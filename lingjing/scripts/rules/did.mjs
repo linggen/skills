@@ -12,6 +12,7 @@
 import { pick, stepName, threshold } from '../state.mjs';
 import { staminaBrief } from './daily.mjs';
 import { bookOf, questOf } from './errands.mjs';
+import { taleLine } from './tale.mjs';
 import { tasksBrief, wordsOf } from './look.mjs';
 import { placeOf } from './world.mjs';
 
@@ -28,8 +29,8 @@ const titleOf = (content, id, lang) => pick(questOf(content, id)?.title, lang) ?
    when the call changed nothing worth telling (a bare Look, a veil lifted). */
 const QUEST_DID = {
   take: (r) => `took errand ${r.title}`,
-  turn: (r, a, x) => `handed in ${r.title}${paidLine(r.paid, x.w)}`,
-  drop: (r, a, x) => `put down errand ${titleOf(x.content, r.dropped, x.lang)}`,
+  turn: (r, a, x) => (a.id === 'tale' ? taleDid(r, x) : `handed in ${r.title}${paidLine(r.paid, x.w)}`),
+  drop: (r, a, x) => (a.id === 'tale' ? TALE_DID.drop() : `put down errand ${titleOf(x.content, r.dropped, x.lang)}`),
 };
 const TRADE_DID = {
   buy: (r) => `bought ${r.item?.name}`,
@@ -48,6 +49,10 @@ const JOURNEY_DID = {
   recall: (r) => `called Yinyue back early from ${r.place?.name}`,
   receive: (r) => `welcomed Yinyue back from ${r.place?.name}`,
 };
+/* 传闻 on the page: a step's board won, its riddle answered, a kept win counted. */
+const taleDid = (r, x) => (r.ended ? `ended today's rumor${paidLine(r.handed?.[0]?.paid, x.w)}${r.handed?.[0]?.gives ? `, got ${r.handed[0].gives}` : ''}`
+  : r.kept ? "solved the rumor's step; counted when 体力 is back" : r.step ? `the rumor's step done${paidLine(r.handed?.[0]?.paid, x.w)}; next: ${r.step.game_name} at ${r.step.at?.name}` : null);
+const TALE_DID = { win: (r, a, x) => taleDid(r, x), answer: (r, a, x) => taleDid(r, x), turn: (r, a, x) => taleDid(r, x), drop: () => "put today's rumor down" };
 const byAction = (table) => (r, a, x) => table[a.action ?? 'take']?.(r, a, x) ?? null;
 
 const PAGE_DID = {
@@ -61,6 +66,7 @@ const PAGE_DID = {
   nourish: () => 'nourished the 本命法宝',
   chance: () => 'took the chance (机缘)',
   journey: byAction(JOURNEY_DID),
+  tale: (r, a, x) => TALE_DID[a.action]?.(r, a, x) ?? null,
 };
 
 /* The page's change, written down on the state it wrote: a fresh copy with
@@ -114,6 +120,7 @@ export function progress(state, content, ctx) {
       stamina: { now: st.now, max: st.max, ...(st.empty ? { empty: true, rest_at: st.rest_at } : {}) },
       place: here ? { id: here.id, name: pick(here.name, lang) } : null,
       book: bookOf(content, state, lang, ctx).map(b => ({ title: b.title, ready: b.ready })),
+      tale: taleLine(content, state, ctx.now),
       practice: { done: tasks.filter(t => t.paid).map(t => t.title), left: tasks.filter(t => !t.paid).map(t => t.title) },
     },
   };

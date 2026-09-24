@@ -11,7 +11,8 @@ import { progress } from './did.mjs';
 import { divine, fate } from './fortune.mjs';
 import { look, stageAt } from './look.mjs';
 import { duel, lundao, questCheck, task, win, write } from './tasks.mjs';
-import { branch, go, lang, move, summarize, trade } from './travel.mjs';
+import { tale, taleInfo } from './tale.mjs';
+import { go, lang, move, summarize, trade } from './travel.mjs';
 import { placeName, placeOf } from './world.mjs';
 import { amend, art, atlas, build, enter, forget, leave, load, make, ring, save, saves, tame, travel, wake, worlds } from './worlds.mjs';
 
@@ -30,7 +31,7 @@ export const VERBS = {
     }
     return { state: next, result };
   },
-  resolve, judge, task, win, duel, tame, write, refine, nourish, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
+  resolve, judge, task, win, duel, tame, write, refine, nourish, tale, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
   go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, tend, bond, chance, journey, greet, deck, lundao, progress,
   gear: (s, c) => ({ state: null, result: { ok: true, gear: gearBrief(c, s) } }),
 };
@@ -41,6 +42,8 @@ export const VERBS = {
 export function quest(state, content, ctx, args) {
   const id = String(args.id ?? ''), lang = state.lang;
   const action = String(args.action ?? 'take');
+  // The day's 传闻 rides the book as one line (tale.mjs): its row opens, is put down, or a kept win is counted.
+  if (id === 'tale') return taleQuest(state, content, ctx, action);
   // The page's own reading of one line: everything a row expands to. It is
   // asked for on a tap and never rides Look, so it costs Ling nothing (his,
   // 2026-09-21: what the page knows it shows — the model is for telling).
@@ -82,6 +85,11 @@ export function quest(state, content, ctx, args) {
   const told = handedOne(content, s, h);
   return { state: s, result: { ok: true, turned: id, title: told.title, paid: h.paid, book: bookOf(content, s, lang, ctx),
     ...(told.next ? { then: told.next } : {}) } };
+}
+
+function taleQuest(state, content, ctx, action) {
+  if (action === 'info') return { state: null, result: taleInfo(content, state, ctx) };
+  return ['drop', 'turn'].includes(action) ? tale(state, content, ctx, { action }) : refuse('unknown-action', null, { actions: ['info', 'drop', 'turn'] });
 }
 
 function questInfo(state, content, ctx, id) {

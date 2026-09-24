@@ -18,9 +18,9 @@ export function newState(content, lang, now) {
     bag: {}, cast: [], wear: {}, duels: {}, arts: [],
     chapter: first.id, scene: first.first_scene, done_scenes: [], ended: [],
     place: first.scenes[first.first_scene]?.at ?? content.places[first.province]?.start ?? null,
-    tasks: {}, chores: {}, quests: {}, wins: {}, branch: null, story: '', seeds_used: [],
+    tasks: {}, chores: {}, quests: {}, wins: {}, story: '', seeds_used: [],
     made: { scenes: {}, at: null },
-    day: { key: dayKey(now), progress: 0, wealth: 0, branches: 0 },
+    day: { key: dayKey(now), progress: 0, wealth: 0 },
     stamina: content.rewards.stamina.max, stamina_at: at,
     created: at, updated: at,
   };
@@ -87,7 +87,7 @@ export function periodStart(period, now) {
 /* The day's totals roll over at local midnight. */
 export function rollDay(state, now) {
   const key = dayKey(now);
-  if (state.day?.key !== key) state.day = { key, progress: 0, wealth: 0, branches: 0 };
+  if (state.day?.key !== key) state.day = { key, progress: 0, wealth: 0 };
 }
 
 /* ── Stamina: the pace ── */
@@ -190,7 +190,7 @@ export function migrate(state, content = null) {
   const move = (from, to) => { if (from in m) { m[to] = m[from]; delete m[from]; } };
   move('daohao', 'name'); move('root', 'traits'); move('realm', 'tier'); move('stage', 'step');
   move('xw', 'progress'); move('ls', 'wealth'); move('beasts', 'cast'); move('qi', 'stamina'); move('qi_at', 'stamina_at');
-  if (m.day) m.day = { key: m.day.key, progress: m.day.xw ?? m.day.progress ?? 0, wealth: m.day.ls ?? m.day.wealth ?? 0, branches: m.day.branches ?? 0 };
+  if (m.day) m.day = { key: m.day.key, progress: m.day.xw ?? m.day.progress ?? 0, wealth: m.day.ls ?? m.day.wealth ?? 0 };
   m.world ??= FIRST_WORLD;
   m.place ??= null; // settled by the rules from the scene, or the province's start
   m.wear ??= {};
@@ -208,7 +208,10 @@ export function migrate(state, content = null) {
    place or a beast renamed since it was written — is fitted back to the
    world's defaults rather than crash every Look (review, 2026-09-24). A
    save that fits comes back as it was. */
-export function fitWorld(state, content) {
+export function fitWorld(saved, content) {
+  // 奇遇 (Branch) went 2026-09-24 for 今日传闻: an open one is closed quietly, unpaid.
+  const { branch, ...rest } = saved;
+  const state = 'branch' in saved ? rest : saved;
   const tier = tierOf(content, state.tier);
   const chapter = content.chapters[state.chapter];
   const scene = chapter && state.scene != null ? chapter.scenes[state.scene] : null;

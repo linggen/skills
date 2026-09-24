@@ -11,7 +11,8 @@ import { clone, pay, paysOf, refuse, RIDDLE_TRIES, spendStamina } from './core.m
 import { herAway } from './daily.mjs';
 import { nameOf } from './look.mjs';
 import { canWrite, questDone } from './tasks.mjs';
-import { hashOf, pickSeed } from './travel.mjs';
+import { canMakeTale, taleEvent, taleHanded, taleRow } from './tale.mjs';
+import { hashOf } from './travel.mjs';
 import { allPlaces, atScene, creatureOf, inCorridor, inMade, pathOf, placeName, placeOf, provinceOpen, sceneOf, tooHard, towardOf } from './world.mjs';
 
 /* ── 差事 — the errands the player takes (design.md § 差事) ──
@@ -68,9 +69,10 @@ function choresOf(state, ctx, lang) {
     });
 }
 
-/* Open, in the order taken; then life's own. */
+/* Open, in the order taken; then the day's 传闻 (tale.mjs); then life's own. */
 function bookOf(content, state, lang, ctx) {
-  return [...errandsOf(content, state, lang, ctx?.now ?? new Date()), ...choresOf(state, ctx, lang)];
+  const tale = taleRow(content, state, { now: ctx?.now ?? new Date() });
+  return [...errandsOf(content, state, lang, ctx?.now ?? new Date()), ...(tale ? [tale] : []), ...choresOf(state, ctx, lang)];
 }
 
 function errandsOf(content, state, lang, now) {
@@ -247,7 +249,9 @@ export function advance(content, state, event, ctx = null) {
       held.have = { ...held.have, [i]: Math.min(need.n, (held.have?.[i] ?? 0) + 1) };
     });
   }
-  return ctx ? settleErrands(content, state, ctx) : [];
+  // 传闻's finale: a fight won or a beast tamed ends it (tale.mjs).
+  const tale = taleEvent(content, state, event, ctx);
+  return ctx ? [...tale, ...settleErrands(content, state, ctx)] : tale;
 }
 
 /* 交差 by itself (his pick, 2026-09-23): a tap that asks no choice is only a
@@ -286,6 +290,7 @@ function settleErrands(content, s, ctx) {
 
 /* One errand handed in, as the stage and Ling tell it. */
 function handedOne(content, state, h) {
+  if (h.tale) return taleHanded(content, state, h);
   const lang = state.lang, q = questOf(content, h.id), next = h.next ? questOf(content, h.next) : null;
   return { id: h.id, title: pick(q?.title, lang), who: q?.from?.who ? pick(q.from.who, lang) : null, paid: h.paid,
     ...(q?.grant?.item ? { gives: pick(itemOf(content, q.grant.item)?.name, lang) } : {}),
@@ -355,7 +360,7 @@ const meetsToday = (state, now) => (state.meets?.day === dayKey(now) ? state.mee
 const meetHere = (state, now) => meetsToday(state, now)[state.place] ?? null;
 
 /* What the place holds by itself: a scene, an errand offered, a shelf, a
-   beast still to be met. Any of these IS the arrival. A seed is not: 在此逗留
+   beast still to be met. Any of these IS the arrival. A seed is not: 今日传闻
    is one more option in the question, and a place that offered only that was
    the empty arrival he complained of (吕梁洪, 2026-09-21) — it is dealt a 遇
    like any other, and the tale is still there to begin. */
@@ -565,11 +570,6 @@ export function meet(state, content, ctx, args) {
   return refuse('unknown-action', null, { actions });
 }
 
-/* A 奇遇 does not keep overnight. His save held one opened 2026-09-14 with no
-   turn taken, and for a week it shut every seed out of every place: he
-   arrived, nothing was there, and the chat asked where next (2026-09-21). */
-const liveBranch = (state, now) => (state.branch && dayKey(new Date(state.branch.opened)) === dayKey(now) ? state.branch : null);
-
 /* The nearest open road out of a scene's place the player can walk. */
 function wayBack(content, state, now) {
   const scene = sceneOf(content, state);
@@ -602,15 +602,15 @@ const poolOf = (content, state) => {
 };
 
 /* The director's brief: what Ling improvises inside this turn — what is
-   near, what is beyond the player, the thread, the pool, today's seed. The
+   near, what is beyond the player, the thread, the pool. The
    rules still decide every outcome. */
 function directorBrief(content, state, ctx) {
   const place = placeOf(content, state.place);
   if (!place) return null;
   const roads = place.roads.map(id => placeOf(content, id)).filter(p => provinceOpen(content, p.province, ctx.now));
   const closed = place.roads.map(id => placeOf(content, id)).filter(p => !provinceOpen(content, p.province, ctx.now));
-  const seed = place.has?.seeds && state.day.branches < content.branches.per_day && !liveBranch(state, ctx.now)
-    ? pickSeed(content, state, content.branches.templates[0].kind, ctx.now) : null;
+  // 今日传闻 is offered where the province's lore gathers (a place with seeds).
+  const rumor = place.has?.seeds && canMakeTale(state, ctx.now) ? pick(content.dictionary.words.tale_today, state.lang) : null;
   const here = placeName(content, state, place);
   const near = roads.filter(p => !tooHard(content, state, p)).map(p => placeName(content, state, p));
   const thread = threadOf(content, state, ctx.now);
@@ -628,18 +628,17 @@ function directorBrief(content, state, ctx) {
     corridor: inCorridor(content, state),
     thread,
     pool: poolOf(content, state),
-    seed: seed ? { id: seed.id, line: seed.line } : null,
-    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...led, place: toward } : led, Boolean(seed), ctx.said, canWrite(content, state), filler(content, state, ctx.said), bookOf(content, state, state.lang, ctx).filter(q => q.ready), workOf(content, state, ctx)),
+    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...led, place: toward } : led, rumor, ctx.said, canWrite(content, state), filler(content, state, ctx.said), bookOf(content, state, state.lang, ctx).filter(q => q.ready), workOf(content, state, ctx)),
   };
 }
 
 /* The way forward while the world is open, ready for AskUser as it is: the
-   thread's place first, then the other roads, a linger when today's seed
-   waits here, and a word to Yinyue so there are always two. Ling offers it
-   verbatim; a tapped label is its `move` (Move there at once), `linger`
-   (Branch open) or `ask` (Yinyue answers). A scene's own buttons take its
-   place while one runs. */
-function choiceOf(state, here, near, thread, seeded, said, write = false, alone = null, ready = [], work = null) {
+   thread's place first, then the other roads, 今日传闻 when today's is still
+   to be told here, and a word to Yinyue so there are always two. Ling offers
+   it verbatim; a tapped label is its `move` (Move there at once), `tale`
+   (Tale seed, then make) or `ask` (Yinyue answers). A scene's own buttons
+   take its place while one runs. */
+function choiceOf(state, here, near, thread, rumor, said, write = false, alone = null, ready = [], work = null) {
   const zh = state.lang === 'zh';
   const first = thread?.place && near.find(p => p.id === thread.place.id);
   const places = first ? [first, ...near.filter(p => p.id !== first.id)] : near;
@@ -654,7 +653,7 @@ function choiceOf(state, here, near, thread, seeded, said, write = false, alone 
   if (work && !work.here) options.push({ label: zh ? `${work.place.name} · 有差事` : `${work.place.name} · work to be had`, move: work.place.id });
   if (write) options.push({ label: zh ? '写一道符' : 'Write a talisman', write: true });
   options.push(...places.filter(p => !(work && !work.here && p.id === work.place.id)).map(p => ({ label: p.name, move: p.id })));
-  if (seeded) options.push({ label: zh ? '在此逗留' : 'Linger here', linger: true });
+  if (rumor) options.push({ label: rumor, tale: true });
   if (options.length < 2) options.push(alone ?? { label: zh ? '看看四周' : 'Look around', look: true });
   return { header: here.name, question: zh ? '何去何从？' : 'What now?', options };
 }
@@ -756,4 +755,4 @@ function gearBrief(content, state) {
   };
 }
 
-export { bookOf, breakthroughOf, complete, countsOf, dealMeet, directorBrief, filler, FILLERS, GEAR_SLOTS, gearBrief, HANDED_KEEP, handedHere, handedOne, itemBrief, itemOf, liveBranch, meetBrief, meetHere, meetsToday, noticeAt, noticeOf, offersOf, questDoneBefore, questOf, questReady, settleErrands, taskOf, threadOf, TIERS_ORDER, wayBack, waypointOf, workOf };
+export { bookOf, breakthroughOf, complete, countsOf, dealMeet, directorBrief, filler, FILLERS, GEAR_SLOTS, gearBrief, HANDED_KEEP, handedHere, handedOne, itemBrief, itemOf, meetBrief, meetHere, meetsToday, noticeAt, noticeOf, offersOf, questDoneBefore, questOf, questReady, settleErrands, taskOf, threadOf, TIERS_ORDER, wayBack, waypointOf, whereAt, withinRoads, workOf };

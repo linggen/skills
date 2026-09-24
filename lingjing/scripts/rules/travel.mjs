@@ -1,89 +1,24 @@
-// rules/travel.mjs — Branches, story, travel, trade, language — and Ling driving the game.
+// rules/travel.mjs — Story, travel, trade, language — and Ling driving the game.
 // Part of the rules engine; rules.mjs is its one door.
 import { ARM_SLOTS } from '../content.mjs';
-import { dayKey, fill, langOf, pick, rollDay } from '../state.mjs';
+import { dayKey, fill, langOf, pick } from '../state.mjs';
 import { grow, tierRank, TREASURE_TOP, treasureBrief } from './arms.mjs';
 import { healthBrief, hpMaxOf, woundsNow } from './cards.mjs';
 import { companionOf, gainBond, hasCompanion } from './companion.mjs';
 import { clone, offerTasks, pay, refuse, spendStamina } from './core.mjs';
 import { chanceBrief, chanceLive } from './daily.mjs';
-import { advance, bookOf, dealMeet, directorBrief, GEAR_SLOTS, itemBrief, itemOf, liveBranch, meetsToday, questOf, settleErrands } from './errands.mjs';
+import { advance, bookOf, dealMeet, directorBrief, GEAR_SLOTS, itemBrief, itemOf, meetsToday, questOf, settleErrands } from './errands.mjs';
 import { forSale, sceneBrief, shelfOf, wordsOf } from './look.mjs';
 import { atScene, fittingPlace, inCorridor, inMade, pathOf, placeBrief, placeName, placeOf, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard } from './world.mjs';
 import { enter } from './worlds.mjs';
 
-/* ── Branches, story, travel, language ── */
+/* ── Story, travel, language ── */
 
 /* A small stable hash: the same day and name land on the same seed. */
 function hashOf(text) {
   let h = 0;
   for (const ch of String(text)) h = (h * 31 + ch.codePointAt(0)) % 2147483647;
   return h;
-}
-
-/* The seed a 奇遇 grows from: the player's province, this kind, unused
-   first; chosen by the day and the 道号, so a day reopens the same seed. A
-   province with no seeds grows the tale from the template alone. */
-function pickSeed(content, state, kind, now) {
-  const province = placeOf(content, state.place)?.province ?? content.chapters[state.chapter]?.province;
-  const all = (content.seeds[province]?.seeds ?? []).filter(x => x.kind === kind);
-  if (!all.length) return null;
-  const used = new Set(state.seeds_used ?? []);
-  const pool = all.some(x => !used.has(x.id)) ? all.filter(x => !used.has(x.id)) : all;
-  const seed = pool[hashOf(`${dayKey(now)}|${state.name ?? ''}|${kind}`) % pool.length];
-  return { id: seed.id, line: pick(seed.line, state.lang), source: pick(seed.source, state.lang), creature: seed.creature ?? null };
-}
-
-export function branch(state, content, ctx, args) {
-  const s = clone(state);
-  rollDay(s, ctx.now);
-  if (!liveBranch(s, ctx.now)) s.branch = null;
-  if (args.action === 'open') {
-    const template = content.branches.templates.find(b => b.kind === args.kind);
-    if (!template) return refuse('unknown-branch', null, { kinds: content.branches.templates.map(b => b.kind) });
-    if (s.branch) return refuse('branch-open', null, { open: s.branch.kind });
-    if (s.day.branches >= content.branches.per_day) return refuse('branch-cap', null);
-    const empty = spendStamina(content, s, ctx, 'branch');
-    if (empty) return empty;
-    const seed = pickSeed(content, s, template.kind, ctx.now);
-    s.branch = { kind: template.kind, turns: 0, said: null, opened: ctx.now.toISOString(), seed: seed?.id ?? null, at_turn: ctx.turn ?? null };
-    if (seed) s.seeds_used = [...(s.seeds_used ?? []), seed.id];
-    s.day.branches += 1;
-    const show = seed?.creature ? [{ card: 'creature', id: seed.creature }] : [];
-    return { state: s, result: { ok: true, opened: template.kind, min_turns: template.min_turns ?? 0, max_turns: template.max_turns, may_not: template.may_not, seed, show } };
-  }
-  if (!s.branch) return refuse('no-branch', null);
-  const template = content.branches.templates.find(b => b.kind === s.branch.kind);
-  // A turn is the player's. The engine counts their messages
-  // (LINGGEN_USER_TURNS): the tale's turns are those sent since it opened,
-  // whatever Ling remembered to report. Without the count, a turn carries
-  // their words, and the same words twice are one turn. A tale closed
-  // before the player has taken part in `min_turns` of them pays nothing —
-  // the reward is for playing it.
-  const counted = () => {
-    if (ctx.turn == null || s.branch.at_turn == null) return false;
-    s.branch.turns = Math.max(s.branch.turns, ctx.turn - s.branch.at_turn);
-    return true;
-  };
-  if (args.action === 'turn') {
-    const said = String(args.said ?? '').trim();
-    if (!counted()) {
-      if (!said || said === s.branch.said) return refuse('no-player-turn', null, { turns: s.branch.turns });
-      s.branch.turns += 1;
-    }
-    s.branch.said = said;
-    return { state: s, result: { ok: true, turns: s.branch.turns, close_now: s.branch.turns >= template.max_turns } };
-  }
-  if (args.action === 'close') {
-    // The words that ended the tale are the player's last turn.
-    const said = String(args.said ?? '').trim();
-    if (!counted() && said && said !== s.branch.said) { s.branch.turns += 1; s.branch.said = said; }
-    const early = s.branch.turns < (template.min_turns ?? 0);
-    const paid = early ? null : pay(content, s, ctx, { table: template.table, progress: Number(args.progress) || 0, wealth: Number(args.wealth) || 0 });
-    s.branch = null;
-    return { state: s, result: { ok: true, closed: template.kind, paid, ...(early ? { unpaid: 'too-soon', min_turns: template.min_turns } : {}), summarize: true } };
-  }
-  return refuse('unknown-action', null, { actions: ['open', 'turn', 'close'] });
 }
 
 export function summarize(state, content, ctx, args) {
@@ -372,4 +307,4 @@ export function go(state, content, ctx, args) {
   return { state: s, result: { ok: true, scene: sceneBrief(content, s, ctx.now), summarize: true } };
 }
 
-export { hashOf, pickSeed, provinceOf };
+export { hashOf, provinceOf };

@@ -9,8 +9,9 @@ import { fightSetup, healthBrief } from './cards.mjs';
 import { bondBrief, callDue, companionOf, hasCompanion, questBrief } from './companion.mjs';
 import { clone, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mjs';
 import { chanceBrief, journeyBrief, staminaBrief } from './daily.mjs';
-import { bookOf, breakthroughOf, directorBrief, handedHere, itemOf, liveBranch, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
+import { bookOf, breakthroughOf, directorBrief, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
 import { divinationBrief, fateBrief } from './fortune.mjs';
+import { knownBrief, storyDue, taleBrief } from './tale.mjs';
 import { doneThisPeriod, gameLevel, lundaoBrief, questDone, reopened } from './tasks.mjs';
 import { atScene, creatureOf, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
 import { building } from './worlds.mjs';
@@ -203,7 +204,9 @@ export function look(state, content, ctx) {
     // Where an errand may be taken, when the book has room — so 「what now」 has an answer.
     ...(workOf(content, state, ctx) ? { work: workOf(content, state, ctx) } : {}),
     ...(offersOf(content, state, lang, ctx.now).length ? { offers: offersOf(content, state, lang, ctx.now) } : {}),
-    ended: state.ended, branch: liveBranch(state, ctx.now), story: state.story,
+    // 今日传闻 (tale.mjs): the step open now and its people; `story_due` when nothing story-like happened for a while.
+    ...taleLook(content, state, ctx),
+    ended: state.ended, story: state.story,
     divination: divinationBrief(content, state, ctx.now),
     fate: fateBrief(content, state),
     stamina: staminaBrief(content, state, ctx.now),
@@ -213,6 +216,12 @@ export function look(state, content, ctx) {
     ...tasksBrief(content, state, ctx),
   };
   return { ...onStage(content, state, ctx, {}, brief), ...brief };
+}
+
+/* 传闻 as Look carries it: the tale, the people met in finished ones, and a nudge. */
+function taleLook(content, state, ctx) {
+  const tale = taleBrief(content, state, ctx.now), known = knownBrief(content, state), due = storyDue(content, state, ctx);
+  return { tale, ...(known.length ? { known } : {}), ...(due ? { story_due: true, story_why: due.why } : {}) };
 }
 
 /* The stage and the question, decided together and never twice (his law,

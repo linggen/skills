@@ -46,9 +46,13 @@
       "zh": "论道",
       "en": "debate"
     },
-    "branch": {
-      "zh": "奇遇",
-      "en": "chance encounter"
+    "tale": {
+      "zh": "传闻",
+      "en": "Rumor"
+    },
+    "tale_today": {
+      "zh": "今日传闻",
+      "en": "Today's Rumor"
     },
     "task": {
       "zh": "功课",

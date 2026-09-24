@@ -25,7 +25,7 @@ const PICTURE_STYLE = 'Traditional Chinese ink wash painting with soft watercolo
 const plainEn = t => String(pick(t, 'en') ?? '').trim().replace(/[.。]$/, '');
 
 /* The verbs that move the story, and so wait for the brush. */
-export const BUILDING_WAITS = new Set(['resolve', 'judge', 'duel', 'tame', 'branch', 'move', 'trade', 'make', 'enter', 'leave', 'refine']);
+export const BUILDING_WAITS = new Set(['resolve', 'judge', 'duel', 'tame', 'tale', 'move', 'trade', 'make', 'enter', 'leave', 'refine']);
 
 /* What a made world still needs painted, as GenerateImage's arguments, each
    with the `creature` Art takes back: its new creatures, then its map. */

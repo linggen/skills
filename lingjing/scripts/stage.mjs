@@ -26,6 +26,12 @@ export function lineHere(look) {
   return null;
 }
 
+/* 传闻's step, when it is to be played on this very spot. */
+export function taleHere(look) {
+  const t = look?.tale;
+  return t?.step?.at?.here && !t.ended && !t.dropped ? t.step : null;
+}
+
 /* EVERY card kind says whether it HOLDS the stage: whether it is asking the
    player to do something, here, now. While any card holds, the chat keeps its
    question to itself and the roads stand on the stage under the cards; the
@@ -49,6 +55,8 @@ export const CARD_KINDS = {
   veil: { holds: true }, //        a 遇 not yet revealed: mist, until Ling has set the moment
   item: { holds: true }, //        a shelf to buy from
   quest: { holds: look => Boolean(lineHere(look)) }, // the search's step, only when it can be taken on this spot
+  // 传闻's step where he stands: its board, its riddle, its 论道. A fight finale's own duel card holds instead.
+  tale: { holds: look => Boolean(taleHere(look)) && look.tale.step.game !== 'duel' },
   // A beast that can still be met today. Won, withdrawn or tamed, its card is a record, not an ask.
   duel: { holds: (look, card) => { const e = look?.place?.encounter; return !e || e.game?.id !== card.id || !(e.won || e.withdrawn || e.tamed); } },
   hexagram: { holds: false }, //   the day's coins: optional, never what an arrival is about
@@ -82,6 +90,8 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   if (look.building?.paint?.length) head.push({ card: 'building' });
   if (look.stamina?.empty) head.push({ card: 'empty' });
   if (look.quest) head.push({ card: 'quest' });
+  // 传闻: the step before him — one card, in the queue near the search's.
+  if (taleHere(look)) head.push({ card: 'tale' });
   // Where the story waits — one slim line, no buttons. It was a whole card
   // with the book under it until 2026-09-21, and three tall cards crowded the
   // stage (his: 「current UI is crowded」); the card and the book now open from
@@ -141,7 +151,7 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
    on a card is never also an option in the chat, whichever side it came from.
 
    The keys match an `ask` option's own fields: `divine`, `ring`, `write`,
-   `linger`, `move:<place>`, `exit:<id>`, `tame:<creature>` — and only
+   `tale`, `move:<place>`, `exit:<id>`, `tame:<creature>` — and only
    those: a key no option can carry owns nothing (the `quest:` and `duel:`
    keys went, review 2026-09-24 — the question never offers 接下 or 出手). */
 export function stageOwns(look, cards) {
@@ -172,7 +182,7 @@ export function stageOwns(look, cards) {
    has it all. */
 export function askMinusStage(ask, owns) {
   if (!ask) return null;
-  const key = o => (o.divine ? 'divine' : o.ring && !o.answer ? 'ring' : o.write ? 'write' : o.linger ? 'linger'
+  const key = o => (o.divine ? 'divine' : o.ring && !o.answer ? 'ring' : o.write ? 'write' : o.tale ? 'tale'
     : o.move ? `move:${o.move}` : o.exit && !o.answer ? `exit:${o.exit}` : o.tame ? `tame:${o.tame}` : null);
   const options = ask.options.filter(o => { const k = key(o); return !k || !owns.has(k); });
   // A question needs two ways out of it; fewer than that and the stage is the

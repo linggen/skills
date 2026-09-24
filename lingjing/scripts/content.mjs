@@ -22,7 +22,7 @@ export const hasWorld = id => typeof id === 'string' && /^[a-z0-9-]+$/.test(id) 
 /* They live in the skill's data folder (LINGJING_DATA in tests), one folder
    per world, holding only what Ling wrote: the card, the words that differ,
    new creatures, one province of places, the opening scene. Everything
-   else — ladder, rewards, herbs, items, riddles, tasks, branches — is the
+   else — ladder, rewards, herbs, items, riddles, tasks, the tale's shape — is the
    base world's. */
 const dataDir = () => process.env.LINGJING_DATA || path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../data');
 export const madeWorldsDir = () => path.join(dataDir(), 'worlds');
@@ -138,7 +138,7 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     hexagrams: at('hexagrams.json'),
     riddles: { zh: at('riddles/zh.json'), en: at('riddles/en.json') },
     tasks: at('tasks/world.json'),
-    branches: at('branches.json'),
+    tale: at('tale.json'),
     seeds: loadSeeds(path.join(dir, 'seeds')),
     quests: loadQuests(path.join(dir, 'quests')),
     notices: loadNotices(path.join(dir, 'quests', 'templates.json')),
@@ -420,10 +420,7 @@ export function lint(content) {
   lintBook(content, bad);
   lintFate(content, bad);
   for (const task of content.tasks.tasks) lintTask(task, content, ids, bad);
-  for (const b of content.branches.templates) {
-    if (!content.rewards.tables[b.table]) bad(`branch ${b.kind}`, `unknown reward table ${b.table}`);
-    if (!b.may_not?.includes('spine')) bad(`branch ${b.kind}`, 'must not touch the spine');
-  }
+  lintTaleShape(content, ids, bad);
   for (const chapter of Object.values(content.chapters)) lintChapter(chapter, content, ids, bad);
   lintSeeds(content, ids, bad);
   lintQuests(content, ids, bad);
@@ -626,8 +623,31 @@ function lintMeets(content, ids, bad) {
   }
 }
 
+/* 今日传闻's shape (tale.json) and its pay (rewards.json § tale): every game
+   a board the page can deal or a word game the rules judge, two or three
+   story uses each; the pay tables and the drops real, each drop of a tier
+   the ladder has. A tale Ling writes is linted against this in rules/tale.mjs. */
+const TALE_WORD_GAMES = new Set(['riddle', 'lundao']);
+function lintTaleShape(content, ids, bad) {
+  const t = content.tale, r = content.rewards;
+  if (!t) { bad('tale', 'tale.json is missing'); return; }
+  if (!(t.steps?.min >= 1 && t.steps.max >= t.steps.min)) bad('tale', 'steps needs min ≤ max');
+  if (!(t.kinds_min >= 1 && t.kinds_min <= t.steps?.min)) bad('tale', 'kinds_min must fit the fewest steps');
+  for (const [id, g] of Object.entries(t.games ?? {})) {
+    if (!TALE_WORD_GAMES.has(id) && !g.page) bad(`tale game ${id}`, 'needs the page board it deals');
+    if (g.page && g.page !== 'lianliankan' && !fs.existsSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'games', `${g.page}.js`))) bad(`tale game ${id}`, `no board scripts/games/${g.page}.js`);
+    if (!(g.frames?.length >= 2 && g.frames.length <= 3)) bad(`tale game ${id}`, 'two or three frames');
+  }
+  for (const k of ['tale', 'tale_end']) if (!r.tables[k]) bad('rewards', `no ${k} table`);
+  const tiers = new Set(content.ladder.tiers.map(x => x.id)), cards = new Set((content.cards?.cards ?? []).map(c => c.id));
+  for (const d of r.tale?.drops ?? []) {
+    if (!tiers.has(d.tier)) bad('tale drop', `unknown tier ${d.tier}`);
+    if (d.item ? !ids.items.has(d.item) : !cards.has(d.card)) bad('tale drop', `unknown ${d.item ? 'item' : 'card'} ${d.item ?? d.card}`);
+  }
+}
+
 function lintSeeds(content, ids, bad) {
-  const kinds = new Set(content.branches.templates.map(b => b.kind));
+  const kinds = new Set(Object.keys(content.tale?.seed_kinds ?? {}));
   const seen = new Set();
   for (const [province, doc] of Object.entries(content.seeds)) {
     if (!content.dictionary.provinces[province]) bad(`seeds ${province}`, 'unknown province');

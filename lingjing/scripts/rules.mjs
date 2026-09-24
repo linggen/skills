@@ -3,7 +3,7 @@
 // either apply it or refuse with a reason Ling can narrate.
 //
 //   node rules.mjs <verb> [--key value …]
-//   verbs: init look progress resolve judge task win duel tame write refine nourish branch summarize move trade lang make enter leave
+//   verbs: init look progress resolve judge task win duel tame write refine nourish tale summarize move trade lang make enter leave
 //          build worlds travel amend art go saves save load forget undo
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
@@ -42,7 +42,8 @@ export { parseArgs } from './rules/files.mjs';
 export { castThrows, divinationBrief, divine, fate, fateBrief, fateOf } from './rules/fortune.mjs';
 export { look } from './rules/look.mjs';
 export { closeStaleFight, duel, fightHold, lundao, task, win, write } from './rules/tasks.mjs';
-export { branch, go, heed, lang, move, summarize, trade } from './rules/travel.mjs';
+export { go, heed, lang, move, summarize, trade } from './rules/travel.mjs';
+export { lintTale, tale } from './rules/tale.mjs';
 export { quest, show, VERBS } from './rules/verbs.mjs';
 export { PAGE_KEEP, progress } from './rules/did.mjs';
 export { amend, art, atlas, build, BUILDING_WAITS, enter, forget, leave, load, make, paintList, ring, save, saves, tame, travel, wake, worlds } from './rules/worlds.mjs';
@@ -50,6 +51,8 @@ export { amend, art, atlas, build, BUILDING_WAITS, enter, forget, leave, load, m
 /* Answers handed over as they are — no question, no stage: Progress is for
    a pet that only wants to know how the game stands. */
 const PLAIN = new Set(['progress']);
+/* The verbs that are story when they land: a scene step, a 遇, a made scene entered. */
+const STORY_VERBS = new Set(['resolve', 'meet', 'enter']);
 
 /* One call, start to end, under the save's lock (files.mjs withLock): the
    read, the verb and every write it makes — Look's `asked_at` too, and a
@@ -98,6 +101,8 @@ function runLocked(verb, args, stateFile, reader) {
   const changed = out.state ?? (heard !== (raw ?? state) ? heard : null);
   // What the page did, written down with it, so Ling and Yinyue can read it.
   const next = (!reader && notePage(verb, args, out.result, changed, content, now)) || changed;
+  // Something of the story happened: 传闻's quiet clock starts again (tale.mjs storyDue).
+  if (next && out.result?.ok && STORY_VERBS.has(verb)) next.story_at = now.toISOString();
   if (next) {
     next.updated = now.toISOString();
     writeAtomic(stateFile, JSON.stringify(next));
@@ -106,6 +111,12 @@ function runLocked(verb, args, stateFile, reader) {
   if (out.result?.travel) return travelTo(out.result.travel, next ?? state, { stateFile, logFile, now, verb });
   const asking = next ?? state;
   const told = pageTold(verb, reader, asking, stateFile);
+  // 传闻's nudge is handed to Ling once a span: written down like her place in
+  // page_did — never logged, so Undo still takes back the last real move.
+  if (reader === 'ling' && verb === 'look' && out.result?.story_due) {
+    asking.story_told = now.toISOString();
+    writeAtomic(stateFile, JSON.stringify(asking));
+  }
   const said = heard !== state ? { ...out.result, lang_set: heard.lang } : out.result;
   const result = told ? { ...said, page_did: told } : said;
   if (PLAIN.has(verb)) return result;

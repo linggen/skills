@@ -251,7 +251,7 @@ const spentCharms = (content, setup, played) => {
    readers work. `true` holds the verb; a function holds only the calls it
    says. Anything not named is left alone. */
 const FIGHT_HOLDS = {
-  resolve: true, move: true, go: true, enter: true, leave: true, trade: true, journey: true, branch: true,
+  resolve: true, move: true, go: true, enter: true, leave: true, trade: true, journey: true, tale: a => !['info', 'seed'].includes(a.action),
   meet: true, tame: true, write: true, refine: true, nourish: true, chance: true, task: a => a.action !== 'list',
   win: true, travel: true, build: true, load: true, make: true, amend: true, lundao: true, tend: true, bond: true,
   divine: true, fate: true, ring: true, greet: true, deck: true, quest: a => a.action !== 'info',
@@ -401,4 +401,4 @@ export function lundao(state, content, ctx, args) {
   return { state: s, result: { ok: true, good, ...(form ? { form } : {}), ...(!form && !judged ? { judged: false } : {}), lundao: lundaoBrief(content, s, ctx.now), ...(l.model && !l.outcome ? { model: l.model } : {}), ...(paid ? { paid, line: pick(taskOf(content, 'lundao').done_line, lang) } : {}) } };
 }
 
-export { canWrite, doneThisPeriod, gameLevel, lundaoBrief, questCheck, questDone, reopened };
+export { canWrite, doneThisPeriod, gameLevel, lundaoBrief, lundaoForm, questCheck, questDone, reopened };

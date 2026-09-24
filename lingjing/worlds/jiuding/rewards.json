@@ -19,6 +19,8 @@
       "progress": 20,
       "wealth": 5
     },
+    "tale": { "progress": 10, "wealth": 3 },
+    "tale_end": { "progress": 25, "wealth": 10 },
     "haunt": {
       "progress": 25,
       "wealth": 10
@@ -48,6 +50,17 @@
       "wealth": 20
     }
   },
+  "_tale": "今日传闻 (design.md § 今日传闻): Ling writes no number. Each step pays the `tale` table and the finale the `tale_end` table, both capped; the whole tale never pays more than `cap` (a fifth step eats into the finale), and pay() scales it by the roots, the day's cast and the realm like any grant. One finale `drop`: the highest-tier entry at or below the player's realm (an item, or a card not held and of a root the player has), picked by the tale's id. Economy: a step costs its board's 体力 (stamina.cost.game, 3) plus the walk; a 4-step tale with an elite finale is ~36 体力 for 40 + 25 修为 here plus the elite's own 38 — ~2.9 per 体力, just under a fight's 3.1, the walking being the difference.",
+  "tale": {
+    "cap": { "progress": 65, "wealth": 22 },
+    "drops": [
+      { "item": "mend-pill", "tier": "qi" }, { "item": "qi-pill", "tier": "qi" }, { "item": "straw-cloak", "tier": "qi" },
+      { "card": "huiqi", "tier": "qi" }, { "card": "peiyuan", "tier": "qi" }, { "card": "wudao", "tier": "qi" },
+      { "item": "yaodan-1", "tier": "foundation" }, { "item": "wangqi-1", "tier": "foundation" }, { "item": "foundation-pill", "tier": "foundation" },
+      { "item": "yaodan-2", "tier": "core" }, { "item": "firm-pill", "tier": "core" }, { "item": "wangqi-2", "tier": "core" },
+      { "item": "yaodan-3", "tier": "nascent" }
+    ]
+  },
   "_stamina": "stamina is the pace — design.md § 灵气. Refills by the clock, full in refill_hours; actions cost it; a quest paid refills it (the app's own `qi`, else refill.quest).",
   "stamina": {
     "max": 100,
@@ -55,7 +68,6 @@
     "cost": {
       "move": { "base": 3, "per_road": 1, "max": 6 },
       "step": 3,
-      "branch": 8,
       "duel": 8,
       "game": 3,
       "elite": 12,

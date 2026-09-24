@@ -9,7 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { act, battle, begin, effectOf, foeTurn, offers, tokenOf } from '../scripts/battle.js';
 import { lint, loadContent } from '../scripts/content.mjs';
 import { dayKey, langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, fightSetup, hpMaxOf, bond, tend, chance, journey, greet, deck, deckFor, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
+import { VERBS, fightSetup, hpMaxOf, bond, tend, chance, journey, greet, deck, deckFor, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
 
 const content = loadContent();
@@ -907,27 +907,6 @@ test('a checked quest refills 灵气 — the app\'s own amount, capped', () => {
   assert.equal(out.state.stamina, 100);
 });
 
-test('a 奇遇 grows from a seed of the province — by the day, unused first', () => {
-  let s = start();
-  s.name = '青玄';
-  const one = must(branch, s, { action: 'open', kind: 'province-tale' });
-  const seed = one.result.seed;
-  assert.match(seed.id, /^xu-/);
-  assert.ok(seed.line && seed.source);
-  assert.deepEqual(one.state.seeds_used, [seed.id]);
-  assert.equal(one.state.branch.seed, seed.id);
-  // the same day, the same player: the same seed
-  const again = must(branch, s, { action: 'open', kind: 'province-tale' });
-  assert.equal(again.result.seed.id, seed.id);
-  // once used, the day moves to another
-  s = must(branch, one.state, { action: 'close', progress: 5, wealth: 0 }).state;
-  const next = must(branch, s, { action: 'open', kind: 'province-tale' });
-  assert.notEqual(next.result.seed.id, seed.id);
-  // a seed with a creature shows its card
-  const withCard = content.seeds['徐'].seeds.find(x => x.creature);
-  assert.equal(withCard.creature, 'fuzhu');
-});
-
 test('Make with nothing is the template; a scene in its shape is kept and played; a bad one is refused with its problems', () => {
   let s = start('en');
   const t = make(s, content, ctx(), {}).result;
@@ -1002,46 +981,6 @@ test('a quest pays when its app says it was done this period, once', () => {
   refused(quest, turned.state, { action: 'turn', id: 'shifu-scan' }, 'already-paid', done);
 });
 
-test('a branch opens alone, counts its turns and pays within its cap', () => {
-  let s = must(branch, start(), { action: 'open', kind: 'night-tale' }).state;
-  refused(branch, s, { action: 'open', kind: 'province-tale' }, 'branch-open');
-  // a tale closed before the player took part pays nothing
-  const early = must(branch, s, { action: 'close', progress: '20', wealth: '5' });
-  assert.equal(early.result.paid, null);
-  assert.equal(early.result.unpaid, 'too-soon');
-  // a turn is the player's words; the same words twice are one turn
-  refused(branch, s, { action: 'turn' }, 'no-player-turn');
-  s = must(branch, s, { action: 'turn', said: '我跟着那点灯火走' }).state;
-  refused(branch, s, { action: 'turn', said: '我跟着那点灯火走' }, 'no-player-turn');
-  // the words that end the tale count as the player's last turn
-  assert.equal(must(branch, s, { action: 'close', said: '问她叫什么', progress: '20', wealth: '5' }).result.paid.progress, 20);
-  s = must(branch, s, { action: 'turn', said: '问她叫什么' }).state;
-  const closed = must(branch, s, { action: 'close', progress: '500', wealth: '99' });
-  assert.equal(closed.result.paid.progress, 20);
-  assert.equal(closed.result.paid.wealth, 5);
-  assert.equal(closed.state.branch, null);
-});
-
-test('with the engine counting the player\'s messages, a tale\'s turns are those sent since it opened', () => {
-  // The engine says the player has sent 7 messages when the tale opens: that
-  // message is the asking, not a turn of the tale.
-  let s = must(branch, start(), { action: 'open', kind: 'night-tale' }, ctx({ turn: 7 })).state;
-  assert.equal(s.branch.at_turn, 7);
-  s = must(branch, s, { action: 'turn', said: '走' }, ctx({ turn: 7 })).state;
-  assert.equal(s.branch.turns, 0, 'the opening message is not a turn');
-  // Ling forgot to report a turn; the count catches up on the next call.
-  s = must(branch, s, { action: 'turn', said: '走' }, ctx({ turn: 9 })).state;
-  assert.equal(s.branch.turns, 2, 'the same words, but the engine counted two messages');
-  // Closing pays by the engine's count, whatever Ling said.
-  const closed = must(branch, s, { action: 'close', progress: '20', wealth: '5' }, ctx({ turn: 10 }));
-  assert.equal(closed.state.branch, null);
-  assert.equal(closed.result.paid.progress, 20);
-  // Opened on an engine that counts, played on one that does not: the words count as before.
-  s = must(branch, start(), { action: 'open', kind: 'night-tale' }).state;
-  assert.equal(s.branch.at_turn, null);
-  refused(branch, s, { action: 'turn' }, 'no-player-turn', ctx({ turn: 3 }));
-});
-
 test('the story summary has a length limit', () => {
   refused(summarize, start(), { text: '字'.repeat(601) }, 'too-long');
   assert.equal(must(summarize, start(), { text: '青玄在泗水边醒来。' }).state.story, '青玄在泗水边醒来。');
@@ -1089,7 +1028,7 @@ test('a save from before the dictionary migrates to the ids', () => {
   assert.equal(m.world, 'jiuding', 'a save from before worlds was playing 《九鼎》');
   assert.equal(m.name, '青玄'); assert.deepEqual(m.traits, ['wood']); assert.equal(m.tier, 'qi'); assert.equal(m.step, 2);
   assert.equal(m.progress, 30); assert.equal(m.wealth, 5); assert.deepEqual(m.cast, ['fuzhu']); assert.equal(m.stamina, 40);
-  assert.deepEqual(m.day, { key: '2026-09-11', progress: 30, wealth: 5, branches: 0 });
+  assert.deepEqual(m.day, { key: '2026-09-11', progress: 30, wealth: 5 });
   assert.equal(m.xw, undefined);
   assert.equal(look(m, content, ctx()).tier.name, '练气三层');
 });
@@ -1167,7 +1106,7 @@ test('Move for real: roads, tiers, a fitting place, the names', () => {
   assert.equal(l.director.choice.question, '何去何从？');
   assert.deepEqual(l.director.choice.options.slice(0, 2).map(o => o.label), ['泗水岸', '云龙山']);
   assert.deepEqual(l.director.choice.options.slice(0, 2).map(o => o.move), ['sishui', 'yunlong']);
-  assert.deepEqual(l.director.choice.options[2], { label: '在此逗留', linger: true }, 'seeds grow here: a linger opens the day\'s branch');
+  assert.deepEqual(l.director.choice.options[2], { label: '今日传闻', tale: true }, 'seeds grow here: today\'s rumor is offered');
   assert.equal(look(toFuzhu(), content, ctx()).director.choice, null, 'a scene running has its own buttons');
   assert.equal(l.place.has.creature.name, '夫诸');
   assert.deepEqual(l.place.show, [{ card: 'creature', id: 'fuzhu' }]);
@@ -1224,16 +1163,16 @@ test('Move for real: roads, tiers, a fitting place, the names', () => {
   assert.deepEqual(look(s, content, ctx()).director.too_hard, []);
 });
 
-test('the director names today\'s seed only where seeds grow, and the pool', () => {
+test('the director offers today\'s rumor only where seeds grow, and the pool', () => {
   const s = toOpenWorld();
   const d = look(s, content, ctx()).director;
-  assert.ok(d.seed?.id.startsWith('xu-'));
+  assert.ok(d.choice.options.some(o => o.tale));
   assert.equal(d.pool, 'full', 'the prologue asked nothing');
   assert.equal(look({ ...s, stamina: 40 }, content, ctx()).director.pool, 'half');
   assert.equal(look(start(), content, ctx()).director.pool, 'full');
   const moved = must(move, s, { place: 'sishui' }).state;
   const t = must(move, moved, { place: 'huaidu' }).state;
-  assert.equal(look(t, content, ctx()).director.seed, null, 'the ferry has no seeds');
+  assert.ok(!look(t, content, ctx()).director.choice.options.some(o => o.tale), 'the ferry has no seeds');
   assert.equal(look({ ...s, stamina: 0 }, content, ctx()).director.pool, 'empty');
   assert.equal(look({ ...s, stamina: 1 }, content, ctx()).director.pool, 'low', 'the last point is not empty');
 });
@@ -2155,10 +2094,10 @@ test('遇: no arrival is empty — a find, a traveller\'s riddle or a beast on t
   // where the place has its own — a market, a haunt's beast not yet met — nothing is dealt on top
   assert.equal(must(move, base, { place: 'pengcheng' }, day(0)).result.place.meet, undefined);
   assert.equal(must(move, { ...base, cast: [] }, { place: 'sibei' }, day(0)).result.place.meet, undefined, '夫诸 is what is met at 泗水北岸');
-  // a seed is an option, not an event: 吕梁洪 is dealt one, and 在此逗留 is still offered once it is done
+  // a seed is an option, not an event: 吕梁洪 is dealt one, and 今日传闻 is still offered
   const seeded = must(move, { ...base, place: 'sibei' }, { place: 'lvliang' }, day(0));
   assert.ok(seeded.result.place.meet, 'a place with only a tale to begin is not an arrival by itself');
-  assert.ok(seeded.result.director.seed);
+  assert.ok(seeded.result.director.choice.options.some(o => o.tale));
   // a place walked THROUGH is not an arrival: 泗水岸 → 泗口 passes 淮水渡口
   const through = must(move, base, { place: 'sikou' }, day(0));
   assert.deepEqual(through.result.via.map(p => p.id), ['huaidu']);
@@ -2251,13 +2190,8 @@ test('arriving is an event: the errand met there is told with what is seen, 交�
   const again = must(move, away.state, { place: 'lvliang' }, at);
   assert.equal(again.result.met, undefined);
 
-  // a 奇遇 opened a week ago and never played: the place still has its seed, and Look calls no tale open
-  const stale = { ...arrived.state, branch: { kind: 'province-tale', turns: 0, opened: '2026-09-14T14:07:21.338Z', seed: 'xu-13' } };
-  const seen = look(stale, content, at);
-  assert.ok(seen.director.seed, 'a stale tale shuts no seed out');
-  assert.equal(seen.branch, null);
-  assert.ok(seen.director.choice.options.some(o => o.linger), '在此逗留 is offered');
-  assert.ok(look({ ...stale, branch: { ...stale.branch, opened: '2026-09-21T09:00:00' } }, content, at).branch, 'today\'s is still open');
+  // today's rumor is offered here until one is made
+  assert.ok(look(arrived.state, content, at).director.choice.options.some(o => o.tale), '今日传闻 is offered');
 });
 
 test('榜文: a market posts one templated 差事 a day — near, winnable, rebuilt from its id', () => {
@@ -3057,7 +2991,7 @@ test('one fight at a time: another will not start, another\'s picks do not settl
   refused(duel, { ...open, fight: { ...open.fight, game: 'haunt:other' } }, { id: 'haunt:jingwei', picks: 'end' }, 'not-started', c);
   refused(duel, { ...open, fight: { ...open.fight, game: 'haunt:other' } }, { id: 'haunt:jingwei' }, 'in-a-fight', c);
   // the guard: what changes the world waits; the fight's own verbs and the readers do not
-  for (const [verb, args] of [['move', {}], ['go', {}], ['resolve', {}], ['trade', { action: 'use' }], ['journey', {}], ['branch', {}], ['meet', {}], ['quest', { action: 'take' }], ['deck', {}]]) {
+  for (const [verb, args] of [['move', {}], ['go', {}], ['resolve', {}], ['trade', { action: 'use' }], ['journey', {}], ['tale', { action: 'make' }], ['meet', {}], ['quest', { action: 'take' }], ['deck', {}]]) {
     assert.equal(fightHold(open, verb, args)?.result.refused, 'in-a-fight', verb);
   }
   for (const [verb, args] of [['look', {}], ['duel', { picks: 'end' }], ['show', {}], ['gear', {}], ['quest', { action: 'info' }], ['task', { action: 'list' }], ['lang', {}]]) {
@@ -3095,7 +3029,7 @@ test('温养 rolls the day first, and the treasure says nourished by the clock a
   const s = { ...toOpenWorld(), place: 'pengcheng', treasure: { name: '青', base: 1, element: 'wood', level: 1, exp: 0 }, bag: { 'sang-paper': 2 },
     day: { key: '2026-10-05', progress: 0, wealth: 0, branches: 3, written: 1 }, updated: y.now.toISOString() };
   const n = must(nourish, s, {}, t);
-  assert.deepEqual(n.state.day, { key: '2026-10-06', progress: 0, wealth: 0, branches: 0, nourished: '2026-10-06' }, 'yesterday\'s counts stay yesterday\'s');
+  assert.deepEqual(n.state.day, { key: '2026-10-06', progress: 0, wealth: 0, nourished: '2026-10-06' }, 'yesterday\'s counts stay yesterday\'s');
   assert.equal(n.result.treasure.nourished, true);
   assert.equal(must(write, n.state, {}, t).result.written, 'talisman', 'today\'s 符 is still to write');
   assert.equal(look(n.state, content, t).treasure.nourished, true, 'a save last written yesterday: today\'s clock decides');

@@ -5,6 +5,7 @@ import { normalizeAnswer, pick } from '../state.mjs';
 import { companionOf, questBrief, riddleWaiting } from './companion.mjs';
 import { directorBrief, filler, FILLERS, meetBrief, offersOf, wayBack } from './errands.mjs';
 import { onStage, sceneBrief, shownHere, stageAt } from './look.mjs';
+import { taleBrief } from './tale.mjs';
 import { atScene, placeBrief } from './world.mjs';
 
 /* The choice, ready for AskUser, on every answer the rules give: the scene's
@@ -123,7 +124,7 @@ function stageHeld(content, state, ctx) {
   if (atScene(content, state)) return false;
   // Only what a holding card reads — the whole Look computes the question
   // itself, and asking it here is a loop.
-  const view = { quest: questBrief(content, state, ctx.now), offers: offersOf(content, state, state.lang, ctx.now), place: placeBrief(content, state, ctx.now), tasks: [] };
+  const view = { quest: questBrief(content, state, ctx.now), offers: offersOf(content, state, state.lang, ctx.now), place: placeBrief(content, state, ctx.now), tale: taleBrief(content, state, ctx.now), tasks: [] };
   return stageHolds(view, stageCards(view, { focus: shownHere(content, state, view), fight: Boolean(state.fight) }));
 }
 const THEN = 'Now AskUser exactly `ask` — header, question, options as they are. The reply ends only there.';
@@ -159,7 +160,7 @@ const TAPS = {
   write: () => 'Inscribe',
   ring: o => (o.answer ? `Ring {answer: ${o.answer}}` : 'Ring'),
   tame: o => `Tame {creature: ${o.tame}}`,
-  linger: () => 'Branch {action: open}',
+  tale: () => 'Tale {action: seed}, write today\'s rumor from what it hands you, then Tale {action: make}',
   turn: o => `Quest {action: turn, id: ${o.turn}}`,
   meet: o => `Meet {action: ${o.meet}${o.answer ? `, answer: ${o.answer}` : ''}}`,
   divine: o => (o.divine === true ? 'Divine' : `Divine {ask: ${o.divine}}`),
