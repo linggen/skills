@@ -1,7 +1,7 @@
 // The player's state and the arithmetic over it. Pure: no files, no clock —
 // the caller passes `now`.
 
-export const STATE_VERSION = 4;
+export const STATE_VERSION = 5;
 export const FIRST_WORLD = 'jiuding'; // the world every save before worlds was playing
 
 export function firstChapter(content) {
@@ -180,27 +180,47 @@ export function addProgress(content, state, amount) {
   return { levels, hold };
 }
 
-/* Older saves: version 1 used the world's words as keys; version 2 had no
-   `world` — it was always 《九鼎》. Given the world, the save is also fitted
-   to it (fitWorld). */
+/* Older saves, one step per version, in order (a table, never a chain of
+   ifs): each step takes the save as the version before left it. Given the
+   world, the save is also fitted to it (fitWorld). */
+const move = (m, from, to) => { if (from in m) { m[to] = m[from]; delete m[from]; } };
+const MIGRATIONS = [
+  // v1–v4: version 1 used the world's words as keys; version 2 had no
+  // `world` — it was always 《九鼎》; v4: 'quests' was the record of the apps'
+  // 功课 being paid, and the word now belongs to 差事 (design.md § 差事).
+  [4, m => {
+    for (const [from, to] of [['daohao', 'name'], ['root', 'traits'], ['realm', 'tier'], ['stage', 'step'], ['xw', 'progress'], ['ls', 'wealth'], ['beasts', 'cast'], ['qi', 'stamina'], ['qi_at', 'stamina_at']]) move(m, from, to);
+    if (m.day) m.day = { key: m.day.key, progress: m.day.xw ?? m.day.progress ?? 0, wealth: m.day.ls ?? m.day.wealth ?? 0 };
+    m.world ??= FIRST_WORLD;
+    m.place ??= null; // settled by the rules from the scene, or the province's start
+    m.wear ??= {};
+    m.duels ??= {};
+    m.arts ??= [];
+    move(m, 'quests', 'chores');
+    m.chores ??= {};
+    m.quests ??= {};
+  }],
+  // v5 (redesign-v2 § 四, 2026-09-24): 伤势, 羁绊, 历练 and the daily 温养 are
+  // cut. What the player HOLDS stays — the bag, the cards, the treasure and its
+  // 重; what only those systems read goes: the wound (a loss now only sends
+  // the beast away for the day), the bond's count and marks, her journey (a
+  // journey still out ends where it is: she is simply back at the player's
+  // side, bringing nothing — never lost on the road), the day's 温养 and 写符
+  // marks, and the treasure's 温养 exp toward the next 重.
+  [5, m => {
+    for (const k of ['wounds', 'bond', 'tended', 'journey']) delete m[k];
+    if (m.day) { delete m.day.nourished; delete m.day.written; }
+    if (m.treasure) { const { exp, ...t } = m.treasure; m.treasure = t; }
+  }],
+];
+
 export function migrate(state, content = null) {
   if (!state) return state;
-  if ((state.version ?? 1) >= STATE_VERSION) return content ? fitWorld(state, content) : state;
-  const m = { ...state, version: STATE_VERSION };
-  const move = (from, to) => { if (from in m) { m[to] = m[from]; delete m[from]; } };
-  move('daohao', 'name'); move('root', 'traits'); move('realm', 'tier'); move('stage', 'step');
-  move('xw', 'progress'); move('ls', 'wealth'); move('beasts', 'cast'); move('qi', 'stamina'); move('qi_at', 'stamina_at');
-  if (m.day) m.day = { key: m.day.key, progress: m.day.xw ?? m.day.progress ?? 0, wealth: m.day.ls ?? m.day.wealth ?? 0 };
-  m.world ??= FIRST_WORLD;
-  m.place ??= null; // settled by the rules from the scene, or the province's start
-  m.wear ??= {};
-  m.duels ??= {};
-  m.arts ??= [];
-  // v4: 'quests' was the record of the apps' 功课 being paid; the word now
-  // belongs to 差事, the errands the player takes (design.md § 差事).
-  move('quests', 'chores');
-  m.chores ??= {};
-  m.quests ??= {};
+  const from = state.version ?? 1;
+  if (from >= STATE_VERSION) return content ? fitWorld(state, content) : state;
+  const m = structuredClone(state);
+  for (const [to, step] of MIGRATIONS) if (from < to) step(m);
+  m.version = STATE_VERSION;
   return content ? fitWorld(m, content) : m;
 }
 

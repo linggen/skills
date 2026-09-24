@@ -155,9 +155,6 @@ const withAsk = (result, content, state, ctx) => ({ ...onStage(content, state, c
 const TAPS = {
   move: o => `Move {place: ${o.move}}`,
   exit: o => `Resolve {exit: ${o.exit}${o.answer ? `, answer: ${o.answer}` : ''}}`,
-  // Inscribe, not Write: the engine's own file tool is Write, and took the
-  // call (2026-09-17: 写一道符 → "missing field `path`").
-  write: () => 'Inscribe',
   ring: o => (o.answer ? `Ring {answer: ${o.answer}}` : 'Ring'),
   tame: o => `Tame {creature: ${o.tame}}`,
   tale: () => 'Tale {action: seed}, write today\'s rumor from what it hands you, then Tale {action: make}',

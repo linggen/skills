@@ -14,7 +14,7 @@
 // tale), the drop, the counts. A tale that asks for more is not played.
 import { refusedNames } from '../content.mjs';
 import { dayKey, normalizeAnswer, pick } from '../state.mjs';
-import { tierRank } from './arms.mjs';
+import { giveCharm, growTreasure, tierRank } from './arms.mjs';
 import { cardCatalog, gainCard, ownedCards, usable } from './cards.mjs';
 import { clone, pay, paysOf, refuse, spendStamina } from './core.mjs';
 import { HANDED_KEEP, itemOf, whereAt, withinRoads } from './errands.mjs';
@@ -288,9 +288,13 @@ function settle(content, s, ctx) {
   const paid = pay(content, s, ctx, link.end ? t.grants.end : t.grants.step);
   const at = ctx.now.toISOString();
   delete t.won; delete t.tried; delete t.lundao;
-  let gives = null;
+  let gives = null, grew = null, charm = null;
   if (link.end) {
     gives = giveDrop(content, s, dropOf(content, s, t));
+    // The finale also leaves a 符 and raises the 本命法宝 one 重 (rewards.json
+    // `growth` — they grow with the story now, redesign-v2 § 四).
+    charm = giveCharm(content, s);
+    grew = growTreasure(content, s, 'tale_end');
     t.done_at = at;
     t.drop = gives;
     remember(content, s, t, ctx.now);
@@ -299,9 +303,10 @@ function settle(content, s, ctx) {
     t.step_at = at;
   }
   s.story_at = at;
-  const h = { id: boardId(t, n), tale: true, n, place: s.place, at, paid, ...(link.end ? { end: true } : {}), ...(gives ? { gives: gives.name } : {}) };
+  const given = [gives?.name, charm?.name].filter(Boolean).join(' · ');
+  const h = { id: boardId(t, n), tale: true, n, place: s.place, at, paid, ...(link.end ? { end: true } : {}), ...(given ? { gives: given } : {}) };
   s.handed = [...(s.handed ?? []), h].slice(-HANDED_KEEP);
-  return { handed: [taleHanded(content, s, h)], ...(link.end ? { ended: true } : { step: stepBrief(content, s, ctx.now) }) };
+  return { handed: [taleHanded(content, s, h)], ...(link.end ? { ended: true, ...(grew ? { treasure_grew: grew } : {}) } : { step: stepBrief(content, s, ctx.now) }) };
 }
 
 /* 相识 — the people of a finished tale are remembered, and may come back. */

@@ -1,10 +1,9 @@
-// rules/daily.mjs — 机缘, 历练 and 问候: the day's chances, her journeys, her greeting, 体力.
+// rules/daily.mjs — 机缘 and 问候: the day's chance, her greeting, 体力.
 // Part of the rules engine; rules.mjs is its one door.
 import { dayKey, pick, staminaReturnsAt, stepName } from '../state.mjs';
-import { healthBrief, winCard } from './cards.mjs';
-import { bondBrief, gainBond, hasCompanion } from './companion.mjs';
+import { winCard } from './cards.mjs';
+import { hasCompanion } from './companion.mjs';
 import { clone, pay, refuse } from './core.mjs';
-import { itemOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
 import { creatureOf, inMade, placeOf, provinceOpen, tooHard } from './world.mjs';
 
@@ -32,25 +31,6 @@ function nearPlaces(content, s, now, reach) {
   return near;
 }
 
-/* ── 历练 — 银月 goes out on her own, for real hours ──
-   His call, 2026-09-23 (Lifeline's clock, the companion's own life): sent
-   from the 装备 card for 2, 4 or 8 hours to a place the rules pick within
-   three roads, once a day. While she is out she does not fight beside him,
-   tend him, or steady his hand in a 抉择 — that is the price. Back, she
-   brings what that province's roads give (its finds; more the longer) and,
-   after eight hours, a card; the page hands her the journey and she tells it
-   herself. Called back early, she brings nothing. */
-const JOURNEY = { hours: [2, 4, 8], reach: 3, finds: { 2: 1, 4: 2, 8: 3 }, wealth: { 2: 5, 4: 10, 8: 20 } };
-const herAway = (state, now) => Boolean(state.journey && !state.journey.received && now < new Date(state.journey.until));
-const herBack = (state, now) => Boolean(state.journey && !state.journey.received && now >= new Date(state.journey.until));
-function journeyBrief(content, state, now) {
-  const j = state.journey;
-  if (!j || j.received) return null;
-  const at = placeOf(content, j.place), lang = state.lang;
-  const place = { id: j.place, name: pick(at?.name, lang) };
-  if (herBack(state, now)) return { place, hours: j.hours, back: true };
-  return { place, hours: j.hours, until: j.until, minutes_left: Math.ceil((new Date(j.until) - now) / 60000) };
-}
 /* ── 问候 — the day's first opening is hers ──
    His pick, 2026-09-23: 银月 greets the player the first time the game is
    opened each day, from what the save knows of yesterday and today; the page
@@ -77,78 +57,13 @@ export function greet(state, content, ctx) {
     const how = { won: zh ? '赢了' : 'won against', lost: zh ? '输给了' : 'lost to', withdrew: zh ? '没打完，它遁走了：' : 'was left unfinished by' }[d.outcome];
     facts.push(zh ? `昨天${how}${name}` : `yesterday the player ${how} ${name}`);
   }
-  const h = healthBrief(content, state, ctx.now);
-  if (h.now < h.max) facts.push(zh ? `身上还带着伤，气血 ${h.now}/${h.max}` : `still hurt, Life ${h.now}/${h.max}`);
   const c = chanceBrief(content, state, ctx.now);
   if (c && !c.taken && !c.missed) facts.push(zh ? `今天${c.place.name}有一份机缘` : `a chance waits at ${c.place.name} today`);
-  const j = journeyBrief(content, state, ctx.now);
-  if (j?.back) facts.push(zh ? `你（银月）从${j.place.name}历练回来了，东西还没交给玩家` : `you are back from ${j.place.name}, with things not yet handed over`);
-  else if (j) facts.push(zh ? `你（银月）还在${j.place.name}历练` : `you are still out at ${j.place.name}`);
-  const b = bondBrief(content, state);
-  facts.push(zh ? `你们的羁绊：${b.name}` : `your bond: ${b.name}`);
   facts.push(zh ? `玩家如今是${stepName(content, state.tier, state.step, state.lang)}` : `the player stands at ${stepName(content, state.tier, state.step, state.lang)}`);
   s.greeted = day;
   return { state: s, result: { ok: true, first: true, name: state.name ?? null, facts } };
 }
 
-/* What she picked up on the road, `n` of them, into the bag (stones are
-   counted by the caller). */
-function journeyFinds(content, s, j, at, n) {
-  const book = content.meets?.finds?.[at?.province]?.length ? content.meets.finds[at.province] : content.meets?.finds?.['*'] ?? [];
-  const brought = [];
-  for (let i = 0; i < n && book.length; i += 1) {
-    const f = book[hashOf(`${j.day}|${j.place}|${s.name ?? ''}|brought|${i}`) % book.length];
-    if (f.item && itemOf(content, f.item)) { s.bag[f.item] = (s.bag[f.item] ?? 0) + 1; brought.push({ id: f.item, name: pick(itemOf(content, f.item).name, s.lang), line: pick(f.line, s.lang) }); }
-    else if (f.wealth) brought.push({ wealth: f.wealth, line: pick(f.line, s.lang) });
-  }
-  return brought;
-}
-
-export function journey(state, content, ctx, args) {
-  const lang = state.lang, action = String(args.action ?? '');
-  if (!hasCompanion(state)) return refuse('no-companion', null);
-  const s = clone(state), day = dayKey(ctx.now);
-  if (action === 'send') {
-    const hours = Number(args.hours);
-    if (!JOURNEY.hours.includes(hours)) return refuse('bad-hours', null, { hours: JOURNEY.hours });
-    if (state.journey && !state.journey.received) return refuse('already-out', null, { journey: journeyBrief(content, state, ctx.now) });
-    if (state.journey?.day === day) return refuse('once-a-day', pick({ zh: '她今日已出过门了。', en: 'She has been out once today.' }, lang));
-    if (state.fight) return refuse('in-a-fight', null);
-    const near = nearPlaces(content, s, ctx.now, JOURNEY.reach);
-    if (!near.length) return refuse('nowhere', null);
-    const to = near[hashOf(`${day}|${s.name ?? ''}|journey|${hours}`) % near.length];
-    s.journey = { day, place: to.id, hours, from: ctx.now.toISOString(), until: new Date(ctx.now.getTime() + hours * 3600000).toISOString() };
-    return { state: s, result: { ok: true, sent: journeyBrief(content, s, ctx.now) } };
-  }
-  if (!state.journey || state.journey.received) return refuse('not-out', null);
-  if (action === 'recall') {
-    if (!herAway(state, ctx.now)) return refuse('already-back', null);
-    s.journey = { ...s.journey, received: ctx.now.toISOString(), recalled: true };
-    // Called back, she brings a small part of it (his, 2026-09-23: small
-    // portion): stones at half the rate for the time she was out, one find
-    // once she was out half the way, never the card or the bond — waiting
-    // always pays better. And she tells it (facts; she writes the words).
-    const j = state.journey, at = placeOf(content, j.place);
-    const out = Math.max(0, Math.round((ctx.now - new Date(j.from)) / 60000));
-    const share = Math.min(1, out / (j.hours * 60));
-    const brought = share >= 0.5 ? journeyFinds(content, s, j, at, 1) : [];
-    const wealth = Math.floor((JOURNEY.wealth[j.hours] ?? 0) * share / 2) + brought.reduce((n, b) => n + (b.wealth ?? 0), 0);
-    s.wealth += wealth;
-    return { state: s, result: { ok: true, recalled: true, place: { id: j.place, name: pick(at?.name, lang) }, hours: j.hours, out_min: out, brought, wealth } };
-  }
-  if (action === 'receive') {
-    if (!herBack(state, ctx.now)) return refuse('still-out', null, { journey: journeyBrief(content, state, ctx.now) });
-    const j = state.journey, at = placeOf(content, j.place);
-    const brought = journeyFinds(content, s, j, at, JOURNEY.finds[j.hours] ?? 1);
-    const wealth = (JOURNEY.wealth[j.hours] ?? 0) + brought.reduce((n, b) => n + (b.wealth ?? 0), 0);
-    s.wealth += wealth;
-    const card = j.hours >= 8 ? winCard(content, s, { id: `journey:${j.place}`, root: at?.province ? (s.traits ?? [])[0] : null }, ctx.now, 'journey') : null;
-    s.journey = { ...s.journey, received: ctx.now.toISOString() };
-    const bond = gainBond(content, s, 'journey', ctx.now);
-    return { state: s, result: { ok: true, place: { id: j.place, name: pick(at?.name, lang) }, hours: j.hours, brought, wealth, ...(card ? { card } : {}), ...(bond ? { bond } : {}) } };
-  }
-  return refuse('unknown-action', null, { actions: ['send', 'recall', 'receive'] });
-}
 function dealChance(content, s, ctx) {
   const day = dayKey(ctx.now);
   if (s.chance?.day === day || !s.traits?.length || inMade(s) || !content.rewards.tables.chance) return null;
@@ -205,4 +120,4 @@ function staminaBrief(content, state, now) {
     full_at: state.stamina < q.max ? at(q.max) : null };
 }
 
-export { chanceBrief, chanceLive, dealChance, herAway, journeyBrief, staminaBrief };
+export { chanceBrief, chanceLive, dealChance, staminaBrief };

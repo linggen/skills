@@ -131,15 +131,16 @@ export function shuffle(ids, seed) {
 /* ── Setup ── */
 
 /* `setup` is the configuration locked at the door (design.md § 副本契约):
-   { mode, seed, you: { tier, step, root, deck, extra, power?, armor?, ward?, boost?, wounds?, lifts?, insight? }, foe: { tier, root, deck, hp?, signature?, elite? } }
+   { mode, seed, you: { tier, step, root, deck, extra, power?, armor?, ward?, boost?, wounds?, lifts?, insight? }, foe: { tier, root, deck, hp?, signature? } }
    `lifts` is { cardId: { atk, hp, heal } } — a body that stands taller for this
-   side (银月 by the bond, rules.mjs § 羁绊); `bodyOf` is the one reading.
+   side (银月 by the chapters ended, rules/companion.mjs herLifts); `bodyOf`
+   is the one reading.
    `power` is what a worn 法器 adds to 主灵根一击; `boost` is the day's cast
    asked about fights — { element, n }: that element's 功法 hit n harder
    (or softer, n < 0). Both are locked at the door like the rest.
    `armor` is 护体 from a worn 法衣 (its 防): a pool that takes a blow on the
    hero before 气血 does, spent as it goes, never mended in the fight — and
-   never carried out of it, so 伤势 stays 气血 alone. `ward` is a 佩's 抗,
+   never carried out of it. `ward` is a 佩's 抗,
    { element: n }: a blow of that element lands n lighter on the hero (at
    least 1 — 抗 never negates). All of it from the world's gear (rules.mjs
    § 装备入局); the fight only reads the numbers.
@@ -148,7 +149,8 @@ export function shuffle(ids, seed) {
 function sideOf(who, cfg, catalog, mode, seed) {
   const realm = REALMS[cfg.tier] ?? REALMS.qi;
   const hp = Math.max(1, Math.round((realm.hp + (cfg.step ?? 0) * 0.5) * (cfg.hpScale ?? 1)));
-  // 伤势: the player walks in carrying yesterday's fight (rules.mjs § 伤势).
+  // `wounds`: only a fight whose door was opened before 伤势 was cut
+  // (2026-09-24) still carries them in its locked setup; the rules give none now.
   const now = Math.max(1, hp - Math.max(0, cfg.wounds ?? 0));
   const deck = shuffle(cfg.deck ?? [], `${seed}|${who}`);
   return {
@@ -177,8 +179,9 @@ export function begin(setup, catalog) {
   const unknown = missingCards(setup, catalog);
   if (unknown.length) throw new Error(`no card row for ${unknown.join(', ')}`);
   const you = sideOf('you', setup.you, catalog, mode, seed);
-  // 精英 stand at their full 气血 (creatures.json `elite`); the rest at the mode's share.
-  const foe = sideOf('foe', { ...setup.foe, hpScale: setup.foe.elite ? 1 : mode.foeHp }, catalog, mode, seed);
+  // Every beast stands at the mode's share of its 气血; an elite is only its
+  // harder deck (redesign-v2 § 四 — its full 气血 was cut with its own rules).
+  const foe = sideOf('foe', { ...setup.foe, hpScale: mode.foeHp }, catalog, mode, seed);
   const st = { mode, catalog, seed, you, foe, turn: 0, whose: mode.youFirst ? 'you' : 'foe', outcome: 'open', log: [] };
   for (let i = 0; i < mode.hand; i += 1) draw(st, you);
   for (let i = 0; i < mode.foeHand; i += 1) draw(st, foe);

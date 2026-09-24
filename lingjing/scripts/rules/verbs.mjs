@@ -1,17 +1,16 @@
 // rules/verbs.mjs — The verb table, quest and show.
 // Part of the rules engine; rules.mjs is its one door.
 import { dayKey, fill, pick } from '../state.mjs';
-import { artBrief, artOf, nourish, refine } from './arms.mjs';
+import { artBrief, artOf, refine } from './arms.mjs';
 import { deck } from './cards.mjs';
-import { bond, tend } from './companion.mjs';
 import { clone, judge, paysOf, refuse, resolve, setRiddleAside } from './core.mjs';
 import { choreGrant, kaifuList } from './chores.mjs';
-import { chance, greet, journey } from './daily.mjs';
+import { chance, greet } from './daily.mjs';
 import { BOOK_MAX, bookOf, complete, countsOf, gearBrief, HANDED_KEEP, handedOne, itemOf, meet, noticeAt, noticeOf, questDoneBefore, questOf, questReady } from './errands.mjs';
 import { progress } from './did.mjs';
 import { divine, fate } from './fortune.mjs';
 import { look, stageAt } from './look.mjs';
-import { duel, lundao, questCheck, task, win, write } from './tasks.mjs';
+import { duel, lundao, questCheck, task, win } from './tasks.mjs';
 import { tale, taleInfo } from './tale.mjs';
 import { go, lang, move, summarize, trade } from './travel.mjs';
 import { placeName, placeOf } from './world.mjs';
@@ -32,8 +31,8 @@ export const VERBS = {
     }
     return { state: next, result };
   },
-  resolve, judge, task, win, duel, tame, write, refine, nourish, tale, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, tend, bond, chance, journey, greet, deck, lundao, progress,
+  resolve, judge, task, win, duel, tame, refine, tale, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
+  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, chance, greet, deck, lundao, progress,
   gear: (s, c) => ({ state: null, result: { ok: true, gear: gearBrief(c, s) } }),
 };
 

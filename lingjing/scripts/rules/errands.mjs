@@ -2,12 +2,10 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { ARM_SLOTS } from '../content.mjs';
 import { dayKey, fill, normalizeAnswer, periodKey, pick, stepName, threshold, tierOf } from '../state.mjs';
-import { cardCatalog, deckFor, gearFight, healthBrief, hpMaxOf, ownedCards, pickedCards, rootsOf, usable, woundsNow } from './cards.mjs';
-import { bondBrief, companionOf, hasCompanion, nearestPlace } from './companion.mjs';
+import { canPick, cardCatalog, deckFor, gearFight, ownedCards, pickedCards, rootsOf, usable } from './cards.mjs';
+import { companionOf, hasCompanion, nearestPlace } from './companion.mjs';
 import { clone, pay, paysOf, refuse, RIDDLE_TRIES, spendStamina } from './core.mjs';
-import { herAway } from './daily.mjs';
 import { nameOf } from './look.mjs';
-import { canWrite } from './tasks.mjs';
 import { choreOpen, isPool, questDone, todayChores } from './chores.mjs';
 import { canMakeTale, taleEvent, taleHanded, taleRow } from './tale.mjs';
 import { hashOf } from './travel.mjs';
@@ -450,12 +448,13 @@ const STAKES = {
     s.wealth -= lost;
     return { lost: { wealth: lost } };
   },
+  // Hurt on the road: 伤势 was cut (redesign-v2 § 四), so a wound is 体力 —
+  // the share of the pool (meets.json trial.lose.wound), never below 0.
   wound: (content, s, ctx, share) => {
-    const now = woundsNow(content, s, ctx.now), add = Math.ceil(hpMaxOf(s) * share);
-    const after = Math.min(hpMaxOf(s), now + add);
-    s.wounds = { n: after, at: ctx.now.toISOString() };
-    // What it truly took: a wound on a body already near empty takes only what was left.
-    return { lost: { hp: after - now }, health: healthBrief(content, s, ctx.now) };
+    const lost = Math.min(s.stamina, Math.ceil(content.rewards.stamina.max * share));
+    s.stamina -= lost;
+    if (s.stamina === 0) s.resting = true;
+    return { lost: { stamina: lost } };
   },
 };
 const stakesOf = t => Object.keys(t.lose).filter(k => Object.hasOwn(STAKES, k));
@@ -500,7 +499,7 @@ export function meet(state, content, ctx, args) {
     const linted = lintTrial(content, args.options);
     if (!linted.options) return refuse('not-playable', null, { why: linted.why });
     const { veiled, ...open } = here;
-    s.meets.places[s.place] = { ...open, options: linted.options, companion: hasCompanion(s) && !herAway(s, ctx.now) };
+    s.meets.places[s.place] = { ...open, options: linted.options, companion: hasCompanion(s) };
     return { state: s, result: { ok: true, offered: linted.options.length, meet: meetBrief(content, s, ctx.now) } };
   }
   if (here.kind === 'trial' && action === 'choose') {
@@ -615,7 +614,7 @@ function directorBrief(content, state, ctx) {
     corridor: inCorridor(content, state),
     thread,
     pool: poolOf(content, state),
-    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...led, place: toward } : led, rumor, ctx.said, canWrite(content, state), filler(content, state, ctx.said), bookOf(content, state, state.lang, ctx).filter(q => q.ready), workOf(content, state, ctx)),
+    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...led, place: toward } : led, rumor, ctx.said, filler(content, state, ctx.said), bookOf(content, state, state.lang, ctx).filter(q => q.ready), workOf(content, state, ctx)),
   };
 }
 
@@ -625,20 +624,19 @@ function directorBrief(content, state, ctx) {
    it verbatim; a tapped label is its `move` (Move there at once), `tale`
    (Tale seed, then make) or `ask` (Yinyue answers). A scene's own buttons
    take its place while one runs. */
-function choiceOf(state, here, near, thread, rumor, said, write = false, alone = null, ready = [], work = null) {
+function choiceOf(state, here, near, thread, rumor, said, alone = null, ready = [], work = null) {
   const zh = state.lang === 'zh';
   const first = thread?.place && near.find(p => p.id === thread.place.id);
   const places = first ? [first, ...near.filter(p => p.id !== first.id)] : near;
   const options = [];
   // 降妖 and the feeding are on the creature's card, the cast on its coins, the
   // bell on the quest's card: one clickable place each, never asked here too
-  // (his law, 2026-09-17 — "user will click twice"). 写符 has no card of its own.
+  // (his law, 2026-09-17 — "user will click twice").
   // Something done is handed in before anything else is asked: 交差 where he
   // stands, the moment it is met — and the chat says so, not only a chip.
   options.push(...ready.map(q => ({ label: zh ? `交差：${q.title}` : `Hand in: ${q.title}`, turn: q.id })));
   // Work to be had, a walk away: the way on when the story is waiting.
   if (work && !work.here) options.push({ label: zh ? `${work.place.name} · 有差事` : `${work.place.name} · work to be had`, move: work.place.id });
-  if (write) options.push({ label: zh ? '写一道符' : 'Write a talisman', write: true });
   options.push(...places.filter(p => !(work && !work.here && p.id === work.place.id)).map(p => ({ label: p.name, move: p.id })));
   if (rumor) options.push({ label: rumor, tale: true });
   if (options.length < 2) options.push(alone ?? { label: zh ? '看看四周' : 'Look around', look: true });
@@ -671,14 +669,13 @@ const ELEMENT_NAME = (content, lang, el) => pick(content.traits.elements[el], la
 const EFFECT_BRIEF = {
   key: () => ({ key: true }),
   progress: e => ({ progress: e.progress }),
-  mend: e => ({ mend: e.mend }),
   learn: e => ({ learn: e.learn, level: e.level, tier: e.tier }),
   wear: e => ({ wear: e.wear, ...(e.lift ? { lift: e.lift } : {}) }),
   charm: () => ({ charm: true }),
   atk: (e, content, lang) => ({ atk: e.atk, ...(e.root ? { root: e.root, root_name: ELEMENT_NAME(content, lang, e.root) } : {}) }),
   def: e => ({ def: e.def }),
   ward: (e, content, lang) => ({ ward: e.ward, wards: Object.entries(e.ward).map(([el, n]) => ({ id: el, name: ELEMENT_NAME(content, lang, el), n })) }),
-  temper: (e, content, lang) => ({ temper: e.temper, ...(e.core ? { core: e.core, core_name: ELEMENT_NAME(content, lang, e.core) } : {}) }),
+  core: (e, content, lang) => ({ core: e.core, core_name: ELEMENT_NAME(content, lang, e.core) }),
 };
 function effectBrief(content, lang, effect) {
   const e = effect ?? {};
@@ -715,18 +712,20 @@ function gearBrief(content, state) {
     if (!item) return { id, name: id, n };
     const e = item.effect ?? {};
     const slot = e.wear ? (e.wear === her?.id ? e.wear : null) : ARM_SLOTS.get(item.kind) ?? null;
-    return { ...itemBrief(content, state, item), n, ...(slot ? { slot } : {}), ...(e.progress || e.mend || e.learn ? { usable: true } : {}) };
+    return { ...itemBrief(content, state, item), n, ...(slot ? { slot } : {}), ...(e.progress || e.learn ? { usable: true } : {}) };
   });
   return {
     slots: GEAR_SLOTS.map(slot => ({ slot, item: worn(state.wear?.[slot]) })),
-    ...(her ? { her: { name: nameOf(content, her.id, state.lang), item: worn(state.wear?.[her.id]), bond: bondBrief(content, state) } } : {}),
+    ...(her ? { her: { name: nameOf(content, her.id, state.lang), item: worn(state.wear?.[her.id]) } } : {}),
     // What the fight takes from them (cards.mjs § 装备入局): 主灵根一击 +power,
     // 护体 armor, 抗 by element, the 符 in hand, and the roots they lend.
     fight: (() => {
       const g = gearFight(content, state), lent = [...rootsOf(content, state)].filter(r => !(state.traits ?? []).includes(r));
       return { power: g.power, armor: g.armor, ...(g.ward ? { ward: g.ward } : {}), ...(g.charm ? { charm: g.charm } : {}), ...(lent.length ? { lends: lent } : {}) };
     })(),
-    ...(Array.isArray(state.deck) ? { picking: true } : {}),
+    // 组牌 is his from 结丹 on (`can_pick`); before, the roots deal the ten.
+    ...(canPick(content, state) ? { can_pick: true } : {}),
+    ...(Array.isArray(state.deck) && canPick(content, state) ? { picking: true } : {}),
     bag,
     // 牌 — every card he holds, cheapest first, and which ten a fight deals
     // today (deckFor), 银月 always in hand. Roots he lacks are marked, not hid.
@@ -736,7 +735,7 @@ function gearBrief(content, state) {
         .sort((a, b) => a.cost - b.cost || String(a.element ?? '').localeCompare(String(b.element ?? '')))
         .map(c => ({ id: c.id, name: pick(c.name, state.lang), cost: c.cost, kind: c.kind, element: c.element ?? null,
           // Picking, lit is his and a filled card is only marked; else the ten dealt.
-          ...(c.id === 'yinyue' ? { hand: true } : Array.isArray(state.deck) ? (picked.has(c.id) ? { deck: true, picked: true } : ten.has(c.id) ? { fill: true } : {}) : ten.has(c.id) ? { deck: true } : {}),
+          ...(c.id === 'yinyue' ? { hand: true } : Array.isArray(state.deck) && canPick(content, state) ? (picked.has(c.id) ? { deck: true, picked: true } : ten.has(c.id) ? { fill: true } : {}) : ten.has(c.id) ? { deck: true } : {}),
           ...(!usable(c, roots) ? { off_root: true } : {}) }));
     })(),
   };

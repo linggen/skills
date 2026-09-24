@@ -16,18 +16,20 @@ function rig() {
 
 test('flags: big moments converse, asked ones are asked, low ones are plain', () => {
   assert.deepEqual(flagsOf('rise'), { big: true, converse: true });
-  assert.deepEqual(flagsOf('journey'), { asked: true });
+  assert.deepEqual(flagsOf('reading'), { asked: true });
   assert.deepEqual(flagsOf('lost'), { big: true });
   assert.deepEqual(flagsOf('won'), {});
-  for (const id of ['rise', 'chapter', 'tamed', 'elite', 'finale', 'tale_end', 'spent']) assert.equal(MOMENTS[id].priority, 'big', id);
+  for (const id of ['rise', 'chapter', 'tamed', 'finale', 'tale_end', 'spent']) assert.equal(MOMENTS[id].priority, 'big', id);
+  // 历练, 疗伤, 伤势 and the elite's own rules were cut (redesign-v2 § 四): no moments for them.
+  for (const id of ['journey', 'tended', 'wounded', 'elite']) assert.equal(MOMENTS[id], undefined, id);
 });
 
 test('big and asked moments always go, even right after a line', () => {
   const r = rig();
   r.v.heard();
   assert.equal(r.v.moment('rise', 'x').verdict, 'sent');
-  assert.equal(r.v.moment('journey', 'x').verdict, 'sent');
-  assert.deepEqual(r.ids(), ['rise', 'journey']);
+  assert.equal(r.v.moment('reading', 'x').verdict, 'sent');
+  assert.deepEqual(r.ids(), ['rise', 'reading']);
 });
 
 test('one unprompted line per 90 s: a small moment right after any line is skipped', () => {

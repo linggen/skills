@@ -5,10 +5,10 @@ import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
 import { dayKey, fill, periodKey, pick, rollDay, settleStamina, speedOf, stepName, threshold } from '../state.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, thenFor } from './ask.mjs';
-import { fightSetup, healthBrief } from './cards.mjs';
-import { bondBrief, callDue, companionOf, hasCompanion, questBrief, recalledOf } from './companion.mjs';
+import { fightSetup } from './cards.mjs';
+import { callDue, companionOf, hasCompanion, questBrief, recalledOf } from './companion.mjs';
 import { clone, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mjs';
-import { chanceBrief, journeyBrief, staminaBrief } from './daily.mjs';
+import { chanceBrief, staminaBrief } from './daily.mjs';
 import { bookOf, breakthroughOf, directorBrief, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
 import { divinationBrief, fateBrief } from './fortune.mjs';
 import { knownBrief, storyDue, taleBrief } from './tale.mjs';
@@ -78,7 +78,6 @@ function duelBrief(content, state, game, now) {
       lean: creature.lean, art: creature.art ?? null, about: pick(creature.about, lang),
       ...(creature.elite ? { elite: true } : {}),
     },
-    health: healthBrief(content, state, now),
     // Everything the fight is given at the door, and nothing else.
     setup: fightSetup(content, state, creature, now, game.id),
     today: open ? { outcome: open.outcome } : null,
@@ -187,7 +186,7 @@ export function look(state, content, ctx) {
     bag: Object.entries(state.bag).map(([id, n]) => ({ id, name: pick(itemOf(content, id)?.name, lang) ?? id, n })),
     wear: state.wear ?? {},
     arts: artsBrief(content, state),
-    treasure: treasureBrief(content, state, ctx.now),
+    treasure: treasureBrief(content, state),
     // At 结丹 with none bound: what a binding would take, held now.
     ...(state.treasure || !canRefine(content, state) ? {} : { can_refine: true, refine_with: refineWith(content, state) }),
     // A fight open on the scene: while this is here Ling advances nothing.
@@ -198,7 +197,7 @@ export function look(state, content, ctx) {
     waypoint: waypointOf(content, state, ctx),
     place: placeBrief(content, state, ctx.now),
     director: directorBrief(content, state, ctx),
-    companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined, bond: bondBrief(content, state), recalled: recalledOf(content, state), ...(state.tended === dayKey(ctx.now) ? { tended: true } : {}), ...(journeyBrief(content, state, ctx.now) ? { journey: journeyBrief(content, state, ctx.now) } : {}), ...(state.journey?.day === dayKey(ctx.now) ? { journeyed: true } : {}) } : null,
+    companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined, recalled: recalledOf(content, state) } : null,
     quest: questBrief(content, state, ctx.now),
     // 差事: what is in hand, and what may be taken where he stands.
     book: bookOf(content, state, lang, ctx),
@@ -216,7 +215,6 @@ export function look(state, content, ctx) {
     divination: divinationBrief(content, state, ctx.now),
     fate: fateBrief(content, state),
     stamina: staminaBrief(content, state, ctx.now),
-    health: healthBrief(content, state, ctx.now),
     made: { at: state.made?.at ?? null, scenes: Object.keys(state.made?.scenes ?? {}) },
     words: wordsOf(content, lang),
     ...tasksBrief(content, state, ctx),

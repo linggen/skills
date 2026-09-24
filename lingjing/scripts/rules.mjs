@@ -3,7 +3,7 @@
 // either apply it or refuse with a reason Ling can narrate.
 //
 //   node rules.mjs <verb> [--key value …]
-//   verbs: init look progress resolve judge task win duel tame write refine nourish tale summarize move trade lang make enter leave
+//   verbs: init look progress resolve judge task win duel tame refine tale summarize move trade lang make enter leave
 //          build worlds travel amend art go saves save load forget undo
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
@@ -31,17 +31,17 @@ import { VERBS } from './rules/verbs.mjs';
 import { atScene } from './rules/world.mjs';
 import { BUILDING_WAITS, keepDay, keepSave, paintList, readSave } from './rules/worlds.mjs';
 
-export { nourish, NOURISH, refine, TREASURE_TOP } from './rules/arms.mjs';
+export { refine, TREASURE_TOP } from './rules/arms.mjs';
 export { askOf, tapThen, thenFor } from './rules/ask.mjs';
 export { deck, deckFor, fightSetup, hpMaxOf, ownedCards } from './rules/cards.mjs';
-export { bond, hasCompanion, tend } from './rules/companion.mjs';
+export { hasCompanion } from './rules/companion.mjs';
 export { judge, resolve, riddleOf } from './rules/core.mjs';
-export { chance, greet, journey } from './rules/daily.mjs';
+export { chance, greet } from './rules/daily.mjs';
 export { advance, BOOK_MAX, meet } from './rules/errands.mjs';
 export { parseArgs } from './rules/files.mjs';
 export { castThrows, divinationBrief, divine, fate, fateBrief, fateOf } from './rules/fortune.mjs';
 export { look } from './rules/look.mjs';
-export { closeStaleFight, duel, fightHold, lundao, task, win, write } from './rules/tasks.mjs';
+export { closeStaleFight, duel, fightHold, lundao, task, win } from './rules/tasks.mjs';
 export { go, heed, lang, move, summarize, trade } from './rules/travel.mjs';
 export { lintTale, tale } from './rules/tale.mjs';
 export { quest, show, VERBS } from './rules/verbs.mjs';

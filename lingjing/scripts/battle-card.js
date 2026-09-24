@@ -471,7 +471,6 @@ export function challengeHtml(brief, ctx) {
         ${c.about ? `<p class="cabout">${esc(c.about)}</p>` : ''}
       </div>
     </div>
-    ${!done && brief.health && brief.health.now < brief.health.max ? `<div class="churt">${ctx.lang === 'en' ? `You go in hurt: Life ${brief.health.now}/${brief.health.max}` : `带伤上阵：气血 ${brief.health.now}/${brief.health.max}`}</div>` : ''}
     ${done ? `<div class="cdone">${esc(done)}</div>${ctx.feed ? `<div class="cacts">${ctx.feed}</div>` : ''}` : `<div class="cacts"><button class="bact end" data-duel-start="${esc(brief.id)}">${esc(w.begin)}</button>${ctx.feed ?? ''}</div>`}
     ${!done && ctx.say ? `<div class="cdone">${esc(ctx.say)}</div>` : ''}
   </div>`;

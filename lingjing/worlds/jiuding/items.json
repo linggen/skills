@@ -163,8 +163,7 @@
         "冀"
       ],
       "effect": {
-        "wear": "yinyue",
-        "lift": { "tend": 0.1 }
+        "wear": "yinyue"
       }
     },
     {
@@ -243,20 +242,12 @@
       },
       "art": "art/items/mend-pill.webp",
       "about": {
-        "zh": "斗法落下的伤，一粒去其一半。",
-        "en": "Takes half of what the fights took, in one pill."
+        "zh": "旧时疗伤的丹，如今只剩市价。",
+        "en": "A healing pill of older days; now worth only its price."
       },
       "buy": 30,
       "sell": 8,
-      "sold": [
-        "兖",
-        "冀",
-        "徐",
-        "青"
-      ],
-      "effect": {
-        "mend": 0.5
-      }
+      "sold": []
     },
     {
       "id": "wangqi-1",
@@ -409,7 +400,6 @@
         "青"
       ],
       "effect": {
-        "temper": 5,
         "core": "metal"
       }
     },
@@ -432,7 +422,6 @@
         "扬"
       ],
       "effect": {
-        "temper": 5,
         "core": "wood"
       }
     },
@@ -454,7 +443,6 @@
         "青"
       ],
       "effect": {
-        "temper": 5,
         "core": "water"
       }
     },
@@ -476,7 +464,6 @@
         "冀"
       ],
       "effect": {
-        "temper": 5,
         "core": "fire"
       }
     },
@@ -498,7 +485,6 @@
         "兖"
       ],
       "effect": {
-        "temper": 5,
         "core": "earth"
       }
     },
@@ -516,10 +502,7 @@
       },
       "buy": 60,
       "sell": 40,
-      "sold": [],
-      "effect": {
-        "temper": 3
-      }
+      "sold": []
     },
     {
       "id": "yaodan-2",
@@ -535,10 +518,7 @@
       },
       "buy": 150,
       "sell": 100,
-      "sold": [],
-      "effect": {
-        "temper": 6
-      }
+      "sold": []
     },
     {
       "id": "yaodan-3",
@@ -554,10 +534,7 @@
       },
       "buy": 360,
       "sell": 240,
-      "sold": [],
-      "effect": {
-        "temper": 10
-      }
+      "sold": []
     },
     {
       "id": "jade-ring",

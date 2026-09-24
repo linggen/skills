@@ -1,18 +1,22 @@
 // rules/arms.mjs — 本命法宝 and 功法: the bound treasure, the sword, the 符 and the learned arts.
 // Part of the rules engine; rules.mjs is its one door.
-import { dayKey, pick, rollDay, tierOf } from '../state.mjs';
+import { dayKey, pick, tierOf } from '../state.mjs';
 import { clone, refuse } from './core.mjs';
 import { itemOf } from './errands.mjs';
+import { hashOf } from './travel.mjs';
 import { tierIndex } from './world.mjs';
 
 /* ── 本命法宝: the treasure a cultivator binds at 结丹 ── */
 
-/* What a subdued creature leaves behind: the 妖丹 of the realm it was met at,
-   and the one thing this creature carries (creatures.json `drops`). Both go
-   into the bag; the catalog owns their words and their worth. */
-function drop(content, state, creature) {
+/* What a subdued creature leaves behind: the one thing it carries
+   (creatures.json `drops`), and on one win in `fight_one_in` a 符 (rewards.json
+   `growth.charm` — 写符 was cut, redesign-v2 § 四). The 妖丹 it left went with
+   强化. Both go into the bag; the catalog owns their words and their worth. */
+function drop(content, state, creature, now) {
   const lang = state.lang, got = [];
-  for (const id of [TIER_TEMPER[state.tier], creature.drops].filter(Boolean)) {
+  const one = content.rewards.growth?.charm?.fight_one_in, charm = charmOf(content);
+  const lucky = one && charm && hashOf(`${dayKey(now)}|${creature.id}|${state.name ?? ''}|charm`) % one === 0;
+  for (const id of [creature.drops, lucky ? charm.id : null].filter(Boolean)) {
     const item = itemOf(content, id);
     if (!item) continue;
     state.bag[id] = (state.bag[id] ?? 0) + 1;
@@ -21,38 +25,43 @@ function drop(content, state, creature) {
   return got;
 }
 
-/* 一重 … 九重: what each 重 asks in 温养 and 妖丹 before the next. */
+/* One 符 into the bag — a rumor's finale leaves it. Null when the world has none. */
+function giveCharm(content, state) {
+  const charm = charmOf(content), n = content.rewards.growth?.charm?.tale_end ?? 0;
+  if (!charm || !n) return null;
+  state.bag[charm.id] = (state.bag[charm.id] ?? 0) + n;
+  return { id: charm.id, name: pick(charm.name, state.lang), n: state.bag[charm.id] };
+}
+
+/* 一重 … 九重. The treasure grows with the story, never from a daily tap
+   (redesign-v2 § 四: 温养 and 强化 were cut): one 重 each time a chapter ends
+   and each time 今日传闻's finale is won (rewards.json `growth.treasure`). */
 export const TREASURE_TOP = 9;
-export const NOURISH = 1; // 温养, once a day
-const expFor = level => 10 + (level - 1) * 5;
-const TIER_TEMPER = { qi: 'yaodan-1', foundation: 'yaodan-1', core: 'yaodan-2', nascent: 'yaodan-3' };
 /* The realm a cultivator may bind one at, and the material that names its element. */
 const REFINE_TIER = 'core';
 const coreOf = (content, id) => content.items.items.find(i => i.id === id && i.effect?.core);
 const canRefine = (content, state) => tierRank(content, REFINE_TIER) <= tierIndex(content, state);
 
-/* The treasure as the card and Look tell it — `nourished` by the caller's
-   clock, not the save's last write (review, 2026-09-24: a save last touched
-   yesterday said 温养 was still to do after it was done today). */
-function treasureBrief(content, state, now) {
+/* The treasure as the card and Look tell it. */
+function treasureBrief(content, state) {
   const t = state.treasure;
   if (!t) return null;
   const lang = state.lang, steps = content.ladder.treasure_steps ?? null;
   return {
     name: t.name, level: t.level, step: steps ? pick(steps, lang)?.[t.level - 1] ?? String(t.level) : String(t.level),
     element: t.element, element_name: pick(content.traits.elements[t.element], lang),
-    atk: t.base + t.level, exp: t.exp, needs: t.level >= TREASURE_TOP ? null : expFor(t.level),
-    nourished: state.day?.nourished === dayKey(now) ? true : undefined,
+    atk: t.base + t.level, top: t.level >= TREASURE_TOP,
   };
 }
 
-/* Feed a treasure: exp in, 重 out. Never past 九重. */
-function grow(treasure, exp) {
-  const t = { ...treasure, exp: treasure.exp + exp };
-  const gained = [];
-  while (t.level < TREASURE_TOP && t.exp >= expFor(t.level)) { t.exp -= expFor(t.level); t.level += 1; gained.push(t.level); }
-  if (t.level >= TREASURE_TOP) t.exp = 0;
-  return { treasure: t, gained };
+/* The story's growth, by what happened (`chapter` or `tale_end`): the 重 it
+   rose to, or null when there is no treasure, nothing to give, or it is at 九重. */
+function growTreasure(content, state, why) {
+  const n = content.rewards.growth?.treasure?.[why] ?? 0;
+  if (!state.treasure || !n || state.treasure.level >= TREASURE_TOP) return null;
+  const level = Math.min(TREASURE_TOP, state.treasure.level + n);
+  state.treasure = { ...state.treasure, level };
+  return { name: state.treasure.name, level, why };
 }
 
 /* What a binding would take, held now: the weapon in hand and the 天材地宝 in
@@ -70,7 +79,7 @@ function refineWith(content, state) {
    The weapon and the material are spent; a treasure is never lost. */
 export function refine(state, content, ctx, args) {
   const lang = state.lang;
-  if (state.treasure) return refuse('already-bound', pick({ zh: `你已有本命法宝${state.treasure.name}。`, en: `${state.treasure.name} is already yours.` }, lang), { treasure: treasureBrief(content, state, ctx.now) });
+  if (state.treasure) return refuse('already-bound', pick({ zh: `你已有本命法宝${state.treasure.name}。`, en: `${state.treasure.name} is already yours.` }, lang), { treasure: treasureBrief(content, state) });
   if (!canRefine(content, state)) {
     const tier = pick(tierOf(content, REFINE_TIER)?.name, lang);
     return refuse('needs-tier', pick({ zh: `炼化本命须结丹之后。`, en: `A treasure is bound at ${tier}, not before.` }, lang), { tier: REFINE_TIER });
@@ -88,25 +97,8 @@ export function refine(state, content, ctx, args) {
   s.bag[weapon.id] -= 1;
   if (!s.bag[weapon.id]) delete s.bag[weapon.id];
   if (s.wear?.weapon === weapon.id) delete s.wear.weapon;
-  s.treasure = { name, base: weapon.effect?.atk ?? 0, element: material.effect.core, level: 1, exp: 0 };
-  return { state: s, result: { ok: true, refined: { from: pick(weapon.name, lang), with: pick(material.name, lang) }, treasure: treasureBrief(content, s, ctx.now), show: [{ card: 'treasure' }] } };
-}
-
-/* 温养 — once a day, a quiet hour with it: one breath of growth. The page
-   taps it; no model decides it. The day is rolled first, so the mark is
-   today's alone and never carries yesterday's counts into it (review,
-   2026-09-24: a morning 温养 kept last night's 写符 and refused today's). */
-export function nourish(state, content, ctx, args) {
-  if (!state.treasure) return refuse('no-treasure', null);
-  const day = dayKey(ctx.now);
-  if (state.day?.nourished === day) return refuse('nourished-today', null, { treasure: treasureBrief(content, state, ctx.now) });
-  if (state.treasure.level >= TREASURE_TOP) return refuse('at-top', null, { treasure: treasureBrief(content, state, ctx.now) });
-  const s = clone(state);
-  rollDay(s, ctx.now);
-  const { treasure, gained } = grow(s.treasure, NOURISH);
-  s.treasure = treasure;
-  s.day.nourished = day;
-  return { state: s, result: { ok: true, nourished: NOURISH, ...(gained.length ? { rose: gained } : {}), treasure: treasureBrief(content, s, ctx.now) } };
+  s.treasure = { name, base: weapon.effect?.atk ?? 0, element: material.effect.core, level: 1 };
+  return { state: s, result: { ok: true, refined: { from: pick(weapon.name, lang), with: pick(material.name, lang) }, treasure: treasureBrief(content, s), show: [{ card: 'treasure' }] } };
 }
 
 /* ── 功法: the sword, the 符 and the learned arts ── */
@@ -140,4 +132,4 @@ const wornOf = (content, state, slot) => (state.wear?.[slot] && state.bag[state.
    fish for an easier one. */
 const duelSeed = (state, creature, now) => `${dayKey(now)}|${creature.id}|${state.name ?? ''}`;
 
-export { artBrief, artOf, artsBrief, canRefine, refineWith, charmOf, drop, duelSeed, grow, learn, tierRank, treasureBrief, wornOf };
+export { artBrief, artOf, artsBrief, canRefine, charmOf, drop, duelSeed, giveCharm, growTreasure, learn, refineWith, tierRank, treasureBrief, wornOf };

@@ -911,10 +911,10 @@ function lintItems(content, bad) {
     // Arms are the fight's own numbers: 攻 on a weapon (with the root it
     // lends), 防 on a 法衣, 抗 on a 佩. Everything else is one plain effect.
     const arms = ['atk', 'def', 'ward'].filter(k => e[k] != null);
-    const kinds = ['key', 'progress', 'wear', 'charm', 'temper', 'mend', 'learn'].filter(k => e[k] != null);
-    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, progress, wear, charm, temper, mend, learn, or arms (atk, def, ward)');
+    // 伤势 and 强化 were cut (redesign-v2 § 四): no `mend`, no `temper`.
+    const kinds = ['key', 'progress', 'wear', 'charm', 'core', 'learn'].filter(k => e[k] != null);
+    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, progress, wear, charm, core, learn, or arms (atk, def, ward)');
     if (e.learn != null && (e.learn !== 'wangqi' || ![1, 2].includes(e.level) || !content.ladder.tiers.some(t => t.id === e.tier))) bad(where, 'learn is wangqi, level 1 or 2, at a tier the ladder knows');
-    if (e.mend != null && !(e.mend > 0 && e.mend <= 1)) bad(where, 'mend is a share of 气血, above 0 and at most 1');
     if (arms.length > 1) bad(where, 'arms are one of 攻, 防 or 抗');
     for (const k of arms) {
       if (k !== 'ward' && (!Number.isInteger(e[k]) || e[k] < 1)) bad(where, `${k} must be a whole number above zero`);
@@ -928,11 +928,8 @@ function lintItems(content, bad) {
     }
     if (e.root != null && !ELEMENTS.includes(e.root)) bad(where, `lends unknown root ${e.root}`);
     if (e.root != null && e.atk == null) bad(where, 'a root is lent by a weapon, which needs its 攻');
-    // 强化: what a thing feeds a 本命法宝, and — for a 天材地宝 — the element
-    // it would lend the day one is bound with it.
-    if (e.temper != null && (!Number.isInteger(e.temper) || e.temper < 1)) bad(where, 'temper must be a whole number above zero');
+    // A 天材地宝: the element it lends the day a treasure is bound with it.
     if (e.core != null && !ELEMENTS.includes(e.core)) bad(where, `binds unknown element ${e.core}`);
-    if (e.core != null && e.temper == null) bad(where, 'a core element belongs to a material that tempers');
     if (e.charm != null && !item.made) bad(where, 'a charm is made, never sold');
     // A 符 goes into a fight as the card of its own id (rules/cards.mjs § 装备入局).
     const charmCard = e.charm != null ? (content.cards?.cards ?? []).find(c => c.id === item.id) : null;
@@ -943,13 +940,12 @@ function lintItems(content, bad) {
       else if (e.progress > table.progress) bad(where, `progress ${e.progress} is over the ${e.table} cap of ${table.progress}`);
     }
     if (e.wear != null && !WEAR_SLOTS.has(e.wear)) bad(where, `cannot wear on ${e.wear}`);
-    // What a thing worn by a companion lifts: one point on her card (攻 or
-    // 气血 — the bond's +2/+2 won 97%, so kept small), or a tenth more to her
-    // 疗伤 (tend, a share of 气血).
+    // What a thing worn by a companion lifts: one point on her card, 攻 or
+    // 气血 (+2/+2 won 97%, so kept small).
     if (e.lift != null) {
       if (e.wear == null) bad(where, 'a lift is worn by a companion — it needs wear');
       const keys = Object.keys(e.lift), k = keys[0];
-      if (keys.length !== 1 || !(((k === 'atk' || k === 'hp') && e.lift[k] === 1) || (k === 'tend' && e.lift[k] === 0.1))) bad(where, 'a lift is atk or hp by 1, or tend by 0.1');
+      if (keys.length !== 1 || !((k === 'atk' || k === 'hp') && e.lift[k] === 1)) bad(where, 'a lift is atk or hp by 1');
     }
   }
 }

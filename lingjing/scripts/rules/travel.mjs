@@ -2,9 +2,8 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { ARM_SLOTS } from '../content.mjs';
 import { dayKey, fill, langOf, pick } from '../state.mjs';
-import { grow, tierRank, TREASURE_TOP, treasureBrief } from './arms.mjs';
-import { healthBrief, hpMaxOf, woundsNow } from './cards.mjs';
-import { companionOf, gainBond, hasCompanion } from './companion.mjs';
+import { tierRank } from './arms.mjs';
+import { companionOf, hasCompanion } from './companion.mjs';
 import { clone, offerTasks, pay, refuse, spendStamina } from './core.mjs';
 import { chanceBrief, chanceLive } from './daily.mjs';
 import { advance, bookOf, dealMeet, directorBrief, GEAR_SLOTS, itemBrief, itemOf, meetsToday, questOf, settleErrands } from './errands.mjs';
@@ -143,7 +142,9 @@ function keyInUse(content, state, id) {
    (a place with a shop) and cost a visit's stamina; the prices are the
    catalog's, never Ling's. Using a pill pays its progress within its table;
    using a wear puts it on Yinyue or the abode; using arms wears them — a
-   weapon in hand (and a fight may borrow its root), a 法衣, a 佩. */
+   weapon in hand (and a fight may borrow its root), a 法衣, a 佩. A 天材地宝
+   waits for the 炼化; a 妖丹 or an old 回春丹 is only goods now (强化 and
+   伤势 were cut, redesign-v2 § 四). */
 export function trade(state, content, ctx, args) {
   const item = itemOf(content, String(args.id ?? ''));
   const s = clone(state);
@@ -183,17 +184,6 @@ export function trade(state, content, ctx, args) {
   if (args.action === 'use') {
     if (held < 1) return refuse('not-in-bag', null);
     const e = item.effect ?? {};
-    // 疗伤: a mending pill takes back a share of what the fights took (§ 伤势).
-    if (e.mend) {
-      const n = woundsNow(content, s, ctx.now);
-      if (!n) return refuse('not-hurt', pick({ zh: '身上没伤，留着吧。', en: 'You are not hurt — keep it.' }, lang));
-      s.bag[item.id] = held - 1;
-      if (s.bag[item.id] <= 0) delete s.bag[item.id];
-      const rest = Math.max(0, n - Math.ceil(hpMaxOf(s) * e.mend));
-      s.wounds = rest ? { n: rest, at: ctx.now.toISOString() } : undefined;
-      if (!s.wounds) delete s.wounds;
-      return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), health: healthBrief(content, s, ctx.now) } };
-    }
     // 功法卷 — read once, learned for good: 望气术 (§ 意图) by its 卷, in order,
     // at the realm it asks.
     if (e.learn) {
@@ -221,21 +211,7 @@ export function trade(state, content, ctx, args) {
     if (slot) {
       s.wear ??= {};
       s.wear[slot] = item.id;
-      const gift = e.wear && e.wear === companionOf(content)?.id ? gainBond(content, s, 'gift', ctx.now, `gift:${item.id}`) : null;
-      return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), wear: s.wear, ...(gift ? { bond: gift } : {}) } };
-    }
-    // 强化 — a 妖丹 or a天材地宝 fed to the 本命法宝. A core material with no
-    // treasure yet is kept for the 炼化, not burned.
-    if (e.temper) {
-      if (!s.treasure) {
-        return refuse(e.core ? 'refine-first' : 'no-treasure', pick({ zh: e.core ? '此物待炼本命之用。' : '你还没有本命法宝。', en: e.core ? 'This waits for the day you bind a treasure.' : 'You have no treasure to feed.' }, lang));
-      }
-      if (s.treasure.level >= TREASURE_TOP) return refuse('at-top', pick({ zh: `${s.treasure.name}已至九重。`, en: `${s.treasure.name} is at its ninth.` }, lang));
-      s.bag[item.id] = held - 1;
-      if (s.bag[item.id] <= 0) delete s.bag[item.id];
-      const { treasure, gained } = grow(s.treasure, e.temper);
-      s.treasure = treasure;
-      return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), tempered: e.temper, ...(gained.length ? { rose: gained } : {}), treasure: treasureBrief(content, s, ctx.now), show: [{ card: 'treasure' }] } };
+      return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), wear: s.wear } };
     }
     if (e.charm) return refuse('cast-in-a-bout', pick({ zh: `${pick(item.name, lang)}在${w.contest}时掷出，不在此。`, en: `A ${pick(item.name, lang)} is cast in a bout, not here.` }, lang));
     return refuse('not-usable', null);

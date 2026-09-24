@@ -51,7 +51,6 @@ export const CARD_KINDS = {
   find: { holds: true }, //        收下 — something by the road
   trial: { holds: true }, //       抉择 — the ways Ling wrote, until one is taken
   chance: { holds: true }, //      机缘 — 收下, where it lies, while it lasts
-  journey: { holds: true }, //     历练 — she is back; 收下 what she brought
   veil: { holds: true }, //        a 遇 not yet revealed: mist, until Ling has set the moment
   item: { holds: true }, //        a shelf to buy from
   quest: { holds: look => Boolean(lineHere(look)) }, // the search's step, only when it can be taken on this spot
@@ -112,8 +111,6 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   else if (look.place?.meet?.kind === 'trial' && look.place.meet.options) head.push({ card: 'trial' });
   // 机缘 where it lies, while it lasts.
   if (look.chance?.here && !look.chance.taken && !look.chance.missed) head.push({ card: 'chance' });
-  // 历练: she is back, with what she brought.
-  if (look.companion?.journey?.back) head.push({ card: 'journey' });
 
   const line = lineHere(look);
   // Ling's own cards stand whatever else is true — she chose them. With none,
@@ -150,7 +147,7 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
    against. One clickable place for one thing (his law, 2026-09-17): an action
    on a card is never also an option in the chat, whichever side it came from.
 
-   The keys match an `ask` option's own fields: `divine`, `ring`, `write`,
+   The keys match an `ask` option's own fields: `divine`, `ring`,
    `tale`, `move:<place>`, `exit:<id>`, `tame:<creature>` — and only
    those: a key no option can carry owns nothing (the `quest:` and `duel:`
    keys went, review 2026-09-24 — the question never offers 接下 or 出手). */
@@ -182,7 +179,7 @@ export function stageOwns(look, cards) {
    has it all. */
 export function askMinusStage(ask, owns) {
   if (!ask) return null;
-  const key = o => (o.divine ? 'divine' : o.ring && !o.answer ? 'ring' : o.write ? 'write' : o.tale ? 'tale'
+  const key = o => (o.divine ? 'divine' : o.ring && !o.answer ? 'ring' : o.tale ? 'tale'
     : o.move ? `move:${o.move}` : o.exit && !o.answer ? `exit:${o.exit}` : o.tame ? `tame:${o.tame}` : null);
   const options = ask.options.filter(o => { const k = key(o); return !k || !owns.has(k); });
   // A question needs two ways out of it; fewer than that and the stage is the

@@ -473,7 +473,7 @@ async function main() {
     if (label === '起手' && rates[0].rate < 0.5) problems.push(`起手十张在练气只赢 ${(rates[0].rate * 100).toFixed(1)}% — 新人进不了门`);
   }
 
-  // 带进门的 — 问斗法 (its element's 功法 ±n) and the bond; the gear is below.
+  // 带进门的 — 问卦 (its element's 功法 ±n) and her lift by the story; the gear is below.
   // Each should lift or lower the attentive line a few points, never decide it.
   const base = smartRun.rate;
   console.log('\n带进门的（会读场的，对全部牌组）');
@@ -482,18 +482,18 @@ async function main() {
     ['问斗法 吉 · +1', root => ({ boost: { element: root, n: 1 } })],
     ['问斗法 凶 · −1', root => ({ boost: { element: root, n: -1 } })],
     ['问斗法 大凶 · −2', root => ({ boost: { element: root, n: -2 } })],
-    // 羁绊 lifts her card (rewards.json bond.levels): 相知 +0/+1, 相惜 +0/+2, 同心 +1/+1.
-    ['羁绊 相知 · 银月 +0/+1', { lifts: { yinyue: { atk: 0, hp: 1 } } }],
-    ['羁绊 同心 · 银月 +1/+1', { lifts: { yinyue: { atk: 1, hp: 1 } } }],
-    // What she wears (items.json lift): 齐纨 +0/+1 on top of 同心 (+1.6). Tried and dropped 2026-09-23:
+    // Her card by the chapters ended (rewards.json bond.lifts): four +0/+1, five +0/+2, seven +1/+1.
+    ['银月 四章 · +0/+1', { lifts: { yinyue: { atk: 0, hp: 1 } } }],
+    ['银月 七章 · +1/+1', { lifts: { yinyue: { atk: 1, hp: 1 } } }],
+    // What she wears (items.json lift): 齐纨 +0/+1 on top (+1.6). Tried and dropped 2026-09-23:
     // 银月铃 as heal +1 (0.0 — the heal never decides a fight) and +1 攻 (+4.4, over the gate).
-    ['羁绊 同心 + 齐纨 · +1/+2', { lifts: { yinyue: { atk: 1, hp: 2 } } }],
+    ['银月 七章 + 齐纨 · +1/+2', { lifts: { yinyue: { atk: 1, hp: 2 } } }],
   ];
   for (const [label, you] of kit) {
     const r = run(smart, { decks, you });
     const d = (r.rate - base) * 100;
     console.log(`${label.padEnd(20)}  ${(r.rate * 100).toFixed(1)}%  (${d >= 0 ? '+' : ''}${d.toFixed(1)})`);
-    if (Math.abs(d) > (label.startsWith('羁绊') ? 8 : 15)) problems.push(`${label} 改了 ${d.toFixed(1)} 个百分点 — 带进门的东西不该替人打仗`);
+    if (Math.abs(d) > (label.startsWith('银月') ? 8 : 15)) problems.push(`${label} 改了 ${d.toFixed(1)} 个百分点 — 带进门的东西不该替人打仗`);
   }
 
   gearRows(decks, problems);
@@ -510,57 +510,19 @@ async function main() {
   if (!process.env.NO_SIG && met / n < 0.6) problems.push(`只有 ${(met / n * 100).toFixed(0)}% 的仗碰到杀招 — 关键回合不在多数仗里`);
   if (metLost / Math.max(1, met) > 0.25) problems.push(`碰到杀招的仗输了 ${(metLost / met * 100).toFixed(1)}% — 杀招成了墙`);
 
-  // 一天 — 伤势 and 精英 (rules.mjs § 伤势, creatures.json `elite`). Three
-  // fights back to back, 气血 carried; a plain win pays 20, an elite 40, a
-  // loss ends the day. The elite must be a real risk at full, a bad one hurt,
-  // and choosing by your wounds must beat never taking the risk.
+  // 精英 — its harder deck and nothing more (redesign-v2 § 四, 2026-09-24: the
+  // full 气血, the 12 体力, the half-again pay and the second card were cut, and
+  // with them 伤势). Every beast stands at the mode's share; an elite should
+  // still be the harder fight — by its deck alone — and never a wall.
   const ELITES = CREATURES.filter(c => c.elite && c.deck), PLAIN = CREATURES.filter(c => !c.elite && c.deck);
-  const vs = (deck, c, wounds, seed) => {
-    const setup = { mode: 'pve', seed, you: { tier: 'foundation', root: deck.root, deck: deck.cards, extra: ['yinyue'], wounds }, foe: { tier: 'foundation', root: c.root, deck: c.deck, ...(process.env.NO_SIG ? {} : { signature: c.signature }), ...(c.elite ? { elite: true } : {}) } };
-    return play(setup, smart);
-  };
-  const REWARDS = JSON.parse(fs.readFileSync(path.join(HERE, '../worlds/jiuding/rewards.json'), 'utf8')).tables;
-  const PAY = { plain: REWARDS.haunt.progress, elite: +(process.env.ELITE_PAY ?? REWARDS.elite.progress) };
-  const hpMax = 26; // 筑基, REALMS.foundation.hp
-  const day = (deck, d, pickFoe) => {
-    let wounds = 0, pay = 0, lost = false;
-    for (let f = 0; f < 3 && !lost; f += 1) {
-      const hp = hpMax - wounds;
-      if (hp < Math.ceil(hpMax / 4)) break;
-      const elite = pickFoe(hp / hpMax);
-      const pool = elite ? ELITES : PLAIN;
-      const c = pool[(d * 3 + f) % pool.length];
-      const st = vs(deck, c, wounds, `day${d}|${f}|${deck.id}|${c.id}`);
-      if (st.outcome === 'won') { pay += elite ? PAY.elite : PAY.plain; wounds = hpMax - st.you.hp; }
-      else if (st.outcome === 'lost') lost = true;
-      else wounds = hpMax - st.you.hp;
-    }
-    return { pay, lost };
-  };
-  // The same seeds at full and hurt, so the gap is the wound and not the draw.
-  const rate = (c, wounds) => { let w = 0, n = 0; for (const deck of decks) for (let d = 0; d < 6; d += 1) { n += 1; if (vs(deck, c, wounds, `x${d}|${deck.id}`).outcome === 'won') w += 1; } return w / n; };
-  const full = c => rate(c, 0), hurtRate = c => rate(c, 13);
-  const eliteFull = ELITES.reduce((a, c) => a + full(c), 0) / ELITES.length;
-  const eliteHurt = ELITES.reduce((a, c) => a + hurtRate(c), 0) / ELITES.length;
-  const plainFull = PLAIN.reduce((a, c) => a + full(c), 0) / PLAIN.length;
-  console.log(`\n精英  满血赢 ${(eliteFull * 100).toFixed(1)}% · 半血赢 ${(eliteHurt * 100).toFixed(1)}%  （寻常满血 ${(plainFull * 100).toFixed(1)}%）`);
-  const lines3 = { '总是寻常': () => false, '总是精英': () => true, '看伤势': share => share >= +(process.env.FIT ?? 0.85) };
-  const yields = {};
-  for (const [name, pickFoe] of Object.entries(lines3)) {
-    let pay = 0, lost = 0, n = 0;
-    for (const deck of decks) for (let d = 0; d < 6; d += 1) { const r = day(deck, d, pickFoe); n += 1; pay += r.pay; if (r.lost) lost += 1; }
-    yields[name] = pay / n;
-    console.log(`一天三仗 ${name.padEnd(5)}  修为 ${(pay / n).toFixed(1)} · 输掉一仗的天 ${(lost / n * 100).toFixed(0)}%`);
-  }
-  if (eliteFull < 0.45 || eliteFull > 0.75) problems.push(`精英满血赢 ${(eliteFull * 100).toFixed(1)}% — 该在 45–75% 之间`);
-  if (eliteFull - eliteHurt < 0.1) problems.push(`带伤打精英只少赢 ${((eliteFull - eliteHurt) * 100).toFixed(1)} 点 — 伤势没有分量`);
-  // Per fight, in 修为 expected: whole, an elite is worth the risk; hurt, it is
-  // not better than a plain beast (its two cards are then the only lure).
-  const plainHurt = PLAIN.reduce((a, c) => a + hurtRate(c), 0) / PLAIN.length;
-  const ev = { eliteFull: eliteFull * PAY.elite, plainFull: plainFull * PAY.plain, eliteHurt: eliteHurt * PAY.elite, plainHurt: plainHurt * PAY.plain };
-  console.log(`每仗期望修为  满血：精英 ${ev.eliteFull.toFixed(1)} / 寻常 ${ev.plainFull.toFixed(1)} · 半血：精英 ${ev.eliteHurt.toFixed(1)} / 寻常 ${ev.plainHurt.toFixed(1)}`);
-  if (ev.eliteFull <= ev.plainFull) problems.push('满血打精英不比寻常值 — 精英不值得冒险');
-  if (ev.eliteHurt > ev.plainHurt * 1.1) problems.push('带伤打精英仍明显更值 — 伤势没有分量');
+  const vs = (deck, c, seed) => play({ mode: 'pve', seed, you: { tier: 'foundation', root: deck.root, deck: deck.cards, extra: ['yinyue'] }, foe: { tier: 'foundation', root: c.root, deck: c.deck, ...(process.env.NO_SIG ? {} : { signature: c.signature }) } }, smart);
+  const rate = c => { let w = 0, n = 0; for (const deck of decks) for (let d = 0; d < 6; d += 1) { n += 1; if (vs(deck, c, `x${d}|${deck.id}`).outcome === 'won') w += 1; } return w / n; };
+  const eliteRate = ELITES.reduce((a, c) => a + rate(c), 0) / Math.max(1, ELITES.length);
+  const plainRate = PLAIN.reduce((a, c) => a + rate(c), 0) / Math.max(1, PLAIN.length);
+  console.log(`\n精英（只是牌更难）赢 ${(eliteRate * 100).toFixed(1)}%  （寻常 ${(plainRate * 100).toFixed(1)}%）`);
+  for (const c of ELITES) console.log(`  ${c.id.padEnd(10)} ${(rate(c) * 100).toFixed(1)}%`);
+  if (ELITES.length && eliteRate >= plainRate) problems.push(`精英赢 ${(eliteRate * 100).toFixed(1)}%，不比寻常难 — 牌组该更难`);
+  if (ELITES.length && eliteRate < 0.35) problems.push(`精英只赢 ${(eliteRate * 100).toFixed(1)}% — 成了墙`);
 
   const ent = entropy(decks);
   const pct = x => `${(x * 100).toFixed(0)}%`;

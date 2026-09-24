@@ -3,25 +3,28 @@
 import { MODES, REALMS as CARD_REALMS, shuffle } from '../battle.js';
 import { dayKey, pick } from '../state.mjs';
 import { charmOf, duelSeed, wornOf } from './arms.mjs';
-import { bondLifts, FIT_TO_FIGHT, hasCompanion } from './companion.mjs';
+import { hasCompanion, herLifts } from './companion.mjs';
 import { clone, refuse } from './core.mjs';
-import { herAway } from './daily.mjs';
 import { gearBrief } from './errands.mjs';
 import { boutFortune } from './fortune.mjs';
 import { hashOf } from './travel.mjs';
-import { creatureOf } from './world.mjs';
+import { creatureOf, tierIndex } from './world.mjs';
 
 /* ── 斗法 v3: the ten cards a player takes in ──
    Until the skill tree picks a deck, the deck is WHO THEY ARE: the cards of
    their own roots, and the ones no root claims, ten of them in a stable order.
    Deterministic, so the same player takes the same deck into the same fight —
    and so the rules and the page never disagree about what was held. */
-/* 组牌 — the ten he picks himself (his, 2026-09-23). state.deck is his pick,
-   kept in the order picked; a card no longer usable drops out, and under ten
-   the rules fill the rest along the realm's curve as before. */
+/* 组牌 — the ten he picks himself (his, 2026-09-23), from 结丹 on
+   (redesign-v2 § 四: auto before — a new player never builds a deck).
+   state.deck is his pick, kept in the order picked; a card no longer usable
+   drops out, and under ten the rules fill the rest along the realm's curve as
+   before. A pick kept from before the rule waits, unread, until 结丹. */
+const PICK_FROM = 'core';
+const canPick = (content, state) => tierIndex(content, state) >= content.ladder.tiers.findIndex(t => t.id === PICK_FROM);
 export function deckFor(content, state) {
   const auto = autoDeck(content, state);
-  if (!Array.isArray(state.deck)) return auto;
+  if (!Array.isArray(state.deck) || !canPick(content, state)) return auto;
   const owned = new Set(ownedCards(content, state)), roots = rootsOf(content, state), catalog = cardCatalog(content);
   const picked = [...new Set(state.deck)].filter(id => owned.has(id) && catalog[id] && id !== 'yinyue' && usable(catalog[id], roots)).slice(0, MODES.pve.deck);
   // A card he took out stays out — the fill never puts it back (seen on a
@@ -33,13 +36,14 @@ export function deckFor(content, state) {
   const fill = autoDeck(content, { ...state, cards: [...left, ...(ownedCards(content, state).includes('yinyue') ? ['yinyue'] : [])] });
   return [...picked, ...fill].slice(0, MODES.pve.deck);
 }
-const pickedCards = (content, state) => (Array.isArray(state.deck) ? deckFor(content, state).filter(id => state.deck.includes(id)) : []);
+const pickedCards = (content, state) => (Array.isArray(state.deck) && canPick(content, state) ? deckFor(content, state).filter(id => state.deck.includes(id)) : []);
 
 export function deck(state, content, ctx, args) {
   const lang = state.lang, action = String(args.action ?? 'toggle');
   const s = clone(state);
   if (action === 'auto') { delete s.deck; delete s.deck_out; return { state: s, result: { ok: true, gear: gearBrief(content, s) } }; }
   if (action !== 'toggle') return refuse('unknown-action', null, { actions: ['toggle', 'auto'] });
+  if (!canPick(content, state)) return refuse('needs-tier', pick({ zh: '结丹之后，方能自己组牌。', en: 'You pick your own ten from the Core on.' }, lang), { tier: PICK_FROM });
   const id = String(args.id ?? ''), c = cardCatalog(content)[id];
   if (!c || !ownedCards(content, state).includes(id)) return refuse('not-held', null);
   if (id === 'yinyue') return refuse('always-in-hand', pick({ zh: '银月开局就在手上，不占这十张。', en: 'Yinyue starts in hand; she is not one of the ten.' }, lang));
@@ -137,55 +141,32 @@ function rootsOf(content, state) {
   return new Set([...(state.traits ?? []), ...lent]);
 }
 export const hpMaxOf = state => Math.round((CARD_REALMS[state.tier] ?? CARD_REALMS.qi).hp + (state.step ?? 0) * 0.5);
-function woundsNow(content, state, now) {
-  const w = state.wounds;
-  if (!w?.n) return 0;
-  const hours = Math.max(0, (now - new Date(w.at)) / 3600000);
-  const mended = Math.floor((hpMaxOf(state) * hours) / content.rewards.stamina.refill_hours);
-  return Math.max(0, w.n - mended);
-}
-/* When the wounds will have mended to `left` or fewer. */
-function mendsBy(content, state, now, left) {
-  const n = woundsNow(content, state, now);
-  if (n <= left) return now;
-  const perHour = hpMaxOf(state) / content.rewards.stamina.refill_hours;
-  return new Date(now.getTime() + Math.ceil(((n - left) / perHour) * 3600000));
-}
-function healthBrief(content, state, now) {
-  const max = hpMaxOf(state), n = woundsNow(content, state, now);
-  return { now: max - n, max, ...(n ? { full_at: mendsBy(content, state, now, 0).toISOString() } : {}) };
-}
-const fitToFight = (content, state, now) => hpMaxOf(state) - woundsNow(content, state, now) >= Math.ceil(hpMaxOf(state) * FIT_TO_FIGHT);
 
 /* The fight open on the save, when it is THIS one (`game` its id) — a door
    left open on another creature holds nothing for this fight. */
 const openFight = (state, game) => (game && state.fight?.game === game ? state.fight : null);
 
 /* Everything a fight is given at the door. Once the door is open it is the
-   save's (`state.fight.setup`), not the hour's: a 谈心 that crosses a bond
-   threshold, a 问斗法 cast, a scroll learned or an hour of mending between
-   the page's play and the settle must not replay the fight against other
-   numbers — a different result, or a legal turn refused. A save whose fight
-   was opened before the setup was kept falls back to the live reading, with
-   its wounds still the door's. */
+   save's (`state.fight.setup`), not the hour's: a 问卦 cast, a scroll learned
+   or a chapter ended between the page's play and the settle must not replay
+   the fight against other numbers — a different result, or a legal turn
+   refused. A save whose fight was opened before the setup was kept falls
+   back to the live reading. Every fight begins at full 气血 (伤势 was cut,
+   redesign-v2 § 四). */
 export function fightSetup(content, state, creature, now, game = null) {
   const open = openFight(state, game);
   if (open?.setup) return open.setup;
   const fortune = now ? boutFortune(content, state, now) : null;
   const boost = fortune?.card ? { element: fortune.root, n: fortune.card } : null;
   const main = state.fate?.element?.id ?? state.fate?.element ?? (state.traits ?? [])[0] ?? 'wood';
-  // Out on a 历练, she is not at his side (§ 历练).
-  const withHer = ownedCards(content, state).includes('yinyue') && !herAway(state, now ?? new Date());
-  const gear = gearFight(content, state);
+  const withHer = ownedCards(content, state).includes('yinyue');
+  const gear = gearFight(content, state), lifts = withHer ? herLifts(content, state) : null;
   return {
     mode: 'pve',
     seed: duelSeed(state, creature, now),
     you: {
       tier: state.tier, step: state.step ?? 0, root: main, deck: deckFor(content, state), extra: [...(withHer ? ['yinyue'] : []), ...(gear.charm ? [gear.charm] : [])],
-      // Locked at the door with the rest: the page and the settle replay the
-      // same fight even if an hour of mending passes between them.
-      wounds: open?.wounds ?? (now ? woundsNow(content, state, now) : 0),
-      ...(withHer && bondLifts(content, state) ? { lifts: bondLifts(content, state) } : {}),
+      ...(lifts ? { lifts } : {}),
       // 望气术: how much of the beast's plan he can read (items `learn`).
       ...(state.insight ? { insight: state.insight } : {}),
       // What he wears, as numbers (§ 装备入局).
@@ -195,7 +176,8 @@ export function fightSetup(content, state, creature, now, game = null) {
       // 问斗法: the lower trigram's element, its 功法 lifted or lowered today.
       ...(boost ? { boost } : {}),
     },
-    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...(creature.signature ? { signature: creature.signature } : {}), ...(creature.elite ? { elite: true } : {}) },
+    // An elite is its harder deck and nothing else (redesign-v2 § 四).
+    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...(creature.signature ? { signature: creature.signature } : {}) },
   };
 }
 
@@ -253,4 +235,4 @@ function winCard(content, state, creature, now, nth = 0) {
   return gainCard(content, state, pool[hashOf(`${dayKey(now)}|${creature.id}|${state.name ?? ''}|card${nth ? `|${nth}` : ''}`) % pool.length].id);
 }
 
-export { cardCatalog, fitToFight, gainCard, gearFight, healthBrief, mendsBy, pickedCards, rootsOf, starterOf, usable, winCard, woundsNow };
+export { canPick, cardCatalog, gainCard, gearFight, pickedCards, rootsOf, starterOf, usable, winCard };

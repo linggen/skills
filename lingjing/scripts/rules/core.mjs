@@ -2,10 +2,9 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { gameOf, MADE_GRANT } from '../content.mjs';
 import { addProgress, dayKey, normalizeAnswer, payOf, pick, rollDay, settleStamina, speedOf, staminaReturnsAt, stepName, threshold, tierOf } from '../state.mjs';
-import { learn } from './arms.mjs';
+import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
 import { gainCard, starterOf } from './cards.mjs';
-import { gainBond } from './companion.mjs';
 import { threadOf } from './errands.mjs';
 import { fortuneOf } from './fortune.mjs';
 import { sceneBrief, spoken, wordsOf } from './look.mjs';
@@ -56,7 +55,6 @@ function pay(content, state, ctx, grant) {
   const { base, progress, wealth, pf, wf } = amountsOf(content, state, ctx.now, grant);
   state.day.progress += base; state.day.wealth += wealth; state.wealth += wealth;
   const { levels, hold } = addProgress(content, state, progress);
-  const risen = levels.length ? gainBond(content, state, 'rise', ctx.now) : null;
   if (grant.cast && !state.cast.includes(grant.cast)) state.cast.push(grant.cast);
   // A beast that joins brings its card; a grant may name one outright.
   const cards = [grant.cast, grant.card].map(id => (id ? gainCard(content, state, id) : null)).filter(Boolean);
@@ -66,7 +64,7 @@ function pay(content, state, ctx, grant) {
   const named = levels.map(l => ({ from: stepName(content, l.from.tier, l.from.step, state.lang), to: stepName(content, l.to.tier, l.to.step, state.lang) }));
   // `progress` is what the realm really took; at the peak the rest is held.
   const fortune = (pf !== 1 && grant.progress) || (wf !== 1 && grant.wealth) ? { progress: pf, wealth: wf } : null;
-  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}), ...(fortune ? { fortune } : {}), ...(risen ? { bond: risen } : {}) };
+  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}), ...(fortune ? { fortune } : {}) };
 }
 
 /* A riddle is answered wrong at most this many times a day. */
@@ -132,7 +130,7 @@ const hourOf = (at, lang) => at.toLocaleTimeString(lang === 'zh' ? 'zh-CN' : 'en
    untouched. */
 /* A chapter marked `free` (the prologue) asks no 灵气 for its own steps
    and bouts: a new player finishes the opening in one sitting. */
-const CHAPTER_COSTS = new Set(['step', 'duel', 'elite', 'move']);
+const CHAPTER_COSTS = new Set(['step', 'duel', 'move']);
 const freeHere = (content, s, kind) => CHAPTER_COSTS.has(kind) && !inMade(s)
   && Boolean(content.chapters[s.chapter]?.free) && !s.ended.includes(s.chapter);
 
@@ -275,7 +273,7 @@ export function resolve(state, content, ctx, args) {
   const paid = grant ? pay(content, s, ctx, grant) : null;
   const beat = spoken(content, s, exit.beat);
 
-  let waiting = null;
+  let waiting = null, grew = null;
   const replay = replaying(content, s, scene);
   if (inMade(s)) {
     // A made scene leads only to another made scene or back to the spine.
@@ -284,7 +282,11 @@ export function resolve(state, content, ctx, args) {
   } else {
     if ((exit.next || exit.ends) && !replay) s.done_scenes.push(scene.id);
     if (exit.next) { s.scene = exit.next; settlePlace(content, s); offerTasks(content, s); }
-    if (exit.ends) { if (!s.ended.includes(exit.ends)) s.ended.push(exit.ends); s.scene = null; ({ waiting } = advanceChapter(content, s, ctx.now)); }
+    if (exit.ends) {
+      // A chapter ended for the first time raises the 本命法宝 one 重 (rewards.json `growth`).
+      if (!s.ended.includes(exit.ends)) { s.ended.push(exit.ends); grew = growTreasure(content, s, 'chapter'); }
+      s.scene = null; ({ waiting } = advanceChapter(content, s, ctx.now));
+    }
   }
   const walked = exit.next ? walkOn(content, s, ctx.now) : null;
   return {
@@ -292,7 +294,7 @@ export function resolve(state, content, ctx, args) {
     result: {
       ok: true, took: exit.id, beat, paid, breakthrough, show: exit.show ?? [], scene: atScene(content, s) ? sceneBrief(content, s, ctx.now) : null,
       waypoint: !atScene(content, s) && sceneOf(content, s) ? threadOf(content, s, ctx.now) : null, ended: exit.ends ?? null, waiting,
-      ...(walked ? { walked } : {}),
+      ...(walked ? { walked } : {}), ...(grew ? { treasure_grew: grew } : {}),
       summarize: Boolean(exit.next || exit.ends),
     },
   };

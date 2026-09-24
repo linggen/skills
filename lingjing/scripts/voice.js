@@ -6,10 +6,10 @@
 //
 // - Ling and Yinyue together: at most one unprompted line per QUIET_MS,
 //   except big moments (a realm broken, a chapter opened, a beast won over,
-//   an elite or a rumor's finale won, 今日传闻 finished, 体力 spent) — those
+//   a rumor's finale won, 今日传闻 finished, 体力 spent) — those
 //   are always told, and carry `converse` (Ling may answer her once).
-// - Asked moments (the player turned to her: her journey, the cast, the
-//   命格, the day's greeting) are the player's own doing: always told.
+// - Asked moments (the player turned to her: the cast, the 命格, the day's
+//   greeting) are the player's own doing: always told.
 // - A small moment has its own cooldown too; but once nobody has spoken for
 //   STILL_MS of active play, the next small moment is not skipped.
 // - Nothing small is told during a fight or a burst of taps: it is held, and
@@ -35,22 +35,18 @@ export const MOMENTS = {
   rise: { who: 'both', priority: 'big' },
   chapter: { who: 'both', priority: 'big' },
   tamed: { who: 'both', priority: 'big' },
-  elite: { who: 'both', priority: 'big' },
   finale: { who: 'both', priority: 'big' },
   tale_end: { who: 'both', priority: 'big' },
   spent: { who: 'both', priority: 'big' },
   greet: { who: 'yinyue', priority: 'asked' },
-  journey: { who: 'yinyue', priority: 'asked' },
   reading: { who: 'yinyue', priority: 'asked' },
   fate: { who: 'yinyue', priority: 'asked' },
   lost: { who: 'yinyue', priority: 'high', cooldown: 0 },
-  tended: { who: 'yinyue', priority: 'high', cooldown: 0 },
   chance: { who: 'yinyue', priority: 'high', cooldown: 0 },
   won: { who: 'yinyue', priority: 'low', cooldown: 10 * 60_000 },
   withdrew: { who: 'yinyue', priority: 'low', cooldown: 10 * 60_000 },
   unleash: { who: 'yinyue', priority: 'low', cooldown: 10 * 60_000 },
   hurt: { who: 'yinyue', priority: 'low', cooldown: 10 * 60_000 },
-  wounded: { who: 'yinyue', priority: 'low', cooldown: 10 * 60_000 },
   gain: { who: 'yinyue', priority: 'low', cooldown: 10 * 60_000 },
   trial: { who: 'yinyue', priority: 'low', cooldown: 5 * 60_000 },
   chance_late: { who: 'yinyue', priority: 'low', cooldown: 30 * 60_000 },

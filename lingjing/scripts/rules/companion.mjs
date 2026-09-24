@@ -1,10 +1,7 @@
-// rules/companion.mjs — The companion: found, not given — 伤势, 羁绊, her tending and talk.
+// rules/companion.mjs — The companion: found, not given — her call, her past, what she brings to a fight.
 // Part of the rules engine; rules.mjs is its one door.
 import { dayKey, pick } from '../state.mjs';
 import { wornOf } from './arms.mjs';
-import { healthBrief, hpMaxOf, woundsNow } from './cards.mjs';
-import { clone, refuse } from './core.mjs';
-import { herAway } from './daily.mjs';
 import { itemOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
 import { placeName, placeOf, provinceOpen, tooHard } from './world.mjs';
@@ -137,86 +134,19 @@ export function herPast(content, state) {
   };
 }
 
-/* ── 伤势 — a fight's cost carried out of it ──
-   His call, 2026-09-23, from what the gate measured: a fight begun at full
-   气血 every time is a fight no turn of which matters, so the real choices were
-   never made. Now what a fight takes stays taken: the next one begins where
-   this one ended. It mends on the 灵气 clock (full in `refill_hours`), or at
-   once with a mending pill; below a quarter nobody walks into a fight. A loss
-   leaves nothing — that is its cost now, where before it had none. */
-const FIT_TO_FIGHT = 0.25;
-
-/* ── 羁绊 — what walking together grows ──
-   His call, 2026-09-23: the player should feel they play WITH her. The bond
-   is the rules' record of it: a win beside her, an elite beaten, a realm
-   broken, a wound she tended, a gift she wears, a heart-to-heart Ling marks
-   once a day. Capped a day, so it is walked, not farmed. Its level makes her
-   card stand taller and her tending mend more (rewards.json `bond`). */
-const bondOf = content => content.rewards.bond;
-function bondLevel(content, n) {
-  const levels = bondOf(content).levels;
-  return [...levels].reverse().find(l => n >= l.at) ?? levels[0];
-}
-function bondBrief(content, state) {
-  const n = state.bond?.n ?? 0, lang = state.lang, levels = bondOf(content).levels;
-  const level = bondLevel(content, n), next = levels.find(l => l.at > n);
-  return { n, level: level.id, name: pick(level.name, lang), ...(next ? { next: next.at, next_name: pick(next.name, lang) } : {}) };
-}
-/* Grow it by a kind of shared moment; returns what changed, or null. */
-function gainBond(content, s, kind, now, key = null) {
-  if (!hasCompanion(s)) return null;
-  const cfg = bondOf(content), day = dayKey(now);
-  s.bond ??= { n: 0 };
-  if (key && (s.bond.keys ?? []).includes(key)) return null;
-  const today = s.bond.day === day ? s.bond.today ?? 0 : 0;
-  const add = Math.min(cfg.gains[kind] ?? 0, cfg.day_cap - today);
-  if (add <= 0) return null;
-  const before = bondLevel(content, s.bond.n);
-  s.bond = { ...s.bond, n: s.bond.n + add, day, today: today + add, ...(key ? { keys: [...(s.bond.keys ?? []), key] } : {}) };
-  const after = bondLevel(content, s.bond.n);
-  return { kind, gained: add, ...bondBrief(content, s), ...(after.id !== before.id ? { rose: pick(after.name, s.lang) } : {}) };
-}
-/* Her card, as the bond and what she wears lift it — locked at the door
-   with the rest. 齐纨 +1 气血 (his, 2026-09-23: 银月的佩戴都没啥用 — we cannot
-   change how she looks, so a number). 银月铃 lifts her 疗伤 instead: a heal
-   +1 in the fight measured nothing, and +1 攻 over 同心 failed the gate. */
-const bondLifts = (content, state) => {
+/* ── Beside her — what walking together gives, from the story alone ──
+   The 羁绊 count, 谈心 and 疗伤 were cut (redesign-v2 § 四, 2026-09-24): no
+   relationship score, nothing to tap for her. How close she is shows in her
+   words (her `recalled` and `stance`), and her card stands taller as the
+   story goes on — by the chapters ended (rewards.json `bond.lifts`), plus
+   whatever she wears (齐纨 +1 气血). */
+function herLifts(content, state) {
   if (!hasCompanion(state)) return null;
-  const lift = bondLevel(content, state.bond?.n ?? 0).lift ?? {};
+  const ended = (state.ended ?? []).length;
+  const lift = [...(content.rewards.bond?.lifts ?? [])].reverse().find(l => ended >= l.ended) ?? {};
   const her = companionOf(content)?.id, worn = her ? wornOf(content, state, her)?.effect?.lift ?? {} : {};
   const sum = { atk: (lift.atk ?? 0) + (worn.atk ?? 0), hp: (lift.hp ?? 0) + (worn.hp ?? 0) };
   return sum.atk || sum.hp ? { yinyue: sum } : null;
-};
-
-/* 疗伤 — she tends the wound, once a day, by the bond. A page tap. */
-export function tend(state, content, ctx) {
-  const lang = state.lang;
-  if (!hasCompanion(state)) return refuse('no-companion', null);
-  if (herAway(state, ctx.now)) return refuse('away', pick({ zh: '她出门历练去了。', en: 'She is out on her journey.' }, state.lang));
-  const n = woundsNow(content, state, ctx.now);
-  if (!n) return refuse('not-hurt', pick({ zh: '身上没伤。', en: 'You are not hurt.' }, lang));
-  const day = dayKey(ctx.now);
-  if (state.tended === day) return refuse('tended-today', pick({ zh: '今日她已替你调理过了。', en: 'She has already tended you today.' }, lang));
-  const s = clone(state);
-  // 银月铃 on her: its sound settles the breath, and she mends a tenth more.
-  const her = companionOf(content)?.id;
-  const share = bondLevel(content, s.bond?.n ?? 0).tend + (her ? wornOf(content, s, her)?.effect?.lift?.tend ?? 0 : 0);
-  const mended = Math.min(n, Math.ceil(hpMaxOf(s) * share));
-  s.wounds = n - mended ? { n: n - mended, at: ctx.now.toISOString() } : undefined;
-  if (!s.wounds) delete s.wounds;
-  s.tended = day;
-  const bond = gainBond(content, s, 'tend', ctx.now);
-  return { state: s, result: { ok: true, mended, health: healthBrief(content, s, ctx.now), ...(bond ? { bond } : {}) } };
 }
 
-/* 谈心 — Ling marks a real exchange with her, once a day (the talk gain). */
-export function bond(state, content, ctx) {
-  if (!hasCompanion(state)) return refuse('no-companion', null);
-  if (state.bond?.talked === dayKey(ctx.now)) return refuse('talked-today', null);
-  const s = clone(state);
-  const got = gainBond(content, s, 'talk', ctx.now);
-  s.bond = { ...(s.bond ?? { n: 0 }), talked: dayKey(ctx.now) };
-  return { state: s, result: { ok: true, bond: got ?? bondBrief(content, s), ...(got ? {} : { capped: true }) } };
-}
-
-export { bondBrief, bondLifts, callDue, companionOf, companionRiddle, FIT_TO_FIGHT, gainBond, nearestPlace, questBrief, riddleWaiting };
+export { callDue, companionOf, companionRiddle, herLifts, nearestPlace, questBrief, riddleWaiting };

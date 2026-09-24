@@ -177,17 +177,18 @@ test('杀招 on the page: the beast gathering says what will land, and on whom, 
   assert.match(html, /雷神 开始蓄力：雷霆/, 'and the last-move line says so');
 });
 
-test('the way in says 精英 and the wound you carry — the two facts that make going a choice', async () => {
+test('the way in says 精英 — its deck is harder — and never a wound: every fight begins whole', async () => {
   const { challengeHtml, WORDS } = await import('../scripts/battle-card.js');
   const brief = {
-    id: 'haunt:leishen', today: null, health: { now: 14, max: 26 },
+    id: 'haunt:leishen', today: null,
     creature: { id: 'leishen', name: '雷神', pinyin: 'léi shén', root: 'wood', root_name: '木', elite: true, art: 'art/leishen.webp', about: null },
   };
   const html = challengeHtml(brief, { lang: 'zh', words: WORDS.zh });
   assert.match(html, /class="celite">精英/);
-  assert.match(html, /带伤上阵：气血 14\/26/);
-  const whole = challengeHtml({ ...brief, health: { now: 26, max: 26 }, creature: { ...brief.creature, elite: false } }, { lang: 'zh', words: WORDS.zh });
-  assert.doesNotMatch(whole, /celite|churt/);
+  // an older page's brief carrying a wound is shown none (伤势 was cut)
+  assert.doesNotMatch(challengeHtml({ ...brief, health: { now: 14, max: 26 } }, { lang: 'zh', words: WORDS.zh }), /churt|带伤/);
+  const whole = challengeHtml({ ...brief, creature: { ...brief.creature, elite: false } }, { lang: 'zh', words: WORDS.zh });
+  assert.doesNotMatch(whole, /celite/);
 });
 
 test('抉择 on the stage: each way a button with how hard, the odds and the stake — then the line of the way taken', async () => {
@@ -201,12 +202,12 @@ test('抉择 on the stage: each way a button with how hard, the odds and the sta
   assert.ok(!stageCards({ place: { meet: { kind: 'trial', waiting: true } } }, []).some(c => c.card === 'trial'), 'not before Ling has written them');
   const html = cardHtml({ card: 'trial' }, { look, lang: 'zh', words: WORDS.zh });
   assert.match(html, /data-trial="0"><b>涉水而过<\/b>/);
-  assert.match(html, /难 · 30% 把握 · 失手伤身/);
+  assert.match(html, /难 · 30% 把握 · 失手折体力/, 'a wound on the road is 体力 now');
   assert.match(html, /易 · 75% 把握 · 失手破财/);
-  const told = trialToldHtml({ success: false, line: '一脚踩空，被急流卷出三丈。', cost: '气血 −12' }, { lang: 'zh', words: WORDS.zh });
+  const told = trialToldHtml({ success: false, line: '一脚踩空，被急流卷出三丈。', cost: '体力 −12' }, { lang: 'zh', words: WORDS.zh });
   assert.match(told, /抉择 · 失手/);
   assert.match(told, /一脚踩空，被急流卷出三丈。/);
-  assert.match(told, /气血 −12/);
+  assert.match(told, /体力 −12/);
 });
 
 test('望气 on the page: 上卷 reads the shape, 下卷 every move with the number — and nothing without it', async () => {
@@ -243,19 +244,18 @@ test('机缘 on the page: the book counts it down, the stage holds 收下 where 
   assert.equal(bookChipHtml({ look: { chance: { ...away.chance, until: new Date(Date.now() - 1000).toISOString() }, book: [] }, words: WORDS.zh, lang: 'zh' }, false, false), '', 'run out: gone');
 });
 
-test('历练 on the page: send her from 装备, out she shows where and how long, back she stands on the stage', async () => {
+test('装备 on the page: no 历练, no 羁绊 — her row is what she wears; before 结丹 the ten are dealt, not buttons', async () => {
   const { gearPopHtml, cardHtml, WORDS } = await import('../scripts/cards.js');
-  const { stageCards } = await import('../scripts/stage.mjs');
-  const gear = { slots: [], her: { name: '银月', item: null, bond: null }, bag: [], cards: [], fight: {} };
-  const pop = c => gearPopHtml({ gear, words: WORDS.zh, lang: 'zh', look: { treasure: null, companion: c } });
-  assert.match(pop({ name: '银月' }), /data-journey="2">2 时[\s\S]*data-journey="8">8 时/);
-  const out = pop({ name: '银月', journey: { place: { name: '微山湖' }, minutes_left: 130 } });
-  assert.match(out, /在微山湖 · 还剩 2 时 10 分/);
-  assert.match(out, /data-journey-recall/);
-  assert.match(pop({ name: '银月', journeyed: true }), /今日已出过门/);
-  const back = { companion: { name: '银月', journey: { place: { name: '微山湖' }, back: true } } };
-  assert.ok(stageCards(back, []).some(c => c.card === 'journey'));
-  assert.match(cardHtml({ card: 'journey' }, { look: back, lang: 'zh', words: WORDS.zh }), /银月回来了[\s\S]*她从微山湖回来，带了些东西。[\s\S]*data-journey-receive/);
+  const cards = [{ id: 'qingteng', name: '青藤', cost: 1, deck: true }, { id: 'yinyue', name: '银月', cost: 2, hand: true }];
+  const gear = { slots: [], her: { name: '银月', item: null }, bag: [], cards, fight: {} };
+  const pop = (g, c = { name: '银月' }) => gearPopHtml({ gear: g, words: WORDS.zh, lang: 'zh', look: { treasure: null, companion: c } });
+  const early = pop(gear);
+  assert.doesNotMatch(early, /data-journey|羁绊|历练/);
+  assert.doesNotMatch(early, /data-deck/, 'dealt by the roots: nothing to tap');
+  assert.match(early, /结丹之后可以自己组牌/);
+  const core = pop({ ...gear, can_pick: true });
+  assert.match(core, /data-deck="qingteng"/, 'from 结丹 on each card is a tap');
+  assert.equal(cardHtml({ card: 'journey' }, { look: { companion: { name: '银月' } }, lang: 'zh', words: WORDS.zh }), '', 'no journey card');
 });
 
 test('a fight whose cards the page cannot name is refused, not opened', async () => {

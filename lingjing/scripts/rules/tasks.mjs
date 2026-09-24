@@ -1,17 +1,16 @@
-// rules/tasks.mjs — Tasks and quests: boards, errands handed in, win, duel, write, 论道.
+// rules/tasks.mjs — Tasks and quests: boards, errands handed in, win, duel, 论道.
 // Part of the rules engine; rules.mjs is its one door.
 import { battle } from '../battle.js';
 import { gameOf } from '../content.mjs';
-import { addStamina, dayKey, periodKey, pick, rollDay, settleStamina, tierOf } from '../state.mjs';
-import { charmOf, drop, tierRank } from './arms.mjs';
-import { cardCatalog, fightSetup, fitToFight, healthBrief, hpMaxOf, mendsBy, winCard, woundsNow } from './cards.mjs';
-import { FIT_TO_FIGHT, gainBond } from './companion.mjs';
-import { clone, hourOf, pay, refuse, replaying, spendStamina } from './core.mjs';
+import { addStamina, dayKey, periodKey, pick, settleStamina } from '../state.mjs';
+import { drop } from './arms.mjs';
+import { cardCatalog, fightSetup, winCard } from './cards.mjs';
+import { clone, pay, refuse, replaying, spendStamina } from './core.mjs';
 import { choreCounts, choreGrant, questDone } from './chores.mjs';
-import { advance, countsOf, itemBrief, itemOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from './errands.mjs';
-import { duelBrief, tasksBrief, wordsOf } from './look.mjs';
+import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from './errands.mjs';
+import { duelBrief, tasksBrief } from './look.mjs';
 import { hashOf } from './travel.mjs';
-import { creatureOf, encounterOf, placeOf, sceneOf, settlePlace, tierIndex } from './world.mjs';
+import { creatureOf, encounterOf, placeOf, sceneOf } from './world.mjs';
 
 /* ── Tasks and quests ── */
 
@@ -144,7 +143,7 @@ export function win(state, content, ctx, args) {
    sends the creature into the mist until tomorrow. A loss costs nothing
    else. A creature beaten today is subdued until tomorrow — a scene's as
    much as a haunt's, and one whose exit waits to be taken is not fought
-   again at all: every win drops, deals a card and grows the bond, so a
+   again at all: every win drops and deals a card, so a
    second win was a farm (review, 2026-09-24). A scene played again (Go
    back into a chapter done) is fought for the story and pays nothing.
    One fight at a time: while one is open no other starts, and only its
@@ -173,18 +172,14 @@ export function duel(state, content, ctx, args) {
     // day's 灵气 is not taken twice. The seed is the day's, so the cards deal
     // the same way they did.
     const resuming = s.fight?.game === id && today?.day === day && today.outcome === 'open';
-    if (!resuming && !fitToFight(content, s, ctx.now)) {
-      const at = mendsBy(content, s, ctx.now, hpMaxOf(s) - Math.ceil(hpMaxOf(s) * FIT_TO_FIGHT));
-      return refuse('wounded', pick({ zh: `伤还重，${hourOf(at, 'zh')} 再来 —— 或者服一粒丹。`, en: `Too hurt to fight. Come back at ${hourOf(at, 'en')} — or take a pill.` }, state.lang), { health: healthBrief(content, s, ctx.now), returns_at: at.toISOString(), game: id });
-    }
     if (!resuming) {
-      const empty = spendStamina(content, s, ctx, creature.elite ? 'elite' : 'duel');
+      const empty = spendStamina(content, s, ctx, 'duel');
       if (empty) return empty;
     }
     s.duels = { ...s.duels, [creature.id]: { day, outcome: 'open' } };
     // While this is set, Ling advances NOTHING (SKILL.md § 斗法): she knows
     // from the save, not from a message, because a message can be lost.
-    s.fight = resuming ? s.fight : { game: id, creature: creature.id, at: ctx.now.toISOString(), wounds: woundsNow(content, s, ctx.now) };
+    s.fight = resuming ? s.fight : { game: id, creature: creature.id, at: ctx.now.toISOString() };
     // The whole setup is kept with it, so the settle replays what the page
     // is handed now (an older save's open fight takes it on resume).
     if (!s.fight.setup) s.fight.setup = fightSetup(content, s, creature, ctx.now, id);
@@ -200,11 +195,8 @@ export function duel(state, content, ctx, args) {
   if (played.refused) return refuse(played.refused.why, null, { action: played.refused.action });
   if (played.outcome === 'open') return refuse('unfinished', null, { turn: played.turn });
   delete s.fight;
+  // A loss costs nothing but the beast, gone for the day (伤势 was cut, redesign-v2 § 四).
   s.duels[creature.id] = { day, outcome: played.outcome };
-  // What the fight took stays taken (§ 伤势); a loss leaves nothing.
-  const left = played.outcome === 'lost' ? 0 : played.you.hp;
-  s.wounds = left < played.you.hpMax ? { n: played.you.hpMax - left, at: ctx.now.toISOString() } : undefined;
-  if (!s.wounds) delete s.wounds;
   // A 符 played is a 符 spent, win or lose (cards.mjs § 装备入局).
   const spent = spentCharms(content, setup, played);
   for (const id of spent) { s.bag[id] = Math.max(0, (s.bag[id] ?? 0) - 1); if (!s.bag[id]) delete s.bag[id]; }
@@ -219,21 +211,14 @@ export function duel(state, content, ctx, args) {
     : played.outcome === 'withdrew' ? pick({ zh: `${pick(creature.name, 'zh')}一口气用尽，转身走了 —— 这一场不算你赢。`, en: `${pick(creature.name, 'en')} runs out of breath and turns away — this one is not a win.` }, state.lang)
       : null;
   // What a subdued creature leaves, and what a haunt pays for it. A fight that
-  // ended in 遁走 pays nothing: it has to be WON (design.md § 斗法 v3).
-  const dropped = pays ? drop(content, s, creature) : [];
-  // 精英 pay half again what a plain beast does and leave two cards (his,
-  // 2026-09-23: fixed in the world, marked where you can see them — the choice
-  // is whether to go, and in what shape). Half again, not twice: at twice the
-  // gate found always-elite the best day whatever the wounds, so there was no
-  // choice; at 1.5× an elite is worth it whole and a coin toss hurt.
-  const elite = Boolean(creature.elite);
-  const bonded = pays ? gainBond(content, s, elite ? 'elite' : 'win', ctx.now) : null;
-  for (let i = 0; pays && i < (elite ? 2 : 1); i += 1) {
-    const card = winCard(content, s, creature, ctx.now, i);
-    if (card) dropped.push(card);
-  }
-  const paid = haunt && pays ? pay(content, s, ctx, { table: elite ? 'elite' : 'haunt', progress: content.rewards.tables[elite ? 'elite' : 'haunt'].progress, wealth: content.rewards.tables[elite ? 'elite' : 'haunt'].wealth }) : null;
-  return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, ...(spent.length ? { spent } : {}), you: played.you, foe: played.foe, turns: played.turn, health: healthBrief(content, s, ctx.now), ...(elite ? { elite: true } : {}), ...(bonded ? { bond: bonded } : {}), ...(dropped.length ? { dropped } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
+  // ended in 遁走 pays nothing: it has to be WON (design.md § 斗法 v3). An
+  // elite pays as any beast: its harder deck is all it is (redesign-v2 § 四).
+  const dropped = pays ? drop(content, s, creature, ctx.now) : [];
+  const card = pays ? winCard(content, s, creature, ctx.now) : null;
+  if (card) dropped.push(card);
+  const t = content.rewards.tables.haunt;
+  const paid = haunt && pays ? pay(content, s, ctx, { table: 'haunt', progress: t.progress, wealth: t.wealth }) : null;
+  return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, ...(spent.length ? { spent } : {}), you: played.you, foe: played.foe, turns: played.turn, ...(dropped.length ? { dropped } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
 }
 
 /* The 符 the door put in his hand that the fight saw him play — each is
@@ -252,9 +237,9 @@ const spentCharms = (content, setup, played) => {
    readers work. `true` holds the verb; a function holds only the calls it
    says. Anything not named is left alone. */
 const FIGHT_HOLDS = {
-  resolve: true, move: true, go: true, enter: true, leave: true, trade: true, journey: true, tale: a => !['info', 'seed'].includes(a.action),
-  meet: true, tame: true, write: true, refine: true, nourish: true, chance: true, task: a => a.action !== 'list',
-  win: true, travel: true, build: true, load: true, make: true, amend: true, lundao: true, tend: true, bond: true,
+  resolve: true, move: true, go: true, enter: true, leave: true, trade: true, tale: a => !['info', 'seed'].includes(a.action),
+  meet: true, tame: true, refine: true, chance: true, task: a => a.action !== 'list',
+  win: true, travel: true, build: true, load: true, make: true, amend: true, lundao: true,
   divine: true, fate: true, ring: true, greet: true, deck: true, quest: a => !['info', 'kaifu'].includes(a.action),
 };
 export function fightHold(state, verb, args = {}) {
@@ -275,47 +260,6 @@ export function closeStaleFight(state, now) {
   const was = s.duels?.[f.creature];
   if (was?.outcome === 'open') s.duels[f.creature] = { ...was, outcome: 'withdrew' };
   return s;
-}
-
-/* 写符 — one 桑皮纸 becomes one 符: at a market, or anywhere once the
-   catalog's `made.anywhere_from` tier is reached; a visit's stamina; one a
-   day. The 符 is cast on the scene, in a fight; Ling never plays it. */
-
-/* Whether 写符 would be allowed here today — the choice offers it then. */
-function canWrite(content, state) {
-  const charm = charmOf(content), paper = charm?.made?.from;
-  if (!charm || !paper || !(state.bag[paper] ?? 0) || state.day?.written) return false;
-  const here = placeOf(content, state.place);
-  const adept = charm.made.anywhere_from != null && tierIndex(content, state) >= tierRank(content, charm.made.anywhere_from);
-  return Boolean(here?.has?.[charm.made.at ?? 'shop']) || adept;
-}
-
-export function write(state, content, ctx, args) {
-  const charm = charmOf(content), paper = charm?.made?.from ? itemOf(content, charm.made.from) : null;
-  if (!charm || !paper) return refuse('no-charm-here', null);
-  const s = clone(state);
-  settlePlace(content, s);
-  rollDay(s, ctx.now);
-  const lang = s.lang, w = wordsOf(content, lang), paperName = pick(paper.name, lang), charmName = pick(charm.name, lang);
-  const here = placeOf(content, s.place);
-  const adept = charm.made.anywhere_from != null && tierIndex(content, s) >= tierRank(content, charm.made.anywhere_from);
-  const at = charm.made.at ?? 'shop';
-  if (!here?.has?.[at] && !adept) {
-    const from = charm.made.anywhere_from ? pick(tierOf(content, charm.made.anywhere_from)?.name, lang) : null;
-    return refuse('not-here', pick({
-      zh: `${w.write}要在${w[at]}里${from ? `，或待${from}之后` : ''}。`,
-      en: `A ${charmName} is written at a ${w[at]}${from ? `, or anywhere from ${from} on` : ''}.`,
-    }, lang), { at, ...(from ? { anywhere_from: charm.made.anywhere_from } : {}) });
-  }
-  if (!(s.bag[paper.id] ?? 0)) return refuse('no-paper', pick({ zh: `没有${paperName}，写不得${charmName}。`, en: `No ${paperName} — nothing to write on.` }, lang), { needs: paper.id });
-  if (s.day.written) return refuse('written-today', pick({ zh: `今日已写过一${charmName}，朱砂要歇。`, en: `One ${charmName} a day; the cinnabar rests.` }, lang));
-  const empty = spendStamina(content, s, ctx, 'shop');
-  if (empty) return empty;
-  s.bag[paper.id] -= 1;
-  if (!s.bag[paper.id]) delete s.bag[paper.id];
-  s.bag[charm.id] = (s.bag[charm.id] ?? 0) + 1;
-  s.day.written = 1;
-  return { state: s, result: { ok: true, written: charm.id, from: paper.id, item: itemBrief(content, s, charm), show: [{ card: 'item', id: charm.id }] } };
 }
 
 /* 论道 — word games with the scholar at 稷下 (his, 2026-09-23: build the
@@ -402,4 +346,4 @@ export function lundao(state, content, ctx, args) {
   return { state: s, result: { ok: true, good, ...(form ? { form } : {}), ...(!form && !judged ? { judged: false } : {}), lundao: lundaoBrief(content, s, ctx.now), ...(l.model && !l.outcome ? { model: l.model } : {}), ...(paid ? { paid, line: pick(taskOf(content, 'lundao').done_line, lang) } : {}) } };
 }
 
-export { canWrite, doneThisPeriod, gameLevel, lundaoBrief, lundaoForm, questCheck, questDone, reopened };
+export { doneThisPeriod, gameLevel, lundaoBrief, lundaoForm, questCheck, questDone, reopened };

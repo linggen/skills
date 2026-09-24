@@ -21,7 +21,7 @@ const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
 
 // Tools that change the state: the scene re-reads Look once they have run.
-const WRITERS = new Set(['Divine', 'Resolve', 'Practice', 'Tale', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Inscribe', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art']);
+const WRITERS = new Set(['Divine', 'Resolve', 'Practice', 'Tale', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art']);
 
 /* A 斗法 in play, held by the page: the setup the rules handed over at the
    door, the fight itself, and every action taken so far. When it ends the page
@@ -41,7 +41,7 @@ let chat = null;
    her words. Her line lands in this chat (`session`) once she walks with the
    player; a big moment lets Ling answer her once (`converse`). ── */
 const IDLE_FACT = { zh: '玩家在这页上静了好一会儿，什么也没动。', en: 'The player has been quiet here a while, not touching anything.' };
-const herHere = () => Boolean(look?.companion) && !(look.companion.journey && !look.companion.journey.back);
+const herHere = () => Boolean(look?.companion);
 const voice = createVoice({
   post: (id, fact, flags, opts) => postMoment(fact, flags, opts),
   sees: () => ({ fighting: Boolean(bout), present: herHere() }),
@@ -369,18 +369,6 @@ function qiHtml() {
     <i class="ring" style="--p:${Number(q.p) || 0}"></i><span class="st">${esc(state)}</span><span class="cnt">${esc(q.now)}/${esc(q.max)}</span></span>`;
 }
 
-/// 气血 on the strip only while a fight's wounds are carried (rules § 伤势):
-/// at full it is noise, hurt it is the fact that decides the next fight.
-function hpHtml() {
-  const h = look?.health;
-  if (!h || h.now >= h.max) return '';
-  const w = words();
-  const t = clock(h.full_at);
-  // 疗伤: she tends it, once a day, when she walks with him (rules § 羁绊).
-  const tend = look.companion && !look.companion.tended ? ` <button class="act tend" data-tend>${esc(w.tend)}</button>` : '';
-  return `<span class="hp" title="${esc(t ? w.mendsAt.replace('{t}', t) : '')}"><span class="lbl">${esc(w.hp)}</span> <b>${esc(h.now)}/${esc(h.max)}</b>${tend}</span>`;
-}
-
 /// One line in the world while the window is spent — and the boards stay:
 /// they use no model.
 function statusHtml() {
@@ -391,7 +379,6 @@ function statusHtml() {
     <div class="xw"><span class="lbl">${esc(w.xw)}</span><div class="bar"><i style="width:${pct || 0}%"></i></div>
       <span class="num"><span data-count="progress">${esc(look.progress)}</span>/${esc(look.next)}</span>${omenChip('progress')}</div>
     ${qiHtml()}
-    ${hpHtml()}
     <span class="ls"><span class="lbl">${esc(w.ls)}</span> <b data-count="wealth">${esc(look.wealth)}</b>${omenChip('wealth')}</span>${omenChip('bout')}
     ${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}
     ${gearChipHtml({ ...ctx(), gear: view.gear, gearNote: view.gearOpen ? view.gearNote : null }, view.gearOpen)}
@@ -627,7 +614,7 @@ function focusHtml() {
    in this order; the first stands on the stage, 下一件 › puts it off to the end
    of the line, and walking on starts the line again. The goal line, an empty
    pool and what Ling showed of the place stay where they are. */
-const QUEUE = ['handed', 'quest', 'tale', 'veil', 'find', 'trial', 'chance', 'journey', 'offer', 'duel', 'lundao', 'board'];
+const QUEUE = ['handed', 'quest', 'tale', 'veil', 'find', 'trial', 'chance', 'offer', 'duel', 'lundao', 'board'];
 const HEAD = new Set(['building', 'empty', 'goal']);
 const qKey = (c) => `${c.card}:${c.id ?? ''}`;
 
@@ -753,11 +740,9 @@ function draw() {
   // open, scene or road, not only where a scene casts her.
   $('stage').hidden = false;
   // She stands there only once she has been found (his rule, 2026-09-17).
-  // Out on a 历练 she is not on the stage; her name says where she went.
-  const away = look.companion?.journey && !look.companion.journey.back;
-  const her = Boolean(look.companion) && !bout && !away;
-  stageYinyue(her, Boolean(bout) && Boolean(look.companion) && !away);
-  $('stageName').textContent = her ? look.companion.name : away ? `${look.companion.name} · ${words().journeyAway}` : '';
+  const her = Boolean(look.companion) && !bout;
+  stageYinyue(her, Boolean(bout) && Boolean(look.companion));
+  $('stageName').textContent = her ? look.companion.name : '';
   $('askHerBtn').hidden = !her;
   if (her) $('askHerBtn').textContent = words().askHer.replace('{name}', look.companion.name);
   const cast = look.divination ? JSON.stringify(look.divination.throws) : null;
@@ -1037,50 +1022,12 @@ async function deckTap(args) {
   show({ gear: r.ok ? r.gear : view.gear, gearNote: r.ok ? null : refusal(r) });
 }
 
-/* 历练 — send her, call her back, take what she brought. She says her own
-   goodbye and tells her own journey (asked moments: she answers at once). */
-/// Resolves true when she will hear it; false when nobody will (the pet off
-/// answers 503 at once) — a page that waits on her must not wait then.
+/// A moment she is asked about answers at once. Resolves true when she will
+/// hear it; false when nobody will (the pet off answers 503 at once) — a
+/// page that waits on her must not wait then.
 function askHer(id, zh, en, mood) {
   return voice.moment(id, { zh, en }, { mood }).said;
 }
-async function journeyVerb(action, extra = {}) {
-  const r = await write('journey', { action, ...extra }).catch(failed);
-  if (!r.ok) keep(view.gearOpen ? { gearNote: refusal(r) } : { doNote: refusal(r) });
-  if (view.gearOpen) { const g = await verb('gear', {}).catch(() => null); keep({ gear: g?.gear ?? view.gear }); }
-  await refresh();
-  return r;
-}
-async function sendHer(hours) {
-  const r = await journeyVerb('send', { hours });
-  if (r.ok) askHer('journey', `玩家让你去${r.sent.place.name}历练 ${hours} 个时辰，你这就动身。`, `The player is sending you to ${r.sent.place.name} for ${hours} hours; you set off now.`, 'happy');
-}
-/* Called back early: she comes home with a little, and tells it her way. */
-async function recallHer() {
-  const r = await journeyVerb('recall');
-  if (!r.ok) return;
-  const items = r.brought.filter((b) => b.id).map((b) => ({ id: b.id, name: b.name }));
-  if (items.length) keep({ spoils: { place: look?.place?.id ?? null, cards: [], items } });
-  const t = r.out_min >= 60 ? `${Math.floor(r.out_min / 60)} 个时辰${r.out_min % 60 ? `${r.out_min % 60} 分` : ''}` : `${r.out_min} 分`;
-  const te = r.out_min >= 60 ? `${Math.floor(r.out_min / 60)}h${r.out_min % 60 ? ` ${r.out_min % 60}m` : ''}` : `${r.out_min}m`;
-  const seen = r.brought.map((b) => b.line).join(' ');
-  const got = [...items.map((i) => i.name), r.wealth ? `${r.wealth} 灵石` : ''].filter(Boolean).join('、');
-  const gotEn = [...items.map((i) => i.name), r.wealth ? `${r.wealth} stones` : ''].filter(Boolean).join(', ');
-  askHer('journey', `玩家提前把你从${r.place.name}叫了回来：原定 ${r.hours} 个时辰，才走了 ${t}。${seen ? `路上所见：${seen} ` : ''}${got ? `只带回：${got}。` : '这趟什么也没带回。'}今日不能再出门。你回到玩家身边，跟玩家说几句。`,
-    `The player called you back early from ${r.place.name}: ${r.hours} hours planned, ${te} gone. ${seen ? `On the road: ${seen} ` : ''}${gotEn ? `You bring only: ${gotEn}.` : 'You bring nothing back.'} No second trip today. You are beside the player again; say a few words to them.`);
-  render();
-}
-async function receiveHer() {
-  const r = await journeyVerb('receive');
-  if (!r.ok) return;
-  const cards = r.card ? [r.card] : [], items = r.brought.filter((b) => b.id).map((b) => ({ id: b.id, name: b.name }));
-  keep({ spoils: { place: look?.place?.id ?? null, cards, items } });
-  const seen = r.brought.map((b) => b.line).join(' ');
-  askHer('journey', `你从${r.place.name}历练回来（${r.hours} 个时辰）。路上所见：${seen} 带回：${[...items.map((i) => i.name), r.card?.name, `${r.wealth} 灵石`].filter(Boolean).join('、')}。讲给玩家听。`,
-    `You are back from ${r.place.name} (${r.hours} hours). On the road: ${seen} Brought: ${[...items.map((i) => i.name), r.card?.name, `${r.wealth} stones`].filter(Boolean).join(', ')}. Tell the player.`, 'happy');
-  render();
-}
-
 /* 机缘 — 收下 is a page tap; what it left stands on the stage, and 银月
    hears it (a big moment: she was there for the run to reach it). */
 async function takeChance() {
@@ -1097,9 +1044,6 @@ async function takeChance() {
    say so. */
 let chanceTold = null;
 setInterval(() => {
-  // She comes back while the page is open: redraw, and the stage shows it.
-  const j = look?.companion?.journey;
-  if (j?.until && !j.back && new Date(j.until) <= Date.now()) { refresh(); return; }
   const c = look?.chance;
   if (!c || c.taken || c.missed || !c.until) return;
   const left = Math.ceil((new Date(c.until) - Date.now()) / 60000);
@@ -1121,7 +1065,7 @@ async function chooseWay(n) {
   keep({ choosing: false });
   if (!r.ok) { keep({ doNote: refusal(r) }); await refresh(); return; }
   const w = words();
-  const cost = r.lost?.hp ? w.trialHurt.replace('{n}', r.lost.hp) : r.lost?.wealth ? w.trialPoorer.replace('{n}', r.lost.wealth) : '';
+  const cost = r.lost?.stamina ? w.trialHurt.replace('{n}', r.lost.stamina) : r.lost?.wealth ? w.trialPoorer.replace('{n}', r.lost.wealth) : '';
   keep({ trialTold: { place: look?.place?.id ?? null, success: r.success, line: r.line, cost } });
   await refresh();
   if (r.success) tellYinyue('trial', `路上的抉择成了：${r.line}`, `A choice on the road went well: ${r.line}`, { mood: 'happy' });
@@ -1304,8 +1248,6 @@ const CLICKS = [
     if ((view.bookOpen || view.gearOpen) && !e.target.closest('.bookpop') && !e.target.closest('#askbar')) show({ bookOpen: false, gearOpen: false });
     return false;
   }],
-  ['[data-nourish]', busy('nourish', () => onNourish())],
-  ['[data-tend]', busy('tend', () => onTend())],
   ['[data-spoils-close]', () => show({ spoils: null })],
   // Inside a fight the stage belongs to the fight: a click is a place on it.
   ['[data-spot]', (el) => {
@@ -1327,9 +1269,6 @@ const CLICKS = [
   ['[data-refine]', (el) => { if (el.dataset.refine) run('refine', () => refineTap(el.dataset.refine)); }],
   ['[data-divine]', (el) => run('divine', () => castByPage(el.dataset.divine))],
   ['[data-chance]', busy('chance', () => takeChance())],
-  ['[data-journey]', (el) => run('journey', () => sendHer(Number(el.dataset.journey)))],
-  ['[data-journey-recall]', busy('journey', () => recallHer())],
-  ['[data-journey-receive]', busy('journey', () => receiveHer())],
   ['[data-trial]', (el) => run('trial', () => chooseWay(Number(el.dataset.trial)))],
   ['[data-tale-answer]', (el) => run('tale', () => taleAnswer(el.dataset.taleAnswer))],
   ['[data-drop]', (el) => run(`drop:${el.dataset.drop}`, () => dropErrand(el.dataset.drop))],
@@ -1387,12 +1326,11 @@ function fightMoments() {
   }
 }
 
-/* How it ended, for her: a loss and an elite won are the big ones. */
+/* How it ended, for her: a loss is the big one. */
 function toldOutcome(brief, outcome) {
   const c = brief?.creature ?? {}, foe = c.name ?? '';
-  if (outcome === 'won' && c.elite) return tellYinyue('elite', `打赢了精英${foe}`, `Beat ${foe}, an elite`, { mood: 'happy' });
   if (outcome === 'won') return tellYinyue('won', `降服了${foe}`, `Beat ${foe}`, { mood: 'happy' });
-  if (outcome === 'lost') return tellYinyue('lost', `输给了${foe}，气血耗尽，只能回去养伤`, `Lost to ${foe}, no Life left — rest before the next`, { mood: 'sad' });
+  if (outcome === 'lost') return tellYinyue('lost', `输给了${foe}，它今日不会再出来了`, `Lost to ${foe} — it will not come out again today`, { mood: 'sad' });
   if (outcome === 'withdrew') tellYinyue('withdrew', `${foe}力竭遁走，这一仗不算赢`, `${foe} ran out of breath and left — not a win`);
 }
 
@@ -1411,7 +1349,6 @@ async function onDuelStart(id) {
       // talking to itself. The states without words (won today, tamed) are
       // already written on the card by Look.
       show({ duelSay: { id, text: r.say ?? null } });
-      if (r.refused === 'wounded') tellYinyue('wounded', '伤太重，没能出手', 'Too hurt to fight', { mood: 'sad' });
       return;
     }
     const brief = r.duel;
@@ -1563,23 +1500,6 @@ async function settleBout(b = bout) {
   // A fight that ended today's rumor is its ending: one beat, the tale's.
   const ended = (r.handed ?? []).some((h) => h.tale && h.ended);
   await report(ended ? '[scene] tale end' : `[scene] ${r.outcome} ${id}`);
-  await refresh();
-}
-
-/// 疗伤 — she looks at the wound and mends some of it; then she says what she
-/// will, in her own time (a big moment: the screen settles, she speaks).
-async function onTend() {
-  const r = await write('tend', {}).catch(failed);
-  if (r.ok) tellYinyue('tended', `玩家让你看了看伤，你替玩家调理了一番，气血回了 ${r.mended}`, `The player let you look at the wound; you tended it, ${r.mended} Life back`, { mood: 'relaxed' });
-  else keep({ doNote: refusal(r) });
-  await refresh();
-}
-
-/// 温养 — once a day, a tap. No model decides it and no turn is spent on it:
-/// the page asks the rules and re-reads; Ling reads it on her next Look.
-async function onNourish() {
-  const r = await write('nourish', {}).catch(failed);
-  if (!r.ok) keep({ doNote: refusal(r) });
   await refresh();
 }
 

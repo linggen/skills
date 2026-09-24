@@ -45,11 +45,6 @@ const MEET_DID = {
   choose: (r) => `chose a way at a crossroads — ${r.success ? 'it went well' : 'it went wrong'}`,
   answer: () => "answered a traveller's riddle",
 };
-const JOURNEY_DID = {
-  send: (r) => `sent Yinyue out to ${r.sent?.place?.name}`,
-  recall: (r) => `called Yinyue back early from ${r.place?.name}`,
-  receive: (r) => `welcomed Yinyue back from ${r.place?.name}`,
-};
 /* 传闻 on the page: a step's board won, its riddle answered, a kept win counted. */
 const taleDid = (r, x) => (r.ended ? `ended today's rumor${paidLine(r.handed?.[0]?.paid, x.w)}${r.handed?.[0]?.gives ? `, got ${r.handed[0].gives}` : ''}`
   : r.kept ? "solved the rumor's step; counted when 体力 is back" : r.step ? `the rumor's step done${paidLine(r.handed?.[0]?.paid, x.w)}; next: ${r.step.game_name} at ${r.step.at?.name}` : null);
@@ -64,9 +59,7 @@ const PAGE_DID = {
   task: (r, a, x) => (a.action === 'done' ? `practice ${r.done} done${paidLine(r.paid, x.w)}` : a.action === 'check' ? `app task ${r.quest} paid${paidLine(r.paid, x.w)}` : null),
   trade: byAction(TRADE_DID),
   meet: byAction(MEET_DID),
-  nourish: () => 'nourished the 本命法宝',
   chance: () => 'took the chance (机缘)',
-  journey: byAction(JOURNEY_DID),
   tale: (r, a, x) => TALE_DID[a.action]?.(r, a, x) ?? null,
 };
 
