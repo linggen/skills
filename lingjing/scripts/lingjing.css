@@ -115,6 +115,9 @@ button:disabled { cursor: default; }
         box-shadow: 0 0 22px 4px rgba(190, 210, 225, .55); animation: breathe 4s ease-in-out infinite; }
 @keyframes breathe { 50% { transform: scale(.97); box-shadow: 0 0 30px 8px rgba(190, 210, 225, .7); } }
 .stage b { font-family: var(--serif); font-weight: 600; font-size: 15px; color: var(--yinyue); }
+/* 问问银月: a word to her, in the chat (`@银月 …`). */
+.stage .askher { color: var(--yinyue); border-color: color-mix(in srgb, var(--yinyue) 45%, transparent); }
+.stage .askher[hidden] { display: none; }
 .focus { position: absolute; top: 48px; right: 24px; bottom: 20px; left: var(--stage-room); overflow-y: auto;
          display: flex; flex-direction: column; gap: 12px; }
 .focus .card { background: color-mix(in srgb, var(--surface) 94%, transparent); width: 100%; max-width: 540px; margin: 0 auto; padding: 14px 16px; flex: none; }

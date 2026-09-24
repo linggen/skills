@@ -2568,7 +2568,7 @@ test('降妖: a fight open on another creature lends nothing to this one', () =>
    moment fires at a quarter of 气血, so it cannot say 一成多. */
 test('降妖: the low-气血 word to 银月 matches the quarter it fires at', () => {
   const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  const low = src.match(/st\.you\.hp \* 4 <= st\.you\.hpMax[\s\S]{0,200}?tellYinyue\(`([^`]*)`, `([^`]*)`\)/);
+  const low = src.match(/st\.you\.hp \* 4 <= st\.you\.hpMax[\s\S]{0,200}?tellYinyue\('hurt', `([^`]*)`, `([^`]*)`\)/);
   assert.ok(low, 'the low moment is a quarter');
   assert.match(low[1], /不到三成/);
   assert.match(low[2], /quarter/);

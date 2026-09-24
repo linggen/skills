@@ -15,6 +15,7 @@ import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { WORDS, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, trayHtml, trialToldHtml, clockOf } from './cards.js';
 import { esc } from './esc.js';
+import { createVoice } from './voice.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -34,6 +35,26 @@ let cloud = null; //      the engine's view of the account: {signed_in, meter}; 
 let atlasPlaces = null; // every province's places for the map, read by the atlas verb: {key, provinces}
 const boards = new Map();
 let chat = null;
+
+/* ── 银月's voice — every moment the page tells her goes through one budget
+   (voice.js: who, how much it weighs, its cooldown). Facts only; she writes
+   her words. Her line lands in this chat (`session`) once she walks with the
+   player; a big moment lets Ling answer her once (`converse`). ── */
+const IDLE_FACT = { zh: '玩家在这页上静了好一会儿，什么也没动。', en: 'The player has been quiet here a while, not touching anything.' };
+const herHere = () => Boolean(look?.companion) && !(look.companion.journey && !look.companion.journey.back);
+const voice = createVoice({
+  post: (id, fact, flags, opts) => postMoment(fact, flags, opts),
+  sees: () => ({ fighting: Boolean(bout), present: herHere() }),
+});
+/// Resolves true when she will hear it; false when nobody will (the pet off
+/// answers 503 at once) — a page that waits on her must not wait then.
+function postMoment(fact, flags, { mood = null } = {}) {
+  const sid = look?.companion ? chat?.getSessionId?.() : null;
+  const { converse, ...rest } = flags ?? {};
+  const body = { app: SKILL, text: lang() === 'en' ? fact.en : fact.zh, ...rest, ...(mood ? { mood } : {}), ...(sid ? { session: sid, ...(converse ? { converse } : {}) } : {}) };
+  return fetch('/api/yinyue/event', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    .then((res) => res.ok).catch((e) => { console.warn('[lingjing] yinyue', e); return false; });
+}
 
 const lang = () => (look?.lang === 'en' ? 'en' : 'zh');
 /// The page's own labels, with the stat names from the world's dictionary
@@ -149,6 +170,7 @@ const view = {
   doNote: null, //       a page tap the rules refused, in their words, until the next tap
   bookInfo: null, //     what the rules say of it (`Quest info`), read on the tap
   ask: null, //          the 问询 waiting in the ask bar: its line (「说说夫诸」)
+  askHer: false, //      the ask bar speaks to 银月 (`@银月 …`), not to Ling
   choosing: false, //    a 抉择 tapped: its roll is in flight
   trialTold: null, //    the way taken at a 抉择, on the stage until he walks on: { place, success, line, cost }
   gearNote: null, //     a 装备 tap the rules refused, in their words, inside the popover
@@ -403,7 +425,7 @@ function riseStats() {
     // real life is hers, not Ling's (his rule, 2026-09-23).
     if (before.stamina > 0 && now.stamina === 0 && !before.resting) {
       const at = clock(look.stamina?.rest_at ?? look.stamina?.returns_at);
-      askHer(`玩家的体力刚刚耗尽了（${at} 可以再出发）。游戏先放一放：请玩家回到现实里歇一歇，起身走走、喝口水。说一两句。`, `The player's stamina just ran out (ready to go again at ${at}). The game waits: send them back to the real world to rest — stand up, walk, drink some water. A line or two.`, 'relaxed');
+      askHer('spent', `玩家的体力刚刚耗尽了（${at} 可以再出发）。游戏先放一放：请玩家回到现实里歇一歇，起身走走、喝口水。说一两句。`, `The player's stamina just ran out (ready to go again at ${at}). The game waits: send them back to the real world to rest — stand up, walk, drink some water. A line or two.`, 'relaxed');
     }
     if (now.rank && before.rank && now.rank !== before.rank) feat('rise', now.rank, before.rank);
     else if (now.chapter && before.chapter && now.chapter !== before.chapter) feat('chapter', look.chapter.title);
@@ -489,8 +511,8 @@ function feat(kind, name, from = '') {
   el.style.animationDelay = `${Math.max(0, riseAfter - performance.now())}ms`;
   $('view')?.appendChild(el);
   setTimeout(() => el.remove(), 4200 + Math.max(0, riseAfter - performance.now()));
-  if (kind === 'rise') askHer(`玩家刚刚突破了，从${from}到了${name}。这是件大事，你就在玩家身边，说几句。`, `The player has just broken through, from ${from} to ${name}. It is a great moment and you are beside them; say a few words.`, 'happy');
-  else askHer(`新的一章开了：${name}。你陪玩家一路走到这里，说几句。`, `A new chapter opens: ${name}. You have walked with the player to here; say a few words.`, 'happy');
+  if (kind === 'rise') askHer('rise', `玩家刚刚突破了，从${from}到了${name}。这是件大事，你就在玩家身边，说几句。`, `The player has just broken through, from ${from} to ${name}. It is a great moment and you are beside them; say a few words.`, 'happy');
+  else askHer('chapter', `新的一章开了：${name}。你陪玩家一路走到这里，说几句。`, `A new chapter opens: ${name}. You have walked with the player to here; say a few words.`, 'happy');
 }
 
 function wonOver(beasts) {
@@ -503,7 +525,7 @@ function wonOver(beasts) {
     view$?.appendChild(seal);
     setTimeout(() => seal.remove(), 2600 + i * 600);
   }
-  tellYinyue(`收服了${beasts.map((b) => b.name).join('、')}，它从此随行`, `Won over ${beasts.map((b) => b.name).join(', ')} — it walks with us now`, { big: true, mood: 'happy' });
+  tellYinyue('tamed', `收服了${beasts.map((b) => b.name).join('、')}，它从此随行`, `Won over ${beasts.map((b) => b.name).join(', ')} — it walks with us now`, { mood: 'happy' });
   const chip = document.querySelector('.gearchip');
   if (!chip) return;
   const gain = document.createElement('span');
@@ -735,6 +757,8 @@ function draw() {
   const her = Boolean(look.companion) && !bout && !away;
   stageYinyue(her, Boolean(bout) && Boolean(look.companion) && !away);
   $('stageName').textContent = her ? look.companion.name : away ? `${look.companion.name} · ${words().journeyAway}` : '';
+  $('askHerBtn').hidden = !her;
+  if (her) $('askHerBtn').textContent = words().askHer.replace('{name}', look.companion.name);
   const cast = look.divination ? JSON.stringify(look.divination.throws) : null;
   keep({ castFresh: view.castSeen !== undefined && cast !== null && cast !== view.castSeen, castSeen: cast });
   if (view.castFresh) readingByHer(look.divination);
@@ -856,6 +880,7 @@ const isTask = (id) => Boolean(look?.tasks?.some((t) => t.id === id));
 async function taleDone(r) {
   keep({ doNote: r.ok ? null : refusal(r) });
   await refresh();
+  if (r.ok && !r.kept && r.ended) taleEnded(r.handed?.[0]?.title);
   if (r.ok && !r.kept && (r.ended || r.step)) await report(`[scene] tale ${r.ended ? 'end' : 'step'}`);
   return r.ok;
 }
@@ -1009,12 +1034,8 @@ async function deckTap(args) {
    goodbye and tells her own journey (asked moments: she answers at once). */
 /// Resolves true when she will hear it; false when nobody will (the pet off
 /// answers 503 at once) — a page that waits on her must not wait then.
-function askHer(zh, en, mood) {
-  return fetch('/api/yinyue/event', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ app: 'lingjing', text: lang() === 'en' ? en : zh, asked: true, mood }),
-  }).then((res) => res.ok).catch((e) => { console.warn('[lingjing] yinyue', e); return false; });
+function askHer(id, zh, en, mood) {
+  return voice.moment(id, { zh, en }, { mood }).said;
 }
 async function journeyVerb(action, extra = {}) {
   const r = await write('journey', { action, ...extra }).catch(failed);
@@ -1025,7 +1046,7 @@ async function journeyVerb(action, extra = {}) {
 }
 async function sendHer(hours) {
   const r = await journeyVerb('send', { hours });
-  if (r.ok) askHer(`玩家让你去${r.sent.place.name}历练 ${hours} 个时辰，你这就动身。`, `The player is sending you to ${r.sent.place.name} for ${hours} hours; you set off now.`, 'happy');
+  if (r.ok) askHer('journey', `玩家让你去${r.sent.place.name}历练 ${hours} 个时辰，你这就动身。`, `The player is sending you to ${r.sent.place.name} for ${hours} hours; you set off now.`, 'happy');
 }
 /* Called back early: she comes home with a little, and tells it her way. */
 async function recallHer() {
@@ -1038,7 +1059,7 @@ async function recallHer() {
   const seen = r.brought.map((b) => b.line).join(' ');
   const got = [...items.map((i) => i.name), r.wealth ? `${r.wealth} 灵石` : ''].filter(Boolean).join('、');
   const gotEn = [...items.map((i) => i.name), r.wealth ? `${r.wealth} stones` : ''].filter(Boolean).join(', ');
-  askHer(`玩家提前把你从${r.place.name}叫了回来：原定 ${r.hours} 个时辰，才走了 ${t}。${seen ? `路上所见：${seen} ` : ''}${got ? `只带回：${got}。` : '这趟什么也没带回。'}今日不能再出门。你回到玩家身边，跟玩家说几句。`,
+  askHer('journey', `玩家提前把你从${r.place.name}叫了回来：原定 ${r.hours} 个时辰，才走了 ${t}。${seen ? `路上所见：${seen} ` : ''}${got ? `只带回：${got}。` : '这趟什么也没带回。'}今日不能再出门。你回到玩家身边，跟玩家说几句。`,
     `The player called you back early from ${r.place.name}: ${r.hours} hours planned, ${te} gone. ${seen ? `On the road: ${seen} ` : ''}${gotEn ? `You bring only: ${gotEn}.` : 'You bring nothing back.'} No second trip today. You are beside the player again; say a few words to them.`);
   render();
 }
@@ -1048,7 +1069,7 @@ async function receiveHer() {
   const cards = r.card ? [r.card] : [], items = r.brought.filter((b) => b.id).map((b) => ({ id: b.id, name: b.name }));
   keep({ spoils: { place: look?.place?.id ?? null, cards, items } });
   const seen = r.brought.map((b) => b.line).join(' ');
-  askHer(`你从${r.place.name}历练回来（${r.hours} 个时辰）。路上所见：${seen} 带回：${[...items.map((i) => i.name), r.card?.name, `${r.wealth} 灵石`].filter(Boolean).join('、')}。讲给玩家听。`,
+  askHer('journey', `你从${r.place.name}历练回来（${r.hours} 个时辰）。路上所见：${seen} 带回：${[...items.map((i) => i.name), r.card?.name, `${r.wealth} 灵石`].filter(Boolean).join('、')}。讲给玩家听。`,
     `You are back from ${r.place.name} (${r.hours} hours). On the road: ${seen} Brought: ${[...items.map((i) => i.name), r.card?.name, `${r.wealth} stones`].filter(Boolean).join(', ')}. Tell the player.`, 'happy');
   render();
 }
@@ -1060,7 +1081,7 @@ async function takeChance() {
   if (!r.ok) { keep({ doNote: refusal(r) }); await refresh(); return; }
   if (r.card) keep({ spoils: { place: look?.place?.id ?? null, cards: [r.card], items: [] } });
   const where = look?.chance?.place?.name ?? '';
-  tellYinyue(`赶上了${where}的机缘，得了${r.card?.name ?? '些东西'}`, `Made it to the chance at ${where} in time — ${r.card?.name ?? 'something'} gained`, { big: true, mood: 'happy' });
+  tellYinyue('chance', `赶上了${where}的机缘，得了${r.card?.name ?? '些东西'}`, `Made it to the chance at ${where} in time — ${r.card?.name ?? 'something'} gained`, { mood: 'happy' });
   await refresh();
 }
 
@@ -1077,7 +1098,7 @@ setInterval(() => {
   const left = Math.ceil((new Date(c.until) - Date.now()) / 60000);
   if (left <= 30 && left > 0 && !c.here && chanceTold !== c.until) {
     chanceTold = c.until;
-    tellYinyue(`${c.place.name}的机缘只剩半个时辰了`, `The chance at ${c.place.name} has half an hour left`, { mood: 'neutral' });
+    tellYinyue('chance_late', `${c.place.name}的机缘只剩半个时辰了`, `The chance at ${c.place.name} has half an hour left`, { mood: 'neutral' });
   }
   if (left <= 0) { refresh(); return; }
   render();
@@ -1096,8 +1117,8 @@ async function chooseWay(n) {
   const cost = r.lost?.hp ? w.trialHurt.replace('{n}', r.lost.hp) : r.lost?.wealth ? w.trialPoorer.replace('{n}', r.lost.wealth) : '';
   keep({ trialTold: { place: look?.place?.id ?? null, success: r.success, line: r.line, cost } });
   await refresh();
-  if (r.success) tellYinyue(`路上的抉择成了：${r.line}`, `A choice on the road went well: ${r.line}`, { mood: 'happy' });
-  else tellYinyue(`路上的抉择失手了：${r.line}`, `A choice on the road went wrong: ${r.line}`, { mood: 'sad' });
+  if (r.success) tellYinyue('trial', `路上的抉择成了：${r.line}`, `A choice on the road went well: ${r.line}`, { mood: 'happy' });
+  else tellYinyue('trial', `路上的抉择失手了：${r.line}`, `A choice on the road went wrong: ${r.line}`, { mood: 'sad' });
   await report(`[scene] trial ${n} ${r.success ? 'won' : 'lost'}`);
 }
 
@@ -1119,7 +1140,13 @@ async function doTap(action, id) {
   if (r.ok && action === 'take') tookOffer(id);
   await refresh();
   // 交差 on 传闻's line counts a kept win: the next step is the story's.
+  if (r.ok && id === 'tale' && r.ended) taleEnded(r.handed?.[0]?.title ?? r.title);
   if (r.ok && id === 'tale' && (r.ended || r.step)) await report(`[scene] tale ${r.ended ? 'end' : 'step'}`);
+}
+/* 今日传闻 finished — a big moment for her (a fight that ends it is its finale). */
+function taleEnded(title, finale = false) {
+  const t = title ? `「${title}」` : '';
+  tellYinyue(finale ? 'finale' : 'tale_end', `${finale ? '打赢了收尾的一仗，' : ''}今日传闻${t}走完了`, `${finale ? 'Won the closing fight — ' : ''}today's rumor${title ? ` "${title}"` : ''} is finished`, { mood: 'happy' });
 }
 
 /* 接下 seen: the row takes a 已接下 seal and fades, so a second errand rising
@@ -1157,21 +1184,29 @@ async function dropErrand(id) {
 /* The ask bar stands outside the stage's repaint, so a stream of tokens never
    takes the field from under the player's hands. Empty, it sends the line as
    it is (「说说夫诸」); with a question, the line quotes what is asked about. */
-function openAsk(line) {
-  keep({ ask: line });
+function openAsk(line, toHer = false) {
+  keep({ ask: line, askHer: toHer });
   const bar = $('askbar');
-  bar.innerHTML = askBarHtml(line, words());
+  bar.innerHTML = askBarHtml(line, words(), toHer ? words().askHerHint : undefined);
   bar.hidden = false;
   $('askField').focus();
 }
 function closeAsk() {
-  keep({ ask: null });
+  keep({ ask: null, askHer: false });
   $('askbar').hidden = true;
   $('askbar').innerHTML = '';
 }
 function sendAsk() {
   if (!view.ask) return;
   const q = $('askField').value.trim();
+  // 问问银月: the words go to her in this chat (`@银月 …`) — she answers as
+  // [Yinyue], and Ling reads the exchange on his next turn. Empty, the
+  // player's gentle nudge to talk.
+  if (view.askHer) {
+    closeAsk();
+    deliver(`@银月 ${q || words().askHerEmpty}`, false);
+    return;
+  }
   const line = q ? `${view.ask}${lang() === 'zh' ? '：' : ': '}${q}` : view.ask;
   closeAsk();
   show({ bookOpen: false });
@@ -1203,7 +1238,7 @@ async function setFate(kind) {
   await refresh();
   const f = look?.fate;
   if (kind === 'decline' || !f?.zodiac) return;
-  askHer(`玩家刚在灵根卡上定了命格：属${f.zodiac.name}，日主${f.stem.name}${f.element.name}，天生亲近${f.element.name}。它给的：斗法时同属${f.element.name}的一击，每场减半一次；起卦时下卦属${f.element.name}，卦象偏向玩家。用你自己的话告诉玩家，一两句。`,
+  askHer('fate', `玩家刚在灵根卡上定了命格：属${f.zodiac.name}，日主${f.stem.name}${f.element.name}，天生亲近${f.element.name}。它给的：斗法时同属${f.element.name}的一击，每场减半一次；起卦时下卦属${f.element.name}，卦象偏向玩家。用你自己的话告诉玩家，一两句。`,
     `The player has just set their birth sign on the roots card: year of the ${f.zodiac.name}, day master ${f.stem.name} (${f.element.name}), at home in ${f.element.name}. What it gives: once a fight, a blow of ${f.element.name} is halved; a cast whose lower trigram is ${f.element.name} leans their way. Tell them in your own words, a line or two.`, 'happy');
 }
 document.addEventListener('input', (e) => { if (e.target.id === 'fate-birth') keep({ fateDraft: e.target.value, fateError: false }); });
@@ -1273,6 +1308,7 @@ const CLICKS = [
   // 问询: the one word that costs a model turn opens the ask bar; nothing is
   // sent until the player says so.
   ['[data-ask]', (el) => openAsk(el.dataset.ask)],
+  ['[data-ask-her]', () => (view.ask && view.askHer ? closeAsk() : openAsk(words().askHer.replace('{name}', look?.companion?.name ?? words().yinyue), true))],
   ['[data-ask-send]', () => sendAsk()],
   ['[data-ask-close]', () => closeAsk()],
   ['[data-meet]', (el) => run(`meet:${el.dataset.meet}`, () => takeMeet(el.dataset.meet))],
@@ -1322,13 +1358,9 @@ document.addEventListener('click', (e) => {
    them until the player has gone quiet — or, `big`, until the screen settles —
    and then she decides whether a word fits (his, 2026-09-23: 不要每条都回复,
    只在安静了许久的时候出来说一些). Only once she walks with the player. */
-function tellYinyue(zh, en, { big = false, mood = null } = {}) {
+function tellYinyue(id, zh, en, { mood = null } = {}) {
   if (!look?.companion) return;
-  fetch('/api/yinyue/event', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ app: 'lingjing', text: lang() === 'en' ? en : zh, big, ...(mood ? { mood } : {}) }),
-  }).catch((e) => console.warn('[lingjing] yinyue event', e));
+  voice.moment(id, { zh, en }, { mood });
 }
 
 /* The turns of a fight worth her knowing: the beast letting its 杀招 go, and
@@ -1339,21 +1371,21 @@ function fightMoments() {
   if (st.foe.charge?.phase === 'spent' && !bout.told?.unleash) {
     bout.told = { ...bout.told, unleash: true };
     const sig = st.foe.signature?.name ?? {};
-    tellYinyue(`${foe}放出了杀招「${sig.zh ?? ''}」`, `${foe} let its ${sig.en ?? 'signature'} go`);
+    tellYinyue('unleash', `${foe}放出了杀招「${sig.zh ?? ''}」`, `${foe} let its ${sig.en ?? 'signature'} go`);
   }
   if (st.outcome === 'open' && st.you.hp * 4 <= st.you.hpMax && !bout.told?.low) {
     bout.told = { ...bout.told, low: true };
-    tellYinyue(`斗${foe}，气血只剩不到三成了`, `Fighting ${foe}, down to a quarter of their Life or less`);
+    tellYinyue('hurt', `斗${foe}，气血只剩不到三成了`, `Fighting ${foe}, down to a quarter of their Life or less`);
   }
 }
 
 /* How it ended, for her: a loss and an elite won are the big ones. */
 function toldOutcome(brief, outcome) {
   const c = brief?.creature ?? {}, foe = c.name ?? '';
-  if (outcome === 'won' && c.elite) return tellYinyue(`打赢了精英${foe}`, `Beat ${foe}, an elite`, { big: true, mood: 'happy' });
-  if (outcome === 'won') return tellYinyue(`降服了${foe}`, `Beat ${foe}`, { mood: 'happy' });
-  if (outcome === 'lost') return tellYinyue(`输给了${foe}，气血耗尽，只能回去养伤`, `Lost to ${foe}, no Life left — rest before the next`, { big: true, mood: 'sad' });
-  if (outcome === 'withdrew') tellYinyue(`${foe}力竭遁走，这一仗不算赢`, `${foe} ran out of breath and left — not a win`);
+  if (outcome === 'won' && c.elite) return tellYinyue('elite', `打赢了精英${foe}`, `Beat ${foe}, an elite`, { mood: 'happy' });
+  if (outcome === 'won') return tellYinyue('won', `降服了${foe}`, `Beat ${foe}`, { mood: 'happy' });
+  if (outcome === 'lost') return tellYinyue('lost', `输给了${foe}，气血耗尽，只能回去养伤`, `Lost to ${foe}, no Life left — rest before the next`, { mood: 'sad' });
+  if (outcome === 'withdrew') tellYinyue('withdrew', `${foe}力竭遁走，这一仗不算赢`, `${foe} ran out of breath and left — not a win`);
 }
 
 /* ── 降妖: the page plays the fight, the rules decide it ── */
@@ -1371,7 +1403,7 @@ async function onDuelStart(id) {
       // talking to itself. The states without words (won today, tamed) are
       // already written on the card by Look.
       show({ duelSay: { id, text: r.say ?? null } });
-      if (r.refused === 'wounded') tellYinyue('伤太重，没能出手', 'Too hurt to fight', { mood: 'sad' });
+      if (r.refused === 'wounded') tellYinyue('wounded', '伤太重，没能出手', 'Too hurt to fight', { mood: 'sad' });
       return;
     }
     const brief = r.duel;
@@ -1507,7 +1539,9 @@ async function settleBout(b = bout) {
     await refresh();
     return;
   }
-  toldOutcome(brief, r.outcome);
+  const finale = (r.handed ?? []).find((h) => h.tale && h.ended);
+  if (finale && r.outcome === 'won') taleEnded(finale.title, true);
+  else toldOutcome(brief, r.outcome);
   // 所得: the room closes, and what it left stands on the stage — the card he
   // now holds is seen, not only told.
   const got = r.outcome === 'won' ? r.dropped ?? [] : [];
@@ -1528,7 +1562,7 @@ async function settleBout(b = bout) {
 /// will, in her own time (a big moment: the screen settles, she speaks).
 async function onTend() {
   const r = await write('tend', {}).catch(failed);
-  if (r.ok) tellYinyue(`让她看了看伤，她替你调理了一番，气血回了 ${r.mended}`, `Let her look at the wound; she tended it, ${r.mended} Life back`, { big: true, mood: 'relaxed' });
+  if (r.ok) tellYinyue('tended', `玩家让你看了看伤，你替玩家调理了一番，气血回了 ${r.mended}`, `The player let you look at the wound; you tended it, ${r.mended} Life back`, { mood: 'relaxed' });
   else keep({ doNote: refusal(r) });
   await refresh();
 }
@@ -1645,6 +1679,7 @@ async function mountChat() {
     onStreamToken: () => { streaming = true; },
     onStreamEnd: () => {
       turnEnded();
+      voice.heard();
       streaming = false;
       const before = look;
       // Her turn is over: a 遇 still in the mist is lifted by the page — she
@@ -1706,11 +1741,7 @@ function readingByHer(d) {
     ? `为「${d.ask.name}」起了一卦：得《${h.name}》${to}，${d.grade.name}。卦辞：${h.judgment}${moving}。`
     : `A cast for "${d.ask.name}": ${h.name}${to}, ${d.grade.name}. The judgment: ${h.judgment}.`;
   const mood = { great: 'happy', good: 'happy', even: 'relaxed', ill: 'sad', dire: 'sad' }[d.grade.id] ?? 'neutral';
-  fetch('/api/yinyue/event', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ app: 'lingjing', text, asked: true, mood }),
-  }).catch((e) => console.warn('[lingjing] yinyue reading', e));
+  askHer('reading', text, text, mood);
 }
 
 /// Something won in Ling's turn — 修为, or 灵石 not from a sale: 银月 hears the
@@ -1726,7 +1757,7 @@ function cheer(before) {
   if (!progress && !wealth) return;
   const w = words();
   const zh = [progress ? `${w.xw} +${progress}` : '', wealth ? `${w.ls} +${wealth}` : ''].filter(Boolean).join('，');
-  tellYinyue(`刚才这一段，他得了${zh}`, `Just now he gained ${zh.replace('，', ', ')}`, { mood: 'happy' });
+  tellYinyue('gain', `刚才这一段，玩家得了${zh}`, `Just now the player gained ${zh.replace('，', ', ')}`, { mood: 'happy' });
 }
 
 /* Yinyue on the stage: the engine's pet view, loaded as a stage so it
@@ -1821,7 +1852,7 @@ async function greetByHer() {
   const zh = `${who}今天第一次打开灵境。你知道的：${r.facts.join('；')}。像见到对方那样，打个招呼 —— 挑一两件说，不必都提。`;
   const en = `${who} has just opened Lingjing for the first time today. What you know: ${r.facts.join('; ')}. Greet the player as you would on seeing them — pick one or two, not all.`;
   // Nobody to say it (pet off): Ling opens instead.
-  if (!(await askHer(zh, en, 'happy'))) return false;
+  if (!(await askHer('greet', zh, en, 'happy'))) return false;
   greetText = [...(lang() === 'en' ? en : zh).trim()].slice(0, 300).join('');
   return true;
 }
@@ -1836,4 +1867,9 @@ async function boot() {
 }
 
 window.addEventListener('focus', () => { if (look) refresh(); });
+// The voice budget's senses: a tap or a key is play; every 5 s the held
+// moments are weighed and the idle word considered (voice.js).
+document.addEventListener('pointerdown', () => voice.input(), { capture: true, passive: true });
+document.addEventListener('keydown', () => voice.input(), { capture: true, passive: true });
+setInterval(() => voice.tick({ visible: document.visibilityState === 'visible', busy: streaming || saying || Boolean(view.ask), idleFact: IDLE_FACT }), 5000);
 boot();
