@@ -30,13 +30,13 @@
 # recording is kept for its sound, and words without timings are still shown.
 #
 # Reads one JSON object (argv[1] or stdin), writes one JSON line:
-#   in : {artist, title, year?, version?, query_hints?, yt_dlp, results?}
+#   in : {artist, title, year?, version?, query_hints?, exclude?, yt_dlp, results?}
 #   out: {ok, urls[], url, id, duration, video_title, channel, album, anchor,
+#         canonical_title,
 #         lyrics: {synced, duration, gap}, runners_up[], notes[]}
 #         — or {ok:false, error}
 #
-# Callers: scripts/get.sh (agent path) and scripts/download.js (page path).
-# It exists so those two stop reimplementing the same search by hand.
+# Caller: scripts/fetch.py — every download door goes through it.
 
 import concurrent.futures
 import json
@@ -208,6 +208,9 @@ def album_tracks(yt_dlp, artist, title):
         "duration": d["duration"],
         "view_count": d.get("view_count"),
         "album": d.get("album"),
+        # The catalogue's own names for the song, when YouTube Music has them.
+        "track": d.get("track"),
+        "artist": d.get("artist"),
         "_album": True,
     } for d, who in zip(details, singers)
         if not simp_artist or lm.same_artist(simp_artist, who)]
@@ -224,6 +227,37 @@ def corroborated(albums, entries, candidates):
         return any(isinstance(x, (int, float))
                    and abs(x - a["duration"]) <= lm.FIT_SECONDS for x in others)
     return [a for a in albums if agrees(a)]
+
+
+def in_script_of(requested, name):
+    """`name` written the way `requested` is: a song asked for in traditional
+    characters keeps them, one asked for in simplified keeps those."""
+    if not lm.is_cjk(requested) or not lm.is_cjk(name):
+        return name
+    if lm.is_traditional(requested):
+        return lm.traditional([name])[0]
+    return lm.simplified([name])[0]
+
+
+def canonical_title(album, artist, title, lyric_entries=()):
+    """The song's real title when the album track names it differently from the
+    request — the agent asked for 郭富城 風中密碼, the catalogue says 风里密码,
+    and LRCLIB only knows 風裡密碼. None when it is the same name (in any
+    script) or when the album track can't be shown to be this song: its title
+    must share the request's characters (and its artist the requested one's),
+    or its length must agree with a lyrics set for the request."""
+    name = lm._BRACKETED.sub("", str(album.get("track") or album.get("title") or "")).strip()
+    if not name or not title:
+        return None
+    simp_name, simp_title, simp_artist, simp_who = lm.simplified(
+        [name, title, artist or "", album.get("artist") or album.get("channel") or ""])
+    if fold(simp_name).replace(" ", "") == fold(simp_title).replace(" ", ""):
+        return None
+    same = lm.same_title(simp_name, simp_title) and (not simp_artist or lm.same_artist(simp_artist, simp_who))
+    seconds = album.get("duration") or 0
+    agrees = any(isinstance(e.get("duration"), (int, float)) and abs(e["duration"] - seconds) <= lm.FIT_SECONDS
+                 for e in lyric_entries)
+    return in_script_of(title, name) if same or agrees else None
 
 
 def lyrics_anchor(entries):
@@ -362,6 +396,9 @@ def main():
     albums = corroborated(albums, lyric_entries, candidates)
     album_ids = {a["id"] for a in albums}
     candidates = albums + [c for c in candidates if c.get("id") not in album_ids]
+    # "Find another source": the uploads already tried are out of the running.
+    exclude = {str(x) for x in (req.get("exclude") or [])}
+    candidates = [c for c in candidates if str(c.get("id")) not in exclude]
     if not candidates:
         fail("no candidates found")
 
@@ -428,6 +465,8 @@ def main():
 
     ranked.sort(key=lambda r: r["score"], reverse=True)
     win = ranked[0]
+    album = next((c for c in candidates if c.get("_album") and c["id"] == win["id"]), None)
+    canonical = canonical_title(album, artist, title, lyric_entries) if album else None
     # What the winner's lyrics are expected to be. Callers fit again against
     # the file that actually lands (lyrics_match.for_file): yt-dlp walks down
     # `urls` when a video is dead, and the one that downloads is the one the
@@ -449,6 +488,9 @@ def main():
         "why": win["why"],
         "anchor": {"seconds": anchor, "source": anchor_source},
         "album": win["album"],
+        # Name the song by this, not the request, when set: filename, tags,
+        # library row and the lyrics lookup.
+        "canonical_title": canonical,
         "lyrics": ({k: plan[k] for k in ("synced", "duration", "gap")}
                    if plan else None),
         "runners_up": ranked[1:4],

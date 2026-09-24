@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # lyrics_match.py — which lyrics belong to which recording. The one place DJ
 # decides it: pick-source.py pairs each video with the lyrics that fit it, and
-# every lyric lookup after a download (get.sh, lyrics.js → attachLyrics) fits
+# every lyric lookup after a download (fetch.py, lyrics.js → attachLyrics) fits
 # the file on disk through here. The phone's DjEnrich runs the same rule.
 #
 # A .lrc is a clock for ONE recording: `[00:32.68] 笑你我枉花光心計` means "32.68 s
@@ -19,8 +19,8 @@
 # sidecars as such.
 #
 # CLI: one JSON object (argv[1] or stdin) → one JSON line.
-#   in : {artist, title, file, version?}
-#   out: {ok, body, synced, duration, gap, seconds} — or {ok:false, error}
+#   in : {artist, title, file, version?, other_titles?}
+#   out: {ok, body, synced, duration, gap, seconds, title} — or {ok:false, error}
 
 import concurrent.futures
 import json
@@ -75,11 +75,7 @@ def is_cjk(s):
                for c in str(s or ""))
 
 
-def simplified(texts):
-    """Traditional → simplified through macOS's own ICU, one call for the lot.
-    LRCLIB and YouTube Music file Chinese songs under either script, and ICU
-    also folds variants (難唸的經 → 难念的经). Anything it can't do, the texts
-    come back as they went in."""
+def _transform(texts, reverse):
     texts = [str(t or "").replace("\n", " ") for t in texts]
     if not any(is_cjk(t) for t in texts):
         return texts
@@ -87,7 +83,7 @@ def simplified(texts):
           f" var s = $.NSMutableString.stringWithString({json.dumps(chr(10).join(texts))});"
           " s.applyTransformReverseRangeUpdatedRange("
           "$.NSString.stringWithString('Traditional-Simplified'),"
-          " false, $.NSMakeRange(0, s.length), $());"
+          f" {'true' if reverse else 'false'}, $.NSMakeRange(0, s.length), $());"
           " ObjC.unwrap(s)")
     try:
         out = subprocess.run(["osascript", "-l", "JavaScript", "-e", js],
@@ -96,6 +92,26 @@ def simplified(texts):
         return texts
     lines = out.rstrip("\n").split("\n")
     return lines if len(lines) == len(texts) else texts
+
+
+def simplified(texts):
+    """Traditional → simplified through macOS's own ICU, one call for the lot.
+    LRCLIB and YouTube Music file Chinese songs under either script, and ICU
+    also folds variants (難唸的經 → 难念的经). Anything it can't do, the texts
+    come back as they went in."""
+    return _transform(texts, False)
+
+
+def traditional(texts):
+    """Simplified → traditional, the same transform run backwards. YouTube
+    Music names a Cantonese song in simplified (风里密码) while LRCLIB files
+    it in traditional (風裡密碼) and finds nothing under the other."""
+    return _transform(texts, True)
+
+
+def is_traditional(text):
+    """Written in traditional characters: simplifying it changes it."""
+    return is_cjk(text) and simplified([text])[0] != text
 
 
 def cluster(values, width):
@@ -274,13 +290,22 @@ def fit(entries, seconds):
             "duration": round(e.get("duration") or 0), "gap": None}
 
 
-def for_file(artist, title, path, version="studio"):
-    """The lyrics to write next to an audio file already on disk."""
+def for_file(artist, title, path, version="studio", other_titles=()):
+    """The lyrics to write next to an audio file already on disk.
+
+    `other_titles` are the song's other names — the one it was asked for when
+    the file carries the catalogue's (郭富城 風中密碼 is really 風裡密碼, and
+    LRCLIB knows only the real one), or the reverse. Each gets the whole query
+    ladder before the song is given up on."""
     seconds = file_seconds(path) if path else 0
-    got = fit(lyric_sets(artist, title, version), seconds)
-    if got:
-        got["seconds"] = round(seconds, 1)
-    return got
+    titles = list(dict.fromkeys(t for t in [title, *other_titles] if str(t or "").strip()))
+    for name in titles or [title]:
+        got = fit(lyric_sets(artist, name, version), seconds)
+        if got:
+            got["seconds"] = round(seconds, 1)
+            got["title"] = name
+            return got
+    return None
 
 
 # ------------------------------------------------------------------------- cli
@@ -295,7 +320,8 @@ def main():
         print(json.dumps({"ok": False, "error": "couldn't read the request"}))
         return
     got = for_file(req.get("artist"), req.get("title"), req.get("file"),
-                   str(req.get("version") or "studio").lower())
+                   str(req.get("version") or "studio").lower(),
+                   [t for t in req.get("other_titles") or [] if isinstance(t, str)])
     print(json.dumps({"ok": True, **got} if got else
                      {"ok": False, "error": "no lyrics found"}, ensure_ascii=False))
 
