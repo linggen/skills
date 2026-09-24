@@ -80,7 +80,9 @@ function taskDone(state, content, ctx, id) {
   // A hosted game won today is counted wherever he stands when it is handed
   // in: the win was at the place (his 五子棋, 2026-09-23: a queued "go to 彭城"
   // ran before the win's turn, and the pay was refused at 彭城).
-  const wonHere = Boolean(t.hosted && state.wins?.[id] && dayKey(new Date(state.wins[id])) === dayKey(ctx.now) && errandWants(content, state, id));
+  // Kept across midnight: while the errand still asks for it, a win kept on
+  // an empty pool counts whenever 体力 is back (the page says so).
+  const wonHere = Boolean(t.hosted && state.wins?.[id] && errandWants(content, state, id));
   if (!state.tasks[id] && !again && !hostedHere(content, state, id) && !wonHere) return refuse('not-offered', null);
   if (!wonHere && !taskOpen(content, state, id, ctx.now)) return refuse('already-done', null);
   if (!state.wins?.[id]) return refuse('not-won', null);
