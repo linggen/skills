@@ -27,19 +27,21 @@ const MONEY_RE = /[-+]?\$?\d{1,3}(?:,?\d{3})*\.\d{2}[-+]?(?:\s?(?:cr|dr))?/ig;
 // phrases; an outbound word anywhere ("sent", "bill payment", "to") keeps it
 // spend — "BILL PAYMENT HYDRO ONE" and "E-TRANSFER SENT" are money leaving.
 const INBOUND_RE = /\b(deposit|refund|reversal|statement credit|credit adjustment|cash\s*back|rebate|(?:payment|pymt)s?\s+received|payment\s*-?\s*thank you|thank you for your payment|transfer in|e-?transfer\s+(received|deposit))\b/i;
-const OUTBOUND_RE = /\b(sent|bill\s*pay(ment)?|to|withdrawal|withdraw)\b/i;
+const OUTBOUND_RE = /\b(sent|bill\s*pay(ment)?|to|withdrawal|withdraw|pre-?authori[sz]ed (payment|debit))\b/i;
 // A second date opening the description — the posting date of a two-date row.
 const POSTING_RE = new RegExp(`^\\s*(?:${MONTH_RE}[a-z]*\\.?\\s+\\d{1,2}(?:,?\\s*\\d{4})?|\\d{1,2}/\\d{1,2}(?:/\\d{2,4})?)(?=\\s)`, 'i');
 // A statement's summary box, not a transaction: the balances, limits and
 // totals a card or bank prints above its activity. Each carries a date and an
 // amount, so without this a card's "Previous total balance" books as money in.
-const SUMMARY_RE = /\b(previous (total )?balance|new (total )?balance|opening balance|closing balance|balance forward|beginning balance|statement balance|minimum (payment|amount)|payment due|credit limit|available credit|credit available|total (payments|credits|purchases|charges|interest|fees|debits|deposits|withdrawals)|payments (&|and) credits|purchases (&|and) (other )?charges)\b/i;
+const SUMMARY_RE = /\b(previous (total )?balance|new (total )?balance|opening balance|closing balance|(opening|closing) totals?|balance forward|beginning balance|statement balance|minimum (payment|amount)|payment due|credit limit|available credit|credit available|total (payments|credits|purchases|charges|interest|fees|debits|deposits|withdrawals)|payments (&|and) credits|purchases (&|and) (other )?charges)\b/i;
 // A credit-card statement (the words only a card prints). On one, a leading
 // minus marks a credit to the card — a payment or refund — not spend.
 const CARD_RE = /\b(credit limit|minimum payment|available credit|credit available|payment due date|annual interest rate)\b/i;
 // Column headers of a two-column bank layout.
-const DEBIT_COL_RE = /\b(withdrawals?|debits?|paid out|charges?)\b/i;
-const CREDIT_COL_RE = /\b(deposits?|credits?|paid in)\b/i;
+// BMO chequing prints "Amounts deducted from your account" / "Amounts added to
+// your account" instead of Withdrawals / Deposits.
+const DEBIT_COL_RE = /\b(withdrawals?|debits?|paid out|charges?|deducted)\b/i;
+const CREDIT_COL_RE = /\b(deposits?|credits?|paid in|added)\b/i;
 
 // Reconstruct text lines from a PDF's positioned text items via the vendored
 // pdf.js. Returns a flat array of {text, cells:[{x, s}]} lines (all pages).

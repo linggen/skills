@@ -131,5 +131,50 @@ t('K7 "7-11" stays a merchant, not a posting date', byMerchant(card, /7-11/)?.me
 const chqMinus = parseStatementText(['Statement date Jul 31, 2026', 'Jul 03 TIM HORTONS -$4.85 $3495.15']);
 t('K8 on a bank account a leading minus is still spend', chqMinus[0]?.amount === -4.85, chqMinus[0]?.amount);
 
+// ── BMO chequing (the "Amounts deducted / added" layout) ──
+// Synthetic, shaped like BMO's own: one amount + running balance per row, the
+// balance lines "Opening balance" / "Closing totals", and bill payments,
+// sent e-transfers and pre-authorized payments leaving the account.
+console.log('\n— BMO chequing —');
+const BMO_CHQ = [
+  'BMO Everyday Banking',
+  'Your Primary Chequing Account statement',
+  'For the period ending June 5, 2026',
+  'Date Description Amounts deducted from your account ($) Amounts added to your account ($) Balance ($)',
+  'May 07 Opening balance 1,500.00',
+  'May 07 Direct Deposit, ACME PAYROLL PAY/PAY 2,000.00 3,500.00',
+  'May 11 INTERAC e-Transfer Sent 40.00 3,460.00',
+  'May 15 Online Bill Payment, CITY SCHOOL 900.00 2,560.00',
+  'May 19 Online Bill Payment, ROGERS BK MC 300.00 2,260.00',
+  'May 27 Online Transfer, TF 1111-222 500.00 1,760.00',
+  'May 29 Premium Plan Fee 17.95 1,742.05',
+  'Jun 01 Pre-Authorized Payment, LIFE INS CO LNS/PRE 61.66 1,680.39',
+  'Jun 02 INTERAC e-Transfer Received 25.00 1,705.39',
+  'Jun 05 Closing totals 1,819.61 2,025.00 1,705.39',
+];
+const bmo = parseStatementText(BMO_CHQ);
+t('B1 opening balance and closing totals are not rows', bmo.length === 8 && !bmo.some((x) => /balance|totals/i.test(x.merchant)),
+  bmo.map((x) => x.merchant).join(' | '));
+t('B2 direct deposit is money in', byMerchant(bmo, /Direct Deposit/)?.amount === 2000, byMerchant(bmo, /Direct Deposit/)?.amount);
+t('B3 e-transfer sent is spend', byMerchant(bmo, /Sent/)?.amount === -40);
+t('B4 online bill payment is spend', byMerchant(bmo, /CITY SCHOOL/)?.amount === -900);
+t('B5 a card bill payment leaves the account', byMerchant(bmo, /ROGERS/)?.amount === -300);
+t('B6 pre-authorized payment is spend', byMerchant(bmo, /Pre-Authorized/)?.amount === -61.66, byMerchant(bmo, /Pre-Authorized/)?.amount);
+t('B7 e-transfer received is money in', byMerchant(bmo, /Received/)?.amount === 25);
+t('B8 the amount, not the running balance', byMerchant(bmo, /Premium Plan/)?.amount === -17.95, byMerchant(bmo, /Premium/)?.amount);
+
+// Same layout with positioned cells: the column an amount sits under decides,
+// even for a word the keyword rules don't know.
+const bmoCells = [
+  { text: 'For the period ending June 5, 2026', cells: [cell(40, 'For the period ending June 5, 2026')] },
+  { text: 'Date Description Amounts deducted from your account ($) Amounts added to your account ($) Balance ($)',
+    cells: [cell(40, 'Date'), cell(90, 'Description'), cell(330, 'Amounts deducted from your account ($)'), cell(430, 'Amounts added to your account ($)'), cell(530, 'Balance ($)')] },
+  { text: 'May 20 MYSTERY SETTLEMENT 75.00 1,575.00', cells: [cell(40, 'May 20'), cell(90, 'MYSTERY SETTLEMENT'), cell(440, '75.00'), cell(540, '1,575.00')] },
+  { text: 'May 21 MYSTERY CHARGE 30.00 1,545.00', cells: [cell(40, 'May 21'), cell(90, 'MYSTERY CHARGE'), cell(340, '30.00'), cell(540, '1,545.00')] },
+];
+const bc = parseStatementText(bmoCells);
+t('B9 an amount under "added to your account" is money in', byMerchant(bc, /SETTLEMENT/)?.amount === 75, byMerchant(bc, /SETTLEMENT/)?.amount);
+t('B10 an amount under "deducted from your account" is spend', byMerchant(bc, /CHARGE/)?.amount === -30, byMerchant(bc, /CHARGE/)?.amount);
+
 console.log(`\n${pass} passed, ${fail} failed.`);
 process.exit(fail ? 1 : 0);
