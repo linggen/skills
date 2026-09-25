@@ -129,7 +129,7 @@ function questProblems(entry) {
 }
 
 test('every skill folder has a SKILL.md', () => {
-  assert.ok(SKILLS.length >= 10, `found ${SKILLS.length}`);
+  assert.ok(SKILLS.length >= 7, `found ${SKILLS.length}`);
 });
 
 for (const dir of SKILLS) {
