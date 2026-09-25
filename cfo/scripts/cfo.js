@@ -10,7 +10,8 @@ import { analyzeCsv, orientTransactions, categorize, cleanMerchant, amortize, de
 import { stampQuest } from './quest.js';
 import { toLedgerRows, mergeImport, idsToRevert, reportFromLedger, viewFromLedger, detectTransfers, ruleKey, isStatementArtifact } from './ledger.js';
 import { hashId } from './hash.js';
-import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, activeRows, seedFromLegacy, saveRegisterFile, updateJsonFile } from './lww.js';
+import { CURRENCY_CODES as ALL_CURRENCY_CODES, accountCurrency, currencyUnconfirmed, importCurrencyCells, seedAccountCurrencies, accountHints, migrateLedgerText, parseEcbXml, parseBocValet, ECB_URL, BOC_URL } from './currency.js';
+import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, activeRows, seedFromLegacy, saveRegisterFile, updateJsonFile, lockedUpdate } from './lww.js';
 import { initInvestments, renderInvestView, leaveInvestView, reportSaved, holdingsIn, proposeHoldings, chipsNow as investChipsNow } from './investments.js';
 import { reportChips, spendChips, txnChips, commitChips } from './chips.js';
 import { importStatus, importNote, pageDidLine, paymentState, PAY_STATES } from './page-did.js';
@@ -174,16 +175,55 @@ const currencySymbol = (code) => ({
   USD: '$', CAD: '$', AUD: '$', GBP: '£', EUR: '€', JPY: '¥',
   CNY: '¥', RMB: '¥', HKD: 'HK$', INR: '₹', KRW: '₩',
 }[(code || '').toUpperCase()] || '$');
-const money = (n) => `${CURRENCY}${Math.round(Number(n) || 0).toLocaleString()}`;
+// The currency the page is showing, from the report (never the setting alone):
+// one currency → its symbol, exactly as before; several → every figure names
+// its code ("CAD 3,200 · USD 450"), because "$" alone would be a lie.
+let VIEW_CUR = null;
+let MULTI_CUR = false;
+const curPrefix = (code) => (MULTI_CUR ? `${code || VIEW_CUR || CURRENCY_CODE} ` : (code ? currencySymbol(code) : CURRENCY));
+const money = (n, code) => `${curPrefix(code)}${Math.round(Number(n) || 0).toLocaleString()}`;
 // Subscription amounts are small and cents-meaningful ($16.49 → $18.99 is the
 // whole story of a price hike) — exact for those, whole dollars elsewhere.
-const moneyExact = (n) => `${CURRENCY}${(Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const moneyExact = (n, code) => `${curPrefix(code)}${(Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+// "CAD 3,200 · USD 450" — per-currency figures side by side, never summed.
+const perCurrency = (v, pick, fmt = money) => (v.currencies || []).map((c) => fmt(pick(v.by_currency?.[c] || {}) || 0, c)).join(' · ');
+const setViewCurrency = (v) => {
+  MULTI_CUR = (v?.currencies || []).length > 1;
+  VIEW_CUR = v?.currency || CURRENCY_CODE;
+  CURRENCY = currencySymbol(VIEW_CUR);
+};
 const analyzeOpts = () => ({
   categoryOverrides: CATEGORY_OVERRIDES,
   commitments: Object.keys(COMMITMENTS).length ? COMMITMENTS : null,
   marketBenchmark: MARKET,
   budgets: Object.keys(BUDGETS).length ? BUDGETS : null,
+  homeCurrency: CURRENCY_CODE,
+  fx: FX,
 });
+
+// ── Exchange rates — only when the accounts hold more than one currency.
+// ECB daily reference rates (keyless, ~30 currencies), the Bank of Canada's
+// Valet as the fallback; cached a day in data/fx.json. No user data leaves.
+let FX = null;
+const accountCurrencies = () => new Set(
+  [...new Set([...Object.keys(ACCOUNTS), ...LEDGER.map((r) => r.account)])]
+    .map((id) => accountCurrency(ACCOUNTS[id], CURRENCY_CODE).currency).filter(Boolean),
+);
+async function loadFx() {
+  try {
+    const cache = await readJson(`${DATA}/fx.json`, null);
+    if (cache && cache.rates) FX = cache;
+    if (accountCurrencies().size < 2) return;
+    if (cache && cache.fetched_at && Date.now() - new Date(cache.fetched_at).getTime() < 20 * 3600000) return;
+    let fx = parseEcbXml(await runBash(`curl -s --max-time 8 "${ECB_URL}" || true`));
+    if (!fx) fx = parseBocValet(await runBash(`curl -s --max-time 8 "${BOC_URL}" || true`));
+    if (!fx) return; // no rate today: the page shows per-currency figures and says so
+    FX = { ...fx, fetched_at: new Date().toISOString() };
+    await writeB64(`${DATA}/fx.json`, `${JSON.stringify(FX, null, 2)}\n`);
+    refreshView();
+    await rebuildReport();
+  } catch (e) { console.warn('[cfo] fx', e); }
+}
 
 // ── Market benchmark — anonymous public posted-rate averages; no user data
 // in the request. CAD: Bank of Canada 5-yr conventional; USD: Freddie Mac
@@ -644,6 +684,7 @@ function renderTxnView() {
   document.getElementById('txn-browse').hidden = !!STAGING;
   if (STAGING) { renderStaging(); return; }
   renderImportHistory();
+  renderAccounts();
   detectTransfers(LEDGER, ACCOUNTS, 5, CATEGORY_OVERRIDES);
   const cats = knownCategories();
   const f = TXN_FILTERS;
@@ -680,7 +721,7 @@ function renderTxnView() {
     // Every row is editable: a transfer can be reclassified back to real spend,
     // any row can be marked a transfer/payment. Click opens the picker combobox.
     const catCell = `<button class="cat-pick${r.transfer ? ' is-transfer' : ''}" data-id="${esc(r.id)}">${esc(lbl)}<span class="caret">▾</span></button>`;
-    return `<tr><td>${esc(r.date || '—')}</td><td class="m" title="${esc(r.merchant)}">${esc(cleanMerchant(r.merchant))}</td><td>${esc(ACCOUNTS[r.account]?.label || r.account)}</td><td class="num ${r.amount < 0 ? 'neg' : 'pos'}">${r.amount < 0 ? '−' : '+'}${moneyExact(Math.abs(r.amount))}</td><td>${catCell}</td></tr>`;
+    return `<tr><td>${esc(r.date || '—')}</td><td class="m" title="${esc(r.merchant)}">${esc(cleanMerchant(r.merchant))}</td><td>${esc(ACCOUNTS[r.account]?.label || r.account)}</td><td class="num ${r.amount < 0 ? 'neg' : 'pos'}">${r.amount < 0 ? '−' : '+'}${moneyExact(Math.abs(r.amount), r.currency)}</td><td>${catCell}</td></tr>`;
   }).join('')}</tbody></table>` : '<p class="hint">No matching transactions.</p>';
 
   document.querySelectorAll('#txn-table .cat-pick').forEach((btn) => {
@@ -779,6 +820,39 @@ async function applyRuleByMerchant(merchant, val, recompute = true) {
 
 // Import history with per-import revert. Imports made before undo existed have
 // no recorded ids — shown but marked not-revertible (honest about the limit).
+// ── Accounts: each one's currency, a plain control. An assumed or unclear
+// currency shows as such with a Confirm beside it — the one-tap fix.
+function renderAccounts() {
+  const el = document.getElementById('txn-accounts');
+  if (!el) return;
+  const ids = [...new Set([...Object.keys(ACCOUNTS), ...LEDGER.map((r) => r.account)])].filter(Boolean);
+  if (!ids.length) { el.innerHTML = ''; return; }
+  const codes = [...new Set([CURRENCY_CODE, ...ALL_CURRENCY_CODES])];
+  el.innerHTML = `
+    <h2>Accounts</h2>
+    <div class="imports">
+      ${ids.map((id) => {
+    const a = ACCOUNTS[id] || {};
+    const c = accountCurrency(a, CURRENCY_CODE);
+    const unsure = currencyUnconfirmed(c.source);
+    const n = LEDGER.filter((r) => r.account === id).length;
+    const why = c.source === 'ambiguous' ? 'unclear from the statement' : c.source === 'assumed' ? 'assumed — your home currency' : c.source === 'user' ? 'set by you' : 'from the statement';
+    return `<div class="import-row acct-row">
+        <span class="imp-file">${esc(a.label || id)}</span>
+        <span class="imp-meta">${esc(a.type || '—')} · ${n} transaction${n === 1 ? '' : 's'} · ${esc(why)}</span>
+        <span class="acct-cur-wrap">
+          <select class="acct-cur${unsure ? ' unsure' : ''}" data-id="${esc(id)}" aria-label="Currency of ${esc(a.label || id)}">
+            ${codes.map((k) => `<option ${k === c.currency ? 'selected' : ''}>${k}</option>`).join('')}
+          </select>
+          ${unsure ? `<button class="chip acct-ok" data-id="${esc(id)}" data-cur="${esc(c.currency || '')}">Confirm</button>` : ''}
+        </span>
+      </div>`;
+  }).join('')}
+    </div>`;
+  el.querySelectorAll('.acct-cur').forEach((sel) => sel.addEventListener('change', () => setAccountCurrency(sel.dataset.id, sel.value)));
+  el.querySelectorAll('.acct-ok').forEach((b) => b.addEventListener('click', () => { b.disabled = true; setAccountCurrency(b.dataset.id, b.dataset.cur); }));
+}
+
 async function renderImportHistory() {
   const el = document.getElementById('import-history');
   const log = (await readJson(`${DATA}/imports.json`, [])).slice().reverse();
@@ -860,15 +934,17 @@ async function afterCategoriesChanged() {
 // ── Import: parse → resolve account → orient signs → reconcile → render.
 async function importFile(file, fileIdx = 0, fileCount = 1, opts = {}) {
   const isPdf = /\.pdf$/i.test(file.name) || file.type === 'application/pdf';
-  let transactions, fingerprint = null, notes = [];
+  let transactions, fingerprint = null, notes = [], detected = { currency: null, ambiguous: [] };
   if (isPdf) {
     const { pdfToTransactions } = await import('./pdf-import.js');
     const res = await pdfToTransactions(await file.arrayBuffer());
     transactions = res.transactions; notes = res.notes || [];
+    detected = { currency: res.currency || null, ambiguous: res.currency_ambiguous || [] };
   } else {
     const r = analyzeCsv(await file.text(), analyzeOpts());
     if (r.errors && r.errors.length) throw new Error([...(r.notes || []), ...r.errors].join(' '));
     transactions = r.transactions; fingerprint = r.account_fingerprint; notes = r.notes || [];
+    detected = { currency: r.currency || null, ambiguous: r.currency_ambiguous || [] };
   }
   if (!transactions || !transactions.length) {
     throw new Error([...(notes.length ? notes : ['No transactions found in this file.'])].join(' '));
@@ -888,7 +964,17 @@ async function importFile(file, fileIdx = 0, fileCount = 1, opts = {}) {
   const oriented = orientTransactions(transactions, ACCOUNTS[accountId]?.type);
   if (oriented.flipped) notes.push('This statement lists charges as positive amounts — signs were flipped so spend reads correctly.');
 
-  const incoming = toLedgerRows(oriented.transactions, accountId);
+  // The account's currency: what this statement says, unless the person set
+  // it; a statement that says nothing leaves the home currency, assumed.
+  const curCells = Object.entries(importCurrencyCells(ACCOUNTS[accountId], detected, CURRENCY_CODE));
+  if (curCells.length) {
+    for (const [f, v] of curCells) EDITS.set(`acc:${accountId}|${f}`, v);
+    applyEdits();
+    await saveEdits();
+  }
+  const acctCur = accountCurrency(ACCOUNTS[accountId], CURRENCY_CODE);
+  if (acctCur.source === 'ambiguous') notes.push(`Currency unclear (${detected.ambiguous.join(' or ')}) — set it under Transactions › Accounts.`);
+  const incoming = toLedgerRows(oriented.transactions, accountId, acctCur.currency);
   // The read→merge→append runs under the import lock: the next importer re-reads
   // `existing` only after this append lands, so overlapping rows dedup instead of
   // double-appending. LEDGER is set here too, inside the serialized section.
@@ -911,6 +997,7 @@ async function importFile(file, fileIdx = 0, fileCount = 1, opts = {}) {
   await appendImport({ id: importId, file: file.name, account: accountId, added: added.length, rows: incoming.length, added_ids: added.map((r) => r.id), row_ids: incoming.map((r) => r.id), at: new Date().toISOString() });
   if (added.length) stampQuest(runBash, 'cfo-import'); // new rows landed — the quest fact (quest.js)
 
+  await loadFx(); // a second currency may have just arrived
   await rebuildReport(); // agent's full-history copy
   refreshView();
   const dup = incoming.length - added.length;
@@ -948,6 +1035,48 @@ async function undoImport(importId) {
   return true;
 }
 
+// ── Currency migration: every account gets a currency cell (detected from its
+// label and imported file names, else the home currency, assumed — seed cells
+// any real edit outranks), and every ledger row carries its account's
+// currency. Idempotent: a second run seeds nothing and rewrites no file. Row
+// ids are never touched (they hash date|merchant|amount, not currency).
+async function migrateCurrencies() {
+  const log = await readJson(`${DATA}/imports.json`, []);
+  const ids = [...new Set([...Object.keys(ACCOUNTS), ...RAW_LEDGER.map((r) => r.account)])];
+  if (seedAccountCurrencies(EDITS, ids, CURRENCY_CODE, (id) => accountHints(id, ACCOUNTS[id], log))) {
+    applyEdits();
+    await saveEdits();
+  }
+  await migrateLedgerRows();
+}
+
+async function migrateLedgerRows() {
+  const files = (await runBash(`ls "${DATA}"/ledger/*.jsonl 2>/dev/null || true`)).split('\n').map((f) => f.trim()).filter(Boolean);
+  let changed = false;
+  for (const f of files) {
+    await lockedUpdate(runBash, f, (text) => {
+      const next = migrateLedgerText(text, ACCOUNTS, CURRENCY_CODE);
+      if (next != null) changed = true;
+      return next;
+    });
+  }
+  if (changed) { RAW_LEDGER = await loadLedger(); applyEdits(); }
+}
+
+// The person's one tap: an account's currency, set by them, sticks — no
+// statement overrides it (currency.js importCurrencyCells).
+async function setAccountCurrency(id, code) {
+  EDITS.set(`acc:${id}|currency`, code);
+  EDITS.set(`acc:${id}|currency_source`, 'user');
+  applyEdits();
+  await saveEdits();
+  await migrateLedgerRows();
+  await loadFx();
+  await rebuildReport();
+  refreshView();
+  if (VIEW_MODE === 'txn') renderTxnView();
+}
+
 // Re-render the saved ledger on open, so the user lands on their picture and
 // the report survives /clear, refresh, and the 24h session rollover.
 async function resumeState() {
@@ -955,6 +1084,7 @@ async function resumeState() {
     RAW_LEDGER = await loadLedger();
     EDITS = await loadEdits(RAW_LEDGER);
     applyEdits(); // ACCOUNTS / COMMITMENTS / BUDGETS / overrides / LEDGER
+    await migrateCurrencies();
     INSIGHTS = await loadInsights();
     SUGGESTIONS = await loadSuggestions();
     ANOM_DISMISSED = new Set(await readJson(`${DATA}/anomalies-dismissed.json`, []));
@@ -1155,6 +1285,7 @@ function refreshView() {
   // Transfer detection always runs on the full ledger; the range only slices the view.
   const months = [...new Set(LEDGER.filter((r) => r.date).map((r) => r.date.slice(0, 7)))].sort();
   const view = viewFromLedger(LEDGER, ACCOUNTS, analyzeOpts(), currentRange(months));
+  setViewCurrency(view);
   LAST_VIEW = view;
   // Commitments always read the full history — a 1-month range can't see a
   // monthly cadence, so the headline card and tab would go blank on short views.
@@ -1180,7 +1311,7 @@ function refreshView() {
   const cats = view.by_category || [];
   setSecSum('breakdown', [
     cats.length ? `${cats[0].category} leads ${money(cats[0].spend)}` : '',
-    `subs ${moneyExact(view.subscription_monthly_total)}/mo`,
+    MULTI_CUR ? `subs ${perCurrency(view, (b) => b.subscription_monthly_total, moneyExact)}/mo` : `subs ${moneyExact(view.subscription_monthly_total)}/mo`,
   ].filter(Boolean).join(' · '));
   if (VIEW_MODE === 'commit') renderCommitView();
 }
@@ -1203,8 +1334,8 @@ function renderBillCal() {
   const byDay = {};
   for (const e of events) if (e.date.startsWith(CAL_MONTH)) (byDay[+e.date.slice(8)] ||= []).push(e);
 
-  const tipFor = (e) => `${e.label}\n${moneyExact(Math.abs(e.amount))} — ${e.status === 'paid' ? 'paid' : 'expected ~'}${e.date}`;
-  const chip = (e) => `<span class="bc-chip ${esc(e.kind)} ${esc(e.status)}" data-tip="${esc(tipFor(e))}">${e.status === 'paid' ? '✓' : ''}${e.amount > 0 ? '+' : ''}${money(Math.abs(e.amount))}</span>`;
+  const tipFor = (e) => `${e.label}\n${moneyExact(Math.abs(e.amount), e.currency)} — ${e.status === 'paid' ? 'paid' : 'expected ~'}${e.date}`;
+  const chip = (e) => `<span class="bc-chip ${esc(e.kind)} ${esc(e.status)}" data-tip="${esc(tipFor(e))}">${e.status === 'paid' ? '✓' : ''}${e.amount > 0 ? '+' : ''}${money(Math.abs(e.amount), e.currency)}</span>`;
   const cells = [];
   for (let i = 0; i < firstDow; i++) cells.push('<div class="bc-cell empty"></div>');
   for (let d = 1; d <= dim; d++) {
@@ -1238,6 +1369,9 @@ function renderBillCal() {
 function renderForecast(f) {
   const el = document.getElementById('forecast');
   if (!f) { el.innerHTML = ''; return; }
+  const fm = (n) => money(n, f.currency);
+  // Several currencies: this card is the lead currency's own month.
+  const only = MULTI_CUR && f.currency ? ` · ${f.currency} accounts` : '';
   const mn = `${monthName(f.month)} ${f.month.slice(0, 4)}`;
   const dom = (iso) => `~${monthName(iso.slice(0, 7))} ${+iso.slice(8)}`;
   const fixedBits = f.upcoming_fixed.slice(0, 3).map((u) => `${esc(u.merchant.slice(0, 22))} ${dom(u.expected)}`).join(' · ');
@@ -1247,13 +1381,13 @@ function renderForecast(f) {
   el.innerHTML = `
   <div class="fc-card">
     <div class="fc-head">
-      <span class="fc-title">Safe to spend — rest of ${mn}</span>
+      <span class="fc-title">Safe to spend — rest of ${mn}${esc(only)}</span>
       <span class="hint">as of ${esc(f.as_of)}</span>
     </div>
-    <div class="fc-hero ${pos ? 'pos' : 'neg'}">${pos ? '' : '−'}${money(Math.abs(f.safe_to_spend))}</div>
+    <div class="fc-hero ${pos ? 'pos' : 'neg'}">${pos ? '' : '−'}${fm(Math.abs(f.safe_to_spend))}</div>
     <div class="fc-lines">
-      <div>So far: <b>+${money(f.income_so_far)}</b> in · <b>−${money(f.spend_so_far)}</b> out${f.expected_income_total ? ` · still expecting <b class="pos-t">+${money(f.expected_income_total)}</b> income` : ''}${f.upcoming_fixed_total ? ` · <b>−${money(f.upcoming_fixed_total)}</b> fixed still due${fixedBits ? ` (${fixedBits}${more})` : ''}` : ''}</div>
-      ${f.variable.daily_avg > 0 ? `<div>Day-to-day pace <b>${money(f.variable.daily_avg)}/day</b> → on track to land at <b class="${f.on_track_net >= 0 ? 'pos-t' : 'neg-t'}">${f.on_track_net >= 0 ? '+' : '−'}${money(Math.abs(f.on_track_net))}</b> by month end</div>` : ''}
+      <div>So far: <b>+${fm(f.income_so_far)}</b> in · <b>−${fm(f.spend_so_far)}</b> out${f.expected_income_total ? ` · still expecting <b class="pos-t">+${fm(f.expected_income_total)}</b> income` : ''}${f.upcoming_fixed_total ? ` · <b>−${fm(f.upcoming_fixed_total)}</b> fixed still due${fixedBits ? ` (${fixedBits}${more})` : ''}` : ''}</div>
+      ${f.variable.daily_avg > 0 ? `<div>Day-to-day pace <b>${fm(f.variable.daily_avg)}/day</b> → on track to land at <b class="${f.on_track_net >= 0 ? 'pos-t' : 'neg-t'}">${f.on_track_net >= 0 ? '+' : '−'}${fm(Math.abs(f.on_track_net))}</b> by month end</div>` : ''}
       ${staleDays > 7 ? `<div class="hint">📥 Data ends ${esc(f.as_of)} — import fresher statements for a live number.</div>` : ''}
     </div>
   </div>`;
@@ -1264,6 +1398,9 @@ function renderForecast(f) {
 // chips + inline input write config.budgets; the agent only ever narrates.
 let BUDGET_EDIT = null; // category with the inline amount input open
 function renderBudgets(b) {
+  // Budgets are in the home currency; other currencies' spending counts
+  // toward them converted at the day's rate — said on the card.
+  const bm = (n) => money(n, b && b.currency);
   const el = document.getElementById('budgets-wrap');
   if (!LEDGER.length) { el.innerHTML = ''; return; }
   const rows = (b && b.categories) || [];
@@ -1274,6 +1411,8 @@ function renderBudgets(b) {
   const nPace = rows.filter((r) => r.state === 'pacing').length;
   const nOver = rows.filter((r) => r.state === 'over').length;
   const monthLabel = b ? `${monthName(b.month)} ${b.month.slice(0, 4)} · as of ${monthName(b.month)} ${+b.as_of.slice(8)}` : '';
+  const approxLabel = b && b.approx ? `≈ ${b.currency}, with ${b.converted_from.join(', ')} spending converted at the ${b.fx_date || ''} rate` : '';
+  const gapLabel = b && (b.fx_missing || []).length ? `${b.fx_missing.join(', ')} spending not counted — no exchange rate` : '';
 
   const editRow = (cat, val) => `
     <div class="bg-row edit" data-cat="${esc(cat)}">
@@ -1288,9 +1427,9 @@ function renderBudgets(b) {
     const pct = Math.min(100, Math.round((100 * r.mtd) / r.budget));
     const pacePct = Math.round((100 * r.projected) / r.budget);
     const clip = pacePct > 100;
-    const proj = r.state === 'over' ? `<span class="bg-proj neg">${money(r.mtd - r.budget)} over</span>`
+    const proj = r.state === 'over' ? `<span class="bg-proj neg">${bm(r.mtd - r.budget)} over</span>`
       : !b.projection_ready ? ''
-        : `<span class="bg-proj${r.state === 'pacing' ? ' warn' : ''}">→ ~${money(r.projected)} by month end</span>`;
+        : `<span class="bg-proj${r.state === 'pacing' ? ' warn' : ''}">→ ~${bm(r.projected)} by month end</span>`;
     return `
     <div class="bg-row" data-cat="${esc(r.category)}">
       <span class="bg-label">${esc(r.category)}</span>
@@ -1298,7 +1437,7 @@ function renderBudgets(b) {
         <span class="bg-fill ${stateCls[r.state]}" style="width:${pct}%"></span>
         ${b.projection_ready ? `<span class="bg-pace${clip ? ' clip' : r.state === 'pacing' ? ' warn' : ''}"${clip ? '' : ` style="left:${Math.max(2, Math.min(98, pacePct))}%"`}></span>` : ''}
       </span>
-      <span class="bg-nums"><b class="bg-amt" title="Click to edit this budget">${money(r.mtd)}</b> <span class="of">of ${money(r.budget)}</span>${proj}</span>
+      <span class="bg-nums"><b class="bg-amt" title="Click to edit this budget">${bm(r.mtd)}</b> <span class="of">of ${bm(r.budget)}</span>${proj}</span>
       <button class="bg-x" title="Remove this budget">×</button>
     </div>`;
   };
@@ -1308,6 +1447,7 @@ function renderBudgets(b) {
     <div class="bg-head">
       <span class="bg-title">Budgets</span>
       ${monthLabel ? `<span class="hint">${esc(monthLabel)}</span>` : ''}
+      ${approxLabel || gapLabel ? `<span class="approx-note">${esc([approxLabel, gapLabel].filter(Boolean).join(' · '))}</span>` : ''}
       <span class="bg-sum">${nPace ? `<span class="pill warn">${nPace} pacing over</span>` : ''}${nOver ? `<span class="pill neg">${nOver} over</span>` : ''}</span>
     </div>
     ${rows.map(row).join('')}
@@ -1344,10 +1484,11 @@ function renderBudgets(b) {
 // never from the model. Re-synced on every recompute so they track the ledger;
 // a dismissed card stays gone until its message changes (or resolves).
 function syncBudgetInsights(b) {
+  const bm = (n) => money(n, b && b.currency);
   const key = (c) => `${c.tone}|${c.title}|${c.body}`;
   const mk = (r) => (r.state === 'over'
-    ? { src: 'budget', tone: 'alert', title: `Budget: ${r.category} over`, body: `**${r.category}** is ${money(r.mtd - r.budget)} over its ${money(r.budget)} ${monthName(b.month)} budget (${money(r.mtd)} spent).`, at: new Date().toISOString() }
-    : { src: 'budget', tone: 'warn', title: `Budget: ${r.category} pacing over`, body: `**${r.category}** is pacing to ~${money(r.projected)} against its ${money(r.budget)} ${monthName(b.month)} budget.`, at: new Date().toISOString() });
+    ? { src: 'budget', tone: 'alert', title: `Budget: ${r.category} over`, body: `**${r.category}** is ${bm(r.mtd - r.budget)} over its ${bm(r.budget)} ${monthName(b.month)} budget (${bm(r.mtd)} spent).`, at: new Date().toISOString() }
+    : { src: 'budget', tone: 'warn', title: `Budget: ${r.category} pacing over`, body: `**${r.category}** is pacing to ~${bm(r.projected)} against its ${bm(r.budget)} ${monthName(b.month)} budget.`, at: new Date().toISOString() });
   let cards = ((b && b.categories) || []).filter((r) => r.state !== 'ok').map(mk);
   let dismissed = [];
   try { dismissed = JSON.parse(localStorage.getItem('cfo:budget-dismissed') || '[]'); } catch { /* ignore */ }
@@ -1378,6 +1519,7 @@ function renderCards(v, full) {
   const period = current ? `${monthName(f.month)} ${f.month.slice(0, 4)}` : rangeWords(v);
   const sub = current ? `as of ${monthName(f.month)} ${+f.as_of.slice(8)}` : `${t.months || 0} mo`;
   const net = t.net || 0;
+  if (MULTI_CUR) { renderCardsMulti(v, src, period, current, sub); return; }
   const headCards = `
     <div class="card"><div class="k">Income</div><div class="v">${money(t.income)}</div><div class="sub">${esc(period)}</div></div>
     <div class="card"><div class="k">Spend</div><div class="v">${money(t.spend)}</div><div class="sub">${current ? 'month to date' : esc(period)}</div></div>
@@ -1385,6 +1527,32 @@ function renderCards(v, full) {
   document.getElementById('cards').innerHTML = `${headCards}
     <div class="card"><div class="k">Subscriptions</div><div class="v">${moneyExact(src.subscription_monthly_total)}<span class="per">/mo</span></div><div class="sub">${src.active_subscription_count || 0} active${src.stopped_subscription_count ? ` · ${src.stopped_subscription_count} stopped` : ''}</div></div>
     <div class="card link" id="card-commit" title="Loans, insurance, bills, subscriptions — open the Commitments tab"><div class="k">Commitments</div><div class="v">${money(c.monthly_total)}<span class="per">/mo</span></div><div class="sub">${c.pct_of_income != null ? `${Math.round(c.pct_of_income)}% of income` : 'fixed monthly'}</div></div>`;
+  document.getElementById('card-commit')?.addEventListener('click', () => switchView('commit'));
+}
+
+// Several currencies: each head card leads with the ONE combined figure
+// (≈, in the currency holding the most, at the day's rate) and lists every
+// currency's own figure under it. No rate → the per-currency figures lead,
+// and the gap is said as a gap.
+function combinedLine(v, key) {
+  const cb = v.combined;
+  return cb ? `≈ ${money(cb.totals[key], cb.currency)}` : perCurrency(v, (b) => b.totals?.[key]);
+}
+function fxNote(v) {
+  if (v.combined) return `≈ at ${v.combined.fx_source || 'the'} rate of ${v.combined.fx_date || 'today'}`;
+  return (v.fx_missing || []).length ? `No exchange rate for ${v.fx_missing.join(', ')} — shown per currency` : '';
+}
+function renderCardsMulti(v, src, period, current, sub) {
+  const net = v.combined ? v.combined.totals.net : null;
+  const split = (key) => (v.combined ? `<div class="cur-split">${esc(perCurrency(v, (b) => b.totals?.[key]))}</div>` : '');
+  const head = (k, key, subText, cls = '') => `<div class="card ${cls}"><div class="k">${k}</div><div class="v">${esc(combinedLine(v, key))}</div>${split(key)}<div class="sub">${esc(subText)}</div></div>`;
+  document.getElementById('cards').innerHTML = `
+    ${head('Income', 'income', period)}
+    ${head('Spend', 'spend', current ? 'month to date' : period)}
+    ${head('Net', 'net', sub, net == null ? '' : net >= 0 ? 'pos' : 'neg')}
+    <div class="card"><div class="k">Subscriptions</div><div class="v">${esc(perCurrency(src, (b) => b.subscription_monthly_total, moneyExact))}<span class="per">/mo</span></div><div class="sub">${src.active_subscription_count || 0} active</div></div>
+    <div class="card link" id="card-commit" title="Loans, insurance, bills, subscriptions — open the Commitments tab"><div class="k">Commitments</div><div class="v">${esc(perCurrency(src, (b) => b.commitments?.monthly_total))}<span class="per">/mo</span></div><div class="sub">fixed monthly</div></div>
+    ${fxNote(v) ? `<p class="approx-note">${esc(fxNote(v))}</p>` : ''}`;
   document.getElementById('card-commit')?.addEventListener('click', () => switchView('commit'));
 }
 
@@ -1404,6 +1572,11 @@ function renderTrendCards(v) {
   const t = v.totals || {};
   const net = t.net || 0;
   const period = rangeWords(v);
+  if (MULTI_CUR) {
+    const card = (k, key, subText) => `<div class="card"><div class="k">${k}</div><div class="v">${esc(combinedLine(v, key))}</div>${v.combined ? `<div class="cur-split">${esc(perCurrency(v, (b) => b.totals?.[key]))}</div>` : ''}<div class="sub">${esc(subText)}</div></div>`;
+    document.getElementById('trend-cards').innerHTML = `${card('Spend', 'spend', period)}${card('Income', 'income', `${t.months || 0} mo`)}${card('Net', 'net', fxNote(v))}`;
+    return;
+  }
   document.getElementById('trend-cards').innerHTML = `
     <div class="card"><div class="k">Spend</div><div class="v">${money(t.spend)}</div><div class="sub">${esc(period)}</div></div>
     <div class="card"><div class="k">Income</div><div class="v">${money(t.income)}</div><div class="sub">${t.months || 0} mo</div></div>
@@ -1413,7 +1586,10 @@ function renderTrendCards(v) {
 // Hand-rolled SVG: paired spend/income bars per month + net line. No chart lib.
 function renderTrend(v) {
   const el = document.getElementById('trend');
-  const byM = v.by_month || {};
+  // Several currencies: the chart draws the combined ≈ figures when there is
+  // a rate for every currency, else the lead currency's own — and says which.
+  const byM = (MULTI_CUR && v.combined ? v.combined.by_month : v.by_month) || {};
+  const caption = MULTI_CUR ? `<p class="approx-note">${v.combined ? `≈ ${esc(v.combined.currency)}, all accounts converted at the ${esc(v.combined.fx_date || '')} rate` : `${esc(v.currency)} accounts only — ${esc(fxNote(v))}`}</p>` : '';
   const r = v.range || (v.months_available?.length
     ? { from: v.months_available[0], to: v.months_available[v.months_available.length - 1] } : null);
   if (!r) { el.innerHTML = '<p class="hint">No dated transactions yet.</p>'; return; }
@@ -1451,7 +1627,7 @@ function renderTrend(v) {
     `<circle cx="${L + groupW * (i + 0.5)}" cy="${y(d.net)}" r="3" class="netdot"/>`).join('');
   const zero = minV < 0 ? `<line x1="${L}" y1="${y(0)}" x2="${W - R}" y2="${y(0)}" class="zero"/>` : '';
 
-  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+  el.innerHTML = `${caption}<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
     ${grid}${zero}${bars}
     <polyline points="${netPts}" class="netline"/>${netDots}
   </svg>`;
@@ -1522,14 +1698,23 @@ function renderFacets(v) {
 }
 
 function renderCategories(v) {
-  const cats = v.by_category || [];
-  const maxCat = cats.length ? cats[0].spend : 1;
-  document.getElementById('cats').innerHTML = cats.length ? cats.map((c) => `
+  const bars = (cats, code) => {
+    const maxCat = cats.length ? cats[0].spend : 1;
+    return cats.map((c) => `
     <div class="bar-row" data-cat="${esc(c.category)}" title="Show these transactions">
       <span class="bar-label">${esc(c.category)}</span>
       <span class="bar-track"><span class="bar-fill${c.category === 'fees' ? ' fee' : ''}" style="width:${Math.round((100 * c.spend) / maxCat)}%"></span></span>
-      <span class="bar-val">${money(c.spend)} <em>${c.pct}%</em></span>
-    </div>`).join('') : '<p class="hint">No spending in this range.</p>';
+      <span class="bar-val">${money(c.spend, code)} <em>${c.pct}%</em></span>
+    </div>`).join('');
+  };
+  // Several currencies: one breakdown per currency — a percentage across two
+  // currencies would add them.
+  const groups = MULTI_CUR
+    ? v.currencies.map((c) => [c, v.by_currency?.[c]?.by_category || []]).filter(([, cats]) => cats.length)
+    : [[null, v.by_category || []]].filter(([, cats]) => cats.length);
+  document.getElementById('cats').innerHTML = groups.length
+    ? groups.map(([code, cats]) => `${code ? `<p class="hint bills-head">${esc(code)}</p>` : ''}${bars(cats, code)}`).join('')
+    : '<p class="hint">No spending in this range.</p>';
   document.querySelectorAll('#cats .bar-row').forEach((el) => el.addEventListener('click', () => {
     TXN_FILTERS = { month: '', account: '', category: el.dataset.cat, q: '' };
     switchView('txn'); // drill into the records behind this bar
@@ -1543,16 +1728,16 @@ function renderSubs(v) {
   document.getElementById('subs').innerHTML = subs.length ? subs.map((s) => `
     <div class="sub-row${s.stopped ? ' stopped' : ''}">
       <span class="sub-name">${esc(s.merchant)}</span>
-      <span class="sub-amt">${moneyExact(s.monthly)}/mo</span>
+      <span class="sub-amt">${moneyExact(s.monthly, s.currency)}/mo</span>
       <span class="sub-flags">${s.increased ? '<span class="flag up">↑ price up</span>' : ''}${s.stopped ? '<span class="flag stopped">⏸ stopped</span>' : ''}</span>
     </div>`).join('')
     : '<p class="hint">No recurring charges detected yet — import a few months for better detection.</p>';
   document.getElementById('bills').innerHTML = bills.length
     ? `<p class="hint bills-head">Recurring bills (not counted above)</p>` + bills.map((s) => `
-      <div class="sub-row bill"><span class="sub-name">${esc(s.merchant)}</span><span class="sub-amt">${moneyExact(s.monthly)}/mo</span></div>`).join('')
+      <div class="sub-row bill"><span class="sub-name">${esc(s.merchant)}</span><span class="sub-amt">${moneyExact(s.monthly, s.currency)}/mo</span></div>`).join('')
     : '';
   const nudge = active.length
-    ? `<p class="hint nudge">You're paying <b>${moneyExact(v.subscription_monthly_total)}/mo</b> across ${active.length} active subscription${active.length === 1 ? '' : 's'} — cancel any you don't use.</p>` : '';
+    ? `<p class="hint nudge">You're paying <b>${MULTI_CUR ? esc(perCurrency(v, (b) => b.subscription_monthly_total, moneyExact)) : moneyExact(v.subscription_monthly_total)}/mo</b> across ${active.length} active subscription${active.length === 1 ? '' : 's'} — cancel any you don't use.</p>` : '';
   document.getElementById('bills').insertAdjacentHTML('beforeend', nudge);
 }
 
@@ -1591,7 +1776,7 @@ function renderPayments(v) {
     const badge = st.badge(p), cls = st.cls;
     return `<div class="pay-row ${cls}">
       <span class="pay-name">${esc(p.label)}</span>
-      <span class="pay-last">✓ paid ${p.last_paid.date} (${moneyExact(p.last_paid.amount)})</span>
+      <span class="pay-last">✓ paid ${p.last_paid.date} (${moneyExact(p.last_paid.amount, p.currency)})</span>
       <span class="pay-badge">${esc(badge)}</span>
     </div>`;
   }).join('');
@@ -1710,7 +1895,7 @@ function commitRow(it) {
   <div class="cm-row${it.active ? '' : ' stopped'}">
     <div class="cm-main">
       <span class="cm-name">${esc(it.merchant)}</span>
-      <span class="cm-amt">${moneyExact(it.monthly)}/mo</span>
+      <span class="cm-amt">${moneyExact(it.monthly, it.currency)}/mo</span>
       <span class="cm-flags">${flags}</span>
       <span class="spacer"></span>
       ${kindSel}${toggle}
@@ -1735,14 +1920,16 @@ function renderCommitView() {
   const items = c.items || [];
   head.innerHTML = `
     <div class="cm-summary">
-      <span class="cm-total"><b>${moneyExact(c.monthly_total)}</b>/mo fixed</span>
+      <span class="cm-total"><b>${MULTI_CUR && FULL_VIEW ? esc(perCurrency(FULL_VIEW, (b) => b.commitments?.monthly_total, moneyExact)) : moneyExact(c.monthly_total)}</b>/mo fixed</span>
       ${c.pct_of_income != null ? `<span class="cm-pct">${Math.round(c.pct_of_income)}% of income</span>` : ''}
-      ${GROUP_META.filter(([g]) => c.split && c.split[g] > 0).map(([g, label]) => `<span class="chip cm-chip">${label} ${money(c.split[g])}/mo</span>`).join('')}
+      ${GROUP_META.filter(([g]) => c.split && c.split[g] > 0).map(([g, label]) => `<span class="chip cm-chip">${label} ${money(c.split[g], c.currency)}/mo</span>`).join('')}
     </div>
     <p class="hint">Fixed monthly obligations from your statements. Add balance, rate or renewal for payoff math, computed on this Mac.</p>`;
   // Loans with full terms power the cross-loan strategy panel (≥2 — a single
   // loan already has its own prepayment slider on the row).
-  const loans = items.filter((it) => it.group === 'debt' && it.active && it.balance > 0 && it.monthly > 0 && !it.payment_below_interest)
+  // One currency's loans only — a shared extra payment can't pool two currencies.
+  const loans = items.filter((it) => it.group === 'debt' && it.active && it.balance > 0 && it.monthly > 0 && !it.payment_below_interest
+    && (!it.currency || it.currency === c.currency))
     .map((it) => ({ key: it.key, merchant: it.merchant, balance: it.balance, rate_pct: it.rate_pct || 0, payment: it.monthly }));
   groupsEl.innerHTML = items.length
     ? GROUP_META.map(([g, label]) => {
@@ -1783,13 +1970,13 @@ function renderCommitView() {
 function anomalyText(a) {
   switch (a.type) {
     case 'double_charge':
-      return `<b>${esc(a.merchant)}</b> charged ${moneyExact(a.amount)} twice within days (${esc(a.prior_date)} and ${esc(a.date)}) — banks do make this error; worth a glance.`;
+      return `<b>${esc(a.merchant)}</b> charged ${moneyExact(a.amount, a.currency)} twice within days (${esc(a.prior_date)} and ${esc(a.date)}) — banks do make this error; worth a glance.`;
     case 'new_recurring':
-      return `New recurring charge: <b>${esc(a.merchant)}</b> ${moneyExact(a.amount)}/mo since ${esc(a.date)} — intentional?`;
+      return `New recurring charge: <b>${esc(a.merchant)}</b> ${moneyExact(a.amount, a.currency)}/mo since ${esc(a.date)} — intentional?`;
     case 'trial_charge':
-      return `First charge from <b>${esc(a.merchant)}</b> (${moneyExact(a.amount)} on ${esc(a.date)}) — a free trial converting?`;
+      return `First charge from <b>${esc(a.merchant)}</b> (${moneyExact(a.amount, a.currency)} on ${esc(a.date)}) — a free trial converting?`;
     case 'bill_spike':
-      return `<b>${esc(a.merchant)}</b> hit ${moneyExact(a.amount)} on ${esc(a.date)} — usually ~${moneyExact(a.usual)}.`;
+      return `<b>${esc(a.merchant)}</b> hit ${moneyExact(a.amount, a.currency)} on ${esc(a.date)} — usually ~${moneyExact(a.usual, a.currency)}.`;
     default:
       return esc(a.merchant || '');
   }
@@ -2562,6 +2749,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await resumeState();                  // land on the existing financial picture
   loadMarketRate();                     // background; re-renders/saves when it lands
+  loadFx();                             // only fetches when accounts hold 2+ currencies
   const sid = await recentSessionId();
   await mountChat(sid);                 // resume <24h chat, else fresh
   showTabSuggestions();
@@ -2613,6 +2801,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       CURRENCY = currencySymbol(CURRENCY_CODE);
       await updateConfig((cfg) => { cfg.currency = CURRENCY_CODE; });
       loadMarketRate(); // benchmark is per-currency; nulls now, refills async
+      await migrateLedgerRows(); // assumed accounts follow the home currency
+      await loadFx();
+      await rebuildReport();
       refreshView();
       if (VIEW_MODE === 'txn') renderTxnView();
     });

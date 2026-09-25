@@ -10,6 +10,7 @@
 // users never download it.
 
 import { parseDate, parseAmount, cleanMerchant } from './analyze.js';
+import { detectCurrency } from './currency.js';
 
 const MONTH_RE = '(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)';
 const DATE_RE = new RegExp(
@@ -231,5 +232,7 @@ export async function pdfToTransactions(arrayBuffer) {
   if (!txns.length) {
     notes.push('No transaction rows found. The PDF may be scanned or unusual — try the CSV export.');
   }
-  return { transactions: txns, notes };
+  // The account's currency, when the statement names it (currency.js).
+  const cur = detectCurrency(lines.map((l) => (typeof l === 'string' ? l : l.text)).join('\n'));
+  return { transactions: txns, notes, currency: cur.currency, currency_ambiguous: cur.ambiguous };
 }

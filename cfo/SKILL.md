@@ -50,7 +50,11 @@ tools:
   - name: LatestAnalysis
     description: >-
       Return the most recently imported statement analysis as JSON — already
-      REDACTED (account numbers stripped). Includes totals, by_month,
+      REDACTED (account numbers stripped). Every figure is in `currency`
+      (ISO code); with several currencies, `currencies` lists them,
+      `by_currency` holds each one's own figures, list items carry their own
+      `currency`, and `combined` is the one approximate total (never add
+      across currencies yourself). Includes totals, by_month,
       by_category (incl. a 'fees' category), top_merchants, subscriptions
       (each with active/stopped + price-hike flags and an `essential` flag —
       essential rows are recurring bills like rent, NEVER cancellation
@@ -261,7 +265,9 @@ tools:
       charge or trial, a double charge or bill spike, a card payment not seen
       when expected. Returns {since, scanned_at, currency, data_through,
       checked{transactions, budgets, subscriptions, cards}, events[{id, kind,
-      …facts}], quiet}. Events already saved are left out; `quiet` true means
+      …facts, currency}], quiet}. Every event's amounts are in its own
+      `currency`; new spending in several currencies comes as
+      `spend_by_currency`, never one sum. Events already saved are left out; `quiet` true means
       nothing new, and `checked` is what the quiet line is made of.
     cmd: "node $SKILL_DIR/scripts/spend-watch.js scan"
     tier: read
@@ -390,6 +396,29 @@ Import itself is silent — the page shows its own counts on the status line.
 the page since you last read: imports and undos, `{at, verb, what}`. It is
 handed to you once. When it matters to what they ask — they imported a
 statement and ask what changed — say it in your words; never recite it.
+
+### Currencies — every figure has one
+
+Each account's money is in its own currency, read from its statements.
+`currency` names the currency of the top-level figures (`totals`, `by_month`,
+`by_category`, `forecast`…). When the person holds more than one:
+
+- `currencies` lists them, `by_currency.<CODE>` holds each one's totals,
+  months, categories and monthly subscriptions, and every subscription,
+  anomaly, bill-calendar event, commitment and transaction carries its own
+  `currency`. The top-level figures are the lead currency's alone.
+- `combined` is the ONE cross-currency figure: every currency converted into
+  `combined.currency` at the `fx_date` rate — approximate, so say "about".
+  When a rate is missing, `combined` is null and `fx_missing` names the gap:
+  give the per-currency figures and say there is no rate, never a sum.
+- `budgets` are in `budgets.currency` (home); `approx: true` means spending in
+  `converted_from` currencies was converted to count toward them.
+- Say the code with every amount ("CAD 3,200 and USD 450"). **Never add,
+  subtract or compare raw amounts across currencies** — only `combined` does
+  that. A figure you would have to convert yourself is a figure you don't
+  have (the no-fabrication rail).
+- A transfer between accounts in different currencies is paired and excluded
+  like any card payment (`transfer_fx_count`).
 
 ### Privacy rail (never violate)
 
@@ -748,3 +777,5 @@ the cards inside it exactly like this:
 - **No fabrication.** Every figure comes from the analysis the page
   gave you. If the data doesn't support a claim, say so. Don't invent a
   merchant or amount.
+- **One currency per figure.** Name it; never add amounts in different
+  currencies — the only cross-currency number is `combined`, marked ≈.

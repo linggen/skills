@@ -1,0 +1,1262 @@
+{
+  "fx": {
+    "base": "EUR",
+    "date": "2026-09-24",
+    "source": "ECB",
+    "rates": {
+      "USD": 1.14,
+      "CAD": 1.61,
+      "JPY": 179.7,
+      "CNY": 7.66,
+      "GBP": 0.86
+    }
+  },
+  "detect": [
+    {
+      "name": "ISO code",
+      "text": "Account currency: USD\nDate Description Amount",
+      "expect": {
+        "currency": "USD",
+        "ambiguous": []
+      }
+    },
+    {
+      "name": "currency word",
+      "text": "All amounts are in Canadian dollars",
+      "expect": {
+        "currency": "CAD",
+        "ambiguous": []
+      }
+    },
+    {
+      "name": "FX detail lines never count",
+      "text": "AMAZON.COM\nUSD 12.00 @ 1.3612\nFOREIGN CURRENCY USD 30.00",
+      "expect": {
+        "currency": null,
+        "ambiguous": []
+      }
+    },
+    {
+      "name": "country-prefixed symbols",
+      "text": "Balance HK$1,200.00\nPayment HK$300.00",
+      "expect": {
+        "currency": "HKD",
+        "ambiguous": []
+      }
+    },
+    {
+      "name": "€ and £",
+      "text": "Saldo €1.234,56",
+      "expect": {
+        "currency": "EUR",
+        "ambiguous": []
+      }
+    },
+    {
+      "name": "¥ alone is ambiguous",
+      "text": "Total ¥12,000\nPaid ¥3,000",
+      "expect": {
+        "currency": null,
+        "ambiguous": [
+          "CNY",
+          "JPY"
+        ]
+      }
+    },
+    {
+      "name": "¥ with 人民币 is CNY",
+      "text": "币种: 人民币\n余额 ¥12,000",
+      "expect": {
+        "currency": "CNY",
+        "ambiguous": []
+      }
+    },
+    {
+      "name": "¥ with 円 is JPY",
+      "text": "ご利用額 ¥12,000 (円)",
+      "expect": {
+        "currency": "JPY",
+        "ambiguous": []
+      }
+    },
+    {
+      "name": "¥ with RMB is CNY",
+      "text": "RMB account ¥500",
+      "expect": {
+        "currency": "CNY",
+        "ambiguous": []
+      }
+    },
+    {
+      "name": "a tie between two codes stays open",
+      "text": "C$ 45.00 and US$ 3.00",
+      "expect": {
+        "currency": null,
+        "ambiguous": [
+          "CAD",
+          "USD"
+        ]
+      }
+    },
+    {
+      "name": "nothing decides",
+      "text": "Payment $45.00",
+      "expect": {
+        "currency": null,
+        "ambiguous": []
+      }
+    },
+    {
+      "name": "lowercase letters never read as a code",
+      "text": "Decadent cadillac eurostar",
+      "expect": {
+        "currency": null,
+        "ambiguous": []
+      }
+    }
+  ],
+  "csv": [
+    {
+      "name": "currency column",
+      "csv": "Date,Description,Amount,Currency\n2026-09-01,Cafe,-4.50,GBP\n2026-09-02,Train,-12.00,GBP\n",
+      "expect": {
+        "currency": "GBP",
+        "ambiguous": []
+      }
+    },
+    {
+      "name": "currency-named amount column",
+      "csv": "Date,Description,USD$\n9/1/2026,Cafe,-4.50\n",
+      "expect": {
+        "currency": "USD",
+        "ambiguous": []
+      }
+    },
+    {
+      "name": "header says the code",
+      "csv": "Date,Description,Amount (EUR)\n2026-09-01,Cafe,-4.50\n",
+      "expect": {
+        "currency": "EUR",
+        "ambiguous": []
+      }
+    },
+    {
+      "name": "nothing in the file",
+      "csv": "Date,Description,Amount\n2026-09-01,Cafe,-4.50\n",
+      "expect": {
+        "currency": null,
+        "ambiguous": []
+      }
+    },
+    {
+      "name": "¥ amounts",
+      "csv": "Date,Description,Amount\n2026-09-01,Cafe,¥450\n2026-09-02,Train,¥1200\n",
+      "expect": {
+        "currency": null,
+        "ambiguous": [
+          "CNY",
+          "JPY"
+        ]
+      }
+    }
+  ],
+  "import_cells": [
+    {
+      "name": "new account, statement decides",
+      "acc": null,
+      "detected": {
+        "currency": "USD",
+        "ambiguous": []
+      },
+      "home": "CAD",
+      "expect": {
+        "currency": "USD",
+        "currency_source": "detected"
+      }
+    },
+    {
+      "name": "new account, statement silent",
+      "acc": null,
+      "detected": {
+        "currency": null,
+        "ambiguous": []
+      },
+      "home": "CAD",
+      "expect": {
+        "currency": "CAD",
+        "currency_source": "assumed"
+      }
+    },
+    {
+      "name": "¥ ambiguous, home not a candidate",
+      "acc": null,
+      "detected": {
+        "currency": null,
+        "ambiguous": [
+          "CNY",
+          "JPY"
+        ]
+      },
+      "home": "CAD",
+      "expect": {
+        "currency": "CNY",
+        "currency_source": "ambiguous"
+      }
+    },
+    {
+      "name": "¥ ambiguous, home JPY",
+      "acc": null,
+      "detected": {
+        "currency": null,
+        "ambiguous": [
+          "CNY",
+          "JPY"
+        ]
+      },
+      "home": "JPY",
+      "expect": {
+        "currency": "JPY",
+        "currency_source": "ambiguous"
+      }
+    },
+    {
+      "name": "assumed upgraded by a statement that decides",
+      "acc": {
+        "currency": "CAD",
+        "currency_source": "assumed"
+      },
+      "detected": {
+        "currency": "USD",
+        "ambiguous": []
+      },
+      "home": "CAD",
+      "expect": {
+        "currency": "USD",
+        "currency_source": "detected"
+      }
+    },
+    {
+      "name": "the user's choice sticks",
+      "acc": {
+        "currency": "EUR",
+        "currency_source": "user"
+      },
+      "detected": {
+        "currency": "USD",
+        "ambiguous": []
+      },
+      "home": "CAD",
+      "expect": {}
+    },
+    {
+      "name": "first detection sticks",
+      "acc": {
+        "currency": "USD",
+        "currency_source": "detected"
+      },
+      "detected": {
+        "currency": "CAD",
+        "ambiguous": []
+      },
+      "home": "CAD",
+      "expect": {}
+    }
+  ],
+  "migrate": [
+    {
+      "name": "old ledger: accounts seeded, rows stamped, ids untouched, second run a no-op",
+      "home": "CAD",
+      "accounts": {
+        "a1": {
+          "label": "BMO USD Mastercard",
+          "type": "credit"
+        },
+        "a2": {
+          "label": "Chequing",
+          "type": "checking"
+        },
+        "a3": {
+          "label": "Card",
+          "type": "credit",
+          "currency": "EUR",
+          "currency_source": "user"
+        }
+      },
+      "imports": [
+        {
+          "account": "a2",
+          "file": "statement.csv"
+        },
+        {
+          "account": "a4",
+          "file": "HSBC HK$ savings.csv"
+        }
+      ],
+      "ledger": "{\"id\":\"r1\",\"account\":\"a1\",\"date\":\"2026-07-01\",\"merchant\":\"CAFE\",\"amount\":-5,\"category\":null,\"transfer\":false,\"transfer_pair\":null}\n{\"id\":\"r2\",\"account\":\"a2\",\"date\":\"2026-07-02\",\"merchant\":\"PAYROLL\",\"amount\":3000,\"category\":null,\"transfer\":false,\"transfer_pair\":null}\n{\"id\":\"r3\",\"account\":\"a3\",\"date\":\"2026-07-03\",\"merchant\":\"BISTRO\",\"amount\":-20,\"category\":null,\"transfer\":false,\"transfer_pair\":null}\n{\"id\":\"r4\",\"account\":\"a4\",\"date\":\"2026-07-04\",\"merchant\":\"TEA\",\"amount\":-30,\"category\":null,\"transfer\":false,\"transfer_pair\":null}\nnot json — kept as it is\n",
+      "expect": {
+        "seeded": 3,
+        "accounts": {
+          "a1": {
+            "currency": "USD",
+            "currency_source": "detected"
+          },
+          "a2": {
+            "currency": "CAD",
+            "currency_source": "assumed"
+          },
+          "a3": {
+            "currency": "EUR",
+            "currency_source": "user"
+          },
+          "a4": {
+            "currency": "HKD",
+            "currency_source": "detected"
+          }
+        },
+        "rows": {
+          "r1": "USD",
+          "r2": "CAD",
+          "r3": "EUR",
+          "r4": "HKD"
+        }
+      }
+    }
+  ],
+  "reports": [
+    {
+      "name": "USD card + CAD chequing: grouped, one ≈ line in CAD, an FX card payment paired",
+      "home": "CAD",
+      "fx": {
+        "base": "EUR",
+        "date": "2026-09-24",
+        "source": "ECB",
+        "rates": {
+          "USD": 1.14,
+          "CAD": 1.61,
+          "JPY": 179.7,
+          "CNY": 7.66,
+          "GBP": 0.86
+        }
+      },
+      "accounts": {
+        "chq": {
+          "label": "Chequing",
+          "type": "checking",
+          "currency": "CAD",
+          "currency_source": "detected"
+        },
+        "visa": {
+          "label": "US Visa",
+          "type": "credit",
+          "currency": "USD",
+          "currency_source": "detected"
+        }
+      },
+      "budgets": {
+        "dining": 300
+      },
+      "rows": [
+        {
+          "id": "c1",
+          "account": "chq",
+          "date": "2026-09-01",
+          "merchant": "PAYROLL ACME",
+          "amount": 5000,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "c2",
+          "account": "chq",
+          "date": "2026-09-03",
+          "merchant": "RENT PROPERTY MGMT",
+          "amount": -2000,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "c3",
+          "account": "chq",
+          "date": "2026-09-10",
+          "merchant": "SUSHI RESTAURANT",
+          "amount": -120,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "c4",
+          "account": "chq",
+          "date": "2026-09-15",
+          "merchant": "ONLINE PAYMENT TO VISA",
+          "amount": -700,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "v1",
+          "account": "visa",
+          "date": "2026-09-05",
+          "merchant": "AMAZON.COM",
+          "amount": -150,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "v2",
+          "account": "visa",
+          "date": "2026-09-12",
+          "merchant": "CAFE LA",
+          "amount": -80,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "v3",
+          "account": "visa",
+          "date": "2026-09-16",
+          "merchant": "PAYMENT THANK YOU",
+          "amount": 495,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "currency": "CAD",
+        "currencies": [
+          "CAD",
+          "USD"
+        ],
+        "totals": {
+          "spend": 2120,
+          "income": 5000,
+          "net": 2880
+        },
+        "by_currency": {
+          "CAD": {
+            "spend": 2120,
+            "income": 5000,
+            "net": 2880
+          },
+          "USD": {
+            "spend": 230,
+            "income": 0,
+            "net": -230
+          }
+        },
+        "combined": {
+          "currency": "CAD",
+          "totals": {
+            "spend": 2444.82,
+            "income": 5000,
+            "net": 2555.18
+          }
+        },
+        "fx_missing": [],
+        "budgets": {
+          "currency": "CAD",
+          "approx": true,
+          "converted_from": [
+            "USD"
+          ],
+          "fx_missing": [],
+          "categories": [
+            {
+              "category": "dining",
+              "mtd": 232.98,
+              "state": "pacing"
+            }
+          ]
+        },
+        "transfers": [
+          "c4",
+          "v3"
+        ],
+        "transfer_fx": [
+          "c4",
+          "v3"
+        ]
+      }
+    },
+    {
+      "name": "EUR-only user: one currency, no conversion, report as before",
+      "home": "CAD",
+      "fx": {
+        "base": "EUR",
+        "date": "2026-09-24",
+        "source": "ECB",
+        "rates": {
+          "USD": 1.14,
+          "CAD": 1.61,
+          "JPY": 179.7,
+          "CNY": 7.66,
+          "GBP": 0.86
+        }
+      },
+      "accounts": {
+        "ing": {
+          "label": "ING",
+          "type": "checking",
+          "currency": "EUR",
+          "currency_source": "detected"
+        }
+      },
+      "rows": [
+        {
+          "id": "e1",
+          "account": "ing",
+          "date": "2026-09-01",
+          "merchant": "SALARIS",
+          "amount": 3200,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "e2",
+          "account": "ing",
+          "date": "2026-09-04",
+          "merchant": "ALBERT HEIJN",
+          "amount": -84.2,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "e3",
+          "account": "ing",
+          "date": "2026-09-09",
+          "merchant": "NS REIZIGERS",
+          "amount": -23.5,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "currency": "EUR",
+        "currencies": [
+          "EUR"
+        ],
+        "totals": {
+          "spend": 107.7,
+          "income": 3200,
+          "net": 3092.3
+        },
+        "by_currency": null,
+        "combined": null,
+        "fx_missing": null,
+        "budgets": null,
+        "transfers": [],
+        "transfer_fx": []
+      }
+    },
+    {
+      "name": "lead: 100 CAD + 99 USD → CAD (the raw number)",
+      "home": "USD",
+      "fx": {
+        "base": "EUR",
+        "date": "2026-09-24",
+        "source": "ECB",
+        "rates": {
+          "USD": 1.14,
+          "CAD": 1.61,
+          "JPY": 179.7,
+          "CNY": 7.66,
+          "GBP": 0.86
+        }
+      },
+      "accounts": {
+        "a": {
+          "currency": "CAD",
+          "currency_source": "detected",
+          "type": "credit"
+        },
+        "b": {
+          "currency": "USD",
+          "currency_source": "detected",
+          "type": "credit"
+        }
+      },
+      "rows": [
+        {
+          "id": "l1",
+          "account": "a",
+          "date": "2026-09-02",
+          "merchant": "BOOKSHOP",
+          "amount": -100,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "l2",
+          "account": "b",
+          "date": "2026-09-02",
+          "merchant": "RECORD STORE",
+          "amount": -99,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "currency": "CAD",
+        "currencies": [
+          "CAD",
+          "USD"
+        ],
+        "totals": {
+          "spend": 100,
+          "income": 0,
+          "net": -100
+        },
+        "by_currency": {
+          "CAD": {
+            "spend": 100,
+            "income": 0,
+            "net": -100
+          },
+          "USD": {
+            "spend": 99,
+            "income": 0,
+            "net": -99
+          }
+        },
+        "combined": {
+          "currency": "CAD",
+          "totals": {
+            "spend": 239.82,
+            "income": 0,
+            "net": -239.82
+          }
+        },
+        "fx_missing": [],
+        "budgets": null,
+        "transfers": [],
+        "transfer_fx": []
+      }
+    },
+    {
+      "name": "lead: 100 CAD + 120 USD → USD",
+      "home": "CAD",
+      "fx": {
+        "base": "EUR",
+        "date": "2026-09-24",
+        "source": "ECB",
+        "rates": {
+          "USD": 1.14,
+          "CAD": 1.61,
+          "JPY": 179.7,
+          "CNY": 7.66,
+          "GBP": 0.86
+        }
+      },
+      "accounts": {
+        "a": {
+          "currency": "CAD",
+          "currency_source": "detected",
+          "type": "credit"
+        },
+        "b": {
+          "currency": "USD",
+          "currency_source": "detected",
+          "type": "credit"
+        }
+      },
+      "rows": [
+        {
+          "id": "m1",
+          "account": "a",
+          "date": "2026-09-02",
+          "merchant": "BOOKSHOP",
+          "amount": -100,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "m2",
+          "account": "b",
+          "date": "2026-09-02",
+          "merchant": "RECORD STORE",
+          "amount": -120,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "currency": "USD",
+        "currencies": [
+          "USD",
+          "CAD"
+        ],
+        "totals": {
+          "spend": 120,
+          "income": 0,
+          "net": -120
+        },
+        "by_currency": {
+          "USD": {
+            "spend": 120,
+            "income": 0,
+            "net": -120
+          },
+          "CAD": {
+            "spend": 100,
+            "income": 0,
+            "net": -100
+          }
+        },
+        "combined": {
+          "currency": "USD",
+          "totals": {
+            "spend": 190.81,
+            "income": 0,
+            "net": -190.81
+          }
+        },
+        "fx_missing": [],
+        "budgets": null,
+        "transfers": [],
+        "transfer_fx": []
+      }
+    },
+    {
+      "name": "lead: a tie goes to the home currency",
+      "home": "USD",
+      "fx": {
+        "base": "EUR",
+        "date": "2026-09-24",
+        "source": "ECB",
+        "rates": {
+          "USD": 1.14,
+          "CAD": 1.61,
+          "JPY": 179.7,
+          "CNY": 7.66,
+          "GBP": 0.86
+        }
+      },
+      "accounts": {
+        "a": {
+          "currency": "CAD",
+          "currency_source": "detected",
+          "type": "credit"
+        },
+        "b": {
+          "currency": "USD",
+          "currency_source": "detected",
+          "type": "credit"
+        }
+      },
+      "rows": [
+        {
+          "id": "t1",
+          "account": "a",
+          "date": "2026-09-02",
+          "merchant": "BOOKSHOP",
+          "amount": -100,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "t2",
+          "account": "b",
+          "date": "2026-09-02",
+          "merchant": "RECORD STORE",
+          "amount": -100,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "currency": "USD",
+        "currencies": [
+          "USD",
+          "CAD"
+        ],
+        "totals": {
+          "spend": 100,
+          "income": 0,
+          "net": -100
+        },
+        "by_currency": {
+          "USD": {
+            "spend": 100,
+            "income": 0,
+            "net": -100
+          },
+          "CAD": {
+            "spend": 100,
+            "income": 0,
+            "net": -100
+          }
+        },
+        "combined": {
+          "currency": "USD",
+          "totals": {
+            "spend": 170.81,
+            "income": 0,
+            "net": -170.81
+          }
+        },
+        "fx_missing": [],
+        "budgets": null,
+        "transfers": [],
+        "transfer_fx": []
+      }
+    },
+    {
+      "name": "JPY-heavy mix: the raw number leads, the ≈ line is in JPY",
+      "home": "USD",
+      "fx": {
+        "base": "EUR",
+        "date": "2026-09-24",
+        "source": "ECB",
+        "rates": {
+          "USD": 1.14,
+          "CAD": 1.61,
+          "JPY": 179.7,
+          "CNY": 7.66,
+          "GBP": 0.86
+        }
+      },
+      "accounts": {
+        "jp": {
+          "currency": "JPY",
+          "currency_source": "detected",
+          "type": "credit"
+        },
+        "us": {
+          "currency": "USD",
+          "currency_source": "detected",
+          "type": "checking"
+        }
+      },
+      "rows": [
+        {
+          "id": "j1",
+          "account": "jp",
+          "date": "2026-09-03",
+          "merchant": "LAWSON",
+          "amount": -10000,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "j2",
+          "account": "jp",
+          "date": "2026-09-06",
+          "merchant": "SUICA",
+          "amount": -2500,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "u1",
+          "account": "us",
+          "date": "2026-09-01",
+          "merchant": "PAYROLL",
+          "amount": 400,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "u2",
+          "account": "us",
+          "date": "2026-09-05",
+          "merchant": "TRADER JOE",
+          "amount": -100,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "currency": "JPY",
+        "currencies": [
+          "JPY",
+          "USD"
+        ],
+        "totals": {
+          "spend": 12500,
+          "income": 0,
+          "net": -12500
+        },
+        "by_currency": {
+          "JPY": {
+            "spend": 12500,
+            "income": 0,
+            "net": -12500
+          },
+          "USD": {
+            "spend": 100,
+            "income": 400,
+            "net": 300
+          }
+        },
+        "combined": {
+          "currency": "JPY",
+          "totals": {
+            "spend": 28263.16,
+            "income": 63052.63,
+            "net": 34789.47
+          }
+        },
+        "fx_missing": [],
+        "budgets": null,
+        "transfers": [],
+        "transfer_fx": []
+      }
+    },
+    {
+      "name": "no rate for a currency: per-currency only, the gap named",
+      "home": "CAD",
+      "fx": {
+        "base": "EUR",
+        "date": "2026-09-24",
+        "source": "ECB",
+        "rates": {
+          "USD": 1.14,
+          "CAD": 1.61,
+          "JPY": 179.7,
+          "CNY": 7.66,
+          "GBP": 0.86
+        }
+      },
+      "accounts": {
+        "a": {
+          "currency": "CAD",
+          "currency_source": "detected",
+          "type": "checking"
+        },
+        "k": {
+          "currency": "KRW",
+          "currency_source": "user",
+          "type": "credit"
+        }
+      },
+      "budgets": {
+        "groceries": 500
+      },
+      "rows": [
+        {
+          "id": "n1",
+          "account": "a",
+          "date": "2026-09-01",
+          "merchant": "NO FRILLS",
+          "amount": -90,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "n2",
+          "account": "k",
+          "date": "2026-09-02",
+          "merchant": "EMART",
+          "amount": -45000,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "currency": "KRW",
+        "currencies": [
+          "KRW",
+          "CAD"
+        ],
+        "totals": {
+          "spend": 45000,
+          "income": 0,
+          "net": -45000
+        },
+        "by_currency": {
+          "KRW": {
+            "spend": 45000,
+            "income": 0,
+            "net": -45000
+          },
+          "CAD": {
+            "spend": 90,
+            "income": 0,
+            "net": -90
+          }
+        },
+        "combined": null,
+        "fx_missing": [
+          "KRW"
+        ],
+        "budgets": {
+          "currency": "CAD",
+          "approx": false,
+          "converted_from": [],
+          "fx_missing": [
+            "KRW"
+          ],
+          "categories": [
+            {
+              "category": "groceries",
+              "mtd": 90,
+              "state": "ok"
+            }
+          ]
+        },
+        "transfers": [],
+        "transfer_fx": []
+      }
+    },
+    {
+      "name": "same-currency pairing unchanged beside an FX pair",
+      "home": "CAD",
+      "fx": {
+        "base": "EUR",
+        "date": "2026-09-24",
+        "source": "ECB",
+        "rates": {
+          "USD": 1.14,
+          "CAD": 1.61,
+          "JPY": 179.7,
+          "CNY": 7.66,
+          "GBP": 0.86
+        }
+      },
+      "accounts": {
+        "chq": {
+          "label": "Chequing",
+          "type": "checking",
+          "currency": "CAD",
+          "currency_source": "detected"
+        },
+        "mc": {
+          "label": "MC",
+          "type": "credit",
+          "currency": "CAD",
+          "currency_source": "detected"
+        },
+        "us": {
+          "label": "US card",
+          "type": "credit",
+          "currency": "USD",
+          "currency_source": "detected"
+        }
+      },
+      "rows": [
+        {
+          "id": "s1",
+          "account": "chq",
+          "date": "2026-08-10",
+          "merchant": "PAYMENT TO MASTERCARD",
+          "amount": -300,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "s2",
+          "account": "mc",
+          "date": "2026-08-11",
+          "merchant": "PAYMENT RECEIVED THANK YOU",
+          "amount": 300,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "s3",
+          "account": "chq",
+          "date": "2026-08-12",
+          "merchant": "TRANSFER TO US ACCOUNT",
+          "amount": -1400,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "s4",
+          "account": "us",
+          "date": "2026-08-13",
+          "merchant": "PAYMENT THANK YOU",
+          "amount": 1000,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "s5",
+          "account": "us",
+          "date": "2026-08-14",
+          "merchant": "HOTEL",
+          "amount": -400,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "s6",
+          "account": "chq",
+          "date": "2026-08-20",
+          "merchant": "GROCER",
+          "amount": -60,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "currency": "USD",
+        "currencies": [
+          "USD",
+          "CAD"
+        ],
+        "totals": {
+          "spend": 400,
+          "income": 0,
+          "net": -400
+        },
+        "by_currency": {
+          "USD": {
+            "spend": 400,
+            "income": 0,
+            "net": -400
+          },
+          "CAD": {
+            "spend": 60,
+            "income": 0,
+            "net": -60
+          }
+        },
+        "combined": {
+          "currency": "USD",
+          "totals": {
+            "spend": 442.48,
+            "income": 0,
+            "net": -442.48
+          }
+        },
+        "fx_missing": [],
+        "budgets": null,
+        "transfers": [
+          "s1",
+          "s2",
+          "s3",
+          "s4"
+        ],
+        "transfer_fx": [
+          "s3",
+          "s4"
+        ]
+      }
+    },
+    {
+      "name": "FX pair with no rate: date window and wording alone",
+      "home": "CAD",
+      "fx": null,
+      "accounts": {
+        "chq": {
+          "type": "checking",
+          "currency": "CAD",
+          "currency_source": "detected"
+        },
+        "us": {
+          "type": "credit",
+          "currency": "USD",
+          "currency_source": "detected"
+        }
+      },
+      "rows": [
+        {
+          "id": "w1",
+          "account": "chq",
+          "date": "2026-08-12",
+          "merchant": "ONLINE PAYMENT US CARD",
+          "amount": -1400,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "w2",
+          "account": "us",
+          "date": "2026-08-14",
+          "merchant": "PAYMENT THANK YOU",
+          "amount": 1000,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "w3",
+          "account": "us",
+          "date": "2026-08-15",
+          "merchant": "DINER",
+          "amount": -40,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "w4",
+          "account": "chq",
+          "date": "2026-08-15",
+          "merchant": "GROCER",
+          "amount": -70,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "currency": "CAD",
+        "currencies": [
+          "CAD",
+          "USD"
+        ],
+        "totals": {
+          "spend": 70,
+          "income": 0,
+          "net": -70
+        },
+        "by_currency": {
+          "CAD": {
+            "spend": 70,
+            "income": 0,
+            "net": -70
+          },
+          "USD": {
+            "spend": 40,
+            "income": 0,
+            "net": -40
+          }
+        },
+        "combined": null,
+        "fx_missing": [
+          "CAD",
+          "USD"
+        ],
+        "budgets": null,
+        "transfers": [
+          "w1",
+          "w2"
+        ],
+        "transfer_fx": [
+          "w1",
+          "w2"
+        ]
+      }
+    }
+  ]
+}

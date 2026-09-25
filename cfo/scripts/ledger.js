@@ -11,7 +11,8 @@
 //      transfer pair and exclude both from spend/income.
 
 import { txnId } from './hash.js';
-import { analyzeTransactions, keywordRe, cleanMerchant } from './analyze.js';
+import { analyzeTransactions, budgetsFor, keywordRe, cleanMerchant } from './analyze.js';
+import { accountCurrency, fxRate, leadCurrency } from './currency.js';
 
 // The key a merchant rule (`ov:<key>`) is stored under: the cleaned, lowercased
 // name — one rule covers every raw variant (store numbers, city suffixes), and
@@ -81,7 +82,10 @@ function userTransferRule(merchant, overrides) {
 // Identical rows within the statement (same date/merchant/amount — e.g. two of
 // the same coffee in one day) get an occurrence index so they don't collapse to
 // one id; statement order is stable, so re-imports reproduce the same indices.
-export function toLedgerRows(transactions, accountId) {
+//
+// `currency` is the account's (currency.js) — stored on the row, never part of
+// its id, so a row's identity is the same before and after currencies existed.
+export function toLedgerRows(transactions, accountId, currency = null) {
   const occ = new Map();
   return (transactions || []).map((t) => {
     const key = `${t.date}|${t.merchant}|${t.amount}`;
@@ -96,6 +100,7 @@ export function toLedgerRows(transactions, accountId) {
       category: t.category || null,
       transfer: false,
       transfer_pair: null,
+      ...(currency ? { currency } : {}),
     };
   });
 }
@@ -171,8 +176,15 @@ function preferredCredit(debit, candidate, best) {
   return candidate.id < best.id;
 }
 
-export function detectTransfers(rows, accountsById = {}, windowDays = 5, overrides = null) {
-  for (const r of rows) { r.transfer = false; r.transfer_pair = null; }
+// Across currencies (a USD card paid from CAD chequing) the two sides can't be
+// equal, so pass 2b pairs them by the date window and wording alone — within
+// 8% of the day's rate when there is one — and marks both `transfer_fx`.
+// Same-currency pairing (pass 2) is untouched and runs first.
+const FX_PAIR_TOLERANCE = 0.08;
+const curOf = (r) => r.currency || null;
+
+export function detectTransfers(rows, accountsById = {}, windowDays = 5, overrides = null, fx = null) {
+  for (const r of rows) { r.transfer = false; r.transfer_pair = null; if ('transfer_fx' in r) delete r.transfer_fx; }
 
   // 1. User rules.
   const locked = new Set();
@@ -198,6 +210,7 @@ export function detectTransfers(rows, accountsById = {}, windowDays = 5, overrid
     let best = null, bestGap = Infinity;
     for (const c of credits) {
       if (usedCredit.has(c.id) || c.account === d.account) continue;
+      if (curOf(c) !== curOf(d)) continue; // across currencies: pass 2b
       if (Math.abs(Math.abs(c.amount) - Math.abs(d.amount)) > 0.005) continue; // exact amount
       const gap = daysBetween(d.date, c.date);
       if (gap > windowDays) continue;
@@ -212,6 +225,40 @@ export function detectTransfers(rows, accountsById = {}, windowDays = 5, overrid
       d.transfer = best.transfer = true;
       d.transfer_pair = best.id;
       best.transfer_pair = d.id;
+      usedCredit.add(best.id);
+    }
+  }
+
+  // 2b. Cross-currency pairing: date window + both sides' wording; the amount
+  // only has to agree with the day's rate when a rate is known.
+  for (const d of debits) {
+    if (d.transfer || !curOf(d)) continue;
+    let best = null, bestDev = Infinity, bestGap = Infinity;
+    for (const c of credits) {
+      if (usedCredit.has(c.id) || c.transfer || c.account === d.account) continue;
+      if (!curOf(c) || curOf(c) === curOf(d)) continue;
+      const gap = daysBetween(d.date, c.date);
+      if (gap > windowDays) continue;
+      const looksTransfer = (PAYMENT_RE.test(d.merchant) || PAYMENT_RE.test(c.merchant))
+        && !REFUND_RE.test(c.merchant);
+      if (!looksTransfer) continue;
+      const k = fxRate(fx, curOf(d), curOf(c));
+      let dev = 1; // no rate: every candidate is equally unmeasured
+      if (k != null) {
+        const expect = Math.abs(d.amount) * k;
+        dev = expect > 0 ? Math.abs(Math.abs(c.amount) - expect) / expect : Infinity;
+        if (dev > FX_PAIR_TOLERANCE) continue;
+      }
+      if (best === null || dev < bestDev
+        || (dev === bestDev && (gap < bestGap || (gap === bestGap && preferredCredit(d, c, best))))) {
+        best = c; bestDev = dev; bestGap = gap;
+      }
+    }
+    if (best) {
+      d.transfer = best.transfer = true;
+      d.transfer_pair = best.id;
+      best.transfer_pair = d.id;
+      d.transfer_fx = best.transfer_fx = true;
       usedCredit.add(best.id);
     }
   }
@@ -281,22 +328,118 @@ export function isStatementArtifact(merchant) {
   return STATEMENT_ARTIFACT_RE.test(merchant || '');
 }
 
+// Each row's currency = its account's (currency.js accountCurrency), falling
+// back to what the row carries, then the home currency. Stamped on the row so
+// every reader (transfer pairing, the transaction list) sees the same one.
+// Rows with none of the three stay without — a ledger from before currencies,
+// read with no home set, reports exactly as it always did.
+function stampCurrencies(rows, accountsById, home) {
+  for (const r of rows) {
+    const acc = accountsById[r.account];
+    const c = acc && acc.currency ? accountCurrency(acc, home).currency : (r.currency || home || null);
+    if (c) r.currency = c;
+  }
+}
+
+const txnOf = (r) => ({ date: r.date, merchant: r.merchant, amount: r.amount, category: r.category || null });
+const tag = (list, currency) => (list || []).map((x) => ({ ...x, currency }));
+
+// What one currency's figures look like beside the others.
+function currencySlice(part) {
+  const c = part.commitments || {};
+  return {
+    totals: part.totals || { spend: 0, income: 0, net: 0, months: 0 },
+    by_month: part.by_month || {},
+    by_category: part.by_category || [],
+    by_category_monthly: part.by_category_monthly || {},
+    top_merchants: part.top_merchants || [],
+    subscription_monthly_total: part.subscription_monthly_total || 0,
+    recurring_bills_monthly_total: part.recurring_bills_monthly_total || 0,
+    active_subscription_count: part.active_subscription_count || 0,
+    stopped_subscription_count: part.stopped_subscription_count || 0,
+    commitments: { monthly_total: c.monthly_total || 0, split: c.split || null, pct_of_income: c.pct_of_income ?? null },
+    forecast: part.forecast || null,
+  };
+}
+
+// The one combined figure: every currency's totals converted into `lead` at
+// the day's rate. Approximate by construction, and null when any currency has
+// no rate — a partial sum would read as the whole.
+function combine(slices, order, fx, lead) {
+  // The currencies the rate table lacks (not the ones they'd fail to reach).
+  const missing = order.filter((c) => !fx || fxRate(fx, c, fx.base) == null);
+  if (missing.length) return { combined: null, missing };
+  const totals = { spend: 0, income: 0, net: 0 };
+  const byMonth = {};
+  const rates = {};
+  for (const c of order) {
+    const k = fxRate(fx, c, lead);
+    if (c !== lead) rates[c] = k;
+    const t = slices[c].totals;
+    totals.spend += t.spend * k; totals.income += t.income * k; totals.net += t.net * k;
+    for (const [m, v] of Object.entries(slices[c].by_month)) {
+      const b = (byMonth[m] ||= { spend: 0, income: 0, net: 0 });
+      b.spend += v.spend * k; b.income += v.income * k; b.net += v.net * k;
+    }
+  }
+  const r2 = (n) => Math.round(n * 100) / 100;
+  for (const k of Object.keys(totals)) totals[k] = r2(totals[k]);
+  const by_month = Object.fromEntries(Object.entries(byMonth).sort()
+    .map(([m, v]) => [m, { spend: r2(v.spend), income: r2(v.income), net: r2(v.net) }]));
+  return {
+    combined: { currency: lead, approx: true, fx_date: fx.date || null, fx_source: fx.source || null, rates, totals, by_month },
+    missing: [],
+  };
+}
+
+// Budgets stay in the home currency. Spending in another currency counts
+// toward them converted at the day's rate — approximate, and said so; a
+// currency with no rate is left out and named.
+function budgetsAcross(rows, budgetCur, fx, opts) {
+  if (!opts.budgets) return null;
+  const converted = new Set(), missing = new Set(), txns = [];
+  for (const r of rows) {
+    if (r.currency === budgetCur) { txns.push(txnOf(r)); continue; }
+    const k = fxRate(fx, r.currency, budgetCur);
+    if (k == null) { missing.add(r.currency); continue; }
+    converted.add(r.currency);
+    txns.push({ ...txnOf(r), amount: Math.round(r.amount * k * 100) / 100 });
+  }
+  const b = budgetsFor(txns, opts);
+  if (!b) return null;
+  return { ...b, currency: budgetCur, approx: converted.size > 0, converted_from: [...converted].sort(), fx_missing: [...missing].sort(), fx_date: converted.size ? fx.date || null : null };
+}
+
 export function viewFromLedger(rows, accountsById = {}, opts = {}, range = null) {
-  detectTransfers(rows, accountsById, opts.transferWindowDays || 5, opts.categoryOverrides || null);
-  let spendable = rows.filter((r) => !r.transfer && !isStatementArtifact(r.merchant));
+  const home = opts.homeCurrency || null;
+  const fx = opts.fx || null;
+  stampCurrencies(rows, accountsById, home);
+  detectTransfers(rows, accountsById, opts.transferWindowDays || 5, opts.categoryOverrides || null, fx);
+  const spendableAll = rows.filter((r) => !r.transfer && !isStatementArtifact(r.merchant));
+  let spendable = spendableAll;
   const months_available = [...new Set(spendable.filter((r) => r.date).map((r) => r.date.slice(0, 7)))].sort();
   if (range && range.from && range.to) {
     spendable = spendable.filter((r) => r.date && r.date.slice(0, 7) >= range.from && r.date.slice(0, 7) <= range.to);
   }
-  const report = analyzeTransactions(
-    spendable.map((r) => ({ date: r.date, merchant: r.merchant, amount: r.amount, category: r.category || null })),
-    { source: 'ledger' }, opts,
-  );
+  const currencies = [...new Set(spendableAll.map((r) => r.currency).filter(Boolean))].sort();
+  let report;
+  if (currencies.length <= 1) {
+    // One currency (or none known): the report as it always was.
+    const only = currencies[0] || home || null;
+    report = analyzeTransactions(spendable.map(txnOf), { source: 'ledger', currency: only }, opts);
+    if (currencies.length) report.currencies = currencies;
+  } else {
+    report = multiCurrencyView(spendableAll, spendable, currencies, home, fx, opts);
+  }
   report.months_available = months_available;
   report.range = range || null;
   report.transfer_count = rows.filter((r) => r.transfer).length;
+  if (rows.some((r) => r.transfer_fx)) report.transfer_fx_count = rows.filter((r) => r.transfer_fx).length;
   report.account_count = new Set(rows.map((r) => r.account)).size;
   report.payment_schedule = detectPaymentSchedule(rows, accountsById);
+  const multi = currencies.length > 1;
+  const accCur = (id) => rows.find((r) => r.account === id && r.currency)?.currency || null;
+  if (multi) report.payment_schedule = report.payment_schedule.map((p) => ({ ...p, currency: accCur(p.account) }));
 
   // Card-payment events for the bill calendar — transfers are excluded from
   // the analyze layer by design, so they join here: paid ones this month from
@@ -307,19 +450,61 @@ export function viewFromLedger(rows, accountsById = {}, opts = {}, range = null)
     const y = +month.slice(0, 4), mo = +month.slice(5, 7);
     const nextMonth = mo === 12 ? `${y + 1}-01` : `${y}-${String(mo + 1).padStart(2, '0')}`;
     const winEnd = `${nextMonth}-${String(new Date(Date.UTC(+nextMonth.slice(0, 4), +nextMonth.slice(5, 7), 0)).getUTCDate()).padStart(2, '0')}`;
+    const cur = (c) => (multi ? { currency: c } : {});
     for (const r of rows) {
       if (r.transfer && r.amount > 0 && r.date && r.date.startsWith(month)
         && (accountsById[r.account]?.type || '').toLowerCase() === 'credit') {
-        report.bill_calendar.push({ date: r.date, label: `${accountsById[r.account]?.label || r.account} payment`, amount: -Math.abs(r.amount), kind: 'card', status: 'paid' });
+        report.bill_calendar.push({ date: r.date, label: `${accountsById[r.account]?.label || r.account} payment`, amount: -Math.abs(r.amount), kind: 'card', status: 'paid', ...cur(r.currency || null) });
       }
     }
     for (const p of report.payment_schedule) {
       if (p.next_expected && p.next_expected > dataThrough && p.next_expected <= winEnd) {
-        report.bill_calendar.push({ date: p.next_expected, label: `${p.label} payment`, amount: -Math.abs(p.last_paid.amount), kind: 'card', status: 'expected' });
+        report.bill_calendar.push({ date: p.next_expected, label: `${p.label} payment`, amount: -Math.abs(p.last_paid.amount), kind: 'card', status: 'expected', ...cur(p.currency || null) });
       }
     }
     report.bill_calendar.sort((a, b) => a.date.localeCompare(b.date));
   }
+  return report;
+}
+
+// Several currencies: one analysis per currency, never a sum across them.
+// Top-level figures are the LEAD currency's (the one the combined line is in)
+// so a reader that knows nothing of currencies still gets one honest,
+// labelled set; every list item carries its own `currency`; `by_currency`
+// holds each currency's figures; `combined` is the single ≈ line.
+function multiCurrencyView(spendableAll, spendable, currencies, home, fx, opts) {
+  const activity = {};
+  for (const c of currencies) activity[c] = { amount: 0, rows: 0 };
+  // Summed in whole cents: integers add exactly in any order, and this Mac and
+  // the phone walk the ledger in different orders.
+  for (const r of spendableAll) { activity[r.currency].amount += Math.round(Math.abs(r.amount) * 100); activity[r.currency].rows++; }
+  for (const c of currencies) activity[c].amount /= 100;
+  const lead = leadCurrency(activity, fx, home);
+  const order = [lead, ...currencies.filter((c) => c !== lead)];
+  const subOpts = { ...opts, budgets: null };
+  const parts = {}, slices = {};
+  for (const c of order) {
+    parts[c] = analyzeTransactions(spendable.filter((r) => r.currency === c).map(txnOf), { source: 'ledger', currency: c }, subOpts);
+    slices[c] = currencySlice(parts[c]);
+  }
+  const main = parts[lead];
+  const report = { ...main, errors: main.errors || [] };
+  report.currency = lead;
+  report.currencies = order;
+  report.by_currency = slices;
+  const byDateDesc = (a, b) => (b.date || '').localeCompare(a.date || '');
+  report.subscriptions = order.flatMap((c) => tag(parts[c].subscriptions, c));
+  report.anomalies = order.flatMap((c) => tag(parts[c].anomalies, c)).sort(byDateDesc).slice(0, 12);
+  report.bill_calendar = order.flatMap((c) => tag(parts[c].bill_calendar, c)).sort((a, b) => a.date.localeCompare(b.date));
+  report.transactions = order.flatMap((c) => tag(parts[c].transactions, c));
+  if (main.commitments) {
+    report.commitments = { ...main.commitments, currency: lead, items: order.flatMap((c) => tag(parts[c].commitments?.items, c)) };
+  }
+  if (main.forecast) report.forecast = { ...main.forecast, currency: lead };
+  const { combined, missing } = combine(slices, order, fx, lead);
+  report.combined = combined;
+  report.fx_missing = missing;
+  report.budgets = budgetsAcross(spendable, home || lead, fx, opts);
   return report;
 }
 

@@ -8,6 +8,7 @@
 // aggregates.
 
 import { accountFingerprint } from './hash.js';
+import { csvCurrency } from './currency.js';
 
 const DATE_KEYS = ['transaction date', 'posting date', 'date posted', 'date'];
 const DESC_KEYS = ['description', 'details', 'payee', 'merchant', 'name', 'memo', 'narration'];
@@ -294,12 +295,13 @@ function ingest(text) {
   if (!rows.length) return { transactions: [], errors: ['empty CSV'] };
   const notes = [];
   const hi = findHeaderRow(rows);
-  let map, body;
+  let map, body, headersL = null;
   if (hi >= 0) {
     const headers = rows[hi];
     body = rows.slice(hi + 1);
     if (hi > 0) notes.push(`skipped ${hi} summary line(s) above the header`);
-    map = mapByHeader(headers, headers.map((h) => h.trim().toLowerCase()), body, notes);
+    headersL = headers.map((h) => h.trim().toLowerCase());
+    map = mapByHeader(headers, headersL, body, notes);
   } else {
     notes.push('no header row; columns inferred from content');
     map = inferColumns(rows, notes);
@@ -335,8 +337,10 @@ function ingest(text) {
     notes.push('All amounts share one sign — double-check that spend vs. income looks right.');
   }
   dates.sort();
+  // The statement's own currency, when it says (see currency.js).
+  const cur = csvCurrency(headersL, body, map.ai, text);
   return {
-    source: 'import.csv', currency: null, row_count: txns.length,
+    source: 'import.csv', currency: cur.currency, currency_ambiguous: cur.ambiguous, row_count: txns.length,
     date_range: { start: dates[0] || null, end: dates[dates.length - 1] || null },
     transactions: txns, redacted_columns: map.redacted,
     account_fingerprint: map.account_fingerprint, notes, errors: [],
@@ -849,6 +853,21 @@ function buildCommitments(subs, userMap, monthlyIncome, marketBenchmark) {
   };
 }
 
+// ── Budgets alone, over rows already in ONE currency — the ledger's
+// multi-currency view converts other currencies' spending into the budget
+// currency first (approximate, and marked so), then asks here.
+export function budgetsFor(txns, opts = {}) {
+  if (!txns.length || !opts.budgets) return null;
+  const overrides = opts.categoryOverrides || null;
+  txns = txns.map((t) => ({ ...t, merchant: cleanMerchant(t.merchant) }));
+  const dates = txns.filter((t) => t.date).map((t) => t.date).sort();
+  const lastDate = dates[dates.length - 1] || null;
+  const userCommitments = opts.commitments || null;
+  const kindOf = userCommitments ? (m) => (userCommitments[merchantKey(m)] || {}).kind || null : null;
+  const subs = detectSubscriptions(txns, lastDate, (m) => categorize(m, overrides), kindOf);
+  return buildBudgets(txns, subs, opts.budgets, lastDate, (t) => t.category || categorize(t.merchant, overrides));
+}
+
 // ── Public: roll up an already-parsed, redacted transactions array.
 // Shared by the CSV and PDF import paths. `meta` carries source/currency/notes.
 export function analyzeTransactions(txns, meta = {}, opts = {}) {
@@ -940,9 +959,11 @@ export function analyzeTransactions(txns, meta = {}, opts = {}) {
 // ── Public: CSV text → full redacted analysis ──
 export function analyzeCsv(text, opts = {}) {
   const ing = ingest(text);
-  return analyzeTransactions(ing.transactions, {
+  const out = analyzeTransactions(ing.transactions, {
     source: ing.source, currency: ing.currency,
     account_fingerprint: ing.account_fingerprint,
     notes: ing.notes, redacted_columns: ing.redacted_columns,
   }, opts);
+  out.currency_ambiguous = ing.currency_ambiguous || [];
+  return out;
 }

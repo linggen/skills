@@ -328,6 +328,12 @@ td.num.pos { color: var(--pos); }
 .undo-link { color: var(--accent); font-weight: 600; text-decoration: none; }
 .undo-link:hover { text-decoration: underline; }
 #import-history { margin-top: 26px; }
+#txn-accounts { margin-top: 26px; }
+.acct-cur-wrap { display: flex; gap: 6px; align-items: center; }
+.acct-cur { padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: inherit; }
+.acct-cur.unsure { border-color: var(--warn, #c98a00); }
+.cur-split { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.approx-note { color: var(--muted); font-size: 12px; }
 .imports { display: flex; flex-direction: column; gap: 6px; }
 .import-row { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center;
   background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px;

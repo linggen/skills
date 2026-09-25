@@ -28,31 +28,38 @@ export function spendEvents(report, prevThrough) {
   const events = [];
   const fresh = (r.transactions || []).filter((t) => t.date && (!prevThrough || t.date > prevThrough));
   const spent = fresh.filter((t) => t.amount < 0);
+  // Every amount names its currency; spending in two currencies is two
+  // figures (`spend_by_currency`), never one sum.
+  const cur = r.currency || null;
+  const multi = (r.currencies || []).length > 1;
   if (fresh.length) {
+    const byCur = {};
+    for (const t of spent) byCur[t.currency || cur] = round2((byCur[t.currency || cur] || 0) - t.amount);
     events.push({
       id: `txns:${through}`, kind: 'new_transactions', count: fresh.length,
-      spend: round2(-spent.reduce((a, t) => a + t.amount, 0)), from: prevThrough, through,
+      ...(multi ? { spend: null, spend_by_currency: byCur } : { spend: round2(-spent.reduce((a, t) => a + t.amount, 0)), currency: cur }),
+      from: prevThrough, through,
     });
   }
   const b = r.budgets;
   for (const c of b?.categories || []) {
     if (c.state !== 'over') continue;
-    events.push({ id: `budget:${b.month}:${c.category}`, kind: 'budget_over', category: c.category, budget: c.budget, mtd: c.mtd, projected: b.projection_ready ? c.projected : null, month: b.month });
+    events.push({ id: `budget:${b.month}:${c.category}`, kind: 'budget_over', category: c.category, budget: c.budget, mtd: c.mtd, projected: b.projection_ready ? c.projected : null, month: b.month, currency: b.currency || cur, ...(b.approx ? { approx: true } : {}) });
   }
   for (const s of r.subscriptions || []) {
     if (!s.active || s.essential || !s.increased) continue;
-    events.push({ id: `hike:${s.merchant}:${s.last_amount}`, kind: 'price_hike', merchant: s.merchant, from_amount: s.prior_amount, to_amount: s.last_amount, increase: s.increase_amount });
+    events.push({ id: `hike:${s.merchant}:${s.last_amount}`, kind: 'price_hike', merchant: s.merchant, from_amount: s.prior_amount, to_amount: s.last_amount, increase: s.increase_amount, currency: s.currency || cur });
   }
   const ANOMALY_KIND = { new_recurring: 'new_subscription', trial_charge: 'trial_charge', double_charge: 'double_charge', bill_spike: 'bill_spike' };
   for (const a of r.anomalies || []) {
     const kind = ANOMALY_KIND[a.type];
     if (!kind) continue;
     const { id, type, ...facts } = a;
-    events.push({ id: `anomaly:${id}`, kind, ...facts });
+    events.push({ id: `anomaly:${id}`, kind, ...facts, currency: a.currency || cur });
   }
   for (const p of r.payment_schedule || []) {
     if (!p.missed_in_data) continue;
-    events.push({ id: `missed:${p.account}:${p.next_expected}`, kind: 'missed_payment', card: p.label, expected: p.next_expected, last_paid: p.last_paid });
+    events.push({ id: `missed:${p.account}:${p.next_expected}`, kind: 'missed_payment', card: p.label, expected: p.next_expected, last_paid: p.last_paid, currency: p.currency || cur });
   }
   return { through, events };
 }

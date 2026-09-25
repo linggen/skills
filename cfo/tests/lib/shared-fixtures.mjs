@@ -16,7 +16,7 @@ export const LIST = join(ROOT, 'shared.sha256');
 /// Relative paths of every shared fixture, sorted.
 export function sharedFiles() {
   const pdf = readdirSync(join(ROOT, 'pdf')).filter((f) => /\.(pdf|truth\.json)$/.test(f)).map((f) => `pdf/${f}`);
-  return [...pdf, 'compose/cases.json'].sort();
+  return [...pdf, 'compose/cases.json', 'currency/cases.json'].sort();
 }
 
 /// The list as `shasum -a 256` writes it: "<hex>  <path>" per line.

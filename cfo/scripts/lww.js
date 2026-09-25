@@ -16,7 +16,7 @@
 //   ov:<keyword>       a merchant-keyword rule -> category | 'transfer' | 'income'
 //   bud:<category>     monthly cap
 //   com:<key>|<field>  a commitment term (balance, rate_pct, renewal_date, kind)
-//   acc:<id>|<field>   an account field (label, type)
+//   acc:<id>|<field>   an account field (label, type, currency, currency_source)
 //   del:<txnId>        true = reverted out of the report (rows are grow-only)
 //   inv:<symbol>|<field>  an investment: watch (true), shares, avg_cost,
 //                      account, rank (its place in the list, lower = higher)
@@ -71,6 +71,12 @@ export class Register {
 
   remove(key) {
     this.set(key, null);
+  }
+
+  /// A default, not an edit: written at ts 1 and only when the key was never
+  /// held, so any real write on either device outranks it. Migrations use it.
+  seed(key, value) {
+    if (!this.cells.has(key)) this.cells.set(key, new LwwEntry(value === undefined ? null : value, 1, this.deviceId));
   }
 
   /// The live value, or undefined when the key was never written here. A
@@ -153,7 +159,7 @@ export const budgetsOf = (reg) => Object.fromEntries(reg.entries('bud:'));
 /// merchant key -> {balance, rate_pct, renewal_date, kind}
 export const commitmentsOf = (reg) => reg.grouped('com:');
 
-/// account id -> {label, type}
+/// account id -> {label, type, currency, currency_source}
 export const accountsOf = (reg) => reg.grouped('acc:');
 
 /// symbol -> {watch, shares, avg_cost, account, rank}. A symbol left with only
