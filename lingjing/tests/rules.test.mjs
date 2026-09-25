@@ -365,6 +365,7 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   assert.equal(askOf(content, plain, ctx(), { director: true }), null);
   assert.ok(askOf(content, plain, ctx({ said: '接下来去哪？' }), { director: true })?.options.some(x => x.move), 'asked in words, the roads are asked');
   assert.equal(askOf(content, plain, ctx({ said: '[scene] arrived' }), { director: true }), null, 'a page report is not his word');
+  assert.equal(askOf(content, plain, ctx({ said: '起一卦' }), { director: true }), null, 'any other word is not asking the way');
   // …and a stage holding something out still keeps the chat quiet, even asked
   const shop = { ...arrived.state, place: 'pengcheng' };
   assert.equal(askOf(content, shop, ctx({ said: '去哪' }), { director: true }), null, 'a 坊市 is on the stage — the chat keeps quiet');

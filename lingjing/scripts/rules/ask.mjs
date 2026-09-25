@@ -118,8 +118,10 @@ export function askOf(content, state, ctx, result = {}, ungated = false) {
   return { header: header(placeBrief(content, state, ctx.now)?.name), question, options: FILLERS[zh ? 'zh' : 'en'] };
 }
 
-/* Words he typed — not a page report (`[scene] …`, `[HIDDEN] …`). */
-const typed = said => { const w = String(said ?? '').trim(); return Boolean(w) && !w.startsWith('['); };
+/* He asks in words where to go or what now — not any line he types (起一卦
+   refused brought 何去何从 back, 2026-09-25), and never a page report. */
+const WAY_ON = /去哪|往哪|何去何从|下一步|接下来|怎么走|干点啥|做什么|做点什么|有什么路|where (to|now|next)|what now|what next|which way/i;
+const typed = said => { const w = String(said ?? '').trim(); return Boolean(w) && !w.startsWith('[') && WAY_ON.test(w); };
 /* Stuck: nothing on the page leads on — no story road, no work, nothing
    held out here. Then, and only then, the chat puts the question. */
 const stuck = (content, state, ctx) => !waypointOf(content, state, ctx)?.place && !workOf(content, state, ctx) && !stageHeld(content, state, ctx);
