@@ -4,7 +4,9 @@
 // pdf.js and the parser exactly as an import does, each checked row by row
 // against its `.truth.json`; then the ledger's transfer detection runs over
 // all the accounts together. The phone is held to the same truth by
-// linggen-mobile test/cfo/pdf_e2e_test.dart.
+// linggen-mobile test/cfo/pdf_e2e_test.dart. This repo is the source of those
+// files: tests/fixtures/shared.sha256 lists them, and the phone's CI fails when
+// its copies differ (see tests/lib/shared-fixtures.mjs).
 //
 //   node tests/run-pdf-e2e.mjs
 
