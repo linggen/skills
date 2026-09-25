@@ -1,0 +1,1297 @@
+[
+  {
+    "name": "empty report",
+    "report": {},
+    "layout": {},
+    "expect": {
+      "brief": false,
+      "focus": null,
+      "attention": [],
+      "more": 0
+    }
+  },
+  {
+    "name": "urgent fills the room: brief + two most urgent",
+    "report": {
+      "date_range": {
+        "start": "2026-07-01",
+        "end": "2026-09-20"
+      },
+      "by_month": {
+        "2026-07": {
+          "spend": 3000,
+          "income": 4000
+        },
+        "2026-08": {
+          "spend": 3400,
+          "income": 4000
+        },
+        "2026-09": {
+          "spend": 2100,
+          "income": 2000
+        }
+      },
+      "budgets": {
+        "month": "2026-09",
+        "as_of": "2026-09-20",
+        "projection_ready": true,
+        "categories": [
+          {
+            "category": "dining",
+            "budget": 400,
+            "mtd": 430,
+            "projected": 610,
+            "state": "over"
+          },
+          {
+            "category": "shopping",
+            "budget": 300,
+            "mtd": 390.5,
+            "projected": 500,
+            "state": "over"
+          },
+          {
+            "category": "groceries",
+            "budget": 600,
+            "mtd": 200,
+            "projected": 450,
+            "state": "ok"
+          }
+        ]
+      },
+      "subscriptions": [
+        {
+          "merchant": "NETFLIX",
+          "category": "subscriptions",
+          "essential": false,
+          "monthly": 18.99,
+          "first_amount": 16.49,
+          "last_amount": 18.99,
+          "prior_amount": 16.49,
+          "increased": true,
+          "increase_amount": 2.5,
+          "active": true,
+          "stopped": false
+        },
+        {
+          "merchant": "SPOTIFY",
+          "category": "subscriptions",
+          "essential": false,
+          "monthly": 11.99,
+          "first_amount": 11.99,
+          "last_amount": 11.99,
+          "prior_amount": null,
+          "increased": false,
+          "increase_amount": 0,
+          "active": true,
+          "stopped": false
+        },
+        {
+          "merchant": "RENT",
+          "category": "housing",
+          "essential": true,
+          "monthly": 1900,
+          "first_amount": 1800,
+          "last_amount": 1900,
+          "prior_amount": 1800,
+          "increased": true,
+          "increase_amount": 100,
+          "active": true,
+          "stopped": false
+        }
+      ],
+      "anomalies": [
+        {
+          "type": "double_charge",
+          "merchant": "HRM REC",
+          "amount": 117.1,
+          "date": "2026-08-26",
+          "prior_date": "2026-08-26",
+          "id": "double|HRM REC|117.10|2026-08-26"
+        },
+        {
+          "type": "new_recurring",
+          "merchant": "GYM",
+          "amount": 49,
+          "date": "2026-09-15",
+          "id": "new|GYM"
+        },
+        {
+          "type": "bill_spike",
+          "merchant": "HYDRO",
+          "amount": 210,
+          "date": "2026-09-09",
+          "id": "spike|HYDRO"
+        }
+      ],
+      "payment_schedule": [
+        {
+          "account": "acct_a",
+          "label": "Visa",
+          "last_paid": {
+            "date": "2026-08-12",
+            "amount": 900
+          },
+          "cadence_days": 30,
+          "next_expected": "2026-09-11",
+          "data_through": "2026-09-20",
+          "missed_in_data": true
+        },
+        {
+          "account": "acct_b",
+          "label": "Amex",
+          "last_paid": {
+            "date": "2026-09-01",
+            "amount": 300
+          },
+          "cadence_days": 30,
+          "next_expected": "2026-10-01",
+          "data_through": "2026-09-20",
+          "missed_in_data": false
+        }
+      ],
+      "commitments": {
+        "monthly_total": 2100,
+        "pct_of_income": 52.5,
+        "split": {},
+        "items": [
+          {
+            "merchant": "MORTGAGE",
+            "key": "mortgage",
+            "kind": "loan:home",
+            "group": "debt",
+            "monthly": 2100,
+            "cadence_days": 30,
+            "last_date": "2026-09-02",
+            "active": true
+          }
+        ]
+      }
+    },
+    "layout": {},
+    "expect": {
+      "brief": true,
+      "focus": null,
+      "attention": [
+        "anomaly:bill_spike:HYDRO:2026-09-09",
+        "anomaly:double_charge:HRM REC:2026-08-26"
+      ],
+      "more": 4
+    }
+  },
+  {
+    "name": "their pin keeps a slot",
+    "report": {
+      "date_range": {
+        "start": "2026-07-01",
+        "end": "2026-09-20"
+      },
+      "by_month": {
+        "2026-07": {
+          "spend": 3000,
+          "income": 4000
+        },
+        "2026-08": {
+          "spend": 3400,
+          "income": 4000
+        },
+        "2026-09": {
+          "spend": 2100,
+          "income": 2000
+        }
+      },
+      "budgets": {
+        "month": "2026-09",
+        "as_of": "2026-09-20",
+        "projection_ready": true,
+        "categories": [
+          {
+            "category": "dining",
+            "budget": 400,
+            "mtd": 430,
+            "projected": 610,
+            "state": "over"
+          },
+          {
+            "category": "shopping",
+            "budget": 300,
+            "mtd": 390.5,
+            "projected": 500,
+            "state": "over"
+          },
+          {
+            "category": "groceries",
+            "budget": 600,
+            "mtd": 200,
+            "projected": 450,
+            "state": "ok"
+          }
+        ]
+      },
+      "subscriptions": [
+        {
+          "merchant": "NETFLIX",
+          "category": "subscriptions",
+          "essential": false,
+          "monthly": 18.99,
+          "first_amount": 16.49,
+          "last_amount": 18.99,
+          "prior_amount": 16.49,
+          "increased": true,
+          "increase_amount": 2.5,
+          "active": true,
+          "stopped": false
+        },
+        {
+          "merchant": "SPOTIFY",
+          "category": "subscriptions",
+          "essential": false,
+          "monthly": 11.99,
+          "first_amount": 11.99,
+          "last_amount": 11.99,
+          "prior_amount": null,
+          "increased": false,
+          "increase_amount": 0,
+          "active": true,
+          "stopped": false
+        },
+        {
+          "merchant": "RENT",
+          "category": "housing",
+          "essential": true,
+          "monthly": 1900,
+          "first_amount": 1800,
+          "last_amount": 1900,
+          "prior_amount": 1800,
+          "increased": true,
+          "increase_amount": 100,
+          "active": true,
+          "stopped": false
+        }
+      ],
+      "anomalies": [
+        {
+          "type": "double_charge",
+          "merchant": "HRM REC",
+          "amount": 117.1,
+          "date": "2026-08-26",
+          "prior_date": "2026-08-26",
+          "id": "double|HRM REC|117.10|2026-08-26"
+        },
+        {
+          "type": "new_recurring",
+          "merchant": "GYM",
+          "amount": 49,
+          "date": "2026-09-15",
+          "id": "new|GYM"
+        },
+        {
+          "type": "bill_spike",
+          "merchant": "HYDRO",
+          "amount": 210,
+          "date": "2026-09-09",
+          "id": "spike|HYDRO"
+        }
+      ],
+      "payment_schedule": [
+        {
+          "account": "acct_a",
+          "label": "Visa",
+          "last_paid": {
+            "date": "2026-08-12",
+            "amount": 900
+          },
+          "cadence_days": 30,
+          "next_expected": "2026-09-11",
+          "data_through": "2026-09-20",
+          "missed_in_data": true
+        },
+        {
+          "account": "acct_b",
+          "label": "Amex",
+          "last_paid": {
+            "date": "2026-09-01",
+            "amount": 300
+          },
+          "cadence_days": 30,
+          "next_expected": "2026-10-01",
+          "data_through": "2026-09-20",
+          "missed_in_data": false
+        }
+      ],
+      "commitments": {
+        "monthly_total": 2100,
+        "pct_of_income": 52.5,
+        "split": {},
+        "items": [
+          {
+            "merchant": "MORTGAGE",
+            "key": "mortgage",
+            "kind": "loan:home",
+            "group": "debt",
+            "monthly": 2100,
+            "cadence_days": 30,
+            "last_date": "2026-09-02",
+            "active": true
+          }
+        ]
+      }
+    },
+    "layout": {
+      "pin": "subscriptions"
+    },
+    "expect": {
+      "brief": true,
+      "focus": {
+        "id": "subscriptions",
+        "by": "you"
+      },
+      "attention": [
+        "anomaly:bill_spike:HYDRO:2026-09-09"
+      ],
+      "more": 5
+    }
+  },
+  {
+    "name": "Ling's lead waits behind urgency",
+    "report": {
+      "date_range": {
+        "start": "2026-07-01",
+        "end": "2026-09-20"
+      },
+      "by_month": {
+        "2026-07": {
+          "spend": 3000,
+          "income": 4000
+        },
+        "2026-08": {
+          "spend": 3400,
+          "income": 4000
+        },
+        "2026-09": {
+          "spend": 2100,
+          "income": 2000
+        }
+      },
+      "budgets": {
+        "month": "2026-09",
+        "as_of": "2026-09-20",
+        "projection_ready": true,
+        "categories": [
+          {
+            "category": "dining",
+            "budget": 400,
+            "mtd": 430,
+            "projected": 610,
+            "state": "over"
+          },
+          {
+            "category": "shopping",
+            "budget": 300,
+            "mtd": 390.5,
+            "projected": 500,
+            "state": "over"
+          },
+          {
+            "category": "groceries",
+            "budget": 600,
+            "mtd": 200,
+            "projected": 450,
+            "state": "ok"
+          }
+        ]
+      },
+      "subscriptions": [
+        {
+          "merchant": "NETFLIX",
+          "category": "subscriptions",
+          "essential": false,
+          "monthly": 18.99,
+          "first_amount": 16.49,
+          "last_amount": 18.99,
+          "prior_amount": 16.49,
+          "increased": true,
+          "increase_amount": 2.5,
+          "active": true,
+          "stopped": false
+        },
+        {
+          "merchant": "SPOTIFY",
+          "category": "subscriptions",
+          "essential": false,
+          "monthly": 11.99,
+          "first_amount": 11.99,
+          "last_amount": 11.99,
+          "prior_amount": null,
+          "increased": false,
+          "increase_amount": 0,
+          "active": true,
+          "stopped": false
+        },
+        {
+          "merchant": "RENT",
+          "category": "housing",
+          "essential": true,
+          "monthly": 1900,
+          "first_amount": 1800,
+          "last_amount": 1900,
+          "prior_amount": 1800,
+          "increased": true,
+          "increase_amount": 100,
+          "active": true,
+          "stopped": false
+        }
+      ],
+      "anomalies": [
+        {
+          "type": "double_charge",
+          "merchant": "HRM REC",
+          "amount": 117.1,
+          "date": "2026-08-26",
+          "prior_date": "2026-08-26",
+          "id": "double|HRM REC|117.10|2026-08-26"
+        },
+        {
+          "type": "new_recurring",
+          "merchant": "GYM",
+          "amount": 49,
+          "date": "2026-09-15",
+          "id": "new|GYM"
+        },
+        {
+          "type": "bill_spike",
+          "merchant": "HYDRO",
+          "amount": 210,
+          "date": "2026-09-09",
+          "id": "spike|HYDRO"
+        }
+      ],
+      "payment_schedule": [
+        {
+          "account": "acct_a",
+          "label": "Visa",
+          "last_paid": {
+            "date": "2026-08-12",
+            "amount": 900
+          },
+          "cadence_days": 30,
+          "next_expected": "2026-09-11",
+          "data_through": "2026-09-20",
+          "missed_in_data": true
+        },
+        {
+          "account": "acct_b",
+          "label": "Amex",
+          "last_paid": {
+            "date": "2026-09-01",
+            "amount": 300
+          },
+          "cadence_days": 30,
+          "next_expected": "2026-10-01",
+          "data_through": "2026-09-20",
+          "missed_in_data": false
+        }
+      ],
+      "commitments": {
+        "monthly_total": 2100,
+        "pct_of_income": 52.5,
+        "split": {},
+        "items": [
+          {
+            "merchant": "MORTGAGE",
+            "key": "mortgage",
+            "kind": "loan:home",
+            "group": "debt",
+            "monthly": 2100,
+            "cadence_days": 30,
+            "last_date": "2026-09-02",
+            "active": true
+          }
+        ]
+      }
+    },
+    "layout": {
+      "focus": {
+        "id": "trends",
+        "why": "x"
+      }
+    },
+    "expect": {
+      "brief": true,
+      "focus": null,
+      "attention": [
+        "anomaly:bill_spike:HYDRO:2026-09-09",
+        "anomaly:double_charge:HRM REC:2026-08-26"
+      ],
+      "more": 4
+    }
+  },
+  {
+    "name": "hides free the room",
+    "report": {
+      "date_range": {
+        "start": "2026-07-01",
+        "end": "2026-09-20"
+      },
+      "by_month": {
+        "2026-07": {
+          "spend": 3000,
+          "income": 4000
+        },
+        "2026-08": {
+          "spend": 3400,
+          "income": 4000
+        },
+        "2026-09": {
+          "spend": 2100,
+          "income": 2000
+        }
+      },
+      "budgets": {
+        "month": "2026-09",
+        "as_of": "2026-09-20",
+        "projection_ready": true,
+        "categories": [
+          {
+            "category": "dining",
+            "budget": 400,
+            "mtd": 430,
+            "projected": 610,
+            "state": "over"
+          },
+          {
+            "category": "shopping",
+            "budget": 300,
+            "mtd": 390.5,
+            "projected": 500,
+            "state": "over"
+          },
+          {
+            "category": "groceries",
+            "budget": 600,
+            "mtd": 200,
+            "projected": 450,
+            "state": "ok"
+          }
+        ]
+      },
+      "subscriptions": [
+        {
+          "merchant": "NETFLIX",
+          "category": "subscriptions",
+          "essential": false,
+          "monthly": 18.99,
+          "first_amount": 16.49,
+          "last_amount": 18.99,
+          "prior_amount": 16.49,
+          "increased": true,
+          "increase_amount": 2.5,
+          "active": true,
+          "stopped": false
+        },
+        {
+          "merchant": "SPOTIFY",
+          "category": "subscriptions",
+          "essential": false,
+          "monthly": 11.99,
+          "first_amount": 11.99,
+          "last_amount": 11.99,
+          "prior_amount": null,
+          "increased": false,
+          "increase_amount": 0,
+          "active": true,
+          "stopped": false
+        },
+        {
+          "merchant": "RENT",
+          "category": "housing",
+          "essential": true,
+          "monthly": 1900,
+          "first_amount": 1800,
+          "last_amount": 1900,
+          "prior_amount": 1800,
+          "increased": true,
+          "increase_amount": 100,
+          "active": true,
+          "stopped": false
+        }
+      ],
+      "anomalies": [
+        {
+          "type": "double_charge",
+          "merchant": "HRM REC",
+          "amount": 117.1,
+          "date": "2026-08-26",
+          "prior_date": "2026-08-26",
+          "id": "double|HRM REC|117.10|2026-08-26"
+        },
+        {
+          "type": "new_recurring",
+          "merchant": "GYM",
+          "amount": 49,
+          "date": "2026-09-15",
+          "id": "new|GYM"
+        },
+        {
+          "type": "bill_spike",
+          "merchant": "HYDRO",
+          "amount": 210,
+          "date": "2026-09-09",
+          "id": "spike|HYDRO"
+        }
+      ],
+      "payment_schedule": [
+        {
+          "account": "acct_a",
+          "label": "Visa",
+          "last_paid": {
+            "date": "2026-08-12",
+            "amount": 900
+          },
+          "cadence_days": 30,
+          "next_expected": "2026-09-11",
+          "data_through": "2026-09-20",
+          "missed_in_data": true
+        },
+        {
+          "account": "acct_b",
+          "label": "Amex",
+          "last_paid": {
+            "date": "2026-09-01",
+            "amount": 300
+          },
+          "cadence_days": 30,
+          "next_expected": "2026-10-01",
+          "data_through": "2026-09-20",
+          "missed_in_data": false
+        }
+      ],
+      "commitments": {
+        "monthly_total": 2100,
+        "pct_of_income": 52.5,
+        "split": {},
+        "items": [
+          {
+            "merchant": "MORTGAGE",
+            "key": "mortgage",
+            "kind": "loan:home",
+            "group": "debt",
+            "monthly": 2100,
+            "cadence_days": 30,
+            "last_date": "2026-09-02",
+            "active": true
+          }
+        ]
+      }
+    },
+    "layout": {
+      "hides": [
+        "anomaly:bill_spike:HYDRO:2026-09-09",
+        "anomaly:double_charge:HRM REC:2026-08-26",
+        "budget:2026-09:dining",
+        "budget:2026-09:shopping",
+        "missed:acct_a:2026-09-11"
+      ],
+      "focus": {
+        "id": "trends",
+        "why": "x"
+      }
+    },
+    "expect": {
+      "brief": true,
+      "focus": {
+        "id": "trends",
+        "by": "ling"
+      },
+      "attention": [
+        "hike:NETFLIX:1899"
+      ],
+      "more": 0
+    }
+  },
+  {
+    "name": "quiet month: rules lead with budgets",
+    "report": {
+      "date_range": {
+        "start": "2026-07-01",
+        "end": "2026-09-20"
+      },
+      "by_month": {
+        "2026-07": {
+          "spend": 3000,
+          "income": 4000
+        },
+        "2026-08": {
+          "spend": 3400,
+          "income": 4000
+        },
+        "2026-09": {
+          "spend": 2100,
+          "income": 2000
+        }
+      },
+      "budgets": {
+        "month": "2026-09",
+        "as_of": "2026-09-20",
+        "projection_ready": true,
+        "categories": [
+          {
+            "category": "groceries",
+            "budget": 600,
+            "mtd": 200,
+            "projected": 450,
+            "state": "ok"
+          }
+        ]
+      },
+      "subscriptions": [
+        {
+          "merchant": "SPOTIFY",
+          "category": "subscriptions",
+          "essential": false,
+          "monthly": 11.99,
+          "first_amount": 11.99,
+          "last_amount": 11.99,
+          "prior_amount": null,
+          "increased": false,
+          "increase_amount": 0,
+          "active": true,
+          "stopped": false
+        }
+      ],
+      "anomalies": [
+        {
+          "type": "new_recurring",
+          "merchant": "GYM",
+          "amount": 49,
+          "date": "2026-09-15",
+          "id": "new|GYM"
+        }
+      ],
+      "payment_schedule": [
+        {
+          "account": "acct_b",
+          "label": "Amex",
+          "last_paid": {
+            "date": "2026-09-01",
+            "amount": 300
+          },
+          "cadence_days": 30,
+          "next_expected": "2026-10-01",
+          "data_through": "2026-09-20",
+          "missed_in_data": false
+        }
+      ],
+      "commitments": {
+        "monthly_total": 2100,
+        "pct_of_income": 52.5,
+        "split": {},
+        "items": [
+          {
+            "merchant": "MORTGAGE",
+            "key": "mortgage",
+            "kind": "loan:home",
+            "group": "debt",
+            "monthly": 2100,
+            "cadence_days": 30,
+            "last_date": "2026-09-02",
+            "active": true
+          }
+        ]
+      }
+    },
+    "layout": {},
+    "expect": {
+      "brief": true,
+      "focus": {
+        "id": "budgets",
+        "by": "rules"
+      },
+      "attention": [],
+      "more": 0
+    }
+  },
+  {
+    "name": "quiet month: Ling's lead",
+    "report": {
+      "date_range": {
+        "start": "2026-07-01",
+        "end": "2026-09-20"
+      },
+      "by_month": {
+        "2026-07": {
+          "spend": 3000,
+          "income": 4000
+        },
+        "2026-08": {
+          "spend": 3400,
+          "income": 4000
+        },
+        "2026-09": {
+          "spend": 2100,
+          "income": 2000
+        }
+      },
+      "budgets": {
+        "month": "2026-09",
+        "as_of": "2026-09-20",
+        "projection_ready": true,
+        "categories": [
+          {
+            "category": "groceries",
+            "budget": 600,
+            "mtd": 200,
+            "projected": 450,
+            "state": "ok"
+          }
+        ]
+      },
+      "subscriptions": [
+        {
+          "merchant": "SPOTIFY",
+          "category": "subscriptions",
+          "essential": false,
+          "monthly": 11.99,
+          "first_amount": 11.99,
+          "last_amount": 11.99,
+          "prior_amount": null,
+          "increased": false,
+          "increase_amount": 0,
+          "active": true,
+          "stopped": false
+        }
+      ],
+      "anomalies": [
+        {
+          "type": "new_recurring",
+          "merchant": "GYM",
+          "amount": 49,
+          "date": "2026-09-15",
+          "id": "new|GYM"
+        }
+      ],
+      "payment_schedule": [
+        {
+          "account": "acct_b",
+          "label": "Amex",
+          "last_paid": {
+            "date": "2026-09-01",
+            "amount": 300
+          },
+          "cadence_days": 30,
+          "next_expected": "2026-10-01",
+          "data_through": "2026-09-20",
+          "missed_in_data": false
+        }
+      ],
+      "commitments": {
+        "monthly_total": 2100,
+        "pct_of_income": 52.5,
+        "split": {},
+        "items": [
+          {
+            "merchant": "MORTGAGE",
+            "key": "mortgage",
+            "kind": "loan:home",
+            "group": "debt",
+            "monthly": 2100,
+            "cadence_days": 30,
+            "last_date": "2026-09-02",
+            "active": true
+          }
+        ]
+      }
+    },
+    "layout": {
+      "focus": {
+        "id": "commitments",
+        "why": "renewal"
+      }
+    },
+    "expect": {
+      "brief": true,
+      "focus": {
+        "id": "commitments",
+        "by": "ling"
+      },
+      "attention": [],
+      "more": 0
+    }
+  },
+  {
+    "name": "quiet month: pin beats Ling",
+    "report": {
+      "date_range": {
+        "start": "2026-07-01",
+        "end": "2026-09-20"
+      },
+      "by_month": {
+        "2026-07": {
+          "spend": 3000,
+          "income": 4000
+        },
+        "2026-08": {
+          "spend": 3400,
+          "income": 4000
+        },
+        "2026-09": {
+          "spend": 2100,
+          "income": 2000
+        }
+      },
+      "budgets": {
+        "month": "2026-09",
+        "as_of": "2026-09-20",
+        "projection_ready": true,
+        "categories": [
+          {
+            "category": "groceries",
+            "budget": 600,
+            "mtd": 200,
+            "projected": 450,
+            "state": "ok"
+          }
+        ]
+      },
+      "subscriptions": [
+        {
+          "merchant": "SPOTIFY",
+          "category": "subscriptions",
+          "essential": false,
+          "monthly": 11.99,
+          "first_amount": 11.99,
+          "last_amount": 11.99,
+          "prior_amount": null,
+          "increased": false,
+          "increase_amount": 0,
+          "active": true,
+          "stopped": false
+        }
+      ],
+      "anomalies": [
+        {
+          "type": "new_recurring",
+          "merchant": "GYM",
+          "amount": 49,
+          "date": "2026-09-15",
+          "id": "new|GYM"
+        }
+      ],
+      "payment_schedule": [
+        {
+          "account": "acct_b",
+          "label": "Amex",
+          "last_paid": {
+            "date": "2026-09-01",
+            "amount": 300
+          },
+          "cadence_days": 30,
+          "next_expected": "2026-10-01",
+          "data_through": "2026-09-20",
+          "missed_in_data": false
+        }
+      ],
+      "commitments": {
+        "monthly_total": 2100,
+        "pct_of_income": 52.5,
+        "split": {},
+        "items": [
+          {
+            "merchant": "MORTGAGE",
+            "key": "mortgage",
+            "kind": "loan:home",
+            "group": "debt",
+            "monthly": 2100,
+            "cadence_days": 30,
+            "last_date": "2026-09-02",
+            "active": true
+          }
+        ]
+      }
+    },
+    "layout": {
+      "pin": "trends",
+      "focus": {
+        "id": "commitments",
+        "why": "renewal"
+      }
+    },
+    "expect": {
+      "brief": true,
+      "focus": {
+        "id": "trends",
+        "by": "you"
+      },
+      "attention": [],
+      "more": 0
+    }
+  },
+  {
+    "name": "a pinned card that is hidden is not pinned",
+    "report": {
+      "date_range": {
+        "start": "2026-07-01",
+        "end": "2026-09-20"
+      },
+      "by_month": {
+        "2026-07": {
+          "spend": 3000,
+          "income": 4000
+        },
+        "2026-08": {
+          "spend": 3400,
+          "income": 4000
+        },
+        "2026-09": {
+          "spend": 2100,
+          "income": 2000
+        }
+      },
+      "budgets": {
+        "month": "2026-09",
+        "as_of": "2026-09-20",
+        "projection_ready": true,
+        "categories": [
+          {
+            "category": "groceries",
+            "budget": 600,
+            "mtd": 200,
+            "projected": 450,
+            "state": "ok"
+          }
+        ]
+      },
+      "subscriptions": [
+        {
+          "merchant": "SPOTIFY",
+          "category": "subscriptions",
+          "essential": false,
+          "monthly": 11.99,
+          "first_amount": 11.99,
+          "last_amount": 11.99,
+          "prior_amount": null,
+          "increased": false,
+          "increase_amount": 0,
+          "active": true,
+          "stopped": false
+        }
+      ],
+      "anomalies": [
+        {
+          "type": "new_recurring",
+          "merchant": "GYM",
+          "amount": 49,
+          "date": "2026-09-15",
+          "id": "new|GYM"
+        }
+      ],
+      "payment_schedule": [
+        {
+          "account": "acct_b",
+          "label": "Amex",
+          "last_paid": {
+            "date": "2026-09-01",
+            "amount": 300
+          },
+          "cadence_days": 30,
+          "next_expected": "2026-10-01",
+          "data_through": "2026-09-20",
+          "missed_in_data": false
+        }
+      ],
+      "commitments": {
+        "monthly_total": 2100,
+        "pct_of_income": 52.5,
+        "split": {},
+        "items": [
+          {
+            "merchant": "MORTGAGE",
+            "key": "mortgage",
+            "kind": "loan:home",
+            "group": "debt",
+            "monthly": 2100,
+            "cadence_days": 30,
+            "last_date": "2026-09-02",
+            "active": true
+          }
+        ]
+      }
+    },
+    "layout": {
+      "pin": "trends",
+      "hides": [
+        "trends"
+      ]
+    },
+    "expect": {
+      "brief": true,
+      "focus": {
+        "id": "budgets",
+        "by": "rules"
+      },
+      "attention": [],
+      "more": 0
+    }
+  },
+  {
+    "name": "brief hidden",
+    "report": {
+      "date_range": {
+        "start": "2026-07-01",
+        "end": "2026-09-20"
+      },
+      "by_month": {
+        "2026-07": {
+          "spend": 3000,
+          "income": 4000
+        },
+        "2026-08": {
+          "spend": 3400,
+          "income": 4000
+        },
+        "2026-09": {
+          "spend": 2100,
+          "income": 2000
+        }
+      },
+      "budgets": {
+        "month": "2026-09",
+        "as_of": "2026-09-20",
+        "projection_ready": true,
+        "categories": [
+          {
+            "category": "groceries",
+            "budget": 600,
+            "mtd": 200,
+            "projected": 450,
+            "state": "ok"
+          }
+        ]
+      },
+      "subscriptions": [
+        {
+          "merchant": "SPOTIFY",
+          "category": "subscriptions",
+          "essential": false,
+          "monthly": 11.99,
+          "first_amount": 11.99,
+          "last_amount": 11.99,
+          "prior_amount": null,
+          "increased": false,
+          "increase_amount": 0,
+          "active": true,
+          "stopped": false
+        }
+      ],
+      "anomalies": [
+        {
+          "type": "new_recurring",
+          "merchant": "GYM",
+          "amount": 49,
+          "date": "2026-09-15",
+          "id": "new|GYM"
+        }
+      ],
+      "payment_schedule": [
+        {
+          "account": "acct_b",
+          "label": "Amex",
+          "last_paid": {
+            "date": "2026-09-01",
+            "amount": 300
+          },
+          "cadence_days": 30,
+          "next_expected": "2026-10-01",
+          "data_through": "2026-09-20",
+          "missed_in_data": false
+        }
+      ],
+      "commitments": {
+        "monthly_total": 2100,
+        "pct_of_income": 52.5,
+        "split": {},
+        "items": [
+          {
+            "merchant": "MORTGAGE",
+            "key": "mortgage",
+            "kind": "loan:home",
+            "group": "debt",
+            "monthly": 2100,
+            "cadence_days": 30,
+            "last_date": "2026-09-02",
+            "active": true
+          }
+        ]
+      }
+    },
+    "layout": {
+      "hides": [
+        "brief"
+      ]
+    },
+    "expect": {
+      "brief": false,
+      "focus": {
+        "id": "budgets",
+        "by": "rules"
+      },
+      "attention": [],
+      "more": 0
+    }
+  },
+  {
+    "name": "one month, nothing set: nothing to focus",
+    "report": {
+      "date_range": {
+        "start": "2026-09-01",
+        "end": "2026-09-20"
+      },
+      "by_month": {
+        "2026-09": {
+          "spend": 900,
+          "income": 0
+        }
+      },
+      "subscriptions": [],
+      "anomalies": [],
+      "payment_schedule": []
+    },
+    "layout": {},
+    "expect": {
+      "brief": true,
+      "focus": null,
+      "attention": [],
+      "more": 0
+    }
+  },
+  {
+    "name": "Ling's lead the data can't draw falls back",
+    "report": {
+      "date_range": {
+        "start": "2026-09-01",
+        "end": "2026-09-20"
+      },
+      "by_month": {
+        "2026-09": {
+          "spend": 900,
+          "income": 0
+        }
+      },
+      "subscriptions": [],
+      "anomalies": [],
+      "payment_schedule": []
+    },
+    "layout": {
+      "focus": {
+        "id": "budgets",
+        "why": "x"
+      }
+    },
+    "expect": {
+      "brief": true,
+      "focus": null,
+      "attention": [],
+      "more": 0
+    }
+  }
+]

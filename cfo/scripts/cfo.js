@@ -14,6 +14,7 @@ import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, activeRows
 import { initInvestments, renderInvestView, leaveInvestView, reportSaved, holdingsIn, proposeHoldings, chipsNow as investChipsNow } from './investments.js';
 import { reportChips, spendChips, txnChips, commitChips } from './chips.js';
 import { importStatus, importNote, pageDidLine, paymentState, PAY_STATES } from './page-did.js';
+import { compose, layoutOf, FOCUS_IDS } from './compose.js';
 
 // In-page confirm — window.confirm is a silent no-op inside the app shell
 // (its WKWebView implements no confirm panel: returns false, no dialog),
@@ -1168,6 +1169,7 @@ function refreshView() {
   renderBudgets(FULL_VIEW.budgets);   // budgets are current-month by definition
   syncBudgetInsights(FULL_VIEW.budgets);
   renderAnomalies(FULL_VIEW.anomalies);
+  renderFirstView();
   renderTrend(view);
   renderFacets(view);
   renderCategories(view);
@@ -1810,8 +1812,89 @@ function renderAnomalies(list) {
     ANOM_DISMISSED.add(b.dataset.id);
     await writeB64(`${DATA}/anomalies-dismissed.json`, JSON.stringify([...ANOM_DISMISSED]));
     renderAnomalies(FULL_VIEW && FULL_VIEW.anomalies);
+    renderFirstView();
     showTabSuggestions();
     await rebuildReport(); // agent stops seeing it too
+  }));
+}
+
+// ── The first view: Brief · Focus · Attention (compose.js) ──
+// The same rules the phone's Overview runs, over the same full-history
+// report. The page shows facts; why it is in this order is said in chat.
+const FOCUS_LABEL = { budgets: 'Budgets', subscriptions: 'Subscriptions', trends: 'Trends', commitments: 'Commitments' };
+const ATTN_TEXT = {
+  anomaly: (i) => anomalyText(i),
+  budget_over: (i) => `<b>${esc(i.category)}</b> ${moneyExact(i.mtd)} of its ${moneyExact(i.budget)} budget`,
+  missed_payment: (i) => `<b>${esc(i.card)}</b>: no payment seen around ${esc(i.expected || '')}${i.last_paid != null ? ` — last ${moneyExact(i.last_paid)}` : ''}`,
+  price_hike: (i) => `<b>${esc(i.merchant)}</b> ${moneyExact(i.from)} → ${moneyExact(i.to)}`,
+};
+const ATTN_ICON = { anomaly: '⚠', budget_over: '●', missed_payment: '⚠', price_hike: '↑' };
+const ATTN_CLS = { anomaly: 'double_charge', budget_over: 'bill_spike', missed_payment: 'double_charge', price_hike: 'new_recurring' };
+
+const focusSummary = {
+  subscriptions: (r) => {
+    const subs = (r.subscriptions || []).filter((s) => s.active && !s.essential).sort((a, b) => b.monthly - a.monthly);
+    return `<p><b>${moneyExact(r.subscription_monthly_total)}</b>/mo across ${subs.length} · ${subs.slice(0, 3).map((s) => `${esc(cleanMerchant(s.merchant))} ${moneyExact(s.monthly)}`).join(' · ')}</p>`;
+  },
+  trends: (r) => {
+    const months = Object.keys(r.by_month || {}).sort().slice(-3);
+    return `<p>${months.map((m) => `${monthName(m)} <b>${money(r.by_month[m].spend)}</b>`).join(' · ')}</p>`;
+  },
+  commitments: (r) => {
+    const c = r.commitments || {};
+    return `<p><b>${moneyExact(c.monthly_total)}</b>/mo fixed${c.pct_of_income != null ? ` · ${c.pct_of_income}% of income` : ''}</p>`;
+  },
+};
+const FOCUS_TAB = { subscriptions: 'trends', trends: 'trends', commitments: 'commit' };
+
+function renderFirstView() {
+  if (!FULL_VIEW) return;
+  const full = filterAnomalies(FULL_VIEW); // a dismissed one is gone here too, as in report.json
+  const layout = layoutOf(EDITS);
+  const fv = compose(full, layout);
+  document.getElementById('cards').hidden = !fv.brief;
+  document.getElementById('forecast').hidden = !fv.brief;
+  // The budget editor is one element that lives in Focus or on Trends —
+  // moved out before Focus is redrawn, so redrawing never destroys it.
+  const budgets = document.getElementById('budgets-wrap');
+  document.getElementById('budgets-home').appendChild(budgets);
+  const el = document.getElementById('focus');
+  const f = fv.focus;
+  const lead = `<select id="focus-pin" title="Lead with — your pick beats Ling's">
+      <option value="">Lead: auto</option>
+      ${FOCUS_IDS.map((id) => `<option value="${id}"${layout.pin === id ? ' selected' : ''}>${FOCUS_LABEL[id]}</option>`).join('')}
+    </select>${layout.hides.length ? ` <a href="#" id="focus-unhide" class="hint">${layout.hides.length} hidden · show</a>` : ''}`;
+  el.innerHTML = f
+    ? `<h2 class="focus-h">${FOCUS_LABEL[f.id]} <span class="spacer"></span>${lead}</h2><div class="focus-body">${
+      focusSummary[f.id] ? `${focusSummary[f.id](full)}<button class="chip" data-tab="${FOCUS_TAB[f.id]}">Open ${FOCUS_TAB[f.id] === 'commit' ? 'Commitments' : 'Trends'}</button>` : ''}</div>`
+    : `<h2 class="focus-h"><span class="spacer"></span>${lead}</h2>`;
+  if (f && f.id === 'budgets') el.querySelector('.focus-body').appendChild(budgets);
+  el.querySelector('[data-tab]')?.addEventListener('click', (e) => switchView(e.target.dataset.tab));
+  el.querySelector('#focus-pin').addEventListener('change', async (e) => { await setEdit('lay:pin', e.target.value || null); renderFirstView(); });
+  el.querySelector('#focus-unhide')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    for (const id of layout.hides) EDITS.remove(`lay:hide:${id}`);
+    applyEdits();
+    await saveEdits();
+    renderFirstView();
+  });
+  renderAttention(fv);
+}
+
+function renderAttention(fv) {
+  const el = document.getElementById('attention');
+  if (!fv.attention.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<h2>Needs you${fv.more ? ` <a href="#" class="hint inline" data-tab="trends">${fv.more} more on Trends</a>` : ''}</h2>
+    <div class="anoms">${fv.attention.map((i) => `
+      <div class="anom-row ${ATTN_CLS[i.kind]}">
+        <span class="anom-ic">${ATTN_ICON[i.kind]}</span>
+        <span class="anom-text">${ATTN_TEXT[i.kind](i)}</span>
+        <button class="anom-x" data-id="${esc(i.id)}" title="Hide from the first view">×</button>
+      </div>`).join('')}</div>`;
+  el.querySelector('[data-tab]')?.addEventListener('click', (e) => { e.preventDefault(); switchView('trends'); });
+  el.querySelectorAll('.anom-x').forEach((b) => b.addEventListener('click', async () => {
+    await setEdit(`lay:hide:${b.dataset.id}`, true);
+    renderFirstView();
   }));
 }
 

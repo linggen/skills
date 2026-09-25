@@ -563,3 +563,10 @@ button.link:hover { text-decoration: underline; }
   align-items: baseline; flex-wrap: wrap; }
 .inv-watch-level { text-transform: capitalize; }
 .inv-watch-more { margin-top: 8px; font-size: 12px; }
+
+/* The composed first view (compose.js): Focus, then Attention. */
+#focus .focus-h { display: flex; align-items: center; gap: 8px; }
+#focus .focus-h .spacer { flex: 1; }
+#focus .focus-body { margin-bottom: 22px; }
+#focus .focus-body > p { margin: 4px 0 8px; }
+#focus-pin { font: inherit; font-size: 12px; font-weight: 500; }

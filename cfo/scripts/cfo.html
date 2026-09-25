@@ -51,8 +51,11 @@
         <div id="suggestions-wrap" hidden></div>
         <div id="cards" class="cards"></div>
         <div id="forecast"></div>
-        <div id="budgets-wrap"></div>
-        <div id="anomalies"></div>
+        <!-- The first view is composed (compose.js): Brief above (the cards and
+             the forecast), then Focus — one section, their pin > Ling's lead >
+             the rules — then Attention, most urgent first. At most three. -->
+        <div id="focus"></div>
+        <div id="attention"></div>
         <!-- DYNAMIC section: the only region the agent updates (PageUpdate).
              Sits under the deterministic state summary — numbers first, voice second. -->
         <section id="insights-wrap" hidden>
@@ -67,6 +70,9 @@
            the agent never writes here. -->
       <section id="trends" hidden>
         <div id="trend-cards" class="cards"></div>
+        <!-- Everything the first view leaves out stays one tab away, here. -->
+        <div id="anomalies"></div>
+        <div id="budgets-home"><div id="budgets-wrap"></div></div>
         <section data-sec="trend">
           <h2 class="sec-h">Monthly trend <span class="legend"><i class="sw spend"></i>spend <i class="sw income"></i>income <i class="sw net"></i>net</span></h2>
           <div class="sec-body"><div id="trend"></div></div>
