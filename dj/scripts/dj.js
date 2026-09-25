@@ -14,7 +14,8 @@ import { runAction as action } from './bash.js';
 import { loadConfig, loadLibrary } from './library.js';
 import { backfillLyrics } from './lyrics-backfill.js';
 import { phoneDevices } from './phone.js';
-import { applyPageUpdate, restoreSet, watchQueue } from './set-panel.js';
+import { applyPageUpdate, onQueueDrained, restoreSet, watchQueue } from './set-panel.js';
+import { drainMessage } from './drain.js';
 import { refreshLibrary, renderLibrary, playlists, startKaraoke, libraryView, wireLibrary } from './lib-view.js';
 import { state, setCollection, toast } from './state.js';
 import { ensureThumbs } from './thumbs.js';
@@ -254,6 +255,9 @@ async function mountChat() {
     console.error('[dj] chat mount failed', e);
     return;
   }
+  // A Get run that finished while this page watched: the facts go to the
+  // agent, hidden, and the agent tells the user in its own words.
+  onQueueDrained((facts) => { if (!facts.for_phone) chat?.sendHidden(drainMessage(facts)); });
   // Fresh session → one hidden greeting trigger; resumed sessions stay
   // silent. Retry once if the embed showed no life.
   if (!resume) {

@@ -5,6 +5,7 @@
 
 import { loadQueue, isOwned, ownedRow, trackId, trackKey } from './library.js';
 import { enqueue, queueVerb } from './download.js';
+import { drainStep } from './drain.js';
 import { play, refreshLibrary } from './lib-view.js';
 import { state, toast } from './state.js';
 import { thumbUrl } from './thumbs.js';
@@ -33,6 +34,12 @@ function statusOf(t, bySong) {
 const ACTIVE = new Set(['pending', 'running', 'cancelling']);
 let watching = null;
 let finishedSeen = -1;
+const inRun = new Set();
+let onDrained = () => {};
+
+/// Who hears a finished run's facts — dj.js hands them to the agent, who
+/// words them. The page never writes that sentence itself.
+export function onQueueDrained(fn) { onDrained = fn; }
 
 const finishedCount = () => state.queue.filter((i) => i.status === 'done').length;
 
@@ -44,6 +51,8 @@ export async function pollQueue() {
   if (finishedSeen >= 0 && done !== finishedSeen) await refreshLibrary();
   finishedSeen = done;
   renderSet();
+  const facts = drainStep(state.queue, inRun);
+  if (facts) onDrained(facts);
   return state.queue.some((i) => ACTIVE.has(i.status));
 }
 
