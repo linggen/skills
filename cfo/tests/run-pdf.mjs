@@ -79,7 +79,7 @@ t('D7 refund is income', sign(/REFUND/) === 1);
 t('D8 "payment - thank you" is income', sign(/THANK YOU/) === 1);
 t('D9 "e-transfer received" is income', sign(/RECEIVED/) === 1);
 t('D10 "transfer in" is income', sign(/TRANSFER IN/) === 1);
-t('D11 "REFUND TO CARD" is income — `to` names where it went', sign(/REFUND TO CARD/) === 1);
+t('D10b "REFUND TO CARD" is income — `to` names where it went', sign(/REFUND TO CARD/) === 1);
 t('D11 plain merchant is spend', sign(/STARBUCKS/) === -1);
 t('D12 explicit CR marker is income', sign(/MYSTERY/) === 1);
 t('D13 explicit trailing + is income', sign(/SOMETHING ELSE/) === 1);
