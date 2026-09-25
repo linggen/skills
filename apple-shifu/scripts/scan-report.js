@@ -73,7 +73,7 @@ function day(ms) {
 }
 
 /** The hidden message after a user-started scan. `kind` names what ran. */
-export function reportPrompt({ kind = 'full', prev = null, now, clearable = null, backup = null }) {
+export function reportPrompt({ kind = 'full', prev = null, now, clearable = null, backup = null, order = null }) {
   const lines = [];
   const was = prev?.at ? ` (last scan ${day(prev.at)})` : '';
   const d = now?.disk;
@@ -108,6 +108,7 @@ export function reportPrompt({ kind = 'full', prev = null, now, clearable = null
     lines.push('- Clearable (Files tab): not looked for yet');
   }
   if (backup) lines.push(`- iPhone items with no copy on this Mac: ${backup.count.toLocaleString()}`);
+  if (order) lines.push(`- The Overview shows, in order: ${order.length ? order.join(', ') : 'nothing — the Mac is quiet'}`);
   return [
     `[SHIFU_SCAN] The user just ran a ${kind} scan${was}. The page already shows every figure.`,
     'Report it per "After a scan" in your instructions — words only, no PageUpdate.',

@@ -5,7 +5,7 @@
 
 import './legacy-keys.js';
 import { listSkillSessions } from '/shared/api.js';
-import { runScan, runDeepFileScan, runDiskScan, runSecurityScan, runPerformanceScan, persistScanSnapshot, persistReadout, bash as scanBash } from './scan.js';
+import { runScan, runDeepFileScan, runDiskScan, runSecurityScan, runPerformanceScan, persistScanSnapshot, persistReadout, parseDiskUsage, bash as scanBash } from './scan.js';
 import { buildSystemPage, topBar, diskWidget, cleanupWidget, securityWidget, processesWidget } from './system-page.js';
 import { scanFacts, mergeFacts, reportPrompt, parseClearableSummary } from './scan-report.js';
 import { buildReadout } from './mac-readout.js';
@@ -16,6 +16,8 @@ import { renderPhoneSystem, phoneFacts } from './phone-system.js';
 import { setFileIndex } from './widget-renderers.js';
 import { startLiveTopBar } from './live.js';
 import { flashToast, showToast } from './shifu-io.js';
+import { overviewCards, parseLayout, orderCards, securityFromReadout } from './overview.js';
+import { renderOverview } from './overview-view.js';
 
 const SKILL_NAME = 'apple-shifu';
 const params = new URLSearchParams(window.location.search);
@@ -37,6 +39,7 @@ let scanning = false;
 // because the skill iframe doesn't receive that signal.
 function syncToolbarBusy() {
   refreshVerbs();
+  applySysView();
 }
 
 // ── The System tab's four verbs ──
@@ -221,7 +224,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   onTabChange((tab) => { if (tab === 'system') applySystemSource(getSource()); });
   // The archive figure arrives from the Media tab after this panel first
   // drew — redraw it so the "Not archived here" row matches the header badge.
-  onBackupChange(() => { if (getSource() === 'phone') refreshPhoneSystem(false); });
+  onBackupChange(() => {
+    if (getSource() === 'phone') refreshPhoneSystem(false);
+    refreshOverview();
+  });
+  // The Files tab rewrote its Clearable summary (a scan, a clear).
+  window.addEventListener('shifu:clearable', () => refreshOverview());
+  wireSysViews();
   applySystemSource(getSource());
 
   // App mode: per-skill override in localStorage('apple-shifu:model') if set.
@@ -337,6 +346,8 @@ async function mountAndStart(sessionId, carryPage = null) {
     onContentBlock: (payload) => {
       // Ling added or dropped a "Found by Shifu" row: the Files tab re-reads
       // her finds now, and once more after the tool has surely written them.
+      // Ling moved the Overview's lead: redraw once the tool has written it.
+      if (payload?.tool === 'Lead') setTimeout(refreshOverview, 1200);
       if (payload?.tool === 'ProposeClearable') {
         window.dispatchEvent(new Event('shifu:found'));
         setTimeout(() => window.dispatchEvent(new Event('shifu:found')), 2500);
@@ -385,6 +396,8 @@ async function mountAndStart(sessionId, carryPage = null) {
   setInterval(refreshVerbs, 60_000);   // keeps "Last scan 3m ago" honest
   // The top row's numbers refresh while the Mac's System tab is in view.
   startLiveTopBar({ getActiveTab, getSource, onTabChange, onSourceChange, isScanning: () => scanning });
+
+  refreshOverview();
 
   if (sessionId && hasCachedPage(sessionId)) {
     // Restore dashboard from cache — no re-scan, no tokens, no greeting.
@@ -650,6 +663,98 @@ function hideStaleBanner() {
   if (banner) { banner.hidden = true; banner.innerHTML = ''; }
 }
 
+// ── The Overview: the System tab's first view ──
+//
+// Composed by overview.js from facts this page holds — the Clearable pile's
+// safe total, the iPhone items with no copy here, the first security gap, and
+// the disk when under 10% free. The agent may move one card to the lead (its
+// Lead tool) and says why in the chat; the user's pin or hide beats it.
+
+const VIEW_KEY = 'apple-shifu:sys-view';
+const SHIFU_SCRIPTS = '"$HOME"/.linggen/skills/apple-shifu/scripts';
+const SHIFU_DATA = '"$HOME"/.linggen/skills/apple-shifu/data';
+
+function getSysView() {
+  try { return localStorage.getItem(VIEW_KEY) === 'details' ? 'details' : 'overview'; }
+  catch { return 'overview'; }
+}
+
+/** A scan draws its progress in Details, so Details shows while one runs. */
+function applySysView() {
+  const view = scanning ? 'details' : getSysView();
+  const show = (id, on) => { const n = document.getElementById(id); if (n) n.hidden = !on; };
+  show('overview-area', view === 'overview');
+  show('body-area', view === 'details');
+  show('footer-area', view === 'details');
+  for (const b of document.querySelectorAll('.sys-view')) b.classList.toggle('on', b.dataset.view === view);
+}
+
+function wireSysViews() {
+  for (const b of document.querySelectorAll('.sys-view')) {
+    b.onclick = () => {
+      if (scanning) return;
+      try { localStorage.setItem(VIEW_KEY, b.dataset.view); } catch { /* quota */ }
+      applySysView();
+    };
+  }
+  applySysView();
+}
+
+async function readoutSecurity() {
+  try {
+    const res = await scanBash(`cat ${SHIFU_DATA}/readout.json 2>/dev/null || true`);
+    return securityFromReadout(JSON.parse(res.stdout || '{}'));
+  } catch { return null; }
+}
+
+const OVERVIEW_ACTIONS = {
+  clear: () => {
+    // The reviewed Clear flow, unchanged: the Clearable pile with its SAFE
+    // rows checked. Nothing goes until the user presses Clear and agrees to
+    // the sheet, and clearables.sh re-checks every path against its rule.
+    window.dispatchEvent(new CustomEvent('shifu:open-clearable', { detail: { selectSafe: true } }));
+    setActiveTab('files');
+  },
+  files: () => {
+    window.dispatchEvent(new CustomEvent('shifu:open-clearable', { detail: {} }));
+    setActiveTab('files');
+  },
+  media: () => setActiveTab('media'),
+};
+
+async function changeLayout(cmd, id = '') {
+  await scanBash(`bash ${SHIFU_SCRIPTS}/layout.sh ${cmd} ${id}`);
+  refreshOverview();
+}
+
+let overviewRun = 0;
+
+/** Redraw the Overview from what is on disk now; returns the card order (ids)
+    for the report, with the user's pin marked. */
+async function refreshOverview() {
+  const run = ++overviewRun;
+  const [layoutRes, clearable, df] = await Promise.all([
+    scanBash(`bash ${SHIFU_SCRIPTS}/layout.sh read`).catch(() => ({})),
+    readClearable(),
+    scanBash('df -k /System/Volumes/Data 2>/dev/null || df -k /').catch(() => ({})),
+  ]);
+  const facts = readFacts();
+  const security = facts?.security || await readoutSecurity();
+  const layout = parseLayout(layoutRes.stdout || '');
+  const all = overviewCards({
+    disk: parseDiskUsage(df.stdout || ''), clearable, backup: getBackupSummary(), security,
+  });
+  const cards = orderCards(all, layout);
+  if (run !== overviewRun) return cards.map((c) => c.id);
+  renderOverview(document.getElementById('overview-area'), {
+    cards, layout, hiddenCount: all.length - cards.length,
+    scanned: Boolean(facts || security || getLastScanAt()),
+    onAction: (c) => OVERVIEW_ACTIONS[c.action.kind]?.(),
+    onLayout: changeLayout,
+  });
+  return cards.map((c) => (c.id === layout.pinned ? `${c.id} (pinned by the user)` : c.id));
+}
+
 // ── Section scans and the report after any scan ──
 
 const FACTS_KEY = 'apple-shifu:facts';
@@ -679,7 +784,8 @@ async function reportScan(kind, facts) {
   const now = mergeFacts(prev, facts);
   writeFacts(now);
   const clearable = await readClearable();
-  if (chat) chat.sendHidden(reportPrompt({ kind, prev, now, clearable, backup: getBackupSummary() }));
+  const order = await refreshOverview();
+  if (chat) chat.sendHidden(reportPrompt({ kind, prev, now, clearable, backup: getBackupSummary(), order }));
 }
 
 /** Scan → Disk / Security / Performance: the page runs the same scan the

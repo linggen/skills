@@ -35,6 +35,13 @@
         <div class="mac-system" id="mac-system">
           <div class="top-bar-area" id="top-bar-area"></div>
           <div class="stale-banner" id="stale-banner" hidden></div>
+          <!-- The first view is the Overview (what needs you, composed); every
+               row of the scan is one tab away in Details. -->
+          <div class="sys-views" id="sys-views">
+            <button class="sys-view" data-view="overview">Overview</button>
+            <button class="sys-view" data-view="details">Details</button>
+          </div>
+          <div class="overview-area" id="overview-area"></div>
           <div class="body-area" id="body-area"></div>
           <div class="footer-area" id="footer-area"></div>
         </div>

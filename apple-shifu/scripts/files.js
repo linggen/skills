@@ -68,7 +68,7 @@ const measured = new Set();
     rebuilt whenever a source changes. */
 const clear = {
   catalog: null, rules: new Map(), scan: parseScan(''), found: [], groups: [],
-  byPath: new Map(), running: false, timer: null, loaded: false,
+  byPath: new Map(), running: false, timer: null, loaded: false, loading: null,
 };
 
 // ── registration ──
@@ -79,6 +79,10 @@ export function initFilesTab() {
   onTabChange((name) => { if (name === 'files') { loadClearables().then(resumeClearJob); render(); } });
   // Ling proposed or dropped a row — re-read her finds.
   window.addEventListener('shifu:found', () => readFound());
+  // The System Overview's button: open the Clearable pile, and with
+  // `selectSafe` check its SAFE rows — exactly what Select all takes. The
+  // Clear verb, its confirm sheet and the shell's guard are the same as ever.
+  window.addEventListener('shifu:open-clearable', (e) => openClearable(e.detail || {}));
   onSourceChange(() => render());
   // A page reopened on this tab switched to it before this module listened,
   // which left the panel blank. Draw now if it is already the one showing.
@@ -547,8 +551,14 @@ async function resumeClearJob() {
 
 /** Load the catalog, the last scan and Ling's finds — once per page; a scan
     still streaming from before a reload is picked up where it is. */
-async function loadClearables() {
-  if (clear.loaded) return;
+function loadClearables() {
+  // One load per page; a second caller waits on the first rather than
+  // reading a pile that is still arriving.
+  clear.loading ??= loadClearablesOnce();
+  return clear.loading;
+}
+
+async function loadClearablesOnce() {
   clear.loaded = true;
   try {
     const res = await fetch(new URL('./clearables.json', import.meta.url));
@@ -621,7 +631,19 @@ function regroup() {
     verdicts are the page's. */
 function writeSummary() {
   if (!clear.catalog) return;
-  writeLines(CLEAR_DIR, 'summary.txt', summaryText(clear.catalog, clear.scan, clear.found));
+  writeLines(CLEAR_DIR, 'summary.txt', summaryText(clear.catalog, clear.scan, clear.found))
+    .then(() => window.dispatchEvent(new Event('shifu:clearable')));
+}
+
+async function openClearable({ selectSafe = false } = {}) {
+  if (activeCat !== 'clear') selected.clear();
+  activeCat = 'clear';
+  await loadClearables();
+  if (selectSafe && !removalBlocked()) {
+    selected.clear();
+    for (const p of selectableFor('clear')) selected.add(p);
+  }
+  render();
 }
 
 const METHOD_WORDS = {

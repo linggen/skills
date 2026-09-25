@@ -1294,3 +1294,57 @@ body {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ── System: Overview | Details ── */
+
+.sys-views { display: flex; gap: 4px; margin: 0 0 12px; }
+.sys-view {
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.sys-view.on { color: var(--text); border-color: var(--accent); font-weight: 600; }
+.sys-views[hidden], .overview-area[hidden], .body-area[hidden], .footer-area[hidden] { display: none; }
+
+.overview-area { display: flex; flex-direction: column; gap: 10px; }
+.ov-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.ov-card.ov-alert { border-left-color: var(--danger); }
+.ov-card.ov-warn { border-left-color: var(--warning); }
+.ov-card.ov-good { border-left-color: var(--success); }
+.ov-main { flex: 1; min-width: 0; }
+.ov-label { font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.ov-pin { text-transform: none; letter-spacing: 0; }
+.ov-title { font-size: 17px; font-weight: 600; margin-top: 2px; overflow-wrap: anywhere; }
+.ov-sub { font-size: 12.5px; color: var(--text-muted); margin-top: 3px; overflow-wrap: anywhere; }
+.ov-side { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.ov-side .media-cta { margin: 0; }
+.ov-more {
+  border: 0; background: none; color: var(--text-muted);
+  font-size: 18px; line-height: 1; padding: 4px 6px; cursor: pointer; border-radius: 6px;
+}
+.ov-more:hover { background: var(--bg-hover); color: var(--text); }
+.ov-quiet { font-size: 13.5px; color: var(--text-muted); padding: 6px 2px; }
+.ov-foot { display: flex; gap: 14px; }
+.ov-foot:empty { display: none; }
+.ov-link {
+  border: 0; background: none; padding: 0; cursor: pointer;
+  font-size: 12px; color: var(--text-muted); text-decoration: underline;
+}
+.ov-why { margin: 0; font-size: 12.5px; color: var(--text-muted); }
+@media (max-width: 560px) {
+  .ov-card { flex-direction: column; align-items: stretch; }
+  .ov-side { justify-content: space-between; }
+}

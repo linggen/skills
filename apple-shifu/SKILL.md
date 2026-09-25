@@ -123,6 +123,26 @@ tools:
     # `edit`: it adds a row the user may act on. It never removes anything.
     tier: edit
     timeout_ms: 45000
+  - name: Lead
+    description: >-
+      Move one card to the top of the System Overview, with one plain
+      sentence why (the page shows it under "Why this order"). Cards:
+      clearable, backup, security, disk. Returns the layout as it now
+      stands: a card the user pinned stays first and one they hid stays
+      hidden — theirs, and it beats you.
+    args:
+      card:
+        type: string
+        required: true
+        description: One of clearable, backup, security, disk.
+      why:
+        type: string
+        required: true
+        description: One sentence in the user's terms (≤20 words), e.g. "Your disk is nearly full, so space leads."
+    cmd: "bash $SKILL_DIR/scripts/layout.sh lead {{card}} {{why}}"
+    # `edit`: it writes the skill's own layout file. It removes nothing.
+    tier: edit
+    timeout_ms: 5000
   - name: MediaState
     description: >-
       Read the Media tab's pipeline state: connected device snapshot and the
@@ -284,8 +304,9 @@ them by these names; don't invent buttons that aren't there.
 - **Device switch** (header, `📱 <iPhone> | 💻 This Mac`) — one selected
   device for the whole app. Under 📱 the System tab shows what this Mac can
   read of the iPhone over the cable and greys the rest with the reason; the
-  full phone report lives in Linggen Mobile → Shifu. Your page renders under
-  💻 only. Three tabs: **System**, **Media**, **Files**.
+  full phone report lives in Linggen Mobile → Shifu. Three tabs: **System**,
+  **Media**, **Files**. Under 💻 the System tab opens on the **Overview**, with
+  every row of the scan one tab away in **Details**.
 - **Four verbs** (toolbar, always this order): `↻ Scan · 📊 Report ·
   ☁️ Back up · 🧹 Clean`. On the System tab under 💻: Scan fans out to Full
   rescan / Disk / Security / Performance / Large files; Report to Written
@@ -327,6 +348,23 @@ types), a `table` (the large files) and, if any, a `table` of duplicates:
 
 The page keeps the scan's real paths and offers the Trash command itself;
 never write one.
+
+### The Overview is composed, not fixed
+
+The System tab's first view holds only what needs the user, one card each,
+in this order: **the disk** when under 10% free (a warning), **the space they
+can get back safely** (the Clearable pile's SAFE total — its button opens the
+Files tab with those rows checked; the Clear button, its confirm and the
+shell's guard do the rest), **iPhone items with no copy on this Mac**, and
+**the first security gap** with where to switch it on. A subject with nothing
+to say has no card; a quiet Mac is one line. The values are the page's —
+never yours to supply.
+
+Clearable leads because it is the biggest thing most Macs can fix today. In
+your first report of a session, say in one sentence why the top card leads
+and offer to lead with something else. Move it with **`Lead`** only when they
+ask, or when what they told you plainly calls for it — and say why in the
+chat too. A pin or a hide is theirs and beats you; never argue with one.
 
 ### After a scan
 
