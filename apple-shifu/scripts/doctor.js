@@ -1,17 +1,21 @@
 // Apple Shifu v2 — orchestrator
-// Runs hardware probe on open, sends data to model, renders model's page JSON.
+// Runs the scans the user starts, draws them (system-page.js), and hands the
+// agent the facts to comment on (scan-report.js). The agent never lays out a
+// scan.
 
 import './legacy-keys.js';
 import { listSkillSessions } from '/shared/api.js';
-import { runScan, runDeepFileScan, persistScanSnapshot, persistReadout } from './scan.js';
+import { runScan, runDeepFileScan, runDiskScan, runSecurityScan, runPerformanceScan, persistScanSnapshot, persistReadout, bash as scanBash } from './scan.js';
+import { buildSystemPage, topBar, diskWidget, cleanupWidget, securityWidget, processesWidget } from './system-page.js';
+import { scanFacts, mergeFacts, reportPrompt, parseClearableSummary } from './scan-report.js';
 import { buildReadout } from './mac-readout.js';
 import { applyPageUpdate, parsePageBlock, getCurrentPage, restorePage } from './page-renderer.js';
-import { calculateHealthScore, saveScoreHistory, getLastScore, getScoreHistory, estimateDiskFillRate, estimateBatteryLife } from './health-score.js';
+import { calculateHealthScore, saveScoreHistory, getScoreHistory } from './health-score.js';
 import { initShell, registerTab, setActiveTab, getActiveTab, getSource, onSourceChange, onTabChange, onBackupChange, refreshVerbs, getBackupSummary } from './shifu-shell.js';
 import { renderPhoneSystem, phoneFacts } from './phone-system.js';
 import { setFileIndex } from './widget-renderers.js';
 import { startLiveTopBar } from './live.js';
-import { flashToast } from './shifu-io.js';
+import { flashToast, showToast } from './shifu-io.js';
 
 const SKILL_NAME = 'apple-shifu';
 const params = new URLSearchParams(window.location.search);
@@ -83,9 +87,9 @@ const SYSTEM_VERBS = {
       hint: 'Re-run a system check',
       menu: [
         { label: '↻ Full rescan', hint: 'CPU, memory, disk, battery, security', run: () => startRescan() },
-        { label: '💾 Disk', run: () => send('Scan disk and show top space consumers') },
-        { label: '🔒 Security', run: () => send('Run a security check') },
-        { label: '⚡ Performance', run: () => send('Check performance') },
+        { label: '💾 Disk', run: () => startSectionScan('disk') },
+        { label: '🔒 Security', run: () => startSectionScan('security') },
+        { label: '⚡ Performance', run: () => startSectionScan('performance') },
         { label: '📦 Large files', hint: 'walks the filesystem', run: () => send('Find large files and label them') },
       ],
     },
@@ -391,14 +395,15 @@ async function mountAndStart(sessionId, carryPage = null) {
     restorePage(carryPage);
     maybeShowStaleBanner();
   } else {
-    // Fresh session, or resumed session without a usable cache.
-    startFresh();
+    // Fresh session, or resumed session without a usable cache. Only a new
+    // session is introduced: one already going is picked up in silence.
+    startFresh(!sessionId);
   }
 }
 
 // ── Fresh start — agent introduces itself while probe runs in parallel ──
 
-function startFresh() {
+function startFresh(greet = true) {
   // Parity with the other apps (CFO/Pulse): don't auto-scan on open. The page
   // shows where the scan is; the agent introduces itself in its own words.
   applyPageUpdate({
@@ -418,6 +423,7 @@ function startFresh() {
   // figures (SKILL.md "0. Introduce yourself"). The words are its own — this
   // page never writes a sentence into the chat. Reloads can't repeat it: a
   // session that has spoken resumes silently.
+  if (!greet) return;
   const sess = new URLSearchParams(location.search).get('session');
   const greetKey = sess ? `apple-shifu:greeted:${sess}` : null;
   if (greetKey && localStorage.getItem(greetKey)) return;
@@ -434,12 +440,11 @@ const GREETING =
 
 // ── Hardware probe ──
 
-async function startHardwareProbe(rescan = false) {
+async function startHardwareProbe() {
   if (scanning) return;
   scanning = true;
   syncToolbarBusy();
-  // Capture the pre-rescan summary so the agent can lead with deltas.
-  const prevSummary = rescan ? getLastSummary() : null;
+  const before = JSON.parse(JSON.stringify(getCurrentPage()));
 
   const steps = [
     { label: 'System info', status: 'active', icon: '💻' },
@@ -501,12 +506,15 @@ async function startHardwareProbe(rescan = false) {
     persistReadout(buildReadout(results, score, breakdown), sessionId)
       .catch(() => {});
 
-    // Build and send the scan data (hidden — user doesn't need to see raw data)
-    const prompt = buildOpeningPrompt(results, prevSummary);
-    chat.sendHidden(prompt);
+    // The page draws the scan itself — every figure as it was measured — and
+    // the agent only comments on it (SKILL.md "After a scan").
+    applyPageUpdate(buildSystemPage(results));
+    cacheCurrentPage();
+    await reportScan('full', scanFacts(results));
   } catch (err) {
     console.error('Hardware probe error:', err);
-    if (chat) chat.send('Please greet me and show the apple-shifu dashboard. I could not collect hardware data automatically.');
+    restorePage(before);
+    flashToast(`The scan stopped: ${err?.message || err}. Try ↻ Scan → Full rescan again.`);
   } finally {
     scanning = false;
     syncToolbarBusy();
@@ -553,7 +561,7 @@ const STALE_MS = 7 * 24 * 3600 * 1000;
 async function startRescan() {
   if (scanning) return;
   hideStaleBanner();
-  await startHardwareProbe(true);
+  await startHardwareProbe();
 }
 
 function buildScanSummary(results) {
@@ -590,11 +598,6 @@ function getLastScanAt() {
 function seedLastScanAt(createdAtSec) {
   if (!createdAtSec || getLastScanAt()) return;
   try { localStorage.setItem(LAST_SCAN_KEY, String(createdAtSec * 1000)); } catch { /* quota */ }
-}
-
-function getLastSummary() {
-  try { return JSON.parse(localStorage.getItem(LAST_SUMMARY_KEY) || 'null'); }
-  catch { return null; }
 }
 
 function markScanComplete(summary) {
@@ -647,242 +650,89 @@ function hideStaleBanner() {
   if (banner) { banner.hidden = true; banner.innerHTML = ''; }
 }
 
-// ── Opening prompt ──
+// ── Section scans and the report after any scan ──
 
-function buildOpeningPrompt(results, prevSummary = null) {
-  const parts = ['[SYS_SCAN_DATA]\n'];
+const FACTS_KEY = 'apple-shifu:facts';
 
-  if (prevSummary) {
-    parts.push(`## Previous Scan Summary (${prevSummary.date || 'earlier'})`);
-    if (prevSummary.score != null) parts.push(`- Health score: ${prevSummary.score}/100`);
-    if (prevSummary.disk_free_gb != null) parts.push(`- Disk free: ${fmtGb(prevSummary.disk_free_gb)} (${prevSummary.disk_percent}% used)`);
-    if (prevSummary.mem_percent != null) parts.push(`- Memory: ${prevSummary.mem_percent}%`);
-    if (prevSummary.security_passing != null) parts.push(`- Security: ${prevSummary.security_passing}/${prevSummary.security_total} passing`);
-    if (prevSummary.battery_percent != null) parts.push(`- Battery: ${prevSummary.battery_percent}%${prevSummary.cycle_count ? ` (${prevSummary.cycle_count} cycles)` : ''}`);
-    parts.push('');
-    parts.push('## RESCAN — lead with what changed');
-    parts.push('The user hit Rescan on an existing dashboard. In your 2-3 sentence chat text, lead with the most meaningful CHANGES vs the previous summary above (disk freed/used, score moves, new security findings, memory pressure). If nothing moved meaningfully, say the system is steady since the last scan. Then emit the full page block as usual.');
-    parts.push('');
-  }
+function readFacts() {
+  try { return JSON.parse(localStorage.getItem(FACTS_KEY) || 'null'); } catch { return null; }
+}
 
-  if (results.system) {
-    const s = results.system;
-    parts.push(`## System`);
-    parts.push(`- OS: ${s.os}`);
-    parts.push(`- CPU: ${s.cpuBrand} (${s.cpuCores} cores, ${s.cpuUsage}% usage)`);
-    if (s.loadAvg?.length) parts.push(`- Load: ${s.loadAvg.join(', ')}`);
-    parts.push(`- Memory: ${s.memory.used_gb}/${s.memory.total_gb} GB (${s.memory.percent}%)`);
-    parts.push(`- Uptime: ${s.uptime}`);
-    parts.push(`- Host: ${s.hostname}`);
-    parts.push(`- Arch: ${s.arch}`);
-    parts.push('');
-  }
+function writeFacts(f) {
+  try { localStorage.setItem(FACTS_KEY, JSON.stringify(f)); } catch { /* quota */ }
+}
 
-  if (results.gpu?.chipset) {
-    parts.push(`## GPU`);
-    parts.push(`- ${results.gpu.chipset}: ${results.gpu.cores} cores, ${results.gpu.metal}`);
-    parts.push('');
-  }
+/** The Files tab's Clearable totals as it last wrote them; null before its
+    first scan. */
+async function readClearable() {
+  try {
+    const res = await scanBash('sed -n 1,2p ~/.linggen/skills/apple-shifu/data/files/clearables/summary.txt 2>/dev/null');
+    return parseClearableSummary(res.stdout || '');
+  } catch { return null; }
+}
 
-  if (results.battery?.percent != null) {
-    const b = results.battery;
-    parts.push(`## Battery`);
-    parts.push(`- ${b.percent}% (${b.status || 'unknown'}), ${b.source || ''}${b.cycleCount ? `, ${b.cycleCount} cycles` : ''}`);
-    parts.push('');
-  }
+/** After any scan the user started: keep the facts for the next comparison,
+    and hand the agent what changed. It reports unprompted — one line when
+    nothing moved — in its own words; the page has already drawn the figures. */
+async function reportScan(kind, facts) {
+  const prev = readFacts();
+  const now = mergeFacts(prev, facts);
+  writeFacts(now);
+  const clearable = await readClearable();
+  if (chat) chat.sendHidden(reportPrompt({ kind, prev, now, clearable, backup: getBackupSummary() }));
+}
 
-  if (results.network?.ip) {
-    parts.push(`## Network`);
-    parts.push(`- IP: ${results.network.ip}`);
-    if (results.network.wifi) parts.push(`- WiFi: ${results.network.wifi}`);
-    parts.push('');
-  }
+/** Scan → Disk / Security / Performance: the page runs the same scan the
+    full rescan runs for that section and swaps only its cards. */
+const SECTION_SCANS = {
+  disk: {
+    label: 'Measuring the disk…',
+    run: async (sid) => {
+      const r = await runDiskScan(sid);
+      const bar = topBar({ disk: r.disk })[0];
+      const top = getCurrentPage().top_bar || [];
+      if (bar) applyPageUpdate({ top_bar: top.some((w) => w.widget === 'disk') ? top.map((w) => (w.widget === 'disk' ? bar : w)) : [...top, bar] });
+      applyPageUpdate({ body_patch: [diskWidget(r.disk), cleanupWidget(r.caches)].filter(Boolean) });
+      return { disk: r.disk };
+    },
+  },
+  security: {
+    label: 'Checking security…',
+    run: async (sid) => {
+      const security = await runSecurityScan(sid);
+      applyPageUpdate({ body_patch: [securityWidget(security)].filter(Boolean) });
+      return { security };
+    },
+  },
+  performance: {
+    label: 'Reading processes…',
+    run: async (sid) => {
+      const performance = await runPerformanceScan(sid);
+      applyPageUpdate({ body_patch: [processesWidget(performance)].filter(Boolean) });
+      return { performance };
+    },
+  },
+};
 
-  if (results.io) {
-    parts.push(`## Storage IO`);
-    parts.push(`- ${results.io.mb_per_sec} MB/s, ${results.io.transfers_per_sec} ops/s`);
-    parts.push('');
+async function startSectionScan(kind) {
+  if (scanning) return;
+  const section = SECTION_SCANS[kind];
+  scanning = true;
+  syncToolbarBusy();
+  const toast = showToast(section.label, true);
+  try {
+    const r = await section.run(chat?.getSessionId());
+    cacheCurrentPage();
+    toast.close();
+    const facts = scanFacts(r);
+    delete facts.score;
+    await reportScan(kind, facts);
+  } catch (err) {
+    toast.done(`The ${kind} scan stopped: ${err?.message || err}`);
+  } finally {
+    scanning = false;
+    syncToolbarBusy();
   }
-
-  if (results.disk) {
-    const d = results.disk;
-    parts.push(`## Disk`);
-    parts.push(`- Total: ${fmtGb(d.total_gb)}, Used: ${fmtGb(d.used_gb)}, Free: ${fmtGb(d.free_gb)} (${d.percent}% used)`);
-    if (d.top_dirs?.length) {
-      parts.push('- Home folders, biggest first:');
-      for (const dir of d.top_dirs) {
-        parts.push(`  - ${dir.path}: ${fmtGb(dir.size_gb)}`);
-      }
-    }
-    // Say what was not measured rather than letting the model read the list as
-    // the whole disk — a folder missing here is missing for a reason.
-    if (d.unmeasured_dirs?.length) {
-      parts.push('- Not measured (say so plainly; never guess a size for these):');
-      for (const dir of d.unmeasured_dirs) {
-        parts.push(`  - ${dir.path}: ${dir.why}`);
-      }
-    }
-    parts.push('');
-  }
-
-  if (results.caches?.length) {
-    parts.push(`## Caches`);
-    for (const c of results.caches) {
-      parts.push(`- ${c.path}: ${fmtGb(c.size_gb)}`);
-    }
-    parts.push('');
-  }
-
-  // One truth for "what can be cleared": the Files tab's Clearable pile.
-  parts.push('## Clearable (Files tab — the one list of what can be cleared)');
-  parts.push(results.clearable
-    ? results.clearable
-    : 'Not scanned yet. Point the user at Files → Clearable; never list build folders yourself.');
-  parts.push('');
-
-  if (results.garbage?.length) {
-    parts.push(`## Garbage Candidates`);
-    for (const g of results.garbage) {
-      parts.push(`- ${g.path}: ${fmtGb(g.size_gb)} (${g.category})`);
-    }
-    parts.push('');
-  }
-
-  if (results.applicationsRaw) {
-    // Use the `=== APPLICATIONS ===` marker the SKILL.md "Apps to Review"
-    // trigger watches for. Markdown headers are not recognized.
-    parts.push(`=== APPLICATIONS ===`);
-    parts.push(results.applicationsRaw);
-    parts.push('');
-  }
-
-  if (results.security) {
-    const s = results.security;
-    parts.push(`## Security (${s.passing}/${s.total} passing)`);
-    for (const c of s.checks) {
-      parts.push(`- ${c.label}: ${c.detail} (${c.status})`);
-    }
-    if (s.ports?.length) {
-      parts.push(`- Open ports: ${s.ports.length} listening`);
-    }
-    parts.push('');
-  }
-
-  if (results.performance) {
-    const p = results.performance;
-    parts.push(`## Performance`);
-    if (p.memProcs?.length) {
-      parts.push('- Top memory processes:');
-      for (const proc of p.memProcs.slice(0, 5)) {
-        parts.push(`  - ${proc.name}: ${proc.memory_mb} MB`);
-      }
-    }
-    if (p.launchAgents) parts.push(`- Launch agents: ${p.launchAgents}`);
-    if (p.swapUsedMb > 0) parts.push(`- Swap used: ${Math.round(p.swapUsedMb)} MB`);
-    parts.push('');
-  }
-
-  // Hardware model + age
-  if (results.hardware) {
-    const hw = results.hardware;
-    parts.push(`## Hardware`);
-    if (hw.modelName) parts.push(`- Model: ${hw.modelName}`);
-    if (hw.chip) parts.push(`- Chip: ${hw.chip}`);
-    if (hw.modelId) parts.push(`- Model ID: ${hw.modelId}`);
-    parts.push(`- Architecture: ${hw.isAppleSilicon ? 'Apple Silicon' : 'Intel'}`);
-    if (hw.year) parts.push(`- Approximate year: ${hw.year}`);
-    if (hw.age != null) parts.push(`- Approximate age: ${hw.age} years`);
-    parts.push('');
-  }
-
-  // Usage pattern
-  if (results.usage) {
-    const u = results.usage;
-    parts.push(`## Usage Profile: ${u.profile}`);
-    if (u.summary) {
-      const s = u.summary;
-      const detected = [];
-      if (s.hasXcode) detected.push('Xcode');
-      if (s.hasDocker) detected.push('Docker');
-      if (s.hasVSCode) detected.push('VS Code');
-      if (s.hasBrew) detected.push('Homebrew');
-      if (s.hasNode) detected.push('Node.js');
-      if (s.hasOllama) detected.push('Ollama');
-      if (s.hasCreative) detected.push('Creative apps');
-      if (detected.length) parts.push(`- Detected tools: ${detected.join(', ')}`);
-    }
-    if (u.apps?.length) {
-      parts.push(`- Installed apps: ${u.apps.slice(0, 15).join(', ')}${u.apps.length > 15 ? ` (+${u.apps.length - 15} more)` : ''}`);
-    }
-    parts.push('');
-  }
-
-  // Health score
-  if (results.healthScore != null) {
-    parts.push(`## Health Score: ${results.healthScore}/100`);
-    if (results.scoreBreakdown) {
-      for (const [key, b] of Object.entries(results.scoreBreakdown)) {
-        parts.push(`- ${key}: ${b.score}/100 (weight: ${b.weight}%)`);
-      }
-    }
-    const history = getScoreHistory();
-    if (history.length > 1) {
-      const prev = history[history.length - 2];
-      parts.push(`- Previous score: ${prev.score} on ${prev.date}`);
-    }
-    parts.push('');
-  }
-
-  // Disk fill rate projection
-  const diskRate = estimateDiskFillRate();
-  if (diskRate) {
-    parts.push(`## Disk Trajectory`);
-    parts.push(`- Growing at ~${diskRate.gbPerDay} GB/day`);
-    parts.push(`- Currently ${fmtGb(diskRate.currentFreeGb)} free`);
-    parts.push(`- Estimated ${diskRate.daysUntilFull} days until full at current rate`);
-    parts.push('');
-  }
-
-  // Battery lifespan estimate
-  if (results.battery?.cycleCount) {
-    const battLife = estimateBatteryLife(results.battery.cycleCount, results.battery.percent);
-    if (battLife) {
-      parts.push(`## Battery Lifespan`);
-      parts.push(`- Cycles: ${battLife.cycleCount} / 1000 rated`);
-      parts.push(`- Remaining: ~${battLife.remainingCycles} cycles`);
-      parts.push(`- Trend: ${battLife.healthTrend}`);
-      parts.push(`- ${battLife.recommendation}`);
-      parts.push('');
-    }
-  }
-
-  // Smart advisor hints for the model
-  parts.push(`## Advisor Notes`);
-  parts.push(`Use the data above to give personalized advice. Key things to consider:`);
-  if (results.hardware?.age >= 5) {
-    parts.push(`- Machine is ${results.hardware.age} years old. Consider showing a hero widget with upgrade advice if performance is struggling.`);
-  }
-  if (results.hardware && !results.hardware.isAppleSilicon) {
-    parts.push(`- This is an Intel Mac. Apple Silicon offers 2-3x performance and battery life. Worth mentioning if machine is slow.`);
-  }
-  if (results.disk?.percent >= 85) {
-    parts.push(`- Disk is critically full (${results.disk.percent}%). Prioritize cleanup recommendations.`);
-  }
-  if (results.battery?.percent != null && results.battery.percent < 80) {
-    parts.push(`- Battery health below 80%. Warn the user about declining battery life.`);
-  }
-  if (results.usage?.profile === 'developer' || results.usage?.profile === 'ai-developer') {
-    parts.push(`- User is a ${results.usage.profile}. Tailor advice for development workflows (Docker, node_modules, build caches).`);
-  }
-  parts.push('');
-  parts.push(`## IMPORTANT: Response format`);
-  parts.push(`You MUST include a <!--page JSON block in your response to build the dashboard.`);
-  parts.push(`The left panel renders your page block as visual widgets (top_bar, info card, action-cards).`);
-  parts.push(`Keep your chat text to 2-3 sentences — the dashboard shows the details visually.`);
-  parts.push(`Do NOT echo or repeat the raw data above in your chat response.`);
-  parts.push('');
-
-  return parts.join('\n');
 }
 
 // ── Deep scan (client-side) ──

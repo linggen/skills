@@ -1,5 +1,7 @@
 // Page renderer — takes a page JSON and renders the left panel.
-// The model emits ```page blocks; this module draws them.
+// The page JSON is built by code from the scan (system-page.js); the agent
+// adds only research cards (a Buyer's Guide, Large files labels) through
+// PageUpdate. Either way, this module draws what it is handed.
 
 import { renderTopBarWidget, renderBodyWidget } from './widget-renderers.js';
 
