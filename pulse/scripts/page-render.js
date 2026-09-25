@@ -832,7 +832,7 @@ function renderTabContent(tab, body) {
   // karma + live submissions; Reddit: own-activity RSS). pulse-app renders
   // into this mount after each gather (kept across re-renders by id).
   // Other tabs have no extras.
-  if (tab.id === 'x' || tab.id === 'hn' || tab.id === 'reddit') {
+  if (tab.id === 'x' || tab.id === 'hn' || tab.id === 'reddit' || tab.id === 'needs') {
     const extras = document.createElement('div');
     extras.id = `${tab.id}-tab-extras`;
     extras.className = `${tab.id}-tab-extras tab-extras`;

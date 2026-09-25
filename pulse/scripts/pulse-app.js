@@ -2194,10 +2194,48 @@ function renderXTab(tabId, mount) {
 
 // Route the per-tab extras hook (page-render calls it for 'x', 'hn' and
 // 'reddit') to the matching dashboard renderer.
+// The scheduled mentions pass (pulse:mentions) — off until the user turns it
+// on here; each check is a short model turn, so it is theirs to choose.
+const MENTIONS_MISSION = 'pulse:mentions';
+const mentionsWatch = { mission: null, loaded: false };
+
+async function loadMentionsWatch() {
+  try {
+    const res = await fetch('/api/missions');
+    mentionsWatch.mission = res.ok
+      ? ((await res.json()).missions || []).find(m => m.id === MENTIONS_MISSION) || null
+      : null;
+  } catch { mentionsWatch.mission = null; }
+  mentionsWatch.loaded = true;
+}
+
+function renderNeedsTab(tabId, mount) {
+  if (tabId !== 'needs' || !mount) return;
+  const m = mentionsWatch.mission;
+  if (!mentionsWatch.loaded) { loadMentionsWatch().then(() => renderAll()); return; }
+  if (!m) return;
+  const row = document.createElement('label');
+  row.className = 'needs-watch';
+  row.innerHTML = `<input type="checkbox" ${m.enabled ? 'checked' : ''}>
+    <span>Check replies for me every 3 hours (9–21) — Yinyue tells you when someone answers</span>`;
+  row.querySelector('input').addEventListener('change', async (e) => {
+    try {
+      await fetch(`/api/missions/${encodeURIComponent(MENTIONS_MISSION)}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: e.target.checked }),
+      });
+    } catch (err) { console.warn('[pulse] mentions switch', err); }
+    await loadMentionsWatch();
+    renderAll();
+  });
+  mount.appendChild(row);
+}
+
 function renderTabExtras(tabId, mount) {
   if (tabId === 'x') return renderXTab(tabId, mount);
   if (tabId === 'hn') return renderHnTab(tabId, mount);
   if (tabId === 'reddit') return renderRedditTab(tabId, mount);
+  if (tabId === 'needs') return renderNeedsTab(tabId, mount);
 }
 
 // ============================ HN dashboard ================================

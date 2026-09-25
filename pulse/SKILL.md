@@ -104,6 +104,17 @@ tools:
     cmd: "$SKILL_DIR/scripts/sites/hn-mentions.sh {{hours}}"
     tier: read
     timeout_ms: 45000
+  - name: CheckMentions
+    description: >-
+      The scheduled mentions pass (the pulse:mentions mission) — not for a
+      chat turn: it marks what it returns as seen. Reads HN, Bluesky and
+      Reddit inboxes (sites on, username set; never X), keeps what it has
+      seen, and returns only what is new: {baseline?, new_replies,
+      new_mentions, by_source, items[], checked[], errors[], told_yinyue}.
+      New replies to the user are already handed to Yinyue as facts.
+    cmd: "python3 $SKILL_DIR/scripts/mentions-pass.py"
+    tier: edit
+    timeout_ms: 300000
   - name: FetchReddit
     description: >-
       Fetch two passes per subreddit listed in
