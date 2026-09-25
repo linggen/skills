@@ -270,7 +270,7 @@ const ROAD = {
     if (!chanceLive(s, ctx.now) || s.chance.place !== s.place) return refuse('gone', pick({ zh: '来迟了，机缘已散。', en: 'Too late — it is gone.' }, s.lang));
     s.chance = { ...s.chance, taken: ctx.now.toISOString() };
     const t = content.rewards.tables.chance;
-    const card = winCard(content, s, { id: `chance:${s.place}`, root: (s.traits ?? [])[0] }, ctx.now, 'chance');
+    const card = winCard(content, s, { id: `chance:${s.place}`, root: (s.traits ?? [])[0] }, ctx.now, 'chance', { how: 'chance' });
     const paid = pay(content, s, ctx, { table: 'chance', progress: t.progress, wealth: t.wealth });
     close(s, unveiled(here));
     return { state: s, result: { ok: true, took: null, ...(card ? { card } : {}), paid, chance: true } };

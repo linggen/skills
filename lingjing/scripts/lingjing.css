@@ -652,6 +652,9 @@ body.reading .view, body.reading .tray { display: none; }
 .luperson { display: inline-flex; gap: 6px; align-items: baseline; padding: 2px 10px; border: 1px solid var(--line); border-radius: 99px; background: var(--surface); }
 .luperson i { font-style: normal; font-family: var(--ui); font-size: 11px; color: var(--faint); }
 .luperson.tamed { border-color: var(--jade); }
+.lucard { display: flex; gap: 12px; align-items: center; padding: 8px 0; border-top: 1px dashed var(--line); font-family: var(--ui); }
+.lucard img, .lucard .noart { width: 52px; height: 52px; flex: none; border-radius: 8px; object-fit: cover; background: var(--raised); }
+.lucard b.cost { display: inline-grid; place-items: center; min-width: 1.35em; height: 1.35em; border-radius: 50%; font-size: 11px; background: var(--ling, #3b6ea5); color: #fff; }
 .luher blockquote { margin: 6px 0; padding: 6px 12px; border-left: 3px solid var(--yinyue); background: var(--yinyue-soft); color: var(--yinyue); border-radius: 0 8px 8px 0; }
 @media (max-width: 560px) { .lu { padding: 12px 14px 32px; } .luhead > b { font-size: 19px; } }
 

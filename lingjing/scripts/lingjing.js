@@ -1941,7 +1941,7 @@ function drawLu() {
   el.hidden = !open;
   if (!open) { drawnLu = null; return; }
   // Redrawn only when it changed: a stream token must not reset the scroll.
-  const html = view.lu ? luHtml(view.lu, { lang: lang(), her: look?.companion?.name ?? null }) : `<div class="lu"><div class="loading">${esc(WORDS[lang()].loading)}</div></div>`;
+  const html = view.lu ? luHtml(view.lu, { lang: lang(), her: look?.companion?.name ?? null, artBase: artBase() }) : `<div class="lu"><div class="loading">${esc(WORDS[lang()].loading)}</div></div>`;
   if (html !== drawnLu) { el.innerHTML = html; drawnLu = html; }
 }
 

@@ -11,6 +11,7 @@ import { CAST } from '../content.mjs';
 import { dayKey, fill, pick } from '../state.mjs';
 import { cauldronsFound, companionOf, giftAt, hasCompanion, recalledOf } from './companion.mjs';
 import { threadOf } from './errands.mjs';
+import { cardBook } from './cards.mjs';
 import { atScene, creatureOf, inMade, sceneOf } from './world.mjs';
 
 const HOUR = 3600000;
@@ -130,6 +131,7 @@ export function story(state, content, ctx, args = {}) {
       ok: true, cauldrons: short ? cauldrons.map(({ province, state: st }) => ({ province, state: st })) : cauldrons, found: cauldrons.filter(c => c.state === 'found').length, chapters,
       people: short ? people.map(({ name, kind }) => ({ name, kind })) : people,
       her, open: cur?.mystery ? [pick(cur.mystery, lang)] : [], ending: endingOf(content, state),
+      ...(short ? {} : { cards: cardBook(content, state) }),
     },
   };
 }

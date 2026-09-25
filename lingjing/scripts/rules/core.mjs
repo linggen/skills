@@ -55,7 +55,9 @@ function pay(content, state, ctx, grant) {
   const { levels, hold } = addProgress(content, state, progress);
   if (grant.cast && !state.cast.includes(grant.cast)) state.cast.push(grant.cast);
   // A beast that joins brings its card; a grant may name one outright.
-  const cards = [grant.cast, grant.card].map(id => (id ? gainCard(content, state, id) : null)).filter(Boolean);
+  const day = dayKey(ctx.now);
+  const cards = [[grant.cast, { how: 'tame', creature: grant.cast, day }], [grant.card, { how: 'story', day }]]
+    .map(([id, from]) => (id ? gainCard(content, state, id, from) : null)).filter(Boolean);
   if (grant.item) state.bag[grant.item] = (state.bag[grant.item] ?? 0) + 1;
   // An art is taught by a person, in a scene — never by the beast itself.
   const learned = grant.art ? learn(content, state, grant.art) : null;
@@ -259,6 +261,7 @@ export function resolve(state, content, ctx, args) {
     s.traits = [...content.traits.v1];
     // The root test hands over the starter — the first cards he holds.
     s.cards = [...new Set([...(s.cards ?? []), ...starterOf(content, s.traits)])];
+    s.card_from = { ...Object.fromEntries(starterOf(content, s.traits).map(id => [id, { how: 'starter', place: s.place ?? null, chapter: s.chapter ?? null, day: dayKey(ctx.now) }])), ...(s.card_from ?? {}) };
   }
   if (breakthrough) { s.tier = breakthrough.tier; s.step = 0; s.progress = 0; }
   const grant = grantOf(s, scene, exit);

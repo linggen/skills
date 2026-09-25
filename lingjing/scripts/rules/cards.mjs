@@ -8,7 +8,7 @@ import { clone, refuse } from './core.mjs';
 import { gearBrief } from './errands.mjs';
 import { boutFortune } from './fortune.mjs';
 import { hashOf } from './travel.mjs';
-import { creatureOf, tierIndex } from './world.mjs';
+import { allPlaces, creatureOf, tierIndex } from './world.mjs';
 
 /* ── 斗法 v3: the ten cards a player takes in ──
    Until the skill tree picks a deck, the deck is WHO THEY ARE: the cards of
@@ -223,13 +223,16 @@ function ownedAtStart(content, state) {
 }
 export const ownedCards = (content, state) => state.cards ?? ownedAtStart(content, state);
 
-/* One card into the hand he keeps; null when it is unknown or already his. */
-function gainCard(content, state, id) {
+/* One card into the hand he keeps; null when it is unknown or already his.
+   `from` is where it came from — kept in `card_from` for the 牌谱 (redesign-v2
+   § 五: 牌组就是你这一路的回忆): { how, creature?, place?, chapter?, tale? }. */
+function gainCard(content, state, id, from = null) {
   const card = cardCatalog(content)[id];
   if (!card || card._token) return null;
   const owned = ownedCards(content, state);
   if (owned.includes(id)) { state.cards = owned; return null; }
   state.cards = [...owned, id];
+  if (from) state.card_from = { ...(state.card_from ?? {}), [id]: { ...from, place: from.place ?? state.place ?? null, chapter: from.chapter ?? state.chapter ?? null } };
   return { id, name: pick(card.name, state.lang), card: true };
 }
 
@@ -238,14 +241,43 @@ function gainCard(content, state, id) {
    gift) — the beast's own element first.
    Never a 山海经 beast — those come only by taming. Stable by the day, the
    beast and the 道号, like everything else a fight deals. */
-function winCard(content, state, creature, now, nth = 0) {
+function winCard(content, state, creature, now, nth = 0, from = { how: 'win', creature: creature.id }) {
   const owned = new Set(ownedCards(content, state)), roots = new Set(state.traits ?? []);
   const open = (content.cards?.cards ?? []).filter(c => !c._token && c.id !== 'yinyue' && !isBeastCard(content, c.id)
     && !owned.has(c.id) && usable(c, roots));
   const own = open.filter(c => c.element === creature.root);
   const pool = own.length ? own : open;
   if (!pool.length) return null;
-  return gainCard(content, state, pool[hashOf(`${dayKey(now)}|${creature.id}|${state.name ?? ''}|card${nth ? `|${nth}` : ''}`) % pool.length].id);
+  return gainCard(content, state, pool[hashOf(`${dayKey(now)}|${creature.id}|${state.name ?? ''}|card${nth ? `|${nth}` : ''}`) % pool.length].id, { ...from, day: dayKey(now) });
 }
 
-export { canPick, cardCatalog, gainCard, gearFight, pickedCards, rootsOf, starterOf, usable, winCard };
+/* 牌谱 — every card he holds and where it came from (redesign-v2 § 五). A card
+   gained before `card_from` was kept is read from what is known: the starter,
+   银月, a beast that walks with him; else 旧日所得. Names resolved here. */
+function cardBook(content, state) {
+  const catalog = cardCatalog(content), lang = state.lang, from = state.card_from ?? {};
+  const starter = new Set(starterOf(content, state.traits));
+  const guess = id => (starter.has(id) ? { how: 'starter' } : id === 'yinyue' ? { how: 'companion' }
+    : isBeastCard(content, id) ? { how: 'tame', creature: id } : { how: 'old' });
+  const nameOf = {
+    creature: id => pick(creatureOf(content, id)?.name, lang) ?? null,
+    place: id => pick(allPlaces(content).find(p => p.id === id)?.name, lang) ?? null,
+    chapter: id => pick(content.chapters?.[id]?.title, lang) ?? null,
+  };
+  return ownedCards(content, state).filter(id => catalog[id]).map(id => {
+    const c = catalog[id], f = from[id] ?? guess(id);
+    return {
+      id, name: pick(c.name, lang), kind: c.kind, element: c.element ?? null, cost: c.cost ?? null,
+      ...(c.atk != null ? { atk: c.atk, hp: c.hp } : {}), ...(c.art ? { art: c.art } : {}),
+      from: {
+        how: f.how, day: f.day ?? null,
+        ...(f.creature ? { creature: nameOf.creature(f.creature) ?? f.creature } : {}),
+        ...(f.place ? { place: nameOf.place(f.place) } : {}),
+        ...(f.chapter ? { chapter: nameOf.chapter(f.chapter) } : {}),
+        ...(f.title ? { tale: f.title } : {}),
+      },
+    };
+  });
+}
+
+export { canPick, cardBook, cardCatalog, gainCard, gearFight, pickedCards, rootsOf, starterOf, usable, winCard };

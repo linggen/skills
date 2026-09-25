@@ -266,9 +266,9 @@ function dropOf(content, state, t) {
   return pool[hashOf(`${t.id}|${state.name ?? ''}|drop`) % pool.length];
 }
 
-function giveDrop(content, s, d) {
+function giveDrop(content, s, d, from = null) {
   if (!d) return null;
-  if (d.card) return gainCard(content, s, d.card);
+  if (d.card) return gainCard(content, s, d.card, from);
   s.bag[d.item] = (s.bag[d.item] ?? 0) + 1;
   return { id: d.item, name: pick(itemOf(content, d.item)?.name, s.lang) };
 }
@@ -290,7 +290,7 @@ function settle(content, s, ctx) {
   delete t.won; delete t.tried; delete t.lundao;
   let gives = null, grew = null, charm = null;
   if (link.end) {
-    gives = giveDrop(content, s, dropOf(content, s, t));
+    gives = giveDrop(content, s, dropOf(content, s, t), { how: 'tale', tale: t.id, title: t.title ?? null, day: dayKey(ctx.now) });
     // The finale also leaves a 符 and raises the 本命法宝 one 重 (rewards.json
     // `growth` — they grow with the story now, redesign-v2 § 四).
     charm = giveCharm(content, s);
