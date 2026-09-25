@@ -26,7 +26,6 @@ let existingSession = params.get('session') || '';
 /** @type {ReturnType<typeof LinggenUI.mount> | null} */
 let chat = null;
 let scanning = false;
-let expectPageBlock = false; // only true right after sending a prompt that should produce a page block
 
 // Disable toolbar buttons while a *local* scan (deep file scan) is running so
 // users don't trigger a parallel one. Agent-driven busy state is owned by the
@@ -350,7 +349,6 @@ async function mountAndStart(sessionId, carryPage = null) {
             : payload.args;
           applyPageUpdate(args);
           cacheCurrentPage();
-          expectPageBlock = false;
         } catch (e) {
           console.warn('[apple-shifu] failed to parse PageUpdate args', e, payload.args);
         }
@@ -401,8 +399,8 @@ async function mountAndStart(sessionId, carryPage = null) {
 // ── Fresh start — agent introduces itself while probe runs in parallel ──
 
 function startFresh() {
-  // Parity with the other apps (CFO/Pulse): don't auto-scan on open. Show a
-  // ready state and let the user start the scan with the ↻ Rescan button.
+  // Parity with the other apps (CFO/Pulse): don't auto-scan on open. The page
+  // shows where the scan is; the agent introduces itself in its own words.
   applyPageUpdate({
     body: [
       {
@@ -410,28 +408,29 @@ function startFresh() {
         icon: '🩺',
         title: 'Apple Shifu',
         fields: [
-          { label: '', value: 'Click ↻ Scan in the toolbar above and pick Full rescan for a full system check — CPU, memory, disk, battery, security, and performance.' },
+          { label: '', value: '↻ Scan → Full rescan checks disk, battery, security and performance.' },
         ],
       },
     ],
   });
 
-  // Greet ONCE per session with a fixed local message — zero LLM tokens, and
-  // reloads can't re-post it (this used to fire an agent turn every reload
-  // when the session had no cached dashboard). The actual scan runs only when
-  // the user clicks ↻ Full Rescan (startHardwareProbe).
+  // Once per session, the agent introduces itself from the last scan's real
+  // figures (SKILL.md "0. Introduce yourself"). The words are its own — this
+  // page never writes a sentence into the chat. Reloads can't repeat it: a
+  // session that has spoken resumes silently.
   const sess = new URLSearchParams(location.search).get('session');
   const greetKey = sess ? `apple-shifu:greeted:${sess}` : null;
   if (greetKey && localStorage.getItem(greetKey)) return;
   setTimeout(() => {
     if (!chat) return;
     if (greetKey) localStorage.setItem(greetKey, '1');
-    chat.addMessage('assistant',
-      "I'm Ling, your personal system health assistant inside Apple Shifu. " +
-      'Hit ↻ Scan → Full rescan whenever you want a full health check — ' +
-      'CPU, memory, disk, battery, security, and performance.');
-  }, 2000);
+    chat.sendHidden(GREETING);
+  }, 700);
 }
+
+const GREETING =
+  'The user just opened Apple Shifu (this message is hidden from them). '
+  + 'Introduce yourself now, following "0. Introduce yourself" in your instructions.';
 
 // ── Hardware probe ──
 
@@ -504,7 +503,6 @@ async function startHardwareProbe(rescan = false) {
 
     // Build and send the scan data (hidden — user doesn't need to see raw data)
     const prompt = buildOpeningPrompt(results, prevSummary);
-    expectPageBlock = true;
     chat.sendHidden(prompt);
   } catch (err) {
     console.error('Hardware probe error:', err);
@@ -891,7 +889,7 @@ function buildOpeningPrompt(results, prevSummary = null) {
 
 async function runClientDeepScan(userMessage) {
   if (scanning) {
-    if (chat) chat.addMessage('assistant', 'Still scanning — please wait a moment.');
+    flashToast('A scan is already running.');
     return;
   }
   scanning = true;
@@ -972,7 +970,6 @@ async function runClientDeepScan(userMessage) {
 
     // Build prompt with deep scan data and send to model
     const prompt = buildDeepScanPrompt(deepResults, userMessage);
-    expectPageBlock = true;
     chat.send(prompt);
   } catch (err) {
     // The page says it stopped; nothing goes to the chat. Asking the agent to
@@ -1031,25 +1028,14 @@ function buildDeepScanPrompt(deepResults, userMessage) {
 
 // ── Model response handling ──
 
+/** A legacy `<!--page-->` block in the reply still lands on the page. A reply
+    without one is simply a reply — the page never nags for a layout in the
+    user's name. */
 function handleModelResponse(text) {
   const pageBlock = parsePageBlock(text);
-
-  if (pageBlock) {
-    expectPageBlock = false;
-    applyPageUpdate(pageBlock);
-    cacheCurrentPage();
-    return;
-  }
-
-  // Only retry if we were expecting a page block (after probe/scan prompt)
-  if (expectPageBlock && chat) {
-    expectPageBlock = false; // don't retry more than once
-    chat.send(
-      'Please include a ```page JSON block in your response to update the dashboard. ' +
-      'Refer to your skill instructions for the page layout format.'
-    );
-  }
-  // Otherwise: model just answered a question without view change — that's fine.
+  if (!pageBlock) return;
+  applyPageUpdate(pageBlock);
+  cacheCurrentPage();
 }
 
 // ── Cache ──
