@@ -38,10 +38,20 @@ export const lastJson = (out) => {
 
 // Run a library mutation through actions.mjs — the ONE writer. The same verbs
 // back the agent's SKILL.md tools.
+// A refusal is a fact ({ unavailable, reason } — reach.mjs); the page shows
+// it as a plain status line, keyed by the reason.
+const REFUSED = {
+  youtube_unreachable: 'Downloads unavailable — YouTube is unreachable from this Mac',
+};
+
 export async function runAction(verb, ...args) {
   const cmd = `bash "${SCRIPTS}/run-js.sh" "${SCRIPTS}/actions.mjs" ${verb} ${args.map(sq).join(' ')}`;
   const r = lastJson(await runBash(cmd, { timeoutMs: 30000 }));
-  if (!r.ok) throw new Error(r.error || 'action failed');
+  if (!r.ok) {
+    const e = new Error(r.error || REFUSED[r.reason] || r.reason || 'action failed');
+    e.fact = r;
+    throw e;
+  }
   return r;
 }
 

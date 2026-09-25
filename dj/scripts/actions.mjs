@@ -26,6 +26,7 @@ import {
 import { die, readJson, writeJson, lock, unlock, backupLibrary, LIB, DJ_DIR } from './io.mjs';
 import { decodeOps, applyPhoneOps, saveRing } from './phone-ops.mjs';
 import { reconcile } from './reconcile.mjs';
+import { downloadRefusal, restricted } from './reach.mjs';
 import {
   loadQueue, saveQueue, counts, trackItem, enqueue, claim, finish, cancel, retry,
   clearFinished, resetRunning,
@@ -483,10 +484,19 @@ const VERBS = {
 
 // ── main ─────────────────────────────────────────────────────────────────────
 
+// Verbs that put a download on the queue — refused, with a fact, where the
+// engine reports YouTube unreachable (reach.mjs).
+const DOWNLOAD_VERBS = new Set(['queue-add', 'track-redownload', 'queue-retry']);
+
 const [verb, ...rest] = process.argv.slice(2);
 try {
   const run = VERBS[verb];
   if (!run) die(`unknown verb “${verb || ''}” — one of: ${Object.keys(VERBS).join(', ')}`);
+  const refusal = DOWNLOAD_VERBS.has(verb) ? downloadRefusal(await restricted()) : null;
+  if (refusal) {
+    console.log(JSON.stringify(refusal));
+    process.exit(0);
+  }
   lock();
   let result;
   try {

@@ -109,6 +109,10 @@ def main():
         near = [t for t in every if t not in rows and near_query(query, t)][:NEAR_LIMIT]
     page = rows[offset:offset + limit]
     phone = lib.get("phone") or {}
+    # The engine's region fact (LINGGEN_RESTRICTED): where YouTube is
+    # unreachable, Get cannot download — told up front, before a set is built.
+    restricted = [x.strip() for x in os.environ.get("LINGGEN_RESTRICTED", "").split(",")]
+    no_download = {"download_unavailable": "youtube_unreachable"} if "youtube" in restricted else {}
     print(json.dumps({
         "track_count": len([t for t in lib.get("tracks") or [] if t.get("file")]),
         "playlist_count": len(lib.get("playlists") or []),
@@ -119,6 +123,7 @@ def main():
         **({"near": [row(t) for t in near]} if near else {}),
         "playlists": lists(lib.get("playlists")),
         "phone": {"track_count": len(phone.get("files") or []), "playlists": lists(phone.get("playlists"))},
+        **no_download,
     }, ensure_ascii=False))
 
 

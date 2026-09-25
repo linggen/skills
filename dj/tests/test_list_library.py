@@ -24,14 +24,19 @@ LIB = {
 }
 
 
-def run(*args, lib=LIB):
+def run(*args, lib=LIB, restricted=""):
     with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
         json.dump(lib, f)
-    out = subprocess.run([sys.executable, SCRIPT, f.name, *args], capture_output=True, text=True).stdout
+    env = {**os.environ, "LINGGEN_RESTRICTED": restricted}
+    out = subprocess.run([sys.executable, SCRIPT, f.name, *args], capture_output=True, text=True, env=env).stdout
     return json.loads(out)
 
 
 class ListLibrary(unittest.TestCase):
+
+    def test_says_when_downloads_cannot_work_here(self):
+        self.assertNotIn("download_unavailable", run())
+        self.assertEqual(run(restricted="youtube,google")["download_unavailable"], "youtube_unreachable")
 
     def test_search_ignores_script(self):
         r = run("海阔天空")

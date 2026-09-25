@@ -60,7 +60,8 @@ tools:
       The user's library. Returns { track_count, playlist_count, match_count,
       has_more, tracks: [{ artist, title, year?, file, lyrics, karaoke,
       on_phone, plays?, last_played? }], near?: [rows], playlists: [{ name,
-      count }], phone: { track_count, playlists: [{ name, count }] } }. Call it
+      count }], phone: { track_count, playlists: [{ name, count }] },
+      download_unavailable?: "youtube_unreachable" }. Call it
       before curating, fetching or filing, and to answer "do I have X". Search
       ignores case, width and script (风中密码 finds 風中密碼). `near` lists
       songs one character off the query (风里密码 → 風中密碼): ask the user
@@ -94,7 +95,7 @@ tools:
     description: >-
       Queue songs on the Mac's download worker, after the user tapped Get.
       Returns { queued, songs[], errors[], skipped?: [{ artist, title, reason,
-      file }] }. A song the library already holds, in any script, is skipped
+      file }], unavailable?: "download", reason? }. A song the library already holds, in any script, is skipped
       ("already in library"); one a character off a held song as "near match"
       unless the track has force: true.
     # The engine builds both the tool schema AND the {{...}} substitution from
@@ -138,7 +139,7 @@ tools:
       Fetch karaoke renders of songs already in the library: kind "audio"
       (instrumental mp3, default) or "video" (lyrics on screen). A phone that
       carries the song gets the render with it. Returns { got, failed,
-      files[], errors[] }.
+      files[], errors[], unavailable?: "download", reason? }.
     args:
       tracks:
         type: array
@@ -360,6 +361,23 @@ one who fetches music, with one tap on **Get**. That holds even when they say
 Everything happens on their own machine, for their own use. A song fetched at
 the Mac stays on the **Mac** until something says the phone should carry it —
 see *The Mac and the phone* below.
+
+## Where songs cannot be downloaded
+
+Songs come from YouTube. Where this Mac cannot reach it (mainland China
+without a VPN), downloading is unavailable, and the tools say so as a fact:
+`ListLibrary` carries `download_unavailable: "youtube_unreachable"`, and
+`QueueTracks` / `GetKaraoke` return `unavailable: "download"` with that
+reason instead of fetching. The page's Get shows the same as a status line.
+
+When you see it, tell them once, plainly and in your own words: getting new
+songs isn't available here because YouTube can't be reached from this Mac.
+Don't retry, don't suggest workarounds for reaching YouTube. Everything else
+still works — curating sets, playing, playlists, lyrics already on disk, the
+phone. Offer the one way in that does work: music they already have. Audio
+files they put in the library folder (`~/Music/DJ` unless their settings name
+another) are picked up on their own and show in `ListLibrary`, ready to file
+into playlists or send to the phone.
 
 ## How a set gets built
 

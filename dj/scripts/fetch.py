@@ -328,8 +328,35 @@ def skipped_row(t, reason, file):
             "reason": reason, "file": os.path.basename(str(file or ""))}
 
 
+# ── can DJ download here? (reach.mjs is the node side) ─────────────────────
+
+REFUSAL = {"unavailable": "download", "reason": "youtube_unreachable"}
+
+
+def restricted(env=None, fetch=None):
+    """The services the engine reports unreachable: LINGGEN_RESTRICTED in a
+    tool's env, else GET /api/reach. Unknown (no answer) = [] = try."""
+    env = os.environ if env is None else env
+    if "LINGGEN_RESTRICTED" in env:
+        return [x.strip() for x in env["LINGGEN_RESTRICTED"].split(",") if x.strip()]
+    url = f"http://127.0.0.1:{env.get('LINGGEN_PORT') or '9527'}/api/reach"
+    try:
+        body = fetch(url) if fetch else json.loads(urllib.request.urlopen(url, timeout=12).read())
+        got = body.get("restricted") if isinstance(body, dict) else None
+        return [str(x) for x in got] if isinstance(got, list) else []
+    except Exception:
+        return []
+
+
+def download_refusal(env=None, fetch=None):
+    return dict(REFUSAL) if "youtube" in restricted(env, fetch) else None
+
+
 def karaoke_batch(tracks):
     """Karaoke renders of songs the library holds, now."""
+    refusal = download_refusal()
+    if refusal:
+        return {"got": 0, "failed": 0, "files": [], "errors": [], **refusal}
     bins, cfg = load_bins(), load_config()
     if not bins.get("ok"):
         return {"got": 0, "failed": len(tracks), "files": [], "errors": [bins.get("note") or "yt-dlp/ffmpeg unavailable"]}
@@ -372,6 +399,8 @@ def queue_tracks(tracks, for_phone):
             continue
         todo.append({**t, "for_phone": bool(for_phone) or t.get("for_phone") is True})
     r = action("queue-add", json.dumps(todo, ensure_ascii=False)) if todo else {"ok": True, "added": 0}
+    if r.get("unavailable"):
+        return {"queued": 0, "errors": errors, "unavailable": r["unavailable"], "reason": r.get("reason")}
     if not r.get("ok"):
         return {"queued": 0, "errors": errors + [r.get("error") or "the queue refused"]}
     if r.get("added") and os.environ.get("DJ_NO_WORKER") != "1":
