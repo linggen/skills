@@ -14,6 +14,7 @@
 // Schema in design.md. Bash bridge is /api/bash (ungated by Linggen's
 // agent permission system, so the page does its own filesystem work).
 
+import { gatherFacts, lastGatherBlock } from './gather-facts.js';
 import { applyPageUpdate, loadSession, getSession, setOnChange, setConfig, setOnTabRender, setOnRescan, setOnDraft, renderAll, setSelfHandle, setCommentedThreadUrls, getCommentedThreadUrls, isThreadCommented, setDismissedUrls, addDismissedUrl, getDismissedUrls, setDismissedGroups, addDismissedGroup, resetPage, mentionGroupKey, toggleMentionGroup, stampLaneScan } from './page-render.js';
 import { readPulseConfig, replayRuntimeGrants, applyCompactConfig } from './pulse-api.js';
 import { normalizeMention, buildMentionBlock } from './mention-policy.js';
@@ -580,7 +581,7 @@ async function runGatherLocal() {
       '- No "N files changed" line — mechanical noise.',
       '- Match the brief\'s voice. Strip "🚀", "I\'m thrilled", "TL;DR" if they sneak in.',
       '',
-      'Emit just the body_patch. No prose response. Stay silent after.',
+      'Emit just the body_patch. Say nothing in the chat for this step.',
     ].join('\n'));
     // Chip flips to done when the agent's body_patch arrives on
     // progress_drafts — handled by persistSession → notifyRunningChipsFromSession.
@@ -905,6 +906,8 @@ async function runGatherWeb() {
     '  3. GROUND THE DRAFT. Use the OP body + whatever comments FetchRedditThread returned to understand the discussion (at minimum the OP). Don\'t parrot points existing commenters already made — offer a distinct angle — but the draft replies to the OP, not to any one commenter.',
     '  4. REGISTER. Pick it from the MENTION POLICY block at the top of this goal: disclosed only where the product is the direct answer to the OP and you can name the one concrete thing it does that answers it, else implicit. There is no quota — judge every thread on its own. Set `register` on the card.',
     'Then emit the card with `author` (the OP handle — `u/<name>` from FetchReddit\'s author field, or op.author from FetchRedditThread — so I see who I\'d be replying to), `excerpt` (plain-text OP body, ~500 chars; strip markdown/HTML, for UI display) and `draft_starter` (your 2-4 sentence top-level reply in voice). Drafting the discovery starter IS this step\'s job; this is the only place you draft. The separate Draft button handles broadcast posts, not comment-on-thread starters.',
+    '',
+    DONE_LINE,
   ].join('\n');
   sendChatHidden(goal);
   return promise;
@@ -1605,16 +1608,17 @@ async function sendInitPrompt() {
   const lines = [
     'You are Ling, operating inside Pulse. Your full role + workflow is in SKILL.md — read it as your operational contract. Quick recap:',
     '- Pulse is NOT a coding task. There is no codebase to modify here.',
-    '- You orchestrate a three-step pipeline (Gather local → Gather web → Draft) by emitting PageUpdate body_patch blocks. Cards on the page are the artifact; chat is only your control bus.',
-    '- After this init, send ONE visible greeting as plain chat text (2-3 lines): introduce PULSE itself — it turns the user\'s recent work + live web activity into review-ready draft posts and comment opportunities (you review, never auto-posted), driven by the chips. Sign off as Ling. Do NOT name or list the user\'s products/brands from the brief — introduce what Pulse does, not what they\'re building.',
-    '- The greeting turn is chat-only: do NOT call PageUpdate (or any other tool) on it. Nothing is on the page yet, so an empty/all-null PageUpdate just errors. After the greeting, go silent until a chip goal arrives.',
-    '- When a goal arrives, run the step per SKILL.md. Status narration in chat is short factual lines only. NEVER narrate "Done", "No code changes were needed", or acknowledgments of context blocks — silence is correct when there\'s nothing to surface on the page.',
+    '- You run a three-step pipeline (Gather local → Gather web → Draft) by emitting PageUpdate body_patch blocks. Cards on the page are the artifact; the chat is where you talk to the user about them.',
+    '- After this init, send ONE greeting as plain chat text, 2-3 sentences of fact from the LAST GATHER block below: what it found (replies to them, mentions, threads worth a comment — real counts, by source), what needs them first, and that a fresh scan is running now. No LAST GATHER → say the first scan is running and which sources it reads. Never a feature pitch; never name their products. Sign off as Ling.',
+    '- The greeting turn is chat-only: do NOT call PageUpdate (or any other tool) on it. After the greeting, say nothing until a goal arrives.',
+    '- When a goal arrives, run the step per SKILL.md without narrating it — never name a tool or announce a call. When a gather ends, ONE line: real counts and what needs them first. NEVER "Done", "No code changes were needed", or acknowledgments of context blocks.',
     // This app was called Signal before it was called Pulse, and the model
     // reconstructed the old name from a phrase it had been handed ("scan
     // signal" → "Signal scan updated on the page.", 2026-08-12). The word is
     // fine where it means evidence; it is not a name for this app or its runs.
     '- This app is called PULSE. Never call it Signal, and never call a run a "signal scan" — a run is a Pulse scan, or name its lane ("HN scan", "Reddit scan"). "Signal" is only ever a common noun here, as in "traction signal".',
   ];
+  lines.push('', lastGatherBlock(await previousGatherFacts(), enabledSources(cfg)));
   if (workspace) {
     lines.push('', `Workspace: ${workspace}`,
       'Read README, doc/, source files there to ground drafts in real product knowledge.');
@@ -1623,6 +1627,24 @@ async function sendInitPrompt() {
     lines.push('', 'Brief (case description, voice rules, hard rules):', brief);
   }
   sendChatHidden(lines.join('\n'));
+}
+
+// The sources switched on, by the names a founder uses.
+function enabledSources(cfg) {
+  const names = { hackernews: 'HN', bluesky: 'Bluesky', reddit: 'Reddit', x: 'X', lobsters: 'Lobsters', arxiv: 'arXiv', rss: 'RSS' };
+  return Object.entries(cfg?.sites || {}).filter(([, v]) => v?.enabled).map(([k]) => names[k] || k);
+}
+
+// What the newest earlier session's gather found — the greeting's facts.
+async function previousGatherFacts() {
+  const out = (await runBash(`ls -1t "${SKILL_DIR}/data/"sess-*/session.json 2>/dev/null | head -3`)).trim();
+  for (const f of out.split('\n').filter(Boolean)) {
+    const sid = f.split('/').slice(-2)[0];
+    if (sid === state.activeSessionId) continue;
+    const facts = gatherFacts(await readJson(f));
+    if (facts) return facts;
+  }
+  return null;
 }
 
 function sendChatMessage(text) {
@@ -2674,6 +2696,10 @@ const MENTIONS_RECHECK = (tool) =>
 const EMPTY_RULE = (lane) =>
   `EMPTY CARD (all-or-nothing): if you emitted at least one real \`discovery\` card for ${lane} this run, emit NO empty card — the lane spoke for itself. ONLY if this lane produced zero real cards, emit exactly one { type:"empty", source:"${lane}", reason:<one line> } in \`discovery\`. The \`source\` is REQUIRED — a sourceless empty renders nowhere on the ${lane} tab. Never both, never more than one.`;
 
+// What the agent says when a run ends — facts in its own words, never a
+// narration of the tools it called.
+const DONE_LINE = 'Say nothing while you work. When done, ONE line in the chat: real counts from this run and what needs me first (a reply to me before a thread); a quiet run gets one line too.';
+
 const RESCAN_PROMPTS = {
   x: [
     'Refresh my X targets in THIS session.',
@@ -2681,12 +2707,12 @@ const RESCAN_PROMPTS = {
     'Then call FetchXTargets and emit the freshest posts as `discovery` cards (source:"x") — bypass the 0.6 fit gate (the roster is pre-vetted), drop any whose status id is in SKIP_URLS, freshest first.',
     MENTIONS_RECHECK('FetchXMentions'),
     EMPTY_RULE('x'),
-    'No prose response.',
+    DONE_LINE,
   ].join('\n'),
-  hn: `Find fresh Hacker News threads on my topics in THIS session. Call FetchHNSearch per topic (and FetchHackerNews); rank by heat (points + comments + recency); for survivors clearing 0.6 fit, read with FetchHNThread and draft a top-level hn-comment reply (register per the MENTION POLICY block above); emit \`discovery\` cards (source:"hn"). Also call FetchHNSubmitCandidates and emit an \`hn_submit\` patch EVERY run without exception — the section is replaced by that patch, so skipping it leaves the PREVIOUS run's links on screen looking current; if the tool returns nothing usable, emit exactly one { type:"empty", source:"hn", reason:<one line> } in \`hn_submit\` instead. Drop SKIP_URLS. ${MENTIONS_RECHECK('FetchHNMentions')} ${EMPTY_RULE('hn')} No prose response.`,
-  reddit: `Find fresh Reddit threads in my configured subs on my topics, in THIS session. Call FetchReddit — it returns two passes per sub, and \`mode:"top"\` (made top-of-day) is the ONLY traction signal Reddit gives, so work those first before \`mode:"new"\`. ALREADY-COMMENTED CHECK FIRST — before scoring or drafting, drop every hit whose post id (the segment after /comments/<id>) appears in SKIP_URLS as \`reddit:<id>\`; that list is threads I have already commented in or dismissed, and a draft for one is wasted work the page hides at render. Then, for question / pain-point threads clearing 0.6 fit, read with FetchRedditThread and drop the thread as well if the tree contains a comment authored by REDDIT_HANDLE (case-insensitive, ignore a leading "u/"); draft a top-level reddit-comment reply for the survivors (register per the MENTION POLICY block above — set \`register\` on each card) and emit \`discovery\` cards (source:"reddit", sub:<the subreddit>). SPREAD: at most 2 cards per subreddit, best first — the page drops the rest, so don't draft a third from the same sub; go to the next sub instead. ${MENTIONS_RECHECK('FetchRedditMentions')} ${EMPTY_RULE('reddit')} No prose response.`,
-  bluesky: `Find fresh Bluesky posts on my keywords, in THIS session. Call FetchBlueskyKeywords; for on-topic question / pain-point posts, draft a reply and emit \`discovery\` cards (sub:"bsky"). Drop SKIP_URLS. ${MENTIONS_RECHECK('FetchBlueskyMentions')} ${EMPTY_RULE('bluesky')} No prose response.`,
-  mentions: 'Check my mentions across sources in THIS session. Call FetchRedditMentions (and FetchHNMentions / FetchXMentions / FetchBlueskyMentions if their sites are enabled). Emit `mention` and `reply_to_me` cards into the `mentions` section per SKILL.md; draft replies follow the MENTION POLICY block above (someone asking about my product is the textbook disclosed case; a plain reply names nothing). NEVER fabricate — a tool error or empty result contributes no card; only if nothing real exists anywhere, emit one `empty` card. No prose response.',
+  hn: `Find fresh Hacker News threads on my topics in THIS session. Call FetchHNSearch per topic (and FetchHackerNews); rank by heat (points + comments + recency); for survivors clearing 0.6 fit, read with FetchHNThread and draft a top-level hn-comment reply (register per the MENTION POLICY block above); emit \`discovery\` cards (source:"hn"). Also call FetchHNSubmitCandidates and emit an \`hn_submit\` patch EVERY run without exception — the section is replaced by that patch, so skipping it leaves the PREVIOUS run's links on screen looking current; if the tool returns nothing usable, emit exactly one { type:"empty", source:"hn", reason:<one line> } in \`hn_submit\` instead. Drop SKIP_URLS. ${MENTIONS_RECHECK('FetchHNMentions')} ${EMPTY_RULE('hn')}` + ' ' + DONE_LINE,
+  reddit: `Find fresh Reddit threads in my configured subs on my topics, in THIS session. Call FetchReddit — it returns two passes per sub, and \`mode:"top"\` (made top-of-day) is the ONLY traction signal Reddit gives, so work those first before \`mode:"new"\`. ALREADY-COMMENTED CHECK FIRST — before scoring or drafting, drop every hit whose post id (the segment after /comments/<id>) appears in SKIP_URLS as \`reddit:<id>\`; that list is threads I have already commented in or dismissed, and a draft for one is wasted work the page hides at render. Then, for question / pain-point threads clearing 0.6 fit, read with FetchRedditThread and drop the thread as well if the tree contains a comment authored by REDDIT_HANDLE (case-insensitive, ignore a leading "u/"); draft a top-level reddit-comment reply for the survivors (register per the MENTION POLICY block above — set \`register\` on each card) and emit \`discovery\` cards (source:"reddit", sub:<the subreddit>). SPREAD: at most 2 cards per subreddit, best first — the page drops the rest, so don't draft a third from the same sub; go to the next sub instead. ${MENTIONS_RECHECK('FetchRedditMentions')} ${EMPTY_RULE('reddit')}` + ' ' + DONE_LINE,
+  bluesky: `Find fresh Bluesky posts on my keywords, in THIS session. Call FetchBlueskyKeywords; for on-topic question / pain-point posts, draft a reply and emit \`discovery\` cards (sub:"bsky"). Drop SKIP_URLS. ${MENTIONS_RECHECK('FetchBlueskyMentions')} ${EMPTY_RULE('bluesky')}` + ' ' + DONE_LINE,
+  mentions: 'Check my mentions across sources in THIS session. Call FetchRedditMentions (and FetchHNMentions / FetchXMentions / FetchBlueskyMentions if their sites are enabled). Emit `mention` and `reply_to_me` cards into the `mentions` section per SKILL.md; draft replies follow the MENTION POLICY block above (someone asking about my product is the textbook disclosed case; a plain reply names nothing). NEVER fabricate — a tool error or empty result contributes no card; only if nothing real exists anywhere, emit one `empty` card.' + ' ' + DONE_LINE,
 };
 
 // Which already-engaged lanes a tab's rescan re-reads. undefined = all.
