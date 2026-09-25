@@ -137,11 +137,16 @@ function stageHeld(content, state, ctx) {
   return stageHolds(view, stageCards(view, { focus: shownHere(content, state, view), fight: Boolean(state.fight) }));
 }
 const THEN = 'Now AskUser exactly `ask` — header, question, options as they are. The reply ends only there.';
-/* Something won: Yinyue's own glad line closes the narration. The stage
-   speaks the reply's last Yinyue line, and a scene entered on a win brings
-   lines of its own — so hers comes last, or the story is what she says
-   (2026-09-17: the 青鼎 rose, she spoke "我想起第三件事" and no one was glad). */
-const THEN_CHEER = 'Something was won: the last line before the AskUser is Yinyue\'s own, glad for the player in her voice — `**银月：**…` / `**Yinyue:** …` — after any scene lines, never the numbers. ' + THEN;
+/* Something won: told in the world, in a line. Her gladness is hers — it
+   arrives by itself as [Yinyue]; this text once had Ling write it as
+   `**银月：**…`, against SKILL.md's law that Ling never speaks for her
+   (live test, 2026-09-25). */
+const CHEER = 'Something was won: tell it in the world in a line, never the numbers. Yinyue\'s words are hers and arrive by themselves — never write a line for her. ';
+const THEN_CHEER = CHEER + THEN;
+/* A scene just entered: Ling asked AskUser before narrating it and typed its
+   options into the reply (live test, 2026-09-25). The scene first, then the question. */
+const THEN_SCENE = 'A scene was entered: Show its `scene.show` cards, narrate `scene.setup` in one to three sentences and speak its `scene.lines`, then AskUser exactly `ask` — never the options in your own words. The reply ends only there.';
+const entered = r => Boolean(r?.ok && r.scene && r.summarize);
 const won = r => {
   const p = r?.paid;
   if (!r?.ok || r.sold || r.bought) return false;
@@ -157,7 +162,7 @@ const THEN_VEIL = 'Something waits on this road (`place.meet`, still veiled): th
 const THEN_TRIAL = 'A 抉择 waits on this road (`place.meet` kind trial, veiled): you write it now — guide `trial`: set the moment in two or three lines, then Meet {action: offer} with the ways (it reveals), and stop.';
 const THEN_QUIET = 'No question this time — the stage holds what is before him, or he has already been asked here. End on your words: name a way on in the line if it is worth naming, and do NOT call AskUser.';
 export const thenFor = (result, ask = undefined) => (result?.place?.meet?.veiled ? (result.place.meet.kind === 'trial' ? THEN_TRIAL : THEN_VEIL) : (result?.quest?.say ? THEN_CALL : '')
-  + (ask === null ? THEN_QUIET : won(result) ? THEN_CHEER : THEN));
+  + (ask === null ? THEN_QUIET : entered(result) ? (won(result) ? CHEER : '') + THEN_SCENE : won(result) ? THEN_CHEER : THEN));
 const withAsk = (result, content, state, ctx) => ({ ...onStage(content, state, ctx, result), ...result });
 
 /* The player's words are an option of the question on screen — a tap on a
@@ -173,6 +178,11 @@ const TAPS = {
   turn: o => `Quest {action: turn, id: ${o.turn}}`,
   meet: o => `Meet {action: ${o.meet}${o.answer ? `, answer: ${o.answer}` : ''}}`,
   divine: () => 'Divine',
+  // The one question before what lets the journey go (rules/confirm.mjs).
+  restart: () => 'Restart',
+  undo: () => 'Undo',
+  load: o => `Load {id: ${o.load}}`,
+  forget: o => `Forget {id: ${o.forget}}`,
 };
 // 去X / Go to X typed — a place asked for in words (a chip on the map is the page's own Move now).
 const GO = /^(去|go to\s+)/i;

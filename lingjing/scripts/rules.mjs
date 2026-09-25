@@ -22,6 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { allWorlds, DEFAULT_WORLD, knownWorld, loadWorld } from './content.mjs';
 import { migrate } from './state.mjs';
 import { askOf, tapThen, withAsk } from './rules/ask.mjs';
+import { guard, onLook, unconfirmed } from './rules/confirm.mjs';
 import { markSeen, notePage, READS_PAGE, unseen } from './rules/did.mjs';
 import { clock, dataDir, freshState, parseArgs, readQuests, savedFile, savedFor, userTurn, withLock, writeAtomic } from './rules/files.mjs';
 import { look, stageAt } from './rules/look.mjs';
@@ -85,12 +86,19 @@ function runLocked(verb, args, stateFile, reader) {
   const now = clock();
   const raw = fs.existsSync(stateFile) ? migrate(JSON.parse(fs.readFileSync(stateFile, 'utf8'))) : null;
 
-  if (verb === 'undo') return undo(stateFile, logFile);
+  // Ling's Restart / Undo / Load / Forget only after the one question was
+  // asked (rules/confirm.mjs); the page's own calls are never gated.
+  if (verb === 'undo') {
+    const held = reader === 'ling' ? guard('undo', args, raw, null, now) : null;
+    return held ? held.result : undo(stateFile, logFile);
+  }
   // `init` begins the world in play again (or the one named), in the
   // language in use; the save it replaces is logged so `undo` brings it back.
   const worldId = verb === 'init' ? args.world ?? raw?.world ?? DEFAULT_WORLD : raw?.world ?? DEFAULT_WORLD;
   if (!knownWorld(worldId)) return { ok: false, refused: 'unknown-world', world: worldId, worlds: allWorlds() };
   const content = loadWorld(worldId);
+  const unasked = verb === 'init' && reader === 'ling' ? guard('init', args, raw, content, now) : null;
+  if (unasked) return unasked.result;
   // Fitted to its world (ids renamed since), and a fight left open on an
   // earlier day closed — both written with whatever this call writes.
   const saved = raw && raw.world === worldId ? closeStaleFight(migrate(raw, content), now) : raw;
@@ -100,7 +108,7 @@ function runLocked(verb, args, stateFile, reader) {
   const owed = verb !== 'init' && saved === state && owesRecap(state, now);
   if (verb === 'init' || !saved) writeAtomic(stateFile, JSON.stringify(state));
   if (verb === 'init') {
-    if (saved) fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args, before: saved }) + '\n');
+    if (saved) fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args, before: unconfirmed(saved) }) + '\n');
     return { ...look(state, content, { now, quests: readQuests() }), restarted: !!saved };
   }
 
@@ -115,9 +123,16 @@ function runLocked(verb, args, stateFile, reader) {
   const held = fightHold(state, verb, args) ?? seclusionHold(state, verb, args);
   if (held) return held.result;
   if (raw) keepDay(raw, now);
+  const asked = reader === 'ling' ? guard(verb, args, state, content, now) : null;
+  if (asked) {
+    if (asked.keep) writeAtomic(stateFile, JSON.stringify(asked.keep));
+    return asked.result;
+  }
   const heard = heed(state, args.said);
   const out = fn(heard, content, { now, quests: readQuests(), turn: userTurn(), said: args.said }, args);
   if (out.result?.load) return loadSave(out.result.load, state, { stateFile, logFile, now });
+  // Forget answered: the asking is used up (Load's is, with the save it replaces).
+  if (verb === 'forget' && out.result?.ok && state.confirm) writeAtomic(stateFile, JSON.stringify(unconfirmed(state)));
   // A save fitted, a stale fight closed or a language heard is a change too.
   const changed = out.state ?? (heard !== (raw ?? state) ? heard : null);
   // What the page did, written down with it, so Ling and Yinyue can read it.
@@ -127,7 +142,7 @@ function runLocked(verb, args, stateFile, reader) {
   if (next) {
     next.updated = now.toISOString();
     writeAtomic(stateFile, JSON.stringify(next));
-    fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args, before: raw ?? state }) + '\n');
+    fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args, before: unconfirmed(raw ?? state) }) + '\n');
   }
   if (out.result?.travel) return travelTo(out.result.travel, next ?? state, { stateFile, logFile, now, verb });
   const asking = next ?? state;
@@ -164,6 +179,12 @@ function runLocked(verb, args, stateFile, reader) {
   // A tapped label is matched against the question whether or not it was
   // asked: the roads are on the map card even when the chat holds its tongue,
   // and a tap on one must still become a Move.
+  // 重来 / 悔棋 in his words: the one question, over the scene's own; its
+  // answer tapped back: the tool it names (rules/confirm.mjs). Never logged.
+  const steer = reader === 'ling' && verb === 'look' ? onLook(args.said, asking, content, now) : null;
+  if (steer?.keep) writeAtomic(stateFile, JSON.stringify(steer.keep));
+  if (steer?.tap) return { ...answer, then: tapThen(steer.tap, args.said) };
+  if (steer?.ask) return { ...answer, ask: steer.ask, then: steer.then };
   const tapCtx = { now, quests: readQuests(), said: args.said };
   const tap = verb === 'look' && tapThen(answer.ask ?? askOf(content, next ?? state, tapCtx, {}, true), args.said);
   return tap ? { ...answer, then: tap } : answer;
@@ -189,10 +210,10 @@ function travelTo(id, current, { stateFile, logFile, now, verb }) {
   const content = loadWorld(id);
   const parked = savedFor(id) ? readSave(savedFile(id)).state : null;
   if (parked) fs.rmSync(savedFile(id), { force: true }); // in play now, not kept
-  const state = parked ?? freshState(content, current.lang, now);
+  const state = unconfirmed(parked) ?? freshState(content, current.lang, now);
   state.updated = now.toISOString();
   writeAtomic(stateFile, JSON.stringify(state));
-  fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb: 'travel', args: { world: id, by: verb }, before: current, parked: parkedBefore }) + '\n');
+  fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb: 'travel', args: { world: id, by: verb }, before: unconfirmed(current), parked: parkedBefore }) + '\n');
   return { ...look(state, content, { now, quests: readQuests() }), travelled: { from: current.world, to: id, fresh: !parked } };
 }
 
@@ -201,12 +222,12 @@ function travelTo(id, current, { stateFile, logFile, now, verb }) {
    play — is let go. The answer is its Look, with `loaded` saying which. */
 function loadSave(found, current, { stateFile, logFile, now }) {
   const parkedBefore = parkedFiles([current.world, ...(found.kind === 'world' ? [found.id] : [])]);
-  const state = migrate(found.state, loadWorld(found.state.world));
+  const state = migrate(unconfirmed(found.state), loadWorld(found.state.world));
   if (state.world !== current.world) keepSave('world', current.world, current, now.toISOString());
   if (found.kind === 'world') fs.rmSync(savedFile(found.id), { force: true });
   state.updated = now.toISOString();
   writeAtomic(stateFile, JSON.stringify(state));
-  fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb: 'load', args: { id: found.id }, before: current, parked: parkedBefore }) + '\n');
+  fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb: 'load', args: { id: found.id }, before: unconfirmed(current), parked: parkedBefore }) + '\n');
   const content = loadWorld(state.world);
   return { ...look(state, content, { now, quests: readQuests() }), loaded: { id: found.id, kind: found.kind, title: found.title, at: found.at } };
 }
@@ -227,7 +248,7 @@ function undo(stateFile, logFile) {
     if (text == null) fs.rmSync(savedFile(id), { force: true });
     else writeAtomic(savedFile(id), text);
   }
-  writeAtomic(stateFile, JSON.stringify(last.before));
+  writeAtomic(stateFile, JSON.stringify(unconfirmed(last.before)));
   writeAtomic(logFile, lines.length ? lines.join('\n') + '\n' : '');
   return { ok: true, undid: last.verb, at: last.at };
 }

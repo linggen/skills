@@ -2024,8 +2024,10 @@ test('in October the road from Ye into 兖 is closed, and the brief says so', ()
   assert.deepEqual(look(s, content, octx()).director.closed.map(c => c.id ?? c), look(s, content, octx()).director.closed.map(c => c.id ?? c));
 });
 
-test('a win asks for Yinyue\'s glad line last; a trade or a refusal does not', () => {
-  const glad = /Yinyue's own, glad/;
+test('a win is told in the world, her words left to her; a trade or a refusal is no win', () => {
+  const glad = /Something was won: tell it in the world/;
+  assert.doesNotMatch(thenFor({ ok: true, paid: { progress: 72, wealth: 20 } }), /\*\*银月：|\*\*Yinyue:|Yinyue's own/, 'never asks Ling to speak for her');
+  assert.match(thenFor({ ok: true, paid: { progress: 72, wealth: 20 } }), /never write a line for her/);
   assert.match(thenFor({ ok: true, paid: { progress: 72, wealth: 20 } }), glad);
   assert.match(thenFor({ ok: true, breakthrough: { from: 'a', to: 'b' } }), glad);
   assert.match(thenFor({ ok: true, paid: { progress: 0, wealth: 0, cast: 'fuzhu' } }), glad);
