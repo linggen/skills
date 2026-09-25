@@ -139,7 +139,10 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // the day's coins fill the stage, unless a line is waiting on this spot.
   // An errand offered here is what the stage is about: the place's creature
   // card gives way to it, and comes back once it is taken (his, 2026-09-21).
-  const kept = focus.map(c => boardOf(look, c)).filter(c => !(c.card === 'board' && boardDoneToday(look, c.id)));
+  // A card the head already draws (the goal line, the quest…) is never drawn
+  // twice when Ling Shows it too (2026-09-25: 眼下要做的 stood twice).
+  const inHead = c => head.some(h => h.card === c.card && (h.id ?? null) === (c.id ?? null));
+  const kept = focus.map(c => boardOf(look, c)).filter(c => !inHead(c) && !(c.card === 'board' && boardDoneToday(look, c.id)));
   const shown = look.offers?.length ? kept.filter(c => c.card !== 'creature') : kept;
   // The day's coins fill an empty stage; a 遇 standing here is not empty.
   const cards = shown.length ? [...shown] : line || look.offers?.length || look.place?.meet ? [] : [{ card: 'hexagram' }];

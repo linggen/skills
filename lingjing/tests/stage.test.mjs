@@ -113,3 +113,10 @@ test('every card kind says whether it holds the stage — a new card cannot skip
   assert.equal(stageHolds(beast(false), [{ card: 'duel', id: 'haunt:kui' }]), true);
   assert.equal(stageHolds(beast(true), [{ card: 'duel', id: 'haunt:kui' }]), false);
 });
+
+test('a card Ling shows that the head already draws stands once (2026-09-25: 眼下要做的 twice)', () => {
+  const look = { waypoint: { text: '鼎气要结丹后期' }, place: { id: 'puyang' } };
+  const cards = stageCards(look, { focus: [{ card: 'goal' }, { card: 'map' }] });
+  assert.equal(cards.filter(c => c.card === 'goal').length, 1);
+  assert.ok(cards.some(c => c.card === 'map'), 'what the head does not draw stays');
+});
