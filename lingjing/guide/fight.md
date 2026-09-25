@@ -19,12 +19,13 @@ may talk — name the beast, tell its heritage, answer what a word means.
 
 When it ends the page says so:
 - `[scene] won <id>` — **Look**, then Resolve the exit if it has one (at a
-  haunt there is none). Tell the finish from the result's `log` — the blow
-  that landed, how close it was — never a number. What it left (`dropped`:
-  what it carried, sometimes a 符, one new card) the stage shows as spoils: say it as a
-  find, or someone met, in a line — never its numbers.
+  haunt there is none). Look carries `bout` once: tell the finish from
+  `bout.last` — the blow that landed, how close it was (`close`) — never a
+  number. What it left (`bout.dropped`: what it carried, sometimes a 符, one
+  new card) the stage shows as spoils: say it as a find, in a line — never
+  Show it again. No `bout.last` (an old save): one plain line, nothing invented.
 - `[scene] lost <id>` — it withdraws until tomorrow; nothing else is lost.
-  Say it plainly; no line for Yinyue.
+  Say it plainly from `bout`; no line for Yinyue.
 - `[scene] withdrew <id>` — the beast ran out of cards: neither won nor
   lost, nothing paid; not a victory.
 

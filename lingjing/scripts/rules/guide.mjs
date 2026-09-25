@@ -12,6 +12,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { inquire } from './inquiry.mjs';
 
 const DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../guide');
 const tag = (said, re) => re.test(String(said ?? '').trim());
@@ -55,10 +56,15 @@ export function guideVerb(args = {}) {
    session. Returns the answer with `guide`, and the save's `guided` to keep. */
 export function withGuides({ verb, said, result, state, session }) {
   if (!result || typeof result !== 'object' || verb === 'guide') return { result, guided: null };
+  // A 问询's `about`, a finished fight's `bout` (inquiry.mjs) — Ling's Look only;
+  // the fight told is remembered here as `bout`, so it is told once.
+  const heard = verb === 'look' ? inquire({ said, result, state }) : null;
+  if (heard) result = heard.result;
+  const bout = heard?.told ?? state?.guided?.bout;
   const key = String(session ?? 'none');
   const was = state?.guided?.session === key ? state.guided.topics ?? [] : [];
   const live = topics().filter(t => !was.includes(t) && TOPICS[t]({ verb, said, result, state }));
   const guide = Object.fromEntries(live.map(t => [t, guideText(t)]).filter(([, text]) => text));
-  if (!Object.keys(guide).length) return { result, guided: null };
-  return { result: { ...result, guide }, guided: { session: key, topics: [...was, ...Object.keys(guide)] } };
+  if (!Object.keys(guide).length) return { result, guided: heard?.told ? { ...state?.guided, bout } : null };
+  return { result: { ...result, guide }, guided: { session: key, topics: [...was, ...Object.keys(guide)], ...(bout ? { bout } : {}) } };
 }
