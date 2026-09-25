@@ -11,6 +11,7 @@ import { initShell, registerTab, setActiveTab, getActiveTab, getSource, onSource
 import { renderPhoneSystem, phoneFacts } from './phone-system.js';
 import { setFileIndex } from './widget-renderers.js';
 import { startLiveTopBar } from './live.js';
+import { flashToast } from './shifu-io.js';
 
 const SKILL_NAME = 'apple-shifu';
 const params = new URLSearchParams(window.location.search);
@@ -895,6 +896,8 @@ async function runClientDeepScan(userMessage) {
   }
   scanning = true;
   syncToolbarBusy();
+  // The progress card takes the body; a scan that fails puts the page back.
+  const before = JSON.parse(JSON.stringify(getCurrentPage()));
 
   // Show progress
   applyPageUpdate({
@@ -972,8 +975,11 @@ async function runClientDeepScan(userMessage) {
     expectPageBlock = true;
     chat.send(prompt);
   } catch (err) {
+    // The page says it stopped; nothing goes to the chat. Asking the agent to
+    // walk the disk itself would be the raw Bash this app never grants it.
     console.error('Deep scan error:', err);
-    chat.send(userMessage + '\n\n(Client-side file scan failed. Please use Bash to scan manually.)');
+    restorePage(before);
+    flashToast(`Large-file scan stopped: ${err?.message || err}. Try ↻ Scan → Large files again.`);
   } finally {
     scanning = false;
     syncToolbarBusy();
