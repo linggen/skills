@@ -161,6 +161,13 @@ test('a name must be 1 to 8 characters', () => {
   refused(resolve, s, { exit: 'name', value: '一二三四五六七八九' }, 'value-invalid');
 });
 
+test('an offered name is kept in its Chinese form, a typed one as typed', () => {
+  const s = must(resolve, start('en'), { exit: 'reach' }).state;
+  for (const [typed, kept] of [['Qingxuan', '青玄'], ['青玄', '青玄'], ['qingxuan ', '青玄'], ['Mobai', '墨白'], ['Alex', 'Alex']]) {
+    assert.equal(must(resolve, s, { exit: 'name', value: typed }).state.name, kept, typed);
+  }
+});
+
 test('the road waits until the practice is done', () => {
   let s = start();
   for (const [exit, extra] of [['reach'], ['name', { value: '青玄' }], ['touch']]) s = must(resolve, s, { exit, ...extra }).state;

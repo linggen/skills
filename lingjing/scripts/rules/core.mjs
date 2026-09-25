@@ -168,8 +168,16 @@ function spendStamina(content, s, ctx, kind, n = 1) {
   return refuse('no-stamina', say, { stamina: s.stamina, cost, returns_at: at.toISOString() });
 }
 
+/* An offered name picked in either form is kept in its zh form: the 道号 is
+   a Chinese name, whatever language it was picked in. */
+function offeredForm(value, rule) {
+  const key = value.toLowerCase();
+  const hit = (rule.offers ?? []).find((o) => o.zh === value || String(o.en ?? '').toLowerCase() === key);
+  return hit?.zh ?? value;
+}
+
 function cleanValue(raw, rule) {
-  const value = String(raw ?? '').trim();
+  const value = offeredForm(String(raw ?? '').trim(), rule);
   const length = [...value].length;
   return length >= 1 && length <= rule.max_chars ? value : null;
 }
