@@ -70,7 +70,7 @@ export function watchQueue() {
 
 /// The model is not perfectly consistent: `body` arrives as { key } or
 /// [{ key }] (and rarely the bare key).
-function extractKey(args, key) {
+export function extractKey(args, key) {
   if (!args) return null;
   const fromBody = (b) => {
     if (!b) return null;

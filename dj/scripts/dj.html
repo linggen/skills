@@ -24,7 +24,7 @@
       <section class="left">
         <!-- Primary call-to-action: describe a vibe → Build. -->
         <div class="build">
-          <div class="build-hint">Tell DJ a vibe — it builds the set and grabs clean MP3s with lyrics, ready for your phone.</div>
+          <div class="build-hint">Tell DJ a vibe — it builds the set; Get pulls in clean MP3s with lyrics, ready for your phone.</div>
           <div class="build-row">
             <input id="build-input" type="text" placeholder="Make a list of 90s English songs" autocomplete="off" />
             <button id="build-btn" class="btn">Build</button>
@@ -44,6 +44,14 @@
 
         <!-- DYNAMIC: the set the agent proposes via PageUpdate. Hidden until then. -->
         <div id="set" class="set hidden" aria-live="polite"></div>
+
+        <!-- The first view is Play now — a few rows composed from the library's
+             own facts (play-now.js); the whole library is one tab away. -->
+        <div class="view-tabs" role="tablist">
+          <button class="view-tab" data-tab="now" role="tab">Play now</button>
+          <button class="view-tab" data-tab="library" role="tab">Library</button>
+        </div>
+        <div id="play-now" class="play-now"></div>
 
         <!-- FIXED: the library the page owns. The agent never touches this. -->
         <div class="library-wrap">
