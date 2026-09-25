@@ -1033,21 +1033,29 @@ async function payWin(id) {
 }
 
 /// A board won while 体力 was empty, paid now it is back — the same day,
-/// as the rules keep it. Once per Look, one at a time.
+/// as the rules keep it. Once per Look, one at a time. Never while 闭关 holds
+/// the world, and a refusal never redraws: a refused pay that refreshed ran
+/// Look → pay → refused → Look… and the redraw swallowed the 出关 tap
+/// (2026-09-25, "出关按钮没有反应" — it took several clicks).
 let payingKept = false;
 async function payKeptWins() {
-  if (payingKept || !look || look.stamina?.empty || look.fight) return;
+  if (payingKept || !look || look.stamina?.empty || look.fight || look.seclusion) return;
   const kept = (look.tasks ?? []).filter((t) => t.won && t.status !== 'done');
   const tale = Boolean(look.tale?.step?.won);
   if (!kept.length && !tale) return;
   payingKept = true;
+  let paid = false;
   try {
-    for (const t of kept) await payWin(t.id);
-    if (tale) await taleDone(await write('tale', { action: 'turn' }).catch(failed));
+    for (const t of kept) paid = (await payWin(t.id))?.ok || paid;
+    if (tale) {
+      const r = await write('tale', { action: 'turn' }).catch(failed);
+      if (r.ok) paid = (await taleDone(r)) || paid;
+      else keep({ doNote: refusal(r) });
+    }
   } finally {
     payingKept = false;
   }
-  await refresh();
+  if (paid) await refresh();
 }
 
 /// Tell Ling, unseen: a board or a bout the page played.
