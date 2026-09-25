@@ -15,7 +15,6 @@ const SECTION_ORDER = [
   'mentions',
   'replies_due',
   'discovery',
-  'hn_submit',
 ];
 
 const SECTION_LABELS = {
@@ -23,12 +22,10 @@ const SECTION_LABELS = {
   mentions:        'Mentions',
   replies_due:     'Replies due',
   discovery:       'Discovery',
-  hn_submit:       'HN submit',
 };
 
 const SECTION_HINTS = {
   discovery: 'cold opportunities · matched against brief',
-  hn_submit: 'links to submit · lowers your own-post ratio',
 };
 
 let session = emptySession();
@@ -63,7 +60,6 @@ function emptySession() {
       mentions:        { cards: [], last_updated: null },
       replies_due:     { cards: [], last_updated: null },
       discovery:       { cards: [], last_updated: null },
-      hn_submit:       { cards: [], last_updated: null },
       progress_drafts: { cards: [], last_updated: null },
     },
     last_scan: {},   // tabId -> ISO timestamp of the last content for that tab
@@ -285,14 +281,12 @@ export function loadSession(sessionData) {
     for (const sec of Object.values(session.sections)) {
       sec.cards = normalizeNoticeCards(sec.cards || []);
       sec.cards.forEach(ensureCardId);
-      // Heal sessions holding submit cards that point at an image, not an
-      // article — they were persisted before the finder stopped emitting them.
-      sec.cards = dropUnsubmittableCards(sec.cards);
+      sec.cards = dropRetiredCards(sec.cards);
     }
     if (session.sections.discovery) {
       session.sections.discovery.cards = capPerSub(session.sections.discovery.cards || []);
     }
-    rerouteMisfiledCards(session.sections);
+    delete session.sections.hn_submit;
   }
   renderAll();
 }
@@ -348,63 +342,18 @@ function ensureCardId(c) {
   return c;
 }
 
-// Cards carry their own type, and a typed card's home section is a
-// mechanical invariant — never the model's call. Observed misfile:
-// hn_submit cards emitted inside a discovery patch, where the HN tab's
-// per-source discovery filter silently hides them (submit candidates are
-// external links — lobste.rs etc. — so cardSource never matches 'hn').
-const TYPE_HOME_SECTION = { hn_submit: 'hn_submit' };
-
 // Sections that pool cards from every lane; replace-mode patches on these
 // are lane-scoped (see applyBodyPatch) so one lane's rescan can't erase
 // another lane's cards.
 const MULTI_SOURCE_SECTIONS = ['discovery', 'mentions'];
 
-// Move misfiled cards to their home section (id-deduped append). Runs
-// after every body patch and on persisted-session load, so cards saved
-// under the wrong section heal too. Idempotent.
-function rerouteMisfiledCards(sections) {
-  for (const [sectionId, sec] of Object.entries(sections)) {
-    const cards = sec.cards || [];
-    const stay = [];
-    for (const c of cards) {
-      const home = c && TYPE_HOME_SECTION[c.type];
-      if (!home || home === sectionId) { stay.push(c); continue; }
-      if (!sections[home]) sections[home] = { cards: [], last_updated: null };
-      const homeCards = sections[home].cards || (sections[home].cards = []);
-      if (!homeCards.some(h => h.id && h.id === c.id)) homeCards.push(c);
-    }
-    sec.cards = stay;
-  }
-}
+// HN submit candidates were retired (2026-09-25): the feature existed to
+// game HN's own-link filter. Sessions saved before then still hold the
+// section and its `submit` cards; they are shed on load and never ingested.
+const RETIRED_TYPES = new Set(['submit', 'hn_submit']);
 
-// A submit candidate has to be something a HN reader can READ. "Is this URL an
-// article" is a mechanical test, so the page owns it — the same reason card
-// ids and home sections are not the model's call.
-// Observed 2026-08-12: four `submit` cards pointing at i.redd.it .png/.gif,
-// each with a "Submit on HN" button. hn-submit-finder.sh was fixed to stop
-// emitting them, but the cards were ALREADY persisted in the session and the
-// HN rescan that followed emitted no hn_submit patch at all, so nothing
-// replaced them and the page kept serving them as current. A validator here
-// covers both halves: junk can't enter, and it heals sessions that already
-// hold it (loadSession runs this too).
-const NOT_ARTICLE_HOSTS = ['redd.it', 'reddit.com', 'imgur.com'];
-const MEDIA_EXT_RE = /\.(png|jpe?g|gif|webp|bmp|svg|mp4|webm|mov|m4v|avi|mp3|wav)$/i;
-
-function isArticleUrl(url) {
-  if (!url) return false;
-  let u;
-  try { u = new URL(url); } catch { return false; }
-  const host = u.hostname.toLowerCase().replace(/^www\./, '');
-  if (NOT_ARTICLE_HOSTS.some(d => host === d || host.endsWith('.' + d))) return false;
-  return !MEDIA_EXT_RE.test(u.pathname);
-}
-
-function dropUnsubmittableCards(cards) {
-  return (cards || []).filter(c => {
-    if (!c || (c.type !== 'submit' && c.type !== 'hn_submit')) return true;
-    return isArticleUrl(c.url);
-  });
+function dropRetiredCards(cards) {
+  return (cards || []).filter(c => !(c && RETIRED_TYPES.has(c.type)));
 }
 
 // "This lane found nothing" is a mechanical fact about the patch, not the
@@ -471,6 +420,7 @@ function capPerSub(cards) {
 
 function applyBodyPatch(patch) {
   if (!patch || typeof patch !== 'object' || !patch.section) return;
+  if (patch.section === 'hn_submit') return;
   const sectionId = patch.section;
   if (!session.sections[sectionId]) {
     session.sections[sectionId] = { cards: [], last_updated: null };
@@ -482,7 +432,7 @@ function applyBodyPatch(patch) {
     // before the render-time filter hides them. (Seed loads before any
     // gather — see init() — so dismissedUrls is populated by the time a
     // body_patch arrives.)
-    const incoming = dropUnsubmittableCards(dropContradictoryEmpties(
+    const incoming = dropRetiredCards(dropContradictoryEmpties(
       normalizeNoticeCards(patch.cards.filter(c => !isDismissed(c)))))
       .map(ensureCardId);
     // Two modes:
@@ -526,7 +476,6 @@ function applyBodyPatch(patch) {
   }
   const ts = patch.last_updated || new Date().toISOString();
   session.sections[sectionId].last_updated = ts;
-  rerouteMisfiledCards(session.sections);
   stampTabScan(sectionId, ts);
 }
 
@@ -681,7 +630,7 @@ function renderStatusStrip() {
 // #x-tab-extras).
 const TABS = [
   { id: 'x',        label: 'X',        siteKey: 'x',          source: 'x',       sections: ['discovery'] },
-  { id: 'hn',       label: 'HN',       siteKey: 'hackernews', source: 'hn',      sections: ['discovery', 'hn_submit'] },
+  { id: 'hn',       label: 'HN',       siteKey: 'hackernews', source: 'hn',      sections: ['discovery'] },
   { id: 'reddit',   label: 'Reddit',   siteKey: 'reddit',     source: 'reddit',  sections: ['discovery'] },
   { id: 'bluesky',  label: 'Bluesky',  siteKey: 'bluesky',    source: 'bluesky', sections: ['discovery'] },
   { id: 'mentions', label: 'Mentions', siteKey: null,         source: null,      sections: ['mentions', 'replies_due'] },
@@ -995,8 +944,6 @@ function renderCard(card) {
     case 'reply_to_me':  return renderReplyToMe(card);
     case 'reply':        return renderReply(card);
     case 'discovery':    return renderDiscovery(card);
-    case 'submit':
-    case 'hn_submit':    return renderSubmit(card); // models emit the section name
     case 'progress':     return renderProgress(card);
     case 'draft':        return renderDraft(card);
     case 'empty':        return renderEmpty(card);
@@ -1198,30 +1145,6 @@ function renderDiscovery(c) {
   `);
 }
 
-// HN submit candidate — a third-party article to SUBMIT to HN (lowers the
-// own-post ratio). NO draft: it's a title + url to post. The primary action
-// opens HN's prefilled submitlink form; the url shown is the external article
-// (never a news.ycombinator.com link). hn_status "fresh" = verified not on HN;
-// "unchecked" = Algolia was unreachable, so flag it for a manual check.
-function renderSubmit(c) {
-  const title = c.title || c.thread_title || '(untitled)';
-  const statusBit = c.hn_status === 'unchecked'
-    ? '⚠ verify on hn.algolia.com first'
-    : '✓ not on HN';
-  const metaBits = [
-    c.source ? escapeHtml(c.source) : null,
-    c.score ? `${c.score} pts` : null,
-    c.age_hours != null ? formatAge(c.age_hours) : null,
-    statusBit,
-  ].filter(Boolean).join(' · ');
-  return cardEl(c, 'cold', `
-    <div class="title"><b>${escapeHtml(title)}</b></div>
-    <div class="meta">${metaBits}</div>
-    ${c.url ? `<div class="excerpt">${escapeHtml(c.url)}</div>` : ''}
-    ${actionRow(c, ['submit-hn', 'open-url', 'copy-url', 'dismiss'])}
-  `, 'dense');
-}
-
 function renderProgress(c) {
   const items = (c.items || []).map(i => {
     const kind = i.kind ? `<b>${escapeHtml(i.kind)}:</b> ` : '';
@@ -1336,7 +1259,6 @@ const ACTION_LABELS = {
   'draft-replies':  { label: '✎ Draft replies',  primary: true },
   'draft-starter':  { label: '✎ Draft starter',  primary: true },
   'draft-post':     { label: '✎ Draft post',     primary: true },
-  'submit-hn':      { label: '↗ Submit on HN',   primary: true },
   'reply-back':     { label: '✎ Reply back',     primary: true },
   'polish':         { label: '✎ Polish',         primary: true },
   'open':           { label: '↗ Open',           primary: false },

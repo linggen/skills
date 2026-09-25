@@ -17,17 +17,7 @@
     "hackernews": {
       "enabled": true,
       "keywords": [],
-      "username": "",
-      "submit_sources": {
-        "lobsters": true,
-        "subreddits": [
-          "programming",
-          "rust",
-          "MachineLearning",
-          "compsci",
-          "selfhosted"
-        ]
-      }
+      "username": ""
     },
     "reddit": {
       "enabled": true,
