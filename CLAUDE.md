@@ -4,19 +4,19 @@ This is the Linggen skills repository — the standalone source of truth for the
 
 ## Edit workflow — three synced surfaces
 
-Edit HERE first, then copy changed files to the other two surfaces (keep all three byte-identical):
+Edit HERE first, commit and push, then bring the other two surfaces up to that commit:
 
 1. `skills/<name>/…` — this repo (standalone source of truth)
-2. `~/.linggen/skills/<name>/…` — what the running daemon serves (page changes: reload the app iframe; SKILL.md changes: `POST /api/skills/reload` with `Content-Type: application/json` body `{}`, then a NEW chat to bind)
+2. `~/.linggen/skills/<name>/…` — what the running daemon serves. Install ONLY with `scripts/install-skill.sh <name>` after pushing — never copy files by name. It installs the whole skill from `origin/main` (`--ref HEAD` for a local commit), refuses if any JS fails `node --check` or imports a name its neighbour doesn't export, never deletes or touches user state, and reloads skills when SKILL.md changed (then a NEW chat to bind). Page changes: reload the app iframe. `--check` shows drift; `--dry-run` what would change.
 3. `linggen/linggen-app/vendor/skills` — git submodule of this repo. After pushing here: `git pull origin main` inside the submodule, then commit the pointer bump in linggen-app.
 
 Never edit `~/.linggen` or `vendor/skills` directly.
 
-Never `rsync --delete` (or rm-and-copy) into `~/.linggen/skills/<name>/` — the install holds user state git never has (`config.json`, `data/`, `state/`). One such sync on 2026-09-10 wiped Pulse's config and six skills' data. Copy the changed files by name.
+Never `rsync --delete` (or rm-and-copy) into `~/.linggen/skills/<name>/` — the install holds user state git never has (`config.json`, `data/`, `state/`). One such sync on 2026-09-10 wiped Pulse's config and six skills' data; copying by name blanked Lingjing twice on 2026-09-25 (a file landed without the neighbour it imports). `install-skill.sh` exists for both.
 
 ## Conventions
 
-- Syntax-check JS with `node --check` before syncing; there is no build step — files are served as-is.
+- Syntax-check JS with `node --check` before committing (install-skill.sh refuses otherwise); there is no build step — files are served as-is.
 - Before committing: `./scripts/check.sh` (CI runs the same on every push) — or piecemeal, `node --test tests/*.test.mjs` at the repo root (every SKILL.md frontmatter in the engine's shape; every script parses, every `.sh` passes `bash -n`, every page's local assets exist), plus the skill's own `node --test <skill>/tests/*.test.mjs`.
 - Skill JS runs in a sandboxed iframe: no `window.confirm/prompt` (silent no-ops in the app shell) — use the shared dialog helpers.
 - Files written via `/api/bash` must end with a trailing newline (sentinel-strip gotcha).
