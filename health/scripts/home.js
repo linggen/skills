@@ -115,50 +115,22 @@ export function validHome(home) {
   return null;
 }
 
-/// The composition to draw: the phone's when it is valid, else a plain one
-/// built from the review's own series — a phone from before the composition
-/// still has fortnights worth a line, and the Mac shows those rather than
-/// nothing. Never a guess at anything the review did not carry.
+/// Said on the page when no phone has composed it: a gap, stated as one.
+export const NOT_COMPOSED = 'No iPhone has composed this page yet. It appears after the first examination syncs.';
+
+/// The composition to draw: the phone's, exactly as it composed it. When no
+/// phone has synced a valid one there is nothing to draw — the Mac never
+/// builds a catalog of its own (no invented question, period or pick). The
+/// empty stand-in carries `fallback: true` and says so in [NOT_COMPOSED].
 export function homeOf(report) {
   const held = report?.layout?.home;
   if (held && !validHome(held)) return held;
-  const r = report?.review;
-  const catalog = (Array.isArray(r?.verdicts) ? r.verdicts : []).flatMap((f) => {
-    if (f.verdict === 'thin' || !Array.isArray(f.series)) return [];
-    if (f.series.filter(isNum).length < 2) return [];
-    const end = new Date(`${f.series_to || r.date}T12:00:00Z`);
-    if (!Number.isFinite(end.getTime())) return [];
-    const n = f.series.length;
-    const e = {
-      id: `${f.type}#line14`,
-      subject: f.type,
-      kind: 'line',
-      kinds: ['line'],
-      title: f.label,
-      question: `Is my ${f.label} where it usually is?`,
-      period: `Last ${n} days`,
-      periods: [`${f.type}#line14`],
-      values: f.series.map((v) => (isNum(v) ? v : null)),
-      labels: f.series.map((_, i) =>
-        new Date(end.getTime() - (n - i - 1) * 86400000).toISOString().slice(0, 10)),
-      coverage: `${f.series.filter(isNum).length} of ${n} days measured`,
-      source: `review/${r.date}.json`,
-      relevance: 0.5,
-      tier: 'ranked',
-    };
-    if (typeof f.unit === 'string') e.unit = f.unit;
-    if (isNum(f.normal)) e.normal = f.normal;
-    return validEntry(e) ? [] : [e];
-  });
-  const picked = catalog.find((c) => c.subject === r?.index?.picked) || catalog[0];
   return {
     version: VERSION,
-    by: 'mac',
-    catalog,
-    selected: picked?.id ?? null,
-    why: picked
-      ? 'Drawn from the examination: this phone has not composed a Focus yet.'
-      : 'Nothing to draw until the phone has examined something.',
+    by: 'none',
+    catalog: [],
+    selected: null,
+    why: NOT_COMPOSED,
     hidden: [],
     kinds: {},
     opened: {},

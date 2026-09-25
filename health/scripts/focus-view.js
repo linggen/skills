@@ -60,7 +60,7 @@ export function focusView(report, { change, explore, ask, canUndo, entryId, head
       el(
         'p',
         'dim',
-        home.catalog.length
+        home.fallback || home.catalog.length
           ? home.why
           : 'Not enough recorded yet to draw anything. It fills in as the phone reads its history.',
       ),

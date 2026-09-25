@@ -13,6 +13,7 @@ import {
   dismissCard,
   homeOf,
   MAX_HIGHLIGHTS,
+  NOT_COMPOSED,
   selectedOf,
   validEntry,
   validHome,
@@ -166,7 +167,7 @@ test('hiding the one on screen hands Focus to the next in the phone\'s order', (
   assert.deepEqual(changeFocus(next, { action: 'unhide', id: 'protein' }).hidden, []);
 });
 
-test('a phone that has not composed yet still gets its fortnights drawn, never a guess', () => {
+test('a phone that has not composed yet is a stated gap — the Mac invents no catalog', () => {
   const report = {
     today: '2026-09-08',
     review: {
@@ -174,19 +175,19 @@ test('a phone that has not composed yet still gets its fortnights drawn, never a
       index: { picked: 'hrv' },
       verdicts: [
         { type: 'hrv', label: 'HRV', verdict: 'normal', unit: 'ms', normal: 32, series: [30, null, 33, 31], series_to: '2026-09-08' },
-        { type: 'w', label: 'Weight', verdict: 'thin' },
-        { type: 'x', label: 'One', verdict: 'normal', series: [1] },
       ],
     },
   };
   const h = homeOf(report);
   assert.equal(h.fallback, true);
-  assert.equal(h.catalog.length, 1, 'thin and single-point series are not drawn');
-  assert.equal(h.selected, 'hrv#line14');
-  assert.deepEqual(h.catalog[0].values, [30, null, 33, 31], 'a gap stays a gap');
-  assert.equal(h.catalog[0].labels[0], '2026-09-05');
-  assert.equal(selectedOf(h).kind, 'line');
+  assert.deepEqual(h.catalog, [], 'no catalog built from the review');
+  assert.equal(h.selected, null);
+  assert.equal(selectedOf(h), null);
+  assert.equal(h.why, NOT_COMPOSED, 'the page says the gap plainly');
+  assert.deepEqual(cardsOf(h), []);
   assert.equal(homeOf({ layout: { home: home() } }).fallback, undefined, 'a valid composition is used as it is');
+  assert.deepEqual(homeOf({ layout: { home: home() } }), home(), 'drawn exactly as the phone composed it');
+  assert.equal(homeOf({ layout: { home: { ...home(), version: 1 } } }).fallback, true, 'another version is not guessed at');
   assert.equal(homeOf({}).catalog.length, 0);
 });
 
