@@ -54,7 +54,7 @@ const LEGACY_BRIEF_EXAMPLE = `${SKILL_DIR}/references/brief.example.md`;
 const WEBSITES = [
   {
     name: 'Hacker News',
-    desc: 'Add discovery keywords to find recent HN threads on your topics and draft a comment for each (Target) — the way to build karma on a new account before posting. Set your username so threads you\'ve already commented on drop out. Via the public Algolia HN API — no auth. Pulse drafts; you paste manually, never auto-posted.',
+    desc: 'Works with nothing — public, no account. Keywords find recent threads on your topics, each with a drafted comment; your username adds replies to you and drops threads you already answered. You post by hand.',
     source_id: 'hackernews',
     target_id: 'hn-comment',
     source_fields: [
@@ -63,8 +63,17 @@ const WEBSITES = [
     ],
   },
   {
+    name: 'Bluesky',
+    desc: 'Works with nothing — public, no account. Your handle adds mentions and replies to you; keywords (topics, not brand names) find threads in your space.',
+    source_id: 'bluesky',
+    source_fields: [
+      { kind: 'text', key: 'handle', label: 'My Bluesky handle (for mention monitoring)', placeholder: 'e.g. yourname.bsky.social — without the @ prefix' },
+      { kind: 'chips', key: 'keywords', label: 'Search keywords (categories, not brand names)' },
+    ],
+  },
+  {
     name: 'Reddit',
-    desc: 'Newest threads from each subreddit (Source) + per-thread comment drafts (Target), via Reddit\'s RSS feeds. Reddit closed its anonymous JSON API (Nov 2025); your private RSS token (free, no app — see below) unlocks replies/mentions AND lifts subreddit discovery off the tight shared anonymous rate-limit.',
+    desc: 'Works without an account, but thinly: a few subreddits per scan, and no replies to you. Your private RSS token (free, steps below) unlocks replies to you and every subreddit on each scan.',
     source_id: 'reddit',
     target_id: 'reddit-comment',
     source_fields: [
@@ -97,7 +106,7 @@ const WEBSITES = [
   },
   {
     name: 'X (Twitter)',
-    desc: 'Mentions, replies, and topic discovery read from your logged-in x.com session via the free linggen-browser extension — no paid API. Install the extension and stay signed in to X; without it the X section stays empty. Target accounts are now curated automatically into the X tab roster (from your who-to-follow recs, on-topic posters, and second-degree follows) — no manual list; prune with Ignore / Dismiss on the cards. Pulse drafts replies and ≤280-char posts; you copy them to X manually — never auto-posted.',
+    desc: 'Needs the free linggen-browser extension and you signed in to x.com — without it, X stays empty. With it: mentions, replies to you, and a roster of accounts worth replying to, built for you. Pulse drafts; nothing is posted without your tap.',
     source_id: 'x',
     target_id: 'x-post',
     source_fields: [
@@ -109,15 +118,6 @@ const WEBSITES = [
     name: 'Lobsters',
     desc: 'Lobste.rs newest feed.',
     source_id: 'lobsters',
-  },
-  {
-    name: 'Bluesky',
-    desc: 'Public AT Proto monitoring — no auth required. Set your handle to surface mentions and replies. Add category keywords (extracted from your brief, NOT brand names) for discovery — Bluesky has no subreddits, so keyword search is how you find threads in your space.',
-    source_id: 'bluesky',
-    source_fields: [
-      { kind: 'text', key: 'handle', label: 'My Bluesky handle (for mention monitoring)', placeholder: 'e.g. yourname.bsky.social — without the @ prefix' },
-      { kind: 'chips', key: 'keywords', label: 'Search keywords (categories, not brand names)' },
-    ],
   },
   {
     name: 'arxiv',

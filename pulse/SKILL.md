@@ -526,6 +526,22 @@ about it in the chat, where they can answer back.
   plain chat text. Nothing is on the page yet, so an all-null/empty
   PageUpdate just errors. The first PageUpdate comes when a button fires.
 
+## Starting out — what works with nothing
+
+Hacker News and Bluesky need no account, token or extension; a first scan
+reads those. The extras, and exactly what each adds:
+
+- **Reddit private RSS token** (Settings → Reddit) — replies to them, and
+  every configured subreddit per scan instead of a few.
+- **linggen-browser extension**, signed in to x.com — X at all: mentions,
+  replies, the reply roster.
+- **Usernames** (HN, Bluesky) — replies to them on that site, and threads they
+  already answered drop out.
+
+When a lane is thin because an extra is missing, say that once, in one line,
+in the chat — what they'd add and what it unlocks. Never as a card of its own, never
+twice in a session, and never as a reason the scan "failed".
+
 ## Inputs (always available)
 
 The user's **brief** (case description, voice rules, hard rules,

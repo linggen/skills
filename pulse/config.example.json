@@ -19,8 +19,13 @@
       "keywords": [],
       "username": ""
     },
-    "reddit": {
+    "bluesky": {
       "enabled": true,
+      "handle": "",
+      "keywords": []
+    },
+    "reddit": {
+      "enabled": false,
       "subs": [
         "LocalLLaMA",
         "macapps"
@@ -53,11 +58,6 @@
     },
     "product-hunt": {
       "enabled": false
-    },
-    "bluesky": {
-      "enabled": false,
-      "handle": "",
-      "keywords": []
     }
   },
   "targets": {
