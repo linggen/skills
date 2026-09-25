@@ -28,6 +28,9 @@ const MONEY_RE = /[-+]?\$?\d{1,3}(?:,?\d{3})*\.\d{2}[-+]?(?:\s?(?:cr|dr))?/ig;
 // spend — "BILL PAYMENT HYDRO ONE" and "E-TRANSFER SENT" are money leaving.
 const INBOUND_RE = /\b(deposit|refund|reversal|statement credit|credit adjustment|cash\s*back|rebate|(?:payment|pymt)s?\s+received|payment\s*-?\s*thank you|thank you for your payment|transfer in|e-?transfer\s+(received|deposit))\b/i;
 const OUTBOUND_RE = /\b(sent|bill\s*pay(ment)?|to|withdrawal|withdraw|pre-?authori[sz]ed (payment|debit))\b/i;
+// Money coming back names itself: a refund or reversal is inbound whatever
+// preposition follows it ("REFUND TO CARD" — the `to` is where it went).
+const RETURNED_RE = /\b(refund|reversal|rebate|cash\s*back|statement credit|credit adjustment|chargeback)\b/i;
 // A second date opening the description — the posting date of a two-date row.
 const POSTING_RE = new RegExp(`^\\s*(?:${MONTH_RE}[a-z]*\\.?\\s+\\d{1,2}(?:,?\\s*\\d{4})?|\\d{1,2}/\\d{1,2}(?:/\\d{2,4})?)(?=\\s)`, 'i');
 // A statement's summary box, not a transaction: the balances, limits and
@@ -167,7 +170,7 @@ export function isInbound(line, amtTok, cols = null, card = false) {
   const side = columnSide(line, tok, cols);
   if (side) return side === 'credit';
   const text = line.text ?? line;
-  return INBOUND_RE.test(text) && !OUTBOUND_RE.test(text);
+  return RETURNED_RE.test(text) || (INBOUND_RE.test(text) && !OUTBOUND_RE.test(text));
 }
 
 // Pure, testable: statement lines -> [{date, merchant, amount}]. Spend negative.
