@@ -729,14 +729,41 @@ async function changeLayout(cmd, id = '') {
 
 let overviewRun = 0;
 
+const CHECK_MISSION = 'apple-shifu:weekly-check';
+
+/** The weekly check's switch, from the missions API; null when the engine
+    does not list it. */
+async function readWeekly() {
+  try {
+    const res = await fetch('/api/missions');
+    if (!res.ok) return null;
+    const m = ((await res.json()).missions || []).find((x) => x.id === CHECK_MISSION);
+    return m ? { enabled: Boolean(m.enabled) } : null;
+  } catch { return null; }
+}
+
+async function switchWeekly(on) {
+  try {
+    const res = await fetch(`/api/missions/${encodeURIComponent(CHECK_MISSION)}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: on }),
+    });
+    if (!res.ok) throw new Error(`update ${res.status}`);
+    flashToast(on ? 'Weekly check on — Mondays at 10:00.' : 'Weekly check off.');
+  } catch {
+    flashToast("Couldn't reach Linggen — the weekly check is unchanged.");
+  }
+  refreshOverview();
+}
+
 /** Redraw the Overview from what is on disk now; returns the card order (ids)
     for the report, with the user's pin marked. */
 async function refreshOverview() {
   const run = ++overviewRun;
-  const [layoutRes, clearable, df] = await Promise.all([
+  const [layoutRes, clearable, df, weekly] = await Promise.all([
     scanBash(`bash ${SHIFU_SCRIPTS}/layout.sh read`).catch(() => ({})),
     readClearable(),
     scanBash('df -k /System/Volumes/Data 2>/dev/null || df -k /').catch(() => ({})),
+    readWeekly(),
   ]);
   const facts = readFacts();
   const security = facts?.security || await readoutSecurity();
@@ -749,8 +776,10 @@ async function refreshOverview() {
   renderOverview(document.getElementById('overview-area'), {
     cards, layout, hiddenCount: all.length - cards.length,
     scanned: Boolean(facts || security || getLastScanAt()),
+    weekly,
     onAction: (c) => OVERVIEW_ACTIONS[c.action.kind]?.(),
     onLayout: changeLayout,
+    onWeekly: switchWeekly,
   });
   return cards.map((c) => (c.id === layout.pinned ? `${c.id} (pinned by the user)` : c.id));
 }

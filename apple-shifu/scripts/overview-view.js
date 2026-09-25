@@ -10,7 +10,7 @@ import { openMenu } from './shifu-shell.js';
  * @param {{ cards: object[], layout: object, hiddenCount: number, scanned: boolean,
  *           onAction: (card) => void, onLayout: (cmd: string, id?: string) => void }} v
  */
-export function renderOverview(el, { cards, layout, hiddenCount, scanned, onAction, onLayout }) {
+export function renderOverview(el, { cards, layout, hiddenCount, scanned, weekly = null, onAction, onLayout, onWeekly }) {
   if (!el) return;
   const rows = cards.map((c) => `
     <div class="ov-card ov-${esc(c.tone)}" data-id="${esc(c.id)}">
@@ -31,8 +31,12 @@ export function renderOverview(el, { cards, layout, hiddenCount, scanned, onActi
     ? `<button class="ov-link" type="button" data-cmd="show-all">${hiddenCount} hidden · show</button>` : '';
   const why = layout.why && layout.lead && cards.some((c) => c.id === layout.lead)
     ? '<button class="ov-link" type="button" data-cmd="why">Why this order</button>' : '';
+  // The opt-in weekly check (missions/weekly-check). Absent when the engine
+  // does not list the mission, rather than a switch that does nothing.
+  const week = weekly
+    ? `<button class="ov-link" type="button" data-cmd="weekly" title="Mondays: free space, what can be cleared, the backup gap — one line. Never deletes.">Weekly check: ${weekly.enabled ? 'on' : 'off'}</button>` : '';
   el.innerHTML = `${rows}${quiet}
-    <div class="ov-foot">${why}${hidden}</div>
+    <div class="ov-foot">${why}${hidden}${week}</div>
     <p class="ov-why" hidden>${esc(layout.why || '')}</p>`;
 
   for (const card of el.querySelectorAll('.ov-card')) {
@@ -49,6 +53,8 @@ export function renderOverview(el, { cards, layout, hiddenCount, scanned, onActi
   }
   const showAll = el.querySelector('[data-cmd="show-all"]');
   if (showAll) showAll.onclick = () => onLayout('show', 'all');
+  const weekBtn = el.querySelector('[data-cmd="weekly"]');
+  if (weekBtn) weekBtn.onclick = () => onWeekly?.(!weekly.enabled);
   const whyBtn = el.querySelector('[data-cmd="why"]');
   if (whyBtn) {
     whyBtn.onclick = () => {

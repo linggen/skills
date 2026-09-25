@@ -143,6 +143,18 @@ tools:
     # `edit`: it writes the skill's own layout file. It removes nothing.
     tier: edit
     timeout_ms: 5000
+  - name: WeeklyCheck
+    description: >-
+      The weekly check (the weekly-check mission's one tool): free space,
+      the Clearable safe total as the Files tab last wrote it, iPhone items
+      with no copy here, and the change since last week. Saves
+      data/check.json, hands it to the paired phone, and sends a warning
+      under 10% free to Yinyue. Reads only — it deletes and scans nothing.
+      Returns JSON.
+    cmd: "python3 $SKILL_DIR/scripts/check.py"
+    # `edit`: it writes its own check file and tells the phone and Yinyue.
+    tier: edit
+    timeout_ms: 20000
   - name: MediaState
     description: >-
       Read the Media tab's pipeline state: connected device snapshot and the
@@ -384,6 +396,16 @@ it lists:
 
 Every figure comes from the message or your tools. No projection of when the
 disk fills — say what grew instead. Words only: no PageUpdate on this turn.
+
+### The weekly check (opt-in)
+
+The **weekly-check** mission is off until the user turns it on (the
+Overview's "Weekly check" switch). Monday mornings it reads free space, the
+Clearable total and the backup gap, says it in one line, and never deletes
+anything. Under 10% free is a warning: it goes to Yinyue on this Mac and to
+the phone's lock screen, where warnings skip the two-a-day limit. `WeeklyCheck`
+is that mission's tool — in a chat, `SystemReadout` and `Clearables` answer
+the same questions.
 
 ### Sessions, reopen, and rescans
 
