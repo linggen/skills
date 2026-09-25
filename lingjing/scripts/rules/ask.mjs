@@ -152,7 +152,7 @@ const THEN_CALL = 'The search has just opened: say `quest.line` in the world, in
 const THEN_VEIL = 'Something waits on this road (`place.meet`, still veiled): the page plays a mist and reveals it itself in a moment, then tells you `[scene] arrived` — Look then, and tell what was revealed in a line or two, following its `then`. Now never call Meet reveal, never build toward it and never name it: end on the place, and do NOT call AskUser.';
 /* A 抉择 is Ling's to write — the page never reveals it (road.mjs: revealed
    bare it closes as nothing); her Meet offer lifts the mist. */
-const THEN_TRIAL = 'A 抉择 waits on this road (`place.meet` kind trial, veiled): you write it now — § 抉择: set the moment in two or three lines, then Meet {action: offer} with the ways (it reveals), and stop.';
+const THEN_TRIAL = 'A 抉择 waits on this road (`place.meet` kind trial, veiled): you write it now — guide `trial`: set the moment in two or three lines, then Meet {action: offer} with the ways (it reveals), and stop.';
 const THEN_QUIET = 'No question this time — the stage holds what is before him, or he has already been asked here. End on your words: name a way on in the line if it is worth naming, and do NOT call AskUser.';
 export const thenFor = (result, ask = undefined) => (result?.place?.meet?.veiled ? (result.place.meet.kind === 'trial' ? THEN_TRIAL : THEN_VEIL) : (result?.quest?.say ? THEN_CALL : '')
   + (ask === null ? THEN_QUIET : won(result) ? THEN_CHEER : THEN));

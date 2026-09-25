@@ -30,6 +30,7 @@ import { seclusionHold } from './rules/seclusion.mjs';
 import { heed } from './rules/travel.mjs';
 import { VERBS } from './rules/verbs.mjs';
 import { owesRecap, withHerBeat } from './rules/story.mjs';
+import { guideVerb, withGuides } from './rules/guide.mjs';
 import { atScene } from './rules/world.mjs';
 import { BUILDING_WAITS, keepDay, keepSave, paintList, readSave } from './rules/worlds.mjs';
 
@@ -64,8 +65,19 @@ const STORY_VERBS = new Set(['resolve', 'meet', 'enter']);
    reader's place in what the page did. `reader` is who asked (`--for`):
    none is the page, whose every change is written down (rules/did.mjs). */
 function run(verb, args, reader = null) {
+  if (verb === 'guide') return guideVerb(args);
   const stateFile = path.join(dataDir(), 'state.json');
-  return withLock(stateFile, () => runLocked(verb, args, stateFile, reader), () => ({ ok: false, refused: 'busy', say: null }));
+  return withLock(stateFile, () => guided(verb, args, reader, stateFile, runLocked(verb, args, stateFile, reader)), () => ({ ok: false, refused: 'busy', say: null }));
+}
+
+/* Ling's answer carries the rules of what just became live (rules/guide.mjs):
+   once per session per part, remembered on the save and never logged. */
+function guided(verb, args, reader, stateFile, result) {
+  if (reader !== 'ling' || !fs.existsSync(stateFile)) return result;
+  const state = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
+  const out = withGuides({ verb, said: args.said, result, state, session: process.env.LINGGEN_SESSION_ID });
+  if (out.guided) writeAtomic(stateFile, JSON.stringify({ ...state, guided: out.guided }));
+  return out.result;
 }
 
 function runLocked(verb, args, stateFile, reader) {
