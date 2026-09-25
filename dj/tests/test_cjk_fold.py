@@ -1,4 +1,4 @@
-"""cjk_fold.py and the GetTracks guard built on it.
+"""cjk_fold.py and the Get guard built on it.
 
 The case (2026-09-24): the library held 郭富城 - 風中密碼. Asked for 风里密码 and
 then 风中密码, GetTracks fetched twice more — a plain substring test matched
@@ -50,16 +50,16 @@ class Fold(unittest.TestCase):
         self.assertEqual((same, [r["file"] for r in close]), ([], [HELD["file"]]))
 
 
-def batch(tracks, lib):
-    """fetch.py batch in a throwaway DJ_DIR with the fake downloader."""
-    d = tempfile.mkdtemp()
+def queue(tracks, lib, phone="", into=None):
+    """fetch.py queue in a throwaway DJ_DIR, the worker left unstarted."""
+    d = into or tempfile.mkdtemp()
     with open(os.path.join(d, "library.json"), "w", encoding="utf-8") as f:
         json.dump(lib, f, ensure_ascii=False)
     with open(os.path.join(d, "config.json"), "w") as f:
         json.dump({"library_dir": os.path.join(d, "music")}, f)
-    env = {**os.environ, "DJ_DIR": d, "DJ_FAKE_FETCH": "1", "LINGGEN_PORT": "1"}
-    out = subprocess.run([sys.executable, os.path.join(SCRIPTS, "fetch.py"), "batch",
-                          json.dumps(tracks, ensure_ascii=False), ""],
+    env = {**os.environ, "DJ_DIR": d, "DJ_FAKE_FETCH": "1", "DJ_NO_WORKER": "1", "LINGGEN_PORT": "1"}
+    out = subprocess.run([sys.executable, os.path.join(SCRIPTS, "fetch.py"), "queue",
+                          json.dumps(tracks, ensure_ascii=False), phone],
                          capture_output=True, text=True, env=env, timeout=120).stdout
     return json.loads(out.strip().splitlines()[-1])
 
@@ -68,22 +68,25 @@ class Guard(unittest.TestCase):
     LIB = {"tracks": [HELD]}
 
     def test_held_song_in_another_script_is_skipped(self):
-        r = batch([{"artist": "郭富城", "title": "风中密码"}], self.LIB)
-        self.assertEqual(r["got"], 0)
-        self.assertEqual(r["failed"], 0)
+        r = queue([{"artist": "郭富城", "title": "风中密码"}], self.LIB)
+        self.assertEqual(r["queued"], 0)
         self.assertEqual(r["skipped"], [{"artist": "郭富城", "title": "风中密码",
                                          "reason": "already in library", "file": "郭富城 - 風中密碼.mp3"}])
 
     def test_near_match_is_skipped_unless_forced(self):
-        r = batch([{"artist": "郭富城", "title": "风里密码"}], self.LIB)
-        self.assertEqual((r["got"], r["skipped"][0]["reason"]), (0, "near match"))
-        r = batch([{"artist": "郭富城", "title": "风里密码", "force": True}], self.LIB)
-        self.assertEqual(r["got"], 1)
+        r = queue([{"artist": "郭富城", "title": "风里密码"}], self.LIB)
+        self.assertEqual((r["queued"], r["skipped"][0]["reason"]), (0, "near match"))
+        r = queue([{"artist": "郭富城", "title": "风里密码", "force": True}], self.LIB)
+        self.assertEqual(r["queued"], 1)
         self.assertNotIn("skipped", r)
 
-    def test_new_song_downloads(self):
-        r = batch([{"artist": "郭富城", "title": "對你愛不完"}], self.LIB)
-        self.assertEqual((r["got"], r["failed"]), (1, 0))
+    def test_new_song_is_queued_for_the_phone(self):
+        d = tempfile.mkdtemp()
+        r = queue([{"artist": "郭富城", "title": "對你愛不完"}], self.LIB, phone="true", into=d)
+        self.assertEqual((r["queued"], r["songs"]), (1, ["郭富城 - 對你愛不完"]))
+        with open(os.path.join(d, "data", "queue.json"), encoding="utf-8") as f:
+            [item] = json.load(f)["items"]
+        self.assertEqual((item["status"], item["for_phone"]), ("pending", True))
 
 
 class TwoCharacterTitles(unittest.TestCase):

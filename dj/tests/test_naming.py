@@ -88,7 +88,7 @@ class OneBuilder(unittest.TestCase):
             self.assertIsNone(re.search(r"--audio-format|--embed-thumbnail|def safe\(|const safe\s*=", src), name)
 
     def test_the_shell_doors_call_fetch_py(self):
-        for name, verb in (("get.sh", "batch"), ("karaoke.sh", "karaoke-batch")):
+        for name, verb in (("get.sh", "queue"), ("karaoke.sh", "karaoke-batch")):
             with open(os.path.join(SCRIPTS, name), encoding="utf-8") as f:
                 self.assertIn(f'fetch.py" {verb}', f.read())
 

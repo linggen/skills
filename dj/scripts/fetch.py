@@ -3,7 +3,8 @@
 
     fetch.py track <json>          one song, now (the karaoke page's on-the-fly get)
     fetch.py karaoke <json>        one karaoke render, now (the karaoke page)
-    fetch.py batch <json> [phone]  GetTracks: many songs, registered as they land
+    fetch.py queue <json> [phone]  QueueTracks: the user's Get from the phone —
+                                   held songs skipped, the rest queued
     fetch.py karaoke-batch <json>  GetKaraoke
     fetch.py start-worker          launch the queue worker, detached; prints its pid
     fetch.py worker                drain data/queue.json (what start-worker runs)
@@ -92,16 +93,21 @@ def action(verb, *args):
 
 # ── progress on the retained `tasks` topic ─────────────────────────────────
 
-def publish(task_id, done, total, current, finished=False, kind="download", label="Downloads"):
-    """Facts only — the phone's relay card and the page word them. Telemetry
-    never breaks a download, so every failure is swallowed."""
+def publish(task_id, done, total, current, finished=False, kind="download", label="Downloads",
+            got=None, failed=None):
+    """Facts only — Yinyue and the agent word them, never this. A finished run
+    carries `got` (songs that landed) and `failed` (["Artist - Title: why"]),
+    so whoever tells the user names what did not come. Telemetry never breaks
+    a download, so every failure is swallowed."""
     try:
-        body = json.dumps({
-            "topic": "tasks", "op": "dj", "retain": True,
-            "payload": {"app": "dj", "task_id": task_id, "kind": kind, "label": label,
-                        "done": done, "total": total, "current": current,
-                        "finished": finished, "at": int(time.time())},
-        }).encode()
+        payload = {"app": "dj", "task_id": task_id, "kind": kind, "label": label,
+                   "done": done, "total": total, "current": current,
+                   "finished": finished, "at": int(time.time())}
+        if finished and got is not None:
+            payload["got"] = got
+            payload["failed"] = list(failed or [])[:20]
+        body = json.dumps({"topic": "tasks", "op": "dj", "retain": True,
+                           "payload": payload}, ensure_ascii=False).encode()
         req = urllib.request.Request(
             "http://127.0.0.1:%s/api/topic/publish" % os.environ.get("LINGGEN_PORT", "9527"),
             data=body, headers={"Content-Type": "application/json"})
@@ -301,7 +307,7 @@ def fetch_karaoke(bins, cfg, track, kind, cancelled=None):
     return {"ok": True, "kind": kind, "file": path, "song": row.get("file")}
 
 
-# ── batches: GetTracks / GetKaraoke ────────────────────────────────────────
+# ── GetKaraoke, and the phone's Get ────────────────────────────────────────
 
 def label(track):
     return f"{naming.tag(track.get('artist'))} - {naming.tag(track.get('title'))}".strip(" -")
@@ -317,57 +323,60 @@ def as_tracks(raw):
     return [t for t in tracks if isinstance(t, dict)] if isinstance(tracks, list) else None
 
 
-def register(track, res):
-    """A landed song becomes a library row at once, with its lyrics and source."""
-    return action("track-add", json.dumps({
-        "artist": naming.tag(track.get("artist")),
-        "title": naming.tag(res.get("title") or track.get("title")),
-        "requested_title": res.get("requested_title"),
-        "year": track.get("year") or None, "file": res["file"], "lrc": res.get("lrc"),
-        "lrc_timed": res.get("lrc_timed"), "source_id": res.get("source_id"),
-    }))
+def skipped_row(t, reason, file):
+    return {"artist": naming.tag(t.get("artist")), "title": naming.tag(t.get("title")),
+            "reason": reason, "file": os.path.basename(str(file or ""))}
 
 
-def batch(tracks, for_phone, kind="download"):
+def karaoke_batch(tracks):
+    """Karaoke renders of songs the library holds, now."""
     bins, cfg = load_bins(), load_config()
     if not bins.get("ok"):
         return {"got": 0, "failed": len(tracks), "files": [], "errors": [bins.get("note") or "yt-dlp/ffmpeg unavailable"]}
     task_id, total = int(time.time()), len(tracks)
     files, errors, skipped = [], [], []
-
-    def skip(t, reason, file):
-        skipped.append({"artist": naming.tag(t.get("artist")), "title": naming.tag(t.get("title")),
-                        "reason": reason, "file": os.path.basename(str(file or ""))})
-
     for i, t in enumerate(tracks):
         if not naming.tag(t.get("title")):
             errors.append("a track had no title")
             continue
-        if kind == "download":
-            held = in_library(t, allow_near=bool(t.get("force")))
-            if held:
-                skip(t, held[0], held[1].get("file"))
-                continue
-        publish(task_id, i, total, label(t), kind=kind, label="Karaoke" if kind == "karaoke" else "Downloads")
-        res = (fetch_karaoke(bins, cfg, t, t.get("kind")) if kind == "karaoke"
-               else fetch_track(bins, cfg, t, guard=True))
+        publish(task_id, i, total, label(t), kind="karaoke", label="Karaoke")
+        res = fetch_karaoke(bins, cfg, t, t.get("kind"))
         if res.get("skipped"):
-            skip(t, res["skipped"], res.get("file"))
+            skipped.append(skipped_row(t, res["skipped"], res.get("file")))
             continue
         if not res.get("ok"):
             errors.append(f"{label(t)}: {res.get('error')}")
             continue
         files.append(res["file"])
-        if kind == "download":
-            register(t, res)
-    publish(task_id, total, total, "", finished=True, kind=kind,
-            label="Karaoke" if kind == "karaoke" else "Downloads")
-    if kind == "karaoke":
-        action("reconcile")  # lights 🎤 on the songs these belong to
-    if for_phone and files:
-        action("phone-add", json.dumps(files))
+    publish(task_id, total, total, "", finished=True, kind="karaoke", label="Karaoke",
+            got=len(files), failed=[e for e in errors])
+    action("reconcile")  # lights 🎤 on the songs these belong to
     out = {"got": len(files), "failed": len(tracks) - len(files) - len(skipped),
            "files": files, "errors": errors}
+    return {**out, "skipped": skipped} if skipped else out
+
+
+def queue_tracks(tracks, for_phone):
+    """The user's Get, from a door with no page (the phone's confirm card): the
+    songs the library holds — in any script, or a slip away unless forced —
+    are skipped with the reason, the rest go on the Mac's queue and the worker
+    starts. Nothing downloads in this call."""
+    todo, skipped, errors = [], [], []
+    for t in tracks:
+        if not naming.tag(t.get("title")):
+            errors.append("a track had no title")
+            continue
+        held = in_library(t, allow_near=bool(t.get("force")))
+        if held:
+            skipped.append(skipped_row(t, held[0], held[1].get("file")))
+            continue
+        todo.append({**t, "for_phone": bool(for_phone) or t.get("for_phone") is True})
+    r = action("queue-add", json.dumps(todo, ensure_ascii=False)) if todo else {"ok": True, "added": 0}
+    if not r.get("ok"):
+        return {"queued": 0, "errors": errors + [r.get("error") or "the queue refused"]}
+    if r.get("added") and os.environ.get("DJ_NO_WORKER") != "1":
+        start_worker()
+    out = {"queued": int(r.get("added") or 0), "songs": [label(t) for t in todo], "errors": errors}
     return {**out, "skipped": skipped} if skipped else out
 
 
@@ -424,6 +433,7 @@ def item_status(item_id):
 class Progress:
     def __init__(self):
         self.task_id, self.done, self.left, self.current = int(time.time()), 0, 0, ""
+        self.got, self.failed = 0, []
         self.lock = threading.Lock()
 
     def claimed(self, item, counts):
@@ -432,14 +442,18 @@ class Progress:
             self.left = int(counts.get("pending") or 0) + int(counts.get("running") or 0)
             publish(self.task_id, self.done, self.done + self.left, self.current)
 
-    def finished(self):
+    def finished(self, item=None, res=None):
         with self.lock:
             self.done += 1
+            if res is not None and res.get("ok"):
+                self.got += 1
+            elif res is not None and not res.get("cancelled"):
+                self.failed.append(f"{label(item or {})}: {res.get('error') or 'failed'}")
             self.left = max(0, self.left - 1)
             publish(self.task_id, self.done, self.done + self.left, self.current)
 
     def close(self):
-        publish(self.task_id, self.done, self.done, "", finished=True)
+        publish(self.task_id, self.done, self.done, "", finished=True, got=self.got, failed=self.failed)
 
 
 def run_item(bins, cfg, item):
@@ -450,7 +464,11 @@ def run_item(bins, cfg, item):
         return fetch_track(bins, cfg, item, exclude=item.get("exclude") or (),
                            skip_first=bool(item.get("skip_first")), dest=item.get("dest"),
                            cancelled=cancelled)
-    return fetch_track(bins, cfg, item, cancelled=cancelled)
+    res = fetch_track(bins, cfg, item, cancelled=cancelled, guard=True)
+    if res.get("skipped"):
+        # Known to the catalogue by a name the library already holds.
+        return {"ok": False, "error": f"{res['skipped']} ({os.path.basename(str(res.get('file') or ''))})"}
+    return res
 
 
 def drain(bins, cfg, progress):
@@ -467,7 +485,7 @@ def drain(bins, cfg, progress):
         if not res.get("ok") and item_status(item["id"]) == "cancelling":
             res = {"ok": False, "cancelled": True, "error": "cancelled"}
         action("queue-finish", item["id"], json.dumps(res))
-        progress.finished()
+        progress.finished(item, res)
 
 
 def worker():
@@ -584,22 +602,35 @@ def cli_karaoke():
     return fetch_karaoke(bins, load_config(), t, t.get("kind"))
 
 
-def cli_batch(kind):
+def tracks_arg():
     tracks = as_tracks(arg(2))
     if tracks is None:
-        return {"got": 0, "failed": 0, "files": [], "errors": ["couldn't read the track list"]}
+        return None, "couldn't read the track list"
     if not tracks:
-        return {"got": 0, "failed": 0, "files": [], "errors": ["no tracks given"]}
-    for_phone = arg(3).strip().lower() in ("true", "1", "yes")
-    return batch(tracks, for_phone, kind)
+        return None, "no tracks given"
+    return tracks, None
+
+
+def cli_karaoke_batch():
+    tracks, why = tracks_arg()
+    if why:
+        return {"got": 0, "failed": 0, "files": [], "errors": [why]}
+    return karaoke_batch(tracks)
+
+
+def cli_queue():
+    tracks, why = tracks_arg()
+    if why:
+        return {"queued": 0, "errors": [why]}
+    return queue_tracks(tracks, arg(3).strip().lower() in ("true", "1", "yes"))
 
 
 VERBS = {
     "track": cli_track,
     "rename": cli_rename,
     "karaoke": cli_karaoke,
-    "batch": lambda: cli_batch("download"),
-    "karaoke-batch": lambda: cli_batch("karaoke"),
+    "queue": cli_queue,
+    "karaoke-batch": cli_karaoke_batch,
     "worker": worker,
     "start-worker": start_worker,
 }

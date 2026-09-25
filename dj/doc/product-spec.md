@@ -7,7 +7,7 @@ songs you choose, offline.
 ## Split
 
 - **Agent curates.** NL brief → research → a proposed set (`PageUpdate`), and
-  library tools (`GetTracks`, playlists, `AddToPhone`) when asked. No file or
+  library tools (playlists, `AddToPhone`) when asked — never a download: the user taps Get. No file or
   shell tools of its own.
 - **User gets.** Taps **Get** on the set; the page queues it on the Mac.
 - **One writer.** Every library change — page, agent, phone — runs

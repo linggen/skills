@@ -219,7 +219,7 @@ const GREETING_TRIGGER =
 // calls, or a download that registers through it). One refresh per burst.
 const AGENT_WRITERS = new Set([
   'CreatePlaylist', 'RenamePlaylist', 'DeletePlaylist', 'AddToPlaylist',
-  'RemoveFromPlaylist', 'ReorderPlaylist', 'DeleteTracks', 'GetTracks',
+  'RemoveFromPlaylist', 'ReorderPlaylist', 'DeleteTracks',
   'AddToPhone', 'RemoveFromPhone', 'GetKaraoke',
 ]);
 let agentRefreshTimer = null;
