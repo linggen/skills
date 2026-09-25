@@ -422,3 +422,4 @@
   .bside .bnums { padding-bottom: 0; padding-right: 48px; }
 }
 @media (prefers-reduced-motion: reduce) { .barena { animation: none; } }
+.bdrain { display: block; font-family: var(--ui); font-size: 10px; color: var(--blood); letter-spacing: 0.04em; }

@@ -57,8 +57,10 @@ export const WORDS = {
       'power-used': '这一回合用过了', taunt: '先过护主', 'just-arrived': '刚到，这一回合不能动',
       'already-struck': '这一回合出过手了', 'no-attack': '它不会攻击', 'no-target': '没有可指的',
       'no-friendly': '自己阵前没有人', 'fight-over': '打完了',
+      'too-big': '吞不下 —— 它攻太高', 'aim-one': '点它阵前一个', chained: '被锁着，这一回合不能动',
     },
-    pickCard: '点一个目标 —— 妖，或它阵前的一个', pickTarget: '再点它要打谁 —— 妖，或它阵前的一个',
+    chained: '锁', drought: '大旱', drainNext: '下回合灵力 −{n}',
+    pickCard: '点一个目标 —— 妖，或它阵前的一个', pickRank: '点它阵前的一个', pickTarget: '再点它要打谁 —— 妖，或它阵前的一个',
     begin: '出 手', wonToday: '今日已降', lostToday: '它退入雾中，明日再来', spentToday: '它今日力竭遁走了',
     stale: '牌面没读全 —— 刷新页面再出手。',
     lean: { hide: '厚皮', ward: '避法', quick: '迅捷', fierce: '凶猛' },
@@ -77,6 +79,7 @@ export const WORDS = {
       ['望气', '学了望气术（坊市有卷），你的回合开始时，它头像下写着它下回合要做什么 —— 上卷只看出攻、召、守、养，下卷连点数都看得清。它定下的，就一定照做。'],
       ['杀招', '妖掉到一半气血时开始蓄力：下一回合它不出牌，再下一回合放出它的杀招，一场一次。它会打多少、打谁，写在它头像下面。趁它蓄力打完它，立护主去挡，回血，或者别把随从都摆上去挨群伤。'],
       ['装备', '法衣给护体：打你先扣护体，扣完才伤气血，不留伤。佩给抗：那一行打你轻几点（至少 1）。符开局在手，打出后背包里少一道。'],
+      ['锁 · 吞 · 大旱', '锁：它阵前一个下回合不能出手。吞：它阵前一个攻不过牌上那个数的，直接吞下。灵力 −1：它下回合少一格灵力。大旱：那只站着，你每回合末它阵前每个都挨。'],
       ['没有死', '随从被打到 0 是退下，不是死。这个世界里没有死。'],
     ],
   },
@@ -90,8 +93,10 @@ export const WORDS = {
       'power-used': 'used this turn', taunt: 'a Guard stands in the way', 'just-arrived': 'just arrived',
       'already-struck': 'has struck this turn', 'no-attack': 'it does not strike', 'no-target': 'nothing to point at',
       'no-friendly': 'no one of yours stands', 'fight-over': 'the fight is over',
+      'too-big': 'too big to swallow — its attack is too high', 'aim-one': 'choose one of its rank', chained: 'chained — cannot strike this turn',
     },
-    pickCard: 'choose a target — the beast, or one of its rank', pickTarget: 'now choose what it strikes',
+    chained: 'Chained', drought: 'Drought', drainNext: 'Force −{n} next turn',
+    pickCard: 'choose a target — the beast, or one of its rank', pickRank: 'choose one of its rank', pickTarget: 'now choose what it strikes',
     begin: 'Begin', wonToday: 'subdued today', lostToday: 'it withdrew — come back tomorrow', spentToday: 'it walked away spent today',
     stale: 'The cards did not load — refresh, then begin.',
     lean: { hide: 'thick-hided', ward: 'warded', quick: 'quick', fierce: 'fierce' },
@@ -110,6 +115,7 @@ export const WORDS = {
       ['Reading the qi', 'With Reading the Qi learned (a scroll at the market), the start of your turn shows what the beast will do next — Part One its shape (strike, summon, guard, heal), Part Two every move and its number. What it plans, it does.'],
       ['Signature', "At half its Life the beast gathers: it plays nothing next turn and lets its signature go the turn after, once a fight. What it will do, and to whom, is written under it. Finish it while it gathers, stand a Guard, heal, or keep your rank back from a sweep."],
       ['Gear', 'A robe gives Shield: blows at you take it first, then Life, and it leaves no wound. A pendant wards one root: its blows land lighter on you (at least 1). A talisman starts in hand; played, it leaves the bag.'],
+      ['Chain · Swallow · Drought', 'Chain: one of its rank cannot strike next turn. Swallow: one of its rank whose attack is at most the number is gone. Force −1: it has one less Force next turn. Drought: while it stands, each of its rank takes the number at the end of your every turn.'],
       ['No death', 'A body at zero is driven off, not killed. Nothing dies in this world.'],
     ],
   },
@@ -127,9 +133,11 @@ const name = (c, lang) => esc(typeof c?.name === 'string' ? c.name : c?.name?.[l
 export function wantsTarget(card, st) {
   if (!card) return false;
   if (card.effect?.buff) return st.you.board.length > 0;
-  if (card.effect?.damage != null) return st.foe.board.length > 0;
+  if (card.effect?.damage != null || aimsAtRank(card)) return st.foe.board.length > 0;
   return false;
 }
+/* 锁 and 吞 point at one of its rank, never the beast itself. */
+const aimsAtRank = card => card?.effect?.chain != null || card?.effect?.swallow != null;
 
 /* A click is a place, not an action: `{ kind: 'hand'|'mine'|'theirs'|'power'|
    'hero'|'end'|'quit', index }`. With something already picked up, the second
@@ -147,7 +155,9 @@ export function pickOf(picked, spot, st, catalog = null) {
     if (spot.kind === 'power') return st.foe.board.length ? { pick: { from: 'power' } } : { action: { kind: 'power' } };
     return { clear: true };
   }
-  // Something is in hand — the second click says where it goes.
+  // Something is in hand — the second click says where it goes. Only a lift
+  // is aimed at your own rank; anything else there is put back.
+  if (picked.from === 'hand' && spot.kind === 'mine' && !catalog?.[st.you.hand[picked.index]]?.effect?.buff) return { clear: true };
   const target = spot.kind === 'theirs' ? { kind: 'minion', index: spot.index }
     : spot.kind === 'mine' && picked.from !== 'board' ? { kind: 'minion', index: spot.index }
       : undefined;
@@ -220,12 +230,15 @@ function minionHtml(m, side, index, ctx, picked) {
   const held = picked?.from === 'board' && picked.index === index && side === 'mine';
   const marks = [
     m.taunt ? w.taunt : null,
+    m.chained ? w.chained : null,
+    m.drought ? w.drought : null,
     side === 'mine' && why ? (w.why[why] ?? why) : null,
     side === 'mine' && !why && m.ready ? w.ready : null,
   ].filter(Boolean);
   const can = side === 'mine' && !why && m.ready;
   const aimed = side === 'theirs' ? ctx.aim?.theirs?.has(index) : ctx.aim?.mine?.has(index);
-  const badge = side === 'theirs' && aimed && ctx.striker ? dmgBadge(ctx.st, ctx.striker.n, ctx.striker.element, m.element, ctx.lang) : '';
+  const badge = side === 'theirs' && aimed && ctx.striker ? dmgBadge(ctx.st, ctx.striker.n, ctx.striker.element, m.element, ctx.lang)
+    : side === 'theirs' && aimed && ctx.verb ? `<span class="bdmg up">${esc(ctx.verb)}</span>` : '';
   const pic = artOf(ctx.catalog?.[m.id], ctx);
   // A body on the rank is a little card of its own: its picture on top, its
   // name under it, and 攻 / 血 in the two bottom corners where a card player's
@@ -335,6 +348,10 @@ export function sayEffect(c, ctx) {
   if (e.buff) bits.push(zh ? `一个 +${e.buff.atk ?? 0}/+${e.buff.hp ?? 0}` : `one of yours +${e.buff.atk ?? 0}/+${e.buff.hp ?? 0}`);
   if (e.rally) bits.push(zh ? `全体 +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}` : `all of yours +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}`);
   if (e.summon) bits.push(zh ? `召来 ${e.summon.n ?? 1} 个` : `summon ${e.summon.n ?? 1}`);
+  if (e.chain != null) bits.push(zh ? '锁它阵前一个，下回合不能出手' : 'Chain one of its rank: it cannot strike next turn');
+  if (e.swallow != null) bits.push(zh ? `吞它阵前一个攻 ≤${e.swallow} 的` : `Swallow one of its rank with attack ≤ ${e.swallow}`);
+  if (e.drain != null) bits.push(zh ? `它下回合灵力 −${e.drain}` : `its Force −${e.drain} next turn`);
+  if (e.drought != null) bits.push(zh ? `大旱：你每回合末，它阵前每个 ${e.drought} 点` : `Drought: at the end of your turn, ${e.drought} to each of its rank`);
   const key = c.keywords?.includes('taunt') ? (zh ? '护主' : 'Guard') : null;
   const cry = c.keywords?.includes('battlecry') ? (zh ? '入阵：' : 'On arrival: ') : '';
   return [key, cry + bits.join('，')].filter(x => x && x.trim()).join(' · ');
@@ -432,6 +449,10 @@ function sayTurn(t, ctx) {
     case 'heal': return `${who} +${t.amount}`;
     case 'rally': return `${who} ${zh ? `全体 +${t.atk ?? 0}/+${t.hp ?? 0}` : `all +${t.atk ?? 0}/+${t.hp ?? 0}`}`;
     case 'buff': return `${card(t.id)} +${t.atk ?? 0}/+${t.hp ?? 0}`;
+    case 'chained': return `${card(t.id)} ${zh ? '被锁' : 'is chained'}`;
+    case 'swallowed': return `${card(t.id)} ${zh ? '被吞下' : 'is swallowed'}`;
+    case 'drained': return `${t.who === 'foe' ? (ctx.foeName ?? '') : (zh ? '你' : 'You')} ${fill(w.drainNext, { n: t.amount })}`;
+    case 'drought': return `${card(t.id)} ${w.drought}`;
     case 'foe-withdrew': return w.withdrew;
     case 'charge': return `${who} ${zh ? '开始蓄力' : 'gathers'}：${name(ctx.st?.foe?.signature, ctx.lang)}`;
     case 'unleash': return `${who} ${zh ? '放出' : 'lets go'} ${name(ctx.st?.foe?.signature, ctx.lang)}`;
@@ -514,6 +535,9 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
   ctx.aim = aim;
   ctx.st = st;
   ctx.striker = strikerOf(st, picked, ctx);
+  // 锁 / 吞 held: the word the aimed body wears in place of a number.
+  const heldCard = picked?.from === 'hand' ? ctx.catalog?.[st.you.hand[picked.index]] : null;
+  ctx.verb = heldCard?.effect?.chain != null ? w.chained : heldCard?.effect?.swallow != null ? (ctx.lang === 'en' ? 'Swallow' : '吞') : null;
   const rank = (side, board, n) => {
     const cells = [];
     for (let i = 0; i < n; i += 1) {
@@ -527,7 +551,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
   // (2026-09-18, "我打不了, 雷神不动").
   const canDo = offers.filter(o => o.ok && o.action.kind !== 'end');
   const stuck = st.outcome === 'open' && st.whose === 'you' && !canDo.length;
-  const advice = picked ? (picked.from === 'board' ? w.pickTarget : w.pickCard) : stuck ? w.nothing : null;
+  const advice = picked ? (picked.from === 'board' ? w.pickTarget : ctx.verb ? w.pickRank : w.pickCard) : stuck ? w.nothing : null;
   const over = st.outcome !== 'open';
   const said = st.outcome === 'won' ? w.wonSay : st.outcome === 'lost' ? w.lostSay : st.outcome === 'withdrew' ? w.withdrewSay : '';
   const title = st.outcome === 'won' ? w.won : st.outcome === 'lost' ? w.lost : st.outcome === 'withdrew' ? w.withdrew : '';
@@ -550,7 +574,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       <div class="bnums">
         ${pool(w.hp, st.foe.hp, st.foe.hpMax, 'hp')}
         ${gearHtml(st.foe, 'foe', st, ctx)}
-        ${crystals(st.foe.mana, st.foe.manaMax, st.foe.manaCap)}
+        ${crystals(st.foe.mana, st.foe.manaMax, st.foe.manaCap)}${st.foe.drain ? `<small class="bdrain">${esc(fill(w.drainNext, { n: st.foe.drain }))}</small>` : ''}
       </div>
       ${deckHtml(st.foe.deck, 'theirs', w)}
       ${aim.hero && ctx.striker ? dmgBadge(st, ctx.striker.n, ctx.striker.element, st.foe.root, ctx.lang, true) : ''}
@@ -569,7 +593,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       <div class="bnums">
         ${pool(w.hp, st.you.hp, st.you.hpMax, 'hp')}
         ${gearHtml(st.you, 'you', st, ctx)}
-        ${crystals(st.you.mana, st.you.manaMax, st.you.manaCap)}
+        ${crystals(st.you.mana, st.you.manaMax, st.you.manaCap)}${st.you.drain ? `<small class="bdrain">${esc(fill(w.drainNext, { n: st.you.drain }))}</small>` : ''}
       </div>
       ${deckHtml(st.you.deck, 'mine', w)}
     </div>

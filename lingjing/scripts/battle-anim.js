@@ -144,6 +144,18 @@ export async function playLog(root, entries, ctx = {}) {
         await sleep(BEATS.gap);
         break;
       }
+      case 'chained':
+      case 'drought': {
+        pulse(spotOf(root, t), t.act === 'chained' ? 'shaken' : 'casting', BEATS.hit);
+        await sleep(BEATS.gap);
+        break;
+      }
+      case 'drained': {
+        const el = q(root, t.who === 'foe' ? '.bside.foe .bmana' : '.bside.you .bmana');
+        float(root, el, `−${t.amount}`, 'hurt');
+        await sleep(BEATS.gap);
+        break;
+      }
       case 'foe-withdrew':
         await banner(root, ctx.words?.withdrew ?? '', 'foe');
         break;

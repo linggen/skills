@@ -61,14 +61,18 @@ function score(st, o) {
   const mine = after.mineAtk - before.mineAtk + (after.mineHp - before.mineHp) * 0.6 + (after.mineTaunt - before.mineTaunt) * 2;
   const theirs = before.theirAtk - after.theirAtk;
   const hurtMe = before.youHp - after.youHp;
-  return dealt * 2 + cleared * 2 + mine * 1.5 + theirs - lost * 2 - hurtMe + healed + drawn * 0.5 + (o.action.kind === 'end' ? -0.5 : 0);
+  // 大旱 standing, 灵力 drained off its next turn: worth what they will take.
+  const standing = (after.mineDrought - before.mineDrought) * Math.max(1, after.foeBoard) * 1.5 + (after.foeDrain - before.foeDrain) * 1.5;
+  return dealt * 2 + cleared * 2 + mine * 1.5 + theirs + standing - lost * 2 - hurtMe + healed + drawn * 0.5 + (o.action.kind === 'end' ? -0.5 : 0);
 }
 
 const sum = (board, f) => board.reduce((n, m) => n + f(m), 0);
 const snapshot = st => ({
   foeHp: st.foe.hp, youHp: st.you.hp, foeBoard: st.foe.board.length, youBoard: st.you.board.length, hand: st.you.hand.length,
   mineAtk: sum(st.you.board, m => m.atk), mineHp: sum(st.you.board, m => m.hp), mineTaunt: sum(st.you.board, m => (m.taunt ? 1 : 0)),
-  theirAtk: sum(st.foe.board, m => m.atk),
+  // A chained body strikes nothing next turn: most of its 攻 is out of play.
+  theirAtk: sum(st.foe.board, m => (m.chain ? m.atk * 0.4 : m.atk)),
+  mineDrought: sum(st.you.board, m => m.drought ?? 0), foeDrain: st.foe.drain ?? 0,
 });
 
 /* A fight is replayable, so a line can look one move ahead without changing
@@ -455,7 +459,54 @@ function gearRows(decks, problems) {
   }
 }
 
+/* ── 首领牌 — each chapter boss's card, tamed and taken into a deck ──
+   Every one of the ten carries its legend as a verb (2026-09-25): 夫诸 floods,
+   雷神 drums, 夔 steals a turn's 灵力, 无支祁 chains, 防风氏 stands, 巴蛇
+   swallows, 夔牛 rallies, 肥遗 parches, 泰逢 stirs the qi. Each is weighed the
+   way a player meets it: swapped into a built deck for the card nearest its
+   cost, against the same deck without it. One tamed beast may lift a deck,
+   never carry it — more than BOSS_BAND points and it is the card that wins. */
+const BOSSES = ['fuzhu', 'paoxiao', 'leishen', 'kui', 'wuzhiqi', 'fangfeng', 'bashe', 'kuiniu', 'feiyi', 'taifeng'];
+const BOSS_BAND = 12;
+function withBoss(cards, id) {
+  const cost = CATALOG[id].cost;
+  const out = cards.filter(x => x !== id);
+  // A deck that already holds it gives that slot back to a plain card of its cost.
+  while (out.length < cards.length) out.push(ALL.find(x => !BOSSES.includes(x) && !out.includes(x) && CATALOG[x].cost === cost && CATALOG[x].kind === 'minion') ?? 'xiaoyao');
+  const without = [...out];
+  let at = 0;
+  out.forEach((x, i) => { if (Math.abs(CATALOG[x].cost - cost) < Math.abs(CATALOG[out[at]].cost - cost)) at = i; });
+  out[at] = id;
+  return { without, with: out };
+}
+function bossRows(problems) {
+  const built = ARCHETYPES.map(a => ({ ...a, built: true }));
+  console.log(`\n首领牌（换进五副原型，比不带它；越过 ${BOSS_BAND} 点报越界）`);
+  for (const id of BOSSES) {
+    const c = CATALOG[id];
+    const pairs = built.map(d => ({ d, ...withBoss(d.cards, id) }));
+    const a = run(smart, { decks: pairs.map(p => ({ ...p.d, cards: p.with })) });
+    const b = run(smart, { decks: pairs.map(p => ({ ...p.d, cards: p.without })) });
+    const d = (a.rate - b.rate) * 100;
+    const seen = (a.played.get(id) ?? 0) / a.games;
+    const body = `${c.cost}费 ${c.atk}/${c.hp}`;
+    console.log(`${c.name.padEnd(5)} ${body.padEnd(9)} ${(a.rate * 100).toFixed(1)}%  (${d >= 0 ? '+' : ''}${d.toFixed(1)}，不带 ${(b.rate * 100).toFixed(1)}%)  出场 ${(seen * 100).toFixed(0)}%`);
+    if (Math.abs(d) > BOSS_BAND) problems.push(`${c.name} 换进牌组改了 ${d.toFixed(1)} 个百分点 — 一只收服的妖不该替人打仗`);
+    if (seen < 0.05) problems.push(`${c.name} 带着也几乎不出 — 废牌`);
+  }
+}
+
+async function bossOnly() {
+  const { foeTurn } = await import('../scripts/battle.js');
+  globalThis.__battle = { foeTurn };
+  const problems = [];
+  bossRows(problems);
+  console.log(problems.length ? `\n闸：${problems.length} 处越界\n · ${problems.join('\n · ')}` : '\n闸：全部在带内');
+  if (process.argv.includes('--gate') && problems.length) process.exit(1);
+}
+
 async function main() {
+  if (process.argv.includes('--bosses')) return bossOnly();
   if (process.argv.includes('--kit')) return kitOnly();
   if (process.argv.includes('--her')) return herOnly();
   const { foeTurn } = await import('../scripts/battle.js');
@@ -552,6 +603,7 @@ async function main() {
 
   gearRows(decks, problems);
   herRows(decks, problems);
+  bossRows(problems);
 
   // 杀招 — the key turn (battle.js § 杀招). A climax, not a wall: most won
   // fights meet it, and it should cost a careless player, not end the day.

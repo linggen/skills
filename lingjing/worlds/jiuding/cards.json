@@ -64,8 +64,15 @@
       },
       "cost": 3,
       "element": "water",
-      "atk": 3,
-      "hp": 3,
+      "atk": 2,
+      "hp": 2,
+      "keywords": [
+        "battlecry"
+      ],
+      "effect": {
+        "sweep": 1
+      },
+      "_about": "其鸣自詨，见则其邑大水 —— 入阵，水漫它阵前每一个 1 点。",
       "art": "art/fuzhu.webp",
       "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
     },
@@ -109,8 +116,15 @@
       },
       "cost": 4,
       "element": "earth",
-      "atk": 4,
-      "hp": 4,
+      "atk": 3,
+      "hp": 3,
+      "keywords": [
+        "battlecry"
+      ],
+      "effect": {
+        "damage": 2
+      },
+      "_about": "是食人 —— 入阵先咬一口：打一个，或打它本人。",
       "art": "art/paoxiao.webp",
       "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
     },
@@ -126,8 +140,13 @@
       "atk": 4,
       "hp": 6,
       "keywords": [
-        "taunt"
+        "taunt",
+        "battlecry"
       ],
+      "effect": {
+        "drain": 1
+      },
+      "_about": "一足，声如雷；黄帝以其皮为鼓，声闻五百里 —— 入阵一声鼓，它下回合灵力少一点。",
       "art": "art/kui.webp",
       "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
     },
@@ -140,8 +159,15 @@
       },
       "cost": 6,
       "element": "wood",
-      "atk": 5,
-      "hp": 6,
+      "atk": 4,
+      "hp": 5,
+      "keywords": [
+        "battlecry"
+      ],
+      "effect": {
+        "sweep": 2
+      },
+      "_about": "龙身人头，鼓其腹则雷 —— 入阵一声雷，它阵前每个都挨。",
       "art": "art/leishen.webp",
       "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
     },
@@ -869,11 +895,15 @@
       },
       "cost": 5,
       "element": "metal",
-      "atk": 4,
-      "hp": 6,
+      "atk": 5,
+      "hp": 5,
       "keywords": [
-        "taunt"
+        "battlecry"
       ],
+      "effect": {
+        "chain": 1
+      },
+      "_about": "禹锁之于龟山之足 —— 入阵，锁住它阵前一个：它下回合不能出手。",
       "art": "art/wuzhiqi.webp",
       "art_source": "据《古岳渎经》新绘 — 见 art/CREDITS.md（无支祁不在山海经里，没有古本图）。"
     },
@@ -886,11 +916,12 @@
       },
       "cost": 5,
       "element": "wood",
-      "atk": 4,
-      "hp": 6,
+      "atk": 3,
+      "hp": 8,
       "keywords": [
         "taunt"
       ],
+      "_about": "禹杀防风，其骨专车 —— 身高骨重，攻低而站得住。",
       "art": "art/fangfeng.webp",
       "art_source": "据《国语》新绘 — 见 art/CREDITS.md（防风氏不在山海经里，没有古本图）。"
     },
@@ -918,10 +949,14 @@
       "cost": 5,
       "element": "water",
       "atk": 4,
-      "hp": 6,
+      "hp": 5,
       "keywords": [
-        "taunt"
+        "battlecry"
       ],
+      "effect": {
+        "swallow": 3
+      },
+      "_about": "巴蛇食象，三岁而出其骨 —— 入阵，吞下它阵前一个攻不过 3 的。",
       "art": "art/bashe.webp",
       "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
     },
@@ -952,10 +987,17 @@
       "cost": 5,
       "element": "earth",
       "atk": 4,
-      "hp": 6,
+      "hp": 4,
       "keywords": [
-        "taunt"
+        "battlecry"
       ],
+      "effect": {
+        "rally": {
+          "atk": 1,
+          "hp": 1
+        }
+      },
+      "_about": "夔牛重千斤 —— 入阵，你阵前全体 +1/+1。",
       "art": "art/kuiniu.webp",
       "art_source": "据《中次九经》新绘 — 见 art/CREDITS.md（夔牛没有找到有标注的古本图）。"
     },
@@ -980,13 +1022,14 @@
         "zh": "肥遗",
         "en": "Feiyi"
       },
-      "cost": 5,
+      "cost": 4,
       "element": "fire",
-      "atk": 4,
-      "hp": 6,
-      "keywords": [
-        "taunt"
-      ],
+      "atk": 3,
+      "hp": 4,
+      "effect": {
+        "drought": 1
+      },
+      "_about": "见则其国大旱 —— 它站着，你每回合末，它阵前每个 1 点。",
       "art": "art/feiyi.webp",
       "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
     },
@@ -1017,10 +1060,14 @@
       "cost": 5,
       "element": "earth",
       "atk": 4,
-      "hp": 6,
+      "hp": 5,
       "keywords": [
-        "taunt"
+        "battlecry"
       ],
+      "effect": {
+        "draw": 2
+      },
+      "_about": "泰逢神，动天地气 —— 入阵，抽两张。",
       "art": "art/taifeng.webp",
       "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
     },

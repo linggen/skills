@@ -63,21 +63,21 @@ test('every creature speaks: open, won, lost in both languages, short, no digits
   }
 });
 
-test('a haunt: 降妖 · the place, and the creature\'s own lines at the door — Look keeps them off', () => {
+test('a haunt: just the place (the header says 降妖), and the creature\'s own lines at the door — Look keeps them off', () => {
   const s = atFajiu();
   const brief = door(s, 'haunt:jingwei');
-  assert.equal(brief.stake, '降妖 · 发鸠山');
+  assert.equal(brief.stake, '发鸠山', '降妖 is the header; the stake does not say it twice');
   const own = content.creatures.creatures.find(c => c.id === 'jingwei').says;
   assert.deepEqual(brief.says, { foe: own.open.zh, won: own.won.zh, lost: own.lost.zh });
   const l = look(s, content, october());
-  assert.equal(l.place.encounter.duel.stake, '降妖 · 发鸠山', 'the reason rides Look');
+  assert.equal(l.place.encounter.duel.stake, '发鸠山', 'the reason rides Look');
   assert.equal(l.place.encounter.duel.says, undefined, 'the lines only at the door');
 });
 
 test('in English, the stake and the lines are English', () => {
   const s = { ...atFajiu(), lang: 'en' };
   const brief = door(s, 'haunt:jingwei');
-  assert.match(brief.stake, /^Subdue · /);
+  assert.doesNotMatch(brief.stake, /Subdue|\p{Script=Han}/u, 'the English place alone');
   assert.equal(brief.says.foe, content.creatures.creatures.find(c => c.id === 'jingwei').says.open.en);
 });
 
@@ -99,7 +99,7 @@ test('an errand that asks for the beast: 差事 · its title', () => {
   assert.equal(door(base, 'haunt:longzhi', c).stake, '差事 · 凫丽山的蠪侄');
   // handed in, it is only the haunt again
   const done = { ...base, quests: { 'xu-fuli-longzhi': { have: [1], done_at: c.now.toISOString() } } };
-  assert.match(door(done, 'haunt:longzhi', c).stake, /^降妖 · /);
+  assert.equal(door(done, 'haunt:longzhi', c).stake, l.place.name);
 });
 
 test('a spine scene\'s duel: its chapter\'s title', () => {
@@ -158,14 +158,14 @@ function card(outcome, says) {
   const setup = { mode: 'pve', seed: 'x|leishen', you: { tier: 'core', step: 0, root: 'wood', deck: ['jixiao', 'huoya', 'houtu', 'luying', 'leiming', 'jingwei', 'zhennu', 'luoshi', 'fenghuo', 'linmu'] }, foe: { tier: 'core', root: 'wood', deck: foe.deck } };
   const st = begin(setup, catalog);
   if (outcome !== 'open') st.outcome = outcome;
-  return battleHtml(view(st), offers(st), { lang: 'zh', words: WORDS.zh, catalog, board: 5, title: '降妖', foeName: '雷神', youName: '青玄', herName: '银月', stake: '降妖 · 雷泽', says: boutSays(says, outcome) });
+  return battleHtml(view(st), offers(st), { lang: 'zh', words: WORDS.zh, catalog, board: 5, title: '降妖', foeName: '雷神', youName: '青玄', herName: '银月', stake: '雷泽', says: boutSays(says, outcome) });
 }
 
 test('the fight\'s card: the open bubble, the stake, and the end line inside the seal — none when it walked away', () => {
   const says = { foe: '雷泽是吾的鼓。', won: '鼓声歇了。', lost: '这声雷，是为汝擂的。' };
   const opening = card('open', says);
   assert.match(opening, /<div class="bsay foe">雷泽是吾的鼓。<\/div>/);
-  assert.match(opening, /<small class="bstake">降妖 · 雷泽<\/small>/);
+  assert.match(opening, /<small class="bstake">雷泽<\/small>/);
   assert.doesNotMatch(opening, /bover/);
   assert.doesNotMatch(opening, /bsay her/, '银月\'s words are hers — no line authored for her');
   const seal = html => /<div class="bover [a-z]+">([\s\S]*?)<\/div>\s*<\/div>\s*$/.exec(html)?.[1] ?? '';

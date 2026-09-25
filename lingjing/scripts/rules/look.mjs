@@ -78,7 +78,8 @@ const STAKE = {
   tale: { zh: (t) => `传闻 · ${t} · 终局`, en: (t) => `Rumor · ${t} · Finale` },
   errand: { zh: (t) => `差事 · ${t}`, en: (t) => `Errand · ${t}` },
   road: { zh: (p) => `路上 · ${p}`, en: (p) => `On the road · ${p}` },
-  haunt: { zh: (p) => `降妖 · ${p}`, en: (p) => `Subdue · ${p}` },
+  // Only the place: the fight's header already says 降妖 (2026-09-25).
+  haunt: { zh: (p) => p, en: (p) => p },
 };
 const staked = (kind, lang, what) => (what ? (STAKE[kind][lang] ?? STAKE[kind].zh)(what) : null);
 

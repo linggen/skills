@@ -132,7 +132,7 @@ test('the closed vocabulary: sweep, draw and buff each do one thing', () => {
   const grow = st.you.hand.indexOf('grow');
   act(st, { kind: 'play', index: grow, target: { kind: 'minion', index: 0 } });
   assert.deepEqual([st.you.board[0].atk, st.you.board[0].hp], [2, 2]);
-  assert.deepEqual(Object.keys(EFFECTS).sort(), ['buff', 'damage', 'draw', 'heal', 'rally', 'summon', 'sweep'], 'the vocabulary stays closed');
+  assert.deepEqual(Object.keys(EFFECTS).sort(), ['buff', 'chain', 'damage', 'drain', 'draw', 'drought', 'heal', 'rally', 'summon', 'swallow', 'sweep'], 'the vocabulary stays closed (锁 吞 灵力− 大旱 added 2026-09-25, boss-cards.test.mjs)');
 });
 
 test('召唤 fills the bench to its limit; 齐心 lifts everyone standing', () => {

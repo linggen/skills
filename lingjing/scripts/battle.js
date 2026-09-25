@@ -87,7 +87,7 @@ export const MODES = {
 };
 
 export const POWER_COST = 2; // 主灵根一击
-export const KEYWORDS = ['taunt', 'battlecry']; // 护主 · 入阵 — the only two in v1
+export const KEYWORDS = ['taunt', 'battlecry']; // 护主 · 入阵 — the only two in v1 (大旱 is a verb that stands, not a keyword)
 
 /* The closed vocabulary. An effect is one of these, with `at` naming what it
    may point at. Growing this list is a considered act: every verb multiplies
@@ -104,7 +104,17 @@ export const EFFECTS = {
   // two pay off the swarm, so a wide deck and a tall deck are different games.
   summon: { at: 'none' }, //    召来 {id, n}：阵前多几个小东西
   rally: { at: 'none' }, //     己方阵前全体 +攻/+血
+  // Four more, 2026-09-25 — the chapter bosses' legends, each a verb any card
+  // may carry (the gate weighs them: tools/battle-sim.mjs § 首领牌).
+  chain: { at: 'minion' }, //   锁 (无支祁, chained under 龟山): one of its rank sits out its next turn
+  swallow: { at: 'minion' }, // 吞 {swallow: N} (巴蛇): one of its rank with 攻 ≤ N is gone
+  drain: { at: 'none' }, //     灵力 −N (夔's drum): the other side has N less on its next turn only
+  drought: { at: 'none' }, //   大旱 (肥遗): a STANDING verb — at the end of its side's every turn, N to each of the other rank
 };
+
+/* Does this body fit the aimed verb? 吞 takes only what is small enough to
+   swallow; 锁 takes anything. */
+export const fits = (e, m) => Boolean(m) && (e?.swallow == null || m.atk <= e.swallow);
 
 /* ── A small stable hash: the same day, creature and 道号 shuffle the same ── */
 
@@ -164,7 +174,7 @@ function sideOf(who, cfg, catalog, mode, seed) {
     armor: Math.max(0, cfg.armor ?? 0), ward: cfg.ward ?? null,
     deck, hand: [...(cfg.extra ?? [])], board: [], fatigue: 0, powerUsed: false, played: [],
     signature: cfg.signature ?? null, charge: null, lifts: cfg.lifts ?? null, insight: cfg.insight ?? 0, intent: null,
-    stars: cfg.stars ?? null,
+    stars: cfg.stars ?? null, drain: 0,
   };
 }
 
@@ -203,10 +213,14 @@ export function begin(setup, catalog) {
 function startTurn(st) {
   const side = st[st.whose];
   side.manaMax = Math.min(side.manaCap, side.manaMax + 1);
-  side.mana = side.manaMax;
+  // 夔's drum: a drain laid on this side takes off this turn's 灵力, then is gone.
+  side.mana = Math.max(0, side.manaMax - (side.drain ?? 0));
+  side.drain = 0;
   side.powerUsed = false;
   for (const m of side.board) m.sick = false;
   for (const m of side.board) m.struck = false;
+  // 锁: a body chained on the other side's turn sits out this one, exactly this one.
+  for (const m of side.board) { m.held = Boolean(m.chain); m.chain = 0; }
   if (side.charge?.phase === 'ready') unleash(st, side);
   if (st.outcome !== 'open') return;
   if (st.turn > 0 || st.whose === 'foe') draw(st, side);
@@ -288,8 +302,23 @@ function draw(st, side) {
 export function endTurn(st) {
   const done = st[st.whose];
   if (done.charge?.phase === 'gathering') done.charge = { phase: 'ready' };
+  parch(st, done);
+  if (st.outcome !== 'open') return;
+  for (const m of done.board) m.held = false; // its chained turn is over
   st.whose = st.whose === 'you' ? 'foe' : 'you';
   startTurn(st);
+}
+
+/* 大旱 — 肥遗, where it is seen the land parches: at the end of its side's
+   turn every body of the other rank takes its number, in its element. The
+   one standing verb; it acts while the body stands, never when it is played. */
+function parch(st, side) {
+  const them = other(st, side);
+  for (const m of [...side.board]) {
+    if (!m.drought || !side.board.includes(m)) continue;
+    st.log.push({ act: 'drought', who: side.who, id: m.id, n: m.drought });
+    for (const t of [...them.board]) hurtMinion(st, them, t, dealt(st, side.who, m.drought, m.element, t.element), { from: 'drought' });
+  }
 }
 
 /* ── Damage ── */
@@ -351,6 +380,21 @@ function resolve(st, side, effect, target) {
   if (effect.sweep != null) {
     for (const m of [...them.board]) hurtMinion(st, them, m, hit(effect.sweep, effect.element, m.element), { from: 'sweep' });
   }
+  if ((effect.chain != null || effect.swallow != null) && target?.kind === 'minion') {
+    const m = them.board[target.index];
+    if (m && effect.chain != null) {
+      m.chain = 1;
+      st.log.push({ act: 'chained', who: them.who, id: m.id });
+    }
+    if (fits(effect, m) && effect.swallow != null) {
+      st.log.push({ act: 'swallowed', who: them.who, id: m.id, by: side.who });
+      withdraw(st, them, m);
+    }
+  }
+  if (effect.drain) {
+    them.drain = (them.drain ?? 0) + effect.drain;
+    st.log.push({ act: 'drained', who: them.who, amount: effect.drain });
+  }
   if (effect.heal != null) {
     side.hp = Math.min(side.hpMax, side.hp + effect.heal);
     st.log.push({ act: 'heal', who: side.who, amount: effect.heal, hp: side.hp });
@@ -411,12 +455,22 @@ export function legal(st, action, who = 'you') {
     const at = EFFECTS[Object.keys(EFFECTS).find(k => c.effect?.[k] != null)]?.at;
     if (at === 'enemy' && action.target?.kind === 'minion' && !them.board[action.target.index]) return 'no-target';
     if (at === 'friendly' && !side.board.length) return 'no-friendly';
+    if (at === 'minion') {
+      // 锁 and 吞 point at one of its rank: a body that does not fit is
+      // refused by name, and while one fits the card must be aimed at it.
+      const e = effectOf(side, c);
+      const aimed = action.target?.kind === 'minion' ? them.board[action.target.index] : null;
+      if (action.target?.kind === 'minion' && !aimed) return 'no-target';
+      if (aimed && !fits(e, aimed)) return 'too-big';
+      if (!aimed && them.board.some(m => fits(e, m))) return 'aim-one';
+    }
     return null;
   }
   if (action.kind === 'attack') {
     const m = side.board[action.index];
     if (!m) return 'not-on-board';
     if (m.sick) return 'just-arrived';
+    if (m.held) return 'chained';
     if (m.struck) return 'already-struck';
     if (m.atk <= 0) return 'no-attack';
     if (action.target?.kind === 'minion') {
@@ -510,7 +564,8 @@ export function act(st, action, who = 'you') {
     side.played.push(id);
     if (c.kind === 'minion') {
       const { atk, hp } = bodyOf(side, c), keys = keywordsOf(side, c);
-      const m = { id, name: c.name, element: c.element, atk, hp, hpMax: hp, taunt: keys.includes('taunt'), sick: true, struck: false };
+      const drought = effectOf(side, c)?.drought;
+      const m = { id, name: c.name, element: c.element, atk, hp, hpMax: hp, taunt: keys.includes('taunt'), sick: true, struck: false, ...(drought ? { drought } : {}) };
       side.board.push(m);
       st.log.push({ act: 'played', who: side.who, id, kind: 'minion' });
       if (keys.includes('battlecry')) resolve(st, side, { ...effectOf(side, c), element: c.element }, action.target);
@@ -605,6 +660,13 @@ export function foeTurn(st) {
 function aimFor(st, side, c) {
   const them = other(st, side);
   if (c.effect?.buff) return { kind: 'minion', index: 0 };
+  // 锁 / 吞: the hardest hitter it may take — for 锁 one not already chained.
+  if (c.effect?.chain != null || c.effect?.swallow != null) {
+    const e = effectOf(side, c);
+    const ok = them.board.map((m, index) => ({ m, index })).filter(({ m }) => fits(e, m))
+      .sort((a, b) => (Boolean(a.m.chain) - Boolean(b.m.chain)) || (b.m.atk - a.m.atk) || (b.m.hp - a.m.hp));
+    return ok.length ? { kind: 'minion', index: ok[0].index } : undefined;
+  }
   if (c.effect?.damage == null) return undefined;
   const taunt = them.board.findIndex(m => m.taunt);
   if (taunt >= 0) return { kind: 'minion', index: taunt };
@@ -677,8 +739,8 @@ export function view(st) {
     hp: s.hp, hpMax: s.hpMax, mana: s.mana, manaMax: s.manaMax, manaCap: s.manaCap,
     root: s.root, deck: s.deck.length, hand: s.hand.length, fatigue: s.fatigue,
     powerUsed: s.powerUsed, powerHit: s.powerHit, boost: s.boost, armor: s.armor ?? 0, ward: s.ward ?? null,
-    signature: s.signature, charge: s.charge?.phase ?? null, lifts: s.lifts, stars: s.stars ?? null,
-    board: s.board.map(m => ({ id: m.id, name: m.name, element: m.element, atk: m.atk, hp: m.hp, hpMax: m.hpMax, taunt: m.taunt, ready: !m.sick && !m.struck })),
+    signature: s.signature, charge: s.charge?.phase ?? null, lifts: s.lifts, stars: s.stars ?? null, drain: s.drain ?? 0,
+    board: s.board.map(m => ({ id: m.id, name: m.name, element: m.element, atk: m.atk, hp: m.hp, hpMax: m.hpMax, taunt: m.taunt, ready: !m.sick && !m.struck && !m.held, chained: Boolean(m.chain || m.held), drought: m.drought ?? 0 })),
   });
   // 望气术: the plan is shown only to a player who can read it (setup.you.insight).
   const sight = st.you.insight ?? 0;
@@ -704,7 +766,7 @@ export function offers(st) {
   // looks playable (seen in the browser, 2026-09-18 — 焰心 with an empty rank).
   const targets = c => {
     const at = EFFECTS[Object.keys(EFFECTS).find(k => c.effect?.[k] != null)]?.at;
-    if (at === 'enemy') return [undefined, ...them.board.map((m, index) => ({ kind: 'minion', index }))];
+    if (at === 'enemy' || at === 'minion') return [undefined, ...them.board.map((m, index) => ({ kind: 'minion', index }))];
     if (at === 'friendly') return st.you.board.length ? st.you.board.map((m, index) => ({ kind: 'minion', index })) : [undefined];
     return [undefined];
   };
