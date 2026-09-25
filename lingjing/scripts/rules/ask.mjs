@@ -3,7 +3,7 @@
 import { stageCards, stageHolds } from '../stage.mjs';
 import { normalizeAnswer, pick } from '../state.mjs';
 import { companionOf, questBrief, riddleWaiting } from './companion.mjs';
-import { directorBrief, filler, FILLERS, offersOf, wayBack } from './errands.mjs';
+import { directorBrief, filler, FILLERS, offersOf, waypointOf, wayBack, workOf } from './errands.mjs';
 import { onStage, sceneBrief, shownHere, stageAt } from './look.mjs';
 import { meetBrief } from './road.mjs';
 import { taleBrief } from './tale.mjs';
@@ -83,6 +83,12 @@ export function askOf(content, state, ctx, result = {}, ungated = false) {
     if (options.length < 2) options.push(second);
     return { header: header(scene.place), question: asked, options };
   }
+  // 去处在台上 (his ruling, 2026-09-25): the page holds the roads, the
+  // errands and what waits, so the open world asks nothing in the chat —
+  // a 何去何从 asked there went stale the moment he walked from the map
+  // (去濮阳 still waiting in the chat at 濮阳). It is asked only when he
+  // asks in words, or when the page has no way on to show (stuck).
+  if (!ungated && !typed(ctx.said) && !stuck(content, state, ctx)) return null;
   // 台上有事，聊天不问去处 (his ruling, 2026-09-18). The stage was holding out a
   // 坊市 with 银月铃 on the shelf while the chat asked 何去何从 — two places
   // pulling at once, and the one he had not chosen won. So while something
@@ -111,6 +117,12 @@ export function askOf(content, state, ctx, result = {}, ungated = false) {
   if (choice) return choice;
   return { header: header(placeBrief(content, state, ctx.now)?.name), question, options: FILLERS[zh ? 'zh' : 'en'] };
 }
+
+/* Words he typed — not a page report (`[scene] …`, `[HIDDEN] …`). */
+const typed = said => { const w = String(said ?? '').trim(); return Boolean(w) && !w.startsWith('['); };
+/* Stuck: nothing on the page leads on — no story road, no work, nothing
+   held out here. Then, and only then, the chat puts the question. */
+const stuck = (content, state, ctx) => !waypointOf(content, state, ctx)?.place && !workOf(content, state, ctx) && !stageHeld(content, state, ctx);
 
 /* Is the stage holding something out to him? Asked of the very list that is
    drawn (stage.mjs CARD_KINDS) — this was `stageWaiting`, a list of its own,

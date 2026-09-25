@@ -343,34 +343,31 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   const held = look(toOpenWorld(), content, ctx());
   assert.ok(held.stage.some(c => c.card === 'offer'));
   assert.equal(held.ask, null, 'an errand held out: the chat waits for it');
-  // Taken, nothing holds — and the question comes in that same answer.
+  // 去处在台上 (his ruling, 2026-09-25): the page holds the roads, the errands
+  // and what waits, so the open world asks nothing in the chat — the 去濮阳
+  // asked there was still waiting after he walked to 濮阳 from the map. Taken,
+  // walked, cast: the chat stays quiet while the page shows a way on.
   const took = quest(toOpenWorld(), content, ctx(), { action: 'take', id: held.offers[0].id });
-  assert.ok(askOf(content, took.state, ctx({ verb: 'quest' }), took.result)?.options.some(x => x.move), 'the tap on the first brings the second');
+  assert.equal(askOf(content, took.state, ctx({ verb: 'quest' }), took.result), null, 'the page leads on, the chat asks nothing');
   const o = took.state;
   const lo = look(o, content, ctx());
-  assert.deepEqual(lo.ask, lo.director.choice, 'where he has not been asked, it is asked');
-  // …once. The rules write down that they asked here, so a question he passed
-  // on is not put back a turn later (his Skip, answered by the same widget).
-  const again = { ...o, asked_at: `place:${o.place}` };
-  assert.equal(look(again, content, { ...ctx(), verb: 'look' }).ask, null, 'a bare Look at a spot already asked says nothing');
-  // but anything that moves the world re-arms it — he cast the coins and the
-  // turn ended with no way on (2026-09-18: 起卦完成, 任务卡住了)
-  assert.ok(look(again, content, { ...ctx(), verb: 'divine' }).ask, 'a cast, a trade, a road: asked again');
+  assert.equal(lo.ask, null, 'a Look asks nothing');
+  assert.ok(lo.director.choice?.options.some(x => x.move), 'the roads are still worked out, for Ling\'s line and a typed ask');
+  assert.equal(look(o, content, { ...ctx(), verb: 'divine' }).ask, null, 'a cast asks nothing either');
   const road = lo.director.choice.options.find(x => x.move);
   const arrived = move(o, content, ctx(), { place: road.move });
-  // where he lands, always: the roads — or the traveller's riddle, when that is what the arrival dealt
   const landed = askOf(content, arrived.state, ctx(), arrived.result), dealt = arrived.result.place.meet;
-  const holding = look(arrived.state, content, ctx()).stage.some(c => ['offer', 'road', 'item', 'duel'].includes(c.card));
-  if (dealt?.kind === 'riddle') assert.equal(landed.question, dealt.riddle);
-  else if (holding) assert.equal(landed, null, 'what the arrival holds out comes first');
-  else assert.deepEqual(landed, arrived.result.director.choice, 'and where he lands, always');
-  // …but not onto a stage holding something out: a shelf, a beast at its haunt
-  const shop = { ...arrived.state, place: 'pengcheng' };
-  assert.equal(askOf(content, shop, ctx(), { director: true }), null, 'a 坊市 is on the stage — the chat keeps quiet');
-  const haunt = { ...arrived.state, place: 'fuli', tier: 'qi' };
-  assert.equal(askOf(content, haunt, ctx(), { director: true }), null, 'a beast stands here — its card is the one clickable place');
+  // a traveller's riddle on the road is still the question — the page draws no answers
+  if (dealt?.kind === 'riddle' && !dealt.veiled) assert.equal(landed.question, dealt.riddle);
+  else assert.equal(landed, null, 'an arrival asks nothing');
+  // Asked in words, he gets the question — never from a page report.
   const plain = { ...arrived.state, place: 'sishui', meets: null }; // nothing offered, nothing dealt
-  assert.ok(askOf(content, plain, ctx(), { director: true })?.options.some(x => x.move), 'and where nothing waits, it asks');
+  assert.equal(askOf(content, plain, ctx(), { director: true }), null);
+  assert.ok(askOf(content, plain, ctx({ said: '接下来去哪？' }), { director: true })?.options.some(x => x.move), 'asked in words, the roads are asked');
+  assert.equal(askOf(content, plain, ctx({ said: '[scene] arrived' }), { director: true }), null, 'a page report is not his word');
+  // …and a stage holding something out still keeps the chat quiet, even asked
+  const shop = { ...arrived.state, place: 'pengcheng' };
+  assert.equal(askOf(content, shop, ctx({ said: '去哪' }), { director: true }), null, 'a 坊市 is on the stage — the chat keeps quiet');
 });
 
 test('only the rules decide a fight: a win the exit takes, and pays once', () => {
@@ -2179,7 +2176,7 @@ test('遇: no arrival is empty — a find, a traveller\'s riddle or a beast on t
   const answered = must(meet, wrong.state, { action: 'answer', answer: right }, rd);
   assert.equal(answered.result.paid.progress, 20);
   assert.ok(answered.state.riddles_seen.includes(key));
-  assert.ok(!askOf(content, answered.state, rd, answered.result).options.some(o => o.meet), 'answered, the roads are the question again');
+  assert.equal(askOf(content, answered.state, rd, answered.result), null, 'answered, the chat asks nothing — the roads are on the page (2026-09-25)');
 
   // 拦路: the beast stands like a haunt's own — the same card, the same fight
   const hidden = marsh.find(d => d.result.place.meet.kind === 'beast'), bd = day(marsh.indexOf(hidden));
@@ -2224,7 +2221,7 @@ test('arriving is an event: the errand met there is told with what is seen, 交�
   assert.deepEqual(arrived.result.handed.map(h => h.id), ['xu-lvliang-look']);
   assert.ok(arrived.state.quests['xu-lvliang-look'].done_at);
   assert.ok(arrived.result.handed[0].paid.progress > 0);
-  assert.ok(!askOf(content, arrived.state, at, arrived.result).options.some(o => o.turn));
+  assert.ok(!askOf(content, arrived.state, at, arrived.result)?.options.some(o => o.turn));
   assert.deepEqual(look(arrived.state, content, at).handed.map(h => h.id), ['xu-lvliang-look'], 'the stage shows what it paid');
   // walking on puts the 所得 away, and coming back meets nothing new
   const away = must(move, arrived.state, { place: 'sibei' }, at);

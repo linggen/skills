@@ -891,9 +891,12 @@ a Show, a Trade or a Summarize never ends a turn by itself.
 - **The question is one short line** — *何去何从？* / *What now?* Narration
   and the lines go before it, never inside it; and never type 何去何从 into
   the reply as well.
-- The director's `choice` is asked where the player ARRIVES; a plain Look
-  hands back no question, so a question passed on is not asked again until
-  they walk somewhere.
+- **The open world asks nothing in the chat** (his ruling, 2026-09-25): the
+  page holds the roads, the errands and what waits, and a 何去何从 in the
+  chat goes stale the moment he walks from the map. The director's `choice`
+  comes back in `ask` only when he asks in words (Look with `said`) or when
+  the page has no way on to show. Otherwise end on your words — the roads
+  are yours to name in a line, never to put as a question.
 - A cauldron not yet reachable is not offered; its `breakthrough.need` is
   said once, in the world, never as a lock.
 - A riddle on the table stays the question in every `ask` until answered,
