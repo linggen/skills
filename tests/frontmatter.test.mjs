@@ -20,7 +20,7 @@ const ENGINE_KEYS = [
   'name', 'description', 'tools', 'argument-hint', 'disable-model-invocation', 'user-invocable',
   'allowed-tools', 'allow-skills', 'renamed-from', 'model', 'context', 'memory-context',
   'memory-recall-min-score', 'memory-recall-count', 'agent', 'trigger', 'app', 'permission', 'cwd',
-  'install', 'sync', 'cloud', 'product', 'suggestions', 'closing-ask', 'queue', 'quests',
+  'install', 'sync', 'cloud', 'product', 'suggestions', 'closing-ask', 'queue', 'quests', 'place',
 ];
 const STANDARD_KEYS = ['license', 'homepage', 'metadata', 'compatibility'];
 const KNOWN = new Set([...ENGINE_KEYS, ...STANDARD_KEYS]);

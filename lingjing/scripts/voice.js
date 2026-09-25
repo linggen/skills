@@ -127,6 +127,9 @@ export function createVoice({ now = () => Date.now(), post, sees = () => ({}), t
       const m = table[id];
       const t = now();
       if (!m) return { verdict: 'unknown', said: Promise.resolve(false) };
+      // Before the player finds her she is not in Lingjing at all: nothing
+      // goes to her, however big or asked (SKILL.md place.yinyue).
+      if (!sees().present) return { verdict: 'absent', said: Promise.resolve(false) };
       if (m.priority === 'big' || m.priority === 'asked') {
         stamp(t);
         return { verdict: 'sent', said: send(id, fact, opts, t) };
@@ -156,6 +159,7 @@ export function createVoice({ now = () => Date.now(), post, sees = () => ({}), t
     tick({ visible = true, busy = false, idleFact = null } = {}) {
       const t = now();
       const seen = sees();
+      if (!seen.present) { st.held = []; return null; }
       if (seen.fighting || bursting(t)) return null;
       if (st.held.length) {
         const held = st.held;

@@ -6,10 +6,13 @@
 
 import '/shared/chat-bridge.js';
 import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from '/shared/api.js';
+// And a namespace: a name the served /shared/api.js doesn't export yet
+// (`engineUiUrl`) must not fail the whole page.
+import * as sharedApi from '/shared/api.js';
 import { verb, content } from './rules.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
-import { boardDoneToday, stageCards, stageHolds } from './stage.mjs';
+import { boardDoneToday, petStageUrl, stageCards, stageHolds } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, boutSays, pickOf, spoilsHtml } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
@@ -45,7 +48,10 @@ let chat = null;
    her words. Her line lands in this chat (`session`) once she walks with the
    player; a big moment lets Ling answer her once (`converse`). ── */
 const IDLE_FACT = { zh: '玩家在这页上静了好一会儿，什么也没动。', en: 'The player has been quiet here a while, not touching anything.' };
-const herHere = () => Boolean(look?.companion);
+/// She is in Lingjing only once the player has found her (the save's
+/// `companion.joined`; SKILL.md `place.yinyue.absent_until` — the engine keeps
+/// her out of this skill's sessions until then). Every call to her asks this.
+const herHere = () => Boolean(look?.companion?.joined);
 const voice = createVoice({
   post: (id, fact, flags, opts) => postMoment(fact, flags, opts),
   sees: () => ({ fighting: Boolean(bout), present: herHere() }),
@@ -53,7 +59,9 @@ const voice = createVoice({
 /// Resolves true when she will hear it; false when nobody will (the pet off
 /// answers 503 at once) — a page that waits on her must not wait then.
 function postMoment(fact, flags, { mood = null } = {}) {
-  const sid = look?.companion ? chat?.getSessionId?.() : null;
+  if (!herHere()) return Promise.resolve(false);
+  // Her line lands in this chat, and the engine checks her presence against it.
+  const sid = chat?.getSessionId?.() ?? null;
   const { converse, ...rest } = flags ?? {};
   // In the game the player has a 道号, and she calls them by it (his screen,
   // 2026-09-24: 「今天也辛苦了，Hanli」 inside 灵境). First, so no cap cuts it.
@@ -891,8 +899,8 @@ function draw() {
   // open, scene or road, not only where a scene casts her.
   $('stage').hidden = false;
   // She stands there only once she has been found (his rule, 2026-09-17).
-  const her = Boolean(look.companion) && !bout;
-  stageYinyue(her, Boolean(bout) && Boolean(look.companion));
+  const her = herHere() && !bout;
+  stageYinyue(her, Boolean(bout) && herHere());
   $('stageName').textContent = her ? look.companion.name : '';
   $('askHerBtn').hidden = !her;
   if (her) $('askHerBtn').textContent = words().askHer.replace('{name}', look.companion.name);
@@ -1210,7 +1218,7 @@ async function goSeclude() {
   await refresh();
   // 银月 sits by the player as they go in — the facts; her words are hers.
   const e = r.entered, pill = e.pill ? { zh: `，服了一粒${e.pill.name}`, en: `, having taken a ${e.pill.name}` } : { zh: '', en: '' };
-  if (look?.companion) askHer('seclude', `玩家刚入关闭关，专心修${focusFacts(e, true)}${pill.zh}。时辰按真实时间算，至多 ${e.cap} 小时。你在一旁护关。`,
+  if (herHere()) askHer('seclude', `玩家刚入关闭关，专心修${focusFacts(e, true)}${pill.zh}。时辰按真实时间算，至多 ${e.cap} 小时。你在一旁护关。`,
     `The player has just gone into seclusion to work on ${focusFacts(e, false)}${pill.en}. Real hours count, up to ${e.cap}. You keep watch beside them.`, 'relaxed');
 }
 
@@ -1229,7 +1237,7 @@ async function emerge() {
   const opening = view.afterEmerge;
   keep({ afterEmerge: null });
   if (opening) return opening(facts);
-  if (look?.companion) askHer('emerge', facts.zh, facts.en, 'happy');
+  if (herHere()) askHer('emerge', facts.zh, facts.en, 'happy');
 }
 
 /* What 出关 grew, as facts for her — the rules' numbers, never a line. */
@@ -1277,6 +1285,7 @@ async function deckTap(args) {
 /// hear it; false when nobody will (the pet off answers 503 at once) — a
 /// page that waits on her must not wait then.
 function askHer(id, zh, en, mood) {
+  if (!herHere()) return Promise.resolve(false);
   return voice.moment(id, { zh, en }, { mood }).said;
 }
 /* 机缘's clock: the row counts down by the minute, and once — with half an
@@ -1417,10 +1426,11 @@ function sendAsk() {
   if (!view.ask) return;
   const q = $('askField').value.trim();
   // 问问银月: the words go to her in this chat (`@银月 …`) — she answers as
-  // [Yinyue], and Ling reads the exchange on his next turn. Empty, the
+  // [Yinyue], and Ling reads the exchange on her next turn. Empty, the
   // player's gentle nudge to talk.
   if (view.askHer) {
     closeAsk();
+    if (!herHere()) return noOne();
     deliver(`@银月 ${q || words().askHerEmpty}`, false);
     return;
   }
@@ -1542,7 +1552,7 @@ const CLICKS = [
   // 问询: the one word that costs a model turn opens the ask bar; nothing is
   // sent until the player says so.
   ['[data-ask]', (el) => openAsk(el.dataset.ask)],
-  ['[data-ask-her]', () => (view.ask && view.askHer ? closeAsk() : openAsk(words().askHer.replace('{name}', look?.companion?.name ?? words().yinyue), true))],
+  ['[data-ask-her]', () => (!herHere() ? noOne() : view.ask && view.askHer ? closeAsk() : openAsk(words().askHer.replace('{name}', look?.companion?.name ?? words().yinyue), true))],
   ['[data-ask-send]', () => sendAsk()],
   ['[data-ask-close]', () => closeAsk()],
   ['[data-meet]', (el) => run(`meet:${el.dataset.meet}`, () => takeMeet(el.dataset.meet))],
@@ -1583,13 +1593,19 @@ document.addEventListener('click', (e) => {
   }
 });
 
+/// Someone asked for 银月 before the player found her: one plain line in the
+/// page's own note — no chat message, no turn, nothing sent.
+function noOne() {
+  show({ doNote: words().noOne });
+}
+
 /* ── 银月 hears what happened (engine: POST /api/yinyue/event) ──
    Facts only, in the player's language; she is not woken now. The engine keeps
    them until the player has gone quiet — or, `big`, until the screen settles —
    and then she decides whether a word fits (his, 2026-09-23: 不要每条都回复,
    只在安静了许久的时候出来说一些). Only once she walks with the player. */
 function tellYinyue(id, zh, en, { mood = null } = {}) {
-  if (!look?.companion) return;
+  if (!herHere()) return;
   voice.moment(id, { zh, en }, { mood });
 }
 
@@ -1885,8 +1901,15 @@ async function mountChat() {
     sessionId: resume || undefined,
     // A new chat begun from the panel's own button, after the page is up.
     onSessionCreated: (sid) => { if (mounted && sid !== resume) openWith(sid); },
-    onStreamToken: () => { streaming = true; },
-    onStreamEnd: () => {
+    // Her guest turns (`@银月 …`) stream in this chat too. Only Ling's stream
+    // is the game's turn — it ends the turn, counts the veil, tells the recap
+    // and reads the save again. Hers only counts as a line spoken, so the
+    // voice budget stays quiet after she talks. A bridge that names no agent
+    // (`info` absent) streams Ling alone.
+    guestStreams: true,
+    onStreamToken: (_text, info) => { if (info?.own !== false) streaming = true; },
+    onStreamEnd: (_text, info) => {
+      if (info?.own === false) { voice.heard(); return; }
       turnEnded();
       voice.heard();
       streaming = false;
@@ -1908,6 +1931,10 @@ async function mountChat() {
       // An app wrote its quest facts (a workout mirrored from the phone):
       // the 功课 card reads them again — a Look, no turn.
       if (event === 'quests_changed') refreshSoon(300);
+      // Words for someone not in Lingjing yet (`@银月` before the player
+      // finds her: SKILL.md `place.yinyue.absent_until`). The engine ran no
+      // turn and kept nothing; the page says one plain line, never as hers.
+      if (event === 'agent_absent') noOne();
       // An asked moment nobody will answer (the pet is off).
       if (event === 'device_topic' && payload?.topic === 'yinyue' && payload?.op === 'unanswered' && payload?.payload?.app === SKILL) greetUnanswered(payload.payload.text);
     },
@@ -1945,7 +1972,7 @@ async function castByPage() {
 /// was asked, so she answers at once (engine: `asked`). The facts go to her;
 /// the words are hers (his rule: Yinyue writes every message).
 function readingByHer(d) {
-  if (!d || !look?.companion) return;
+  if (!d || !herHere()) return;
   const h = d.hexagram, zh = lang() !== 'en';
   const moving = h.moving_lines?.length ? (zh ? `；动爻：${h.moving_lines.join(' ')}` : '') : '';
   const to = d.changed ? (zh ? `，之卦《${d.changed.name}》` : `, changing to ${d.changed.name}`) : '';
@@ -1965,7 +1992,7 @@ function readingByHer(d) {
 /// writes every message; the page never speaks a line Ling wrote for her). A
 /// realm risen is the stage's own moment (`feat`), told to her there.
 function cheer(before) {
-  if (!before || !look || !look.companion || before.world?.id !== look.world?.id) return;
+  if (!before || !look || !herHere() || before.world?.id !== look.world?.id) return;
   if (look.tier?.id !== before.tier?.id || look.tier?.step !== before.tier?.step) return;
   const held = (l) => (l.bag ?? []).reduce((n, b) => n + (b.n ?? 0), 0);
   const progress = Math.max(0, (look.progress ?? 0) - (before.progress ?? 0));
@@ -2031,14 +2058,14 @@ const nodeFresh = (kinds) => Boolean(look?.story_node && kinds.includes(look.sto
 function storyMoment(n) {
   const m = nodeMoment(n);
   // Her price showing (unease.js): the stage shows it on her, then she says it.
-  if (m && n.unease && look?.companion) return void raiseUnease(n.unease, () => tellYinyue(m.id, m.zh, m.en, { mood: m.mood }), { still: stillMotion() });
+  if (m && n.unease && herHere()) return void raiseUnease(n.unease, () => tellYinyue(m.id, m.zh, m.en, { mood: m.mood }), { still: stillMotion() });
   if (m) tellYinyue(m.id, m.zh, m.en, { mood: m.mood });
 }
 
 /* 前情提要 — back after a while (Look's `recap_due`), Ling tells what came
    before in two or three lines. One sequence with her greeting, never two
    greetings: she greets (told Ling tells the story next), the page sends Ling
-   one hidden `[scene] recap` once the greeting has settled, and after his
+   one hidden `[scene] recap` once the greeting has settled, and after her
    telling she may add one feeling. A chat Ling opens herself needs none of
    this — her opening Look carries the recap (SKILL.md § 九鼎录). */
 const pause = (ms) => new Promise((ok) => setTimeout(ok, ms));
@@ -2056,7 +2083,7 @@ async function recapWhenSettled(greeted) {
 function recapTold() {
   const q = recapSent;
   recapSent = null;
-  if (q === null || !look?.companion) return;
+  if (q === null || !herHere()) return;
   const zh = `Ling 刚讲完前情提要${q ? `，眼下悬着的谜：「${q}」` : ''}。你已经打过招呼了，别再问候；若有感触，说一句，没有就不说。`;
   const en = `Ling has just told what came before${q ? `; the riddle still open: “${q}”` : ''}. You have greeted already — no second greeting; one feeling if you have one, else nothing.`;
   voice.moment('recap', { zh, en }, { mood: 'relaxed' });
@@ -2085,7 +2112,7 @@ function stageYinyue(on, keep = false) {
   // behaviour late — she has been seen to take longer than eight seconds, and
   // a moon standing a while beats a stage with nobody on it.
   pet.onload = () => { pet.hidden = false; setTimeout(() => { if (pet.dataset.on && !pet.dataset.told) moon.hidden = true; }, 30000); };
-  pet.src = `${location.origin}/?pet=1&stage=1`;
+  pet.src = petStageUrl(sharedApi, location.origin);
 }
 function petSays(e) {
   const pet = $('pet');
@@ -2149,7 +2176,7 @@ async function enter() {
 /// opening and Ling waits; else, back from 闭关, she hears what grew.
 async function openSitting(fresh, grew) {
   const greeted = await greetByHer(grew);
-  if (!greeted && grew && look?.companion) await askHer('emerge', grew.zh, grew.en, 'happy');
+  if (!greeted && grew && herHere()) await askHer('emerge', grew.zh, grew.en, 'happy');
   if (fresh) openWith(chat?.getSessionId(), greeted);
   // Ling opening a fresh chat herself tells the 前情提要 in her opening.
   if (!fresh || greeted) recapWhenSettled(greeted);
@@ -2159,7 +2186,7 @@ async function openSitting(fresh, grew) {
 /// whether she has greeted today and hand over what they know; she speaks.
 /// `grew`: 出关's facts, when the sitting opened on one — one greeting, not two.
 async function greetByHer(grew = null) {
-  if (!look?.companion) return false;
+  if (!herHere()) return false;
   const r = await write('greet', {}).catch(() => null);
   if (!r?.ok || !r.first) return false;
   const who = r.name ?? '';

@@ -29,6 +29,18 @@ cloud:
 # turn to finish, and never takes an open question's place.
 closing-ask: true
 queue: after-turn
+# 银月 is a guest in Lingjing's chat (skill-spec § Place), and she is found,
+# not given: until the player reaches 结丹 and finds her (the save's
+# `companion.joined`), she is not here at all — `@银月` runs no turn and the
+# page says 「查无此人。」, and no app moment reaches her (Hanli, 2026-09-25).
+place:
+  yinyue:
+    text: >-
+      You are inside Lingjing 《灵境》, the player's companion in the game's
+      world, on the road at their side. Speak in the game's language, as
+      yourself; Ling tells the world and runs every turn — never speak for
+      Ling, and never make the game's moves.
+    absent_until: {file: data/state.json, path: companion.joined}
 permission:
   paths:
     # `edit`: a tool's tier is checked against the session's CWD — this

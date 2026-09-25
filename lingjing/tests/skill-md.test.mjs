@@ -75,3 +75,50 @@ test('the list shape that broke the skill is caught', () => {
   assert.equal(problems.length, 1);
   assert.match(problems[0], /args is a list/);
 });
+
+/* The `place:` block (skill-spec § Place; engine `record::Places`): keyed by
+   agent id, each a plain string or `{text, absent_until: {file, path}}`. The
+   gate's path must be the one the rules write when she joins. */
+export function readPlace(md) {
+  const lines = md.split('\n');
+  const fm = lines.slice(1, lines.indexOf('---', 1));
+  const at = fm.indexOf('place:');
+  if (at < 0) return null;
+  const place = {};
+  let agent = null, key = null;
+  for (const line of fm.slice(at + 1)) {
+    if (/^\S/.test(line)) break; // the next top-level key
+    const who = /^ {2}([\w-]+):\s*(.*)$/.exec(line);
+    if (who) { agent = who[1]; place[agent] = who[2] ? who[2].trim() : {}; key = null; continue; }
+    const kv = /^ {4}([\w-]+):\s*(.*)$/.exec(line);
+    if (kv && agent) {
+      key = kv[1];
+      const v = kv[2].trim();
+      const flow = /^\{\s*file:\s*([^,}]+),\s*path:\s*([^,}]+)\}$/.exec(v);
+      place[agent][key] = flow ? { file: flow[1].trim(), path: flow[2].trim() } : v === '>-' || v === '>' || v === '|' ? '' : v;
+      continue;
+    }
+    if (agent && key && /^ {6}/.test(line)) place[agent][key] = `${place[agent][key]} ${line.trim()}`.trim();
+  }
+  return place;
+}
+
+test("place: 银月 is a guest with her own text, absent until the save says she joined", async () => {
+  const place = readPlace(fs.readFileSync(SKILL_MD, 'utf8'));
+  assert.deepEqual(Object.keys(place), ['yinyue'], 'only guests (Ling\'s place is the SKILL.md body)');
+  const her = place.yinyue;
+  assert.ok(her.text.length > 40 && her.text.length < 400, 'one or two short lines');
+  assert.deepEqual(her.absent_until, { file: 'data/state.json', path: 'companion.joined' });
+  // The rules keep the save at data/state.json in the skill folder …
+  const { dataDir } = await import('../scripts/rules/files.mjs');
+  const skillDir = path.resolve(path.dirname(SKILL_MD));
+  if (!process.env.LINGJING_DATA) assert.equal(path.relative(skillDir, path.join(dataDir(), 'state.json')), her.absent_until.file);
+  // … and `companion.joined` is what joining writes, read the engine's way
+  // (set = present and not null/false/0/""/[]/{}).
+  const { hasCompanion } = await import('../scripts/rules/companion.mjs');
+  const valueAt = (json, p) => p.split('.').reduce((v, k) => (v == null ? undefined : v[k]), json);
+  const isSet = (v) => v != null && v !== false && v !== 0 && v !== '' && !(Array.isArray(v) && !v.length) && !(typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length);
+  for (const s of [{}, { companion: {} }, { companion: { riddle: { day: 'x' } } }, { companion: { joined: '2026-09-18' } }]) {
+    assert.equal(isSet(valueAt(s, her.absent_until.path)), hasCompanion(s), JSON.stringify(s));
+  }
+});
