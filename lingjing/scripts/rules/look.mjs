@@ -9,12 +9,12 @@ import { fightSetup } from './cards.mjs';
 import { callDue, companionOf, hasCompanion, herCard, questBrief, recalledOf } from './companion.mjs';
 import { clone, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mjs';
 import { staminaBrief } from './daily.mjs';
-import { bookOf, breakthroughOf, directorBrief, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
+import { bookOf, breakthroughOf, directorBrief, errandFor, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
 import { divinationBrief, fateBrief } from './fortune.mjs';
 import { chanceBrief } from './road.mjs';
 import { seclusionBrief } from './seclusion.mjs';
 import { chapterLook, nodeLook, recapLook } from './story.mjs';
-import { knownBrief, storyDue, taleBrief } from './tale.mjs';
+import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
 import { kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
 import { gameLevel, hostedHere, lundaoBrief, reopened } from './tasks.mjs';
 import { atScene, creatureOf, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
@@ -71,7 +71,46 @@ function sceneBrief(content, state, now = new Date()) {
 /* The fight as the scene draws it: the creature at the player's own realm —
    its numbers, its lean and the turns it takes — the player's roots and
    arms, and today's fight if one is open or done. */
-function duelBrief(content, state, game, now) {
+/* Why this fight is fought — the most specific reason that holds: a 传闻's
+   finale, an errand that asks for the beast, a road beast, its haunt; a
+   spine scene's duel is fought for its chapter (redesign-v2 § 五). */
+const STAKE = {
+  tale: { zh: (t) => `传闻 · ${t} · 终局`, en: (t) => `Rumor · ${t} · Finale` },
+  errand: { zh: (t) => `差事 · ${t}`, en: (t) => `Errand · ${t}` },
+  road: { zh: (p) => `路上 · ${p}`, en: (p) => `On the road · ${p}` },
+  haunt: { zh: (p) => `降妖 · ${p}`, en: (p) => `Subdue · ${p}` },
+};
+const staked = (kind, lang, what) => (what ? (STAKE[kind][lang] ?? STAKE[kind].zh)(what) : null);
+
+/* Today's rumor ends on this beast: its finale link, else null. */
+function taleFinaleOf(state, creature) {
+  const t = liveTale(state), link = t?.chain?.[t.n];
+  return link?.end && link.game === 'duel' && link.creature === creature ? { tale: t, link } : null;
+}
+
+function stakeOf(content, state, game) {
+  const lang = state.lang;
+  if (!game.id.startsWith('haunt:')) return pick(content.chapters?.[state.chapter]?.title, lang) ?? null;
+  const finale = taleFinaleOf(state, game.creature);
+  if (finale) return staked('tale', lang, finale.tale.title);
+  const errand = errandFor(content, state, game.creature);
+  if (errand) return staked('errand', lang, pick(errand.title, lang));
+  const place = placeOf(content, state.place);
+  return staked(place?.has?.creature === game.creature ? 'haunt' : 'road', lang, pick(place?.name, lang));
+}
+
+/* What the beast says: its own lines from its heritage (creatures.json
+   `says`), or — a rumor's finale — the lines Ling wrote with the tale. The
+   stage shows them; Ling does not say them again. `won` is the player's win. */
+function saysOf(content, state, game) {
+  const lang = state.lang, own = creatureOf(content, game.creature)?.says ?? {};
+  const boss = game.id.startsWith('haunt:') ? taleFinaleOf(state, game.creature)?.link.boss ?? {} : {};
+  const line = k => boss[k] ?? pick(own[k], lang) ?? null;
+  const says = { foe: line('open'), won: line('won'), lost: line('lost') };
+  return Object.values(says).some(Boolean) ? says : null;
+}
+
+function duelBrief(content, state, game, now, { door = false } = {}) {
   const creature = creatureOf(content, game.creature);
   const lang = state.lang, today = state.duels?.[game.creature];
   const open = today?.day === dayKey(now) ? today : null;
@@ -87,6 +126,9 @@ function duelBrief(content, state, game, now) {
     // Everything the fight is given at the door, and nothing else.
     setup: fightSetup(content, state, creature, now, game.id),
     today: open ? { outcome: open.outcome } : null,
+    stake: stakeOf(content, state, game),
+    // The lines only at the door, where the page opens the fight — Look stays lean.
+    ...(door ? { says: saysOf(content, state, game) } : {}),
   };
 }
 

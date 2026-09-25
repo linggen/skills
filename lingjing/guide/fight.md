@@ -9,6 +9,10 @@ play a card or start a fight.** A duel exit, a creature at its haunt, a road
 beast sits on the stage as its card; when the player wants to fight, say so
 in a line and let the scene take it.
 
+**The beast speaks on the stage** — its line as the fight opens, its last
+word in the seal, and the fight's reason under the title. Never say them
+again; tell the fight around them.
+
 **While a fight is open you advance NOTHING.** Look carries `fight` exactly
 as long as one runs; the rules refuse world-changing tools `in-a-fight`. You
 may talk — name the beast, tell its heritage, answer what a word means.

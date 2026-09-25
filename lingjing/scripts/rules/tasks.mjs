@@ -186,7 +186,7 @@ export function duel(state, content, ctx, args) {
     // The whole setup is kept with it, so the settle replays what the page
     // is handed now (an older save's open fight takes it on resume).
     if (!s.fight.setup) s.fight.setup = fightSetup(content, s, creature, ctx.now, id);
-    return { state: s, result: { ok: true, started: id, ...(resuming ? { resumed: true } : {}), duel: duelBrief(content, s, game, ctx.now) } };
+    return { state: s, result: { ok: true, started: id, ...(resuming ? { resumed: true } : {}), duel: duelBrief(content, s, game, ctx.now, { door: true }) } };
   }
 
   // ── 收场: the page hands back what was played, the rules replay it ──

@@ -10,7 +10,7 @@ import { verb, content } from './rules.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
 import { boardDoneToday, stageCards, stageHolds } from './stage.mjs';
-import { WORDS as BATTLE_WORDS, battleHtml, pickOf, spoilsHtml } from './battle-card.js';
+import { WORDS as BATTLE_WORDS, battleHtml, boutSays, pickOf, spoilsHtml } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
@@ -938,7 +938,7 @@ function boutCtx() {
     foeName: c.name, foeArt: c.art ? `${artBase()}${c.art}` : null,
     youName: look.name ?? '', herName: look.companion?.name ?? null,
     // Why this fight, and who speaks in it (the brief carries them when the story gives them).
-    stake: bout.brief.stake ?? null, says: bout.says ?? bout.brief.says ?? null,
+    stake: bout.brief.stake ?? null, says: boutSays(bout.brief.says, bout.st.outcome),
   };
 }
 
@@ -1711,12 +1711,18 @@ function yieldBout() {
 /* The rules settle it, and the scene reports it — the scene is still the only
    witness to a fight (design.md § 降妖). The room closes whatever the answer:
    a refusal is said on the stage, and Ling hears only what the rules decided. */
+const SEAL_HOLD_MS = 2400;
 async function settleBout(b = bout) {
   if (!b || b.settling) return;
   b.settling = true;
   clearTimeout(idleTimer);
   const { id, actions, brief } = b;
   const r = await write('duel', { id, picks: actions.join(',') }).catch(failed);
+  // The beast's last word stands in the seal long enough to be read.
+  if (r.ok && bout === b && boutSays(brief.says, b.st.outcome)?.end) {
+    drawNow();
+    await new Promise((done) => setTimeout(done, SEAL_HOLD_MS));
+  }
   if (bout === b) bout = null;
   if (!r.ok) {
     console.warn('[lingjing] the rules refused the fight', r);

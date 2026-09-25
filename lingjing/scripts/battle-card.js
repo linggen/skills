@@ -493,6 +493,18 @@ function gearHtml(side, who, st, ctx) {
 
 /* ── The whole screen ── */
 
+/* The beast's lines on the card: its opening under its name, and at the end
+   its last word inside the seal — `won` when the player won, `lost` when the
+   player lost; a beast that walked away says nothing. 银月's bubble is left
+   empty: her words are hers, spoken in her own voice, and the page never
+   holds them (never author a line for her). */
+export function boutSays(says, outcome) {
+  if (!says) return null;
+  const end = outcome === 'won' ? says.won : outcome === 'lost' ? says.lost : null;
+  return { foe: says.foe ?? null, end: end ?? null };
+}
+
+
 /* `st` is `view(state)`, `offers` is `offers(state)`, `ctx` carries the
    catalog, the language and the words. `picked` is what the player is holding. */
 export function battleHtml(st, offers, ctx, picked = null, openLog = false, note = null, help = false) {

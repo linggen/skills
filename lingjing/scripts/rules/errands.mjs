@@ -37,6 +37,17 @@ function countsOf(content, state, quest) {
 
 const questReady = (content, state, quest) => countsOf(content, state, quest).every(n => n.done);
 
+/* The errand in the book that asks for this beast (降 or 驯, not yet met):
+   the fight's stake says it is fought for that errand. */
+function errandFor(content, state, creature) {
+  for (const id of Object.keys(state.quests ?? {})) {
+    if (questDoneBefore(state, id)) continue;
+    const q = questOf(content, id);
+    if (q && countsOf(content, state, q).some(n => (n.kind === 'subdue' || n.kind === 'tame') && n.creature === creature && !n.done)) return q;
+  }
+  return null;
+}
+
 /* 功课 on the same card (design.md § 差事 ⑥): what the player's apps report,
    as lines of the book — only today's (chores.mjs: the fixed ones and the
    day's one pick; 开府 has its own section). They take no slot — nobody took
@@ -535,4 +546,4 @@ function gearBrief(content, state) {
   };
 }
 
-export { bookOf, breakthroughOf, complete, countsOf, directorBrief, filler, FILLERS, GEAR_SLOTS, gearBrief, HANDED_KEEP, handedHere, handedOne, itemBrief, itemOf, noticeAt, noticeOf, offersOf, questDoneBefore, questOf, questReady, settleErrands, taskOf, threadOf, TIERS_ORDER, wayBack, waypointOf, whereAt, withinRoads, workOf };
+export { bookOf, breakthroughOf, complete, countsOf, directorBrief, errandFor, filler, FILLERS, GEAR_SLOTS, gearBrief, HANDED_KEEP, handedHere, handedOne, itemBrief, itemOf, noticeAt, noticeOf, offersOf, questDoneBefore, questOf, questReady, settleErrands, taskOf, threadOf, TIERS_ORDER, wayBack, waypointOf, whereAt, withinRoads, workOf };

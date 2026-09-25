@@ -21,7 +21,10 @@ never touched.
   games, never the same twice running; each place within `reach` of the last.
   One to three people, each a distinct `voice`; bring back someone `known`
   by id. Riddles and 论道 prompts are yours; every other puzzle, count and
-  reward is the rules' — **never a number**.
+  reward is the rules' — **never a number**. A fight finale's beast speaks:
+  write its `boss` lines for this story — `open` as the fight starts, `won`
+  when the player wins, `lost` when the player loses — one short line each,
+  in its own voice (the example shows them). The stage shows them; you don't.
 - **Play it:** Look's `tale.step` is the step open now. When a step opens —
   after `make`, or on `[scene] tale step` — speak it in one to three lines:
   the giver's `line` in their voice, the game as a thing in the world, where

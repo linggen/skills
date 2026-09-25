@@ -20,6 +20,20 @@
         "zh": "白鹿，头生四角。",
         "en": "A white deer with four antlers."
       },
+      "says": {
+        "open": {
+          "zh": "吾角所指，其邑大水。",
+          "en": "Where my antlers point, the town floods."
+        },
+        "won": {
+          "zh": "水退了。吾归山去，不扰此邑。",
+          "en": "The water falls back. I go to the hills and spare this town."
+        },
+        "lost": {
+          "zh": "见吾者，其邑大水，汝亦然。",
+          "en": "Whoever sees me, their town floods. Yours as well."
+        }
+      },
       "province": "豫",
       "root": "water",
       "art": "art/fuzhu.webp",
@@ -83,6 +97,20 @@
       "look": {
         "zh": "猿猴的样子，青身白头，金眼雪牙；脖子能伸出百尺。",
         "en": "An ape's shape, a blue-green body and a white head, golden eyes and snow-white teeth; its neck can stretch a hundred feet."
+      },
+      "says": {
+        "open": {
+          "zh": "禹锁过吾颈，汝又凭什么？",
+          "en": "Yu once chained my neck. What have you got?"
+        },
+        "won": {
+          "zh": "金铃又响了……淮水，归你们。",
+          "en": "The golden bell rings again… Keep your Huai, then."
+        },
+        "lost": {
+          "zh": "锁不住吾，便让开淮水。",
+          "en": "If you cannot chain me, get off the Huai."
+        }
       },
       "province": "徐",
       "root": "metal",
@@ -149,6 +177,20 @@
       "look": {
         "zh": "巨人，一节骨头就要一辆车来装；夜夜往会稽走，总也走不到。",
         "en": "A giant, one joint of whose bones would fill a cart; every night he walks toward Kuaiji and never arrives."
+      },
+      "says": {
+        "open": {
+          "zh": "会稽还远么？莫挡吾的路。",
+          "en": "Is Kuaiji still far? Do not stand in my road."
+        },
+        "won": {
+          "zh": "又迟了……如当年会稽之会。",
+          "en": "Late again… as I was on Kuaiji, long ago."
+        },
+        "lost": {
+          "zh": "这回，后至的是汝。",
+          "en": "This time, you are the one who came late."
+        }
       },
       "province": "扬",
       "root": "wood",
@@ -220,6 +262,20 @@
         "zh": "长尾猿的样子，四只耳朵；叫声像人在低吟。",
         "en": "A long-tailed ape with four ears; its cry is like someone moaning low."
       },
+      "says": {
+        "open": {
+          "zh": "听吾低吟，郡县皆水。",
+          "en": "Hear my low chant, and every county floods."
+        },
+        "won": {
+          "zh": "吟声歇了，水也歇了。",
+          "en": "My chant falls quiet, and the water with it."
+        },
+        "lost": {
+          "zh": "这吟声，汝可听清了？",
+          "en": "Did you hear the chant clearly?"
+        }
+      },
       "province": "扬",
       "root": "water",
       "art": "art/changyou.webp",
@@ -284,6 +340,20 @@
       "look": {
         "zh": "一条大蛇，青、黄、赤、黑四色，吞得下一头象。",
         "en": "A great snake patterned green, yellow, red and black, able to swallow an elephant."
+      },
+      "says": {
+        "open": {
+          "zh": "吾吞过象，汝不够塞牙。",
+          "en": "I have swallowed elephants. You would not fill a tooth."
+        },
+        "won": {
+          "zh": "罢了，吾盘回去慢慢消食。",
+          "en": "Enough. I will coil back and digest in peace."
+        },
+        "lost": {
+          "zh": "慢慢咽，总有吐骨之日。",
+          "en": "Swallowed slowly; the bones come out in time."
+        }
       },
       "province": "荆",
       "root": "water",
@@ -350,6 +420,20 @@
       "look": {
         "zh": "龟的样子，白身子，红脑袋。",
         "en": "A turtle's shape, a white body and a red head."
+      },
+      "says": {
+        "open": {
+          "zh": "吾缩甲中，火不能侵，汝亦不能。",
+          "en": "In my shell, fire cannot reach me. Nor can you."
+        },
+        "won": {
+          "zh": "甲裂了……吾让路便是。",
+          "en": "My shell cracks… I will make way."
+        },
+        "lost": {
+          "zh": "甲还在，汝的力气没了。",
+          "en": "The shell holds. Your strength does not."
+        }
       },
       "province": "荆",
       "root": "earth",
@@ -419,6 +503,20 @@
         "zh": "一头大牛，重有千斤，身子像一座小山。",
         "en": "A great ox a thousand jin in weight, its body like a small hill."
       },
+      "says": {
+        "open": {
+          "zh": "岷山是吾的，汝踩着吾的草。",
+          "en": "Min Mountain is mine. You are treading my grass."
+        },
+        "won": {
+          "zh": "哞……吾回岷山吃草去。",
+          "en": "Moo… Back to Min Mountain to graze."
+        },
+        "lost": {
+          "zh": "山都顶得动，何况汝。",
+          "en": "I can shove a mountain, let alone you."
+        }
+      },
       "province": "梁",
       "root": "earth",
       "art": "art/kuiniu.webp",
@@ -484,6 +582,20 @@
         "zh": "鸮的样子，红身子，白脑袋。",
         "en": "An owl's shape, a red body and a white head."
       },
+      "says": {
+        "open": {
+          "zh": "赤羽落处，火也绕道。",
+          "en": "Where my red feathers fall, even fire goes around."
+        },
+        "won": {
+          "zh": "羽乱了……吾飞回崌山。",
+          "en": "My feathers are ruffled… Back to Mount Ju I fly."
+        },
+        "lost": {
+          "zh": "汝连吾的影子也没碰着。",
+          "en": "You never touched so much as my shadow."
+        }
+      },
       "province": "梁",
       "root": "fire",
       "art": "art/qiezhi.webp",
@@ -548,6 +660,20 @@
       "look": {
         "zh": "一条蛇，六只脚，四只翅膀。",
         "en": "A snake with six legs and four wings."
+      },
+      "says": {
+        "open": {
+          "zh": "吾出，则天下大旱。汝渴么？",
+          "en": "When I come out, the whole land goes dry. Thirsty?"
+        },
+        "won": {
+          "zh": "雨来了……吾回太华去。",
+          "en": "Rain is coming… I go back to Taihua."
+        },
+        "lost": {
+          "zh": "旱到汝骨头里去罢。",
+          "en": "Let the drought sink into your bones."
+        }
       },
       "province": "雍",
       "root": "fire",
@@ -615,6 +741,20 @@
         "zh": "羊的样子，长着马的尾巴。",
         "en": "A goat's shape with a horse's tail."
       },
+      "says": {
+        "open": {
+          "zh": "钱来山的羊，没那么好欺。",
+          "en": "The sheep of Qianlai Mountain is not easily bullied."
+        },
+        "won": {
+          "zh": "咩……拿去吧，吾脂可已腊。",
+          "en": "Baa… Take it. My fat heals cracked skin."
+        },
+        "lost": {
+          "zh": "皮厚着呢，汝还磨得动？",
+          "en": "My hide is thick. Can you still wear it down?"
+        }
+      },
       "province": "雍",
       "root": "metal",
       "art": "art/qianyang.webp",
@@ -679,6 +819,20 @@
       "look": {
         "zh": "人的样子，老虎的尾巴；出入身上有光。",
         "en": "A man's shape with a tiger's tail; light goes with him in and out."
+      },
+      "says": {
+        "open": {
+          "zh": "吾司和山，汝来此何求？",
+          "en": "I keep He Mountain. What do you seek here?"
+        },
+        "won": {
+          "zh": "善。天地之气，暂让汝行。",
+          "en": "Good. Heaven and earth let you pass, for now."
+        },
+        "lost": {
+          "zh": "天地之气动了，汝站得住么？",
+          "en": "Heaven and earth stir. Can you still stand?"
+        }
       },
       "province": "豫",
       "root": "earth",
@@ -746,6 +900,20 @@
         "zh": "人的脸，老虎的身子；叫起来像婴儿。",
         "en": "A human face on a tiger's body; its cry is like an infant's."
       },
+      "says": {
+        "open": {
+          "zh": "呜哇……过来些，让吾看清汝。",
+          "en": "Waah… Come closer, let me see you."
+        },
+        "won": {
+          "zh": "呜……吾不哭了，汝走罢。",
+          "en": "Hnn… I will stop crying. Go."
+        },
+        "lost": {
+          "zh": "汝循着哭声来，便该想到。",
+          "en": "You followed the crying. You should have known."
+        }
+      },
       "province": "豫",
       "root": "wood",
       "art": "art/mafu.webp",
@@ -811,6 +979,20 @@
         "zh": "羊身人面，目在腋下。",
         "en": "A sheep's body with a human face, eyes under the arms."
       },
+      "says": {
+        "open": {
+          "zh": "吾目在腋下，汝躲不过。",
+          "en": "My eyes are under my arms. You cannot hide."
+        },
+        "won": {
+          "zh": "饿……还是饿……吾走。",
+          "en": "Hungry… still hungry… I will go."
+        },
+        "lost": {
+          "zh": "吞了汝，也还是饿。",
+          "en": "Even with you swallowed, I am still hungry."
+        }
+      },
       "province": "冀",
       "root": "earth",
       "art": "art/paoxiao.webp",
@@ -874,6 +1056,20 @@
       "look": {
         "zh": "花头白喙赤足的小鸟，衔着石子。",
         "en": "A small bird, patterned head, white beak, red feet, a pebble in its beak."
+      },
+      "says": {
+        "open": {
+          "zh": "莫拦吾，东海未平。",
+          "en": "Do not stop me. The Eastern Sea is not yet filled."
+        },
+        "won": {
+          "zh": "石子掉了……吾再去衔。",
+          "en": "I dropped my pebble… I will fetch another."
+        },
+        "lost": {
+          "zh": "海都填得，何惧汝？",
+          "en": "I would fill a sea. Why would I fear you?"
+        }
       },
       "province": "冀",
       "root": "fire",
@@ -943,6 +1139,20 @@
         "zh": "龙的身子，人的头，两只手拍着自己的肚子；每拍一下，天上响一声雷。",
         "en": "A dragon's body and a man's head, both hands beating its own belly; every beat, a crack of thunder in the sky."
       },
+      "says": {
+        "open": {
+          "zh": "雷泽是吾的鼓。汝要听响么？",
+          "en": "Thunder Marsh is my drum. Care to hear it?"
+        },
+        "won": {
+          "zh": "鼓声歇了。雷泽，借汝过。",
+          "en": "The drum falls silent. Cross Thunder Marsh."
+        },
+        "lost": {
+          "zh": "这声雷，是为汝擂的。",
+          "en": "That thunder was drummed for you."
+        }
+      },
       "province": "兖",
       "root": "wood",
       "art": "art/leishen.webp",
@@ -1007,6 +1217,20 @@
       "look": {
         "zh": "狐的身子，九条尾巴，九个头，虎的爪子；叫起来像婴儿哭。",
         "en": "A fox's body with nine tails, nine heads and a tiger's claws; its cry is an infant's."
+      },
+      "says": {
+        "open": {
+          "zh": "头头都饿了，汝先喂哪个？",
+          "en": "Every head is hungry. Which will you feed first?"
+        },
+        "won": {
+          "zh": "尾巴都垂了……吾回凫丽山。",
+          "en": "All my tails droop… Back to Fuli Mountain."
+        },
+        "lost": {
+          "zh": "砍得完吾的头么？",
+          "en": "Could you ever cut off all my heads?"
+        }
       },
       "province": "徐",
       "root": "metal",
@@ -1076,6 +1300,20 @@
         "zh": "牛的样子，青苍的身子，没有角，一条腿；光像日月，声如雷。",
         "en": "An ox's shape, a blue-grey body, no horns, one leg; its light like the sun and moon, its voice like thunder."
       },
+      "says": {
+        "open": {
+          "zh": "吾出入水，必有风雨。",
+          "en": "When I go in or out of the water, wind and rain follow."
+        },
+        "won": {
+          "zh": "雷声远了……莫拿吾皮做鼓。",
+          "en": "The thunder fades… Do not make a drum of my hide."
+        },
+        "lost": {
+          "zh": "黄帝才制得住吾，汝不是。",
+          "en": "Only the Yellow Emperor could master me. You are not he."
+        }
+      },
       "province": "青",
       "root": "water",
       "art": "art/kui.webp",
@@ -1142,6 +1380,20 @@
         "zh": "猪的样子，嘴里含着一颗珠；叫起来像在叫自己的名字。",
         "en": "A pig's shape with a pearl in its mouth; its cry is its own name."
       },
+      "says": {
+        "open": {
+          "zh": "狪狪！狪狪！珠是吾的！",
+          "en": "Tong-tong! Tong-tong! The pearl is mine!"
+        },
+        "won": {
+          "zh": "狪……珠还在，吾走了。",
+          "en": "Tong… The pearl is still here. I am off."
+        },
+        "lost": {
+          "zh": "狪狪！谁也拿不走吾的珠！",
+          "en": "Tong-tong! No one takes my pearl!"
+        }
+      },
       "province": "青",
       "root": "earth",
       "art": "art/tongtong.webp",
@@ -1195,6 +1447,7 @@
   "_likes": "What a creature will take from the bag to walk with the player: 人参 for the man-eaters (形如人), 玉鱼 for the bird that fills the sea, a bell for the drum god, 齐盐 for the sea beast, 齐纨 for the pearl pig, 灵芝 for 夫诸 as the prologue has it.",
   "_lean": "How it fights, at the player's own realm and step: `lean` moves its numbers about a quarter — hide (厚皮), ward (避法), quick (迅), fierce (猛) — and `pattern` is what it does, turn after turn, cycled from a start the day draws: strike 击 · cast 法术 · gather 蓄 · guard 护体 · armor 甲. A made world writes neither: its id draws them.",
   "_drops": "What a subdued creature leaves besides its 妖丹 (which every win gives, by the realm it was met at): one catalog item, the 天材地宝 this creature carries. A made world may leave it out.",
+  "_says": "What the beast says in a fight, in its own voice from its heritage (redesign-v2 § 五): `open` when the fight starts, `won` when the player wins (it yields), `lost` when the player loses (its last word). Terse, archaic, at most 24 characters in Chinese; no numbers, no game terms. `quote` is the book describing it — never its speech. A 传闻 finale's `boss` lines replace these for that fight.",
   "_decks": "每只妖的十二张牌就是它的人格 (design.md § 斗法 v3)。十二张是 PvE 的硬顶：抽空即力竭遁走 —— 一场绝不会拖过十回合。八张是第一版，闸发现那样它在被打退之前就先抽空了（2026-09-18：55–66% 的仗打成了平局）。",
   "_signatures": "杀招 (battle.js § 杀招)：它掉到一半气血时蓄力 —— 下一回合不出牌（它阵前的照样出手），页面写明将落下的点数 —— 再下一回合放出，一场一次。伤害先打护主。效果只用封闭词表。数值是闸量过的（2026-09-23）：会读场的赢约 84%、输约 2% —— 它是一场仗的高潮，不是一堵墙。量出来的另一件事：五回合、照剧本出牌的妖，打到杀招时胜负多半已定，所以真正的取舍在仗外（带什么牌、克哪一行、碰不碰它）。",
   "_elite": "精英 (his, 2026-09-23)：固定在世界里、地图与妖卡上一直标着 —— 选择是去不去、带着多少伤去。它满气血上阵（不打七折），赢了修为灵石加倍、留两张牌。雷神与夔，山海经里神一级的。"

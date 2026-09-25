@@ -13,8 +13,8 @@
   "riddle": { "choices": { "min": 3, "max": 4 } },
   "_lengths": "Most characters (zh) or characters (en) for each field Ling writes.",
   "lengths": {
-    "zh": { "title": 12, "hook": 60, "line": 60, "clue": 40, "ending": 120, "name": 8, "role": 12, "voice": 30, "q": 40, "choice": 10, "prompt": 12 },
-    "en": { "title": 40, "hook": 200, "line": 200, "clue": 140, "ending": 400, "name": 24, "role": 40, "voice": 100, "q": 140, "choice": 30, "prompt": 40 }
+    "zh": { "title": 12, "hook": 60, "line": 60, "clue": 40, "ending": 120, "name": 8, "role": 12, "voice": 30, "q": 40, "choice": 10, "prompt": 12, "boss": 40 },
+    "en": { "title": 40, "hook": 200, "line": 200, "clue": 140, "ending": 400, "name": 24, "role": 40, "voice": 100, "q": 140, "choice": 30, "prompt": 40, "boss": 100 }
   },
   "_games": "Each step is one of these, played on the stage at its place. `page` is the board the page deals (scripts/games/<page>.js, or the herb board for lianliankan); riddle and lundao are words: Ling writes the riddle (its answers among 3–4 choices) or the 论道 prompt, the rules judge. `frames` are the story uses a game lends itself to — handed to Ling with the seed.",
   "games": {
@@ -92,7 +92,7 @@
       ]
     }
   },
-  "_finale": "The finale is a fight (duel: a creature at its haunt, within reach of the last step) or the hardest board of a game — its level one above the realm's.",
+  "_finale": "The finale is a fight (duel: a creature at its haunt, within reach of the last step) or the hardest board of a game — its level one above the realm's. A duel finale's beast speaks: `boss` {open, won, lost} — its lines for this story (open as the fight starts, won when the player wins, lost when the player loses), each a short line, no digits; left out, it says its own.",
   "finale": ["duel", "board"],
   "_seed_kinds": "What a seed's `kind` says of the tale it opens (seeds/<province>.json).",
   "seed_kinds": {
@@ -114,7 +114,7 @@
           "riddle": { "q": "有眼无珠腹中空，头上长草肚里松。", "answers": ["枕头"], "choices": ["枕头", "井", "鱼篓"] } },
         { "game": "luoshu", "at": "yunlong", "giver": "xiucai", "line": "信物在云龙山的石室里，门上是一道九宫锁。", "clue": "信物是一枚裂了的玉珏，毒正是从裂缝里出来的。" }
       ],
-      "finale": { "kind": "duel", "creature": "fuzhu", "giver": "old-fisher", "line": "夫诸守着那口井。降了它，毒才散得开。" },
+      "finale": { "kind": "duel", "creature": "fuzhu", "giver": "old-fisher", "line": "夫诸守着那口井。降了它，毒才散得开。", "boss": { "open": "井是吾的。再近一步，水就漫过你。", "won": "罢了，毒随吾去，井还给你们。", "lost": "回去吧。这口井，谁也拿不走。" } },
       "ending": "井水清了。老祁把第一网鱼分给了你，书生说要把这事写进他的笔记里。"
     },
     "en": {
@@ -130,7 +130,7 @@
           "riddle": { "q": "What has a neck but no head, and wears a cap?", "answers": ["bottle"], "choices": ["bottle", "well", "fish"] } },
         { "game": "luoshu", "at": "yunlong", "giver": "xiucai", "line": "The token is in a stone room on Yunlong Mountain, behind a nine-square lock.", "clue": "It is a cracked jade ring — the poison leaks from the crack." }
       ],
-      "finale": { "kind": "duel", "creature": "fuzhu", "giver": "old-fisher", "line": "Fuzhu guards the well. Subdue it and the poison can clear." },
+      "finale": { "kind": "duel", "creature": "fuzhu", "giver": "old-fisher", "line": "Fuzhu guards the well. Subdue it and the poison can clear.", "boss": { "open": "The well is mine. Another step and the water takes you.", "won": "Enough. The poison leaves with me; the well is yours.", "lost": "Go home. No one takes this well from me." } },
       "ending": "The well runs clear. Old Qi shares his first catch with you, and the scholar says he will write it all down."
     }
   }

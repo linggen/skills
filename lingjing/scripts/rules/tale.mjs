@@ -177,8 +177,25 @@ function lintDuel(content, state, now, f, from, castIds, bad) {
   if (!castIds.has(f.giver)) bad('finale.giver', 'one of the cast ids');
   const e = textOk(f.line, lim.line, lang);
   if (e) bad('finale.line', e);
+  lintBoss(f.boss, lim, lang, bad);
   return haunt;
 }
+
+/* The finale's beast speaks (redesign-v2 § 五): optional `boss` {open, won,
+   lost} — its lines for this story, shown on the fight's card in place of
+   its own. Each one a short line of words, never a digit. */
+const BOSS_LINES = ['open', 'won', 'lost'];
+function lintBoss(boss, lim, lang, bad) {
+  if (boss === undefined) return;
+  if (!boss || typeof boss !== 'object' || Array.isArray(boss)) { bad('finale.boss', `an object {${BOSS_LINES.join(', ')}}`); return; }
+  for (const k of Object.keys(boss)) if (!BOSS_LINES.includes(k)) bad(`finale.boss.${k}`, `only ${BOSS_LINES.join(', ')}`);
+  for (const k of BOSS_LINES) {
+    if (!(k in boss)) continue;
+    const e = textOk(boss[k], lim.boss, lang) ?? (/[0-9０-９]/.test(boss[k]) ? 'no digits — the beast speaks words' : null);
+    if (e) bad(`finale.boss.${k}`, e);
+  }
+}
+const bossOf = boss => (boss && typeof boss === 'object' ? Object.fromEntries(BOSS_LINES.filter(k => typeof boss[k] === 'string').map(k => [k, boss[k].trim()])) : null);
 
 /* The cast: new people, or ones already met in a finished tale (`known`). */
 function lintCast(content, state, cast, bad) {
@@ -227,7 +244,8 @@ function lintTale(content, state, now, raw) {
   const f = t.finale ?? {};
   if (f.kind === 'duel') {
     const haunt = lintDuel(content, state, now, f, from, castIds, bad);
-    chain.push({ game: 'duel', creature: f.creature, at: haunt?.id ?? null, giver: f.giver, line: f.line, end: true });
+    const boss = bossOf(f.boss);
+    chain.push({ game: 'duel', creature: f.creature, at: haunt?.id ?? null, giver: f.giver, line: f.line, end: true, ...(boss && Object.keys(boss).length ? { boss } : {}) });
   } else if (f.kind === 'board') {
     lintLink(content, state, now, f, 'finale', from, castIds, bad, { finale: true });
     chain.push({ ...pickLink(f), end: true });
