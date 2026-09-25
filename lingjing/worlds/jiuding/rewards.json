@@ -139,7 +139,7 @@
     },
     "gifts": [
       { "found": 3, "id": "moonlight", "lift": { "heal": 2, "rally": { "hp": 1 } }, "name": { "zh": "月华", "en": "Moonlight" }, "does": { "zh": "入阵多回 2 气血，你阵前每个 +1 血", "en": "On arrival: heals 2 more, and your rank +1 life" } },
-      { "found": 6, "id": "moonshield", "lift": { "taunt": true, "hp": 1 }, "name": { "zh": "月障", "en": "Moon Screen" }, "does": { "zh": "护主：她挡在你身前，+1 血", "en": "Guard: she stands before you, +1 life" } },
+      { "found": 6, "id": "moonshield", "lift": { "taunt": true, "hp": 1 }, "name": { "zh": "月障", "en": "Moon Screen" }, "does": { "zh": "护主，挡在你身前，+1 血", "en": "Guard — she stands before you, +1 life" } },
       { "found": 9, "id": "moonfall", "lift": { "damage": 4 }, "name": { "zh": "月落", "en": "Moonfall" }, "does": { "zh": "入阵直击妖身 4 点", "en": "On arrival: strikes the beast itself for 4" } }
     ]
   },
@@ -154,7 +154,9 @@
     "treasure_hours": 8,
     "pills": {
       "qi-pill": 1.5
-    }
+    },
+    "art": "art/dongfu-gate.webp",
+    "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, seed 52, 768×512: a closed 洞府 stone gate in a cliff, pine and mist above, steps below, light at the seam."
   },
   "_growth": "本命法宝 and 符 grow from the story, never from a daily tap (redesign-v2 § 四: 温养 · 强化 · 写符 cut). The treasure rises one 重 each time a chapter ends and each time 今日传闻's finale is won, up to 九重. A rumor's finale leaves one 符; a fight won leaves one on one win in `fight_one_in` (by the day, the beast and the 道号).",
   "growth": {

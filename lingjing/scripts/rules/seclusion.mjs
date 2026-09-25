@@ -143,7 +143,8 @@ function targetOf(content, state, now) {
 export function seclusionBrief(content, state, now) {
   if (!state.seclusion || !RULE(content)) return null;
   const told = emergeOn(content, clone(state), { now });
-  return { ...told, running: true, rest_hours: RULE(content).rest_hours, target: targetOf(content, state, now) };
+  // `art`: the closed 洞府 gate the stage paints behind the running card (his, 2026-09-24).
+  return { ...told, running: true, rest_hours: RULE(content).rest_hours, target: targetOf(content, state, now), ...(RULE(content).art ? { art: RULE(content).art } : {}) };
 }
 
 /* 闭关 — `info` (what may be chosen; what is running), `enter` with `focus`

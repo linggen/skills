@@ -1201,10 +1201,11 @@ async function goSeclude() {
    strip's own rise runs (riseStats). Then the opening held back for it —
    her greeting, Ling's 前情提要 — goes on as it would have (enter()). */
 async function emerge() {
+  const art = look?.seclusion?.art ?? null; // the gate that parts before the 出关 card
   const r = await write('seclude', { action: 'leave' }).catch(failed);
   if (!r.ok) { keep({ doNote: refusal(r) }); return refresh(); }
   const e = r.emerged;
-  keep({ emerged: { ...e, at: performance.now(), place: look?.place?.id ?? null } });
+  keep({ emerged: { ...e, art, at: performance.now(), place: look?.place?.id ?? null } });
   await refresh();
   countUp();
   const facts = emergeFacts(e);
@@ -1229,12 +1230,14 @@ function emergeFacts(e) {
 /* 出关's numbers count up from 0 once (`[data-countup]`): each frame finds
    the elements there NOW, as the strip's rise does, so a redraw mid-count
    never kills it. */
-const COUNT_MS = 1400;
+const COUNT_MS = 1400, GATE_MS = 900;
 function countUp() {
   const start = view.emerged?.at;
   if (start == null) return;
+  // Behind the 洞府 gate the count waits for the doors to part (lingjing.css .gateopen).
+  const lead = view.emerged.art && !stillMotion() ? GATE_MS : 0;
   const step = () => {
-    const t = Math.min(1, (performance.now() - start) / (stillMotion() ? 1 : COUNT_MS));
+    const t = Math.min(1, Math.max(0, performance.now() - start - lead) / (stillMotion() ? 1 : COUNT_MS));
     const ease = 1 - (1 - t) ** 3;
     for (const el of document.querySelectorAll('[data-countup]')) {
       const to = Number(el.dataset.countup);

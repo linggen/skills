@@ -52,3 +52,10 @@ choice, 2026-09-17).
 klein 4B), 2026-09-15 (齐盐, 齐纨 and 符 2026-09-16; the five 天材地宝, the three
 妖丹 and 玉珏 2026-09-17), from each item's description. No outside source.
 橘柚 (juyou), 丹砂 (dansha), 蜀锦 (shujin) and 琅玕 (langgan) were painted the same way, 2026-09-24.
+
+## Scenes — painted for Lingjing
+
+`dongfu-gate.webp` — the closed 洞府 stone gate the running 闭关 card wears
+(his ask, 2026-09-24), painted by the local picture model (FLUX.2 klein 4B),
+768×512, seed 52 of four (seed 11 painted fake characters on the rock). No
+outside source.

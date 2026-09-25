@@ -221,3 +221,24 @@ test('a save from before 闭关 plays as it was: no stars, no seclusion, the sam
   const creature = content.creatures.creatures.find(x => x.deck);
   assert.equal(fightSetup(content, m, creature, T0).you.stars, undefined);
 });
+
+/* 洞府 (his, 2026-09-24): while a 闭关 runs, its card wears the closed stone
+   gate — the world's picture, its file on disk — and at 出关 the gate parts
+   over the 出关 card; with motion reduced, no doors at all. */
+test('洞府: the running card shows the closed gate; 出关 opens it; the picture is there', () => {
+  const s = player(), w = WORDS.zh;
+  const running = seclude(s, T0, { action: 'enter', focus: 'progress' }).state;
+  const seen = look(running, content, ctx(at(3))).seclusion;
+  assert.equal(seen.art, content.rewards.seclusion.art);
+  assert.ok(fs.statSync(path.resolve(import.meta.dirname, '../worlds/jiuding', seen.art)).size < 120_000, 'kept small');
+  assert.match(content.rewards.seclusion.art_source, /FLUX\.2 klein 4B/);
+  const card = cardHtml({ card: 'seclusion' }, { look: look(running, content, ctx(at(3))), lang: 'zh', words: w, artBase: '../worlds/jiuding/' });
+  assert.match(card, /<div class="dongfu"><img src="\.\.\/worlds\/jiuding\/art\/dongfu-gate\.webp" alt="洞府石门紧闭">/);
+  const out = seclude(running, at(3), { action: 'leave' }).result.emerged;
+  const gated = emergedHtml({ ...out, art: seen.art }, { lang: 'zh', words: w, artBase: '../worlds/jiuding/' });
+  assert.match(gated, /class="card emerged gated"/);
+  assert.equal((gated.match(/class="door [lr]"/g) ?? []).length, 2);
+  assert.doesNotMatch(emergedHtml(out, { lang: 'zh', words: w }), /gateopen/, 'no gate, no doors');
+  const css = fs.readFileSync(path.resolve(import.meta.dirname, '../scripts/lingjing.css'), 'utf8');
+  assert.match(css, /prefers-reduced-motion: reduce\) \{ \.card\.emerged \.gateopen \{ display: none; \}/);
+});
