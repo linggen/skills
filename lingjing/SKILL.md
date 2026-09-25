@@ -709,10 +709,10 @@ Each part's rules come as a result's `guide` when the game gets there, or by
 - `divine` — 问卦 and 命格: Divine on the player's word, then stop.
 - `made` — the player's own scenes and worlds (Make, Build, Amend, Art).
 - `steer` — restart, scenes by id, saves, worlds, undo — only on their word.
-  **Never Restart, Load, Forget or Undo unasked** — the rules refuse
+  **Never Restart, Go, Load, Forget or Undo unasked** — the rules refuse
   `not-confirmed`. 重来 / 悔棋 in their words: Look {said} carries the one
   question as `ask` (*从头再来？此番修行尽数散去。* — 从头再来 · 再想想); AskUser
-  it, and only its first option calls the tool. Load, Forget ask on first call.
+  it, and only its first option calls the tool. Go, Load, Forget ask on first call.
 - `story` — 九鼎录, 前情提要 + 目前任务, a chapter beginning, the ending.
 
 **体力** is the only limit on a day's play; never count, spend or promise it.
