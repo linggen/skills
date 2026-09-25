@@ -827,7 +827,10 @@ async function applyRuleByMerchant(merchant, val, recompute = true) {
 function renderAccounts() {
   const el = document.getElementById('txn-accounts');
   if (!el) return;
-  const ids = [...new Set([...Object.keys(ACCOUNTS), ...LEDGER.map((r) => r.account)])].filter(Boolean);
+  // Accounts in use: a label or rows in the report. An undone import's account
+  // keeps only its seeded currency cells — nothing to show.
+  const ids = [...new Set([...Object.keys(ACCOUNTS), ...LEDGER.map((r) => r.account)])]
+    .filter((id) => id && (ACCOUNTS[id]?.label || LEDGER.some((r) => r.account === id)));
   if (!ids.length) { el.innerHTML = ''; return; }
   const codes = [...new Set([CURRENCY_CODE, ...ALL_CURRENCY_CODES])];
   el.innerHTML = `
