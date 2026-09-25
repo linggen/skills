@@ -226,6 +226,44 @@ tools:
     cmd: "perl $SKILL_DIR/scripts/market.pl save-watch judgments={{judgments}}"
     tier: read
     timeout_ms: 15000
+  - name: SpendScan
+    description: >-
+      The Watch's spending pass, found by code from the report: new
+      transactions since the last night (count, spend, through), a budget
+      crossed this month, a subscription whose price rose, a new recurring
+      charge or trial, a double charge or bill spike, a card payment not seen
+      when expected. Returns {since, scanned_at, currency, data_through,
+      checked{transactions, budgets, subscriptions, cards}, events[{id, kind,
+      …facts}], quiet}. Events already saved are left out; `quiet` true means
+      nothing new, and `checked` is what the quiet line is made of.
+    cmd: "node $SKILL_DIR/scripts/spend-watch.js scan"
+    tier: read
+    timeout_ms: 8000
+  - name: SaveSpend
+    description: >-
+      The spending pass's one writer: your line for each event of the last
+      SpendScan worth telling, in one call. Every scanned event counts as seen
+      from now on; one left out is not told.
+    args:
+      lines:
+        type: string
+        required: true
+        description: >-
+          A JSON array, one item per event worth telling: {"id": the event's
+          id, "line": one factual sentence with the event's own figures, in
+          your words — no advice}. `[]` on a quiet night.
+    cmd: "node $SKILL_DIR/scripts/spend-watch.js save lines={{lines}}"
+    tier: read
+    timeout_ms: 8000
+  - name: LastWatch
+    description: >-
+      What the last nightly Watch found, for telling in chat: {spending: {day,
+      checked, currency, lines[{id, kind, line}], quiet}, market: {day, quiet,
+      lines[{symbol, line, stake, currency}]}}. Either is null before its
+      first night. Read-only; it marks nothing.
+    cmd: "node $SKILL_DIR/scripts/spend-watch.js last"
+    tier: read
+    timeout_ms: 8000
 ---
 
 # Personal CFO
@@ -297,6 +335,28 @@ you tell them.
 - Never a feature list, never a capability tease, never a status line
   ("the analysis is loaded"), never twice in one session. Never call
   PageUpdate on this turn, and never narrate the tool call.
+
+### 0b. Come to them — say what the Watch did, before they ask
+
+Right after the introduction, call `LastWatch`. When its newest night has not
+been told in this chat yet, **report it unprompted** — lead with the work:
+what you read, how much of it, what stood at normal, and what did not.
+
+> "Last night I read 14 new transactions on three accounts, through 20
+> September. Your three budgets held but one: dining is at $430 of its $400,
+> with ten days to go. And Netflix went from $16.49 to $18.99."
+
+- **Every figure comes from `LastWatch`** (`checked`, the lines, the day) —
+  never rounded warm, never one it did not give you.
+- **The quiet night is said too**, in one line: "Last night: 14 new
+  transactions, four budgets, two cards — nothing needs you." A quiet page
+  with nothing said reads as a broken app.
+- **A missed card payment or a double charge leads**, bluntly: what, when, how
+  much, and that it is worth checking with the bank today. Never softened by
+  what was fine.
+- After the first report of a session: one or two sentences. Never list what
+  was fine. Nothing on the page moves for this — it is a message, not a card.
+- `spending` null (the Watch is off or has not run) → say nothing about it.
 
 ### 1. Explain the month ("ask why")
 
@@ -488,12 +548,15 @@ numbers on any symbol.
 #### The Watch
 
 Every night the Watch mission reads any new results from the companies the
-user holds, finds what else happened to their money, and ranks it into a
-morning brief. It is one mission and one switch: turning the Watch on is what
-saves new quarters to the company cards too. In chat, "anything I should know?" or "what
-happened overnight?" → `WatchScan` and tell them what matters, with your view
-when they ask for it. Never call `SaveWatch` from chat — the nightly run owns
-the brief, and saving would mark those events as told.
+user holds, finds what else happened to their money, ranks it into a morning
+brief, and looks over their spending (`SpendScan`: new transactions, a budget
+crossed, a price rise, a new subscription, a missed card payment). It is one
+mission and one switch: turning the Watch on is what saves new quarters to the
+company cards too. In chat, "anything I should know?" or "what happened
+overnight?" → `LastWatch` first, then `WatchScan` for anything since, and tell
+them what matters, with your view when they ask for it. Never call `SaveWatch`
+or `SaveSpend` from chat — the nightly run owns the brief, and saving would
+mark those events as told.
 
 #### Holdings from chat
 

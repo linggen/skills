@@ -1,8 +1,9 @@
 ---
 name: watch
 description: >-
-  Nightly at 1:00: new results and anything else that moved your money,
-  ranked into a morning brief of three lines or none.
+  Nightly at 1:00: new results, anything else that moved your money, and
+  what changed in your spending — ranked into a morning brief, or one quiet
+  line.
 # Before the phone's 02:00 wake, so the morning line has tonight's brief.
 schedule: "0 1 * * *"
 # Missed while the Mac slept: run once it's back.
@@ -107,8 +108,26 @@ reading budget.
      `ReadReport` — at most 3 reads a night.
 4. Call `SaveWatch` once, with every judgment.
 
+## Pass 3 — spending
+
+1. Call `SpendScan`. `quiet` true → call `SaveSpend` with `lines` `[]` and go
+   to "Finally". This pass reads nothing else.
+2. For each event, write one plain sentence with its own figures — what
+   happened, not what to do:
+   - `new_transactions` — how many and how much spent, through which day.
+   - `budget_over` — the category, spent so far against its cap, and the
+     projection when there is one.
+   - `price_hike` — the merchant, old price → new price.
+   - `new_subscription` / `trial_charge` — the merchant, the amount, the date;
+     it may be wanted, so no accusation.
+   - `double_charge` / `bill_spike` — merchant, dates, amounts.
+   - `missed_payment` — the card, when a payment was expected, the last one.
+3. Call `SaveSpend` once, with every line.
+
 ## Finally
 
 Reply with one line per report saved — `SYMBOL: saved` or `SYMBOL: not out
 yet` — then the brief `SaveWatch` returned, its lines or "quiet night", then
-DONE on its own line.
+the spending lines `SaveSpend` returned, or one quiet line from its `checked`
+counts ("14 new transactions, 4 budgets, 2 cards — nothing new"), then DONE on
+its own line.
