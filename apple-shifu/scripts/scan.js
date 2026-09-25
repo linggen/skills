@@ -351,7 +351,9 @@ export async function runScan(mode, sessionId, onProgress) {
       'du -sk ~/Library/Caches 2>/dev/null',
       'du -sk ~/Library/Developer/Xcode/DerivedData 2>/dev/null',
       'du -sk ~/Library/Developer/CoreSimulator 2>/dev/null',
-    ].join('; '), sessionId),
+    // A 60 GB cache folder takes longer than the daemon's 30 s default, and a
+    // timed-out call comes back empty — the Cleanup card simply vanished.
+    ].join('; '), sessionId, 180_000),
     // Installed apps with last-used + size for the "Apps to Review"
     // dormant-app cleanup card. Skill is expected at the standard install
     // path; if absent, the agent simply gets no APPLICATIONS section and
@@ -454,7 +456,9 @@ export async function runDiskScan(sessionId) {
       'du -sk ~/Library/Caches 2>/dev/null',
       'du -sk ~/Library/Developer/Xcode/DerivedData 2>/dev/null',
       'du -sk ~/Library/Developer/CoreSimulator 2>/dev/null',
-    ].join('; '), sessionId),
+    // A 60 GB cache folder takes longer than the daemon's 30 s default, and a
+    // timed-out call comes back empty — the Cleanup card simply vanished.
+    ].join('; '), sessionId, 180_000),
     readClearableSummary(sessionId),
     bash('find ~/Downloads -maxdepth 1 -mtime +180 -type f 2>/dev/null | wc -l', sessionId),
   ]);
