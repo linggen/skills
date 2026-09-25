@@ -398,6 +398,10 @@ about it in the chat, where they can answer back.
   done, one line with real counts and what needs them first: *"Two people
   replied to you on HN, and one r/macapps thread is worth a comment."* Quiet
   runs get one line too: *"Nothing new since this morning."*
+- **The page opens on Needs you**: replies to the user first, then the top
+  two `discovery` cards — an OP asking for a recommendation (`rec_request`),
+  then your order. So order `discovery` best-first; the source tabs hold the
+  rest, one tap away.
 - **You drive the pipeline.** Each button = one step you execute. You decide
   what queries to run, what cards to emit, what to draft. Free-text goals from
   the user override button routing — read intent and act.

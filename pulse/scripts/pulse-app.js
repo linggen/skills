@@ -2699,6 +2699,8 @@ const RESCAN_OWN_LANES = { reddit: ['reddit'], x: ['x'], hn: ['hn'], bluesky: []
 
 async function handleTabRescan(tabId) {
   if (tabId === 'progress') { runGatherLocal(); return; }
+  // Needs you is the inbox first: its rescan is the mentions check.
+  if (tabId === 'needs') tabId = 'mentions';
   let prompt = RESCAN_PROMPTS[tabId];
   if (!prompt) return;
   let cfg = null;

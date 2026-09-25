@@ -45,7 +45,9 @@ let commentedThreadUrls = new Set();
 // `onTabRenderCallback` lets pulse-app mount the X dashboard + roster card
 // into the X tab's #x-tab-extras once it's in the DOM.
 let pageConfig = null;
-let activeTab = (() => { try { return localStorage.getItem('pulse:tab') || null; } catch (e) { return null; } })();
+// Every open starts on Needs you — the first view is what wants the user;
+// a tab they pick holds for the visit.
+let activeTab = null;
 let onTabRenderCallback = null;
 let onRescanCallback = null;
 let onDraftCallback = null;
@@ -629,6 +631,7 @@ function renderStatusStrip() {
 // additionally hosts the roster card + dashboard (mounted by pulse-app into
 // #x-tab-extras).
 const TABS = [
+  { id: 'needs',    label: 'Needs you', siteKey: null,        source: null,      sections: [] },
   { id: 'x',        label: 'X',        siteKey: 'x',          source: 'x',       sections: ['discovery'] },
   { id: 'hn',       label: 'HN',       siteKey: 'hackernews', source: 'hn',      sections: ['discovery'] },
   { id: 'reddit',   label: 'Reddit',   siteKey: 'reddit',     source: 'reddit',  sections: ['discovery'] },
@@ -656,8 +659,34 @@ function siteEnabled(siteKey) {
   return !!(pageConfig && pageConfig.sites && pageConfig.sites[siteKey] && pageConfig.sites[siteKey].enabled);
 }
 
+// How many threads Needs you shows; the rest wait under their source tab.
+const NEEDS_THREADS = 2;
+
+// Needs you: replies to the user (their inbox and their posts' new comments),
+// then the best threads worth a comment — an OP asking for a recommendation
+// first, then the agent's own order. Source tabs hold everything else.
+function needsSections() {
+  const live = (id) => ((session.sections[id] || {}).cards || [])
+    .filter(c => c.type !== 'empty' && !shouldFilterCard(c));
+  const out = [];
+  const replies = live('mentions').filter(c => c.type === 'reply_to_me');
+  if (replies.length) out.push({ sectionId: 'mentions', original: { cards: replies, label: 'Replies to you' }, cards: replies });
+  const due = live('replies_due');
+  if (due.length) out.push({ sectionId: 'replies_due', original: { cards: due }, cards: due });
+  const threads = live('discovery')
+    .map((c, i) => ({ c, i }))
+    .sort((a, b) => (b.c.rec_request === true) - (a.c.rec_request === true) || a.i - b.i)
+    .slice(0, NEEDS_THREADS)
+    .map(x => x.c);
+  if (threads.length) {
+    out.push({ sectionId: 'discovery', original: { cards: threads, label: 'Worth a comment', hint: 'the top two · every thread is under its source tab' }, cards: threads });
+  }
+  return out;
+}
+
 // The visible (post-filter) cards a tab owns, grouped by section.
 function collectTabSections(tab) {
+  if (tab.id === 'needs') return needsSections();
   const out = [];
   for (const sectionId of tab.sections) {
     const sec = session.sections[sectionId];
@@ -715,7 +744,7 @@ function renderSections() {
   // Resolve the active tab: honor the user's last pick if still visible,
   // else prefer X, else the first visible tab.
   if (!activeTab || !visible.some(t => t.id === activeTab)) {
-    activeTab = (visible.find(t => t.id === 'x') || visible[0]).id;
+    activeTab = (visible.find(t => t.id === 'needs') || visible[0]).id;
   }
 
   container.appendChild(renderTabBar(visible, counts));
@@ -750,7 +779,7 @@ const DRAFT_LABELS = {
 };
 
 const RESCAN_LABELS = {
-  x: '↻ Rescan X', hn: '↻ Rescan HN', reddit: '↻ Rescan Reddit',
+  needs: '↻ Check replies', x: '↻ Rescan X', hn: '↻ Rescan HN', reddit: '↻ Rescan Reddit',
   bluesky: '↻ Rescan Bluesky', mentions: '↻ Check mentions', progress: '↻ Refresh progress',
 };
 
@@ -828,7 +857,15 @@ function renderTabContent(tab, body) {
     renderedAny = true;
   }
 
-  if (!renderedAny && tab.id !== 'x') {
+  if (!renderedAny && tab.id === 'needs') {
+    const msg = document.createElement('div');
+    msg.className = 'state-msg';
+    const at = scanned || (session.sections.discovery || {}).last_updated;
+    msg.textContent = at
+      ? `Nothing needs you — no replies waiting, no thread worth a comment (scanned ${relTime(at)}).`
+      : 'Nothing scanned yet — ↻ Rescan reads your sources.';
+    body.appendChild(msg);
+  } else if (!renderedAny && tab.id !== 'x') {
     const msg = document.createElement('div');
     msg.className = 'state-msg';
     msg.textContent = `Nothing in ${tab.label} yet — run a gather, or type a goal in chat.`;
@@ -865,7 +902,7 @@ function renderSectionEl(sectionId, sec) {
 
   const head = document.createElement('div');
   head.className = 'section-head';
-  head.appendChild(textNode(SECTION_LABELS[sectionId] || sectionId));
+  head.appendChild(textNode(sec.label || SECTION_LABELS[sectionId] || sectionId));
   const visibleCards = sec.cards.filter(c => c.type !== 'empty');
   if (visibleCards.length > 0) {
     const cnt = document.createElement('span');
@@ -873,10 +910,11 @@ function renderSectionEl(sectionId, sec) {
     cnt.textContent = `${visibleCards.length} new`;
     head.appendChild(cnt);
   }
-  if (SECTION_HINTS[sectionId]) {
+  const hint = sec.hint || SECTION_HINTS[sectionId];
+  if (hint) {
     const right = document.createElement('span');
     right.className = 'right';
-    right.textContent = SECTION_HINTS[sectionId];
+    right.textContent = hint;
     head.appendChild(right);
   }
   wrap.appendChild(head);
