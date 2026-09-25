@@ -169,5 +169,9 @@
       "tale_end": 1,
       "fight_one_in": 3
     }
+  },
+  "_pouch": "储物袋 (Hanli, 2026-09-25): the bag's room, counted in slots — one item id is one slot, stacks unlimited; a key, a thing the open chapter or a taken errand still needs, and her bell take none. `by_tier` is the room at each realm (the highest row at or below his); a bigger pouch bought at a 坊市 (items.json `effect.pouch`) adds its slots for good, once each. Full: a drop, a reward or a grant waits at the 洞府 (待取) until he taps it in; a find on the road and a purchase are refused. A 练气 player in 徐 holds 8–12 kinds; 24 is room to spare until the later provinces' materials pile up.",
+  "pouch": {
+    "by_tier": { "qi": 24, "foundation": 36, "core": 48, "nascent": 60 }
   }
 }

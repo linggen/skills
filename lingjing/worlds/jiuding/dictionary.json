@@ -99,8 +99,12 @@
       "en": "omen"
     },
     "bag": {
-      "zh": "行囊",
-      "en": "bag"
+      "zh": "储物袋",
+      "en": "storage pouch"
+    },
+    "pouch": {
+      "zh": "储物袋",
+      "en": "storage pouch"
     },
     "item": {
       "zh": "物品",

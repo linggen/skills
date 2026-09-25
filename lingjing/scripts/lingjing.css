@@ -445,20 +445,76 @@ body.fighting .askbar { display: none; }
 .roadsrow .lbl { color: var(--faint); font-size: 12.5px; margin-right: 2px; }
 .roadsrow .act { background: transparent; }
 
-/* 装备 · 背包 — the 装备 chip's popover: worn above, carried below. */
-.gearpop .gearrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--line, rgba(0,0,0,.08)); }
-.gearpop .gearher { padding: 2px 0 6px 4.5em; border-bottom: 1px solid var(--line, rgba(0,0,0,.08)); line-height: 1.5; }
-.gearpop .gearrow .lbl { min-width: 4.5em; color: var(--ink-soft, inherit); opacity: .75; font-size: 12.5px; }
-.gearpop .gearrow > span:not(.lbl):not(.chip) { flex: 1; }
-.gearpop .gearrow > .chip { flex: none; }
-.gearpop .bagtitle { margin-top: 12px; }
-.gearpop .act { flex: none; }
-.gearpop .gcards { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0 6px; }
-.gearpop .gcard { font-size: 12.5px; padding: 2px 8px; border-radius: 6px; border: 1px solid var(--line); opacity: .55; }
-.gearpop .gcard b { color: var(--ling, inherit); }
-.gearpop .gcard.in { opacity: 1; background: var(--raised); }
-.gearpop .gcard.off { text-decoration: line-through; }
-.gearpop { max-height: min(80vh, 720px); overflow: auto; }
+/* 储物袋 — the chip's panel over the stage (pouch.js): what he wears as one
+   row, the pouch below as tabs, a grid of tiles and the one tapped. */
+.pouch .gearher { padding: 2px 0 6px; line-height: 1.5; }
+.pouch .gearfight { margin-top: 6px; }
+.pouch .bagtitle { margin-top: 4px; }
+.pouch .gcards { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0 6px; }
+.pouch .gcard { font-size: 12.5px; padding: 2px 8px; border-radius: 6px; border: 1px solid var(--line); opacity: .55; }
+.pouch .gcard b { color: var(--ling, inherit); }
+.pouch .gcard.in { opacity: 1; background: var(--raised); }
+.pouch .gcard.off { text-decoration: line-through; }
+.pouch .gcard.fill { border-style: dashed; opacity: .8; }
+.pouch .gcard.picked { border-style: solid; }
+.pouch button.gcard { background: transparent; color: inherit; }
+.pouch .gcard b.cost { display: inline-grid; place-items: center; min-width: 1.35em; height: 1.35em; border-radius: 50%; font-size: 11px; background: var(--ling, #3b6ea5); color: #fff; margin-right: 2px; }
+.phead .pused { font-family: var(--ui); font-size: 13px; color: var(--dim); }
+.phead .pused.full { color: var(--seal); }
+.phead .pused.over { color: var(--seal); font-weight: 600; }
+.pchip { font: inherit; font-family: var(--ui); font-size: 12.5px; padding: 1px 10px; border-radius: 99px; border: 1px solid var(--seal); background: var(--surface); color: var(--seal); cursor: pointer; }
+.pchip[data-pouch-pane="deck"] { border-color: var(--ling); color: var(--ling); }
+.pchip.on { background: var(--seal-soft); }
+.pchip[data-pouch-pane="deck"].on { background: var(--ling-soft); }
+.phead .pchip + .act, .phead .pused + .act { margin-left: auto; }
+.pouch .donote { margin-top: 10px; }
+.psec { margin-top: 14px; font-family: var(--ui); }
+.psec h3 { font-family: var(--serif); font-size: 14px; letter-spacing: .15em; color: var(--dim); margin: 0 0 6px; font-weight: 600; }
+.pwornrow { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 6px; }
+.pworn { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.pworn .lbl { font-size: 11.5px; color: var(--faint); }
+.pworn b { font-family: var(--serif); overflow-wrap: anywhere; }
+.pworn b[role="button"] { cursor: pointer; }
+.pworn .act { align-self: flex-start; margin-top: 2px; padding: 1px 8px; font-size: 12px; }
+.pback { margin: 12px 0 0; }
+.pover { color: var(--seal); margin: 0 0 8px; }
+.ptabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--line); margin-bottom: 10px; }
+.ptab { flex: none; font: inherit; font-size: 13.5px; padding: 6px 10px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--dim); cursor: pointer; }
+.ptab span { margin-left: 4px; font-size: 11.5px; color: var(--faint); }
+.ptab.on { color: var(--ling); border-bottom-color: var(--ling); font-weight: 600; }
+.ptab.none { opacity: .55; }
+.pbody { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 280px); gap: 14px; align-items: start; }
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.ptile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; padding: 6px 4px 5px; font: inherit; color: inherit;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--surface); cursor: pointer; transition: border-color .15s, transform .15s; }
+.ptile img, .ptile .noart { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 6px; background: var(--raised); }
+.ptile .pname { font-size: 12.5px; line-height: 1.25; text-align: center; overflow-wrap: anywhere; }
+.ptile .pn { position: absolute; top: 4px; right: 5px; font-size: 11.5px; padding: 0 5px; border-radius: 99px; background: var(--surface); color: var(--ling); border: 1px solid var(--line); }
+.ptile .pmark { position: absolute; top: 4px; left: 5px; font-size: 10.5px; padding: 0 5px; border-radius: 4px; background: var(--jade-soft); color: var(--jade); }
+.ptile.free { border-style: dashed; }
+.ptile:hover { border-color: var(--ling); }
+.ptile.sel { border-color: var(--ling); box-shadow: 0 0 0 2px var(--ling-soft); transform: translateY(-1px); }
+.pdetail { position: sticky; top: 8px; display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.pdetail.empty { align-items: center; justify-content: center; min-height: 120px; }
+.pdetail > img, .pdetail > .noart { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; border-radius: 6px; background: var(--raised); }
+.pdname { font-family: var(--serif); font-size: 16px; }
+.pdbody > div + div { margin-top: 4px; }
+.pdetail .acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.act.danger { border-color: var(--seal); color: var(--seal); background: transparent; }
+.act.danger:not(.quiet) { background: var(--seal-soft); }
+.ptoss { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--seal-soft); color: var(--seal); font-size: 13px; }
+.ptoss span { flex: 1 1 100%; }
+.pheld { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px dashed var(--line); }
+.pheld img, .pheld .noart { width: 48px; height: 36px; flex: none; object-fit: cover; border-radius: 6px; background: var(--raised); }
+.pheld .act { margin-left: auto; }
+@media (max-width: 560px) {
+  .pbody { grid-template-columns: minmax(0, 1fr); }
+  .pgrid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
+  .pdetail { position: sticky; top: auto; bottom: 0; flex-direction: row; box-shadow: 0 -6px 16px rgba(0, 0, 0, .08); }
+  .pdetail > img, .pdetail > .noart { width: 84px; flex: none; align-self: flex-start; }
+  .pwornrow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) { .ptile { transition: none; } .ptile.sel { transform: none; } }
 
 /* 可接的差事 — one card, a row each; a row opens to the giver's words. */
 .card.offer .offerrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
@@ -500,9 +556,6 @@ body.fighting .askbar { display: none; }
 
 /* 组牌 — lit cards are the ten; his own picks solid, the rules' fill dashed. */
 button.gcard { cursor: pointer; font: inherit; }
-.gearpop .gcard.fill { border-style: dashed; opacity: .8; }
-.gearpop .gcard.picked { border-style: solid; }
-.gearpop button.gcard { background: transparent; color: inherit; }
 /* 收服 — a beast won over, fed or fought: a red seal stamps onto the stage and
    fades; +1 floats off the 装备 chip, where its card now lives. */
 .view { position: relative; }
@@ -670,7 +723,6 @@ body.reading .view, body.reading .tray { display: none; }
 .kaifufold > summary::after { content: ' ▸'; }
 .kaifufold[open] > summary::after { content: ' ▾'; }
 /* A card's price in 灵力 — a round badge, as on the fight's cards. */
-.gearpop .gcard b.cost { display: inline-grid; place-items: center; min-width: 1.35em; height: 1.35em; border-radius: 50%; font-size: 11px; background: var(--ling, #3b6ea5); color: #fff; margin-right: 2px; }
 
 /* 闭关 (rules/seclusion.mjs): the chooser, the running card, 出关's count-up. */
 .qi[data-seclude-open] { cursor: pointer; }

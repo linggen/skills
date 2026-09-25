@@ -17,7 +17,7 @@ export const WORDS = {
     tamed: '已收服', untamed: '未收服', beatenToday: '今日已降', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
     sayBuy: '买{name}', go: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayGateAbout: '说说下一鼎', sayTrib: '说说雷劫', sayRoots: '说说我的灵根', sayBoard: '说说炼丹', sayMap: '说说九州',
     choreOpen: '去 {app} 做', about: '问询', askHint: '想问什么？留空，便请她说说', askHer: '问问{name}', askHerHint: '想对她说什么？留空，便请她说说', askHerEmpty: '说说看？', askSend: '问', drop: '撂 下', paysWord: '酬', nextWord: '其后', feed: '喂它{item}', offer: '献上{item}', feedNone: '囊中没有{item}', tameHint: '降了它，再献上{item}，即可收服', tameBy: '收服 · {what}', likesNone: '它喜欢{item}，囊中没有', playGame: '开局', lundaoTitle: '论道 · 稷下先生', lundaoOffer: '先生在此，以诗文会友。三句过关，今日一回。', lundaoBegin: '请先生论道', sayLundao: '请先生论道', lundaoKey: '飞花令 · 句中须有「{key}」', lundaoChain: '接「{last}」的末字', lundaoUp: '上联：{up}', lundaoMiss: '失 {n}/{max}', lundaoHow: '在对话里作答。', featRise: '突破', featHp: '气血 {a}→{b}', featMana: '灵力上限 {a}→{b}', featPower: '一击 +{n}', featHer: '{name} {a}→{b}', featChapter: '新章', wonOver: '收服', subdue: '降妖',
-    effProgress: '服下：{xw} +{n}', effLearn1: '习之：斗法时看出妖下回合的架势', effLearn2: '习之：看清妖下回合的每一招与点数', effWear: '可赠银月佩戴', effLift: { atk: '她的牌攻 +{n}', hp: '她的牌气血 +{n}' }, effKey: '路上有用之物', effNone: '可买卖的货物', effRoot: '佩之借{root}', effAtk: '器攻 +{n}', effDef: '防 +{n}', effWard: '抗{root} +{n}', effCore: '可炼{root}行本命', effCharm: '斗法时掷出，不计防抗', use: '服用', wear: '佩戴', worn: '已佩', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '{app} · {t} 完成', questWait: '{app} · {when}待做', periods: { day: '今日', week: '本周', once: '' },
+    effProgress: '服下：{xw} +{n}', effLearn1: '习之：斗法时看出妖下回合的架势', effLearn2: '习之：看清妖下回合的每一招与点数', effPouch: '储物袋多 {n} 格，永久', effWear: '可赠银月佩戴', effLift: { atk: '她的牌攻 +{n}', hp: '她的牌气血 +{n}' }, effKey: '路上有用之物', effNone: '可买卖的货物', effRoot: '佩之借{root}', effAtk: '器攻 +{n}', effDef: '防 +{n}', effWard: '抗{root} +{n}', effCore: '可炼{root}行本命', effCharm: '斗法时掷出，不计防抗', use: '服用', wear: '佩戴', worn: '已佩', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '{app} · {t} 完成', questWait: '{app} · {when}待做', periods: { day: '今日', week: '本周', once: '' },
     duelTitle: '降妖', duelHint: '轮番出手：法术相克者倍，物理不问五行，符箓不计防抗，辅助蓄势护体。气血或灵力耗尽者败。', begin: '出手', duelWon: '妖已降服。', duelLost: '败了，它退入雾中。', withdrawn: '它已隐入雾中，明日再来。', wonWait: '已胜，待收。',
     you: '你', hp: '气血', mana: '灵力', power: '战力', youFirst: '你先手', foeFirst: '它先手', barehand: '空手',
     aCast: '法术', aStrike: '物理', aCharm: '符箓', aAssist: '辅助', aFocus: '聚势', aGuard: '护体', arts: '功法',
@@ -58,7 +58,7 @@ export const WORDS = {
     signWait: '等浏览器登录……', signFail: '还没登上。再试一次。',
     building: '灵境绘制中', buildingLine: '还有 {n} 幅画未成，画完即可游历。',
     notDone: '这一下没成，稍后再点。', fightRefused: '这一战没记上，牌还在原处。',
-    needVia: '先去{name}', roadTitle: '路上', refused: { gone: '来迟了，机缘已散', 'nothing-here': '路上已无事', 'already-taken': '已经接下了', 'already-done': '这件已经了结', 'not-posted': '今日的榜文已换', 'not-here': '不在这里', 'not-done': '还没办完', 'not-in-bag': '囊中没有', 'not-for-sale-here': '这里不卖', 'no-companion': '还没有人可以佩戴它', 'in-a-fight': '斗法未完', 'won-already': '已经赢过了', 'subdued-today': '今日已降', 'riddle-closed': '谜题已过', 'not-today': '今日的功课不是这件', 'unknown-place': '找不到这个地方', 'wrong-answer': '答得不对', 'not-this-step': '这一步已经过了', busy: '稍等片刻' }, goalTitle: '眼下要做的', goalWork: '可做：{name} · {what}', goalBeast: '可做：{name}的{what}今日还未降', offersTitle: '可接的差事 · {place}', gearChip: '装备', gearTitle: '装备', bagTitle: '背包', gearEmpty: '—', bagNone: '背包是空的', gearSlots: { weapon: '法器', robe: '法衣', pendant: '佩', treasure: '本命法宝' }, gearHer: '{name}佩着', herCard: '{name}的牌 {atk}/{hp}', herRealm: '随{realm} +{atk}/+{hp}', herGift: '第{n}鼎 · {name}：{does}', gearFight: '斗法里：{what}', saveConflicts: '云端存档已覆盖此处；这里的改动另存了一份。', gearPower: '主灵根一击 +{n}', gearArmor: '护体 {n}', gearWard: '抗{el} {n}', gearCharm: '{name}在手', gearLends: '借{el}', gearTo: '戴上 · {slot}', gearOff: '卸下', cardsTitle: '牌 · {n}', cardsNote: '圆圈里是出牌要的灵力。亮的是出战的十张，点一张换上或取下；银月开局就在手上。', cardsDealt: '圆圈里是出牌要的灵力。亮的是出战的十张，按灵根配好；结丹之后可以自己组牌。', cardsPicked: '十张都是你选的。', cardsShort: '你选了 {mine} 张，还差 {short} 张，出战时按灵根补齐（虚线）。', cardsAuto: '恢复自动', cardsHand: '在手', cardsOff: '灵根不合，修不得这门功法', bookChip: '事', roads: '或往', workAt: '{name}有差事', chanceTitle: '机缘 · {place}', chanceChip: '有机缘', chanceLeft: '还剩 {t}', chanceHM: '{h} 时 {m} 分', chanceM: '{m} 分', chanceHere: '就在此处', chanceLine: '此地灵机正盛，过时不候。', chanceWhat: '那里灵机正盛，赶到便可收下，过时不候。', chanceTake: '收 下', trialTitle: '抉择', trialWon: '成了', trialLost: '失手', trialChance: '{n}% 把握', trialHard: { easy: '易', fair: '中', hard: '难' }, trialStake: { wound: '失手折体力', coin: '失手破财' }, trialHurt: '体力 −{n}', trialPoorer: '灵石 −{n}', findTitle: '拾遗', findTake: '收下 · {what}', findPass: '不取', bookReady: '可交 {n}', bookNone: '手上无事', kaifuTitle: '开府 · {n}/{of}', kaifuPaid: '已记', kaifuDone: '已圆满', kaifuPaidN: '已记 {n} 件', book: '手上的事', take: '接 下', took: '已接下', queueCount: '眼前 {n} 件', queueNext: '下一件：{what}', queueKinds: { handed: '所得', quest: '剧情', road: '路上', offer: '差事', duel: '斗法', tale: '传闻', lundao: '论道', board: '功课' }, turnIn: '交 差', sayQuestAbout: '说说{title}', needAt: '在{name}', needHere: '就在此处',
+    needVia: '先去{name}', roadTitle: '路上', refused: { gone: '来迟了，机缘已散', 'nothing-here': '路上已无事', 'already-taken': '已经接下了', 'already-done': '这件已经了结', 'not-posted': '今日的榜文已换', 'not-here': '不在这里', 'not-done': '还没办完', 'not-in-bag': '囊中没有', 'not-for-sale-here': '这里不卖', 'no-companion': '还没有人可以佩戴它', 'in-a-fight': '斗法未完', 'won-already': '已经赢过了', 'subdued-today': '今日已降', 'riddle-closed': '谜题已过', 'not-today': '今日的功课不是这件', 'unknown-place': '找不到这个地方', 'wrong-answer': '答得不对', 'not-this-step': '这一步已经过了', busy: '稍等片刻', 'bag-full': '储物袋已满，先卖或丢一样', 'pouch-used': '这样的储物袋你已经换上了', worn: '先卸下再丢', 'not-held': '洞府里没有这样东西' }, goalTitle: '眼下要做的', goalWork: '可做：{name} · {what}', goalBeast: '可做：{name}的{what}今日还未降', offersTitle: '可接的差事 · {place}', gearChip: '储物袋', gearEmpty: '—', gearSlots: { weapon: '法器', robe: '法衣', pendant: '佩', treasure: '本命法宝' }, gearHer: '{name}佩着', herCard: '{name}的牌 {atk}/{hp}', herRealm: '随{realm} +{atk}/+{hp}', herGift: '第{n}鼎 · {name}：{does}', gearFight: '斗法里：{what}', saveConflicts: '云端存档已覆盖此处；这里的改动另存了一份。', gearPower: '主灵根一击 +{n}', gearArmor: '护体 {n}', gearWard: '抗{el} {n}', gearCharm: '{name}在手', gearLends: '借{el}', gearTo: '戴上 · {slot}', gearOff: '卸下', cardsTitle: '牌 · {n}', cardsNote: '圆圈里是出牌要的灵力。亮的是出战的十张，点一张换上或取下；银月开局就在手上。', cardsDealt: '圆圈里是出牌要的灵力。亮的是出战的十张，按灵根配好；结丹之后可以自己组牌。', cardsPicked: '十张都是你选的。', cardsShort: '你选了 {mine} 张，还差 {short} 张，出战时按灵根补齐（虚线）。', cardsAuto: '恢复自动', cardsHand: '在手', cardsOff: '灵根不合，修不得这门功法', bookChip: '事', roads: '或往', workAt: '{name}有差事', chanceTitle: '机缘 · {place}', chanceChip: '有机缘', chanceLeft: '还剩 {t}', chanceHM: '{h} 时 {m} 分', chanceM: '{m} 分', chanceHere: '就在此处', chanceLine: '此地灵机正盛，过时不候。', chanceWhat: '那里灵机正盛，赶到便可收下，过时不候。', chanceTake: '收 下', trialTitle: '抉择', trialWon: '成了', trialLost: '失手', trialChance: '{n}% 把握', trialHard: { easy: '易', fair: '中', hard: '难' }, trialStake: { wound: '失手折体力', coin: '失手破财' }, trialHurt: '体力 −{n}', trialPoorer: '灵石 −{n}', findTitle: '拾遗', findTake: '收下 · {what}', findPass: '不取', bookReady: '可交 {n}', bookNone: '手上无事', kaifuTitle: '开府 · {n}/{of}', kaifuPaid: '已记', kaifuDone: '已圆满', kaifuPaidN: '已记 {n} 件', book: '手上的事', take: '接 下', took: '已接下', queueCount: '眼前 {n} 件', queueNext: '下一件：{what}', queueKinds: { handed: '所得', quest: '剧情', road: '路上', offer: '差事', duel: '斗法', tale: '传闻', lundao: '论道', board: '功课' }, turnIn: '交 差', sayQuestAbout: '说说{title}', needAt: '在{name}', needHere: '就在此处',
     taleKept: '已解开 · 体力回来便记上', taleDuel: '降了{name}，此事便了', taleWhere: '{game} · {who}', taleRiddle: '点选作答', handedTitle: '交差 · {title}', handedNext: '接下来 · {title}', handedWait: '下一步 · {title} — 手上已满，了一件再去{at}接', needKinds: { subdue: '降', tame: '驯', carry: '带', visit: '到', board: '成', answer: '答', chore: '做' }, goalWait: '{title} · {opens} 开', goalOpen: '{title} · 未开', goalGate: '鼎气要{step} · {progress} 修为才受得住', goalNow: '如今 {step} · {progress}/{of}', goalGrow: '差事、传闻、斗法，都长修为',
   },
   en: {
@@ -70,7 +70,7 @@ export const WORDS = {
     questAt: 'A market at {name}', questWater: 'The nearest water is {name}', ringBell: 'Ring the bell', sayRing: 'Ring the bell', sayQuest: 'Tell me about the promise under the moon',
     gateNeed: 'To {to}: {step} · {n} {xw}', sayBuy: 'Buy {name}', go: 'Go to {name}', sayTask: 'Tell me about: {title}', sayGate: 'On to the next cauldron', sayOmen: "Tell me about today's omen", sayCreature: 'Tell me about {name}', sayItem: 'Tell me about {name}', sayGateAbout: 'Tell me about the next cauldron', sayTrib: 'Tell me about the tribulation', sayRoots: 'Tell me about my spirit roots', sayBoard: 'Tell me about alchemy', sayMap: 'Tell me about the Nine Provinces',
     choreOpen: 'Do it in {app}', about: 'Ask', askHint: 'What do you want to know? Leave it empty and she simply tells', askHer: 'Ask {name}', askHerHint: 'What would you like to say to her? Leave it empty and she simply talks', askHerEmpty: 'Tell me something?', askSend: 'Ask', drop: 'Put it down', paysWord: 'Pays', nextWord: 'Then', feed: 'Feed it {item}', offer: 'Offer the {item}', feedNone: 'No {item} in the bag', tameHint: 'Beat it, then offer the {item}, and it is yours', tameBy: 'Win it over · {what}', likesNone: 'It likes the {item} — none in the bag', playGame: 'Play', lundaoTitle: 'Debate · The Jixia scholar', lundaoOffer: 'The scholar meets friends with verse. Three good answers, once a day.', lundaoBegin: 'Ask the scholar to debate', sayLundao: 'Ask the scholar to debate', lundaoKey: 'A line with “{key}” in it', lundaoChain: 'A word starting with the last letter of “{last}”', lundaoUp: 'Upper line: {up}', lundaoMiss: 'missed {n}/{max}', lundaoHow: 'Answer in the chat.', featRise: 'Breakthrough', featHp: 'Life {a}→{b}', featMana: 'Force cap {a}→{b}', featPower: 'Root Strike +{n}', featHer: '{name} {a}→{b}', featChapter: 'A new chapter', wonOver: 'Won over', subdue: 'Subdue',
-    effProgress: 'Taken: {xw} +{n}', effLearn1: 'Learned: see the shape of the beast\'s next turn', effLearn2: 'Learned: see every move of its next turn, with numbers', effWear: 'Yinyue can wear it', effLift: { atk: 'her card +{n} attack', hp: 'her card +{n} Life' }, effKey: 'The road will want it', effNone: 'Goods to trade', effRoot: 'Worn, it lends {root}', effAtk: 'Attack +{n}', effDef: 'Guard +{n}', effWard: 'Wards {root} +{n}', effCore: 'Binds a treasure of {root}', effCharm: 'Cast in a bout: the round is won', use: 'Use', wear: 'Wear', worn: 'worn', madeFrom: 'Written on {item}', artsTitle: 'Arts', artFrom: 'from {tier}', questBy: '{app} · done {t}', questWait: '{app} · not yet {when}', periods: { day: 'today', week: 'this week', once: '' },
+    effPouch: 'Your pouch holds {n} more kinds, for good', effProgress: 'Taken: {xw} +{n}', effLearn1: 'Learned: see the shape of the beast\'s next turn', effLearn2: 'Learned: see every move of its next turn, with numbers', effWear: 'Yinyue can wear it', effLift: { atk: 'her card +{n} attack', hp: 'her card +{n} Life' }, effKey: 'The road will want it', effNone: 'Goods to trade', effRoot: 'Worn, it lends {root}', effAtk: 'Attack +{n}', effDef: 'Guard +{n}', effWard: 'Wards {root} +{n}', effCore: 'Binds a treasure of {root}', effCharm: 'Cast in a bout: the round is won', use: 'Use', wear: 'Wear', worn: 'worn', madeFrom: 'Written on {item}', artsTitle: 'Arts', artFrom: 'from {tier}', questBy: '{app} · done {t}', questWait: '{app} · not yet {when}', periods: { day: 'today', week: 'this week', once: '' },
     duelTitle: 'Subdue', duelHint: 'Turn by turn: a 法术 doubles into what it overcomes, a strike asks no element, a 符 ignores armour, 辅助 gathers or guards. 气血 or 灵力 out and you lose.', begin: 'Begin', duelWon: 'Subdued.', duelLost: 'Lost — it withdraws into the mist.', withdrawn: 'It has withdrawn into the mist; come back tomorrow.', wonWait: 'Won — to collect.',
     you: 'You', hp: 'Life', mana: 'Force', power: 'Might', youFirst: 'you move first', foeFirst: 'it moves first', barehand: 'bare-handed',
     aCast: 'Spell', aStrike: 'Strike', aCharm: 'Talisman', aAssist: 'Ready', aFocus: 'Gather', aGuard: 'Guard', arts: 'Arts',
@@ -108,7 +108,7 @@ export const WORDS = {
     signWait: 'Waiting for the browser…', signFail: 'Not signed in yet. Try again.',
     building: 'Painting the world', buildingLine: '{n} to paint — the world opens when the last is done.',
     notDone: 'That did not go through — tap again in a moment.', fightRefused: 'This fight was not recorded; its card is still here.',
-    needVia: 'by way of {name}', roadTitle: 'On the road', refused: { gone: 'Too late — it is gone', 'nothing-here': 'Nothing on the road now', 'already-taken': 'Already taken', 'already-done': 'Already done', 'not-posted': "Today's notice has changed", 'not-here': 'Not here', 'not-done': 'Not done yet', 'not-in-bag': 'Not in the bag', 'not-for-sale-here': 'Not sold here', 'no-companion': 'No one to wear it yet', 'in-a-fight': 'A fight is still open', 'won-already': 'Already won', 'subdued-today': 'Beaten today', 'riddle-closed': 'The riddle has passed', 'not-today': "Not today's chore", 'unknown-place': 'No such place', 'wrong-answer': 'Not that one', 'not-this-step': 'That step has passed', busy: 'One moment' }, goalTitle: 'What waits', goalWork: 'To do: {name} · {what}', goalBeast: 'To do: {what} at {name}, not yet met today', offersTitle: 'Errands to take · {place}', gearChip: 'Gear', gearTitle: 'Worn', bagTitle: 'Bag', gearEmpty: '—', bagNone: 'The bag is empty', gearSlots: { weapon: 'Weapon', robe: 'Robe', pendant: 'Pendant', treasure: 'Treasure' }, gearHer: '{name} wears', herCard: "{name}'s card {atk}/{hp}", herRealm: 'grown with {realm} +{atk}/+{hp}', herGift: 'Cauldron {n} · {name}: {does}', gearFight: 'In a fight: {what}', saveConflicts: 'The cloud save replaced this one; changes made here were kept as a copy.', gearPower: 'Root Strike +{n}', gearArmor: 'Shield {n}', gearWard: 'wards {el} {n}', gearCharm: '{name} in hand', gearLends: 'lends {el}', gearTo: 'Wear · {slot}', gearOff: 'Take off', cardsTitle: 'Cards · {n}', cardsNote: 'The circle is the Force a card costs. Lit: the ten you fight with — tap one to put it in or take it out; Yinyue starts in hand.', cardsDealt: 'The circle is the Force a card costs. Lit: the ten you fight with, dealt by your roots; from the Core on you pick your own.', cardsPicked: 'All ten are yours.', cardsShort: '{mine} picked; {short} more are filled by your roots when you fight (dashed).', cardsAuto: 'Let the roots choose', cardsHand: 'in hand', cardsOff: 'a spell of a root you lack', bookChip: 'Tasks', roads: 'Or on to', workAt: 'Work to be had at {name}', chanceTitle: 'A chance · {place}', chanceChip: 'a chance', chanceLeft: '{t} left', chanceHM: '{h}h {m}m', chanceM: '{m}m', chanceHere: 'right here', chanceLine: 'Something is stirring here — it will not wait.', chanceWhat: 'Something stirs there — reach it in time and it is yours.', chanceTake: 'Take it', trialTitle: 'A choice', trialWon: 'done', trialLost: 'it went wrong', trialChance: '{n}% likely', trialHard: { easy: 'easy', fair: 'fair', hard: 'hard' }, trialStake: { wound: 'failing costs stamina', coin: 'failing costs coin' }, trialHurt: 'Stamina −{n}', trialPoorer: 'Stones −{n}', findTitle: 'By the road', findTake: 'Take it · {what}', findPass: 'Leave it', bookReady: '{n} to hand in', bookNone: 'Nothing in hand', kaifuTitle: 'Setting up · {n}/{of}', kaifuPaid: 'counted', kaifuDone: 'complete', kaifuPaidN: '{n} counted', book: 'In hand', take: 'Take it', took: 'Taken', queueCount: '{n} things here', queueNext: 'Next: {what}', queueKinds: { handed: 'Spoils', quest: 'The story', road: 'On the road', offer: 'Errand', duel: 'A fight', tale: 'Rumor', lundao: 'Debate', board: 'Practice' }, turnIn: 'Hand it in', sayQuestAbout: 'Tell me about {title}', needAt: 'at {name}', needHere: 'right here',
+    needVia: 'by way of {name}', roadTitle: 'On the road', refused: { gone: 'Too late — it is gone', 'nothing-here': 'Nothing on the road now', 'already-taken': 'Already taken', 'already-done': 'Already done', 'not-posted': "Today's notice has changed", 'not-here': 'Not here', 'not-done': 'Not done yet', 'not-in-bag': 'Not in the bag', 'not-for-sale-here': 'Not sold here', 'no-companion': 'No one to wear it yet', 'in-a-fight': 'A fight is still open', 'won-already': 'Already won', 'subdued-today': 'Beaten today', 'riddle-closed': 'The riddle has passed', 'not-today': "Not today's chore", 'unknown-place': 'No such place', 'wrong-answer': 'Not that one', 'not-this-step': 'That step has passed', busy: 'One moment', 'bag-full': 'The pouch is full — sell or drop something first', 'pouch-used': 'You already carry a pouch like that', worn: 'Take it off first', 'not-held': 'Nothing like that waits at the abode' }, goalTitle: 'What waits', goalWork: 'To do: {name} · {what}', goalBeast: 'To do: {what} at {name}, not yet met today', offersTitle: 'Errands to take · {place}', gearChip: 'Pouch', gearEmpty: '—', gearSlots: { weapon: 'Weapon', robe: 'Robe', pendant: 'Pendant', treasure: 'Treasure' }, gearHer: '{name} wears', herCard: "{name}'s card {atk}/{hp}", herRealm: 'grown with {realm} +{atk}/+{hp}', herGift: 'Cauldron {n} · {name}: {does}', gearFight: 'In a fight: {what}', saveConflicts: 'The cloud save replaced this one; changes made here were kept as a copy.', gearPower: 'Root Strike +{n}', gearArmor: 'Shield {n}', gearWard: 'wards {el} {n}', gearCharm: '{name} in hand', gearLends: 'lends {el}', gearTo: 'Wear · {slot}', gearOff: 'Take off', cardsTitle: 'Cards · {n}', cardsNote: 'The circle is the Force a card costs. Lit: the ten you fight with — tap one to put it in or take it out; Yinyue starts in hand.', cardsDealt: 'The circle is the Force a card costs. Lit: the ten you fight with, dealt by your roots; from the Core on you pick your own.', cardsPicked: 'All ten are yours.', cardsShort: '{mine} picked; {short} more are filled by your roots when you fight (dashed).', cardsAuto: 'Let the roots choose', cardsHand: 'in hand', cardsOff: 'a spell of a root you lack', bookChip: 'Tasks', roads: 'Or on to', workAt: 'Work to be had at {name}', chanceTitle: 'A chance · {place}', chanceChip: 'a chance', chanceLeft: '{t} left', chanceHM: '{h}h {m}m', chanceM: '{m}m', chanceHere: 'right here', chanceLine: 'Something is stirring here — it will not wait.', chanceWhat: 'Something stirs there — reach it in time and it is yours.', chanceTake: 'Take it', trialTitle: 'A choice', trialWon: 'done', trialLost: 'it went wrong', trialChance: '{n}% likely', trialHard: { easy: 'easy', fair: 'fair', hard: 'hard' }, trialStake: { wound: 'failing costs stamina', coin: 'failing costs coin' }, trialHurt: 'Stamina −{n}', trialPoorer: 'Stones −{n}', findTitle: 'By the road', findTake: 'Take it · {what}', findPass: 'Leave it', bookReady: '{n} to hand in', bookNone: 'Nothing in hand', kaifuTitle: 'Setting up · {n}/{of}', kaifuPaid: 'counted', kaifuDone: 'complete', kaifuPaidN: '{n} counted', book: 'In hand', take: 'Take it', took: 'Taken', queueCount: '{n} things here', queueNext: 'Next: {what}', queueKinds: { handed: 'Spoils', quest: 'The story', road: 'On the road', offer: 'Errand', duel: 'A fight', tale: 'Rumor', lundao: 'Debate', board: 'Practice' }, turnIn: 'Hand it in', sayQuestAbout: 'Tell me about {title}', needAt: 'at {name}', needHere: 'right here',
     taleKept: 'Solved · counted once your stamina is back', taleDuel: 'Subdue {name} and it is done', taleWhere: '{game} · {who}', taleRiddle: 'Tap an answer', handedTitle: 'Handed in · {title}', handedNext: 'Next · {title}', handedWait: 'Next · {title} — your hands are full; finish one, then take it at {at}', needKinds: { subdue: 'subdue', tame: 'tame', carry: 'carry', visit: 'reach', board: 'finish', answer: 'answer', chore: 'do' }, goalWait: '{title} · opens {opens}', goalOpen: '{title} · not open yet', goalGate: 'The cauldron asks {step} · {progress} cultivation', goalNow: 'Now {step} · {progress}/{of}', goalGrow: 'Errands, rumors and fights all raise it',
   },
 };
@@ -436,7 +436,7 @@ function board(card, ctx) {
 
 /// What an item does, in one line — a pill's dose, arms' numbers, a 符.
 /// What a thing she wears does for her card, in one line.
-const liftSaid = (e, w) => Object.entries(e?.lift ?? {}).map(([k, n]) => (w.effLift?.[k] ? say(w.effLift[k], { n }) : '')).filter(Boolean).join(' · ');
+export const liftSaid = (e, w) => Object.entries(e?.lift ?? {}).map(([k, n]) => (w.effLift?.[k] ? say(w.effLift[k], { n }) : '')).filter(Boolean).join(' · ');
 
 const DOES = {
   progress: (e, w) => say(w.effProgress, { xw: w.xw, n: e.progress }),
@@ -448,8 +448,9 @@ const DOES = {
   core: (e, w) => say(w.effCore, { root: e.core_name }),
   charm: (e, w) => w.effCharm,
   key: (e, w) => w.effKey,
+  pouch: (e, w) => say(w.effPouch, { n: e.pouch }),
 };
-function itemDoes(effect, ctx) {
+export function itemDoes(effect, ctx) {
   const e = effect ?? {}, w = ctx.words;
   const key = Object.keys(DOES).find((k) => e[k] != null);
   return key ? DOES[key](e, w) : w.effNone;
@@ -458,7 +459,7 @@ function itemDoes(effect, ctx) {
 /// One item, or a shelf of them — words, prices and what is held come from
 /// Look's place.shelf or bag; the page prices nothing.
 /// The beasts it wins over, not yet tamed (the rules' `tames`): 「收服夫诸、蛫所需」.
-function tamesLine(i, ctx) {
+export function tamesLine(i, ctx) {
   if (!i.tames?.length) return '';
   const names = i.tames.map((t) => t.name).join(ctx.lang === 'en' ? ', ' : '、');
   return `<div class="small tames">${esc(say(ctx.words.tamesFor, { names }))}</div>`;
@@ -840,21 +841,17 @@ export function bookPopHtml(ctx) {
   return `<div class="bookpop" role="dialog">${head}${bookHtml(ctx) || (g ? '' : `<div class="small dim">${esc(w.bookNone)}</div>`)}${work}${kaifuHtml(ctx)}</div>`;
 }
 
-/// 装备 · 背包 — the 装 chip and what it opens: what he wears above, what he
-/// carries below, open together (his, 2026-09-22). Wearing and taking a pill
-/// are his own taps on the page: the page calls Trade itself, no model turn.
-/// The chip counts from Look's `wear`; what it opens is the rules' `gear`
-/// read (ctx.gear), fetched on the tap — it never rides Look.
+/// 储物袋 — the top bar's chip. What it opens is the full panel over the
+/// stage (pouch.js; Hanli, 2026-09-25): what he wears above, what he carries
+/// below, from the rules' `gear` read fetched on the tap — it never rides Look.
 export function gearChipHtml(ctx, open) {
   if (!ctx.look?.traits) return '';
-  const wear = ctx.look.wear ?? {};
-  const worn = ['weapon', 'robe', 'pendant'].filter((k) => wear[k]).length + (ctx.look.treasure ? 1 : 0);
-  return `<span class="bookwrap"><button class="bookchip gearchip" data-gear aria-expanded="${open ? 'true' : 'false'}">${esc(ctx.words.gearChip)}${worn ? ` ${worn}` : ''}</button>${open && ctx.gear ? gearPopHtml(ctx) : ''}</span>`;
+  return `<span class="bookwrap"><button class="bookchip gearchip" data-gear aria-expanded="${open ? 'true' : 'false'}">${esc(ctx.words.gearChip)}</button></span>`;
 }
 
 /* What the fight takes from what he wears (rules § 装备入局), one line:
    主灵根一击 +n · 护体 n · 抗土 n · 符在手 · 借金. */
-function gearFightHtml(f, ctx) {
+export function gearFightHtml(f, ctx) {
   if (!f) return '';
   const w = ctx.words, el = (id) => pick(ctx.content?.traits?.elements?.[id], ctx.lang) || id;
   const charm = f.charm ? pick((ctx.content?.cards?.cards ?? []).find((c) => c.id === f.charm)?.name, ctx.lang) || f.charm : '';
@@ -872,7 +869,7 @@ function gearFightHtml(f, ctx) {
    攻/血 and the realm it grew with, then each ability a cauldron gave her —
    a line each. */
 const CN_NUM = ['〇', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
-function herCardHtml(her, ctx) {
+export function herCardHtml(her, ctx) {
   const c = her.card, w = ctx.words;
   if (!c) return '';
   const realm = c.realm && (c.realm.atk || c.realm.hp) ? ` · ${say(w.herRealm, { realm: c.realm.name, atk: c.realm.atk, hp: c.realm.hp })}` : '';
@@ -880,30 +877,14 @@ function herCardHtml(her, ctx) {
   return `<div class="gearher"><div class="small dim">${esc(say(w.herCard, { name: her.name, atk: c.atk, hp: c.hp }))}${esc(realm)}</div>${gifts}</div>`;
 }
 
-export function gearPopHtml(ctx) {
-  const g = ctx.gear, w = ctx.words, t = ctx.look.treasure;
-  // On her, a thing's line ("Yinyue can wear it") says nothing: the name is enough.
-  const row = (label, it, plain = false, off = false) => `<div class="gearrow"><span class="lbl">${esc(label)}</span>
-    ${it ? `<span><b>${esc(it.name)}</b>${plain ? '' : ` <span class="small dim">${esc(itemDoes(it.effect, ctx))}</span>`}</span>` : `<span class="dim">${esc(w.gearEmpty)}</span>`}${it && off ? `<button class="act" data-remove="${esc(it.id)}">${esc(w.gearOff)}</button>` : ''}</div>`;
-  const slots = g.slots.map((s) => row(w.gearSlots[s.slot] ?? s.slot, s.item, false, true)).join('');
-  const treasure = t ? `<div class="gearrow"><span class="lbl">${esc(w.gearSlots.treasure)}</span><span><b>${esc(t.name)}</b> <span class="small dim">${esc(t.step)} · ${esc(t.element_name)}</span></span></div>` : '';
-  const herLift = g.her?.item ? liftSaid(g.her.item.effect, w) : '';
-  const herRow = g.her ? `<div class="gearrow"><span class="lbl">${esc(say(w.gearHer, { name: g.her.name }))}</span>
-    ${g.her.item ? `<span><b>${esc(g.her.item.name)}</b>${herLift ? ` <span class="small dim">${esc(herLift)}</span>` : ''}</span>` : `<span class="dim">${esc(w.gearEmpty)}</span>`}</div>` : '';
-  const her = g.her ? herRow + herCardHtml(g.her, ctx) : '';
-  const fight = gearFightHtml(g.fight, ctx);
-  const bag = g.bag.length ? g.bag.map((i) => {
-    const act = i.slot && !i.worn ? `<button class="act" data-wear="${esc(i.id)}">${esc(say(w.gearTo, { slot: w.gearSlots[i.slot] ?? g.her?.name ?? i.slot }))}</button>`
-      : i.usable ? `<button class="act" data-use="${esc(i.id)}">${esc(w.use)}</button>`
-        : i.worn ? `<span class="chip">${esc(w.worn)}</span>` : '';
-    return `<div class="gearrow"><span><b>${esc(i.name)}</b> ×${esc(i.n)} <span class="small dim">${esc(itemDoes(i.effect, ctx))}</span>${tamesLine(i, ctx)}</span>${act}</div>`;
-  }).join('') : `<div class="small dim">${esc(w.bagNone)}</div>`;
-  // 牌 — what he holds to fight with (得牌), the day's ten lit.
-  const held = g.cards ?? [];
-  // 组牌: from 结丹 on each card is a tap — lit is in the ten; his own picks
-  // solid, the rules' fill dashed (his, 2026-09-23). Before, the roots deal
-  // the ten and nothing is a button (redesign-v2 § 四). 银月 and a root he
-  // lacks stay put.
+/// 牌组 — every card he holds, the day's ten lit (得牌). From 结丹 on each
+/// card is a tap — lit is in the ten; his own picks solid, the rules' fill
+/// dashed (his, 2026-09-23). Before, the roots deal the ten and nothing is a
+/// button (redesign-v2 § 四). 银月 and a root he lacks stay put. The pouch
+/// panel opens it from its 牌组 button.
+export function deckHtml(g, ctx) {
+  const held = g.cards ?? [], w = ctx.words;
+  if (!held.length) return '';
   const mine = held.filter((c) => c.picked).length;
   const chip = (c) => {
     const cls = `gcard${c.deck || c.hand ? ' in' : ''}${c.picked ? ' picked' : ''}${c.fill ? ' fill' : ''}${c.off_root ? ' off' : ''}`;
@@ -914,12 +895,9 @@ export function gearPopHtml(ctx) {
   };
   const short = 10 - mine;
   const note = g.picking ? (short > 0 ? say(w.cardsShort, { mine, short }) : say(w.cardsPicked, { mine })) : g.can_pick ? w.cardsNote : w.cardsDealt;
-  const cards = held.length ? `<div class="cardtitle bagtitle">${esc(say(w.cardsTitle, { n: held.length }))}</div>
+  return `<div class="cardtitle bagtitle">${esc(say(w.cardsTitle, { n: held.length }))}</div>
     <div class="gcards">${held.map(chip).join('')}</div>
-    <div class="small dim">${esc(note)}${g.picking ? ` <button class="act quiet" data-deck-auto>${esc(w.cardsAuto)}</button>` : ''}</div>` : '';
-  const said = ctx.gearNote ? `<div class="donote">${esc(ctx.gearNote)}</div>` : '';
-  return `<div class="bookpop gearpop" role="dialog">${said}<div class="cardtitle">${esc(w.gearTitle)}</div>${slots}${treasure}${her}${fight}
-    <div class="cardtitle bagtitle">${esc(w.bagTitle)}</div>${bag}${cards}</div>`;
+    <div class="small dim">${esc(note)}${g.picking ? ` <button class="act quiet" data-deck-auto>${esc(w.cardsAuto)}</button>` : ''}</div>`;
 }
 
 /// 手上的事 — one line each, with its count and where the next one is met.

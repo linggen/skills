@@ -10,6 +10,7 @@ import { choreCounts, choreGrant, questDone } from './chores.mjs';
 import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from './errands.mjs';
 import { duelBrief, tasksBrief } from './look.mjs';
 import { hashOf } from './travel.mjs';
+import { stow, storedLine } from './pouch.mjs';
 import { creatureOf, encounterOf, placeOf, sceneOf } from './world.mjs';
 
 /* ── Tasks and quests ── */
@@ -101,10 +102,10 @@ function taskDone(state, content, ctx, id) {
     return { state: s, result: { ok: true, done: id, paid: null, gives: null, for: 'errand', ...(handed.length ? { handed } : {}) } };
   }
   s.tasks[id] = { status: 'done', period: periodKey(t.period, ctx.now), done_at: ctx.now.toISOString() };
-  if (t.gives?.bag) s.bag[t.gives.bag] = (s.bag[t.gives.bag] ?? 0) + 1;
+  const full = t.gives?.bag ? storedLine(s, [stow(content, s, t.gives.bag)]) : null;
   const paid = pay(content, s, ctx, t.grant);
   const handed = advance(content, s, { kind: 'board', task: id }, ctx);
-  return { state: s, result: { ok: true, done: id, paid, gives: t.gives ?? null, line: pick(t.done_line, s.lang), ...(handed.length ? { handed } : {}) } };
+  return { state: s, result: { ok: true, done: id, paid, gives: t.gives ?? null, line: pick(t.done_line, s.lang), ...(full ? { pouch_full: full } : {}), ...(handed.length ? { handed } : {}) } };
 }
 
 /* A real-life chore handed in: today's pick, a fixed one, or a 开府
@@ -221,7 +222,8 @@ export function duel(state, content, ctx, args) {
   if (card) dropped.push(card);
   const t = content.rewards.tables.haunt;
   const paid = haunt && pays ? pay(content, s, ctx, { table: 'haunt', progress: t.progress, wealth: t.wealth }) : null;
-  return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, ...(spent.length ? { spent } : {}), you: played.you, foe: played.foe, turns: played.turn, ...(dropped.length ? { dropped } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
+  const full = storedLine(s, dropped);
+  return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, ...(spent.length ? { spent } : {}), you: played.you, foe: played.foe, turns: played.turn, ...(dropped.length ? { dropped } : {}), ...(full ? { pouch_full: full } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
 }
 
 /* The 符 the door put in his hand that the fight saw him play — each is
@@ -243,7 +245,7 @@ const FIGHT_HOLDS = {
   resolve: true, move: true, go: true, enter: true, leave: true, trade: true, tale: a => !['info', 'seed'].includes(a.action),
   meet: true, tame: true, refine: true, task: a => a.action !== 'list',
   win: true, travel: true, build: true, load: true, make: true, amend: true, lundao: true,
-  divine: true, fate: true, ring: true, greet: true, deck: true, quest: a => !['info', 'kaifu'].includes(a.action),
+  divine: true, fate: true, ring: true, greet: true, deck: true, bag: true, quest: a => !['info', 'kaifu'].includes(a.action),
   seclude: a => a.action === 'enter',
 };
 export function fightHold(state, verb, args = {}) {

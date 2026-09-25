@@ -8,6 +8,7 @@ import { choreGrant, kaifuList } from './chores.mjs';
 import { greet } from './daily.mjs';
 import { BOOK_MAX, bookOf, complete, countsOf, gearBrief, HANDED_KEEP, handedOne, itemOf, noticeAt, noticeOf, questDoneBefore, questOf, questReady } from './errands.mjs';
 import { meet } from './road.mjs';
+import { bag } from './pouch.mjs';
 import { progress } from './did.mjs';
 import { divine, fate } from './fortune.mjs';
 import { look, stageAt } from './look.mjs';
@@ -35,7 +36,7 @@ export const VERBS = {
     return { state: next, result };
   },
   resolve, judge, task, win, duel, tame, refine, tale, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, story, seclude,
+  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, story, seclude, bag,
   gear: (s, c) => ({ state: null, result: { ok: true, gear: gearBrief(c, s) } }),
 };
 

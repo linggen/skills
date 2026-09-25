@@ -29,6 +29,7 @@ import { hasCompanion } from './companion.mjs';
 import { clone, pay, refuse, RIDDLE_TRIES, spendStamina } from './core.mjs';
 import { itemOf, offersOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
+import { bagFull, roomFor } from './pouch.mjs';
 import { allPlaces, atScene, creatureOf, inMade, placeOf, provinceOpen, tooHard } from './world.mjs';
 
 /* ── 机缘 — the day's one chance, somewhere near, for a few real hours ──
@@ -277,6 +278,8 @@ const ROAD = {
   },
   'find:take': (content, s, ctx, here) => {
     const f = findOf(content, here);
+    // A full 储物袋 leaves it lying there, still to be taken (Hanli, 2026-09-25).
+    if (f.item && !roomFor(content, s, f.item)) return bagFull(content, s);
     if (f.item) s.bag[f.item] = (s.bag[f.item] ?? 0) + 1;
     const paid = f.item ? null : pay(content, s, ctx, { table: 'meet', wealth: f.wealth });
     close(s, unveiled(here));

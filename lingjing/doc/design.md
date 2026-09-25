@@ -507,6 +507,23 @@ picture, a price and one effect.
   whole prices with buy ≥ sell, `sold` provinces known, exactly one effect
   of the three, a pill within its table, a wear on a slot; every bag
   reference names a catalog item (herbs stay the board's tiles only).
+- **储物袋 (built 2026-09-25, Hanli).** The bag is a 储物袋 with room,
+  counted in slots: one id one slot, stacks unlimited; a `key`, a thing the
+  open chapter's exits or a taken errand's `carry` still need, and her bell
+  take none. Room by realm (rewards.json `pouch.by_tier`: 练气 24 · 筑基 36 ·
+  结丹 48 · 元婴 60, the top row after) plus a bigger pouch used once each
+  (items.json `effect.pouch`: 中品储物袋 +12 at 280 in 冀/兖, 上品储物袋 +24 at
+  800 in 青/扬/荆/豫; `state.pouch`). Full: a fight's drop, a grant (`pay`),
+  a task's `gives`, a rumor's drop and 符 wait at the 洞府 (`state.held`, 待取)
+  and the result carries `pouch_full`, the rules' line; a road find is
+  refused `bag-full` and stays; buying something new is refused `bag-full`
+  (a stack held still buys). Verb `bag {claim | toss, id}` (page-only):
+  claim moves 待取 in when there is room; toss drops a whole slot, never a
+  story thing or one worn. A save over its room keeps everything. The page:
+  the chip opens a full panel over the stage (pouch.js) — the worn row, the
+  used/cap header with 待取 n, tabs 全部 · 丹药 · 法器 · 材料 · 符 · 剧情, a grid
+  of tiles and the tapped thing's detail (服用 · 佩戴 · 卖 at a market · 丢,
+  asked on the pane); 牌组 is the panel's own pane (the old deck view).
 
 ### The open world — places, roads, tiers, the director
 

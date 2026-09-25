@@ -255,10 +255,12 @@ test('机缘 on the page: the book counts it down; met on the road, the one road
 });
 
 test('装备 on the page: no 历练, no 羁绊 — her row is what she wears; before 结丹 the ten are dealt, not buttons', async () => {
-  const { gearPopHtml, cardHtml, WORDS } = await import('../scripts/cards.js');
+  const { cardHtml, WORDS } = await import('../scripts/cards.js');
+  const { pouchHtml } = await import('../scripts/pouch.js');
   const cards = [{ id: 'qingteng', name: '青藤', cost: 1, deck: true }, { id: 'yinyue', name: '银月', cost: 2, hand: true }];
   const gear = { slots: [], her: { name: '银月', item: null }, bag: [], cards, fight: {} };
-  const pop = (g, c = { name: '银月' }) => gearPopHtml({ gear: g, words: WORDS.zh, lang: 'zh', look: { treasure: null, companion: c } });
+  // 牌组 is the pouch panel's own pane (its 牌组 button).
+  const pop = (g, c = { name: '银月' }) => pouchHtml({ gear: g, words: WORDS.zh, lang: 'zh', look: { treasure: null, companion: c } }, { pane: 'deck' });
   const early = pop(gear);
   assert.doesNotMatch(early, /data-journey|羁绊|历练/);
   assert.doesNotMatch(early, /data-deck/, 'dealt by the roots: nothing to tap');
@@ -343,9 +345,11 @@ test('every card kind draws — the sweep no surface had until 2026-09-18', asyn
   }
 });
 
-test('装备 · 背包 open together: what he wears, what he carries, and the one tap each thing takes', async () => {
+test('储物袋 · 装备 open together: what he wears, what he carries, and the one tap each thing takes', async () => {
   // His ask, 2026-09-22: 需要有个装备的card, show what is equipped · 需要同时打开装备和背包.
-  const { WORDS, gearChipHtml, gearPopHtml } = await import('../scripts/cards.js');
+  // 2026-09-25: the popover became the 储物袋 panel over the stage (pouch.js).
+  const { WORDS, gearChipHtml } = await import('../scripts/cards.js');
+  const { pouchHtml } = await import('../scripts/pouch.js');
   const { VERBS, look } = await import('../scripts/rules.mjs');
   const { loadContent } = await import('../scripts/content.mjs');
   const content = loadContent();
@@ -361,27 +365,27 @@ test('装备 · 背包 open together: what he wears, what he carries, and the on
   assert.equal(g.her.item.id, 'moon-bell');
   assert.equal(g.fight.power, 0, 'a sword in the bag is not worn');
   const ctx = { look: seen, gear: g, lang: 'zh', words: WORDS.zh };
-  const pop = gearPopHtml(ctx);
-  assert.match(pop, /装备[\s\S]*背包/, 'both, worn above, carried below');
-  assert.match(pop, /data-wear="bamboo-sword"[^>]*>戴上 · 法器/);
-  assert.match(pop, /data-wear="qi-silk"/, 'hers, now she walks with him');
-  assert.doesNotMatch(pop, /data-wear="moon-bell"/, 'already on her');
-  assert.match(pop, /data-use="qi-pill"/);
-  assert.doesNotMatch(pop, /data-wear="talisman"|data-use="talisman"/, 'a 符 is for a fight');
-  assert.doesNotMatch(pop, /undefined|\{[a-z]+\}/);
-  assert.match(gearChipHtml(ctx, false), /data-gear/);
+  const pop = (sel, c = ctx) => pouchHtml(c, { sel });
+  assert.match(pop(), /储物袋[\s\S]*法器[\s\S]*data-pouch-item="bamboo-sword"/, 'both: worn above, carried below');
+  assert.match(pop('bamboo-sword'), /data-wear="bamboo-sword"[^>]*>戴上 · 法器/);
+  assert.match(pop('qi-silk'), /data-wear="qi-silk"/, 'hers, now she walks with him');
+  assert.doesNotMatch(pop('moon-bell'), /data-wear="moon-bell"/, 'already on her');
+  assert.match(pop('qi-pill'), /data-use="qi-pill"[^>]*>服用/);
+  assert.doesNotMatch(pop('talisman'), /data-wear="talisman"|data-use="talisman"/, 'a 符 is for a fight');
+  assert.doesNotMatch(pop(), /undefined|\{[a-z]+\}/);
+  assert.match(gearChipHtml(ctx, false), /data-gear[^>]*>储物袋</);
   // worn: the slot shows it, the fight line says what it gives, the button is gone
   const worn = { ...s, wear: { ...s.wear, weapon: 'bamboo-sword' } };
   const armed = look(worn, content, { now: new Date('2026-09-22T12:00:00'), quests: [] });
   const armedGear = VERBS.gear(worn, content).result.gear;
-  const pop2 = gearPopHtml({ ...ctx, look: armed, gear: armedGear });
-  assert.match(pop2, /法器<\/span>\s*<span><b>竹剑/);
+  const pop2 = pouchHtml({ ...ctx, look: armed, gear: armedGear }, { sel: 'bamboo-sword' });
+  assert.match(pop2, /法器<\/span><b data-pouch-item="bamboo-sword"[^>]*>竹剑/);
   assert.match(pop2, /主灵根一击 \+1/);
   assert.doesNotMatch(pop2, /data-wear="bamboo-sword"/);
-  assert.match(gearChipHtml({ ...ctx, look: armed }, false), /装备 1/);
-  // 牌: every card he holds, the day's ten lit, 银月 in hand
-  assert.match(pop, /牌 · \d+/);
-  assert.match(pop, /class="gcard in"[^>]*><b class="cost"[^>]*>2<\/b> 银月 · 在手/);
+  // 牌: every card he holds, the day's ten lit, 银月 in hand — the 牌组 pane
+  const deck = pouchHtml(ctx, { pane: 'deck' });
+  assert.match(deck, /牌 · \d+/);
+  assert.match(deck, /class="gcard in"[^>]*><b class="cost"[^>]*>2<\/b> 银月 · 在手/);
   assert.ok(g.cards.filter((c) => c.deck).length === 10);
   // 卸下: the slot's own button, and the rules put it back in the bag
   assert.match(pop2, /data-remove="bamboo-sword"[^>]*>卸下/);
@@ -393,7 +397,7 @@ test('装备 · 背包 open together: what he wears, what he carries, and the on
   assert.equal(off.state.wear.yinyue, 'moon-bell', 'hers stays on her');
   assert.equal(trade(worn, content, { now: new Date(), quests: [] }, { action: 'remove', id: 'moon-bell' }).result.refused, 'not-worn', 'what she wears is hers');
   // English stands up too
-  assert.doesNotMatch(gearPopHtml({ look: armed, gear: armedGear, lang: 'en', words: WORDS.en }), /undefined|\{[a-z]+\}/);
+  assert.doesNotMatch(pouchHtml({ look: armed, gear: armedGear, lang: 'en', words: WORDS.en }, { sel: 'qi-pill' }), /undefined|\{[a-z]+\}/);
 });
 
 test('所得: a won fight leaves its new card on the stage, drawn as it will be in the hand', async () => {

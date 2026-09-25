@@ -77,6 +77,8 @@ const PAGE_DID = {
   meet: byAction(MEET_DID),
   tale: (r, a, x) => TALE_DID[a.action]?.(r, a, x) ?? null,
   seclude: (r, a) => SECLUDE_DID[a.action]?.(r) ?? null,
+  // 储物袋: a thing waiting at the 洞府 taken in, a slot thrown away.
+  bag: byAction({ claim: (r) => `took ${r.claimed?.name} from the abode into the storage pouch`, toss: (r) => `threw away ${r.tossed?.name}` }),
 };
 
 /* The page's change, written down on the state it wrote: a fresh copy with

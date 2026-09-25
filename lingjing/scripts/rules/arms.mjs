@@ -5,22 +5,22 @@ import { clone, refuse } from './core.mjs';
 import { itemOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
 import { tierIndex } from './world.mjs';
+import { stow } from './pouch.mjs';
 
 /* ── 本命法宝: the treasure a cultivator binds at 结丹 ── */
 
 /* What a subdued creature leaves behind: the one thing it carries
    (creatures.json `drops`), and on one win in `fight_one_in` a 符 (rewards.json
    `growth.charm` — 写符 was cut, redesign-v2 § 四). The 妖丹 it left went with
-   强化. Both go into the bag; the catalog owns their words and their worth. */
+   强化. Both go into the 储物袋 — or, full, wait at the 洞府 (pouch.mjs). */
 function drop(content, state, creature, now) {
-  const lang = state.lang, got = [];
+  const got = [];
   const one = content.rewards.growth?.charm?.fight_one_in, charm = charmOf(content);
   const lucky = one && charm && hashOf(`${dayKey(now)}|${creature.id}|${state.name ?? ''}|charm`) % one === 0;
   for (const id of [creature.drops, lucky ? charm.id : null].filter(Boolean)) {
     const item = itemOf(content, id);
     if (!item) continue;
-    state.bag[id] = (state.bag[id] ?? 0) + 1;
-    got.push({ id, name: pick(item.name, lang), n: state.bag[id] });
+    got.push(stow(content, state, id));
   }
   return got;
 }
@@ -29,8 +29,7 @@ function drop(content, state, creature, now) {
 function giveCharm(content, state) {
   const charm = charmOf(content), n = content.rewards.growth?.charm?.tale_end ?? 0;
   if (!charm || !n) return null;
-  state.bag[charm.id] = (state.bag[charm.id] ?? 0) + n;
-  return { id: charm.id, name: pick(charm.name, state.lang), n: state.bag[charm.id] };
+  return stow(content, state, charm.id, n);
 }
 
 /* 一重 … 九重. The treasure grows with the story, never from a daily tap

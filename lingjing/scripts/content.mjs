@@ -112,7 +112,7 @@ const GAME_KINDS = new Set(['duel', 'board']);
 /* An exit's game, one shape: `{id, kind, creature?}`; a bare string is a
    board known by its id. */
 export const gameOf = exit => (exit?.game == null ? null : typeof exit.game === 'string' ? { id: exit.game, kind: 'board' } : exit.game);
-export const ITEM_KINDS = new Set(['pill', 'weapon', 'robe', 'pendant', 'gear', 'artifact', 'treasure', 'key', 'material', 'charm', 'scroll']);
+export const ITEM_KINDS = new Set(['pill', 'weapon', 'robe', 'pendant', 'gear', 'artifact', 'treasure', 'key', 'material', 'charm', 'scroll', 'pouch']);
 /* What a player wears, each its own slot: a 法器 in hand, a 法衣, a 佩. */
 export const ARM_SLOTS = new Map([['weapon', 'weapon'], ['robe', 'robe'], ['pendant', 'pendant']]);
 export const WEAR_SLOTS = new Set(['yinyue', 'abode']);
@@ -912,8 +912,10 @@ function lintItems(content, bad) {
     // lends), 防 on a 法衣, 抗 on a 佩. Everything else is one plain effect.
     const arms = ['atk', 'def', 'ward'].filter(k => e[k] != null);
     // 伤势 and 强化 were cut (redesign-v2 § 四): no `mend`, no `temper`.
-    const kinds = ['key', 'progress', 'wear', 'charm', 'core', 'learn'].filter(k => e[k] != null);
-    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, progress, wear, charm, core, learn, or arms (atk, def, ward)');
+    const kinds = ['key', 'progress', 'wear', 'charm', 'core', 'learn', 'pouch'].filter(k => e[k] != null);
+    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, progress, wear, charm, core, learn, pouch, or arms (atk, def, ward)');
+    // A bigger 储物袋: whole slots, on a thing of the kind (rules/pouch.mjs).
+    if (e.pouch != null && (!Number.isInteger(e.pouch) || e.pouch < 1 || item.kind !== 'pouch')) bad(where, 'pouch is a whole number of slots above zero, on a pouch');
     if (e.learn != null && (e.learn !== 'wangqi' || ![1, 2].includes(e.level) || !content.ladder.tiers.some(t => t.id === e.tier))) bad(where, 'learn is wangqi, level 1 or 2, at a tier the ladder knows');
     if (arms.length > 1) bad(where, 'arms are one of 攻, 防 or 抗');
     for (const k of arms) {

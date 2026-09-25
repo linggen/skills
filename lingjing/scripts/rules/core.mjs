@@ -9,6 +9,7 @@ import { threadOf } from './errands.mjs';
 import { sceneBrief, spoken, wordsOf } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { herBeat, storyNode, withHerBeat } from './story.mjs';
+import { stow, storedLine } from './pouch.mjs';
 import { atScene, inMade, placeName, placeOf, provinceOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
 
 /* ── Changing it ── */
@@ -58,12 +59,14 @@ function pay(content, state, ctx, grant) {
   const day = dayKey(ctx.now);
   const cards = [[grant.cast, { how: 'tame', creature: grant.cast, day }], [grant.card, { how: 'story', day }]]
     .map(([id, from]) => (id ? gainCard(content, state, id, from) : null)).filter(Boolean);
-  if (grant.item) state.bag[grant.item] = (state.bag[grant.item] ?? 0) + 1;
+  // A thing granted goes into the 储物袋 — or, full, waits at the 洞府 (pouch.mjs).
+  const stowed = grant.item ? stow(content, state, grant.item) : null;
+  const full = storedLine(state, [stowed]);
   // An art is taught by a person, in a scene — never by the beast itself.
   const learned = grant.art ? learn(content, state, grant.art) : null;
   const named = levels.map(l => ({ from: stepName(content, l.from.tier, l.from.step, state.lang), to: stepName(content, l.to.tier, l.to.step, state.lang) }));
   // `progress` is what the realm really took; at the peak the rest is held.
-  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}) };
+  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, ...(full ? { stored: true, pouch_full: full } : {}), levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}) };
 }
 
 /* A riddle is answered wrong at most this many times a day. */

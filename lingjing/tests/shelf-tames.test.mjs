@@ -4,7 +4,8 @@
 // page draws the names and derives nothing.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { WORDS, cardHtml, gearPopHtml } from '../scripts/cards.js';
+import { WORDS, cardHtml } from '../scripts/cards.js';
+import { pouchHtml } from '../scripts/pouch.js';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, VERBS } from '../scripts/rules.mjs';
@@ -35,6 +36,6 @@ test('the page draws it on the shelf and in the bag, zh and en', () => {
     const names = l.place.shelf.find(i => i.id === 'lingzhi').tames.map(t => t.name).join(lang === 'en' ? ', ' : '、');
     assert.ok(html.includes(WORDS[lang].tamesFor.replace('{names}', names)), lang);
     const gear = VERBS.gear(s, content).result.gear;
-    assert.ok(gearPopHtml({ gear, look: l, lang, words: WORDS[lang] }).includes(names), `${lang}: in the bag`);
+    assert.ok(pouchHtml({ gear, look: l, lang, words: WORDS[lang] }, { sel: 'lingzhi' }).includes(names), `${lang}: in the pouch, on the thing tapped`);
   }
 });

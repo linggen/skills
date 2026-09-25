@@ -10,6 +10,7 @@ import { nameOf } from './look.mjs';
 import { choreOpen, isPool, questDone, todayChores } from './chores.mjs';
 import { canMakeTale, taleEvent, taleHanded, taleRow } from './tale.mjs';
 import { hashOf } from './travel.mjs';
+import { freeSlot, pouchBrief } from './pouch.mjs';
 import { allPlaces, atScene, creatureOf, inCorridor, inMade, pathOf, placeName, placeOf, provinceOpen, sceneOf, tooHard, towardOf } from './world.mjs';
 
 /* ── 差事 — the errands the player takes (design.md § 差事) ──
@@ -466,6 +467,7 @@ const EFFECT_BRIEF = {
   learn: e => ({ learn: e.learn, level: e.level, tier: e.tier }),
   wear: e => ({ wear: e.wear, ...(e.lift ? { lift: e.lift } : {}) }),
   charm: () => ({ charm: true }),
+  pouch: e => ({ pouch: e.pouch }),
   atk: (e, content, lang) => ({ atk: e.atk, ...(e.root ? { root: e.root, root_name: ELEMENT_NAME(content, lang, e.root) } : {}) }),
   def: e => ({ def: e.def }),
   ward: (e, content, lang) => ({ ward: e.ward, wards: Object.entries(e.ward).map(([el, n]) => ({ id: el, name: ELEMENT_NAME(content, lang, el), n })) }),
@@ -514,7 +516,9 @@ function gearBrief(content, state) {
     if (!item) return { id, name: id, n };
     const e = item.effect ?? {};
     const slot = e.wear ? (e.wear === her?.id ? e.wear : null) : ARM_SLOTS.get(item.kind) ?? null;
-    return { ...itemBrief(content, state, item), n, ...(slot ? { slot } : {}), ...(e.progress || e.learn ? { usable: true } : {}) };
+    // `free`: a thing the story still needs, which takes no slot of the 储物袋.
+    return { ...itemBrief(content, state, item), n, ...(slot ? { slot } : {}), ...(e.progress || e.learn || e.pouch ? { usable: true } : {}),
+      ...(freeSlot(content, state, id) ? { free: true } : {}) };
   });
   return {
     slots: GEAR_SLOTS.map(slot => ({ slot, item: worn(state.wear?.[slot]) })),
@@ -530,6 +534,9 @@ function gearBrief(content, state) {
     ...(canPick(content, state) ? { can_pick: true } : {}),
     ...(Array.isArray(state.deck) && canPick(content, state) ? { picking: true } : {}),
     bag,
+    // 储物袋: used / cap and what waits at the 洞府 (pouch.mjs); a 卖 is drawn only at a 坊市.
+    pouch: pouchBrief(content, state),
+    ...(placeOf(content, state.place)?.has?.shop ? { market: true } : {}),
     // 牌 — every card he holds, cheapest first, and which ten a fight deals
     // today (deckFor), 银月 always in hand. Roots he lacks are marked, not hid.
     cards: (() => {

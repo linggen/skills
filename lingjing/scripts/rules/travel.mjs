@@ -11,6 +11,7 @@ import { forSale, sceneBrief, shelfOf, wordsOf } from './look.mjs';
 import { atScene, fittingPlace, inCorridor, inMade, pathOf, placeBrief, placeName, placeOf, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard } from './world.mjs';
 import { enteredBeat, refusalBeat } from './story.mjs';
 import { enter } from './worlds.mjs';
+import { bagFull, pouchBrief, roomFor } from './pouch.mjs';
 
 /* ── Story, travel, language ── */
 
@@ -136,7 +137,7 @@ export function move(state, content, ctx, args) {
 
 /* A key the story still needs: an exit of the current chapter's scenes not
    yet done asks for it in the bag. */
-function keyInUse(content, state, id) {
+export function keyInUse(content, state, id) {
   if (inMade(state)) return false;
   const chapter = content.chapters[state.chapter];
   if (!chapter || state.ended.includes(chapter.id)) return false;
@@ -168,6 +169,10 @@ export function trade(state, content, ctx, args) {
       if (s.wealth < item.buy) {
         return refuse('no-stones', pick({ zh: `${w.wealth}不够。`, en: `Not enough ${w.wealth}.` }, lang), { price: item.buy, wealth: s.wealth });
       }
+      // A bigger 储物袋 already put to use is not bought twice.
+      if (item.effect?.pouch && (s.pouch ?? []).includes(item.id)) return refuse('pouch-used', pick({ zh: '这样的储物袋你已经换上了。', en: 'You already carry a pouch like that.' }, lang));
+      // A full 储物袋 buys nothing new — a stack he holds still takes one more.
+      if (!roomFor(content, s, item.id)) return bagFull(content, s);
       const empty = spendStamina(content, s, ctx, 'shop');
       if (empty) return empty;
       s.wealth -= item.buy;
@@ -201,6 +206,14 @@ export function trade(state, content, ctx, args) {
       if (s.bag[item.id] <= 0) delete s.bag[item.id];
       s.insight = e.level;
       return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), learned: { id: e.learn, level: e.level } } };
+    }
+    // A bigger 储物袋: its room joins his for good, once for each kind.
+    if (e.pouch) {
+      if ((s.pouch ?? []).includes(item.id)) return refuse('pouch-used', pick({ zh: '这样的储物袋你已经换上了。', en: 'You already carry a pouch like that.' }, lang));
+      s.bag[item.id] = held - 1;
+      if (s.bag[item.id] <= 0) delete s.bag[item.id];
+      s.pouch = [...(s.pouch ?? []), item.id];
+      return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), pouch: pouchBrief(content, s) } };
     }
     if (e.progress) {
       s.bag[item.id] = held - 1;

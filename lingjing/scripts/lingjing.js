@@ -15,6 +15,7 @@ import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
 import { WORDS, say as fill, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, emergedHtml, trayHtml, trialToldHtml, clockOf } from './cards.js';
+import { pouchHtml } from './pouch.js';
 import { esc } from './esc.js';
 import { createVoice, nodeMoment } from './voice.js';
 import { LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
@@ -168,8 +169,12 @@ const view = {
   /// Everything else about a fight is in the save.
   duelSay: { id: null, text: null },
   bookOpen: false, //    the 事 chip's popover
-  gearOpen: false, //    the 装备 chip's popover: what he wears and his bag, together
+  gearOpen: false, //    the 储物袋 chip's panel over the stage: what he wears and his pouch, together
   gear: null, //         the rules' `gear` read behind it, fetched when it opens
+  pouchTab: 'all', //    the panel's tab (pouch.js TABS)
+  pouchSel: null, //     the thing tapped, in the detail pane
+  pouchToss: null, //    the thing asking 丢? on the pane, until answered
+  pouchPane: null, //    'held' (洞府 · 待取) or 'deck' (牌组) in the grid's place
   spoils: null, //       what a won fight left: { place, cards, items }, until put away or walked on
   bookSeen: null, //     how many lines the book held when last drawn: one more and the chip says so
   bookFresh: false,
@@ -184,7 +189,7 @@ const view = {
   askHer: false, //      the ask bar speaks to 银月 (`@银月 …`), not to Ling
   choosing: false, //    a 抉择 tapped: its roll is in flight
   trialTold: null, //    the way taken at a 抉择, on the stage until he walks on: { place, success, line, cost }
-  gearNote: null, //     a 装备 tap the rules refused, in their words, inside the popover
+  gearNote: null, //     a 储物袋 tap the rules refused, in their words, inside the panel
   opened: null, //       a board he opened from the tray: { id, place } — it stays until he walks on
   walkedOut: null, //    a fight he left that the rules would not settle: it waits on its card, not pulled back in
   luOpen: false, //      the 录 chip's book (九鼎录), over the stage
@@ -446,7 +451,7 @@ function statusHtml() {
     <span class="ls"><span class="lbl">${esc(w.ls)}</span> <b data-count="wealth">${esc(look.wealth)}</b></span>${omenChip()}
     ${bout ? '' : luChipHtml(lang(), view.luOpen)}
     ${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}
-    ${gearChipHtml({ ...ctx(), gear: view.gear, gearNote: view.gearOpen ? view.gearNote : null }, view.gearOpen)}
+    ${gearChipHtml(ctx(), view.gearOpen)}
     <span class="langsw" title="中文 / English">${['zh', 'en'].map((l) => `<button data-lang="${l}" class="${l === lang() ? 'on' : ''}">${l === 'zh' ? '中' : 'En'}</button>`).join('')}</span>`;
 }
 
@@ -896,6 +901,7 @@ function draw() {
   $('focus').innerHTML = focusHtml();
   keep({ castFresh: false });
   drawLu();
+  drawPouch();
   // The tray holds the world's boards; with none today it is not there at all
   // — 「今日无事」 under a book with things in it was a contradiction.
   $('trayTitle').textContent = w.tray;
@@ -1320,7 +1326,8 @@ const DOES = {
 async function doTap(action, id) {
   if (!DOES[action]) return;
   const r = await DOES[action](id).catch(failed);
-  keep({ doNote: r.ok ? null : refusal(r) });
+  // A reward that found the 储物袋 full says where it went, in the rules' line.
+  keep({ doNote: r.ok ? r.paid?.pouch_full ?? r.pouch_full ?? null : refusal(r) });
   if (r.ok && action === 'take') tookOffer(id);
   await refresh();
   if (r.ok && action === 'turn' && view.bookOpen) await loadKaifu();
@@ -1343,8 +1350,8 @@ function tookOffer(id) {
   setTimeout(() => { if (view.tookOffer?.id === id) show({ tookOffer: null }); }, TOOK_MS);
 }
 
-/* 装备 · 背包: putting a thing on, or taking a pill, is his own tap — the page
-   calls Trade itself and redraws from the rules; no model turn. */
+/* 储物袋: putting a thing on, taking a pill, selling at a market, is his own
+   tap — the page calls Trade itself and redraws from the rules; no model turn. */
 async function useItem(id, action = 'use') {
   const r = await write('trade', { action, id }).catch(failed);
   // A refusal is said where he tapped — a pill kept on a full day said
@@ -1355,8 +1362,32 @@ async function useItem(id, action = 'use') {
 }
 
 async function openGear() {
+  if (!view.gearOpen) show({ gearOpen: true, luOpen: false, bookOpen: false, gear: null, pouchToss: null });
   const r = await verb('gear').catch((e) => { console.warn('[lingjing] gear', e); return null; });
-  show({ gearOpen: true, bookOpen: false, gear: r?.gear ?? null, gearNote: null });
+  if (view.gearOpen) show({ gear: r?.gear ?? null, gearNote: null });
+}
+
+/* 待取 taken in, or a slot thrown away — the panel's own verb (rules/pouch.mjs). */
+async function bagTap(action, id) {
+  const r = await write('bag', { action, id }).catch(failed);
+  await openGear();
+  keep({ gearNote: r.ok ? null : refusal(r), pouchToss: null, ...(r.ok && action === 'toss' ? { pouchSel: null } : {}),
+    ...(r.ok && action === 'claim' && !r.pouch?.held?.length ? { pouchPane: null } : {}) });
+  await refresh();
+}
+
+/* The panel in the stage's place while open, like the 录 book: redrawn only
+   when it changed, so a stream token never resets its scroll. */
+let drawnPouch = null;
+function drawPouch() {
+  const el = $('pouchbook');
+  const open = view.gearOpen && !bout;
+  if (open) document.body.classList.add('reading');
+  el.hidden = !open;
+  if (!open) { drawnPouch = null; return; }
+  const html = pouchHtml({ ...ctx(), gear: view.gear, gearNote: view.gearNote, artBase: artBase() },
+    { tab: view.pouchTab, sel: view.pouchSel, toss: view.pouchToss, pane: view.pouchPane });
+  if (html !== drawnPouch) { el.innerHTML = html; drawnPouch = html; }
 }
 
 /* 撂下 is the rules' to do; Ling reads the book in her next Look. */
@@ -1404,7 +1435,7 @@ const KEY_ROWS = [
 ];
 document.addEventListener('keydown', (e) => {
   if (e.target.id === 'askField' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); sendAsk(); }
-  if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.luOpen) show({ luOpen: false }); else if (view.bookOpen || view.gearOpen) show({ bookOpen: false, gearOpen: false }); }
+  if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.luOpen) show({ luOpen: false }); else if (view.pouchToss) show({ pouchToss: null }); else if (view.bookOpen || view.gearOpen) show({ bookOpen: false, gearOpen: false }); }
   if (e.key !== 'Enter' && e.key !== ' ') return;
   for (const [sel, open] of KEY_ROWS) {
     const row = e.target.closest?.(sel);
@@ -1476,12 +1507,21 @@ const CLICKS = [
   ['[data-do]', (el) => { if (!el.matches(':disabled')) run(`do:${el.dataset.do}:${el.dataset.id}`, () => doTap(el.dataset.do, el.dataset.id)); }],
   ['[data-deck]', (el) => run(`deck:${el.dataset.deck}`, () => deckTap({ action: 'toggle', id: el.dataset.deck }))],
   ['[data-deck-auto]', busy('deck:auto', () => deckTap({ action: 'auto' }))],
+  ['[data-pouch-close]', () => show({ gearOpen: false, pouchToss: null })],
+  ['[data-pouch-tab]', (el) => show({ pouchTab: el.dataset.pouchTab, pouchToss: null, pouchPane: null })],
+  ['[data-pouch-pane]', (el) => show({ pouchPane: el.dataset.pouchPane || null, pouchToss: null })],
+  ['[data-pouch-item]', (el) => show({ pouchSel: el.dataset.pouchItem, pouchToss: null, pouchPane: null })],
+  ['[data-sell]', (el) => run(`item:sell:${el.dataset.sell}`, () => useItem(el.dataset.sell, 'sell'))],
+  ['[data-toss]', (el) => show({ pouchToss: el.dataset.toss })],
+  ['[data-toss-no]', () => show({ pouchToss: null })],
+  ['[data-toss-yes]', (el) => run(`bag:toss:${el.dataset.tossYes}`, () => bagTap('toss', el.dataset.tossYes))],
+  ['[data-claim]', (el) => run(`bag:claim:${el.dataset.claim}`, () => bagTap('claim', el.dataset.claim))],
   ['[data-wear],[data-use],[data-remove]', (el) => {
     const id = el.dataset.wear ?? el.dataset.use ?? el.dataset.remove, action = el.dataset.remove ? 'remove' : 'use';
     run(`item:${action}:${id}`, () => useItem(id, action));
   }],
   ['*', (el, e) => {
-    if ((view.bookOpen || view.gearOpen) && !e.target.closest('.bookpop') && !e.target.closest('#askbar')) show({ bookOpen: false, gearOpen: false });
+    if (view.bookOpen && !e.target.closest('.bookpop') && !e.target.closest('#askbar')) show({ bookOpen: false });
     return false;
   }],
   ['[data-spoils-close]', () => show({ spoils: null })],
@@ -1737,7 +1777,9 @@ async function settleBout(b = bout) {
   else toldOutcome(brief, r.outcome);
   // 所得: the room closes, and what it left stands on the stage — the card he
   // now holds is seen, not only told.
-  const got = r.outcome === 'won' ? r.dropped ?? [] : [];
+  // What waits at the 洞府 (储物袋 full) is not 所得 in hand: the rules' line says where it went.
+  const got = r.outcome === 'won' ? (r.dropped ?? []).filter((d) => !d.stored) : [];
+  if (r.pouch_full) keep({ doNote: r.pouch_full });
   const paid = r.outcome === 'won' && (r.paid?.progress || r.paid?.wealth) ? r.paid : null;
   // A 符 played is spent from the bag, won or lost: the card says so (page fact).
   const spent = r.spent ?? [];

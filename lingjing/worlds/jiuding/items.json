@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "_about": "The catalog: every thing the player can own, with its picture, its price and at most one effect. `key` is needed by an exit; a pill pays `progress` on use from a capped table; `wear` puts it on Yinyue (with a `lift`: her card's atk or hp by 1, or her 疗伤 by 0.1) or the abode; `charm` is a 符 — one in the bag is its card (cards.json, the same id) in hand at a fight's door, spent when it is played. Arms are the fight's own: a weapon's `atk` (器攻) with the `root` it lends, a 法衣's `def` (防), a 佩's `ward` (抗, by element) — each worn in its own slot, and each turned into the fight's numbers at the door by the rates in cards.json `gear` (器攻 → 主灵根一击, 防 → 护体, 抗 → that element lands lighter; the root lent lets its 功法 into the deck). `temper` feeds a 本命法宝 that many points of growth, and `core` on such a material names the element it would lend if the treasure were bound with it. `sold` names the provinces whose market shelves it; an item sold nowhere is a gift or a drop only.",
+  "_about": "The catalog: every thing the player can own, with its picture, its price and at most one effect. `key` is needed by an exit; a pill pays `progress` on use from a capped table; `wear` puts it on Yinyue (with a `lift`: her card's atk or hp by 1, or her 疗伤 by 0.1) or the abode; `charm` is a 符 — one in the bag is its card (cards.json, the same id) in hand at a fight's door, spent when it is played. Arms are the fight's own: a weapon's `atk` (器攻) with the `root` it lends, a 法衣's `def` (防), a 佩's `ward` (抗, by element) — each worn in its own slot, and each turned into the fight's numbers at the door by the rates in cards.json `gear` (器攻 → 主灵根一击, 防 → 护体, 抗 → that element lands lighter; the root lent lets its 功法 into the deck). `temper` feeds a 本命法宝 that many points of growth, and `core` on such a material names the element it would lend if the treasure were bound with it. `sold` names the provinces whose market shelves it; an item sold nowhere is a gift or a drop only. `pouch` on a 储物袋 adds that many slots to the bag's room for good, once for each kind (rewards.json `pouch`).",
   "items": [
     {
       "id": "lingzhi",
@@ -646,6 +646,54 @@
         "豫"
       ],
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, from the description."
+    },
+    {
+      "id": "pouch-mid",
+      "kind": "pouch",
+      "name": {
+        "zh": "中品储物袋",
+        "en": "Middle-grade storage pouch"
+      },
+      "art": "art/items/pouch-mid.webp",
+      "about": {
+        "zh": "靛青绸面，绣着云纹。换上它，储物袋多出十二格。",
+        "en": "Indigo silk worked with clouds. Carry it and your pouch holds twelve more kinds."
+      },
+      "buy": 280,
+      "sell": 70,
+      "sold": [
+        "冀",
+        "兖"
+      ],
+      "effect": {
+        "pouch": 12
+      },
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-25, from the description."
+    },
+    {
+      "id": "pouch-high",
+      "kind": "pouch",
+      "name": {
+        "zh": "上品储物袋",
+        "en": "High-grade storage pouch"
+      },
+      "art": "art/items/pouch-high.webp",
+      "about": {
+        "zh": "绛红织锦，玉扣系口，袋里自成一方天地。换上它，储物袋多出二十四格。",
+        "en": "Crimson brocade with a jade toggle; a small world inside. Carry it and your pouch holds twenty-four more kinds."
+      },
+      "buy": 800,
+      "sell": 200,
+      "sold": [
+        "青",
+        "扬",
+        "荆",
+        "豫"
+      ],
+      "effect": {
+        "pouch": 24
+      },
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-25, from the description."
     }
   ]
 }

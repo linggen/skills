@@ -20,6 +20,7 @@ import { clone, pay, paysOf, refuse, spendStamina } from './core.mjs';
 import { HANDED_KEEP, itemOf, whereAt, withinRoads } from './errands.mjs';
 import { gameLevel, lundaoForm } from './tasks.mjs';
 import { hashOf } from './travel.mjs';
+import { stow, storedLine } from './pouch.mjs';
 import { allPlaces, atScene, creatureOf, placeName, placeOf, provinceOpen, tierIndex, tooHard } from './world.mjs';
 
 const WORD_GAMES = new Set(['riddle', 'lundao']);
@@ -287,8 +288,8 @@ function dropOf(content, state, t) {
 function giveDrop(content, s, d, from = null) {
   if (!d) return null;
   if (d.card) return gainCard(content, s, d.card, from);
-  s.bag[d.item] = (s.bag[d.item] ?? 0) + 1;
-  return { id: d.item, name: pick(itemOf(content, d.item)?.name, s.lang) };
+  const got = stow(content, s, d.item);
+  return { id: got.id, name: got.name, ...(got.stored ? { stored: true } : {}) };
 }
 
 /* ── Playing it ── */
@@ -324,7 +325,8 @@ function settle(content, s, ctx) {
   const given = [gives?.name, charm?.name].filter(Boolean).join(' · ');
   const h = { id: boardId(t, n), tale: true, n, place: s.place, at, paid, ...(link.end ? { end: true } : {}), ...(given ? { gives: given } : {}) };
   s.handed = [...(s.handed ?? []), h].slice(-HANDED_KEEP);
-  return { handed: [taleHanded(content, s, h)], ...(link.end ? { ended: true, ...(grew ? { treasure_grew: grew } : {}) } : { step: stepBrief(content, s, ctx.now) }) };
+  const full = storedLine(s, [gives, charm]);
+  return { handed: [taleHanded(content, s, h)], ...(full ? { pouch_full: full } : {}), ...(link.end ? { ended: true, ...(grew ? { treasure_grew: grew } : {}) } : { step: stepBrief(content, s, ctx.now) }) };
 }
 
 /* 相识 — the people of a finished tale are remembered, and may come back. */

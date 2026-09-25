@@ -1391,7 +1391,7 @@ test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron
   s = r.state;
   const ye = look(s, content, octx());
   assert.equal(ye.scene.id, '01-ye');
-  assert.deepEqual(ye.place.shelf.map(i => i.id), ['moon-bell', 'iron-sword', 'foundation-pill', 'wangqi-1', 'huojing']);
+  assert.deepEqual(ye.place.shelf.map(i => i.id), ['moon-bell', 'iron-sword', 'foundation-pill', 'wangqi-1', 'huojing', 'pouch-mid']);
   s = answer(trade, s, { action: 'buy', id: 'iron-sword' }).state;
   assert.equal(s.wealth, 180);
   s = answer(resolve, s, { exit: 'market' }).state; // stays
@@ -1898,7 +1898,7 @@ test('chapter 2 opens in November: the road from Ye, the Pu, Puyang\'s market, t
   s = r.state;
   const town = look(s, content, nctx());
   assert.equal(town.scene.id, '02-town');
-  assert.deepEqual(town.place.shelf.map(i => i.id), ['firm-pill', 'wangqi-2', 'sang-paper', 'leijimu', 'xirang']);
+  assert.deepEqual(town.place.shelf.map(i => i.id), ['firm-pill', 'wangqi-2', 'sang-paper', 'leijimu', 'xirang', 'pouch-mid']);
   s = answerN(trade, s, { action: 'buy', id: 'sang-paper' }).state;
   assert.equal(s.wealth, 370);
   s = answerN(resolve, s, { exit: 'lake' }).state;
@@ -1979,7 +1979,7 @@ test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market,
   s = r.state;
   const town = look(s, content, dctx());
   assert.equal(town.scene.id, '03-town');
-  assert.deepEqual(town.place.shelf.map(i => i.id), ['wangqi-2', 'qi-salt', 'qi-silk', 'jingjin', 'hanyu']);
+  assert.deepEqual(town.place.shelf.map(i => i.id), ['wangqi-2', 'qi-salt', 'qi-silk', 'jingjin', 'hanyu', 'pouch-high']);
   s = answerD(trade, s, { action: 'buy', id: 'qi-salt' }).state;
   assert.equal(s.wealth, 380);
   s = answerD(resolve, s, { exit: 'shore' }).state;
