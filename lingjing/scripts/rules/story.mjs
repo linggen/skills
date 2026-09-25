@@ -8,18 +8,17 @@
 // in the order it was done. Nothing not yet reached leaves this file: a
 // chapter ahead is a dark cauldron with its province and nothing more.
 import { CAST } from '../content.mjs';
-import { dayKey, fill, pick } from '../state.mjs';
+import { fill, pick } from '../state.mjs';
 import { cauldronsFound, companionOf, giftAt, hasCompanion, recalledOf } from './companion.mjs';
 import { threadOf } from './errands.mjs';
 import { cardBook } from './cards.mjs';
 import { atScene, creatureOf, inMade, sceneOf } from './world.mjs';
 
 const HOUR = 3600000;
-/* 前情提要 is owed after this long away — or on a new day after RECAP_NEW_DAY
-   (a midnight between two sittings an hour apart is not being away); told,
-   it is not owed again until the player has been away that long once more. */
-const RECAP_AWAY = 12 * HOUR;
-const RECAP_NEW_DAY = 3 * HOUR;
+/* 前情提要 opens every sitting (his, 2026-09-25: 每次开始游戏时): a sitting is a
+   new chat session of Ling's, or a return after this long with nothing
+   played; told, it is not owed again until one of those comes round. */
+const RECAP_AWAY = HOUR;
 /* Owed and never told (the player played on the page alone) — let it go. */
 const RECAP_STALE = 6 * HOUR;
 const RECAP_LINES = 3;
@@ -138,17 +137,22 @@ export function story(state, content, ctx, args = {}) {
 
 /* ── 前情提要 ── */
 
-/* Owed? Away long enough since the save last changed, with a story to tell.
-   Marked on the state in place (rules.mjs keeps it; never logged, so Undo
-   still takes back the last real move). Answers true when newly marked. */
-export function owesRecap(state, now) {
-  if (!state?.updated || !(state.done_scenes ?? []).length) return false;
-  const r = state.recap ?? {};
+/* Owed? At a sitting's start, with a story to tell: Ling's first Look of a
+   chat session (`session`, LINGGEN_SESSION_ID — remembered on the save, so
+   once a session), or the first call after RECAP_AWAY since the save last
+   changed. Marked on the state in place (rules.mjs keeps it; never logged,
+   so Undo still takes back the last real move). Answers true when it wrote. */
+export function owesRecap(state, now, session = null) {
+  if (!state?.updated) return false;
+  const r = state.recap ?? {}, lived = (state.done_scenes ?? []).length > 0;
+  if (session && r.session !== session) {
+    state.recap = { ...r, session, ...(lived && !r.owed ? { owed: now.toISOString() } : {}) };
+    return true;
+  }
+  if (!lived) return false;
   if (r.owed && now - new Date(r.owed) < RECAP_STALE) return false;
   const last = Math.max(new Date(state.updated).getTime(), r.told ? new Date(r.told).getTime() : 0);
-  const away = now - last;
-  const newDay = dayKey(new Date(last)) !== dayKey(now);
-  if (!(away >= RECAP_AWAY || (newDay && away >= RECAP_NEW_DAY))) {
+  if (now - last < RECAP_AWAY) {
     if (r.owed) { delete state.recap.owed; return true; }
     return false;
   }

@@ -1,7 +1,8 @@
 // 九鼎录 · 前情提要 · story nodes (redesign-v2 § 六; rules/story.mjs). The book
 // is the authored recap of what the player has DONE, in the order done; a
 // chapter not reached is a dark cauldron and nothing more. The ending marks
-// the save once; 前情提要 is owed after a while away and handed to Ling once.
+// the save once; 前情提要 + 目前任务 opens every sitting — a new chat session of
+// Ling's, or back after a while — built from the facts, handed to Ling once.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -136,14 +137,12 @@ test('Look: a chapter just begun carries its intro (the title card); one scene i
   assert.deepEqual(look(on, content, ctx()).chapter, { id: '02-yan', title: pz(content.chapters['02-yan'].title) });
 });
 
-test('前情提要 is owed after a while away, not after a short break, and never with no story', () => {
+test('前情提要 is owed as a sitting opens — back after a while, not after a short break, and never with no story', () => {
   const day = h => new Date(NOW.getTime() + h * 3600000);
   const played = () => ({ ...at('01-ji', roadOf('01-ji').slice(0, 2)), updated: NOW.toISOString() });
-  assert.equal(owesRecap(played(), day(2)), false, 'two hours, same day');
+  assert.equal(owesRecap(played(), day(0.5)), false, 'half an hour: the same sitting');
+  assert.equal(owesRecap(played(), day(2)), true, 'two hours away');
   assert.equal(owesRecap(played(), day(13)), true, 'thirteen hours');
-  const late = { ...played(), updated: new Date('2026-09-11T22:00:00').toISOString() };
-  assert.equal(owesRecap(late, new Date('2026-09-12T00:30:00')), false, 'past midnight after a short break');
-  assert.equal(owesRecap(late, new Date('2026-09-12T08:00:00')), true, 'the next morning');
   assert.equal(owesRecap({ ...newState(content, 'zh', NOW), updated: NOW.toISOString() }, day(48)), false, 'nothing to recap yet');
   const s = played();
   owesRecap(s, day(30));
@@ -154,8 +153,25 @@ test('前情提要 is owed after a while away, not after a short break, and neve
   assert.equal(r.recap.mystery, pz(content.chapters['01-ji'].mystery));
   // Told, it is not owed again right away.
   const told = { ...s, recap: { told: day(30).toISOString() } };
-  assert.equal(owesRecap(told, day(31)), false);
-  assert.equal(look(told, content, ctx(day(31))).recap_due, undefined);
+  assert.equal(owesRecap(told, day(30.5)), false);
+  assert.equal(look(told, content, ctx(day(30.5))).recap_due, undefined);
+});
+
+test('a new chat session of Ling\'s opens a sitting: owed on its first Look, once — a brand-new game only remembers the session', () => {
+  const later = new Date(NOW.getTime() + 10 * 60000);
+  const s = { ...at('01-ji', roadOf('01-ji').slice(0, 2)), updated: NOW.toISOString() };
+  assert.equal(owesRecap(s, later), false, 'ten minutes, no session: the same sitting');
+  assert.equal(owesRecap(s, later, 's1'), true, 'a new session');
+  assert.equal(s.recap.session, 's1');
+  assert.ok(s.recap.owed);
+  const told = { ...s, recap: { told: later.toISOString(), session: 's1' } };
+  assert.equal(owesRecap(told, later, 's1'), false, 'the same session: never twice');
+  assert.equal(owesRecap(told, later, 's2'), true, 'the next session: again');
+  const fresh = { ...newState(content, 'zh', NOW), updated: NOW.toISOString() };
+  owesRecap(fresh, later, 's1');
+  assert.equal(fresh.recap.owed, undefined, 'nothing to tell yet');
+  fresh.done_scenes = ['00-river'];
+  assert.equal(owesRecap(fresh, later, 's1'), false, 'a scene played in the same session is no new sitting');
 });
 
 test('the command line: owed on the first call after a while away, kept without a log line, handed to Ling once', () => {
@@ -181,6 +197,11 @@ test('the command line: owed on the first call after a while away, kept without 
     const ling = cli('look', '--for=ling');
     assert.equal(ling.recap_due, true);
     assert.equal(ling.story_node, undefined);
+    // Ling's recap is the facts: the book's lines, where he stands, who walks along, the task.
+    assert.ok(ling.recap.chapters.some(c => c.state === 'current' && c.recap.length >= 2), 'the current chapter\'s lines, from the book');
+    assert.equal(ling.recap.mystery, pz(content.chapters['01-ji'].mystery));
+    assert.ok(ling.recap.here && Array.isArray(ling.recap.with) && Array.isArray(ling.recap.task.book));
+    assert.ok(ling.then.startsWith('A sitting opens'), 'the telling comes first');
     assert.equal(cli('look', '--for=ling').recap_due, undefined, 'handed over once');
     assert.equal(cli('look').recap_due, undefined);
   } finally {
@@ -323,4 +344,31 @@ test('the third, sixth and ninth cauldron: the node names her new ability and it
   }
   assert.equal(endOf('02-yan').gift, undefined, 'a cauldron without a gift');
   assert.equal(endOf('03-qing', false).gift, undefined, 'before she walks with him, nothing is hers to hear');
+});
+
+test('a session opens with the recap for Ling, once; no saved summary reaches her, and nothing asks her to write one', () => {
+  const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-sitting-'));
+  try {
+    const file = path.join(data, 'state.json');
+    const soon = new Date(NOW.getTime() + 5 * 60000);
+    fs.writeFileSync(file, JSON.stringify({ ...at('01-ji', roadOf('01-ji').slice(0, 1)), updated: NOW.toISOString(), story: '如今抵达蓬莱，得到青鼎。' }));
+    const cli = (sid, ...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], {
+      cwd: path.resolve(import.meta.dirname, '..'), encoding: 'utf8',
+      env: { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: soon.toISOString(), LINGGEN_SESSION_ID: sid },
+    }).stdout);
+    assert.equal(cli('s1', 'look').recap_due, undefined, 'the page alone, five minutes on: no sitting');
+    const first = cli('s1', 'look', '--for=ling');
+    assert.equal(first.recap_due, true, 'the session\'s first Look');
+    assert.ok(first.recap.task, '目前任务 with it');
+    assert.equal(JSON.stringify(first).includes('蓬莱'), false, 'the old summary never reaches her');
+    assert.equal('story' in first, false);
+    assert.equal(cli('s1', 'look', '--for=ling').recap_due, undefined, 'once a session');
+    const step = cli('s1', 'resolve', '--exit=shrine', '--for=ling'); // 邺城 → the shrine: a scene passed
+    assert.equal(step.ok, true, 'a scene passed');
+    assert.equal('summarize' in step, false, 'no summary asked for');
+    assert.equal(/Summarize/.test(step.then ?? ''), false);
+    assert.equal(cli('s2', 'look', '--for=ling').recap_due, true, 'a new session: again');
+  } finally {
+    fs.rmSync(data, { recursive: true, force: true });
+  }
 });

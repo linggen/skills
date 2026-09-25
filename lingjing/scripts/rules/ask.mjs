@@ -152,6 +152,10 @@ const won = r => {
   if (!r?.ok || r.sold || r.bought) return false;
   return Boolean(r.breakthrough || r.learned?.length || p?.cast || p?.item || p?.levels?.length || (p?.progress ?? 0) > 0 || (p?.wealth ?? 0) > 0);
 };
+/* A sitting opens (story.mjs owesRecap): the recap is told first, from the
+   facts the rules hand over — no summary is kept (his, 2026-09-25). Put
+   before Look's own `then` by rules.mjs, where the facts are attached. */
+export const THEN_RECAP = 'A sitting opens — 前情提要 first: two or three lines of story from `recap` (its chapters\' `recap` lines, `here`, `with`, `mystery`), past tense, never stats; then 目前任务 in one line from `recap.task` (the goal, the errands in hand and where), never a number the page shows. ';
 const THEN_CALL = 'The search has just opened: say `quest.line` in the world, in a line of its own, before the question. ';
 /* No question this time: the stage has the thing in front of him, or nothing
    has changed since the last one. End on words — never invent a question the

@@ -21,7 +21,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { allWorlds, DEFAULT_WORLD, knownWorld, loadWorld } from './content.mjs';
 import { migrate } from './state.mjs';
-import { askOf, tapThen, withAsk } from './rules/ask.mjs';
+import { askOf, tapThen, THEN_RECAP, withAsk } from './rules/ask.mjs';
 import { guard, onLook, unconfirmed } from './rules/confirm.mjs';
 import { markSeen, notePage, READS_PAGE, unseen } from './rules/did.mjs';
 import { clock, dataDir, freshState, parseArgs, readQuests, savedFile, savedFor, userTurn, withLock, writeAtomic } from './rules/files.mjs';
@@ -31,6 +31,7 @@ import { seclusionHold } from './rules/seclusion.mjs';
 import { heed } from './rules/travel.mjs';
 import { VERBS } from './rules/verbs.mjs';
 import { owesRecap, withHerBeat } from './rules/story.mjs';
+import { recapFacts } from './rules/recap.mjs';
 import { guideVerb, withGuides } from './rules/guide.mjs';
 import { atScene } from './rules/world.mjs';
 import { BUILDING_WAITS, keepDay, keepSave, paintList, readSave } from './rules/worlds.mjs';
@@ -103,9 +104,11 @@ function runLocked(verb, args, stateFile, reader) {
   // earlier day closed — both written with whatever this call writes.
   const saved = raw && raw.world === worldId ? closeStaleFight(migrate(raw, content), now) : raw;
   const state = verb === 'init' || !saved ? freshState(content, args.lang ?? saved?.lang, now) : saved;
-  // 前情提要 owed after a while away (story.mjs): marked in place, and kept
-  // below without a log line — Undo takes back moves, not the clock.
-  const owed = verb !== 'init' && saved === state && owesRecap(state, now);
+  // 前情提要 owed as a sitting opens (story.mjs): a chat session of Ling's seen
+  // first on her Look, or a while away. Marked in place, and kept below
+  // without a log line — Undo takes back moves, not the clock.
+  const session = reader === 'ling' ? process.env.LINGGEN_SESSION_ID || null : null;
+  const owed = verb !== 'init' && saved === state && owesRecap(state, now, verb === 'look' ? session : null);
   if (verb === 'init' || !saved) writeAtomic(stateFile, JSON.stringify(state));
   if (verb === 'init') {
     if (saved) fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args, before: unconfirmed(saved) }) + '\n');
@@ -160,12 +163,16 @@ function runLocked(verb, args, stateFile, reader) {
     asking.story_told = now.toISOString();
     writeAtomic(stateFile, JSON.stringify(asking));
   }
-  // 前情提要 is handed to Ling once: told the moment her Look carries it.
-  if (reader === 'ling' && verb === 'look' && out.result?.recap_due) {
-    asking.recap = { told: now.toISOString() };
+  // 前情提要 is handed to Ling once: told the moment her Look carries it —
+  // built from the facts (rules/recap.mjs: the book, where he stands, who
+  // walks along, the task in hand); no summary is kept to read back.
+  const recapped = reader === 'ling' && verb === 'look' && out.result?.recap_due
+    ? { ...out.result, recap: recapFacts(content, asking, { now, quests: readQuests() }), then: THEN_RECAP + (out.result.then ?? '') } : out.result;
+  if (recapped !== out.result) {
+    asking.recap = { told: now.toISOString(), ...(session ? { session } : {}) };
     writeAtomic(stateFile, JSON.stringify(asking));
   } else if (owed && !next) writeAtomic(stateFile, JSON.stringify(asking));
-  const said = heard !== state ? { ...out.result, lang_set: heard.lang } : out.result;
+  const said = heard !== state ? { ...recapped, lang_set: heard.lang } : recapped;
   const result = told ? { ...said, page_did: told } : said;
   if (PLAIN.has(verb)) return result;
   const answer = withAsk(result, content, asking, { now, quests: readQuests(), said: args.said, verb });
@@ -276,6 +283,10 @@ export function forLing(value) {
   const out = {};
   for (const [k, v] of Object.entries(value)) {
     if (k === 'places' && Array.isArray(v) && 'roads' in value) continue;
+    // No summary is kept for Ling (his, 2026-09-25): an old save's `story`
+    // text drifted from the game and was read back as truth; `summarize` is
+    // the rules' own mark of a scene entered (ask.mjs), no longer a request.
+    if ((k === 'story' && typeof v === 'string') || k === 'summarize') continue;
     if (k === 'story_node') continue; // the page's moment; Ling has the node on the move's own result
     // Her beat is hers: Ling learns only that she speaks here and what happened —
     // never her line or her memory, which she says herself (Hanli, 2026-09-24).

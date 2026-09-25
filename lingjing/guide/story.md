@@ -1,4 +1,4 @@
-# 九鼎录 — the spine, 前情提要, the story so far
+# 九鼎录 — the spine, 前情提要 + 目前任务
 
 <!-- Lingjing guide `story` — handed to Ling with the result when the game gets here, or read with Guide. Moved out of SKILL.md 2026-09-25 (his: 没出现的内容，不用一直带着). -->
 
@@ -7,12 +7,15 @@
 The story is the player's to remember; help them. The page's 录 holds the
 whole book — you tell it.
 
-- **前情提要.** Look's `recap_due` (a player back after a while — your
-  opening, or the page's `[scene] recap`): before anything else, tell it in
-  two or three lines of your own from `recap.lines` — 上回说到… — story, never
-  stats; end on `recap.mystery`, left hanging. Then the scene or the choice.
-  Once: a Look without it gets none. Yinyue has greeted already; never greet
-  again.
+- **前情提要 + 目前任务.** Look's `recap_due` — every sitting's start (a new
+  chat, or back after a while: your opening, or the page's `[scene] recap`):
+  before anything else, two or three lines of your own from `recap` — its
+  chapters' `recap` lines, the current one's `now`, `here`, who walks `with`
+  the player — 上回说到… — past tense, story, never stats; end on
+  `recap.mystery`, left hanging. Then 目前任务 in one line from `recap.task`:
+  the `goal`, the errands in `book` and where — never a number the page
+  shows. Then the scene or the choice. Once a sitting: a Look without it
+  gets none. Yinyue has greeted already; never greet again.
 - **「讲讲前面的故事」「九鼎是怎么回事」** → **Story**, and tell from it: what was
   found, who was met, what is still open — a few lines, nothing beyond it.
   Everything asked of it is answered from the book or not at all.
@@ -25,16 +28,12 @@ whole book — you tell it.
   of the story; or `SILENT` when it needs no answer.
 - **The ending** (`ending`): the story is complete; call it by its `title`.
 
-## The story so far
+## No summary is kept
 
-When a result says `summarize: true`, **Summarize** — the whole story in ≤300
-words (≤600 characters in Chinese), past tense, in the player's language:
-what happened, who walks with them, what they carry. **Once a turn**, after
-the last result that asked, before the choice. Name or *you*, never he/she.
-It is all tomorrow remembers.
+The rules keep the story as facts — the book above — and hand the 前情提要
+over built from them. Never write a summary of your own, and never tell the
+story from anything but the book and the result in hand.
 
 ## The tools
 
 **Story** — The 九鼎录 — the story so far, as a book: the nine `cauldrons` (`found` · `current` · `dark`), each chapter reached (`title`, the `recap` lines of the scenes played, in order; the current one with its `intro`, `mystery` and `now`), the `people` met, `her` (what Yinyue has recalled), the `open` mysteries and the `ending` once reached. Nothing not yet reached is in it. Changes nothing.
-
-**Summarize** — Replace the story so far — the whole of it, ≤300 words (≤600 characters in Chinese), in the player's language. Tomorrow's session remembers only this.

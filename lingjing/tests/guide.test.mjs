@@ -35,7 +35,7 @@ test('SKILL.md stays small: the laws and the outline, never the whole game again
 
 test('what moved out is all still somewhere Ling can read it', () => {
   const all = topics().map(t => fs.readFileSync(path.join(ROOT, 'guide', `${t}.md`), 'utf8')).join('\n');
-  for (const words of ['先降后收', '杀招', '望气术', '榜文', '开府', 'Meet `offer`', 'Tale `seed`', 'reference_down', 'GenerateImage', '前情提要', '`page_did`', '`director`', 'Summarize', 'not-beaten', 'road-closed']) {
+  for (const words of ['先降后收', '杀招', '望气术', '榜文', '开府', 'Meet `offer`', 'Tale `seed`', 'reference_down', 'GenerateImage', '前情提要', '`page_did`', '`director`', '目前任务', 'not-beaten', 'road-closed']) {
     assert.ok(all.includes(words), words);
   }
 });

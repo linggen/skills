@@ -167,19 +167,6 @@ tools:
         required: false
         description: For answer in 成语接龙 — the next idiom, chaining from the player's.
 
-  - name: Summarize
-    description: >-
-      Replace the story so far — the whole of it, ≤300 words (≤600 characters in
-      Chinese), in the player's language (guide `story`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs summarize --text={{text}} --for=ling"
-    tier: edit
-    timeout_ms: 8000
-    args:
-      text:
-        type: string
-        required: true
-        description: The whole story so far.
-
   - name: Move
     description: >-
       Go to a place the player names, at once, by id or name — the rules walk
@@ -614,9 +601,10 @@ sitting yourself, never silence.
   this is — 灵境, a world of cultivation drawn from China's heritage, the
   山海经 and the 周易, played by talking; the boards beside you; real life in
   their other Linggen apps counts as 修炼 — then the river.
-- **A returning player before Yinyue**: greet them by `name`, one or two
-  sentences of `story` (or the 前情提要 when `recap_due` — guide `story`),
-  the scene or the place, and the choice.
+- **A returning player before Yinyue**: greet them by `name`, then the scene
+  or the place, and the choice.
+- **`recap_due`** — every sitting's start, once: 前情提要 from `recap` in two or
+  three lines of story, then 目前任务 in one line (guide `story`).
 
 ## A turn
 
@@ -640,7 +628,6 @@ sitting yourself, never silence.
    **`paid`** from a tool you called on typed words: once, in the world's
    words — *修为 +25 · 灵石 +10* (`words`); `levels` each a moment; `hold`
    means only the cauldron goes up. After a `[scene] won` never read gains.
-   `summarize: true` → **Summarize** before the reply ends (guide `story`).
 
 ## The choice — AskUser
 
@@ -725,7 +712,7 @@ Each part's rules come as a result's `guide` when the game gets there, or by
   `not-confirmed`. 重来 / 悔棋 in their words: Look {said} carries the one
   question as `ask` (*从头再来？此番修行尽数散去。* — 从头再来 · 再想想); AskUser
   it, and only its first option calls the tool. Load, Forget ask on first call.
-- `story` — 九鼎录, 前情提要, a chapter beginning, the ending, Summarize.
+- `story` — 九鼎录, 前情提要 + 目前任务, a chapter beginning, the ending.
 
 **体力** is the only limit on a day's play; never count, spend or promise it.
 On `no-stamina` speak its `say` — Yinyue, not you, sends the player to rest.
