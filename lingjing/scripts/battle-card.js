@@ -231,7 +231,7 @@ function minionHtml(m, side, index, ctx, picked) {
   // name under it, and 攻 / 血 in the two bottom corners where a card player's
   // eye already looks. A 22px strip of a painting is a smudge, not a picture
   // (his, 2026-09-18: 放到阵前, 图片看不到了).
-  return `<button class="bminion ${side}${held ? ' held' : ''}${m.taunt ? ' taunt' : ''}${can ? ' can' : ''}${aimed ? ' aimed' : ''}" data-spot="${side === 'mine' ? 'mine' : 'theirs'}" data-index="${index}" data-id="${esc(m.id)}">
+  return `<button class="bminion ${side} el-${esc(m.element ?? 'none')}${held ? ' held' : ''}${m.taunt ? ' taunt' : ''}${can ? ' can' : ''}${aimed ? ' aimed' : ''}" data-spot="${side === 'mine' ? 'mine' : 'theirs'}" data-index="${index}" data-id="${esc(m.id)}">
     <span class="bface-wrap">
       ${pic ? `<img class="bpic small" src="${esc(pic)}" alt="" loading="lazy">` : '<span class="bpic small none"></span>'}
       <span class="bglyph">${GLYPH[m.element] ?? ''}</span>
@@ -260,7 +260,7 @@ function handHtml(st, ctx, picked) {
     const body = c.kind === 'minion' ? `<span class="bstat"><b>${b.atk}</b> / <b>${b.hp}</b></span>` : '';
     // 闭关's ★: the cost it has now, and the stars by its name.
     const stars = starsOf(st.you, c);
-    return `<button class="bcard${held ? ' held' : ''}${why ? ' dim' : ''}${!why && !held ? ' can' : ''}" data-spot="hand" data-index="${index}" data-id="${esc(id)}">
+    return `<button class="bcard el-${esc(c.element ?? 'none')}${held ? ' held' : ''}${why ? ' dim' : ''}${!why && !held ? ' can' : ''}" data-spot="hand" data-index="${index}" data-id="${esc(id)}">
       <span class="bcost">${costOf(st.you, c)}</span>
       ${artOf(c, ctx) ? `<img class="bpic" src="${esc(artOf(c, ctx))}" alt="" loading="lazy">` : ''}
       <span class="bname">${name(c, ctx.lang)}${stars ? ` <span class="stars">${'★'.repeat(stars)}</span>` : ''}</span>
@@ -505,7 +505,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
   const rank = (side, board, n) => {
     const cells = [];
     for (let i = 0; i < n; i += 1) {
-      cells.push(board[i] ? minionHtml(board[i], side, i, ctx, picked) : `<div class="bminion empty">${esc(w.empty)}</div>`);
+      cells.push(board[i] ? minionHtml(board[i], side, i, ctx, picked) : `<div class="bminion empty" aria-label="${esc(w.empty)}"><i aria-hidden="true"></i></div>`);
     }
     return cells.join('');
   };
@@ -519,17 +519,22 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
   const over = st.outcome !== 'open';
   const said = st.outcome === 'won' ? w.wonSay : st.outcome === 'lost' ? w.lostSay : st.outcome === 'withdrew' ? w.withdrewSay : '';
   const title = st.outcome === 'won' ? w.won : st.outcome === 'lost' ? w.lost : st.outcome === 'withdrew' ? w.withdrew : '';
-  return `<div class="battle${over ? ' over' : ''}">
+  // The arena wears the beast (2026-09-25, his 「斗法的UI有点简陋」): its
+  // painting spread behind the fight, faded into the night. `says` carries the
+  // boss's line and 银月's beside you; `stake` is why this fight is fought.
+  const arena = ctx.foeArt ? `<div class="barena" aria-hidden="true" style="background-image:url('${esc(ctx.foeArt)}')"></div>` : '';
+  const bubble = (who, text, name = '') => (text ? `<div class="bsay ${who}">${name ? `<b>${esc(name)}</b>` : ''}${esc(text)}</div>` : '');
+  return `<div class="battle el-${esc(st.foe.root ?? 'none')}${over ? ' over' : ''}">${arena}
     <div class="btop">
       <button class="bquit" data-spot="quit">${esc(w.quit)}</button>
       <button class="bhelpbtn${help ? ' on' : ''}" data-spot="help" title="${esc(w.how)}" aria-label="${esc(w.how)}">?</button>
       <span class="bturn ${st.whose}">${st.whose === 'you' ? (ctx.lang === 'en' ? 'Your turn' : '你的回合') : `${esc(ctx.foeName ?? '')}${ctx.lang === 'en' ? "'s turn" : '的回合'}`}</span>
-      <span class="bwhere">${esc(ctx.title ?? '')}</span>
+      <span class="bwhere">${esc(ctx.title ?? '')}${ctx.stake ? `<small class="bstake">${esc(ctx.stake)}</small>` : ''}</span>
     </div>
 
     <button class="bside foe${picked ? ' aiming' : ''}${aim.hero ? ' aimed' : ''}" data-spot="hero">
       ${ctx.foeArt ? `<img class="bface" src="${esc(ctx.foeArt)}" alt="">` : ''}
-      <div class="bwho">${esc(ctx.foeName ?? '')} <span class="belem">${GLYPH[st.foe.root] ?? ''}</span></div>
+      <div class="bwho"><span>${esc(ctx.foeName ?? '')} <span class="belem">${GLYPH[st.foe.root] ?? ''}</span></span>${bubble('foe', ctx.says?.foe)}</div>
       <div class="bnums">
         ${pool(w.hp, st.foe.hp, st.foe.hpMax, 'hp')}
         ${gearHtml(st.foe, 'foe', st, ctx)}
@@ -548,7 +553,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
     <div class="brank mine"><span class="blab">${esc(w.yours)}</span>${rank('mine', st.you.board, ctx.board)}</div>
 
     <div class="bside you">
-      <div class="bwho">${esc(ctx.youName ?? '')} <span class="belem">${GLYPH[st.you.root] ?? ''}</span></div>
+      <div class="bwho"><span>${esc(ctx.youName ?? '')} <span class="belem">${GLYPH[st.you.root] ?? ''}</span></span>${bubble('her', ctx.says?.her, ctx.herName)}</div>
       <div class="bnums">
         ${pool(w.hp, st.you.hp, st.you.hpMax, 'hp')}
         ${gearHtml(st.you, 'you', st, ctx)}
@@ -576,6 +581,6 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       ${w.help.map(([k, v]) => `<p><b>${esc(k)}</b>${esc(v)}</p>`).join('')}
       <button class="bact" data-spot="help">${esc(w.close)}</button>
     </div></div>` : ''}
-    ${over ? `<div class="bover"><b>${title}</b><span>${said}</span></div>` : ''}
+    ${over ? `<div class="bover ${esc(st.outcome)}"><b class="bseal">${title}</b><span>${said}</span>${bubble('foe', ctx.says?.end)}</div>` : ''}
   </div>`;
 }

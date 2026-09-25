@@ -339,3 +339,86 @@
 .bfloat.armor { color: #9fc1d8; font-size: 18px; }
 @media (prefers-reduced-motion: reduce) { .barmor.struck { animation: none; } }
 .bcard .stars { color: #C9A227; font-size: .85em; }
+
+/* ── The room dressed (his, 2026-09-25: 「斗法的UI可以美化一下，现在有点简陋」) ──
+   The beast's painting fills the room behind the fight, faded into the night;
+   every card wears its element's colour on its frame; a body on the rank is
+   its picture, with 攻 and 血 as gems on it; an empty place is an ink ring,
+   not a dashed box that says 空; the boss and 银月 speak in bubbles; the end
+   is a seal. Decoration only — nothing here changes what can be tapped. */
+.battle { --el: var(--gold); isolation: isolate; }
+.el-wood { --el: #6f9e63; } .el-fire { --el: #c9553f; } .el-earth { --el: #b8894a; }
+.el-metal { --el: #b9c0c9; } .el-water { --el: #4f86c2; }
+.barena {
+  position: absolute; inset: 0 0 auto 0; height: 62%; z-index: -1; pointer-events: none;
+  background-size: cover; background-position: 50% 30%;
+  filter: grayscale(0.35) sepia(0.4) brightness(0.42) contrast(1.1);
+  opacity: 0.55;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.7) 45%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.7) 45%, transparent 100%);
+  animation: arenadrift 30s ease-in-out infinite alternate;
+}
+@keyframes arenadrift { from { transform: scale(1.04); } to { transform: scale(1.12) translateY(-2%); } }
+.battle::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; box-shadow: inset 0 0 0 1px var(--line-d), inset 0 0 0 5px rgba(0, 0, 0, 0.35), inset 0 0 0 6px color-mix(in srgb, var(--el) 35%, transparent); border-radius: 14px; }
+.bwhere { display: grid; justify-items: end; line-height: 1.2; }
+.bstake { font-family: var(--ui); font-size: 11px; letter-spacing: 0.08em; color: var(--faint-d); }
+
+/* The beast: a framed portrait, not a thumbnail. */
+.bside.foe { background: linear-gradient(180deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.45)); border-color: color-mix(in srgb, var(--el) 40%, var(--line-d)); backdrop-filter: blur(1px); }
+.bside.foe .bface { width: 112px; height: 112px; border-radius: 12px; border: 2px solid var(--gold-soft); box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.45), 0 0 26px color-mix(in srgb, var(--el) 35%, transparent); }
+.bside .bwho { display: grid; gap: 6px; justify-items: start; min-width: 0; }
+.bsay { max-width: min(340px, 100%); }
+.bside.you { background: linear-gradient(180deg, rgba(0, 0, 0, 0.3), rgba(255, 255, 255, 0.03)); }
+
+/* Who speaks — the boss's line, 银月's beside you. */
+.bsay { position: relative; max-width: 340px; padding: 7px 12px; border-radius: 12px; font-family: var(--serif); font-size: 14px; line-height: 1.5; letter-spacing: 0.02em; animation: sayin 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.bsay b { display: block; font-family: var(--ui); font-size: 10px; letter-spacing: 0.12em; color: var(--faint-d); font-weight: 500; }
+.bsay.foe { background: rgba(163, 59, 46, 0.16); border: 1px solid rgba(224, 106, 85, 0.45); color: #f1d9cf; }
+.bsay.her { background: rgba(159, 193, 216, 0.10); border: 1px solid rgba(159, 193, 216, 0.4); color: #e3ecf2; }
+@keyframes sayin { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* The ranks: an ink ring where a body may stand. */
+.brank { background: rgba(0, 0, 0, 0.22); }
+.bminion.empty { border: none; display: grid; place-items: center; }
+.bminion.empty i { width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(201, 162, 39, 0.14); box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.5); }
+
+/* A body on the rank is its picture, 攻 and 血 as gems on it. */
+.bminion:not(.empty) { padding: 0; overflow: hidden; min-height: 108px; align-content: end; border-color: color-mix(in srgb, var(--el) 55%, var(--line-d)); background: #15120f; }
+.bminion:not(.empty) .bface-wrap { position: absolute; inset: 0; }
+.bminion:not(.empty) .bpic.small { width: 100%; height: 100%; border: none; border-radius: 0; filter: sepia(0.15) brightness(0.85) contrast(1.05); }
+.bminion:not(.empty) .bpic.small.none { background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--el) 30%, #1b1714), #15120f); }
+.bminion:not(.empty) .bname { position: relative; z-index: 1; width: 100%; padding: 16px 4px 18px; font-size: 15px; text-align: center; background: linear-gradient(180deg, transparent, rgba(10, 8, 6, 0.92) 55%); text-shadow: 0 1px 4px #000; }
+.bminion:not(.empty) small { position: relative; z-index: 1; margin-top: -16px; padding-bottom: 18px; width: 100%; text-align: center; background: rgba(10, 8, 6, 0.92); }
+.bminion .batk, .bminion .bhp { z-index: 2; bottom: 4px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; font-size: 12px; font-weight: 700; color: #1a1510; }
+.bminion .batk { left: 4px; background: radial-gradient(circle at 35% 30%, #f0d27a, #b8901f); }
+.bminion .bhp { right: 4px; background: radial-gradient(circle at 35% 30%, #f29a86, #a33b2e); color: #fff; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; }
+.bglyph { z-index: 2; top: 4px; right: 5px; width: 18px; height: 18px; display: grid; place-items: center; border-radius: 50%; background: rgba(10, 8, 6, 0.7); color: var(--el); }
+
+/* The hand: a card, its element on the frame, the picture as its face. */
+.bcard { flex-basis: 112px; padding: 0 0 8px; overflow: visible; border: 1px solid color-mix(in srgb, var(--el) 60%, var(--line-d)); background: linear-gradient(180deg, color-mix(in srgb, var(--el) 14%, #2a241d), #171310 60%); }
+.bcard .bpic { height: 62px; border: none; border-bottom: 1px solid color-mix(in srgb, var(--el) 50%, transparent); border-radius: 11px 11px 0 0; }
+.bcard .bname { padding: 3px 6px 0; }
+.bcard .belem { color: var(--el); }
+.bcard .btext, .bcard .bwhy, .bcard .bstat { padding: 0 6px; }
+
+/* The deck stack sits in the side's corner, never on a row of its own. */
+.bside { position: relative; }
+.bside .bdeck { position: absolute; right: 12px; bottom: 8px; }
+.bside .bnums { padding-bottom: 50px; }
+.bcard .bcost { z-index: 2; }
+
+/* The end is a seal. */
+.bover { border-color: transparent; background: rgba(0, 0, 0, 0.55); }
+.bseal { display: grid; place-items: center; min-width: 120px; padding: 10px 16px; border: 3px double currentColor; border-radius: 8px; font-size: 30px; letter-spacing: 0.3em; transform: rotate(-4deg); animation: stamp 0.5s cubic-bezier(0.3, 1.4, 0.4, 1) both; }
+.bover.won .bseal { color: #d8493a; background: rgba(216, 73, 58, 0.08); }
+.bover.lost .bseal, .bover.withdrew .bseal { color: var(--faint-d); }
+@keyframes stamp { from { opacity: 0; transform: rotate(-4deg) scale(1.8); } to { opacity: 1; transform: rotate(-4deg) scale(1); } }
+
+@media (max-width: 560px) {
+  .bside.foe .bface { width: 84px; height: 84px; }
+  .bminion:not(.empty) { min-height: 92px; }
+  .bcard { flex-basis: 100px; }
+  .bcard .bpic { height: 52px; }
+  .bside .bnums { padding-bottom: 0; padding-right: 48px; }
+}
+@media (prefers-reduced-motion: reduce) { .barena { animation: none; } }

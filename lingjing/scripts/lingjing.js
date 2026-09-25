@@ -936,7 +936,9 @@ function boutCtx() {
     board: bout.st.mode.board,
     title: words().subdue ?? '降妖',
     foeName: c.name, foeArt: c.art ? `${artBase()}${c.art}` : null,
-    youName: look.name ?? '',
+    youName: look.name ?? '', herName: look.companion?.name ?? null,
+    // Why this fight, and who speaks in it (the brief carries them when the story gives them).
+    stake: bout.brief.stake ?? null, says: bout.says ?? bout.brief.says ?? null,
   };
 }
 

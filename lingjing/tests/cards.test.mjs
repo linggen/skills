@@ -591,3 +591,26 @@ test('炼化本命 on the card: the materials held, a name the player types, and
   assert.match(card({ weapon: null, materials: held.materials }), /先佩一件兵器/);
   assert.match(card({ weapon: '铁剑', materials: [] }), /囊中没有天材地宝/);
 });
+
+test('the room dressed: the beast painted behind the fight, the boss and 银月 speak, why it is fought, and the end is a seal', async () => {
+  const { WORDS, battleHtml } = await import('../scripts/battle-card.js');
+  const { begin, offers, view } = await import('../scripts/battle.js');
+  const { loadWorld } = await import('../scripts/content.mjs');
+  const content = loadWorld('jiuding');
+  const catalog = Object.fromEntries(content.cards.cards.map(c => [c.id, { ...c, name: c.name.zh }]));
+  const foe = content.creatures.creatures.find(c => c.id === 'leishen');
+  const st = begin({ mode: 'pve', seed: 'x', you: { tier: 'core', step: 0, root: 'wood', deck: ['jixiao', 'huoya', 'houtu', 'luying', 'leiming', 'jingwei', 'zhennu', 'luoshi', 'fenghuo', 'linmu'], extra: ['yinyue'] }, foe: { tier: 'core', root: 'wood', deck: foe.deck } }, catalog);
+  const base = { lang: 'zh', words: WORDS.zh, catalog, board: st.mode.board, artBase: '../worlds/jiuding/', title: '降妖', foeName: '雷神', youName: '青玄', foeArt: '../worlds/jiuding/art/leishen.webp' };
+  const plain = battleHtml(view(st), offers(st), base);
+  assert.match(plain, /class="barena"[^>]*leishen\.webp/, 'the beast behind the fight');
+  assert.match(plain, /class="battle el-wood/, 'the room wears its element');
+  assert.doesNotMatch(plain, /bsay|bstake/, 'no line, no bubble; no stake, no line under the title');
+  assert.doesNotMatch(plain, />空</, 'an empty place is a ring, not a word');
+  const said = battleHtml(view(st), offers(st), { ...base, herName: '银月', stake: '为取青鼎', says: { foe: '雷泽是我的鼓。', her: '别让它蓄满。' } });
+  assert.match(said, /<div class="bsay foe">雷泽是我的鼓。<\/div>/);
+  assert.match(said, /<div class="bsay her"><b>银月<\/b>别让它蓄满。<\/div>/);
+  assert.match(said, /<small class="bstake">为取青鼎<\/small>/);
+  const won = battleHtml({ ...view(st), outcome: 'won' }, offers(st), { ...base, says: { end: '雷泽归你。' } });
+  assert.match(won, /class="bover won"><b class="bseal">/);
+  assert.match(won, /雷泽归你。/);
+});
