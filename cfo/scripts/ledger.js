@@ -333,7 +333,7 @@ export function isStatementArtifact(merchant) {
 // every reader (transfer pairing, the transaction list) sees the same one.
 // Rows with none of the three stay without — a ledger from before currencies,
 // read with no home set, reports exactly as it always did.
-function stampCurrencies(rows, accountsById, home) {
+export function stampCurrencies(rows, accountsById, home) {
   for (const r of rows) {
     const acc = accountsById[r.account];
     const c = acc && acc.currency ? accountCurrency(acc, home).currency : (r.currency || home || null);
@@ -401,7 +401,7 @@ function budgetsAcross(rows, budgetCur, fx, opts) {
   for (const r of rows) {
     if (r.currency === budgetCur) { txns.push(txnOf(r)); continue; }
     const k = fxRate(fx, r.currency, budgetCur);
-    if (k == null) { missing.add(r.currency); continue; }
+    if (k == null) { if (r.currency) missing.add(r.currency); continue; }
     converted.add(r.currency);
     txns.push({ ...txnOf(r), amount: Math.round(r.amount * k * 100) / 100 });
   }

@@ -8,7 +8,7 @@ import '/shared/chat-bridge.js'; // sets window.LinggenUI
 import { listSkillSessions } from '/shared/api.js';
 import { analyzeCsv, orientTransactions, categorize, cleanMerchant, amortize, debtPlan } from './analyze.js';
 import { stampQuest } from './quest.js';
-import { toLedgerRows, mergeImport, idsToRevert, reportFromLedger, viewFromLedger, detectTransfers, ruleKey, isStatementArtifact } from './ledger.js';
+import { toLedgerRows, mergeImport, idsToRevert, reportFromLedger, viewFromLedger, detectTransfers, stampCurrencies, ruleKey, isStatementArtifact } from './ledger.js';
 import { hashId } from './hash.js';
 import { CURRENCY_CODES as ALL_CURRENCY_CODES, accountCurrency, currencyUnconfirmed, importCurrencyCells, seedAccountCurrencies, accountHints, migrateLedgerText, parseEcbXml, parseBocValet, ECB_URL, BOC_URL } from './currency.js';
 import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, activeRows, seedFromLegacy, saveRegisterFile, updateJsonFile, lockedUpdate } from './lww.js';
@@ -486,7 +486,8 @@ const filterAnomalies = (r) => ({ ...r, anomalies: (r.anomalies || []).filter((a
 // list for the agent-teacher. Computed over the FULL ledger (not the range
 // view) so a quiet month doesn't hide them. detectTransfers is idempotent.
 function computeResidual() {
-  detectTransfers(LEDGER, ACCOUNTS, 5, CATEGORY_OVERRIDES);
+  stampCurrencies(LEDGER, ACCOUNTS, CURRENCY_CODE); // as the report does: currencies first, then
+  detectTransfers(LEDGER, ACCOUNTS, 5, CATEGORY_OVERRIDES, FX); // pairing (across currencies too)
   const agg = new Map();
   for (const r of LEDGER) {
     if (r.transfer || r.amount >= 0) continue;
@@ -685,7 +686,8 @@ function renderTxnView() {
   if (STAGING) { renderStaging(); return; }
   renderImportHistory();
   renderAccounts();
-  detectTransfers(LEDGER, ACCOUNTS, 5, CATEGORY_OVERRIDES);
+  stampCurrencies(LEDGER, ACCOUNTS, CURRENCY_CODE); // as the report does: currencies first, then
+  detectTransfers(LEDGER, ACCOUNTS, 5, CATEGORY_OVERRIDES, FX); // pairing (across currencies too)
   const cats = knownCategories();
   const f = TXN_FILTERS;
   const months = [...new Set(LEDGER.filter((r) => r.date).map((r) => r.date.slice(0, 7)))].sort().reverse();
