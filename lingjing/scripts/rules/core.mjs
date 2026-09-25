@@ -316,6 +316,8 @@ export function resolve(state, content, ctx, args) {
       ok: true, took: exit.id, beat, paid, breakthrough, show: exit.show ?? [], scene: atScene(content, s) ? sceneBrief(content, s, ctx.now) : null,
       waypoint: !atScene(content, s) && sceneOf(content, s) ? threadOf(content, s, ctx.now) : null, ended: exit.ends ?? null, waiting,
       ...(walked ? { walked } : {}), ...(grew ? { treasure_grew: grew } : {}), ...(node ? { node } : {}),
+      // Her price showing as the chapter ends: Ling opens with what she does (story.mjs uneaseAt).
+      ...(node?.unease ? { unease: node.unease } : {}),
       ...(her ? { her_beat: her } : {}),
       summarize: Boolean(exit.next || exit.ends),
     },

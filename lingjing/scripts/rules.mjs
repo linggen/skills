@@ -291,6 +291,8 @@ export function forLing(value) {
     // Her beat is hers: Ling learns only that she speaks here and what happened —
     // never her line or her memory, which she says herself (Hanli, 2026-09-24).
     if (k === 'her_beat' && v && typeof v === 'object') { out.her_beat = { id: v.id, facts: { happened: v.facts?.happened ?? null } }; continue; }
+    // Her unease is hers to say: Ling gets only the one sentence of what she does.
+    if (k === 'unease' && v && typeof v === 'object') { out.unease = { ling: v.ling ?? null }; continue; }
     if (k === 'shelf' && Array.isArray(v)) { out.shelf = v.map(shelfForLing); continue; }
     out[k] = forLing(v);
   }

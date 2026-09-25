@@ -204,6 +204,7 @@ export function storyNode(content, before, s, scene, exit, now) {
   // The ③ ⑥ ⑨ cauldron gives her an ability and takes a reflection
   // (rules/companion.mjs § Beside her): she hears it as facts, once she walks with him.
   const gift = found && hasCompanion(s) ? giftAt(content, found) : null;
+  const unease = ended ? uneaseAt(content, s, ch.id) : null;
   const node = {
     kind, at: now.toISOString(),
     chapter: { id: ch.id, title: pick(ch.title, lang) },
@@ -212,10 +213,30 @@ export function storyNode(content, before, s, scene, exit, now) {
     ...(kind === 'cauldron' ? { found } : {}),
     ...(gift ? { gift: { name: pick(gift.name, lang), does: pick(gift.does, lang), cost: costKnown(content, s) } } : {}),
     ...(memory.length ? { memory } : {}),
+    ...(unease ? { unease } : {}),
     ...(ended && ch.ending ? { ending: pick(ch.ending.title, lang) } : {}),
     ...(next ? { next: { id: next.id, title: pick(next.title, lang), mystery: pick(next.mystery, lang) } } : {}),
   };
   return node;
+}
+
+/* ── Her price, showing — once, as a chapter ends (redesign-v2 § 六 item 3) ──
+   Hanli, 2026-09-25: 小异样太难看出来, 给大异样. From the chapter she realizes
+   it (companion.json `secret.realized`) to the one she tells it, each chapter
+   ended shows the price on her, big: the stage plays `show`, she hears `fact`
+   (what just happened to her, what she must not yet say) and says it in her
+   own words, aloud; Ling may write `ling`, one sentence of what she does.
+   Only once she walks with the player; marked on the save (`unease`), so it
+   is never handed over twice. */
+export function uneaseAt(content, s, chapter) {
+  const c = companionOf(content);
+  if (!c || !hasCompanion(s) || (s.unease ?? []).includes(chapter)) return null;
+  const lore = content.lore?.id === c.id ? content.lore : null;
+  const u = lore?.thread?.find(e => e.chapter === chapter)?.unease;
+  if (!u) return null;
+  s.unease = [...(s.unease ?? []), chapter];
+  const lang = s.lang, name = s.name || (lang === 'zh' ? '你一路叫惯的那个称呼' : 'the name you always call them');
+  return { chapter, show: u.show, fact: pick(u.fact, lang).replaceAll('{name}', name), ling: pick(u.ling, lang) };
 }
 
 /* What she knows of a gift's price — a reflection of hers, taken with the

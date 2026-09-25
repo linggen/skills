@@ -46,6 +46,9 @@ export const MOMENTS = {
   memory: { who: 'both', priority: 'big' },
   // A line the story wrote for her, said by her (a node's moment carries it when there is one).
   her_beat: { who: 'yinyue', priority: 'big' },
+  // Her price showing as a chapter ends (unease.js): the stage shows it on
+  // her, and she is woken at once to say it in her own words — hers alone.
+  unease: { who: 'yinyue', priority: 'big', now: true },
   greet: { who: 'yinyue', priority: 'asked' },
   reading: { who: 'yinyue', priority: 'asked' },
   fate: { who: 'yinyue', priority: 'asked' },
@@ -204,6 +207,13 @@ export function giftFacts(g, zh) {
   const cost = GIFT_COST[g.cost] ?? GIFT_COST.unknown;
   return zh ? `这口鼎给了你一样新本事：${g.name}（${g.does}）。${cost.zh}` : `This cauldron gave you something new: ${g.name} (${g.does}). ${cost.en}`;
 }
+/* Her unease (story.mjs uneaseAt): what just happened to her, what she feels
+   and must not yet say — facts, never a line; she says it aloud, her way,
+   before anything else of the chapter. */
+export function uneaseFacts(u, zh) {
+  return zh ? `${u.fact}这件事就发生在玩家眼前，玩家看见了。先说这个：用你自己的话、一两句，说出你此刻的反应——别背这段描述。`
+    : `${u.fact} It happened before the player's eyes; they saw it. Say this first: your own reaction right now, in your own words, a line or two — do not recite this description.`;
+}
 export function nodeMoment(n) {
   if (!n) return null;
   const facts = (zh) => {
@@ -219,9 +229,11 @@ export function nodeMoment(n) {
     if (n.memory?.length) bits.push(zh ? `你记起了：${n.memory.map((m) => quote(zh, m)).join('')}。` : `A memory came back to you: ${n.memory.map((m) => quote(zh, m)).join(' ')}.`);
     if (n.ending) bits.push(zh ? `九鼎聚齐，故事到了终局：${n.ending}。` : `The nine are gathered; the story has reached its end: ${n.ending}.`);
     if (n.next) bits.push(zh ? `前面是${n.next.title}，新的谜：${quote(zh, n.next.mystery)}。` : `Ahead lies ${n.next.title}, and a new riddle: ${quote(zh, n.next.mystery)}.`);
-    return `${bits.join(zh ? '' : ' ')}${zh ? '' : ' '}${ask}`;
+    const said = `${bits.join(zh ? '' : ' ')}${zh ? '' : ' '}${ask}`;
+    // The unease leads: one moment, one line from her, the price first.
+    return n.unease ? `${uneaseFacts(n.unease, zh)}${zh ? '然后，' : ' Then, '}${said}` : said;
   };
-  const id = { scene: 'scene_end', cauldron: 'cauldron', chapter: 'cauldron', memory: 'memory', beat: 'her_beat' }[n.kind];
+  const id = n.unease ? 'unease' : { scene: 'scene_end', cauldron: 'cauldron', chapter: 'cauldron', memory: 'memory', beat: 'her_beat' }[n.kind];
   if (!id) return null;
-  return { id, zh: facts(true), en: facts(false), mood: n.kind === 'scene' || n.kind === 'beat' ? 'neutral' : n.memory?.length ? 'relaxed' : 'happy' };
+  return { id, zh: facts(true), en: facts(false), mood: n.unease ? 'sad' : n.kind === 'scene' || n.kind === 'beat' ? 'neutral' : n.memory?.length ? 'relaxed' : 'happy' };
 }

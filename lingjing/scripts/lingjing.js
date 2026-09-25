@@ -18,6 +18,7 @@ import { WORDS, say as fill, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, e
 import { pouchHtml } from './pouch.js';
 import { esc } from './esc.js';
 import { createVoice, nodeMoment } from './voice.js';
+import { raiseUnease } from './unease.js';
 import { LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
 
 const SKILL = 'lingjing';
@@ -2029,6 +2030,8 @@ function watchNode() {
 const nodeFresh = (kinds) => Boolean(look?.story_node && kinds.includes(look.story_node.kind) && Date.now() - Date.parse(look.story_node.at) < 60000);
 function storyMoment(n) {
   const m = nodeMoment(n);
+  // Her price showing (unease.js): the stage shows it on her, then she says it.
+  if (m && n.unease && look?.companion) return void raiseUnease(n.unease, () => tellYinyue(m.id, m.zh, m.en, { mood: m.mood }), { still: stillMotion() });
   if (m) tellYinyue(m.id, m.zh, m.en, { mood: m.mood });
 }
 

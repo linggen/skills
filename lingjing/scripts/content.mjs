@@ -434,6 +434,9 @@ export function lint(content) {
   return problems;
 }
 
+/* The animations the stage plays for her unease (scripts/unease.js SHOWS). */
+export const UNEASE_SHOWS = ['dissolve', 'mist', 'moondark', 'fade', 'telling'];
+
 /* Her past (companion.json): one entry per chapter id, each memory with its
    words or a spine scene of that chapter that gives her the line — a chapter
    not written yet is fine (the rules give nothing for it until it ends). */
@@ -457,6 +460,15 @@ function lintLore(content, bad) {
     else if (content.chapters[e.chapter] && !content.chapters[e.chapter].scenes[e.memory.scene]?.lines?.some(l => l.who === lore.id)) bad(at, `scene ${e.memory.scene} gives her no line`);
   }
   const sec = lore.secret;
+  // The price showing (redesign-v2 § 六 item 3): every chapter from the one
+  // she realizes it to the one she tells it has its unease — facts for her,
+  // an animation the stage knows, one sentence of what she does for Ling.
+  for (const e of lore.thread ?? []) {
+    const u = e.unease, at = `lore ${e.chapter} unease`;
+    if (!u) { if (sec && e.chapter >= sec.realized && e.chapter <= sec.told) bad(at, 'missing — every chapter from realized to told shows the price'); continue; }
+    if (!pair(u.fact) || !pair(u.ling)) bad(at, 'fact and ling need zh and en');
+    if (!UNEASE_SHOWS.includes(u.show)) bad(at, `show ${u.show} is not one the stage plays (${UNEASE_SHOWS.join(', ')})`);
+  }
   if (sec) {
     if (!pair(sec.text) || !pair(sec.resolved)) bad('lore secret', 'text and resolved need zh and en');
     for (const k of ['realized', 'told', 'whole']) if (!seen.has(sec[k])) bad('lore secret', `${k} is not a chapter of the thread`);
