@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Every check CI runs, runnable before a push: ./scripts/check.sh
-# Repo-wide tests, each skill's node tests and run-*.mjs runners, dj's Python tests.
+# Repo-wide tests, each skill's node tests, run-*.mjs and run-*.pl runners, dj's Python tests.
+# Only *.test.mjs, run-*.{mjs,pl} and test_*.py run — helpers like health/tests/preview-server.mjs never do.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
@@ -22,6 +23,10 @@ for dir in */tests; do
   for runner in "$dir"/run-*.mjs; do
     [ -e "$runner" ] || continue
     step node "$runner"
+  done
+  for runner in "$dir"/run-*.pl; do
+    [ -e "$runner" ] || continue
+    step perl "$runner"
   done
   if compgen -G "$dir/test_*.py" >/dev/null; then
     step python3 -m unittest discover -s "$dir"
