@@ -13,6 +13,7 @@ import { hashId } from './hash.js';
 import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, activeRows, seedFromLegacy, saveRegisterFile, updateJsonFile } from './lww.js';
 import { initInvestments, renderInvestView, leaveInvestView, reportSaved, holdingsIn, proposeHoldings, chipsNow as investChipsNow } from './investments.js';
 import { reportChips, spendChips, txnChips, commitChips } from './chips.js';
+import { importStatus, importNote, pageDidLine, paymentState, PAY_STATES } from './page-did.js';
 
 // In-page confirm — window.confirm is a silent no-op inside the app shell
 // (its WKWebView implements no confirm panel: returns false, no dialog),
@@ -128,7 +129,7 @@ let REVIEW_TIMER = null;    // safety net: if the agent answers without pushing 
 let REVIEW_NOCARDS = false; // last review came back without cards (it's in the chat)
 let SUGGESTIONS = []; // agent-teacher proposals awaiting a tap (transfers/income — they move totals)
 let LAST_AUTO_APPLIED = 0; // category proposals auto-applied in the last batch (don't move totals)
-let LAST_VIEW = null; // most recent computed view — read by announceImport
+let LAST_VIEW = null; // most recent computed view — read by openReminders
 let FULL_VIEW = null; // full-history view — commitments ignore the range slicer
 let COMMITMENTS = {}; // user-entered terms per merchant key (register `com:` cells)
 let ANOM_DISMISSED = new Set(); // dismissed anomaly ids (data/anomalies-dismissed.json)
@@ -266,6 +267,12 @@ async function writeB64(path, text, append) {
     ? `printf '%s' "${b64}" | base64 --decode >> "${path}"`
     : `printf '%s' "${b64}" | base64 --decode > "${path}.tmp" && mv -f "${path}.tmp" "${path}"`;
   await runBash(`mkdir -p "$(dirname "${path}")" && ${write}`);
+}
+/// A fact for Ling: what the page just did, read once with her next
+/// LatestAnalysis (latest.sh hands the notes over and clears them). No model
+/// turn — she says it in her words when she next speaks, if it matters.
+function tellLing(verb, what) {
+  return writeB64(`${DATA}/page-did.jsonl`, pageDidLine(verb, what, new Date().toISOString()), true).catch(() => {});
 }
 async function readJson(path, fallback) {
   const t = await readText(path);
@@ -935,7 +942,8 @@ async function undoImport(importId) {
   refreshView();
   if (VIEW_MODE === 'txn') renderTxnView();
   const kept = entry.added_ids.length - ids.length;
-  try { chat?.addMessage?.('assistant', `Reverted the import of ${entry.file} — removed ${ids.length} transaction${ids.length === 1 ? '' : 's'}.${kept > 0 ? ` ${kept} stay — another import holds them.` : ' Your report is back to where it was.'}`); } catch { /* ignore */ }
+  setStatus(`Reverted ${entry.file} — ${ids.length} removed${kept > 0 ? `, ${kept} kept by another import` : ''}.`);
+  tellLing('undo', `reverted the import of ${entry.file}: ${ids.length} transactions removed${kept > 0 ? `, ${kept} kept because another import holds them` : ''}`);
   return true;
 }
 
@@ -1577,16 +1585,8 @@ function renderPayments(v) {
   if (!sched.length) { wrap.innerHTML = ''; return; }
   const today = localToday();
   const rows = sched.map((p) => {
-    let badge, cls;
-    if (p.missed_in_data) {
-      badge = `⚠ no payment seen around ${p.next_expected}`; cls = 'warn';
-    } else if (p.next_expected && today >= p.next_expected && (!p.data_through || p.data_through < p.next_expected)) {
-      badge = `◌ expected ~${p.next_expected} — import your latest statement to check`; cls = 'unknown';
-    } else if (p.next_expected && today < p.next_expected) {
-      badge = `⏳ next ~${p.next_expected}`; cls = 'ok';
-    } else {
-      badge = '✓ on track'; cls = 'ok';
-    }
+    const st = PAY_STATES[paymentState(p, today)];
+    const badge = st.badge(p), cls = st.cls;
     return `<div class="pay-row ${cls}">
       <span class="pay-name">${esc(p.label)}</span>
       <span class="pay-last">✓ paid ${p.last_paid.date} (${moneyExact(p.last_paid.amount)})</span>
@@ -1629,38 +1629,40 @@ function exactMonthsLeft(balance, ratePct, payment) {
   return -Math.log(1 - (i * balance) / payment) / Math.log(1 + i);
 }
 
-function commitDerived(it) {
+// The derived lines under a commitment, one small builder per concern —
+// each returns its lines (or none) for the item.
+function payoffLines(it) {
+  if (it.payment_below_interest) return [`<span class="cm-bad">⚠ ${moneyExact(it.monthly)}/mo doesn't cover the interest on ${money(it.balance)} at ${it.rate_pct}% — the balance grows.</span>`];
+  if (it.months_left != null) return [`Paid off ~<b>${addMonthsIso(it.last_date, it.months_left)}</b> (${it.months_left} payments, ${(it.months_left / 12).toFixed(1)} yr) · remaining interest <b>${money(it.interest_remaining)}</b>`];
+  if (it.kind.startsWith('loan')) return ['<span class="hint">Add the balance (and rate) to see payoff date, remaining interest, and prepayment savings.</span>'];
+  return [];
+}
+function renewalLines(it) {
+  if (!it.renewal_date) {
+    return it.kind.startsWith('insurance') ? ['<span class="hint">Add the renewal date to get a shop-around reminder before it auto-renews.</span>'] : [];
+  }
+  const days = Math.round((new Date(it.renewal_date) - new Date()) / 86400000);
+  if (days < 0) return [`Renewal date <b>${esc(it.renewal_date)}</b> has passed — update it`];
+  return [`Renews <b>${esc(it.renewal_date)}</b> — in ${days} day${days === 1 ? '' : 's'}${days <= 90 ? ' · <span class="cm-warn">time to shop around — ask the assistant for a draft</span>' : ''}`];
+}
+function homeRateLines(it) {
+  if (it.kind !== 'loan:home' || it.rate_pct == null || !(it.balance > 0)) return [];
   const lines = [];
-  if (it.payment_below_interest) {
-    lines.push(`<span class="cm-bad">⚠ ${moneyExact(it.monthly)}/mo doesn't cover the interest on ${money(it.balance)} at ${it.rate_pct}% — the balance grows.</span>`);
-  } else if (it.months_left != null) {
-    lines.push(`Paid off ~<b>${addMonthsIso(it.last_date, it.months_left)}</b> (${it.months_left} payments, ${(it.months_left / 12).toFixed(1)} yr) · remaining interest <b>${money(it.interest_remaining)}</b>`);
-  } else if (it.kind.startsWith('loan')) {
-    lines.push('<span class="hint">Add the balance (and rate) to see payoff date, remaining interest, and prepayment savings.</span>');
+  const n = exactMonthsLeft(it.balance, it.rate_pct, it.monthly);
+  if (n != null) {
+    const i = (it.rate_pct + 1) / 100 / 12;
+    const p1 = (it.balance * i) / (1 - Math.pow(1 + i, -n));
+    if (p1 > it.monthly) lines.push(`If your rate renews +1%: ~<b>${moneyExact(p1)}</b>/mo (+${moneyExact(p1 - it.monthly)})`);
   }
-  if (it.renewal_date) {
-    const days = Math.round((new Date(it.renewal_date) - new Date()) / 86400000);
-    lines.push(days >= 0
-      ? `Renews <b>${esc(it.renewal_date)}</b> — in ${days} day${days === 1 ? '' : 's'}${days <= 90 ? ' · <span class="cm-warn">time to shop around — ask the assistant for a draft</span>' : ''}`
-      : `Renewal date <b>${esc(it.renewal_date)}</b> has passed — update it`);
-  } else if (it.kind.startsWith('insurance')) {
-    lines.push('<span class="hint">Add the renewal date to get a shop-around reminder before it auto-renews.</span>');
+  if (MARKET) {
+    const above = it.rate_pct > MARKET.rate;
+    lines.push(`Market: <b>${MARKET.rate}%</b> ${esc(MARKET.label)} (${esc(MARKET.source)}, ${esc(MARKET.date)}) — your ${it.rate_pct}% is ${above ? '<span class="cm-warn">above the posted average — strong case to rate-shop</span>' : 'below the posted average (posted runs higher than negotiated)'}`);
   }
-  if (it.kind === 'loan:home' && it.rate_pct != null && it.balance > 0) {
-    const n = exactMonthsLeft(it.balance, it.rate_pct, it.monthly);
-    if (n != null) {
-      const i = (it.rate_pct + 1) / 100 / 12;
-      const p1 = (it.balance * i) / (1 - Math.pow(1 + i, -n));
-      if (p1 > it.monthly) lines.push(`If your rate renews +1%: ~<b>${moneyExact(p1)}</b>/mo (+${moneyExact(p1 - it.monthly)})`);
-    }
-    if (MARKET) {
-      const above = it.rate_pct > MARKET.rate;
-      lines.push(`Market: <b>${MARKET.rate}%</b> ${esc(MARKET.label)} (${esc(MARKET.source)}, ${esc(MARKET.date)}) — your ${it.rate_pct}% is ${above ? '<span class="cm-warn">above the posted average — strong case to rate-shop</span>' : 'below the posted average (posted runs higher than negotiated)'}`);
-    }
-  }
-  if (it.increased) lines.push(`<span class="cm-warn">↑ Price creep: ${moneyExact(it.prior_amount)} → ${moneyExact(it.last_amount)} (+${moneyExact(it.increase_amount)}/mo)</span>`);
   return lines;
 }
+const creepLines = (it) => (it.increased ? [`<span class="cm-warn">↑ Price creep: ${moneyExact(it.prior_amount)} → ${moneyExact(it.last_amount)} (+${moneyExact(it.increase_amount)}/mo)</span>`] : []);
+const DERIVED_LINES = [payoffLines, renewalLines, homeRateLines, creepLines];
+const commitDerived = (it) => DERIVED_LINES.flatMap((f) => f(it));
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -2225,60 +2227,30 @@ async function handleImport(files) {
   announceImport(results);
 }
 
-// The assistant acknowledges every import batch — composed HERE from the real
-// numbers and spoken via addMessage (no LLM call: instant, free, can't misquote).
-// The model itself only runs when the user actually asks for something.
+// An import batch is acknowledged by the PAGE, in facts on the status line —
+// never a sentence in the chat written by code (every message a person reads
+// is hers). What happened goes to her as a note she reads with the report on
+// her next turn (`page_did`, latest.sh), so she can mention it in her words.
+// The model itself only runs when the person asks — or turned auto-review on.
 function announceImport(results) {
   const ok = results.filter((r) => r && r.added != null);
   if (!ok.length) return; // nothing landed — errors/skips are on the status line
-  const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
   const newTotal = ok.reduce((a, r) => a + r.added, 0);
   const dupTotal = ok.reduce((a, r) => a + r.dup, 0);
-  const labels = [...new Set(ok.map((r) => r.label))];
-
-  // Everything was already on file — say so plainly instead of staying mute.
-  if (newTotal === 0) {
-    const what = ok.length === 1 ? ok[0].file : plural(ok.length, 'statement');
-    try { chat?.addMessage?.('assistant', `Nothing new — ${what} is already fully on file (${plural(dupTotal, 'duplicate')} skipped, dedup did its job). Your report is unchanged.`); } catch { /* ignore */ }
-    return;
-  }
-
-  let msg = ok.length === 1
-    ? `Nice — imported ${ok[0].file}: ${plural(ok[0].added, 'new transaction')} on ${ok[0].label}${ok[0].dup ? ` (${ok[0].dup} already on file)` : ''}.`
-    : `Nice — imported ${plural(ok.length, 'statement')}: ${plural(newTotal, 'new transaction')} across ${labels.join(', ')}${dupTotal ? ` (${dupTotal} already on file)` : ''}.`;
-  const skipped = results.filter((r) => r && r.skipped);
-  if (skipped.length) msg += ` I skipped ${skipped.map((s) => s.file).join(', ')} — no account was chosen.`;
-  const errs = results.filter((r) => r && r.error);
-  if (errs.length) msg += ` ${errs.map((e) => e.file).join(', ')} couldn't be read.`;
-
-  // One deterministic heads-up, straight from the recomputed report.
-  if (LAST_VIEW) {
-    const hike = (LAST_VIEW.subscriptions || []).find((s) => s.active && !s.essential && s.increased);
-    const missed = (LAST_VIEW.payment_schedule || []).find((p) => p.missed_in_data);
-    if (hike) msg += `\n\nHeads-up: ${hike.merchant} went up ${moneyExact(hike.prior_amount)} → ${moneyExact(hike.last_amount)} (+${moneyExact(hike.increase_amount)}/mo).`;
-    else if (missed) msg += `\n\n⚠ ${missed.label}: I'd expect a payment around ${missed.next_expected}, but it isn't in your data yet.`;
-  }
+  const skipped = results.filter((r) => r && r.skipped).map((r) => r.file);
+  const failed = results.filter((r) => r && r.error).map((r) => r.file);
+  setStatus(importStatus({ files: ok.length, added: newTotal, dup: dupTotal, skipped, failed }));
+  tellLing('import', importNote(ok, skipped, failed));
+  if (newTotal === 0) return; // all already on file — nothing to review or undo
   // The undo affordance shows whichever way the review goes.
   offerUndo(ok);
-  // Proactive tier 2: new data is the one moment insights actually change.
   // A review is a model turn — it costs — so it runs unasked ONLY when the
   // person turned auto-review on (default off; the folder watch lands here
   // too, unattended). Otherwise the status line offers a Review button.
   // Uncategorized merchants go first: the agent-teacher proposes rules for the
   // residual, which the user approves in the Review card.
   const residual = computeResidual();
-  if (autoReviewOn()) {
-    msg += residual.length
-      ? `\n\nCharts are updated. I spotted ${plural(residual.length, 'merchant')} I couldn't categorize — sorting them now for your review…`
-      : `\n\nCharts are updated — running your full review now…`;
-    try { chat?.addMessage?.('assistant', msg); } catch { /* chat not mounted */ }
-    setTimeout(() => runImportReview(residual.length), 600);
-    return;
-  }
-  msg += residual.length
-    ? `\n\nCharts are updated. ${plural(residual.length, 'merchant')} still need a category — press Review to sort them.`
-    : `\n\nCharts are updated — press Review for a financial review, or just ask.`;
-  try { chat?.addMessage?.('assistant', msg); } catch { /* chat not mounted */ }
+  if (autoReviewOn()) { setTimeout(() => runImportReview(residual.length), 600); return; }
   offerReview(residual.length);
 }
 
@@ -2337,22 +2309,21 @@ function openReminders() {
   for (const p of LAST_VIEW.payment_schedule || []) {
     if (!p.next_expected) continue;
     if (p.missed_in_data) {
-      if (once(`cfo:rem3:miss:${p.account}:${p.next_expected}`)) lines.push(`⚠ ${p.label} — I'd expect a payment around ${p.next_expected}, but none shows in your data. Worth checking you didn't miss it.`);
+      if (once(`cfo:rem3:miss:${p.account}:${p.next_expected}`)) lines.push(`⚠ ${p.label}: no payment seen around ${p.next_expected}`);
     } else {
       const d = daysUntil(p.next_expected);
       if (d >= 0 && d <= 3 && once(`cfo:rem3:due:${p.account}:${p.next_expected}`)) {
-        lines.push(`⏳ ${p.label} — you usually pay around ${p.next_expected} (${d === 0 ? 'today' : `in ${d} day${d === 1 ? '' : 's'}`}). Pattern-based, not an official due date.`);
+        lines.push(`${p.label}: usually paid ~${p.next_expected} (${d === 0 ? 'today' : `in ${d} day${d === 1 ? '' : 's'}`})`);
       }
     }
   }
   const newest = LEDGER.reduce((m, r) => (r.date && r.date > m ? r.date : m), '');
   if (newest && daysUntil(newest) <= -35 && once(`cfo:rem3:stale:${newest}`)) {
-    lines.push(`📥 Your newest data is from ${newest} — drag in fresh statements and I'll re-check everything.`);
+    lines.push(`Newest data ${newest} — drop a fresh statement`);
   }
-  if (lines.length) {
-    const text = `Quick check while you were away:\n\n${lines.join('\n\n')}`;
-    setTimeout(() => { try { chat?.addMessage?.('assistant', text); } catch { /* ignore */ } }, 1200);
-  }
+  // Facts on the status line, not a chat message: the page shows what it
+  // holds; she tells.
+  if (lines.length) setStatus(lines.join(' · '));
 }
 
 // Resume a recent chat: if the latest cfo session had activity within 24h,
@@ -2396,9 +2367,9 @@ async function mountChat(sessionId) {
 }
 
 // Fresh sessions get a HIDDEN trigger message (pulse/apple-shifu pattern) — the
-// agent's actual opening is scripted in SKILL.md § 0. Greeting. One LLM turn
+// agent's actual opening is scripted in SKILL.md § 0 (introduce) and § 0b. One LLM turn
 // per new session; resumed sessions stay silent.
-const GREETING_TRIGGER = 'The user just opened the CFO app (this message is hidden from them). Greet them now, following the "0. Greeting" section of your instructions.';
+const GREETING_TRIGGER = 'The user just opened the CFO app (this message is hidden from them). Introduce yourself now, following sections "0. Introduce yourself" and "0b. Come to them" of your instructions.';
 let chatActivity = false; // any stream/content event from the embed iframe
 let reportReload = null;
 
@@ -2494,9 +2465,7 @@ async function pollWatchFolder() {
     }
     if (changed) await saveWatchSeen().catch(() => {});
     if (results.length) announceImport(results);      // ack + auto-review/classify, same as a drag
-    else if (unknown) {
-      try { chat?.addMessage?.('assistant', `Found ${unknown} statement${unknown === 1 ? '' : 's'} from a new account in your watch folder. Drag one in once; then it auto-imports.`); } catch { /* ignore */ }
-    }
+    else if (unknown) setStatus(`${unknown} statement${unknown === 1 ? '' : 's'} in the watch folder from a new account — drag one in once.`);
   } catch (e) { console.warn('[cfo] watch poll', e); }
   finally { WATCH_BUSY = false; }
 }

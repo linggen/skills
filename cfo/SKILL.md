@@ -261,8 +261,11 @@ outside the window, attribute changes from `by_month` / `by_category` /
 computed; **use them, don't recompute or guess.** If it returns `{}`,
 nothing has been imported — ask the user to import a statement.
 
-Import itself is silent — don't react to it. Only fetch and respond when
-the user actually asks a question.
+Import itself is silent — the page shows its own counts on the status line.
+`page_did` (present only when there is something new) is what the person did on
+the page since you last read: imports and undos, `{at, verb, what}`. It is
+handed to you once. When it matters to what they ask — they imported a
+statement and ask what changed — say it in your words; never recite it.
 
 ### Privacy rail (never violate)
 
