@@ -187,6 +187,7 @@ const TAPS = {
   undo: () => 'Undo',
   load: o => `Load {id: ${o.load}}`,
   forget: o => `Forget {id: ${o.forget}}`,
+  go: o => `Go {scene: ${o.go}}`,
 };
 // 去X / Go to X typed — a place asked for in words (a chip on the map is the page's own Move now).
 const GO = /^(去|go to\s+)/i;

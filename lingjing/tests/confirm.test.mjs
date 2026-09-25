@@ -107,6 +107,41 @@ test('Load and Forget ask on their first call, and go on the second', () => {
   assert.equal(g.cli(5, 'load', '--id=nope', '--for=ling').refused, 'unknown-save');
 });
 
+test('Go asks on its first call, 去 then goes; the asking is used up', () => {
+  const g = game(); played(g);
+  const first = g.cli(1, 'go', '--scene=01-altar', '--for=ling');
+  assert.equal(first.refused, 'not-confirmed');
+  assert.equal(first.ask.question, '直接去河伯祠？路上的事就此略过。');
+  assert.deepEqual(first.ask.options.map(o => o.label), ['去', '再想想']);
+  assert.equal(first.ask.options[0].go, '01-altar');
+  assert.match(first.then, /Call Go only if "去"/);
+  assert.equal(g.state().confirm.id, '01-altar');
+  assert.notEqual(g.state().scene, '01-altar');
+  assert.match(g.cli(2, 'look', '--said=去', '--for=ling').then, /call Go \{scene: 01-altar\} now/);
+  // A confirmation for one scene is not one for another.
+  assert.equal(g.cli(2, 'go', '--scene=02-arrive', '--for=ling').refused, 'not-confirmed');
+  assert.equal(g.cli(3, 'go', '--scene=02-arrive', '--for=ling').scene.id, '02-arrive');
+  assert.equal(g.state().scene, '02-arrive');
+  assert.equal(g.state().confirm, undefined);
+  assert.equal(g.cli(4, 'go', '--scene=01-altar', '--for=ling').refused, 'not-confirmed', 'once only');
+  // An unknown scene is the verb's own refusal, not a question.
+  assert.equal(g.cli(5, 'go', '--scene=nope', '--for=ling').refused, 'unknown-scene');
+});
+
+test('Go: 再想想 lets it be; the asking expires after ten minutes; English asks too', () => {
+  const g = game(); played(g);
+  g.cli(1, 'go', '--scene=01-altar', '--for=ling');
+  g.cli(2, 'look', '--said=再想想', '--for=ling');
+  assert.equal(g.state().confirm, undefined);
+  assert.equal(g.cli(3, 'go', '--scene=01-altar', '--for=ling').refused, 'not-confirmed');
+  assert.equal(g.cli(14, 'go', '--scene=01-altar', '--for=ling').refused, 'not-confirmed', 'expired');
+  assert.notEqual(g.state().scene, '01-altar');
+  g.write({ ...g.state(), lang: 'en', lang_set: true });
+  const en = g.cli(15, 'go', '--scene=02-arrive', '--for=ling');
+  assert.equal(en.ask.question, 'Go straight to The Pu? What lies on the road is passed by.');
+  assert.deepEqual(en.ask.options.map(o => o.label), ['Go', 'Not yet']);
+});
+
 test('the page\'s own calls (no reader) are never gated', () => {
   const g = game(); played(g);
   assert.equal(g.cli(1, 'init').restarted, true);
@@ -114,6 +149,7 @@ test('the page\'s own calls (no reader) are never gated', () => {
   const named = g.cli(2, 'save', '--title=x').saved;
   assert.equal(g.cli(2, 'load', `--id=${named.id}`).loaded.id, named.id);
   assert.equal(g.cli(2, 'forget', `--id=${named.id}`).forgot, named.id);
+  assert.equal(g.cli(3, 'go', '--scene=01-altar').scene.id, '01-altar');
 });
 
 test('a first game begins without asking: there is nothing to lose', () => {

@@ -13,7 +13,9 @@ Carried out in the world's words — never a tool, a file or an id:
   Look {said: 再想想}, nothing changes. Unasked, Restart is refused
   `not-confirmed`; the question holds ten minutes.
 - **To a scene** ("back to the river"): **Go** with the scene id from Look's
-  chapter; play it as just entered. Not yet open: say when. Going back into an
+  chapter; its first call is refused `not-confirmed` with the `ask`
+  (*直接去河伯祠？路上的事就此略过。* — 去 · 再想想) — AskUser it, call again only
+  on 去; then play it as just entered. Not yet open: say when. Going back into an
   ended chapter pays nothing again.
 - **The map** (看地图): `Show {card: map}`; nothing moves.
 - **Another world**: **Worlds**, then **Travel**; their own through **Build**.
@@ -25,7 +27,7 @@ Carried out in the world's words — never a tool, a file or an id:
 - **Take it back** (悔棋): Look {said: their words} carries the one question
   (*悔棋：收回上一步？*); on 收回, **Undo**, then Look.
 
-Never restart, load, undo or forget unasked — the rules hold it too. A refusal (`not-open`,
+Never restart, go, load, undo or forget unasked — the rules hold it too. A refusal (`not-open`,
 `unknown-save`, `not-named`) is told in the world.
 
 ## The tools
