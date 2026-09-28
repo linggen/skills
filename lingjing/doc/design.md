@@ -5,7 +5,7 @@ guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is the live page (scripts/index.html); prototype.html is the
   archived first mock. This file is the build.
-status: 2026-09-24 — redesign v2 steps 2–4 (redesign-v2.md § 四, § 十): 路上 (遇 · 拾遗 · 抉择 · 机缘 · 拦路 as one on-arrival system, rules/road.mjs), 差事 (errands and 榜文 one kind; no daily boards), 问卦 (起卦 · 望气 · 命格 one card) merged; 伤势 · 羁绊/谈心/疗伤 · 历练 · 温养/强化/写符 · the elite's own rules cut, 组牌 from 结丹 — save v5 migrates; the day resets 今日传闻, the 人间功课 pick and 问卦. Also 2026-09-24: rules split into scripts/rules/*.mjs; one writer at a time (state.json.lock, `busy`); a fight holds the world still (`in-a-fight`); nothing pays twice (`won-already`, `subdued-today`, made grants progress/wealth only and once, Go replay pays nothing); gear counts in the card fight (装备入局); hosted games and 论道 cost 3 体力; the page's verbs go through the declared page_only `Verb` tool; the cloud save is [data/state.json, data/worlds]. Before: 2026-09-23 伤势 · 羁绊 · 历练 · 机缘 · 抉择 · 精英 · 杀招 · 望气 · 组牌 · the mini-games and 论道; 2026-09-18 斗法 v3 (the card fight) and 差事; 2026-09-14–17 the world, places, catalog, made worlds, 银月 at 结丹. Superseded designs live in archive.md.
+status: 2026-09-28 — the story reborn (§ 故事 v3): a poor 蒙山 hunter's child, 银月 a fallen fox demon-queen found in the prologue, 废柴逆袭 told as a novel you play — 小人书 stage, story in the chat; § 剧情 × 开放世界: tasks drive the story, key beats lock the map (Genshin's shape); 渡劫 a red check; 名字 not 道号; gender on the name card; 生辰 → 灵根; people.json. Before: 2026-09-24 — redesign v2 steps 2–4 (redesign-v2.md § 四, § 十): 路上 (遇 · 拾遗 · 抉择 · 机缘 · 拦路 as one on-arrival system, rules/road.mjs), 差事 (errands and 榜文 one kind; no daily boards), 问卦 (起卦 · 望气 · 命格 one card) merged; 伤势 · 羁绊/谈心/疗伤 · 历练 · 温养/强化/写符 · the elite's own rules cut, 组牌 from 结丹 — save v5 migrates; the day resets 今日传闻, the 人间功课 pick and 问卦. Also 2026-09-24: rules split into scripts/rules/*.mjs; one writer at a time (state.json.lock, `busy`); a fight holds the world still (`in-a-fight`); nothing pays twice (`won-already`, `subdued-today`, made grants progress/wealth only and once, Go replay pays nothing); gear counts in the card fight (装备入局); hosted games and 论道 cost 3 体力; the page's verbs go through the declared page_only `Verb` tool; the cloud save is [data/state.json, data/worlds]. Before: 2026-09-23 伤势 · 羁绊 · 历练 · 机缘 · 抉择 · 精英 · 杀招 · 望气 · 组牌 · the mini-games and 论道; 2026-09-18 斗法 v3 (the card fight) and 差事; 2026-09-14–17 the world, places, catalog, made worlds, 银月 at 结丹. Superseded designs live in archive.md.
 ---
 
 # Lingjing — design
@@ -19,6 +19,43 @@ status: 2026-09-24 — redesign v2 steps 2–4 (redesign-v2.md § 四, § 十): 
 - **斗法照《炉石传说》(Hearthstone)。** 一场战斗是一局卡牌对战：灵力每回合
   长一格、手里有牌、场上有灵兽、法术与符是一次性的。机制取炉石，名字与世界
   取我们自己的heritage。见 `## 斗法 v3`；2026-09-17 那套回合制五行对拼作废。
+
+- **读一本会随你改变的小说 (his, 2026-09-28).** 灵境是「身临其境读小说」的 AI 游戏：
+  剧情在聊天里，由灵讲；舞台是小人书（连环画）—— 画、短字幕、斗法、小游戏。
+  故事照「废柴逆袭」的套路写（凡人、逍遥小散仙的味道，名字与情节全是我们自己的）。
+- **剧情与世界照《原神》的形 (his, 2026-09-28).** 任务在开放世界里驱动剧情；
+  关键剧情锁地图，走完再开；一章一州，剧情开新州；人物有自己的传说任务。
+  见 `## 故事 v3 — 废柴逆袭，银月随行 (his rulings, 2026-09-28; prologue building)
+
+He found the old spine (a myth-mystery a chapter) "not a 修仙 novel" and too heavy. The new one is
+the 废柴逆袭 shape, light and 爽, our own names and plots throughout. Drafts (approved as they grew):
+`doc/drafts/story-outline-v3.md`, `prologue-v3.md`, `prologue-v3-part2.md`. Kept: the nine 鼎,
+one province and one realm a chapter, the 山海经 creatures, the set pieces.
+
+- **The hero** — a poor hunter's child of 石坳村 under 蒙山, 12 in the prologue. Quick-bodied,
+  clever, **猥琐发育**: never reckless, survival first, counts before acting — and once strong,
+  repays every debt, kindness and wrong. Name and gender from the player (the 名字 card).
+- **The family** — the father old (a boar-gored knee), kind, honest to a fault; the mother clever
+  (a poor teacher's daughter; "你随我"). Both on stage.
+- **The tyrant** — 马家 who own the mountain; 马三 collects the rent, 马小宝 bullies — and buys his
+  way into the same sect, so one enemy follows the hero from village to sect.
+- **银月** — 青丘's fox demon-queen, struck down in a war in heaven: one tail of nine, fallen to
+  金丹, most memories gone, an old 储物袋 of ancient 功法, pills and broken weapons. The hero finds
+  her wounded in a forbidden valley, shares the last bread; she mentors him. A small fox on the
+  shoulder, a silver-haired girl when she steps in. Each 鼎 regrows a tail and a memory; 东溟
+  cut her tails.
+- **The arc** — prologue: the rent, the forbidden 断碑, the storm, the fall, 银月; three secret years;
+  the sect's trials with her whispering. Ch1: the 沉鼎秘境 (she leads him to 息壤, the poor roots
+  grow whole) and the 外门大比. Then 散修 across the nine provinces — rivals, villains, set pieces
+  (鲲鹏, 烛龙…), each chapter a different kind of story.
+- **The 恩仇簿** — every kindness and wrong is written; people come back at key beats.
+- **Voice** — flowing, vivid, a little funny; every set piece in the eight steps learned from the
+  鲲鹏 passage: the world turns first, a shadow before the body, the hero is struck, a ladder of
+  giants, it leaves trailing the sea, someone who knows names it, the classic's line lands, a light
+  word after.
+- **Every chapter has a task list** (主线 · 支线 · 隐藏 · 抉择 · 小游戏 · 斗法), as the prologue's 28.
+
+## 剧情 × 开放世界`。
 
 *In English, for the agent reading this: follow the patterns open-world RPGs
 already have (skill tree, points, gear and arts that grow with the player —
@@ -707,6 +744,20 @@ and what the player does in the world comes back into the story.
 A chapter declares its key beats; entering one sets `state.lock = {beat, since}`, finishing it clears
 it. A beat is short (a few scenes) — the lock is never where the player lives.
 
+**Which games this is.** Both Zelda and Genshin are open worlds; ours is Genshin's shape, not Zelda's.
+
+| | Zelda (BotW / TotK) | Genshin | 灵境 |
+|---|---|---|---|
+| Main story | Very free — the last boss is reachable at once | Quest-driven chapters (魔神任务) | Quest-driven |
+| Key moments | Few locks; the story is memories scattered on the map | Main quests lock into cutscenes / instances, then free | Key beats lock the map, then it opens |
+| Regions | Nearly all open from the start | One nation a chapter, opened by the story | One province a chapter |
+| People | Few | Each character a story quest | 人物线 |
+| Daily | — | Commissions, resin | 功课 / 榜文, 体力 |
+
+From Zelda we take one thing: 银月's memories scattered in the world, found by exploring. Ours alone:
+the story told live in the chat, the 小人书 stage, the 恩仇簿 that brings people back, and the 九鼎录 —
+the player's own novel.
+
 **A chapter = one goal + threads (任务驱动).**
 
 - **One goal** the chapter is about (e.g. ch1: win the 外门大比 in seven days → the 筑基丹).
@@ -1222,7 +1273,13 @@ His direction, in order: *开放世界RPG都是一个套路…参考魔兽世界
 
 Superseded; the original is in archive.md. The card fight (`## 斗法 v3`) and `## Systems built 2026-09-21 → 24` hold what is true now.
 
-## 银月 joins at 结丹 (designed and built 2026-09-17)
+## 银月 joins at 结丹 (designed and built 2026-09-17) — SUPERSEDED 2026-09-28
+
+> **Superseded by § 故事 v3.** 银月 is now found in the prologue (a wounded
+> one-tailed silver fox in 黑松岭's valley), not at 结丹; her backstory is no
+> longer the 守鼎人's bell girl. The mechanics below (herHere, guest streams,
+> moments) still run; the story around them is being rewritten.
+
 
 **His rulings:** *Yinyue should be in the game after user 结丹, give user a
 task to get Yinyue. before that, don't show Yinyue.* Where the task lives —
