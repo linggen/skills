@@ -59,14 +59,14 @@ function passed(content, state, ch) {
   }
   return road;
 }
-const recapLines = (content, state, ch) => passed(content, state, ch).map(sc => sc.recap).filter(Boolean).map(r => fill(pick(r, state.lang), state));
+const recapLines = (content, state, ch) => passed(content, state, ch).map(sc => sc.recap).filter(Boolean).map(r => fill(pick(r, state.lang), state, content));
 
 /* Where the current chapter stands this moment: the scene's place when one is
    being played, else the road the thread names. */
 function nowOf(content, state, now) {
   if (inMade(state)) return null;
   const scene = sceneOf(content, state);
-  if (scene && atScene(content, state)) return fill(pick(scene.place, state.lang), state);
+  if (scene && atScene(content, state)) return fill(pick(scene.place, state.lang), state, content);
   const t = threadOf(content, state, now);
   return t?.text ?? t?.title ?? null;
 }
@@ -167,7 +167,7 @@ export function recapLook(content, state) {
   const lines = [];
   for (const sid of state.done_scenes ?? []) {
     const r = sceneIndex(content).get(sid)?.scene.recap;
-    if (r) lines.push(fill(pick(r, state.lang), state));
+    if (r) lines.push(fill(pick(r, state.lang), state, content));
   }
   if (!lines.length) return {};
   const cur = currentOf(content, state);
@@ -208,7 +208,7 @@ export function storyNode(content, before, s, scene, exit, now) {
   const node = {
     kind, at: now.toISOString(),
     chapter: { id: ch.id, title: pick(ch.title, lang) },
-    ...(scene.recap ? { recap: fill(pick(scene.recap, lang), s) } : {}),
+    ...(scene.recap ? { recap: fill(pick(scene.recap, lang), s, content) } : {}),
     ...(ch.mystery ? { mystery: pick(ch.mystery, lang) } : {}),
     ...(kind === 'cauldron' ? { found } : {}),
     ...(gift ? { gift: { name: pick(gift.name, lang), does: pick(gift.does, lang), cost: costKnown(content, s) } } : {}),
@@ -289,7 +289,7 @@ export function refusalBeat(content, s, { id, happened, fitting, line }) {
 /* A scene walked into (Move, Go) with a line of hers in it: her beat, kept
    on the save for the page. Null when she has none there. */
 export function enteredBeat(content, s, scene, now) {
-  const her = scene && herBeat(content, s, { id: scene.id, lines: scene.lines, happened: [fill(pick(scene.setup, s.lang), s)], scenes: [scene] });
+  const her = scene && herBeat(content, s, { id: scene.id, lines: scene.lines, happened: [fill(pick(scene.setup, s.lang), s, content)], scenes: [scene] });
   if (her) s.node = withHerBeat(null, her, now);
   return her;
 }

@@ -59,7 +59,8 @@ export function askOf(content, state, ctx, result = {}, ungated = false) {
     // A value exit (the 道号) is named on its own card — offered names and the
     // player's own — never a chat option: tapped there, Ling filled in a name
     // herself (2026-09-28, every player 青玄). stage.mjs `value`.
-    const named = new Set(scene.exits.filter(e => e.value).map(e => e.id));
+    // The 生辰 likewise, and more so: it is private (roots.mjs).
+    const named = new Set(scene.exits.filter(e => e.value || (e.born && !e.born.kept)).map(e => e.id));
     let options = scene.buttons.filter(b => !gone.has(b.id) && !unready.has(b.id) && !played.has(b.id) && !named.has(b.id)).map(b => ({ label: b.label, exit: b.id }));
     const back = unready.size ? wayBack(content, state, ctx.now) : null;
     // Named by the place it walks to — the story never spoke of leaving for
@@ -170,6 +171,8 @@ const THEN_VEIL = 'Something waits on this road (`place.meet`, still veiled): th
 const THEN_TRIAL = 'A 抉择 waits on this road (`place.meet` kind trial, veiled): you write it now — guide `trial`: set the moment in two or three lines, then Meet {action: offer} with the ways (it reveals), and stop.';
 /* The naming card is up (stage.mjs `value`): the player names themselves there. */
 export const THEN_VALUE = ' The stage\'s card asks the player for their name (offered names to tap, or their own). A scene just entered is told first (Show its `scene.show` cards, its `scene.setup` in one to three sentences, its `scene.lines`); then end on one line inviting the name — never AskUser for it, never name one for them, never Resolve it; the page tells you `[scene] named` when it is done.';
+/* The 生辰 card is up (stage.mjs `born`): the player gives it there, privately. */
+export const THEN_BORN = ' The stage\'s card asks the player\'s birthday for the root test (or lets the stone read them). A scene just entered is told first (Show its `scene.show` cards, its `scene.setup` in one to three sentences, its `scene.lines`); then end on one line inviting them to the card — never AskUser for it, never ask the date in the chat, never Resolve it; the page tells you `[scene] born` when the roots are read.';
 /* 渡劫's card is up (stage.mjs `breakthrough`): the player throws there, seeing the odds. */
 export const THEN_THROW = ' The stage\'s card shows the breakthrough\'s chance and what feeds it; the player throws there. Tell the cauldron; end on one line — never AskUser for it, never promise how it will go, never Resolve it; the page tells you `[scene] breakthrough won|failed`.';
 const THEN_QUIET = 'No question this time — the stage holds what is before him, or he has already been asked here. End on your words: name a way on in the line if it is worth naming, and do NOT call AskUser.';

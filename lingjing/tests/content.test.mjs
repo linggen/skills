@@ -63,7 +63,7 @@ test('the prologue runs from the river to its end', () => {
     const onward = scene.exits.find(e => e.next && scene.buttons.includes(e.id));
     id = onward?.next;
   }
-  assert.deepEqual(path, ['00-river', '00-waking', '00-stone', '00-practice', '00-fuzhu', '00-north']);
+  assert.deepEqual(path, ['00-river', '00-ferry', '00-boat', '00-shanlu', '00-gate', '00-luoshu', '00-longzhi', '00-hall', '00-waimen', '00-fuzhu', '00-north']);
   assert.ok(ch.scenes['00-north'].exits.some(e => e.ends === '00-prologue'));
 });
 
@@ -118,7 +118,7 @@ test('a scene nobody can reach is caught', () => {
 
 test('a need without a refusal line is caught', () => {
   const c = fresh();
-  delete prologue(c).scenes['00-practice'].exits[0].refuse;
+  delete prologue(c).scenes['00-waimen'].exits[0].refuse;
   assert.ok(has(lint(c), 'a need needs a refusal line'));
 });
 

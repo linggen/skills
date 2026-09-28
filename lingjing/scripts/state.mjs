@@ -13,7 +13,7 @@ export function newState(content, lang, now) {
   const at = now.toISOString();
   return {
     version: STATE_VERSION, world: content.world.id, lang: lang === 'en' ? 'en' : 'zh',
-    name: null, traits: null,
+    name: null, gender: null, traits: null,
     tier: content.ladder.tiers[0].id, step: 0, progress: 0, wealth: 0,
     bag: {}, cast: [], wear: {}, duels: {}, arts: [],
     chapter: first.id, scene: first.first_scene, done_scenes: [], ended: [],
@@ -29,7 +29,38 @@ export function newState(content, lang, now) {
 /* ── Words ── */
 
 export const pick = (pair, lang) => (pair ? pair[lang] ?? pair.zh ?? pair.en : null);
-export const fill = (text, state) => (text == null ? text : text.replaceAll('{name}', state.name ?? ''));
+
+/* The player's gender as the name card set it — `female`, `male`, or `none`
+   for a save that never said (the address words then fall back). */
+export const genderOf = state => (state?.gender === 'female' || state?.gender === 'male' ? state.gender : 'none');
+
+/* A slot's person for this player — `ban`, the close companion, by gender
+   (people.json `slots`); a person id stands for itself. */
+export function personOf(content, state, who) {
+  const slot = content?.people?.slots?.[who];
+  const id = slot ? slot[genderOf(state)] ?? slot.none : who;
+  return content?.people?.people?.find(p => p.id === id) ?? null;
+}
+
+/* Scene text as the player reads it: {name}; and, given the world, {兄姐} (how
+   the temple addresses them, by gender), {伴} (the companion's name) and
+   {灵根} (the roots, by how many). A word that comes out empty takes one space
+   beside it along, so an English line never shows a double space. */
+export function fill(text, state, content = null) {
+  if (text == null) return text;
+  let out = text.replaceAll('{name}', state?.name ?? '');
+  if (!content) return out;
+  const bare = text.replace(/\{[^}]*\}/g, ''), lang = /\p{Script=Han}/u.test(bare) ? 'zh' : /[A-Za-z]{2,}/.test(bare) ? 'en' : state?.lang ?? 'zh';
+  const words = {
+    '{伴}': pick(personOf(content, state, 'ban')?.name, lang) ?? '',
+    '{兄姐}': pick(content.people?.address?.['兄姐']?.[genderOf(state)], lang) ?? '',
+    '{灵根}': state?.traits?.length ? pick(content.traits.names[String(state.traits.length)], lang) ?? '' : '',
+  };
+  for (const [key, word] of Object.entries(words)) {
+    out = word ? out.replaceAll(key, word) : out.replaceAll(` ${key}`, '').replaceAll(`${key} `, '').replaceAll(key, '');
+  }
+  return out;
+}
 
 /* A value the player gives the world (the 道号): trimmed, one to `max`
    characters, no line breaks — or null. The rules' check and the page card's
@@ -243,13 +274,17 @@ export function fitWorld(saved, content) {
   const state = 'branch' in saved ? rest : saved;
   const tier = tierOf(content, state.tier);
   const chapter = content.chapters[state.chapter];
-  const scene = chapter && state.scene != null ? chapter.scenes[state.scene] : null;
+  // A scene renamed since — the prologue rewrite of 2026-09-28 — goes to the
+  // nearest scene the chapter names for it (chapter.json `aliases`).
+  const alias = chapter && state.scene != null && !chapter.scenes[state.scene] ? chapter.aliases?.[state.scene] : null;
+  const scene = chapter && state.scene != null ? chapter.scenes[alias ?? state.scene] : null;
   const place = state.place != null && Object.values(content.places).some(d => d.places.some(p => p.id === state.place));
   const beasts = new Set(content.creatures.creatures.map(c => c.id));
   const fix = {
     ...(!tier ? { tier: content.ladder.tiers[0].id, step: 0, progress: 0 } : {}),
     ...(tier && !(state.step < tier.thresholds.length) ? { step: tier.thresholds.length - 1 } : {}),
     ...(!chapter ? { chapter: firstChapter(content).id, scene: firstChapter(content).first_scene } : {}),
+    ...(alias && scene ? { scene: alias } : {}),
     ...(chapter && state.scene != null && !scene ? { scene: state.ended?.includes(chapter.id) ? null : chapter.first_scene } : {}),
     // Unknown, the place is settled by the rules from the scene or the province's start.
     ...(state.place != null && !place ? { place: null } : {}),

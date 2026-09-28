@@ -1,0 +1,69 @@
+{
+ "version": 1,
+ "id": "00-longzhi",
+ "chapter": "00-prologue",
+ "at": "shanmen",
+ "place": {
+  "zh": "沉鼎观 · 山门外",
+  "en": "Chending Temple · outside the gate"
+ },
+ "setup": {
+  "zh": "三试在山门外。木笼里关着一只蠪侄——九尾九首，叫声像婴儿啼哭。笼门开了。",
+  "en": "The third trial is outside the gate. In a wooden cage crouches a Longzhi — nine tails, nine heads, a cry like a crying baby. The cage door opens."
+ },
+ "recap": {
+  "zh": "三试，胆子：山门外的一只蠪侄，你第一次斗法。",
+  "en": "Third trial, nerve: a Longzhi outside the gate — your first fight."
+ },
+ "cast": [
+  "longzhi"
+ ],
+ "show": [
+  {
+   "card": "creature",
+   "id": "longzhi"
+  }
+ ],
+ "lines": [
+  {
+   "who": "qulao",
+   "text": {
+    "zh": "三试，胆子。降了它，或者被它降了。",
+    "en": "Third, nerve. Subdue it — or be subdued."
+   }
+  }
+ ],
+ "buttons": [
+  "subdue"
+ ],
+ "exits": [
+  {
+   "id": "subdue",
+   "label": {
+    "zh": "三试 · 降妖",
+    "en": "Third trial · Subdue it"
+   },
+   "means": "fights the Longzhi, takes the third trial",
+   "game": {
+    "id": "gate-longzhi",
+    "kind": "duel",
+    "creature": "longzhi",
+    "retry": true
+   },
+   "withdrawn": {
+    "zh": "蠪侄缩回笼角，龇着牙。瞿老：「再来。」",
+    "en": "The Longzhi shrinks back into its cage, teeth bared. Elder Qu: \"Again.\""
+   },
+   "beat": [
+    {
+     "who": "qulao",
+     "text": {
+      "zh": "腿短了点，脑子还行，胆子——胆子太大。进去吧。",
+      "en": "Legs a little short, wits will do, nerve — too much nerve. Go in."
+     }
+    }
+   ],
+   "next": "00-hall"
+  }
+ ]
+}

@@ -58,6 +58,9 @@ export { quest, show, VERBS } from './rules/verbs.mjs';
 export { PAGE_KEEP, progress } from './rules/did.mjs';
 export { amend, art, atlas, build, BUILDING_WAITS, enter, forget, leave, load, make, paintList, ring, save, saves, tame, travel, wake, worlds } from './rules/worlds.mjs';
 
+/* A birthday (the 生辰 card, the 命格 form) is read and let go: never in the log. */
+const logged = ({ birth, ...rest }) => rest;
+
 /* Answers handed over as they are — no question, no stage: Progress is for
    a pet that only wants to know how the game stands; Story is a book to read. */
 const PLAIN = new Set(['progress', 'story']);
@@ -151,7 +154,7 @@ function runLocked(verb, args, stateFile, reader) {
   if (next) {
     next.updated = now.toISOString();
     writeAtomic(stateFile, JSON.stringify(next));
-    fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args, before: unconfirmed(raw ?? state) }) + '\n');
+    fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args: logged(args), before: unconfirmed(raw ?? state) }) + '\n');
   }
   if (out.result?.travel) return travelTo(out.result.travel, next ?? state, { stateFile, logFile, now, verb });
   const asking = next ?? state;
@@ -303,6 +306,8 @@ export function forLing(value) {
     // Her unease is hers to say: Ling gets only the one sentence of what she does.
     if (k === 'unease' && v && typeof v === 'object') { out.unease = { ling: v.ling ?? null }; continue; }
     if (k === 'shelf' && Array.isArray(v)) { out.shelf = v.map(shelfForLing); continue; }
+    // A scene's people: their names, roles and voices are hers; the portraits the page's.
+    if (k === 'people' && Array.isArray(v)) { out.people = v.map(shelfForLing); continue; }
     // A value exit's offered names are the page card's to show — never hers to pick from (2026-09-28).
     if (k === 'value' && v && typeof v === 'object' && Array.isArray(v.offers)) { const { offers, ...kept } = v; out.value = kept; continue; }
     out[k] = forLing(v);

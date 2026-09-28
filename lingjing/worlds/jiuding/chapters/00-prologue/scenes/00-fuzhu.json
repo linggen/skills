@@ -8,12 +8,12 @@
   "en": "North of the Si · in the mist"
  },
  "setup": {
-  "zh": "你沿泗水北行。雾里立着一只白鹿，头生四角。",
-  "en": "You follow the river north. In the mist stands a white deer with four antlers."
+  "zh": "傍晚，泗水北岸。雾里立着一头白鹿，头生四角。",
+  "en": "Evening, the north bank of the Si. In the mist stands a white deer with four antlers."
  },
  "recap": {
-  "zh": "泗水北岸的雾里，四角白鹿夫诸拦在路上，最后跟你走了。",
-  "en": "In the mist on the Si's north bank Fuzhu, the white deer with four antlers, stood in the road — and in the end walked on with you."
+  "zh": "泗水北岸，夫诸出水；它最后跟你走了。",
+  "en": "On the Si's north bank Fuzhu rose from the water — and in the end walked on with you."
  },
  "cast": [
   "fuzhu"
@@ -26,10 +26,17 @@
  ],
  "lines": [
   {
+   "who": "ban",
+   "text": {
+    "zh": "……夫诸。书上画的就是它。",
+    "en": "…Fuzhu. That's the one drawn in the books."
+   }
+  },
+  {
    "who": "ling",
    "text": {
-    "zh": "雾里立着夫诸。古书上说，它出现的地方会发大水。",
-    "en": "Fuzhu stands in the mist. The old books say floods follow wherever it appears."
+    "zh": "你抹了把脸：「书上没说它这么大。」",
+    "en": "You wipe your face. \"The books didn't say it was this big.\""
    }
   },
   {

@@ -1,31 +1,32 @@
-# Prologue · 泗水 — beat sheet
+# Prologue · 泗水 · 入门 — beat sheet
 
-The first session: about five minutes, and the player should leave having
-seen every system once — a choice, a name, the root test, a task, a puzzle,
-a creature, free text that works, and a hook.
+The script is doc/drafts/prologue-v1.md (approved by Hanli 2026-09-28). The
+first session: the player should leave having seen every system once — a
+choice, a name, 体力, a board, a fight, the roots, an errand, the day's
+practice, a creature, and a hook. The hero is a 泗水 fisher-child; the name
+card asks 男 · 女, and the rules fill {兄姐} (师兄 · 师姐) and {伴} (阿禾 for a
+girl, 石头 for a boy) — the spine never changes with it.
 
-1. **The river** (`00-river`). Rain, the Si River, a silver light in the
-   shallows. The player reaches in — or walks away, and the light follows.
-2. **The bell** (`00-waking`). At a touch the light goes out: a small silver
-   bell, wet and cold, that does not ring. The player takes a 道号 — three
-   offered; any name typed is taken. Yinyue is NOT here yet: she answers the
-   bell only after the player reaches 结丹 (companion.json `joined`); the
-   silent bell is the promise of her.
-3. **The root test** (`00-stone`). Ling has the player lay a hand on the
-   stone. Four elements light — wood, water, fire, earth; metal stays dark. A
-   false root: slow. Ling: slow is still walking.
-4. **The first practice** (`00-practice`). Ling sets the first task: pair
-   the eight herbs. Any real-life task that is due appears beside it but
-   never blocks the story. The pill leaves one lingzhi over — the herb the
-   next scene can use.
-5. **Fuzhu** (`00-fuzhu`). North along the river, a white deer with four
-   antlers in the mist. Ling names it and warns of floods — and that the
-   player can just talk to it, or do something. Buttons: duel, debate,
-   go around. Typing finds what the buttons don't: feeding it the lingzhi.
-   The riddle can be answered in the player's own words.
-6. **North** (`00-north`). Fuzhu goes with the player. Ling: the first
-   cauldron's breath lies north. The map of the nine provinces, Ji marked. The
-   day ends; chapter 1 opens on its date.
+1. **雨夜** (`00-river`, 泗水). The net holds no fish, only a silver light.
+   Reach — or leave it till tomorrow; it waits. Either way: the silent bell.
+2. **渡口** (`00-ferry`). 渡叔 asks the name → the page's card (男 · 女, four
+   names or their own). He: 「{name}。好名字。」
+3. **天将亮** (`00-boat`). The errand 收船 stands at the crossing (华容道;
+   干粮 and three stones — his father's). Up the mountain.
+4. **上山路** (`00-shanlu`). {伴}'s bundle in the ditch: help (体力 −3) or go
+   on. Marked on the save (`marks`); chapter 1 remembers.
+5. **三试** (`00-gate`, `00-luoshu`, `00-longzhi`, 山门). 瞿老: legs (the steps,
+   straight up or resting — 体力), wits (洛书), nerve (蠪侄, the first fight; a
+   loss here may be fought again at once).
+6. **入门仪式** (`00-hall`, 正殿). 玄沉子 asks the 生辰 on the page's card
+   (year-month-day, private, skippable) → the roots (天 · 地 · 真 · 伪). The
+   bell turns cold. The grey robe; 「{name}{兄姐}」.
+7. **外门** (`00-waimen`). 周衡: water, wood, the manual. The first practice
+   (炼丹, one lingzhi over); the errand 修屋顶 (七巧).
+8. **夫诸出水** (`00-fuzhu`, 泗水北岸). The stage plays its `appear` in full the
+   first time. Gift (the lingzhi) · riddle · subdue.
+9. **北方** (`00-north`). The bell rings once, pointing north. The map; the
+   chapter ends and 第一章 opens.
 
 **Never in the prologue:** anything about the cauldrons beyond their
 existence, Yinyue herself (only the silent bell), anything of her past, any

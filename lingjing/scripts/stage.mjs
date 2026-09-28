@@ -59,6 +59,11 @@ export const CARD_KINDS = {
   // own (ask.mjs keeps it off the chat), and holding would only raise the 或往 roads row under it —
   // a way to walk off in the middle of taking a name.
   value: { holds: false },
+  // The 生辰 at the 入门仪式 (rules/roots.mjs): given on its card, private, or left to the stone.
+  // Like the name: the scene's own question, never the chat's.
+  born: { holds: false },
+  // Who the scene brings on (people.json): a portrait and a name each — told, never asking.
+  people: { holds: false },
   // 渡劫's odds (rules/breakthrough.mjs): the throw is taken on this card, never
   // the chat's. It holds, so the roads stand under it — a way off to prepare
   // (a pill, a 闭关) before the throw.
@@ -140,6 +145,9 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // offered names to tap or the player's own, never a chat option and never
   // Ling's to fill (his, 2026-09-28). Driven by the exit, not by the scene.
   for (const e of look.scene?.exits ?? []) if (e.value) head.push({ card: 'value', id: e.id });
+  // The 生辰 card, while the roots are still to be read (a save that holds
+  // them walks on without it — the exit is the scene's plain button then).
+  for (const e of look.scene?.exits ?? []) if (e.born && !e.born.kept) head.push({ card: 'born', id: e.id });
   // A cauldron ready to take — or shut a while after a failed throw — shows
   // its odds and what feeds them, and the throw is its button (Hanli,
   // 2026-09-28: 渡劫 is a 红检). Driven by the exit's `breakthrough.odds`.
@@ -162,7 +170,7 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   const kept = focus.map(c => boardOf(look, c)).filter(c => !inHead(c) && !(c.card === 'board' && boardDoneToday(look, c.id)));
   const shown = look.offers?.length ? kept.filter(c => c.card !== 'creature') : kept;
   // The day's coins fill an empty stage; a 遇 standing here is not empty.
-  const naming = head.some(c => c.card === 'value' || c.card === 'breakthrough');
+  const naming = head.some(c => c.card === 'value' || c.card === 'born' || c.card === 'breakthrough');
   const cards = shown.length ? [...shown] : line || naming || look.offers?.length || look.place?.meet ? [] : [{ card: 'hexagram' }];
   const has = (kind, id) => cards.some(c => c.card === kind && (id === undefined || c.id === id));
 
@@ -186,7 +194,9 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
     // 先降后收: beaten, it may be won over — on its own card (cards.js creature).
     if (winnable(haunt) && !has('creature', haunt.creature.id)) cards.push({ card: 'creature', id: haunt.creature.id });
   }
-  return [...head, ...cards];
+  // The people of the scene stand first: whoever is speaking is seen.
+  const people = look.scene?.people?.length && !line ? [{ card: 'people' }] : [];
+  return [...people, ...head, ...cards];
 }
 
 /* What those cards already offer, as option keys the question is measured

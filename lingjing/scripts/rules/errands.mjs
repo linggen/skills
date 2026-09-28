@@ -299,6 +299,8 @@ function handedOne(content, state, h) {
   const lang = state.lang, q = questOf(content, h.id), next = h.next ? questOf(content, h.next) : null;
   return { id: h.id, title: pick(q?.title, lang), who: q?.from?.who ? pick(q.from.who, lang) : null, paid: h.paid,
     ...(q?.grant?.item ? { gives: pick(itemOf(content, q.grant.item)?.name, lang) } : {}),
+    // The giver's word at the hand-in, when the errand has one (quests `done`).
+    ...(q?.done ? { done: fill(pick(q.done, lang), state, content) } : {}),
     ...(next ? { next: { id: next.id, title: pick(next.title, lang), took: h.took, at: placeName(content, state, placeOf(content, next.from.place)) } } : {}) };
 }
 
@@ -371,7 +373,7 @@ function wayBack(content, state, now) {
 function threadOf(content, state, now) {
   const lang = state.lang;
   const scene = inMade(state) ? null : sceneOf(content, state);
-  if (scene && atScene(content, state)) return { scene: scene.id, text: fill(pick(scene.setup, lang), state) };
+  if (scene && atScene(content, state)) return { scene: scene.id, text: fill(pick(scene.setup, lang), state, content) };
   if (scene) {
     const at = placeOf(content, scene.at);
     return { scene: scene.id, place: placeName(content, state, at), province: pick(content.dictionary.provinces[at.province], lang),

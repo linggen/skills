@@ -22,13 +22,13 @@
       "en": "Earth"
     }
   },
-  "_speed": "progress multiplier by how many traits are mixed. Four traits is the v1 baseline.",
+  "_speed": "progress multiplier by how many roots. 天 1 · 地 2 · 真 3 · 伪 4–5: a mild gap (天 1.3× 伪) — slow is still walking. Four roots is the v1 baseline.",
   "speed": {
-    "1": 2.0,
-    "2": 1.6,
-    "3": 1.3,
+    "1": 1.3,
+    "2": 1.2,
+    "3": 1.1,
     "4": 1.0,
-    "5": 0.8
+    "5": 1.0
   },
   "names": {
     "1": {
@@ -36,12 +36,12 @@
       "en": "Heavenly root"
     },
     "2": {
-      "zh": "双灵根",
-      "en": "Dual root"
+      "zh": "地灵根",
+      "en": "Earthly root"
     },
     "3": {
-      "zh": "三灵根",
-      "en": "Triple root"
+      "zh": "真灵根",
+      "en": "True root"
     },
     "4": {
       "zh": "四灵根 · 伪灵根",
@@ -58,6 +58,7 @@
     "fire",
     "earth"
   ],
+  "_born": "灵根 from the 生辰 (rules/roots.mjs): the three pillars — year (turning at 立春), month (turning at each month's 节) and day — give six characters, each an element. A lone element on the year branch is the family's, not the player's, and is dropped; one element four times or more crowds out every lone one. What is left are the roots, the most first. Measured over every birthday 1950–2015: 天 7.0% · 地 7.2% · 真 44.1% · 伪 41.7%. Skipped, the same reckoning runs on a day drawn by the save's start. The birthday is never kept.",
   "_fate": "命格 — a lifelong base tone beside the 灵根, set once and only if the player wishes: 生肖 from the birth year, turning at 立春 (by the day — no hour is asked), and 日主, the day's heavenly stem, whose element the player is at home in. `zodiac` from 甲子 1984 (rat); `stems` in order, a day's stem is (JDN + 9) mod 10; `lichun` is the February day of 立春 for each year from `from` (checked against lunar-python). The birthday itself is never kept.",
   "fate": {
     "zodiac": [
@@ -187,6 +188,36 @@
     "lichun": {
       "from": 1900,
       "days": "445554555455544554455445544554455445544554455444544454445444544454445444544454445444444444444444444444444444444444444344434443444344434443444344434443344334433443344334433443344334433343334333433343334"
-    }
+    },
+    "_branches": "The twelve earthly branches' elements, 子 first.",
+    "branches": [
+      "water",
+      "earth",
+      "wood",
+      "wood",
+      "earth",
+      "fire",
+      "fire",
+      "earth",
+      "metal",
+      "metal",
+      "earth",
+      "water"
+    ],
+    "_jie": "The day of each month's 节 — the month pillar turns there (January's 小寒 … December's 大雪; February's comes from `lichun`). Fixed days: a day off at the edge in some years.",
+    "jie": [
+      6,
+      0,
+      6,
+      5,
+      6,
+      6,
+      7,
+      8,
+      8,
+      8,
+      7,
+      7
+    ]
   }
 }

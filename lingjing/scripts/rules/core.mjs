@@ -11,6 +11,7 @@ import { sceneBrief, spoken, wordsOf } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { herBeat, storyNode, withHerBeat } from './story.mjs';
 import { stow, storedLine } from './pouch.mjs';
+import { bornRoots, drawnRoots, rootName, starterFor } from './roots.mjs';
 import { atScene, inMade, placeName, placeOf, provinceOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
 
 /* ── Changing it ── */
@@ -143,13 +144,13 @@ const freeHere = (content, s, kind) => CHAPTER_COSTS.has(kind) && !inMade(s)
    does (2026-09-24); taps that take no time — the market, errands, 起卦,
    疗伤, 历练 — cost nothing. rewards.json § stamina.cost holds the numbers.
    `n` is how many. */
-function spendStamina(content, s, ctx, kind, n = 1) {
+function spendStamina(content, s, ctx, kind, n = 1, fixed = null) {
   if (freeHere(content, s, kind)) return null;
   settleStamina(content, s, ctx.now);
   // A trip is paid as one (his, 2026-09-23: 几分钟消耗光 — seven roads at 3
   // each emptied a fifth of the pool in one tap): a base, a little per road
   // beyond the first, capped. The pool lasts about an hour of his pace.
-  const c = content.rewards.stamina.cost[kind] ?? 0;
+  const c = fixed ?? content.rewards.stamina.cost[kind] ?? 0;
   const cost = typeof c === 'object' ? Math.min(c.max, c.base + Math.max(0, n - 1) * c.per_road) : c * n;
   // The last point still buys any one thing, and takes him to 0 (his rule,
   // 2026-09-23: 最后的体力即使只有1, 也允许…然后提示用户返回现实世界休息);
@@ -195,10 +196,37 @@ function cleanValue(raw, rule) {
 const THEN_PAGE_NAMES = 'This is named on the page\'s card: the player taps an offered name there or writes their own, and the page tells you `[scene] named`. Nothing changed. End on one line inviting them to the card — never AskUser for it, never name one for them, never Resolve it yourself.';
 export function pageNames(content, state, args) {
   const exit = sceneOf(content, state)?.exits?.find(e => e.id === args.exit);
+  // The 生辰 is the player's alone, typed on the page's card and never said
+  // in the chat: Ling never Resolves it, whatever the words (roots.mjs).
+  // A save that already holds its roots (v1) keeps them, and the exit is a plain step.
+  if (exit?.born && !state.traits?.length) return { ok: false, refused: 'page-born', say: null, then: THEN_PAGE_BORN };
   if (!exit?.value) return null;
   const typed = String(args.said ?? '').trim(), value = String(args.value ?? '').trim();
   if (value && typed && !typed.startsWith('[') && typed.toLowerCase().includes(value.toLowerCase())) return null;
   return { ok: false, refused: 'page-names', say: null, then: THEN_PAGE_NAMES };
+}
+
+const THEN_PAGE_BORN = 'The birthday is given on the page\'s card (or left to the stone) — it is private and never said in the chat; the page tells you `[scene] born` when the roots are read. Nothing changed. End on one line inviting them to the card — never AskUser for it, never ask the date yourself, never Resolve it.';
+
+/* The name card's 男 · 女, as the rules keep it — anything else is not said. */
+const GENDERS = new Set(['female', 'male']);
+
+/* 生辰 → 灵根 at the 入门仪式 (roots.mjs): the birthday read here and let go,
+   or — skipped — a day drawn by the save's start. A save that already holds
+   its roots keeps them (the four of v1 among them): nothing is read again.
+   The 命格 stays the coins card's own choice (fortune.mjs): the roots set
+   nothing else, so the day's fights read as they did. */
+function readRoots(content, s, ctx, args) {
+  if (s.traits?.length) return { kept: true };
+  const birth = args.birth ? String(args.birth).trim() : null;
+  const roots = birth ? bornRoots(content, birth) : args.skip ? drawnRoots(content, s) : null;
+  if (!roots || (birth && new Date(`${birth}T00:00:00`) > ctx.now)) return null;
+  s.traits = roots;
+  // The root test hands over the starter — the first cards he holds.
+  const starter = starterFor(content, roots);
+  s.cards = [...new Set([...(s.cards ?? []), ...starter])];
+  s.card_from = { ...Object.fromEntries(starter.map(id => [id, { how: 'starter', place: s.place ?? null, chapter: s.chapter ?? null, day: dayKey(ctx.now) }])), ...(s.card_from ?? {}) };
+  return { read: birth ? 'birth' : 'stone' };
 }
 
 /* The cauldron shut after a failed throw, in the world's words: when. */
@@ -291,7 +319,8 @@ export function resolve(state, content, ctx, args) {
   }
   const game = gameOf(exit);
   if (game && !s.wins?.[game.id]) {
-    const today = game.kind === 'duel' ? s.duels?.[game.creature] : null;
+    // A trial fight (`retry`) may be fought again at once: a loss withdraws nothing.
+    const today = game.kind === 'duel' && !game.retry ? s.duels?.[game.creature] : null;
     if (today?.day === dayKey(ctx.now) && today.outcome === 'lost') return refuse('withdrawn', pick(exit.withdrawn, lang), { game: game.id });
     return refuse('game-not-won', null, { game: game.id });
   }
@@ -300,8 +329,24 @@ export function resolve(state, content, ctx, args) {
     const value = cleanValue(args.value, exit.value);
     if (!value) return refuse('value-invalid', null, { max_chars: exit.value.max_chars });
     s[exit.value.field] = value;
-    named = { field: exit.value.field, value };
+    // The card's 男 · 女: kept when said; a name typed in the chat says none.
+    const gender = exit.value.gender && GENDERS.has(String(args.gender ?? '')) ? String(args.gender) : null;
+    if (gender) s.gender = gender;
+    named = { field: exit.value.field, value, ...(gender ? { gender } : {}) };
   }
+  let born = null;
+  if (exit.born) {
+    born = readRoots(content, s, ctx, args);
+    if (!born) return refuse('birth-invalid', null);
+    born = { ...born, roots: { ids: s.traits, name: rootName(content, s.traits, lang), elements: s.traits.map(e => pick(content.traits.elements[e], lang)) } };
+  }
+  // An exit that is toil by itself (the steps, the ditch) costs its 体力 even
+  // in the free prologue: the first place a new player sees the pool move.
+  if (exit.stamina) {
+    const empty = spendStamina(content, s, ctx, 'toil', 1, exit.stamina);
+    if (empty) return empty;
+  }
+  if (exit.mark) s.marks = [...new Set([...(s.marks ?? []), exit.mark])];
   if (exit.next || exit.ends) {
     const empty = spendStamina(content, s, ctx, 'step');
     if (empty) return empty;
@@ -356,13 +401,13 @@ export function resolve(state, content, ctx, args) {
   const into = exit.next && atScene(content, s) ? sceneOf(content, s) : null;
   const her = herBeat(content, s, {
     id: `${scene.id}/${exit.id}`, lines: [...(exit.beat ?? []), ...(into?.lines ?? [])],
-    happened: [...beat.map(b => b.text), into && fill(pick(into.setup, lang), s)], scenes: [scene, into],
+    happened: [...beat.map(b => b.text), into && fill(pick(into.setup, lang), s, content)], scenes: [scene, into],
   });
   if (her) s.node = withHerBeat(node, her, ctx.now);
   return {
     state: s,
     result: {
-      ok: true, took: exit.id, ...(named ? { named } : {}), beat, paid, breakthrough, show: exit.show ?? [], scene: atScene(content, s) ? sceneBrief(content, s, ctx.now) : null,
+      ok: true, took: exit.id, ...(named ? { named } : {}), ...(born ? { born } : {}), beat, paid, breakthrough, show: exit.show ?? [], scene: atScene(content, s) ? sceneBrief(content, s, ctx.now) : null,
       waypoint: !atScene(content, s) && sceneOf(content, s) ? threadOf(content, s, ctx.now) : null, ended: exit.ends ?? null, waiting,
       ...(walked ? { walked } : {}), ...(grew ? { treasure_grew: grew } : {}), ...(node ? { node } : {}),
       // Her price showing as the chapter ends: Ling opens with what she does (story.mjs uneaseAt).

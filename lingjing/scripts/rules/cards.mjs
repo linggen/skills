@@ -9,6 +9,7 @@ import { gearBrief } from './errands.mjs';
 import { boutFortune } from './fortune.mjs';
 import { hashOf } from './travel.mjs';
 import { allPlaces, creatureOf, tierIndex } from './world.mjs';
+import { starterFor } from './roots.mjs';
 
 /* ── 斗法 v3: the ten cards a player takes in ──
    Until the skill tree picks a deck, the deck is WHO THEY ARE: the cards of
@@ -164,7 +165,9 @@ export function fightSetup(content, state, creature, now, game = null) {
   const main = state.fate?.element?.id ?? state.fate?.element ?? (state.traits ?? [])[0] ?? 'wood';
   const withHer = ownedCards(content, state).includes('yinyue');
   const gear = gearFight(content, state), lifts = withHer ? herLifts(content, state) : null;
-  const deck = deckFor(content, state), stars = starsIn(state, deck);
+  // Before the root test (the prologue's 三试 comes first) a player fights with
+  // what no root claims: the starter's beasts and its one rootless 功法.
+  const deck = state.traits?.length ? deckFor(content, state) : starterFor(content, []), stars = starsIn(state, deck);
   return {
     mode: 'pve',
     seed: duelSeed(state, creature, now),

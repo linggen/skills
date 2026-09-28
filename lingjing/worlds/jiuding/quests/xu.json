@@ -4,6 +4,79 @@
   "_about": "徐州的差事 (design.md § 差事). 接下 at the giver; 交差 wherever the player stands, the moment the count is met — they never walk back.",
   "quests": [
     {
+      "id": "xu-dushu-boat",
+      "title": {
+        "zh": "收船",
+        "en": "Hauling the boat"
+      },
+      "from": {
+        "place": "dukou",
+        "who": {
+          "zh": "渡叔",
+          "en": "Du Shu"
+        },
+        "person": "dushu"
+      },
+      "say": {
+        "zh": "搭把手，把船拖上岸——大水还要涨。拖完了，这袋干粮和三块灵石你带上山：灵石是你爹当年存在我这儿的。",
+        "en": "Lend a hand and drag the boat up the bank — the flood is still rising. Then take this bag of rations and three spirit stones up the mountain: the stones are what your father left with me, years ago."
+      },
+      "done": {
+        "zh": "船上了岸。渡叔把干粮和三块灵石塞进你手里，没再多说。",
+        "en": "The boat is up the bank. Du Shu presses the rations and the three stones into your hands and says nothing more."
+      },
+      "need": [
+        {
+          "kind": "board",
+          "task": "huarong",
+          "n": 1,
+          "at": "dukou"
+        }
+      ],
+      "grant": {
+        "table": "quest",
+        "progress": 10,
+        "wealth": 3,
+        "item": "ganliang"
+      }
+    },
+    {
+      "id": "xu-waimen-roof",
+      "title": {
+        "zh": "修屋顶",
+        "en": "Mending the roof"
+      },
+      "from": {
+        "place": "waimen",
+        "who": {
+          "zh": "周衡",
+          "en": "Zhou Heng"
+        },
+        "person": "zhouheng"
+      },
+      "say": {
+        "zh": "藏经阁漏雨。梯子前天摔断了，你自己想办法。修好了，记你五块灵石。",
+        "en": "The scripture hall leaks. The ladder broke the day before yesterday — find your own way up. Mend it and I'll book you five spirit stones."
+      },
+      "done": {
+        "zh": "你没用梯子，用了渔网和一根竹竿。周衡看了半天：「……能用就行。」",
+        "en": "No ladder: a fishing net and a bamboo pole. Zhou Heng looks at it a long while. \"…It works. That will do.\""
+      },
+      "need": [
+        {
+          "kind": "board",
+          "task": "qiqiao",
+          "n": 1,
+          "at": "waimen"
+        }
+      ],
+      "grant": {
+        "table": "quest",
+        "progress": 15,
+        "wealth": 5
+      }
+    },
+    {
       "id": "xu-elder-herb",
       "title": {
         "zh": "彭城的药钱",

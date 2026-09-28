@@ -781,3 +781,35 @@ body.reading .view, body.reading .tray { display: none; }
 .card.seclusion .secludebar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin: 8px 0 4px; }
 .card.seclusion .secludebar i { display: block; height: 100%; background: var(--ling, #3b6ea5); transition: width .6s; }
 .card.seclusion .secludenow { margin: 6px 0; padding-top: 6px; border-top: 1px dashed var(--line); }
+
+/* The prologue (prologue-v1, 2026-09-28): the name card's 男 · 女, the 生辰
+   card, the people a scene brings on, and a beast's first sight. */
+.valuecard .genderrow { align-items: center; margin-bottom: 4px; }
+.valuecard .genderrow .lbl, .roadsrow .lbl { font-size: 12.5px; opacity: .75; margin-right: 2px; }
+.card.peoplecard { padding: 10px 12px; }
+.peoplecard .people { display: flex; gap: 12px; overflow-x: auto; }
+.peoplecard .person { margin: 0; display: flex; align-items: center; gap: 10px; min-width: 0; }
+.peoplecard .person img { width: 56px; height: 70px; object-fit: cover; object-position: 50% 20%; border-radius: 8px; border: 1px solid var(--line); background: var(--raised); flex: none; }
+.peoplecard figcaption { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.peoplecard figcaption b { font-size: 15px; letter-spacing: .06em; }
+.creature .appearline { font-style: italic; margin: 2px 0 4px; }
+/* 夫诸出水: the stage darkens, the plate pushes in, the lines arrive one by
+   one, the last one shakes the frame, and the classic line settles last. */
+.appear { position: absolute; inset: 0; z-index: 30; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;
+  background: #0d1216; color: #eef1ee; animation: appearDark 1.2s ease-out both; }
+.appear .appearart { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; opacity: 0;
+  filter: grayscale(.35) brightness(.72); animation: appearPush calc(var(--n) * 2.2s + 3s) cubic-bezier(.2, .6, .3, 1) .6s both; }
+.appear .appeartext { position: relative; padding: 18px 20px 54px; background: linear-gradient(to top, rgba(8, 11, 14, .92) 55%, rgba(8, 11, 14, 0)); }
+.appear .appeartext p { margin: 0 0 8px; font-size: 15px; line-height: 1.7; letter-spacing: .03em; opacity: 0; animation: appearLine 1.1s ease-out calc(1s + var(--i) * 2.2s) both; }
+.appear .appeartext p.struck { animation: appearLine 1.1s ease-out calc(1s + var(--i) * 2.2s) both, appearShake .5s ease-in-out calc(1.2s + var(--i) * 2.2s) 1; }
+.appear .appeartext q { display: block; margin-top: 12px; font-size: 16px; letter-spacing: .08em; color: #f3e7c4; opacity: 0; animation: appearLine 1.6s ease-out calc(1.6s + var(--i) * 2.2s) both; }
+.appear .appearskip { position: absolute; right: 12px; bottom: 12px; color: #eef1ee; border-color: rgba(238, 241, 238, .4); background: transparent; }
+.appear.shaking { animation: appearShake .5s ease-in-out 1; }
+@keyframes appearDark { from { background: transparent; } to { background: #0d1216; } }
+@keyframes appearPush { from { opacity: 0; transform: scale(1.02); } 20% { opacity: .9; } to { opacity: .9; transform: scale(1.14); } }
+@keyframes appearLine { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes appearShake { 0%, 100% { transform: none; } 20% { transform: translate(-5px, 2px); } 40% { transform: translate(5px, -2px); } 60% { transform: translate(-3px, 1px); } 80% { transform: translate(3px, 0); } }
+@media (prefers-reduced-motion: reduce) {
+  .appear, .appear .appearart, .appear .appeartext p, .appear .appeartext p.struck, .appear .appeartext q { animation: none; opacity: 1; }
+  .appear .appearart { opacity: .9; }
+}

@@ -157,4 +157,4 @@ export function fate(state, content, ctx, args) {
   return { state: s, result: { ok: true, fate: fateBrief(content, s) } };
 }
 
-export { boutFortune, prng };
+export { boutFortune, jdn, prng };

@@ -1,0 +1,81 @@
+{
+ "version": 1,
+ "id": "00-gate",
+ "chapter": "00-prologue",
+ "at": "shanmen",
+ "place": {
+  "zh": "沉鼎观 · 山门",
+  "en": "Chending Temple · The gate"
+ },
+ "setup": {
+  "zh": "山门前排着长队。守山门的老执事一个一个看过去，看得人手心出汗。",
+  "en": "A long line waits before the gate. The old gatekeeper looks each child over, one by one, until palms sweat."
+ },
+ "recap": {
+  "zh": "山门前，瞿老的三试：腿、脑子、胆子。",
+  "en": "At the gate, Elder Qu's three trials: legs, wits and nerve."
+ },
+ "cast": [],
+ "lines": [
+  {
+   "who": "qulao",
+   "text": {
+    "zh": "沉鼎观收人，不看出身，只看三样：腿、脑子、胆子。",
+    "en": "Chending Temple does not ask where you come from. It looks at three things: legs, wits and nerve."
+   }
+  },
+  {
+   "who": "qulao",
+   "text": {
+    "zh": "一试，腿。三百级石阶，一炷香。香烧完之前上不来的，回家。",
+    "en": "First, legs. Three hundred steps, one stick of incense. Not up before it burns out — go home."
+   }
+  }
+ ],
+ "buttons": [
+  "climb",
+  "rest"
+ ],
+ "exits": [
+  {
+   "id": "climb",
+   "label": {
+    "zh": "一试 · 一口气登顶",
+    "en": "First trial · Climb without stopping"
+   },
+   "means": "climbs the three hundred steps straight up",
+   "stamina": 12,
+   "mark": "stairs-straight",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你一口气登了上去，腿抖得站不稳。香还剩大半截。",
+      "en": "You climb it in one breath, legs shaking under you. More than half the incense is left."
+     }
+    }
+   ],
+   "next": "00-luoshu"
+  },
+  {
+   "id": "rest",
+   "label": {
+    "zh": "一试 · 歇一歇再走",
+    "en": "First trial · Stop for breath on the way"
+   },
+   "means": "climbs the steps but rests on the way",
+   "stamina": 6,
+   "mark": "stairs-rested",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你在第两百级坐下歇了口气。上到顶时，香只剩一指。",
+      "en": "You sit on the two-hundredth step to catch your breath. At the top, a finger's width of incense is left."
+     }
+    }
+   ],
+   "next": "00-luoshu"
+  }
+ ]
+}

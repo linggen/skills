@@ -17,7 +17,7 @@ import { WORDS as BATTLE_WORDS, battleHtml, boutSays, pickOf, spoilsHtml } from 
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { WORDS, say as fill, valueChoice, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, emergedHtml, trayHtml, trialToldHtml, clockOf } from './cards.js';
+import { WORDS, say as fill, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, emergedHtml, trayHtml, trialToldHtml, clockOf } from './cards.js';
 import { pouchHtml } from './pouch.js';
 import { esc } from './esc.js';
 import { thinker, stillAsked } from './think.js';
@@ -174,7 +174,10 @@ const view = {
   mapView: 'province', // the map card: 'province' (the player's, up close), 'world', or another province's id
   fateOpen: false, fateDraft: '', fateError: false, // the 命格 form: shown again, the date typed, a date refused
   refineMat: null, refineName: '', refineNote: null, // 炼化本命 on the card: the material picked, the name typed, a refusal
-  valuePick: null, valueText: '', valueNote: null, // 取一个道号 on the card: an offered name tapped, the player's own typed, a refusal
+  valuePick: null, valueText: '', valueNote: null, // the 名字 card: an offered name tapped, the player's own typed, a refusal
+  valueGender: null, //  the 名字 card's 男 · 女: nothing until tapped
+  bornDraft: '', bornError: false, // the 生辰 card: the date typed (never kept past the tap), a date refused
+  appearing: null, //    a beast's first sight playing over the stage: its id
   throwNote: null, // 渡劫's card: how a failed throw fell, or a refusal
   /// Why the last 出手 did not open, for the card that offered it — the rules'
   /// own words (no 体力, the beast already spent, the page's cards out of date).
@@ -237,7 +240,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null });
+const ctx = () => ({ look, handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, valueGender: view.valueGender, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -764,6 +767,7 @@ function focusHtml() {
   if (view.tookOffer && !cards.some((c) => c.card === 'offer')) cards = [...cards, { card: 'offer' }];
   // 闭关's chooser, opened from the pool or the empty card, stands first.
   if (view.secludeOpen && view.seclude && !look.seclusion) cards = [{ card: 'seclude' }, ...cards];
+  watchAppear(cards);
   const { head, queue, tail } = splitStage(cards);
   // In 闭关 the world holds still: no roads under its card.
   const roads = stageHolds(look, cards) && !look.seclusion ? roadsHtml() : '';
@@ -777,7 +781,7 @@ function focusHtml() {
    pool and what Ling showed of the place stay where they are. */
 const QUEUE = ['handed', 'quest', 'tale', 'road', 'offer', 'duel', 'lundao', 'board'];
 // A naming card (取一个道号) is the story's own step: it stands first, never queued.
-const HEAD = new Set(['seclude', 'building', 'empty', 'goal', 'value']);
+const HEAD = new Set(['people', 'seclude', 'building', 'empty', 'goal', 'value', 'born']);
 const qKey = (c) => `${c.card}:${c.id ?? ''}`;
 
 function splitStage(cards) {
@@ -1292,16 +1296,60 @@ document.addEventListener('input', (e) => {
   const card = e.target.closest('.valuecard'), chosen = valueChoice(null, e.target.value, Number(e.target.dataset.valueMax));
   card?.querySelectorAll('[data-value-pick]').forEach((el) => { el.classList.remove('on'); el.setAttribute('aria-pressed', 'false'); });
   const go = card?.querySelector('[data-value-go]');
-  if (go) { go.disabled = !chosen; go.textContent = chosen ? fill(words().valueGoAs, { v: chosen }) : words().valueGo; }
+  const gendered = !card?.dataset.valueGender || Boolean(view.valueGender);
+  if (go) { go.disabled = !chosen || !gendered; go.textContent = chosen && !gendered ? words().genderFirst : chosen ? fill(words().valueGoAs, { v: chosen }) : words().valueGo; }
 });
 async function valueTap(exitId) {
   const v = (look?.scene?.exits ?? []).find((x) => x.id === exitId)?.value;
   const chosen = v && valueChoice(view.valueText.trim() ? null : view.valuePick, view.valueText, v.max_chars);
-  if (!chosen) return;
-  const r = await write('resolve', { exit: exitId, value: chosen }).catch(failed);
-  keep(r.ok ? { valuePick: null, valueText: '', valueNote: null } : { valueNote: refusal(r) });
+  if (!chosen || (v.gender && !view.valueGender)) return;
+  const r = await write('resolve', { exit: exitId, value: chosen, ...(v.gender ? { gender: view.valueGender } : {}) }).catch(failed);
+  keep(r.ok ? { valuePick: null, valueText: '', valueNote: null, valueGender: null } : { valueNote: refusal(r) });
   await refresh();
   if (r.ok) await report(`[scene] named ${r.named?.value ?? chosen}`);
+}
+
+/* 生辰 → 灵根 — the card's own (cards.js born): the date typed here goes to
+   the rules on this machine and nowhere else — not into the chat, not into
+   the page's memory past this tap (roots.mjs). Or 不填: the stone reads them.
+   Ling hears `[scene] born` with the roots, never the day. */
+document.addEventListener('input', (e) => {
+  if (e.target.id !== 'born-date') return;
+  keep({ bornDraft: e.target.value, bornError: false });
+  const go = e.target.closest('.borncard')?.querySelector('[data-born="birth"]');
+  if (go) go.disabled = !e.target.value;
+});
+async function bornTap(kind) {
+  const exit = (look?.scene?.exits ?? []).find((x) => x.born && !x.born.kept);
+  if (!exit || (kind === 'birth' && !view.bornDraft)) return;
+  const r = await write('resolve', { exit: exit.id, ...(kind === 'birth' ? { birth: view.bornDraft } : { skip: 'true' }) }).catch(failed);
+  keep({ bornDraft: '', bornError: !r.ok && r.refused === 'birth-invalid', doNote: r.ok || r.refused === 'birth-invalid' ? null : refusal(r) });
+  await refresh();
+  if (r.ok) await report(`[scene] born ${r.born?.roots?.name ?? ''}`);
+}
+
+/* A beast's first sight (creatures.json `appear`): played once over the stage
+   the first time its card stands there, then kept on the save (`appear`) so
+   every later meeting shows one line. A tap on 继续 — or the end — lifts it. */
+function watchAppear(cards) {
+  if (view.appearing || bout || !authored) return;
+  const seen = new Set(look?.appeared ?? []);
+  const c = cards.filter((x) => x.card === 'creature').map((x) => authored.creatures.find((k) => k.id === x.id)).find((k) => k?.appear && !seen.has(k.id));
+  if (!c) return;
+  keep({ appearing: c.id });
+  $('view').insertAdjacentHTML('beforeend', appearHtml(c, ctx()));
+  const lines = (c.appear[lang()] ?? c.appear.zh).length;
+  const el = $('view').querySelector('.appear');
+  // The last line strikes: the whole frame shakes with it.
+  if (!stillMotion()) setTimeout(() => el?.classList.add('shaking'), 1200 + (lines - 1) * 2200);
+  setTimeout(() => endAppear(c.id), stillMotion() ? 60000 : 1600 + lines * 2200 + 4200);
+}
+async function endAppear(id) {
+  if (view.appearing !== id) return;
+  $('view').querySelector('.appear')?.remove();
+  keep({ appearing: null });
+  const r = await write('appear', { id }).catch(failed);
+  if (r.ok) await refresh();
 }
 
 /* 渡劫 — the card's own throw (cards.js breakthrough): the rules throw it,
@@ -1621,6 +1669,9 @@ const CLICKS = [
   ['[data-tame]', (el) => { if (!el.matches(':disabled')) run(`tame:${el.dataset.tame}`, () => tameTap(el.dataset.tame)); }],
   ['[data-refine-mat]', (el) => show({ refineMat: el.dataset.refineMat, refineNote: null })],
   ['[data-value-pick]', (el) => show({ valuePick: el.dataset.valuePick, valueText: '', valueNote: null })],
+  ['[data-gender-pick]', (el) => show({ valueGender: el.dataset.genderPick, valueNote: null })],
+  ['[data-born]', (el) => { if (!el.matches(':disabled')) run('born', () => bornTap(el.dataset.born)); }],
+  ['[data-appear-done]', (el) => endAppear(el.dataset.appearDone)],
   ['[data-throw]', (el) => { if (!el.matches(':disabled')) run(`throw:${el.dataset.throw}`, () => throwTap(el.dataset.throw)); }],
   ['[data-value-go]', (el) => { if (!el.matches(':disabled')) run(`value:${el.dataset.valueGo}`, () => valueTap(el.dataset.valueGo)); }],
   ['[data-refine]', (el) => { if (el.dataset.refine) run('refine', () => refineTap(el.dataset.refine)); }],

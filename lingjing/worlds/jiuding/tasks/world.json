@@ -12,6 +12,12 @@
       "done_line": { "zh": "八味灵草配齐，丹成。还剩一株灵芝。", "en": "All eight herbs paired. The pill is made — one lingzhi left over." }
     },
     {
+      "id": "gate-luoshu", "kind": "board", "game": "luoshu", "period": "once",
+      "title": { "zh": "二试 · 洛书九宫", "en": "Second trial · The Luo Shu square" },
+      "grant": { "table": "task", "progress": 10 },
+      "done_line": { "zh": "纵、横、斜，都是十五。", "en": "Down, across and corner to corner — fifteen every way." }
+    },
+    {
       "id": "alchemy-daily", "kind": "board", "game": "lianliankan", "period": "day", "hosted": true,
       "title": { "zh": "炼丹 · 配一炉丹", "en": "Alchemy · A furnace of pills" },
       "grant": { "table": "game", "progress": 5, "wealth": 10 },

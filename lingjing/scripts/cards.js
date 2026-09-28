@@ -60,6 +60,9 @@ export const WORDS = {
     building: '灵境绘制中', buildingLine: '还有 {n} 幅画未成，画完即可游历。',
     bt: { title: '渡劫 · {to}', chance: '把握', base: '{to}之关', pillOff: '未带{name}', body: '身无伤势', hurt: '带伤 · 体力不足一半', seclusion: '{h} 小时内出关', seclusionOff: '{h} 小时内未闭关', her: '{name}相伴', herGifts: '{name}相伴 · 鼎赐 {n}', match: '灵根合{el}', feeds: '灵根生{el}', none: '灵根与{el}无缘', bounds: '至少 {floor}%，至多 {cap}%', risk: '失手：体力 −{st} · 修为 −{xw} · {h} 小时后再试。境界与所藏不失。', go: '渡 劫', cooling: '雷劫余威未散 · {at} 后再试', failed: '雷劫未过：体力 −{st} · 修为 −{xw}。{at} 后再试。', low: '逆天而成' },
     valueHint: '选一个，或自己写一个。', valueOwn: '自己写一个 · 至多{n}字', valueGo: '就叫这个', valueGoAs: '就叫「{v}」',
+    gender: '你是', genders: { female: '女', male: '男' }, genderFirst: '先选男 · 女',
+    bornHint: '只填年月日。只在本机推算灵根：不入存档，不入对话。不填也可，石头自己会看。', bornGo: '测灵根', bornSkip: '不填 · 让石头自己看', bornBad: '这一天不在历中，再看看。',
+    peopleTitle: '在场', appearSkip: '继续',
     notDone: '这一下没成，稍后再点。', fightRefused: '这一战没记上，牌还在原处。',
     needVia: '先去{name}', roadTitle: '路上', refused: { gone: '来迟了，机缘已散', 'nothing-here': '路上已无事', 'already-taken': '已经接下了', 'already-done': '这件已经了结', 'not-posted': '今日的榜文已换', 'not-here': '不在这里', 'not-done': '还没办完', 'not-in-bag': '囊中没有', 'not-for-sale-here': '这里不卖', 'no-companion': '还没有人可以佩戴它', 'in-a-fight': '斗法未完', 'won-already': '已经赢过了', 'subdued-today': '今日已降', 'riddle-closed': '谜题已过', 'not-today': '今日的功课不是这件', 'unknown-place': '找不到这个地方', 'wrong-answer': '答得不对', 'not-this-step': '这一步已经过了', busy: '稍等片刻', 'bag-full': '储物袋已满，先卖或丢一样', 'pouch-used': '这样的储物袋你已经换上了', worn: '先卸下再丢', 'not-held': '洞府里没有这样东西', 'value-invalid': '这个名字用不了' }, goalTitle: '眼下要做的', goalWork: '可做：{name} · {what}', goalBeast: '可做：{name}的{what}今日还未降', offersTitle: '可接的差事 · {place}', gearChip: '储物袋', gearEmpty: '—', gearSlots: { weapon: '法器', robe: '法衣', pendant: '佩', treasure: '本命法宝' }, gearHer: '{name}佩着', herCard: '{name}的牌 {atk}/{hp}', herRealm: '随{realm} +{atk}/+{hp}', herGift: '第{n}鼎 · {name}：{does}', gearFight: '斗法里：{what}', saveConflicts: '云端存档已覆盖此处；这里的改动另存了一份。', noOne: '查无此人。', gearPower: '主灵根一击 +{n}', gearArmor: '护体 {n}', gearWard: '抗{el} {n}', gearCharm: '{name}在手', gearLends: '借{el}', gearTo: '戴上 · {slot}', gearOff: '卸下', cardsTitle: '牌 · {n}', cardsNote: '圆圈里是出牌要的灵力。亮的是出战的十张，点一张换上或取下；银月开局就在手上。', cardsDealt: '圆圈里是出牌要的灵力。亮的是出战的十张，按灵根配好；结丹之后可以自己组牌。', cardsPicked: '十张都是你选的。', cardsShort: '你选了 {mine} 张，还差 {short} 张，出战时按灵根补齐（虚线）。', cardsAuto: '恢复自动', cardsHand: '在手', cardsOff: '灵根不合，修不得这门功法', bookChip: '事', roads: '或往', workAt: '{name}有差事', chanceTitle: '机缘 · {place}', chanceChip: '有机缘', chanceLeft: '还剩 {t}', chanceHM: '{h} 时 {m} 分', chanceM: '{m} 分', chanceHere: '就在此处', chanceLine: '此地灵机正盛，过时不候。', chanceWhat: '那里灵机正盛，赶到便可收下，过时不候。', chanceTake: '收 下', trialTitle: '抉择', trialWon: '成了', trialLost: '失手', trialChance: '{n}% 把握', trialHard: { easy: '易', fair: '中', hard: '难' }, trialStake: { wound: '失手折体力', coin: '失手破财' }, trialHurt: '体力 −{n}', trialPoorer: '灵石 −{n}', findTitle: '拾遗', findTake: '收下 · {what}', findPass: '不取', bookReady: '可交 {n}', bookNone: '手上无事', kaifuTitle: '开府 · {n}/{of}', kaifuPaid: '已记', kaifuDone: '已圆满', kaifuPaidN: '已记 {n} 件', book: '手上的事', take: '接 下', took: '已接下', queueCount: '眼前 {n} 件', queueNext: '下一件：{what}', queueKinds: { handed: '所得', quest: '剧情', road: '路上', offer: '差事', duel: '斗法', tale: '传闻', lundao: '论道', board: '功课' }, turnIn: '交 差', sayQuestAbout: '说说{title}', needAt: '在{name}', needHere: '就在此处',
     taleKept: '已解开 · 体力回来便记上', taleDuel: '降了{name}，此事便了', taleWhere: '{game} · {who}', taleRiddle: '点选作答', handedTitle: '交差 · {title}', handedNext: '接下来 · {title}', handedWait: '下一步 · {title} — 手上已满，了一件再去{at}接', needKinds: { subdue: '降', tame: '驯', carry: '带', visit: '到', board: '成', answer: '答', chore: '做' }, goalWait: '{title} · {opens} 开', goalOpen: '{title} · 未开', goalGate: '鼎气要{step} · {progress} 修为才受得住', goalNow: '如今 {step} · {progress}/{of}', goalGrow: '差事、传闻、斗法，都长修为',
@@ -112,6 +115,9 @@ export const WORDS = {
     building: 'Painting the world', buildingLine: '{n} to paint — the world opens when the last is done.',
     bt: { title: 'Tribulation · {to}', chance: 'chance', base: 'The gate of {to}', pillOff: 'No {name}', body: 'Unhurt', hurt: 'Hurt · stamina under half', seclusion: 'Out of seclusion within {h} h', seclusionOff: 'No seclusion within {h} h', her: '{name} beside you', herGifts: '{name} beside you · {n} gifts', match: 'Roots match {el}', feeds: 'Roots feed {el}', none: 'Roots do not touch {el}', bounds: 'At least {floor}%, at most {cap}%', risk: 'If it fails: Stamina −{st} · cultivation −{xw} · again in {h} h. The realm and what you hold are kept.', go: 'Face the lightning', cooling: 'The lightning still runs in you · again after {at}', failed: 'The tribulation threw you back: Stamina −{st} · cultivation −{xw}. Again after {at}.', low: 'Against the odds' },
     valueHint: 'Pick one, or write your own.', valueOwn: 'Your own · up to {n} characters', valueGo: 'Take this name', valueGoAs: 'Be called {v}',
+    gender: 'You are', genders: { female: 'a girl', male: 'a boy' }, genderFirst: 'Girl or boy first',
+    bornHint: 'Year, month and day only. Read on this machine for the roots — never saved, never said in the chat. Or leave it: the stone will look for itself.', bornGo: 'Test my roots', bornSkip: 'Leave it · let the stone look', bornBad: 'That day is not in the calendar — look again.',
+    peopleTitle: 'Here', appearSkip: 'Go on',
     notDone: 'That did not go through — tap again in a moment.', fightRefused: 'This fight was not recorded; its card is still here.',
     needVia: 'by way of {name}', roadTitle: 'On the road', refused: { gone: 'Too late — it is gone', 'nothing-here': 'Nothing on the road now', 'already-taken': 'Already taken', 'already-done': 'Already done', 'not-posted': "Today's notice has changed", 'not-here': 'Not here', 'not-done': 'Not done yet', 'not-in-bag': 'Not in the bag', 'not-for-sale-here': 'Not sold here', 'no-companion': 'No one to wear it yet', 'in-a-fight': 'A fight is still open', 'won-already': 'Already won', 'subdued-today': 'Beaten today', 'riddle-closed': 'The riddle has passed', 'not-today': "Not today's chore", 'unknown-place': 'No such place', 'wrong-answer': 'Not that one', 'not-this-step': 'That step has passed', busy: 'One moment', 'bag-full': 'The pouch is full — sell or drop something first', 'pouch-used': 'You already carry a pouch like that', worn: 'Take it off first', 'not-held': 'Nothing like that waits at the abode', 'value-invalid': 'That name will not do' }, goalTitle: 'What waits', goalWork: 'To do: {name} · {what}', goalBeast: 'To do: {what} at {name}, not yet met today', offersTitle: 'Errands to take · {place}', gearChip: 'Pouch', gearEmpty: '—', gearSlots: { weapon: 'Weapon', robe: 'Robe', pendant: 'Pendant', treasure: 'Treasure' }, gearHer: '{name} wears', herCard: "{name}'s card {atk}/{hp}", herRealm: 'grown with {realm} +{atk}/+{hp}', herGift: 'Cauldron {n} · {name}: {does}', gearFight: 'In a fight: {what}', saveConflicts: 'The cloud save replaced this one; changes made here were kept as a copy.', noOne: 'No one answers.', gearPower: 'Root Strike +{n}', gearArmor: 'Shield {n}', gearWard: 'wards {el} {n}', gearCharm: '{name} in hand', gearLends: 'lends {el}', gearTo: 'Wear · {slot}', gearOff: 'Take off', cardsTitle: 'Cards · {n}', cardsNote: 'The circle is the Force a card costs. Lit: the ten you fight with — tap one to put it in or take it out; Yinyue starts in hand.', cardsDealt: 'The circle is the Force a card costs. Lit: the ten you fight with, dealt by your roots; from the Core on you pick your own.', cardsPicked: 'All ten are yours.', cardsShort: '{mine} picked; {short} more are filled by your roots when you fight (dashed).', cardsAuto: 'Let the roots choose', cardsHand: 'in hand', cardsOff: 'a spell of a root you lack', bookChip: 'Tasks', roads: 'Or on to', workAt: 'Work to be had at {name}', chanceTitle: 'A chance · {place}', chanceChip: 'a chance', chanceLeft: '{t} left', chanceHM: '{h}h {m}m', chanceM: '{m}m', chanceHere: 'right here', chanceLine: 'Something is stirring here — it will not wait.', chanceWhat: 'Something stirs there — reach it in time and it is yours.', chanceTake: 'Take it', trialTitle: 'A choice', trialWon: 'done', trialLost: 'it went wrong', trialChance: '{n}% likely', trialHard: { easy: 'easy', fair: 'fair', hard: 'hard' }, trialStake: { wound: 'failing costs stamina', coin: 'failing costs coin' }, trialHurt: 'Stamina −{n}', trialPoorer: 'Stones −{n}', findTitle: 'By the road', findTake: 'Take it · {what}', findPass: 'Leave it', bookReady: '{n} to hand in', bookNone: 'Nothing in hand', kaifuTitle: 'Setting up · {n}/{of}', kaifuPaid: 'counted', kaifuDone: 'complete', kaifuPaidN: '{n} counted', book: 'In hand', take: 'Take it', took: 'Taken', queueCount: '{n} things here', queueNext: 'Next: {what}', queueKinds: { handed: 'Spoils', quest: 'The story', road: 'On the road', offer: 'Errand', duel: 'A fight', tale: 'Rumor', lundao: 'Debate', board: 'Practice' }, turnIn: 'Hand it in', sayQuestAbout: 'Tell me about {title}', needAt: 'at {name}', needHere: 'right here',
     taleKept: 'Solved · counted once your stamina is back', taleDuel: 'Subdue {name} and it is done', taleWhere: '{game} · {who}', taleRiddle: 'Tap an answer', handedTitle: 'Handed in · {title}', handedNext: 'Next · {title}', handedWait: 'Next · {title} — your hands are full; finish one, then take it at {at}', needKinds: { subdue: 'subdue', tame: 'tame', carry: 'carry', visit: 'reach', board: 'finish', answer: 'answer', chore: 'do' }, goalWait: '{title} · opens {opens}', goalOpen: '{title} · not open yet', goalGate: 'The cauldron asks {step} · {progress} cultivation', goalNow: 'Now {step} · {progress}/{of}', goalGrow: 'Errands, rumors and fights all raise it',
@@ -184,10 +190,18 @@ function creature(card, ctx) {
     <div class="crow"><div class="seal">${esc(c.name.zh)}</div><div>
       <div class="cardtitle">${title}</div>
       <div class="src">${esc(pick(c.source, ctx.lang))}</div>
-      <q>${esc(pick(c.quote, ctx.lang))}</q>
+      ${seenLine(c, ctx)}<q>${esc(pick(c.quote, ctx.lang))}</q>
       <span class="chip">${esc(ctx.words[tamed ? 'tamed' : beatenToday(ctx, c.id) ? 'beatenToday' : 'untamed'])}</span>
     </div></div>${tameAct(c.id, ctx)}${acts([{ label: ctx.words.about, ask: true, say: say(ctx.words.sayCreature, { name }) }])}</div>`;
 }
+/// A beast whose first sight has played (creatures.json `appear`, Look's
+/// `appeared`): later meetings keep one line of it on the card.
+function seenLine(c, ctx) {
+  const lines = c.appear?.[ctx.lang] ?? c.appear?.zh;
+  if (!lines?.length || !(ctx.look?.appeared ?? []).includes(c.id)) return '';
+  return `<div class="appearline small dim">${esc(lines[0])}</div>`;
+}
+
 /* 收服 on the creature's card, once it is beaten here (先降后收): 献上X (a
    thing) or 喂它X (food) — the page's own Tame. Without X in the bag, the
    button stands disabled and says what it likes. Won over: the chip says
@@ -1067,6 +1081,10 @@ function value(card, ctx) {
   const w = ctx.words, max = v.max_chars, text = ctx.valueText ?? '';
   const picked = text.trim() ? null : ctx.valuePick ?? null;
   const chosen = valueChoice(picked, text, max);
+  // 男 · 女, when the exit asks it (prologue-v1: the address and the companion
+  // follow it; the spine does not). Nothing preselected: the confirm waits for both.
+  const gender = v.gender ? ctx.valueGender ?? null : 'none';
+  const genders = v.gender ? `<div class="acts genderrow"><span class="lbl">${esc(w.gender)}</span>${['female', 'male'].map((g) => `<button class="act namechip${gender === g ? ' on' : ''}" data-gender-pick="${g}" aria-pressed="${gender === g}">${esc(w.genders[g])}</button>`).join('')}</div>` : '';
   const chips = (v.offers ?? []).map((o) => {
     const on = o.value === picked;
     const both = o.label !== o.value ? ` <span class="dim">${esc(o.value)}</span>` : '';
@@ -1074,13 +1092,52 @@ function value(card, ctx) {
   }).join('');
   // An offered name is said as it is shown (Qingxuan in English); the rules keep its 汉字.
   const shown = chosen && chosen === picked ? (v.offers ?? []).find((o) => o.value === picked)?.label ?? chosen : chosen;
-  const go = shown ? say(w.valueGoAs, { v: shown }) : w.valueGo;
-  return `<div class="card valuecard"><div class="cardtitle">${esc(v.label ?? w.valueGo)}</div>
+  const go = !gender && shown ? w.genderFirst : shown ? say(w.valueGoAs, { v: shown }) : w.valueGo;
+  return `<div class="card valuecard"${v.gender ? ' data-value-gender="1"' : ''}><div class="cardtitle">${esc(v.label ?? w.valueGo)}</div>
+    ${genders}
     <div class="small dim">${esc(w.valueHint)}</div>
     <div class="acts">${chips}</div>
     <div class="fateform"><input type="text" id="value-text" data-value-max="${esc(max)}" maxlength="${esc(max)}" autocomplete="off" placeholder="${esc(say(w.valueOwn, { n: max }))}" value="${esc(text)}">
-      <button class="act" data-value-go="${esc(card.id)}"${chosen ? '' : ' disabled'}>${esc(go)}</button></div>
+      <button class="act" data-value-go="${esc(card.id)}"${chosen && gender ? '' : ' disabled'}>${esc(go)}</button></div>
     ${ctx.valueNote ? `<div class="donote">${esc(ctx.valueNote)}</div>` : ''}</div>`;
+}
+
+/// 生辰 → 灵根 at the 入门仪式 (rules/roots.mjs): year, month and day only,
+/// typed here and read by the rules on this machine — never kept, never said
+/// in the chat. Or left to the stone: a day drawn by the save's start.
+function born(card, ctx) {
+  const e = (ctx.look?.scene?.exits ?? []).find((x) => x.id === card.id);
+  if (!e?.born || e.born.kept) return '';
+  const w = ctx.words, today = (ctx.now ?? new Date()).toISOString().slice(0, 10);
+  return `<div class="card borncard"><div class="cardtitle">${esc(e.born.label ?? w.rootTitle)}</div>
+    <div class="small dim">${esc(w.bornHint)}</div>
+    <div class="fateform"><input type="date" id="born-date" min="1900-01-31" max="${today}" value="${esc(ctx.bornDraft ?? '')}">
+      <button class="act" data-born="birth"${ctx.bornDraft ? '' : ' disabled'}>${esc(w.bornGo)}</button><button class="act" data-born="skip">${esc(w.bornSkip)}</button></div>
+    ${ctx.bornError ? `<div class="small seal">${esc(w.bornBad)}</div>` : ''}</div>`;
+}
+
+/// Who the scene brings on (people.json): each a portrait and a name, and
+/// what they are. The words are Ling's to speak; the faces are the page's.
+function people(card, ctx) {
+  const ps = ctx.look?.scene?.people ?? [];
+  if (!ps.length) return '';
+  const faces = ps.map((p) => `<figure class="person"><img src="${esc(worldPath(ctx.look.world?.dir ?? 'worlds/jiuding', p.art))}" alt="${esc(p.name)}"><figcaption><b>${esc(p.name)}</b><span class="small dim">${esc(p.role ?? '')}</span></figcaption></figure>`).join('');
+  return `<div class="card peoplecard"><div class="people">${faces}</div></div>`;
+}
+
+/// A beast's first sight (creatures.json `appear`) — the set piece of
+/// prologue-v1 § 8: the world turns first (the stage darkens), a shadow before
+/// the body (a slow push-in on the plate), the hero struck (a short shake on
+/// the last line), and the classic `quote` settling last. The timings are
+/// CSS (lingjing.css `.appear`); with reduced motion everything simply stands.
+export function appearHtml(c, ctx) {
+  const lines = c?.appear?.[ctx.lang] ?? c?.appear?.zh;
+  if (!lines?.length) return '';
+  const art = c.art ? `<img class="appearart" src="${esc(worldPath(c.dir ?? ctx.look?.world?.dir, c.art))}" alt="">` : '';
+  const ps = lines.map((t, i) => `<p style="--i:${i}"${i === lines.length - 1 ? ' class="struck"' : ''}>${esc(t)}</p>`).join('');
+  return `<div class="appear" data-appear="${esc(c.id)}" style="--n:${lines.length}">${art}<div class="appeartext">${ps}
+    <q style="--i:${lines.length}">${esc(pick(c.quote, ctx.lang))}</q></div>
+    <button class="act quiet appearskip" data-appear-done="${esc(c.id)}">${esc(ctx.words.appearSkip)}</button></div>`;
 }
 
 /// 渡劫 — the breakthrough as one throw (rules/breakthrough.mjs; Hanli,
@@ -1111,7 +1168,7 @@ function breakthrough(card, ctx) {
     <div class="acts"><button class="act btgo" data-throw="${esc(card.id)}"${shut ? ` disabled title="${esc(shut)}"` : ''}>${esc(shut ?? w.go)}</button></div>${note}</div>`;
 }
 
-const RENDER = { value, breakthrough, handed, tale, lundao, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, road, seclude, seclusion };
+const RENDER = { value, born, people, breakthrough, handed, tale, lundao, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, road, seclude, seclusion };
 
 /// Only the kinds the scene knows; anything else Ling sends is dropped.
 export function cardHtml(card, ctx) {

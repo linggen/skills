@@ -166,12 +166,16 @@ export function duel(state, content, ctx, args) {
 
   // ── 出手: the door of the instance ──
   if (!args.picks) {
-    if (today?.day === day && today.outcome === 'lost') return refuse('withdrawn', withdrawnLine, { game: id });
-    if (today?.day === day && today.outcome === 'withdrew') return refuse('spent-today', null, { game: id });
+    // A trial fight (`retry`, the prologue's 三试) is fought again at once — a
+    // new player is never shut out of the gate for the day by one loss.
+    const again = game.retry && today?.day === day && ['lost', 'withdrew'].includes(today.outcome);
+    if (!again && today?.day === day && today.outcome === 'lost') return refuse('withdrawn', withdrawnLine, { game: id });
+    if (!again && today?.day === day && today.outcome === 'withdrew') return refuse('spent-today', null, { game: id });
     if (today?.day === day && today.outcome === 'won') return refuse('subdued-today', null, { game: id });
     if (exit && s.wins?.[id]) return refuse('won-already', null, { game: id, exit: exit.id });
     if (s.fight && s.fight.game !== id) return refuse('in-a-fight', null, { game: s.fight.game });
-    if (!s.traits?.length) return refuse('no-traits', null);
+    // Roots unread, only a trial is fought (the 三试, before the 入门仪式): with the rootless starter (cards.mjs fightSetup).
+    if (!s.traits?.length && !game.retry) return refuse('no-traits', null);
     // A page reloaded mid-fight asks again: the same fight comes back, and the
     // day's 灵气 is not taken twice. The seed is the day's, so the cards deal
     // the same way they did.

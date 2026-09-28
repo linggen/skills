@@ -1,0 +1,78 @@
+{
+ "version": 1,
+ "id": "00-waimen",
+ "chapter": "00-prologue",
+ "at": "waimen",
+ "place": {
+  "zh": "沉鼎观 · 外门",
+  "en": "Chending Temple · The outer court"
+ },
+ "setup": {
+  "zh": "外门的院子里晒着柴，井边排着水桶。一个穿灰袍的年轻人拿着账本，一个一个点名。",
+  "en": "Firewood dries in the outer court; buckets stand in a row by the well. A young man in a grey robe goes down the names with a ledger."
+ },
+ "recap": {
+  "zh": "外门，周衡发下第一份功课：配齐八味灵草，炼一炉丹。",
+  "en": "In the outer court Zhou Heng set the first chore: pair the eight herbs, make a furnace of pills."
+ },
+ "cast": [],
+ "lines": [
+  {
+   "who": "zhouheng",
+   "text": {
+    "zh": "新来的，都一样：挑水、劈柴、背功法。做完了才有灵石，做不完——",
+    "en": "New ones, all the same: carry water, split wood, learn the manual. Done, you get spirit stones. Not done —"
+   }
+  },
+  {
+   "who": "zhouheng",
+   "text": {
+    "zh": "没有灵石就买不了丹，买不了丹就修得慢，修得慢三年后就得下山。懂了？",
+    "en": "no stones, no pills; no pills, slow cultivation; slow cultivation, down the mountain in three years. Understood?"
+   }
+  },
+  {
+   "who": "zhouheng",
+   "text": {
+    "zh": "今日功课：配齐八味灵草，炼一炉丹。",
+    "en": "Today's chore: pair the eight herbs and make a furnace of pills."
+   }
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "alchemy-first"
+  ],
+  "quests": true
+ },
+ "buttons": [
+  "set-out"
+ ],
+ "exits": [
+  {
+   "id": "set-out",
+   "label": {
+    "zh": "傍晚 · 回泗水边",
+    "en": "Evening · Back to the river"
+   },
+   "means": "sets out, goes back down to the river, or asks to move on",
+   "needs": {
+    "task": "alchemy-first"
+   },
+   "refuse": {
+    "zh": "丹还没炼成。周衡的账本上，你那一行还空着。",
+    "en": "The pills aren't made. Your line in Zhou Heng's ledger is still empty."
+   },
+   "beat": [
+    {
+     "who": "zhouheng",
+     "text": {
+      "zh": "……行。明日卯时，别迟。",
+      "en": "…Fine. Dawn tomorrow. Don't be late."
+     }
+    }
+   ],
+   "next": "00-fuzhu"
+  }
+ ]
+}

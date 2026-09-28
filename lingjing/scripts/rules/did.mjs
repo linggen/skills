@@ -58,6 +58,7 @@ function thrownDid(r, x) {
   if (b.success) return `broke through to ${b.to} on the page's card (${b.chance}% chance${b.low ? ', against the odds' : ''}${pill}) — beat: ${(r.beat ?? []).map(t => t.text).join(' ')}`;
   return `tried the breakthrough to ${b.to} on the page's card (${b.chance}% chance${pill}) and the tribulation threw them back: ${x.w.pool ?? '体力'} −${b.lost.stamina}, −${b.lost.progress} ${x.w.progress}; the cauldron is shut until ${b.again_at}. The realm is kept`;
 }
+const beatOf = r => (r.beat ?? []).map(b => (b.name ? `${b.name}: ${b.text}` : b.text)).join(' ');
 /* 闭关: going in, and 出关 with what grew. */
 const SECLUDE_DID = {
   enter: (r) => `went into seclusion (闭关) on ${r.entered?.focus}${r.entered?.pill ? `, took ${r.entered.pill.name}` : ''}`,
@@ -84,9 +85,12 @@ const PAGE_DID = {
   meet: byAction(MEET_DID),
   tale: (r, a, x) => TALE_DID[a.action]?.(r, a, x) ?? null,
   seclude: (r, a) => SECLUDE_DID[a.action]?.(r) ?? null,
-  // A value exit named on the page's card (the 道号): the name, and the beat
-  // Ling speaks for it on `[scene] named` — the page resolves nothing else.
-  resolve: (r, a, x) => (r.named ? `named themselves 「${r.named.value}」 on the page's card — beat: ${(r.beat ?? []).map(b => b.text).join(' ')}` : r.breakthrough?.chance != null ? thrownDid(r, x) : null),
+  // A value exit named on the page's card (the 名字, and 男 · 女): the name,
+  // and the beat Ling speaks for it on `[scene] named`. The 生辰 read there:
+  // the roots only — the birthday itself never leaves the card.
+  resolve: (r, a, x) => (r.named ? `named themselves 「${r.named.value}」${r.named.gender ? ` (${r.named.gender === 'female' ? 'a girl' : 'a boy'})` : ''} on the page's card — beat: ${beatOf(r)}`
+    : r.born ? `${r.born.kept ? 'went through the root test, their roots as they were' : r.born.read === 'birth' ? 'gave their birthday on the page\'s card' : 'let the stone read them'}: ${r.born.roots.name} (${r.born.roots.elements.join(' ')}) — beat: ${beatOf(r)}`
+      : r.breakthrough?.chance != null ? thrownDid(r, x) : null),
   // 储物袋: a thing waiting at the 洞府 taken in, a slot thrown away.
   bag: byAction({ claim: (r) => `took ${r.claimed?.name} from the abode into the storage pouch`, toss: (r) => `threw away ${r.tossed?.name}` }),
 };

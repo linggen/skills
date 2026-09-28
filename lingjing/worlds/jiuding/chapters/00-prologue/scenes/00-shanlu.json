@@ -1,0 +1,101 @@
+{
+ "version": 1,
+ "id": "00-shanlu",
+ "chapter": "00-prologue",
+ "at": "shanlu",
+ "place": {
+  "zh": "上山路",
+  "en": "The mountain path"
+ },
+ "setup": {
+  "zh": "天亮了，雨停了。往沉鼎观的山路上，全是和你一样的孩子，背着包袱，眼睛亮得像刚擦过的碗。",
+  "en": "Day breaks; the rain has stopped. The path to Chending Temple is full of children like you, bundles on their backs, eyes as bright as bowls just wiped."
+ },
+ "recap": {
+  "zh": "上山路上，{伴}的包袱掉进了沟里。",
+  "en": "On the mountain path {伴}'s bundle fell into the ditch."
+ },
+ "cast": [],
+ "lines": [
+  {
+   "who": "ling",
+   "text": {
+    "zh": "沟边蹲着一个和你差不多大的孩子，包袱掉进了沟底，急得脸通红。",
+    "en": "By the ditch crouches a child about your age, bundle lost at the bottom, face red with worry."
+   }
+  },
+  {
+   "who": "ban",
+   "text": {
+    "zh": "别看了！……你、你能帮我够一下吗？",
+    "en": "Stop staring! …C-can you help me reach it?"
+   }
+  }
+ ],
+ "buttons": [
+  "help",
+  "pass"
+ ],
+ "exits": [
+  {
+   "id": "help",
+   "label": {
+    "zh": "下沟帮忙捞包袱",
+    "en": "Climb down and fetch the bundle"
+   },
+   "means": "helps fetch the bundle from the ditch",
+   "stamina": 3,
+   "mark": "shanlu-helped",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你滑下沟，捞起包袱，两个人满身是泥爬上来。",
+      "en": "You slide into the ditch, fish out the bundle, and the two of you climb out covered in mud."
+     }
+    },
+    {
+     "who": "ban",
+     "text": {
+      "zh": "……我叫{伴}。欠你一回。",
+      "en": "…I'm {伴}. I owe you one."
+     }
+    },
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你们一起迟到了半刻。",
+      "en": "The two of you arrive half a quarter-hour late."
+     }
+    }
+   ],
+   "next": "00-gate"
+  },
+  {
+   "id": "pass",
+   "label": {
+    "zh": "先走一步",
+    "en": "Go on ahead"
+   },
+   "means": "goes on without helping",
+   "mark": "shanlu-passed",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你从沟边走了过去。身后那个孩子抬头看了你一眼——记住了你。",
+      "en": "You walk on past the ditch. Behind you the child looks up at you once — and remembers you."
+     }
+    },
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你准时到了山门。后来你才知道，那孩子叫{伴}。",
+      "en": "You reach the gate on time. Only later do you learn the child's name: {伴}."
+     }
+    }
+   ],
+   "next": "00-gate"
+  }
+ ]
+}

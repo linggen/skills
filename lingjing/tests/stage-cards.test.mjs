@@ -13,6 +13,7 @@ import { WORDS, bookChipHtml, bookPopHtml, cardHtml } from '../scripts/cards.js'
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, quest, tale } from '../scripts/rules.mjs';
+import { TO_FUZHU, TO_HALL, walk } from './prologue.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const read = f => JSON.parse(fs.readFileSync(path.join(HERE, '../worlds/jiuding', f), 'utf8'));
@@ -51,8 +52,11 @@ const SITUATIONS = {
   '闭关 running: its 出关 card is the stage': [{ ...open, place: 'sishui', seclusion: { focus: 'progress', since: new Date(NOW.getTime() - 3 * 3600_000).toISOString() } }, ctx()],
   '拾遗 by the road': [{ ...open, place: 'huaidu', meets: { day: '2026-09-21', places: { huaidu: { kind: 'find', find: '徐', n: 0 } } } }, ctx()],
   'the first scene of a new save': [newState(content, 'zh', NOW), ctx()],
-  '取一个道号: the naming card at the second scene': [{ ...newState(content, 'zh', NOW), scene: '00-waking' }, ctx()],
-  'the naming card, in English': [{ ...newState(content, 'en', NOW), scene: '00-waking' }, ctx()],
+  '名字: the naming card at the crossing, 渡叔 on the stage': [{ ...newState(content, 'zh', NOW), scene: '00-ferry', place: 'dukou' }, ctx()],
+  'the naming card, in English': [{ ...newState(content, 'en', NOW), scene: '00-ferry', place: 'dukou' }, ctx()],
+  '生辰: the root test at the 入门仪式': [walk(newState(content, 'zh', NOW), TO_HALL, content, NOW), ctx()],
+  'the root test, in English': [walk(newState(content, 'en', NOW), TO_HALL, content, NOW), ctx()],
+  '夫诸 met again: one line of its first sight': [{ ...walk(newState(content, 'zh', NOW), TO_FUZHU, content, NOW), appeared: ['fuzhu'] }, ctx()],
   'the same, in English': [{ ...open, place: 'pengcheng', lang: 'en' }, ctx({ quests: chores })],
 };
 
@@ -70,7 +74,7 @@ for (const [name, [state, c]] of Object.entries(SITUATIONS)) {
 
 test('the situations cover the stage\'s own cards', () => {
   const seen = new Set(Object.values(SITUATIONS).flatMap(([s, c]) => look(s, content, c).stage.map(x => x.card)));
-  for (const kind of ['goal', 'offer', 'item', 'creature', 'hexagram', 'road', 'tale', 'value']) assert.ok(seen.has(kind), `no situation stages a ${kind} card`);
+  for (const kind of ['goal', 'offer', 'item', 'creature', 'hexagram', 'road', 'tale', 'value', 'born', 'people']) assert.ok(seen.has(kind), `no situation stages a ${kind} card`);
 });
 
 test('the 事 chip: how many in hand, what can be handed in — and its popover holds the goal and the rows', () => {

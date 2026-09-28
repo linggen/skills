@@ -13,6 +13,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { resolve, task, win } from '../scripts/rules.mjs';
 import { THEN_ABOUT, THEN_ABOUT_NONE, THEN_BOUT, THEN_BOUT_BARE } from '../scripts/rules/inquiry.mjs';
+import { TO_OPEN, walk } from './prologue.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-10-05T10:00:00');
@@ -24,12 +25,7 @@ const must = (fn, s, args) => {
   assert.ok(out.result.ok, JSON.stringify(out.result));
   return out.state;
 };
-function openWorld() {
-  let s = newState(content, 'zh', NOW);
-  for (const [fn, args] of [[resolve, { exit: 'reach' }], [resolve, { exit: 'name', value: '青玄' }], [resolve, { exit: 'touch' }],
-    [win, { id: 'alchemy-first' }], [task, { action: 'done', id: 'alchemy-first' }], [resolve, { exit: 'set-out' }], [resolve, { exit: 'gift' }], [resolve, { exit: 'rest' }]]) s = must(fn, s, args);
-  return s;
-}
+const openWorld = () => walk(newState(content, 'zh', NOW), TO_OPEN, content, NOW);
 
 /* A save on disk and the command line, as the page and Ling call it. */
 function world(state) {

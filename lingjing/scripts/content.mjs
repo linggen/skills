@@ -146,6 +146,8 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     lundao: fs.existsSync(path.join(dir, 'lundao.json')) ? readJson(path.join(dir, 'lundao.json')) : null,
     // The companion's past, given back chapter by chapter (companion.mjs § 她的来处).
     lore: fs.existsSync(path.join(dir, 'companion.json')) ? readJson(path.join(dir, 'companion.json')) : null,
+    // The standing people (people.json): a scene line's `who` may be one of them, or a slot.
+    people: fs.existsSync(path.join(dir, 'people.json')) ? readJson(path.join(dir, 'people.json')) : null,
     places: loadPlaces(path.join(dir, 'places')),
     templates: { made: at('templates/made-scene.json'), world: at('templates/made-world.json') },
     dictionary: at('dictionary.json'),
@@ -432,7 +434,40 @@ export function lint(content) {
   lintPlaces(content, ids, bad);
   lintAtlas(content, bad);
   lintLore(content, bad);
+  lintPeople(content, bad);
   return problems;
+}
+
+/* The people who speak besides the creatures, and the slots that stand for one. */
+const peopleIds = content => [...(content.people?.people ?? []).map(p => p.id), ...Object.keys(content.people?.slots ?? {})];
+
+/* people.json: a lowercase id no creature has, a name, role and voice in both
+   languages, a home the map knows, a portrait on disk; each slot names a
+   person for every gender. */
+const GENDERS = ['female', 'male', 'none'];
+function lintPeople(content, bad) {
+  const doc = content.people;
+  if (!doc) return;
+  const places = new Set(Object.values(content.places).flatMap(d => d.places.map(p => p.id)));
+  const creatures = new Set(content.creatures.creatures.map(c => c.id));
+  const seen = new Set();
+  for (const p of doc.people ?? []) {
+    const at = `person ${p.id}`;
+    if (!ID.test(p.id ?? '')) bad(at, 'id must be lowercase letters, digits and dashes');
+    if (seen.has(p.id) || creatures.has(p.id) || SPEAKERS.has(p.id)) bad(at, 'id is taken');
+    seen.add(p.id);
+    for (const k of ['name', 'role', 'voice']) if (!pair(p[k])) bad(at, `${k} needs zh and en`);
+    if (!places.has(p.home)) bad(at, `home ${p.home} is not a place`);
+    if (!p.art) bad(at, 'needs a portrait');
+    else if (!fs.existsSync(path.join(content.dir, p.art))) bad(at, `art ${p.art} is missing`);
+  }
+  for (const [slot, by] of Object.entries(doc.slots ?? {})) {
+    if (seen.has(slot)) bad(`slot ${slot}`, 'shares an id with a person');
+    for (const g of GENDERS) if (!seen.has(by?.[g])) bad(`slot ${slot}`, `${g} names no person`);
+  }
+  for (const [word, by] of Object.entries(doc.address ?? {})) {
+    for (const g of GENDERS) if (!by?.[g] || typeof by[g].zh !== 'string' || typeof by[g].en !== 'string') bad(`address ${word}`, `${g} needs zh and en`);
+  }
 }
 
 /* The animations the stage plays for her unease (scripts/unease.js SHOWS). */
@@ -563,7 +598,7 @@ function bilingual(node, where, bad) {
     else if (Array.isArray(node.zh) && node.zh.length !== node.en.length) bad(where, 'zh and en differ in length');
   }
   for (const [key, value] of Object.entries(node)) {
-    if (key.startsWith('_') || key === 'riddles' || key === 'lundao') continue; // per-language lists, not pairs
+    if (key.startsWith('_') || key === 'riddles' || key === 'lundao' || key === 'address') continue; // per-language lists, not pairs; an address may be empty
     bilingual(value, `${where}.${key}`, bad);
   }
 }
@@ -764,6 +799,8 @@ function lintCreatures(content, bad) {
     if (c.drops && !content.items.items.some(i => i.id === c.drops)) bad(`creature ${c.id}`, `drops unknown item ${c.drops}`);
     if (!c.made) lintPinyin(c, bad, true);
     if (c.signature) lintSignature(content, c, bad);
+    // `appear`: the first meeting played on the stage, a few lines in both languages.
+    if (c.appear != null && !(Array.isArray(c.appear.zh) && Array.isArray(c.appear.en) && c.appear.zh.length && c.appear.zh.length <= 8)) bad(`creature ${c.id}`, 'appear is one to eight lines, zh and en');
     if (!c.art || !c.art_source) { bad(`creature ${c.id}`, 'needs art and art_source'); continue; }
     if (!fs.existsSync(path.join(content.dir, c.art))) bad(`creature ${c.id}`, `art ${c.art} is missing`);
   }
@@ -846,7 +883,7 @@ function lintScene(scene, chapter, content, ids, bad) {
   if (scene.chapter !== chapter.id) bad(where, `says chapter ${scene.chapter}, lives in ${chapter.id}`);
   const places = content.places[chapter.province]?.places ?? [];
   if (scene.at && !places.some(p => p.id === scene.at)) bad(where, `at ${scene.at}, which is not a place of ${chapter.province}`);
-  const speakers = new Set([...SPEAKERS, ...ids.creatures]);
+  const speakers = new Set([...SPEAKERS, ...ids.creatures, ...peopleIds(content)]);
   for (const line of scene.lines ?? []) if (!speakers.has(line.who)) bad(where, `unknown speaker ${line.who}`);
   for (const card of scene.show ?? []) lintCard(where, card, ids, bad);
   for (const t of scene.offers?.tasks ?? []) if (!ids.tasks.has(t)) bad(where, `offers unknown task ${t}`);
@@ -889,8 +926,15 @@ function lintExit(where, exit, chapter, content, ids, speakers, bad) {
     if (!GAME_KINDS.has(game.kind)) bad(where, `unknown game kind ${game.kind}`);
     if (game.kind === 'duel' && !ids.creatures.has(game.creature)) bad(where, `duels unknown creature ${game.creature}`);
     if (game.kind === 'duel' && !exit.withdrawn) bad(where, 'a duel needs a withdrawn line');
+    if (game.retry != null && (game.retry !== true || game.kind !== 'duel')) bad(where, 'retry is true, on a duel');
   }
   if (exit.value && !VALUE_FIELDS.has(exit.value.field)) bad(where, `cannot set ${exit.value.field}`);
+  if (exit.value?.gender != null && typeof exit.value.gender !== 'boolean') bad(where, 'a value\'s gender is true or false');
+  // 生辰 → 灵根 (rules/roots.mjs): read on the page's card, never with `set` or a value beside it.
+  if (exit.born != null && (exit.born !== true || exit.value || exit.set)) bad(where, 'born is true, alone — no value, no set');
+  // An exit that costs 体力 by itself (the prologue's steps are otherwise free): a whole number.
+  if (exit.stamina != null && !(Number.isInteger(exit.stamina) && exit.stamina > 0 && exit.stamina <= content.rewards.stamina.max)) bad(where, 'stamina is a whole number within the pool');
+  if (exit.mark != null && !ID.test(String(exit.mark))) bad(where, 'a mark is a lowercase id');
   if (exit.value) {
     // The page card draws `draw` of the pool per save, nothing preselected:
     // every offer a name that fits, in both languages, and never the same twice.

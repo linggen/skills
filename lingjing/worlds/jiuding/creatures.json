@@ -16,6 +16,25 @@
         "zh": "有兽焉，其状如白鹿而四角，名曰夫诸，见则其邑大水。",
         "en": "There is a beast shaped like a white deer with four antlers, called Fuzhu. Where it is seen, the town floods."
       },
+      "appear": {
+        "zh": [
+          "那天傍晚，风是从北边来的。",
+          "泗水上的雾本是灰的，忽然一寸一寸白下去，白得发亮，像有人在雾后头点了一盏灯。",
+          "河水停了。不是退，是停——浪头悬在半空，一滴也不落。",
+          "雾里先是一个影子，比渡口的老槐还高。然后你看清了：一头白鹿，立在水面上，四只角向天分开，像一棵冬天的树。",
+          "它低下头看你。它每迈一步，脚下的水便涨一尺——",
+          "水墙扑上岸来，把你拍进了芦苇丛里。你从泥里爬起来，吐出一口河水。"
+        ],
+        "en": [
+          "That evening the wind came from the north.",
+          "The mist on the Si had been grey. Now, inch by inch, it whitened — bright, as if someone had lit a lamp behind it.",
+          "The river stopped. Not ebbing: stopped — the crest of a wave hung in the air, and not a drop fell.",
+          "First a shadow in the mist, taller than the old locust tree at the crossing. Then you saw it: a white deer standing on the water, four antlers branching to the sky like a tree in winter.",
+          "It lowered its head to look at you. With every step it took, the water under it rose a foot —",
+          "A wall of water came up the bank and threw you into the reeds. You crawl out of the mud and spit out a mouthful of river."
+        ]
+      },
+      "_appear": "The first meeting, played in full on the stage (scripts/cards.js appear): the world turns first, a shadow before the body, the hero struck, then the classic `quote` settles last. Later meetings show one line.",
       "look": {
         "zh": "白鹿，头生四角。",
         "en": "A white deer with four antlers."

@@ -38,7 +38,19 @@ export const VERBS = {
   resolve, judge, task, win, duel, tame, refine, tale, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
   go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, story, seclude, bag,
   gear: (s, c) => ({ state: null, result: { ok: true, gear: gearBrief(c, s) } }),
+  appear,
 };
+
+/* A beast's first sight (creatures.json `appear`) played on the page's stage
+   — the page's alone: kept on the save, so every later meeting shows one line. */
+function appear(state, content, ctx, args) {
+  const id = String(args.id ?? '');
+  if (!content.creatures.creatures.some(c => c.id === id && c.appear)) return refuse('no-appear', null);
+  if ((state.appeared ?? []).includes(id)) return { state: null, result: { ok: true, appeared: id, seen: true } };
+  const s = clone(state);
+  s.appeared = [...(state.appeared ?? []), id];
+  return { state: s, result: { ok: true, appeared: id } };
+}
 
 /* Quest — 接下 · 交差 · 撂下 (design.md § 差事). The world's errands, taken by
    the player and counted by the rules. `take` at the giver; `turn` wherever he

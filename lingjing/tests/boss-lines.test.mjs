@@ -10,6 +10,7 @@ import { dayKey, newState } from '../scripts/state.mjs';
 import { duel, look, resolve, tale, task, win } from '../scripts/rules.mjs';
 import { battleHtml, boutSays, WORDS } from '../scripts/battle-card.js';
 import { begin, offers, view } from '../scripts/battle.js';
+import { TO_FUZHU, walk } from './prologue.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-09-11T12:00:00');
@@ -22,16 +23,8 @@ function must(fn, state, args, c = ctx()) {
   return out;
 }
 
-/* The spine to 夫诸's scene, then the world open (as rules.test.mjs walks it). */
-function toFuzhu(lang = 'zh') {
-  let s = newState(content, lang, NOW);
-  s = must(resolve, s, { exit: 'reach' }).state;
-  s = must(resolve, s, { exit: 'name', value: '青玄' }).state;
-  s = must(resolve, s, { exit: 'touch' }).state;
-  s = must(win, s, { id: 'alchemy-first' }).state;
-  s = must(task, s, { action: 'done', id: 'alchemy-first' }).state;
-  return must(resolve, s, { exit: 'set-out' }).state;
-}
+/* The spine to 夫诸's scene, then the world open (tests/prologue.mjs walks it). */
+const toFuzhu = (lang = 'zh') => walk(newState(content, lang, NOW), TO_FUZHU, content, NOW);
 function openWorld() {
   let s = toFuzhu();
   s = must(resolve, s, { exit: 'gift' }).state;

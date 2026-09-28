@@ -14,7 +14,8 @@
    "roads": [
     "sibei",
     "pengcheng",
-    "huaidu"
+    "huaidu",
+    "dukou"
    ],
    "map": [
     0.804,
@@ -45,7 +46,8 @@
     "sishui",
     "yunlong",
     "lvliang",
-    "zhangnan"
+    "zhangnan",
+    "waimen"
    ],
    "map": [
     0.7957,
@@ -107,7 +109,12 @@
     0.7894,
     0.4794
    ],
-   "has": { "seeds": true, "games": ["luoshu"] },
+   "has": {
+    "seeds": true,
+    "games": [
+     "luoshu"
+    ]
+   },
    "line": {
     "zh": "山形如卧龙，山上有石床，传说仙人在此醉卧。",
     "en": "A hill shaped like a sleeping dragon, a stone bed on top where an immortal is said to have slept off his wine."
@@ -164,7 +171,12 @@
     0.8186,
     0.4917
    ],
-   "has": { "seeds": true, "games": ["xiangqi"] },
+   "has": {
+    "seeds": true,
+    "games": [
+     "xiangqi"
+    ]
+   },
    "line": {
     "zh": "下邳的老桥。当年一位老人在桥上掉了鞋，一个少年替他拾了三次。",
     "en": "The old bridge at Xiapi. An old man once dropped his shoe here; a young man picked it up three times."
@@ -280,7 +292,12 @@
     0.7964,
     0.4529
    ],
-   "has": { "seeds": true, "games": ["huarong"] },
+   "has": {
+    "seeds": true,
+    "games": [
+     "huarong"
+    ]
+   },
    "line": {
     "zh": "湖上千顷荷，湖心有岛，岛上有古墓。",
     "en": "A thousand acres of lotus; an island at the heart, and an old tomb on the island."
@@ -422,6 +439,119 @@
    "meets": [
     "find"
    ]
+  },
+  {
+   "id": "dukou",
+   "name": {
+    "zh": "渡口",
+    "en": "The Si crossing"
+   },
+   "tier": 0,
+   "roads": [
+    "sishui",
+    "shanlu"
+   ],
+   "map": [
+    0.8,
+    0.4275
+   ],
+   "has": {
+    "games": [
+     "huarong"
+    ]
+   },
+   "line": {
+    "zh": "渡叔的船拴在这里，一盏灯挂在桩上，大水天也不灭。",
+    "en": "Du Shu's boat is tied here, a lantern on the post that stays lit even in the floods."
+   },
+   "water": true
+  },
+  {
+   "id": "shanlu",
+   "name": {
+    "zh": "上山路",
+    "en": "The mountain path"
+   },
+   "tier": 0,
+   "roads": [
+    "dukou",
+    "shanmen"
+   ],
+   "map": [
+    0.8065,
+    0.4235
+   ],
+   "line": {
+    "zh": "往沉鼎观的石径，沟深草密，三年一回挤满上山的孩子。",
+    "en": "The stone path up to Chending Temple: deep ditches, thick grass, and once in three years, crowded with children climbing."
+   }
+  },
+  {
+   "id": "shanmen",
+   "name": {
+    "zh": "沉鼎观 · 山门",
+    "en": "Chending Temple · The gate"
+   },
+   "tier": 0,
+   "roads": [
+    "shanlu",
+    "zhengdian",
+    "waimen"
+   ],
+   "map": [
+    0.8105,
+    0.4185
+   ],
+   "line": {
+    "zh": "三百级石阶顶上一座旧山门，瞿老守在门里，谁进谁出都要过他那一关。",
+    "en": "An old gate at the top of three hundred steps. Elder Qu keeps it; no one comes or goes without passing him."
+   }
+  },
+  {
+   "id": "zhengdian",
+   "name": {
+    "zh": "沉鼎观 · 正殿",
+    "en": "Chending Temple · The main hall"
+   },
+   "tier": 0,
+   "roads": [
+    "shanmen",
+    "waimen"
+   ],
+   "map": [
+    0.8125,
+    0.4135
+   ],
+   "line": {
+    "zh": "正殿里没有神像，只有一口空的石座，四方，四足。",
+    "en": "No statue in the main hall — only an empty stone seat, square, on four feet."
+   }
+  },
+  {
+   "id": "waimen",
+   "name": {
+    "zh": "沉鼎观 · 外门",
+    "en": "Chending Temple · The outer court"
+   },
+   "tier": 0,
+   "roads": [
+    "shanmen",
+    "zhengdian",
+    "sibei"
+   ],
+   "map": [
+    0.8045,
+    0.4155
+   ],
+   "has": {
+    "games": [
+     "qiqiao"
+    ]
+   },
+   "line": {
+    "zh": "外门的院子：晒着的柴，井边的水桶，周衡的账本。",
+    "en": "The outer court: firewood drying, buckets by the well, Zhou Heng's ledger."
+   }
   }
  ]
 }

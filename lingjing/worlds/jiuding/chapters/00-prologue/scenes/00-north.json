@@ -8,12 +8,12 @@
   "en": "North bank of the Si"
  },
  "setup": {
-  "zh": "第一鼎的气息，在北方。",
-  "en": "The breath of the first cauldron lies to the north."
+  "zh": "水退下去的时候，袖子里的铃——响了一下。很轻，只有你听见。铃声指向北方。",
+  "en": "As the water falls back, the bell in your sleeve rings — once. Very softly; only you hear it. The sound points north."
  },
  "recap": {
-  "zh": "第一鼎的气息在北方，冀州。",
-  "en": "The first cauldron's breath lay north, in Ji."
+  "zh": "铃第一次响了一下，指向北方：第一鼎的气息在冀州。",
+  "en": "The bell rang once for the first time, pointing north: the first cauldron's breath lay in Ji."
  },
  "cast": [
   "fuzhu"
@@ -46,6 +46,15 @@
     }
    ],
    "ends": "00-prologue"
+  }
+ ],
+ "lines": [
+  {
+   "who": "ling",
+   "text": {
+    "zh": "第一鼎的气息，在北方。",
+    "en": "The breath of the first cauldron lies to the north."
+   }
   }
  ]
 }

@@ -1,4 +1,4 @@
-// 取一个道号 — a scene exit with `value` is named on the page's card, never by
+// 名字 (it was 道号 until the prologue rewrite, 2026-09-28) — a scene exit with `value` is named on the page's card, never by
 // Ling. Live, 2026-09-28: the chat's AskUser offered 「取一个道号」 as its only
 // option; tapped, Ling Resolved it with 青玄 — every player became 青玄. His
 // ruling: 给用户一个card with some options, 用户可以选择或者输入一个自定义的,
@@ -19,7 +19,7 @@ const content = loadContent();
 const NOW = new Date('2026-09-28T12:00:00');
 const ctx = { now: NOW, quests: [] };
 const waking = (lang = 'zh', created = NOW) => resolve(newState(content, lang, created), content, ctx, { exit: 'reach' }).state;
-const scene = content.chapters['00-prologue'].scenes['00-waking'];
+const scene = content.chapters['00-prologue'].scenes['00-ferry'];
 const rule = scene.exits.find(e => e.id === 'name').value;
 const exitOf = l => l.scene.exits.find(e => e.id === 'name');
 
@@ -34,7 +34,8 @@ test('the opening names from a pool: four drawn per save, the same on a reload, 
   assert.ok(draws.size >= 6, `twelve saves drew only ${draws.size} different sets`);
   const en = exitOf(look(waking('en'), content, ctx)).value;
   for (const o of en.offers) assert.equal(rule.offers.find(p => p.zh === o.value).en, o.label, 'in English: the pinyin shown, the name kept in 汉字');
-  assert.equal(en.label, 'Take a Daoist name');
+  assert.equal(en.label, 'Tell Du Shu your name');
+  assert.equal(one.gender, true, 'the card asks 男 · 女 as well');
 });
 
 test('the card stands on the stage; the chat asks nothing and offers no name', () => {
@@ -44,7 +45,7 @@ test('the card stands on the stage; the chat asks nothing and offers no name', (
   assert.equal(l.ask, null, 'no AskUser for the name');
   assert.match(l.then, /never AskUser for it, never name one for them, never Resolve it/);
   const ungated = askOf(content, waking(), ctx, {}, true);
-  assert.ok(!(ungated?.options ?? []).some(o => o.exit === 'name'), 'no 取一个道号 option, even ungated');
+  assert.ok(!(ungated?.options ?? []).some(o => o.exit === 'name'), 'no naming option, even ungated');
 });
 
 test('Ling may not name the player: her Resolve of a value exit is refused unless the name is in their own typed words', () => {
@@ -74,15 +75,16 @@ test('the command line: Ling refused and nothing written; the page names, page_d
   assert.equal(refused.refused, 'page-names');
   assert.deepEqual(state(), before, 'a refusal writes nothing');
   const offered = cli('look').scene.exits.find(e => e.id === 'name').value.offers;
-  const named = cli('resolve', '--exit=name', `--value=${offered[2].value}`);
+  const named = cli('resolve', '--exit=name', `--value=${offered[2].value}`, '--gender=male');
   assert.equal(named.ok, true, JSON.stringify(named));
-  assert.deepEqual(named.named, { field: 'name', value: offered[2].value });
+  assert.deepEqual(named.named, { field: 'name', value: offered[2].value, gender: 'male' });
+  assert.equal(state().gender, 'male');
   assert.equal(state().name, offered[2].value);
   const told = cli('look', `--said=[scene] named ${offered[2].value}`, '--for=ling');
   const fact = told.page_did.find(d => d.verb === 'resolve');
   assert.ok(fact, JSON.stringify(told.page_did));
-  assert.match(fact.what, new RegExp(`「${offered[2].value}」.*${offered[2].value}。从今日起，这是你的道号。`));
-  assert.equal(told.scene.id, '00-stone');
+  assert.match(fact.what, new RegExp(`「${offered[2].value}」 \\(a boy\\).*渡叔: ${offered[2].value}。好名字。`));
+  assert.equal(told.scene.id, '00-boat');
   fs.rmSync(data, { recursive: true, force: true });
 });
 
@@ -90,7 +92,7 @@ test('the command line: Ling refused and nothing written; the page names, page_d
 const pageCtx = (l, extra = {}) => ({ look: l, lang: l.lang, words: WORDS[l.lang], content: {}, artBase: '../worlds/jiuding/', ...extra });
 const card = { card: 'value', id: 'name' };
 
-test('the 道号 card draws: the four names as chips, a field for his own, and a confirm shut until one is chosen', () => {
+test('the 名字 card draws: 男 · 女, the four names as chips, a field for his own, and a confirm shut until both are chosen', () => {
   for (const lang of ['zh', 'en']) {
     const l = look(waking(lang), content, ctx), offers = exitOf(l).value.offers;
     const html = cardHtml(card, pageCtx(l));
@@ -100,12 +102,17 @@ test('the 道号 card draws: the four names as chips, a field for his own, and a
     assert.doesNotMatch(html, /namechip on/, 'nothing preselected');
     assert.match(html, /<input type="text" id="value-text" data-value-max="8" maxlength="8"/);
     assert.match(html, /data-value-go="name" disabled>/, 'confirm shut until a name is chosen');
-    assert.match(html, lang === 'zh' ? /取一个道号[\s\S]*选一个，或自己写一个。[\s\S]*至多8字/ : /Take a Daoist name[\s\S]*Pick one, or write your own\.[\s\S]*up to 8 characters/);
-    const picked = cardHtml(card, pageCtx(l, { valuePick: offers[1].value }));
+    assert.match(html, lang === 'zh' ? /告诉渡叔你的名字[\s\S]*你是[\s\S]*女[\s\S]*男[\s\S]*选一个，或自己写一个。[\s\S]*至多8字/ : /Tell Du Shu your name[\s\S]*You are[\s\S]*a girl[\s\S]*a boy[\s\S]*Pick one, or write your own\.[\s\S]*up to 8 characters/);
+    assert.equal((html.match(/data-gender-pick=/g) ?? []).length, 2, '男 · 女');
+    assert.doesNotMatch(html, /namechip on/, 'no gender preselected either');
+    const noGender = cardHtml(card, pageCtx(l, { valuePick: offers[1].value }));
+    assert.match(noGender, new RegExp(`data-value-go="name" disabled>${lang === 'zh' ? '先选男 · 女' : 'Girl or boy first'}<`), 'a name without 男 · 女 stays shut');
+    const picked = cardHtml(card, pageCtx(l, { valuePick: offers[1].value, valueGender: 'female' }));
+    assert.match(picked, /namechip on" data-gender-pick="female" aria-pressed="true"/);
     assert.match(picked, new RegExp(`namechip on" data-value-pick="${offers[1].value}" aria-pressed="true"`));
     assert.match(picked, new RegExp(`data-value-go="name">${lang === 'zh' ? `就叫「${offers[1].value}」` : `Be called ${offers[1].label}`}<`));
-    const own = cardHtml(card, pageCtx(l, { valuePick: offers[1].value, valueText: 'Alex' }));
-    assert.doesNotMatch(own, /namechip on/, 'his own words win over a chip');
+    const own = cardHtml(card, pageCtx(l, { valuePick: offers[1].value, valueText: 'Alex', valueGender: 'male' }));
+    assert.doesNotMatch(own, /namechip on" data-value-pick/, 'his own words win over a chip');
     assert.match(own, /value="Alex"[\s\S]*data-value-go="name">/);
     assert.match(cardHtml(card, pageCtx(l, { valueText: '一二三四五六七八九' })), /data-value-go="name" disabled>/, 'too long: shut');
     assert.match(cardHtml(card, pageCtx(l, { valueText: '   ' })), /data-value-go="name" disabled>/, 'blank: shut');
@@ -125,7 +132,7 @@ test('the card and the rules agree on what is a name (one check, state.mjs fitVa
 
 test('the content lint holds a value exit\'s pool', () => {
   const bad = structuredClone(content);
-  const v = bad.chapters['00-prologue'].scenes['00-waking'].exits.find(e => e.id === 'name').value;
+  const v = bad.chapters['00-prologue'].scenes['00-ferry'].exits.find(e => e.id === 'name').value;
   v.offers.push({ zh: '青玄', en: 'Qingxuan' }, { zh: '一二三四五六七八九', en: 'Toolong' });
   v.draw = 40;
   const errors = lint(bad).join('\n');

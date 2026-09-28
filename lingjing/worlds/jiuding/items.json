@@ -107,6 +107,39 @@
       }
     },
     {
+      "id": "grey-robe",
+      "kind": "robe",
+      "name": {
+        "zh": "灰袍",
+        "en": "Grey robe"
+      },
+      "art": "art/items/grey-robe.webp",
+      "about": {
+        "zh": "沉鼎观弟子的粗布袍，入门那天发的。",
+        "en": "The coarse robe of a Chending Temple disciple, given on the day of entry."
+      },
+      "buy": 30,
+      "sell": 8,
+      "effect": {
+        "def": 1
+      }
+    },
+    {
+      "id": "ganliang",
+      "kind": "material",
+      "name": {
+        "zh": "干粮",
+        "en": "Travel rations"
+      },
+      "art": "art/items/ganliang.webp",
+      "about": {
+        "zh": "渡叔塞给你的一袋干饼，硬得能砸核桃。",
+        "en": "A bag of flat cakes Du Shu pressed on you, hard enough to crack walnuts."
+      },
+      "buy": 6,
+      "sell": 2
+    },
+    {
       "id": "jade-fish",
       "kind": "treasure",
       "name": {

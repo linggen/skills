@@ -1,0 +1,128 @@
+{
+ "version": 1,
+ "id": "00-ferry",
+ "chapter": "00-prologue",
+ "at": "dukou",
+ "place": {
+  "zh": "泗水渡口 · 夜",
+  "en": "The Si crossing · night"
+ },
+ "setup": {
+  "zh": "渡口的灯在雨里晃。提灯的是渡叔，在这条河上撑了一辈子船。",
+  "en": "The crossing's lantern sways in the rain. It is Du Shu who holds it; he has poled a boat on this river all his life."
+ },
+ "recap": {
+  "zh": "渡口，渡叔问你叫什么——明日沉鼎观开山门，三年一回。",
+  "en": "At the crossing Du Shu asked your name: tomorrow Chending Temple opens its gate, once in three years."
+ },
+ "cast": [],
+ "lines": [
+  {
+   "who": "dushu",
+   "text": {
+    "zh": "大水天还往河边跑，你爹娘在的时候……罢了。手里拿的什么？",
+    "en": "Running to the river in a flood. When your mother and father were alive… never mind. What's that in your hand?"
+   }
+  },
+  {
+   "who": "ling",
+   "text": {
+    "zh": "你把铃攥进袖子里。渡叔看了你一眼，没有再问。",
+    "en": "You close the bell into your sleeve. Du Shu looks at you once and does not ask again."
+   }
+  },
+  {
+   "who": "dushu",
+   "text": {
+    "zh": "明日沉鼎观开山门，三年一回。你那点灵性，窝在渡口可惜了。",
+    "en": "Tomorrow Chending Temple opens its gate — once in three years. That spark in you is wasted at a ferry landing."
+   }
+  },
+  {
+   "who": "dushu",
+   "text": {
+    "zh": "去吧。去之前，先告诉我——观里的人问你叫什么，你怎么答？",
+    "en": "Go. But first tell me: when they ask your name up there, what will you answer?"
+   }
+  }
+ ],
+ "buttons": [
+  "name"
+ ],
+ "exits": [
+  {
+   "id": "name",
+   "label": {
+    "zh": "告诉渡叔你的名字",
+    "en": "Tell Du Shu your name"
+   },
+   "means": "gives a name to be called by, and whether a girl or a boy — the page card asks it: offered names to tap, or the player's own",
+   "value": {
+    "field": "name",
+    "max_chars": 8,
+    "gender": true,
+    "offers": [
+     {
+      "zh": "青玄",
+      "en": "Qingxuan"
+     },
+     {
+      "zh": "云舟",
+      "en": "Yunzhou"
+     },
+     {
+      "zh": "墨白",
+      "en": "Mobai"
+     },
+     {
+      "zh": "清和",
+      "en": "Qinghe"
+     },
+     {
+      "zh": "长庚",
+      "en": "Changgeng"
+     },
+     {
+      "zh": "小满",
+      "en": "Xiaoman"
+     },
+     {
+      "zh": "若水",
+      "en": "Ruoshui"
+     },
+     {
+      "zh": "听松",
+      "en": "Tingsong"
+     },
+     {
+      "zh": "秋白",
+      "en": "Qiubai"
+     },
+     {
+      "zh": "知白",
+      "en": "Zhibai"
+     },
+     {
+      "zh": "观澜",
+      "en": "Guanlan"
+     },
+     {
+      "zh": "栖霞",
+      "en": "Qixia"
+     }
+    ],
+    "draw": 4
+   },
+   "beat": [
+    {
+     "who": "dushu",
+     "text": {
+      "zh": "{name}。好名字。去了观里，别说是我荐的。",
+      "en": "{name}. A good name. Up there, don't say I sent you."
+     }
+    }
+   ],
+   "next": "00-boat"
+  }
+ ]
+}

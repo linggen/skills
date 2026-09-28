@@ -1,0 +1,51 @@
+{
+ "version": 1,
+ "id": "00-boat",
+ "chapter": "00-prologue",
+ "at": "dukou",
+ "place": {
+  "zh": "泗水渡口",
+  "en": "The Si crossing"
+ },
+ "setup": {
+  "zh": "雨小了。渡叔的船还横在滩上，一半泡在水里。天快亮了。",
+  "en": "The rain eases. Du Shu's boat still lies across the shingle, half in the water. Dawn is close."
+ },
+ "recap": {
+  "zh": "渡叔送你上山：去沉鼎观的山路，从渡口往北。",
+  "en": "Du Shu saw you off: the path to Chending Temple runs north from the crossing."
+ },
+ "cast": [],
+ "lines": [
+  {
+   "who": "ling",
+   "text": {
+    "zh": "去沉鼎观的山路，从渡口往北。",
+    "en": "The path to Chending Temple runs north from the crossing."
+   }
+  }
+ ],
+ "buttons": [
+  "uphill"
+ ],
+ "exits": [
+  {
+   "id": "uphill",
+   "label": {
+    "zh": "上山 · 去沉鼎观",
+    "en": "Up the mountain · To the temple"
+   },
+   "means": "sets off up the mountain to the temple, or moves on",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你背起包袱，回头看了一眼。渡叔的灯还亮着。",
+      "en": "You shoulder your bundle and look back once. Du Shu's lantern is still lit."
+     }
+    }
+   ],
+   "next": "00-shanlu"
+  }
+ ]
+}

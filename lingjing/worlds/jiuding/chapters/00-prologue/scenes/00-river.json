@@ -4,18 +4,27 @@
  "chapter": "00-prologue",
  "at": "sishui",
  "place": {
-  "zh": "泗水之畔",
-  "en": "The bank of the Si River"
+  "zh": "泗水之畔 · 雨夜",
+  "en": "The bank of the Si · a night of rain"
  },
  "setup": {
-  "zh": "雨夜。泗水之畔，水声压过了一切。浅水里有一点银光，忽明忽暗，像在等谁。",
-  "en": "A night of rain. On the bank of the Si River, the water drowns out everything else. In the shallows a point of silver light flickers, as if waiting for someone."
+  "zh": "泗水涨了三天。你家的渔船拴在渡口，缆绳绷得像弓弦。你是来收网的。网里没有鱼——只有一点银光，在浅水里忽明忽暗，像在等谁。",
+  "en": "The Si has been rising for three days. Your family's boat is tied at the crossing, its rope drawn tight as a bowstring. You came to haul in the net. There are no fish in it — only a point of silver light in the shallows, flickering, as if waiting for someone."
  },
  "recap": {
-  "zh": "泗水边的雨夜，一道银光落进浅滩——像在等谁。",
-  "en": "A rain night on the Si: a point of silver light fell into the shallows, as if waiting for someone."
+  "zh": "雨夜收网，网里没有鱼，只有一点银光；你拾起它——一只不响的银铃。",
+  "en": "Hauling the net on a rain night you found no fish, only a silver light — and picked it up: a small bell that would not ring."
  },
  "cast": [],
+ "lines": [
+  {
+   "who": "ling",
+   "text": {
+    "zh": "你伸手，还是不伸？",
+    "en": "Do you reach for it, or not?"
+   }
+  }
+ ],
  "buttons": [
   "reach",
   "leave"
@@ -24,33 +33,67 @@
   {
    "id": "reach",
    "label": {
-    "zh": "伸手入水",
-    "en": "Reach into the water"
+    "zh": "伸手去拿",
+    "en": "Reach for it"
    },
-   "means": "reaches into the water or touches the light",
-   "next": "00-waking",
+   "means": "reaches into the water or takes the light",
    "grant": {
     "table": "scene",
     "item": "moon-bell"
-   }
-  },
-  {
-   "id": "leave",
-   "label": {
-    "zh": "转身离开",
-    "en": "Walk away"
    },
-   "means": "walks away from the light or ignores it",
-   "stay": true,
    "beat": [
     {
      "who": "ling",
      "text": {
-      "zh": "你走出十步。银光追着你的影子，不肯熄灭。",
-      "en": "You walk ten paces. The light follows your shadow and will not go out."
+      "zh": "指尖触到的一瞬，银光灭了。掌心里躺着一只小铃——银的，湿冷，系绳早烂了。摇一摇，不响。",
+      "en": "The moment your fingers touch it, the light goes out. In your palm lies a small bell — silver, cold and wet, its cord long rotted. You shake it: no sound."
+     }
+    },
+    {
+     "who": "ling",
+     "text": {
+      "zh": "渡口那头有人提着灯喊你。是渡叔。",
+      "en": "From the crossing someone calls your name, a lantern held high. It is Du Shu."
      }
     }
-   ]
+   ],
+   "next": "00-ferry"
+  },
+  {
+   "id": "leave",
+   "label": {
+    "zh": "先收网，明天再说",
+    "en": "Haul the net; leave it till tomorrow"
+   },
+   "means": "walks away, leaves the light for tomorrow, or ignores it",
+   "grant": {
+    "table": "scene",
+    "item": "moon-bell"
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "一夜之后，银光还在。它在等的，大概就是你。你伸出了手。",
+      "en": "A night later the light is still there. Whatever it waits for, it is probably you. You reach out."
+     }
+    },
+    {
+     "who": "ling",
+     "text": {
+      "zh": "指尖触到的一瞬，银光灭了。掌心里躺着一只小铃——银的，湿冷，系绳早烂了。摇一摇，不响。",
+      "en": "The moment your fingers touch it, the light goes out. In your palm lies a small bell — silver, cold and wet, its cord long rotted. You shake it: no sound."
+     }
+    },
+    {
+     "who": "ling",
+     "text": {
+      "zh": "渡口那头有人提着灯喊你。是渡叔。",
+      "en": "From the crossing someone calls your name, a lantern held high. It is Du Shu."
+     }
+    }
+   ],
+   "next": "00-ferry"
   }
  ]
 }

@@ -1,0 +1,75 @@
+{
+ "version": 1,
+ "id": "00-hall",
+ "chapter": "00-prologue",
+ "at": "zhengdian",
+ "place": {
+  "zh": "沉鼎观 · 正殿",
+  "en": "Chending Temple · The main hall"
+ },
+ "setup": {
+  "zh": "沉鼎观的正殿里没有神像，只有一口空的石座，四方，四足，大得能躺下一个人。石座前立着测灵石。",
+  "en": "There is no statue in the main hall — only an empty stone seat, square, on four feet, big enough for a person to lie in. Before it stands the spirit stone."
+ },
+ "recap": {
+  "zh": "入门仪式：测灵石测出你的灵根，观主说路长路短，不在灵根。",
+  "en": "The rite of entry: the spirit stone read your roots, and the abbot said the length of the road is not in the roots."
+ },
+ "cast": [],
+ "lines": [
+  {
+   "who": "xuanchenzi",
+   "text": {
+    "zh": "报上生辰。",
+    "en": "Tell me the day you were born."
+   }
+  }
+ ],
+ "buttons": [
+  "born"
+ ],
+ "exits": [
+  {
+   "id": "born",
+   "label": {
+    "zh": "报上生辰 · 测灵根",
+    "en": "Give your birthday · The root test"
+   },
+   "means": "gives the day they were born, or lets the stone read them — the page card asks it",
+   "born": true,
+   "show": [
+    {
+     "card": "traits"
+    }
+   ],
+   "grant": {
+    "table": "scene",
+    "item": "grey-robe"
+   },
+   "beat": [
+    {
+     "who": "xuanchenzi",
+     "text": {
+      "zh": "{灵根}。——路长路短，不在灵根。",
+      "en": "{灵根}. — Whether the road is long or short is not in the roots."
+     }
+    },
+    {
+     "who": "ling",
+     "text": {
+      "zh": "他的目光在你袖口停了一瞬。你袖子里的铃，冰了一下。",
+      "en": "His eyes rest on your sleeve a moment. The bell inside it turns cold."
+     }
+    },
+    {
+     "who": "ling",
+     "text": {
+      "zh": "灰袍、储物袋、一本《沉鼎观入门功法》，交到了你手里。从此观里的人叫你「{name}{兄姐}」。",
+      "en": "A grey robe, a storage pouch and a copy of the temple's first manual are put into your hands. From today the temple calls you {兄姐} {name}."
+     }
+    }
+   ],
+   "next": "00-waimen"
+  }
+ ]
+}

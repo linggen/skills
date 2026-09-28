@@ -9,15 +9,21 @@
   "gate": null,
   "title": { "zh": "序章 · 泗水", "en": "Prologue · The Si River" },
   "summary": {
-    "zh": "雨夜泗水，银光里醒来一个不记得自己是谁的少女。测过灵根，做完第一份功课，在雾里遇见夫诸。第一鼎的气息在北方。",
-    "en": "A rain night on the Si River; a girl who remembers nothing wakes from a silver light. The root test, the first practice, Fuzhu in the mist. The first cauldron's breath lies north."
+    "zh": "雨夜泗水，渔家的孩子在网里拾到一只不响的银铃。渡叔送你上山，瞿老三试，观主测灵根，周衡发下第一份功课；傍晚，夫诸出水。第一鼎的气息在北方。",
+    "en": "A rain night on the Si: a fisher's child finds a silent silver bell in the net. Du Shu sends you up the mountain; Elder Qu's three trials, the abbot's root test, Zhou Heng's first chore; at evening Fuzhu rises from the water. The first cauldron's breath lies north."
   },
   "intro": {
-    "zh": "雨夜，泗水。你在水边醒来，什么都不记得。浅水里有一点银光，像在等你。",
-    "en": "A rain night on the Si. You wake at the water's edge remembering nothing. In the shallows a point of silver light, as if waiting for you."
+    "zh": "雨夜，泗水。你是来收网的。网里没有鱼，只有一点银光，像在等你。",
+    "en": "A rain night on the Si. You came to haul in the net. No fish in it — only a point of silver light, as if waiting for you."
   },
   "mystery": {
     "zh": "泗水里那点银光，在等谁？",
     "en": "Whom is the silver light in the Si waiting for?"
+  },
+  "_aliases": "Scene ids an older save may still hold, and the scene of this chapter nearest to each (state.mjs fitWorld). The 2026-09-28 rewrite: the old naming and root test fall at the crossing (the name and the 男 · 女 are asked again; roots already read are kept), the old practice at the outer court.",
+  "aliases": {
+    "00-waking": "00-ferry",
+    "00-stone": "00-ferry",
+    "00-practice": "00-waimen"
   }
 }

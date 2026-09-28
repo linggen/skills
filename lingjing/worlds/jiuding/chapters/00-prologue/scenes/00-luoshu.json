@@ -1,0 +1,63 @@
+{
+ "version": 1,
+ "id": "00-luoshu",
+ "chapter": "00-prologue",
+ "at": "shanmen",
+ "place": {
+  "zh": "沉鼎观 · 山门 · 石坪",
+  "en": "Chending Temple · The gate · the stone yard"
+ },
+ "setup": {
+  "zh": "二试在山门里的一方石坪上。地上刻着九宫，缺了几个数。",
+  "en": "The second trial is on a stone yard inside the gate: a square of nine cut into the ground, some numbers missing."
+ },
+ "recap": {
+  "zh": "二试，洛书九宫：纵、横、斜，都要是十五。",
+  "en": "Second trial, the Luo Shu square: fifteen down, across and corner to corner."
+ },
+ "cast": [],
+ "lines": [
+  {
+   "who": "qulao",
+   "text": {
+    "zh": "二试，脑子。填上。纵、横、斜，都要是十五。",
+    "en": "Second, wits. Fill it in. Down, across, corner to corner — fifteen every way."
+   }
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "gate-luoshu"
+  ]
+ },
+ "buttons": [
+  "pass"
+ ],
+ "exits": [
+  {
+   "id": "pass",
+   "label": {
+    "zh": "二试 · 交卷",
+    "en": "Second trial · Hand it in"
+   },
+   "means": "hands in the solved square, or asks to go on to the third trial",
+   "needs": {
+    "task": "gate-luoshu"
+   },
+   "refuse": {
+    "zh": "九宫还没填满。瞿老不看半张卷子。",
+    "en": "The square is not filled yet. Elder Qu does not look at half an answer."
+   },
+   "beat": [
+    {
+     "who": "qulao",
+     "text": {
+      "zh": "……嗯。三试。",
+      "en": "…Hm. The third."
+     }
+    }
+   ],
+   "next": "00-longzhi"
+  }
+ ]
+}

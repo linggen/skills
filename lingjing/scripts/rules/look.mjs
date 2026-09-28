@@ -2,9 +2,9 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { CAST, gameOf } from '../content.mjs';
 import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
-import { dayKey, fill, periodKey, pick, rollDay, settleStamina, speedOf, stepName, threshold } from '../state.mjs';
+import { dayKey, fill, genderOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, stepName, threshold } from '../state.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
-import { askOf, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
+import { askOf, THEN_BORN, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
 import { fightSetup } from './cards.mjs';
 import { callDue, companionOf, hasCompanion, herCard, questBrief, recalledOf } from './companion.mjs';
 import { clone, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mjs';
@@ -32,8 +32,11 @@ const shelfOf = (content, province, state = null) => {
 };
 const forSale = (content, state, item, province) => shelfOf(content, province, state).some(i => i.id === item.id);
 
-/* A speaker's name in the player's language; Ling narrates, unnamed. */
-const nameOf = (content, who, lang) => (who === 'ling' ? null : pick(CAST[who] ?? creatureOf(content, who)?.name, lang));
+/* A speaker's name in the player's language; Ling narrates, unnamed. A
+   person (people.json) or a slot (`ban`, the companion by gender) is named
+   as the save makes them. */
+const nameOf = (content, who, lang, state = null) => (who === 'ling' ? null
+  : pick(CAST[who] ?? creatureOf(content, who)?.name ?? personOf(content, state, who)?.name, lang));
 /* Lines as the scene says them. Before the companion is found, her line is
    the narration's `alone` text, or it is not said at all. Once she walks
    with the player it is not here either: it is hers to say, in her own words
@@ -44,8 +47,22 @@ const spoken = (content, state, lines) => (lines ?? []).flatMap(l => {
     if (hasCompanion(state)) return [];
     return l.alone ? [{ who: 'ling', name: null, text: fill(pick(l.alone, state.lang), state) }] : [];
   }
-  return [{ who: l.who, name: nameOf(content, l.who, state.lang), text: fill(pick(l.text, state.lang), state) }];
+  // A person speaks as themselves — a slot as the one it stands for.
+  const person = personOf(content, state, l.who);
+  return [{ who: person?.id ?? l.who, name: nameOf(content, l.who, state.lang, state), text: fill(pick(l.text, state.lang), state, content) }];
 });
+
+/* The people a scene brings on — its lines' speakers and its exits' — each
+   with the voice Ling writes them in, and the portrait the page draws. */
+function peopleIn(content, state, scene) {
+  const whos = [...(scene.lines ?? []), ...scene.exits.flatMap(e => e.beat ?? [])].map(l => l.who);
+  const seen = new Map();
+  for (const who of whos) {
+    const p = personOf(content, state, who);
+    if (p && !seen.has(p.id)) seen.set(p.id, { id: p.id, name: pick(p.name, state.lang), role: pick(p.role, state.lang), voice: pick(p.voice, state.lang), art: p.art });
+  }
+  return [...seen.values()];
+}
 
 /* A made world is read by its map: its scenes stand at places, so their
    cards end with the province's map, as its places' do. */
@@ -55,8 +72,9 @@ function sceneBrief(content, state, now = new Date()) {
   const scene = sceneOf(content, state);
   if (!scene) return null;
   const ctxNow = now;
-  const lang = state.lang, say = pair => fill(pick(pair, lang), state);
+  const lang = state.lang, say = pair => fill(pick(pair, lang), state, content);
   const buttons = scene.buttons ?? [];
+  const people = peopleIn(content, state, scene);
   return {
     id: scene.id,
     place: say(scene.place),
@@ -64,6 +82,7 @@ function sceneBrief(content, state, now = new Date()) {
     cast: (scene.cast ?? []).filter(id => id !== companionOf(content)?.id || hasCompanion(state)).map(id => ({ id, name: nameOf(content, id, lang) })),
     show: withMap(content, scene.show ?? []),
     lines: spoken(content, state, scene.lines),
+    ...(people.length ? { people } : {}),
     buttons: buttons.map(id => ({ id, label: say(scene.exits.find(e => e.id === id).label) })),
     exits: scene.exits.map(e => exitBrief(content, state, e, buttons.includes(e.id), ctxNow, scene)),
   };
@@ -115,7 +134,8 @@ function saysOf(content, state, game) {
 function duelBrief(content, state, game, now, { door = false } = {}) {
   const creature = creatureOf(content, game.creature);
   const lang = state.lang, today = state.duels?.[game.creature];
-  const open = today?.day === dayKey(now) ? today : null;
+  // A trial fight (`retry`) lost or run dry is simply open again.
+  const open = today?.day === dayKey(now) && !(game.retry && ['lost', 'withdrew'].includes(today.outcome)) ? today : null;
   return {
     id: game.id,
     creature: {
@@ -161,11 +181,13 @@ function exitBrief(content, state, exit, button, ctxNow = new Date(), scene = sc
     Object.assign(brief, { game, won: Boolean(state.wins?.[game.id]) });
     if (game.kind === 'duel') {
       const today = state.duels?.[game.creature];
-      brief.withdrawn = today?.day === dayKey(ctxNow) && today.outcome === 'lost';
+      brief.withdrawn = !game.retry && today?.day === dayKey(ctxNow) && today.outcome === 'lost';
       brief.duel = duelBrief(content, state, game, ctxNow);
     }
   }
-  if (exit.value) brief.value = { field: exit.value.field, max_chars: exit.value.max_chars, label: fill(pick(exit.label, state.lang), state), offers: drawnOffers(state, exit).map(o => ({ label: pick(o, state.lang), value: o.zh })) };
+  if (exit.value) brief.value = { field: exit.value.field, max_chars: exit.value.max_chars, label: fill(pick(exit.label, state.lang), state), ...(exit.value.gender ? { gender: true } : {}), offers: drawnOffers(state, exit).map(o => ({ label: pick(o, state.lang), value: o.zh })) };
+  // 生辰 → 灵根: asked on the page's card; a save that holds its roots keeps them.
+  if (exit.born) brief.born = { label: fill(pick(exit.label, state.lang), state), kept: Boolean(state.traits?.length) };
   return brief;
 }
 
@@ -238,7 +260,10 @@ export function look(state, content, ctx) {
     speed: speedOf(content, state),
   };
   const brief = {
-    ok: true, lang, name: state.name, ...(state.lang_set ? { lang_set: true } : {}),
+    ok: true, lang, name: state.name, gender: genderOf(state), ...(state.lang_set ? { lang_set: true } : {}),
+    // What the story has marked (a choice it will remember), and the beasts whose first sight has played.
+    ...(state.marks?.length ? { marks: state.marks } : {}),
+    ...(state.appeared?.length ? { appeared: state.appeared } : {}),
     world: worldBrief(content, lang),
     ...building(content),
     tier: { id: state.tier, step: state.step + 1, name: stepName(content, state.tier, state.step, lang) },
@@ -308,7 +333,7 @@ function onStage(content, state, ctx, result = {}, brief = null) {
   const view = brief ?? look(state, content, ctx);
   const cards = stageCards(view, { focus: shownHere(content, state, view), fight: Boolean(state.fight) });
   const ask = askMinusStage(askOf(content, state, ctx, result), stageOwns(view, cards));
-  const naming = cards.some(c => c.card === 'value') ? THEN_VALUE : '';
+  const naming = cards.some(c => c.card === 'value') ? THEN_VALUE : cards.some(c => c.card === 'born') ? THEN_BORN : '';
   // Only a cauldron ready to throw; shut after a failure, the card only waits.
   const throwing = cards.some(c => c.card === 'breakthrough' && view.scene?.exits?.find(e => e.id === c.id)?.breakthrough?.ready) ? THEN_THROW : '';
   return { then: thenFor(result, ask) + naming + throwing, ask, stage: cards };
