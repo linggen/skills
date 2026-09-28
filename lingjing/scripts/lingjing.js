@@ -20,6 +20,7 @@ import { drainAt, drainOf, trialNudge } from './beats.js';
 import { WORDS, say as fill, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, emergedHtml, trayHtml, trialToldHtml, clockOf } from './cards.js';
 import { pouchHtml } from './pouch.js';
 import { esc } from './esc.js';
+import { thinker, stillAsked } from './think.js';
 import { createVoice, nodeMoment } from './voice.js';
 import { raiseUnease } from './unease.js';
 import { LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
@@ -1479,11 +1480,23 @@ function gameMove(gmove) {
   if (!ghost || gmove.disabled) return false;
   const g = boardFor(ghost.dataset.game);
   if (!g) return true;
+  if (g.state.wait) return true; // the rival's turn: taps wait for the reply
   const r = g.mod.act(g.state, { ...gmove.dataset });
   g.state = r.state;
   render();
   if (r.won && !g.sent) { g.sent = true; run(`win:${g.taskId}`, () => onWin(g.taskId)); }
+  if (r.state.wait && g.mod.think) rivalTurn(g);
   return true;
+}
+/* The rival's turn (a module that `think`s, as 象棋 does): thought in a Worker so
+   the page stays live, laid in by the module's `answer` — only if the board is
+   still the one it was thought for. */
+const think = thinker(() => new Worker(new URL('./think-worker.js', import.meta.url), { type: 'module' }));
+function rivalTurn(g) {
+  const asked = g.state;
+  think(g.mod, asked)
+    .then((m) => { if (stillAsked(boards, g, asked)) { g.state = g.mod.answer(asked, m); render(); } })
+    .catch((e) => console.warn('[lingjing] rival', g.taskId, e));
 }
 function tileTap(tile) {
   const host = tile.closest('[data-board]');

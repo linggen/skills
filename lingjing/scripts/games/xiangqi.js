@@ -1,7 +1,10 @@
-// 象棋残局 — 斗法 with a rival cultivator. Pure ES module: newGame / html / act.
-// Red (the player) must checkmate black within N red moves; black answers inside act()
-// with the best defence an exhaustive search finds. Board: 9 files (x 0..8) × 10 ranks
-// (y 0..9); black sits at the top (y 0), red at the bottom (y 9); river between y 4 and 5.
+// 象棋残局 — 斗法 with a rival cultivator. Pure ES module: newGame / html / act,
+// plus think / answer for the rival's turn. Red (the player) must checkmate black
+// within N red moves; after a red move act() leaves the state waiting (`wait`), and
+// black's best defence comes from think() — an exhaustive search slow enough (≈1 s
+// at level 3) that the page runs it in a Worker (../think.js) — laid in by answer().
+// Board: 9 files (x 0..8) × 10 ranks (y 0..9); black sits at the top (y 0), red at the
+// bottom (y 9); river between y 4 and 5.
 // A board is a 90-char string, index y*9+x, '.' empty; red pieces upper-case, black lower.
 
 export const meta = {
@@ -177,7 +180,7 @@ const parseAt = (s) => {
 export function act(state, data = {}) {
   const g = data.g;
   if (g === 'again') return { state: fresh(state.level, state.pid), won: false };
-  if (state.outcome !== 'open') return { state, won: false };
+  if (state.outcome !== 'open' || state.wait) return { state, won: false };
   const i = parseAt(data.at);
   if (i < 0) return { state, won: false };
   if (g === 'pick') {
@@ -194,20 +197,28 @@ export function act(state, data = {}) {
     return { state: { ...state, board, left, sel: null, last, outcome: 'won' }, won: true };
   }
   if (left <= 0) return { state: { ...state, board, left, sel: null, last, outcome: 'lost' }, won: false };
-  const [f, t] = blackReply(board, left);
-  board = move(board, f, t);
-  last = { from: f, to: t, side: 'b' };
+  return { state: { ...state, board, left, sel: null, last, wait: true }, won: false };
+}
+
+// The rival's turn, the slow half: black's reply [from, to] to a waiting state.
+// Plain data in and out, so it can run in a Worker.
+export const think = (state) => blackReply(state.board, state.left);
+
+// Lay black's reply into the waiting state it was thought for.
+export function answer(state, m) {
+  if (!state.wait || !m) return state;
+  const board = move(state.board, m[0], m[1]);
   const outcome = legalMoves(board, 'r').length ? 'open' : 'lost';
-  return { state: { ...state, board, left, sel: null, last, outcome }, won: false };
+  return { ...state, board, wait: false, last: { from: m[0], to: m[1], side: 'b' }, outcome };
 }
 
 const GLYPH = { K: '帅', A: '仕', B: '相', N: '马', R: '车', C: '炮', P: '兵',
   k: '将', a: '士', b: '象', n: '马', r: '车', c: '炮', p: '卒' };
 const T = {
   zh: { goal: (n, l) => `红先，${n} 步内将死（余 ${l} 步）`, open: '轮到你走红棋。', won: '将死！斗法得胜。',
-    lost: '未能将死，此局告负。', again: '再来一局', check: '将军！' },
+    lost: '未能将死，此局告负。', again: '再来一局', check: '将军！', wait: '对手思索中……' },
   en: { goal: (n, l) => `Red to move: mate in ${n} (${l} left)`, open: 'Your move (red).', won: 'Checkmate! You win.',
-    lost: 'No mate in time; the puzzle is lost.', again: 'Try again', check: 'Check!' },
+    lost: 'No mate in time; the puzzle is lost.', again: 'Try again', check: 'Check!', wait: 'Your rival is thinking…' },
 };
 
 function boardSvg() {
@@ -225,7 +236,8 @@ function boardSvg() {
 
 export function html(state, lang = 'zh') {
   const t = T[lang] || T.zh;
-  const open = state.outcome === 'open';
+  // While black thinks the board stands still: no piece to pick, no point to go to.
+  const open = state.outcome === 'open' && !state.wait;
   const b = state.board;
   const dests = open && state.sel !== null
     ? new Set(legalMoves(b, 'r').filter(([f]) => f === state.sel).map(([, to]) => to)) : new Set();
@@ -245,11 +257,12 @@ export function html(state, lang = 'zh') {
       : `<span class="${cls.join(' ')}" style="${pos}">${disc}</span>`);
   }
   const checked = open && inCheck(b, 'r') ? ` ${t.check}` : '';
+  const status = state.wait ? t.wait : `${t[state.outcome]}${checked}`;
   const again = state.outcome === 'lost'
     ? `<button type="button" class="g-xiangqi-again" data-g="again">${t.again}</button>` : '';
-  return `<div class="g-xiangqi is-${state.outcome}">`
+  return `<div class="g-xiangqi is-${state.outcome}${state.wait ? ' is-wait' : ''}">`
     + `<p class="g-xiangqi-goal">${t.goal(state.n, state.left)}</p>`
     + `<div class="g-xiangqi-board">${boardSvg()}<div class="g-xiangqi-grid">${cells.join('')}</div></div>`
-    + `<div class="g-xiangqi-foot"><span class="g-xiangqi-status">${t[state.outcome]}${checked}</span>${again}</div>`
+    + `<div class="g-xiangqi-foot"><span class="g-xiangqi-status">${status}</span>${again}</div>`
     + `</div>`;
 }

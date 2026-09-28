@@ -99,3 +99,7 @@ button.g-xiangqi-pt:hover .g-xiangqi-piece { transform: scale(1.06); }
   font-size: 14px;
   cursor: pointer;
 }
+/* The rival's turn: the board holds still, the status breathes. */
+.g-xiangqi.is-wait .g-xiangqi-status { color: var(--dim); animation: g-xiangqi-breathe 1.2s ease-in-out infinite alternate; }
+@keyframes g-xiangqi-breathe { from { opacity: 1; } to { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) { .g-xiangqi.is-wait .g-xiangqi-status { animation: none; } }

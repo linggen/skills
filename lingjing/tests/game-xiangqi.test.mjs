@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  meta, newGame, html, act, PUZZLES, parsePos, legalMoves, move, inCheck,
+  meta, newGame, html, act, think, answer, PUZZLES, parsePos, legalMoves, move, inCheck,
 } from '../scripts/games/xiangqi.js';
 
 const sq = (i) => String.fromCharCode(97 + (i % 9)) + Math.floor(i / 9);
@@ -29,7 +29,9 @@ function deepFreeze(o) {
 function play(state, [f, t]) {
   const s1 = act(state, { g: 'pick', at: xy(f) }).state;
   assert.equal(s1.sel, f);
-  return act(s1, { g: 'go', at: xy(t) });
+  const r = act(s1, { g: 'go', at: xy(t) });
+  // The rival's turn, as the page lays it in once the Worker answers.
+  return r.state.wait ? { state: answer(r.state, think(r.state)), won: r.won } : r;
 }
 
 test('meta and exports', () => {
@@ -174,4 +176,33 @@ test('act ignores bad input and never mutates', () => {
   act(s1, { g: 'go', at: xy(m[1]) });
   act(s1, { g: 'again' });
   assert.equal(JSON.stringify(s), snap);
+});
+
+test('rival turn: act waits, think answers, answer lays the reply in', () => {
+  const pid = PUZZLES[2].findIndex((p) => p.id === 'chuanxin');
+  const s = deepFreeze({ ...newGame('t', 2), pid, board: parsePos(PUZZLES[2][pid].pos) });
+  const [f, t] = legalMoves(s.board, 'r').find(([a, b]) => !blackLost(move(s.board, a, b), 1));
+  const r = act(act(s, { g: 'pick', at: xy(f) }).state, { g: 'go', at: xy(t) });
+  const w = deepFreeze(r.state);
+  assert.equal(w.wait, true);
+  assert.equal(w.outcome, 'open');
+  assert.equal(w.last.side, 'r');
+  // while waiting: no buttons, a thinking line, taps ignored
+  const out = html(w);
+  assert.doesNotMatch(out, /data-g="(pick|go)"/);
+  assert.match(out, /is-wait/);
+  assert.match(out, /对手思索中/);
+  assert.match(html(w, 'en'), /thinking/);
+  const red = w.board.search(/[A-Z]/);
+  assert.equal(act(w, { g: 'pick', at: xy(red) }).state, w);
+  // the reply is plain data (it crosses postMessage) and a legal black move
+  const m = think(JSON.parse(JSON.stringify(w)));
+  assert.ok(legalMoves(w.board, 'b').some(([a, b]) => a === m[0] && b === m[1]));
+  const done = answer(w, m);
+  assert.equal(done.wait, false);
+  assert.equal(done.last.side, 'b');
+  assert.equal(done.board, move(w.board, m[0], m[1]));
+  // an answer to a state no longer waiting, or no answer, changes nothing
+  assert.equal(answer(done, m), done);
+  assert.equal(answer(w, null), w);
 });
