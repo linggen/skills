@@ -21,7 +21,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { allWorlds, DEFAULT_WORLD, knownWorld, loadWorld } from './content.mjs';
 import { migrate } from './state.mjs';
-import { askOf, tapThen, THEN_RECAP, withAsk } from './rules/ask.mjs';
+import { askOf, tapThen, THEN_RECAP, THEN_TELL, withAsk } from './rules/ask.mjs';
 import { guard, onLook, unconfirmed } from './rules/confirm.mjs';
 import { markSeen, notePage, READS_PAGE, unseen } from './rules/did.mjs';
 import { pageNames, pageThrows } from './rules/core.mjs';
@@ -35,6 +35,7 @@ import { owesRecap, withHerBeat } from './rules/story.mjs';
 import { recapFacts } from './rules/recap.mjs';
 import { guideVerb, withGuides } from './rules/guide.mjs';
 import { atScene } from './rules/world.mjs';
+import { tellOf } from './rules/tell.mjs';
 import { BUILDING_WAITS, keepDay, keepSave, paintList, readSave } from './rules/worlds.mjs';
 
 export { refine, TREASURE_TOP } from './rules/arms.mjs';
@@ -66,6 +67,8 @@ const logged = ({ birth, ...rest }) => rest;
 const PLAIN = new Set(['progress', 'story']);
 /* The verbs that are story when they land: a scene step, something met on the road, a made scene entered. */
 const STORY_VERBS = new Set(['resolve', 'meet', 'enter']);
+/* The verbs whose answer to Ling carries the story passages owed (rules/tell.mjs). */
+const TELLS = new Set(['look', 'resolve', 'go']);
 
 /* One call, start to end, under the save's lock (files.mjs withLock): the
    read, the verb and every write it makes — Look's `asked_at` too, and a
@@ -182,7 +185,15 @@ function runLocked(verb, args, stateFile, reader) {
     writeAtomic(stateFile, JSON.stringify(asking));
   } else if (owed && !next) writeAtomic(stateFile, JSON.stringify(asking));
   const said = heard !== state ? { ...recapped, lang_set: heard.lang } : recapped;
-  const result = told ? { ...said, page_did: told } : said;
+  const paged = told ? { ...said, page_did: told } : said;
+  // The passages a beat owes Ling (rules/tell.mjs), handed to her once, in
+  // order — never logged: Undo takes back moves, not what she was told.
+  const telling = reader === 'ling' && TELLS.has(verb) && out.result?.ok !== false ? tellOf(content, asking) : null;
+  if (telling) {
+    asking.tell_owed = telling.keep.tell_owed; asking.told_scenes = telling.keep.told_scenes;
+    writeAtomic(stateFile, JSON.stringify(asking));
+  }
+  const result = telling?.tell.length ? { ...paged, tell: telling.tell } : paged;
   if (PLAIN.has(verb)) return result;
   const answer = withAsk(result, content, asking, { now, quests: readQuests(), said: args.said, verb });
   // Written down, so the next bare Look does not ask it again. Cleared by
@@ -199,11 +210,18 @@ function runLocked(verb, args, stateFile, reader) {
   // answer tapped back: the tool it names (rules/confirm.mjs). Never logged.
   const steer = reader === 'ling' && verb === 'look' ? onLook(args.said, asking, content, now) : null;
   if (steer?.keep) writeAtomic(stateFile, JSON.stringify(steer.keep));
-  if (steer?.tap) return { ...answer, then: tapThen(steer.tap, args.said) };
-  if (steer?.ask) return { ...answer, ask: steer.ask, then: steer.then };
+  if (steer?.tap) return tellFirst({ ...answer, then: tapThen(steer.tap, args.said) });
+  if (steer?.ask) return tellFirst({ ...answer, ask: steer.ask, then: steer.then });
   const tapCtx = { now, quests: readQuests(), said: args.said };
   const tap = verb === 'look' && tapThen(answer.ask ?? askOf(content, next ?? state, tapCtx, {}, true), args.said);
-  return tap ? { ...answer, then: tap } : answer;
+  return tellFirst(tap ? { ...answer, then: tap } : answer);
+}
+
+/* A passage owed is told before anything else the answer asks (rules/tell.mjs):
+   Look's own `then` was written before the passages were attached. */
+function tellFirst(r) {
+  if (!r?.tell?.length || String(r.then ?? '').startsWith(THEN_TELL)) return r;
+  return { ...r, then: THEN_TELL + (r.then ?? '') };
 }
 
 /* What the page did since this reader last read, when this verb is one of
@@ -300,6 +318,8 @@ export function forLing(value) {
     // was dropped by the line above until 2026-09-28 (a string named story).
     if (k === 'guide' && v && typeof v === 'object') { out.guide = v; continue; }
     if (k === 'story_node') continue; // the page's moment; Ling has the node on the move's own result
+    // A 连环画 panel is the page's picture and caption: she tells the story, never the picture.
+    if (k === 'panel') continue;
     // Her beat is hers: Ling learns only that she speaks here and what happened —
     // never her line or her memory, which she says herself (Hanli, 2026-09-24).
     if (k === 'her_beat' && v && typeof v === 'object') { out.her_beat = { id: v.id, facts: { happened: v.facts?.happened ?? null } }; continue; }

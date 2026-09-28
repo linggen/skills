@@ -36,8 +36,8 @@ test('a world is loaded by its id, and an unknown id names the ones that exist',
 
 test('a novel\'s name anywhere in the world is caught', () => {
   const c = fresh();
-  prologue(c).scenes['00-river'].setup.zh += '，韩立在岸边。';
-  assert.ok(has(lint(c), 'scenes.00-river.setup.zh: names 韩立 (凡人修仙传)'));
+  prologue(c).scenes['00-shiao'].setup.zh += '，韩立在村口。';
+  assert.ok(has(lint(c), 'scenes.00-shiao.setup.zh: names 韩立 (凡人修仙传)'));
   const d = fresh();
   d.creatures.creatures[0].quote.en += ' Xiao Yan';
   assert.ok(!has(lint(d), 'names'), 'only the listed names, never a translation the list lacks');
@@ -54,7 +54,7 @@ test('the world card needs a folder-shaped id and a bilingual title and style', 
   assert.ok(has(problems, 'world: style needs zh and en'));
 });
 
-test('the prologue runs from the river to its end', () => {
+test('the prologue runs from 石坳村 to the notice board', () => {
   const ch = prologue(fresh());
   const path = [];
   for (let id = ch.first_scene; id; ) {
@@ -63,31 +63,45 @@ test('the prologue runs from the river to its end', () => {
     const onward = scene.exits.find(e => e.next && scene.buttons.includes(e.id));
     id = onward?.next;
   }
-  assert.deepEqual(path, ['00-river', '00-ferry', '00-boat', '00-shanlu', '00-gate', '00-luoshu', '00-longzhi', '00-hall', '00-waimen', '00-fuzhu', '00-north']);
-  assert.ok(ch.scenes['00-north'].exits.some(e => e.ends === '00-prologue'));
+  assert.deepEqual(path, ['00-shiao', '00-masan', '00-dawn', '00-kitchen', '00-chushan', '00-duanbei', '00-heisong', '00-storm', '00-fall', '00-fox', '00-cave', '00-yinyue',
+    '00-cliff', '00-deer', '00-rent', '00-dusk', '00-xiuxian', '00-sleep', '00-halfyear', '00-uncle', '00-notice', '00-gate', '00-luoshu', '00-longzhi', '00-hall', '00-waimen', '00-mijing']);
+  assert.ok(ch.scenes['00-mijing'].exits.some(e => e.ends === '00-prologue'));
 });
 
-test('feeding Fuzhu is an exit no button offers', () => {
-  const fuzhu = prologue(fresh()).scenes['00-fuzhu'];
-  assert.ok(fuzhu.exits.some(e => e.id === 'gift'));
-  assert.ok(!fuzhu.buttons.includes('gift'));
+test('every prologue scene is a 连环画 beat: a panel on disk, a caption of two to four lines, a passage in both languages', () => {
+  const c = fresh();
+  for (const scene of Object.values(prologue(c).scenes)) {
+    assert.ok(scene.panel?.art && scene.story?.zh && scene.story?.en, scene.id);
+    assert.ok(scene.panel.caption.zh.length >= 2 && scene.panel.caption.zh.length <= 4, scene.id);
+  }
+  prologue(c).scenes['00-fox'].panel.art = 'art/panels/nothing.webp';
+  prologue(c).scenes['00-fox'].panel.caption.en = ['one line'];
+  prologue(c).scenes['00-cave'].exits[0].story.en = prologue(c).scenes['00-cave'].exits[0].story.en.replace('⟫', '');
+  prologue(c).scenes['00-masan'].exits[0].ledger[0].kind = '怨';
+  prologue(c).scenes['00-dawn'].exits[0].ledger[0].who = 'nobody';
+  const problems = lint(c);
+  assert.ok(has(problems, 'panel art art/panels/nothing.webp is missing'));
+  assert.ok(has(problems, 'a panel caption is two to four lines in en'));
+  assert.ok(has(problems, 'do not pair'));
+  assert.ok(has(problems, 'a ledger entry is 恩 or 仇'));
+  assert.ok(has(problems, 'a ledger entry names unknown person nobody'));
 });
 
 test('a dead next is caught', () => {
   const c = fresh();
-  prologue(c).scenes['00-river'].exits[0].next = '00-nowhere';
+  prologue(c).scenes['00-shiao'].exits[0].next = '00-nowhere';
   assert.ok(has(lint(c), 'next 00-nowhere does not exist'));
 });
 
 test('a grant over its cap is caught', () => {
   const c = fresh();
-  prologue(c).scenes['00-fuzhu'].exits[0].grant.progress = 999;
+  prologue(c).scenes['00-chushan'].exits[0].grant.progress = 999;
   assert.ok(has(lint(c), 'over the scene cap'));
 });
 
 test('a missing language is caught', () => {
   const c = fresh();
-  delete prologue(c).scenes['00-river'].setup.en;
+  delete prologue(c).scenes['00-shiao'].setup.en;
   assert.ok(has(lint(c), 'needs both zh and en'));
 });
 
@@ -128,12 +142,12 @@ test('places: a road to nowhere, a road that does not come back, a tier off the 
   xu.places[0].roads.push('atlantis');
   xu.places[1].roads = xu.places[1].roads.filter(r => r !== 'sishui');
   xu.places[2].tier = 9;
-  prologue(c).scenes['00-river'].at = 'atlantis';
+  prologue(c).scenes['00-shiao'].at = 'atlantis';
   const problems = lint(c);
   assert.ok(has(problems, 'place sishui: road to atlantis, which is not a place'));
   assert.ok(has(problems, 'place sishui: road to sibei does not come back'));
   assert.ok(has(problems, 'place pengcheng: tier 9 is not on the ladder'));
-  assert.ok(has(problems, 'scene 00-river: at atlantis, which is not a place of 徐'));
+  assert.ok(has(problems, 'scene 00-shiao: at atlantis, which is not a place of 徐'));
   const d = fresh();
   for (const p of d.places['徐'].places) p.roads = p.roads.filter(r => r !== 'xushan');
   d.places['徐'].places.find(p => p.id === 'xushan').roads = [];
@@ -148,7 +162,7 @@ test('the catalog: a price below its sell, a missing picture, a pill over its ta
   item('lingzhi').effect = { progress: 99, table: 'puzzle' };
   item('moon-bell').effect = { wear: 'hat' };
   item('jade-fish').kind = 'relic';
-  prologue(c).scenes['00-fuzhu'].exits.find(e => e.id === 'gift').needs.bag = 'unicorn-horn';
+  prologue(c).scenes['00-rent'].exits.find(e => e.id === 'dumb').needs.bag = 'unicorn-horn';
   c.tasks.tasks[0].gives = { bag: 'unicorn-horn' };
   const problems = lint(c);
   assert.ok(has(problems, 'item qi-pill: buys for 10, below its sell price 20'));
@@ -203,10 +217,10 @@ test('the world map is on disk, and every place of a world with one stands on it
 test('a creature needs a root; a duel needs a known creature, a kind and its withdrawn line', () => {
   const c = fresh();
   c.creatures.creatures[0].root = 'plasma';
-  const subdue = prologue(c).scenes['00-fuzhu'].exits.find(e => e.id === 'subdue');
+  const subdue = prologue(c).scenes['00-longzhi'].exits.find(e => e.id === 'subdue');
   subdue.game = { id: 'subdue-x', kind: 'duel', creature: 'qilin' };
   delete subdue.withdrawn;
-  prologue(c).scenes['00-fuzhu'].exits.find(e => e.id === 'around').game = { id: 'tickle-x', kind: 'tickle' };
+  prologue(c).scenes['00-fox'].exits.find(e => e.id === 'leave').game = { id: 'tickle-x', kind: 'tickle' };
   const problems = lint(c);
   assert.ok(has(problems, 'creature fuzhu: needs a root the traits know, not plasma'));
   assert.ok(has(problems, 'unknown game kind tickle'));

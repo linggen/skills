@@ -3,7 +3,7 @@
 import { MODES, REALMS as CARD_REALMS, shuffle } from '../battle.js';
 import { dayKey, pick } from '../state.mjs';
 import { charmOf, duelSeed, wornOf } from './arms.mjs';
-import { hasCompanion, herLifts } from './companion.mjs';
+import { herAwake, herLifts } from './companion.mjs';
 import { clone, refuse } from './core.mjs';
 import { gearBrief } from './errands.mjs';
 import { boutFortune } from './fortune.mjs';
@@ -163,7 +163,8 @@ export function fightSetup(content, state, creature, now, game = null) {
   const boost = fortune?.card ? { element: fortune.root, n: fortune.card } : null;
   const insight = Math.max(state.insight ?? 0, fortune?.sight ?? 0);
   const main = state.fate?.element?.id ?? state.fate?.element ?? (state.traits ?? [])[0] ?? 'wood';
-  const withHer = ownedCards(content, state).includes('yinyue');
+  // Her card goes into a fight only while she is awake (asleep in the fox token, she fights nothing).
+  const withHer = herAwake(state) && ownedCards(content, state).includes('yinyue');
   const gear = gearFight(content, state), lifts = withHer ? herLifts(content, state) : null;
   // Before the root test (the prologue's 三试 comes first) a player fights with
   // what no root claims: the starter's beasts and its one rootless 功法.
@@ -220,7 +221,7 @@ function ownedAtStart(content, state) {
   if (!state.traits?.length) return [];
   return [...new Set([
     ...starterOf(content, state.traits),
-    ...(hasCompanion(state) && catalog.yinyue ? ['yinyue'] : []),
+    ...(herAwake(state) && catalog.yinyue ? ['yinyue'] : []),
     ...(state.cast ?? []).filter(id => catalog[id]),
   ])];
 }

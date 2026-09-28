@@ -10,7 +10,7 @@ import { dayKey, newState } from '../scripts/state.mjs';
 import { duel, look, resolve, tale, task, win } from '../scripts/rules.mjs';
 import { battleHtml, boutSays, WORDS } from '../scripts/battle-card.js';
 import { begin, offers, view } from '../scripts/battle.js';
-import { TO_FUZHU, walk } from './prologue.mjs';
+import { TO_HALL, TO_WAIMEN, walk } from './prologue.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-09-11T12:00:00');
@@ -24,10 +24,10 @@ function must(fn, state, args, c = ctx()) {
 }
 
 /* The spine to 夫诸's scene, then the world open (tests/prologue.mjs walks it). */
-const toFuzhu = (lang = 'zh') => walk(newState(content, lang, NOW), TO_FUZHU, content, NOW);
+const toFuzhu = (lang = 'zh') => walk(newState(content, lang, NOW), TO_WAIMEN, content, NOW);
 function openWorld() {
   let s = toFuzhu();
-  s = must(resolve, s, { exit: 'gift' }).state;
+  s = must(resolve, s, { exit: 'pay' }).state;
   s = must(resolve, s, { exit: 'rest' }).state;
   return s;
 }
@@ -96,7 +96,7 @@ test('an errand that asks for the beast: 差事 · its title', () => {
 });
 
 test('a spine scene\'s duel: its chapter\'s title', () => {
-  const s = toFuzhu();
+  const s = walk(newState(content, 'zh', NOW), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'won')), content, NOW);
   const exit = look(s, content, ctx()).scene.exits.find(e => e.duel);
   assert.equal(exit.duel.stake, content.chapters[s.chapter].title.zh);
 });

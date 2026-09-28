@@ -6,7 +6,7 @@ import { dayKey, fill, genderOf, periodKey, personOf, pick, rollDay, settleStami
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, THEN_BORN, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
 import { fightSetup } from './cards.mjs';
-import { callDue, companionOf, hasCompanion, herCard, questBrief, recalledOf } from './companion.mjs';
+import { callDue, companionOf, hasCompanion, herAwake, herCard, questBrief, recalledOf } from './companion.mjs';
 import { clone, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mjs';
 import { staminaBrief } from './daily.mjs';
 import { bookOf, breakthroughOf, directorBrief, errandFor, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
@@ -20,6 +20,7 @@ import { gameLevel, hostedHere, lundaoBrief, reopened } from './tasks.mjs';
 import { hashOf } from './travel.mjs';
 import { atScene, creatureOf, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
 import { building } from './worlds.mjs';
+import { practiceHint } from './scrolls.mjs';
 
 /* The market's shelf: the catalog sold in this province — and, while the
    companion is still to be found, her bell at every market, since the call
@@ -44,7 +45,7 @@ const nameOf = (content, who, lang, state = null) => (who === 'ling' ? null
 const spoken = (content, state, lines) => (lines ?? []).flatMap(l => {
   const c = companionOf(content);
   if (c && l.who === c.id) {
-    if (hasCompanion(state)) return [];
+    if (herAwake(state)) return [];
     return l.alone ? [{ who: 'ling', name: null, text: fill(pick(l.alone, state.lang), state) }] : [];
   }
   // A person speaks as themselves — a slot as the one it stands for.
@@ -55,13 +56,41 @@ const spoken = (content, state, lines) => (lines ?? []).flatMap(l => {
 /* The people a scene brings on — its lines' speakers and its exits' — each
    with the voice Ling writes them in, and the portrait the page draws. */
 function peopleIn(content, state, scene) {
-  const whos = [...(scene.lines ?? []), ...scene.exits.flatMap(e => e.beat ?? [])].map(l => l.who);
+  // Who the scene names (`people`, a 连环画 beat: its story is told in the chat,
+  // so its speakers are listed, not found in lines), then whoever speaks.
+  const whos = [...(scene.people ?? []), ...[...(scene.lines ?? []), ...scene.exits.flatMap(e => e.beat ?? [])].map(l => l.who)];
   const seen = new Map();
   for (const who of whos) {
     const p = personOf(content, state, who);
-    if (p && !seen.has(p.id)) seen.set(p.id, { id: p.id, name: pick(p.name, state.lang), role: pick(p.role, state.lang), voice: pick(p.voice, state.lang), art: p.art });
+    if (p && !seen.has(p.id)) seen.set(p.id, { id: p.id, name: pick(p.name, state.lang), role: fill(pick(p.role, state.lang), state, content), voice: pick(p.voice, state.lang), art: p.art });
   }
+  // Before she walks with the player she is the story's (the little fox, the
+  // girl at dawn): her face in the form the scene names. After, she stands on
+  // the stage herself.
+  const form = scene.her && !hasCompanion(state) ? companionOf(content)?.forms?.[scene.her] : null;
+  if (form) seen.set(companionOf(content).id, { id: companionOf(content).id, name: pick(form.name, state.lang), role: pick(form.role, state.lang), art: form.art });
   return [...seen.values()];
+}
+
+/* A 连环画 beat on the stage (his, 2026-09-28: 右边尽量放图片……像小人书): the
+   picture, two to four lines of caption, and the scene's own choices under it
+   — the plain exits; a name, a birthday, a fight or a board has its own card. */
+function panelOf(content, state, scene, buttons) {
+  if (!scene.panel) return null;
+  const say = pair => fill(pick(pair, state.lang), state, content);
+  const own = e => e.value || e.born || gameOf(e) || e.breakthrough;
+  // A staying choice already made (看碑背) is not offered again: its passage was told.
+  const done = e => e.stay && e.mark && (state.marks ?? []).includes(e.mark);
+  const taps = buttons.map(id => scene.exits.find(e => e.id === id)).filter(e => e && !own(e) && !done(e)).map(e => ({ id: e.id, label: say(e.label) }));
+  return { art: scene.panel.art, caption: (scene.panel.caption?.[state.lang] ?? scene.panel.caption?.zh ?? []).map(l => fill(l, state, content)), taps };
+}
+
+/* 恩仇簿 as Look tells it: who, 恩 or 仇, what — oldest first, in the player's language. */
+function ledgerOf(content, state) {
+  return (state.ledger ?? []).map(e => ({
+    who: e.who, name: pick(personOf(content, state, e.who)?.name ?? CAST[e.who], state.lang) ?? e.who,
+    kind: e.kind, what: pick(e.what, state.lang), chapter: pick(content.chapters[e.chapter]?.title, state.lang) ?? null,
+  }));
 }
 
 /* A made world is read by its map: its scenes stand at places, so their
@@ -75,6 +104,7 @@ function sceneBrief(content, state, now = new Date()) {
   const lang = state.lang, say = pair => fill(pick(pair, lang), state, content);
   const buttons = scene.buttons ?? [];
   const people = peopleIn(content, state, scene);
+  const panel = panelOf(content, state, scene, buttons);
   return {
     id: scene.id,
     place: say(scene.place),
@@ -83,6 +113,7 @@ function sceneBrief(content, state, now = new Date()) {
     show: withMap(content, scene.show ?? []),
     lines: spoken(content, state, scene.lines),
     ...(people.length ? { people } : {}),
+    ...(panel ? { panel } : {}),
     buttons: buttons.map(id => ({ id, label: say(scene.exits.find(e => e.id === id).label) })),
     exits: scene.exits.map(e => exitBrief(content, state, e, buttons.includes(e.id), ctxNow, scene)),
   };
@@ -264,6 +295,10 @@ export function look(state, content, ctx) {
     // What the story has marked (a choice it will remember), and the beasts whose first sight has played.
     ...(state.marks?.length ? { marks: state.marks } : {}),
     ...(state.appeared?.length ? { appeared: state.appeared } : {}),
+    // 恩仇簿: every debt the story has written down, good and bad.
+    ...(state.ledger?.length ? { ledger: ledgerOf(content, state) } : {}),
+    // The day's 功课 from the scroll in the bag (《吐纳经》, rules/scrolls.mjs).
+    ...(practiceHint(content, state) ? { practice_hint: practiceHint(content, state) } : {}),
     world: worldBrief(content, lang),
     ...building(content),
     tier: { id: state.tier, step: state.step + 1, name: stepName(content, state.tier, state.step, lang) },
@@ -284,7 +319,7 @@ export function look(state, content, ctx) {
     waypoint: waypointOf(content, state, ctx),
     place: placeBrief(content, state, ctx.now),
     director: directorBrief(content, state, ctx),
-    companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined, recalled: recalledOf(content, state), card: herCard(content, state) } : null,
+    companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined, ...(state.companion.asleep ? { asleep: true } : {}), recalled: recalledOf(content, state), card: herCard(content, state) } : null,
     quest: questBrief(content, state, ctx.now),
     // 差事: what is in hand, and what may be taken where he stands.
     book: bookOf(content, state, lang, ctx),
@@ -370,4 +405,4 @@ function worldBrief(content, lang) {
   };
 }
 
-export { duelBrief, forSale, nameOf, onStage, sceneBrief, shelfOf, shownHere, spoken, stageAt, tasksBrief, withMap, wordsOf };
+export { duelBrief, forSale, ledgerOf, nameOf, onStage, sceneBrief, shelfOf, shownHere, spoken, stageAt, tasksBrief, withMap, wordsOf };

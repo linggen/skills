@@ -1,5 +1,10 @@
 # 月下之约 — finding Yinyue
 
+**A new game finds her in the prologue** (prologue-v3): the wounded silver fox
+in 黑松岭's valley joins at daybreak (`companion.joined`), then sleeps in
+吴婆婆's fox token (`companion.asleep`). What follows is for a save that did
+not — one that reached 结丹 before the prologue was rewritten.
+
 <!-- Lingjing guide `her` — handed to Ling with the result when the game gets here, or read with Guide. Moved out of SKILL.md 2026-09-25 (his: 没出现的内容，不用一直带着). -->
 
 ## 月下之约 — finding her

@@ -416,7 +416,9 @@
       ],
       "effect": {
         "wear": "yinyue",
-        "lift": { "hp": 1 }
+        "lift": {
+          "hp": 1
+        }
       },
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the description."
     },
@@ -751,6 +753,74 @@
         "pouch": 24
       },
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-25, from the description."
+    },
+    {
+      "id": "fox-token",
+      "kind": "key",
+      "name": {
+        "zh": "狐纹木牌",
+        "en": "Fox-carved token"
+      },
+      "art": "art/items/fox-token.webp",
+      "about": {
+        "zh": "吴婆婆塞给你的小木牌，磨得发亮；刻着一只蜷着的狐狸，尾巴绕着身子——九条。银月睡在里头：一条尾巴亮着，银的，一明，一暗。",
+        "en": "The little wooden token Granny Wu pressed into your hand, worn bright; carved with a curled fox, its tails wrapped round it — nine. Yinyue sleeps inside: one tail is lit, silver, bright then dim."
+      },
+      "buy": 0,
+      "sell": 0,
+      "effect": {
+        "key": true
+      }
+    },
+    {
+      "id": "deer-hide",
+      "kind": "material",
+      "name": {
+        "zh": "鹿皮",
+        "en": "Deer hide"
+      },
+      "art": "art/items/deer-hide.webp",
+      "about": {
+        "zh": "黑松岭那头雄鹿的皮，完整，油光水滑——够交马家的租。",
+        "en": "The hide of the stag from Black Pine Ridge, whole and glossy — enough for the Mas' rent."
+      },
+      "buy": 40,
+      "sell": 20
+    },
+    {
+      "id": "old-bow",
+      "kind": "weapon",
+      "name": {
+        "zh": "爷爷的弓",
+        "en": "Grandfather's bow"
+      },
+      "art": "art/items/old-bow.webp",
+      "about": {
+        "zh": "弓背裂过两回，拿牛筋缠着。爹摘下来放在你面前：「你拿着。」佩之借木。",
+        "en": "Its back cracked twice and bound with ox sinew. Father took it off the wall and laid it before you: \"Take it.\" Worn, it lends 木."
+      },
+      "buy": 50,
+      "sell": 10,
+      "effect": {
+        "root": "wood",
+        "atk": 2
+      }
+    },
+    {
+      "id": "tuna-jing",
+      "kind": "scroll",
+      "name": {
+        "zh": "吐纳经",
+        "en": "The Scroll of Breath"
+      },
+      "art": "art/items/tuna-jing.webp",
+      "about": {
+        "zh": "银月留下的一卷残简，绳子都快烂了。「看不懂，也要背。背熟了，总有一天会懂。」",
+        "en": "The scroll Yinyue left, its cords nearly rotted through. \"Learn it by heart even if you can't understand it. One day you will.\""
+      },
+      "buy": 0,
+      "sell": 0,
+      "reads": "tuna"
     }
   ]
 }

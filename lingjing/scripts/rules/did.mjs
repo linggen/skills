@@ -90,7 +90,9 @@ const PAGE_DID = {
   // the roots only — the birthday itself never leaves the card.
   resolve: (r, a, x) => (r.named ? `named themselves 「${r.named.value}」${r.named.gender ? ` (${r.named.gender === 'female' ? 'a girl' : 'a boy'})` : ''} on the page's card — beat: ${beatOf(r)}`
     : r.born ? `${r.born.kept ? 'went through the root test, their roots as they were' : r.born.read === 'birth' ? 'gave their birthday on the page\'s card' : 'let the stone read them'}: ${r.born.roots.name} (${r.born.roots.elements.join(' ')}) — beat: ${beatOf(r)}`
-      : r.breakthrough?.chance != null ? thrownDid(r, x) : null),
+      : r.breakthrough?.chance != null ? thrownDid(r, x)
+        // A 连环画 panel's choice: which, and what the 恩仇簿 wrote — the story is in `tell`.
+        : r.chose ? `chose 「${r.chose}」 under the picture${r.ledger?.length ? ` — 恩仇簿: ${r.ledger.map(e => `${e.kind} ${e.who}`).join(', ')}` : ''}` : null),
   // 储物袋: a thing waiting at the 洞府 taken in, a slot thrown away.
   bag: byAction({ claim: (r) => `took ${r.claimed?.name} from the abode into the storage pouch`, toss: (r) => `threw away ${r.tossed?.name}` }),
 };

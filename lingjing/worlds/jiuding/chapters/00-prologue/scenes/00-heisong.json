@@ -1,0 +1,63 @@
+{
+ "version": 1,
+ "id": "00-heisong",
+ "chapter": "00-prologue",
+ "at": "heisong",
+ "place": {
+  "zh": "黑松岭",
+  "en": "Black Pine Ridge"
+ },
+ "setup": {
+  "zh": "树比外面高一倍，树皮黑得像铁。山涧边有鹿的蹄印，比你的巴掌还宽。",
+  "en": "The trees are twice as tall as outside, bark black as iron. By a stream, deer tracks wider than your palm."
+ },
+ "recap": {
+  "zh": "黑松岭深处，你们找到了一头大鹿的蹄印，你每三十步刻一道记号。",
+  "en": "Deep in Black Pine Ridge you found a great deer's tracks, and cut a mark every thirty steps."
+ },
+ "cast": [],
+ "people": [
+  "baba"
+ ],
+ "panel": {
+  "art": "art/panels/00-heisong.webp",
+  "caption": {
+   "zh": [
+    "树高一倍，树皮如铁。",
+    "松针厚如毯，踩下去无声。",
+    "山涧边，一行蹄印，比巴掌还宽。"
+   ],
+   "en": [
+    "Trees twice as tall, bark like iron.",
+    "Needles thick as a rug; no footstep sounds.",
+    "By the stream, hoofprints wider than a palm."
+   ]
+  }
+ },
+ "story": {
+  "zh": "林子里的树，比外面的高一倍。树皮是黑的，摸上去是凉的，像摸着一块铁。脚下的松针厚得像毯子，踩下去一点声音都没有。\n\n晌午过后，你们在一处山涧边找到了蹄印。是鹿，一头大的，蹄印比你的巴掌还宽——前山十年都没见过这么大的鹿。\n\n「一张鹿皮，」你爹蹲在地上摸着蹄印，低声说，「够交马家的租。剩下的肉，给你娘换一身新棉袄，给吴婆婆送一条腿。」\n\n他抬起头，冲你笑了一下。这是马三走了以后，你第一次看见他笑。",
+  "en": "The trees in here are twice as tall as those outside. The bark is black, and cold to the touch, like laying your hand on iron. The pine needles underfoot are thick as a rug, and your steps make no sound at all.\n\nPast noon, by a mountain stream, you find tracks. Deer — a big one, each print wider than your palm. The front slopes haven't seen a deer this size in ten years.\n\n\"One hide,\" your father says softly, crouched with his fingers in the print, \"pays the Mas' rent. The rest of the meat buys your mother a new padded coat, and a leg goes to Granny Wu.\"\n\nHe looks up and smiles at you. It is the first time you have seen him smile since Ma San left."
+ },
+ "lines": [],
+ "buttons": [
+  "carve"
+ ],
+ "exits": [
+  {
+   "id": "carve",
+   "label": {
+    "zh": "追蹄印，三十步刻一道",
+    "en": "Follow the tracks, a mark every thirty steps"
+   },
+   "means": "follows the deer tracks, cuts a mark every thirty steps, keeps the rules",
+   "stamina": 3,
+   "mark": "marks-cut",
+   "story": {
+    "zh": "蹄印往黑松岭的更深处去。你们追了一个时辰。你刻了四十一道记号。",
+    "en": "The tracks lead deeper into Black Pine Ridge. You follow them for a full watch. You cut forty-one marks."
+   },
+   "beat": [],
+   "next": "00-storm"
+  }
+ ]
+}

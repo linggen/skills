@@ -17,7 +17,7 @@ import { WORDS as BATTLE_WORDS, battleHtml, boutSays, pickOf, spoilsHtml } from 
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { WORDS, say as fill, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, emergedHtml, trayHtml, trialToldHtml, clockOf } from './cards.js';
+import { WORDS, say as fill, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, ledgerChipHtml, readChipHtml, cardHtml, emergedHtml, trayHtml, trialToldHtml, clockOf } from './cards.js';
 import { pouchHtml } from './pouch.js';
 import { esc } from './esc.js';
 import { thinker, stillAsked } from './think.js';
@@ -52,7 +52,9 @@ const IDLE_FACT = { zh: '玩家在这页上静了好一会儿，什么也没动�
 /// She is in Lingjing only once the player has found her (the save's
 /// `companion.joined`; SKILL.md `place.yinyue.absent_until` — the engine keeps
 /// her out of this skill's sessions until then). Every call to her asks this.
-const herHere = () => Boolean(look?.companion?.joined);
+/// Asleep in 吴婆婆's fox token (prologue-v3), she walks with the player but is
+/// not present: no moments, no body on the stage (`companion.asleep`).
+const herHere = () => Boolean(look?.companion?.joined && !look?.companion?.asleep);
 const voice = createVoice({
   post: (id, fact, flags, opts) => postMoment(fact, flags, opts),
   sees: () => ({ fighting: Boolean(bout), present: herHere() }),
@@ -174,6 +176,8 @@ const view = {
   mapView: 'province', // the map card: 'province' (the player's, up close), 'world', or another province's id
   fateOpen: false, fateDraft: '', fateError: false, // the 命格 form: shown again, the date typed, a date refused
   refineMat: null, refineName: '', refineNote: null, // 炼化本命 on the card: the material picked, the name typed, a refusal
+  panelBusy: null, panelNote: null, // a 连环画 panel's choice in flight, or its refusal
+  ledgerOpen: false, // the 恩仇簿 chip's popover
   valuePick: null, valueText: '', valueNote: null, // the 名字 card: an offered name tapped, the player's own typed, a refusal
   valueGender: null, //  the 名字 card's 男 · 女: nothing until tapped
   bornDraft: '', bornError: false, // the 生辰 card: the date typed (never kept past the tap), a date refused
@@ -240,7 +244,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, valueGender: view.valueGender, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null });
+const ctx = () => ({ look, handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, panelBusy: view.panelBusy, panelNote: view.panelNote, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, valueGender: view.valueGender, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -464,9 +468,10 @@ function statusHtml() {
       <span class="num"><span data-count="progress">${esc(look.progress)}</span>/${esc(look.next)}</span></div>
     ${qiHtml()}
     <span class="ls"><span class="lbl">${esc(w.ls)}</span> <b data-count="wealth">${esc(look.wealth)}</b></span>${omenChip()}
-    ${bout ? '' : luChipHtml(lang(), view.luOpen)}
+    ${bout ? '' : luChipHtml(lang(), view.luOpen)}${bout ? '' : readChipHtml(ctx())}
     ${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}
     ${gearChipHtml(ctx(), view.gearOpen)}
+    ${ledgerChipHtml(ctx(), view.ledgerOpen)}
     <span class="langsw" title="中文 / English">${['zh', 'en'].map((l) => `<button data-lang="${l}" class="${l === lang() ? 'on' : ''}">${l === 'zh' ? '中' : 'En'}</button>`).join('')}</span>`;
 }
 
@@ -782,7 +787,7 @@ function focusHtml() {
    pool and what Ling showed of the place stay where they are. */
 const QUEUE = ['handed', 'quest', 'tale', 'road', 'offer', 'duel', 'lundao', 'board'];
 // A naming card (名字) or the 生辰 card is the story's own step: it stands first, never queued.
-const HEAD = new Set(['people', 'seclude', 'building', 'empty', 'goal', 'value', 'born']);
+const HEAD = new Set(['panel', 'people', 'seclude', 'building', 'empty', 'goal', 'value', 'born']);
 const qKey = (c) => `${c.card}:${c.id ?? ''}`;
 
 function splitStage(cards) {
@@ -1312,6 +1317,20 @@ async function valueTap(exitId) {
   if (r.ok) await report(`[scene] named ${r.named?.value ?? chosen}`);
 }
 
+/* A 连环画 panel's choice (cards.js panel): the page Resolves the exit itself,
+   and Ling hears `[scene] took <label>` — her Look carries the passages the
+   choice owes (rules/tell.mjs `tell`), and she tells the story in the chat.
+   Refused (a need not met), the panel says why and nothing moves. */
+async function panelTap(exitId, label) {
+  keep({ panelBusy: exitId, panelNote: null });
+  render();
+  const r = await write('resolve', { exit: exitId, said: label }).catch(failed);
+  // A tap on a choice the story already moved past (a second tap in flight) is no refusal to show.
+  keep({ panelBusy: null, panelNote: r.ok || r.refused === 'unknown-exit' ? null : refusal(r) });
+  await refresh();
+  if (r.ok) await report(`[scene] took ${r.chose ?? label}`);
+}
+
 /* 生辰 → 灵根 — the card's own (cards.js born): the date typed here goes to
    the rules on this machine and nowhere else — not into the chat, not into
    the page's memory past this tap (roots.mjs). Or 不填: the stone reads them.
@@ -1547,7 +1566,7 @@ const KEY_ROWS = [
 document.addEventListener('keydown', (e) => {
   if (e.target.id === 'askField' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); sendAsk(); }
   if (e.target.id === 'value-text' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.closest('.valuecard')?.querySelector('[data-value-go]:not(:disabled)')?.click(); }
-  if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.luOpen) show({ luOpen: false }); else if (view.pouchToss) show({ pouchToss: null }); else if (view.bookOpen || view.gearOpen) show({ bookOpen: false, gearOpen: false }); }
+  if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.luOpen) show({ luOpen: false }); else if (view.pouchToss) show({ pouchToss: null }); else if (view.bookOpen || view.gearOpen || view.ledgerOpen) show({ bookOpen: false, gearOpen: false, ledgerOpen: false }); }
   if (e.key !== 'Enter' && e.key !== ' ') return;
   for (const [sel, open] of KEY_ROWS) {
     const row = e.target.closest?.(sel);
@@ -1623,7 +1642,9 @@ function sayTap(spoken, e) {
    it was for. */
 const busy = (key, fn) => () => run(key, fn);
 const CLICKS = [
-  ['[data-book]', () => { show({ bookOpen: !view.bookOpen, gearOpen: false }); if (view.bookOpen) loadKaifu(); }],
+  ['[data-book]', () => { show({ bookOpen: !view.bookOpen, gearOpen: false, ledgerOpen: false }); if (view.bookOpen) loadKaifu(); }],
+  ['[data-ledger]', () => show({ ledgerOpen: !view.ledgerOpen, bookOpen: false, gearOpen: false })],
+  ['[data-panel-exit]', (el) => { if (!el.matches(':disabled')) run(`panel:${el.dataset.panelExit}`, () => panelTap(el.dataset.panelExit, el.textContent.trim())); }],
   ['[data-lu]', () => (view.luOpen ? show({ luOpen: false }) : openLu())],
   ['[data-lu-close]', () => show({ luOpen: false })],
   ['[data-titlecard]', (el) => { dismissedTitles.add(el.dataset.titlecard); titleSeen(el.dataset.titlecard, true); render(); }],
@@ -1646,6 +1667,7 @@ const CLICKS = [
   }],
   ['*', (el, e) => {
     if (view.bookOpen && !e.target.closest('.bookpop') && !e.target.closest('#askbar')) show({ bookOpen: false });
+    if (view.ledgerOpen && !e.target.closest('.ledgerpop')) show({ ledgerOpen: false });
     return false;
   }],
   ['[data-spoils-close]', () => show({ spoils: null })],
@@ -2072,7 +2094,7 @@ async function mountChat() {
 
 /// A brand-new game starts in the language of the machine it is played on.
 async function firstLanguage() {
-  const fresh = look && !look.name && look.scene?.id === '00-river' && !look.story;
+  const fresh = look && !look.name && look.chapter?.id === '00-prologue' && look.chapter?.fresh && !look.story;
   if (!fresh) return;
   const want = (navigator.language || '').toLowerCase().startsWith('zh') ? 'zh' : 'en';
   if (want !== look.lang) {

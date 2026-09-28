@@ -1,0 +1,114 @@
+{
+ "version": 1,
+ "id": "00-shiao",
+ "chapter": "00-prologue",
+ "at": "shiao",
+ "place": {
+  "zh": "蒙山脚下 · 石坳村",
+  "en": "Foot of Mount Meng · Shi'ao village"
+ },
+ "setup": {
+  "zh": "蒙山脚下的石坳村，十七户人家，一户打猎——你家。屋顶漏雨，米缸半年见底；山，是马家的。",
+  "en": "Shi'ao village at the foot of Mount Meng: seventeen households, one of them hunters — yours. The roof leaks, the rice jar is empty half the year; the mountain belongs to the Mas."
+ },
+ "recap": {
+  "zh": "石坳村，猎户家的孩子：爹老实，娘心细，山是马家的。",
+  "en": "Shi'ao village, a hunter's child: an honest father, a clever mother, and a mountain that belongs to the Mas."
+ },
+ "cast": [],
+ "people": [
+  "baba",
+  "mama"
+ ],
+ "panel": {
+  "art": "art/panels/00-shiao.webp",
+  "caption": {
+   "zh": [
+    "蒙山脚下，石坳村。",
+    "十七户人家，十六户种地，一户打猎。",
+    "屋顶三年没换茅草，一下雨，盆碗齐响。"
+   ],
+   "en": [
+    "Shi'ao village, at the foot of Mount Meng.",
+    "Seventeen households: sixteen farm, one hunts.",
+    "Three years on the same thatch; when it rains, every bowl rings."
+   ]
+  }
+ },
+ "story": {
+  "zh": "蒙山脚下的石坳村，一共十七户人家，十六户种地，一户打猎。打猎的那一户，就是你家。\n\n说是一户，其实就是两间土坯房，一间住人，一间挂兽皮。屋顶的茅草三年没换了，一下雨，你娘就把家里所有的盆和碗都摆出来接水，叮叮咚咚，像在敲一套不成调的编钟。你家的米缸，一年有半年是见底的；你身上的衣裳，是你爹的旧衣裳改的，你爹的旧衣裳，又是你爷爷的旧衣裳改的。\n\n你爹四十岁上才有的你。如今他五十多了，头发白了一半，左边膝盖年轻时被野猪顶过，阴天就疼，入了冬还咳，一咳就是一整夜。可他是村里最老实的人——马家的租，他从来一两不少；打到了肉，他总要割一块，给村东头的吴婆婆送去。你娘说他傻。他说：「吴婆婆没儿没女，眼睛又看不见。咱饿一顿，饿不死。」\n\n可你家最怕的，不是穷。是马家。\n\n蒙山是马家的。至少马家这么说。马家老爷在县里有个做书吏的表侄，于是山上的每一棵树、每一只兔子、每一口泉水，就都姓了马。村里人砍一担柴，要交马家一捆；你家打一头獐子，要交马家半扇。收租的是马三——马家老爷的远房侄子，一个比门框还宽的汉子，腰里别着一根包了铁皮的短棍，走到哪儿，哪儿的狗就不叫了。",
+  "en": "Shi'ao village at the foot of Mount Meng has seventeen households: sixteen farm, one hunts. The one that hunts is yours.\n\nA household, they call it; really it is two mud-brick rooms, one to live in and one to hang the hides. The thatch has not been changed in three years. When it rains your mother sets out every basin and bowl in the house to catch the drips, tink-tonk, like a set of bronze bells that cannot keep a tune. Half the year the rice jar shows its bottom. Your clothes are your father's old clothes cut down, and your father's old clothes were your grandfather's, cut down.\n\nYour father was forty before he had you. He is past fifty now, his hair half white. A boar gored his left knee when he was young; it aches when the sky is grey, and in winter he coughs, whole nights at a time. Yet he is the most honest man in the village. He has never paid the Ma family's rent one tael short, and whenever he brings meat home he cuts a piece for Granny Wu at the east end. Your mother calls him a fool. He says: \"Granny Wu has no children, and her eyes are gone. We go hungry one meal, we don't die of it.\"\n\nBut what your family fears most is not being poor. It is the Mas.\n\nMount Meng belongs to the Mas. So the Mas say, at least. Old Master Ma has a nephew who clerks in the county yamen, and so every tree on the mountain, every hare and every spring bears the name Ma. Cut a load of firewood and a bundle goes to the Mas; your family takes a river deer and half of it goes to the Mas. The one who collects is Ma San — some distant nephew of the old master, a man wider than a door frame, with a short iron-bound club in his belt. Wherever he walks, the dogs stop barking."
+ },
+ "lines": [],
+ "buttons": [
+  "name"
+ ],
+ "exits": [
+  {
+   "id": "name",
+   "label": {
+    "zh": "爹娘叫你什么",
+    "en": "What your parents call you"
+   },
+   "means": "gives a name to be called by, and whether a girl or a boy — the page card asks it: offered names to tap, or the player's own",
+   "value": {
+    "field": "name",
+    "max_chars": 8,
+    "gender": true,
+    "offers": [
+     {
+      "zh": "青玄",
+      "en": "Qingxuan"
+     },
+     {
+      "zh": "云舟",
+      "en": "Yunzhou"
+     },
+     {
+      "zh": "墨白",
+      "en": "Mobai"
+     },
+     {
+      "zh": "清和",
+      "en": "Qinghe"
+     },
+     {
+      "zh": "长庚",
+      "en": "Changgeng"
+     },
+     {
+      "zh": "小满",
+      "en": "Xiaoman"
+     },
+     {
+      "zh": "若水",
+      "en": "Ruoshui"
+     },
+     {
+      "zh": "听松",
+      "en": "Tingsong"
+     },
+     {
+      "zh": "秋白",
+      "en": "Qiubai"
+     },
+     {
+      "zh": "知白",
+      "en": "Zhibai"
+     },
+     {
+      "zh": "观澜",
+      "en": "Guanlan"
+     },
+     {
+      "zh": "栖霞",
+      "en": "Qixia"
+     }
+    ],
+    "draw": 4
+   },
+   "beat": [],
+   "next": "00-masan"
+  }
+ ]
+}

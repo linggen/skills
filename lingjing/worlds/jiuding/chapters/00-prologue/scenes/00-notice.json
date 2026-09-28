@@ -1,0 +1,62 @@
+{
+ "version": 1,
+ "id": "00-notice",
+ "chapter": "00-prologue",
+ "at": "shiao",
+ "place": {
+  "zh": "石坳村 · 开山门",
+  "en": "Shi'ao village · the gate opens"
+ },
+ "setup": {
+  "zh": "马家花三百两给马小宝买了一张荐书。那天夜里，爹从墙上摘下了那张弓；娘给了你针线和一个空钱袋。",
+  "en": "The Mas spend three hundred taels on a letter of recommendation for Ma Xiaobao. That night Father takes the bow down from the wall; Mother gives you needle and thread and an empty purse."
+ },
+ "recap": {
+  "zh": "爹把爷爷的弓给了你，娘给了你针线和一个空钱袋：「你自己挣满它。」",
+  "en": "Father gave you grandfather's bow, and Mother needle and thread and an empty purse: \"Fill it yourself.\""
+ },
+ "cast": [],
+ "people": [
+  "baba",
+  "mama"
+ ],
+ "panel": {
+  "art": "art/panels/00-notice.webp",
+  "caption": {
+   "zh": [
+    "爹摘下墙上那张旧弓。",
+    "娘的针线，和一个空钱袋。",
+    "「——争得过，再争。」"
+   ],
+   "en": [
+    "Father takes the old bow down from the wall.",
+    "Mother's needle and thread, and an empty purse.",
+    "\"— unless you can win.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "九月初九之前，整个县城都知道了沉鼎观开山门的消息。\n\n马家也轰动了。马家老爷托了县里那个做书吏的表侄，花了整整三百两银子，给马小宝弄到了一张「荐书」。\n\n「有荐书，灵根差一点也收，」马三在村口喝得满脸通红，拍着桌子嚷嚷，「我家小宝，将来是要做仙师的！」\n\n你蹲在自家门口，剥着一颗栗子，一句话没说。\n\n胸口的木牌，热了一下。\n\n那天夜里，你把你的决定，告诉了爹娘。\n\n你爹沉默了很久，然后起身，从墙上摘下了那张缠着牛筋的旧弓，放在你面前。\n\n「你爷爷的，」他说，「你拿着。」\n\n「爹，那家里——」\n\n「家里有我。」你爹说，「膝盖不行，手还行，种两亩地饿不死。」他顿了顿，又说，「到了仙家门派，要守人家的规矩，要老实，别跟人争——」\n\n「他爹，」你娘打断了他。\n\n你爹不说了。\n\n你娘从怀里摸出一个小布包，塞进你手里。你打开一看，是一套针线，还有——一个铜钱都没有的钱袋。\n\n「针线，衣裳破了自己补。」她说，「钱袋是空的——你自己挣满它。」\n\n她看着你。\n\n「你爹的话，你听一半。」她说，「要守规矩，对。要老实——对好人老实。别跟人争——」\n\n她把你的衣领翻好。\n\n「——争得过，再争。」",
+  "en": "Before the ninth of the ninth month, the whole county town knows Chending Temple is opening its gate.\n\nThe Ma house is in an uproar too. Old Master Ma calls on that clerk nephew of his in the county, and for a full three hundred taels of silver gets Ma Xiaobao a \"letter of recommendation.\"\n\n\"With a letter they'll take you even if your roots are a bit poor,\" Ma San bawls at the village gate, red-faced with drink, pounding the table. \"My Xiaobao is going to be an immortal master!\"\n\nYou crouch at your own door peeling a chestnut, and say nothing.\n\nThe token at your chest grows warm, once.\n\nThat night you tell your parents what you have decided.\n\nYour father is silent a long time. Then he gets up, takes the old bow bound with ox sinew down from the wall, and lays it before you.\n\n\"Your grandfather's,\" he says. \"Take it.\"\n\n\"Father, but at home —\"\n\n\"I'm at home,\" your father says. \"The knee's no good, but the hands still are; two mu of land won't let us starve.\" He pauses, then goes on: \"In an immortals' sect you keep their rules, you're honest, you don't quarrel with anyone —\"\n\n\"Husband,\" your mother cuts in.\n\nYour father stops.\n\nYour mother takes a little cloth bundle from inside her jacket and presses it into your hand. You open it: a sewing kit, and — a purse without a single copper in it.\n\n\"Needle and thread, to mend your own clothes when they tear,\" she says. \"The purse is empty. You fill it yourself.\"\n\nShe looks at you.\n\n\"Listen to half of what your father says,\" she says. \"Keep the rules — yes. Be honest — to good people. Don't quarrel with anyone —\"\n\nShe turns your collar down straight.\n\n\"— unless you can win.\""
+ },
+ "lines": [],
+ "buttons": [
+  "go"
+ ],
+ "exits": [
+  {
+   "id": "go",
+   "label": {
+    "zh": "九月初九，去沉鼎山",
+    "en": "The ninth of the ninth: to Chending Mountain"
+   },
+   "means": "sets off for the trials at the temple",
+   "grant": {
+    "table": "scene",
+    "item": "old-bow"
+   },
+   "beat": [],
+   "next": "00-gate"
+  }
+ ]
+}

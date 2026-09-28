@@ -445,7 +445,7 @@ export function ring(state, content, ctx, args) {
     keep(missed, !closed);
     return { state: s, result: { ok: false, refused: closed ? 'riddle-closed' : 'wrong-answer', ...(closed ? {} : { hint: riddle.hint }) } };
   }
-  s.companion = { joined: dayKey(ctx.now) };
+  s.companion = { joined: dayKey(ctx.now), awake: true };
   gainCard(content, s, c.id, { how: 'companion', day: dayKey(ctx.now) }); // 银月 is a card he holds from now on
   s.wear = { ...(s.wear ?? {}), [c.id]: c.bell };
   const paid = c.grant ? pay(content, s, ctx, c.grant) : null;

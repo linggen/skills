@@ -8,73 +8,73 @@
   "en": "Chending Temple · The gate"
  },
  "setup": {
-  "zh": "山门前排着长队。守山门的老执事一个一个看过去，看得人手心出汗。",
-  "en": "A long line waits before the gate. The old gatekeeper looks each child over, one by one, until palms sweat."
+  "zh": "三百级石阶直通云雾，顶上站着一个扫地的老头：「不看出身，不看荐书——只看三样：腿，脑子，胆子。」一试，腿：三百级，一炷香。",
+  "en": "Three hundred steps climb into the clouds; at the top stands an old man with a broom: \"Not birth, not letters — three things only: legs, wits, nerve.\" First trial, legs: three hundred steps, one stick of incense."
  },
  "recap": {
-  "zh": "山门前，瞿老的三试：腿、脑子、胆子。",
-  "en": "At the gate, Elder Qu's three trials: legs, wits and nerve."
+  "zh": "一试，三百级石阶：你三步一吸，三步一呼，替舅舅走了上来。",
+  "en": "First trial, three hundred steps: three steps a breath in, three a breath out, you climbed the stair for your uncle."
  },
  "cast": [],
- "lines": [
-  {
-   "who": "qulao",
-   "text": {
-    "zh": "沉鼎观收人，不看出身，只看三样：腿、脑子、胆子。",
-    "en": "Chending Temple does not ask where you come from. It looks at three things: legs, wits and nerve."
-   }
-  },
-  {
-   "who": "qulao",
-   "text": {
-    "zh": "一试，腿。三百级石阶，一炷香。香烧完之前上不来的，回家。",
-    "en": "First, legs. Three hundred steps, one stick of incense. Not up before it burns out — go home."
-   }
-  }
+ "people": [
+  "qulao",
+  "maxiaobao"
  ],
+ "panel": {
+  "art": "art/panels/00-gate.webp",
+  "caption": {
+   "zh": [
+    "三百级石阶，直通云雾。",
+    "石阶顶上，一个扫地的老头。",
+    "一试，腿：一炷香。"
+   ],
+   "en": [
+    "Three hundred steps, straight into the clouds.",
+    "At the top, an old man with a broom.",
+    "First trial, legs: one stick of incense."
+   ]
+  }
+ },
+ "story": {
+  "zh": "九月初九，泗水沉鼎山下，人山人海。\n\n山门前一道石阶，三百级，直通到云雾里。石阶顶上，站着一个扫地的老头，拄着一把竹扫帚，看都不看底下这几千个孩子一眼。\n\n「沉鼎观收人，」他开口了，声音不大，却每个人都听得清清楚楚，「不看出身，不看荐书——」\n\n马小宝的脸，白了一下。\n\n「——只看三样：腿，脑子，胆子。」\n\n**一试 · 腿。** 三百级石阶，一炷香。\n\n几千个孩子一窝蜂地往上冲。",
+  "en": "On the ninth day of the ninth month, the foot of Chending Mountain on the Si is a sea of people.\n\nBefore the gate a flight of stone steps, three hundred of them, climbs straight up into the clouds. At the top stands an old man with a bamboo broom, leaning on it, not so much as glancing at the thousands of children below.\n\n\"Chending Temple takes disciples,\" he says, not loudly, and yet every one of them hears it clearly, \"not by birth, not by letters of recommendation —\"\n\nMa Xiaobao's face goes white for a moment.\n\n\"— by three things only: legs, wits, nerve.\"\n\n**First trial · Legs.** Three hundred steps, one stick of incense.\n\nThousands of children rush up in a swarm."
+ },
+ "lines": [],
  "buttons": [
-  "climb",
-  "rest"
+  "steady",
+  "rush"
  ],
  "exits": [
   {
-   "id": "climb",
+   "id": "steady",
    "label": {
-    "zh": "一试 · 一口气登顶",
-    "en": "First trial · Climb without stopping"
+    "zh": "走在最后，三步一吸，三步一呼",
+    "en": "At the back: three steps in, three steps out"
    },
-   "means": "climbs the three hundred steps straight up",
-   "stamina": 12,
-   "mark": "stairs-straight",
-   "beat": [
-    {
-     "who": "ling",
-     "text": {
-      "zh": "你一口气登了上去，腿抖得站不稳。香还剩大半截。",
-      "en": "You climb it in one breath, legs shaking under you. More than half the incense is left."
-     }
-    }
-   ],
+   "means": "climbs steadily at an even pace, counting breaths, like a hunter on a long trail",
+   "stamina": 6,
+   "mark": "steps-steady",
+   "story": {
+    "zh": "你没有冲。你走在最后面，一步一步，不快不慢。\n\n你想起舅舅说的那句话：「我爬到一百六十级，腿就动不了了。」\n\n你想起你爹说的：蹲一只鹿，蹲得越急，鹿越不来。\n\n你一级一级地数，数着自己的呼吸：三步一吸，三步一呼，像在山里追一头走得很稳的鹿。\n\n冲在最前面的那些孩子，到了一百五十级，一个一个都像是腿上绑了石头，越急越走不动，有的干脆坐在台阶上哭了起来。\n\n你照着你的步子，不快不慢，从他们身边一个一个走过去。\n\n一百六十级。你的腿也沉了——像绑了两块石头。你没有停，也没有快，照着你的呼吸，一步，一步。\n\n香烧完的时候，你站在了第三百级石阶上。你回头往下看了一眼，一百六十级那里，坐着好几个哭鼻子的孩子。\n\n舅舅，你在心里说，我替你走上来了。那个扫地的老头第一次抬起眼皮，看了你一眼。",
+    "en": "You don't rush. You walk at the very back, step after step, not fast, not slow.\n\nYou remember what your uncle said: \"I got to the hundred-and-sixtieth and my legs wouldn't move.\"\n\nYou remember what your father said: wait on a deer, and the more impatient you are, the less it comes.\n\nYou count the steps one by one, counting your breaths: three steps breathing in, three breathing out, like following a deer through the mountains that walks very steadily.\n\nThe children who rushed ahead reach the hundred-and-fiftieth step and slow one by one as if stones were tied to their legs; the more they hurry, the less they can move, and some simply sit down on the steps and cry.\n\nAt your own pace, not fast, not slow, you pass them one by one.\n\nThe hundred-and-sixtieth step. Your legs grow heavy too — as if two stones were tied to them. You don't stop, and you don't hurry; by your breath, one step, then another.\n\nAs the incense burns out, you are standing on the three-hundredth step. You look back down once: at the hundred-and-sixtieth step sit several children, sniffling.\n\nUncle, you say to yourself, I've climbed it for you. For the first time the old man with the broom lifts his eyelids, and looks at you."
+   },
+   "beat": [],
    "next": "00-luoshu"
   },
   {
-   "id": "rest",
+   "id": "rush",
    "label": {
-    "zh": "一试 · 歇一歇再走",
-    "en": "First trial · Stop for breath on the way"
+    "zh": "跟着冲上去",
+    "en": "Rush up with the rest"
    },
-   "means": "climbs the steps but rests on the way",
-   "stamina": 6,
-   "mark": "stairs-rested",
-   "beat": [
-    {
-     "who": "ling",
-     "text": {
-      "zh": "你在第两百级坐下歇了口气。上到顶时，香只剩一指。",
-      "en": "You sit on the two-hundredth step to catch your breath. At the top, a finger's width of incense is left."
-     }
-    }
-   ],
+   "means": "rushes up the steps as fast as possible",
+   "stamina": 12,
+   "mark": "steps-rushed",
+   "story": {
+    "zh": "你跟着冲了上去。\n\n到了一百五十级，腿上一沉，像是绑了石头——越急，越沉。你喘得像你爹那口破风箱，眼看着身边的孩子一个一个坐倒在台阶上哭。\n\n一百六十级。舅舅坐下的地方。\n\n你停下来，站着喘匀了气。你想起你爹说的：蹲一只鹿，蹲得越急，鹿越不来。你数着呼吸，三步一吸，三步一呼，一步一步，匀着走了上去。\n\n香只剩一指的时候，你站在了第三百级石阶上。那个扫地的老头抬起眼皮，看了你一眼。",
+    "en": "You rush up with the rest.\n\nAt the hundred-and-fiftieth step your legs turn heavy, as if stones were tied to them — the harder you hurry, the heavier. You're panting like your father's broken bellows, watching the children around you sit down on the steps one by one and cry.\n\nThe hundred-and-sixtieth step. Where your uncle sat down.\n\nYou stop and stand until your breath is even. You remember your father: wait on a deer, and the more impatient you are, the less it comes. Counting breaths — three steps in, three steps out — you climb on, evenly, step by step.\n\nWith a finger's width of incense left, you are standing on the three-hundredth step. The old man with the broom lifts his eyelids, and looks at you."
+   },
+   "beat": [],
    "next": "00-luoshu"
   }
  ]

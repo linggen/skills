@@ -1,33 +1,45 @@
-# Prologue · 泗水 · 入门 — beat sheet
+# Prologue · 蒙山 — beat sheet
 
-The script is doc/drafts/prologue-v1.md (approved by Hanli 2026-09-28). The
-first session: the player should leave having seen every system once — a
-choice, a name, 体力, a board, a fight, the roots, an errand, the day's
-practice, a creature, and a hook. The hero is a 泗水 fisher-child; the name
-card asks 男 · 女, and the rules fill {兄姐} (师兄 · 师姐) and {伴} (阿禾 for a
-girl, 石头 for a boy) — the spine never changes with it.
+The script is story/huxian-bing/notes/prologue-1-source.md (sections
+一–九, tasks 1–13) and prologue-2-source.md (十–十九, tasks 14–30), approved by
+Hanli 2026-09-28; the order of part 2 is notes/structure.md. Told as a 小人书:
+each scene is one painted panel on the stage (`panel`: art/panels/, a caption
+of two to four lines, the choices under it) and one passage in the chat
+(`story`, zh + en — the source's own prose; an exit's `story` is a choice's
+outcome). Ling tells the passage; the stage never holds the prose. The hero is
+你 — name and 男 · 女 on the first scene's card; {伴} is 阿禾 for a girl, 石头
+for a boy.
 
-1. **雨夜** (`00-river`, 泗水). The net holds no fish, only a silver light.
-   Reach — or leave it till tomorrow; it waits. Either way: the silent bell.
-2. **渡口** (`00-ferry`). 渡叔 asks the name → the page's card (男 · 女, four
-   names or their own). He: 「{name}。好名字。」
-3. **天将亮** (`00-boat`). The errand 收船 stands at the crossing (华容道;
-   干粮 and three stones — his father's). Up the mountain.
-4. **上山路** (`00-shanlu`). {伴}'s bundle in the ditch: help (体力 −3) or go
-   on. Marked on the save (`marks`); chapter 1 remembers.
-5. **三试** (`00-gate`, `00-luoshu`, `00-longzhi`, 山门). 瞿老: legs (the steps,
-   straight up or resting — 体力), wits (洛书), nerve (蠪侄, the first fight; a
-   loss here may be fought again at once).
-6. **入门仪式** (`00-hall`, 正殿). 玄沉子 asks the 生辰 on the page's card
-   (year-month-day, private, skippable) → the roots (天 · 地 · 真 · 伪). The
-   bell turns cold. The grey robe; 「{name}{兄姐}」.
-7. **外门** (`00-waimen`). 周衡: water, wood, the manual. The first practice
-   (炼丹, one lingzhi over); the errand 修屋顶 (七巧).
-8. **夫诸出水** (`00-fuzhu`, 泗水北岸). The stage plays its `appear` in full the
-   first time. Gift (the lingzhi) · riddle · subdue.
-9. **北方** (`00-north`). The bell rings once, pointing north. The map; the
-   chapter ends and 第一章 opens.
+| Scene | Source | Choices → mechanics |
+|---|---|---|
+| `00-shiao` 石坳村 | 一 | the name card (名字 · 男 · 女) |
+| `00-masan` 马三 | 一 | 垂眼 (`kept-count`) · 攥拳 (体力 −5): both write 恩仇簿 仇 马小宝, 马三 — task 2 |
+| `00-dawn` 鸡蛋 | 一 | 收下 → 恩 {伴} (task 3) · 推回去 (`no-egg`) |
+| `00-kitchen` 灶间 | 一 | 跟爹进山 → 狐纹木牌 (task 4) |
+| `00-chushan` 前山 | 二 | 爬树眺望 → the map card (task 5) |
+| `00-duanbei` 断碑 | 三 | 看碑背 (`stele-fox`, task 7) · 三条规矩 (`three-rules`, task 6) · 回村 / 独自进 stay |
+| `00-heisong` 黑松岭 | 三 | 三十步一记 (体力 −3, `marks-cut`, task 8) |
+| `00-storm` 暴雨 | 四 | 掉头 (体力 −4) · 再追半里 (体力 −10, the harder fall — task 9) |
+| `00-fall` 坠谷 | 五 · 六 | 一样一样地查 (task 10) |
+| `00-fox` 银光 | 七 | 裹起它 · 别碰 (stay) — task 11 |
+| `00-cave` 那一夜 | 八 | 分它一半 · 自己吃 (task 12) |
+| `00-yinyue` 天亮 | 九 | 带她出谷 → she joins (`joins`, task 13) |
+| `00-cliff` 出谷 | 十 | 抓住爹的手 (体力 −3) → 恩 老周 (task 14) |
+| `00-deer` 那头鹿 | 十一 | 往左偏半寸 → 鹿皮, she faints (`sleeps`) · 照直射 stay (task 15) |
+| `00-rent` 交租 | 十二 | 装傻 · 说实话 (`told-ma`) — the 鹿皮 paid (task 16) |
+| `00-dusk` 村东头 | 十二 | 去村东头 (`wupo-bowed`, task 17) · 守着它; both wake her |
+| `00-xiuxian` 什么是修仙 | 十三 | (task 18) |
+| `00-sleep` 沉睡 | 十四 | 泡进去 (体力 −6) → 《吐纳经》, she sleeps in the token (tasks 19–20) · 爬出来 stay |
+| `00-halfyear` 半年 | 十五 | 功课 open (`offers.quests`) (tasks 21–22) |
+| `00-uncle` 舅舅 | 十六 | 去 · 再等等 stay (tasks 23–24) |
+| `00-notice` 开山门 | 十七 | → 爷爷的弓 (task 25) |
+| `00-gate` 一试 | 十八 | 三步一吸 (体力 −6) · 冲 (体力 −12) (task 26) |
+| `00-luoshu` 二试 | 十八 | 洛书 board (task 27) |
+| `00-longzhi` 三试 | 十八 | 蠪侄, a trial fight (`retry`), its first sight plays; the token's one word (task 28) |
+| `00-hall` 入门 | 十九 | the 生辰 card → roots; 灰袍 + 3 灵石 (task 29) |
+| `00-waimen` 公中 | 十九 | 交 (−1 灵石, 仇 马小宝) · 不交 (task 30) |
+| `00-mijing` 秘境告示 | 十九 | ends the prologue |
 
-**Never in the prologue:** anything about the cauldrons beyond their
-existence, Yinyue herself (only the silent bell), anything of her past, any
-realm above 练气.
+Narrative only for now: 「风」 as a bow art, 体魄 / 体力上限 from the bath, 「韧」,
+舅舅's stipend and his thread, 马家 raising trouble in chapter 1 (`told-ma`,
+`refused-gongzhong` are marked for it), the 修炼图 page.

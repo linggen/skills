@@ -49,7 +49,7 @@ test('a save from before the cut migrates: what is held stays, what only the cut
   assert.deepEqual(m.cards, old.cards);
   assert.deepEqual(m.cast, old.cast);
   assert.deepEqual(m.treasure, { name: '青锋', base: 3, element: 'metal', level: 3 }, 'its 重 kept, the 温养 exp gone');
-  assert.deepEqual(m.companion, old.companion);
+  assert.deepEqual(m.companion, { ...old.companion, awake: true }, 'found by the bell: awake (the engine reads `awake`)');
   assert.deepEqual([m.tier, m.step, m.progress], ['foundation', 1, 40]);
   // Gone: the wound, the bond and its marks, her tending, the day's 温养 and 写符.
   for (const k of ['wounds', 'bond', 'tended', 'journey']) assert.equal(m[k], undefined, k);

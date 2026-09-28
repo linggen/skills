@@ -1,0 +1,61 @@
+{
+ "version": 1,
+ "id": "00-halfyear",
+ "chapter": "00-prologue",
+ "at": "shiao",
+ "place": {
+  "zh": "石坳村 · 半年",
+  "en": "Shi'ao village · half a year"
+ },
+ "setup": {
+  "zh": "你一个人了。《吐纳经》上的字认不全，娘在灶间的油灯底下一个字一个字地教你。每夜子时吐纳，什么都没有。木牌凉着。",
+  "en": "You are on your own. You can't read half the scroll, so Mother teaches you by the kitchen lamp, character by character. Every midnight you breathe, and there is nothing. The token stays cool."
+ },
+ "recap": {
+  "zh": "半年里你一个人背《吐纳经》，娘教你认字；每夜吐纳，什么都摸不着；木牌只烫过一下。",
+  "en": "For half a year you learned the scroll alone, Mother teaching you the characters; every night you breathed and felt nothing; the token burned only once."
+ },
+ "cast": [],
+ "people": [
+  "mama"
+ ],
+ "offers": {
+  "quests": true
+ },
+ "panel": {
+  "art": "art/panels/00-halfyear.webp",
+  "caption": {
+   "zh": [
+    "灶间一盏油灯，一卷快散的竹简。",
+    "「吹呴呼吸，吐故纳新。」",
+    "小腹底下，冷得像一口枯井。"
+   ],
+   "en": [
+    "One lamp in the kitchen, a scroll about to fall apart.",
+    "\"Blow and breathe out, draw and breathe in; spit out the old, take in the new.\"",
+    "Below your navel, cold as a dry well."
+   ]
+  }
+ },
+ "story": {
+  "zh": "你一个人了。\n\n《吐纳经》上的字，你认不全。你爹不识字，你偷偷去问你娘。\n\n你娘接过竹简，就着油灯看了很久。她的手指一个字一个字地摸过去，摸到最后，停住了。\n\n「这是……」她抬头看你，眼神很复杂，「哪来的？」\n\n「山里捡的。」\n\n你娘没再问。她把竹简放在炕桌上，拿过你的手，放在第一个字上。\n\n「这个字，念『吹』。」她说，「吹气的吹。」\n\n从那天起，每天夜里，等你爹睡着了，你娘就在灶间的油灯底下，一个字一个字地教你。她教得很慢，很仔细，就像你小时候她教你算账那样。\n\n「吹呴呼吸，吐故纳新。」你跟着念。\n\n「吐故纳新，」你娘说，「就是把旧的吐出去，把新的吸进来。」她顿了顿，「……人也一样。」\n\n你背熟了。你每夜子时坐在柴垛上，照着经上说的，一呼，一吸，把念头往下沉。\n\n什么都没有。\n\n一个月，什么都没有。两个月，还是什么都没有。你的小腹底下，冷得像一口枯井。\n\n你没有停。你爹说过，打猎的人蹲一只鹿，有时候要蹲三天三夜。鹿不来，不是鹿不在，是你蹲得还不够久。\n\n木牌一直是凉的。那一条银色的尾巴，一明，一暗。\n\n入冬的时候，马三又来收租了。你缩在你爹身后，一句话不说。马小宝又长胖了，穿着一件新的狐皮袄子，冲你挤眉弄眼。\n\n那天夜里，你坐在柴垛上吐纳，吐着吐着，胸口的木牌忽然烫了一下。\n\n只一下。\n\n你愣了很久，然后低下头，把木牌贴在额头上。\n\n「你也生气了，是不是？」你小声说，「……那件狐皮袄子。」\n\n木牌没有回答。",
+  "en": "You are on your own.\n\nYou can't read all the characters of the Tuna Jing. Your father can't read, so you go to your mother, secretly.\n\nYour mother takes the scroll and studies it by the oil lamp for a long time. Her finger moves over it, character by character, and at the end it stops.\n\n\"This is…\" She looks up at you, her eyes full of something you can't read. \"Where did it come from?\"\n\n\"I found it in the mountains.\"\n\nYour mother asks nothing more. She lays the scroll on the little table on the brick bed, takes your hand and sets it on the first character.\n\n\"This one is read *chui*,\" she says. \"*Chui*, as in to blow.\"\n\nFrom that day on, every night, once your father is asleep, your mother teaches you by the oil lamp in the kitchen, one character at a time. She teaches slowly and carefully, just as she taught you accounts when you were small.\n\n\"Blow and breathe out, draw and breathe in; spit out the old, take in the new,\" you repeat after her.\n\n\"Spit out the old, take in the new,\" says your mother. \"Breathe out what's old and breathe in what's new.\" She pauses. \"…People are the same.\"\n\nYou learn it by heart. Every midnight you sit on the woodpile and, as the scroll says, breathe out, breathe in, and let your thoughts sink.\n\nNothing.\n\nA month: nothing. Two months: still nothing. Below your navel it is as cold as a dry well.\n\nYou don't stop. Your father always said a hunter waiting on a deer sometimes waits three days and three nights. If the deer doesn't come, it isn't that there's no deer — it's that you haven't waited long enough.\n\nThe token stays cool. The one silver tail: bright, then dim.\n\nAt the start of winter Ma San comes for the rent again. You shrink behind your father and say nothing. Ma Xiaobao has grown fatter, and he's wearing a new foxskin jacket; he pulls faces at you.\n\nThat night, breathing on the woodpile, in the middle of a breath, the token at your chest suddenly burns.\n\nJust once.\n\nYou sit stunned a long while; then you bow your head and press the token to your forehead.\n\n\"You're angry too, aren't you?\" you whisper. \"…That foxskin jacket.\"\n\nThe token doesn't answer."
+ },
+ "lines": [],
+ "buttons": [
+  "on"
+ ],
+ "exits": [
+  {
+   "id": "on",
+   "label": {
+    "zh": "开春",
+    "en": "Spring comes"
+   },
+   "means": "moves on to the spring",
+   "mark": "scroll-by-heart",
+   "beat": [],
+   "next": "00-uncle"
+  }
+ ]
+}

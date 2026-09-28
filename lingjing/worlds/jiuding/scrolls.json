@@ -1,0 +1,315 @@
+{
+ "version": 1,
+ "_about": "Scrolls a thing in the bag can be read as (an item's `reads`): 《吐纳经》, the scroll 银月 leaves (story/huxian-bing/90-附录·吐纳经.md, 41e8a30). Its passages are quoted exactly from the classics (public domain), each with her gloss (a quote's `zh` is the classic's own words, exact; its `en` a rendering); `layers` are the nine layers of 练气, each with its name, the day's 功课 and its source, and the passage it reads. The page shows the passage for the player's current layer; Look hands Ling the layer's 功课 as the day's practice hint.",
+ "scrolls": {
+  "tuna": {
+   "title": {
+    "zh": "吐纳经",
+    "en": "The Scroll of Breath"
+   },
+   "tier": "qi",
+   "passages": {
+    "head": {
+     "title": {
+      "zh": "卷首 · 何谓吐纳",
+      "en": "Opening · What breathing is"
+     },
+     "quotes": [
+      {
+       "zh": "吹呴呼吸，吐故纳新，熊经鸟申，为寿而已矣。",
+       "en": "Blowing and breathing, spitting out the old and taking in the new, hanging like a bear and stretching like a bird — this is only for long life. (Zhuangzi, 'Constrained in Will')",
+       "source": "《庄子·刻意》"
+      },
+      {
+       "zh": "真人之息以踵，众人之息以喉。",
+       "en": "The true man breathes from his heels; the common man breathes from his throat. (Zhuangzi, 'The Great Teacher')",
+       "source": "《庄子·大宗师》"
+      }
+     ],
+     "gloss": {
+      "zh": "「吐故纳新」——把身子里旧的、浊的吐出去，把天地间新的、清的吸进来。吐纳两个字，就是从这里来的。庄子说，光这样做，只够长寿。本王说：先长寿，再说别的。凡人喘气，喘到嗓子眼就完了；修道的人，一口气要一直沉到脚后跟。你现在喘到哪儿？——嗓子。嗯，从嗓子练起。",
+      "en": "\"Spit out the old, take in the new\" — breathe out what's old and murky inside you, breathe in what's new and clear from heaven and earth. That's where the word comes from. Zhuangzi says that alone is only good for a long life. This king says: long life first, the rest after. A mortal's breath stops at the throat; a cultivator's goes all the way down to the heels. Where does yours go now? — The throat. Fine. Start from the throat."
+     }
+    },
+    "xingqi": {
+     "title": {
+      "zh": "第一篇 · 行气",
+      "en": "Part One · Moving the breath"
+     },
+     "quotes": [
+      {
+       "zh": "行气，深则蓄，蓄则伸，伸则下，下则定，定则固，固则萌，萌则长，长则退，退则天。天几舂在上，地几舂在下。顺则生，逆则死。",
+       "en": "To move the breath: breathe deep and it gathers; gathered, it stretches; stretched, it sinks; sunk, it settles; settled, it holds firm; firm, it sprouts; sprouting, it grows; grown, it returns; returned, it reaches heaven. Heaven's pivot lies above, earth's below. Follow the order and live; go against it and die. (The Jade Pendant Inscription on Moving the Breath, Warring States: forty-five characters on a twelve-sided jade column)",
+       "source": "《行气玉佩铭》（战国，刻在一枚十二面的玉柱上，四十五字）"
+      }
+     ],
+     "gloss": {
+      "zh": "这是你们凡间最老的一篇行气口诀，两千多年前有人把它刻在玉上，怕它丢了。一口气吸进来，要深；深了才蓄得住；蓄满了会自己伸展开，往下走，沉到小腹底下定住；定住了才固；固了，就像种子一样萌芽，一天一天长；长满了，再顺着原路退回来，一直退到头顶，通天。顺着这个次序，就是生；乱了，就是死。——所以，别急。",
+      "en": "This is the oldest breathing rhyme your mortal world has; over two thousand years ago someone carved it in jade so it wouldn't be lost. Draw the breath in deep; only deep does it gather; gathered full, it stretches of itself and goes down, and settles below the navel; settled, it holds; holding, it sprouts like a seed and grows day by day; grown full, it comes back the way it went, all the way up to the crown, and reaches heaven. Keep to that order and you live; muddle it and you die. — So don't rush."
+     }
+    },
+    "shouyi": {
+     "title": {
+      "zh": "第二篇 · 守一",
+      "en": "Part Two · Holding to the one"
+     },
+     "quotes": [
+      {
+       "zh": "载营魄抱一，能无离乎？专气致柔，能如婴儿乎？",
+       "en": "Carrying body and soul and embracing the one — can you keep them from parting? Focusing the breath until it is soft — can you be like an infant? (Daodejing, 10)",
+       "source": "《道德经》第十章"
+      },
+      {
+       "zh": "致虚极，守静笃。万物并作，吾以观复。",
+       "en": "Reach emptiness to the utmost; keep stillness steadfast. The ten thousand things rise together, and I watch them return. (Daodejing, 16)",
+       "source": "《道德经》第十六章"
+      }
+     ],
+     "gloss": {
+      "zh": "身子和神魂抱在一起，不分开——这叫「抱一」。气要专一、要柔，柔得像刚出生的婴儿。婴儿不用学，天生就会用肚子喘气。你们长大了，反倒忘了。练的时候，心要空到底，静到底。你一想马小宝，气就散了。——想也可以，练完再想。",
+      "en": "Body and spirit held together, never parting — that is \"embracing the one\". The breath must be single and soft, soft as a newborn's. A baby needn't learn; it breathes with its belly from birth. You grow up and forget. When you practise, empty your heart to the bottom and still it to the bottom. Think of Ma Xiaobao and the breath scatters. — You may think of him. After practice."
+     }
+    },
+    "zhenqi": {
+     "title": {
+      "zh": "第三篇 · 真气",
+      "en": "Part Three · True breath"
+     },
+     "quotes": [
+      {
+       "zh": "恬惔虚无，真气从之，精神内守，病安从来。",
+       "en": "Calm, content and empty, and the true breath follows; essence and spirit kept within — whence could sickness come? (Yellow Emperor's Inner Classic, Suwen, 'On the Natural Truth of High Antiquity')",
+       "source": "《黄帝内经·素问·上古天真论》"
+      },
+      {
+       "zh": "呼吸精气，独立守神，肌肉若一。",
+       "en": "Breathing in the essential breath, standing alone and guarding the spirit, flesh and muscle as one. (the same)",
+       "source": "同上"
+      }
+     ],
+     "gloss": {
+      "zh": "心里不贪不急，空空的，真气才肯跟着你走；精和神守在身子里头，不往外跑，病就进不来。——你爹的膝盖，一半是伤，一半是一辈子急出来的。",
+      "en": "Only when your heart neither grasps nor hurries — empty — will the true breath consent to follow you; keep essence and spirit inside, not running out, and sickness can't get in. — Your father's knee is half injury, and half a lifetime of worry."
+     }
+    },
+    "taixi": {
+     "title": {
+      "zh": "第四篇 · 胎息",
+      "en": "Part Four · Embryonic breathing"
+     },
+     "quotes": [
+      {
+       "zh": "初学行炁，鼻中引炁而闭之，阴以心数至一百二十，乃以口微吐之，及引之，皆不欲令己耳闻其炁出入之声，常令入多出少，以鸿毛著鼻口之上，吐炁而鸿毛不动为候也。",
+       "en": "One who first learns to move the breath draws it in through the nose and holds it, counting silently in the heart to one hundred and twenty, then lets it out faintly through the mouth; in drawing in and letting out, one's own ears should not hear the breath come or go; always take in more than you let out; lay a swan's down feather at the nose and mouth, and when the breath goes out and the down does not stir, that is the sign. (Ge Hong, Baopuzi, Inner Chapters, 'Explaining Obstructions')",
+       "source": "葛洪《抱朴子·内篇·释滞》"
+      },
+      {
+       "zh": "得胎息者，能不以鼻口嘘吸，如在胞胎之中，则道成矣。",
+       "en": "One who attains embryonic breathing can breathe without nose or mouth, as if in the womb; then the Way is achieved. (the same)",
+       "source": "同上"
+      }
+     ],
+     "gloss": {
+      "zh": "这是最实在的一篇。鼻子吸一口，憋住，心里默数到一百二十，再用嘴一丝一丝地吐——吸和吐都轻到连自己的耳朵都听不见，吸得多，吐得少。拿一根鸿毛放在鼻子前面，吐气的时候鸿毛一动不动，才算入门。练到最后，不用鼻子也不用嘴，像娘胎里的孩子一样，自己就能「息」——那就是胎息。练气九层的尽头，就是胎息。到了那一步，才能筑基。",
+      "en": "This is the most practical part. Breathe in through the nose, hold it, count silently to a hundred and twenty, then let it out through the mouth a thread at a time — in and out so softly your own ears can't hear it, more in than out. Put a swan's down feather before your nose; when you breathe out and it doesn't stir, you've begun. At the very end you need neither nose nor mouth; like a child in the womb you simply breathe — that is embryonic breathing. The ninth layer of Qi Condensation ends in it. Only there can you lay a Foundation."
+     }
+    },
+    "tail": {
+     "title": {
+      "zh": "卷末 · 路在哪里",
+      "en": "Close · Where the road goes"
+     },
+     "quotes": [
+      {
+       "zh": "炼精化气，炼气化神，炼神还虚。",
+       "en": "Refine essence into breath, breath into spirit, spirit back into emptiness. (the inner alchemists, from the Song and Yuan scriptures on, such as Zhang Boduan's Wuzhen Pian)",
+       "source": "内丹家言（宋元以来的丹经，如张伯端《悟真篇》一脉）"
+      }
+     ],
+     "gloss": {
+      "zh": "你们凡间的丹道，把一整条路分成三段：把身子里的精，炼成气；把气，炼成神；把神，炼回虚空。你现在做的，是第一段的第一步——练气。后面还长着呢。本王在上面等你。",
+      "en": "Your mortal alchemy splits the whole road into three: refine the body's essence into breath; breath into spirit; spirit back into emptiness. What you are doing now is the first step of the first part — Qi Condensation. There's a long way still. This king is waiting up there."
+     }
+    }
+   },
+   "layers": [
+    {
+     "n": 1,
+     "name": {
+      "zh": "引气",
+      "en": "Drawing the breath"
+     },
+     "note": {
+      "zh": "丹田初暖",
+      "en": "the dantian first warms"
+     },
+     "gongke": {
+      "zh": "子时吐纳一刻，气沉到小腹",
+      "en": "a quarter-hour of breathing at midnight, the breath sunk to the belly"
+     },
+     "source": {
+      "zh": "行气铭「深则蓄」",
+      "en": "the Inscription: 'deep, and it gathers'"
+     },
+     "reads": "xingqi"
+    },
+    {
+     "n": 2,
+     "name": {
+      "zh": "蓄气",
+      "en": "Gathering"
+     },
+     "note": {
+      "zh": "气能存住",
+      "en": "the breath is kept"
+     },
+     "gongke": {
+      "zh": "一吸一闭，心数至三十",
+      "en": "breathe in, hold, count to thirty"
+     },
+     "source": {
+      "zh": "行气铭「蓄则伸」",
+      "en": "the Inscription: 'gathered, it stretches'"
+     },
+     "reads": "xingqi"
+    },
+    {
+     "n": 3,
+     "name": {
+      "zh": "行气",
+      "en": "Moving"
+     },
+     "note": {
+      "zh": "气随意走",
+      "en": "the breath goes where you will"
+     },
+     "gongke": {
+      "zh": "气从小腹走到四肢",
+      "en": "send the breath from the belly out to the limbs"
+     },
+     "source": {
+      "zh": "行气铭「伸则下」",
+      "en": "the Inscription: 'stretched, it sinks'"
+     },
+     "reads": "xingqi"
+    },
+    {
+     "n": 4,
+     "name": {
+      "zh": "定气",
+      "en": "Settling"
+     },
+     "note": {
+      "zh": "静坐不散",
+      "en": "sitting still, not scattered"
+     },
+     "gongke": {
+      "zh": "坐一炷香，心不动",
+      "en": "sit one stick of incense, the heart unmoved"
+     },
+     "source": {
+      "zh": "《道德经》守静笃",
+      "en": "Daodejing: 'keep stillness steadfast'"
+     },
+     "reads": "shouyi"
+    },
+    {
+     "n": 5,
+     "name": {
+      "zh": "固气",
+      "en": "Holding firm"
+     },
+     "note": {
+      "zh": "百病不侵",
+      "en": "no sickness can touch you"
+     },
+     "gongke": {
+      "zh": "心数至六十",
+      "en": "count to sixty"
+     },
+     "source": {
+      "zh": "《内经》真气从之",
+      "en": "Inner Classic: 'the true breath follows'"
+     },
+     "reads": "zhenqi"
+    },
+    {
+     "n": 6,
+     "name": {
+      "zh": "柔气",
+      "en": "Softening"
+     },
+     "note": {
+      "zh": "专气致柔",
+      "en": "focus the breath until soft"
+     },
+     "gongke": {
+      "zh": "气柔如婴儿，腹息",
+      "en": "breath soft as an infant's, from the belly"
+     },
+     "source": {
+      "zh": "《道德经》专气致柔",
+      "en": "Daodejing: 'focus the breath until soft'"
+     },
+     "reads": "shouyi"
+    },
+    {
+     "n": 7,
+     "name": {
+      "zh": "息踵",
+      "en": "Breathing from the heels"
+     },
+     "note": {
+      "zh": "一口气到脚跟",
+      "en": "one breath down to the heels"
+     },
+     "gongke": {
+      "zh": "心数至一百二十",
+      "en": "count to a hundred and twenty"
+     },
+     "source": {
+      "zh": "《庄子》息以踵",
+      "en": "Zhuangzi: 'breathes from his heels'"
+     },
+     "reads": "head"
+    },
+    {
+     "n": 8,
+     "name": {
+      "zh": "鸿毛不动",
+      "en": "The unstirred feather"
+     },
+     "gongke": {
+      "zh": "吐气时鸿毛不动",
+      "en": "breathe out and the down does not stir"
+     },
+     "source": {
+      "zh": "《抱朴子》鸿毛为候",
+      "en": "Baopuzi: 'the down feather is the sign'"
+     },
+     "reads": "taixi"
+    },
+    {
+     "n": 9,
+     "name": {
+      "zh": "胎息",
+      "en": "Embryonic breathing"
+     },
+     "note": {
+      "zh": "不以口鼻",
+      "en": "without nose or mouth"
+     },
+     "gongke": {
+      "zh": "静坐自息 → 可筑基",
+      "en": "sit and breathe of yourself → Foundation"
+     },
+     "source": {
+      "zh": "《抱朴子》胎息",
+      "en": "Baopuzi: embryonic breathing"
+     },
+     "reads": "taixi"
+    }
+   ]
+  }
+ }
+}

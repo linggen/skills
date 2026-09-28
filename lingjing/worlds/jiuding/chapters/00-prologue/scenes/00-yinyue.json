@@ -1,0 +1,56 @@
+{
+ "version": 1,
+ "id": "00-yinyue",
+ "chapter": "00-prologue",
+ "at": "yingu",
+ "place": {
+  "zh": "银叶谷 · 天亮",
+  "en": "The Silver-leaf Vale · daybreak"
+ },
+ "setup": {
+  "zh": "天亮了，狐狸不见了。洞口坐着一个银发赤脚的姑娘，金色的竖瞳，正在吃你剩下的半块饼。",
+  "en": "Day has come and the fox is gone. At the cave mouth sits a barefoot girl with silver hair and gold slit eyes, eating your half of the bread."
+ },
+ "recap": {
+  "zh": "天亮时，那只狐狸成了一个银发的姑娘：青丘之主，只记得自己叫银月；她看见吴婆婆的木牌，变了脸色。",
+  "en": "At daybreak the fox was a silver-haired girl: mistress of Qingqiu, remembering only that her name was Yinyue; the sight of Granny Wu's token changed her face."
+ },
+ "cast": [],
+ "her": "human",
+ "panel": {
+  "art": "art/panels/00-yinyue.webp",
+  "caption": {
+   "zh": [
+    "洞口坐着一个人。",
+    "银发垂到腰下，赤着脚，衣白如雪。",
+    "身后一条银尾，只有一条。"
+   ],
+   "en": [
+    "Someone sits at the cave mouth.",
+    "Silver hair to her waist, bare feet, a robe white as snow.",
+    "One silver tail behind her. Only one."
+   ]
+  }
+ },
+ "story": {
+  "zh": "你是被饿醒的。\n\n火堆已经熄了。洞口透进来灰白的天光，雨停了。你怀里空空的——你的外衣叠得整整齐齐放在一边，狐狸不见了。\n\n洞口坐着一个人。\n\n一个姑娘，看起来比你大不了几岁，银色的头发一直垂到腰下，赤着脚，身上裹着一件你从没见过的衣裳，白得像雪，又亮得像水。她背对着你，正在吃东西。\n\n吃的是你剩下的那半块饼。\n\n她听见你醒了，转过头来。金色的眼睛，竖着的瞳仁。\n\n⟪「醒了？」⟫她舔了舔手指上的饼渣，⟪「你们凡人的饼，真难吃。」⟫\n\n你没有叫，也没有跑。你只是悄悄把手摸向了身边的一块石头。\n\n她看见了，嘴角一翘：⟪「不错。知道先摸石头，不是先喊娘。」⟫她站起来，走到你面前，低头打量你，像在打量一件不怎么值钱的东西：⟪「十二岁，筋骨还行，眼神也还行，灵根……啧，烂成这样。」⟫她叹了口气，⟪「罢了。本王欠你一条命。」⟫\n\n「你……是那只狐狸？」\n\n⟪「放肆。」⟫她抬起下巴，⟪「本王是青丘之主，仙界妖王——」⟫\n\n她顿住了。眉头皱起来，像是在很用力地想什么。\n\n⟪「——本王叫什么来着？」⟫\n\n山谷里很静。树上的露珠一颗一颗落下来。\n\n过了好一会儿，她才慢慢说：⟪「……银月。本王只记得这两个字了。」⟫\n\n她低头看了看自己身后。晨光里，一条银白的尾巴轻轻摆了摆。只有一条。\n\n然后她看见了你手边的木牌。她的眼睛，一下子睁大了。\n\n⟪「这个，」⟫她的声音变了，⟪「哪来的？」⟫\n\n「村里吴婆婆给的。她说……我爷爷当年进山，也从她门口过。」\n\n银月盯着那块木牌，盯了很久。然后她把木牌还给你，什么也没说，只是冲你露出一个不太像妖王的笑：\n\n⟪「走吧，凡人。先带本王出去——你爹顺着你刻的记号，在崖顶喊了你一夜，嗓子都喊哑了。」⟫",
+  "en": "It is hunger that wakes you.\n\nThe fire is out. Grey daylight comes in at the cave mouth; the rain has stopped. Your arms are empty — your jacket lies neatly folded beside you, and the fox is gone.\n\nSomeone is sitting at the mouth of the cave.\n\nA girl, not many years older than you by the look of her, silver hair falling past her waist, bare feet, wrapped in a garment such as you have never seen, white as snow and bright as water. Her back is to you; she is eating something.\n\nWhat she is eating is your half of the bread.\n\nShe hears you wake and turns her head. Gold eyes, slit pupils.\n\n⟪\"Awake?\"⟫ She licks the crumbs from her fingers. ⟪\"Your mortal bread is truly awful.\"⟫\n\nYou don't cry out, and you don't run. You only slide your hand, quietly, toward a stone beside you.\n\nShe sees it, and the corner of her mouth lifts. ⟪\"Not bad. Reaches for a stone first, not for its mother.\"⟫ She rises, comes to stand over you and looks you up and down as if pricing something not worth much. ⟪\"Twelve years old. Bones will do, eyes will do, roots… tch, rotten as that.\"⟫ She sighs. ⟪\"Never mind. This king owes you a life.\"⟫\n\n\"You're… the fox?\"\n\n⟪\"Insolence.\"⟫ She lifts her chin. ⟪\"This king is the mistress of Qingqiu, demon sovereign of the immortal realm —\"⟫\n\nShe stops. Her brows draw together, as if she is thinking very hard.\n\n⟪\"— what was this king's name again?\"⟫\n\nThe valley is very quiet. Dewdrops fall from the trees, one by one.\n\nAt last, slowly, she says: ⟪\"…Yinyue. Those two words are all this king remembers.\"⟫\n\nShe looks down behind herself. In the morning light a silver-white tail sways gently. Only one.\n\nThen she sees the token by your hand. Her eyes go wide.\n\n⟪\"That,\"⟫ her voice has changed, ⟪\"where did it come from?\"⟫\n\n\"Granny Wu in our village gave it to me. She said… when my grandfather went into the mountain, he passed her door too.\"\n\nYinyue stares at the token for a long time. Then she gives it back to you and says nothing about it; she only gives you a smile not much like a demon sovereign's:\n\n⟪\"Come, mortal. Get this king out of here first — your father has been following the marks you cut, shouting for you from the clifftop all night. He's shouted himself hoarse.\"⟫"
+ },
+ "lines": [],
+ "buttons": [
+  "follow"
+ ],
+ "exits": [
+  {
+   "id": "follow",
+   "label": {
+    "zh": "带她出谷",
+    "en": "Take her out of the valley"
+   },
+   "means": "goes with her, leaves the valley, heads back toward father",
+   "joins": true,
+   "beat": [],
+   "next": "00-cliff"
+  }
+ ]
+}

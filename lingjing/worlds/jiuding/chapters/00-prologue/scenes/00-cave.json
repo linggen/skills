@@ -1,0 +1,76 @@
+{
+ "version": 1,
+ "id": "00-cave",
+ "chapter": "00-prologue",
+ "at": "yingu",
+ "place": {
+  "zh": "银叶谷 · 石洞 · 夜",
+  "en": "The Silver-leaf Vale · a cave · night"
+ },
+ "setup": {
+  "zh": "崖壁下一个浅石洞。你生起一小堆火挡在洞口，怀里是{伴}的鸡蛋和娘的半块饼。",
+  "en": "A shallow cave under the cliff. You light a small fire across its mouth; inside your jacket are {伴}'s egg and half of Mother's bread."
+ },
+ "recap": {
+  "zh": "石洞里生了火，你把吃的分给它，给它擦伤口；睡着前，有人说：本王记住你了。",
+  "en": "In the cave you lit a fire, shared your food with the fox and cleaned its wounds; as you fell asleep someone said: this king will remember you."
+ },
+ "cast": [],
+ "her": "fox",
+ "panel": {
+  "art": "art/panels/00-cave.webp",
+  "caption": {
+   "zh": [
+    "一个浅石洞，一小堆火。",
+    "松脂噼啪，野兽不敢近。",
+    "怀里两样东西：一个鸡蛋，半块饼。"
+   ],
+   "en": [
+    "A shallow cave, a small fire.",
+    "The resin crackles; no beast comes near.",
+    "Two things in your jacket: an egg, half a bread."
+   ]
+  }
+ },
+ "story": {
+  "zh": "你在崖壁下找到了一个浅浅的石洞。你先扔了块石头进去，听了听——空的，没东西。你用你爹教的法子，拿干苔和松脂生了一小堆火，火堆挡在洞口，野兽不敢进来。\n\n你从怀里摸出两样东西：{伴}给的煮鸡蛋，和你娘塞给你的半块饼——家里最后的一点白面。",
+  "en": "Under the cliff you find a shallow cave. First you throw a stone in and listen — empty, nothing there. The way your father taught you, you make a small fire of dry moss and pine resin and set it across the mouth of the cave; no beast will come in past it.\n\nFrom inside your jacket you take out two things: the boiled egg {伴} gave you, and the half bread your mother tucked in — the last of the family's white flour."
+ },
+ "lines": [],
+ "buttons": [
+  "share",
+  "keep"
+ ],
+ "exits": [
+  {
+   "id": "share",
+   "label": {
+    "zh": "分它一半",
+    "en": "Give it half"
+   },
+   "means": "shares the egg and the bread with the fox, feeds it",
+   "mark": "shared-bread",
+   "story": {
+    "zh": "你把鸡蛋剥了，掰了一半给它。饼，你想了想，又掰了一半给它。\n\n它闻了闻，看了你一眼，吃了。\n\n你撕下衣摆，蘸着雨水，一点一点给它擦伤口上的泥。它不咬你了，只是在你碰到疼处的时候，耳朵往后一压，小小地「呜」一声。\n\n火光里，你看见它的伤口在慢慢地、慢慢地合拢。\n\n你太累了。你抱着它，靠着石壁，不知道什么时候就睡着了。\n\n睡着之前，你好像听见有人在你耳边，用很小的声音说了一句话。不是狐狸的叫声，是人话，是一个姑娘的声音，带着一点不情不愿：\n\n⟪「……凡人。本王记住你了。」⟫",
+    "en": "You peel the egg and break off half for it. The bread — you think a moment — you break in half for it too.\n\nIt sniffs, looks at you once, and eats.\n\nYou tear a strip from the hem of your shirt, wet it with rain, and bit by bit wipe the mud from its wounds. It doesn't bite you now; only when you touch a sore place its ears flatten and it gives a tiny \"wu\".\n\nIn the firelight you see its wounds closing, slowly, slowly.\n\nYou are so tired. Holding it, leaning against the rock, you fall asleep without knowing when.\n\nJust before sleep you seem to hear someone speak close to your ear, very quietly. Not a fox's cry — words, a girl's voice, a little grudging:\n\n⟪\"…Mortal. This king will remember you.\"⟫"
+   },
+   "beat": [],
+   "next": "00-yinyue"
+  },
+  {
+   "id": "keep",
+   "label": {
+    "zh": "自己吃",
+    "en": "Eat it yourself"
+   },
+   "means": "keeps the food, eats it alone",
+   "mark": "kept-bread",
+   "story": {
+    "zh": "你把鸡蛋剥了，自己吃了。饼，你咬了一口，想了想，把剩下的揣回怀里——明天还不知道有没有吃的。\n\n它在衣裳里看着你，一直看着，没出声。\n\n你撕下衣摆，蘸着雨水，给它擦伤口上的泥。它不咬你了，只是在你碰到疼处的时候，耳朵往后一压。\n\n你太累了。你抱着它，靠着石壁，不知道什么时候就睡着了。\n\n睡着之前，你好像听见有人在你耳边，用很小的声音说了一句话，是一个姑娘的声音，带着一点不情不愿：\n\n⟪「……凡人。小气。——本王记住你了。」⟫",
+    "en": "You peel the egg and eat it yourself. The bread you bite once, think it over, and tuck the rest back inside your jacket — who knows if there will be food tomorrow.\n\nFrom inside the jacket it watches you, and keeps watching, and makes no sound.\n\nYou tear a strip from your hem, wet it with rain, and wipe the mud from its wounds. It doesn't bite you now; only when you touch a sore place its ears flatten.\n\nYou are so tired. Holding it, leaning against the rock, you fall asleep without knowing when.\n\nJust before sleep you seem to hear someone speak close to your ear, very quietly — a girl's voice, a little grudging:\n\n⟪\"…Mortal. Stingy. — This king will remember you.\"⟫"
+   },
+   "beat": [],
+   "next": "00-yinyue"
+  }
+ ]
+}

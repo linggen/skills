@@ -12,12 +12,12 @@
   },
   "joined": {
     "knows": {
-      "zh": "她不记得自己是谁，只知道那只铃是她的，她等了很久。",
-      "en": "She does not remember who she was — only that the bell is hers and she waited a long while."
+      "zh": "她是青丘的狐，自称本王；只记得「银月」两个字，只剩一条尾巴、金丹，砍她尾巴的人还在找她。吴婆婆的木牌上刻着九尾的狐。",
+      "en": "She is a fox of Qingqiu who calls herself this king; she remembers only the name Yinyue — one tail left, a Golden Core, and the one who cut her tails still searching. Granny Wu's token bears a nine-tailed fox."
     },
     "feels": {
-      "zh": "被找到了，高兴，嘴上不说。",
-      "en": "Found, and glad of it, though she will not make much of it."
+      "zh": "欠了这个凡人孩子一条命，嘴上嫌弃，心里记着。",
+      "en": "She owes this mortal child her life; she scoffs aloud and remembers it inside."
     }
   },
   "thread": [
@@ -59,7 +59,10 @@
     },
     {
       "chapter": "03-qing",
-      "memory": { "id": "salt-water", "scene": "03-cauldron" },
+      "memory": {
+        "id": "salt-water",
+        "scene": "03-cauldron"
+      },
       "knows": {
         "zh": "她被放在东海；那人要她等九鼎聚齐，还叫了一个不是她的名字。",
         "en": "She was set down in the eastern sea; she was told to wait until the nine are gathered, and a name was spoken that was not hers."

@@ -18,8 +18,9 @@ import { askOf, forLing, look, pageNames, resolve } from '../scripts/rules.mjs';
 const content = loadContent();
 const NOW = new Date('2026-09-28T12:00:00');
 const ctx = { now: NOW, quests: [] };
-const waking = (lang = 'zh', created = NOW) => resolve(newState(content, lang, created), content, ctx, { exit: 'reach' }).state;
-const scene = content.chapters['00-prologue'].scenes['00-ferry'];
+// prologue-v3: the name card stands on the first scene, 石坳村.
+const waking = (lang = 'zh', created = NOW) => newState(content, lang, created);
+const scene = content.chapters['00-prologue'].scenes['00-shiao'];
 const rule = scene.exits.find(e => e.id === 'name').value;
 const exitOf = l => l.scene.exits.find(e => e.id === 'name');
 
@@ -34,7 +35,7 @@ test('the opening names from a pool: four drawn per save, the same on a reload, 
   assert.ok(draws.size >= 6, `twelve saves drew only ${draws.size} different sets`);
   const en = exitOf(look(waking('en'), content, ctx)).value;
   for (const o of en.offers) assert.equal(rule.offers.find(p => p.zh === o.value).en, o.label, 'in English: the pinyin shown, the name kept in 汉字');
-  assert.equal(en.label, 'Tell Du Shu your name');
+  assert.equal(en.label, 'What your parents call you');
   assert.equal(one.gender, true, 'the card asks 男 · 女 as well');
 });
 
@@ -57,7 +58,7 @@ test('Ling may not name the player: her Resolve of a value exit is refused unles
   assert.equal(pageNames(content, s, { exit: 'name', value: '青玄', said: '[scene] opened' }).refused, 'page-names', 'a page report is not his words');
   assert.equal(pageNames(content, s, { exit: 'name', value: '墨白', said: '叫我墨白吧' }), null, 'typed by him: his');
   assert.equal(pageNames(content, s, { exit: 'name', value: 'Alex', said: 'call me alex' }), null);
-  assert.equal(pageNames(content, newState(content, 'zh', NOW), { exit: 'reach' }), null, 'any other exit is untouched');
+  assert.equal(pageNames(content, newState(content, 'zh', NOW), { exit: 'endure' }), null, 'any other exit is untouched');
 });
 
 test('the command line: Ling refused and nothing written; the page names, page_did carries the beat, Ling never sees the offers', () => {
@@ -66,7 +67,6 @@ test('the command line: Ling refused and nothing written; the page names, page_d
   const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
   const state = () => JSON.parse(fs.readFileSync(path.join(data, 'state.json'), 'utf8'));
   cli('init');
-  cli('resolve', '--exit=reach');
   const seen = cli('look', '--for=ling');
   assert.equal(exitOf(seen).value.offers, undefined, 'Ling gets no names to pick from');
   assert.equal(exitOf(seen).value.max_chars, 8);
@@ -83,8 +83,9 @@ test('the command line: Ling refused and nothing written; the page names, page_d
   const told = cli('look', `--said=[scene] named ${offered[2].value}`, '--for=ling');
   const fact = told.page_did.find(d => d.verb === 'resolve');
   assert.ok(fact, JSON.stringify(told.page_did));
-  assert.match(fact.what, new RegExp(`「${offered[2].value}」 \\(a boy\\).*渡叔: ${offered[2].value}。好名字。`));
-  assert.equal(told.scene.id, '00-boat');
+  assert.match(fact.what, new RegExp(`「${offered[2].value}」 \\(a boy\\) on the page's card`));
+  assert.equal(told.scene.id, '00-masan');
+  assert.match(told.tell.at(-1).text, /那天傍晚，马三又来了。/, 'the next beat\'s passage, owed to Ling');
   fs.rmSync(data, { recursive: true, force: true });
 });
 
@@ -102,7 +103,7 @@ test('the 名字 card draws: 男 · 女, the four names as chips, a field for hi
     assert.doesNotMatch(html, /namechip on/, 'nothing preselected');
     assert.match(html, /<input type="text" id="value-text" data-value-max="8" maxlength="8"/);
     assert.match(html, /data-value-go="name" disabled>/, 'confirm shut until a name is chosen');
-    assert.match(html, lang === 'zh' ? /告诉渡叔你的名字[\s\S]*你是[\s\S]*女[\s\S]*男[\s\S]*选一个，或自己写一个。[\s\S]*至多8字/ : /Tell Du Shu your name[\s\S]*You are[\s\S]*a girl[\s\S]*a boy[\s\S]*Pick one, or write your own\.[\s\S]*up to 8 characters/);
+    assert.match(html, lang === 'zh' ? /爹娘叫你什么[\s\S]*你是[\s\S]*女[\s\S]*男[\s\S]*选一个，或自己写一个。[\s\S]*至多8字/ : /What your parents call you[\s\S]*You are[\s\S]*a girl[\s\S]*a boy[\s\S]*Pick one, or write your own\.[\s\S]*up to 8 characters/);
     assert.equal((html.match(/data-gender-pick=/g) ?? []).length, 2, '男 · 女');
     assert.doesNotMatch(html, /namechip on/, 'no gender preselected either');
     const noGender = cardHtml(card, pageCtx(l, { valuePick: offers[1].value }));
@@ -132,7 +133,7 @@ test('the card and the rules agree on what is a name (one check, state.mjs fitVa
 
 test('the content lint holds a value exit\'s pool', () => {
   const bad = structuredClone(content);
-  const v = bad.chapters['00-prologue'].scenes['00-ferry'].exits.find(e => e.id === 'name').value;
+  const v = bad.chapters['00-prologue'].scenes['00-shiao'].exits.find(e => e.id === 'name').value;
   v.offers.push({ zh: '青玄', en: 'Qingxuan' }, { zh: '一二三四五六七八九', en: 'Toolong' });
   v.draw = 40;
   const errors = lint(bad).join('\n');

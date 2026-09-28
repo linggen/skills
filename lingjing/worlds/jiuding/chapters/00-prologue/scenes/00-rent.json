@@ -1,0 +1,100 @@
+{
+ "version": 1,
+ "id": "00-rent",
+ "chapter": "00-prologue",
+ "at": "shiao",
+ "place": {
+  "zh": "石坳村 · 交租",
+  "en": "Shi'ao village · the rent"
+ },
+ "setup": {
+  "zh": "马三来收租，全村都来看：一张完整的鹿皮，二十斤肉。马三眯起眼睛：「黑松岭……里头还有什么？」",
+  "en": "Ma San comes for the rent and the whole village comes to watch: a whole deer hide, twenty jin of meat. Ma San narrows his eyes: \"Black Pine Ridge… what else is in there?\""
+ },
+ "recap": {
+  "zh": "租交上了，弓保住了；马三问黑松岭里有什么；娘摸了摸你的\"围脖\"，什么都没问。",
+  "en": "The rent was paid and the bow kept; Ma San asked what was inside Black Pine Ridge; Mother touched your \"scarf\" and asked nothing."
+ },
+ "cast": [],
+ "people": [
+  "masan",
+  "maxiaobao",
+  "baba"
+ ],
+ "panel": {
+  "art": "art/panels/00-rent.webp",
+  "caption": {
+   "zh": [
+    "一张完整的鹿皮，油光水滑。",
+    "二十斤肉，只多不少。",
+    "「里头……还有什么？」"
+   ],
+   "en": [
+    "A whole deer hide, sleek and glossy.",
+    "Twenty jin of meat, not an ounce short.",
+    "\"What else… is in there?\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "马三来收租的那天，村里人都来看了。\n\n一张完整的鹿皮，油光水滑；二十斤肉，只多不少。马三拎起鹿皮抖了抖，又翻过来看了看，脸上的横肉一跳一跳的。\n\n「黑松岭？」他盯着你爹。\n\n你爹老老实实地点头：「黑松岭。」\n\n「进去了，还出来了？」马三眯起眼睛，「里头……还有什么？」",
+  "en": "The day Ma San comes for the rent, the whole village comes to watch.\n\nA whole deer hide, sleek and glossy; twenty jin of meat, not an ounce short. Ma San picks up the hide and shakes it out, turns it over and looks again; the thick muscles of his face twitch and jump.\n\n\"Black Pine Ridge?\" He stares at your father.\n\nYour father nods, honest as ever. \"Black Pine Ridge.\"\n\n\"Went in, and came out again?\" Ma San narrows his eyes. \"What else… is in there?\""
+ },
+ "lines": [],
+ "buttons": [
+  "dumb",
+  "truth"
+ ],
+ "exits": [
+  {
+   "id": "dumb",
+   "label": {
+    "zh": "踩爹的脚后跟，抢着装傻",
+    "en": "Tread on Father's heel and play the fool"
+   },
+   "means": "plays dumb, says there is nothing in there, scared, hides what they saw",
+   "needs": {
+    "bag": "deer-hide"
+   },
+   "take": {
+    "bag": "deer-hide"
+   },
+   "refuse": {
+    "zh": "手里没有鹿皮。",
+    "en": "You have no deer hide."
+   },
+   "mark": "played-dumb",
+   "story": {
+    "zh": "你爹张嘴就要说。你在后面，轻轻踩了一下他的脚后跟。\n\n「就是林子，」你抢着说，缩着脖子，一副吓破了胆的样子，「黑乎乎的，下大雨，我掉沟里了，差点死了……三爷，那地方真不能去，我爷爷就是在那儿没的。」\n\n马三看了你一会儿，哼了一声，把鹿皮扔给了身后的家丁。\n\n马小宝在他爹身后，冲你挤了挤眼睛：「哟，还活着呢？命挺硬啊。」\n\n你低着头，冲他笑了笑。\n\n马家的人走了以后，你娘把你拉进屋里，关上门。她看着你，看了很久。\n\n「你刚才踩你爹那一下，」她说，「娘看见了。」\n\n你没吭声。\n\n她伸出手，替你把围在脖子上的\"狐皮\"理了理——你愣住了。\n\n「这条围脖，」你娘说，「挺暖和的吧。」\n\n她什么都没问，转身去灶间了。\n\n你脖子上那团凉冰冰的银毛，一直没醒——可你娘的手碰到它的那一下，它的耳朵，轻轻动了一动。",
+    "en": "Your father opens his mouth to answer. Behind him, you tread lightly on his heel.\n\n\"Just woods,\" you cut in, hunching your shoulders, scared half to death by the look of you. \"All dark, and pouring rain, and I fell in a gully and nearly died… Third Master, you really can't go there. That's where my grandfather died.\"\n\nMa San looks at you a while, grunts, and tosses the hide to the man behind him.\n\nBehind his father, Ma Xiaobao winks at you. \"Well, well. Still alive? Tough little thing.\"\n\nYou keep your head down and smile at him.\n\nWhen the Mas have gone, your mother pulls you into the house and shuts the door. She looks at you for a long time.\n\n\"That step on your father's heel just now,\" she says. \"I saw it.\"\n\nYou say nothing.\n\nShe reaches out and straightens the \"foxskin\" round your neck — you freeze.\n\n\"This scarf,\" your mother says. \"Nice and warm, is it?\"\n\nShe asks nothing at all, and goes back to the kitchen.\n\nThe cold silver fur round your neck has not woken all day — but at the touch of your mother's hand, its ears give the smallest twitch."
+   },
+   "beat": [],
+   "next": "00-dusk"
+  },
+  {
+   "id": "truth",
+   "label": {
+    "zh": "让爹照实说",
+    "en": "Let Father tell it straight"
+   },
+   "means": "tells the truth about the ridge, lets father answer honestly",
+   "needs": {
+    "bag": "deer-hide"
+   },
+   "take": {
+    "bag": "deer-hide"
+   },
+   "refuse": {
+    "zh": "手里没有鹿皮。",
+    "en": "You have no deer hide."
+   },
+   "mark": "told-ma",
+   "story": {
+    "zh": "你爹老老实实地说了：「里头的树，比外头的高一倍；鹿，比前山的大一圈。就是路不好走，下雨天——」\n\n马三的眼睛亮了。他把鹿皮扔给身后的家丁，拿短棍敲了敲你家的门框：「黑松岭的鹿，今年起，也姓马了。」\n\n马小宝在他爹身后，冲你挤了挤眼睛：「哟，还活着呢？命挺硬啊。」\n\n你低着头，冲他笑了笑。\n\n马家的人走了以后，你娘把你拉进屋里，关上门。她看着你，看了很久。\n\n她伸出手，替你把围在脖子上的\"狐皮\"理了理——你愣住了。\n\n「这条围脖，」你娘说，「挺暖和的吧。」\n\n她什么都没问，转身去灶间了。\n\n你脖子上那团凉冰冰的银毛，一直没醒——可你娘的手碰到它的那一下，它的耳朵，轻轻动了一动。",
+    "en": "Your father tells it honestly: \"The trees in there are twice as tall as outside; the deer are a size bigger than on the front slopes. Only the paths are bad, and when it rains —\"\n\nMa San's eyes light up. He tosses the hide to the man behind him and raps your door frame with his club. \"From this year on, the deer of Black Pine Ridge are Ma deer too.\"\n\nBehind his father, Ma Xiaobao winks at you. \"Well, well. Still alive? Tough little thing.\"\n\nYou keep your head down and smile at him.\n\nWhen the Mas have gone, your mother pulls you into the house and shuts the door. She looks at you for a long time.\n\nShe reaches out and straightens the \"foxskin\" round your neck — you freeze.\n\n\"This scarf,\" your mother says. \"Nice and warm, is it?\"\n\nShe asks nothing at all, and goes back to the kitchen.\n\nThe cold silver fur round your neck has not woken all day — but at the touch of your mother's hand, its ears give the smallest twitch."
+   },
+   "beat": [],
+   "next": "00-dusk"
+  }
+ ]
+}

@@ -88,7 +88,7 @@
      }
     }
    ],
-   "next": "00-north"
+   "next": "00-mijing"
   },
   {
    "id": "riddle",
@@ -116,7 +116,7 @@
      }
     }
    ],
-   "next": "00-north"
+   "next": "00-mijing"
   },
   {
    "id": "subdue",
@@ -148,7 +148,7 @@
      }
     }
    ],
-   "next": "00-north"
+   "next": "00-mijing"
   },
   {
    "id": "around",
@@ -182,5 +182,6 @@
     }
    ]
   }
- ]
+ ],
+ "_about": "A test fixture, not content: the v1 prologue's 夫诸 scene (retired 2026-09-28 by prologue-v3), kept so the fight engine's tests have a creature scene with a gift, a riddle, a duel that withdraws and staying exits. tests/rules.test.mjs puts it into the prologue chapter it loads."
 }

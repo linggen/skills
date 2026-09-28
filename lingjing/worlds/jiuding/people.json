@@ -1,7 +1,7 @@
 {
   "version": 1,
   "_about": "The standing people of the world (story-outline.md § 人物): each a name, what they are, the voice they speak in, where they live and their portrait. A scene line `who: <id>` speaks as them — the page draws the name and the portrait, Look hands Ling the voice. Ling writes their live lines in that voice and never another's. Portraits are original, painted with the local FLUX recipe (art/people/).",
-  "_slots": "A line's `who` may name a slot instead of a person: the rules fill it from the save. `ban` is the close companion, by the player's gender (阿禾 for a girl, 石头 for a boy; `none` when the save never said).",
+  "_slots": "A line's `who` may name a slot instead of a person: the rules fill it from the save. `ban` is the close companion, by the player's gender — the neighbour's child of 石坳村 (prologue-v3): 阿禾 for a girl, 石头 for a boy; `none` when the save never said.",
   "slots": {
     "ban": { "female": "ahe", "male": "shitou", "none": "ahe" }
   },
@@ -25,17 +25,17 @@
     {
       "id": "ahe",
       "name": { "zh": "阿禾", "en": "Ahe" },
-      "role": { "zh": "同日上山的渔村姑娘", "en": "A fisher-village girl who came up the mountain the same day" },
-      "voice": { "zh": "快人快语，急了脸先红；不肯欠人情。", "en": "Quick and blunt; her face goes red before her temper does. Hates owing anyone." },
-      "home": "waimen",
+      "role": { "zh": "邻家姑娘，比你小一岁；她家也欠马家的租", "en": "The girl next door, a year younger than you; her family owes the Mas rent too" },
+      "voice": { "zh": "快人快语，急了脸先红；不肯欠人情，也不许人欠她的——「记账，以后还。」", "en": "Quick and blunt; her face goes red before her temper does. Will not owe anyone, nor let anyone owe her — \"Keep count; pay me back.\"" },
+      "home": "shiao",
       "art": "art/people/ahe.webp"
     },
     {
       "id": "shitou",
       "name": { "zh": "石头", "en": "Shitou" },
-      "role": { "zh": "同日上山的渔村少年", "en": "A fisher-village boy who came up the mountain the same day" },
-      "voice": { "zh": "嘴笨心实，一急就结巴；答应的事一定做。", "en": "Slow of tongue, honest to the bone; stammers when flustered. What he promises, he does." },
-      "home": "waimen",
+      "role": { "zh": "邻家少年，比你小一岁；他家也欠马家的租", "en": "The boy next door, a year younger than you; his family owes the Mas rent too" },
+      "voice": { "zh": "嘴笨心实，一急就结巴；答应的事一定做——「记账，以后还。」", "en": "Slow of tongue, honest to the bone; stammers when flustered. What he promises, he does — \"Keep count; pay me back.\"" },
+      "home": "shiao",
       "art": "art/people/shitou.webp"
     },
     {
@@ -61,6 +61,62 @@
       "voice": { "zh": "爱讲规矩、爱记账，句句带数；刻薄，但不坏。", "en": "Loves rules and ledgers, every sentence has a number in it; sharp-tongued, but not unkind." },
       "home": "waimen",
       "art": "art/people/zhouheng.webp"
+    },
+    {
+      "id": "baba",
+      "name": { "zh": "爹", "en": "Father" },
+      "role": { "zh": "石坳村的老猎户，五十多了，膝盖有旧伤", "en": "The old hunter of Shi'ao village, past fifty, with a bad knee" },
+      "voice": { "zh": "老实，话少，句句软，心更软；弯着腰陪笑，从不说人坏话；急了只说一句「闭嘴」。", "en": "Honest and slow of speech, every word soft and his heart softer; he bows and smiles, never speaks ill of anyone; frightened for you, he says only \"Quiet.\"" },
+      "home": "shiao",
+      "art": "art/people/baba.webp"
+    },
+    {
+      "id": "mama",
+      "name": { "zh": "娘", "en": "Mother" },
+      "role": { "zh": "织布换米的猎户妻，落魄塾师的女儿，识字会算", "en": "A hunter's wife who weaves for rice; a poor schoolmaster's daughter who reads and reckons" },
+      "voice": { "zh": "话少，心细，每句都算过；不问，只看；说一半，留一半让你自己想。", "en": "Few words, each one reckoned; she does not ask, she watches; says half and leaves you the other half." },
+      "home": "shiao",
+      "art": "art/people/mama.webp"
+    },
+    {
+      "id": "wupo",
+      "name": { "zh": "吴婆婆", "en": "Granny Wu" },
+      "role": { "zh": "村东头的瞎眼老太太，全村最老", "en": "The blind old woman at the village's east end, the oldest in it" },
+      "voice": { "zh": "慢，轻，像早知道了；问一句，不等人答；她讲的，总比别人多一句。", "en": "Slow and soft, as if she already knew; asks and does not wait for the answer; she always says one thing more than anyone else." },
+      "home": "shiao",
+      "art": "art/people/wupo.webp"
+    },
+    {
+      "id": "masan",
+      "name": { "zh": "马三", "en": "Ma San" },
+      "role": { "zh": "马家收租的，比门框还宽", "en": "The Ma family's rent collector, wider than a door frame" },
+      "voice": { "zh": "粗，横，笑声像破锣；拿短棍敲门框说话，句句是威胁。", "en": "Coarse and overbearing, a laugh like a cracked gong; talks by rapping his club on the door frame, every sentence a threat." },
+      "home": "shiao",
+      "art": "art/people/masan.webp"
+    },
+    {
+      "id": "maxiaobao",
+      "name": { "zh": "马小宝", "en": "Ma Xiaobao" },
+      "role": { "zh": "马三的儿子，比你大两岁，穿绸子", "en": "Ma San's son, two years older than you, in silk" },
+      "voice": { "zh": "阴阳怪气，爱看人出丑；「哟」字开头，笑得像他爹。", "en": "Sneering and sly, loves to watch others shamed; starts with \"Well, well\", and laughs like his father." },
+      "home": "shiao",
+      "art": "art/people/maxiaobao.webp"
+    },
+    {
+      "id": "jiujiu",
+      "name": { "zh": "舅舅", "en": "Uncle" },
+      "role": { "zh": "娘的亲弟弟，县城济世堂的账房", "en": "Mother's younger brother, a bookkeeper in the county town" },
+      "voice": { "zh": "体面，讲究，话里带着账房的数；叹气多，笑得难看；二十年前爬到一百六十级石阶，没上去——心里一直有这块石阶。", "en": "Proper and particular, a bookkeeper's numbers in his talk; sighs a lot and smiles badly; twenty years ago he stopped at the hundred-and-sixtieth step, and still carries it." },
+      "home": "shiao",
+      "art": "art/people/jiujiu.webp"
+    },
+    {
+      "id": "laozhou",
+      "name": { "zh": "老周", "en": "Old Zhou" },
+      "role": { "zh": "邻居，种地的，{伴}的爹", "en": "The neighbour, a farmer; {伴}'s father" },
+      "voice": { "zh": "粗声，实在，一句是一句；喊人像喊牲口，心是热的。", "en": "Gruff and plain, every word meant; hollers like he's calling cattle, and has a warm heart." },
+      "home": "shiao",
+      "art": "art/people/laozhou.webp"
     }
   ]
 }

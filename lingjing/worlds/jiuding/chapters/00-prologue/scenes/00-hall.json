@@ -8,23 +8,39 @@
   "en": "Chending Temple · The main hall"
  },
  "setup": {
-  "zh": "沉鼎观的正殿里没有神像，只有一口空的石座，四方，四足，大得能躺下一个人。石座前立着测灵石。",
-  "en": "There is no statue in the main hall — only an empty stone seat, square, on four feet, big enough for a person to lie in. Before it stands the spirit stone."
+  "zh": "正殿里没有神像，只有一口空的石座，四方，四足。石座前立着测灵石，观主玄沉子坐在一旁。轮到你了。",
+  "en": "No statue in the main hall — only an empty stone seat, square, on four feet. Before it stands the spirit stone; the abbot Xuanchenzi sits beside it. It is your turn."
  },
  "recap": {
-  "zh": "入门仪式：测灵石测出你的灵根，观主说路长路短，不在灵根。",
-  "en": "The rite of entry: the spirit stone read your roots, and the abbot said the length of the road is not in the roots."
+  "zh": "测灵石测出了你的灵根；瞿老说「腿稳，心细」，观主说：收，外门。",
+  "en": "The spirit stone read your roots; Elder Qu said \"steady legs, careful heart,\" and the abbot said: take them — the outer court."
  },
  "cast": [],
- "lines": [
-  {
-   "who": "xuanchenzi",
-   "text": {
-    "zh": "报上生辰。",
-    "en": "Tell me the day you were born."
-   }
-  }
+ "people": [
+  "xuanchenzi",
+  "qulao",
+  "maxiaobao"
  ],
+ "panel": {
+  "art": "art/panels/00-hall.webp",
+  "caption": {
+   "zh": [
+    "正殿没有神像，只有一口空的石座。",
+    "四方，四足，大得能躺下一个人。",
+    "测灵石前，把手放上去。"
+   ],
+   "en": [
+    "No statue in the hall — only an empty stone seat.",
+    "Square, four-footed, big enough to lie in.",
+    "Before the spirit stone: lay your hand on it."
+   ]
+  }
+ },
+ "story": {
+  "zh": "正殿里，没有神像，只有一口空的石座，四方，四足，大得能躺下一个人。石座前立着测灵石。\n\n观主玄沉子坐在石座旁边，一身灰袍，面目温和。\n\n轮到你了。你把手放上去。",
+  "en": "In the main hall there is no statue — only an empty stone seat, square, on four feet, big enough for a person to lie in. Before it stands the spirit stone.\n\nThe abbot Xuanchenzi sits beside the seat, in a grey robe, his face mild.\n\nIt is your turn. You lay your hand on the stone."
+ },
+ "lines": [],
  "buttons": [
   "born"
  ],
@@ -37,38 +53,21 @@
    },
    "means": "gives the day they were born, or lets the stone read them — the page card asks it",
    "born": true,
+   "grant": {
+    "table": "scene",
+    "item": "grey-robe",
+    "wealth": 3
+   },
    "show": [
     {
      "card": "traits"
     }
    ],
-   "grant": {
-    "table": "scene",
-    "item": "grey-robe"
+   "story": {
+    "zh": "测灵石亮了——亮得很暗，五种颜色都有一点，哪一种都不多。\n\n殿里有人笑出了声。是马小宝。他的灵根也不好，可比你好一点——三种颜色。\n\n「{灵根}，」一个执事念道，「下下之资。」\n\n玄沉子没有说话。他看了看测灵石，又看了看你。他看你的时间，比看测灵石的时间长得多。\n\n「三试，」他问旁边的扫地老头，「瞿老以为如何？」\n\n扫地老头——瞿老——只说了四个字：「腿稳，心细。」\n\n玄沉子点了点头。\n\n「收，」他说，「外门。」\n\n马小宝也被收了——荐书在，外门。他走过你身边的时候，压低声音说：「杂灵根也配进山门？等着，在这山里，我有的是法子收拾你。」\n\n你冲他笑了笑。",
+    "en": "The spirit stone lights — very dimly: a little of all five colours, not much of any.\n\nSomeone in the hall laughs out loud. Ma Xiaobao. His roots are poor too, but better than yours — three colours.\n\n\"{灵根},\" a steward reads out. \"The lowest of the low.\"\n\nXuanchenzi says nothing. He looks at the spirit stone, and then at you. He looks at you far longer than he looked at the stone.\n\n\"The three trials,\" he asks the old man with the broom beside him. \"What does Elder Qu think?\"\n\nThe old man with the broom — Elder Qu — says four words only: \"Steady legs. Careful heart.\"\n\nXuanchenzi nods.\n\n\"Take them,\" he says. \"The outer court.\"\n\nMa Xiaobao is taken too — the letter stands; the outer court. As he passes you he says under his breath: \"A mixed root, through the gate? Just wait. On this mountain I've got plenty of ways to deal with you.\"\n\nYou smile at him."
    },
-   "beat": [
-    {
-     "who": "xuanchenzi",
-     "text": {
-      "zh": "{灵根}。——路长路短，不在灵根。",
-      "en": "{灵根}. — Whether the road is long or short is not in the roots."
-     }
-    },
-    {
-     "who": "ling",
-     "text": {
-      "zh": "他的目光在你袖口停了一瞬。你袖子里的铃，冰了一下。",
-      "en": "His eyes rest on your sleeve a moment. The bell inside it turns cold."
-     }
-    },
-    {
-     "who": "ling",
-     "text": {
-      "zh": "灰袍、储物袋、一本《沉鼎观入门功法》，交到了你手里。从此观里的人叫你「{name}{兄姐}」。",
-      "en": "A grey robe, a storage pouch and a copy of the temple's first manual are put into your hands. From today the temple calls you {兄姐} {name}."
-     }
-    }
-   ],
+   "beat": [],
    "next": "00-waimen"
   }
  ]

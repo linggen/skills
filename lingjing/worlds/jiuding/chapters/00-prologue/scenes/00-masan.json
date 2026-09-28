@@ -1,0 +1,117 @@
+{
+ "version": 1,
+ "id": "00-masan",
+ "chapter": "00-prologue",
+ "at": "shiao",
+ "place": {
+  "zh": "石坳村 · 你家 · 傍晚",
+  "en": "Shi'ao village · your home · dusk"
+ },
+ "setup": {
+  "zh": "马三踹开柴门：还差一张鹿皮、二十斤肉，入冬前交不上，墙上那张弓就归他。马小宝要你学狗叫。",
+  "en": "Ma San kicks the gate open: a deer hide and twenty jin of meat still owed; not paid by winter, the bow on the wall is his. Ma Xiaobao wants you to bark like a dog."
+ },
+ "recap": {
+  "zh": "马三来收租：还差一张鹿皮、二十斤肉，不然拿走爷爷的弓；马小宝推了你一把，碗碎了。",
+  "en": "Ma San came for the rent — a deer hide and twenty jin of meat, or grandfather's bow; Ma Xiaobao shoved you and a bowl broke."
+ },
+ "cast": [],
+ "people": [
+  "masan",
+  "maxiaobao",
+  "baba"
+ ],
+ "panel": {
+  "art": "art/panels/00-masan.webp",
+  "caption": {
+   "zh": [
+    "马三来了，一脚踹开柴门。",
+    "「还差一张鹿皮，二十斤肉。」",
+    "他的目光，落在墙上那张旧弓上。"
+   ],
+   "en": [
+    "Ma San comes, and kicks the gate open.",
+    "\"Still short a deer hide and twenty jin of meat.\"",
+    "His eyes settle on the old bow on the wall."
+   ]
+  }
+ },
+ "story": {
+  "zh": "那天傍晚，马三又来了。\n\n他一脚踹开你家的柴门，门轴吱呀一声，差点掉下来。他身后跟着他儿子马小宝，比你大两岁，胖，穿着一身绸子，手里捏着一块你这辈子都没吃过的桂花糕。\n\n「今年的山租，」马三拿短棍敲了敲门框，「还差一张鹿皮，二十斤肉。入冬前交不上——」他扫了一眼屋里，目光落在墙上那张缠着牛筋的旧弓上，「那张弓，就归我了。」\n\n你爹弯着腰，陪着笑：「三爷，再宽限些日子，前山今年实在没东西……」\n\n「前山没有，后山呢？」马三笑了，「黑松岭上的鹿，可肥得很。」\n\n你爹的笑僵在了脸上。\n\n马小宝绕过他爹，走到你面前，把桂花糕在你鼻子底下晃了晃，又收回去，自己咬了一口，嚼得吧唧响：「想吃啊？学声狗叫，给你舔一口。」\n\n你没叫。\n\n你在心里飞快地算了一笔账：马小宝比你高一个头，重你一半；马三就站在门口，手里有棍子；你要是动手，挨打的不是你——是你爹。",
+  "en": "That evening, Ma San came again.\n\nHe kicks your wicker gate open; the hinge shrieks and nearly gives. Behind him comes his son Ma Xiaobao, two years older than you, fat, dressed all in silk, holding a piece of osmanthus cake of a kind you have never tasted in your life.\n\n\"This year's mountain rent,\" Ma San says, rapping the door frame with his club, \"is still short one deer hide and twenty jin of meat. Not paid by winter —\" his eyes sweep the room and settle on the old bow on the wall, the one bound with ox sinew, \"— and that bow is mine.\"\n\nYour father bows and smiles: \"Third Master, a little more time — the front slopes truly have nothing this year…\"\n\n\"Nothing on the front slopes? What about the back?\" Ma San grins. \"The deer up on Black Pine Ridge are fat as anything.\"\n\nYour father's smile freezes on his face.\n\nMa Xiaobao steps round his father and comes up to you. He waves the cake under your nose, takes it back, bites it himself and chews with his mouth open. \"Want some? Bark like a dog and you can lick it.\"\n\nYou do not bark.\n\nYou do a quick sum in your head. Ma Xiaobao is a head taller than you and half again your weight; Ma San stands in the doorway with a club in his hand; if you strike, it won't be you who takes the beating — it will be your father."
+ },
+ "lines": [],
+ "buttons": [
+  "endure",
+  "strike"
+ ],
+ "exits": [
+  {
+   "id": "endure",
+   "label": {
+    "zh": "垂下眼睛，一动不动",
+    "en": "Lower your eyes and stand still"
+   },
+   "means": "endures it, does not bark and does not hit back, stands still",
+   "mark": "kept-count",
+   "ledger": [
+    {
+     "who": "maxiaobao",
+     "kind": "仇",
+     "what": {
+      "zh": "推你撞上灶台，摔碎了家里四只碗里的一只。",
+      "en": "Shoved you into the stove and broke one of your family's four bowls."
+     }
+    },
+    {
+     "who": "masan",
+     "kind": "仇",
+     "what": {
+      "zh": "要拿走爷爷的弓。",
+      "en": "Means to take grandfather's bow."
+     }
+    }
+   ],
+   "story": {
+    "zh": "所以你只是垂下眼睛，一动不动。\n\n马小宝觉得没意思，抬手推了你一把。你顺着那股劲往后一倒，后背撞在灶台上，碗落在地上，碎了。那是你家四只碗里的一只。\n\n马三笑了，笑声像破锣：「小崽子，还挺乖。」\n\n他们走了。柴门在风里晃荡。\n\n你娘蹲下去捡碗的碎片，捡着捡着，手停住了，半天没动。你爹走过去，把她扶起来，然后转过身，看着你。他张了张嘴，像是想说什么，最后只说：「明天，跟我进山。」\n\n那一夜，你没怎么睡。隔着一道布帘，你听见爹娘在低声说话，说了很久，你娘哭了一小会儿，又不哭了。你躺在炕上，听着屋顶漏下来的雨滴落进盆里，一滴，一滴。\n\n你不恨马小宝推你那一下。你只是把它记下来了——和马三看那张弓的眼神，和你娘停住不动的手，一起。\n\n**现在打不过。**\n\n你在黑暗里睁着眼睛，把这五个字又想了一遍。\n\n**现在。**",
+    "en": "So you only lower your eyes and do not move.\n\nMa Xiaobao finds it no fun and shoves you. You go back with the push; your spine hits the stove, and a bowl falls to the floor and breaks. One of the four bowls your family owns.\n\nMa San laughs, a laugh like a cracked gong. \"Good little whelp, isn't it.\"\n\nThey leave. The wicker gate swings in the wind.\n\nYour mother crouches to pick up the pieces. Partway through, her hands stop, and for a long while they do not move. Your father goes to her and helps her up, then turns and looks at you. He opens his mouth as if to say something, and in the end says only: \"Tomorrow, you come into the mountain with me.\"\n\nYou hardly sleep that night. Through the cloth curtain you hear them talking low, for a long time; your mother cries a little, then stops. You lie on the brick bed listening to the rain leak through the roof into the basins, one drop, then another.\n\nYou do not hate Ma Xiaobao for the shove. You have only written it down — together with the look Ma San gave the bow, and your mother's hands, gone still.\n\n**Can't win it now.**\n\nEyes open in the dark, you think the words over once more.\n\n**Now.**"
+   },
+   "beat": [],
+   "next": "00-dawn"
+  },
+  {
+   "id": "strike",
+   "label": {
+    "zh": "攥紧拳头",
+    "en": "Clench your fists"
+   },
+   "means": "hits back, clenches fists, tries to fight Ma Xiaobao",
+   "stamina": 5,
+   "mark": "clenched",
+   "ledger": [
+    {
+     "who": "maxiaobao",
+     "kind": "仇",
+     "what": {
+      "zh": "推你撞上灶台，摔碎了家里四只碗里的一只。",
+      "en": "Shoved you into the stove and broke one of your family's four bowls."
+     }
+    },
+    {
+     "who": "masan",
+     "kind": "仇",
+     "what": {
+      "zh": "要拿走爷爷的弓；那一棍落在爹肩上。",
+      "en": "Means to take grandfather's bow; his club came down on your father's shoulder."
+     }
+    }
+   ],
+   "story": {
+    "zh": "你攥紧了拳头。\n\n你爹比你快。他一步挡在你前面，腰弯得更低了：「三爷，孩子小，不懂事。」\n\n马三的短棍落在他肩上，闷闷的一声。你爹晃了晃，没吭声，脸上还挂着笑。\n\n你的拳头，一点一点松开了。你算的那笔账，是对的。\n\n马小宝觉得没意思，抬手推了你一把。你顺着那股劲往后一倒，后背撞在灶台上，碗落在地上，碎了。那是你家四只碗里的一只。\n\n马三笑了，笑声像破锣：「小崽子，还挺乖。」\n\n他们走了。柴门在风里晃荡。\n\n你娘蹲下去捡碗的碎片，捡着捡着，手停住了，半天没动。你爹走过去，把她扶起来，然后转过身，看着你。他张了张嘴，像是想说什么，最后只说：「明天，跟我进山。」\n\n那一夜，你没怎么睡。隔着一道布帘，你听见爹娘在低声说话，说了很久，你娘哭了一小会儿，又不哭了。你躺在炕上，听着屋顶漏下来的雨滴落进盆里，一滴，一滴。\n\n你不恨马小宝推你那一下。你只是把它记下来了——和马三看那张弓的眼神，和你娘停住不动的手，一起。\n\n**现在打不过。**\n\n你在黑暗里睁着眼睛，把这五个字又想了一遍。\n\n**现在。**",
+    "en": "You clench your fists.\n\nYour father is quicker. In one step he is in front of you, bowing lower still: \"Third Master, the child is young, doesn't know any better.\"\n\nMa San's club comes down on his shoulder with a dull sound. Your father sways, makes no sound, the smile still on his face.\n\nYour fists open, a little at a time. The sum you did was right.\n\nMa Xiaobao finds it no fun and shoves you. You go back with the push; your spine hits the stove, and a bowl falls to the floor and breaks. One of the four bowls your family owns.\n\nMa San laughs, a laugh like a cracked gong. \"Good little whelp, isn't it.\"\n\nThey leave. The wicker gate swings in the wind.\n\nYour mother crouches to pick up the pieces. Partway through, her hands stop, and for a long while they do not move. Your father goes to her and helps her up, then turns and looks at you. He opens his mouth as if to say something, and in the end says only: \"Tomorrow, you come into the mountain with me.\"\n\nYou hardly sleep that night. Through the cloth curtain you hear them talking low, for a long time; your mother cries a little, then stops. You lie on the brick bed listening to the rain leak through the roof into the basins, one drop, then another.\n\nYou do not hate Ma Xiaobao for the shove. You have only written it down — together with the look Ma San gave the bow, and your mother's hands, gone still.\n\n**Can't win it now.**\n\nEyes open in the dark, you think the words over once more.\n\n**Now.**"
+   },
+   "beat": [],
+   "next": "00-dawn"
+  }
+ ]
+}

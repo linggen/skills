@@ -13,7 +13,7 @@
 // peak step's 修为 and shuts the cauldron for real hours. The realm, the save
 // and every other thing held are never lost; only the pill carried is spent.
 import { pick, settleStamina, threshold } from '../state.mjs';
-import { hasCompanion, herGifts } from './companion.mjs';
+import { herAwake, herGifts } from './companion.mjs';
 import { itemOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
 
@@ -51,7 +51,7 @@ const FACTORS = {
   },
   her: (content, state, rule) => {
     // Before she is found she is not in the game at all — not even as a row (SKILL.md § Yinyue).
-    if (!hasCompanion(state)) return null;
+    if (!herAwake(state)) return null;
     const gifts = herGifts(content, state).length;
     return { n: rule.her.joined + gifts * rule.her.per_gift, on: true, gifts };
   },

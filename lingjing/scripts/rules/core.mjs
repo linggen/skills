@@ -1,7 +1,7 @@
 // rules/core.mjs — Changing it: refusals, pay, riddles, stamina, resolve and judge.
 // Part of the rules engine; rules.mjs is its one door.
 import { gameOf, MADE_GRANT } from '../content.mjs';
-import { addProgress, dayKey, fill, fitValue, normalizeAnswer, payOf, pick, rollDay, settleStamina, speedOf, staminaReturnsAt, stepName, threshold, tierOf } from '../state.mjs';
+import { addProgress, dayKey, fill, fitValue, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaReturnsAt, stepName, threshold, tierOf } from '../state.mjs';
 import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
 import { gainCard, starterOf } from './cards.mjs';
@@ -12,6 +12,8 @@ import { hashOf } from './travel.mjs';
 import { herBeat, storyNode, withHerBeat } from './story.mjs';
 import { stow, storedLine } from './pouch.mjs';
 import { bornRoots, drawnRoots, rootName, starterFor } from './roots.mjs';
+import { oweExit, spanLines } from './tell.mjs';
+import { companionOf } from './companion.mjs';
 import { atScene, inMade, placeName, placeOf, provinceOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
 
 /* ── Changing it ── */
@@ -22,6 +24,7 @@ const clone = state => structuredClone(state);
 function meets(state, needs) {
   if (needs.bag && !(state.bag[needs.bag] > 0)) return false;
   if (needs.task && state.tasks[needs.task]?.status !== 'done') return false;
+  if (needs.wealth && !(state.wealth >= needs.wealth)) return false;
   return true;
 }
 
@@ -362,6 +365,13 @@ export function resolve(state, content, ctx, args) {
     s.bag[exit.take.bag] -= 1;
     if (s.bag[exit.take.bag] <= 0) delete s.bag[exit.take.bag];
   }
+  // A few stones handed over (the outer court's 「公中」): a choice, never a price list.
+  if (exit.take?.wealth) s.wealth = Math.max(0, s.wealth - exit.take.wealth);
+  // 恩仇簿 — the debts a choice writes down, good and bad (writeLedger).
+  const wrote = writeLedger(content, s, exit);
+  // 银月 found in the story itself (prologue-v3 § 九): she walks with the player from here.
+  const joined = exit.joins ? joinHer(content, s, ctx) : null;
+  const rested = restHer(s, exit);
   if (exit.set?.traits === 'v1') {
     s.traits = [...content.traits.v1];
     // The root test hands over the starter — the first cards he holds.
@@ -380,6 +390,7 @@ export function resolve(state, content, ctx, args) {
     if (exit.next) s.made.at = exit.next;
     if (exit.ends) s.made.at = null;
   } else {
+    oweExit(s, scene, exit, replay);
     if ((exit.next || exit.ends) && !replay) s.done_scenes.push(scene.id);
     if (exit.next) { s.scene = exit.next; settlePlace(content, s); offerTasks(content, s); }
     if (exit.ends) {
@@ -400,14 +411,15 @@ export function resolve(state, content, ctx, args) {
   // are hers to say: facts for her, never a line for Ling (story.mjs herBeat).
   const into = exit.next && atScene(content, s) ? sceneOf(content, s) : null;
   const her = herBeat(content, s, {
-    id: `${scene.id}/${exit.id}`, lines: [...(exit.beat ?? []), ...(into?.lines ?? [])],
+    id: `${scene.id}/${exit.id}`, lines: [...(exit.beat ?? []), ...(into?.lines ?? []), ...spanLines(content, [exit.story, into?.story])],
     happened: [...beat.map(b => b.text), into && fill(pick(into.setup, lang), s, content)], scenes: [scene, into],
   });
   if (her) s.node = withHerBeat(node, her, ctx.now);
   return {
     state: s,
     result: {
-      ok: true, took: exit.id, ...(named ? { named } : {}), ...(born ? { born } : {}), beat, paid, breakthrough, show: exit.show ?? [], scene: atScene(content, s) ? sceneBrief(content, s, ctx.now) : null,
+      ok: true, took: exit.id, ...(exit.label ? { chose: fill(pick(exit.label, lang), s, content) } : {}), ...(named ? { named } : {}),
+      ...(wrote.length ? { ledger: wrote } : {}), ...(joined ? { joined } : {}), ...(rested ? { her: rested } : {}), ...(born ? { born } : {}), beat, paid, breakthrough, show: exit.show ?? [], scene: atScene(content, s) ? sceneBrief(content, s, ctx.now) : null,
       waypoint: !atScene(content, s) && sceneOf(content, s) ? threadOf(content, s, ctx.now) : null, ended: exit.ends ?? null, waiting,
       ...(walked ? { walked } : {}), ...(grew ? { treasure_grew: grew } : {}), ...(node ? { node } : {}),
       // Her price showing as the chapter ends: Ling opens with what she does (story.mjs uneaseAt).
@@ -416,6 +428,43 @@ export function resolve(state, content, ctx, args) {
       summarize: Boolean(exit.next || exit.ends),
     },
   };
+}
+
+/* 恩仇簿 — his ruling (prologue-v3): the hero repays every debt once strong,
+   good or bad. An exit's `ledger` writes who and what, once each; a slot
+   (`ban`) is written as the person it stands for, and the same debt is never
+   written twice. */
+function writeLedger(content, s, exit) {
+  const out = [];
+  for (const e of exit.ledger ?? []) {
+    const who = personOf(content, s, e.who)?.id ?? e.who;
+    if ((s.ledger ?? []).some(x => x.who === who && x.what?.zh === e.what.zh)) continue;
+    const entry = { who, kind: e.kind, what: e.what, chapter: s.chapter };
+    s.ledger = [...(s.ledger ?? []), entry];
+    out.push(entry);
+  }
+  return out;
+}
+
+/* She joins by the story (an exit's `joins`), not by the bell: the same
+   joining as 摇铃's (worlds.mjs ring) without the bell at her neck — she is
+   a card he holds from now on. */
+function joinHer(content, s, ctx) {
+  const c = companionOf(content);
+  if (!c || s.companion?.joined) return null;
+  s.companion = { joined: dayKey(ctx.now), awake: true };
+  gainCard(content, s, c.id, { how: 'companion', day: dayKey(ctx.now) });
+  return { id: c.id };
+}
+
+/* She sleeps (an exit's `sleeps` — prologue-v3 § 十四, 吴婆婆's fox token) or
+   wakes (`wakes`): only a companion found; `awake` is the flag the engine's
+   presence reads (SKILL.md `absent_until`). */
+function restHer(s, exit) {
+  if (!s.companion?.joined || !(exit.sleeps || exit.wakes)) return null;
+  const { awake, asleep, ...rest } = s.companion;
+  s.companion = exit.sleeps ? { ...rest, asleep: true } : { ...rest, awake: true };
+  return exit.sleeps ? 'asleep' : 'awake';
 }
 
 /* A scene played again — one already passed, or any of a chapter already

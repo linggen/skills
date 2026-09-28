@@ -1,0 +1,33 @@
+/* read.html — the book the game is told from, in the game's paper and ink. */
+:root {
+  --ground: #F1ECE1; --surface: #FBF8F2; --line: #DCD3C1; --text: #1D1B17; --dim: #6A6458; --seal: #B03A2B;
+  --serif: "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", Georgia, serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --ground: #12110E; --surface: #1A1815; --line: #353026; --text: #ECE5D6; --dim: #A69E8E; --seal: #E27461; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --ground: #12110E; --surface: #1A1815; --line: #353026; --text: #ECE5D6; --dim: #A69E8E; --seal: #E27461; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); color: var(--text); font-family: var(--serif); }
+.bar { position: sticky; top: 0; display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--line); z-index: 2; }
+.bar a { color: var(--seal); text-decoration: none; font-size: 14px; }
+.booktitle { flex: 1; font-weight: 600; letter-spacing: .08em; }
+.langsw button { font: inherit; font-size: 11px; padding: 2px 7px; border: 1px solid var(--line); background: var(--surface); color: var(--dim); border-radius: 6px; cursor: pointer; }
+.langsw button.on { color: var(--seal); border-color: var(--seal); }
+.reader { max-width: 720px; margin: 0 auto; padding: 16px; }
+.toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 20px; }
+.toc a { font-size: 13px; padding: 3px 10px; border: 1px solid var(--line); border-radius: 99px; color: var(--dim); text-decoration: none; }
+.toc a.on { color: var(--seal); border-color: var(--seal); }
+.chapter { line-height: 1.95; font-size: 17px; }
+.chapter h1 { font-size: 24px; letter-spacing: .1em; margin: 12px 0 18px; }
+.chapter h2 { font-size: 19px; margin: 32px 0 12px; color: var(--seal); letter-spacing: .06em; }
+.chapter h3 { font-size: 17px; margin: 24px 0 8px; }
+.chapter p { margin: 0 0 1em; }
+.chapter blockquote { margin: 1em 0; padding: 4px 14px; border-left: 3px solid var(--line); color: var(--dim); }
+.chapter hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
+.chapter table { border-collapse: collapse; font-size: 14px; width: 100%; overflow-x: auto; display: block; }
+.chapter th, .chapter td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; }
+.note { color: var(--dim); font-size: 14px; }
+.pager { display: flex; justify-content: space-between; gap: 12px; margin: 28px 0 40px; }
+.pager a { color: var(--seal); text-decoration: none; font-size: 14px; }

@@ -1,0 +1,108 @@
+{
+ "version": 1,
+ "id": "00-duanbei",
+ "chapter": "00-prologue",
+ "at": "duanbei",
+ "place": {
+  "zh": "黑松岭 · 断碑",
+  "en": "Black Pine Ridge · the broken stele"
+ },
+ "setup": {
+  "zh": "岭口的断碑只剩「勿入」两字。爹说：你在这儿等我。",
+  "en": "Only two characters are left on the broken stele at the ridge mouth: Do not enter. Father says: wait for me here."
+ },
+ "recap": {
+  "zh": "断碑前，你和爹定了三条规矩，跨进了黑松岭。",
+  "en": "At the broken stele you and Father made three rules, and stepped into Black Pine Ridge."
+ },
+ "cast": [],
+ "people": [
+  "baba"
+ ],
+ "panel": {
+  "art": "art/panels/00-duanbei.webp",
+  "caption": {
+   "zh": [
+    "岭口一块断碑，半截埋在土里。",
+    "只剩两个字：勿入。",
+    "碑后松林，一点风都没有。"
+   ],
+   "en": [
+    "A broken stele at the ridge mouth, half buried.",
+    "Two characters left: Do not enter.",
+    "Behind it the pines, not a breath of wind."
+   ]
+  }
+ },
+ "story": {
+  "zh": "石坳村的孩子，还不会走路就听过黑松岭的故事。\n\n岭口立着一块断碑，半截埋在土里，字早已认不全了，只剩最后两个还看得清：**勿入**。村里的老人说，那碑比村子还老，比马家还老，比县城的城墙都老。过了断碑，树会自己挪地方，路会自己打结；进去的人，十个里头回来一个，回来的那一个，也不肯说里面有什么。\n\n你爹的爹，就是那十个里头没回来的九个之一。\n\n你们站在断碑前面。碑后面的松林黑沉沉的，一点风都没有，连鸟叫都没有。\n\n你想起了吴婆婆的话。\n\n「你在这儿等我，」你爹说。",
+  "en": "The children of Shi'ao hear the stories of Black Pine Ridge before they can walk.\n\nAt the mouth of the ridge stands a broken stele, half buried in the earth. Its writing has long worn past reading; only the last two characters are still clear: **Do not enter**. The old people say the stele is older than the village, older than the Mas, older than the county town's walls. Past the stele the trees move of themselves and the paths tie themselves in knots; of ten who go in, one comes back, and the one who comes back will not say what is inside.\n\nYour father's father was one of the nine of those ten who did not come back.\n\nYou stand before the broken stele. The pines behind it are dark and heavy. There is not a breath of wind, not even a bird.\n\nYou remember what Granny Wu said.\n\n\"Wait for me here,\" your father says."
+ },
+ "lines": [],
+ "buttons": [
+  "back",
+  "rules",
+  "home",
+  "alone"
+ ],
+ "exits": [
+  {
+   "id": "back",
+   "label": {
+    "zh": "看看碑背面",
+    "en": "Look at the back of the stele"
+   },
+   "means": "looks at the back of the stele, as Granny Wu said; compares the token",
+   "mark": "stele-fox",
+   "story": {
+    "zh": "你绕到碑后面，扒开半人高的枯草。碑背面也刻着字，比正面的更深，更小，你一个都不认得——只认得最底下刻着一只小小的狐狸，蜷着，尾巴绕着身子。\n\n你把怀里的木牌拿出来。木牌上，刻的是同一只狐狸。\n\n你没吭声，把木牌收好了。",
+    "en": "You go round behind the stele and part the dry grass, half as tall as a man. There is writing on the back too, deeper and smaller than on the front, and you know none of it — only, at the very bottom, a small carved fox, curled, its tail wrapped around its body.\n\nYou take the token out of your jacket. On the token is the same fox.\n\nYou say nothing, and put the token away."
+   },
+   "beat": [],
+   "stay": true
+  },
+  {
+   "id": "rules",
+   "label": {
+    "zh": "定三条规矩，跟爹进去",
+    "en": "Make three rules, and go in with him"
+   },
+   "means": "goes in with father on conditions, sets rules, marks, turns back by sundown, runs if anything is wrong",
+   "mark": "three-rules",
+   "story": {
+    "zh": "你没有说「我不」。你想了想，说：「爹，你的腿，追不上鹿。」\n\n你爹愣住了。\n\n「我跟你进去，」你说，「但咱们定三条规矩：一，每走三十步，我在树上刻一道记号；二，太阳一过那道山梁，不管追没追到，掉头就走；三，只要有一样东西不对劲——不管是什么——不商量，跑。」\n\n你爹看着你，看了很久。他的眼睛有点红，不知道是风吹的，还是别的什么。\n\n「好，」他说，「听你的。」\n\n你们跨过了断碑。\n\n过碑的那一刻，你耳朵里轻轻「嗡」了一下，像有人在很远的地方敲了一记钟。你回头看——断碑还在。再往前走几步，再回头，断碑就不见了。\n\n你在身边的树上刻下了第一道记号。",
+    "en": "You don't say \"I won't.\" You think a moment and say: \"Father, your leg can't catch a deer.\"\n\nYour father stops short.\n\n\"I'll go in with you,\" you say. \"But we make three rules. One: every thirty steps I cut a mark on a tree. Two: once the sun passes that ridge, deer or no deer, we turn round. Three: the moment anything is wrong — anything at all — no talking it over. We run.\"\n\nYour father looks at you for a long time. His eyes are a little red; the wind, maybe, or something else.\n\n\"All right,\" he says. \"We do it your way.\"\n\nYou step past the broken stele.\n\nThe moment you pass it, something hums softly in your ears, like a bell struck somewhere very far away. You look back — the stele is still there. A few steps on you look back again, and the stele is gone.\n\nYou cut the first mark on the tree beside you."
+   },
+   "beat": [],
+   "next": "00-heisong"
+  },
+  {
+   "id": "home",
+   "label": {
+    "zh": "劝爹回村",
+    "en": "Talk Father into going home"
+   },
+   "means": "wants to go back to the village, gives up the hunt",
+   "story": {
+    "zh": "「爹，咱回吧。」\n\n你爹没回头。「回去，弓就没了。」他说得很轻，「没了弓，冬天拿什么打肉。」\n\n你看着他缠着麻布的膝盖，没再说话。",
+    "en": "\"Father, let's go home.\"\n\nYour father doesn't turn round. \"Go home, and the bow's gone,\" he says, very quietly. \"No bow, and what do we hunt with come winter?\"\n\nYou look at the hemp cloth wound round his knee and say nothing more."
+   },
+   "beat": [],
+   "stay": true
+  },
+  {
+   "id": "alone",
+   "label": {
+    "zh": "让爹留下，自己进去",
+    "en": "Leave Father here and go in alone"
+   },
+   "means": "wants to go in alone, leaving father behind",
+   "story": {
+    "zh": "「你在这儿等我，我一个人进去。」\n\n你爹一把攥住你的胳膊，攥得你生疼。「你爷爷就是一个人进去的。」\n\n他没再往下说。你也没再提。",
+    "en": "\"You wait here. I'll go in alone.\"\n\nYour father grips your arm so hard it hurts. \"Your grandfather went in alone.\"\n\nHe says nothing more. Neither do you."
+   },
+   "beat": [],
+   "stay": true
+  }
+ ]
+}

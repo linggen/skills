@@ -1298,7 +1298,23 @@
         }
       },
       "_deck": "九首九尾 —— 爪快身薄，抢在你立稳之前。",
-      "_signature": "九首九尾 —— 爪子还没收回，头又来了。"
+      "_signature": "九首九尾 —— 爪子还没收回，头又来了。",
+      "appear": {
+        "zh": [
+          "山门外的林子里，放着一只妖兽。",
+          "一根锁链，拴在一棵古松上。锁链那头，有什么在动。",
+          "九个脑袋，九条尾巴，虎一样的爪子。",
+          "九个脑袋一齐转过来，盯着每一个走进林子的孩子——",
+          "它叫了。九个声音，像九个婴儿一齐在哭。"
+        ],
+        "en": [
+          "In the woods outside the gate, a demon beast has been set loose.",
+          "A chain, fastened to an ancient pine. At the other end of it, something moves.",
+          "Nine heads, nine tails, claws like a tiger's.",
+          "All nine heads turn at once to stare at every child who walks into the woods —",
+          "It cries. Nine voices, like nine infants wailing together."
+        ]
+      }
     },
     {
       "id": "kui",

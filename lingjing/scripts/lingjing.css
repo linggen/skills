@@ -813,3 +813,31 @@ body.reading .view, body.reading .tray { display: none; }
   .appear, .appear .appearart, .appear .appeartext p, .appear .appeartext p.struck, .appear .appeartext q { animation: none; opacity: 1; }
   .appear .appearart { opacity: .9; }
 }
+
+/* ── 连环画 — a scene's panel (prologue-v3, his 2026-09-28: 右边尽量放图片……像小人书):
+   the painted picture, two to four lines of caption, the choices under it. ── */
+.card.panelcard { padding: 10px; }
+.panelcard .panel { margin: 0; }
+.panelcard .panelart { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); }
+.panelcard figcaption { margin: 10px 4px 2px; font-family: var(--serif); font-size: 15px; line-height: 1.7; letter-spacing: .04em; }
+.panelcard figcaption p { margin: 0; }
+.panelcard .paneltaps { margin-top: 10px; flex-wrap: wrap; }
+.panelcard .paneltap.busy { opacity: .6; }
+
+/* ── 恩仇簿 — the ledger chip's popover ── */
+.ledgerpop { width: min(420px, 80vw); }
+.ledgerrow { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-top: 1px solid var(--line); }
+.ledgerrow:first-of-type { border-top: 0; }
+.ledgerkind { flex: none; min-width: 26px; height: 26px; padding: 0 5px; font-size: 12px; display: grid; place-content: center; border-radius: 6px; font-family: var(--serif); font-weight: 600; border: 1px solid var(--line); }
+.ledgerrow.chou .ledgerkind { color: var(--seal); border-color: var(--seal); background: var(--seal-soft); }
+.ledgerrow.en .ledgerkind { color: var(--ling); border-color: var(--ling); }
+
+/* 书 — the novel's reader, a link beside 录 */
+a.readchip { text-decoration: none; display: inline-block; }
+
+/* 《吐纳经》 read in the pouch: the classic's words, her note under them */
+.scroll { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+.scroll .scrollq { margin: 4px 0; padding: 4px 10px; border-left: 2px solid var(--line); font-family: var(--serif); }
+.scroll .scrollq p { margin: 0 0 2px; }
+.scroll .scrollq cite { font-size: 11.5px; color: var(--dim); font-style: normal; }
+.scroll .gloss { color: var(--text); }

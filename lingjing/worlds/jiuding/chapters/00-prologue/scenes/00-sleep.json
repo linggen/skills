@@ -1,0 +1,80 @@
+{
+ "version": 1,
+ "id": "00-sleep",
+ "chapter": "00-prologue",
+ "at": "shiao",
+ "place": {
+  "zh": "石坳村 · 屋后柴垛 · 夜",
+  "en": "Shi'ao village · the woodpile · night"
+ },
+ "setup": {
+  "zh": "第二天夜里，它薄得像一层纸。它要闭关：一颗洗髓丹，一卷《吐纳经》，一个字「藏」。然后化成一缕银光，钻进了吴婆婆的狐纹木牌。",
+  "en": "The next night it is thin as paper. It must go into seclusion: a marrow-washing pill, a scroll of breathing, and one word — \"hide\". Then it becomes a thread of silver light and slips into Granny Wu's fox token."
+ },
+ "recap": {
+  "zh": "银月伤得太重，化光钻进了吴婆婆的木牌闭关；她留下一颗洗髓丹、一卷《吐纳经》和一个「藏」字。你泡了洗髓丹，一声没吭。",
+  "en": "Too badly hurt, Yinyue went into seclusion inside Granny Wu's token, leaving a marrow-washing pill, the scroll of breathing and the word \"hide\". You sat through the marrow-washing bath without a sound."
+ },
+ "cast": [],
+ "panel": {
+  "art": "art/panels/00-sleep.webp",
+  "caption": {
+   "zh": [
+    "它薄得像一层纸，月光能透过去。",
+    "一颗洗髓丹，一卷竹简，一个字：藏。",
+    "一缕银光，钻进了木牌。"
+   ],
+   "en": [
+    "Thin as paper; the moonlight shines through it.",
+    "A marrow-washing pill, a bamboo scroll, one word: hide.",
+    "A thread of silver light slips into the token."
+   ]
+  }
+ },
+ "story": {
+  "zh": "第二天夜里，它把你叫醒了。\n\n它的样子比昨天更差。银色的血已经不渗了，可整个身子薄得像一层纸，月光能从它身上透过去。\n\n⟪「听着，」⟫它说，⟪「本王要睡一阵子。」⟫\n\n「多久？」\n\n⟪「不知道。」⟫它说，⟪「伤得太重，得闭关。醒一次，就少一分力气。」⟫它看着你，⟪「在本王醒过来之前，你得自己走。」⟫\n\n它从那只旧得发黑的储物袋里，一样一样，往外吐东西。\n\n**一颗黑乎乎的丹药**，鸽子蛋那么大。\n\n⟪「洗髓丹。今夜就泡，把你骨头里十二年的烟火渣滓洗出来。疼，别喊。」⟫\n\n**一卷竹简**，绳子都快烂了。\n\n⟪「《吐纳经》。最粗浅的入门功夫。看不懂，也要背。背熟了，总有一天会懂。」⟫\n\n然后，它看着你，一个字一个字地说：\n\n⟪「**藏。**」⟫\n\n⟪「在你打得过所有人之前，不许让任何人知道本王，不许让任何人知道你在修炼。能装傻就装傻，能示弱就示弱。」⟫\n\n「那什么时候能不藏？」\n\n⟪「等你把欺负过你的人，一个一个，都踩在脚底下的时候。」⟫\n\n它的眼皮越来越沉。\n\n⟪「还有……本王在找一个地方……一个名字……」⟫它皱着眉，很用力地想，⟪「……想不起来了。等你……听见了……本王会知道的……」⟫\n\n它的身子化成了一缕银光。\n\n那缕光绕着你转了一圈，然后钻进了你怀里——钻进了吴婆婆给你的那块狐纹木牌。\n\n木牌上那只蜷着的小狐狸，九条尾巴里，有一条亮了起来。银的。一明，一暗，像在很慢很慢地呼吸。",
+  "en": "The next night, it wakes you.\n\nIt looks worse than yesterday. The silver blood has stopped seeping, but its whole body is thin as a sheet of paper; the moonlight shines through it.\n\n⟪\"Listen,\"⟫ it says. ⟪\"This king is going to sleep for a while.\"⟫\n\n\"How long?\"\n\n⟪\"This king doesn't know,\"⟫ it says. ⟪\"The wound is too deep; it needs seclusion. Every time this king wakes, a little strength is gone.\"⟫ It looks at you. ⟪\"Until this king wakes, you walk on your own.\"⟫\n\nFrom the old storage pouch gone black with age it brings things up, one by one.\n\n**A blackish pill**, the size of a pigeon's egg.\n\n⟪\"Marrow-washing pill. Soak in it tonight; it washes twelve years of smoke and chaff out of your bones. It hurts. Don't shout.\"⟫\n\n**A bamboo scroll**, its cords almost rotted through.\n\n⟪\"The Tuna Jing. The crudest beginner's art. Learn it by heart even if you can't understand it. Learn it well enough and one day you will.\"⟫\n\nThen it looks at you and says, one word at a time:\n\n⟪\"**Hide.**\"⟫\n\n⟪\"Until you can beat everyone, no one may know about this king, and no one may know you are cultivating. Play the fool wherever you can; look weak wherever you can.\"⟫\n\n\"And when can I stop hiding?\"\n\n⟪\"When everyone who ever bullied you is under your feet — one by one.\"⟫\n\nIts eyelids grow heavier and heavier.\n\n⟪\"And… this king is looking for a place… a name…\"⟫ It frowns, trying very hard. ⟪\"…Can't remember. When you… hear it… this king will know…\"⟫\n\nIts body turns into a thread of silver light.\n\nThe light circles you once and slips inside your jacket — into the fox token Granny Wu gave you.\n\nOn the little curled fox carved there, one of the nine tails lights up. Silver. Bright, then dim, as if breathing, very, very slowly."
+ },
+ "lines": [],
+ "buttons": [
+  "bath",
+  "out"
+ ],
+ "exits": [
+  {
+   "id": "bath",
+   "label": {
+    "zh": "泡进去，一声不吭",
+    "en": "Get in, and not a sound"
+   },
+   "means": "soaks in the marrow-washing bath, endures it silently",
+   "stamina": 6,
+   "mark": "marrow-washed",
+   "sleeps": true,
+   "grant": {
+    "table": "scene",
+    "item": "tuna-jing"
+   },
+   "story": {
+    "zh": "那天夜里，你泡了洗髓丹。\n\n你娘洗衣裳的木盆，墨绿的水咕嘟咕嘟冒泡。你泡进去的那一刻，就知道什么叫疼了——从骨头缝里往外钻的疼，像千万只蚂蚁在啃，又像有人拿烧红的铁刷子，一寸一寸地刷你的骨头。\n\n你咬住自己的胳膊，咬出了血。\n\n一声没吭。\n\n三炷香。你身上渗出来的黑泥，把一盆水染得像墨汁，臭得你自己都想吐。疼停下来的那一刻，你爬出木盆，拿井水冲了三遍，低头看自己——皮肤底下，淡淡的，有一层光，像月下的玉。\n\n你攥着胸前的木牌，那一条银色的尾巴，一明，一暗。\n\n「银月，」你小声说，「我没喊。」\n\n木牌没有回答。\n\n可你觉得，它暖了一下。",
+    "en": "That night you soak in the marrow-washing pill.\n\nIn the wooden tub your mother washes clothes in, dark green water bubbles and seethes. The moment you get in, you know what pain is — a pain that bores out from the cracks between your bones, as if ten thousand ants were gnawing you, as if someone were scrubbing your bones inch by inch with a red-hot iron brush.\n\nYou bite down on your own arm until it bleeds.\n\nNot a sound.\n\nThree sticks of incense. The black slime that seeps out of you turns the tub to ink, so foul you want to retch. The moment the pain stops you climb out, rinse three times with well water, and look down at yourself — under your skin, faint, there is a light, like jade under the moon.\n\nYou hold the token at your chest. That one silver tail: bright, then dim.\n\n\"Yinyue,\" you whisper. \"I didn't shout.\"\n\nThe token doesn't answer.\n\nBut you think it grew warm, for a moment."
+   },
+   "beat": [],
+   "next": "00-halfyear"
+  },
+  {
+   "id": "out",
+   "label": {
+    "zh": "太疼了，爬出来",
+    "en": "It hurts too much — climb out"
+   },
+   "means": "gives up the bath, climbs out",
+   "story": {
+    "zh": "你一只手扒上了盆沿。\n\n胸前的木牌凉凉的，那条银色的尾巴，一明，一暗。它说：疼，别喊。它没说可以出来。\n\n你的手，一点一点松开了。你沉回那盆墨绿的水里。",
+    "en": "You get one hand onto the rim of the tub.\n\nThe token at your chest is cool; the silver tail goes bright, then dim. It said: it hurts, don't shout. It never said you could get out.\n\nYour hand lets go, a little at a time. You sink back into the dark green water."
+   },
+   "beat": [],
+   "stay": true
+  }
+ ]
+}

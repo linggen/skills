@@ -176,7 +176,9 @@ export const THEN_BORN = ' The stage\'s card asks the player\'s birthday for the
 /* 渡劫's card is up (stage.mjs `breakthrough`): the player throws there, seeing the odds. */
 export const THEN_THROW = ' The stage\'s card shows the breakthrough\'s chance and what feeds it; the player throws there. Tell the cauldron; end on one line — never AskUser for it, never promise how it will go, never Resolve it; the page tells you `[scene] breakthrough won|failed`.';
 const THEN_QUIET = 'No question this time — the stage holds what is before him, or he has already been asked here. End on your words: name a way on in the line if it is worth naming, and do NOT call AskUser.';
-export const thenFor = (result, ask = undefined) => (result?.place?.meet?.veiled ? (result.place.meet.kind === 'trial' ? THEN_TRIAL : THEN_VEIL) : (result?.quest?.say ? THEN_CALL : '')
+/* A 连环画 beat (rules/tell.mjs): the story is the chat's, the picture and the choices the stage's. */
+export const THEN_TELL = 'Tell the story first: `tell` holds the passages owed, in order — a choice\'s outcome, then the scene entered. Tell each closely, in its own voice: trim a long one, keep every line of dialogue, never summarize it away; fit it to the player\'s 名字, gender, roots and earlier choices (`marks`). 〔银月〕 marks where Yinyue speaks — her words reach her by themselves: write around it, never her line. The picture and the choices stand on the stage: never describe the picture, never list the choices. ';
+export const thenFor = (result, ask = undefined) => (result?.tell?.length ? THEN_TELL : '') + (result?.place?.meet?.veiled ? (result.place.meet.kind === 'trial' ? THEN_TRIAL : THEN_VEIL) : (result?.quest?.say ? THEN_CALL : '')
   + (ask === null ? THEN_QUIET : entered(result) ? (won(result) ? CHEER : '') + THEN_SCENE : won(result) ? THEN_CHEER : THEN));
 const withAsk = (result, content, state, ctx) => ({ ...onStage(content, state, ctx, result), ...result });
 

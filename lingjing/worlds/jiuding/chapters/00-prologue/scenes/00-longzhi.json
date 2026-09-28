@@ -4,19 +4,22 @@
  "chapter": "00-prologue",
  "at": "shanmen",
  "place": {
-  "zh": "沉鼎观 · 山门外",
-  "en": "Chending Temple · outside the gate"
+  "zh": "沉鼎观 · 山门外的林子",
+  "en": "Chending Temple · the woods outside the gate"
  },
  "setup": {
-  "zh": "三试在山门外。木笼里关着一只蠪侄——九尾九首，叫声像婴儿啼哭。笼门开了。",
-  "en": "The third trial is outside the gate. In a wooden cage crouches a Longzhi — nine tails, nine heads, a cry like a crying baby. The cage door opens."
+  "zh": "三试，胆子：林子里一只蠪侄，九首九尾，虎爪，叫声像婴儿，拴在古松上。一半的孩子哭着跑了。",
+  "en": "Third trial, nerve: in the woods a Longzhi — nine heads, nine tails, tiger claws, a cry like an infant's — chained to an old pine. Half the children run away crying."
  },
  "recap": {
-  "zh": "三试，胆子：山门外的一只蠪侄，你第一次斗法。",
-  "en": "Third trial, nerve: a Longzhi outside the gate — your first fight."
+  "zh": "三试，胆子：你听出了蠪侄九个头里哪一个是真的；它扑来的那一刻，木牌一烫——「……左边」。",
+  "en": "Third trial, nerve: you heard which of the Longzhi's nine heads was real; as it lunged, the token burned — \"…Left.\""
  },
  "cast": [
   "longzhi"
+ ],
+ "people": [
+  "qulao"
  ],
  "show": [
   {
@@ -24,15 +27,26 @@
    "id": "longzhi"
   }
  ],
- "lines": [
-  {
-   "who": "qulao",
-   "text": {
-    "zh": "三试，胆子。降了它，或者被它降了。",
-    "en": "Third, nerve. Subdue it — or be subdued."
-   }
+ "panel": {
+  "art": "art/panels/00-longzhi.webp",
+  "caption": {
+   "zh": [
+    "三试，胆子。",
+    "九首，九尾，虎爪；其音如婴儿。",
+    "锁链够不着的地方，站着一个人。"
+   ],
+   "en": [
+    "Third trial, nerve.",
+    "Nine heads, nine tails, tiger claws; a voice like an infant.",
+    "Just beyond the chain's reach, someone stands."
+   ]
   }
- ],
+ },
+ "story": {
+  "zh": "**三试 · 胆子。** 山门外的林子里，放着一只妖兽。\n\n是蠪侄。九个脑袋，九条尾巴，虎一样的爪子，叫起来像婴儿哭。它被一根锁链拴在一棵古松上，九个脑袋一齐转过来，盯着每一个走进林子的孩子。\n\n一半的孩子，一进林子就吓哭了，掉头就跑。马小宝进去了，走了三步，裤子湿了。\n\n你进去了。\n\n你没有往前冲。你站在锁链够不着的地方，看了很久。九个脑袋，九种叫声——可只有一个脑袋的叫声，真正像婴儿；其他八个，叫到最后，都有一点点哑。\n\n你是猎户家的孩子。你从会走路起，就在听山里的声音——哪一声是真的狼嚎，哪一声是风穿过石缝。\n\n你闭上眼睛，听。\n\n九种叫声。只有一种，是从胸腔里出来的，带着热气；其他八种，是空的。\n\n你捡起一块石头。你等着。",
+  "en": "**Third trial · Nerve.** In the woods outside the gate, a demon beast has been set loose.\n\nIt is a Longzhi. Nine heads, nine tails, claws like a tiger's, a cry like an infant's wail. It is chained to an ancient pine, and all nine heads turn at once to stare at every child who walks into the woods.\n\nHalf the children burst into tears the moment they step in, and turn and run. Ma Xiaobao goes in, takes three steps, and wets his trousers.\n\nYou go in.\n\nYou don't rush forward. You stand just beyond the chain's reach and watch for a long time. Nine heads, nine cries — but only one head's cry is truly like an infant's; the other eight, at the end of each cry, are just a little hoarse.\n\nYou are a hunter's child. Since you could walk you have been listening to the mountain — which cry is a real wolf's howl, which is wind through a crack in the rock.\n\nYou close your eyes, and listen.\n\nNine cries. Only one comes from a chest, with heat in it; the other eight are hollow.\n\nYou pick up a stone. You wait."
+ },
+ "lines": [],
  "buttons": [
   "subdue"
  ],
@@ -51,18 +65,14 @@
     "retry": true
    },
    "withdrawn": {
-    "zh": "蠪侄缩回笼角，龇着牙。瞿老：「再来。」",
-    "en": "The Longzhi shrinks back into its cage, teeth bared. Elder Qu: \"Again.\""
+    "zh": "蠪侄缩回古松后面，九个头龇着牙。瞿老：「再来。」",
+    "en": "The Longzhi shrinks back behind the pine, nine heads baring their teeth. Elder Qu: \"Again.\""
    },
-   "beat": [
-    {
-     "who": "qulao",
-     "text": {
-      "zh": "腿短了点，脑子还行，胆子——胆子太大。进去吧。",
-      "en": "Legs a little short, wits will do, nerve — too much nerve. Go in."
-     }
-    }
-   ],
+   "story": {
+    "zh": "等到那九个脑袋一齐张嘴的那一刻——你把石头扔了出去——\n\n几乎同时，蠪侄扑了过来。锁链绷得笔直，一只虎爪带着风，从你左边扫过来。\n\n胸口的木牌，一烫。\n\n⟪「……左边。」⟫\n\n一个很小、很困的声音。你往右一滚。虎爪擦着你的肩膀扫过去，扫断了你身后一棵小松树。\n\n你的石头，正正地砸在那个真正的脑袋的鼻尖上。\n\n蠪侄愣住了。八个假脑袋一下子散了，像一阵烟。剩下那一个真的，委屈地「呜」了一声，缩回了古松后面。\n\n林子外面，很静。\n\n扫地的老头，拄着扫帚，站在林子口，不知道看了多久。",
+    "en": "The moment all nine heads open their mouths at once — you throw the stone —\n\nand almost in the same instant the Longzhi lunges. The chain snaps taut; a tiger's claw sweeps at you from the left, trailing wind.\n\nThe token at your chest burns.\n\n⟪\"…Left.\"⟫\n\nA very small, very sleepy voice. You roll to the right. The claw grazes your shoulder and snaps the little pine behind you in two.\n\nYour stone lands square on the nose of the real head.\n\nThe Longzhi freezes. The eight false heads scatter at once like a puff of smoke. The one real head gives a hurt little \"wu\" and shrinks back behind the ancient pine.\n\nOutside the woods, it is very quiet.\n\nThe old man with the broom stands at the edge of the woods, leaning on it. Who knows how long he has been watching."
+   },
+   "beat": [],
    "next": "00-hall"
   }
  ]

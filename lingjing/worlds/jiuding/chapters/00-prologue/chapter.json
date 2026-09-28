@@ -5,25 +5,34 @@
   "province": "徐",
   "corridor": true,
   "free": true,
-  "first_scene": "00-river",
+  "first_scene": "00-shiao",
   "gate": null,
-  "title": { "zh": "序章 · 泗水", "en": "Prologue · The Si River" },
+  "title": {
+    "zh": "序章 · 蒙山",
+    "en": "Prologue · Mount Meng"
+  },
   "summary": {
-    "zh": "雨夜泗水，渔家的孩子在网里拾到一只不响的银铃。渡叔送你上山，瞿老三试，观主测灵根，周衡发下第一份功课；傍晚，夫诸出水。第一鼎的气息在北方。",
-    "en": "A rain night on the Si: a fisher's child finds a silent silver bell in the net. Du Shu sends you up the mountain; Elder Qu's three trials, the abbot's root test, Zhou Heng's first chore; at evening Fuzhu rises from the water. The first cauldron's breath lies north."
+    "zh": "蒙山脚下的猎户家，马家的租，一张弓。你和爹越过「勿入」的断碑，暴雨里坠谷，救起一只断了八尾的小银狐——银月。她伤重沉睡在吴婆婆的狐纹木牌里；半年后，舅舅带来沉鼎观开山门的告示。三试凭你自己的腿、脑子和胆子，外门收下了你；告示栏上：沉鼎秘境，下月初一。",
+    "en": "A hunter's home under Mount Meng, the Ma family's rent, and a bow. You and your father cross the broken stele that says Do not enter; in the storm you fall into a valley and save a little silver fox with eight tails cut away — Yinyue. Badly hurt, she sleeps in Granny Wu's fox token; half a year on, your uncle brings the notice that Chending Temple opens its gate. You pass the three trials on your own legs, wits and nerve, and the outer court takes you in; on its notice board: the hidden realm opens on the first of next month."
   },
   "intro": {
-    "zh": "雨夜，泗水。你是来收网的。网里没有鱼，只有一点银光，像在等你。",
-    "en": "A rain night on the Si. You came to haul in the net. No fish in it — only a point of silver light, as if waiting for you."
+    "zh": "蒙山脚下的石坳村，十七户人家，一户打猎。那一户，就是你家。",
+    "en": "Shi'ao village under Mount Meng: seventeen households, one of them hunters. That one is yours."
   },
   "mystery": {
-    "zh": "泗水里那点银光，在等谁？",
-    "en": "Whom is the silver light in the Si waiting for?"
+    "zh": "吴婆婆的木牌上，为什么刻着一只九尾的狐狸？",
+    "en": "Why is a nine-tailed fox carved on Granny Wu's token?"
   },
-  "_aliases": "Scene ids an older save may still hold, and the scene of this chapter nearest to each (state.mjs fitWorld). The 2026-09-28 rewrite: the old naming and root test fall at the crossing (the name and the 男 · 女 are asked again; roots already read are kept), the old practice at the outer court.",
+  "_aliases": "Scene ids an older save may still hold, and the scene of this chapter nearest to each (state.mjs fitWorld). The prologue-v3 rewrite (2026-09-28): every scene of the v0 and v1 prologues that came before the trials goes to 石坳村, where the story now begins (the name card asks again; roots, bag and progress are kept); the trials and the hall keep their ids; the old outer-court practice goes to the outer court; 夫诸 and the north go to the notice board, the prologue's last scene.",
   "aliases": {
-    "00-waking": "00-ferry",
-    "00-stone": "00-ferry",
-    "00-practice": "00-waimen"
+    "00-waking": "00-shiao",
+    "00-stone": "00-shiao",
+    "00-practice": "00-shiao",
+    "00-river": "00-shiao",
+    "00-ferry": "00-shiao",
+    "00-boat": "00-shiao",
+    "00-shanlu": "00-shiao",
+    "00-fuzhu": "00-mijing",
+    "00-north": "00-mijing"
   }
 }

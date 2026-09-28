@@ -10,10 +10,15 @@ import { act, battle, begin, effectOf, foeTurn, offers, tokenOf } from '../scrip
 import { lint, loadContent } from '../scripts/content.mjs';
 import { dayKey, langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
 import { oddsOf, rollOf, VERBS, fightSetup, hpMaxOf, greet, deck, deckFor, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win } from '../scripts/rules.mjs';
-import { TO_FUZHU, TO_HALL, V1_BIRTH, walk } from './prologue.mjs';
+import { TO_WAIMEN, TO_HALL, TO_VALLEY, V1_BIRTH, walk } from './prologue.mjs';
+import { tellOf } from '../scripts/rules/tell.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
 
 const content = loadContent();
+// 夫诸 at the Si's north bank — the v1 prologue's creature scene, retired by
+// prologue-v3 and kept as a fixture for the fight engine's tests (a gift, a
+// riddle, a duel that withdraws, staying exits). Reached only by `toFuzhu`.
+content.chapters['00-prologue'].scenes['00-fuzhu'] = JSON.parse(fs.readFileSync(new URL('./fixtures/scene-fuzhu.json', import.meta.url), 'utf8'));
 /* 渡劫 is a throw (rules/breakthrough.mjs): a walkthrough takes the first try
    whose die lands under the chance — the spine is walked, not diced. */
 function lucky(state, to, at) {
@@ -121,108 +126,112 @@ function fightOut(state, id, { line = null, c = ctx(), between = s => s } = {}) 
 
 /* Walk the prologue the ordinary way (tests/prologue.mjs): to the 入门仪式, or to 夫诸. */
 const toHall = (s = start()) => walk(s, TO_HALL, content, NOW);
-const toFuzhu = (s = start()) => walk(s, TO_FUZHU, content, NOW);
+const toFuzhu = (s = start()) => {
+  const at = walk(s, TO_WAIMEN, content, NOW);
+  return { ...at, scene: '00-fuzhu', place: 'sibei', bag: { ...at.bag, lingzhi: 1 } };
+};
 /* At the outer court, the roots read, the first practice offered. */
 const toPractice = () => must(resolve, toHall(), { exit: 'born', birth: V1_BIRTH }).state;
 
-test('a new game starts at the river, 练气一层, nothing in hand', () => {
+test('a new game starts at 石坳村, 练气一层, nothing in hand, the name card up', () => {
   const s = start();
-  assert.equal(s.scene, '00-river');
+  assert.equal(s.scene, '00-shiao');
+  assert.equal(s.place, 'shiao');
   const seen = look(s, content, ctx());
   assert.equal(seen.tier.name, '练气一层');
-  assert.equal(seen.scene.buttons.length, 2);
-  assert.equal(seen.scene.exits.find(e => e.id === 'leave').button, true);
+  assert.deepEqual(seen.scene.buttons.map(b => b.id), ['name']);
+  assert.ok(seen.stage.some(c => c.card === 'value'));
 });
 
-test('the prologue walks from the river to its end by exits alone', () => {
-  let s = toFuzhu();
-  const fz = riddleAt(s, 'riddle');
-  missed(resolve, s, { exit: 'riddle', answer: fz.wrong });
-  s = must(resolve, s, { exit: 'riddle', answer: fz.right }).state;
-  assert.equal(s.scene, '00-north');
+test('the prologue walks from 石坳村 to its end by exits alone', () => {
+  let s = walk(start(), TO_WAIMEN, content, NOW);
+  assert.equal(s.scene, '00-waimen');
+  s = must(resolve, s, { exit: 'pay' }).state;
+  assert.equal(s.scene, '00-mijing');
   const end = must(resolve, s, { exit: 'rest' });
   s = end.state;
   assert.deepEqual(s.ended, ['00-prologue']);
   assert.equal(s.scene, null);
+  assert.deepEqual(end.result.waiting, { chapter: '01-ji', opens: '2026-10-01' }, 'this file dates chapter 1 to October');
   assert.equal(s.name, '青玄');
   assert.deepEqual(s.traits, ['wood', 'water', 'fire', 'earth']);
-  assert.deepEqual(s.cast, ['fuzhu']);
+  assert.deepEqual(s.cast, [], 'no beast tamed: the trials are the child\'s own');
   assert.equal(s.gender, 'female');
-  assert.deepEqual(s.marks, ['shanlu-helped', 'stairs-straight']);
-  assert.equal(s.step, 1); // 洛书 10 + alchemy 20 + Fuzhu 50 crosses the first layer (50)
-  assert.equal(s.progress, 30);
-  assert.equal(s.wealth, 10);
-  assert.equal(s.bag['grey-robe'], 1, 'the robe of the 入门仪式, in the bag');
+  assert.deepEqual(s.companion, { joined: '2026-09-11', asleep: true }, 'found in the valley, asleep in the fox token');
+  assert.equal(s.step, 0, 'the prologue ends at the bottom of 练气 (the source: 练气零层)');
+  assert.equal(s.progress, 10);
+  assert.equal(s.wealth, 2, 'three stones of the allowance, one to the 公中');
+  for (const id of ['grey-robe', 'fox-token', 'tuna-jing', 'old-bow']) assert.equal(s.bag[id], 1, id);
+  assert.deepEqual(s.ledger.map(e => `${e.who}${e.kind}`), ['maxiaobao仇', 'masan仇', 'ahe恩', 'laozhou恩', 'maxiaobao仇']);
   assert.equal(end.result.ended, '00-prologue');
 });
 
-test('the name fills the lines that follow, and the name card keeps 男 · 女', () => {
-  let s = must(resolve, start(), { exit: 'reach' }).state;
-  assert.equal(s.scene, '00-ferry');
+test('the name card keeps 男 · 女, and the name fills what follows', () => {
+  const s = start();
   const named = must(resolve, s, { exit: 'name', value: '墨白', gender: 'male' });
-  assert.equal(named.result.beat[0].text, '墨白。好名字。去了观里，别说是我荐的。');
-  assert.equal(named.result.beat[0].name, '渡叔');
   assert.deepEqual(named.result.named, { field: 'name', value: '墨白', gender: 'male' });
   assert.equal(named.state.gender, 'male');
-  assert.equal(named.result.scene.id, '00-boat');
+  assert.equal(named.result.scene.id, '00-masan');
   // a gender the card does not offer is not kept; a name typed in the chat says none
   assert.equal(must(resolve, s, { exit: 'name', value: '墨白', gender: 'robot' }).state.gender, null);
   assert.equal(must(resolve, s, { exit: 'name', value: '墨白' }).state.gender, null);
-});
+  const cliff = walk(named.state, [...TO_HALL.slice(1, TO_HALL.findIndex(([, a]) => a.exit === 'follow') + 1)], content, NOW);
+  assert.equal(cliff.scene, '00-cliff');
+  assert.match(tellOf(content, cliff).tell.at(-1).text, /是老周，石头的爹的声音/);
+})
 
 test('a name must be 1 to 8 characters', () => {
-  const s = must(resolve, start(), { exit: 'reach' }).state;
+  const s = start();
   refused(resolve, s, { exit: 'name', value: '   ' }, 'value-invalid');
   refused(resolve, s, { exit: 'name', value: '一二三四五六七八九' }, 'value-invalid');
 });
 
 test('an offered name is kept in its Chinese form, a typed one as typed', () => {
-  const s = must(resolve, start('en'), { exit: 'reach' }).state;
+  const s = start('en');
   for (const [typed, kept] of [['Qingxuan', '青玄'], ['青玄', '青玄'], ['qingxuan ', '青玄'], ['Mobai', '墨白'], ['Alex', 'Alex']]) {
     assert.equal(must(resolve, s, { exit: 'name', value: typed }).state.name, kept, typed);
   }
 });
 
-test('the road waits until the practice is done', () => {
+test('the 公中 takes a stone: none in hand, it is refused in the world', () => {
   const s = must(resolve, toHall(), { exit: 'born', birth: V1_BIRTH }).state;
   assert.equal(s.scene, '00-waimen');
-  const r = refused(resolve, s, { exit: 'set-out' }, 'needs');
-  assert.match(r.say, /丹还没炼成/);
+  const r = refused(resolve, { ...s, wealth: 0 }, { exit: 'pay' }, 'needs');
+  assert.equal(r.say, '怀里没有灵石。');
+  const paid = must(resolve, s, { exit: 'pay' }).state;
+  assert.equal(paid.wealth, s.wealth - 1);
+  assert.equal(must(resolve, s, { exit: 'refuse' }).state.wealth, s.wealth, 'refused: the stone stays, the mark says so');
 });
 
-test('feeding Fuzhu the leftover lingzhi tames it and uses the herb up', () => {
-  const s = toFuzhu();
-  assert.equal(s.bag.lingzhi, 1);
-  const fed = must(resolve, s, { exit: 'gift' });
-  assert.equal(fed.state.bag.lingzhi, undefined);
-  assert.deepEqual(fed.state.cast, ['fuzhu']);
-  assert.equal(fed.result.beat[1].who, 'fuzhu');
+test('the rent is paid with the deer hide the shot brought, and refused without it', () => {
+  const s = walk(start(), TO_HALL.slice(0, TO_HALL.findIndex(([, a]) => a.exit === 'dumb')), content, NOW);
+  assert.equal(s.scene, '00-rent');
+  assert.equal(s.bag['deer-hide'], 1);
+  const paid = must(resolve, s, { exit: 'truth' });
+  assert.equal(paid.state.bag['deer-hide'], undefined);
+  assert.ok(paid.state.marks.includes('told-ma'));
+  const bare = { ...s, bag: {} };
+  assert.equal(refused(resolve, bare, { exit: 'dumb' }, 'needs').say, '手里没有鹿皮。');
 });
 
-test('without the herb the gift is refused in the world', () => {
-  const s = toFuzhu();
-  delete s.bag.lingzhi;
-  const r = refused(resolve, s, { exit: 'gift' }, 'needs');
-  assert.equal(r.say, '你身上没有灵芝。');
+test('staying exits tell their passage and keep the scene; a staying choice made is not offered again', () => {
+  const s = walk(start(), TO_VALLEY.slice(0, 5), content, NOW);
+  assert.equal(s.scene, '00-duanbei');
+  const back = must(resolve, s, { exit: 'back' });
+  assert.equal(back.state.scene, '00-duanbei');
+  assert.equal(back.result.summarize, false);
+  assert.ok(back.state.marks.includes('stele-fox'));
+  assert.ok(back.state.tell_owed.includes('00-duanbei/back'));
+  const taps = st => look(st, content, ctx()).scene.panel.taps.map(t => t.id);
+  assert.deepEqual(taps(s), ['back', 'rules', 'home', 'alone']);
+  assert.deepEqual(taps(back.state), ['rules', 'home', 'alone'], 'the stele\'s back was read');
+  const home = must(resolve, back.state, { exit: 'home' });
+  assert.deepEqual(taps(home.state), ['rules', 'home', 'alone'], 'a staying choice with no mark may be tried again');
 });
 
-test('staying exits narrate and keep the scene', () => {
-  const out = must(resolve, toFuzhu(), { exit: 'around' });
-  assert.equal(out.state.scene, '00-fuzhu');
-  assert.equal(out.result.summarize, false);
-  assert.equal(must(resolve, start(), { exit: 'reach' }).result.summarize, true);
-  assert.match(out.result.beat[0].text, /你绕开了它/);
-  // leaving the light for tomorrow still ends at it: the bell is found either way
-  const left = must(resolve, start(), { exit: 'leave' });
-  assert.equal(left.state.scene, '00-ferry');
-  assert.equal(left.state.bag['moon-bell'], 1);
-  assert.match(left.result.beat[0].text, /一夜之后，银光还在/);
-});
-
-test('an unknown exit, a missing answer and an unfought duel are refused', () => {
-  const s = toFuzhu();
+test('an unknown exit and an unfought duel are refused', () => {
+  const s = walk(start(), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'won')), content, NOW);
   refused(resolve, s, { exit: 'fly' }, 'unknown-exit');
-  assert.equal(resolve(s, content, ctx(), { exit: 'riddle' }).result.refused, 'needs-answer');
   refused(resolve, s, { exit: 'subdue' }, 'game-not-won');
 });
 
@@ -302,7 +311,7 @@ test('the engine\'s empty-reply nudge is not the player\'s word: it sets no lang
 });
 
 test('every answer carries the question ready: the scene\'s buttons, the riddle when one waits, the choice when the world is open', () => {
-  const s = toFuzhu();
+  const s = atAltar();
   const l = look(s, content, ctx());
   // Every button but the ones played on their own card (a bout, a board).
   const inChat = l.scene.buttons.filter(b => !l.scene.exits.find(e => e.id === b.id)?.game);
@@ -434,7 +443,7 @@ test('only the rules decide a fight: a win the exit takes, and pays once', () =>
   assert.ok(settled.state.wins['subdue-fuzhu']);
   assert.equal(look(settled.state, content, ctx()).scene.exits.find(e => e.id === 'subdue').won, true);
   const out = must(resolve, settled.state, { exit: 'subdue' });
-  assert.equal(out.state.scene, '00-north');
+  assert.equal(out.state.scene, '00-mijing');
   assert.ok(out.state.cast.includes('fuzhu'));
   assert.deepEqual(out.state.wins, {});
 });
@@ -485,7 +494,7 @@ test('the ten cards are the player\'s own roots (and the ones their arms lend), 
   const out = must(resolve, won.state, { exit: 'subdue' });
   assert.deepEqual(out.state.arts ?? [], []);
   assert.equal(out.result.paid.learned, undefined);
-  const old = { ...toOpenWorld(), arts: undefined, chance: DEALT };
+  const old = { ...toOpenWorld(), cast: ['fuzhu'], arts: undefined, chance: DEALT };
   assert.ok(old.cast.includes('fuzhu'));
   const woke = VERBS.look(old, content, ctx());
   assert.equal(woke.state, null, 'a companion in an old save teaches nothing either');
@@ -789,7 +798,8 @@ test('得牌: he fights only with the cards he has obtained — the starter at t
   const s = toFuzhu();
   // the root test hands over the starter of his roots, and nothing else
   const starter = content.cards.starter.filter(id => !byId[id].element || s.traits.includes(byId[id].element));
-  assert.deepEqual([...s.cards].sort(), [...starter].sort());
+  assert.ok(s.cards.includes('yinyue'), 'her card, held since the valley');
+  assert.deepEqual([...s.cards].filter(id => id !== 'yinyue').sort(), [...starter].sort());
   assert.equal(starter.length, 10, 'four roots, ten cards');
   const deck = look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.deck;
   assert.ok(deck.every(id => s.cards.includes(id)), 'the ten are all his');
@@ -842,13 +852,14 @@ test('a subdued creature leaves what it carries, one new card, and on one win in
 });
 
 test('an in-world task pays only after the page recorded its win', () => {
-  let s = toPractice();
-  refused(task, s, { action: 'done', id: 'alchemy-first' }, 'not-won');
-  s = must(win, s, { id: 'alchemy-first' }).state;
-  assert.equal(look(s, content, ctx()).tasks.find(t => t.id === 'alchemy-first').won, true);
-  const done = must(task, s, { action: 'done', id: 'alchemy-first' });
-  assert.equal(done.state.bag.lingzhi, 1);
-  refused(win, done.state, { id: 'alchemy-first' }, 'not-here');
+  let s = walk(start(), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'win')), content, NOW);
+  assert.equal(s.scene, '00-luoshu');
+  refused(task, s, { action: 'done', id: 'gate-luoshu' }, 'not-won');
+  s = must(win, s, { id: 'gate-luoshu' }).state;
+  assert.equal(look(s, content, ctx()).tasks.find(t => t.id === 'gate-luoshu').won, true);
+  const done = must(task, s, { action: 'done', id: 'gate-luoshu' });
+  assert.equal(done.result.paid.progress, 10);
+  refused(win, done.state, { id: 'gate-luoshu' }, 'not-here');
 });
 
 test('every line carries its speaker’s name; Ling narrates unnamed', () => {
@@ -860,7 +871,7 @@ test('every line carries its speaker’s name; Ling narrates unnamed', () => {
   assert.equal(scene.lines[0].who, 'ahe');
   const out = must(resolve, s, { exit: 'riddle', answer: riddleAt(s, 'riddle').right });
   assert.equal(out.result.beat[0].name, '夫诸');
-  assert.equal(must(resolve, start('en'), { exit: 'leave' }).result.beat[0].name, null);
+  assert.equal(must(resolve, { ...s, lang: 'en' }, { exit: 'around' }).result.beat[0].name, null);
 });
 
 test('answers are judged in either language, punctuation and articles aside', () => {
@@ -911,17 +922,15 @@ test('a later realm pays more for the same task; the day counts base', () => {
 
 test('the prologue is free: its steps and bouts cost no 灵气, with the 丹田 empty or full', () => {
   let s = { ...start(), stamina: 0, stamina_at: NOW.toISOString() };
-  s = must(resolve, s, { exit: 'reach' }).state;
-  s = must(resolve, s, { exit: 'name', value: '青玄' }).state;
-  s = must(resolve, s, { exit: 'uphill' }).state;
-  assert.equal(s.scene, '00-shanlu');
+  s = walk(s, TO_VALLEY.slice(0, 6), content, NOW);
+  assert.equal(s.scene, '00-heisong');
   assert.equal(s.stamina, 0);
-  // …but an exit that is toil by itself (the ditch, the steps) spends its own 体力
-  refused(resolve, s, { exit: 'help' }, 'no-stamina');
-  const full = must(resolve, { ...s, stamina: 100 }, { exit: 'help' }).state;
+  // …but an exit that is toil by itself (the marks, the storm, the steps) spends its own 体力
+  refused(resolve, s, { exit: 'carve' }, 'no-stamina');
+  const full = must(resolve, { ...s, stamina: 100 }, { exit: 'carve' }).state;
   assert.equal(full.stamina, 97);
-  assert.equal(must(resolve, full, { exit: 'climb' }).state.stamina, 85);
-  assert.equal(must(resolve, full, { exit: 'rest' }).state.stamina, 91, 'resting on the steps costs half');
+  assert.equal(must(resolve, full, { exit: 'chase' }).state.stamina, 87);
+  assert.equal(must(resolve, full, { exit: 'turn' }).state.stamina, 93, 'turning back by the third rule costs less');
   // making a scene inside it still costs
   const ferry = make(s, content, ctx(), {}).result.template;
   const exits = ferry.exits.filter(e => !e.next);
@@ -967,13 +976,13 @@ test('Make with nothing is the template; a scene in its shape is kept and played
   // enter it; the spine keeps its place
   s = must(enter, s, { scene: 'made-ferry' }).state;
   assert.equal(look(s, content, ctx()).scene.id, 'made-ferry');
-  assert.equal(s.scene, '00-river');
+  assert.equal(s.scene, '00-shiao');
   // an exit that stays, then one that ends: home again, paid within the branch table
   s = must(resolve, s, { exit: 'ask' }).state;
   const out = must(resolve, s, { exit: 'cross' });
   assert.equal(out.result.paid.progress, 10);
   assert.equal(out.state.made.at, null);
-  assert.equal(look(out.state, content, ctx()).scene.id, '00-river');
+  assert.equal(look(out.state, content, ctx()).scene.id, '00-shiao');
   // refusals: a forbidden field, a grant off the branch table, a next that does not exist
   const bad = { ...second, id: 'made-bad', exits: [{ id: 'x', means: 'x', key: 'riddle', grant: { table: 'scene', progress: 50 }, next: 'made-nowhere' }] };
   const r = refused(make, s, { scene: JSON.stringify(bad) }, 'not-playable');
@@ -988,7 +997,7 @@ test('Make with nothing is the template; a scene in its shape is kept and played
 test('a task pays once; one never offered cannot be claimed', () => {
   refused(task, start(), { action: 'done', id: 'alchemy-first' }, 'not-offered');
   const s = toFuzhu();
-  refused(task, s, { action: 'done', id: 'alchemy-first' }, 'already-done');
+  refused(task, s, { action: 'done', id: 'gate-luoshu' }, 'already-done');
 });
 
 test('a quest pays when its app says it was done this period, once', () => {
@@ -1033,11 +1042,11 @@ test('switching language returns the scene in it; the same language writes nothi
   const out = must(lang, start('zh'), { lang: 'en' });
   assert.equal(out.state.lang, 'en');
   assert.equal(out.result.changed, true);
-  assert.equal(out.result.scene.place, 'The bank of the Si · a night of rain');
+  assert.equal(out.result.scene.place, "Foot of Mount Meng · Shi'ao village");
   const same = must(lang, { ...start('zh'), lang_set: true }, { lang: 'zh' });
   assert.equal(same.state, null);
   assert.equal(same.result.changed, false);
-  assert.equal(same.result.scene.place, '泗水之畔 · 雨夜');
+  assert.equal(same.result.scene.place, '蒙山脚下 · 石坳村');
 });
 
 test('the player’s words set the language; a tap, an emoji or the page’s report do not', () => {
@@ -1111,17 +1120,26 @@ function inFerry(s) {
 }
 
 function toOpenWorld() {
-  let s = toFuzhu();
-  s = must(resolve, s, { exit: 'gift' }).state;
+  let s = walk(start(), TO_WAIMEN, content, NOW);
+  s = must(resolve, s, { exit: 'pay' }).state;
   s = must(resolve, s, { exit: 'rest' }).state;
   assert.equal(s.scene, null);
-  return s;
+  // The prologue ends at the outer court; one road on is the Si's north bank.
+  s = must(move, s, { place: 'sibei' }).state;
+  // The open world these tests were written for: a save that has not met her
+  // (as before prologue-v3, where she is found at 结丹 by the bell) — the call,
+  // the bell and the riddle still run for such saves. prologue-v3's companion
+  // (found in the valley, asleep in the token) is tested with the prologue.
+  const { companion, ...rest } = s;
+  return { ...rest, cards: rest.cards.filter(id => id !== 'yinyue') };
 }
+/* 河伯's altar at 邺城 (01-altar): a scene whose question is the chat's — a riddle among its buttons. */
+const atAltar = () => ({ ...toOpenWorld(), chapter: '01-ji', scene: '01-altar', place: 'hebo' });
 
 test('the corridor walks the player from place to place, and Move waits', () => {
   let s = start();
-  assert.equal(s.place, 'sishui');
-  assert.equal(look(s, content, ctx()).place.name, '泗水岸');
+  assert.equal(s.place, 'shiao');
+  assert.equal(look(s, content, ctx()).place.name, '石坳村');
   const r = refused(move, s, { place: 'pengcheng' }, 'corridor');
   refused(move, inFerry(s), { place: 'huaidu' }, 'corridor'); // a made scene does not open the corridor's road
   assert.equal(r.say, '先把眼前的事做完。');
@@ -1135,7 +1153,7 @@ test('too-hard with her beside him: her word is her beat — kept on the save un
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-toohard-'));
   try {
     const file = path.join(data, 'state.json');
-    fs.writeFileSync(file, JSON.stringify({ ...toOpenWorld(), companion: { joined: '2026-09-01' }, updated: NOW.toISOString() }));
+    fs.writeFileSync(file, JSON.stringify({ ...toOpenWorld(), companion: { joined: '2026-09-01', awake: true }, updated: NOW.toISOString() }));
     const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
     const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
     const ling = cli('move', '--place=lvliang', '--for=ling');
@@ -1185,7 +1203,7 @@ test('Move for real: roads, tiers, a fitting place, the names', () => {
   assert.equal(look(toFuzhu(), content, ctx()).director.choice, null, 'a scene running has its own buttons');
   assert.equal(l.place.has.creature.name, '夫诸');
   assert.deepEqual(l.place.show, [{ card: 'creature', id: 'fuzhu' }]);
-  assert.equal(l.place.places.length, 20, '徐 with 大野泽, 凫丽 and 空桑 — the 禹贡\'s 徐 — 泗渊 under 彭城, and 沉鼎观 up from the crossing');
+  assert.equal(l.place.places.length, 25, '徐 with 大野泽, 凫丽 and 空桑 — the 禹贡\'s 徐 — 泗渊 under 彭城, 沉鼎观 up from the crossing, and 蒙山 of prologue-v3 (石坳村, 前山, 断碑, 黑松岭, 银叶谷)');
   assert.ok(l.place.places.find(p => p.id === 'sibei').here);
   // the same place is no move
   assert.equal(must(move, s, { place: 'sibei' }).result.here, true);
@@ -1281,13 +1299,13 @@ test('the market: the shelf on the place, buying, selling, the visit\'s stamina'
   assert.deepEqual(l.place.show, [{ card: 'item', ids: ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'wangqi-1', 'jade-ring'] }]);
   const bought = must(trade, s, { action: 'buy', id: 'qi-pill' });
   assert.equal(bought.state.wealth, 20);
-  assert.deepEqual(bought.state.bag, { 'moon-bell': 1, 'grey-robe': 1, 'qi-pill': 1 }); // the bell came from the river, the robe from the 入门仪式
+  assert.deepEqual(bought.state.bag, { 'fox-token': 1, 'tuna-jing': 1, 'old-bow': 1, 'grey-robe': 1, 'qi-pill': 1 }); // the token from 吴婆婆, the scroll from her, the bow from 爹, the robe from the 入门仪式
   assert.equal(bought.state.stamina, 100, 'the market costs nothing — a tap, no time (2026-09-23)');
   assert.equal(bought.result.item.held, 1);
-  assert.deepEqual(look(bought.state, content, ctx()).bag.map(b => b.id), ['moon-bell', 'grey-robe', 'qi-pill']);
+  assert.deepEqual(look(bought.state, content, ctx()).bag.map(b => b.id), ['fox-token', 'tuna-jing', 'old-bow', 'grey-robe', 'qi-pill']);
   const sold = must(trade, bought.state, { action: 'sell', id: 'qi-pill' });
   assert.equal(sold.state.wealth, 40);
-  assert.deepEqual(sold.state.bag, { 'moon-bell': 1, 'grey-robe': 1 });
+  assert.deepEqual(sold.state.bag, { 'fox-token': 1, 'tuna-jing': 1, 'old-bow': 1, 'grey-robe': 1 });
   refused(trade, sold.state, { action: 'sell', id: 'qi-pill' }, 'not-in-bag');
   const poor = refused(trade, { ...s, wealth: 10 }, { action: 'buy', id: 'qi-pill' }, 'no-stones');
   assert.equal(poor.say, '灵石不够。');
@@ -1304,7 +1322,7 @@ test('no market away from one; a pill is used anywhere; a wear waits for her', (
   const withPill = must(trade, s, { action: 'buy', id: 'qi-pill' }).state;
   const used = must(trade, must(move, withPill, { place: 'sishui' }).state, { action: 'use', id: 'qi-pill' });
   assert.equal(used.result.paid.progress, 20);
-  assert.deepEqual(used.state.bag, { 'moon-bell': 1, 'grey-robe': 1 }); // the river's bell and the temple's robe are carried from the prologue
+  assert.deepEqual(used.state.bag, { 'fox-token': 1, 'tuna-jing': 1, 'old-bow': 1, 'grey-robe': 1 }); // what the prologue gave is carried on
   refused(trade, s, { action: 'use', id: 'qi-pill' }, 'not-in-bag');
   const withSword = must(trade, s, { action: 'buy', id: 'bamboo-sword' }).state;
   // arms used are worn, each in its own slot: a weapon in hand (a fight
@@ -1363,8 +1381,8 @@ test('a key the story still needs cannot be sold', () => {
 
 test('an exit can grant a thing', () => {
   const c = structuredClone(content);
-  c.chapters['00-prologue'].scenes['00-river'].exits[0].grant = { table: 'scene', item: 'straw-cloak' };
-  const out = resolve(start(), c, ctx(), { exit: 'reach' });
+  c.chapters['00-prologue'].scenes['00-chushan'].exits[0].grant = { table: 'scene', item: 'straw-cloak' };
+  const out = resolve(walk(start(), TO_VALLEY.slice(0, 4), c, NOW), c, ctx(), { exit: 'lookout' });
   assert.equal(out.result.ok, true);
   assert.equal(out.result.paid.item, 'straw-cloak');
   assert.deepEqual(out.state.bag, { 'straw-cloak': 1 });
@@ -1519,7 +1537,9 @@ test('past the prologue a story step costs 灵气; an empty 丹田 refuses with 
 });
 
 test('chapter 1: the fight at the shrine, and Ximen Bao\'s way', () => {
-  let s = toJi();
+  // a beast tamed on the way by then (the v1 prologue gave 夫诸; prologue-v3 gives none)
+  let s = { ...toJi(), cast: ['fuzhu'] };
+  s = { ...s, cards: [...s.cards, 'fuzhu'] };
   s = answer(resolve, s, { exit: 'town' }).state;
   assert.equal(s.place, 'ye');
   s = answer(resolve, s, { exit: 'shrine' }).state;
@@ -1546,7 +1566,7 @@ test('look carries today\'s cast (none yet) and the offered tasks', () => {
   let s = toPractice();
   const seen = look(s, content, ctx());
   assert.equal(seen.divination, null);
-  assert.deepEqual(seen.tasks.map(t => [t.id, t.status]), [['gate-luoshu', 'done'], ['alchemy-first', 'offered']], 'the 二试 done today, and the practice');
+  assert.deepEqual(seen.tasks.map(t => [t.id, t.status]), [['gate-luoshu', 'done']], 'the 二试 done today');
 });
 
 test('问卦: once a day by three coins — nothing asked first, the same throws all day, and what the grade does to the day\'s fights', () => {
@@ -1639,7 +1659,11 @@ test('a tapped option comes to Look as words, and Look names the tool it is', ()
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-'));
   const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
   const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
-  const opening = cli('init', '--lang', 'en');
+  cli('init', '--lang', 'en');
+  // A scene whose question is the chat's (the prologue's choices stand under its panels): 河伯's altar.
+  const file = path.join(data, 'state.json');
+  fs.writeFileSync(file, JSON.stringify({ ...JSON.parse(fs.readFileSync(file, 'utf8')), chapter: '01-ji', scene: '01-altar', place: 'hebo', ended: ['00-prologue'] }));
+  const opening = cli('look');
   const option = opening.ask.options.find(o => o.exit);
   const tapped = cli('look', `--said=${option.label}`);
   assert.match(tapped.then, new RegExp(`Resolve \\{exit: ${option.exit}\\}`));
@@ -1675,30 +1699,30 @@ test('the command line keeps state on disk, logs it and undoes it', () => {
   const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
   assert.deepEqual(cli('init', '--world=nowhere'), { ok: false, refused: 'unknown-world', world: 'nowhere', worlds: ['jiuding'] });
   assert.equal(cli('init', '--lang', 'en').world.id, 'jiuding');
-  assert.equal(cli('look').scene.id, '00-river');
+  assert.equal(cli('look').scene.id, '00-shiao');
   assert.equal(JSON.parse(fs.readFileSync(path.join(data, 'state.json'), 'utf8')).world, 'jiuding');
-  assert.equal(cli('resolve', '--exit', 'reach', '--answer', '{{answer}}').scene.id, '00-ferry');
-  assert.equal(cli('look').scene.id, '00-ferry');
+  assert.equal(cli('resolve', '--exit', 'name', '--value', '墨白', '--answer', '{{answer}}').scene.id, '00-masan');
+  assert.equal(cli('look').scene.id, '00-masan');
   assert.equal(cli('resolve', '--exit', 'nowhere').refused, 'unknown-exit');
   assert.equal(cli('undo').undid, 'resolve');
-  assert.equal(cli('look').scene.id, '00-river');
+  assert.equal(cli('look').scene.id, '00-shiao');
   // Restart: `init` with nothing begins the world in play again, in its
   // language, and logs the save it replaced so `undo` brings it back.
-  assert.equal(cli('resolve', '--exit', 'reach').scene.id, '00-ferry');
+  assert.equal(cli('resolve', '--exit', 'name', '--value', '墨白').scene.id, '00-masan');
   assert.equal(cli('look', '--said=我在哪里？').lang, 'zh');
   const again = cli('init');
   assert.equal(again.restarted, true);
-  assert.equal(again.scene.id, '00-river');
+  assert.equal(again.scene.id, '00-shiao');
   assert.equal(again.lang, 'zh');
   assert.equal(cli('undo').undid, 'init');
-  assert.equal(cli('look').scene.id, '00-ferry');
+  assert.equal(cli('look').scene.id, '00-masan');
   assert.equal(cli('undo').undid, 'look');
   assert.equal(cli('undo').undid, 'resolve');
-  assert.equal(cli('look').scene.id, '00-river');
+  assert.equal(cli('look').scene.id, '00-shiao');
   assert.equal(cli('look').lang, 'en');
   // What the engine renders for an omitted optional arg: an empty --key=.
-  const sh = spawnSync('sh', ['-c', `"${process.execPath}" scripts/rules.mjs resolve --exit='reach' --value= --answer=`], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' });
-  assert.equal(JSON.parse(sh.stdout).scene.id, '00-ferry');
+  const sh = spawnSync('sh', ['-c', `"${process.execPath}" scripts/rules.mjs resolve --exit='name' --value='墨白' --gender= --answer=`], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' });
+  assert.equal(JSON.parse(sh.stdout).scene.id, '00-masan');
   // Words in the other language switch the game before the verb reads it.
   const heard = cli('look', '--said=我在哪里？');
   assert.equal(heard.lang, 'zh');
@@ -1714,28 +1738,28 @@ test('Go jumps to an opened scene; the rules keep each day\'s closing state, the
   const cli = (env, ...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
   const d1 = at('2026-09-12T12:00:00Z'), d2 = at('2026-09-13T12:00:00Z');
   cli(d1, 'init', '--lang=en');
-  assert.equal(cli(d1, 'resolve', '--exit=reach').scene.id, '00-ferry');
+  assert.equal(cli(d1, 'resolve', '--exit=name', '--value=Mobai').scene.id, '00-masan');
   const named = cli(d1, 'save', '--title=At the waking').saved;
   assert.equal(named.kind, 'named');
-  assert.equal(named.where, 'The Si crossing · night');
+  assert.equal(named.where, "Shi'ao village · your home · dusk");
   assert.equal(cli(d1, 'save').refused, 'no-title');
   // Go: an opened scene, straight; a chapter still to open, refused with when.
-  assert.equal(cli(d1, 'go', '--scene=00-fuzhu').scene.id, '00-fuzhu');
+  assert.equal(cli(d1, 'go', '--scene=00-longzhi').scene.id, '00-longzhi');
   // A chapter still to open refuses with when (the shipped files carry no dates while building; the harness's do).
   assert.deepEqual(refused(go, start(), { scene: '01-ye' }, 'not-open'), { ok: false, refused: 'not-open', say: null, chapter: '01-ji', opens: '2026-10-01' });
-  assert.ok(cli(d1, 'go', '--scene=nowhere').scenes.includes('00-river'));
+  assert.ok(cli(d1, 'go', '--scene=nowhere').scenes.includes('00-shiao'));
   // The next day's first move keeps yesterday's closing state.
-  assert.equal(cli(d2, 'look', '--said=hi').scene.id, '00-fuzhu');
+  assert.equal(cli(d2, 'look', '--said=hi').scene.id, '00-longzhi');
   const kept = cli(d2, 'saves').saves;
   assert.deepEqual(kept.map(x => [x.id, x.kind]), [['2026-09-12', 'day'], [named.id, 'named']]);
-  assert.equal(kept[0].where, 'North of the Si · in the mist', 'the day save is the closing state, at the fuzhu');
+  assert.equal(kept[0].where, 'Chending Temple · the woods outside the gate', 'the day save is the closing state, at the third trial');
   assert.equal(fs.existsSync(path.join(data, 'saves', '2026-09-12.json')), true);
   // Load, undo, forget.
   const loaded = cli(d2, 'load', `--id=${named.id}`);
-  assert.equal(loaded.scene.id, '00-ferry');
+  assert.equal(loaded.scene.id, '00-masan');
   assert.equal(loaded.loaded.title, 'At the waking');
   assert.equal(cli(d2, 'undo').undid, 'load');
-  assert.equal(cli(d2, 'look').scene.id, '00-fuzhu');
+  assert.equal(cli(d2, 'look').scene.id, '00-longzhi');
   assert.equal(cli(d2, 'forget', '--id=2026-09-12').refused, 'not-named');
   assert.equal(cli(d2, 'forget', `--id=${named.id}`).forgot, named.id);
   assert.equal(cli(d2, 'load', `--id=${named.id}`).refused, 'unknown-save');
@@ -1818,7 +1842,7 @@ test('Build takes the player to a fresh save in their world, which plays once it
     assert.deepEqual(run('worlds').worlds.map(w => [w.id, w.playing, w.saved]), [['jiuding', false, true], ['the-yunmeng-marsh', true, true]]);
     const home = run('travel', '--world=jiuding');
     assert.deepEqual(home.travelled, { from: 'the-yunmeng-marsh', to: 'jiuding', fresh: false });
-    assert.equal(home.scene.id, '00-river');
+    assert.equal(home.scene.id, '00-shiao');
     assert.equal(home.building, undefined, 'a shipped world never builds');
     assert.equal(home.stamina.now, 90, 'building cost the save it was built from');
     assert.equal(run('travel', '--world=the-yunmeng-marsh').place.id, 'shrine', 'restored where it stood');
@@ -2005,7 +2029,8 @@ test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market,
   s = r.state;
   const town = look(s, content, dctx());
   assert.equal(town.scene.id, '03-town');
-  assert.deepEqual(town.place.shelf.map(i => i.id), ['pojing-pill', 'wangqi-2', 'qi-salt', 'qi-silk', 'jingjin', 'hanyu', 'pouch-high']);
+  // at 结丹 with her still to find and no bell in hand, the market sells one
+  assert.deepEqual(town.place.shelf.map(i => i.id), ['pojing-pill', 'wangqi-2', 'qi-salt', 'qi-silk', 'jingjin', 'hanyu', 'pouch-high', 'moon-bell']);
   s = answerD(trade, s, { action: 'buy', id: 'qi-salt' }).state;
   assert.equal(s.wealth, 380);
   s = answerD(resolve, s, { exit: 'shore' }).state;
@@ -2138,7 +2163,7 @@ test('银月 is found, not given: the call at 结丹, the bell, water, her riddl
   // A scene with one button takes its second option from the rules: a look
   // around, found or not — never a word to her, which Ling cannot answer for
   // (she has her own ask box on the stage).
-  const lone = { chapter: '00-prologue', scene: '00-boat', place: 'dukou' };
+  const lone = { chapter: '00-prologue', scene: '00-kitchen', place: 'shiao' };
   assert.equal(askOf(content, { ...called, ...lone }, ctx()).options.at(-1).label, '看看四周');
   assert.equal(askOf(content, { ...joined.state, ...lone }, ctx()).options.at(-1).label, '看看四周');
   assert.ok(!askOf(content, { ...joined.state, ...lone }, ctx()).options.some(o => o.ask || /银月|Yinyue/.test(o.label)));
@@ -3052,14 +3077,17 @@ test('a made scene grants progress and wealth only, and each of its exits pays o
 
 test('Go back into a chapter already ended plays it for the story: nothing pays, and the prologue is not free again', () => {
   let s = toOpenWorld();
-  const bells = s.bag['moon-bell'], stamina = s.stamina;
-  s = must(go, s, { scene: '00-river' }).state;
+  const tokens = s.bag['fox-token'], stamina = s.stamina, ledger = s.ledger.length;
+  s = must(go, s, { scene: '00-chushan' }).state;
   assert.ok(s.ended.includes('00-prologue'), 'the chapter stays ended');
-  const replay = must(resolve, s, { exit: 'reach' });
-  assert.equal(replay.result.paid, null, 'the river\'s bell is not handed over twice');
-  assert.equal(replay.state.bag['moon-bell'], bells);
+  const replay = must(resolve, s, { exit: 'lookout' });
+  assert.equal(replay.result.paid, null, '吴婆婆\'s token is not handed over twice');
+  assert.equal(replay.state.bag['fox-token'], tokens);
   assert.ok(replay.state.stamina < stamina, 'a step costs, as outside the prologue');
-  assert.equal(replay.state.done_scenes.filter(id => id === '00-river').length, 1, 'passed once is kept once');
+  assert.equal(replay.state.done_scenes.filter(id => id === '00-chushan').length, 1, 'passed once is kept once');
+  assert.deepEqual(replay.state.tell_owed ?? [], s.tell_owed ?? [], 'a passage told is not owed again');
+  const masan = must(resolve, must(go, replay.state, { scene: '00-masan' }).state, { exit: 'endure' });
+  assert.equal(masan.state.ledger.length, ledger, 'the same debt is never written twice');
 });
 
 test('a creature beaten today is not fought again today — a scene\'s as much as a haunt\'s — and a waiting exit is not re-won', () => {
@@ -3144,7 +3172,9 @@ test('a traveller\'s riddle is missed at most RIDDLE_TRIES times; a beast passed
   assert.equal(twice.result.refused, 'riddle-closed');
   refused(meet, twice.state, { action: 'answer', answer: r.a[0] }, 'nothing-here');
   // a beast on the road: passed, it is gone; beaten, the same
-  const road = { ...toOpenWorld(), place: 'sishui', meets: { day: dayKey(c.now), places: { sishui: { kind: 'beast', creature: 'paoxiao' } } } };
+  // a beast tamed by then (the v1 prologue gave 夫诸) to fight it with
+  const road = { ...toOpenWorld(), cast: ['fuzhu'], place: 'sishui', meets: { day: dayKey(c.now), places: { sishui: { kind: 'beast', creature: 'paoxiao' } } } };
+  road.cards = [...road.cards, 'fuzhu'];
   assert.equal(look(road, content, c).place.encounter?.game.id, 'haunt:paoxiao');
   const passed = must(meet, road, { action: 'pass' }).state;
   assert.equal(look(passed, content, c).place.encounter, null);
@@ -3319,9 +3349,9 @@ test('a hosted game costs a step\'s 体力 when it is counted; with the pool emp
   refused(task, empty, { action: 'done', id: 'wuziqi' }, 'no-stamina', ctx({ now: new Date(NOW.getTime() + 90 * 60_000) }));
   const later = ctx({ now: new Date(NOW.getTime() + content.rewards.stamina.refill_hours * 3600_000) });
   assert.ok(must(task, empty, { action: 'done', id: 'wuziqi' }, later).result.handed[0].paid.progress > 0);
-  // A task that is not a hosted game (the story's first furnace) stays free.
-  const story = { ...toPractice(), stamina: 100, stamina_at: NOW.toISOString() };
-  const first = must(task, must(win, story, { id: 'alchemy-first' }).state, { action: 'done', id: 'alchemy-first' });
+  // A task that is not a hosted game (the story's 二试) stays free.
+  const story = { ...walk(start(), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'win')), content, NOW), stamina: 100, stamina_at: NOW.toISOString() };
+  const first = must(task, must(win, story, { id: 'gate-luoshu' }).state, { action: 'done', id: 'gate-luoshu' });
   assert.equal(first.state.stamina, 100);
 });
 

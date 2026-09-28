@@ -9,7 +9,7 @@
 // chapter ahead is a dark cauldron with its province and nothing more.
 import { CAST } from '../content.mjs';
 import { fill, pick } from '../state.mjs';
-import { cauldronsFound, companionOf, giftAt, hasCompanion, recalledOf } from './companion.mjs';
+import { cauldronsFound, companionOf, giftAt, hasCompanion, herAwake, recalledOf } from './companion.mjs';
 import { threadOf } from './errands.mjs';
 import { cardBook } from './cards.mjs';
 import { atScene, creatureOf, inMade, sceneOf } from './world.mjs';
@@ -262,7 +262,7 @@ export function joinNode(content, s, now) {
    `alone` narration, Ling's as ever (look.mjs `spoken`). */
 export function herBeat(content, s, { id, lines, happened = [], scenes = [] }) {
   const c = companionOf(content);
-  if (!c || !hasCompanion(s)) return null;
+  if (!c || !herAwake(s)) return null;
   const lang = s.lang, sep = lang === 'zh' ? '' : ' ';
   const said = (lines ?? []).filter(l => l.who === c.id).map(l => fill(pick(l.text, lang), s));
   if (!said.length) return null;
@@ -282,7 +282,7 @@ export const withHerBeat = (node, her, now) => (!her ? node : node ? { ...node, 
    `beat` node, unlogged (rules.mjs), for the page to raise. Before she is
    found: null, and the refusal's own words are Ling's. */
 export function refusalBeat(content, s, { id, happened, fitting, line }) {
-  if (!companionOf(content) || !hasCompanion(s)) return null;
+  if (!companionOf(content) || !herAwake(s)) return null;
   return { id, facts: { ...(happened ? { happened } : {}), ...(fitting ? { fitting } : {}), line } };
 }
 

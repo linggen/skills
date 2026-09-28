@@ -107,6 +107,31 @@
   "grant": {
    "table": "scene",
    "progress": 40
+  },
+  "_forms": "How she looks before she walks with the player (prologue-v3): the little silver fox in the valley, the girl at dawn. A scene's `her` names the form the people card shows; once she walks with the player she stands on the stage herself.",
+  "forms": {
+   "fox": {
+    "name": {
+     "zh": "小银狐",
+     "en": "A little silver fox"
+    },
+    "role": {
+     "zh": "坑底的泥水里，一尾，伤得很重",
+     "en": "In the muddy pit, one tail, badly hurt"
+    },
+    "art": "art/people/yinyue-fox.webp"
+   },
+   "human": {
+    "name": {
+     "zh": "银月",
+     "en": "Yinyue"
+    },
+    "role": {
+     "zh": "青丘之主——她只记得这两个字了",
+     "en": "Mistress of Qingqiu — the two words are all she remembers"
+    },
+    "art": "art/people/yinyue.webp"
+   }
   }
  }
 }

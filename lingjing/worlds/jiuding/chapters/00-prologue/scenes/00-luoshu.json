@@ -4,31 +4,25 @@
  "chapter": "00-prologue",
  "at": "shanmen",
  "place": {
-  "zh": "沉鼎观 · 山门 · 石坪",
-  "en": "Chending Temple · The gate · the stone yard"
+  "zh": "沉鼎观 · 山门 · 石壁",
+  "en": "Chending Temple · The gate · the stone wall"
  },
  "setup": {
-  "zh": "二试在山门里的一方石坪上。地上刻着九宫，缺了几个数。",
-  "en": "The second trial is on a stone yard inside the gate: a square of nine cut into the ground, some numbers missing."
+  "zh": "二试，脑子：一面石壁，刻着九个空格，一堆刻了数的石块。「横竖斜，加起来都要一样。」",
+  "en": "Second trial, wits: a stone wall carved with nine empty squares, a heap of numbered stones. \"Across, down, corner to corner — they all add up the same.\""
  },
  "recap": {
-  "zh": "二试，洛书九宫：纵、横、斜，都要是十五。",
-  "en": "Second trial, the Luo Shu square: fifteen down, across and corner to corner."
+  "zh": "二试，洛书九宫：你想起娘教的口诀，「五居中央」。",
+  "en": "Second trial, the Luo Shu square: you remembered Mother's rhyme — \"five in the middle.\""
  },
  "cast": [],
+ "people": [
+  "qulao"
+ ],
  "show": [
   {
    "card": "board",
    "id": "gate-luoshu"
-  }
- ],
- "lines": [
-  {
-   "who": "qulao",
-   "text": {
-    "zh": "二试，脑子。填上。纵、横、斜，都要是十五。",
-    "en": "Second, wits. Fill it in. Down, across, corner to corner — fifteen every way."
-   }
   }
  ],
  "offers": {
@@ -36,6 +30,26 @@
    "gate-luoshu"
   ]
  },
+ "panel": {
+  "art": "art/panels/00-luoshu.webp",
+  "caption": {
+   "zh": [
+    "二试，脑子。",
+    "一面石壁，九个空格。",
+    "「横竖斜，加起来都要一样。」"
+   ],
+   "en": [
+    "Second trial, wits.",
+    "A stone wall, nine empty squares.",
+    "\"Across, down, corner to corner — all the same.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "**二试 · 脑子。** 一面石壁，刻着九个空格，旁边一堆刻了数字的石块。\n\n「横竖斜，加起来都要一样。」老头说。\n\n你看着那九个格子，脑子里想起了你娘。她教你识字的时候，教过你算账；教你算账的时候，教过你这个——「戴九履一，左三右七，二四为肩，六八为足，五居中央」。她说是她爹教她的，她爹又是从一本旧书上看来的。",
+  "en": "**Second trial · Wits.** A stone wall carved with nine empty squares, and beside it a heap of stones carved with numbers.\n\n\"Across, down and corner to corner, they must all add up the same,\" says the old man.\n\nYou look at the nine squares and think of your mother. When she taught you your characters she taught you accounts; when she taught you accounts she taught you this: \"Nine on the head, one at the feet; three on the left, seven on the right; two and four the shoulders, six and eight the feet; five in the middle.\" She said her father taught it to her, and he had it from an old book."
+ },
+ "lines": [],
  "buttons": [
   "pass"
  ],
@@ -54,15 +68,11 @@
     "zh": "九宫还没填满。瞿老不看半张卷子。",
     "en": "The square is not filled yet. Elder Qu does not look at half an answer."
    },
-   "beat": [
-    {
-     "who": "qulao",
-     "text": {
-      "zh": "……嗯。三试。",
-      "en": "…Hm. The third."
-     }
-    }
-   ],
+   "story": {
+    "zh": "你把五放在了正中间。\n\n你把最后一块石头按进格子里的时候，想起了灶间那盏油灯。",
+    "en": "You put the five in the middle.\n\nAs you press the last stone into its square, you think of the oil lamp in the kitchen."
+   },
+   "beat": [],
    "next": "00-longzhi"
   }
  ]

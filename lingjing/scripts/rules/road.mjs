@@ -25,7 +25,7 @@
 // `not-offered`, `no-such-way`.
 import { dayKey, normalizeAnswer, pick } from '../state.mjs';
 import { winCard } from './cards.mjs';
-import { hasCompanion } from './companion.mjs';
+import { herAwake } from './companion.mjs';
 import { clone, pay, refuse, RIDDLE_TRIES, spendStamina } from './core.mjs';
 import { itemOf, offersOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
@@ -308,7 +308,7 @@ const ROAD = {
     if (here.options) return refuse('already-offered', null, { meet: meetBrief(content, s, ctx.now) });
     const linted = lintTrial(content, args.options);
     if (!linted.options) return refuse('not-playable', null, { why: linted.why });
-    put(s, { ...unveiled(here), options: linted.options, companion: hasCompanion(s) });
+    put(s, { ...unveiled(here), options: linted.options, companion: herAwake(s) });
     return { state: s, result: { ok: true, offered: linted.options.length, meet: meetBrief(content, s, ctx.now) } };
   },
   'trial:choose': (content, s, ctx, here, args) => {

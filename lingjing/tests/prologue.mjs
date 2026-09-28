@@ -1,6 +1,7 @@
-// tests/prologue.mjs — the prologue walked the ordinary way (doc/drafts/prologue-v1.md),
-// for every test that needs a save at a point of it or past it. One walk, so
-// a scene rewritten is one edit here, not one in every test file.
+// tests/prologue.mjs — the prologue walked the ordinary way (prologue-v3:
+// story/huxian-bing/notes/prologue-1-source.md and prologue-2-source.md),
+// for every test that needs a save at a point of it or past it. One walk, so a
+// scene rewritten is one edit here, not one in every test file.
 import assert from 'node:assert/strict';
 import { resolve, task, win } from '../scripts/rules.mjs';
 
@@ -9,27 +10,47 @@ export const V1_BIRTH = '1986-07-07';
 
 const FNS = { resolve, task, win };
 
-/* The steps, in order: [verb, args]. `won` sets a scene fight's win down as the page would record it. */
-export const TO_HALL = [
-  ['resolve', { exit: 'reach' }],
+/* 石坳村 to the valley: the name card, the rent, the egg, the stele's rules,
+   the storm, the fall, the fox — and she joins at daybreak (`follow`). */
+export const TO_VALLEY = [
   ['resolve', { exit: 'name', value: '青玄', gender: 'female' }],
-  ['resolve', { exit: 'uphill' }],
-  ['resolve', { exit: 'help' }],
+  ['resolve', { exit: 'endure' }],
+  ['resolve', { exit: 'egg' }],
+  ['resolve', { exit: 'go' }],
+  ['resolve', { exit: 'lookout' }],
+  ['resolve', { exit: 'rules' }],
+  ['resolve', { exit: 'carve' }],
+  ['resolve', { exit: 'turn' }],
+  ['resolve', { exit: 'check' }],
+  ['resolve', { exit: 'save' }],
+  ['resolve', { exit: 'share' }],
+];
+/* Up to 00-hall: out of the valley, the deer, the rent, her sleep in the
+   token, half a year, 舅舅, the three trials. `won` sets a scene fight's win
+   down as the page would record it. */
+export const TO_HALL = [
+  ...TO_VALLEY,
+  ['resolve', { exit: 'follow' }],
   ['resolve', { exit: 'climb' }],
+  ['resolve', { exit: 'left' }],
+  ['resolve', { exit: 'dumb' }],
+  ['resolve', { exit: 'visit' }],
+  ['resolve', { exit: 'on' }],
+  ['resolve', { exit: 'bath' }],
+  ['resolve', { exit: 'on' }],
+  ['resolve', { exit: 'go' }],
+  ['resolve', { exit: 'go' }],
+  ['resolve', { exit: 'steady' }],
   ['win', { id: 'gate-luoshu' }],
   ['task', { action: 'done', id: 'gate-luoshu' }],
   ['resolve', { exit: 'pass' }],
   ['won', { id: 'gate-longzhi' }],
   ['resolve', { exit: 'subdue' }],
 ];
-export const TO_FUZHU = [
-  ...TO_HALL,
-  ['resolve', { exit: 'born', birth: V1_BIRTH }],
-  ['win', { id: 'alchemy-first' }],
-  ['task', { action: 'done', id: 'alchemy-first' }],
-  ['resolve', { exit: 'set-out' }],
-];
-export const TO_OPEN = [...TO_FUZHU, ['resolve', { exit: 'gift' }], ['resolve', { exit: 'rest' }]];
+/* The roots read: the outer court's first night (公中). */
+export const TO_WAIMEN = [...TO_HALL, ['resolve', { exit: 'born', birth: V1_BIRTH }]];
+/* The prologue ended: 公中 paid, the notice board, and chapter 1 opens. */
+export const TO_OPEN = [...TO_WAIMEN, ['resolve', { exit: 'pay' }], ['resolve', { exit: 'rest' }]];
 
 /* Walk `steps` from `state`; every step must land. */
 export function walk(state, steps, content, now) {
@@ -37,7 +58,7 @@ export function walk(state, steps, content, now) {
   for (const [verb, args] of steps) {
     if (verb === 'won') { s = { ...s, wins: { ...s.wins, [args.id]: now.toISOString() } }; continue; }
     const out = FNS[verb](s, content, { now, quests: [] }, args);
-    assert.equal(out.result.ok, true, `${verb} ${JSON.stringify(args)}: ${JSON.stringify(out.result)}`);
+    assert.equal(out.result.ok, true, `${verb} ${JSON.stringify(args)} at ${s.scene}: ${JSON.stringify(out.result)}`);
     s = out.state ?? s;
   }
   return s;

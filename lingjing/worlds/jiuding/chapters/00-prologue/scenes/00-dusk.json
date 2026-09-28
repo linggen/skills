@@ -1,0 +1,79 @@
+{
+ "version": 1,
+ "id": "00-dusk",
+ "chapter": "00-prologue",
+ "at": "shiao",
+ "place": {
+  "zh": "石坳村 · 村东头 · 夜",
+  "en": "Shi'ao village · the east end · night"
+ },
+ "setup": {
+  "zh": "天黑了。村东头，吴婆婆的门槛上，好像一直有人坐着。",
+  "en": "Night falls. At the east end of the village, someone seems to have been sitting on Granny Wu's doorstep all along."
+ },
+ "recap": {
+  "zh": "那天夜里，瞎眼的吴婆婆朝着你肩上看不见的银光，慢慢低下了头。",
+  "en": "That night blind Granny Wu slowly bowed her head toward the silver on your shoulder she could not see."
+ },
+ "cast": [],
+ "people": [
+  "wupo"
+ ],
+ "panel": {
+  "art": "art/panels/00-dusk.webp",
+  "caption": {
+   "zh": [
+    "村东头，门槛上的老人。",
+    "她看不见。",
+    "她朝着那团看不见的银光，低下了头。"
+   ],
+   "en": [
+    "The east end: an old woman on her doorstep.",
+    "She cannot see.",
+    "She bows her head toward a silver light she cannot see."
+   ]
+  }
+ },
+ "story": {
+  "zh": "天黑了。村东头，吴婆婆的门槛上，像是一直有人坐着。",
+  "en": "Night falls. At the east end of the village, someone seems to have been sitting on Granny Wu's doorstep all along."
+ },
+ "lines": [],
+ "buttons": [
+  "visit",
+  "stay-home"
+ ],
+ "exits": [
+  {
+   "id": "visit",
+   "label": {
+    "zh": "去一趟村东头",
+    "en": "Go to the east end"
+   },
+   "means": "visits Granny Wu that night",
+   "mark": "wupo-bowed",
+   "wakes": true,
+   "story": {
+    "zh": "那天晚上，你去了一趟村东头。吴婆婆坐在门槛上，像是一直在等你。\n\n「见着了？」她问。\n\n你想了想，点了点头。\n\n吴婆婆那双白蒙蒙的眼睛弯了起来。她伸出枯瘦的手，摸了摸你的头，又摸了摸你的肩膀——摸到了那条\"围脖\"。\n\n她的手停住了。然后，她朝着那团看不见的银光，很慢、很慢地低下了头。",
+    "en": "That night you walk to the east end of the village. Granny Wu is sitting on her doorstep, as if she has been waiting for you all along.\n\n\"Did you see it?\" she asks.\n\nYou think a moment, and nod.\n\nGranny Wu's clouded eyes crinkle into a smile. She reaches out a bony hand and touches your head, then your shoulder — and finds the \"scarf.\"\n\nHer hand stops. Then, toward the silver light she cannot see, very slowly, she bows her head."
+   },
+   "beat": [],
+   "next": "00-xiuxian"
+  },
+  {
+   "id": "stay-home",
+   "label": {
+    "zh": "守着它，不出门",
+    "en": "Stay in and watch over it"
+   },
+   "means": "stays home with the fox that night",
+   "wakes": true,
+   "story": {
+    "zh": "你没出门。你守着怀里那团凉冰冰的银毛；村东头的门槛上，那个人坐到了半夜。",
+    "en": "You stay in, watching over the cold silver fur inside your jacket; on the doorstep at the east end, someone sits until midnight."
+   },
+   "beat": [],
+   "next": "00-xiuxian"
+  }
+ ]
+}

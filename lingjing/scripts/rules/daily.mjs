@@ -1,7 +1,7 @@
 // rules/daily.mjs — 问候 and 体力: her greeting on the day's first opening, the pool as the stage draws it.
 // Part of the rules engine; rules.mjs is its one door.
 import { dayKey, pick, staminaReturnsAt, stepName } from '../state.mjs';
-import { hasCompanion } from './companion.mjs';
+import { herAwake } from './companion.mjs';
 import { clone, refuse } from './core.mjs';
 import { chanceBrief } from './road.mjs';
 import { creatureOf } from './world.mjs';
@@ -13,7 +13,7 @@ import { creatureOf } from './world.mjs';
    never before she walks with him. Facts, in the player's language — never
    sentences for the player: she writes the words. */
 export function greet(state, content, ctx) {
-  if (!hasCompanion(state)) return refuse('no-companion', null);
+  if (!herAwake(state)) return refuse('no-companion', null);
   const day = dayKey(ctx.now);
   if (state.greeted === day) return { state: null, result: { ok: true, first: false } };
   const s = clone(state), zh = state.lang !== 'en', facts = [];

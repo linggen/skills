@@ -1,0 +1,74 @@
+{
+ "version": 1,
+ "id": "00-cliff",
+ "chapter": "00-prologue",
+ "at": "heisong",
+ "place": {
+  "zh": "黑松岭 · 崖下",
+  "en": "Black Pine Ridge · under the cliff"
+ },
+ "setup": {
+  "zh": "谷口的藤墙为她让开了路；她咳出一口银色的血，化成小狐狸伏在你肩上发抖。你顺着自己的记号爬上石缝；崖顶上，爹在喊你的名字。",
+  "en": "The wall of vines parts for her; she coughs silver blood and becomes a small fox trembling on your shoulder. You follow your own marks up the rock; at the top, Father is calling your name."
+ },
+ "recap": {
+  "zh": "你顺着记号爬上了崖，爹一把抓住了你——{伴}的爹老周陪他找了一夜；银月咳着银色的血，伏在你肩上，只有你看得见。",
+  "en": "You climbed back up by your marks and Father caught your hand — {伴}'s father, Old Zhou, had searched with him all night; Yinyue, coughing silver blood, lay on your shoulder, seen by you alone."
+ },
+ "cast": [],
+ "people": [
+  "baba",
+  "laozhou"
+ ],
+ "panel": {
+  "art": "art/panels/00-cliff.webp",
+  "caption": {
+   "zh": [
+    "藤墙让开一条路。",
+    "肩上一团银，一直在发抖。",
+    "崖顶，一只手伸下来。"
+   ],
+   "en": [
+    "The wall of vines opens a way.",
+    "A curl of silver on your shoulder, trembling.",
+    "From the clifftop, a hand reaches down."
+   ]
+  }
+ },
+ "story": {
+  "zh": "谷口被一面藤墙堵着，藤条比你的胳膊还粗，密得连只兔子都钻不过去。\n\n银月站在藤墙前面，懒洋洋地抬了抬下巴：⟪「让开。」⟫\n\n藤墙抖了一下。然后，像一群被主人喝住的狗，那些藤条一根一根地缩了回去，让出一条刚够一个人走的路。\n\n你回头看她。她身子晃了一下，捂着嘴咳了一声——指缝里漏出来的，是银色的血。\n\n你还没来得及伸手，她已经不见了——你的肩膀上多了一点分量，一只巴掌大的银狐狸蹲在那里，尾巴绕过你的脖子，暖烘烘的。\n\n⟪「看什么，」⟫它说，嘴巴没动，声音直接落在你耳朵里，声音比刚才弱了一截，⟪「本王现在这点修为，化形撑不了多久。……走你的路。」⟫\n\n你感觉到，它趴在你肩上，一直在发抖。\n\n「别人……看得见你吗？」\n\n⟪「本王只肯让你看见。」⟫它打了个哈欠，⟪「其他人看你，就是一个脖子上围了条狐皮的傻孩子。」⟫\n\n你顺着崖壁上自己划的记号往回走，找到了一条能爬上去的石缝。你爬得很慢，每一步都先试过再落脚。爬到一半，你听见了上面的人声。\n\n「——这儿！记号到这儿就断了！」\n\n是老周，{伴}的爹的声音。\n\n然后是另一个声音，嘶哑得几乎听不出来是谁，一遍一遍地喊着你的名字。\n\n你爹趴在崖边，往下伸着手。他的膝盖上缠的麻布全是泥，脸上也全是泥，眼睛通红。他看见你的那一刻，嘴张着，一个字都没喊出来。",
+  "en": "The mouth of the valley is blocked by a wall of vines, each one thicker than your arm, so dense not even a hare could squeeze through.\n\nYinyue stands before it and lazily lifts her chin: ⟪\"Move.\"⟫\n\nThe wall shivers. Then, like a pack of dogs called to heel, the vines draw back one by one and leave a path just wide enough for one.\n\nYou look back at her. She sways, puts a hand to her mouth and coughs — and what slips between her fingers is silver blood.\n\nBefore you can reach out she is gone — and there is a small new weight on your shoulder: a silver fox the size of your hand sits there, its tail wrapped round your neck, warm.\n\n⟪\"What are you staring at,\"⟫ it says — its mouth does not move; the voice lands straight in your ear, a good deal weaker than before — ⟪\"at this king's present strength a human shape doesn't hold for long. …Walk.\"⟫\n\nYou can feel it, lying on your shoulder, trembling the whole time.\n\n\"Can… other people see you?\"\n\n⟪\"This king lets only you see her.\"⟫ It yawns. ⟪\"Anyone else looking at you sees a silly child with a foxskin round its neck.\"⟫\n\nYou follow the marks you scratched on the rock back along the cliff and find a crack you can climb. You climb slowly, testing every hold before you trust it. Halfway up you hear voices above.\n\n\"— Here! The marks stop here!\"\n\nIt is Old Zhou, {伴}'s father.\n\nThen another voice, so hoarse you hardly know whose it is, calling your name over and over.\n\nYour father is lying at the cliff edge, reaching down. The hemp on his knee is caked in mud, his face is caked in mud, his eyes are red. The moment he sees you his mouth opens, and not a sound comes out."
+ },
+ "lines": [],
+ "buttons": [
+  "climb"
+ ],
+ "exits": [
+  {
+   "id": "climb",
+   "label": {
+    "zh": "抓住爹的手",
+    "en": "Take Father's hand"
+   },
+   "means": "climbs up, takes father's hand, goes back to him",
+   "stamina": 3,
+   "mark": "found-father",
+   "ledger": [
+    {
+     "who": "laozhou",
+     "kind": "恩",
+     "what": {
+      "zh": "顺着你刻的记号，陪你爹在崖顶找了你一夜。",
+      "en": "Followed the marks you cut and searched the clifftop all night with your father."
+     }
+    }
+   ],
+   "story": {
+    "zh": "你抓住了他的手。\n\n这一回，他抓住了。\n\n他把你拽上来，一把搂进怀里，搂得你喘不过气。他身上一股泥水和汗的味道，胸口一起一伏，像一口破风箱。你感觉到他在抖。\n\n「爹，」你闷在他怀里说，「我没事。你的膝盖——」\n\n「闭嘴。」你爹说。\n\n这是你这辈子，第一次听他凶你。",
+    "en": "You take his hand.\n\nThis time, he holds on.\n\nHe hauls you up and crushes you against his chest so hard you can't breathe. He smells of mud and sweat; his chest heaves like a broken bellows. You can feel him shaking.\n\n\"Father,\" you say into his coat, \"I'm all right. Your knee —\"\n\n\"Quiet,\" your father says.\n\nIt is the first time in your life you have heard him speak sharply to you."
+   },
+   "beat": [],
+   "next": "00-deer"
+  }
+ ]
+}

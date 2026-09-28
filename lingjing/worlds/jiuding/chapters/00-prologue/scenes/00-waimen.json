@@ -8,77 +8,92 @@
   "en": "Chending Temple · The outer court"
  },
  "setup": {
-  "zh": "外门的院子里晒着柴，井边排着水桶。一个穿灰袍的年轻人拿着账本，一个一个点名。",
-  "en": "Firewood dries in the outer court; buckets stand in a row by the well. A young man in a grey robe goes down the names with a ledger."
+  "zh": "外门执事周衡给新弟子发东西：灰袍，木牌，三块灵石——「每人交一块，给外门的『公中』。」马小宝冲你笑，笑得像他爹。",
+  "en": "Zhou Heng, steward of the outer court, hands out a grey robe, a wooden tag and three spirit stones — \"one each goes to the outer court's common fund.\" Ma Xiaobao smiles at you, just like his father."
  },
  "recap": {
-  "zh": "外门，周衡发下第一份功课：配齐八味灵草，炼一炉丹。",
-  "en": "In the outer court Zhou Heng set the first chore: pair the eight herbs, make a furnace of pills."
+  "zh": "外门的第一夜：周衡发下三块灵石，马小宝要收一块「公中」。",
+  "en": "The first night in the outer court: Zhou Heng handed out three spirit stones, and Ma Xiaobao wanted one for his \"common fund.\""
  },
  "cast": [],
- "show": [
-  {
-   "card": "board",
-   "id": "alchemy-first"
-  }
+ "people": [
+  "zhouheng",
+  "maxiaobao"
  ],
- "lines": [
-  {
-   "who": "zhouheng",
-   "text": {
-    "zh": "新来的，都一样：挑水、劈柴、背功法。做完了才有灵石，做不完——",
-    "en": "New ones, all the same: carry water, split wood, learn the manual. Done, you get spirit stones. Not done —"
-   }
-  },
-  {
-   "who": "zhouheng",
-   "text": {
-    "zh": "没有灵石就买不了丹，买不了丹就修得慢，修得慢三年后就得下山。懂了？",
-    "en": "no stones, no pills; no pills, slow cultivation; slow cultivation, down the mountain in three years. Understood?"
-   }
-  },
-  {
-   "who": "zhouheng",
-   "text": {
-    "zh": "今日功课：配齐八味灵草，炼一炉丹。",
-    "en": "Today's chore: pair the eight herbs and make a furnace of pills."
-   }
+ "panel": {
+  "art": "art/panels/00-waimen.webp",
+  "caption": {
+   "zh": [
+    "一件灰袍，一块木牌，三块灵石。",
+    "「每人交一块，给外门的『公中』。」",
+    "马小宝在笑。"
+   ],
+   "en": [
+    "A grey robe, a wooden tag, three spirit stones.",
+    "\"One each, for the outer court's common fund.\"",
+    "Ma Xiaobao is smiling."
+   ]
   }
- ],
- "offers": {
-  "tasks": [
-   "alchemy-first"
-  ],
-  "quests": true
  },
+ "story": {
+  "zh": "那天晚上，外门执事周衡给你们新弟子发东西：一件灰袍，一块木牌，三块灵石——\n\n「一个月的份例，」周衡板着脸，「每月初一领。领了之后，外门的规矩——」他顿了顿，眼睛往旁边瞟了一下，「每人交一块，给马师兄……咳，给外门的『公中』。」\n\n你看了看马小宝。马小宝正冲你笑，笑得像他爹。\n\n你把三块灵石收进怀里，什么也没说。\n\n夜里，外门的大通铺上，鼾声一片。你躺在最靠门的那张铺上，睁着眼睛。\n\n你把胸口的木牌掏出来，握在手心里。它是凉的。那条银色的尾巴，一明，一暗。",
+  "en": "That evening Zhou Heng, steward of the outer court, hands out things to the new disciples: a grey robe, a wooden tag, three spirit stones —\n\n\"A month's allowance,\" says Zhou Heng, straight-faced. \"Collected on the first of every month. Once collected, the outer court's rule is —\" he pauses, and his eyes slide sideways, \"— one each goes to Senior Brother Ma… ahem, to the outer court's common fund.\"\n\nYou look at Ma Xiaobao. Ma Xiaobao is smiling at you, just like his father.\n\nYou put the three stones inside your jacket and say nothing.\n\nThat night the long communal bed of the outer court is one great snore. You lie in the bed nearest the door, eyes open.\n\nYou take the token out from your chest and hold it in your palm. It is cool. The one silver tail: bright, then dim."
+ },
+ "lines": [],
  "buttons": [
-  "set-out"
+  "pay",
+  "refuse"
  ],
  "exits": [
   {
-   "id": "set-out",
+   "id": "pay",
    "label": {
-    "zh": "傍晚 · 回泗水边",
-    "en": "Evening · Back to the river"
+    "zh": "交",
+    "en": "Pay it"
    },
-   "means": "sets out, goes back down to the river, or asks to move on",
+   "means": "pays the one stone to the common fund, keeps the peace for now",
    "needs": {
-    "task": "alchemy-first"
+    "wealth": 1
+   },
+   "take": {
+    "wealth": 1
    },
    "refuse": {
-    "zh": "丹还没炼成。周衡的账本上，你那一行还空着。",
-    "en": "The pills aren't made. Your line in Zhou Heng's ledger is still empty."
+    "zh": "怀里没有灵石。",
+    "en": "You have no spirit stones on you."
    },
-   "beat": [
+   "mark": "paid-gongzhong",
+   "ledger": [
     {
-     "who": "zhouheng",
-     "text": {
-      "zh": "……行。明日卯时，别迟。",
-      "en": "…Fine. Dawn tomorrow. Don't be late."
+     "who": "maxiaobao",
+     "kind": "仇",
+     "what": {
+      "zh": "外门的「公中」：收了你一块灵石。",
+      "en": "The outer court's \"common fund\": took one of your spirit stones."
      }
     }
    ],
-   "next": "00-fuzhu"
+   "story": {
+    "zh": "「现在打不过，」你对着木牌，小声说，「他有荐书，有人，有他家的钱。我什么都没有。」\n\n木牌没有回答。\n\n你翻了个身，看着窗外的月亮。\n\n「可是，」你说，「账，我都记着呢。」\n\n握在手心里的木牌，轻轻地，暖了一下。",
+    "en": "\"I can't win now,\" you whisper to the token. \"He has a letter, and people, and his family's money. I have nothing.\"\n\nThe token doesn't answer.\n\nYou turn over and look at the moon outside the window.\n\n\"But,\" you say, \"I'm keeping the accounts.\"\n\nThe token in your palm grows warm, softly, for a moment."
+   },
+   "beat": [],
+   "next": "00-mijing"
+  },
+  {
+   "id": "refuse",
+   "label": {
+    "zh": "不交",
+    "en": "Refuse"
+   },
+   "means": "refuses to pay the common fund",
+   "mark": "refused-gongzhong",
+   "story": {
+    "zh": "「不交，」你对着木牌，小声说，「这三块，是娘那个空钱袋里的头三样东西。」\n\n木牌没有回答。\n\n你翻了个身，看着窗外的月亮。你知道明天会怎样：马小宝不会当着周衡的面动手，他会等。你也等。\n\n「现在打不过，」你说，「可是，账，我都记着呢。」\n\n握在手心里的木牌，轻轻地，暖了一下。",
+    "en": "\"No,\" you whisper to the token. \"These three are the first three things in Mother's empty purse.\"\n\nThe token doesn't answer.\n\nYou turn over and look at the moon outside the window. You know how tomorrow will go: Ma Xiaobao won't lift a hand in front of Zhou Heng; he'll wait. So will you.\n\n\"I can't win now,\" you say. \"But I'm keeping the accounts.\"\n\nThe token in your palm grows warm, softly, for a moment."
+   },
+   "beat": [],
+   "next": "00-mijing"
   }
  ]
 }

@@ -1,0 +1,58 @@
+{
+ "version": 1,
+ "id": "00-kitchen",
+ "chapter": "00-prologue",
+ "at": "shiao",
+ "place": {
+  "zh": "石坳村 · 灶间",
+  "en": "Shi'ao village · the kitchen"
+ },
+ "setup": {
+  "zh": "娘把最后一点白面烙成两张饼，厚的给你；爹拿麻布缠紧了膝盖。娘说：打得过就打，打不过就跑。",
+  "en": "Mother bakes the last of the white flour into two flatbreads, the thick one for you; Father binds his knee tight. Mother says: fight if you can win; if not, run."
+ },
+ "recap": {
+  "zh": "娘把最后一点白面烙成饼塞给你：「打不过就跑——跑不丢人。」",
+  "en": "Mother gave you bread from the last of the flour: \"If you can't win, run — there's no shame in running.\""
+ },
+ "cast": [],
+ "people": [
+  "mama",
+  "baba"
+ ],
+ "panel": {
+  "art": "art/panels/00-kitchen.webp",
+  "caption": {
+   "zh": [
+    "灶间亮了灯。最后一点白面，烙成两张饼。",
+    "一张厚，一张薄。",
+    "「遇事，先想，再动。」"
+   ],
+   "en": [
+    "A lamp in the kitchen. The last of the flour, baked into two breads.",
+    "One thick, one thin.",
+    "\"Think first, then move.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "你关上窗，一回身，灶间已经亮了灯。\n\n你娘蹲在灶前，正往灶膛里添柴。锅里烙着饼，白面的——家里那个小布袋，你知道，已经瘪了一个月了。她把最后一点面全倒了出来，烙成了两张饼，一张厚，一张薄。\n\n你爹坐在炕沿上，就着灯，拿一块旧麻布一圈一圈地缠他的左膝。缠得很紧，缠完了，他站起来试着走两步，脸上的肉抽了一下，又若无其事地坐回去。\n\n「他爹，」你娘没回头，「真去黑松岭？」\n\n「前山空了。」\n\n「你那腿——」\n\n「腿不行，」你爹说，「还有孩子的腿。」\n\n你娘的手停了一下。然后她把那张厚的饼铲出来，用干净的布包好，走过来，塞进你怀里。薄的那张，她塞给了你爹。\n\n「你听着，」她蹲下来，看着你的眼睛，声音很低，只有你们两个人听得见，「你爹老实，一辈子不会算计人，也不会防着人。你不一样，你随我。」\n\n她把你衣襟上的一根线头掐掉。\n\n「山里的东西，比马三还狠。遇事，先想，再动。想明白了，打得过就打，打不过就跑——跑不丢人。活着回来，才有以后。」\n\n「嗯。」\n\n「还有，」她顿了顿，「那一下，娘看见了。」\n\n你抬起头。\n\n「你没还手，」她说，「对的。」她伸手，把你额前的头发拢了拢，「可也别忘了。」\n\n你爹在身后咳了两声，背起了弓。\n\n你娘站在门口，看着你们一大一小两个背影走进天边那一线灰白里。她没有喊，也没有挥手，只是一直站着，站到你回头也看不见她了。",
+  "en": "You close the window and turn round; the kitchen lamp is already lit.\n\nYour mother crouches at the stove, feeding it firewood. There is bread on the griddle, white flour — the little cloth bag, you know, has been flat for a month. She has poured out the very last of it and made two flatbreads, one thick, one thin.\n\nYour father sits on the edge of the brick bed by the lamp, winding an old strip of hemp cloth round his left knee, turn after turn. He binds it tight, then stands and tries two steps; the muscles of his face twitch once, and he sits back down as if nothing happened.\n\n\"Husband,\" your mother says without turning round, \"you're really going to Black Pine Ridge?\"\n\n\"The front slopes are empty.\"\n\n\"That leg of yours —\"\n\n\"The leg's no good,\" your father says. \"The child's legs are.\"\n\nYour mother's hands stop for a moment. Then she lifts the thick bread off the griddle, wraps it in a clean cloth, comes over and tucks it inside your jacket. The thin one she gives to your father.\n\n\"Listen,\" she says, crouching to look you in the eye, her voice so low only the two of you can hear. \"Your father is honest. All his life he's never schemed against anyone, and never guarded against anyone either. You're different. You take after me.\"\n\nShe pinches a loose thread off your collar.\n\n\"The things in the mountain are crueller than Ma San. When something happens, think first, then move. Once you've thought it through — if you can win, fight; if you can't, run. There's no shame in running. Come back alive; that's the only way there's a later.\"\n\n\"Mm.\"\n\n\"And,\" she pauses, \"that shove. I saw it.\"\n\nYou look up.\n\n\"You didn't hit back,\" she says. \"That was right.\" She reaches out and smooths the hair off your forehead. \"But don't forget it either.\"\n\nBehind you your father coughs twice and shoulders the bow.\n\nYour mother stands in the doorway and watches the two of you, one big and one small, walk into the thin grey line at the edge of the sky. She does not call out and she does not wave. She only stands there, until you look back and can no longer see her."
+ },
+ "lines": [],
+ "buttons": [
+  "go"
+ ],
+ "exits": [
+  {
+   "id": "go",
+   "label": {
+    "zh": "跟爹进山",
+    "en": "Into the mountain with Father"
+   },
+   "means": "sets off with father into the mountain, moves on",
+   "beat": [],
+   "next": "00-chushan"
+  }
+ ]
+}

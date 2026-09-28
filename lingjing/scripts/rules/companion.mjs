@@ -16,6 +16,12 @@ import { placeName, placeOf, provinceOpen, tooHard } from './world.mjs';
    be given, and the stage stands empty (his rule, 2026-09-17). */
 const companionOf = content => content.world.companion ?? null;
 export const hasCompanion = state => Boolean(state.companion?.joined);
+/* Found, and awake: prologue-v3 has her sleep in 吴婆婆's fox token (an exit's
+   `sleeps`), waking rarely (`wakes`). Asleep she walks with the player — her
+   past, her card in the bag — but she is not present: no lines of hers, no
+   moments, no fights, and the engine keeps her out of the chat
+   (SKILL.md `absent_until: companion.awake`). */
+export const herAwake = state => Boolean(state.companion?.joined && !state.companion?.asleep);
 const callDue = (content, state) => {
   const c = companionOf(content);
   if (!c) return false;
@@ -170,7 +176,7 @@ function herLift(content, state) {
 const liftsAny = l => Object.values(l).some(v => (typeof v === 'object' ? liftsAny(v) : Boolean(v)));
 /* What her card takes into a fight: { yinyue: lift }, or null. */
 function herLifts(content, state) {
-  if (!hasCompanion(state)) return null;
+  if (!herAwake(state)) return null;
   const lift = herLift(content, state), her = companionOf(content)?.id;
   return her && liftsAny(lift) ? { [her]: lift } : null;
 }

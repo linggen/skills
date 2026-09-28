@@ -1,0 +1,86 @@
+{
+ "version": 1,
+ "id": "00-dawn",
+ "chapter": "00-prologue",
+ "at": "shiao",
+ "place": {
+  "zh": "石坳村 · 天快亮",
+  "en": "Shi'ao village · before dawn"
+ },
+ "setup": {
+  "zh": "天快亮时，窗纸响了三下：隔壁的{伴}塞进来一个还温着的煮鸡蛋。",
+  "en": "Near dawn the window paper taps three times: {伴} from next door pushes in a boiled egg, still warm."
+ },
+ "recap": {
+  "zh": "天亮前，{伴}隔着窗塞来一个煮鸡蛋。",
+  "en": "Before dawn {伴} pushed a boiled egg through the window."
+ },
+ "cast": [],
+ "people": [
+  "ban"
+ ],
+ "panel": {
+  "art": "art/panels/00-dawn.webp",
+  "caption": {
+   "zh": [
+    "天快亮，窗纸响了三下。",
+    "一个煮鸡蛋，还温着。"
+   ],
+   "en": [
+    "Near dawn, three taps on the window paper.",
+    "A boiled egg, still warm."
+   ]
+  }
+ },
+ "story": {
+  "zh": "天快亮的时候，窗纸上响了三下。你爬起来，推开窗——是隔壁的{伴}，冻得鼻子通红，往你手里塞了一个还温着的煮鸡蛋。\n\n「我娘说你们要去黑松岭，」{伴}压低声音，「……你别死在里头啊。」\n\n「死不了。」",
+  "en": "Near dawn there are three taps on the window paper. You get up and push the window open — it is {伴} from next door, nose red with cold, pushing a boiled egg, still warm, into your hand.\n\n\"My mum says you're going to Black Pine Ridge,\" {伴} whispers. \"…Don't go and die in there.\"\n\n\"I won't.\""
+ },
+ "lines": [],
+ "buttons": [
+  "egg",
+  "no-egg"
+ ],
+ "exits": [
+  {
+   "id": "egg",
+   "label": {
+    "zh": "收下鸡蛋",
+    "en": "Take the egg"
+   },
+   "means": "takes the egg, thanks them",
+   "mark": "took-egg",
+   "ledger": [
+    {
+     "who": "ban",
+     "kind": "恩",
+     "what": {
+      "zh": "天没亮，隔着窗塞给你一个煮鸡蛋：「记账，以后还我。」",
+      "en": "Before dawn, pushed a boiled egg through your window: \"Keep count. Pay me back.\""
+     }
+    }
+   ],
+   "story": {
+    "zh": "「那记账，」{伴}把手缩回袖子里，「一个鸡蛋，以后还我。」",
+    "en": "\"Then keep count,\" says {伴}, pulling the hand back into the sleeve. \"One egg. You pay me back.\""
+   },
+   "beat": [],
+   "next": "00-kitchen"
+  },
+  {
+   "id": "no-egg",
+   "label": {
+    "zh": "推回去：你家也欠着租",
+    "en": "Push it back: your family owes rent too"
+   },
+   "means": "refuses the egg, gives it back",
+   "mark": "no-egg",
+   "story": {
+    "zh": "你把鸡蛋推了回去：「你家也欠着租。」\n\n{伴}瞪了你一眼，缩回手，关窗前丢下一句：「那你活着回来。回来了，我再给你。」",
+    "en": "You push the egg back. \"Your family owes rent too.\"\n\n{伴} glares at you and pulls the hand back, and says one thing before the window closes: \"Then come back alive. Come back, and I'll give it to you then.\""
+   },
+   "beat": [],
+   "next": "00-kitchen"
+  }
+ ]
+}

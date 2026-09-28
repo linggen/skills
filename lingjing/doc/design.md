@@ -415,6 +415,12 @@ The fields, as `scripts/content.mjs` checks them:
 | exit `game` | A puzzle or duel whose win the page reports; `retry` — a trial fight fought again the same day. |
 | exit `stamina` · `mark` | Toil that costs 体力 even in a free chapter; a choice the save remembers (`marks`). |
 | exit `beat` | Lines spoken when the exit is taken. |
+| `story` · exit `story` | 小人书 (2026-09-28): the approved passage of a beat (zh + en) — the scene entered, or a choice's outcome — handed to Ling once, in order, as `tell` (rules/tell.mjs); 银月's words marked ⟪…⟫ are hers while she is present. |
+| `panel` | The stage's picture of the beat: `art` (art/panels/) and a `caption` of two to four lines per language; the scene's plain buttons stand under it as taps the page resolves (`[scene] took`). |
+| `people` · `her` | Who the people card shows (people.json ids or slots); `her` — 银月's form (`fox`, `human`, world.json `companion.forms`) before she walks with the player. |
+| exit `ledger` | 恩仇簿 entries a choice writes: `{who, kind: 恩\|仇, what}` — once each. |
+| exit `joins` · `sleeps` · `wakes` | 银月 found by the story (`companion.joined` + `awake`), asleep in the fox token (`asleep`), woken for a beat. |
+| `needs`/`take` `wealth` | A few stones handed over (the 公中). |
 | exit `next` · `stay` · `ends` | Exactly one: the next scene, stay here, or end the chapter. |
 
 The lint also refuses a scene nobody can reach, a chapter with no ending, a
@@ -1271,6 +1277,23 @@ His direction, in order: *开放世界RPG都是一个套路…参考魔兽世界
 ## 斗法 v2 — 灵力、法器与本命法宝 — archived
 
 Superseded; the original is in archive.md. The card fight (`## 斗法 v3`) and `## Systems built 2026-09-21 → 24` hold what is true now.
+
+## 小人书 — the prologue as built (2026-09-28)
+
+Built from story/huxian-bing/notes/prologue-1-source.md and prologue-2-source.md
+(the order of structure.md): 27 scenes in `00-prologue`, one painted panel each
+(art/panels/, the local FLUX recipe, tools/paint-prologue.py), the passage in
+`story`. The page draws the panel first on the stage with its choices under
+it; a tap Resolves the exit on the page and sends `[scene] took <choice>`; the
+rules keep what Ling is owed (`tell_owed`, `told_scenes`) and hand it to her
+Look or Resolve once (`tell`, with guide `tell`). 银月 joins at the valley's
+dawn (`joins`), faints after the deer (`sleeps`), wakes that night (`wakes`)
+and sleeps in 吴婆婆's fox token after the bath; `companion.awake` is what the
+engine's presence reads (SKILL.md `absent_until`), so asleep she is out of the
+chat, off the stage, out of fights, and her rare word is the story's. The
+恩仇簿 (`state.ledger`) is written by choices and shown by its chip; 《吐纳经》
+(`scrolls.json`) is read in the pouch by layer and hands Ling the day's 功课
+(`practice_hint`). 书 (`scripts/read.html`) reads the book in the same frame.
 
 ## 银月 joins at 结丹 (designed and built 2026-09-17) — SUPERSEDED 2026-09-28
 

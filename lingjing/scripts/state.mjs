@@ -268,6 +268,10 @@ export function migrate(state, content = null) {
    place or a beast renamed since it was written — is fitted back to the
    world's defaults rather than crash every Look (review, 2026-09-24). A
    save that fits comes back as it was. */
+const keptTasks = (tasks, chapter) => {
+  const offered = new Set(Object.values(chapter.scenes).flatMap(sc => sc.offers?.tasks ?? []));
+  return Object.fromEntries(Object.entries(tasks ?? {}).filter(([id, t]) => t.status === 'done' || offered.has(id)));
+};
 export function fitWorld(saved, content) {
   // 奇遇 (Branch) went 2026-09-24 for 今日传闻: an open one is closed quietly, unpaid.
   const { branch, ...rest } = saved;
@@ -285,10 +289,16 @@ export function fitWorld(saved, content) {
     ...(tier && !(state.step < tier.thresholds.length) ? { step: tier.thresholds.length - 1 } : {}),
     ...(!chapter ? { chapter: firstChapter(content).id, scene: firstChapter(content).first_scene } : {}),
     ...(alias && scene ? { scene: alias } : {}),
+    // Moved by an alias, a practice the retired scene offered and no scene of
+    // the chapter offers now is let go (unfinished); what was done stays.
+    ...(alias && scene ? { tasks: keptTasks(state.tasks, chapter) } : {}),
     ...(chapter && state.scene != null && !scene ? { scene: state.ended?.includes(chapter.id) ? null : chapter.first_scene } : {}),
     // Unknown, the place is settled by the rules from the scene or the province's start.
     ...(state.place != null && !place ? { place: null } : {}),
     ...((state.cast ?? []).some(id => !beasts.has(id)) ? { cast: state.cast.filter(id => beasts.has(id)) } : {}),
+    // A companion found before she could sleep (the bell at 结丹, before
+    // prologue-v3) is awake: `awake` is what the engine's presence reads.
+    ...(state.companion?.joined && !state.companion.asleep && !state.companion.awake ? { companion: { ...state.companion, awake: true } } : {}),
   };
   return Object.keys(fix).length ? { ...state, ...fix } : state;
 }

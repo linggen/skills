@@ -1,0 +1,54 @@
+{
+ "version": 1,
+ "id": "00-mijing",
+ "chapter": "00-prologue",
+ "at": "waimen",
+ "place": {
+  "zh": "沉鼎观 · 外门 · 告示栏",
+  "en": "Chending Temple · The outer court · the notice board"
+ },
+ "setup": {
+  "zh": "外门的告示栏上，贴着一张新的告示，墨迹还没干：沉鼎秘境，十年一开。下月初一，外门弟子皆可入。",
+  "en": "On the outer court's notice board, a new notice, the ink still wet: the Chending hidden realm opens once in ten years. On the first of next month, every outer disciple may enter."
+ },
+ "recap": {
+  "zh": "外门的告示栏上贴出新告示：沉鼎秘境，十年一开，下月初一，外门弟子皆可入。",
+  "en": "A new notice on the outer court's board: the Chending hidden realm, open once in ten years — on the first of next month every outer disciple may enter."
+ },
+ "cast": [],
+ "panel": {
+  "art": "art/panels/00-mijing.webp",
+  "caption": {
+   "zh": [
+    "外门的告示栏，墨迹未干。",
+    "沉鼎秘境，十年一开。",
+    "下月初一，外门弟子皆可入。"
+   ],
+   "en": [
+    "The outer court's notice board, the ink still wet.",
+    "The Chending hidden realm opens once in ten years.",
+    "On the first of next month, every outer disciple may enter."
+   ]
+  }
+ },
+ "story": {
+  "zh": "窗外，外门的告示栏上，贴着一张新的告示，墨迹还没干：\n\n**沉鼎秘境，十年一开。下月初一，外门弟子皆可入。**",
+  "en": "Outside the window, on the outer court's notice board, a new notice has gone up, the ink still wet:\n\n**The Chending hidden realm opens once in ten years. On the first of next month, every outer disciple may enter.**"
+ },
+ "lines": [],
+ "buttons": [
+  "rest"
+ ],
+ "exits": [
+  {
+   "id": "rest",
+   "label": {
+    "zh": "今日到此",
+    "en": "Rest for today"
+   },
+   "means": "rests, ends the day, or asks what comes next",
+   "beat": [],
+   "ends": "00-prologue"
+  }
+ ]
+}

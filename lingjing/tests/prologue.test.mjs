@@ -14,7 +14,8 @@ import { lint, loadContent } from '../scripts/content.mjs';
 import { fill, migrate, newState } from '../scripts/state.mjs';
 import { VERBS, duel, forLing, look, pageNames, resolve } from '../scripts/rules.mjs';
 import { bornRoots, drawnRoots, pillarsOf, rootsFrom, starterFor } from '../scripts/rules/roots.mjs';
-import { TO_FUZHU, TO_HALL, V1_BIRTH, walk } from './prologue.mjs';
+import { TO_WAIMEN, TO_HALL, TO_VALLEY, V1_BIRTH, walk } from './prologue.mjs';
+import { tellOf } from '../scripts/rules/tell.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-09-28T12:00:00');
@@ -73,12 +74,16 @@ test('生辰 at the 入门仪式: the roots are read and the day let go — neve
   assert.equal(out.result.ok, true, JSON.stringify(out.result));
   assert.deepEqual(out.state.traits, ['fire', 'earth', 'water']);
   assert.deepEqual(out.result.born, { read: 'birth', roots: { ids: ['fire', 'earth', 'water'], name: '真灵根', elements: ['火', '土', '水'] } });
-  assert.equal(out.result.beat[0].text, '真灵根。——路长路短，不在灵根。');
-  assert.equal(out.result.beat[0].name, '玄沉子');
-  assert.match(out.result.beat[2].text, /「青玄师姐」/);
+  // the stone's verdict is the player's roots, told in the passage the choice owes
+  // owed since Ling last read — every beat walked here, the root test last but the scene
+  const told = tellOf(content, out.state).tell, rite = told.find(t => t.id === "00-hall/born");
+  assert.deepEqual(told.slice(-2).map(t => t.id), ['00-hall/born', '00-waimen']);
+  assert.match(rite.text, /「真灵根，」一个执事念道/);
+  assert.match(rite.text, /腿稳，心细/);
   assert.deepEqual(out.result.show, [{ card: 'traits' }]);
   assert.equal(out.state.fate, undefined, 'the 命格 stays the coins card\'s own choice');
   assert.equal(out.state.bag['grey-robe'], 1);
+  assert.equal(out.state.wealth - s.wealth, 3, 'three spirit stones: the month\'s allowance');
   assert.equal(out.state.scene, '00-waimen');
   for (const text of [JSON.stringify(out.state), JSON.stringify(out.result)]) assert.doesNotMatch(text, /2000-01-01/);
   // a day that is not one, or one still to come, is refused and changes nothing
@@ -143,15 +148,15 @@ test('the command line: the birthday never reaches the log, and page_did tells L
 
 test('{兄姐} and {伴} follow the name card: a girl walks with 阿禾 as 师姐, a boy with 石头 as 师兄', () => {
   const at = s => look(s, content, ctx());
-  for (const [gender, ban, sib] of [['female', '阿禾', '师姐'], ['male', '石头', '师兄']]) {
-    let s = walk(start(), [['resolve', { exit: 'reach' }], ['resolve', { exit: 'name', value: '墨白', gender }], ['resolve', { exit: 'uphill' }]], content, NOW);
-    const shanlu = at(s).scene;
-    assert.equal(shanlu.lines[1].name, ban);
-    assert.equal(shanlu.people[0].name, ban);
-    const helped = resolve(s, content, ctx(), { exit: 'help' }).result;
-    assert.equal(helped.beat[1].text, `……我叫${ban}。欠你一回。`);
-    s = born(hall('zh', gender), { birth: V1_BIRTH });
-    assert.match(s.result.beat[2].text, new RegExp(`「青玄${sib}」`));
+  for (const [gender, ban, id] of [['female', '阿禾', 'ahe'], ['male', '石头', 'shitou']]) {
+    const s = walk(start(), [['resolve', { exit: 'name', value: '墨白', gender }], ['resolve', { exit: 'endure' }]], content, NOW);
+    const dawn = at(s).scene;
+    assert.equal(dawn.id, '00-dawn');
+    assert.equal(dawn.people[0].name, ban);
+    assert.match(tellOf(content, s).tell.at(-1).text, new RegExp(`是隔壁的${ban}`));
+    const egg = resolve(s, content, ctx(), { exit: 'egg' });
+    assert.deepEqual(egg.result.ledger.map(e => [e.who, e.kind]), [[id, '恩']]);
+    assert.match(tellOf(content, egg.state).tell.find(t => t.id === '00-dawn/egg').text, new RegExp(`「那记账，」${ban}把手缩回袖子里`));
   }
   // never said (a name typed in the chat, an old save): no address, and 阿禾 walks along
   const none = { ...start(), name: '墨白', gender: null };
@@ -164,19 +169,25 @@ test('{兄姐} and {伴} follow the name card: a girl walks with 阿禾 as 师�
 /* ── The people ── */
 
 test('people speak as themselves: a line names them, Look carries their voice for Ling and the portrait for the page', () => {
-  const s = walk(start(), [['resolve', { exit: 'reach' }]], content, NOW);
+  const s = walk(start(), [['resolve', { exit: 'name', value: '墨白', gender: 'male' }]], content, NOW);
   const l = look(s, content, ctx());
-  assert.equal(l.scene.lines[0].who, 'dushu');
-  assert.equal(l.scene.lines[0].name, '渡叔');
-  assert.deepEqual(l.scene.people.map(p => p.id), ['dushu']);
-  assert.match(l.scene.people[0].voice, /水知道/);
-  assert.equal(l.scene.people[0].art, 'art/people/dushu.webp');
+  assert.deepEqual(l.scene.people.map(p => p.id), ['masan', 'maxiaobao', 'baba']);
+  assert.equal(l.scene.people[0].name, '马三');
+  assert.match(l.scene.people[0].voice, /破锣/);
+  assert.equal(l.scene.people[0].art, 'art/people/masan.webp');
   assert.ok(l.stage.some(c => c.card === 'people'));
   const hers = forLing(l);
   assert.equal(hers.scene.people[0].art, undefined, 'the portrait is the page\'s');
-  assert.match(hers.scene.people[0].voice, /水知道/);
+  assert.match(hers.scene.people[0].voice, /破锣/);
   const html = cardHtml({ card: 'people' }, { look: l, lang: 'zh', words: WORDS.zh });
-  assert.match(html, /<img src="\.\.\/worlds\/jiuding\/art\/people\/dushu\.webp" alt="渡叔">[\s\S]*<b>渡叔<\/b>/);
+  assert.match(html, /<img src="\.\.\/worlds\/jiuding\/art\/people\/masan\.webp" alt="马三">[\s\S]*<b>马三<\/b>/);
+  // 老周's role names {伴}, filled for this player
+  const cliff = look(walk(s, [...TO_VALLEY.slice(1), ['resolve', { exit: 'follow' }]], content, NOW), content, ctx()).scene;
+  assert.equal(cliff.people.find(p => p.id === 'laozhou').role, '邻居，种地的，石头的爹');
+  // before she walks with the player she is the story's fox, her face in the people card
+  const fox = look(walk(s, TO_VALLEY.slice(1, -2), content, NOW), content, ctx()).scene;
+  assert.equal(fox.id, '00-fox');
+  assert.deepEqual(fox.people.map(p => [p.id, p.name]), [['yinyue', '小银狐']]);
   for (const p of content.people.people) assert.ok(fs.existsSync(path.join(content.dir, p.art)), p.art);
 });
 
@@ -186,13 +197,13 @@ test('the lint holds people.json: a home, a portrait, a voice, and a slot for ev
   bad.people.people[1].art = 'art/people/nobody.webp';
   delete bad.people.people[2].voice;
   bad.people.slots.ban.male = 'nobody';
-  bad.chapters['00-prologue'].scenes['00-ferry'].lines[0].who = 'stranger';
+  bad.chapters['00-prologue'].scenes['00-shiao'].lines = [{ who: 'stranger', text: { zh: '……', en: '…' } }];
   const errors = lint(bad).join('\n');
   assert.match(errors, /person dushu: home atlantis is not a place/);
   assert.match(errors, /person ahe: art art\/people\/nobody\.webp is missing/);
   assert.match(errors, /person shitou: voice needs zh and en/);
   assert.match(errors, /slot ban: male names no person/);
-  assert.match(errors, /scene 00-ferry: unknown speaker stranger/);
+  assert.match(errors, /scene 00-shiao: unknown speaker stranger/);
   assert.deepEqual(lint(content), []);
 });
 
@@ -206,42 +217,44 @@ test('the 三试\'s fight may be fought again the same day: a loss withdraws not
   assert.equal(look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue').withdrawn, false);
   const again = duel(s, content, ctx(), { id: 'gate-longzhi' });
   assert.equal(again.result.ok, true, JSON.stringify(again.result));
-  // 夫诸 is no trial: lost, it withdraws for the day as before
-  const fz = { ...walk(start(), TO_FUZHU, content, NOW), duels: { fuzhu: { day: '2026-09-28', outcome: 'lost' } } };
-  assert.equal(duel(fz, content, ctx(), { id: 'subdue-fuzhu' }).result.refused, 'withdrawn');
 });
 
-test('the ditch and the steps are marked on the save; the story remembers the choice', () => {
+test('the choices are marked on the save; the storm\'s other branch is the harder fall', () => {
   const s = walk(start(), TO_HALL, content, NOW);
-  assert.deepEqual(s.marks, ['shanlu-helped', 'stairs-straight']);
-  assert.deepEqual(look(s, content, ctx()).marks, ['shanlu-helped', 'stairs-straight']);
-  const passed = walk(start(), [['resolve', { exit: 'reach' }], ['resolve', { exit: 'name', value: '墨白' }], ['resolve', { exit: 'uphill' }], ['resolve', { exit: 'pass' }]], content, NOW);
-  assert.deepEqual(passed.marks, ['shanlu-passed']);
-  assert.equal(passed.stamina, 100, 'going on ahead costs nothing');
+  for (const m of ['kept-count', 'took-egg', 'three-rules', 'turned-back', 'shared-bread', 'played-dumb', 'marrow-washed', 'steps-steady']) assert.ok(s.marks.includes(m), m);
+  assert.deepEqual(look(s, content, ctx()).marks, s.marks);
+  const storm = walk(start(), TO_VALLEY.slice(0, 7), content, NOW);
+  assert.equal(storm.scene, '00-storm');
+  const turned = resolve(storm, content, ctx(), { exit: 'turn' }).state, chased = resolve(storm, content, ctx(), { exit: 'chase' }).state;
+  assert.equal(storm.stamina - turned.stamina, 4);
+  assert.equal(storm.stamina - chased.stamina, 10, 'half a li more: the harder fall');
+  assert.deepEqual(chased.marks.at(-1), 'chased');
+  assert.equal(chased.scene, '00-fall');
 });
 
 /* ── 夫诸出水 ── */
 
-test('夫诸\'s first sight: played on the stage in full, the classic line last, then kept on the save', () => {
-  const c = content.creatures.creatures.find(x => x.id === 'fuzhu');
+test('蠪侄\'s first sight: played on the stage in full, the classic line last, then kept on the save', () => {
+  const c = content.creatures.creatures.find(x => x.id === 'longzhi');
   assert.equal(c.appear.zh.length, c.appear.en.length);
   const html = appearHtml({ ...c, dir: 'worlds/jiuding' }, { lang: 'zh', words: WORDS.zh, look: { world: { dir: 'worlds/jiuding' } } });
   const order = [...c.appear.zh, c.quote.zh].map(t => html.indexOf(t));
   assert.ok(order.every((at, i) => at > 0 && (i === 0 || at > order[i - 1])), 'every line, in order, the quote last');
-  assert.match(html, /class="struck">水墙扑上岸来/);
-  assert.match(html, /data-appear-done="fuzhu"/);
+  assert.match(html, /class="struck">它叫了。九个声音/);
+  assert.match(html, /data-appear-done="longzhi"/);
   assert.match(fs.readFileSync(path.join(ROOT, 'scripts/lingjing.css'), 'utf8'), /prefers-reduced-motion: reduce\) \{\s*\.appear,/);
   // the page keeps it seen: once, then never again; a beast without one is refused
-  const s = walk(start(), TO_FUZHU, content, NOW);
-  const first = VERBS.appear(s, content, ctx(), { id: 'fuzhu' });
-  assert.deepEqual(first.state.appeared, ['fuzhu']);
-  assert.equal(VERBS.appear(first.state, content, ctx(), { id: 'fuzhu' }).result.seen, true);
+  const s = walk(start(), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'won')), content, NOW);
+  assert.equal(s.scene, '00-longzhi');
+  const first = VERBS.appear(s, content, ctx(), { id: 'longzhi' });
+  assert.deepEqual(first.state.appeared, ['longzhi']);
+  assert.equal(VERBS.appear(first.state, content, ctx(), { id: 'longzhi' }).result.seen, true);
   assert.equal(VERBS.appear(s, content, ctx(), { id: 'jingwei' }).result.refused, 'no-appear');
   // met again: one line of it on the card
   const l = look(first.state, content, ctx());
-  const card = cardHtml({ card: 'creature', id: 'fuzhu' }, { look: l, lang: 'zh', words: WORDS.zh, content: { creatures: [{ ...c, dir: 'worlds/jiuding' }] } });
-  assert.match(card, /class="appearline small dim">那天傍晚，风是从北边来的。/);
-  assert.doesNotMatch(cardHtml({ card: 'creature', id: 'fuzhu' }, { look: look(s, content, ctx()), lang: 'zh', words: WORDS.zh, content: { creatures: [c] } }), /appearline/);
+  const card = cardHtml({ card: 'creature', id: 'longzhi' }, { look: l, lang: 'zh', words: WORDS.zh, content: { creatures: [{ ...c, dir: 'worlds/jiuding' }] } });
+  assert.match(card, /class="appearline small dim">山门外的林子里，放着一只妖兽。/);
+  assert.doesNotMatch(cardHtml({ card: 'creature', id: 'longzhi' }, { look: look(s, content, ctx()), lang: 'zh', words: WORDS.zh, content: { creatures: [c] } }), /appearline/);
 });
 
 /* ── An old save ── */
@@ -251,27 +264,29 @@ test('an old save whose prologue scene the rewrite took away lands on the neares
   const his = { ...start(), version: 5, name: '青玄', traits: ['wood', 'water', 'fire', 'earth'], scene: '00-practice', place: 'sishui',
     done_scenes: ['00-river', '00-waking', '00-stone'], tasks: { 'alchemy-first': { status: 'offered' } }, bag: { 'moon-bell': 1 },
     cards: ['xiaoyao', 'qingteng', 'leipu', 'luying', 'shuiwu', 'huoya', 'huodan', 'tuou', 'shanjing', 'huiqi'] };
+  // prologue-v3: the story begins again at 石坳村 — the v3 outer court assumes the fox he never met
   const m = migrate(his, content);
-  assert.equal(m.scene, '00-waimen');
+  assert.equal(m.scene, '00-shiao');
   assert.deepEqual(m.traits, his.traits, 'his roots are kept');
+  assert.equal(m.name, '青玄', 'and his name, until the card asks it again');
+  assert.deepEqual(m.tasks, {}, 'the old practice, never done, is let go');
   const l = look(m, content, ctx());
-  assert.equal(l.scene.id, '00-waimen');
-  assert.equal(l.place.id, 'waimen');
-  assert.deepEqual(l.tasks.map(t => t.id), ['alchemy-first']);
-  assert.ok(l.recap_due === undefined || l.recap_due);
-  for (const [old, now] of [['00-waking', '00-ferry'], ['00-stone', '00-ferry'], ['00-river', '00-river'], ['00-fuzhu', '00-fuzhu'], ['nowhere', '00-river']]) {
+  assert.equal(l.scene.id, '00-shiao');
+  assert.equal(l.place.id, 'shiao');
+  assert.ok(l.stage.some(c => c.card === 'value'), 'the name card, with 男 · 女 this time');
+  for (const [old, now] of [['00-waking', '00-shiao'], ['00-stone', '00-shiao'], ['00-river', '00-shiao'], ['00-ferry', '00-shiao'], ['00-boat', '00-shiao'], ['00-shanlu', '00-shiao'],
+    ['00-gate', '00-gate'], ['00-hall', '00-hall'], ['00-waimen', '00-waimen'], ['00-fuzhu', '00-mijing'], ['00-north', '00-mijing'], ['nowhere', '00-shiao']]) {
     assert.equal(migrate({ ...his, scene: old }, content).scene, now, old);
   }
-  // walked on from there as the ordinary way
-  let s = { ...m, bag: { ...m.bag, lingzhi: 1 }, tasks: { 'alchemy-first': { status: 'done' } } };
-  s = resolve(s, content, ctx(), { exit: 'set-out' }).state;
-  assert.equal(s.scene, '00-fuzhu');
-  assert.equal(look(s, content, ctx()).scene.lines[0].name, '阿禾', 'a save that never said: 阿禾 walks along');
+  // walked on from there as the ordinary way: the root test later keeps his roots
+  const s = walk(m, [...TO_HALL.map(([v, a]) => [v, a.exit === 'name' ? { ...a, value: '青玄', gender: 'male' } : a]), ['resolve', { exit: 'born' }]], content, NOW);
+  assert.equal(s.scene, '00-waimen');
+  assert.deepEqual(s.traits, his.traits);
   // the command line reads it the same (a copy on disk, never his)
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-old-'));
   fs.writeFileSync(path.join(data, 'state.json'), JSON.stringify(his));
   const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
   const out = JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', 'look'], { cwd: ROOT, env, encoding: 'utf8' }).stdout);
-  assert.equal(out.scene.id, '00-waimen');
+  assert.equal(out.scene.id, '00-shiao');
   fs.rmSync(data, { recursive: true, force: true });
 });

@@ -1,0 +1,75 @@
+{
+ "version": 1,
+ "id": "00-fox",
+ "chapter": "00-prologue",
+ "at": "yingu",
+ "place": {
+  "zh": "银叶谷 · 浅坑",
+  "en": "The Silver-leaf Vale · the pit"
+ },
+ "setup": {
+  "zh": "坑底蜷着一只小银狐，伤得很重，只剩一条尾巴，尾根八处断口。它睁眼，龇牙。",
+  "en": "A little silver fox lies curled in the pit, badly hurt: one tail left, eight clean cuts at its root. It opens its eyes and bares its teeth."
+ },
+ "recap": {
+  "zh": "谷底的浅坑里，你救起一只伤重的小银狐——一条尾巴，尾根八处断口。",
+  "en": "In a pit on the valley floor you took up a badly hurt little silver fox — one tail, eight cuts at its root."
+ },
+ "cast": [],
+ "her": "fox",
+ "panel": {
+  "art": "art/panels/00-fox.webp",
+  "caption": {
+   "zh": [
+    "坑底一点银光，一明，一暗。",
+    "一只小银狐，毛如月霜。",
+    "只剩一条尾巴。尾根上，八处断口。"
+   ],
+   "en": [
+    "A silver light in the pit, bright, then dim.",
+    "A little silver fox, fur like moonlit frost.",
+    "One tail left. At its root, eight clean cuts."
+   ]
+  }
+ },
+ "story": {
+  "zh": "你没有走过去。\n\n你先蹲在一棵银叶树后面，看了很久。坑边没有脚印，没有血迹拖过的痕，四下里没有别的动静。你捡起一根枯枝，扔进坑边——光还是那样，一明，一暗。\n\n你这才慢慢走近。\n\n是一只狐狸。\n\n很小，比你家的猫还小一圈，蜷在坑底的泥水里。毛是银色的——不是灰，是真正的银，像月光凝成了一层霜。雨水落在它的毛上，也不沾，也不湿，就那样滑下去。\n\n可它伤得很重。一条后腿歪着，身上好几道口子，血把银毛染成了暗红。它身后只有一条尾巴，尾巴根上，还有好几处断口——整整齐齐的，像是被什么极快极利的东西一刀斩断的。\n\n你数了数。八处。\n\n你愣了一下，把怀里吴婆婆的木牌摸了出来。木牌上那只蜷着的小狐狸，尾巴绕着身子——你数了数那尾巴的纹路。\n\n九条。\n\n坑里的狐狸睁开了眼睛。金色的，竖着的瞳仁，冷得像冬天的井水。它看着你，龇了一下牙，喉咙里发出一声很小、很凶的呜咽——可它连头都抬不起来。\n\n你爹说过，受伤的野兽最凶，别碰。",
+  "en": "You don't walk over.\n\nFirst you crouch behind a silver-leaved tree and watch for a long time. No footprints at the pit's edge, no trail of blood, no other movement anywhere. You pick up a dead stick and toss it by the pit — the light goes on as before, bright, dim.\n\nOnly then do you creep closer.\n\nIt is a fox.\n\nTiny — smaller than your family's cat — curled in the muddy water at the bottom of the pit. Its fur is silver: not grey, true silver, like moonlight frozen into frost. The rain falls on it and does not cling or soak in; it simply slides away.\n\nBut it is badly hurt. One hind leg is twisted, there are gashes all over it, and blood has stained the silver dark red. Behind it there is only one tail, and at the root of that tail are more cuts — clean, even, as if something impossibly fast and sharp had struck them off, one blow at a time.\n\nYou count them. Eight.\n\nYou stop, and take Granny Wu's token out of your jacket. The little curled fox on it, its tail wrapped around its body — you count the lines of that tail.\n\nNine.\n\nThe fox in the pit opens its eyes. Gold, with slit pupils, cold as well water in winter. It looks at you and bares its teeth, and a small, fierce whine comes from its throat — but it cannot even lift its head.\n\nYour father always said: a hurt animal is the fiercest; don't touch it."
+ },
+ "lines": [],
+ "buttons": [
+  "save",
+  "leave"
+ ],
+ "exits": [
+  {
+   "id": "save",
+   "label": {
+    "zh": "脱下外衣，裹起它",
+    "en": "Take off your jacket and wrap it up"
+   },
+   "means": "saves the fox, picks it up, wraps it in the jacket, helps it",
+   "mark": "fox-saved",
+   "story": {
+    "zh": "你看了它很久。你想：它要是死在这儿，就什么都不是了；它要是活下来——你不知道它会是什么。可你知道，一只尾巴被人一刀一刀斩掉的东西，和被人推倒在灶台边的你，差不太多。\n\n你脱下外衣——那是你娘去年冬天拿你爹的旧袄改的，袖口还打着补丁——用枯枝挑着，轻轻盖在它身上，再隔着衣裳，把它抱了起来。\n\n它还是咬了你一口。隔着两层布，咬在虎口上，不深，但很疼。你没有松手。\n\n「不怕，」你说，「我也掉下来了。咱俩做个伴。」\n\n它不咬了。它在你的衣裳里抖了一下，把脸埋进了补丁里。",
+    "en": "You look at it for a long time. You think: if it dies here, it will be nothing at all; if it lives — you don't know what it will be. But you do know that a thing whose tails were cut off one stroke at a time is not so different from you, pushed down against the stove.\n\nYou take off your jacket — your mother cut it down last winter from your father's old padded coat, and the cuffs are still patched — lift it on a dead stick, lay it gently over the fox, and through the cloth you pick it up.\n\nIt bites you anyway. Through two layers of cloth, in the web of your thumb — not deep, but it hurts. You don't let go.\n\n\"Don't be scared,\" you say. \"I fell down here too. We'll keep each other company.\"\n\nIt stops biting. It shivers once inside your jacket, and buries its face in the patch."
+   },
+   "beat": [],
+   "next": "00-cave"
+  },
+  {
+   "id": "leave",
+   "label": {
+    "zh": "受伤的野兽，别碰",
+    "en": "A hurt animal — leave it"
+   },
+   "means": "leaves the fox alone, backs away, walks off",
+   "story": {
+    "zh": "你往后退了一步。又一步。\n\n坑里那点银光，一明，一暗，一明——暗下去的那一下，比刚才长。\n\n你停住了。你想起那八处断口，整整齐齐的，一刀，一刀。你想起灶台，想起碎在地上的碗。",
+    "en": "You take a step back. Then another.\n\nThe silver light in the pit goes bright, dim, bright — and the dim lasts longer than before.\n\nYou stop. You think of the eight cuts, clean and even, one stroke, then another. You think of the stove, and the bowl broken on the floor."
+   },
+   "beat": [],
+   "stay": true
+  }
+ ]
+}

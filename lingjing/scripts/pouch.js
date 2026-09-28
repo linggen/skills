@@ -56,6 +56,16 @@ function tileHtml(i, ctx, sel) {
     ${artOf(i, ctx)}<span class="pname">${esc(i.name)}</span>${i.n > 1 ? `<b class="pn">×${esc(i.n)}</b>` : ''}${i.worn ? `<span class="pmark">${esc(ctx.words.worn)}</span>` : ''}</button>`;
 }
 
+/* A scroll (《吐纳经》): the layer the player stands on, its 功课, and its
+   passage — the classic's words exactly, 银月's note under them. */
+function readsHtml(r, w) {
+  if (!r) return '';
+  const quotes = r.passage.quotes.map((q) => `<blockquote class="scrollq"><p>${esc(q.text)}</p><cite>${esc(q.source)}</cite>${q.en ? `<p class="small dim">${esc(q.en)}</p>` : ''}</blockquote>`).join('');
+  return `<div class="scroll"><div class="small"><b>${esc(say(w.scrollLayer ?? '{name}', { n: r.layer, name: r.name }))}</b>${r.note ? ` · ${esc(r.note)}` : ''}</div>
+    <div class="small">${esc(say(w.scrollDaily ?? '{what}', { what: r.gongke }))}</div>
+    <div class="small dim">${esc(r.passage.title)}</div>${quotes}<div class="small gloss">${esc(r.passage.gloss)}</div></div>`;
+}
+
 /* The one tapped: what it is, what it does, who it wins over, and its taps.
    The rules decide each one; a button is drawn only where it can land. */
 function detailHtml(i, g, ctx, pw, ui) {
@@ -75,7 +85,7 @@ function detailHtml(i, g, ctx, pw, ui) {
     <button class="act danger" data-toss-yes="${esc(i.id)}">${esc(pw.tossYes)}</button><button class="act quiet" data-toss-no>${esc(pw.tossNo)}</button></div>` : '';
   return `<div class="pdetail">${artOf(i, ctx)}<div class="pdbody"><b class="pdname">${esc(i.name)}</b>${i.n > 1 ? ` <span class="dim">×${esc(i.n)}</span>` : ''}
     <div class="small dim">${esc(kind)}${kind ? ' · ' : ''}${esc(itemDoes(e, ctx))}</div>
-    ${i.about ? `<div class="small about">${esc(i.about)}</div>` : ''}${tamesLine(i, ctx)}
+    ${i.about ? `<div class="small about">${esc(i.about)}</div>` : ''}${tamesLine(i, ctx)}${readsHtml(i.reads, w)}
     ${i.free ? `<div class="small dim">${esc(pw.free)}</div>` : ''}
     ${acts.length ? `<div class="acts">${acts.join('')}</div>` : ''}${ask}</div></div>`;
 }

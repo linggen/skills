@@ -64,6 +64,10 @@ export const CARD_KINDS = {
   born: { holds: false },
   // Who the scene brings on (people.json): a portrait and a name each — told, never asking.
   people: { holds: false },
+  // A 连环画 beat (his, 2026-09-28: 右边尽量放图片……像小人书): the picture, its caption, and the
+  // scene's choices under it. The scene's own question — like the name, never the chat's; the
+  // choices it carries are owned here (stageOwns), so the chat asks nothing twice.
+  panel: { holds: false },
   // 渡劫's odds (rules/breakthrough.mjs): the throw is taken on this card, never
   // the chat's. It holds, so the roads stand under it — a way off to prepare
   // (a pill, a 闭关) before the throw.
@@ -171,7 +175,8 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   const shown = look.offers?.length ? kept.filter(c => c.card !== 'creature') : kept;
   // The day's coins fill an empty stage; a 遇 standing here is not empty.
   const naming = head.some(c => c.card === 'value' || c.card === 'born' || c.card === 'breakthrough');
-  const cards = shown.length ? [...shown] : line || naming || look.offers?.length || look.place?.meet ? [] : [{ card: 'hexagram' }];
+  // A picture-book beat is not an empty stage either.
+  const cards = shown.length ? [...shown] : line || naming || look.scene?.panel || look.offers?.length || look.place?.meet ? [] : [{ card: 'hexagram' }];
   const has = (kind, id) => cards.some(c => c.card === kind && (id === undefined || c.id === id));
 
   if (!line) {
@@ -196,7 +201,9 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   }
   // The people of the scene stand first: whoever is speaking is seen.
   const people = look.scene?.people?.length && !line ? [{ card: 'people' }] : [];
-  return [...people, ...head, ...cards];
+  // The picture of the beat stands first: the stage is a picture book, the story is the chat's.
+  const panel = look.scene?.panel ? [{ card: 'panel' }] : [];
+  return [...panel, ...people, ...head, ...cards];
 }
 
 /* What those cards already offer, as option keys the question is measured
@@ -222,6 +229,8 @@ export function stageOwns(look, cards) {
     if (c.card === 'creature' && winnable(look?.place?.encounter) && look.place.encounter.creature.id === c.id) owns.add(`tame:${c.id}`);
     if (c.card === 'board') owns.add(`exit:${c.id}`);
     if (c.card === 'breakthrough') owns.add(`exit:${c.id}`); // the throw is the card's
+    // A panel's choices are tapped under the picture.
+    if (c.card === 'panel') for (const t of look?.scene?.panel?.taps ?? []) owns.add(`exit:${t.id}`);
     // The map draws every place as a chip that walks there, so the roads are
     // already clickable and the question does not repeat them.
     if (c.card === 'map') for (const p of look?.place?.places ?? []) if (!p.here) owns.add(`move:${p.id}`);

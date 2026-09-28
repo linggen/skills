@@ -34,9 +34,9 @@ test('the room grows with the realm, from rewards.json', () => {
 test('a stack is one slot; a key, her bell and a carried errand thing take none', () => {
   assert.equal(slotsUsed(content, at({ 'qi-pill': 9, ginseng: 3 })), 2);
   assert.equal(slotsUsed(content, at({ 'ferry-token': 1, 'moon-bell': 1 })), 0, 'a key and her bell are free');
-  // 灵芝 is free only while an exit of the open chapter still needs it.
-  assert.equal(freeSlot(content, at({}, { chapter: '00-prologue', ended: [], done_scenes: [] }), 'lingzhi'), true);
-  assert.equal(freeSlot(content, at({}), 'lingzhi'), false);
+  // 鹿皮 is free only while an exit of the open chapter still needs it (the rent).
+  assert.equal(freeSlot(content, at({}, { chapter: '00-prologue', ended: [], done_scenes: [] }), 'deer-hide'), true);
+  assert.equal(freeSlot(content, at({}), 'deer-hide'), false);
 });
 
 test('full: a fight\'s drop and a grant wait at the 洞府, said in the rules\' line', () => {

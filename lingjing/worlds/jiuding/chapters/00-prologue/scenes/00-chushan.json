@@ -1,0 +1,71 @@
+{
+ "version": 1,
+ "id": "00-chushan",
+ "chapter": "00-prologue",
+ "at": "mengshan",
+ "place": {
+  "zh": "蒙山 · 前山",
+  "en": "Mount Meng · the front slopes"
+ },
+ "setup": {
+  "zh": "出村时，吴婆婆把一块磨亮的木牌塞给你：「到了碑那儿，看看碑背面。」前山满地狗爪印——马家的围猎篦空了它。",
+  "en": "Leaving the village, Granny Wu pressed a worn token into your hand: \"When you reach the stele, look at its back.\" The front slopes are all dog tracks — the Mas' hunts combed them bare."
+ },
+ "recap": {
+  "zh": "吴婆婆给了你一块狐纹木牌；前山被马家的围猎篦空了。",
+  "en": "Granny Wu gave you a fox-carved token; the Mas' hunts had combed the front slopes bare."
+ },
+ "cast": [],
+ "people": [
+  "wupo",
+  "baba"
+ ],
+ "panel": {
+  "art": "art/panels/00-chushan.webp",
+  "caption": {
+   "zh": [
+    "村东头，瞎眼的吴婆婆，像在等你们。",
+    "一块磨得发亮的小木牌。",
+    "前山：满地狗爪印，马蹄印。"
+   ],
+   "en": [
+    "At the east end, blind Granny Wu, as if she were waiting.",
+    "A little wooden token, worn bright.",
+    "The front slopes: dog tracks and hoofprints everywhere."
+   ]
+  }
+ },
+ "story": {
+  "zh": "出村的时候，你们经过村东头。吴婆婆坐在门槛上，一双白蒙蒙的眼睛朝着山的方向，像是在等你们。\n\n「去黑松岭？」她问。你爹没说话。她也不要你们回答，只是把一个磨得发亮的小木牌塞进你手里：「你爷爷走那年，也从我门口过。——到了碑那儿，看看碑背面。」\n\n你把木牌揣进怀里。你没问为什么。你知道，有些话，问了也不会说。\n\n你爹说，打猎的人家有三样东西不能少：一张好弓，一双好腿，一副好耳朵。弓是你爷爷传下来的，弓背裂过两回，拿牛筋缠着；耳朵是你爹的——他能听见三里外一只獐子踩断一根枯枝。至于腿，你爹的膝盖不行了，这两年，腿是你的。\n\n你十二岁，个子不高，却轻得像只猴。村里没有你爬不上的树，没有你跳不过的沟；你能在一棵松树顶上一动不动地趴半个时辰，只为看清山那边有没有鹿。\n\n你们天没亮就进了山。雾还没散，林子里湿漉漉的。你爹走在前面，一瘸一拐，脚步却还是轻的；你跟在后面，学他落脚，一回都没踩响。\n\n可那一天，前山什么也没有。\n\n满地的狗爪印和马蹄印。马家入秋办了三场围猎，带着二十条猎狗、几十个家丁，把前山篦了一遍又一遍。",
+  "en": "On the way out of the village you pass its east end. Granny Wu sits on her doorstep, her clouded white eyes turned toward the mountain, as if she has been waiting for you.\n\n\"Black Pine Ridge?\" she asks. Your father says nothing. She wants no answer either; she only presses a little wooden token, worn bright, into your hand. \"The year your grandfather went, he passed my door too. — When you reach the stele, look at its back.\"\n\nYou tuck the token inside your jacket. You don't ask why. You know some things, asked, will still not be said.\n\nYour father says a hunting family cannot do without three things: a good bow, good legs and good ears. The bow came down from your grandfather; its back has cracked twice and is bound with ox sinew. The ears are your father's — he can hear a river deer snap a dry twig three li off. As for legs: your father's knee has failed him. These two years, the legs have been yours.\n\nYou are twelve, not tall, and light as a monkey. There is no tree in the village you cannot climb, no ditch you cannot jump; you can lie flat on the top of a pine for half a watch without moving, just to see whether there are deer beyond the ridge.\n\nYou went into the mountain before dawn. The mist had not lifted and the woods dripped. Your father walked ahead, limping, and yet his feet were still light; you followed, putting your feet where he put his, and never once made a sound.\n\nBut that day the front slopes held nothing.\n\nDog tracks and hoofprints everywhere. Since autumn the Mas have held three great hunts — twenty hounds and dozens of their men — and combed the front slopes over and over."
+ },
+ "lines": [],
+ "buttons": [
+  "lookout"
+ ],
+ "exits": [
+  {
+   "id": "lookout",
+   "label": {
+    "zh": "爬上最高的松树眺望",
+    "en": "Climb the tallest pine and look out"
+   },
+   "means": "climbs a tree to look out over the mountain, scouts, looks around",
+   "grant": {
+    "table": "scene",
+    "item": "fox-token"
+   },
+   "show": [
+    {
+     "card": "map"
+    }
+   ],
+   "story": {
+    "zh": "你爬上最高的那棵松树往四下看，看了半天，下来只说了一句：「爹，前山空了。」\n\n你们在林子里转到晌午，只打到一只瘦得皮包骨的山鸡。\n\n你爹坐在一块石头上，揉着膝盖，很久没说话。然后他站起来，往山的更深处望了一眼。\n\n那边是黑松岭。",
+    "en": "You climb the tallest pine and look in every direction for a long while, and when you come down you say only: \"Father, the front slopes are empty.\"\n\nYou wander the woods until noon and get one pheasant, skin and bone.\n\nYour father sits on a rock rubbing his knee and says nothing for a long time. Then he stands, and looks once, deeper into the mountain.\n\nThat way lies Black Pine Ridge."
+   },
+   "beat": [],
+   "next": "00-duanbei"
+  }
+ ]
+}

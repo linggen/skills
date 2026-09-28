@@ -148,6 +148,8 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     lore: fs.existsSync(path.join(dir, 'companion.json')) ? readJson(path.join(dir, 'companion.json')) : null,
     // The standing people (people.json): a scene line's `who` may be one of them, or a slot.
     people: fs.existsSync(path.join(dir, 'people.json')) ? readJson(path.join(dir, 'people.json')) : null,
+    // Scrolls a thing can be read as (rules/scrolls.mjs): 《吐纳经》 and its nine layers.
+    scrolls: fs.existsSync(path.join(dir, 'scrolls.json')) ? readJson(path.join(dir, 'scrolls.json')) : null,
     places: loadPlaces(path.join(dir, 'places')),
     templates: { made: at('templates/made-scene.json'), world: at('templates/made-world.json') },
     dictionary: at('dictionary.json'),
@@ -896,6 +898,29 @@ function lintScene(scene, chapter, content, ids, bad) {
     else if (!exit.label) bad(`${where} exit ${b}`, 'a button needs a label');
   }
   for (const exit of scene.exits) lintExit(`${where} exit ${exit.id}`, exit, chapter, content, ids, speakers, bad);
+  // A 连环画 beat (rules/tell.mjs): the passage told in the chat, the panel on the stage.
+  lintStory(where, scene.story, bad);
+  if (scene.panel) {
+    if (!scene.panel.art) bad(where, 'a panel needs its picture');
+    else if (!fs.existsSync(path.join(content.dir, scene.panel.art))) bad(where, `panel art ${scene.panel.art} is missing`);
+    for (const lang of ['zh', 'en']) {
+      const lines = scene.panel.caption?.[lang];
+      if (!Array.isArray(lines) || lines.length < 2 || lines.length > 4 || lines.some(l => typeof l !== 'string' || !l.trim())) bad(where, `a panel caption is two to four lines in ${lang}`);
+    }
+  }
+  const persons = new Set(peopleIds(content));
+  for (const who of scene.people ?? []) if (!persons.has(who)) bad(where, `names unknown person ${who}`);
+  if (scene.her != null && !content.world.companion?.forms?.[scene.her]) bad(where, `her form ${scene.her} is not the companion's`);
+}
+
+/* A passage (zh + en), with the companion's words marked ⟪…⟫ alike in both. */
+function lintStory(where, story, bad) {
+  if (story == null) return;
+  if (!pair(story)) { bad(where, 'a story needs zh and en'); return; }
+  const marks = t => [(t.match(/⟪/g) ?? []).length, (t.match(/⟫/g) ?? []).length];
+  const [zo, zc] = marks(story.zh), [eo, ec] = marks(story.en);
+  if (zo !== zc || eo !== ec) bad(where, 'a story\'s ⟪ ⟫ do not pair');
+  else if (zo !== eo) bad(where, `a story marks her words ${zo} times in zh, ${eo} in en`);
 }
 
 function lintExit(where, exit, chapter, content, ids, speakers, bad) {
@@ -909,6 +934,19 @@ function lintExit(where, exit, chapter, content, ids, speakers, bad) {
     if (rule?.task && !ids.tasks.has(rule.task)) bad(where, `unknown task ${rule.task}`);
   }
   if (exit.take && !exit.needs) bad(where, 'takes what it never checks for');
+  if (exit.take?.wealth != null && !(Number.isInteger(exit.take.wealth) && exit.take.wealth > 0 && exit.needs?.wealth >= exit.take.wealth)) bad(where, 'takes stones it never checks for');
+  if (exit.needs?.wealth != null && !(Number.isInteger(exit.needs.wealth) && exit.needs.wealth > 0)) bad(where, 'needs a whole number of stones');
+  lintStory(where, exit.story, bad);
+  // 恩仇簿: who (a person or a slot), 恩 or 仇, and what, in both languages.
+  const persons = new Set(peopleIds(content));
+  for (const e of exit.ledger ?? []) {
+    if (!persons.has(e?.who)) bad(where, `a ledger entry names unknown person ${e?.who}`);
+    if (!['恩', '仇'].includes(e?.kind)) bad(where, 'a ledger entry is 恩 or 仇');
+    if (!pair(e?.what)) bad(where, 'a ledger entry needs what, zh and en');
+  }
+  if (exit.joins != null && (exit.joins !== true || !content.world.companion)) bad(where, 'joins is true, in a world with a companion');
+  for (const k of ['sleeps', 'wakes']) if (exit[k] != null && (exit[k] !== true || !content.world.companion)) bad(where, `${k} is true, in a world with a companion`);
+  if (exit.sleeps && exit.wakes) bad(where, 'sleeps or wakes, not both');
   if (exit.needs && !exit.refuse) bad(where, 'a need needs a refusal line');
   if (exit.breakthrough) {
     if (!exit.refuse) bad(where, 'a breakthrough needs a refusal line for the one not yet at the peak');
@@ -984,6 +1022,7 @@ function lintItems(content, bad) {
     if (!item.art) bad(where, 'needs art');
     else if (!fs.existsSync(path.join(content.dir, item.art))) bad(where, `art ${item.art} is missing`);
     // A made thing (a 符 from paper) has no price and is sold nowhere.
+    if (item.reads != null && !content.scrolls?.scrolls?.[item.reads]) bad(where, `reads unknown scroll ${item.reads}`);
     if (item.made) {
       if (!content.items.items.some(i => i.id === item.made.from)) bad(where, `made from unknown item ${item.made.from}`);
       if (item.made.anywhere_from && !content.ladder.tiers.some(t => t.id === item.made.anywhere_from)) bad(where, `made anywhere from unknown tier ${item.made.anywhere_from}`);

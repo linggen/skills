@@ -475,7 +475,8 @@
    "tier": 0,
    "roads": [
     "dukou",
-    "shanmen"
+    "shanmen",
+    "shiao"
    ],
    "map": [
     0.8285,
@@ -552,6 +553,110 @@
     "zh": "外门的院子：晒着的柴，井边的水桶，周衡的账本。",
     "en": "The outer court: firewood drying, buckets by the well, Zhou Heng's ledger."
    }
+  },
+  {
+   "id": "shiao",
+   "name": {
+    "zh": "石坳村",
+    "en": "Shi'ao village"
+   },
+   "tier": 0,
+   "roads": [
+    "mengshan",
+    "shanlu"
+   ],
+   "map": [
+    0.822,
+    0.398
+   ],
+   "line": {
+    "zh": "蒙山脚下十七户人家，十六户种地，一户打猎——你家。",
+    "en": "Seventeen households at the foot of Mount Meng: sixteen farm, one hunts — yours."
+   }
+  },
+  {
+   "id": "mengshan",
+   "name": {
+    "zh": "蒙山前山",
+    "en": "The front slopes of Mount Meng"
+   },
+   "tier": 0,
+   "roads": [
+    "shiao",
+    "duanbei"
+   ],
+   "map": [
+    0.826,
+    0.386
+   ],
+   "line": {
+    "zh": "马家的山。三场围猎把前山篦了一遍又一遍，满地狗爪印。",
+    "en": "The Mas' mountain. Three autumn hunts combed the front slopes bare; dog tracks everywhere."
+   }
+  },
+  {
+   "id": "duanbei",
+   "name": {
+    "zh": "黑松岭 · 断碑",
+    "en": "Black Pine Ridge · The broken stele"
+   },
+   "tier": 0,
+   "roads": [
+    "mengshan",
+    "heisong"
+   ],
+   "map": [
+    0.83,
+    0.376
+   ],
+   "line": {
+    "zh": "岭口的断碑，只剩两个字还看得清：勿入。",
+    "en": "The broken stele at the ridge mouth; only two characters still read: Do not enter."
+   }
+  },
+  {
+   "id": "heisong",
+   "name": {
+    "zh": "黑松岭",
+    "en": "Black Pine Ridge"
+   },
+   "tier": 1,
+   "roads": [
+    "duanbei",
+    "yingu"
+   ],
+   "map": [
+    0.835,
+    0.367
+   ],
+   "line": {
+    "zh": "树比外面的高一倍，树皮黑得像铁；路会自己打结。",
+    "en": "Trees twice as tall as outside, bark black as iron; the paths tie themselves in knots."
+   },
+   "meets": [
+    "beast",
+    "find"
+   ]
+  },
+  {
+   "id": "yingu",
+   "name": {
+    "zh": "银叶谷",
+    "en": "The Silver-leaf Vale"
+   },
+   "tier": 1,
+   "roads": [
+    "heisong"
+   ],
+   "map": [
+    0.841,
+    0.36
+   ],
+   "line": {
+    "zh": "崖下的山谷，银叶树上挂着露珠，草叶踩下去会发亮。",
+    "en": "The vale under the cliff: silver-leaved trees hung with dew, grass that glows where you step."
+   },
+   "water": true
   }
  ]
 }

@@ -42,12 +42,12 @@ test('Restart with nothing asked is refused and changes nothing', () => {
 test('重来 → Look asks, over the scene\'s own question; 从头再来 → Restart', () => {
   const g = game(); played(g);
   const plain = g.cli(1, 'look', '--for=ling');
-  assert.ok(plain.ask?.options.some(o => o.exit), 'the scene has its own question');
+  assert.equal(plain.ask, null, 'a picture-book scene asks nothing in the chat: its choices stand under its panel');
   const asked = g.cli(1, 'look', '--said=我想重来', '--for=ling');
   assert.equal(asked.ask.question, '从头再来？此番修行尽数散去。');
   assert.deepEqual(asked.ask.options.map(o => o.label), ['从头再来', '再想想']);
   assert.equal(asked.ask.options[0].restart, true);
-  assert.equal(asked.ask.header, plain.ask.header);
+  assert.equal(asked.ask.header, plain.scene.place);
   assert.match(asked.then, /AskUser exactly `ask`/);
   assert.match(asked.then, /Restart only if "从头再来"/);
   assert.equal(g.state().confirm.what, 'restart');
@@ -77,9 +77,7 @@ test('再想想 lets it be; the asking expires after ten minutes', () => {
 
 test('悔棋 asks before Undo, and Undo unasked is refused', () => {
   const g = game();
-  const opening = g.cli(1, 'look');
-  const exit = opening.ask.options.find(o => o.exit);
-  g.cli(1, 'resolve', `--exit=${exit.exit}`);
+  g.cli(1, 'resolve', '--exit=name', '--value=墨白', '--gender=male');
   assert.equal(g.cli(2, 'undo', '--for=ling').refused, 'not-confirmed');
   const asked = g.cli(2, 'look', '--said=悔棋', '--for=ling');
   assert.equal(asked.ask.question, '悔棋：收回上一步？');

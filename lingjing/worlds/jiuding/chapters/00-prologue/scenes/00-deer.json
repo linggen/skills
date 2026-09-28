@@ -1,0 +1,82 @@
+{
+ "version": 1,
+ "id": "00-deer",
+ "chapter": "00-prologue",
+ "at": "heisong",
+ "place": {
+  "zh": "黑松岭 · 谷口溪边",
+  "en": "Black Pine Ridge · the stream at the valley mouth"
+ },
+ "setup": {
+  "zh": "那头鹿还在谷口的溪边喝水：三百步，东北，顺风。爹的手在抖，把爷爷的弓递给了你。",
+  "en": "The deer is still drinking at the stream by the valley mouth: three hundred paces, northeast, downwind. Father's hands shake; he gives you grandfather's bow."
+ },
+ "recap": {
+  "zh": "你拉开爷爷的弓射中了那头雄鹿；银月撑着说完指路的话，晕了过去。",
+  "en": "You drew grandfather's bow and brought down the stag; Yinyue held on long enough to guide the shot, and fainted."
+ },
+ "cast": [],
+ "people": [
+  "baba"
+ ],
+ "panel": {
+  "art": "art/panels/00-deer.webp",
+  "caption": {
+   "zh": [
+    "三百步，东北，顺风。",
+    "一头雄鹿低头饮水，角如枯枝。",
+    "弓比你想的沉。"
+   ],
+   "en": [
+    "Three hundred paces, northeast, downwind.",
+    "A stag drinks, antlers like dead branches.",
+    "The bow is heavier than you thought."
+   ]
+  }
+ },
+ "story": {
+  "zh": "你们没有马上下山。\n\n⟪「那头鹿，」⟫银月在你耳边说，⟪「还在谷口的溪边喝水。三百步，东北，顺风。」⟫\n\n你愣了一下。\n\n⟪「你们来黑松岭，不就是为了它？」⟫它的尾巴尖扫了扫你的耳朵，⟪「救命之恩，本王先还个小的。」⟫\n\n你拉了拉你爹的袖子，指了指东北。\n\n你爹不信。可他还是跟你摸了过去——三百步，溪边，一头雄鹿正低着头喝水，鹿角像一丛枯树枝，比你爹见过的所有鹿都大。\n\n你爹拉弓的手在抖。他的膝盖跪不下去，蹲也蹲不稳。\n\n「爹，」你说，「我来。」\n\n你爹看了你一眼，把爷爷的弓递给了你。\n\n弓比你想的沉。你拉开它，拉到一半，胳膊就开始打颤。你咬着牙，屏住气，像你爹教过你一千遍的那样——\n\n⟪「风，」⟫银月说，⟪「往左偏半寸。」⟫",
+  "en": "You don't go down the mountain at once.\n\n⟪\"That deer,\"⟫ Yinyue says in your ear, ⟪\"is still drinking at the stream by the valley mouth. Three hundred paces, northeast, downwind.\"⟫\n\nYou stop short.\n\n⟪\"Isn't that what you came to Black Pine Ridge for?\"⟫ The tip of its tail brushes your ear. ⟪\"A life saved — this king repays a small piece first.\"⟫\n\nYou tug your father's sleeve and point northeast.\n\nYour father doesn't believe it. But he creeps over with you anyway — three hundred paces, by the stream, a stag drinking with its head down, antlers like a thicket of dead branches, bigger than any deer your father has ever seen.\n\nYour father's hands shake on the bow. His knee won't kneel, and he can't hold a crouch.\n\n\"Father,\" you say. \"Let me.\"\n\nYour father looks at you once, and hands you grandfather's bow.\n\nThe bow is heavier than you thought. You draw it; halfway, your arms begin to tremble. You set your teeth and hold your breath, the way your father has taught you a thousand times —\n\n⟪\"Wind,\"⟫ says Yinyue. ⟪\"Half an inch to the left.\"⟫"
+ },
+ "lines": [],
+ "buttons": [
+  "left",
+  "straight"
+ ],
+ "exits": [
+  {
+   "id": "left",
+   "label": {
+    "zh": "往左偏半寸",
+    "en": "Half an inch to the left"
+   },
+   "means": "aims a little left for the wind, as told, and shoots",
+   "mark": "shot-wind",
+   "sleeps": true,
+   "grant": {
+    "table": "scene",
+    "item": "deer-hide"
+   },
+   "story": {
+    "zh": "你往左偏了半寸。\n\n箭出去了。\n\n你肩上一轻——那只小银狐从你脖子上滑了下来。你一把接住，它已经闭上了眼睛，身子凉得像一块冰。\n\n你把它塞进怀里，贴着胸口捂着，一句话都没说。",
+    "en": "You shift half an inch to the left.\n\nThe arrow flies.\n\nYour shoulder goes light — the little silver fox has slid off your neck. You catch it; its eyes are already closed, its body cold as ice.\n\nYou tuck it inside your jacket, hold it against your chest to warm it, and say nothing at all."
+   },
+   "beat": [],
+   "next": "00-rent"
+  },
+  {
+   "id": "straight",
+   "label": {
+    "zh": "照直射",
+    "en": "Shoot straight"
+   },
+   "means": "ignores the wind and shoots straight",
+   "story": {
+    "zh": "你没理那句话，照直放了箭。\n\n箭擦着鹿角飞了过去，钉进溪对岸的泥里。雄鹿猛地抬起头，却没跑——它往四下看了看，鼻子喷了一口白气，又低下头去。\n\n你爹没说话，递过来第二支箭。",
+    "en": "You ignore it and loose straight.\n\nThe arrow grazes the antlers and sticks in the mud across the stream. The stag's head jerks up — but it doesn't run. It looks around, blows out a white breath, and lowers its head again.\n\nYour father says nothing, and hands you a second arrow."
+   },
+   "beat": [],
+   "stay": true
+  }
+ ]
+}
