@@ -79,7 +79,7 @@ const ACTION_ARTS = new Set(['thunder', 'twice']);
 /* Once a fight. */
 const ONCE = new Set(['thunder', 'twice']);
 
-/* A small stable hash: the same day, creature and 道号 draw the same start. */
+/* A small stable hash: the same day, creature and 名字 draw the same start. */
 export function hashOf(text) {
   let h = 7;
   for (const ch of String(text)) h = (h * 31 + ch.codePointAt(0)) % 2147483647;

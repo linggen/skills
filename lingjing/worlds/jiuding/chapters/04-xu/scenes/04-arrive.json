@@ -8,12 +8,12 @@
   "en": "The Si River bank · The reeds"
  },
  "setup": {
-  "zh": "回到泗水。你醒来的那片芦苇被割平了，岸上摆着上千根绳子，一头系着石头，一头系着木桩。潜水的人围着火堆烤身子。河水不往下游走，往下沉。",
-  "en": "Back to the Si. The reeds where you woke have been cut flat, and a thousand ropes lie along the bank, a stone at one end, a stake at the other. Divers warm themselves round the fires. The water does not run downstream — it sinks."
+  "zh": "回到泗水。你拾到铃的那片芦苇被割平了，岸上摆着上千根绳子，一头系着石头，一头系着木桩。潜水的人围着火堆烤身子。河水不往下游走，往下沉。",
+  "en": "Back to the Si. The reeds where you found the bell have been cut flat, and a thousand ropes lie along the bank, a stone at one end, a stake at the other. Divers warm themselves round the fires. The water does not run downstream — it sinks."
  },
  "recap": {
-  "zh": "回到泗水岸，你醒来的芦苇已被割平；上千根绳子沿岸摆开，河水在往下沉。",
-  "en": "Back on the Si, the reeds where you woke had been cut flat; a thousand ropes lay along the bank, and the water was sinking."
+  "zh": "回到泗水岸，你拾到铃的芦苇已被割平；上千根绳子沿岸摆开，河水在往下沉。",
+  "en": "Back on the Si, the reeds where you found the bell had been cut flat; a thousand ropes lay along the bank, and the water was sinking."
  },
  "cast": [
   "yinyue"
@@ -29,12 +29,12 @@
   {
    "who": "yinyue",
    "text": {
-    "zh": "你醒来的地方。……第四鼎就在这水底下。它在往下拉。",
-    "en": "Where you woke. …The fourth cauldron is under this water. It is pulling down."
+    "zh": "你拾到铃的地方。……第四鼎就在这水底下。它在往下拉。",
+    "en": "Where you found the bell. …The fourth cauldron is under this water. It is pulling down."
    },
    "alone": {
-    "zh": "你醒来的地方。第四鼎就在这水底下，水在往下沉。",
-    "en": "Where you woke. The fourth cauldron lies under this water, and the water sinks toward it."
+    "zh": "你拾到铃的地方。第四鼎就在这水底下，水在往下沉。",
+    "en": "Where you found the bell. The fourth cauldron lies under this water, and the water sinks toward it."
    }
   },
   {

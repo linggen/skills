@@ -147,8 +147,8 @@
       "unease": {
         "show": "moondark",
         "fact": {
-          "zh": "刚才，荆鼎起来之后，你正要叫玩家，话说到一半，玩家的道号忘了——那个你一路叫惯了的名字（是「{name}」），一时怎么也想不起来；舞台上的月亮也暗了一瞬。过了片刻你才想起来。你察觉到了，心里发冷。别假装没事，但也还不说为什么。",
-          "en": "Just now, after the Jing cauldron rose, you began to call the player and, halfway through, lost their Daoist name — the name you have called them all this way ({name}); for a moment it would not come back at all, and the moon over the stage went dark. It came back a little later. You noticed, and it chilled you. Do not pretend nothing happened, but do not say why yet."
+          "zh": "刚才，荆鼎起来之后，你正要叫玩家，话说到一半，玩家的名字忘了——那个你一路叫惯了的名字（是「{name}」），一时怎么也想不起来；舞台上的月亮也暗了一瞬。过了片刻你才想起来。你察觉到了，心里发冷。别假装没事，但也还不说为什么。",
+          "en": "Just now, after the Jing cauldron rose, you began to call the player and, halfway through, lost their name — the name you have called them all this way ({name}); for a moment it would not come back at all, and the moon over the stage went dark. It came back a little later. You noticed, and it chilled you. Do not pretend nothing happened, but do not say why yet."
         },
         "ling": {
           "zh": "银月张口唤你，唤到一半停住了，怔怔地看着你，像在找一个丢了的字。",

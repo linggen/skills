@@ -55,7 +55,7 @@ export const CARD_KINDS = {
   seclusion: { holds: true }, //   闭关 running: 出关 is the one way on (rules/seclusion.mjs)
   seclude: { holds: false }, //    闭关's choices, offered on an empty pool or a tap on 体力 — never an ask
   offer: { holds: true }, //       接下 — the errands held out where he stands, one card
-  // A scene's value exit (the 道号): named on its card. It asks, but a scene's question is the rules'
+  // A scene's value exit (the 名字): named on its card. It asks, but a scene's question is the rules'
   // own (ask.mjs keeps it off the chat), and holding would only raise the 或往 roads row under it —
   // a way to walk off in the middle of taking a name.
   value: { holds: false },
@@ -141,7 +141,7 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // and the next step, already in hand, until he walks on.
   if (look.handed?.length) head.unshift({ card: 'handed' });
 
-  // A scene's exit that takes a value (the 道号) is named on its own card:
+  // A scene's exit that takes a value (the 名字) is named on its own card:
   // offered names to tap or the player's own, never a chat option and never
   // Ling's to fill (his, 2026-09-28). Driven by the exit, not by the scene.
   for (const e of look.scene?.exits ?? []) if (e.value) head.push({ card: 'value', id: e.id });

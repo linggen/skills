@@ -64,7 +64,7 @@ function postMoment(fact, flags, { mood = null } = {}) {
   // Her line lands in this chat, and the engine checks her presence against it.
   const sid = chat?.getSessionId?.() ?? null;
   const { converse, ...rest } = flags ?? {};
-  // In the game the player has a 道号, and she calls them by it (his screen,
+  // In the game the player has a 名字, and she calls them by it (his screen,
   // 2026-09-24: 「今天也辛苦了，Hanli」 inside 灵境). First, so no cap cuts it.
   const name = look?.name, called = !name ? '' : lang() === 'en' ? `(In the game the player is ${name}.) ` : `（灵境里玩家叫${name}。）`;
   const body = { app: SKILL, text: called + (lang() === 'en' ? fact.en : fact.zh), ...rest, ...(mood ? { mood } : {}), ...(sid ? { session: sid, ...(converse ? { converse } : {}) } : {}) };
@@ -780,7 +780,7 @@ function focusHtml() {
    of the line, and walking on starts the line again. The goal line, an empty
    pool and what Ling showed of the place stay where they are. */
 const QUEUE = ['handed', 'quest', 'tale', 'road', 'offer', 'duel', 'lundao', 'board'];
-// A naming card (取一个道号) is the story's own step: it stands first, never queued.
+// A naming card (名字) or the 生辰 card is the story's own step: it stands first, never queued.
 const HEAD = new Set(['people', 'seclude', 'building', 'empty', 'goal', 'value', 'born']);
 const qKey = (c) => `${c.card}:${c.id ?? ''}`;
 
@@ -1285,7 +1285,7 @@ function countUp() {
 }
 document.addEventListener('input', (e) => { if (e.target.id === 'refine-name') keep({ refineName: e.target.value, refineNote: null }); });
 
-/* 取一个道号 — the card's own (cards.js value): an offered name tapped, or the
+/* 名字 — the card's own (cards.js value): an offered name tapped, or the
    player's own written; the page Resolves the exit with it and tells Ling
    `[scene] named`, and she tells the beat. Ling never picks the name (his,
    2026-09-28: every player had become 青玄). A keystroke is kept without a

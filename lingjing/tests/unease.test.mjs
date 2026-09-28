@@ -89,7 +89,7 @@ test('each chapter from 4 to 8 ends with its unease on the node, marked on the s
   }
 });
 
-test('the 道号 she loses in 荆 is the player\'s own; with none yet, a plain word stands in', () => {
+test('the 名字 she loses in 荆 is the player\'s own; with none yet, a plain word stands in', () => {
   assert.ok(endChapter(atEnd('06-jing', { ...HER, name: '青玄' })).result.unease.fact.includes('「青玄」'));
   const none = endChapter(atEnd('06-jing', { ...HER, name: '' })).result.unease.fact;
   assert.equal(none.includes('{name}'), false);

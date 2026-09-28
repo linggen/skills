@@ -136,7 +136,7 @@ function runLocked(verb, args, stateFile, reader) {
     if (asked.keep) writeAtomic(stateFile, JSON.stringify(asked.keep));
     return asked.result;
   }
-  // A value exit (the 道号) is the page card's to name, never Ling's (core.mjs pageNames).
+  // A value exit (the 名字) is the page card's to name, never Ling's (core.mjs pageNames).
   // A breakthrough is thrown on the page's card, where its odds stand (core.mjs pageThrows).
   const theirs = reader === 'ling' && verb === 'resolve' ? pageNames(content, state, args) ?? pageThrows(content, state, { ...args, now }) : null;
   if (theirs) return theirs;

@@ -74,7 +74,7 @@ function refineWith(content, state) {
 }
 
 /* 炼化本命 — once, at 结丹: the worn weapon and one core material become the
-   player's own treasure, and the player names it as they named their 道号.
+   player's own treasure, and the player names it as they named themselves.
    The weapon and the material are spent; a treasure is never lost. */
 export function refine(state, content, ctx, args) {
   const lang = state.lang;
@@ -127,7 +127,7 @@ function learn(content, state, id) {
 /* What the player wears in a slot, while it is still in the bag. */
 const wornOf = (content, state, slot) => (state.wear?.[slot] && state.bag[state.wear[slot]] ? itemOf(content, state.wear[slot]) : null);
 
-/* The same day, creature and 道号 draw the same creature — an undo cannot
+/* The same day, creature and 名字 draw the same creature — an undo cannot
    fish for an easier one. */
 const duelSeed = (state, creature, now) => `${dayKey(now)}|${creature.id}|${state.name ?? ''}`;
 

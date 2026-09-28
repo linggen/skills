@@ -76,7 +76,7 @@ export function divinationBrief(content, state, now) {
 }
 
 /* 问卦: once a day, and the coins fall at once — nothing is asked first, it
-   is always the day's fight luck. The same throws for the day and the 道号,
+   is always the day's fight luck. The same throws for the day and the 名字,
    so undo cannot fish for another. `ask` from an older caller is ignored. */
 export function divine(state, content, ctx) {
   if (castToday(state, ctx.now)) return refuse('cast-today', null, { divination: divinationBrief(content, state, ctx.now) });
@@ -135,7 +135,7 @@ export function fateBrief(content, state) {
 
 /* The page's alone, never a tool: the birthday is typed on the card and
    read here, on this machine; only what it gives is kept. Once set, it
-   stays for life; `random` draws one by the 道号; `decline` lets it be. */
+   stays for life; `random` draws one by the 名字; `decline` lets it be. */
 export function fate(state, content, ctx, args) {
   if (state.fate?.zodiac) return refuse('fate-set', null, { fate: fateBrief(content, state) });
   const s = clone(state);

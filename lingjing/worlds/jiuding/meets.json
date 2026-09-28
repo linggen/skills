@@ -1,6 +1,6 @@
 {
  "version": 1,
- "_about": "遇 — what an arrival deals when the place holds nothing of its own (design.md § 遇). The rules draw one by the day, the place and the 道号; once per place per day. Finds are authored per province ('*' serves a province with none); the road's riddles are never the story's own. A find may say `at` — the places it belongs to; unsaid, anywhere in its province.",
+ "_about": "遇 — what an arrival deals when the place holds nothing of its own (design.md § 遇). The rules draw one by the day, the place and the 名字; once per place per day. Finds are authored per province ('*' serves a province with none); the road's riddles are never the story's own. A find may say `at` — the places it belongs to; unsaid, anywhere in its province.",
  "weights": {
   "find": 25,
   "riddle": 20,

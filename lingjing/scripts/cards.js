@@ -1071,7 +1071,7 @@ function building(card, ctx) {
 /// keeps the confirm button shut — nothing is ever preselected.
 export const valueChoice = (picked, text, max) => fitValue(text, max) ?? (picked ? fitValue(picked, max) : null);
 
-/// 取一个道号 — a scene exit with `value`, named here and never by Ling (his,
+/// 名字 — a scene exit with `value` (and, asked, 男 · 女), named here and never by Ling (his,
 /// 2026-09-28: 给用户一个card with some options, 用户可以选择或者输入一个自定义
 /// 的, 不要默认给青玄). The offered names are Look's draw for this save; the
 /// player taps one or writes their own, and 就叫这个 is the page's Resolve.

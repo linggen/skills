@@ -821,7 +821,7 @@ test('a subdued creature leaves what it carries, one new card, and on one win in
   assert.ok(!content.creatures.creatures.some(c => c.id === card.id));
   const won_ = content.cards.cards.find(c => c.id === card.id);
   assert.ok(won_.kind !== 'spell' || s.traits.includes(won_.element), 'a spell he can cast, or a beast of any element');
-  // A 符 falls on one win in `fight_one_in`, by the day, the beast and the 道号:
+  // A 符 falls on one win in `fight_one_in`, by the day, the beast and the 名字:
   // over many days, about a third — never every time, never none.
   const one = content.rewards.growth.charm.fight_one_in;
   const days = Array.from({ length: 30 }, (_, i) => fightOut(toFuzhu(), 'subdue-fuzhu', { c: ctx({ now: new Date(NOW.getTime() + i * 864e5) }) }));

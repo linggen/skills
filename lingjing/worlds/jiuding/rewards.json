@@ -158,7 +158,7 @@
     "art": "art/dongfu-gate.webp",
     "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, seed 52, 768×512: a closed 洞府 stone gate in a cliff, pine and mist above, steps below, light at the seam."
   },
-  "_growth": "本命法宝 and 符 grow from the story, never from a daily tap (redesign-v2 § 四: 温养 · 强化 · 写符 cut). The treasure rises one 重 each time a chapter ends and each time 今日传闻's finale is won, up to 九重. A rumor's finale leaves one 符; a fight won leaves one on one win in `fight_one_in` (by the day, the beast and the 道号).",
+  "_growth": "本命法宝 and 符 grow from the story, never from a daily tap (redesign-v2 § 四: 温养 · 强化 · 写符 cut). The treasure rises one 重 each time a chapter ends and each time 今日传闻's finale is won, up to 九重. A rumor's finale leaves one 符; a fight won leaves one on one win in `fight_one_in` (by the day, the beast and the 名字).",
   "growth": {
     "treasure": {
       "chapter": 1,

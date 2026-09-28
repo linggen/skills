@@ -79,7 +79,7 @@ const riddlePool = exit => (Array.isArray(exit.key) ? exit.key : [exit.key]);
 const riddleSlot = (scene, exit) => `${scene.id}/${exit.id}`;
 
 /* The riddle an exit asks: today's, once asked; else one this play has not
-   seen, by the day and the 道号 — never twice in one play (his rule,
+   seen, by the day and the 名字 — never twice in one play (his rule,
    2026-09-17) until the pool is spent, and then never the last one again. */
 export function riddleOf(state, scene, exit, now) {
   const pool = riddlePool(exit), slot = state.riddles?.[riddleSlot(scene, exit)];
@@ -173,7 +173,7 @@ function spendStamina(content, s, ctx, kind, n = 1, fixed = null) {
   return refuse('no-stamina', say, { stamina: s.stamina, cost, returns_at: at.toISOString() });
 }
 
-/* An offered name picked in either form is kept in its zh form: the 道号 is
+/* An offered name picked in either form is kept in its zh form: the 名字 is
    a Chinese name, whatever language it was picked in. */
 function offeredForm(value, rule) {
   const key = value.toLowerCase();
@@ -186,7 +186,7 @@ function cleanValue(raw, rule) {
   return value && fitValue(offeredForm(value, rule), rule.max_chars);
 }
 
-/* An exit with `value` (the 道号) is named on the page's card — the player
+/* An exit with `value` (the 名字) is named on the page's card — the player
    taps an offered name or writes their own, and the page resolves it. Ling
    never fills it in: live, 2026-09-28, she asked 「取一个道号」 as the only
    option and, tapped, Resolved it with 青玄 — every player became 青玄. So

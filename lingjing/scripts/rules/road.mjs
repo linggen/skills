@@ -82,7 +82,7 @@ function chanceBrief(content, state, now) {
    Where the place holds nothing of its own, the rules deal ONE: something
    found, a traveller's riddle, a beast on the road, a 抉择 — or, where it
    lies, the day's 机缘, which comes before anything the place holds. Drawn
-   by the day, the place and the 道号 — a reload rerolls nothing — and once
+   by the day, the place and the 名字 — a reload rerolls nothing — and once
    per place per day, so walking to and fro is not a farm (design.md § 路上). */
 const meetsToday = (state, now) => (state.meets?.day === dayKey(now) ? state.meets.places ?? {} : {});
 const meetHere = (state, now) => meetsToday(state, now)[state.place] ?? null;

@@ -46,7 +46,7 @@ function taleLabel(content, state, t, n = t.n) {
 /* ── The seed and the shape Ling writes to ── */
 
 /* The seed a tale grows from: the province he stands in, unused first,
-   chosen by the day and the 道号 — the same day hands back the same seed.
+   chosen by the day and the 名字 — the same day hands back the same seed.
    A province with none written grows the tale from its heritage alone. */
 function pickSeed(content, state, now) {
   const province = placeOf(content, state.place)?.province ?? content.chapters[state.chapter]?.province;

@@ -361,8 +361,9 @@ The fields, as `scripts/content.mjs` checks them:
 
 | Field | Means |
 |---|---|
-| `place`, `setup` | Where it is; what Ling narrates on entry — paraphrased, facts unchanged. `{daohao}` fills in the player's name. |
+| `place`, `setup` | Where it is; what Ling narrates on entry — paraphrased, facts unchanged. `{name}` fills in the player's 名字; `{兄姐}` (师兄 · 师姐) and `{伴}` (阿禾 · 石头) follow the name card's 男 · 女, `{灵根}` the roots (2026-09-28). |
 | `cast` | Who is present: `yinyue`, creature ids. |
+| line `who` | `ling` (narration), a creature, a person of `people.json` (name, role, voice, home, portrait), or the slot `ban` — the companion by gender. |
 | `show` | Cards `Show`n on entry: `creature`, `root`, `map`, `board`, `hexagram`, `gate`, `tribulation`. |
 | `lines` | Hand-written spine lines spoken on entry, near verbatim. |
 | `offers` | Tasks set here, and whether due quests appear beside them. |
@@ -372,9 +373,11 @@ The fields, as `scripts/content.mjs` checks them:
 | exit `needs` / `take` | What must be in hand (`bag`) or done (`task`); what it uses up. A need carries a `refuse` line. |
 | exit `grant` | 修为, 灵石, a creature — never over its table's cap. |
 | exit `key` | A riddle, or a pool of them (2026-09-17). The rules pick the day's — one this play has not seen, by the day and the 道号; asked is seen, and a play never asks one twice until its pool is spent. Each riddle offers `choices` (three or four, one right) as the question's options; a miss is kept — the first brings the `hint`, the second shuts the riddle until tomorrow (`riddle-closed`). The model only extracts the answer. |
-| exit `value` | A value the player gives — the 道号 — with offered choices. |
+| exit `value` | A value the player gives — the 名字 — with offered choices; `gender: true` asks 男 · 女 on the same card. |
+| exit `born` | 生辰 → 灵根 on the page's card (rules/roots.mjs): private, skippable, never Ling's; a save holding its roots keeps them. |
 | exit `set` | State the rules set, e.g. `root: v1`. |
-| exit `game` | A puzzle or duel whose win the page reports. |
+| exit `game` | A puzzle or duel whose win the page reports; `retry` — a trial fight fought again the same day. |
+| exit `stamina` · `mark` | Toil that costs 体力 even in a free chapter; a choice the save remembers (`marks`). |
 | exit `beat` | Lines spoken when the exit is taken. |
 | exit `next` · `stay` · `ends` | Exactly one: the next scene, stay here, or end the chapter. |
 

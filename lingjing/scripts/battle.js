@@ -116,7 +116,7 @@ export const EFFECTS = {
    swallow; 锁 takes anything. */
 export const fits = (e, m) => Boolean(m) && (e?.swallow == null || m.atk <= e.swallow);
 
-/* ── A small stable hash: the same day, creature and 道号 shuffle the same ── */
+/* ── A small stable hash: the same day, creature and 名字 shuffle the same ── */
 
 export function hashOf(text) {
   let h = 7;

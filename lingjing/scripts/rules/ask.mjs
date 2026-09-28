@@ -56,7 +56,7 @@ export function askOf(content, state, ctx, result = {}, ungated = false) {
     // game is played on its own card — a bout, a board — is not asked here
     // too; winning it moves the story by itself.
     const played = new Set(scene.exits.filter(e => e.game && !e.won).map(e => e.id));
-    // A value exit (the 道号) is named on its own card — offered names and the
+    // A value exit (the 名字) is named on its own card — offered names and the
     // player's own — never a chat option: tapped there, Ling filled in a name
     // herself (2026-09-28, every player 青玄). stage.mjs `value`.
     // The 生辰 likewise, and more so: it is private (roots.mjs).

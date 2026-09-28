@@ -243,7 +243,7 @@ function gainCard(content, state, id, from = null) {
    灵兽 of any element, a 功法 only of his roots (one he could never cast is no
    gift) — the beast's own element first.
    Never a 山海经 beast — those come only by taming. Stable by the day, the
-   beast and the 道号, like everything else a fight deals. */
+   beast and the 名字, like everything else a fight deals. */
 function winCard(content, state, creature, now, nth = 0, from = { how: 'win', creature: creature.id }) {
   const owned = new Set(ownedCards(content, state)), roots = new Set(state.traits ?? []);
   const open = (content.cards?.cards ?? []).filter(c => !c._token && c.id !== 'yinyue' && !isBeastCard(content, c.id)

@@ -62,7 +62,7 @@ export function fill(text, state, content = null) {
   return out;
 }
 
-/* A value the player gives the world (the 道号): trimmed, one to `max`
+/* A value the player gives the world (the 名字): trimmed, one to `max`
    characters, no line breaks — or null. The rules' check and the page card's
    confirm button read this one function, so they can never disagree. */
 export function fitValue(raw, max) {
