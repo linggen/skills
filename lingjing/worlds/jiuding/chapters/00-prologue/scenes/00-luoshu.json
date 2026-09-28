@@ -16,6 +16,12 @@
   "en": "Second trial, the Luo Shu square: fifteen down, across and corner to corner."
  },
  "cast": [],
+ "show": [
+  {
+   "card": "board",
+   "id": "gate-luoshu"
+  }
+ ],
  "lines": [
   {
    "who": "qulao",

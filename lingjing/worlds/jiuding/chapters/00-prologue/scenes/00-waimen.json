@@ -16,6 +16,12 @@
   "en": "In the outer court Zhou Heng set the first chore: pair the eight herbs, make a furnace of pills."
  },
  "cast": [],
+ "show": [
+  {
+   "card": "board",
+   "id": "alchemy-first"
+  }
+ ],
  "lines": [
   {
    "who": "zhouheng",

@@ -770,7 +770,8 @@ function focusHtml() {
   watchAppear(cards);
   const { head, queue, tail } = splitStage(cards);
   // In 闭关 the world holds still: no roads under its card.
-  const roads = stageHolds(look, cards) && !look.seclusion ? roadsHtml() : '';
+  // …nor inside a corridor (the prologue): the rules refuse the walk there anyway.
+  const roads = stageHolds(look, cards) && !look.seclusion && !look.director?.corridor ? roadsHtml() : '';
   return spoils + head.map(drawCard).join('') + queueHtml(queue) + tail.map(drawCard).join('') + roads;
 }
 
@@ -803,6 +804,8 @@ function inQueue(c) {
   // Done for the day (the tray's 已完成), it never queues — opened, shown or hosted (stage.mjs).
   if (boardDoneToday(look, c.id)) return false;
   if (view.opened?.id === c.id || view.focus.some((f) => f.card === 'board' && f.id === c.id)) return true;
+  // A scene that stands its board on the stage (the prologue's 二试, the first practice).
+  if ((look?.scene?.show ?? []).some((f) => f.card === 'board' && f.id === c.id)) return true;
   const task = look?.tasks?.find((t) => t.id === c.id);
   return !task || Boolean(task.hosted || task.for_errand);
 }
@@ -1334,7 +1337,9 @@ async function bornTap(kind) {
 function watchAppear(cards) {
   if (view.appearing || bout || !authored) return;
   const seen = new Set(look?.appeared ?? []);
-  const c = cards.filter((x) => x.card === 'creature').map((x) => authored.creatures.find((k) => k.id === x.id)).find((k) => k?.appear && !seen.has(k.id));
+  // The creature's card on the stage, or the one the scene brings on (an errand's card may stand in its place).
+  const shown = [...cards, ...(look?.scene?.show ?? [])].filter((x) => x.card === 'creature');
+  const c = shown.map((x) => authored.creatures.find((k) => k.id === x.id)).find((k) => k?.appear && !seen.has(k.id));
   if (!c) return;
   keep({ appearing: c.id });
   $('view').insertAdjacentHTML('beforeend', appearHtml(c, ctx()));
