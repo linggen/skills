@@ -38,7 +38,7 @@ test('a beat stands as a panel: the picture, its caption, the choices under it �
     const html = cardHtml({ card: 'panel' }, page(l));
     assert.match(html, /<img class="panelart" src="\.\.\/worlds\/jiuding\/art\/panels\/00-masan\.webp"/);
     assert.match(html, lang === 'zh' ? /<p>马三来了，一脚踹开柴门。<\/p>/ : /<p>Ma San comes, and kicks the gate open\.<\/p>/);
-    assert.match(html, lang === 'zh' ? /data-panel-exit="endure">垂下眼睛，一动不动</ : /data-panel-exit="endure">Lower your eyes and stand still</);
+    assert.match(html, lang === 'zh' ? /data-panel-exit="endure">照他的话，原样说回去</ : /data-panel-exit="endure">Say his words straight back</);
     assert.doesNotMatch(html, /undefined|\{\w+\}|NaN/);
     assert.match(cardHtml({ card: 'panel' }, page(l, { panelBusy: 'strike' })), /paneltap busy" data-panel-exit="strike" disabled/);
     assert.match(cardHtml({ card: 'panel' }, page(l, { panelNote: '手里没有鹿皮。' })), /class="donote">手里没有鹿皮。</);
@@ -66,7 +66,7 @@ test('the command line: Ling is handed each passage once — a new game\'s first
     cli('init', '--lang=zh');
     const first = cli('look', '--said=[scene] opened', '--for=ling');
     assert.deepEqual(first.tell.map(t => t.id), ['00-shiao']);
-    assert.match(first.tell[0].text, /蒙山脚下的石坳村，一共十七户人家/);
+    assert.match(first.tell[0].text, /石坳村一共十七户人家/);
     assert.match(first.then, /^Tell the story first/);
     assert.equal(first.guide.tell.includes('小人书'), true, 'the guide comes with the first passage');
     assert.equal(cli('look', '--said=你好', '--for=ling').tell, undefined, 'told once');
@@ -75,7 +75,7 @@ test('the command line: Ling is handed each passage once — a new game\'s first
     cli('resolve', '--exit=strike', '--said=攥紧拳头');
     const told = cli('look', '--said=[scene] took 攥紧拳头', '--for=ling');
     assert.deepEqual(told.tell.map(t => t.id), ['00-masan/strike', '00-dawn']);
-    assert.match(told.tell[0].text, /你爹比你快/);
+    assert.match(told.tell[0].text, /你攥紧了拳头/);
     assert.match(told.tell[1].text, /是隔壁的石头/, 'a boy walks with 石头');
     assert.deepEqual(told.page_did.map(d => d.what).filter(w => /chose/.test(w)), ['chose 「攥紧拳头」 under the picture — 恩仇簿: 仇 maxiaobao, 仇 masan']);
     // Ling's own Resolve carries its passages at once
@@ -92,15 +92,15 @@ test('her words are hers while she is present: marked for Ling, handed to her; a
   const valley = walk(start(), TO_VALLEY, content, NOW);
   assert.equal(valley.scene, '00-yinyue');
   // at dawn she is not yet with the player: Ling tells her words
-  assert.match(tellOf(content, valley).tell.at(-1).text, /「醒了？」她舔了舔手指上的饼渣/);
+  assert.match(tellOf(content, valley).tell.at(-1).text, /\*\*她\*\*：（嚼）难吃。/);
   const out = resolve(valley, content, ctx(), { exit: 'follow' });
   assert.deepEqual(out.result.joined, { id: 'yinyue' });
   assert.deepEqual(out.state.companion, { joined: '2026-09-28', awake: true });
   const cliff = tellOf(content, out.state).tell.at(-1);
   assert.equal(cliff.id, '00-cliff');
-  assert.match(cliff.text, /懒洋洋地抬了抬下巴：〔银月〕/);
+  assert.match(cliff.text, /懒洋洋地抬了抬下巴。\n\n〔银月〕/);
   assert.doesNotMatch(cliff.text, /让开/);
-  assert.match(out.result.her_beat.facts.line, /「让开。」/);
+  assert.match(out.result.her_beat.facts.line, /让开/);
   assert.deepEqual(Object.keys(forLing(out.result).her_beat.facts), ['happened'], 'Ling never gets her line');
   // she faints at the deer, wakes at night, sleeps in the token after the bath
   let s = walk(out.state, [['resolve', { exit: 'climb' }], ['resolve', { exit: 'left' }]], content, NOW);
@@ -116,7 +116,7 @@ test('her words are hers while she is present: marked for Ling, handed to her; a
   assert.deepEqual(fight.duel.setup.you.extra, [], 'asleep, she fights nothing');
   const won = resolve({ ...trial, wins: { 'gate-longzhi': NOW.toISOString() } }, content, ctx(), { exit: 'subdue' });
   assert.equal(won.result.her_beat, undefined);
-  assert.match(tellOf(content, won.state).tell.find(t => t.id === '00-longzhi/subdue').text, /胸口的木牌，一烫。\n\n「……左边。」/);
+  assert.match(tellOf(content, won.state).tell.find(t => t.id === '00-longzhi/subdue').text, /……左边/);
 });
 
 test('an old save found her by the bell: awake, and the engine reads it so', () => {

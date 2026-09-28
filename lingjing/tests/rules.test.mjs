@@ -177,7 +177,7 @@ test('the name card keeps 男 · 女, and the name fills what follows', () => {
   assert.equal(must(resolve, s, { exit: 'name', value: '墨白' }).state.gender, null);
   const cliff = walk(named.state, [...TO_HALL.slice(1, TO_HALL.findIndex(([, a]) => a.exit === 'follow') + 1)], content, NOW);
   assert.equal(cliff.scene, '00-cliff');
-  assert.match(tellOf(content, cliff).tell.at(-1).text, /是老周，石头的爹的声音/);
+  assert.match(tellOf(content, cliff).tell.at(-1).text, /是石头的爹，老周。/);
 })
 
 test('a name must be 1 to 8 characters', () => {

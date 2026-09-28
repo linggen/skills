@@ -35,8 +35,8 @@
   }
  },
  "story": {
-  "zh": "石坳村的孩子，还不会走路就听过黑松岭的故事。\n\n岭口立着一块断碑，半截埋在土里，字早已认不全了，只剩最后两个还看得清：**勿入**。村里的老人说，那碑比村子还老，比马家还老，比县城的城墙都老。过了断碑，树会自己挪地方，路会自己打结；进去的人，十个里头回来一个，回来的那一个，也不肯说里面有什么。\n\n你爹的爹，就是那十个里头没回来的九个之一。\n\n你们站在断碑前面。碑后面的松林黑沉沉的，一点风都没有，连鸟叫都没有。\n\n你想起了吴婆婆的话。\n\n「你在这儿等我，」你爹说。",
-  "en": "The children of Shi'ao hear the stories of Black Pine Ridge before they can walk.\n\nAt the mouth of the ridge stands a broken stele, half buried in the earth. Its writing has long worn past reading; only the last two characters are still clear: **Do not enter**. The old people say the stele is older than the village, older than the Mas, older than the county town's walls. Past the stele the trees move of themselves and the paths tie themselves in knots; of ten who go in, one comes back, and the one who comes back will not say what is inside.\n\nYour father's father was one of the nine of those ten who did not come back.\n\nYou stand before the broken stele. The pines behind it are dark and heavy. There is not a breath of wind, not even a bird.\n\nYou remember what Granny Wu said.\n\n\"Wait for me here,\" your father says."
+  "zh": "石坳村的孩子，还不会走路，就听过黑松岭的故事。\n\n岭口立着一块断碑，半截埋在土里。碑上的字，风吹雨打了不知道多少年，早就认不全了。只剩下最后两个，还看得清清楚楚——\n\n**勿入。**\n\n村里的老人说，那块碑，比村子还老，比马家还老，比县城的城墙都老。\n\n村里的老人说，过了断碑，林子就不一样了。树会自己挪地方，路会自己打结。进去十个人，回来一个。回来的那一个，也不肯说里面有什么。\n\n你爷爷，就是没回来的那九个之一。\n\n你们站在断碑前面。\n\n碑后面的松林黑沉沉的。没有风。没有鸟叫。静得像有人把整座山的声音，都装进口袋里拿走了。\n\n**爹**：你在这儿等我。",
+  "en": "The children of Shi'ao hear the stories of Black Pine Ridge before they can walk.\n\nAt the mouth of the ridge stands a broken stele, half buried in the earth. Wind and rain have worked at its writing for who knows how many years; most of it can't be read. Only the last two characters are still perfectly clear —\n\n**Do not enter.**\n\nThe old people of the village say that stele is older than the village, older than the Mas, older than the walls of the county town.\n\nThe old people of the village say that past the stele, the woods are different. The trees move by themselves; the paths tie themselves in knots. Ten go in, one comes back. And the one who comes back won't say what's inside.\n\nYour grandfather was one of the nine who didn't.\n\nThe two of you stand before the broken stele.\n\nThe pines behind it are dark and heavy. No wind. No birdsong. So quiet it's as if someone had put every sound on the mountain into a sack and carried it off.\n\n**Father:** Wait for me here."
  },
  "lines": [],
  "buttons": [
@@ -55,8 +55,8 @@
    "means": "looks at the back of the stele, as Granny Wu said; compares the token",
    "mark": "stele-fox",
    "story": {
-    "zh": "你绕到碑后面，扒开半人高的枯草。碑背面也刻着字，比正面的更深，更小，你一个都不认得——只认得最底下刻着一只小小的狐狸，蜷着，尾巴绕着身子。\n\n你把怀里的木牌拿出来。木牌上，刻的是同一只狐狸。\n\n你没吭声，把木牌收好了。",
-    "en": "You go round behind the stele and part the dry grass, half as tall as a man. There is writing on the back too, deeper and smaller than on the front, and you know none of it — only, at the very bottom, a small carved fox, curled, its tail wrapped around its body.\n\nYou take the token out of your jacket. On the token is the same fox.\n\nYou say nothing, and put the token away."
+    "zh": "你想起吴婆婆的话，绕到碑后面，扒开半人高的枯草——\n\n碑的背面，也刻着字。比正面的更深，更小，弯弯曲曲的，你一个都不认得。\n\n只认得最底下，刻着一只小小的狐狸。蜷着。尾巴绕着身子。\n\n你把怀里的木牌掏出来，比了一比。\n\n一模一样。\n\n你的心里，咯噔一下。\n\n你看了看木牌。又看了看碑。又看了看木牌。\n\n然后，你做了一个非常成熟的决定——\n\n你把木牌收好了。什么都没说。\n\n有些事，说出来，你爹今天就不会进去了。你爹不进去，马三就要来收弓。马三来收弓，你娘就又要蹲在地上捡东西。\n\n这笔账，你算得很清楚。",
+    "en": "You remember what Granny Wu said, go round behind the stele, and part the dry grass, half as tall as a man —\n\nThe back of the stele is carved too. Deeper than the front, smaller, all curls and twists. You can't read a single character.\n\nExcept, at the very bottom, a tiny carved fox. Curled up. Tail wrapped around its body.\n\nYou take the token out of your jacket and hold it up beside it.\n\nIdentical.\n\nSomething in your chest goes *thunk*.\n\nYou look at the token. Then at the stele. Then at the token.\n\nAnd then you make a very mature decision —\n\nYou put the token away. And say nothing.\n\nSome things, said out loud, would mean your father doesn't go in today. If your father doesn't go in, Ma San comes for the bow. If Ma San comes for the bow, your mother ends up crouched on the floor picking things up again.\n\nYou've done that sum, and you're quite clear on it."
    },
    "beat": [],
    "stay": true
@@ -70,8 +70,8 @@
    "means": "goes in with father on conditions, sets rules, marks, turns back by sundown, runs if anything is wrong",
    "mark": "three-rules",
    "story": {
-    "zh": "你没有说「我不」。你想了想，说：「爹，你的腿，追不上鹿。」\n\n你爹愣住了。\n\n「我跟你进去，」你说，「但咱们定三条规矩：一，每走三十步，我在树上刻一道记号；二，太阳一过那道山梁，不管追没追到，掉头就走；三，只要有一样东西不对劲——不管是什么——不商量，跑。」\n\n你爹看着你，看了很久。他的眼睛有点红，不知道是风吹的，还是别的什么。\n\n「好，」他说，「听你的。」\n\n你们跨过了断碑。\n\n过碑的那一刻，你耳朵里轻轻「嗡」了一下，像有人在很远的地方敲了一记钟。你回头看——断碑还在。再往前走几步，再回头，断碑就不见了。\n\n你在身边的树上刻下了第一道记号。",
-    "en": "You don't say \"I won't.\" You think a moment and say: \"Father, your leg can't catch a deer.\"\n\nYour father stops short.\n\n\"I'll go in with you,\" you say. \"But we make three rules. One: every thirty steps I cut a mark on a tree. Two: once the sun passes that ridge, deer or no deer, we turn round. Three: the moment anything is wrong — anything at all — no talking it over. We run.\"\n\nYour father looks at you for a long time. His eyes are a little red; the wind, maybe, or something else.\n\n\"All right,\" he says. \"We do it your way.\"\n\nYou step past the broken stele.\n\nThe moment you pass it, something hums softly in your ears, like a bell struck somewhere very far away. You look back — the stele is still there. A few steps on you look back again, and the stele is gone.\n\nYou cut the first mark on the tree beside you."
+    "zh": "你没有说「我不」。你想了想，说：\n\n**你**：爹。你的腿，追不上鹿。\n\n你爹愣住了。\n\n**你**：我跟你进去。（竖起三根手指）但咱们定三条规矩。\n\n**你**：一，每走三十步，我在树上刻一道记号。\n\n**你**：二，太阳一过那道山梁，不管追没追到，掉头就走。\n\n**你**：三——（你看着他的眼睛）只要有一样东西不对劲，不管是什么，不商量。跑。\n\n你爹看着你，看了很久很久。他的眼睛有点红。你不知道是风吹的，还是别的什么。\n\n**爹**：好。听你的。\n\n**爹**：（顿了顿）……你娘教的？\n\n**你**：嗯。\n\n你爹长长地叹了一口气。那口气里，有一半是放心，还有一半，是有点吃醋。\n\n**爹**：随她。随她好。\n\n你们跨过了断碑。\n\n跨过去的那一刻，你的耳朵里，轻轻地「嗡」了一下，像有人在很远很远的地方，敲了一记钟。\n\n你回头看。断碑还在。\n\n你往前走了几步。再回头——\n\n断碑，没了。\n\n你面不改色地，在身边那棵树上，刻下了第一道记号。\n\n手有点抖。刻歪了。\n\n你又在旁边刻了一道。这一回，没歪。\n\n你决定，第一道不算。",
+    "en": "You don't say \"I won't.\" You think a moment, and say:\n\n**You:** Father. Your leg can't catch a deer.\n\nYour father stops short.\n\n**You:** I'm coming in with you. (holding up three fingers) But we make three rules.\n\n**You:** One: every thirty steps, I cut a mark on a tree.\n\n**You:** Two: once the sun passes that ridge, deer or no deer, we turn round.\n\n**You:** Three — (you look him in the eye) the moment anything is wrong, anything at all, no talking it over. We run.\n\nYour father looks at you for a long, long time. His eyes are a little red. You can't tell if it's the wind or something else.\n\n**Father:** All right. We'll do it your way.\n\n**Father:** (after a pause) …Your mother taught you that?\n\n**You:** Mm.\n\nYour father lets out a long sigh. Half of it is relief. The other half is a little bit jealous.\n\n**Father:** Takes after her. Good. Take after her.\n\nYou step past the broken stele.\n\nThe moment you cross it, something hums softly in your ears — like a bell struck somewhere very, very far away.\n\nYou look back. The stele is still there.\n\nYou walk a few steps on. You look back again —\n\nThe stele is gone.\n\nWithout a flicker on your face, you cut the first mark into the tree beside you.\n\nYour hand shakes a little. It comes out crooked.\n\nYou cut another beside it. This one's straight.\n\nYou decide the first one doesn't count."
    },
    "beat": [],
    "next": "00-heisong"
@@ -84,8 +84,8 @@
    },
    "means": "wants to go back to the village, gives up the hunt",
    "story": {
-    "zh": "「爹，咱回吧。」\n\n你爹没回头。「回去，弓就没了。」他说得很轻，「没了弓，冬天拿什么打肉。」\n\n你看着他缠着麻布的膝盖，没再说话。",
-    "en": "\"Father, let's go home.\"\n\nYour father doesn't turn round. \"Go home, and the bow's gone,\" he says, very quietly. \"No bow, and what do we hunt with come winter?\"\n\nYou look at the hemp cloth wound round his knee and say nothing more."
+    "zh": "**你**：爹，咱回吧。\n\n你爹没回头。\n\n**爹**：回去，弓就没了。\n\n**爹**：（顿了顿）没了弓，冬天拿什么打肉？拿我的膝盖？\n\n你看了看他缠着麻布的膝盖。它今天一句话都没说。你也没再说话。",
+    "en": "**You:** Father, let's go home.\n\nYour father doesn't turn round.\n\n**Father:** Go home, and the bow's gone.\n\n**Father:** (after a pause) No bow, and what do we hunt with come winter? My knee?\n\nYou look at the hemp cloth wound round his knee. It hasn't said a word all day. Neither do you, now."
    },
    "beat": [],
    "stay": true
@@ -98,8 +98,8 @@
    },
    "means": "wants to go in alone, leaving father behind",
    "story": {
-    "zh": "「你在这儿等我，我一个人进去。」\n\n你爹一把攥住你的胳膊，攥得你生疼。「你爷爷就是一个人进去的。」\n\n他没再往下说。你也没再提。",
-    "en": "\"You wait here. I'll go in alone.\"\n\nYour father grips your arm so hard it hurts. \"Your grandfather went in alone.\"\n\nHe says nothing more. Neither do you."
+    "zh": "**你**：你在这儿等我。我一个人进去。\n\n你爹一把攥住你的胳膊，攥得你生疼。\n\n**爹**：你爷爷，就是一个人进去的。\n\n他没再往下说。你也没再提。",
+    "en": "**You:** You wait here. I'll go in alone.\n\nYour father grabs your arm so hard it hurts.\n\n**Father:** Your grandfather went in alone.\n\nHe says nothing more. Neither do you."
    },
    "beat": [],
    "stay": true

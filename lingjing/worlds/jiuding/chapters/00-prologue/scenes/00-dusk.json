@@ -35,7 +35,7 @@
   }
  },
  "story": {
-  "zh": "天黑了。村东头，吴婆婆的门槛上，像是一直有人坐着。",
+  "zh": "天黑了。村东头，吴婆婆的门槛上，好像一直有人坐着。",
   "en": "Night falls. At the east end of the village, someone seems to have been sitting on Granny Wu's doorstep all along."
  },
  "lines": [],
@@ -54,8 +54,8 @@
    "mark": "wupo-bowed",
    "wakes": true,
    "story": {
-    "zh": "那天晚上，你去了一趟村东头。吴婆婆坐在门槛上，像是一直在等你。\n\n「见着了？」她问。\n\n你想了想，点了点头。\n\n吴婆婆那双白蒙蒙的眼睛弯了起来。她伸出枯瘦的手，摸了摸你的头，又摸了摸你的肩膀——摸到了那条\"围脖\"。\n\n她的手停住了。然后，她朝着那团看不见的银光，很慢、很慢地低下了头。",
-    "en": "That night you walk to the east end of the village. Granny Wu is sitting on her doorstep, as if she has been waiting for you all along.\n\n\"Did you see it?\" she asks.\n\nYou think a moment, and nod.\n\nGranny Wu's clouded eyes crinkle into a smile. She reaches out a bony hand and touches your head, then your shoulder — and finds the \"scarf.\"\n\nHer hand stops. Then, toward the silver light she cannot see, very slowly, she bows her head."
+    "zh": "那天晚上，你去了一趟村东头。\n\n吴婆婆坐在门槛上，像是一直在等你。\n\n**吴婆婆**：见着了？\n\n你想了想，点了点头。\n\n吴婆婆那双白蒙蒙的眼睛，弯了起来。她伸出枯瘦的手，摸了摸你的头，又摸了摸你的肩膀——\n\n摸到了那条\"围脖\"。\n\n她的手停住了。\n\n然后，她朝着那团谁都看不见的银光，很慢、很慢地，低下了头。\n\n你站在那儿，一动不敢动。\n\n吴婆婆直起身，拍了拍你的手背，又变回了那个十句话九句废话的老太太：\n\n**吴婆婆**：回去吧。明儿个，记得给我送条鹿腿来。\n\n**你**：……您怎么知道有鹿腿？\n\n**吴婆婆**：你爹答应的。在断碑那儿。\n\n**你**：您又不在断碑那儿。\n\n吴婆婆笑了，露出那三颗牙：「我耳朵好。」",
+    "en": "That evening, you walk to the east end of the village.\n\nGranny Wu is sitting on her doorstep, as if she has been waiting for you all along.\n\n**Granny Wu:** Did you see it?\n\nYou think a moment, and nod.\n\nGranny Wu's clouded white eyes crinkle up. She reaches out a bony hand and touches your head, then your shoulder —\n\nand finds the \"scarf.\"\n\nHer hand stops.\n\nThen, toward the silver light that nobody can see, very, very slowly, she bows her head.\n\nYou stand there, not daring to move.\n\nGranny Wu straightens up, pats the back of your hand, and turns back into the old woman whose words are nine parts nonsense in ten:\n\n**Granny Wu:** Off home. Tomorrow, remember to bring me a leg of venison.\n\n**You:** …How do you know there's venison?\n\n**Granny Wu:** Your father promised. At the broken stele.\n\n**You:** You weren't at the broken stele.\n\nGranny Wu laughs, showing her three teeth. \"My ears are good.\""
    },
    "beat": [],
    "next": "00-xiuxian"
@@ -69,8 +69,8 @@
    "means": "stays home with the fox that night",
    "wakes": true,
    "story": {
-    "zh": "你没出门。你守着怀里那团凉冰冰的银毛；村东头的门槛上，那个人坐到了半夜。",
-    "en": "You stay in, watching over the cold silver fur inside your jacket; on the doorstep at the east end, someone sits until midnight."
+    "zh": "你没出门。你守着怀里那团凉冰冰的银毛，一夜数了三遍它还在不在喘气。村东头的门槛上，那个人坐到了半夜。",
+    "en": "You stay in. You keep watch over the cold silver fur inside your jacket, and three times in the night you check that it's still breathing. On the doorstep at the east end, someone sits until midnight."
    },
    "beat": [],
    "next": "00-xiuxian"

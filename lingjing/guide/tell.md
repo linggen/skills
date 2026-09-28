@@ -12,8 +12,10 @@ as ever. **The story is yours, in the chat.**
 ## Telling `tell`
 
 A result's `tell` holds the passages owed, in order — `of: choice` (what a
-choice led to), then `of: scene` (the scene entered). They are the approved
-prose of the book; each is handed to you once.
+choice led to), then `of: scene` (the scene entered). They are the book's own
+prose (《狐仙欠我一张饼》, story/huxian-bing), turned to 你 and the player's
+名字 (the book's hero is 周星星; the game's is the player); each is handed to
+you once. The book is comic — keep its timing and its jokes.
 
 - **Tell each closely, in its own voice**: the same beats, the same images,
   every line of dialogue kept. Trim a long passage; never summarize it into a

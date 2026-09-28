@@ -35,8 +35,8 @@
   }
  },
  "story": {
-  "zh": "你们没有马上下山。\n\n⟪「那头鹿，」⟫银月在你耳边说，⟪「还在谷口的溪边喝水。三百步，东北，顺风。」⟫\n\n你愣了一下。\n\n⟪「你们来黑松岭，不就是为了它？」⟫它的尾巴尖扫了扫你的耳朵，⟪「救命之恩，本王先还个小的。」⟫\n\n你拉了拉你爹的袖子，指了指东北。\n\n你爹不信。可他还是跟你摸了过去——三百步，溪边，一头雄鹿正低着头喝水，鹿角像一丛枯树枝，比你爹见过的所有鹿都大。\n\n你爹拉弓的手在抖。他的膝盖跪不下去，蹲也蹲不稳。\n\n「爹，」你说，「我来。」\n\n你爹看了你一眼，把爷爷的弓递给了你。\n\n弓比你想的沉。你拉开它，拉到一半，胳膊就开始打颤。你咬着牙，屏住气，像你爹教过你一千遍的那样——\n\n⟪「风，」⟫银月说，⟪「往左偏半寸。」⟫",
-  "en": "You don't go down the mountain at once.\n\n⟪\"That deer,\"⟫ Yinyue says in your ear, ⟪\"is still drinking at the stream by the valley mouth. Three hundred paces, northeast, downwind.\"⟫\n\nYou stop short.\n\n⟪\"Isn't that what you came to Black Pine Ridge for?\"⟫ The tip of its tail brushes your ear. ⟪\"A life saved — this king repays a small piece first.\"⟫\n\nYou tug your father's sleeve and point northeast.\n\nYour father doesn't believe it. But he creeps over with you anyway — three hundred paces, by the stream, a stag drinking with its head down, antlers like a thicket of dead branches, bigger than any deer your father has ever seen.\n\nYour father's hands shake on the bow. His knee won't kneel, and he can't hold a crouch.\n\n\"Father,\" you say. \"Let me.\"\n\nYour father looks at you once, and hands you grandfather's bow.\n\nThe bow is heavier than you thought. You draw it; halfway, your arms begin to tremble. You set your teeth and hold your breath, the way your father has taught you a thousand times —\n\n⟪\"Wind,\"⟫ says Yinyue. ⟪\"Half an inch to the left.\"⟫"
+  "zh": "⟪**银月**：那头鹿。⟫\n\n你们正要下山，银月忽然在你耳边开口。声音很小，像是一口气要分成三口说。\n\n⟪**银月**：谷口溪边……在喝水。三百步，东北，顺风。⟫\n\n**你**：你怎么知道？\n\n⟪**银月**：本王是妖王。⟫\n\n**你**：妖王也管打猎？\n\n⟪**银月**：……本王欠你一张饼。先还个利息。⟫\n\n你拉了拉你爹的袖子，指了指东北。\n\n你爹不信。可他还是跟着你摸了过去。三百步。溪边。一头雄鹿正低着头喝水，鹿角像一丛冬天的枯树枝，比你爹这辈子见过的所有鹿都大。\n\n你爹拉弓的手在抖。他的膝盖跪不下去，蹲也蹲不稳。\n\n**你**：爹。我来。\n\n你爹看了你一眼，把爷爷的弓递给了你。\n\n弓比你想的沉。你拉开它，拉到一半，胳膊就开始打颤。你咬着牙，屏住气——\n\n⟪**银月**：风。往左偏半寸。⟫",
+  "en": "⟪**Yinyue:** That deer.⟫\n\nYou are just about to go down the mountain when Yinyue speaks in your ear. Her voice is very small, as if one breath had to be split into three.\n\n⟪**Yinyue:** At the stream by the valley mouth… drinking. Three hundred paces, northeast, downwind.⟫\n\n**You:** How do you know?\n\n⟪**Yinyue:** This king is the demon sovereign.⟫\n\n**You:** Demon sovereigns do hunting too?\n\n⟪**Yinyue:** …This king owes you a flatbread. Here's some interest first.⟫\n\nYou tug your father's sleeve and point northeast.\n\nYour father doesn't believe it. But he creeps over with you anyway. Three hundred paces. The stream. A stag is drinking with its head down, antlers like a thicket of winter branches, bigger than any deer your father has seen in his whole life.\n\nYour father's hands shake on the bow. His knee won't kneel, and he can't hold a crouch.\n\n**You:** Father. Let me.\n\nYour father looks at you once, and hands you grandfather's bow.\n\nThe bow is heavier than you thought. You draw it; halfway, your arms start to tremble. You grit your teeth and hold your breath —\n\n⟪**Yinyue:** Wind. Half an inch to the left.⟫"
  },
  "lines": [],
  "buttons": [
@@ -58,8 +58,8 @@
     "item": "deer-hide"
    },
    "story": {
-    "zh": "你往左偏了半寸。\n\n箭出去了。\n\n你肩上一轻——那只小银狐从你脖子上滑了下来。你一把接住，它已经闭上了眼睛，身子凉得像一块冰。\n\n你把它塞进怀里，贴着胸口捂着，一句话都没说。",
-    "en": "You shift half an inch to the left.\n\nThe arrow flies.\n\nYour shoulder goes light — the little silver fox has slid off your neck. You catch it; its eyes are already closed, its body cold as ice.\n\nYou tuck it inside your jacket, hold it against your chest to warm it, and say nothing at all."
+    "zh": "你往左偏了半寸。\n\n箭出去了。\n\n你肩上一轻。那只小银狐从你脖子上滑了下来。你一把接住——它已经闭上了眼睛，身子凉得像一块冰。\n\n你把它塞进怀里，贴着胸口捂着。\n\n溪边，那头鹿倒下了。你爹一瘸一拐地跑过去，跪在鹿旁边，回头看你，笑得像个孩子。\n\n你也笑。\n\n可你的手，一直按在胸口上，没敢松开。",
+    "en": "You shift half an inch to the left.\n\nThe arrow flies.\n\nYour shoulder goes light. The little silver fox has slid off your neck. You catch it — its eyes are already shut, its body cold as a lump of ice.\n\nYou tuck it inside your jacket and hold it against your chest.\n\nBy the stream, the stag goes down. Your father limps over as fast as he can, kneels beside it, and looks back at you, grinning like a boy.\n\nYou grin too.\n\nBut your hand stays pressed to your chest, and you don't dare let go."
    },
    "beat": [],
    "next": "00-rent"
@@ -72,8 +72,8 @@
    },
    "means": "ignores the wind and shoots straight",
    "story": {
-    "zh": "你没理那句话，照直放了箭。\n\n箭擦着鹿角飞了过去，钉进溪对岸的泥里。雄鹿猛地抬起头，却没跑——它往四下看了看，鼻子喷了一口白气，又低下头去。\n\n你爹没说话，递过来第二支箭。",
-    "en": "You ignore it and loose straight.\n\nThe arrow grazes the antlers and sticks in the mud across the stream. The stag's head jerks up — but it doesn't run. It looks around, blows out a white breath, and lowers its head again.\n\nYour father says nothing, and hands you a second arrow."
+    "zh": "你没理那句话。风？风懂什么。你照直放了箭。\n\n箭擦着鹿角飞了过去，「笃」地钉进了溪对岸的泥里，尾羽还在晃。\n\n那头雄鹿猛地抬起头，往四下里看了看——没看见人，只看见一支插在泥里、还在摇头晃脑的箭。它喷了一口白气，像是在嘲笑这支箭，又低下头去，接着喝水。\n\n你爹没说话。他从箭袋里抽出第二支箭，递了过来。\n\n你肩上那团银毛，很轻很轻地，哼了一声。",
+    "en": "You ignore it. Wind? What does wind know. You loose straight.\n\nThe arrow grazes the antlers and thunks into the mud across the stream, its feathers still waggling.\n\nThe stag's head jerks up. It looks around — no one in sight, only an arrow stuck in the mud, still shaking its head. It blows out a white breath, as if laughing at the arrow, and lowers its head to drink again.\n\nYour father says nothing. He draws a second arrow from the quiver and hands it over.\n\nThe silver fur on your shoulder gives a very, very small sniff."
    },
    "beat": [],
    "stay": true

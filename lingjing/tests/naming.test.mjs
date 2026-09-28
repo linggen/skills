@@ -85,7 +85,7 @@ test('the command line: Ling refused and nothing written; the page names, page_d
   assert.ok(fact, JSON.stringify(told.page_did));
   assert.match(fact.what, new RegExp(`「${offered[2].value}」 \\(a boy\\) on the page's card`));
   assert.equal(told.scene.id, '00-masan');
-  assert.match(told.tell.at(-1).text, /那天傍晚，马三又来了。/, 'the next beat\'s passage, owed to Ling');
+  assert.match(told.tell.at(-1).text, /收租的，是马三。/, 'the next beat\'s passage, owed to Ling');
   fs.rmSync(data, { recursive: true, force: true });
 });
 

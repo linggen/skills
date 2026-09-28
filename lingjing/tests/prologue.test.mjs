@@ -78,8 +78,8 @@ test('生辰 at the 入门仪式: the roots are read and the day let go — neve
   // owed since Ling last read — every beat walked here, the root test last but the scene
   const told = tellOf(content, out.state).tell, rite = told.find(t => t.id === "00-hall/born");
   assert.deepEqual(told.slice(-2).map(t => t.id), ['00-hall/born', '00-waimen']);
-  assert.match(rite.text, /「真灵根，」一个执事念道/);
-  assert.match(rite.text, /腿稳，心细/);
+  assert.match(rite.text, /\*\*执事\*\*：（念）真灵根。/);
+  assert.match(rite.text, /腿稳。心细。/);
   assert.deepEqual(out.result.show, [{ card: 'traits' }]);
   assert.equal(out.state.fate, undefined, 'the 命格 stays the coins card\'s own choice');
   assert.equal(out.state.bag['grey-robe'], 1);
@@ -153,10 +153,10 @@ test('{兄姐} and {伴} follow the name card: a girl walks with 阿禾 as 师�
     const dawn = at(s).scene;
     assert.equal(dawn.id, '00-dawn');
     assert.equal(dawn.people[0].name, ban);
-    assert.match(tellOf(content, s).tell.at(-1).text, new RegExp(`是隔壁的${ban}`));
+    assert.match(tellOf(content, s).tell.at(-1).text, new RegExp(`隔壁的${ban}`));
     const egg = resolve(s, content, ctx(), { exit: 'egg' });
     assert.deepEqual(egg.result.ledger.map(e => [e.who, e.kind]), [[id, '恩']]);
-    assert.match(tellOf(content, egg.state).tell.find(t => t.id === '00-dawn/egg').text, new RegExp(`「那记账，」${ban}把手缩回袖子里`));
+    assert.match(tellOf(content, egg.state).tell.find(t => t.id === '00-dawn/egg').text, new RegExp(`\\*\\*${ban}\\*\\*：那记账。`));
   }
   // never said (a name typed in the chat, an old save): no address, and 阿禾 walks along
   const none = { ...start(), name: '墨白', gender: null };

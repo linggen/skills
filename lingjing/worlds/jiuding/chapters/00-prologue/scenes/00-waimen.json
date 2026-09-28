@@ -36,8 +36,8 @@
   }
  },
  "story": {
-  "zh": "那天晚上，外门执事周衡给你们新弟子发东西：一件灰袍，一块木牌，三块灵石——\n\n「一个月的份例，」周衡板着脸，「每月初一领。领了之后，外门的规矩——」他顿了顿，眼睛往旁边瞟了一下，「每人交一块，给马师兄……咳，给外门的『公中』。」\n\n你看了看马小宝。马小宝正冲你笑，笑得像他爹。\n\n你把三块灵石收进怀里，什么也没说。\n\n夜里，外门的大通铺上，鼾声一片。你躺在最靠门的那张铺上，睁着眼睛。\n\n你把胸口的木牌掏出来，握在手心里。它是凉的。那条银色的尾巴，一明，一暗。",
-  "en": "That evening Zhou Heng, steward of the outer court, hands out things to the new disciples: a grey robe, a wooden tag, three spirit stones —\n\n\"A month's allowance,\" says Zhou Heng, straight-faced. \"Collected on the first of every month. Once collected, the outer court's rule is —\" he pauses, and his eyes slide sideways, \"— one each goes to Senior Brother Ma… ahem, to the outer court's common fund.\"\n\nYou look at Ma Xiaobao. Ma Xiaobao is smiling at you, just like his father.\n\nYou put the three stones inside your jacket and say nothing.\n\nThat night the long communal bed of the outer court is one great snore. You lie in the bed nearest the door, eyes open.\n\nYou take the token out from your chest and hold it in your palm. It is cool. The one silver tail: bright, then dim."
+  "zh": "那天晚上，外门执事周衡给新弟子发东西。一件灰袍，一块木牌，三块灵石。\n\n**周衡**：一个月的份例。每月初一领。领了之后，外门的规矩——（眼睛往旁边瞟了一下）每人交一块，给马师兄……咳，给外门的「公中」。\n\n你看了看马小宝。马小宝正冲你笑，笑得跟他爹一模一样。\n\n你把三块灵石收进怀里。什么也没说。\n\n夜里，外门的大通铺上，鼾声一片。你躺在最靠门的那张铺上，睁着眼睛。\n\n你把胸口的木牌掏出来，握在手心里。它是凉的。那条银色的尾巴，一明，一暗。",
+  "en": "That evening Zhou Heng, the outer court's steward, hands things out to the new disciples. A grey robe, a wooden tag, three spirit stones.\n\n**Zhou Heng:** A month's allowance. Collected on the first of every month. Once collected, the outer court's rule is — (his eyes slide sideways) one each goes to Senior Brother Ma… ahem, to the outer court's \"common fund.\"\n\nYou look at Ma Xiaobao. Ma Xiaobao is smiling at you, exactly the way his father smiles.\n\nYou put the three stones inside your jacket. You say nothing.\n\nThat night the long communal bed of the outer court is one big snore. You lie on the bed nearest the door, eyes open.\n\nYou take the token out from your chest and hold it in your palm. It's cool. The one silver tail: bright, then dim."
  },
  "lines": [],
  "buttons": [
@@ -74,8 +74,8 @@
     }
    ],
    "story": {
-    "zh": "「现在打不过，」你对着木牌，小声说，「他有荐书，有人，有他家的钱。我什么都没有。」\n\n木牌没有回答。\n\n你翻了个身，看着窗外的月亮。\n\n「可是，」你说，「账，我都记着呢。」\n\n握在手心里的木牌，轻轻地，暖了一下。",
-    "en": "\"I can't win now,\" you whisper to the token. \"He has a letter, and people, and his family's money. I have nothing.\"\n\nThe token doesn't answer.\n\nYou turn over and look at the moon outside the window.\n\n\"But,\" you say, \"I'm keeping the accounts.\"\n\nThe token in your palm grows warm, softly, for a moment."
+    "zh": "**你**：（对着木牌，小声）现在打不过。他有荐书，有人，有他家的钱。我什么都没有。\n\n木牌没有回答。\n\n你翻了个身，看着窗外的月亮。\n\n十二岁。{灵根}。练气零层。家里一年五两银子，一个空钱袋，一张爷爷的弓，一套你娘的针线。\n\n还有一个睡着了的、欠你一张饼的妖王。\n\n**你**：可是——\n\n**你**：账，我都记着呢。\n\n握在手心里的木牌，轻轻地，暖了一下。",
+    "en": "**You:** (to the token, quietly) I can't win now. He's got a letter, and people, and his family's money. I've got nothing.\n\nThe token doesn't answer.\n\nYou roll over and look at the moon outside the window.\n\nTwelve years old. {灵根}. Qi Condensation, layer zero. Five taels a year for the family, one empty purse, grandfather's bow, and your mother's needle and thread.\n\nAnd one sleeping demon queen who owes you a flatbread.\n\n**You:** But —\n\n**You:** I'm keeping the accounts.\n\nThe token in your palm grows warm, softly, for a moment."
    },
    "beat": [],
    "next": "00-mijing"
@@ -89,8 +89,8 @@
    "means": "refuses to pay the common fund",
    "mark": "refused-gongzhong",
    "story": {
-    "zh": "「不交，」你对着木牌，小声说，「这三块，是娘那个空钱袋里的头三样东西。」\n\n木牌没有回答。\n\n你翻了个身，看着窗外的月亮。你知道明天会怎样：马小宝不会当着周衡的面动手，他会等。你也等。\n\n「现在打不过，」你说，「可是，账，我都记着呢。」\n\n握在手心里的木牌，轻轻地，暖了一下。",
-    "en": "\"No,\" you whisper to the token. \"These three are the first three things in Mother's empty purse.\"\n\nThe token doesn't answer.\n\nYou turn over and look at the moon outside the window. You know how tomorrow will go: Ma Xiaobao won't lift a hand in front of Zhou Heng; he'll wait. So will you.\n\n\"I can't win now,\" you say. \"But I'm keeping the accounts.\"\n\nThe token in your palm grows warm, softly, for a moment."
+    "zh": "**你**：（对着木牌，小声）不交。\n\n木牌没有回答。\n\n你把那三块灵石从怀里摸出来，一块一块，放进你娘给的那个空钱袋里。叮。叮。叮。空钱袋里的头三样东西。\n\n你知道明天会怎样：马小宝不会当着周衡的面动手。他会等。他爹就是这么收租的——先笑，再等，等你以为没事了，门就飞了。\n\n你翻了个身，看着窗外的月亮。\n\n**你**：那就等。\n\n**你**：反正，账，我都记着呢。\n\n握在手心里的木牌，轻轻地，暖了一下。",
+    "en": "**You:** (to the token, quietly) Not paying.\n\nThe token doesn't answer.\n\nYou take the three stones out of your jacket and drop them, one by one, into the empty purse your mother gave you. Clink. Clink. Clink. The first three things ever to go into it.\n\nYou know how tomorrow goes: Ma Xiaobao won't lift a finger in front of Zhou Heng. He'll wait. That's how his father collects rent — smile first, then wait, wait till you think it's over, and then the door goes flying.\n\nYou roll over and look at the moon outside the window.\n\n**You:** Then we wait.\n\n**You:** I'm keeping the accounts anyway.\n\nThe token in your palm grows warm, softly, for a moment."
    },
    "beat": [],
    "next": "00-mijing"

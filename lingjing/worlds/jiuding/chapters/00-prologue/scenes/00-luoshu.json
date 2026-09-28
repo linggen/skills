@@ -46,8 +46,8 @@
   }
  },
  "story": {
-  "zh": "**二试 · 脑子。** 一面石壁，刻着九个空格，旁边一堆刻了数字的石块。\n\n「横竖斜，加起来都要一样。」老头说。\n\n你看着那九个格子，脑子里想起了你娘。她教你识字的时候，教过你算账；教你算账的时候，教过你这个——「戴九履一，左三右七，二四为肩，六八为足，五居中央」。她说是她爹教她的，她爹又是从一本旧书上看来的。",
-  "en": "**Second trial · Wits.** A stone wall carved with nine empty squares, and beside it a heap of stones carved with numbers.\n\n\"Across, down and corner to corner, they must all add up the same,\" says the old man.\n\nYou look at the nine squares and think of your mother. When she taught you your characters she taught you accounts; when she taught you accounts she taught you this: \"Nine on the head, one at the feet; three on the left, seven on the right; two and four the shoulders, six and eight the feet; five in the middle.\" She said her father taught it to her, and he had it from an old book."
+  "zh": "**二试 · 脑子。**\n\n一面石壁，刻着九个空格。旁边一堆刻了数字的石块。\n\n**扫地的老头**：横竖斜，加起来都要一样。\n\n几百个孩子围着石壁，抓耳挠腮。有人把石块摆成了一朵花。有人把石块摞成了一座塔。有一个孩子，把石块全部塞进了嘴里——你到现在也不知道他在想什么。\n\n你看着那九个格子。\n\n你想起灶间的那盏油灯。你娘教你认字的时候，也教你算账；教你算账的时候，教过你一个口诀——\n\n戴九履一，左三右七，二四为肩，六八为足，五居中央。\n\n她说，是她爹教她的。她爹，是从一本旧书上看来的。",
+  "en": "**Second trial · Brains.**\n\nA stone wall carved with nine empty squares. Beside it, a heap of stones carved with numbers.\n\n**The old sweeper:** Across, down and corner to corner — they must all add up the same.\n\nHundreds of children crowd round the wall, scratching their heads. Someone arranges the stones into a flower. Someone stacks them into a tower. One child stuffs every stone into his mouth — to this day you don't know what he was thinking.\n\nYou look at the nine squares.\n\nYou remember the oil lamp in the kitchen. When your mother taught you your characters, she taught you accounts too; and when she taught you accounts, she taught you a rhyme —\n\nNine on the head, one at the feet; three on the left, seven on the right; two and four the shoulders, six and eight the feet; five in the middle.\n\nShe said her father taught it to her. Her father had it from an old book."
  },
  "lines": [],
  "buttons": [
@@ -69,8 +69,8 @@
     "en": "The square is not filled yet. Elder Qu does not look at half an answer."
    },
    "story": {
-    "zh": "你把五放在了正中间。\n\n你把最后一块石头按进格子里的时候，想起了灶间那盏油灯。",
-    "en": "You put the five in the middle.\n\nAs you press the last stone into its square, you think of the oil lamp in the kitchen."
+    "zh": "你把五，放在了正中间。",
+    "en": "You put the five right in the middle."
    },
    "beat": [],
    "next": "00-longzhi"

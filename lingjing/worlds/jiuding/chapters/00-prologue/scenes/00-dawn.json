@@ -33,8 +33,8 @@
   }
  },
  "story": {
-  "zh": "天快亮的时候，窗纸上响了三下。你爬起来，推开窗——是隔壁的{伴}，冻得鼻子通红，往你手里塞了一个还温着的煮鸡蛋。\n\n「我娘说你们要去黑松岭，」{伴}压低声音，「……你别死在里头啊。」\n\n「死不了。」",
-  "en": "Near dawn there are three taps on the window paper. You get up and push the window open — it is {伴} from next door, nose red with cold, pushing a boiled egg, still warm, into your hand.\n\n\"My mum says you're going to Black Pine Ridge,\" {伴} whispers. \"…Don't go and die in there.\"\n\n\"I won't.\""
+  "zh": "天快亮的时候，窗纸上「笃、笃、笃」，响了三下。\n\n你推开窗。\n\n窗外是隔壁的{伴}。比你小一岁，冻得鼻头通红，像一根刚从地里拔出来的小萝卜。身上还沾着泥——一看就是一大早起来，蹲在菜地里给那颗被门砸扁的白菜收尸。\n\n{伴}往你手里塞了一样东西。\n\n温的。\n\n一个煮鸡蛋。\n\n**{伴}**：我娘说，你们今天要去黑松岭。\n\n**你**：嗯。\n\n**{伴}**：你别死在里头啊。\n\n**你**：死不了。",
+  "en": "Just before dawn: *tok, tok, tok* — three taps on the window paper.\n\nYou push the window open.\n\nOutside is {伴} from next door. A year younger than you, nose red with cold like a little radish just pulled from the ground. Still muddy, too — clearly up at first light, crouched in the vegetable patch holding a funeral for the cabbage the door flattened.\n\n{伴} presses something into your hand.\n\nWarm.\n\nA boiled egg.\n\n**{伴}:** My mum says you're going to Black Pine Ridge today.\n\n**You:** Mm.\n\n**{伴}:** Don't go and die in there.\n\n**You:** I won't."
  },
  "lines": [],
  "buttons": [
@@ -61,8 +61,8 @@
     }
    ],
    "story": {
-    "zh": "「那记账，」{伴}把手缩回袖子里，「一个鸡蛋，以后还我。」",
-    "en": "\"Then keep count,\" says {伴}, pulling the hand back into the sleeve. \"One egg. You pay me back.\""
+    "zh": "**{伴}**：那记账。（把手缩回袖子，一本正经）一个鸡蛋。以后还我。\n\n**你**：还你什么？\n\n**{伴}**：（想了想）还我两个。\n\n**你**：……利息这么高？\n\n**{伴}**：黑松岭。风险大，利息自然高。\n\n**你**：那你家的白菜……\n\n**{伴}**：（面无表情）那个另算。那个利息更高。\n\n{伴}说完就跑了。跑到一半，回过头，又补了一句：「记得是两个！」\n\n你站在窗前，握着那个鸡蛋，握了很久。\n\n它比你家灶膛里最后那一点火，还暖和。",
+    "en": "**{伴}:** Then keep count. (pulling both hands back into the sleeves, very businesslike) One egg. You pay me back.\n\n**You:** Pay you back with what?\n\n**{伴}:** (thinks) Two.\n\n**You:** …That's some interest.\n\n**{伴}:** Black Pine Ridge. High risk, high interest.\n\n**You:** And your family's cabbage…\n\n**{伴}:** (deadpan) That's a separate account. Even higher interest.\n\nAnd {伴} runs off. Halfway, a look back and one more thing: \"Remember — two!\"\n\nYou stand at the window holding that egg for a long time.\n\nIt's warmer than the last bit of fire in your family's stove."
    },
    "beat": [],
    "next": "00-kitchen"
@@ -76,8 +76,8 @@
    "means": "refuses the egg, gives it back",
    "mark": "no-egg",
    "story": {
-    "zh": "你把鸡蛋推了回去：「你家也欠着租。」\n\n{伴}瞪了你一眼，缩回手，关窗前丢下一句：「那你活着回来。回来了，我再给你。」",
-    "en": "You push the egg back. \"Your family owes rent too.\"\n\n{伴} glares at you and pulls the hand back, and says one thing before the window closes: \"Then come back alive. Come back, and I'll give it to you then.\""
+    "zh": "你把鸡蛋推了回去。\n\n**你**：你家也欠着租。\n\n**{伴}**：（瞪你）我家欠的是租，又不是鸡蛋。\n\n**你**：那也不要。\n\n**{伴}**：（把鸡蛋收回袖子，一本正经）行。那记账：你欠我一回「不要」。活着回来，连本带利，再给你。\n\n{伴}说完就跑了。跑到一半，回过头，又补了一句：「利息很高的！」",
+    "en": "You push the egg back.\n\n**You:** Your family owes rent too.\n\n**{伴}:** (glaring) My family owes rent, not eggs.\n\n**You:** Still no.\n\n**{伴}:** (tucking the egg back into a sleeve, very businesslike) Fine. Then I'm keeping count: you owe me one \"no.\" Come back alive and I'll give it to you then, with interest.\n\nAnd {伴} runs off. Halfway, a look back and one more thing: \"The interest is very high!\""
    },
    "beat": [],
    "next": "00-kitchen"

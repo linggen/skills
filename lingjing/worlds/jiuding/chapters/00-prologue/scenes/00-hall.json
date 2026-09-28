@@ -37,8 +37,8 @@
   }
  },
  "story": {
-  "zh": "正殿里，没有神像，只有一口空的石座，四方，四足，大得能躺下一个人。石座前立着测灵石。\n\n观主玄沉子坐在石座旁边，一身灰袍，面目温和。\n\n轮到你了。你把手放上去。",
-  "en": "In the main hall there is no statue — only an empty stone seat, square, on four feet, big enough for a person to lie in. Before it stands the spirit stone.\n\nThe abbot Xuanchenzi sits beside the seat, in a grey robe, his face mild.\n\nIt is your turn. You lay your hand on the stone."
+  "zh": "正殿里，没有神像。只有一口空的石座，四方，四足，大得能躺下一个人。石座前，立着测灵石。\n\n观主玄沉子坐在石座旁边，一身灰袍，面目温和。\n\n轮到你了。你把手放上去。",
+  "en": "There's no statue in the main hall. Only an empty stone seat — square, four-footed, big enough for a person to lie in. Before it stands the spirit-testing stone.\n\nThe abbot, Xuanchenzi, sits beside the seat in a grey robe, his face mild.\n\nYour turn. You lay your hand on it."
  },
  "lines": [],
  "buttons": [
@@ -64,8 +64,8 @@
     }
    ],
    "story": {
-    "zh": "测灵石亮了——亮得很暗，五种颜色都有一点，哪一种都不多。\n\n殿里有人笑出了声。是马小宝。他的灵根也不好，可比你好一点——三种颜色。\n\n「{灵根}，」一个执事念道，「下下之资。」\n\n玄沉子没有说话。他看了看测灵石，又看了看你。他看你的时间，比看测灵石的时间长得多。\n\n「三试，」他问旁边的扫地老头，「瞿老以为如何？」\n\n扫地老头——瞿老——只说了四个字：「腿稳，心细。」\n\n玄沉子点了点头。\n\n「收，」他说，「外门。」\n\n马小宝也被收了——荐书在，外门。他走过你身边的时候，压低声音说：「杂灵根也配进山门？等着，在这山里，我有的是法子收拾你。」\n\n你冲他笑了笑。",
-    "en": "The spirit stone lights — very dimly: a little of all five colours, not much of any.\n\nSomeone in the hall laughs out loud. Ma Xiaobao. His roots are poor too, but better than yours — three colours.\n\n\"{灵根},\" a steward reads out. \"The lowest of the low.\"\n\nXuanchenzi says nothing. He looks at the spirit stone, and then at you. He looks at you far longer than he looked at the stone.\n\n\"The three trials,\" he asks the old man with the broom beside him. \"What does Elder Qu think?\"\n\nThe old man with the broom — Elder Qu — says four words only: \"Steady legs. Careful heart.\"\n\nXuanchenzi nods.\n\n\"Take them,\" he says. \"The outer court.\"\n\nMa Xiaobao is taken too — the letter stands; the outer court. As he passes you he says under his breath: \"A mixed root, through the gate? Just wait. On this mountain I've got plenty of ways to deal with you.\"\n\nYou smile at him."
+    "zh": "测灵石亮了——亮得很暗。五种颜色，都有一点，哪一种都不多。像你娘用剩下的五种碎布，拼成的一块抹布。\n\n殿里，有人笑出了声。\n\n是马小宝。他的裤子已经换过了。他的灵根也不好，三种颜色，可比你的亮一点。\n\n**执事**：（念）{灵根}。下下之资。\n\n笑声更大了。\n\n玄沉子没有说话。他看了看测灵石，又看了看你。\n\n他看你的时间，比看测灵石的时间，长得多。\n\n**玄沉子**：三试。瞿老以为如何？\n\n扫地的老头——瞿老——只说了四个字：\n\n**瞿老**：腿稳。心细。\n\n玄沉子点了点头。\n\n**玄沉子**：收。外门。\n\n马小宝也被收了。荐书在。外门。\n\n他走过你身边的时候，压低了声音：\n\n**马小宝**：杂灵根也配进山门？等着。在这山里，我有的是法子收拾你。\n\n**你**：小宝哥，裤子干了吗？\n\n马小宝的脸，一下子变成了他爹的那种颜色。\n\n「完了」色。",
+    "en": "The stone lights up — very dimly. A little of all five colours, not much of any. Like a rag your mother stitched together out of five kinds of leftover scraps.\n\nSomeone in the hall laughs out loud.\n\nMa Xiaobao. He's changed his trousers. His roots aren't good either — three colours — but a bit brighter than yours.\n\n**Steward:** (reading out) {灵根}. The lowest of the low.\n\nThe laughter gets louder.\n\nXuanchenzi says nothing. He looks at the stone, and then at you.\n\nHe looks at you for far longer than he looked at the stone.\n\n**Xuanchenzi:** The three trials. What does Elder Qu think?\n\nThe old sweeper — Elder Qu — says four words, no more:\n\n**Elder Qu:** Steady legs. Careful heart.\n\nXuanchenzi nods.\n\n**Xuanchenzi:** Take them. Outer court.\n\nMa Xiaobao is taken too. The letter stands. Outer court.\n\nAs he passes you, he lowers his voice:\n\n**Ma Xiaobao:** A mixed root, through the gate? Just wait. On this mountain I've got plenty of ways to deal with you.\n\n**You:** Brother Xiaobao, are your trousers dry yet?\n\nMa Xiaobao's face turns, all at once, his father's colour.\n\nThe colour called \"done for.\""
    },
    "beat": [],
    "next": "00-waimen"
