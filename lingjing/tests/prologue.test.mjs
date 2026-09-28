@@ -13,7 +13,7 @@ import { WORDS, appearHtml, cardHtml } from '../scripts/cards.js';
 import { lint, loadContent } from '../scripts/content.mjs';
 import { fill, migrate, newState } from '../scripts/state.mjs';
 import { VERBS, duel, forLing, look, pageNames, resolve } from '../scripts/rules.mjs';
-import { bornRoots, drawnRoots, pillarsOf, rootsFrom, starterFor } from '../scripts/rules/roots.mjs';
+import { bornRoots, dominantFrom, mainRoot, pillarsOf, rootName, starterFor, stoneRoots, strongRoots } from '../scripts/rules/roots.mjs';
 import { TO_WAIMEN, TO_HALL, TO_VALLEY, V1_BIRTH, walk } from './prologue.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
 
@@ -35,32 +35,47 @@ test('the three pillars: 2000-01-01 is 己卯年 丙子月 戊午日; the month 
   for (const bad of ['2000-02-30', '1899-06-01', 'yesterday', '', null]) assert.equal(pillarsOf(content, bad), null, String(bad));
 });
 
-test('the roots: a lone year branch is the family\'s; four of one crowd out the lone; the most first', () => {
-  assert.deepEqual(rootsFrom(content, ['earth', 'wood', 'fire', 'water', 'earth', 'fire']), ['fire', 'earth', 'water'], 'wood only on the year branch: dropped');
-  assert.deepEqual(rootsFrom(content, ['water', 'water', 'water', 'water', 'fire', 'wood']), ['water'], '天灵根');
-  assert.deepEqual(rootsFrom(content, ['water', 'fire', 'water', 'water', 'water', 'fire']), ['water', 'fire']);
-  assert.deepEqual(bornRoots(content, V1_BIRTH), ['wood', 'water', 'fire', 'earth']);
+const FIVE = ['metal', 'wood', 'water', 'fire', 'earth'];
+
+test('the roots: always all five; the element seen most in the six leads; a tie by the seed', () => {
+  // 1985-03-03: 土 ×3 — 土 leads, whatever the seed
+  for (const seed of ['a', 'b', 'c']) assert.deepEqual(bornRoots(content, '1985-03-03', seed), { roots: FIVE, main: 'earth' }, seed);
+  assert.equal(dominantFrom(content, ['metal', 'metal', 'metal', 'metal', 'wood', 'earth']), 'metal');
+  // 2000-01-01: 火 ×2 and 土 ×2 tie — the seed picks, the same every time, one of the two
+  const tie = pillarsOf(content, '2000-01-01');
+  const picks = new Set(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map(seed => dominantFrom(content, tie, seed)));
+  assert.deepEqual([...picks].sort(), ['earth', 'fire'], 'both reachable by seed, nothing else');
+  assert.equal(dominantFrom(content, tie, 'x'), dominantFrom(content, tie, 'x'));
+  assert.deepEqual(stoneRoots(content), { roots: FIVE, main: null }, 'skipped: five even, none leads');
+  assert.equal(rootName(content, { traits: FIVE, root_main: 'fire' }, 'zh'), '五行杂灵根 · 火为主');
+  assert.equal(rootName(content, { traits: FIVE, root_main: 'water' }, 'en'), 'Mixed five-element root · Water leads');
+  assert.equal(rootName(content, { traits: FIVE }, 'zh'), '五行杂灵根');
+  assert.equal(rootName(content, { traits: ['wood', 'water', 'fire', 'earth'] }, 'zh'), '四灵根 · 伪灵根', 'an old save keeps its retired name');
+  // what an affinity reads: the leader of five, none when even; an old save's own
+  assert.deepEqual(strongRoots({ traits: FIVE, root_main: 'fire' }), ['fire']);
+  assert.deepEqual(strongRoots({ traits: FIVE }), []);
+  assert.deepEqual(strongRoots({ traits: ['wood', 'water'] }), ['wood', 'water']);
+  assert.equal(mainRoot({ traits: FIVE }), null);
+  assert.equal(mainRoot({ traits: ['wood', 'water', 'fire', 'earth'] }), 'wood');
 });
 
-test('天 · 地 · 真 · 伪 over every birthday 1950–2015: 天 rare, 伪 and 真 the most, every grade reachable', () => {
-  const n = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+test('every birthday 1950–2015 gives all five; each of the five can lead', () => {
+  const n = { metal: 0, wood: 0, water: 0, fire: 0, earth: 0 };
   let all = 0;
-  for (let y = 1950; y <= 2015; y++) for (let m = 1; m <= 12; m++) for (let d = 1; d <= 28; d += 3) {
-    n[bornRoots(content, `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`).length] += 1; all += 1;
+  for (const seed of ['a', 'b', 'c']) for (let y = 1950; y <= 2015; y++) for (let m = 1; m <= 12; m++) for (let d = 1; d <= 28; d += 3) {
+    const read = bornRoots(content, `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`, seed);
+    assert.deepEqual(read.roots, FIVE);
+    n[read.main] += 1; all += 1;
   }
-  const pct = k => (100 * n[k]) / all;
-  assert.ok(pct(1) > 3 && pct(1) < 12, `天 ${pct(1).toFixed(1)}%`);
-  assert.ok(pct(2) > 3 && pct(2) < 15, `地 ${pct(2).toFixed(1)}%`);
-  assert.ok(pct(3) > 30 && pct(3) < 55, `真 ${pct(3).toFixed(1)}%`);
-  assert.ok(pct(4) + pct(5) > 30 && pct(4) + pct(5) < 55, `伪 ${(pct(4) + pct(5)).toFixed(1)}%`);
-  // the speed gap stays mild: 天 about 1.3× 伪
-  assert.equal(content.traits.speed['1'] / content.traits.speed['4'], 1.3);
-  assert.equal(content.traits.names['2'].zh, '地灵根');
-  assert.equal(content.traits.names['3'].zh, '真灵根');
+  // 土 leads most (辰戌丑未 are four of the twelve branches); every other one leads at least one in ten
+  for (const [e, k] of Object.entries(n)) assert.ok(k / all > 0.1 && k / all < 0.45, `${e} ${((100 * k) / all).toFixed(1)}%`);
+  assert.equal(content.traits.names['5'].zh, '五行杂灵根');
 });
 
-test('the starter: four roots are the old ten exactly; fewer roots fill with beasts, never a 功法 of a root they lack', () => {
-  assert.deepEqual(starterFor(content, ['wood', 'water', 'fire', 'earth']), ['xiaoyao', 'qingteng', 'leipu', 'luying', 'shuiwu', 'huoya', 'huodan', 'tuou', 'shanjing', 'huiqi']);
+test('the starter: five roots and four are the old ten exactly; fewer roots fill with beasts, never a 功法 of a root they lack', () => {
+  const TEN = ['xiaoyao', 'qingteng', 'leipu', 'luying', 'shuiwu', 'huoya', 'huodan', 'tuou', 'shanjing', 'huiqi'];
+  assert.deepEqual(starterFor(content, ['wood', 'water', 'fire', 'earth']), TEN);
+  assert.deepEqual(starterFor(content, FIVE), TEN, 'the starter\'s 金 cards stand last and fall off');
   const one = starterFor(content, ['metal']), catalog = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
   assert.equal(one.length, 9);
   assert.ok(one.every(id => catalog[id].kind !== 'spell' || !catalog[id].element || catalog[id].element === 'metal'), one.join());
@@ -70,35 +85,48 @@ test('the starter: four roots are the old ten exactly; fewer roots fill with bea
 test('生辰 at the 入门仪式: the roots are read and the day let go — never on the save, in the result, in the log', () => {
   const s = hall();
   assert.equal(s.scene, '00-hall');
-  const out = born(s, { birth: '2000-01-01' });
+  const out = born(s, { birth: '1985-03-03' });
   assert.equal(out.result.ok, true, JSON.stringify(out.result));
-  assert.deepEqual(out.state.traits, ['fire', 'earth', 'water']);
-  assert.deepEqual(out.result.born, { read: 'birth', roots: { ids: ['fire', 'earth', 'water'], name: '真灵根', elements: ['火', '土', '水'] } });
+  assert.deepEqual(out.state.traits, FIVE, 'all five, each weak');
+  assert.equal(out.state.root_main, 'earth', '土 is the one the six hold most');
+  assert.deepEqual(out.result.born, { read: 'birth', roots: { ids: FIVE, name: '五行杂灵根 · 土为主', elements: ['金', '木', '水', '火', '土'], main: '土' } });
+  assert.equal(look(out.state, content, ctx()).traits.main, 'earth');
   // the stone's verdict is the player's roots, told in the passage the choice owes
   // owed since Ling last read — every beat walked here, the root test last but the scene
   const told = tellOf(content, out.state).tell, rite = told.find(t => t.id === "00-hall/born");
   assert.deepEqual(told.slice(-2).map(t => t.id), ['00-hall/born', '00-waimen']);
-  assert.match(rite.text, /\*\*执事\*\*：（念）真灵根。/);
+  assert.match(rite.text, /\*\*执事\*\*：（念）金木水火土，五行俱全——五行杂灵根。下下之资。/);
+  assert.match(rite.text, /金、青、黑、红、黄，五种颜色，都有一点，哪一种都不多。只有黄的那一点，比别的亮一些。像你娘用剩下的五种碎布/);
+  assert.match(rite.text, /\*\*马小宝\*\*：杂灵根也配进山门？/);
+  assert.doesNotMatch(rite.text, /[{}]|伪灵根|缺/);
+  const waimen = tellOf(content, resolve(out.state, content, ctx(), { exit: 'pay' }).state).tell.find(t => t.id === '00-waimen/pay');
+  assert.match(waimen.text, /十二岁。五行杂灵根。下下之资。练气零层。/);
   assert.match(rite.text, /腿稳。心细。/);
   assert.deepEqual(out.result.show, [{ card: 'traits' }]);
   assert.equal(out.state.fate, undefined, 'the 命格 stays the coins card\'s own choice');
   assert.equal(out.state.bag['grey-robe'], 1);
   assert.equal(out.state.wealth - s.wealth, 3, 'three spirit stones: the month\'s allowance');
   assert.equal(out.state.scene, '00-waimen');
-  for (const text of [JSON.stringify(out.state), JSON.stringify(out.result)]) assert.doesNotMatch(text, /2000-01-01/);
+  for (const text of [JSON.stringify(out.state), JSON.stringify(out.result), JSON.stringify(told)]) assert.doesNotMatch(text, /1985-03-03|1985|03-03/);
   // a day that is not one, or one still to come, is refused and changes nothing
   assert.equal(born(s, { birth: '2000-02-30' }).result.refused, 'birth-invalid');
   assert.equal(born(s, { birth: '2027-01-01' }).result.refused, 'birth-invalid');
   assert.equal(born(s, {}).result.refused, 'birth-invalid', 'neither a day nor 不填');
 });
 
-test('不填: the stone reads them — a day drawn by the save\'s start, the same on a reload', () => {
-  const s = hall();
-  const a = born(s, { skip: 'true' }), b = born(s, { skip: 'true' });
-  assert.deepEqual(a.state.traits, drawnRoots(content, s));
-  assert.deepEqual(a.state.traits, b.state.traits);
-  assert.equal(a.result.born.read, 'stone');
-  assert.ok(a.state.cards.length >= 9);
+test('不填: the stone reads five even — none leads — and the starter is the old ten', () => {
+  for (const lang of ['zh', 'en']) {
+    const s = hall(lang);
+    const a = born(s, { skip: 'true' });
+    assert.deepEqual(a.state.traits, FIVE);
+    assert.equal(a.state.root_main, undefined);
+    assert.equal(a.result.born.read, 'stone');
+    assert.equal(a.result.born.roots.name, lang === 'zh' ? '五行杂灵根' : 'Mixed five-element root');
+    for (const id of starterFor(content, a.state.traits)) assert.ok(a.state.cards.includes(id), id);
+    const rite = tellOf(content, a.state).tell.find(t => t.id === '00-hall/born').text;
+    assert.match(rite, lang === 'zh' ? /（念）金木水火土，五行俱全——五行杂灵根。下下之资。/ : /\(reading out\) Metal, Wood, Water, Fire, Earth — all five elements, every one: a mixed five-element root\. The lowest of the low\./);
+    assert.match(rite, lang === 'zh' ? /哪一种都不多。像你娘用剩下的五种碎布/ : /not much of any\. Like a rag your mother stitched together out of five kinds/, 'even: no colour brighter, no gap left');
+  }
 });
 
 test('a save that already holds its roots (v1) keeps them: no card, the exit a plain step, Ling may walk it', () => {
@@ -135,12 +163,13 @@ test('the command line: the birthday never reaches the log, and page_did tells L
   const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
   const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: ROOT, env, encoding: 'utf8' }).stdout);
   fs.writeFileSync(path.join(data, 'state.json'), JSON.stringify(hall()));
-  const r = cli('resolve', '--exit=born', '--birth=2000-01-01');
+  const r = cli('resolve', '--exit=born', '--birth=1985-03-03');
   assert.equal(r.ok, true, JSON.stringify(r));
-  const told = cli('look', '--said=[scene] born 真灵根', '--for=ling');
+  const told = cli('look', '--said=[scene] born 五行杂灵根 · 土为主', '--for=ling');
   const fact = told.page_did.find(d => d.verb === 'resolve');
-  assert.match(fact.what, /gave their birthday on the page's card: 真灵根 \(火 土 水\)/);
-  for (const f of ['state.json', 'log.jsonl']) assert.doesNotMatch(fs.readFileSync(path.join(data, f), 'utf8'), /2000-01-01/, f);
+  assert.match(fact.what, /gave their birthday on the page's card: 五行杂灵根 · 土为主 \(金 木 水 火 土\)/);
+  for (const f of ['state.json', 'log.jsonl']) assert.doesNotMatch(fs.readFileSync(path.join(data, f), 'utf8'), /1985-03-03|1985/, f);
+  assert.doesNotMatch(JSON.stringify(told), /1985/);
   fs.rmSync(data, { recursive: true, force: true });
 });
 
@@ -295,4 +324,53 @@ test('an old save whose prologue scene the rewrite took away lands on the neares
   const out = JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', 'look'], { cwd: ROOT, env, encoding: 'utf8' }).stdout);
   assert.equal(out.scene.id, '00-shiao');
   fs.rmSync(data, { recursive: true, force: true });
+});
+
+/* ── 「你爷爷的」 (Hanli, 2026-09-28): the hero's catchphrase, as the book has it ── */
+
+test('the catchphrase rides the book\'s beats: the bowl night first, the bow, the vine on his own grandfather, the beam, nine heads', () => {
+  const scenes = content.chapters['00-prologue'].scenes;
+  const story = (id, exit) => (exit ? scenes[id].exits.find(e => e.id === exit) : scenes[id]).story;
+  const beats = [['00-masan', 'endure', /一个一个地，骂了一遍：\n\n\*\*你爷爷的。\*\*/], ['00-masan', 'strike', /一个一个地，骂了一遍：\n\n\*\*你爷爷的。\*\*/],
+    ['00-notice', null, /\*\*你\*\*：……爹，这话听着像骂人。\n\n\*\*爹\*\*：不许瞎说。（把弓往你怀里一塞）你爷爷的弓。/],
+    ['00-fall', null, /藤，断了。\n\n「你爷爷的——」[\s\S]*「……爷爷，不是说你。」/], ['00-sleep', 'bath', /房梁。\n\n「你爷爷的……」/],
+    ['00-longzhi', null, /「你爷爷的，」你趴在地上想，「九个脑袋。」/]];
+  for (const [id, exit, zh] of beats) {
+    const exitId = exit ?? (id === '00-longzhi' ? scenes[id].exits[0].id : null);
+    const s = story(id, exitId);
+    assert.match(s.zh, zh, `${id}/${exitId}`);
+    assert.match(s.en, /Your grandpa's/, `${id}/${exitId} en`);
+  }
+  assert.match(fs.readFileSync(path.join(ROOT, 'guide/tell.md'), 'utf8'), /「你爷爷的」[\s\S]*night of the broken bowl[\s\S]*sparingly/);
+});
+
+/* ── The companion in the trials, half-recognised and never named ── */
+
+test('the companion\'s cameos: 阿禾\'s braids, red nose and notebook for a girl, 石头\'s red cheeks, bundle and stammer for a boy — never a name', () => {
+  const scenes = content.chapters['00-prologue'].scenes;
+  const texts = s => [scenes['00-gate'].exits.find(e => e.id === 'steady').story, scenes['00-gate'].exits.find(e => e.id === 'rush').story, scenes['00-luoshu'].exits[0].story, scenes['00-hall'].story];
+  for (const [gender, marks, other] of [['female', /小辫子|红鼻头|小本子/, /大包袱|结巴|红脸蛋/], ['male', /大包袱|红脸蛋|结巴/, /小辫子|红鼻头|小本子/]]) {
+    const s = { ...start(), name: '墨白', gender };
+    for (const t of texts()) {
+      for (const lang of ['zh', 'en']) {
+        const out = fill(t[lang], { ...s, lang }, content);
+        assert.doesNotMatch(out, /\{伴|阿禾|「石头|石头（|Ahe|Shitou/, `${gender} ${lang}: filled, never named`);
+      }
+      assert.match(fill(t.zh, s, content), marks, gender);
+      assert.doesNotMatch(fill(t.zh, s, content), other, gender);
+    }
+    const hallText = fill(scenes['00-hall'].story.zh, s, content);
+    assert.match(hallText, gender === 'female' ? /红鼻头。小辫子。小本子。\n\n你心里咯噔一下——不会吧？/ : /红脸蛋。大包袱。结巴。\n\n你心里咯噔一下——不会吧？/);
+    assert.match(hallText, /（念）木、水、土，三灵根。真灵根。中上之资。[\s\S]*一定是看错了。\n\n轮到你了。/);
+  }
+});
+
+test('渡劫\'s 五行 reads the root that leads: five even give it nothing, a leader of the realm\'s element matches', async () => {
+  const { oddsOf } = await import('../scripts/rules/breakthrough.mjs');
+  const base = { ...start(), traits: FIVE, tier: 'qi', step: 0, progress: 0, stamina: 100, stamina_at: NOW.toISOString() };
+  const el = st => oddsOf(content, st, NOW, 'foundation').parts.find(p => p.id === 'element');
+  assert.equal(el(base).how, null, 'five even: no leader, no 五行 bonus');
+  assert.equal(el({ ...base, root_main: 'earth' }).how, 'match', '筑基 is 土');
+  assert.equal(el({ ...base, root_main: 'fire' }).how, 'feeds', '火生土');
+  assert.equal(el({ ...base, root_main: 'water' }).how, null);
 });

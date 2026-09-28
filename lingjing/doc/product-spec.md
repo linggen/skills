@@ -185,8 +185,11 @@ fast 修为 grows.**
 
 - **Fewer roots, faster cultivation:** one root (天灵根) is fastest; the more
   roots are mixed, the slower 修为 builds from the same task.
-- **v1: every player has the same 灵根 — four roots, 木 水 火 土** (a 伪灵根).
-  Everyone starts slow and climbs by diligence.
+- **Every player is 五行杂灵根 — all five roots, each weak** (Hanli,
+  2026-09-28). The 生辰 decides only the one that leads — the stone's
+  brightest colour, the element seen most in the three pillars (ties by the
+  save's start); skipped, five even. Everyone starts slow and climbs by
+  diligence.
 - Ling reveals it at the 测灵根 scene near the start.
 
 ## 体力

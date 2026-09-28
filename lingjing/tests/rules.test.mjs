@@ -11,6 +11,7 @@ import { lint, loadContent } from '../scripts/content.mjs';
 import { dayKey, langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
 import { oddsOf, rollOf, VERBS, fightSetup, hpMaxOf, greet, deck, deckFor, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win } from '../scripts/rules.mjs';
 import { TO_WAIMEN, TO_HALL, TO_VALLEY, V1_BIRTH, walk } from './prologue.mjs';
+import { starterFor } from '../scripts/rules/roots.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
 
@@ -133,6 +134,9 @@ const toFuzhu = (s = start()) => {
   const at = walk(s, TO_WAIMEN, content, NOW);
   return { ...at, scene: '00-fuzhu', place: 'sibei', bag: { ...at.bag, lingzhi: 1 } };
 };
+/* A save read under the retired root rule, born without 金 (v1 — his own
+   save's 木 水 火 土): what a root it lacks, lent by the arms, does. */
+const toFuzhuV1 = () => ({ ...toFuzhu(), traits: [...content.traits.v1] });
 /* At the outer court, the roots read, the first practice offered. */
 const toPractice = () => must(resolve, toHall(), { exit: 'born', birth: V1_BIRTH }).state;
 
@@ -159,7 +163,7 @@ test('the prologue walks from 石坳村 to its end by exits alone', () => {
   assert.equal(s.scene, null);
   assert.deepEqual(end.result.waiting, { chapter: '01-ji', opens: '2026-10-01' }, 'this file dates chapter 1 to October');
   assert.equal(s.name, '青玄');
-  assert.deepEqual(s.traits, ['wood', 'water', 'fire', 'earth']);
+  assert.deepEqual(s.traits, ['metal', 'wood', 'water', 'fire', 'earth'], '五行杂灵根');
   assert.deepEqual(s.cast, [], 'no beast tamed: the trials are the child\'s own');
   assert.equal(s.gender, 'female');
   assert.deepEqual(s.companion, { joined: '2026-09-11', asleep: true }, 'found in the valley, asleep in the fox token');
@@ -454,7 +458,7 @@ test('only the rules decide a fight: a win the exit takes, and pays once', () =>
 });
 
 test('the ten cards are the player\'s own roots (and the ones their arms lend), and a companion teaches nothing', () => {
-  const s = { ...toFuzhu(), bag: { 'iron-sword': 1, 'straw-cloak': 1 }, wear: { weapon: 'iron-sword', robe: 'straw-cloak' } };
+  const s = { ...toFuzhuV1(), bag: { 'iron-sword': 1, 'straw-cloak': 1 }, wear: { weapon: 'iron-sword', robe: 'straw-cloak' } };
   const brief = look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel;
   const byId = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
   const roots = new Set(s.traits);
@@ -802,10 +806,10 @@ test('得牌: he fights only with the cards he has obtained — the starter at t
   const beasts = new Set(content.creatures.creatures.map(c => c.id));
   const s = toFuzhu();
   // the root test hands over the starter of his roots, and nothing else
-  const starter = content.cards.starter.filter(id => !byId[id].element || s.traits.includes(byId[id].element));
+  const starter = starterFor(content, s.traits);
   assert.ok(s.cards.includes('yinyue'), 'her card, held since the valley');
   assert.deepEqual([...s.cards].filter(id => id !== 'yinyue').sort(), [...starter].sort());
-  assert.equal(starter.length, 10, 'four roots, ten cards');
+  assert.equal(starter.length, 10, 'five roots, the old ten cards');
   const deck = look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.deck;
   assert.ok(deck.every(id => s.cards.includes(id)), 'the ten are all his');
   assert.ok(!deck.some(id => beasts.has(id)), 'no 山海经 beast he has not tamed');
@@ -2442,7 +2446,7 @@ test('精英 is its harder deck and nothing more: the same share of 气血, the 
   // A strong hand, so the win path runs: every card his five roots may hold,
   // its wood cards held back so a win has cards left to give.
   const all = content.cards.cards.filter(x => !x._token && x.element !== 'wood').map(x => x.id);
-  const won = fightOut({ ...base, tier: 'core', traits: ['metal', 'wood', 'water', 'fire', 'earth'], cards: all }, 'haunt:leishen', { c: nov });
+  const won = fightOut({ ...base, tier: 'core', traits: ['metal', 'wood', 'water', 'fire', 'earth'], root_main: 'metal', cards: all }, 'haunt:leishen', { c: nov });
   assert.equal(won.result.outcome, 'won', JSON.stringify({ o: won.result.outcome, you: won.result.you?.hp, foe: won.result.foe?.hp, turns: won.result.turns }));
   assert.equal(won.result.elite, undefined);
   assert.equal(won.result.paid.wealth, content.rewards.tables.haunt.wealth, 'a haunt\'s pay');
@@ -3285,7 +3289,7 @@ test('two callers at once: the save is locked from read to write, and no change 
 
 const fuzhuOf = () => content.creatures.creatures.find(c => c.id === 'fuzhu');
 const doorOf = s => fightSetup(content, s, fuzhuOf(), NOW).you;
-const wearing = (wear, extra = {}) => ({ ...toFuzhu(), bag: Object.fromEntries(Object.values(wear).map(id => [id, 1])), wear, ...extra });
+const wearing = (wear, extra = {}) => ({ ...toFuzhuV1(), bag: Object.fromEntries(Object.values(wear).map(id => [id, 1])), wear, ...extra });
 
 test('装备入局: the sword by its grade, the robe as 护体, the 佩 as 抗 — nothing worn, nothing added', () => {
   assert.equal(doorOf(wearing({ weapon: 'bamboo-sword' })).power, 1, '竹剑 (器攻 2) → 主灵根一击 +1');
@@ -3299,7 +3303,7 @@ test('装备入局: the sword by its grade, the robe as 护体, the 佩 as 抗 �
 });
 
 test('装备入局: the 本命法宝 is the sword it was made of, +1 every four 重 — and one hand holds the bigger', () => {
-  const bound = level => ({ ...toFuzhu(), treasure: { name: '青萍', base: 3, element: 'metal', level, exp: 0 } });
+  const bound = level => ({ ...toFuzhuV1(), treasure: { name: '青萍', base: 3, element: 'metal', level, exp: 0 } });
   assert.equal(doorOf(bound(1)).power, 2, 'bound from the 铁剑: never weaker than the sword it was');
   assert.equal(doorOf(bound(5)).power, 3, '温养 and 强化 now reach the fight');
   assert.equal(doorOf(bound(9)).power, 4, '九重');
@@ -3307,7 +3311,7 @@ test('装备入局: the 本命法宝 is the sword it was made of, +1 every four 
   // Its element is lent like a sword's root: a 金 功法 may be dealt.
   const s = { ...bound(1), cards: [...toFuzhu().cards ?? [], 'suijin'] };
   assert.ok(doorOf({ ...s, cards: [...(s.cards ?? []), 'suijin'] }).deck.includes('suijin'));
-  assert.ok(!doorOf({ ...toFuzhu(), cards: [...(toFuzhu().cards ?? []), 'suijin'] }).deck.includes('suijin'), 'without it, no 金 spell');
+  assert.ok(!doorOf({ ...toFuzhuV1(), cards: [...(toFuzhu().cards ?? []), 'suijin'] }).deck.includes('suijin'), 'without it, no 金 spell');
 });
 
 test('装备入局: the gear panel says what the fight takes from each thing', async () => {

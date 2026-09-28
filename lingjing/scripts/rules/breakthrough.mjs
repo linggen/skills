@@ -15,6 +15,7 @@
 import { pick, settleStamina, threshold } from '../state.mjs';
 import { herAwake, herGifts } from './companion.mjs';
 import { itemOf } from './errands.mjs';
+import { strongRoots } from './roots.mjs';
 import { hashOf } from './travel.mjs';
 
 const HOUR = 3600_000;
@@ -56,7 +57,8 @@ const FACTORS = {
     return { n: rule.her.joined + gifts * rule.her.per_gift, on: true, gifts };
   },
   element: (content, state, rule, x) => {
-    const want = rule.element.of?.[x.to], roots = state.traits ?? [];
+    // Five weak roots count through the one that leads (roots.mjs strongRoots).
+    const want = rule.element.of?.[x.to], roots = strongRoots(state);
     const how = !want ? null : roots.includes(want) ? 'match' : roots.some(r => FEEDS[r] === want) ? 'feeds' : null;
     const el = want ? { id: want, name: pick(content.traits?.elements?.[want], state.lang) ?? want } : null;
     return { n: how ? rule.element[how] : 0, on: Boolean(how), how, element: el, ...(how === 'feeds' ? { root: roots.find(r => FEEDS[r] === want) } : {}) };

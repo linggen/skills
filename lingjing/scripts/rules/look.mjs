@@ -22,6 +22,7 @@ import { hashOf } from './travel.mjs';
 import { atScene, creatureOf, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
 import { building } from './worlds.mjs';
 import { practiceHint } from './scrolls.mjs';
+import { mainRoot, rootName } from './roots.mjs';
 
 /* The market's shelf: the catalog sold in this province — and, while the
    companion is still to be found, her bell at every market, since the call
@@ -292,7 +293,8 @@ export function look(state, content, ctx) {
   const traits = state.traits && {
     ids: state.traits,
     elements: state.traits.map(e => pick(content.traits.elements[e], lang)),
-    name: pick(content.traits.names[String(state.traits.length)], lang),
+    name: rootName(content, state, lang),
+    ...(state.traits.length === 5 && mainRoot(state) ? { main: mainRoot(state) } : {}),
     speed: speedOf(content, state),
   };
   const brief = {

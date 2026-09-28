@@ -69,8 +69,8 @@
     "en": "The square is not filled yet. Elder Qu does not look at half an answer."
    },
    "story": {
-    "zh": "你把五，放在了正中间。",
-    "en": "You put the five right in the middle."
+    "zh": "你把五，放在了正中间。\n\n{伴·洛书}",
+    "en": "You put the five right in the middle.\n\n{伴·洛书}"
    },
    "beat": [],
    "next": "00-longzhi"

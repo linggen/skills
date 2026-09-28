@@ -171,6 +171,8 @@ button:disabled { cursor: default; }
 .root.lit.water { background: var(--water); border-color: var(--water); }
 .root.lit.fire { background: var(--fire); border-color: var(--fire); }
 .root.lit.earth { background: var(--earth); border-color: var(--earth); }
+.roots.weak .root.lit { opacity: .55; }
+.roots.weak .root.main { opacity: 1; outline: 2px solid var(--faint); outline-offset: 2px; }
 .rootres { font-family: var(--serif); font-weight: 600; }
 
 .hex { display: flex; gap: 14px; align-items: center; }

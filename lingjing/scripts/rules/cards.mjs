@@ -9,7 +9,7 @@ import { gearBrief } from './errands.mjs';
 import { boutFortune } from './fortune.mjs';
 import { hashOf } from './travel.mjs';
 import { allPlaces, creatureOf, tierIndex } from './world.mjs';
-import { starterFor } from './roots.mjs';
+import { mainRoot, starterFor } from './roots.mjs';
 
 /* ── 斗法 v3: the ten cards a player takes in ──
    Until the skill tree picks a deck, the deck is WHO THEY ARE: the cards of
@@ -162,7 +162,7 @@ export function fightSetup(content, state, creature, now, game = null) {
   const fortune = now ? boutFortune(content, state, now) : null;
   const boost = fortune?.card ? { element: fortune.root, n: fortune.card } : null;
   const insight = Math.max(state.insight ?? 0, fortune?.sight ?? 0);
-  const main = state.fate?.element?.id ?? state.fate?.element ?? (state.traits ?? [])[0] ?? 'wood';
+  const main = state.fate?.element?.id ?? state.fate?.element ?? mainRoot(state) ?? 'wood';
   // Her card goes into a fight only while she is awake (asleep in the fox token, she fights nothing).
   const withHer = herAwake(state) && ownedCards(content, state).includes('yinyue');
   const gear = gearFight(content, state), lifts = withHer ? herLifts(content, state) : null;

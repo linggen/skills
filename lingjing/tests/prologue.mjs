@@ -5,7 +5,8 @@
 import assert from 'node:assert/strict';
 import { resolve, task, win } from '../scripts/rules.mjs';
 
-/* A birthday whose roots read 木 水 火 土, in that order — the four of v1. */
+/* The walk's birthday (named for v1, whose 木 水 火 土 it read under the retired
+   rule): now 五行杂灵根 like every birthday, 木 and 水 tied to lead. */
 export const V1_BIRTH = '1986-07-07';
 
 const FNS = { resolve, task, win };

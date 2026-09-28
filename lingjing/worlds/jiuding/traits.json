@@ -3,26 +3,46 @@
   "elements": {
     "metal": {
       "zh": "金",
-      "en": "Metal"
+      "en": "Metal",
+      "color": {
+        "zh": "金",
+        "en": "gold"
+      }
     },
     "wood": {
       "zh": "木",
-      "en": "Wood"
+      "en": "Wood",
+      "color": {
+        "zh": "青",
+        "en": "green"
+      }
     },
     "water": {
       "zh": "水",
-      "en": "Water"
+      "en": "Water",
+      "color": {
+        "zh": "黑",
+        "en": "black"
+      }
     },
     "fire": {
       "zh": "火",
-      "en": "Fire"
+      "en": "Fire",
+      "color": {
+        "zh": "红",
+        "en": "red"
+      }
     },
     "earth": {
       "zh": "土",
-      "en": "Earth"
+      "en": "Earth",
+      "color": {
+        "zh": "黄",
+        "en": "yellow"
+      }
     }
   },
-  "_speed": "progress multiplier by how many roots. 天 1 · 地 2 · 真 3 · 伪 4–5: a mild gap (天 1.3× 伪) — slow is still walking. Four roots is the v1 baseline.",
+  "_speed": "progress multiplier by how many roots. Every new save is 五行杂灵根 (5, as slow as 伪 4); 天 1 · 地 2 · 真 3 · 伪 4 stay for saves read under the retired rules.",
   "speed": {
     "1": 1.3,
     "2": 1.2,
@@ -48,8 +68,8 @@
       "en": "Four roots — a false root"
     },
     "5": {
-      "zh": "五灵根 · 伪灵根",
-      "en": "Five roots — a false root"
+      "zh": "五行杂灵根",
+      "en": "Mixed five-element root"
     }
   },
   "v1": [
@@ -58,7 +78,7 @@
     "fire",
     "earth"
   ],
-  "_born": "灵根 from the 生辰 (rules/roots.mjs): the three pillars — year (turning at 立春), month (turning at each month's 节) and day — give six characters, each an element. A lone element on the year branch is the family's, not the player's, and is dropped; one element four times or more crowds out every lone one. What is left are the roots, the most first. Measured over every birthday 1950–2015: 天 7.0% · 地 7.2% · 真 44.1% · 伪 41.7%. Skipped, the same reckoning runs on a day drawn by the save's start. The birthday is never kept.",
+  "_born": "灵根 from the 生辰 (rules/roots.mjs): the hero is always 五行杂灵根 — all five roots, each weak (Hanli, 2026-09-28). The birthday decides only the root that leads (`root_main` on the save, the stone's brightest colour): the three pillars — year (turning at 立春), month (turning at each month's 节) and day — give six characters, each an element, and the one seen most leads, a tie broken by a seed from the save's start. Skipped, five even colours and none leads. Measured over every birthday 1950–2015 (days 1–28, five save seeds): 土 39.1% · 火 17.7% · 水 15.5% · 木 14.5% · 金 13.1% — 土 leads most, as 辰戌丑未 are four of the twelve branches; 41% of birthdays tie and take the seed. The leading root is what the 渡劫 五行 factor, a fight's 主灵根 (when no 命格 is set) and a chance card's element read. `names` 1–4 are kept only for saves read under the retired rules. `color` is the stone's light for each root. The birthday is never kept.",
   "_fate": "命格 — a lifelong base tone beside the 灵根, set once and only if the player wishes: 生肖 from the birth year, turning at 立春 (by the day — no hour is asked), and 日主, the day's heavenly stem, whose element the player is at home in. `zodiac` from 甲子 1984 (rat); `stems` in order, a day's stem is (JDN + 9) mod 10; `lichun` is the February day of 立春 for each year from `from` (checked against lunar-python). The birthday itself is never kept.",
   "fate": {
     "zodiac": [

@@ -95,9 +95,19 @@ export function personOf(content, state, who) {
 }
 
 /* Scene text as the player reads it: {name}; and, given the world, {兄姐} (how
-   the temple addresses them, by gender), {伴} (the companion's name) and
-   {灵根} (the roots, by how many). A word that comes out empty takes one space
-   beside it along, so an English line never shows a double space. */
+   the temple addresses them, by gender) and every other people.json `address`
+   word (the companion's unnamed cameos), {伴} (the companion's name) and
+   {灵根} (the roots, by how many) and {主亮} (the stone's brightest colour, the
+   root that leads — a sentence, or nothing). A word that comes out empty takes
+   one space beside it along, so an English line never shows a double space. */
+/* The stone's brightest colour — the root that leads a five-root save — as
+   one sentence, or nothing when the five read even. */
+function brightest(content, state, lang) {
+  const main = state?.traits?.length === 5 ? state.root_main : null, color = main && content.traits?.elements?.[main]?.color;
+  if (!color) return '';
+  return lang === 'en' ? `Only the ${color.en} is a little brighter than the rest.` : `只有${color.zh}的那一点，比别的亮一些。`;
+}
+
 export function fill(text, state, content = null) {
   if (text == null) return text;
   let out = text.replaceAll('{name}', state?.name ?? '');
@@ -105,8 +115,10 @@ export function fill(text, state, content = null) {
   const bare = text.replace(/\{[^}]*\}/g, ''), lang = /\p{Script=Han}/u.test(bare) ? 'zh' : /[A-Za-z]{2,}/.test(bare) ? 'en' : state?.lang ?? 'zh';
   const words = {
     '{伴}': pick(personOf(content, state, 'ban')?.name, lang) ?? '',
-    '{兄姐}': pick(content.people?.address?.['兄姐']?.[genderOf(state)], lang) ?? '',
+    // people.json `address`: {兄姐}, and the companion's unnamed cameos ({伴·阶} …), by gender.
+    ...Object.fromEntries(Object.entries(content.people?.address ?? {}).map(([k, v]) => [`{${k}}`, pick(v?.[genderOf(state)], lang) ?? ''])),
     '{灵根}': state?.traits?.length ? pick(content.traits.names[String(state.traits.length)], lang) ?? '' : '',
+    '{主亮}': brightest(content, state, lang),
   };
   for (const [key, word] of Object.entries(words)) {
     out = word ? out.replaceAll(key, word) : out.replaceAll(` ${key}`, '').replaceAll(`${key} `, '').replaceAll(key, '');

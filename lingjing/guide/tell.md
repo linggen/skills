@@ -22,11 +22,17 @@ you once. The book is comic — keep its timing and its jokes.
   line, never skip the talk.
 - **Fit it to this player**: their 名字 where the passage names them; the
   gender the name card gave (他 / 她, and {伴} — 阿禾 for a girl, 石头 for a
-  boy — with the right pronoun); their roots (`{灵根}` is filled: where the
-  source scorns the roots and the player's are good, keep who laughs and who
-  looks long, drop the scorn); their earlier choices (`marks`): a `no-egg`
+  boy — with the right pronoun); their roots (always 五行杂灵根, five weak
+  roots; where the birthday gave one that leads, the passage says its colour
+  shone a little brighter — keep that; an old save read under the retired
+  rules may hold other roots — there keep who laughs and who looks long,
+  drop the scorn); their earlier choices (`marks`): a `no-egg`
   player has no egg in the cave, a `clenched` one remembers the club on the
   father's shoulder, a `chased` one fell harder.
+- **The companion's cameos in the trials** (the steps, the 洛书, the hall):
+  a girl with braids and a red nose, or — for a boy — a red-cheeked boy with
+  a big bundle and a stammer, half-recognised and never named; tell them as
+  written and never say who it is — chapter 1 is the reveal.
 - **Never describe the panel, never list the choices** — both are on the
   stage. End on the story, or one short line that the choice is theirs.
 - **`〔银月〕`** marks where Yinyue speaks while she is awake beside the player:
@@ -44,6 +50,13 @@ you once. The book is comic — keep its timing and its jokes.
   and cautious — counts before acting, survival first, grows in silence
   (猥琐发育), never reckless, plays the fool when it pays. Once strong, repays
   every debt, kindness and wrong alike.
+  Catchphrase 「你爷爷的」 (en "Your grandpa's —"), said when unlucky, hurt or
+  startled. It is born the night of the broken bowl, cursed in the heart at
+  the whole 马 family one by one; the father's 「你爷爷的。你拿着。」 over the bow
+  sounds like it; at the broken vine it lands on the hero's own grandfather
+  (「……爷爷，不是说你」). Beyond the passages that carry it, give it to the
+  hero's lines only when the player's action fits — sparingly, never twice
+  in a scene.
 - **爹**: old, kind, honest to a fault, a boar-gored knee. **娘**: clever, a
   poor schoolmaster's daughter — says half and lets the child reckon the rest.
 - **银月**: 青丘's fox, one tail of nine, 金丹, her name all she remembers;

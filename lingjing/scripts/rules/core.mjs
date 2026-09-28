@@ -11,7 +11,7 @@ import { sceneBrief, spoken, wordsOf } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { herBeat, storyNode, withHerBeat } from './story.mjs';
 import { stow, storedLine } from './pouch.mjs';
-import { bornRoots, drawnRoots, rootName, starterFor } from './roots.mjs';
+import { bornRoots, rootName, starterFor, stoneRoots } from './roots.mjs';
 import { oweExit, spanLines } from './tell.mjs';
 import { companionOf } from './companion.mjs';
 import { atScene, inMade, placeName, placeOf, provinceOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
@@ -218,17 +218,20 @@ const THEN_PAGE_BORN = 'The birthday is given on the page\'s card (or left to th
 /* The name card's 男 · 女, as the rules keep it — anything else is not said. */
 const GENDERS = new Set(['female', 'male']);
 
-/* 生辰 → 灵根 at the 入门仪式 (roots.mjs): the birthday read here and let go,
-   or — skipped — a day drawn by the save's start. A save that already holds
+/* 生辰 → 灵根 at the 入门仪式 (roots.mjs): always five, 五行杂灵根 — the
+   birthday, read here and let go, names the one that leads (a tie by the
+   save's start); skipped, five even and none leads. A save that already holds
    its roots keeps them (the four of v1 among them): nothing is read again.
    The 命格 stays the coins card's own choice (fortune.mjs): the roots set
    nothing else, so the day's fights read as they did. */
 function readRoots(content, s, ctx, args) {
   if (s.traits?.length) return { kept: true };
   const birth = args.birth ? String(args.birth).trim() : null;
-  const roots = birth ? bornRoots(content, birth) : args.skip ? drawnRoots(content, s) : null;
-  if (!roots || (birth && new Date(`${birth}T00:00:00`) > ctx.now)) return null;
+  const read = birth ? bornRoots(content, birth, s.created ?? '') : args.skip ? stoneRoots(content) : null;
+  if (!read || (birth && new Date(`${birth}T00:00:00`) > ctx.now)) return null;
+  const roots = read.roots;
   s.traits = roots;
+  if (read.main) s.root_main = read.main;
   // The root test hands over the starter — the first cards he holds.
   const starter = starterFor(content, roots);
   s.cards = [...new Set([...(s.cards ?? []), ...starter])];
@@ -345,7 +348,8 @@ export function resolve(state, content, ctx, args) {
   if (exit.born) {
     born = readRoots(content, s, ctx, args);
     if (!born) return refuse('birth-invalid', null);
-    born = { ...born, roots: { ids: s.traits, name: rootName(content, s.traits, lang), elements: s.traits.map(e => pick(content.traits.elements[e], lang)) } };
+    const main = s.traits.length === 5 && s.root_main ? { main: pick(content.traits.elements[s.root_main], lang) } : {};
+    born = { ...born, roots: { ids: s.traits, name: rootName(content, s, lang), elements: s.traits.map(e => pick(content.traits.elements[e], lang)), ...main } };
   }
   // An exit that is toil by itself (the steps, the ditch) costs its 体力 even
   // in the free prologue: the first place a new player sees the pool move.

@@ -223,18 +223,20 @@ function tameAct(id, ctx) {
   return `<div class="acts"><button class="act tame" data-tame="${esc(id)}">${esc(say(w.tameBy, { what }))}</button></div>`;
 }
 
+/// 五行杂灵根: all five lit but faint, the one that leads (the stone's
+/// brightest colour, from the 生辰) at full; skipped, five even.
 function traits(card, ctx) {
-  const lit = new Set(ctx.look.traits?.ids || []);
+  const lit = new Set(ctx.look.traits?.ids || []), main = ctx.look.traits?.main ?? null, weak = lit.size === 5;
   const els = ELEMENTS.map((id) => {
     const e = ctx.content.traits.elements[id];
     const small = ctx.lang === 'en' ? `<small>${esc(e.en)}</small>` : '';
-    return `<div class="root ${id}${lit.has(id) ? ' lit' : ''}"><b>${esc(e.zh)}</b>${small}</div>`;
+    return `<div class="root ${id}${lit.has(id) ? ' lit' : ''}${main === id ? ' main' : ''}"><b>${esc(e.zh)}</b>${small}</div>`;
   });
   const result = ctx.look.traits ? `<div class="rootres">${esc(ctx.look.traits.name)}</div>` : '';
   // The arts learned, each with what it does; greyed until its realm.
   const arts = (ctx.look.arts || []).map((a) => `<div class="artrow${a.ready ? '' : ' dim'}"><b>${esc(a.name)}</b> <span class="small">${esc(a.about)}</span>${a.ready ? '' : ` <span class="chip">${esc(say(ctx.words.artFrom, { tier: a.tier.name }))}</span>`}</div>`);
   const artsHtml = arts.length ? `<div class="cardtitle arts">${esc(ctx.look.words?.arts ?? ctx.words.artsTitle)}</div>${arts.join('')}` : '';
-  return `<div class="card"><div class="cardtitle">${esc(ctx.words.rootTitle)}</div><div class="roots">${els.join('')}</div>${result}${artsHtml}${acts([{ label: ctx.words.about, ask: true, say: ctx.words.sayRoots }])}</div>`;
+  return `<div class="card"><div class="cardtitle">${esc(ctx.words.rootTitle)}</div><div class="roots${weak ? ' weak' : ''}">${els.join('')}</div>${result}${artsHtml}${acts([{ label: ctx.words.about, ask: true, say: ctx.words.sayRoots }])}</div>`;
 }
 
 /// 命格 on the day's reading (问卦 — one card): what it is once set; before,
