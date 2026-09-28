@@ -1750,10 +1750,10 @@ Listing every menu entry flooded the book. The rules read the menus thus:
   On Linggen Cloud the game already travels like Health — the shared trial,
   then the plan's monthly pool (linggensite `llm.ts`).
 
-## 丹药等级 — 阶随境界，品分六等，仙丹在顶 (his, 2026-09-28; designed, not built)
+## 丹药等级 — 阶随境界，一至九转，仙丹在顶 (his, 2026-09-28; designed, not built)
 
 A pill is measured twice: its **阶** is bound to a realm — every realm has pills of its own level —
-and its **品** says how well it was made. Above the nine mortal 阶 stands **仙丹**, made only in 仙界.
+and its **转** (一至九, 《抱朴子》) says how well it was made, and its **品** (下中上, 《神农本草经》) its toxin. Above the nine mortal 阶 stands **仙丹**, made only in 仙界.
 Today items.json names pills without a grade (聚气丹, 筑基丹, 固基丹, 破境丹, 回春丹…); 阶 and 品 are
 fields each made pill carries, not a new item per grade.
 
@@ -1763,11 +1763,11 @@ fields each made pill carries, not a new item per grade.
 - **葛洪《抱朴子·金丹》**（晋）——丹以转论：「一转之丹，服之三年得仙……九转之丹，服之三日得仙。」→ 丹炼一回为一转、丹上多一道纹；**九转**是凡间只在书上见过的顶；银月丹炉的丹，都是九转。
 - **《黄帝九鼎神丹经诀》**（道藏）——黄帝铸九鼎炼神丹的丹经：古书里丹道与九鼎本来就连着——沉鼎观得名于祖师得过它一卷残篇，锁在藏经阁最顶层（剧情钩子）。
 - **《黄帝内经》**——真气、丹田、精气神的来处（「恬惔虚无，真气从之」）。
-- 极品 · 完美 · 无暇是我们在上品之上加的；仙丹是九转之后、仙界的丹。
+- 不另造等级：丹只论**转**（一至九）与**品**（下中上，照本草经以毒分）；仙丹是九转之后、仙界的丹。
 
 **阶 — bound to the realm (九阶 + 仙阶)**
 
-| 阶 | 境界 | 丹 | 药力（同品，一阶比一阶 ×10） |
+| 阶 | 境界 | 丹 | 药力（同转，一阶比一阶 ×10） |
 |---|---|---|---|
 | 一阶 | 练气 | 聚气丹 · 回春丹 · 洗髓丹 | ×1 |
 | 二阶 | 筑基 | 筑基丹 · 固基丹 | ×10 |
@@ -1778,20 +1778,22 @@ fields each made pill carries, not a new item per grade.
 - A mortal pill above the eater's realm is refused (「药力太猛，受不住」); below it pays a tenth per 阶 under.
 - **仙丹不分境界**：仙气自己找路，练气的凡人吃了也受得住——这就是它逆天的地方。
 
-**品 — how well it was made (六等，一等比一等 ×10)**
+**转 — how many times it was refined (一转至九转, 《抱朴子·金丹》)；品 — its toxin band (《神农本草经》)**
 
-| 品 | 丹纹 | 丹身 | 丹毒 | 药力（下品＝×1） | 凡人丹炉出率 | 在世上 |
+丹炼一回为一转，丹上多一道纹。一转比一转药力 ×10（故事的尺度；游戏里走驯过的曲线）。
+
+| 转 | 丹纹 | 品（本草经） | 丹毒 | 药力（一转＝×1） | 凡人丹炉出率 | 在世上 |
 |---|---|---|---|---|---|---|
-| **下品** | 一道 | 浊，满身斑 | 重 | ×1 | 20%（另有 70% 炸炉） | 药铺柜台上 |
-| **中品** | 三道 | 半浊 | 有 | ×10 | 7% | 锁在柜子里 |
-| **上品** | 五道 | 清 | 微 | ×100 | 2.5% | 宗门库房，论功领 |
-| **极品** | 七道 | 亮 | 一丝 | ×1,000 | 0.5% | 一个丹师一辈子一颗，就能开宗立派 |
-| **完美** | 九道，齐 | 透 | 余一丝杂气 | ×10,000 | 传说 | 只听说过 |
-| **无暇** | 九道，金 | 透亮如露 | 无，反能化去旧毒 | ×100,000 | 凡间不该有 | 无价 |
+| 一转 | 一道 | 下品 | 重，不可久服 | ×1 | 20%（另有 70% 炸炉） | 药铺柜台上 |
+| 二转 | 二道 | 下品 | 重 | ×10 | 7% | 锁在柜子里 |
+| 三转 | 三道 | 下品 | 有 | ×100 | 2.5% | 沉鼎观开山三百年，最好的一炉 |
+| 四转 · 五转 · 六转 | 四—六道 | 中品 | 有无，斟酌 | ×1,000 · ×10⁴ · ×10⁵ | 名门丹师，一辈子几炉 | 大宗门的镇库之宝 |
+| 七转 · 八转 | 七—八道 | 上品 | 无毒 | ×10⁶ · ×10⁷ | 传说 | 只听说过 |
+| **九转** | 九道，金 | 上品 | 无，反能化去旧毒 | ×10⁸ | 书上说说的 | 「九转之丹，服之三日得仙」 |
 
-- **丹毒**：下品、中品吃多了积毒（体力上限一时降低，闭关可排）；上品起几乎不积；无暇反能化毒。
+- **丹毒**：下品（一至三转）吃多了积毒（体力上限一时降低，闭关可排）；中品看体质；上品无毒；九转反能化毒。
 - **炸炉**：凡人丹炉十炉炸七；炸了灵草全失。
-- **丹纹**是玩家一眼能看的标记：一、三、五、七、九道；无暇的九道是金的；仙丹没有纹——它自己发光。
+- **丹纹**是玩家一眼能看的标记：几道纹就是几转；九转的九道是金的；仙丹没有纹——它自己发光。
 - **Numbers in the game**: the ×10 ladders are the *story's* scale (why it feels 逆天); the rules
   cap real effects to the game's own economy (a pill's 修为/体力 gain is set per item and multiplied
   by a tamed curve, not the raw ×10ⁿ), so the balance gate keeps holding.
@@ -1805,21 +1807,21 @@ fields each made pill carries, not a new item per grade.
 它跟着掉了下来。银月不记得这些——炉盖上的小兽记得，它不说。来历在后面的章节一点点揭开，
 九鼎仍是九鼎，丹炉不在其中。
 
-**银月的丹炉**（故事 v3，第一章）——**随主人**：不管投进去的灵草是几阶，出来的永远是**主人当下境界的无暇丹**——
-他吃得下的、最好的那一颗（练气时一阶无暇；筑基了，同样的灵草出二阶无暇……）。唯一例外是**破境丹**：
+**银月的丹炉**（故事 v3，第一章）——**随主人**：不管投进去的灵草是几阶，出来的永远是**主人当下境界的九转丹**——
+他吃得下的、最好的那一颗（练气时一阶九转；筑基了，同样的灵草出二阶九转……）。唯一例外是**破境丹**：
 破境本就是跨一步，它炼的破境丹高主人一阶。不炸炉；尝过一次的丹，记住丹方。**仙丹留到终章**——九鼎归位、
 丹炉全醒、主人渡劫之后，它才炼出第一颗主人吃得下的仙丹。限制在灵草：稀缺的是料，不是丹。
 **剧情里说一半**：银月交出丹炉时话没说完就睡了——只留下「你吃得下的，最好的……那一颗」「它嘴刁……尝过的丹……」「它还会……」。
 丹纹、六等、九道金纹、尝一口记住丹方、会飞——都由玩家一点一点撞见：第一炉的九道金纹、褚先生讲丹的那一课、济世堂掌柜的脸、
 让它尝了筑基丹之后的第二炉、第三章夜里坠崖时它托住你。
-游戏里：丹炉之前，玩家炼丹走凡人出率；得到丹炉之后，每一炉都是本境无暇——灵草的供给（药园、秘境、
-差事、坊市）才是节流阀；无暇丹不能卖（没人认得，拿出去就是祸）。
+游戏里：丹炉之前，玩家炼丹走凡人出率；得到丹炉之后，每一炉都是本境九转——灵草的供给（药园、秘境、
+差事、坊市）才是节流阀；九转丹不能卖（没人认得，拿出去就是祸）。
 
 **灵草从哪来**（丹炉是开挂，灵草是节流阀——穷外门弟子也要有路）：
 
 | 来处 | 何时开 | 怎么得 |
 |---|---|---|
-| **药园残株** | 第一章，药园巡夜之后 | 周衡：每月拔下的残株（虫咬、长歪、灵气散了一半）「往年都是扔，以后扔给你」——别人的垃圾，丹炉照样炼成本境无暇 |
+| **药园残株** | 第一章，药园巡夜之后 | 周衡：每月拔下的残株（虫咬、长歪、灵气散了一半）「往年都是扔，以后扔给你」——别人的垃圾，丹炉照样炼成本境九转 |
 | **小狰寻药** | 收服小狰之后 | 从小偷灵草长大的狰，鼻子最灵：每日一次，带你去附近一处崖缝、林下的野灵草（地点随地图，路上遇） |
 | **采药** | 一直 | 猎户的本事：山里、秘境、断碑后的深处，按地点刷新（高阶地方出高阶灵草） |
 | **差事酬劳** | 入门之后 | 宗门差事、榜文可以付灵草而不付灵石 |
@@ -1828,9 +1830,9 @@ fields each made pill carries, not a new item per grade.
 
 The throttle holds because each source is small, daily or event-bound; the furnace multiplies quality, never quantity.
 
-**游戏上要做的**：made pills carry `tier` (阶 1–9, or `xian`) and `grade` (品 1–6; a 仙丹 has none);
+**游戏上要做的**：made pills carry `tier` (阶 1–9, or `xian`) and `zhuan` (转 1–9; 品 derives from it; a 仙丹 has none);
 effects follow a tamed curve per tier/grade; the pill card shows 丹纹 as strokes (a 仙丹 glows instead);
-the furnace (an item) makes the owner's-realm 无暇 (破境丹 one 阶 above), never bursts; 无暇 can't be sold; 仙丹 only from the furnace after the finale.
+the furnace (an item) makes the owner's-realm 九转 (破境丹 one 阶 above), never bursts; 九转 can't be sold; 仙丹 only from the furnace after the finale.
 
 ## 体力 — the game's own stamina
 
