@@ -1,4 +1,4 @@
-// redesign v2 (doc/redesign-v2.md § 四 and § 十, steps 2–4): what was merged,
+// redesign v2 (doc/archive.md § redesign-v2 — § 四 and § 十, steps 2–4): what was merged,
 // what was cut, and how a save from before comes across. A player keeps
 // everything they HOLD — the bag, the cards, the treasure and its 重; what only
 // a cut system read goes, and never takes anything with it.

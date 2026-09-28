@@ -3,9 +3,9 @@ type: design
 reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
-  and plays is the live page (scripts/index.html); prototype.html is the
-  archived first mock. This file is the build.
-status: 2026-09-28 — the story reborn (§ 故事 v3): a poor 蒙山 hunter's child, 银月 a fallen fox demon-queen found in the prologue, 废柴逆袭 told as a novel you play — 小人书 stage, story in the chat; § 剧情 × 开放世界: tasks drive the story, key beats lock the map (Genshin's shape); 渡劫 a red check; 名字 not 道号; gender on the name card; 生辰 → 灵根; people.json. Before: 2026-09-24 — redesign v2 steps 2–4 (redesign-v2.md § 四, § 十): 路上 (遇 · 拾遗 · 抉择 · 机缘 · 拦路 as one on-arrival system, rules/road.mjs), 差事 (errands and 榜文 one kind; no daily boards), 问卦 (起卦 · 望气 · 命格 one card) merged; 伤势 · 羁绊/谈心/疗伤 · 历练 · 温养/强化/写符 · the elite's own rules cut, 组牌 from 结丹 — save v5 migrates; the day resets 今日传闻, the 人间功课 pick and 问卦. Also 2026-09-24: rules split into scripts/rules/*.mjs; one writer at a time (state.json.lock, `busy`); a fight holds the world still (`in-a-fight`); nothing pays twice (`won-already`, `subdued-today`, made grants progress/wealth only and once, Go replay pays nothing); gear counts in the card fight (装备入局); hosted games and 论道 cost 3 体力; the page's verbs go through the declared page_only `Verb` tool; the cloud save is [data/state.json, data/worlds]. Before: 2026-09-23 伤势 · 羁绊 · 历练 · 机缘 · 抉择 · 精英 · 杀招 · 望气 · 组牌 · the mini-games and 论道; 2026-09-18 斗法 v3 (the card fight) and 差事; 2026-09-14–17 the world, places, catalog, made worlds, 银月 at 结丹. Superseded designs live in archive.md.
+  and plays is the live page (scripts/index.html); the story is story/huxian-bing
+  (DESIGN.md, OUTLINE.md). This file is the build.
+status: 2026-09-28 — the story reborn (§ 故事 v3): a poor 蒙山 hunter's child, 银月 a fallen fox demon-queen found in the prologue, 废柴逆袭 told as a novel you play — 小人书 stage, story in the chat; § 剧情 × 开放世界: tasks drive the story, key beats lock the map (Genshin's shape); 渡劫 a red check; 名字 not 道号; gender on the name card; 生辰 → 灵根; people.json. Before: 2026-09-24 — redesign v2 steps 2–4 (archive.md § redesign-v2 § 四, § 十): 路上 (遇 · 拾遗 · 抉择 · 机缘 · 拦路 as one on-arrival system, rules/road.mjs), 差事 (errands and 榜文 one kind; no daily boards), 问卦 (起卦 · 望气 · 命格 one card) merged; 伤势 · 羁绊/谈心/疗伤 · 历练 · 温养/强化/写符 · the elite's own rules cut, 组牌 from 结丹 — save v5 migrates; the day resets 今日传闻, the 人间功课 pick and 问卦. Also 2026-09-24: rules split into scripts/rules/*.mjs; one writer at a time (state.json.lock, `busy`); a fight holds the world still (`in-a-fight`); nothing pays twice (`won-already`, `subdued-today`, made grants progress/wealth only and once, Go replay pays nothing); gear counts in the card fight (装备入局); hosted games and 论道 cost 3 体力; the page's verbs go through the declared page_only `Verb` tool; the cloud save is [data/state.json, data/worlds]. Before: 2026-09-23 伤势 · 羁绊 · 历练 · 机缘 · 抉择 · 精英 · 杀招 · 望气 · 组牌 · the mini-games and 论道; 2026-09-18 斗法 v3 (the card fight) and 差事; 2026-09-14–17 the world, places, catalog, made worlds, 银月 at 结丹. Superseded designs live in archive.md.
 ---
 
 # Lingjing — design
@@ -923,7 +923,7 @@ Prompt rules that ride in SKILL.md:
 
 ## The screens
 
-The look and flow are `prototype.html`. **One set of cards, two placements:**
+The look and flow are the live page. **One set of cards, two placements:**
 the Mac shows them on a scene beside the chat, the phone inline in the chat.
 
 **Mac — the scene on the left, the conversation on the right.** No engine
