@@ -280,7 +280,14 @@ export function fitWorld(saved, content) {
   const chapter = content.chapters[state.chapter];
   // A scene renamed since — the prologue rewrite of 2026-09-28 — goes to the
   // nearest scene the chapter names for it (chapter.json `aliases`).
-  const alias = chapter && state.scene != null && !chapter.scenes[state.scene] ? chapter.aliases?.[state.scene] : null;
+  let alias = chapter && state.scene != null && !chapter.scenes[state.scene] ? chapter.aliases?.[state.scene] : null;
+  // A save that played only the retired scenes of a rewritten chapter (their
+  // ids are `aliases` keys) and stands on a scene the rewrite kept (00-waimen)
+  // begins the rewrite at its first scene: the kept scene's story assumes the
+  // new one before it (prologue-v3's outer court, the fox he never met).
+  const done = state.done_scenes ?? [];
+  if (!alias && chapter?.aliases && state.scene && state.scene !== chapter.first_scene && chapter.scenes[state.scene]
+    && !(state.ended ?? []).includes(chapter.id) && done.some(id => id in chapter.aliases) && !done.some(id => chapter.scenes[id])) alias = chapter.first_scene;
   const scene = chapter && state.scene != null ? chapter.scenes[alias ?? state.scene] : null;
   const place = state.place != null && Object.values(content.places).some(d => d.places.some(p => p.id === state.place));
   const beasts = new Set(content.creatures.creatures.map(c => c.id));

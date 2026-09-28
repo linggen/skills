@@ -23,7 +23,7 @@
     "zh": "吴婆婆的木牌上，为什么刻着一只九尾的狐狸？",
     "en": "Why is a nine-tailed fox carved on Granny Wu's token?"
   },
-  "_aliases": "Scene ids an older save may still hold, and the scene of this chapter nearest to each (state.mjs fitWorld). The prologue-v3 rewrite (2026-09-28): every scene of the v0 and v1 prologues that came before the trials goes to 石坳村, where the story now begins (the name card asks again; roots, bag and progress are kept); the trials and the hall keep their ids; the old outer-court practice goes to the outer court; 夫诸 and the north go to the notice board, the prologue's last scene.",
+  "_aliases": "Scene ids an older save may still hold, and the scene of this chapter nearest to each (state.mjs fitWorld). The prologue-v3 rewrite (2026-09-28): every scene of the v0 and v1 prologues that came before the trials goes to 石坳村, where the story now begins (the name card asks again; roots, bag and progress are kept); the trials and the hall keep their ids; the old outer-court practice goes to the outer court; 夫诸 and the north go to the notice board, the prologue's last scene. A save that walked only the retired scenes and stands on one the rewrite kept (his: v1 put him at 00-waimen) begins again at 石坳村 too (state.mjs fitWorld).",
   "aliases": {
     "00-waking": "00-shiao",
     "00-stone": "00-shiao",

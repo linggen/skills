@@ -1,4 +1,4 @@
-// The prologue of 2026-09-28 (doc/drafts/prologue-v1.md): the name card's
+// The prologue's machinery (built for the v1 prologue, retired; kept for prologue-v3): the name card's
 // 男 · 女 and what the rules fill from it, the 生辰 read into 灵根 and let go,
 // the people a scene brings on, the trial fight that may be fought again, the
 // toil that costs 体力 in a free chapter, 夫诸's first sight, and an old save
@@ -275,9 +275,15 @@ test('an old save whose prologue scene the rewrite took away lands on the neares
   assert.equal(l.place.id, 'shiao');
   assert.ok(l.stage.some(c => c.card === 'value'), 'the name card, with 男 · 女 this time');
   for (const [old, now] of [['00-waking', '00-shiao'], ['00-stone', '00-shiao'], ['00-river', '00-shiao'], ['00-ferry', '00-shiao'], ['00-boat', '00-shiao'], ['00-shanlu', '00-shiao'],
-    ['00-gate', '00-gate'], ['00-hall', '00-hall'], ['00-waimen', '00-waimen'], ['00-fuzhu', '00-mijing'], ['00-north', '00-mijing'], ['nowhere', '00-shiao']]) {
+    ['00-gate', '00-shiao'], ['00-hall', '00-shiao'], ['00-waimen', '00-shiao'], ['00-fuzhu', '00-mijing'], ['00-north', '00-mijing'], ['nowhere', '00-shiao']]) {
     assert.equal(migrate({ ...his, scene: old }, content).scene, now, old);
   }
+  // as the live save stood by the afternoon: the v1 alias had already put it at 00-waimen — a scene the rewrite kept
+  const moved = migrate({ ...his, scene: '00-waimen', place: 'waimen' }, content);
+  assert.equal(moved.scene, '00-shiao', 'played only the retired scenes: the rewrite begins at its start');
+  const v3 = { ...start(), scene: '00-waimen', done_scenes: ['00-shiao', '00-masan'] };
+  assert.equal(migrate(v3, content).scene, '00-waimen', 'a v3 save stays where it is');
+  assert.equal(migrate({ ...start(), scene: '00-gate' }, content).scene, '00-gate', 'a Go to a kept scene stays');
   // walked on from there as the ordinary way: the root test later keeps his roots
   const s = walk(m, [...TO_HALL.map(([v, a]) => [v, a.exit === 'name' ? { ...a, value: '青玄', gender: 'male' } : a]), ['resolve', { exit: 'born' }]], content, NOW);
   assert.equal(s.scene, '00-waimen');
