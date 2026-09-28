@@ -1,0 +1,42 @@
+{
+ "id": "huxian-bing",
+ "title": {
+  "zh": "狐仙欠我一张饼",
+  "en": "The Fox Owes Me a Flatbread"
+ },
+ "blurb": {
+  "zh": "蒙山脚下最穷的猎户家，出了个嘴最贫的孩子。为了一张鹿皮，他越过「勿入」的断碑，捡回一只断了八尾、饿得发慌、连自己名字都想不起来的仙界妖王。她吃了他最后一张饼，许了他一个愿——从此，他的倒霉人生，一路开挂。",
+  "en": "The poorest hunter's family under Mount Meng has the mouthiest child. For one deer hide he crosses the stone that says Do Not Enter, and carries home a queen of heaven's foxes — eight tails cut away, starving, unable to recall her own name. She eats his last flatbread and owes him a wish. From then on, his luckless life takes off."
+ },
+ "world": "jiuding",
+ "chapters": [
+  {
+   "id": "00",
+   "title": {
+    "zh": "序章（上）· 坠谷遇狐",
+    "en": "Prologue I · The Fall and the Fox"
+   },
+   "file": "00-序章上·坠谷遇狐.md",
+   "opens": "00-prologue"
+  },
+  {
+   "id": "01",
+   "title": {
+    "zh": "序章（下）· 仙门",
+    "en": "Prologue II · The Gate"
+   },
+   "file": "01-序章下·仙门.md",
+   "opens": "00-prologue"
+  }
+ ],
+ "appendix": [
+  {
+   "id": "tuna",
+   "title": {
+    "zh": "附录 ·《吐纳经》",
+    "en": "Appendix · The Scroll of Breath"
+   },
+   "file": "90-附录·吐纳经.md"
+  }
+ ]
+}

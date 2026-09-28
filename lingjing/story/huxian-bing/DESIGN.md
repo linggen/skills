@@ -1,10 +1,9 @@
-# 《山海问仙》· 设计 —— 喜剧修仙 × 原神式开放世界
+# 《狐仙欠我一张饼》· 设计 —— 喜剧修仙 × 原神式开放世界
 
 *Design for the book and how the game carries it. Hanli's rulings of
 2026-09-28, gathered. The engine-side build lives in ../../doc/design.md
 (§ 故事 v3, § 剧情 × 开放世界); this file is the book's own: what it is,
-how it sounds, who is in it, how it is played. Title still open
-(candidates: 《狐仙欠我一张饼》《修仙？先交租》《我家狐狸是妖王》).*
+how it sounds, who is in it, how it is played. Title (his pick, 2026-09-28): 《狐仙欠我一张饼》 — The Fox Owes Me a Flatbread.*
 
 ---
 
@@ -81,5 +80,4 @@ how it sounds, who is in it, how it is played. Title still open
 
 ## 八 · 待定
 
-1. 书名。
-2. 序章上要不要照样章重写成完整的周星驰腔（现在是"轻喜剧"版本）。
+1. 序章上要不要照样章重写成完整的周星驰腔（现在是"轻喜剧"版本）。

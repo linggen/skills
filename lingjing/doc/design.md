@@ -28,7 +28,7 @@ status: 2026-09-28 — the story reborn (§ 故事 v3): a poor 蒙山 hunter's c
   见 `## 故事 v3 — 废柴逆袭，银月随行 (his rulings, 2026-09-28; prologue building)
 
 He found the old spine (a myth-mystery a chapter) "not a 修仙 novel" and too heavy. The new one is
-the 废柴逆袭 shape, light and 爽, our own names and plots throughout. The book lives in `story/shanhai-wenxian/` (reader chapters, book.json, notes/ with the outline, structure, sources, tasks), linked from the game. Kept: the nine 鼎,
+the 废柴逆袭 shape, light and 爽, our own names and plots throughout. The book — 《狐仙欠我一张饼》 (his title) — lives in `story/huxian-bing/` (reader chapters, book.json, notes/ with the outline, structure, sources, tasks), linked from the game. Kept: the nine 鼎,
 one province and one realm a chapter, the 山海经 creatures, the set pieces.
 
 - **The hero** — a poor hunter's child of 石坳村 under 蒙山, 12 in the prologue. Quick-bodied,
@@ -48,7 +48,7 @@ one province and one realm a chapter, the 山海经 creatures, the set pieces.
   grow whole) and the 外门大比. Then 散修 across the nine provinces — rivals, villains, set pieces
   (鲲鹏, 烛龙…), each chapter a different kind of story.
 - **The 恩仇簿** — every kindness and wrong is written; people come back at key beats.
-- **Voice (his ruling, later the same day)** — a Stephen Chow–style comedy (《大话西游》's register): misery told as epic, ancient people speaking modern sense, deadpan absurdity, every solemn moment collapses, slapstick, running gags that grow, and one true beat at the end of each scene that no joke follows. Homage in technique and genre only — never a line, scene, character or prop from his films. The book's own design: `story/shanhai-wenxian/DESIGN.md`; voice samples in its notes/. Set pieces keep the eight steps below. Earlier voice note: every set piece in the eight steps learned from the
+- **Voice (his ruling, later the same day)** — a Stephen Chow–style comedy (《大话西游》's register): misery told as epic, ancient people speaking modern sense, deadpan absurdity, every solemn moment collapses, slapstick, running gags that grow, and one true beat at the end of each scene that no joke follows. Homage in technique and genre only — never a line, scene, character or prop from his films. The book's own design: `story/huxian-bing/DESIGN.md`; voice samples in its notes/. Set pieces keep the eight steps below. Earlier voice note: every set piece in the eight steps learned from the
   鲲鹏 passage: the world turns first, a shadow before the body, the hero is struck, a ladder of
   giants, it leaves trailing the sea, someone who knows names it, the classic's line lands, a light
   word after.
