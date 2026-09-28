@@ -59,3 +59,14 @@ klein 4B), 2026-09-15 (齐盐, 齐纨 and 符 2026-09-16; the five 天材地宝,
 (his ask, 2026-09-24), painted by the local picture model (FLUX.2 klein 4B),
 768×512, seed 52 of four (seed 11 painted fake characters on the rock). No
 outside source.
+
+## The prologue — people and panels (2026-09-28)
+
+`people/baba.webp`, `mama`, `wupo`, `masan`, `maxiaobao`, `laozhou`, `jiujiu`,
+`yinyue-fox` (the little silver fox) and `yinyue` (her human form), and the 27
+`panels/00-*.webp` of the prologue's 连环画, with `items/fox-token`,
+`deer-hide`, `old-bow` and `tuna-jing`: painted for Lingjing by the local
+picture model (FLUX.2 klein 4B), 2026-09-28, from the prompts in
+`tools/paint-prologue.py` (portraits in ink wash, panels as 白描 with a light
+wash on aged paper). No outside source. `panels/00-years.webp` was painted for
+the three-year montage that moved to chapter 1; it is kept for it.
