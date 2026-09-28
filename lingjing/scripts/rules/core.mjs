@@ -1,7 +1,7 @@
 // rules/core.mjs — Changing it: refusals, pay, riddles, stamina, resolve and judge.
 // Part of the rules engine; rules.mjs is its one door.
 import { gameOf, MADE_GRANT } from '../content.mjs';
-import { addProgress, dayKey, fill, normalizeAnswer, payOf, pick, rollDay, settleStamina, speedOf, staminaReturnsAt, stepName, threshold, tierOf } from '../state.mjs';
+import { addProgress, dayKey, fill, fitValue, normalizeAnswer, payOf, pick, rollDay, settleStamina, speedOf, staminaReturnsAt, stepName, threshold, tierOf } from '../state.mjs';
 import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
 import { gainCard, starterOf } from './cards.mjs';
@@ -180,9 +180,24 @@ function offeredForm(value, rule) {
 }
 
 function cleanValue(raw, rule) {
-  const value = offeredForm(String(raw ?? '').trim(), rule);
-  const length = [...value].length;
-  return length >= 1 && length <= rule.max_chars ? value : null;
+  const value = fitValue(raw, rule.max_chars);
+  return value && fitValue(offeredForm(value, rule), rule.max_chars);
+}
+
+/* An exit with `value` (the 道号) is named on the page's card — the player
+   taps an offered name or writes their own, and the page resolves it. Ling
+   never fills it in: live, 2026-09-28, she asked 「取一个道号」 as the only
+   option and, tapped, Resolved it with 青玄 — every player became 青玄. So
+   her Resolve of such an exit is refused unless the value stands in the
+   player's own typed words (`said`); the page's path (no reader) is never
+   gated. Null: not such an exit, or theirs. */
+const THEN_PAGE_NAMES = 'This is named on the page\'s card: the player taps an offered name there or writes their own, and the page tells you `[scene] named`. Nothing changed. End on one line inviting them to the card — never AskUser for it, never name one for them, never Resolve it yourself.';
+export function pageNames(content, state, args) {
+  const exit = sceneOf(content, state)?.exits?.find(e => e.id === args.exit);
+  if (!exit?.value) return null;
+  const typed = String(args.said ?? '').trim(), value = String(args.value ?? '').trim();
+  if (value && typed && !typed.startsWith('[') && typed.toLowerCase().includes(value.toLowerCase())) return null;
+  return { ok: false, refused: 'page-names', say: null, then: THEN_PAGE_NAMES };
 }
 
 /* Entering a scene offers its tasks. */
@@ -254,10 +269,12 @@ export function resolve(state, content, ctx, args) {
     if (today?.day === dayKey(ctx.now) && today.outcome === 'lost') return refuse('withdrawn', pick(exit.withdrawn, lang), { game: game.id });
     return refuse('game-not-won', null, { game: game.id });
   }
+  let named = null;
   if (exit.value) {
     const value = cleanValue(args.value, exit.value);
     if (!value) return refuse('value-invalid', null, { max_chars: exit.value.max_chars });
     s[exit.value.field] = value;
+    named = { field: exit.value.field, value };
   }
   if (exit.next || exit.ends) {
     const empty = spendStamina(content, s, ctx, 'step');
@@ -313,7 +330,7 @@ export function resolve(state, content, ctx, args) {
   return {
     state: s,
     result: {
-      ok: true, took: exit.id, beat, paid, breakthrough, show: exit.show ?? [], scene: atScene(content, s) ? sceneBrief(content, s, ctx.now) : null,
+      ok: true, took: exit.id, ...(named ? { named } : {}), beat, paid, breakthrough, show: exit.show ?? [], scene: atScene(content, s) ? sceneBrief(content, s, ctx.now) : null,
       waypoint: !atScene(content, s) && sceneOf(content, s) ? threadOf(content, s, ctx.now) : null, ended: exit.ends ?? null, waiting,
       ...(walked ? { walked } : {}), ...(grew ? { treasure_grew: grew } : {}), ...(node ? { node } : {}),
       // Her price showing as the chapter ends: Ling opens with what she does (story.mjs uneaseAt).

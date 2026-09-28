@@ -374,6 +374,10 @@ ruby.py rt { font-family: var(--ui); font-size: 0.62em; font-weight: 400; letter
 .act.on { background: var(--ling); color: var(--surface); }
 .fateform input[type=text] { flex: 1 1 10em; min-width: 0; font: inherit; font-size: 13px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--text); }
 .fateform input[type=date] { font: inherit; font-size: 13px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--text); }
+/* 取一个道号: the offered names, a touch larger than an action — each is a name to wear. */
+.valuecard .namechip { font-size: 15px; letter-spacing: 0.08em; min-width: 4.2em; }
+.valuecard .namechip .dim { font-size: 11px; letter-spacing: 0; }
+.valuecard .namechip.on .dim { color: inherit; opacity: 0.75; }
 .small.seal { color: var(--seal); margin-top: 4px; }
 
 /* 降妖 before the fight: who you are about to fight, and the one way in. The

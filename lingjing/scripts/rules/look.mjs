@@ -4,19 +4,20 @@ import { CAST, gameOf } from '../content.mjs';
 import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
 import { dayKey, fill, periodKey, pick, rollDay, settleStamina, speedOf, stepName, threshold } from '../state.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
-import { askOf, thenFor } from './ask.mjs';
+import { askOf, THEN_VALUE, thenFor } from './ask.mjs';
 import { fightSetup } from './cards.mjs';
 import { callDue, companionOf, hasCompanion, herCard, questBrief, recalledOf } from './companion.mjs';
 import { clone, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mjs';
 import { staminaBrief } from './daily.mjs';
 import { bookOf, breakthroughOf, directorBrief, errandFor, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
-import { divinationBrief, fateBrief } from './fortune.mjs';
+import { divinationBrief, fateBrief, prng } from './fortune.mjs';
 import { chanceBrief } from './road.mjs';
 import { seclusionBrief } from './seclusion.mjs';
 import { chapterLook, nodeLook, recapLook } from './story.mjs';
 import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
 import { kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
 import { gameLevel, hostedHere, lundaoBrief, reopened } from './tasks.mjs';
+import { hashOf } from './travel.mjs';
 import { atScene, creatureOf, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
 import { building } from './worlds.mjs';
 
@@ -133,6 +134,18 @@ function duelBrief(content, state, game, now, { door = false } = {}) {
   };
 }
 
+/* The names a value exit offers this player: `draw` of its pool, seeded by
+   when the save began — a reload shows the same ones, another player others,
+   and none is ever the default (his, 2026-09-28: 不要默认给青玄). */
+function drawnOffers(state, exit) {
+  const pool = [...(exit.value.offers ?? [])], rand = prng(hashOf(`${state.created ?? ''}|${exit.id}|offers`));
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, exit.value.draw ?? pool.length);
+}
+
 function exitBrief(content, state, exit, button, ctxNow = new Date(), scene = sceneOf(content, state)) {
   const brief = { id: exit.id, means: exit.means, button };
   if (exit.needs) brief.needs = exit.needs;
@@ -152,7 +165,7 @@ function exitBrief(content, state, exit, button, ctxNow = new Date(), scene = sc
       brief.duel = duelBrief(content, state, game, ctxNow);
     }
   }
-  if (exit.value) brief.value = { field: exit.value.field, max_chars: exit.value.max_chars, offers: exit.value.offers.map(o => pick(o, state.lang)) };
+  if (exit.value) brief.value = { field: exit.value.field, max_chars: exit.value.max_chars, label: fill(pick(exit.label, state.lang), state), offers: drawnOffers(state, exit).map(o => ({ label: pick(o, state.lang), value: o.zh })) };
   return brief;
 }
 
@@ -295,7 +308,8 @@ function onStage(content, state, ctx, result = {}, brief = null) {
   const view = brief ?? look(state, content, ctx);
   const cards = stageCards(view, { focus: shownHere(content, state, view), fight: Boolean(state.fight) });
   const ask = askMinusStage(askOf(content, state, ctx, result), stageOwns(view, cards));
-  return { then: thenFor(result, ask), ask, stage: cards };
+  const naming = cards.some(c => c.card === 'value') ? THEN_VALUE : '';
+  return { then: thenFor(result, ask) + naming, ask, stage: cards };
 }
 
 /* What Ling last showed, while she is still in the place she showed it — else

@@ -24,6 +24,7 @@ import { migrate } from './state.mjs';
 import { askOf, tapThen, THEN_RECAP, withAsk } from './rules/ask.mjs';
 import { guard, onLook, unconfirmed } from './rules/confirm.mjs';
 import { markSeen, notePage, READS_PAGE, unseen } from './rules/did.mjs';
+import { pageNames } from './rules/core.mjs';
 import { clock, dataDir, freshState, parseArgs, readQuests, savedFile, savedFor, userTurn, withLock, writeAtomic } from './rules/files.mjs';
 import { look, stageAt } from './rules/look.mjs';
 import { closeStaleFight, fightHold } from './rules/tasks.mjs';
@@ -40,7 +41,7 @@ export { refine, TREASURE_TOP } from './rules/arms.mjs';
 export { askOf, tapThen, thenFor } from './rules/ask.mjs';
 export { deck, deckFor, fightSetup, hpMaxOf, ownedCards } from './rules/cards.mjs';
 export { hasCompanion } from './rules/companion.mjs';
-export { judge, resolve, riddleOf } from './rules/core.mjs';
+export { judge, pageNames, resolve, riddleOf } from './rules/core.mjs';
 export { greet } from './rules/daily.mjs';
 export { advance, BOOK_MAX } from './rules/errands.mjs';
 export { meet } from './rules/road.mjs';
@@ -131,6 +132,9 @@ function runLocked(verb, args, stateFile, reader) {
     if (asked.keep) writeAtomic(stateFile, JSON.stringify(asked.keep));
     return asked.result;
   }
+  // A value exit (the 道号) is the page card's to name, never Ling's (core.mjs pageNames).
+  const theirs = reader === 'ling' && verb === 'resolve' ? pageNames(content, state, args) : null;
+  if (theirs) return theirs;
   const heard = heed(state, args.said);
   const out = fn(heard, content, { now, quests: readQuests(), turn: userTurn(), said: args.said }, args);
   if (out.result?.load) return loadSave(out.result.load, state, { stateFile, logFile, now });
@@ -294,6 +298,8 @@ export function forLing(value) {
     // Her unease is hers to say: Ling gets only the one sentence of what she does.
     if (k === 'unease' && v && typeof v === 'object') { out.unease = { ling: v.ling ?? null }; continue; }
     if (k === 'shelf' && Array.isArray(v)) { out.shelf = v.map(shelfForLing); continue; }
+    // A value exit's offered names are the page card's to show — never hers to pick from (2026-09-28).
+    if (k === 'value' && v && typeof v === 'object' && Array.isArray(v.offers)) { const { offers, ...kept } = v; out.value = kept; continue; }
     out[k] = forLing(v);
   }
   return out;

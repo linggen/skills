@@ -55,6 +55,10 @@ export const CARD_KINDS = {
   seclusion: { holds: true }, //   闭关 running: 出关 is the one way on (rules/seclusion.mjs)
   seclude: { holds: false }, //    闭关's choices, offered on an empty pool or a tap on 体力 — never an ask
   offer: { holds: true }, //       接下 — the errands held out where he stands, one card
+  // A scene's value exit (the 道号): named on its card. It asks, but a scene's question is the rules'
+  // own (ask.mjs keeps it off the chat), and holding would only raise the 或往 roads row under it —
+  // a way to walk off in the middle of taking a name.
+  value: { holds: false },
   road: { holds: true }, //        路上 — what this arrival met: mist until told, then 收下 a find or the
   //                               day's 机缘, or the ways of a 抉择, until it is answered
   item: { holds: true }, //        a shelf to buy from
@@ -128,6 +132,11 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // and the next step, already in hand, until he walks on.
   if (look.handed?.length) head.unshift({ card: 'handed' });
 
+  // A scene's exit that takes a value (the 道号) is named on its own card:
+  // offered names to tap or the player's own, never a chat option and never
+  // Ling's to fill (his, 2026-09-28). Driven by the exit, not by the scene.
+  for (const e of look.scene?.exits ?? []) if (e.value) head.push({ card: 'value', id: e.id });
+
   // 路上 (rules/road.mjs): what this arrival met is ONE card until it is
   // answered — mist while veiled, then a find or the day's 机缘 to 收下, or a
   // 抉择's ways. A traveller's riddle is the chat's question; a road beast is
@@ -145,7 +154,8 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   const kept = focus.map(c => boardOf(look, c)).filter(c => !inHead(c) && !(c.card === 'board' && boardDoneToday(look, c.id)));
   const shown = look.offers?.length ? kept.filter(c => c.card !== 'creature') : kept;
   // The day's coins fill an empty stage; a 遇 standing here is not empty.
-  const cards = shown.length ? [...shown] : line || look.offers?.length || look.place?.meet ? [] : [{ card: 'hexagram' }];
+  const naming = head.some(c => c.card === 'value');
+  const cards = shown.length ? [...shown] : line || naming || look.offers?.length || look.place?.meet ? [] : [{ card: 'hexagram' }];
   const has = (kind, id) => cards.some(c => c.card === kind && (id === undefined || c.id === id));
 
   if (!line) {

@@ -51,6 +51,8 @@ const SITUATIONS = {
   '闭关 running: its 出关 card is the stage': [{ ...open, place: 'sishui', seclusion: { focus: 'progress', since: new Date(NOW.getTime() - 3 * 3600_000).toISOString() } }, ctx()],
   '拾遗 by the road': [{ ...open, place: 'huaidu', meets: { day: '2026-09-21', places: { huaidu: { kind: 'find', find: '徐', n: 0 } } } }, ctx()],
   'the first scene of a new save': [newState(content, 'zh', NOW), ctx()],
+  '取一个道号: the naming card at the second scene': [{ ...newState(content, 'zh', NOW), scene: '00-waking' }, ctx()],
+  'the naming card, in English': [{ ...newState(content, 'en', NOW), scene: '00-waking' }, ctx()],
   'the same, in English': [{ ...open, place: 'pengcheng', lang: 'en' }, ctx({ quests: chores })],
 };
 
@@ -68,7 +70,7 @@ for (const [name, [state, c]] of Object.entries(SITUATIONS)) {
 
 test('the situations cover the stage\'s own cards', () => {
   const seen = new Set(Object.values(SITUATIONS).flatMap(([s, c]) => look(s, content, c).stage.map(x => x.card)));
-  for (const kind of ['goal', 'offer', 'item', 'creature', 'hexagram', 'road', 'tale']) assert.ok(seen.has(kind), `no situation stages a ${kind} card`);
+  for (const kind of ['goal', 'offer', 'item', 'creature', 'hexagram', 'road', 'tale', 'value']) assert.ok(seen.has(kind), `no situation stages a ${kind} card`);
 });
 
 test('the 事 chip: how many in hand, what can be handed in — and its popover holds the goal and the rows', () => {

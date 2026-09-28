@@ -35,7 +35,7 @@
     "zh": "取一个道号",
     "en": "Take a Daoist name"
    },
-   "means": "gives a name to be called by, or picks one of the offered names",
+   "means": "gives a name to be called by — the page card asks it: offered names to tap, or the player's own",
    "value": {
     "field": "name",
     "max_chars": 8,
@@ -51,8 +51,45 @@
      {
       "zh": "墨白",
       "en": "Mobai"
+     },
+     {
+      "zh": "清和",
+      "en": "Qinghe"
+     },
+     {
+      "zh": "长庚",
+      "en": "Changgeng"
+     },
+     {
+      "zh": "素尘",
+      "en": "Suchen"
+     },
+     {
+      "zh": "玄霜",
+      "en": "Xuanshuang"
+     },
+     {
+      "zh": "听松",
+      "en": "Tingsong"
+     },
+     {
+      "zh": "守拙",
+      "en": "Shouzhuo"
+     },
+     {
+      "zh": "知白",
+      "en": "Zhibai"
+     },
+     {
+      "zh": "观澜",
+      "en": "Guanlan"
+     },
+     {
+      "zh": "栖霞",
+      "en": "Qixia"
      }
-    ]
+    ],
+    "draw": 4
    },
    "beat": [
     {

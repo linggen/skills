@@ -31,6 +31,15 @@ export function newState(content, lang, now) {
 export const pick = (pair, lang) => (pair ? pair[lang] ?? pair.zh ?? pair.en : null);
 export const fill = (text, state) => (text == null ? text : text.replaceAll('{name}', state.name ?? ''));
 
+/* A value the player gives the world (the 道号): trimmed, one to `max`
+   characters, no line breaks — or null. The rules' check and the page card's
+   confirm button read this one function, so they can never disagree. */
+export function fitValue(raw, max) {
+  const value = String(raw ?? '').trim();
+  const length = [...value].length;
+  return length >= 1 && length <= max && !/[\r\n]/.test(value) ? value : null;
+}
+
 /* Lowercase, drop punctuation and articles: "An egg!" and "egg" meet. */
 export function normalizeAnswer(answer) {
   return String(answer ?? '')

@@ -77,6 +77,9 @@ const PAGE_DID = {
   meet: byAction(MEET_DID),
   tale: (r, a, x) => TALE_DID[a.action]?.(r, a, x) ?? null,
   seclude: (r, a) => SECLUDE_DID[a.action]?.(r) ?? null,
+  // A value exit named on the page's card (the 道号): the name, and the beat
+  // Ling speaks for it on `[scene] named` — the page resolves nothing else.
+  resolve: (r) => (r.named ? `named themselves 「${r.named.value}」 on the page's card — beat: ${(r.beat ?? []).map(b => b.text).join(' ')}` : null),
   // 储物袋: a thing waiting at the 洞府 taken in, a slot thrown away.
   bag: byAction({ claim: (r) => `took ${r.claimed?.name} from the abode into the storage pouch`, toss: (r) => `threw away ${r.tossed?.name}` }),
 };

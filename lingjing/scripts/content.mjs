@@ -871,6 +871,15 @@ function lintExit(where, exit, chapter, content, ids, speakers, bad) {
     if (game.kind === 'duel' && !exit.withdrawn) bad(where, 'a duel needs a withdrawn line');
   }
   if (exit.value && !VALUE_FIELDS.has(exit.value.field)) bad(where, `cannot set ${exit.value.field}`);
+  if (exit.value) {
+    // The page card draws `draw` of the pool per save, nothing preselected:
+    // every offer a name that fits, in both languages, and never the same twice.
+    const pool = exit.value.offers ?? [], n = exit.value.draw ?? pool.length;
+    if (!Number.isInteger(exit.value.max_chars) || exit.value.max_chars < 1) bad(where, 'a value needs max_chars');
+    if (!Number.isInteger(n) || n < 2 || n > pool.length) bad(where, `a value draws ${n} of ${pool.length} offers`);
+    for (const o of pool) if (!o?.zh || !o?.en || [...o.zh].length > exit.value.max_chars) bad(where, `offer ${o?.zh ?? '?'} needs zh + en within max_chars`);
+    if (new Set(pool.map(o => o?.zh)).size !== pool.length || new Set(pool.map(o => String(o?.en).toLowerCase())).size !== pool.length) bad(where, 'value offers repeat');
+  }
   for (const [field, value] of Object.entries(exit.set ?? {})) {
     if (!SETTABLE[field]?.has(value)) bad(where, `cannot set ${field} to ${value}`);
   }

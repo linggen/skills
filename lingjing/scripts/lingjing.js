@@ -17,7 +17,7 @@ import { WORDS as BATTLE_WORDS, battleHtml, boutSays, pickOf, spoilsHtml } from 
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { WORDS, say as fill, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, emergedHtml, trayHtml, trialToldHtml, clockOf } from './cards.js';
+import { WORDS, say as fill, valueChoice, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, emergedHtml, trayHtml, trialToldHtml, clockOf } from './cards.js';
 import { pouchHtml } from './pouch.js';
 import { esc } from './esc.js';
 import { thinker, stillAsked } from './think.js';
@@ -174,6 +174,7 @@ const view = {
   mapView: 'province', // the map card: 'province' (the player's, up close), 'world', or another province's id
   fateOpen: false, fateDraft: '', fateError: false, // the 命格 form: shown again, the date typed, a date refused
   refineMat: null, refineName: '', refineNote: null, // 炼化本命 on the card: the material picked, the name typed, a refusal
+  valuePick: null, valueText: '', valueNote: null, // 取一个道号 on the card: an offered name tapped, the player's own typed, a refusal
   /// Why the last 出手 did not open, for the card that offered it — the rules'
   /// own words (no 体力, the beast already spent, the page's cards out of date).
   /// Everything else about a fight is in the save.
@@ -235,7 +236,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null });
+const ctx = () => ({ look, handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -771,7 +772,8 @@ function focusHtml() {
    of the line, and walking on starts the line again. The goal line, an empty
    pool and what Ling showed of the place stay where they are. */
 const QUEUE = ['handed', 'quest', 'tale', 'road', 'offer', 'duel', 'lundao', 'board'];
-const HEAD = new Set(['seclude', 'building', 'empty', 'goal']);
+// A naming card (取一个道号) is the story's own step: it stands first, never queued.
+const HEAD = new Set(['seclude', 'building', 'empty', 'goal', 'value']);
 const qKey = (c) => `${c.card}:${c.id ?? ''}`;
 
 function splitStage(cards) {
@@ -1275,6 +1277,29 @@ function countUp() {
 }
 document.addEventListener('input', (e) => { if (e.target.id === 'refine-name') keep({ refineName: e.target.value, refineNote: null }); });
 
+/* 取一个道号 — the card's own (cards.js value): an offered name tapped, or the
+   player's own written; the page Resolves the exit with it and tells Ling
+   `[scene] named`, and she tells the beat. Ling never picks the name (his,
+   2026-09-28: every player had become 青玄). A keystroke is kept without a
+   repaint (the field would be replaced); only the chips and the button follow. */
+document.addEventListener('input', (e) => {
+  if (e.target.id !== 'value-text') return;
+  keep({ valueText: e.target.value, valuePick: null, valueNote: null });
+  const card = e.target.closest('.valuecard'), chosen = valueChoice(null, e.target.value, Number(e.target.dataset.valueMax));
+  card?.querySelectorAll('[data-value-pick]').forEach((el) => { el.classList.remove('on'); el.setAttribute('aria-pressed', 'false'); });
+  const go = card?.querySelector('[data-value-go]');
+  if (go) { go.disabled = !chosen; go.textContent = chosen ? fill(words().valueGoAs, { v: chosen }) : words().valueGo; }
+});
+async function valueTap(exitId) {
+  const v = (look?.scene?.exits ?? []).find((x) => x.id === exitId)?.value;
+  const chosen = v && valueChoice(view.valueText.trim() ? null : view.valuePick, view.valueText, v.max_chars);
+  if (!chosen) return;
+  const r = await write('resolve', { exit: exitId, value: chosen }).catch(failed);
+  keep(r.ok ? { valuePick: null, valueText: '', valueNote: null } : { valueNote: refusal(r) });
+  await refresh();
+  if (r.ok) await report(`[scene] named ${r.named?.value ?? chosen}`);
+}
+
 /* 组牌 — a tap puts a card in the ten or takes it out; the popover redraws
    from the rules' own answer, and a refusal is said inside it. */
 async function deckTap(args) {
@@ -1447,6 +1472,7 @@ const KEY_ROWS = [
 ];
 document.addEventListener('keydown', (e) => {
   if (e.target.id === 'askField' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); sendAsk(); }
+  if (e.target.id === 'value-text' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.closest('.valuecard')?.querySelector('[data-value-go]:not(:disabled)')?.click(); }
   if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.luOpen) show({ luOpen: false }); else if (view.pouchToss) show({ pouchToss: null }); else if (view.bookOpen || view.gearOpen) show({ bookOpen: false, gearOpen: false }); }
   if (e.key !== 'Enter' && e.key !== ' ') return;
   for (const [sel, open] of KEY_ROWS) {
@@ -1573,6 +1599,8 @@ const CLICKS = [
   ['[data-go]', (el) => { if (!el.matches(':disabled')) run(`go:${el.dataset.go}`, () => goTo(el.dataset.go)); }],
   ['[data-tame]', (el) => { if (!el.matches(':disabled')) run(`tame:${el.dataset.tame}`, () => tameTap(el.dataset.tame)); }],
   ['[data-refine-mat]', (el) => show({ refineMat: el.dataset.refineMat, refineNote: null })],
+  ['[data-value-pick]', (el) => show({ valuePick: el.dataset.valuePick, valueText: '', valueNote: null })],
+  ['[data-value-go]', (el) => { if (!el.matches(':disabled')) run(`value:${el.dataset.valueGo}`, () => valueTap(el.dataset.valueGo)); }],
   ['[data-refine]', (el) => { if (el.dataset.refine) run('refine', () => refineTap(el.dataset.refine)); }],
   ['[data-divine]', () => run('divine', () => castByPage())],
   ['[data-trial]', (el) => run('trial', () => chooseWay(Number(el.dataset.trial)))],

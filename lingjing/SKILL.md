@@ -106,7 +106,7 @@ tools:
       value:
         type: string
         required: false
-        description: For an exit with `value` (the player's name in the world, `words.name`) — exactly as the player wrote it, never translated.
+        description: For an exit with `value` (the player's name in the world, `words.name`) — only a name the player TYPED in their own words, exactly as written; never one you chose. The page's card names it otherwise.
       answer:
         type: string
         required: false
@@ -625,7 +625,7 @@ sitting yourself, never silence.
    (keep every fact, add nothing). Speak its `lines` near verbatim.
 2. **The player answers.** A tapped option is its exit: Resolve it. Typed
    words: match them to any exit's `means` — a creative act that plainly fits
-   counts; pass only the name as `value`, only the answer as `answer`. Nothing
+   counts; pass only the answer as `answer`. Nothing
    fits: Look with their words as `said`, answer briefly in the world, change
    nothing. A line from the stage (*说说夫诸*, *Use X*) is the player's own
    words; Look's `then` names the tool for it. **A 问询** (*说说夫诸：它为什么四角？*)
@@ -662,6 +662,11 @@ around), `ring` (Ring) or `answer` (Resolve with that answer).
 
 ## The page's own taps
 
+**An exit with `value` (取一个道号) is the player's, on the page's card** — the
+offered names or their own. Never AskUser for it, never name one for them,
+never Resolve it; say one line and let the card ask (the rules refuse
+`page-names`). Only a name they type in the chat is Resolved, as written.
+
 The page calls the rules itself for: **去X**, 接下 · 交差, a board won, 买 · 卖 ·
 服用 · 佩戴, 喂它X / 献上X, 炼化本命, 问卦 and 命格, 收下 / 不取, a 抉择's way,
 starting a fight or a board, 组牌, 闭关 · 出关. Nothing reaches you; never offer
@@ -672,7 +677,8 @@ tool — then a line in the world, never the numbers.
 **never announce it back**; weave one in only if the story calls for it.
 
 The page reports only what finishes, or where the story takes over — each
-with its guide the first time: `[scene] won|lost|withdrew <id>` (fight),
+with its guide the first time: `[scene] named <name>` (the card: speak the
+beat in `page_did`, then the scene), `[scene] won|lost|withdrew <id>` (fight),
 `[scene] trial …` (trial), `[scene] tale step|end` (tale), `[scene] recap`
 (story), `[scene] arrived <place>` (road): Look, then tell it and follow its
 `then`.

@@ -56,7 +56,11 @@ export function askOf(content, state, ctx, result = {}, ungated = false) {
     // game is played on its own card — a bout, a board — is not asked here
     // too; winning it moves the story by itself.
     const played = new Set(scene.exits.filter(e => e.game && !e.won).map(e => e.id));
-    let options = scene.buttons.filter(b => !gone.has(b.id) && !unready.has(b.id) && !played.has(b.id)).map(b => ({ label: b.label, exit: b.id }));
+    // A value exit (the 道号) is named on its own card — offered names and the
+    // player's own — never a chat option: tapped there, Ling filled in a name
+    // herself (2026-09-28, every player 青玄). stage.mjs `value`.
+    const named = new Set(scene.exits.filter(e => e.value).map(e => e.id));
+    let options = scene.buttons.filter(b => !gone.has(b.id) && !unready.has(b.id) && !played.has(b.id) && !named.has(b.id)).map(b => ({ label: b.label, exit: b.id }));
     const back = unready.size ? wayBack(content, state, ctx.now) : null;
     // Named by the place it walks to — the story never spoke of leaving for
     // any other world (his "why now return to 人间", 2026-09-17).
@@ -164,6 +168,8 @@ const THEN_VEIL = 'Something waits on this road (`place.meet`, still veiled): th
 /* A 抉择 is Ling's to write — the page never reveals it (road.mjs: revealed
    bare it closes as nothing); her Meet offer lifts the mist. */
 const THEN_TRIAL = 'A 抉择 waits on this road (`place.meet` kind trial, veiled): you write it now — guide `trial`: set the moment in two or three lines, then Meet {action: offer} with the ways (it reveals), and stop.';
+/* The naming card is up (stage.mjs `value`): the player names themselves there. */
+export const THEN_VALUE = ' The stage\'s card asks the player for their name (offered names to tap, or their own). A scene just entered is told first (Show its `scene.show` cards, its `scene.setup` in one to three sentences, its `scene.lines`); then end on one line inviting the name — never AskUser for it, never name one for them, never Resolve it; the page tells you `[scene] named` when it is done.';
 const THEN_QUIET = 'No question this time — the stage holds what is before him, or he has already been asked here. End on your words: name a way on in the line if it is worth naming, and do NOT call AskUser.';
 export const thenFor = (result, ask = undefined) => (result?.place?.meet?.veiled ? (result.place.meet.kind === 'trial' ? THEN_TRIAL : THEN_VEIL) : (result?.quest?.say ? THEN_CALL : '')
   + (ask === null ? THEN_QUIET : entered(result) ? (won(result) ? CHEER : '') + THEN_SCENE : won(result) ? THEN_CHEER : THEN));
