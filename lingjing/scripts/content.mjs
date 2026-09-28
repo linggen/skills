@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ART_EFFECTS, ELEMENTS, INTENTS, LEAN_IDS } from './duel.js';
-import { normalizeAnswer } from './state.mjs';
+import { LOCKABLE, normalizeAnswer } from './state.mjs';
 import { EFFECTS } from './battle.js';
 
 /* The worlds ship with the skill, one folder each under `worlds/`; the
@@ -878,6 +878,15 @@ function lintChapter(chapter, content, ids, bad) {
   for (const scene of Object.values(chapter.scenes)) lintScene(scene, chapter, content, ids, bad);
   for (const id of unreachable(chapter)) bad(`scene ${id}`, 'cannot be reached from the first scene');
   if (!endsSomewhere(chapter)) bad(where, 'no exit ends the chapter');
+  // A story gate (state.mjs lockedOf): a scene of its own that opens it, systems the engine knows, a refusal in both languages.
+  const lock = chapter.locks;
+  if (lock) {
+    if (!chapter.scenes[lock.until]) bad(where, `locks until ${lock.until}, which is not a scene of it`);
+    if (lock.until === chapter.first_scene) bad(where, 'locks open on the first scene: nothing is shut');
+    for (const sys of lock.systems ?? []) if (!(sys in LOCKABLE)) bad(where, `locks an unknown system ${sys}`);
+    if (!lock.systems?.length) bad(where, 'locks no system');
+    if (!lock.say?.zh || !lock.say?.en) bad(where, 'locks with no refusal line in zh and en');
+  }
 }
 
 function lintScene(scene, chapter, content, ids, bad) {

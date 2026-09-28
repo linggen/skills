@@ -17,7 +17,7 @@ import { WORDS as BATTLE_WORDS, battleHtml, boutSays, pickOf, spoilsHtml } from 
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { WORDS, say as fill, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, ledgerChipHtml, readChipHtml, cardHtml, emergedHtml, trayHtml, trialToldHtml, clockOf } from './cards.js';
+import { WORDS, say as fill, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, ledgerChipHtml, readChipHtml, cardHtml, emergedHtml, trayHtml, trialToldHtml, clockOf, isShut } from './cards.js';
 import { pouchHtml } from './pouch.js';
 import { esc } from './esc.js';
 import { thinker, stillAsked } from './think.js';
@@ -452,7 +452,7 @@ function qiHtml() {
   const cnt = resting ? `<span class="cnt">${esc(fill(w.qiBackAt, { t: clockOf(new Date(d.refillAt * 1000), lang()) }))}</span>`
     : `<span class="cnt"><span data-qi>${esc(d.now)}</span>/${esc(q.max)}</span>`;
   // A tap on the pool opens 闭关 (his, 2026-09-24: any time the player chooses).
-  const open = look.seclusion ? '' : ` data-seclude-open role="button" tabindex="0"`;
+  const open = look.seclusion || isShut(look, 'seclusion') ? '' : ` data-seclude-open role="button" tabindex="0"`;
   return `<span class="qi" data-st="${esc(d.st)}" title="${esc(w.qi)} · ${esc(w.secludeOpen)}"${open}><span class="lbl">${esc(w.qi)}</span>
     <i class="ring" style="--p:${resting ? 0 : Number(d.p) || 0}"></i><span class="st">${esc(qiWord(d.st, w))}</span>${cnt}</span>`;
 }
@@ -463,11 +463,15 @@ function statusHtml() {
   const w = words();
   const pct = look.next ? Math.min(100, Math.round((look.progress / look.next) * 100)) : 0;
   const name = look.name ? `<span class="daohao">${esc(look.name)}</span>` : '';
-  return `${name}<span class="realm">${esc(look.tier.name)}</span>
+  // Before the prologue's gate (Look's `locked`) a mortal: no realm, no 修为 bar, no 灵石, no coins — not greyed, not there.
+  const realm = isShut(look, 'cultivation') ? `<span class="realm">${esc(w.mortal)}</span>`
+    : `<span class="realm">${esc(look.tier.name)}</span>
     <div class="xw"><span class="lbl">${esc(w.xw)}</span><div class="bar"><i style="width:${pct || 0}%"></i></div>
-      <span class="num"><span data-count="progress">${esc(look.progress)}</span>/${esc(look.next)}</span></div>
+      <span class="num"><span data-count="progress">${esc(look.progress)}</span>/${esc(look.next)}</span></div>`;
+  const stones = isShut(look, 'wealth') ? '' : `<span class="ls"><span class="lbl">${esc(w.ls)}</span> <b data-count="wealth">${esc(look.wealth)}</b></span>`;
+  return `${name}${realm}
     ${qiHtml()}
-    <span class="ls"><span class="lbl">${esc(w.ls)}</span> <b data-count="wealth">${esc(look.wealth)}</b></span>${omenChip()}
+    ${stones}${omenChip()}
     ${bout ? '' : luChipHtml(lang(), view.luOpen)}${bout ? '' : readChipHtml(ctx())}
     ${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}
     ${gearChipHtml(ctx(), view.gearOpen)}

@@ -11,6 +11,7 @@ import { meet } from './road.mjs';
 import { bag } from './pouch.mjs';
 import { progress } from './did.mjs';
 import { divine, fate } from './fortune.mjs';
+import { gated } from './locks.mjs';
 import { look, stageAt } from './look.mjs';
 import { duel, lundao, questCheck, task, win } from './tasks.mjs';
 import { seclude } from './seclusion.mjs';
@@ -20,7 +21,8 @@ import { go, lang, move, summarize, trade } from './travel.mjs';
 import { placeName, placeOf } from './world.mjs';
 import { amend, art, atlas, build, enter, forget, leave, load, make, ring, save, saves, tame, travel, wake, worlds } from './worlds.mjs';
 
-export const VERBS = {
+/* Every verb kept to the story gates (rules/locks.mjs): a shut system's verb is refused `not-yet`. */
+export const VERBS = gated({
   look: (s, c, x) => {
     const woke = wake(s, c, x);
     // An art taught on waking (a companion from before the arts) is said once.
@@ -39,7 +41,7 @@ export const VERBS = {
   go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, story, seclude, bag,
   gear: (s, c) => ({ state: null, result: { ok: true, gear: gearBrief(c, s) } }),
   appear,
-};
+});
 
 /* A beast's first sight (creatures.json `appear`) played on the page's stage
    — the page's alone: kept on the save, so every later meeting shows one line. */

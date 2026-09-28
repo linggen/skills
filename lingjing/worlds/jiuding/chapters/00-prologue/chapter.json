@@ -7,6 +7,24 @@
   "free": true,
   "first_scene": "00-shiao",
   "gate": null,
+  "_locks": "Story gates (his ruling, 2026-09-28: 修行是遇见银月、加入宗门开始的，先走剧情). Until the player reaches `until` — the outer court's first night, the day they join the sect — the prologue keeps these shut: no realm, no 修为 bar and no 修为 gained; no 灵石 (the hall's three are the first); no 人间功课, no 开府, no 问卦, no 差事 or 传闻, nothing on the road, no 闭关. 体力, the 储物袋, 录, 书 and the 恩仇簿 stay. On `until` and every scene after it all of it opens, at 练气一层 from 0 (state.mjs lockedOf, lockReset; rules/locks.mjs). `say` is the refusal of a shut verb.",
+  "locks": {
+    "until": "00-waimen",
+    "systems": [
+      "cultivation",
+      "wealth",
+      "chores",
+      "kaifu",
+      "divine",
+      "errands",
+      "road",
+      "seclusion"
+    ],
+    "say": {
+      "zh": "你还是个凡人。修行、功课、差事这些，要进了沉鼎观才轮得到你。",
+      "en": "You are still a mortal. Cultivation, chores and errands wait until you join Chending Temple."
+    }
+  },
   "title": {
     "zh": "序章 · 蒙山",
     "en": "Prologue · Mount Meng"

@@ -45,6 +45,9 @@ const ctx = (extra = {}) => ({ now: NOW, quests: [], ...extra });
 // Today's 机缘 already dealt: for tests that mean "a Look that changes nothing else".
 const DEALT = { day: dayKey(NOW), place: 'none', until: NOW.toISOString(), taken: NOW.toISOString() };
 const start = (lang = 'zh') => newState(content, lang, NOW);
+/* A save past the prologue's story gate (chapter.json `locks`): the outer
+   court's first night, where 修为, 灵石, 功课 and the coins open. */
+const joined = (lang = 'zh') => ({ ...start(lang), scene: '00-waimen', place: 'waimen' });
 
 /* Apply a verb and insist it was allowed. */
 function must(fn, state, args, c = ctx()) {
@@ -133,12 +136,14 @@ const toFuzhu = (s = start()) => {
 /* At the outer court, the roots read, the first practice offered. */
 const toPractice = () => must(resolve, toHall(), { exit: 'born', birth: V1_BIRTH }).state;
 
-test('a new game starts at 石坳村, 练气一层, nothing in hand, the name card up', () => {
+test('a new game starts at 石坳村, a mortal — 练气一层 at 0 waits for the gate — nothing in hand, the name card up', () => {
   const s = start();
   assert.equal(s.scene, '00-shiao');
   assert.equal(s.place, 'shiao');
+  assert.deepEqual([s.tier, s.step, s.progress, s.wealth], ['qi', 0, 0, 0]);
   const seen = look(s, content, ctx());
-  assert.equal(seen.tier.name, '练气一层');
+  assert.equal(seen.tier, undefined, 'no realm before the sect');
+  assert.ok(seen.locked.includes('cultivation'));
   assert.deepEqual(seen.scene.buttons.map(b => b.id), ['name']);
   assert.ok(seen.stage.some(c => c.card === 'value'));
 });
@@ -159,7 +164,7 @@ test('the prologue walks from 石坳村 to its end by exits alone', () => {
   assert.equal(s.gender, 'female');
   assert.deepEqual(s.companion, { joined: '2026-09-11', asleep: true }, 'found in the valley, asleep in the fox token');
   assert.equal(s.step, 0, 'the prologue ends at the bottom of 练气 (the source: 练气零层)');
-  assert.equal(s.progress, 10);
+  assert.equal(s.progress, 0, 'the trials were a mortal child\'s: 修为 begins in the outer court');
   assert.equal(s.wealth, 2, 'three stones of the allowance, one to the 公中');
   for (const id of ['grey-robe', 'fox-token', 'tuna-jing', 'old-bow']) assert.equal(s.bag[id], 1, id);
   assert.deepEqual(s.ledger.map(e => `${e.who}${e.kind}`), ['maxiaobao仇', 'masan仇', 'ahe恩', 'laozhou恩', 'maxiaobao仇']);
@@ -858,7 +863,8 @@ test('an in-world task pays only after the page recorded its win', () => {
   s = must(win, s, { id: 'gate-luoshu' }).state;
   assert.equal(look(s, content, ctx()).tasks.find(t => t.id === 'gate-luoshu').won, true);
   const done = must(task, s, { action: 'done', id: 'gate-luoshu' });
-  assert.equal(done.result.paid.progress, 10);
+  assert.equal(done.result.paid.progress, 0, 'before the gate a board pays no 修为');
+  assert.equal(done.state.progress, 0);
   refused(win, done.state, { id: 'gate-luoshu' }, 'not-here');
 });
 
@@ -882,7 +888,7 @@ test('answers are judged in either language, punctuation and articles aside', ()
 });
 
 test('a layer fills and the next begins, the rest carried over', () => {
-  const s = start();
+  const s = joined();
   s.progress = 40;
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
@@ -892,7 +898,7 @@ test('a layer fills and the next begins, the rest carried over', () => {
 });
 
 test('at the realm peak the player holds until the chapter opens', () => {
-  const s = start();
+  const s = joined();
   s.step = 8; s.progress = 120;
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
@@ -902,7 +908,7 @@ test('at the realm peak the player holds until the chapter opens', () => {
 });
 
 test('no day cap: a day full of play pays every time — 灵气 is the only limit', () => {
-  const s = start();
+  const s = joined();
   s.day.progress = 10000; s.day.wealth = 10000;
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
@@ -911,7 +917,7 @@ test('no day cap: a day full of play pays every time — 灵气 is the only limi
 });
 
 test('a later realm pays more for the same task; the day counts base', () => {
-  const s = start();
+  const s = joined();
   s.tier = 'deity'; s.step = 0; s.progress = 0; // 化神, pay ×3
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
@@ -1003,7 +1009,7 @@ test('a task pays once; one never offered cannot be claimed', () => {
 test('a quest pays when its app says it was done this period, once', () => {
   const chore = { id: 'shifu-scan', app: 'apple-shifu', period: 'week', due: true, reward: 30, title: { zh: '扫描', en: 'Scan' } };
   const done = ctx({ quests: [{ ...chore, done_at: '2026-09-10T09:00:00' }] });
-  const s = start();
+  const s = joined();
   const seen = look(s, content, done).quests[0];
   assert.deepEqual([seen.done, seen.paid], [true, false], 'Look shows the app\'s record before anyone asks');
   const paid = must(task, s, { action: 'check', id: 'shifu-scan' }, done);
@@ -1082,7 +1088,7 @@ test('a save from before the dictionary migrates to the ids', () => {
   assert.equal(m.progress, 30); assert.equal(m.wealth, 5); assert.deepEqual(m.cast, ['fuzhu']); assert.equal(m.stamina, 40);
   assert.deepEqual(m.day, { key: '2026-09-11', progress: 30, wealth: 5 });
   assert.equal(m.xw, undefined);
-  assert.equal(look(m, content, ctx()).tier.name, '练气三层');
+  assert.equal(look({ ...m, scene: '00-waimen' }, content, ctx()).tier.name, '练气三层');
 });
 
 test('a new save says its world, and Look carries the world card', () => {
@@ -1570,7 +1576,7 @@ test('look carries today\'s cast (none yet) and the offered tasks', () => {
 });
 
 test('问卦: once a day by three coins — nothing asked first, the same throws all day, and what the grade does to the day\'s fights', () => {
-  let s = start();
+  let s = joined();
   s.name = '清玄';
   const c = ctx();
   // no question: the coins fall at once (an `ask` from an older caller is ignored)

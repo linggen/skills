@@ -4,6 +4,7 @@
 
 ## 问卦 and 命格
 
+- **Before the gate** (Look's `locked` holds `divine`): the coins are not the player's yet — Divine is refused `not-yet`; speak its `say`, never cast.
 - **问卦 is the day's fight luck, once a day, on one card.** The coins' tap
   casts by itself and Yinyue reads it; you hear nothing of it. Asked in the
   chat (*起一卦*, *问卦*): **Divine**, then **stop** — the card shows the cast

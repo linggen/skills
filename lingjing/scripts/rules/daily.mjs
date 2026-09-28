@@ -1,6 +1,6 @@
 // rules/daily.mjs — 问候 and 体力: her greeting on the day's first opening, the pool as the stage draws it.
 // Part of the rules engine; rules.mjs is its one door.
-import { dayKey, pick, staminaReturnsAt, stepName } from '../state.mjs';
+import { dayKey, lockedOf, pick, staminaReturnsAt, stepName } from '../state.mjs';
 import { herAwake } from './companion.mjs';
 import { clone, refuse } from './core.mjs';
 import { chanceBrief } from './road.mjs';
@@ -32,9 +32,11 @@ export function greet(state, content, ctx) {
     const how = { won: zh ? '赢了' : 'won against', lost: zh ? '输给了' : 'lost to', withdrew: zh ? '没打完，它遁走了：' : 'was left unfinished by' }[d.outcome];
     facts.push(zh ? `昨天${how}${name}` : `yesterday the player ${how} ${name}`);
   }
-  const c = chanceBrief(content, state, ctx.now);
+  // Before a story gate she says nothing of what it keeps shut (state.mjs lockedOf).
+  const shut = lockedOf(content, state);
+  const c = shut.includes('road') ? null : chanceBrief(content, state, ctx.now);
   if (c && !c.taken && !c.missed) facts.push(zh ? `今天${c.place.name}有一份机缘` : `a chance waits at ${c.place.name} today`);
-  facts.push(zh ? `玩家如今是${stepName(content, state.tier, state.step, state.lang)}` : `the player stands at ${stepName(content, state.tier, state.step, state.lang)}`);
+  if (!shut.includes('cultivation')) facts.push(zh ? `玩家如今是${stepName(content, state.tier, state.step, state.lang)}` : `the player stands at ${stepName(content, state.tier, state.step, state.lang)}`);
   s.greeted = day;
   return { state: s, result: { ok: true, first: true, name: state.name ?? null, facts } };
 }

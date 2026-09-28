@@ -2,7 +2,7 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { ARM_SLOTS } from '../content.mjs';
 import { costOf } from '../battle.js';
-import { dayKey, fill, periodKey, pick, stepName, threshold, tierOf } from '../state.mjs';
+import { dayKey, fill, lockedOf, periodKey, pick, stepName, threshold, tierOf } from '../state.mjs';
 import { canPick, cardCatalog, deckFor, gearFight, ownedCards, pickedCards, rootsOf, usable } from './cards.mjs';
 import { companionOf, hasCompanion, herCard, nearestPlace } from './companion.mjs';
 import { readingOf } from './scrolls.mjs';
@@ -71,8 +71,10 @@ function choresOf(state, ctx, lang) {
 
 /* Open, in the order taken; then the day's 传闻 (tale.mjs); then life's own. */
 function bookOf(content, state, lang, ctx) {
-  const tale = taleRow(content, state, { now: ctx?.now ?? new Date() });
-  return [...errandsOf(content, state, lang, ctx?.now ?? new Date()), ...(tale ? [tale] : []), ...choresOf(state, ctx, lang)];
+  // Before a story gate the book holds nothing it keeps shut (state.mjs lockedOf).
+  const shut = lockedOf(content, state), errands = !shut.includes('errands');
+  const tale = errands ? taleRow(content, state, { now: ctx?.now ?? new Date() }) : null;
+  return [...(errands ? errandsOf(content, state, lang, ctx?.now ?? new Date()) : []), ...(tale ? [tale] : []), ...(shut.includes('chores') ? [] : choresOf(state, ctx, lang))];
 }
 
 function errandsOf(content, state, lang, now) {

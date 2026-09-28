@@ -2,7 +2,7 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { CAST, gameOf } from '../content.mjs';
 import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
-import { dayKey, fill, genderOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, stepName, threshold } from '../state.mjs';
+import { dayKey, fill, genderOf, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, stepName, threshold } from '../state.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, THEN_BORN, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
 import { fightSetup } from './cards.mjs';
@@ -11,6 +11,7 @@ import { clone, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mj
 import { staminaBrief } from './daily.mjs';
 import { bookOf, breakthroughOf, directorBrief, errandFor, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
 import { divinationBrief, fateBrief, prng } from './fortune.mjs';
+import { withoutLocked } from './locks.mjs';
 import { chanceBrief } from './road.mjs';
 import { seclusionBrief } from './seclusion.mjs';
 import { chapterLook, nodeLook, recapLook } from './story.mjs';
@@ -256,14 +257,18 @@ function tasksBrief(content, state, ctx) {
   // Today's 人间功课 only — the fixed ones and the day's pick — and a 开府
   // milestone done but unpaid; the rest of every app's menu never reaches
   // Ling (chores.mjs). 开府 rides as one compact line.
+  // Before a story gate: no chores, no 开府, and a board pays no 修为 (state.mjs lockedOf).
+  const shut = lockedOf(content, state);
   const menu = ctx.quests ?? [];
-  const quests = [...todayChores(state, menu, ctx.now), ...kaifuReady(state, menu, ctx.now)].map(q => ({
+  const chores = shut.includes('chores') ? [] : todayChores(state, menu, ctx.now), ready = shut.includes('kaifu') ? [] : kaifuReady(state, menu, ctx.now);
+  const quests = [...chores, ...ready].map(q => ({
     id: q.id, app: q.app, title: pick(q.title, lang), device: q.device ?? null,
     done: questDone(q, ctx.now), paid: state.chores[q.id]?.period === periodKey(q.period, ctx.now),
     done_at: questDone(q, ctx.now) ? q.done_at : null, // when its app saw it done — the scene says so
     period: q.period, reward: q.reward ?? null, stamina: q.stamina ?? null, // what it pays, so Ling can tell the practice
   }));
-  const kaifu = kaifuBrief(state, menu, ctx.now, lang);
+  const kaifu = shut.includes('kaifu') ? null : kaifuBrief(state, menu, ctx.now, lang);
+  if (shut.includes('cultivation')) for (const t of tasks) t.pays = null;
   return { tasks, quests, ...(kaifu ? { kaifu } : {}) };
 }
 
@@ -345,7 +350,9 @@ export function look(state, content, ctx) {
     words: wordsOf(content, lang),
     ...tasksBrief(content, state, ctx),
   };
-  return { ...onStage(content, state, ctx, {}, brief), ...brief };
+  // Before a story gate Look carries nothing it keeps shut, and `locked` names it (rules/locks.mjs).
+  const kept = withoutLocked(content, state, brief);
+  return { ...onStage(content, state, ctx, {}, kept), ...kept };
 }
 
 /* 传闻 as Look carries it: the tale, the people met in finished ones, and a nudge. */

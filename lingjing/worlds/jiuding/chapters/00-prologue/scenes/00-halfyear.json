@@ -19,9 +19,6 @@
  "people": [
   "mama"
  ],
- "offers": {
-  "quests": true
- },
  "panel": {
   "art": "art/panels/00-halfyear.webp",
   "caption": {

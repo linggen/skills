@@ -176,7 +176,9 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // The day's coins fill an empty stage; a 遇 standing here is not empty.
   const naming = head.some(c => c.card === 'value' || c.card === 'born' || c.card === 'breakthrough');
   // A picture-book beat is not an empty stage either.
-  const cards = shown.length ? [...shown] : line || naming || look.scene?.panel || look.offers?.length || look.place?.meet ? [] : [{ card: 'hexagram' }];
+  // Before a story gate the coins are not his yet (Look's `locked`, rules/locks.mjs).
+  const coins = !(look.locked ?? []).includes('divine');
+  const cards = shown.length ? [...shown] : line || naming || look.scene?.panel || look.offers?.length || look.place?.meet || !coins ? [] : [{ card: 'hexagram' }];
   const has = (kind, id) => cards.some(c => c.card === kind && (id === undefined || c.id === id));
 
   if (!line) {

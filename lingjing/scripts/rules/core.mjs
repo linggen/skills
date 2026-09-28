@@ -1,7 +1,7 @@
 // rules/core.mjs — Changing it: refusals, pay, riddles, stamina, resolve and judge.
 // Part of the rules engine; rules.mjs is its one door.
 import { gameOf, MADE_GRANT } from '../content.mjs';
-import { addProgress, dayKey, fill, fitValue, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaReturnsAt, stepName, threshold, tierOf } from '../state.mjs';
+import { addProgress, dayKey, fill, fitValue, lockedOf, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaReturnsAt, stepName, threshold, tierOf } from '../state.mjs';
 import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
 import { gainCard, starterOf } from './cards.mjs';
@@ -50,13 +50,17 @@ function amountsOf(content, state, now, grant) {
    some of it back; that is told when it is paid. */
 const paysOf = (content, state, now, grant) => {
   if (!grant || !content.rewards.tables[grant.table]) return null;
-  const { progress, wealth } = amountsOf(content, state, now, grant);
-  return { progress, wealth };
+  const { progress, wealth } = amountsOf(content, state, now, grant), shut = lockedOf(content, state);
+  return { progress: shut.includes('cultivation') ? 0 : progress, wealth: shut.includes('wealth') ? 0 : wealth };
 };
 
-function pay(content, state, ctx, grant) {
+function pay(content, state, ctx, grant, landing = state) {
   rollDay(state, ctx.now);
-  const { base, progress, wealth } = amountsOf(content, state, ctx.now, grant);
+  // Before a story gate nothing it keeps is paid (state.mjs lockedOf): read
+  // where the move lands — the hall's three stones land in the outer court.
+  const shut = lockedOf(content, landing);
+  const due = amountsOf(content, state, ctx.now, grant);
+  const base = shut.includes('cultivation') ? 0 : due.base, progress = shut.includes('cultivation') ? 0 : due.progress, wealth = shut.includes('wealth') ? 0 : due.wealth;
   state.day.progress += base; state.day.wealth += wealth; state.wealth += wealth;
   const { levels, hold } = addProgress(content, state, progress);
   if (grant.cast && !state.cast.includes(grant.cast)) state.cast.push(grant.cast);
@@ -380,7 +384,8 @@ export function resolve(state, content, ctx, args) {
   }
   if (breakthrough) { s.tier = breakthrough.tier; s.step = 0; s.progress = 0; }
   const grant = grantOf(s, scene, exit);
-  const paid = grant ? pay(content, s, ctx, grant) : null;
+  const landing = exit.ends ? { ...s, scene: null } : exit.next && !inMade(s) ? { ...s, scene: exit.next } : s;
+  const paid = grant ? pay(content, s, ctx, grant, landing) : null;
   const beat = spoken(content, s, exit.beat);
 
   let waiting = null, grew = null, node = null;

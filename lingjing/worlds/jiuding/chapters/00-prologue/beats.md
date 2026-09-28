@@ -30,7 +30,7 @@ for a boy.
 | `00-dusk` 村东头 | 十二 | 去村东头 (`wupo-bowed`, task 17) · 守着它; both wake her |
 | `00-xiuxian` 什么是修仙 | 十三 | (task 18) |
 | `00-sleep` 沉睡 | 十四 | 泡进去 (体力 −6) → 《吐纳经》, she sleeps in the token (tasks 19–20) · 爬出来 stay |
-| `00-halfyear` 半年 | 十五 | 功课 open (`offers.quests`) (tasks 21–22) |
+| `00-halfyear` 半年 | 十五 | (tasks 21–22) — no 功课 yet: they, 修为, 灵石, 开府, 问卦 and 差事 open at `00-waimen` (chapter.json `locks`) |
 | `00-uncle` 舅舅 | 十六 | 去 · 再等等 stay (tasks 23–24) |
 | `00-notice` 开山门 | 十七 | → 爷爷的弓 (task 25) |
 | `00-gate` 一试 | 十八 | 三步一吸 (体力 −6) · 冲 (体力 −12) (task 26) |

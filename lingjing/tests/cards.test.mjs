@@ -97,7 +97,8 @@ test('问卦 asks nothing: Divine with no question casts, and no answer asks 所
   const content = loadContent();
   const now = new Date('2026-09-17T12:00:00Z');
   for (const lang of ['zh', 'en']) {
-    const s = { ...newState(content, lang, now), name: 'Alex' };
+    // Joined (the outer court): before it, the coins are not the player's yet (chapter.json `locks`).
+    const s = { ...newState(content, lang, now), name: 'Alex', scene: '00-waimen' };
     const r = VERBS.divine(s, content, { now, quests: [] }, {});
     assert.equal(r.result.ok, true);
     assert.notEqual(askOf(content, s, { now, quests: [] }, { refused: 'needs-ask' })?.question, lang === 'zh' ? '所问何事？' : 'What do you ask about?');

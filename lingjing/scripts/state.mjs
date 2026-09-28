@@ -26,6 +26,58 @@ export function newState(content, lang, now) {
   };
 }
 
+/* ── Story gates: what a chapter keeps shut until the story gets there ──
+
+   His ruling (2026-09-28): 「修行是遇见yinyue, 加入宗门开始的, 先不要出现开府
+   任务, 增长修为等. 先走剧情.」 A chapter declares it (chapter.json `locks`):
+   the systems it keeps shut, and the scene that opens them (`until`) — shut on
+   every scene before it, open on it and on every scene it leads to, and once
+   the chapter is ended or left. The engine names no scene: the content does. */
+export const LOCKABLE = {
+  cultivation: '境界 and 修为: the realm, the bar, any 修为 gained, the scroll\'s daily 功课',
+  wealth: '灵石: shown, gained, bought and sold with',
+  chores: '人间功课: the apps\' real-life chores',
+  kaifu: '开府: the Linggen setup milestones',
+  divine: '问卦: the day\'s coins, their chip and card',
+  errands: '差事, 榜文 and 今日传闻: the book and its 事 chip',
+  road: '路上 and 机缘: what the road meets',
+  seclusion: '闭关',
+};
+const NONE = Object.freeze([]);
+const openFrom = new WeakMap();
+/* The scenes a gate scene leads to, itself included (its exits' `next`, followed). */
+function opened(chapter, until) {
+  if (openFrom.has(chapter)) return openFrom.get(chapter);
+  const seen = new Set(), todo = [until];
+  while (todo.length) {
+    const id = todo.pop();
+    if (seen.has(id) || !chapter.scenes[id]) continue;
+    seen.add(id);
+    for (const e of chapter.scenes[id].exits ?? []) if (e.next) todo.push(e.next);
+  }
+  openFrom.set(chapter, seen);
+  return seen;
+}
+/* The systems shut for this save right now — [] for every save past its chapter's gate. */
+export function lockedOf(content, state) {
+  const chapter = content?.chapters?.[state?.chapter], lock = chapter?.locks;
+  if (!lock || !state.scene || (state.ended ?? []).includes(chapter.id)) return NONE;
+  return opened(chapter, lock.until).has(state.scene) ? NONE : lock.systems;
+}
+/* A save before the gate holds none of what the gate keeps: an old save that
+   began the rewritten prologue again carried 修为 and 灵石 from before (his
+   live save, 2026-09-28: 练气一层 40/50, 灵石 20 at 石坳村). They go, and
+   the gate opens on 练气一层 at 0; the bag, the cards and the book stay. */
+export function lockReset(content, state) {
+  const shut = lockedOf(content, state), fix = {};
+  const first = content.ladder.tiers[0].id;
+  if (shut.includes('cultivation') && (state.tier !== first || state.step || state.progress)) Object.assign(fix, { tier: first, step: 0, progress: 0 });
+  if (shut.includes('wealth') && state.wealth) fix.wealth = 0;
+  if ((fix.progress === 0 || fix.wealth === 0) && state.day) fix.day = { ...state.day, ...(fix.progress === 0 ? { progress: 0 } : {}), ...(fix.wealth === 0 ? { wealth: 0 } : {}) };
+  if (shut.includes('seclusion') && state.seclusion) fix.seclusion = undefined;
+  return fix;
+}
+
 /* ── Words ── */
 
 export const pick = (pair, lang) => (pair ? pair[lang] ?? pair.zh ?? pair.en : null);
@@ -307,5 +359,8 @@ export function fitWorld(saved, content) {
     // prologue-v3) is awake: `awake` is what the engine's presence reads.
     ...(state.companion?.joined && !state.companion.asleep && !state.companion.awake ? { companion: { ...state.companion, awake: true } } : {}),
   };
+  // Before a story gate, nothing the gate keeps (lockReset): read where the save now stands.
+  Object.assign(fix, lockReset(content, { ...state, ...fix }));
+  if ('seclusion' in fix) { const { seclusion, ...kept } = { ...state, ...fix }; return kept; }
   return Object.keys(fix).length ? { ...state, ...fix } : state;
 }

@@ -4,6 +4,7 @@
 
 ## Tasks, boards and 差事
 
+- **Before the gate** (Look's `locked`): no 人间功课, 开府 or 差事 exist yet — never offer one; Quest and Practice `check` are refused `not-yet` (speak its `say`). A scene's own board (the trials) still plays, and pays no 修为.
 - **Boards** stand on the stage when the story or an errand asks for one —
   a scene's board, or a place's game (洛书 · 华容道 · 七巧 · 五子 · 残局 · 论道)
   that a notice sent them to; none is a daily chore, and 今日传闻's steps are

@@ -10,6 +10,7 @@
 // only what came after hers. Reading never clears it for the other (his,
 // 2026-09-24: both of them look it up when they want to).
 import { pick, stepName, threshold } from '../state.mjs';
+import { withoutLocked } from './locks.mjs';
 import { herPast } from './companion.mjs';
 import { staminaBrief } from './daily.mjs';
 import { bookOf, questOf } from './errands.mjs';
@@ -153,9 +154,10 @@ export function progress(state, content, ctx) {
   const st = staminaBrief(content, state, ctx.now);
   const { tasks, quests, kaifu } = tasksBrief(content, state, ctx);
   const lundao = lundaoHelp(content, state, ctx.now);
+  // Before a story gate, nothing it keeps shut (rules/locks.mjs).
   return {
     state: null,
-    result: {
+    result: withoutLocked(content, state, {
       ok: true, name: state.name ?? null,
       tier: stepName(content, state.tier, state.step, lang), progress: state.progress, next: threshold(content, state),
       stamina: { now: st.now, max: st.max, ...(st.empty ? { empty: true, rest_at: st.rest_at } : {}) },
@@ -170,6 +172,6 @@ export function progress(state, content, ctx) {
       ...(lundao ? { lundao } : {}),
       // 闭关 running: its focus and the hours in (rules/seclusion.mjs).
       ...(state.seclusion ? { seclusion: (({ focus, hours, card }) => ({ focus, hours, ...(card ? { card: card.name } : {}) }))(seclusionBrief(content, state, ctx.now)) } : {}),
-    },
+    }),
   };
 }
