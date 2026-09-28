@@ -691,6 +691,57 @@ authored content has; the same lint checks it; the same rules play it.
 
 Superseded; the original is in archive.md. The card fight (`## 斗法 v3`) and `## Systems built 2026-09-21 → 24` hold what is true now.
 
+## 剧情 × 开放世界 — 任务驱动，关键剧情锁图 (his, 2026-09-28; designed, not built)
+
+**The rule (his words):** 「我们还是通过任务, 在开放世界中驱动剧情. 关键剧情的时候关闭开放世界探索,
+走剧情. 走完之后才开放地图探索.」 The story sets the goal, the world is where it is reached,
+and what the player does in the world comes back into the story.
+
+**Two modes, one switch.**
+
+| Mode | What the player can do | When |
+|---|---|---|
+| **开放** — open world | Walk the map, take errands, fight, tame, play the boards, rest | Between key beats — most of the time |
+| **剧情** — story lock | The map is shut (roads refuse, the map card greys with one line why); the stage runs the beat's panels, fights, boards; Ling tells the story in the chat | A key beat, from its first scene to its last; then the map opens again, often wider |
+
+A chapter declares its key beats; entering one sets `state.lock = {beat, since}`, finishing it clears
+it. A beat is short (a few scenes) — the lock is never where the player lives.
+
+**A chapter = one goal + threads (任务驱动).**
+
+- **One goal** the chapter is about (e.g. ch1: win the 外门大比 in seven days → the 筑基丹).
+- **3–5 threads** around it, each a task chain given by a person at a place, done in any order.
+  The map marks them: **gold** 主线, **silver** 人物线, grey 杂务. A thread's last step can open a key beat.
+- **The story needs the world** (凡人式稀缺): a key beat asks for things only the open world gives —
+  a deck strong enough (tamed creatures), 灵石 for a pill (errands), a piece of intelligence
+  (a person's thread). How well the player prepared decides how the beat goes, never whether it can be finished.
+- **The world comes back into the story**: every errand has a person; every person goes into the
+  **恩仇簿**; people helped return at a key beat (a warning, a hand, a card), people wronged return too.
+- **银月's memories lie in the world**: where her tails fell, a glint on the map; reaching it plays a
+  short panel + her line — exploring moves her story.
+- **The world moves by itself**: dated events (the 秘境 opens on the 1st, the 大比 in seven days,
+  马家 raises the rent) pull the player back; deeds spread as 传闻 through the 说书人, and people
+  treat the player by the name they now have.
+- **Ling ties it**: off-path deeds are folded into the story she tells, the 前情提要 and the 九鼎录
+  (the player's own novel, read back from the start).
+
+**The screens (小人书, his ruling the same day).** The stage never holds the novel's prose: it is a
+连环画 — one painted panel per beat with 2–4 lines of caption (scene, task, creature), plus fights,
+boards and choices. The chat carries the story: Ling tells each beat's authored `story` passage closely,
+adapted to the player's choices, name and gender, and writes live only for off-script actions, in the
+same voice.
+
+**Chapter 1 as the first one built this way** (after the v3 prologue):
+
+| Thread | Place | What it gives |
+|---|---|---|
+| **主线** 大比 in seven days | 外门 | The goal and the countdown; the key beat is the 大比 itself (locked) |
+| 沉鼎秘境 opens | 泗水底 | Key beat (locked): 银月 leads to 息壤 — the roots grow whole |
+| 马小宝's plan | 坊市 (钱掌柜) | Intelligence bought or earned; counters his trick at the 大比 |
+| A memory of 银月 | 泗水北岸 | Her first memory: "a very bright light" |
+| 阿禾 pressed to dive for the 鼎 | 渡口 | Help her → 恩; she stands with the player at the 大比 |
+| Preparing | anywhere | Tame, earn 灵石, make pills — the deck and the purse for the 大比 |
+
 ## Player state
 
 `state.json`:
