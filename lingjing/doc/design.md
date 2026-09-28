@@ -1800,6 +1800,19 @@ fields each made pill carries, not a new item per grade.
 游戏里：丹炉之前，玩家炼丹走凡人出率；得到丹炉之后，每一炉都是本境无暇——灵草的供给（药园、秘境、
 差事、坊市）才是节流阀；无暇丹不能卖（没人认得，拿出去就是祸）。
 
+**灵草从哪来**（丹炉是开挂，灵草是节流阀——穷外门弟子也要有路）：
+
+| 来处 | 何时开 | 怎么得 |
+|---|---|---|
+| **药园残株** | 第一章，药园巡夜之后 | 周衡：每月拔下的残株（虫咬、长歪、灵气散了一半）「往年都是扔，以后扔给你」——别人的垃圾，丹炉照样炼成本境无暇 |
+| **小狰寻药** | 收服小狰之后 | 从小偷灵草长大的狰，鼻子最灵：每日一次，带你去附近一处崖缝、林下的野灵草（地点随地图，路上遇） |
+| **采药** | 一直 | 猎户的本事：山里、秘境、断碑后的深处，按地点刷新（高阶地方出高阶灵草） |
+| **差事酬劳** | 入门之后 | 宗门差事、榜文可以付灵草而不付灵石 |
+| **坊市** | 有钱之后 | 用灵石买；稀有灵草要机缘 |
+| **秘境** | 十年一开 / 章节大事件 | 一次一大把，外加稀有灵草 |
+
+The throttle holds because each source is small, daily or event-bound; the furnace multiplies quality, never quantity.
+
 **游戏上要做的**：made pills carry `tier` (阶 1–9, or `xian`) and `grade` (品 1–6; a 仙丹 has none);
 effects follow a tamed curve per tier/grade; the pill card shows 丹纹 as strokes (a 仙丹 glows instead);
 the furnace (an item) makes the owner's-realm 无暇 (破境丹 one 阶 above), never bursts; 无暇 can't be sold; 仙丹 only from the furnace after the finale.
