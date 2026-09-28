@@ -47,7 +47,8 @@ async function main() {
   document.title = `${pick(book.title)} · ${pick(ch.title)}`;
   $('booktitle').textContent = pick(book.title);
   $('toc').setAttribute('aria-label', w.toc);
-  $('toc').innerHTML = all.map((c, i) => `<a href="${esc(hrefWith({ book: bookId, ch: c.id }))}" class="${i === at ? 'on' : ''}">${esc(pick(c.title))}</a>`).join('');
+  $('toc').innerHTML = `<div class="toch">${esc(w.toc)}</div>` + all.map((c, i) => `<a href="${esc(hrefWith({ book: bookId, ch: c.id }))}" class="${i === at ? 'on' : ''}">${esc(pick(c.title))}</a>`).join('');
+  $('toc').querySelector('a.on')?.scrollIntoView({ block: 'nearest' });
   try {
     const res = await fetch(`${STORY}${encodeURIComponent(bookId)}/${encodeURIComponent(ch.file)}`);
     if (!res.ok) throw new Error(String(res.status));
