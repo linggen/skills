@@ -1790,14 +1790,18 @@ fields each made pill carries, not a new item per grade.
 
 **仙丹**：仙界炼的丹。凡间的丹师，没有一个见过。它不分阶、不分品——仙丹就是仙丹。
 
-**银月的丹炉**（故事 v3，第一章）：仙界带下来的炉子——**同样一炉灵草，凡人炉子出下品的，它直接出仙丹**；
-不炸炉；尝过一次的丹，记住丹方（只要灵草对，就能照原样炼成仙丹）。它的限制在灵草：稀缺的是料，不是丹。
-游戏里：丹炉之前，玩家炼丹走凡人出率；得到丹炉之后，他的每一炉都是仙丹——所以灵草的供给
-（药园、秘境、差事、坊市）才是节流阀；仙丹不能卖（没人认得，拿出去就是祸）。
+**银月的丹炉**（故事 v3，第一章）——**随主人**：不管投进去的灵草是几阶，出来的永远是**主人当下境界的无暇丹**——
+他吃得下的、最好的那一颗（练气时一阶无暇；筑基了，同样的灵草出二阶无暇……）。唯一例外是**破境丹**：
+破境本就是跨一步，它炼的破境丹高主人一阶。不炸炉；尝过一次的丹，记住丹方。**仙丹留到终章**——九鼎归位、
+丹炉全醒、主人渡劫之后，它才炼出第一颗主人吃得下的仙丹。限制在灵草：稀缺的是料，不是丹。
+**剧情里说得隐晦**：银月只说「你吃得下的，最好的那一颗」「那就数（丹纹）」「至于别的，等你吃得下那天再说」；
+九道金纹是什么意思，由褚先生的讲堂、济世堂、别人的惊掉下巴一点一点揭开。
+游戏里：丹炉之前，玩家炼丹走凡人出率；得到丹炉之后，每一炉都是本境无暇——灵草的供给（药园、秘境、
+差事、坊市）才是节流阀；无暇丹不能卖（没人认得，拿出去就是祸）。
 
 **游戏上要做的**：made pills carry `tier` (阶 1–9, or `xian`) and `grade` (品 1–6; a 仙丹 has none);
 effects follow a tamed curve per tier/grade; the pill card shows 丹纹 as strokes (a 仙丹 glows instead);
-the furnace (an item) makes 仙丹 and never bursts; 仙丹 can't be sold.
+the furnace (an item) makes the owner's-realm 无暇 (破境丹 one 阶 above), never bursts; 无暇 can't be sold; 仙丹 only from the furnace after the finale.
 
 ## 体力 — the game's own stamina
 
