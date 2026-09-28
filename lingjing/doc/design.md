@@ -1750,6 +1750,47 @@ Listing every menu entry flooded the book. The rules read the menus thus:
   On Linggen Cloud the game already travels like Health — the shared trial,
   then the plan's monthly pool (linggensite `llm.ts`).
 
+## 丹药等级 — 两把尺子：阶与品 (his, 2026-09-28; designed, not built)
+
+A pill is measured twice: its **阶** says which realm it serves; its **品** says how well it was made.
+Today items.json names pills without a grade (聚气丹, 筑基丹, 固基丹, 破境丹, 回春丹…); the grade is a
+field each made pill carries, not a new item per grade.
+
+**阶 — which realm it serves (九阶, one per realm)**
+
+| 阶 | 境界 | 例 |
+|---|---|---|
+| 一阶 | 练气 | 聚气丹 · 回春丹 · 洗髓丹 |
+| 二阶 | 筑基 | 筑基丹 · 固基丹 |
+| 三阶 | 结丹 | 凝丹 · 破境丹（结丹） |
+| 四阶 … 九阶 | 元婴 … 渡劫 | 每境一种破境丹，余随剧情 |
+
+A pill above the eater's realm is refused (「药力太猛，受不住」); below it pays less (each 阶 under, half).
+
+**品 — how well it was made (六等)**
+
+| 品 | 丹纹 | 丹身 | 丹毒 | 药效 | 凡人丹炉出率 | 价（下品＝1） | 在世上 |
+|---|---|---|---|---|---|---|---|
+| **下品** | 一道 | 浊，满身斑 | 重 | 30% | 20%（另有 70% 炸炉） | 1 | 药铺柜台上 |
+| **中品** | 三道 | 半浊 | 有 | 50% | 7% | 3 | 锁在柜子里 |
+| **上品** | 五道 | 清 | 微 | 70% | 2.5% | 10 | 宗门库房，论功领 |
+| **极品** | 七道 | 亮 | 一丝 | 90% | 0.5% | 40 | 一个丹师一辈子一颗，就能开宗立派 |
+| **完美** | 九道，齐 | 透 | 无痕，余一丝杂气 | 99% | 传说 | 不上市 | 只听说过 |
+| **无暇** | 九道，圆融 | 透亮如露 | 无 | 100%，一分不漏 | 世上不该有 | 无价 | 银月的丹炉 |
+
+- **丹毒**：下品、中品吃多了积毒（体力上限一时降低，闭关可排）；上品起几乎不积；完美、无暇不积。
+- **炸炉**：凡人丹炉十炉炸七；炸了灵草全失。
+- **丹纹**是玩家一眼能看的标记：卡上、储物袋里，品就是纹数（一、三、五、七、九道；无暇的九道是金的）。
+
+**银月的丹炉**（故事 v3，第一章）：同样一炉灵草，别人出下品的，它出**无暇**——从最末一等跳到最顶一等；
+不炸炉；尝过一次的丹，记住丹方（只要灵草对，就能照原样炼）。它的限制在灵草：稀缺的是料，不是丹。
+游戏里：丹炉之前，玩家炼丹走凡人出率；得到丹炉之后，他的每一炉都是无暇——所以灵草的供给
+（药园、秘境、差事、坊市）才是节流阀。
+
+**游戏上要做的**：made pills carry `grade` (1–6) and `tier` (阶 1–9); `effect` × the 药效 column;
+sell price × the 价 column; 丹毒 as a small debt on 体力's cap that 闭关 clears; the pill card shows
+丹纹 as strokes; the furnace (an item) sets grade 6 and never bursts.
+
 ## 体力 — the game's own stamina
 
 **It keeps the game from taking too much of a day, and sends the player back
