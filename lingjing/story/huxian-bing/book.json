@@ -27,6 +27,15 @@
    },
    "file": "01-序章下·仙门.md",
    "opens": "00-prologue"
+  },
+  {
+   "id": "02",
+   "title": {
+    "zh": "第一章 · 外门",
+    "en": "Chapter One · The Outer Court"
+   },
+   "file": "02-第一章·外门.md",
+   "opens": "01-ji"
   }
  ],
  "appendix": [
