@@ -1918,7 +1918,13 @@ async function mountChat() {
       if (veil) veil.turns += 1;
       refresh().then(() => { cheer(before); nudgeTrial(); });
     },
-    onContentBlock: (payload) => { streaming = true; onContentBlock(payload); },
+    // Her tool blocks (`info.own === false`) are hers alone: no turn, no card,
+    // no marked options, no coins. A bridge that names no agent is Ling's.
+    onContentBlock: (payload, info) => {
+      if (info?.own === false) return;
+      streaming = true;
+      onContentBlock(payload);
+    },
     // The engine says the save changed under the page (`save_changed`: the
     // account's copy was pulled over it): read it again. It is global, so
     // only this skill's.

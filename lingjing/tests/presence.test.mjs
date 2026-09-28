@@ -136,6 +136,45 @@ test("onStreamEnd: only Ling's stream ends the turn; hers is only a line heard",
   assert.match(SRC, /onStreamToken: \(_text, info\) => \{ if \(info\?\.own !== false\) streaming = true; \}/);
 });
 
+/// The mount's onContentBlock over the page's own, run with stubs.
+function contentBlock() {
+  const at = SRC.indexOf('onContentBlock: (');
+  const src = SRC.slice(at + 'onContentBlock: '.length, closeOf(SRC.indexOf('{', at), SRC) + 1);
+  const did = [];
+  const scope = {
+    did, streaming: false, contentStale: false, WRITERS: new Set(), JSON, console,
+    view: { casting: true },
+    keep: (p) => did.push(['keep', p]), show: (p) => did.push(['show', p]),
+    waitingOnPlayer: () => did.push('waiting'), render: () => did.push('render'),
+    refreshSoon: () => did.push('refresh'),
+  };
+  const page = inPage(`${fnSource('askedOptions')} ${fnSource('onContentBlock')} return onContentBlock;`, scope);
+  const fn = inPage(`return (${src});`, { ...scope, onContentBlock: page, get streaming() { return scope.streaming; }, set streaming(v) { scope.streaming = v; } });
+  return { fn, scope };
+}
+
+test("onContentBlock: only Ling's blocks move the page; hers open nothing", () => {
+  const ask = { phase: 'start', tool: 'AskUser', args: JSON.stringify({ questions: [{ options: [{ label: '去' }] }] }) };
+  const showMap = { phase: 'start', tool: 'Show', args: JSON.stringify({ cards: [{ card: 'map' }] }) };
+  const her = contentBlock();
+  her.fn(ask, { agent: 'yinyue', own: false });
+  her.fn(showMap, { agent: 'yinyue', own: false });
+  assert.deepEqual(her.scope.did, [], 'no card, no marked options, the coins untouched');
+  assert.equal(her.scope.streaming, false, 'her block is no turn');
+  const ling = contentBlock();
+  ling.fn(ask, { agent: 'ling', own: true });
+  ling.fn(showMap, { agent: 'ling', own: true });
+  assert.equal(ling.scope.streaming, true);
+  assert.deepEqual(ling.scope.did[0], ['keep', { casting: false }], 'a question lands the coins');
+  assert.deepEqual([...ling.scope.did[1][1].asked], ['去'], 'his choices marked');
+  assert.ok(ling.scope.did.some((d) => d[0] === 'show' && d[1].mapView === 'province'), 'the map opens');
+  // A bridge that names no agent (before linggen 4951f50) hands Ling's alone.
+  const old = contentBlock();
+  old.fn(showMap);
+  assert.equal(old.scope.streaming, true);
+  assert.ok(old.scope.did.some((d) => d[0] === 'show'));
+});
+
 test("the stage loads her body through the engine's engineUiUrl when /shared/api.js has it", () => {
   assert.equal(petStageUrl({ engineUiUrl: (q) => `https://linggen.dev/app/connect/abc?${q}` }, 'https://linggen.dev'),
     'https://linggen.dev/app/connect/abc?pet=1&stage=1');
