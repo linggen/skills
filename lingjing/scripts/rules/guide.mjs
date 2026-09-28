@@ -36,7 +36,7 @@ export const TOPICS = {
   steer: ({ verb, said }) => ['init', 'go', 'undo', 'saves', 'save', 'load', 'forget', 'worlds', 'travel'].includes(verb)
     || tag(said, /重来|从头|存档|读档|悔棋|回到昨|别的世界|restart|begin again|\bsave\b|\bload\b|\bundo\b|another world/i),
   story: ({ verb, said, result }) => verb === 'story' || Boolean(result?.recap_due || result?.chapter?.fresh || result?.ending) || result?.ended === true
-    || tag(said, /^\[scene\] recap\b|前面的故事|九鼎是|上回/),
+    || tag(said, /^\[scene\] (recap|breakthrough)\b|前面的故事|九鼎是|上回/),
 };
 
 export const topics = () => Object.keys(TOPICS);

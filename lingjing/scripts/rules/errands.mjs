@@ -10,6 +10,7 @@ import { nameOf } from './look.mjs';
 import { choreOpen, isPool, questDone, todayChores } from './chores.mjs';
 import { canMakeTale, taleEvent, taleHanded, taleRow } from './tale.mjs';
 import { hashOf } from './travel.mjs';
+import { coolingUntil, oddsOf } from './breakthrough.mjs';
 import { freeSlot, pouchBrief } from './pouch.mjs';
 import { allPlaces, atScene, creatureOf, inCorridor, inMade, pathOf, placeName, placeOf, provinceOpen, sceneOf, tooHard, towardOf } from './world.mjs';
 
@@ -317,7 +318,7 @@ function waypointOf(content, state, ctx) {
   if (!thread?.place) return thread;
   // A cauldron that waits on the peak is not a road to walk: the card says
   // what it asks and where he stands, so a blocked spine reads as blocked.
-  if (waitsOnPeak(content, state)) return { ...thread, gate: gateOf(content, state) };
+  if (waitsOnPeak(content, state, ctx.now)) return { ...thread, gate: gateOf(content, state, ctx.now) };
   const here = placeOf(content, state.place), goal = placeOf(content, thread.place.id);
   if (!here || !goal || here.id === goal.id) return thread;
   const toward = towardOf(content, state, here, goal, ctx.now);
@@ -327,31 +328,37 @@ function waypointOf(content, state, ctx) {
 /* A cauldron's breath, as the rules would judge it now: `ready` at the peak
    of the tier this chapter's cauldron lifts from; `need` names that peak and
    the 修为 it asks, and the realm it opens. Resolve refuses on the same terms. */
-function breakthroughOf(content, state) {
+function breakthroughOf(content, state, now = new Date()) {
   const tiers = content.ladder.tiers, tier = tierOf(content, state.tier), next = tiers[tiers.indexOf(tier) + 1];
   const gate = content.chapters[state.chapter]?.gate;
   const peak = state.step === tier.thresholds.length - 1 && state.progress >= threshold(content, state);
   const target = tiers.find(t => t.gate != null && t.gate === gate);
   const source = target ? tiers[tiers.indexOf(target) - 1] : null;
   const last = source ? source.thresholds.length - 1 : 0;
+  // 渡劫 is a throw (breakthrough.mjs): its chance while this cauldron is his
+  // to take, and the hours it stays shut after a failed one.
+  const at = Boolean(next && next.gate === gate);
+  const cooling = at ? coolingUntil(state, now) : null;
+  const odds = at && (peak || cooling) ? oddsOf(content, state, now, next.id) : null;
   return {
-    ready: Boolean(peak && next && next.gate === gate),
+    ready: Boolean(peak && at && !cooling),
     need: source ? { step: stepName(content, source.id, last, state.lang), progress: source.thresholds[last], to: pick(target.name, state.lang) } : null,
+    ...(odds ? { odds } : {}), ...(cooling ? { cooling } : {}),
   };
 }
 
 /* What a waiting cauldron asks, beside where the player stands now. */
-function gateOf(content, state) {
-  const need = breakthroughOf(content, state).need;
-  return need && { ...need, now: { step: stepName(content, state.tier, state.step, state.lang), progress: state.progress, of: threshold(content, state) } };
+function gateOf(content, state, now) {
+  const bt = breakthroughOf(content, state, now), need = bt.need;
+  return need && { ...need, now: { step: stepName(content, state.tier, state.step, state.lang), progress: state.progress, of: threshold(content, state) }, ...(bt.cooling ? { again_at: bt.cooling } : {}) };
 }
 
 /* A scene that waits only on a breath the player cannot take yet: the way
    on is the world, not back to the cauldron. */
-function waitsOnPeak(content, state) {
+function waitsOnPeak(content, state, now) {
   const scene = inMade(state) ? null : sceneOf(content, state);
   const exits = (scene?.buttons ?? []).map(id => scene.exits.find(e => e.id === id));
-  return exits.length > 0 && exits.every(e => e?.breakthrough) && !breakthroughOf(content, state).ready;
+  return exits.length > 0 && exits.every(e => e?.breakthrough) && !breakthroughOf(content, state, now).ready;
 }
 
 /* The nearest open road out of a scene's place the player can walk. */
@@ -401,7 +408,7 @@ function directorBrief(content, state, ctx) {
   // The first road on the way to the thread's place, when it is not a road
   // away itself — so the choice leads with the way on, not the way back.
   // A cauldron that waits on the peak is not led to: the player just left it.
-  const led = waitsOnPeak(content, state) ? null : thread;
+  const led = waitsOnPeak(content, state, ctx.now) ? null : thread;
   const goal = led?.place && placeOf(content, led.place.id);
   const toward = goal && !near.some(p => p.id === goal.id) ? towardOf(content, state, place, goal, ctx.now) : null;
   return {

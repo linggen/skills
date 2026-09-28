@@ -5,7 +5,8 @@ import { addProgress, dayKey, fill, fitValue, normalizeAnswer, payOf, pick, roll
 import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
 import { gainCard, starterOf } from './cards.mjs';
-import { threadOf } from './errands.mjs';
+import { breakthroughOf, threadOf } from './errands.mjs';
+import { coolingUntil, oddsOf, throwOn } from './breakthrough.mjs';
 import { sceneBrief, spoken, wordsOf } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { herBeat, storyNode, withHerBeat } from './story.mjs';
@@ -200,6 +201,26 @@ export function pageNames(content, state, args) {
   return { ok: false, refused: 'page-names', say: null, then: THEN_PAGE_NAMES };
 }
 
+/* The cauldron shut after a failed throw, in the world's words: when. */
+function coolingSay(lang, at, now) {
+  const later = at.toDateString() !== now.toDateString();
+  return lang === 'zh'
+    ? `雷劫的余威还在经脉里游走，鼎气不肯近身。${later ? '明日' : ''}${hourOf(at, 'zh')} 以后再来。`
+    : `The tribulation still runs through your meridians; the cauldron's breath will not come near. Come back after ${hourOf(at, 'en')}${later ? ' tomorrow' : ''}.`;
+}
+
+/* A breakthrough is thrown on the page's card, where its odds stand (Hanli,
+   2026-09-28): Ling's Resolve of a cauldron ready to take is refused, so the
+   throw never lands before the player has seen what feeds it. Not ready —
+   below the peak, or shut after a failure — her Resolve still hears why.
+   Null: not such an exit, or not ready. */
+const THEN_PAGE_THROWS = 'The breakthrough is thrown on the page\'s card, where its chance and what feeds it stand; the player throws there, and the page tells you `[scene] breakthrough won|failed`. Nothing changed. End on one line inviting them to the cauldron — never AskUser for it, never promise how it will go, never Resolve it yourself.';
+export function pageThrows(content, state, args) {
+  const exit = sceneOf(content, state)?.exits?.find(e => e.id === args.exit);
+  if (!exit?.breakthrough || !breakthroughOf(content, state, args.now ?? new Date()).ready) return null;
+  return { ok: false, refused: 'page-throws', say: null, then: THEN_PAGE_THROWS };
+}
+
 /* Entering a scene offers its tasks. */
 function offerTasks(content, state) {
   const scene = sceneOf(content, state);
@@ -231,7 +252,7 @@ export function resolve(state, content, ctx, args) {
     return refuse('not-at-scene', lang === 'zh' ? `你还没到${pick(at.name, 'zh')}。` : `You are not at ${pick(at.name, 'en')} yet.`, { place: placeName(content, s, at) });
   }
   if (exit.needs && !meets(s, exit.needs)) return refuse('needs', pick(exit.refuse, lang));
-  let breakthrough = null;
+  let breakthrough = null, odds = null;
   if (exit.breakthrough) {
     const tier = tierOf(content, s.tier), tiers = content.ladder.tiers, next = tiers[tiers.indexOf(tier) + 1];
     const peak = s.step === tier.thresholds.length - 1 && s.progress >= threshold(content, s);
@@ -239,6 +260,11 @@ export function resolve(state, content, ctx, args) {
     if (!peak || !next || next.gate !== gate) {
       return refuse('not-at-peak', pick(exit.refuse, lang), { tier: s.tier, step: s.step + 1, progress: s.progress, next: threshold(content, s), peak_step: tier.thresholds.length });
     }
+    // A failed throw shuts the cauldron for real hours (breakthrough.mjs).
+    const until = coolingUntil(s, ctx.now);
+    if (until) return refuse('breakthrough-cooling', coolingSay(lang, new Date(until), ctx.now), { again_at: until });
+    // The chance as the card showed it — read before this step's 体力 is paid.
+    odds = oddsOf(content, s, ctx.now, next.id);
     breakthrough = { from: stepName(content, s.tier, s.step, lang), to: stepName(content, next.id, 0, lang), tier: next.id };
   }
   if (exit.key) {
@@ -279,6 +305,12 @@ export function resolve(state, content, ctx, args) {
   if (exit.next || exit.ends) {
     const empty = spendStamina(content, s, ctx, 'step');
     if (empty) return empty;
+  }
+  // 渡劫 is one throw (Hanli, 2026-09-28): failed, the scene stays, the
+  // realm stays, and nothing moves on — the rules' die, never Ling's word.
+  if (breakthrough && odds) {
+    breakthrough = { ...breakthrough, ...throwOn(content, s, odds, breakthrough.tier, ctx.now) };
+    if (!breakthrough.success) return { state: s, result: { ok: true, took: null, breakthrough, beat: [], paid: null, show: [], scene: sceneBrief(content, s, ctx.now), summarize: false } };
   }
   if (game) delete s.wins[game.id];
   if (exit.take?.bag) {

@@ -417,6 +417,7 @@ export function lint(content) {
     if (!['dir', 'world', 'names'].includes(part)) refusedNames(node, content, part, bad);
   }
   lintLadder(content.ladder, bad);
+  lintBreakthrough(content, bad);
   lintCreatures(content, bad);
   lintRiddles(content.riddles, bad);
   lintBook(content, bad);
@@ -712,6 +713,25 @@ function lintLadder(ladder, bad) {
     const n = t.thresholds.length;
     if (t.steps.zh.length !== n) bad(`tier ${t.id}`, `${t.steps.zh.length} steps but ${n} thresholds`);
   }
+}
+
+/* 渡劫's odds (rules/breakthrough.mjs): a base for every realm a cauldron
+   opens, a floor under a cap, pills the catalog has, elements the roots know,
+   and a failure that costs a share and some hours. Optional: a world without
+   it breaks through on the breath alone. */
+function lintBreakthrough(content, bad) {
+  const r = content.ladder.breakthrough, where = 'ladder breakthrough';
+  if (!r) return;
+  const pct = n => Number.isInteger(n) && n >= 0 && n <= 100, share = n => typeof n === 'number' && n >= 0 && n <= 1;
+  for (const t of content.ladder.tiers.filter(t => t.gate != null)) {
+    if (!pct(r.base?.[t.id])) bad(where, `base for ${t.id} is a whole percent`);
+    if (r.element?.of?.[t.id] && !content.traits.elements?.[r.element.of[t.id]]) bad(where, `element ${r.element.of[t.id]} for ${t.id} is not one of the five`);
+  }
+  if (!pct(r.floor) || !pct(r.cap) || r.floor > r.cap) bad(where, 'floor and cap are percents, floor under cap');
+  if (!pct(r.low)) bad(where, 'low is a percent');
+  for (const [to, id] of Object.entries(r.pill?.items ?? {})) if (!content.items.items.some(i => i.id === id)) bad(where, `pill for ${to}: unknown item ${id}`);
+  if (!share(r.body?.share) || !share(r.fail?.wound) || !share(r.fail?.progress)) bad(where, 'body.share, fail.wound and fail.progress are shares of 0–1');
+  if (!(r.fail?.cooldown_hours > 0)) bad(where, 'fail.cooldown_hours is some hours');
 }
 
 /* A creature's name is read aloud from its pinyin, one syllable a character:

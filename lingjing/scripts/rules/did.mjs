@@ -51,6 +51,13 @@ const MEET_DID = {
 const taleDid = (r, x) => (r.ended ? `ended today's rumor${paidLine(r.handed?.[0]?.paid, x.w)}${r.handed?.[0]?.gives ? `, got ${r.handed[0].gives}` : ''}`
   : r.kept ? "solved the rumor's step; counted when 体力 is back" : r.step ? `the rumor's step done${paidLine(r.handed?.[0]?.paid, x.w)}; next: ${r.step.game_name} at ${r.step.at?.name}` : null);
 const TALE_DID = { win: (r, a, x) => taleDid(r, x), answer: (r, a, x) => taleDid(r, x), turn: (r, a, x) => taleDid(r, x), drop: () => "put today's rumor down" };
+/* 渡劫 thrown on the page's card (rules/breakthrough.mjs): how it fell, at
+   what chance, and — failed — what it cost and when the cauldron opens. */
+function thrownDid(r, x) {
+  const b = r.breakthrough, pill = b.pill ? `, ${b.pill.name} spent` : '';
+  if (b.success) return `broke through to ${b.to} on the page's card (${b.chance}% chance${b.low ? ', against the odds' : ''}${pill}) — beat: ${(r.beat ?? []).map(t => t.text).join(' ')}`;
+  return `tried the breakthrough to ${b.to} on the page's card (${b.chance}% chance${pill}) and the tribulation threw them back: ${x.w.pool ?? '体力'} −${b.lost.stamina}, −${b.lost.progress} ${x.w.progress}; the cauldron is shut until ${b.again_at}. The realm is kept`;
+}
 /* 闭关: going in, and 出关 with what grew. */
 const SECLUDE_DID = {
   enter: (r) => `went into seclusion (闭关) on ${r.entered?.focus}${r.entered?.pill ? `, took ${r.entered.pill.name}` : ''}`,
@@ -79,7 +86,7 @@ const PAGE_DID = {
   seclude: (r, a) => SECLUDE_DID[a.action]?.(r) ?? null,
   // A value exit named on the page's card (the 道号): the name, and the beat
   // Ling speaks for it on `[scene] named` — the page resolves nothing else.
-  resolve: (r) => (r.named ? `named themselves 「${r.named.value}」 on the page's card — beat: ${(r.beat ?? []).map(b => b.text).join(' ')}` : null),
+  resolve: (r, a, x) => (r.named ? `named themselves 「${r.named.value}」 on the page's card — beat: ${(r.beat ?? []).map(b => b.text).join(' ')}` : r.breakthrough?.chance != null ? thrownDid(r, x) : null),
   // 储物袋: a thing waiting at the 洞府 taken in, a slot thrown away.
   bag: byAction({ claim: (r) => `took ${r.claimed?.name} from the abode into the storage pouch`, toss: (r) => `threw away ${r.tossed?.name}` }),
 };

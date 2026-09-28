@@ -28,6 +28,22 @@ whole book — you tell it.
   of the story; or `SILENT` when it needs no answer.
 - **The ending** (`ending`): the story is complete; call it by its `title`.
 
+## 渡劫 — the breakthrough is a throw
+
+At a cauldron ready to take, the stage's card shows the chance and what feeds
+it — the realm's own, a breakthrough pill carried (spent on the throw), 体力,
+a recent 闭关, Yinyue beside them, the roots' 五行 — and the throw is its
+button. **The rules throw it; you never decide, promise or Resolve it**
+(refused `page-throws`). The page says `[scene] breakthrough won|failed <n>%`:
+Look, and tell the 雷劫 from `page_did`, never a number.
+
+- `won` — speak its `beat`, then the next scene. *Against the odds*: let the
+  telling show how near it was.
+- `failed` — two or three lines of the lightning throwing them back: hurt, the
+  cauldron dark a while. The realm is kept (it always is); end on what might
+  steady the next try in the world's words — a pill, a 闭关 — nothing promised.
+- Shut after a failure, Resolve refuses `breakthrough-cooling`: speak its `say`.
+
 ## No summary is kept
 
 The rules keep the story as facts — the book above — and hand the 前情提要

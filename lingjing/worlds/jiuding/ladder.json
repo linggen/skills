@@ -279,5 +279,61 @@
       "9th"
     ]
   },
-  "_treasure": "The nine 重 of a 本命法宝, grown by 温养 and by what a fight leaves — design.md § 斗法."
+  "_treasure": "The nine 重 of a 本命法宝, grown by 温养 and by what a fight leaves — design.md § 斗法.",
+  "_breakthrough": "渡劫 is one throw that can fail (Hanli, 2026-09-28: 红检, you pick). The chance starts at `base` for the realm it opens and each factor adds to it, then it is held between `floor` and `cap`. `pill`: the realm's breakthrough pill carried in the bag (spent on the throw, either way). `body`: 伤势 is 体力 since 2026-09-24 — at least `share` of the pool is `whole`, under it `hurt`. `seclusion`: out of a 闭关 of at least its min_hours within `hours`. `her`: 银月 at the player's side, plus `per_gift` for each gift the cauldrons gave her. `element`: the realm's 五行; a root of it is `match`, a root that feeds it (相生) is `feeds`. A failure wounds (`fail.wound`, a share of the 体力 pool), takes `fail.progress` of the peak step's 修为 and shuts the cauldron for `fail.cooldown_hours` real hours; the realm, the save and every other thing held are never lost. Under `low` a success is marked 逆天.",
+  "breakthrough": {
+    "base": {
+      "foundation": 60,
+      "core": 55,
+      "nascent": 50,
+      "deity": 45,
+      "void": 40,
+      "body": 40,
+      "maha": 35,
+      "tribulation": 30
+    },
+    "floor": 30,
+    "cap": 95,
+    "low": 50,
+    "pill": {
+      "bonus": 20,
+      "items": {
+        "foundation": "foundation-pill",
+        "core": "firm-pill",
+        "*": "pojing-pill"
+      }
+    },
+    "body": {
+      "share": 0.5,
+      "whole": 5,
+      "hurt": -10
+    },
+    "seclusion": {
+      "hours": 24,
+      "bonus": 10
+    },
+    "her": {
+      "joined": 5,
+      "per_gift": 3
+    },
+    "element": {
+      "match": 10,
+      "feeds": 5,
+      "of": {
+        "foundation": "earth",
+        "core": "metal",
+        "nascent": "wood",
+        "deity": "fire",
+        "void": "water",
+        "body": "earth",
+        "maha": "metal",
+        "tribulation": "wood"
+      }
+    },
+    "fail": {
+      "wound": 0.3,
+      "progress": 0.3,
+      "cooldown_hours": 6
+    }
+  }
 }

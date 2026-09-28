@@ -106,6 +106,8 @@ const GROW = {
 function emergeOn(content, s, ctx) {
   const sec = s.seclusion, r = RULE(content), h = hoursOf(content, sec, ctx.now);
   delete s.seclusion;
+  // Kept for the breakthrough's chance: a 闭关 just done steadies it (breakthrough.mjs).
+  s.last_seclusion = { at: ctx.now.toISOString(), hours: round1(h.real) };
   const grown = h.grows ? GROW[sec.focus](content, s, sec, h.counted, ctx) : {};
   // Rested: a long enough sitting is a full pool, whatever the focus.
   const rested = h.real >= r.rest_hours;

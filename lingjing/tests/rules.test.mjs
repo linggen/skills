@@ -9,10 +9,19 @@ import { spawnSync } from 'node:child_process';
 import { act, battle, begin, effectOf, foeTurn, offers, tokenOf } from '../scripts/battle.js';
 import { lint, loadContent } from '../scripts/content.mjs';
 import { dayKey, langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, fightSetup, hpMaxOf, greet, deck, deckFor, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win } from '../scripts/rules.mjs';
+import { oddsOf, rollOf, VERBS, fightSetup, hpMaxOf, greet, deck, deckFor, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win } from '../scripts/rules.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
 
 const content = loadContent();
+/* 渡劫 is a throw (rules/breakthrough.mjs): a walkthrough takes the first try
+   whose die lands under the chance — the spine is walked, not diced. */
+function lucky(state, to, at) {
+  for (let k = 0; ; k += 1) {
+    const t = { ...state, breakthrough: { tries: { [to]: k } } };
+    if (rollOf(t, to) < oddsOf(content, t, at.now, to).chance) return t;
+  }
+}
+const btOf = b => ({ from: b.from, to: b.to, tier: b.tier, success: b.success });
 // The shipped chapters carry no `opens` while the game is being built and
 // tested (his rule, 2026-09-16: "don't lock it"); the tests keep the serial
 // gate exercised with the dates the launch will set.
@@ -1416,9 +1425,9 @@ test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron
   assert.ok(held.say.startsWith('鼎气扑到你身上'));
   assert.equal(held.peak_step, 9);
   // at the peak: the Foundation is laid, then paid into the new tier
-  s = { ...s, step: 8, progress: 130 };
+  s = lucky({ ...s, step: 8, progress: 130 }, 'foundation', octx());
   r = answer(resolve, s, { exit: 'take' });
-  assert.deepEqual(r.result.breakthrough, { from: '练气九层', to: '筑基初期', tier: 'foundation' });
+  assert.deepEqual(btOf(r.result.breakthrough), { from: '练气九层', to: '筑基初期', tier: 'foundation', success: true });
   assert.equal(r.state.tier, 'foundation'); assert.equal(r.state.step, 0);
   assert.equal(r.state.progress, 60);
   assert.deepEqual(r.result.show, [{ card: 'tribulation', strikes: 3 }]);
@@ -1924,9 +1933,9 @@ test('chapter 2 opens in November: the road from Ye, the Pu, Puyang\'s market, t
   assert.ok(held.say.startsWith('鼎气扑到你身上'));
   assert.equal(held.peak_step, 3);
   // at the peak: the Core forms, then paid into the new tier
-  s = { ...s, step: 2, progress: 600 };
+  s = lucky({ ...s, step: 2, progress: 600 }, 'core', nctx());
   r = answerN(resolve, s, { exit: 'take' });
-  assert.deepEqual(r.result.breakthrough, { from: '筑基后期', to: '结丹初期', tier: 'core' });
+  assert.deepEqual(btOf(r.result.breakthrough), { from: '筑基后期', to: '结丹初期', tier: 'core', success: true });
   assert.equal(r.state.tier, 'core'); assert.equal(r.state.step, 0);
   assert.equal(r.state.progress, 60);
   assert.equal(r.state.scene, '02-end');
@@ -1979,7 +1988,7 @@ test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market,
   s = r.state;
   const town = look(s, content, dctx());
   assert.equal(town.scene.id, '03-town');
-  assert.deepEqual(town.place.shelf.map(i => i.id), ['wangqi-2', 'qi-salt', 'qi-silk', 'jingjin', 'hanyu', 'pouch-high']);
+  assert.deepEqual(town.place.shelf.map(i => i.id), ['pojing-pill', 'wangqi-2', 'qi-salt', 'qi-silk', 'jingjin', 'hanyu', 'pouch-high']);
   s = answerD(trade, s, { action: 'buy', id: 'qi-salt' }).state;
   assert.equal(s.wealth, 380);
   s = answerD(resolve, s, { exit: 'shore' }).state;
@@ -2005,9 +2014,9 @@ test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market,
   assert.ok(held.say.startsWith('鼎气涌上来'));
   assert.equal(held.peak_step, 3);
   // at the peak: the Nascent Soul forms, then paid into the new tier — which pays double
-  s = { ...s, step: 2, progress: 1200 };
+  s = lucky({ ...s, step: 2, progress: 1200 }, 'nascent', dctx());
   r = answerD(resolve, s, { exit: 'take' });
-  assert.deepEqual(r.result.breakthrough, { from: '结丹后期', to: '元婴初期', tier: 'nascent' });
+  assert.deepEqual(btOf(r.result.breakthrough), { from: '结丹后期', to: '元婴初期', tier: 'nascent', success: true });
   assert.equal(r.state.tier, 'nascent'); assert.equal(r.state.step, 0);
   assert.equal(r.state.progress, 120);
   assert.equal(r.state.scene, '03-end');
@@ -2056,12 +2065,13 @@ test('a cauldron the player cannot take yet offers the way back, and says what i
   const waits = look(away.state, content, c).waypoint;
   assert.deepEqual(waits.gate, { step: '结丹后期', progress: 1200, to: '元婴', now: { step: '结丹初期', progress: 222, of: 800 } });
   assert.equal(waits.toward, undefined);
-  // at the peak, the breath is the button again
+  // at the peak, the breath is the odds card's throw — never the chat's (Hanli, 2026-09-28)
   const peak = { ...s, step: 2, progress: 1200 };
   const ready = look(peak, content, c);
   assert.equal(ready.scene.exits.find(e => e.id === 'take').breakthrough.ready, true);
-  assert.ok(ready.ask.options.some(o => o.exit === 'take'));
-  assert.ok(!ready.ask.options.some(o => o.move));
+  assert.ok(ready.stage.some(x => x.card === 'breakthrough' && x.id === 'take'), JSON.stringify(ready.stage));
+  assert.ok(!(ready.ask?.options ?? []).some(o => o.exit === 'take'));
+  assert.ok(!(ready.ask?.options ?? []).some(o => o.move));
 });
 
 test('银月 is found, not given: the call at 结丹, the bell, water, her riddle — and until then she is not in the game', () => {

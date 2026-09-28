@@ -154,7 +154,7 @@ const entered = r => Boolean(r?.ok && r.scene && r.summarize);
 const won = r => {
   const p = r?.paid;
   if (!r?.ok || r.sold || r.bought) return false;
-  return Boolean(r.breakthrough || r.learned?.length || p?.cast || p?.item || p?.levels?.length || (p?.progress ?? 0) > 0 || (p?.wealth ?? 0) > 0);
+  return Boolean((r.breakthrough && r.breakthrough.success !== false) || r.learned?.length || p?.cast || p?.item || p?.levels?.length || (p?.progress ?? 0) > 0 || (p?.wealth ?? 0) > 0);
 };
 /* A sitting opens (story.mjs owesRecap): the recap is told first, from the
    facts the rules hand over — no summary is kept (his, 2026-09-25). Put
@@ -170,6 +170,8 @@ const THEN_VEIL = 'Something waits on this road (`place.meet`, still veiled): th
 const THEN_TRIAL = 'A 抉择 waits on this road (`place.meet` kind trial, veiled): you write it now — guide `trial`: set the moment in two or three lines, then Meet {action: offer} with the ways (it reveals), and stop.';
 /* The naming card is up (stage.mjs `value`): the player names themselves there. */
 export const THEN_VALUE = ' The stage\'s card asks the player for their name (offered names to tap, or their own). A scene just entered is told first (Show its `scene.show` cards, its `scene.setup` in one to three sentences, its `scene.lines`); then end on one line inviting the name — never AskUser for it, never name one for them, never Resolve it; the page tells you `[scene] named` when it is done.';
+/* 渡劫's card is up (stage.mjs `breakthrough`): the player throws there, seeing the odds. */
+export const THEN_THROW = ' The stage\'s card shows the breakthrough\'s chance and what feeds it; the player throws there. Tell the cauldron; end on one line — never AskUser for it, never promise how it will go, never Resolve it; the page tells you `[scene] breakthrough won|failed`.';
 const THEN_QUIET = 'No question this time — the stage holds what is before him, or he has already been asked here. End on your words: name a way on in the line if it is worth naming, and do NOT call AskUser.';
 export const thenFor = (result, ask = undefined) => (result?.place?.meet?.veiled ? (result.place.meet.kind === 'trial' ? THEN_TRIAL : THEN_VEIL) : (result?.quest?.say ? THEN_CALL : '')
   + (ask === null ? THEN_QUIET : entered(result) ? (won(result) ? CHEER : '') + THEN_SCENE : won(result) ? THEN_CHEER : THEN));

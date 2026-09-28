@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { newState, normalizeAnswer } from '../scripts/state.mjs';
-import { look, resolve, riddleOf } from '../scripts/rules.mjs';
+import { look, oddsOf, resolve, riddleOf, rollOf } from '../scripts/rules.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-09-24T12:00:00');
@@ -18,6 +18,15 @@ function must(state, args) {
   const out = resolve(state, content, c, args);
   assert.equal(out.result.ok, true, `${state.scene} ${args.exit}: ${JSON.stringify(out.result)}`);
   return out;
+}
+
+/* 渡劫 is a throw (rules/breakthrough.mjs): the walk takes the first try
+   whose die lands under the chance, so the spine is walked, not diced. */
+function lucky(state, to) {
+  for (let k = 0; ; k += 1) {
+    const t = { ...state, breakthrough: { tries: { [to]: k } } };
+    if (rollOf(t, to) < oddsOf(content, t, NOW, to).chance) return t;
+  }
 }
 
 /* The answer a riddle exit takes today, and a choice it refuses. */
@@ -59,7 +68,7 @@ for (const id of later) {
           const miss = resolve(s, content, c, { exit: exit.id, answer: wrong });
           assert.equal(miss.result.refused, 'wrong-answer', `${scene.id}: ${wrong} is not the answer`);
           s = must(s, { exit: exit.id, answer: right }).state;
-        } else s = must(s, { exit: exit.id }).state;
+        } else s = must(exit.breakthrough ? lucky(s, tiers.find(t => t.gate === ch.gate).id) : s, { exit: exit.id }).state;
       }
       assert.deepEqual(walked.map(w => w.split('@')[0]).sort(), Object.keys(ch.scenes).sort(), 'every scene is on the spine');
       assert.ok(s.ended.includes(id), `${id} ended`);

@@ -59,6 +59,10 @@ export const CARD_KINDS = {
   // own (ask.mjs keeps it off the chat), and holding would only raise the 或往 roads row under it —
   // a way to walk off in the middle of taking a name.
   value: { holds: false },
+  // 渡劫's odds (rules/breakthrough.mjs): the throw is taken on this card, never
+  // the chat's. It holds, so the roads stand under it — a way off to prepare
+  // (a pill, a 闭关) before the throw.
+  breakthrough: { holds: true },
   road: { holds: true }, //        路上 — what this arrival met: mist until told, then 收下 a find or the
   //                               day's 机缘, or the ways of a 抉择, until it is answered
   item: { holds: true }, //        a shelf to buy from
@@ -136,6 +140,10 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // offered names to tap or the player's own, never a chat option and never
   // Ling's to fill (his, 2026-09-28). Driven by the exit, not by the scene.
   for (const e of look.scene?.exits ?? []) if (e.value) head.push({ card: 'value', id: e.id });
+  // A cauldron ready to take — or shut a while after a failed throw — shows
+  // its odds and what feeds them, and the throw is its button (Hanli,
+  // 2026-09-28: 渡劫 is a 红检). Driven by the exit's `breakthrough.odds`.
+  for (const e of look.scene?.exits ?? []) if (e.breakthrough?.odds) head.push({ card: 'breakthrough', id: e.id });
 
   // 路上 (rules/road.mjs): what this arrival met is ONE card until it is
   // answered — mist while veiled, then a find or the day's 机缘 to 收下, or a
@@ -154,7 +162,7 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   const kept = focus.map(c => boardOf(look, c)).filter(c => !inHead(c) && !(c.card === 'board' && boardDoneToday(look, c.id)));
   const shown = look.offers?.length ? kept.filter(c => c.card !== 'creature') : kept;
   // The day's coins fill an empty stage; a 遇 standing here is not empty.
-  const naming = head.some(c => c.card === 'value');
+  const naming = head.some(c => c.card === 'value' || c.card === 'breakthrough');
   const cards = shown.length ? [...shown] : line || naming || look.offers?.length || look.place?.meet ? [] : [{ card: 'hexagram' }];
   const has = (kind, id) => cards.some(c => c.card === kind && (id === undefined || c.id === id));
 
@@ -203,6 +211,7 @@ export function stageOwns(look, cards) {
     if (c.card === 'duel') owns.add(`exit:${c.id}`);
     if (c.card === 'creature' && winnable(look?.place?.encounter) && look.place.encounter.creature.id === c.id) owns.add(`tame:${c.id}`);
     if (c.card === 'board') owns.add(`exit:${c.id}`);
+    if (c.card === 'breakthrough') owns.add(`exit:${c.id}`); // the throw is the card's
     // The map draws every place as a chip that walks there, so the roads are
     // already clickable and the question does not repeat them.
     if (c.card === 'map') for (const p of look?.place?.places ?? []) if (!p.here) owns.add(`move:${p.id}`);

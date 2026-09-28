@@ -4,7 +4,7 @@ import { CAST, gameOf } from '../content.mjs';
 import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
 import { dayKey, fill, periodKey, pick, rollDay, settleStamina, speedOf, stepName, threshold } from '../state.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
-import { askOf, THEN_VALUE, thenFor } from './ask.mjs';
+import { askOf, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
 import { fightSetup } from './cards.mjs';
 import { callDue, companionOf, hasCompanion, herCard, questBrief, recalledOf } from './companion.mjs';
 import { clone, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mjs';
@@ -149,7 +149,7 @@ function drawnOffers(state, exit) {
 function exitBrief(content, state, exit, button, ctxNow = new Date(), scene = sceneOf(content, state)) {
   const brief = { id: exit.id, means: exit.means, button };
   if (exit.needs) brief.needs = exit.needs;
-  if (exit.breakthrough) brief.breakthrough = breakthroughOf(content, state);
+  if (exit.breakthrough) brief.breakthrough = breakthroughOf(content, state, ctxNow);
   if (exit.key) {
     const key = riddleOf(state, scene, exit, ctxNow);
     const riddle = content.riddles[state.lang].riddles[key], tried = triedToday(state, scene, exit, key, ctxNow);
@@ -309,7 +309,9 @@ function onStage(content, state, ctx, result = {}, brief = null) {
   const cards = stageCards(view, { focus: shownHere(content, state, view), fight: Boolean(state.fight) });
   const ask = askMinusStage(askOf(content, state, ctx, result), stageOwns(view, cards));
   const naming = cards.some(c => c.card === 'value') ? THEN_VALUE : '';
-  return { then: thenFor(result, ask) + naming, ask, stage: cards };
+  // Only a cauldron ready to throw; shut after a failure, the card only waits.
+  const throwing = cards.some(c => c.card === 'breakthrough' && view.scene?.exits?.find(e => e.id === c.id)?.breakthrough?.ready) ? THEN_THROW : '';
+  return { then: thenFor(result, ask) + naming + throwing, ask, stage: cards };
 }
 
 /* What Ling last showed, while she is still in the place she showed it — else

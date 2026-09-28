@@ -175,6 +175,7 @@ const view = {
   fateOpen: false, fateDraft: '', fateError: false, // the 命格 form: shown again, the date typed, a date refused
   refineMat: null, refineName: '', refineNote: null, // 炼化本命 on the card: the material picked, the name typed, a refusal
   valuePick: null, valueText: '', valueNote: null, // 取一个道号 on the card: an offered name tapped, the player's own typed, a refusal
+  throwNote: null, // 渡劫's card: how a failed throw fell, or a refusal
   /// Why the last 出手 did not open, for the card that offered it — the rules'
   /// own words (no 体力, the beast already spent, the page's cards out of date).
   /// Everything else about a fight is in the save.
@@ -236,7 +237,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null });
+const ctx = () => ({ look, handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -612,7 +613,10 @@ function feat(kind, name, from = '', quiet = false, gains = '', her = null) {
   const w = words();
   const el = document.createElement('div');
   el.className = 'feat';
-  el.innerHTML = `<i class="rays"></i><div class="featbox"><b>${esc(kind === 'rise' ? w.featRise : w.featChapter)}</b><span>${esc(name)}</span>${gains ? `<small class="featgain">${esc(gains)}</small>` : ''}</div>`;
+  // A throw that landed against the odds (under the rule's `low`) is marked on the seal.
+  const against = kind === 'rise' && thrown?.low ? `<em class="featlow">${esc(w.bt.low)}</em>` : '';
+  if (kind === 'rise') thrown = null;
+  el.innerHTML = `<i class="rays"></i><div class="featbox${against ? ' low' : ''}">${against}<b>${esc(kind === 'rise' ? w.featRise : w.featChapter)}</b><span>${esc(name)}</span>${gains ? `<small class="featgain">${esc(gains)}</small>` : ''}</div>`;
   el.style.animationDelay = `${Math.max(0, riseAfter - performance.now())}ms`;
   $('view')?.appendChild(el);
   setTimeout(() => el.remove(), 4200 + Math.max(0, riseAfter - performance.now()));
@@ -1300,6 +1304,23 @@ async function valueTap(exitId) {
   if (r.ok) await report(`[scene] named ${r.named?.value ?? chosen}`);
 }
 
+/* 渡劫 — the card's own throw (cards.js breakthrough): the rules throw it,
+   the card says how a failure fell, the rise seal marks a win against the
+   odds, and Ling hears `[scene] breakthrough won|failed` to tell the 雷劫 —
+   she never decides it (Hanli, 2026-09-28). */
+let thrown = null; // a landed throw, for the rise seal's mark
+async function throwTap(exitId) {
+  const r = await write('resolve', { exit: exitId }).catch(failed);
+  const b = r.ok ? r.breakthrough : null;
+  thrown = b?.success ? b : null;
+  const fell = b && !b.success ? fill(words().bt.failed, { st: b.lost.stamina, xw: b.lost.progress, at: clock(b.again_at) }) : null;
+  keep({ throwNote: r.ok ? fell : refusal(r) });
+  await refresh();
+  if (!b) return;
+  if (!b.success) tellYinyue('tribulation', `渡劫没有过：雷把玩家打了回来（${b.chance}% 的把握）。境界还在，${clock(b.again_at)} 之后可以再试`, `The breakthrough failed: the lightning threw the player back (a ${b.chance}% chance). The realm is kept; they can try again after ${clock(b.again_at)}`, { mood: 'sad' });
+  await report(`[scene] breakthrough ${b.success ? 'won' : 'failed'} ${b.chance}%`);
+}
+
 /* 组牌 — a tap puts a card in the ten or takes it out; the popover redraws
    from the rules' own answer, and a refusal is said inside it. */
 async function deckTap(args) {
@@ -1600,6 +1621,7 @@ const CLICKS = [
   ['[data-tame]', (el) => { if (!el.matches(':disabled')) run(`tame:${el.dataset.tame}`, () => tameTap(el.dataset.tame)); }],
   ['[data-refine-mat]', (el) => show({ refineMat: el.dataset.refineMat, refineNote: null })],
   ['[data-value-pick]', (el) => show({ valuePick: el.dataset.valuePick, valueText: '', valueNote: null })],
+  ['[data-throw]', (el) => { if (!el.matches(':disabled')) run(`throw:${el.dataset.throw}`, () => throwTap(el.dataset.throw)); }],
   ['[data-value-go]', (el) => { if (!el.matches(':disabled')) run(`value:${el.dataset.valueGo}`, () => valueTap(el.dataset.valueGo)); }],
   ['[data-refine]', (el) => { if (el.dataset.refine) run('refine', () => refineTap(el.dataset.refine)); }],
   ['[data-divine]', () => run('divine', () => castByPage())],

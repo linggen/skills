@@ -234,6 +234,30 @@
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-15, from the description."
     },
     {
+      "id": "pojing-pill",
+      "kind": "pill",
+      "name": {
+        "zh": "破境丹",
+        "en": "Breach pill"
+      },
+      "art": "art/items/pojing-pill.webp",
+      "about": {
+        "zh": "结丹以后破境时带在身上，雷落下来多一分把握。破境时化去。",
+        "en": "Carried into a breakthrough from the Core on, it steadies you under the lightning. It is spent in the attempt."
+      },
+      "buy": 400,
+      "sell": 100,
+      "sold": [
+        "青",
+        "扬",
+        "荆",
+        "梁",
+        "雍",
+        "豫"
+      ],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-28, seed 2809, 640×480: a cracked vermilion pill on a celadon dish, lightning inside it, thunder clouds."
+    },
+    {
       "id": "mend-pill",
       "kind": "pill",
       "name": {

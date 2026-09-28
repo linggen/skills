@@ -24,7 +24,7 @@ import { migrate } from './state.mjs';
 import { askOf, tapThen, THEN_RECAP, withAsk } from './rules/ask.mjs';
 import { guard, onLook, unconfirmed } from './rules/confirm.mjs';
 import { markSeen, notePage, READS_PAGE, unseen } from './rules/did.mjs';
-import { pageNames } from './rules/core.mjs';
+import { pageNames, pageThrows } from './rules/core.mjs';
 import { clock, dataDir, freshState, parseArgs, readQuests, savedFile, savedFor, userTurn, withLock, writeAtomic } from './rules/files.mjs';
 import { look, stageAt } from './rules/look.mjs';
 import { closeStaleFight, fightHold } from './rules/tasks.mjs';
@@ -41,7 +41,8 @@ export { refine, TREASURE_TOP } from './rules/arms.mjs';
 export { askOf, tapThen, thenFor } from './rules/ask.mjs';
 export { deck, deckFor, fightSetup, hpMaxOf, ownedCards } from './rules/cards.mjs';
 export { hasCompanion } from './rules/companion.mjs';
-export { judge, pageNames, resolve, riddleOf } from './rules/core.mjs';
+export { judge, pageNames, pageThrows, resolve, riddleOf } from './rules/core.mjs';
+export { oddsOf, rollOf } from './rules/breakthrough.mjs';
 export { greet } from './rules/daily.mjs';
 export { advance, BOOK_MAX } from './rules/errands.mjs';
 export { meet } from './rules/road.mjs';
@@ -133,7 +134,8 @@ function runLocked(verb, args, stateFile, reader) {
     return asked.result;
   }
   // A value exit (the 道号) is the page card's to name, never Ling's (core.mjs pageNames).
-  const theirs = reader === 'ling' && verb === 'resolve' ? pageNames(content, state, args) : null;
+  // A breakthrough is thrown on the page's card, where its odds stand (core.mjs pageThrows).
+  const theirs = reader === 'ling' && verb === 'resolve' ? pageNames(content, state, args) ?? pageThrows(content, state, { ...args, now }) : null;
   if (theirs) return theirs;
   const heard = heed(state, args.said);
   const out = fn(heard, content, { now, quests: readQuests(), turn: userTurn(), said: args.said }, args);
@@ -291,6 +293,9 @@ export function forLing(value) {
     // text drifted from the game and was read back as truth; `summarize` is
     // the rules' own mark of a scene entered (ask.mjs), no longer a request.
     if ((k === 'story' && typeof v === 'string') || k === 'summarize') continue;
+    // The guides handed over are text for her, as they are — the `story` guide
+    // was dropped by the line above until 2026-09-28 (a string named story).
+    if (k === 'guide' && v && typeof v === 'object') { out.guide = v; continue; }
     if (k === 'story_node') continue; // the page's moment; Ling has the node on the move's own result
     // Her beat is hers: Ling learns only that she speaks here and what happened —
     // never her line or her memory, which she says herself (Hanli, 2026-09-24).
