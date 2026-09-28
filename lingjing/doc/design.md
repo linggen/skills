@@ -1750,46 +1750,54 @@ Listing every menu entry flooded the book. The rules read the menus thus:
   On Linggen Cloud the game already travels like Health — the shared trial,
   then the plan's monthly pool (linggensite `llm.ts`).
 
-## 丹药等级 — 两把尺子：阶与品 (his, 2026-09-28; designed, not built)
+## 丹药等级 — 阶随境界，品分六等，仙丹在顶 (his, 2026-09-28; designed, not built)
 
-A pill is measured twice: its **阶** says which realm it serves; its **品** says how well it was made.
-Today items.json names pills without a grade (聚气丹, 筑基丹, 固基丹, 破境丹, 回春丹…); the grade is a
-field each made pill carries, not a new item per grade.
+A pill is measured twice: its **阶** is bound to a realm — every realm has pills of its own level —
+and its **品** says how well it was made. Above the nine mortal 阶 stands **仙丹**, made only in 仙界.
+Today items.json names pills without a grade (聚气丹, 筑基丹, 固基丹, 破境丹, 回春丹…); 阶 and 品 are
+fields each made pill carries, not a new item per grade.
 
-**阶 — which realm it serves (九阶, one per realm)**
+**阶 — bound to the realm (九阶 + 仙阶)**
 
-| 阶 | 境界 | 例 |
-|---|---|---|
-| 一阶 | 练气 | 聚气丹 · 回春丹 · 洗髓丹 |
-| 二阶 | 筑基 | 筑基丹 · 固基丹 |
-| 三阶 | 结丹 | 凝丹 · 破境丹（结丹） |
-| 四阶 … 九阶 | 元婴 … 渡劫 | 每境一种破境丹，余随剧情 |
+| 阶 | 境界 | 丹 | 药力（同品，一阶比一阶 ×10） |
+|---|---|---|---|
+| 一阶 | 练气 | 聚气丹 · 回春丹 · 洗髓丹 | ×1 |
+| 二阶 | 筑基 | 筑基丹 · 固基丹 | ×10 |
+| 三阶 | 结丹 | 凝丹 · 破境丹（结丹） | ×100 |
+| 四阶 … 九阶 | 元婴 … 渡劫 | 每境一种破境丹，余随剧情 | ×1,000 … ×100,000,000 |
+| **仙阶** | 仙界 | **仙丹** | 凡间的丹，没有一颗能比 |
 
-A pill above the eater's realm is refused (「药力太猛，受不住」); below it pays less (each 阶 under, half).
+- A mortal pill above the eater's realm is refused (「药力太猛，受不住」); below it pays a tenth per 阶 under.
+- **仙丹不分境界**：仙气自己找路，练气的凡人吃了也受得住——这就是它逆天的地方。
 
-**品 — how well it was made (六等)**
+**品 — how well it was made (六等，一等比一等 ×10)**
 
-| 品 | 丹纹 | 丹身 | 丹毒 | 药力（下品＝×1） | 凡人丹炉出率 | 价（下品＝1） | 在世上 |
-|---|---|---|---|---|---|---|---|
-| **下品** | 一道 | 浊，满身斑 | 重 | ×1 | 20%（另有 70% 炸炉） | 1 | 药铺柜台上 |
-| **中品** | 三道 | 半浊 | 有 | ×3 | 7% | 3 | 锁在柜子里 |
-| **上品** | 五道 | 清 | 微 | ×10 | 2.5% | 10 | 宗门库房，论功领 |
-| **极品** | 七道 | 亮 | 一丝 | ×30 | 0.5% | 40 | 一个丹师一辈子一颗，就能开宗立派 |
-| **完美** | 九道，齐 | 透 | 无痕，余一丝杂气 | ×100 | 传说 | 不上市 | 只听说过 |
-| **无暇** | 九道，圆融 | 透亮如露 | 无，反能化去体内旧毒 | **×1000**——一颗顶十颗完美、一千颗下品 | 世上不该有 | 无价 | 银月的丹炉 |
+| 品 | 丹纹 | 丹身 | 丹毒 | 药力（下品＝×1） | 凡人丹炉出率 | 在世上 |
+|---|---|---|---|---|---|---|
+| **下品** | 一道 | 浊，满身斑 | 重 | ×1 | 20%（另有 70% 炸炉） | 药铺柜台上 |
+| **中品** | 三道 | 半浊 | 有 | ×10 | 7% | 锁在柜子里 |
+| **上品** | 五道 | 清 | 微 | ×100 | 2.5% | 宗门库房，论功领 |
+| **极品** | 七道 | 亮 | 一丝 | ×1,000 | 0.5% | 一个丹师一辈子一颗，就能开宗立派 |
+| **完美** | 九道，齐 | 透 | 余一丝杂气 | ×10,000 | 传说 | 只听说过 |
+| **无暇** | 九道，金 | 透亮如露 | 无，反能化去旧毒 | ×100,000 | 凡间不该有 | 无价 |
 
-- **丹毒**：下品、中品吃多了积毒（体力上限一时降低，闭关可排）；上品起几乎不积；完美不积；无暇反能化去体内的旧毒。
+- **丹毒**：下品、中品吃多了积毒（体力上限一时降低，闭关可排）；上品起几乎不积；无暇反能化毒。
 - **炸炉**：凡人丹炉十炉炸七；炸了灵草全失。
-- **丹纹**是玩家一眼能看的标记：卡上、储物袋里，品就是纹数（一、三、五、七、九道；无暇的九道是金的）。
+- **丹纹**是玩家一眼能看的标记：一、三、五、七、九道；无暇的九道是金的；仙丹没有纹——它自己发光。
+- **Numbers in the game**: the ×10 ladders are the *story's* scale (why it feels 逆天); the rules
+  cap real effects to the game's own economy (a pill's 修为/体力 gain is set per item and multiplied
+  by a tamed curve, not the raw ×10ⁿ), so the balance gate keeps holding.
 
-**银月的丹炉**（故事 v3，第一章）：同样一炉灵草，别人出下品的，它出**无暇**——从最末一等跳到最顶一等；
-不炸炉；尝过一次的丹，记住丹方（只要灵草对，就能照原样炼）。它的限制在灵草：稀缺的是料，不是丹。
-游戏里：丹炉之前，玩家炼丹走凡人出率；得到丹炉之后，他的每一炉都是无暇——所以灵草的供给
-（药园、秘境、差事、坊市）才是节流阀。
+**仙丹**：仙界炼的丹。凡间的丹师，没有一个见过。它不分阶、不分品——仙丹就是仙丹。
 
-**游戏上要做的**：made pills carry `grade` (1–6) and `tier` (阶 1–9); `effect` × the 药力 column (×1 · ×3 · ×10 · ×30 · ×100 · ×1000 — each rung about three times the last, and 无暇 ten times 完美);
-sell price × the 价 column; 丹毒 as a small debt on 体力's cap that 闭关 clears; the pill card shows
-丹纹 as strokes; the furnace (an item) sets grade 6 and never bursts.
+**银月的丹炉**（故事 v3，第一章）：仙界带下来的炉子——**同样一炉灵草，凡人炉子出下品的，它直接出仙丹**；
+不炸炉；尝过一次的丹，记住丹方（只要灵草对，就能照原样炼成仙丹）。它的限制在灵草：稀缺的是料，不是丹。
+游戏里：丹炉之前，玩家炼丹走凡人出率；得到丹炉之后，他的每一炉都是仙丹——所以灵草的供给
+（药园、秘境、差事、坊市）才是节流阀；仙丹不能卖（没人认得，拿出去就是祸）。
+
+**游戏上要做的**：made pills carry `tier` (阶 1–9, or `xian`) and `grade` (品 1–6; a 仙丹 has none);
+effects follow a tamed curve per tier/grade; the pill card shows 丹纹 as strokes (a 仙丹 glows instead);
+the furnace (an item) makes 仙丹 and never bursts; 仙丹 can't be sold.
 
 ## 体力 — the game's own stamina
 
