@@ -259,11 +259,22 @@ export const MAIN = [
 /* A card's queue key — what 还有 N 件 › puts off to the end of the line. */
 export const slotKey = c => `${c.card}:${c.id ?? ''}`;
 
+/* A game the scene card waits on — a fight that is one of its exits (the
+   大比's rounds), or the board an exit needs (the 秘境's 洛书): it stands under
+   the scene card, in the same thing, never behind 还有 1 件 › with the scene
+   card left without a choice (live, 2026-09-29: 马小宝's round showed its
+   caption and no way to fight). */
+export function sceneGame(look, c) {
+  if (!look?.scene?.panel || (c.card !== 'duel' && c.card !== 'board')) return false;
+  return (look.scene.exits ?? []).some(e => (c.card === 'duel' ? e.game?.kind === 'duel' && e.game.id === c.id : e.needs?.task === c.id));
+}
+
 /* The things one rank puts in MAIN, in its kinds' order: one each, or the
-   whole rank as one. */
-function thingsOf(rank, r, cards) {
-  const mine = cards.filter(c => rank.kinds.includes(c.card))
-    .map((c, i) => ({ c, i })).sort((a, b) => rank.kinds.indexOf(a.c.card) - rank.kinds.indexOf(b.c.card) || a.i - b.i).map(x => x.c);
+   whole rank as one. The scene's own games go with the scene's rank. */
+function thingsOf(rank, r, cards, look) {
+  const at = c => (rank.kinds.includes(c.card) ? rank.kinds.indexOf(c.card) : rank.kinds.length);
+  const mine = cards.filter(c => (rank.together ? rank.kinds.includes(c.card) || sceneGame(look, c) : rank.kinds.includes(c.card) && !sceneGame(look, c)))
+    .map((c, i) => ({ c, i })).sort((a, b) => at(a.c) - at(b.c) || a.i - b.i).map(x => x.c);
   if (!mine.length) return [];
   const group = rank.together ? [mine] : mine.map(c => [c]);
   return group.map((g, i) => ({ cards: g, key: slotKey(g[0]), rank: r, i, filler: Boolean(rank.filler) }));
@@ -273,7 +284,7 @@ function thingsOf(rank, r, cards) {
    还有 N 件 ›, oldest first: they go to the end of the line in that order. */
 export function stageSlots(look, cards = [], { skip = [] } = {}) {
   const header = HEADER.flatMap(k => cards.filter(c => c.card === k));
-  const things = MAIN.flatMap((rank, r) => thingsOf(rank, r, cards));
+  const things = MAIN.flatMap((rank, r) => thingsOf(rank, r, cards, look));
   const real = things.filter(t => !t.filler);
   const order = t => { const put = skip.indexOf(t.key); return put < 0 ? t.rank * 1000 + t.i : 1e6 + put; };
   const [now = null, ...queue] = (real.length ? real : things).sort((a, b) => order(a) - order(b));

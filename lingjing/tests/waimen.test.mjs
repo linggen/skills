@@ -9,6 +9,8 @@ import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { duel, look, move, quest, resolve, story, tame, task, trade, win } from '../scripts/rules.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
+import { WORDS, cardHtml, duelTitle } from '../scripts/cards.js';
+import { stageSlots } from '../scripts/stage.mjs';
 import { TO_OPEN, walk } from './prologue.mjs';
 
 const content = loadContent();
@@ -260,4 +262,27 @@ test('the scratch fixture for live checks stands at the chapter\'s first scene (
   assert.deepEqual([s.chapter, s.scene, s.place, s.gender], ['00-waimen', 'wm-ahe', 'waimen', 'female']);
   assert.ok(s.ended.includes('00-prologue'));
   assert.equal(look(s, content, ctx()).scene.id, 'wm-ahe');
+});
+
+test('the 大比 is a 比试, not a 降妖: its three foes are people, and the fight card says so; a beast stays 降妖 (live, 2026-09-29)', () => {
+  const s = { ...opened(), scene: 'wm-lun2', place: 'zhengdian' };
+  const l = look(s, content, ctx());
+  const exit = l.scene.exits.find(e => e.id === 'bark');
+  assert.equal(exit.duel.creature.person, true);
+  const html = cardHtml({ card: 'duel', id: 'dabi-ma' }, { look: l, lang: 'zh', words: WORDS.zh, content: {}, artBase: '' });
+  assert.match(html, /比试/);
+  assert.doesNotMatch(html, /降妖/);
+  assert.equal(duelTitle({ id: 'zheng' }, WORDS.zh), '降妖');
+  assert.equal(duelTitle({ id: 'foe-shijie', person: true }, WORDS.en), 'Bout');
+});
+
+test('a scene waiting on a game stands with it: the round fight and the wall 洛书 sit under the scene card, never behind 还有 1 件 (live, 2026-09-29)', () => {
+  const kinds = slots => slots.main.map(c => `${c.card}:${c.id ?? ''}`);
+  for (const [scene, place, game] of [['wm-lun2', 'zhengdian', 'duel:dabi-ma'], ['wm-lun1', 'zhengdian', 'duel:dabi-sun'], ['wm-juesai', 'zhengdian', 'duel:dabi-final'], ['wm-wangzuo', 'shimen', 'board:mijing-wall']]) {
+    const s = { ...opened(), scene, place, tasks: {} };
+    const l = look(s, content, ctx());
+    const main = kinds(stageSlots(l, l.stage));
+    assert.ok(main.includes('panel:'), scene);
+    assert.ok(main.includes(game), `${scene}: ${main.join(' ')} · ${JSON.stringify(l.stage)}`);
+  }
 });
