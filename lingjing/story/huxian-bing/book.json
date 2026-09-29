@@ -9,14 +9,14 @@
   "en": "The poorest hunter's family under Mount Meng has the mouthiest child. For one deer hide he crosses the stone that says Do Not Enter, and carries home a queen of heaven's foxes — eight tails cut away, starving, unable to recall her own name. She eats his last flatbread and owes him a wish. From then on, his luckless life takes off."
  },
  "world": "jiuding",
- "_form": "《鹿鼎记》's form (Hanli 2026-09-29: 「按回卷改」): a 卷 is one province and its 鼎; a 回 is one whole story, numbered through the whole book, with a 回目 of two matching seven-character lines (DESIGN.md § 回目). read-md.js bookEntries flattens it for the reader.",
+ "_form": "《鹿鼎记》's form (Hanli 2026-09-29: 「按回卷改」): a 卷 is ten 回 (his, 2026-09-29: 「按照1卷10回」「当前的都放到第一卷」); a 回 is one whole story, numbered through the whole book, with a 回目 of two matching seven-character lines (DESIGN.md § 回目). read-md.js bookEntries flattens it for the reader.",
  "volumes": [
   {
    "id": "juan1",
    "n": 1,
    "name": {
-    "zh": "卷一 · 徐州",
-    "en": "Volume One · Xu"
+    "zh": "卷一",
+    "en": "Volume One"
    },
    "hui": [
     {
@@ -66,17 +66,7 @@
      },
      "file": "03-第三回.md",
      "opens": "01-ji"
-    }
-   ]
-  },
-  {
-   "id": "juan2",
-   "n": 2,
-   "name": {
-    "zh": "卷二 · 冀州",
-    "en": "Volume Two · Ji"
-   },
-   "hui": [
+    },
     {
      "id": "h04",
      "n": 4,
@@ -93,6 +83,7 @@
      "file": "04-第四回.md",
      "opens": "01-ji"
     }
+
    ]
   }
  ],

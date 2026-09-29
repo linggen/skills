@@ -15,11 +15,12 @@ const book = JSON.parse(fs.readFileSync(path.join(BOOK, 'book.json'), 'utf8'));
 const hui = bookEntries(book).filter((c) => c.huimu);
 
 test('卷 hold 回; the 回 run 第一回, 第二回 … through the whole book, never restarting', () => {
-  assert.deepEqual(book.volumes.map((v) => v.name.zh), ['卷一 · 徐州', '卷二 · 冀州']);
+  assert.deepEqual(book.volumes.map((v) => v.name.zh), ['卷一']);
+  book.volumes.forEach((v) => assert.ok(v.hui.length <= 10, `${v.name.zh}: a 卷 is ten 回`));
   assert.deepEqual(hui.map((h) => h.n), hui.map((_, i) => i + 1));
   assert.deepEqual(hui.map((h) => h.label.zh), ['第一回', '第二回', '第三回', '第四回']);
   assert.equal(new Set(bookEntries(book).map((c) => c.id)).size, bookEntries(book).length, 'ids unique');
-  book.volumes.forEach((v, i) => assert.equal(v.name.zh.startsWith(`卷${cnNumber(i + 1)} · `), true, v.name.zh));
+  book.volumes.forEach((v, i) => assert.equal(v.name.zh.startsWith(`卷${cnNumber(i + 1)}`), true, v.name.zh));
   assert.equal(bookEntries(book).at(-1).id, 'tuna', 'the appendix comes last');
   assert.deepEqual([1, 10, 12, 20, 21, 100].map(cnNumber), ['一', '十', '十二', '二十', '二十一', '一百']);
   assert.equal(huiLabel(14), '第十四回');

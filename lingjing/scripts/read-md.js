@@ -15,7 +15,7 @@ import { fill, genderOf } from './state.mjs';
 import { codexHtml, isSubject } from './codex.js';
 
 /* ── The book's form (《鹿鼎记》's, Hanli 2026-09-29: 「按回卷改」): book.json's
-   `volumes` (卷 = one province, one 鼎) hold its `hui` (回, numbered through
+   `volumes` (卷 = ten 回) hold its `hui` (回, numbered through
    the whole book, each with a 回目 of two seven-character lines); the reader
    walks them flat, 卷 by 卷. ── */
 
