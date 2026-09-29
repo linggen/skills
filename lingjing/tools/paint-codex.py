@@ -59,7 +59,7 @@ PEOPLE = {
 # Only things with a 图鉴 entry (codex.json tags them 法宝 · 丹药 · 功法 · 信物); an
 # everyday thing — 鹿皮, 萝卜, 饼, 碗, a bow — has none (his, 2026-09-29).
 ITEMS = {
-  'fox-token': 'A small worn wooden token, rounded, polished bright by hands, carved in low relief with a tiny curled-up sleeping fox whose NINE tails (exactly nine, all visible) wrap around its body, hanging on a frayed cord. No writing on it.',
+  'fox-token': 'A small worn flat WOODEN token (wood grain visible), rounded, polished bright by hands, carved in low relief with a tiny curled-up sleeping fox whose tails wrap around its body: exactly NINE tails, no more and no fewer — nine broad, separate tails fanned out so each one can be counted. A hole at the top with a frayed cord. No writing on it.',
   'xisui-pill': 'A single round Chinese elixir pill, glossy black, resting in a small plain clay dish.',
   'tuna-jing': 'An old bundle of Chinese bamboo slips (a jian scroll) half unrolled, the slips tied side by side with two cords that are nearly rotted through and frayed, the slips blank and worn smooth — no writing on them.',
   'danlu': 'A tiny Chinese bronze alchemy furnace, palm-sized, round-bellied, with exactly THREE legs, TWO upright ears (handles) on its rim, a lid with a small crouching beast on top, and flames and clouds carved in low relief around its belly; old bronze with a grey wash, no colour.',

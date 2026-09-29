@@ -173,8 +173,6 @@
     "book": "01",
     "scene": "00-sleep"
    },
-   "image": null,
-   "_image": "columns of fake characters and a seal",
    "tag": "功法"
   },
   "danlu": {
@@ -192,13 +190,9 @@
    "tag": "法宝"
   },
   "mend-pill": {
-   "image": null,
-   "_image": "a modern two-colour capsule",
    "tag": "丹药"
   },
   "moon-bell": {
-   "image": null,
-   "_image": "a Western bell with a ribbon bow",
    "tag": "信物"
   },
   "wangqi-2": {
@@ -313,8 +307,7 @@
     "zh": "洗髓丹",
     "en": "Marrow-Cleansing Pill"
    },
-   "image": null,
-   "_image": "to be painted (tools/paint-codex.py; the Codex credits ran out 2026-09-29)",
+   "image": "art/items/xisui-pill.webp",
    "lines": {
     "zh": [
      "银月给的一颗黑丸子，化在水里泡一夜，洗筋伐髓。",
