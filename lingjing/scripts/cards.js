@@ -7,6 +7,7 @@ import { worldPath } from './rules.js';
 import { WORDS as BATTLE_WORDS, challengeHtml } from './battle-card.js';
 import { layoutRoads } from './roadmap.js';
 import { frameOf, inside, within } from './atlas.js';
+import { inkLayerHtml, provinceLineHtml, pvState } from './inkmap.js';
 import { boardDoneToday, onRoad, winnable } from './stage.mjs';
 import { fitValue } from './state.mjs';
 
@@ -281,15 +282,20 @@ function atlasMap(ctx) {
   const shown = other ? other.places : points;
   const frame = whole ? { x: 0, y: 0, w: 1, h: 1 } : frameOf(shown.map((p) => p.map), atlas.aspect);
   const pos = (at) => { const { left, top } = within(frame, at); return `left:${left.toFixed(2)}%;top:${top.toFixed(2)}%`; };
-  const img = `<img src="${esc(worldPath(dir, atlas.file))}" alt="" style="width:${(100 / frame.w).toFixed(2)}%;left:${(-frame.x / frame.w * 100).toFixed(2)}%;top:${(-frame.y / frame.h * 100).toFixed(2)}%">`;
+  const names = Object.fromEntries(Object.keys(atlas.provinces).map((id) => [id, ctx.content?.dictionary?.provinces?.[id]?.[ctx.lang] ?? id]));
+  // 鼎归 · 地图晕开: the 九州 in ink as the rules read the save (inkmap.js), the plain picture until it is loaded.
+  const inked = ctx.ink && ctx.inkGeo ? inkLayerHtml(ctx.inkGeo, ctx.ink, frame, { names, labels: atlas.provinces, lang: ctx.lang }) : '';
+  const img = inked || `<img src="${esc(worldPath(dir, atlas.file))}" alt="" style="width:${(100 / frame.w).toFixed(2)}%;left:${(-frame.x / frame.w * 100).toFixed(2)}%;top:${(-frame.y / frame.h * 100).toFixed(2)}%">`;
   const provinceName = (id) => (ctx.lang === 'en' ? ctx.content.dictionary.provinces[id]?.en ?? id : id);
   const hasPlaces = (id) => id === own || ctx.atlas?.[id]?.places?.some((p) => !p.closed);
   // A province the chapter's map keeps shut stands in mist (his, 2026-09-29: 地图分步打开).
-  const misted = (id) => id !== own && (ctx.atlas?.[id]?.places?.length ?? 0) > 0 && !hasPlaces(id);
+  const misted = (id) => (ctx.ink ? id !== own && ctx.ink.provinces?.[id]?.state === 'mist' : id !== own && (ctx.atlas?.[id]?.places?.length ?? 0) > 0 && !hasPlaces(id));
   const provinces = Object.entries(atlas.provinces)
     .filter(([, at]) => inside(frame, at))
     .map(([id, at]) => {
-      const cls = `pv${id === own ? ' here' : ''}${misted(id) ? ' mist' : ''}`;
+      const cls = `pv${id === own ? ' here' : ''}${misted(id) ? ' mist' : ''}${pvState(ctx.ink, id)}`;
+      // With the ink map, a tap on a province says its line (and its 鼎's, once home).
+      if (whole && ctx.ink) return `<button class="${cls}" data-map-pv="${esc(id)}" style="${pos(at)}">${esc(provinceName(id))}</button>`;
       // On the whole map a province with places opens up close.
       return whole && hasPlaces(id)
         ? `<button class="${cls}" data-mapview="${id === own ? 'province' : esc(id)}" style="${pos(at)}">${esc(provinceName(id))}</button>`
@@ -312,9 +318,11 @@ function atlasMap(ctx) {
   const toOwn = points.length ? `<button class="act" data-mapview="province">${esc(place.province.name)}</button>` : '';
   const views = whole ? toOwn : other ? toWhole + toOwn : toWhole;
   // A key beat running: the map waits, and says why (world.mjs beatOf).
+  const lookAt = (id) => (hasPlaces(id) ? `<button class="act quiet" data-mapview="${id === own ? 'province' : esc(id)}">${esc(names[id])} ›</button>` : '');
+  const pvLine = whole && ctx.mapPv && ctx.ink ? provinceLineHtml(ctx.ink, ctx.mapPv, { lang: ctx.lang, name: names[ctx.mapPv], more: lookAt(ctx.mapPv) }) : '';
   const locked = ctx.look.lock ? `<div class="small dim maplock">${esc(say(ctx.words.mapLocked, { title: ctx.look.lock.title }))}</div>` : '';
   return `<div class="card"><div class="cardtitle">${esc(title)}</div>${locked}
-    <div class="atlas${whole ? ' whole' : ''}" style="aspect-ratio:${(frame.w * atlas.aspect).toFixed(4)} / ${frame.h.toFixed(4)}">${img}${provinces.join('')}${dots.join('')}</div>
+    <div class="atlas${whole ? ' whole' : ''}" style="aspect-ratio:${(frame.w * atlas.aspect).toFixed(4)} / ${frame.h.toFixed(4)}">${img}${provinces.join('')}${dots.join('')}</div>${pvLine}
     <div class="acts">${views}<button class="act ask" ${askAttr(ctx.words.sayMap)}>${esc(ctx.words.about)}</button></div></div>`;
 }
 

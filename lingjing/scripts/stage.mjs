@@ -54,6 +54,8 @@ export const CARD_KINDS = {
   fight: { holds: true }, //       the fight IS the stage
   // 银月's memory, blooming from ink into colour (memory.js): the page's own, while it plays — the chat is quiet.
   memory: { holds: true },
+  // 鼎归 · 地图晕开 (inkmap.js): a 鼎 come home spreading its province in ink — the page's own, after her memory.
+  homing: { holds: true },
   seclusion: { holds: true }, //   闭关 running: 出关 is the one way on (rules/seclusion.mjs)
   seclude: { holds: false }, //    闭关's choices, offered on an empty pool or a tap on 体力 — never an ask
   offer: { holds: true }, //       接下 — the errands held out where he stands, one card
@@ -218,7 +220,7 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
    people, the goal line, the name and 生辰 cards (the scene's exits), a world
    being painted, an empty pool. Never Ling's to Show — the `show` verb drops
    them (rules/verbs.mjs) and the stage drops them from what she showed. */
-export const PAGE_OWNS = new Set(['panel', 'people', 'goal', 'value', 'born', 'building', 'empty', 'memory']);
+export const PAGE_OWNS = new Set(['panel', 'people', 'goal', 'value', 'born', 'building', 'empty', 'memory', 'homing']);
 export const showable = c => Boolean(c) && !PAGE_OWNS.has(c.card);
 
 /* 此地 · 此刻 · 行 — the stage in FIXED SECTIONS (Hanli, 2026-09-29: the same
@@ -238,6 +240,7 @@ export const showable = c => Boolean(c) && !PAGE_OWNS.has(c.card);
 export const HEADER = ['people', 'goal'];
 export const MAIN = [
   { kinds: ['memory'] }, //                                              银月's memory, while it plays
+  { kinds: ['homing'] }, //                                              then the 鼎's province in ink (鼎归)
   { kinds: ['fight', 'seclusion', 'seclude'] }, //                      the fight, 闭关
   { kinds: ['panel', 'value', 'born', 'breakthrough'], together: true }, // the scene waiting on a choice
   { kinds: ['board', 'duel', 'lundao'] }, //                             a game to play here

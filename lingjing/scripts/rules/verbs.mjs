@@ -21,6 +21,7 @@ import { story } from './story.mjs';
 import { tale, taleInfo } from './tale.mjs';
 import { go, lang, move, summarize, trade } from './travel.mjs';
 import { placeName, placeOf } from './world.mjs';
+import { fly, inkMapOf, jiudingBrief, unrolled } from './inkmap.mjs';
 import { amend, art, atlas, build, enter, forget, leave, load, make, ring, save, saves, tame, travel, wake, worlds } from './worlds.mjs';
 
 /* Every verb kept to the story gates (rules/locks.mjs): a shut system's verb is refused `not-yet`. */
@@ -32,7 +33,9 @@ export const VERBS = gated({
     // An art taught on waking (a companion from before the arts) is said once.
     const learned = woke ? (woke.arts ?? []).filter(id => !(s.arts ?? []).includes(id)).map(id => artBrief(c, woke, artOf(c, id))) : [];
     const aside = setRiddleAside(c, woke ?? s, x) ?? woke;
-    const result = { ...look(aside ?? s, c, x), ...(learned.length ? { learned } : {}) };
+    // 九鼎 home (rules/inkmap.mjs): the page plays 鼎归 · 地图晕开 when the list grows.
+    const jiuding = jiudingBrief(c, aside ?? s);
+    const result = { ...look(aside ?? s, c, x), ...(learned.length ? { learned } : {}), ...(jiuding ? { jiuding } : {}) };
     // Said once: the call is marked told the moment it is handed over.
     let next = aside;
     if (result.quest?.say) {
@@ -42,9 +45,15 @@ export const VERBS = gated({
     return { state: next, result };
   },
   resolve, judge, task, win, duel, tame, refine, tale, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, story, seclude, bag,
+  go, saves, save, load, forget, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, story, seclude, bag,
   gear: (s, c) => ({ state: null, result: { ok: true, gear: gearBrief(c, s) } }),
   appear, remember,
+  // The page's map: each province's places, and the 九州 in ink as the save stands (rules/inkmap.mjs).
+  atlas: (s, c, x, args) => {
+    const out = atlas(s, c, x, args), ink = inkMapOf(c, s, x.now);
+    return ink ? { ...out, result: { ...out.result, ink: { ...ink, shapes: c.world.atlas.shapes ?? {} } } } : out;
+  },
+  fly, unrolled,
 });
 
 /* A beast's first sight (creatures.json `appear`) played on the page's stage

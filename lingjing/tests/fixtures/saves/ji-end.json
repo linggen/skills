@@ -1,0 +1,73 @@
+{
+ "_about": "Scratch fixture (seed --from=ji-end): 第二章 冀 at its last scene, the 鼎 taken and memory 1 back; Resolve rest ends the chapter and brings the 冀鼎 home — 鼎归 · 地图晕开 plays.",
+ "state": {
+  "version": 5,
+  "world": "jiuding",
+  "lang": "zh",
+  "name": "清玄",
+  "gender": "male",
+  "traits": [
+   "wood",
+   "water",
+   "fire",
+   "earth"
+  ],
+  "tier": "foundation",
+  "step": 0,
+  "progress": 0,
+  "wealth": 300,
+  "bag": {},
+  "cast": [],
+  "wear": {},
+  "duels": {},
+  "arts": [],
+  "chapter": "01-ji",
+  "scene": "01-end",
+  "done_scenes": [
+   "01-altar",
+   "01-arrive",
+   "01-cauldron",
+   "01-deep",
+   "01-ye"
+  ],
+  "ended": [
+   "00-prologue",
+   "00-waimen"
+  ],
+  "place": "zhangyuan",
+  "tasks": {},
+  "chores": {},
+  "quests": {},
+  "wins": {},
+  "story": "",
+  "seeds_used": [],
+  "made": {
+   "scenes": {},
+   "at": null
+  },
+  "day": {
+   "key": "2026-09-29",
+   "progress": 0,
+   "wealth": 0
+  },
+  "stamina": 100,
+  "stamina_at": "2026-09-29T12:00:00.000Z",
+  "created": "2026-09-29T12:00:00.000Z",
+  "updated": "2026-09-29T12:00:00.000Z",
+  "companion": {
+   "joined": "2026-09-20",
+   "awake": true
+  },
+  "memories": [
+   1
+  ],
+  "memory_last": {
+   "n": 1,
+   "at": "2026-09-29T11:00:00Z"
+  },
+  "been": [
+   "徐",
+   "冀"
+  ]
+ }
+}

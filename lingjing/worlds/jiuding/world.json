@@ -63,6 +63,18 @@
     0.4349,
     0.2129
    ]
+  },
+  "_shapes": "Each province's outline in the map file: the id of its fill group (the first path under it). The page draws the 九州 in ink from these (scripts/inkmap.js): mist, wash, ink as the 鼎 come home.",
+  "shapes": {
+   "冀": "Ji_Fill_1_",
+   "兖": "Yan_Fill",
+   "青": "Qing_Fill_1_",
+   "徐": "Xu_Fill_1_",
+   "扬": "Yang_Fill_1_",
+   "荆": "Jing_Fill",
+   "豫": "Yu_Fill_1_",
+   "梁": "Liang_Fill_2_",
+   "雍": "Yong_Fill_2_"
   }
  },
  "companion": {

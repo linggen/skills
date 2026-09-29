@@ -1,0 +1,93 @@
+/* inkmap.css — 鼎归 · 地图晕开 (哇时刻 ①): the 九州 in ink on 宣纸 (inkmap.js).
+   mist: blank paper, a faint dashed outline · wash: a light ink wash ·
+   ink: deep ink, rivers, a red seal and a moon on the water. */
+:root {
+  --ink-paper: #f5efe1;
+  --ink-deep: #231f1a;
+  --ink-wash: rgba(35, 31, 26, 0.13);
+  --ink-seal: #b3322a;
+  --ink-moon: #fbf6e6;
+}
+
+/* The map card: the ink layer stands where the plain picture stood. */
+.atlas .inklayer { position: absolute; pointer-events: none; }
+.atlas .inklayer svg { display: block; width: 100%; height: auto; }
+.inkmap .paper { fill: var(--ink-paper); }
+.inkmap .waters path { fill: rgba(70, 86, 96, 0.09); stroke: rgba(35, 31, 26, 0.18); stroke-width: 1; }
+.inkmap .pvfill { stroke: none; fill: transparent; transition: fill 0.8s; }
+.inkmap .pvfill.s-wash { fill: var(--ink-wash); }
+.inkmap .spill { fill: var(--ink-deep); opacity: 0.62; }
+.inkmap .rivers path { fill: none; stroke: var(--ink-paper); stroke-width: 3.2; stroke-linecap: round; opacity: 0.9; }
+.inkmap .pvedge { fill: none; stroke: var(--ink-deep); stroke-linejoin: round; }
+.inkmap .pvedge.s-mist { stroke-opacity: 0.16; stroke-width: 1.4; stroke-dasharray: 7 7; }
+.inkmap .pvedge.s-wash { stroke-opacity: 0.4; stroke-width: 1.6; }
+.inkmap .pvedge.s-ink { stroke-opacity: 0.85; stroke-width: 2.4; }
+.inkmap .seal rect { fill: var(--ink-seal); opacity: 0.92; }
+.inkmap .seal text { fill: #fff6ec; font-family: var(--serif, serif); font-weight: 700; }
+.inkmap .moondisc { fill: var(--ink-moon); stroke: rgba(35, 31, 26, 0.35); stroke-width: 1.2; }
+.inkmap .moonripple { fill: none; stroke: var(--ink-moon); stroke-width: 1.4; opacity: 0.8; }
+.inkmap .drop { fill: var(--ink-deep); opacity: 0; }
+
+/* Province names in brush: pale over a wash, dark over ink, all but gone in mist. */
+.atlas .pv.s-wash { color: rgba(40, 34, 24, 0.42); }
+.atlas .pv.s-ink { color: rgba(24, 20, 16, 0.92); text-shadow: 0 0 6px var(--ink-paper); }
+.atlas.whole .pv.s-ink { color: var(--ink-paper); text-shadow: 0 0 3px var(--ink-deep); }
+.atlas .pv.s-mist { color: rgba(40, 34, 24, 0.12); filter: blur(0.6px); }
+.pvline { display: grid; gap: 2px; margin-top: 8px; padding: 8px 10px; border-left: 3px solid var(--ink-seal); background: rgba(245, 239, 225, 0.7); font-size: 13px; }
+.pvline b { font-family: var(--serif, serif); letter-spacing: 0.1em; }
+.pvline:not(.ink) { border-left-color: rgba(40, 34, 24, 0.25); color: rgba(40, 34, 24, 0.6); }
+.pvline .acts { margin-top: 4px; }
+
+/* ── The moment: 鼎归 ── */
+.card.homing { position: relative; padding: 0; overflow: hidden; background: var(--ink-paper); cursor: pointer; }
+.homingmap svg { display: block; width: 100%; height: auto; }
+.homingcount { position: absolute; top: 8px; right: 10px; padding: 2px 8px; font-family: var(--serif, serif); font-size: 13px; letter-spacing: 0.12em; color: var(--ink-deep); background: rgba(245, 239, 225, 0.85); border: 1px solid rgba(35, 31, 26, 0.25); border-radius: 3px; }
+.homingrise { position: absolute; left: 0; right: 0; bottom: 30px; text-align: center; font-family: var(--serif, serif); font-size: 20px; letter-spacing: 0.3em; color: var(--ink-deep); text-shadow: 0 0 8px var(--ink-paper), 0 0 16px var(--ink-paper); opacity: 0; }
+.hominghint { position: absolute; right: 10px; bottom: 6px; font-size: 11px; color: rgba(35, 31, 26, 0.45); }
+
+.inkmap.moment .cam.zoom { transform-box: view-box; transform-origin: 0 0; transform: var(--cam); }
+.inkmap.moment .spread { transform-box: fill-box; transform-origin: center; }
+.inkmap.moment .rivers.draw path { stroke-dasharray: 1 1; }
+.inkmap.moment .seal.thud { transform-box: fill-box; }
+.inkmap.moment .seal.thud .sealbody { transform-box: fill-box; transform-origin: center; }
+
+.card.homing:not(.still) .inkmap .cam.zoom { animation: ink-zoom 1.4s cubic-bezier(.3, .1, .2, 1) both; animation-delay: calc(0ms - var(--age)); }
+.card.homing:not(.still) .inkmap .drop { animation: ink-drop 0.55s ease-in both; animation-delay: calc(900ms - var(--age)); }
+.card.homing:not(.still) .inkmap .spread { animation: ink-spread 2.2s cubic-bezier(.2, .6, .3, 1) both; animation-delay: calc(1300ms - var(--age)); }
+.card.homing:not(.still) .inkmap .rivers.draw path { animation: ink-river 1.6s ease-out both; animation-delay: calc(3300ms - var(--age)); }
+.card.homing:not(.still) .inkmap .seal.thud .sealbody { animation: ink-thud 0.5s cubic-bezier(.5, 0, .7, 1.4) both; animation-delay: calc(4800ms - var(--age)); }
+.card.homing:not(.still) .inkmap .waters.ripple path { animation: ink-ripple 1.6s ease-out both; animation-delay: calc(5500ms - var(--age)); }
+.card.homing:not(.still) .inkmap .moon.rise { animation: ink-moon 1.2s ease-out both; animation-delay: calc(5900ms - var(--age)); }
+.card.homing:not(.still) .homingrise { animation: ink-words 1.4s ease-out both; animation-delay: calc(5500ms - var(--age)); }
+.card.homing:not(.still) { animation: ink-shake 0.3s linear both; animation-delay: calc(4950ms - var(--age)); }
+.card.homing.still .homingrise { opacity: 1; }
+
+@keyframes ink-zoom { from { transform: none; } to { transform: var(--cam); } }
+@keyframes ink-drop { 0% { opacity: 0; transform: translateY(-120px); } 70% { opacity: 1; } 100% { opacity: 0.9; transform: none; } }
+@keyframes ink-spread { from { transform: scale(0.001); } to { transform: scale(1); } }
+@keyframes ink-river { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes ink-thud { 0% { opacity: 0; transform: scale(2.4); } 60% { opacity: 1; transform: scale(0.92); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes ink-ripple { 0% { stroke-width: 1; stroke: rgba(35, 31, 26, 0.18); } 40% { stroke-width: 7; stroke: rgba(70, 86, 96, 0.45); } 100% { stroke-width: 1; stroke: rgba(35, 31, 26, 0.18); } }
+@keyframes ink-moon { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes ink-words { from { opacity: 0; letter-spacing: 0.6em; } to { opacity: 1; letter-spacing: 0.3em; } }
+@keyframes ink-shake { 0%, 100% { transform: none; } 25% { transform: translate(2px, 1px); } 50% { transform: translate(-2px, -1px); } 75% { transform: translate(1px, -1px); } }
+
+/* ── 卷轴: a picture unrolled left to right ── */
+.unroll { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; background: rgba(35, 31, 26, 0.35); cursor: pointer; }
+.unroll .scroll { position: relative; width: min(92%, 760px); padding: 0 14px; }
+.unroll .sheet { background: var(--ink-paper); box-shadow: 0 6px 30px rgba(0, 0, 0, 0.3); clip-path: inset(0 0 0 0); }
+.unroll .sheet svg { display: block; width: 100%; height: auto; }
+.unroll .rod { position: absolute; top: -10px; bottom: -10px; width: 14px; border-radius: 7px; background: linear-gradient(90deg, #3b2a1a, #7a5a36 45%, #3b2a1a); }
+.unroll .rod.l { left: 0; }
+.unroll .rod.r { right: 0; }
+.unroll .unrolltitle { margin-top: 12px; font-family: var(--serif, serif); font-size: 20px; letter-spacing: 0.4em; color: var(--ink-paper); text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); }
+.unroll:not(.still) .sheet { animation: unroll-open 3.2s cubic-bezier(.45, .05, .3, 1) both; }
+.unroll:not(.still) .rod.r { animation: unroll-rod 3.2s cubic-bezier(.45, .05, .3, 1) both; }
+.unroll:not(.still) .unrolltitle { animation: ink-words 1.2s ease-out 3s both; }
+@keyframes unroll-open { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes unroll-rod { from { right: calc(100% - 28px); } to { right: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .card.homing *, .card.homing, .unroll * { animation: none !important; }
+  .card.homing .homingrise { opacity: 1; }
+}

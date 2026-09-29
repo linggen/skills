@@ -1,0 +1,84 @@
+{
+ "_about": "Scratch fixture (seed --from=ji-home): the 冀鼎 home (第二章 ended), standing at 泗水 in 徐 — 冀 in ink, 徐 washed, the rest in mist; 御剑 to 漳渊 costs 1 体力.",
+ "state": {
+  "version": 5,
+  "world": "jiuding",
+  "lang": "zh",
+  "name": "清玄",
+  "gender": "male",
+  "traits": [
+   "wood",
+   "water",
+   "fire",
+   "earth"
+  ],
+  "tier": "foundation",
+  "step": 0,
+  "progress": 0,
+  "wealth": 300,
+  "bag": {},
+  "cast": [],
+  "wear": {},
+  "duels": {},
+  "arts": [],
+  "chapter": "02-yan",
+  "scene": "02-arrive",
+  "done_scenes": [
+   "01-altar",
+   "01-arrive",
+   "01-cauldron",
+   "01-deep",
+   "01-ye",
+   "01-end"
+  ],
+  "ended": [
+   "00-prologue",
+   "00-waimen",
+   "01-ji"
+  ],
+  "place": "sishui",
+  "tasks": {},
+  "chores": {},
+  "quests": {},
+  "wins": {},
+  "story": "",
+  "seeds_used": [],
+  "made": {
+   "scenes": {},
+   "at": null
+  },
+  "day": {
+   "key": "2026-09-29",
+   "progress": 0,
+   "wealth": 0
+  },
+  "stamina": 97,
+  "stamina_at": "2026-09-29T12:00:00.000Z",
+  "created": "2026-09-29T12:00:00.000Z",
+  "updated": "2026-09-29T12:00:00.000Z",
+  "companion": {
+   "joined": "2026-09-20",
+   "awake": true
+  },
+  "memories": [
+   1
+  ],
+  "memory_last": {
+   "n": 1,
+   "at": "2026-09-29T11:00:00Z"
+  },
+  "been": [
+   "徐",
+   "冀"
+  ],
+  "chance": {
+   "day": "2026-09-29",
+   "place": "zhangnan",
+   "until": "2026-09-29T15:00:00.000Z"
+  },
+  "page_n": 1,
+  "page_did": [],
+  "story_at": "2026-09-29T12:00:00.000Z",
+  "page_seen": {}
+ }
+}

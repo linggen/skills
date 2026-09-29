@@ -80,6 +80,8 @@ const byAction = (table) => (r, a, x) => table[a.action ?? 'take']?.(r, a, x) ??
 const rememberedDid = (r, what) => (r.memory ? `${what ?? 'moved on'} — 银月的记忆 ${r.memory.n} plays on the stage (tail ${r.memory.tail}): say only 「${r.memory.say}」` : what);
 
 const PAGE_DID = {
+  // 御剑 to a 鼎 come home (rules/inkmap.mjs), from the map card.
+  fly: (r) => (r.here ? null : `flew by sword (御剑) to ${r.flew?.to?.name}, where the ${r.flew?.province} cauldron came home`),
   move: (r) => (r.here ? null : `moved to ${r.place?.name}${r.via?.length ? ` via ${r.via.map(p => p.name).join(', ')}` : ''}${r.stopped ? ', stopped where a scene took over' : ''}`),
   tame: (r) => `tamed ${r.tamed?.name} with ${r.fed?.name}`,
   refine: (r) => `refined 本命法宝 「${r.treasure?.name}」 from ${r.refined?.from} with ${r.refined?.with}`,

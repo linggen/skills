@@ -37,6 +37,7 @@ import { owesRecap, withHerBeat } from './rules/story.mjs';
 import { recapFacts } from './rules/recap.mjs';
 import { guideVerb, withGuides } from './rules/guide.mjs';
 import { atScene } from './rules/world.mjs';
+import { markBeen } from './rules/inkmap.mjs';
 import { tellOf } from './rules/tell.mjs';
 import { BUILDING_WAITS, keepDay, keepSave, paintList, readSave } from './rules/worlds.mjs';
 
@@ -160,6 +161,8 @@ function runLocked(verb, args, stateFile, reader) {
   // Something of the story happened: 传闻's quiet clock starts again (tale.mjs storyDue).
   if (next && out.result?.ok && STORY_VERBS.has(verb)) next.story_at = now.toISOString();
   if (next) {
+    // The province stood in, kept for the map (rules/inkmap.mjs: mist → wash).
+    markBeen(content, next);
     next.updated = now.toISOString();
     writeAtomic(stateFile, JSON.stringify(next));
     fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args: logged(args), before: unconfirmed(raw ?? state) }) + '\n');
@@ -357,6 +360,7 @@ export function forLing(value) {
     // was dropped by the line above until 2026-09-28 (a string named story).
     if (k === 'guide' && v && typeof v === 'object') { out.guide = v; continue; }
     if (k === 'story_node') continue; // the page's moment; Ling has the node on the move's own result
+    if (k === 'jiuding') continue; // the map's moment is the page's (rules/inkmap.mjs)
     // 恩仇簿: the page draws it all; Ling holds only the people present and the open 诺 (Look's `here`).
     if (k === 'ledger' && Array.isArray(v) && v.some(r => r && 'here' in r)) {
       const here = v.filter(r => r.here).map(({ here: _, who, day, by, ...r }) => r);

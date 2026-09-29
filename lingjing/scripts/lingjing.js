@@ -9,7 +9,7 @@ import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from 
 // And a namespace: a name the served /shared/api.js doesn't export yet
 // (`engineUiUrl`) must not fail the whole page.
 import * as sharedApi from '/shared/api.js';
-import { verb, content, SCRATCH } from './rules.js';
+import { verb, content, SCRATCH, worldPath } from './rules.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
 import { boardDoneToday, petStageUrl, stageCards, stageSlots } from './stage.mjs';
@@ -25,6 +25,8 @@ import { createVoice, nodeMoment } from './voice.js';
 import { raiseUnease } from './unease.js';
 import { LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
 import { colourOn, freshMemory, memoryCardHtml, replayOf } from './memory.js';
+import { HOMING_MS, freshHome, homingCardHtml, inkMapSvg, shapesOf, unrollHtml } from './inkmap.js';
+import { frameOf } from './atlas.js';
 import { atmosClasses, atmosOf, particlesHtml } from './atmos.js';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
@@ -229,6 +231,8 @@ const view = {
   walkedOut: null, //    a fight he left that the rules would not settle: it waits on its card, not pulled back in
   luOpen: false, //      the 录 chip's book (九鼎录), over the stage
   lu: null, //           the rules' `story` read behind it, fetched when it opens
+  mapPv: null, //        the whole map's province tapped: its line (inkmap.js provinceLineHtml)
+  homing: null, //       鼎归 · 地图晕开 on the stage (inkmap.js): { province, frame, at, still }
   memory: null, //       银月's memory on the stage (memory.js): { n, i, play, at } — main holds it while it plays
   // 闭关 (rules/seclusion.mjs): the chooser open, what it may choose (`seclude
   // info`), the pick and pill, a refusal; `emerged` — 出关's result, counted up
@@ -261,18 +265,35 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, panelBusy: view.panelBusy, panelNote: view.panelNote, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, valueGender: view.valueGender, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null });
+const ctx = () => ({ look, handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, panelBusy: view.panelBusy, panelNote: view.panelNote, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, valueGender: view.valueGender, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
 async function loadAtlas() {
-  const key = `${look?.world?.id}:${lang()}:${look?.tier?.id}`;
+  // The ink map changes with the chapter's map, the 鼎 home and the province stood in.
+  const key = `${look?.world?.id}:${lang()}:${look?.tier?.id}:${look?.chapter?.id}:${look?.jiuding?.homed?.join('') ?? ''}:${look?.place?.province?.id ?? ''}`;
   if (atlasPlaces?.key === key) return;
   try {
     const r = await verb('atlas');
-    if (r.ok) atlasPlaces = { key, provinces: r.provinces };
+    if (r.ok) atlasPlaces = { key, provinces: r.provinces, ink: r.ink ?? null };
+    if (r.ink && look?.world?.atlas) await loadInkGeo(look.world, r.ink.shapes);
   } catch (e) {
     console.warn('[lingjing] atlas', e);
+  }
+}
+
+/// The ink map's shapes (inkmap.js shapesOf), read from the world's own map
+/// file once per world: every province's outline, its rivers and its water.
+let inkGeo = null, inkGeoFor = null;
+async function loadInkGeo(world, shapes) {
+  if (inkGeoFor === world.id || !shapes) return;
+  inkGeoFor = world.id;
+  try {
+    const res = await fetch(worldPath(world.dir, world.atlas.file));
+    inkGeo = shapesOf(await res.text(), shapes);
+  } catch (e) {
+    inkGeoFor = null;
+    console.warn('[lingjing] ink map', e);
   }
 }
 
@@ -427,6 +448,8 @@ async function readOnce() {
   watchVeil();
   watchNode();
   watchMemory();
+  if (look.world?.atlas) await loadAtlas();
+  watchHoming();
   festivalMoment();
   render();
 }
@@ -783,6 +806,8 @@ function stageNow() {
   if (view.secludeOpen && view.seclude && !look.seclusion) cards = [{ card: 'seclude' }, ...cards];
   // 银月's memory takes the main slot while it plays (memory.js; stage.mjs MAIN).
   if (view.memory) cards = [{ card: 'memory', id: view.memory.n }, ...cards];
+  // 鼎归 · 地图晕开 after her memory (stage.mjs MAIN ranks it second).
+  if (view.homing) cards = [{ card: 'homing', id: view.homing.province }, ...cards];
   watchAppear(cards);
   return stageSlots(look, cards.filter(inQueue), { skip: view.qSkip });
 }
@@ -933,7 +958,9 @@ function spoilsCtx() {
   };
 }
 
-const drawCard = (c) => (c.card === 'memory' ? memoryHtml() : cardHtml(c, ctx()));
+const drawCard = (c) => (c.card === 'memory' ? memoryHtml() : c.card === 'homing' ? homingHtml() : cardHtml(c, ctx()));
+const inkNames = () => Object.fromEntries(Object.keys(look?.world?.atlas?.provinces ?? {}).map((id) => [id, authored?.dictionary?.provinces?.[id]?.[lang()] ?? id]));
+const homingHtml = () => (view.homing && atlasPlaces?.ink ? homingCardHtml(inkGeo, atlasPlaces.ink, { province: view.homing.province, frame: view.homing.frame, age: performance.now() - view.homing.at, still: view.homing.still || stillMotion(), lang: lang(), names: inkNames(), labels: look?.world?.atlas?.provinces }) : '');
 /// 银月's memory: ink blooming into colour, carried on from its age on a redraw.
 const memoryHtml = () => (view.memory ? memoryCardHtml(view.memory.play, { i: view.memory.i, age: performance.now() - view.memory.at, still: stillMotion(), artBase: artBase(), lang: lang() }) : '');
 
@@ -1774,6 +1801,12 @@ const CLICKS = [
   // 银月的记忆: the next panel (it blooms again), put away, or replayed from the album in 录.
   ['[data-mem-next]', (el) => show({ memory: view.memory && { ...view.memory, i: Number(el.dataset.memNext), at: performance.now() } })],
   ['[data-mem-close]', () => show({ memory: null })],
+  // 鼎归: a tap skips to the last frame; once still, a tap puts it away.
+  ['[data-homing]', () => { const h = view.homing; if (h) show({ homing: h.still || performance.now() - h.at >= HOMING_MS.end ? null : { ...h, still: true } }); }],
+  ['[data-map-pv]', (el) => show({ mapPv: view.mapPv === el.dataset.mapPv ? null : el.dataset.mapPv })],
+  ['[data-fly]', (el) => run(`fly:${el.dataset.fly}`, () => flyTo(el.dataset.fly))],
+  ['[data-lu-album]', () => openLu().then(() => document.querySelector('.lualbum')?.scrollIntoView({ block: 'start' }))],
+  ['[data-unroll]', () => closeUnroll()],
   ['[data-mem-replay]', (el) => { const play = replayOf(view.lu?.album, el.dataset.memReplay); if (play) show({ luOpen: false, memory: { n: play.n, i: 0, play, at: performance.now() } }); }],
   ['[data-titlecard]', (el) => { dismissedTitles.add(el.dataset.titlecard); titleSeen(el.dataset.titlecard, true); render(); }],
   ['[data-gear]', () => (view.gearOpen ? show({ gearOpen: false }) : openGear())],
@@ -2335,12 +2368,75 @@ function watchMemory() {
   memorySeen = at;
   if (last) playMemory(last.n);
 }
+let memoryWaits = false; // a memory come back, not yet on the stage (鼎归 waits for it)
 async function playMemory(n) {
+  memoryWaits = true;
+  try { await playMemoryNow(n); } finally { memoryWaits = false; }
+}
+async function playMemoryNow(n) {
   const r = await verb('story').catch((e) => { console.warn('[lingjing] memory', e); return null; });
   const play = replayOf(r?.album, n);
   // A 鼎 home is often a realm risen too: her memory waits for the gold seal to go (feat).
   for (let k = 0; k < 40 && document.querySelector('.feat'); k += 1) await pause(200);
   if (play) show({ memory: { n, i: 0, play, at: performance.now() } });
+}
+
+/* 鼎归 · 地图晕开 (inkmap.js): a 鼎 just come home — Look's `jiuding.homed`
+   grew — plays once in the main slot, after the realm's gold seal and her
+   memory (which the same beat brings). The first read only notes where
+   things stand. */
+let homedSeen = null;
+async function watchHoming() {
+  const now = look?.jiuding?.homed ?? null;
+  const fresh = freshHome(homedSeen, look);
+  homedSeen = now ? [...now] : homedSeen;
+  if (fresh) playHoming(fresh);
+  watchUnroll();
+}
+async function playHoming(province) {
+  // Her memory first: wait for the gold seal and the memory the beat brings to be over.
+  await pause(600);
+  for (let k = 0; k < 120 && (document.querySelector('.feat') || view.memory || memoryWaits); k += 1) await pause(250);
+  await loadAtlas();
+  const places = atlasPlaces?.provinces?.[province]?.places ?? [];
+  const pts = places.map((p) => p.map).filter(Boolean);
+  const home = atlasPlaces?.ink?.provinces?.[province]?.home;
+  const frame = frameOf(pts.length ? pts : [home?.map ?? look.world.atlas.provinces[province]], look.world.atlas.aspect);
+  if (!inkGeo) return;
+  show({ homing: { province, frame, at: performance.now(), still: false } });
+  // Its words come in at the end: a redraw then shows 收起; it goes by itself a while later.
+  const mine = view.homing;
+  setTimeout(() => { if (view.homing === mine) render(); }, HOMING_MS.end + 50);
+  setTimeout(() => { if (view.homing === mine) show({ homing: null }); }, HOMING_MS.end + 6000);
+}
+
+/// 御剑 from the map card: the rules say yes (1 体力) or why not.
+async function flyTo(province) {
+  const r = await write('fly', { province }).catch(failed);
+  if (!r.ok) { keep({ doNote: refusal(r) }); render(); return; }
+  show({ mapPv: null, mapView: 'province' });
+  await refresh();
+}
+
+/* 卷轴 — the whole 九州 unrolled (第三章 · 下山): Look's `jiuding.unroll` asks
+   for it once (chapter.json `unroll`), and the page marks it played. A
+   scratch save may preview it (?save=test&unroll=1). */
+let unrollFor = null;
+function watchUnroll() {
+  const preview = SCRATCH && new URLSearchParams(location.search).has('unroll');
+  const id = look?.jiuding?.unroll ?? (preview ? 'preview' : null);
+  if (!id || unrollFor === id || !inkGeo || !atlasPlaces?.ink) return;
+  unrollFor = id;
+  const box = document.createElement('div');
+  box.innerHTML = unrollHtml(inkMapSvg(inkGeo, atlasPlaces.ink, { names: inkNames(), labels: look.world.atlas.provinces, lang: lang(), id: 'unroll' }), { still: stillMotion(), label: lang() === 'en' ? 'The Nine Provinces' : '九州' });
+  box.firstElementChild.dataset.chapter = id;
+  $('view')?.appendChild(box.firstElementChild);
+}
+function closeUnroll() {
+  const el = document.querySelector('.unroll');
+  if (!el) return;
+  el.remove();
+  if (el.dataset.chapter && el.dataset.chapter !== 'preview') write('unrolled', { chapter: el.dataset.chapter }).catch(failed);
 }
 
 let nodeSeen;
