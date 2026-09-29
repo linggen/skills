@@ -72,3 +72,39 @@ test('the prologue\'s panels land in its two chapters, 三关 in 第一章, and 
   assert.match(first, /我叫秋白。/);
   assert.doesNotMatch(first, /:::|[{}]/);
 });
+
+test('marks: points and paths sit inside the picture, and paths go through points that exist', () => {
+  for (const [id, n] of Object.entries(NOTES)) {
+    const m = n.marks ?? {};
+    const inside = ([x, y]) => x >= 0 && x <= 1 && y >= 0 && y <= 1;
+    const ids = new Set((m.points ?? []).map((p) => p.id));
+    assert.equal(ids.size, (m.points ?? []).length, `${id}: point ids are unique`);
+    for (const p of m.points ?? []) assert.ok(p.id && p.label && inside([p.x, p.y]), `${id}: point ${p.id} in 0–1`);
+    for (const p of m.paths ?? []) {
+      assert.ok(p.d.length >= 2 && p.d.every(inside), `${id}: path ${p.id} in 0–1`);
+      for (const t of p.through ?? []) assert.ok(ids.has(t), `${id}: path ${p.id} through ${t}`);
+    }
+    if (m.points?.length || m.paths?.length) assert.ok(m.ratio > 0, `${id}: ratio`);
+  }
+  const m = NOTES['三关'].marks;
+  assert.deepEqual(m.points.map((p) => p.id), ['尾闾', '夹脊', '玉枕']);
+  assert.deepEqual(m.paths[0].through, ['尾闾', '夹脊', '玉枕']);
+  assert.ok(m.points[0].y > m.points[1].y && m.points[1].y > m.points[2].y, 'the qi climbs: 尾闾 lowest, 玉枕 highest');
+});
+
+test('marksSvg draws the marks over the picture; the lights wait for the flow, bottom first', async () => {
+  const { marksSvg } = await import('../scripts/marks.js');
+  assert.equal(marksSvg(undefined), '');
+  assert.equal(marksSvg({}), '');
+  const svg = marksSvg(NOTES['三关'].marks);
+  assert.match(svg, /^<svg class="marks" viewBox="0 0 100 194\.40" aria-hidden="true">/);
+  assert.equal((svg.match(/<path class="m-flow"/g) ?? []).length, 1);
+  assert.equal((svg.match(/<circle /g) ?? []).length, 3);
+  const t = [...svg.matchAll(/data-mark="([^"]+)" style="--t:([\d.]+)s"/g)].map(([, id, s]) => [id, Number(s)]);
+  assert.deepEqual(t.map(([id]) => id), ['尾闾', '夹脊', '玉枕']);
+  assert.ok(t[0][1] < t[1][1] && t[1][1] < t[2][1], 'lit one after another');
+  assert.match(marksSvg(NOTES['三关'].marks, 'en'), />Weilü</);
+  assert.match(marksSvg({ ratio: 1, points: [{ id: 'a', label: '<x>', x: 0.5, y: 0.5 }] }), /&lt;x&gt;/);
+  const fig = renderMarkdown('[三关]{注=三关}', { notes: NOTES });
+  assert.match(fig, /<div class="pic"><img [^>]+><svg class="marks"/);
+});

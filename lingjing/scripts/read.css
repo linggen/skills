@@ -66,3 +66,21 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
   .sidenote, .noted.open .sidenote { display: block; position: absolute; top: 0; left: calc(100% + 40px); width: 240px; margin: 0; }
   .gloss { cursor: default; }
 }
+/* The animation layer (marks.js): points and paths over the figure, in its
+   0–1 space. Points breathe; the qi climbs a path once, lighting each point
+   as it passes; hover or a tap on the words plays it again. */
+.sidenote .pic { position: relative; }
+.marks { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.marks .m-way { fill: none; stroke: var(--seal); stroke-width: .9; stroke-linecap: round; stroke-linejoin: round; opacity: .28; }
+.marks .m-flow { fill: none; stroke: var(--seal); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 14 200; stroke-dashoffset: 14; opacity: 0; filter: drop-shadow(0 0 1.5px var(--seal)); }
+.marks.play .m-flow { animation: m-flow 2.4s ease-in-out 1 both; }
+.marks circle { fill: var(--seal); stroke: var(--surface); stroke-width: .6; transform-box: fill-box; transform-origin: center; filter: drop-shadow(0 0 1.5px var(--seal)); animation: m-breathe 3s ease-in-out infinite; }
+.marks.play circle { animation: m-breathe 3s ease-in-out infinite, m-light 1s ease-out var(--t) 1 both; }
+.marks text { font-size: 6px; fill: var(--seal); text-anchor: end; dominant-baseline: middle; paint-order: stroke; stroke: var(--surface); stroke-width: 1.6px; letter-spacing: .05em; }
+@keyframes m-flow { 0% { stroke-dashoffset: 14; opacity: 1; } 90% { opacity: 1; } 100% { stroke-dashoffset: -100; opacity: 0; } }
+@keyframes m-breathe { 0%, 100% { opacity: .6; } 50% { opacity: 1; } }
+@keyframes m-light { 0% { transform: scale(1); } 35% { transform: scale(2.2); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .marks circle, .marks.play circle, .marks.play .m-flow { animation: none; }
+  .marks circle { opacity: .9; }
+}

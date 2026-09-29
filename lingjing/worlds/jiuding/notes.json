@@ -1,10 +1,13 @@
 {
  "version": 1,
  "_about": "注: knowledge figures, each defined once, keyed by id. The book writes [words]{注=id}; the reader (scripts/read-md.js) shows the figure beside that paragraph. image is under this world folder; lines are 2–3 short lines; credit and source say where the picture is from.",
- "_marks": "Reserved for the animation layer: points [{id, label, x, y}] and paths [{id, through:[point ids]}] drawn over the image as an SVG overlay, x/y in 0–1 of the image.",
+ "_marks": "The animation layer (scripts/marks.js): ratio = the image's height/width; points [{id, label, x, y}] and paths [{id, d: [[x, y]…], through: [point ids, in flow order]}], x/y in 0–1 of the image, drawn as an SVG over it.",
  "notes": {
   "三关": {
-   "title": { "zh": "三关", "en": "The Three Passes" },
+   "title": {
+    "zh": "三关",
+    "en": "The Three Passes"
+   },
    "image": "art/notes/neijingtu.webp",
    "lines": {
     "zh": [
@@ -28,7 +31,18 @@
     "via": "Wikimedia Commons, from 四川大学道教與宗教文化研究處 (daoism.cn/up/data/033njt.htm)",
     "edit": "title band cropped off, greyscale, webp"
    },
-   "marks": {}
+   "marks": {
+    "ratio": 1.944,
+    "points": [
+     {"id": "尾闾", "label": {"zh": "尾闾", "en": "Weilü"}, "x": 0.78, "y": 0.88},
+     {"id": "夹脊", "label": {"zh": "夹脊", "en": "Jiaji"}, "x": 0.845, "y": 0.62},
+     {"id": "玉枕", "label": {"zh": "玉枕", "en": "Yuzhen"}, "x": 0.715, "y": 0.25}
+    ],
+    "paths": [
+     {"id": "督脉", "through": ["尾闾", "夹脊", "玉枕"],
+      "d": [[0.78,0.93], [0.78,0.88], [0.83,0.8], [0.855,0.7], [0.845,0.62], [0.8,0.53], [0.745,0.45], [0.715,0.36], [0.715,0.25], [0.72,0.12]]}
+    ]
+   }
   }
  }
 }

@@ -6,6 +6,7 @@
 // reader and its test both use it).
 import { esc } from './esc.js';
 import { fill, genderOf } from './state.mjs';
+import { marksSvg } from './marks.js';
 
 /// The hero the drafts were written with: the name a page with no save shows.
 export const HERO = '周星星';
@@ -41,11 +42,11 @@ const inline = (t, notes) => esc(t)
 const noteIds = (lines, notes) => [...new Set(lines.flatMap((l) => [...esc(l).matchAll(GLOSS)].map((m) => m[2])))].filter((id) => known(notes, id));
 const cells = (row) => row.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim());
 
-/// A note's figure: its picture, title, lines and credit (`marks` waits for the
-/// animation layer). `src(path)` resolves the picture under the world.
+/// A note's figure: its picture (its `marks` drawn over it, marks.js), title,
+/// lines and credit. `src(path)` resolves the picture under the world.
 export function noteFigure(id, note, { src = (p) => p, lang = 'zh' } = {}) {
   const pick = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v[lang] ?? v.zh ?? v.en : v);
-  const img = note.image ? `<img src="${esc(src(note.image))}" alt="${esc(pick(note.title))}" loading="lazy">` : '';
+  const img = note.image ? `<div class="pic"><img src="${esc(src(note.image))}" alt="${esc(pick(note.title))}" loading="lazy">${marksSvg(note.marks, lang)}</div>` : '';
   const lines = (pick(note.lines) ?? []).map((l) => `<span>${esc(l)}</span>`).join('');
   return `<aside class="sidenote" data-note="${esc(id)}"><figure>${img}<figcaption><b>${esc(pick(note.title))}</b>${lines}<small>${esc(pick(note.credit))}</small></figcaption></figure></aside>`;
 }

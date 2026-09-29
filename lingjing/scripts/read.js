@@ -4,6 +4,7 @@
 // chapters and appendix; each chapter is a markdown file (read-md.js).
 import { esc } from './esc.js';
 import { fillHero, heroOf, renderMarkdown } from './read-md.js';
+import { wireMarks } from './marks.js';
 import { content, verb, worldPath } from './rules.js';
 
 const WORDS = {
@@ -67,6 +68,7 @@ async function main() {
   } catch {
     $('chapter').innerHTML = `<p class="note">${esc(w.failed)}</p>`;
   }
+  wireMarks($('chapter'));
   const prev = all[at - 1], next = all[at + 1];
   $('pager').innerHTML = `${prev ? `<a href="${esc(hrefWith({ book: bookId, ch: prev.id }))}">${esc(w.prev)} ${esc(pick(prev.title))}</a>` : '<span></span>'}${next ? `<a href="${esc(hrefWith({ book: bookId, ch: next.id }))}">${esc(pick(next.title))} ${esc(w.next)}</a>` : '<span></span>'}`;
   window.scrollTo(0, 0);
