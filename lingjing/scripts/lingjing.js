@@ -2395,14 +2395,18 @@ async function watchHoming() {
 }
 async function playHoming(province) {
   // Her memory first: wait for the gold seal and the memory the beat brings to be over.
-  // The 新章 seal is put up a beat after the read that brings it: give it that beat.
-  await pause(1500);
-  for (let k = 0; k < 120 && (document.querySelector('.feat') || view.memory || memoryWaits); k += 1) await pause(250);
+  // The 新章 seal goes up on the first draw of the read that brought the 鼎 home
+  // (riseStats notes the chapter in `shown`): wait for that draw, then for the seal and her memory to go.
+  const sealed = () => shown?.chapter === look?.chapter?.id;
+  await pause(600);
+  for (let k = 0; k < 160 && (!sealed() || document.querySelector('.feat') || view.memory || memoryWaits); k += 1) await pause(250);
   await loadAtlas();
   const places = atlasPlaces?.provinces?.[province]?.places ?? [];
   const pts = places.map((p) => p.map).filter(Boolean);
   const home = atlasPlaces?.ink?.provinces?.[province]?.home;
-  const frame = frameOf(pts.length ? pts : [home?.map ?? look.world.atlas.provinces[province]], look.world.atlas.aspect);
+  // The find spot stands well inside the frame: the drop, the spread's heart and the moon are there.
+  const at = home?.map ?? look.world.atlas.provinces[province];
+  const frame = frameOf([...pts, at, [at[0], at[1] + 0.06], [at[0] - 0.04, at[1]], [at[0] + 0.04, at[1]]], look.world.atlas.aspect);
   if (!inkGeo) return;
   show({ homing: { province, frame, at: performance.now(), still: false } });
   // Its words come in at the end: a redraw then shows 收起; it goes by itself a while later.

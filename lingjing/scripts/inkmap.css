@@ -42,7 +42,7 @@
 .card.homing { position: relative; padding: 0; overflow: hidden; background: var(--ink-paper); cursor: pointer; }
 .homingmap svg { display: block; width: 100%; height: auto; }
 .homingcount { position: absolute; top: 8px; right: 10px; padding: 2px 8px; font-family: var(--serif, serif); font-size: 13px; letter-spacing: 0.12em; color: var(--ink-deep); background: rgba(245, 239, 225, 0.85); border: 1px solid rgba(35, 31, 26, 0.25); border-radius: 3px; }
-.homingrise { position: absolute; left: 0; right: 0; bottom: 30px; text-align: center; font-family: var(--serif, serif); font-size: 20px; letter-spacing: 0.3em; color: var(--ink-deep); text-shadow: 0 0 8px var(--ink-paper), 0 0 16px var(--ink-paper); opacity: 0; }
+.homingrise { position: absolute; left: 12px; top: 10px; font-family: var(--serif, serif); font-size: 18px; letter-spacing: 0.3em; color: var(--ink-paper); text-shadow: 0 0 6px var(--ink-deep), 0 0 12px var(--ink-deep); opacity: 0; }
 .hominghint { position: absolute; right: 10px; bottom: 6px; font-size: 11px; color: rgba(35, 31, 26, 0.45); }
 
 .inkmap.moment .cam.zoom { transform-box: view-box; transform-origin: 0 0; transform: var(--cam); }

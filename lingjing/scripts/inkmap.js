@@ -114,7 +114,7 @@ export function inkMapSvg(geo, ink, { names = {}, labels = {}, lang = 'zh', mome
   const rivers = ids.filter((p) => pv[p]?.state === 'ink').map((p) => `<g clip-path="url(#${key(p)})" class="rivers${p === M ? ' draw' : ''}">${geo.rivers.map((d) => `<path d="${d}" pathLength="1"/>`).join('')}</g>`).join('');
   const edges = ids.map((p) => shape(p, `pvedge s-${pv[p]?.state ?? 'mist'}${p === M ? ' now' : ''}`)).join('');
   const waters = geo.waters.map((d) => `<path d="${d}"/>`).join('');
-  const r = geo.w * (M ? 0.008 : 0.012);
+  const r = geo.w * 0.012;
   const moons = ids.filter((p) => pv[p]?.state === 'ink' && home(p)?.map).map((p) => { const [x, y] = pt(home(p).map); return moonSvg(x + r * 2.4, y + r * 1.6, r, `moon${M ? ' rise' : ''}`); }).join('');
   const seals = ids.filter((p) => pv[p]?.state === 'ink').map((p) => {
     const [x, y] = pt(labels[p] ?? home(p).map);
