@@ -349,3 +349,27 @@ test('a bout with a person speaks of him or her: 他/她 by the person, 认输, 
   const shijie = look({ ...opened(), scene: 'wm-juesai', place: 'zhengdian' }, content, ctx()).scene.exits.find(e => e.id === 'final').duel.creature;
   assert.equal(shijie.gender, 'female');
 });
+
+test('息壤 keeps his 修为 through the jump, and its moment is the five doors opening one by one, in ink (his, 2026-09-29)', async () => {
+  const { doorsHtml } = await import('../scripts/doors.js');
+  const { MAIN, CARD_KINDS, PAGE_OWNS } = await import('../scripts/stage.mjs');
+  const out = resolve({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 1, progress: 33 }, content, ctx(), { exit: 'swallow' });
+  assert.deepEqual([out.state.step, out.state.progress], [4, 33], 'the 修为 goes with him');
+  const capped = resolve({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 3, progress: 79 }, content, ctx(), { exit: 'swallow' }).state;
+  assert.ok(capped.progress < content.ladder.tiers[0].thresholds[4], 'short of the new layer: it never jumps twice');
+  const node = out.result.node;
+  assert.deepEqual(node.doors.map(d => d.el), ['metal', 'wood', 'water', 'fire', 'earth']);
+  assert.ok(node.doors.every(d => d.line.startsWith('第')));
+  assert.equal(node.rose.to, '练气五层');
+  const html = doorsHtml(node, { lang: 'zh' });
+  assert.equal((html.match(/class="seal"/g) ?? []).length, 5);
+  assert.match(html, /五门俱开[\s\S]*金[\s\S]*木[\s\S]*水[\s\S]*火[\s\S]*土[\s\S]*练气五层/);
+  assert.match(html, /style="--i:4"/, 'each door its turn');
+  assert.match(doorsHtml(node, { still: true }), /class="card doors still"/, 'reduced motion: the last frame');
+  assert.doesNotMatch(html, /#[0-9a-f]{3,6}|color:/i, 'ink only: no colour in the moment');
+  assert.equal(doorsHtml({}, {}), '');
+  assert.equal(CARD_KINDS.doors.holds, true);
+  assert.ok(PAGE_OWNS.has('doors'));
+  assert.ok(MAIN.findIndex(r => r.kinds.includes('doors')) < MAIN.findIndex(r => r.kinds.includes('panel')), 'before the next scene card');
+  assert.equal(stageSlots({}, [{ card: 'panel' }, { card: 'doors' }]).main[0].card, 'doors');
+});

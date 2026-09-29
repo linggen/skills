@@ -230,6 +230,8 @@ export function storyNode(content, before, s, scene, exit, now) {
     ...(memory.length ? { memory } : {}),
     ...(unease ? { unease } : {}),
     ...(ended && ch.ending ? { ending: pick(ch.ending.title, lang) } : {}),
+    // An exit's `doors` (息壤): the five 灵根 opening one by one, a line each — the page's moment.
+    ...(exit.doors ? { doors: exit.doors.map(d => ({ el: d.el, line: fill(pick(d, lang), s, content) })) } : {}),
     ...(next ? { next: { id: next.id, title: pick(next.title, lang), mystery: mysteryOf(next, s, lang) } } : {}),
   };
   return node;

@@ -26,6 +26,7 @@ import { createVoice, nodeMoment } from './voice.js';
 import { raiseUnease } from './unease.js';
 import { LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
 import { colourOn, freshMemory, memoryCardHtml, replayOf } from './memory.js';
+import { doorsHtml } from './doors.js';
 import { HOMING_MS, freshHome, homingCardHtml, inkMapSvg, shapesOf, unrollHtml } from './inkmap.js';
 import { frameOf } from './atlas.js';
 import { fxTimes, glOK, playHoming as playHomingFx } from './fx.js';
@@ -235,6 +236,7 @@ const view = {
   lu: null, //           the rules' `story` read behind it, fetched when it opens
   mapPv: null, //        the whole map's province tapped: its line (inkmap.js provinceLineHtml)
   homing: null, //       鼎归 · 地图晕开 on the stage (inkmap.js): { province, frame, at, still }
+  doors: null, //        息壤's five doors opening (doors.js): { node } — main holds it until he taps on
   memory: null, //       银月's memory on the stage (memory.js): { n, i, play, at } — main holds it while it plays
   // 闭关 (rules/seclusion.mjs): the chooser open, what it may choose (`seclude
   // info`), the pick and pill, a refusal; `emerged` — 出关's result, counted up
@@ -835,6 +837,8 @@ function stageNow() {
   if (view.memory) cards = [{ card: 'memory', id: view.memory.n }, ...cards];
   // 鼎归 · 地图晕开 after her memory (stage.mjs MAIN ranks it second).
   if (view.homing) cards = [{ card: 'homing', id: view.homing.province }, ...cards];
+  // 息壤's five doors (stage.mjs MAIN ranks them after 鼎归).
+  if (view.doors) cards = [{ card: 'doors' }, ...cards];
   watchAppear(cards);
   return stageSlots(look, cards.filter(inQueue), { skip: view.qSkip });
 }
@@ -989,7 +993,8 @@ function spoilsCtx() {
   };
 }
 
-const drawCard = (c) => (c.card === 'memory' ? memoryHtml() : c.card === 'homing' ? homingHtml() : cardHtml(c, ctx()));
+const PAGE_CARDS = { memory: () => memoryHtml(), homing: () => homingHtml(), doors: () => doorsHtml(view.doors?.node, { lang: lang(), still: stillMotion() }) };
+const drawCard = (c) => (PAGE_CARDS[c.card] ?? (() => cardHtml(c, ctx())))();
 const inkNames = () => Object.fromEntries(Object.keys(look?.world?.atlas?.provinces ?? {}).map((id) => [id, authored?.dictionary?.provinces?.[id]?.[lang()] ?? id]));
 const homingHtml = () => (view.homing && atlasPlaces?.ink ? homingCardHtml(inkGeo, atlasPlaces.ink, { province: view.homing.province, frame: view.homing.frame, age: performance.now() - view.homing.at, still: view.homing.still || stillMotion(), lang: lang(), names: inkNames(), labels: look?.world?.atlas?.provinces, paint: inkPaint(), fx: Boolean(view.homing.fx) }) : '');
 
@@ -1882,6 +1887,7 @@ const CLICKS = [
   ['[data-mem-next]', (el) => show({ memory: view.memory && { ...view.memory, i: Number(el.dataset.memNext), at: performance.now() } })],
   ['[data-mem-close]', () => show({ memory: null })],
   // 鼎归: a tap skips to the last frame; once still, a tap puts it away.
+  ['[data-doors]', () => show({ doors: null })],
   ['[data-homing]', () => { const h = view.homing; if (!h) return; if (!(h.still || performance.now() - h.at >= HOMING_MS.end)) fxRun?.ctl?.skip(); show({ homing: h.still || performance.now() - h.at >= HOMING_MS.end ? null : { ...h, still: true } }); }],
   ['[data-map-pv]', (el) => show({ mapPv: view.mapPv === el.dataset.mapPv ? null : el.dataset.mapPv })],
   ['[data-fly]', (el) => run(`fly:${el.dataset.fly}`, () => flyTo(el.dataset.fly))],
@@ -2544,6 +2550,8 @@ function watchNode() {
 }
 const nodeFresh = (kinds) => Boolean(look?.story_node && kinds.includes(look.story_node.kind) && Date.now() - Date.parse(look.story_node.at) < 60000);
 function storyMoment(n) {
+  // A realm lifted with its doors (息壤): the five open on the stage, one by one.
+  if (n.doors?.length) show({ doors: { node: n } });
   const m = nodeMoment(n);
   // Her price showing (unease.js): the stage shows it on her, then she says it.
   if (m && n.unease && herHere()) return void raiseUnease(n.unease, () => tellYinyue(m.id, m.zh, m.en, { mood: m.mood }), { still: stillMotion() });

@@ -279,12 +279,15 @@ function offerTasks(content, state) {
 
 /* The story lifts the realm to a layer of the first tier (an exit's `rise`,
    1-based: 小周天 is 一层, 息壤 五层) — never down, never past its tier, once:
-   a scene played again lifts nothing, and before a story gate nothing moves. */
+   a scene played again lifts nothing, and before a story gate nothing moves.
+   The 修为 he had toward the next layer goes with him (his, 2026-09-29: the jump
+   reset it to 0) — short of the new layer's own threshold, so it never jumps twice. */
 function riseTo(content, s, layer, replay) {
   const tier = content.ladder.tiers[0];
   if (replay || s.tier !== tier.id || s.step >= layer - 1 || lockedOf(content, s).includes('cultivation')) return null;
   const from = stepName(content, s.tier, s.step, s.lang);
-  s.step = Math.min(layer, tier.thresholds.length) - 1; s.progress = 0;
+  s.step = Math.min(layer, tier.thresholds.length) - 1;
+  s.progress = Math.max(0, Math.min(s.progress ?? 0, threshold(content, s) - 1));
   return { from, to: stepName(content, s.tier, s.step, s.lang) };
 }
 
@@ -459,6 +462,8 @@ export function resolve(state, content, ctx, args) {
     }
     // A scene passed, a cauldron found, a memory come back: the page's moment (story.mjs).
     if ((exit.next || exit.ends) && !replay) node = s.node = storyNode(content, state, s, scene, exit, ctx.now);
+    // The realm the story lifted, for the page's moment (息壤's five doors, story.mjs).
+    if (node && rose) node.rose = rose;
   }
   const walked = exit.next ? walkOn(content, s, ctx.now) : null;
   // Her lines in this move — the exit's beat, and the scene it walks into —
