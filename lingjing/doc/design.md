@@ -842,6 +842,12 @@ same voice.
 | 阿禾 pressed to dive for the 鼎 | 渡口 | Help her → 恩; she stands with the player at the 大比 |
 | Preparing | anywhere | Tame, earn 灵石, make pills — the deck and the purse for the 大比 |
 
+**The map opens in steps (his, 2026-09-29).** 序章: 石坳村 and 蒙山. 第一章: the small area around 沉鼎观
+(外门, 药园, 藏经阁, 渡口, 坊市). 第二章: one road 徐 → 冀 (邺城, 漳水). **第三章 · 下山** (「从此是散修」):
+the whole 九州 map unrolls — every road open, a province in mist until visited; from then on each 鼎 taken
+home spreads its 州 like ink (哇时刻 1). A chapter declares the map it opens; the rules refuse the rest
+with one in-world line. The beta ships through 第一章, so the other eight provinces are shut.
+
 ## 哇时刻 — wow moments (his, 2026-09-29; designed, not built)
 
 His ask: 「让玩家 say wow」. Borrowed from 原神 where it fits, and the two only an AI game can do. His order of value: **5 > 3 > 1 > 7 > 6 > 2 > 4**.
