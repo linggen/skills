@@ -12,6 +12,7 @@ import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { forLing, look, owesRecap, resolve, story, VERBS } from '../scripts/rules.mjs';
+import { storyNode } from '../scripts/rules/story.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-09-11T12:00:00');
@@ -73,8 +74,11 @@ test('the people met: the scenes\' cast, beasts tamed and fought, rumor folk —
   assert.equal(kinds.paoxiao, 'story', 'met in 冀 before it was fought');
   assert.equal(kinds['known:old-li'], 'known');
   assert.ok(!r.people.some(p => p.id === 'yinyue'), 'she is her own page');
-  const her = story({ ...s, companion: { joined: '2026-09-01' } }, content, ctx()).result.her;
-  assert.deepEqual(her, [pz(content.lore.thread[0].memory.text)]);
+  // 「银月记起的」 is 银月的记忆 unlocked (memories.json), none before a 鼎 brings one home.
+  assert.deepEqual(story({ ...s, companion: { joined: '2026-09-01' } }, content, ctx()).result.her, []);
+  const her = story({ ...s, companion: { joined: '2026-09-01' }, memories: [1] }, content, ctx()).result.her;
+  assert.equal(her.length, 1);
+  assert.ok(her[0].startsWith('「一道光」'), her[0]);
 });
 
 test("Ling's Story is small — every chapter ended, in Chinese, under ~3 KB", () => {
@@ -121,7 +125,13 @@ test('story nodes: a scene passed carries its recap; a cauldron its memory once 
   assert.equal(found.result.ok, true, JSON.stringify(found.result));
   assert.equal(found.result.node.kind, 'cauldron');
   assert.equal(found.result.node.found, 1);
-  assert.deepEqual(found.result.node.memory, [pz(content.lore.thread[0].memory.text)]);
+  assert.equal(found.result.node.memory, undefined, 'the memory came with the 鼎, not with the chapter\'s end');
+  // 冀's 鼎 brought home (`01-cauldron` · take, `memory: 1`): the move's node carries memory 1, her line.
+  const scene鼎 = content.chapters['01-ji'].scenes['01-cauldron'], take = scene鼎.exits.find(e => e.id === 'take');
+  const before = { ...at('01-ji', road.slice(0, road.indexOf('01-cauldron'))), companion: { joined: '2026-09-01' } };
+  const node = storyNode(content, before, { ...before, memories: [1] }, scene鼎, take, NOW);
+  assert.equal(node.memory.length, 1);
+  assert.ok(node.memory[0].startsWith('「一道光」'), node.memory[0]);
   assert.equal(found.result.node.next.id, '02-yan');
 
   // Walked back into an ended chapter, a scene is story only: no node.
@@ -211,14 +221,15 @@ test('the command line: owed on the first call after a while away, kept without 
 
 test('the page\'s book draws the read as it is — every word escaped, a dark cauldron its province only', async () => {
   const { luHtml, titleCardHtml } = await import('../scripts/lu.js');
-  const s = at('02-yan', roadOf('02-yan').slice(0, 1), { companion: { joined: '2026-09-01' }, known: [{ id: 'x', name: '<img src=x onerror=alert(1)>', role: 'r', voice: 'v', from: '"t"' }] });
+  const s = at('02-yan', roadOf('02-yan').slice(0, 1), { companion: { joined: '2026-09-01' }, memories: [1], known: [{ id: 'x', name: '<img src=x onerror=alert(1)>', role: 'r', voice: 'v', from: '"t"' }] });
   const book = story(s, content, ctx()).result;
   const html = luHtml(book, { lang: 'zh', her: '银月' });
-  assert.equal(html.includes('<img'), false);
+  assert.equal(html.includes('<img src=x'), false);
   assert.ok(html.includes('&lt;img'));
   assert.equal((html.match(/class="ding dark"/g) ?? []).length, 7);
   assert.ok(html.includes(pz(content.chapters['02-yan'].scenes[roadOf('02-yan')[0]].recap)));
   assert.ok(html.includes('银月记起的'));
+  assert.ok(html.includes('「一道光」'), '「银月记起的」 is her memories back (memories.json)');
   assert.equal(luHtml(null).includes('九鼎录'), true, 'a failed read still draws a closable book');
   const card = titleCardHtml(look(at('02-yan'), content, ctx()).chapter, 'zh');
   assert.ok(card.includes(pz(content.chapters['02-yan'].intro)) && card.includes('data-titlecard="02-yan"'));

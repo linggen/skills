@@ -448,7 +448,7 @@ export function resolve(state, content, ctx, args) {
   const into = exit.next && atScene(content, s) ? sceneOf(content, s) : null;
   const her = herBeat(content, s, {
     id: `${scene.id}/${exit.id}`, lines: [...(exit.beat ?? []), ...(into?.lines ?? []), ...spanLines(content, [exit.story, into?.story])],
-    happened: [...beat.map(b => b.text), into && fill(pick(into.setup, lang), s, content)], scenes: [scene, into],
+    happened: [...beat.map(b => b.text), into && fill(pick(into.setup, lang), s, content)],
   });
   if (her) s.node = withHerBeat(node, her, ctx.now);
   return {

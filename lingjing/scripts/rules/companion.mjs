@@ -4,6 +4,7 @@ import { dayKey, pick } from '../state.mjs';
 import { wornOf } from './arms.mjs';
 import { itemOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
+import { memoriesOf } from './memories.mjs';
 import { placeName, placeOf, placeOpen, tooHard } from './world.mjs';
 
 /* The thread — the pull: the scene while one runs, else the next chapter
@@ -92,51 +93,57 @@ function questBrief(content, state, now) {
   };
 }
 
-/* ── 她的来处 — her past, given back one cauldron at a time ──
-   The approved backstory as data (worlds/<id>/companion.json): per chapter,
-   the memory its cauldron returns, what she knows then and how she carries
-   it. What she has recalled is a function of the chapters ENDED, and only
-   once she walks with the player — memories 1–2 are told at the join, since
-   she was not there. Nothing ahead ever leaves the rules: a chapter not yet
-   ended (or not yet written) gives nothing, and the secret she keeps from
-   徐 on is handed over only once its `told` chapter has ended. */
+/* ── 她的来处 — her past, given back one 鼎 at a time ──
+   Her past is 银月的记忆 (worlds/<id>/memories.json, rules/memories.mjs): a
+   memory comes back only when a chapter's 鼎 comes home (`memory: n` on the
+   exit), and 「银月记起的」 — what she has recalled — is the memories unlocked,
+   each its title and her own lines (the painted panels'; a memory not yet
+   painted, what she knows of it). The bell-child thread was retired 2026-09-29
+   (companion.json `thread`, gone). companion.json keeps her fear, where she
+   stands when she joins, and the secret she keeps from 徐 on — handed over
+   only once its `told` chapter has ended. Nothing ahead ever leaves the
+   rules, and nothing before she walks with the player. */
 const loreOf = content => (content.lore && content.lore.id === companionOf(content)?.id ? content.lore : null);
-/* A memory's line: its own words, or the line the spine scene already gives
-   her (never a second wording of what the story said). */
-function memoryLine(content, entry, lang) {
-  const m = entry.memory;
-  if (m.text) return pick(m.text, lang);
-  const said = content.chapters[entry.chapter]?.scenes?.[m.scene]?.lines?.find(l => l.who === loreOf(content).id);
-  return said ? pick(said.text, lang) : null;
+/* A memory's line for 录 and for her: 「title」 then her lines under its panels,
+   or what she knows of it when it is not painted yet. */
+function memoryLine(m, lang) {
+  const lines = (m.panels ?? []).flatMap(p => pick(p.lines, lang) ?? []);
+  const title = pick(m.title, lang), sep = lang === 'en' ? ' ' : '';
+  const body = lines.length ? lines.join(sep) : pick(m.knows, lang);
+  return title && body ? (lang === 'en' ? `${title}: ${body}` : `「${title}」${body}`) : body || null;
+}
+/* The memories she has back, in order: memories.json's entries named on the save. */
+function memoriesBack(content, state) {
+  const have = new Set(Array.isArray(state.memories) ? state.memories : []);
+  return (memoriesOf(content)?.memories ?? []).filter(m => have.has(m.n));
 }
 /* What she has got back so far, oldest first: [{id, line}]. */
 export function recalledOf(content, state) {
   const lore = loreOf(content);
-  if (!lore || !hasCompanion(state)) return [];
+  if (!companionOf(content) || !hasCompanion(state)) return [];
   const ended = new Set(state.ended ?? []), lang = state.lang;
-  const out = lore.thread.filter(e => ended.has(e.chapter)).map(e => ({ id: e.memory.id, line: memoryLine(content, e, lang) })).filter(r => r.line);
-  const sec = lore.secret;
+  const out = memoriesBack(content, state).map(m => ({ id: `memory-${m.n}`, line: memoryLine(m, lang) })).filter(r => r.line);
+  const sec = lore?.secret;
   if (sec && ended.has(sec.told)) out.push({ id: 'secret', line: pick(sec.text, lang) });
   if (sec && ended.has(sec.whole)) out.push({ id: 'whole', line: pick(sec.resolved, lang) });
   return out;
 }
-/* Where she stands now — what she knows and how she carries it, from the
-   latest chapter ended — for her own read (Progress), so she speaks from it. */
+/* Where she stands now — what she knew when she joined, what the latest
+   memory back has told her, and how she carries it — for her own read
+   (Progress), so she speaks from it. */
 function stanceOf(content, state) {
   const lore = loreOf(content);
   if (!lore || !hasCompanion(state)) return null;
-  const ended = new Set(state.ended ?? []), lang = state.lang;
-  const at = [...lore.thread].reverse().find(e => ended.has(e.chapter)) ?? lore.joined;
-  return `${pick(at.knows, lang)} ${pick(at.feels, lang)}`;
+  const lang = state.lang, latest = memoriesBack(content, state).at(-1);
+  return [pick(lore.joined.knows, lang), latest ? pick(latest.knows, lang) : null, pick(lore.joined.feels, lang)].filter(Boolean).join(' ');
 }
 /* Her past as Progress hands it to her; null until she is found. */
 export function herPast(content, state) {
   const lore = loreOf(content);
   if (!lore || !hasCompanion(state)) return null;
-  const ended = new Set(state.ended ?? []);
   return {
     recalled: recalledOf(content, state), stance: stanceOf(content, state), fear: pick(lore.fear, state.lang),
-    cauldrons: lore.thread.filter(e => ended.has(e.chapter)).length,
+    cauldrons: cauldronsFound(content, state),
   };
 }
 

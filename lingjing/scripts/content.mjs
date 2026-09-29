@@ -503,9 +503,11 @@ function lintPeople(content, bad) {
 /* The animations the stage plays for her unease (scripts/unease.js SHOWS). */
 export const UNEASE_SHOWS = ['dissolve', 'mist', 'moondark', 'fade', 'telling'];
 
-/* Her past (companion.json): one entry per chapter id, each memory with its
-   words or a spine scene of that chapter that gives her the line — a chapter
-   not written yet is fine (the rules give nothing for it until it ends). */
+/* Her lore (companion.json): her fear and want, where she stands when she
+   joins, and the secret — its chapters in order, and from the one she
+   realizes it to the one she tells it, the price showing (`secret.unease`).
+   Her memories are memories.json (rules/memories.mjs lintMemories); the old
+   bell-child `thread` was retired 2026-09-29 and is refused if it comes back. */
 function lintLore(content, bad) {
   const lore = content.lore;
   if (!lore) return;
@@ -513,32 +515,27 @@ function lintLore(content, bad) {
   if (lore.id !== content.world.companion?.id) bad('lore', `id ${lore.id} is not the world's companion`);
   for (const k of ['fear', 'want']) if (!pair(lore[k])) bad('lore', `${k} needs zh and en`);
   if (!pair(lore.joined?.knows) || !pair(lore.joined?.feels)) bad('lore', 'joined needs knows and feels');
-  const seen = new Set();
-  for (const e of lore.thread ?? []) {
-    const at = `lore ${e.chapter}`;
-    if (!/^\d\d-[a-z]+$/.test(e.chapter ?? '')) bad(at, 'chapter must be a chapter id');
-    if (seen.has(e.chapter)) bad(at, 'one entry per chapter');
-    seen.add(e.chapter);
-    if (!e.memory?.id) bad(at, 'memory needs an id');
-    if (!pair(e.knows) || !pair(e.feels)) bad(at, 'needs knows and feels, zh and en');
-    if (e.memory?.text) { if (!pair(e.memory.text)) bad(at, 'memory text needs zh and en'); }
-    else if (!e.memory?.scene) bad(at, 'memory needs text or a scene');
-    else if (content.chapters[e.chapter] && !content.chapters[e.chapter].scenes[e.memory.scene]?.lines?.some(l => l.who === lore.id)) bad(at, `scene ${e.memory.scene} gives her no line`);
-  }
+  if (lore.thread) bad('lore', 'thread is retired — her past is memories.json');
   const sec = lore.secret;
+  if (!sec) return;
+  const chapterId = id => /^\d\d-[a-z]+$/.test(id ?? '');
+  if (!pair(sec.text) || !pair(sec.resolved)) bad('lore secret', 'text and resolved need zh and en');
+  for (const k of ['realized', 'told', 'whole']) if (!chapterId(sec[k])) bad('lore secret', `${k} is not a chapter id`);
+  if (!(sec.realized < sec.told && sec.told < sec.whole)) bad('lore secret', 'realized, told, whole go in chapter order');
   // The price showing (redesign-v2 § 六 item 3): every chapter from the one
   // she realizes it to the one she tells it has its unease — facts for her,
   // an animation the stage knows, one sentence of what she does for Ling.
-  for (const e of lore.thread ?? []) {
-    const u = e.unease, at = `lore ${e.chapter} unease`;
-    if (!u) { if (sec && e.chapter >= sec.realized && e.chapter <= sec.told) bad(at, 'missing — every chapter from realized to told shows the price'); continue; }
-    if (!pair(u.fact) || !pair(u.ling)) bad(at, 'fact and ling need zh and en');
-    if (!UNEASE_SHOWS.includes(u.show)) bad(at, `show ${u.show} is not one the stage plays (${UNEASE_SHOWS.join(', ')})`);
+  const unease = sec.unease ?? {};
+  for (const [ch, u] of Object.entries(unease)) {
+    const at = `lore ${ch} unease`;
+    if (!chapterId(ch)) bad(at, 'not a chapter id');
+    else if (ch < sec.realized || ch > sec.told) bad(at, 'outside realized…told');
+    if (!pair(u?.fact) || !pair(u?.ling)) bad(at, 'fact and ling need zh and en');
+    if (!UNEASE_SHOWS.includes(u?.show)) bad(at, `show ${u?.show} is not one the stage plays (${UNEASE_SHOWS.join(', ')})`);
   }
-  if (sec) {
-    if (!pair(sec.text) || !pair(sec.resolved)) bad('lore secret', 'text and resolved need zh and en');
-    for (const k of ['realized', 'told', 'whole']) if (!seen.has(sec[k])) bad('lore secret', `${k} is not a chapter of the thread`);
-    if (!(sec.realized < sec.told && sec.told < sec.whole)) bad('lore secret', 'realized, told, whole go in chapter order');
+  // Every chapter of the world between realized and told is covered.
+  for (const ch of Object.keys(content.chapters ?? {}).filter(id => id >= sec.realized && id <= sec.told)) {
+    if (!unease[ch]) bad(`lore ${ch} unease`, 'missing — every chapter from realized to told shows the price');
   }
 }
 

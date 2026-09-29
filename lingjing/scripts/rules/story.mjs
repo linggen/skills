@@ -226,7 +226,7 @@ export function storyNode(content, before, s, scene, exit, now) {
 
 /* ── Her price, showing — once, as a chapter ends (redesign-v2 § 六 item 3) ──
    Hanli, 2026-09-25: 小异样太难看出来, 给大异样. From the chapter she realizes
-   it (companion.json `secret.realized`) to the one she tells it, each chapter
+   it (companion.json `secret.realized`) to the one she tells it (`secret.unease`), each chapter
    ended shows the price on her, big: the stage plays `show`, she hears `fact`
    (what just happened to her, what she must not yet say) and says it in her
    own words, aloud; Ling may write `ling`, one sentence of what she does.
@@ -236,7 +236,7 @@ export function uneaseAt(content, s, chapter) {
   const c = companionOf(content);
   if (!c || !hasCompanion(s) || (s.unease ?? []).includes(chapter)) return null;
   const lore = content.lore?.id === c.id ? content.lore : null;
-  const u = lore?.thread?.find(e => e.chapter === chapter)?.unease;
+  const u = lore?.secret?.unease?.[chapter];
   if (!u) return null;
   s.unease = [...(s.unease ?? []), chapter];
   const lang = s.lang, name = s.name || (lang === 'zh' ? '你一路叫惯的那个称呼' : 'the name you always call them');
@@ -261,19 +261,17 @@ export function joinNode(content, s, now) {
    Hanli, 2026-09-24: 银月 writes her own words; Ling writes the scene only.
    A move that plays a line of hers — an exit's beat, or the scene it walks
    into — once she walks with the player hands it over as facts: what
-   happened, what she recalls, and the authored line as her reference (she
+   happened and the authored line as her reference (she
    says it her way, same meaning). Before she is found the line is its
    `alone` narration, Ling's as ever (look.mjs `spoken`). */
-export function herBeat(content, s, { id, lines, happened = [], scenes = [] }) {
+export function herBeat(content, s, { id, lines, happened = [] }) {
   const c = companionOf(content);
   if (!c || !herAwake(s)) return null;
   const lang = s.lang, sep = lang === 'zh' ? '' : ' ';
   const said = (lines ?? []).filter(l => l.who === c.id).map(l => fill(pick(l.text, lang), s));
   if (!said.length) return null;
-  const lore = content.lore?.id === c.id ? content.lore : null;
-  const memory = lore?.thread?.find(e => e.memory?.scene && scenes.some(sc => sc?.id === e.memory.scene));
   const what = happened.filter(Boolean).join(sep);
-  return { id, facts: { ...(what ? { happened: what } : {}), ...(memory ? { recalls: pick(memory.knows, lang) } : {}), line: said.join(sep) } };
+  return { id, facts: { ...(what ? { happened: what } : {}), line: said.join(sep) } };
 }
 /* The page hears her beat on its next Look, with the move's story node when
    there is one (one moment, one line from her), else as a node of its own. */
@@ -293,7 +291,7 @@ export function refusalBeat(content, s, { id, happened, fitting, line }) {
 /* A scene walked into (Move, Go) with a line of hers in it: her beat, kept
    on the save for the page. Null when she has none there. */
 export function enteredBeat(content, s, scene, now) {
-  const her = scene && herBeat(content, s, { id: scene.id, lines: scene.lines, happened: [fill(pick(scene.setup, s.lang), s, content)], scenes: [scene] });
+  const her = scene && herBeat(content, s, { id: scene.id, lines: scene.lines, happened: [fill(pick(scene.setup, s.lang), s, content)] });
   if (her) s.node = withHerBeat(null, her, now);
   return her;
 }

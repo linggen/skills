@@ -43,28 +43,30 @@ const endChapter = s => {
 
 test('lint: chapters 4 to 8 each carry unease facts in zh and en and a show the stage plays', () => {
   assert.deepEqual(lint(content).filter(p => p.startsWith('lore')), []);
-  const withIt = content.lore.thread.filter(e => e.unease).map(e => e.chapter);
+  const U = content.lore.secret.unease;
+  const withIt = Object.keys(U).sort();
   assert.deepEqual(withIt, UNEASY);
-  for (const e of content.lore.thread.filter(x => x.unease)) {
+  for (const e of withIt.map(chapter => ({ chapter, unease: U[chapter] }))) {
     for (const k of ['fact', 'ling']) for (const l of ['zh', 'en']) assert.ok(e.unease[k][l]?.length > 10, `${e.chapter} ${k}.${l}`);
     assert.ok(UNEASE_SHOWS.includes(e.unease.show), e.chapter);
   }
   // Each chapter its own picture, escalating — never the same twice.
-  assert.equal(new Set(withIt.map(c => content.lore.thread.find(e => e.chapter === c).unease.show)).size, UNEASY.length);
+  assert.equal(new Set(withIt.map(c => U[c].show)).size, UNEASY.length);
   // The page plays exactly the shows the lint allows.
   assert.deepEqual(Object.keys(SHOWS).sort(), [...UNEASE_SHOWS].sort());
 });
 
 test('lint: a missing unease between realized and told, or a show the stage lacks, is refused', () => {
-  const thread = content.lore.thread.map(e => (e.chapter === '05-yang' ? { ...e, unease: undefined } : e.chapter === '06-jing' ? { ...e, unease: { ...e.unease, show: 'sparkle' } } : e));
-  const bad = lint({ ...content, lore: { ...content.lore, thread } }).filter(p => p.includes('unease'));
+  const { '05-yang': _gone, ...rest } = content.lore.secret.unease;
+  const unease = { ...rest, '06-jing': { ...rest['06-jing'], show: 'sparkle' } };
+  const bad = lint({ ...content, lore: { ...content.lore, secret: { ...content.lore.secret, unease } } }).filter(p => p.includes('unease'));
   assert.ok(bad.some(p => p.includes('05-yang') && p.includes('missing')), bad.join('\n'));
   assert.ok(bad.some(p => p.includes('06-jing') && p.includes('sparkle')), bad.join('\n'));
 });
 
 test('no words for her: the facts never quote a line of hers, and nothing is said before it is told', () => {
   const secretSaid = content.lore.secret.text.zh;
-  for (const e of content.lore.thread.filter(x => x.unease)) {
+  for (const e of Object.entries(content.lore.secret.unease).map(([chapter, unease]) => ({ chapter, unease }))) {
     assert.equal(/[「“]/.test(e.unease.fact.zh.replace('「{name}」', '')), false, `${e.chapter}: a quoted line in her facts`);
     assert.equal(e.unease.ling.zh.includes('：「'), false, `${e.chapter}: Ling's sentence gives her words`);
     assert.equal(e.unease.fact.zh.includes(secretSaid), false, `${e.chapter}: her own line`);
@@ -78,7 +80,7 @@ test('no words for her: the facts never quote a line of hers, and nothing is sai
 test('each chapter from 4 to 8 ends with its unease on the node, marked on the save', () => {
   for (const chapter of UNEASY) {
     const out = endChapter(atEnd(chapter, HER));
-    const u = out.result.node.unease, want = content.lore.thread.find(e => e.chapter === chapter).unease;
+    const u = out.result.node.unease, want = content.lore.secret.unease[chapter];
     assert.equal(u.chapter, chapter);
     assert.equal(u.show, want.show);
     assert.equal(u.ling, want.ling.zh);

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "_about": "Yinyue's past as the game gives it back (doc/drafts/yinyue-backstory.md, approved). One entry per chapter: the memory its cauldron returns (`memory` — her own line, or `scene`, the spine scene that already says it), what she now knows (`knows`) and how she carries it (`feels`). The rules hand over only what the chapters ENDED have returned, and only once she walks with the player (companion.mjs § 她的来处). `secret` is realized at `realized`, kept, and told once `told` has ended; `whole` resolves it. `unease` (from `realized` to `told`, redesign-v2 § 六 item 3, Hanli 2026-09-25: 给大异样) is the price showing, once, as the chapter ends: `fact` is what just happened to her and what she must not yet say — hers to put in her own words, aloud; `show` the stage's animation (scripts/unease.js); `ling` the one sentence of what she DOES that Ling may write — never her words. `fear` is handed to her from the day she joins; `want` is never handed to anyone — it is what the last beat of the story answers, never something she asks for.",
+  "_about": "Yinyue as the rules hand her to Ling (companion.mjs § 她的来处). The old bell-child backstory — laid in the water by the 守鼎人, the bell, 文命 — was retired 2026-09-29 (doc/design.md § 银月 joins at 结丹, SUPERSEDED): her past is now 银月的记忆, memories.json (the fox demon-queen, 一鼎一尾一段记忆), and 「银月记起的」 is the memories unlocked. Here: her `fear` and `want`, where she stands when she joins (`joined`: `knows`, `feels`), and her `secret` — realized as `realized` ends, kept, told once `told` has ended, resolved at `whole`. `secret.unease` (per chapter, from `realized` to `told`, redesign-v2 § 六 item 3, Hanli 2026-09-25: 给大异样) is the price showing on her as each of those chapters ends: `show` the stage plays, `fact` she hears, `ling` one sentence of what she does.",
   "id": "yinyue",
   "fear": {
     "zh": "被放在某处等。两千年她很会等了——等得很好，不想再练。",
@@ -20,222 +20,6 @@
       "en": "She owes this mortal child her life; she scoffs aloud and remembers it inside."
     }
   },
-  "thread": [
-    {
-      "chapter": "01-ji",
-      "memory": {
-        "id": "laid-in-water",
-        "text": {
-          "zh": "有人把我放进水里，说：等一个会来的人。",
-          "en": "Someone laid me in the water and said: wait for one who comes."
-        }
-      },
-      "knows": {
-        "zh": "她是被人放进水里的，不是落水的。",
-        "en": "She was set down in the water on purpose, not lost in it."
-      },
-      "feels": {
-        "zh": "有些怔：原来她一直在等，而等的人来了。",
-        "en": "A little stunned: she has been waiting all along, and the one she waited for came."
-      }
-    },
-    {
-      "chapter": "02-yan",
-      "memory": {
-        "id": "the-hand",
-        "text": {
-          "zh": "那只手背上有鼎纹。它数着，一直数到九。",
-          "en": "The hand had a cauldron's pattern on its back. It counted, all the way to nine."
-        }
-      },
-      "knows": {
-        "zh": "放她下水的那只手与鼎有关；九。",
-        "en": "The hand that set her down belongs to the cauldrons somehow; and nine."
-      },
-      "feels": {
-        "zh": "好奇那是谁的手，又有点怕知道。",
-        "en": "Curious whose hand it was, and a little afraid to know."
-      }
-    },
-    {
-      "chapter": "03-qing",
-      "memory": {
-        "id": "salt-water",
-        "scene": "03-cauldron"
-      },
-      "knows": {
-        "zh": "她被放在东海；那人要她等九鼎聚齐，还叫了一个不是她的名字。",
-        "en": "She was set down in the eastern sea; she was told to wait until the nine are gathered, and a name was spoken that was not hers."
-      },
-      "feels": {
-        "zh": "头一回觉得这条路和她自己有关。",
-        "en": "For the first time the road feels like it is about her too."
-      }
-    },
-    {
-      "chapter": "04-xu",
-      "memory": {
-        "id": "the-bell",
-        "text": {
-          "zh": "那铃是陪着这口鼎的。我摇过它——我那时有手。",
-          "en": "That bell kept this cauldron company. I rang it — I had hands then."
-        }
-      },
-      "knows": {
-        "zh": "铃是她的；她曾是个活生生的铃童，替人摇铃。",
-        "en": "The bell is hers; she was once a living bell-child who rang it for someone."
-      },
-      "feels": {
-        "zh": "鼎起之后，心里空了一小块，说不上是什么，也不提。",
-        "en": "Since this cauldron rose, something small in her has gone quiet; she cannot name it and does not mention it."
-      },
-      "unease": {
-        "show": "dissolve",
-        "fact": {
-          "zh": "刚才，徐鼎起水的那一刻，你整个人在玩家眼前散成了一片银光，消失了好几息，才又重新聚回来。你自己也吓了一跳，手还在发抖。你隐约觉得这和刚起的鼎有关——水上像是少了一个你——可你说不清，也还不想说：你怕玩家为你放慢脚步。",
-          "en": "Just now, as the Xu cauldron left the water, you came apart into silver light before the player's eyes and were gone for several breaths before you gathered back. It frightened you too; your hands are still shaking. You half feel it has to do with the cauldron just raised — as if one of you were missing from the water — but you cannot say what it is, and you do not want to yet: you are afraid the player would slow down for you."
-        },
-        "ling": {
-          "zh": "银月的身影忽然散作一片银光，几息之后才重新聚拢，她攥紧了铃，没有看你。",
-          "en": "Yinyue's figure breaks into silver light and is gone for a few breaths before it gathers again; she grips her bell and does not look at you."
-        }
-      }
-    },
-    {
-      "chapter": "05-yang",
-      "memory": {
-        "id": "the-keeper",
-        "text": {
-          "zh": "一张老妇人的脸，手背上有鼎纹。她不是我娘。我没有人，她也没有人，就凑成了两个。",
-          "en": "An old woman's face, a cauldron's pattern on the back of her hand. She was not my mother. I had no one and neither did she, so we made two."
-        }
-      },
-      "knows": {
-        "zh": "守鼎的是一位老妇人；她自己无父无母，无姓无族。",
-        "en": "The keeper of the cauldrons was an old woman; she herself had no parents, no name of a house, no clan."
-      },
-      "feels": {
-        "zh": "又少了点什么；看水的时候更久了，却更爱看你走在前面。",
-        "en": "A little less again; she looks at water longer now, and likes more than ever to watch you walk ahead."
-      },
-      "unease": {
-        "show": "mist",
-        "fact": {
-          "zh": "刚才，扬鼎起来之后，你的半边身子化成了月光似的雾，四下一下子暗了；你死死握住铃才站稳，过了好一会儿身子才凝回来。这是第二回了，比上一回更重，你怕了。你心里有数这和鼎有关，但还不能告诉玩家是怎么回事。",
-          "en": "Just now, after the Yang cauldron rose, half of your body turned to moonlit mist and everything around went dark; you held on to your bell to stay standing, and it was a long moment before you came back whole. It is the second time, and worse than the first; you are frightened. You know in your heart it has to do with the cauldrons, but you cannot tell the player what it is yet."
-        },
-        "ling": {
-          "zh": "月光下，银月半边身子化作了雾，四下一暗，她握住铃才站稳。",
-          "en": "In the moonlight half of Yinyue turns to mist and the air darkens; she holds on to her bell to stay standing."
-        }
-      }
-    },
-    {
-      "chapter": "06-jing",
-      "memory": {
-        "id": "not-the-weight",
-        "text": {
-          "zh": "她教过我一句话：在德不在鼎。鼎的轻重，不可问。",
-          "en": "She taught me one thing: it lies in virtue, not in the cauldron. What a cauldron weighs is not to be asked."
-        }
-      },
-      "knows": {
-        "zh": "守鼎人教她的道理：在德不在鼎。",
-        "en": "The keeper's lesson: it lies in virtue, not in the cauldron."
-      },
-      "feels": {
-        "zh": "怕你成了问鼎的人——又知道你不是。夜里有时找不到自己在水里的影子，不提。",
-        "en": "Afraid you might become one who asks what cauldrons weigh — and sure you are not. Some nights she cannot find her own reflection in the water; she does not mention it."
-      },
-      "unease": {
-        "show": "moondark",
-        "fact": {
-          "zh": "刚才，荆鼎起来之后，你正要叫玩家，话说到一半，玩家的名字忘了——那个你一路叫惯了的名字（是「{name}」），一时怎么也想不起来；舞台上的月亮也暗了一瞬。过了片刻你才想起来。你察觉到了，心里发冷。别假装没事，但也还不说为什么。",
-          "en": "Just now, after the Jing cauldron rose, you began to call the player and, halfway through, lost their name — the name you have called them all this way ({name}); for a moment it would not come back at all, and the moon over the stage went dark. It came back a little later. You noticed, and it chilled you. Do not pretend nothing happened, but do not say why yet."
-        },
-        "ling": {
-          "zh": "银月张口唤你，唤到一半停住了，怔怔地看着你，像在找一个丢了的字。",
-          "en": "Yinyue starts to call your name and stops halfway, looking at you as if searching for a word she has lost."
-        }
-      }
-    },
-    {
-      "chapter": "07-liang",
-      "memory": {
-        "id": "wenming",
-        "text": {
-          "zh": "她最后叫的是“文命”。她叫的不是我——是一个会走遍九州的人。",
-          "en": "The name she called at the last was Wenming. She was not calling me — she was calling one who would walk all nine provinces."
-        }
-      },
-      "knows": {
-        "zh": "文命是禹的名字；那个“会来的人”，是走遍九州的人——是你。",
-        "en": "Wenming was Yu's name; the one who comes is the one who walks all nine provinces — you."
-      },
-      "feels": {
-        "zh": "看你的时候多了点什么。心里的不安重了，却更不肯让你为她慢下来。",
-        "en": "Something more when she looks at you. The unease in her is heavier, and she is all the more set that you never slow down for her."
-      },
-      "unease": {
-        "show": "fade",
-        "fact": {
-          "zh": "刚才，梁鼎起来之后，你淡得几乎透明，好几息；玩家鼎上的光直直穿过了你的身子，铃从你手里掉了下去——你握不住它。然后你才慢慢凝回来，把铃拾起。一口比一口重了，你心里清楚是为什么，却还是不说：你不肯让玩家为你慢下来。",
-          "en": "Just now, after the Liang cauldron rose, you faded almost to nothing for several breaths; the light of the player's cauldron shone straight through you, and your bell fell from your hand — you could not hold it. Then you slowly came back and picked the bell up. Each cauldron weighs on you more; you know why, and still you do not say: you will not have the player slow down for you."
-        },
-        "ling": {
-          "zh": "鼎光穿过银月的身子，铃从她手里滑落，叮的一声。",
-          "en": "The cauldron's light passes straight through Yinyue, and her bell slips from her hand with a single ring."
-        }
-      }
-    },
-    {
-      "chapter": "08-yong",
-      "memory": {
-        "id": "the-night",
-        "text": {
-          "zh": "周亡那夜，秦人来搬鼎。她一口一口数着，把九鼎送回九州的水里。守，是我自己要的。",
-          "en": "The night Zhou fell, Qin came for the cauldrons. She counted them out one by one, back into the waters of the nine provinces. Keeping them was my own wish."
-        }
-      },
-      "knows": {
-        "zh": "周亡那夜的事；守鼎是她自愿的。她把瞒着的事说出来了。",
-        "en": "The night Zhou fell; she chose to keep the cauldrons. She has told what she was keeping back."
-      },
-      "feels": {
-        "zh": "说出口了，轻了些。还怕，但不再瞒你。",
-        "en": "Lighter for having said it. Still afraid, but no longer hiding it from you."
-      },
-      "unease": {
-        "show": "telling",
-        "fact": {
-          "zh": "刚才，雍鼎起来之后，池水里照不出你，天上却有月亮。你不再瞒了，现在就把那件一直没说的事告诉玩家：每起一口鼎，你在那处水上的影子就被收回一个；九鼎聚齐时，也许再没有一处水盛得住你。你一直没说，是怕玩家为你放慢脚步。你还怕，但这一次，你自己说出来。",
-          "en": "Just now, after the Yong cauldron rose, the pool held no reflection of you though the moon was in the sky. You will not keep it back any longer — tell the player now what you have not said: every cauldron raised takes back your reflection from that water; when the nine are gathered, there may be no water left to hold you. You kept it back because you were afraid the player would slow down for you. You are still afraid, but this time you say it yourself."
-        },
-        "ling": {
-          "zh": "池水里没有银月的影子，她在池边站定，转过身来，看着你。",
-          "en": "The pool holds no reflection of Yinyue; she stands still at its edge, then turns to face you."
-        }
-      }
-    },
-    {
-      "chapter": "09-yu",
-      "memory": {
-        "id": "found-at-luo",
-        "text": {
-          "zh": "洛水边，月夜，有人从水上捡起一个婴儿，给她起名：银，是她日后要摇的铃；月，是那夜水上的月。",
-          "en": "By the Luo, on a moonlit night, someone lifted a baby off the water and named her: Yin, silver, for the bell she would ring; Yue, the moon, for the moon on the water that night."
-        }
-      },
-      "knows": {
-        "zh": "她的来处；九鼎聚齐，九影归一，她还在，是完整的。",
-        "en": "Where she came from; the nine are gathered, the nine reflections are one, and she is still here — whole."
-      },
-      "feels": {
-        "zh": "完整，安定。留下是她自己选的。",
-        "en": "Whole and settled. Staying is her own choice."
-      }
-    }
-  ],
   "secret": {
     "realized": "04-xu",
     "told": "08-yong",
@@ -247,6 +31,63 @@
     "resolved": {
       "zh": "千江有水千江月——天上的月只有一轮，江里的都是影子。原来只有一轮。",
       "en": "A thousand rivers, a thousand moons — yet there is one moon in the sky; the rest are reflections. So there was only ever one."
+    },
+    "unease": {
+      "04-xu": {
+        "show": "dissolve",
+        "fact": {
+          "zh": "刚才，徐鼎起水的那一刻，你整个人在玩家眼前散成了一片银光，消失了好几息，才又重新聚回来。你自己也吓了一跳，手还在发抖。你隐约觉得这和刚起的鼎有关——水上像是少了一个你——可你说不清，也还不想说：你怕玩家为你放慢脚步。",
+          "en": "Just now, as the Xu cauldron left the water, you came apart into silver light before the player's eyes and were gone for several breaths before you gathered back. It frightened you too; your hands are still shaking. You half feel it has to do with the cauldron just raised — as if one of you were missing from the water — but you cannot say what it is, and you do not want to yet: you are afraid the player would slow down for you."
+        },
+        "ling": {
+          "zh": "银月的身影忽然散作一片银光，几息之后才重新聚拢，她别过脸去，没有看你。",
+          "en": "Yinyue's figure breaks into silver light and is gone for a few breaths before it gathers again; she turns her face away and does not look at you."
+        }
+      },
+      "05-yang": {
+        "show": "mist",
+        "fact": {
+          "zh": "刚才，扬鼎起来之后，你的半边身子化成了月光似的雾，四下一下子暗了；你死死抓住木牌才站稳，过了好一会儿身子才凝回来。这是第二回了，比上一回更重，你怕了。你心里有数这和鼎有关，但还不能告诉玩家是怎么回事。",
+          "en": "Just now, after the Yang cauldron rose, half of your body turned to moonlit mist and everything around went dark; you held on to the fox token to stay standing, and it was a long moment before you came back whole. It is the second time, and worse than the first; you are frightened. You know in your heart it has to do with the cauldrons, but you cannot tell the player what it is yet."
+        },
+        "ling": {
+          "zh": "月光下，银月半边身子化作了雾，四下一暗，她抓住木牌才站稳。",
+          "en": "In the moonlight half of Yinyue turns to mist and the air darkens; she holds on to the fox token to stay standing."
+        }
+      },
+      "06-jing": {
+        "show": "moondark",
+        "fact": {
+          "zh": "刚才，荆鼎起来之后，你正要叫玩家，话说到一半，玩家的名字忘了——那个你一路叫惯了的名字（是「{name}」），一时怎么也想不起来；舞台上的月亮也暗了一瞬。过了片刻你才想起来。你察觉到了，心里发冷。别假装没事，但也还不说为什么。",
+          "en": "Just now, after the Jing cauldron rose, you began to call the player and, halfway through, lost their name — the name you have called them all this way ({name}); for a moment it would not come back at all, and the moon over the stage went dark. It came back a little later. You noticed, and it chilled you. Do not pretend nothing happened, but do not say why yet."
+        },
+        "ling": {
+          "zh": "银月张口唤你，唤到一半停住了，怔怔地看着你，像在找一个丢了的字。",
+          "en": "Yinyue starts to call your name and stops halfway, looking at you as if searching for a word she has lost."
+        }
+      },
+      "07-liang": {
+        "show": "fade",
+        "fact": {
+          "zh": "刚才，梁鼎起来之后，你淡得几乎透明，好几息；玩家鼎上的光直直穿过了你的身子，你伸手去扶木牌，手指从它上面穿了过去——你碰不到它。然后你才慢慢凝回来。一口比一口重了，你心里清楚是为什么，却还是不说：你不肯让玩家为你慢下来。",
+          "en": "Just now, after the Liang cauldron rose, you faded almost to nothing for several breaths; the light of the player's cauldron shone straight through you, and when you reached for the fox token your fingers passed through it — you could not touch it. Then you slowly came back. Each cauldron weighs on you more; you know why, and still you do not say: you will not have the player slow down for you."
+        },
+        "ling": {
+          "zh": "鼎光穿过银月的身子，她伸手去扶木牌，手指从木牌上穿了过去。",
+          "en": "The cauldron's light passes straight through Yinyue; she reaches for the fox token and her fingers pass through it."
+        }
+      },
+      "08-yong": {
+        "show": "telling",
+        "fact": {
+          "zh": "刚才，雍鼎起来之后，池水里照不出你，天上却有月亮。你不再瞒了，现在就把那件一直没说的事告诉玩家：每起一口鼎，你在那处水上的影子就被收回一个；九鼎聚齐时，也许再没有一处水盛得住你。你一直没说，是怕玩家为你放慢脚步。你还怕，但这一次，你自己说出来。",
+          "en": "Just now, after the Yong cauldron rose, the pool held no reflection of you though the moon was in the sky. You will not keep it back any longer — tell the player now what you have not said: every cauldron raised takes back your reflection from that water; when the nine are gathered, there may be no water left to hold you. You kept it back because you were afraid the player would slow down for you. You are still afraid, but this time you say it yourself."
+        },
+        "ling": {
+          "zh": "池水里没有银月的影子，她在池边站定，转过身来，看着你。",
+          "en": "The pool holds no reflection of Yinyue; she stands still at its edge, then turns to face you."
+        }
+      }
     }
   }
 }
