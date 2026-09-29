@@ -44,7 +44,7 @@ function playThrough(gender) {
   s = must(quest, s, { action: 'take', id: 'xu-sun-charm' });
   s = must(win, s, { id: 'qiqiao' }); s = must(task, s, { action: 'done', id: 'qiqiao' });
   assert.ok(s.quests['xu-sun-charm'].done_at, 'the charm mended, the errand hands itself in');
-  for (const exit of ['count', 'keep', 'swallow']) s = must(resolve, fresh(s), { exit });
+  for (const exit of ['count', 'keep', 'swallow']) s = must(resolve, fresh(s), { exit, ...(exit === 'keep' ? { said: '你这饭桶' } : {}) });
   s = must(move, s, { place: 'fangshi' });
   s = must(trade, { ...s, wealth: Math.max(s.wealth, 5) }, { action: 'buy', id: 'luobo' });
   s = must(trade, s, { action: 'buy', id: 'luobo' });
@@ -189,7 +189,7 @@ test('the 大比 waits a real day: the goal line counts down, the first round re
   let s = opened('male');
   for (const exit of ['owe', 'can', 'breathe', 'hide']) s = must(resolve, s, { exit });
   s = must(move, s, { place: 'chaifang' });
-  for (const exit of ['count', 'keep', 'swallow']) s = must(resolve, fresh(s), { exit });
+  for (const exit of ['count', 'keep', 'swallow']) s = must(resolve, fresh(s), { exit, ...(exit === 'keep' ? { said: '你这饭桶' } : {}) });
   s = must(move, fresh(s), { place: 'shimen' });
   s = must(resolve, s, { exit: 'refuse' });
   s = must(win, s, { id: 'mijing-wall' }); s = must(task, s, { action: 'done', id: 'mijing-wall' });
@@ -325,4 +325,27 @@ test('what is for a person is handed where that person is: 周衡 at 外门, 阿
   s = must(quest, s, { action: 'turn', id: 'xu-ahe-lixi' });
   assert.ok(s.quests['xu-ahe-lixi'].done_at);
   assert.ok(s.bag.talisman > 0, 'the 符 for the 大比');
+});
+
+test('a bout with a person speaks of him or her: 他/她 by the person, 认输, 「今日已比过」, 「他退了下去」 — never 妖, 它 or 今日已降 (his, 2026-09-29)', async () => {
+  const { WORDS: BW, boutWords, sayEffect, challengeHtml } = await import('../scripts/battle-card.js');
+  const l = look({ ...opened(), scene: 'wm-lun2', place: 'zhengdian' }, content, ctx());
+  const ma = l.scene.exits.find(e => e.id === 'bark').duel.creature;
+  assert.equal(ma.gender, 'male');
+  const w = boutWords(BW.zh, ma, 'zh');
+  for (const k of ['theirs', 'withdrew', 'wonSay', 'withdrewSay', 'pickCard', 'pickRank', 'pickTarget', 'wonToday', 'lostToday', 'spentToday']) {
+    assert.doesNotMatch(w[k], /妖|它|今日已降|雾/, `${k}: ${w[k]}`);
+  }
+  assert.equal(w.wonSay, '他退了下去。');
+  assert.equal(w.wonToday, '今日已比过');
+  assert.equal(boutWords(BW.zh, { person: true, gender: 'female' }, 'zh').theirs, '她的阵前');
+  assert.equal(boutWords(BW.zh, { person: true }, 'zh').theirs, '对方的阵前', 'no gender said: 对方');
+  assert.equal(boutWords(BW.en, { person: true, gender: 'female' }, 'en').wonSay, 'She steps down.');
+  assert.equal(boutWords(BW.zh, { id: 'zheng' }, 'zh'), BW.zh, 'a beast keeps its words');
+  assert.match(sayEffect({ effect: { sweep: 2 } }, { lang: 'zh', words: w }), /^他阵前每个 2 点/);
+  assert.match(sayEffect({ effect: { sweep: 2 } }, { lang: 'zh', words: BW.zh }), /^它阵前/);
+  const done = challengeHtml({ id: 'dabi-ma', creature: ma, today: { outcome: 'won' } }, { lang: 'zh', words: w, title: '比试' });
+  assert.match(done, /今日已比过/);
+  const shijie = look({ ...opened(), scene: 'wm-juesai', place: 'zhengdian' }, content, ctx()).scene.exits.find(e => e.id === 'final').duel.creature;
+  assert.equal(shijie.gender, 'female');
 });

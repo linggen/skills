@@ -4,7 +4,7 @@
 
 import { boardHtml } from './board.js';
 import { worldPath } from './rules.js';
-import { WORDS as BATTLE_WORDS, challengeHtml } from './battle-card.js';
+import { WORDS as BATTLE_WORDS, boutWords, challengeHtml } from './battle-card.js';
 import { layoutRoads } from './roadmap.js';
 import { frameOf, inside, within } from './atlas.js';
 import { inkLayerHtml, provinceLineHtml, pvState } from './inkmap.js';
@@ -564,7 +564,7 @@ function duel(card, ctx) {
   if (!exit) return '';
   // 先降后收 (his, 2026-09-24): the duel card is 出手 only. Once beaten, the
   // creature's own card offers 收服 (creature, below).
-  return challengeHtml(exit.duel, { ...ctx, words: BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, title: duelTitle(exit.duel?.creature, ctx.words), artBase: ctx.artBase ?? '', say: ctx.duelFor?.(card.id)?.text ?? null });
+  return challengeHtml(exit.duel, { ...ctx, words: boutWords(BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, exit.duel?.creature, ctx.lang), title: duelTitle(exit.duel?.creature, ctx.words), artBase: ctx.artBase ?? '', say: ctx.duelFor?.(card.id)?.text ?? null });
 }
 
 /// 本命法宝 — the treasure bound at 结丹: its name and 重, what it strikes and

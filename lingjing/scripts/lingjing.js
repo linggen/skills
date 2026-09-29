@@ -14,7 +14,7 @@ import { addressSay, codexOf } from './codex.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
 import { boardDoneToday, petStageUrl, stageCards, stageSlots } from './stage.mjs';
-import { WORDS as BATTLE_WORDS, battleHtml, boutSays, pickOf, spoilsHtml } from './battle-card.js';
+import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, pickOf, spoilsHtml } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
@@ -1164,7 +1164,7 @@ function boutCtx() {
   const c = bout.brief.creature;
   return {
     catalog: cardCatalog(), artBase: artBase(),
-    lang: lang(), words: BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh,
+    lang: lang(), words: boutWords(BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh, c, lang()),
     board: bout.st.mode.board,
     title: duelTitle(c, words()),
     foeName: c.name, foeArt: c.art ? `${artBase()}${c.art}` : null,
@@ -2003,12 +2003,17 @@ function fightMoments() {
   }
 }
 
-/* How it ended, for her: a loss is the big one. */
+/* How it ended, for her: a loss is the big one. A bout with a person is told
+   as a 比试 — nobody 降服s 马小宝 (his, 2026-09-29). */
+const TOLD = {
+  beast: { won: ['降服了{foe}', 'Beat {foe}', 'happy'], lost: ['输给了{foe}，它今日不会再出来了', 'Lost to {foe} — it will not come out again today', 'sad'], withdrew: ['{foe}力竭遁走，这一仗不算赢', '{foe} ran out of breath and left — not a win'] },
+  person: { won: ['比试赢了{foe}', 'Won the bout with {foe}', 'happy'], lost: ['比试输给了{foe}', 'Lost the bout to {foe}', 'sad'], withdrew: ['{foe}力竭认输，这一场不算赢', '{foe} yielded, spent — not a win'] },
+};
 function toldOutcome(brief, outcome) {
-  const c = brief?.creature ?? {}, foe = c.name ?? '';
-  if (outcome === 'won') return tellYinyue('won', `降服了${foe}`, `Beat ${foe}`, { mood: 'happy' });
-  if (outcome === 'lost') return tellYinyue('lost', `输给了${foe}，它今日不会再出来了`, `Lost to ${foe} — it will not come out again today`, { mood: 'sad' });
-  if (outcome === 'withdrew') tellYinyue('withdrew', `${foe}力竭遁走，这一仗不算赢`, `${foe} ran out of breath and left — not a win`);
+  const c = brief?.creature ?? {}, told = TOLD[c.person ? 'person' : 'beast'][outcome];
+  if (!told) return;
+  const [zh, en, mood] = told.map((t) => t.replace('{foe}', c.name ?? ''));
+  tellYinyue(outcome, zh, en, told[2] ? { mood } : undefined);
 }
 
 /* ── 降妖: the page plays the fight, the rules decide it ── */

@@ -148,6 +148,7 @@
     },
     {
       "id": "maxiaobao",
+      "gender": "male",
       "name": { "zh": "马小宝", "en": "Ma Xiaobao" },
       "role": { "zh": "马三的儿子，比你大两岁，穿绸子", "en": "Ma San's son, two years older than you, in silk" },
       "voice": { "zh": "阴阳怪气，爱看人出丑；「哟」字开头，笑得像他爹。", "en": "Sneering and sly, loves to watch others shamed; starts with \"Well, well\", and laughs like his father." },
@@ -180,6 +181,7 @@
     },
     {
       "id": "sunergou",
+      "gender": "male",
       "name": {"zh": "孙二狗", "en": "Sun Ergou"},
       "role": {"zh": "外门弟子，灵根比你当初还差；他娘给他缝了一个护身符", "en": "An outer disciple whose roots are worse than yours were; his mother sewed him a charm"},
       "voice": {"zh": "说话结巴，胆子小，心眼实；在梦里喊「娘，我不吃糠」。", "en": "Stammers, timid, honest to the bone; cries \"Ma, I won't eat chaff\" in his sleep."},
@@ -188,6 +190,7 @@
     },
     {
       "id": "neimen-shijie",
+      "gender": "female",
       "name": {"zh": "内门师姐", "en": "The inner-court senior"},
       "role": {"zh": "内门下来比外门大比的真灵根师姐", "en": "A true-root senior come down from the inner court for the outer court's contest"},
       "voice": {"zh": "话少，眼尖，出手留三分；看得出别人藏着什么。", "en": "Few words, sharp eyes, always holds a little back; sees what others are hiding."},

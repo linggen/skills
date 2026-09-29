@@ -46,9 +46,54 @@ function strikerOf(st, picked, ctx) {
   return e?.damage != null ? { n: e.damage, element: c.element } : null;
 }
 
+/* The foe's pronouns in the card words: 它 for a beast; a person's 他/她 in a
+   bout (boutWords). A card drawn outside a fight reads 它. */
+const pro = (ctx) => {
+  const w = ctx.words ?? {}, zh = ctx.lang !== 'en';
+  return { it: w.it ?? (zh ? '它' : 'it'), its: w.its ?? (zh ? '它' : 'its'), itObj: w.itObj ?? (zh ? '它' : 'it') };
+};
+const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+
+/* A bout with a PERSON (the 大比's three; the duel brief's `person`): every word
+   that calls the foe 妖 or 它 said of him or her instead — 比试, 认输, 「今日已比过」,
+   「他退了下去」 (his, 2026-09-29). `{ta}` … is the person's pronoun by gender, 对方
+   (they) when the gender is unsaid. */
+const PRONOUN = {
+  zh: { male: { ta: '他' }, female: { ta: '她' }, none: { ta: '对方' } },
+  en: { male: { it: 'he', its: 'his', itObj: 'him' }, female: { it: 'she', its: 'her', itObj: 'her' }, none: { it: 'they', its: 'their', itObj: 'them' } },
+};
+export const PERSON_WORDS = {
+  zh: {
+    theirs: '{ta}的阵前', withdrew: '{ta}力竭认输', wonSay: '{ta}退了下去。', lostSay: '你认了输，退下台来。', withdrewSay: '{ta}一口气用尽，拱手认输 —— 这一场不算你赢。',
+    pickCard: '点一个目标 —— {ta}本人，或{ta}阵前的一个', pickRank: '点{ta}阵前的一个', pickTarget: '再点要打谁 —— {ta}本人，或{ta}阵前的一个',
+    wonToday: '今日已比过', lostToday: '今日已比过，明日再来', spentToday: '今日已比过',
+    why: { 'no-attack': '{ta}不会出手', 'too-big': '吞不下 —— {ta}攻太高', 'aim-one': '点{ta}阵前一个' },
+  },
+  en: {
+    theirs: '{Its} rank', withdrew: '{It} yields, spent', wonSay: '{It} steps down.', lostSay: 'You yield and step down.', withdrewSay: '{It} runs out of breath and yields — this one is not your win.',
+    pickCard: 'choose a target — {itObj}, or one of {its} rank', pickRank: 'choose one of {its} rank', pickTarget: 'now choose what it strikes — {itObj}, or one of {its} rank',
+    wonToday: 'bout fought today', lostToday: 'bout fought today — again tomorrow', spentToday: 'bout fought today',
+    why: { 'no-attack': '{It} does not strike', 'too-big': 'too big to swallow — the attack is too high', 'aim-one': 'choose one of {its} rank' },
+  },
+};
+
+/// The fight's words for this foe: the beast's as they are, a person's with
+/// PERSON_WORDS laid over and the pronoun filled in.
+export function boutWords(words, creature, lang = 'zh') {
+  if (!creature?.person) return words;
+  const l = lang === 'en' ? 'en' : 'zh', g = creature.gender === 'female' || creature.gender === 'male' ? creature.gender : 'none';
+  const p = l === 'zh' ? { it: PRONOUN.zh[g].ta, its: PRONOUN.zh[g].ta, itObj: PRONOUN.zh[g].ta, ta: PRONOUN.zh[g].ta } : PRONOUN.en[g];
+  const vars = { ...p, It: cap(p.it), Its: cap(p.its) };
+  const put = (t) => t.replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m);
+  const over = PERSON_WORDS[l];
+  const flat = Object.fromEntries(Object.entries(over).filter(([k]) => k !== 'why').map(([k, v]) => [k, put(v)]));
+  return { ...words, ...flat, it: p.it, its: p.its, itObj: p.itObj, why: { ...words.why, ...Object.fromEntries(Object.entries(over.why).map(([k, v]) => [k, put(v)])) } };
+}
+
 export const WORDS = {
   zh: {
     hp: '气血', mana: '灵力', deck: '牌库', hand: '手牌', power: '主灵根一击', end: '结束回合',
+    it: '它', its: '它', itObj: '它',
     yours: '你的阵前', theirs: '它的阵前', empty: '空', taunt: '护主', arriving: '刚到',
     struck: '已出手', spoils: '所得', spoilsCard: '新得一张牌，往后可带进斗法：', spoilsBag: '收进储物袋：', spoilsClose: '收起', spoilsSpent: '用去：', spentTitle: '用去', xw: '修为', ls: '灵石', quit: '认输', won: '胜', lost: '败', withdrew: '它力竭遁走',
     wonSay: '它退入雾中。', lostSay: '你退了半里地，它没有追。', withdrewSay: '它一口气用尽，转身走了 —— 这一场不算你赢。',
@@ -84,6 +129,7 @@ export const WORDS = {
     ],
   },
   en: {
+    it: 'it', its: 'its', itObj: 'it',
     hp: 'Life', mana: 'Force', deck: 'Deck', hand: 'Hand', power: 'Root Strike', end: 'End turn',
     yours: 'Your rank', theirs: 'Its rank', empty: 'empty', taunt: 'Guard', arriving: 'just arrived',
     struck: 'has struck', spoils: 'Spoils', spoilsCard: 'A new card, yours to take into a fight:', spoilsBag: 'Into the pouch: ', spoilsClose: 'Put away', spoilsSpent: 'Used up: ', spentTitle: 'Used up', xw: 'Cultivation', ls: 'Stones', quit: 'Yield', won: 'Won', lost: 'Lost', withdrew: 'It withdrew',
@@ -324,7 +370,7 @@ function onBeast(st, c, ctx) {
   const word = clashWord(c.element, st.foe.root, ctx.lang);
   if (!word) return '';
   const n = dealt(st, 'you', e.damage, c.element, st.foe.root);
-  return ` <b class="bon${clash(c.element, st.foe.root) < 1 ? ' down' : ''}">${ctx.lang === 'en' ? `→ ${n} on it · ${word}` : `→ 对它 ${n} · ${word}`}</b>`;
+  return ` <b class="bon${clash(c.element, st.foe.root) < 1 ? ' down' : ''}">${ctx.lang === 'en' ? `→ ${n} on ${pro(ctx).itObj} · ${word}` : `→ 对${pro(ctx).itObj} ${n} · ${word}`}</b>`;
 }
 
 /* The day's cast on a card it touches — so a number that differs from the
@@ -342,16 +388,16 @@ export function sayEffect(c, ctx) {
   const e = c.effect ?? {};
   const bits = [];
   if (e.damage != null) bits.push(zh ? `打 ${e.damage} 点` : `${e.damage} damage`);
-  if (e.sweep != null) bits.push(zh ? `它阵前每个 ${e.sweep} 点` : `${e.sweep} to each of its rank`);
+  if (e.sweep != null) bits.push(zh ? `${pro(ctx).its}阵前每个 ${e.sweep} 点` : `${e.sweep} to each of ${pro(ctx).its} rank`);
   if (e.heal != null) bits.push(zh ? `回 ${e.heal} 气血` : `heal ${e.heal}`);
   if (e.draw != null) bits.push(zh ? `抽 ${e.draw} 张` : `draw ${e.draw}`);
   if (e.buff) bits.push(zh ? `一个 +${e.buff.atk ?? 0}/+${e.buff.hp ?? 0}` : `one of yours +${e.buff.atk ?? 0}/+${e.buff.hp ?? 0}`);
   if (e.rally) bits.push(zh ? `全体 +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}` : `all of yours +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}`);
   if (e.summon) bits.push(zh ? `召来 ${e.summon.n ?? 1} 个` : `summon ${e.summon.n ?? 1}`);
-  if (e.chain != null) bits.push(zh ? '锁它阵前一个，下回合不能出手' : 'Chain one of its rank: it cannot strike next turn');
-  if (e.swallow != null) bits.push(zh ? `吞它阵前一个攻 ≤${e.swallow} 的` : `Swallow one of its rank with attack ≤ ${e.swallow}`);
-  if (e.drain != null) bits.push(zh ? `它下回合灵力 −${e.drain}` : `its Force −${e.drain} next turn`);
-  if (e.drought != null) bits.push(zh ? `大旱：你每回合末，它阵前每个 ${e.drought} 点` : `Drought: at the end of your turn, ${e.drought} to each of its rank`);
+  if (e.chain != null) bits.push(zh ? `锁${pro(ctx).its}阵前一个，下回合不能出手` : `Chain one of ${pro(ctx).its} rank: it cannot strike next turn`);
+  if (e.swallow != null) bits.push(zh ? `吞${pro(ctx).its}阵前一个攻 ≤${e.swallow} 的` : `Swallow one of ${pro(ctx).its} rank with attack ≤ ${e.swallow}`);
+  if (e.drain != null) bits.push(zh ? `${pro(ctx).it}下回合灵力 −${e.drain}` : `${pro(ctx).its} Force −${e.drain} next turn`);
+  if (e.drought != null) bits.push(zh ? `大旱：你每回合末，${pro(ctx).its}阵前每个 ${e.drought} 点` : `Drought: at the end of your turn, ${e.drought} to each of ${pro(ctx).its} rank`);
   const key = c.keywords?.includes('taunt') ? (zh ? '护主' : 'Guard') : null;
   const cry = c.keywords?.includes('battlecry') ? (zh ? '入阵：' : 'On arrival: ') : '';
   return [key, cry + bits.join('，')].filter(x => x && x.trim()).join(' · ');
@@ -372,9 +418,9 @@ function sigWords(st, ctx) {
       ? (zh ? `${name(guard, ctx.lang)} 替你挡 −${hit(e.damage, guard.element)}` : `${name(guard, ctx.lang)} takes it −${hit(e.damage, guard.element)}`)
       : (zh ? `你 −${landed(st, 'foe', e.damage, root)}（护主可挡）` : `you −${landed(st, 'foe', e.damage, root)} (a Guard takes it)`));
   }
-  if (e.heal != null) out.push(zh ? `它回 ${e.heal}` : `it heals ${e.heal}`);
+  if (e.heal != null) out.push(zh ? `${pro(ctx).it}回 ${e.heal}` : `${pro(ctx).it} heals ${e.heal}`);
   if (e.summon) out.push(zh ? `召来 ${name(ctx.catalog?.[e.summon.id], ctx.lang)} ×${e.summon.n ?? 1}` : `summons ${name(ctx.catalog?.[e.summon.id], ctx.lang)} ×${e.summon.n ?? 1}`);
-  if (e.rally) out.push(zh ? `它阵前全体 +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}` : `its rank +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}`);
+  if (e.rally) out.push(zh ? `${pro(ctx).its}阵前全体 +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}` : `${pro(ctx).its} rank +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}`);
   return out.join(zh ? ' · ' : ' · ');
 }
 
@@ -384,8 +430,8 @@ export function chargeHtml(st, ctx) {
   const zh = ctx.lang !== 'en';
   const sig = name(st.foe.signature, ctx.lang);
   const when = phase === 'gathering'
-    ? (zh ? '它在蓄力 —— 下一回合不出牌，再下一回合放出' : 'It gathers — it plays nothing next turn, and lets go the turn after')
-    : (zh ? '它下一回合放出 —— 这一回合是你的' : 'It lets go next turn — this turn is yours');
+    ? (zh ? `${pro(ctx).it}在蓄力 —— 下一回合不出牌，再下一回合放出` : `${cap(pro(ctx).it)} gathers — nothing played next turn, let go the turn after`)
+    : (zh ? `${pro(ctx).it}下一回合放出 —— 这一回合是你的` : `${cap(pro(ctx).it)} lets go next turn — this turn is yours`);
   return `<div class="bcharge ${phase}"><b>${zh ? '杀招' : 'Signature'} · ${sig}</b><span>${sigWords(st, ctx)}</span><small>${when}</small></div>`;
 }
 
@@ -422,7 +468,7 @@ export function intentHtml(st, ctx) {
   if (!it || st.outcome !== 'open' || st.whose !== 'you') return '';
   const zh = ctx.lang !== 'en', bits = intentBits(st, ctx);
   const what = it.gathering ? (zh ? '蓄力，不出手' : 'gathers — nothing else') : bits.length ? bits.join(' · ') : (zh ? '只让阵前的出手' : 'only its rank strikes');
-  return `<div class="bintent${it.sight >= 2 ? ' exact' : ''}"><b>${zh ? '望气' : 'Its qi'}</b><span>${zh ? '它下回合：' : 'Next turn: '}${esc(what)}</span></div>`;
+  return `<div class="bintent${it.sight >= 2 ? ' exact' : ''}"><b>${zh ? '望气' : 'Its qi'}</b><span>${zh ? `${pro(ctx).it}下回合：` : 'Next turn: '}${esc(what)}</span></div>`;
 }
 
 /* ── 上一手 — what just happened, in words ──
