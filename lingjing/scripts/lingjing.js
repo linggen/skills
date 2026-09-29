@@ -1337,9 +1337,22 @@ function turnEnded() {
 /// user widget", 2026-09-17 — the skill declares the queue).
 function deliver(text, hidden) {
   // A scratch save (?save=) never messages Ling: the word is shown, the turn ends.
-  if (SCRATCH) { keep({ doNote: `${SCRATCH_BADGE} · ${text}` }); turnEnded(); return; }
+  if (SCRATCH) { keep({ doNote: `${SCRATCH_BADGE} · ${text}` }); turnEnded(); scratchTakes(text); return; }
   if (hidden) chat?.sendHidden(text);
   else chat?.send(text);
+}
+
+/* A scratch save has no Ling, so the one step she takes after a scene's
+   fight is won — Resolve its exit (SKILL.md: `[scene] won` → follow `then`) —
+   is taken here, or a check stood stuck on the 大比's round with the win in
+   hand. Only that: her words are not written, nothing else is decided. */
+async function scratchTakes(text) {
+  const won = /^\[scene\] won (\S+)$/.exec(text)?.[1];
+  const exit = won && (look?.scene?.exits ?? []).find((e) => e.game?.kind === 'duel' && e.game.id === won);
+  if (!exit) return;
+  const r = await write('resolve', { exit: exit.id }).catch(failed);
+  if (!r.ok) console.warn('[lingjing] scratch resolve', r);
+  await refresh();
 }
 
 /* 开府 — the setup milestones, read (no model) when the 事 chip opens. */
