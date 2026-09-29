@@ -17,8 +17,10 @@ import { allPlaces, atScene, creatureOf, huntable, inCorridor, inMade, pathOf, p
 
 /* ── 差事 — the errands the player takes (design.md § 差事) ──
    接 · 记 · 追 · 交. The world offers, the player takes, the rules count, and
-   交差 happens where he stands the moment the count is met — he never walks
-   back to the giver (his ruling, 2026-09-18: 不要让用户跑地图). */
+   交差 happens where he stands the moment the count is met (his ruling,
+   2026-09-18: 不要让用户跑地图) — unless the giver is a PERSON (quests
+   `from.person`): what is handed to someone is handed where they are (his,
+   2026-09-29: 阿禾 at 坊市, not at 渡口). The book shows where to go. */
 
 export const BOOK_MAX = 3; // a chat game cannot show a log of twenty-five
 
@@ -39,6 +41,16 @@ function countsOf(content, state, quest) {
 }
 
 const questReady = (content, state, quest) => countsOf(content, state, quest).every(n => n.done);
+
+/* Where a person waits to be handed the errand; null when it hands in anywhere. */
+const giverAt = quest => (quest?.from?.person ? quest.from.place : null);
+const withGiver = (state, quest) => !giverAt(quest) || state.place === giverAt(quest);
+
+/* The giver's words when he tries it elsewhere: in-world, never a code. */
+function awayLine(content, state, quest) {
+  const who = pick(quest.from.who, 'zh'), whoEn = pick(quest.from.who, 'en'), at = placeOf(content, giverAt(quest));
+  return pick({ zh: `这件事得当面交给${who}——${who}在${pick(at?.name, 'zh')}。`, en: `This is for ${whoEn}, in person — ${whoEn} is at ${pick(at?.name, 'en')}.` }, state.lang);
+}
 
 /* The errand in the book that asks for this beast (降 or 驯, not yet met):
    the fight's stake says it is fought for that errand. */
@@ -88,7 +100,11 @@ function errandsOf(content, state, lang, now) {
       // taskDone): the row says so, or it reads 0/1 as if nothing happened (his
       // 五子 at 桑间, 2026-09-24 — it looked broken).
       const kept = n => n.kind === 'board' && !n.done && Boolean(state.wins?.[n.task]);
-      return { id, title: pick(q.title, lang), need: need.map(n => ({ kind: n.kind, have: n.have, n: n.n, ...(kept(n) ? { kept: true } : {}) })), ready: need.every(x => x.done), where: whereFor(content, state, q, need, lang, now) };
+      const ready = need.every(x => x.done), away = ready && !withGiver(state, q);
+      return { id, title: pick(q.title, lang), need: need.map(n => ({ kind: n.kind, have: n.have, n: n.n, ...(kept(n) ? { kept: true } : {}) })), ready,
+        // Done, but the person it is for is elsewhere: who, and the way there.
+        ...(away ? { away: { who: pick(q.from.who, lang) } } : {}),
+        where: away ? whereAt(content, state, placeOf(content, giverAt(q)), lang, now) : whereFor(content, state, q, need, lang, now) };
     })
     .filter(Boolean);
 }
@@ -292,7 +308,7 @@ function settleErrands(content, s, ctx) {
   for (const id of Object.keys(s.quests ?? {})) {
     if (questDoneBefore(s, id)) continue;
     const q = questOf(content, id);
-    if (!q || q.need.some(n => n.kind === 'carry') || !questReady(content, s, q)) continue;
+    if (!q || q.need.some(n => n.kind === 'carry') || !questReady(content, s, q) || !withGiver(s, q)) continue;
     out.push(complete(content, s, ctx, id, q));
   }
   if (out.length) s.handed = [...(s.handed ?? []), ...out].slice(-HANDED_KEEP);
@@ -588,4 +604,4 @@ function gearBrief(content, state) {
   };
 }
 
-export { bookOf, breakthroughOf, complete, countsOf, directorBrief, errandFor, filler, FILLERS, GEAR_SLOTS, gearBrief, HANDED_KEEP, handedHere, handedOne, itemBrief, itemOf, noticeAt, noticeOf, offersOf, questDoneBefore, questOf, questReady, settleErrands, taskOf, threadOf, TIERS_ORDER, wayBack, waypointOf, whereAt, withinRoads, workOf };
+export { awayLine, bookOf, breakthroughOf, complete, countsOf, directorBrief, errandFor, filler, FILLERS, GEAR_SLOTS, gearBrief, HANDED_KEEP, handedHere, handedOne, itemBrief, itemOf, noticeAt, noticeOf, offersOf, questDoneBefore, questOf, questReady, settleErrands, withGiver, taskOf, threadOf, TIERS_ORDER, wayBack, waypointOf, whereAt, withinRoads, workOf };

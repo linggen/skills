@@ -9,7 +9,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { duel, look, move, quest, resolve, story, tame, task, trade, win } from '../scripts/rules.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
-import { WORDS, cardHtml, duelTitle } from '../scripts/cards.js';
+import { WORDS, bookPopHtml, cardHtml, duelTitle } from '../scripts/cards.js';
 import { stageSlots } from '../scripts/stage.mjs';
 import { TO_OPEN, walk } from './prologue.mjs';
 
@@ -285,4 +285,44 @@ test('a scene waiting on a game stands with it: the round fight and the wall 洛
     assert.ok(main.includes('panel:'), scene);
     assert.ok(main.includes(game), `${scene}: ${main.join(' ')} · ${JSON.stringify(l.stage)}`);
   }
+});
+
+test('what is for a person is handed where that person is: 周衡 at 外门, 阿禾 at 坊市 — elsewhere the rules refuse in-world and the book shows the way (his, 2026-09-29)', () => {
+  let s = opened();
+  for (const exit of ['owe', 'can', 'breathe', 'hide']) s = must(resolve, s, { exit });
+  s = must(move, s, { place: 'waimen' });
+  s = must(quest, s, { action: 'take', id: 'xu-yaoyuan-shouye' });
+  s = must(move, s, { place: 'yaoyuan' });
+  s = must(win, s, { id: 'shouye' }); s = must(task, s, { action: 'done', id: 'shouye' });
+  s = must(tame, { ...s, bag: { ...s.bag, luobo: 1 } }, { creature: 'zheng' });
+  assert.equal(s.quests['xu-yaoyuan-shouye'].done_at, undefined, 'tamed at the 药园: 周衡 is not here');
+  const row = look(s, content, ctx()).book.find(b => b.id === 'xu-yaoyuan-shouye');
+  assert.equal(row.ready, true);
+  assert.equal(row.away.who, '周衡');
+  assert.match(row.where.name, /外门/);
+  const pop = bookPopHtml({ look: look(s, content, ctx()), lang: 'zh', words: WORDS.zh });
+  assert.match(pop, /交给周衡/, 'the row names who it is for');
+  assert.match(pop, /在沉鼎观 · 外门/, 'and where');
+  assert.doesNotMatch(pop, /data-do="turn"[^>]*xu-yaoyuan-shouye/, 'no 交差 away from him');
+  const no = refused(quest, s, { action: 'turn', id: 'xu-yaoyuan-shouye' }, 'not-with-giver');
+  assert.match(no.say, /周衡/);
+  assert.match(no.say, /外门/);
+  const wealth = s.wealth;
+  s = must(move, fresh(s), { place: 'waimen' });
+  assert.ok(s.quests['xu-yaoyuan-shouye'].done_at, 'at 外门 it hands itself in');
+  assert.ok(s.wealth >= wealth + 10);
+  // 阿禾's interest: a carry, handed by his tap — at 坊市 only
+  s = must(move, s, { place: 'fangshi' });
+  s = must(quest, s, { action: 'take', id: 'xu-ahe-lixi' });
+  s = { ...s, bag: { ...s.bag, luobo: 2 } };
+  s = must(move, fresh(s), { place: 'dukou' });
+  const ahe = look(s, content, ctx()).book.find(b => b.id === 'xu-ahe-lixi');
+  assert.equal(ahe.ready, true);
+  assert.equal(ahe.away.who, '阿禾');
+  assert.match(ahe.where.name, /坊市/);
+  assert.match(refused(quest, s, { action: 'turn', id: 'xu-ahe-lixi' }, 'not-with-giver').say, /阿禾在.*坊市/);
+  s = must(move, fresh(s), { place: 'fangshi' });
+  s = must(quest, s, { action: 'turn', id: 'xu-ahe-lixi' });
+  assert.ok(s.quests['xu-ahe-lixi'].done_at);
+  assert.ok(s.bag.talisman > 0, 'the 符 for the 大比');
 });

@@ -6,7 +6,7 @@ import { deck } from './cards.mjs';
 import { clone, judge, paysOf, refuse, resolve, setRiddleAside } from './core.mjs';
 import { choreGrant, kaifuList } from './chores.mjs';
 import { greet } from './daily.mjs';
-import { BOOK_MAX, bookOf, complete, countsOf, gearBrief, HANDED_KEEP, handedOne, itemOf, noticeAt, noticeOf, questDoneBefore, questOf, questReady } from './errands.mjs';
+import { awayLine, BOOK_MAX, bookOf, complete, countsOf, gearBrief, HANDED_KEEP, handedOne, itemOf, noticeAt, noticeOf, questDoneBefore, questOf, questReady, withGiver } from './errands.mjs';
 import { meet } from './road.mjs';
 import { remember } from './ledger.mjs';
 import { PAGE_OWNS, showable } from '../stage.mjs';
@@ -69,7 +69,7 @@ function appear(state, content, ctx, args) {
 
 /* Quest — 接下 · 交差 · 撂下 (design.md § 差事). The world's errands, taken by
    the player and counted by the rules. `take` at the giver; `turn` wherever he
-   stands, the moment the counts are met; `drop` is WoW's abandon, no penalty. */
+   stands, the moment the counts are met (a person's, where that person is); `drop` is WoW's abandon, no penalty. */
 export function quest(state, content, ctx, args) {
   const id = String(args.id ?? ''), lang = state.lang;
   const action = String(args.action ?? 'take');
@@ -112,6 +112,7 @@ export function quest(state, content, ctx, args) {
   if (!s.quests[id]) return refuse('not-taken', null);
   if (questDoneBefore(s, id)) return refuse('already-done', null);
   if (!questReady(content, s, q)) return refuse('not-done', null, { need: countsOf(content, s, q).map(n => ({ kind: n.kind, have: n.have, n: n.n })) });
+  if (!withGiver(s, q)) return refuse('not-with-giver', awayLine(content, s, q), { at: placeName(content, s, placeOf(content, q.from.place)) });
   // What the need consumed: a `carry` hands the thing over.
   const h = complete(content, s, ctx, id, q);
   s.handed = [...(s.handed ?? []), h].slice(-HANDED_KEEP);

@@ -1701,7 +1701,11 @@ are the only writer and a counter nobody can verify is a lie:
    NOT copy WoW: no walking back to the giver. The line in the book turns into
    a 交差 button the instant the count is met, anywhere; the rules pay from the
    capped table and offer `then`, the next link. A chain still walks the player
-   across a province — it just never walks them backwards.
+   across a province — it just never walks them backwards. **Except for a
+   person** (his, 2026-09-29): an errand whose giver is a person (`from.person`)
+   is handed where that person is — 阿禾's 萝卜 at 坊市, not at 渡口. Done
+   elsewhere, the row reads 「交给阿禾 · 在坊市」 and 交差 refuses in-world
+   (`not-with-giver`); arriving there, it hands itself in (or waits for the tap, a `carry`).
 5. **撂下** — `Quest drop --id`, WoW's abandon, no penalty.
 
 ### 事簿 — three lines, not twenty-five
