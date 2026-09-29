@@ -383,3 +383,15 @@ test('a session opens with the recap for Ling, once; no saved summary reaches he
     fs.rmSync(data, { recursive: true, force: true });
   }
 });
+
+test('第一章\'s riddle hints until the 秘境 is behind him — 息壤 is named only after wm-xirang (his, 2026-09-29)', async () => {
+  const { mysteryOf } = await import('../scripts/rules/story.mjs');
+  const ch = content.chapters['00-waimen'];
+  const before = mysteryOf(ch, { lang: 'zh', done_scenes: ['wm-ahe', 'wm-mijing', 'wm-kunzhen'] });
+  const after = mysteryOf(ch, { lang: 'zh', done_scenes: ['wm-mijing', 'wm-xirang'] });
+  assert.doesNotMatch(before, /息壤/);
+  assert.match(after, /息壤/);
+  assert.doesNotMatch(mysteryOf(ch, { lang: 'en', done_scenes: [] }), /breathing soil/i);
+  assert.ok(ch.scenes[ch.mystery_after.after], 'the scene it waits on is the chapter\'s own');
+  for (const c of Object.values(content.chapters)) if (c.mystery_after) assert.ok(c.mystery_after.zh && c.mystery_after.en && c.scenes[c.mystery_after.after], c.id);
+});

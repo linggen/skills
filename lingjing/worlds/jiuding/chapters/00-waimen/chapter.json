@@ -144,7 +144,13 @@
     "zh": "外门的日子，是从交钱开始的。",
     "en": "Life in the outer court starts with paying up."
   },
+  "_mystery": "The riddle hints until the 秘境 is behind him: 息壤 is named only once wm-xirang is passed (story.mjs mysteryOf).",
   "mystery": {
+    "zh": "泗水底下的秘境，人人手里一张地图。地图上没画的地方，有什么？",
+    "en": "Everyone who enters the realm under the Si carries a map. What lies where the map shows nothing?"
+  },
+  "mystery_after": {
+    "after": "wm-xirang",
     "zh": "三百年没人进过的石室里，为什么放着一撮息壤？",
     "en": "Why was there a pinch of breathing soil in a stone chamber no one had entered in three hundred years?"
   }

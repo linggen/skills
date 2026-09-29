@@ -74,6 +74,14 @@ function nowOf(content, state, now) {
   return t?.text ?? t?.title ?? null;
 }
 
+/* A chapter's riddle as the player may know it: `mystery`, until the scene
+   `mystery_after.after` is passed — then its own words. 第一章 names 息壤 only
+   once the 秘境 is behind him (his, 2026-09-29: the 录 spoiled it from the start). */
+export const mysteryOf = (ch, state, lang = state.lang) => {
+  const later = ch?.mystery_after;
+  return pick(later && (state.done_scenes ?? []).includes(later.after) ? later : ch?.mystery, lang);
+};
+
 const nameOf = (content, id, lang) => pick(CAST[id] ?? creatureOf(content, id)?.name, lang) ?? null;
 
 /* 人物谱: who the story has put before the player — the scenes passed, the
@@ -120,9 +128,9 @@ export function story(state, content, ctx, args = {}) {
     ...done.map(ch => {
       const lines = recapLines(content, state, ch), title = pick(ch.title, lang);
       if (short) return { title, state: 'done', recap: lines.slice(ch.id === tail ? -3 : -1) };
-      return { id: ch.id, title, state: 'done', intro: pick(ch.intro, lang), recap: lines, mystery: pick(ch.mystery, lang) };
+      return { id: ch.id, title, state: 'done', intro: pick(ch.intro, lang), recap: lines, mystery: mysteryOf(ch, state, lang) };
     }),
-    ...(cur ? [{ id: cur.id, title: pick(cur.title, lang), state: 'current', intro: pick(cur.intro, lang), recap: recapLines(content, state, cur), mystery: pick(cur.mystery, lang), now: nowOf(content, state, ctx.now) }] : []),
+    ...(cur ? [{ id: cur.id, title: pick(cur.title, lang), state: 'current', intro: pick(cur.intro, lang), recap: recapLines(content, state, cur), mystery: mysteryOf(cur, state, lang), now: nowOf(content, state, ctx.now) }] : []),
   ];
   const recalled = hasCompanion(state) ? recalledOf(content, state).map(r => r.line) : null;
   const her = short && recalled ? recalled.slice(-3) : recalled;
@@ -132,7 +140,7 @@ export function story(state, content, ctx, args = {}) {
     result: {
       ok: true, cauldrons: short ? cauldrons.map(({ province, state: st }) => ({ province, state: st })) : cauldrons, found: cauldrons.filter(c => c.state === 'found').length, chapters,
       people: short ? people.map(({ name, kind }) => ({ name, kind })) : people,
-      her, open: cur?.mystery ? [pick(cur.mystery, lang)] : [], ending: endingOf(content, state),
+      her, open: cur?.mystery ? [mysteryOf(cur, state, lang)] : [], ending: endingOf(content, state),
       ...(short ? {} : { cards: cardBook(content, state) }),
       // 银月的记忆 — the album in 录: eight frames, lit one by one (rules/memories.mjs).
       ...(short ? {} : { album: albumOf(content, state) }),
@@ -178,7 +186,7 @@ export function recapLook(content, state) {
   }
   if (!lines.length) return {};
   const cur = currentOf(content, state);
-  return { recap_due: true, recap: { lines: [...new Set(lines)].slice(-RECAP_LINES), ...(cur ? { chapter: pick(cur.title, state.lang), mystery: pick(cur.mystery, state.lang) } : {}) } };
+  return { recap_due: true, recap: { lines: [...new Set(lines)].slice(-RECAP_LINES), ...(cur ? { chapter: pick(cur.title, state.lang), mystery: mysteryOf(cur, state) } : {}) } };
 }
 
 /* Look's chapter, with its intro while it has only just begun (no scene of it
@@ -216,13 +224,13 @@ export function storyNode(content, before, s, scene, exit, now) {
     kind, at: now.toISOString(),
     chapter: { id: ch.id, title: pick(ch.title, lang) },
     ...(scene.recap ? { recap: fill(pick(scene.recap, lang), s, content) } : {}),
-    ...(ch.mystery ? { mystery: pick(ch.mystery, lang) } : {}),
+    ...(ch.mystery ? { mystery: mysteryOf(ch, s, lang) } : {}),
     ...(kind === 'cauldron' ? { found } : {}),
     ...(gift ? { gift: { name: pick(gift.name, lang), does: pick(gift.does, lang), cost: costKnown(content, s) } } : {}),
     ...(memory.length ? { memory } : {}),
     ...(unease ? { unease } : {}),
     ...(ended && ch.ending ? { ending: pick(ch.ending.title, lang) } : {}),
-    ...(next ? { next: { id: next.id, title: pick(next.title, lang), mystery: pick(next.mystery, lang) } } : {}),
+    ...(next ? { next: { id: next.id, title: pick(next.title, lang), mystery: mysteryOf(next, s, lang) } } : {}),
   };
   return node;
 }
