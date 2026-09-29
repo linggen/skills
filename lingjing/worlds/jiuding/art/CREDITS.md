@@ -81,10 +81,10 @@ house-style reference) 褚先生 孙二狗 内门师姐 周衡; the things `item
 paint: 舅舅 玄沉子 渡叔, the other things of the list, the other eighteen creatures. A creature's
 old woodcut stays at its old path as its 「原图」 (`art_plate`, the table above).
 
-The 经脉 · 穴位 figures are our own SVG: `codex/mannequin-{profile,back,front}.svg`
-(`tools/mannequin.py`), a mannequin after the 宋天圣针灸铜人, with every label, point and channel
-drawn by the codex's `marks`. The plate they follow, 《性命圭旨·反照图》 (Ming, public domain,
-Wikimedia Commons), is kept as `codex/fanzhao-scan.webp`, the 三关 figure's 「原图」.
+The 经脉 · 穴位 figures are painted by Codex with their labels (each checked by eye); the codex's
+`marks` sit on the painted points. `codex/sanguan.webp` — 「人体背面·督脉三关」, painted with Codex
+for Hanli, 2026-09-29 (webp q80, 1448×1086). The plate the passes follow, 《性命圭旨·反照图》 (Ming,
+public domain, Wikimedia Commons), is kept as `codex/fanzhao-scan.webp`, its 「原图」.
 
 ## The prologue — people and panels (2026-09-28; the panels retired and the people repainted 2026-09-29, above)
 

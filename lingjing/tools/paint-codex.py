@@ -8,10 +8,14 @@ the 图鉴's painter; its silver fox is the HOUSE STYLE — fine graphite and in
 白描 with a soft grey wash on warm aged paper, one subject, nothing else. The
 山海经 creatures are painted too (his, 2026-09-29: 「用codex重画山海经吧」) from their
 own classical line, every countable feature spelled out — the old woodcut stays
-as the entry's 「原图」 (creatures.json `art_plate`). 经脉 · 穴位 figures are SVG on
-the mannequin (tools/mannequin.py), never painted.
+as the entry's 「原图」 (creatures.json `art_plate`). 经脉 · 穴位 figures are painted
+WITH their labels (his pick, 2026-09-29), each label checked by eye; the codex
+`marks` sit on the painted points.
 
-One job at a time (Codex runs one image per call, ~1–2 min). Each picture is
+One job at a time (Codex runs one image per call, ~1–2 min). Resumable: a
+subject whose picture is already in the output folder is skipped (paint a review
+round into --out, look, then copy the approved ones into art/); at a usage limit
+it stops at once instead of retrying. Each picture is
 looked at before it ships: right age and look, Chinese dress and setting, no
 text, no seal, no seam — re-roll with --force --only <id>. The hero is NEVER
 painted. 阿禾 is painted twice: a girl (beside a boy hero) and a boy (beside a
@@ -100,6 +104,9 @@ def paint(out, subject, aspect, force):
   r = subprocess.run(['codex', 'exec', '-m', 'gpt-5.5', '--skip-git-repo-check', '-s', 'workspace-write', prompt],
                      cwd=out.parent, capture_output=True, text=True)
   if not png.exists():
+    said = (r.stdout + r.stderr).lower()
+    if 'usage limit' in said or 'out of credits' in said or 'rate limit' in said:
+      raise SystemExit(f'{out.stem}: Codex limit reached — stopped; rerun later (done pictures are kept, so it resumes)')
     return f'failed: {r.stderr.strip()[-200:]}'
   # 640 px on the long side, webp — the same weight as the art it replaces.
   size = '0 960' if aspect.startswith('portrait') else '960 0'

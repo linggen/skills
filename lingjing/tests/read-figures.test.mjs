@@ -108,10 +108,11 @@ test('a subject\'s card stands once, after the paragraph of its first appearance
 
 test('a knowledge figure stands under every paragraph that names it, marks and all', () => {
   const html = renderMarkdown('**银月**：[尾闾，夹脊，玉枕]{注=三关}。三道关。', { codex: CODEX, src, chapter: '02' });
-  assert.match(html, /^<div class="noted"><p><b>银月<\/b>：<span class="gloss" role="button" tabindex="0" data-note="三关">尾闾，夹脊，玉枕<\/span>。三道关。<\/p><figure class="notefig" data-note="三关"><div class="pic"><img src="\.\.\/worlds\/jiuding\/art\/codex\/mannequin-profile\.svg"/);
+  assert.match(html, /^<div class="noted"><p><b>银月<\/b>：<span class="gloss" role="button" tabindex="0" data-note="三关">尾闾，夹脊，玉枕<\/span>。三道关。<\/p><figure class="notefig" data-note="三关"><div class="pic"><img src="\.\.\/worlds\/jiuding\/art\/codex\/sanguan\.webp"/);
   assert.match(html, /<svg class="marks"/);
   assert.match(html, /<b>三关<\/b><span>督脉/);
-  assert.match(html, /仿宋天圣针灸铜人/, 'the base credits the bronze figure');
+  assert.match(html, /Codex 所绘/, 'the figure credits its painter');
+  assert.doesNotMatch(html, /<text /, 'the picture carries its own painted labels: the marks draw none');
   assert.match(html, /data-scan="\.\.\/worlds\/jiuding\/art\/codex\/fanzhao-scan\.webp"/, '「原图」 opens the old plate');
   assert.match(renderMarkdown('[a]{注=三关}', { codex: codexOf(FILES, { lang: 'en' }), lang: 'en' }), /<b>The Three Passes<\/b>/);
   const ch = chapters.find((c) => c.id === '02');
@@ -155,35 +156,38 @@ test('marks: points and paths sit inside the picture, and paths go through point
     }
     if (m.points?.length || m.paths?.length) assert.ok(m.ratio > 0, `${e.id}: ratio`);
   }
-  // 三关 on the profile mannequin (anatomy per 《性命圭旨》): the passes up the
-  // back, 尾闾 lowest (the coccyx tip), 玉枕 highest (the back of the head);
-  // the 任脉 down the front through the three 丹田; the back first, then the front.
+  // 三关 on his painted figure (the back): the marks sit on the three painted dots
+  // (measured), 尾闾 lowest (the coccyx tip), 玉枕 highest (the back of the head).
   const m = CODEX.get('三关').marks;
   const pt = (id) => m.points.find((p) => p.id === id);
   assert.ok(pt('尾闾').y > pt('夹脊').y && pt('夹脊').y > pt('玉枕').y, 'the qi climbs');
-  assert.ok(['尾闾', '夹脊', '玉枕'].every((id) => pt(id).x > 0.5) && ['上丹田', '中丹田', '下丹田'].every((id) => pt(id).x < 0.5), 'back on the right, front on the left');
-  assert.ok(pt('下丹田').y > pt('中丹田').y && pt('中丹田').y > pt('上丹田').y);
-  const [du, ren] = m.paths;
-  assert.deepEqual([du.id, du.tone, ren.id, ren.tone], ['督脉', 'du', '任脉', 'ren']);
-  assert.ok(ren.at > du.at, 'the three passes light first, then the loop comes down the front');
-  assert.deepEqual(du.through.slice(0, 4), ['尾闾', '命门', '夹脊', '玉枕']);
+  assert.deepEqual(m.points.map((p) => [p.id, p.x, p.y]), [['尾闾', 0.4943, 0.519], ['夹脊', 0.4943, 0.3182], ['玉枕', 0.4942, 0.1091]]);
+  assert.equal(m.ratio, 0.75, '1448×1086');
+  assert.equal(m.labels, false);
+  assert.deepEqual(m.paths[0].through, ['尾闾', '夹脊', '玉枕']);
 });
 
-test('marksSvg draws the marks over the picture; the lights wait for the flow, the back before the front', () => {
+test('marksSvg draws the marks over the picture; the lights wait for the flow; channels in colour, arrows, labels either side', () => {
   assert.equal(marksSvg(undefined), '');
   assert.equal(marksSvg({}), '');
   const m = CODEX.get('三关').marks;
   const svg = marksSvg(m);
-  assert.match(svg, /^<svg class="marks" viewBox="0 0 100 150\.00" aria-hidden="true">/);
-  assert.equal((svg.match(/<path class="m-flow/g) ?? []).length, 2);
-  assert.match(svg, /<marker id="m-arrow-du"[\s\S]*<marker id="m-arrow-ren"/, 'arrows the way the qi runs, each channel its colour');
-  assert.match(svg, /class="m-flow m-ren"[^>]*style="--at:2\.60s"/);
-  assert.equal((svg.match(/<circle /g) ?? []).length, m.points.length);
+  assert.match(svg, /^<svg class="marks" viewBox="0 0 100 75\.00" aria-hidden="true">/);
+  assert.equal((svg.match(/<path class="m-flow m-du"/g) ?? []).length, 1);
+  assert.match(svg, /<marker id="m-arrow-du"/, 'arrows the way the qi runs');
+  assert.equal((svg.match(/<circle /g) ?? []).length, 3);
+  assert.doesNotMatch(svg, /<text /, 'labels: false — the painted labels stand');
   const t = Object.fromEntries([...svg.matchAll(/data-mark="([^"]+)" style="--t:([\d.]+)s"/g)].map(([, id, s]) => [id, Number(s)]));
   assert.ok(t['尾闾'] < t['夹脊'] && t['夹脊'] < t['玉枕'], 'the passes light one after another');
-  assert.ok(t['玉枕'] < t['上丹田'] && t['上丹田'] < t['中丹田'] && t['中丹田'] < t['下丹田'], 'then down the front');
-  assert.match(svg, /<text x="[\d.]+" y="[\d.]+" class="r">尾闾<\/text>/, 'a back point\'s label sits right of it');
-  assert.match(marksSvg(m, 'en'), />Weilü</);
+  // the loop: a second channel starts later, its own colour; a label sits right with side: 'r'
+  const loop = marksSvg({ ratio: 1, points: [{ id: 'a', label: '甲', x: 0.6, y: 0.8, side: 'r' }, { id: 'b', label: { zh: '乙', en: 'B' }, x: 0.4, y: 0.3 }],
+    paths: [{ id: 'du', tone: 'du', through: ['a'], d: [[0.6, 0.9], [0.6, 0.1]] }, { id: 'ren', tone: 'ren', at: 2.6, through: ['b'], d: [[0.4, 0.1], [0.4, 0.9]] }] });
+  assert.match(loop, /class="m-flow m-ren"[^>]*style="--at:2\.60s"/);
+  assert.match(loop, /<marker id="m-arrow-du"[\s\S]*<marker id="m-arrow-ren"/);
+  assert.match(loop, /class="r">甲<\/text>/);
+  const lt = Object.fromEntries([...loop.matchAll(/data-mark="([^"]+)" style="--t:([\d.]+)s"/g)].map(([, id, s]) => [id, Number(s)]));
+  assert.ok(lt.b > lt.a, 'the front waits for the back');
+  assert.match(marksSvg({ ratio: 1, points: [{ id: 'b', label: { zh: '乙', en: 'B' }, x: 0.4, y: 0.3 }] }, 'en'), />B</);
   assert.match(marksSvg({ ratio: 1, points: [{ id: 'a', label: '<x>', x: 0.5, y: 0.5 }] }), /&lt;x&gt;/);
 });
 

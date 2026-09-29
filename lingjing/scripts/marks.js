@@ -20,7 +20,8 @@ function along(d, p) {
 /// A path's flow starts `at` seconds in (the 三关 climb, then the 任脉 down the
 /// front: one 小周天), wears its `tone` (du · ren — each channel its colour) and
 /// carries arrows the way the qi goes; a point's label sits left of it, or right
-/// with `side: "r"`. Empty or missing marks draw nothing.
+/// with `side: "r"` — or none at all with `labels: false`, when the picture
+/// carries its own painted labels. Empty or missing marks draw nothing.
 export function marksSvg(marks, lang = 'zh') {
   const points = marks?.points ?? [], paths = marks?.paths ?? [];
   if (!points.length && !paths.length) return '';
@@ -38,7 +39,7 @@ export function marksSvg(marks, lang = 'zh') {
     const t = path ? at(path) + along(path.d, p) * FLOW : 0;
     const [x, y] = xy([p.x, p.y]).split(' ').map(Number);
     const right = p.side === 'r';
-    return `<g class="m-pt${tone(path ?? {})}" data-mark="${esc(p.id)}" style="--t:${t.toFixed(2)}s"><circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="2"/><text x="${(right ? x + 4 : x - 4).toFixed(2)}" y="${y.toFixed(2)}"${right ? ' class="r"' : ''}>${esc(label(p.label))}</text></g>`;
+    return `<g class="m-pt${tone(path ?? {})}" data-mark="${esc(p.id)}" style="--t:${t.toFixed(2)}s"><circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="2"/>${marks.labels === false ? '' : `<text x="${(right ? x + 4 : x - 4).toFixed(2)}" y="${y.toFixed(2)}"${right ? ' class="r"' : ''}>${esc(label(p.label))}</text>`}</g>`;
   }).join('');
   // An arrow at each bend, the way the qi runs, in its channel's colour (codex.css).
   const tones = [...new Set(paths.map((p) => (p.tone && /^[a-z]+$/.test(p.tone) ? p.tone : 'way')))];

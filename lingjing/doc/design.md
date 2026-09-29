@@ -1469,11 +1469,13 @@ Superseded; the original is in archive.md. The card fight (`## 斗法 v3`) and `
   one house style — fine ink 白描 with a soft grey wash on warm aged paper, one subject, no text — every
   picture checked by eye and re-rolled until right. 山海经 creatures are painted from their own classical line
   with every countable feature spelled out; the old woodcut stays as the entry's 「原图」 (`art_plate`).
-  **Knowledge figures are never painted:** SVG on one base set, a mannequin after the 宋天圣针灸铜人
-  (`tools/mannequin.py`: profile · back · front, no face, no text), every label, point and channel our own
-  `marks` in large simplified Chinese — 三关 on the profile: the passes light up the 督脉 (尾闾 → 夹脊 → 玉枕),
-  then the 任脉 runs down the front through the three 丹田 (one 小周天). The plates they follow
-  (《性命圭旨》) are credited, the scan a tap away.
+  **Knowledge figures** (经脉 · 穴位 · 洛书 · 五行 …, his pick 2026-09-29 over a hand-built SVG mannequin that
+  read as a placeholder): Codex paints them WITH their labels in the house style; each label's place and wording
+  is checked by eye (redone if wrong), and the codex `marks` sit exactly on the painted points for the glow and
+  the qi's flow (`labels: false` — the painted words stand). 三关: 「人体背面·督脉三关」, a robed figure from
+  behind, the marks measured onto its three dots (玉枕 · 夹脊 · 尾闾); the plate the passes follow,
+  《性命圭旨·反照图》, is its 「原图」, a tap away. marks.js can also time a second channel (the 任脉 down the
+  front, its own colour, arrows) for the 小周天 figure to come.
 - **银月: one colour picture per chapter**, at her memory (§ 哇时刻 ③; memories.json `art`, the lint wants one).
 
 The prologue itself (built 2026-09-28): 27 scenes in `00-prologue`, the passage in

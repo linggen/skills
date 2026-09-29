@@ -242,30 +242,31 @@
    },
    "lines": {
     "zh": [
-     "督脉沿脊背正中上行，小周天的气从这里往上走，要过三道关：尾闾、夹脊、玉枕。",
+     "督脉沿脊背正中上行，小周天的气从这里往上走，要过三道关。",
      "尾闾在尾骨尖，夹脊在两肩胛之间，玉枕在后脑。",
-     "过了三关，气从头顶下来，沿任脉经上、中、下三丹田，回到丹田——这就是小周天。"
+     "三关过了，气从头顶下来，沿任脉回到丹田——这就是小周天。"
     ],
     "en": [
-     "The Du channel runs up the middle of the back; the small circuit's qi climbs it through three passes: Weilü, Jiaji, Yuzhen.",
+     "The Du channel runs up the middle of the back; the small circuit's qi climbs it through three passes.",
      "Weilü at the tip of the tailbone, Jiaji between the shoulder blades, Yuzhen at the back of the head.",
-     "Past the three, the qi comes over the crown and down the Ren channel through the upper, middle and lower dantian: the small circuit."
+     "Past the three, the qi comes over the crown and back down the Ren channel to the dantian: the small circuit."
     ]
    },
-   "image": "art/codex/mannequin-profile.svg",
+   "image": "art/codex/sanguan.webp",
    "credit": {
-    "zh": "仿宋天圣针灸铜人的假人，侧身；点与线据《性命圭旨》诸图。",
-    "en": "A mannequin after the Song bronze acupuncture figure, in profile; points and channels after the Xingming guizhi plates."
+    "zh": "Codex 所绘（人体背面·督脉三关），字与点经人眼校过；三关的位置据《性命圭旨》。",
+    "en": "Painted with Codex (the back, the Du channel's three passes), labels checked by eye; the passes placed after the Xingming guizhi."
    },
    "source": {
     "url": "https://commons.wikimedia.org/wiki/File:%E6%80%A7%E5%91%BD%E5%9C%AD%E6%97%A8_%E5%8F%8D%E7%85%A7%E5%9C%96.png",
-    "license": "Our own drawing (tools/mannequin.py); the plates it follows are public domain",
-    "via": "仿宋天圣针灸铜人 · 《性命圭旨》〈反照图〉〈时照图〉 (Ming), Wikimedia Commons",
+    "license": "Painted for Lingjing (Codex CLI image tool, 2026-09-29); the plate it follows is public domain",
+    "via": "his Codex picture (output/lingjing/three-gates-meridian.png); 《性命圭旨》〈反照图〉 (Ming), Wikimedia Commons",
     "scan": "art/codex/fanzhao-scan.webp",
-    "edit": "base: tools/mannequin.py (art/codex/mannequin-profile.svg); every label, point and channel is these marks"
+    "edit": "webp q80, 1448×1086; the marks sit on the painted dots (measured: 玉枕 0.4942/0.1091, 夹脊 0.4943/0.3182, 尾闾 0.4943/0.5190)"
    },
    "marks": {
-    "ratio": 1.5,
+    "ratio": 0.75,
+    "labels": false,
     "points": [
      {
       "id": "尾闾",
@@ -273,19 +274,8 @@
        "zh": "尾闾",
        "en": "Weilü"
       },
-      "x": 0.59,
-      "y": 0.606,
-      "side": "r"
-     },
-     {
-      "id": "命门",
-      "label": {
-       "zh": "命门",
-       "en": "Mingmen"
-      },
-      "x": 0.573,
-      "y": 0.5,
-      "side": "r"
+      "x": 0.4943,
+      "y": 0.519
      },
      {
       "id": "夹脊",
@@ -293,9 +283,8 @@
        "zh": "夹脊",
        "en": "Jiaji"
       },
-      "x": 0.597,
-      "y": 0.347,
-      "side": "r"
+      "x": 0.4943,
+      "y": 0.3182
      },
      {
       "id": "玉枕",
@@ -303,46 +292,8 @@
        "zh": "玉枕",
        "en": "Yuzhen"
       },
-      "x": 0.583,
-      "y": 0.164,
-      "side": "r"
-     },
-     {
-      "id": "百会",
-      "label": {
-       "zh": "百会",
-       "en": "Baihui"
-      },
-      "x": 0.5,
-      "y": 0.058,
-      "side": "r"
-     },
-     {
-      "id": "上丹田",
-      "label": {
-       "zh": "上丹田",
-       "en": "Upper dantian"
-      },
-      "x": 0.43,
-      "y": 0.113
-     },
-     {
-      "id": "中丹田",
-      "label": {
-       "zh": "中丹田",
-       "en": "Middle dantian"
-      },
-      "x": 0.437,
-      "y": 0.333
-     },
-     {
-      "id": "下丹田",
-      "label": {
-       "zh": "下丹田",
-       "en": "Lower dantian"
-      },
-      "x": 0.447,
-      "y": 0.522
+      "x": 0.4942,
+      "y": 0.1091
      }
     ],
     "paths": [
@@ -352,95 +303,29 @@
       "at": 0,
       "through": [
        "尾闾",
-       "命门",
        "夹脊",
-       "玉枕",
-       "百会"
+       "玉枕"
       ],
       "d": [
        [
-        0.53,
-        0.622
+        0.4943,
+        0.545
        ],
        [
-        0.59,
-        0.606
+        0.4943,
+        0.519
        ],
        [
-        0.573,
-        0.5
+        0.4943,
+        0.3182
        ],
        [
-        0.597,
-        0.347
+        0.4942,
+        0.1091
        ],
        [
-        0.587,
-        0.256
-       ],
-       [
-        0.583,
-        0.164
-       ],
-       [
-        0.55,
+        0.4942,
         0.08
-       ],
-       [
-        0.5,
-        0.058
-       ]
-      ]
-     },
-     {
-      "id": "任脉",
-      "tone": "ren",
-      "at": 2.6,
-      "through": [
-       "上丹田",
-       "中丹田",
-       "下丹田"
-      ],
-      "d": [
-       [
-        0.5,
-        0.058
-       ],
-       [
-        0.45,
-        0.071
-       ],
-       [
-        0.43,
-        0.113
-       ],
-       [
-        0.437,
-        0.183
-       ],
-       [
-        0.453,
-        0.239
-       ],
-       [
-        0.437,
-        0.333
-       ],
-       [
-        0.437,
-        0.433
-       ],
-       [
-        0.447,
-        0.522
-       ],
-       [
-        0.487,
-        0.6
-       ],
-       [
-        0.53,
-        0.622
        ]
       ]
      }
