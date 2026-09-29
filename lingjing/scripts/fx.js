@@ -189,19 +189,20 @@ export async function playHoming(slot, { geo, ink, province, frame, paint, names
   grain.blendMode = 'multiply';
   root.addChild(grain);
 
-  const drawSoak = () => app.renderer.render({ container: soakSrc, target: rt, clear: true });
-  drawSoak();
+  // Each frame: the camera where the timeline has it (never a tween callback, which a seek may skip), then the soak's mask.
+  let aim = () => {};
+  const drawSoak = () => { aim(); app.renderer.render({ container: soakSrc, target: rt, clear: true }); };
   app.ticker.add(drawSoak);
 
   // One timeline: the camera, the drop, the soak and its bleed, the rivers, the seal (and a small shake), the water, the moons.
   const target = camOf(geo, frame);
   const view = { s: 1, tx: 0, ty: 0 };
   const svgCam = svg.querySelector('.cam');
-  const aim = () => {
+  aim = () => {
     cam.scale.set(view.s); cam.position.set(view.tx, view.ty);
     svgCam.style.transform = `translate(${view.tx}px, ${view.ty}px) scale(${view.s})`;
   };
-  aim();
+  drawSoak();
   const at = (ms) => ms / 1000;
   const rivers = svg.querySelectorAll('.rivers.draw path');
   const seal = svg.querySelector('.inkseal.thud .sealbody');
@@ -211,7 +212,7 @@ export async function playHoming(slot, { geo, ink, province, frame, paint, names
   if (seal) gsap.set(seal, { opacity: 0, scale: 2.4, transformOrigin: '50% 50%' });
   gsap.set(moons, { opacity: 0, y: 6 });
   const tl = gsap.timeline({ paused: true });
-  tl.to(view, { s: target.s, tx: target.tx, ty: target.ty, duration: 1.4, ease: 'power2.inOut', onUpdate: aim }, at(HOMING_MS.zoom))
+  tl.to(view, { s: target.s, tx: target.tx, ty: target.ty, duration: 1.4, ease: 'power2.inOut' }, at(HOMING_MS.zoom))
     .to(drop, { alpha: 1, duration: 0.25 }, at(HOMING_MS.drop))
     .to(drop.position, { y: find[1], duration: 0.4, ease: 'power2.in' }, at(HOMING_MS.drop))
     .to(drop, { alpha: 0, duration: 0.3 }, at(HOMING_MS.spread) + 0.05)
