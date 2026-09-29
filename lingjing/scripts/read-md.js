@@ -98,7 +98,6 @@ export function classicsAppendix(cited, classics = {}) {
     const plain = (Array.isArray(c.plain) ? c.plain : [c.plain]).filter(Boolean).map((l) => `<p class="plain"><span class="tag">白话</span>${esc(l)}</p>`).join('');
     return `<article class="dianent" id="${classicAnchor(id)}"><h3>《${esc(c.title)}》</h3><p class="about">${esc(c.about ?? '')}</p>`
       + `<blockquote class="orig" lang="zh-Hant"><span class="tag">原文</span>${esc(c.original)}</blockquote>`
-      + (c.simplified && c.simplified !== c.original ? `<p class="simp" lang="zh-Hans"><span class="tag">简体</span>${esc(c.simplified)}</p>` : '')
       + plain + (c.note ? `<p class="dnote">${esc(c.note)}</p>` : '')
       + `<p class="where">本章见：${refs.map((r) => back(id, r)).join('　')}</p>`
       + `<p class="src">出处：<a href="${esc(src.url ?? '')}" target="_blank" rel="noopener">${esc(src.edition ?? '')}</a>${src.section ? ` · ${esc(src.section)}` : ''}${src.license ? ` · ${esc(src.license)}` : ''}</p></article>`;

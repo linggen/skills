@@ -27,7 +27,7 @@ test('《书名》{典=id} links to its entry at the chapter\'s end, and the ent
   assert.match(html, /<a href="#dian-shennong-1" data-dian-jump="dian-shennong-1">↑ 六·五 · 九转<\/a>/, 'back to the spot, named by its section');
   assert.match(html, /href="#dian-shennong-2"/);
   assert.ok(html.includes(CLASSICS.shennong.original), 'the passage, in the edition\'s own text');
-  assert.ok(html.includes(CLASSICS.shennong.simplified) && html.includes('简体') && html.includes('白话'));
+  assert.ok(!html.includes('简体') && html.includes('白话'), 'no 简体 line (his, 2026-09-29); the 白话 stays');
   assert.ok(html.includes(`href="${CLASSICS.shennong.source.url}"`), 'the source it was copied from');
   assert.ok(html.indexOf('附 · 本章典籍') > html.indexOf('又念一遍'), 'inline, at the end');
   assert.equal(classicAnchor('x'), 'dian-x');
@@ -55,7 +55,6 @@ test('every {典=id} in the book is an entry; every entry has a real source and 
     assert.match(c.source?.url ?? '', /^https:\/\/(zh\.wikisource\.org|ctext\.org)\//, `${id}: a Wikisource or ctext URL`);
     assert.ok(c.source.edition && c.source.section && c.source.license, `${id}: edition, section, license`);
     assert.ok(c.original && [...c.original].length <= 150, `${id}: the passage, ≤150 characters`);
-    assert.ok(c.simplified && [...c.simplified].length === [...c.original].length, `${id}: the simplified rendering, char for char`);
     assert.ok(Array.isArray(c.plain) && c.plain.length >= 1 && c.plain.length <= 2, `${id}: one or two lines of 白话`);
   }
 });
