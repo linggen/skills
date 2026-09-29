@@ -6,15 +6,12 @@
 
 import '/shared/chat-bridge.js';
 import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from '/shared/api.js';
-// And a namespace: a name the served /shared/api.js doesn't export yet
-// (`engineUiUrl`) must not fail the whole page.
-import * as sharedApi from '/shared/api.js';
 import { verb, content, SCRATCH, worldPath } from './rules.js';
 import { holdPlaceholder } from './invite.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
-import { boardDoneToday, petStageUrl, stageCards, stageSlots } from './stage.mjs';
+import { boardDoneToday, stageCards, stageSlots } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, pickOf, spoilsHtml } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
@@ -1124,9 +1121,11 @@ function draw() {
   // She is always at the player's side: on the stage whenever the game is
   // open, scene or road, not only where a scene casts her.
   $('stage').hidden = false;
-  // She stands there only once she has been found (his rule, 2026-09-17).
+  // She stands there only once she has been found (his rule, 2026-09-17) —
+  // as the moon and her name, never her 3D body: in this world she is the
+  // silver fox of the story, and the desktop girl did not fit it (his,
+  // 2026-09-29: 「3D 模型就不用放在webUI了吧，和剧情合不上」).
   const her = herHere() && !bout;
-  stageYinyue(her, Boolean(bout) && herHere());
   $('stageName').textContent = her ? look.companion.name : '';
   $('askHerBtn').hidden = !her;
   if (her) $('askHerBtn').textContent = words().askHer.replace('{name}', look.companion.name);
@@ -2691,39 +2690,6 @@ function recapTold() {
   voice.moment('recap', { zh, en }, { mood: 'relaxed' });
 }
 
-/* Yinyue on the stage: the engine's pet view, loaded as a stage so it
-   outranks the desktop corner. Loaded while the game is open — the gate
-   unloads it, which releases her, and she goes back to wherever she was.
-   The moon stands in until the view has loaded. */
-function stageYinyue(on, keep = false) {
-  if (SCRATCH) on = false; // her body is the real game's: a scratch save never calls her over
-  const pet = $('pet');
-  const moon = document.querySelector('.stage .moon');
-  // In a fight she is a card, so her body steps aside — but her view stays
-  // loaded: unloaded, it gave up the presenter and she walked into the other
-  // Linggen tab mid-fight (his screen, 2026-09-23: 进战斗后, 银月跑回主页面了).
-  if (!on && keep && pet.dataset.on) { pet.style.visibility = 'hidden'; return; }
-  pet.style.visibility = '';
-  if (!on) { pet.hidden = true; moon.hidden = false; if (pet.dataset.on) { delete pet.dataset.on; delete pet.dataset.told; pet.src = 'about:blank'; } return; }
-  if (pet.dataset.on) return;
-  pet.dataset.on = '1';
-  // The view is transparent, so it can lie over the moon while she is on her
-  // way: the frame's load is only its HTML — the peer, the presenter lock and
-  // her model all come after, and until 2026-09-21 that gap showed nothing at
-  // all (his: 「Yinyue's 3D model is not show」). The moon goes when the view
-  // says she is drawn (`petSays`). An engine too old to say so gets the old
-  // behaviour late — she has been seen to take longer than eight seconds, and
-  // a moon standing a while beats a stage with nobody on it.
-  pet.onload = () => { pet.hidden = false; setTimeout(() => { if (pet.dataset.on && !pet.dataset.told) moon.hidden = true; }, 30000); };
-  pet.src = petStageUrl(sharedApi, location.origin);
-}
-function petSays(e) {
-  const pet = $('pet');
-  if (e.source !== pet.contentWindow || e.data?.type !== 'linggen-pet') return;
-  pet.dataset.told = '1';
-  document.querySelector('.stage .moon').hidden = e.data.event === 'ready';
-}
-window.addEventListener('message', petSays);
 
 /* ── The gate: sign in to play ── */
 
@@ -2741,7 +2707,6 @@ function gate(note = '') {
   drawnStrip = '';
   $('place').textContent = '';
   $('stage').hidden = true;
-  stageYinyue(false);
   $('tray').innerHTML = '';
   $('trayTitle').textContent = '';
   $('focus').innerHTML = `<div class="card gate-card"><div class="cardtitle">${esc(w.signTitle)}</div>

@@ -6,7 +6,7 @@
 .unease-layer { position: absolute; pointer-events: none; }
 
 /* ── 4 · dissolve — silver light, gone, gathered again ── */
-.stage.unease-dissolve .body > .pet, .stage.unease-dissolve .body > .moon { animation: uneaseDissolve var(--unease-ms, 3600ms) ease-in-out both; }
+.stage.unease-dissolve .body > .moon { animation: uneaseDissolve var(--unease-ms, 3600ms) ease-in-out both; }
 @keyframes uneaseDissolve {
   0% { opacity: 1; filter: none; }
   18% { opacity: .9; filter: brightness(2.2) saturate(0) blur(1px); }
@@ -36,7 +36,7 @@
 @keyframes uneaseDim { 0% { opacity: 0; } 20%, 78% { opacity: 1; } 100% { opacity: 0; } }
 
 /* ── 5 · mist — half of her turns to moonlit mist ── */
-.stage.unease-mist .body > .pet, .stage.unease-mist .body > .moon { animation: uneaseMistBody var(--unease-ms, 3800ms) ease-in-out both; }
+.stage.unease-mist .body > .moon { animation: uneaseMistBody var(--unease-ms, 3800ms) ease-in-out both; }
 /* Her lower half is taken by the mist: cut away under it, the mist over the cut. */
 @keyframes uneaseMistBody {
   0% { clip-path: inset(0 0 0 0); filter: none; }
@@ -57,11 +57,11 @@
   38%, 70% { filter: brightness(.12); box-shadow: 0 0 0 0 transparent; opacity: .9; }
   100% { filter: none; box-shadow: 0 0 40px 10px rgba(200, 216, 232, .7); opacity: 1; }
 }
-.stage.unease-moondark .body > .pet, .stage.unease-moondark .body > .moon { animation: uneaseWaver var(--unease-ms, 3200ms) ease-in-out both; }
+.stage.unease-moondark .body > .moon { animation: uneaseWaver var(--unease-ms, 3200ms) ease-in-out both; }
 @keyframes uneaseWaver { 0%, 100% { opacity: 1; filter: none; } 35% { opacity: .5; filter: grayscale(1) blur(1.5px); } 50% { opacity: .75; } 62% { opacity: .45; filter: grayscale(1) blur(2px); } }
 
 /* ── 7 · fade — nearly transparent, the light straight through her, the bell drops ── */
-.stage.unease-fade .body > .pet, .stage.unease-fade .body > .moon { animation: uneaseFade var(--unease-ms, 4000ms) ease-in-out both; }
+.stage.unease-fade .body > .moon { animation: uneaseFade var(--unease-ms, 4000ms) ease-in-out both; }
 @keyframes uneaseFade { 0% { opacity: 1; filter: none; } 22%, 75% { opacity: .1; filter: brightness(1.6) saturate(0); } 100% { opacity: 1; filter: none; } }
 .unease-beam-layer { top: 30%; left: 0; width: 100%; height: 90px; z-index: 2;
   background: linear-gradient(90deg, transparent, rgba(255, 214, 120, .15) 10%, rgba(255, 226, 150, .85) 30%, rgba(255, 240, 200, .95) 50%, rgba(255, 226, 150, .6) 80%, transparent);
@@ -83,6 +83,6 @@
   animation: uneaseGlow var(--unease-ms, 3000ms) linear both; }
 @keyframes uneaseGlow { 0% { opacity: 0; } 15%, 85% { opacity: 1; } 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
-  .stage.unease .body > .pet, .stage.unease .body > .moon { animation: none !important; }
+  .stage.unease .body > .moon { animation: none !important; }
   .unease-layer:not(.unease-glow-layer) { display: none; }
 }

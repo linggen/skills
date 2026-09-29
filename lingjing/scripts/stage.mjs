@@ -354,6 +354,3 @@ export function askMinusStage(ask, owns) {
    connect page when the page is served over linggen.dev — the bare origin
    would load the site's home page there. A /shared/api.js too old to export
    it gets the engine's own origin, as before. */
-export function petStageUrl(api, origin) {
-  return typeof api?.engineUiUrl === 'function' ? api.engineUiUrl('pet=1&stage=1') : `${origin}/?pet=1&stage=1`;
-}

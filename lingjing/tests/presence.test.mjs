@@ -9,7 +9,6 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { createVoice, MOMENTS } from '../scripts/voice.js';
-import { petStageUrl } from '../scripts/stage.mjs';
 import { WORDS } from '../scripts/cards.js';
 
 const SRC = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
@@ -175,10 +174,6 @@ test("onContentBlock: only Ling's blocks move the page; hers open nothing", () =
   assert.ok(old.scope.did.some((d) => d[0] === 'show'));
 });
 
-test("the stage loads her body through the engine's engineUiUrl when /shared/api.js has it", () => {
-  assert.equal(petStageUrl({ engineUiUrl: (q) => `https://linggen.dev/app/connect/abc?${q}` }, 'https://linggen.dev'),
-    'https://linggen.dev/app/connect/abc?pet=1&stage=1');
-  assert.equal(petStageUrl({}, 'http://localhost:9527'), 'http://localhost:9527/?pet=1&stage=1', 'an older api.js: the old URL');
-  assert.match(SRC, /pet\.src = petStageUrl\(sharedApi, location\.origin\);/);
-  assert.match(SRC, /import \* as sharedApi from '\/shared\/api\.js';/, 'a namespace import: a missing name must not break the page');
+test("the game page never loads her 3D body — she is the story's fox (his, 2026-09-29)", () => {
+  assert.doesNotMatch(SRC, /pet\.src|petStageUrl|pet=1&stage=1/);
 });
