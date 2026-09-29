@@ -9,7 +9,7 @@ import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from 
 // And a namespace: a name the served /shared/api.js doesn't export yet
 // (`engineUiUrl`) must not fail the whole page.
 import * as sharedApi from '/shared/api.js';
-import { verb, content } from './rules.js';
+import { verb, content, SCRATCH } from './rules.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
 import { boardDoneToday, petStageUrl, stageCards, stageSlots } from './stage.mjs';
@@ -70,7 +70,8 @@ const IDLE_FACT = { zh: '玩家在这页上静了好一会儿，什么也没动�
 /// not present: no moments, no body on the stage (`companion.asleep`).
 const herHere = () => Boolean(look?.companion?.joined && !look?.companion?.asleep);
 const voice = createVoice({
-  post: (id, fact, flags, opts) => postMoment(fact, flags, opts),
+  // A scratch save (?save=) tells 银月 nothing: she lives in the real game.
+  post: (id, fact, flags, opts) => (SCRATCH ? Promise.resolve(false) : postMoment(fact, flags, opts)),
   sees: () => ({ fighting: Boolean(bout), present: herHere() }),
 });
 /// Resolves true when she will hear it; false when nobody will (the pet off
@@ -305,6 +306,7 @@ async function loadContent(world, force = false) {
 /// The account as the engine sees it. The meter moves with every model call,
 /// so it is read whenever the game is.
 async function readCloud() {
+  if (SCRATCH) return; // a scratch save is never the account's: no gate, no sync
   try {
     cloud = await fetchCloud(SKILL);
   } catch (e) {
@@ -1247,6 +1249,8 @@ function turnEnded() {
 /// waits its turn behind it (his "should it queue instead of hiding the ask
 /// user widget", 2026-09-17 — the skill declares the queue).
 function deliver(text, hidden) {
+  // A scratch save (?save=) never messages Ling: the word is shown, the turn ends.
+  if (SCRATCH) { keep({ doNote: `${SCRATCH_BADGE} · ${text}` }); turnEnded(); return; }
   if (hidden) chat?.sendHidden(text);
   else chat?.send(text);
 }
@@ -2159,6 +2163,8 @@ function greetUnanswered(text = null) {
 
 /// Mounts the chat; answers whether it is a fresh session (not a day picked up).
 async function mountChat() {
+  // A scratch save (?save=) never starts or messages Ling's chat: no recap, no opening turn.
+  if (SCRATCH) { $('chat-panel').innerHTML = `<div class="scratch-chat" style="padding:24px 16px;color:#8a7a66;font-size:13px;line-height:1.8;text-align:center">${esc(SCRATCH_BADGE)}<br>${esc(SCRATCH_NOTE)}</div>`; return false; }
   const resume = await recentSessionId();
   chat = await window.LinggenUI.mount($('chat-panel'), {
     skillName: SKILL,
@@ -2385,6 +2391,7 @@ function recapTold() {
    unloads it, which releases her, and she goes back to wherever she was.
    The moon stands in until the view has loaded. */
 function stageYinyue(on, keep = false) {
+  if (SCRATCH) on = false; // her body is the real game's: a scratch save never calls her over
   const pet = $('pet');
   const moon = document.querySelector('.stage .moon');
   // In a fight she is a card, so her body steps aside — but her view stays
@@ -2450,7 +2457,7 @@ function gate(note = '') {
 async function enter() {
   $('focus').innerHTML = `<div class="loading">${esc(WORDS.zh.loading)} · ${esc(WORDS.en.loading)}</div>`;
   try {
-    await syncCloud(SKILL);
+    if (!SCRATCH) await syncCloud(SKILL);
   } catch (e) {
     console.warn('[lingjing] sync on open', e);
   }
@@ -2492,7 +2499,23 @@ async function greetByHer(grew = null) {
   return true;
 }
 
+/* 测试存档 — a scratch save for live checks (?save=test; rules.js SCRATCH):
+   a badge on the page; `&seed=fresh|real|<fixture>` begins it once, then the
+   URL forgets the seed so a reload plays on. */
+const SCRATCH_BADGE = SCRATCH ? `测试存档 · ${SCRATCH}` : '';
+const SCRATCH_NOTE = '不连 Ling，不发 银月 — 只读写 data/saves/' + (SCRATCH ?? '') + '/';
+async function scratchBoot() {
+  document.body.insertAdjacentHTML('beforeend', `<div class="scratch-badge" title="${esc(SCRATCH_NOTE)}" style="position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:99;padding:2px 10px;border:1px solid #b33a2b;border-radius:3px;background:#fff8ef;color:#b33a2b;font:600 12px/1.6 var(--ui, sans-serif);letter-spacing:.08em;pointer-events:none">${esc(SCRATCH_BADGE)}</div>`);
+  const url = new URL(location.href), from = url.searchParams.get('seed');
+  if (!from) return;
+  const r = await verb('seed', { from }).catch(failed);
+  if (!r.ok) console.warn('[lingjing] seed', r);
+  url.searchParams.delete('seed');
+  history.replaceState(null, '', url);
+}
+
 async function boot() {
+  if (SCRATCH) await scratchBoot();
   $('focus').innerHTML = `<div class="loading">${esc(WORDS.zh.loading)} · ${esc(WORDS.en.loading)}</div>`;
   await readCloud();
   // A cloud declared and no account behind it: the gate. No cloud at all

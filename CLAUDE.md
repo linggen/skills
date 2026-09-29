@@ -17,6 +17,7 @@ Never `rsync --delete` (or rm-and-copy) into `~/.linggen/skills/<name>/` — the
 ## Conventions
 
 - Syntax-check JS with `node --check` before committing (install-skill.sh refuses otherwise); there is no build step — files are served as-is.
+- Live-check Lingjing with ?save=test; never open the plain page in a check.
 - Before committing: `./scripts/check.sh` (CI runs the same on every push) — or piecemeal, `node --test tests/*.test.mjs` at the repo root (every SKILL.md frontmatter in the engine's shape; every script parses, every `.sh` passes `bash -n`, every page's local assets exist), plus the skill's own `node --test <skill>/tests/*.test.mjs`.
 - Skill JS runs in a sandboxed iframe: no `window.confirm/prompt` (silent no-ops in the app shell) — use the shared dialog helpers.
 - Files written via `/api/bash` must end with a trailing newline (sentinel-strip gotcha).

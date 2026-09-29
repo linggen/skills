@@ -2,12 +2,26 @@
 // read and every write is a verb on rules.mjs, the same writer Ling's tools
 // use, so the scene and the chat can never disagree.
 
+/// A scratch save for live checks (`?save=test`): every verb carries
+/// `--save=<name>` and the rules play data/saves/<name>/ — never the player's
+/// own save. The page in this mode never opens Ling's chat (lingjing.js).
+export const SCRATCH = (() => {
+  try {
+    const name = new URLSearchParams(globalThis.location?.search ?? '').get('save');
+    return name && /^[a-z0-9][a-z0-9_-]{0,31}$/i.test(name) ? name : null;
+  } catch {
+    return null;
+  }
+})();
+/// The flags a verb is sent with: its own, then the scratch save's.
+export const flagsOf = (args, scratch = SCRATCH) => [...Object.entries(args).map(([k, v]) => `--${k}=${v}`), ...(scratch ? [`--save=${scratch}`] : [])];
+
 /// One verb: `verb('win', { id: 'alchemy-first' })`. Prints one JSON object;
 /// a refusal comes back as `{ok: false, refused}` rather than a throw. Runs
 /// through the skill's declared page tool (`Verb` in SKILL.md): the engine
 /// knows what may run, one move at a time.
 export async function verb(name, args = {}) {
-  const flags = Object.entries(args).map(([k, v]) => `--${k}=${v}`);
+  const flags = flagsOf(args);
   const res = await fetch('/api/skills/lingjing/tools/Verb', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

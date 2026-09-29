@@ -4,7 +4,9 @@
 //
 //   node rules.mjs <verb> [--key value …]
 //   verbs: init look progress story resolve judge task win duel tame refine tale summarize move trade lang make enter leave
-//          build worlds travel amend art go saves save load forget seclude undo
+//          build worlds travel amend art go saves save load forget seclude undo seed
+//   --save=<name> on any verb plays a scratch save in data/saves/<name>/ (files.mjs);
+//   `seed --save=<name> --from=fresh|real|<fixture>` begins it (never touching data/state.json).
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
 // and never changes state. The save says which world it plays; `init` begins
@@ -25,7 +27,7 @@ import { askOf, tapThen, THEN_RECAP, THEN_TELL, withAsk } from './rules/ask.mjs'
 import { guard, onLook, unconfirmed } from './rules/confirm.mjs';
 import { markSeen, notePage, READS_PAGE, unseen } from './rules/did.mjs';
 import { pageNames, pageThrows } from './rules/core.mjs';
-import { clock, dataDir, freshState, parseArgs, readQuests, savedFile, savedFor, userTurn, userWords, withLock, writeAtomic } from './rules/files.mjs';
+import { clock, dataDir, freshState, homeDir, parseArgs, readQuests, SAVE_NAME, savedFile, savedFor, scratchName, skillDir, userTurn, userWords, withLock, writeAtomic } from './rules/files.mjs';
 import { look, stageAt } from './rules/look.mjs';
 import { closeStaleFight, fightHold } from './rules/tasks.mjs';
 import { seclusionHold } from './rules/seclusion.mjs';
@@ -78,6 +80,7 @@ const TELLS = new Set(['look', 'resolve', 'go']);
 function run(verb, args, reader = null) {
   if (verb === 'guide') return guideVerb(args);
   const stateFile = path.join(dataDir(), 'state.json');
+  if (verb === 'seed') return withLock(stateFile, () => seed(args, stateFile), () => ({ ok: false, refused: 'busy', say: null }));
   return withLock(stateFile, () => guided(verb, args, reader, stateFile, runLocked(verb, args, stateFile, reader)), () => ({ ok: false, refused: 'busy', say: null }));
 }
 
@@ -232,6 +235,27 @@ function runLocked(verb, args, stateFile, reader) {
   return tellFirst(tap ? { ...answer, then: tap } : answer);
 }
 
+/* Seed — a scratch save only (`--save=<name>`): begin it again from the
+   start (`--from=fresh`, the default), from a copy of the player's own save
+   (`--from=real`, read and never written), or from a fixture
+   (tests/fixtures/saves/<name>.json, a bare state or {state}). Its log goes:
+   Undo in a scratch save never reaches back past the seed. */
+function seed(args, stateFile) {
+  if (!scratchName()) return { ok: false, refused: 'not-scratch', say: null };
+  const from = String(args.from ?? 'fresh');
+  const logFile = path.join(dataDir(), 'log.jsonl');
+  const source = from === 'real' ? path.join(homeDir(), 'state.json')
+    : from === 'fresh' ? null
+      : SAVE_NAME.test(from) ? path.join(skillDir(), 'tests', 'fixtures', 'saves', `${from}.json`) : '';
+  if (source === '' || (source && !fs.existsSync(source))) return { ok: false, refused: 'no-seed', from };
+  const doc = source ? JSON.parse(fs.readFileSync(source, 'utf8')) : null;
+  const state = doc?.state ?? doc;
+  fs.rmSync(logFile, { force: true });
+  if (state) writeAtomic(stateFile, JSON.stringify(state));
+  else fs.rmSync(stateFile, { force: true });
+  return { ok: true, seeded: from, save: scratchName() };
+}
+
 /* A passage owed is told before anything else the answer asks (rules/tell.mjs):
    Look's own `then` was written before the passages were attached. */
 function tellFirst(r) {
@@ -359,7 +383,13 @@ export function forLing(value) {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [verb, ...rest] = process.argv.slice(2);
   try {
-    const { for: reader, ...args } = parseArgs(rest);
+    const { for: reader, save, ...args } = parseArgs(rest);
+    // A scratch save (files.mjs): every read and write below goes to data/saves/<name>/.
+    if (save != null && !SAVE_NAME.test(String(save))) {
+      console.log(JSON.stringify({ ok: false, refused: 'bad-save', say: null }));
+      process.exit(0);
+    }
+    if (save != null) process.env.LINGJING_SAVE = String(save);
     const result = run(verb ?? 'look', args, reader ?? null);
     console.log(JSON.stringify(reader === 'ling' ? forLing(result) : result));
   } catch (err) {

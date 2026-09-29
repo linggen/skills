@@ -12,7 +12,15 @@ import { newState } from '../state.mjs';
 // The scripts folder: this file sits one below it, in rules/.
 const HERE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const skillDir = () => path.resolve(HERE, '..');
-const dataDir = () => process.env.LINGJING_DATA || path.resolve(HERE, '../data');
+/* The player's own save: data/ (LINGJING_DATA in tests). */
+const homeDir = () => process.env.LINGJING_DATA || path.resolve(HERE, '../data');
+/* A scratch save for live checks (`--save=test`, the page's `?save=test`):
+   every read and write goes to data/saves/<name>/ instead, so a check never
+   touches the player's state.json or log. The name is one plain word. */
+const SAVE_NAME = /^[a-z0-9][a-z0-9_-]{0,31}$/i;
+const scratchName = () => (SAVE_NAME.test(process.env.LINGJING_SAVE ?? '') ? process.env.LINGJING_SAVE : null);
+const scratchDir = name => path.join(homeDir(), 'saves', name);
+const dataDir = () => (scratchName() ? scratchDir(scratchName()) : homeDir());
 const savesDir = () => path.join(dataDir(), 'saves');
 const savedFile = id => path.join(savesDir(), `${id}.json`);
 const savedFor = id => fs.existsSync(savedFile(id));
@@ -127,4 +135,4 @@ export function parseArgs(argv) {
   return args;
 }
 
-export { clock, dataDir, freshState, LOCK, readQuests, savedFile, savedFor, savesDir, skillDir, userTurn, userWords, withLock, writeAtomic, writeMadeWorld };
+export { clock, dataDir, freshState, homeDir, SAVE_NAME, scratchDir, scratchName, LOCK, readQuests, savedFile, savedFor, savesDir, skillDir, userTurn, userWords, withLock, writeAtomic, writeMadeWorld };
