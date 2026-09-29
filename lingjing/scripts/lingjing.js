@@ -18,7 +18,7 @@ import { WORDS as BATTLE_WORDS, battleHtml, boutSays, pickOf, spoilsHtml } from 
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { WORDS, say as fill, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, ledgerChipHtml, readChipHtml, cardHtml, emergedHtml, trayHtml, trialToldHtml, clockOf, isShut } from './cards.js';
+import { WORDS, say as fill, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, ledgerChipHtml, readChipHtml, cardHtml, emergedHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle } from './cards.js';
 import { pouchHtml } from './pouch.js';
 import { esc } from './esc.js';
 import { thinker, stillAsked } from './think.js';
@@ -1166,7 +1166,7 @@ function boutCtx() {
     catalog: cardCatalog(), artBase: artBase(),
     lang: lang(), words: BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh,
     board: bout.st.mode.board,
-    title: words().subdue ?? '降妖',
+    title: duelTitle(c, words()),
     foeName: c.name, foeArt: c.art ? `${artBase()}${c.art}` : null,
     youName: look.name ?? '', herName: look.companion?.name ?? null,
     // Why this fight, and who speaks in it (the brief carries them when the story gives them).

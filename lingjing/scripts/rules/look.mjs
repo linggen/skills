@@ -204,6 +204,8 @@ function duelBrief(content, state, game, now, { door = false } = {}) {
       root: creature.root, root_name: pick(content.traits.elements[creature.root], lang),
       lean: creature.lean, art: creature.art ?? null, about: pick(creature.about, lang),
       ...(creature.elite ? { elite: true } : {}),
+      // A person met in a bout (the 大比's three), not a beast: the page titles it 比试.
+      ...(creature.person ? { person: true } : {}),
     },
     // Everything the fight is given at the door, and nothing else.
     setup: fightSetup(content, state, creature, now, game.id),
