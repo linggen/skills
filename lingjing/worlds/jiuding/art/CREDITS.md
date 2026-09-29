@@ -87,6 +87,15 @@ the story's baby 小狰 (five tails, one horn, hugging a stalk of 灵草). Where
 狪狪 雷神 (its first roll had five limbs) and 肥遗 (four rolls, the feet never six — it keeps its woodcut). A creature's
 old woodcut stays at its old path as its 「原图」 (`art_plate`, the table above).
 
+When the Codex credits ran out (his: 「用flux吧」, 2026-09-29) the local FLUX (FLUX.2 klein 4B) painted on in the
+same house style, from `tools/paint-flux-codex.py` (English-only prompts, each seed kept listed there; eight seeds
+a round, every picture looked at and only a right one kept): `people/bingyi.webp` — 河伯 冰夷, 「冰夷人面，乘两龙」,
+one man standing on exactly two dragons, one foot on each; `creatures/fangfeng.webp` — 防风氏 (a giant, one head,
+two arms, two legs, an ankle-high cart beside his foot; his FLUX woodcut `fangfeng.webp` stays for the 斗法 card);
+`creatures/tongtong.webp` — 狪狪 (a pig with one pearl in its mouth; the 1597 print stays its 「原图」). Two rounds
+could not make 肥遗 (six legs), 雷神 (a dragon's body with a man's head), 蠪侄 (nine heads and nine tails) or 夔
+(one leg, no horns) come out right: they keep their woodcuts. No outside source.
+
 The 经脉 · 穴位 figures are painted by Codex with their labels (each checked by eye); the codex's
 `marks` sit on the painted points. `codex/sanguan.webp` — 「人体背面·督脉三关」, painted with Codex
 for Hanli, 2026-09-29 (webp q80, 1448×1086). The plate the passes follow, 《性命圭旨·反照图》 (Ming,

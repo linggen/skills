@@ -214,8 +214,8 @@
       },
       "province": "扬",
       "root": "wood",
-      "art": "art/fangfeng.webp",
-      "art_source": "Drawn for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, as a woodcut after the 《国语·鲁语下》 text — 防风氏 is not drawn in the 山海经 editions and no classical plate of him is known; laid on paper by tools/frame.py. See art/CREDITS.md.",
+      "art": "art/creatures/fangfeng.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-29, in the 图鉴's house style after the 《国语·鲁语下》 text (tools/paint-flux-codex.py) — 防风氏 is not drawn in the 山海经 editions and no classical plate of him is known. The FLUX woodcut of 2026-09-24 stays at art/fangfeng.webp for its 斗法 card. See art/CREDITS.md.",
       "art_caption": {
         "zh": "据《国语》新绘",
         "en": "Newly drawn after the Discourses of the States"
@@ -1441,7 +1441,8 @@
       },
       "province": "青",
       "root": "earth",
-      "art": "art/tongtong.webp",
+      "art": "art/creatures/tongtong.webp",
+      "art_plate": "art/tongtong.webp",
       "art_source": "《山海經》蔣應鎬繪圖本，明萬曆刊（c. 1597），卷四 東山經 第二十六圖（左下） — public domain, Wikimedia Commons, File:山海經十八卷 蔣應鎬繪圖 明萬曆間刊本.pdf, page 91; kept in art/plates/tongtong-1597-p91.jpg and laid on paper by tools/frame.py.",
       "art_caption": {
         "zh": "蔣應鎬繪圖本，明萬曆刊",
