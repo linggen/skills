@@ -160,22 +160,23 @@ export async function playHoming(slot, { geo, ink, province, frame, paint, names
   blob.position.set(find[0], find[1]);
   blob.scale.set(0.001);
   const tear = new PIXI.DisplacementFilter({ sprite: fibres, scale: R * 0.22 });
-  blob.filters = [tear, new PIXI.BlurFilter({ strength: 10, quality: 3 })];
+  blob.filters = [tear, new PIXI.BlurFilter({ strength: 4, quality: 3 })];
   soakSrc.addChild(fibres, blob);
   const rt = PIXI.RenderTexture.create({ width: Math.ceil(geo.w * K), height: Math.ceil(geo.h * K) });
   const soakMask = new PIXI.Sprite(rt);
   soakMask.scale.set(1 / K);
 
   const here = clipped(province);
-  here.addChild(painting(0.3));
+  here.addChild(painting(0.15)); // fainter than a walked province, so the soak reads
   const whole = painting(1);
   here.addChild(whole, soakMask);
   whole.mask = soakMask;
-  const bleed = new PIXI.Graphics().circle(0, 0, R).stroke({ width: R * 0.012, color: 0x231f1a, alpha: 1 });
+  const bleed = new PIXI.Graphics().circle(0, 0, R).stroke({ width: R * 0.008, color: 0x231f1a, alpha: 1 });
   bleed.position.set(find[0], find[1]);
   bleed.scale.set(0.001);
   bleed.alpha = 0;
-  bleed.filters = [new PIXI.DisplacementFilter({ sprite: fibres2, scale: R * 0.22 }), new PIXI.BlurFilter({ strength: 2 })];
+  // The same tear as the mask's edge, so the ring rides the soak's rim.
+  bleed.filters = [new PIXI.DisplacementFilter({ sprite: fibres2, scale: R * 0.22 }), new PIXI.BlurFilter({ strength: 1.5 })];
   here.addChild(bleed, fibres2);
   const drop = new PIXI.Graphics().circle(0, 0, geo.w * 0.006).fill(0x231f1a);
   drop.position.set(find[0], find[1] - geo.h * 0.12);
