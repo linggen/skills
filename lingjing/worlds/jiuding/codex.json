@@ -87,9 +87,7 @@
    "first": {
     "book": "01",
     "scene": "00-uncle"
-   },
-   "image": null,
-   "_image": "the FLUX portrait wears a modern buttoned jacket; the Codex re-roll came back framed in black — to paint again"
+   }
   },
   "laozhou": {
    "first": {
@@ -107,9 +105,7 @@
    "first": {
     "book": "01",
     "scene": "00-hall"
-   },
-   "image": null,
-   "_image": "a calligraphy inscription (fake text)"
+   }
   },
   "zhouheng": {
    "first": {
@@ -131,10 +127,6 @@
    "first": {
     "book": "02"
    }
-  },
-  "dushu": {
-   "image": null,
-   "_image": "a calligraphy inscription (fake text)"
   },
   "yinyue": {
    "kind": "人物",

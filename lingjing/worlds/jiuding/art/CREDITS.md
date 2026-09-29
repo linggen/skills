@@ -76,9 +76,9 @@ fine ink 白描 with a soft grey wash on warm aged paper, one subject, no text o
 subject's prompt. Each picture was looked at against its description and re-rolled where wrong.
 No outside source. Painted so far (the Codex credits ran out mid-run): the people 爹 娘 马三 马小宝
 阿禾 (twice: `ahe-girl`, `ahe-boy`) 吴婆婆 老周 瞿老 银月 (`yinyue`, and her fox form `yinyue-fox`, the
-house-style reference) 褚先生 孙二狗 内门师姐 周衡; the bow `items/old-bow` (the pouch's picture; a bow has no 图鉴 entry); and
+house-style reference) 褚先生 孙二狗 内门师姐 周衡, and (the afternoon's round) 舅舅 玄沉子 渡叔; the bow `items/old-bow` (the pouch's picture; a bow has no 图鉴 entry); and
 `creatures/fuzhu` (夫诸, four horns, from 「其状如白鹿而四角」). They replace the FLUX pictures. Still to
-paint: 舅舅 玄沉子 渡叔, the other things of the list, the other eighteen creatures. A creature's
+paint: the other things of the list, the other eighteen creatures. A creature's
 old woodcut stays at its old path as its 「原图」 (`art_plate`, the table above).
 
 The 经脉 · 穴位 figures are painted by Codex with their labels (each checked by eye); the codex's
