@@ -2,7 +2,7 @@
 // paragraphs, **bold**, > blockquotes, --- rules and pipe tables, plus two of
 // the book's own: `::: 画 <panel-id> [caption]`, a 小人书 panel full width,
 // `::: 男` / `::: 女` … `:::`, a passage told for one hero (fillHero), and
-// `[words]{注=id}`, words with a knowledge figure beside their paragraph
+// `[words]{注=id}`, words with a knowledge figure set right under their paragraph
 // (worlds/<world>/notes.json). Pure: no DOM, every word escaped (read.html's
 // reader and its test both use it).
 import { esc } from './esc.js';
@@ -75,7 +75,7 @@ export function noteFigure(id, note, { src = (p) => p, lang = 'zh' } = {}) {
   const pick = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v[lang] ?? v.zh ?? v.en : v);
   const img = note.image ? `<div class="pic"><img src="${esc(src(note.image))}" alt="${esc(pick(note.title))}" loading="lazy">${marksSvg(note.marks, lang)}</div>` : '';
   const lines = (pick(note.lines) ?? []).map((l) => `<span>${esc(l)}</span>`).join('');
-  return `<aside class="sidenote" data-note="${esc(id)}"><figure>${img}<figcaption><b>${esc(pick(note.title))}</b>${lines}<small>${esc(pick(note.credit))}</small></figcaption></figure></aside>`;
+  return `<figure class="notefig" data-note="${esc(id)}">${img}<figcaption><b>${esc(pick(note.title))}</b>${lines}<small>${esc(pick(note.credit))}</small></figcaption></figure>`;
 }
 
 /// `opts.panel(id)` → a panel's src (none: panels are left out); `opts.notes`

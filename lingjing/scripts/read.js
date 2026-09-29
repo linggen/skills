@@ -4,7 +4,7 @@
 // chapters and appendix; each chapter is a markdown file (read-md.js).
 import { esc } from './esc.js';
 import { fillHero, heroOf, renderMarkdown } from './read-md.js';
-import { wireMarks } from './marks.js';
+import { playMarks, wireMarks } from './marks.js';
 import { content, verb, worldPath } from './rules.js';
 
 const WORDS = {
@@ -54,7 +54,7 @@ async function main() {
   // The player's name from the save (Look), asked beside the chapter; no save,
   // a failed or slow look reads with the drafts' hero — never blocks the book.
   const hero = Promise.race([verb('look'), new Promise((_, no) => setTimeout(no, 3000))]).then(heroOf, () => heroOf(null));
-  // The world's art and notes: 小人书 panels inline, 注 figures in the margin;
+  // The world's art and notes: 小人书 panels and 注 figures, all in the text;
   // no notes file reads the words alone.
   const world = `worlds/${book.world ?? 'jiuding'}`;
   const notes = content(world, 'notes.json').then((n) => n?.notes ?? {}, () => ({}));
@@ -74,15 +74,21 @@ async function main() {
   window.scrollTo(0, 0);
 }
 
-// Narrow screens have no margin: a tap on the words opens the figure under
-// the paragraph (wide ones show it beside, always).
-const openNote = (e) => {
-  const g = e.target.closest?.('.gloss');
-  if (!g || (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ')) return;
-  e.preventDefault();
-  g.closest('.noted')?.classList.toggle('open');
-};
-$('chapter').addEventListener('click', openNote);
-$('chapter').addEventListener('keydown', openNote);
+// A tap on a figure or a panel opens it large over the page, marks and all;
+// Esc or a tap closes it.
+function openLarge(e) {
+  const pic = e.target.closest?.('.notefig .pic, figure.panel img');
+  if (!pic) return;
+  const box = document.createElement('div');
+  box.className = 'lightbox';
+  box.append(pic.cloneNode(true));
+  const close = () => { box.remove(); removeEventListener('keydown', onKey); };
+  const onKey = (k) => { if (k.key === 'Escape') close(); };
+  box.addEventListener('click', close);
+  addEventListener('keydown', onKey);
+  document.body.append(box);
+  playMarks(box.querySelector('svg.marks'));
+}
+$('chapter').addEventListener('click', openLarge);
 
 main().catch((e) => { console.warn('[lingjing] read', e); $('chapter').innerHTML = `<p class="note">${esc(w.failed)}</p>`; });

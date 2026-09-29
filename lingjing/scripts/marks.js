@@ -46,15 +46,15 @@ export function playMarks(svg) {
   svg.classList.add('play');
 }
 
-/// Every figure with marks plays once when its paragraph first comes into
-/// view; hover or a tap on its words plays it again.
+/// Every figure with marks plays once when it first comes into view; hover or
+/// a tap on its words plays it again.
 export function wireMarks(root) {
   const seen = new IntersectionObserver((es) => es.forEach((e) => {
-    if (!e.isIntersecting || !e.target.querySelector('.sidenote')?.offsetParent) return;
+    if (!e.isIntersecting) return;
     seen.unobserve(e.target);
     playMarks(e.target.querySelector('svg.marks'));
-  }), { threshold: 0.4 });
-  root.querySelectorAll('.noted').forEach((n) => { if (n.querySelector('svg.marks')) seen.observe(n); });
+  }), { threshold: 0.5 });
+  root.querySelectorAll('.notefig').forEach((f) => { if (f.querySelector('svg.marks')) seen.observe(f); });
   const replay = (e) => {
     const n = e.target.closest?.('.gloss')?.closest('.noted');
     if (n) requestAnimationFrame(() => playMarks(n.querySelector('svg.marks')));

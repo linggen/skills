@@ -1,6 +1,6 @@
 {
  "version": 1,
- "_about": "注: knowledge figures, each defined once, keyed by id. The book writes [words]{注=id}; the reader (scripts/read-md.js) shows the figure beside that paragraph. image is under this world folder; lines are 2–3 short lines; credit and source say where the picture is from.",
+ "_about": "注: knowledge figures, each defined once, keyed by id. The book writes [words]{注=id}; the reader (scripts/read-md.js) sets the figure in the text right under that paragraph. image is under this world folder; lines are 2–3 short lines; credit and source say where the picture is from.",
  "_marks": "The animation layer (scripts/marks.js): ratio = the image's height/width; points [{id, label, x, y}] and paths [{id, d: [[x, y]…], through: [point ids, in flow order]}], x/y in 0–1 of the image, drawn as an SVG over it.",
  "notes": {
   "三关": {
@@ -8,39 +8,39 @@
     "zh": "三关",
     "en": "The Three Passes"
    },
-   "image": "art/notes/neijingtu.webp",
+   "image": "art/notes/fanzhao.webp",
    "lines": {
     "zh": [
-     "督脉沿脊背上行。小周天的气，从这里往上走。",
-     "要过三道关：尾闾在尾骨尖，夹脊在两肩胛之间，玉枕在后脑。",
-     "《内经图》画的就是这条脊背：下起尾闾，上到头顶的群峰。"
+     "督脉沿脊背正中上行，小周天的气从这里往上走，要过三道关。",
+     "尾闾在脊骨尽头，图上是长强，底下题着「尾閭穴，朝天嶺，氣海門，曹溪路」。",
+     "夹脊在两肩胛之间，图上没题这两个字，约当至阳；玉枕在后脑，图上就题着「玉枕」。"
     ],
     "en": [
-     "The Du channel runs up the spine; the small circuit's qi climbs it.",
-     "Three passes bar the way: Weilü at the tailbone, Jiaji between the shoulder blades, Yuzhen at the back of the head.",
-     "The Neijing Tu draws this spine: from Weilü at the foot to the peaks of the head."
+     "The Du channel runs up the middle of the back; the small circuit's qi climbs it through three passes.",
+     "Weilü is the foot of the spine — the plate's Changqiang, captioned below: Weilü cavity, Chaotian ridge, Qihai gate, Caoxi road.",
+     "Jiaji lies between the shoulder blades — unnamed on the plate, near Zhiyang; Yuzhen, the back of the head, the plate names outright."
     ]
    },
    "credit": {
-    "zh": "《内经图》，北京白云观碑拓本，光绪十二年（1886）。公有领域。",
-    "en": "Neijing Tu, rubbing of the Baiyun Guan stele, Beijing, 1886. Public domain."
+    "zh": "《性命圭旨》·〈反照图〉，明代内丹书插图。公有领域。",
+    "en": "Xingming guizhi, the Back-view plate (Fanzhao tu), Ming dynasty. Public domain."
    },
    "source": {
-    "url": "https://commons.wikimedia.org/wiki/File:NeijingTu1.jpg",
-    "license": "Public domain (PD-Art; published 1886)",
-    "via": "Wikimedia Commons, from 四川大学道教與宗教文化研究處 (daoism.cn/up/data/033njt.htm)",
-    "edit": "title band cropped off, greyscale, webp"
+    "url": "https://commons.wikimedia.org/wiki/File:%E6%80%A7%E5%91%BD%E5%9C%AD%E6%97%A8_%E5%8F%8D%E7%85%A7%E5%9C%96.png",
+    "license": "Public domain (PD-scan)",
+    "via": "Wikimedia Commons, scanned from a reprint (ISBN 7-5621-0846-3)",
+    "edit": "greyscale, lossless webp, 1120×1680"
    },
    "marks": {
-    "ratio": 1.944,
+    "ratio": 1.5,
     "points": [
-     {"id": "尾闾", "label": {"zh": "尾闾", "en": "Weilü"}, "x": 0.78, "y": 0.88},
-     {"id": "夹脊", "label": {"zh": "夹脊", "en": "Jiaji"}, "x": 0.845, "y": 0.62},
-     {"id": "玉枕", "label": {"zh": "玉枕", "en": "Yuzhen"}, "x": 0.715, "y": 0.25}
+     {"id": "尾闾", "label": {"zh": "尾闾", "en": "Weilü"}, "x": 0.498, "y": 0.81},
+     {"id": "夹脊", "label": {"zh": "夹脊", "en": "Jiaji"}, "x": 0.506, "y": 0.466},
+     {"id": "玉枕", "label": {"zh": "玉枕", "en": "Yuzhen"}, "x": 0.504, "y": 0.21}
     ],
     "paths": [
      {"id": "督脉", "through": ["尾闾", "夹脊", "玉枕"],
-      "d": [[0.78,0.93], [0.78,0.88], [0.83,0.8], [0.855,0.7], [0.845,0.62], [0.8,0.53], [0.745,0.45], [0.715,0.36], [0.715,0.25], [0.72,0.12]]}
+      "d": [[0.498,0.838], [0.498,0.81], [0.502,0.66], [0.506,0.466], [0.506,0.3], [0.505,0.255], [0.504,0.21], [0.503,0.135]]}
     ]
    }
   }

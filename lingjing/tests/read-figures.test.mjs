@@ -1,6 +1,7 @@
 // The book's pictures: `::: 画 <panel-id>` puts a 小人书 panel full width in
 // the text, and `[words]{注=id}` underlines words whose figure (a note in
-// worlds/<world>/notes.json) stands beside the paragraph.
+// worlds/<world>/notes.json) is set in the text right under the paragraph —
+// no margin, the same on a phone and a desktop.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -28,12 +29,12 @@ test('::: 画 renders the panel full width, with its caption when it has one', (
   assert.equal(renderMarkdown('::: 画 00-masan\n\n一段。'), '<p>一段。</p>', 'no resolver: panels are left out, never shown as text');
 });
 
-test('{注=…} underlines the words and sets the figure beside its paragraph', () => {
+test('{注=…} underlines the words and sets the figure right under its paragraph, in the text', () => {
   const html = renderMarkdown('**银月**：[尾闾，夹脊，玉枕]{注=三关}。三道关。', { notes: NOTES, src: (f) => `../worlds/jiuding/${f}` });
-  assert.match(html, /^<div class="noted"><p><b>银月<\/b>：<span class="gloss" role="button" tabindex="0" data-note="三关">尾闾，夹脊，玉枕<\/span>。三道关。<\/p><aside class="sidenote" data-note="三关">/);
-  assert.match(html, /<img src="\.\.\/worlds\/jiuding\/art\/notes\/neijingtu\.webp" alt="三关"/);
+  assert.match(html, /^<div class="noted"><p><b>银月<\/b>：<span class="gloss" role="button" tabindex="0" data-note="三关">尾闾，夹脊，玉枕<\/span>。三道关。<\/p><figure class="notefig" data-note="三关"><div class="pic"><img /);
+  assert.match(html, /<img src="\.\.\/worlds\/jiuding\/art\/notes\/fanzhao\.webp" alt="三关"/);
   assert.match(html, /<b>三关<\/b><span>督脉/);
-  assert.match(html, /<small>《内经图》/);
+  assert.match(html, /<small>《性命圭旨》·〈反照图〉/);
   assert.match(renderMarkdown('[a]{注=三关}', { notes: NOTES, lang: 'en' }), /<b>The Three Passes<\/b>/);
 });
 
@@ -67,7 +68,7 @@ test('the prologue\'s panels land in its two chapters, 三关 in 第一章, and 
   const count = (c) => (c.md.match(/^::: 画 /gm) ?? []).length;
   assert.equal(count(chapters[0]) + count(chapters[1]), 28);
   const html = renderMarkdown(fillHero(chapters[2].md, { name: '秋白' }), { panel, notes: NOTES });
-  assert.equal((html.match(/class="sidenote"/g) ?? []).length, 1);
+  assert.equal((html.match(/class="notefig"/g) ?? []).length, 1);
   const first = renderMarkdown(fillHero(chapters[0].md, { name: '秋白' }), { panel, notes: NOTES });
   assert.match(first, /我叫秋白。/);
   assert.doesNotMatch(first, /:::|[{}]/);
@@ -97,7 +98,7 @@ test('marksSvg draws the marks over the picture; the lights wait for the flow, b
   assert.equal(marksSvg(undefined), '');
   assert.equal(marksSvg({}), '');
   const svg = marksSvg(NOTES['三关'].marks);
-  assert.match(svg, /^<svg class="marks" viewBox="0 0 100 194\.40" aria-hidden="true">/);
+  assert.match(svg, /^<svg class="marks" viewBox="0 0 100 150\.00" aria-hidden="true">/);
   assert.equal((svg.match(/<path class="m-flow"/g) ?? []).length, 1);
   assert.equal((svg.match(/<circle /g) ?? []).length, 3);
   const t = [...svg.matchAll(/data-mark="([^"]+)" style="--t:([\d.]+)s"/g)].map(([, id, s]) => [id, Number(s)]);
@@ -107,4 +108,5 @@ test('marksSvg draws the marks over the picture; the lights wait for the flow, b
   assert.match(marksSvg({ ratio: 1, points: [{ id: 'a', label: '<x>', x: 0.5, y: 0.5 }] }), /&lt;x&gt;/);
   const fig = renderMarkdown('[三关]{注=三关}', { notes: NOTES });
   assert.match(fig, /<div class="pic"><img [^>]+><svg class="marks"/);
+  assert.doesNotMatch(fig, /sidenote|<aside/, 'no margin: the figure is in the text');
 });
