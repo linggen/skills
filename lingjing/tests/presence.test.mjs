@@ -5,6 +5,7 @@
 //
 // The page (lingjing.js) is a DOM module; its small functions are read from
 // the source and run against stubs, so the test runs the page's own code.
+import { petStageUrl } from '../scripts/stage.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -12,6 +13,7 @@ import { createVoice, MOMENTS } from '../scripts/voice.js';
 import { WORDS } from '../scripts/cards.js';
 
 const SRC = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+const HTML = fs.readFileSync(new URL('../scripts/index.html', import.meta.url), 'utf8');
 
 /// The source of `function name(…) {…}` in the page, braces matched.
 function fnSource(name) {
@@ -174,6 +176,11 @@ test("onContentBlock: only Ling's blocks move the page; hers open nothing", () =
   assert.ok(old.scope.did.some((d) => d[0] === 'show'));
 });
 
-test("the game page never loads her 3D body — she is the story's fox (his, 2026-09-29)", () => {
-  assert.doesNotMatch(SRC, /pet\.src|petStageUrl|pet=1&stage=1/);
+test("the game holds her voice through a voice-only stage — no 3D body (his, 2026-09-29)", () => {
+  assert.equal(petStageUrl({ engineUiUrl: (q) => `https://linggen.dev/app/connect/abc?${q}` }, 'https://linggen.dev'),
+    'https://linggen.dev/app/connect/abc?pet=1&stage=1&body=0');
+  assert.equal(petStageUrl({}, 'http://localhost:9527'), 'http://localhost:9527/?pet=1&stage=1&body=0', 'an older api.js: the old URL');
+  assert.match(SRC, /f\.src = petStageUrl\(sharedApi, location\.origin\);/);
+  assert.match(SRC, /import \* as sharedApi from '\/shared\/api\.js';/, 'a namespace import: a missing name must not break the page');
+  assert.match(HTML, /<iframe id="herVoice" title="Yinyue" hidden><\/iframe>/, 'never drawn');
 });

@@ -6,12 +6,15 @@
 
 import '/shared/chat-bridge.js';
 import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from '/shared/api.js';
+// And a namespace: a name the served /shared/api.js doesn't export yet
+// (`engineUiUrl`) must not fail the whole page.
+import * as sharedApi from '/shared/api.js';
 import { verb, content, SCRATCH, worldPath } from './rules.js';
 import { holdPlaceholder } from './invite.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
-import { boardDoneToday, stageCards, stageSlots } from './stage.mjs';
+import { boardDoneToday, petStageUrl, stageCards, stageSlots } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, pickOf, spoilsHtml } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
@@ -1126,6 +1129,7 @@ function draw() {
   // silver fox of the story, and the desktop girl did not fit it (his,
   // 2026-09-29: 「3D 模型就不用放在webUI了吧，和剧情合不上」).
   const her = herHere() && !bout;
+  holdHerVoice(herHere());
   $('stageName').textContent = her ? look.companion.name : '';
   $('askHerBtn').hidden = !her;
   if (her) $('askHerBtn').textContent = words().askHer.replace('{name}', look.companion.name);
@@ -2691,6 +2695,20 @@ function recapTold() {
 }
 
 
+/* Her voice while the game is open: the engine's pet view as a voice-only
+   stage (`body=0`) — it holds her, so the desktop corner's 3D girl steps
+   aside while the player is in the story, and her lines are spoken here; it
+   draws nothing (his, 2026-09-29: app里的3D模型 hidden while playing). Loaded
+   once she is found and awake; unloading it gives her back to the corner. */
+function holdHerVoice(on) {
+  if (SCRATCH) on = false; // her voice is the real game's: a scratch save never calls her over
+  const f = $('herVoice');
+  if (!on) { if (f.dataset.on) { delete f.dataset.on; f.src = 'about:blank'; } return; }
+  if (f.dataset.on) return;
+  f.dataset.on = '1';
+  f.src = petStageUrl(sharedApi, location.origin);
+}
+
 /* ── The gate: sign in to play ── */
 
 /// The page's language before there is a game to take it from.
@@ -2707,6 +2725,7 @@ function gate(note = '') {
   drawnStrip = '';
   $('place').textContent = '';
   $('stage').hidden = true;
+  holdHerVoice(false);
   $('tray').innerHTML = '';
   $('trayTitle').textContent = '';
   $('focus').innerHTML = `<div class="card gate-card"><div class="cardtitle">${esc(w.signTitle)}</div>
