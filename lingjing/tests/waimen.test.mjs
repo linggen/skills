@@ -415,3 +415,10 @@ test('a first-appearance 图鉴 card beside the scene card is compact — a smal
   const js = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(js, /\['\[data-codex-big\]', \(el\) => openCodexBig/);
 });
+
+test('the walk map never pops over a scene card on arrival (his, 2026-09-29)', async () => {
+  const fs = await import('node:fs');
+  const js = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const watch = js.slice(js.indexOf('function watchTravel()'), js.indexOf('function playTravel('));
+  assert.match(watch, /if \(!prev \|\| prev\.id === p\.id \|\| bout \|\| look\.scene\?\.panel\) return;/);
+});

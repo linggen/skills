@@ -48,7 +48,7 @@ const PREVIEW = (() => {
 })();
 
 // Tools that change the state: the scene re-reads Look once they have run.
-const WRITERS = new Set(['Divine', 'Resolve', 'Practice', 'Tale', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art', 'Lundao', 'Meet', 'Quest', 'Refine', 'Ring']);
+const WRITERS = new Set(['Divine', 'Resolve', 'Practice', 'Tale', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art', 'Lundao', 'Meet', 'Quest', 'Refine', 'Ring', 'Remember']);
 
 /* A 斗法 in play, held by the page: the setup the rules handed over at the
    door, the fight itself, and every action taken so far. When it ends the page
@@ -621,7 +621,9 @@ function watchTravel() {
   const points = new Map((p.places ?? []).filter((x) => x.map).map((x) => [x.id, x]));
   const prev = lastPlace;
   lastPlace = { id: p.id, points };
-  if (!prev || prev.id === p.id || bout) return;
+  // A scene card on arrival is what the stage is about: the map never pops over
+  // it (his, 2026-09-29) — the story's own step to the next scene is no walk either.
+  if (!prev || prev.id === p.id || bout || look.scene?.panel) return;
   const all = new Map([...prev.points, ...points]);
   const way = wayOf(all, prev.id, p.id) ?? [prev.id, p.id].filter((id) => all.has(id));
   if (way.length < 2) return;
