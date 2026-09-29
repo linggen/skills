@@ -34,6 +34,7 @@ import { fxTimes, glOK, playHoming as playHomingFx } from './fx.js';
 import { atmosClasses, atmosOf, particlesHtml } from './atmos.js';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
+import { advance, dialogHtml, keepReading, loadReading, logHtml, playing, skipAll, withTold } from './dialogue.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -198,7 +199,8 @@ const view = {
   fateOpen: false, fateDraft: '', fateError: false, // the 命格 form: shown again, the date typed, a date refused
   refineMat: null, refineName: '', refineNote: null, // 炼化本命 on the card: the material picked, the name typed, a refusal
   panelBusy: null, panelNote: null, // a 连环画 panel's choice in flight, or its refusal
-  telling: null, // {tell, from, scene, shown, ends, heard}: a tap's passages, held for Ling's telling (reportTelling)
+  reading: undefined, // the dialogue box (dialogue.js): the beats drawn in this scene and the one on show; undefined until read back
+  logOpen: false, //   its 记录, over the box
   lookBusy: null, // a 看 chip's look in flight (rules/examine.mjs)
   ledgerOpen: false, // the 恩仇簿 chip's popover
   wxOpen: false, wxSense: null, wxNote: null, // the weather chip's popover: the engine's sense as read, a note
@@ -272,7 +274,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, panelBusy: view.panelBusy, panelNote: view.panelNote, telling: tellingNow(), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, valueGender: view.valueGender, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, panelBusy: view.panelBusy, panelNote: view.panelNote, reading: readingHere(), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, valueGender: view.valueGender, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -473,6 +475,7 @@ async function readOnce() {
   watchVeil();
   watchNode();
   watchMemory();
+  watchTell();
   if (look.world?.atlas) await loadAtlas();
   watchHoming();
   festivalMoment();
@@ -1147,6 +1150,10 @@ function draw() {
   paintIf('footRow', footRowHtml(slots));
   paintIf('footChips', footChipsHtml());
   $('focus').innerHTML = focusHtml(slots);
+  // The dialogue box at the stage's foot, the slots lifted over it (lingjing.css .dlgwrap).
+  const box = dialogBoxHtml(slots);
+  paintIf('dlg', box);
+  document.body.classList.toggle('reading', Boolean(box));
   holdFx();
   keep({ castFresh: false });
   drawLu();
@@ -1533,8 +1540,8 @@ function countUp() {
 document.addEventListener('input', (e) => { if (e.target.id === 'refine-name') keep({ refineName: e.target.value, refineNote: null }); });
 
 /* 名字 — the card's own (cards.js value): an offered name tapped, or the
-   player's own written; the page Resolves the exit with it and tells Ling
-   `[scene] named`, and she tells the beat. Ling never picks the name (his,
+   player's own written; the page Resolves the exit with it and the stage
+   plays the beat — no chat turn; Ling reads it in `page_did`. Ling never picks the name (his,
    2026-09-28: every player had become 青玄). A keystroke is kept without a
    repaint (the field would be replaced); only the chips and the button follow. */
 document.addEventListener('input', (e) => {
@@ -1556,75 +1563,60 @@ async function valueTap(exitId) {
   await refresh();
   // The city row, when filled: the engine's weather sense takes it (sky.js).
   if (r.ok && skyDraft.city.trim()) await setSense({ city: skyDraft.city.trim() });
-  if (r.ok) await reportTelling(`[scene] named ${r.named?.value ?? chosen}`);
 }
 
-/* A 连环画 panel's choice (cards.js panel): the page Resolves the exit itself,
-   and Ling hears `[scene] took <label>` with the passages the choice owes
-   (`[tell]`, reportTelling) and tells the story in the chat. Refused (a need
-   not met), the panel says why and nothing moves. One tap, one beat: while
-   Ling is telling the last one, the choices wait. */
+/* A scene card's choice (cards.js panel): the page Resolves the exit itself,
+   and the stage plays what it owes in the dialogue box — no chat turn: Ling
+   reads it in Look's `page_did` (Hanli, 2026-09-29: 「对话框先做，go」).
+   Refused (a need not met), the card says why and nothing moves. */
 async function panelTap(exitId, label) {
-  if (view.telling && !view.telling.shown) return;
-  const from = look?.scene?.id ?? null;
-  keep({ panelBusy: exitId, panelNote: null, telling: null });
+  keep({ panelBusy: exitId, panelNote: null });
   render();
   const r = await write('resolve', { exit: exitId, said: label }).catch(failed);
   // A tap on a choice the story already moved past (a second tap in flight) is no refusal to show.
   keep({ panelBusy: null, panelNote: r.ok || r.refused === 'unknown-exit' ? null : refusal(r) });
   await refresh();
-  if (r.ok) await reportTelling(`[scene] took ${r.chose ?? label}`, from);
 }
 
-/* One tap, one beat (Hanli, 2026-09-29). The passages a tap owes ride in its
-   hidden report — `[tell]`, drawn by the rules' Tell and marked told there
-   (rules/tell.mjs) — so Ling tells them on any model, whether or not she
-   Looks (a fallback model that never called Look told a story of its own
-   while the stage walked on). The scene card holds its choices behind
-   「灵正在讲……」 until her run for that report ends; no reply within
-   TELL_WAIT_MS, a run that never ends, or a send that failed, and the card
-   shows the book's own text itself — the player is never stuck. */
-const TELL_WAIT_MS = 25000, TELL_MAX_MS = 90000;
-let tellTimer = null;
-/* Held for the scene the tap walked into — adopted on the first Look past
-   the one it was tapped in (`from`): a Look still in flight must not drop it. */
-const tellingNow = () => {
-  const t = view.telling, at = look?.scene?.id ?? null;
-  if (!t) return null;
-  if (t.scene === undefined && at !== t.from) t.scene = at;
-  return t.scene === undefined || t.scene === at ? t : null;
-};
-async function reportTelling(line, from) {
-  const t = await write('tell').catch(() => null);
-  const tell = t?.ok && t.tell?.length ? t.tell : null;
-  if (tell) holdForTelling(tell, from);
-  await report(tell && t.report ? `${line}\n${t.report}` : line);
+/* ── The dialogue box (dialogue.js) ──
+   The book's passages owed (Look's `tell_owed`) are drawn by the page — the
+   rules mark them told — and played here beat by beat, whoever moved: a tap,
+   a name, a birthday, or Ling Resolving what the player typed. The reading
+   is kept per save in this browser, so a reload finds its place. */
+let drawingTold = false;
+async function watchTell() {
+  if (!look?.tell_owed || drawingTold) return;
+  drawingTold = true;
+  try {
+    const t = await write('tell').catch(() => null);
+    if (t?.ok && t.tell?.length) setReading(withTold(readingNow(), t.tell, look?.scene?.id ?? null));
+  } finally { drawingTold = false; }
 }
-function holdForTelling(tell, from) {
-  clearTimeout(tellTimer);
-  // A scratch save has no Ling: the book's text shows at once.
-  keep({ telling: { tell, from, scene: undefined, shown: Boolean(SCRATCH), ends: streaming ? 2 : 1, heard: false } });
-  render();
-  if (SCRATCH) return;
-  tellTimer = setTimeout(() => {
-    if (view.telling?.heard) tellTimer = setTimeout(tellingFailed, TELL_MAX_MS - TELL_WAIT_MS);
-    else tellingFailed();
-  }, TELL_WAIT_MS);
+/* The reading, read back from this browser the first time it is asked for. */
+function readingNow() {
+  if (view.reading === undefined) keep({ reading: loadReading(SCRATCH) });
+  return view.reading;
 }
-function tellingFailed() {
-  clearTimeout(tellTimer);
-  tellTimer = null;
-  if (view.telling && !view.telling.shown) show({ telling: { ...view.telling, shown: true } });
+/* The reading that belongs on the stage now: still playing, or this scene's (its 记录). */
+function readingHere() {
+  const r = readingNow();
+  return r && (playing(r) || r.scene === (look?.scene?.id ?? null)) ? r : null;
 }
-/* Her run ended: the telling landed (a run already going when the tap came ends first). */
-function tellingLanded() {
-  const t = view.telling;
-  if (!t || t.shown) return;
-  if (t.ends > 1) { t.ends -= 1; return; }
-  clearTimeout(tellTimer);
-  tellTimer = null;
-  keep({ telling: null });
+function setReading(r, patch = {}) {
+  keepReading(SCRATCH, r);
+  show({ reading: r, ...patch });
 }
+/* The box yields the stage to a fight, a board, a mini-game, her memory and
+   the page's own moments; it plays on when they are done. */
+const YIELDS = new Set(['board', 'duel', 'tale', 'lundao', 'memory', 'homing', 'doors']);
+const boxYields = (slots) => Boolean(bout || view.appearing || !slots || slots.main.some((c) => YIELDS.has(c.card)));
+function dialogBoxHtml(slots) {
+  const r = readingHere(), src = (f) => worldPath(look.world?.dir ?? 'worlds/jiuding', f);
+  if (!r || boxYields(slots)) return '';
+  return (playing(r) ? dialogHtml(r, { lang: lang(), src }) : '') + (view.logOpen ? logHtml(r, { lang: lang(), src }) : '');
+}
+const nextBeat = () => { const r = readingNow(); if (playing(r)) setReading(advance(r)); };
+const skipBeats = () => { const r = readingNow(); if (playing(r)) setReading(skipAll(r), { logOpen: true }); };
 
 /* 看 — a hotspot on the scene card (cards.js lookHtml): the rules look
    (`look --at`), free, and the finding stands under the card. No chat turn:
@@ -1640,7 +1632,7 @@ async function lookAt(id) {
 /* 生辰 → 灵根 — the card's own (cards.js born): the date typed here goes to
    the rules on this machine and nowhere else — not into the chat, not into
    the page's memory past this tap (roots.mjs). Or 不填: the stone reads them.
-   Ling hears `[scene] born` with the roots, never the day. */
+   The stage plays the rite; Ling reads the roots in `page_did`, never the day. */
 document.addEventListener('input', (e) => {
   if (e.target.id !== 'born-date') return;
   keep({ bornDraft: e.target.value, bornError: false });
@@ -1653,7 +1645,6 @@ async function bornTap(kind) {
   const r = await write('resolve', { exit: exit.id, ...(kind === 'birth' ? { birth: view.bornDraft } : { skip: 'true' }) }).catch(failed);
   keep({ bornDraft: '', bornError: !r.ok && r.refused === 'birth-invalid', doNote: r.ok || r.refused === 'birth-invalid' ? null : refusal(r) });
   await refresh();
-  if (r.ok) await reportTelling(`[scene] born ${r.born?.roots?.name ?? ''}`);
 }
 
 /* A beast's first sight (creatures.json `appear`): played once over the stage
@@ -1869,10 +1860,16 @@ const KEY_ROWS = [
   ['[data-bookrow]', (row) => openRow(row.dataset.bookrow)],
   ['[data-offerrow]', (row) => toggleOffer(row.dataset.offerrow)],
 ];
+/* Space or Enter goes on in the dialogue box — unless the keys are the
+   player's own: a field, a button, the chat beside the stage. */
+const boxKey = (e) => (e.key === ' ' || e.key === 'Enter') && !e.isComposing && !e.repeat && Boolean($('dlg')?.querySelector('[data-dlg-next]'))
+  && !view.logOpen && !e.target.closest?.('input, textarea, select, button, [contenteditable], #chat-panel, [data-bookrow], [data-offerrow]');
 document.addEventListener('keydown', (e) => {
   if (e.target.id === 'askField' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); sendAsk(); }
   if (e.target.id === 'wx-city' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); document.querySelector('[data-wx-set]')?.click(); }
   if (e.target.id === 'value-text' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.closest('.valuecard')?.querySelector('[data-value-go]:not(:disabled)')?.click(); }
+  if (e.key === 'Escape' && view.logOpen) { show({ logOpen: false }); return; }
+  if (boxKey(e)) { e.preventDefault(); nextBeat(); return; }
   if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.luOpen) show({ luOpen: false }); else if (view.pouchToss) show({ pouchToss: null }); else if (view.bookOpen || view.gearOpen || view.ledgerOpen) show({ bookOpen: false, gearOpen: false, ledgerOpen: false }); }
   if (e.key !== 'Enter' && e.key !== ' ') return;
   for (const [sel, open] of KEY_ROWS) {
@@ -1955,6 +1952,12 @@ const CLICKS = [
   ['[data-wx-set]', () => { if (skyDraft.city.trim()) run('wx:set', () => setSense({ city: skyDraft.city.trim() })); }],
   ['[data-wx-off]', (el) => run('wx:off', () => setSense({ off: el.dataset.wxOff === 'off' }))],
   ['[data-wx-clear]', () => run('wx:clear', () => setSense({ city: null }))],
+  // The dialogue box: 记录 and 跳过 first, then a tap anywhere on it goes on.
+  ['[data-dlg-log]', () => show({ logOpen: !view.logOpen })],
+  ['[data-dlg-logclose]', () => show({ logOpen: false })],
+  ['[data-dlg-skip]', () => skipBeats()],
+  ['[data-dlg-next]', () => nextBeat()],
+  ['.dlglog', () => true],
   ['[data-look-at]', (el) => { if (!el.matches(':disabled')) run(`look:${el.dataset.lookAt}`, () => lookAt(el.dataset.lookAt)); }],
   ['[data-panel-exit]', (el) => { if (!el.matches(':disabled')) run(`panel:${el.dataset.panelExit}`, () => panelTap(el.dataset.panelExit, el.textContent.trim())); }],
   ['[data-lu]', () => (view.luOpen ? show({ luOpen: false }) : openLu())],
@@ -2349,8 +2352,8 @@ let mounted = false;
 function openWith(sid, greeted = false) {
   if (!sid || openedFor === sid || !chat) return;
   openedFor = sid;
-  // The passages owed ride with it (`[tell]`, reportTelling): a model that never Looks still tells them.
-  if (!greeted) reportTelling('[scene] opened');
+  // The book's passages are the stage's (the dialogue box): the opening carries none.
+  if (!greeted) report('[scene] opened');
   else greetWaits = { sid, text: greetText };
 }
 
@@ -2363,7 +2366,7 @@ function greetUnanswered(text = null) {
   const g = greetWaits;
   if (!g || (text && g.text && text !== g.text)) return;
   greetWaits = null;
-  if (chat && chat.getSessionId?.() === g.sid) reportTelling('[scene] opened');
+  if (chat && chat.getSessionId?.() === g.sid) report('[scene] opened');
 }
 
 /// Mounts the chat; answers whether it is a fresh session (not a day picked up).
@@ -2386,12 +2389,9 @@ async function mountChat() {
     // voice budget stays quiet after she talks. A bridge that names no agent
     // (`info` absent) streams Ling alone.
     guestStreams: true,
-    // A word that never reached the engine: a tap's telling shows on the stage instead.
-    onSendFailed: () => tellingFailed(),
-    onStreamToken: (_text, info) => { if (info?.own !== false) { streaming = true; if (view.telling) view.telling.heard = true; } },
+    onStreamToken: (_text, info) => { if (info?.own !== false) streaming = true; },
     onStreamEnd: (_text, info) => {
       if (info?.own === false) { voice.heard(); return; }
-      tellingLanded();
       turnEnded();
       voice.heard();
       streaming = false;

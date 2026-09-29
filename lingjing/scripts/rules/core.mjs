@@ -210,7 +210,7 @@ function cleanValue(raw, rule) {
    her Resolve of such an exit is refused unless the value stands in the
    player's own typed words (`said`); the page's path (no reader) is never
    gated. Null: not such an exit, or theirs. */
-const THEN_PAGE_NAMES = 'This is named on the page\'s card: the player taps an offered name there or writes their own, and the page tells you `[scene] named`. Nothing changed. End on one line inviting them to the card — never AskUser for it, never name one for them, never Resolve it yourself.';
+const THEN_PAGE_NAMES = 'This is named on the page\'s card: the player taps an offered name there or writes their own, and the stage goes on by itself (you read it in `page_did`). Nothing changed. End on one line inviting them to the card — never AskUser for it, never name one for them, never Resolve it yourself.';
 export function pageNames(content, state, args) {
   const exit = sceneOf(content, state)?.exits?.find(e => e.id === args.exit);
   // The 生辰 is the player's alone, typed on the page's card and never said
@@ -223,7 +223,7 @@ export function pageNames(content, state, args) {
   return { ok: false, refused: 'page-names', say: null, then: THEN_PAGE_NAMES };
 }
 
-const THEN_PAGE_BORN = 'The birthday is given on the page\'s card (or left to the stone) — it is private and never said in the chat; the page tells you `[scene] born` when the roots are read. Nothing changed. End on one line inviting them to the card — never AskUser for it, never ask the date yourself, never Resolve it.';
+const THEN_PAGE_BORN = 'The birthday is given on the page\'s card (or left to the stone) — it is private and never said in the chat; the stage goes on by itself when the roots are read (`page_did`). Nothing changed. End on one line inviting them to the card — never AskUser for it, never ask the date yourself, never Resolve it.';
 
 /* The name card's 男 · 女, as the rules keep it — anything else is not said. */
 const GENDERS = new Set(['female', 'male']);

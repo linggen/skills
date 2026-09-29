@@ -115,7 +115,7 @@ function peopleOf(content, state) {
   const met = [...(state.done_scenes ?? []), ...(atScene(content, state) && !inMade(state) ? [state.scene] : [])];
   for (const sid of met) {
     const at = index.get(sid);
-    const when = at && (huiLabel(content, at.scene.hui, lang) ?? pick(at.chapter.title, lang));
+    const when = at && (huiLabel(content, at.scene.hui, lang, 'short') ?? pick(at.chapter.title, lang));
     for (const id of at?.scene.cast ?? []) if (id !== her && id !== 'ling') add(id, nameOf(content, id, lang), 'story', when);
   }
   for (const [id, d] of Object.entries(state.duels ?? {})) if (d?.outcome && d.outcome !== 'open') add(id, nameOf(content, id, lang), 'fought');

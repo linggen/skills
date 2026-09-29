@@ -1,0 +1,164 @@
+// The dialogue box (Hanli, 2026-09-29: 「对话框先做，go」): the book's passage for
+// each beat is played on the stage itself, a paragraph at a time — a line
+// spoken under its speaker's name and 图鉴 portrait (the hero's under the
+// player's 名字, never a face; 银月's in the form her scene names), any other
+// paragraph a caption. The rules parse the beats (rules/tell.mjs beatsOf);
+// the page plays them (dialogue.js), and a tap costs no model turn.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { loadContent } from '../scripts/content.mjs';
+import { newState } from '../scripts/state.mjs';
+import { resolve } from '../scripts/rules.mjs';
+import { beatsOf, playOf, tellOf } from '../scripts/rules/tell.mjs';
+import { advance, choicesUp, dialogHtml, keepReading, loadReading, logHtml, playing, skipAll, toldSoFar, withTold } from '../scripts/dialogue.js';
+import { walk } from './prologue.mjs';
+
+const ROOT = path.resolve(import.meta.dirname, '..');
+const content = loadContent();
+const NOW = new Date('2026-09-28T12:00:00');
+const ctx = { now: NOW, quests: [] };
+const named = (lang = 'zh', gender = 'male') => walk(newState(content, lang, NOW), [['resolve', { exit: 'name', value: '墨白', gender }]], content, NOW);
+
+test('a paragraph `**名**：话` is a line spoken — its name and portrait; any other is narration, no face', () => {
+  const s = named();
+  const beats = beatsOf(content, s, { of: 'scene', id: '00-masan', text: '马三来了。\n\n**马三**：租呢？\n\n**爹**：（冲马三）您手劲真好。\n\n**勿入。**' });
+  assert.deepEqual(beats[0], { text: '马三来了。' });
+  assert.deepEqual(beats[1], { who: 'masan', name: '马三', art: 'art/people/masan.webp', text: '租呢？' });
+  assert.deepEqual(beats[2], { who: 'baba', name: '爹', art: 'art/people/baba.webp', act: '冲马三', text: '您手劲真好。' });
+  assert.deepEqual(beats[3], { text: '勿入。' }, 'bold with no colon is narration');
+  // English: the colon inside the bold
+  const en = beatsOf(content, named('en'), { of: 'scene', id: '00-masan', text: '**Father:** (to Ma San) Quite a grip.\n\nThe room goes quiet.' });
+  assert.deepEqual(en[0], { who: 'baba', name: 'Father', art: 'art/people/baba.webp', act: 'to Ma San', text: 'Quite a grip.' });
+  assert.deepEqual(en[1], { text: 'The room goes quiet.' });
+  // someone the 图鉴 does not name speaks with a name and no face
+  assert.deepEqual(beatsOf(content, s, { of: 'scene', id: '00-gate', text: '**扫地的老头**：沉鼎。' })[0], { name: '扫地的老头', text: '沉鼎。' });
+});
+
+test('the hero speaks under the player\'s 名字 and is never drawn; 阿禾 by the hero\'s gender', () => {
+  const [you, ahe] = beatsOf(content, named('zh', 'male'), { of: 'scene', id: '00-dawn', text: '**你**：嗯。\n\n**阿禾**：你别死在里头啊。' });
+  assert.deepEqual(you, { hero: true, name: '墨白', text: '嗯。' });
+  assert.equal(ahe.art, 'art/people/ahe-girl.webp', 'beside a boy, a girl');
+  assert.equal(beatsOf(content, named('zh', 'female'), { of: 'scene', id: '00-dawn', text: '**阿禾**：嗯。' })[0].art, 'art/people/ahe-boy.webp');
+  const en = beatsOf(content, named('en'), { of: 'scene', id: '00-dawn', text: '**You:** Mm.' })[0];
+  assert.deepEqual(en, { hero: true, name: '墨白', text: 'Mm.' });
+  const html = dialogHtml({ scene: '00-dawn', beats: [you], at: 0, closed: false });
+  assert.doesNotMatch(html, /<img/, 'no portrait for the hero');
+  assert.match(html, /class="dlgname hero">墨白</);
+});
+
+test('银月\'s lines carry her face in the form her scene names: the fox in the valley', () => {
+  const s = named();
+  const cliff = beatsOf(content, s, { of: 'scene', id: '00-cliff', text: '**银月**：让开。' })[0];
+  assert.equal(cliff.who, 'yinyue');
+  assert.equal(cliff.name, '银月');
+  assert.equal(cliff.art, 'art/people/yinyue-fox.webp');
+  const html = dialogHtml({ scene: '00-cliff', beats: [cliff], at: 0, closed: false }, { src: (f) => `../worlds/jiuding/${f}` });
+  assert.match(html, /<img class="dlgface" src="\.\.\/worlds\/jiuding\/art\/people\/yinyue-fox\.webp" alt="银月">/);
+  assert.match(html, /class="dlgname">银月</);
+  // every 银月 line in the book resolves to her
+  for (const sc of Object.values(content.chapters['00-prologue'].scenes)) {
+    for (const pair of [sc.story, ...(sc.exits ?? []).map(e => e.story)].filter(Boolean)) {
+      const beats = beatsOf(content, s, { of: 'scene', id: sc.id, text: pair.zh.replace(/⟪|⟫/g, '') });
+      for (const b of beats.filter(b => b.name === '银月')) assert.equal(b.who, 'yinyue', sc.id);
+    }
+  }
+});
+
+test('a move plays its two passages in order — the choice\'s outcome, then the scene entered — one beat a tap', () => {
+  const s = walk(named(), [['resolve', { exit: 'strike' }]], content, NOW);
+  const { tell } = tellOf(content, s);
+  const played = playOf(content, s, tell);
+  assert.deepEqual(played.map(t => t.id), ['00-masan/strike', '00-dawn']);
+  let r = withTold(null, played, '00-dawn');
+  const total = played.reduce((n, t) => n + t.beats.length, 0);
+  assert.equal(r.beats.length, total);
+  assert.equal(r.beats[0].of, 'choice');
+  assert.equal(r.beats.at(-1).of, 'scene');
+  assert.ok(playing(r) && !choicesUp(r), 'the choices wait');
+  const seen = [];
+  for (let i = 0; i < total; i++) { seen.push(r.beats[r.at].text); r = advance(r); }
+  assert.match(seen[0], /你攥紧了拳头|拳头/);
+  assert.equal(seen.length, total);
+  assert.ok(!playing(r), 'the last tap puts the box away');
+  assert.ok(choicesUp(r));
+  assert.equal(toldSoFar(r).length, total, 'the log holds them all');
+});
+
+test('the last beat brings the choices up; 跳过 shows the rest at once; new passages in the same scene queue behind', () => {
+  const beats = [{ text: 'a' }, { name: '马三', text: 'b' }, { text: 'c' }];
+  let r = withTold(null, [{ of: 'scene', beats }], 's1');
+  assert.equal(choicesUp(r), false);
+  r = advance(advance(r));
+  assert.equal(r.at, 2);
+  assert.ok(playing(r) && choicesUp(r), 'the last beat stays up with the choices');
+  assert.doesNotMatch(dialogHtml(r), /data-dlg-skip/, 'nothing left to skip');
+  const skipped = skipAll(withTold(null, [{ of: 'scene', beats }], 's1'));
+  assert.ok(!playing(skipped) && choicesUp(skipped));
+  assert.equal(skipped.skippedFrom, 0);
+  assert.match(logHtml(skipped), /data-dlg-from/);
+  assert.equal((logHtml(skipped).match(/dlglogrow/g) ?? []).length, 3);
+  // a passage drawn while one plays (Ling Resolved what the player typed) queues behind it
+  const mid = advance(withTold(null, [{ of: 'scene', beats }], 's1'));
+  const more = withTold(mid, [{ of: 'choice', beats: [{ text: 'd' }] }], 's1');
+  assert.equal(more.at, 1, 'the one on show stays');
+  assert.equal(more.beats.length, 4);
+  // a new scene begins a new reading; a closed one opens on the new beats
+  assert.equal(withTold(mid, [{ of: 'scene', beats: [{ text: 'x' }] }], 's2').beats.length, 1);
+  const again = withTold({ ...mid, at: 2, closed: true }, [{ of: 'choice', beats: [{ text: 'd' }] }], 's1');
+  assert.equal(again.at, 3);
+  assert.ok(playing(again));
+});
+
+test('catch-up: past two passages owed, the older ones play as recap lines, marked 前情, then the last two whole', () => {
+  let s = { ...named(), tell_owed: [], told_scenes: ['00-shiao', '00-masan'] };
+  for (const exit of ['endure', 'egg']) s = resolve(s, content, ctx, { exit }).state;
+  const played = playOf(content, s, tellOf(content, s).tell);
+  assert.deepEqual(played.map(t => t.of), ['catchup', 'choice', 'scene']);
+  assert.ok(played[0].beats.every(b => b.recap && !b.name), 'a recap is narration');
+  const r = withTold(null, played, '00-kitchen');
+  assert.match(dialogHtml(r), /<span class="dlgrecap">前情<\/span>马三来收租/);
+});
+
+test('the reading is kept per save in this browser, and read back after a reload; storage off, the page still plays', () => {
+  const mem = new Map();
+  const store = { getItem: (k) => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, v) };
+  const r = advance(withTold(null, [{ of: 'scene', beats: [{ text: 'a' }, { text: 'b' }, { text: 'c' }] }], '00-dawn'));
+  keepReading('test', r, store);
+  assert.ok(mem.has('lingjing.reading.test'), 'a scratch save keeps its own');
+  assert.deepEqual(loadReading('test', store), r);
+  assert.equal(loadReading(null, store), null, 'the player\'s own save is another key');
+  const broken = { getItem: () => { throw new Error('denied'); }, setItem: () => { throw new Error('denied'); } };
+  assert.equal(loadReading('test', broken), null);
+  assert.doesNotThrow(() => keepReading('test', r, broken));
+});
+
+test('a tap costs no model turn: the scene card, the name and the birthday are page-only; the box never speaks to the chat', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
+  const body = (name) => {
+    const at = src.indexOf(`async function ${name}(`);
+    return src.slice(at, src.indexOf('\n}\n', at));
+  };
+  for (const fn of ['panelTap', 'valueTap', 'bornTap', 'watchTell']) {
+    const b = body(fn);
+    assert.ok(b.length > 40, fn);
+    assert.doesNotMatch(b, /\breport\(|\bsay\(|sendHidden|deliver\(/, `${fn} sends nothing to the chat`);
+  }
+  assert.match(body('panelTap'), /write\('resolve'/);
+  assert.match(body('watchTell'), /write\('tell'\)/);
+  const box = fs.readFileSync(path.join(ROOT, 'scripts/dialogue.js'), 'utf8');
+  assert.doesNotMatch(box, /report|sendHidden|fetch\(/);
+});
+
+test('the box on the page: its place in the view, the keys that go on, and it yields to a fight or a board', () => {
+  const html = fs.readFileSync(path.join(ROOT, 'scripts/index.html'), 'utf8');
+  assert.match(html, /<div class="dlgwrap" id="dlg"><\/div>/);
+  const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
+  assert.match(src, /e\.key === ' ' \|\| e\.key === 'Enter'/);
+  assert.match(src, /const YIELDS = new Set\(\['board', 'duel'/);
+  assert.match(src, /bout \|\| view\.appearing/);
+  const css = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.css'), 'utf8');
+  assert.match(css, /body\.reading \.slots \{ bottom:/);
+  assert.match(css, /\.dlgwrap \{ left: 16px; right: 16px;/, 'narrow: 16px gutters');
+});

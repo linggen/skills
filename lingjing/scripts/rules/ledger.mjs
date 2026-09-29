@@ -162,7 +162,8 @@ export function rowOf(content, s, e) {
   return {
     who: e.who, name: ledgerName(content, s, e.who), kind: e.kind, what: pick(e.what, s.lang),
     ...(e.said ? { said: e.said } : {}),
-    chapter: huiLabel(content, sceneHui(content, e.at), s.lang) ?? chapterLabel(content, s, content.chapters[e.chapter], s.lang) ?? null,
+    // A small place, a short label — 「第三回」 (rules/hui.mjs `short`); the header keeps the whole.
+    chapter: huiLabel(content, sceneHui(content, e.at), s.lang, 'short') ?? chapterLabel(content, s, content.chapters[e.chapter], s.lang, 'short') ?? null,
     ...(e.kept != null ? { kept: e.kept } : {}),
   };
 }

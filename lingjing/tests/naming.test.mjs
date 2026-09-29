@@ -53,7 +53,7 @@ test('Ling may not name the player: her Resolve of a value exit is refused unles
   const s = waking();
   const live = pageNames(content, s, { exit: 'name', value: '青玄', said: '取一个道号' });
   assert.equal(live.refused, 'page-names', 'the bug: a tapped label, a name she chose');
-  assert.match(live.then, /\[scene\] named/);
+  assert.match(live.then, /the stage goes on by itself/);
   assert.equal(pageNames(content, s, { exit: 'name', value: '青玄' }).refused, 'page-names', 'no words at all');
   assert.equal(pageNames(content, s, { exit: 'name', value: '青玄', said: '[scene] opened' }).refused, 'page-names', 'a page report is not his words');
   assert.equal(pageNames(content, s, { exit: 'name', value: '墨白', said: '叫我墨白吧' }), null, 'typed by him: his');
@@ -85,7 +85,10 @@ test('the command line: Ling refused and nothing written; the page names, page_d
   assert.ok(fact, JSON.stringify(told.page_did));
   assert.match(fact.what, new RegExp(`「${offered[2].value}」 \\(a boy\\) on the page's card`));
   assert.equal(told.scene.id, '00-masan');
-  assert.match(told.tell.at(-1).text, /收租的，是马三。/, 'the next beat\'s passage, owed to Ling');
+  assert.equal(told.tell, undefined, 'the book is the stage\'s, never Ling\'s to retell');
+  assert.ok(told.staged.some(x => x.scene === '00-masan'), 'Ling knows what the stage plays');
+  const drawn = cli('tell');
+  assert.match(drawn.tell.at(-1).text, /收租的，是马三。/, 'the next beat\'s passage, drawn by the page for the dialogue box');
   fs.rmSync(data, { recursive: true, force: true });
 });
 

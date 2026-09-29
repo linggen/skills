@@ -268,8 +268,8 @@ function cardBook(content, state) {
   const nameOf = {
     creature: id => pick(creatureOf(content, id)?.name, lang) ?? null,
     place: id => pick(allPlaces(content).find(p => p.id === id)?.name, lang) ?? null,
-    // told as its 回: the scene's, else the chapter's (卷一 · 第三回)
-    chapter: (id, scene) => huiLabel(content, sceneHui(content, scene), lang) ?? chapterLabel(content, state, content.chapters?.[id], lang),
+    // told as its 回, short: the scene's, else the chapter's (第三回)
+    chapter: (id, scene) => huiLabel(content, sceneHui(content, scene), lang, 'short') ?? chapterLabel(content, state, content.chapters?.[id], lang, 'short'),
   };
   return ownedCards(content, state).filter(id => catalog[id]).map(id => {
     const c = catalog[id], f = from[id] ?? guess(id);

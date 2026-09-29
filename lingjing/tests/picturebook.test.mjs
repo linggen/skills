@@ -1,7 +1,7 @@
-// The prologue as a 小人书 (Hanli, 2026-09-28: 「右边不要放小说内容, 右边尽量放图片,
-// 战斗, 小游戏……像小人书。左边chat里放剧情。」): each beat a painted panel with a
-// caption and its choices on the stage, and the source passage owed to Ling in
-// the chat (rules/tell.mjs); 银月's words hers while she is present; the 恩仇簿;
+// The prologue on the stage: each beat a scene card with a caption and its
+// choices, and the book's own passage played on the stage by the dialogue box
+// (rules/tell.mjs, dialogue.js — Hanli, 2026-09-29: 「对话框先做，go」; it was
+// Ling's to retell in the chat until then); 银月's book lines in place; the 恩仇簿;
 // 《吐纳经》 read in the pouch; and the book itself, read in the game's frame.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -68,66 +68,71 @@ test('no prologue scene has a picture; every person\'s portrait is on disk or a 
   for (const f of Object.values(content.world.companion.forms)) assert.ok(fs.existsSync(path.join(content.dir, f.art)), f.art);
 });
 
-/* ── The story owed to Ling ── */
+/* ── The story owed to the stage (the dialogue box, Hanli 2026-09-29: 「对话框先做，go」) ── */
 
-test('the command line: Ling is handed each passage once — a new game\'s first, the tap\'s outcome and the next scene', () => {
+test('the command line: Ling is never handed the prose — only what the stage plays (`staged`); nothing is marked told for her', () => {
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-tell-'));
   const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
   const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: ROOT, env, encoding: 'utf8' }).stdout);
   try {
     cli('init', '--lang=zh');
     const first = cli('look', '--said=[scene] opened', '--for=ling');
-    assert.deepEqual(first.tell.map(t => t.id), ['00-shiao']);
-    assert.match(first.tell[0].text, /石坳村一共十七户人家/);
-    assert.match(first.then, /^Tell the story first/);
-    assert.equal(first.guide.tell.includes('小人书'), true, 'the guide comes with the first passage');
-    assert.equal(cli('look', '--said=你好', '--for=ling').tell, undefined, 'told once');
-    // the page names the player and taps a choice; Ling's next Look owes both beats
+    assert.equal(first.tell, undefined);
+    assert.deepEqual(first.staged, [{ scene: '00-shiao', recap: first.staged[0].recap }]);
+    assert.match(first.then, /^The stage is playing the book's passage/);
+    assert.match(first.then, /never retell it/);
+    assert.equal(first.tell_owed, undefined, 'the page\'s flag is not hers');
+    assert.equal(first.guide.tell.includes('对话框'), true, 'the guide comes with the first beat the stage plays');
+    assert.ok(cli('look', '--said=你好', '--for=ling').staged, 'still owed: Ling\'s Look draws nothing');
+    assert.equal(cli('look').tell_owed, true, 'the page sees it owed');
+    // the page draws it, names the player and taps a choice; Ling hears what the stage plays
+    assert.deepEqual(cli('tell').tell.map(t => t.id), ['00-shiao']);
     cli('resolve', '--exit=name', '--value=墨白', '--gender=male');
+    cli('tell');
     cli('resolve', '--exit=strike', '--said=攥紧拳头');
-    const told = cli('look', '--said=[scene] took 攥紧拳头', '--for=ling');
-    assert.deepEqual(told.tell.map(t => t.id), ['00-masan/strike', '00-dawn']);
-    assert.match(told.tell[0].text, /你攥紧了拳头/);
-    assert.match(told.tell[1].text, /是隔壁的阿禾/, 'a boy walks with 阿禾');
+    const told = cli('look', '--for=ling');
+    assert.deepEqual(told.staged, [{ chose: '攥紧拳头' }, { scene: '00-dawn', recap: '天亮前，阿禾隔着窗塞来一个煮鸡蛋。' }]);
     assert.deepEqual(told.page_did.map(d => d.what).filter(w => /chose/.test(w)), ['chose 「攥紧拳头」 under the picture — 恩仇簿: 仇 maxiaobao, 仇 masan']);
-    // Ling's own Resolve carries its passages at once
+    cli('tell');
+    // Ling's own Resolve (the player typed it): the stage plays it too
     const egg = cli('resolve', '--exit=egg', '--said=收下鸡蛋', '--for=ling');
-    assert.deepEqual(egg.tell.map(t => t.id), ['00-dawn/egg', '00-kitchen']);
+    assert.equal(egg.tell, undefined);
+    assert.deepEqual(egg.staged.map(x => x.chose ?? x.scene), ['收下鸡蛋', '00-kitchen']);
     assert.deepEqual(egg.ledger, [{ who: 'ahe', kind: '恩', what: { zh: '天没亮，隔着窗塞给你一个煮鸡蛋：「记账，以后还我。」', en: 'Before dawn, pushed a boiled egg through your window: "Keep count. Pay me back."' }, chapter: '00-prologue', day: '2026-09-28', at: '00-dawn' }]);
-    assert.equal(cli('look', '--for=ling').tell, undefined);
+    assert.deepEqual(cli('tell').tell.map(t => t.id), ['00-dawn/egg', '00-kitchen']);
+    assert.equal(cli('look', '--for=ling').staged, undefined, 'played, nothing staged');
   } finally {
     fs.rmSync(data, { recursive: true, force: true });
   }
 });
 
-test('one tap, one beat: the page draws the passages a tap owes for its report (Tell) — on any model, Look or none — and marks them told', () => {
+test('the page draws the passages owed with their beats (Tell) and marks them told — the page\'s alone', () => {
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-tell-'));
   const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
   const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: ROOT, env, encoding: 'utf8' }).stdout);
   try {
     cli('init', '--lang=zh');
-    cli('look', '--said=[scene] opened', '--for=ling');
+    cli('tell');
     cli('resolve', '--exit=name', '--value=墨白', '--gender=male');
+    cli('tell');
     cli('resolve', '--exit=strike', '--said=攥紧拳头');
     const t = cli('tell');
     assert.deepEqual(t.tell.map(i => i.id), ['00-masan/strike', '00-dawn']);
-    assert.match(t.report, /^\[tell\] /);
-    assert.match(t.report, /【选择之后】\n.*你攥紧了拳头/s);
-    assert.match(t.report, /【此景】\n.*是隔壁的阿禾/s);
-    assert.match(t.report, /\[\/tell\]$/);
+    assert.equal(t.report, undefined, 'no report for Ling');
+    assert.match(t.tell[0].beats.map(b => b.text).join('\n'), /你攥紧了拳头/);
+    assert.ok(t.tell[1].beats.some(b => b.name === '阿禾' && b.art), '阿禾 speaks with her face');
     assert.deepEqual(cli('tell').tell, [], 'drawn once');
-    const l = cli('look', '--said=[scene] took 攥紧拳头', '--for=ling');
-    assert.equal(l.tell, undefined, 'Ling\'s Look does not hand them twice');
+    assert.equal(cli('look').tell_owed, undefined);
     assert.equal(cli('tell', '--for=ling').ok, false, 'the page\'s alone');
   } finally {
     fs.rmSync(data, { recursive: true, force: true });
   }
 });
 
-test('a fresh chat\'s opening carries the passages owed, as a tap does: `[scene] opened` goes out through reportTelling', () => {
+test('a fresh chat\'s opening carries no passage: the stage plays the book; `[scene] opened` is a plain report', () => {
   const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
-  assert.doesNotMatch(src, /sendHidden\('\[scene\] opened'\)/, 'never a bare opening');
-  assert.equal(src.match(/reportTelling\('\[scene\] opened'\)/g)?.length, 2, 'the opening and the one after an unanswered greeting');
+  assert.doesNotMatch(src, /reportTelling|tellingFailed|tellingLanded|TELL_WAIT_MS|view\.telling/, 'Ling\'s telling hold is gone');
+  assert.equal(src.match(/report\('\[scene\] opened'\)/g)?.length, 2, 'the opening and the one after an unanswered greeting');
 });
 
 test('nothing lost: a scene is owed the moment it is entered; past two owed, the older ones fold into a catch-up of recaps', () => {
@@ -152,20 +157,24 @@ test('nothing lost: a scene is owed the moment it is entered; past two owed, the
   assert.deepEqual(tellOf(content, two).tell.map(i => i.of), ['choice', 'scene']);
 });
 
-test('the scene card holds its choices while Ling tells, and shows the book\'s text when her telling does not come', () => {
+test('the scene card waits while the dialogue box plays: its choices and 看 come with the last beat, 记录 once it is put away', () => {
   const s = walk(start('zh'), [['resolve', { exit: 'name', value: '墨白', gender: 'male' }]], content, NOW);
   const l = look(s, content, ctx());
-  const tell = [{ of: 'scene', id: '00-masan', text: '**马三**：租呢？\n\n〔银月〕\n\n屋里，安静了。' }];
-  const waiting = cardHtml({ card: 'panel' }, page(l, { telling: { tell, shown: false } }));
-  assert.match(waiting, /class="small dim telling">灵正在讲……</);
-  assert.doesNotMatch(waiting, /data-panel-exit/, 'no second tap while she tells');
-  const shown = cardHtml({ card: 'panel' }, page(l, { telling: { tell, shown: true } }));
-  assert.match(shown, /<div class="scenetold"><p>马三：租呢？<\/p><p>屋里，安静了。<\/p><\/div>/);
-  assert.match(shown, /data-panel-exit="endure"/, 'the choices come back with the text');
-  assert.equal(WORDS.en.lingTelling, 'Ling is telling it…');
+  const beats = [{ name: '马三', text: '租呢？' }, { text: '屋里，安静了。' }];
+  const reading = { scene: '00-masan', beats, at: 0, closed: false };
+  const waiting = cardHtml({ card: 'panel' }, page(l, { reading }));
+  assert.doesNotMatch(waiting, /data-panel-exit|data-look-at|data-dlg-log/, 'nothing to tap while it plays');
+  assert.match(waiting, /panelcard reading/);
+  const last = cardHtml({ card: 'panel' }, page(l, { reading: { ...reading, at: 1 } }));
+  assert.match(last, /data-panel-exit="endure"/, 'the last beat brings the choices up');
+  const closed = cardHtml({ card: 'panel' }, page(l, { reading: { ...reading, at: 1, closed: true } }));
+  assert.match(closed, /data-panel-exit="endure"/);
+  assert.match(closed, /class="quietnext dlgloglink" data-dlg-log>记录</);
+  assert.match(cardHtml({ card: 'panel' }, page(l)), /data-panel-exit="endure"/, 'no reading: the choices stand');
+  assert.equal(WORDS.en.lingTelling, undefined);
 });
 
-test('her lines in the book are the book\'s: Ling tells them in place, awake or asleep (his, 2026-09-29)', () => {
+test('her lines in the book are the book\'s: played in place, awake or asleep (his, 2026-09-29)', () => {
   const valley = walk(start(), TO_VALLEY, content, NOW);
   assert.equal(valley.scene, '00-yinyue');
   // at dawn she is not yet with the player: Ling tells her words
@@ -209,8 +218,8 @@ test('恩仇簿: the choices write who and what, once each; Look names them; the
   const l = look(s, content, ctx());
   assert.deepEqual(l.ledger.map(e => [e.name, e.kind]), [['马小宝', '仇'], ['马三', '仇'], ['阿禾', '恩'], ['老周', '恩']]);
   assert.match(l.ledger[2].what, /记账，以后还我/);
-  assert.equal(l.ledger[0].chapter, huiLabel(content, 'h01', 'zh'), 'written at 马三\'s rent: 第一回');
-  assert.equal(l.ledger[3].chapter, huiLabel(content, 'h02', 'zh'), 'written at the cliff: 第二回');
+  assert.equal(l.ledger[0].chapter, huiLabel(content, 'h01', 'zh', 'short'), 'written at 马三\'s rent: 第一回');
+  assert.equal(l.ledger[3].chapter, huiLabel(content, 'h02', 'zh', 'short'), 'written at the cliff: 第二回');
   const w = { look: l, lang: 'zh', words: WORDS.zh };
   assert.match(ledgerChipHtml(w, false), /data-ledger aria-expanded="false">恩仇簿 4</);
   const open = ledgerChipHtml(w, true);

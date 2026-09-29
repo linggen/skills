@@ -94,12 +94,12 @@ const PAGE_DID = {
   tale: (r, a, x) => TALE_DID[a.action]?.(r, a, x) ?? null,
   seclude: (r, a) => SECLUDE_DID[a.action]?.(r) ?? null,
   // A value exit named on the page's card (the 名字, and 男 · 女): the name,
-  // and the beat Ling speaks for it on `[scene] named`. The 生辰 read there:
+  // and its beat — Ling reads it here; the stage plays the story. The 生辰 read there:
   // the roots only — the birthday itself never leaves the card.
   resolve: (r, a, x) => rememberedDid(r, r.named ? `named themselves 「${r.named.value}」${r.named.gender ? ` (${r.named.gender === 'female' ? 'a girl' : 'a boy'})` : ''} on the page's card — beat: ${beatOf(r)}`
     : r.born ? `${r.born.kept ? 'went through the root test, their roots as they were' : r.born.read === 'birth' ? 'gave their birthday on the page\'s card' : 'let the stone read them'}: ${r.born.roots.name} (${r.born.roots.elements.join(' ')}) — beat: ${beatOf(r)}`
       : r.breakthrough?.chance != null ? thrownDid(r, x)
-        // A 连环画 panel's choice: which, and what the 恩仇簿 wrote — the story is in `tell`.
+        // A scene card's choice: which, and what the 恩仇簿 wrote — the story is the stage's (rules/tell.mjs).
         : r.chose ? `chose 「${r.chose}」 under the picture${r.ledger?.length ? ` — 恩仇簿: ${r.ledger.map(e => `${e.kind} ${e.who}`).join(', ')}` : ''}` : null),
   // 储物袋: a thing waiting at the 洞府 taken in, a slot thrown away.
   bag: byAction({ claim: (r) => `took ${r.claimed?.name} from the abode into the storage pouch`, toss: (r) => `threw away ${r.tossed?.name}` }),

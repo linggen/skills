@@ -22,9 +22,9 @@ const has = (xs) => Array.isArray(xs) && xs.length > 0;
    page report (`said`), and the answer about to go back. */
 export const TOPICS = {
   look: () => true, // the first answer of a session: what Look carries
-  // 小人书: the first answer that hands Ling a passage to tell (rules/tell.mjs).
+  // 小人书: the first answer while the stage plays a passage (rules/tell.mjs `staged`).
   // …and the first memory of hers that comes back (rules/memories.mjs): keep quiet during it.
-  tell: ({ said, result }) => (result?.tell?.length ?? 0) > 0 || Boolean(result?.memory) || tag(said, /^\[scene\] took\b/),
+  tell: ({ result }) => (result?.staged?.length ?? 0) > 0 || Boolean(result?.memory),
   fight: ({ verb, said, result, state }) => Boolean(state?.fight || result?.fight || result?.place?.encounter)
     || ['tame', 'refine', 'duel'].includes(verb) || result?.refused === 'in-a-fight' || tag(said, /^\[scene\] (won|lost|withdrew)\b/),
   road: ({ verb, said, result }) => ['move', 'trade', 'meet'].includes(verb) || Boolean(result?.place?.meet || result?.place?.has?.shop) || tag(said, /^\[scene\] arrived\b|^(去|go to\s)/i),

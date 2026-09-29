@@ -24,6 +24,7 @@ import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
 import { chapterLabel } from './hui.mjs';
 import { practiceHint } from './scrolls.mjs';
+import { owesTell } from './tell.mjs';
 import { mainRoot, rootName } from './roots.mjs';
 import { memoriesLook } from './memories.mjs';
 import { todayBrief } from './festival.mjs';
@@ -96,7 +97,8 @@ function panelOf(content, state, scene, buttons) {
   const done = e => e.stay && !e.snub && marked(e);
   const taps = buttons.map(id => scene.exits.find(e => e.id === id)).filter(e => e && !own(e) && !done(e))
     .map(e => ({ id: e.id, label: say(e.label), ...(e.snub && marked(e) ? { spent: true } : {}) }));
-  return { place: say(scene.place), caption: (scene.panel.caption?.[state.lang] ?? scene.panel.caption?.zh ?? []).map(l => fill(l, state, content)), taps: quietOne(scene, taps), ...(invites(state, taps) ? { invite: true } : {}) };
+  // A painted picture for the beat, when the world has one: it fills the stage behind the dialogue box.
+  return { place: say(scene.place), ...(scene.panel.art ? { art: scene.panel.art } : {}), caption: (scene.panel.caption?.[state.lang] ?? scene.panel.caption?.zh ?? []).map(l => fill(l, state, content)), taps: quietOne(scene, taps), ...(invites(state, taps) ? { invite: true } : {}) };
 }
 
 /* Only a real decision is a row of buttons (his, 2026-09-29: tapping on felt
@@ -392,6 +394,8 @@ export function look(state, content, ctx) {
     // A key beat running: the map is shut until its last scene (world.mjs beatOf).
     ...(beatOf(content, state) ? { lock: { beat: beatOf(content, state).id, title: pick(beatOf(content, state).title, lang) } } : {}),
     scene: atScene(content, state) ? sceneBrief(content, state, ctx.now) : null,
+    // The book's passages owed to the stage's dialogue box: the page draws them (`tell`, rules/tell.mjs).
+    ...(owesTell(content, state) ? { tell_owed: true } : {}),
     // 所见 — what was looked at, the newest scenes, and what was passed by (rules/examine.mjs).
     ...(state.looked?.length ? { seen: seenLog(content, state, SEEN_KEEP) } : {}),
     waypoint: waypointOf(content, state, ctx),

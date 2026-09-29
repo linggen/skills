@@ -1073,3 +1073,57 @@ body.fighting .atmos { display: none; }
 @keyframes telling { from { opacity: .45; } to { opacity: 1; } }
 .panelcard .scenetold { margin: 10px 4px 4px; max-height: 42vh; overflow-y: auto; font-family: var(--serif); font-size: 15px; line-height: 1.8; }
 .panelcard .scenetold p { margin: 0 0 .5em; }
+
+/* ── 对话框 — the dialogue box (dialogue.js; Hanli, 2026-09-29: 「对话框先做，go」):
+   the book's passage played on the stage a paragraph at a time, at its foot.
+   The slots are lifted over it while it plays; a fight or a board never sees
+   it (it yields, lingjing.js boxYields). ── */
+.view { --dlg-h: 168px; }
+body.reading .slots { bottom: calc(var(--dlg-h) + 20px); }
+.dlgwrap { position: absolute; left: var(--stage-room); right: 24px; bottom: 12px; z-index: 4; pointer-events: none; }
+.dlgwrap > * { pointer-events: auto; }
+.dlgwrap:empty { display: none; }
+.dlg { position: relative; display: flex; gap: 14px; align-items: flex-start; max-width: 720px; margin: 0 auto; height: var(--dlg-h);
+  padding: 16px 20px 26px; border: 1px solid color-mix(in srgb, var(--text) 22%, var(--line)); border-radius: 10px; cursor: pointer; user-select: none;
+  background: color-mix(in srgb, var(--surface) 96%, transparent); box-shadow: 0 6px 22px rgba(40, 30, 15, .16); outline: none; }
+.dlg:focus-visible { border-color: var(--ling); }
+.dlg::before { content: ''; position: absolute; inset: 4px; border: 1px solid var(--line); border-radius: 7px; pointer-events: none; opacity: .7; }
+.dlgface { flex: none; width: 88px; height: 110px; object-fit: cover; object-position: top; border-radius: 6px; border: 1px solid var(--line); background: var(--raised); animation: dlgIn .25s ease-out; }
+.dlgbody { flex: 1; min-width: 0; height: 100%; overflow-y: auto; scrollbar-width: thin; }
+.dlgname { display: inline-block; margin-bottom: 6px; padding: 1px 12px 1px 0; border-bottom: 1px solid var(--ling); font-family: var(--serif); font-weight: 600; font-size: 15px; letter-spacing: .12em; color: var(--ling); }
+.dlgname.hero { color: var(--text); border-color: var(--dim); }
+.dlgtext { font-family: var(--serif); font-size: 17px; line-height: 1.8; letter-spacing: .03em; color: var(--text); animation: dlgIn .25s ease-out; }
+.dlg.told .dlgbody { display: flex; align-items: center; }
+.dlg.told .dlgtext { width: 100%; text-align: center; color: color-mix(in srgb, var(--text) 82%, var(--dim)); }
+.dlgact { color: var(--dim); font-size: 15px; }
+.dlgrecap { display: inline-block; margin-right: 8px; padding: 0 6px; border: 1px solid var(--line); border-radius: 3px; font-family: var(--ui); font-size: 11px; letter-spacing: .1em; color: var(--faint); vertical-align: 2px; }
+.dlgctl { position: absolute; top: 8px; right: 12px; display: flex; align-items: center; gap: 6px; }
+.dlgcount { font-size: 11px; color: var(--faint); margin-right: 2px; font-variant-numeric: tabular-nums; }
+.dlgbtn { font: inherit; font-size: 12px; padding: 1px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--dim); cursor: pointer; }
+.dlgbtn:hover { color: var(--text); border-color: var(--dim); }
+.dlgon { position: absolute; right: 18px; bottom: 6px; font-size: 12px; color: var(--ling); animation: dlgBob 1.2s ease-in-out infinite; }
+.dlgon.last { color: var(--faint); animation: none; }
+@keyframes dlgIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+@keyframes dlgBob { 50% { transform: translateY(3px); } }
+@media (prefers-reduced-motion: reduce) { .dlgface, .dlgtext, .dlgon { animation: none; } }
+/* 记录 — what was told in this scene, over the stage. */
+.dlglog { position: absolute; left: 0; right: 0; bottom: 0; max-width: 720px; margin: 0 auto; max-height: min(70vh, 520px); display: flex; flex-direction: column;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--surface); box-shadow: 0 8px 28px rgba(40, 30, 15, .2); z-index: 5; cursor: default; }
+.dlgloghead { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); font-family: var(--serif); font-size: 13px; letter-spacing: .12em; color: var(--dim); }
+.dlglogbody { overflow-y: auto; padding: 8px 16px 14px; }
+.dlglogrow { font-family: var(--serif); font-size: 15px; line-height: 1.8; padding: 4px 0; color: color-mix(in srgb, var(--text) 80%, var(--dim)); }
+.dlglogrow.spoken { color: var(--text); }
+.dlglogrow b { font-weight: 600; color: var(--ling); margin-right: .6em; }
+/* While the box plays, the scene card waits: its choices come with the last beat. */
+.panelcard.reading .scenecap { opacity: .85; }
+.panelcard .dlgloglink { display: block; margin: 6px 4px 0 auto; font-size: 12px; }
+/* A beat's picture, when the world paints one: it fills the card's head. */
+.panelcard .panelart img { display: block; width: 100%; max-height: 46vh; object-fit: cover; border-radius: 6px; margin-bottom: 8px; }
+@container scene (max-width: 600px) {
+  .view { --dlg-h: 150px; }
+  .dlgwrap { left: 16px; right: 16px; bottom: 8px; }
+  .dlg { padding: 12px 14px 22px; gap: 10px; }
+  .dlgface { width: 60px; height: 76px; }
+  .dlgtext { font-size: 15.5px; line-height: 1.7; }
+  .dlgname { font-size: 14px; margin-bottom: 4px; }
+}
