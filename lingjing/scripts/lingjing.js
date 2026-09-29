@@ -841,6 +841,8 @@ function stageNow() {
   if (view.homing) cards = [{ card: 'homing', id: view.homing.province }, ...cards];
   // 息壤's five doors (stage.mjs MAIN ranks them after 鼎归).
   if (view.doors) cards = [{ card: 'doors' }, ...cards];
+  // A chapter's ending card, until he puts it away (合上; kept per save in this browser).
+  cards = cards.filter((c) => c.card !== 'closed' || !closeSeen(look.chapter?.close?.id));
   watchAppear(cards);
   return stageSlots(look, cards.filter(inQueue), { skip: view.qSkip });
 }
@@ -1897,6 +1899,7 @@ const CLICKS = [
   ['[data-lu-album]', () => openLu().then(() => document.querySelector('.lualbum')?.scrollIntoView({ block: 'start' }))],
   ['[data-unroll]', () => closeUnroll()],
   ['[data-mem-replay]', (el) => { const play = replayOf(view.lu?.album, el.dataset.memReplay); if (play) show({ luOpen: false, memory: { n: play.n, i: 0, play, at: performance.now() } }); }],
+  ['[data-close-chapter]', (el) => { closeSeen(el.dataset.closeChapter, true); render(); }],
   ['[data-titlecard]', (el) => { dismissedTitles.add(el.dataset.titlecard); titleSeen(el.dataset.titlecard, true); render(); }],
   ['[data-gear]', () => (view.gearOpen ? show({ gearOpen: false }) : openGear())],
   ['[data-do]', (el) => { if (!el.matches(':disabled')) run(`do:${el.dataset.do}:${el.dataset.id}`, () => doTap(el.dataset.do, el.dataset.id)); }],
@@ -2440,6 +2443,16 @@ function titleSeen(id, mark = false) {
   }
 }
 const dismissedTitles = new Set();
+/* The chapter's ending card, put away once (合上): remembered like the title card. */
+function closeSeen(id, mark = false) {
+  if (!id) return true;
+  try {
+    if (mark) localStorage.setItem(titleKey(`close:${id}`), '1');
+    return Boolean(localStorage.getItem(titleKey(`close:${id}`)));
+  } catch {
+    return mark;
+  }
+}
 function titleCard() {
   const ch = look?.chapter;
   if (!ch?.fresh || bout || dismissedTitles.has(ch.id) || titleSeen(ch.id)) return '';

@@ -227,7 +227,7 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // whoever or whatever the scene brings on for the first time.
   const meet = (look.scene?.meet ?? []).map(id => ({ card: 'meet', id }));
   const panel = look.scene?.panel ? [{ card: 'panel' }] : [];
-  // The chapter's ending card, while the next chapter waits: it fills a quiet stage (MAIN's filler).
+  // The chapter's ending card, while the next chapter waits: first on the stage until he puts it away (合上, the page's).
   const closed = look.chapter?.close ? [{ card: 'closed' }] : [];
   return [...meet, ...panel, ...people, ...head, ...cards, ...closed];
 }
@@ -258,13 +258,13 @@ export const MAIN = [
   { kinds: ['memory'] }, //                                              银月's memory, while it plays
   { kinds: ['homing'] }, //                                              then the 鼎's province in ink (鼎归)
   { kinds: ['doors'] }, //                                               then 息壤's five doors, one by one
+  { kinds: ['closed'] }, //                                              a chapter's ending card, until he puts it away
   { kinds: ['fight', 'seclusion', 'seclude'] }, //                      the fight, 闭关
   { kinds: ['meet', 'panel', 'value', 'born', 'breakthrough'], together: true }, // the scene waiting on a choice, its new faces first
   { kinds: ['board', 'duel', 'lundao'] }, //                             a game to play here
   { kinds: ['handed', 'quest', 'tale', 'road', 'offer'] }, //            the line, one at a time
   { kinds: ['building', 'empty'] }, //                                   the page's own notices
   { kinds: ['codex', 'creature', 'item', 'map', 'traits', 'gate', 'tribulation', 'treasure'] }, // what Ling showed
-  { kinds: ['closed'], filler: true }, //                                a chapter's ending card, while the next waits
   { kinds: ['hexagram'], filler: true }, //                              the day's coins
 ];
 

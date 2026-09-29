@@ -182,7 +182,7 @@ test('the 守夜 and the tame: 狰 runs from a fight, yields to the watch won, a
   assert.ok(s.cast.includes('zheng'));
   assert.equal(s.bag.luobo, undefined, 'the 萝卜 eaten');
   // never a bounty, a road beast or a rumor's finale
-  assert.equal(content.creatures.creatures.find(c => c.id === 'zheng').art, 'art/zheng.webp');
+  assert.equal(content.creatures.creatures.find(c => c.id === 'zheng').art, 'art/creatures/zheng.webp');
 });
 
 test('the 大比 waits a real day: the goal line counts down, the first round refuses today, and 明日 comes', () => {
@@ -382,11 +382,10 @@ test('第一章 ends on its card: 「第一章 · 外门 · 完」, what this pl
   assert.equal(close.did, '你收了药园那只偷萝卜的小狰，大比把第一轮让给了孙二狗，终究赢下了那颗筑基丹，又拜了扫了五十年台阶的瞿老为师。');
   assert.match(close.teaser, /邺城[\s\S]*河伯/);
   assert.ok(l.stage.some(c => c.card === 'closed'), 'on the stage');
-  const quiet = l.stage.filter(c => ['closed', 'hexagram', 'goal'].includes(c.card));
-  assert.equal(stageSlots(l, [...quiet, { card: 'hexagram' }]).main[0].card, 'closed', 'a quiet stage: the ending card fills it, before the coins');
-  assert.equal(stageSlots(l, l.stage).queue.length + 1, stageSlots(l, l.stage).footer.waiting + 1, 'a filler never counts as waiting');
+  assert.equal(stageSlots(l, l.stage).main[0].card, 'closed', 'first on the stage, before an errand offered where he stands');
+  assert.ok(l.stage.some(c => c.card === 'offer'), 'an offer was there too');
   const html = cardHtml({ card: 'closed' }, { look: l, lang: 'zh', words: WORDS.zh });
-  assert.match(html, /第一章 · 外门 · 完[\s\S]*小狰[\s\S]*邺城[\s\S]*第二章 · 即将开放/);
+  assert.match(html, /第一章 · 外门 · 完[\s\S]*小狰[\s\S]*邺城[\s\S]*第二章 · 即将开放[\s\S]*data-close-chapter="00-waimen">合上/);
   // another player's chapter reads his own: no 狰, and the first round fought
   const other = { ...s, cast: s.cast.filter(id => id !== 'zheng'), ledger: s.ledger.filter(e => e.who !== 'sunergou') };
   assert.match(look(other, content, ctx(DAY2)).chapter.close.did, /^药园的贼，你没收成，大比一轮一轮打了上去，/);
