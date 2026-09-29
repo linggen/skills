@@ -582,7 +582,7 @@ function renderStaging() {
     <h2>Import review — ${esc(s.filename)}${fileTag}</h2>
     <p class="hint">${s.fingerprint ? 'New account detected — label it once and future imports auto-match.' : 'This file has no account number — pick the account it belongs to.'}</p>
     <div class="stage-accts">
-      ${Object.entries(ACCOUNTS).map(([id, a]) => `
+      ${Object.entries(ACCOUNTS).filter(([, a]) => a?.label).map(([id, a]) => `
         <label class="acct-opt"><input type="radio" name="st-acct" value="${esc(id)}" ${s.accountId === id ? 'checked' : ''}> <span>${esc(a.label)}</span> <span class="acct-type">${esc(a.type)}</span></label>`).join('')}
       <label class="acct-opt"><input type="radio" name="st-acct" value="__new__" ${s.accountId === '__new__' ? 'checked' : ''}> New account…
         <input id="st-label" type="text" value="${esc(s.newLabel)}" ${s.accountId === '__new__' ? '' : 'disabled'}>
