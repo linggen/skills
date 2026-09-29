@@ -119,9 +119,9 @@ test('the ink map draws the three states; the moment draws the spread, the river
   assert.equal((map.match(/class="pvfill s-ink/g) ?? []).length, 1);
   assert.equal((map.match(/class="pvfill s-wash/g) ?? []).length, 1);
   assert.equal((map.match(/class="pvedge s-mist/g) ?? []).length, 7, 'seven in mist, dashed');
-  assert.match(map, /class="seal"/);
+  assert.match(map, /class="inkseal"/);
   assert.match(map, />冀<\/text>.*>州<\/text>.*>鼎<\/text>.*>归<\/text>/s, '「冀州 · 鼎归」');
-  assert.match(map, /class="moon"/);
+  assert.match(map, /class="inkmoon"/);
   assert.doesNotMatch(map, /<img|href=/, 'no raster art');
 
   const frame = { x: 0.55, y: 0.25, w: 0.2, h: 0.2 };
@@ -130,9 +130,9 @@ test('the ink map draws the three states; the moment draws the spread, the river
   assert.match(card, /<mask id="homing-spread"[\s\S]*class="spread"/, 'the spread is a mask');
   assert.match(card, /clip-path="url\(#homing-\d\)"><rect class="spill" [^>]*mask="url\(#homing-spread\)"/, 'clipped to the province');
   assert.match(card, /class="rivers draw"><path d="[^"]+" pathLength="1"/, 'rivers draw themselves');
-  assert.match(card, /class="seal thud"/);
+  assert.match(card, /class="inkseal thud"/);
   assert.match(card, /class="waters ripple"/);
-  assert.match(card, /class="drop"/);
+  assert.match(card, /class="inkdrop"/);
   assert.match(card, /--cam: translate\(/, 'closes in on the province');
   assert.match(card, /九州的水涨了一寸/);
   assert.match(card, /九鼎 · 一／九/);

@@ -115,12 +115,12 @@ export function inkMapSvg(geo, ink, { names = {}, labels = {}, lang = 'zh', mome
   const edges = ids.map((p) => shape(p, `pvedge s-${pv[p]?.state ?? 'mist'}${p === M ? ' now' : ''}`)).join('');
   const waters = geo.waters.map((d) => `<path d="${d}"/>`).join('');
   const r = geo.w * 0.012;
-  const moons = ids.filter((p) => pv[p]?.state === 'ink' && home(p)?.map).map((p) => { const [x, y] = pt(home(p).map); return moonSvg(x + r * 2.4, y + r * 1.6, r, `moon${M ? ' rise' : ''}`); }).join('');
+  const moons = ids.filter((p) => pv[p]?.state === 'ink' && home(p)?.map).map((p) => { const [x, y] = pt(home(p).map); return moonSvg(x + r * 2.4, y + r * 1.6, r, `inkmoon${M ? ' rise' : ''}`); }).join('');
   const seals = ids.filter((p) => pv[p]?.state === 'ink').map((p) => {
     const [x, y] = pt(labels[p] ?? home(p).map);
-    return sealSvg(x, y + geo.w * 0.05, geo.w * (p === M ? 0.036 : 0.042), names[p] ?? p, lang, `seal${p === M ? ' thud' : ''}`);
+    return sealSvg(x, y + geo.w * 0.05, geo.w * (p === M ? 0.036 : 0.042), names[p] ?? p, lang, `inkseal${p === M ? ' thud' : ''}`);
   }).join('');
-  const drop = M ? `<circle class="drop" cx="${f2(find[0])}" cy="${f2(find[1])}" r="${f2(geo.w * 0.006)}"/>` : '';
+  const drop = M ? `<circle class="inkdrop" cx="${f2(find[0])}" cy="${f2(find[1])}" r="${f2(geo.w * 0.006)}"/>` : '';
   const cam = M ? camOf(geo, moment.frame) : null;
   const camStyle = cam ? ` style="--cam: translate(${cam.tx}px, ${cam.ty}px) scale(${cam.s})"` : '';
   const cls = `inkmap${M ? ' moment' : ''}${still ? ' still' : ''}`;

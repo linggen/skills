@@ -22,11 +22,11 @@
 .inkmap .pvedge.s-mist { stroke-opacity: 0.16; stroke-width: 1.4; stroke-dasharray: 7 7; }
 .inkmap .pvedge.s-wash { stroke-opacity: 0.4; stroke-width: 1.6; }
 .inkmap .pvedge.s-ink { stroke-opacity: 0.85; stroke-width: 2.4; }
-.inkmap .seal rect { fill: var(--ink-seal); opacity: 0.92; }
-.inkmap .seal text { fill: #fff6ec; font-family: var(--serif, serif); font-weight: 700; }
+.inkmap .inkseal rect { fill: var(--ink-seal); opacity: 0.92; }
+.inkmap .inkseal text { fill: #fff6ec; font-family: var(--serif, serif); font-weight: 700; }
 .inkmap .moondisc { fill: var(--ink-moon); stroke: rgba(35, 31, 26, 0.35); stroke-width: 1.2; }
 .inkmap .moonripple { fill: none; stroke: var(--ink-moon); stroke-width: 1.4; opacity: 0.8; }
-.inkmap .drop { fill: var(--ink-deep); opacity: 0; }
+.inkmap .inkdrop { fill: var(--ink-deep); opacity: 0; }
 
 /* Province names in brush: pale over a wash, dark over ink, all but gone in mist. */
 .atlas .pv.s-wash { color: rgba(40, 34, 24, 0.42); }
@@ -48,16 +48,16 @@
 .inkmap.moment .cam.zoom { transform-box: view-box; transform-origin: 0 0; transform: var(--cam); }
 .inkmap.moment .spread { transform-box: fill-box; transform-origin: center; }
 .inkmap.moment .rivers.draw path { stroke-dasharray: 1 1; }
-.inkmap.moment .seal.thud { transform-box: fill-box; }
-.inkmap.moment .seal.thud .sealbody { transform-box: fill-box; transform-origin: center; }
+.inkmap.moment .inkseal.thud { transform-box: fill-box; }
+.inkmap.moment .inkseal.thud .sealbody { transform-box: fill-box; transform-origin: center; }
 
 .card.homing:not(.still) .inkmap .cam.zoom { animation: ink-zoom 1.4s cubic-bezier(.3, .1, .2, 1) both; animation-delay: calc(0ms - var(--age)); }
-.card.homing:not(.still) .inkmap .drop { animation: ink-drop 0.55s ease-in both; animation-delay: calc(900ms - var(--age)); }
+.card.homing:not(.still) .inkmap .inkdrop { animation: ink-drop 0.55s ease-in both; animation-delay: calc(900ms - var(--age)); }
 .card.homing:not(.still) .inkmap .spread { animation: ink-spread 2.2s cubic-bezier(.2, .6, .3, 1) both; animation-delay: calc(1300ms - var(--age)); }
 .card.homing:not(.still) .inkmap .rivers.draw path { animation: ink-river 1.6s ease-out both; animation-delay: calc(3300ms - var(--age)); }
-.card.homing:not(.still) .inkmap .seal.thud .sealbody { animation: ink-thud 0.5s cubic-bezier(.5, 0, .7, 1.4) both; animation-delay: calc(4800ms - var(--age)); }
+.card.homing:not(.still) .inkmap .inkseal.thud .sealbody { animation: ink-thud 0.5s cubic-bezier(.5, 0, .7, 1.4) both; animation-delay: calc(4800ms - var(--age)); }
 .card.homing:not(.still) .inkmap .waters.ripple path { animation: ink-ripple 1.6s ease-out both; animation-delay: calc(5500ms - var(--age)); }
-.card.homing:not(.still) .inkmap .moon.rise .moonbody { animation: ink-moon 1.2s ease-out both; animation-delay: calc(5900ms - var(--age)); }
+.card.homing:not(.still) .inkmap .inkmoon.rise .moonbody { animation: ink-moon 1.2s ease-out both; animation-delay: calc(5900ms - var(--age)); }
 .card.homing:not(.still) .homingrise { animation: ink-words 1.4s ease-out both; animation-delay: calc(5500ms - var(--age)); }
 .card.homing:not(.still) { animation: ink-shake 0.3s linear both; animation-delay: calc(4950ms - var(--age)); }
 .card.homing.still .homingrise { opacity: 1; }
