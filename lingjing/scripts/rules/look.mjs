@@ -17,9 +17,9 @@ import { seclusionBrief } from './seclusion.mjs';
 import { chapterLook, nodeLook, recapLook } from './story.mjs';
 import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
 import { kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
-import { gameLevel, hostedHere, lundaoBrief, reopened } from './tasks.mjs';
+import { catchHere, gameLevel, hostedHere, lundaoBrief, reopened } from './tasks.mjs';
 import { hashOf } from './travel.mjs';
-import { atScene, creatureOf, encounterOf, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
+import { atScene, beatOf, creatureOf, encounterOf, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
 import { practiceHint } from './scrolls.mjs';
@@ -122,7 +122,10 @@ function sceneBrief(content, state, now = new Date()) {
   if (!scene) return null;
   const ctxNow = now;
   const lang = state.lang, say = pair => fill(pick(pair, lang), state, content);
-  const buttons = scene.buttons ?? [];
+  // A choice a thread sets up (`needs.quest`: 孙二狗's charm before the 大比)
+  // is not offered until the thread is done — the story never set it up.
+  const setUp = id => { const q = scene.exits.find(e => e.id === id)?.needs?.quest; return !q || Boolean(state.quests?.[q]?.done_at); };
+  const buttons = (scene.buttons ?? []).filter(setUp);
   const people = peopleIn(content, state, scene);
   const panel = panelOf(content, state, scene, buttons);
   return {
@@ -253,6 +256,9 @@ function tasksBrief(content, state, ctx) {
   // A board an errand wants stands offered, whatever it was: the errand pays.
   const hosted = Object.fromEntries((placeOf(content, state.place)?.has?.games ?? [])
     .filter(id => hostedHere(content, state, id)).map(id => [id, { status: 'offered' }]));
+  // The board a beast here is caught with (狰's 守夜), until it is caught.
+  const cid = placeOf(content, state.place)?.has?.creature, katch = cid ? creatureOf(content, cid)?.catch : null;
+  if (katch && catchHere(content, state, katch)) hosted[katch] = { status: 'offered' };
   const again = new Set([...(content.tasks?.tasks ?? []).map(t => t.id).filter(id => reopened(content, state, id, ctx.now)), ...Object.keys(hosted)]);
   const held = Object.fromEntries([...again].map(id => [id, { status: 'offered' }]));
   const tasks = Object.entries({ ...state.tasks, ...held, ...hosted })
@@ -340,6 +346,8 @@ export function look(state, content, ctx) {
     cast: state.cast.map(id => ({ id, name: pick(creatureOf(content, id).name, lang) })),
     // The chapter (its intro while just begun), the ending once reached (story.mjs).
     ...chapterLook(content, state),
+    // A key beat running: the map is shut until its last scene (world.mjs beatOf).
+    ...(beatOf(content, state) ? { lock: { beat: beatOf(content, state).id, title: pick(beatOf(content, state).title, lang) } } : {}),
     scene: atScene(content, state) ? sceneBrief(content, state, ctx.now) : null,
     waypoint: waypointOf(content, state, ctx),
     place: placeBrief(content, state, ctx.now),

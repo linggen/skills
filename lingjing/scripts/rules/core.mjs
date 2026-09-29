@@ -16,17 +16,21 @@ import { oweExit, spanLines } from './tell.mjs';
 import { companionOf } from './companion.mjs';
 import { grantMemory } from './memories.mjs';
 import { writeLedger } from './ledger.mjs';
-import { atScene, inMade, placeName, placeOf, provinceOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
+import { atScene, inMade, placeName, placeOf, placeOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
 
 /* ── Changing it ── */
 
 const refuse = (refused, say, extra = {}) => ({ state: null, result: { ok: false, refused, say: say ?? null, ...extra } });
 const clone = state => structuredClone(state);
 
-function meets(state, needs) {
+function meets(state, needs, now = new Date()) {
   if (needs.bag && !(state.bag[needs.bag] > 0)) return false;
   if (needs.task && state.tasks[needs.task]?.status !== 'done') return false;
   if (needs.wealth && !(state.wealth >= needs.wealth)) return false;
+  // A choice a thread sets up (an errand handed in), and a day that must pass
+  // since the story marked its eve (the 大比 is tomorrow: a real local day).
+  if (needs.quest && !state.quests?.[needs.quest]?.done_at) return false;
+  if (needs.day_after && !(state.mark_days?.[needs.day_after] && state.mark_days[needs.day_after] < dayKey(now))) return false;
   return true;
 }
 
@@ -267,12 +271,25 @@ function offerTasks(content, state) {
   for (const id of scene?.offers?.tasks ?? []) state.tasks[id] ??= { status: 'offered' };
 }
 
-/* After a chapter ends, the next one that has opened takes over. */
+/* The story lifts the realm to a layer of the first tier (an exit's `rise`,
+   1-based: 小周天 is 一层, 息壤 五层) — never down, never past its tier, once:
+   a scene played again lifts nothing, and before a story gate nothing moves. */
+function riseTo(content, s, layer, replay) {
+  const tier = content.ladder.tiers[0];
+  if (replay || s.tier !== tier.id || s.step >= layer - 1 || lockedOf(content, s).includes('cultivation')) return null;
+  const from = stepName(content, s.tier, s.step, s.lang);
+  s.step = Math.min(layer, tier.thresholds.length) - 1; s.progress = 0;
+  return { from, to: stepName(content, s.tier, s.step, s.lang) };
+}
+
+/* After a chapter ends, the next one that has opened takes over. One still
+   being written (`coming`, e.g. 「第二章 · 即将开放」) is waited on, dateless. */
 function advanceChapter(content, state, now) {
   const next = Object.values(content.chapters)
     .filter(c => !state.ended.includes(c.id) && c.id > state.chapter)
     .sort((a, b) => a.id.localeCompare(b.id))[0];
   if (!next) return { waiting: null };
+  if (next.coming) return { waiting: { chapter: next.id, coming: pick(next.coming, state.lang) } };
   if (next.opens && new Date(next.opens) > now) return { waiting: { chapter: next.id, opens: next.opens } };
   state.chapter = next.id; state.scene = next.first_scene;
   settlePlace(content, state);
@@ -291,7 +308,7 @@ export function resolve(state, content, ctx, args) {
     const at = placeOf(content, scene.at);
     return refuse('not-at-scene', lang === 'zh' ? `你还没到${pick(at.name, 'zh')}。` : `You are not at ${pick(at.name, 'en')} yet.`, { place: placeName(content, s, at) });
   }
-  if (exit.needs && !meets(s, exit.needs)) return refuse('needs', pick(exit.refuse, lang));
+  if (exit.needs && !meets(s, exit.needs, ctx.now)) return refuse('needs', pick(exit.refuse, lang));
   let breakthrough = null, odds = null;
   if (exit.breakthrough) {
     const tier = tierOf(content, s.tier), tiers = content.ladder.tiers, next = tiers[tiers.indexOf(tier) + 1];
@@ -359,7 +376,11 @@ export function resolve(state, content, ctx, args) {
     const empty = spendStamina(content, s, ctx, 'toil', 1, exit.stamina);
     if (empty) return empty;
   }
-  if (exit.mark) s.marks = [...new Set([...(s.marks ?? []), exit.mark])];
+  if (exit.mark) {
+    s.marks = [...new Set([...(s.marks ?? []), exit.mark])];
+    // The day it was marked, once: a dated beat waits on it (`needs.day_after`).
+    s.mark_days = { [exit.mark]: dayKey(ctx.now), ...(s.mark_days ?? {}) };
+  }
   if (exit.next || exit.ends) {
     const empty = spendStamina(content, s, ctx, 'step');
     if (empty) return empty;
@@ -391,6 +412,8 @@ export function resolve(state, content, ctx, args) {
     s.card_from = { ...Object.fromEntries(starterOf(content, s.traits).map(id => [id, { how: 'starter', place: s.place ?? null, chapter: s.chapter ?? null, day: dayKey(ctx.now) }])), ...(s.card_from ?? {}) };
   }
   if (breakthrough) { s.tier = breakthrough.tier; s.step = 0; s.progress = 0; }
+  // The story lifts the realm (小周天, 息壤): to that layer of the first tier, never down.
+  const rose = exit.rise ? riseTo(content, s, exit.rise, replaying(content, s, scene)) : null;
   const grant = grantOf(s, scene, exit);
   const landing = exit.ends ? { ...s, scene: null } : exit.next && !inMade(s) ? { ...s, scene: exit.next } : s;
   const paid = grant ? pay(content, s, ctx, grant, landing) : null;
@@ -432,7 +455,7 @@ export function resolve(state, content, ctx, args) {
     state: s,
     result: {
       ok: true, took: exit.id, ...(exit.label ? { chose: fill(pick(exit.label, lang), s, content) } : {}), ...(named ? { named } : {}),
-      ...(wrote.length ? { ledger: wrote } : {}), ...(joined ? { joined } : {}), ...(rested ? { her: rested } : {}), ...(born ? { born } : {}), beat, paid, breakthrough, show: exit.show ?? [], scene: atScene(content, s) ? sceneBrief(content, s, ctx.now) : null,
+      ...(wrote.length ? { ledger: wrote } : {}), ...(joined ? { joined } : {}), ...(rested ? { her: rested } : {}), ...(born ? { born } : {}), beat, paid, breakthrough, ...(rose ? { rose } : {}), show: exit.show ?? [], scene: atScene(content, s) ? sceneBrief(content, s, ctx.now) : null,
       waypoint: !atScene(content, s) && sceneOf(content, s) ? threadOf(content, s, ctx.now) : null, ended: exit.ends ?? null, waiting,
       ...(walked ? { walked } : {}), ...(grew ? { treasure_grew: grew } : {}), ...(node ? { node } : {}),
       // Her price showing as the chapter ends: Ling opens with what she does (story.mjs uneaseAt).
@@ -492,7 +515,7 @@ function walkOn(content, s, now) {
   if (inMade(s) || atScene(content, s)) return null;
   const scene = sceneOf(content, s), here = placeOf(content, s.place);
   const target = scene && placeOf(content, scene.at);
-  if (!target || !here?.roads.includes(target.id) || !provinceOpen(content, target.province, now) || tooHard(content, s, target)) return null;
+  if (!target || !here?.roads.includes(target.id) || !placeOpen(content, s, target, now) || tooHard(content, s, target)) return null;
   s.place = target.id;
   return { from: placeName(content, s, here), to: placeName(content, s, target) };
 }

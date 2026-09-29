@@ -1,0 +1,18 @@
+/* 守夜 · 药园 — all selectors prefixed .g-shouye */
+.g-shouye { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.g-shouye-head { font-family: var(--serif); font-size: 16px; }
+.g-shouye-sign { font-family: var(--ui); font-size: 12px; color: var(--dim); }
+.g-shouye-spots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.g-shouye-spot {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-height: 56px; padding: 8px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--surface); color: inherit; font-family: var(--serif); font-size: 15px; cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.g-shouye-spot:hover:not(:disabled) { border-color: var(--ling); background: var(--ling-soft); }
+.g-shouye-spot small { font-family: var(--ui); font-size: 11px; color: var(--faint); }
+.g-shouye-spot.is-used small { color: var(--seal); }
+.g-shouye-spot:disabled { cursor: default; opacity: 0.7; }
+.g-shouye-log p { margin: 0 0 6px; font-family: var(--serif); font-size: 14px; line-height: 1.6; }
+.g-shouye-miss { color: var(--dim); }
+.g-shouye-caught { color: var(--ling); }

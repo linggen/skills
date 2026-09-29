@@ -31,7 +31,7 @@ import { itemOf, offersOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
 import { bagFull, roomFor } from './pouch.mjs';
 import { mainRoot } from './roots.mjs';
-import { allPlaces, atScene, creatureOf, inMade, placeOf, provinceOpen, tooHard } from './world.mjs';
+import { allPlaces, atScene, creatureOf, huntable, inMade, placeOf, placeOpen, tooHard } from './world.mjs';
 
 /* ── 机缘 — the day's one chance, somewhere near, for a few real hours ──
    His pick, 2026-09-23 (觅长生's 过时不候, Lifeline's real clock): once a day,
@@ -53,7 +53,7 @@ function nearPlaces(content, s, now, reach) {
   for (let step = 0; step < reach; step += 1) {
     ring = ring.flatMap(p => p.roads ?? []).map(id => placeOf(content, id)).filter(p => p && !seen.has(p.id));
     for (const p of ring) seen.add(p.id);
-    near.push(...ring.filter(p => !tooHard(content, s, p) && provinceOpen(content, p.province, now)));
+    near.push(...ring.filter(p => !tooHard(content, s, p) && placeOpen(content, s, p, now)));
   }
   return near;
 }
@@ -111,7 +111,7 @@ function meetPool(content, state, ctx) {
   // Creatures move (his, 2026-09-21) — but not across the world: a wandering
   // beast is one of THIS province's haunts, else of a province a road away.
   // Never one that walks with him, was met today, or lives beyond his tier.
-  const roams = p => p.has?.creature && p.id !== place.id && !tooHard(content, state, p) && provinceOpen(content, p.province, ctx.now)
+  const roams = p => huntable(content, p) && p.id !== place.id && !tooHard(content, state, p) && placeOpen(content, state, p, ctx.now)
     && !state.cast.includes(p.has.creature) && state.duels?.[p.has.creature]?.day !== dayKey(ctx.now);
   const every = allPlaces(content), home = every.filter(p => p.province === place.province && roams(p));
   const nextDoor = new Set(every.filter(p => p.province === place.province).flatMap(p => p.roads).map(id => placeOf(content, id)?.province));

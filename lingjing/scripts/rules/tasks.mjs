@@ -67,12 +67,19 @@ function gameLevel(content, state) {
   return i < 2 ? 1 : i < 4 ? 2 : 3;
 }
 
+/* The board a beast here is caught with (creatures.json `catch`: 狰's 守夜),
+   open at its haunt until it is caught — never fought, never tamed first. */
+function catchHere(content, state, id) {
+  const cid = placeOf(content, state.place)?.has?.creature, c = cid ? creatureOf(content, cid) : null;
+  return Boolean(c?.catch === id && !(state.cast ?? []).includes(cid) && state.tasks?.[id]?.status !== 'done');
+}
+
 /* Offered, and not yet done this period — or wanted by an errand (reopened,
-   or hosted here for one). */
+   or hosted here for one), or the catch of the beast here. */
 function taskOpen(content, state, id, now) {
   const t = taskOf(content, id), held = state.tasks[id];
   if (!t) return false;
-  if (reopened(content, state, id, now) || hostedHere(content, state, id)) return true;
+  if (reopened(content, state, id, now) || hostedHere(content, state, id) || catchHere(content, state, id)) return true;
   if (!held) return false;
   return !(held.status === 'done' && (t.period === 'once' || held.period === periodKey(t.period, now)));
 }
@@ -87,7 +94,7 @@ function taskDone(state, content, ctx, id) {
   // Kept across midnight: while the errand still asks for it, a win kept on
   // an empty pool counts whenever 体力 is back (the page says so).
   const wonHere = Boolean(t.hosted && state.wins?.[id] && errandWants(content, state, id));
-  if (!state.tasks[id] && !again && !hostedHere(content, state, id) && !wonHere) return refuse('not-offered', null);
+  if (!state.tasks[id] && !again && !hostedHere(content, state, id) && !catchHere(content, state, id) && !wonHere) return refuse('not-offered', null);
   if (!wonHere && !taskOpen(content, state, id, ctx.now)) return refuse('already-done', null);
   if (!state.wins?.[id]) return refuse('not-won', null);
   const s = clone(state);
@@ -162,6 +169,8 @@ export function duel(state, content, ctx, args) {
   if (!exit && !(haunt && haunt.game.id === id)) return refuse('not-here', null);
   if (haunt?.tamed) return refuse('tamed', null, { creature: haunt.creature });
   const game = exit ? gameOf(exit) : haunt.game, creature = creatureOf(content, game.creature);
+  // A beast that is caught, not fought (`catch`), runs the moment it is struck at.
+  if (haunt && creature.catch) return refuse('runs', pick(creature.runs, state.lang), { creature: haunt.creature, catch: creature.catch });
   const withdrawnLine = exit ? pick(exit.withdrawn, state.lang)
     : pick({ zh: `${pick(creature.name, 'zh')}退入林影，明日再来。`, en: `${pick(creature.name, 'en')} withdraws into the shadows; come back tomorrow.` }, state.lang);
   const s = clone(state);
@@ -372,4 +381,4 @@ export function lundao(state, content, ctx, args) {
   return { state: s, result: { ok: true, good, ...(form ? { form } : {}), ...(!form && !judged ? { judged: false } : {}), lundao: lundaoBrief(content, s, ctx.now), ...(fresh ? { say: l.prompt } : {}), ...(l.model && !l.outcome ? { judge: judgeOf(l.model) } : {}), ...(l.outcome === 'won' ? { line: pick(taskOf(content, 'lundao').done_line, lang), ...(paid ? { paid } : {}), ...(handed.length ? { handed } : {}) } : {}) } };
 }
 
-export { doneThisPeriod, gameLevel, hostedHere, lundaoBrief, lundaoForm, lundaoName, questCheck, questDone, reopened };
+export { catchHere, doneThisPeriod, gameLevel, hostedHere, lundaoBrief, lundaoForm, lundaoName, questCheck, questDone, reopened };

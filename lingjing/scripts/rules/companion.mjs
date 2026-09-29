@@ -4,7 +4,7 @@ import { dayKey, pick } from '../state.mjs';
 import { wornOf } from './arms.mjs';
 import { itemOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
-import { placeName, placeOf, provinceOpen, tooHard } from './world.mjs';
+import { placeName, placeOf, placeOpen, tooHard } from './world.mjs';
 
 /* The thread — the pull: the scene while one runs, else the next chapter
    and when it opens; nothing when the spine has run out. */
@@ -60,7 +60,7 @@ function nearestPlace(content, state, now, test) {
         if (seen.has(id)) continue;
         seen.add(id);
         const q = placeOf(content, id);
-        if (q && provinceOpen(content, q.province, now) && !tooHard(content, state, q)) next.push(q);
+        if (q && placeOpen(content, state, q, now) && !tooHard(content, state, q)) next.push(q);
       }
     }
     edge = next;
@@ -148,8 +148,8 @@ export function herPast(content, state) {
    gives her an ability, and each takes one of her reflections (rewards.json
    `her_card`). Plus whatever she wears (齐纨 +1 气血). */
 const herCardOf = content => content.rewards.her_card ?? {};
-/* Cauldrons found: the chapters ended that hold one (every chapter but a corridor). */
-export const cauldronsFound = (content, state) => (state.ended ?? []).filter(id => content.chapters[id] && !content.chapters[id].corridor).length;
+/* Cauldrons found: the chapters ended that hold one (every chapter but a corridor, or one marked `cauldron: false`). */
+export const cauldronsFound = (content, state) => (state.ended ?? []).filter(id => content.chapters[id] && !content.chapters[id].corridor && content.chapters[id].cauldron !== false).length;
 /* Her lift at the player's realm: the highest realm listed at or below theirs. */
 function realmLift(content, state) {
   const tiers = content.ladder.tiers.map(t => t.id), at = tiers.indexOf(state.tier);

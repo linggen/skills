@@ -30,12 +30,38 @@ function provinceOpen(content, province, now) {
   return Object.values(content.chapters).some(c => c.province === province && (!c.opens || new Date(c.opens) <= now));
 }
 
+/* The map a chapter opens (his, 2026-09-29: 地图分步打开 — 序章 蒙山, 第一章
+   沉鼎观 …): chapter.json `map.places`, in force while the save's chapter is
+   that one — ended and waiting on the next too. A chapter that declares none
+   opens every province that has opened, as before. */
+function mapOf(content, state, now = new Date()) {
+  const ch = content.chapters[state?.chapter], ended = state?.ended ?? [];
+  if (!ch?.map) return null;
+  if (!ended.includes(ch.id)) return ch.map;
+  // Ended: its map holds only while the next chapter waits (a date to come, or still being written).
+  const next = Object.values(content.chapters).filter(c => c.id > ch.id && !ended.includes(c.id)).sort((a, b) => a.id.localeCompare(b.id))[0];
+  return next && (next.coming || (next.opens && new Date(next.opens) > now)) ? ch.map : null;
+}
+const onMap = (content, state, place, now) => !mapOf(content, state, now)?.places || mapOf(content, state, now).places.includes(place.id);
+/* A place the player may walk to: its province open and the chapter's map holding it. */
+const placeOpen = (content, state, place, now) => Boolean(place) && provinceOpen(content, place.province, now) && onMap(content, state, place, now);
+
+/* 关键剧情锁图 (his, 2026-09-28): a key beat — chapter.json `beats`, its
+   entry scene first — shuts the map from the scene after its entry to its
+   last: the scene carries the player as a corridor does. The entry is a
+   waypoint, walked to; nothing is stored, the scene is the lock. */
+function beatOf(content, state) {
+  if (inMade(state) || !state.scene) return null;
+  return (content.chapters[state.chapter]?.beats ?? []).find(b => b.scenes.indexOf(state.scene) > 0) ?? null;
+}
+const carried = (content, state) => Boolean(content.chapters[state.chapter]?.corridor) || Boolean(beatOf(content, state));
+
 /* The spine as waypoints: outside a corridor a scene runs only where it
    stands — the player walks to it. */
 function atScene(content, state) {
   const scene = sceneOf(content, state);
   if (!scene) return false;
-  if (inMade(state) || content.chapters[state.chapter]?.corridor) return true;
+  if (inMade(state) || carried(content, state)) return true;
   return !scene.at || state.place === scene.at;
 }
 
@@ -44,7 +70,7 @@ function atScene(content, state) {
    province starts. */
 function settlePlace(content, state) {
   const scene = inMade(state) ? null : sceneOf(content, state);
-  if (scene?.at && content.chapters[state.chapter]?.corridor) state.place = scene.at;
+  if (scene?.at && carried(content, state)) state.place = scene.at;
   if (!state.place || !placeOf(content, state.place)) {
     const province = content.chapters[state.chapter]?.province;
     state.place = content.places[province]?.start ?? null;
@@ -67,6 +93,10 @@ const placeName = (content, state, place) => ({ id: place.id, name: pick(place.n
    day, and a taming by what it likes from the bag. Nothing while a scene
    runs here — the scene's own exits take over. */
 const hauntId = creature => `haunt:${creature}`;
+/* A haunt whose beast is fought — a bounty, a road beast, a rumor's finale;
+   a beast caught instead (`catch`) is never offered as a fight. */
+const huntable = (content, p) => Boolean(p?.has?.creature) && !creatureOf(content, p.has.creature)?.catch;
+const caughtBy = (state, creature) => Boolean(creature.catch) && state.tasks?.[creature.catch]?.status === 'done';
 function encounterOf(content, state, now) {
   const place = placeOf(content, state.place);
   // The haunt's own beast, else the one today's 遇 put on this road — until
@@ -87,8 +117,11 @@ function encounterOf(content, state, now) {
     won: Boolean(state.wins?.[game.id]) && today?.day === day && today.outcome === 'won',
     withdrawn: today?.day === day && today.outcome === 'lost',
     tamed: state.cast.includes(cid),
-    // Beaten once, on any day: only a beast beaten can be won over.
-    beaten: Boolean(state.wins?.[game.id]),
+    // Beaten once, on any day: only a beast beaten can be won over. A beast
+    // that is caught, never fought (creatures.json `catch`: 狰, the herb
+    // thief), yields to the board of that id won here instead.
+    beaten: Boolean(state.wins?.[game.id]) || caughtBy(state, creature),
+    ...(creature.catch ? { catch: creature.catch } : {}),
     // `fed`: food is fed; a thing (雷神's bell, 狪狪's silk) is offered (his, 2026-09-23: 雷神吃装备吗?)
     likes: item ? { id: item.id, name: pick(item.name, lang), held: state.bag[item.id] ?? 0, fed: item.kind === 'material' } : null,
   };
@@ -114,11 +147,12 @@ function placeBrief(content, state, now = new Date()) {
     },
     roads: place.roads.map(id => placeOf(content, id)).map(p => ({
       ...placeName(content, state, p), tier: p.tier, too_hard: tooHard(content, state, p),
-      province: p.province, closed: !provinceOpen(content, p.province, now),
+      province: p.province, closed: !placeOpen(content, state, p, now),
     })),
     places: doc.places.map(p => ({
       ...placeName(content, state, p), tier: p.tier, roads: p.roads, ...(p.map ? { map: p.map } : {}),
       here: p.id === place.id, road: place.roads.includes(p.id), too_hard: tooHard(content, state, p),
+      ...(onMap(content, state, p, now) ? {} : { closed: true }),
     })),
     shelf: shelf.map(i => itemBrief(content, state, i)),
     show: withMap(content, show),
@@ -130,7 +164,7 @@ function placeBrief(content, state, now = new Date()) {
 /* The shortest way from one place to another, walking only places the player
    may enter — every place on it after `from`, or null when no such way runs. */
 function pathOf(content, state, from, to, now) {
-  const walkable = p => p && !tooHard(content, state, p) && provinceOpen(content, p.province, now);
+  const walkable = p => p && !tooHard(content, state, p) && placeOpen(content, state, p, now);
   if (!walkable(to)) return null;
   const back = new Map([[from.id, null]]), queue = [from];
   while (queue.length) {
@@ -176,6 +210,6 @@ function fittingPlace(content, state, from) {
 
 /* The corridor: a chapter that walks the player scene by scene; the world
    opens when it ends. */
-const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && Boolean(content.chapters[state.chapter]?.corridor);
+const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && carried(content, state);
 
-export { allPlaces, atScene, creatureOf, encounterOf, fittingPlace, inCorridor, inMade, pathOf, placeBrief, placeName, placeOf, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };
+export { allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };

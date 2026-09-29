@@ -26,8 +26,9 @@ const RECAP_LINES = 3;
 
 const byId = (a, b) => a.id.localeCompare(b.id);
 const chaptersOf = content => Object.values(content.chapters).sort(byId);
-/* A chapter with a cauldron in it: every chapter of the spine but a corridor (the prologue). */
-const holdsCauldron = ch => !ch.corridor;
+/* A chapter with a cauldron in it: every chapter of the spine but a corridor
+   (the prologue) and one that says it holds none (`cauldron: false`, 第一章 · 外门). */
+const holdsCauldron = ch => !ch.corridor && ch.cauldron !== false;
 
 /* scene id → its chapter, once per world. */
 const SCENES = new WeakMap();

@@ -13,7 +13,7 @@ import { canMakeTale, taleEvent, taleHanded, taleRow } from './tale.mjs';
 import { hashOf } from './travel.mjs';
 import { coolingUntil, oddsOf } from './breakthrough.mjs';
 import { freeSlot, pouchBrief } from './pouch.mjs';
-import { allPlaces, atScene, creatureOf, inCorridor, inMade, pathOf, placeName, placeOf, provinceOpen, sceneOf, tooHard, towardOf } from './world.mjs';
+import { allPlaces, atScene, creatureOf, huntable, inCorridor, inMade, pathOf, placeName, placeOf, placeOpen, sceneOf, tooHard, towardOf } from './world.mjs';
 
 /* ── 差事 — the errands the player takes (design.md § 差事) ──
    接 · 记 · 追 · 交. The world offers, the player takes, the rules count, and
@@ -156,7 +156,7 @@ const NOTICE_REACH = 3; // roads from the market: an errand, not a pilgrimage
 
 /* The places within so many walkable roads of one. */
 function withinRoads(content, state, from, now, max) {
-  const walkable = p => p && !tooHard(content, state, p) && provinceOpen(content, p.province, now);
+  const walkable = p => p && !tooHard(content, state, p) && placeOpen(content, state, p, now);
   const seen = new Set([from.id]);
   let edge = [from];
   for (let i = 0; i < max; i += 1) {
@@ -173,10 +173,11 @@ function noticeTargets(content, state, market, t, now) {
   if (t.kind === 'visit') return near.map(p => p.id);
   if (t.kind === 'board') return near.filter(p => (p.has?.games ?? []).some(g => g !== 'alchemy-daily')).map(p => p.id);
   // A bounty that cannot be won is a lie: not a beast that walks with him, nor one already met today.
-  return near.filter(p => p.has?.creature && !state.cast.includes(p.has.creature) && state.duels?.[p.has.creature]?.day !== dayKey(now)).map(p => p.has.creature);
+  return near.filter(p => huntable(content, p) && !state.cast.includes(p.has.creature) && state.duels?.[p.has.creature]?.day !== dayKey(now)).map(p => p.has.creature);
 }
 
 const NOTICES_A_DAY = 3;
+const mixed = h => { const x = Math.imul(h ^ (h >>> 16), 0x45d9f3b); return (x ^ (x >>> 16)) >>> 0; };
 
 function noticeAt(content, state, now) {
   const market = placeOf(content, state.place);
@@ -189,7 +190,9 @@ function noticeAt(content, state, now) {
   if (today.length >= NOTICES_A_DAY) return null;
   const pool = (content.notices ?? []).flatMap(t => noticeTargets(content, state, market, t, now).map(target => `daily-${stamp}-${t.id}-${target}`))
     .filter(id => !state.quests?.[id]);
-  return pool.length ? noticeOf(content, pool[hashOf(`${day}|${state.name ?? ''}|${market.id}|notice|${today.length}`) % pool.length]) : null;
+  // hashOf multiplies by 31: a pool of 31 (or a multiple) took the same pick
+  // every day — the day's digits vanish mod 31. Mixed first (2026-09-29).
+  return pool.length ? noticeOf(content, pool[mixed(hashOf(`${day}|${state.name ?? ''}|${market.id}|notice|${today.length}`)) % pool.length]) : null;
 }
 
 /* What may be taken where he stands: the giver is here, it is not in the book
@@ -201,7 +204,7 @@ function offersOf(content, state, lang, now) {
     .filter(q => q.from?.place === state.place && !state.quests?.[q.id]
       && (!q.opens?.after || questDoneBefore(state, q.opens.after))
       && (!q.opens?.tier || TIERS_ORDER(content).indexOf(state.tier) >= TIERS_ORDER(content).indexOf(q.opens.tier)))
-    .map(q => ({ id: q.id, title: pick(q.title, lang), who: q.from.who ? pick(q.from.who, lang) : null, say: fill(pick(q.say, lang), state), need: q.need.map(n => ({ kind: n.kind, n: n.n })), grant: q.grant, pays: paysOf(content, state, now, q.grant) }));
+    .map(q => ({ id: q.id, title: pick(q.title, lang), who: q.from.who ? pick(q.from.who, lang) : null, say: fill(pick(q.say, lang), state, content), need: q.need.map(n => ({ kind: n.kind, n: n.n })), grant: q.grant, pays: paysOf(content, state, now, q.grant) }));
 }
 
 const TIERS_ORDER = content => content.ladder.tiers.map(t => t.id);
@@ -217,7 +220,7 @@ const TIERS_ORDER = content => content.ladder.tiers.map(t => t.id);
 function beastWork(content, state, ctx, here) {
   const day = dayKey(ctx.now);
   const at = allPlaces(content)
-    .filter(p => p.has?.creature && !state.cast.includes(p.has.creature) && state.duels?.[p.has.creature]?.day !== day && !tooHard(content, state, p))
+    .filter(p => huntable(content, p) && !state.cast.includes(p.has.creature) && state.duels?.[p.has.creature]?.day !== day && !tooHard(content, state, p))
     .map(p => ({ p, way: p.id === here.id ? [] : pathOf(content, state, here, p, ctx.now) }))
     .filter(x => x.way)
     .sort((a, b) => a.way.length - b.way.length)[0];
@@ -318,7 +321,9 @@ function handedHere(content, state) {
    「where to go, what should do」. `toward` is one road at a time; at the door
    it is the place itself. */
 function waypointOf(content, state, ctx) {
-  if (atScene(content, state) || inMade(state) || !sceneOf(content, state)) return null;
+  // The spine run out onto a chapter still being written: its words are the goal line.
+  if (!inMade(state) && !sceneOf(content, state)) { const t = threadOf(content, state, ctx.now); return t?.coming ? t : null; }
+  if (atScene(content, state) || inMade(state)) return null;
   const thread = threadOf(content, state, ctx.now);
   if (!thread?.place) return thread;
   // A cauldron that waits on the peak is not a road to walk: the card says
@@ -370,22 +375,38 @@ function waitsOnPeak(content, state, now) {
 function wayBack(content, state, now) {
   const scene = sceneOf(content, state);
   const here = placeOf(content, scene?.at ?? state.place);
-  return (here?.roads ?? []).map(id => placeOf(content, id)).find(p => provinceOpen(content, p.province, now) && !tooHard(content, state, p)) ?? null;
+  return (here?.roads ?? []).map(id => placeOf(content, id)).find(p => placeOpen(content, state, p, now) && !tooHard(content, state, p)) ?? null;
 }
+
+/* The chapter's goal and its countdown (chapter.json `goal`, his 2026-09-28:
+   一个目标 + 倒计时): the day it falls in the story (腊月初八) until its eve
+   is marked, then 明日 on the eve's day and 今日 after — real local days, as
+   the beat's `needs.day_after` counts them. Gone once its scene is passed. */
+function goalOf(content, state, now) {
+  const g = content.chapters[state.chapter]?.goal, lang = state.lang;
+  if (!g || (state.done_scenes ?? []).includes(g.at) || (state.ended ?? []).includes(state.chapter)) return null;
+  const eve = state.mark_days?.[g.eve], today = dayKey(now);
+  const when = !eve ? pick(g.date, lang) : eve >= today ? pick({ zh: '明日', en: 'tomorrow' }, lang) : pick({ zh: '今日', en: 'today' }, lang);
+  return { title: pick(g.title, lang), when, ...(eve ? { eve: true } : {}) };
+}
+const goalLine = (goal, lang) => (goal ? `${goal.title} · ${goal.when}${lang === 'zh' ? '。' : '. '}` : '');
 
 function threadOf(content, state, now) {
   const lang = state.lang;
   const scene = inMade(state) ? null : sceneOf(content, state);
   if (scene && atScene(content, state)) return { scene: scene.id, text: fill(pick(scene.setup, lang), state, content) };
   if (scene) {
-    const at = placeOf(content, scene.at);
+    const at = placeOf(content, scene.at), goal = goalOf(content, state, now);
     return { scene: scene.id, place: placeName(content, state, at), province: pick(content.dictionary.provinces[at.province], lang),
-      text: lang === 'zh' ? `路通向${pick(at.name, 'zh')}。` : `The road leads to ${pick(at.name, 'en')}.` };
+      ...(goal ? { goal } : {}),
+      text: goalLine(goal, lang) + (lang === 'zh' ? `路通向${pick(at.name, 'zh')}。` : `The road leads to ${pick(at.name, 'en')}.`) };
   }
   const next = Object.values(content.chapters)
     .filter(c => !state.ended.includes(c.id) && c.id > state.chapter)
     .sort((a, b) => a.id.localeCompare(b.id))[0];
   if (!next) return null;
+  // A chapter still being written: its own words stand as the goal (「第二章 · 即将开放」).
+  if (next.coming) return { chapter: next.id, coming: true, text: pick(next.coming, lang) };
   const opens = next.opens && new Date(next.opens) > now ? next.opens : null;
   const at = next.scenes[next.first_scene]?.at;
   return { chapter: next.id, title: pick(next.title, lang), opens, province: pick(content.dictionary.provinces[next.province], lang), place: at ? placeName(content, state, placeOf(content, at)) : null };
@@ -403,8 +424,8 @@ const poolOf = (content, state) => {
 function directorBrief(content, state, ctx) {
   const place = placeOf(content, state.place);
   if (!place) return null;
-  const roads = place.roads.map(id => placeOf(content, id)).filter(p => provinceOpen(content, p.province, ctx.now));
-  const closed = place.roads.map(id => placeOf(content, id)).filter(p => !provinceOpen(content, p.province, ctx.now));
+  const roads = place.roads.map(id => placeOf(content, id)).filter(p => placeOpen(content, state, p, ctx.now));
+  const closed = place.roads.map(id => placeOf(content, id)).filter(p => !placeOpen(content, state, p, ctx.now));
   // 今日传闻 is offered where the province's lore gathers (a place with seeds).
   const rumor = place.has?.seeds && canMakeTale(state, ctx.now) ? pick(content.dictionary.words.tale_today, state.lang) : null;
   const here = placeName(content, state, place);

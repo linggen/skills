@@ -8,7 +8,7 @@ import { clone, offerTasks, pay, refuse, spendStamina } from './core.mjs';
 import { advance, bookOf, directorBrief, GEAR_SLOTS, itemBrief, itemOf, questOf, settleErrands } from './errands.mjs';
 import { arriveOnRoad } from './road.mjs';
 import { forSale, sceneBrief, shelfOf, wordsOf } from './look.mjs';
-import { atScene, fittingPlace, inCorridor, inMade, pathOf, placeBrief, placeName, placeOf, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard } from './world.mjs';
+import { atScene, beatOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard } from './world.mjs';
 import { enteredBeat, refusalBeat } from './story.mjs';
 import { enter } from './worlds.mjs';
 import { bagFull, pouchBrief, roomFor } from './pouch.mjs';
@@ -67,12 +67,19 @@ export function move(state, content, ctx, args) {
   }
   if (target.id === here?.id) return { state: null, result: { ok: true, here: true, place: placeBrief(content, s) } };
   // A made scene played inside the corridor does not open the road.
+  // A key beat locks the map as the corridor does, in its own words (world.mjs beatOf).
   if (inCorridor(content, { ...s, made: null })) {
-    return stay('corridor', pick({ zh: '先把眼前的事做完。', en: 'Finish what is before you first.' }, lang), { scene: s.scene });
+    const beat = beatOf(content, s);
+    return stay('corridor', pick(beat?.say ?? { zh: '先把眼前的事做完。', en: 'Finish what is before you first.' }, lang), { scene: s.scene, ...(beat ? { beat: beat.id } : {}) });
   }
   if (!provinceOpen(content, target.province, ctx.now)) {
     const say = { zh: `${target.province}州的路还没开。`, en: 'That road has not opened yet.' };
     return stay('road-closed', pick(say, lang), { province: target.province });
+  }
+  // Beyond the map this chapter opens: its one in-world line (chapter.json `map.say`).
+  if (!onMap(content, s, target, ctx.now)) {
+    const say = mapOf(content, s, ctx.now).say ?? { zh: '那条路还没开。', en: 'That road has not opened yet.' };
+    return stay('road-closed', pick(say, lang), { province: target.province, place: placeName(content, s, target) });
   }
   if (tooHard(content, s, target)) {
     const fitting = fittingPlace(content, s, here);
@@ -114,7 +121,7 @@ export function move(state, content, ctx, args) {
   // place an errand sent him to is an event, not an empty ford.
   const wasReady = new Set(bookOf(content, state, lang, ctx).filter(q => q.ready).map(q => q.id));
   const met = bookOf(content, s, lang, ctx).filter(q => q.ready && !wasReady.has(q.id))
-    .map(q => ({ id: q.id, title: q.title, ...(questOf(content, q.id)?.seen ? { seen: fill(pick(questOf(content, q.id).seen, lang), s) } : {}) }));
+    .map(q => ({ id: q.id, title: q.title, ...(questOf(content, q.id)?.seen ? { seen: fill(pick(questOf(content, q.id).seen, lang), s, content) } : {}) }));
   const handed = settleErrands(content, s, ctx);
   const via = way.slice(0, way.findIndex(p => p.id === reached.id)).map(p => placeName(content, s, p));
   // 路上 (road.mjs): at most one thing met, where he STOPS — never a place

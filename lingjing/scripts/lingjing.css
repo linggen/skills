@@ -352,6 +352,10 @@ ruby.py rt { font-family: var(--ui); font-size: 0.62em; font-weight: 400; letter
 .atlas .pt.here i { width: 11px; height: 11px; background: #46708C; }
 .atlas .pt.here span { color: #46708C; font-weight: 600; }
 .atlas .pt.far { opacity: 0.55; }
+/* Beyond the map a chapter opens: greyed and shut; a province all shut stands in mist. */
+.atlas .pt.shut { opacity: 0.3; filter: grayscale(1); }
+.atlas .pv.mist { color: rgba(40, 34, 24, 0.12); filter: blur(0.6px); }
+.maplock { margin: -2px 0 6px; }
 .atlas button.pt { cursor: pointer; }
 .atlas button.pt:hover span { background: #fff; }
 

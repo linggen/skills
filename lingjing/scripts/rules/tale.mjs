@@ -21,7 +21,7 @@ import { HANDED_KEEP, itemOf, whereAt, withinRoads } from './errands.mjs';
 import { gameLevel, lundaoForm } from './tasks.mjs';
 import { hashOf } from './travel.mjs';
 import { stow, storedLine } from './pouch.mjs';
-import { allPlaces, atScene, creatureOf, placeName, placeOf, provinceOpen, tierIndex, tooHard } from './world.mjs';
+import { allPlaces, atScene, creatureOf, huntable, placeName, placeOf, placeOpen, tierIndex, tooHard } from './world.mjs';
 
 const WORD_GAMES = new Set(['riddle', 'lundao']);
 const cfgOf = content => content.tale;
@@ -59,7 +59,7 @@ function pickSeed(content, state, now) {
   return { id: seed.id, line: pick(seed.line, state.lang), source: pick(seed.source, state.lang), creature: seed.creature ?? null, ...(kind ? { kind: pick(kind, state.lang) } : {}) };
 }
 
-const walkable = (content, state, p, now) => p && !tooHard(content, state, p) && provinceOpen(content, p.province, now);
+const walkable = (content, state, p, now) => p && !tooHard(content, state, p) && placeOpen(content, state, p, now);
 
 /* The places a tale may use, around where he stands — and the beasts at
    their haunts a finale may be. Ids and names only: her context is not a map. */
@@ -68,7 +68,7 @@ function reachOf(content, state, now) {
   if (!here) return { places: [], haunts: [] };
   const ids = [here.id, ...withinRoads(content, state, here, now, cfg.reach * 3)];
   const places = ids.map(id => placeOf(content, id)).filter(p => walkable(content, state, p, now));
-  const haunts = places.filter(p => p.has?.creature && !state.cast.includes(p.has.creature)).map(p => {
+  const haunts = places.filter(p => huntable(content, p) && !state.cast.includes(p.has.creature)).map(p => {
     const c = creatureOf(content, p.has.creature);
     return { creature: c.id, name: pick(c.name, state.lang), at: p.id, ...(c.elite ? { elite: true } : {}) };
   });
@@ -173,6 +173,7 @@ function lintDuel(content, state, now, f, from, castIds, bad) {
   const haunt = c && allPlaces(content).find(p => p.has?.creature === c.id);
   if (!haunt) { bad('finale.creature', `a creature with a haunt — ${f.creature} is not`); return null; }
   if (state.cast.includes(c.id)) bad('finale.creature', `${c.id} walks with the player — no fight`);
+  if (c.catch) bad('finale.creature', `${c.id} is caught, never fought`);
   const where = placeProblem(content, state, now, haunt.id, from);
   if (where) bad('finale.creature', where);
   if (!castIds.has(f.giver)) bad('finale.giver', 'one of the cast ids');

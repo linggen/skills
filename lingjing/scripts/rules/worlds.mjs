@@ -14,7 +14,7 @@ import { nameOf, sceneBrief, spoken } from './look.mjs';
 import { arriveOnRoad, chanceLive, dealChance, meetHere } from './road.mjs';
 import { herBeat, joinNode, withHerBeat } from './story.mjs';
 import { hashOf } from './travel.mjs';
-import { creatureOf, encounterOf, inMade, placeName, placeOf, settlePlace, tooHard } from './world.mjs';
+import { creatureOf, encounterOf, inMade, onMap, placeName, placeOf, settlePlace, tooHard } from './world.mjs';
 
 /* ── Building: a made world's pictures ──
    Only building paints. A made world plays once every creature it made has
@@ -406,10 +406,12 @@ function insideSkill(raw) {
 /* The world map past the player's province — the page's alone, never a
    tool: each province's places where the map puts them. Here and the roads
    are Look's, for the province the player stands in. */
-export function atlas(state, content) {
+export function atlas(state, content, ctx = {}) {
+  const now = ctx.now ?? new Date();
   const provinces = Object.fromEntries(Object.entries(content.places).map(([id, doc]) => [id, {
     name: pick(content.dictionary.provinces[id], state.lang),
-    places: doc.places.filter(p => p.map).map(p => ({ ...placeName(content, state, p), map: p.map, too_hard: tooHard(content, state, p) })),
+    // `closed`: beyond the map the chapter opens (world.mjs onMap) — greyed, the province misted.
+    places: doc.places.filter(p => p.map).map(p => ({ ...placeName(content, state, p), map: p.map, too_hard: tooHard(content, state, p), ...(onMap(content, state, p, now) ? {} : { closed: true }) })),
   }]));
   return { state: null, result: { ok: true, provinces } };
 }

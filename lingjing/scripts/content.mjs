@@ -829,6 +829,11 @@ function lintCreatures(content, bad) {
     if (c.drops && !content.items.items.some(i => i.id === c.drops)) bad(`creature ${c.id}`, `drops unknown item ${c.drops}`);
     if (!c.made) lintPinyin(c, bad, true);
     if (c.signature) lintSignature(content, c, bad);
+    // Caught, not fought (狰): the board it is caught with, and its line when struck at.
+    if (c.catch != null && !(content.tasks?.tasks ?? []).some(t => t.id === c.catch && t.kind === 'board')) bad(`creature ${c.id}`, `caught with unknown board ${c.catch}`);
+    if (c.catch != null && !pair(c.runs)) bad(`creature ${c.id}`, 'a beast caught, not fought, needs its runs line in zh and en');
+    // A person fought as a foe (the 外门大比): one of people.json, never tamed.
+    if (c.person != null && (!peopleIds(content).includes(c.person) || c.likes)) bad(`creature ${c.id}`, `a foe is a person of people.json and likes nothing, not ${c.person}`);
     // `appear`: the first meeting played on the stage, a few lines in both languages.
     if (c.appear != null && !(Array.isArray(c.appear.zh) && Array.isArray(c.appear.en) && c.appear.zh.length && c.appear.zh.length <= 8)) bad(`creature ${c.id}`, 'appear is one to eight lines, zh and en');
     if (!c.art || !c.art_source) { bad(`creature ${c.id}`, 'needs art and art_source'); continue; }
@@ -906,6 +911,7 @@ function lintChapter(chapter, content, ids, bad) {
   for (const scene of Object.values(chapter.scenes)) lintScene(scene, chapter, content, ids, bad);
   for (const id of unreachable(chapter)) bad(`scene ${id}`, 'cannot be reached from the first scene');
   if (!endsSomewhere(chapter)) bad(where, 'no exit ends the chapter');
+  lintChapterShape(chapter, content, bad);
   // A story gate (state.mjs lockedOf): a scene of its own that opens it, systems the engine knows, a refusal in both languages.
   const lock = chapter.locks;
   if (lock) {
@@ -915,6 +921,38 @@ function lintChapter(chapter, content, ids, bad) {
     if (!lock.systems?.length) bad(where, 'locks no system');
     if (!lock.say?.zh || !lock.say?.en) bad(where, 'locks with no refusal line in zh and en');
   }
+}
+
+/* The map a chapter opens, its key beats, its goal, its `coming` words
+   (world.mjs mapOf / beatOf, errands.mjs goalOf, core.mjs advanceChapter). */
+function lintChapterShape(chapter, content, bad) {
+  const where = `chapter ${chapter.id}`, known = new Set(Object.values(content.places).flatMap(d => d.places.map(p => p.id)));
+  const map = chapter.map;
+  if (map) {
+    if (!Array.isArray(map.places) || !map.places.length) bad(where, 'a map opens at least one place');
+    for (const id of map.places ?? []) if (!known.has(id)) bad(where, `map opens unknown place ${id}`);
+    if (map.say != null && !pair(map.say)) bad(where, 'the map\'s refusal needs zh and en');
+    for (const sc of Object.values(chapter.scenes)) if (sc.at && map.places && !map.places.includes(sc.at)) bad(`scene ${sc.id}`, `at ${sc.at}, beyond the map its chapter opens`);
+  }
+  const inBeats = new Set();
+  for (const b of chapter.beats ?? []) {
+    const at = `${where} beat ${b.id}`;
+    if (!b.id || !pair(b.title)) bad(at, 'a beat needs an id and a title in zh and en');
+    if (!Array.isArray(b.scenes) || b.scenes.length < 2) bad(at, 'a beat is its entry and at least one scene it locks');
+    for (const id of b.scenes ?? []) {
+      if (!chapter.scenes[id]) bad(at, `names unknown scene ${id}`);
+      if (inBeats.has(id)) bad(at, `scene ${id} is in two beats`);
+      inBeats.add(id);
+    }
+    if (b.say != null && !pair(b.say)) bad(at, 'a beat\'s refusal needs zh and en');
+  }
+  const g = chapter.goal;
+  if (g) {
+    if (!pair(g.title) || !pair(g.date)) bad(where, 'a goal needs its title and date in zh and en');
+    if (!chapter.scenes[g.at]) bad(where, `goal at unknown scene ${g.at}`);
+    if (!Object.values(chapter.scenes).some(sc => sc.exits.some(e => e.mark === g.eve))) bad(where, `goal eve ${g.eve} is marked by no exit`);
+  }
+  if (chapter.coming != null && !pair(chapter.coming)) bad(where, 'coming needs zh and en');
 }
 
 function lintScene(scene, chapter, content, ids, bad) {
@@ -971,6 +1009,11 @@ function lintExit(where, exit, chapter, content, ids, speakers, bad) {
     if (rule?.task && !ids.tasks.has(rule.task)) bad(where, `unknown task ${rule.task}`);
   }
   if (exit.take && !exit.needs) bad(where, 'takes what it never checks for');
+  // A choice a thread sets up; a day that must pass since a mark of the chapter.
+  if (exit.needs?.quest && !(content.quests ?? []).some(q => q.id === exit.needs.quest)) bad(where, `needs unknown quest ${exit.needs.quest}`);
+  if (exit.needs?.day_after && !Object.values(chapter.scenes).some(sc => sc.exits.some(e => e.mark === exit.needs.day_after))) bad(where, `waits a day after ${exit.needs.day_after}, which no exit marks`);
+  // The story lifts the realm to a layer of the first tier (core.mjs riseTo).
+  if (exit.rise != null && !(Number.isInteger(exit.rise) && exit.rise >= 1 && exit.rise <= content.ladder.tiers[0].thresholds.length)) bad(where, 'rise is a layer of the first tier');
   if (exit.take?.wealth != null && !(Number.isInteger(exit.take.wealth) && exit.take.wealth > 0 && exit.needs?.wealth >= exit.take.wealth)) bad(where, 'takes stones it never checks for');
   if (exit.needs?.wealth != null && !(Number.isInteger(exit.needs.wealth) && exit.needs.wealth > 0)) bad(where, 'needs a whole number of stones');
   lintStory(where, exit.story, bad);

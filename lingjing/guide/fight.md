@@ -55,7 +55,10 @@ Food is fed, a thing offered (`likes.fed`) — never say a beast eats a bell.
 **先降后收**: before it is beaten (`encounter.beaten`) Tame refuses
 `not-beaten` — say it must be beaten first. A thing Yinyue wears can still be
 offered. A tamed beast joins the `cast`, counts as 降 for errands, and fights
-no more there.
+no more there. **Caught, not fought** (`encounter.catch`, 狰 at the 药园): its
+board — 守夜 — stands on the stage; struck at, Duel refuses `runs` with its
+line (say it). Won, it is beaten: then 收服 with what it likes. A scene's duel
+may be a person (the 外门大比): the same card game, fought again at once when lost.
 
 **本命法宝** (past 结丹): the weapon and a 天材地宝 become the player's own
 treasure, **named by the player**. The treasure card binds it: they pick the
