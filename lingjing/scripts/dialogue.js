@@ -20,33 +20,58 @@ export const DLG_WORDS = {
   en: { skip: 'Skip', log: 'Log', close: 'Close', logTitle: 'Told in this scene', recap: 'Before this', on: 'Tap to go on', act: (a) => `(${a}) ` },
 };
 
-/* The reading as it stands: the scene it belongs to, every beat drawn there
-   in order, the one on show (`at`), and whether the last was put away. */
-export const emptyReading = (scene) => ({ scene: scene ?? null, beats: [], at: 0, closed: false });
+/* The reading as it stands: the scene it belongs to, the passages drawn
+   there in order (each with its beats in both languages — a switch of
+   language plays on in the other), the one on show (passage `i`, beat `j`),
+   and whether the last was put away. */
+export const emptyReading = (scene) => ({ scene: scene ?? null, items: [], i: 0, j: 0, closed: false });
+const beatsOf = (item, lang) => {
+  const b = item?.beats;
+  if (Array.isArray(b)) return b;
+  return b?.[lang]?.length ? b[lang] : b?.[lang === 'en' ? 'zh' : 'en'] ?? [];
+};
+const lastJ = (r, i, lang) => Math.max(0, beatsOf(r.items[i], lang).length - 1);
 
-/* Passages drawn (the rules' `tell`, each with its `beats`) added to the
-   reading: a new scene begins a new one; in the same scene they queue after
-   what is showing, and the box opens on the first of them. */
+/* Passages drawn (the rules' `tell`) added to the reading: a new scene — or
+   its own passage told again (a new game, a replay) — begins a new one; in
+   the same scene they queue after what is showing, and a box put away opens
+   on the first of them. */
 export function withTold(reading, tell, scene) {
-  const fresh = (tell ?? []).flatMap((t) => (t.beats ?? []).map((b) => ({ ...b, of: t.of })));
+  const fresh = (tell ?? []).filter((t) => beatsOf(t, 'zh').length || beatsOf(t, 'en').length).map(({ of, id, beats }) => ({ of, id, beats }));
   if (!fresh.length) return reading;
-  const r = reading && reading.scene === (scene ?? null) ? reading : emptyReading(scene);
-  const start = r.beats.length && !r.closed && r.at < r.beats.length ? r.at : r.beats.length;
-  return { ...r, beats: [...r.beats, ...fresh], at: start, closed: false };
+  const at = scene ?? null;
+  const again = fresh.some((t) => t.of === 'scene' && t.id === at);
+  const r = reading?.items && reading.scene === at && !again ? reading : emptyReading(at);
+  const open = r.items.length && !r.closed;
+  return { ...r, items: [...r.items, ...fresh], ...(open ? {} : { i: r.items.length, j: 0 }), closed: false };
 }
 
 /* Is the box playing? — beats left to show, or the last one still up. */
-export const playing = (r) => Boolean(r && r.beats.length && !r.closed);
+export const playing = (r) => Boolean(r?.items?.length && !r.closed);
+const atLast = (r, lang) => r.i >= r.items.length - 1 && r.j >= lastJ(r, r.i, lang);
 /* Are the scene's choices up? Only once the last beat is showing. */
-export const choicesUp = (r) => !playing(r) || r.at >= r.beats.length - 1;
+export const choicesUp = (r, lang = 'zh') => !playing(r) || atLast(r, lang);
 
 /* A tap on the box: the next beat; on the last, the box is put away. */
-export const advance = (r) => (!playing(r) ? r : r.at < r.beats.length - 1 ? { ...r, at: r.at + 1 } : { ...r, closed: true });
+export function advance(r, lang = 'zh') {
+  if (!playing(r)) return r;
+  if (r.j < lastJ(r, r.i, lang)) return { ...r, j: r.j + 1 };
+  if (r.i < r.items.length - 1) return { ...r, i: r.i + 1, j: 0 };
+  return { ...r, closed: true };
+}
 /* 跳过: the rest at once — the box closes and the log opens on them. */
-export const skipAll = (r) => (!playing(r) ? r : { ...r, at: r.beats.length - 1, closed: true, skippedFrom: r.at });
+export const skipAll = (r, lang = 'zh') => (!playing(r) ? r : { ...r, closed: true, skipped: { i: r.i, j: Math.min(r.j, lastJ(r, r.i, lang)) } });
 
+/* Every beat in order, in a language, with where each stands. */
+const flat = (r, lang) => (r?.items ?? []).flatMap((it, i) => beatsOf(it, lang).map((b, j) => ({ ...b, of: it.of, i, j })));
+/* The beat on show, and its place among them all. */
+export function current(r, lang = 'zh') {
+  const all = flat(r, lang), j = Math.min(r.j, lastJ(r, r.i, lang));
+  const k = all.findIndex((b) => b.i === r.i && b.j === j);
+  return { beat: all[k] ?? {}, k: Math.max(0, k), n: all.length };
+}
 /* The beats told so far in this scene (the log): up to the one on show. */
-export const toldSoFar = (r) => (!r ? [] : r.closed ? r.beats : r.beats.slice(0, r.at + 1));
+export const toldSoFar = (r, lang = 'zh') => (!r ? [] : r.closed ? flat(r, lang) : flat(r, lang).slice(0, current(r, lang).k + 1));
 
 /* Kept per save, so a reload finds its place; storage may be off (a private
    window, a preview): then the reading lives only as long as the page. */
@@ -54,7 +79,7 @@ const keyOf = (save) => `lingjing.reading.${save || 'main'}`;
 export function loadReading(save, store = globalThis.localStorage) {
   try {
     const r = JSON.parse(store?.getItem(keyOf(save)) ?? 'null');
-    return r && Array.isArray(r.beats) && Number.isInteger(r.at) ? r : null;
+    return r && Array.isArray(r.items) && Number.isInteger(r.i) && Number.isInteger(r.j) ? r : null;
   } catch { return null; }
 }
 export function keepReading(save, r, store = globalThis.localStorage) {
@@ -76,23 +101,23 @@ function lineHtml(b, w) {
    跳过 and 记录 at its corner, and a small mark that a tap goes on. */
 export function dialogHtml(r, { lang = 'zh', src = (f) => f } = {}) {
   if (!playing(r)) return '';
-  const w = DLG_WORDS[lang] ?? DLG_WORDS.zh, b = r.beats[r.at] ?? {};
+  const w = DLG_WORDS[lang] ?? DLG_WORDS.zh, { beat: b, k, n } = current(r, lang);
   const spoken = Boolean(b.name);
   const who = spoken ? `<div class="dlgname${b.hero ? ' hero' : ''}">${esc(b.name)}</div>` : '';
-  const last = r.at >= r.beats.length - 1;
+  const last = atLast(r, lang);
   return `<div class="dlg${spoken ? ' spoken' : ' told'}${b.art && !b.hero ? ' withface' : ''}" data-dlg-next role="button" tabindex="0" aria-label="${esc(w.on)}">
     ${face(b, src)}<div class="dlgbody">${who}<div class="dlgtext">${lineHtml(b, w)}</div></div>
-    <div class="dlgctl"><span class="dlgcount">${r.at + 1} / ${r.beats.length}</span><button class="dlgbtn" data-dlg-log>${esc(w.log)}</button>${last ? '' : `<button class="dlgbtn" data-dlg-skip>${esc(w.skip)}</button>`}</div>
+    <div class="dlgctl"><span class="dlgcount">${k + 1} / ${n}</span><button class="dlgbtn" data-dlg-log>${esc(w.log)}</button>${last ? '' : `<button class="dlgbtn" data-dlg-skip>${esc(w.skip)}</button>`}</div>
     <div class="dlgon${last ? ' last' : ''}" aria-hidden="true">▾</div></div>`;
 }
 
 /* 记录: what was told in this scene, in order; opened by 跳过 on the first
    beat it skipped. */
-export function logHtml(r, { lang = 'zh', src = (f) => f } = {}) {
-  const w = DLG_WORDS[lang] ?? DLG_WORDS.zh;
-  const rows = toldSoFar(r).map((b, i) => `<div class="dlglogrow${b.name ? ' spoken' : ''}"${i === r?.skippedFrom ? ' data-dlg-from' : ''}>${b.name ? `<b>${esc(b.name)}</b>` : ''}<span>${lineHtml(b, w)}</span></div>`).join('');
+export function logHtml(r, { lang = 'zh' } = {}) {
+  const w = DLG_WORDS[lang] ?? DLG_WORDS.zh, from = r?.skipped;
+  const rows = toldSoFar(r, lang).map((b) => `<div class="dlglogrow${b.name ? ' spoken' : ''}"${from && b.i === from.i && b.j === from.j ? ' data-dlg-from' : ''}>${b.name ? `<b>${esc(b.name)}</b>` : ''}<span>${lineHtml(b, w)}</span></div>`).join('');
   return `<div class="dlglog" role="dialog" aria-label="${esc(w.logTitle)}"><div class="dlgloghead"><span>${esc(w.logTitle)}</span><button class="dlgbtn" data-dlg-logclose>${esc(w.close)}</button></div><div class="dlglogbody">${rows}</div></div>`;
 }
 
 /* The small 记录 link under a scene card once the box is put away. */
-export const logLinkHtml = (r, lang = 'zh') => (r?.beats?.length && !playing(r) ? `<button class="quietnext dlgloglink" data-dlg-log>${esc((DLG_WORDS[lang] ?? DLG_WORDS.zh).log)}</button>` : '');
+export const logLinkHtml = (r, lang = 'zh') => (r?.items?.length && !playing(r) ? `<button class="quietnext dlgloglink" data-dlg-log>${esc((DLG_WORDS[lang] ?? DLG_WORDS.zh).log)}</button>` : '');

@@ -1112,7 +1112,8 @@ export const valueChoice = (picked, text, max) => fitValue(text, max) ?? (picked
 /// player taps one or writes their own, and 就叫这个 is the page's Resolve.
 function value(card, ctx) {
   const e = (ctx.look?.scene?.exits ?? []).find((x) => x.id === card.id), v = e?.value;
-  if (!v) return '';
+  // It asks with the scene's last beat, as the scene card's choices do (dialogue.js).
+  if (!v || !choicesUp(ctx.reading, ctx.lang)) return '';
   const w = ctx.words, max = v.max_chars, text = ctx.valueText ?? '';
   const picked = text.trim() ? null : ctx.valuePick ?? null;
   const chosen = valueChoice(picked, text, max);
@@ -1143,7 +1144,7 @@ function value(card, ctx) {
 /// in the chat. Or left to the stone: a day drawn by the save's start.
 function born(card, ctx) {
   const e = (ctx.look?.scene?.exits ?? []).find((x) => x.id === card.id);
-  if (!e?.born || e.born.kept) return '';
+  if (!e?.born || e.born.kept || !choicesUp(ctx.reading, ctx.lang)) return '';
   const w = ctx.words, today = (ctx.now ?? new Date()).toISOString().slice(0, 10);
   return `<div class="card borncard"><div class="cardtitle">${esc(e.born.label ?? w.rootTitle)}</div>
     <div class="small dim">${esc(w.bornHint)}</div>
@@ -1174,7 +1175,7 @@ function panel(card, ctx) {
   const caption = (p.caption ?? []).map((l) => `<p>${esc(l)}</p>`).join('');
   const art = p.art ? `<div class="panelart"><img src="${esc(worldPath(ctx.look.world?.dir ?? 'worlds/jiuding', p.art))}" alt=""></div>` : '';
   const busy = ctx.panelBusy ?? null, w = ctx.words;
-  const up = choicesUp(ctx.reading);
+  const up = choicesUp(ctx.reading, ctx.lang);
   const taps = up ? (p.taps ?? []).map((t) => panelTapHtml(t, busy, w)).join('') : '';
   const quiet = (p.taps ?? []).length === 1 && p.taps[0].quiet;
   // 「也可以直接说你想怎么做」 — now and then, where the scene waits on a real choice (rules: `invite`).

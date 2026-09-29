@@ -119,8 +119,9 @@ test('the page draws the passages owed with their beats (Tell) and marks them to
     const t = cli('tell');
     assert.deepEqual(t.tell.map(i => i.id), ['00-masan/strike', '00-dawn']);
     assert.equal(t.report, undefined, 'no report for Ling');
-    assert.match(t.tell[0].beats.map(b => b.text).join('\n'), /你攥紧了拳头/);
-    assert.ok(t.tell[1].beats.some(b => b.name === '阿禾' && b.art), '阿禾 speaks with her face');
+    assert.match(t.tell[0].beats.zh.map(b => b.text).join('\n'), /你攥紧了拳头/);
+    assert.ok(t.tell[1].beats.zh.some(b => b.name === '阿禾' && b.art), '阿禾 speaks with her face');
+    assert.ok(t.tell[1].beats.en.some(b => b.name === 'Ahe'), 'and in English, for a switch mid-passage');
     assert.deepEqual(cli('tell').tell, [], 'drawn once');
     assert.equal(cli('look').tell_owed, undefined);
     assert.equal(cli('tell', '--for=ling').ok, false, 'the page\'s alone');
@@ -161,13 +162,13 @@ test('the scene card waits while the dialogue box plays: its choices and 看 com
   const s = walk(start('zh'), [['resolve', { exit: 'name', value: '墨白', gender: 'male' }]], content, NOW);
   const l = look(s, content, ctx());
   const beats = [{ name: '马三', text: '租呢？' }, { text: '屋里，安静了。' }];
-  const reading = { scene: '00-masan', beats, at: 0, closed: false };
+  const reading = { scene: '00-masan', items: [{ of: 'scene', id: '00-masan', beats: { zh: beats, en: beats } }], i: 0, j: 0, closed: false };
   const waiting = cardHtml({ card: 'panel' }, page(l, { reading }));
   assert.doesNotMatch(waiting, /data-panel-exit|data-look-at|data-dlg-log/, 'nothing to tap while it plays');
   assert.match(waiting, /panelcard reading/);
-  const last = cardHtml({ card: 'panel' }, page(l, { reading: { ...reading, at: 1 } }));
+  const last = cardHtml({ card: 'panel' }, page(l, { reading: { ...reading, j: 1 } }));
   assert.match(last, /data-panel-exit="endure"/, 'the last beat brings the choices up');
-  const closed = cardHtml({ card: 'panel' }, page(l, { reading: { ...reading, at: 1, closed: true } }));
+  const closed = cardHtml({ card: 'panel' }, page(l, { reading: { ...reading, j: 1, closed: true } }));
   assert.match(closed, /data-panel-exit="endure"/);
   assert.match(closed, /class="quietnext dlgloglink" data-dlg-log>记录</);
   assert.match(cardHtml({ card: 'panel' }, page(l)), /data-panel-exit="endure"/, 'no reading: the choices stand');

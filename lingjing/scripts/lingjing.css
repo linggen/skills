@@ -1079,7 +1079,7 @@ body.fighting .atmos { display: none; }
    The slots are lifted over it while it plays; a fight or a board never sees
    it (it yields, lingjing.js boxYields). ── */
 .view { --dlg-h: 168px; }
-body.reading .slots { bottom: calc(var(--dlg-h) + 20px); }
+.view:has(.dlgwrap:not(:empty)) .slots { bottom: calc(var(--dlg-h) + 20px); }
 .dlgwrap { position: absolute; left: var(--stage-room); right: 24px; bottom: 12px; z-index: 4; pointer-events: none; }
 .dlgwrap > * { pointer-events: auto; }
 .dlgwrap:empty { display: none; }

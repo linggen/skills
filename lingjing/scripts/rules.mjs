@@ -282,6 +282,7 @@ function pageTell(content, state, stateFile) {
   const telling = tellOf(content, state);
   if (!telling) return { ok: true, tell: [] };
   writeAtomic(stateFile, JSON.stringify({ ...state, tell_owed: telling.keep.tell_owed, told_scenes: telling.keep.told_scenes }));
+  // Both languages' beats: a switch of language mid-passage plays on in the other (dialogue.js).
   return { ok: true, tell: playOf(content, state, telling.tell) };
 }
 

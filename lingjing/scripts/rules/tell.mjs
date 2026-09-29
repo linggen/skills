@@ -134,7 +134,7 @@ const plain = t => t.replace(/\*/g, '').trim();
 
 export function beatsOf(content, state, item) {
   const sid = item.of === 'scene' ? item.id : item.id.split('/')[0];
-  const paras = String(item.text ?? '').split(/\n+/).map(p => p.trim()).filter(p => p && !/^〔(银月|Yinyue)〕$/.test(p));
+  const paras = String(item.text ?? '').split(/\n+/).map(p => p.trim()).filter(p => p && !/^〔(银月|Yinyue)〕$/.test(p) && !/^([-*_])\1{2,}$/.test(p));
   if (item.of === 'catchup') return paras.map(p => ({ text: plain(p), recap: true }));
   return paras.map(p => spokenOf(content, state, p, sid) ?? { text: plain(p) });
 }
@@ -160,5 +160,15 @@ function speakerOf(content, state, name, sid) {
   return p ? { who: p.id, name, art: portraitOf(content, state, p.id, p.art ?? null) } : { name };
 }
 
-/* The passages as the page plays them: each owed item with its beats. */
-export const playOf = (content, state, tell) => tell.map(t => ({ ...t, beats: beatsOf(content, state, t) }));
+/* The passages as the page plays them: each owed item with its beats in
+   both languages (the same walk read in each — the same items, in order), so
+   a switch of language mid-passage plays on in the other. */
+export function playOf(content, state, tell) {
+  const other = state.lang === 'en' ? 'zh' : 'en';
+  const there = tellOf(content, { ...state, lang: other })?.tell ?? [];
+  return tell.map(t => {
+    const twin = there.find(x => x.id === t.id);
+    const beats = { [state.lang]: beatsOf(content, state, t), [other]: twin ? beatsOf(content, { ...state, lang: other }, twin) : [] };
+    return { ...t, beats };
+  });
+}

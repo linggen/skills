@@ -1153,7 +1153,6 @@ function draw() {
   // The dialogue box at the stage's foot, the slots lifted over it (lingjing.css .dlgwrap).
   const box = dialogBoxHtml(slots);
   paintIf('dlg', box);
-  document.body.classList.toggle('reading', Boolean(box));
   holdFx();
   keep({ castFresh: false });
   drawLu();
@@ -1613,10 +1612,16 @@ const boxYields = (slots) => Boolean(bout || view.appearing || !slots || slots.m
 function dialogBoxHtml(slots) {
   const r = readingHere(), src = (f) => worldPath(look.world?.dir ?? 'worlds/jiuding', f);
   if (!r || boxYields(slots)) return '';
-  return (playing(r) ? dialogHtml(r, { lang: lang(), src }) : '') + (view.logOpen ? logHtml(r, { lang: lang(), src }) : '');
+  return (playing(r) ? dialogHtml(r, { lang: lang(), src }) : '') + (view.logOpen ? logHtml(r, { lang: lang() }) : '');
 }
-const nextBeat = () => { const r = readingNow(); if (playing(r)) setReading(advance(r)); };
-const skipBeats = () => { const r = readingNow(); if (playing(r)) setReading(skipAll(r), { logOpen: true }); };
+const nextBeat = () => { const r = readingNow(); if (playing(r)) setReading(advance(r, lang())); };
+/* 跳过: the log opens on the first beat skipped. */
+function skipBeats() {
+  const r = readingNow();
+  if (!playing(r)) return;
+  setReading(skipAll(r, lang()), { logOpen: true });
+  requestAnimationFrame(() => requestAnimationFrame(() => $('dlg').querySelector('[data-dlg-from]')?.scrollIntoView({ block: 'start' })));
+}
 
 /* 看 — a hotspot on the scene card (cards.js lookHtml): the rules look
    (`look --at`), free, and the finding stands under the card. No chat turn:
