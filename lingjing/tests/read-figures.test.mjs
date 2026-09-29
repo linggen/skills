@@ -246,3 +246,13 @@ test('a repainted creature keeps its old woodcut as 「原图」; the prologue\'
   assert.match(html, /data-scan="\.\.\/worlds\/jiuding\/art\/fuzhu\.webp">原图</);
   for (const id of ['baba', 'mama', 'masan', 'maxiaobao', 'wupo', 'laozhou', 'qulao', 'yinyue']) assert.ok(CODEX.get(id).image, `${id}: a portrait`);
 });
+
+test('every entry with a first appearance in the book is glossed there — a rewrite cannot drop its card', () => {
+  for (const [id, e] of Object.entries(FILES.codex.entries)) {
+    const ch = e.first?.book;
+    if (!ch) continue;
+    const c = chapters.find((x) => x.id === ch);
+    assert.ok(c, `${id}: chapter ${ch} is in book.json`);
+    assert.ok(c.md.includes(`{注=${id}}`), `${id}: glossed in ${c.file}`);
+  }
+});
