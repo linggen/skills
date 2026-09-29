@@ -170,8 +170,11 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // card gives way to it, and comes back once it is taken (his, 2026-09-21).
   // A card the head already draws (the goal line, the quest…) is never drawn
   // twice when Ling Shows it too (2026-09-25: 眼下要做的 stood twice).
+  // …and a kind the page draws for itself (the panel, the people, the goal…)
+  // is never Ling's to stand up: she Showed [panel, people] on 2026-09-29 and
+  // the 小人书 panel stood twice (PAGE_OWNS, below).
   const inHead = c => head.some(h => h.card === c.card && (h.id ?? null) === (c.id ?? null));
-  const kept = focus.map(c => boardOf(look, c)).filter(c => !inHead(c) && !(c.card === 'board' && boardDoneToday(look, c.id)));
+  const kept = focus.filter(showable).map(c => boardOf(look, c)).filter(c => !inHead(c) && !(c.card === 'board' && boardDoneToday(look, c.id)));
   const shown = look.offers?.length ? kept.filter(c => c.card !== 'creature') : kept;
   // The day's coins fill an empty stage; a 遇 standing here is not empty.
   const naming = head.some(c => c.card === 'value' || c.card === 'born' || c.card === 'breakthrough');
@@ -206,6 +209,63 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // The picture of the beat stands first: the stage is a picture book, the story is the chat's.
   const panel = look.scene?.panel ? [{ card: 'panel' }] : [];
   return [...panel, ...people, ...head, ...cards];
+}
+
+/* The kinds the PAGE draws for itself, from Look alone: the scene's panel and
+   people, the goal line, the name and 生辰 cards (the scene's exits), a world
+   being painted, an empty pool. Never Ling's to Show — the `show` verb drops
+   them (rules/verbs.mjs) and the stage drops them from what she showed. */
+export const PAGE_OWNS = new Set(['panel', 'people', 'goal', 'value', 'born', 'building', 'empty']);
+export const showable = c => Boolean(c) && !PAGE_OWNS.has(c.card);
+
+/* 此地 · 此刻 · 行 — the stage in FIXED SECTIONS (Hanli, 2026-09-29: the same
+   小人书 panel was drawn twice, because the stage was one list). The layout
+   stays put; only what fills each slot changes.
+
+   HEADER (此地) is the page's own: the place line, the people, the goal.
+   MAIN (此刻) holds EXACTLY ONE thing, the first of these ranks with anything
+   in it — replaced, never stacked. Everything else in MAIN's ranks waits in the
+   queue, and the footer counts it (还有 N 件 ›). A `together` rank is one thing
+   (the panel and the scene's own choice card under it); a `filler` rank stands
+   only when nothing else does (the day's coins).
+   FOOTER (行): the roads (only while something holds — the chat is quiet
+   then), the count of what waits; the page adds the ask bar and the chips.
+
+   Every kind in CARD_KINDS lives in exactly one slot (tests/stage.test.mjs). */
+export const HEADER = ['people', 'goal'];
+export const MAIN = [
+  { kinds: ['fight', 'seclusion', 'seclude'] }, //                      the fight, 闭关
+  { kinds: ['panel', 'value', 'born', 'breakthrough'], together: true }, // the scene waiting on a choice
+  { kinds: ['board', 'duel', 'lundao'] }, //                             a game to play here
+  { kinds: ['handed', 'quest', 'tale', 'road', 'offer'] }, //            the line, one at a time
+  { kinds: ['building', 'empty'] }, //                                   the page's own notices
+  { kinds: ['creature', 'item', 'map', 'traits', 'gate', 'tribulation', 'treasure'] }, // what Ling showed
+  { kinds: ['hexagram'], filler: true }, //                              the day's coins
+];
+
+/* A card's queue key — what 还有 N 件 › puts off to the end of the line. */
+export const slotKey = c => `${c.card}:${c.id ?? ''}`;
+
+/* The things one rank puts in MAIN, in its kinds' order: one each, or the
+   whole rank as one. */
+function thingsOf(rank, r, cards) {
+  const mine = cards.filter(c => rank.kinds.includes(c.card))
+    .map((c, i) => ({ c, i })).sort((a, b) => rank.kinds.indexOf(a.c.card) - rank.kinds.indexOf(b.c.card) || a.i - b.i).map(x => x.c);
+  if (!mine.length) return [];
+  const group = rank.together ? [mine] : mine.map(c => [c]);
+  return group.map((g, i) => ({ cards: g, key: slotKey(g[0]), rank: r, i, filler: Boolean(rank.filler) }));
+}
+
+/* The stage's list, cut into its slots. `skip` holds the keys he put off with
+   还有 N 件 ›, oldest first: they go to the end of the line in that order. */
+export function stageSlots(look, cards = [], { skip = [] } = {}) {
+  const header = HEADER.flatMap(k => cards.filter(c => c.card === k));
+  const things = MAIN.flatMap((rank, r) => thingsOf(rank, r, cards));
+  const real = things.filter(t => !t.filler);
+  const order = t => { const put = skip.indexOf(t.key); return put < 0 ? t.rank * 1000 + t.i : 1e6 + put; };
+  const [now = null, ...queue] = (real.length ? real : things).sort((a, b) => order(a) - order(b));
+  const roads = stageHolds(look, cards) && !look?.seclusion && !look?.director?.corridor;
+  return { header, main: now?.cards ?? [], key: now?.key ?? null, queue: queue.map(t => ({ key: t.key, cards: t.cards })), footer: { roads, waiting: queue.length } };
 }
 
 /* What those cards already offer, as option keys the question is measured

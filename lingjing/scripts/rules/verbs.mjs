@@ -8,6 +8,7 @@ import { choreGrant, kaifuList } from './chores.mjs';
 import { greet } from './daily.mjs';
 import { BOOK_MAX, bookOf, complete, countsOf, gearBrief, HANDED_KEEP, handedOne, itemOf, noticeAt, noticeOf, questDoneBefore, questOf, questReady } from './errands.mjs';
 import { meet } from './road.mjs';
+import { PAGE_OWNS, showable } from '../stage.mjs';
 import { bag } from './pouch.mjs';
 import { progress } from './did.mjs';
 import { divine, fate } from './fortune.mjs';
@@ -154,8 +155,14 @@ export function show(state, content, ctx, args) {
   if (typeof cards === 'string') { try { cards = JSON.parse(cards); } catch { return refuse('bad-cards', null); } }
   cards = (Array.isArray(cards) ? cards : []).filter(c => c && typeof c.card === 'string').map(c => ({ ...c }));
   if (!cards.length) return refuse('no-cards', null);
+  // The panel, the people, the goal… are the page's own (stage.mjs PAGE_OWNS):
+  // shown by Ling too they stood twice (2026-09-29). Dropped, and she is told.
+  const dropped = cards.filter(c => PAGE_OWNS.has(c.card)).map(c => c.card);
+  cards = cards.filter(showable);
+  const told = dropped.length ? { dropped, why: 'the page draws these itself' } : {};
+  if (!cards.length) return { state, result: { ok: true, shown: [], ...told } };
   const s = clone(state);
   s.shown = cards;
   s.shown_at = stageAt(content, s);
-  return { state: s, result: { ok: true, shown: cards } };
+  return { state: s, result: { ok: true, shown: cards, ...told } };
 }

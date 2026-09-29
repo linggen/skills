@@ -26,19 +26,25 @@
           <path d="M0 126 L52 98 L92 112 L130 90 L176 116 L220 98 L268 118 L320 104 L320 150 L0 150Z" fill="currentColor" opacity=".12"/>
           <path d="M0 136 Q80 128 160 136 T320 134 L320 150 L0 150Z" fill="currentColor" opacity=".06"/>
         </svg>
-        <div class="place" id="place"></div>
         <!-- Yinyue stands here: the engine's own pet view, told this is a
              stage, so she walks over from the desktop corner while a scene
              holds her and goes back when it ends. One device, one voice —
              the moon holds her place only until she arrives. -->
         <div class="stage" id="stage" hidden><div class="body"><div class="moon" aria-hidden="true"></div><iframe class="pet" id="pet" title="Yinyue" hidden></iframe></div><b id="stageName"></b><button class="act quiet askher" id="askHerBtn" data-ask-her hidden></button></div>
-        <div class="focus" id="focus"></div>
-        <div class="askbar" id="askbar" hidden></div>
+        <!-- 此地 · 此刻: fixed slots, the layout stays put and only what fills
+             them changes (stage.mjs stageSlots). HEADER is the page's own —
+             the place, the people, the goal; MAIN (#focus) holds ONE thing. -->
+        <div class="slots">
+          <div class="slothead" id="slotHead"><div class="place" id="place"></div><div class="headcards" id="headCards"></div></div>
+          <div class="focus" id="focus"></div>
+        </div>
       </div>
       <!-- 九鼎录: the 录 chip's book, in the stage's place while it is open. -->
       <div class="lubook" id="lubook" hidden></div>
       <!-- 储物袋: the chip's panel — what he wears and carries — likewise over the stage. -->
       <div class="lubook pouchbook" id="pouchbook" hidden></div>
+      <!-- 行: the roads, what else waits, the chips; the ask bar opens over it. -->
+      <footer class="slotfoot" id="slotFoot"><div class="footrow" id="footRow"></div><div class="footchips" id="footChips"></div><div class="askbar" id="askbar" hidden></div></footer>
       <div class="tray"><div class="traytitle" id="trayTitle"></div><div id="tray"></div></div>
     </section>
     <section id="chat-panel"></section>

@@ -106,9 +106,9 @@ button:disabled { cursor: default; }
 /* ── the view: ink hills, the place, Yinyue, the focus card ── */
 .view { position: relative; flex: 1; min-height: 0; overflow: hidden; background: linear-gradient(180deg, var(--sky-a), var(--sky-b));
         /* Her room beside the cards: the cards start where she ends. */
-        --her-w: 240px; --her-h: 420px; --stage-room: calc(var(--her-w) + 50px); }
+        --her-w: 240px; --her-h: 420px; --stage-room: calc(var(--her-w) + 50px); --head-h: 132px; }
 .backdrop { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 62%; color: var(--text); }
-.place { position: absolute; top: 14px; left: 20px; font-family: var(--serif); font-size: 16px; color: var(--dim); z-index: 1; }
+.place { font-family: var(--serif); font-size: 16px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: none; }
 .stage { position: absolute; left: 24px; bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 1; }
 .stage .body { position: relative; width: var(--her-w); height: var(--her-h); display: flex; align-items: flex-end; justify-content: center; }
 .stage .pet { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: transparent; color-scheme: normal; }
@@ -121,8 +121,23 @@ button:disabled { cursor: default; }
 /* 问问银月: a word to her, in the chat (`@银月 …`). */
 .stage .askher { color: var(--yinyue); border-color: color-mix(in srgb, var(--yinyue) 45%, transparent); }
 .stage .askher[hidden] { display: none; }
-.focus { position: absolute; top: 48px; right: 24px; bottom: 20px; left: var(--stage-room); overflow-y: auto;
-         display: flex; flex-direction: column; gap: 12px; }
+/* 此地 · 此刻 — fixed slots (stage.mjs stageSlots): the header a fixed height
+   whatever it holds, main the rest, scrolling inside itself. The page never jumps. */
+.slots { position: absolute; top: 0; right: 24px; bottom: 12px; left: var(--stage-room); z-index: 2;
+         display: grid; grid-template-rows: var(--head-h) minmax(0, 1fr); }
+.slothead { min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 6px; padding: 12px 0 8px; }
+.headcards { display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+.slothead .card.peoplecard { padding: 0; border: 0; background: none; box-shadow: none; max-width: none; margin: 0; }
+.slothead .peoplecard .person img { width: 40px; height: 50px; border-radius: 6px; }
+.slothead .peoplecard figcaption b { font-size: 14px; }
+.slothead .peoplecard figcaption .small { font-size: 11.5px; max-width: 12em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.slothead .goalline { max-width: none; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.slothead .goalline .goalnext { display: inline; margin: 0 0 0 8px; }
+.focus { position: relative; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 4px; }
+.focus .panelart { max-height: 46vh; }
+/* What just happened, over the one thing: short, and it scrolls if it is not. */
+.toasts { flex: none; width: 100%; max-width: 540px; margin: 0 auto; max-height: 38%; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.toasts .card { padding: 10px 12px; font-size: 13px; }
 .focus .card { background: color-mix(in srgb, var(--surface) 94%, transparent); width: 100%; max-width: 540px; margin: 0 auto; padding: 14px 16px; flex: none; }
 /* Centred when the cards fit, scrolled from the top when they do not. `justify-content:
    center` centred the overflow too: with three cards up, the first one's top lay above
@@ -407,7 +422,9 @@ body.fighting .stage,
 body.fighting .tray { display: none; }
 body.fighting .view { background: #0d0b0a; }
 /* The focus sits pinned inside the view; in a fight it takes the whole of it. */
-body.fighting .focus { inset: 0; padding: 0; overflow: hidden; }
+body.fighting .slots { inset: 0; grid-template-rows: minmax(0, 1fr); }
+body.fighting .slothead { display: none; }
+body.fighting .focus { padding: 0; overflow: hidden; }
 body.fighting .scene { overflow: hidden; }
 body.fighting .battle { max-width: none; height: 100%; border-radius: 0; padding: 14px 18px 16px; }
 /* With the room, the fight grows into it: bigger bodies, bigger hand. */
@@ -433,7 +450,7 @@ body.fighting .bside .bwho { font-size: 30px; }
 .bookdetail .say { font-family: var(--serif); }
 .act.quiet { background: transparent; border-color: var(--line); color: var(--dim); }
 /* The ask bar: one field for every 问询, outside the stage's repaint. */
-.askbar { position: absolute; left: var(--stage-room); right: 24px; bottom: 20px; z-index: 40; display: flex; align-items: center; gap: 8px; max-width: 640px; margin: 0 auto;
+.askbar { position: absolute; inset: 6px 12px; z-index: 40; display: flex; align-items: center; gap: 8px;
           padding: 8px 10px; background: var(--surface); border: 1px solid var(--ling); border-radius: 10px; box-shadow: 0 8px 24px rgb(0 0 0 / 16%); }
 .askbar[hidden] { display: none; }
 .askbar .asktopic { flex: none; font-family: var(--serif); color: var(--ling); font-size: 13px; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -447,7 +464,21 @@ body.fighting .askbar { display: none; }
 .bookwork { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); display: flex; gap: 10px; align-items: center; justify-content: space-between; }
 
 /* The roads, on the stage while a card holds it (the chat is quiet then). */
-.roadsrow { width: 100%; max-width: 540px; margin: 0 auto; flex: none; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 2px 4px; }
+.roadsrow { flex: 1; min-width: 0; display: flex; flex-wrap: nowrap; gap: 6px; align-items: center; overflow-x: auto; scrollbar-width: none; }
+.roadsrow .act { flex: none; }
+
+/* 行 — the footer: the roads and what else waits, then the chips; a fixed
+   height, and the ask bar opens over it. Outside the view, so the chips stay
+   while the 录 book or the pouch has the stage's place. */
+.slotfoot { flex: none; position: relative; z-index: 20; height: 76px; display: grid; grid-template-rows: 1fr 1fr; align-items: center;
+            padding: 4px 18px; border-top: 1px solid var(--line); background: var(--surface); }
+.footrow { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.footrow .more { flex: none; margin-left: auto; font-size: 12.5px; }
+.footchips { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: nowrap; }
+.slotfoot .bookpop { top: auto; bottom: calc(100% + 10px); }
+body.reading .footrow { visibility: hidden; }
+body.fighting .slotfoot { height: auto; grid-template-rows: 1fr; padding: 6px 18px; }
+body.fighting .footrow { display: none; }
 .roadsrow .lbl { color: var(--faint); font-size: 12.5px; margin-right: 2px; }
 .roadsrow .act { background: transparent; }
 
@@ -665,17 +696,20 @@ button.gcard { cursor: pointer; font: inherit; }
 @container scene (max-width: 600px) {
   .status { padding: 8px 12px; gap: 8px 12px; }
   .xw { min-width: 120px; }
-  .view { display: flex; flex-direction: column; overflow-x: hidden; overflow-y: auto; --her-w: 120px; --her-h: 200px; }
-  .place { position: relative; top: auto; left: auto; padding: 10px 16px 0; }
-  .stage { position: relative; left: auto; bottom: auto; align-self: center; margin-top: 4px; flex: none; }
-  .focus { position: relative; inset: auto; overflow: visible; padding: 8px 16px 16px; flex: none; }
-  .focus > :first-child { margin-top: 0; }
-  .focus > :last-child { margin-bottom: 0; }
-  .askbar { position: sticky; left: auto; right: auto; bottom: 8px; margin: 0 12px 8px; max-width: none; flex: none; }
+  /* Narrow, she stands small in the header's corner; the slots keep their places. */
+  .view { --her-w: 76px; --her-h: 96px; --stage-room: calc(var(--her-w) + 20px); --head-h: 150px; }
+  .stage { left: 10px; top: 10px; bottom: auto; gap: 4px; z-index: 3; }
+  .stage b { font-size: 12px; }
+  .stage .askher { font-size: 11px; padding: 2px 6px; }
+  .moon { width: 56px; height: 56px; }
+  .slots { left: 12px; right: 12px; bottom: 8px; }
+  .slothead { padding-left: var(--stage-room); }
+  .slothead .peoplecard .person figcaption .small { display: none; }
+  .slotfoot { padding: 4px 12px; }
+  .footchips { overflow-x: auto; scrollbar-width: none; }
   .tray { padding: 8px 12px 10px; }
   #tray { grid-template-columns: minmax(0, 1fr); }
-  body.fighting .view { overflow: hidden; }
-  body.fighting .focus { position: absolute; inset: 0; padding: 0; overflow: hidden; }
+  body.fighting .slots { inset: 0; }
 }
 /* 接下: the row is sealed 已接下, holds, then fades out of the card. */
 .card.offer .offerrow.taken { animation: offerTaken 1.6s ease-in forwards; }
@@ -685,9 +719,6 @@ button.gcard { cursor: pointer; font: inherit; }
 @keyframes offerTaken { 0%, 65% { opacity: 1; } 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .card.offer .offerrow.taken, .tookseal { animation: none; } }
 /* 眼前: one thing at a time; the bar says how many wait and what is next. */
-.queueslot { display: flex; flex-direction: column; }
-.queuebar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 2px 6px; font-size: 13px; }
-.queuebar .act { font-size: 13px; }
 
 /* ── 九鼎录 — the 录 chip's book, in the stage's place while open ──
    Ink on rice paper: a scroll per chapter, the nine as seals (lit, glowing,

@@ -515,7 +515,8 @@ tools:
     description: >-
       Put cards before the player — creature, traits, map, board, hexagram,
       gate, tribulation, item, duel, treasure — exactly as the rules gave them
-      (guide `look`).
+      (guide `look`). The panel, the people and the goal are the page's own —
+      never Show them.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs show --cards={{cards}} --for=ling"
     tier: edit
     args:

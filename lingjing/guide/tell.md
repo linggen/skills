@@ -35,6 +35,7 @@ you once. The book is comic — keep its timing and its jokes.
   written and never say who it is — chapter 1 is the reveal.
 - **Never describe the panel, never list the choices** — both are on the
   stage. End on the story, or one short line that the choice is theirs.
+- **The panel, the people and the goal are the page's own** — never Show them.
 - **`〔银月〕`** marks where Yinyue speaks while she is awake beside the player:
   her words reach her by themselves (`her_beat`) — write the sentence around
   the mark, never her line. While she is not present (before the valley's

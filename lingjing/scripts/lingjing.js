@@ -12,7 +12,7 @@ import * as sharedApi from '/shared/api.js';
 import { verb, content } from './rules.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
-import { boardDoneToday, petStageUrl, stageCards, stageHolds } from './stage.mjs';
+import { boardDoneToday, petStageUrl, stageCards, stageSlots } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, boutSays, pickOf, spoilsHtml } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
@@ -472,10 +472,6 @@ function statusHtml() {
   return `${name}${realm}
     ${qiHtml()}
     ${stones}${omenChip()}
-    ${bout ? '' : luChipHtml(lang(), view.luOpen)}${bout ? '' : readChipHtml(ctx())}
-    ${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}
-    ${gearChipHtml(ctx(), view.gearOpen)}
-    ${ledgerChipHtml(ctx(), view.ledgerOpen)}
     <span class="langsw" title="中文 / English">${['zh', 'en'].map((l) => `<button data-lang="${l}" class="${l === lang() ? 'on' : ''}">${l === 'zh' ? '中' : 'En'}</button>`).join('')}</span>`;
 }
 
@@ -748,64 +744,71 @@ async function switchLang(to) {
   await refresh();
 }
 
-/// Ling's cards, else the day's omen — and an open board always beside them:
-/// Ling tells the player the board is before them, so it must be.
-function focusHtml() {
-  // A fight takes the stage: while one is open, nothing else is on it, and the
-  // chat beside it keeps talking (design.md § 斗法在主界面里).
-  if (bout) return battleHtml(boutView(bout.st), boutOffers(bout.st), boutCtx(), bout.picked, bout.openLog, bout.note, bout.help);
-  // Walked on, the spoils are put away by themselves.
-  if (view.spoils && view.spoils.place !== (look?.place?.id ?? null)) keep({ spoils: null });
-  if (view.trialTold && view.trialTold.place !== (look?.place?.id ?? null)) keep({ trialTold: null });
-  if (view.emerged && view.emerged.place !== (look?.place?.id ?? null)) keep({ emerged: null });
-  const spoils = titleCard() + (view.doNote ? `<div class="donote">${esc(view.doNote)}</div>` : '') + (view.emerged ? emergedHtml({ ...view.emerged, age: performance.now() - view.emerged.at }, ctx()) : '') + (view.trialTold ? trialToldHtml(view.trialTold, ctx()) : '') + (view.spoils ? spoilsHtml(view.spoils, spoilsCtx()) : '');
-  // A line running under his feet takes the stage (his law, 2026-09-18:
-  // 「最好左面 webview 显示一个 card，或者在一个故事线或任务中走，显示相关内容」).
-  // Standing at the water with the bell in hand, the stage said 摇一摇铃 — and
-  // beside it offered him the day's coins, which belong to no part of this.
-  // So while the step is his to take HERE, the page adds nothing of its own:
-  // Ling's cards are hers to choose, and the quest's card is the line.
-  // ONE list, and the rules made it (stage.mjs) — the same one they measured
-  // the chat's question against, so nothing stands in both places. Only while
-  // Ling's Show is still in flight does the page work it out for itself.
+/// The stage in its FIXED SECTIONS (Hanli, 2026-09-29): 此地 (the header —
+/// the place, the people, the goal), 此刻 (ONE thing in main), 行 (the roads,
+/// what else waits, the chips). Which card goes where, and which one thing
+/// main holds, is the rules' own (stage.mjs stageSlots) — the same list they
+/// measured the chat's question against, so nothing stands in both places.
+function stageNow() {
+  // A line running under his feet takes the stage (his law, 2026-09-18) — the
+  // rules made the list. Only while Ling's Show is still in flight does the
+  // page work it out for itself.
   let cards = view.focus.length ? stageCards(look, { focus: view.focus }) : (look.stage ?? []);
   // A board he opened from the tray stays before him through the next Look
   // and whatever Ling shows, until he walks on.
   if (view.opened && !cards.some((c) => c.card === 'board' && c.id === view.opened.id)) cards = [...cards, { card: 'board', id: view.opened.id }];
   // The errand just taken keeps its card a moment, sealed 已接下.
   if (view.tookOffer && !cards.some((c) => c.card === 'offer')) cards = [...cards, { card: 'offer' }];
-  // 闭关's chooser, opened from the pool or the empty card, stands first.
+  // 闭关's chooser, opened from the pool or the empty card.
   if (view.secludeOpen && view.seclude && !look.seclusion) cards = [{ card: 'seclude' }, ...cards];
   watchAppear(cards);
-  const { head, queue, tail } = splitStage(cards);
-  // In 闭关 the world holds still: no roads under its card.
-  // …nor inside a corridor (the prologue): the rules refuse the walk there anyway.
-  const roads = stageHolds(look, cards) && !look.seclusion && !look.director?.corridor ? roadsHtml() : '';
-  return spoils + head.map(drawCard).join('') + queueHtml(queue) + tail.map(drawCard).join('') + roads;
+  return stageSlots(look, cards.filter(inQueue), { skip: view.qSkip });
 }
 
-/* 眼前 — one thing to do at a time (his, 2026-09-24: 「用一个队列，一个完成，
-   再从队列取出下一个显示，不要都堆放在UI上」). The things that ask a tap wait
-   in this order; the first stands on the stage, 下一件 › puts it off to the end
-   of the line, and walking on starts the line again. The goal line, an empty
-   pool and what Ling showed of the place stay where they are. */
-const QUEUE = ['handed', 'quest', 'tale', 'road', 'offer', 'duel', 'lundao', 'board'];
-// A naming card (名字) or the 生辰 card is the story's own step: it stands first, never queued.
-const HEAD = new Set(['panel', 'people', 'seclude', 'building', 'empty', 'goal', 'value', 'born']);
-const qKey = (c) => `${c.card}:${c.id ?? ''}`;
-
-function splitStage(cards) {
-  const head = cards.filter((c) => HEAD.has(c.card));
-  const queued = cards.filter((c) => QUEUE.includes(c.card) && inQueue(c));
-  const tail = cards.filter((c) => !HEAD.has(c.card) && !QUEUE.includes(c.card));
-  const rank = (c) => {
-    const put = view.qSkip.indexOf(qKey(c));
-    return put < 0 ? QUEUE.indexOf(c.card) : QUEUE.length + put;
-  };
-  return { head, queue: [...queued].sort((a, b) => rank(a) - rank(b)), tail };
+/// 此刻 — the one thing, and over it the short notes of what just happened
+/// (spoils, a 抉择 told, a way out emerged): a toast inside main, never more
+/// cards stacked under it.
+function focusHtml(slots) {
+  // A fight takes the stage: while one is open, nothing else is on it, and the
+  // chat beside it keeps talking (design.md § 斗法在主界面里).
+  if (bout) return battleHtml(boutView(bout.st), boutOffers(bout.st), boutCtx(), bout.picked, bout.openLog, bout.note, bout.help);
+  const toasts = toastsHtml();
+  return (toasts ? `<div class="toasts">${toasts}</div>` : '') + slots.main.map(drawCard).join('');
 }
 
-/* The day's practice waits in the tray: a board comes into the line when he
+function toastsHtml() {
+  // Walked on, the spoils are put away by themselves.
+  const here = look?.place?.id ?? null;
+  for (const k of ['spoils', 'trialTold', 'emerged']) if (view[k] && view[k].place !== here) keep({ [k]: null });
+  return titleCard() + (view.doNote ? `<div class="donote">${esc(view.doNote)}</div>` : '')
+    + (view.emerged ? emergedHtml({ ...view.emerged, age: performance.now() - view.emerged.at }, ctx()) : '')
+    + (view.trialTold ? trialToldHtml(view.trialTold, ctx()) : '') + (view.spoils ? spoilsHtml(view.spoils, spoilsCtx()) : '');
+}
+
+/// 此地 — the people of the scene and the goal line; the place is its own line.
+const headHtml = (slots) => (bout ? '' : slots.header.map(drawCard).join(''));
+
+/// 行 — the roads (only while something holds: the chat is quiet then), and
+/// how many more things wait here; the tap puts the one in main off to the
+/// end of the line (his, 2026-09-24: 「用一个队列，一个完成，再从队列取出下一个显示」).
+function footRowHtml(slots) {
+  if (bout) return '';
+  const w = words(), next = slots.queue[0];
+  // In 闭关 and inside a corridor (the prologue) the rules keep the roads off (stageSlots).
+  const roads = slots.footer.roads ? roadsHtml() : '<span></span>';
+  const more = next ? `<button class="act quiet more" data-qnext="${esc(slots.key)}" title="${esc(fill(w.queueNext, { what: queueLabel(next.cards[0]) }))}">${esc(fill(w.queueMore, { n: slots.queue.length }))} ›</button>` : '';
+  return roads + more;
+}
+
+/// The chips — 录 · 书 · 事 · 袋 · 恩 — in the footer, under the stage.
+function footChipsHtml() {
+  return `${bout ? '' : luChipHtml(lang(), view.luOpen)}${bout ? '' : readChipHtml(ctx())}
+    ${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}
+    ${gearChipHtml(ctx(), view.gearOpen)}
+    ${ledgerChipHtml(ctx(), view.ledgerOpen)}`;
+}
+
+/* The day's practice waits in the tray: a board comes onto the stage when he
    opens it there, when Ling shows it, or when this place hosts it or an errand
    asks for it here. */
 function inQueue(c) {
@@ -817,15 +820,6 @@ function inQueue(c) {
   if ((look?.scene?.show ?? []).some((f) => f.card === 'board' && f.id === c.id)) return true;
   const task = look?.tasks?.find((t) => t.id === c.id);
   return !task || Boolean(task.hosted || task.for_errand);
-}
-
-function queueHtml(queue) {
-  if (!queue.length) return '';
-  const [now, next] = queue;
-  const w = words();
-  const bar = next ? `<div class="queuebar"><span class="dim">${esc(w.queueCount.replace('{n}', queue.length))}</span>
-    <button class="act" data-qnext="${esc(qKey(now))}">${esc(w.queueNext.replace('{what}', queueLabel(next)))} ›</button></div>` : '';
-  return `<div class="queueslot">${bar}${drawCard(now)}</div>`;
 }
 
 function queueLabel(c) {
@@ -858,6 +852,16 @@ function roadsHtml() {
   const w = words();
   const chips = near.map((p) => `<button class="act go" data-go="${esc(p.id)}">${esc(p.name)}</button>`).join('');
   return `<div class="roadsrow"><span class="lbl">${esc(w.roads)}</span>${chips}</div>`;
+}
+
+/* A slot redrawn only when what it holds changed — or what the chat asks,
+   which marks the slot's buttons it repeats (draw's answered-in-chat). */
+const painted = {};
+function paintIf(id, html) {
+  const key = `${html}\u0000${[...(view.asked ?? [])].join('|')}`;
+  if (painted[id] === key) return;
+  painted[id] = key;
+  $(id).innerHTML = html;
 }
 
 /* Every writer calls `render()`; the drawing happens once, on the next frame.
@@ -930,7 +934,14 @@ function draw() {
   const cast = look.divination ? JSON.stringify(look.divination.throws) : null;
   keep({ castFresh: view.castSeen !== undefined && cast !== null && cast !== view.castSeen, castSeen: cast });
   if (view.castFresh) readingByHer(look.divination);
-  $('focus').innerHTML = focusHtml();
+  // The slots stay put; only what fills them changes. The header and the
+  // footer are redrawn only when they changed (a stream token must not
+  // restart a portrait's fade or reset a chip's pop).
+  const slots = bout ? null : stageNow();
+  paintIf('headCards', headHtml(slots));
+  paintIf('footRow', footRowHtml(slots));
+  paintIf('footChips', footChipsHtml());
+  $('focus').innerHTML = focusHtml(slots);
   keep({ castFresh: false });
   drawLu();
   drawPouch();

@@ -120,3 +120,97 @@ test('a card Ling shows that the head already draws stands once (2026-09-25: 眼
   assert.equal(cards.filter(c => c.card === 'goal').length, 1);
   assert.ok(cards.some(c => c.card === 'map'), 'what the head does not draw stays');
 });
+
+/* 此地 · 此刻 · 行 — the stage in fixed slots (Hanli, 2026-09-29). On 马三's
+   scene Ling Showed [panel, people]; the page drew panel, people, panel,
+   people — the scene's own panel and people were put in front AFTER her Show
+   was measured against the head. Now the page's kinds are never hers, and
+   main holds one thing. */
+test('马三\'s scene: Ling showing the panel and the people draws each once — the people in the header, ONE panel in main', async () => {
+  const { loadContent } = await import('../scripts/content.mjs');
+  const { newState } = await import('../scripts/state.mjs');
+  const { look } = await import('../scripts/rules.mjs');
+  const { show } = await import('../scripts/rules/verbs.mjs');
+  const { stageSlots } = await import('../scripts/stage.mjs');
+  const { TO_VALLEY, walk } = await import('./prologue.mjs');
+  const content = loadContent(), NOW = new Date('2026-09-29T18:00:00'), ctx = { now: NOW, quests: [] };
+  const s = walk(newState(content, 'zh', NOW), TO_VALLEY.slice(0, 1), content, NOW);
+  const before = look(s, content, ctx);
+  assert.ok(before.scene?.panel && before.scene?.people?.length, 'the scene has a panel and people');
+  // The verb drops what the page owns, and says so; nothing left, the save is untouched.
+  const r = show(s, content, ctx, { cards: [{ card: 'panel' }, { card: 'people' }] });
+  assert.deepEqual(r.result.shown, []);
+  assert.deepEqual(r.result.dropped, ['panel', 'people']);
+  assert.equal(r.state, s, 'nothing written');
+  // Written anyway (an old save), the stage still draws each once.
+  const direct = stageCards(before, { focus: [{ card: 'panel' }, { card: 'people' }] });
+  assert.deepEqual(direct.filter(c => c.card === 'panel' || c.card === 'people').map(c => c.card), ['panel', 'people'], 'the 2026-09-29 bug: panel, people, panel, people');
+  const l = look({ ...s, shown: [{ card: 'panel' }, { card: 'people' }], shown_at: s.scene }, content, ctx);
+  assert.deepEqual(l.stage.filter(c => c.card === 'panel' || c.card === 'people').map(c => c.card).sort(), ['panel', 'people']);
+  const slots = stageSlots(l, l.stage);
+  assert.deepEqual(kinds(slots.header), ['people']);
+  assert.deepEqual(slots.main.map(c => c.card).filter(k => k === 'panel'), ['panel'], 'ONE panel in main');
+  assert.ok(!slots.queue.some(t => t.cards.some(c => c.card === 'panel' || c.card === 'people')));
+  // A card of hers beside them is kept.
+  const mixed = show(s, content, ctx, { cards: [{ card: 'panel' }, { card: 'creature', id: 'fuzhu' }] });
+  assert.deepEqual(mixed.result.shown, [{ card: 'creature', id: 'fuzhu' }]);
+  assert.deepEqual(mixed.result.dropped, ['panel']);
+});
+
+test('the slots: the header is the page\'s, main holds ONE thing by fixed priority, the rest wait and the footer counts them', async () => {
+  const { stageSlots } = await import('../scripts/stage.mjs');
+  const at = (over = {}) => world({ scene: { panel: { taps: [] }, people: [{ name: '马三' }], exits: [{ id: 'name', value: true }] }, waypoint: { text: '去' }, ...over });
+  // the panel and the scene's own choice card are one thing
+  const l = at({ offers: [{ id: 'x' }], tasks: [{ kind: 'board', id: 'b', status: 'open' }] });
+  const slots = stageSlots(l, stageCards(l, { focus: [{ card: 'creature', id: 'fuzhu' }] }));
+  assert.deepEqual(kinds(slots.header), ['people', 'goal']);
+  assert.deepEqual(kinds(slots.main), ['panel', 'value:name']);
+  assert.deepEqual(slots.queue.map(t => kinds(t.cards).join(' ')), ['board:b', 'offer'], 'a board before an errand; Ling\'s creature gives way to the errand');
+  assert.equal(slots.footer.waiting, 2);
+  assert.equal(slots.key, 'panel:');
+  // 还有 N 件 › puts the one in main off to the end of the line
+  const next = stageSlots(l, stageCards(l), { skip: ['panel:'] });
+  assert.deepEqual(kinds(next.main), ['board:b']);
+  assert.equal(next.queue.at(-1).key, 'panel:');
+  // a fight or 闭关 is the whole of main
+  assert.deepEqual(kinds(stageSlots(l, stageCards(l, { fight: true })).main), ['fight']);
+  // the coins are filler: alone they stand, beside anything else they go
+  assert.deepEqual(kinds(stageSlots(world(), stageCards(world())).main), ['hexagram']);
+  const shelf = stageSlots(world(), [{ card: 'item', ids: ['a'] }, { card: 'hexagram' }]);
+  assert.deepEqual(kinds(shelf.main), ['item']);
+  assert.equal(shelf.queue.length, 0);
+  // the roads stand in the footer only while something holds — never in 闭关 or a corridor
+  assert.equal(shelf.footer.roads, true);
+  assert.equal(stageSlots(world(), stageCards(world())).footer.roads, false);
+  assert.equal(stageSlots(world({ director: { corridor: true } }), [{ card: 'item', ids: ['a'] }]).footer.roads, false);
+});
+
+test('every card kind lives in exactly one slot, and the page\'s own kinds are never Ling\'s', async () => {
+  const { CARD_KINDS, HEADER, MAIN, PAGE_OWNS, showable } = await import('../scripts/stage.mjs');
+  for (const kind of Object.keys(CARD_KINDS)) {
+    const homes = (HEADER.includes(kind) ? 1 : 0) + MAIN.filter(r => r.kinds.includes(kind)).length;
+    assert.equal(homes, 1, `card kind "${kind}" lives in ${homes} slots`);
+  }
+  for (const kind of ['panel', 'people', 'goal', 'value', 'born', 'building', 'empty']) {
+    assert.ok(PAGE_OWNS.has(kind));
+    assert.equal(showable({ card: kind }), false);
+  }
+  assert.equal(showable({ card: 'creature' }), true);
+  // Ling's Show can only fill MAIN: no kind of hers is in the header
+  for (const kind of HEADER) assert.ok(PAGE_OWNS.has(kind), `${kind} is the page's`);
+});
+
+test('the page draws the slots: header, main (#focus) holding the one thing, footer with the roads, the count, the ask bar and the chips', async () => {
+  const fs = await import('node:fs');
+  const html = fs.readFileSync(new URL('../scripts/index.html', import.meta.url), 'utf8');
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(html, /<div class="slothead" id="slotHead"><div class="place" id="place"><\/div><div class="headcards" id="headCards"><\/div><\/div>\s*<div class="focus" id="focus"><\/div>/);
+  assert.match(html, /<footer class="slotfoot" id="slotFoot"><div class="footrow" id="footRow"><\/div><div class="footchips" id="footChips"><\/div><div class="askbar" id="askbar" hidden><\/div><\/footer>/);
+  assert.match(html, /id="stage"/, 'her place on the stage stays');
+  const focus = src.slice(src.indexOf('function focusHtml(slots)'), src.indexOf('function toastsHtml()'));
+  assert.match(focus, /slots\.main\.map\(drawCard\)/, 'main draws the one thing only');
+  assert.doesNotMatch(src, /splitStage|queueHtml|const HEAD = /, 'no second list of where cards go');
+  assert.match(src, /stageSlots\(look, cards\.filter\(inQueue\), \{ skip: view\.qSkip \}\)/);
+  const strip = src.slice(src.indexOf('function statusHtml()'), src.indexOf('function statusHtml()') + 1500);
+  assert.doesNotMatch(strip.slice(0, strip.indexOf('\n}')), /ChipHtml/, 'the chips are the footer\'s');
+});
