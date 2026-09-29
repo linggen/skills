@@ -6,7 +6,8 @@ import assert from 'node:assert/strict';
 import { askMinusStage, lineHere, stageCards, stageOwns } from '../scripts/stage.mjs';
 
 const kinds = cards => cards.map(c => (c.id ? `${c.card}:${c.id}` : c.card));
-const world = (over = {}) => ({ place: { id: 'ye', name: '邺城' }, scene: null, tasks: [], ...over });
+const AWAKE = { companion: { joined: true } }; // 银月 awake: the coins are hers to throw
+const world = (over = {}) => ({ place: { id: 'ye', name: '邺城' }, scene: null, tasks: [], ...AWAKE, ...over });
 
 test('the stage is one ordered list, and Ling\'s own cards stand whatever else is true', () => {
   // nothing shown, nothing waiting: the day's coins fill it
@@ -62,7 +63,7 @@ test('the goal is one slim line on the stage; its road is the question\'s to off
   // 2026-09-21: the card and the book moved behind the 事 chip (「current UI is
   // crowded」); the line stays, with nothing to tap, so the chat keeps the road.
   const { stageCards, stageOwns, askMinusStage } = await import('../scripts/stage.mjs');
-  const look = { place: { id: 'sibei' }, tasks: [], waypoint: { scene: '03-cauldron', place: { id: 'liubo', name: '流波山' }, province: '青州', text: '路通向流波山。', toward: { id: 'liubo', name: '流波山' } } };
+  const look = { ...AWAKE, place: { id: 'sibei' }, tasks: [], waypoint: { scene: '03-cauldron', place: { id: 'liubo', name: '流波山' }, province: '青州', text: '路通向流波山。', toward: { id: 'liubo', name: '流波山' } } };
   assert.deepEqual(stageCards(look).map(c => c.card), ['goal', 'hexagram']);
   const owns = stageOwns(look, stageCards(look));
   assert.ok(!owns.has('move:liubo'), 'a line with no button owns no road');
@@ -82,7 +83,7 @@ test('差事: an offer is what the stage is about — the book is behind the chi
   assert.deepEqual(stageCards(look, { focus: [{ card: 'item', ids: ['lingzhi'] }, ...focus] }).map(c => c.card), ['offer', 'item']);
   // 接下 is on its own card, and the question never offers it: the card owns no key
   assert.ok(![...stageOwns(look, stageCards(look))].some(k => k.startsWith('quest:')), 'no key the question cannot carry');
-  assert.deepEqual(stageCards({ place: { id: 'p' }, tasks: [] }).map(c => c.card), ['hexagram']);
+  assert.deepEqual(stageCards({ ...AWAKE, place: { id: 'p' }, tasks: [] }).map(c => c.card), ['hexagram']);
   // two errands at one place: ONE card, and both 接下 are on it (彭城, 2026-09-22)
   const two = { ...look, offers: [...look.offers, { id: 'daily-20260922-patrol-sishui', title: '榜文' }] };
   assert.deepEqual(stageCards(two).map(c => c.card), ['offer']);
@@ -213,4 +214,10 @@ test('the page draws the slots: header, main (#focus) holding the one thing, foo
   assert.match(src, /stageSlots\(look, cards\.filter\(inQueue\), \{ skip: view\.qSkip \}\)/);
   const strip = src.slice(src.indexOf('function statusHtml()'), src.indexOf('function statusHtml()') + 1500);
   assert.doesNotMatch(strip.slice(0, strip.indexOf('\n}')), /ChipHtml/, 'the chips are the footer\'s');
+});
+
+test('the day\'s coins wait for 银月 awake — asleep in the token, or not yet met, no 「请银月三钱六掷」 (his, 2026-09-29)', () => {
+  assert.deepEqual(kinds(stageCards(world())), ['hexagram']);
+  assert.deepEqual(kinds(stageCards(world({ companion: { joined: true, asleep: true } }))), []);
+  assert.deepEqual(kinds(stageCards(world({ companion: null }))), []);
 });

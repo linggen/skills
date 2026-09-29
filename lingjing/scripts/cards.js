@@ -8,7 +8,7 @@ import { WORDS as BATTLE_WORDS, challengeHtml } from './battle-card.js';
 import { layoutRoads } from './roadmap.js';
 import { frameOf, inside, within } from './atlas.js';
 import { inkLayerHtml, provinceLineHtml, pvState } from './inkmap.js';
-import { boardDoneToday, onRoad, winnable } from './stage.mjs';
+import { boardDoneToday, herAwake, onRoad, winnable } from './stage.mjs';
 import { fitValue } from './state.mjs';
 
 export const WORDS = {
@@ -391,6 +391,8 @@ function hexagram(card, ctx) {
       <div class="hextext">${esc(pick(h.image, ctx.lang))}</div>${acts([{ label: w.about, ask: true, say: say(w.sayItem, { name: pick(h.name, ctx.lang) }) }])}</div></div>`;
   }
   const d = ctx.look.divination;
+  // The uncast coins ask her to throw them: not while she sleeps in the token.
+  if (!d && !herAwake(ctx.look)) return '';
   // Tapped: the coins are in the air until the cast lands — nothing to tap twice.
   if (!d && ctx.casting) {
     return `<div class="card hex uncast throwing"><div class="coins">${'<i></i>'.repeat(3)}</div><div>

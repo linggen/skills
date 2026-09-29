@@ -16,7 +16,8 @@ test('问卦 on one card: the coins wait for one tap, then six lines as they fel
   const { WORDS, cardHtml } = await import('../scripts/cards.js');
   const { loadWorld } = await import('../scripts/content.mjs');
   const content = { ...loadWorld('jiuding'), hexagrams: loadWorld('jiuding').hexagrams.hexagrams };
-  const ctx = (divination) => ({ look: { divination }, lang: 'zh', words: WORDS.zh, content });
+  const ctx = (divination) => ({ look: { divination, companion: { joined: true } }, lang: 'zh', words: WORDS.zh, content });
+  assert.equal(cardHtml({ card: 'hexagram' }, { ...ctx(null), look: { divination: null, companion: { joined: true, asleep: true } } }), '', 'she sleeps in the token: no coins to ask her for');
   const waiting = cardHtml({ card: 'hexagram' }, ctx(null));
   assert.match(waiting, /今日未卜/);
   assert.match(waiting, /data-divine>起一卦</, 'one tap, nothing to choose');
@@ -43,7 +44,7 @@ test('命格 is set on the 问卦 card — the birthday typed there, or the sign
   const { loadWorld } = await import('../scripts/content.mjs');
   const w = loadWorld('jiuding');
   const content = { ...w, traits: w.traits, hexagrams: w.hexagrams.hexagrams };
-  const ctx = (fate, extra = {}) => ({ look: { traits: { ids: ['wood', 'water', 'fire', 'earth'], name: '四灵根' }, fate, divination: null }, lang: 'zh', words: WORDS.zh, content, ...extra });
+  const ctx = (fate, extra = {}) => ({ look: { traits: { ids: ['wood', 'water', 'fire', 'earth'], name: '四灵根' }, fate, divination: null, companion: { joined: true } }, lang: 'zh', words: WORDS.zh, content, ...extra });
   assert.doesNotMatch(cardHtml({ card: 'traits' }, ctx(null)), /fate-birth|命格/, 'not on the roots card');
   const form = cardHtml({ card: 'hexagram' }, ctx(null));
   assert.match(form, /<input type="date" id="fate-birth"/);

@@ -37,6 +37,9 @@ export function taleHere(look) {
   return t?.step?.at?.here && !t.ended && !t.dropped ? t.step : null;
 }
 
+/* 银月 walks with him and is awake: the coins are hers to throw. */
+export const herAwake = look => Boolean(look?.companion?.joined && !look.companion.asleep);
+
 /* EVERY card kind says whether it HOLDS the stage: whether it is asking the
    player to do something, here, now. While any card holds, the chat keeps its
    question to itself and the roads stand on the stage under the cards; the
@@ -187,8 +190,9 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // The day's coins fill an empty stage; a 遇 standing here is not empty.
   const naming = head.some(c => c.card === 'value' || c.card === 'born' || c.card === 'breakthrough');
   // A picture-book beat is not an empty stage either.
-  // Before a story gate the coins are not his yet (Look's `locked`, rules/locks.mjs).
-  const coins = !(look.locked ?? []).includes('divine');
+  // Before a story gate the coins are not his yet (Look's `locked`, rules/locks.mjs);
+  // nor while 银月 sleeps in the token — the card asks her to throw them (his, 2026-09-29).
+  const coins = !(look.locked ?? []).includes('divine') && herAwake(look);
   const cards = shown.length ? [...shown] : line || naming || look.scene?.panel || look.offers?.length || look.place?.meet || !coins ? [] : [{ card: 'hexagram' }];
   const has = (kind, id) => cards.some(c => c.card === kind && (id === undefined || c.id === id));
 

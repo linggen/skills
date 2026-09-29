@@ -35,7 +35,7 @@ function pageCtx(l) {
     boardFor: () => null, duelFor: () => null };
 }
 
-const open = { ...newState(content, 'zh', NOW), scene: null, chapter: '02-yan', ended: ['00-prologue', '01-ji', '02-yan'], tier: 'core', step: 0, progress: 306, name: '清玄', bag: {} };
+const open = { ...newState(content, 'zh', NOW), scene: null, chapter: '02-yan', ended: ['00-prologue', '01-ji', '02-yan'], tier: 'core', step: 0, progress: 306, name: '清玄', bag: {}, companion: { joined: '2026-09-01' } };
 const chores = [{ id: 'shifu-scan', app: 'apple-shifu', period: 'week', due: true, reward: 30, done_at: '2026-09-21T09:00:00', title: { zh: '扫描', en: 'Scan' } },
   { id: 'health-workout', app: 'health', period: 'day', due: true, reward: 20, title: { zh: '炼体', en: 'Workout' } }];
 const ctx = (extra = {}) => ({ now: NOW, quests: [], ...extra });
