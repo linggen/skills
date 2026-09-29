@@ -1,6 +1,7 @@
 // read-md.js — the little markdown the book is written in, as HTML: headings,
 // paragraphs, **bold**, > blockquotes, --- rules and pipe tables, plus two of
-// the book's own: `::: 画 <panel-id> [caption]`, a 小人书 panel full width, and
+// the book's own: `::: 画 <panel-id> [caption]`, a 小人书 panel full width,
+// `::: 男` / `::: 女` … `:::`, a passage told for one hero (fillHero), and
 // `[words]{注=id}`, words with a knowledge figure beside their paragraph
 // (worlds/<world>/notes.json). Pure: no DOM, every word escaped (read.html's
 // reader and its test both use it).
@@ -23,13 +24,39 @@ export const heroOf = (seen) => ({
 export const genderWords = (md, gender) =>
   String(md ?? '').replace(/\{([^{}|\n]*)\|([^{}|\n]*)\}/g, (_, male, female) => (gender === 'female' ? female : male));
 
-/// A chapter's markdown with the player in it, before rendering: the gendered
-/// words, then `{name}` (state.mjs `fill`, the scenes' own token). The name is
+const VARIANT = /^:::\s*(男|女)\s*$/;
+const VARIANT_END = /^:::\s*$/;
+
+/// `::: 男` … `:::` and `::: 女` … `:::`: a passage told two ways. The hero's
+/// block stays (female → 女; male or unset → 男), the other goes, and so do the
+/// fence lines; a lone block with no twin simply vanishes for the other hero.
+/// Only a line that is exactly `::: 男`/`::: 女` opens one, so `::: 画 <id>`
+/// panels are left alone. An unclosed block runs to the end.
+export function genderBlocks(md, gender) {
+  const want = gender === 'female' ? '女' : '男';
+  const out = [];
+  let inside = null;
+  for (const line of String(md ?? '').split('\n')) {
+    const bare = line.replace(/\r$/, '').trim();
+    if (inside === null) {
+      const open = VARIANT.exec(bare);
+      if (open) inside = open[1];
+      else out.push(line);
+      continue;
+    }
+    if (VARIANT_END.test(bare)) { inside = null; continue; }
+    if (inside === want) out.push(line);
+  }
+  return out.join('\n');
+}
+
+/// A chapter's markdown with the player in it, before rendering: the hero's
+/// variant blocks, then the gendered words, then `{name}` (state.mjs `fill`, the scenes' own token). The name is
 /// a word, never markup, so a `*` or `|` in it goes full-width and can't open
 /// bold or split a table row (renderMarkdown escapes the rest).
 export function fillHero(md, hero = {}) {
   const name = String(hero.name || HERO).replace(/\*/g, '＊').replace(/\|/g, '｜');
-  return fill(genderWords(md, hero.gender), { name });
+  return fill(genderWords(genderBlocks(md, hero.gender), hero.gender), { name });
 }
 
 const PANEL = /^:::\s*画\s+([\w-]+)\s*(.*)$/;

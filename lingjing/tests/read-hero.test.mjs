@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { fillHero, genderWords, heroOf, HERO, renderMarkdown } from '../scripts/read-md.js';
+import { fillHero, genderBlocks, genderWords, heroOf, HERO, renderMarkdown } from '../scripts/read-md.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BOOK = path.join(ROOT, 'story/huxian-bing');
@@ -62,4 +62,43 @@ test('the chapters name the hero only as {name}; every token fills for either he
   const her = renderMarkdown(fillHero(fs.readFileSync(path.join(BOOK, '00-序章上·坠谷遇狐.md'), 'utf8'), { name: '秋白', gender: 'female' }));
   assert.match(her, /我叫秋白。今年十二岁。家住蒙山脚下石坳村。职业：猎户家的独女。/);
   assert.match(her, /窗外是隔壁的阿禾。他比我小一岁/);
+});
+
+test('::: 男 / ::: 女 blocks: the hero\'s stays, the other goes, fences never show', () => {
+  const md = '前。\n\n::: 男\n他挨打。\n:::\n::: 女\n她进猪圈。\n:::\n\n后。';
+  assert.equal(genderBlocks(md, 'male'), '前。\n\n他挨打。\n\n后。');
+  assert.equal(genderBlocks(md, undefined), genderBlocks(md, 'male'));
+  assert.equal(genderBlocks(md, 'female'), '前。\n\n她进猪圈。\n\n后。');
+  // A lone 女 block vanishes for a male hero; CRLF fences work too.
+  assert.equal(genderBlocks('甲。\r\n::: 女\r\n掌柜说话。\r\n:::\r\n乙。', 'male'), '甲。\r\n乙。');
+  assert.equal(renderMarkdown(fillHero('::: 女\n**掌柜**：{小子|姑娘}。\n:::', { gender: 'female' })), '<p><b>掌柜</b>：姑娘。</p>');
+  assert.equal(renderMarkdown(fillHero('::: 女\n**掌柜**：姑娘。\n:::', { gender: 'male' })), '');
+});
+
+test('variant blocks leave ::: 画 panels alone, inside or outside a block', () => {
+  const md = '::: 画 p1 柴房\n::: 女\n::: 画 p2 猪圈\n:::\n尾。';
+  assert.equal(genderBlocks(md, 'female'), '::: 画 p1 柴房\n::: 画 p2 猪圈\n尾。');
+  assert.equal(genderBlocks(md, 'male'), '::: 画 p1 柴房\n尾。');
+  const html = renderMarkdown(fillHero(md, { gender: 'female' }), { panel: (id) => `${id}.png` });
+  assert.match(html, /p1\.png[\s\S]*p2\.png/);
+});
+
+test('the girl-hero chapters: both readings clean, each told its own way', () => {
+  const read = (f, gender) => renderMarkdown(fillHero(fs.readFileSync(path.join(BOOK, f), 'utf8'), { name: '秋白', gender }));
+  for (const f of ['02-第一章·外门.md', '03-第二章·河伯娶妇.md']) {
+    for (const gender of ['male', 'female']) assert.doesNotMatch(read(f, gender), /:::|[{}]|女主变体/, `${f} ${gender}`);
+  }
+  const [hm, hf] = ['male', 'female'].map((g) => read('02-第一章·外门.md', g));
+  assert.match(hm, /蹲了下去，抱住了头/);
+  assert.doesNotMatch(hm, /猪圈/);
+  assert.match(hf, /扔进了伙房后面的猪圈/);
+  assert.doesNotMatch(hf, /抱住了头|肿成馒头/);
+  assert.match(hf, /嘴里一股泥腥味/);
+  const [rm, rf] = ['male', 'female'].map((g) => read('03-第二章·河伯娶妇.md', g));
+  assert.match(rm, /打鼓的那个，是我。/);
+  assert.doesNotMatch(rm, /你长得像交不起河伯钱的|这个，行/);
+  assert.match(rf, /你长得像交不起河伯钱的/);
+  assert.match(rf, /这个，行。/);
+  assert.doesNotMatch(rf, /打鼓的那个，是我/);
+  for (const html of [rm, rf]) assert.match(html, /「扑通。」/);
 });
