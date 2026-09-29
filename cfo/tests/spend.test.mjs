@@ -23,6 +23,25 @@ for (const c of CASES.reports) {
   });
 }
 
+// A card's "payment received" stored with a minus (a misread sign) is never
+// spend: it pairs with the bank's debit by size, or stands alone as a transfer.
+// Stated here by hand, not only as the engine's own recorded answer.
+test('SPEND a minus-signed card payment is never spend', () => {
+  const byName = (re) => CASES.reports.find((c) => re.test(c.name));
+  const paired = byName(/pairs with the bank debit by size/).expect;
+  assert.equal(paired.totals.spend, 80);
+  assert.deepEqual(paired.transfers, ['w3', 'w4']);
+  const twin = byName(/beside its correct twin/).expect;
+  assert.equal(twin.totals.spend, 140); // grocer 80 + a reversed payment 60 (owed again)
+  assert.deepEqual(twin.transfers, ['x3', 'x4', 'x5', 'x6']);
+  // The bank's right-signed row pairs, not the misread one the same day.
+  const c = byName(/beside its correct twin/);
+  const rows = c.rows.map((r) => ({ ...r }));
+  detectTransfers(rows, c.accounts);
+  assert.equal(rows.find((r) => r.id === 'x5').transfer_pair, 'x4');
+  assert.equal(rows.find((r) => r.id === 'x3').wrong_sign, true);
+});
+
 test('SPEND posting dates leave names, rule keys follow', () => {
   for (const c of CASES.clean) {
     assert.equal(cleanMerchant(c.in), c.out, c.in);

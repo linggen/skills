@@ -9,7 +9,7 @@
 // pdf.js (~1.7MB) is lazy-loaded only when a PDF is actually imported, so CSV
 // users never download it.
 
-import { parseDate, parseAmount, cleanMerchant, CARD_WORDS_RE } from './analyze.js';
+import { parseDate, parseAmount, cleanMerchant, CARD_WORDS_RE, PAYMENT_IN_RE, CARD_BILL_PAID_RE, PAYMENT_UNDONE_RE } from './analyze.js';
 import { detectCurrency } from './currency.js';
 
 const MONTH_RE = '(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)';
@@ -168,10 +168,14 @@ export function isInbound(line, amtTok, cols = null, card = false) {
   // a withdrawal.
   if (card && (/^-/.test(tok) || /\d\s*-$/.test(tok))) return true;
   if (/dr$/i.test(tok) || /\d\s*-$/.test(tok)) return false;
+  const text = line.text ?? line;
+  // On a card, a payment is money in whatever column or preposition — in any
+  // bank's words ("AUTOMATIC PYMT RECEIVED", "PAIEMENT - MERCI", analyze.js
+  // PAYMENT_IN_RE) — and a bounced one is money owed again.
+  if (card && (PAYMENT_IN_RE.test(text) || CARD_BILL_PAID_RE.test(text))) return !PAYMENT_UNDONE_RE.test(text);
   const side = columnSide(line, tok, cols);
   if (side) return side === 'credit';
-  const text = line.text ?? line;
-  return RETURNED_RE.test(text) || (INBOUND_RE.test(text) && !OUTBOUND_RE.test(text));
+  return RETURNED_RE.test(text) || ((INBOUND_RE.test(text) || PAYMENT_IN_RE.test(text)) && !OUTBOUND_RE.test(text));
 }
 
 // Pure, testable: statement lines -> [{date, merchant, amount}]. Spend negative.

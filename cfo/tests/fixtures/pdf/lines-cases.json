@@ -1,0 +1,156 @@
+{
+  "about": "Card and bank statement lines (as a PDF reader rebuilds them) and which way each row's money moved. Shared with linggen-mobile: pdf-import.js parseStatementText and pdf_import.dart must both give each `expect` row (first row whose merchant contains `has`, case-insensitive) its signed amount, and `count` rows in all. `words` holds wording checks: in = a payment landing (any statement), card_bill = a card's own bill paid (card only), undone = a payment bounced. Synthetic: no real merchant or amount.",
+  "cases": [
+    {
+      "name": "CA card, two dates per row, credits marked with a minus",
+      "lines": [
+        "Mastercard Statement date Sep. 4, 2026",
+        "Credit limit $5,000.00",
+        "Previous total balance, Aug. 4, 2026 $1,234.56",
+        "Aug. 4 Aug. 5 NEW HARBOUR MARKET HALIFAX NS 93.87",
+        "Aug. 21 Aug. 24 HARBOURSIDE PARKING 2.50",
+        "Aug. 25 Aug. 25 AUTOMATIC PYMT RECEIVED -1,234.56",
+        "Aug. 26 Aug. 27 CITY REC ONLINE -54.10",
+        "Aug. 28 Aug. 31 SUGAR & SPICE BAKERY 15.91"
+      ],
+      "count": 5,
+      "expect": [
+        { "has": "NEW HARBOUR MARKET", "amount": -93.87 },
+        { "has": "AUTOMATIC PYMT RECEIVED", "amount": 1234.56 },
+        { "has": "CITY REC ONLINE", "amount": 54.1 },
+        { "has": "SUGAR & SPICE", "amount": -15.91 }
+      ]
+    },
+    {
+      "name": "CA card, the payment printed with no sign at all",
+      "lines": [
+        "Mastercard Statement date Sep. 4, 2026",
+        "Minimum payment $10.00",
+        "Aug. 4 Aug. 5 NEW HARBOUR MARKET 93.87",
+        "Aug. 25 Aug. 25 AUTOMATIC PYMT RECEIVED 1,234.56",
+        "Aug. 26 Aug. 26 PAYMENT RECEIVED - THANK YOU 200.00"
+      ],
+      "count": 3,
+      "expect": [
+        { "has": "NEW HARBOUR MARKET", "amount": -93.87 },
+        { "has": "AUTOMATIC PYMT RECEIVED", "amount": 1234.56 },
+        { "has": "THANK YOU", "amount": 200.0 }
+      ]
+    },
+    {
+      "name": "US card, unsigned rows: payments by wording, charges that only look like payments stay spend",
+      "lines": [
+        "VISA SIGNATURE Statement closing date 08/31/2026",
+        "Payment due date 09/25/2026",
+        "08/03 CORNER GROCER 42.10",
+        "08/15 PAYMENT THANK YOU - WEB 500.00",
+        "08/16 AUTOPAY PYMT 250.00",
+        "08/17 ONLINE PAYMENT, THANK YOU 75.00",
+        "08/18 PAYMENTUS UTILITY BILL 80.00",
+        "08/19 PAYPAL *ONLINE PAYMENT 12.00",
+        "08/20 PAYMENT RECEIVED REVERSAL 300.00"
+      ],
+      "count": 7,
+      "expect": [
+        { "has": "CORNER GROCER", "amount": -42.1 },
+        { "has": "PAYMENT THANK YOU", "amount": 500.0 },
+        { "has": "AUTOPAY PYMT", "amount": 250.0 },
+        { "has": "ONLINE PAYMENT, THANK YOU", "amount": 75.0 },
+        { "has": "PAYMENTUS", "amount": -80.0 },
+        { "has": "PAYPAL", "amount": -12.0 },
+        { "has": "REVERSAL", "amount": -300.0 }
+      ]
+    },
+    {
+      "name": "CA bilingual card: French payment wording",
+      "lines": [
+        "Statement date / Date du relevé Aug 31, 2026",
+        "Limite de crédit / Credit limit 3,000.00",
+        "Aug 12 CAFE DU PORT 8.75",
+        "Aug 20 PAIEMENT - MERCI 300.00",
+        "Aug 21 PAIEMENT REÇU 150.00"
+      ],
+      "count": 3,
+      "expect": [
+        { "has": "CAFE DU PORT", "amount": -8.75 },
+        { "has": "MERCI", "amount": 300.0 },
+        { "has": "REÇU", "amount": 150.0 }
+      ]
+    },
+    {
+      "name": "UK card: day-first dates, payment and direct debit wording",
+      "lines": [
+        "Statement date 31 Aug 2026",
+        "Credit limit 3,000.00",
+        "12 Aug PAYMENT RECEIVED, THANK YOU 400.00",
+        "14 Aug DIRECT DEBIT PAYMENT 120.00",
+        "15 Aug HIGH STREET STORES 23.10"
+      ],
+      "count": 3,
+      "expect": [
+        { "has": "PAYMENT RECEIVED, THANK YOU", "amount": 400.0 },
+        { "has": "DIRECT DEBIT PAYMENT", "amount": 120.0 },
+        { "has": "HIGH STREET", "amount": -23.1 }
+      ]
+    },
+    {
+      "name": "AU card: THANKYOU in one word, BPAY",
+      "lines": [
+        "Statement period 01 Aug 2026 to 31 Aug 2026",
+        "Minimum payment due 25.00",
+        "03 Aug PAYMENT - THANKYOU 800.00",
+        "04 Aug BPAY PAYMENT 200.00",
+        "05 Aug CORNER GROCER 55.20"
+      ],
+      "count": 3,
+      "expect": [
+        { "has": "THANKYOU", "amount": 800.0 },
+        { "has": "BPAY PAYMENT", "amount": 200.0 },
+        { "has": "CORNER GROCER", "amount": -55.2 }
+      ]
+    },
+    {
+      "name": "bank statement: paying a card is money out, a payment received from someone is money in",
+      "lines": [
+        "Chequing statement period Jul 1 - Jul 31, 2026",
+        "Jul 06 AUTOPAY PAYMENT VISA 300.00",
+        "Jul 07 PAYMENT RECEIVED FROM ALEX 50.00",
+        "Jul 08 CORNER GROCER 20.00"
+      ],
+      "count": 3,
+      "expect": [
+        { "has": "AUTOPAY PAYMENT VISA", "amount": -300.0 },
+        { "has": "PAYMENT RECEIVED FROM ALEX", "amount": 50.0 },
+        { "has": "CORNER GROCER", "amount": -20.0 }
+      ]
+    }
+  ],
+  "words": [
+    { "text": "AUTOMATIC PYMT RECEIVED", "in": true, "card_bill": true, "undone": false },
+    { "text": "PAYMENT RECEIVED - THANK YOU", "in": true, "card_bill": false, "undone": false },
+    { "text": "PAYMENT, THANK YOU", "in": true, "card_bill": false, "undone": false },
+    { "text": "PAYMENT THANKYOU", "in": true, "card_bill": false, "undone": false },
+    { "text": "INTERNET PAYMENT - THANK YOU", "in": true, "card_bill": false, "undone": false },
+    { "text": "THANK YOU FOR YOUR PAYMENT", "in": true, "card_bill": false, "undone": false },
+    { "text": "PMT RECD", "in": true, "card_bill": false, "undone": false },
+    { "text": "PAIEMENT - MERCI", "in": true, "card_bill": false, "undone": false },
+    { "text": "PAIEMENT REÇU", "in": true, "card_bill": false, "undone": false },
+    { "text": "MERCI POUR VOTRE PAIEMENT", "in": true, "card_bill": false, "undone": false },
+    { "text": "Zahlungseingang", "in": true, "card_bill": false, "undone": false },
+    { "text": "Vielen Dank für Ihre Zahlung", "in": true, "card_bill": false, "undone": false },
+    { "text": "Pago recibido", "in": true, "card_bill": false, "undone": false },
+    { "text": "Betaling ontvangen", "in": true, "card_bill": false, "undone": false },
+    { "text": "Pagamento ricevuto", "in": true, "card_bill": false, "undone": false },
+    { "text": "CAPITAL ONE AUTOPAY PYMT", "in": false, "card_bill": true, "undone": false },
+    { "text": "AUTO-PMT", "in": false, "card_bill": true, "undone": false },
+    { "text": "DIRECT DEBIT PAYMENT", "in": false, "card_bill": true, "undone": false },
+    { "text": "PAYMENT BY DIRECT DEBIT", "in": false, "card_bill": true, "undone": false },
+    { "text": "PAYMENT RECEIVED REVERSAL", "in": true, "card_bill": false, "undone": true },
+    { "text": "RETURNED PAYMENT", "in": false, "card_bill": false, "undone": true },
+    { "text": "BILL PAYMENT HYDRO", "in": false, "card_bill": false, "undone": false },
+    { "text": "PAYMENT TO VISA", "in": false, "card_bill": false, "undone": false },
+    { "text": "PAYMENTUS UTILITY BILL", "in": false, "card_bill": false, "undone": false },
+    { "text": "PAYPAL *ONLINE PAYMENT", "in": false, "card_bill": false, "undone": false },
+    { "text": "BELL PAP", "in": false, "card_bill": false, "undone": false }
+  ]
+}

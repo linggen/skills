@@ -12,7 +12,7 @@
 //      transfer pair and exclude both from spend/income.
 
 import { txnId } from './hash.js';
-import { analyzeTransactions, budgetsFor, keywordRe, cleanMerchant, merchantKey } from './analyze.js';
+import { analyzeTransactions, budgetsFor, keywordRe, cleanMerchant, merchantKey, PAYMENT_IN_RE, PAYMENT_UNDONE_RE } from './analyze.js';
 import { accountCurrency, fxRate, leadCurrency } from './currency.js';
 
 // The key a merchant rule (`ov:<key>`) is stored under: the cleaned, lowercased
@@ -21,7 +21,18 @@ import { accountCurrency, fxRate, leadCurrency } from './currency.js';
 export const ruleKey = (merchant) => (cleanMerchant(merchant) || String(merchant)).toLowerCase();
 
 const daysBetween = (a, b) => Math.abs((new Date(a) - new Date(b)) / 86400000);
-const PAYMENT_RE = /\b(payment|autopay|auto pay|bill ?pay|e-?transfer|transfer|thank you|pymt)\b/i;
+const PAYMENT_RE = /\b(payment|autopay|auto pay|bill ?pay|e-?transfer|transfer|thank you|pymt|pmt|paiement)\b/i;
+
+// A card row that says a payment was RECEIVED but carries a minus: a misread
+// sign (a statement parsed before its card's payment wording was known). No
+// reading of "payment received" on a card is spend, so it counts as the
+// credit it is — pairing matches it to the bank's debit by size, and alone it
+// is a transfer, never spend. The row keeps its stored sign; `wrong_sign`
+// says so for this run.
+const isCredit = (acc) => (acc?.type || '').toLowerCase() === 'credit';
+function wrongSignPayment(row, account) {
+  return row.amount < 0 && isCredit(account) && PAYMENT_IN_RE.test(row.merchant || '') && !PAYMENT_UNDONE_RE.test(row.merchant || '');
+}
 const REFUND_RE = /\b(refund|reversal|rebate|cash ?back|chargeback)\b/i;
 
 // ── Single-row transfer signals ─────────────────────────────────────────────
@@ -64,7 +75,7 @@ function transferSignal(row, account) {
   if ((type === 'checking' || type === 'savings') && row.amount < 0 && CARD_ISSUER_RES.some((re) => re.test(m))) return 'card';
   if (TRANSFER_RES.some((re) => re.test(m))) return 'account';
   // The card side of that payment landing as a credit on a credit account.
-  if (type === 'credit' && row.amount > 0 && PAYMENT_RE.test(m) && !REFUND_RE.test(m)) return 'account';
+  if (type === 'credit' && (row.amount > 0 || row.wrong_sign) && PAYMENT_RE.test(m) && !REFUND_RE.test(m)) return 'account';
   return null;
 }
 
@@ -267,6 +278,9 @@ const byDateThenId = (a, b) =>
 // unrelated bill payment for the same amount the day before. The smaller id
 // settles what's left, so the answer never depends on iteration order.
 function preferredCredit(debit, candidate, best) {
+  // A credit stored with its right sign beats a misread one (wrong_sign) — the
+  // bank's own export over an older parse of the same payment.
+  if (!!candidate.wrong_sign !== !!best.wrong_sign) return !candidate.wrong_sign;
   const candidateAfter = candidate.date >= debit.date;
   const bestAfter = best.date >= debit.date;
   if (candidateAfter !== bestAfter) return candidateAfter;
@@ -281,7 +295,7 @@ const FX_PAIR_TOLERANCE = 0.08;
 const curOf = (r) => r.currency || null;
 
 // Flags a report run sets on rows and never stores: cleared on every run.
-const RUN_FLAGS = ['transfer_fx', 'saved', 'via', 'household', 'refund', 'one_off'];
+const RUN_FLAGS = ['transfer_fx', 'saved', 'via', 'household', 'refund', 'one_off', 'wrong_sign'];
 
 // `external` = the person's answers about accounts that aren't imported
 // ({counterpartyKey: 'mine' | 'household'}, register `ext:` cells): money in
@@ -309,9 +323,10 @@ export function detectTransfers(rows, accountsById = {}, windowDays = 5, overrid
   // in the list" makes two devices holding the same ledger report different
   // numbers — it cost $900 of June income once. Candidates are sorted, and ties
   // are settled by a stated rule (see `preferredCredit`), never by arrival.
+  for (const r of rows) if (wrongSignPayment(r, accountsById[r.account])) r.wrong_sign = true;
   const avail = (r) => r.date && !r.transfer && !locked.has(r.id);
-  const credits = rows.filter((r) => r.amount > 0 && avail(r)).sort(byDateThenId);
-  const debits = rows.filter((r) => r.amount < 0 && avail(r)).sort(byDateThenId);
+  const credits = rows.filter((r) => (r.amount > 0 || r.wrong_sign) && avail(r)).sort(byDateThenId);
+  const debits = rows.filter((r) => r.amount < 0 && !r.wrong_sign && avail(r)).sort(byDateThenId);
   const usedCredit = new Set();
   for (const d of debits) {
     let best = null, bestGap = Infinity;
@@ -388,7 +403,6 @@ export function detectTransfers(rows, accountsById = {}, windowDays = 5, overrid
 // income. The person's own 'income' rule says otherwise, and wins. A "card"
 // whose credits outweigh its charges is a bank account typed as a card (a
 // new account's type is a guess): its deposits stay income.
-const isCredit = (acc) => (acc?.type || '').toLowerCase() === 'credit';
 function cardsThatLookLikeCards(rows, accountsById) {
   const sums = {};
   for (const r of rows) {

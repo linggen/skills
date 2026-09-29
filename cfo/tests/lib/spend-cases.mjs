@@ -177,6 +177,31 @@ const reports = [
       row('l6', 'mc', '2026-08-28', 'Sep 03 LOCAL BAKE HOUSE', -7.5),
     ],
   },
+  {
+    name: 'a card payment stored with a minus pairs with the bank debit by size — never spend',
+    home: 'CAD',
+    accounts: { card: { label: 'Mastercard', type: 'credit' }, chk: { label: 'Chequing', type: 'checking' } },
+    rows: [
+      row('w1', 'chk', '2026-08-01', 'ACME PAYROLL', 3000),
+      row('w2', 'card', '2026-08-10', 'CORNER GROCER', -80),
+      row('w3', 'card', '2026-08-25', 'Aug. 25 AUTOMATIC PYMT RECEIVED', -500),
+      row('w4', 'chk', '2026-08-26', 'CARD BANK PAYMENT BPY', -500),
+    ],
+  },
+  {
+    name: 'a minus-signed card payment beside its correct twin: the twin pairs, the misread row is a transfer alone',
+    home: 'CAD',
+    accounts: { card: { label: 'Mastercard', type: 'credit' }, chk: { label: 'Chequing', type: 'checking' } },
+    rows: [
+      row('x1', 'chk', '2026-08-01', 'ACME PAYROLL', 3000),
+      row('x2', 'card', '2026-08-10', 'CORNER GROCER', -80),
+      row('x3', 'card', '2026-08-25', 'Aug. 25 AUTOMATIC PYMT RECEIVED', -500),
+      row('x4', 'card', '2026-08-25', 'AUTOMATIC PYMT RECEIVED', 500),
+      row('x5', 'chk', '2026-08-26', 'CARD BANK PAYMENT BPY', -500),
+      row('x6', 'card', '2026-08-27', 'PAIEMENT - MERCI', -40),
+      row('x7', 'card', '2026-08-28', 'PAYMENT RECEIVED REVERSAL', -60),
+    ],
+  },
 ];
 
 for (const c of reports) {

@@ -4,7 +4,9 @@
 //
 //   node tests/run-pdf.mjs
 
+import { readFileSync } from 'node:fs';
 import { parseStatementText, statementClose, statementKind } from '../scripts/pdf-import.js';
+import { PAYMENT_IN_RE, CARD_BILL_PAID_RE, PAYMENT_UNDONE_RE } from '../scripts/analyze.js';
 
 let pass = 0, fail = 0;
 const t = (name, ok, detail = '') => {
@@ -182,6 +184,25 @@ t('B10 an amount under "deducted from your account" is spend', byMerchant(bc, /C
 console.log('\n— statement kind —');
 t('K1 a card statement names its credit limit', statementKind(['Credit limit $5,000.00', 'Aug 5 GROCER 10.00']) === 'credit');
 t('K2 a bank statement is a bank\'s', statementKind(['Amounts deducted from your account', 'Jun 8 Online Transfer, TF 2754-997 2,000.00']) === 'bank');
+
+t('K3 a French card statement is a card\'s', statementKind(['Limite de crédit 3,000.00', 'Aug 5 EPICERIE 10.00']) === 'credit');
+
+// ── Card payments in any bank's words (fixtures/pdf/lines-cases.json, shared
+// with linggen-mobile pdf_import_test.dart) ──
+console.log('\n— card payments, any bank —');
+const LINES = JSON.parse(readFileSync(new URL('./fixtures/pdf/lines-cases.json', import.meta.url), 'utf8'));
+for (const c of LINES.cases) {
+  const got = parseStatementText(c.lines);
+  t(`C ${c.name}: ${c.count} rows`, got.length === c.count, `${got.length}: ${got.map((x) => `${x.merchant} ${x.amount}`).join(' | ')}`);
+  for (const e of c.expect) {
+    const row = got.find((x) => x.merchant.toLowerCase().includes(e.has.toLowerCase()));
+    t(`C ${c.name}: ${e.has} ${e.amount}`, row?.amount === e.amount, row ? `${row.merchant} ${row.amount}` : 'missing');
+  }
+}
+for (const w of LINES.words) {
+  const got = { in: PAYMENT_IN_RE.test(w.text), card_bill: CARD_BILL_PAID_RE.test(w.text), undone: PAYMENT_UNDONE_RE.test(w.text) };
+  t(`W "${w.text}"`, got.in === w.in && got.card_bill === w.card_bill && got.undone === w.undone, JSON.stringify(got));
+}
 
 console.log(`\n${pass} passed, ${fail} failed.`);
 process.exit(fail ? 1 : 0);

@@ -2082,6 +2082,251 @@
         ],
         "one_off_rows": []
       }
+    },
+    {
+      "name": "a card payment stored with a minus pairs with the bank debit by size — never spend",
+      "home": "CAD",
+      "accounts": {
+        "card": {
+          "label": "Mastercard",
+          "type": "credit"
+        },
+        "chk": {
+          "label": "Chequing",
+          "type": "checking"
+        }
+      },
+      "rows": [
+        {
+          "id": "w1",
+          "account": "chk",
+          "date": "2026-08-01",
+          "merchant": "ACME PAYROLL",
+          "amount": 3000,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "w2",
+          "account": "card",
+          "date": "2026-08-10",
+          "merchant": "CORNER GROCER",
+          "amount": -80,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "w3",
+          "account": "card",
+          "date": "2026-08-25",
+          "merchant": "Aug. 25 AUTOMATIC PYMT RECEIVED",
+          "amount": -500,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "w4",
+          "account": "chk",
+          "date": "2026-08-26",
+          "merchant": "CARD BANK PAYMENT BPY",
+          "amount": -500,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "totals": {
+          "spend": 80,
+          "income": 3000,
+          "net": 2920
+        },
+        "refunds_total": 0,
+        "by_category": [
+          {
+            "category": "other",
+            "spend": 80
+          }
+        ],
+        "one_off_total": 0,
+        "one_offs": [],
+        "typical_month_spend": 80,
+        "saved": {
+          "total": 0,
+          "lines": []
+        },
+        "paid_to_cards_not_imported": {
+          "total": 0,
+          "lines": []
+        },
+        "moved_not_imported": {
+          "in": 0,
+          "out": 0,
+          "net": 0,
+          "lines": []
+        },
+        "saving_suggestions": [],
+        "subscriptions": [],
+        "anomalies": [],
+        "transfers": [
+          "w3",
+          "w4"
+        ],
+        "refunds": [],
+        "one_off_rows": []
+      }
+    },
+    {
+      "name": "a minus-signed card payment beside its correct twin: the twin pairs, the misread row is a transfer alone",
+      "home": "CAD",
+      "accounts": {
+        "card": {
+          "label": "Mastercard",
+          "type": "credit"
+        },
+        "chk": {
+          "label": "Chequing",
+          "type": "checking"
+        }
+      },
+      "rows": [
+        {
+          "id": "x1",
+          "account": "chk",
+          "date": "2026-08-01",
+          "merchant": "ACME PAYROLL",
+          "amount": 3000,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "x2",
+          "account": "card",
+          "date": "2026-08-10",
+          "merchant": "CORNER GROCER",
+          "amount": -80,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "x3",
+          "account": "card",
+          "date": "2026-08-25",
+          "merchant": "Aug. 25 AUTOMATIC PYMT RECEIVED",
+          "amount": -500,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "x4",
+          "account": "card",
+          "date": "2026-08-25",
+          "merchant": "AUTOMATIC PYMT RECEIVED",
+          "amount": 500,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "x5",
+          "account": "chk",
+          "date": "2026-08-26",
+          "merchant": "CARD BANK PAYMENT BPY",
+          "amount": -500,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "x6",
+          "account": "card",
+          "date": "2026-08-27",
+          "merchant": "PAIEMENT - MERCI",
+          "amount": -40,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "x7",
+          "account": "card",
+          "date": "2026-08-28",
+          "merchant": "PAYMENT RECEIVED REVERSAL",
+          "amount": -60,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "totals": {
+          "spend": 140,
+          "income": 3000,
+          "net": 2860
+        },
+        "refunds_total": 0,
+        "by_category": [
+          {
+            "category": "other",
+            "spend": 140
+          }
+        ],
+        "one_off_total": 0,
+        "one_offs": [],
+        "typical_month_spend": 140,
+        "saved": {
+          "total": 0,
+          "lines": []
+        },
+        "paid_to_cards_not_imported": {
+          "total": 0,
+          "lines": []
+        },
+        "moved_not_imported": {
+          "in": 0,
+          "out": 540,
+          "net": -540,
+          "lines": [
+            {
+              "key": "automatic",
+              "label": "AUTOMATIC",
+              "amount": -500,
+              "in": 0,
+              "out": 500,
+              "count": 1,
+              "answer": null,
+              "ask": false
+            },
+            {
+              "key": "paiement merci",
+              "label": "PAIEMENT MERCI",
+              "amount": -40,
+              "in": 0,
+              "out": 40,
+              "count": 1,
+              "answer": null,
+              "ask": false
+            }
+          ]
+        },
+        "saving_suggestions": [],
+        "subscriptions": [],
+        "anomalies": [],
+        "transfers": [
+          "x3",
+          "x4",
+          "x5",
+          "x6"
+        ],
+        "refunds": [],
+        "one_off_rows": []
+      }
     }
   ]
 }

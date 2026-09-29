@@ -27,7 +27,31 @@ const REDACT_KEYS = ['account', 'card', 'number', 'iban', 'routing', 'sort code'
 // Columns that may carry the account's own number (fingerprinted, see mapByHeader).
 const ACCOUNT_KEYS = ['account', 'card', 'konto', 'iban', 'rekening', 'compte'];
 // The words only a credit card's statement prints (pdf-import.js reads them too).
-export const CARD_WORDS_RE = /\b(credit limit|minimum payment|available credit|credit available|payment due date|annual interest rate)\b/i;
+// English, and the French, Spanish, Dutch, Italian and German a card prints
+// for its limit and minimum payment ("Limite de crédit", "Paiement minimum").
+export const CARD_WORDS_RE = /\b(credit limit|minimum payment|available credit|credit available|payment due date|annual interest rate|limite de cr[ée]dit|cr[ée]dit disponible|paiement minimum|versement minimum|pago m[íi]nimo|minimaal te betalen|pagamento minimo|mindestzahlung|mindestbetrag)\b/i;
+
+// A payment landing on a card, in a bank's words: "PAYMENT RECEIVED",
+// "AUTOMATIC PYMT RECEIVED", "PAYMENT - THANK YOU", "PAYMENT, THANK YOU",
+// "PAYMENT THANKYOU", "THANK YOU FOR YOUR PAYMENT", "PAIEMENT - MERCI",
+// "PAIEMENT REÇU", "Zahlungseingang", "Pago recibido", "Betaling ontvangen",
+// "Pagamento ricevuto". On any statement these say money came in.
+export const PAYMENT_IN_RE = new RegExp([
+  "\\b(?:payments?|pymts?|pmts?)\\b[\\s,.:;/*-]*(?:received|recvd|rec'?d\\b|thank\\s*(?:you|s)\\b)",
+  '\\bthank\\s*you\\s+for\\s+(?:your\\s+)?payment',
+  '\\bpaiements?\\b[\\s,.:;/*-]*(?:re[çc]u|merci)',
+  '\\bmerci\\s+(?:pour\\s+)?(?:votre\\s+)?paiement',
+  '\\bzahlungs?\\s*eingang', '\\bzahlung\\s+erhalten', '\\bdank(?:e)?\\s+f(?:ü|ue)r\\s+ihre\\s+zahlung',
+  '\\bpago\\s+recibido', '\\bgracias\\s+por\\s+su\\s+pago',
+  '\\bbetaling\\s+ontvangen', '\\bbedankt\\s+voor\\s+uw\\s+betaling',
+  '\\bpagamento\\s+ricevuto', '\\bgrazie\\s+per\\s+il\\s+pagamento',
+].join('|'), 'i');
+// On a card only: the card's own bill paid by autopay or direct debit
+// ("AUTOPAY PYMT", "AUTOMATIC PAYMENT", "DIRECT DEBIT PAYMENT", "BPAY PAYMENT").
+export const CARD_BILL_PAID_RE = /\b(?:auto-?\s*pay|automatic|bpay|direct\s+debit)\s*-?\s*(?:pymt|pmt|payment)\b|\bauto-?pmt\b|\bpayment\s+by\s+direct\s+debit\b/i;
+// A payment that bounced or was undone: on a card that is money owed again.
+export const PAYMENT_UNDONE_RE = /\b(returned|reversal|reversed|dishonou?red|nsf|rejected|retourn[ée]e?|annul[ée]e?|storno|r[üu]ckbuchung)\b/i;
+
 
 const CATEGORY_RULES = [
   // Fees first — they're the leak-detection ground truth and the keywords are specific.
@@ -557,7 +581,7 @@ function ingest(textIn) {
 // on a card, the non-payment rows are overwhelmingly charges, so when most of
 // them are positive the convention is inverted and every sign flips. Other
 // account types (deposits vs spend both legit) are left alone.
-const CARD_PAYMENT_RE = /\b(payment|thank you|autopay|auto pay|pymt)\b/i;
+const CARD_PAYMENT_RE = /\b(payment|thank you|autopay|auto pay|pymt|pmt|paiement)\b/i;
 export function orientTransactions(txns, accountType) {
   if ((accountType || '').toLowerCase() !== 'credit') return { transactions: txns, flipped: false };
   const charges = txns.filter((t) => t.amount !== 0 && !CARD_PAYMENT_RE.test(t.merchant));
