@@ -41,7 +41,9 @@ test('a new game: nine dark cauldrons, the prologue current, nothing of what lie
   assert.equal(r.ok, true);
   assert.equal(r.cauldrons.length, 9);
   assert.ok(r.cauldrons.every(c => c.state === 'dark' && !c.title), 'a dark cauldron gives only its province');
-  assert.deepEqual(r.chapters.map(c => [c.id, c.state]), [['00-prologue', 'current']]);
+  // The book is the novel's 回 (his, 2026-09-29): the prologue opens on 第一回.
+  assert.deepEqual(r.chapters.map(c => [c.id, c.chapter, c.state]), [['h01', '00-prologue', 'current']]);
+  assert.match(r.chapters[0].title, /^卷一.* · 第一回　一只破碗辞残照　半张烙饼换妖王$/);
   assert.deepEqual(r.chapters[0].recap, []);
   assert.equal(r.her, null);
   assert.deepEqual(r.open, [pz(content.chapters['00-prologue'].mystery)]);
@@ -55,7 +57,13 @@ test('mid-chapter: the chapters ended and the current one, recaps in the order p
   const r = story(s, content, ctx()).result;
   assert.deepEqual(r.cauldrons.map(c => c.state), ['found', 'current', 'dark', 'dark', 'dark', 'dark', 'dark', 'dark', 'dark']);
   assert.equal(r.found, 1);
-  assert.deepEqual(r.chapters.map(c => [c.id, c.state]), [['00-prologue', 'done'], ['01-ji', 'done'], ['02-yan', 'current']]);
+  // Each chapter cut into its 回, the prologue's two among them; 兖 has none yet (to be rewritten): its own title.
+  assert.deepEqual(r.chapters.map(c => [c.id, c.state]), [['h01', 'done'], ['h02', 'done'], ['h04', 'done'], ['02-yan', 'current']]);
+  assert.equal(r.chapters[0].intro, pz(content.chapters['00-prologue'].intro), 'the intro opens a chapter\'s first 回');
+  assert.equal(r.chapters[1].intro, undefined);
+  assert.deepEqual(r.chapters[0].mystery, undefined, 'the riddle closes its last');
+  assert.equal(r.chapters[1].mystery, pz(content.chapters['00-prologue'].mystery));
+  assert.equal(r.chapters.at(-1).title, pz(content.chapters['02-yan'].title));
   const cur = r.chapters.at(-1);
   assert.deepEqual(cur.recap, road.slice(0, 2).map(id => pz(content.chapters['02-yan'].scenes[id].recap)));
   assert.ok(cur.now, 'the current chapter says where it stands');
@@ -85,7 +93,7 @@ test("Ling's Story is small — every chapter ended, in Chinese, under ~3 KB", (
   const s = { ...at('09-yu', roadOf('09-yu').slice(0, -1)), done_scenes: [...at('09-yu').done_scenes, ...roadOf('09-yu')], ended: ['00-prologue', ...CH], scene: null, companion: { joined: '2026-09-01' }, ending: { id: 'dingding', at: NOW.toISOString() } };
   const full = story(s, content, ctx()).result;
   const short = forLing(story(s, content, ctx(), { short: 'true' }).result);
-  assert.equal(full.chapters.length, 10);
+  assert.equal(full.chapters.length, 11, 'the prologue\'s two 回, 冀\'s one, and eight chapters still to be rewritten');
   assert.ok(Buffer.byteLength(JSON.stringify(short)) <= 3200, `${Buffer.byteLength(JSON.stringify(short))} bytes`);
   assert.ok(Buffer.byteLength(JSON.stringify(short)) < Buffer.byteLength(JSON.stringify(full)));
   assert.deepEqual(short.ending, { id: 'dingding', title: '定鼎', at: NOW.toISOString() });
@@ -203,7 +211,7 @@ test('the command line: owed on the first call after a while away, kept without 
     // The book is a read — the page's Verb and Ling's short one.
     const book = cli('story');
     assert.equal(book.ok, true);
-    assert.equal(book.chapters.at(-1).id, '01-ji');
+    assert.deepEqual([book.chapters.at(-1).id, book.chapters.at(-1).chapter], ['h04', '01-ji'], '冀 is 第四回');
     const ling = cli('look', '--for=ling');
     assert.equal(ling.recap_due, true);
     assert.equal(ling.story_node, undefined);

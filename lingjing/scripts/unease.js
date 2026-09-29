@@ -73,7 +73,7 @@ export async function raiseUnease(u, say, { doc = globalThis.document, still = f
   const body = stage?.querySelector?.('.body');
   if (!view || !stage || !body || stage.hidden) { say?.(); return false; }
   ensureStyle(doc);
-  // The 新章 seal first: her moment comes as it clears, not under it.
+  // The 新的一回 seal first: her moment comes as it clears, not under it.
   for (let t = 0; doc.querySelector('.feat') && t < FEAT_WAIT_MS; t += 200) await wait(200);
   const plan = uneasePlan(u, still);
   const drawn = plan.layers.map((name) => {

@@ -14,6 +14,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { fill, newState } from '../scripts/state.mjs';
 import { forLing, look, remember, resolve, writeLedger } from '../scripts/rules.mjs';
 import { TO_WAIMEN, walk } from './prologue.mjs';
+import { huiLabel } from '../scripts/rules/hui.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const content = loadContent();
@@ -21,6 +22,9 @@ const NOW = new Date('2026-09-28T12:00:00');
 const ctx = (words = null, extra = {}) => ({ now: NOW, quests: [], words, ...extra });
 /* At 马三's rent (00-masan): 马三, 马小宝 and 爹 on the scene. */
 const atMasan = (lang = 'zh') => resolve(newState(content, lang, NOW), content, ctx(), { exit: 'name', value: '青玄', gender: 'female' }).state;
+/* When, as a reader is told it: the 回 of the scene written in (卷一 · 第一回), from the book. */
+const H1 = huiLabel(content, 'h01', 'zh'), H1_EN = huiLabel(content, 'h01', 'en');
+const re = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const TYPED = ['[scene] took 照他的话，原样说回去', '马三，这账  我记着。', '阿禾，等我回来'];
 
 test('Remember writes a real moment in the player\'s own words — who, kind, what, said, when', () => {
@@ -30,7 +34,8 @@ test('Remember writes a real moment in the player\'s own words — who, kind, wh
   const e = out.state.ledger.at(-1);
   assert.deepEqual(e, { who: 'masan', kind: '仇', what: { zh: '一脚踹开柴门，逼租' }, chapter: '00-prologue', day: '2026-09-28', at: '00-masan', by: 'ling', said: '这账 我记着' });
   assert.equal(out.result.wrote.said, '这账 我记着', 'whitespace made one, the quote marks off');
-  assert.equal(out.result.wrote.chapter, '序章 · 蒙山');
+  assert.equal(out.result.wrote.chapter, H1);
+  assert.match(H1, /^卷一.* · 第一回$/, 'the 卷 and the 回, never 章');
   // by id, a slot, a named creature, the companion
   assert.equal(remember(s, content, ctx(TYPED), { who: 'ban', kind: '诺', what: '说好回来' }).state.ledger.at(-1).who, 'ahe');
   assert.equal(remember(s, content, ctx(), { who: '银月', kind: '恩', what: '救命' }).result.ok, true);
@@ -117,22 +122,23 @@ test('Look: the page gets the whole 簿; Ling only the people present and the op
   for (const e of hers) assert.deepEqual(Object.keys(e).filter(k => ['here', 'who', 'day', 'by'].includes(k)), [], 'compact');
   // at 马三's rent, with 马三 written: he is here, so Ling holds him
   const m = remember(atMasan(), content, ctx(TYPED), { who: '马三', kind: '仇', what: '逼租', quote: '这账 我记着' }).state;
-  assert.deepEqual(forLing(look(m, content, ctx())).ledger, [{ name: '马三', kind: '仇', what: '逼租', said: '这账 我记着', chapter: '序章 · 蒙山' }]);
+  assert.deepEqual(forLing(look(m, content, ctx())).ledger, [{ name: '马三', kind: '仇', what: '逼租', said: '这账 我记着', chapter: H1 }]);
 });
 
-test('the 恩 chip: each entry\'s quote 「『…』 —— 你对马三说 · 序章」, a 诺 marked, kept or broken', () => {
+test('the 恩 chip: each entry\'s quote 「『…』 —— 你对马三说 · 卷一 · 第一回」, a 诺 marked, kept or broken', () => {
   let s = atMasan();
   s = remember(s, content, ctx(TYPED), { who: '马三', kind: '仇', what: '逼租', quote: '这账 我记着' }).state;
   s = remember(s, content, ctx(TYPED), { who: '阿禾', kind: '诺', what: '说好会回来', quote: '等我回来' }).state;
   let html = ledgerChipHtml({ look: look(s, content, ctx()), lang: 'zh', words: WORDS.zh }, true);
-  assert.match(html, /<div class="ledgersaid">『这账 我记着』<span class="small dim"> —— 你对马三说 · 序章 · 蒙山<\/span><\/div>/);
+  assert.match(html, new RegExp(`<div class="ledgersaid">『这账 我记着』<span class="small dim"> —— 你对马三说 · ${re(H1)}</span></div>`));
   assert.match(html, /ledgerrow nuo"><span class="ledgerkind">诺<\/span><div><b>阿禾<\/b>/);
   assert.doesNotMatch(html, /ledgerkept/, 'open: no mark yet');
   s = remember(s, content, ctx(), { who: '阿禾', action: 'break' }).state;
   html = ledgerChipHtml({ look: look(s, content, ctx()), lang: 'zh', words: WORDS.zh }, true);
   assert.match(html, /<span class="ledgerkept broken">负诺<\/span>/);
   const en = ledgerChipHtml({ look: look({ ...s, lang: 'en' }, content, ctx()), lang: 'en', words: WORDS.en }, true);
-  assert.match(en, /『这账 我记着』<span class="small dim"> —— you said to Ma San · Prologue · Mount Meng/);
+  assert.match(en, new RegExp(`『这账 我记着』<span class="small dim"> —— you said to Ma San · ${re(H1_EN)}<`));
+  assert.match(H1_EN, /^Volume One.* · Chapter 1$/);
   assert.match(en, /ledgerkept broken">broken</);
   assert.doesNotMatch(html + en, /undefined|NaN|\{who\}/);
 });

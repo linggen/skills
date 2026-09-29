@@ -7,7 +7,7 @@
   "cauldron": false,
   "first_scene": "wm-ahe",
   "gate": null,
-  "_id": "The book's 第一章 · 外门 (story/huxian-bing/03-第三回.md, now the book's 第三回), between the prologue and 冀: an id that sorts after 00-prologue and before 01-ji (chapters run in id order, core.mjs advanceChapter).",
+  "_id": "The book's 第三回 (story/huxian-bing/03-第三回.md; once 第一章 · 外门), between the prologue and 冀: an id that sorts after 00-prologue and before 01-ji (chapters run in id order, core.mjs advanceChapter).",
   "_map": "The small area around 沉鼎观 (his, 2026-09-29): 外门, 讲堂, 柴房, 药园, 后山, 藏经阁, 坊市, 渡口, the Si and its stone door, 泗水北岸. Every other place — the rest of 徐 and the eight provinces — refuses with `say` and stands greyed on the map (world.mjs mapOf).",
   "map": {
     "places": [
@@ -132,13 +132,13 @@
     "at": "wm-dabi",
     "eve": "dabi-eve"
   },
+  "_title": "The arc's own name, no number: the player is told the 回 (卷一 · 第三回, book.json via the scenes' `hui`, rules/hui.mjs).",
   "title": {
-    "zh": "第一章 · 外门",
-    "en": "Chapter 1 · The Outer Court"
+    "zh": "外门",
+    "en": "The Outer Court"
   },
-  "_close": "The ending card on the stage once the chapter is over and the next one waits (story.mjs closeOf): its title, one line of what THIS player did — each `did` part whose `if` holds on the save (cast · owed · not; none: always), joined — and the next chapter's teaser in the book's voice.",
+  "_close": "The ending card on the stage once the chapter is over and the next one waits (story.mjs closeOf): 「第三回 · 完」 for the 回 it ends on (rules/hui.mjs, never written here), one line of what THIS player did — each `did` part whose `if` holds on the save (cast · owed · not; none: always), joined — and the next chapter's teaser in the book's voice.",
   "close": {
-    "title": { "zh": "第一章 · 外门 · 完", "en": "Chapter 1 · The Outer Court · The End" },
     "did": [
       { "if": { "cast": "zheng" }, "zh": "你收了药园那只偷萝卜的小狰", "en": "You took in the little Zheng that robbed the herb garden" },
       { "if": { "not": { "cast": "zheng" } }, "zh": "药园的贼，你没收成", "en": "The garden thief got away from you" },

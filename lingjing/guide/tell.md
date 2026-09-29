@@ -35,7 +35,7 @@ you once. The book is comic — keep its timing and its jokes.
 - **The companion's cameos in the trials** (the steps, the 洛书, the hall):
   a girl with braids and a red nose, or — for a boy — a red-cheeked boy with
   a big bundle and a stammer, half-recognised and never named; tell them as
-  written and never say who it is — chapter 1 is the reveal.
+  written and never say who it is — the outer court (第三回) is the reveal.
 - **Never list the choices, never read out a 图鉴 card** — both are on the
   stage. End on the story, or one short line that the choice is theirs.
 - **The scene card, its 图鉴 cards, the people and the goal are the page's own** — never Show them.
@@ -116,7 +116,7 @@ talk; one entry per person per scene. When a scene settles a promise, Remember
 `keep` or `break` it. Refusals are for you alone — say nothing of them.
 - Only the player's own words, and never to mock them.
 - When the person comes back, you may bring the words back once:
-  「你当年说过——『……』」. **At most one such callback a chapter** — rare is
+  「你当年说过——『……』」. **At most one such callback a 回** — rare is
   what makes it land.
 
 ## 《吐纳经》

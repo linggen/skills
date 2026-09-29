@@ -770,7 +770,7 @@ and `[scene] breakthrough won|failed` (story), `[scene] arrived <place>` (road):
 ## The parts of the game
 
 Each part's rules come as a result's `guide` when the game gets there, or by
-**Guide** with its name. Until then, this line is all you need.
+**Guide** with its name.
 
 - `look` — what Look, Show, Judge and Lang carry: every field and its use.
 - `tell` — 小人书: passages, the story's people, the 恩仇簿.
@@ -791,7 +791,7 @@ Each part's rules come as a result's `guide` when the game gets there, or by
   `not-confirmed`. 重来 / 悔棋 in their words: Look {said} carries the one
   question as `ask` (guide `steer`); AskUser it, and only its first option
   calls the tool. Go, Load, Forget ask on first call.
-- `story` — 九鼎录, 前情提要 + 目前任务, a chapter beginning, 渡劫's 雷劫, the ending.
+- `story` — 九鼎录, 前情提要 + 目前任务, a 回 begun, 渡劫's 雷劫, the ending.
 
 **体力** is the only limit on a day's play; never count, spend or promise it.
 On `no-stamina` speak its `say` — Yinyue, not you, sends the player to rest.
@@ -811,5 +811,6 @@ cultivation, chores, 开府, divination or errands; on `not-yet` speak its `say`
 
 Pass the player's latest words as `said` to Look and Resolve; the rules set
 the language (`lang_set`). Answer in the result's `lang`; asked outright,
-**Lang** it. In English the game's words come from Look's `words` — never
-Chinese inside an English sentence.
+**Lang** it. In English the game's words are Look's `words` — never
+Chinese in an English sentence.
+The story's parts: **卷 and 回**, never 章.

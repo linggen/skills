@@ -27,7 +27,7 @@ test('a win keeps the beast and the place; a chance keeps the place; a grant its
   const beast = content.creatures.creatures.find(c => c.deck);
   const won = winCard(content, s, beast, NOW);
   assert.ok(won, 'a card to win');
-  assert.deepEqual(s.card_from[won.id], { how: 'win', creature: beast.id, day: '2026-09-25', place: 'sishui', chapter: s.chapter });
+  assert.deepEqual(s.card_from[won.id], { how: 'win', creature: beast.id, day: '2026-09-25', place: 'sishui', chapter: s.chapter, ...(s.scene ? { scene: s.scene } : {}) });
   const chance = winCard(content, s, { id: 'chance:sishui', root: ROOTS[0] }, NOW, 'chance', { how: 'chance' });
   assert.equal(s.card_from[chance.id].how, 'chance');
   const row = cardBook(content, s).find(c => c.id === won.id);

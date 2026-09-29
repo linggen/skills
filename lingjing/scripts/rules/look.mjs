@@ -22,6 +22,7 @@ import { hashOf } from './travel.mjs';
 import { atScene, beatOf, creatureOf, encounterOf, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
+import { chapterLabel } from './hui.mjs';
 import { practiceHint } from './scrolls.mjs';
 import { mainRoot, rootName } from './roots.mjs';
 import { memoriesLook } from './memories.mjs';
@@ -201,7 +202,8 @@ function taleFinaleOf(state, creature) {
 
 function stakeOf(content, state, game) {
   const lang = state.lang;
-  if (!game.id.startsWith('haunt:')) return pick(content.chapters?.[state.chapter]?.title, lang) ?? null;
+  // A scene's fight is fought for the story: its 回 (卷一 · 第三回, rules/hui.mjs).
+  if (!game.id.startsWith('haunt:')) return chapterLabel(content, state, content.chapters?.[state.chapter], lang);
   const finale = taleFinaleOf(state, game.creature);
   if (finale) return staked('tale', lang, finale.tale.title);
   const errand = errandFor(content, state, game.creature);

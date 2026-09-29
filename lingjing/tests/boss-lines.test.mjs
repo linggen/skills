@@ -11,6 +11,7 @@ import { duel, look, resolve, tale, task, win } from '../scripts/rules.mjs';
 import { battleHtml, boutSays, WORDS } from '../scripts/battle-card.js';
 import { begin, offers, view } from '../scripts/battle.js';
 import { beforeChapterOne, TO_HALL, TO_WAIMEN, walk } from './prologue.mjs';
+import { huiLabel } from '../scripts/rules/hui.mjs';
 
 const content = beforeChapterOne(loadContent());
 const NOW = new Date('2026-09-11T12:00:00');
@@ -95,10 +96,11 @@ test('an errand that asks for the beast: 差事 · its title', () => {
   assert.equal(door(done, 'haunt:longzhi', c).stake, l.place.name);
 });
 
-test('a spine scene\'s duel: its chapter\'s title', () => {
+test('a spine scene\'s duel: its 回, as the book names it (卷一 · 第二回)', () => {
   const s = walk(newState(content, 'zh', NOW), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'won')), content, NOW);
   const exit = look(s, content, ctx()).scene.exits.find(e => e.duel);
-  assert.equal(exit.duel.stake, content.chapters[s.chapter].title.zh);
+  assert.equal(exit.duel.stake, huiLabel(content, content.chapters[s.chapter].scenes[s.scene].hui, 'zh'));
+  assert.match(exit.duel.stake, /^卷一.* · 第二回$/);
 });
 
 /* 今日传闻 — the finale's beast speaks Ling's lines. */

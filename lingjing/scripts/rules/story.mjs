@@ -16,6 +16,7 @@ import { cardBook } from './cards.mjs';
 import { albumOf } from './memories.mjs';
 import { seenOf } from './codex.mjs';
 import { atScene, creatureOf, inMade, sceneOf } from './world.mjs';
+import { chapterHuis, chapterLabel, endLabel, huiEnded, huiLabel, huiNow, huiOf } from './hui.mjs';
 
 const HOUR = 3600000;
 /* 前情提要 opens every sitting (his, 2026-09-25: 每次开始游戏时): a sitting is a
@@ -29,7 +30,7 @@ const RECAP_LINES = 3;
 const byId = (a, b) => a.id.localeCompare(b.id);
 const chaptersOf = content => Object.values(content.chapters).sort(byId);
 /* A chapter with a cauldron in it: every chapter of the spine but a corridor
-   (the prologue) and one that says it holds none (`cauldron: false`, 第一章 · 外门). */
+   (the prologue) and one that says it holds none (`cauldron: false`, 外门 — 第三回). */
 const holdsCauldron = ch => !ch.corridor && ch.cauldron !== false;
 
 /* scene id → its chapter, once per world. */
@@ -63,7 +64,25 @@ function passed(content, state, ch) {
   }
   return road;
 }
-const recapLines = (content, state, ch) => passed(content, state, ch).map(sc => sc.recap).filter(Boolean).map(r => fill(pick(r, state.lang), state, content));
+const recapOf = (content, state, scenes) => scenes.map(sc => sc.recap).filter(Boolean).map(r => fill(pick(r, state.lang), state, content));
+
+/* A chapter as the book's 回 (rules/hui.mjs): its scenes passed, by the 回
+   they belong to — [{hui, scenes}] in the book's order, each 回's scenes in
+   the order passed. The save's own chapter ends on the 回 it stands in, even
+   with none of it passed yet. A chapter with no 回 (one still to be
+   rewritten) is one part, `hui` null. */
+function partsOf(content, state, ch) {
+  const by = new Map(), n = id => huiOf(content, id)?.n ?? Infinity;
+  for (const sc of passed(content, state, ch)) {
+    const hui = sc.hui ?? null;
+    if (!by.has(hui)) by.set(hui, { hui, scenes: [] });
+    by.get(hui).scenes.push(sc);
+  }
+  const now = ch.id === state.chapter ? huiNow(content, state) : null;
+  if (!by.size) by.set(null, { hui: now ?? chapterHuis(content, ch)[0] ?? null, scenes: [] });
+  else if (now && !by.has(now)) by.set(now, { hui: now, scenes: [] });
+  return [...by.values()].sort((a, b) => n(a.hui) - n(b.hui));
+}
 
 /* Where the current chapter stands this moment: the scene's place when one is
    being played, else the road the thread names. */
@@ -76,7 +95,7 @@ function nowOf(content, state, now) {
 }
 
 /* A chapter's riddle as the player may know it: `mystery`, until the scene
-   `mystery_after.after` is passed — then its own words. 第一章 names 息壤 only
+   `mystery_after.after` is passed — then its own words. 外门 (第三回) names 息壤 only
    once the 秘境 is behind him (his, 2026-09-29: the 录 spoiled it from the start). */
 export const mysteryOf = (ch, state, lang = state.lang) => {
   const later = ch?.mystery_after;
@@ -96,7 +115,8 @@ function peopleOf(content, state) {
   const met = [...(state.done_scenes ?? []), ...(atScene(content, state) && !inMade(state) ? [state.scene] : [])];
   for (const sid of met) {
     const at = index.get(sid);
-    for (const id of at?.scene.cast ?? []) if (id !== her && id !== 'ling') add(id, nameOf(content, id, lang), 'story', pick(at.chapter.title, lang));
+    const when = at && (huiLabel(content, at.scene.hui, lang) ?? pick(at.chapter.title, lang));
+    for (const id of at?.scene.cast ?? []) if (id !== her && id !== 'ling') add(id, nameOf(content, id, lang), 'story', when);
   }
   for (const [id, d] of Object.entries(state.duels ?? {})) if (d?.outcome && d.outcome !== 'open') add(id, nameOf(content, id, lang), 'fought');
   for (const k of state.known ?? []) add(`known:${k.id}`, k.name, 'known', k.from);
@@ -122,17 +142,24 @@ export function story(state, content, ctx, args = {}) {
     return { chapter: ch.id, province: pick(content.dictionary.provinces[ch.province] ?? ch.province, lang) ?? ch.province, state: st, ...(st === 'dark' ? {} : { title: pick(ch.title, lang) }) };
   });
   const done = chaptersOf(content).filter(ch => ended.has(ch.id));
-  // Ling's short book: a chapter ended is its title and closing line — the
-  // last one, with nothing after it, its last three — and her last three memories.
+  // The book is the novel's 回 (his, 2026-09-29: 「故事叫回和卷，游戏也需要一致的叫法」):
+  // each chapter reached, cut into its 回; the chapter's intro opens its first,
+  // its riddle and where it stands close its last.
+  // Ling's short book: a 回 done is its title and closing line — the last one,
+  // with nothing after it, its last three — and her last three memories.
   const tail = !cur && done.at(-1)?.id;
-  const chapters = [
-    ...done.map(ch => {
-      const lines = recapLines(content, state, ch), title = pick(ch.title, lang);
-      if (short) return { title, state: 'done', recap: lines.slice(ch.id === tail ? -3 : -1) };
-      return { id: ch.id, title, state: 'done', intro: pick(ch.intro, lang), recap: lines, mystery: mysteryOf(ch, state, lang) };
-    }),
-    ...(cur ? [{ id: cur.id, title: pick(cur.title, lang), state: 'current', intro: pick(cur.intro, lang), recap: recapLines(content, state, cur), mystery: mysteryOf(cur, state, lang), now: nowOf(content, state, ctx.now) }] : []),
-  ];
+  const chapters = [...done, ...(cur ? [cur] : [])].flatMap(ch => {
+    const parts = partsOf(content, state, ch), open = ch === cur;
+    return parts.map((p, i) => {
+      const last = i === parts.length - 1, st = open && last ? 'current' : 'done', lines = recapOf(content, state, p.scenes);
+      const title = huiLabel(content, p.hui, lang, 'book') ?? pick(ch.title, lang);
+      if (short && st === 'done') return { title, state: st, recap: lines.slice(ch.id === tail && last ? -3 : -1) };
+      return {
+        id: p.hui ?? ch.id, chapter: ch.id, title, state: st, ...(i === 0 ? { intro: pick(ch.intro, lang) } : {}), recap: lines,
+        ...(last ? { mystery: mysteryOf(ch, state, lang) } : {}), ...(st === 'current' ? { now: nowOf(content, state, ctx.now) } : {}),
+      };
+    });
+  });
   const recalled = hasCompanion(state) ? recalledOf(content, state).map(r => r.line) : null;
   const her = short && recalled ? recalled.slice(-3) : recalled;
   const people = peopleOf(content, state);
@@ -189,12 +216,15 @@ export function recapLook(content, state) {
   }
   if (!lines.length) return {};
   const cur = currentOf(content, state);
-  return { recap_due: true, recap: { lines: [...new Set(lines)].slice(-RECAP_LINES), ...(cur ? { chapter: pick(cur.title, state.lang), mystery: mysteryOf(cur, state) } : {}) } };
+  return { recap_due: true, recap: { lines: [...new Set(lines)].slice(-RECAP_LINES), ...(cur ? { chapter: chapterLabel(content, state, cur, state.lang, 'head'), mystery: mysteryOf(cur, state) } : {}) } };
 }
 
-/* A chapter's close (chapter.json `close`), while it is over and the next one
-   waits: its title, one line of what THIS player did — each `did` part whose
-   `if` holds on the save (none: always), joined — and the teaser (his, 2026-09-29). */
+/* A 回's close — 「第二回 · 完」, its 回目 and the 回 now beginning — on the
+   first scene of the next (hui.mjs huiEnded: derived, never flagged). And a
+   chapter's (chapter.json `close`), while it is over and the next one waits:
+   「第三回 · 完」 for the 回 it ended on, one line of what THIS player did —
+   each `did` part whose `if` holds on the save (none: always), joined — and
+   the teaser (his, 2026-09-29). Its id is the 回's, so the page puts either away once. */
 const CLOSE_IF = {
   cast: (s, id) => (s.cast ?? []).includes(id), //                      walks with him
   owed: (s, who) => (s.ledger ?? []).some(e => e.who === who && e.kind === '恩'), // an 恩 in the 恩仇簿
@@ -203,22 +233,27 @@ const CLOSE_IF = {
 const closeHolds = (s, c) => Object.entries(c ?? {}).every(([k, v]) => CLOSE_IF[k]?.(s, v) ?? false);
 export function closeOf(content, state) {
   const ch = content.chapters[state.chapter], c = ch?.close, lang = state.lang;
-  if (!c || state.scene || inMade(state) || !(state.ended ?? []).includes(ch.id)) return null;
+  if (inMade(state) || content.world.made) return null;
+  const turned = huiEnded(content, state);
+  if (turned) return { id: turned, title: endLabel(content, turned, lang), huimu: pick(huiOf(content, turned).huimu, lang), next: huiLabel(content, huiNow(content, state), lang, 'head') };
+  if (!c || state.scene || !(state.ended ?? []).includes(ch.id)) return null;
   const parts = (c.did ?? []).filter(d => closeHolds(state, d.if)).map(d => fill(pick(d, lang), state, content));
   const did = parts.length ? parts.join(lang === 'zh' ? '，' : ', ') + (lang === 'zh' ? '。' : '.') : '';
-  return { id: ch.id, title: pick(c.title, lang), ...(did ? { did } : {}), teaser: pick(c.teaser, lang) };
+  const hui = huiNow(content, state);
+  return { id: hui ?? ch.id, title: endLabel(content, hui, lang) ?? pick(c.title, lang) ?? pick(ch.title, lang), ...(did ? { did } : {}), teaser: pick(c.teaser, lang) };
 }
 
-/* Look's chapter, with its intro while it has only just begun (no scene of it
-   passed yet) — the stage raises its title card then — its close once it is
-   over (closeOf), and the ending once reached. */
+/* Look's chapter, named as the book names it — the 回 it stands in
+   (「卷一 · 第三回　漏勺夜半通三关」, hui.mjs) — with its intro while it has only
+   just begun (no scene of it passed yet) — the stage raises its title card
+   then — its close once a 回 or it is over (closeOf), and the ending once reached. */
 export function chapterLook(content, state) {
   const ch = content.chapters[state.chapter];
   const fresh = !inMade(state) && !content.world.made && ch?.intro && !(state.ended ?? []).includes(ch.id)
     && !(state.done_scenes ?? []).some(id => ch.scenes?.[id]);
   const ending = endingOf(content, state), close = closeOf(content, state);
   return {
-    chapter: { id: ch.id, title: pick(ch.title, state.lang), ...(fresh ? { fresh: true, intro: pick(ch.intro, state.lang) } : {}), ...(close ? { close } : {}) },
+    chapter: { id: ch.id, title: chapterLabel(content, state, ch, state.lang, 'head'), ...(huiNow(content, state) ? { hui: huiNow(content, state) } : {}), ...(fresh ? { fresh: true, intro: pick(ch.intro, state.lang) } : {}), ...(close ? { close } : {}) },
     ...(ending ? { ending: { id: ending.id, title: ending.title } } : {}),
   };
 }
@@ -243,7 +278,7 @@ export function storyNode(content, before, s, scene, exit, now) {
   const unease = ended ? uneaseAt(content, s, ch.id) : null;
   const node = {
     kind, at: now.toISOString(),
-    chapter: { id: ch.id, title: pick(ch.title, lang) },
+    chapter: { id: ch.id, title: huiLabel(content, scene.hui, lang) ?? pick(ch.title, lang) },
     ...(scene.recap ? { recap: fill(pick(scene.recap, lang), s, content) } : {}),
     ...(ch.mystery ? { mystery: mysteryOf(ch, s, lang) } : {}),
     ...(kind === 'cauldron' ? { found } : {}),
@@ -253,7 +288,7 @@ export function storyNode(content, before, s, scene, exit, now) {
     ...(ended && ch.ending ? { ending: pick(ch.ending.title, lang) } : {}),
     // An exit's `doors` (息壤): the five 灵根 opening one by one, a line each — the page's moment.
     ...(exit.doors ? { doors: exit.doors.map(d => ({ el: d.el, line: fill(pick(d, lang), s, content) })) } : {}),
-    ...(next ? { next: { id: next.id, title: pick(next.title, lang), mystery: mysteryOf(next, s, lang) } } : {}),
+    ...(next ? { next: { id: next.id, title: chapterLabel(content, s, next, lang), mystery: mysteryOf(next, s, lang) } } : {}),
   };
   return node;
 }

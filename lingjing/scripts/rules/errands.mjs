@@ -13,6 +13,7 @@ import { canMakeTale, taleEvent, taleHanded, taleRow } from './tale.mjs';
 import { hashOf } from './travel.mjs';
 import { coolingUntil, oddsOf } from './breakthrough.mjs';
 import { freeSlot, pouchBrief } from './pouch.mjs';
+import { chapterLabel, comingOf } from './hui.mjs';
 import { allPlaces, atScene, creatureOf, huntable, inCorridor, inMade, pathOf, placeName, placeOf, placeOpen, sceneOf, tooHard, towardOf } from './world.mjs';
 
 /* ── 差事 — the errands the player takes (design.md § 差事) ──
@@ -421,11 +422,11 @@ function threadOf(content, state, now) {
     .filter(c => !state.ended.includes(c.id) && c.id > state.chapter)
     .sort((a, b) => a.id.localeCompare(b.id))[0];
   if (!next) return null;
-  // A chapter still being written: its own words stand as the goal (「第二章 · 即将开放」).
-  if (next.coming) return { chapter: next.id, coming: true, text: pick(next.coming, lang) };
+  // A chapter still being written: 「第四回 · 即将开放」 stands as the goal (its first 回, hui.mjs).
+  if (next.coming) return { chapter: next.id, coming: true, text: comingOf(content, next, lang) };
   const opens = next.opens && new Date(next.opens) > now ? next.opens : null;
   const at = next.scenes[next.first_scene]?.at;
-  return { chapter: next.id, title: pick(next.title, lang), opens, province: pick(content.dictionary.provinces[next.province], lang), place: at ? placeName(content, state, placeOf(content, at)) : null };
+  return { chapter: next.id, title: chapterLabel(content, state, next, lang), opens, province: pick(content.dictionary.provinces[next.province], lang), place: at ? placeName(content, state, placeOf(content, at)) : null };
 }
 
 const poolOf = (content, state) => {

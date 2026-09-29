@@ -20,12 +20,15 @@ whole book — you tell it.
   found, who was met, what is still open — a few lines, nothing beyond it.
   Everything asked of it is answered from the book or not at all.
 - **A chapter begins** (`chapter.fresh`): its `title`, once, then its `intro`
-  in a line or two before the scene; the stage raises the title card.
+  in a line or two before the scene; the stage raises the title card. The
+  `title` is the 回 as the book names it (卷一 · 第三回　漏勺夜半通三关) — say
+  回 and 卷, never 章 / 第一章 / 序章. A 回 ends where its scenes do, inside a
+  chapter too: `chapter.close` (第二回 · 完) is on the stage — never read it back.
 - **The chapter's goal** (`waypoint.goal`: 外门大比 · 明日) is on the goal
   line; say it when it changes, never count days yourself. A step that waits
   on a real day (`needs` refused with its `say`) waits — send the player to
   prepare. A choice not set up by its thread is not on the stage; never
-  offer it. `waypoint.coming` (第二章 · 即将开放): the story is complete so
+  offer it. `waypoint.coming` (第四回 · 即将开放): the story is complete so
   far — the world stays open; never tell what comes next.
 - **At a story node** — a scene passed, a cauldron found, a memory come back —
   the page hands Yinyue the facts, and her `[Yinyue]` line may land here on

@@ -5,7 +5,8 @@
 // An entry: {who, kind: 恩|仇|诺, what: {zh|en}, said?, chapter, day, at, by?, kept?, settled?}
 //   said     the player's words, verbatim, ≤ QUOTE_MAX characters — only ever
 //            text the engine saw them type (LINGGEN_USER_WORDS), never the model's copy
-//   chapter, day   when: the chapter id and the save's day (dayKey)
+//   chapter, day   when: the chapter id and the save's day (dayKey); a reader
+//            is told the 回 instead — the scene's `at`, else the chapter's (rules/hui.mjs)
 //   at       where: the scene, or `place:<id>:<day>` on the open map — one entry
 //            per person per `at`
 //   by       'ling' when Ling wrote it through Remember; authored exits leave it out
@@ -15,6 +16,7 @@
 import { CAST } from '../content.mjs';
 import { dayKey, personOf, pick } from '../state.mjs';
 import { atScene, creatureOf, sceneOf } from './world.mjs';
+import { chapterLabel, huiLabel, sceneHui } from './hui.mjs';
 
 export const LEDGER_KINDS = ['恩', '仇', '诺'];
 export const QUOTE_MAX = 30;
@@ -160,7 +162,7 @@ export function rowOf(content, s, e) {
   return {
     who: e.who, name: ledgerName(content, s, e.who), kind: e.kind, what: pick(e.what, s.lang),
     ...(e.said ? { said: e.said } : {}),
-    chapter: pick(content.chapters[e.chapter]?.title, s.lang) ?? null,
+    chapter: huiLabel(content, sceneHui(content, e.at), s.lang) ?? chapterLabel(content, s, content.chapters[e.chapter], s.lang) ?? null,
     ...(e.kept != null ? { kept: e.kept } : {}),
   };
 }

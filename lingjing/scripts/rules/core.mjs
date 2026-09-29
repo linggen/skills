@@ -17,6 +17,7 @@ import { seenMet } from './examine.mjs';
 import { companionOf } from './companion.mjs';
 import { grantMemory } from './memories.mjs';
 import { writeLedger } from './ledger.mjs';
+import { comingOf } from './hui.mjs';
 import { atScene, inMade, placeName, placeOf, placeOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
 
 /* ── Changing it ── */
@@ -295,13 +296,13 @@ function riseTo(content, s, layer, replay) {
 }
 
 /* After a chapter ends, the next one that has opened takes over. One still
-   being written (`coming`, e.g. 「第二章 · 即将开放」) is waited on, dateless. */
+   being written (`coming`: 「第四回 · 即将开放」, named by its first 回 — hui.mjs) is waited on, dateless. */
 function advanceChapter(content, state, now) {
   const next = Object.values(content.chapters)
     .filter(c => !state.ended.includes(c.id) && c.id > state.chapter)
     .sort((a, b) => a.id.localeCompare(b.id))[0];
   if (!next) return { waiting: null };
-  if (next.coming) return { waiting: { chapter: next.id, coming: pick(next.coming, state.lang) } };
+  if (next.coming) return { waiting: { chapter: next.id, coming: comingOf(content, next, state.lang) } };
   if (next.opens && new Date(next.opens) > now) return { waiting: { chapter: next.id, opens: next.opens } };
   state.chapter = next.id; state.scene = next.first_scene;
   settlePlace(content, state);

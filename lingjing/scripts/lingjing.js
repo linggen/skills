@@ -575,11 +575,11 @@ function watchDrain() {
 }
 function riseStats() {
   const now = { world: look.world?.id, tier: look.tier?.id, progress: look.progress, wealth: look.wealth, next: look.next, cast: (look.cast ?? []).map((b) => b.id),
-    rank: look.tier?.name, step: look.tier?.step, chapter: look.chapter?.id, stamina: look.stamina?.now, resting: Boolean(look.stamina?.resting),
+    rank: look.tier?.name, step: look.tier?.step, chapter: look.chapter?.id, hui: look.chapter?.hui ?? look.chapter?.id, stamina: look.stamina?.now, resting: Boolean(look.stamina?.resting),
     her: look.companion?.card ? { atk: look.companion.card.atk, hp: look.companion.card.hp } : null };
   const before = shown;
   shown = now;
-  // 大成就: a realm risen, a chapter opened — the stage marks it and 银月 speaks
+  // 大成就: a realm risen, a 回 begun — the stage marks it and 银月 speaks
   // at once (his, 2026-09-23: 境界突破等大成就达成时, 显示一个动画, 并让银月说点什么).
   if (before && before.world === now.world) {
     // The last point spent: 银月 sends him back to the real world to rest —
@@ -590,7 +590,8 @@ function riseStats() {
     }
     if (now.rank && before.rank && now.rank !== before.rank) feat('rise', now.rank, before.rank, false, riseGains(before, now), herGrew(before, now) ? { from: before.her, to: now.her } : null);
     // A cauldron found tells her on its own (the story node, with its facts); the seal still shows.
-    else if (now.chapter && before.chapter && now.chapter !== before.chapter) feat('chapter', look.chapter.title, '', nodeFresh(['cauldron', 'chapter']));
+    // A 回 begun — where the scenes' 回 turns, inside a chapter or across one (rules/hui.mjs).
+    else if (now.hui && before.hui && now.hui !== before.hui) feat('chapter', look.chapter.title, '', nodeFresh(['cauldron', 'chapter']));
   }
   // A beast won over — fed or fought — is a moment of its own: a 收服 seal on
   // the stage and +1 off the 装备 chip, where its card now lives (his ask,
@@ -707,7 +708,7 @@ function feat(kind, name, from = '', quiet = false, gains = '', her = null) {
   if (kind === 'rise') askHer('rise',
     `玩家刚刚突破：${from} → ${name}，舞台上金光正亮。${grew.zh}这是你们一路一起熬出来的，你是真心为这一刻动容。说两三句带情绪的话：点一件对话里你们刚一起经历过的具体的事，再说说往后的路（或是鼎，或是你自己的心事）。别说「恭喜」「替你高兴」这类客套话。${who ? `在灵境里称呼玩家「${who}」。` : ''}`,
     `The player has just broken through: ${from} → ${name}; the gold is on the stage right now. ${grew.en}You two earned this together and it moves you. Say two or three lines with real feeling: one concrete thing you just went through together (it is in the chat), then the road ahead — the cauldrons, or something of your own. No stock "congratulations".${who ? ` In the game, call the player ${who}.` : ''}`, 'happy');
-  else askHer('chapter', `新的一章开了：${name}。你陪玩家一路走到这里，说几句。`, `A new chapter opens: ${name}. You have walked with the player to here; say a few words.`, 'happy');
+  else askHer('chapter', `新的一回开了：${name}。你陪玩家一路走到这里，说几句。`, `A new chapter opens: ${name}. You have walked with the player to here; say a few words.`, 'happy');
 }
 
 function wonOver(beasts) {
@@ -1120,6 +1121,8 @@ function draw() {
   // the room (his, 2026-09-18). It all comes back when the fight ends.
   document.body.classList.toggle('fighting', Boolean(bout));
   paintAtmos();
+  // The 回 above the place, as the book names it (「卷一 · 第三回　漏勺夜半通三关」, rules/hui.mjs).
+  $('huiLine').textContent = look.chapter?.hui ? look.chapter.title : '';
   $('place').textContent = look.scene?.place ?? look.place?.name ?? look.chapter?.title ?? '';
   // She is always at the player's side: on the stage whenever the game is
   // open, scene or road, not only where a scene casts her.
@@ -2584,7 +2587,7 @@ async function playHoming(province) {
   homingFor = province;
   setTimeout(() => { if (homingFor === province) homingFor = null; }, 60000);
   // Her memory first: wait for the gold seal and the memory the beat brings to be over.
-  // The 新章 seal goes up on the first draw of the read that brought the 鼎 home
+  // The 新的一回 seal goes up on the first draw of the read that brought the 鼎 home
   // (riseStats notes the chapter in `shown`): wait for that draw, then for the seal and her memory to go.
   const sealed = () => shown?.chapter === look?.chapter?.id;
   await pause(600);

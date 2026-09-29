@@ -10,6 +10,7 @@ import { boutFortune } from './fortune.mjs';
 import { hashOf } from './travel.mjs';
 import { allPlaces, creatureOf, tierIndex } from './world.mjs';
 import { mainRoot, starterFor } from './roots.mjs';
+import { chapterLabel, huiLabel, sceneHui } from './hui.mjs';
 
 /* ── 斗法 v3: the ten cards a player takes in ──
    Until the skill tree picks a deck, the deck is WHO THEY ARE: the cards of
@@ -229,14 +230,15 @@ export const ownedCards = (content, state) => state.cards ?? ownedAtStart(conten
 
 /* One card into the hand he keeps; null when it is unknown or already his.
    `from` is where it came from — kept in `card_from` for the 牌谱 (redesign-v2
-   § 五: 牌组就是你这一路的回忆): { how, creature?, place?, chapter?, tale? }. */
+   § 五: 牌组就是你这一路的回忆): { how, creature?, place?, chapter?, scene?, tale? } —
+   the scene, when one is played, names its 回 (rules/hui.mjs). */
 function gainCard(content, state, id, from = null) {
   const card = cardCatalog(content)[id];
   if (!card || card._token) return null;
   const owned = ownedCards(content, state);
   if (owned.includes(id)) { state.cards = owned; return null; }
   state.cards = [...owned, id];
-  if (from) state.card_from = { ...(state.card_from ?? {}), [id]: { ...from, place: from.place ?? state.place ?? null, chapter: from.chapter ?? state.chapter ?? null } };
+  if (from) state.card_from = { ...(state.card_from ?? {}), [id]: { ...from, place: from.place ?? state.place ?? null, chapter: from.chapter ?? state.chapter ?? null, ...(state.scene ? { scene: state.scene } : {}) } };
   return { id, name: pick(card.name, state.lang), card: true };
 }
 
@@ -266,7 +268,8 @@ function cardBook(content, state) {
   const nameOf = {
     creature: id => pick(creatureOf(content, id)?.name, lang) ?? null,
     place: id => pick(allPlaces(content).find(p => p.id === id)?.name, lang) ?? null,
-    chapter: id => pick(content.chapters?.[id]?.title, lang) ?? null,
+    // told as its 回: the scene's, else the chapter's (卷一 · 第三回)
+    chapter: (id, scene) => huiLabel(content, sceneHui(content, scene), lang) ?? chapterLabel(content, state, content.chapters?.[id], lang),
   };
   return ownedCards(content, state).filter(id => catalog[id]).map(id => {
     const c = catalog[id], f = from[id] ?? guess(id);
@@ -277,7 +280,7 @@ function cardBook(content, state) {
         how: f.how, day: f.day ?? null,
         ...(f.creature ? { creature: nameOf.creature(f.creature) ?? f.creature } : {}),
         ...(f.place ? { place: nameOf.place(f.place) } : {}),
-        ...(f.chapter ? { chapter: nameOf.chapter(f.chapter) } : {}),
+        ...(f.chapter ? { chapter: nameOf.chapter(f.chapter, f.scene) } : {}),
         ...(f.title ? { tale: f.title } : {}),
       },
     };

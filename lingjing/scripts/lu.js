@@ -13,7 +13,7 @@ export const LU_WORDS = {
     seen: '所见', missed: '未细看：{what}', now: '眼下：{what}', mystery: '谜：{q}', people: '人物谱', her: '{name}记起的', open: '悬而未决',
     kinds: { story: '途中所遇', tamed: '随行', fought: '交过手', known: '相识' },
     none: '还没有什么可记的。', ending: '终局 · {title}', noOpen: '眼下没有悬着的谜。',
-    titleClose: '入章', sep: '',
+    titleClose: '且看', sep: '',
     paipu: '牌谱 · {n}', paipuNote: '你手上的每一张牌，和它从哪里来。',
     how: { starter: '测灵根时所得', companion: '{creature}随你而来', tame: '收服{creature}', win: '胜{creature}所得', chance: '机缘所得', tale: '传闻《{tale}》', story: '{chapter}', old: '旧日所得' },
     at: '于{place}', kinds: { minion: '灵兽', spell: '法术' },

@@ -17,7 +17,7 @@
   walks with the player it carries `her_beat` — her word turning him back is
   hers; the page hands it to her — never write it. A
   closed road is Move's own `road-closed` line — never from memory: a chapter
-  opens only its own map (第一章: the grounds of 沉鼎观), and the rest of the
+  opens only its own map (第三回: the grounds of 沉鼎观), and the rest of the
   world waits behind that line; places Look marks `closed` are never offered.
 - **A key beat locks the map** (Look's `lock`: its `title`). From the scene
   after its entry to its last, the story carries the player; Move refuses

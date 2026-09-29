@@ -18,6 +18,7 @@ import { readingOf } from '../scripts/rules/scrolls.mjs';
 import { stageOwns } from '../scripts/stage.mjs';
 import { bookEntries, renderMarkdown } from '../scripts/read-md.js';
 import { TO_HALL, TO_VALLEY, TO_WAIMEN, walk } from './prologue.mjs';
+import { huiLabel } from '../scripts/rules/hui.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const content = loadContent();
@@ -208,7 +209,8 @@ test('恩仇簿: the choices write who and what, once each; Look names them; the
   const l = look(s, content, ctx());
   assert.deepEqual(l.ledger.map(e => [e.name, e.kind]), [['马小宝', '仇'], ['马三', '仇'], ['阿禾', '恩'], ['老周', '恩']]);
   assert.match(l.ledger[2].what, /记账，以后还我/);
-  assert.equal(l.ledger[0].chapter, '序章 · 蒙山');
+  assert.equal(l.ledger[0].chapter, huiLabel(content, 'h01', 'zh'), 'written at 马三\'s rent: 第一回');
+  assert.equal(l.ledger[3].chapter, huiLabel(content, 'h02', 'zh'), 'written at the cliff: 第二回');
   const w = { look: l, lang: 'zh', words: WORDS.zh };
   assert.match(ledgerChipHtml(w, false), /data-ledger aria-expanded="false">恩仇簿 4</);
   const open = ledgerChipHtml(w, true);

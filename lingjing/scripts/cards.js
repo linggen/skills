@@ -18,7 +18,7 @@ export const WORDS = {
     paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。', boardDoneToday: '今日丹已成 · 明日再炼', gameDoneToday: '今日已成 · 明日再来', lundaoWon: '今日论道已胜 · 明日再来', lundaoLost: '今日论道已毕 · 明日再来',
     tamed: '已收服', untamed: '未收服', beatenToday: '今日已降', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', mapLocked: '{title} · 剧情未完，地图暂不开放', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
     sayBuy: '买{name}', go: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayGateAbout: '说说下一鼎', sayTrib: '说说雷劫', sayRoots: '说说我的灵根', sayBoard: '说说炼丹', sayMap: '说说九州',
-    choreOpen: '去 {app} 做', about: '问询', askHint: '想问什么？留空，便请她说说', askHer: '问问{name}', askHerHint: '想对她说什么？留空，便请她说说', askHerEmpty: '说说看？', askSend: '问', drop: '撂 下', paysWord: '酬', nextWord: '其后', feed: '喂它{item}', offer: '献上{item}', feedNone: '囊中没有{item}', tameHint: '降了它，再献上{item}，即可收服', tameBy: '收服 · {what}', likesNone: '它喜欢{item}，囊中没有', playGame: '开局', lundaoTitle: '论道 · 稷下先生', lundaoOffer: '先生在此，以诗文会友。三句过关，今日一回。', lundaoBegin: '请先生论道', sayLundao: '请先生论道', lundaoKey: '飞花令 · 句中须有「{key}」', lundaoChain: '接「{last}」的末字', lundaoUp: '上联：{up}', lundaoMiss: '失 {n}/{max}', lundaoHow: '在对话里作答。', featRise: '突破', featHp: '气血 {a}→{b}', featMana: '灵力上限 {a}→{b}', featPower: '一击 +{n}', featHer: '{name} {a}→{b}', featChapter: '新章', wonOver: '收服', subdue: '降妖', bout: '比试',
+    choreOpen: '去 {app} 做', about: '问询', askHint: '想问什么？留空，便请她说说', askHer: '问问{name}', askHerHint: '想对她说什么？留空，便请她说说', askHerEmpty: '说说看？', askSend: '问', drop: '撂 下', paysWord: '酬', nextWord: '其后', feed: '喂它{item}', offer: '献上{item}', feedNone: '囊中没有{item}', tameHint: '降了它，再献上{item}，即可收服', tameBy: '收服 · {what}', likesNone: '它喜欢{item}，囊中没有', playGame: '开局', lundaoTitle: '论道 · 稷下先生', lundaoOffer: '先生在此，以诗文会友。三句过关，今日一回。', lundaoBegin: '请先生论道', sayLundao: '请先生论道', lundaoKey: '飞花令 · 句中须有「{key}」', lundaoChain: '接「{last}」的末字', lundaoUp: '上联：{up}', lundaoMiss: '失 {n}/{max}', lundaoHow: '在对话里作答。', featRise: '突破', featHp: '气血 {a}→{b}', featMana: '灵力上限 {a}→{b}', featPower: '一击 +{n}', featHer: '{name} {a}→{b}', featChapter: '新的一回', wonOver: '收服', subdue: '降妖', bout: '比试',
     effProgress: '服下：{xw} +{n}', effLearn1: '习之：斗法时看出妖下回合的架势', effLearn2: '习之：看清妖下回合的每一招与点数', effPouch: '储物袋多 {n} 格，永久', effWear: '可赠银月佩戴', effLift: { atk: '她的牌攻 +{n}', hp: '她的牌气血 +{n}' }, effKey: '路上有用之物', effNone: '可买卖的货物', effRoot: '佩之借{root}', effAtk: '器攻 +{n}', effDef: '防 +{n}', effWard: '抗{root} +{n}', effCore: '可炼{root}行本命', effCharm: '斗法时掷出，不计防抗', use: '服用', wear: '佩戴', worn: '已佩', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '{app} · {t} 完成', questWait: '{app} · {when}待做', periods: { day: '今日', week: '本周', once: '' },
     duelTitle: '降妖', duelHint: '轮番出手：法术相克者倍，物理不问五行，符箓不计防抗，辅助蓄势护体。气血或灵力耗尽者败。', begin: '出手', duelWon: '妖已降服。', duelLost: '败了，它退入雾中。', withdrawn: '它已隐入雾中，明日再来。', wonWait: '已胜，待收。',
     you: '你', hp: '气血', mana: '灵力', power: '战力', youFirst: '你先手', foeFirst: '它先手', barehand: '空手',
@@ -26,7 +26,7 @@ export const WORDS = {
     fStrike: '击', fCast: '法', stGather: '蓄势', stGuard: '护体', stArmor: '甲',
     lean: { hide: '厚皮', ward: '避法', quick: '迅捷', fierce: '凶猛' },
     treasureTitle: '本命法宝', treasureDoes: '器攻 {atk} · {root}法术 +{n}', treasureTop: '已至九重，再养无益。',
-    treasureGrows: '随剧情与传闻而长：一章终了、一回传闻了结，各长一重。',
+    treasureGrows: '随剧情与传闻而长：一段剧情终了、一则传闻了结，各长一重。',
     refine: '炼化本命', sayTreasure: '说说{name}',
     refineHint: '结丹之后，可将随身法器与一味天材地宝炼作本命。',
     refineWith: '以何物炼之', refineName: '为它取个名字', refineNameHint: '至多十二字', refineNoWeapon: '手中无器可炼：先佩一件兵器。', refineNoMaterial: '囊中没有天材地宝。',
@@ -87,7 +87,7 @@ export const WORDS = {
     fStrike: 'strikes', fCast: ' spell', stGather: 'gathering', stGuard: 'guarded', stArmor: 'armoured',
     lean: { hide: 'thick-hided', ward: 'warded', quick: 'quick', fierce: 'fierce' },
     treasureTitle: 'Bound treasure', treasureDoes: 'Strikes for {atk} · {root} spells +{n}', treasureTop: 'At its ninth. Nothing more will grow.',
-    treasureGrows: 'It grows with the story: one 重 for each chapter ended and each rumor finished.',
+    treasureGrows: 'It grows with the story: one 重 for each part of the story ended and each rumor finished.',
     refine: 'Bind a treasure', sayTreasure: 'Tell me about {name}',
     refineHint: 'Past the Core, a carried weapon and one material of the five can be bound into a treasure of your own.',
     refineWith: 'Bind it with', refineName: 'Name it', refineNameHint: 'up to 12 characters', refineNoWeapon: 'Nothing in hand to bind: wear a weapon first.', refineNoMaterial: 'No material of the five in the bag.',
@@ -1248,7 +1248,7 @@ export function ledgerPopHtml(ctx) {
 }
 
 /// One entry: the kind, who and what; the player's own words when kept
-/// (「『…』 —— 你对孙二狗说 · 第一章」, 哇时刻 5), else when; a 诺 marked
+/// (「『…』 —— 你对孙二狗说 · 卷一 · 第三回」, 哇时刻 5), else when; a 诺 marked
 /// kept or broken once settled.
 const LEDGER_CLASS = { 恩: 'en', 仇: 'chou', 诺: 'nuo' };
 function ledgerRowHtml(w, e) {
@@ -1311,15 +1311,17 @@ function breakthrough(card, ctx) {
     <div class="acts"><button class="act btgo" data-throw="${esc(card.id)}"${shut ? ` disabled title="${esc(shut)}"` : ''}>${esc(shut ?? w.go)}</button></div>${note}</div>`;
 }
 
-/// A chapter over, the next one waiting (Look's chapter.close): 「第一章 · 外门 · 完」,
-/// one line of what this player did, the next chapter's teaser in the book's
-/// voice, and the goal line's 「第二章 · 即将开放」 under it; 合上 puts it away (the page remembers).
+/// A 回 over (Look's chapter.close, rules/hui.mjs): 「第三回 · 完」. Inside the
+/// story, its 回目 and the 回 now beginning under it; at a chapter's end, one line
+/// of what this player did, the next 回's teaser in the book's voice, and the goal
+/// line's 「第四回 · 即将开放」 under it. 合上 puts it away (the page remembers).
 function closed(card, ctx) {
   const c = ctx.look.chapter?.close;
   if (!c) return '';
-  const coming = ctx.look.waypoint?.coming ? ctx.look.waypoint.text : '';
-  return `<div class="card closecard"><div class="closetitle">${esc(c.title)}</div>${c.did ? `<p class="closedid">${esc(c.did)}</p>` : ''}`
-    + `<p class="closetease">${esc(c.teaser)}</p>${coming ? `<div class="closecoming">${esc(coming)}</div>` : ''}`
+  const coming = ctx.look.waypoint?.coming ? ctx.look.waypoint.text : c.next ?? '';
+  const huimu = c.huimu?.length ? `<p class="closehuimu">${c.huimu.map((l) => `<span>${esc(l)}</span>`).join('')}</p>` : '';
+  return `<div class="card closecard"><div class="closetitle">${esc(c.title)}</div>${huimu}${c.did ? `<p class="closedid">${esc(c.did)}</p>` : ''}`
+    + `${c.teaser ? `<p class="closetease">${esc(c.teaser)}</p>` : ''}${coming ? `<div class="closecoming">${esc(coming)}</div>` : ''}`
     + `<div class="acts"><button class="act quiet" data-close-chapter="${esc(c.id)}">${esc(ctx.words.closeAway ?? '合上')}</button></div></div>`;
 }
 

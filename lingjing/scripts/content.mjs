@@ -163,7 +163,24 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     templates: { made: at('templates/made-scene.json'), world: at('templates/made-world.json') },
     dictionary: at('dictionary.json'),
     chapters: loadChapters(path.join(dir, 'chapters')),
+    // The book the world is read from (story/<id>/book.json): its 卷 and 回 name the game's parts (rules/hui.mjs).
+    book: loadBook(path.basename(dir)),
   };
+}
+
+/* The novel told in a world (story/index.json's books, the one whose `world`
+   is this folder's name), or null — a world with no book names its parts by
+   its chapters' own titles. */
+export const STORY_DIR = path.resolve(WORLDS_DIR, '../story');
+function loadBook(world) {
+  const index = path.join(STORY_DIR, 'index.json');
+  if (!fs.existsSync(index)) return null;
+  for (const id of readJson(index).books ?? []) {
+    const file = path.join(STORY_DIR, id, 'book.json');
+    const book = fs.existsSync(file) ? readJson(file) : null;
+    if (book?.world === world) return book;
+  }
+  return null;
 }
 
 function loadChapters(root) {
@@ -959,7 +976,24 @@ function lintChapterShape(chapter, content, bad) {
     if (!chapter.scenes[g.at]) bad(where, `goal at unknown scene ${g.at}`);
     if (!Object.values(chapter.scenes).some(sc => sc.exits.some(e => e.mark === g.eve))) bad(where, `goal eve ${g.eve} is marked by no exit`);
   }
-  if (chapter.coming != null && !pair(chapter.coming)) bad(where, 'coming needs zh and en');
+  // `coming` is a flag: its words are the first 回's (rules/hui.mjs comingOf), never written here.
+  if (chapter.coming != null && chapter.coming !== true) bad(where, 'coming is true or absent — its words come from the book');
+  if (chapter.close?.title) bad(where, 'a close is named by its 回 (「第三回 · 完」), never by its own title');
+  lintHui(chapter, content, bad);
+}
+
+/* 卷 and 回 (rules/hui.mjs): a scene's `hui` is a 回 of the world's book, and
+   along a chapter's spine — any exit to a next scene — it never goes back. */
+function lintHui(chapter, content, bad) {
+  const book = new Map((content.book?.volumes ?? []).flatMap(v => v.hui ?? []).map(h => [h.id, h.n]));
+  for (const sc of Object.values(chapter.scenes)) {
+    if (sc.hui == null) continue;
+    if (!book.has(sc.hui)) { bad(`scene ${sc.id}`, `hui ${sc.hui} is no 回 of the book`); continue; }
+    for (const e of sc.exits ?? []) {
+      const next = chapter.scenes[e.next];
+      if (next?.hui && book.get(next.hui) < book.get(sc.hui)) bad(`scene ${sc.id}`, `exit ${e.id} goes back from ${sc.hui} to ${next.hui}`);
+    }
+  }
 }
 
 /* 看 — the lint of a scene's hotspots (rules/examine.mjs; LOOK_GIVES is its
