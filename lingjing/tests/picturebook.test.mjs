@@ -76,12 +76,12 @@ test('the command line: Ling is handed each passage once — a new game\'s first
     const told = cli('look', '--said=[scene] took 攥紧拳头', '--for=ling');
     assert.deepEqual(told.tell.map(t => t.id), ['00-masan/strike', '00-dawn']);
     assert.match(told.tell[0].text, /你攥紧了拳头/);
-    assert.match(told.tell[1].text, /是隔壁的石头/, 'a boy walks with 石头');
+    assert.match(told.tell[1].text, /是隔壁的阿禾/, 'a boy walks with 阿禾');
     assert.deepEqual(told.page_did.map(d => d.what).filter(w => /chose/.test(w)), ['chose 「攥紧拳头」 under the picture — 恩仇簿: 仇 maxiaobao, 仇 masan']);
     // Ling's own Resolve carries its passages at once
     const egg = cli('resolve', '--exit=egg', '--said=收下鸡蛋', '--for=ling');
     assert.deepEqual(egg.tell.map(t => t.id), ['00-dawn/egg', '00-kitchen']);
-    assert.deepEqual(egg.ledger, [{ who: 'shitou', kind: '恩', what: { zh: '天没亮，隔着窗塞给你一个煮鸡蛋：「记账，以后还我。」', en: 'Before dawn, pushed a boiled egg through your window: "Keep count. Pay me back."' }, chapter: '00-prologue' }]);
+    assert.deepEqual(egg.ledger, [{ who: 'ahe', kind: '恩', what: { zh: '天没亮，隔着窗塞给你一个煮鸡蛋：「记账，以后还我。」', en: 'Before dawn, pushed a boiled egg through your window: "Keep count. Pay me back."' }, chapter: '00-prologue' }]);
     assert.equal(cli('look', '--for=ling').tell, undefined);
   } finally {
     fs.rmSync(data, { recursive: true, force: true });

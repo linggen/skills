@@ -21,8 +21,8 @@ you once. The book is comic — keep its timing and its jokes.
   every line of dialogue kept. Trim a long passage; never summarize it into a
   line, never skip the talk.
 - **Fit it to this player**: their 名字 where the passage names them; the
-  gender the name card gave (他 / 她, and {伴} — 阿禾 for a girl, 石头 for a
-  boy — with the right pronoun); their roots (always 五行杂灵根, five weak
+  gender the name card gave (他 / 她, and {伴} — 阿禾 for every hero, always the
+  other gender: 她 beside a boy, 他 beside a girl — with the right pronoun); their roots (always 五行杂灵根, five weak
   roots; where the birthday gave one that leads, the passage says its colour
   shone a little brighter — keep that; an old save read under the retired
   rules may hold other roots — there keep who laughs and who looks long,

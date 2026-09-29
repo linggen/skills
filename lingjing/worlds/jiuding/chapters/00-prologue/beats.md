@@ -7,8 +7,8 @@ each scene is one painted panel on the stage (`panel`: art/panels/, a caption
 of two to four lines, the choices under it) and one passage in the chat
 (`story`, zh + en — the source's own prose; an exit's `story` is a choice's
 outcome). Ling tells the passage; the stage never holds the prose. The hero is
-你 — name and 男 · 女 on the first scene's card; {伴} is 阿禾 for a girl, 石头
-for a boy.
+你 — name and 男 · 女 on the first scene's card; {伴} is 阿禾 for every hero, always
+the other gender (a girl beside a boy, a boy beside a girl).
 
 | Scene | Source | Choices → mechanics |
 |---|---|---|

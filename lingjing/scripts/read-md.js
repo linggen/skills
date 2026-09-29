@@ -2,29 +2,38 @@
 // paragraphs, **bold**, > blockquotes, --- rules and pipe tables. Pure: no DOM,
 // every word escaped (read.html's reader and its test both use it).
 import { esc } from './esc.js';
-import { fill } from './state.mjs';
+import { fill, genderOf } from './state.mjs';
 
 /// The hero the drafts were written with: the name a page with no save shows.
 export const HERO = '周星星';
 
-/// The hero from what Look says (`name`), or the drafts' own when there is no
-/// save or no name yet.
-export const heroOf = (seen) => ({ name: (typeof seen?.name === 'string' && seen.name.trim()) || HERO });
+/// The hero from what Look says (`name`, `gender`), or the drafts' own — 周星星,
+/// and the male words — when there is no save, no name or no gender yet.
+export const heroOf = (seen) => ({
+  name: (typeof seen?.name === 'string' && seen.name.trim()) || HERO,
+  gender: genderOf(seen) === 'female' ? 'female' : 'male',
+});
 
-/// A chapter's markdown with the player in it: `{name}` becomes the hero's
-/// name (state.mjs `fill`, the scenes' own token). Runs before rendering; the
-/// name is a word, never markup, so a `*` or `|` in it is made full-width and
-/// can't open bold or split a table row (renderMarkdown escapes the rest).
+/// `{男词|女词}`: the word for the hero's gender — keyed on the HERO, so a
+/// word about 阿禾 (always the other gender) reads `{她|他}`. Unset → male.
+export const genderWords = (md, gender) =>
+  String(md ?? '').replace(/\{([^{}|\n]*)\|([^{}|\n]*)\}/g, (_, male, female) => (gender === 'female' ? female : male));
+
+/// A chapter's markdown with the player in it, before rendering: the gendered
+/// words, then `{name}` (state.mjs `fill`, the scenes' own token). The name is
+/// a word, never markup, so a `*` or `|` in it goes full-width and can't open
+/// bold or split a table row (renderMarkdown escapes the rest).
 export function fillHero(md, hero = {}) {
   const name = String(hero.name || HERO).replace(/\*/g, '＊').replace(/\|/g, '｜');
-  return fill(String(md ?? ''), { name });
+  return fill(genderWords(md, hero.gender), { name });
 }
 
 const inline = (t) => esc(t).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
 const cells = (row) => row.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim());
 
 export function renderMarkdown(md) {
-  const lines = String(md ?? '').replace(/\r\n/g, '\n').split('\n');
+  // <!-- … --> is a note for the writers (女主变体 and the like), never read.
+  const lines = String(md ?? '').replace(/\r\n/g, '\n').replace(/<!--[\s\S]*?-->/g, '').split('\n');
   const out = [];
   let para = [], quote = [], table = [];
   const flush = () => {

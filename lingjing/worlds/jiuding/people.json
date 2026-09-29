@@ -1,30 +1,40 @@
 {
   "version": 1,
   "_about": "The standing people of the world (story-outline.md § 人物): each a name, what they are, the voice they speak in, where they live and their portrait. A scene line `who: <id>` speaks as them — the page draws the name and the portrait, Look hands Ling the voice. Ling writes their live lines in that voice and never another's. Portraits are original, painted with the local FLUX recipe (art/people/).",
-  "_slots": "A line's `who` may name a slot instead of a person: the rules fill it from the save. `ban` is the close companion, by the player's gender — the neighbour's child of 石坳村 (prologue-v3): 阿禾 for a girl, 石头 for a boy; `none` when the save never said.",
+  "_slots": "A line's `who` may name a slot instead of a person: the rules fill it from the save. `ban` is the close companion — 阿禾, the neighbour's child of 石坳村 (prologue-v3), for every hero: always the other gender (a girl beside a boy, a boy beside a girl), the name neutral on purpose (2026-09-29). Every gender names ahe.",
   "slots": {
-    "ban": { "female": "ahe", "male": "shitou", "none": "ahe" }
+    "ban": { "female": "ahe", "male": "ahe", "none": "ahe" }
   },
-  "_address": "Words the rules fill into scene text by the player's gender: {兄姐} how the temple addresses them, {伴} the companion's name; and the companion's unnamed cameos in the trials ({伴·阶} the steps, {伴·洛书} the 洛书, {伴·殿} the hall — the book's 阿禾, half-recognised, building to chapter 1's reveal; for a boy, 石头 by his own tells: red cheeks, the big bundle, the stammer). Never name the companion in a cameo. `none` when the save never said.",
+  "_address": "Words the rules fill into scene text by the player's gender: {兄姐} how the temple addresses them, {伴} the companion's name; {伴·孩} and {伴·她} what 阿禾 is (the other gender: 姑娘/她 beside a boy or an unsaid save, 少年/他 beside a girl); and the companion's unnamed cameos in the trials ({伴·阶} the steps, {伴·洛书} the 洛书, {伴·殿} the hall — the book's 阿禾, half-recognised, building to chapter 1's reveal: the red nose and the little notebook always; the braids for a girl 阿禾, a tuft of hair sticking up for a boy). Never name the companion in a cameo. `none` when the save never said.",
   "address": {
     "兄姐": {
       "female": { "zh": "师姐", "en": "Sister" },
       "male": { "zh": "师兄", "en": "Brother" },
       "none": { "zh": "", "en": "" }
     },
+    "伴·孩": {
+      "female": { "zh": "少年", "en": "boy" },
+      "male": { "zh": "姑娘", "en": "girl" },
+      "none": { "zh": "姑娘", "en": "girl" }
+    },
+    "伴·她": {
+      "female": { "zh": "他", "en": "his" },
+      "male": { "zh": "她", "en": "her" },
+      "none": { "zh": "她", "en": "her" }
+    },
     "伴·阶": {
-      "female": {"zh": "你从一个扎两根小辫子的姑娘身边走过去——不对，是她从你身边冲过去。她没坐下，也没哭，鼻头冻得通红，像一根萝卜，咬着牙，一口气往上冲。\n\n那个背影……有点眼熟。\n\n你想多看两眼，她已经冲上去了，只剩一截小辫子，一晃，就没了。", "en": "You pass a girl with two little braids — no: she passes you, charging. She doesn't sit, doesn't cry; her nose is frozen red as a radish, and she grits her teeth and takes the steps in one breath.\n\nThat back… looks familiar.\n\nYou want a second look, but she's already gone up — the end of a braid, a flick, and nothing."},
-      "male": {"zh": "你从一个背着大包袱的少年身边走过去——不对，是他从你身边冲过去。他没坐下，也没哭，两边脸蛋冻得通红，像两只柿子，咬着牙，一口气往上冲。\n\n那个背影……有点眼熟。\n\n你想多看两眼，他已经冲上去了，只剩那只大包袱，一颠，就没了。", "en": "You pass a boy with a big bundle on his back — no: he passes you, charging. He doesn't sit, doesn't cry; both cheeks frozen red as persimmons, and he grits his teeth and takes the steps in one breath.\n\nThat back… looks familiar.\n\nYou want a second look, but he's already gone up — the bundle, a bounce, and nothing."},
+      "female": {"zh": "你从一个头上翘着一撮头发的小子身边走过去——不对，是他从你身边冲过去。他没坐下，也没哭，鼻头冻得通红，像一根萝卜，咬着牙，一口气往上冲。\n\n那个背影……有点眼熟。\n\n你想多看两眼，他已经冲上去了，只剩那撮翘起来的头发，一晃，就没了。", "en": "You pass a boy with a tuft of hair sticking up — no: he passes you, charging. He doesn't sit, doesn't cry; his nose is frozen red as a radish, and he grits his teeth and takes the steps in one breath.\n\nThat back… looks familiar.\n\nYou want a second look, but he's already gone up — that tuft of hair, a flick, and nothing."},
+      "male": {"zh": "你从一个扎两根小辫子的姑娘身边走过去——不对，是她从你身边冲过去。她没坐下，也没哭，鼻头冻得通红，像一根萝卜，咬着牙，一口气往上冲。\n\n那个背影……有点眼熟。\n\n你想多看两眼，她已经冲上去了，只剩一截小辫子，一晃，就没了。", "en": "You pass a girl with two little braids — no: she passes you, charging. She doesn't sit, doesn't cry; her nose is frozen red as a radish, and she grits her teeth and takes the steps in one breath.\n\nThat back… looks familiar.\n\nYou want a second look, but she's already gone up — the end of a braid, a flick, and nothing."},
       "none": {"zh": "你从一个扎两根小辫子的姑娘身边走过去——不对，是她从你身边冲过去。她没坐下，也没哭，鼻头冻得通红，像一根萝卜，咬着牙，一口气往上冲。\n\n那个背影……有点眼熟。\n\n你想多看两眼，她已经冲上去了，只剩一截小辫子，一晃，就没了。", "en": "You pass a girl with two little braids — no: she passes you, charging. She doesn't sit, doesn't cry; her nose is frozen red as a radish, and she grits her teeth and takes the steps in one breath.\n\nThat back… looks familiar.\n\nYou want a second look, but she's already gone up — the end of a braid, a flick, and nothing."}
     },
     "伴·洛书": {
-      "female": {"zh": "石壁那一头，另一面石壁前，早有人摆好了。一个红鼻头的姑娘，正拿一根炭条，在一个小本子上低头记着什么。\n\n小本子。\n\n你愣了一下。这年头，谁出门还带个本子记账？\n\n你还没想明白，人群一挤，她就不见了。", "en": "At the far end, before another stone wall, someone has already finished. A red-nosed girl, head down, is writing something in a little notebook with a stick of charcoal.\n\nA little notebook.\n\nYou stop short. Who goes out these days carrying a notebook to keep accounts in?\n\nBefore you can work it out, the crowd shifts, and she's gone."},
-      "male": {"zh": "石壁那一头，另一面石壁前，早有人摆好了。一个红脸蛋的少年，正对着石壁，掰着手指头，一个格子一个格子地核，嘴里磕磕巴巴：「记、记、记下了。」\n\n结巴。\n\n你愣了一下。这年头，谁对着一块石头还结巴？\n\n你还没想明白，人群一挤，他就不见了。", "en": "At the far end, before another stone wall, someone has already finished. A red-cheeked boy is checking it square by square on his fingers, mumbling, \"G-g-got it. W-written down.\"\n\nA stammer.\n\nYou stop short. Who stammers at a stone wall?\n\nBefore you can work it out, the crowd shifts, and he's gone."},
+      "female": {"zh": "石壁那一头，另一面石壁前，早有人摆好了。一个红鼻头的小子，正拿一根炭条，在一个小本子上低头记着什么。\n\n小本子。\n\n你愣了一下。这年头，谁出门还带个本子记账？\n\n你还没想明白，人群一挤，他就不见了。", "en": "At the far end, before another stone wall, someone has already finished. A red-nosed boy, head down, is writing something in a little notebook with a stick of charcoal.\n\nA little notebook.\n\nYou stop short. Who goes out these days carrying a notebook to keep accounts in?\n\nBefore you can work it out, the crowd shifts, and he's gone."},
+      "male": {"zh": "石壁那一头，另一面石壁前，早有人摆好了。一个红鼻头的姑娘，正拿一根炭条，在一个小本子上低头记着什么。\n\n小本子。\n\n你愣了一下。这年头，谁出门还带个本子记账？\n\n你还没想明白，人群一挤，她就不见了。", "en": "At the far end, before another stone wall, someone has already finished. A red-nosed girl, head down, is writing something in a little notebook with a stick of charcoal.\n\nA little notebook.\n\nYou stop short. Who goes out these days carrying a notebook to keep accounts in?\n\nBefore you can work it out, the crowd shifts, and she's gone."},
       "none": {"zh": "石壁那一头，另一面石壁前，早有人摆好了。一个红鼻头的姑娘，正拿一根炭条，在一个小本子上低头记着什么。\n\n小本子。\n\n你愣了一下。这年头，谁出门还带个本子记账？\n\n你还没想明白，人群一挤，她就不见了。", "en": "At the far end, before another stone wall, someone has already finished. A red-nosed girl, head down, is writing something in a little notebook with a stick of charcoal.\n\nA little notebook.\n\nYou stop short. Who goes out these days carrying a notebook to keep accounts in?\n\nBefore you can work it out, the crowd shifts, and she's gone."}
     },
     "伴·殿": {
-      "female": {"zh": "排在你前面第三个的，是一个扎两根小辫子的姑娘。她把手放上去，测灵石亮起三种颜色——青、黑、黄，亮得刺眼。\n\n**执事**：（念）木、水、土，三灵根。真灵根。中上之资。\n\n殿里一阵惊叹。你踮起脚想看看是谁，人太多，只看见一截小辫子，一晃，就被人群挡住了。\n\n红鼻头。小辫子。小本子。\n\n你心里咯噔一下——不会吧？\n\n可石坳村的姑娘，怎么会跑到这儿来？她娘连村口都不让她出。\n\n你摇摇头，一定是看错了。", "en": "Third in line ahead of you is a girl with two little braids. She lays her hand on the stone, and it lights three colours — green, black, yellow — bright enough to sting.\n\n**Steward:** (reading out) Wood, Water, Earth — three roots. A true root. Above the middle.\n\nA murmur of wonder goes round the hall. You go up on your toes to see who it is, but there are too many people — just the end of a braid, a flick, and the crowd closes over it.\n\nA red nose. Little braids. A little notebook.\n\nSomething in you lurches — surely not?\n\nBut how would a girl from Shi'ao Village end up here? Her mother won't even let her past the village gate.\n\nYou shake your head. You must have seen wrong."},
-      "male": {"zh": "排在你前面第三个的，是一个背着大包袱的少年。他把手放上去，测灵石亮起三种颜色——青、黑、黄，亮得刺眼。\n\n**执事**：（念）木、水、土，三灵根。真灵根。中上之资。\n\n殿里一阵惊叹。你踮起脚想看看是谁，人太多，只看见那只大包袱，一颠，就被人群挡住了。\n\n红脸蛋。大包袱。结巴。\n\n你心里咯噔一下——不会吧？\n\n可石坳村的小子，怎么会跑到这儿来？他爹连村口都不让他出。\n\n你摇摇头，一定是看错了。", "en": "Third in line ahead of you is a boy with a big bundle on his back. He lays his hand on the stone, and it lights three colours — green, black, yellow — bright enough to sting.\n\n**Steward:** (reading out) Wood, Water, Earth — three roots. A true root. Above the middle.\n\nA murmur of wonder goes round the hall. You go up on your toes to see who it is, but there are too many people — just the bundle, a bounce, and the crowd closes over it.\n\nRed cheeks. A big bundle. A stammer.\n\nSomething in you lurches — surely not?\n\nBut how would a boy from Shi'ao Village end up here? His father won't even let him past the village gate.\n\nYou shake your head. You must have seen wrong."},
+      "female": {"zh": "排在你前面第三个的，是一个头上翘着一撮头发的小子。他把手放上去，测灵石亮起三种颜色——青、黑、黄，亮得刺眼。\n\n**执事**：（念）木、水、土，三灵根。真灵根。中上之资。\n\n殿里一阵惊叹。你踮起脚想看看是谁，人太多，只看见那撮翘起来的头发，一晃，就被人群挡住了。\n\n红鼻头。翘头发。小本子。\n\n你心里咯噔一下——不会吧？\n\n可石坳村的小子，怎么会跑到这儿来？他娘连村口都不让他出。\n\n你摇摇头，一定是看错了。", "en": "Third in line ahead of you is a boy with a tuft of hair sticking up. He lays his hand on the stone, and it lights three colours — green, black, yellow — bright enough to sting.\n\n**Steward:** (reading out) Wood, Water, Earth — three roots. A true root. Above the middle.\n\nA murmur of wonder goes round the hall. You go up on your toes to see who it is, but there are too many people — just that tuft of hair, a flick, and the crowd closes over it.\n\nA red nose. That tuft of hair. A little notebook.\n\nSomething in you lurches — surely not?\n\nBut how would a boy from Shi'ao Village end up here? His mother won't even let him past the village gate.\n\nYou shake your head. You must have seen wrong."},
+      "male": {"zh": "排在你前面第三个的，是一个扎两根小辫子的姑娘。她把手放上去，测灵石亮起三种颜色——青、黑、黄，亮得刺眼。\n\n**执事**：（念）木、水、土，三灵根。真灵根。中上之资。\n\n殿里一阵惊叹。你踮起脚想看看是谁，人太多，只看见一截小辫子，一晃，就被人群挡住了。\n\n红鼻头。小辫子。小本子。\n\n你心里咯噔一下——不会吧？\n\n可石坳村的姑娘，怎么会跑到这儿来？她娘连村口都不让她出。\n\n你摇摇头，一定是看错了。", "en": "Third in line ahead of you is a girl with two little braids. She lays her hand on the stone, and it lights three colours — green, black, yellow — bright enough to sting.\n\n**Steward:** (reading out) Wood, Water, Earth — three roots. A true root. Above the middle.\n\nA murmur of wonder goes round the hall. You go up on your toes to see who it is, but there are too many people — just the end of a braid, a flick, and the crowd closes over it.\n\nA red nose. Little braids. A little notebook.\n\nSomething in you lurches — surely not?\n\nBut how would a girl from Shi'ao Village end up here? Her mother won't even let her past the village gate.\n\nYou shake your head. You must have seen wrong."},
       "none": {"zh": "排在你前面第三个的，是一个扎两根小辫子的姑娘。她把手放上去，测灵石亮起三种颜色——青、黑、黄，亮得刺眼。\n\n**执事**：（念）木、水、土，三灵根。真灵根。中上之资。\n\n殿里一阵惊叹。你踮起脚想看看是谁，人太多，只看见一截小辫子，一晃，就被人群挡住了。\n\n红鼻头。小辫子。小本子。\n\n你心里咯噔一下——不会吧？\n\n可石坳村的姑娘，怎么会跑到这儿来？她娘连村口都不让她出。\n\n你摇摇头，一定是看错了。", "en": "Third in line ahead of you is a girl with two little braids. She lays her hand on the stone, and it lights three colours — green, black, yellow — bright enough to sting.\n\n**Steward:** (reading out) Wood, Water, Earth — three roots. A true root. Above the middle.\n\nA murmur of wonder goes round the hall. You go up on your toes to see who it is, but there are too many people — just the end of a braid, a flick, and the crowd closes over it.\n\nA red nose. Little braids. A little notebook.\n\nSomething in you lurches — surely not?\n\nBut how would a girl from Shi'ao Village end up here? Her mother won't even let her past the village gate.\n\nYou shake your head. You must have seen wrong."}
     }
   },
@@ -40,18 +50,10 @@
     {
       "id": "ahe",
       "name": { "zh": "阿禾", "en": "Ahe" },
-      "role": { "zh": "邻家姑娘，比你小一岁；她家也欠马家的租", "en": "The girl next door, a year younger than you; her family owes the Mas rent too" },
-      "voice": { "zh": "快人快语，急了脸先红；不肯欠人情，也不许人欠她的——「记账，以后还。」", "en": "Quick and blunt; her face goes red before her temper does. Will not owe anyone, nor let anyone owe her — \"Keep count; pay me back.\"" },
+      "role": { "zh": "邻家{伴·孩}，比你小一岁；{伴·她}家也欠马家的租", "en": "The {伴·孩} next door, a year younger than you; {伴·她} family owes the Mas rent too" },
+      "voice": { "zh": "快人快语，急了脸先红；不肯欠人情，也不许谁欠着不还——「记账，以后还。」", "en": "Quick and blunt; the face goes red before the temper does. Will not owe anyone, nor let a debt go unpaid — \"Keep count; pay me back.\"" },
       "home": "shiao",
       "art": "art/people/ahe.webp"
-    },
-    {
-      "id": "shitou",
-      "name": { "zh": "石头", "en": "Shitou" },
-      "role": { "zh": "邻家少年，比你小一岁；他家也欠马家的租", "en": "The boy next door, a year younger than you; his family owes the Mas rent too" },
-      "voice": { "zh": "嘴笨心实，一急就结巴；答应的事一定做——「记账，以后还。」", "en": "Slow of tongue, honest to the bone; stammers when flustered. What he promises, he does — \"Keep count; pay me back.\"" },
-      "home": "shiao",
-      "art": "art/people/shitou.webp"
     },
     {
       "id": "qulao",

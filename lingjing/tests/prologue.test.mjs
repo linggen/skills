@@ -175,13 +175,14 @@ test('the command line: the birthday never reaches the log, and page_did tells L
 
 /* ── 男 · 女: the address and the companion ── */
 
-test('{兄姐} and {伴} follow the name card: a girl walks with 阿禾 as 师姐, a boy with 石头 as 师兄', () => {
+test('{兄姐} follows the name card (师姐 · 师兄); {伴} is 阿禾 for every hero, the other gender', () => {
   const at = s => look(s, content, ctx());
-  for (const [gender, ban, id] of [['female', '阿禾', 'ahe'], ['male', '石头', 'shitou']]) {
+  for (const [gender, ban, id, role] of [['female', '阿禾', 'ahe', '邻家少年，比你小一岁；他家也欠马家的租'], ['male', '阿禾', 'ahe', '邻家姑娘，比你小一岁；她家也欠马家的租']]) {
     const s = walk(start(), [['resolve', { exit: 'name', value: '墨白', gender }], ['resolve', { exit: 'endure' }]], content, NOW);
     const dawn = at(s).scene;
     assert.equal(dawn.id, '00-dawn');
     assert.equal(dawn.people[0].name, ban);
+    assert.equal(dawn.people[0].role, role, `${gender}: 阿禾 is the other gender`);
     assert.match(tellOf(content, s).tell.at(-1).text, new RegExp(`隔壁的${ban}`));
     const egg = resolve(s, content, ctx(), { exit: 'egg' });
     assert.deepEqual(egg.result.ledger.map(e => [e.who, e.kind]), [[id, '恩']]);
@@ -212,7 +213,7 @@ test('people speak as themselves: a line names them, Look carries their voice fo
   assert.match(html, /<img src="\.\.\/worlds\/jiuding\/art\/people\/masan\.webp" alt="马三">[\s\S]*<b>马三<\/b>/);
   // 老周's role names {伴}, filled for this player
   const cliff = look(walk(s, [...TO_VALLEY.slice(1), ['resolve', { exit: 'follow' }]], content, NOW), content, ctx()).scene;
-  assert.equal(cliff.people.find(p => p.id === 'laozhou').role, '邻居，种地的，石头的爹');
+  assert.equal(cliff.people.find(p => p.id === 'laozhou').role, '邻居，种地的，阿禾的爹');
   // before she walks with the player she is the story's fox, her face in the people card
   const fox = look(walk(s, TO_VALLEY.slice(1, -2), content, NOW), content, ctx()).scene;
   assert.equal(fox.id, '00-fox');
@@ -230,7 +231,7 @@ test('the lint holds people.json: a home, a portrait, a voice, and a slot for ev
   const errors = lint(bad).join('\n');
   assert.match(errors, /person dushu: home atlantis is not a place/);
   assert.match(errors, /person ahe: art art\/people\/nobody\.webp is missing/);
-  assert.match(errors, /person shitou: voice needs zh and en/);
+  assert.match(errors, /person qulao: voice needs zh and en/);
   assert.match(errors, /slot ban: male names no person/);
   assert.match(errors, /scene 00-shiao: unknown speaker stranger/);
   assert.deepEqual(lint(content), []);
@@ -346,10 +347,10 @@ test('the catchphrase rides the book\'s beats: the bowl night first, the bow, th
 
 /* ── The companion in the trials, half-recognised and never named ── */
 
-test('the companion\'s cameos: 阿禾\'s braids, red nose and notebook for a girl, 石头\'s red cheeks, bundle and stammer for a boy — never a name', () => {
+test('the companion\'s cameos: 阿禾, the other gender — braids beside a boy, a tuft of hair beside a girl; the red nose and notebook always — never a name', () => {
   const scenes = content.chapters['00-prologue'].scenes;
   const texts = s => [scenes['00-gate'].exits.find(e => e.id === 'steady').story, scenes['00-gate'].exits.find(e => e.id === 'rush').story, scenes['00-luoshu'].exits[0].story, scenes['00-hall'].story];
-  for (const [gender, marks, other] of [['female', /小辫子|红鼻头|小本子/, /大包袱|结巴|红脸蛋/], ['male', /大包袱|红脸蛋|结巴/, /小辫子|红鼻头|小本子/]]) {
+  for (const [gender, marks, other] of [['male', /小辫子|红鼻头|小本子/, /翘|小子|大包袱|结巴|红脸蛋/], ['none', /小辫子|红鼻头|小本子/, /翘|小子|大包袱|结巴|红脸蛋/], ['female', /翘|红鼻头|小本子/, /小辫子|姑娘|她|大包袱|结巴|红脸蛋/]]) {
     const s = { ...start(), name: '墨白', gender };
     for (const t of texts()) {
       for (const lang of ['zh', 'en']) {
@@ -360,7 +361,7 @@ test('the companion\'s cameos: 阿禾\'s braids, red nose and notebook for a gir
       assert.doesNotMatch(fill(t.zh, s, content), other, gender);
     }
     const hallText = fill(scenes['00-hall'].story.zh, s, content);
-    assert.match(hallText, gender === 'female' ? /红鼻头。小辫子。小本子。\n\n你心里咯噔一下——不会吧？/ : /红脸蛋。大包袱。结巴。\n\n你心里咯噔一下——不会吧？/);
+    assert.match(hallText, gender === 'female' ? /红鼻头。翘头发。小本子。\n\n你心里咯噔一下——不会吧？/ : /红鼻头。小辫子。小本子。\n\n你心里咯噔一下——不会吧？/);
     assert.match(hallText, /（念）木、水、土，三灵根。真灵根。中上之资。[\s\S]*一定是看错了。\n\n轮到你了。/);
   }
 });
