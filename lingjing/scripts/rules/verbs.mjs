@@ -51,7 +51,7 @@ export const VERBS = gated({
   // The page's map: each province's places, and the 九州 in ink as the save stands (rules/inkmap.mjs).
   atlas: (s, c, x, args) => {
     const out = atlas(s, c, x, args), ink = inkMapOf(c, s, x.now);
-    return ink ? { ...out, result: { ...out.result, ink: { ...ink, shapes: c.world.atlas.shapes ?? {} } } } : out;
+    return ink ? { ...out, result: { ...out.result, ink: { ...ink, shapes: c.world.atlas.shapes ?? {}, ...(c.world.atlas.paint ? { paint: c.world.atlas.paint } : {}) } } } : out;
   },
   fly, unrolled,
 });

@@ -81,41 +81,61 @@ function sealSvg(x, y, size, pname, lang, cls) {
   return `<g class="${cls}" transform="translate(${f2(x - w / 2)} ${f2(y - h / 2)})"><g class="sealbody"><rect width="${f2(w)}" height="${f2(h)}" rx="${f2(h * 0.08)}"/>${text}</g></g>`;
 }
 
-/// A small moon on the water: a pale disc and its reflection's ripple.
-const moonSvg = (x, y, r, cls) => `<g class="${cls}" transform="translate(${f2(x)} ${f2(y)})"><g class="moonbody"><ellipse class="moonripple" rx="${f2(r * 2.2)}" ry="${f2(r * 0.55)}" cy="${f2(r * 0.9)}"/><circle class="moondisc" r="${f2(r)}"/></g></g>`;
+/// A small moon on the water: a soft glowing disc in its halo, and its
+/// reflection broken on the water below it (千江有水千江月).
+const moonSvg = (x, y, r, cls, id) => `<g class="${cls}" transform="translate(${f2(x)} ${f2(y)})"><g class="moonbody">`
+  + `<circle class="moonhalo" r="${f2(r * 2.8)}" fill="url(#${id}-halo)"/>`
+  + `<ellipse class="moonreflect" cy="${f2(r * 2.1)}" rx="${f2(r * 1.5)}" ry="${f2(r * 0.32)}" fill="url(#${id}-halo)" filter="url(#${id}-soft)"/>`
+  + `<ellipse class="moonreflect" cy="${f2(r * 2.7)}" rx="${f2(r * 0.9)}" ry="${f2(r * 0.2)}" fill="url(#${id}-halo)" filter="url(#${id}-soft)"/>`
+  + `<circle class="moondisc" r="${f2(r)}" fill="url(#${id}-disc)"/></g></g>`;
 
 /// The 九州 in ink. `ink` is the atlas verb's (rules/inkmap.mjs); `geo` the
 /// shapes; `names` the provinces' names in the page's language. `moment`
 /// {province, frame} draws the 鼎-home animation for that province (the page
 /// sets `--age` so a redraw carries on); `still` draws it done. `labels` are
 /// the provinces' label points (world.json atlas.provinces), where a seal
-/// stands. `id` keeps
+/// stands. `paint` {href, x, y, w, h} is the world's own ink painting of the
+/// whole map (world.json atlas.paint): hidden in mist, faint in a wash, whole
+/// where the 鼎 is home — the paper stays light, never a dark block. `id` keeps
 /// the defs of two maps on one page apart.
-export function inkMapSvg(geo, ink, { names = {}, labels = {}, lang = 'zh', moment = null, still = false, id = 'ink' } = {}) {
+export function inkMapSvg(geo, ink, { names = {}, labels = {}, lang = 'zh', moment = null, still = false, id = 'ink', paint = null } = {}) {
   if (!geo?.provinces || !ink?.provinces) return '';
   const ids = Object.keys(geo.provinces);
   const key = (p) => `${id}-${ids.indexOf(p)}`;
   const pv = ink.provinces;
   const M = moment && pv[moment.province] ? moment.province : null;
   const pt = ([x, y]) => [x * geo.w, y * geo.h];
-  const clips = ids.filter((p) => pv[p]?.state === 'ink').map((p) => `<clipPath id="${key(p)}"><path d="${geo.provinces[p]}"/></clipPath>`).join('');
+  const shown = (p) => pv[p]?.state === 'ink' || pv[p]?.state === 'wash';
+  const clips = ids.filter(shown).map((p) => `<clipPath id="${key(p)}"><path d="${geo.provinces[p]}"/></clipPath>`).join('');
   const home = (p) => pv[p]?.home;
   const find = M ? pt(home(M)?.map ?? [0.5, 0.5]) : null;
   const R = M && moment.frame ? Math.max(moment.frame.w * geo.w, moment.frame.h * geo.h) * 1.25 : geo.w * 0.3;
   const rough = `<filter id="${id}-rough" x="-30%" y="-30%" width="160%" height="160%"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="4" seed="9" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="${f2(Math.max(24, R * 0.28))}" xChannelSelector="R" yChannelSelector="G"/></filter>`;
   const grain = `<filter id="${id}-grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 0.35  0 0 0 0 0.3  0 0 0 0 0.22  0 0 0 0.07 0"/></filter>`;
+  // The reveal: a soft-edged circle of white grows from the find spot; roughened, it soaks in like ink on 宣纸.
   const mask = M ? `<mask id="${id}-spread" maskUnits="userSpaceOnUse" x="0" y="0" width="${geo.w}" height="${geo.h}"><g filter="url(#${id}-rough)"><circle class="spread" cx="${f2(find[0])}" cy="${f2(find[1])}" r="${f2(R)}" fill="#fff"/></g></mask>` : '';
+  const glow = `<radialGradient id="${id}-halo"><stop offset="0" stop-color="#fffbe8" stop-opacity="0.95"/><stop offset="0.45" stop-color="#fff4cf" stop-opacity="0.45"/><stop offset="1" stop-color="#fff4cf" stop-opacity="0"/></radialGradient>`
+    + `<radialGradient id="${id}-disc" cx="0.42" cy="0.4"><stop offset="0" stop-color="#fffef6"/><stop offset="0.7" stop-color="#fbf0cc"/><stop offset="1" stop-color="#efdca6"/></radialGradient>`
+    + `<filter id="${id}-soft" x="-50%" y="-200%" width="200%" height="500%"><feGaussianBlur stdDeviation="${f2(geo.w * 0.002)}"/></filter>`;
+  // The painting: the world's own ink map (a light warm wash where there is none yet).
+  const art = (cls, extra = '') => (paint?.href
+    ? `<image class="${cls}" href="${esc(paint.href)}" x="${f2(paint.x ?? 0)}" y="${f2(paint.y ?? 0)}" width="${f2(paint.w ?? geo.w)}" height="${f2(paint.h ?? geo.h)}" preserveAspectRatio="none"${extra}/>`
+    : `<rect class="${cls} bare" width="${geo.w}" height="${geo.h}"${extra}/>`);
   const shape = (p, cls) => `<path class="${cls}" d="${geo.provinces[p]}" data-pv="${esc(p)}"/>`;
   const fills = ids.map((p) => shape(p, `pvfill s-${pv[p]?.state ?? 'mist'}${pv[p]?.locked ? ' locked' : ''}`)).join('');
-  // Deep ink: the whole province under its clip; the moment's own grows from the drop.
-  const inks = ids.filter((p) => pv[p]?.state === 'ink').map((p) => (p === M
-    ? `<g clip-path="url(#${key(p)})"><rect class="spill" width="${geo.w}" height="${geo.h}" mask="url(#${id}-spread)"/></g>`
-    : `<g clip-path="url(#${key(p)})"><rect class="spill done" width="${geo.w}" height="${geo.h}"/></g>`)).join('');
+  // The painting inside each province: faint where walked, whole where its 鼎 is home. The moment's
+  // own province shows faint, and the whole painting soaks in from the drop, a darker bleed at its edge.
+  const inks = ids.filter(shown).map((p) => {
+    const ink = pv[p].state === 'ink';
+    if (p !== M) return `<g clip-path="url(#${key(p)})">${art(ink ? 'plate' : 'plate faint')}</g>`;
+    return `<g clip-path="url(#${key(p)})">${art('plate faint')}${art('plate', ` mask="url(#${id}-spread)"`)}`
+      + `<g filter="url(#${id}-rough)"><circle class="bleed" cx="${f2(find[0])}" cy="${f2(find[1])}" r="${f2(R)}" stroke-width="${f2(R * 0.035)}"/></g></g>`;
+  }).join('');
   const rivers = ids.filter((p) => pv[p]?.state === 'ink').map((p) => `<g clip-path="url(#${key(p)})" class="rivers${p === M ? ' draw' : ''}">${geo.rivers.map((d) => `<path d="${d}" pathLength="1"/>`).join('')}</g>`).join('');
   const edges = ids.map((p) => shape(p, `pvedge s-${pv[p]?.state ?? 'mist'}${p === M ? ' now' : ''}`)).join('');
   const waters = geo.waters.map((d) => `<path d="${d}"/>`).join('');
   const r = geo.w * 0.012;
-  const moons = ids.filter((p) => pv[p]?.state === 'ink' && home(p)?.map).map((p) => { const [x, y] = pt(home(p).map); return moonSvg(x + r * 2.4, y + r * 1.6, r, `inkmoon${M ? ' rise' : ''}`); }).join('');
+  const moons = ids.filter((p) => pv[p]?.state === 'ink' && home(p)?.map).map((p) => { const [x, y] = pt(home(p).map); return moonSvg(x + r * 2.4, y + r * 1.2, r, `inkmoon${M ? ' rise' : ''}`, id); }).join('');
   const seals = ids.filter((p) => pv[p]?.state === 'ink').map((p) => {
     const [x, y] = pt(labels[p] ?? home(p).map);
     return sealSvg(x, y + geo.w * 0.05, geo.w * (p === M ? 0.036 : 0.042), names[p] ?? p, lang, `inkseal${p === M ? ' thud' : ''}`);
@@ -125,7 +145,7 @@ export function inkMapSvg(geo, ink, { names = {}, labels = {}, lang = 'zh', mome
   const camStyle = cam ? ` style="--cam: translate(${cam.tx}px, ${cam.ty}px) scale(${cam.s})"` : '';
   const cls = `inkmap${M ? ' moment' : ''}${still ? ' still' : ''}`;
   return `<svg class="${cls}" viewBox="0 0 ${geo.w} ${geo.h}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-<defs>${rough}${grain}${clips}${mask}</defs>
+<defs>${rough}${grain}${glow}${clips}${mask}</defs>
 <g class="cam${cam ? ' zoom' : ''}"${camStyle}><rect class="paper" width="${geo.w}" height="${geo.h}"/><rect width="${geo.w}" height="${geo.h}" filter="url(#${id}-grain)"/>
 <g class="waters${M ? ' ripple' : ''}">${waters}</g><g class="fills">${fills}</g><g class="inks">${inks}</g>${rivers}<g class="edges">${edges}</g>${drop}<g class="moons">${moons}</g><g class="seals">${seals}</g></g></svg>`;
 }
@@ -165,11 +185,11 @@ export function provinceLineHtml(ink, id, { lang = 'zh', name = id, more = '' } 
 /// spreading, the rivers, the seal, the water rising, the moons; the count
 /// of 九鼎 in the corner. `age` ms since it began (a redraw carries on);
 /// `still` (reduced motion, or skipped) is its last frame at once.
-export function homingCardHtml(geo, ink, { province, frame, age = 0, still = false, lang = 'zh', names = {}, labels = {} } = {}) {
+export function homingCardHtml(geo, ink, { province, frame, age = 0, still = false, lang = 'zh', names = {}, labels = {}, paint = null } = {}) {
   if (!geo || !ink?.provinces?.[province]) return '';
   const w = words(lang);
   const n = ink.homed?.length ?? 0, of = ink.of ?? 9;
-  const svg = inkMapSvg(geo, ink, { names, labels, lang, moment: { province, frame }, still, id: 'homing' });
+  const svg = inkMapSvg(geo, ink, { names, labels, lang, moment: { province, frame }, still, id: 'homing', paint });
   const done = still || age >= HOMING_MS.end;
   return `<div class="card homing${still ? ' still' : ''}" data-homing="${esc(province)}" role="button" tabindex="0" aria-label="${esc(say(w.seal, { p: names[province] ?? province }))}" style="--age:${Math.round(still ? HOMING_MS.end : age)}ms">
     <div class="homingmap">${svg}</div>

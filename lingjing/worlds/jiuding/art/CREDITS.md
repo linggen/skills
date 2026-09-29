@@ -47,6 +47,12 @@ mountain marks and frame removed. The adapted map is shared under the same
 licence. The names over it and every place's point are the game's own (his
 choice, 2026-09-17).
 
+`map/jiuzhou-ink.webp` — the 九州 as an ink landscape map (山水舆图), painted for
+the game by Codex (gpt-5.5 image generation), 2026-09-29, from an outline of
+`map/jiuzhou.svg`'s coast, borders and rivers so it lies over the map's shapes.
+The painting is ours; the province shapes it is clipped to (and the outline it
+followed) remain the CC BY-SA map above. The 鼎归 map shows it province by province.
+
 ## Items — painted for Lingjing
 
 `items/*.webp` are painted for the game by the local picture model (FLUX.2

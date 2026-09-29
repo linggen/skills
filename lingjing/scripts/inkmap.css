@@ -1,6 +1,7 @@
-/* inkmap.css — 鼎归 · 地图晕开 (哇时刻 ①): the 九州 in ink on 宣纸 (inkmap.js).
-   mist: blank paper, a faint dashed outline · wash: a light ink wash ·
-   ink: deep ink, rivers, a red seal and a moon on the water. */
+/* inkmap.css — 鼎归 · 地图晕开 (哇时刻 ①): the 九州 on 宣纸 (inkmap.js).
+   mist: blank paper, a faint dashed outline · wash: the ink painting faint, like pencil ·
+   ink: the painting whole, like a restored old map, a red seal and a moon on the water.
+   The paper stays light everywhere: nothing is ever a dark block. */
 :root {
   --ink-paper: #f5efe1;
   --ink-deep: #231f1a;
@@ -15,23 +16,26 @@
 .inkmap .paper { fill: var(--ink-paper); }
 .inkmap .waters path { fill: rgba(70, 86, 96, 0.09); stroke: rgba(35, 31, 26, 0.18); stroke-width: 1; }
 .inkmap .pvfill { stroke: none; fill: transparent; transition: fill 0.8s; }
-.inkmap .pvfill.s-wash { fill: var(--ink-wash); }
-.inkmap .spill { fill: var(--ink-deep); opacity: 0.62; }
-.inkmap .rivers path { fill: none; stroke: var(--ink-paper); stroke-width: 3.2; stroke-linecap: round; opacity: 0.9; }
+.inkmap .pvfill.s-wash { fill: rgba(35, 31, 26, 0.03); }
+.inkmap .plate.faint { opacity: 0.3; }
+.inkmap .plate.bare { fill: rgba(120, 100, 70, 0.12); }
+.inkmap .plate.bare.faint { opacity: 0.4; }
+.inkmap .bleed { fill: none; stroke: rgba(35, 31, 26, 0.5); opacity: 0; }
+.inkmap .rivers path { fill: none; stroke: rgba(46, 64, 78, 0.55); stroke-width: 2.2; stroke-linecap: round; }
 .inkmap .pvedge { fill: none; stroke: var(--ink-deep); stroke-linejoin: round; }
 .inkmap .pvedge.s-mist { stroke-opacity: 0.16; stroke-width: 1.4; stroke-dasharray: 7 7; }
 .inkmap .pvedge.s-wash { stroke-opacity: 0.4; stroke-width: 1.6; }
 .inkmap .pvedge.s-ink { stroke-opacity: 0.85; stroke-width: 2.4; }
 .inkmap .inkseal rect { fill: var(--ink-seal); opacity: 0.92; }
 .inkmap .inkseal text { fill: #fff6ec; font-family: var(--serif, serif); font-weight: 700; }
-.inkmap .moondisc { fill: var(--ink-moon); stroke: rgba(35, 31, 26, 0.35); stroke-width: 1.2; }
-.inkmap .moonripple { fill: none; stroke: var(--ink-moon); stroke-width: 1.4; opacity: 0.8; }
+.inkmap .moondisc { stroke: rgba(160, 130, 70, 0.35); stroke-width: 0.8; }
+.inkmap .moonreflect { opacity: 0.85; }
 .inkmap .inkdrop { fill: var(--ink-deep); opacity: 0; }
 
 /* Province names in brush: pale over a wash, dark over ink, all but gone in mist. */
 .atlas .pv.s-wash { color: rgba(40, 34, 24, 0.42); }
 .atlas .pv.s-ink { color: rgba(24, 20, 16, 0.92); text-shadow: 0 0 6px var(--ink-paper); }
-.atlas.whole .pv.s-ink { color: var(--ink-paper); text-shadow: 0 0 3px var(--ink-deep); }
+.atlas.whole .pv.s-ink { color: var(--ink-deep); text-shadow: 0 0 4px var(--ink-paper), 0 0 8px var(--ink-paper); }
 .atlas .pv.s-mist { color: rgba(40, 34, 24, 0.12); filter: blur(0.6px); }
 .pvline { display: grid; gap: 2px; margin-top: 8px; padding: 8px 10px; border-left: 3px solid var(--ink-seal); background: rgba(245, 239, 225, 0.7); font-size: 13px; }
 .pvline b { font-family: var(--serif, serif); letter-spacing: 0.1em; }
@@ -42,8 +46,8 @@
 .card.homing { position: relative; padding: 0; overflow: hidden; background: var(--ink-paper); cursor: pointer; }
 .homingmap svg { display: block; width: 100%; height: auto; }
 .homingcount { position: absolute; top: 8px; right: 10px; padding: 2px 8px; font-family: var(--serif, serif); font-size: 13px; letter-spacing: 0.12em; color: var(--ink-deep); background: rgba(245, 239, 225, 0.85); border: 1px solid rgba(35, 31, 26, 0.25); border-radius: 3px; }
-.homingrise { position: absolute; left: 12px; top: 10px; font-family: var(--serif, serif); font-size: 18px; letter-spacing: 0.3em; color: var(--ink-paper); text-shadow: 0 0 6px var(--ink-deep), 0 0 12px var(--ink-deep); opacity: 0; }
-.hominghint { position: absolute; right: 10px; bottom: 6px; font-size: 11px; color: rgba(35, 31, 26, 0.45); }
+.homingrise { position: absolute; left: 10px; top: 8px; padding: 3px 10px; font-family: var(--serif, serif); font-size: 18px; letter-spacing: 0.3em; color: var(--ink-deep); background: rgba(245, 239, 225, 0.88); border-radius: 3px; box-shadow: 0 0 12px rgba(245, 239, 225, 0.9); opacity: 0; }
+.hominghint { position: absolute; right: 8px; bottom: 6px; padding: 1px 6px; font-size: 11px; color: rgba(35, 31, 26, 0.7); background: rgba(245, 239, 225, 0.85); border-radius: 3px; }
 
 .inkmap.moment .cam.zoom { transform-box: view-box; transform-origin: 0 0; transform: var(--cam); }
 .inkmap.moment .spread { transform-box: fill-box; transform-origin: center; }
@@ -53,7 +57,9 @@
 
 .card.homing:not(.still) .inkmap .cam.zoom { animation: ink-zoom 1.4s cubic-bezier(.3, .1, .2, 1) both; animation-delay: calc(0ms - var(--age)); }
 .card.homing:not(.still) .inkmap .inkdrop { animation: ink-drop 0.55s ease-in both; animation-delay: calc(900ms - var(--age)); }
-.card.homing:not(.still) .inkmap .spread { animation: ink-spread 2.2s cubic-bezier(.2, .6, .3, 1) both; animation-delay: calc(1300ms - var(--age)); }
+.card.homing:not(.still) .inkmap .bleed { animation: ink-spread 2.6s cubic-bezier(.2, .6, .3, 1) both, ink-bleed 2.6s ease-out both; animation-delay: calc(1300ms - var(--age)); }
+.inkmap.moment .bleed { transform-box: fill-box; transform-origin: center; }
+.card.homing:not(.still) .inkmap .spread { animation: ink-spread 2.6s cubic-bezier(.2, .6, .3, 1) both; animation-delay: calc(1300ms - var(--age)); }
 .card.homing:not(.still) .inkmap .rivers.draw path { animation: ink-river 1.6s ease-out both; animation-delay: calc(3300ms - var(--age)); }
 .card.homing:not(.still) .inkmap .inkseal.thud .sealbody { animation: ink-thud 0.5s cubic-bezier(.5, 0, .7, 1.4) both; animation-delay: calc(4800ms - var(--age)); }
 .card.homing:not(.still) .inkmap .waters.ripple path { animation: ink-ripple 1.6s ease-out both; animation-delay: calc(5500ms - var(--age)); }
@@ -63,6 +69,7 @@
 .card.homing.still .homingrise { opacity: 1; }
 
 @keyframes ink-zoom { from { transform: none; } to { transform: var(--cam); } }
+@keyframes ink-bleed { 0% { opacity: 0; } 15% { opacity: 0.8; } 70% { opacity: 0.35; } 100% { opacity: 0; } }
 @keyframes ink-drop { 0% { opacity: 0; transform: translateY(-120px); } 60% { opacity: 1; transform: none; } 100% { opacity: 0; transform: none; } }
 @keyframes ink-spread { from { transform: scale(0.001); } to { transform: scale(1); } }
 @keyframes ink-river { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }

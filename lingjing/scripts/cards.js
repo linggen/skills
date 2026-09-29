@@ -285,7 +285,7 @@ function atlasMap(ctx) {
   const pos = (at) => { const { left, top } = within(frame, at); return `left:${left.toFixed(2)}%;top:${top.toFixed(2)}%`; };
   const names = Object.fromEntries(Object.keys(atlas.provinces).map((id) => [id, ctx.content?.dictionary?.provinces?.[id]?.[ctx.lang] ?? id]));
   // 鼎归 · 地图晕开: the 九州 in ink as the rules read the save (inkmap.js), the plain picture until it is loaded.
-  const inked = ctx.ink && ctx.inkGeo ? inkLayerHtml(ctx.inkGeo, ctx.ink, frame, { names, labels: atlas.provinces, lang: ctx.lang }) : '';
+  const inked = ctx.ink && ctx.inkGeo ? inkLayerHtml(ctx.inkGeo, ctx.ink, frame, { names, labels: atlas.provinces, lang: ctx.lang, paint: ctx.ink.paint ? { href: worldPath(dir, ctx.ink.paint) } : null }) : '';
   const img = inked || `<img src="${esc(worldPath(dir, atlas.file))}" alt="" style="width:${(100 / frame.w).toFixed(2)}%;left:${(-frame.x / frame.w * 100).toFixed(2)}%;top:${(-frame.y / frame.h * 100).toFixed(2)}%">`;
   const provinceName = (id) => (ctx.lang === 'en' ? ctx.content.dictionary.provinces[id]?.en ?? id : id);
   const hasPlaces = (id) => id === own || ctx.atlas?.[id]?.places?.some((p) => !p.closed);

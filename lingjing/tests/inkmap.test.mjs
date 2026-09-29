@@ -128,7 +128,11 @@ test('the ink map draws the three states; the moment draws the spread, the river
   const card = homingCardHtml(geo, ink, { province: '冀', frame, age: 1500, names, labels: atlas.provinces });
   assert.match(card, /<feTurbulence[^>]*\/><feDisplacementMap/, 'rough ink-on-paper edges');
   assert.match(card, /<mask id="homing-spread"[\s\S]*class="spread"/, 'the spread is a mask');
-  assert.match(card, /clip-path="url\(#homing-\d\)"><rect class="spill" [^>]*mask="url\(#homing-spread\)"/, 'clipped to the province');
+  assert.match(card, /clip-path="url\(#homing-\d\)">[^]*?class="plate(?: bare)?" [^>]*mask="url\(#homing-spread\)"/, 'the painting revealed through the mask, clipped to the province');
+  assert.match(card, /class="bleed"/, 'a darker bleed at the spreading edge');
+  assert.doesNotMatch(card, /spill/, 'never a dark fill');
+  const painted = homingCardHtml(geo, ink, { province: '冀', frame, paint: { href: 'art/map/x.webp' } });
+  assert.match(painted, /<image class="plate" href="art\/map\/x.webp"[^>]*mask="url\(#homing-spread\)"/);
   assert.match(card, /class="rivers draw"><path d="[^"]+" pathLength="1"/, 'rivers draw themselves');
   assert.match(card, /class="inkseal thud"/);
   assert.match(card, /class="waters ripple"/);

@@ -25,6 +25,8 @@
  "atlas": {
   "_about": "The world map: art/map/jiuzhou.svg, cleaned of every word by tools/clean_map.py. Each place's `map` and each province here are [x, y] as fractions of it; tools/pin.py starts a new place from its longitude and latitude.",
   "file": "art/map/jiuzhou.svg",
+  "_paint": "The same map painted in ink (Codex, 2026-09-29; art/CREDITS.md), lying exactly over `file`: the 鼎归 map shows it province by province — hidden in mist, faint where walked, whole where the 鼎 is home.",
+  "paint": "art/map/jiuzhou-ink.webp",
   "aspect": 1.3645,
   "provinces": {
    "冀": [

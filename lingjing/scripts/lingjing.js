@@ -974,7 +974,9 @@ function spoilsCtx() {
 
 const drawCard = (c) => (c.card === 'memory' ? memoryHtml() : c.card === 'homing' ? homingHtml() : cardHtml(c, ctx()));
 const inkNames = () => Object.fromEntries(Object.keys(look?.world?.atlas?.provinces ?? {}).map((id) => [id, authored?.dictionary?.provinces?.[id]?.[lang()] ?? id]));
-const homingHtml = () => (view.homing && atlasPlaces?.ink ? homingCardHtml(inkGeo, atlasPlaces.ink, { province: view.homing.province, frame: view.homing.frame, age: performance.now() - view.homing.at, still: view.homing.still || stillMotion(), lang: lang(), names: inkNames(), labels: look?.world?.atlas?.provinces }) : '');
+const homingHtml = () => (view.homing && atlasPlaces?.ink ? homingCardHtml(inkGeo, atlasPlaces.ink, { province: view.homing.province, frame: view.homing.frame, age: performance.now() - view.homing.at, still: view.homing.still || stillMotion(), lang: lang(), names: inkNames(), labels: look?.world?.atlas?.provinces, paint: inkPaint() }) : '');
+/// The world's ink painting of the map (world.json atlas.paint), where the 鼎归 map shows it.
+const inkPaint = () => (atlasPlaces?.ink?.paint && look?.world?.dir ? { href: worldPath(look.world.dir, atlasPlaces.ink.paint) } : null);
 /// 银月's memory: ink blooming into colour, carried on from its age on a redraw.
 const memoryHtml = () => (view.memory ? memoryCardHtml(view.memory.play, { i: view.memory.i, age: performance.now() - view.memory.at, still: stillMotion(), artBase: artBase(), lang: lang() }) : '');
 
@@ -2449,7 +2451,7 @@ function watchUnroll() {
   if (!id || unrollFor === id || !inkGeo || !atlasPlaces?.ink) return;
   unrollFor = id;
   const box = document.createElement('div');
-  box.innerHTML = unrollHtml(inkMapSvg(inkGeo, atlasPlaces.ink, { names: inkNames(), labels: look.world.atlas.provinces, lang: lang(), id: 'unroll' }), { still: stillMotion(), label: lang() === 'en' ? 'The Nine Provinces' : '九州' });
+  box.innerHTML = unrollHtml(inkMapSvg(inkGeo, atlasPlaces.ink, { names: inkNames(), labels: look.world.atlas.provinces, lang: lang(), id: 'unroll', paint: inkPaint() }), { still: stillMotion(), label: lang() === 'en' ? 'The Nine Provinces' : '九州' });
   box.firstElementChild.dataset.chapter = id;
   $('view')?.appendChild(box.firstElementChild);
 }
