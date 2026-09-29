@@ -126,12 +126,16 @@ function looseKeyed(rows) {
 // devices pair the same way; incoming in statement order) — two merchants on
 // one day for one amount stay two, and an overlapping statement's new row is
 // never taken for a row it already matched by id.
-export function onFileIds(existing, incoming) {
+export function onFileIds(existing, incoming, isDeleted = () => false) {
   const have = new Set((existing || []).map((r) => r.id));
   const onFile = new Map();
   for (const r of incoming || []) if (have.has(r.id)) onFile.set(r.id, r.id);
   const claimed = new Set(onFile.values());
-  const rest = (existing || []).filter((r) => !claimed.has(r.id)).sort((a, b) => a.id.localeCompare(b.id));
+  // Live rows before deleted ones: a row the person deleted by hand stays
+  // deleted when a live twin (same day, same amount) can take the match.
+  const rank = (r) => (isDeleted(r.id) ? 1 : 0);
+  const rest = (existing || []).filter((r) => !claimed.has(r.id))
+    .sort((a, b) => rank(a) - rank(b) || a.id.localeCompare(b.id));
   const loose = new Map(looseKeyed(rest));
   for (const [key, r] of looseKeyed((incoming || []).filter((r) => !have.has(r.id)))) {
     if (loose.has(key)) onFile.set(r.id, loose.get(key).id);
@@ -142,8 +146,8 @@ export function onFileIds(existing, incoming) {
 // Merge incoming rows into existing, dropping rows already on file (problem 1).
 // Returns { merged, added, onFile } — `added` is what should be appended to
 // the JSONL; `onFile` maps each incoming row already there to its id on file.
-export function mergeLedger(existing, incoming) {
-  const onFile = onFileIds(existing, incoming);
+export function mergeLedger(existing, incoming, isDeleted = () => false) {
+  const onFile = onFileIds(existing, incoming, isDeleted);
   const seen = new Set();
   const added = [];
   for (const r of incoming || []) {
@@ -161,7 +165,7 @@ export function mergeLedger(existing, incoming) {
 // `added_ids`, so the import reports "N new" and can be undone again. `ids` is
 // every row the statement carried, by its id on file — the log's `row_ids`.
 export function mergeImport(existing, incoming, isDeleted = () => false) {
-  const { merged, added, onFile } = mergeLedger(existing, incoming);
+  const { merged, added, onFile } = mergeLedger(existing, incoming, isDeleted);
   const ids = (incoming || []).map((r) => onFile.get(r.id) || r.id);
   const byId = new Map(merged.map((r) => [r.id, r]));
   const restored = [...new Set(ids)].filter((id) => isDeleted(id)).map((id) => byId.get(id));

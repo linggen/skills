@@ -58,6 +58,24 @@ test('a re-import records the rows it carried by their ids on file', () => {
   assert.deepEqual(idsToRevert(log, 'new'), [again.fresh[0].id], 'undoing it takes only its new row');
 });
 
+// A fee and its rebate misread as two fees: the person deletes the wrong one.
+// The bank's own export then carries one fee — it pairs with the live row, and
+// the deleted one stays deleted.
+test('a row deleted by hand stays deleted when its live twin takes the match', () => {
+  const onFile = toLedgerRows([
+    { date: '2026-03-31', merchant: 'Monthly Plan Fee', amount: -9.5 },
+    { date: '2026-03-31', merchant: 'Monthly Plan Fee', amount: -9.5 },
+  ], 'acct');
+  for (const gone of onFile) {
+    const again = mergeImport(onFile, toLedgerRows([
+      { date: '2026-03-31', merchant: 'PLAN FEE', amount: -9.5 },
+      { date: '2026-03-31', merchant: 'PLAN FEE REBATE', amount: 9.5 },
+    ], 'acct'), (id) => id === gone.id);
+    assert.deepEqual(again.restored, [], `deleted ${gone.id} stays deleted`);
+    assert.deepEqual(again.added.map((r) => r.merchant), ['PLAN FEE REBATE']);
+  }
+});
+
 test('re-importing a reverted statement after the cleaner changed lifts the old tombstones', () => {
   const first = mergeImport([], toLedgerRows(oldText, 'acct'));
   const deleted = new Set(first.fresh.map((r) => r.id));
