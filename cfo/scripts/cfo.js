@@ -2694,15 +2694,20 @@ function openReminders() {
 // reattach to it; otherwise mint a fresh one. The report is independent of this.
 // Activity = `updated_at` (the engine sets it from the transcript's mtime); a
 // chat begun two days ago and spoken in an hour ago is still today's.
+// A session never spoken in (updated_at == created_at) is a lost kickoff — the
+// embed's transport dropped before the hidden greeting landed. Resuming it
+// silently left "No messages" all day; reuse it, but greet again.
 const lastActive = (s) => s.updated_at || s.created_at || 0;
-async function recentSessionId() {
+const spoken = (s) => (s.updated_at || 0) > (s.created_at || 0);
+async function recentSession() {
   try {
-    const sessions = await listSkillSessions(SKILL);
-    if (!sessions.length) return null;
-    sessions.sort((a, b) => lastActive(b) - lastActive(a));
-    const ageHours = (Date.now() / 1000 - lastActive(sessions[0])) / 3600;
-    return ageHours < 24 ? sessions[0].id : null;
-  } catch { return null; }
+    const recent = (await listSkillSessions(SKILL))
+      .filter((s) => (Date.now() / 1000 - lastActive(s)) / 3600 < 24)
+      .sort((a, b) => lastActive(b) - lastActive(a));
+    const talk = recent.find(spoken);
+    if (talk) return { id: talk.id, greet: false };
+    return recent.length ? { id: recent[0].id, greet: true } : { id: null, greet: true };
+  } catch { return { id: null, greet: true }; }
 }
 
 async function mountChat(sessionId) {
@@ -2844,10 +2849,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   await resumeState();                  // land on the existing financial picture
   loadMarketRate();                     // background; re-renders/saves when it lands
   loadFx();                             // only fetches when accounts hold 2+ currencies
-  const sid = await recentSessionId();
+  const { id: sid, greet } = await recentSession();
   await mountChat(sid);                 // resume <24h chat, else fresh
   showTabSuggestions();
-  if (!sid) triggerGreeting();
+  if (greet) triggerGreeting();         // fresh, or a kickoff that never landed
   openReminders();                      // payment/staleness checks, once per state
   await loadWatchSeen();                // folder-watch: auto-import dropped statements
   startWatch();
