@@ -110,4 +110,6 @@ test('the page: every verb carries --save, and scratch mode never opens the chat
   assert.match(body('deliver'), /if \(SCRATCH\)/, 'no message to Ling');
   assert.match(body('readCloud'), /if \(SCRATCH\) return/, 'no cloud sync');
   assert.match(page, /测试存档/, 'the badge');
+  assert.match(body('footRowHtml'), /slots\.footer\.roads \|\| scratchRoads\(\)/, 'no chat to ask 何去何从: the roads always stand');
+  assert.match(page, /const scratchRoads = \(\) => Boolean\(SCRATCH\) && !look\?\.seclusion && !look\?\.director\?\.corridor;/, 'but never in 闭关 or a corridor');
 });

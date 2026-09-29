@@ -857,10 +857,14 @@ function footRowHtml(slots) {
   if (bout) return '';
   const w = words(), next = slots.queue[0];
   // In 闭关 and inside a corridor (the prologue) the rules keep the roads off (stageSlots).
-  const roads = slots.footer.roads ? roadsHtml() : '<span></span>';
+  const roads = slots.footer.roads || scratchRoads() ? roadsHtml() : '<span></span>';
   const more = next ? `<button class="act quiet more" data-qnext="${esc(slots.key)}" title="${esc(fill(w.queueNext, { what: queueLabel(next.cards[0]) }))}">${esc(fill(w.queueMore, { n: slots.queue.length }))} ›</button>` : '';
   return roads + more;
 }
+
+/// A scratch save has no chat to ask 何去何从, so its roads always stand —
+/// except where the rules keep them off (闭关, a corridor).
+const scratchRoads = () => Boolean(SCRATCH) && !look?.seclusion && !look?.director?.corridor;
 
 /// The chips — 录 · 书 · 事 · 袋 · 恩 — in the footer, under the stage.
 function footChipsHtml() {
