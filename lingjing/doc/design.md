@@ -842,6 +842,33 @@ same voice.
 | 阿禾 pressed to dive for the 鼎 | 渡口 | Help her → 恩; she stands with the player at the 大比 |
 | Preparing | anywhere | Tame, earn 灵石, make pills — the deck and the purse for the 大比 |
 
+## 哇时刻 — wow moments (his, 2026-09-29; designed, not built)
+
+His ask: 「让玩家 say wow」. Borrowed from 原神 where it fits, and the two only an AI game can do. His order of value: **5 > 3 > 1 > 7 > 6 > 2 > 4**.
+
+1. **鼎归 · 地图晕开** (原神's 七天神像): a 鼎 taken home spreads its 州 across the 行路 map like ink on 宣纸; the 九州 water rises an inch — 「每一处水上一轮月」.
+2. **大场面** (原神's 魔神任务): one per chapter at most — the main slot takes the whole stage (漳水站起来, 冰夷 on two dragons, the furnace flying, 九宫归位); the picture shakes, 银月 looks up.
+3. **银月的记忆是彩色的** (原神's lost sibling): everything is ink; only her memories are painted in colour — one tail, one memory, one colour 小人书 panel (青丘, the heavenly war, 「天下，该归于一」).
+4. **山海经 图录** (原神's 图鉴): each creature met fills a 1597-woodcut page with its 山海经 line; a finished 经 opens as a readable picture book.
+5. **世界记得你** (AI only): Ling remembers what the player said weeks ago; at the finale a person helped in 第一章 stands beside them and repeats their words. The 恩仇簿 holds the record; wiring it to Ling's memory is the work.
+6. **真实世界进游戏** (AI + host only): festivals and the day's weather — see the next section. Real steps (Health) → 行路 is later.
+7. **你自己的小人书**: each chapter's end prints the player's own chapter — their name, choices, lines, panels — to shelve and share.
+
+Not borrowed: gacha. Paid draws go against 「欠饼还饼」.
+
+## 真实世界 — 节日与天气 (his, 2026-09-29; building)
+
+**节日** — the player's real calendar, reckoned locally (no network):
+- Chinese: 春节 · 除夕 · 元宵 · 端午 · 七夕 · 中秋 · 重阳 · 腊八, and the 二十四节气. International: 元旦 (New Year) · 圣诞 (Christmas). Lunar dates by table, 节气 by formula, on the player's local date.
+- Only on the real day (a 除夕–元宵-style span where the custom is one) — rare is what makes it special (原神's 海灯节).
+- Each festival is one data entry in the world: stage dressing (春联 and lanterns on the 小人书 frame; a light particle layer — firecracker sparks, snow for 圣诞), Ling's opening line for the day, one festival task (贴春联, 和阿禾包饺子), a small gift (压岁钱 灵石), 银月's greeting (「凡人的节，本王也吃」). A new festival is a new entry, not code.
+- 圣诞 and 元旦 live in the frame (dressing, greetings, a small gift), told in-world with a wink — a 西域胡商's feast day — never as 道统 lore.
+
+**天气** — the day's weather at the player's city:
+- A skill never goes online itself (skills don't phone home). The engine offers a general **weather** sense any skill can declare: city-level current weather from a keyless public service, off by the player's choice.
+- **The city is set once** by the player (a row on the 名字 card) — no location permission, private, the same on the phone. No city → 蒙山's seasons (snow in winter all the same).
+- Drawn as a layer over the stage (snow · rain · fog), snow on the 小人书 panels too; Ling says it once when it changes (「石坳村也下雪了」); small comic ties (the leaky roof drips on rainy days; 小狰 hates snow). Weather never makes the game harder — at most a small texture (fewer herbs on snow days).
+
 ## Player state
 
 `state.json`:
