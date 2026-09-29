@@ -164,7 +164,7 @@ test('the scene card holds its choices while Ling tells, and shows the book\'s t
   assert.equal(WORDS.en.lingTelling, 'Ling is telling it…');
 });
 
-test('her words are hers while she is present: marked for Ling, handed to her; asleep, the story tells them', () => {
+test('her lines in the book are the book\'s: Ling tells them in place, awake or asleep (his, 2026-09-29)', () => {
   const valley = walk(start(), TO_VALLEY, content, NOW);
   assert.equal(valley.scene, '00-yinyue');
   // at dawn she is not yet with the player: Ling tells her words
@@ -174,10 +174,10 @@ test('her words are hers while she is present: marked for Ling, handed to her; a
   assert.deepEqual(out.state.companion, { joined: '2026-09-28', awake: true });
   const cliff = tellOf(content, out.state).tell.at(-1);
   assert.equal(cliff.id, '00-cliff');
-  assert.match(cliff.text, /懒洋洋地抬了抬下巴。\n\n〔银月〕/);
-  assert.doesNotMatch(cliff.text, /让开/);
-  assert.match(out.result.her_beat.facts.line, /让开/);
-  assert.deepEqual(Object.keys(forLing(out.result).her_beat.facts), ['happened'], 'Ling never gets her line');
+  assert.match(cliff.text, /懒洋洋地抬了抬下巴。/);
+  assert.match(cliff.text, /让开/, 'her book line told in place');
+  assert.doesNotMatch(cliff.text, /〔银月〕|⟪|⟫/);
+  assert.doesNotMatch(out.result.her_beat?.facts?.line ?? '', /让开/, 'never handed to her as well');
   // she faints at the deer, wakes at night, sleeps in the token after the bath
   let s = walk(out.state, [['resolve', { exit: 'climb' }], ['resolve', { exit: 'left' }]], content, NOW);
   assert.deepEqual(s.companion, { joined: '2026-09-28', asleep: true });

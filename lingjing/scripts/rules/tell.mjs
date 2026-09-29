@@ -9,41 +9,20 @@
 // the choice's outcome, then the scene it walks into — whoever moved: her own
 // Resolve carries it, and a tap on the panel leaves it owed for her next Look.
 //
-// Yinyue's words inside a passage are marked ⟪…⟫. Until she walks with the
-// player — and while she sleeps in the fox token — they are the story's (the fox
-// in the valley, the girl at dawn, the token's one word at the 蠪侄), and Ling
-// tells them; while she walks with the player awake they are hers (SKILL.md:
-// Ling never speaks as her), so Ling's copy shows 〔银月〕 where she speaks and
-// the words go to her as her beat (story.mjs herBeat), to say in her own way.
+// Yinyue's words inside a passage are marked ⟪…⟫. They are the BOOK's lines,
+// and Ling tells them as written, awake or asleep — telling the book is not
+// speaking for her (his, 2026-09-29: 「银月的台词按书引用」). Handed to her
+// instead, they left holes in the dialogue: 「我娘说编得不好」 answered a line
+// the chat never showed. Her own words off the page are still hers alone.
 import { fill, pick } from '../state.mjs';
-import { companionOf, herAwake } from './companion.mjs';
 import { inMade, sceneOf } from './world.mjs';
 
 const SPAN = /⟪([\s\S]*?)⟫/g;
-const MARK = { zh: '〔银月〕', en: '〔Yinyue〕' };
 
-/* Her words in a passage, in order: the marked spans' text. */
-export const herSpans = text => [...String(text ?? '').matchAll(SPAN)].map(m => m[1]);
-
-/* A passage as Ling reads it: her spans told by the story while she is not
-   present, marked as hers while she is. */
+/* A passage as Ling reads it: her marked words told as the book's. */
 export function passageFor(content, state, pair) {
-  const lang = state.lang, text = fill(pick(pair, lang), state, content);
-  if (text == null) return null;
-  return herAwake(state) ? text.replace(SPAN, MARK[lang] ?? MARK.zh) : text.replace(SPAN, '$1');
-}
-
-/* Her words in a move's passages as lines of hers, for her beat: the
-   exit's story and the scene it walks into, each language kept. */
-export function spanLines(content, stories) {
-  const c = companionOf(content);
-  if (!c) return [];
-  const text = {};
-  for (const lang of ['zh', 'en']) {
-    const said = stories.filter(Boolean).flatMap(s => herSpans(s[lang]));
-    if (said.length) text[lang] = said.join(lang === 'zh' ? '' : ' ');
-  }
-  return text.zh || text.en ? [{ who: c.id, text }] : [];
+  const text = fill(pick(pair, state.lang), state, content);
+  return text == null ? null : text.replace(SPAN, '$1');
 }
 
 /* A move owes Ling its passages: the exit's own (when it has one), and the
@@ -130,4 +109,3 @@ export function tellReport(tell, lang = 'zh') {
   return `${HEAD[lang] ?? HEAD.zh}\n\n${body}\n[/tell]`;
 }
 
-export { MARK };

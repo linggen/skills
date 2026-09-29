@@ -12,7 +12,7 @@ import { hashOf } from './travel.mjs';
 import { herBeat, storyNode, withHerBeat } from './story.mjs';
 import { stow, storedLine } from './pouch.mjs';
 import { bornRoots, rootName, starterFor, stoneRoots } from './roots.mjs';
-import { oweExit, spanLines } from './tell.mjs';
+import { oweExit } from './tell.mjs';
 import { seenMet } from './examine.mjs';
 import { companionOf } from './companion.mjs';
 import { grantMemory } from './memories.mjs';
@@ -471,9 +471,10 @@ export function resolve(state, content, ctx, args) {
   const walked = exit.next ? walkOn(content, s, ctx.now) : null;
   // Her lines in this move — the exit's beat, and the scene it walks into —
   // are hers to say: facts for her, never a line for Ling (story.mjs herBeat).
+  // The book's own lines for her are not among them: Ling tells those (tell.mjs).
   const into = exit.next && atScene(content, s) ? sceneOf(content, s) : null;
   const her = herBeat(content, s, {
-    id: `${scene.id}/${exit.id}`, lines: [...(exit.beat ?? []), ...(into?.lines ?? []), ...spanLines(content, [exit.story, into?.story])],
+    id: `${scene.id}/${exit.id}`, lines: [...(exit.beat ?? []), ...(into?.lines ?? [])],
     happened: [...beat.map(b => b.text), into && fill(pick(into.setup, lang), s, content)],
   });
   if (her) s.node = withHerBeat(node, her, ctx.now);

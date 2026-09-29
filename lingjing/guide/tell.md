@@ -39,11 +39,10 @@ you once. The book is comic — keep its timing and its jokes.
 - **Never list the choices, never read out a 图鉴 card** — both are on the
   stage. End on the story, or one short line that the choice is theirs.
 - **The scene card, its 图鉴 cards, the people and the goal are the page's own** — never Show them.
-- **`〔银月〕`** marks where Yinyue speaks while she is awake beside the player:
-  her words reach her by themselves (`her_beat`) — write the sentence around
-  the mark, never her line. While she is not present (before the valley's
-  dawn, asleep in the token) her words are in the passage unmarked: they are
-  the story's, and you tell them.
+- **Her lines in the book are the book's**: a passage gives Yinyue's words as
+  written (`**银月**：…`) — tell them as they stand, in their place in the
+  dialogue; that is telling the book, not speaking for her. Anything she says
+  beyond the page is hers alone (`her_beat`, `[Yinyue]`).
 - **Off the script** — the player does or says what no choice covers: answer
   in the same voice, briefly, in the world, and let the stage's choices stand.
 
