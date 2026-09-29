@@ -74,7 +74,7 @@ the three-year montage that moved to chapter 1; it is kept for it.
 
 ## 第一章 · 外门 — painted for Lingjing
 
-`panels/wm-*.webp` (21 小人书 panels — **drafts**, to be repainted from chapters/00-waimen/panels.md), `people/chuxiansheng.webp`, `people/sunergou.webp`,
-`people/neimen-shijie.webp` and `items/{luobo,danlu,huangting,heluo}.webp` were painted by the local
+`people/chuxiansheng.webp`, `people/sunergou.webp`, `people/neimen-shijie.webp` and `items/{luobo,danlu,huangting,heluo}.webp` were painted by the local
 picture model (FLUX.2 klein 4B), 2026-09-29, with tools/paint-waimen.py — the prologue's recipe; each
-looked at and re-rolled where it painted fake characters (the kept seeds are the script's `SEEDS`). No outside source.
+looked at and re-rolled where it painted fake characters (the kept seeds are the script's `SEEDS`).
+The chapter has no story panels (his ruling, 2026-09-29). No outside source.

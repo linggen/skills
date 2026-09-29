@@ -1,9 +1,10 @@
 # 第一章 · 外门 — beat sheet
 
 The script is story/huxian-bing/02-第一章·外门.md (approved by Hanli; his plan
-of 2026-09-29: 「可以，按2天做，go」, 「可以，不打，go」). Told as a 小人书 like the
-prologue: one painted panel a scene (art/panels/wm-*.webp — drafts; the shot list for the repaint is panels.md),
-two to four lines of caption, the choices under it; the passage (`story`) is the
+of 2026-09-29: 「可以，按2天做，go」, 「可以，不打，go」). On the stage each scene is
+its caption (two to four lines) and its choices — no picture: a story moment is
+not illustrated (his ruling, 2026-09-29; pictures are for unfamiliar knowledge,
+and figures.md lists where one would help). The passage (`story`) is the
 book's own, turned to 你, and Ling tells it. The prologue already played the
 book's § 一 公中, so the chapter opens on the morning after, with {伴}.
 

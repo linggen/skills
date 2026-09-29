@@ -88,7 +88,7 @@ function panelOf(content, state, scene, buttons) {
   // A staying choice already made (看碑背) is not offered again: its passage was told.
   const done = e => e.stay && e.mark && (state.marks ?? []).includes(e.mark);
   const taps = buttons.map(id => scene.exits.find(e => e.id === id)).filter(e => e && !own(e) && !done(e)).map(e => ({ id: e.id, label: say(e.label) }));
-  return { art: scene.panel.art, caption: (scene.panel.caption?.[state.lang] ?? scene.panel.caption?.zh ?? []).map(l => fill(l, state, content)), taps };
+  return { ...(scene.panel.art ? { art: scene.panel.art } : {}), caption: (scene.panel.caption?.[state.lang] ?? scene.panel.caption?.zh ?? []).map(l => fill(l, state, content)), taps };
 }
 
 /* 恩仇簿 as Look tells it: who, 恩 · 仇 · 诺, what, the player's own words,

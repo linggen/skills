@@ -75,7 +75,8 @@ test('the prologue leads into 第一章 · 外门, which sorts between it and �
   assert.equal(l.chapter.title, '第一章 · 外门');
   assert.equal(l.chapter.fresh, true);
   assert.equal(l.scene.id, 'wm-ahe');
-  assert.ok(l.scene.panel.art.endsWith('wm-ahe.webp'));
+  assert.equal(l.scene.panel.art, undefined, 'a story moment is not illustrated: the caption and the choices stand alone');
+  assert.ok(l.scene.panel.caption.length >= 2 && l.scene.panel.taps.length >= 1);
   assert.equal(story(s, content, ctx()).result.cauldrons.length, 9, 'no cauldron in it: the nine are still the nine');
 });
 

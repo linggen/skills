@@ -973,8 +973,8 @@ function lintScene(scene, chapter, content, ids, bad) {
   // A 连环画 beat (rules/tell.mjs): the passage told in the chat, the panel on the stage.
   lintStory(where, scene.story, bad);
   if (scene.panel) {
-    if (!scene.panel.art) bad(where, 'a panel needs its picture');
-    else if (!fs.existsSync(path.join(content.dir, scene.panel.art))) bad(where, `panel art ${scene.panel.art} is missing`);
+    // A picture is optional: a story moment is not illustrated (his, 2026-09-29); one named must exist.
+    if (scene.panel.art && !fs.existsSync(path.join(content.dir, scene.panel.art))) bad(where, `panel art ${scene.panel.art} is missing`);
     for (const lang of ['zh', 'en']) {
       const lines = scene.panel.caption?.[lang];
       if (!Array.isArray(lines) || lines.length < 2 || lines.length > 4 || lines.some(l => typeof l !== 'string' || !l.trim())) bad(where, `a panel caption is two to four lines in ${lang}`);

@@ -858,6 +858,7 @@ body.reading .view, body.reading .tray { display: none; }
 .panelcard .panelart { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); }
 .panelcard figcaption { margin: 10px 4px 2px; font-family: var(--serif); font-size: 15px; line-height: 1.7; letter-spacing: .04em; }
 .panelcard figcaption p { margin: 0; }
+.panelcard .panel.noart figcaption { margin-top: 4px; font-size: 16px; }
 .panelcard .paneltaps { margin-top: 10px; flex-wrap: wrap; }
 .panelcard .paneltap.busy { opacity: .6; }
 

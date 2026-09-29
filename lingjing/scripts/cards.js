@@ -1144,17 +1144,18 @@ function people(card, ctx) {
   return `<div class="card peoplecard"><div class="people">${faces}</div></div>`;
 }
 
-/// A 连环画 beat (his, 2026-09-28: 右边尽量放图片……像小人书): the painted panel,
-/// two to four lines of caption, and the scene's own choices under it — each a
+/// A 连环画 beat (his, 2026-09-28: 右边尽量放图片……像小人书): the painted panel —
+/// or none: a story moment is not illustrated (his, 2026-09-29; pictures are for
+/// unfamiliar knowledge), and the caption stands alone — two to four lines of caption, and the scene's own choices under it — each a
 /// tap the page resolves itself; Ling hears `[scene] took` and tells the story.
 function panel(card, ctx) {
   const p = ctx.look?.scene?.panel;
   if (!p) return '';
-  const art = `<img class="panelart" src="${esc(worldPath(ctx.look.world?.dir ?? 'worlds/jiuding', p.art))}" alt="">`;
+  const art = p.art ? `<img class="panelart" src="${esc(worldPath(ctx.look.world?.dir ?? 'worlds/jiuding', p.art))}" alt="">` : '';
   const caption = (p.caption ?? []).map((l) => `<p>${esc(l)}</p>`).join('');
   const busy = ctx.panelBusy ?? null;
   const taps = (p.taps ?? []).map((t) => `<button class="act paneltap${busy === t.id ? ' busy' : ''}" data-panel-exit="${esc(t.id)}"${busy ? ' disabled' : ''}>${esc(t.label)}</button>`).join('');
-  return `<div class="card panelcard"><figure class="panel">${art}<figcaption>${caption}</figcaption></figure>
+  return `<div class="card panelcard"><figure class="panel${p.art ? '' : ' noart'}">${art}<figcaption>${caption}</figcaption></figure>
     ${taps ? `<div class="acts paneltaps">${taps}</div>` : ''}${ctx.panelNote ? `<div class="donote">${esc(ctx.panelNote)}</div>` : ''}</div>`;
 }
 
