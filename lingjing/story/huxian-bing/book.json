@@ -36,6 +36,15 @@
    },
    "file": "02-第一章·外门.md",
    "opens": "01-ji"
+  },
+  {
+   "id": "03",
+   "title": {
+    "zh": "第二章 · 河伯娶妇",
+    "en": "Chapter Two · The River Lord's Bride"
+   },
+   "file": "03-第二章·河伯娶妇.md",
+   "opens": "01-ji"
   }
  ],
  "appendix": [
