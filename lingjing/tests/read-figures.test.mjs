@@ -245,6 +245,13 @@ test('录 holds a 图鉴: met entries by kind, the unmet as empty slots; a tap o
   assert.match(luHtml(book, { lang: 'en', artBase: 'A/', codex: codexOf(FILES, { lang: 'en' }), codexKinds: FILES.codex.kinds }), /<h3>Codex<\/h3>[\s\S]*People/);
   // a creature's card carries its 山海经 line
   assert.match(codexHtml(CODEX.get('longzhi'), { src }), /九尾、九首、虎爪/);
+  // 人物谱 is merged into the 图鉴 (his, 2026-09-29): no second list of the same people
+  const known = { ...book, people: [{ id: 'masan', name: '马三', kind: 'story' }, { id: 'known:x', name: '渔人老七', kind: 'known' }] };
+  const merged = luHtml(known, { lang: 'zh', artBase: 'A/', codex: CODEX, codexKinds: FILES.codex.kinds });
+  assert.doesNotMatch(merged, /<h3>人物谱<\/h3>/);
+  assert.doesNotMatch(merged, /class="luperson[^"]*"[^>]*><b>马三<\/b>/, 'one met with an entry is in the grid, not a name chip');
+  assert.match(luHtml(known, { lang: 'zh', artBase: 'A/', codex: CODEX, codexKinds: FILES.codex.kinds }), /<section class="lusec lucodex">[\s\S]*<b>渔人老七<\/b>[\s\S]*<\/section>/, 'one with no entry stays a name, under the 图鉴');
+  assert.match(luHtml(known, { lang: 'zh' }), /<h3>人物谱<\/h3>/, 'no 图鉴 at hand: the old list');
 });
 
 test('a repainted creature keeps its old woodcut as 「原图」; the prologue\'s people have their portraits', () => {

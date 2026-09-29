@@ -56,7 +56,12 @@ export function luHtml(book, { lang = 'zh', her = null, artBase = '', codex = nu
   if (!book?.ok) return `<div class="lu"><header class="luhead"><b>${esc(w.title)}</b><button class="act quiet" data-lu-close>${esc(w.close)}</button></header><p class="dim">${esc(w.none)}</p></div>`;
   const chapters = book.chapters ?? [];
   const last = chapters.length - 1;
-  const people = (book.people ?? []).map((p) => `<span class="luperson ${esc(p.kind)}" title="${esc(p.from ?? '')}"><b>${esc(p.name)}</b><i>${esc(w.kinds[p.kind] ?? '')}</i></span>`).join('');
+  // 人物谱 is the 图鉴's (his, 2026-09-29): who has an entry stands there with a
+  // picture; only those without one stay as names, under it. No 图鉴: the old list.
+  const tujian = tujianHtml(book, { lang, artBase, codex, codexKinds, codexOpen });
+  const inCodex = (p) => Boolean(tujian) && codex.has(p.id) && book.codex.includes(p.id);
+  const people = (book.people ?? []).filter((p) => !inCodex(p)).map((p) => `<span class="luperson ${esc(p.kind)}" title="${esc(p.from ?? '')}"><b>${esc(p.name)}</b><i>${esc(w.kinds[p.kind] ?? '')}</i></span>`).join('');
+  const peopleList = people ? `<div class="lupeople">${people}</div>` : '';
   const recalled = book.her?.length ? `<section class="lusec luher"><h3>${esc(say(w.her, { name: her ?? '' }))}</h3>${book.her.map((l) => `<blockquote>${esc(l)}</blockquote>`).join('')}</section>` : '';
   return `<div class="lu" role="dialog" aria-label="${esc(w.title)}">
     <header class="luhead"><b>${esc(w.title)}</b>${book.cauldrons?.length ? `<span class="dim">${esc(say(w.found, { n: book.found ?? 0 }))}</span>` : ''}
@@ -64,10 +69,10 @@ export function luHtml(book, { lang = 'zh', her = null, artBase = '', codex = nu
       <button class="act quiet" data-lu-close>${esc(w.close)}</button></header>
     ${book.cauldrons?.length ? mapHtml(book.cauldrons, w) : ''}
     <section class="lusec">${chapters.length ? chapters.map((c, i) => chapterHtml(c, w, i === last)).join('') : `<p class="dim">${esc(w.none)}</p>`}</section>
-    ${people ? `<section class="lusec"><h3>${esc(w.people)}</h3><div class="lupeople">${people}</div></section>` : ''}
+    ${!tujian && people ? `<section class="lusec"><h3>${esc(w.people)}</h3>${peopleList}</section>` : ''}
     ${recalled}
     ${albumHtml(book.album, { artBase, lang })}
-    ${tujianHtml(book, { lang, artBase, codex, codexKinds, codexOpen })}
+    ${tujian ? tujian.replace(/<\/section>$/, `${peopleList}</section>`) : ''}
     ${paipuHtml(book.cards, w, { artBase, her })}
     <section class="lusec"><h3>${esc(w.open)}</h3>${(book.open ?? []).length ? book.open.map((q) => `<p class="luq">${esc(q)}</p>`).join('') : `<p class="dim">${esc(w.noOpen)}</p>`}</section>
   </div>`;
