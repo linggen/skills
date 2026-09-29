@@ -217,7 +217,8 @@ export function pickOf(picked, spot, st, catalog = null) {
 }
 
 /* Where the held thing may land: the beast, or these of its rank. Straight
-   from `offers`, so the glow can never disagree with the rules. */
+   from `offers`, so the glow can never disagree with the rules — the foe itself
+   lights only when it can be hit (a 护主 in the way: it stays dark, 2026-09-29). */
 function aimable(offers, picked) {
   const out = { hero: false, theirs: new Set(), mine: new Set() };
   if (!picked) return out;
@@ -614,7 +615,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       <span class="bwhere">${esc(ctx.title ?? '')}${ctx.stake ? `<small class="bstake">${esc(ctx.stake)}</small>` : ''}</span>
     </div>
 
-    <button class="bside foe${picked ? ' aiming' : ''}${aim.hero ? ' aimed' : ''}" data-spot="hero">
+    <button class="bside foe${aim.hero ? ' aiming aimed' : ''}" data-spot="hero">
       ${ctx.foeArt ? `<img class="bface" src="${esc(ctx.foeArt)}" alt="">` : ''}
       <div class="bwho"><span>${esc(ctx.foeName ?? '')} <span class="belem">${GLYPH[st.foe.root] ?? ''}</span></span>${bubble('foe', ctx.says?.foe)}</div>
       <div class="bnums">

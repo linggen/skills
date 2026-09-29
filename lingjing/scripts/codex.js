@@ -103,6 +103,21 @@ export function codexHtml(entry, { src = (p) => p, lang = 'zh', first = false } 
     + `<figcaption><b>${esc(entry.name)}</b><i>${esc(kind)}</i>${lines}${entry.credit || entry.source?.scan ? `<small>${esc(entry.credit ?? '')}${scanButton(entry, src, lang)}</small>` : ''}</figcaption></figure>`;
 }
 
+/// The card made small, for the stage when a scene card stands under it (his,
+/// 2026-09-29: the choices must stay on screen): a little picture, and beside it
+/// the name, the kind and the first line on one line; the whole is a tap that
+/// opens the full card (`data-codex-big`).
+export function codexCompactHtml(entry, { src = (p) => p, lang = 'zh' } = {}) {
+  if (!entry || !isSubject(entry)) return '';
+  const pic = entry.image
+    ? `<img src="${esc(src(entry.image))}" alt="" loading="lazy">`
+    : `<span class="namecard" aria-hidden="true"><b>${esc(entry.name.slice(0, 2))}</b></span>`;
+  const kind = entry.tag ? (lang === 'en' ? TAG_EN[entry.tag] : entry.tag) : lang === 'en' ? KIND_EN[entry.kind] ?? entry.kind : entry.kind;
+  const open = lang === 'en' ? 'Open the card' : '展开图鉴';
+  return `<button class="codexcompact" data-codex-big="${esc(entry.id)}" data-kind="${esc(entry.kind)}" aria-label="${esc(`${entry.name} · ${open}`)}">`
+    + `<span class="cpic">${pic}</span><span class="ccap"><b>${esc(entry.name)}</b><i>${esc(kind)}</i><span>${esc(entry.lines[0] ?? '')}</span></span><span class="cmore" aria-hidden="true">⤢</span></button>`;
+}
+
 /// 「原图」: the old print an entry was drawn from, opened large on a tap.
 const scanButton = (entry, src, lang) => (entry.source?.scan ? ` <button class="origscan" data-scan="${esc(src(entry.source.scan))}">${lang === 'en' ? 'Original' : '原图'}</button>` : '');
 

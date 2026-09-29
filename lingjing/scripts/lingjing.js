@@ -10,7 +10,7 @@ import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from 
 // (`engineUiUrl`) must not fail the whole page.
 import * as sharedApi from '/shared/api.js';
 import { verb, content, SCRATCH, worldPath } from './rules.js';
-import { addressSay, codexOf } from './codex.js';
+import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
 import { boardDoneToday, petStageUrl, stageCards, stageSlots } from './stage.mjs';
@@ -1882,6 +1882,7 @@ const CLICKS = [
   ['[data-lu]', () => (view.luOpen ? show({ luOpen: false }) : openLu())],
   ['[data-lu-close]', () => show({ luOpen: false, codexOpen: null })],
   // 录's 图鉴: a met entry's card opens over its grid; a second tap closes it.
+  ['[data-codex-big]', (el) => openCodexBig(el.dataset.codexBig)],
   ['[data-codex-open]', (el) => show({ codexOpen: view.codexOpen === el.dataset.codexOpen ? null : el.dataset.codexOpen })],
   // 银月的记忆: the next panel (it blooms again), put away, or replayed from the album in 录.
   ['[data-mem-next]', (el) => show({ memory: view.memory && { ...view.memory, i: Number(el.dataset.memNext), at: performance.now() } })],
@@ -2538,6 +2539,21 @@ function closeUnroll() {
   if (!el) return;
   el.remove();
   if (el.dataset.chapter && el.dataset.chapter !== 'preview') write('unrolled', { chapter: el.dataset.chapter }).catch(failed);
+}
+
+/* A 图鉴 card opened full size over the page from its compact card on the stage:
+   closes on ×, Esc or a tap outside it (the book's pop-up, read.js). */
+function openCodexBig(id) {
+  const entry = codexNow()?.get?.(id);
+  if (!entry) return;
+  const box = document.createElement('div');
+  box.className = 'codexbox';
+  box.innerHTML = `<div class="boxcard" role="dialog"><button class="boxclose" aria-label="×">×</button>${codexHtml(entry, { src: (f) => worldPath(look?.world?.made ? `worlds/${look.world.base}` : look?.world?.dir ?? 'worlds/jiuding', f), lang: lang() })}</div>`;
+  const close = () => { box.remove(); removeEventListener('keydown', onKey); };
+  const onKey = (k) => { if (k.key === 'Escape') close(); };
+  box.addEventListener('click', (c) => { if (c.target === box || c.target.closest('.boxclose')) close(); });
+  addEventListener('keydown', onKey);
+  document.body.append(box);
 }
 
 let nodeSeen;

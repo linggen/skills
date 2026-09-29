@@ -394,3 +394,24 @@ test('第一章 ends on its card: 「第一章 · 外门 · 完」, what this pl
   // before the end: no card
   assert.equal(look({ ...opened() }, content, ctx()).chapter.close, undefined);
 });
+
+test('a first-appearance 图鉴 card beside the scene card is compact — a small picture, one line, a tap to open it big — so the choices stay on screen (his, 2026-09-29)', async () => {
+  const fs = await import('node:fs');
+  const { codexOf } = await import('../scripts/codex.js');
+  const json = (f) => JSON.parse(fs.readFileSync(new URL(`../worlds/jiuding/${f}`, import.meta.url), 'utf8'));
+  const codex = codexOf({ codex: json('codex.json'), people: json('people.json'), creatures: json('creatures.json'), items: json('items.json'), arts: json('arts.json') });
+  const l = look(opened(), content, ctx());
+  assert.deepEqual(l.scene.meet, ['sunergou']);
+  const c = { look: l, lang: 'zh', words: WORDS.zh, codex };
+  const html = cardHtml({ card: 'meet', id: 'sunergou' }, c);
+  assert.match(html, /^<div class="card codexwrap compact"><button class="codexcompact" data-codex-big="sunergou"/);
+  assert.match(html, /<b>孙二狗<\/b><i>人物<\/i><span>外门弟子/);
+  assert.doesNotMatch(html, /<figcaption>/, 'not the full card');
+  // Ling's Show, or a meet with no scene card under it: the full card
+  assert.match(cardHtml({ card: 'codex', id: 'sunergou' }, c), /class="codexcard"/);
+  assert.match(cardHtml({ card: 'meet', id: 'sunergou' }, { ...c, look: { ...l, scene: { ...l.scene, panel: null } } }), /class="codexcard first"/);
+  const css = fs.readFileSync(new URL('../scripts/codex.css', import.meta.url), 'utf8');
+  assert.match(css, /\.codexcompact \.cpic \{[^}]*height: 76px/, 'the picture is small');
+  const js = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(js, /\['\[data-codex-big\]', \(el\) => openCodexBig/);
+});

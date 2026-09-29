@@ -164,3 +164,22 @@ test('the player aims 锁 and 吞 at its rank; a 吞 at a too-big body is refuse
   act(st, { kind: 'play', index: 1, target: { kind: 'minion', index: 0 } });
   assert.match(battleHtml(view(st), offers(st), { lang: 'zh', words: WORDS.zh, catalog, board: 4 }), /data-id="brute">[\s\S]*?<small>锁<\/small>/);
 });
+
+test('a 护主 in the way: the foe itself stays dark while a body is aimed — it lights only when it can be hit (his, 2026-09-29)', () => {
+  const catalog = { ...CARDS };
+  const st = opened([], ['cub']);
+  st.you.board = [{ id: 'cub', name: '小妖', element: null, atk: 1, hp: 2, hpMax: 2, taunt: false, sick: false, struck: false }];
+  const foeSide = (html) => html.match(/<button class="bside foe[^"]*"/)[0];
+  const open = battleHtml(view(st), offers(st), { lang: 'zh', words: WORDS.zh, catalog, board: 4 }, { from: 'board', index: 0 });
+  assert.match(foeSide(open), /aiming aimed/, 'nothing in the way: the foe lights');
+  st.foe.board[0].taunt = true;
+  const guarded = battleHtml(view(st), offers(st), { lang: 'zh', words: WORDS.zh, catalog, board: 4 }, { from: 'board', index: 0 });
+  assert.doesNotMatch(foeSide(guarded), /aiming|aimed/, '护主 in the way: dark');
+  assert.match(guarded, /class="bminion theirs[^"]*taunt[^"]*aimed/, 'the 护主 lights instead');
+});
+
+test('the fight board keeps its width as the hand runs down', async () => {
+  const fs = await import('node:fs');
+  const css = fs.readFileSync(new URL('../scripts/battle.css', import.meta.url), 'utf8');
+  assert.match(css, /\.battle \{[^}]*width: 100%/);
+});

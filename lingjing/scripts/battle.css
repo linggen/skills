@@ -346,7 +346,8 @@
    its picture, with 攻 and 血 as gems on it; an empty place is an ink ring,
    not a dashed box that says 空; the boss and 银月 speak in bubbles; the end
    is a seal. Decoration only — nothing here changes what can be tapped. */
-.battle { --el: var(--gold); isolation: isolate; }
+/* A fixed width: the board never narrows as the hand runs down (his, 2026-09-29). */
+.battle { --el: var(--gold); isolation: isolate; width: 100%; box-sizing: border-box; }
 .el-wood { --el: #6f9e63; } .el-fire { --el: #c9553f; } .el-earth { --el: #b8894a; }
 .el-metal { --el: #b9c0c9; } .el-water { --el: #4f86c2; }
 .barena {

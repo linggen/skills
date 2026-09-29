@@ -132,7 +132,7 @@ export const WORDS = {
 export { esc } from './esc.js';
 import { cityRowHtml } from './sky.js';
 import { esc } from './esc.js';
-import { codexHtml } from './codex.js';
+import { codexCompactHtml, codexHtml } from './codex.js';
 
 /// A system the story has not reached yet (Look's `locked`, rules/locks.mjs): its chip, bar and buttons are not drawn at all.
 export const isShut = (look, system) => (look?.locked ?? []).includes(system);
@@ -1185,7 +1185,11 @@ function codexCard(card, ctx, first = false) {
   const entry = ctx.codex?.get?.(card.id);
   if (!entry) return '';
   const dir = ctx.look?.world?.made ? `worlds/${ctx.look.world.base}` : ctx.look?.world?.dir ?? 'worlds/jiuding';
-  return `<div class="card codexwrap">${codexHtml(entry, { src: (f) => worldPath(dir, f), lang: ctx.lang ?? 'zh', first })}</div>`;
+  const opts = { src: (f) => worldPath(dir, f), lang: ctx.lang ?? 'zh', first };
+  // With the scene card under it, the card is made small so the choices stay on
+  // screen (his, 2026-09-29); a tap opens it full size.
+  if (first && ctx.look?.scene?.panel) return `<div class="card codexwrap compact">${codexCompactHtml(entry, opts)}</div>`;
+  return `<div class="card codexwrap">${codexHtml(entry, opts)}</div>`;
 }
 const meet = (card, ctx) => codexCard(card, ctx, true);
 const codex = (card, ctx) => codexCard(card, ctx);
