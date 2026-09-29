@@ -57,13 +57,13 @@
 .card.homing:not(.still) .inkmap .rivers.draw path { animation: ink-river 1.6s ease-out both; animation-delay: calc(3300ms - var(--age)); }
 .card.homing:not(.still) .inkmap .seal.thud .sealbody { animation: ink-thud 0.5s cubic-bezier(.5, 0, .7, 1.4) both; animation-delay: calc(4800ms - var(--age)); }
 .card.homing:not(.still) .inkmap .waters.ripple path { animation: ink-ripple 1.6s ease-out both; animation-delay: calc(5500ms - var(--age)); }
-.card.homing:not(.still) .inkmap .moon.rise { animation: ink-moon 1.2s ease-out both; animation-delay: calc(5900ms - var(--age)); }
+.card.homing:not(.still) .inkmap .moon.rise .moonbody { animation: ink-moon 1.2s ease-out both; animation-delay: calc(5900ms - var(--age)); }
 .card.homing:not(.still) .homingrise { animation: ink-words 1.4s ease-out both; animation-delay: calc(5500ms - var(--age)); }
 .card.homing:not(.still) { animation: ink-shake 0.3s linear both; animation-delay: calc(4950ms - var(--age)); }
 .card.homing.still .homingrise { opacity: 1; }
 
 @keyframes ink-zoom { from { transform: none; } to { transform: var(--cam); } }
-@keyframes ink-drop { 0% { opacity: 0; transform: translateY(-120px); } 70% { opacity: 1; } 100% { opacity: 0.9; transform: none; } }
+@keyframes ink-drop { 0% { opacity: 0; transform: translateY(-120px); } 60% { opacity: 1; transform: none; } 100% { opacity: 0; transform: none; } }
 @keyframes ink-spread { from { transform: scale(0.001); } to { transform: scale(1); } }
 @keyframes ink-river { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes ink-thud { 0% { opacity: 0; transform: scale(2.4); } 60% { opacity: 1; transform: scale(0.92); } 100% { opacity: 1; transform: scale(1); } }

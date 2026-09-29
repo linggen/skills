@@ -82,7 +82,7 @@ function sealSvg(x, y, size, pname, lang, cls) {
 }
 
 /// A small moon on the water: a pale disc and its reflection's ripple.
-const moonSvg = (x, y, r, cls) => `<g class="${cls}" transform="translate(${f2(x)} ${f2(y)})"><ellipse class="moonripple" rx="${f2(r * 2.2)}" ry="${f2(r * 0.55)}" cy="${f2(r * 0.9)}"/><circle class="moondisc" r="${f2(r)}"/></g>`;
+const moonSvg = (x, y, r, cls) => `<g class="${cls}" transform="translate(${f2(x)} ${f2(y)})"><g class="moonbody"><ellipse class="moonripple" rx="${f2(r * 2.2)}" ry="${f2(r * 0.55)}" cy="${f2(r * 0.9)}"/><circle class="moondisc" r="${f2(r)}"/></g></g>`;
 
 /// The 九州 in ink. `ink` is the atlas verb's (rules/inkmap.mjs); `geo` the
 /// shapes; `names` the provinces' names in the page's language. `moment`
@@ -114,11 +114,11 @@ export function inkMapSvg(geo, ink, { names = {}, labels = {}, lang = 'zh', mome
   const rivers = ids.filter((p) => pv[p]?.state === 'ink').map((p) => `<g clip-path="url(#${key(p)})" class="rivers${p === M ? ' draw' : ''}">${geo.rivers.map((d) => `<path d="${d}" pathLength="1"/>`).join('')}</g>`).join('');
   const edges = ids.map((p) => shape(p, `pvedge s-${pv[p]?.state ?? 'mist'}${p === M ? ' now' : ''}`)).join('');
   const waters = geo.waters.map((d) => `<path d="${d}"/>`).join('');
-  const r = geo.w * 0.009;
+  const r = geo.w * (M ? 0.008 : 0.012);
   const moons = ids.filter((p) => pv[p]?.state === 'ink' && home(p)?.map).map((p) => { const [x, y] = pt(home(p).map); return moonSvg(x + r * 2.4, y + r * 1.6, r, `moon${M ? ' rise' : ''}`); }).join('');
   const seals = ids.filter((p) => pv[p]?.state === 'ink').map((p) => {
     const [x, y] = pt(labels[p] ?? home(p).map);
-    return sealSvg(x, y + geo.w * 0.03, geo.w * (p === M ? 0.034 : 0.026), names[p] ?? p, lang, `seal${p === M ? ' thud' : ''}`);
+    return sealSvg(x, y + geo.w * 0.05, geo.w * (p === M ? 0.036 : 0.042), names[p] ?? p, lang, `seal${p === M ? ' thud' : ''}`);
   }).join('');
   const drop = M ? `<circle class="drop" cx="${f2(find[0])}" cy="${f2(find[1])}" r="${f2(geo.w * 0.006)}"/>` : '';
   const cam = M ? camOf(geo, moment.frame) : null;

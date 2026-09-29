@@ -2395,7 +2395,8 @@ async function watchHoming() {
 }
 async function playHoming(province) {
   // Her memory first: wait for the gold seal and the memory the beat brings to be over.
-  await pause(600);
+  // The 新章 seal is put up a beat after the read that brings it: give it that beat.
+  await pause(1500);
   for (let k = 0; k < 120 && (document.querySelector('.feat') || view.memory || memoryWaits); k += 1) await pause(250);
   await loadAtlas();
   const places = atlasPlaces?.provinces?.[province]?.places ?? [];
