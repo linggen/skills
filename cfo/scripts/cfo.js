@@ -8,7 +8,8 @@ import '/shared/chat-bridge.js'; // sets window.LinggenUI
 import { listSkillSessions } from '/shared/api.js';
 import { analyzeCsv, orientTransactions, categorize, cleanMerchant, amortize, debtPlan } from './analyze.js';
 import { stampQuest } from './quest.js';
-import { toLedgerRows, mergeImport, idsToRevert, reportFromLedger, viewFromLedger, detectTransfers, stampCurrencies, ruleKey, isStatementArtifact } from './ledger.js';
+import { guessType, labelFromFilename, bestAccountMatch } from './accounts.js';
+import { toLedgerRows, mergeImport, onFileIds, idsToRevert, reportFromLedger, viewFromLedger, detectTransfers, stampCurrencies, ruleKey, isStatementArtifact } from './ledger.js';
 import { hashId } from './hash.js';
 import { CURRENCY_CODES as ALL_CURRENCY_CODES, accountCurrency, currencyUnconfirmed, importCurrencyCells, seedAccountCurrencies, accountHints, migrateLedgerText, parseEcbXml, parseBocValet, ECB_URL, BOC_URL } from './currency.js';
 import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, activeRows, seedFromLegacy, saveRegisterFile, updateJsonFile, lockedUpdate } from './lww.js';
@@ -515,28 +516,9 @@ const saveReport = (r) => {
 // ── Account resolution: known fingerprint → silent fast path; anything else
 // goes through the import-review staging page (Transactions tab).
 
-// Pre-select the likely account type from the filename so the user usually
-// just clicks through (e.g. "...-checking.csv" → Checking, not Credit card).
-function guessType(text) {
-  const t = (text || '').toLowerCase();
-  if (/check|chequing/.test(t)) return 'checking';
-  if (/saving/.test(t)) return 'savings';
-  return 'credit'; // visa/card/credit/amex/etc. and the default
-}
-
-// Suggest (never silently decide): pre-check the existing account whose label
-// tokens all appear in the filename — "td-checking-apr-jun.csv" → "td checking".
-// The user still confirms; mis-assignment corrupts reconciliation.
-function bestAccountMatch(filename, accounts) {
-  const ftoks = new Set((filename || '').toLowerCase().replace(/\.(csv|pdf)$/i, '').split(/[^a-z0-9]+/).filter(Boolean));
-  let best = null, bestN = 0;
-  for (const [id, a] of Object.entries(accounts)) {
-    const ltoks = (a.label || '').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
-    const hit = ltoks.filter((t) => ftoks.has(t)).length;
-    if (ltoks.length && hit === ltoks.length && hit > bestN) { best = id; bestN = hit; }
-  }
-  return best;
-}
+// The file name suggests the account (accounts.js): the one whose label it
+// names, else a new one labelled and typed from it — dates, months and
+// "statement" dropped, so a monthly file lands on last month's account.
 
 // ── Import-review staging (replaces the old account modal) ──
 // One file at a time; resolves with the chosen accountId or null on cancel.
@@ -569,7 +551,7 @@ function stageImport(ctx) {
       // it unselected showed "0 / Pick an account to preview", which read as
       // "empty file". The account picker is still right there to switch/merge.
       accountId: match || '__new__',
-      newLabel: (ctx.filename || '').replace(/\.(csv|pdf)$/i, '').replace(/[_-]+/g, ' ').trim().slice(0, 30) || 'Account',
+      newLabel: labelFromFilename(ctx.filename),
       newType: guessType(ctx.filename),
       catEdits: {},
       resolve,
@@ -585,7 +567,7 @@ function stagingPreview() {
   const id = isNew ? (s.fingerprint || `acct_${hashId(s.newLabel + s.newType)}`) : s.accountId;
   const oriented = s.accountId ? orientTransactions(s.transactions, type).transactions : s.transactions;
   const rows = s.accountId ? toLedgerRows(oriented, id) : [];
-  const onFile = new Set(LEDGER.map((r) => r.id));
+  const onFile = onFileIds(LEDGER, rows); // by id, or merchant-blind for a row whose text changed
   return { oriented, rows, dup: rows.filter((r) => onFile.has(r.id)).length, onFile };
 }
 
@@ -983,23 +965,23 @@ async function importFile(file, fileIdx = 0, fileCount = 1, opts = {}) {
   // The read→merge→append runs under the import lock: the next importer re-reads
   // `existing` only after this append lands, so overlapping rows dedup instead of
   // double-appending. LEDGER is set here too, inside the serialized section.
-  const added = await withImportLock(async () => {
+  const { added, ids } = await withImportLock(async () => {
     const existing = await loadLedger();
-    // Re-importing a file you reverted brings it back: the rows dedup by id, so
-    // the tombstone has to lift — and the lifted rows count as this import's
-    // additions, so it reads "N new" and can be undone again.
+    // Re-importing a file you reverted brings it back: its rows are already on
+    // file, so the tombstone has to lift — and the lifted rows count as this
+    // import's additions, so it reads "N new" and can be undone again.
     const merge = mergeImport(existing, incoming, (id) => EDITS.get(`del:${id}`) === true);
     if (merge.added.length) await appendLedgerRows(merge.added);
     RAW_LEDGER = merge.merged;
     for (const r of merge.restored) EDITS.remove(`del:${r.id}`);
     applyEdits();
     if (merge.restored.length) await saveEdits();
-    return merge.fresh;
+    return { added: merge.fresh, ids: merge.ids };
   });
   // Record the exact ids this import added so it can be reverted later. id is a
   // local timestamp-ish token (Date.now is fine in the browser; this is UI state).
   const importId = `imp_${Date.now().toString(36)}_${Math.floor(Math.random() * 1e6).toString(36)}`;
-  await appendImport({ id: importId, file: file.name, account: accountId, added: added.length, rows: incoming.length, added_ids: added.map((r) => r.id), row_ids: incoming.map((r) => r.id), at: new Date().toISOString() });
+  await appendImport({ id: importId, file: file.name, account: accountId, added: added.length, rows: incoming.length, added_ids: added.map((r) => r.id), row_ids: ids, at: new Date().toISOString() });
   if (added.length) stampQuest(runBash, 'cfo-import'); // new rows landed — the quest fact (quest.js)
 
   await loadFx(); // a second currency may have just arrived

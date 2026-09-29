@@ -4,7 +4,8 @@
 // private, so dedup + internal-transfer detection happen here, never in the model.
 //
 // Two problems it solves when several accounts (cards + checking) are merged:
-//   1. Re-import / overlap duplicates  → dedup by stable txn id.
+//   1. Re-import / overlap duplicates  → dedup by stable txn id, then by
+//      account + date + amount + occurrence for rows whose merchant text changed.
 //   2. Internal transfers (the dangerous one) — your checking pays your cards,
 //      so the card shows the purchases PLUS "payment received", and checking
 //      shows "payment to card". Counting both double-counts spend. We detect the
@@ -105,30 +106,68 @@ export function toLedgerRows(transactions, accountId, currency = null) {
   });
 }
 
-// Merge incoming rows into existing, dropping exact-id duplicates (problem 1).
-// Returns { merged, added } — `added` is what should be appended to the JSONL.
+// The merchant-blind key: account|date|amount|n, n the row's place among the
+// given rows sharing that account, date and amount. A row's id hashes its
+// merchant as parsed, so a better cleaner or parser would give an old
+// statement's rows new ids; this key still knows them.
+function looseKeyed(rows) {
+  const occ = new Map();
+  return rows.map((r) => {
+    const base = `${r.account || ''}|${r.date || ''}|${r.amount}`;
+    const n = occ.get(base) || 0;
+    occ.set(base, n + 1);
+    return [`${base}|${n}`, r];
+  });
+}
+
+// Which incoming rows are already on file, as { incoming id → id on file }.
+// An exact id is the row itself. What is left is matched merchant-blind, both
+// sides counted among their unmatched rows only (existing in id order, so both
+// devices pair the same way; incoming in statement order) — two merchants on
+// one day for one amount stay two, and an overlapping statement's new row is
+// never taken for a row it already matched by id.
+export function onFileIds(existing, incoming) {
+  const have = new Set((existing || []).map((r) => r.id));
+  const onFile = new Map();
+  for (const r of incoming || []) if (have.has(r.id)) onFile.set(r.id, r.id);
+  const claimed = new Set(onFile.values());
+  const rest = (existing || []).filter((r) => !claimed.has(r.id)).sort((a, b) => a.id.localeCompare(b.id));
+  const loose = new Map(looseKeyed(rest));
+  for (const [key, r] of looseKeyed((incoming || []).filter((r) => !have.has(r.id)))) {
+    if (loose.has(key)) onFile.set(r.id, loose.get(key).id);
+  }
+  return onFile;
+}
+
+// Merge incoming rows into existing, dropping rows already on file (problem 1).
+// Returns { merged, added, onFile } — `added` is what should be appended to
+// the JSONL; `onFile` maps each incoming row already there to its id on file.
 export function mergeLedger(existing, incoming) {
-  const seen = new Set((existing || []).map((r) => r.id));
+  const onFile = onFileIds(existing, incoming);
+  const seen = new Set();
   const added = [];
   for (const r of incoming || []) {
-    if (seen.has(r.id)) continue;
+    if (onFile.has(r.id) || seen.has(r.id)) continue;
     seen.add(r.id);
     added.push(r);
   }
-  return { merged: (existing || []).concat(added), added };
+  return { merged: (existing || []).concat(added), added, onFile };
 }
 
-// An import against a ledger that may hold reverted rows. Rows dedup by id,
-// so re-importing a file you reverted adds nothing to the file — its rows come
-// back by lifting their tombstones. `fresh` is what this import brought into
-// the report either way: it is what the import log records as `added_ids`, so
-// the import reports "N new" and can be undone again.
+// An import against a ledger that may hold reverted rows. Rows already on
+// file add nothing to the file — re-importing a file you reverted brings its
+// rows back by lifting their tombstones. `fresh` is what this import brought
+// into the report either way: it is what the import log records as
+// `added_ids`, so the import reports "N new" and can be undone again. `ids` is
+// every row the statement carried, by its id on file — the log's `row_ids`.
 export function mergeImport(existing, incoming, isDeleted = () => false) {
-  const { merged, added } = mergeLedger(existing, incoming);
-  const restored = (incoming || []).filter((r) => isDeleted(r.id));
+  const { merged, added, onFile } = mergeLedger(existing, incoming);
+  const ids = (incoming || []).map((r) => onFile.get(r.id) || r.id);
+  const byId = new Map(merged.map((r) => [r.id, r]));
+  const restored = [...new Set(ids)].filter((id) => isDeleted(id)).map((id) => byId.get(id));
   const seen = new Set(), fresh = [];
   for (const r of [...added, ...restored]) if (!seen.has(r.id)) { seen.add(r.id); fresh.push(r); }
-  return { merged, added, restored, fresh };
+  return { merged, added, restored, fresh, ids };
 }
 
 // Which rows undoing one import may take out of the report. Its own additions,

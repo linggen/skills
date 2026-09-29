@@ -1,0 +1,164 @@
+{
+  "merge": [
+    {
+      "name": "re-importing a statement after the cleaner changed adds nothing",
+      "on_file": [[
+        { "date": "2026-08-03", "merchant": "SQ *BLUE BOTTLE #12", "amount": -6.5 },
+        { "date": "2026-08-03", "merchant": "UBER *TRIP HELP.UBER", "amount": -6.5 },
+        { "date": "2026-08-05", "merchant": "AMZN MKTP CA*1A2B3", "amount": -40 },
+        { "date": "2026-08-05", "merchant": "AMZN MKTP CA*1A2B3", "amount": -40 },
+        { "date": "2026-08-09", "merchant": "PAYROLL ACME CO", "amount": 2500 }
+      ]],
+      "incoming": [
+        { "date": "2026-08-03", "merchant": "Blue Bottle", "amount": -6.5 },
+        { "date": "2026-08-03", "merchant": "Uber", "amount": -6.5 },
+        { "date": "2026-08-05", "merchant": "Amazon", "amount": -40 },
+        { "date": "2026-08-05", "merchant": "Amazon", "amount": -40 },
+        { "date": "2026-08-09", "merchant": "Payroll Acme", "amount": 2500 }
+      ],
+      "expect": { "added": [] }
+    },
+    {
+      "name": "two merchants on one day for one amount are both kept",
+      "on_file": [],
+      "incoming": [
+        { "date": "2026-08-03", "merchant": "CAFE ONE", "amount": -5 },
+        { "date": "2026-08-03", "merchant": "BAKERY TWO", "amount": -5 }
+      ],
+      "expect": { "added": ["CAFE ONE", "BAKERY TWO"] }
+    },
+    {
+      "name": "an overlapping statement listing the other merchant first still adds it",
+      "on_file": [[
+        { "date": "2026-08-03", "merchant": "CAFE ONE", "amount": -5 }
+      ]],
+      "incoming": [
+        { "date": "2026-08-03", "merchant": "BAKERY TWO", "amount": -5 },
+        { "date": "2026-08-03", "merchant": "CAFE ONE", "amount": -5 }
+      ],
+      "expect": { "added": ["BAKERY TWO"] }
+    },
+    {
+      "name": "a renamed statement with a new month adds only the new month",
+      "on_file": [[
+        { "date": "2026-08-03", "merchant": "SQ *BLUE BOTTLE #12", "amount": -6.5 },
+        { "date": "2026-08-20", "merchant": "SHELL OIL 5739", "amount": -52.1 }
+      ]],
+      "incoming": [
+        { "date": "2026-08-03", "merchant": "Blue Bottle", "amount": -6.5 },
+        { "date": "2026-08-20", "merchant": "Shell", "amount": -52.1 },
+        { "date": "2026-09-02", "merchant": "Shell", "amount": -48.75 },
+        { "date": "2026-09-04", "merchant": "Blue Bottle", "amount": -6.5 }
+      ],
+      "expect": { "added": ["Shell", "Blue Bottle"] }
+    },
+    {
+      "name": "a third charge that day for the same amount is new",
+      "on_file": [[
+        { "date": "2026-08-03", "merchant": "CAFE ONE #1", "amount": -5 },
+        { "date": "2026-08-03", "merchant": "BAKERY TWO #2", "amount": -5 }
+      ]],
+      "incoming": [
+        { "date": "2026-08-03", "merchant": "Cafe One", "amount": -5 },
+        { "date": "2026-08-03", "merchant": "Bakery Two", "amount": -5 },
+        { "date": "2026-08-03", "merchant": "Kiosk Three", "amount": -5 }
+      ],
+      "expect": { "added": ["Kiosk Three"] }
+    },
+    {
+      "name": "a refund of the same amount that day is not the purchase",
+      "on_file": [[
+        { "date": "2026-08-03", "merchant": "SHOP", "amount": -20 }
+      ]],
+      "incoming": [
+        { "date": "2026-08-03", "merchant": "SHOP REFUND", "amount": 20 }
+      ],
+      "expect": { "added": ["SHOP REFUND"] }
+    },
+    {
+      "name": "another account never matches",
+      "on_file": [[
+        { "date": "2026-08-03", "merchant": "SQ *BLUE BOTTLE #12", "amount": -6.5 }
+      ]],
+      "incoming_account": "other",
+      "incoming": [
+        { "date": "2026-08-03", "merchant": "Blue Bottle", "amount": -6.5 }
+      ],
+      "expect": { "added": ["Blue Bottle"] }
+    }
+  ],
+  "accounts": [
+    {
+      "name": "two statement files with no account words are one account",
+      "accounts": { "acct_a": { "label": "Account", "type": "credit" } },
+      "filename": "Statement Sept 2026.pdf",
+      "expect": { "match": "acct_a", "label": "Account", "type": "credit" }
+    },
+    {
+      "name": "an account labelled from an old dated file name still matches",
+      "accounts": { "acct_old": { "label": "statement 2026 08", "type": "credit" } },
+      "filename": "Statement Sept 2026.pdf",
+      "expect": { "match": "acct_old", "label": "Account", "type": "credit" }
+    },
+    {
+      "name": "a packed-date e-statement is the same account",
+      "accounts": { "acct_a": { "label": "Account", "type": "credit" } },
+      "filename": "eStatement_20260831.pdf",
+      "expect": { "match": "acct_a", "label": "Account", "type": "credit" }
+    },
+    {
+      "name": "a new account is labelled without the date",
+      "accounts": {},
+      "filename": "TD Visa Statement 2026-08.pdf",
+      "expect": { "match": null, "label": "TD Visa", "type": "credit" }
+    },
+    {
+      "name": "a dated bank export finds the account",
+      "accounts": { "acct_td": { "label": "TD Visa", "type": "credit" } },
+      "filename": "td_visa_sept_2026.csv",
+      "expect": { "match": "acct_td", "label": "td visa", "type": "credit" }
+    },
+    {
+      "name": "a copy suffix and prefix are dropped",
+      "accounts": { "acct_chase": { "label": "Chase Checking", "type": "checking" } },
+      "filename": "Copy of Chase Checking (1).csv",
+      "expect": { "match": "acct_chase", "label": "Chase Checking", "type": "checking" }
+    },
+    {
+      "name": "an old label with its date matches the next month's file",
+      "accounts": { "acct_old": { "label": "rbc chequing 2026 07", "type": "checking" } },
+      "filename": "RBC-Chequing-Aug2026.pdf",
+      "expect": { "match": "acct_old", "label": "RBC Chequing", "type": "checking" }
+    },
+    {
+      "name": "a file with no account words never lands on a chequing account",
+      "accounts": { "acct_chq": { "label": "Account", "type": "checking" } },
+      "filename": "statement-2026-09.pdf",
+      "expect": { "match": null, "label": "Account", "type": "credit" }
+    },
+    {
+      "name": "an account with no label is never matched",
+      "accounts": { "acct_bare": { "currency": "CAD" } },
+      "filename": "statement-2026-09.pdf",
+      "expect": { "match": null, "label": "Account", "type": "credit" }
+    },
+    {
+      "name": "two cards told apart by their last four",
+      "accounts": { "acct_4521": { "label": "visa 4521", "type": "credit" } },
+      "filename": "visa-9876-2026-09.csv",
+      "expect": { "match": null, "label": "visa 9876", "type": "credit" }
+    },
+    {
+      "name": "two banks stay two accounts",
+      "accounts": { "acct_td": { "label": "TD Visa", "type": "credit" } },
+      "filename": "RBC Visa Sept 2026.pdf",
+      "expect": { "match": null, "label": "RBC Visa", "type": "credit" }
+    },
+    {
+      "name": "a merchant-like word is not a month",
+      "accounts": {},
+      "filename": "Marriott Bonvoy Aug2026.pdf",
+      "expect": { "match": null, "label": "Marriott Bonvoy", "type": "credit" }
+    }
+  ]
+}
