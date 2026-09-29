@@ -251,3 +251,11 @@ test('阿禾 walks with every hero as the other gender, and 周衡 calls a girl 
   assert.ok(offer.say.startsWith('师妹。'), offer.say);
   assert.ok(boy.scene.people.some(p => p.id === 'ahe'));
 });
+
+test('the scratch fixture for live checks stands at the chapter\'s first scene (tests/fixtures/saves/waimen.json, ?save=test&seed=waimen)', async () => {
+  const fs = await import('node:fs');
+  const s = JSON.parse(fs.readFileSync(new URL('./fixtures/saves/waimen.json', import.meta.url), 'utf8'));
+  assert.deepEqual([s.chapter, s.scene, s.place, s.gender], ['00-waimen', 'wm-ahe', 'waimen', 'female']);
+  assert.ok(s.ended.includes('00-prologue'));
+  assert.equal(look(s, content, ctx()).scene.id, 'wm-ahe');
+});

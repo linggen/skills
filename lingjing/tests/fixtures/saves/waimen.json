@@ -1,0 +1,309 @@
+{
+ "version": 5,
+ "world": "jiuding",
+ "lang": "zh",
+ "name": "墨白",
+ "gender": "female",
+ "traits": [
+  "metal",
+  "wood",
+  "water",
+  "fire",
+  "earth"
+ ],
+ "tier": "qi",
+ "step": 0,
+ "progress": 0,
+ "wealth": 2,
+ "bag": {
+  "fox-token": 1,
+  "tuna-jing": 1,
+  "old-bow": 1,
+  "grey-robe": 1
+ },
+ "cast": [],
+ "wear": {},
+ "duels": {},
+ "arts": [],
+ "chapter": "00-waimen",
+ "scene": "wm-ahe",
+ "done_scenes": [
+  "00-shiao",
+  "00-masan",
+  "00-dawn",
+  "00-kitchen",
+  "00-chushan",
+  "00-duanbei",
+  "00-heisong",
+  "00-storm",
+  "00-fall",
+  "00-fox",
+  "00-cave",
+  "00-yinyue",
+  "00-cliff",
+  "00-deer",
+  "00-rent",
+  "00-dusk",
+  "00-xiuxian",
+  "00-sleep",
+  "00-halfyear",
+  "00-uncle",
+  "00-notice",
+  "00-gate",
+  "00-luoshu",
+  "00-longzhi",
+  "00-hall",
+  "00-waimen",
+  "00-mijing"
+ ],
+ "ended": [
+  "00-prologue"
+ ],
+ "place": "waimen",
+ "tasks": {
+  "gate-luoshu": {
+   "status": "done",
+   "period": "once",
+   "done_at": "2026-09-29T11:00:00.000Z"
+  }
+ },
+ "chores": {},
+ "quests": {},
+ "wins": {},
+ "story": "",
+ "seeds_used": [],
+ "made": {
+  "scenes": {},
+  "at": null
+ },
+ "day": {
+  "key": "2026-09-29",
+  "progress": 0,
+  "wealth": 3
+ },
+ "stamina": 100,
+ "stamina_at": "2026-09-29T11:00:00.000Z",
+ "created": "2026-09-29T11:00:00.000Z",
+ "updated": "2026-09-29T11:00:00.000Z",
+ "node": {
+  "kind": "chapter",
+  "at": "2026-09-29T11:00:00.000Z",
+  "chapter": {
+   "id": "00-prologue",
+   "title": "序章 · 蒙山"
+  },
+  "recap": "外门的告示栏上贴出新告示：沉鼎秘境，十年一开，下月初一，外门弟子皆可入。",
+  "mystery": "吴婆婆的木牌上，为什么刻着一只九尾的狐狸？",
+  "next": {
+   "id": "00-waimen",
+   "title": "第一章 · 外门",
+   "mystery": "三百年没人进过的石室里，为什么放着一撮息壤？"
+  }
+ },
+ "marks": [
+  "kept-count",
+  "took-egg",
+  "three-rules",
+  "marks-cut",
+  "turned-back",
+  "fall-checked",
+  "fox-saved",
+  "shared-bread",
+  "found-father",
+  "shot-wind",
+  "played-dumb",
+  "wupo-bowed",
+  "asked-them",
+  "marrow-washed",
+  "scroll-by-heart",
+  "resolved-to-go",
+  "steps-steady",
+  "paid-gongzhong"
+ ],
+ "mark_days": {
+  "paid-gongzhong": "2026-09-29",
+  "steps-steady": "2026-09-29",
+  "resolved-to-go": "2026-09-29",
+  "scroll-by-heart": "2026-09-29",
+  "marrow-washed": "2026-09-29",
+  "asked-them": "2026-09-29",
+  "wupo-bowed": "2026-09-29",
+  "played-dumb": "2026-09-29",
+  "shot-wind": "2026-09-29",
+  "found-father": "2026-09-29",
+  "shared-bread": "2026-09-29",
+  "fox-saved": "2026-09-29",
+  "fall-checked": "2026-09-29",
+  "turned-back": "2026-09-29",
+  "marks-cut": "2026-09-29",
+  "three-rules": "2026-09-29",
+  "took-egg": "2026-09-29",
+  "kept-count": "2026-09-29"
+ },
+ "ledger": [
+  {
+   "who": "maxiaobao",
+   "kind": "仇",
+   "what": {
+    "zh": "推你撞上灶台，摔碎了家里四只碗里的一只。",
+    "en": "Shoved you into the stove and broke one of your family's four bowls."
+   },
+   "chapter": "00-prologue",
+   "day": "2026-09-29",
+   "at": "00-masan"
+  },
+  {
+   "who": "masan",
+   "kind": "仇",
+   "what": {
+    "zh": "要拿走爷爷的弓。",
+    "en": "Means to take grandfather's bow."
+   },
+   "chapter": "00-prologue",
+   "day": "2026-09-29",
+   "at": "00-masan"
+  },
+  {
+   "who": "ahe",
+   "kind": "恩",
+   "what": {
+    "zh": "天没亮，隔着窗塞给你一个煮鸡蛋：「记账，以后还我。」",
+    "en": "Before dawn, pushed a boiled egg through your window: \"Keep count. Pay me back.\""
+   },
+   "chapter": "00-prologue",
+   "day": "2026-09-29",
+   "at": "00-dawn"
+  },
+  {
+   "who": "laozhou",
+   "kind": "恩",
+   "what": {
+    "zh": "顺着你刻的记号，陪你爹在崖顶找了你一夜。",
+    "en": "Followed the marks you cut and searched the clifftop all night with your father."
+   },
+   "chapter": "00-prologue",
+   "day": "2026-09-29",
+   "at": "00-cliff"
+  },
+  {
+   "who": "maxiaobao",
+   "kind": "仇",
+   "what": {
+    "zh": "外门的「公中」：收了你一块灵石。",
+    "en": "The outer court's \"common fund\": took one of your spirit stones."
+   },
+   "chapter": "00-prologue",
+   "day": "2026-09-29",
+   "at": "00-waimen"
+  }
+ ],
+ "tell_owed": [
+  "00-masan/endure",
+  "00-dawn/egg",
+  "00-chushan/lookout",
+  "00-duanbei/rules",
+  "00-heisong/carve",
+  "00-storm/turn",
+  "00-fall/check",
+  "00-fox/save",
+  "00-cave/share",
+  "00-yinyue/follow",
+  "00-cliff/climb",
+  "00-deer/left",
+  "00-rent/dumb",
+  "00-dusk/visit",
+  "00-sleep/bath",
+  "00-uncle/go",
+  "00-gate/steady",
+  "00-luoshu/pass",
+  "00-longzhi/subdue",
+  "00-hall/born",
+  "00-waimen/pay"
+ ],
+ "companion": {
+  "joined": "2026-09-29",
+  "asleep": true
+ },
+ "cards": [
+  "yinyue",
+  "xiaoyao",
+  "qingteng",
+  "leipu",
+  "luying",
+  "shuiwu",
+  "huoya",
+  "huodan",
+  "tuou",
+  "shanjing",
+  "huiqi"
+ ],
+ "card_from": {
+  "xiaoyao": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-09-29"
+  },
+  "qingteng": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-09-29"
+  },
+  "leipu": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-09-29"
+  },
+  "luying": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-09-29"
+  },
+  "shuiwu": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-09-29"
+  },
+  "huoya": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-09-29"
+  },
+  "huodan": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-09-29"
+  },
+  "tuou": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-09-29"
+  },
+  "shanjing": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-09-29"
+  },
+  "huiqi": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-09-29"
+  },
+  "yinyue": {
+   "how": "companion",
+   "day": "2026-09-29",
+   "place": "yingu",
+   "chapter": "00-prologue"
+  }
+ },
+ "root_main": "wood"
+}
