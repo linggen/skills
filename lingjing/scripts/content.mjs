@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { ART_EFFECTS, ELEMENTS, INTENTS, LEAN_IDS } from './duel.js';
 import { LOCKABLE, normalizeAnswer } from './state.mjs';
 import { EFFECTS } from './battle.js';
+import { FRAMES, PARTICLES } from './atmos.js';
 
 /* The worlds ship with the skill, one folder each under `worlds/`; the
    folder's name is the world's id and the save's `world`. */
@@ -150,6 +151,8 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     people: fs.existsSync(path.join(dir, 'people.json')) ? readJson(path.join(dir, 'people.json')) : null,
     // Scrolls a thing can be read as (rules/scrolls.mjs): 《吐纳经》 and its nine layers.
     scrolls: fs.existsSync(path.join(dir, 'scrolls.json')) ? readJson(path.join(dir, 'scrolls.json')) : null,
+    // 节日 (design.md § 真实世界): the real calendar's festivals, one entry each (rules/festival.mjs).
+    festivals: fs.existsSync(path.join(dir, 'festivals.json')) ? readJson(path.join(dir, 'festivals.json')) : null,
     places: loadPlaces(path.join(dir, 'places')),
     templates: { made: at('templates/made-scene.json'), world: at('templates/made-world.json') },
     dictionary: at('dictionary.json'),
@@ -437,7 +440,32 @@ export function lint(content) {
   lintAtlas(content, bad);
   lintLore(content, bad);
   lintPeople(content, bad);
+  lintFestivals(content, bad);
   return problems;
+}
+
+/* festivals.json: every festival the calendar names has one entry and no
+   other; each has its line, task, gift and her words in both languages
+   (bilingual checks the pairs), dressing the page can draw, and a gift no
+   bigger than a task's pay — a festival is a treat, not a farm. */
+export const FESTIVAL_IDS = ['chuxi', 'chunjie', 'yuanxiao', 'duanwu', 'qixi', 'zhongqiu', 'chongyang', 'laba', 'yuandan', 'shengdan'];
+function lintFestivals(content, bad) {
+  const list = content.festivals?.festivals;
+  if (!list) return;
+  const seen = new Set();
+  for (const f of list) {
+    const where = `festival ${f.id}`;
+    if (!FESTIVAL_IDS.includes(f.id)) bad(where, 'is not a festival the calendar knows');
+    if (seen.has(f.id)) bad(where, 'twice');
+    seen.add(f.id);
+    for (const key of ['name', 'line', 'her']) if (!pair(f[key])) bad(where, `${key} needs zh and en`);
+    if (!pair(f.task?.label) || !pair(f.task?.what)) bad(where, 'the task needs its label and what, zh and en');
+    if (!pair(f.gift?.line) || !(f.gift?.wealth > 0)) bad(where, 'the gift needs a line and some 灵石');
+    else if (f.gift.wealth > content.rewards.tables.task.wealth) bad(where, `gift ${f.gift.wealth} is over a task's ${content.rewards.tables.task.wealth}`);
+    if (f.dressing?.frame != null && !FRAMES.includes(f.dressing.frame)) bad(where, `unknown frame ${f.dressing.frame}`);
+    if (f.dressing?.particles != null && !PARTICLES.includes(f.dressing.particles)) bad(where, `unknown particles ${f.dressing.particles}`);
+  }
+  for (const id of FESTIVAL_IDS) if (!seen.has(id)) bad('festivals', `${id} has no entry`);
 }
 
 /* The people who speak besides the creatures, and the slots that stand for one. */

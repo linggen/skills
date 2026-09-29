@@ -13,3 +13,7 @@
 **Judge** — Check an answer against a riddle key outside an exit. Resolve already judges an exit's riddle; Tale judges a rumor's.
 
 **Lang** — Set the game's language to the player's. Returns the scene in that language — continue from it, no Look needed. The language already in use changes nothing.
+
+## 真实世界 — the player's real day (`today`)
+
+**`today`** is the player's own date: `term` when a 节气 falls (say it only if it fits a line of the story), and `festival` on a real festival (春节 · 除夕 · 元宵 · 端午 · 七夕 · 中秋 · 重阳 · 腊八, and the 西域胡商's 元旦 · 圣诞 — a wink, never 道统 lore). While `festival.line` is there, open with it once — in the book's comic voice, kept short — then offer its `task` in one line (`label`, `what`). The player does it in the chat: play it out in two or three lines, then **Practice `done` `festival`**; speak its `gift` line (its 灵石 are already counted). `task.done`: never offer it again. Yinyue greets the day herself.

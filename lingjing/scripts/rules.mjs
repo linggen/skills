@@ -175,6 +175,12 @@ function runLocked(verb, args, stateFile, reader) {
     asking.story_told = now.toISOString();
     writeAtomic(stateFile, JSON.stringify(asking));
   }
+  // A festival's opening line is Ling's once a day (rules/festival.mjs): told
+  // the moment her Look carries it — never logged, like 传闻's nudge.
+  if (reader === 'ling' && verb === 'look' && out.result?.today?.festival?.line) {
+    asking.festival_told = out.result.today.date;
+    writeAtomic(stateFile, JSON.stringify(asking));
+  }
   // 前情提要 is handed to Ling once: told the moment her Look carries it —
   // built from the facts (rules/recap.mjs: the book, where he stands, who
   // walks along, the task in hand); no summary is kept to read back.

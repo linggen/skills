@@ -23,6 +23,7 @@ import { atScene, creatureOf, placeBrief, placeOf, sceneOf, settlePlace } from '
 import { building } from './worlds.mjs';
 import { practiceHint } from './scrolls.mjs';
 import { mainRoot, rootName } from './roots.mjs';
+import { todayBrief } from './festival.mjs';
 
 /* The market's shelf: the catalog sold in this province — and, while the
    companion is still to be found, her bell at every market, since the call
@@ -350,6 +351,8 @@ export function look(state, content, ctx) {
     ...(state.seclusion ? { seclusion: seclusionBrief(content, state, ctx.now) } : {}),
     made: { at: state.made?.at ?? null, scenes: Object.keys(state.made?.scenes ?? {}) },
     words: wordsOf(content, lang),
+    // 节日 · 节气 (rules/festival.mjs): the player's real day, reckoned on the device.
+    today: todayBrief(content, state, ctx, { day: ctx.day }),
     ...tasksBrief(content, state, ctx),
   };
   // Before a story gate Look carries nothing it keeps shut, and `locked` names it (rules/locks.mjs).

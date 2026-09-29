@@ -1,5 +1,6 @@
 // rules/tasks.mjs — Tasks and quests: boards, errands handed in, win, duel, 论道.
 // Part of the rules engine; rules.mjs is its one door.
+import { festivalDone } from './festival.mjs';
 import { battle } from '../battle.js';
 import { gameOf } from '../content.mjs';
 import { addStamina, dayKey, periodKey, pick, settleStamina } from '../state.mjs';
@@ -17,6 +18,8 @@ import { creatureOf, encounterOf, placeOf, sceneOf } from './world.mjs';
 
 export function task(state, content, ctx, args) {
   if (args.action === 'list') return { state: null, result: { ok: true, ...tasksBrief(content, state, ctx) } };
+  // The day's festival task (rules/festival.mjs), done in the chat.
+  if (args.action === 'done' && args.id === 'festival') return festivalDone(state, content, ctx);
   if (args.action === 'done') return taskDone(state, content, ctx, args.id);
   if (args.action === 'check') return questCheck(state, content, ctx, args.id);
   return refuse('unknown-action', null, { actions: ['list', 'done', 'check'] });

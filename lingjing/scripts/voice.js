@@ -54,6 +54,8 @@ export const MOMENTS = {
   fate: { who: 'yinyue', priority: 'asked' },
   // After Ling's 前情提要, one feeling of hers — part of the opening he came back to.
   recap: { who: 'yinyue', priority: 'asked' },
+  // 节日 (design.md § 真实世界): the real day's festival, once a day.
+  festival: { who: 'yinyue', priority: 'high', cooldown: 0 },
   // 闭关 (rules/seclusion.mjs): she sits by the player going in, and hears what
   // grew at 出关 — both the player's own taps, so always told.
   seclude: { who: 'yinyue', priority: 'asked' },

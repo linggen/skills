@@ -874,3 +874,113 @@ a.readchip { text-decoration: none; display: inline-block; }
 .scroll .scrollq p { margin: 0 0 2px; }
 .scroll .scrollq cite { font-size: 11.5px; color: var(--dim); font-style: normal; }
 .scroll .gloss { color: var(--text); }
+
+/* ── 真实世界 — the atmosphere over the stage (atmos.js; design.md § 真实世界):
+   a festival's dressing on the 小人书 frame, the day's weather, one layer.
+   `.view` carries fest-<frame> and wx-<weather>; #atmos holds the frame's
+   pieces and the particles. Never in the way: no pointer events, faint. ── */
+.atmos { position: absolute; inset: 0; pointer-events: none; z-index: 3; overflow: hidden; }
+.atmos[hidden] { display: none; }
+body.fighting .atmos { display: none; }
+.atmos .frame i { position: absolute; display: none; }
+.atmos .pts { position: absolute; inset: 0; }
+.atmos .pt { position: absolute; left: var(--x); top: -14px; display: block; will-change: transform; }
+
+/* The weather tints the sky before anything falls. */
+.view.wx-snow { background: linear-gradient(180deg, color-mix(in srgb, var(--sky-a) 70%, #F4F7FA), color-mix(in srgb, var(--sky-b) 75%, #DCE3EA)); }
+.view.wx-rain, .view.wx-storm { background: linear-gradient(180deg, color-mix(in srgb, var(--sky-a) 72%, #8C99A6), color-mix(in srgb, var(--sky-b) 78%, #7D8A96)); }
+.view.wx-fog { background: linear-gradient(180deg, color-mix(in srgb, var(--sky-a) 60%, #F2F2EE), color-mix(in srgb, var(--sky-b) 60%, #E6E6E0)); }
+.view.wx-fog .backdrop { opacity: .55; }
+
+/* snow · rain · fog — the weather's */
+.p-snow .pt { width: calc(6px * var(--s)); height: calc(6px * var(--s)); border-radius: 50%; background: #fff; opacity: .9;
+  box-shadow: 0 0 3px rgba(120, 140, 160, .35); animation: atFall calc(var(--k) * 11s) linear var(--d) infinite; }
+.p-rain .pt { width: 1.5px; height: calc(18px * var(--s)); border-radius: 1px; opacity: .45;
+  background: linear-gradient(180deg, transparent, #5E7182); transform: rotate(12deg); animation: atRain calc(var(--k) * 1.1s) linear var(--d) infinite; }
+.p-fog .pt { top: calc(var(--y) * .6 + 20%); left: -40%; width: 90%; height: 34%; border-radius: 50%; filter: blur(18px); opacity: .5;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, .85), rgba(255, 255, 255, 0) 70%); animation: atDrift calc(var(--k) * 40s) ease-in-out var(--d) infinite alternate; }
+@keyframes atFall { 0% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(14px, 55vh, 0); } 100% { transform: translate3d(-6px, 110vh, 0); } }
+@keyframes atRain { from { transform: translate3d(0, 0, 0) rotate(12deg); } to { transform: translate3d(-24px, 110vh, 0) rotate(12deg); } }
+@keyframes atDrift { from { transform: translateX(0); } to { transform: translateX(80%); } }
+
+/* sparks · glow · stars · leaves — a festival's */
+.p-sparks .pt { top: calc(var(--y) * .55); width: 4px; height: 4px; border-radius: 50%; opacity: 0;
+  background: radial-gradient(circle, #FFE7A0, #E0482E 70%); box-shadow: 0 0 6px 2px rgba(240, 150, 60, .55);
+  animation: atBurst calc(var(--k) * 2.2s) ease-out var(--d) infinite; }
+@keyframes atBurst { 0% { opacity: 0; transform: rotate(calc(var(--i) * 47deg)) translateX(0) scale(.4); } 12% { opacity: 1; }
+  70% { opacity: .8; } 100% { opacity: 0; transform: rotate(calc(var(--i) * 47deg)) translateX(calc(46px * var(--s))) translateY(18px) scale(.2); } }
+.p-glow .pt { top: auto; bottom: -12px; width: calc(8px * var(--s)); height: calc(8px * var(--s)); border-radius: 50%; opacity: 0;
+  background: radial-gradient(circle, rgba(255, 214, 140, .95), rgba(240, 150, 60, 0) 70%); animation: atRise calc(var(--k) * 14s) ease-in var(--d) infinite; }
+@keyframes atRise { 0% { opacity: 0; transform: translate3d(0, 0, 0); } 15% { opacity: .9; } 85% { opacity: .6; } 100% { opacity: 0; transform: translate3d(18px, -90vh, 0); } }
+.p-stars .pt { top: calc(var(--y) * .4); width: 3px; height: 3px; border-radius: 50%; background: #FFF6D8; box-shadow: 0 0 4px 1px rgba(255, 240, 190, .8);
+  animation: atTwinkle calc(var(--k) * 3s) ease-in-out var(--d) infinite; }
+@keyframes atTwinkle { 0%, 100% { opacity: .15; } 50% { opacity: .95; } }
+.p-leaves .pt { width: calc(10px * var(--s)); height: calc(5px * var(--s)); border-radius: 50% 0; background: #C8702C; opacity: .75;
+  animation: atLeaf calc(var(--k) * 12s) ease-in-out var(--d) infinite; }
+@keyframes atLeaf { 0% { transform: translate3d(0, 0, 0) rotate(0); } 50% { transform: translate3d(30px, 55vh, 0) rotate(200deg); } 100% { transform: translate3d(-10px, 110vh, 0) rotate(400deg); } }
+
+/* The frame: 春联 and 横批 beside her, lanterns, 艾草, 鹊桥, the moon, 茱萸, 松枝. */
+.atmos .frame .fl, .atmos .frame .fr { top: 8px; width: 26px; padding: 8px 0; writing-mode: vertical-rl; text-orientation: upright;
+  font-family: var(--serif); font-size: 15px; font-weight: 600; letter-spacing: .12em; line-height: 26px; text-align: center;
+  color: #1D1B17; background: linear-gradient(180deg, #C8352A, #B02A22); border-radius: 2px; box-shadow: 0 2px 6px rgba(80, 20, 10, .3); }
+.atmos .frame .fl { left: 6px; }
+.atmos .frame .fr { right: 2px; }
+.atmos .frame .ft { top: 6px; left: calc(24px + var(--her-w) / 2 - 64px); width: 128px; height: 28px; font-family: var(--serif); font-size: 15px; font-weight: 600;
+  letter-spacing: .3em; line-height: 28px; text-align: center; color: #1D1B17; background: linear-gradient(180deg, #C8352A, #B02A22); border-radius: 2px; box-shadow: 0 2px 6px rgba(80, 20, 10, .3); }
+.fest-chunlian .atmos .frame .fl, .fest-chunlian .atmos .frame .fr, .fest-chunlian .atmos .frame .ft { display: block; }
+.fest-chunlian .atmos .frame .fl::before { content: "天增岁月人增寿"; }
+.fest-chunlian .atmos .frame .fr::before { content: "春满乾坤福满门"; }
+.fest-chunlian .atmos .frame .ft::before { content: "万象更新"; }
+.atmos .frame .la, .atmos .frame .lb { top: 0; width: 40px; height: 70px; transform-origin: 50% 0; animation: atSway 5s ease-in-out infinite alternate; }
+.atmos .frame .la { left: 44px; }
+.atmos .frame .lb { left: calc(var(--her-w) - 20px); animation-delay: -2.5s; }
+@keyframes atSway { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+/* a lantern: the cord, the red body, the gold caps, the tassel */
+.fest-chunlian .atmos .frame .la, .fest-chunlian .atmos .frame .lb, .fest-lantern .atmos .frame .la, .fest-lantern .atmos .frame .lb { display: block;
+  background: linear-gradient(#8A6224, #8A6224) 50% 0 / 2px 14px no-repeat,
+    linear-gradient(#D9AC5E, #D9AC5E) 50% 14px / 18px 4px no-repeat,
+    radial-gradient(ellipse 50% 50% at 50% 50%, #F0613F, #C22A1C 70%, transparent 72%) 50% 18px / 40px 34px no-repeat,
+    linear-gradient(#D9AC5E, #D9AC5E) 50% 52px / 18px 4px no-repeat,
+    linear-gradient(#C22A1C, #C22A1C) 50% 56px / 2px 14px no-repeat;
+  filter: drop-shadow(0 0 8px rgba(240, 100, 50, .45)); }
+.fest-chunlian .atmos .frame .la { left: calc(24px + var(--her-w) / 2 - 110px); }
+.fest-chunlian .atmos .frame .lb { left: calc(24px + var(--her-w) / 2 + 70px); }
+/* 艾草: a green bundle over the door */
+.fest-aicao .atmos .frame .la { display: block; left: 34px; width: 26px; height: 86px; animation-duration: 7s;
+  background: linear-gradient(#B02A22, #B02A22) 50% 0 / 20px 6px no-repeat,
+    linear-gradient(170deg, transparent 40%, #4C7A3A 41% 47%, transparent 48%) 0 6px / 26px 80px no-repeat,
+    linear-gradient(190deg, transparent 40%, #5E8C45 41% 47%, transparent 48%) 0 6px / 26px 80px no-repeat,
+    linear-gradient(180deg, transparent 44%, #3F6A30 45% 55%, transparent 56%) 0 6px / 26px 80px no-repeat; }
+/* 鹊桥: a dotted arc of magpies across the top */
+.fest-magpie .atmos .frame .ft { display: block; top: 18px; left: 18%; width: 64%; height: 90px; background: none; box-shadow: none;
+  border-top: 3px dotted color-mix(in srgb, var(--text) 45%, transparent); border-radius: 50% 50% 0 0 / 100% 100% 0 0; }
+/* the Mid-Autumn moon */
+.fest-moon .atmos .frame .lb { display: block; top: 22px; left: auto; right: 40px; width: 76px; height: 76px; border-radius: 50%; animation: none;
+  background: radial-gradient(circle at 40% 38%, #FFFBEA, #F6E3AE 60%, #E8C77A); box-shadow: 0 0 36px 12px rgba(250, 226, 160, .55); }
+/* 茱萸: red berries at the corners */
+.fest-zhuyu .atmos .frame .la, .fest-zhuyu .atmos .frame .lb { display: block; width: 34px; height: 40px; animation-duration: 6s;
+  background: radial-gradient(circle, #D0322A 40%, transparent 44%) 0 0 / 11px 11px, linear-gradient(#4C7A3A, #4C7A3A) 50% 0 / 2px 40px no-repeat; }
+/* 松枝 with gold bells — the 胡商's feast */
+.fest-pine .atmos .frame .la, .fest-pine .atmos .frame .lb { display: block; top: -4px; width: 110px; height: 46px; animation-duration: 8s;
+  background: radial-gradient(circle, #D9AC5E 45%, transparent 50%) 30% 70% / 12px 12px no-repeat, radial-gradient(circle, #C22A1C 45%, transparent 50%) 70% 80% / 10px 10px no-repeat,
+    repeating-linear-gradient(60deg, #2F5A36 0 2px, transparent 2px 6px) 0 0 / 110px 30px no-repeat, repeating-linear-gradient(120deg, #2F5A36 0 2px, transparent 2px 6px) 0 0 / 110px 30px no-repeat; }
+.fest-pine .atmos .frame .la { left: 0; }
+.fest-pine .atmos .frame .lb { left: auto; right: 0; transform: scaleX(-1); animation: none; }
+
+/* On the 小人书 panels: a festival's red border; snow on the picture's top edge. */
+.fest-chunlian .panelcard, .fest-lantern .panelcard { border-color: #C22A1C; box-shadow: 0 0 0 3px color-mix(in srgb, #C22A1C 22%, transparent); }
+.wx-snow .panelcard .panel { position: relative; }
+.wx-snow .panelcard .panel::before { content: ""; position: absolute; left: -3px; right: -3px; top: -5px; height: 12px; z-index: 1; border-radius: 8px 8px 50% 50% / 8px 8px 100% 100%;
+  background: radial-gradient(ellipse at 20% 100%, #fff 60%, transparent 62%) 0 0 / 38px 12px repeat-x, #fff; box-shadow: 0 2px 3px rgba(120, 140, 160, .3); }
+.wx-snow .panelcard .panel::after { content: ""; position: absolute; left: 0; right: 0; top: 0; aspect-ratio: 3 / 2; pointer-events: none; border-radius: 6px;
+  background: radial-gradient(circle, rgba(255, 255, 255, .9) 1.2px, transparent 1.8px) 0 0 / 23px 29px, radial-gradient(circle, rgba(255, 255, 255, .8) 1px, transparent 1.6px) 11px 13px / 31px 37px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .atmos .pt, .atmos .frame i { animation: none !important; }
+  .atmos .p-sparks, .atmos .p-rain { display: none; }
+  .atmos .p-snow .pt, .atmos .p-leaves .pt { top: var(--y); }
+  .atmos .p-glow .pt { bottom: auto; top: var(--y); opacity: .6; }
+  .atmos .p-fog .pt { left: calc(var(--x) - 40%); }
+}
+.bookchip.festchip { border-color: #C22A1C; color: #C22A1C; }
+.bookchip.festchip.done, .bookchip.festchip.term { cursor: default; border-color: var(--line); color: var(--dim); }

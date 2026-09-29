@@ -24,9 +24,21 @@ import { thinker, stillAsked } from './think.js';
 import { createVoice, nodeMoment } from './voice.js';
 import { raiseUnease } from './unease.js';
 import { LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
+import { atmosClasses, atmosOf, particlesHtml } from './atmos.js';
+import { parseDay } from './calendar.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
+
+/* A preview of the atmosphere, for testing only: `?day=2027-02-06` reads
+   Look's `today` for that date (a read — the save is never written for it),
+   `?weather=snow|rain|fog|clear` draws that sky. */
+const PREVIEW = (() => {
+  try {
+    const q = new URLSearchParams(location.search);
+    return { day: parseDay(q.get('day')) ? q.get('day') : null, weather: q.get('weather') || null };
+  } catch { return { day: null, weather: null }; }
+})();
 
 // Tools that change the state: the scene re-reads Look once they have run.
 const WRITERS = new Set(['Divine', 'Resolve', 'Practice', 'Tale', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art', 'Lundao', 'Meet', 'Quest', 'Refine', 'Ring']);
@@ -380,7 +392,7 @@ function refresh() {
 
 async function readOnce() {
   try {
-    const [seen, ,] = await Promise.all([verb('look'), readCloud()]);
+    const [seen, ,] = await Promise.all([verb('look', PREVIEW.day ? { day: PREVIEW.day } : {}), readCloud()]);
     look = seen;
     if (look.divination) keep({ casting: false });
     await loadContent(look.world, contentStale);
@@ -408,6 +420,7 @@ async function readOnce() {
   }
   watchVeil();
   watchNode();
+  festivalMoment();
   render();
 }
 
@@ -802,10 +815,56 @@ function footRowHtml(slots) {
 
 /// The chips — 录 · 书 · 事 · 袋 · 恩 — in the footer, under the stage.
 function footChipsHtml() {
-  return `${bout ? '' : luChipHtml(lang(), view.luOpen)}${bout ? '' : readChipHtml(ctx())}
+  return `${bout ? '' : festChipHtml()}${bout ? '' : luChipHtml(lang(), view.luOpen)}${bout ? '' : readChipHtml(ctx())}
     ${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}
     ${gearChipHtml(ctx(), view.gearOpen)}
     ${ledgerChipHtml(ctx(), view.ledgerOpen)}`;
+}
+
+/* 节日 · 节气: today's festival as a chip — its task a word to Ling (she
+   plays it out and pays it) until done — or the 节气's name, just said. */
+function festChipHtml() {
+  const t = look?.today, f = t?.festival;
+  if (f) {
+    const title = `${f.name} · ${f.task.what}`;
+    return f.task.done
+      ? `<span class="bookchip festchip done" title="${esc(title)}">${esc(f.name)}</span>`
+      : `<button class="bookchip festchip" data-say="${esc(f.task.label)}" title="${esc(title)}">${esc(f.name)} · ${esc(f.task.label)}</button>`;
+  }
+  return t?.term ? `<span class="bookchip festchip term">${esc(t.term.name)}</span>` : '';
+}
+
+/* The atmosphere over the stage (atmos.js): the festival's dressing and the
+   day's weather. The particles are laid again only when the layer changes, so
+   a redraw never restarts them. */
+let atmosKey = null;
+function paintAtmos() {
+  const a = atmosOf(look?.today?.festival?.dressing, PREVIEW.weather ?? look?.weather?.kind ?? null);
+  const v = $('view');
+  for (const c of [...v.classList]) if (c.startsWith('fest-') || c.startsWith('wx-')) v.classList.remove(c);
+  v.classList.add(...atmosClasses(a));
+  if (a.key === atmosKey) return;
+  atmosKey = a.key;
+  $('atmosPts').innerHTML = particlesHtml(a.particles, look?.today?.date ?? '');
+}
+
+/* 银月 on a festival: she hears the day once (a fact, and the kind of thing
+   she might say — festivals.json `her`), in her own words. Never on a preview. */
+let festivalsData;
+async function festivalMoment() {
+  const f = look?.today?.festival;
+  if (!f || PREVIEW.day || !herHere()) return;
+  const mark = `${look.today.date}:${f.id}`, KEY = 'lingjing:festival-told';
+  try { if (localStorage.getItem(KEY) === mark) return; } catch { /* no storage: at most once a load */ }
+  if (festivalMoment.told === mark) return;
+  festivalMoment.told = mark;
+  if (festivalsData === undefined) festivalsData = await content(authored?.dir ?? look.world.dir, 'festivals.json').catch(() => null);
+  const her = festivalsData?.festivals?.find((x) => x.id === f.id)?.her;
+  const zh = `今天是真实世界里的${f.name}。${her ? `你也许会说：「${her.zh}」——用你自己的话。` : ''}`;
+  const en = `Today is ${f.name} in the real world.${her ? ` You might say: “${her.en}” — in your own words.` : ''}`;
+  const { verdict } = voice.moment('festival', { zh, en }, { mood: 'happy' });
+  if (verdict === 'sent') { try { localStorage.setItem(KEY, mark); } catch { /* fine */ } }
+  else festivalMoment.told = null;
 }
 
 /* The day's practice waits in the tray: a board comes onto the stage when he
@@ -921,6 +980,7 @@ function draw() {
   // body give way, because she is IN the fight as a card and the cards need
   // the room (his, 2026-09-18). It all comes back when the fight ends.
   document.body.classList.toggle('fighting', Boolean(bout));
+  paintAtmos();
   $('place').textContent = look.scene?.place ?? look.place?.name ?? look.chapter?.title ?? '';
   // She is always at the player's side: on the stage whenever the game is
   // open, scene or road, not only where a scene casts her.

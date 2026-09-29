@@ -24,7 +24,9 @@ import { amend, art, atlas, build, enter, forget, leave, load, make, ring, save,
 
 /* Every verb kept to the story gates (rules/locks.mjs): a shut system's verb is refused `not-yet`. */
 export const VERBS = gated({
-  look: (s, c, x) => {
+  look: (s, c, x, args = {}) => {
+    // `--day` (the page's preview of a festival, and tests) moves only `today`.
+    if (args.day) x = { ...x, day: args.day };
     const woke = wake(s, c, x);
     // An art taught on waking (a companion from before the arts) is said once.
     const learned = woke ? (woke.arts ?? []).filter(id => !(s.arts ?? []).includes(id)).map(id => artBrief(c, woke, artOf(c, id))) : [];

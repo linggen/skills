@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "_about": "节日 — the player's real calendar in the world (design.md § 真实世界). The day is reckoned on the device (scripts/calendar.js: lunar table + 节气 by formula), never online. One entry per festival: `dressing` (the page's atmosphere layer: `frame` on the 小人书 frame, `particles` over the stage — scripts/atmos.js names the kinds), Ling's `line` to open the day with (once), one small `task` (Practice done `festival` when the player has done it in the chat), a `gift` (灵石, once per festival per year — 除夕 to 元宵 is one 春节, one gift), and `her`: what 银月 might say, handed to her as a fact to put in her own words. 圣诞 and 元旦 are a 西域胡商's feast days — a wink, never 道统 lore. Only on the real day: rare is the point.",
+  "festivals": [
+    {
+      "id": "chuxi",
+      "name": { "zh": "除夕", "en": "New Year's Eve" },
+      "dressing": { "frame": "chunlian", "particles": "sparks" },
+      "line": {
+        "zh": "今天是除夕。九州的灶台一齐冒烟，连山里的狼都没出来——它们也回家吃饭了。",
+        "en": "It's New Year's Eve. Every stove in the Nine Provinces is smoking, and not a wolf is out in the hills — they went home for dinner too."
+      },
+      "task": {
+        "label": { "zh": "守岁", "en": "See the year out" },
+        "what": { "zh": "和{伴}一起守岁，谁先睡着，谁明年洗碗。", "en": "Stay up with {伴} to see the year out. Whoever nods off first washes the bowls all next year." }
+      },
+      "gift": { "wealth": 8, "line": { "zh": "枕头底下，压着八块灵石。压岁钱。谁放的，不说。", "en": "Under your pillow: eight spirit stones. New Year money. Nobody says who put them there." } },
+      "her": { "zh": "凡人的节，本王也吃。饺子呢？", "en": "A mortal feast. I eat at those too. Where are the dumplings?" }
+    },
+    {
+      "id": "chunjie",
+      "name": { "zh": "春节", "en": "Spring Festival" },
+      "dressing": { "frame": "chunlian", "particles": "sparks" },
+      "line": {
+        "zh": "过年了。家家门上贴了春联，「福」字倒着——贴的人说是故意的，看他的脸，不像。",
+        "en": "It's the New Year. Couplets on every door, the 福 upside down — whoever pasted it says that was on purpose. His face says otherwise."
+      },
+      "task": {
+        "label": { "zh": "贴春联", "en": "Paste the couplets" },
+        "what": { "zh": "给自己的门贴一副春联——上联下联，你自己编，横批不许写「欠饼」。", "en": "Paste a pair of couplets on your own door — write them yourself; the top line may not say 'owed flatbread'." }
+      },
+      "gift": { "wealth": 8, "line": { "zh": "红纸包里，八块灵石。压岁钱，一年一回。", "en": "In a red paper packet: eight spirit stones. New Year money, once a year." } },
+      "her": { "zh": "凡人的节，本王也吃。", "en": "A mortal feast. I eat at those too." }
+    },
+    {
+      "id": "yuanxiao",
+      "name": { "zh": "元宵", "en": "Lantern Festival" },
+      "dressing": { "frame": "lantern", "particles": "glow" },
+      "line": {
+        "zh": "正月十五，元宵。满街的灯笼，每一盏底下都吊着一条灯谜，猜不出的人，比灯笼还多。",
+        "en": "The fifteenth night: the Lantern Festival. A riddle hangs under every lantern, and the people who can't guess them outnumber the lanterns."
+      },
+      "task": {
+        "label": { "zh": "猜灯谜", "en": "Guess a lantern riddle" },
+        "what": { "zh": "摘一盏灯，猜它底下的谜。猜中了，灯归你；猜不中，灯也归你——卖灯的收摊了。", "en": "Take down a lantern and guess its riddle. Guess right and the lantern is yours; guess wrong and it's still yours — the seller has packed up." }
+      },
+      "gift": { "wealth": 8, "line": { "zh": "灯笼里掉出八块灵石。元宵的彩头。", "en": "Eight spirit stones fall out of the lantern. The Lantern Festival's prize." } },
+      "her": { "zh": "汤圆，要芝麻的。本王只说一遍。", "en": "Rice balls. Sesame. I shall say it once." }
+    },
+    {
+      "id": "duanwu",
+      "name": { "zh": "端午", "en": "Dragon Boat Festival" },
+      "dressing": { "frame": "aicao", "particles": null },
+      "line": {
+        "zh": "五月初五，端午。门上挂了艾草，河上赛龙舟——划得最卖力的那条，船上没人会游泳。",
+        "en": "The fifth of the fifth moon: Dragon Boat day. Mugwort over the doors, boats racing on the river — the crew rowing hardest can't swim."
+      },
+      "task": {
+        "label": { "zh": "包粽子", "en": "Wrap zongzi" },
+        "what": { "zh": "和{伴}包粽子。包得像粽子的归你，包得像草鞋的，也归你。", "en": "Wrap zongzi with {伴}. The ones that look like zongzi are yours; the ones that look like straw sandals are also yours." }
+      },
+      "gift": { "wealth": 5, "line": { "zh": "粽子里包着五块灵石。谁包的，谁心里有数。", "en": "Five spirit stones wrapped inside a zongzi. Whoever wrapped it knows." } },
+      "her": { "zh": "粽子要甜的。咸的，给小狰。", "en": "The sweet ones. The salty ones go to Xiaozheng." }
+    },
+    {
+      "id": "qixi",
+      "name": { "zh": "七夕", "en": "Qixi" },
+      "dressing": { "frame": "magpie", "particles": "stars" },
+      "line": {
+        "zh": "七月初七，七夕。喜鹊都上天搭桥去了，地上的虫子，今天过得很安心。",
+        "en": "The seventh of the seventh moon: Qixi. Every magpie has flown up to build the bridge, and the bugs down here are having a very relaxed day."
+      },
+      "task": {
+        "label": { "zh": "乞巧", "en": "Beg for deft hands" },
+        "what": { "zh": "月下穿针：一口气，线穿过针眼，就算巧。穿了三十回的，也算——算有恒心。", "en": "Thread a needle by moonlight in one breath and you are deft. Thirty tries also counts — as patience." }
+      },
+      "gift": { "wealth": 5, "line": { "zh": "针线篓底下，五块灵石。织女给的，大概。", "en": "Five spirit stones at the bottom of the sewing basket. From the Weaver Girl, probably." } },
+      "her": { "zh": "一年见一面？本王两千年没见过谁，也没哭。", "en": "Once a year? I went two thousand years seeing no one, and did not cry about it." }
+    },
+    {
+      "id": "zhongqiu",
+      "name": { "zh": "中秋", "en": "Mid-Autumn" },
+      "dressing": { "frame": "moon", "particles": "glow" },
+      "line": {
+        "zh": "八月十五，中秋。月亮圆得像一张饼——在这本书里，这不是好兆头：有人欠着一张饼。",
+        "en": "The fifteenth of the eighth moon: Mid-Autumn. The moon is as round as a flatbread — which, in this story, is a bad sign: somebody owes one."
+      },
+      "task": {
+        "label": { "zh": "分月饼", "en": "Share the mooncake" },
+        "what": { "zh": "把一只月饼分成几份，分给身边的人。分得不匀，吃得不香。", "en": "Cut one mooncake into shares for everyone beside you. Cut it unevenly and nobody enjoys it." }
+      },
+      "gift": { "wealth": 6, "line": { "zh": "月饼的馅里，硌牙的是六块灵石。", "en": "Something in the mooncake's filling hurts your teeth: six spirit stones." } },
+      "her": { "zh": "这不算还饼。饼是饼，月饼是月饼。", "en": "This does not count as the flatbread I owe. A flatbread is a flatbread; a mooncake is a mooncake." }
+    },
+    {
+      "id": "chongyang",
+      "name": { "zh": "重阳", "en": "Double Ninth" },
+      "dressing": { "frame": "zhuyu", "particles": "leaves" },
+      "line": {
+        "zh": "九月初九，重阳。插茱萸，登高——山顶上站满了登高的人，比山下还挤。",
+        "en": "The ninth of the ninth moon: Double Ninth. Dogwood sprigs, and everyone climbs high — the summit is more crowded than the town below."
+      },
+      "task": {
+        "label": { "zh": "登高", "en": "Climb high" },
+        "what": { "zh": "登一回高，给家里的老人捎句话。爬到一半想回头的，不丢人——爬到一半躺下的，丢一点。", "en": "Climb somewhere high and send word to the old folks at home. Turning back halfway is no shame — lying down halfway is a little." }
+      },
+      "gift": { "wealth": 5, "line": { "zh": "山顶的石头缝里，卡着五块灵石。登高的彩头。", "en": "Five spirit stones wedged in a crack at the summit. The climber's prize." } },
+      "her": { "zh": "高？本王从天上掉下来的，那才叫高。", "en": "High? I fell out of the sky. That was high." }
+    },
+    {
+      "id": "laba",
+      "name": { "zh": "腊八", "en": "Laba" },
+      "dressing": { "frame": null, "particles": null },
+      "line": {
+        "zh": "腊月初八，腊八。家家熬粥，八样米豆一锅煮——穷人家凑不齐八样，就把一样煮八遍。",
+        "en": "The eighth of the twelfth moon: Laba. Everyone cooks porridge of eight grains — a poor house that can't find eight cooks one grain eight times."
+      },
+      "task": {
+        "label": { "zh": "熬腊八粥", "en": "Cook Laba porridge" },
+        "what": { "zh": "熬一锅腊八粥，凑齐八样——凑不齐的，一样煮八遍，也算。", "en": "Cook a pot of Laba porridge with eight things in it — short of eight, cook one thing eight times; that counts." }
+      },
+      "gift": { "wealth": 4, "line": { "zh": "粥底下沉着四块灵石。难怪那么稠。", "en": "Four spirit stones at the bottom of the pot. No wonder it was so thick." } },
+      "her": { "zh": "八样？本王数了，你这锅只有七样半。", "en": "Eight? I counted. Your pot has seven and a half." }
+    },
+    {
+      "id": "yuandan",
+      "name": { "zh": "元旦", "en": "New Year's Day" },
+      "dressing": { "frame": "lantern", "particles": "sparks" },
+      "line": {
+        "zh": "西域来的胡商说，今天是他们那儿的新年。他放了一挂自己带来的炮仗，很响，很短，他很满意。",
+        "en": "A merchant from the Western Regions says today is New Year where he comes from. He sets off a string of firecrackers he carried all that way. Loud, short, and he is very pleased."
+      },
+      "task": {
+        "label": { "zh": "许个新年愿", "en": "Make a New Year wish" },
+        "what": { "zh": "胡商说，他们那儿新年要许一个愿，许了就得做。说一个——做不到的别说。", "en": "The merchant says where he comes from you make a wish at New Year, and then you must keep it. Say one — nothing you can't do." }
+      },
+      "gift": { "wealth": 4, "line": { "zh": "胡商塞给你四块灵石：「新年好！」——他只会说这一句。", "en": "The merchant presses four spirit stones on you: 'Happy New Year!' — the only words of ours he knows." } },
+      "her": { "zh": "胡人的年，也是年。有吃的就行。", "en": "A foreigner's new year is still a new year. So long as there is food." }
+    },
+    {
+      "id": "shengdan",
+      "name": { "zh": "圣诞", "en": "Christmas" },
+      "dressing": { "frame": "pine", "particles": "snow" },
+      "line": {
+        "zh": "那个西域胡商又来了：红袍，白胡子，背一只大口袋。他说今天是他们那儿的节，挨家挨户送东西——走的是烟囱，因为门他推不开。",
+        "en": "That Western merchant is back: red robe, white beard, a big sack on his back. He says it's a feast day where he comes from, and he goes house to house leaving gifts — down the chimneys, because he can't work the doors."
+      },
+      "task": {
+        "label": { "zh": "帮胡商送礼", "en": "Help the merchant deliver" },
+        "what": { "zh": "帮胡商把口袋里的东西送到孩子们手里。烟囱太窄，你走门。", "en": "Help the merchant hand out what's in his sack to the children. The chimneys are too narrow; you use the doors." }
+      },
+      "gift": { "wealth": 6, "line": { "zh": "口袋底下剩了六块灵石，胡商说：「给你的。」他的袜子挂在你门口，不知道为什么。", "en": "Six spirit stones left at the bottom of the sack. 'For you,' says the merchant. His sock is hanging on your door. Nobody knows why." } },
+      "her": { "zh": "从烟囱进来？本王当年也这么干过。偷鸡。", "en": "Down the chimney? I did that once too. For chickens." }
+    }
+  ]
+}
