@@ -55,7 +55,8 @@
       },
       "province": "豫",
       "root": "water",
-      "art": "art/fuzhu.webp",
+      "art": "art/creatures/fuzhu.webp",
+      "art_plate": "art/fuzhu.webp",
       "art_source": "《山海經》蔣應鎬繪圖本，明萬曆刊（c. 1597），卷五 中山經 第三十二圖，左葉。Public domain. Wikimedia Commons: File:山海經十八卷 蔣應鎬繪圖 明萬曆間刊本.pdf, page 108. Cropped, levelled and laid on paper by tools/frame.py (art/plates/fuzhu-1597-p108.jpg).",
       "art_caption": {
         "zh": "蔣應鎬繪圖本，明萬曆刊",

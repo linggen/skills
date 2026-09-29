@@ -88,7 +88,7 @@
       "role": { "zh": "邻家{伴·孩}，比你小一岁；{伴·她}家也欠马家的租", "en": "The {伴·孩} next door, a year younger than you; {伴·她} family owes the Mas rent too" },
       "voice": { "zh": "快人快语，急了脸先红；不肯欠人情，也不许谁欠着不还——「记账，以后还。」", "en": "Quick and blunt; the face goes red before the temper does. Will not owe anyone, nor let a debt go unpaid — \"Keep count; pay me back.\"" },
       "home": "shiao",
-      "art": "art/people/ahe.webp"
+      "art": "art/people/ahe-girl.webp"
     },
     {
       "id": "qulao",

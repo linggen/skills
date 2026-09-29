@@ -222,3 +222,13 @@ test('录 holds a 图鉴: met entries by kind, the unmet as empty slots; a tap o
   // a creature's card carries its 山海经 line
   assert.match(codexHtml(CODEX.get('longzhi'), { src }), /九尾、九首、虎爪/);
 });
+
+test('a repainted creature keeps its old woodcut as 「原图」; the prologue\'s people have their portraits', () => {
+  const fuzhu = CODEX.get('fuzhu');
+  assert.equal(fuzhu.image, 'art/creatures/fuzhu.webp');
+  assert.equal(fuzhu.source.scan, 'art/fuzhu.webp');
+  const html = codexHtml(fuzhu, { src });
+  assert.match(html, /据《山海经 · 中山经》重绘；原图：蔣應鎬繪圖本/);
+  assert.match(html, /data-scan="\.\.\/worlds\/jiuding\/art\/fuzhu\.webp">原图</);
+  for (const id of ['baba', 'mama', 'masan', 'maxiaobao', 'wupo', 'laozhou', 'qulao', 'yinyue', 'old-bow', 'bing']) assert.ok(CODEX.get(id).image, `${id}: a portrait`);
+});

@@ -74,10 +74,12 @@ retired (git history keeps them). After the bake-off (local FLUX · Gemini · Co
 Codex CLI's image tool (ChatGPT's image model): `tools/paint-codex.py` holds the house style —
 fine ink 白描 with a soft grey wash on warm aged paper, one subject, no text or seal — and every
 subject's prompt. Each picture was looked at against its description and re-rolled where wrong.
-No outside source. The people (`people/*.webp`, 阿禾 twice: `ahe-girl`, `ahe-boy`), the things
-(`items/{bing,fox-token,old-bow,xisui-pill,tuna-jing,luobo,danlu,huangting,heluo}.webp`) and the
-山海经 creatures (`creatures/*.webp`, each from its own classical line) replace the FLUX pictures;
-a creature's old woodcut stays at its old path as its 「原图」 (`art_plate`, the table above).
+No outside source. Painted so far (the Codex credits ran out mid-run): the people 爹 娘 马三 马小宝
+阿禾 (twice: `ahe-girl`, `ahe-boy`) 吴婆婆 老周 瞿老 银月 (`yinyue`, and her fox form `yinyue-fox`, the
+house-style reference) 褚先生 孙二狗 内门师姐 周衡; the things `items/bing` and `items/old-bow`; and
+`creatures/fuzhu` (夫诸, four horns, from 「其状如白鹿而四角」). They replace the FLUX pictures. Still to
+paint: 舅舅 玄沉子 渡叔, the other things of the list, the other eighteen creatures. A creature's
+old woodcut stays at its old path as its 「原图」 (`art_plate`, the table above).
 
 The 经脉 · 穴位 figures are our own SVG: `codex/mannequin-{profile,back,front}.svg`
 (`tools/mannequin.py`), a mannequin after the 宋天圣针灸铜人, with every label, point and channel

@@ -45,9 +45,7 @@
    "first": {
     "book": "00",
     "scene": "00-masan"
-   },
-   "image": null,
-   "_image": "modern jacket with pockets, belt and boots — reads 20th century, not old China"
+   }
   },
   "mama": {
    "first": {
@@ -59,17 +57,13 @@
    "first": {
     "book": "00",
     "scene": "00-masan"
-   },
-   "image": null,
-   "_image": "an old bald man, portly not hulking, modern belt buckle — awaiting the bake-off"
+   }
   },
   "maxiaobao": {
    "first": {
     "book": "00",
     "scene": "00-masan"
-   },
-   "image": null,
-   "_image": "reads as a grown woman, not a fourteen-year-old boy"
+   }
   },
   "ahe": {
    "first": {
@@ -77,10 +71,10 @@
     "scene": "00-dawn"
    },
    "by_hero": {
-    "male": "art/people/ahe.webp",
-    "female": null
+    "male": "art/people/ahe-girl.webp",
+    "female": "art/people/ahe-boy.webp"
    },
-   "_by_hero": "阿禾 is always the hero's other gender: a girl beside a boy hero, a boy beside a girl. The boy portrait is not painted yet (a name card until then)."
+   "_by_hero": "阿禾 is always the hero's other gender: the girl beside a boy hero, the boy beside a girl (tools/paint-codex.py ahe-girl, ahe-boy)."
   },
   "wupo": {
    "first": {
@@ -94,15 +88,13 @@
     "scene": "00-uncle"
    },
    "image": null,
-   "_image": "a modern buttoned jacket with a leather belt"
+   "_image": "the FLUX portrait wears a modern buttoned jacket; the Codex re-roll came back framed in black — to paint again"
   },
   "laozhou": {
    "first": {
     "book": "01",
     "scene": "00-cliff"
-   },
-   "image": null,
-   "_image": "a calligraphy inscription (fake text); modern shirt pocket"
+   }
   },
   "qulao": {
    "first": {
@@ -127,23 +119,17 @@
   "chuxiansheng": {
    "first": {
     "book": "02"
-   },
-   "image": null,
-   "_image": "holds a Western leather-bound book"
+   }
   },
   "sunergou": {
    "first": {
     "book": "02"
-   },
-   "image": null,
-   "_image": "a checked yukata and sandals — reads Japanese"
+   }
   },
   "neimen-shijie": {
    "first": {
     "book": "02"
-   },
-   "image": null,
-   "_image": "a katana-hilted sword and kimono look — reads Japanese"
+   }
   },
   "dushu": {
    "image": null,
@@ -159,7 +145,7 @@
     "book": "00",
     "scene": "00-fox"
    },
-   "image": null,
+   "image": "art/people/yinyue-fox.webp",
    "lines": {
     "zh": [
      "一只巴掌大的银狐，一条尾巴，身后八截断尾。",
@@ -169,8 +155,7 @@
      "A silver fox no bigger than a palm: one tail, and eight cut stumps behind it.",
      "She calls herself mistress of Qingqiu — the rest she cannot recall."
     ]
-   },
-   "_image": "the fox form (art/people/yinyue-fox.webp) has no stumps and reads wolf-sized — awaiting the bake-off"
+   }
   },
   "longzhi": {
    "first": {
@@ -191,9 +176,7 @@
    "name": {
     "zh": "爷爷的弓",
     "en": "Grandfather's bow"
-   },
-   "image": null,
-   "_image": "not clearly a bow (a stick on straw) — awaiting the bake-off"
+   }
   },
   "deer-hide": {
    "first": {
@@ -473,8 +456,7 @@
     "zh": "饼",
     "en": "Flatbread"
    },
-   "image": null,
-   "_image": "to be painted (tools/paint-codex.py)",
+   "image": "art/items/bing.webp",
    "lines": {
     "zh": [
      "娘把最后一点面抖了三遍，烙了两张饼，一厚一薄。",
@@ -497,7 +479,7 @@
     "en": "Marrow-Cleansing Pill"
    },
    "image": null,
-   "_image": "to be painted (tools/paint-codex.py)",
+   "_image": "to be painted (tools/paint-codex.py; the Codex credits ran out 2026-09-29)",
    "lines": {
     "zh": [
      "银月给的一颗黑丸子，化在水里泡一夜，洗筋伐髓。",
