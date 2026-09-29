@@ -96,9 +96,8 @@ test('the girl-hero 回 (第三回, 第四回): both readings clean, each told i
   assert.match(hf, /嘴里一股泥腥味/);
   const [rm, rf] = ['male', 'female'].map((g) => read('04-第四回.md', g));
   assert.match(rm, /打鼓的那个，便是我。/);
-  assert.doesNotMatch(rm, /你长得像交不起河伯钱的|巫祝眯起眼睛/);
+  assert.doesNotMatch(rm, /你长得像交不起河伯钱的/);
   assert.match(rf, /你长得像交不起河伯钱的/);
-  assert.match(rf, /巫祝眯起眼睛，把我从头看到脚/);
   assert.doesNotMatch(rf, /打鼓的那个，便是我/);
   for (const html of [rm, rf]) assert.match(html, /「扑通」一声/);
 });

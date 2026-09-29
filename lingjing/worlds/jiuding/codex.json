@@ -325,10 +325,16 @@
    "tag": "丹药"
   },
   "qi-pill": {
-   "tag": "丹药"
+   "tag": "丹药",
+   "first": {
+    "book": "h04"
+   }
   },
   "foundation-pill": {
-   "tag": "丹药"
+   "tag": "丹药",
+   "first": {
+    "book": "h04"
+   }
   },
   "firm-pill": {
    "tag": "丹药"

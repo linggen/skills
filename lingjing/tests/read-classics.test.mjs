@@ -64,7 +64,7 @@ test('第三回 and 第四回 end with their classics, and the made-up 《吐纳
   const at = (id) => chapters.find((c) => c.id === id);
   const entries = (id) => [...renderMarkdown(fillHero(at(id).md, {}), { classics: CLASSICS }).matchAll(/<article class="dianent" id="dian-([\w-]+)"/g)].map((m) => m[1]);
   assert.deepEqual(entries('h03'), ['suwen', 'shanhai-zheng', 'shennong', 'baopu', 'jiuding', 'shanhai-xirang', 'huangting']);
-  assert.deepEqual(entries('h04'), ['baopu-jiyan', 'shiji-ximenbao', 'shanhai-bingyi']);
+  assert.deepEqual(entries('h04'), ['baopu-jiyan', 'huangting', 'shiji-ximenbao', 'shanhai-bingyi']);
   for (const c of chapters) assert.equal(/《吐纳经》\{典=/.test(c.md), false, `${c.file}: 《吐纳经》 is 银月's own, never a classic`);
   const html = renderMarkdown(fillHero(at('h03').md, {}), { classics: CLASSICS });
   assert.doesNotMatch(html.replace(/<[^>]+>/g, ''), /\{典=/, 'no token shows');
