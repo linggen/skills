@@ -43,6 +43,10 @@ test('an old ?ch= id opens its 回; the 回 title renders centred as number and 
   assert.equal(entryById(book, 'h03').file, '03-第三回.md');
   assert.equal(entryById(book, 'tuna').id, 'tuna');
   assert.equal(entryById(book, 'nope'), null);
+  // read.js finds the 回 it opens by id, never by object identity (entryById builds fresh entries: 2026-09-29, every old link opened 第一回).
+  const js = fs.readFileSync(path.join(ROOT, 'scripts/read.js'), 'utf8');
+  assert.match(js, /const want = entryById\(book, params\.get\('ch'\)\)\?\.id;\n  const at = Math\.max\(0, all\.findIndex\(\(c\) => c\.id === want\)\);/);
+  assert.doesNotMatch(js, /all\.indexOf\(entryById/);
   assert.equal(renderMarkdown('# 第四回　九转一炉藏饭桶　千鱼漳水立龙门\n\n甲。\n\n---\n\n乙。'),
     '<h1 class="huimu"><span class="hui">第四回</span><span class="line">九转一炉藏饭桶</span><span class="line">千鱼漳水立龙门</span></h1>\n<p>甲。</p>\n<hr class="scene">\n<p>乙。</p>');
   assert.equal(renderMarkdown('# 附录 ·《吐纳经》'), '<h1>附录 ·《吐纳经》</h1>', 'a plain title stays plain');

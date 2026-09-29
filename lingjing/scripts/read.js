@@ -47,7 +47,8 @@ async function main() {
   const book = await getJson(`${STORY}${encodeURIComponent(bookId)}/book.json`);
   const all = bookEntries(book);
   // An old chapter id (read.html?ch=02, before the 回) opens its 回.
-  const at = Math.max(0, all.indexOf(entryById(book, params.get('ch'))));
+  const want = entryById(book, params.get('ch'))?.id;
+  const at = Math.max(0, all.findIndex((c) => c.id === want));
   const ch = all[at];
   document.title = `${pick(book.title)} · ${pick(ch.label ?? ch.title)}`;
   $('booktitle').textContent = pick(book.title);
