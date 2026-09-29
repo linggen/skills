@@ -1454,8 +1454,11 @@ Superseded; the original is in archive.md. The card fight (`## 斗法 v3`) and `
   `first`, `image: null` to refuse a bad picture — a clean name card stands instead — `by_hero` for 阿禾, whose
   two portraits follow the hero's gender like the address words). One renderer (`codexHtml`) and one stylesheet
   (`codex.css`) draw it everywhere; the rules deal in ids (rules/codex.mjs); pictures live under the world.
-- **Kinds.** 人物 · 生物 · 物品 · 武功 (a card: portrait at ~40% beside its words, stacked on a phone) and
-  knowledge — 经脉 · 穴位 · 洛书 · 五行 … (a figure, full width, animated).
+- **Kinds.** 人物 · 生物 · 物品 · 武功 (a card: the picture large on the left, its words beside it, stacked on a
+  phone) and knowledge — 经脉 · 穴位 · 洛书 · 五行 … (a figure, full width, animated). **An item has an entry only
+  if the reader would not know it or it is a named story object** — tagged 法宝 · 丹药 · 功法 · 信物 (狐纹木牌,
+  小铜炉, 洗髓丹, 回春丹, 《吐纳经》, 《黄庭经》, 《河洛剑诀》); everyday things (鹿皮, 萝卜, 饼, 碗, 爷爷的弓 — a bow
+  is a bow) have none (his, 2026-09-29; the lint holds it). A picture painted for us shows no credit line.
 - **First appearance.** The book writes `[words]{注=id}`: a subject's card sits after the paragraph of its first
   appearance (`first.book`, tested against the book's order), later mentions are a dotted link that opens the
   card; a knowledge figure sits under every paragraph that names it. The game: a scene's people, 银月's form and

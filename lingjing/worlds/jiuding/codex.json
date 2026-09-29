@@ -1,6 +1,6 @@
 {
  "version": 1,
- "_about": "图鉴 — the codex, the ONE picture system (Hanli 2026-09-29: 「图片作为图鉴，展示人物、生物、物品、武功、经脉、穴位等」). One entry per subject, one source for the book (read-md.js) and the game (the stage's first-appearance card, Ling's Show, 录's 图鉴): scripts/codex.js resolves and draws them. People, creatures, items and arts are LINKED — every row of people.json, creatures.json (not the foe- stand-ins), items.json and arts.json is an entry under its own id, its name, line and art read from there; an entry here with that id only adds to it: `first` {book: chapter id in book.json, scene: the game scene that introduces it}, `name`/`lines` to override, `image: null` to refuse a picture (`_image` says why; a name card stands instead), `by_hero` {male, female} for one picked by the hero's gender (阿禾). Knowledge (经脉, 穴位, 洛书, 五行 …) lives here whole: name, 2–3 lines, image, credit, source, and `marks` (scripts/marks.js). The hero has NO entry and is never drawn. The book writes [words]{注=id}: a subject's card sits after the paragraph of its first appearance (first.book), later mentions are a dotted link; a knowledge figure sits under every paragraph that names it.",
+ "_about": "图鉴 — the codex, the ONE picture system (Hanli 2026-09-29: 「图片作为图鉴，展示人物、生物、物品、武功、经脉、穴位等」). One entry per subject, one source for the book (read-md.js) and the game (the stage's first-appearance card, Ling's Show, 录's 图鉴): scripts/codex.js resolves and draws them. People, creatures, items and arts are LINKED — every row of people.json, creatures.json (not the foe- stand-ins), items.json and arts.json is an entry under its own id, its name, line and art read from there; an entry here with that id only adds to it: `first` {book: chapter id in book.json, scene: the game scene that introduces it}, `name`/`lines` to override, `image: null` to refuse a picture (`_image` says why; a name card stands instead), `by_hero` {male, female} for one picked by the hero's gender (阿禾). Knowledge (经脉, 穴位, 洛书, 五行 …) lives here whole: name, 2–3 lines, image, source, and `marks` (scripts/marks.js). A picture painted for us (Codex) shows NO credit line on the page (his, 2026-09-29) — its provenance is `_credit` and CREDITS.md; an old print keeps its short source line and the 「原图」 button. The hero has NO entry and is never drawn. The book writes [words]{注=id}: a subject's card sits after the paragraph of its first appearance (first.book), later mentions are a dotted link; a knowledge figure sits under every paragraph that names it.",
  "_marks": "The animation layer (scripts/marks.js): ratio = the image's height/width; points [{id, label, x, y}] and paths [{id, d: [[x, y]…], through: [point ids, in flow order]}], x/y in 0–1 of the image, drawn as an SVG over it.",
  "kinds": {
   "人物": {
@@ -16,7 +16,8 @@
   "物品": {
    "zh": "物品",
    "en": "Things",
-   "from": "items"
+   "from": "items",
+   "_only": "An item is an entry only when codex.json tags it 法宝 · 丹药 · 功法 · 信物 (his, 2026-09-29: 「鹿皮就不用图鉴了」): a thing the reader would not know, or a named story object. Everyday things — 鹿皮, 萝卜, 饼, 碗, 爷爷的弓 (a bow is a bow) — have none."
   },
   "武功": {
    "zh": "武功",
@@ -168,27 +169,12 @@
     "book": "02"
    }
   },
-  "old-bow": {
-   "first": {
-    "book": "00",
-    "scene": "00-masan"
-   },
-   "name": {
-    "zh": "爷爷的弓",
-    "en": "Grandfather's bow"
-   }
-  },
-  "deer-hide": {
-   "first": {
-    "book": "00",
-    "scene": "00-deer"
-   }
-  },
   "fox-token": {
    "first": {
     "book": "00",
     "scene": "00-chushan"
-   }
+   },
+   "tag": "信物"
   },
   "tuna-jing": {
    "first": {
@@ -196,43 +182,37 @@
     "scene": "00-sleep"
    },
    "image": null,
-   "_image": "columns of fake characters and a seal"
+   "_image": "columns of fake characters and a seal",
+   "tag": "功法"
   },
   "danlu": {
    "first": {
     "book": "02",
     "scene": "wm-danlu"
-   }
+   },
+   "tag": "法宝"
   },
   "xirang": {
    "first": {
     "book": "02",
     "scene": "wm-xirang"
-   }
+   },
+   "tag": "法宝"
   },
   "mend-pill": {
    "image": null,
-   "_image": "a modern two-colour capsule"
+   "_image": "a modern two-colour capsule",
+   "tag": "丹药"
   },
   "moon-bell": {
    "image": null,
-   "_image": "a Western bell with a ribbon bow"
-  },
-  "sang-paper": {
-   "image": null,
-   "_image": "a Western ink bottle and dip pen"
-  },
-  "straw-cloak": {
-   "image": null,
-   "_image": "a lampshade-like thatch, not a cloak"
-  },
-  "talisman": {
-   "image": null,
-   "_image": "large fake characters and a seal"
+   "_image": "a Western bell with a ribbon bow",
+   "tag": "信物"
   },
   "wangqi-2": {
    "image": null,
-   "_image": "an eye-of-providence motif — reads Western"
+   "_image": "an eye-of-providence motif — reads Western",
+   "tag": "功法"
   },
   "三关": {
    "kind": "经脉",
@@ -253,10 +233,6 @@
     ]
    },
    "image": "art/codex/sanguan.webp",
-   "credit": {
-    "zh": "Codex 所绘（人体背面·督脉三关），字与点经人眼校过；三关的位置据《性命圭旨》。",
-    "en": "Painted with Codex (the back, the Du channel's three passes), labels checked by eye; the passes placed after the Xingming guizhi."
-   },
    "source": {
     "url": "https://commons.wikimedia.org/wiki/File:%E6%80%A7%E5%91%BD%E5%9C%AD%E6%97%A8_%E5%8F%8D%E7%85%A7%E5%9C%96.png",
     "license": "Painted for Lingjing (Codex CLI image tool, 2026-09-29); the plate it follows is public domain",
@@ -333,28 +309,10 @@
    },
    "first": {
     "book": "02"
-   }
-  },
-  "bing": {
-   "kind": "物品",
-   "name": {
-    "zh": "饼",
-    "en": "Flatbread"
    },
-   "image": "art/items/bing.webp",
-   "lines": {
-    "zh": [
-     "娘把最后一点面抖了三遍，烙了两张饼，一厚一薄。",
-     "厚的那张，后来被一只狐狸吃了——她说欠你一张。"
-    ],
-    "en": [
-     "Mother shook out the last of the flour three times and baked two flatbreads, one thick, one thin.",
-     "The thick one a fox ate later — and said she owed you one."
-    ]
-   },
-   "first": {
-    "book": "00",
-    "scene": "00-kitchen"
+   "_credit": {
+    "zh": "Codex 所绘（人体背面·督脉三关），字与点经人眼校过；三关的位置据《性命圭旨》。",
+    "en": "Painted with Codex (the back, the Du channel's three passes), labels checked by eye; the passes placed after the Xingming guizhi."
    }
   },
   "xisui-pill": {
@@ -378,7 +336,29 @@
    "first": {
     "book": "01",
     "scene": "00-sleep"
-   }
+   },
+   "tag": "丹药"
+  },
+  "qi-pill": {
+   "tag": "丹药"
+  },
+  "foundation-pill": {
+   "tag": "丹药"
+  },
+  "firm-pill": {
+   "tag": "丹药"
+  },
+  "pojing-pill": {
+   "tag": "丹药"
+  },
+  "huangting": {
+   "tag": "功法"
+  },
+  "heluo": {
+   "tag": "功法"
+  },
+  "wangqi-1": {
+   "tag": "功法"
   }
  }
 }

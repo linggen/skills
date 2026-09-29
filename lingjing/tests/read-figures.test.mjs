@@ -10,7 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fillHero, renderMarkdown } from '../scripts/read-md.js';
-import { codexHtml, codexOf, codexRaw, isSubject, lintCodex, resolveEntry, SUBJECTS } from '../scripts/codex.js';
+import { codexHtml, codexOf, codexRaw, isSubject, ITEM_TAGS, lintCodex, resolveEntry, SUBJECTS } from '../scripts/codex.js';
 import { cardHtml, WORDS } from '../scripts/cards.js';
 import { marksSvg } from '../scripts/marks.js';
 
@@ -42,7 +42,16 @@ test('the codex lints clean: every kind known, every picture on disk, one entry 
   // linked, not duplicated: every person, 山海经 creature, item and art is an entry
   for (const p of FILES.people.people) assert.equal(CODEX.get(p.id)?.kind, '人物', p.id);
   for (const c of FILES.creatures.creatures.filter((c) => !c.id.startsWith('foe-'))) assert.equal(CODEX.get(c.id)?.kind, '生物', c.id);
-  for (const i of FILES.items.items) assert.equal(CODEX.get(i.id)?.kind, '物品', i.id);
+  // an item only when tagged 法宝 · 丹药 · 功法 · 信物 (his: 「鹿皮就不用图鉴了」)
+  for (const i of FILES.items.items) {
+    const tag = FILES.codex.entries[i.id]?.tag;
+    assert.equal(CODEX.get(i.id)?.kind, ITEM_TAGS.includes(tag) ? '物品' : undefined, i.id);
+  }
+  for (const id of ['deer-hide', 'luobo', 'old-bow', 'bing']) assert.equal(CODEX.has(id), false, `${id}: everyday, no entry`);
+  for (const id of ['fox-token', 'danlu', 'xisui-pill', 'mend-pill', 'tuna-jing', 'huangting', 'heluo']) assert.ok(ITEM_TAGS.includes(CODEX.get(id)?.tag), `${id}: a story object`);
+  const untagged = structuredClone(FILES);
+  untagged.codex.entries.bing = { kind: '物品', name: { zh: '饼', en: 'Flatbread' }, lines: { zh: ['x'], en: ['x'] } };
+  assert.ok(lintCodex(untagged, exists).some((p) => /bing: an item's entry is tagged/.test(p)));
   for (const a of FILES.arts.arts) assert.equal(CODEX.get(a.id)?.kind, '武功', a.id);
   // a refused picture is a name card, and the lint catches a missing one
   const broken = structuredClone(FILES);
@@ -97,7 +106,7 @@ test('a subject\'s card stands once, after the paragraph of its first appearance
     assert.doesNotMatch(html, /:::|\{注=/, `${c.file}: nothing left raw`);
   }
   for (const [id, ch] of firstIn) if (isSubject(CODEX.get(id))) assert.equal(cards.get(id), 1, `${id}: one card in the book (${ch})`);
-  for (const id of ['masan', 'ahe', 'yinyue', 'old-bow', 'longzhi', 'sunergou']) assert.equal(cards.get(id), 1, `${id} is introduced`);
+  for (const id of ['masan', 'ahe', 'yinyue', 'fox-token', 'longzhi', 'sunergou']) assert.equal(cards.get(id), 1, `${id} is introduced`);
   // in one render: a card once, the second mention a dotted link
   const md = '收租的，是[马三]{注=masan}。\n\n又是[马三]{注=masan}。';
   const html = renderMarkdown(md, { codex: CODEX, chapter: '00', src });
@@ -111,7 +120,7 @@ test('a knowledge figure stands under every paragraph that names it, marks and a
   assert.match(html, /^<div class="noted"><p><b>银月<\/b>：<span class="gloss" role="button" tabindex="0" data-note="三关">尾闾，夹脊，玉枕<\/span>。三道关。<\/p><figure class="notefig" data-note="三关"><div class="pic"><img src="\.\.\/worlds\/jiuding\/art\/codex\/sanguan\.webp"/);
   assert.match(html, /<svg class="marks"/);
   assert.match(html, /<b>三关<\/b><span>督脉/);
-  assert.match(html, /Codex 所绘/, 'the figure credits its painter');
+  assert.doesNotMatch(html, /Codex/, 'a picture painted for us carries no credit line on the page');
   assert.doesNotMatch(html, /<text /, 'the picture carries its own painted labels: the marks draw none');
   assert.match(html, /data-scan="\.\.\/worlds\/jiuding\/art\/codex\/fanzhao-scan\.webp"/, '「原图」 opens the old plate');
   assert.match(renderMarkdown('[a]{注=三关}', { codex: codexOf(FILES, { lang: 'en' }), lang: 'en' }), /<b>The Three Passes<\/b>/);
@@ -210,7 +219,7 @@ test('录 holds a 图鉴: met entries by kind, the unmet as empty slots; a tap o
   const fresh = newState(content, 'zh', NOW);
   const s = walk(fresh, [['resolve', { exit: 'name', value: '墨白', gender: 'male' }], ['resolve', { exit: 'endure' }]], content, NOW);
   const met = story(s, content, { now: NOW, quests: [] }).result.codex;
-  for (const id of ['baba', 'masan', 'maxiaobao', 'old-bow', 'ahe']) assert.ok(met.includes(id), `${id} met`);
+  for (const id of ['baba', 'masan', 'maxiaobao', 'ahe']) assert.ok(met.includes(id), `${id} met`);
   assert.ok(!met.includes('wupo') && !met.includes('longzhi'), 'not yet met');
   assert.equal(story(s, content, { now: NOW, quests: [] }, { short: 'true' }).result.codex, undefined, 'Ling\'s short book leaves it out');
   const book = story(s, content, { now: NOW, quests: [] }).result;
@@ -232,7 +241,8 @@ test('a repainted creature keeps its old woodcut as 「原图」; the prologue\'
   assert.equal(fuzhu.image, 'art/creatures/fuzhu.webp');
   assert.equal(fuzhu.source.scan, 'art/fuzhu.webp');
   const html = codexHtml(fuzhu, { src });
-  assert.match(html, /据《山海经 · 中山经》重绘；原图：蔣應鎬繪圖本/);
+  assert.match(html, /<small>《山海经 · 中山经》 <button class="origscan"/, 'the classic it is drawn from, never the painter');
+  assert.doesNotMatch(html, /重绘|Codex/);
   assert.match(html, /data-scan="\.\.\/worlds\/jiuding\/art\/fuzhu\.webp">原图</);
-  for (const id of ['baba', 'mama', 'masan', 'maxiaobao', 'wupo', 'laozhou', 'qulao', 'yinyue', 'old-bow', 'bing']) assert.ok(CODEX.get(id).image, `${id}: a portrait`);
+  for (const id of ['baba', 'mama', 'masan', 'maxiaobao', 'wupo', 'laozhou', 'qulao', 'yinyue']) assert.ok(CODEX.get(id).image, `${id}: a portrait`);
 });

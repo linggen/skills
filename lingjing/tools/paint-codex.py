@@ -55,16 +55,17 @@ PEOPLE = {
   'zhouheng': 'A young Chinese Taoist temple steward of about twenty-five, neat topknot, plain grey robe with a crossed collar, a calligraphy brush in one hand and an account ledger in the other, a strict particular face. Full length.',
 }
 
+# Only things with a 图鉴 entry (codex.json tags them 法宝 · 丹药 · 功法 · 信物); an
+# everyday thing — 鹿皮, 萝卜, 饼, 碗, a bow — has none (his, 2026-09-29).
 ITEMS = {
-  'bing': 'Two round Chinese flatbreads, one thick and one thin, on a small woven bamboo plate.',
   'fox-token': 'A small worn wooden token polished bright by hands, carved with a tiny curled fox whose nine tails wrap around its body, on a frayed cord.',
-  'old-bow': "An old Chinese hunting bow of dark wood, a grandfather's bow, recurved limbs, its back cracked in two places and bound tightly with wrappings of ox sinew, a worn leather grip, an old hemp bowstring strung between both tips, the whole bow lying horizontally, seen from the side.",
   'xisui-pill': 'A single dark round Chinese pill, glossy black, resting in a small plain clay dish.',
   'tuna-jing': 'An old bundle of bamboo slips half unrolled, its binding cords nearly rotted through, the slips blank and worn smooth.',
-  'luobo': 'A white Chinese radish with its green leaves, fresh soil on the root.',
   'danlu': 'A tiny three-legged bronze alchemy furnace, palm-sized, two handles, a little crouching beast on its lid, old patina.',
   'huangting': 'A thin Chinese thread-bound book, plain paper cover with no writing, slightly worn.',
   'heluo': 'Half a bundle of old bamboo slips tied with cord, the slips blank, one end broken.',
+  'mend-pill': 'A single round Chinese elixir pill, pale jade green, in a small celadon dish.',
+  'moon-bell': 'A small old silver bell on a faded red cord, a crescent moon engraved on it.',
 }
 
 
@@ -91,7 +92,8 @@ CREATURES = {
   'longzhi': '蠪侄 — 「其状如狐，而九尾、九首、虎爪」: a fox with NINE heads (all nine clearly visible and countable) and NINE tails (all nine visible), and tiger claws.',
   'kui': '夔 — 「状如牛，苍身而无角，一足」: an ox-like beast with a dark grey-blue body, NO horns, and only ONE leg (a single leg in the middle, clearly one), standing at the edge of the sea, a faint glow around it.',
   'tongtong': '狪狪 — 「其状如豚而有珠」: a pig holding a round pearl in its mouth, on a mountain path.',
-  'zheng': '狰 — 「其状如赤豹，五尾一角」: a red leopard (soft red wash) with exactly FIVE tails (all five visible and countable) and ONE single horn on its forehead, on a rocky slope.',
+  # The story's 小狰 (his, 2026-09-29): a baby, not the adult leopard of the 1725 woodcut (its 「原图」).
+  'zheng': '狰 — 「其状如赤豹，五尾一角」, drawn as the story\'s BABY 狰: cat-sized, round and young, soft red fur (a light red wash), exactly FIVE fluffy little tails (all five visible and countable), ONE small stubby horn on its forehead, squatting and hugging a stalk of spirit herb in both front paws, munching messily, crumbs falling. Cute, but clearly the 山海经 beast, not a leopard.',
 }
 
 

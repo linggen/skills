@@ -1,22 +1,32 @@
 /* codex.css — 图鉴 cards, drawn by codex.js, the same in the book (read.html) and
-   the game (index.html). The picture leads (his, 2026-09-29: 「图片太小，文字占比太大」):
-   large and centred, the name, kind and line a compact caption right under it, the
-   box tight around both. A person stands tall (height-capped); a thing or a beast
-   takes the column's width. A clean name card where no picture is good. */
-.codexcard { display: flex; flex-direction: column; align-items: stretch; width: min-content; max-width: 100%; margin: 0 auto 1.5em; padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); box-sizing: border-box; }
-.codexcard .cpic { display: flex; justify-content: center; }
-.codexcard .cpic img { display: block; height: min(70vh, 640px); width: auto; max-width: 100%; object-fit: contain; border-radius: 4px; cursor: zoom-in; }
-.codexcard:not([data-kind="人物"]) { width: 100%; }
-.codexcard:not([data-kind="人物"]) .cpic img { height: auto; width: 100%; max-height: min(60vh, 460px); }
-.codexcard .cpic.none { width: 240px; height: 300px; max-width: 100%; margin: 0 auto; }
-.codexcard:not([data-kind="人物"]) .cpic.none { width: 100%; height: 180px; }
+   the game (index.html). His, 2026-09-29: 「图片和文字说明左右结构」, a big picture:
+   the picture on the left, large (a person height min(60vh, 520px); a thing or a
+   beast ~65% of the card), the caption beside it, centred, only as wide as it needs
+   (at most ~35%). The picture has an explicit size, so it never collapses. Phone:
+   stacked, the picture full width on top. A clean name card where none is good. */
+.codexcard { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 20px; width: 100%; margin: 0 0 1.5em; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); box-sizing: border-box; }
+.codexcard .cpic { flex: 0 1 auto; max-width: 65%; }
+.codexcard .cpic img { display: block; height: min(60vh, 520px); width: auto; max-width: 100%; object-fit: contain; border-radius: 4px; cursor: zoom-in; }
+.codexcard:not([data-kind="人物"]) .cpic { flex: 0 0 65%; }
+.codexcard:not([data-kind="人物"]) .cpic img { width: 100%; height: auto; max-height: min(60vh, 520px); }
+.codexcard .cpic.none { flex: 0 0 auto; width: 220px; height: 280px; }
+.codexcard:not([data-kind="人物"]) .cpic.none { flex: 0 0 65%; height: 200px; }
+.codexcard figcaption { flex: 0 1 auto; max-width: 35%; min-width: 9em; font-size: 15px; line-height: 1.75; color: var(--dim); }
+.codexcard figcaption b { display: inline; font-size: 22px; letter-spacing: .12em; color: var(--text); font-family: var(--serif); }
+.codexcard figcaption i { margin-left: 8px; font-style: normal; font-size: 12px; letter-spacing: .12em; padding: 1px 7px; border: 1px solid var(--line); border-radius: 8px; vertical-align: 4px; }
+.codexcard figcaption span { display: block; margin-top: 6px; }
+.codexcard figcaption small { display: block; margin-top: 8px; font-size: 12px; opacity: .8; }
+/* Narrow — a phone, or the game's stage column: measured on the card's own container. */
+.chapter, .codexwrap, .boxcard, .lu { container-type: inline-size; }
+@container (max-width: 600px) {
+  .codexcard { flex-direction: column; align-items: stretch; gap: 10px; }
+  .codexcard .cpic, .codexcard:not([data-kind="人物"]) .cpic { flex: none; max-width: 100%; }
+  .codexcard .cpic img, .codexcard:not([data-kind="人物"]) .cpic img { width: 100%; height: auto; max-height: none; }
+  .codexcard .cpic.none, .codexcard:not([data-kind="人物"]) .cpic.none { width: 100%; height: 200px; }
+  .codexcard figcaption { max-width: none; }
+}
 .namecard { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; min-height: 96px; border: 1px solid var(--line); border-radius: 4px; background: repeating-linear-gradient(0deg, transparent 0 22px, color-mix(in srgb, var(--line) 35%, transparent) 22px 23px); }
 .namecard b { font-family: var(--serif); font-size: 28px; letter-spacing: .25em; writing-mode: vertical-rl; color: var(--text); }
-.codexcard figcaption { min-width: 12em; margin-top: 8px; font-size: 13.5px; line-height: 1.7; color: var(--dim); }
-.codexcard figcaption b { display: inline; font-size: 17px; letter-spacing: .12em; color: var(--text); font-family: var(--serif); }
-.codexcard figcaption i { margin-left: 8px; font-style: normal; font-size: 11px; letter-spacing: .12em; padding: 1px 6px; border: 1px solid var(--line); border-radius: 8px; vertical-align: 2px; }
-.codexcard figcaption span { display: block; margin-top: 3px; }
-.codexcard figcaption small { display: block; margin-top: 5px; font-size: 12px; opacity: .8; }
 .origscan { font: inherit; font-size: 11px; margin-left: 6px; padding: 0 6px; border: 1px solid var(--line); border-radius: 8px; background: none; color: var(--seal); cursor: pointer; }
 /* 录's 图鉴: met entries a grid of small pictures, unmet ones an empty slot. */
 .lucodex h4 { margin: 12px 0 6px; font-size: 13px; letter-spacing: .12em; }

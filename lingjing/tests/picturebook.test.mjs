@@ -34,8 +34,8 @@ test('a beat stands as a scene card in words: the place, its caption, the choice
     const s = walk(start(lang), [['resolve', { exit: 'name', value: '墨白', gender: 'male' }]], content, NOW);
     const l = look(s, content, ctx());
     assert.equal(l.scene.panel.art, undefined, 'a story moment is never illustrated');
-    assert.deepEqual(l.scene.meet, ['masan', 'maxiaobao', 'old-bow'], '马三, 马小宝 and 爷爷的弓 come on here for the first time (爹 met at home)');
-    assert.deepEqual(l.stage.slice(0, 4).map(c => c.card), ['meet', 'meet', 'meet', 'panel']);
+    assert.deepEqual(l.scene.meet, ['masan', 'maxiaobao'], '马三 and 马小宝 come on here for the first time (爹 met at home; a bow is a bow — no entry)');
+    assert.deepEqual(l.stage.slice(0, 3).map(c => c.card), ['meet', 'meet', 'panel']);
     assert.deepEqual(l.scene.panel.taps.map(t => t.id), ['endure', 'strike']);
     const html = cardHtml({ card: 'panel' }, page(l));
     assert.doesNotMatch(html, /<img/);

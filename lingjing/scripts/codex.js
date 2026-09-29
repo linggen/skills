@@ -28,14 +28,18 @@ const LINKS = {
   // 2026-09-29, its old woodcut kept as 「原图」 (`art_plate`) with the edition's name.
   creatures: {
     rows: (f) => (f.creatures?.creatures ?? []).filter((c) => !String(c.id).startsWith('foe-')), lines: (r) => [r.quote],
-    credit: (r) => (r.art_plate
-      ? { zh: `据${r.source?.zh ?? '《山海经》'}重绘；原图：${r.art_caption?.zh ?? ''}`, en: `Drawn from ${r.source?.en ?? 'the Classic of Mountains and Seas'}; original: ${r.art_caption?.en ?? ''}` }
-      : r.art_caption ?? r.source),
+    // Repainted (Codex): no painter's line (his, 2026-09-29) — the classic it is drawn from, and 「原图」.
+    credit: (r) => (r.art_plate ? r.source : r.art_caption ?? r.source),
     scan: (r) => r.art_plate ?? null,
   },
   items: { rows: (f) => f.items?.items ?? [], lines: (r) => [r.about], credit: () => null },
   arts: { rows: (f) => f.arts?.arts ?? [], lines: (r) => [r.about], credit: (r) => r.source },
 };
+
+/// What an item must be to have an entry (his, 2026-09-29: 「鹿皮就不用图鉴了」): a thing the
+/// reader would not know, or a named story object — never an everyday thing.
+export const ITEM_TAGS = ['法宝', '丹药', '功法', '信物'];
+const TAG_EN = { 法宝: 'Treasure', 丹药: 'Elixir', 功法: 'Scripture', 信物: 'Token' };
 
 /// The raw entries, linked and own, before any language: id → {id, kind, from?, row?, over}.
 export function codexRaw(files = {}) {
@@ -44,9 +48,11 @@ export function codexRaw(files = {}) {
   for (const [kind, k] of Object.entries(kinds)) {
     const link = LINKS[k.from];
     if (!link) continue;
-    for (const row of link.rows(files)) out.set(row.id, { id: row.id, kind, from: k.from, row, over: own[row.id] ?? {} });
+    // An item is linked only when the codex tags it; every other file links whole.
+    for (const row of link.rows(files)) if (k.from !== 'items' || ITEM_TAGS.includes(own[row.id]?.tag)) out.set(row.id, { id: row.id, kind, from: k.from, row, over: own[row.id] ?? {} });
   }
-  for (const [id, over] of Object.entries(own)) if (!out.has(id)) out.set(id, { id, kind: over.kind, from: null, row: null, over });
+  const linkedIds = new Set(Object.values(kinds).flatMap((k) => LINKS[k.from]?.rows(files).map((r) => r.id) ?? []));
+  for (const [id, over] of Object.entries(own)) if (!out.has(id) && !linkedIds.has(id)) out.set(id, { id, kind: over.kind, from: null, row: null, over });
   return out;
 }
 
@@ -71,6 +77,7 @@ export function resolveEntry(raw, { lang = 'zh', gender = 'male', say = (t) => t
     ...(source ? { source } : {}),
     ...(over.marks ? { marks: over.marks } : {}),
     ...(over.first ? { first: over.first } : {}),
+    ...(over.tag ? { tag: over.tag } : {}),
   };
 }
 
@@ -90,7 +97,7 @@ export function codexHtml(entry, { src = (p) => p, lang = 'zh', first = false } 
   const pic = entry.image
     ? `<img src="${esc(src(entry.image))}" alt="${esc(entry.name)}" loading="lazy">`
     : `<span class="namecard" aria-hidden="true"><b>${esc(entry.name)}</b></span>`;
-  const kind = lang === 'en' ? KIND_EN[entry.kind] ?? entry.kind : entry.kind;
+  const kind = entry.tag ? (lang === 'en' ? TAG_EN[entry.tag] : entry.tag) : lang === 'en' ? KIND_EN[entry.kind] ?? entry.kind : entry.kind;
   const lines = entry.lines.map((l) => `<span>${esc(l)}</span>`).join('');
   return `<figure class="codexcard${first ? ' first' : ''}" data-codex="${esc(entry.id)}" data-kind="${esc(entry.kind)}"><div class="cpic${entry.image ? '' : ' none'}">${pic}</div>`
     + `<figcaption><b>${esc(entry.name)}</b><i>${esc(kind)}</i>${lines}${entry.credit || entry.source?.scan ? `<small>${esc(entry.credit ?? '')}${scanButton(entry, src, lang)}</small>` : ''}</figcaption></figure>`;
@@ -105,7 +112,8 @@ const scanButton = (entry, src, lang) => (entry.source?.scan ? ` <button class="
 export function codexFigure(entry, { src = (p) => p, lang = 'zh' } = {}) {
   const img = entry.image ? `<div class="pic"><img src="${esc(src(entry.image))}" alt="${esc(entry.name)}" loading="lazy">${marksSvg(entry.marks, lang)}</div>` : '';
   const lines = entry.lines.map((l) => `<span>${esc(l)}</span>`).join('');
-  return `<figure class="notefig" data-note="${esc(entry.id)}">${img}<figcaption><b>${esc(entry.name)}</b>${lines}<small>${esc(entry.credit ?? '')}${scanButton(entry, src, lang)}</small></figcaption></figure>`;
+  const foot = entry.credit || entry.source?.scan ? `<small>${esc(entry.credit ?? '')}${scanButton(entry, src, lang)}</small>` : '';
+  return `<figure class="notefig" data-note="${esc(entry.id)}">${img}<figcaption><b>${esc(entry.name)}</b>${lines}${foot}</figcaption></figure>`;
 }
 
 /// 录's 图鉴: every entry by kind, met ones as cards, the rest as empty slots
@@ -145,6 +153,8 @@ export function lintCodex(files, exists = () => true) {
     for (const p of Object.values(e.by_hero ?? {})) if (p && !exists(p)) bad.push(`${id}: picture ${p} is missing`);
     if (e.by_hero && !(Object.hasOwn(e.by_hero, 'male') && Object.hasOwn(e.by_hero, 'female'))) bad.push(`${id}: by_hero names both male and female`);
     if (e.first && typeof e.first !== 'object') bad.push(`${id}: first is {book, scene}`);
+    const isItem = e.kind ? e.kind === '物品' : (files.items?.items ?? []).some((i) => i.id === id);
+    if (isItem && !ITEM_TAGS.includes(e.tag)) bad.push(`${id}: an item's entry is tagged ${ITEM_TAGS.join(' · ')} — an everyday thing has none`);
   }
   const raw = codexRaw(files);
   const ids = new Map();
@@ -158,7 +168,7 @@ export function lintCodex(files, exists = () => true) {
     if (!(r.over.name ?? r.row?.name)?.zh) bad.push(`${id}: no name`);
     if (!r.row && !(Array.isArray(r.over.lines?.zh) && r.over.lines.zh.length && Array.isArray(r.over.lines?.en))) bad.push(`${id}: lines in zh and en`);
     if (r.row?.art && !Object.hasOwn(r.over, 'image') && !r.over.by_hero && !exists(r.row.art)) bad.push(`${id}: picture ${r.row.art} is missing`);
-    if (!isSubject(e) && !(e.image && e.credit && r.over.source?.url)) bad.push(`${id}: a knowledge figure needs its picture, credit and source`);
+    if (!isSubject(e) && !(e.image && r.over.source?.url)) bad.push(`${id}: a knowledge figure needs its picture and source`);
   }
   return bad;
 }
