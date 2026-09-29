@@ -119,21 +119,54 @@ function openLarge(e) {
 }
 $('chapter').addEventListener('click', openLarge);
 
-// A classic named in the text jumps to its entry at the chapter's end, and the
-// entry's 「本章见」 jumps back — in place (the app's frame keeps its URL), the
-// spot lit for a moment so the eye finds it.
+// A classic named in the text opens its entry in place, a note over the page
+// (his, 2026-09-29: the jump to the chapter's end and back was too much work);
+// the full 「附 · 本章典籍」 still stands at the end. The entry's own 「本章见」
+// links jump in place, the spot lit so the eye finds it.
+let note = null;
+function closeNote() {
+  note?.remove();
+  note = null;
+  removeEventListener('keydown', noteKey);
+}
+function noteKey(e) { if (e.key === 'Escape') closeNote(); }
+function openNote(ref, entry) {
+  closeNote();
+  note = document.createElement('div');
+  note.className = 'diannote';
+  note.setAttribute('role', 'dialog');
+  const body = entry.cloneNode(true);
+  body.removeAttribute('id');
+  body.querySelector('.where')?.remove();
+  note.innerHTML = '<button class="dianclose" aria-label="×">×</button>';
+  note.append(body);
+  document.body.append(note);
+  // Beside the name on a wide screen; a sheet from the bottom on a phone.
+  if (innerWidth > 640) {
+    const r = ref.getBoundingClientRect(), h = note.offsetHeight;
+    const top = r.bottom + 8 + h < innerHeight ? r.bottom + 8 : Math.max(8, r.top - 8 - h);
+    note.style.top = `${top}px`;
+    note.style.left = `${Math.min(Math.max(8, r.left), innerWidth - note.offsetWidth - 8)}px`;
+  } else note.classList.add('sheet');
+  note.querySelector('.dianclose').addEventListener('click', closeNote);
+  addEventListener('keydown', noteKey);
+}
 function jump(e) {
   const a = e.target.closest?.('[data-dian-jump]');
   const to = a && document.getElementById(a.dataset.dianJump);
-  if (!to) return;
+  if (!to) {
+    if (note && !e.target.closest?.('.diannote')) closeNote();
+    return;
+  }
   e.preventDefault();
-  // At once, not smooth: the jump spans the whole chapter, and a smooth scroll
-  // that long crawls (and stalls in a hidden tab). The light shows where.
+  if (a.classList.contains('dianref')) return openNote(a, to);
+  closeNote();
   to.scrollIntoView({ block: 'center' });
   to.classList.remove('lit');
   void to.offsetWidth;
   to.classList.add('lit');
 }
-$('chapter').addEventListener('click', jump);
+document.addEventListener('click', jump);
+addEventListener('scroll', () => { if (note && !note.classList.contains('sheet')) closeNote(); }, { passive: true });
 
 main().catch((e) => { console.warn('[lingjing] read', e); $('chapter').innerHTML = `<p class="note">${esc(w.failed)}</p>`; });
