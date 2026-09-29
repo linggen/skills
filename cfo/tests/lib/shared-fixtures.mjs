@@ -1,6 +1,7 @@
 // The fixtures linggen-mobile keeps copies of (test/fixtures/cfo/…, same
-// relative paths) — this repo is their source. shared.sha256 lists each with
-// its checksum; the mobile repo holds the same list and fails its CI when its
+// relative paths: the PDF statements, the bank CSV exports, the shared
+// cases) — this repo is their source. shared.sha256 lists each with its
+// checksum; the mobile repo holds the same list and fails its CI when its
 // copies or its list differ from this one (test/cfo/fixture_parity_test.dart,
 // which checks this repo out). Change a fixture here → `node
 // cfo/tests/lib/shared-fixtures.mjs --write`, then copy the files and the list
@@ -16,7 +17,8 @@ export const LIST = join(ROOT, 'shared.sha256');
 /// Relative paths of every shared fixture, sorted.
 export function sharedFiles() {
   const pdf = readdirSync(join(ROOT, 'pdf')).filter((f) => /\.(pdf|truth\.json)$/.test(f)).map((f) => `pdf/${f}`);
-  return [...pdf, 'compose/cases.json', 'currency/cases.json', 'import/cases.json'].sort();
+  const csv = readdirSync(join(ROOT, 'csv')).filter((f) => /\.(csv|json)$/.test(f)).map((f) => `csv/${f}`);
+  return [...pdf, ...csv, 'compose/cases.json', 'currency/cases.json', 'import/cases.json'].sort();
 }
 
 /// The list as `shasum -a 256` writes it: "<hex>  <path>" per line.

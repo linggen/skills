@@ -1,0 +1,5 @@
+Date, Time, Amount, Type, Description
+2026-06-01, 09:00:00, 3400.00, Deposit, ACME CORP PAYROLL
+2026-06-03, 10:15:00, -1650.00, Withdrawal, RENT PROPERTY MGMT
+2026-06-15, 12:30:00, -126.40, Withdrawal, WHOLEFDS #10234
+2026-06-22, 18:45:00, -55.25, Withdrawal, SHELL OIL 57444

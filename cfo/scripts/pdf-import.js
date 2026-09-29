@@ -9,7 +9,7 @@
 // pdf.js (~1.7MB) is lazy-loaded only when a PDF is actually imported, so CSV
 // users never download it.
 
-import { parseDate, parseAmount, cleanMerchant } from './analyze.js';
+import { parseDate, parseAmount, cleanMerchant, CARD_WORDS_RE } from './analyze.js';
 import { detectCurrency } from './currency.js';
 
 const MONTH_RE = '(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)';
@@ -42,7 +42,7 @@ const SUMMARY_RE = /\b(previous (total )?balance|new (total )?balance|opening ba
 // minus marks a credit to the card — a payment or refund — not spend.
 const TOTAL_RE = /\b(sub)?totals?\b/i;
 const FX_RE = /@|exchange rate|foreign currency/i;
-const CARD_RE = /\b(credit limit|minimum payment|available credit|credit available|payment due date|annual interest rate)\b/i;
+const CARD_RE = CARD_WORDS_RE; // the words only a card prints (analyze.js, CSVs read them too)
 // Column headers of a two-column bank layout.
 // BMO chequing prints "Amounts deducted from your account" / "Amounts added to
 // your account" instead of Withdrawals / Deposits.

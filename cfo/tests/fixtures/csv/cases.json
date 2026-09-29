@@ -1,0 +1,330 @@
+{
+  "about": "Synthetic bank CSV exports (layouts from bank help pages and the bank2ynab registry; no real data). Each case: the file, a realistic download name, a renamed copy, and what an import must give on the Mac and the phone alike — rows after sign orientation as [date, amount, merchant].",
+  "cases": [
+    {"file":"au-commbank.csv","bank":"CommBank (AU)","filename":"CSVData.csv","renamed":"CSVData (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"Salary ACME PTY LTD"],
+      ["2026-06-03",-1650,"Transfer To RENT PROPERTY MGMT NetBank"],
+      ["2026-06-15",-126.4,"WOOLWORTHS 1234 SYDNEY NS AUS Card xx1234"],
+      ["2026-06-22",-55.25,"AMPOL 5678 SYDNEY NS AUS Card xx1234"]
+    ]}},
+    {"file":"ca-amex-card.csv","bank":"Amex card (CA)","filename":"amex-ca-activity.csv","renamed":"amex-ca-activity (1).csv","expect":{"kind":"credit","type":"credit","flipped":true,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",-18.99,"NETFLIX.COM"],
+      ["2026-06-14",-126.4,"LOBLAWS"],
+      ["2026-06-20",-41.2,"UBER EATS"],
+      ["2026-06-25",487.5,"PAYMENT RECEIVED - THANK YOU"]
+    ]}},
+    {"file":"ca-bmo-card.csv","bank":"BMO debit-card layout, card-typed (CA)","filename":"ca-bmo-card.csv","renamed":"ca-bmo-card (1).csv","expect":{"kind":null,"type":"credit","flipped":false,"currency":null,"fingerprint":"acct_sz3dpvqcpn","asks":false,"rows": [
+      ["2026-06-01",-18.99,"NETFLIX.COM"],
+      ["2026-06-08",-126.4,"LOBLAWS"],
+      ["2026-06-09",-41.2,"UBER EATS"],
+      ["2026-06-15",487.5,"PAYMENT RECEIVED - THANK YOU"]
+    ]}},
+    {"file":"ca-bmo-chequing.csv","bank":"BMO chequing (CA)","filename":"statement.csv","renamed":"statement (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":"acct_a4gw67m19k","asks":false,"rows": [
+      ["2026-06-01",3400,"PAYROLL DEP ACME CORP"],
+      ["2026-06-03",-1650,"INTERAC ETRNSFR SENT RENT"],
+      ["2026-06-15",-126.4,"LOBLAWS TORONTO ON"],
+      ["2026-06-22",-55.25,"PETRO-CANADA 98765"]
+    ]}},
+    {"file":"ca-bmo-mastercard.csv","bank":"BMO Mastercard (CA)","filename":"statement.csv","renamed":"statement (2).csv","expect":{"kind":"credit","type":"credit","flipped":true,"currency":null,"fingerprint":"acct_2fozt8fqtoj","asks":false,"rows": [
+      ["2026-06-01",-18.99,"NETFLIX.COM"],
+      ["2026-06-14",-126.4,"LOBLAWS TORONTO ON"],
+      ["2026-06-20",-41.2,"UBER EATS"],
+      ["2026-06-25",487.5,"PAYMENT RECEIVED - THANK YOU"]
+    ]}},
+    {"file":"ca-cibc-checking.csv","bank":"CIBC chequing (CA)","filename":"cibc.csv","renamed":"cibc (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":true,"rows": [
+      ["2026-06-01",3400,"PAYROLL DEPOSIT"],
+      ["2026-06-03",-1650,"RENT E-TRANSFER"],
+      ["2026-06-08",-126.4,"LOBLAWS"],
+      ["2026-06-09",-55.25,"PETRO-CANADA"]
+    ]}},
+    {"file":"ca-desjardins-chequing.csv","bank":"Desjardins (CA, FR headers)","filename":"releve.csv","renamed":"releve (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"PAIE ACME CORP"],
+      ["2026-06-03",-1650,"LOYER GESTION IMMOBILIERE"],
+      ["2026-06-15",-126.4,"IGA MONTREAL"],
+      ["2026-06-22",-55.25,"ULTRAMAR"]
+    ]}},
+    {"file":"ca-eq-bank-savings.csv","bank":"EQ Bank savings (CA)","filename":"EQ Bank Transactions.csv","renamed":"EQ Bank Transactions July 2026.csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"Deposit from ACME CORP"],
+      ["2026-06-03",-1650,"Transfer to RENT PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"Transfer to LOBLAWS"],
+      ["2026-06-22",-55.25,"Transfer to PETRO-CANADA"]
+    ]}},
+    {"file":"ca-national-bank-chequing.csv","bank":"National Bank chequing (CA)","filename":"NBC-transactions-2026-06.csv","renamed":"NBC-transactions-2026-07.csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"PAYROLL ACME CORP"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"METRO"],
+      ["2026-06-22",-55.25,"ESSO 4412"]
+    ]}},
+    {"file":"ca-rbc-checking.csv","bank":"RBC chequing (CA)","filename":"csv63020.csv","renamed":"csv71833.csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":"CAD","fingerprint":"acct_7n7ev8pxgi","asks":true,"rows": [
+      ["2026-06-01",3400,"PAYROLL DEPOSIT"],
+      ["2026-06-03",-1650,"e-Transfer sent"],
+      ["2026-06-08",-126.4,"LOBLAWS"],
+      ["2026-06-09",-55.25,"PETRO-CANADA"]
+    ]}},
+    {"file":"ca-scotiabank-checking.csv","bank":"Scotiabank chequing (CA)","filename":"Scotiabank-chequing.csv","renamed":"Scotiabank-chequing (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":true,"rows": [
+      ["2026-06-01",3400,"PAYROLL DEPOSIT ACME"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-08",-126.4,"LOBLAWS"],
+      ["2026-06-09",-55.25,"PETRO-CANADA"]
+    ]}},
+    {"file":"ca-simplii-chequing.csv","bank":"Simplii chequing (CA)","filename":"SIMPLII.csv","renamed":"SIMPLII (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"PAYROLL ACME CORP"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"NO FRILLS"],
+      ["2026-06-22",-55.25,"PETRO-CANADA"]
+    ]}},
+    {"file":"ca-tangerine-checking.csv","bank":"Tangerine chequing (CA)","filename":"Tangerine Chequing.csv","renamed":"Tangerine Chequing (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":true,"rows": [
+      ["2026-06-01",3400,"ACME CORP PAYROLL"],
+      ["2026-06-03",-1650,"EFT to RENT PROPERTY MGMT"],
+      ["2026-06-08",-126.4,"LOBLAWS"],
+      ["2026-06-09",-55.25,"PETRO-CANADA"]
+    ]}},
+    {"file":"ca-td-checking.csv","bank":"TD chequing (CA)","filename":"accountactivity.csv","renamed":"accountactivity (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":true,"rows": [
+      ["2026-06-01",3400,"PAYROLL DEPOSIT ACME"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-08",-126.4,"LOBLAWS"],
+      ["2026-06-09",-55.25,"PETRO-CANADA"]
+    ]}},
+    {"file":"ca-wealthsimple-cash.csv","bank":"Wealthsimple Cash (CA)","filename":"wealthsimple-cash-2026-06.csv","renamed":"wealthsimple-cash-2026-07.csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":"CAD","fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"Direct deposit ACME CORP"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"Loblaws"],
+      ["2026-06-22",-55.25,"Petro-Canada"]
+    ]}},
+    {"file":"de-n26-current.csv","bank":"N26 (DE)","filename":"20260601-20260630.csv","renamed":"20260701-20260731.csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":"EUR","fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"ACME GmbH"],
+      ["2026-06-03",-1650,"Hausverwaltung Meier"],
+      ["2026-06-15",-126.4,"REWE Markt"],
+      ["2026-06-22",-55.25,"ARAL Tankstelle"]
+    ]}},
+    {"file":"de-sparkasse-giro.csv","bank":"Sparkasse CSV-CAMT (DE)","filename":"20260630-12345678-umsatz.CSV","renamed":"20260731-12345678-umsatz.CSV","expect":{"kind":"bank","type":"checking","flipped":false,"currency":"EUR","fingerprint":"acct_1s4v8c41bz0","asks":false,"rows": [
+      ["2026-06-01",3400,"ACME GmbH"],
+      ["2026-06-03",-1650,"Hausverwaltung Meier"],
+      ["2026-06-15",-126.4,"REWE Markt GmbH"],
+      ["2026-06-22",-55.25,"ARAL AG"]
+    ]}},
+    {"file":"de-volksbank-giro.csv","bank":"Volksbank Soll/Haben (DE)","filename":"Umsaetze_Girokonto_2026.06.30.csv","renamed":"Umsaetze_Girokonto_2026.07.31.csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":"EUR","fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"ACME GmbH"],
+      ["2026-06-03",-1650,"Hausverwaltung Meier"],
+      ["2026-06-15",-126.4,"REWE Markt GmbH"],
+      ["2026-06-22",-55.25,"ARAL AG"]
+    ]}},
+    {"file":"edge-ambiguous-dates.csv","bank":"Edge: dates all ≤ 12 (GBP)","filename":"edge-ambiguous-dates.csv","renamed":"edge-ambiguous-dates (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":"GBP","fingerprint":null,"asks":true,"rows": [
+      ["2026-06-01",3400,"ACME LTD SALARY"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-05",-126.4,"TESCO STORES 3412"],
+      ["2026-06-09",-55.25,"SHELL 4412"]
+    ]}},
+    {"file":"edge-balance-first.csv","bank":"Edge: balance column before amount","filename":"edge-balance-first.csv","renamed":"edge-balance-first (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"PAYROLL ACME CORP"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"LOBLAWS"],
+      ["2026-06-22",-55.25,"PETRO-CANADA"]
+    ]}},
+    {"file":"edge-balance-unnamed-amount.csv","bank":"Edge: unnamed amount + running balance","filename":"edge-balance-unnamed-amount.csv","renamed":"edge-balance-unnamed-amount (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"PAYROLL ACME CORP"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"LOBLAWS"],
+      ["2026-06-22",-55.25,"PETRO-CANADA"]
+    ]}},
+    {"file":"edge-bom.csv","bank":"Edge: UTF-8 BOM","filename":"edge-bom.csv","renamed":"edge-bom (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"PAYROLL ACME CORP"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"LOBLAWS"],
+      ["2026-06-22",-55.25,"PETRO-CANADA"]
+    ]}},
+    {"file":"edge-cr-dr.csv","bank":"Edge: trailing CR/DR","filename":"edge-cr-dr.csv","renamed":"edge-cr-dr (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"SALARY ACME PTY LTD"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"WOOLWORTHS 1234"],
+      ["2026-06-22",-55.25,"AMPOL 5678"]
+    ]}},
+    {"file":"edge-cr-only.csv","bank":"Edge: only credits marked CR","filename":"edge-cr-only-card.csv","renamed":"edge-cr-only-card (1).csv","expect":{"kind":"credit","type":"credit","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",-18.99,"NETFLIX.COM"],
+      ["2026-06-14",-126.4,"LOBLAWS"],
+      ["2026-06-20",-41.2,"UBER EATS"],
+      ["2026-06-25",487.5,"PAYMENT RECEIVED - THANK YOU"]
+    ]}},
+    {"file":"edge-crlf.csv","bank":"Edge: CRLF line ends","filename":"edge-crlf.csv","renamed":"edge-crlf (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"PAYROLL ACME CORP"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"LOBLAWS"],
+      ["2026-06-22",-55.25,"PETRO-CANADA"]
+    ]}},
+    {"file":"edge-iso-time.csv","bank":"Edge: ISO dates with time","filename":"edge-iso-time.csv","renamed":"edge-iso-time (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"PAYROLL ACME CORP"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"LOBLAWS"],
+      ["2026-06-22",-55.25,"PETRO-CANADA"]
+    ]}},
+    {"file":"edge-parens.csv","bank":"Edge: (12.34) negatives","filename":"edge-parens.csv","renamed":"edge-parens (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"PAYROLL ACME CORP"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"LOBLAWS"],
+      ["2026-06-22",-55.25,"PETRO-CANADA"]
+    ]}},
+    {"file":"edge-quoted-commas.csv","bank":"Edge: quoted commas","filename":"edge-quoted-commas.csv","renamed":"edge-quoted-commas (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"ACME CORP, INC. PAYROLL"],
+      ["2026-06-03",-1650,"RENT \"JUNE\", PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"LOBLAWS, TORONTO"],
+      ["2026-06-22",-55.25,"PETRO-CANADA, HWY 7"]
+    ]}},
+    {"file":"edge-thousands.csv","bank":"Edge: 1,234.56 thousands","filename":"edge-thousands.csv","renamed":"edge-thousands (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"PAYROLL ACME CORP"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-15",-1126.4,"LOBLAWS"],
+      ["2026-06-22",-55.25,"PETRO-CANADA"]
+    ]}},
+    {"file":"fr-credit-agricole-compte.csv","bank":"Crédit Agricole (FR)","filename":"CA20260630_123456.csv","renamed":"CA20260731_123456.csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":"EUR","fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"VIREMENT EN VOTRE FAVEUR ACME SAS SALAIRE JUIN"],
+      ["2026-06-03",-1650,"PRELEVEMENT LOYER GESTION IMMOBILIERE"],
+      ["2026-06-15",-126.4,"CARTE X1234 14/06 CARREFOUR MARKET"],
+      ["2026-06-22",-55.25,"CARTE X1234 21/06 TOTAL ENERGIES"]
+    ]}},
+    {"file":"nl-ing-checking.csv","bank":"ING (NL)","filename":"NL12INGB0001234567_01-06-2026_30-06-2026.csv","renamed":"NL12INGB0001234567_01-07-2026_31-07-2026.csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":"EUR","fingerprint":"acct_nwaj1qph8n","asks":false,"rows": [
+      ["2026-06-01",3400,"SALARIS ACME"],
+      ["2026-06-03",-1650,"HUUR VASTGOED BV"],
+      ["2026-06-08",-126.4,"ALBERT HEIJN 1234"]
+    ]}},
+    {"file":"revolut-checking.csv","bank":"Revolut","filename":"revolut-checking.csv","renamed":"revolut-checking (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":"CAD","fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"Payroll top-up"],
+      ["2026-06-03",-1650,"Rent property"],
+      ["2026-06-08",-126.4,"Loblaws"],
+      ["2026-06-09",-55.25,"Petro-Canada"]
+    ]}},
+    {"file":"uk-barclays-current.csv","bank":"Barclays (UK)","filename":"data.csv","renamed":"data (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":"acct_yenuztbewh","asks":false,"rows": [
+      ["2026-06-01",3400,"ACME LTD SALARY"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"TESCO STORES 3412 ON 14 JUN BCC"],
+      ["2026-06-22",-55.25,"SHELL 4412 ON 21 JUN BCC"]
+    ]}},
+    {"file":"uk-hsbc-current.csv","bank":"HSBC (UK)","filename":"TransactionHistory.csv","renamed":"TransactionHistory (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"ACME LTD SALARY"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"TESCO STORES 3412"],
+      ["2026-06-22",-55.25,"SHELL 4412"]
+    ]}},
+    {"file":"uk-lloyds-current.csv","bank":"Lloyds (UK)","filename":"12345678_20260630_1200.csv","renamed":"12345678_20260731_1200.csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":"acct_2eur4o2x4fl","asks":false,"rows": [
+      ["2026-06-22",-55.25,"SHELL 4412"],
+      ["2026-06-15",-126.4,"TESCO STORES 3412"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-01",3400,"ACME LTD SALARY"]
+    ]}},
+    {"file":"uk-monzo-current.csv","bank":"Monzo (UK)","filename":"MonzoDataExport_June2026_2026-06-30_174335.csv","renamed":"MonzoDataExport_July2026_2026-07-31_091502.csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":"GBP","fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"ACME LTD SALARY"],
+      ["2026-06-03",-1650,"RENT JUNE"],
+      ["2026-06-15",-126.4,"TESCO STORES 3412"],
+      ["2026-06-22",-55.25,"SHELL 4412"]
+    ]}},
+    {"file":"uk-nationwide-current.csv","bank":"Nationwide (UK, Paid out/Paid in)","filename":"Nationwide FlexAccount.csv","renamed":"Nationwide FlexAccount (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":"GBP","fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"ACME LTD SALARY"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"TESCO STORES 3412"],
+      ["2026-06-22",-55.25,"SHELL 4412"]
+    ]}},
+    {"file":"uk-starling-current.csv","bank":"Starling (UK)","filename":"StarlingStatement_2026-06-01_2026-06-30.csv","renamed":"StarlingStatement_2026-07-01_2026-07-31.csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":"GBP","fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"Acme Ltd"],
+      ["2026-06-03",-1650,"Rent Property Mgmt"],
+      ["2026-06-15",-126.4,"Tesco"],
+      ["2026-06-22",-55.25,"Shell"]
+    ]}},
+    {"file":"us-ally-savings.csv","bank":"Ally savings (US)","filename":"transactions.csv","renamed":"transactions (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"ACME CORP PAYROLL"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"WHOLEFDS"],
+      ["2026-06-22",-55.25,"SHELL OIL 57444"]
+    ]}},
+    {"file":"us-amex-card.csv","bank":"Amex card (US)","filename":"activity.csv","renamed":"activity (1).csv","expect":{"kind":"credit","type":"credit","flipped":true,"currency":null,"fingerprint":"acct_286ut8t3lsy","asks":false,"rows": [
+      ["2026-06-01",-18.99,"NETFLIX.COM"],
+      ["2026-06-08",-126.4,"WHOLEFDS"],
+      ["2026-06-09",-41.2,"UBER EATS"],
+      ["2026-06-15",487.5,"ONLINE PAYMENT - THANK YOU"]
+    ]}},
+    {"file":"us-apple-card.csv","bank":"Apple Card (US)","filename":"Apple Card Transactions - June 2026.csv","renamed":"Apple Card Transactions - July 2026.csv","expect":{"kind":null,"type":"credit","flipped":true,"currency":"USD","fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",-18.99,"NETFLIX.COM LOS GATOS CA"],
+      ["2026-06-14",-126.4,"WHOLEFDS AUSTIN TX"],
+      ["2026-06-20",-41.2,"UBER EATS SAN FRANCISCO CA"],
+      ["2026-06-25",487.5,"ACH DEPOSIT INTERNET TRANSFER FROM ACCOUNT ENDING IN 1234"]
+    ]}},
+    {"file":"us-bofa-checking.csv","bank":"Bank of America (US)","filename":"stmt.csv","renamed":"stmt (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":true,"rows": [
+      ["2026-06-01",3400,"ACME CORP DES:PAYROLL"],
+      ["2026-06-03",-1650,"ONLINE PAYMENT RENT PROPERTY"],
+      ["2026-06-08",-126.4,"WHOLEFDS PURCHASE"],
+      ["2026-06-09",-55.25,"SHELL OIL PURCHASE"]
+    ]}},
+    {"file":"us-capitalone-card.csv","bank":"Capital One card (US)","filename":"2026-06-30_transaction_download.csv","renamed":"2026-07-31_transaction_download.csv","expect":{"kind":"credit","type":"credit","flipped":false,"currency":null,"fingerprint":"acct_1pekp8kgg2q","asks":false,"rows": [
+      ["2026-06-01",-18.99,"NETFLIX.COM"],
+      ["2026-06-08",-126.4,"WHOLEFDS"],
+      ["2026-06-09",-41.2,"UBER EATS"],
+      ["2026-06-15",487.5,"CAPITAL ONE MOBILE PYMT"]
+    ]}},
+    {"file":"us-chase-card.csv","bank":"Chase card (US)","filename":"Chase1234_Activity20260630.CSV","renamed":"Chase1234_Activity20260731.CSV","expect":{"kind":"credit","type":"credit","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",-18.99,"NETFLIX.COM"],
+      ["2026-06-08",-126.4,"WHOLEFDS"],
+      ["2026-06-09",-41.2,"UBER EATS"],
+      ["2026-06-15",487.5,"Payment Thank You-Mobile"]
+    ]}},
+    {"file":"us-chase-checking.csv","bank":"Chase checking (US)","filename":"Chase5678_Activity_20260630.CSV","renamed":"Chase5678_Activity_20260731.CSV","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"ACME CORP PAYROLL PPD ID:"],
+      ["2026-06-03",-1650,"ZELLE PAYMENT TO RENT PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"WHOLEFDS AUSTIN TX"],
+      ["2026-06-22",-55.25,"SHELL OIL 57444"]
+    ]}},
+    {"file":"us-citi-card.csv","bank":"Citi card (US)","filename":"Citi-card-Jun2026.csv","renamed":"Citi-card-Jul2026.csv","expect":{"kind":"credit","type":"credit","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",-18.99,"NETFLIX.COM"],
+      ["2026-06-08",-126.4,"WHOLEFDS"],
+      ["2026-06-09",-41.2,"UBER EATS"],
+      ["2026-06-15",487.5,"ONLINE PAYMENT THANK YOU"]
+    ]}},
+    {"file":"us-discover-card.csv","bank":"Discover card (US)","filename":"Discover-Statement-20260630.csv","renamed":"Discover-Statement-20260731.csv","expect":{"kind":null,"type":"credit","flipped":true,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",-18.99,"NETFLIX.COM"],
+      ["2026-06-08",-126.4,"WHOLEFDS"],
+      ["2026-06-09",-41.2,"UBER EATS"],
+      ["2026-06-15",487.5,"DIRECTPAY FULL BALANCE"]
+    ]}},
+    {"file":"us-pnc-checking.csv","bank":"PNC checking (US, legacy)","filename":"AccountActivityExport.csv","renamed":"AccountActivityExport (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"ACME CORP PAYROLL"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"GIANT EAGLE"],
+      ["2026-06-22",-55.25,"SUNOCO 0412"]
+    ]}},
+    {"file":"us-schwab-checking.csv","bank":"Schwab checking (US)","filename":"Checking_Transactions_20260630-120000.csv","renamed":"Checking_Transactions_20260731-120000.csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-22",-55.25,"SHELL OIL 57444"],
+      ["2026-06-15",-126.4,"WHOLEFDS"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-01",3400,"ACME CORP PAYROLL"]
+    ]}},
+    {"file":"us-sofi-checking.csv","bank":"SoFi checking (US)","filename":"SoFi_Checking_Jun2026.csv","renamed":"SoFi_Checking_Jul2026.csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"ACME CORP PAYROLL"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"WHOLEFDS"],
+      ["2026-06-22",-55.25,"SHELL OIL 57444"]
+    ]}},
+    {"file":"us-usbank-checking.csv","bank":"U.S. Bank checking (US)","filename":"Checking - 1234_06-30-2026.csv","renamed":"Checking - 1234_07-31-2026.csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"ACME CORP PAYROLL"],
+      ["2026-06-03",-1650,"RENT PROPERTY MGMT"],
+      ["2026-06-15",-126.4,"WHOLEFDS"],
+      ["2026-06-22",-55.25,"SHELL OIL 57444"]
+    ]}},
+    {"file":"us-wellsfargo-checking.csv","bank":"Wells Fargo (US)","filename":"Checking1.csv","renamed":"Checking1 (1).csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":null,"fingerprint":null,"asks":true,"rows": [
+      ["2026-06-01",3400,"ACME PAYROLL DIRECT DEP"],
+      ["2026-06-03",-1650,"ONLINE PAYMENT RENT PROPERTY"],
+      ["2026-06-08",-126.4,"WHOLEFDS POS"],
+      ["2026-06-09",-55.25,"SHELL OIL POS PURCHASE"]
+    ]}},
+    {"file":"wise-eur-statement.csv","bank":"Wise EUR balance","filename":"statement_12345678_EUR_2026-06-01_2026-06-30.csv","renamed":"statement_12345678_EUR_2026-07-01_2026-07-31.csv","expect":{"kind":"bank","type":"checking","flipped":false,"currency":"EUR","fingerprint":null,"asks":false,"rows": [
+      ["2026-06-01",3400,"Received money from ACME GMBH with reference SALARY"],
+      ["2026-06-03",-1650,"Sent money to Rent Property Mgmt"],
+      ["2026-06-15",-126.4,"Card transaction of 126.40 EUR issued by Rewe Berlin"],
+      ["2026-06-22",-55.25,"Card transaction of 55.25 EUR issued by Aral Berlin"]
+    ]}}
+  ],
+  "accounts": [
+    {"name":"a number-less, word-less bank file never lands on an account known by its number","filename":"stmt.csv","kind":"bank","fingerprint":null,"accounts":{"acct_bmo":{"label":"Account","type":"checking","numbered":true}},"expect":{"match":null,"label":"Account"}},
+    {"name":"a word-less file still finds last month's word-less account","filename":"20260701-20260731.csv","kind":"bank","fingerprint":null,"accounts":{"acct_n26":{"label":"Account","type":"checking"}},"expect":{"match":"acct_n26","label":"Account"}},
+    {"name":"a file naming another bank is not an account labelled with fewer words","filename":"SoFi_Checking_Jun2026.csv","kind":"bank","fingerprint":null,"accounts":{"acct_schwab":{"label":"Checking","type":"checking"}},"expect":{"match":null,"label":"SoFi Checking"}},
+    {"name":"an account number in the name is another account too","filename":"Checking - 1234_07-31-2026.csv","kind":"bank","fingerprint":null,"accounts":{"acct_schwab":{"label":"Checking","type":"checking"},"acct_usb":{"label":"Checking 1234","type":"checking"}},"expect":{"match":"acct_usb","label":"Checking 1234"}},
+    {"name":"a date glued to a word drops as noise","filename":"Chase1234_Activity20260731.CSV","kind":"credit","fingerprint":null,"accounts":{"acct_chase":{"label":"Chase1234 Activity20260630","type":"credit"}},"expect":{"match":"acct_chase","label":"Chase 1234"}},
+    {"name":"a file with its own number never takes a numbered account by its name","filename":"statement.csv","kind":"credit","fingerprint":"acct_mc","accounts":{"acct_chq":{"label":"statement","type":"checking","numbered":true}},"expect":{"match":null,"label":"Account"}}
+  ]
+}

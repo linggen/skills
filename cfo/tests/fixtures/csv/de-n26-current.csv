@@ -1,0 +1,5 @@
+"Date","Payee","Account number","Transaction type","Payment reference","Amount (EUR)","Amount (Foreign Currency)","Type Foreign Currency","Exchange Rate"
+"2026-06-01","ACME GmbH","DE89370400440532013000","Income","Gehalt Juni","3400.0","","",""
+"2026-06-03","Hausverwaltung Meier","DE02120300000000202051","Outgoing Transfer","Miete Juni","-1650.0","","",""
+"2026-06-15","REWE Markt","","MasterCard Payment","","-126.4","-126.4","EUR","1.0"
+"2026-06-22","ARAL Tankstelle","DE44500105175407324931","Direct Debit","","-55.25","","",""

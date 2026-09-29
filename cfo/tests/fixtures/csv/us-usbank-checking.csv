@@ -1,0 +1,5 @@
+"Date","Transaction","Name","Memo","Amount"
+"2026-06-01","CREDIT","ACME CORP PAYROLL","Download from usbank.com.","3400.0000"
+"2026-06-03","DEBIT","RENT PROPERTY MGMT","Download from usbank.com.","-1650.0000"
+"2026-06-15","DEBIT","WHOLEFDS #10234","Download from usbank.com.","-126.4000"
+"2026-06-22","DEBIT","SHELL OIL 57444","Download from usbank.com.","-55.2500"

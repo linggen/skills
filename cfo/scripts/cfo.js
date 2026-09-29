@@ -581,6 +581,7 @@ function renderStaging() {
   el.innerHTML = `
     <h2>Import review — ${esc(s.filename)}${fileTag}</h2>
     <p class="hint">${s.fingerprint ? 'New account detected — label it once and future imports auto-match.' : 'This file has no account number — pick the account it belongs to.'}</p>
+    ${(s.notes || []).filter((n) => /check/i.test(n)).map((n) => `<p class="hint warn">${esc(n)}</p>`).join('')}
     <div class="stage-accts">
       ${Object.entries(ACCOUNTS).filter(([, a]) => a?.label).map(([id, a]) => `
         <label class="acct-opt"><input type="radio" name="st-acct" value="${esc(id)}" ${s.accountId === id ? 'checked' : ''}> <span>${esc(a.label)}</span> <span class="acct-type">${esc(a.type)}</span></label>`).join('')}
@@ -632,6 +633,7 @@ function renderStaging() {
       id = s.fingerprint || `acct_${hashId(label + s.newType)}`;
       EDITS.set(`acc:${id}|label`, label);
       EDITS.set(`acc:${id}|type`, s.newType);
+      if (s.fingerprint) EDITS.set(`acc:${id}|numbered`, 'true'); // known by its number (accounts.js bestAccountMatch)
       applyEdits();
       await saveEdits();
     }
@@ -933,6 +935,7 @@ async function importFile(file, fileIdx = 0, fileCount = 1, opts = {}) {
     if (r.errors && r.errors.length) throw new Error([...(r.notes || []), ...r.errors].join(' '));
     transactions = r.transactions; fingerprint = r.account_fingerprint; notes = r.notes || [];
     detected = { currency: r.currency || null, ambiguous: r.currency_ambiguous || [] };
+    kind = r.kind || null; // card or bank, when the columns say (analyze.js csvKind)
   }
   if (!transactions || !transactions.length) {
     throw new Error([...(notes.length ? notes : ['No transactions found in this file.'])].join(' '));
@@ -943,7 +946,7 @@ async function importFile(file, fileIdx = 0, fileCount = 1, opts = {}) {
     // Folder-watch only auto-imports files for accounts it already knows — it
     // never pops the account modal unprompted (a stray CSV stays untouched).
     if (opts.autoOnly) return { file: file.name, skipped: 'unknown-account' };
-    accountId = await stageImport({ transactions, fingerprint, kind, filename: file.name, fileIdx, fileCount });
+    accountId = await stageImport({ transactions, fingerprint, kind, notes, filename: file.name, fileIdx, fileCount });
     if (!accountId) { setStatus(`Skipped ${file.name} — no account chosen.`); return { file: file.name, skipped: true }; }
   }
 

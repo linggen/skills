@@ -1,0 +1,5 @@
+Buchungstag;Valuta;Auftraggeber/Zahlungsempfänger;Empfänger/Zahlungspflichtiger;Konto-Nr.;IBAN;BLZ;BIC;Vorgang/Verwendungszweck;Kundenreferenz;Währung;Umsatz;Soll/Haben
+01.06.2026;01.06.2026;Alex Chen;ACME GmbH;;DE89370400440532013000;;COBADEFFXXX;Gehalt Juni;;EUR;3.400,00;H
+03.06.2026;03.06.2026;Alex Chen;Hausverwaltung Meier;;DE02120300000000202051;;BYLADEM1001;Miete Juni;;EUR;1.650,00;S
+15.06.2026;15.06.2026;Alex Chen;REWE Markt GmbH;;DE44500105175407324931;;INGDDEFFXXX;Kartenzahlung;;EUR;126,40;S
+22.06.2026;22.06.2026;Alex Chen;ARAL AG;;DE75512108001245126199;;SOGEDEFFXXX;Lastschrift;;EUR;55,25;S

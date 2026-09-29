@@ -1,0 +1,5 @@
+Transaction Date,Clearing Date,Description,Merchant,Category,Type,Amount (USD),Purchased By
+06/01/2026,06/02/2026,NETFLIX.COM LOS GATOS CA,Netflix,Other,Purchase,18.99,Alex Chen
+06/14/2026,06/15/2026,WHOLEFDS #10234 AUSTIN TX,Whole Foods,Grocery,Purchase,126.40,Alex Chen
+06/20/2026,06/21/2026,UBER EATS SAN FRANCISCO CA,Uber Eats,Restaurants,Purchase,41.20,Alex Chen
+06/25/2026,06/25/2026,ACH DEPOSIT INTERNET TRANSFER FROM ACCOUNT ENDING IN 1234,Payment,Payment,Payment,-487.50,Alex Chen

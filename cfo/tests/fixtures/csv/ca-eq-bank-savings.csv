@@ -1,0 +1,5 @@
+Transfer date,Description,Amount,Balance
+2026-06-01,Deposit from ACME CORP,"$3,400.00","$8,400.00"
+2026-06-03,Transfer to RENT PROPERTY MGMT,"-$1,650.00","$6,750.00"
+2026-06-15,Transfer to LOBLAWS,-$126.40,"$6,623.60"
+2026-06-22,Transfer to PETRO-CANADA,-$55.25,"$6,568.35"

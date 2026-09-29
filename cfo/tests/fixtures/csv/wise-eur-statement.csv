@@ -1,0 +1,5 @@
+TransferWise ID,Date,Amount,Currency,Description,Payment Reference,Running Balance,Exchange From,Exchange To,Exchange Rate,Payer Name,Payee Name,Payee Account Number,Merchant,Card Last Four Digits,Card Holder Full Name,Attachment,Note,Total fees
+TRANSFER-1001,01-06-2026,3400.00,EUR,Received money from ACME GMBH with reference SALARY,SALARY,8400.00,,,,ACME GMBH,,,,,,,,0.00
+TRANSFER-1002,03-06-2026,-1650.00,EUR,Sent money to Rent Property Mgmt,RENT,6750.00,,,,,Rent Property Mgmt,DE02120300000000202051,,,,,,0.00
+CARD-1003,15-06-2026,-126.40,EUR,Card transaction of 126.40 EUR issued by Rewe Berlin,,6623.60,,,,,,,Rewe,4321,Alex Chen,,,0.00
+CARD-1004,22-06-2026,-55.25,EUR,Card transaction of 55.25 EUR issued by Aral Berlin,,6568.35,,,,,,,Aral,4321,Alex Chen,,,0.00

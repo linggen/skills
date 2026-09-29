@@ -1,0 +1,5 @@
+Transaction ID,Date,Time,Type,Name,Emoji,Category,Amount,Currency,Local amount,Local currency,Notes and #tags,Address,Receipt,Description,Category split,Money Out,Money In
+tx_0001,01/06/2026,09:00:12,Faster payment,Acme Ltd,,Income,3400.00,GBP,3400.00,GBP,,,,ACME LTD SALARY,,,3400.00
+tx_0002,03/06/2026,10:15:00,Faster payment,Rent Property Mgmt,,Bills,-1650.00,GBP,-1650.00,GBP,,,,RENT JUNE,,-1650.00,
+tx_0003,15/06/2026,12:30:00,Card payment,Tesco,,Groceries,-126.40,GBP,-126.40,GBP,,London,,TESCO STORES 3412,,-126.40,
+tx_0004,22/06/2026,18:45:00,Card payment,Shell,,Transport,-55.25,GBP,-55.25,GBP,,London,,SHELL 4412,,-55.25,

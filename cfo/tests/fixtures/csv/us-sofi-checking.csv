@@ -1,0 +1,5 @@
+Date,Description,Type,Amount,Current balance,Status
+2026-06-01,ACME CORP PAYROLL,Direct Deposit,3400.00,8400.00,Posted
+2026-06-03,RENT PROPERTY MGMT,ACH,-1650.00,6750.00,Posted
+2026-06-15,WHOLEFDS #10234,Debit Card,-126.40,6623.60,Posted
+2026-06-22,SHELL OIL 57444,Debit Card,-55.25,6568.35,Posted

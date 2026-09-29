@@ -10,12 +10,24 @@
 import { accountFingerprint } from './hash.js';
 import { csvCurrency } from './currency.js';
 
-const DATE_KEYS = ['transaction date', 'posting date', 'date posted', 'date'];
-const DESC_KEYS = ['description', 'details', 'payee', 'merchant', 'name', 'memo', 'narration'];
-const AMOUNT_KEYS = ['amount', 'transaction amount'];
-const DEBIT_KEYS = ['debit', 'withdrawal', 'money out', 'paid out'];
-const CREDIT_KEYS = ['credit', 'deposit', 'money in', 'paid in'];
-const REDACT_KEYS = ['account', 'card', 'number', 'balance', 'iban', 'routing', 'sort code', 'ref'];
+// Column words, in the languages banks export in (EN, FR, DE, NL, ES). Order
+// is priority: a header equal to a key wins, then the first key a header
+// contains (see findCol).
+const DATE_KEYS = ['transaction date', 'posting date', 'date posted', 'date', 'buchungstag', 'buchungsdatum', 'datum', 'fecha'];
+const DESC_KEYS = [
+  'description', 'details', 'payee', 'counter party', 'counterparty', 'merchant', 'name', 'memo', 'narrative', 'narration',
+  'libellé', 'libelle', 'beguenstigter', 'begünstigter', 'zahlungsempfänger', 'empfänger', 'auftraggeber',
+  'naam', 'omschrijving', 'verwendungszweck', 'concepto', 'descripción',
+];
+const AMOUNT_KEYS = ['amount', 'transaction amount', 'montant', 'betrag', 'bedrag', 'umsatz', 'importe'];
+const DEBIT_KEYS = ['debit', 'withdrawal', 'money out', 'paid out', 'funds out', 'débit', 'retrait', 'sortie', 'soll', 'ausgang'];
+const CREDIT_KEYS = ['credit', 'deposit', 'money in', 'paid in', 'funds in', 'crédit', 'dépôt', 'depot', 'entrée', 'haben', 'eingang'];
+const BALANCE_KEYS = ['balance', 'saldo', 'solde', 'kontostand'];
+const REDACT_KEYS = ['account', 'card', 'number', 'iban', 'routing', 'sort code', 'ref', 'konto', 'rekening', 'compte', ...BALANCE_KEYS];
+// Columns that may carry the account's own number (fingerprinted, see mapByHeader).
+const ACCOUNT_KEYS = ['account', 'card', 'konto', 'iban', 'rekening', 'compte'];
+// The words only a credit card's statement prints (pdf-import.js reads them too).
+export const CARD_WORDS_RE = /\b(credit limit|minimum payment|available credit|credit available|payment due date|annual interest rate)\b/i;
 
 const CATEGORY_RULES = [
   // Fees first — they're the leak-detection ground truth and the keywords are specific.
@@ -63,48 +75,103 @@ function sniffDelimiter(text) {
   return ',';
 }
 
-const findCol = (headersL, keys) => headersL.findIndex((h) => keys.some((k) => h.includes(k)));
+// The column a list of keys names: the first key (in priority order) a
+// header equals, else contains — "Betrag" beats "Lastschrift
+// Ursprungsbetrag", "Description" beats Chase's DEBIT/CREDIT "Details".
+// `skip(header, index)` rules out a column that belongs to something else.
+function findCol(headersL, keys, skip = () => false) {
+  const ok = (j) => !skip(headersL[j], j);
+  for (const k of keys) {
+    const exact = headersL.findIndex((h, j) => h === k && ok(j));
+    if (exact >= 0) return exact;
+    const part = headersL.findIndex((h, j) => h.includes(k) && ok(j));
+    if (part >= 0) return part;
+  }
+  return -1;
+}
+const namesAny = (keys) => (h) => keys.some((k) => h.includes(k));
 
 function pad2(n) { return String(n).padStart(2, '0'); }
 
-export function parseDate(raw) {
+const TIME_RE = /[T ]\d{1,2}:\d{2}(?::\d{2})?(?:\.\d+)?\s*(?:[+-]\d{2}:?\d{2}|[A-Za-z]{1,5})?$/;
+const NUMERIC_DATE_RE = /^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})$/;
+const validDate = (y, mo, d) => (mo >= 1 && mo <= 12 && d >= 1 && d <= 31 ? `${y}-${pad2(mo)}-${pad2(d)}` : null);
+const fullYear = (y) => (+y < 100 ? +y + 2000 : +y);
+
+// "03/06/2026": `order` says which number is the month — 'dmy' or 'mdy', as
+// the whole file reads (dateOrder); without one a first number over 12 is a
+// day, else the month (North America).
+function numericDate(m, order) {
+  const a = +m[1], b = +m[2], y = fullYear(m[3]);
+  const dayFirst = order ? order === 'dmy' : a > 12;
+  return dayFirst ? validDate(y, b, a) : validDate(y, a, b);
+}
+
+export function parseDate(raw, order = null) {
   let s = (raw || '').trim();
   if (!s) return null;
   // Drop a trailing time-of-day ("2026-06-01 09:00:12", ISO offsets, tz codes)
-  s = s.replace(/[T ]\d{1,2}:\d{2}(?::\d{2})?(?:\.\d+)?\s*(?:[+-]\d{2}:?\d{2}|[A-Za-z]{1,5})?$/, '').trim();
+  s = s.replace(TIME_RE, '').trim();
   let m;
-  if ((m = s.match(/^(\d{4})(\d{2})(\d{2})$/))) { // compact YYYYMMDD (BMO, ING)
-    return +m[2] >= 1 && +m[2] <= 12 && +m[3] >= 1 && +m[3] <= 31 ? `${m[1]}-${m[2]}-${m[3]}` : null;
-  }
-  if ((m = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/))) return `${m[1]}-${pad2(m[2])}-${pad2(m[3])}`;
-  if ((m = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$/))) {
-    let [, a, b, y] = m;
-    a = +a; b = +b; y = +y; if (y < 100) y += 2000;
-    // a/b ambiguous: if a>12 it's D/M, else assume M/D (North America)
-    const month = a > 12 ? b : a, day = a > 12 ? a : b;
-    return `${y}-${pad2(month)}-${pad2(day)}`;
-  }
-  if ((m = s.match(/^(\d{1,2})[ -]([A-Za-z]{3})[A-Za-z]*[ -](\d{4})$/))) {
-    const mo = MONTHS[m[2].toLowerCase()]; if (mo != null) return `${m[3]}-${pad2(mo + 1)}-${pad2(+m[1])}`;
+  if ((m = s.match(/^(\d{4})(\d{2})(\d{2})$/))) return validDate(m[1], +m[2], +m[3]); // compact YYYYMMDD (BMO, ING)
+  if ((m = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/))) return validDate(m[1], +m[2], +m[3]);
+  if ((m = s.match(NUMERIC_DATE_RE))) return numericDate(m, order);
+  if ((m = s.match(/^(\d{1,2})[ -]([A-Za-z]{3})[A-Za-z]*\.?[ -](\d{4}|\d{2})$/))) {
+    const mo = MONTHS[m[2].toLowerCase()]; if (mo != null) return validDate(fullYear(m[3]), mo + 1, +m[1]);
   }
   if ((m = s.match(/^([A-Za-z]{3})[A-Za-z]*\.?\s+(\d{1,2}),?\s+(\d{4})$/))) {
-    const mo = MONTHS[m[1].toLowerCase()]; if (mo != null) return `${m[3]}-${pad2(mo + 1)}-${pad2(+m[2])}`;
+    const mo = MONTHS[m[1].toLowerCase()]; if (mo != null) return validDate(m[3], mo + 1, +m[2]);
   }
   return null;
 }
 
+// Day-first currencies: everywhere but North America writes 03/06 as 3 June.
+const MONTH_FIRST_CURRENCIES = new Set(['USD', 'CAD']);
+
+/// How a file's numeric dates read: { order: 'dmy' | 'mdy' | null, guessed }.
+/// A first number over 12 anywhere makes the file day-first, a second one
+/// month-first, a dotted date ("03.06.2026") day-first. With no such date the
+/// currency decides (`guessed`: every date could be read either way — the
+/// import review should say so); no currency keeps month-first.
+export function dateOrder(values, currency = null) {
+  let dmy = 0, mdy = 0, loose = 0;
+  for (const v of values) {
+    const d = String(v || '').trim().replace(TIME_RE, '');
+    const m = d.match(NUMERIC_DATE_RE);
+    if (!m) continue;
+    const a = +m[1], b = +m[2];
+    if (a > 12 || d.includes('.')) dmy++;
+    else if (b > 12) mdy++;
+    else if (a !== b) loose++;
+  }
+  if (dmy && !mdy) return { order: 'dmy', guessed: false };
+  if (mdy && !dmy) return { order: 'mdy', guessed: false };
+  if (!loose) return { order: null, guessed: false };
+  const dayFirst = currency && !MONTH_FIRST_CURRENCIES.has(currency);
+  return { order: dayFirst ? 'dmy' : 'mdy', guessed: true };
+}
+
+// A sign written after the number: "12.34 DR" / "12.34 CR" / "12.34-".
+const TRAILING_SIGN_RE = /(?<=[\d)])\s*(cr|dr|-|\+)\.?$/i;
+export const markedCredit = (raw) => /(?<=[\d)])\s*cr\.?$/i.test(String(raw || '').trim());
+export const markedDebit = (raw) => /(?<=[\d)])\s*(dr|-)\.?$/i.test(String(raw || '').trim());
+
 export function parseAmount(raw) {
-  let s = (raw || '').trim();
+  let s = String(raw || '').trim().replace(/−/g, '-');
   if (!s) return null;
-  const neg = s.startsWith('(') && s.endsWith(')');
-  s = s.replace(/[()$£€\s]/g, '');
+  let sign = 1;
+  const tail = TRAILING_SIGN_RE.exec(s);
+  if (tail) { sign = /^(dr|-)$/i.test(tail[1]) ? -1 : 1; s = s.slice(0, tail.index); }
+  s = s.replace(/[$£€'\s]/g, '');
+  if (s.startsWith('(') && s.endsWith(')')) sign = -sign;
+  s = s.replace(/[()]/g, '');
   // European decimal comma ("1.234,56" / "3400,00"): dots are thousands.
   if (/^[+-]?\d+(\.\d{3})*,\d{1,2}$/.test(s)) s = s.replace(/\./g, '').replace(',', '.');
   else s = s.replace(/,/g, ''); // North-American thousands commas
   if (s === '' || s === '-' || s === '+') return null;
   const v = parseFloat(s);
   if (Number.isNaN(v)) return null;
-  return neg ? -v : v;
+  return sign * v;
 }
 
 // Canadian province codes banks append as a location suffix. US states are
@@ -176,67 +243,146 @@ const daysBetween = (a, b) => Math.abs((new Date(a) - new Date(b)) / 86400000);
 const round2 = (n) => Math.round(n * 100) / 100;
 
 // ── Header detection + column mapping ──
-// Direction-flag columns some banks use instead of signs (ING "Af"/"Bij", DR/CR).
-const SIGN_DEBIT = new Set(['af', 'dr', 'd', 'db', 'dbit', 'debit', 'withdrawal']);
-const SIGN_CREDIT = new Set(['bij', 'cr', 'c', 'credit', 'deposit']);
+// Direction-flag columns some banks use instead of signs (ING "Af"/"Bij", DR/CR,
+// the German "S"/"H" of Soll/Haben).
+const SIGN_DEBIT = new Set(['af', 'dr', 'd', 'db', 'dbit', 'debit', 'withdrawal', 's', 'soll']);
+const SIGN_CREDIT = new Set(['bij', 'cr', 'c', 'credit', 'deposit', 'h', 'haben']);
 const HEADER_HINTS = [...new Set([
   ...DATE_KEYS, ...DESC_KEYS, ...AMOUNT_KEYS, ...DEBIT_KEYS, ...CREDIT_KEYS, ...REDACT_KEYS,
   'cheque', 'category', 'status', 'type', 'memo', 'running bal', 'currency', 'fee', 'state',
+  'time', 'valuta', 'wertstellung', 'währung', 'waehrung', 'devise',
 ])];
 const CURRENCY_COL_RE = /^[a-z]{3}\s*\$$|^\$$/; // RBC-style "CAD$" / "USD$" amount columns
+// A header naming what a direction-flag column holds.
+const FLAG_HEADER_RE = /type|direction|soll|haben|dr\s*\/\s*cr|cr\s*\/\s*dr|af\s*bij|debit\s*\/\s*credit/;
 
-// A header row is pure labels — no date- or amount-parseable cells — naming at
-// least two known column concepts. Scanning the first rows also skips summary
-// preambles (BofA's balance block, BMO's "data is valid as of" line).
+const cellAt = (r, i) => (i >= 0 && i < r.length ? String(r[i] ?? '') : '');
+const filledValues = (body, i) => body.map((r) => cellAt(r, i).trim()).filter(Boolean);
+const isAmountCell = (v) => parseDate(v) == null && parseAmount(v) != null;
+
+// A header row is pure labels — no date- or amount-parseable cells — naming a
+// date column and at least one more known column concept. Scanning the first
+// rows also skips summary preambles (BofA's balance block, BMO's "data is
+// valid as of" line, DKB's "Kontonummer:" lines).
 function findHeaderRow(rows) {
-  for (let i = 0; i < Math.min(rows.length, 10); i++) {
-    const cells = rows[i].map((c) => String(c).trim()).filter(Boolean);
+  const hint = (l) => HEADER_HINTS.some((k) => l.includes(k)) || CURRENCY_COL_RE.test(l);
+  for (let i = 0; i < Math.min(rows.length, 15); i++) {
+    const cells = rows[i].map((c) => String(c).trim().toLowerCase()).filter(Boolean);
     if (cells.length < 2) continue;
     if (cells.some((c) => parseDate(c) != null || parseAmount(c) != null)) continue;
-    const hits = cells.filter((c) => {
-      const l = c.toLowerCase();
-      return HEADER_HINTS.some((k) => l.includes(k)) || CURRENCY_COL_RE.test(l);
-    }).length;
-    if (hits >= 2) return i;
+    if (cells.filter(hint).length >= 2 && cells.some(namesAny(DATE_KEYS))) return i;
   }
   return -1;
 }
 
+// The value (nearly) every row repeats — the account's own number. A
+// counterparty's number (N26 "Account number", Sparkasse "Kontonummer/IBAN",
+// Wise "Payee Account Number") changes row to row, or is blank on most rows,
+// and names no account of yours. `values` is the column, one cell per row.
+function steadyValue(values) {
+  const n = new Map();
+  let top = null, best = 0;
+  for (const v of values.map((c) => String(c ?? '').trim()).filter(Boolean)) {
+    n.set(v, (n.get(v) || 0) + 1);
+    if (n.get(v) > best) { top = v; best = n.get(v); }
+  }
+  return values.length && best / values.length >= 0.6 ? top : null;
+}
+
+// A column holding one value on every row (three or more) — the account
+// holder's own name, never the merchant.
+function constantColumn(body, i) {
+  const vals = body.map((r) => cellAt(r, i).trim());
+  return body.length >= 3 && !!vals[0] && vals.every((v) => v === vals[0]);
+}
+
+// A direction-flag column: every value a flag, and the header says so or the
+// column holds both directions (a lone "C" column may just mean "cleared").
+function flagColumn(headersL, body, taken) {
+  const width = Math.max(0, ...body.map((r) => r.length));
+  for (let i = 0; i < width; i++) {
+    if (taken.includes(i)) continue;
+    const vals = filledValues(body, i).map((v) => v.toLowerCase());
+    if (!vals.length || !vals.every((v) => SIGN_DEBIT.has(v) || SIGN_CREDIT.has(v))) continue;
+    const both = vals.some((v) => SIGN_DEBIT.has(v)) && vals.some((v) => SIGN_CREDIT.has(v));
+    if (both || FLAG_HEADER_RE.test(headersL?.[i] || '')) return i;
+  }
+  return -1;
+}
+
+// No amount header: the rightmost column that reads as money and is not a
+// balance, account or reference column.
+function guessAmountColumn(headersL, body) {
+  for (let i = headersL.length - 1; i >= 0; i--) {
+    if (namesAny(REDACT_KEYS)(headersL[i])) continue;
+    const vals = filledValues(body, i);
+    if (vals.length && vals.filter(isAmountCell).length / vals.length >= 0.9) return i;
+  }
+  return headersL.length - 1;
+}
+
 function mapByHeader(headers, headersL, body, notes) {
   let di = findCol(headersL, DATE_KEYS);
-  let pi = findCol(headersL, DESC_KEYS);
-  let ai = findCol(headersL, AMOUNT_KEYS);
-  const dbi = findCol(headersL, DEBIT_KEYS);
-  const cri = findCol(headersL, CREDIT_KEYS);
+  let pi = findCol(headersL, DESC_KEYS, (h, j) => constantColumn(body, j));
+  // One signed amount column wins over a debit/credit pair; "Debit Amount" and
+  // "Credit Amount" (Lloyds) are the pair, not the amount.
+  let ai = findCol(headersL, AMOUNT_KEYS, namesAny([...DEBIT_KEYS, ...CREDIT_KEYS, ...BALANCE_KEYS]));
+  let dbi = ai >= 0 ? -1 : findCol(headersL, DEBIT_KEYS, namesAny(BALANCE_KEYS));
+  let cri = ai >= 0 ? -1 : findCol(headersL, CREDIT_KEYS, namesAny(BALANCE_KEYS));
+  if (dbi >= 0 && dbi === cri) { dbi = -1; cri = -1; } // one "Soll/Haben" column is a flag, not money
   if (ai < 0 && dbi < 0 && cri < 0) {
     // Currency-named amount columns (RBC "CAD$"/"USD$") — prefer the fullest.
     const cands = headersL.map((h, i) => (CURRENCY_COL_RE.test(h) ? i : -1)).filter((i) => i >= 0);
-    const fill = (i) => body.filter((r) => i < r.length && String(r[i]).trim()).length;
+    const fill = (i) => filledValues(body, i).length;
     if (cands.length) ai = cands.sort((a, b) => fill(b) - fill(a))[0];
   }
   if (di < 0) di = 0;
   if (pi < 0) pi = Math.min(1, headers.length - 1);
-  if (ai < 0 && dbi < 0 && cri < 0) { ai = headers.length - 1; notes.push('no amount column recognized; guessed the last column'); }
-  const redacted = headers.filter((h, i) => REDACT_KEYS.some((k) => headersL[i].includes(k)));
+  if (ai < 0 && dbi < 0 && cri < 0) { ai = guessAmountColumn(headersL, body); notes.push('no amount column recognized; guessed one'); }
+  const redacted = headers.filter((h, i) => namesAny(REDACT_KEYS)(headersL[i]));
 
   // Fingerprint the account from its number column (hashed; the raw number is
   // discarded, never stored) so re-imports of the same card auto-group. Try
-  // every account/card-named column and keep the first whose values carry
-  // enough digits — skips name columns like Amex's "Card Member".
+  // every account/card-named column and keep the first whose steady value
+  // carries enough digits — skips name columns like Amex's "Card Member" and
+  // a counterparty's number.
   let account_fingerprint = null;
   for (let i = 0; i < headersL.length && !account_fingerprint; i++) {
-    if (!headersL[i].includes('account') && !headersL[i].includes('card')) continue;
-    const row = body.find((r) => i < r.length && String(r[i]).trim());
-    account_fingerprint = accountFingerprint(row ? row[i] : null);
+    if (namesAny(ACCOUNT_KEYS)(headersL[i])) account_fingerprint = accountFingerprint(steadyValue(body.map((r) => cellAt(r, i))));
   }
-  return { di, pi, ai, dbi, cri, sgi: -1, redacted, account_fingerprint };
+  const sgi = flagColumn(headersL, body, [di, pi, ai, dbi, cri]);
+  const balance = headersL.some(namesAny(BALANCE_KEYS));
+  return { di, pi, ai, dbi, cri, sgi, redacted, account_fingerprint, balance };
+}
+
+// Does column `bi` move by column `ai`'s amounts, row to row, in either
+// statement order? Then `bi` is the running balance and `ai` the amount.
+function runsAsBalance(body, bi, ai) {
+  const pairs = body.map((r) => [parseAmount(cellAt(r, bi)), parseAmount(cellAt(r, ai))]);
+  if (pairs.length < 2 || pairs.some(([b, a]) => b == null || a == null)) return false;
+  const near = (x) => Math.abs(x) < 0.005;
+  const oldestFirst = pairs.slice(1).every(([b, a], i) => near(b - pairs[i][0] - a));
+  const newestFirst = pairs.slice(1).every(([b], i) => near(pairs[i][0] - b - pairs[i][1]));
+  return oldestFirst || newestFirst;
+}
+
+// Leading rows shaped unlike the rest (PNC's one-line account summary above
+// headerless rows) are not transactions.
+function dropOddLeadingRows(body, notes) {
+  const count = new Map();
+  for (const r of body) count.set(r.length, (count.get(r.length) || 0) + 1);
+  const usual = [...count.entries()].reduce((a, b) => (b[1] > a[1] ? b : a))[0];
+  let k = 0;
+  while (k < 3 && body.length - k > 2 && body[k].length !== usual) k++;
+  if (k) notes.push(`skipped ${k} summary line(s) shaped unlike the rows`);
+  return body.slice(k);
 }
 
 // No header row (TD, CIBC, Wells Fargo, foreign-language headers): classify
 // every column by its CONTENT — date-parse rate, numeric rate, digit-heavy
 // (account numbers / IBANs), direction flags, text length — and assign roles.
 function inferColumns(bodyIn, notes) {
-  let body = bodyIn;
+  let body = dropOddLeadingRows(bodyIn, notes);
   // A lone label row on top is an unrecognized (e.g. non-English) header.
   const isLabelRow = (r) => r.filter((c) => String(c).trim()).length >= 2
     && !r.some((c) => parseDate(String(c).trim()) != null || parseAmount(String(c).trim()) != null);
@@ -247,17 +393,17 @@ function inferColumns(bodyIn, notes) {
   const width = Math.max(...body.map((r) => r.length));
   const stats = [];
   for (let i = 0; i < width; i++) {
-    const vals = body.map((r) => String(r[i] ?? '').trim()).filter(Boolean);
+    const vals = filledValues(body, i);
     const n = vals.length;
     stats.push({
       i, n,
       fillRate: n / body.length,
       dates: n ? vals.filter((v) => parseDate(v) != null).length / n : 0,
       digitHeavy: n > 0 && vals.filter((v) => /\d{6,}/.test(v.replace(/[\s-]/g, ''))).length / n > 0.8,
-      nums: n ? vals.filter((v) => parseDate(v) == null && parseAmount(v) != null).length / n : 0,
+      nums: n ? vals.filter(isAmountCell).length / n : 0,
       flags: n > 0 && vals.every((v) => SIGN_DEBIT.has(v.toLowerCase()) || SIGN_CREDIT.has(v.toLowerCase())),
       avgLen: n ? vals.reduce((a, v) => a + v.length, 0) / n : 0,
-      sample: vals[0] || '',
+      steady: steadyValue(body.map((r) => cellAt(r, i))),
     });
   }
   let di = -1, bestDates = 0.7;
@@ -265,32 +411,84 @@ function inferColumns(bodyIn, notes) {
   const sgi = stats.find((c) => c.i !== di && c.flags)?.i ?? -1;
 
   let cands = stats.filter((c) => c.i !== di && c.i !== sgi && !c.digitHeavy && c.n > 0 && c.nums >= 0.99);
+  let balance = false;
   // A trailing always-filled numeric column next to sparse ones is the running balance.
   if (cands.length >= 2) {
     const last = cands[cands.length - 1];
-    if (last.fillRate >= 0.99 && cands.slice(0, -1).some((c) => c.fillRate < 0.99)) cands = cands.slice(0, -1);
+    if (last.fillRate >= 0.99 && cands.slice(0, -1).some((c) => c.fillRate < 0.99)) { cands = cands.slice(0, -1); balance = true; }
   }
   let ai = -1, dbi = -1, cri = -1;
   if (cands.length === 1) ai = cands[0].i;
   else if (cands.length >= 2) {
     const [a, b] = cands;
-    const both = body.filter((r) => String(r[a.i] ?? '').trim() && String(r[b.i] ?? '').trim()).length;
+    const both = body.filter((r) => cellAt(r, a.i).trim() && cellAt(r, b.i).trim()).length;
     // Mutually exclusive pair = debit,credit (debit-first convention); else
-    // both-filled means amount + running balance — keep the leftmost.
-    if (both / body.length <= 0.2) { dbi = a.i; cri = b.i; } else ai = a.i;
+    // both-filled means amount + running balance — the balance is the column
+    // that moves by the other's amounts, else the rightmost.
+    if (both / body.length <= 0.2) { dbi = a.i; cri = b.i; } else {
+      const aIsBalance = runsAsBalance(body, a.i, b.i);
+      ai = aIsBalance ? b.i : a.i;
+      balance = aIsBalance || runsAsBalance(body, b.i, a.i);
+    }
   }
-  const fp = stats.find((c) => c.i !== di && c.digitHeavy);
+  const fp = stats.find((c) => c.i !== di && c.digitHeavy && c.steady);
   const textish = (c) => c.i !== di && c.i !== sgi && !c.digitHeavy && c.dates < 0.5 && c.nums < 0.5 && c.avgLen >= 3 && c.n > 0;
   const pi = (stats.find((c) => c.i > di && textish(c)) || stats.find(textish) || { i: di + 1 }).i;
   return {
     di: di >= 0 ? di : 0, pi, ai, dbi, cri, sgi, redacted: [],
-    account_fingerprint: fp ? accountFingerprint(fp.sample) : null,
-    body,
+    account_fingerprint: fp ? accountFingerprint(fp.steady) : null,
+    balance, body,
   };
 }
 
+// ── What the statement is: a card's or a bank's ──
+// 'credit' when only card signs show (card words, a card-number column, a
+// "payment — thank you" row), 'bank' when only bank signs do (a balance
+// column, an IBAN, BMO's "First Bank Card", payroll or e-transfer rows), else null
+// and the file name decides (accounts.js guessType).
+const CARD_COLUMN_RE = /\bcard\s*(#|no\b|no\.|number|member)|cardmember|cardholder/;
+const BANK_COLUMN_RE = /balance|saldo|solde|kontostand|iban|sort code|first bank card|cheque|check or slip|check #|check number/;
+const CARD_PAYMENT_ROW_RE = /\bpayment\s*(received|-?\s*thank you)|thank you for your payment/i;
+const BANK_ROW_RE = /\b(payroll|salary|salaire|salaris|gehalt|lohn|direct dep(osit)?|direct debit|e-?transfer|interac|atm withdrawal|virement)\b/i;
+const IBAN_RE = /^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/;
+export function csvKind(headersL, body, merchants, text, balance) {
+  const heads = headersL || [];
+  const iban = body.some((r) => r.some((c) => IBAN_RE.test(String(c).replace(/\s/g, ''))));
+  const credit = CARD_WORDS_RE.test(text) || heads.some((h) => CARD_COLUMN_RE.test(h)) || merchants.some((m) => CARD_PAYMENT_ROW_RE.test(m));
+  const bank = !!balance || iban || heads.some((h) => BANK_COLUMN_RE.test(h)) || merchants.some((m) => BANK_ROW_RE.test(m));
+  if (credit === bank) return null;
+  return credit ? 'credit' : 'bank';
+}
+
 // ── Redact + normalize ──
-function ingest(text) {
+// A row's signed amount: its amount column (an unmarked amount in a column
+// that marks only its credits "CR" is a debit), else credit − debit, then a
+// direction flag, when there is one, sets the sign.
+function rowAmount(r, map, unmarkedDebit) {
+  let amount = null;
+  if (map.ai >= 0) {
+    const cell = cellAt(r, map.ai);
+    amount = parseAmount(cell);
+    if (amount != null && unmarkedDebit && !markedCredit(cell)) amount = -Math.abs(amount);
+  } else if (map.dbi >= 0 || map.cri >= 0) {
+    amount = Math.abs(parseAmount(cellAt(r, map.cri)) || 0) - Math.abs(parseAmount(cellAt(r, map.dbi)) || 0);
+  }
+  if (amount == null || map.sgi < 0) return amount;
+  const f = cellAt(r, map.sgi).trim().toLowerCase();
+  if (SIGN_DEBIT.has(f)) return -Math.abs(amount);
+  if (SIGN_CREDIT.has(f)) return Math.abs(amount);
+  return amount;
+}
+
+// The amount column marks only its credits ("3,400.00 CR"): the rest are debits.
+function creditsOnlyMarked(body, ai) {
+  if (ai < 0) return false;
+  const vals = filledValues(body, ai);
+  return vals.some(markedCredit) && !vals.some(markedDebit);
+}
+
+function ingest(textIn) {
+  const text = String(textIn || '').replace(/^﻿/, ''); // a UTF-8 byte-order mark
   const rows = parseCsv(text, sniffDelimiter(text));
   if (!rows.length) return { transactions: [], errors: ['empty CSV'] };
   const notes = [];
@@ -308,42 +506,35 @@ function ingest(text) {
     body = map.body;
   }
 
+  // The statement's own currency, when it says (see currency.js) — it also
+  // settles how "03/06" reads when no date in the file does.
+  const cur = csvCurrency(headersL, body, map.ai, text);
+  const order = dateOrder(body.map((r) => cellAt(r, map.di)), cur.currency);
+  if (order.guessed) notes.push(`Dates like 03/06 could be day or month first — read as ${order.order === 'dmy' ? 'day/month' : 'month/day'}; check them.`);
+  const unmarkedDebit = creditsOnlyMarked(body, map.ai);
   const txns = [], dates = [];
   for (const r of body) {
-    const date = map.di >= 0 && map.di < r.length ? parseDate(r[map.di]) : null;
-    const merchant = map.pi >= 0 && map.pi < r.length ? cleanMerchant(r[map.pi]) : '';
-    let amount;
-    if (map.dbi >= 0 || map.cri >= 0) {
-      const debit = map.dbi >= 0 && map.dbi < r.length ? parseAmount(r[map.dbi]) || 0 : 0;
-      const credit = map.cri >= 0 && map.cri < r.length ? parseAmount(r[map.cri]) || 0 : 0;
-      amount = credit - debit;
-    } else {
-      amount = map.ai >= 0 && map.ai < r.length ? parseAmount(r[map.ai]) : null;
-    }
+    const amount = rowAmount(r, map, unmarkedDebit);
     if (amount == null) continue;
-    if (map.sgi >= 0 && map.sgi < r.length) { // direction flag column overrides sign
-      const f = String(r[map.sgi] ?? '').trim().toLowerCase();
-      if (SIGN_DEBIT.has(f)) amount = -Math.abs(amount);
-      else if (SIGN_CREDIT.has(f)) amount = Math.abs(amount);
-    }
-    txns.push({ date, merchant, amount: round2(amount) });
+    const date = parseDate(cellAt(r, map.di), order.order);
+    txns.push({ date, merchant: cleanMerchant(cellAt(r, map.pi)), amount: round2(amount) });
     if (date) dates.push(date);
   }
   // Only warn about the single-Amount sign when it's genuinely ambiguous — i.e.
   // every row is the same sign. When both spend (−) and income (+) appear, the
   // convention is self-evident, so no need to alarm the user.
   const hasPos = txns.some((t) => t.amount > 0), hasNeg = txns.some((t) => t.amount < 0);
-  if (map.ai >= 0 && map.dbi < 0 && map.cri < 0 && map.sgi < 0 && !(hasPos && hasNeg)) {
+  if (map.ai >= 0 && map.sgi < 0 && !(hasPos && hasNeg)) {
     notes.push('All amounts share one sign — double-check that spend vs. income looks right.');
   }
   dates.sort();
-  // The statement's own currency, when it says (see currency.js).
-  const cur = csvCurrency(headersL, body, map.ai, text);
   return {
     source: 'import.csv', currency: cur.currency, currency_ambiguous: cur.ambiguous, row_count: txns.length,
     date_range: { start: dates[0] || null, end: dates[dates.length - 1] || null },
     transactions: txns, redacted_columns: map.redacted,
-    account_fingerprint: map.account_fingerprint, notes, errors: [],
+    account_fingerprint: map.account_fingerprint,
+    kind: csvKind(headersL, body, txns.map((t) => t.merchant), text, map.balance),
+    notes, errors: [],
   };
 }
 
@@ -965,5 +1156,6 @@ export function analyzeCsv(text, opts = {}) {
     notes: ing.notes, redacted_columns: ing.redacted_columns,
   }, opts);
   out.currency_ambiguous = ing.currency_ambiguous || [];
+  out.kind = ing.kind || null;
   return out;
 }

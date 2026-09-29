@@ -1,0 +1,5 @@
+"Auftragskonto";"Buchungstag";"Valutadatum";"Buchungstext";"Verwendungszweck";"Glaeubiger ID";"Mandatsreferenz";"Kundenreferenz (End-to-End)";"Sammlerreferenz";"Lastschrift Ursprungsbetrag";"Auslagenersatz Ruecklastschrift";"Beguenstigter/Zahlungspflichtiger";"Kontonummer/IBAN";"BIC (SWIFT-Code)";"Betrag";"Waehrung";"Info"
+"DE12500105170648489890";"01.06.26";"01.06.26";"GUTSCHR. UEBERWEISUNG";"Gehalt Juni";"";"";"";"";"";"";"ACME GmbH";"DE89370400440532013000";"COBADEFFXXX";"3.400,00";"EUR";"Umsatz gebucht"
+"DE12500105170648489890";"03.06.26";"03.06.26";"DAUERAUFTRAG";"Miete Juni";"";"";"";"";"";"";"Hausverwaltung Meier";"DE02120300000000202051";"BYLADEM1001";"-1.650,00";"EUR";"Umsatz gebucht"
+"DE12500105170648489890";"15.06.26";"15.06.26";"KARTENZAHLUNG";"REWE SAGT DANKE";"";"";"";"";"";"";"REWE Markt GmbH";"DE44500105175407324931";"INGDDEFFXXX";"-126,40";"EUR";"Umsatz gebucht"
+"DE12500105170648489890";"22.06.26";"22.06.26";"LASTSCHRIFT";"ARAL Tankstelle";"DE98ZZZ09999999999";"M-123";"";"";"";"";"ARAL AG";"DE75512108001245126199";"SOGEDEFFXXX";"-55,25";"EUR";"Umsatz gebucht"
