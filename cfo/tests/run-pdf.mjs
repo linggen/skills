@@ -4,7 +4,7 @@
 //
 //   node tests/run-pdf.mjs
 
-import { parseStatementText, statementClose } from '../scripts/pdf-import.js';
+import { parseStatementText, statementClose, statementKind } from '../scripts/pdf-import.js';
 
 let pass = 0, fail = 0;
 const t = (name, ok, detail = '') => {
@@ -177,6 +177,11 @@ const bmoCells = [
 const bc = parseStatementText(bmoCells);
 t('B9 an amount under "added to your account" is money in', byMerchant(bc, /SETTLEMENT/)?.amount === 75, byMerchant(bc, /SETTLEMENT/)?.amount);
 t('B10 an amount under "deducted from your account" is spend', byMerchant(bc, /CHARGE/)?.amount === -30, byMerchant(bc, /CHARGE/)?.amount);
+
+// ── What the statement is (picks the account when the file name says nothing) ──
+console.log('\n— statement kind —');
+t('K1 a card statement names its credit limit', statementKind(['Credit limit $5,000.00', 'Aug 5 GROCER 10.00']) === 'credit');
+t('K2 a bank statement is a bank\'s', statementKind(['Amounts deducted from your account', 'Jun 8 Online Transfer, TF 2754-997 2,000.00']) === 'bank');
 
 console.log(`\n${pass} passed, ${fail} failed.`);
 process.exit(fail ? 1 : 0);

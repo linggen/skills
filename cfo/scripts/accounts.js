@@ -30,12 +30,15 @@ function accountWords(text) {
 }
 const tokens = (text) => new Set(accountWords(text).map((w) => w.toLowerCase()));
 
-// The account type the file name suggests; credit when it says nothing (that
-// default decides the sign flip, so the phone's must match).
-export function guessType(text) {
+// The account type the file name suggests; when it says nothing, what the
+// statement itself is (`kind`: 'credit' for a card's statement, 'bank' for a
+// bank's — a PDF knows, a CSV passes nothing), else credit (that default
+// decides the sign flip, so the phone's must match).
+export function guessType(text, kind = null) {
   const t = (text || '').toLowerCase();
   if (/check|chequing/.test(t)) return 'checking';
   if (/saving/.test(t)) return 'savings';
+  if (kind === 'bank') return 'checking';
   return 'credit'; // visa/card/credit/amex/etc. and the default
 }
 
@@ -45,15 +48,20 @@ export function labelFromFilename(filename) {
   return accountWords(filename).join(' ').slice(0, 30).trim() || 'Account';
 }
 
-// Suggest (never silently decide): the existing account whose label's account
-// words all appear in the file name — "td-checking-apr-jun.csv" → "td
-// checking"; the most words wins, the first seen breaks a tie. A name with no
-// account words ("statement-2026-08.pdf") can only be a labelled account whose
-// label has none either, and only of the type the name suggests — so a chequing
-// statement never lands on a card.
-export function bestAccountMatch(filename, accounts) {
+// Suggest (never silently decide): the account labelled with this very file
+// name ("July 6, 2026.pdf", or a "(1)" copy of it, is the account its first
+// import made); else the existing account whose label's account words all
+// appear in the file name — "td-checking-apr-jun.csv" → "td checking"; the
+// most words wins, the first seen breaks a tie. A name with no account words
+// ("statement-2026-08.pdf") can only be a labelled account whose label has
+// none either, and only of the type the name — or, when it says nothing, the
+// statement (`kind`, see guessType) — gives: a bank statement never lands on a
+// card, nor a card's on a chequing account.
+export function bestAccountMatch(filename, accounts, kind = null) {
+  const same = sameName(filename, accounts);
+  if (same) return same;
   const ftoks = tokens(filename);
-  if (!ftoks.size) return genericMatch(guessType(filename), accounts);
+  if (!ftoks.size) return genericMatch(guessType(filename, kind), accounts);
   let best = null, bestN = 0;
   for (const [id, a] of Object.entries(accounts || {})) {
     const ltoks = [...tokens(a?.label)];
@@ -61,6 +69,17 @@ export function bestAccountMatch(filename, accounts) {
     if (ltoks.length && hit === ltoks.length && hit > bestN) { best = id; bestN = hit; }
   }
   return best;
+}
+
+// A file name as a whole, for "is this the file that account was named from":
+// no extension, "Copy of" or "(1)" copy suffix, case or punctuation.
+const nameKey = (text) => stem(text).replace(/\s*\(\d+\)$/, '').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean).join(' ');
+
+function sameName(filename, accounts) {
+  const key = nameKey(filename);
+  if (!key) return null;
+  const hit = Object.entries(accounts || {}).find(([, a]) => a?.label && nameKey(a.label) === key);
+  return hit ? hit[0] : null;
 }
 
 function genericMatch(type, accounts) {

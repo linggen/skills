@@ -39,8 +39,11 @@ t('E0 fixtures present', names.length >= 4, names.join(', '));
 const rows = [], accounts = {}, truthOf = new Map();
 for (const n of names) {
   const truth = JSON.parse(fs.readFileSync(path.join(DIR, `${n}.truth.json`), 'utf8'));
-  const { transactions: got } = await pdfToTransactions(new Uint8Array(fs.readFileSync(path.join(DIR, `${n}.pdf`))));
+  const { transactions: got, kind } = await pdfToTransactions(new Uint8Array(fs.readFileSync(path.join(DIR, `${n}.pdf`))));
   t(`${n}: row count`, got.length === truth.rows.length, `${got.length} of ${truth.rows.length}`);
+  // What the statement is picks the account when its file name says nothing.
+  t(`${n}: a ${truth.account_type} statement reads as ${truth.account_type === 'credit' ? 'a card' : 'a bank'}'s`,
+    kind === (truth.account_type === 'credit' ? 'credit' : 'bank'), kind);
   const bad = [];
   truth.rows.forEach((w, i) => {
     const g = got[i];

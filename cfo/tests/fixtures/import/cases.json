@@ -159,6 +159,47 @@
       "accounts": {},
       "filename": "Marriott Bonvoy Aug2026.pdf",
       "expect": { "match": null, "label": "Marriott Bonvoy", "type": "credit" }
+    },
+    {
+      "name": "the same file name finds the account its first import made",
+      "accounts": { "acct_mc": { "label": "September 4, 2026", "type": "credit" }, "acct_jul": { "label": "July 6, 2026", "type": "checking" } },
+      "filename": "July 6, 2026.pdf",
+      "kind": "bank",
+      "expect": { "match": "acct_jul", "label": "Account", "type": "checking" }
+    },
+    {
+      "name": "a copy of that file finds it too, whatever the statement says",
+      "accounts": { "acct_mc": { "label": "September 4, 2026", "type": "credit" }, "acct_jul": { "label": "July 6, 2026", "type": "checking" } },
+      "filename": "July 6, 2026 (1).pdf",
+      "expect": { "match": "acct_jul", "label": "Account", "type": "credit" }
+    },
+    {
+      "name": "a dated bank statement lands on the bank account, not the card",
+      "accounts": { "acct_mc": { "label": "September 4, 2026", "type": "credit" }, "acct_jul": { "label": "July 6, 2026", "type": "checking" } },
+      "filename": "August 6, 2026.pdf",
+      "kind": "bank",
+      "expect": { "match": "acct_jul", "label": "Account", "type": "checking" }
+    },
+    {
+      "name": "a dated card statement lands on the card, not the bank account",
+      "accounts": { "acct_jul": { "label": "July 6, 2026", "type": "checking" }, "acct_jun": { "label": "June 5, 2026", "type": "checking" }, "acct_mc": { "label": "September 4, 2026", "type": "credit" } },
+      "filename": "October 4, 2026.pdf",
+      "kind": "credit",
+      "expect": { "match": "acct_mc", "label": "Account", "type": "credit" }
+    },
+    {
+      "name": "a new dated bank statement is a chequing account",
+      "accounts": {},
+      "filename": "August 6, 2026.pdf",
+      "kind": "bank",
+      "expect": { "match": null, "label": "Account", "type": "checking" }
+    },
+    {
+      "name": "a bank statement never lands on a card",
+      "accounts": { "acct_mc": { "label": "September 4, 2026", "type": "credit" } },
+      "filename": "August 6, 2026.pdf",
+      "kind": "bank",
+      "expect": { "match": null, "label": "Account", "type": "checking" }
     }
   ]
 }

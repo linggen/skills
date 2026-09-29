@@ -176,6 +176,13 @@ export function isInbound(line, amtTok, cols = null, card = false) {
 
 // Pure, testable: statement lines -> [{date, merchant, amount}]. Spend negative.
 // A line is a string or {text, cells} (cells carry x for column reading).
+// What the statement is: 'credit' when it prints what only a card prints
+// (credit limit, minimum payment…), else 'bank'. The import picks the account
+// type with it when the file name says nothing (accounts.js guessType).
+export function statementKind(input) {
+  return input.some((l) => CARD_RE.test(typeof l === 'string' ? l : l.text)) ? 'credit' : 'bank';
+}
+
 export function parseStatementText(input) {
   const lines = input.map((l) => (typeof l === 'string' ? { text: l } : l));
   const close = statementClose(lines.map((l) => l.text));
@@ -224,7 +231,7 @@ export function parseStatementText(input) {
   return txns;
 }
 
-// arrayBuffer -> { transactions, notes }. Notes flag the best-effort nature.
+// arrayBuffer -> { transactions, notes, currency, kind }. Notes flag the best-effort nature.
 export async function pdfToTransactions(arrayBuffer) {
   const lines = await extractPdfText(arrayBuffer);
   const txns = parseStatementText(lines);
@@ -234,5 +241,5 @@ export async function pdfToTransactions(arrayBuffer) {
   }
   // The account's currency, when the statement names it (currency.js).
   const cur = detectCurrency(lines.map((l) => (typeof l === 'string' ? l : l.text)).join('\n'));
-  return { transactions: txns, notes, currency: cur.currency, currency_ambiguous: cur.ambiguous };
+  return { transactions: txns, notes, currency: cur.currency, currency_ambiguous: cur.ambiguous, kind: statementKind(lines) };
 }

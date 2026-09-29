@@ -543,7 +543,7 @@ function stageImport(ctx) {
     return Promise.resolve(null);
   }
   return new Promise((resolve) => {
-    const match = bestAccountMatch(ctx.filename, ACCOUNTS);
+    const match = bestAccountMatch(ctx.filename, ACCOUNTS, ctx.kind);
     STAGING = {
       ...ctx,
       // Default to the pre-filled New account (label + type guessed from the
@@ -552,7 +552,7 @@ function stageImport(ctx) {
       // "empty file". The account picker is still right there to switch/merge.
       accountId: match || '__new__',
       newLabel: labelFromFilename(ctx.filename),
-      newType: guessType(ctx.filename),
+      newType: guessType(ctx.filename, ctx.kind),
       catEdits: {},
       resolve,
     };
@@ -921,12 +921,13 @@ async function afterCategoriesChanged() {
 // ── Import: parse → resolve account → orient signs → reconcile → render.
 async function importFile(file, fileIdx = 0, fileCount = 1, opts = {}) {
   const isPdf = /\.pdf$/i.test(file.name) || file.type === 'application/pdf';
-  let transactions, fingerprint = null, notes = [], detected = { currency: null, ambiguous: [] };
+  let transactions, fingerprint = null, notes = [], detected = { currency: null, ambiguous: [] }, kind = null;
   if (isPdf) {
     const { pdfToTransactions } = await import('./pdf-import.js');
     const res = await pdfToTransactions(await file.arrayBuffer());
     transactions = res.transactions; notes = res.notes || [];
     detected = { currency: res.currency || null, ambiguous: res.currency_ambiguous || [] };
+    kind = res.kind || null;
   } else {
     const r = analyzeCsv(await file.text(), analyzeOpts());
     if (r.errors && r.errors.length) throw new Error([...(r.notes || []), ...r.errors].join(' '));
@@ -942,7 +943,7 @@ async function importFile(file, fileIdx = 0, fileCount = 1, opts = {}) {
     // Folder-watch only auto-imports files for accounts it already knows — it
     // never pops the account modal unprompted (a stray CSV stays untouched).
     if (opts.autoOnly) return { file: file.name, skipped: 'unknown-account' };
-    accountId = await stageImport({ transactions, fingerprint, filename: file.name, fileIdx, fileCount });
+    accountId = await stageImport({ transactions, fingerprint, kind, filename: file.name, fileIdx, fileCount });
     if (!accountId) { setStatus(`Skipped ${file.name} — no account chosen.`); return { file: file.name, skipped: true }; }
   }
 
