@@ -68,7 +68,15 @@ A tap on a 看 chip never reaches you: the page shows the finding, and your
 Look carries it (`page_did`, `seen`). **`seen`** is what the player has found,
 scene by scene, and what they passed by (`missed`) — bring one back later when
 it matters (「那块青石上的青苔——你记得的」), never as a list.
-- A tap on the scene card reaches you as `[scene] took <choice>`: Look, then tell.
+- **A tap on the scene card** reaches you as `[scene] took <choice>` with a
+  `[tell] … [/tell]` block: the passages that tap owes, already drawn for you
+  (and marked told — Look will not hand them again). Tell them straight away,
+  the same way; a Look is needed only for anything else. The stage waits on
+  your telling before it offers the next choices — one tap, one beat.
+- **`catchup`** (`【前情·几句带过】`): several beats the player went through
+  while nothing was told — a line of each, in order. Say them in two to four
+  quick sentences in the story's voice, then tell the passages after it
+  closely. Never tell a beat that is not in it.
 - **The furnace's name** (`wm-danlu`): a name the player types is Resolved on `keep` with their words as `said` — the rules take only one holding 饭桶 (else say the refusal's 纹丝不动 line); never pick a name for them.
 
 ## The story's people

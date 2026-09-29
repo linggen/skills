@@ -99,6 +99,65 @@ test('the command line: Ling is handed each passage once — a new game\'s first
   }
 });
 
+test('one tap, one beat: the page draws the passages a tap owes for its report (Tell) — on any model, Look or none — and marks them told', () => {
+  const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-tell-'));
+  const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
+  const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: ROOT, env, encoding: 'utf8' }).stdout);
+  try {
+    cli('init', '--lang=zh');
+    cli('look', '--said=[scene] opened', '--for=ling');
+    cli('resolve', '--exit=name', '--value=墨白', '--gender=male');
+    cli('resolve', '--exit=strike', '--said=攥紧拳头');
+    const t = cli('tell');
+    assert.deepEqual(t.tell.map(i => i.id), ['00-masan/strike', '00-dawn']);
+    assert.match(t.report, /^\[tell\] /);
+    assert.match(t.report, /【选择之后】\n.*你攥紧了拳头/s);
+    assert.match(t.report, /【此景】\n.*是隔壁的阿禾/s);
+    assert.match(t.report, /\[\/tell\]$/);
+    assert.deepEqual(cli('tell').tell, [], 'drawn once');
+    const l = cli('look', '--said=[scene] took 攥紧拳头', '--for=ling');
+    assert.equal(l.tell, undefined, 'Ling\'s Look does not hand them twice');
+    assert.equal(cli('tell', '--for=ling').ok, false, 'the page\'s alone');
+  } finally {
+    fs.rmSync(data, { recursive: true, force: true });
+  }
+});
+
+test('nothing lost: a scene is owed the moment it is entered; past two owed, the older ones fold into a catch-up of recaps', () => {
+  // tapped through, never told: each exit's passage and each scene entered
+  let s = walk(start(), [['resolve', { exit: 'name', value: '墨白', gender: 'male' }]], content, NOW);
+  s = { ...s, tell_owed: [], told_scenes: ['00-shiao', '00-masan'] };
+  for (const exit of ['endure', 'egg']) s = resolve(s, content, ctx(), { exit }).state;
+  assert.deepEqual(s.tell_owed, ['00-masan/endure', 'scene/00-dawn', '00-dawn/egg', 'scene/00-kitchen']);
+  const out = tellOf(content, s);
+  assert.deepEqual(out.tell.map(i => i.id), ['catchup', '00-dawn/egg', '00-kitchen']);
+  assert.deepEqual(out.tell[0].ids, ['00-masan/endure', '00-dawn']);
+  assert.equal(out.tell[0].of, 'catchup');
+  assert.equal(out.tell[0].text, '马三来收租：还差一张鹿皮、二十斤肉，不然拿走爷爷的弓；马小宝推了你一把，碗碎了。', 'the scene the whole passages stand in is not caught up twice');
+  assert.deepEqual(out.keep.tell_owed, []);
+  assert.ok(['00-dawn', '00-kitchen'].every(id => out.keep.told_scenes.includes(id)));
+  assert.equal(tellOf(content, out.keep), null, 'told once');
+  // an old save's owed exit keys owe the scenes they walked into
+  const old = { ...s, tell_owed: ['00-masan/endure', '00-dawn/egg'] };
+  assert.deepEqual(tellOf(content, old).tell[0].ids, ['00-masan/endure', '00-dawn']);
+  // two owed are told whole
+  const two = { ...s, tell_owed: ['00-dawn/egg', 'scene/00-kitchen'], told_scenes: [...s.told_scenes, '00-dawn'] };
+  assert.deepEqual(tellOf(content, two).tell.map(i => i.of), ['choice', 'scene']);
+});
+
+test('the scene card holds its choices while Ling tells, and shows the book\'s text when her telling does not come', () => {
+  const s = walk(start('zh'), [['resolve', { exit: 'name', value: '墨白', gender: 'male' }]], content, NOW);
+  const l = look(s, content, ctx());
+  const tell = [{ of: 'scene', id: '00-masan', text: '**马三**：租呢？\n\n屋里，安静了。' }];
+  const waiting = cardHtml({ card: 'panel' }, page(l, { telling: { tell, shown: false } }));
+  assert.match(waiting, /class="small dim telling">灵正在讲……</);
+  assert.doesNotMatch(waiting, /data-panel-exit/, 'no second tap while she tells');
+  const shown = cardHtml({ card: 'panel' }, page(l, { telling: { tell, shown: true } }));
+  assert.match(shown, /<div class="scenetold"><p>马三：租呢？<\/p><p>屋里，安静了。<\/p><\/div>/);
+  assert.match(shown, /data-panel-exit="endure"/, 'the choices come back with the text');
+  assert.equal(WORDS.en.lingTelling, 'Ling is telling it…');
+});
+
 test('her words are hers while she is present: marked for Ling, handed to her; asleep, the story tells them', () => {
   const valley = walk(start(), TO_VALLEY, content, NOW);
   assert.equal(valley.scene, '00-yinyue');

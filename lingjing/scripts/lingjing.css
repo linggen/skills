@@ -1063,3 +1063,8 @@ body.fighting .atmos { display: none; }
 .closecard .closedid { margin: 0 auto 12px; max-width: 34em; font-size: 14.5px; line-height: 1.8; }
 .closecard .closetease { margin: 0 auto 14px; max-width: 34em; font-family: var(--serif); font-size: 15px; line-height: 1.9; color: var(--dim); text-align: left; text-indent: 2em; }
 .closecard .closecoming { display: inline-block; padding: 3px 14px; border: 1px solid var(--line); border-radius: 99px; font-size: 13px; letter-spacing: .15em; color: var(--ling); }
+/* A tap's telling (lingjing.js reportTelling): the wait, and the book's text when Ling's does not come. */
+.panelcard .telling { margin: 8px 4px 2px; letter-spacing: .08em; animation: telling 1.6s ease-in-out infinite alternate; }
+@keyframes telling { from { opacity: .45; } to { opacity: 1; } }
+.panelcard .scenetold { margin: 10px 4px 4px; max-height: 42vh; overflow-y: auto; font-family: var(--serif); font-size: 15px; line-height: 1.8; }
+.panelcard .scenetold p { margin: 0 0 .5em; }

@@ -112,7 +112,7 @@ function streamEnd() {
   const did = [];
   const scope = {
     did, streaming: true, recapSent: 'x', veil: { turns: 0 }, look: {},
-    turnEnded: () => did.push('turnEnded'), recapTold: () => did.push('recapTold'),
+    turnEnded: () => did.push('turnEnded'), recapTold: () => did.push('recapTold'), tellingLanded: () => did.push('tellingLanded'),
     voice: { heard: () => did.push('heard') }, refresh: () => { did.push('refresh'); return Promise.resolve(); },
     cheer() {}, nudgeTrial() {},
   };
@@ -127,13 +127,13 @@ test("onStreamEnd: only Ling's stream ends the turn; hers is only a line heard",
   assert.equal(her.scope.streaming, true, 'the turn is still on');
   const ling = streamEnd();
   ling.fn('...', { agent: 'ling', own: true });
-  assert.deepEqual(ling.scope.did, ['turnEnded', 'heard', 'recapTold', 'refresh']);
+  assert.deepEqual(ling.scope.did, ['tellingLanded', 'turnEnded', 'heard', 'recapTold', 'refresh']);
   assert.equal(ling.scope.veil.turns, 1);
   // A bridge that names no agent (before linggen f764ef9) streams Ling alone.
   const old = streamEnd();
   old.fn('...');
   assert.ok(old.scope.did.includes('turnEnded'));
-  assert.match(SRC, /onStreamToken: \(_text, info\) => \{ if \(info\?\.own !== false\) streaming = true; \}/);
+  assert.match(SRC, /onStreamToken: \(_text, info\) => \{ if \(info\?\.own !== false\) \{ streaming = true; if \(view\.telling\) view\.telling\.heard = true; \} \}/);
 });
 
 /// The mount's onContentBlock over the page's own, run with stubs.

@@ -646,7 +646,7 @@ did not give; the rules fill 师兄 · 师姐 and 阿禾 from the name card.
 - **A result's `guide` is the rules of what just began** — read it and follow
   it from then on. It comes once a session; the **Guide** tool reads any part
   again by name.
-- **小人书**: scene cards and choices on the stage; `tell` is your story (guide `tell`).
+- **小人书**: scene cards, choices on stage; `tell`/`[tell]` is your story (guide `tell`).
 
 ## Opening
 

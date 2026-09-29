@@ -46,31 +46,88 @@ export function spanLines(content, stories) {
   return text.zh || text.en ? [{ who: c.id, text }] : [];
 }
 
-/* An exit taken with a passage of its own: owed until Ling is handed it.
-   A spine scene played again owes nothing (it was told). */
+/* A move owes Ling its passages: the exit's own (when it has one), and the
+   scene it walks into (`scene/<id>`), recorded the moment the player ENTERS
+   it — a scene tapped through before anyone Looked is still told (seen
+   2026-09-29: eight choices tapped while a fallback model never Looked, and
+   five scenes' passages were lost). A spine scene played again owes nothing. */
 export function oweExit(s, scene, exit, replay) {
-  if (!exit.story || replay || inMade(s)) return;
-  s.tell_owed = [...(s.tell_owed ?? []), `${scene.id}/${exit.id}`];
+  if (replay || inMade(s)) return;
+  const owed = [...(s.tell_owed ?? [])];
+  if (exit.story) owed.push(`${scene.id}/${exit.id}`);
+  if (exit.next) owed.push(`scene/${exit.next}`);
+  if (owed.length !== (s.tell_owed ?? []).length) s.tell_owed = owed;
 }
 
-/* What Ling is owed now, in order — the choices' outcomes, then the scene
-   she stands in when it has a passage she has not been handed — and the
-   save with it marked told. Null when nothing is owed. */
+/* More than this many passages owed at once, and the older ones are told as
+   a catch-up (their scenes' `recap` lines): a stale run skips cleanly. */
+export const CATCHUP_OVER = 2;
+
+const findScene = (content, sid) => Object.values(content.chapters).map(c => c.scenes?.[sid]).find(Boolean);
+
+/* What Ling is owed now, in order — each choice's outcome, the scene it
+   walked into, and the scene she stands in when it has a passage she has not
+   been handed — and the save with it marked told. More than two owed: the
+   older ones fold into one `catchup` item (the recaps of their scenes, in
+   order), the last two stay whole. Null when nothing is owed. An owed exit
+   key from before `scene/` keys (an old save) owes its next scene too. */
 export function tellOf(content, state) {
   if (inMade(state)) return null;
   const scenes = content.chapters[state.chapter]?.scenes ?? {};
-  const items = [];
+  const told = new Set(state.told_scenes ?? []);
+  const items = [], seen = new Set();
+  const addScene = (sid) => {
+    const sc = findScene(content, sid);
+    if (!sc?.story || told.has(sid) || seen.has(`scene/${sid}`)) return;
+    seen.add(`scene/${sid}`); told.add(sid);
+    const text = passageFor(content, state, sc.story);
+    if (text) items.push({ of: 'scene', id: sid, text });
+  };
   for (const key of state.tell_owed ?? []) {
     const [sid, eid] = key.split('/');
-    const exit = Object.values(content.chapters).map(c => c.scenes[sid]).find(Boolean)?.exits?.find(e => e.id === eid);
-    const text = exit?.story ? passageFor(content, state, exit.story) : null;
-    if (text) items.push({ of: 'choice', id: key, text });
+    if (sid === 'scene') { addScene(eid); continue; }
+    const exit = findScene(content, sid)?.exits?.find(e => e.id === eid);
+    const text = exit?.story && !seen.has(key) ? passageFor(content, state, exit.story) : null;
+    if (text) { seen.add(key); items.push({ of: 'choice', id: key, text }); }
+    if (exit?.next) addScene(exit.next);
   }
-  const scene = sceneOf(content, state), told = state.told_scenes ?? [];
-  if (scene?.story && scenes[scene.id] && !told.includes(scene.id)) items.push({ of: 'scene', id: scene.id, text: passageFor(content, state, scene.story) });
+  const scene = sceneOf(content, state);
+  if (scene?.story && scenes[scene.id]) addScene(scene.id);
   if (!items.length && !(state.tell_owed ?? []).length) return null;
-  const keep = { ...state, tell_owed: [], told_scenes: scene?.story && !told.includes(scene.id) ? [...told, scene.id] : told };
-  return { tell: items, keep };
+  const keep = { ...state, tell_owed: [], told_scenes: [...told] };
+  return { tell: caughtUp(content, state, items), keep };
+}
+
+/* The older passages folded into their scenes' recaps (one line each, in
+   order); the last two kept whole. */
+function caughtUp(content, state, items) {
+  if (items.length <= CATCHUP_OVER) return items;
+  const older = items.slice(0, -CATCHUP_OVER), last = items.slice(-CATCHUP_OVER);
+  const whole = new Set(last.map(i => i.of === 'scene' ? i.id : i.id.split('/')[0]));
+  const sids = [...new Set(older.map(i => (i.of === 'scene' ? i.id : i.id.split('/')[0])))].filter(sid => !whole.has(sid));
+  const lines = sids.map(sid => {
+    const sc = findScene(content, sid);
+    return fill(pick(sc?.recap, state.lang) ?? pick(sc?.setup, state.lang), state, content);
+  }).filter(Boolean);
+  return lines.length ? [{ of: 'catchup', id: 'catchup', ids: older.map(i => i.id), text: lines.join('\n') }, ...last] : last;
+}
+
+const HEAD = {
+  zh: '[tell] 灵，这是玩家刚走过的书中原文，照着讲——贴着原文、保留对白、按玩家的名字与选择改写；不列选项（guide `tell`）。',
+  en: '[tell] Ling: the book\'s own passages the player just walked through — tell them closely, every line of dialogue kept, fitted to the player; never list the choices (guide `tell`).',
+};
+const PART = {
+  zh: { catchup: '【前情·几句带过】', choice: '【选择之后】', scene: '【此景】' },
+  en: { catchup: '[Catch-up — a few lines]', choice: '[After the choice]', scene: '[This scene]' },
+};
+
+/* The passages as the page's report carries them to Ling (lingjing.js):
+   one block after `[scene] took …`, read by any model without a tool call. */
+export function tellReport(tell, lang = 'zh') {
+  if (!tell?.length) return '';
+  const part = PART[lang] ?? PART.zh;
+  const body = tell.map(t => `${part[t.of] ?? ''}\n${t.text}`).join('\n\n');
+  return `${HEAD[lang] ?? HEAD.zh}\n\n${body}\n[/tell]`;
 }
 
 export { MARK };

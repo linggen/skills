@@ -198,6 +198,7 @@ const view = {
   fateOpen: false, fateDraft: '', fateError: false, // the 命格 form: shown again, the date typed, a date refused
   refineMat: null, refineName: '', refineNote: null, // 炼化本命 on the card: the material picked, the name typed, a refusal
   panelBusy: null, panelNote: null, // a 连环画 panel's choice in flight, or its refusal
+  telling: null, // {tell, scene, shown, ends, heard}: a tap's passages, held for Ling's telling (reportTelling)
   lookBusy: null, // a 看 chip's look in flight (rules/examine.mjs)
   ledgerOpen: false, // the 恩仇簿 chip's popover
   wxOpen: false, wxSense: null, wxNote: null, // the weather chip's popover: the engine's sense as read, a note
@@ -271,7 +272,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, panelBusy: view.panelBusy, panelNote: view.panelNote, lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, valueGender: view.valueGender, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, panelBusy: view.panelBusy, panelNote: view.panelNote, telling: tellingNow(), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, valueGender: view.valueGender, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -1353,7 +1354,7 @@ function turnEnded() {
 /// user widget", 2026-09-17 — the skill declares the queue).
 function deliver(text, hidden) {
   // A scratch save (?save=) never messages Ling: the word is shown, the turn ends.
-  if (SCRATCH) { keep({ doNote: `${SCRATCH_BADGE} · ${text}` }); turnEnded(); scratchTakes(text); return; }
+  if (SCRATCH) { keep({ doNote: `${SCRATCH_BADGE} · ${text.split('\n')[0]}` }); turnEnded(); scratchTakes(text); return; }
   if (hidden) chat?.sendHidden(text);
   else chat?.send(text);
 }
@@ -1549,21 +1550,66 @@ async function valueTap(exitId) {
   await refresh();
   // The city row, when filled: the engine's weather sense takes it (sky.js).
   if (r.ok && skyDraft.city.trim()) await setSense({ city: skyDraft.city.trim() });
-  if (r.ok) await report(`[scene] named ${r.named?.value ?? chosen}`);
+  if (r.ok) await reportTelling(`[scene] named ${r.named?.value ?? chosen}`);
 }
 
 /* A 连环画 panel's choice (cards.js panel): the page Resolves the exit itself,
-   and Ling hears `[scene] took <label>` — her Look carries the passages the
-   choice owes (rules/tell.mjs `tell`), and she tells the story in the chat.
-   Refused (a need not met), the panel says why and nothing moves. */
+   and Ling hears `[scene] took <label>` with the passages the choice owes
+   (`[tell]`, reportTelling) and tells the story in the chat. Refused (a need
+   not met), the panel says why and nothing moves. One tap, one beat: while
+   Ling is telling the last one, the choices wait. */
 async function panelTap(exitId, label) {
-  keep({ panelBusy: exitId, panelNote: null });
+  if (view.telling && !view.telling.shown) return;
+  keep({ panelBusy: exitId, panelNote: null, telling: null });
   render();
   const r = await write('resolve', { exit: exitId, said: label }).catch(failed);
   // A tap on a choice the story already moved past (a second tap in flight) is no refusal to show.
   keep({ panelBusy: null, panelNote: r.ok || r.refused === 'unknown-exit' ? null : refusal(r) });
   await refresh();
-  if (r.ok) await report(`[scene] took ${r.chose ?? label}`);
+  if (r.ok) await reportTelling(`[scene] took ${r.chose ?? label}`);
+}
+
+/* One tap, one beat (Hanli, 2026-09-29). The passages a tap owes ride in its
+   hidden report — `[tell]`, drawn by the rules' Tell and marked told there
+   (rules/tell.mjs) — so Ling tells them on any model, whether or not she
+   Looks (a fallback model that never called Look told a story of its own
+   while the stage walked on). The scene card holds its choices behind
+   「灵正在讲……」 until her run for that report ends; no reply within
+   TELL_WAIT_MS, a run that never ends, or a send that failed, and the card
+   shows the book's own text itself — the player is never stuck. */
+const TELL_WAIT_MS = 25000, TELL_MAX_MS = 90000;
+let tellTimer = null;
+const tellingNow = () => (view.telling && view.telling.scene === (look?.scene?.id ?? null) ? view.telling : null);
+async function reportTelling(line) {
+  const t = await write('tell').catch(() => null);
+  const tell = t?.ok && t.tell?.length ? t.tell : null;
+  if (tell) holdForTelling(tell);
+  await report(tell && t.report ? `${line}\n${t.report}` : line);
+}
+function holdForTelling(tell) {
+  clearTimeout(tellTimer);
+  // A scratch save has no Ling: the book's text shows at once.
+  keep({ telling: { tell, scene: look?.scene?.id ?? null, shown: Boolean(SCRATCH), ends: streaming ? 2 : 1, heard: false } });
+  render();
+  if (SCRATCH) return;
+  tellTimer = setTimeout(() => {
+    if (view.telling?.heard) tellTimer = setTimeout(tellingFailed, TELL_MAX_MS - TELL_WAIT_MS);
+    else tellingFailed();
+  }, TELL_WAIT_MS);
+}
+function tellingFailed() {
+  clearTimeout(tellTimer);
+  tellTimer = null;
+  if (view.telling && !view.telling.shown) show({ telling: { ...view.telling, shown: true } });
+}
+/* Her run ended: the telling landed (a run already going when the tap came ends first). */
+function tellingLanded() {
+  const t = view.telling;
+  if (!t || t.shown) return;
+  if (t.ends > 1) { t.ends -= 1; return; }
+  clearTimeout(tellTimer);
+  tellTimer = null;
+  keep({ telling: null });
 }
 
 /* 看 — a hotspot on the scene card (cards.js lookHtml): the rules look
@@ -1593,7 +1639,7 @@ async function bornTap(kind) {
   const r = await write('resolve', { exit: exit.id, ...(kind === 'birth' ? { birth: view.bornDraft } : { skip: 'true' }) }).catch(failed);
   keep({ bornDraft: '', bornError: !r.ok && r.refused === 'birth-invalid', doNote: r.ok || r.refused === 'birth-invalid' ? null : refusal(r) });
   await refresh();
-  if (r.ok) await report(`[scene] born ${r.born?.roots?.name ?? ''}`);
+  if (r.ok) await reportTelling(`[scene] born ${r.born?.roots?.name ?? ''}`);
 }
 
 /* A beast's first sight (creatures.json `appear`): played once over the stage
@@ -2325,9 +2371,12 @@ async function mountChat() {
     // voice budget stays quiet after she talks. A bridge that names no agent
     // (`info` absent) streams Ling alone.
     guestStreams: true,
-    onStreamToken: (_text, info) => { if (info?.own !== false) streaming = true; },
+    // A word that never reached the engine: a tap's telling shows on the stage instead.
+    onSendFailed: () => tellingFailed(),
+    onStreamToken: (_text, info) => { if (info?.own !== false) { streaming = true; if (view.telling) view.telling.heard = true; } },
     onStreamEnd: (_text, info) => {
       if (info?.own === false) { voice.heard(); return; }
+      tellingLanded();
       turnEnded();
       voice.heard();
       streaming = false;

@@ -4,7 +4,7 @@
 //
 //   node rules.mjs <verb> [--key value …]
 //   verbs: init look progress story resolve judge task win duel tame refine tale summarize move trade lang make enter leave
-//          build worlds travel amend art go saves save load forget seclude undo seed shift
+//          build worlds travel amend art go saves save load forget seclude undo seed shift tell (the page's)
 //   --save=<name> on any verb plays a scratch save in data/saves/<name>/ (files.mjs);
 //   `seed --save=<name> --from=fresh|real|<fixture>` begins it (never touching data/state.json);
 //   `shift --save=<name> --days=N` sets its clock N days ahead (the 大比's real day, in a check).
@@ -39,7 +39,7 @@ import { recapFacts } from './rules/recap.mjs';
 import { guideVerb, withGuides } from './rules/guide.mjs';
 import { atScene } from './rules/world.mjs';
 import { markBeen } from './rules/inkmap.mjs';
-import { tellOf } from './rules/tell.mjs';
+import { tellOf, tellReport } from './rules/tell.mjs';
 import { BUILDING_WAITS, keepDay, keepSave, paintList, readSave } from './rules/worlds.mjs';
 
 export { refine, TREASURE_TOP } from './rules/arms.mjs';
@@ -130,6 +130,9 @@ function runLocked(verb, args, stateFile, reader) {
     return { ...look(state, content, { now, quests: readQuests() }), restarted: !!saved };
   }
 
+  // The page's report carries the passages a tap owes (rules/tell.mjs): drawn
+  // here and marked told, so Ling hears them on any model, tool call or none.
+  if (verb === 'tell' && !reader) return pageTell(content, state, stateFile);
   const fn = VERBS[verb];
   if (!fn) return { ok: false, refused: 'unknown-verb', verbs: ['init', ...Object.keys(VERBS), 'undo'] };
   if (BUILDING_WAITS.has(verb)) {
@@ -273,6 +276,16 @@ function shift(args) {
   if (days) writeAtomic(shiftFile(), JSON.stringify({ days }) + '\n');
   else fs.rmSync(shiftFile(), { force: true });
   return { ok: true, days: shiftDays(), now: clock().toISOString(), save: scratchName() };
+}
+
+/* Tell — the page's own: the passages owed, as its hidden report carries
+   them to Ling (`[scene] took …` + `[tell]`), and the save with them marked
+   told. Never logged: Undo takes back moves, not what she was told. */
+function pageTell(content, state, stateFile) {
+  const telling = tellOf(content, state);
+  if (!telling) return { ok: true, tell: [] };
+  writeAtomic(stateFile, JSON.stringify({ ...state, tell_owed: telling.keep.tell_owed, told_scenes: telling.keep.told_scenes }));
+  return { ok: true, tell: telling.tell, ...(telling.tell.length ? { report: tellReport(telling.tell, state.lang) } : {}) };
 }
 
 /* A passage owed is told before anything else the answer asks (rules/tell.mjs):
