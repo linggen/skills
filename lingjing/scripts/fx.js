@@ -125,7 +125,12 @@ export async function playHoming(slot, { geo, ink, province, frame, paint, names
   root.addChild(cam);
   cam.addChild(new PIXI.Graphics().rect(0, 0, geo.w, geo.h).fill(0xf5efe1));
 
-  const tex = await PIXI.Assets.load(paint.href);
+  // The painting, from a fresh image each moment: a texture cached across Applications
+  // is left bound to a destroyed renderer (seen live: a second moment drew blank paper).
+  const img = new Image();
+  img.src = paint.href;
+  await img.decode();
+  const tex = PIXI.Texture.from(img);
   const painting = (alpha) => { const s = new PIXI.Sprite(tex); s.width = geo.w; s.height = geo.h; s.alpha = alpha; return s; };
   const clipped = (p) => {
     const c = new PIXI.Container();
@@ -166,11 +171,11 @@ export async function playHoming(slot, { geo, ink, province, frame, paint, names
   const whole = painting(1);
   here.addChild(whole, soakMask);
   whole.mask = soakMask;
-  const bleed = new PIXI.Graphics().circle(0, 0, R).stroke({ width: R * 0.03, color: 0x231f1a, alpha: 1 });
+  const bleed = new PIXI.Graphics().circle(0, 0, R).stroke({ width: R * 0.012, color: 0x231f1a, alpha: 1 });
   bleed.position.set(find[0], find[1]);
   bleed.scale.set(0.001);
   bleed.alpha = 0;
-  bleed.filters = [new PIXI.DisplacementFilter({ sprite: fibres2, scale: R * 0.22 }), new PIXI.BlurFilter({ strength: 3 })];
+  bleed.filters = [new PIXI.DisplacementFilter({ sprite: fibres2, scale: R * 0.22 }), new PIXI.BlurFilter({ strength: 2 })];
   here.addChild(bleed, fibres2);
   const drop = new PIXI.Graphics().circle(0, 0, geo.w * 0.006).fill(0x231f1a);
   drop.position.set(find[0], find[1] - geo.h * 0.12);
@@ -211,7 +216,7 @@ export async function playHoming(slot, { geo, ink, province, frame, paint, names
     .to(drop.position, { y: find[1], duration: 0.4, ease: 'power2.in' }, at(HOMING_MS.drop))
     .to(drop, { alpha: 0, duration: 0.3 }, at(HOMING_MS.spread) + 0.05)
     .to([blob.scale, bleed.scale], { x: 1, y: 1, duration: 3, ease: 'power1.inOut' }, at(HOMING_MS.spread))
-    .to(bleed, { keyframes: [{ alpha: 0.75, duration: 0.5 }, { alpha: 0.3, duration: 1.6 }, { alpha: 0, duration: 0.9 }] }, at(HOMING_MS.spread))
+    .to(bleed, { keyframes: [{ alpha: 0.45, duration: 0.5 }, { alpha: 0.2, duration: 1.6 }, { alpha: 0, duration: 0.9 }] }, at(HOMING_MS.spread))
     .to(rivers, { strokeDashoffset: 0, duration: 1.6, ease: 'power1.out', stagger: 0.02 }, at(HOMING_MS.rivers))
     .to(waters, { keyframes: [{ strokeWidth: 7, duration: 0.6 }, { strokeWidth: 1, duration: 1 }] }, at(HOMING_MS.rise))
     .to(moons, { opacity: 1, y: 0, duration: 1.2, ease: 'power2.out' }, at(HOMING_MS.moons));
@@ -233,6 +238,7 @@ export async function playHoming(slot, { geo, ink, province, frame, paint, names
       app.ticker.remove(drawSoak);
       rt.destroy(true);
       app.destroy(true, { children: true });
+      for (const t of [tex, fibreTex, grainTex]) t.destroy(true);
       host.remove();
     },
   };

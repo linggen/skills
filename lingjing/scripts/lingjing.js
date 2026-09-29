@@ -2441,7 +2441,11 @@ async function watchHoming() {
   if (fresh) playHoming(fresh);
   watchUnroll();
 }
+let homingFor = null; // the province whose moment is on its way: one moment per 鼎, never two
 async function playHoming(province) {
+  if (homingFor === province) return;
+  homingFor = province;
+  setTimeout(() => { if (homingFor === province) homingFor = null; }, 60000);
   // Her memory first: wait for the gold seal and the memory the beat brings to be over.
   // The 新章 seal goes up on the first draw of the read that brought the 鼎 home
   // (riseStats notes the chapter in `shown`): wait for that draw, then for the seal and her memory to go.
