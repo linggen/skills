@@ -1,0 +1,34 @@
+{
+ "version": 1,
+ "_about": "注: knowledge figures, each defined once, keyed by id. The book writes [words]{注=id}; the reader (scripts/read-md.js) shows the figure beside that paragraph. image is under this world folder; lines are 2–3 short lines; credit and source say where the picture is from.",
+ "_marks": "Reserved for the animation layer: points [{id, label, x, y}] and paths [{id, through:[point ids]}] drawn over the image as an SVG overlay, x/y in 0–1 of the image.",
+ "notes": {
+  "三关": {
+   "title": { "zh": "三关", "en": "The Three Passes" },
+   "image": "art/notes/neijingtu.webp",
+   "lines": {
+    "zh": [
+     "督脉沿脊背上行。小周天的气，从这里往上走。",
+     "要过三道关：尾闾在尾骨尖，夹脊在两肩胛之间，玉枕在后脑。",
+     "《内经图》画的就是这条脊背：下起尾闾，上到头顶的群峰。"
+    ],
+    "en": [
+     "The Du channel runs up the spine; the small circuit's qi climbs it.",
+     "Three passes bar the way: Weilü at the tailbone, Jiaji between the shoulder blades, Yuzhen at the back of the head.",
+     "The Neijing Tu draws this spine: from Weilü at the foot to the peaks of the head."
+    ]
+   },
+   "credit": {
+    "zh": "《内经图》，北京白云观碑拓本，光绪十二年（1886）。公有领域。",
+    "en": "Neijing Tu, rubbing of the Baiyun Guan stele, Beijing, 1886. Public domain."
+   },
+   "source": {
+    "url": "https://commons.wikimedia.org/wiki/File:NeijingTu1.jpg",
+    "license": "Public domain (PD-Art; published 1886)",
+    "via": "Wikimedia Commons, from 四川大学道教與宗教文化研究處 (daoism.cn/up/data/033njt.htm)",
+    "edit": "title band cropped off, greyscale, webp"
+   },
+   "marks": {}
+  }
+ }
+}

@@ -1,6 +1,9 @@
 // read-md.js — the little markdown the book is written in, as HTML: headings,
-// paragraphs, **bold**, > blockquotes, --- rules and pipe tables. Pure: no DOM,
-// every word escaped (read.html's reader and its test both use it).
+// paragraphs, **bold**, > blockquotes, --- rules and pipe tables, plus two of
+// the book's own: `::: 画 <panel-id> [caption]`, a 小人书 panel full width, and
+// `[words]{注=id}`, words with a knowledge figure beside their paragraph
+// (worlds/<world>/notes.json). Pure: no DOM, every word escaped (read.html's
+// reader and its test both use it).
 import { esc } from './esc.js';
 import { fill, genderOf } from './state.mjs';
 
@@ -28,26 +31,55 @@ export function fillHero(md, hero = {}) {
   return fill(genderWords(md, hero.gender), { name });
 }
 
-const inline = (t) => esc(t).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+const PANEL = /^:::\s*画\s+([\w-]+)\s*(.*)$/;
+const GLOSS = /\[([^\]\n]+)\]\{注=([^{}\n]+)\}/g;
+const known = (notes, id) => Object.hasOwn(notes ?? {}, id);
+// A gloss whose note is missing reads as its words, nothing more.
+const inline = (t, notes) => esc(t)
+  .replace(GLOSS, (_, words, id) => (known(notes, id) ? `<span class="gloss" role="button" tabindex="0" data-note="${id}">${words}</span>` : words))
+  .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+const noteIds = (lines, notes) => [...new Set(lines.flatMap((l) => [...esc(l).matchAll(GLOSS)].map((m) => m[2])))].filter((id) => known(notes, id));
 const cells = (row) => row.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim());
 
-export function renderMarkdown(md) {
+/// A note's figure: its picture, title, lines and credit (`marks` waits for the
+/// animation layer). `src(path)` resolves the picture under the world.
+export function noteFigure(id, note, { src = (p) => p, lang = 'zh' } = {}) {
+  const pick = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v[lang] ?? v.zh ?? v.en : v);
+  const img = note.image ? `<img src="${esc(src(note.image))}" alt="${esc(pick(note.title))}" loading="lazy">` : '';
+  const lines = (pick(note.lines) ?? []).map((l) => `<span>${esc(l)}</span>`).join('');
+  return `<aside class="sidenote" data-note="${esc(id)}"><figure>${img}<figcaption><b>${esc(pick(note.title))}</b>${lines}<small>${esc(pick(note.credit))}</small></figcaption></figure></aside>`;
+}
+
+/// `opts.panel(id)` → a panel's src (none: panels are left out); `opts.notes`
+/// → notes.json's notes; `opts.src`, `opts.lang` → noteFigure.
+export function renderMarkdown(md, opts = {}) {
+  const { notes } = opts;
   // <!-- … --> is a note for the writers (女主变体 and the like), never read.
   const lines = String(md ?? '').replace(/\r\n/g, '\n').replace(/<!--[\s\S]*?-->/g, '').split('\n');
   const out = [];
   let para = [], quote = [], table = [];
   const flush = () => {
-    if (para.length) { out.push(`<p>${para.map(inline).join('<br>')}</p>`); para = []; }
-    if (quote.length) { out.push(`<blockquote>${quote.map((l) => `<p>${inline(l)}</p>`).join('')}</blockquote>`); quote = []; }
+    if (para.length) {
+      const p = `<p>${para.map((l) => inline(l, notes)).join('<br>')}</p>`, ids = noteIds(para, notes);
+      out.push(ids.length ? `<div class="noted">${p}${ids.map((id) => noteFigure(id, notes[id], opts)).join('')}</div>` : p);
+      para = [];
+    }
+    if (quote.length) { out.push(`<blockquote>${quote.map((l) => `<p>${inline(l, notes)}</p>`).join('')}</blockquote>`); quote = []; }
     if (table.length) {
       const [head, , ...body] = table;
-      out.push(`<table><thead><tr>${cells(head).map((c) => `<th>${inline(c)}</th>`).join('')}</tr></thead><tbody>${body.map((r) => `<tr>${cells(r).map((c) => `<td>${inline(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`);
+      out.push(`<table><thead><tr>${cells(head).map((c) => `<th>${inline(c, notes)}</th>`).join('')}</tr></thead><tbody>${body.map((r) => `<tr>${cells(r).map((c) => `<td>${inline(c, notes)}</td>`).join('')}</tr>`).join('')}</tbody></table>`);
       table = [];
     }
   };
   for (const line of lines) {
     const h = /^(#{1,4})\s+(.*)$/.exec(line);
     if (h) { flush(); out.push(`<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`); continue; }
+    const pic = PANEL.exec(line.trim());
+    if (pic) {
+      flush();
+      if (opts.panel) out.push(`<figure class="panel"><img src="${esc(opts.panel(pic[1]))}" alt="${esc(pic[2])}" loading="lazy">${pic[2] ? `<figcaption>${inline(pic[2])}</figcaption>` : ''}</figure>`);
+      continue;
+    }
     if (/^\s*(---|\*\*\*)\s*$/.test(line)) { flush(); out.push('<hr>'); continue; }
     if (/^\s*>/.test(line)) { if (para.length || table.length) flush(); quote.push(line.replace(/^\s*>\s?/, '')); continue; }
     if (/^\s*\|/.test(line)) { if (para.length || quote.length) flush(); table.push(line); continue; }

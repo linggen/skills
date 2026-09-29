@@ -4,7 +4,7 @@
 // chapters and appendix; each chapter is a markdown file (read-md.js).
 import { esc } from './esc.js';
 import { fillHero, heroOf, renderMarkdown } from './read-md.js';
-import { verb } from './rules.js';
+import { content, verb, worldPath } from './rules.js';
 
 const WORDS = {
   zh: { back: '← 回到灵境', toc: '目录', prev: '← 上一章', next: '下一章 →', none: '书还没有写。', failed: '这一章没能打开。', only: '这一章只有中文。' },
@@ -53,11 +53,17 @@ async function main() {
   // The player's name from the save (Look), asked beside the chapter; no save,
   // a failed or slow look reads with the drafts' hero — never blocks the book.
   const hero = Promise.race([verb('look'), new Promise((_, no) => setTimeout(no, 3000))]).then(heroOf, () => heroOf(null));
+  // The world's art and notes: 小人书 panels inline, 注 figures in the margin;
+  // no notes file reads the words alone.
+  const world = `worlds/${book.world ?? 'jiuding'}`;
+  const notes = content(world, 'notes.json').then((n) => n?.notes ?? {}, () => ({}));
   try {
     const res = await fetch(`${STORY}${encodeURIComponent(bookId)}/${encodeURIComponent(ch.file)}`);
     if (!res.ok) throw new Error(String(res.status));
     const md = await res.text();
-    $('chapter').innerHTML = (lang === 'en' ? `<p class="note">${esc(w.only)}</p>` : '') + renderMarkdown(fillHero(md, await hero));
+    $('chapter').innerHTML = (lang === 'en' ? `<p class="note">${esc(w.only)}</p>` : '') + renderMarkdown(fillHero(md, await hero), {
+      panel: (id) => worldPath(world, `art/panels/${id}.webp`), notes: await notes, src: (file) => worldPath(world, file), lang,
+    });
   } catch {
     $('chapter').innerHTML = `<p class="note">${esc(w.failed)}</p>`;
   }
@@ -65,5 +71,16 @@ async function main() {
   $('pager').innerHTML = `${prev ? `<a href="${esc(hrefWith({ book: bookId, ch: prev.id }))}">${esc(w.prev)} ${esc(pick(prev.title))}</a>` : '<span></span>'}${next ? `<a href="${esc(hrefWith({ book: bookId, ch: next.id }))}">${esc(pick(next.title))} ${esc(w.next)}</a>` : '<span></span>'}`;
   window.scrollTo(0, 0);
 }
+
+// Narrow screens have no margin: a tap on the words opens the figure under
+// the paragraph (wide ones show it beside, always).
+const openNote = (e) => {
+  const g = e.target.closest?.('.gloss');
+  if (!g || (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ')) return;
+  e.preventDefault();
+  g.closest('.noted')?.classList.toggle('open');
+};
+$('chapter').addEventListener('click', openNote);
+$('chapter').addEventListener('keydown', openNote);
 
 main().catch((e) => { console.warn('[lingjing] read', e); $('chapter').innerHTML = `<p class="note">${esc(w.failed)}</p>`; });

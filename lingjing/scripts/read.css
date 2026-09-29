@@ -43,3 +43,26 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 .note { color: var(--dim); font-size: 14px; }
 .pager { display: flex; justify-content: space-between; gap: 12px; margin: 28px 0 40px; }
 .pager a { color: var(--seal); text-decoration: none; font-size: 14px; }
+/* 小人书: the game's own panels, full width in the text. */
+.chapter figure.panel { margin: 1.5em 0; }
+.chapter figure.panel img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 4px; }
+.chapter figure.panel figcaption { font-size: 13px; color: var(--dim); text-align: center; margin-top: 6px; letter-spacing: .1em; }
+/* 注: words with a figure. Wide screens stand it in the right margin level
+   with its paragraph; narrow ones open it under the paragraph on a tap. */
+.gloss { border-bottom: 1px dotted var(--seal); cursor: pointer; }
+.noted { position: relative; }
+.sidenote { display: none; margin: 0 0 1em; }
+.noted.open .sidenote { display: block; }
+.sidenote figure { margin: 0; padding: 10px; max-width: 260px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+.sidenote img { display: block; width: 100%; height: auto; mix-blend-mode: multiply; }
+.sidenote figcaption { margin-top: 8px; font-size: 12.5px; line-height: 1.65; color: var(--dim); }
+.sidenote figcaption b { display: block; margin-bottom: 2px; font-size: 14px; letter-spacing: .15em; color: var(--text); }
+.sidenote figcaption span { display: block; }
+.sidenote small { display: block; margin-top: 6px; font-size: 11px; opacity: .8; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sidenote img { filter: invert(.88); mix-blend-mode: screen; } }
+:root[data-theme="dark"] .sidenote img { filter: invert(.88); mix-blend-mode: screen; }
+@media (min-width: 1320px) {
+  .reader { grid-template-columns: 240px minmax(0, 720px) 240px; grid-template-areas: "toc chapter margin" "toc pager margin"; }
+  .sidenote, .noted.open .sidenote { display: block; position: absolute; top: 0; left: calc(100% + 40px); width: 240px; margin: 0; }
+  .gloss { cursor: default; }
+}
