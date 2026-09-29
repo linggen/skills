@@ -98,7 +98,9 @@ const moonSvg = (x, y, r, cls, id) => `<g class="${cls}" transform="translate(${
 /// whole map (world.json atlas.paint): hidden in mist, faint in a wash, whole
 /// where the 鼎 is home — the paper stays light, never a dark block. `id` keeps
 /// the defs of two maps on one page apart.
-export function inkMapSvg(geo, ink, { names = {}, labels = {}, lang = 'zh', moment = null, still = false, id = 'ink', paint = null } = {}) {
+/// `overlay` draws only what lies over a canvas (fx.js): the water's edges,
+/// the borders, the rivers, the moons and the seals — no paper, no painting.
+export function inkMapSvg(geo, ink, { names = {}, labels = {}, lang = 'zh', moment = null, still = false, id = 'ink', paint = null, overlay = false } = {}) {
   if (!geo?.provinces || !ink?.provinces) return '';
   const ids = Object.keys(geo.provinces);
   const key = (p) => `${id}-${ids.indexOf(p)}`;
@@ -143,11 +145,13 @@ export function inkMapSvg(geo, ink, { names = {}, labels = {}, lang = 'zh', mome
   const drop = M ? `<circle class="inkdrop" cx="${f2(find[0])}" cy="${f2(find[1])}" r="${f2(geo.w * 0.006)}"/>` : '';
   const cam = M ? camOf(geo, moment.frame) : null;
   const camStyle = cam ? ` style="--cam: translate(${cam.tx}px, ${cam.ty}px) scale(${cam.s})"` : '';
-  const cls = `inkmap${M ? ' moment' : ''}${still ? ' still' : ''}`;
+  const cls = `inkmap${M ? ' moment' : ''}${still ? ' still' : ''}${overlay ? ' overlay' : ''}`;
+  const under = overlay ? '' : `<rect class="paper" width="${geo.w}" height="${geo.h}"/><rect width="${geo.w}" height="${geo.h}" filter="url(#${id}-grain)"/>`;
+  const body = overlay ? '' : `<g class="fills">${fills}</g><g class="inks">${inks}</g>`;
   return `<svg class="${cls}" viewBox="0 0 ${geo.w} ${geo.h}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
 <defs>${rough}${grain}${glow}${clips}${mask}</defs>
-<g class="cam${cam ? ' zoom' : ''}"${camStyle}><rect class="paper" width="${geo.w}" height="${geo.h}"/><rect width="${geo.w}" height="${geo.h}" filter="url(#${id}-grain)"/>
-<g class="waters${M ? ' ripple' : ''}">${waters}</g><g class="fills">${fills}</g><g class="inks">${inks}</g>${rivers}<g class="edges">${edges}</g>${drop}<g class="moons">${moons}</g><g class="seals">${seals}</g></g></svg>`;
+<g class="cam${cam ? ' zoom' : ''}"${camStyle}>${under}
+<g class="waters${M ? ' ripple' : ''}">${waters}</g>${body}${rivers}<g class="edges">${edges}</g>${overlay ? '' : drop}<g class="moons">${moons}</g><g class="seals">${seals}</g></g></svg>`;
 }
 
 /// The map card's picture: the ink map where the plain one stood, framed the
@@ -185,14 +189,17 @@ export function provinceLineHtml(ink, id, { lang = 'zh', name = id, more = '' } 
 /// spreading, the rivers, the seal, the water rising, the moons; the count
 /// of 九鼎 in the corner. `age` ms since it began (a redraw carries on);
 /// `still` (reduced motion, or skipped) is its last frame at once.
-export function homingCardHtml(geo, ink, { province, frame, age = 0, still = false, lang = 'zh', names = {}, labels = {}, paint = null } = {}) {
+/// `fx`: the WebGL moment (fx.js) plays in the map's box instead — the card
+/// keeps an empty slot of the map's shape for it, and the words.
+export function homingCardHtml(geo, ink, { province, frame, age = 0, still = false, lang = 'zh', names = {}, labels = {}, paint = null, fx = false } = {}) {
   if (!geo || !ink?.provinces?.[province]) return '';
   const w = words(lang);
   const n = ink.homed?.length ?? 0, of = ink.of ?? 9;
-  const svg = inkMapSvg(geo, ink, { names, labels, lang, moment: { province, frame }, still, id: 'homing', paint });
+  const svg = fx ? '' : inkMapSvg(geo, ink, { names, labels, lang, moment: { province, frame }, still, id: 'homing', paint });
   const done = still || age >= HOMING_MS.end;
-  return `<div class="card homing${still ? ' still' : ''}" data-homing="${esc(province)}" role="button" tabindex="0" aria-label="${esc(say(w.seal, { p: names[province] ?? province }))}" style="--age:${Math.round(still ? HOMING_MS.end : age)}ms">
-    <div class="homingmap">${svg}</div>
+  const map = fx ? `<div class="homingmap" data-fx style="aspect-ratio:${f2(geo.w)} / ${f2(geo.h)}"></div>` : `<div class="homingmap">${svg}</div>`;
+  return `<div class="card homing${still ? ' still' : ''}${fx ? ' fx' : ''}" data-homing="${esc(province)}" role="button" tabindex="0" aria-label="${esc(say(w.seal, { p: names[province] ?? province }))}" style="--age:${Math.round(still ? HOMING_MS.end : age)}ms">
+    ${map}
     <div class="homingcount">${esc(say(w.count, { n: num(n, lang), of: num(of, lang) }))}</div>
     <div class="homingrise">${esc(w.rise)}</div>
     <div class="hominghint">${esc(done ? w.close : w.skip)}</div>

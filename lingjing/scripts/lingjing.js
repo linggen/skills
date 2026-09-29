@@ -28,6 +28,7 @@ import { LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
 import { colourOn, freshMemory, memoryCardHtml, replayOf } from './memory.js';
 import { HOMING_MS, freshHome, homingCardHtml, inkMapSvg, shapesOf, unrollHtml } from './inkmap.js';
 import { frameOf } from './atlas.js';
+import { fxTimes, glOK, playHoming as playHomingFx } from './fx.js';
 import { atmosClasses, atmosOf, particlesHtml } from './atmos.js';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
@@ -974,7 +975,35 @@ function spoilsCtx() {
 
 const drawCard = (c) => (c.card === 'memory' ? memoryHtml() : c.card === 'homing' ? homingHtml() : cardHtml(c, ctx()));
 const inkNames = () => Object.fromEntries(Object.keys(look?.world?.atlas?.provinces ?? {}).map((id) => [id, authored?.dictionary?.provinces?.[id]?.[lang()] ?? id]));
-const homingHtml = () => (view.homing && atlasPlaces?.ink ? homingCardHtml(inkGeo, atlasPlaces.ink, { province: view.homing.province, frame: view.homing.frame, age: performance.now() - view.homing.at, still: view.homing.still || stillMotion(), lang: lang(), names: inkNames(), labels: look?.world?.atlas?.provinces, paint: inkPaint() }) : '');
+const homingHtml = () => (view.homing && atlasPlaces?.ink ? homingCardHtml(inkGeo, atlasPlaces.ink, { province: view.homing.province, frame: view.homing.frame, age: performance.now() - view.homing.at, still: view.homing.still || stillMotion(), lang: lang(), names: inkNames(), labels: look?.world?.atlas?.provinces, paint: inkPaint(), fx: Boolean(view.homing.fx) }) : '');
+
+/* 鼎归 in WebGL (fx.js): one Pixi Application per moment, kept across the stage's
+   redraws — its box is put back into the card's empty slot after each one — and
+   destroyed when the card goes. If it cannot start, the card draws the SVG moment. */
+let fxRun = null; // { homing, ctl, host } while the WebGL moment is on
+function holdFx() {
+  const slot = document.querySelector('.card.homing .homingmap[data-fx]');
+  if (!slot || !view.homing?.fx) { if (fxRun) { fxRun.ctl?.destroy(); fxRun.host?.remove(); fxRun = null; } return; }
+  if (fxRun && fxRun.homing === view.homing.at) { if (fxRun.host) slot.appendChild(fxRun.host); return; }
+  fxRun?.ctl?.destroy();
+  const run = { homing: view.homing.at, ctl: null, host: null };
+  fxRun = run;
+  const h = view.homing;
+  playHomingFx(slot, { geo: inkGeo, ink: atlasPlaces.ink, province: h.province, frame: h.frame, paint: inkPaint(), names: inkNames(), labels: look?.world?.atlas?.provinces, lang: lang(), still: h.still || stillMotion() })
+    .then((ctl) => {
+      if (fxRun !== run) { ctl.destroy(); return; }
+      run.ctl = ctl; run.host = ctl.host;
+      if (view.homing?.still) ctl.skip();
+      console.info('[lingjing] fx', { pixi_ms: fxTimes.pixi, gsap_ms: fxTimes.gsap });
+      const now = document.querySelector('.card.homing .homingmap[data-fx]');
+      if (now && ctl.host.parentElement !== now) now.appendChild(ctl.host);
+    })
+    .catch((e) => {
+      console.warn('[lingjing] fx — the SVG moment instead', e);
+      if (fxRun === run) fxRun = null;
+      if (view.homing?.at === run.homing) show({ homing: { ...view.homing, fx: false } });
+    });
+}
 /// The world's ink painting of the map (world.json atlas.paint), where the 鼎归 map shows it.
 const inkPaint = () => (atlasPlaces?.ink?.paint && look?.world?.dir ? { href: worldPath(look.world.dir, atlasPlaces.ink.paint) } : null);
 /// 银月's memory: ink blooming into colour, carried on from its age on a redraw.
@@ -1084,6 +1113,7 @@ function draw() {
   paintIf('footRow', footRowHtml(slots));
   paintIf('footChips', footChipsHtml());
   $('focus').innerHTML = focusHtml(slots);
+  holdFx();
   keep({ castFresh: false });
   drawLu();
   drawPouch();
@@ -1820,7 +1850,7 @@ const CLICKS = [
   ['[data-mem-next]', (el) => show({ memory: view.memory && { ...view.memory, i: Number(el.dataset.memNext), at: performance.now() } })],
   ['[data-mem-close]', () => show({ memory: null })],
   // 鼎归: a tap skips to the last frame; once still, a tap puts it away.
-  ['[data-homing]', () => { const h = view.homing; if (h) show({ homing: h.still || performance.now() - h.at >= HOMING_MS.end ? null : { ...h, still: true } }); }],
+  ['[data-homing]', () => { const h = view.homing; if (!h) return; if (!(h.still || performance.now() - h.at >= HOMING_MS.end)) fxRun?.ctl?.skip(); show({ homing: h.still || performance.now() - h.at >= HOMING_MS.end ? null : { ...h, still: true } }); }],
   ['[data-map-pv]', (el) => show({ mapPv: view.mapPv === el.dataset.mapPv ? null : el.dataset.mapPv })],
   ['[data-fly]', (el) => run(`fly:${el.dataset.fly}`, () => flyTo(el.dataset.fly))],
   ['[data-lu-album]', () => openLu().then(() => document.querySelector('.lualbum')?.scrollIntoView({ block: 'start' }))],
@@ -2426,7 +2456,8 @@ async function playHoming(province) {
   const at = home?.map ?? look.world.atlas.provinces[province];
   const frame = frameOf([...pts, at, [at[0], at[1] + 0.06], [at[0] - 0.04, at[1]], [at[0] + 0.04, at[1]]], look.world.atlas.aspect);
   if (!inkGeo) return;
-  show({ homing: { province, frame, at: performance.now(), still: false } });
+  // WebGL when there is WebGL and motion is welcome (fx.js); else the SVG moment.
+  show({ homing: { province, frame, at: performance.now(), still: false, fx: glOK() && !stillMotion() && Boolean(inkPaint()) } });
   // Its words come in at the end: a redraw then shows 收起; it goes by itself a while later.
   const mine = view.homing;
   setTimeout(() => { if (view.homing === mine) render(); }, HOMING_MS.end + 50);

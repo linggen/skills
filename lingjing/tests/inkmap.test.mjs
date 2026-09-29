@@ -194,3 +194,34 @@ test('卷轴: a chapter that declares `unroll` asks once; the page marks it play
   const css = fs.readFileSync(path.join(ROOT, 'scripts', 'inkmap.css'), 'utf8');
   assert.match(css, /@keyframes unroll-open \{ from \{ clip-path: inset\(0 100% 0 0\)/, 'left to right');
 });
+
+test('the WebGL moment (fx.js): the libraries load only when it plays, and the SVG moment stands in without WebGL', async () => {
+  const fx = fs.readFileSync(path.join(ROOT, 'scripts', 'fx.js'), 'utf8');
+  assert.doesNotMatch(fx, /^import [^\n]*vendor/m, 'no static import of a library');
+  assert.match(fx, /import\(PIXI_URL\)/, 'Pixi by dynamic import()');
+  assert.match(fx, /createElement\('script'\)/, 'GSAP by a script tag, on demand');
+  for (const f of ['pixi-8.21.0.min.mjs', 'gsap-3.15.0.min.js']) {
+    assert.ok(fx.includes(f), `fx.js names ${f}`);
+    assert.ok(fs.existsSync(path.join(ROOT, 'scripts', 'vendor', f)), `vendor/${f}`);
+  }
+  assert.doesNotMatch(fx, /https?:\/\/(?!www\.w3\.org\/)/, 'never the network (an SVG namespace is not a fetch)');
+  const { glOK } = await import('../scripts/fx.js');
+  assert.equal(glOK(), false, 'no WebGL here: the page takes the SVG moment');
+  const page = fs.readFileSync(path.join(ROOT, 'scripts', 'lingjing.js'), 'utf8');
+  assert.match(page, /fx: glOK\(\) && !stillMotion\(\)/, 'reduced motion never starts WebGL');
+  assert.match(page, /ctl\.destroy\(\)/, 'one Application per moment, destroyed');
+
+  const geo = shapesOf(svgText, atlas.shapes);
+  const ink = inkMapOf(content, fixture('ji-home'), NOW);
+  const frame = { x: 0.55, y: 0.25, w: 0.2, h: 0.2 };
+  const card = homingCardHtml(geo, ink, { province: '冀', frame, fx: true });
+  assert.match(card, /class="card homing fx"/);
+  assert.match(card, /<div class="homingmap" data-fx style="aspect-ratio:/, 'an empty box of the map\'s shape for the canvas');
+  assert.doesNotMatch(card, /<svg/, 'no SVG moment under it');
+  assert.match(card, /九州的水涨了一寸/, 'the words stay DOM');
+  const over = inkMapSvg(geo, ink, { moment: { province: '冀', frame }, overlay: true, paint: { href: 'x.webp' } });
+  assert.match(over, /class="inkmap moment overlay"/);
+  assert.doesNotMatch(over, /class="paper"|<image|class="plate/, 'no paper, no painting: the canvas has those');
+  assert.match(over, /class="inkseal thud"/);
+  assert.match(over, /class="rivers draw"/);
+});

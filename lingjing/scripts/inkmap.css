@@ -55,17 +55,17 @@
 .inkmap.moment .inkseal.thud { transform-box: fill-box; }
 .inkmap.moment .inkseal.thud .sealbody { transform-box: fill-box; transform-origin: center; }
 
-.card.homing:not(.still) .inkmap .cam.zoom { animation: ink-zoom 1.4s cubic-bezier(.3, .1, .2, 1) both; animation-delay: calc(0ms - var(--age)); }
-.card.homing:not(.still) .inkmap .inkdrop { animation: ink-drop 0.55s ease-in both; animation-delay: calc(900ms - var(--age)); }
-.card.homing:not(.still) .inkmap .bleed { animation: ink-spread 3s cubic-bezier(.35, .1, .45, 1) both, ink-bleed 3s ease-out both; animation-delay: calc(1300ms - var(--age)); }
+.card.homing:not(.still):not(.fx) .inkmap .cam.zoom { animation: ink-zoom 1.4s cubic-bezier(.3, .1, .2, 1) both; animation-delay: calc(0ms - var(--age)); }
+.card.homing:not(.still):not(.fx) .inkmap .inkdrop { animation: ink-drop 0.55s ease-in both; animation-delay: calc(900ms - var(--age)); }
+.card.homing:not(.still):not(.fx) .inkmap .bleed { animation: ink-spread 3s cubic-bezier(.35, .1, .45, 1) both, ink-bleed 3s ease-out both; animation-delay: calc(1300ms - var(--age)); }
 .inkmap.moment .bleed { transform-box: fill-box; transform-origin: center; }
-.card.homing:not(.still) .inkmap .spread { animation: ink-spread 3s cubic-bezier(.35, .1, .45, 1) both; animation-delay: calc(1300ms - var(--age)); }
-.card.homing:not(.still) .inkmap .rivers.draw path { animation: ink-river 1.6s ease-out both; animation-delay: calc(3300ms - var(--age)); }
-.card.homing:not(.still) .inkmap .inkseal.thud .sealbody { animation: ink-thud 0.5s cubic-bezier(.5, 0, .7, 1.4) both; animation-delay: calc(4800ms - var(--age)); }
-.card.homing:not(.still) .inkmap .waters.ripple path { animation: ink-ripple 1.6s ease-out both; animation-delay: calc(5500ms - var(--age)); }
-.card.homing:not(.still) .inkmap .inkmoon.rise .moonbody { animation: ink-moon 1.2s ease-out both; animation-delay: calc(5900ms - var(--age)); }
+.card.homing:not(.still):not(.fx) .inkmap .spread { animation: ink-spread 3s cubic-bezier(.35, .1, .45, 1) both; animation-delay: calc(1300ms - var(--age)); }
+.card.homing:not(.still):not(.fx) .inkmap .rivers.draw path { animation: ink-river 1.6s ease-out both; animation-delay: calc(3300ms - var(--age)); }
+.card.homing:not(.still):not(.fx) .inkmap .inkseal.thud .sealbody { animation: ink-thud 0.5s cubic-bezier(.5, 0, .7, 1.4) both; animation-delay: calc(4800ms - var(--age)); }
+.card.homing:not(.still):not(.fx) .inkmap .waters.ripple path { animation: ink-ripple 1.6s ease-out both; animation-delay: calc(5500ms - var(--age)); }
+.card.homing:not(.still):not(.fx) .inkmap .inkmoon.rise .moonbody { animation: ink-moon 1.2s ease-out both; animation-delay: calc(5900ms - var(--age)); }
 .card.homing:not(.still) .homingrise { animation: ink-words 1.4s ease-out both; animation-delay: calc(5500ms - var(--age)); }
-.card.homing:not(.still) { animation: ink-shake 0.3s linear both; animation-delay: calc(4950ms - var(--age)); }
+.card.homing:not(.still):not(.fx) { animation: ink-shake 0.3s linear both; animation-delay: calc(4950ms - var(--age)); }
 .card.homing.still .homingrise { opacity: 1; }
 
 @keyframes ink-zoom { from { transform: none; } to { transform: var(--cam); } }
@@ -98,3 +98,9 @@
   .card.homing *, .card.homing, .unroll * { animation: none !important; }
   .card.homing .homingrise { opacity: 1; }
 }
+
+/* The WebGL moment (fx.js): the canvas and the crisp overlay share one box. */
+.homingmap[data-fx] { position: relative; background: var(--ink-paper); }
+.fxhost { position: absolute; inset: 0; }
+.fxhost canvas, .fxhost svg.inkmap { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.fxhost svg.inkmap.overlay .waters path { fill: rgba(70, 86, 96, 0.05); }
