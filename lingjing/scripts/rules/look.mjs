@@ -28,6 +28,7 @@ import { memoriesLook } from './memories.mjs';
 import { todayBrief } from './festival.mjs';
 import { weatherBrief } from './weather.mjs';
 import { newHere, portraitOf } from './codex.mjs';
+import { hotspotsOf, lookHint, seenLog, seenMet, SEEN_KEEP } from './examine.mjs';
 
 /* The market's shelf: the catalog sold in this province — and, while the
    companion is still to be found, her bell at every market, since the call
@@ -94,8 +95,20 @@ function panelOf(content, state, scene, buttons) {
   const done = e => e.stay && !e.snub && marked(e);
   const taps = buttons.map(id => scene.exits.find(e => e.id === id)).filter(e => e && !own(e) && !done(e))
     .map(e => ({ id: e.id, label: say(e.label), ...(e.snub && marked(e) ? { spent: true } : {}) }));
-  return { place: say(scene.place), caption: (scene.panel.caption?.[state.lang] ?? scene.panel.caption?.zh ?? []).map(l => fill(l, state, content)), taps };
+  return { place: say(scene.place), caption: (scene.panel.caption?.[state.lang] ?? scene.panel.caption?.zh ?? []).map(l => fill(l, state, content)), taps: quietOne(scene, taps), ...(invites(state, taps) ? { invite: true } : {}) };
 }
+
+/* Only a real decision is a row of buttons (his, 2026-09-29: tapping on felt
+   like turning pages). A scene with one plain way on is a transition: its one
+   tap is `quiet` — the page draws a small 「接着」 link, not a button. An exit
+   that ends the chapter's day keeps its own words (今日到此). */
+const quietOne = (scene, taps) => (taps.length === 1 && !taps[0].spent
+  ? [{ ...taps[0], quiet: scene.exits.find(e => e.id === taps[0].id)?.ends ? 'label' : 'on' }] : taps);
+
+/* 「也可以直接说你想怎么做」 — now and then, not on every scene: a real
+   decision (two ways or more), on every INVITE_EVERY-th scene played. */
+const INVITE_EVERY = 3;
+const invites = (state, taps) => taps.filter(t => !t.spent).length >= 2 && (state.done_scenes ?? []).length % INVITE_EVERY === 0;
 
 /* The things this player has named, id → the name the page shows. */
 function namedOf(content, state, lang) {
@@ -136,12 +149,17 @@ function sceneBrief(content, state, now = new Date()) {
   const lang = state.lang, say = pair => fill(pick(pair, lang), state, content);
   // A choice a thread sets up (`needs.quest`: 孙二狗's charm before the 大比)
   // is not offered until the thread is done — the story never set it up.
-  const setUp = id => { const q = scene.exits.find(e => e.id === id)?.needs?.quest; return !q || Boolean(state.quests?.[q]?.done_at); };
+  // A choice that waits on a clue (`needs.seen`, rules/examine.mjs) is not offered until it is found.
+  const setUp = id => {
+    const needs = scene.exits.find(e => e.id === id)?.needs;
+    return (!needs?.quest || Boolean(state.quests?.[needs.quest]?.done_at)) && (!needs?.seen || seenMet(state, scene.id, needs.seen));
+  };
   const buttons = (scene.buttons ?? []).filter(setUp);
   const people = peopleIn(content, state, scene);
   const panel = panelOf(content, state, scene, buttons);
   // 图鉴: who and what this scene brings on for the first time (codex.mjs) — the page shows their cards.
   const meet = newHere(content, state, scene);
+  const looks = hotspotsOf(content, state, scene), hint = lookHint(content, state, scene);
   return {
     id: scene.id,
     place: say(scene.place),
@@ -152,6 +170,9 @@ function sceneBrief(content, state, now = new Date()) {
     ...(people.length ? { people } : {}),
     ...(panel ? { panel } : {}),
     ...(meet.length ? { meet } : {}),
+    // 看 — what may be looked at here; a finding only once found (rules/examine.mjs).
+    ...(looks.length ? { look: looks } : {}),
+    ...(hint ? { look_hint: hint } : {}),
     buttons: buttons.map(id => ({ id, label: say(scene.exits.find(e => e.id === id).label) })),
     exits: scene.exits.map(e => exitBrief(content, state, e, buttons.includes(e.id), ctxNow, scene)),
   };
@@ -369,6 +390,8 @@ export function look(state, content, ctx) {
     // A key beat running: the map is shut until its last scene (world.mjs beatOf).
     ...(beatOf(content, state) ? { lock: { beat: beatOf(content, state).id, title: pick(beatOf(content, state).title, lang) } } : {}),
     scene: atScene(content, state) ? sceneBrief(content, state, ctx.now) : null,
+    // 所见 — what was looked at, the newest scenes, and what was passed by (rules/examine.mjs).
+    ...(state.looked?.length ? { seen: seenLog(content, state, SEEN_KEEP) } : {}),
     waypoint: waypointOf(content, state, ctx),
     place: placeBrief(content, state, ctx.now),
     director: directorBrief(content, state, ctx),

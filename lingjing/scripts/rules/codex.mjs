@@ -22,10 +22,22 @@ export function meetsOf(content, state, scene) {
   const raw = rawOf(content);
   const whos = [...(scene.people ?? []), ...[...(scene.lines ?? []), ...(scene.exits ?? []).flatMap(e => e.beat ?? [])].map(l => l.who)];
   const ids = whos.map(w => personOf(content, state, w)?.id).filter(Boolean);
-  if (scene.her) ids.push(content.world.companion?.id);
+  // 银月 in the form the scene names: its own entry when the codex holds one
+  // (`yinyue-fox`: the nameless fox of the pit), else hers — never her name
+  // before the hero has heard it.
+  if (scene.her) ids.push(herEntry(content, raw, scene.her));
   for (const [id, r] of raw) if (r.over.first?.scene === scene.id) ids.push(id);
   return [...new Set(ids)].filter(id => raw.has(id));
 }
+
+const herEntry = (content, raw, form) => {
+  const id = content.world.companion?.id;
+  return raw.has(`${id}-${form}`) ? `${id}-${form}` : id;
+};
+
+/* An entry that `becomes` another (the nameless fox → 银月) stands only
+   until that one is met: then it is the same subject, known by its name. */
+const folded = (raw, seen) => [...seen].filter(id => !seen.has(raw.get(id)?.over.becomes));
 
 /* Every entry the player has met: brought on by a scene done or the scene
    they stand in, held in the bag, fought, or walking with them. */
@@ -37,7 +49,7 @@ export function seenOf(content, state, scene = null) {
   for (const id of Object.keys(state.bag ?? {})) seen.add(id);
   for (const id of Object.keys(state.duels ?? {})) seen.add(id);
   if (state.companion?.joined) seen.add(content.world.companion?.id);
-  return [...seen].filter(id => raw.has(id));
+  return folded(raw, seen).filter(id => raw.has(id));
 }
 
 /* What this scene brings on for the FIRST time: its entries no scene done

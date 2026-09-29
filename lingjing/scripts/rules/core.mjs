@@ -13,6 +13,7 @@ import { herBeat, storyNode, withHerBeat } from './story.mjs';
 import { stow, storedLine } from './pouch.mjs';
 import { bornRoots, rootName, starterFor, stoneRoots } from './roots.mjs';
 import { oweExit, spanLines } from './tell.mjs';
+import { seenMet } from './examine.mjs';
 import { companionOf } from './companion.mjs';
 import { grantMemory } from './memories.mjs';
 import { writeLedger } from './ledger.mjs';
@@ -23,7 +24,7 @@ import { atScene, inMade, placeName, placeOf, placeOpen, sceneOf, settlePlace, t
 const refuse = (refused, say, extra = {}) => ({ state: null, result: { ok: false, refused, say: say ?? null, ...extra } });
 const clone = state => structuredClone(state);
 
-function meets(state, needs, now = new Date()) {
+function meets(state, needs, now = new Date(), sceneId = state.scene) {
   if (needs.bag && !(state.bag[needs.bag] > 0)) return false;
   if (needs.task && state.tasks[needs.task]?.status !== 'done') return false;
   if (needs.wealth && !(state.wealth >= needs.wealth)) return false;
@@ -31,6 +32,8 @@ function meets(state, needs, now = new Date()) {
   // since the story marked its eve (the 大比 is tomorrow: a real local day).
   if (needs.quest && !state.quests?.[needs.quest]?.done_at) return false;
   if (needs.day_after && !(state.mark_days?.[needs.day_after] && state.mark_days[needs.day_after] < dayKey(now))) return false;
+  // A clue that must be found here first (rules/examine.mjs: 看).
+  if (needs.seen && !seenMet(state, sceneId, needs.seen)) return false;
   return true;
 }
 
@@ -317,7 +320,7 @@ export function resolve(state, content, ctx, args) {
     const at = placeOf(content, scene.at);
     return refuse('not-at-scene', lang === 'zh' ? `你还没到${pick(at.name, 'zh')}。` : `You are not at ${pick(at.name, 'en')} yet.`, { place: placeName(content, s, at) });
   }
-  if (exit.needs && !meets(s, exit.needs, ctx.now)) return refuse('needs', pick(exit.refuse, lang));
+  if (exit.needs && !meets(s, exit.needs, ctx.now, scene.id)) return refuse('needs', pick(exit.refuse, lang));
   // A choice the scene turns down (`snub`: the furnace ignores a grand name):
   // its line is said, nothing moves, and it is kept (`mark`) so the card
   // greys it out. Saved, like a riddle's miss.

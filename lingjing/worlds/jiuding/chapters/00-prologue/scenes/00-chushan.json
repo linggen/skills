@@ -34,6 +34,30 @@
    ]
   }
  },
+ "look": [
+  {
+   "id": "token",
+   "label": {
+    "zh": "吴婆婆的木牌",
+    "en": "Granny Wu's token"
+   },
+   "text": {
+    "zh": "木牌磨得发亮，刻着一只蜷着的狐狸，尾巴一圈圈绕着身子；揣在怀里，温温的。",
+    "en": "The token is rubbed smooth: a curled fox, its tails wound round and round its body. Tucked inside your coat, it is warm."
+   }
+  },
+  {
+   "id": "tracks",
+   "label": {
+    "zh": "满地的狗爪印",
+    "en": "The dog tracks everywhere"
+   },
+   "text": {
+    "zh": "狗爪印、马蹄印一层叠着一层，连兔子洞都给刨开了——马家篦过的山，连根兔毛都不剩。",
+    "en": "Dog prints and hoofprints lie layer on layer; even the rabbit holes are dug open. Where the Mas have combed a hill, not a rabbit hair is left."
+   }
+  }
+ ],
  "story": {
   "zh": "出村的时候，要经过村东头。\n\n吴婆婆坐在门槛上，一双白蒙蒙的眼睛朝着山的方向，像是专门在等你们。\n\n吴婆婆是石坳村最老的人。她的眼睛看不见，耳朵却比村里所有的狗加起来还灵。谁家半夜偷了谁家的瓜，她第二天一早就知道。不但知道是谁偷的，还知道偷了几个，还知道哪个是生的。\n\n**吴婆婆**：去黑松岭？\n\n你爹没吭声。\n\n吴婆婆也不要你们回答。她摸索着，从怀里掏出一样东西，塞进你手里。\n\n一块小木牌。磨得发亮，上面刻着一只蜷着的狐狸。\n\n**吴婆婆**：你爷爷走的那年，也从我这门口过。\n\n**你**：……\n\n**吴婆婆**：到了碑那儿，看看碑背面。\n\n**你**：看什么？\n\n**吴婆婆**：（笑了，露出仅剩的三颗牙）看了，就知道了。不看，就不知道。\n\n你觉得这句话，说了跟没说一样。\n\n可你还是把木牌揣进了怀里。你娘说过，老人家说话，十句里有九句是废话。\n\n剩下那一句，能救命。\n\n你爹说，打猎的人家，有三样东西不能少：一张好弓，一双好腿，一副好耳朵。\n\n弓，是你爷爷传下来的。弓背裂过两回，拿牛筋缠着，远远看过去，像一条打了补丁的裤子。\n\n耳朵，是你爹的。他能听见三里外一只獐子踩断一根枯枝。\n\n至于腿——你爹的膝盖不行了。这两年，腿是你的。\n\n你十二岁，个子不高，轻得像只猴。村里没有你爬不上的树，没有你跳不过的沟。你能在一棵松树顶上一动不动地趴半个时辰，只为看清楚山那边有没有鹿。\n\n有一回你趴得太久，一只松鼠把你当成了树上的一个疙瘩，在你头顶上，埋了三颗松子。\n\n第二天你再爬上去，它蹲在旁边的树枝上，正等着来挖。你们对视了很久。最后它把松子挖走了，临走之前，还白了你一眼。\n\n那一天，你们天没亮就进了山。\n\n前山什么也没有。\n\n满地的狗爪印。满地的马蹄印。马家入秋办了三场围猎，带着二十条猎狗、几十个家丁，把前山篦了一遍又一遍，篦得比你娘梳头还细。",
   "en": "On the way out of the village you have to pass its east end.\n\nGranny Wu sits on her doorstep, her clouded white eyes turned toward the mountain, as if she has been waiting for you on purpose.\n\nGranny Wu is the oldest person in Shi'ao. Her eyes don't work, but her ears are sharper than every dog in the village put together. If somebody steals somebody's melon at midnight, she knows by morning. Not just who stole it — how many, and which one wasn't ripe.\n\n**Granny Wu:** Black Pine Ridge?\n\nYour father says nothing.\n\nGranny Wu doesn't want an answer anyway. She fumbles inside her jacket, pulls something out, and presses it into your hand.\n\nA little wooden token. Worn bright, with a curled-up fox carved on it.\n\n**Granny Wu:** The year your grandfather went, he passed my door too.\n\n**You:** …\n\n**Granny Wu:** When you reach the stele, look at its back.\n\n**You:** Look at what?\n\n**Granny Wu:** (smiling, showing her last three teeth) Look, and you'll know. Don't look, and you won't.\n\nYou feel this sentence has said nothing whatsoever.\n\nBut you tuck the token into your jacket all the same. Your mother says that of every ten things an old person tells you, nine are nonsense.\n\nThe tenth one saves your life.\n\nYour father says a hunting family can't do without three things: a good bow, good legs, and good ears.\n\nThe bow came down from your grandfather. Its back has cracked twice and is bound with ox sinew; from a distance it looks like a pair of patched trousers.\n\nThe ears are your father's. He can hear a river deer snap a dry twig three li away.\n\nAs for legs — your father's knee has given out. These two years, the legs have been yours.\n\nYou're twelve, not tall, and light as a monkey. There isn't a tree in the village you can't climb or a ditch you can't jump. You can lie flat on the top of a pine for half a watch without moving, just to see if there are deer beyond the ridge.\n\nOnce you lay there so long that a squirrel took you for a knot on the tree and buried three pine nuts on top of your head.\n\nThe next day you climbed up again, and there it was, crouched on the next branch, waiting to dig them up. The two of you stared at each other for a long time. In the end it dug the nuts out, and before it left, it rolled its eyes at you.\n\nThat day, you went into the mountain before dawn.\n\nThe front slopes held nothing.\n\nDog tracks everywhere. Hoofprints everywhere. Since autumn the Mas had held three great hunts — twenty hounds and dozens of their men — combing the front slopes over and over, finer than your mother combs her hair."

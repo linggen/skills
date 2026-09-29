@@ -10,7 +10,7 @@ export const LU_WORDS = {
   zh: {
     chip: '录', title: '九鼎录', close: '合上', found: '已寻回 {n}/9', map: '九鼎',
     states: { found: '已寻回', current: '寻访中', dark: '未至' },
-    now: '眼下：{what}', mystery: '谜：{q}', people: '人物谱', her: '{name}记起的', open: '悬而未决',
+    seen: '所见', missed: '未细看：{what}', now: '眼下：{what}', mystery: '谜：{q}', people: '人物谱', her: '{name}记起的', open: '悬而未决',
     kinds: { story: '途中所遇', tamed: '随行', fought: '交过手', known: '相识' },
     none: '还没有什么可记的。', ending: '终局 · {title}', noOpen: '眼下没有悬着的谜。',
     titleClose: '入章', sep: '',
@@ -21,7 +21,7 @@ export const LU_WORDS = {
   en: {
     chip: 'Record', title: 'The Nine Cauldrons', close: 'Close', found: '{n}/9 found', map: 'The nine',
     states: { found: 'found', current: 'seeking', dark: 'not yet' },
-    now: 'Now: {what}', mystery: 'The riddle: {q}', people: 'People met', her: 'What {name} remembers', open: 'Still open',
+    seen: 'What you saw', missed: 'Passed by: {what}', now: 'Now: {what}', mystery: 'The riddle: {q}', people: 'People met', her: 'What {name} remembers', open: 'Still open',
     kinds: { story: 'met on the way', tamed: 'walks with you', fought: 'fought', known: 'acquainted' },
     none: 'Nothing to record yet.', ending: 'The end · {title}', noOpen: 'No riddle open now.',
     titleClose: 'Begin', sep: ' ',
@@ -71,11 +71,21 @@ export function luHtml(book, { lang = 'zh', her = null, artBase = '', codex = nu
     <section class="lusec">${chapters.length ? chapters.map((c, i) => chapterHtml(c, w, i === last)).join('') : `<p class="dim">${esc(w.none)}</p>`}</section>
     ${!tujian && people ? `<section class="lusec"><h3>${esc(w.people)}</h3>${peopleList}</section>` : ''}
     ${recalled}
+    ${seenHtml(book.seen, w)}
     ${albumHtml(book.album, { artBase, lang })}
     ${tujian ? tujian.replace(/<\/section>$/, `${peopleList}</section>`) : ''}
     ${paipuHtml(book.cards, w, { artBase, her })}
     <section class="lusec"><h3>${esc(w.open)}</h3>${(book.open ?? []).length ? book.open.map((q) => `<p class="luq">${esc(q)}</p>`).join('') : `<p class="dim">${esc(w.noOpen)}</p>`}</section>
   </div>`;
+}
+
+/* 所见 — what was looked at along the way (rules/examine.mjs), scene by
+   scene: each finding in its one line, and what was passed by, by name only. */
+export function seenHtml(seen, w) {
+  if (!seen?.length) return '';
+  const row = (r) => `<div class="luseen"><h4>${esc(r.place)}</h4>${r.found.map((f) => `<p><b>${esc(f.label)}</b>${esc(f.text)}</p>`).join('')}`
+    + `${r.missed?.length ? `<p class="dim">${esc(say(w.missed, { what: r.missed.join('、') }))}</p>` : ''}</div>`;
+  return `<section class="lusec luseenall"><h3>${esc(w.seen)}</h3>${seen.map(row).join('')}</section>`;
 }
 
 /* 图鉴 — every entry by kind (codex.js): the met ones as small pictures, a tap

@@ -35,6 +35,41 @@
    ]
   }
  },
+ "look": [
+  {
+   "id": "seat",
+   "label": {
+    "zh": "空石座",
+    "en": "The empty stone seat"
+   },
+   "text": {
+    "zh": "石座四只脚下各压出一个方方的深坑；座上空空的——原先该坐着一样极重的东西。",
+    "en": "Under each of the seat's four feet the floor is pressed into a deep square pit. The seat is bare; something very heavy must once have sat on it."
+   }
+  },
+  {
+   "id": "stone",
+   "label": {
+    "zh": "测灵石",
+    "en": "The root-testing stone"
+   },
+   "text": {
+    "zh": "石面光溜溜的，正中凹下去一块，是千百只手按出来的。你把手心在衣襟上擦了两擦。",
+    "en": "The stone is worn smooth, a hollow pressed into its middle by a thousand hands. You wipe your palm twice on your coat."
+   }
+  },
+  {
+   "id": "broom",
+   "label": {
+    "zh": "殿门边的扫帚",
+    "en": "The broom by the door"
+   },
+   "text": {
+    "zh": "殿门边靠着一把秃扫帚——扫石阶的那个老头也来了，站在柱子后头，谁也不看。",
+    "en": "A worn broom leans by the hall door: the old man who sweeps the steps has come too. He stands behind a pillar and looks at no one."
+   }
+  }
+ ],
  "story": {
   "zh": "正殿里，没有神像。只有一口空的石座，四方，四足，大得能躺下一个人。石座前，立着测灵石。\n\n观主玄沉子坐在石座旁边，一身灰袍，面目温和。\n\n{伴·殿}\n\n轮到你了。你把手放上去。",
   "en": "There's no statue in the main hall. Only an empty stone seat — square, four-footed, big enough for a person to lie in. Before it stands the spirit-testing stone.\n\nThe abbot, Xuanchenzi, sits beside the seat in a grey robe, his face mild.\n\n{伴·殿}\n\nYour turn. You lay your hand on it."

@@ -33,6 +33,46 @@
    ]
   }
  },
+ "look": [
+  {
+   "id": "prints",
+   "label": {
+    "zh": "蹄印",
+    "en": "The hoofprints"
+   },
+   "text": {
+    "zh": "印子边上的泥还湿着，涧水正一丝丝渗进去——鹿过去，还不到一个时辰。",
+    "en": "The mud at the print's edge is still wet, the stream seeping in thread by thread: the deer passed less than a watch ago."
+   }
+  },
+  {
+   "id": "stone",
+   "label": {
+    "zh": "石上的痕迹",
+    "en": "The marks on the stone"
+   },
+   "text": {
+    "zh": "蹄印到涧边一块青石前便断了；石上青苔刮掉两道，石头那边的软泥里，又是半个蹄印。",
+    "en": "The prints stop at a grey stone by the stream. Two strips of moss are scraped off it, and in the soft mud beyond lies half a print."
+   },
+   "clue": true
+  },
+  {
+   "id": "grass",
+   "label": {
+    "zh": "枯草",
+    "en": "The dry grass"
+   },
+   "text": {
+    "zh": "涧边的枯草尖上挂着几根鹿毛，灰褐色，粗得像马鬃——好大一头鹿。",
+    "en": "A few deer hairs hang on the dry grass by the stream, grey-brown and coarse as a horse's mane. A very big deer."
+   }
+  }
+ ],
+ "look_hint": {
+  "zh": "蹄印在涧边断了。鹿总不会飞——你爹蹲在那儿不作声，等你看出个名堂来。",
+  "en": "The prints break off at the stream. A deer cannot fly — your father crouches there in silence, waiting for you to make it out."
+ },
  "story": {
   "zh": "黑松岭的树，比外面的高一倍。树皮是黑的，摸上去是凉的，像摸着一块铁。脚下的松针厚得像毯子，踩下去，一点声音都没有。\n\n你爹走在前面。这是这么多年来，他头一回走得比你还轻。\n\n晌午过后，你们在一处山涧边，找到了蹄印。\n\n鹿。一头大的。蹄印比你的巴掌还宽。\n\n前山十年都没见过这么大的鹿。\n\n你爹蹲在地上，摸着那个蹄印，手在发颤。\n\n**爹**：一张鹿皮……够交马家的租。\n\n**爹**：剩下的肉，给你娘换一身新棉袄。\n\n**爹**：给吴婆婆，送一条腿。\n\n**爹**：再给{伴}家……赔一颗白菜。\n\n他抬起头，冲你笑了一下。\n\n这是马三走了以后，你第一次，看见他笑。",
   "en": "The trees on Black Pine Ridge are twice as tall as the ones outside. The bark is black, and cold to the touch, like laying your hand on iron. The pine needles underfoot are thick as a rug; your steps make no sound at all.\n\nYour father walks ahead. For the first time in all these years, he walks more lightly than you.\n\nPast noon, by a mountain stream, you find tracks.\n\nDeer. A big one. Each print wider than your palm.\n\nThe front slopes haven't seen a deer this size in ten years.\n\nYour father crouches, fingers in the print, and his hand is trembling.\n\n**Father:** One deer hide… pays the Mas' rent.\n\n**Father:** The rest of the meat buys your mother a new padded coat.\n\n**Father:** A leg for Granny Wu.\n\n**Father:** And for {伴}'s family… one cabbage, to make up for it.\n\nHe looks up and smiles at you.\n\nIt's the first time you've seen him smile since Ma San left."
@@ -56,7 +96,16 @@
     "en": "The tracks lead deeper into Black Pine Ridge. You follow them for a full watch. You cut forty-one marks, until your fingers go numb."
    },
    "beat": [],
-   "next": "00-storm"
+   "next": "00-storm",
+   "needs": {
+    "seen": [
+     "stone"
+    ]
+   },
+   "refuse": {
+    "zh": "蹄印到涧边就断了，往哪儿追？先看清楚。",
+    "en": "The prints stop at the stream. Follow them where? Look first."
+   }
   }
  ]
 }

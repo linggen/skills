@@ -13,7 +13,7 @@ import { fitValue } from './state.mjs';
 
 export const WORDS = {
   zh: {
-    title: '灵境', xw: '修为', ls: '灵石', tray: '手边的棋局', trayEmpty: '手边无局，随处走走。',
+    title: '灵境', lookHead: '看', lookAt: '看看{label}', goOn: '接着', invite: '也可以直接说你想怎么做', chatHint: '你想怎么做？', xw: '修为', ls: '灵石', tray: '手边的棋局', trayEmpty: '手边无局，随处走走。',
     play: '炼丹', done: '已完成', won: '丹成，待收', offered: '待做', quest: '人间功课',
     paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。', boardDoneToday: '今日丹已成 · 明日再炼', gameDoneToday: '今日已成 · 明日再来', lundaoWon: '今日论道已胜 · 明日再来', lundaoLost: '今日论道已毕 · 明日再来',
     tamed: '已收服', untamed: '未收服', beatenToday: '今日已降', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', mapLocked: '{title} · 剧情未完，地图暂不开放', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
@@ -71,7 +71,7 @@ export const WORDS = {
     taleKept: '已解开 · 体力回来便记上', taleDuel: '降了{name}，此事便了', taleWhere: '{game} · {who}', taleRiddle: '点选作答', handedTitle: '交差 · {title}', handedNext: '接下来 · {title}', handedWait: '下一步 · {title} — 手上已满，了一件再去{at}接', needKinds: { subdue: '降', tame: '驯', carry: '带', visit: '到', board: '成', answer: '答', chore: '做' }, goalWait: '{title} · {opens} 开', goalOpen: '{title} · 未开', goalGate: '鼎气要{step} · {progress} 修为才受得住', goalNow: '如今 {step} · {progress}/{of}', goalGrow: '差事、传闻、斗法，都长修为',
   },
   en: {
-    title: 'Lingjing', xw: 'Cultivation', ls: 'Spirit stones', tray: 'Boards at hand', trayEmpty: 'No board at hand. Wander a while.',
+    title: 'Lingjing', lookHead: 'Look', lookAt: 'Look at {label}', goOn: 'Go on', invite: 'Or just say what you do', chatHint: 'What do you do?', xw: 'Cultivation', ls: 'Spirit stones', tray: 'Boards at hand', trayEmpty: 'No board at hand. Wander a while.',
     play: 'Make the pill', done: 'Done', won: 'Pill made — to collect', offered: 'To do', quest: 'Real-life practice',
     paid: 'Counted', due: 'To do', seen: 'Done — to collect', boardHint: 'Tap pairs. When all eight herbs are paired, the pill is made.', boardDone: 'The pill is made.', boardDoneToday: 'Done for today — brew again tomorrow', gameDoneToday: 'Done for today — again tomorrow', lundaoWon: 'Won for today — again tomorrow', lundaoLost: 'Done for today — again tomorrow',
     tamed: 'Won over', untamed: 'Not won over', beatenToday: 'Beaten today', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', mapWhole: 'All nine provinces', mapLocked: '{title} · the story is under way; the map waits', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
@@ -1170,11 +1170,37 @@ function panel(card, ctx) {
   const p = ctx.look?.scene?.panel;
   if (!p) return '';
   const caption = (p.caption ?? []).map((l) => `<p>${esc(l)}</p>`).join('');
-  const busy = ctx.panelBusy ?? null;
-  // A choice the scene turned down (`spent`: the furnace ignored that name) stays, greyed.
-  const taps = (p.taps ?? []).map((t) => `<button class="act paneltap${busy === t.id ? ' busy' : ''}${t.spent ? ' spent' : ''}" data-panel-exit="${esc(t.id)}"${busy || t.spent ? ' disabled' : ''}>${esc(t.label)}</button>`).join('');
+  const busy = ctx.panelBusy ?? null, w = ctx.words;
+  const taps = (p.taps ?? []).map((t) => panelTapHtml(t, busy, w)).join('');
+  const quiet = (p.taps ?? []).length === 1 && p.taps[0].quiet;
+  // 「也可以直接说你想怎么做」 — now and then, where the scene waits on a real choice (rules: `invite`).
+  const invite = p.invite ? `<div class="sceneinvite">${esc(w.invite)}</div>` : '';
   return `<div class="card panelcard"><div class="panel scenecard">${p.place ? `<div class="sceneplace">${esc(p.place)}</div>` : ''}<div class="scenecap">${caption}</div></div>
-    ${taps ? `<div class="acts paneltaps">${taps}</div>` : ''}${ctx.panelNote ? `<div class="donote">${esc(ctx.panelNote)}</div>` : ''}</div>`;
+    ${lookHtml(ctx.look.scene, ctx.lookBusy ?? null, w)}
+    ${taps ? `<div class="acts paneltaps${quiet ? ' quiet' : ''}">${taps}</div>` : ''}${invite}${ctx.panelNote ? `<div class="donote">${esc(ctx.panelNote)}</div>` : ''}</div>`;
+}
+
+/// One choice under the scene card: a button for a real decision; the one way
+/// on of a transition is a small quiet link — 「接着」, or its own words when
+/// it ends the day (rules: `quiet`). A choice turned down (`spent`) stays, greyed.
+const QUIET_TEXT = { on: (t, w) => `${w.goOn} ›`, label: (t) => `${t.label} ›` };
+function panelTapHtml(t, busy, w) {
+  const off = busy || t.spent ? ' disabled' : '';
+  if (t.quiet) return `<button class="quietnext${busy === t.id ? ' busy' : ''}" data-panel-exit="${esc(t.id)}" title="${esc(t.label)}" aria-label="${esc(t.label)}"${off}>${esc(QUIET_TEXT[t.quiet]?.(t, w) ?? t.label)}</button>`;
+  return `<button class="act paneltap${busy === t.id ? ' busy' : ''}${t.spent ? ' spent' : ''}" data-panel-exit="${esc(t.id)}"${off}>${esc(t.label)}</button>`;
+}
+
+/// 看 — the scene's hotspots (rules/examine.mjs): small chips; a tap looks, free,
+/// and what was found stands under the card, one line each.
+/// The hint comes when the player looked twice without the key (`look_hint`).
+export function lookHtml(scene, busy, w) {
+  const spots = scene?.look ?? [];
+  if (!spots.length) return '';
+  const chips = spots.map((h) => `<button class="lookchip${h.found ? ' found' : ''}${busy === h.id ? ' busy' : ''}" data-look-at="${esc(h.id)}" aria-label="${esc(say(w.lookAt, { label: h.label }))}"${h.found || busy ? ' disabled' : ''}>${esc(h.label)}</button>`).join('');
+  const found = spots.filter((h) => h.found).map((h) => `<li${h.clue ? ' class="clue"' : ''}><b>${esc(h.label)}</b>${esc(h.text)}</li>`).join('');
+  return `<div class="looks"><span class="lookhead" aria-hidden="true">${esc(w.lookHead)}</span>${chips}</div>`
+    + (found ? `<ul class="lookfound">${found}</ul>` : '')
+    + (scene.look_hint ? `<div class="lookhint">${esc(scene.look_hint)}</div>` : '');
 }
 
 /// 图鉴 — an entry's card (codex.js, the same the book sets in its text): `meet`

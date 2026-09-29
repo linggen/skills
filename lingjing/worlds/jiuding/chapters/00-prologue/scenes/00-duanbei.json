@@ -33,6 +33,41 @@
    ]
   }
  },
+ "look": [
+  {
+   "id": "words",
+   "label": {
+    "zh": "「勿入」二字",
+    "en": "The words “Do not enter”"
+   },
+   "text": {
+    "zh": "两个字刻得极深，笔画里积满了黑泥，倒像刻字的人生怕后人看不清。",
+    "en": "The two characters are cut very deep, their strokes packed with black mud, as if whoever carved them feared no one after would read them."
+   }
+  },
+  {
+   "id": "pines",
+   "label": {
+    "zh": "碑后的松林",
+    "en": "The pines behind the stele"
+   },
+   "text": {
+    "zh": "你捡了块石子扔进松林，石子落了地，竟没有一点声响。",
+    "en": "You toss a pebble into the pines. It lands — and makes no sound at all."
+   }
+  },
+  {
+   "id": "grass",
+   "label": {
+    "zh": "碑脚的枯草",
+    "en": "The dead grass at its foot"
+   },
+   "text": {
+    "zh": "碑脚下的枯草有半人高，一根根朝外倒着，倒像许多年前有人扒开过，又慢慢长拢了。",
+    "en": "The dead grass at the stele's foot stands half a man high and leans outward, as if someone parted it long ago and it slowly grew back."
+   }
+  }
+ ],
  "story": {
   "zh": "石坳村的孩子，还不会走路，就听过黑松岭的故事。\n\n岭口立着一块断碑，半截埋在土里。碑上的字，风吹雨打了不知道多少年，早就认不全了。只剩下最后两个，还看得清清楚楚——\n\n**勿入。**\n\n村里的老人说，那块碑，比村子还老，比马家还老，比县城的城墙都老。\n\n村里的老人说，过了断碑，林子就不一样了。树会自己挪地方，路会自己打结。进去十个人，回来一个。回来的那一个，也不肯说里面有什么。\n\n你爷爷，就是没回来的那九个之一。\n\n你们站在断碑前面。\n\n碑后面的松林黑沉沉的。没有风。没有鸟叫。静得像有人把整座山的声音，都装进口袋里拿走了。\n\n**爹**：你在这儿等我。",
   "en": "The children of Shi'ao hear the stories of Black Pine Ridge before they can walk.\n\nAt the mouth of the ridge stands a broken stele, half buried in the earth. Wind and rain have worked at its writing for who knows how many years; most of it can't be read. Only the last two characters are still perfectly clear —\n\n**Do not enter.**\n\nThe old people of the village say that stele is older than the village, older than the Mas, older than the walls of the county town.\n\nThe old people of the village say that past the stele, the woods are different. The trees move by themselves; the paths tie themselves in knots. Ten go in, one comes back. And the one who comes back won't say what's inside.\n\nYour grandfather was one of the nine who didn't.\n\nThe two of you stand before the broken stele.\n\nThe pines behind it are dark and heavy. No wind. No birdsong. So quiet it's as if someone had put every sound on the mountain into a sack and carried it off.\n\n**Father:** Wait for me here."

@@ -31,6 +31,30 @@
    ]
   }
  },
+ "look": [
+  {
+   "id": "rim",
+   "label": {
+    "zh": "坑边",
+    "en": "The rim of the pit"
+   },
+   "text": {
+    "zh": "坑边的泥上没有一个脚印，也没有血拖过的痕迹——它倒像跟你一样，是从上头掉下来的。",
+    "en": "No footprint in the mud at the rim, no trail of blood: it seems to have fallen from above, like you."
+   }
+  },
+  {
+   "id": "cuts",
+   "label": {
+    "zh": "尾根的断口",
+    "en": "The stumps of its tails"
+   },
+   "text": {
+    "zh": "八处断口，一处比一处齐，不是野兽咬的，也不是夹子夹的——夹子夹不了这么齐。",
+    "en": "Eight stumps, each cleaner than the last. Not a beast's bite, not a trap — no trap cuts so clean."
+   }
+  }
+ ],
  "story": {
   "zh": "你没有走过去。\n\n你先蹲在一棵银叶树后面，看了很久。坑边没有脚印，没有血迹拖过的痕迹，四下里，没有别的动静。\n\n你捡起一根枯枝，扔到坑边。\n\n光还是那样。一明。一暗。\n\n你这才一点一点地，挪了过去。\n\n是一只狐狸。\n\n很小。比吴婆婆家那只猫还小一圈——吴婆婆家那只猫胖得像一个枕头，这只狐狸，大概只有半个枕头。它蜷在坑底的泥水里，毛是银色的。不是灰。是真正的银。像月光冻成了一层霜，铺在它身上。雨水落在它的毛上，也不沾，也不湿，就那样滑下去。\n\n可它伤得很重。\n\n一条后腿歪着。身上好几道口子。血把银毛染成了暗红色。\n\n它身后，只有一条尾巴。尾巴根上，还有好几处断口。整整齐齐的，像是被什么极快、极利的东西，一刀，一刀，斩断的。\n\n你数了数。\n\n八处。\n\n你愣住了。你把怀里吴婆婆的木牌摸了出来，就着那一点银光，看木牌上那只蜷着的小狐狸，一条一条地，数它的尾巴。\n\n九条。\n\n坑里的狐狸，睁开了眼睛。\n\n金色的。竖着的瞳仁。冷得像冬天的井水。它看着你，龇了一下牙，喉咙里发出一声很小、很凶的呜咽——\n\n可它连头都抬不起来。\n\n你爹说过：受伤的野兽，最凶。别碰。",
   "en": "You don't walk over.\n\nFirst you crouch behind a silver-leaved tree and watch for a long time. No footprints at the edge of the pit, no trail of dragged blood, nothing else moving anywhere.\n\nYou pick up a dead stick and toss it by the pit.\n\nThe light goes on as before. Bright. Dim.\n\nOnly then do you shuffle over, a little at a time.\n\nIt's a fox.\n\nTiny. A size smaller than Granny Wu's cat — and Granny Wu's cat is as fat as a pillow; this fox is maybe half a pillow. It lies curled in the muddy water at the bottom of the pit, and its fur is silver. Not grey. Real silver. Like moonlight frozen into a layer of frost and spread over it. The rain lands on its fur and doesn't cling, doesn't soak in — it just slides off.\n\nBut it's badly hurt.\n\nOne hind leg is twisted. Gashes all over it. Blood has stained the silver a dark red.\n\nBehind it there is only one tail. And at the root of that tail, more cuts. Neat, even cuts, as if something impossibly fast and impossibly sharp had struck them off — one stroke, then another.\n\nYou count them.\n\nEight.\n\nYou freeze. You take Granny Wu's token out of your jacket and, by that little silver light, look at the curled fox carved on it, and count its tails one by one.\n\nNine.\n\nThe fox in the pit opens its eyes.\n\nGold. Slit pupils. Cold as well water in winter. It looks at you and bares its teeth, and a small, fierce whine comes out of its throat —\n\nbut it can't even lift its head.\n\nYour father always said: a hurt animal is the fiercest kind. Don't touch it."

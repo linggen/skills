@@ -3,16 +3,17 @@
 // for every test that needs a save at a point of it or past it. One walk, so a
 // scene rewritten is one edit here, not one in every test file.
 import assert from 'node:assert/strict';
-import { resolve, task, win } from '../scripts/rules.mjs';
+import { resolve, task, VERBS, win } from '../scripts/rules.mjs';
 
 /* The walk's birthday (named for v1, whose 木 水 火 土 it read under the retired
    rule): now 五行杂灵根 like every birthday, 木 and 水 tied to lead. */
 export const V1_BIRTH = '1986-07-07';
 
-const FNS = { resolve, task, win };
+/* `look` with `at` is 看 (rules/examine.mjs): a hotspot looked at, free. */
+const FNS = { resolve, task, win, look: VERBS.look };
 
 /* 石坳村 to the valley: the name card, the rent, the egg, the stele's rules,
-   the storm, the fall, the fox — and she joins at daybreak (`follow`). */
+   the clue at 黑松岭, the storm, the fall, the fox — and she joins at daybreak (`follow`). */
 export const TO_VALLEY = [
   ['resolve', { exit: 'name', value: '青玄', gender: 'female' }],
   ['resolve', { exit: 'endure' }],
@@ -20,6 +21,8 @@ export const TO_VALLEY = [
   ['resolve', { exit: 'go' }],
   ['resolve', { exit: 'lookout' }],
   ['resolve', { exit: 'rules' }],
+  // 黑松岭: the tracks go on past the stone by the stream — found, the chase opens.
+  ['look', { at: 'stone' }],
   ['resolve', { exit: 'carve' }],
   ['resolve', { exit: 'turn' }],
   ['resolve', { exit: 'check' }],

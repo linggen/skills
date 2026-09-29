@@ -78,6 +78,7 @@ export function resolveEntry(raw, { lang = 'zh', gender = 'male', say = (t) => t
     ...(over.marks ? { marks: over.marks } : {}),
     ...(over.first ? { first: over.first } : {}),
     ...(over.tag ? { tag: over.tag } : {}),
+    ...(over.becomes ? { becomes: over.becomes } : {}),
   };
 }
 
@@ -136,7 +137,8 @@ export function codexFigure(entry, { src = (p) => p, lang = 'zh' } = {}) {
 export function codexBookHtml(codex, seen, { src = (p) => p, lang = 'zh', kinds = {} } = {}) {
   const title = lang === 'en' ? 'Codex' : '图鉴';
   const groups = Object.keys(kinds).map((kind) => {
-    const all = [...codex.values()].filter((e) => e.kind === kind);
+    // An entry that becomes another (the nameless fox → 银月) is no slot of its own.
+    const all = [...codex.values()].filter((e) => e.kind === kind && (!e.becomes || seen.has(e.id)));
     if (!all.length) return '';
     const met = all.filter((e) => seen.has(e.id));
     const name = pickOf(lang)(kinds[kind]) ?? kind;
@@ -168,6 +170,7 @@ export function lintCodex(files, exists = () => true) {
     for (const p of Object.values(e.by_hero ?? {})) if (p && !exists(p)) bad.push(`${id}: picture ${p} is missing`);
     if (e.by_hero && !(Object.hasOwn(e.by_hero, 'male') && Object.hasOwn(e.by_hero, 'female'))) bad.push(`${id}: by_hero names both male and female`);
     if (e.first && typeof e.first !== 'object') bad.push(`${id}: first is {book, scene}`);
+    if (e.becomes != null && !(codex.entries ?? {})[e.becomes]) bad.push(`${id}: becomes ${e.becomes}, which is no entry`);
     const isItem = e.kind ? e.kind === '物品' : (files.items?.items ?? []).some((i) => i.id === id);
     if (isItem && !ITEM_TAGS.includes(e.tag)) bad.push(`${id}: an item's entry is tagged ${ITEM_TAGS.join(' · ')} — an everyday thing has none`);
   }

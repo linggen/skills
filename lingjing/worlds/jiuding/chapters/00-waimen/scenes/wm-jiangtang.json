@@ -33,6 +33,30 @@
    ]
   }
  },
+ "look": [
+  {
+   "id": "beard",
+   "label": {
+    "zh": "褚先生的山羊胡子",
+    "en": "Master Chu's goatee"
+   },
+   "text": {
+    "zh": "胡子一翘一翘，倒像在替他点头；你暗暗数了，他讲一段，要翘七回。",
+    "en": "The goatee bobs up and down as if nodding for him. You count on the quiet: seven bobs to a passage."
+   }
+  },
+  {
+   "id": "ruler",
+   "label": {
+    "zh": "讲桌上的戒尺",
+    "en": "The ruler on the desk"
+   },
+   "text": {
+    "zh": "戒尺一头磨得发亮，另一头却新得很——先生打人，只用一头。",
+    "en": "One end of the ruler is worn bright; the other looks new. The master only ever strikes with one end."
+   }
+  }
+ ],
  "story": {
   "zh": "外门每日辰时上课。讲课的，是褚先生。\n\n褚先生五十来岁，瘦，留一撮山羊胡子，说话的时候山羊胡子一翘一翘的，像在替他点头。他讲课有一个习惯：先讲一段，然后点一个人起来问。\n\n点谁，看心情。心情好，点真灵根的。心情不好，点杂灵根的。\n\n他心情不好的时候比较多。\n\n**褚先生**：天地之间，灵气充盈。凡人不能纳，修士能纳。何也？——灵根也。灵根者，纳气之门户也。一门者，天灵根，门大而直，气如江河；五门者——（山羊胡子一翘，目光扫过全堂，停在你身上）——杂灵根，门小而乱，气如漏勺。\n\n满堂哄笑。\n\n**褚先生**：（山羊胡子一翘）《黄帝内经·素问》有言：「恬惔虚无，真气从之，精神内守，病安从来。」心里不贪不急，真气才肯跟着你走——你们一个个，心里全是灵石，真气能跟你们走吗？\n\n满堂不笑了。\n\n**褚先生**：{name}。\n\n**你**：（站起来）在。\n\n**褚先生**：你说，漏勺能打水吗？",
   "en": "The outer court has class every day at the hour of Chen. The one who teaches is Master Chu.\n\nMaster Chu is about fifty, thin, with a little goatee that bobs when he talks, as if it's nodding for him. He has a habit in class: lecture a stretch, then call someone up to answer.\n\nWho he calls depends on his mood. Good mood, he calls a true root. Bad mood, he calls a mixed root.\n\nHe's in a bad mood rather often.\n\n**Master Chu:** Between heaven and earth, spirit qi abounds. Mortals cannot take it in; cultivators can. Why? — Spirit roots. A spirit root is the doorway through which qi enters. One door: a heavenly root, the door wide and straight, qi like a river. Five doors — (the goatee bobs; his eyes sweep the hall and stop on you) — mixed roots, the doors small and crooked, qi like a skimmer.\n\nThe hall roars with laughter.\n\n**Master Chu:** (goatee bobbing) The Huangdi Neijing (Suwen) says: \"Be calm and empty, and true qi follows; keep the spirit within, and whence could illness come?\" Only when the heart is not greedy and not hasty will true qi follow you — every one of you has a heart full of spirit stones; will true qi follow you?\n\nThe hall stops laughing.\n\n**Master Chu:** {name}.\n\n**You:** (standing) Here.\n\n**Master Chu:** Tell me: can a skimmer draw water?"

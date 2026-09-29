@@ -136,7 +136,7 @@
    },
    "first": {
     "book": "h01",
-    "scene": "00-fox"
+    "scene": "00-yinyue"
    },
    "image": "art/people/yinyue-fox.webp",
    "lines": {
@@ -147,6 +147,24 @@
     "en": [
      "A silver fox no bigger than a palm: one tail, and eight cut stumps behind it.",
      "She calls herself mistress of Qingqiu — the rest she cannot recall."
+    ]
+   }
+  },
+  "yinyue-fox": {
+   "_about": "银月 as the hero first sees her, in the valley pit (a scene with `her: fox`, rules/codex.mjs): a little silver fox, nameless — the hero learns her name only at dawn (00-yinyue), where the 银月 entry takes over; `becomes` folds this one into it in 录's 图鉴.",
+   "kind": "生物",
+   "name": {
+    "zh": "小银狐",
+    "en": "A little silver fox"
+   },
+   "becomes": "yinyue",
+   "image": "art/people/yinyue-fox.webp",
+   "lines": {
+    "zh": [
+     "坑底泥水里的一只小银狐，毛如月霜；只剩一条尾巴，尾根八处断口。"
+    ],
+    "en": [
+     "A little silver fox in the muddy pit, its fur like frost on moonlight: one tail left, and eight stumps at its root."
     ]
    }
   },

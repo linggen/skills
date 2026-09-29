@@ -15,6 +15,7 @@ import { progress } from './did.mjs';
 import { divine, fate } from './fortune.mjs';
 import { gated } from './locks.mjs';
 import { look, stageAt } from './look.mjs';
+import { examine } from './examine.mjs';
 import { duel, lundao, questCheck, task, win } from './tasks.mjs';
 import { seclude } from './seclusion.mjs';
 import { story } from './story.mjs';
@@ -27,6 +28,8 @@ import { amend, art, atlas, build, enter, forget, leave, load, make, ring, save,
 /* Every verb kept to the story gates (rules/locks.mjs): a shut system's verb is refused `not-yet`. */
 export const VERBS = gated({
   look: (s, c, x, args = {}) => {
+    // `--at`: look at one thing in the scene (看, rules/examine.mjs) — free, written on the save.
+    if (args.at != null) return examine(s, c, x, args);
     // `--day` (the page's preview of a festival, and tests) moves only `today`.
     if (args.day) x = { ...x, day: args.day };
     const woke = wake(s, c, x);

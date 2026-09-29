@@ -762,6 +762,11 @@ body.reading .view, body.reading .tray { display: none; }
 @media (prefers-reduced-motion: reduce) { .ding.current i { animation: none; } }
 .lusec { margin-top: 18px; }
 .lusec h3 { font-size: 14px; letter-spacing: .15em; color: var(--dim); margin: 0 0 8px; font-weight: 600; }
+.luseen { margin: 0 0 10px; }
+.luseen h4 { margin: 0 0 2px; font-size: 12.5px; letter-spacing: .1em; color: var(--dim); font-weight: 600; }
+.luseen p { margin: 0; font-family: var(--serif); font-size: 14px; line-height: 1.7; }
+.luseen p b { font-weight: 600; margin-right: .6em; }
+.luseen p.dim { font-family: inherit; font-size: 12.5px; }
 .luch { margin: 8px 0; padding: 10px 14px; border: 1px solid var(--line); border-left: 3px solid var(--ling); border-radius: 8px; background: var(--surface); }
 .luch.current { border-left-color: var(--seal); }
 .luch summary { cursor: pointer; font-weight: 600; font-size: 15.5px; }
@@ -878,6 +883,24 @@ body .card.codexwrap .codexcard[data-kind="人物"] .cpic img { height: min(40vh
 body .card.codexwrap .codexcard:not([data-kind="人物"]) .cpic img { max-height: min(36vh, 300px); }
 .panelcard .paneltaps { margin-top: 10px; flex-wrap: wrap; }
 .panelcard .paneltap.busy { opacity: .6; }
+/* 看 — a scene's hotspots: small chips; what was found, one line each under the card. */
+.panelcard .looks { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 10px 4px 0; }
+.panelcard .lookhead { font-family: var(--serif); font-size: 13px; color: var(--dim); margin-right: 2px; }
+.panelcard .lookchip { font: inherit; font-size: 12.5px; padding: 3px 10px; border-radius: 999px; border: 1px dashed var(--line); background: var(--surface); color: var(--text); cursor: pointer; }
+.panelcard .lookchip:hover:not(:disabled) { border-color: var(--dim); }
+.panelcard .lookchip.found { border-style: solid; color: var(--faint); cursor: default; }
+.panelcard .lookchip.busy { opacity: .6; }
+.panelcard .lookfound { list-style: none; margin: 8px 4px 0; padding: 0; }
+.panelcard .lookfound li { font-family: var(--serif); font-size: 14px; line-height: 1.7; color: var(--dim); padding: 2px 0; }
+.panelcard .lookfound li b { font-weight: 600; color: var(--text); margin-right: .6em; }
+.panelcard .lookfound li.clue b { color: var(--seal); }
+.panelcard .lookhint { margin: 8px 4px 0; font-size: 13px; color: var(--seal); }
+/* A transition's one way on: a quiet link, not a button (his, 2026-09-29). */
+.panelcard .paneltaps.quiet { justify-content: flex-end; }
+.panelcard .quietnext { font: inherit; font-size: 13px; padding: 2px 4px; border: 0; background: none; color: var(--dim); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); }
+.panelcard .quietnext:hover:not(:disabled) { color: var(--text); }
+.panelcard .quietnext.busy { opacity: .6; }
+.panelcard .sceneinvite { margin: 8px 4px 0; font-size: 12px; color: var(--faint); }
 
 /* ── 恩仇簿 — the ledger chip's popover ── */
 .ledgerpop { width: min(420px, 80vw); }

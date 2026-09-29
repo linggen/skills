@@ -33,6 +33,30 @@
    ]
   }
  },
+ "look": [
+  {
+   "id": "axe",
+   "label": {
+    "zh": "手里的柴刀",
+    "en": "The axe in your hand"
+   },
+   "text": {
+    "zh": "刃口是你自己磨的，一刀能劈开一截松木；劈人，你没试过，也不打算今晚试。",
+    "en": "You ground its edge yourself; one blow splits a pine log. You have never tried it on a man and do not mean to start tonight."
+   }
+  },
+  {
+   "id": "token",
+   "label": {
+    "zh": "胸口的木牌",
+    "en": "The token on your chest"
+   },
+   "text": {
+    "zh": "木牌凉凉的，一动不动。她睡得正沉。",
+    "en": "The token lies cool and still. She is sound asleep."
+   }
+  }
+ ],
  "story": {
   "zh": "那件事以后，你照旧去讲堂，照旧被褚先生点名，照旧回答「多打几次」。\n\n你的修为，没人知道。白天你是外门最笨的那一个；晚上你是后山那块青石的噩梦——青石上的裂缝，一天比一天多。\n\n九月十二，夜里。你在柴房后面劈柴，马小宝来了。\n\n带着五个人。\n\n**马小宝**：{name}。听说褚先生夸你「有前途」？\n\n**你**：先生说的是学问。\n\n**马小宝**：学问？（伸手）公中，这个月的，再交一块。\n\n**你**：初一交过了。\n\n**马小宝**：那是初一的。这是「有前途」的。（冲身后一挥手）\n\n五个人围了上来。\n\n你在心里飞快地算了一遍。六个人。练气三层的两个，练气二层的三个，马小宝练气一层——他家给他吃了半年的丹药，吃出来的。\n\n你呢？练气一层。\n\n打得过吗？打得过。一拳一块青石，你试过。\n\n然后呢？\n\n然后全外门就知道了：一个五行杂灵根、下下之资、进门没几天的{name}，一个人打翻了六个。\n\n那就不用藏了。\n\n那就藏不住了。",
   "en": "After that, you go to the lecture hall as usual, get called on by Master Chu as usual, and answer \"draw it more times\" as usual.\n\nNobody knows your cultivation. By day you're the dumbest one in the outer court; by night you're the nightmare of that bluestone on the back mountain — the cracks in it multiply day by day.\n\nNinth month, twelfth day, night. You're splitting wood behind the woodshed when Ma Xiaobao comes.\n\nWith five people.\n\n**Ma Xiaobao:** {name}. Heard Master Chu called you \"promising\"?\n\n**You:** He meant my learning.\n\n**Ma Xiaobao:** Learning? (holds out his hand) Common fund, this month's — one more.\n\n**You:** I paid on the first.\n\n**Ma Xiaobao:** That was for the first. This is for \"promising.\" (waves to the ones behind him)\n\nThe five close in.\n\nIn your head you run the numbers fast. Six of them. Two at Qi Condensation layer three, three at layer two, Ma Xiaobao at layer one — his family fed him pills for half a year, and that's what came out.\n\nYou? Layer one.\n\nCan you beat them? You can. One punch, one bluestone — you've tried it.\n\nAnd then?\n\nAnd then the whole outer court knows: {name}, five-element mixed roots, bottom of the class, here a few days, knocked down six, single-handed.\n\nThen there's no more hiding.\n\nThen there's no hiding it."

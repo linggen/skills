@@ -10,6 +10,7 @@ import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from 
 // (`engineUiUrl`) must not fail the whole page.
 import * as sharedApi from '/shared/api.js';
 import { verb, content, SCRATCH, worldPath } from './rules.js';
+import { holdPlaceholder } from './invite.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
@@ -197,6 +198,7 @@ const view = {
   fateOpen: false, fateDraft: '', fateError: false, // the 命格 form: shown again, the date typed, a date refused
   refineMat: null, refineName: '', refineNote: null, // 炼化本命 on the card: the material picked, the name typed, a refusal
   panelBusy: null, panelNote: null, // a 连环画 panel's choice in flight, or its refusal
+  lookBusy: null, // a 看 chip's look in flight (rules/examine.mjs)
   ledgerOpen: false, // the 恩仇簿 chip's popover
   wxOpen: false, wxSense: null, wxNote: null, // the weather chip's popover: the engine's sense as read, a note
   valuePick: null, valueText: '', valueNote: null, // the 名字 card: an offered name tapped, the player's own typed, a refusal
@@ -269,7 +271,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, panelBusy: view.panelBusy, panelNote: view.panelNote, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, valueGender: view.valueGender, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, panelBusy: view.panelBusy, panelNote: view.panelNote, lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, valueGender: view.valueGender, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -1564,6 +1566,17 @@ async function panelTap(exitId, label) {
   if (r.ok) await report(`[scene] took ${r.chose ?? label}`);
 }
 
+/* 看 — a hotspot on the scene card (cards.js lookHtml): the rules look
+   (`look --at`), free, and the finding stands under the card. No chat turn:
+   the page shows the fact, and Ling reads it in Look (`page_did`, `seen`). */
+async function lookAt(id) {
+  keep({ lookBusy: id });
+  render();
+  const r = await write('look', { at: id }).catch(failed);
+  keep({ lookBusy: null, panelNote: r.ok ? null : refusal(r) });
+  await refresh();
+}
+
 /* 生辰 → 灵根 — the card's own (cards.js born): the date typed here goes to
    the rules on this machine and nowhere else — not into the chat, not into
    the page's memory past this tap (roots.mjs). Or 不填: the stone reads them.
@@ -1882,6 +1895,7 @@ const CLICKS = [
   ['[data-wx-set]', () => { if (skyDraft.city.trim()) run('wx:set', () => setSense({ city: skyDraft.city.trim() })); }],
   ['[data-wx-off]', (el) => run('wx:off', () => setSense({ off: el.dataset.wxOff === 'off' }))],
   ['[data-wx-clear]', () => run('wx:clear', () => setSense({ city: null }))],
+  ['[data-look-at]', (el) => { if (!el.matches(':disabled')) run(`look:${el.dataset.lookAt}`, () => lookAt(el.dataset.lookAt)); }],
   ['[data-panel-exit]', (el) => { if (!el.matches(':disabled')) run(`panel:${el.dataset.panelExit}`, () => panelTap(el.dataset.panelExit, el.textContent.trim())); }],
   ['[data-lu]', () => (view.luOpen ? show({ luOpen: false }) : openLu())],
   ['[data-lu-close]', () => show({ luOpen: false, codexOpen: null })],
@@ -2300,6 +2314,8 @@ async function mountChat() {
     skillName: SKILL,
     agentId: 'ling',
     title: 'Lingjing',
+    // 「你想怎么做？」 — every scene can be answered in words (invite.js).
+    placeholder: words().chatHint,
     sessionId: resume || undefined,
     // A new chat begun from the panel's own button, after the page is up.
     onSessionCreated: (sid) => { if (mounted && sid !== resume) openWith(sid); },
@@ -2347,6 +2363,7 @@ async function mountChat() {
       if (event === 'device_topic' && payload?.topic === 'yinyue' && payload?.op === 'unanswered' && payload?.payload?.app === SKILL) greetUnanswered(payload.payload.text);
     },
   });
+  holdPlaceholder($('chat-panel'), () => words().chatHint);
   mounted = true;
   // The bridge holds what is sent until the embed is listening, so one send
   // is enough — the old second `[scene] opened` 4.5 s later was a duplicate.

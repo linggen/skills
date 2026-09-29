@@ -932,9 +932,9 @@ test('a later realm pays more for the same task; the day counts base', () => {
 
 test('the prologue is free: its steps and bouts cost no 灵气, with the 丹田 empty or full', () => {
   let s = { ...start(), stamina: 0, stamina_at: NOW.toISOString() };
-  s = walk(s, TO_VALLEY.slice(0, 6), content, NOW);
+  s = walk(s, TO_VALLEY.slice(0, 7), content, NOW);
   assert.equal(s.scene, '00-heisong');
-  assert.equal(s.stamina, 0);
+  assert.equal(s.stamina, 0, 'looking (看) is free');
   // …but an exit that is toil by itself (the marks, the storm, the steps) spends its own 体力
   refused(resolve, s, { exit: 'carve' }, 'no-stamina');
   const full = must(resolve, { ...s, stamina: 100 }, { exit: 'carve' }).state;

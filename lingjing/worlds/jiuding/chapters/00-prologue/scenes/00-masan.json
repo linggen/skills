@@ -35,6 +35,41 @@
    ]
   }
  },
+ "look": [
+  {
+   "id": "bow",
+   "label": {
+    "zh": "墙上的旧弓",
+    "en": "The old bow on the wall"
+   },
+   "text": {
+    "zh": "弓背裂过两回，拿牛筋一圈一圈缠着，是爷爷传下来的；马三的眼睛，已在它上头停了两回。",
+    "en": "The bow-back has split twice and is bound round and round with ox sinew — your grandfather's. Ma San's eyes have come to rest on it twice already."
+   }
+  },
+  {
+   "id": "bowls",
+   "label": {
+    "zh": "灶台上的碗",
+    "en": "The bowls on the stove"
+   },
+   "text": {
+    "zh": "灶台上四只碗，三只缺口，只一只是囫囵的，偏偏搁在最边上。",
+    "en": "Four bowls on the stove: three chipped, one whole — and the whole one sits right on the edge."
+   }
+  },
+  {
+   "id": "club",
+   "label": {
+    "zh": "马三的短棍",
+    "en": "Ma San's club"
+   },
+   "text": {
+    "zh": "短棍包着铁皮，棍头磨得发亮；这根棍子打过的人，只怕比你认得的人还多。",
+    "en": "The club is sheathed in iron, its head rubbed bright. It has likely struck more people than you have ever met."
+   }
+  }
+ ],
  "story": {
   "zh": "收租的，是马三。\n\n马三是马家老爷的远房侄子，长得跟一扇门似的。不是像门，他本人比你家那扇门还像门——你家的门，至少还有缝。他进屋要侧着身子，侧着身子还要低头，低着头还要吸气。\n\n他腰里别一根包了铁皮的短棍。那根棍子在石坳村比他本人还有名。它走到哪儿，哪儿的狗就不叫了；它走到哪儿，哪儿的人就突然想起来，家里的鸡好像还没喂。\n\n那天傍晚，天边的云突然一暗。\n\n一阵狂风卷着落叶灌进村子。村口的狗集体闭上了嘴。树上的麻雀，排着队，一只接一只，飞走了。\n\n你放下手里的柴刀，叹了一口气。\n\n你知道，**他**来了。\n\n「砰——！」\n\n你家的柴门飞了出去。它在空中转了三圈，姿态优美，落在隔壁{伴}家的菜地里，砸扁了一颗白菜。\n\n那颗白菜，{伴}家种了一个秋天。\n\n门口站着一个人，把夕阳挡得严严实实。\n\n马三。\n\n他身后，走出来一个圆滚滚的身影。那身影每走一步，地面都要抖一下——主要是他自己在抖。\n\n马小宝。马三的独子，比你大两岁，重你一倍，穿一身绸子，走起路来像一只成了精的糯米团子。他手里，捏着一块桂花糕。\n\n**马三**：（短棍敲着门框，一下，一下，节奏感很好）山——租——\n\n**爹**：（扑通一声跪下）三爷！\n\n**马三**：我还没说完。\n\n**爹**：我先跪着。您慢慢说。\n\n马三愣了一下。显然，他收了这么多年租，头一回碰上这么配合的。\n\n**马三**：……还差一张鹿皮，二十斤肉。入冬前交不上——\n\n他的目光在屋里转了一圈。转过墙角接水的盆，转过灶台上的碗，最后，落在墙上那张缠着牛筋的旧弓上。\n\n**马三**：——那张弓，我就收了。\n\n**爹**：三爷！那是我爹传给我的！\n\n**马三**：你爹传给你，你传给我。（拍了拍你爹的肩膀，语重心长）传承嘛。我懂。\n\n就在这时，马小宝一摇一摆，绕过他爹，走到了你面前。\n\n他把那块桂花糕，举到了你的鼻子底下。\n\n那一刻，时间变慢了。\n\n你看见那块糕上，每一粒桂花都在发光，金灿灿的，像撒了一层碎金子。你闻见那股香味从你的鼻孔钻进去，顺着喉咙往下滑，一路滑到你空了一整天的肚子里，在那里转了一圈，挥了挥手，又走了。\n\n你听见那块桂花糕，在对你说话。\n\n它说：**你配吗？**\n\n**马小宝**：想吃吗？学声狗叫，给你舔一口。",
   "en": "The one who collects the rent is Ma San.\n\nMa San is some distant nephew of Old Master Ma, and he is built like a door. Not *like* a door — he is more of a door than your family's door; your door at least has gaps in it. To get into a room he has to turn sideways, and turned sideways he has to duck, and ducking he has to breathe in.\n\nAt his belt he carries a short club bound with iron. In Shi'ao that club is more famous than he is. Wherever it goes, the dogs stop barking; wherever it goes, people suddenly remember they haven't fed the chickens.\n\nThat evening, the clouds at the edge of the sky go suddenly dark.\n\nA gust of wind pours into the village, full of dead leaves. The dogs at the gate shut their mouths, all together. The sparrows in the trees line up and fly off, one after another.\n\nYou put down your wood-knife and sigh.\n\nYou know: **he** has come.\n\n*\"BANG —!\"*\n\nYour wicker gate flies off. It turns three graceful circles in the air and lands in {伴}'s family's vegetable patch next door, flattening a cabbage.\n\n{伴}'s family spent a whole autumn growing that cabbage.\n\nSomeone stands in the doorway, blocking out the sunset completely.\n\nMa San.\n\nFrom behind him waddles a round figure. With every step it takes the ground shakes a little — mostly it's the figure itself that's shaking.\n\nMa Xiaobao. Ma San's only son, two years older than you and twice your weight, dressed all in silk, walking like a rice dumpling that has become a demon. In his hand, a piece of osmanthus cake.\n\n**Ma San:** (rapping the door frame with his club, tap, tap, great sense of rhythm) Moun — tain — rent —\n\n**Father:** (dropping to his knees with a thud) Third Master!\n\n**Ma San:** I'm not finished.\n\n**Father:** I'll kneel first. Take your time.\n\nMa San is thrown for a moment. Clearly, in all his years of collecting rent, he has never met anyone this cooperative.\n\n**Ma San:** …Still short one deer hide, twenty jin of meat. Not paid before winter —\n\nHis eyes make a circuit of the room. Past the basins in the corner catching drips, past the bowls on the stove, and at last they settle on the old bow bound with ox sinew on the wall.\n\n**Ma San:** — and that bow is mine.\n\n**Father:** Third Master! My father handed that down to me!\n\n**Ma San:** Your father handed it to you, you hand it to me. (patting your father's shoulder, earnestly) Heritage. I get it.\n\nJust then Ma Xiaobao waddles round his father and comes up to you.\n\nHe holds the osmanthus cake right under your nose.\n\nIn that moment, time slows down.\n\nYou see every flake of osmanthus on that cake shining, golden, as if sprinkled with gold dust. You smell it: the scent slips in through your nostrils, slides down your throat, all the way into your stomach that's been empty all day, takes a turn around, waves, and leaves.\n\nYou hear the osmanthus cake speaking to you.\n\nIt says: **Do you deserve me?**\n\n**Ma Xiaobao:** Want some? Bark like a dog and you can lick it."

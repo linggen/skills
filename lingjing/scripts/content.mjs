@@ -962,6 +962,35 @@ function lintChapterShape(chapter, content, bad) {
   if (chapter.coming != null && !pair(chapter.coming)) bad(where, 'coming needs zh and en');
 }
 
+/* 看 — the lint of a scene's hotspots (rules/examine.mjs; LOOK_GIVES is its
+   GIVES table's kinds, kept equal by tests/examine.test.mjs): ids, words in both languages, one line
+   each; every clue an exit waits on is a clue of this scene, and a scene that
+   waits on one has its hint. `pair` checks a {zh, en}. Returns problems. */
+export const LOOK_TEXT_MAX = { zh: 60, en: 200 };
+export function lintLooks(scene, pair, isId) {
+  const bad = [], spots = Array.isArray(scene.look) ? scene.look : [], ids = spots.map(h => h.id);
+  if (scene.look != null && !Array.isArray(scene.look)) return ['look is a list'];
+  if (new Set(ids).size !== ids.length) bad.push('repeats a look id');
+  if (spots.length > 4) bad.push('at most four things to look at');
+  for (const h of spots) {
+    const at = `look ${h.id}`;
+    if (!isId(String(h.id))) bad.push(`${at}: an id is lowercase`);
+    if (!pair(h.label)) bad.push(`${at}: a label in zh and en`);
+    if (!pair(h.text)) bad.push(`${at}: a finding in zh and en`);
+    else for (const lang of ['zh', 'en']) if ([...h.text[lang]].length > LOOK_TEXT_MAX[lang] || /\n/.test(h.text[lang])) bad.push(`${at}: a finding is one line in ${lang} (≤${LOOK_TEXT_MAX[lang]})`);
+    if (h.clue != null && h.clue !== true) bad.push(`${at}: clue is true`);
+    for (const kind of Object.keys(h.gives ?? {})) if (!LOOK_GIVES.has(kind)) bad.push(`${at}: gives ${kind}, which it cannot`);
+    if (h.gives?.mark != null && !isId(String(h.gives.mark))) bad.push(`${at}: a mark is a lowercase id`);
+  }
+  const waits = scene.exits.flatMap(e => e.needs?.seen ?? []);
+  for (const id of waits) if (!spots.some(h => h.id === id && h.clue)) bad.push(`an exit waits on ${id}, not a clue of this scene`);
+  if (waits.length && !pair(scene.look_hint)) bad.push('a scene that waits on a clue has a look_hint in zh and en');
+  if (scene.look_hint != null && !waits.length) bad.push('a look_hint, but no exit waits on a clue');
+  return bad;
+}
+
+export const LOOK_GIVES = new Set(['mark']);
+
 function lintScene(scene, chapter, content, ids, bad) {
   const where = `scene ${scene.id}`;
   if (scene.chapter !== chapter.id) bad(where, `says chapter ${scene.chapter}, lives in ${chapter.id}`);
@@ -993,6 +1022,7 @@ function lintScene(scene, chapter, content, ids, bad) {
   const persons = new Set(peopleIds(content));
   for (const who of scene.people ?? []) if (!persons.has(who)) bad(where, `names unknown person ${who}`);
   if (scene.her != null && !content.world.companion?.forms?.[scene.her]) bad(where, `her form ${scene.her} is not the companion's`);
+  for (const p of lintLooks(scene, pair, id => ID.test(id))) bad(where, p);
 }
 
 /* A passage (zh + en), with the companion's words marked ⟪…⟫ alike in both. */

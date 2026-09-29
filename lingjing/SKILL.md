@@ -62,8 +62,10 @@ tools:
       The game as it stands, as JSON — the scene, the place, the stage, `ask`,
       `page_did`, `words` and the rest (guide `look`). Call it first in every
       session, first again when the player speaks after a quiet while, and
-      whenever unsure.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs look --said={{said}} --for=ling"
+      whenever unsure. With `at`, the player looks at one thing of
+      `scene.look` (看): its finding, free — typed words that look, touch or
+      search go here (guide `tell`).
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs look --said={{said}} --at={{at}} --for=ling"
     tier: read
     timeout_ms: 8000
     args:
@@ -73,6 +75,12 @@ tools:
         description: >-
           The player's latest words, verbatim — typed or the tapped label. The
           rules set the game's language from them before answering.
+      at:
+        type: string
+        required: false
+        description: >-
+          A hotspot id from `scene.look`, when the player's words look at,
+          touch or search that thing. Omit for a plain Look.
 
   - name: Progress
     description: >-
