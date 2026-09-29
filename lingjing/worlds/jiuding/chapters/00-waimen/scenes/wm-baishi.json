@@ -1,0 +1,61 @@
+{
+ "version": 1,
+ "id": "wm-baishi",
+ "chapter": "00-waimen",
+ "at": "shanmen",
+ "place": {
+  "zh": "沉鼎观 · 山门",
+  "en": "Chending Temple · The gate"
+ },
+ "setup": {
+  "zh": "大比后的第三天，你挑水路过山门。瞿老在那一级台阶上扫地，扫帚忽然停了：「放下。跟我来。」",
+  "en": "Three days after the contest you carry water past the gate. Elder Qu is sweeping that one step, and his broom stops. \"Put it down. Come with me.\""
+ },
+ "recap": {
+  "zh": "大比后的第三天，扫了五十年台阶的瞿老，把扫帚一停：「放下。跟我来。」",
+  "en": "Three days after the contest, Elder Qu, who had swept the steps for fifty years, stopped his broom. \"Put it down. Come with me.\""
+ },
+ "cast": [],
+ "people": [
+  "qulao"
+ ],
+ "panel": {
+  "art": "art/panels/wm-baishi.webp",
+  "caption": {
+   "zh": [
+    "大比后的第三天，山门。",
+    "扫帚，停了。",
+    "「放下。跟我来。」"
+   ],
+   "en": [
+    "Three days after the contest, the gate.",
+    "The broom stops.",
+    "\"Put it down. Come with me.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "大比后的第三天，瞿老来了。\n\n不是他来找你——是你挑水路过山门，他在那一级台阶上扫地，扫帚忽然停了。\n\n**瞿老**：放下。",
+  "en": "On the third day after the contest, Elder Qu comes.\n\nNot to find you — you're carrying water past the mountain gate, he's sweeping that one step, and suddenly the broom stops.\n\n**Elder Qu:** Put it down."
+ },
+ "lines": [],
+ "buttons": [
+  "follow"
+ ],
+ "exits": [
+  {
+   "id": "follow",
+   "label": {
+    "zh": "放下水桶，跟上",
+    "en": "Set down the buckets and follow"
+   },
+   "means": "sets down the water and follows Elder Qu",
+   "story": {
+    "zh": "你把水桶放下。\n\n**瞿老**：跟我来。\n\n他扛着扫帚往后山走。你跟在后面。",
+    "en": "You put the buckets down.\n\n**Elder Qu:** Come with me.\n\nHe shoulders the broom and heads for the back mountain. You follow."
+   },
+   "beat": [],
+   "next": "wm-caowu"
+  }
+ ]
+}

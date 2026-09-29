@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "id": "00-waimen",
+  "opens": null,
+  "province": "徐",
+  "corridor": false,
+  "cauldron": false,
+  "first_scene": "wm-ahe",
+  "gate": null,
+  "_id": "The book's 第一章 · 外门 (story/huxian-bing/02-第一章·外门.md), between the prologue and 冀: an id that sorts after 00-prologue and before 01-ji (chapters run in id order, core.mjs advanceChapter).",
+  "_map": "The small area around 沉鼎观 (his, 2026-09-29): 外门, 讲堂, 柴房, 药园, 后山, 藏经阁, 坊市, 渡口, the Si and its stone door, 泗水北岸. Every other place — the rest of 徐 and the eight provinces — refuses with `say` and stands greyed on the map (world.mjs mapOf).",
+  "map": {
+    "places": [
+      "waimen",
+      "jiangtang",
+      "chaifang",
+      "yaoyuan",
+      "houshan",
+      "cangjing",
+      "zhengdian",
+      "shanmen",
+      "fangshi",
+      "dukou",
+      "shimen",
+      "sishui",
+      "sibei"
+    ],
+    "say": {
+      "zh": "外门弟子，无令不得下山。周衡的账本上，每一步都记着。",
+      "en": "Outer disciples may not leave the mountain without leave. Every step goes in Zhou Heng's ledger."
+    }
+  },
+  "_beats": "剧情 × 开放世界 (design.md, his 2026-09-28): five key beats lock the map from the scene after their entry to their last (world.mjs beatOf); between them the area is open, with the threads in quests/xu.json. The entry of each is a waypoint the player walks to.",
+  "beats": [
+    {
+      "id": "rumen",
+      "title": {
+        "zh": "入门第一课",
+        "en": "The first lesson"
+      },
+      "scenes": [
+        "wm-ahe",
+        "wm-jiangtang",
+        "wm-zhoutian",
+        "wm-qingshi"
+      ],
+      "say": {
+        "zh": "讲堂还没散，夜还没过。先把眼前的事做完。",
+        "en": "The lesson isn't over, nor the night. Finish what is before you first."
+      }
+    },
+    {
+      "id": "chaifang",
+      "title": {
+        "zh": "柴房",
+        "en": "The woodshed"
+      },
+      "scenes": [
+        "wm-chaifang",
+        "wm-danlu",
+        "wm-diyilu"
+      ],
+      "say": {
+        "zh": "你一身是伤，哪儿也去不了。",
+        "en": "You are hurt all over; you are going nowhere."
+      }
+    },
+    {
+      "id": "mijing",
+      "title": {
+        "zh": "沉鼎秘境",
+        "en": "The hidden realm"
+      },
+      "scenes": [
+        "wm-mijing",
+        "wm-wangzuo",
+        "wm-kunzhen",
+        "wm-xirang",
+        "wm-chu"
+      ],
+      "say": {
+        "zh": "秘境的石门在身后合上了。三天后才开。",
+        "en": "The stone door has shut behind you. It opens again in three days."
+      }
+    },
+    {
+      "id": "dabi",
+      "title": {
+        "zh": "外门大比",
+        "en": "The outer court contest"
+      },
+      "scenes": [
+        "wm-dabi",
+        "wm-lun1",
+        "wm-fushi",
+        "wm-lun2",
+        "wm-juesai"
+      ],
+      "say": {
+        "zh": "大比正在进行，台下三百双眼睛。",
+        "en": "The contest is on, and three hundred pairs of eyes are watching."
+      }
+    },
+    {
+      "id": "baishi",
+      "title": {
+        "zh": "拜师",
+        "en": "The master"
+      },
+      "scenes": [
+        "wm-baishi",
+        "wm-caowu",
+        "wm-heluo",
+        "wm-jiaxin"
+      ],
+      "say": {
+        "zh": "瞿老还在等你。",
+        "en": "Elder Qu is still waiting for you."
+      }
+    }
+  ],
+  "_goal": "The chapter's one goal and its countdown on the goal line (errands.mjs goalOf): the story's date until 周衡 says 「大比，明日」 (the mark `dabi-eve`), then 明日 that real day and 今日 after; the contest's first exit waits a real day on the same mark (`needs.day_after`).",
+  "goal": {
+    "title": {
+      "zh": "外门大比",
+      "en": "The outer court contest"
+    },
+    "date": {
+      "zh": "腊月初八",
+      "en": "the eighth of the twelfth month"
+    },
+    "at": "wm-dabi",
+    "eve": "dabi-eve"
+  },
+  "title": {
+    "zh": "第一章 · 外门",
+    "en": "Chapter 1 · The Outer Court"
+  },
+  "summary": {
+    "zh": "外门的日子，是从交钱开始的。褚先生说杂灵根是漏勺；那天夜里，你一夜通了小周天——银月替你凿了两道半。柴房里二十三下，换来一只小铜炉；药园的贼不认字，吃了你的萝卜；沉鼎秘境里一撮息壤，撑开了你的五扇门。外门大比，马小宝在泗水里转了三圈。扫了五十年台阶的瞿老，收你为徒。",
+    "en": "Outer-court life starts with paying up. Master Chu says mixed roots are a skimmer; that night your qi goes round the small circuit in one go — Yinyue had chiselled two and a half gates for you. Twenty-three blows in the woodshed buy a little bronze furnace; the garden thief can't read, and eats your radish; a pinch of breathing soil in the hidden realm opens your five doors. At the contest Ma Xiaobao spins three times into the Si. Elder Qu, who swept the steps for fifty years, takes you as his student."
+  },
+  "intro": {
+    "zh": "外门的日子，是从交钱开始的。",
+    "en": "Life in the outer court starts with paying up."
+  },
+  "mystery": {
+    "zh": "三百年没人进过的石室里，为什么放着一撮息壤？",
+    "en": "Why was there a pinch of breathing soil in a stone chamber no one had entered in three hundred years?"
+  }
+}

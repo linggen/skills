@@ -1,0 +1,87 @@
+{
+ "version": 1,
+ "id": "wm-kunzhen",
+ "chapter": "00-waimen",
+ "at": "shimen",
+ "place": {
+  "zh": "沉鼎秘境 · 崖壁",
+  "en": "The hidden realm · The cliff wall"
+ },
+ "setup": {
+  "zh": "头顶传来脚步声。马小宝和那五个人，顺着崖壁爬下来：「秘境里死个把人，可不稀奇。」",
+  "en": "Footsteps overhead. Ma Xiaobao and his five come climbing down the cliff. \"People die in the hidden realm all the time.\""
+ },
+ "recap": {
+  "zh": "马小宝六个人追下崖来，你踩了一脚那块长得像马小宝的石头——六个人像壁虎一样粘在了崖壁上，三天后才开。",
+  "en": "Ma Xiaobao and his five came down the cliff after you; you stepped on the stone that looked like Ma Xiaobao — and the six of them stuck to the cliff like geckos, not to come free for three days."
+ },
+ "cast": [],
+ "people": [
+  "maxiaobao"
+ ],
+ "panel": {
+  "art": "art/panels/wm-kunzhen.webp",
+  "caption": {
+   "zh": [
+    "崖壁上，亮起一圈淡淡的光。",
+    "六个人，像六只壁虎，贴在崖壁上。",
+    "「三天后自己就开了。」"
+   ],
+   "en": [
+    "A faint ring of light glows on the cliff.",
+    "Six people stuck to the rock like six geckos.",
+    "\"It opens by itself in three days.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "就在这时，头顶上传来一阵脚步声。\n\n**马小宝**：——我就说{他她}往这边走了！\n\n你抬头。崖顶上，站着马小宝，还有那五个人。\n\n**马小宝**：（居高临下，笑得很开心）{name}，秘境里死个把人，可不稀奇。\n\n他们顺着崖壁往下爬。\n\n⟪**银月**：（打了个哈欠）……往左边那块石头上踩一下。⟫\n\n**你**：哪块？\n\n⟪**银月**：那块长得像马小宝的。⟫\n\n你找到了那块石头。圆的，胖的，确实有点像。你一脚踩了上去。\n\n崖壁上，亮起了一圈淡淡的光。正在往下爬的六个人，同时停住了——不是自己停的，是动不了了。他们像六只被粘在墙上的壁虎，贴在崖壁上，手脚都在乱蹬，就是动不了。\n\n**马小宝**：你——你干了什么！\n\n**你**：我什么都没干。\n\n⟪**银月**：前人留下的困阵。三天后自己就开了。⟫\n\n**你**：（抬头）小宝哥，三天后自己就开了。\n\n**马小宝**：三天？！我——我还没吃饭！",
+  "en": "Just then, footsteps sound overhead.\n\n**Ma Xiaobao:** — Told you {他她} came this way!\n\nYou look up. On the cliff top stands Ma Xiaobao, with those five.\n\n**Ma Xiaobao:** (looking down on you, smiling very happily) {name}, people dying in a hidden realm — nobody's surprised.\n\nThey start climbing down the cliff face.\n\n⟪**Yinyue:** (yawning) …Step on that stone on the left.⟫\n\n**You:** Which one?\n\n⟪**Yinyue:** The one that looks like Ma Xiaobao.⟫\n\nYou find the stone. Round, fat — it does look a bit like him. You stamp on it.\n\nA ring of faint light lights up on the cliff face. The six climbing down all stop at once — not by choice; they can't move. Like six geckos glued to a wall, stuck to the cliff, arms and legs kicking, going nowhere.\n\n**Ma Xiaobao:** You — what did you do!\n\n**You:** I didn't do anything.\n\n⟪**Yinyue:** A trapping array someone left long ago. It opens by itself in three days.⟫\n\n**You:** (looking up) Brother Xiaobao, it opens by itself in three days.\n\n**Ma Xiaobao:** Three days?! I — I haven't eaten!"
+ },
+ "lines": [],
+ "buttons": [
+  "radish",
+  "go"
+ ],
+ "exits": [
+  {
+   "id": "radish",
+   "label": {
+    "zh": "扔一根萝卜上去",
+    "en": "Toss up a radish"
+   },
+   "means": "throws a radish up to Ma Xiaobao",
+   "needs": {
+    "bag": "luobo"
+   },
+   "take": {
+    "bag": "luobo"
+   },
+   "refuse": {
+    "zh": "你身上没有萝卜。",
+    "en": "You have no radish on you."
+   },
+   "mark": "radish-lixi",
+   "story": {
+    "zh": "你想了想，从包袱里摸出一根萝卜，往上扔了过去。\n\n萝卜划过一道弧线，精准地落进了马小宝张大的嘴里。\n\n**你**：利息。\n\n你走进了那道墙。",
+    "en": "You think it over, take a radish out of your bundle and toss it up.\n\nThe radish flies in an arc and lands neatly in Ma Xiaobao's wide-open mouth.\n\n**You:** Interest.\n\nYou walk into the wall."
+   },
+   "beat": [],
+   "next": "wm-xirang"
+  },
+  {
+   "id": "go",
+   "label": {
+    "zh": "走",
+    "en": "Walk on"
+   },
+   "means": "leaves them stuck and goes through the wall",
+   "story": {
+    "zh": "你想了想，什么也没扔。\n\n**你**：利息，另算。\n\n你走进了那道墙。",
+    "en": "You think it over and toss nothing.\n\n**You:** Interest, reckoned separately.\n\nYou walk into the wall."
+   },
+   "beat": [],
+   "next": "wm-xirang"
+  }
+ ]
+}

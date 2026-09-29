@@ -1,0 +1,108 @@
+{
+ "version": 1,
+ "id": "wm-mijing",
+ "chapter": "00-waimen",
+ "at": "shimen",
+ "place": {
+  "zh": "泗水 · 秘境石门前",
+  "en": "The Si · Before the stone door"
+ },
+ "setup": {
+  "zh": "十月初一，泗水退潮，露出一道石门。几百个外门弟子挤在门前，手里都攥着地图。马小宝坐在一只描金小木匣后面：「公中，一人一块。」",
+  "en": "The first of the tenth month: the Si draws back and shows a stone door. Hundreds of outer disciples crowd before it, maps in hand. Ma Xiaobao sits behind a little gilded box. \"Common fund. One each.\""
+ },
+ "recap": {
+  "zh": "十月初一，沉鼎秘境开了。{伴}把{伴·她}的地图借给你——利息，两块。",
+  "en": "On the first of the tenth month the hidden realm opened. {伴} lent you the map — interest, two stones."
+ },
+ "cast": [],
+ "people": [
+  "ban",
+  "maxiaobao"
+ ],
+ "panel": {
+  "art": "art/panels/wm-mijing.webp",
+  "caption": {
+   "zh": [
+    "十月初一，泗水退潮。",
+    "石门前，几百个外门弟子攥着地图。",
+    "「借你。利息，两块。」"
+   ],
+   "en": [
+    "The first of the tenth month: the Si draws back.",
+    "Before the stone door, hundreds of disciples clutch their maps.",
+    "\"I'll lend it. Interest: two stones.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "十月初一。\n\n沉鼎秘境，开了。\n\n秘境在泗水底下。每十年，泗水退一次潮，露出一道石门。石门后面，是一座不知道多少年前留下来的遗迹——沉鼎观的名字，就是从这里来的。外门弟子进去，各凭本事。捡到什么，归什么。\n\n几百个外门弟子挤在石门前，手里都攥着地图——前人画的，一代一代传下来，画得密密麻麻。哪里有灵草，哪里有机关，哪里有前人留下的破法器，地图上都标着。\n\n**{伴}**：（凑过来）你的地图呢？\n\n**你**：没有。\n\n**{伴}**：你不买？一张地图才一块灵石。\n\n**你**：我的灵石，一块交了公中，一块交了公中，一块……\n\n**{伴}**：交了公中。\n\n**你**：交了公中。\n\n{伴}看了你一会儿，把{伴·她}的地图塞给了你。\n\n**{伴}**：借你。利息，两块。\n\n**你**：……你到底借给多少人过？\n\n**{伴}**：就你一个。（面无表情）所以利息高。\n\n石门边上，马小宝又摆开了那只描金的小木匣。\n\n**马小宝**：秘境门口，公中，一人一块。外门的规矩。",
+  "en": "Tenth month, first day.\n\nThe Chending hidden realm opens.\n\nThe hidden realm lies under the Si. Once every ten years the Si's tide goes out and a stone gate appears. Behind it is a ruin left from who knows how many years ago — it's where Chending Temple gets its name. Outer-court disciples go in on their own wits. Whatever you pick up is yours.\n\nHundreds of outer-court disciples crowd in front of the stone gate, every one clutching a map — drawn by those before, handed down generation to generation, packed dense with marks. Where the spirit herbs are, where the traps are, where old broken artifacts lie — it's all on the map.\n\n**{伴}:** (sidling up) Where's your map?\n\n**You:** Haven't got one.\n\n**{伴}:** You're not buying one? A map's only one spirit stone.\n\n**You:** My spirit stones: one went to the common fund, one went to the common fund, one…\n\n**{伴}:** Went to the common fund.\n\n**You:** Went to the common fund.\n\n{伴} looks at you a moment, then shoves {伴·她} map at you.\n\n**{伴}:** A loan. Interest: two.\n\n**You:** …How many people have you lent to, exactly?\n\n**{伴}:** Just you. (deadpan) That's why the interest is high.\n\nBy the stone gate, Ma Xiaobao has set out that little gilded wooden box again.\n\n**Ma Xiaobao:** At the hidden realm's gate, common fund, one each. Outer-court rules."
+ },
+ "lines": [],
+ "buttons": [
+  "pay",
+  "refuse"
+ ],
+ "exits": [
+  {
+   "id": "pay",
+   "label": {
+    "zh": "交",
+    "en": "Pay it"
+   },
+   "means": "pays one stone to Ma Xiaobao's common fund",
+   "needs": {
+    "wealth": 1
+   },
+   "take": {
+    "wealth": 1
+   },
+   "refuse": {
+    "zh": "怀里没有灵石。",
+    "en": "You have no spirit stones on you."
+   },
+   "ledger": [
+    {
+     "who": "maxiaobao",
+     "kind": "仇",
+     "what": {
+      "zh": "十月初一，秘境门口，公中：一块灵石。",
+      "en": "The first of the tenth month, at the hidden realm's door, the common fund: one spirit stone."
+     }
+    }
+   ],
+   "story": {
+    "zh": "你把一块灵石放进匣子里。\n\n**马小宝**：懂事。\n\n你往前走了十步，停下来，摸出小本子，舔了舔笔尖：**十月初一。公中。灵石一块。马小宝。**",
+    "en": "You put one spirit stone in the box.\n\n**Ma Xiaobao:** Good sense.\n\nYou walk ten steps on, stop, take out your notebook and lick the brush tip: **Tenth month, first day. Common fund. One spirit stone. Ma Xiaobao.**"
+   },
+   "beat": [],
+   "next": "wm-wangzuo"
+  },
+  {
+   "id": "refuse",
+   "label": {
+    "zh": "不交",
+    "en": "Refuse"
+   },
+   "means": "refuses to pay the common fund",
+   "mark": "refused-oct",
+   "ledger": [
+    {
+     "who": "maxiaobao",
+     "kind": "仇",
+     "what": {
+      "zh": "十月初一，秘境门口：你没交公中。他笑着说，秘境里死个把人，可不稀奇。",
+      "en": "The first of the tenth month, at the hidden realm's door: you didn't pay the common fund. He smiled: people die in the hidden realm all the time."
+     }
+    }
+   ],
+   "story": {
+    "zh": "你从匣子前面走了过去，像没看见。\n\n**马小宝**：（在你身后，笑得很开心）{name}。秘境里死个把人，可不稀奇。\n\n你没回头。你摸出小本子，舔了舔笔尖：**十月初一。公中。没交。马小宝笑了。**",
+    "en": "You walk past the box as if you don't see it.\n\n**Ma Xiaobao:** (behind you, smiling very happily) {name}. People dying in a hidden realm — nobody's surprised.\n\nYou don't look back. You take out your notebook and lick the brush tip: **Tenth month, first day. Common fund. Didn't pay. Ma Xiaobao smiled.**"
+   },
+   "beat": [],
+   "next": "wm-wangzuo"
+  }
+ ]
+}

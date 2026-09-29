@@ -1,0 +1,99 @@
+{
+ "version": 1,
+ "id": "wm-chaifang",
+ "chapter": "00-waimen",
+ "at": "chaifang",
+ "place": {
+  "zh": "沉鼎观 · 柴房后面",
+  "en": "Chending Temple · Behind the woodshed"
+ },
+ "setup": {
+  "zh": "夜里，你在柴房后面劈柴。马小宝来了，带着五个人：「听说褚先生夸你『有前途』？」",
+  "en": "At night you are splitting wood behind the shed. Ma Xiaobao comes, with five others. \"I hear Master Chu called you 'promising'?\""
+ },
+ "recap": {
+  "zh": "九月十二夜里，马小宝带五个人堵在柴房后面。你打得过，可你没还手——你数着，二十三下。",
+  "en": "On the night of the twelfth, Ma Xiaobao and five others cornered you behind the woodshed. You could have beaten them. You didn't lift a hand — you counted: twenty-three."
+ },
+ "cast": [],
+ "people": [
+  "maxiaobao"
+ ],
+ "panel": {
+  "art": "art/panels/wm-chaifang.webp",
+  "caption": {
+   "zh": [
+    "九月十二，夜里，柴房后面。",
+    "马小宝来了，带着五个人。",
+    "打得过。然后呢？"
+   ],
+   "en": [
+    "The twelfth of the ninth month, night, behind the woodshed.",
+    "Ma Xiaobao comes, with five others.",
+    "You could beat them. And then?"
+   ]
+  }
+ },
+ "story": {
+  "zh": "那件事以后，你照旧去讲堂，照旧被褚先生点名，照旧回答「多打几次」。\n\n你的修为，没人知道。白天你是外门最笨的那一个；晚上你是后山那块青石的噩梦——青石上的裂缝，一天比一天多。\n\n九月十二，夜里。你在柴房后面劈柴，马小宝来了。\n\n带着五个人。\n\n**马小宝**：{name}。听说褚先生夸你「有前途」？\n\n**你**：先生说的是学问。\n\n**马小宝**：学问？（伸手）公中，这个月的，再交一块。\n\n**你**：初一交过了。\n\n**马小宝**：那是初一的。这是「有前途」的。（冲身后一挥手）\n\n五个人围了上来。\n\n你在心里飞快地算了一遍。六个人。练气三层的两个，练气二层的三个，马小宝练气一层——他家给他吃了半年的丹药，吃出来的。\n\n你呢？练气一层。\n\n打得过吗？打得过。一拳一块青石，你试过。\n\n然后呢？\n\n然后全外门就知道了：一个五行杂灵根、下下之资、进门没几天的{name}，一个人打翻了六个。\n\n那就不用藏了。\n\n那就藏不住了。",
+  "en": "After that, you go to the lecture hall as usual, get called on by Master Chu as usual, and answer \"draw it more times\" as usual.\n\nNobody knows your cultivation. By day you're the dumbest one in the outer court; by night you're the nightmare of that bluestone on the back mountain — the cracks in it multiply day by day.\n\nNinth month, twelfth day, night. You're splitting wood behind the woodshed when Ma Xiaobao comes.\n\nWith five people.\n\n**Ma Xiaobao:** {name}. Heard Master Chu called you \"promising\"?\n\n**You:** He meant my learning.\n\n**Ma Xiaobao:** Learning? (holds out his hand) Common fund, this month's — one more.\n\n**You:** I paid on the first.\n\n**Ma Xiaobao:** That was for the first. This is for \"promising.\" (waves to the ones behind him)\n\nThe five close in.\n\nIn your head you run the numbers fast. Six of them. Two at Qi Condensation layer three, three at layer two, Ma Xiaobao at layer one — his family fed him pills for half a year, and that's what came out.\n\nYou? Layer one.\n\nCan you beat them? You can. One punch, one bluestone — you've tried it.\n\nAnd then?\n\nAnd then the whole outer court knows: {name}, five-element mixed roots, bottom of the class, here a few days, knocked down six, single-handed.\n\nThen there's no more hiding.\n\nThen there's no hiding it."
+ },
+ "lines": [],
+ "buttons": [
+  "count",
+  "fist"
+ ],
+ "exits": [
+  {
+   "id": "count",
+   "label": {
+    "zh": "护住木牌，数着",
+    "en": "Guard the token, and count"
+   },
+   "means": "does not fight back, shields the fox token and counts the blows",
+   "mark": "counted-23",
+   "ledger": [
+    {
+     "who": "maxiaobao",
+     "kind": "仇",
+     "what": {
+      "zh": "九月十二，柴房：马小宝等六人，二十三下。利息，另算。",
+      "en": "The twelfth of the ninth month, the woodshed: Ma Xiaobao and five others, twenty-three blows. Interest to be reckoned separately."
+     }
+    }
+   ],
+   "story": {
+    "zh": "{外门·柴房}\n\n马小宝踹完最后一脚，喘着粗气，啐了一口。\n\n**马小宝**：下个月初一，公中交两块。\n\n他们走了。\n\n你躺在柴房后面的泥地里，望着天上的月亮。嘴里一股{外门·腥}腥味。\n\n**你**：（对着月亮，很轻）……你爷爷的。{外门·伤}\n\n**你**：（咧嘴，一咧就疼）……没事。账，记着呢。",
+    "en": "{外门·柴房}\n\nMa Xiaobao lands the last kick, panting, and spits.\n\n**Ma Xiaobao:** First of next month, the common fund is two.\n\nThey leave.\n\nYou lie in the dirt behind the woodshed, looking up at the moon. A taste of {外门·腥} in your mouth.\n\n**You:** (to the moon, very softly) …Your grandpa's. {外门·伤}\n\n**You:** (grinning, and the grin hurts) …It's fine. It's in the ledger."
+   },
+   "beat": [],
+   "next": "wm-danlu"
+  },
+  {
+   "id": "fist",
+   "label": {
+    "zh": "攥紧拳头",
+    "en": "Clench your fists"
+   },
+   "means": "clenches the fists, nearly fights back",
+   "stamina": 5,
+   "mark": "shed-fist",
+   "ledger": [
+    {
+     "who": "maxiaobao",
+     "kind": "仇",
+     "what": {
+      "zh": "九月十二，柴房：马小宝等六人，二十三下。利息，另算。",
+      "en": "The twelfth of the ninth month, the woodshed: Ma Xiaobao and five others, twenty-three blows. Interest to be reckoned separately."
+     }
+    }
+   ],
+   "story": {
+    "zh": "你攥紧了拳头。\n\n后山那块青石上的缝，从上到下。一拳，就一拳。\n\n你想起那一夜，木牌里那个很困的声音说的那个字。\n\n你松开了拳头。\n\n{外门·柴房}\n\n马小宝踹完最后一脚，喘着粗气，啐了一口。\n\n**马小宝**：下个月初一，公中交两块。\n\n他们走了。\n\n你躺在柴房后面的泥地里，望着天上的月亮。嘴里一股{外门·腥}腥味。\n\n**你**：（对着月亮，很轻）……你爷爷的。{外门·伤}\n\n**你**：（咧嘴，一咧就疼）……没事。账，记着呢。",
+    "en": "You clench your fist.\n\nThe crack in that bluestone on the back mountain, top to bottom. One punch, just one.\n\nYou remember that night, and the one word the very sleepy voice in the token said.\n\nYou open your fist.\n\n{外门·柴房}\n\nMa Xiaobao lands the last kick, panting, and spits.\n\n**Ma Xiaobao:** First of next month, the common fund is two.\n\nThey leave.\n\nYou lie in the dirt behind the woodshed, looking up at the moon. A taste of {外门·腥} in your mouth.\n\n**You:** (to the moon, very softly) …Your grandpa's. {外门·伤}\n\n**You:** (grinning, and the grin hurts) …It's fine. It's in the ledger."
+   },
+   "beat": [],
+   "next": "wm-danlu"
+  }
+ ]
+}

@@ -1,0 +1,73 @@
+{
+ "version": 1,
+ "id": "wm-lun2",
+ "chapter": "00-waimen",
+ "at": "zhengdian",
+ "place": {
+  "zh": "沉鼎观 · 大比 · 对马小宝",
+  "en": "Chending Temple · The contest · Against Ma Xiaobao"
+ },
+ "setup": {
+  "zh": "再上台，对面是马小宝。一身新法衣，腰里挂着铜镜：「你跪下，叫三声爷爷，我让你滚下去。」",
+  "en": "Up again, and across from you stands Ma Xiaobao: a new robe, the bronze mirror at his waist. \"Kneel, call me grandpa three times, and I'll let you crawl off.\""
+ },
+ "recap": {
+  "zh": "你对马小宝说：学声狗叫，给你舔一口。你用了三成——他在空中转了三圈，落进了泗水里。",
+  "en": "You told Ma Xiaobao: bark like a dog and you can have a lick. You used three-tenths of your strength — he turned three times in the air and landed in the Si."
+ },
+ "cast": [],
+ "people": [
+  "maxiaobao",
+  "chuxiansheng",
+  "qulao"
+ ],
+ "panel": {
+  "art": "art/panels/wm-lun2.webp",
+  "caption": {
+   "zh": [
+    "对面，马小宝。一面铜镜。",
+    "「你跪下，叫三声爷爷。」",
+    "一寸，就是一辈子。"
+   ],
+   "en": [
+    "Across from you, Ma Xiaobao. A bronze mirror.",
+    "\"Kneel, and call me grandpa three times.\"",
+    "An inch is a lifetime."
+   ]
+  }
+ },
+ "story": {
+  "zh": "再上台的时候，台下三百多人，炸了锅。\n\n**台下**：{name}？那个五行杂灵根？\n\n**台下**：{他她}来挨揍？\n\n对面，是马小宝。一路打上来的马小宝，当届最强的那一个。一身新的法衣，腰里挂着他家传的法器——一面铜镜，据说是马家祖上从一个游方道士手里，用三亩好地换来的。\n\n**马小宝**：（笑得很开心）{name}。还是上次的规矩——你跪下，叫三声爷爷，我让你滚下去。\n\n你看着他。\n\n你想起灶台上飞出去的那只碗。\n\n一寸。\n\n一寸，就是一辈子。",
+  "en": "When you step up again, the three hundred-odd people below erupt.\n\n**The crowd:** {name}? The five-element mixed roots?\n\n**The crowd:** And {他她}'s here to get beaten up?\n\nAcross from you is Ma Xiaobao. Ma Xiaobao, who has fought his way up, the strongest of the year. A brand-new robe, and at his waist his family's heirloom artifact — a bronze mirror that, they say, a Ma ancestor got from a wandering Taoist in exchange for three mu of good land.\n\n**Ma Xiaobao:** (smiling very happily) {name}. Same rules as last time — kneel, call me grandpa three times, and I'll let you crawl off.\n\nYou look at him.\n\nYou remember the bowl that flew off the stove.\n\nOne inch.\n\nOne inch is a whole life."
+ },
+ "lines": [],
+ "buttons": [
+  "bark"
+ ],
+ "exits": [
+  {
+   "id": "bark",
+   "label": {
+    "zh": "学声狗叫，给你舔一口",
+    "en": "Bark like a dog, and you can have a lick"
+   },
+   "means": "answers Ma Xiaobao's taunt and fights him",
+   "game": {
+    "id": "dabi-ma",
+    "kind": "duel",
+    "creature": "foe-maxiaobao",
+    "retry": true
+   },
+   "withdrawn": {
+    "zh": "马小宝的铜镜又亮了，他笑得更开心了。——再来。",
+    "en": "Ma Xiaobao's mirror flashes again, and he smiles even wider. — Again."
+   },
+   "story": {
+    "zh": "**你**：小宝哥。\n\n**马小宝**：嗯？\n\n**你**：学声狗叫，给你舔一口。\n\n台下，愣了一下。然后笑声像炸开的锅一样，从台下一直炸到山门外。\n\n马小宝的脸，变成了他爹的那种颜色。「完了」色。\n\n他举起铜镜。铜镜里射出一道黄光，直冲你的面门——\n\n你没躲。你只是抬起了一只手。\n\n胸口里，那股被息壤撑开的五扇门里涌出来的暖，一下子冲到了掌心。金，青，黑，红，黄。五种颜色的光，在你的掌心里，转成一个圈。\n\n那道黄光撞在圈上——像一滴水，落进了一口很大很大的水缸里。\n\n没了。\n\n马小宝举着铜镜，傻站在台上。\n\n**你**：小宝哥。九月初一，公中，一块灵石。十月初一，公中，一块灵石。九月十二，柴房，二十三下。\n\n你往前走了一步。\n\n**你**：利息，另算。\n\n一掌。\n\n你没用全力。你用了三成。\n\n马小宝飞了出去。他在空中转了三圈，姿态，很优美。然后越过了台子，越过了台下的人群，越过了外门的院墙——\n\n「扑通。」\n\n落进了泗水里。\n\n台下，三百多人，一个声音都没有。褚先生站在人群最后面，山羊胡子一动不动，停在半空，像被冻住了。瞿老拄着扫帚，站在山门的台阶上。他扫了五十年的那一级台阶，今天，他没有扫。\n\n胸口的木牌，一烫。\n\n⟪**银月**：……三成？⟫\n\n**你**：（小声）嗯。\n\n⟪**银月**：（打了个哈欠）……下回用两成。泗水离这儿，太近了。⟫",
+    "en": "**You:** Brother Xiaobao.\n\n**Ma Xiaobao:** Hm?\n\n**You:** Bark like a dog and you can lick it.\n\nBelow, a beat of stunned silence. Then laughter goes off like a pot boiling over, from the foot of the platform all the way out past the mountain gate.\n\nMa Xiaobao's face turns his father's colour. The colour called \"finished.\"\n\nHe raises the bronze mirror. A beam of yellow light shoots out of it, straight at your face —\n\nYou don't dodge. You just raise one hand.\n\nIn your chest, the warmth pouring out through the five doors the breathing soil pried open rushes all at once into your palm. Gold, green, black, red, yellow. Light of five colours turns into a ring in your palm.\n\nThe yellow beam hits the ring — like a drop of water falling into a very, very big water vat.\n\nGone.\n\nMa Xiaobao stands there on the platform holding up his mirror, dumbstruck.\n\n**You:** Brother Xiaobao. Ninth month, first day, common fund, one spirit stone. Tenth month, first day, common fund, one spirit stone. Ninth month, twelfth day, woodshed, twenty-three blows.\n\nYou take one step forward.\n\n**You:** Interest, reckoned separately.\n\nOne palm.\n\nYou don't use your full strength. You use three tenths.\n\nMa Xiaobao flies off. He turns three graceful circles in the air. Then over the platform, over the crowd, over the outer-court wall —\n\n*Splash.*\n\nInto the Si.\n\nBelow, three hundred-odd people, not one sound. Master Chu stands at the very back of the crowd, his goatee motionless in mid-air, as if frozen. Elder Qu leans on his broom on the steps of the mountain gate. That one step he has swept for fifty years — today, he doesn't sweep it.\n\nThe token on your chest goes hot.\n\n⟪**Yinyue:** …Three tenths?⟫\n\n**You:** (quietly) Mm.\n\n⟪**Yinyue:** (yawning) …Use two next time. The Si's too close.⟫"
+   },
+   "beat": [],
+   "next": "wm-juesai"
+  }
+ ]
+}

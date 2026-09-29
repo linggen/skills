@@ -1,0 +1,63 @@
+{
+ "version": 1,
+ "id": "wm-chu",
+ "chapter": "00-waimen",
+ "at": "shimen",
+ "place": {
+  "zh": "泗水 · 秘境石门外",
+  "en": "The Si · Outside the stone door"
+ },
+ "setup": {
+  "zh": "三天后秘境关闭，你最后一个出来，空着手。「捡到什么了？」「一撮土。」",
+  "en": "Three days on the realm closes. You come out last, empty-handed. \"What did you find?\" \"A pinch of earth.\""
+ },
+ "recap": {
+  "zh": "你空着手出了秘境；{伴}问你是不是长高了。腊月初七，周衡在告示栏贴出一张纸：外门大比，明日。",
+  "en": "You came out of the realm empty-handed; {伴} asked if you'd grown taller. On the seventh of the twelfth month Zhou Heng pinned a notice to the board: the outer court contest — tomorrow."
+ },
+ "cast": [],
+ "people": [
+  "ban",
+  "zhouheng"
+ ],
+ "panel": {
+  "art": "art/panels/wm-chu.webp",
+  "caption": {
+   "zh": [
+    "三天后，秘境关闭。你最后一个出来，空着手。",
+    "「你是不是……长高了？」",
+    "告示栏：外门大比，明日。头名，筑基丹一枚。"
+   ],
+   "en": [
+    "Three days later the realm closes. You come out last, empty-handed.",
+    "\"Have you… grown taller?\"",
+    "The notice board: the outer court contest, tomorrow. First place, one Foundation pill."
+   ]
+  }
+ },
+ "story": {
+  "zh": "三天后，秘境关闭。\n\n外门弟子一个一个从石门里出来，有的捧着灵草，有的抱着破法器，有的空着手，一脸晦气。\n\n你最后一个出来。空着手。\n\n**{伴}**：（凑过来）捡到什么了？\n\n**你**：一撮土。\n\n**{伴}**：……土？\n\n**你**：土。\n\n**{伴}**：（掏出小本子）地图的利息，两块灵石。\n\n**你**：我没钱。\n\n**{伴}**：那记着。\n\n**你**：记着。\n\n{伴·她}合上本子，走了两步，又回头看了你一眼。\n\n**{伴}**：你是不是……长高了？\n\n你没回答。\n\n又过了半个时辰，马小宝和五个跟班，从石门里爬了出来。六个人，饿得眼睛发绿，走路打晃。\n\n——\n\n日子一天一天地过去。泗水涨回来，盖住了石门。后山那块青石上的裂缝，多得数不清了。\n\n腊月初七，周衡在外门的告示栏上，贴了一张纸。墨迹还没干。\n\n**外门大比，明日。头名，赏筑基丹一枚。**\n\n整个沉鼎观，这届只分到一枚。\n\n**周衡**：（贴完，退后一步，看了看，又上前把一个角抹平）大比，明日。输了的，不退报名费。——没有报名费。记账。",
+  "en": "Three days later, the hidden realm closes.\n\nThe outer-court disciples come out of the stone gate one by one — some holding spirit herbs, some hugging broken artifacts, some empty-handed and sour-faced.\n\nYou come out last. Empty-handed.\n\n**{伴}:** (sidling up) Find anything?\n\n**You:** A pinch of soil.\n\n**{伴}:** …Soil?\n\n**You:** Soil.\n\n**{伴}:** (takes out the little notebook) Interest on the map: two spirit stones.\n\n**You:** I've got no money.\n\n**{伴}:** Then it's on the books.\n\n**You:** On the books.\n\n{伴} closes the notebook, walks two steps, and looks back at you.\n\n**{伴}:** Did you… get taller?\n\nYou don't answer.\n\nAnother half hour later, Ma Xiaobao and his five hangers-on crawl out of the stone gate. Six of them, eyes green with hunger, staggering.\n\n——\n\nThe days go by, one by one. The Si rises again and covers the stone gate. The cracks in that bluestone on the back mountain are past counting.\n\nTwelfth month, seventh day: Zhou Heng pins a sheet of paper to the outer court's notice board. The ink isn't dry.\n\n**Outer-court contest, tomorrow. First place wins one Foundation pill.**\n\nAll of Chending Temple got only one this year.\n\n**Zhou Heng:** (pins it, steps back, looks, steps up again to smooth down a corner) The contest, tomorrow. Losers get no refund on the entry fee. — There is no entry fee. Entered in the ledger."
+ },
+ "lines": [],
+ "buttons": [
+  "rest"
+ ],
+ "exits": [
+  {
+   "id": "rest",
+   "label": {
+    "zh": "今日到此——大比，明日",
+    "en": "Enough for today — the contest is tomorrow"
+   },
+   "means": "rests for the day, waits for tomorrow's contest",
+   "mark": "dabi-eve",
+   "story": {
+    "zh": "那天夜里，你没去后山。\n\n你躺在大通铺上，握着胸口的木牌。木牌是凉的。那条银色的尾巴，一明，一暗。\n\n**你**：（小声）明天。\n\n木牌没有回答。",
+    "en": "That night you don't go to the back mountain.\n\nYou lie on the communal bed, holding the token on your chest. It's cool. The one silver tail: bright, then dim.\n\n**You:** (quietly) Tomorrow.\n\nThe token doesn't answer."
+   },
+   "beat": [],
+   "next": "wm-dabi"
+  }
+ ]
+}

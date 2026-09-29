@@ -821,6 +821,72 @@
       "buy": 0,
       "sell": 0,
       "reads": "tuna"
+    },
+    {
+      "id": "luobo",
+      "kind": "material",
+      "name": {
+        "zh": "萝卜",
+        "en": "Radish"
+      },
+      "art": "art/items/luobo.webp",
+      "about": {
+        "zh": "伙房的萝卜，白的，带着泥。银月说：带根萝卜去。",
+        "en": "A radish from the kitchen, white, with the soil still on. Yinyue said: take a radish."
+      },
+      "buy": 1,
+      "sell": 0,
+      "sold": [
+        "徐"
+      ]
+    },
+    {
+      "id": "danlu",
+      "kind": "key",
+      "name": {
+        "zh": "小铜炉",
+        "en": "The little bronze furnace"
+      },
+      "art": "art/items/danlu.webp",
+      "about": {
+        "zh": "银月从仙界带下来的丹炉，巴掌大，三足两耳，炉盖上蹲着一只小兽。它炼丹不炸。它嘴刁。",
+        "en": "The furnace Yinyue brought down from the heavens: palm-sized, three legs, two ears, a little beast crouched on the lid. It never blows up a batch. It is a picky eater."
+      },
+      "buy": 0,
+      "sell": 0,
+      "effect": {
+        "key": true
+      }
+    },
+    {
+      "id": "huangting",
+      "kind": "scroll",
+      "name": {
+        "zh": "黄庭经",
+        "en": "The Yellow Court Scripture"
+      },
+      "art": "art/items/huangting.webp",
+      "about": {
+        "zh": "瞿老扔给你的一卷薄书。「上有黄庭下关元，后有幽阙前命门」——三丹田，这回自己练。",
+        "en": "A thin book Elder Qu tossed you. \"Above is the Yellow Court, below the Origin Pass; behind the Hidden Gate, before the Gate of Life\" — the three elixir fields, yours to train now."
+      },
+      "buy": 0,
+      "sell": 0
+    },
+    {
+      "id": "heluo",
+      "kind": "scroll",
+      "name": {
+        "zh": "河洛剑诀",
+        "en": "The He-Luo Sword Canon"
+      },
+      "art": "art/items/heluo.webp",
+      "about": {
+        "zh": "沉鼎观祖师留下的半卷竹简。三百年，没有一个人练成过第一宫——它要五行俱全。开篇是：戴九履一，左三右七。",
+        "en": "Half a bamboo scroll left by the temple's founder. In three hundred years no one has mastered its first palace — it needs all five elements. It opens: nine on the head, one on the feet, three on the left, seven on the right."
+      },
+      "buy": 0,
+      "sell": 0
     }
   ]
 }

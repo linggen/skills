@@ -1,0 +1,64 @@
+{
+ "version": 1,
+ "id": "wm-diyilu",
+ "chapter": "00-waimen",
+ "at": "chaifang",
+ "place": {
+  "zh": "沉鼎观 · 柴房",
+  "en": "Chending Temple · The woodshed"
+ },
+ "setup": {
+  "zh": "第二天，你没去讲堂。你蹲在柴房里，面前是那只小铜炉，和三株外门弟子当杂草的回春藤。",
+  "en": "The next day you skip the lecture. You crouch in the woodshed before the little furnace and three stems of spring-return vine the outer disciples call weeds."
+ },
+ "recap": {
+  "zh": "第一炉：三株当杂草的回春藤，出来一颗九道金纹的回春丹。你吞了它，一身的伤，一夜退尽。",
+  "en": "The first batch: three stems of vine everyone called weeds, and out came a spring-return pill with nine gold rings. You swallowed it, and every bruise was gone by morning."
+ },
+ "cast": [],
+ "people": [],
+ "panel": {
+  "art": "art/panels/wm-diyilu.webp",
+  "caption": {
+   "zh": [
+    "三株当杂草的回春藤，放进炉子，盖上盖。",
+    "「轰。」一团青紫色的火，一点都不烫。",
+    "九道纹。金的。"
+   ],
+   "en": [
+    "Three stems of vine everyone calls weeds; in they go, lid on.",
+    "Whoomph. A blue-violet flame — not hot at all.",
+    "Nine rings. Gold."
+   ]
+  }
+ },
+ "story": {
+  "zh": "第二天，你没去讲堂。\n\n你蹲在柴房里，面前摆着那只小铜炉。炉子旁边，是你夜里去后山崖缝里挖的东西：三株回春藤。外门弟子都当它是杂草——灵气太薄，炼出来顶多是个下品，还十炉炸七炉。\n\n你照着《吐纳经》背面那几行小字——你原来以为是虫子咬的，那天夜里才看清楚是字——把它们一样一样放进炉子，盖上盖。\n\n然后你把手按在炉底，把肚子里那股暖，一点一点引过去——\n\n「轰。」\n\n炉子里腾起一团青紫色的火。你吓得往后一仰，后脑勺撞在柴堆上，柴堆塌了，埋了你半个身子。\n\n那团火不烫。一点都不烫。暖洋洋的，照得整间柴房都亮了。炉盖上的小兽睁开了两只眼睛，张着嘴，像在吃那团火。\n\n一炷香以后，炉盖自己弹开了。炉底躺着一颗丹。圆滚滚的，碧绿色，鸽子蛋那么大，透亮得像一滴凝住的露水。你凑近了，一道一道地数上面的纹——\n\n九道。金的。整间柴房，一下子全是香味。\n\n你不知道九道是什么意思。你只知道，三株外门弟子当杂草的回春藤，扔进去，出来了这个。\n\n镇上济世堂里有这个，锁在柜子里。下品的一颗，要五两银子，上面一道纹。九道纹的——济世堂的掌柜，怕是这辈子都没见过。\n\n你家一年的租，也不够买一颗。",
+  "en": "The next day you don't go to the lecture hall.\n\nYou squat in the woodshed with the little bronze furnace in front of you. Beside it is what you dug out of a crack in the back-mountain cliff last night: three spring-return vines. The outer-court disciples all treat it as a weed — too little spirit qi; at best it makes a low-grade pill, and seven furnaces in ten blow up.\n\nFollowing the few lines of small writing on the back of the Scroll of Breath — you used to think they were worm-holes; only that night did you see they were words — you put them into the furnace one at a time and close the lid.\n\nThen you press your hand to the bottom of the furnace and lead the warmth in your belly over to it, bit by bit —\n\n*Whoomp.*\n\nA ball of blue-purple fire leaps up in the furnace. You jerk back in fright, the back of your head hits the woodpile, the woodpile collapses and buries half of you.\n\nThe fire isn't hot. Not hot at all. It's warm and cosy and lights up the whole woodshed. The little beast on the lid has both eyes open and its mouth wide, as if it's eating the fire.\n\nOne stick of incense later, the lid pops open on its own. At the bottom lies a pill. Round, jade-green, the size of a pigeon's egg, clear as a drop of frozen dew. You lean in and count the lines on it, one by one —\n\nNine. Gold. All at once the whole woodshed is fragrance.\n\nYou don't know what nine lines means. All you know is that three spring-return vines the outer court calls weeds went in, and this came out.\n\nThe Jishi Hall in town keeps these locked in a cabinet. A low-grade one costs five taels of silver, and it has one line. Nine lines — the Jishi Hall's shopkeeper has likely never seen one in his life.\n\nA whole year of your family's rent wouldn't buy one."
+ },
+ "lines": [],
+ "buttons": [
+  "swallow"
+ ],
+ "exits": [
+  {
+   "id": "swallow",
+   "label": {
+    "zh": "吞下去",
+    "en": "Swallow it"
+   },
+   "means": "swallows the pill",
+   "grant": {
+    "table": "scene",
+    "progress": 30,
+    "item": "mend-pill"
+   },
+   "story": {
+    "zh": "你把它吞了下去。\n\n一股暖流从喉咙往下，化开，流到肋骨上，流到眼睛上，流到身上每一块青紫的地方。疼，一点一点地，退了。\n\n你低头，看着那只小铜炉。它蹲在那里，炉盖上的小兽冲你挤了一下眼睛。\n\n**你**：……第三样呢？\n\n炉子没理你。\n\n那天夜里，你又炼了一炉，装进一个小瓷瓶里。九道纹。金的。\n\n——\n\n第三天，你走进讲堂的时候，脸上一点伤都没有。\n\n马小宝坐在第一排，回头看见你，手里的桂花糕，掉在了地上。\n\n**马小宝**：你——你的脸——\n\n**你**：（摸了摸脸）怎么了？前天夜里？前天夜里我睡得很好啊。小宝哥做噩梦了？\n\n马小宝张着嘴，看了看你，又看了看他自己的拳头。拳头上，还留着前天的淤青。他的脸，慢慢地，变成了他爹的那种颜色。\n\n你在他身后坐下，翻开本子，舔了舔笔尖：\n\n**九月十二。柴房。马小宝等六人。二十三下。**\n\n**利息：另算。**\n\n那天褚先生讲丹：《神农本草经》，上药、中药、下药；葛稚川《抱朴子》，「九转之丹，服之三日得仙」——「那是书上说说的。本观开山三百年，最好的一炉，是三转。」\n\n你在袖子里，攥紧了那个小瓷瓶。\n\n**褚先生**：还有一部，你们这辈子是见不着的。《黄帝九鼎神丹经诀》。本观为什么叫「沉鼎」？就是因为祖师当年，在泗水边上，得过这部经的一卷残篇——如今锁在藏经阁最顶层，观主都不轻易开。\n\n胸口的木牌，烫了一下。一个很困的声音：\n\n⟪**银月**：……九鼎……神丹……⟫\n\n然后，就没声了。\n\n你低下头，在本子上写：**九转。九纹。九鼎神丹经。藏经阁最顶层。**想了想，又把「藏经阁最顶层」几个字，描粗了一遍。",
+    "en": "You swallow it.\n\nA warm current runs down from your throat, spreads, flows to your ribs, to your eye, to every black-and-blue place on your body. The pain, little by little, recedes.\n\nYou look down at the little bronze furnace. It squats there; the little beast on the lid gives you a wink.\n\n**You:** …And the third thing?\n\nThe furnace ignores you.\n\nThat night you make another furnace's worth and put it in a little porcelain bottle. Nine lines. Gold.\n\n——\n\nOn the third day, when you walk into the lecture hall, there isn't a mark on your face.\n\nMa Xiaobao, in the front row, turns round, sees you, and drops his osmanthus cake on the floor.\n\n**Ma Xiaobao:** You — your face —\n\n**You:** (touching your face) What about it? The night before last? I slept very well the night before last. Did Brother Xiaobao have a nightmare?\n\nMa Xiaobao's mouth hangs open; he looks at you, then at his own fists. The fists still carry the bruises from the night before last. His face, slowly, turns his father's colour.\n\nYou sit down behind him, open your notebook and lick the brush tip:\n\n**Ninth month, twelfth day. Woodshed. Ma Xiaobao and five others. Twenty-three blows.**\n\n**Interest: reckoned separately.**\n\nThat day Master Chu lectures on pills: the Shennong Bencao Jing, upper, middle and lower medicines; Ge Zhichuan's Baopuzi, \"take the pill of nine turnings, and in three days become immortal\" — \"That's what the books say. In the three hundred years since this temple was founded, the best furnace ever made was three turnings.\"\n\nIn your sleeve, you grip the little porcelain bottle tight.\n\n**Master Chu:** And there's one more you'll never see in your lives. The Yellow Emperor's Canon of the Nine-Cauldron Elixir. Why is this temple called \"Chending,\" the Sunken Cauldron? Because the founder once found one broken scroll of that canon by the Si — it's locked now on the top floor of the scripture hall, and even the abbot seldom opens it.\n\nThe token on your chest goes hot for a moment. A very sleepy voice:\n\n⟪**Yinyue:** …nine cauldrons… elixir…⟫\n\nThen nothing more.\n\nYou lower your head and write in your notebook: **Nine turnings. Nine lines. Nine-Cauldron Elixir Canon. Top floor of the scripture hall.** You think a moment, then go over \"top floor of the scripture hall\" again, thicker."
+   },
+   "beat": [],
+   "next": "wm-mijing"
+  }
+ ]
+}

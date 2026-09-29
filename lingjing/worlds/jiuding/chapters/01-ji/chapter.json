@@ -6,6 +6,8 @@
   "corridor": false,
   "first_scene": "01-arrive",
   "gate": 1,
+  "_coming": "Still being rewritten as the book's 第二章 (河伯娶妇): the chapter before it ends and waits here, dateless (core.mjs advanceChapter). Take `coming` out when it is rewritten.",
+  "coming": { "zh": "第二章 · 即将开放", "en": "Chapter 2 · coming soon" },
   "title": { "zh": "第一章 · 冀州之鼎", "en": "Chapter 1 · The Cauldron of Ji" },
   "summary": {
     "zh": "北上冀州。漳水边的邺城年年给河伯娶妇，祠后的深水里有鼎在呼吸。揭开河伯的真身，破开洛书之封，第一鼎归来——练气圆满者，在此筑基。",

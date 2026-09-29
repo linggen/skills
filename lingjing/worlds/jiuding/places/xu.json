@@ -449,7 +449,9 @@
    "tier": 0,
    "roads": [
     "sishui",
-    "shanlu"
+    "shanlu",
+    "fangshi",
+    "shimen"
    ],
    "map": [
     0.815,
@@ -497,7 +499,8 @@
    "roads": [
     "shanlu",
     "zhengdian",
-    "waimen"
+    "waimen",
+    "fangshi"
    ],
    "map": [
     0.8395,
@@ -517,7 +520,8 @@
    "tier": 0,
    "roads": [
     "shanmen",
-    "waimen"
+    "waimen",
+    "cangjing"
    ],
    "map": [
     0.8455,
@@ -538,7 +542,10 @@
    "roads": [
     "shanmen",
     "zhengdian",
-    "sibei"
+    "sibei",
+    "jiangtang",
+    "chaifang",
+    "yaoyuan"
    ],
    "map": [
     0.8375,
@@ -657,6 +664,154 @@
     "en": "The vale under the cliff: silver-leaved trees hung with dew, grass that glows where you step."
    },
    "water": true
+  },
+  {
+   "id": "jiangtang",
+   "name": {
+    "zh": "沉鼎观 · 讲堂",
+    "en": "Chending Temple · The lecture hall"
+   },
+   "tier": 0,
+   "roads": [
+    "waimen",
+    "cangjing"
+   ],
+   "map": [
+    0.8432,
+    0.4046
+   ],
+   "line": {
+    "zh": "外门的讲堂：一排排矮桌，褚先生的山羊胡子一翘一翘。每日辰时上课。",
+    "en": "The outer court's lecture hall: rows of low desks, and Master Chu's goat beard bobbing. Lessons every morning at the hour of the dragon."
+   }
+  },
+  {
+   "id": "cangjing",
+   "name": {
+    "zh": "沉鼎观 · 藏经阁",
+    "en": "Chending Temple · The scripture hall"
+   },
+   "tier": 0,
+   "roads": [
+    "jiangtang",
+    "zhengdian"
+   ],
+   "map": [
+    0.8492,
+    0.4101
+   ],
+   "line": {
+    "zh": "藏经阁七层，外门弟子只许上三层。最顶层的门上一把铜锁，锁眼都绿了。你走近的时候，胸口的木牌烫了一下，一个很困的声音：「……九鼎……神丹……」然后就没声了。",
+    "en": "Seven floors, and outer disciples may climb only three. The top floor's door has a bronze lock gone green in the keyhole. As you come near, the token on your chest flares, and a very sleepy voice: \"…Nine cauldrons… divine elixir…\" Then nothing."
+   }
+  },
+  {
+   "id": "chaifang",
+   "name": {
+    "zh": "沉鼎观 · 柴房",
+    "en": "Chending Temple · The woodshed"
+   },
+   "tier": 0,
+   "roads": [
+    "waimen"
+   ],
+   "map": [
+    0.8322,
+    0.4043
+   ],
+   "has": {
+    "games": [
+     "qiqiao"
+    ]
+   },
+   "line": {
+    "zh": "外门后院的柴房，挨着伙房和猪圈。外门也有柴堆——你觉得这是缘分。",
+    "en": "The woodshed behind the outer court, by the kitchen and the pigsty. The outer court has a woodpile too — you call that fate."
+   }
+  },
+  {
+   "id": "yaoyuan",
+   "name": {
+    "zh": "沉鼎观 · 药园",
+    "en": "Chending Temple · The herb garden"
+   },
+   "tier": 0,
+   "roads": [
+    "houshan",
+    "waimen"
+   ],
+   "map": [
+    0.8285,
+    0.3978
+   ],
+   "has": {
+    "creature": "zheng"
+   },
+   "line": {
+    "zh": "药园一片银白。最里面那株最贵的紫玉参旁边，夜里常有「咔嚓、咔嚓」的声音。园门上挂着一块牌子：药园重地，偷者必究。",
+    "en": "The herb garden lies silver-white. Beside the costliest purple jade ginseng at the far end, at night, there is often a crunch, crunch. A board on the gate: Herb garden. Thieves will be pursued."
+   }
+  },
+  {
+   "id": "houshan",
+   "name": {
+    "zh": "沉鼎山 · 后山崖顶",
+    "en": "Mount Chending · The cliff top"
+   },
+   "tier": 0,
+   "roads": [
+    "yaoyuan"
+   ],
+   "map": [
+    0.8352,
+    0.3925
+   ],
+   "line": {
+    "zh": "后山崖顶，一块比人还高的大青石。往下看是泗水，泗水再往北，是蒙山。",
+    "en": "The cliff top behind the temple, a blue boulder taller than a person. Below runs the Si; north of the Si, Mount Meng."
+   }
+  },
+  {
+   "id": "fangshi",
+   "name": {
+    "zh": "沉鼎山下 · 坊市",
+    "en": "Below Mount Chending · The market"
+   },
+   "tier": 0,
+   "roads": [
+    "shanmen",
+    "dukou"
+   ],
+   "map": [
+    0.8272,
+    0.4381
+   ],
+   "has": {
+    "shop": true
+   },
+   "line": {
+    "zh": "山脚的坊市，一条街，卖符纸的、卖灵草的、卖萝卜的。钱掌柜的铺子最大，算盘打得最响。",
+    "en": "The market at the foot of the mountain: one street of talisman paper, spirit herbs and radishes. Shopkeeper Qian's is the biggest stall, and his abacus the loudest."
+   }
+  },
+  {
+   "id": "shimen",
+   "name": {
+    "zh": "沉鼎秘境 · 石门",
+    "en": "The hidden realm · The stone door"
+   },
+   "tier": 0,
+   "roads": [
+    "dukou"
+   ],
+   "map": [
+    0.8092,
+    0.4404
+   ],
+   "line": {
+    "zh": "泗水底下有一道石门。每十年，泗水退一次潮，露出它来。沉鼎观的名字，就是从这里来的。",
+    "en": "Under the Si there is a stone door. Once every ten years the river draws back and shows it. Chending Temple takes its name from it."
+   }
   }
  ]
 }

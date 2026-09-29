@@ -205,6 +205,161 @@
         "wealth": 15,
         "item": "qi-pill"
       }
+    },
+    {
+      "id": "xu-yaoyuan-shouye",
+      "title": {
+        "zh": "药园巡夜",
+        "en": "The night watch"
+      },
+      "from": {
+        "place": "waimen",
+        "who": {
+          "zh": "周衡",
+          "en": "Zhou Heng"
+        },
+        "person": "zhouheng"
+      },
+      "say": {
+        "zh": "{弟妹}。修仙之人，最要紧的是什么？——是不丢东西。药园上个月丢了灵草三十七株，这个月三十八株。多了一株：它在进步。此乃药园巡夜令，持此令者，夜入药园，无人敢拦。贼？贼不认字。灯油，外门每人每月半根。另一半，记账。",
+        "en": "Junior. What matters most to one who cultivates? — Not losing things. The herb garden lost thirty-seven plants last month, thirty-eight this month. One more: it is improving. This is the night-watch token; whoever holds it may enter the garden at night and none will stop them. The thief? The thief cannot read. Lamp oil: half a candle a month per outer disciple. The other half goes in the ledger."
+      },
+      "seen": {
+        "zh": "子时的药园一片银白。最里面，那株最贵的紫玉参旁边，「咔嚓」一声。",
+        "en": "The herb garden at midnight, silver-white. At the far end, by the costliest purple jade ginseng: crunch."
+      },
+      "done": {
+        "zh": "周衡看了看那团打呼的红毛，又看了看你，提笔写下一行：「药园：灵草损失三十八株。入账：灵兽一只。」他长长地舒了一口气：「账平了。」巡夜有功，赏灵石——他一块一块地数——十块。「记账。」",
+        "en": "Zhou Heng looks at the snoring ball of red fur, then at you, and writes a line: \"Herb garden: thirty-eight plants lost. Received: one spirit beast.\" He lets out a long breath. \"The books balance.\" A reward for the watch — he counts them out one by one — ten stones. \"Entered in the ledger.\""
+      },
+      "need": [
+        {
+          "kind": "tame",
+          "creature": "zheng",
+          "n": 1
+        }
+      ],
+      "grant": {
+        "table": "quest",
+        "progress": 30,
+        "wealth": 10
+      }
+    },
+    {
+      "id": "xu-yaoyuan-canzhu",
+      "title": {
+        "zh": "药园残株",
+        "en": "The garden's culls"
+      },
+      "from": {
+        "place": "waimen",
+        "who": {
+          "zh": "周衡",
+          "en": "Zhou Heng"
+        },
+        "person": "zhouheng"
+      },
+      "say": {
+        "zh": "外门穷，巡夜没有工钱。不过药园每个月要拔一回残株：虫咬的，长歪的，灵气散了一半的。往年都是扔。以后，扔给你。——垃圾，也是账。你那只畜生鼻子灵，让它闻一闻，哪几株还能入炉。",
+        "en": "The outer court is poor; the night watch pays nothing. But every month the garden is weeded of its culls: bitten by worms, grown crooked, half their spirit gone. We always threw them out. From now on, we throw them to you. — Rubbish is accounts too. That beast of yours has a good nose; let it sniff out which ones can still go in a furnace."
+      },
+      "done": {
+        "zh": "小狰的鼻子一抽一抽，从一堆残株里拱出八味还能用的。炉盖上的小兽睁开一只眼，又闭上了——像是在说：勉强。炉底躺着一颗聚气丹。",
+        "en": "Little Zheng's nose twitches, and from the heap of culls it roots out eight herbs still good. The little beast on the furnace lid opens one eye and closes it — as if to say: passable. At the bottom of the furnace lies a Gathering pill."
+      },
+      "need": [
+        {
+          "kind": "board",
+          "task": "alchemy-first",
+          "n": 1
+        }
+      ],
+      "grant": {
+        "table": "quest",
+        "progress": 30,
+        "wealth": 5,
+        "item": "qi-pill"
+      },
+      "opens": {
+        "after": "xu-yaoyuan-shouye"
+      }
+    },
+    {
+      "id": "xu-sun-charm",
+      "title": {
+        "zh": "孙二狗的护身符",
+        "en": "Sun Ergou's charm"
+      },
+      "from": {
+        "place": "chaifang",
+        "who": {
+          "zh": "孙二狗",
+          "en": "Sun Ergou"
+        },
+        "person": "sunergou"
+      },
+      "say": {
+        "zh": "{兄姐}……我娘给我缝的护身符……缝了三个晚上……马小宝说它土，一扯，碎成了七块……你、你手巧吗？我娘说，戴着它，大比能赢一场。一场就够了。",
+        "en": "Um… my mother sewed me this charm… three nights she sewed it… Ma Xiaobao said it was ugly and tore it — seven pieces… are you… are you good with your hands? My mother says with it on I'll win one round at the contest. One round is enough."
+      },
+      "done": {
+        "zh": "七块碎布拼回了一只护身符。孙二狗把它系回腰上，系了三道，又摸了三遍。「{兄姐}……你是好人。」",
+        "en": "Seven scraps pieced back into a charm. Sun Ergou ties it at his waist, three knots, and touches it three times. \"You're… a good person.\""
+      },
+      "need": [
+        {
+          "kind": "board",
+          "task": "qiqiao",
+          "n": 1,
+          "at": "chaifang"
+        }
+      ],
+      "grant": {
+        "table": "quest",
+        "progress": 15,
+        "wealth": 3
+      }
+    },
+    {
+      "id": "xu-ahe-lixi",
+      "title": {
+        "zh": "阿禾的利息",
+        "en": "Ah He's interest"
+      },
+      "from": {
+        "place": "fangshi",
+        "who": {
+          "zh": "阿禾",
+          "en": "Ah He"
+        },
+        "person": "ahe"
+      },
+      "say": {
+        "zh": "（翻开小本子）九月初一，{name}，下下之资。地图，利息两块。——你没钱。那就跑腿抵：买两根萝卜，再替我去渡口，给渡叔捎句话。利息，一笔一笔地还。",
+        "en": "(opening the little notebook) First of the ninth month: {name}, bottom of the class. The map: two stones' interest. — You've no money. Then work it off: buy two radishes, and run down to the ferry with a word for Du Shu. Interest gets paid one entry at a time."
+      },
+      "done": {
+        "zh": "阿禾接过萝卜，在本子上划掉一行，又写了一行，没告诉你写的什么。临走，{伴·她}塞给你一张符，墨还没干：「大比那天带着。我押你。」",
+        "en": "Ah He takes the radishes, crosses out one line in the notebook and writes another — and doesn't tell you what. Leaving, Ah He presses a talisman on you, the ink still wet: \"Bring it to the contest. I'm betting on you.\""
+      },
+      "need": [
+        {
+          "kind": "carry",
+          "item": "luobo",
+          "n": 2
+        },
+        {
+          "kind": "visit",
+          "place": "dukou",
+          "n": 1
+        }
+      ],
+      "grant": {
+        "table": "quest",
+        "progress": 15,
+        "wealth": 0,
+        "item": "talisman"
+      }
     }
   ]
 }

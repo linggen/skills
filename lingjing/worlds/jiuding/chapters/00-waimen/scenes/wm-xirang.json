@@ -1,0 +1,60 @@
+{
+ "version": 1,
+ "id": "wm-xirang",
+ "chapter": "00-waimen",
+ "at": "shimen",
+ "place": {
+  "zh": "沉鼎秘境 · 石室",
+  "en": "The hidden realm · The stone chamber"
+ },
+ "setup": {
+  "zh": "墙后面是一间石室，正中一张石台，台上一只玉匣。匣子里，只有一撮土。银月的眼睛，亮得吓人：「息壤。」",
+  "en": "Behind the wall is a stone chamber: a stone altar in the middle, a jade box on it. In the box, only a pinch of earth. Yinyue's eyes blaze: \"Breathing soil.\""
+ },
+ "recap": {
+  "zh": "石室里的玉匣中，是一撮息壤。你吞了它；它在你身子里长，把五扇又小又乱的门，一扇一扇撑开——五行俱全。练气五层。",
+  "en": "The jade box in the chamber held a pinch of breathing soil. You swallowed it; it grew inside you and opened your five small, crooked doors one by one — all five elements. Qi Condensation, layer five."
+ },
+ "cast": [],
+ "people": [],
+ "panel": {
+  "art": "art/panels/wm-xirang.webp",
+  "caption": {
+   "zh": [
+    "一张石台，一只玉匣。",
+    "匣子里，只有一撮土。",
+    "「息壤。」"
+   ],
+   "en": [
+    "A stone altar, a jade box.",
+    "In the box, only a pinch of earth.",
+    "\"Breathing soil.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "墙后面，是一间石室。\n\n不大。四面光秃秃的，没有灵草，没有法器，没有前人的骸骨。石室正中间，一张石台。石台上，一只玉匣。\n\n你走过去，打开玉匣。\n\n匣子里，只有**一撮土**。黄褐色的。普普通通的。跟你家后院的土，没什么两样。\n\n**你**：……就这？\n\n你肩膀上的银月，没有说话。你转过头看它。它的眼睛，亮得吓人。\n\n⟪**银月**：息壤。⟫\n\n**你**：什么？\n\n⟪**银月**：（声音都在抖）会自己长的土。当年鲧从天帝那里偷出来，拿去堵洪水的那种土——《山海经》里写的那个——它……它怎么会在这里……⟫\n\n**你**：它能干什么？\n\n银月转过头，盯着你。\n\n⟪**银月**：吞下去。⟫\n\n**你**：吞——吞土？\n\n⟪**银月**：吞下去！⟫\n\n**你**：我娘说，吃土是要闹肚子的——\n\n⟪**银月**：你娘说得对！可这不是土！⟫\n\n**你**：你刚才说它是土。\n\n⟪**银月**：（尾巴毛全炸了）——你到底吞不吞！⟫",
+  "en": "Behind the wall is a stone chamber.\n\nNot big. Bare on all four sides — no spirit herbs, no artifacts, no bones of those who came before. In the very middle, a stone table. On the stone table, a jade casket.\n\nYou go over and open it.\n\nIn the casket is only **a pinch of soil**. Yellow-brown. Perfectly ordinary. No different from the dirt in your back yard at home.\n\n**You:** …That's it?\n\nYinyue, on your shoulder, says nothing. You turn to look at her. Her eyes are frighteningly bright.\n\n⟪**Yinyue:** Breathing soil.⟫\n\n**You:** What?\n\n⟪**Yinyue:** (her voice is shaking) Soil that grows by itself. The soil Gun stole from the Heavenly Emperor to dam the flood — the one in the Classic of Mountains and Seas — how… how can it be here…⟫\n\n**You:** What does it do?\n\nYinyue turns and stares at you.\n\n⟪**Yinyue:** Swallow it.⟫\n\n**You:** Swa — swallow dirt?\n\n⟪**Yinyue:** Swallow it!⟫\n\n**You:** My mother says eating dirt gives you a bad stomach —\n\n⟪**Yinyue:** Your mother's right! But this isn't dirt!⟫\n\n**You:** You just said it was soil.\n\n⟪**Yinyue:** (every hair on her tail standing up) — Are you swallowing it or not!⟫"
+ },
+ "lines": [],
+ "buttons": [
+  "swallow"
+ ],
+ "exits": [
+  {
+   "id": "swallow",
+   "label": {
+    "zh": "吞下去",
+    "en": "Swallow it"
+   },
+   "means": "swallows the breathing soil",
+   "rise": 5,
+   "story": {
+    "zh": "你吞了。\n\n那撮土，一进嘴，就化了。像一口温水，顺着喉咙滑下去，滑进肚子，滑进丹田——\n\n然后，它开始**长**。\n\n它在你的丹田里，像一粒种子，破开了壳，伸出根，往你身子的每一个角落扎去。扎进经脉，扎进骨头，扎进那五扇又小又乱的「门」——你的灵根。\n\n它在长你的灵根。\n\n五扇门，一扇一扇地被撑开。被撑大。被撑直。原来又小又乱，像漏勺上的洞；现在，一扇比一扇宽，一扇比一扇亮——\n\n你跪在石台前面，浑身发抖。不是疼。是涨。像整个人是一片刚下过雨的地，每一寸都有东西在往外冒。\n\n不知道过了多久，你睁开眼睛。石室的墙上有一面磨光的石壁。你看见自己的皮肤底下，有五种颜色的光，在流。金，青，黑，红，黄。一种都不少。每一种，都亮得刺眼。\n\n⟪**银月**：……五行俱全。五门俱开。五行相生，转成一个圈——天底下，没有一门功法你修不了。从今天起，你不是漏勺了。⟫\n\n**你**：……那我是什么？\n\n⟪**银月**：（想了想）……水缸。很大的水缸。⟫\n\n你笑了。笑着笑着，眼泪流了下来。你想起褚先生的山羊胡子，想起满堂的哄笑，想起你娘在油灯底下，教你认的第一个字。\n\n「吹。」\n\n你吸了一口气。石室里的灵气，像被一只看不见的手推着，全部涌向你。哗哗地，像江河。\n\n练气三层。练气四层。练气五层。\n\n你停下来的时候，银月已经缩回了木牌里。木牌上那条银色的尾巴，亮着，亮得比任何时候都久。\n\n你把玉匣放回原处，盖好。然后你从怀里摸出{伴}的地图，在这间石室的位置上，画了一个很小很小的叉。\n\n你想了想，又把它涂掉了。\n\n藏。",
+    "en": "You swallow it.\n\nThe moment the soil is in your mouth, it melts. Like a mouthful of warm water it slides down your throat, into your belly, into your dantian —\n\nAnd then it begins to **grow**.\n\nIn your dantian, like a seed, it cracks its shell and puts out roots, driving them into every corner of your body. Into the meridians, into the bones, into those five small, crooked \"doors\" — your spirit roots.\n\nIt is growing your roots.\n\nThe five doors are pried open, one by one. Pried wider. Pried straight. They used to be small and crooked, like the holes in a skimmer; now each one wider than the last, each one brighter than the last —\n\nYou kneel before the stone table, shaking all over. Not pain. Swelling. As if your whole self were a field just after rain, and something pushing up out of every inch.\n\nWho knows how long passes before you open your eyes. On one wall of the chamber is a polished stone face. In it you see, under your skin, light of five colours flowing. Gold, green, black, red, yellow. Not one missing. Every one bright enough to sting the eyes.\n\n⟪**Yinyue:** …All five elements. All five doors open. The five feed each other and turn into a ring — there isn't a method under heaven you can't cultivate. From today, you're not a skimmer.⟫\n\n**You:** …Then what am I?\n\n⟪**Yinyue:** (thinking) …A water vat. A very big water vat.⟫\n\nYou laugh. And as you laugh, the tears come. You remember Master Chu's goatee, the whole hall laughing, the first character your mother taught you under the oil lamp.\n\n\"Blow.\"\n\nYou draw a breath. The spirit qi in the chamber, as if pushed by an invisible hand, all rushes into you. Pouring, like a river.\n\nQi Condensation, layer three. Layer four. Layer five.\n\nWhen you stop, Yinyue has already shrunk back into the token. The silver tail on the token is lit, lit longer than it has ever been.\n\nYou put the jade casket back where it was and close it. Then you take {伴}'s map out of your jacket and, where this chamber is, draw a very, very small cross.\n\nYou think a moment, then blot it out.\n\nHide."
+   },
+   "beat": [],
+   "next": "wm-chu"
+  }
+ ]
+}

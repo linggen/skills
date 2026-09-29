@@ -1,0 +1,105 @@
+{
+ "version": 1,
+ "id": "wm-lun1",
+ "chapter": "00-waimen",
+ "at": "zhengdian",
+ "place": {
+  "zh": "沉鼎观 · 大比 · 第一轮",
+  "en": "Chending Temple · The contest · Round one"
+ },
+ "setup": {
+  "zh": "第一轮，你的对手是孙二狗。他上台的时候，腿在抖：「咱俩……都是下下之资……你手下留情……」",
+  "en": "Round one: your opponent is Sun Ergou. His legs shake as he climbs up. \"We're both… the bottom of the class… go easy on me…\""
+ },
+ "recap": {
+  "zh": "大比第一轮，你的对手是孙二狗。",
+  "en": "In the first round of the contest you faced Sun Ergou."
+ },
+ "cast": [],
+ "people": [
+  "sunergou",
+  "ban"
+ ],
+ "panel": {
+  "art": "art/panels/wm-lun1.webp",
+  "caption": {
+   "zh": [
+    "第一轮。对手，孙二狗。",
+    "他腿在抖。腰上，他娘缝的护身符。",
+    "「你……你手下留情……」"
+   ],
+   "en": [
+    "Round one. Opponent: Sun Ergou.",
+    "His legs shake. At his waist, the charm his mother sewed.",
+    "\"Go… go easy on me…\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "第一轮。\n\n你的对手，是孙二狗。灵根比你当初还差的那个。\n\n孙二狗上台的时候，腿在抖。他看见是你，腿抖得更厉害了——不是怕，是松了一口气。\n\n**孙二狗**：（小声）{兄姐}……咱俩……都是下下之资……你……你手下留情……\n\n他腰上，系着那只护身符。一针一线，歪歪扭扭，缝了三个晚上。\n\n**你**：（小声）你先出手。\n\n孙二狗闭着眼睛，一拳打过来。",
+  "en": "Round one.\n\nYour opponent is Sun Ergou. The one whose roots are even worse than yours were.\n\nWhen Sun Ergou steps onto the platform, his legs are shaking. When he sees it's you, they shake harder — not from fear; from relief.\n\n**Sun Ergou:** (quietly) {兄姐}… we're both… bottom of the class… go… go easy on me…\n\nAt his waist hangs that charm. Stitch by stitch, all crooked, sewn over three nights.\n\n**You:** (quietly) You go first.\n\nSun Ergou shuts his eyes and throws a punch."
+ },
+ "lines": [],
+ "buttons": [
+  "fall",
+  "fight"
+ ],
+ "exits": [
+  {
+   "id": "fall",
+   "label": {
+    "zh": "往后一倒",
+    "en": "Fall backwards"
+   },
+   "means": "loses on purpose, lets Sun Ergou win",
+   "needs": {
+    "quest": "xu-sun-charm"
+   },
+   "refuse": {
+    "zh": "你看着孙二狗发抖的腿。你不知道他为什么这么想赢一场。",
+    "en": "You look at Sun Ergou's shaking legs. You don't know why he wants one win so badly."
+   },
+   "mark": "let-sun-win",
+   "ledger": [
+    {
+     "who": "sunergou",
+     "kind": "恩",
+     "what": {
+      "zh": "外门大比第一轮，你往后一倒，让孙二狗赢了他入观以来的第一场。",
+      "en": "Round one of the contest: you fell backwards and let Sun Ergou win the first bout of his life in the temple."
+     }
+    }
+   ],
+   "story": {
+    "zh": "你往后一倒。\n\n「哎呀——」\n\n你摔出了台子。\n\n台下，一片寂静。孙二狗睁开眼睛，看着自己的拳头，又看了看台下的你，一脸茫然。\n\n**执事**：（沉默了很久）……孙二狗，胜。\n\n孙二狗晋级了。孙二狗入观以来，第一次赢。他站在台上，攥着腰上的护身符，哭得像个孩子。\n\n你在台下爬起来，拍了拍身上的土。\n\n**{伴}**：（面无表情）你输了。\n\n**你**：嗯。\n\n**{伴}**：你是故意的。\n\n**你**：孙二狗他娘，给他缝了一个护身符，缝了三个晚上。我补过。\n\n{伴}看了你很久。{伴·她}掏出小本子，写了一行。这一次，{伴·她}没告诉你写的是什么。",
+    "en": "You fall over backwards.\n\n\"Aiya —\"\n\nYou tumble off the platform.\n\nBelow, dead silence. Sun Ergou opens his eyes, looks at his fist, looks at you down there, utterly lost.\n\n**Steward:** (after a long silence) …Sun Ergou wins.\n\nSun Ergou goes through. His first win since he came to the temple. He stands on the platform clutching the charm at his waist, crying like a little child.\n\nYou pick yourself up below and brush off the dirt.\n\n**{伴}:** (deadpan) You lost.\n\n**You:** Mm.\n\n**{伴}:** On purpose.\n\n**You:** Sun Ergou's mother sewed him a charm. Three nights, it took her. I mended it.\n\n{伴} looks at you a long time, takes out the little notebook, and writes a line. This time, {伴} doesn't tell you what it says."
+   },
+   "beat": [],
+   "next": "wm-fushi"
+  },
+  {
+   "id": "fight",
+   "label": {
+    "zh": "出手",
+    "en": "Fight"
+   },
+   "means": "fights Sun Ergou in earnest",
+   "game": {
+    "id": "dabi-sun",
+    "kind": "duel",
+    "creature": "foe-sunergou",
+    "retry": true
+   },
+   "withdrawn": {
+    "zh": "孙二狗还站着，腿抖得更厉害了。——再来。",
+    "en": "Sun Ergou is still standing, legs shaking harder than ever. — Again."
+   },
+   "story": {
+    "zh": "你没往后倒。\n\n三招。孙二狗坐在了台上，护身符攥在手里，一脸茫然。\n\n**执事**：{name}，胜。\n\n你伸手，把他拉了起来。他攥着那只护身符，冲你鞠了一躬，鞠得很深。",
+    "en": "You don't fall over.\n\nThree moves. Sun Ergou is sitting on the platform, the charm clutched in his hand, utterly lost.\n\n**Steward:** {name} wins.\n\nYou reach down and pull him up. Clutching the charm, he bows to you — a very deep bow."
+   },
+   "beat": [],
+   "next": "wm-lun2"
+  }
+ ]
+}

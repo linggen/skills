@@ -288,7 +288,7 @@ test('chapter 9 is the ending: no gate and no breakthrough, 定鼎 marked on the
   assert.ok(end.exits.every(e => e.ends === '09-yu'));
   assert.equal(end.at, 'luoyi', 'the nine are set on the footings at 洛邑');
   // every province has its chapter, each chapter its elite
-  assert.deepEqual(Object.values(c.chapters).map(x => x.province).sort(), ['兖', '冀', '徐', '徐', '扬', '梁', '荆', '豫', '雍', '青'].sort());
+  assert.deepEqual(Object.values(c.chapters).map(x => x.province).sort(), ['兖', '冀', '徐', '徐', '徐', '扬', '梁', '荆', '豫', '雍', '青'].sort());
 });
 
 // Every line of Yinyue's from chapter 3 on has its narration for the player who never rang the bell.

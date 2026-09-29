@@ -1,0 +1,65 @@
+{
+ "version": 1,
+ "id": "wm-heluo",
+ "chapter": "00-waimen",
+ "at": "houshan",
+ "place": {
+  "zh": "沉鼎山 · 后山崖顶 · 青石前",
+  "en": "Mount Chending · The cliff top · before the blue stone"
+ },
+ "setup": {
+  "zh": "瞿老捧出一个旧布包：半卷竹简，《河洛剑诀》。三百年，没有一个人练成过第一宫。「你念开篇。」",
+  "en": "Elder Qu brings out an old cloth bundle: half a bamboo scroll, the He-Luo Sword Canon. In three hundred years no one has mastered its first palace. \"Read the opening.\""
+ },
+ "recap": {
+  "zh": "《河洛剑诀》的开篇，是你娘教你的洛书口诀。瞿老问：「……你娘，是谁？」然后他倒握扫帚，只动了一下——落叶在半空排成九宫，落成一个「徐」字。",
+  "en": "The He-Luo Sword Canon opened with the Luo Shu rhyme your mother taught you. Elder Qu asked, \"…Who is your mother?\" Then he took the broom upside down and moved once — the fallen leaves hung in the nine squares, and fell as the word 徐."
+ },
+ "cast": [],
+ "people": [
+  "qulao"
+ ],
+ "panel": {
+  "art": "art/panels/wm-heluo.webp",
+  "caption": {
+   "zh": [
+    "半卷竹简，比《吐纳经》还旧。",
+    "「戴九履一，左三右七……」",
+    "「……你娘，是谁？」"
+   ],
+   "en": [
+    "Half a bamboo scroll, older than the Scroll of Breath.",
+    "\"Nine on the head, one on the feet, three on the left, seven on the right…\"",
+    "\"…Who is your mother?\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "**瞿老**：剑。\n\n他转身进了草屋，出来的时候，手里捧着一个布包。布包很旧，边角都磨破了。他把布包放在青石上，一层一层地打开。\n\n里面是一卷竹简，比《吐纳经》还旧，只剩半卷。\n\n**瞿老**：这是本观祖师留下的一门剑诀。三百年了，没有一个人练成过第一宫。因为它要五行俱全。一行不缺，一行不偏，剑气才转得起来。单灵根练它，走火入魔；三灵根、四灵根练它，一辈子卡在门口。\n\n他看着你。\n\n**瞿老**：五行杂灵根，天底下都笑的那种。我等了五十年。\n\n他把竹简推到你面前。\n\n**瞿老**：《河洛剑诀》。你念开篇。\n\n你低下头，看第一行。\n\n你的手，停住了。竹简上的字，有些你认不全。可是那几个字的排法——九个，三三一排，中间一个「五」——你太熟了。",
+  "en": "**Elder Qu:** The sword.\n\nHe turns into the hut and comes out holding a cloth bundle. The cloth is very old, its corners worn through. He sets it on the bluestone and unwraps it, layer by layer.\n\nInside is a roll of bamboo slips, older than the Scroll of Breath, only half of it left.\n\n**Elder Qu:** This is a sword canon left by the founder of this temple. In three hundred years not one person has mastered its first palace. Because it needs all five elements. Not one missing, not one leaning — only then will the sword qi turn. A single root that trains it goes mad; three roots, four roots, and you're stuck at the door your whole life.\n\nHe looks at you.\n\n**Elder Qu:** Five-element mixed roots, the kind the whole world laughs at. I've waited fifty years.\n\nHe pushes the slips toward you.\n\n**Elder Qu:** The He-Luo Sword Canon. Read the opening.\n\nYou lower your head and look at the first line.\n\nYour hand stops. Some of the characters on the slips you can't quite read. But the way those few are laid out — nine of them, three to a row, a \"five\" in the middle — you know it far too well."
+ },
+ "lines": [],
+ "buttons": [
+  "read"
+ ],
+ "exits": [
+  {
+   "id": "read",
+   "label": {
+    "zh": "念开篇",
+    "en": "Read the opening"
+   },
+   "means": "recites the opening of the sword canon",
+   "grant": {
+    "table": "scene",
+    "item": "heluo"
+   },
+   "story": {
+    "zh": "你不用看，就念出来了：\n\n**你**：「戴九履一，左三右七，二四为肩，六八为足，五居中央。」\n\n崖顶上，很静。风吹过来，香炉里的三根香，烟一齐歪了一下。\n\n瞿老看着你。他扫了五十年地，看过几千个孩子爬那三百级台阶，脸上从来没有过什么表情。这一回，有了。\n\n**瞿老**：……你没看竹简。\n\n**你**：我娘教的。\n\n**瞿老**：你娘？\n\n**你**：她说，是她爹教她的。她爹，是从一本旧书上看来的。\n\n瞿老沉默了很久很久。\n\n**瞿老**：……你娘，是谁？\n\n你张了张嘴，不知道怎么答。你娘是石坳村猎户家的媳妇，会织布，会算账，下雨天会把家里所有的盆摆出来接水。你娘是一个落魄塾师的女儿。\n\n你娘，还能是谁？\n\n胸口的木牌，烫了一下。一只半透明的小银狐钻了出来，蹲在你肩膀上。它看了看瞿老，看了看竹简，又看了看你，然后眯起眼睛：\n\n⟪**银月**：……本王的徒弟，他也配？⟫\n\n你吓得一哆嗦，差点把竹简扔了。瞿老皱了皱眉，往你肩膀上看了一眼——什么都没看见。他又看了一眼。\n\n**瞿老**：你肩膀上，有东西？\n\n**你**：……有、有只虫子。\n\n⟪**银月**：你说谁是虫子？！⟫\n\n木牌凉了。它走的时候，狠狠地踩了你一脚——隔着衣裳，踩在你锁骨上。\n\n瞿老又看了你肩膀一眼，没再问。他把竹简卷起来，只露出第一段。\n\n**瞿老**：第一宫，坎一。九宫配九州，坎宫在北，今日先教你徐州——这是你的家乡，泗水，是一切开始的地方。\n\n他站起来，从墙角拿起那把扫帚，倒过来握在手里。扫帚头朝下，扫帚把朝前。\n\n**瞿老**：看好了。\n\n他只动了一下。你甚至没看清他怎么动的。你只看见崖顶上的落叶，一片不剩，全被卷了起来，在半空里排成一个方方正正的格子——三三一排，九格——中间那一格，空着。\n\n然后落叶，落了下来。一片一片，落在崖顶上，落成一个字。\n\n「徐」。\n\n**瞿老**：这就是第一宫。练到你能用一根树枝做到，再来找我。\n\n**你**：……那要练多久？\n\n**瞿老**：（拿起扫帚，往山下走）我练了四十年。\n\n**你**：……\n\n**瞿老**：（头也不回）你是五行俱全的。你试试。",
+    "en": "You don't need to look. You say it out loud:\n\n**You:** \"Nine on the head, one on the feet, three on the left, seven on the right, two and four the shoulders, six and eight the feet, five in the middle.\"\n\nThe clifftop is very still. A wind blows over; the smoke from the three sticks of incense leans all together.\n\nElder Qu looks at you. He has swept for fifty years, watched thousands of children climb those three hundred steps, and his face has never had any expression on it. This time, it does.\n\n**Elder Qu:** …You didn't look at the slips.\n\n**You:** My mother taught me.\n\n**Elder Qu:** Your mother?\n\n**You:** She said her father taught her. And her father got it from an old book.\n\nElder Qu is silent for a long, long time.\n\n**Elder Qu:** …Who is your mother?\n\nYou open your mouth and don't know how to answer. Your mother is the wife of a hunter in Shi'ao village; she weaves, she keeps accounts, and when it rains she sets out every basin in the house to catch the drips. Your mother is the daughter of a down-and-out village schoolmaster.\n\nWho else could your mother be?\n\nThe token on your chest goes hot for a moment. A small, half-transparent silver fox slips out and crouches on your shoulder. It looks at Elder Qu, looks at the slips, looks at you, then narrows its eyes:\n\n⟪**Yinyue:** …This king's disciple — and he thinks he's worthy?⟫\n\nYou jump so hard you nearly throw the slips. Elder Qu frowns and glances at your shoulder — sees nothing. He glances again.\n\n**Elder Qu:** Is there something on your shoulder?\n\n**You:** …A b-bug.\n\n⟪**Yinyue:** Who are you calling a bug?!⟫\n\nThe token goes cool. On the way out she stamps on you, hard — through your clothes, right on your collarbone.\n\nElder Qu looks at your shoulder once more and asks nothing else. He rolls up the slips, leaving only the first section showing.\n\n**Elder Qu:** The first palace, Kan-One. The nine palaces match the nine provinces; the Kan palace lies north. Today I'll teach you Xuzhou — your home. The Si, where everything begins.\n\nHe stands, takes the broom from the corner, and turns it round in his hands. Broom head down, handle forward.\n\n**Elder Qu:** Watch closely.\n\nHe moves only once. You don't even see how. All you see is every fallen leaf on the clifftop, not one left behind, swept up into the air and ranged into a neat square grid — three to a row, nine squares — with the middle square empty.\n\nThen the leaves come down. One by one, they fall on the clifftop, and fall into a character.\n\n\"Xu.\"\n\n**Elder Qu:** That is the first palace. When you can do it with a twig, come and find me.\n\n**You:** …How long will that take?\n\n**Elder Qu:** (picking up the broom and heading down the mountain) I trained forty years.\n\n**You:** …\n\n**Elder Qu:** (without looking back) You have all five. Give it a try."
+   },
+   "beat": [],
+   "next": "wm-jiaxin"
+  }
+ ]
+}

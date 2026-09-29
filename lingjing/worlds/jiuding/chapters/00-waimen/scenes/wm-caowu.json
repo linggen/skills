@@ -1,0 +1,75 @@
+{
+ "version": 1,
+ "id": "wm-caowu",
+ "chapter": "00-waimen",
+ "at": "houshan",
+ "place": {
+  "zh": "沉鼎山 · 后山崖顶 · 草屋",
+  "en": "Mount Chending · The cliff top · a thatched hut"
+ },
+ "setup": {
+  "zh": "崖顶一间草屋，屋前青石上一只香炉，三根香已经点上了。瞿老摸出一张红纸：拜师帖，只空着一个名字。",
+  "en": "A thatched hut on the cliff top; on a blue stone before it, an incense burner with three sticks already lit. Elder Qu takes out a sheet of red paper: a letter of discipleship, one name left blank."
+ },
+ "recap": {
+  "zh": "后山崖顶的草屋前，你在瞿老的拜师帖上写下了名字，磕了三个头。三十年，他没收过徒弟。",
+  "en": "Before the hut on the cliff top you wrote your name on Elder Qu's red letter and bowed three times. In thirty years he had taken no student."
+ },
+ "cast": [],
+ "people": [
+  "qulao"
+ ],
+ "panel": {
+  "art": "art/panels/wm-caowu.webp",
+  "caption": {
+   "zh": [
+    "崖顶一间草屋。三根香，已经点上了。",
+    "一张红纸，空着一个名字。",
+    "「我三十年没收徒弟了。你写不写，自己定。」"
+   ],
+   "en": [
+    "A thatched hut on the cliff top. Three sticks of incense, already lit.",
+    "A sheet of red paper with one name left blank.",
+    "\"I haven't taken a student in thirty years. Write or don't — your choice.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "走了半个时辰，走到一处你从来没来过的崖顶——后山那块青石再往上。崖顶上一间草屋，屋门口一块青石，青石上摆着一只香炉，香炉里插着三根香，已经点上了。\n\n像是早就知道你会来。\n\n**瞿老**：外门弟子，没有师父。你知道为什么？\n\n**你**：……外门穷？\n\n**瞿老**：法不传六耳。一个师父，一辈子只教得好几个人。外门几百人，教不过来，只好一起听大课。（他看着你）想要师父，得有人要你。\n\n**你**：那……有人要我吗？\n\n瞿老没回答。他从怀里摸出一张红纸，放在青石上。\n\n拜师帖。上面已经写好了字，只空着一个名字。\n\n**瞿老**：我三十年没收徒弟了。你写不写，自己定。\n\n你盯着那张红纸，看了很久。你想起三试那天，他在第三百级台阶上看了你一眼。想起入门那天，满殿哄笑，只有他说了四个字。想起马小宝的滑竿从他身边抬过去的时候，那一扫帚。",
+  "en": "Half an hour's walk brings you to a clifftop you've never been to — above that bluestone on the back mountain. On the clifftop is a thatched hut; by its door, a bluestone; on the bluestone, a censer; in the censer, three sticks of incense, already lit.\n\nAs if he knew all along you'd come.\n\n**Elder Qu:** Outer-court disciples have no master. Do you know why?\n\n**You:** …The outer court is poor?\n\n**Elder Qu:** The Way isn't taught to six ears. One master can only teach a few people well in a whole lifetime. The outer court has hundreds; no one could teach them all, so they sit the big lectures together. (He looks at you.) If you want a master, someone has to want you.\n\n**You:** Then… does anyone want me?\n\nElder Qu doesn't answer. He takes a sheet of red paper from his robe and lays it on the bluestone.\n\nA letter of discipleship. The words are already written; only the name is blank.\n\n**Elder Qu:** I haven't taken a disciple in thirty years. Whether you write it or not is up to you.\n\nYou stare at the red paper for a long time. You remember the day of the third trial, when he looked at you once on the three-hundredth step. You remember the day you came in, the whole hall laughing, and only he said four words. You remember Ma Xiaobao's litter being carried past him, and that one sweep of the broom."
+ },
+ "lines": [],
+ "buttons": [
+  "sign"
+ ],
+ "exits": [
+  {
+   "id": "sign",
+   "label": {
+    "zh": "写上名字，磕三个头",
+    "en": "Write your name, and bow three times"
+   },
+   "means": "signs the letter of discipleship and bows",
+   "ledger": [
+    {
+     "who": "qulao",
+     "kind": "恩",
+     "what": {
+      "zh": "瞿老三十年没收徒弟。他收了你。",
+      "en": "Elder Qu had taken no student in thirty years. He took you."
+     }
+    }
+   ],
+   "grant": {
+    "table": "scene",
+    "item": "huangting"
+   },
+   "story": {
+    "zh": "你拿起笔，写上了你的名字。\n\n然后你跪下，冲着那只香炉，磕了三个头。\n\n**瞿老**：起来。\n\n他没笑。可他扫了五十年台阶的那只手，在你肩膀上，按了一下。\n\n**瞿老**：内功，先练《黄庭经》。（他把一卷薄薄的书扔给你）「上有黄庭下关元，后有幽阙前命门」——三丹田，你在讲堂里听过的，这回自己练。\n\n**你**：是。",
+    "en": "You pick up the brush and write your name.\n\nThen you kneel, facing the censer, and knock your head to the ground three times.\n\n**Elder Qu:** Get up.\n\nHe doesn't smile. But the hand that has swept those steps for fifty years presses once on your shoulder.\n\n**Elder Qu:** For inner work, start with the Yellow Court Scripture. (He tosses you a thin scroll.) \"Above is the Yellow Court, below the Guanyuan; behind, the Dark Gate, in front, the Gate of Life\" — the three dantian. You've heard it in the lecture hall. This time you practise it yourself.\n\n**You:** Yes."
+   },
+   "beat": [],
+   "next": "wm-heluo"
+  }
+ ]
+}

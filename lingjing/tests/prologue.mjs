@@ -53,6 +53,18 @@ export const TO_WAIMEN = [...TO_HALL, ['resolve', { exit: 'born', birth: V1_BIRT
 /* The prologue ended: 公中 paid, the notice board, and chapter 1 opens. */
 export const TO_OPEN = [...TO_WAIMEN, ['resolve', { exit: 'pay' }], ['resolve', { exit: 'rest' }]];
 
+/* The world as the tests written before 第一章 · 外门 knew it: the prologue
+   ended straight onto the open 徐 and the road to 冀 — no chapter between, no
+   map shut by a chapter, 冀 not waiting on its rewrite. Their fixtures test
+   the engine's roads, markets and fights on that spine; tests/waimen.test.mjs
+   tests the chapter as shipped. Mutates and returns the content it is given. */
+export function beforeChapterOne(content) {
+  delete content.chapters['00-waimen'];
+  delete content.chapters['00-prologue'].map;
+  delete content.chapters['01-ji'].coming;
+  return content;
+}
+
 /* Walk `steps` from `state`; every step must land. */
 export function walk(state, steps, content, now) {
   let s = state;

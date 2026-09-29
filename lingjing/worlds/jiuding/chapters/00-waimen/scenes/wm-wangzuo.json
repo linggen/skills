@@ -1,0 +1,77 @@
+{
+ "version": 1,
+ "id": "wm-wangzuo",
+ "chapter": "00-waimen",
+ "at": "shimen",
+ "place": {
+  "zh": "沉鼎秘境 · 断崖下",
+  "en": "The hidden realm · Below the drop"
+ },
+ "setup": {
+  "zh": "别人都往右，你往左，往下。崖底是一面光秃秃的石墙——墙后头，有风。墙上刻着九个格子。",
+  "en": "Everyone else goes right. You go left, and down. At the bottom of the drop, a bare stone wall — and a draught behind it. Nine squares are carved on the wall."
+ },
+ "recap": {
+  "zh": "秘境里，银月领着你往左、往下；墙后头有风，墙上刻着九宫——五居中央，墙开了。",
+  "en": "In the hidden realm Yinyue led you left and down; there was a draught behind the wall, the nine squares carved on it — five in the middle, and the wall opened."
+ },
+ "cast": [],
+ "people": [],
+ "show": [
+  {
+   "card": "board",
+   "id": "mijing-wall"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "mijing-wall"
+  ]
+ },
+ "panel": {
+  "art": "art/panels/wm-wangzuo.webp",
+  "caption": {
+   "zh": [
+    "「……这地方。本王来过。」",
+    "往左。往下。",
+    "那面墙后头，有风。"
+   ],
+   "en": [
+    "\"…This place. I have been here before.\"",
+    "Left. Down.",
+    "Behind that wall: a draught."
+   ]
+  }
+ },
+ "story": {
+  "zh": "石门开了。几百个人一窝蜂冲进去，顺着地图上画的路，往前挤。\n\n你没挤。\n\n你站在门口，胸口的木牌，一下一下地，越来越烫。一只半透明的小银狐，从木牌里钻了出来，蹲在你肩膀上。这一次，它的身子比以前实一点，没那么透了。\n\n⟪**银月**：……这地方。⟫\n\n它的声音，变了。\n\n⟪**银月**：本王来过。⟫\n\n**你**：什么时候？\n\n⟪**银月**：不知道。（它的鼻子一抽一抽的，在闻什么）……往左。⟫\n\n别人都往右走，地图上画的路，是往右的。你往左。\n\n⟪**银月**：往下。⟫\n\n左边是一道断崖，崖下黑洞洞的。\n\n**你**：下面什么都没有。\n\n⟪**银月**：往下。⟫\n\n你顺着崖壁往下爬。爬到底，是一面石墙。光秃秃的，什么都没有。\n\n⟪**银月**：那面墙后头，有风。⟫\n\n你把手贴在墙上。凉的。可是——有一丝，很细很细的，从墙缝里透出来的风。\n\n你摸遍了整面墙。墙上刻着九个格子，三三一排；旁边一堆刻了点子的石块，被水泡得发黑。\n\n九个格子。你太熟了。",
+  "en": "The stone gate opens. Hundreds of people surge in and push forward along the route drawn on their maps.\n\nYou don't push.\n\nYou stand at the gate. The token on your chest grows hotter, beat by beat. A small, half-transparent silver fox slips out of it and crouches on your shoulder. This time its body is a little more solid than before, not so see-through.\n\n⟪**Yinyue:** …This place.⟫\n\nHer voice has changed.\n\n⟪**Yinyue:** This king has been here.⟫\n\n**You:** When?\n\n⟪**Yinyue:** Don't know. (Her nose twitches, sniffing at something.) …Left.⟫\n\nEveryone else goes right; the route on the maps goes right. You go left.\n\n⟪**Yinyue:** Down.⟫\n\nOn the left is a sheer drop, black at the bottom.\n\n**You:** There's nothing down there.\n\n⟪**Yinyue:** Down.⟫\n\nYou climb down the cliff face. At the bottom is a stone wall. Bare. Nothing there.\n\n⟪**Yinyue:** There's wind behind that wall.⟫\n\nYou lay your hand on the wall. Cold. But — there's a thread of wind, very, very fine, seeping through a crack.\n\nYou feel over the whole wall. Carved on it are nine squares, three to a row; beside them a pile of stone blocks carved with dots, blackened from soaking in water.\n\nNine squares. You know them far too well."
+ },
+ "lines": [],
+ "buttons": [
+  "open"
+ ],
+ "exits": [
+  {
+   "id": "open",
+   "label": {
+    "zh": "墙，开了",
+    "en": "The wall opens"
+   },
+   "means": "has solved the nine squares and goes through the wall",
+   "needs": {
+    "task": "mijing-wall"
+   },
+   "refuse": {
+    "zh": "九个格子还没填对。墙不动。",
+    "en": "The nine squares are not right yet. The wall does not move."
+   },
+   "story": {
+    "zh": "你把五，放在了正中间。\n\n「轰隆隆——」\n\n墙，开了。",
+    "en": "You put the five right in the middle.\n\n*Rumble —*\n\nThe wall opens."
+   },
+   "beat": [],
+   "next": "wm-kunzhen"
+  }
+ ]
+}

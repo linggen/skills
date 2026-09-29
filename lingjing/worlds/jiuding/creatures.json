@@ -1477,6 +1477,284 @@
       },
       "_deck": "腹中有珠 —— 守得住，也养得回。",
       "_signature": "其中多珠 —— 珠光一亮，它和它的都缓过来了。"
+    },
+    {
+      "id": "zheng",
+      "name": {
+        "zh": "狰",
+        "en": "Zheng"
+      },
+      "pinyin": "zhēng",
+      "source": {
+        "zh": "《山海经 · 西次三经》",
+        "en": "Classic of Mountains and Seas — Western Mountains, third sequence"
+      },
+      "quote": {
+        "zh": "章莪之山……有兽焉，其状如赤豹，五尾一角，其音如击石，其名如狰。",
+        "en": "On Mount Zhang'e … there is a beast like a red leopard, with five tails and one horn; its voice is like struck stone, and its name is Zheng."
+      },
+      "look": {
+        "zh": "像一只赤豹，五条尾巴，头上一只独角；叫起来像敲石头。眼前这只，像一只吃撑了的红毛团子。",
+        "en": "Like a red leopard with five tails and a single horn; its cry is like stone struck on stone. This one looks more like an overfed ball of red fur."
+      },
+      "says": {
+        "open": {
+          "zh": "（咔嚓，咔嚓。）",
+          "en": "(Crunch. Crunch.)"
+        },
+        "won": {
+          "zh": "（打了个嗝。）",
+          "en": "(A hiccup.)"
+        },
+        "lost": {
+          "zh": "（叼着灵草跑了。）",
+          "en": "(It runs off with the herb in its mouth.)"
+        }
+      },
+      "province": "徐",
+      "root": "fire",
+      "art": "art/zheng.webp",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》猙圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic252 - 猙圖.svg. Laid on paper by tools/frame.py (art/plates/zheng.svg).",
+      "art_caption": {
+        "zh": "《古今圖書集成·禽蟲典》，清雍正本",
+        "en": "Gujin Tushu Jicheng, Qing, 1725"
+      },
+      "likes": "luobo",
+      "catch": "shouye",
+      "runs": {
+        "zh": "你刚一抬手，那团红毛就窜进了灵草丛，没影了。胸口的木牌一烫，一个很困的声音：「……打什么打。带萝卜了没有。」",
+        "en": "You barely raise a hand and the ball of red fur shoots into the herbs and is gone. The token on your chest flares, and a very sleepy voice: \"…Why fight it? Did you bring a radish or not.\""
+      },
+      "lean": "quick",
+      "pattern": [
+        "strike",
+        "gather",
+        "strike",
+        "cast",
+        "guard"
+      ],
+      "deck": [
+        "huoya",
+        "huoya",
+        "xianshi",
+        "xianshi",
+        "tongling",
+        "tongling",
+        "huodan",
+        "huodan",
+        "zheng",
+        "zheng",
+        "yanxin",
+        "huiqi"
+      ],
+      "_deck": "五尾一角 —— 偷灵草长大的，手快，嘴更快。",
+      "signature": {
+        "id": "wuwei",
+        "name": {
+          "zh": "五尾一角",
+          "en": "Five Tails, One Horn"
+        },
+        "effect": {
+          "draw": 2,
+          "damage": 3
+        }
+      },
+      "_signature": "五尾一角 —— 其音如击石：一声，嘴里又多了两株。"
+    },
+    {
+      "id": "foe-sunergou",
+      "name": {
+        "zh": "孙二狗",
+        "en": "Sun Ergou"
+      },
+      "pinyin": "sūn èr gǒu",
+      "person": "sunergou",
+      "look": {
+        "zh": "瘦高个，腿在抖；腰上系着他娘缝的护身符。",
+        "en": "Tall and skinny, legs shaking; at his waist, the charm his mother sewed."
+      },
+      "says": {
+        "open": {
+          "zh": "咱俩……都是下下之资……你……你手下留情……",
+          "en": "We're both… the bottom of the class… go… go easy on me…"
+        },
+        "won": {
+          "zh": "……我、我还是输了。",
+          "en": "…I—I lost after all."
+        },
+        "lost": {
+          "zh": "我……我赢了？",
+          "en": "I… I won?"
+        }
+      },
+      "province": "徐",
+      "root": "earth",
+      "art": "art/people/sunergou.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-29 (tools/paint-waimen.py).",
+      "lean": "ward",
+      "pattern": [
+        "guard",
+        "strike",
+        "gather",
+        "strike",
+        "guard"
+      ],
+      "deck": [
+        "tuou",
+        "tuou",
+        "tuou",
+        "xiaoyao",
+        "xiaoyao",
+        "shanjing",
+        "shanjing",
+        "houtu",
+        "zhuguang",
+        "xiaoyao",
+        "tuou",
+        "shanjing"
+      ],
+      "_deck": "下下之资 —— 一身土，一身抖，只会守。",
+      "signature": {
+        "id": "hushenfu",
+        "name": {
+          "zh": "娘缝的护身符",
+          "en": "Mother's Charm"
+        },
+        "effect": {
+          "heal": 4
+        }
+      },
+      "_signature": "娘缝的护身符 —— 他攥紧它，又站了起来。"
+    },
+    {
+      "id": "foe-maxiaobao",
+      "name": {
+        "zh": "马小宝",
+        "en": "Ma Xiaobao"
+      },
+      "pinyin": "mǎ xiǎo bǎo",
+      "person": "maxiaobao",
+      "look": {
+        "zh": "一身新法衣，腰里挂着他家传的铜镜——马家祖上拿三亩好地换的。",
+        "en": "A new robe, and at his waist his family's bronze mirror — the Ma forebears traded three good acres for it."
+      },
+      "says": {
+        "open": {
+          "zh": "你跪下，叫三声爷爷，我让你滚下去。",
+          "en": "Kneel, call me grandpa three times, and I'll let you crawl off."
+        },
+        "won": {
+          "zh": "我——我爹是——",
+          "en": "My—my father is—"
+        },
+        "lost": {
+          "zh": "看见没？这就是懂事的。",
+          "en": "See? That's what knowing your place looks like."
+        }
+      },
+      "province": "徐",
+      "root": "metal",
+      "art": "art/people/maxiaobao.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-28 (tools/paint-prologue.py).",
+      "lean": "fierce",
+      "pattern": [
+        "strike",
+        "strike",
+        "cast",
+        "gather",
+        "strike"
+      ],
+      "deck": [
+        "jinsuo",
+        "jinsuo",
+        "jinzhua",
+        "jinzhua",
+        "xiaoyao",
+        "xiaoyao",
+        "jianying",
+        "suijin",
+        "jinzhen",
+        "huiqi",
+        "jinzhua",
+        "jinsuo"
+      ],
+      "signature": {
+        "id": "tongjing",
+        "name": {
+          "zh": "铜镜黄光",
+          "en": "The Bronze Mirror"
+        },
+        "effect": {
+          "damage": 5
+        }
+      },
+      "_deck": "半年的丹药吃出来的练气五层 —— 手快，家伙贵。",
+      "_signature": "铜镜黄光 —— 一道黄光，直冲面门。"
+    },
+    {
+      "id": "foe-shijie",
+      "name": {
+        "zh": "内门师姐",
+        "en": "The inner-court senior"
+      },
+      "pinyin": "nèi mén shī jiě",
+      "person": "neimen-shijie",
+      "look": {
+        "zh": "内门下来的真灵根，淡蓝的衣裳，剑在背上；比赛的时候，一直没用全力。",
+        "en": "A true-root disciple come down from the inner court, in pale blue, a sword on her back; all through the contest she never used her full strength."
+      },
+      "says": {
+        "open": {
+          "zh": "请。",
+          "en": "After you."
+        },
+        "won": {
+          "zh": "藏得好。",
+          "en": "Well hidden."
+        },
+        "lost": {
+          "zh": "还没藏够。",
+          "en": "Not hidden enough yet."
+        }
+      },
+      "province": "徐",
+      "root": "water",
+      "art": "art/people/neimen-shijie.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-29 (tools/paint-waimen.py).",
+      "lean": "ward",
+      "pattern": [
+        "cast",
+        "guard",
+        "strike",
+        "gather",
+        "cast"
+      ],
+      "deck": [
+        "luying",
+        "luying",
+        "shuiwu",
+        "shuiwu",
+        "hanquan",
+        "hanquan",
+        "hantan",
+        "hantan",
+        "chaoqi",
+        "tingbo",
+        "gupi",
+        "huiqi"
+      ],
+      "signature": {
+        "id": "sanshizhao",
+        "name": {
+          "zh": "三十招",
+          "en": "Thirty Moves"
+        },
+        "effect": {
+          "sweep": 3
+        }
+      },
+      "_deck": "真灵根 —— 水一样，打不散。",
+      "_signature": "三十招 —— 一招一招，全在水里。"
     }
   ],
   "_likes": "What a creature will take from the bag to walk with the player: 人参 for the man-eaters (形如人), 玉鱼 for the bird that fills the sea, a bell for the drum god, 齐盐 for the sea beast, 齐纨 for the pearl pig, 灵芝 for 夫诸 as the prologue has it.",

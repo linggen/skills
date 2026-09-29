@@ -1,0 +1,55 @@
+{
+ "version": 1,
+ "id": "wm-jiaxin",
+ "chapter": "00-waimen",
+ "at": "waimen",
+ "place": {
+  "zh": "沉鼎观 · 外门 · 大通铺",
+  "en": "Chending Temple · The outer court · the long dormitory bed"
+ },
+ "setup": {
+  "zh": "那天晚上，你给家里写了第一封信。窗外，下雪了。",
+  "en": "That night you write your first letter home. Outside, it is snowing."
+ },
+ "recap": {
+  "zh": "你给家里写了第一封信：「娘，漏勺也能打水。」窗外下雪了；木牌轻轻地烫了一下——那张饼，还欠着。",
+  "en": "You wrote your first letter home: \"Ma, a skimmer can carry water too.\" Outside it snowed; the token warmed, just a little — the flatbread is still owed."
+ },
+ "cast": [],
+ "people": [],
+ "panel": {
+  "art": "art/panels/wm-jiaxin.webp",
+  "caption": {
+   "zh": [
+    "第一封家信。",
+    "「娘，漏勺也能打水。」",
+    "窗外，下雪了。"
+   ],
+   "en": [
+    "The first letter home.",
+    "\"Ma, a skimmer can carry water too.\"",
+    "Outside, it is snowing."
+   ]
+  }
+ },
+ "story": {
+  "zh": "那天晚上，你给家里写了第一封信。\n\n你不太会写字。你娘教你的那些，大多是《吐纳经》上的字，「吹」「呴」「呼」「吸」，写家信用不上。你写了擦，擦了写，最后只写了几行：\n\n**娘：**\n\n**我进仙门了。一年五两，观里说腊月就送到家。**\n\n**屋顶修一修。盆可以收起来了。**\n\n**给我爹买一副护膝，狗皮的。**\n\n**给吴婆婆，送一条鹿腿。**\n\n**给{伴}家，赔一颗白菜。**\n\n**我拜了师父。师父是扫台阶的。他扫了五十年。**\n\n**我在这里很好。有人欺负我，我记着账。**\n\n**账，都还上了。**\n\n**——{name}**\n\n你把信折好，想了想，又打开，在最后加了一行：\n\n**娘，漏勺也能打水。**\n\n——\n\n窗外，下雪了。\n\n你躺在大通铺上，握着胸口的木牌。它是暖的。那条银色的尾巴，亮着。\n\n**你**：（小声）银月。\n\n木牌没有回答。\n\n**你**：你欠我的那张饼……还欠着吧？\n\n木牌，轻轻地，烫了一下。\n\n像是在说：\n\n**还欠着。**",
+  "en": "That evening, you write your first letter home.\n\nYou're not much good at writing. What your mother taught you is mostly characters from the Scroll of Breath — \"blow,\" \"breathe out,\" \"exhale,\" \"inhale\" — no use for a letter home. You write and rub out, rub out and write, and in the end you only manage a few lines:\n\n**Mother:**\n\n**I'm in the immortal gate. Five taels a year; the temple says it'll reach home by the twelfth month.**\n\n**Fix the roof. You can put the basins away.**\n\n**Buy Father a pair of knee pads. Dog skin.**\n\n**Give Granny Wu a haunch of deer.**\n\n**Give {伴}'s family a cabbage, to make up.**\n\n**I have a master. My master sweeps the steps. He's swept them fifty years.**\n\n**I'm fine here. When someone bullies me, I keep the ledger.**\n\n**The ledger's all paid back.**\n\n**— {name}**\n\nYou fold the letter, think, open it again, and add one more line at the end:\n\n**Mother, a skimmer can draw water too.**\n\n——\n\nOutside the window, it's snowing.\n\nYou lie on the communal bed, holding the token on your chest. It's warm. The one silver tail is lit.\n\n**You:** (quietly) Yinyue.\n\nThe token doesn't answer.\n\n**You:** That flatbread you owe me… you still owe it, right?\n\nThe token, softly, goes hot for a moment.\n\nAs if to say:\n\n**Still owe it.**"
+ },
+ "lines": [],
+ "buttons": [
+  "rest"
+ ],
+ "exits": [
+  {
+   "id": "rest",
+   "label": {
+    "zh": "今日到此",
+    "en": "Rest for today"
+   },
+   "means": "rests, ends the day, or asks what comes next",
+   "beat": [],
+   "ends": "00-waimen"
+  }
+ ]
+}

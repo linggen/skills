@@ -1,0 +1,66 @@
+{
+ "version": 1,
+ "id": "wm-dabi",
+ "chapter": "00-waimen",
+ "at": "zhengdian",
+ "place": {
+  "zh": "沉鼎观 · 正殿前 · 大比擂台",
+  "en": "Chending Temple · Before the main hall · the contest platform"
+ },
+ "setup": {
+  "zh": "外门大比。三百多个弟子全报了名，所有人都押马小宝——他练气五层了，马家为了这一枚筑基丹，把蒙山上的树卖了三成。",
+  "en": "The outer court contest. More than three hundred disciples have entered, and every one of them is betting on Ma Xiaobao — he is at layer five now, and the Ma family sold three-tenths of the trees on Mount Meng for this one Foundation pill."
+ },
+ "recap": {
+  "zh": "外门大比开场：所有人都押马小宝。{伴}问你押谁——你押你自己。",
+  "en": "The contest opened with everyone betting on Ma Xiaobao. {伴} asked whom you were betting on — yourself."
+ },
+ "cast": [],
+ "people": [
+  "ban",
+  "maxiaobao",
+  "chuxiansheng"
+ ],
+ "panel": {
+  "art": "art/panels/wm-dabi.webp",
+  "caption": {
+   "zh": [
+    "腊月初八，外门大比。",
+    "头名，筑基丹一枚。整个沉鼎观，只一枚。",
+    "所有人都押马小宝。"
+   ],
+   "en": [
+    "The eighth of the twelfth month: the outer court contest.",
+    "First place: one Foundation pill. The only one the temple has.",
+    "Everyone is betting on Ma Xiaobao."
+   ]
+  }
+ },
+ "story": {
+  "zh": "腊月初八，外门大比。\n\n头名，赏**筑基丹**一枚。一枚筑基丹，就是一条通往修士的路。没有它，练气九层圆满，也只能靠自己硬冲——十个人冲，九个冲不过去，冲不过去的，这辈子就停在练气了。\n\n外门三百多个弟子，全报了名。所有人都押马小宝。\n\n马小宝练气五层了。他家这半年，往山上送了一车一车的丹药。据说马家老爷为了这一枚筑基丹，把蒙山上的树卖了三成。\n\n**{伴}**：你呢？你押谁？\n\n**你**：我押我自己。\n\n**{伴}**：你？（上下打量你）你练气几层？\n\n**你**：（想了想，伸出两根手指）\n\n**{伴}**：二层？！那你报什么名？\n\n**你**：来都来了。",
+  "en": "Twelfth month, eighth day: the outer-court contest.\n\nFirst place wins one **Foundation pill**. One Foundation pill is one road to becoming a true cultivator. Without it, even at the peak of Qi Condensation layer nine you have to force the breakthrough on your own — of ten who try, nine fail, and those who fail stay in Qi Condensation for the rest of their lives.\n\nAll three hundred-odd outer-court disciples have signed up. Everyone's betting on Ma Xiaobao.\n\nMa Xiaobao is at layer five now. This past half year his family has sent pills up the mountain by the cartload. They say Old Master Ma sold three tenths of the trees on Mount Meng for this one Foundation pill.\n\n**{伴}:** And you? Who are you betting on?\n\n**You:** Myself.\n\n**{伴}:** You? (looks you up and down) What layer are you?\n\n**You:** (thinks, holds up two fingers)\n\n**{伴}:** Layer two?! Then why did you sign up?\n\n**You:** I'm here anyway."
+ },
+ "lines": [],
+ "buttons": [
+  "up"
+ ],
+ "exits": [
+  {
+   "id": "up",
+   "label": {
+    "zh": "上台",
+    "en": "Step up"
+   },
+   "means": "steps up onto the contest platform for the first round",
+   "needs": {
+    "day_after": "dabi-eve"
+   },
+   "refuse": {
+    "zh": "大比在明日。今天养足精神——备牌、炼丹、跑跑腿，都来得及。",
+    "en": "The contest is tomorrow. Rest today — there's time to ready your cards, make pills, run errands."
+   },
+   "beat": [],
+   "next": "wm-lun1"
+  }
+ ]
+}

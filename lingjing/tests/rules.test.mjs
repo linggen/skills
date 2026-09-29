@@ -10,12 +10,12 @@ import { act, battle, begin, effectOf, foeTurn, offers, tokenOf } from '../scrip
 import { lint, loadContent } from '../scripts/content.mjs';
 import { dayKey, langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
 import { oddsOf, rollOf, VERBS, fightSetup, hpMaxOf, greet, deck, deckFor, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win } from '../scripts/rules.mjs';
-import { TO_WAIMEN, TO_HALL, TO_VALLEY, V1_BIRTH, walk } from './prologue.mjs';
+import { beforeChapterOne, TO_WAIMEN, TO_HALL, TO_VALLEY, V1_BIRTH, walk } from './prologue.mjs';
 import { starterFor } from '../scripts/rules/roots.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
 
-const content = loadContent();
+const content = beforeChapterOne(loadContent());
 // 夫诸 at the Si's north bank — the v1 prologue's creature scene, retired by
 // prologue-v3 and kept as a fixture for the fight engine's tests (a gift, a
 // riddle, a duel that withdraws, staying exits). Reached only by `toFuzhu`.
@@ -1213,7 +1213,7 @@ test('Move for real: roads, tiers, a fitting place, the names', () => {
   assert.equal(look(toFuzhu(), content, ctx()).director.choice, null, 'a scene running has its own buttons');
   assert.equal(l.place.has.creature.name, '夫诸');
   assert.deepEqual(l.place.show, [{ card: 'creature', id: 'fuzhu' }]);
-  assert.equal(l.place.places.length, 25, '徐 with 大野泽, 凫丽 and 空桑 — the 禹贡\'s 徐 — 泗渊 under 彭城, 沉鼎观 up from the crossing, and 蒙山 of prologue-v3 (石坳村, 前山, 断碑, 黑松岭, 银叶谷)');
+  assert.equal(l.place.places.length, 32, '徐 with 大野泽, 凫丽 and 空桑 — the 禹贡\'s 徐 — 泗渊 under 彭城, 沉鼎观 up from the crossing, 蒙山 of prologue-v3 (石坳村, 前山, 断碑, 黑松岭, 银叶谷), and 第一章\'s temple grounds (讲堂, 藏经阁, 柴房, 药园, 后山, 坊市, 秘境石门)');
   assert.ok(l.place.places.find(p => p.id === 'sibei').here);
   // the same place is no move
   assert.equal(must(move, s, { place: 'sibei' }).result.here, true);
@@ -1304,9 +1304,9 @@ test('the market: the shelf on the place, buying, selling, the visit\'s stamina'
   const s = toMarket();
   const l = look(s, content, ctx());
   assert.equal(l.place.has.shop, true);
-  assert.deepEqual(l.place.shelf.map(i => i.id), ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'wangqi-1', 'jade-ring']);
+  assert.deepEqual(l.place.shelf.map(i => i.id), ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'wangqi-1', 'jade-ring', 'luobo']);
   assert.equal(l.place.shelf[1].buy, 80);
-  assert.deepEqual(l.place.show, [{ card: 'item', ids: ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'wangqi-1', 'jade-ring'] }]);
+  assert.deepEqual(l.place.show, [{ card: 'item', ids: ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'wangqi-1', 'jade-ring', 'luobo'] }]);
   const bought = must(trade, s, { action: 'buy', id: 'qi-pill' });
   assert.equal(bought.state.wealth, 20);
   assert.deepEqual(bought.state.bag, { 'fox-token': 1, 'tuna-jing': 1, 'old-bow': 1, 'grey-robe': 1, 'qi-pill': 1 }); // the token from 吴婆婆, the scroll from her, the bow from 爹, the robe from the 入门仪式
@@ -1320,7 +1320,7 @@ test('the market: the shelf on the place, buying, selling, the visit\'s stamina'
   const poor = refused(trade, { ...s, wealth: 10 }, { action: 'buy', id: 'qi-pill' }, 'no-stones');
   assert.equal(poor.say, '灵石不够。');
   assert.equal(poor.price, 80);
-  assert.deepEqual(refused(trade, s, { action: 'buy', id: 'moon-bell' }, 'not-for-sale-here').shelf.length, 9, 'the old 回春丹 is sold nowhere now');
+  assert.deepEqual(refused(trade, s, { action: 'buy', id: 'moon-bell' }, 'not-for-sale-here').shelf.length, 10, 'the old 回春丹 is sold nowhere now (萝卜 came with 第一章)');
   refused(trade, s, { action: 'buy', id: 'nothing' }, 'unknown-item');
   assert.equal(must(trade, { ...s, stamina: 0 }, { action: 'buy', id: 'straw-cloak' }).result.ok, true, 'spent 体力 still shops');
 });
@@ -2311,7 +2311,7 @@ test('榜文: a market posts one templated 差事 a day — near, winnable, rebu
   const posted = days.map(at => look(base, content, at).offers.filter(o => o.id.startsWith('daily-')));
   assert.ok(posted.every(p => p.length === 1), 'one a day, every day');
   assert.ok(new Set(posted.map(p => p[0].id.split('-').slice(2).join('-'))).size > 2, 'and the posting turns with the day');
-  const NEAR = new Set(['sishui', 'sibei', 'yunlong', 'huaidu', 'peize', 'weishan', 'xushan', 'lvliang', 'sikou', 'yiqiao', 'siyuan', 'dukou', 'shanlu', 'waimen']);
+  const NEAR = new Set(['sishui', 'sibei', 'yunlong', 'huaidu', 'peize', 'weishan', 'xushan', 'lvliang', 'sikou', 'yiqiao', 'siyuan', 'dukou', 'shanlu', 'waimen', 'shimen', 'fangshi']);
   for (const [o] of posted) {
     assert.doesNotMatch(o.id, /fuzhu|fuli|longzhi|pengcheng/, 'never a beast that walks with him, a place eight roads off, or the market itself');
     if (o.need[0].kind === 'visit') assert.ok(NEAR.has(o.id.split('-').pop()), o.id);
@@ -2445,7 +2445,8 @@ test('精英 is its harder deck and nothing more: the same share of 气血, the 
   assert.equal(content.rewards.tables.elite, undefined);
   // A strong hand, so the win path runs: every card his five roots may hold,
   // its wood cards held back so a win has cards left to give.
-  const all = content.cards.cards.filter(x => !x._token && x.element !== 'wood').map(x => x.id);
+  // (狰 out: the hand this win was tuned with came before 第一章 brought it.)
+  const all = content.cards.cards.filter(x => !x._token && x.element !== 'wood' && x.id !== 'zheng').map(x => x.id);
   const won = fightOut({ ...base, tier: 'core', traits: ['metal', 'wood', 'water', 'fire', 'earth'], root_main: 'metal', cards: all }, 'haunt:leishen', { c: nov });
   assert.equal(won.result.outcome, 'won', JSON.stringify({ o: won.result.outcome, you: won.result.you?.hp, foe: won.result.foe?.hp, turns: won.result.turns }));
   assert.equal(won.result.elite, undefined);

@@ -32,6 +32,7 @@ paper, a warm paper ground with grain, the red seal).
 | qianyang | 羬羊 | 《古今圖書集成·禽蟲典》羬羊圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic229 - 羬羊圖.svg* |
 | taifeng | 太逢（泰逢） | 《古今圖書集成·神異典》太逢神圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Spirits and the Supernatural - pic30 - 太逢神圖.svg* |
 | mafu | 馬腹 | 《古今圖書集成·禽蟲典》馬腹圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic297 - 馬腹圖.svg* |
+| zheng | 猙 | 《古今圖書集成·禽蟲典》猙圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic252 - 猙圖.svg* (五尾一角, the leopard's spots — as the 西次三經 says) |
 
 The FLUX paintings of 2026-09-15 (夫諸, 狍鴞, 精衛, 雷神, 蠪侄) were replaced
 on 2026-09-16; the seal font lacks 蠪 and 狪, so those seals read 侄 and 珠.
@@ -70,3 +71,10 @@ picture model (FLUX.2 klein 4B), 2026-09-28, from the prompts in
 `tools/paint-prologue.py` (portraits in ink wash, panels as 白描 with a light
 wash on aged paper). No outside source. `panels/00-years.webp` was painted for
 the three-year montage that moved to chapter 1; it is kept for it.
+
+## 第一章 · 外门 — painted for Lingjing
+
+`panels/wm-*.webp` (21 小人书 panels — **drafts**, to be repainted from chapters/00-waimen/panels.md), `people/chuxiansheng.webp`, `people/sunergou.webp`,
+`people/neimen-shijie.webp` and `items/{luobo,danlu,huangting,heluo}.webp` were painted by the local
+picture model (FLUX.2 klein 4B), 2026-09-29, with tools/paint-waimen.py — the prologue's recipe; each
+looked at and re-rolled where it painted fake characters (the kept seeds are the script's `SEEDS`). No outside source.

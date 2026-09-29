@@ -1,0 +1,76 @@
+{
+ "version": 1,
+ "id": "wm-qingshi",
+ "chapter": "00-waimen",
+ "at": "houshan",
+ "place": {
+  "zh": "沉鼎山 · 后山崖顶",
+  "en": "Mount Chending · The cliff top"
+ },
+ "setup": {
+  "zh": "你翻出院墙，冲上后山。崖边有一块大青石，比你还高。你把那股暖，一点一点引到胳膊上——一拳。",
+  "en": "You vault the wall and race up the mountain. At the cliff's edge stands a blue boulder taller than you. You draw the warmth, bit by bit, into your arm — and punch."
+ },
+ "recap": {
+  "zh": "你一拳打裂了后山崖顶的大青石，然后把拳头塞进嘴里，一声没出。「娘。漏勺，也能打水。」",
+  "en": "One punch split the blue boulder on the cliff top; then you stuffed your fist in your mouth and made no sound. \"Ma. A skimmer can carry water too.\""
+ },
+ "cast": [],
+ "people": [],
+ "panel": {
+  "art": "art/panels/wm-qingshi.webp",
+  "caption": {
+   "zh": [
+    "崖边一块大青石，比你还高。",
+    "一拳。「咔。」",
+    "一道缝，从上到下。"
+   ],
+   "en": [
+    "At the cliff's edge, a blue boulder taller than you.",
+    "One punch. Crack.",
+    "A split, from top to bottom."
+   ]
+  }
+ },
+ "story": {
+  "zh": "你从柴堆上跳下来——不是跳，是飘，你轻得像一片叶子——你翻出外门的院墙，冲上了后山。\n\n风在耳朵边呼呼地响。路两边的树一棵一棵往后倒。一道你白天要绕半里地的山涧，你想都没想，一步就跨了过去。\n\n你停在后山崖顶上，大口大口地喘气。崖边有一块大青石，比你还高。\n\n你盯着它。心砰砰直跳。你握紧拳头，把那股在身子里转圈的暖，一点一点，引到胳膊上——\n\n一拳。\n\n「咔。」\n\n青石上，裂开了一道缝。从你的拳头落下的地方，一直裂到了石头底。\n\n你看着那道缝。看着你的拳头。拳头上，一点皮都没破。\n\n你想笑。你张开嘴，想冲着整座沉鼎山喊一嗓子——",
+  "en": "You jump down from the woodpile — not jump, float; you're light as a leaf — vault the outer-court wall and race up the back mountain.\n\nThe wind roars past your ears. The trees on either side fall away behind you one after another. A ravine you'd walk half a li around by day, you cross in one stride without a thought.\n\nYou stop on the clifftop of the back mountain, gulping air. At the cliff's edge is a big bluestone, taller than you.\n\nYou stare at it. Your heart is pounding. You clench your fist and lead the warmth circling inside you, bit by bit, into your arm —\n\nOne punch.\n\n*Crack.*\n\nA crack opens in the bluestone. From where your fist landed, all the way to the bottom of the rock.\n\nYou look at the crack. You look at your fist. Not a scrap of skin broken.\n\nYou want to laugh. You open your mouth, about to shout at the whole of Mount Chending —"
+ },
+ "lines": [],
+ "buttons": [
+  "hide",
+  "shout"
+ ],
+ "exits": [
+  {
+   "id": "hide",
+   "label": {
+    "zh": "把拳头塞进嘴里",
+    "en": "Stuff your fist in your mouth"
+   },
+   "means": "keeps silent, bites the fist, hides the joy",
+   "mark": "hid-joy",
+   "story": {
+    "zh": "你把拳头塞进了嘴里。\n\n你咬着自己的拳头，蹲在那块裂开的青石后面，笑得浑身发抖，笑得眼泪都流出来了，一点声音都没出。\n\n「藏。」你一边笑，一边在心里念，「藏，藏，藏……」\n\n那天夜里，你在崖顶上坐到了天亮。你看着山下，看着泗水，看着泗水再往北，蒙山的方向。\n\n你想起娘蹲在地上捡碗。\n\n**你**：（对着蒙山，很小声）娘。我能打水了。\n\n**你**：漏勺，也能打水。",
+    "en": "You stuff your fist in your mouth.\n\nBiting your own fist, crouched behind the split bluestone, you laugh till your whole body shakes, till tears run down your face, without making a single sound.\n\n\"Hide,\" you chant in your head as you laugh. \"Hide, hide, hide…\"\n\nThat night you sit on the clifftop till dawn. You look down the mountain, at the Si, and past the Si to the north, toward Mount Meng.\n\nYou remember your mother squatting on the floor picking up the bowl.\n\n**You:** (toward Mount Meng, very quietly) Mother. I can draw water now.\n\n**You:** A skimmer can draw water too."
+   },
+   "beat": [],
+   "next": "wm-chaifang"
+  },
+  {
+   "id": "shout",
+   "label": {
+    "zh": "喊出来",
+    "en": "Shout it out"
+   },
+   "means": "shouts for joy over the mountain",
+   "mark": "shouted-joy",
+   "story": {
+    "zh": "「啊——」\n\n只喊出了半个字。山那边，外门的院子里，有一盏灯亮了。\n\n你把拳头塞进了嘴里。\n\n你咬着自己的拳头，蹲在那块裂开的青石后面，一动不动，一直等到那盏灯灭了。然后你笑得浑身发抖，笑得眼泪都流出来了，再没出一点声音。\n\n「藏。」你一边笑，一边在心里念，「藏，藏，藏……」\n\n那天夜里，你在崖顶上坐到了天亮。你看着山下，看着泗水，看着泗水再往北，蒙山的方向。\n\n你想起娘蹲在地上捡碗。\n\n**你**：（对着蒙山，很小声）娘。我能打水了。\n\n**你**：漏勺，也能打水。",
+    "en": "\"Ah —\"\n\nOnly half a syllable gets out. Over the hill, in the outer-court yard, a lamp comes on.\n\nYou stuff your fist in your mouth.\n\nBiting your own fist, crouched behind the split bluestone, you don't move, not until that lamp goes out. Then you laugh till your whole body shakes, till tears run down your face, without another sound.\n\n\"Hide,\" you chant in your head as you laugh. \"Hide, hide, hide…\"\n\nThat night you sit on the clifftop till dawn. You look down the mountain, at the Si, and past the Si to the north, toward Mount Meng.\n\nYou remember your mother squatting on the floor picking up the bowl.\n\n**You:** (toward Mount Meng, very quietly) Mother. I can draw water now.\n\n**You:** A skimmer can draw water too."
+   },
+   "beat": [],
+   "next": "wm-chaifang"
+  }
+ ]
+}

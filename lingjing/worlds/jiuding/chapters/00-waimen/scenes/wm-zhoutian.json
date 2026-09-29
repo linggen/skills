@@ -1,0 +1,63 @@
+{
+ "version": 1,
+ "id": "wm-zhoutian",
+ "chapter": "00-waimen",
+ "at": "chaifang",
+ "place": {
+  "zh": "沉鼎观 · 外门后院 · 柴堆",
+  "en": "Chending Temple · Behind the outer court · the woodpile"
+ },
+ "setup": {
+  "zh": "夜里，你照旧坐在外门后院的柴堆上，照着《吐纳经》，一呼，一吸。",
+  "en": "At night you sit on the woodpile behind the outer court as always, the Scroll of Breath open: out, in."
+ },
+ "recap": {
+  "zh": "那天夜里，你的气在身子里转了一个圈——一夜通了小周天。银月说：三道关，她替你凿了两道半。「你比本王算的，快了三天。」",
+  "en": "That night your qi went round your body in one circle — the small circuit, open in a single night. Yinyue said she had chiselled two and a half of the three gates for you. \"You're three days faster than I reckoned.\""
+ },
+ "cast": [],
+ "people": [],
+ "panel": {
+  "art": "art/panels/wm-zhoutian.webp",
+  "caption": {
+   "zh": [
+    "柴堆上，一呼，一吸。",
+    "一股暖，顺着脊梁骨往上走——一节，一节。",
+    "「三道关。本王凿了两道半。」"
+   ],
+   "en": [
+    "On the woodpile: out, in.",
+    "A warmth climbs the spine — one joint, then the next.",
+    "\"Three gates. I chiselled two and a half.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "按褚先生的说法，引气入体，快则三月，慢则三年。杂灵根，五年起步。\n\n**褚先生**：所以，不要急。急也没用。\n\n你不急。\n\n那天夜里，你照旧坐在外门后院的柴堆上——外门也有柴堆，你觉得这是缘分——照着《吐纳经》，一呼，一吸，把念头往下沉。\n\n半年了。你蹲这只鹿，蹲了半年了。",
+  "en": "By Master Chu's account, drawing qi into the body takes three months if you're quick, three years if you're slow. Mixed roots, five years at least.\n\n**Master Chu:** So don't hurry. Hurrying won't help.\n\nYou don't hurry.\n\nThat night, as usual, you sit on the woodpile in the outer court's back yard — the outer court has a woodpile too; you take it as fate — following the Scroll of Breath, one breath out, one breath in, letting your thoughts sink down.\n\nHalf a year now. You've been lying in wait for this deer for half a year."
+ },
+ "lines": [],
+ "buttons": [
+  "breathe"
+ ],
+ "exits": [
+  {
+   "id": "breathe",
+   "label": {
+    "zh": "一呼，一吸",
+    "en": "Out — and in"
+   },
+   "means": "breathes as the scroll says, sinks the mind down",
+   "grant": {
+    "table": "scene",
+    "progress": 40
+   },
+   "story": {
+    "zh": "吸进第一口气的时候，你就觉出来了。\n\n不一样。\n\n那口气是凉的，清的，像山泉水，从鼻子里进去，顺着喉咙往下流，一直流进肚子里——流进你身子里那片你从来不知道的湖里。\n\n然后，那片湖，**亮了**。\n\n先是一点暖，像有人在那里点了一盏灯。然后那盏灯越烧越旺——你还没来得及害怕，那股暖就自己动了起来，冲出肚子，顺着脊梁骨往上走，一节，一节，像一条火做的小蛇，往上钻。钻过后腰。钻过后背。钻上后脑。钻到头顶——\n\n「轰。」\n\n你眼前一白。\n\n然后那股暖从头顶翻过来，顺着脸、顺着喉咙、顺着胸口，一路往下，落回你的肚脐底下。稳稳地，停住了。\n\n一个圈。\n\n你睁开眼睛。月亮还是那个月亮，柴堆还是那个柴堆。可你看得见院子里每一片叶子上的露水；你听得见三间房外，孙二狗在梦里喊「娘，我不吃糠」；你闻得见隔壁伙房里，明天早饭的咸菜，是隔夜的。\n\n胸口的木牌，烫得像一块刚出炉的烙饼。一只半透明的小银狐，从木牌里钻了出来，蹲在你膝盖上，打了个哈欠。\n\n⟪**银月**：……通了？⟫\n\n**你**：通、通了！银月，我一夜就——\n\n⟪**银月**：知道。本王算好的。你以为这半年，你是白蹲的？洗髓丹，是洗烟囱。可烟囱洗干净了，门还锁着。你自己撞，撞到三十岁也撞不开。所以本王睡在你心口，每天夜里，趁你吐纳的时候，拿本王的气，替你一点一点地凿。⟫\n\n它抬起一只爪子，在你后腰上点了一下，后背正中点了一下，后脑勺点了一下。\n\n⟪**银月**：尾闾，夹脊，玉枕。三道关。本王凿了两道半。最后那半道，得你自己撞——本王替你撞，你这辈子都不知道门是怎么开的。⟫\n\n一百八十个夜里。你坐在柴垛上，觉得自己像一口枯井。原来，一直有人在井底下，替你挖。\n\n**你**：……所以我不是天才。\n\n⟪**银月**：你是漏勺。本王是补锅匠。⟫\n\n你这才看清楚它。它比上回薄了，月光从它身上透过去，能看见后面的柴堆。那一条尾巴，垂着，连尖都不翘了。\n\n⟪**银月**：（把脸扭开）本王是妖王。凿几道门，算什么。……就是要多睡几天。不过，你比本王算的，快了三天。⟫\n\n**你**：快三天是好事吗？\n\n⟪**银月**：是好事。……也是怪事。藏好。⟫\n\n然后它就不见了。木牌凉了下去——凉得比哪一次都久。",
+    "en": "With the first breath in, you can feel it.\n\nIt's different.\n\nThe breath is cool and clear, like mountain spring water, going in through your nose, flowing down your throat, all the way into your belly — into a lake inside you that you never knew was there.\n\nAnd then the lake **lights up**.\n\nFirst a little warmth, as if someone has lit a lamp there. Then the lamp burns brighter and brighter — before you have time to be afraid, the warmth moves on its own, bursts out of your belly and climbs your spine, one joint, one joint, like a little snake made of fire, boring upward. Through the small of your back. Through your back. Up the back of your head. To the crown —\n\n*Whoom.*\n\nEverything goes white.\n\nThen the warmth rolls over from the crown, down your face, down your throat, down your chest, all the way down, and settles back below your navel. Steady. Still.\n\nA circle.\n\nYou open your eyes. The moon is the same moon, the woodpile the same woodpile. But you can see the dew on every leaf in the yard; you can hear, three rooms away, Sun Ergou calling in his sleep, \"Mother, I won't eat the chaff\"; you can smell, in the kitchen next door, that tomorrow's breakfast pickles are left over from yesterday.\n\nThe token on your chest is hot as a flatbread fresh off the griddle. A small, half-transparent silver fox slips out of it, crouches on your knee, and yawns.\n\n⟪**Yinyue:** …Through?⟫\n\n**You:** Th-through! Yinyue, in one night I —\n\n⟪**Yinyue:** I know. This king worked it out. You think you sat there half a year for nothing? The marrow-washing pill cleans the chimney. But clean the chimney, and the door's still locked. Batter at it yourself and you'd still be battering at thirty. So this king slept at your heart, and every night, while you breathed, chiselled it for you with this king's own qi, bit by bit.⟫\n\nShe lifts a paw and taps the small of your back, the middle of your back, the back of your head.\n\n⟪**Yinyue:** Weilü, Jiaji, Yuzhen. Three passes. This king chiselled two and a half. The last half you have to break yourself — if this king broke it for you, you'd never in your life know how the door opens.⟫\n\nA hundred and eighty nights. You sat on the woodpile feeling like a dry well. All along, someone was at the bottom of the well, digging for you.\n\n**You:** …So I'm not a genius.\n\n⟪**Yinyue:** You're a skimmer. This king is the pot-mender.⟫\n\nOnly now do you see her clearly. She's thinner than last time; the moonlight goes right through her, and you can see the woodpile behind. That one tail hangs down, not even the tip curled up.\n\n⟪**Yinyue:** (turning her face away) This king is a demon sovereign. Chiselling a few doors, what's that? …Only means a few more days of sleep. Still, you were three days faster than this king worked out.⟫\n\n**You:** Is three days faster good?\n\n⟪**Yinyue:** It's good. …It's also strange. Hide it well.⟫\n\nThen she's gone. The token cools — and stays cool longer than ever before."
+   },
+   "beat": [],
+   "next": "wm-qingshi"
+  }
+ ]
+}

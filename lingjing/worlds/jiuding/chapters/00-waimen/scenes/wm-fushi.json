@@ -1,0 +1,57 @@
+{
+ "version": 1,
+ "id": "wm-fushi",
+ "chapter": "00-waimen",
+ "at": "waimen",
+ "place": {
+  "zh": "沉鼎观 · 外门 · 执事房",
+  "en": "Chending Temple · The outer court · the steward's office"
+ },
+ "setup": {
+  "zh": "你输了，就不能进下一轮。可那天晚上，周衡把你叫进了执事房：「外门大比，有一条规矩。你知道吗？」",
+  "en": "You lost, so you are out. But that night Zhou Heng calls you into his office. \"The contest has a rule. Do you know it?\""
+ },
+ "recap": {
+  "zh": "你输了第一轮。那天夜里，周衡从抽屉里拿出那半根蜡烛：巡夜有功，赏灵石十块——正好买一次「复试」。",
+  "en": "You lost the first round. That night Zhou Heng took the half candle out of his drawer: a reward for the night watch, ten stones — exactly the price of a second chance."
+ },
+ "cast": [],
+ "people": [
+  "zhouheng"
+ ],
+ "panel": {
+  "art": "art/panels/wm-fushi.webp",
+  "caption": {
+   "zh": [
+    "那天晚上，执事房。",
+    "桌上，那半根蜡烛。",
+    "「——十块。记账。」"
+   ],
+   "en": [
+    "That night, the steward's office.",
+    "On the desk: the half candle.",
+    "\"— Ten. Entered in the ledger.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "你输了。输了，就不能进下一轮了。\n\n按规矩，是这样。\n\n可是那天晚上，周衡把你叫进了执事房。\n\n**周衡**：（头也不抬）{name}。外门大比，有一条规矩。你知道吗？\n\n**你**：不知道。\n\n**周衡**：输了第一轮的人，可以花十块灵石，买一次「复试」。设了三十年了，一次都没人用过。（抬头看你）因为输了第一轮的人，一般都没有十块灵石。\n\n**你**：我也没有。\n\n**周衡**：我知道。\n\n他从抽屉里，拿出了一样东西，放在桌上。那半根蜡烛。\n\n**周衡**：药园巡夜，灵草，一株没丢。（他翻开账簿）按外门的规矩，巡夜有功，赏灵石——\n\n他一个一个地数：\n\n**周衡**：——十块。记账。\n\n你看着他。他低下头，接着翻他的账簿。\n\n**你**：……周师兄。\n\n**周衡**：嗯。\n\n**你**：有前途。\n\n周衡翻账簿的手，停了一下。然后他咳了一声，挥挥手，让你滚了。",
+  "en": "You lost. Lose, and you can't go on to the next round.\n\nThat's the rule.\n\nBut that evening, Zhou Heng calls you into the steward's office.\n\n**Zhou Heng:** (without looking up) {name}. The outer-court contest has a rule. Do you know it?\n\n**You:** No.\n\n**Zhou Heng:** Anyone who loses the first round can pay ten spirit stones for one \"second chance.\" It's been on the books thirty years and nobody's ever used it. (looks up at you) Because people who lose the first round generally don't have ten spirit stones.\n\n**You:** I don't either.\n\n**Zhou Heng:** I know.\n\nFrom a drawer he takes something and sets it on the table. That half candle.\n\n**Zhou Heng:** Night watch at the herb garden: not one spirit herb lost. (He opens the ledger.) By outer-court rules, meritorious night watch is rewarded in spirit stones —\n\nHe counts them out one by one:\n\n**Zhou Heng:** — ten. Entered in the ledger.\n\nYou look at him. He lowers his head and goes on turning the pages of his ledger.\n\n**You:** …Senior Brother Zhou.\n\n**Zhou Heng:** Mm.\n\n**You:** Promising.\n\nZhou Heng's hand stops on the page for a moment. Then he coughs, waves a hand, and tells you to get lost."
+ },
+ "lines": [],
+ "buttons": [
+  "on"
+ ],
+ "exits": [
+  {
+   "id": "on",
+   "label": {
+    "zh": "复试",
+    "en": "The second chance"
+   },
+   "means": "takes the second-chance bout",
+   "beat": [],
+   "next": "wm-lun2"
+  }
+ ]
+}

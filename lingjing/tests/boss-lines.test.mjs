@@ -10,9 +10,9 @@ import { dayKey, newState } from '../scripts/state.mjs';
 import { duel, look, resolve, tale, task, win } from '../scripts/rules.mjs';
 import { battleHtml, boutSays, WORDS } from '../scripts/battle-card.js';
 import { begin, offers, view } from '../scripts/battle.js';
-import { TO_HALL, TO_WAIMEN, walk } from './prologue.mjs';
+import { beforeChapterOne, TO_HALL, TO_WAIMEN, walk } from './prologue.mjs';
 
-const content = loadContent();
+const content = beforeChapterOne(loadContent());
 const NOW = new Date('2026-09-11T12:00:00');
 const ctx = (extra = {}) => ({ now: NOW, quests: [], ...extra });
 const october = () => ctx({ now: new Date('2026-10-05T10:00:00') });
@@ -40,7 +40,7 @@ const GAME_WORDS = /修为|灵力|卡牌|灵石|体力|气血/;
 
 test('every creature speaks: open, won, lost in both languages, short, no digits, no game words', () => {
   const all = content.creatures.creatures.filter(c => !c.made);
-  assert.equal(all.length, 18);
+  assert.equal(all.length, 22, 'eighteen beasts, 狰, and the three the 外门大比 fights');
   for (const c of all) {
     for (const k of ['open', 'won', 'lost']) {
       const line = c.says?.[k];
@@ -52,7 +52,7 @@ test('every creature speaks: open, won, lost in both languages, short, no digits
       assert.match(line.zh, /\p{Script=Han}/u);
       assert.doesNotMatch(line.en, /\p{Script=Han}/u);
     }
-    assert.notEqual(c.says.open.zh, c.quote.zh, 'the quote describes it; it is not its speech');
+    if (c.quote) assert.notEqual(c.says.open.zh, c.quote.zh, 'the quote describes it; it is not its speech');
   }
 });
 

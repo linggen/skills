@@ -1,0 +1,76 @@
+{
+ "version": 1,
+ "id": "wm-juesai",
+ "chapter": "00-waimen",
+ "at": "zhengdian",
+ "place": {
+  "zh": "沉鼎观 · 大比 · 决赛",
+  "en": "Chending Temple · The contest · The final"
+ },
+ "setup": {
+  "zh": "决赛。对手是内门下来的一个真灵根师姐，淡蓝的衣裳，剑在背上。她冲你一抱拳：「请。」",
+  "en": "The final. Your opponent is a true-root senior come down from the inner court, in pale blue, a sword on her back. She salutes you, fist in palm. \"After you.\""
+ },
+ "recap": {
+  "zh": "决赛打了三十招，内门师姐输了，冲你一抱拳：「藏得好。」观主玄沉子把筑基丹放在你手里。",
+  "en": "The final went thirty moves; the inner-court senior lost and saluted you: \"Well hidden.\" Abbot Xuanchenzi put the Foundation pill in your hand."
+ },
+ "cast": [],
+ "people": [
+  "neimen-shijie",
+  "xuanchenzi"
+ ],
+ "panel": {
+  "art": "art/panels/wm-juesai.webp",
+  "caption": {
+   "zh": [
+    "决赛。内门下来的真灵根师姐。",
+    "三十招。",
+    "「藏得好。」「师姐也是。」"
+   ],
+   "en": [
+    "The final. A true-root senior from the inner court.",
+    "Thirty moves.",
+    "\"Well hidden.\" \"You too, senior.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "决赛。\n\n对手是内门下来的一个真灵根师姐。淡蓝的衣裳，剑在背上，一路打上来，一场都没用全力——你看得出来。\n\n她看了你一眼。她也看得出来。\n\n**内门师姐**：（一抱拳）请。",
+  "en": "The final.\n\nYour opponent is a senior sister down from the inner court, a true root. Pale blue clothes, sword on her back; she's fought her way up without using her full strength once — you can tell.\n\nShe glances at you. She can tell too.\n\n**The senior:** (cupping her fist) Please."
+ },
+ "lines": [],
+ "buttons": [
+  "final"
+ ],
+ "exits": [
+  {
+   "id": "final",
+   "label": {
+    "zh": "决赛",
+    "en": "The final"
+   },
+   "means": "fights the final bout",
+   "game": {
+    "id": "dabi-final",
+    "kind": "duel",
+    "creature": "foe-shijie",
+    "retry": true
+   },
+   "withdrawn": {
+    "zh": "师姐收了剑，退后一步：「再来。」",
+    "en": "The senior sheathes her sword and steps back. \"Again.\""
+   },
+   "grant": {
+    "table": "scene",
+    "item": "foundation-pill"
+   },
+   "story": {
+    "zh": "决赛，你赢了。\n\n打了三十招。她输了以后，冲你一抱拳：「藏得好。」\n\n你也冲她一抱拳：「师姐也是。」——她比赛的时候，也一直没用全力。\n\n头名，筑基丹一枚。\n\n观主玄沉子亲手把丹药放在你手里。他看着你，看了很久很久，就像入门那天，看测灵石那样。\n\n**玄沉子**：五行杂灵根？\n\n**你**：原来是。\n\n玄沉子笑了。笑得很温和，说话还是只说半句：\n\n**玄沉子**：沉鼎秘境里，有一间石室。三百年，没人进去过……\n\n他没说完。他拍了拍你的肩膀，转身走了。",
+    "en": "You win the final.\n\nThirty moves. When she's lost, she cups her fist to you: \"Well hidden.\"\n\nYou cup your fist back: \"You too, senior sister.\" — she never used her full strength in her bouts either.\n\nFirst place: one Foundation pill.\n\nXuanchenzi, the abbot, places the pill in your hand himself. He looks at you for a long, long time, the way he looked at the testing stone the day you came in.\n\n**Xuanchenzi:** Five-element mixed roots?\n\n**You:** Used to be.\n\nXuanchenzi smiles. A mild smile, and he still only says half of what he means:\n\n**Xuanchenzi:** In the Chending hidden realm there is a stone chamber. In three hundred years, no one has gone in…\n\nHe doesn't finish. He pats your shoulder, turns, and goes."
+   },
+   "beat": [],
+   "next": "wm-baishi"
+  }
+ ]
+}

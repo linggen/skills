@@ -1,0 +1,63 @@
+{
+ "version": 1,
+ "id": "wm-danlu",
+ "chapter": "00-waimen",
+ "at": "chaifang",
+ "place": {
+  "zh": "沉鼎观 · 柴房后面 · 泥地里",
+  "en": "Chending Temple · Behind the woodshed · in the mud"
+ },
+ "setup": {
+  "zh": "胸口的木牌烫了，烫得很久很久。小银狐钻出来，看着你的伤，一句话都没说——然后「呸」地吐出了一样东西。",
+  "en": "The token on your chest burns, and burns a long while. The little silver fox slips out, looks at your hurts and says nothing at all — then spits something out."
+ },
+ "recap": {
+  "zh": "银月一句话都没说，吐出了她的丹炉——一只巴掌大的小铜炉。「替本王看着它。」她说完最后半句就淡了下去：「……下次……打回去……」",
+  "en": "Yinyue said nothing at all; she spat out her furnace — a little bronze furnace the size of a palm. \"Look after it for me.\" Her last half-sentence as she faded: \"…next time… hit back…\""
+ },
+ "cast": [],
+ "people": [],
+ "panel": {
+  "art": "art/panels/wm-danlu.webp",
+  "caption": {
+   "zh": [
+    "一只巴掌大的小铜炉，三只脚，两只耳。",
+    "「本王的丹炉。仙界带下来的。」",
+    "「……下次……打回去……」"
+   ],
+   "en": [
+    "A little bronze furnace the size of a palm: three legs, two ears.",
+    "\"My furnace. I brought it down from the heavens.\"",
+    "\"…next time… hit back…\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "胸口的木牌，烫了。\n\n这一次，烫得很久很久。\n\n一只半透明的小银狐，从木牌里钻了出来。它蹲在你胸口上，低头看着你{外门·伤处}，看了很久很久。\n\n它没有说话。它平常嘴那么毒，这时候，一句话都没有说。\n\n然后，它张开嘴，「呸」地吐出了一样东西。\n\n那东西落在你胸口上，叮当一声。一只巴掌大的小铜炉。三只脚，两只耳，炉身青里透紫，刻满了火焰和云。炉盖上蹲着一只小兽，打了个哈欠，睁开一只眼睛瞥了你一眼，又闭上了。\n\n⟪**银月**：（声音很轻）本王的丹炉。仙界带下来的。替本王看着它。⟫\n\n**你**：……它能干什么？\n\n⟪**银月**：它会炼丹。你们凡人炼丹，十炉炸七炉……它不炸。它炼出来的……是你吃得下的，最好的……那一颗。还有，它嘴刁……尝过的丹……⟫\n\n她的声音越来越小。\n\n**你**：银月？\n\n⟪**银月**：……它还会……⟫\n\n她没说完。她的身子，像一缕烟一样淡了下去。最后剩下的，是半句很轻很轻的话：\n\n⟪**银月**：……下次……打回去……⟫\n\n木牌，凉了。\n\n你捧着那只小铜炉，坐在泥地里，愣了很久。「嘴刁」是什么意思？「还会」——还会什么？\n\n炉盖上的小兽睁开一只眼睛，瞥了你一眼，又闭上了。它显然知道。它显然不打算告诉你。\n\n你把它翻过来看。炉底刻着几个字，笔画弯弯曲曲，像云，又像火。你一个都不认得。只认得最后一个字，是个「兜」。",
+  "en": "The token on your chest goes hot.\n\nThis time it stays hot for a long, long time.\n\nA small, half-transparent silver fox slips out of the token. It crouches on your chest, looking down at {外门·伤处}, for a long, long time.\n\nIt doesn't speak. As sharp as its tongue usually is, right now it says nothing at all.\n\nThen it opens its mouth and — *ptoo* — spits something out.\n\nThe thing lands on your chest with a clink. A little bronze furnace the size of your palm. Three legs, two ears, the body blue shot through with purple, carved all over with flames and clouds. On the lid crouches a small beast; it yawns, opens one eye, glances at you, and shuts it again.\n\n⟪**Yinyue:** (very softly) This king's furnace. Brought down from the Immortal Realm. Keep it for this king.⟫\n\n**You:** …What does it do?\n\n⟪**Yinyue:** It makes pills. When you mortals make pills, seven furnaces in ten blow up… it doesn't. What it makes is… the best one… you can take. And it's picky… a pill it's tasted…⟫\n\nHer voice gets smaller and smaller.\n\n**You:** Yinyue?\n\n⟪**Yinyue:** …it can also…⟫\n\nShe doesn't finish. Her body fades like a wisp of smoke. The last thing left is half a sentence, very, very soft:\n\n⟪**Yinyue:** …next time… hit back…⟫\n\nThe token goes cool.\n\nYou sit in the mud holding the little bronze furnace, stunned, for a long time. What does \"picky\" mean? \"It can also\" — can also what?\n\nThe little beast on the lid opens one eye, glances at you, and shuts it again. It clearly knows. It clearly has no plans to tell you.\n\nYou turn it over. Carved on the bottom are a few characters, all curls, like cloud, like fire. You can't read a single one. Except the last: it's *dou*, 兜."
+ },
+ "lines": [],
+ "buttons": [
+  "keep"
+ ],
+ "exits": [
+  {
+   "id": "keep",
+   "label": {
+    "zh": "收好小铜炉",
+    "en": "Keep the little furnace safe"
+   },
+   "means": "takes the furnace, keeps it",
+   "grant": {
+    "table": "scene",
+    "item": "danlu"
+   },
+   "story": {
+    "zh": "**你**：……你叫什么？\n\n炉盖，一动不动。\n\n**你**：那我给你起一个。\n\n你想了想，给它起了个名字。\n\n炉盖安静了很久，然后，轻轻地「咔哒」了一声。\n\n像是在说：勉强。",
+    "en": "**You:** …What's your name?\n\nThe lid doesn't move.\n\n**You:** Then I'll give you one.\n\nYou think it over and give it a name.\n\nThe lid stays quiet a long while, then gives a small *click*.\n\nAs if to say: it'll do."
+   },
+   "beat": [],
+   "next": "wm-diyilu"
+  }
+ ]
+}
