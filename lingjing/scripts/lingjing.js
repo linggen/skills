@@ -1204,6 +1204,9 @@ function syncSoon() {
 async function write(name, args = {}) {
   const r = await verb(name, args);
   if (r?.ok) syncSoon();
+  // A scene choice's refusal («九个格子还没填对») stands until the next move
+  // lands: the board won under it, the note would still say the wall holds.
+  if (r?.ok && name !== 'resolve' && view.panelNote) keep({ panelNote: null });
   return r;
 }
 const failed = (e) => ({ ok: false, error: String(e) });

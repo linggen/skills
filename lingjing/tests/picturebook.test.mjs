@@ -201,3 +201,9 @@ test('书: every chapter the book names exists and renders; the reader and its c
   assert.doesNotMatch(reader, /window\.open|target="_blank"/, 'the frame is sandboxed: navigate in place');
   assert.match(readChipHtml({ lang: 'en', words: WORDS.en }), /<a class="luchip readchip" href="read\.html\?lang=en" title="Read the book">Book<\/a>/);
 });
+
+test('a scene choice refused says why until the next move lands: winning the board it waited on clears the note (live, 2026-09-29)', () => {
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const write = src.slice(src.indexOf('async function write('), src.indexOf('\n}\n', src.indexOf('async function write(')));
+  assert.match(write, /if \(r\?\.ok && name !== 'resolve' && view\.panelNote\) keep\(\{ panelNote: null \}\);/);
+});
