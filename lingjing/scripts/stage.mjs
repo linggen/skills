@@ -68,10 +68,14 @@ export const CARD_KINDS = {
   born: { holds: false },
   // Who the scene brings on (people.json): a portrait and a name each — told, never asking.
   people: { holds: false },
-  // A 连环画 beat (his, 2026-09-28: 右边尽量放图片……像小人书): the picture, its caption, and the
-  // scene's choices under it. The scene's own question — like the name, never the chat's; the
-  // choices it carries are owned here (stageOwns), so the chat asks nothing twice.
+  // The scene card: its place, caption and choices, in words (his, 2026-09-29: 「不用小人书的方式了」 —
+  // no picture). The scene's own question — like the name, never the chat's; the choices it
+  // carries are owned here (stageOwns), so the chat asks nothing twice.
   panel: { holds: false },
+  // 图鉴 (codex.js): who or what this scene brings on for the first time, its card before the
+  // scene card — told, never asking. `codex` is the same card when Ling Shows an entry.
+  meet: { holds: false },
+  codex: { holds: false },
   // 渡劫's odds (rules/breakthrough.mjs): the throw is taken on this card, never
   // the chat's. It holds, so the roads stand under it — a way off to prepare
   // (a pill, a 闭关) before the throw.
@@ -211,16 +215,18 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   }
   // The people of the scene stand first: whoever is speaking is seen.
   const people = look.scene?.people?.length && !line ? [{ card: 'people' }] : [];
-  // The picture of the beat stands first: the stage is a picture book, the story is the chat's.
+  // The scene card stands first (the story is the chat's), and before it the 图鉴 card of
+  // whoever or whatever the scene brings on for the first time.
+  const meet = (look.scene?.meet ?? []).map(id => ({ card: 'meet', id }));
   const panel = look.scene?.panel ? [{ card: 'panel' }] : [];
-  return [...panel, ...people, ...head, ...cards];
+  return [...meet, ...panel, ...people, ...head, ...cards];
 }
 
 /* The kinds the PAGE draws for itself, from Look alone: the scene's panel and
    people, the goal line, the name and 生辰 cards (the scene's exits), a world
    being painted, an empty pool. Never Ling's to Show — the `show` verb drops
    them (rules/verbs.mjs) and the stage drops them from what she showed. */
-export const PAGE_OWNS = new Set(['panel', 'people', 'goal', 'value', 'born', 'building', 'empty', 'memory', 'homing']);
+export const PAGE_OWNS = new Set(['meet', 'panel', 'people', 'goal', 'value', 'born', 'building', 'empty', 'memory', 'homing']);
 export const showable = c => Boolean(c) && !PAGE_OWNS.has(c.card);
 
 /* 此地 · 此刻 · 行 — the stage in FIXED SECTIONS (Hanli, 2026-09-29: the same
@@ -242,11 +248,11 @@ export const MAIN = [
   { kinds: ['memory'] }, //                                              银月's memory, while it plays
   { kinds: ['homing'] }, //                                              then the 鼎's province in ink (鼎归)
   { kinds: ['fight', 'seclusion', 'seclude'] }, //                      the fight, 闭关
-  { kinds: ['panel', 'value', 'born', 'breakthrough'], together: true }, // the scene waiting on a choice
+  { kinds: ['meet', 'panel', 'value', 'born', 'breakthrough'], together: true }, // the scene waiting on a choice, its new faces first
   { kinds: ['board', 'duel', 'lundao'] }, //                             a game to play here
   { kinds: ['handed', 'quest', 'tale', 'road', 'offer'] }, //            the line, one at a time
   { kinds: ['building', 'empty'] }, //                                   the page's own notices
-  { kinds: ['creature', 'item', 'map', 'traits', 'gate', 'tribulation', 'treasure'] }, // what Ling showed
+  { kinds: ['codex', 'creature', 'item', 'map', 'traits', 'gate', 'tribulation', 'treasure'] }, // what Ling showed
   { kinds: ['hexagram'], filler: true }, //                              the day's coins
 ];
 

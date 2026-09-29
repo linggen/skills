@@ -27,6 +27,7 @@ import { mainRoot, rootName } from './roots.mjs';
 import { memoriesLook } from './memories.mjs';
 import { todayBrief } from './festival.mjs';
 import { weatherBrief } from './weather.mjs';
+import { newHere, portraitOf } from './codex.mjs';
 
 /* The market's shelf: the catalog sold in this province — and, while the
    companion is still to be found, her bell at every market, since the call
@@ -68,19 +69,21 @@ function peopleIn(content, state, scene) {
   const seen = new Map();
   for (const who of whos) {
     const p = personOf(content, state, who);
-    if (p && !seen.has(p.id)) seen.set(p.id, { id: p.id, name: pick(p.name, state.lang), role: fill(pick(p.role, state.lang), state, content), voice: pick(p.voice, state.lang), art: p.art });
+    if (p && !seen.has(p.id)) seen.set(p.id, { id: p.id, name: pick(p.name, state.lang), role: fill(pick(p.role, state.lang), state, content), voice: pick(p.voice, state.lang), art: portraitOf(content, state, p.id, p.art) });
   }
   // Before she walks with the player she is the story's (the little fox, the
   // girl at dawn): her face in the form the scene names. After, she stands on
   // the stage herself.
   const form = scene.her && !hasCompanion(state) ? companionOf(content)?.forms?.[scene.her] : null;
-  if (form) seen.set(companionOf(content).id, { id: companionOf(content).id, name: pick(form.name, state.lang), role: pick(form.role, state.lang), art: form.art });
+  // The 图鉴 decides her picture too: none until a good one is painted (a name card).
+  if (form) seen.set(companionOf(content).id, { id: companionOf(content).id, name: pick(form.name, state.lang), role: pick(form.role, state.lang), art: portraitOf(content, state, companionOf(content).id, form.art) });
   return [...seen.values()];
 }
 
-/* A 连环画 beat on the stage (his, 2026-09-28: 右边尽量放图片……像小人书): the
-   picture, two to four lines of caption, and the scene's own choices under it
-   — the plain exits; a name, a birthday, a fight or a board has its own card. */
+/* A beat on the stage as a text card (his, 2026-09-29: 「不用小人书的方式了」 —
+   a story moment is never illustrated): the place, two to four lines of
+   caption, and the scene's own choices under it — the plain exits; a name, a
+   birthday, a fight or a board has its own card. Pictures are the 图鉴's. */
 function panelOf(content, state, scene, buttons) {
   if (!scene.panel) return null;
   const say = pair => fill(pick(pair, state.lang), state, content);
@@ -88,7 +91,7 @@ function panelOf(content, state, scene, buttons) {
   // A staying choice already made (看碑背) is not offered again: its passage was told.
   const done = e => e.stay && e.mark && (state.marks ?? []).includes(e.mark);
   const taps = buttons.map(id => scene.exits.find(e => e.id === id)).filter(e => e && !own(e) && !done(e)).map(e => ({ id: e.id, label: say(e.label) }));
-  return { ...(scene.panel.art ? { art: scene.panel.art } : {}), caption: (scene.panel.caption?.[state.lang] ?? scene.panel.caption?.zh ?? []).map(l => fill(l, state, content)), taps };
+  return { place: say(scene.place), caption: (scene.panel.caption?.[state.lang] ?? scene.panel.caption?.zh ?? []).map(l => fill(l, state, content)), taps };
 }
 
 /* 恩仇簿 as Look tells it: who, 恩 · 仇 · 诺, what, the player's own words,
@@ -128,6 +131,8 @@ function sceneBrief(content, state, now = new Date()) {
   const buttons = (scene.buttons ?? []).filter(setUp);
   const people = peopleIn(content, state, scene);
   const panel = panelOf(content, state, scene, buttons);
+  // 图鉴: who and what this scene brings on for the first time (codex.mjs) — the page shows their cards.
+  const meet = newHere(content, state, scene);
   return {
     id: scene.id,
     place: say(scene.place),
@@ -137,6 +142,7 @@ function sceneBrief(content, state, now = new Date()) {
     lines: spoken(content, state, scene.lines),
     ...(people.length ? { people } : {}),
     ...(panel ? { panel } : {}),
+    ...(meet.length ? { meet } : {}),
     buttons: buttons.map(id => ({ id, label: say(scene.exits.find(e => e.id === id).label) })),
     exits: scene.exits.map(e => exitBrief(content, state, e, buttons.includes(e.id), ctxNow, scene)),
   };

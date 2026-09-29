@@ -97,17 +97,17 @@ function questBrief(content, state, now) {
    Her past is 银月的记忆 (worlds/<id>/memories.json, rules/memories.mjs): a
    memory comes back only when a chapter's 鼎 comes home (`memory: n` on the
    exit), and 「银月记起的」 — what she has recalled — is the memories unlocked,
-   each its title and her own lines (the painted panels'; a memory not yet
+   each its title and her own lines (the painted picture's; a memory not yet
    painted, what she knows of it). The bell-child thread was retired 2026-09-29
    (companion.json `thread`, gone). companion.json keeps her fear, where she
    stands when she joins, and the secret she keeps from 徐 on — handed over
    only once its `told` chapter has ended. Nothing ahead ever leaves the
    rules, and nothing before she walks with the player. */
 const loreOf = content => (content.lore && content.lore.id === companionOf(content)?.id ? content.lore : null);
-/* A memory's line for 录 and for her: 「title」 then her lines under its panels,
+/* A memory's line for 录 and for her: 「title」 then her lines under its picture,
    or what she knows of it when it is not painted yet. */
 function memoryLine(m, lang) {
-  const lines = (m.panels ?? []).flatMap(p => pick(p.lines, lang) ?? []);
+  const lines = m.art ? pick(m.lines, lang) ?? [] : [];
   const title = pick(m.title, lang), sep = lang === 'en' ? ' ' : '';
   const body = lines.length ? lines.join(sep) : pick(m.knows, lang);
   return title && body ? (lang === 'en' ? `${title}: ${body}` : `「${title}」${body}`) : body || null;

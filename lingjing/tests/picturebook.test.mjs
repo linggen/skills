@@ -27,31 +27,42 @@ const start = (lang = 'zh') => newState(content, lang, NOW);
 const upTo = (steps, exit) => steps.slice(0, steps.findIndex(([, a]) => a.exit === exit));
 const page = (l, extra = {}) => ({ look: l, lang: l.lang, words: WORDS[l.lang], content: {}, ...extra });
 
-/* ── The panel ── */
+/* ── The scene card (his, 2026-09-29: 「不用小人书的方式了」 — no picture) ── */
 
-test('a beat stands as a panel: the picture, its caption, the choices under it — first on the stage', () => {
+test('a beat stands as a scene card in words: the place, its caption, the choices under it — its new faces\' 图鉴 cards first', () => {
   for (const lang of ['zh', 'en']) {
     const s = walk(start(lang), [['resolve', { exit: 'name', value: '墨白', gender: 'male' }]], content, NOW);
     const l = look(s, content, ctx());
-    assert.equal(l.stage[0].card, 'panel');
+    assert.equal(l.scene.panel.art, undefined, 'a story moment is never illustrated');
+    assert.deepEqual(l.scene.meet, ['masan', 'maxiaobao', 'old-bow'], '马三, 马小宝 and 爷爷的弓 come on here for the first time (爹 met at home)');
+    assert.deepEqual(l.stage.slice(0, 4).map(c => c.card), ['meet', 'meet', 'meet', 'panel']);
     assert.deepEqual(l.scene.panel.taps.map(t => t.id), ['endure', 'strike']);
     const html = cardHtml({ card: 'panel' }, page(l));
-    assert.match(html, /<img class="panelart" src="\.\.\/worlds\/jiuding\/art\/panels\/00-masan\.webp"/);
+    assert.doesNotMatch(html, /<img/);
+    assert.match(html, lang === 'zh' ? /<div class="sceneplace">石坳村 · 你家 · 傍晚<\/div>/ : /<div class="sceneplace">Shi&#39;ao village/);
     assert.match(html, lang === 'zh' ? /<p>马三来了，一脚踹开柴门。<\/p>/ : /<p>Ma San comes, and kicks the gate open\.<\/p>/);
     assert.match(html, lang === 'zh' ? /data-panel-exit="endure">照他的话，原样说回去</ : /data-panel-exit="endure">Say his words straight back</);
     assert.doesNotMatch(html, /undefined|\{\w+\}|NaN/);
     assert.match(cardHtml({ card: 'panel' }, page(l, { panelBusy: 'strike' })), /paneltap busy" data-panel-exit="strike" disabled/);
     assert.match(cardHtml({ card: 'panel' }, page(l, { panelNote: '手里没有鹿皮。' })), /class="donote">手里没有鹿皮。</);
-    // the panel owns its choices: the chat asks nothing, and Ling never sees the picture
+    // the scene card owns its choices: the chat asks nothing
     assert.ok(stageOwns(l, l.stage).has('exit:endure'));
     assert.equal(l.ask, null);
     assert.equal(forLing(l).scene.panel, undefined);
-    assert.ok(!l.stage.some(c => c.card === 'hexagram'), 'a picture-book beat is not an empty stage');
+    assert.ok(!l.stage.some(c => c.card === 'hexagram'), 'a beat is not an empty stage');
   }
 });
 
-test('every prologue panel is on disk; every portrait too', () => {
-  for (const scene of Object.values(content.chapters['00-prologue'].scenes)) assert.ok(fs.existsSync(path.join(content.dir, scene.panel.art)), scene.id);
+test('a face is new once: the next scene brings on only who it has not met; a replay brings no one', () => {
+  const s = walk(start('zh'), [['resolve', { exit: 'name', value: '墨白', gender: 'male' }], ['resolve', { exit: 'endure' }]], content, NOW);
+  const l = look(s, content, ctx());
+  assert.equal(l.scene.id, '00-dawn');
+  assert.ok(!(l.scene.meet ?? []).includes('masan'), '马三 was met');
+  assert.ok((l.scene.meet ?? []).includes('ahe'), '阿禾 comes on at dawn');
+});
+
+test('no prologue scene has a picture; every person\'s portrait is on disk or a name card', () => {
+  for (const scene of Object.values(content.chapters['00-prologue'].scenes)) assert.equal(scene.panel?.art, undefined, scene.id);
   for (const p of content.people.people) assert.ok(fs.existsSync(path.join(content.dir, p.art)), p.id);
   for (const f of Object.values(content.world.companion.forms)) assert.ok(fs.existsSync(path.join(content.dir, f.art)), f.art);
 });

@@ -49,36 +49,9 @@ ITEMS = {
   'old-bow': 'an old hunting bow of dark wood, its back cracked twice and bound with ox sinew, a worn leather grip, lying on straw',
 }
 
-PANELS = {
-  '00-shiao': 'a village of seventeen poor households at the foot of a great mountain in autumn dusk, terraced fields, one mud-brick hut apart with hides hanging to dry and a sagging thatch roof, bowls set out under the leaks inside, a child at the door looking up at the mountain',
-  '00-masan': 'dusk inside a poor mountain hunter\'s mud-brick hut: a huge rent collector with an iron-bound club kicks open the wicker gate, a plump boy in silk waves a cake, an old hunter bows and smiles humbly, a thin child stands still with lowered eyes, a broken bowl on the floor, an old sinew-wrapped bow on the wall, bowls catching drips from the leaking thatch',
-  '00-dawn': 'grey frosty dawn at a farmhouse paper window, a neighbour child\'s mittened hand passes a warm boiled egg through the half-open window to a child inside, breath steaming',
-  '00-kitchen': 'lamplight in a poor farmhouse kitchen before dawn: a peasant mother crouched at a clay stove baking two flatbreads, one thick one thin; an old hunter sitting on the edge of a brick bed wrapping his left knee tightly with old cloth; a child watching',
-  '00-chushan': 'misty dawn at the east end of a mountain village: a blind old woman sitting on her doorstep presses a small worn wooden token into a child\'s hand; an old limping hunter with a bow waits; beyond, a pine forest trampled by hunting dogs and a child at the top of a tall pine looking out over empty hills',
-  '00-duanbei': 'a broken ancient stone stele half buried in dry grass at the mouth of a black pine forest, no birds, dead still air; an old hunter and a small child stand before it, the child parting the grass behind the stele where a tiny curled fox is carved',
-  '00-heisong': 'a forest of giant black pines twice normal height, thick needle carpet, a child carving a notch into a black trunk with a knife while an old hunter crouches by a mountain stream touching huge deer hoofprints',
-  '00-storm': 'a violent rainstorm in a black pine forest, trees bent in the wind, water pouring down a narrow path along a cliff edge; an old hunter\'s knee gives way and he tips toward the drop while a small child lunges and grabs his belt',
-  '00-fall': 'the bottom of a deep misty ravine in the rain, towering cliffs vanishing into cloud, a small child lying in a bed of thick moss among broken branches and a snapped vine, then sitting up checking their hands',
-  '00-fox': 'a hidden valley of strange silver-leaved trees with raindrops beaded like pearls on every leaf tip, faintly glowing grass; in a shallow muddy pit a tiny wounded silver fox with a single tail glows softly, breathing; a child crouches behind a silver tree watching',
-  '00-cave': 'night in a shallow rock cave behind a small fire of moss and pine resin; a child sits against the stone wall holding a tiny silver fox wrapped in a patched jacket, breaking a flatbread in half for it',
-  '00-yinyue': 'grey dawn at a cave mouth after rain: a young woman with long silver hair to her waist, barefoot, in a white robe bright as water, a single silver fox tail behind her, sits eating a piece of flatbread and looks back over her shoulder; a child waking inside the cave reaches for a stone',
-  '00-cliff': 'a child climbing a rock crack up a cliff face toward an old hunter lying at the muddy cliff edge reaching down his hand, a peasant farmer with a torch behind him; a tiny silver fox curled around the child\'s neck like a fur scarf',
-  '00-deer': 'a child drawing a large old sinew-wrapped bow at a great stag with branching antlers drinking at a stream three hundred paces away, an old hunter kneeling behind, a tiny silver fox on the child\'s shoulder, wind in the grass',
-  '00-rent': 'a village threshing ground: a burly rent collector shakes out a whole deer hide, a plump youth in silk grins, an old hunter nods honestly, a child hunched and cowering as if frightened, villagers watching; a mother in the doorway',
-  '00-dusk': 'night at the east end of the village: a blind old woman on her doorstep slowly bows her head low toward a child who wears a silver fox curled like a scarf around the neck, lantern light',
-  '00-xiuxian': 'midnight on a woodpile behind a farmhouse: a child sits hunched and watchful beside a tiny silver fox lying limp on the straw, silver drops like frost falling from the cut root of its single tail, a full moon above',
-  '00-sleep': 'night on a woodpile: a tiny silver fox, thin and translucent in the moonlight, dissolves into a thread of silver light that circles a child and flows into a small wooden token carved with a nine-tailed fox; a black pill and an old bamboo scroll lie on the straw',
-  '00-halfyear': 'a poor farmhouse kitchen at night under one oil lamp: a peasant mother points with one finger at the characters of an old bamboo scroll on a low table while a child reads along; a wooden token on a cord at the child\'s neck',
-  '00-uncle': 'a humble farmhouse at a meal: a thin bookkeeper uncle in a new blue-grey gown sits on the edge of the brick bed reading aloud from a folded paper; the old hunter father puts down his chopsticks, the mother listens; a child bends over the table clutching the chest, a thread of silver light leaking between the fingers',
-  '00-years': 'moonlight on a woodpile behind a farmhouse through the seasons, snow on the roof; a teenager sits cross-legged breathing in meditation, a small silver fox with one tail sits on their knee beside an old bamboo scroll; two bowls of soup on the windowsill',
-  '00-notice': 'night in a humble farmhouse: an old father lifts an old sinew-wrapped bow down from the wall and lays it before a teenager, the mother holds out a small cloth bundle with needle and thread and an empty purse; a silver fox scarf on the teenager\'s neck',
-  '00-gate': 'three hundred stone steps climbing into clouds toward an old mountain temple gate, crowds of children rushing up and slumping exhausted halfway, one teenager walking steadily at the back, an old man with a bamboo broom at the top',
-  '00-luoshu': 'a stone wall carved with a three by three grid of empty squares, a heap of stone blocks marked with black and white dots like the Luo Shu diagram beside it, a teenager placing a stone in the centre square, an old gatekeeper with a broom watching',
-  '00-longzhi': 'a forest outside a temple gate: a fox-like beast with nine heads and nine tails and tiger claws chained to an ancient pine, all heads turned; children fleeing in tears; a teenager standing just beyond the chain\'s reach holding a stone, waiting',
-  '00-hall': 'a Taoist main hall with no statues, only an empty square four-legged stone seat big enough for a person to lie in; before it a spirit-testing stone glows dimly in five faint colours; a mild abbot in a grey robe sits beside it; a teenager lays a hand on the stone',
-  '00-waimen': 'a temple outer courtyard at evening: a stern young steward with a ledger hands out grey robes, wooden tags and three small spirit stones to new disciples; a plump youth leans on a pillar smirking',
-  '00-mijing': 'night in a long temple dormitory, rows of sleeping youths on one long bed; a teenager lies awake by the door looking at the moon through the window, a small silver fox by the pillow; outside, a fresh paper notice on a wooden board in the courtyard',
-}
+# The 28 小人书 panels were retired 2026-09-29 (his: 「不用小人书的方式了，图片作为图鉴」);
+# their prompts are in git history. Portraits and things: tools/paint-codex.py.
+PANELS = {}
 
 
 def paint(out, prompt, width, height, seed):

@@ -52,38 +52,10 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 /* 注: words with a figure, set in the text right under their paragraph, the
    column's width and at most most of a screen tall; a tap opens it large. */
 .gloss { border-bottom: 1px dotted var(--seal); cursor: pointer; }
-.notefig { margin: 0 0 1.5em; padding: 12px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
-.notefig .pic { cursor: zoom-in; }
-.notefig .pic img { max-height: min(72vh, 620px); }
-.notefig figcaption { margin-top: 10px; font-size: 14px; line-height: 1.75; color: var(--dim); }
-.notefig figcaption b { display: block; margin-bottom: 2px; font-size: 15px; letter-spacing: .15em; color: var(--text); }
-.notefig figcaption span { display: block; }
-.notefig small { display: block; margin-top: 6px; font-size: 12px; opacity: .8; }
 .chapter figure.panel img { cursor: zoom-in; }
-.pic { position: relative; width: fit-content; max-width: 100%; margin: 0 auto; }
-.pic img { display: block; max-width: 100%; width: auto; height: auto; mix-blend-mode: multiply; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pic img { filter: invert(.88); mix-blend-mode: screen; } }
-:root[data-theme="dark"] .pic img { filter: invert(.88); mix-blend-mode: screen; }
 .lightbox { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgb(0 0 0 / .78); cursor: zoom-out; }
 .lightbox > .pic { background: var(--surface); }
 .lightbox > .pic img, .lightbox > img { max-height: calc(100vh - 32px); max-width: calc(100vw - 32px); }
-/* The animation layer (marks.js): points and paths over the figure, in its
-   0–1 space. Points breathe; the qi climbs a path once, lighting each point
-   as it passes; hover or a tap on the words plays it again. */
-.marks { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-.marks .m-way { fill: none; stroke: var(--seal); stroke-width: .7; stroke-linecap: round; stroke-linejoin: round; opacity: .28; }
-.marks .m-flow { fill: none; stroke: var(--seal); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 14 200; stroke-dashoffset: 14; opacity: 0; filter: drop-shadow(0 0 1.5px var(--seal)); }
-.marks.play .m-flow { animation: m-flow 2.4s ease-in-out 1 both; }
-.marks circle { fill: var(--seal); stroke: var(--surface); stroke-width: .6; transform-box: fill-box; transform-origin: center; filter: drop-shadow(0 0 1.5px var(--seal)); animation: m-breathe 3s ease-in-out infinite; }
-.marks.play circle { animation: m-breathe 3s ease-in-out infinite, m-light 1s ease-out var(--t) 1 both; }
-.marks text { font-size: 4px; fill: var(--seal); text-anchor: end; dominant-baseline: middle; paint-order: stroke; stroke: var(--surface); stroke-width: 1.6px; letter-spacing: .05em; }
-@keyframes m-flow { 0% { stroke-dashoffset: 14; opacity: 1; } 90% { opacity: 1; } 100% { stroke-dashoffset: -100; opacity: 0; } }
-@keyframes m-breathe { 0%, 100% { opacity: .6; } 50% { opacity: 1; } }
-@keyframes m-light { 0% { transform: scale(1); } 35% { transform: scale(2.2); } 100% { transform: scale(1); } }
-@media (prefers-reduced-motion: reduce) {
-  .marks circle, .marks.play circle, .marks.play .m-flow { animation: none; }
-  .marks circle { opacity: .9; }
-}
 /* 附 · 本章典籍: the classics a chapter names, inline at its end. The name in
    the text wears the figures' dotted underline and jumps here; 「本章见」 jumps back. */
 .chapter a.dianref { color: inherit; text-decoration: none; }

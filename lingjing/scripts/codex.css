@@ -1,0 +1,66 @@
+/* codex.css — 图鉴 cards, drawn by codex.js, the same in the book (read.html) and
+   the game (index.html): a portrait at ~40% with its words beside it on a wide
+   column, stacked on a phone; a clean name card where no portrait is good. */
+.codexcard { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 14px; align-items: start; margin: 0 0 1.5em; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+.codexcard .cpic img { display: block; width: 100%; height: auto; max-height: 260px; object-fit: contain; border-radius: 4px; cursor: zoom-in; }
+.codexcard .cpic.none { aspect-ratio: 4 / 5; max-height: 220px; }
+.namecard { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; min-height: 96px; border: 1px solid var(--line); border-radius: 4px; background: repeating-linear-gradient(0deg, transparent 0 22px, color-mix(in srgb, var(--line) 35%, transparent) 22px 23px); }
+.namecard b { font-family: var(--serif); font-size: 28px; letter-spacing: .25em; writing-mode: vertical-rl; color: var(--text); }
+.codexcard figcaption { font-size: 14px; line-height: 1.75; color: var(--dim); }
+.codexcard figcaption b { display: inline; font-size: 17px; letter-spacing: .12em; color: var(--text); font-family: var(--serif); }
+.codexcard figcaption i { margin-left: 8px; font-style: normal; font-size: 11px; letter-spacing: .12em; padding: 1px 6px; border: 1px solid var(--line); border-radius: 8px; vertical-align: 2px; }
+.codexcard figcaption span { display: block; margin-top: 4px; }
+.codexcard figcaption small { display: block; margin-top: 6px; font-size: 12px; opacity: .8; }
+@media (max-width: 560px) { .codexcard { grid-template-columns: 1fr; } .codexcard .cpic { max-width: 240px; } }
+.origscan { font: inherit; font-size: 11px; margin-left: 6px; padding: 0 6px; border: 1px solid var(--line); border-radius: 8px; background: none; color: var(--seal); cursor: pointer; }
+/* 录's 图鉴: met entries a grid of small pictures, unmet ones an empty slot. */
+.lucodex h4 { margin: 12px 0 6px; font-size: 13px; letter-spacing: .12em; }
+.codexgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; }
+.codexmini, .codexslot { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); font: inherit; font-size: 12px; color: var(--text); cursor: pointer; }
+.codexmini img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 3px; }
+.codexmini .namecard { aspect-ratio: 1; min-height: 0; }
+.codexmini .namecard b { font-size: 15px; }
+.codexslot { justify-content: center; aspect-ratio: 1; color: var(--line); font-size: 22px; cursor: default; border-style: dashed; }
+.boxcard { max-width: min(640px, calc(100vw - 32px)); }
+.boxcard .codexcard { margin: 0; }
+
+/* A knowledge figure (codex.js codexFigure), and its marks — moved here from read.css so the game draws it the same. */
+.notefig { margin: 0 0 1.5em; padding: 12px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+.notefig .pic { cursor: zoom-in; }
+.notefig .pic img { max-height: min(72vh, 620px); }
+.notefig figcaption { margin-top: 10px; font-size: 14px; line-height: 1.75; color: var(--dim); }
+.notefig figcaption b { display: block; margin-bottom: 2px; font-size: 15px; letter-spacing: .15em; color: var(--text); }
+.notefig figcaption span { display: block; }
+.notefig small { display: block; margin-top: 6px; font-size: 12px; opacity: .8; }
+.pic { position: relative; width: fit-content; max-width: 100%; margin: 0 auto; }
+.pic img { display: block; max-width: 100%; width: auto; height: auto; mix-blend-mode: multiply; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pic img { filter: invert(.88); mix-blend-mode: screen; } }
+:root[data-theme="dark"] .pic img { filter: invert(.88); mix-blend-mode: screen; }
+/* The animation layer (marks.js): points and paths over the figure, in its
+   0–1 space. Points breathe; the qi climbs a path once, lighting each point
+   as it passes; hover or a tap on the words plays it again. */
+.marks { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.marks .m-way { fill: none; stroke: var(--seal); stroke-width: .7; stroke-linecap: round; stroke-linejoin: round; opacity: .28; }
+.marks .m-flow { fill: none; stroke: var(--seal); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 14 200; stroke-dashoffset: 14; opacity: 0; filter: drop-shadow(0 0 1.5px var(--seal)); }
+.marks.play .m-flow { animation: m-flow 2.4s ease-in-out var(--at, 0s) 1 both; }
+.marks circle { fill: var(--seal); stroke: var(--surface); stroke-width: .6; transform-box: fill-box; transform-origin: center; filter: drop-shadow(0 0 1.5px var(--seal)); animation: m-breathe 3s ease-in-out infinite; }
+.marks.play circle { animation: m-breathe 3s ease-in-out infinite, m-light 1s ease-out var(--t) 1 both; }
+.marks text { font-size: 5.5px; font-weight: 600; fill: var(--seal); text-anchor: end; dominant-baseline: middle; paint-order: stroke; stroke: #f4eee1; stroke-width: 2px; letter-spacing: .05em; }
+@keyframes m-flow { 0% { stroke-dashoffset: 14; opacity: 1; } 90% { opacity: 1; } 100% { stroke-dashoffset: -100; opacity: 0; } }
+@keyframes m-breathe { 0%, 100% { opacity: .6; } 50% { opacity: 1; } }
+@keyframes m-light { 0% { transform: scale(1); } 35% { transform: scale(2.2); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .marks circle, .marks.play circle, .marks.play .m-flow { animation: none; }
+  .marks circle { opacity: .9; }
+}
+/* Each channel its colour (a path's `tone`): 督脉 cinnabar up the back, 任脉 blue down the front. */
+.marks marker { color: var(--seal); }
+.marks .m-du, .marks marker.m-du { --mc: #b03a2b; color: #b03a2b; }
+.marks .m-ren, .marks marker.m-ren { --mc: #3a6ca3; color: #3a6ca3; }
+.marks .m-way.m-du, .marks .m-way.m-ren { stroke: var(--mc); opacity: .55; stroke-width: .9; }
+.marks .m-flow.m-du, .marks .m-flow.m-ren { stroke: var(--mc); filter: drop-shadow(0 0 1.5px var(--mc)); }
+.marks .m-pt.m-du circle, .marks .m-pt.m-ren circle { fill: var(--mc); filter: drop-shadow(0 0 1.5px var(--mc)); }
+.marks .m-pt.m-du text, .marks .m-pt.m-ren text { fill: var(--mc); }
+.marks text.r { text-anchor: start; }
+/* A figure drawn as SVG carries its own paper: never inverted in the dark. */
+.pic img[src$=".svg"] { filter: none !important; mix-blend-mode: normal !important; }

@@ -16,6 +16,7 @@ import { VERBS, duel, forLing, look, pageNames, resolve } from '../scripts/rules
 import { bornRoots, dominantFrom, mainRoot, pillarsOf, rootName, starterFor, stoneRoots, strongRoots } from '../scripts/rules/roots.mjs';
 import { TO_WAIMEN, TO_HALL, TO_VALLEY, V1_BIRTH, walk } from './prologue.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
+import { portraitOf } from '../scripts/rules/codex.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-09-28T12:00:00');
@@ -204,13 +205,15 @@ test('people speak as themselves: a line names them, Look carries their voice fo
   assert.deepEqual(l.scene.people.map(p => p.id), ['masan', 'maxiaobao', 'baba']);
   assert.equal(l.scene.people[0].name, '马三');
   assert.match(l.scene.people[0].voice, /破锣/);
-  assert.equal(l.scene.people[0].art, 'art/people/masan.webp');
+  // The portrait is the 图鉴's: a good one, or none (a name card) while it is refused.
+  const masanArt = portraitOf(content, s, 'masan');
+  assert.equal(l.scene.people[0].art, masanArt);
   assert.ok(l.stage.some(c => c.card === 'people'));
   const hers = forLing(l);
   assert.equal(hers.scene.people[0].art, undefined, 'the portrait is the page\'s');
   assert.match(hers.scene.people[0].voice, /破锣/);
   const html = cardHtml({ card: 'people' }, { look: l, lang: 'zh', words: WORDS.zh });
-  assert.match(html, /<img src="\.\.\/worlds\/jiuding\/art\/people\/masan\.webp" alt="马三">[\s\S]*<b>马三<\/b>/);
+  assert.match(html, masanArt ? /<img src="\.\.\/worlds\/jiuding\/art\/people\/masan\.webp" alt="马三">[\s\S]*<b>马三<\/b>/ : /<span class="namecard" aria-hidden="true"><b>马三<\/b><\/span>[\s\S]*<b>马三<\/b>/);
   // 老周's role names {伴}, filled for this player
   const cliff = look(walk(s, [...TO_VALLEY.slice(1), ['resolve', { exit: 'follow' }]], content, NOW), content, ctx()).scene;
   assert.equal(cliff.people.find(p => p.id === 'laozhou').role, '邻居，种地的，阿禾的爹');

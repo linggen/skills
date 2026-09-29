@@ -16,25 +16,34 @@ function along(d, p) {
   return total ? at / total : 0;
 }
 
-/// `marks`: { ratio: height/width, points: [{id, label, x, y}], paths: [{id, d: [[x, y]…], through: [point ids]}] }.
-/// Empty or missing marks draw nothing.
+/// `marks`: { ratio: height/width, points: [{id, label, x, y, side?}], paths: [{id, d: [[x, y]…], through: [point ids], at?, tone?}] }.
+/// A path's flow starts `at` seconds in (the 三关 climb, then the 任脉 down the
+/// front: one 小周天), wears its `tone` (du · ren — each channel its colour) and
+/// carries arrows the way the qi goes; a point's label sits left of it, or right
+/// with `side: "r"`. Empty or missing marks draw nothing.
 export function marksSvg(marks, lang = 'zh') {
   const points = marks?.points ?? [], paths = marks?.paths ?? [];
   if (!points.length && !paths.length) return '';
   const H = 100 * (Number(marks.ratio) || 1);
   const xy = ([x, y]) => `${(x * 100).toFixed(2)} ${(y * H).toFixed(2)}`;
   const label = (l) => (l && typeof l === 'object' ? l[lang] ?? l.zh ?? l.en : l ?? '');
+  const at = (p) => Math.max(0, Number(p?.at) || 0);
+  const tone = (p) => (p.tone && /^[a-z]+$/.test(p.tone) ? ` m-${p.tone}` : '');
   const lines = paths.map((p) => {
     const d = `M${p.d.map(xy).join(' L')}`;
-    return `<path class="m-way" d="${d}" pathLength="100"/><path class="m-flow" d="${d}" pathLength="100"/>`;
+    return `<path class="m-way${tone(p)}" d="${d}" pathLength="100" marker-mid="url(#m-arrow-${p.tone && /^[a-z]+$/.test(p.tone) ? p.tone : 'way'})"/><path class="m-flow${tone(p)}" d="${d}" pathLength="100" style="--at:${at(p).toFixed(2)}s"/>`;
   }).join('');
   const dots = points.map((p) => {
     const path = paths.find((q) => q.through?.includes(p.id));
-    const t = path ? along(path.d, p) * FLOW : 0;
-    const [x, y] = xy([p.x, p.y]).split(' ');
-    return `<g class="m-pt" data-mark="${esc(p.id)}" style="--t:${t.toFixed(2)}s"><circle cx="${x}" cy="${y}" r="2"/><text x="${(x - 4).toFixed(2)}" y="${y}">${esc(label(p.label))}</text></g>`;
+    const t = path ? at(path) + along(path.d, p) * FLOW : 0;
+    const [x, y] = xy([p.x, p.y]).split(' ').map(Number);
+    const right = p.side === 'r';
+    return `<g class="m-pt${tone(path ?? {})}" data-mark="${esc(p.id)}" style="--t:${t.toFixed(2)}s"><circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="2"/><text x="${(right ? x + 4 : x - 4).toFixed(2)}" y="${y.toFixed(2)}"${right ? ' class="r"' : ''}>${esc(label(p.label))}</text></g>`;
   }).join('');
-  return `<svg class="marks" viewBox="0 0 100 ${H.toFixed(2)}" aria-hidden="true">${lines}${dots}</svg>`;
+  // An arrow at each bend, the way the qi runs, in its channel's colour (codex.css).
+  const tones = [...new Set(paths.map((p) => (p.tone && /^[a-z]+$/.test(p.tone) ? p.tone : 'way')))];
+  const arrow = tones.length ? `<defs>${tones.map((t) => `<marker id="m-arrow-${t}" class="m-${t}" viewBox="0 0 6 6" refX="3" refY="3" markerWidth="5" markerHeight="5" orient="auto"><path d="M1 1 L5 3 L1 5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></marker>`).join('')}</defs>` : '';
+  return `<svg class="marks" viewBox="0 0 100 ${H.toFixed(2)}" aria-hidden="true">${arrow}${lines}${dots}</svg>`;
 }
 
 /// Run the qi once: the flow climbs, each point lights as it passes. Again on

@@ -1,0 +1,517 @@
+{
+ "version": 1,
+ "_about": "图鉴 — the codex, the ONE picture system (Hanli 2026-09-29: 「图片作为图鉴，展示人物、生物、物品、武功、经脉、穴位等」). One entry per subject, one source for the book (read-md.js) and the game (the stage's first-appearance card, Ling's Show, 录's 图鉴): scripts/codex.js resolves and draws them. People, creatures, items and arts are LINKED — every row of people.json, creatures.json (not the foe- stand-ins), items.json and arts.json is an entry under its own id, its name, line and art read from there; an entry here with that id only adds to it: `first` {book: chapter id in book.json, scene: the game scene that introduces it}, `name`/`lines` to override, `image: null` to refuse a picture (`_image` says why; a name card stands instead), `by_hero` {male, female} for one picked by the hero's gender (阿禾). Knowledge (经脉, 穴位, 洛书, 五行 …) lives here whole: name, 2–3 lines, image, credit, source, and `marks` (scripts/marks.js). The hero has NO entry and is never drawn. The book writes [words]{注=id}: a subject's card sits after the paragraph of its first appearance (first.book), later mentions are a dotted link; a knowledge figure sits under every paragraph that names it.",
+ "_marks": "The animation layer (scripts/marks.js): ratio = the image's height/width; points [{id, label, x, y}] and paths [{id, d: [[x, y]…], through: [point ids, in flow order]}], x/y in 0–1 of the image, drawn as an SVG over it.",
+ "kinds": {
+  "人物": {
+   "zh": "人物",
+   "en": "People",
+   "from": "people"
+  },
+  "生物": {
+   "zh": "生物",
+   "en": "Creatures",
+   "from": "creatures"
+  },
+  "物品": {
+   "zh": "物品",
+   "en": "Things",
+   "from": "items"
+  },
+  "武功": {
+   "zh": "武功",
+   "en": "Arts",
+   "from": "arts"
+  },
+  "经脉": {
+   "zh": "经脉",
+   "en": "Channels"
+  },
+  "穴位": {
+   "zh": "穴位",
+   "en": "Points"
+  },
+  "洛书": {
+   "zh": "河图洛书",
+   "en": "The River Charts"
+  },
+  "五行": {
+   "zh": "五行",
+   "en": "Five Phases"
+  }
+ },
+ "entries": {
+  "baba": {
+   "first": {
+    "book": "00",
+    "scene": "00-masan"
+   },
+   "image": null,
+   "_image": "modern jacket with pockets, belt and boots — reads 20th century, not old China"
+  },
+  "mama": {
+   "first": {
+    "book": "00",
+    "scene": "00-kitchen"
+   }
+  },
+  "masan": {
+   "first": {
+    "book": "00",
+    "scene": "00-masan"
+   },
+   "image": null,
+   "_image": "an old bald man, portly not hulking, modern belt buckle — awaiting the bake-off"
+  },
+  "maxiaobao": {
+   "first": {
+    "book": "00",
+    "scene": "00-masan"
+   },
+   "image": null,
+   "_image": "reads as a grown woman, not a fourteen-year-old boy"
+  },
+  "ahe": {
+   "first": {
+    "book": "00",
+    "scene": "00-dawn"
+   },
+   "by_hero": {
+    "male": "art/people/ahe.webp",
+    "female": null
+   },
+   "_by_hero": "阿禾 is always the hero's other gender: a girl beside a boy hero, a boy beside a girl. The boy portrait is not painted yet (a name card until then)."
+  },
+  "wupo": {
+   "first": {
+    "book": "00",
+    "scene": "00-chushan"
+   }
+  },
+  "jiujiu": {
+   "first": {
+    "book": "01",
+    "scene": "00-uncle"
+   },
+   "image": null,
+   "_image": "a modern buttoned jacket with a leather belt"
+  },
+  "laozhou": {
+   "first": {
+    "book": "01",
+    "scene": "00-cliff"
+   },
+   "image": null,
+   "_image": "a calligraphy inscription (fake text); modern shirt pocket"
+  },
+  "qulao": {
+   "first": {
+    "book": "01",
+    "scene": "00-gate"
+   }
+  },
+  "xuanchenzi": {
+   "first": {
+    "book": "01",
+    "scene": "00-hall"
+   },
+   "image": null,
+   "_image": "a calligraphy inscription (fake text)"
+  },
+  "zhouheng": {
+   "first": {
+    "book": "01",
+    "scene": "00-waimen"
+   }
+  },
+  "chuxiansheng": {
+   "first": {
+    "book": "02"
+   },
+   "image": null,
+   "_image": "holds a Western leather-bound book"
+  },
+  "sunergou": {
+   "first": {
+    "book": "02"
+   },
+   "image": null,
+   "_image": "a checked yukata and sandals — reads Japanese"
+  },
+  "neimen-shijie": {
+   "first": {
+    "book": "02"
+   },
+   "image": null,
+   "_image": "a katana-hilted sword and kimono look — reads Japanese"
+  },
+  "dushu": {
+   "image": null,
+   "_image": "a calligraphy inscription (fake text)"
+  },
+  "yinyue": {
+   "kind": "人物",
+   "name": {
+    "zh": "银月",
+    "en": "Yinyue"
+   },
+   "first": {
+    "book": "00",
+    "scene": "00-fox"
+   },
+   "image": null,
+   "lines": {
+    "zh": [
+     "一只巴掌大的银狐，一条尾巴，身后八截断尾。",
+     "自称青丘之主——别的，她想不起来了。"
+    ],
+    "en": [
+     "A silver fox no bigger than a palm: one tail, and eight cut stumps behind it.",
+     "She calls herself mistress of Qingqiu — the rest she cannot recall."
+    ]
+   },
+   "_image": "the fox form (art/people/yinyue-fox.webp) has no stumps and reads wolf-sized — awaiting the bake-off"
+  },
+  "longzhi": {
+   "first": {
+    "book": "01",
+    "scene": "00-longzhi"
+   }
+  },
+  "zheng": {
+   "first": {
+    "book": "02"
+   }
+  },
+  "old-bow": {
+   "first": {
+    "book": "00",
+    "scene": "00-masan"
+   },
+   "name": {
+    "zh": "爷爷的弓",
+    "en": "Grandfather's bow"
+   },
+   "image": null,
+   "_image": "not clearly a bow (a stick on straw) — awaiting the bake-off"
+  },
+  "deer-hide": {
+   "first": {
+    "book": "00",
+    "scene": "00-deer"
+   }
+  },
+  "fox-token": {
+   "first": {
+    "book": "00",
+    "scene": "00-chushan"
+   }
+  },
+  "tuna-jing": {
+   "first": {
+    "book": "01",
+    "scene": "00-sleep"
+   },
+   "image": null,
+   "_image": "columns of fake characters and a seal"
+  },
+  "danlu": {
+   "first": {
+    "book": "02",
+    "scene": "wm-danlu"
+   }
+  },
+  "xirang": {
+   "first": {
+    "book": "02",
+    "scene": "wm-xirang"
+   }
+  },
+  "mend-pill": {
+   "image": null,
+   "_image": "a modern two-colour capsule"
+  },
+  "moon-bell": {
+   "image": null,
+   "_image": "a Western bell with a ribbon bow"
+  },
+  "sang-paper": {
+   "image": null,
+   "_image": "a Western ink bottle and dip pen"
+  },
+  "straw-cloak": {
+   "image": null,
+   "_image": "a lampshade-like thatch, not a cloak"
+  },
+  "talisman": {
+   "image": null,
+   "_image": "large fake characters and a seal"
+  },
+  "wangqi-2": {
+   "image": null,
+   "_image": "an eye-of-providence motif — reads Western"
+  },
+  "三关": {
+   "kind": "经脉",
+   "name": {
+    "zh": "三关",
+    "en": "The Three Passes"
+   },
+   "lines": {
+    "zh": [
+     "督脉沿脊背正中上行，小周天的气从这里往上走，要过三道关：尾闾、夹脊、玉枕。",
+     "尾闾在尾骨尖，夹脊在两肩胛之间，玉枕在后脑。",
+     "过了三关，气从头顶下来，沿任脉经上、中、下三丹田，回到丹田——这就是小周天。"
+    ],
+    "en": [
+     "The Du channel runs up the middle of the back; the small circuit's qi climbs it through three passes: Weilü, Jiaji, Yuzhen.",
+     "Weilü at the tip of the tailbone, Jiaji between the shoulder blades, Yuzhen at the back of the head.",
+     "Past the three, the qi comes over the crown and down the Ren channel through the upper, middle and lower dantian: the small circuit."
+    ]
+   },
+   "image": "art/codex/mannequin-profile.svg",
+   "credit": {
+    "zh": "仿宋天圣针灸铜人的假人，侧身；点与线据《性命圭旨》诸图。",
+    "en": "A mannequin after the Song bronze acupuncture figure, in profile; points and channels after the Xingming guizhi plates."
+   },
+   "source": {
+    "url": "https://commons.wikimedia.org/wiki/File:%E6%80%A7%E5%91%BD%E5%9C%AD%E6%97%A8_%E5%8F%8D%E7%85%A7%E5%9C%96.png",
+    "license": "Our own drawing (tools/mannequin.py); the plates it follows are public domain",
+    "via": "仿宋天圣针灸铜人 · 《性命圭旨》〈反照图〉〈时照图〉 (Ming), Wikimedia Commons",
+    "scan": "art/codex/fanzhao-scan.webp",
+    "edit": "base: tools/mannequin.py (art/codex/mannequin-profile.svg); every label, point and channel is these marks"
+   },
+   "marks": {
+    "ratio": 1.5,
+    "points": [
+     {
+      "id": "尾闾",
+      "label": {
+       "zh": "尾闾",
+       "en": "Weilü"
+      },
+      "x": 0.59,
+      "y": 0.606,
+      "side": "r"
+     },
+     {
+      "id": "命门",
+      "label": {
+       "zh": "命门",
+       "en": "Mingmen"
+      },
+      "x": 0.573,
+      "y": 0.5,
+      "side": "r"
+     },
+     {
+      "id": "夹脊",
+      "label": {
+       "zh": "夹脊",
+       "en": "Jiaji"
+      },
+      "x": 0.597,
+      "y": 0.347,
+      "side": "r"
+     },
+     {
+      "id": "玉枕",
+      "label": {
+       "zh": "玉枕",
+       "en": "Yuzhen"
+      },
+      "x": 0.583,
+      "y": 0.164,
+      "side": "r"
+     },
+     {
+      "id": "百会",
+      "label": {
+       "zh": "百会",
+       "en": "Baihui"
+      },
+      "x": 0.5,
+      "y": 0.058,
+      "side": "r"
+     },
+     {
+      "id": "上丹田",
+      "label": {
+       "zh": "上丹田",
+       "en": "Upper dantian"
+      },
+      "x": 0.43,
+      "y": 0.113
+     },
+     {
+      "id": "中丹田",
+      "label": {
+       "zh": "中丹田",
+       "en": "Middle dantian"
+      },
+      "x": 0.437,
+      "y": 0.333
+     },
+     {
+      "id": "下丹田",
+      "label": {
+       "zh": "下丹田",
+       "en": "Lower dantian"
+      },
+      "x": 0.447,
+      "y": 0.522
+     }
+    ],
+    "paths": [
+     {
+      "id": "督脉",
+      "tone": "du",
+      "at": 0,
+      "through": [
+       "尾闾",
+       "命门",
+       "夹脊",
+       "玉枕",
+       "百会"
+      ],
+      "d": [
+       [
+        0.53,
+        0.622
+       ],
+       [
+        0.59,
+        0.606
+       ],
+       [
+        0.573,
+        0.5
+       ],
+       [
+        0.597,
+        0.347
+       ],
+       [
+        0.587,
+        0.256
+       ],
+       [
+        0.583,
+        0.164
+       ],
+       [
+        0.55,
+        0.08
+       ],
+       [
+        0.5,
+        0.058
+       ]
+      ]
+     },
+     {
+      "id": "任脉",
+      "tone": "ren",
+      "at": 2.6,
+      "through": [
+       "上丹田",
+       "中丹田",
+       "下丹田"
+      ],
+      "d": [
+       [
+        0.5,
+        0.058
+       ],
+       [
+        0.45,
+        0.071
+       ],
+       [
+        0.43,
+        0.113
+       ],
+       [
+        0.437,
+        0.183
+       ],
+       [
+        0.453,
+        0.239
+       ],
+       [
+        0.437,
+        0.333
+       ],
+       [
+        0.437,
+        0.433
+       ],
+       [
+        0.447,
+        0.522
+       ],
+       [
+        0.487,
+        0.6
+       ],
+       [
+        0.53,
+        0.622
+       ]
+      ]
+     }
+    ]
+   },
+   "first": {
+    "book": "02"
+   }
+  },
+  "bing": {
+   "kind": "物品",
+   "name": {
+    "zh": "饼",
+    "en": "Flatbread"
+   },
+   "image": null,
+   "_image": "to be painted (tools/paint-codex.py)",
+   "lines": {
+    "zh": [
+     "娘把最后一点面抖了三遍，烙了两张饼，一厚一薄。",
+     "厚的那张，后来被一只狐狸吃了——她说欠你一张。"
+    ],
+    "en": [
+     "Mother shook out the last of the flour three times and baked two flatbreads, one thick, one thin.",
+     "The thick one a fox ate later — and said she owed you one."
+    ]
+   },
+   "first": {
+    "book": "00",
+    "scene": "00-kitchen"
+   }
+  },
+  "xisui-pill": {
+   "kind": "物品",
+   "name": {
+    "zh": "洗髓丹",
+    "en": "Marrow-Cleansing Pill"
+   },
+   "image": null,
+   "_image": "to be painted (tools/paint-codex.py)",
+   "lines": {
+    "zh": [
+     "银月给的一颗黑丸子，化在水里泡一夜，洗筋伐髓。",
+     "「疼，别喊。」"
+    ],
+    "en": [
+     "A black pill from Yinyue: dissolved in water and soaked in overnight, it washes the sinews and marrow.",
+     "\"It hurts. Don't shout.\""
+    ]
+   },
+   "first": {
+    "book": "01",
+    "scene": "00-sleep"
+   }
+  }
+ }
+}

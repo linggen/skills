@@ -61,7 +61,24 @@ klein 4B), 2026-09-15 (齐盐, 齐纨 and 符 2026-09-16; the five 天材地宝,
 768×512, seed 52 of four (seed 11 painted fake characters on the rock). No
 outside source.
 
-## The prologue — people and panels (2026-09-28)
+## 图鉴 — portraits, things and creatures painted by Codex (2026-09-29)
+
+His ruling: 「不用小人书的方式了，图片作为图鉴」. The 28 prologue panels (`panels/00-*`) are
+retired (git history keeps them). After the bake-off (local FLUX · Gemini · Codex CLI) he chose
+Codex CLI's image tool (ChatGPT's image model): `tools/paint-codex.py` holds the house style —
+fine ink 白描 with a soft grey wash on warm aged paper, one subject, no text or seal — and every
+subject's prompt. Each picture was looked at against its description and re-rolled where wrong.
+No outside source. The people (`people/*.webp`, 阿禾 twice: `ahe-girl`, `ahe-boy`), the things
+(`items/{bing,fox-token,old-bow,xisui-pill,tuna-jing,luobo,danlu,huangting,heluo}.webp`) and the
+山海经 creatures (`creatures/*.webp`, each from its own classical line) replace the FLUX pictures;
+a creature's old woodcut stays at its old path as its 「原图」 (`art_plate`, the table above).
+
+The 经脉 · 穴位 figures are our own SVG: `codex/mannequin-{profile,back,front}.svg`
+(`tools/mannequin.py`), a mannequin after the 宋天圣针灸铜人, with every label, point and channel
+drawn by the codex's `marks`. The plate they follow, 《性命圭旨·反照图》 (Ming, public domain,
+Wikimedia Commons), is kept as `codex/fanzhao-scan.webp`, the 三关 figure's 「原图」.
+
+## The prologue — people and panels (2026-09-28; the panels retired and the people repainted 2026-09-29, above)
 
 `people/baba.webp`, `mama`, `wupo`, `masan`, `maxiaobao`, `laozhou`, `jiujiu`,
 `yinyue-fox` (the little silver fox) and `yinyue` (her human form), and the 27

@@ -10,6 +10,7 @@ import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from 
 // (`engineUiUrl`) must not fail the whole page.
 import * as sharedApi from '/shared/api.js';
 import { verb, content, SCRATCH, worldPath } from './rules.js';
+import { addressSay, codexOf } from './codex.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
 import { boardDoneToday, petStageUrl, stageCards, stageSlots } from './stage.mjs';
@@ -265,7 +266,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, panelBusy: view.panelBusy, panelNote: view.panelNote, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, valueGender: view.valueGender, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, panelBusy: view.panelBusy, panelNote: view.panelNote, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, valueGender: view.valueGender, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -319,9 +320,22 @@ async function loadContent(world, force = false) {
     all = [...all, ...mine.creatures.map((c) => ({ ...c, dir: world.dir }))];
     dictionary = { ...terms, words: { ...terms.words, ...(words.words ?? {}) }, provinces: { ...terms.provinces, ...(words.provinces ?? {}) } };
   }
+  // 图鉴: the codex and the files it links — the same entries the book draws (codex.js).
+  const [codex, people, items, arts] = await Promise.all(['codex.json', 'people.json', 'items.json', 'arts.json'].map((f) => content(baseDir, f).catch(() => null)));
   const sameWorld = authored?.world === world.id;
-  authored = { world: world.id, dir: baseDir, creatures: all, herbs: herbs.herbs, hexagrams: hexagrams.hexagrams, traits: roots, dictionary, cards, loadedAt: Date.now() };
+  authored = { world: world.id, dir: baseDir, creatures: all, herbs: herbs.herbs, hexagrams: hexagrams.hexagrams, traits: roots, dictionary, cards, codexFiles: { codex, people, creatures, items, arts }, loadedAt: Date.now() };
   if (!sameWorld) boards.clear();
+}
+
+/// The 图鉴 resolved for this reader: the page's language, the hero's gender
+/// (阿禾's portrait follows it), the address words filled. Kept until one changes.
+let codexMemo = null;
+function codexNow() {
+  const f = authored?.codexFiles;
+  if (!f?.codex) return null;
+  const key = `${authored.loadedAt}:${lang()}:${look?.gender ?? ''}`;
+  if (codexMemo?.key !== key) codexMemo = { key, map: codexOf(f, { lang: lang(), gender: look?.gender, say: addressSay(f.people, look?.gender, lang()) }) };
+  return codexMemo.map;
 }
 
 /// The account as the engine sees it. The meter moves with every model call,
@@ -1797,7 +1811,9 @@ const CLICKS = [
   ['[data-wx-clear]', () => run('wx:clear', () => setSense({ city: null }))],
   ['[data-panel-exit]', (el) => { if (!el.matches(':disabled')) run(`panel:${el.dataset.panelExit}`, () => panelTap(el.dataset.panelExit, el.textContent.trim())); }],
   ['[data-lu]', () => (view.luOpen ? show({ luOpen: false }) : openLu())],
-  ['[data-lu-close]', () => show({ luOpen: false })],
+  ['[data-lu-close]', () => show({ luOpen: false, codexOpen: null })],
+  // 录's 图鉴: a met entry's card opens over its grid; a second tap closes it.
+  ['[data-codex-open]', (el) => show({ codexOpen: view.codexOpen === el.dataset.codexOpen ? null : el.dataset.codexOpen })],
   // 银月的记忆: the next panel (it blooms again), put away, or replayed from the album in 录.
   ['[data-mem-next]', (el) => show({ memory: view.memory && { ...view.memory, i: Number(el.dataset.memNext), at: performance.now() } })],
   ['[data-mem-close]', () => show({ memory: null })],
@@ -2330,7 +2346,7 @@ function drawLu() {
   el.hidden = !open;
   if (!open) { drawnLu = null; return; }
   // Redrawn only when it changed: a stream token must not reset the scroll.
-  const html = view.lu ? luHtml(view.lu, { lang: lang(), her: look?.companion?.name ?? null, artBase: artBase() }) : `<div class="lu"><div class="loading">${esc(WORDS[lang()].loading)}</div></div>`;
+  const html = view.lu ? luHtml(view.lu, { lang: lang(), her: look?.companion?.name ?? null, artBase: artBase(), codex: codexNow(), codexKinds: authored?.codexFiles?.codex?.kinds, codexOpen: view.codexOpen ?? null }) : `<div class="lu"><div class="loading">${esc(WORDS[lang()].loading)}</div></div>`;
   if (html !== drawnLu) { el.innerHTML = html; drawnLu = html; }
 }
 

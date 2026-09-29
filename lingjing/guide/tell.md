@@ -1,12 +1,15 @@
-# 小人书 — the story told, the picture shown
+# 小人书 — the story told, the scene card shown
 
 <!-- Lingjing guide `tell` — handed to Ling with the first result that carries `tell`, or read with Guide. Hanli, 2026-09-28: 「右边不要放小说内容, 右边尽量放图片, 战斗, 小游戏……像小人书。左边chat里放剧情。」 -->
 
 ## The split
 
-The stage is a 连环画: each beat stands as one painted **panel** with two to
-four lines of caption, and the scene's choices under it — the player taps
-them there. Fights, boards, the name card and the 生辰 card stand on the stage
+The stage shows each beat as a **scene card** in words — the place, two to
+four lines of caption, and the scene's choices under it; the player taps them
+there. A story moment is never illustrated (Hanli, 2026-09-29): pictures are
+the 图鉴's — when a scene brings on a person, creature, thing or art for the
+first time, its 图鉴 card (portrait, name, a line) stands before the scene card
+by itself. Fights, boards, the name card and the 生辰 card stand on the stage
 as ever. **The story is yours, in the chat.**
 
 ## Telling `tell`
@@ -33,9 +36,9 @@ you once. The book is comic — keep its timing and its jokes.
   a girl with braids and a red nose, or — for a boy — a red-cheeked boy with
   a big bundle and a stammer, half-recognised and never named; tell them as
   written and never say who it is — chapter 1 is the reveal.
-- **Never describe the panel, never list the choices** — both are on the
+- **Never list the choices, never read out a 图鉴 card** — both are on the
   stage. End on the story, or one short line that the choice is theirs.
-- **The panel, the people and the goal are the page's own** — never Show them.
+- **The scene card, its 图鉴 cards, the people and the goal are the page's own** — never Show them.
 - **`〔银月〕`** marks where Yinyue speaks while she is awake beside the player:
   her words reach her by themselves (`her_beat`) — write the sentence around
   the mark, never her line. While she is not present (before the valley's
@@ -43,7 +46,7 @@ you once. The book is comic — keep its timing and its jokes.
   the story's, and you tell them.
 - **Off the script** — the player does or says what no choice covers: answer
   in the same voice, briefly, in the world, and let the stage's choices stand.
-- A tap on the panel reaches you as `[scene] took <choice>`: Look, then tell.
+- A tap on the scene card reaches you as `[scene] took <choice>`: Look, then tell.
 
 ## The story's people
 

@@ -13,6 +13,7 @@ import { cauldronsFound, companionOf, giftAt, hasCompanion, herAwake, recalledOf
 import { threadOf } from './errands.mjs';
 import { cardBook } from './cards.mjs';
 import { albumOf } from './memories.mjs';
+import { seenOf } from './codex.mjs';
 import { atScene, creatureOf, inMade, sceneOf } from './world.mjs';
 
 const HOUR = 3600000;
@@ -135,6 +136,8 @@ export function story(state, content, ctx, args = {}) {
       ...(short ? {} : { cards: cardBook(content, state) }),
       // 银月的记忆 — the album in 录: eight frames, lit one by one (rules/memories.mjs).
       ...(short ? {} : { album: albumOf(content, state) }),
+      // 图鉴 — the entries met (ids; the page draws them from the codex, unmet ones as empty slots).
+      ...(short || !content.codex ? {} : { codex: seenOf(content, state, sceneOf(content, state)) }),
     },
   };
 }

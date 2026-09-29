@@ -74,14 +74,14 @@ export function memoriesLook(content, state) {
 }
 
 /* The album in 录 — 「银月的记忆」: eight frames, lit one by one. A lit frame
-   carries its panels and her lines (to replay); a dark one only its tail.
+   carries its one picture and her lines (to replay); a dark one only its tail.
    The finale is not a frame: `finale` says whether it has come. */
 export function albumOf(content, state) {
   const doc = memoriesOf(content);
   if (!doc) return null;
   const lang = state.lang, have = new Set(haveOf(state));
   const frames = doc.memories.filter(m => !m.finale).slice(0, doc.frames).map(m => (have.has(m.n)
-    ? { n: m.n, tail: m.tail, lit: true, title: pick(m.title, lang), panels: m.panels.map(p => ({ art: p.art, lines: pick(p.lines, lang) ?? [] })) }
+    ? { n: m.n, tail: m.tail, lit: true, title: pick(m.title, lang), ...(m.art ? { art: m.art } : {}), lines: pick(m.lines, lang) ?? [] }
     : { n: m.n, tail: m.tail, lit: false }));
   const found = new Set(state.fragments ?? []);
   const fragments = Object.values(content.places ?? {}).flatMap(d => d.places).filter(p => p.fragment && found.has(p.fragment.id))
@@ -90,17 +90,18 @@ export function albumOf(content, state) {
   return { frames, fragments, finale: Boolean(fin && have.has(fin.n)), colour: Boolean(state.colour) };
 }
 
-/* A memory to play on the stage — its panels and lines — only once unlocked. */
+/* A memory to play on the stage — its one picture and her lines — only once unlocked. */
 export function playOf(content, state, n) {
   const m = entryOf(content, n);
   if (!m || !haveOf(state).includes(n)) return null;
-  return { n, tail: m.tail, title: pick(m.title, state.lang), panels: m.panels.map(p => ({ art: p.art, lines: pick(p.lines, state.lang) ?? [] })) };
+  return { n, tail: m.tail, title: pick(m.title, state.lang), ...(m.art ? { art: m.art } : {}), lines: pick(m.lines, state.lang) ?? [] };
 }
 
 /* ── Lint ──
    memories.json in shape; each memory granted by at most one exit, in its
-   own chapter, and only by a spine exit; a memory an exit grants has 1–3
-   panels on disk under art/memories/ with her lines in both languages; the
+   own chapter, and only by a spine exit; a memory has at most ONE picture
+   (Hanli 2026-09-29: 「银月一章一图就好」) on disk under art/memories/ with one
+   to three of her lines in both languages, and one an exit grants has it; the
    finale alone carries `colour`. Fragments: an id once, art under
    art/memories/fragments/ on disk, the thing in both languages. And the
    colour set stays shut: no other part of the world points into art/memories/. */
@@ -132,17 +133,17 @@ export function lintMemories(content) {
     if (!content.chapters?.[m.chapter]) bad(at, `chapter ${m.chapter} does not exist`);
     if (!Number.isInteger(m.tail) || m.tail < 2 || m.tail > 9) bad(at, 'tail is 2–9');
     if (m.colour && !m.finale) bad(at, 'only the finale turns the world to colour');
-    if (!Array.isArray(m.panels) || m.panels.length > 3) bad(at, 'at most three panels');
-    for (const p of m.panels ?? []) {
-      if (!MEM_ART.test(p.art ?? '')) bad(at, `art ${p.art} must be art/memories/<id>.webp`);
-      else if (!fs.existsSync(path.join(content.dir, p.art))) bad(at, `art ${p.art} is not on disk`);
-      if (!Array.isArray(p.lines?.zh) || !Array.isArray(p.lines?.en) || !p.lines.zh.length || p.lines.zh.length > 3) bad(at, 'each panel has one to three of her lines, zh and en');
+    if ('panels' in m) bad(at, 'one picture a memory: `art` and `lines`, never `panels`');
+    if (m.art != null) {
+      if (typeof m.art !== 'string' || !MEM_ART.test(m.art)) bad(at, `art ${m.art} must be ONE picture, art/memories/<id>.webp`);
+      else if (!fs.existsSync(path.join(content.dir, m.art))) bad(at, `art ${m.art} is not on disk`);
+      if (!Array.isArray(m.lines?.zh) || !Array.isArray(m.lines?.en) || !m.lines.zh.length || m.lines.zh.length > 3) bad(at, 'a picture carries one to three of her lines, zh and en');
     }
     const by = granted[m.n] ?? [];
     if (by.length > 1) bad(at, `granted by ${by.length} exits — one 鼎, one memory`);
     for (const g of by) {
       if (g.chapter !== m.chapter) bad(g.where, `grants memory ${m.n}, which belongs to ${m.chapter}`);
-      if (!(m.panels ?? []).length) bad(g.where, `grants memory ${m.n}, which has no panels yet`);
+      if (!m.art) bad(g.where, `grants memory ${m.n}, which has no picture yet`);
     }
   }
   const seen = new Set();

@@ -91,9 +91,14 @@ test('the lint: one 鼎 one memory, in its own chapter, with its pictures — an
   const wrong = structuredClone(content);
   wrong.chapters['00-prologue'].scenes['00-shiao'].exits[0].memory = 2;
   assert.ok(lintMemories(wrong).some(p => /belongs to 02-yan/.test(p)));
-  assert.ok(lintMemories(wrong).some(p => /has no panels yet/.test(p)), 'an unpainted memory cannot be granted');
+  assert.ok(lintMemories(wrong).some(p => /has no picture yet/.test(p)), 'an unpainted memory cannot be granted');
   assert.equal(doc.memories.length, 9);
   assert.equal(doc.memories.filter(m => !m.finale).length, 8, 'eight 鼎, eight tails, eight memories');
+  // 一章一图 (Hanli, 2026-09-29): one picture a memory — never a list of panels.
+  for (const m of doc.memories) assert.ok(!('panels' in m) && (m.art == null || typeof m.art === 'string'), `memory ${m.n}: one picture`);
+  const one = memoriesOf(content).memories[0];
+  one.panels = [{ art: 'art/memories/1-a.webp' }];
+  try { assert.ok(lintMemories(content).some(p => /one picture a memory/.test(p)), 'panels are refused'); } finally { delete one.panels; }
   assert.deepEqual(doc.memories.map(m => m.chapter), ['01-ji', '02-yan', '03-qing', '04-xu', '05-yang', '06-jing', '07-liang', '08-yong', '09-yu']);
 });
 
@@ -142,9 +147,10 @@ test('the bloom: a colour picture that starts as ink; her lines only; reduced mo
   assert.match(html, /--mem-age:-1200ms/, 'a redraw carries the bloom on, never restarts it');
   assert.match(html, /<p style="--k:0">……光。<\/p>/);
   assert.match(html, /第二条尾巴/);
-  assert.match(html, /data-mem-next="1"/, 'two panels: the next one is a tap away');
-  assert.match(memoryCardHtml(play, { i: 1 }), /data-mem-close/);
-  assert.match(memoryCardHtml(play, { i: 1 }), /「天下，该归于一。」/);
+  assert.doesNotMatch(html, /data-mem-next/, 'one picture: nothing after it');
+  assert.match(html, /data-mem-close/);
+  assert.match(html, /「天下，该归于一。」/, 'her three lines under the one picture');
+  assert.equal((html.match(/<img /g) ?? []).length, 1);
   const still = memoryCardHtml(play, { still: true });
   assert.doesNotMatch(still, /bloom|--mem-age/);
   assert.match(still, /class="card memory still"/);
@@ -169,7 +175,7 @@ test('the page plays a memory once, only when fresh', () => {
 test('the album: eight dark frames before (the beta\'s teaser), then lit one by one; a lit one replays', () => {
   const none = albumOf(content, atJi());
   assert.equal(none.frames.length, 8);
-  assert.ok(none.frames.every(f => !f.lit && !f.panels && !f.title), 'a dark frame is its tail and nothing else');
+  assert.ok(none.frames.every(f => !f.lit && !f.art && !f.title), 'a dark frame is its tail and nothing else');
   assert.deepEqual(none.frames.map(f => f.tail), [2, 3, 4, 5, 6, 7, 8, 9]);
   const dark = albumHtml(none, { lang: 'zh' });
   assert.equal((dark.match(/class="memframe dark"/g) ?? []).length, 8);
@@ -181,7 +187,7 @@ test('the album: eight dark frames before (the beta\'s teaser), then lit one by 
   const html = albumHtml(one, { artBase: 'A/', lang: 'zh' });
   assert.match(html, /<button class="memframe lit" data-mem-replay="1"[^>]*><img class="memart" src="A\/art\/memories\/1-a\.webp"/);
   assert.equal((html.match(/class="memframe dark"/g) ?? []).length, 7);
-  assert.deepEqual(replayOf(one, '1').panels.map(p => p.art), ['art/memories/1-a.webp', 'art/memories/1-b.webp']);
+  assert.equal(replayOf(one, '1').art, 'art/memories/1-a.webp');
   assert.equal(replayOf(one, '2'), null, 'a dark frame cannot be played');
   // In the 录 book, from the rules' `story`.
   const book = story(s, content, ctx).result;
@@ -193,17 +199,16 @@ test('the album: eight dark frames before (the beta\'s teaser), then lit one by 
 
 /* ── The book ── */
 
-test('the book: ::: 忆 n[.k] is memory n\'s colour plate; chapter two carries memory 1 at the first 鼎', () => {
-  const memory = (n, k = 1) => doc.memories.find(m => m.n === n)?.panels?.[k - 1]?.art ?? null;
-  const html = renderMarkdown('前。\n::: 忆 1 九天之上\n\n::: 忆 1.2\n::: 忆 2\n后。', { memory });
+test('the book: ::: 忆 n is memory n\'s one colour plate; chapter two carries memory 1 at the first 鼎, once', () => {
+  const memory = (n) => doc.memories.find(m => m.n === n)?.art ?? null;
+  const html = renderMarkdown('前。\n::: 忆 1 九天之上\n\n::: 忆 2\n后。', { memory });
   assert.match(html, /<figure class="panel memplate"><img src="art\/memories\/1-a\.webp" alt="九天之上" loading="lazy"><figcaption>九天之上<\/figcaption><\/figure>/);
-  assert.match(html, /art\/memories\/1-b\.webp/);
-  assert.equal((html.match(/memplate/g) ?? []).length, 2, 'an unpainted memory is left out, never shown as text');
+  assert.equal((html.match(/memplate/g) ?? []).length, 1, 'an unpainted memory is left out, never shown as text');
   assert.equal(renderMarkdown('::: 忆 1\n\n一段。'), '<p>一段。</p>', 'no resolver: left out');
   const ch = fs.readFileSync(path.join(ROOT, 'story/huxian-bing/03-第二章·河伯娶妇.md'), 'utf8');
   const at = ch.indexOf('::: 忆 1 ');
   assert.ok(at > ch.indexOf('第二条，亮了。') && at > ch.indexOf('本王想起来一点了'), 'memory 1 is where the second tail lights');
-  assert.ok(ch.includes('::: 忆 1.2 '), 'and the voice, where she hears the words again');
+  assert.equal((ch.match(/^::: 忆 /gm) ?? []).length, 1, '银月一章一图: one plate in the chapter');
 });
 
 /* ── Fragments ── */
@@ -262,8 +267,8 @@ const artDir = path.join(content.dir, 'art');
 const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => (e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]));
 
 test('the colour set is art/memories/ alone: memories point only there, nothing else does', () => {
-  for (const m of doc.memories) for (const p of m.panels) assert.match(p.art, /^art\/memories\/[\w-]+\.webp$/);
-  const painted = new Set(doc.memories.flatMap(m => m.panels.map(p => p.art)));
+  for (const m of doc.memories) if (m.art) assert.match(m.art, /^art\/memories\/[\w-]+\.webp$/);
+  const painted = new Set(doc.memories.map(m => m.art).filter(Boolean));
   for (const f of fs.readdirSync(path.join(artDir, 'memories')).filter(f => f.endsWith('.webp'))) assert.ok(painted.has(`art/memories/${f}`), `${f} is a memory's`);
   assert.deepEqual(lintMemories(content), []);
   const c = structuredClone(content);

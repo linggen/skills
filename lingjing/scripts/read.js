@@ -5,6 +5,7 @@
 import { esc } from './esc.js';
 import { fillHero, heroOf, renderMarkdown } from './read-md.js';
 import { playMarks, wireMarks } from './marks.js';
+import { addressSay, codexHtml, codexOf } from './codex.js';
 import { content, verb, worldPath } from './rules.js';
 
 const WORDS = {
@@ -54,10 +55,12 @@ async function main() {
   // The player's name from the save (Look), asked beside the chapter; no save,
   // a failed or slow look reads with the drafts' hero — never blocks the book.
   const hero = Promise.race([verb('look'), new Promise((_, no) => setTimeout(no, 3000))]).then(heroOf, () => heroOf(null));
-  // The world's art and notes: 小人书 panels and 注 figures, all in the text;
-  // no notes file reads the words alone.
+  // 图鉴 (codex.json and the files it links): the cards and figures in the
+  // text — the same entries the game draws. None reads the words alone.
   const world = `worlds/${book.world ?? 'jiuding'}`;
-  const notes = content(world, 'notes.json').then((n) => n?.notes ?? {}, () => ({}));
+  worldDir = world;
+  const files = Promise.all(['codex', 'people', 'creatures', 'items', 'arts'].map((f) => content(world, `${f}.json`).catch(() => null)))
+    .then(([codex, people, creatures, items, arts]) => ({ codex, people, creatures, items, arts }));
   // 银月's memories (`::: 忆 n`): the colour plates, from memories.json.
   const memories = content(world, 'memories.json').then((m) => m?.memories ?? [], () => []);
   // 附 · 本章典籍: the classics the book names (`《书名》{典=id}`), one file per book; none reads plain.
@@ -66,8 +69,10 @@ async function main() {
     const res = await fetch(`${STORY}${encodeURIComponent(bookId)}/${encodeURIComponent(ch.file)}`);
     if (!res.ok) throw new Error(String(res.status));
     const md = await res.text();
-    $('chapter').innerHTML = (lang === 'en' ? `<p class="note">${esc(w.only)}</p>` : '') + renderMarkdown(fillHero(md, await hero), {
-      panel: (id) => worldPath(world, `art/panels/${id}.webp`), notes: await notes, src: (file) => worldPath(world, file), lang,
+    const who = await hero, f = await files;
+    codex = codexOf(f, { lang, gender: who.gender, say: addressSay(f.people, who.gender, lang) });
+    $('chapter').innerHTML = (lang === 'en' ? `<p class="note">${esc(w.only)}</p>` : '') + renderMarkdown(fillHero(md, who), {
+      codex, chapter: ch.id, src: (file) => worldPath(world, file), lang,
       memory: memoryPlate(await memories, world), classics: await classics,
     });
   } catch {
@@ -79,20 +84,32 @@ async function main() {
   window.scrollTo(0, 0);
 }
 
-/// Memory n's panel k (from 1) as a src, or null while it is not painted.
-const memoryPlate = (list, world) => (n, k = 1) => {
-  const art = list.find((m) => m.n === n)?.panels?.[k - 1]?.art;
+/// Memory n's one colour plate as a src, or null while it is not painted.
+const memoryPlate = (list, world) => (n) => {
+  const art = list.find((m) => m.n === n)?.art;
   return art ? worldPath(world, art) : null;
 };
 
-// A tap on a figure or a panel opens it large over the page, marks and all;
-// Esc or a tap closes it.
+let codex = new Map(), worldDir = 'worlds/jiuding';
+
+// A tap on a figure, a plate or a card's picture opens it large over the page,
+// marks and all; a later mention's link opens the subject's card; 「原图」 the
+// scan a traced figure was drawn from. Esc or a tap closes it.
 function openLarge(e) {
-  const pic = e.target.closest?.('.notefig .pic, figure.panel img');
-  if (!pic) return;
+  const scan = e.target.closest?.('[data-scan]');
+  const link = e.target.closest?.('.gloss[data-codex]');
+  const pic = e.target.closest?.('.notefig .pic, figure.panel img, .codexcard .cpic img');
+  let shown = null;
+  if (scan) { shown = document.createElement('img'); shown.src = scan.dataset.scan; }
+  else if (link && codex.get(link.dataset.codex)) {
+    shown = document.createElement('div');
+    shown.className = 'boxcard';
+    shown.innerHTML = codexHtml(codex.get(link.dataset.codex), { src: (f) => worldPath(worldDir, f), lang });
+  } else if (pic) shown = pic.cloneNode(true);
+  if (!shown) return;
   const box = document.createElement('div');
   box.className = 'lightbox';
-  box.append(pic.cloneNode(true));
+  box.append(shown);
   const close = () => { box.remove(); removeEventListener('keydown', onKey); };
   const onKey = (k) => { if (k.key === 'Escape') close(); };
   box.addEventListener('click', close);

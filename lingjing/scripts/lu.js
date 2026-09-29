@@ -4,6 +4,7 @@
 // model turn, and nothing here writes.
 import { esc } from './esc.js';
 import { albumHtml } from './memory.js';
+import { codexBookHtml, codexHtml } from './codex.js';
 
 export const LU_WORDS = {
   zh: {
@@ -50,7 +51,7 @@ function chapterHtml(ch, w, open) {
     ${ch.intro ? `<p class="luintro">${esc(ch.intro)}</p>` : ''}${recap ? `<p class="lurecap">${esc(recap)}</p>` : ''}${now}${q}</details>`;
 }
 
-export function luHtml(book, { lang = 'zh', her = null, artBase = '' } = {}) {
+export function luHtml(book, { lang = 'zh', her = null, artBase = '', codex = null, codexKinds = null, codexOpen = null } = {}) {
   const w = wordsOf(lang);
   if (!book?.ok) return `<div class="lu"><header class="luhead"><b>${esc(w.title)}</b><button class="act quiet" data-lu-close>${esc(w.close)}</button></header><p class="dim">${esc(w.none)}</p></div>`;
   const chapters = book.chapters ?? [];
@@ -66,9 +67,20 @@ export function luHtml(book, { lang = 'zh', her = null, artBase = '' } = {}) {
     ${people ? `<section class="lusec"><h3>${esc(w.people)}</h3><div class="lupeople">${people}</div></section>` : ''}
     ${recalled}
     ${albumHtml(book.album, { artBase, lang })}
+    ${tujianHtml(book, { lang, artBase, codex, codexKinds, codexOpen })}
     ${paipuHtml(book.cards, w, { artBase, her })}
     <section class="lusec"><h3>${esc(w.open)}</h3>${(book.open ?? []).length ? book.open.map((q) => `<p class="luq">${esc(q)}</p>`).join('') : `<p class="dim">${esc(w.noOpen)}</p>`}</section>
   </div>`;
+}
+
+/* 图鉴 — every entry by kind (codex.js): the met ones as small pictures, a tap
+   opens the card over the grid; the unmet ones empty slots (哇时刻 ④'s
+   catalogue — a 山海经 creature's card carries its classic line). */
+function tujianHtml(book, { lang, artBase, codex, codexKinds, codexOpen }) {
+  if (!codex || !codexKinds || !Array.isArray(book.codex)) return '';
+  const src = (f) => artBase + f;
+  const open = codexOpen && book.codex.includes(codexOpen) ? codexHtml(codex.get(codexOpen), { src, lang }) : '';
+  return codexBookHtml(codex, new Set(book.codex), { src, lang, kinds: codexKinds }).replace('</h3>', `</h3>${open}`);
 }
 
 /* 牌谱 — the deck as the road's memory (redesign-v2 § 五): each card, its

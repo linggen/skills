@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """paint-memories.py — 银月's memories, the only colour in the game.
 
-    python3 tools/paint-memories.py [--only 1-a,1-b] [--force] [--seed N] [--try DIR --seeds 1,2,3]
+    python3 tools/paint-memories.py [--only 1-a] [--force] [--seed N] [--try DIR --seeds 1,2,3]
 
 哇时刻 #3 (Hanli, 2026-09-29: 「终章全彩」): everything in Lingjing is ink —
 白描 on aged paper — and only her memories are painted: 工笔重彩 in the
@@ -36,15 +36,14 @@ MEMORY = ('Chinese gongbi heavy-colour painting in the style of the Dunhuang cav
 YINYUE = ('a young woman with long silver hair falling past her waist, golden eyes with vertical slit pupils, '
           'barefoot, in a white robe bright as snow with cinnabar red sashes, nine silver fox tails fanned out behind her')
 
-# Memory n → its panels, a, b, c (1–3 a memory). Only memory 1 is painted
+# Memory n → its ONE picture (his, 2026-09-29: 「银月一章一图就好」; 1-b, the voice, retired). Only memory 1 is painted
 # (2026-09-29); 2–8 are drafted in doc/design.md § 哇时刻 ③. SEEDS pins the
 # candidate picked from a sheet (1-a: 3 tried; 1-b: 7 tried over two
 # wordings — a close-up read as a triumphant pose, and one seed put a
 # European heraldic shield on her robe).
-SEEDS = {'1-a': 11, '1-b': 44}
+SEEDS = {'1-a': 11}
 PANELS = {
   '1-a': f'high above a sea of swirling clouds, {YINYUE}, stands on a cloud, looking up; the sky above her splits open and a blinding column of golden white light falls straight down toward her from far above',
-  '1-b': f'at the top of the picture a blinding white and gold light pours down out of a malachite green sky; in the lower half, seen from the waist up, {YINYUE}, in a long robe, shields her eyes with one raised sleeve and looks up into the light, afraid, her silver hair and red ribbons blown back by the blast',
 }
 
 

@@ -128,7 +128,8 @@ button:disabled { cursor: default; }
 .slothead { min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 6px; padding: 12px 0 8px; }
 .headcards { display: flex; flex-direction: column; gap: 6px; min-height: 0; }
 .slothead .card.peoplecard { padding: 0; border: 0; background: none; box-shadow: none; max-width: none; margin: 0; }
-.slothead .peoplecard .person img { width: 40px; height: 50px; border-radius: 6px; }
+.slothead .peoplecard .person img, .slothead .peoplecard .person .namecard { width: 40px; height: 50px; border-radius: 6px; }
+.slothead .peoplecard .person .namecard b { font-size: 13px; letter-spacing: .05em; }
 .slothead .peoplecard figcaption b { font-size: 14px; }
 .slothead .peoplecard figcaption .small { font-size: 11.5px; max-width: 12em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .slothead .goalline { max-width: none; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -827,6 +828,8 @@ body.reading .view, body.reading .tray { display: none; }
 .peoplecard .people { display: flex; gap: 12px; overflow-x: auto; }
 .peoplecard .person { margin: 0; display: flex; align-items: center; gap: 10px; min-width: 0; }
 .peoplecard .person img { width: 56px; height: 70px; object-fit: cover; object-position: 50% 20%; border-radius: 8px; border: 1px solid var(--line); background: var(--raised); flex: none; }
+.peoplecard .person .namecard { width: 56px; height: 70px; min-height: 0; flex: none; }
+.peoplecard .person .namecard b { font-size: 16px; letter-spacing: .08em; }
 .peoplecard figcaption { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .peoplecard figcaption b { font-size: 15px; letter-spacing: .06em; }
 .creature .appearline { font-style: italic; margin: 2px 0 4px; }
@@ -855,10 +858,11 @@ body.reading .view, body.reading .tray { display: none; }
    the painted picture, two to four lines of caption, the choices under it. ── */
 .card.panelcard { padding: 10px; }
 .panelcard .panel { margin: 0; }
-.panelcard .panelart { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); }
-.panelcard figcaption { margin: 10px 4px 2px; font-family: var(--serif); font-size: 15px; line-height: 1.7; letter-spacing: .04em; }
-.panelcard figcaption p { margin: 0; }
-.panelcard .panel.noart figcaption { margin-top: 4px; font-size: 16px; }
+.panelcard .sceneplace { margin: 2px 4px 8px; font-size: 12px; letter-spacing: .14em; color: var(--dim); }
+.panelcard .scenecap { margin: 0 4px 2px; font-family: var(--serif); font-size: 16px; line-height: 1.75; letter-spacing: .04em; }
+.panelcard .scenecap p { margin: 0; }
+.card.codexwrap { padding: 0; border: 0; background: none; }
+.card.codexwrap .codexcard { margin: 0 0 8px; }
 .panelcard .paneltaps { margin-top: 10px; flex-wrap: wrap; }
 .panelcard .paneltap.busy { opacity: .6; }
 

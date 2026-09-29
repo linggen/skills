@@ -1,6 +1,6 @@
 {
  "version": 1,
- "_about": "银月的记忆是彩色的 (哇时刻 ③, Hanli 2026-09-29: 「可以，都按你说的，终章全彩」). Everything in the game is ink; only her memories are in colour — 工笔重彩 in 敦煌 mural colours, art/memories/ (tools/paint-memories.py), the one colour set (tests/memories.test.mjs). 一鼎一尾一段记忆: a memory comes ONLY from a chapter's key beat — the exit that brings its 鼎 home declares `memory: n` (rules/memories.mjs grantMemory); nothing else grants one. `tail` is the tail lit on the fox token (she has one; the first 鼎 lights the second). `say` is the one chat line (Ling's guide `tell`). `knows` is what Ling may refer to once it is unlocked (Look's `memories`), never before. `panels` are 1–3 colour pictures with her own short `lines` under each — shown in the main slot, blooming from ink to colour, and replayed from the album in 录. A memory with no panels is planned, not yet painted (doc/design.md § 哇时刻 ③: the draft prompts). The ninth (终章) turns the whole ink world to colour (`colour`: state.colour). `fragments` are in places (a place's `fragment`): ink with ONE coloured thing, found by exploring; the album adds a line for each.",
+ "_about": "银月的记忆是彩色的 (哇时刻 ③, Hanli 2026-09-29: 「可以，都按你说的，终章全彩」). Everything in the game is ink; only her memories are in colour — 工笔重彩 in 敦煌 mural colours, art/memories/ (tools/paint-memories.py), the one colour set (tests/memories.test.mjs). 一鼎一尾一段记忆: a memory comes ONLY from a chapter's key beat — the exit that brings its 鼎 home declares `memory: n` (rules/memories.mjs grantMemory); nothing else grants one. `tail` is the tail lit on the fox token (she has one; the first 鼎 lights the second). `say` is the one chat line (Ling's guide `tell`). `knows` is what Ling may refer to once it is unlocked (Look's `memories`), never before. `art` is its ONE colour picture (Hanli 2026-09-29: 「银月一章一图就好」) with her own short `lines` (one to three) under it — shown in the main slot, blooming from ink to colour, and replayed from the album in 录. A memory with no `art` is planned, not yet painted (doc/design.md § 哇时刻 ③: the draft prompts). The ninth (终章) turns the whole ink world to colour (`colour`: state.colour). `fragments` are in places (a place's `fragment`): ink with ONE coloured thing, found by exploring; the album adds a line for each.",
  "frames": 8,
  "found_line": {
   "zh": "好像……在哪里见过。",
@@ -17,22 +17,11 @@
     "zh": "她想起九天之上，一道很亮很亮的光朝她劈下来；光里有个声音说：「天下，该归于一。」",
     "en": "She remembers a blinding light from high heaven striking down at her, and a voice in it: “All under heaven must be one.”"
    },
-   "panels": [
-    {
-     "art": "art/memories/1-a.webp",
-     "lines": {
-      "zh": ["……光。", "九天之上，一道很亮很亮的光，朝本王劈下来。"],
-      "en": ["…Light.", "High above the ninth heaven, a light so bright — striking down at this king."]
-     }
-    },
-    {
-     "art": "art/memories/1-b.webp",
-     "lines": {
-      "zh": ["光里，有个声音。", "「天下，该归于一。」"],
-      "en": ["There was a voice in the light.", "“All under heaven must be one.”"]
-     }
-    }
-   ]
+   "art": "art/memories/1-a.webp",
+   "lines": {
+    "zh": ["……光。", "九天之上，一道很亮很亮的光，朝本王劈下来。", "光里，有个声音：「天下，该归于一。」"],
+    "en": ["…Light.", "High above the ninth heaven, a light so bright — striking down at this king.", "There was a voice in the light: “All under heaven must be one.”"]
+   }
   },
   {
    "n": 2,
@@ -43,8 +32,7 @@
    "knows": {
     "zh": "她想起青丘的春天，九尾俱全；一个凡人孩子举着一张饼给她——欠饼，是从那里开始的。",
     "en": "She remembers Qingqiu in spring, her nine tails whole, and a human child holding up a flatbread to her — the debt of bread began there."
-   },
-   "panels": []
+   }
   },
   {
    "n": 3,
@@ -55,8 +43,7 @@
    "knows": {
     "zh": "她想起兜率宫：太上老君把那只小丹炉递给她，「拿去玩，别炸了」。",
     "en": "She remembers the Tushita Palace: Laozi handing her the little furnace — “Take it and play. Don’t blow it up.”"
-   },
-   "panels": []
+   }
   },
   {
    "n": 4,
@@ -67,8 +54,7 @@
    "knows": {
     "zh": "她想起很久以前在黑松岭救过一个猎人——主角的先人；这和吴婆婆的秘密连在一起。",
     "en": "She remembers saving a hunter in the Black Pine Ridge long ago — the hero’s forebear; it ties to Granny Wu’s secret."
-   },
-   "panels": []
+   }
   },
   {
    "n": 5,
@@ -79,8 +65,7 @@
    "knows": {
     "zh": "她想起九鼎被聚到一处，青丘不肯交出自己那一口；天兵压在边境。",
     "en": "She remembers the nine cauldrons being gathered, Qingqiu refusing to hand over its own, and heaven’s army at the border."
-   },
-   "panels": []
+   }
   },
   {
    "n": 6,
@@ -91,8 +76,7 @@
    "knows": {
     "zh": "她想起自己救过巫咸一族——所以巫姑看得见她。",
     "en": "She remembers once saving the Wuxian people — which is why the shaman woman can see her."
-   },
-   "panels": []
+   }
   },
   {
    "n": 7,
@@ -103,8 +87,7 @@
    "knows": {
     "zh": "在石纽，她想起了斩她尾巴的那个人的脸。",
     "en": "At Shiniu she remembers the face of the one who cut off her tails."
-   },
-   "panels": []
+   }
   },
   {
    "n": 8,
@@ -115,8 +98,7 @@
    "knows": {
     "zh": "她想起东溟的剑，八条尾巴落下；他要九鼎归于一人之手。",
     "en": "She remembers Dongming’s sword and eight tails falling: he wanted the nine cauldrons in one pair of hands."
-   },
-   "panels": []
+   }
   },
   {
    "n": 9,
@@ -129,8 +111,7 @@
    "knows": {
     "zh": "九鼎归位，她九尾重生；灵境从水墨变成了彩色。",
     "en": "The nine cauldrons are home and her nine tails grow back; the ink world turns to colour."
-   },
-   "panels": []
+   }
   }
  ]
 }

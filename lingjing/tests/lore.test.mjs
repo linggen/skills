@@ -56,10 +56,10 @@ test('recalled is the memories unlocked, in order: 「title」 and her own lines
   // A chapter ended with no memory brought home recalls nothing — the 鼎 alone gives one.
   assert.deepEqual(ids(withHer(upTo(2), [])), []);
   const one = MEM[0], line = recalledOf(content, withHer(upTo(1), [1])).find(r => r.id === 'memory-1').line;
-  assert.equal(line, `「${one.title.zh}」${one.panels.flatMap(p => p.lines.zh).join('')}`);
-  assert.equal(recalledOf(content, withHer(upTo(1), [1], 'en'))[0].line, `${one.title.en}: ${one.panels.flatMap(p => p.lines.en).join(' ')}`);
+  assert.equal(line, `「${one.title.zh}」${one.lines.zh.join('')}`);
+  assert.equal(recalledOf(content, withHer(upTo(1), [1], 'en'))[0].line, `${one.title.en}: ${one.lines.en.join(' ')}`);
   // Not painted yet: what she knows of it.
-  const bare = MEM.find(m => !m.panels.length);
+  const bare = MEM.find(m => !m.art);
   if (bare) assert.equal(recalledOf(content, withHer([], [bare.n]))[0].line, `「${bare.title.zh}」${bare.knows.zh}`);
 });
 

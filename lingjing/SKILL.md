@@ -519,8 +519,8 @@ tools:
   - name: Show
     description: >-
       Put cards before the player — creature, traits, map, board, hexagram,
-      gate, tribulation, item, duel, treasure — exactly as the rules gave them
-      (guide `look`). The panel, the people and the goal are the page's own —
+      gate, tribulation, item, duel, treasure, codex — exactly as the rules
+      gave them (guide `look`). The panel, the people and the goal are the page's own —
       never Show them.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs show --cards={{cards}} --for=ling"
     tier: edit
@@ -638,7 +638,7 @@ did not give; the rules fill 师兄 · 师姐 and 阿禾 from the name card.
 - **A result's `guide` is the rules of what just began** — read it and follow
   it from then on. It comes once a session; the **Guide** tool reads any part
   again by name.
-- **小人书**: panels and choices on the stage; `tell` is your story (guide `tell`).
+- **小人书**: scene cards and choices on the stage; `tell` is your story (guide `tell`).
 
 ## Opening
 

@@ -10,6 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WORDS, bookChipHtml, bookPopHtml, cardHtml } from '../scripts/cards.js';
+import { codexOf } from '../scripts/codex.js';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, quest, tale } from '../scripts/rules.mjs';
@@ -24,9 +25,12 @@ const NOW = new Date('2026-09-21T12:00:00');
 const authored = { world: 'jiuding', dir: 'worlds/jiuding', creatures: read('creatures.json').creatures.map(c => ({ ...c, dir: 'worlds/jiuding' })),
   herbs: read('herbs.json').herbs, hexagrams: read('hexagrams.json').hexagrams, traits: read('traits.json'), dictionary: read('dictionary.json'), cards: read('cards.json') };
 
+// …and its 图鉴, resolved the way lingjing.js codexNow does.
+const codexFiles = { codex: read('codex.json'), people: read('people.json'), creatures: read('creatures.json'), items: read('items.json'), arts: read('arts.json') };
+
 function pageCtx(l) {
   const q = l.stamina, p = q?.max ? Math.round((q.now / q.max) * 100) : 0;
-  return { look: l, lang: l.lang, words: WORDS[l.lang], content: authored, artBase: '../worlds/jiuding/', mapView: 'province', atlas: null,
+  return { look: l, codex: codexOf(codexFiles, { lang: l.lang, gender: l.gender }), lang: l.lang, words: WORDS[l.lang], content: authored, artBase: '../worlds/jiuding/', mapView: 'province', atlas: null,
     qi: q?.max ? { st: q.empty ? 'empty' : 'full', p, now: q.now, max: q.max, refillAt: null } : null,
     boardFor: () => null, duelFor: () => null };
 }

@@ -1,15 +1,17 @@
 // read-md.js — the little markdown the book is written in, as HTML: headings,
-// paragraphs, **bold**, > blockquotes, --- rules and pipe tables, plus two of
-// the book's own: `::: 画 <panel-id> [caption]`, a 小人书 panel full width,
-// `::: 男` / `::: 女` … `:::`, a passage told for one hero (fillHero), and
-// `[words]{注=id}`, words with a knowledge figure set right under their paragraph
-// (worlds/<world>/notes.json), and `《书名》{典=id}`, a classic the chapter names,
+// paragraphs, **bold**, > blockquotes, --- rules and pipe tables, plus the
+// book's own: `::: 男` / `::: 女` … `:::`, a passage told for one hero
+// (fillHero); `::: 忆 <n>`, 银月's memory n as its one colour plate;
+// `[words]{注=id}`, words naming a 图鉴 entry (worlds/<world>/codex.json,
+// scripts/codex.js) — a subject's card after the paragraph of its first
+// appearance (the entry's `first.book`), a dotted link after that; a knowledge
+// figure under every paragraph that names it; and `《书名》{典=id}`, a classic the chapter names,
 // linked both ways to its entry in 「附 · 本章典籍」 at the chapter's end
 // (story/<book>/classics.json). Pure: no DOM, every word escaped (read.html's
 // reader and its test both use it).
 import { esc } from './esc.js';
 import { fill, genderOf } from './state.mjs';
-import { marksSvg } from './marks.js';
+import { codexHtml, isSubject } from './codex.js';
 
 /// The hero the drafts were written with: the name a page with no save shows.
 export const HERO = '周星星';
@@ -32,8 +34,8 @@ const VARIANT_END = /^:::\s*$/;
 /// `::: 男` … `:::` and `::: 女` … `:::`: a passage told two ways. The hero's
 /// block stays (female → 女; male or unset → 男), the other goes, and so do the
 /// fence lines; a lone block with no twin simply vanishes for the other hero.
-/// Only a line that is exactly `::: 男`/`::: 女` opens one, so `::: 画 <id>`
-/// panels are left alone. An unclosed block runs to the end.
+/// Only a line that is exactly `::: 男`/`::: 女` opens one, so `::: 忆 <n>`
+/// plates are left alone. An unclosed block runs to the end.
 export function genderBlocks(md, gender) {
   const want = gender === 'female' ? '女' : '男';
   const out = [];
@@ -61,30 +63,24 @@ export function fillHero(md, hero = {}) {
   return fill(genderWords(genderBlocks(md, hero.gender), hero.gender), { name });
 }
 
-const PANEL = /^:::\s*画\s+([\w-]+)\s*(.*)$/;
-// `::: 忆 <n>[.<k>] [caption]` — 银月's memory n (its panel k, from 1) as a colour plate (memories.json).
-const MEMORY = /^:::\s*忆\s+(\d+)(?:\.(\d+))?\s*(.*)$/;
+// `::: 忆 <n> [caption]` — 银月's memory n as its one colour plate (memories.json).
+const MEMORY = /^:::\s*忆\s+(\d+)\s*(.*)$/;
 const GLOSS = /\[([^\]\n]+)\]\{注=([^{}\n]+)\}/g;
 // `《书名》{典=id}` — a classic named in the text (classics.json).
 const CLASSIC = /《([^》\n]+)》\{典=([\w-]+)\}/g;
-const known = (notes, id) => Object.hasOwn(notes ?? {}, id);
-// A gloss whose note is missing reads as its words, nothing more; a classic
-// with no entry (or no `cite`) reads as its 《书名》.
-const inline = (t, notes, cite) => esc(t)
-  .replace(GLOSS, (_, words, id) => (known(notes, id) ? `<span class="gloss" role="button" tabindex="0" data-note="${id}">${words}</span>` : words))
+const entryOf = (codex, id) => (codex instanceof Map ? codex.get(id) : Object.hasOwn(codex ?? {}, id) ? codex[id] : null) ?? null;
+// A gloss whose entry is missing reads as its words, nothing more; a classic
+// with no entry (or no `cite`) reads as its 《书名》. A subject links to its card
+// (data-codex), a knowledge figure to the figure under the paragraph (data-note).
+const inline = (t, codex, cite) => esc(t)
+  .replace(GLOSS, (_, words, id) => {
+    const e = entryOf(codex, id);
+    return e ? `<span class="gloss" role="button" tabindex="0" data-${isSubject(e) ? 'codex' : 'note'}="${id}">${words}</span>` : words;
+  })
   .replace(CLASSIC, (_, words, id) => cite?.(id, words) ?? `《${words}》`)
   .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
-const noteIds = (lines, notes) => [...new Set(lines.flatMap((l) => [...esc(l).matchAll(GLOSS)].map((m) => m[2])))].filter((id) => known(notes, id));
+const glossIds = (lines, codex) => [...new Set(lines.flatMap((l) => [...esc(l).matchAll(GLOSS)].map((m) => m[2])))].filter((id) => entryOf(codex, id));
 const cells = (row) => row.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim());
-
-/// A note's figure: its picture (its `marks` drawn over it, marks.js), title,
-/// lines and credit. `src(path)` resolves the picture under the world.
-export function noteFigure(id, note, { src = (p) => p, lang = 'zh' } = {}) {
-  const pick = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v[lang] ?? v.zh ?? v.en : v);
-  const img = note.image ? `<div class="pic"><img src="${esc(src(note.image))}" alt="${esc(pick(note.title))}" loading="lazy">${marksSvg(note.marks, lang)}</div>` : '';
-  const lines = (pick(note.lines) ?? []).map((l) => `<span>${esc(l)}</span>`).join('');
-  return `<figure class="notefig" data-note="${esc(id)}">${img}<figcaption><b>${esc(pick(note.title))}</b>${lines}<small>${esc(pick(note.credit))}</small></figcaption></figure>`;
-}
 
 /// The anchor ids of a classic's entry and of its n-th mention (from 1).
 export const classicAnchor = (id, n = 0) => (n ? `dian-${id}-${n}` : `dian-${id}`);
@@ -112,11 +108,21 @@ export function classicsAppendix(cited, classics = {}) {
 
 /// `opts.classics` → classics.json's classics: `《书名》{典=id}` links to its entry
 /// at the chapter's end (and back); none, or no entry: the 《书名》 alone.
-/// `opts.memory(n, k)` → memory n's panel k src, or null (none: plates are left out);
-/// `opts.panel(id)` → a panel's src (none: panels are left out); `opts.notes`
-/// → notes.json's notes; `opts.src`, `opts.lang` → noteFigure.
+/// `opts.memory(n)` → memory n's plate src, or null (none: plates are left out);
+/// `opts.codex` → the resolved 图鉴 (codex.js codexOf: a Map, or an object) and
+/// `opts.chapter` → this chapter's id in book.json, which `first.book` names;
+/// `opts.src`, `opts.lang` → codexHtml.
 export function renderMarkdown(md, opts = {}) {
-  const { notes } = opts, classics = opts.classics ?? {};
+  const codex = opts.codex, classics = opts.classics ?? {};
+  // A subject's card stands once: after the first paragraph that names it, in
+  // the chapter of its first appearance.
+  const carded = new Set();
+  const figures = (ids) => ids.map((id) => entryOf(codex, id)).map((e) => {
+    if (!isSubject(e)) return codexHtml(e, opts);
+    if (carded.has(e.id) || !opts.chapter || e.first?.book !== opts.chapter) return '';
+    carded.add(e.id);
+    return codexHtml(e, { ...opts, first: true });
+  }).join('');
   // Each classic named: its mentions in order, with the heading each sits under.
   const cited = new Map();
   let heading = '';
@@ -133,31 +139,25 @@ export function renderMarkdown(md, opts = {}) {
   let para = [], quote = [], table = [];
   const flush = () => {
     if (para.length) {
-      const p = `<p>${para.map((l) => inline(l, notes, cite)).join('<br>')}</p>`, ids = noteIds(para, notes);
-      out.push(ids.length ? `<div class="noted">${p}${ids.map((id) => noteFigure(id, notes[id], opts)).join('')}</div>` : p);
+      const p = `<p>${para.map((l) => inline(l, codex, cite)).join('<br>')}</p>`, figs = figures(glossIds(para, codex));
+      out.push(figs ? `<div class="noted">${p}${figs}</div>` : p);
       para = [];
     }
-    if (quote.length) { out.push(`<blockquote>${quote.map((l) => `<p>${inline(l, notes, cite)}</p>`).join('')}</blockquote>`); quote = []; }
+    if (quote.length) { out.push(`<blockquote>${quote.map((l) => `<p>${inline(l, codex, cite)}</p>`).join('')}</blockquote>${figures(glossIds(quote, codex))}`); quote = []; }
     if (table.length) {
       const [head, , ...body] = table;
-      out.push(`<table><thead><tr>${cells(head).map((c) => `<th>${inline(c, notes, cite)}</th>`).join('')}</tr></thead><tbody>${body.map((r) => `<tr>${cells(r).map((c) => `<td>${inline(c, notes, cite)}</td>`).join('')}</tr>`).join('')}</tbody></table>`);
+      out.push(`<table><thead><tr>${cells(head).map((c) => `<th>${inline(c, codex, cite)}</th>`).join('')}</tr></thead><tbody>${body.map((r) => `<tr>${cells(r).map((c) => `<td>${inline(c, codex, cite)}</td>`).join('')}</tr>`).join('')}</tbody></table>`);
       table = [];
     }
   };
   for (const line of lines) {
     const h = /^(#{1,4})\s+(.*)$/.exec(line);
     if (h) { flush(); if (h[1].length <= 2) heading = h[2].replace(CLASSIC, '《$1》').replace(/\*\*/g, ''); out.push(`<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`); continue; }
-    const pic = PANEL.exec(line.trim());
-    if (pic) {
-      flush();
-      if (opts.panel) out.push(`<figure class="panel"><img src="${esc(opts.panel(pic[1]))}" alt="${esc(pic[2])}" loading="lazy">${pic[2] ? `<figcaption>${inline(pic[2])}</figcaption>` : ''}</figure>`);
-      continue;
-    }
     const mem = MEMORY.exec(line.trim());
     if (mem) {
       flush();
-      const src = opts.memory?.(Number(mem[1]), Number(mem[2] ?? 1));
-      if (src) out.push(`<figure class="panel memplate"><img src="${esc(src)}" alt="${esc(mem[3])}" loading="lazy">${mem[3] ? `<figcaption>${inline(mem[3])}</figcaption>` : ''}</figure>`);
+      const src = opts.memory?.(Number(mem[1]));
+      if (src) out.push(`<figure class="panel memplate"><img src="${esc(src)}" alt="${esc(mem[2])}" loading="lazy">${mem[2] ? `<figcaption>${inline(mem[2])}</figcaption>` : ''}</figure>`);
       continue;
     }
     if (/^\s*(---|\*\*\*)\s*$/.test(line)) { flush(); out.push('<hr>'); continue; }

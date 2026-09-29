@@ -132,6 +132,7 @@ export const WORDS = {
 export { esc } from './esc.js';
 import { cityRowHtml } from './sky.js';
 import { esc } from './esc.js';
+import { codexHtml } from './codex.js';
 
 /// A system the story has not reached yet (Look's `locked`, rules/locks.mjs): its chip, bar and buttons are not drawn at all.
 export const isShut = (look, system) => (look?.locked ?? []).includes(system);
@@ -1148,24 +1149,38 @@ function born(card, ctx) {
 function people(card, ctx) {
   const ps = ctx.look?.scene?.people ?? [];
   if (!ps.length) return '';
-  const faces = ps.map((p) => `<figure class="person"><img src="${esc(worldPath(ctx.look.world?.dir ?? 'worlds/jiuding', p.art))}" alt="${esc(p.name)}"><figcaption><b>${esc(p.name)}</b><span class="small dim">${esc(p.role ?? '')}</span></figcaption></figure>`).join('');
+  // A portrait where the 图鉴 has a good one; else a clean name card.
+  const face = (p) => (p.art ? `<img src="${esc(worldPath(ctx.look.world?.dir ?? 'worlds/jiuding', p.art))}" alt="${esc(p.name)}">` : `<span class="namecard" aria-hidden="true"><b>${esc(p.name)}</b></span>`);
+  const faces = ps.map((p) => `<figure class="person">${face(p)}<figcaption><b>${esc(p.name)}</b><span class="small dim">${esc(p.role ?? '')}</span></figcaption></figure>`).join('');
   return `<div class="card peoplecard"><div class="people">${faces}</div></div>`;
 }
 
-/// A 连环画 beat (his, 2026-09-28: 右边尽量放图片……像小人书): the painted panel —
-/// or none: a story moment is not illustrated (his, 2026-09-29; pictures are for
-/// unfamiliar knowledge), and the caption stands alone — two to four lines of caption, and the scene's own choices under it — each a
-/// tap the page resolves itself; Ling hears `[scene] took` and tells the story.
+/// The scene card (his, 2026-09-29: 「不用小人书的方式了」): a story moment is never
+/// illustrated — the place, two to four lines of caption, and the scene's own
+/// choices under it, each a tap the page resolves itself; Ling hears
+/// `[scene] took` and tells the story. Pictures are the 图鉴's (meet, codex).
 function panel(card, ctx) {
   const p = ctx.look?.scene?.panel;
   if (!p) return '';
-  const art = p.art ? `<img class="panelart" src="${esc(worldPath(ctx.look.world?.dir ?? 'worlds/jiuding', p.art))}" alt="">` : '';
   const caption = (p.caption ?? []).map((l) => `<p>${esc(l)}</p>`).join('');
   const busy = ctx.panelBusy ?? null;
   const taps = (p.taps ?? []).map((t) => `<button class="act paneltap${busy === t.id ? ' busy' : ''}" data-panel-exit="${esc(t.id)}"${busy ? ' disabled' : ''}>${esc(t.label)}</button>`).join('');
-  return `<div class="card panelcard"><figure class="panel${p.art ? '' : ' noart'}">${art}<figcaption>${caption}</figcaption></figure>
+  return `<div class="card panelcard"><div class="panel scenecard">${p.place ? `<div class="sceneplace">${esc(p.place)}</div>` : ''}<div class="scenecap">${caption}</div></div>
     ${taps ? `<div class="acts paneltaps">${taps}</div>` : ''}${ctx.panelNote ? `<div class="donote">${esc(ctx.panelNote)}</div>` : ''}</div>`;
 }
+
+/// 图鉴 — an entry's card (codex.js, the same the book sets in its text): `meet`
+/// when the scene brings it on for the first time, `codex` when Ling Shows it.
+/// `ctx.codex` is the codex the page resolved (lingjing.js); an id it does not
+/// hold draws nothing.
+function codexCard(card, ctx, first = false) {
+  const entry = ctx.codex?.get?.(card.id);
+  if (!entry) return '';
+  const dir = ctx.look?.world?.made ? `worlds/${ctx.look.world.base}` : ctx.look?.world?.dir ?? 'worlds/jiuding';
+  return `<div class="card codexwrap">${codexHtml(entry, { src: (f) => worldPath(dir, f), lang: ctx.lang ?? 'zh', first })}</div>`;
+}
+const meet = (card, ctx) => codexCard(card, ctx, true);
+const codex = (card, ctx) => codexCard(card, ctx);
 
 /// 恩仇簿 — the top bar's chip and what it opens: every kindness and every
 /// wrong the story has written down, oldest first (his, prologue-v3: the hero
@@ -1247,7 +1262,7 @@ function breakthrough(card, ctx) {
     <div class="acts"><button class="act btgo" data-throw="${esc(card.id)}"${shut ? ` disabled title="${esc(shut)}"` : ''}>${esc(shut ?? w.go)}</button></div>${note}</div>`;
 }
 
-const RENDER = { panel, value, born, people, breakthrough, handed, tale, lundao, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, road, seclude, seclusion };
+const RENDER = { meet, codex, panel, value, born, people, breakthrough, handed, tale, lundao, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, road, seclude, seclusion };
 
 /// Only the kinds the scene knows; anything else Ling sends is dropped.
 export function cardHtml(card, ctx) {

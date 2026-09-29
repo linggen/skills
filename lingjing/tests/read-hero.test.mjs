@@ -75,12 +75,12 @@ test('::: 男 / ::: 女 blocks: the hero\'s stays, the other goes, fences never 
   assert.equal(renderMarkdown(fillHero('::: 女\n**掌柜**：姑娘。\n:::', { gender: 'male' })), '');
 });
 
-test('variant blocks leave ::: 画 panels alone, inside or outside a block', () => {
-  const md = '::: 画 p1 柴房\n::: 女\n::: 画 p2 猪圈\n:::\n尾。';
-  assert.equal(genderBlocks(md, 'female'), '::: 画 p1 柴房\n::: 画 p2 猪圈\n尾。');
-  assert.equal(genderBlocks(md, 'male'), '::: 画 p1 柴房\n尾。');
-  const html = renderMarkdown(fillHero(md, { gender: 'female' }), { panel: (id) => `${id}.png` });
-  assert.match(html, /p1\.png[\s\S]*p2\.png/);
+test('variant blocks leave ::: 忆 plates alone, inside or outside a block', () => {
+  const md = '::: 忆 1 柴房\n::: 女\n::: 忆 2 猪圈\n:::\n尾。';
+  assert.equal(genderBlocks(md, 'female'), '::: 忆 1 柴房\n::: 忆 2 猪圈\n尾。');
+  assert.equal(genderBlocks(md, 'male'), '::: 忆 1 柴房\n尾。');
+  const html = renderMarkdown(fillHero(md, { gender: 'female' }), { memory: (n) => `m${n}.png` });
+  assert.match(html, /m1\.png[\s\S]*m2\.png/);
 });
 
 test('the girl-hero chapters: both readings clean, each told its own way', () => {

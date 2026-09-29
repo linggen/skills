@@ -8,6 +8,7 @@ import { ART_EFFECTS, ELEMENTS, INTENTS, LEAN_IDS } from './duel.js';
 import { LOCKABLE, normalizeAnswer } from './state.mjs';
 import { EFFECTS } from './battle.js';
 import { FRAMES, PARTICLES } from './atmos.js';
+import { lintCodex } from './codex.js';
 
 /* The worlds ship with the skill, one folder each under `worlds/`; the
    folder's name is the world's id and the save's `world`. */
@@ -107,7 +108,7 @@ export function overlayOf(outline) {
    never a named speaker. */
 export const CAST = { yinyue: { zh: '银月', en: 'Yinyue' } };
 const SPEAKERS = new Set(['ling', ...Object.keys(CAST)]);
-const CARDS = new Set(['creature', 'traits', 'map', 'board', 'hexagram', 'gate', 'tribulation', 'item', 'duel', 'treasure']);
+const CARDS = new Set(['codex', 'creature', 'traits', 'map', 'board', 'hexagram', 'gate', 'tribulation', 'item', 'duel', 'treasure']);
 const GAME_KINDS = new Set(['duel', 'board']);
 
 /* An exit's game, one shape: `{id, kind, creature?}`; a bare string is a
@@ -121,6 +122,9 @@ const VALUE_FIELDS = new Set(['name']);
 const SETTABLE = { traits: new Set(['v1']) };
 
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8'));
+
+/* The files the 图鉴 resolves over (scripts/codex.js codexOf): the codex and what it links. */
+export const codexFiles = content => ({ codex: content.codex, people: content.people, creatures: content.creatures, items: content.items, arts: content.arts });
 
 export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
   const at = file => readJson(path.join(dir, file));
@@ -149,6 +153,8 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     lore: fs.existsSync(path.join(dir, 'companion.json')) ? readJson(path.join(dir, 'companion.json')) : null,
     // The standing people (people.json): a scene line's `who` may be one of them, or a slot.
     people: fs.existsSync(path.join(dir, 'people.json')) ? readJson(path.join(dir, 'people.json')) : null,
+    // 图鉴 (scripts/codex.js): one entry per subject, linked to the files above; the book reads the same.
+    codex: fs.existsSync(path.join(dir, 'codex.json')) ? readJson(path.join(dir, 'codex.json')) : null,
     // Scrolls a thing can be read as (rules/scrolls.mjs): 《吐纳经》 and its nine layers.
     scrolls: fs.existsSync(path.join(dir, 'scrolls.json')) ? readJson(path.join(dir, 'scrolls.json')) : null,
     // 节日 (design.md § 真实世界): the real calendar's festivals, one entry each (rules/festival.mjs).
@@ -441,6 +447,10 @@ export function lint(content) {
   lintLore(content, bad);
   lintPeople(content, bad);
   lintFestivals(content, bad);
+  if (content.codex) for (const p of lintCodex(codexFiles(content), f => fs.existsSync(path.join(content.dir, f)))) bad('codex', p);
+  // A codex entry's first scene is a scene of this world.
+  const sceneIds = new Set(Object.values(content.chapters).flatMap(ch => Object.keys(ch.scenes ?? {})));
+  for (const [id, e] of Object.entries(content.codex?.entries ?? {})) if (e.first?.scene && !sceneIds.has(e.first.scene)) bad('codex', `${id}: first scene ${e.first.scene} is not a scene`);
   return problems;
 }
 
@@ -973,8 +983,8 @@ function lintScene(scene, chapter, content, ids, bad) {
   // A 连环画 beat (rules/tell.mjs): the passage told in the chat, the panel on the stage.
   lintStory(where, scene.story, bad);
   if (scene.panel) {
-    // A picture is optional: a story moment is not illustrated (his, 2026-09-29); one named must exist.
-    if (scene.panel.art && !fs.existsSync(path.join(content.dir, scene.panel.art))) bad(where, `panel art ${scene.panel.art} is missing`);
+    // A story moment is never illustrated (his, 2026-09-29): the scene card is its words; pictures are the 图鉴's.
+    if (scene.panel.art) bad(where, 'a scene has no picture — pictures are the 图鉴\'s (codex.json)');
     for (const lang of ['zh', 'en']) {
       const lines = scene.panel.caption?.[lang];
       if (!Array.isArray(lines) || lines.length < 2 || lines.length > 4 || lines.some(l => typeof l !== 'string' || !l.trim())) bad(where, `a panel caption is two to four lines in ${lang}`);

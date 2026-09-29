@@ -68,19 +68,19 @@ test('the prologue runs from 石坳村 to the notice board', () => {
   assert.ok(ch.scenes['00-mijing'].exits.some(e => e.ends === '00-prologue'));
 });
 
-test('every prologue scene is a 连环画 beat: a panel on disk, a caption of two to four lines, a passage in both languages', () => {
+test('every prologue scene is a beat: a scene card with no picture, a caption of two to four lines, a passage in both languages', () => {
   const c = fresh();
   for (const scene of Object.values(prologue(c).scenes)) {
-    assert.ok(scene.panel?.art && scene.story?.zh && scene.story?.en, scene.id);
+    assert.ok(scene.panel && !scene.panel.art && scene.story?.zh && scene.story?.en, scene.id);
     assert.ok(scene.panel.caption.zh.length >= 2 && scene.panel.caption.zh.length <= 4, scene.id);
   }
-  prologue(c).scenes['00-fox'].panel.art = 'art/panels/nothing.webp';
+  prologue(c).scenes['00-fox'].panel.art = 'art/panels/00-fox.webp';
   prologue(c).scenes['00-fox'].panel.caption.en = ['one line'];
   prologue(c).scenes['00-cave'].exits[0].story.en = prologue(c).scenes['00-cave'].exits[0].story.en.replace('⟫', '');
   prologue(c).scenes['00-masan'].exits[0].ledger[0].kind = '怨';
   prologue(c).scenes['00-dawn'].exits[0].ledger[0].who = 'nobody';
   const problems = lint(c);
-  assert.ok(has(problems, 'panel art art/panels/nothing.webp is missing'));
+  assert.ok(has(problems, 'a scene has no picture'), 'a story moment is never illustrated');
   assert.ok(has(problems, 'a panel caption is two to four lines in en'));
   assert.ok(has(problems, 'do not pair'));
   assert.ok(has(problems, 'a ledger entry is 恩, 仇 or 诺'));
