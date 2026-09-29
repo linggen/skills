@@ -79,8 +79,12 @@ No outside source. Painted so far (the Codex credits ran out mid-run): the peopl
 house-style reference) 褚先生 孙二狗 内门师姐 周衡, and (the afternoon's round) 舅舅 玄沉子 渡叔; the bow `items/old-bow` (the pouch's picture; a bow has no 图鉴 entry); the things 狐纹木牌 (nine tails)
 洗髓丹 《吐纳经》 小铜炉 (three legs, two ears, the beast on the lid) 《黄庭经》 《河洛剑诀》 回春丹 银月铃
 (`items/{fox-token,xisui-pill,tuna-jing,danlu,huangting,heluo,mend-pill,moon-bell}`); and
-`creatures/fuzhu` (夫诸, four horns, from 「其状如白鹿而四角」). They replace the FLUX pictures. Still to
-paint: the other eighteen creatures. A creature's
+`creatures/fuzhu` (夫诸, four horns, from 「其状如白鹿而四角」), and (the afternoon's round, each from its classical
+line, every head, leg, tail, horn and wing counted) 无支祁 长右 巴蛇 蛫 夔牛 窃脂 羬羊 泰逢 马腹 狍鸮 精卫 and 狰 as
+the story's baby 小狰 (five tails, one horn, hugging a stalk of 灵草). Where Codex painted strong colour
+(小狰, 蛫, 窃脂, 马腹, 《河洛剑诀》) it was toned down to the house's faint tint. They replace the FLUX pictures;
+无支祁 and 夔牛 had no old print (their FLUX woodcuts stay for the 斗法 cards). Still to paint: 防风氏 蠪侄 夔
+狪狪 雷神 (its first roll had five limbs) and 肥遗 (four rolls, the feet never six — it keeps its woodcut). A creature's
 old woodcut stays at its old path as its 「原图」 (`art_plate`, the table above).
 
 The 经脉 · 穴位 figures are painted by Codex with their labels (each checked by eye); the codex's

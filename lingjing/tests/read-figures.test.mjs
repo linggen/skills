@@ -259,6 +259,11 @@ test('a repainted creature keeps its old woodcut as 「原图」; the prologue\'
   assert.equal(fuzhu.image, 'art/creatures/fuzhu.webp');
   assert.equal(fuzhu.source.scan, 'art/fuzhu.webp');
   const html = codexHtml(fuzhu, { src });
+  // 小狰 (Codex) with the 1725 woodcut as its 「原图」 — no painter's line, the classic and the edition only
+  const zheng = CODEX.get('zheng');
+  assert.equal(zheng.image, 'art/creatures/zheng.webp');
+  assert.equal(zheng.source.scan, 'art/zheng.webp');
+  assert.match(codexHtml(zheng, { src }), /《山海经 · 西次三经》 <button class="origscan" data-scan="\.\.\/worlds\/jiuding\/art\/zheng\.webp">原图</);
   assert.match(html, /<small>《山海经 · 中山经》 <button class="origscan"/, 'the classic it is drawn from, never the painter');
   assert.doesNotMatch(html, /重绘|Codex/);
   assert.match(html, /data-scan="\.\.\/worlds\/jiuding\/art\/fuzhu\.webp">原图</);

@@ -134,8 +134,8 @@
       },
       "province": "徐",
       "root": "metal",
-      "art": "art/wuzhiqi.webp",
-      "art_source": "Drawn for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, as a woodcut after the 《古岳渎经》 text — 无支祁 is not a 山海经 creature and no classical plate of it is known; laid on paper by tools/frame.py. See art/CREDITS.md.",
+      "art": "art/creatures/wuzhiqi.webp",
+      "art_source": "Painted for Lingjing by Codex CLI's image tool, 2026-09-29, from the 《古岳渎经》 text (tools/paint-codex.py). No outside source; the FLUX woodcut of 2026-09-24 stays at art/wuzhiqi.webp for its 斗法 card.",
       "art_caption": {
         "zh": "据《古岳渎经》新绘",
         "en": "Newly drawn after the Old Classic of Mountains and Rivers"
@@ -298,7 +298,8 @@
       },
       "province": "扬",
       "root": "water",
-      "art": "art/changyou.webp",
+      "art": "art/creatures/changyou.webp",
+      "art_plate": "art/changyou.webp",
       "art_source": "《古今圖書集成·博物彙編·禽蟲典》長右圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic239 - 長右圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/changyou.svg).",
       "art_caption": {
         "zh": "《古今圖書集成·禽蟲典》，清雍正本",
@@ -377,7 +378,8 @@
       },
       "province": "荆",
       "root": "water",
-      "art": "art/bashe.webp",
+      "art": "art/creatures/bashe.webp",
+      "art_plate": "art/bashe.webp",
       "art_source": "《古今圖書集成·博物彙編·禽蟲典》巴蛇圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic510 - 巴蛇圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/bashe.svg).",
       "art_caption": {
         "zh": "《古今圖書集成·禽蟲典》，清雍正本",
@@ -457,7 +459,8 @@
       },
       "province": "荆",
       "root": "earth",
-      "art": "art/gui.webp",
+      "art": "art/creatures/gui.webp",
+      "art_plate": "art/gui.webp",
       "art_source": "《古今圖書集成·博物彙編·禽蟲典》蛫圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic313 - 蛫圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/gui.svg).",
       "art_caption": {
         "zh": "《古今圖書集成·禽蟲典》，清雍正本",
@@ -539,8 +542,8 @@
       },
       "province": "梁",
       "root": "earth",
-      "art": "art/kuiniu.webp",
-      "art_source": "Drawn for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, as a woodcut after the 《中次九经》 text and 郭璞's note — no labelled classical plate of 夔牛 was found; laid on paper by tools/frame.py. See art/CREDITS.md.",
+      "art": "art/creatures/kuiniu.webp",
+      "art_source": "Painted for Lingjing by Codex CLI's image tool, 2026-09-29, from the 《中次九经》 text (tools/paint-codex.py). No outside source; the FLUX woodcut of 2026-09-24 stays at art/kuiniu.webp for its 斗法 card.",
       "art_caption": {
         "zh": "据《中次九经》新绘",
         "en": "Newly drawn after the Central Mountains IX"
@@ -618,7 +621,8 @@
       },
       "province": "梁",
       "root": "fire",
-      "art": "art/qiezhi.webp",
+      "art": "art/creatures/qiezhi.webp",
+      "art_plate": "art/qiezhi.webp",
       "art_source": "《古今圖書集成·博物彙編·禽蟲典》竊脂圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic137 - 竊脂圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/qiezhi.svg).",
       "art_caption": {
         "zh": "《古今圖書集成·禽蟲典》，清雍正本",
@@ -777,7 +781,8 @@
       },
       "province": "雍",
       "root": "metal",
-      "art": "art/qianyang.webp",
+      "art": "art/creatures/qianyang.webp",
+      "art_plate": "art/qianyang.webp",
       "art_source": "《古今圖書集成·博物彙編·禽蟲典》羬羊圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic229 - 羬羊圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/qianyang.svg).",
       "art_caption": {
         "zh": "《古今圖書集成·禽蟲典》，清雍正本",
@@ -856,7 +861,8 @@
       },
       "province": "豫",
       "root": "earth",
-      "art": "art/taifeng.webp",
+      "art": "art/creatures/taifeng.webp",
+      "art_plate": "art/taifeng.webp",
       "art_source": "《古今圖書集成·博物彙編·神異典》太逢神圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Spirits and the Supernatural - pic30 - 太逢神圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/taifeng.svg).",
       "art_caption": {
         "zh": "《古今圖書集成·神異典》，清雍正本",
@@ -936,7 +942,8 @@
       },
       "province": "豫",
       "root": "wood",
-      "art": "art/mafu.webp",
+      "art": "art/creatures/mafu.webp",
+      "art_plate": "art/mafu.webp",
       "art_source": "《古今圖書集成·博物彙編·禽蟲典》馬腹圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic297 - 馬腹圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/mafu.svg).",
       "art_caption": {
         "zh": "《古今圖書集成·禽蟲典》，清雍正本",
@@ -1015,7 +1022,8 @@
       },
       "province": "冀",
       "root": "earth",
-      "art": "art/paoxiao.webp",
+      "art": "art/creatures/paoxiao.webp",
+      "art_plate": "art/paoxiao.webp",
       "art_source": "《山海經圖》狍鴞，胡文煥，明 萬曆（1596–1650）。Public domain. Wikimedia Commons: File:狍鴞.jpg. Laid on paper by tools/frame.py (art/plates/paoxiao.jpg).",
       "art_caption": {
         "zh": "胡文煥《山海經圖》，明萬曆本",
@@ -1093,7 +1101,8 @@
       },
       "province": "冀",
       "root": "fire",
-      "art": "art/jingwei.webp",
+      "art": "art/creatures/jingwei.webp",
+      "art_plate": "art/jingwei.webp",
       "art_source": "《古今圖書集成·博物彙編·禽蟲典》精衛圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic130 - 精衛圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/jingwei.svg).",
       "art_caption": {
         "zh": "《古今圖書集成·禽蟲典》，清雍正本",
@@ -1514,7 +1523,8 @@
       },
       "province": "徐",
       "root": "fire",
-      "art": "art/zheng.webp",
+      "art": "art/creatures/zheng.webp",
+      "art_plate": "art/zheng.webp",
       "art_source": "《古今圖書集成·博物彙編·禽蟲典》猙圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic252 - 猙圖.svg. Laid on paper by tools/frame.py (art/plates/zheng.svg).",
       "art_caption": {
         "zh": "《古今圖書集成·禽蟲典》，清雍正本",

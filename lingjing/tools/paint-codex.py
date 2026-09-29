@@ -83,18 +83,20 @@ CREATURES = {
   'gui': '蛫 — 「其状如龟，而白身赤首」: a turtle with ONE head, FOUR legs, a pale WHITE shell and body and a RED head (a faint pale red wash on the head only), on a stony bank.',
   'kuiniu': '夔牛 — 「其兽多犀象，多夔牛」 (郭璞：重数千斤): an enormous heavy wild ox, ONE head, TWO horns, FOUR legs, huge as a small hill, standing on a mountain slope.',
   'qiezhi': '窃脂 — 「状如鸮而赤身白首」: an owl with ONE head, TWO wings, TWO feet, a RED body (a faint pale red wash) and a WHITE head, perched on a branch.',
-  'feiyi': '肥遗 — 「有蛇焉，名曰肥遗，六足四翼」: a snake with ONE head, exactly SIX legs (three pairs along its body, all six visible and countable) and exactly FOUR wings (two pairs, all four visible), coiled on a square cliff top.',
+  # 肥遗: four rolls 2026-09-29 (side view ×3, this top-down view ×1) — the wings came right, the feet never
+  # (7, 5, 5, 7): still its 1725 woodcut. 雷神: the first roll had five limbs; this four-limb prompt is untried.
+  'feiyi': '肥遗 — 「有蛇焉，名曰肥遗，六足四翼」: a snake seen from directly ABOVE, lying stretched in a gentle S on a square flat cliff top, like a specimen plate: ONE plain snake head (no horns, no whiskers, not a dragon), exactly SIX short lizard legs splayed out flat to the sides — three on the left, three on the right, all six feet clearly separate and countable — and exactly FOUR feathered wings spread flat — two on the left, two on the right — the long tail bare.',
   'qianyang': '羬羊 — 「其状如羊而马尾」: a goat with ONE head, TWO horns, FOUR legs and ONE long flowing HORSE tail, standing among pines.',
   'taifeng': '泰逢 — 「其状如人而虎尾……出入有光」: a benevolent mountain god in the shape of a man, ONE head, TWO arms, TWO legs, in simple ancient robes, with ONE striped TIGER tail, a soft glow around him.',
   'mafu': '马腹 — 「其状如人面虎身」: a tiger\'s body with a HUMAN face, ONE head, FOUR legs, ONE tail, crouching by a river among bamboo.',
   'paoxiao': '狍鸮 — 「其状如羊身人面，其目在腋下，虎齿人爪」: a sheep\'s body with ONE human face, NO eyes on the face — its TWO eyes are under its forelegs (armpits) — tiger fangs, FOUR legs whose front feet are human-like hands.',
   'jingwei': '精卫 — 「其状如乌，文首、白喙、赤足」: a small crow-like bird with ONE head, a patterned head, a WHITE beak, TWO RED feet (a faint red wash on the feet only), TWO wings, carrying a small pebble in its beak over sea waves.',
-  'leishen': '雷神 — 「雷泽中有雷神，龙身而人头，鼓其腹」: a dragon\'s long scaled body with ONE MAN\'S head, FOUR clawed dragon legs, drumming on its own belly with its front claws, in a marsh under storm clouds.',
+  'leishen': '雷神 — 「雷泽中有雷神，龙身而人头，鼓其腹」: a dragon\'s long scaled body with ONE MAN\'S head and FOUR limbs in all — it rears up on its TWO hind legs and drums on its own round belly with its TWO front claws (no other legs), in a marsh under storm clouds.',
   'longzhi': '蠪侄 — 「其状如狐，而九尾、九首、虎爪」: a fox with exactly NINE heads (all nine clearly visible and countable, on nine necks) and exactly NINE tails (all nine visible), FOUR legs with tiger claws.',
   'kui': '夔 — 「状如牛，苍身而无角，一足」: an ox-like beast with ONE head, a dark grey body, NO horns, and only ONE leg (a single thick leg in the middle, clearly one), standing at the edge of the sea, a faint glow around it.',
   'tongtong': '狪狪 — 「其状如豚而有珠」: a pig with ONE head and FOUR legs, holding ONE round pearl in its mouth, on a mountain path.',
   # The story's 小狰 (his, 2026-09-29): a baby, not the adult leopard of the 1725 woodcut (its 「原图」).
-  'zheng': '狰 — 「其状如赤豹，五尾一角」, drawn as the story\'s BABY 狰: cat-sized, round and young, soft red fur (a faint pale red wash), exactly FIVE small fluffy tails (all five visible and countable), exactly ONE small stubby horn on its forehead, squatting and hugging a stalk of spirit herb in both front paws, munching messily, crumbs falling. Cute, but clearly the 山海经 beast, not a leopard.',
+  'zheng': '狰 — 「其状如赤豹，五尾一角」, drawn as the story\'s BABY 狰: cat-sized, round and young, soft red fur (a faint pale red wash), exactly FIVE small fluffy tails, spread apart in a wide fan behind it so that all five are separate and can be counted (five, not four, not six), exactly ONE small stubby horn on its forehead, squatting and hugging a stalk of spirit herb in both front paws, munching messily, crumbs falling. Cute, but clearly the 山海经 beast, not a leopard.',
 }
 
 
@@ -104,8 +106,13 @@ def paint(out, subject, aspect, force):
   png = out.with_suffix('.png')
   prompt = (f'Use your image generation tool to make ONE image in {aspect} orientation, then save it in the current '
             f'directory as {png.name}. Subject: {subject} {OLD_CHINA} Style: {STYLE} Reply with the saved file path only.')
-  r = subprocess.run(['codex', 'exec', '-m', 'gpt-5.5', '--skip-git-repo-check', '-s', 'workspace-write', prompt],
-                     cwd=out.parent, capture_output=True, text=True)
+  # stdin closed (a piped stdin makes codex exec wait on it) and a cap per picture: one call
+  # hung 20 minutes with no session at all (2026-09-29) — a stuck call fails, it never stalls the run.
+  try:
+    r = subprocess.run(['codex', 'exec', '-m', 'gpt-5.5', '--skip-git-repo-check', '-s', 'workspace-write', prompt],
+                       cwd=out.parent, capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=600)
+  except subprocess.TimeoutExpired:
+    return 'failed: no picture in 10 minutes'
   if not png.exists():
     said = (r.stdout + r.stderr).lower()
     if 'usage limit' in said or 'out of credits' in said or 'rate limit' in said:
