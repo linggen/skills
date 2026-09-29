@@ -173,6 +173,8 @@ test('the 守夜 and the tame: 狰 runs from a fight, yields to the watch won, a
   s = must(task, s, { action: 'done', id: 'shouye' });
   assert.equal(look(s, content, ctx()).place.encounter.beaten, true);
   assert.equal(look(s, content, ctx()).tasks.some(t => t.id === 'shouye' && t.status !== 'done'), false, 'caught once, the board is gone');
+  assert.ok(!look(s, content, ctx()).stage.some(c => c.card === 'duel'), 'caught, its 出手 is gone: the creature card offers 收服');
+  assert.ok(look(s, content, ctx()).stage.some(c => c.card === 'creature' && c.id === 'zheng'));
   refused(tame, s, { creature: 'zheng' }, 'needs-item');
   s = must(tame, { ...s, bag: { ...s.bag, luobo: 1 } }, { creature: 'zheng' });
   assert.ok(s.cast.includes('zheng'));

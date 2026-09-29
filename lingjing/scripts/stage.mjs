@@ -202,7 +202,8 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
       if (e.game?.kind === 'duel' && !has('duel', e.game.id)) cards.push({ card: 'duel', id: e.game.id });
     }
     const haunt = look.place?.encounter;
-    if (haunt && !haunt.tamed && !has('duel', haunt.game.id)) cards.push({ card: 'duel', id: haunt.game.id });
+    // A beast caught, not fought (狰): its 出手 is offered only until the catch — then it is 收服's.
+    if (haunt && !haunt.tamed && !(haunt.catch && haunt.beaten) && !has('duel', haunt.game.id)) cards.push({ card: 'duel', id: haunt.game.id });
     // 先降后收: beaten, it may be won over — on its own card (cards.js creature).
     if (winnable(haunt) && !has('creature', haunt.creature.id)) cards.push({ card: 'creature', id: haunt.creature.id });
   }
