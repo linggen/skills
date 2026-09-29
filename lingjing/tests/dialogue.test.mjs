@@ -110,10 +110,14 @@ test('the last beat brings the choices up; 跳过 shows the rest at once; new pa
   assert.equal(current(more).k, 1, 'the one on show stays');
   assert.equal(current(more).n, 4);
   // a new scene begins a new reading; a closed one opens on the new beats
-  assert.equal(current(withTold(mid, [{ of: 'scene', id: 's2', beats: [{ text: 'x' }] }], 's2')).n, 1);
+  assert.equal(current(withTold({ ...mid, closed: true }, [{ of: 'scene', id: 's2', beats: [{ text: 'x' }] }], 's2')).n, 1);
   const again = withTold({ ...mid, closed: true }, [{ of: 'choice', id: 'x/y', beats: [{ text: 'd' }] }], 's1');
   assert.equal(current(again).k, 3);
   assert.ok(playing(again));
+  // moved on to a new scene mid-passage: the rest of the old plays first, from where it stood
+  const carried = withTold(mid, [{ of: 'scene', id: 's2', beats: [{ text: 'x' }] }], 's2');
+  assert.equal(carried.scene, 's2');
+  assert.deepEqual([current(carried).k, current(carried).n, current(carried).beat.text], [1, 4, 'b']);
   // the scene's own passage told again (a new game) begins afresh
   assert.equal(current(withTold({ ...mid, closed: true }, [{ of: 'scene', id: 's1', beats: [{ text: 'z' }] }], 's1')).n, 1);
 });

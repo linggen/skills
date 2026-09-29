@@ -1596,10 +1596,12 @@ function readingNow() {
   if (view.reading === undefined) keep({ reading: loadReading(SCRATCH) });
   return view.reading;
 }
-/* The reading that belongs on the stage now: still playing, or this scene's (its 记录). */
+/* The reading that belongs on the stage now: this scene's (or the open
+   world's) — one left from another scene (an Undo, a Load, a save begun
+   again) is not played over this one. */
 function readingHere() {
   const r = readingNow();
-  return r && (playing(r) || r.scene === (look?.scene?.id ?? null)) ? r : null;
+  return r && r.scene === (look?.scene?.id ?? null) ? r : null;
 }
 function setReading(r, patch = {}) {
   keepReading(SCRATCH, r);
@@ -2809,6 +2811,8 @@ async function scratchBoot() {
   if (from) {
     const r = await verb('seed', { from }).catch(failed);
     if (!r.ok) console.warn('[lingjing] seed', r);
+    // A save begun again reads nothing of the last one's dialogue box.
+    else keepReading(SCRATCH, null);
   }
   // `&days=N`: the scratch save's clock N days ahead (rules.mjs shift) — the 大比's real day in a check.
   if (days != null) {
