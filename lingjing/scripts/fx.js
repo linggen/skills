@@ -160,8 +160,13 @@ export async function playHoming(slot, { geo, ink, province, frame, paint, names
   blob.position.set(find[0], find[1]);
   blob.scale.set(0.001);
   const tear = new PIXI.DisplacementFilter({ sprite: fibres, scale: R * 0.22 });
-  blob.filters = [tear, new PIXI.BlurFilter({ strength: 4, quality: 3 })];
-  soakSrc.addChild(fibres, blob);
+  // The filters sit on a layer as big as the map (a near-clear sheet under the disc): a filter
+  // clips to its object's bounds, and the torn edge reaching past the disc's box was cut square (seen live).
+  const sheet = () => new PIXI.Graphics().rect(0, 0, geo.w, geo.h).fill({ color: 0x000000, alpha: 0.001 });
+  const soakLayer = new PIXI.Container();
+  soakLayer.addChild(sheet(), blob);
+  soakLayer.filters = [tear, new PIXI.BlurFilter({ strength: 4, quality: 3 })];
+  soakSrc.addChild(fibres, soakLayer);
   const rt = PIXI.RenderTexture.create({ width: Math.ceil(geo.w * K), height: Math.ceil(geo.h * K) });
   const soakMask = new PIXI.Sprite(rt);
   soakMask.scale.set(1 / K);
@@ -176,8 +181,10 @@ export async function playHoming(slot, { geo, ink, province, frame, paint, names
   bleed.scale.set(0.001);
   bleed.alpha = 0;
   // The same tear as the mask's edge, so the ring rides the soak's rim.
-  bleed.filters = [new PIXI.DisplacementFilter({ sprite: fibres2, scale: R * 0.22 }), new PIXI.BlurFilter({ strength: 1.5 })];
-  here.addChild(bleed, fibres2);
+  const bleedLayer = new PIXI.Container();
+  bleedLayer.addChild(sheet(), bleed);
+  bleedLayer.filters = [new PIXI.DisplacementFilter({ sprite: fibres2, scale: R * 0.22 }), new PIXI.BlurFilter({ strength: 1.5 })];
+  here.addChild(bleedLayer, fibres2);
   const drop = new PIXI.Graphics().circle(0, 0, geo.w * 0.006).fill(0x231f1a);
   drop.position.set(find[0], find[1] - geo.h * 0.12);
   drop.alpha = 0;
