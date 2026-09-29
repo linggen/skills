@@ -21,7 +21,7 @@ status: 2026-09-28 — the story reborn (§ 故事 v3): a poor 蒙山 hunter's c
   取我们自己的heritage。见 `## 斗法 v3`；2026-09-17 那套回合制五行对拼作废。
 
 - **读一本会随你改变的小说 (his, 2026-09-28).** 灵境是「身临其境读小说」的 AI 游戏：
-  剧情在聊天里，由灵讲；舞台是小人书（连环画）—— 画、短字幕、斗法、小游戏。
+  剧情在聊天里，由灵讲；舞台是文字的场景卡、图鉴、斗法、小游戏（2026-09-29：不用小人书的方式了，图片作为图鉴）。
   故事照「废柴逆袭」的套路写（凡人、逍遥小散仙的味道，名字与情节全是我们自己的）。
 - **剧情与世界照《原神》的形 (his, 2026-09-28).** 任务在开放世界里驱动剧情；
   关键剧情锁地图，走完再开；一章一州，剧情开新州；人物有自己的传说任务。
@@ -460,7 +460,7 @@ The fields, as `scripts/content.mjs` checks them:
 | exit `stamina` · `mark` | Toil that costs 体力 even in a free chapter; a choice the save remembers (`marks`). |
 | exit `beat` | Lines spoken when the exit is taken. |
 | `story` · exit `story` | 小人书 (2026-09-28): the approved passage of a beat (zh + en) — the scene entered, or a choice's outcome — handed to Ling once, in order, as `tell` (rules/tell.mjs); 银月's words marked ⟪…⟫ are hers while she is present. |
-| `panel` | The stage's picture of the beat: `art` (art/panels/) and a `caption` of two to four lines per language; the scene's plain buttons stand under it as taps the page resolves (`[scene] took`). |
+| `panel` | The stage's scene card, in words (no picture since 2026-09-29 — § 图鉴): a `caption` of two to four lines per language, the place over it; the scene's plain buttons stand under it as taps the page resolves (`[scene] took`). |
 | `people` · `her` | Who the people card shows (people.json ids or slots); `her` — 银月's form (`fox`, `human`, world.json `companion.forms`) before she walks with the player. |
 | exit `ledger` | 恩仇簿 entries a choice writes: `{who, kind: 恩\|仇, what}` — once each. |
 | exit `joins` · `sleeps` · `wakes` | 银月 found by the story (`companion.joined` + `awake`), asleep in the fox token (`asleep`), woken for a beat. |
@@ -788,7 +788,7 @@ and what the player does in the world comes back into the story.
 | Mode | What the player can do | When |
 |---|---|---|
 | **开放** — open world | Walk the map, take errands, fight, tame, play the boards, rest | Between key beats — most of the time |
-| **剧情** — story lock | The map is shut (roads refuse, the map card greys with one line why); the stage runs the beat's panels, fights, boards; Ling tells the story in the chat | A key beat, from its first scene to its last; then the map opens again, often wider |
+| **剧情** — story lock | The map is shut (roads refuse, the map card greys with one line why); the stage runs the beat's scene cards, fights, boards; Ling tells the story in the chat | A key beat, from its first scene to its last; then the map opens again, often wider |
 
 A chapter declares its key beats; entering one sets `state.lock = {beat, since}`, finishing it clears
 it. A beat is short (a few scenes) — the lock is never where the player lives.
@@ -825,8 +825,8 @@ the player's own novel.
 - **Ling ties it**: off-path deeds are folded into the story she tells, the 前情提要 and the 九鼎录
   (the player's own novel, read back from the start).
 
-**The screens (小人书, his ruling the same day).** The stage never holds the novel's prose: it is a
-连环画 — one painted panel per beat with 2–4 lines of caption (scene, task, creature), plus fights,
+**The screens (小人书, his ruling the same day; the pictures went to the 图鉴 2026-09-29 — § 图鉴).** The stage never holds the novel's prose: it is a
+scene card per beat with 2–4 lines of caption (scene, task, creature), plus fights,
 boards and choices. The chat carries the story: Ling tells each beat's authored `story` passage closely,
 adapted to the player's choices, name and gender, and writes live only for off-script actions, in the
 same voice.
@@ -854,11 +854,11 @@ His ask: 「让玩家 say wow」. Borrowed from 原神 where it fits, and the tw
 
 1. **鼎归 · 地图晕开** (原神's 七天神像): a 鼎 taken home spreads its 州 across the 行路 map like ink on 宣纸; the 九州 water rises an inch — 「每一处水上一轮月」. **Built 2026-09-29** (rules/inkmap.mjs, scripts/inkmap.js/.css): each province is **mist** (never walked, or shut by the chapter's map — a locked province is always mist), **wash** (walked: `state.been`, here, scenes passed) or **ink** (its 鼎 home: the chapter holding it ended) with rivers, a red seal 「X州 · 鼎归」 and a moon on its water — drawn from the map file's own paths (world.json `atlas.shapes`), no raster. The atlas verb carries `ink`; Look carries `jiuding` {homed, of} (never Ling's). **The moment** (page-owned stage kind `homing`, ranked in MAIN after 银月's memory, after the 新章 seal): the view closes in, an ink drop falls where the 鼎 was found and spreads (mask circle + feTurbulence/feDisplacementMap, clipped to the province), the rivers draw themselves, the seal thuds, 「九州的水涨了一寸」 — every water ripples, a moon on each province home; 「九鼎 · 一／九」; ~7.4 s, tap to skip; reduced motion = the last frame. **御剑** (`fly`, the map card's button on a tapped province): straight to the 鼎's place for 1 体力; refused not-home, locked, corridor, fight, 闭关, no 体力. A tapped province shows its 鼎's line and 「银月的记忆 ›」 (录). **卷轴** (`unrollHtml`): a chapter declaring `unroll` (第三章 · 下山) unrolls the whole map once (`unrolled` marks it); previewed with `?save=test&unroll=1`.
 2. **大场面** (原神's 魔神任务): one per chapter at most — the main slot takes the whole stage (漳水站起来, 冰夷 on two dragons, the furnace flying, 九宫归位); the picture shakes, 银月 looks up.
-3. **银月的记忆是彩色的** (原神's lost sibling): everything is ink; only her memories are painted in colour — one tail, one memory, one colour 小人书 panel (青丘, the heavenly war, 「天下，该归于一」). **Built 2026-09-29** — § ③ below.
-4. **山海经 图录** (原神's 图鉴): each creature met fills a 1597-woodcut page with its 山海经 line; a finished 经 opens as a readable picture book.
+3. **银月的记忆是彩色的** (原神's lost sibling): everything is ink; only her memories are painted in colour — one tail, one memory, one colour picture (青丘, the heavenly war, 「天下，该归于一」). **Built 2026-09-29** — § ③ below.
+4. **山海经 图录** (原神's 图鉴): each creature met fills its page in 录's 图鉴 with its 山海经 line (built with § 图鉴: empty slots for the unmet); a finished 经 opening as a readable picture book is later.
 5. **世界记得你** (AI only): Ling remembers what the player said weeks ago; at the finale a person helped in 第一章 stands beside them and repeats their words. **Built 2026-09-29** (rules/ledger.mjs): a 簿 entry is `{who, kind: 恩|仇|诺, what, said, chapter, day, at}` in the save (cloud with it, reset with the beta; never ling-mem). `said` is the player's words, verbatim, ≤30 characters. Ling writes through **Remember** (`keep`/`break` settle a 诺); the rules refuse an unknown person, a second entry for one person in one scene, and any quote not in what the player typed — the engine's `LINGGEN_USER_WORDS` (their last 8 messages; absent on the page's calls → refused). Authored exits: `ledger[].said: true` keeps the last typed line; `settles` marks a 诺. Look hands Ling only the people present and open 诺; scene text fills `{恩人}` `{仇人}` `{恩人·said}` `{仇人·said}`; the 恩 chip shows 「『…』 —— 你对X说 · 章」. Guide `tell`: real moments only, never to mock, one callback a chapter.
 6. **真实世界进游戏** (AI + host only): festivals and the day's weather — see the next section. Real steps (Health) → 行路 is later.
-7. **你自己的小人书**: each chapter's end prints the player's own chapter — their name, choices, lines, panels — to shelve and share.
+7. **你自己的小人书**: each chapter's end prints the player's own chapter — their name, choices, lines, 图鉴 cards — to shelve and share.
 
 Not borrowed: gacha. Paid draws go against 「欠饼还饼」.
 
@@ -888,7 +888,7 @@ tails → eight colour memories; the finale is the ninth and turns the whole ink
   nothing of the rest. State: `memories` [n…], `memory_last` {n, at}, `fragments` [id…], `colour`.
 - **Presentation** (memory.js, memory.css). The memory takes the main slot (stage.mjs MAIN's first rank, page-owned):
   one colour picture comes in as grey ink and blooms to full colour over ~4 s (a CSS filter, grayscale + sepia →
-  none); reduced motion shows the colour at once. 1–3 panels, her own short lines under each; nothing else on screen.
+  none); reduced motion shows the colour at once. ONE picture a memory (his, 2026-09-29: 「银月一章一图就好」), one to three of her own short lines under it; nothing else on screen.
   Ling is silent: the chat gets one line, 「木牌亮了第X条尾巴。」 (the result's `say`; guide `tell`; a page tap hands
   it to her in `page_did`). A redraw carries the bloom on from its age, never restarts it.
 - **Style.** 工笔重彩 in 敦煌 mural colours — 石绿, 朱砂, 石青, 金 — against the game's ink 白描. **Nothing else may be in
@@ -897,7 +897,7 @@ tails → eight colour memories; the finale is the ninth and turns the whole ink
   exception, still hers:** a fragment — an ink picture where ONE thing is in colour.
 - **Album 「银月的记忆」** in the 录 book (lu.js; the rules' `story` → `album`): eight frames lit one by one; a dark frame
   shows only a tail's outline; tap a lit one to replay it. The beta shows eight empty frames — the teaser.
-- **Book.** `::: 忆 <n>[.<k>] [caption]` is memory n's panel k as a colour plate (read-md.js; read.js resolves it from
+- **Book.** `::: 忆 <n> [caption]` is memory n's one colour plate (read-md.js; read.js resolves it from
   memories.json; an unpainted one is left out). 第二章 carries memory 1 where the second tail lights, and its voice
   where she hears the words again.
 - **Fragments** (the Zelda idea). A place may declare `fragment: {id, art, thing, memory?}` — art under
@@ -905,7 +905,7 @@ tails → eight colour memories; the finale is the ninth and turns the whole ink
   once; the album adds 「好像……在哪里见过」. Placed from 第三章 on (the whole map); none yet.
 - **Finale.** The ninth memory carries `colour`: granting it sets `state.colour`, Look's `memories.colour`, and the
   page puts `html.colour` on — the ink filter comes off every picture at once (a 2.4 s transition). Tested on a
-  scratch save; it reaches players when the 终章 exists. The full-colour look of the ordinary panels is the finale's
+  scratch save; it reaches players when the 终章 exists. The full-colour look of the ordinary pictures is the finale's
   own art task (today they are ink with a light wash, so the switch shows that wash, saturated).
 
 **To paint (memories 2–8; not yet).** tools/paint-memories.py, the prologue's local FLUX recipe; her words: *a young
@@ -938,13 +938,29 @@ words; check every picture for fake characters and re-roll. Drafts:
 **节日** — the player's real calendar, reckoned locally (no network):
 - Chinese: 春节 · 除夕 · 元宵 · 端午 · 七夕 · 中秋 · 重阳 · 腊八, and the 二十四节气. International: 元旦 (New Year) · 圣诞 (Christmas). Lunar dates by table, 节气 by formula, on the player's local date.
 - Only on the real day (a 除夕–元宵-style span where the custom is one) — rare is what makes it special (原神's 海灯节).
-- Each festival is one data entry in the world: stage dressing (春联 and lanterns on the 小人书 frame; a light particle layer — firecracker sparks, snow for 圣诞), Ling's opening line for the day, one festival task (贴春联, 和阿禾包饺子), a small gift (压岁钱 灵石), 银月's greeting (「凡人的节，本王也吃」). A new festival is a new entry, not code.
+- Each festival is one data entry in the world: stage dressing (春联 and lanterns on the stage frame; a light particle layer — firecracker sparks, snow for 圣诞), Ling's opening line for the day, one festival task (贴春联, 和阿禾包饺子), a small gift (压岁钱 灵石), 银月's greeting (「凡人的节，本王也吃」). A new festival is a new entry, not code.
 - 圣诞 and 元旦 live in the frame (dressing, greetings, a small gift), told in-world with a wink — a 西域胡商's feast day — never as 道统 lore.
 
 **天气** — the day's weather at the player's city:
 - A skill never goes online itself (skills don't phone home). The engine offers a general **weather** sense any skill can declare: city-level current weather from a keyless public service, off by the player's choice.
 - **The city is set once** by the player (a row on the 名字 card) — no location permission, private, the same on the phone. No city → 蒙山's seasons (snow in winter all the same).
-- Drawn as a layer over the stage (snow · rain · fog), snow on the 小人书 panels too; Ling says it once when it changes (「石坳村也下雪了」); small comic ties (the leaky roof drips on rainy days; 小狰 hates snow). Weather never makes the game harder — at most a small texture (fewer herbs on snow days).
+- Drawn as a layer over the stage (snow · rain · fog), snow on the stage's pictures too; Ling says it once when it changes (「石坳村也下雪了」); small comic ties (the leaky roof drips on rainy days; 小狰 hates snow). Weather never makes the game harder — at most a small texture (fewer herbs on snow days).
+
+## 画面效果 — PixiJS + GSAP (his, 2026-09-29; the map is the pilot)
+
+**The split.** The page stays web UI (chat, cards, buttons, the book, every word). **PixiJS** (WebGL 2D) paints what must
+be *drawn*: ink wicking into rice paper, paper grain, particles, ink blooming into colour. **GSAP** choreographs a moment
+on one timeline (drop → spread → rivers → seal → moon). Web UI is the stage and the lines; Pixi the painter; GSAP the director.
+
+**Where, in order.** 1 鼎归 · 地图晕开 (pilot) · 2 银月's colour memories (ink → colour in WebGL) · 3 festival and weather
+particles (snow, rain, fog, sparks) · 4 each chapter's big set piece (漳水倒立, 九宫归位) · 5 chapter transitions (the page
+dissolves into ink and gathers again). **Not** for chat, cards, buttons, book text, or 图鉴 pictures.
+
+**Rules.** Loaded only when a moment or the map opens; one canvas per moment, destroyed when it ends (never fighting the
+pet stage's three.js). Words are never painted into the canvas — they stay DOM/SVG above it, sharp and translatable.
+No WebGL → the SVG/CSS version. One small module (`fx.js`: ink spread, snow, colour bloom…) that every surface calls,
+so the look stays one. Both libraries vendored in the skill at pinned versions (no CDN; skills don't phone home);
+~0.7 MB together against an 18 MB game — the size risk is pictures, so every picture ships as WebP under a size cap.
 
 ## Player state
 
@@ -1426,12 +1442,42 @@ His direction, in order: *开放世界RPG都是一个套路…参考魔兽世界
 
 Superseded; the original is in archive.md. The card fight (`## 斗法 v3`) and `## Systems built 2026-09-21 → 24` hold what is true now.
 
-## 小人书 — the prologue as built (2026-09-28)
+## 图鉴 — the one picture system (his, 2026-09-29: 「不用小人书的方式了，图片作为图鉴，展示人物、生物、物品、武功、经脉、穴位等。银月一章一图就好。」)
 
-Built from story/huxian-bing/notes/prologue-1-source.md and prologue-2-source.md
-(the order of structure.md): 27 scenes in `00-prologue`, one painted panel each
-(art/panels/, the local FLUX recipe, tools/paint-prologue.py), the passage in
-`story`. The page draws the panel first on the stage with its choices under
+- **The rule.** A picture shows what the reader does not know; the plot is never illustrated. **The hero is never
+  drawn** (a boy or a girl — no picture can follow that). Why: an audit of the 28 FLUX 小人书 panels found 23 wrong
+  (Western houses, a wolf-sized fox, the hero drawn as a toddler or a teen, seams, fake text).
+- **One codex, the book and the game.** `worlds/<world>/codex.json` (notes.json folded in) resolved by
+  `scripts/codex.js`: one entry per subject — id, kind, name, one to three lines, picture, credit, source (a
+  `scan` is its 「原图」), `marks`, `first` {book: chapter id, scene}. People, creatures, items and arts are
+  LINKED from people.json · creatures.json · items.json · arts.json (every row an entry; codex.json only adds:
+  `first`, `image: null` to refuse a bad picture — a clean name card stands instead — `by_hero` for 阿禾, whose
+  two portraits follow the hero's gender like the address words). One renderer (`codexHtml`) and one stylesheet
+  (`codex.css`) draw it everywhere; the rules deal in ids (rules/codex.mjs); pictures live under the world.
+- **Kinds.** 人物 · 生物 · 物品 · 武功 (a card: portrait at ~40% beside its words, stacked on a phone) and
+  knowledge — 经脉 · 穴位 · 洛书 · 五行 … (a figure, full width, animated).
+- **First appearance.** The book writes `[words]{注=id}`: a subject's card sits after the paragraph of its first
+  appearance (`first.book`, tested against the book's order), later mentions are a dotted link that opens the
+  card; a knowledge figure sits under every paragraph that names it. The game: a scene's people, 银月's form and
+  every entry whose `first.scene` it is are `scene.meet` while none was met before (read off `done_scenes`, the
+  bag and the fights — nothing new in the save); the page puts their 图鉴 cards (`meet`, page-owned) in the main
+  slot before the scene card, as one thing with it. The scene card is words only: place, caption, choices. The
+  header's people strip keeps a portrait where the 图鉴 has a good one, else a name card. Ling may Show an entry
+  (`{card: "codex", id}`). 录 has a 「图鉴」 section: met entries by kind, empty slots for the unmet (哇时刻 ④).
+- **Pictures.** Portraits, creatures and things are painted by Codex CLI's image tool (his pick after the
+  2026-09-29 bake-off of local FLUX · Gemini · Codex; the Gemini key had no image quota): `tools/paint-codex.py`,
+  one house style — fine ink 白描 with a soft grey wash on warm aged paper, one subject, no text — every
+  picture checked by eye and re-rolled until right. 山海经 creatures are painted from their own classical line
+  with every countable feature spelled out; the old woodcut stays as the entry's 「原图」 (`art_plate`).
+  **Knowledge figures are never painted:** SVG on one base set, a mannequin after the 宋天圣针灸铜人
+  (`tools/mannequin.py`: profile · back · front, no face, no text), every label, point and channel our own
+  `marks` in large simplified Chinese — 三关 on the profile: the passes light up the 督脉 (尾闾 → 夹脊 → 玉枕),
+  then the 任脉 runs down the front through the three 丹田 (one 小周天). The plates they follow
+  (《性命圭旨》) are credited, the scan a tap away.
+- **银月: one colour picture per chapter**, at her memory (§ 哇时刻 ③; memories.json `art`, the lint wants one).
+
+The prologue itself (built 2026-09-28): 27 scenes in `00-prologue`, the passage in
+`story`. The page draws the scene card first on the stage with its choices under
 it; a tap Resolves the exit on the page and sends `[scene] took <choice>`; the
 rules keep what Ling is owed (`tell_owed`, `told_scenes`) and hand it to her
 Look or Resolve once (`tell`, with guide `tell`). 银月 joins at the valley's
