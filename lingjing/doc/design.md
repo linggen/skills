@@ -852,7 +852,7 @@ with one in-world line. The beta ships through 第一章, so the other eight pro
 
 His ask: 「让玩家 say wow」. Borrowed from 原神 where it fits, and the two only an AI game can do. His order of value: **5 > 3 > 1 > 7 > 6 > 2 > 4**.
 
-1. **鼎归 · 地图晕开** (原神's 七天神像): a 鼎 taken home spreads its 州 across the 行路 map like ink on 宣纸; the 九州 water rises an inch — 「每一处水上一轮月」.
+1. **鼎归 · 地图晕开** (原神's 七天神像): a 鼎 taken home spreads its 州 across the 行路 map like ink on 宣纸; the 九州 water rises an inch — 「每一处水上一轮月」. **Built 2026-09-29** (rules/inkmap.mjs, scripts/inkmap.js/.css): each province is **mist** (never walked, or shut by the chapter's map — a locked province is always mist), **wash** (walked: `state.been`, here, scenes passed) or **ink** (its 鼎 home: the chapter holding it ended) with rivers, a red seal 「X州 · 鼎归」 and a moon on its water — drawn from the map file's own paths (world.json `atlas.shapes`), no raster. The atlas verb carries `ink`; Look carries `jiuding` {homed, of} (never Ling's). **The moment** (page-owned stage kind `homing`, ranked in MAIN after 银月's memory, after the 新章 seal): the view closes in, an ink drop falls where the 鼎 was found and spreads (mask circle + feTurbulence/feDisplacementMap, clipped to the province), the rivers draw themselves, the seal thuds, 「九州的水涨了一寸」 — every water ripples, a moon on each province home; 「九鼎 · 一／九」; ~7.4 s, tap to skip; reduced motion = the last frame. **御剑** (`fly`, the map card's button on a tapped province): straight to the 鼎's place for 1 体力; refused not-home, locked, corridor, fight, 闭关, no 体力. A tapped province shows its 鼎's line and 「银月的记忆 ›」 (录). **卷轴** (`unrollHtml`): a chapter declaring `unroll` (第三章 · 下山) unrolls the whole map once (`unrolled` marks it); previewed with `?save=test&unroll=1`.
 2. **大场面** (原神's 魔神任务): one per chapter at most — the main slot takes the whole stage (漳水站起来, 冰夷 on two dragons, the furnace flying, 九宫归位); the picture shakes, 银月 looks up.
 3. **银月的记忆是彩色的** (原神's lost sibling): everything is ink; only her memories are painted in colour — one tail, one memory, one colour 小人书 panel (青丘, the heavenly war, 「天下，该归于一」). **Built 2026-09-29** — § ③ below.
 4. **山海经 图录** (原神's 图鉴): each creature met fills a 1597-woodcut page with its 山海经 line; a finished 经 opens as a readable picture book.
@@ -2304,6 +2304,8 @@ Establishment, Core Formation, Nascent Soul).
   picture.
 - **A playthrough without a model**: the prologue driven by exit ids alone,
   asserting the state at the end.
+- **Live checks use a scratch save** (`?save=test`, rules `--save=test` → data/saves/test/; `&seed=fresh|real|<fixture>`
+  from tests/fixtures/saves/): the page never opens Ling's chat or tells 银月, and the player's save is never touched.
 
 ## Build order
 
