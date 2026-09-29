@@ -40,7 +40,7 @@ export function withTold(reading, tell, scene) {
   const fresh = (tell ?? []).filter((t) => beatsOf(t, 'zh').length || beatsOf(t, 'en').length).map(({ of, id, beats }) => ({ of, id, beats }));
   if (!fresh.length) return reading;
   const at = scene ?? null;
-  const again = fresh.some((t) => t.of === 'scene' && t.id === at);
+  const again = reading?.scene === at && fresh.some((t) => t.of === 'scene' && t.id === at);
   if (reading?.items && reading.scene === at && !again) {
     const open = reading.items.length && !reading.closed;
     return { ...reading, items: [...reading.items, ...fresh], ...(open ? {} : { i: reading.items.length, j: 0 }), closed: false };
