@@ -717,6 +717,14 @@ function wonOver(beasts) {
   chip.parentElement.appendChild(gain);
   setTimeout(() => gain.remove(), 2400);
 }
+/// Where a gain's count stands `age` ms in: eased from → to over RISE_MS, and
+/// the landed number once its time is up. The last frame always writes it: a
+/// hidden tab draws no frames, and the strip — redrawn only when its HTML
+/// changes — kept 36/60 · 灵石 6 over a save at 55 · 25 (live, 2026-09-29).
+function riseValue(r, age, still) {
+  const k = still || age >= RISE_MS ? 1 : Math.max(0, age / RISE_MS), eased = 1 - (1 - k) ** 3;
+  return { k, value: Math.round(r.from + (r.to - r.from) * eased) };
+}
 let riseFrame = null;
 function paintRise() {
   if (riseFrame) cancelAnimationFrame(riseFrame);
@@ -724,15 +732,14 @@ function paintRise() {
   const t = performance.now();
   for (const [key, r] of rising) {
     const el = document.querySelector(`[data-count="${key}"]`), age = t - r.start;
-    if (age > GAIN_MS) { rising.delete(key); el?.classList.remove('rising'); continue; }
-    if (!el) continue;
-    const k = still ? 1 : Math.min(1, age / RISE_MS), eased = 1 - (1 - k) ** 3;
-    const value = Math.round(r.from + (r.to - r.from) * eased);
+    if (!el) { if (age > GAIN_MS) rising.delete(key); continue; }
+    const { k, value } = riseValue(r, age, still);
     el.textContent = String(value);
     el.classList.toggle('rising', k < 1);
     // The bar fills with the number, not ahead of it.
     const bar = key === 'progress' && r.next ? document.querySelector('.status .xw .bar i') : null;
     if (bar) bar.style.width = `${Math.min(100, (value / r.next) * 100)}%`;
+    if (age > GAIN_MS) { rising.delete(key); continue; }
     // The gain floats off the number; redrawn, it picks up where it was.
     if (!el.parentElement.querySelector(`.gain[data-for="${key}"]`)) {
       const gain = document.createElement('span');
