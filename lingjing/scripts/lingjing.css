@@ -864,6 +864,11 @@ body.reading .view, body.reading .tray { display: none; }
 .ledgerkind { flex: none; min-width: 26px; height: 26px; padding: 0 5px; font-size: 12px; display: grid; place-content: center; border-radius: 6px; font-family: var(--serif); font-weight: 600; border: 1px solid var(--line); }
 .ledgerrow.chou .ledgerkind { color: var(--seal); border-color: var(--seal); background: var(--seal-soft); }
 .ledgerrow.en .ledgerkind { color: var(--ling); border-color: var(--ling); }
+.ledgerrow.nuo .ledgerkind { color: var(--text); border-style: dashed; }
+.ledgersaid { margin-top: 4px; font-family: var(--serif); line-height: 1.5; }
+.ledgerkept { font-size: 11px; padding: 0 5px; border-radius: 4px; border: 1px solid var(--line); }
+.ledgerkept.kept { color: var(--jade); border-color: var(--jade); }
+.ledgerkept.broken { color: var(--seal); border-color: var(--seal); }
 
 /* 书 — the novel's reader, a link beside 录 */
 a.readchip { text-decoration: none; display: inline-block; }

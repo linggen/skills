@@ -98,8 +98,28 @@ export function personOf(content, state, who) {
    the temple addresses them, by gender) and every other people.json `address`
    word (the companion's unnamed cameos), {伴} (the companion's name) and
    {灵根} (the roots, by how many) and {主亮} (the stone's brightest colour, the
-   root that leads — a sentence, or nothing). A word that comes out empty takes
+   root that leads — a sentence, or nothing), and the 恩仇簿's {恩人} · {仇人}
+   and their {…·said} (ledgerWords). A word that comes out empty takes
    one space beside it along, so an English line never shows a double space. */
+/* The 恩仇簿 in a scene's words (哇时刻 5): {恩人} the one the player owes
+   most kindness, {仇人} the one who wronged them most (ties: the first
+   written), and {恩人·said} / {仇人·said} the player's own last words kept
+   with them, in their quote marks — each empty, and so gone, when the 簿 has none. */
+function ledgerWords(content, state, lang) {
+  const rows = state?.ledger ?? [];
+  const top = kind => {
+    const n = new Map();
+    for (const e of rows) if (e.kind === kind) n.set(e.who, (n.get(e.who) ?? 0) + 1);
+    return [...n].reduce((best, x) => (!best || x[1] > best[1] ? x : best), null)?.[0] ?? null;
+  };
+  const nameOf = who => (who ? pick(personOf(content, state, who)?.name ?? content.creatures?.creatures?.find(c => c.id === who)?.name, lang) ?? '' : '');
+  // The quote comes in its own marks, so a 簿 without one leaves no empty 「」 behind.
+  const said = who => (who ? rows.filter(e => e.who === who && e.said).at(-1)?.said : null);
+  const saidTo = who => (said(who) ? (lang === 'en' ? `"${said(who)}"` : `「${said(who)}」`) : '');
+  const en = top('恩'), chou = top('仇');
+  return { '{恩人}': nameOf(en), '{恩人·said}': saidTo(en), '{仇人}': nameOf(chou), '{仇人·said}': saidTo(chou) };
+}
+
 /* The stone's brightest colour — the root that leads a five-root save — as
    one sentence, or nothing when the five read even. */
 function brightest(content, state, lang) {
@@ -119,6 +139,7 @@ export function fill(text, state, content = null) {
     ...Object.fromEntries(Object.entries(content.people?.address ?? {}).map(([k, v]) => [`{${k}}`, pick(v?.[genderOf(state)], lang) ?? ''])),
     '{灵根}': state?.traits?.length ? pick(content.traits.names[String(state.traits.length)], lang) ?? '' : '',
     '{主亮}': brightest(content, state, lang),
+    ...ledgerWords(content, state, lang),
   };
   for (const [key, word] of Object.entries(words)) {
     out = word ? out.replaceAll(key, word) : out.replaceAll(` ${key}`, '').replaceAll(`${key} `, '').replaceAll(key, '');

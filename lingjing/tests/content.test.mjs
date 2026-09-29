@@ -83,7 +83,7 @@ test('every prologue scene is a 连环画 beat: a panel on disk, a caption of tw
   assert.ok(has(problems, 'panel art art/panels/nothing.webp is missing'));
   assert.ok(has(problems, 'a panel caption is two to four lines in en'));
   assert.ok(has(problems, 'do not pair'));
-  assert.ok(has(problems, 'a ledger entry is 恩 or 仇'));
+  assert.ok(has(problems, 'a ledger entry is 恩, 仇 or 诺'));
   assert.ok(has(problems, 'a ledger entry names unknown person nobody'));
 });
 

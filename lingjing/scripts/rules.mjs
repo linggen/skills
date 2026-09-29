@@ -11,7 +11,7 @@
 // it again — or another with `--world` — and logs the save it replaces. `build` and
 // `travel` switch worlds: the save in play is parked under data/saves/ and
 // the other world's is restored, or begun.
-// Env: LINGJING_DATA, LINGJING_QUESTS, LINGJING_NOW; LINGGEN_USER_TURNS from the engine.
+// Env: LINGJING_DATA, LINGJING_QUESTS, LINGJING_NOW; LINGGEN_USER_TURNS and LINGGEN_USER_WORDS from the engine.
 //
 // The verbs live in rules/, one file per part of the game (world, errands,
 // cards, travel …); this file is their one door — every export Ling's tools,
@@ -25,7 +25,7 @@ import { askOf, tapThen, THEN_RECAP, THEN_TELL, withAsk } from './rules/ask.mjs'
 import { guard, onLook, unconfirmed } from './rules/confirm.mjs';
 import { markSeen, notePage, READS_PAGE, unseen } from './rules/did.mjs';
 import { pageNames, pageThrows } from './rules/core.mjs';
-import { clock, dataDir, freshState, parseArgs, readQuests, savedFile, savedFor, userTurn, withLock, writeAtomic } from './rules/files.mjs';
+import { clock, dataDir, freshState, parseArgs, readQuests, savedFile, savedFor, userTurn, userWords, withLock, writeAtomic } from './rules/files.mjs';
 import { look, stageAt } from './rules/look.mjs';
 import { closeStaleFight, fightHold } from './rules/tasks.mjs';
 import { seclusionHold } from './rules/seclusion.mjs';
@@ -43,6 +43,7 @@ export { askOf, tapThen, thenFor } from './rules/ask.mjs';
 export { deck, deckFor, fightSetup, hpMaxOf, ownedCards } from './rules/cards.mjs';
 export { hasCompanion } from './rules/companion.mjs';
 export { judge, pageNames, pageThrows, resolve, riddleOf } from './rules/core.mjs';
+export { heardOf, openPromises, remember, settlePromise, writeLedger } from './rules/ledger.mjs';
 export { oddsOf, rollOf } from './rules/breakthrough.mjs';
 export { greet } from './rules/daily.mjs';
 export { advance, BOOK_MAX } from './rules/errands.mjs';
@@ -144,7 +145,8 @@ function runLocked(verb, args, stateFile, reader) {
   const theirs = reader === 'ling' && verb === 'resolve' ? pageNames(content, state, args) ?? pageThrows(content, state, { ...args, now }) : null;
   if (theirs) return theirs;
   const heard = heed(state, args.said);
-  const out = fn(heard, content, { now, quests: readQuests(), turn: userTurn(), said: args.said }, args);
+  // The player's typed words reach only Ling's calls: a quote from the page is never trusted (rules/ledger.mjs).
+  const out = fn(heard, content, { now, quests: readQuests(), turn: userTurn(), said: args.said, words: reader === 'ling' ? userWords() : null }, args);
   if (out.result?.load) return loadSave(out.result.load, state, { stateFile, logFile, now });
   // Forget answered: the asking is used up (Load's is, with the save it replaces).
   if (verb === 'forget' && out.result?.ok && state.confirm) writeAtomic(stateFile, JSON.stringify(unconfirmed(state)));
@@ -324,6 +326,12 @@ export function forLing(value) {
     // was dropped by the line above until 2026-09-28 (a string named story).
     if (k === 'guide' && v && typeof v === 'object') { out.guide = v; continue; }
     if (k === 'story_node') continue; // the page's moment; Ling has the node on the move's own result
+    // 恩仇簿: the page draws it all; Ling holds only the people present and the open 诺 (Look's `here`).
+    if (k === 'ledger' && Array.isArray(v) && v.some(r => r && 'here' in r)) {
+      const here = v.filter(r => r.here).map(({ here: _, who, day, by, ...r }) => r);
+      if (here.length) out.ledger = here;
+      continue;
+    }
     // A 连环画 panel is the page's picture and caption: she tells the story, never the picture.
     if (k === 'panel') continue;
     // Her beat is hers: Ling learns only that she speaks here and what happened —

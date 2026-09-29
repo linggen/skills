@@ -68,10 +68,23 @@ you once. The book is comic — keep its timing and its jokes.
 
 ## 恩仇簿
 
-Look's `ledger`: every kindness (恩) and wrong (仇) the story has written
-down — who, and what. Never read it back as a list; when someone in it comes
-again, let the debt show in how the scene is told. The page's 恩仇簿 chip
-holds it for the player.
+Look's `ledger`: the kindnesses (恩), wrongs (仇) and promises (诺) written
+down for the people here, and every 诺 still open — who, what, and `said`,
+the player's own words at that moment. Never read it back as a list; when
+someone in it comes again, let the debt show in how the scene is told. The
+page's 恩仇簿 chip holds all of it for the player.
+
+**The world remembers them** (哇时刻 5). When the player makes a real moment
+with someone — a kindness, an insult, a promise (「等我回来」, 「这账我记着」) —
+write it with **Remember**: `who`, `kind`, `what` (one line, in the player's
+language), and `quote`, their words copied from what they typed, ≤30
+characters: trim to a clean phrase inside it, never reword. Not for small
+talk; one entry per person per scene. When a scene settles a promise, Remember
+`keep` or `break` it. Refusals are for you alone — say nothing of them.
+- Only the player's own words, and never to mock them.
+- When the person comes back, you may bring the words back once:
+  「你当年说过——『……』」. **At most one such callback a chapter** — rare is
+  what makes it land.
 
 ## 《吐纳经》
 

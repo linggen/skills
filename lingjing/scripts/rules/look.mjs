@@ -19,7 +19,8 @@ import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
 import { kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
 import { gameLevel, hostedHere, lundaoBrief, reopened } from './tasks.mjs';
 import { hashOf } from './travel.mjs';
-import { atScene, creatureOf, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
+import { atScene, creatureOf, encounterOf, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
+import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
 import { practiceHint } from './scrolls.mjs';
 import { mainRoot, rootName } from './roots.mjs';
@@ -88,12 +89,26 @@ function panelOf(content, state, scene, buttons) {
   return { art: scene.panel.art, caption: (scene.panel.caption?.[state.lang] ?? scene.panel.caption?.zh ?? []).map(l => fill(l, state, content)), taps };
 }
 
-/* 恩仇簿 as Look tells it: who, 恩 or 仇, what — oldest first, in the player's language. */
-function ledgerOf(content, state) {
+/* 恩仇簿 as Look tells it: who, 恩 · 仇 · 诺, what, the player's own words,
+   when — oldest first, in the player's language. The page draws every entry;
+   `here` marks what Ling is handed (forLing): the people present, and every
+   promise still open (哇时刻 5 — so the words come back when they do). */
+function ledgerOf(content, state, now = new Date()) {
+  const present = presentOf(content, state, now);
   return (state.ledger ?? []).map(e => ({
-    who: e.who, name: pick(personOf(content, state, e.who)?.name ?? CAST[e.who], state.lang) ?? e.who,
-    kind: e.kind, what: pick(e.what, state.lang), chapter: pick(content.chapters[e.chapter]?.title, state.lang) ?? null,
+    ...rowOf(content, state, e), ...(e.day ? { day: e.day } : {}), ...(e.by ? { by: e.by } : {}),
+    here: present.has(e.who) || (e.kind === '诺' && e.kept == null),
   }));
+}
+
+/* Who stands here: the scene's people, the companion at the player's side,
+   the beast of the place. */
+function presentOf(content, state, now) {
+  const ids = new Set(atScene(content, state) ? peopleIn(content, state, sceneOf(content, state)).map(p => p.id) : []);
+  if (hasCompanion(state)) ids.add(companionOf(content).id);
+  const beast = !atScene(content, state) ? encounterOf(content, state, now)?.creature?.id : null;
+  if (beast) ids.add(beast);
+  return ids;
 }
 
 /* A made world is read by its map: its scenes stand at places, so their
@@ -304,7 +319,7 @@ export function look(state, content, ctx) {
     ...(state.marks?.length ? { marks: state.marks } : {}),
     ...(state.appeared?.length ? { appeared: state.appeared } : {}),
     // 恩仇簿: every debt the story has written down, good and bad.
-    ...(state.ledger?.length ? { ledger: ledgerOf(content, state) } : {}),
+    ...(state.ledger?.length ? { ledger: ledgerOf(content, state, ctx.now) } : {}),
     // The day's 功课 from the scroll in the bag (《吐纳经》, rules/scrolls.mjs).
     ...(practiceHint(content, state) ? { practice_hint: practiceHint(content, state) } : {}),
     world: worldBrief(content, lang),

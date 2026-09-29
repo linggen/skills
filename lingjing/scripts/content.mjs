@@ -974,12 +974,19 @@ function lintExit(where, exit, chapter, content, ids, speakers, bad) {
   if (exit.take?.wealth != null && !(Number.isInteger(exit.take.wealth) && exit.take.wealth > 0 && exit.needs?.wealth >= exit.take.wealth)) bad(where, 'takes stones it never checks for');
   if (exit.needs?.wealth != null && !(Number.isInteger(exit.needs.wealth) && exit.needs.wealth > 0)) bad(where, 'needs a whole number of stones');
   lintStory(where, exit.story, bad);
-  // 恩仇簿: who (a person or a slot), 恩 or 仇, and what, in both languages.
+  // 恩仇簿: who (a person or a slot), 恩 · 仇 · 诺, and what, in both languages;
+  // `said: true` keeps the player's last typed line with it (rules/ledger.mjs).
+  // `settles` marks a 诺 to that person kept (or `kept: false`, broken).
   const persons = new Set(peopleIds(content));
   for (const e of exit.ledger ?? []) {
     if (!persons.has(e?.who)) bad(where, `a ledger entry names unknown person ${e?.who}`);
-    if (!['恩', '仇'].includes(e?.kind)) bad(where, 'a ledger entry is 恩 or 仇');
+    if (!['恩', '仇', '诺'].includes(e?.kind)) bad(where, 'a ledger entry is 恩, 仇 or 诺');
     if (!pair(e?.what)) bad(where, 'a ledger entry needs what, zh and en');
+    if (e?.said != null && e.said !== true) bad(where, 'a ledger entry\'s said is true');
+  }
+  for (const x of exit.settles ?? []) {
+    if (!persons.has(x?.who)) bad(where, `settles names unknown person ${x?.who}`);
+    if (x?.kept != null && typeof x.kept !== 'boolean') bad(where, 'settles kept is true or false');
   }
   if (exit.joins != null && (exit.joins !== true || !content.world.companion)) bad(where, 'joins is true, in a world with a companion');
   for (const k of ['sleeps', 'wakes']) if (exit[k] != null && (exit[k] !== true || !content.world.companion)) bad(where, `${k} is true, in a world with a companion`);

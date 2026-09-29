@@ -46,6 +46,15 @@ const clock = () => (process.env.LINGJING_NOW ? new Date(process.env.LINGJING_NO
 /* How many messages the player has sent this session, the engine's count
    (LINGGEN_USER_TURNS); null on an engine that does not say. */
 const userTurn = () => (/^\d+$/.test(process.env.LINGGEN_USER_TURNS ?? '') ? Number(process.env.LINGGEN_USER_TURNS) : null);
+/* What the player typed lately, as the engine saw it (LINGGEN_USER_WORDS, a
+   JSON array, newest last) — the only witness a quote in the 恩仇簿 is checked
+   against (rules/ledger.mjs); null when the engine did not say. */
+const userWords = () => {
+  try {
+    const words = JSON.parse(process.env.LINGGEN_USER_WORDS ?? 'null');
+    return Array.isArray(words) ? words.filter(w => typeof w === 'string') : null;
+  } catch { return null; }
+};
 
 function writeAtomic(file, text) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -118,4 +127,4 @@ export function parseArgs(argv) {
   return args;
 }
 
-export { clock, dataDir, freshState, LOCK, readQuests, savedFile, savedFor, savesDir, skillDir, userTurn, withLock, writeAtomic, writeMadeWorld };
+export { clock, dataDir, freshState, LOCK, readQuests, savedFile, savedFor, savesDir, skillDir, userTurn, userWords, withLock, writeAtomic, writeMadeWorld };

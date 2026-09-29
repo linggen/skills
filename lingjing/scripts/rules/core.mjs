@@ -14,6 +14,7 @@ import { stow, storedLine } from './pouch.mjs';
 import { bornRoots, rootName, starterFor, stoneRoots } from './roots.mjs';
 import { oweExit, spanLines } from './tell.mjs';
 import { companionOf } from './companion.mjs';
+import { writeLedger } from './ledger.mjs';
 import { atScene, inMade, placeName, placeOf, provinceOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
 
 /* ── Changing it ── */
@@ -376,7 +377,7 @@ export function resolve(state, content, ctx, args) {
   // A few stones handed over (the outer court's 「公中」): a choice, never a price list.
   if (exit.take?.wealth) s.wealth = Math.max(0, s.wealth - exit.take.wealth);
   // 恩仇簿 — the debts a choice writes down, good and bad (writeLedger).
-  const wrote = writeLedger(content, s, exit);
+  const wrote = writeLedger(content, s, exit, ctx);
   // 银月 found in the story itself (prologue-v3 § 九): she walks with the player from here.
   const joined = exit.joins ? joinHer(content, s, ctx) : null;
   const rested = restHer(s, exit);
@@ -437,22 +438,6 @@ export function resolve(state, content, ctx, args) {
       summarize: Boolean(exit.next || exit.ends),
     },
   };
-}
-
-/* 恩仇簿 — his ruling (prologue-v3): the hero repays every debt once strong,
-   good or bad. An exit's `ledger` writes who and what, once each; a slot
-   (`ban`) is written as the person it stands for, and the same debt is never
-   written twice. */
-function writeLedger(content, s, exit) {
-  const out = [];
-  for (const e of exit.ledger ?? []) {
-    const who = personOf(content, s, e.who)?.id ?? e.who;
-    if ((s.ledger ?? []).some(x => x.who === who && x.what?.zh === e.what.zh)) continue;
-    const entry = { who, kind: e.kind, what: e.what, chapter: s.chapter };
-    s.ledger = [...(s.ledger ?? []), entry];
-    out.push(entry);
-  }
-  return out;
 }
 
 /* She joins by the story (an exit's `joins`), not by the bell: the same

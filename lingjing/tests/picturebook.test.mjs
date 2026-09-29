@@ -81,7 +81,7 @@ test('the command line: Ling is handed each passage once — a new game\'s first
     // Ling's own Resolve carries its passages at once
     const egg = cli('resolve', '--exit=egg', '--said=收下鸡蛋', '--for=ling');
     assert.deepEqual(egg.tell.map(t => t.id), ['00-dawn/egg', '00-kitchen']);
-    assert.deepEqual(egg.ledger, [{ who: 'ahe', kind: '恩', what: { zh: '天没亮，隔着窗塞给你一个煮鸡蛋：「记账，以后还我。」', en: 'Before dawn, pushed a boiled egg through your window: "Keep count. Pay me back."' }, chapter: '00-prologue' }]);
+    assert.deepEqual(egg.ledger, [{ who: 'ahe', kind: '恩', what: { zh: '天没亮，隔着窗塞给你一个煮鸡蛋：「记账，以后还我。」', en: 'Before dawn, pushed a boiled egg through your window: "Keep count. Pay me back."' }, chapter: '00-prologue', day: '2026-09-28', at: '00-dawn' }]);
     assert.equal(cli('look', '--for=ling').tell, undefined);
   } finally {
     fs.rmSync(data, { recursive: true, force: true });

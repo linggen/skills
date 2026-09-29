@@ -526,6 +526,37 @@ tools:
         description: One object per card, each with a `card` kind.
         items: { type: object }
 
+  - name: Remember
+    description: >-
+      恩仇簿 — write a real moment with someone (恩 · 仇 · 诺), with the
+      player's own words; or settle a 诺 (guide `tell`).
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs remember --action={{action}} --who={{who}} --kind={{kind}} --what={{what}} --quote={{quote}} --for=ling"
+    tier: edit
+    timeout_ms: 8000
+    args:
+      action:
+        type: string
+        required: false
+        description: write (the default), keep or break — keep and break settle the open 诺 to `who`.
+      who:
+        type: string
+        required: true
+        description: The person or named creature, by id or name.
+      kind:
+        type: string
+        required: false
+        description: For write — 恩 (a kindness), 仇 (a wrong) or 诺 (a promise).
+      what:
+        type: string
+        required: false
+        description: For write — one short line of what happened, in the player's language.
+      quote:
+        type: string
+        required: false
+        description: >-
+          For write — the player's words at that moment, copied verbatim from
+          what they typed, ≤30 characters (a clean phrase inside it).
+
   - name: Guide
     description: >-
       Read the rules of one part of the game by name: look, fight, road, trial,
