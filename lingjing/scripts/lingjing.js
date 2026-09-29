@@ -2654,17 +2654,26 @@ async function greetByHer(grew = null) {
 }
 
 /* 测试存档 — a scratch save for live checks (?save=test; rules.js SCRATCH):
-   a badge on the page; `&seed=fresh|real|<fixture>` begins it once, then the
-   URL forgets the seed so a reload plays on. */
+   a badge on the page; `&seed=fresh|real|<fixture>` begins it once and
+   `&days=N` moves its clock N days ahead, then the URL forgets both so a
+   reload plays on. */
 const SCRATCH_BADGE = SCRATCH ? `测试存档 · ${SCRATCH}` : '';
 const SCRATCH_NOTE = '不连 Ling，不发 银月 — 只读写 data/saves/' + (SCRATCH ?? '') + '/';
 async function scratchBoot() {
   document.body.insertAdjacentHTML('beforeend', `<div class="scratch-badge" title="${esc(SCRATCH_NOTE)}" style="position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:99;padding:2px 10px;border:1px solid #b33a2b;border-radius:3px;background:#fff8ef;color:#b33a2b;font:600 12px/1.6 var(--ui, sans-serif);letter-spacing:.08em;pointer-events:none">${esc(SCRATCH_BADGE)}</div>`);
-  const url = new URL(location.href), from = url.searchParams.get('seed');
-  if (!from) return;
-  const r = await verb('seed', { from }).catch(failed);
-  if (!r.ok) console.warn('[lingjing] seed', r);
+  const url = new URL(location.href), from = url.searchParams.get('seed'), days = url.searchParams.get('days');
+  if (!from && days == null) return;
+  if (from) {
+    const r = await verb('seed', { from }).catch(failed);
+    if (!r.ok) console.warn('[lingjing] seed', r);
+  }
+  // `&days=N`: the scratch save's clock N days ahead (rules.mjs shift) — the 大比's real day in a check.
+  if (days != null) {
+    const r = await verb('shift', { days }).catch(failed);
+    if (!r.ok) console.warn('[lingjing] shift', r);
+  }
   url.searchParams.delete('seed');
+  url.searchParams.delete('days');
   history.replaceState(null, '', url);
 }
 

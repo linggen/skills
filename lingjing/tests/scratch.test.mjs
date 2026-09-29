@@ -63,6 +63,32 @@ test('seed: fresh, a copy of the real save (read-only), or a fixture — only in
   }
 });
 
+test('shift: a scratch save clock runs days ahead (the 大比 real day in a check); never the real save; a seed puts it back', () => {
+  const { data, cli, done } = sandbox();
+  try {
+    cli('look');
+    assert.equal(cli('shift', '--days=1').refused, 'not-scratch', 'the real save keeps the real day');
+    assert.equal(fs.existsSync(path.join(data, 'clock.json')), false);
+    cli('seed', '--from=waimen', '--save=t3');
+    const r = cli('shift', '--days=1', '--save=t3');
+    assert.equal(r.ok, true);
+    assert.equal(r.now, '2026-09-30T10:00:00.000Z', 'one day on from LINGJING_NOW');
+    assert.equal(cli('shift', '--days=-1', '--save=t3').refused, 'bad-days');
+    assert.equal(cli('shift', '--days=x', '--save=t3').refused, 'bad-days');
+    // the day a mark is made is the shifted day, and the real save's clock never moved
+    const real = stamp(path.join(data, 'state.json'));
+    assert.equal(cli('resolve', '--exit=argue', '--save=t3').ok, true);
+    const st = JSON.parse(fs.readFileSync(path.join(data, 'saves', 't3', 'state.json'), 'utf8'));
+    assert.equal(st.mark_days['argued-lixi'], '2026-09-30', 'marked on the shifted day');
+    assert.deepEqual(stamp(path.join(data, 'state.json')), real, 'the real save untouched');
+    cli('seed', '--from=fresh', '--save=t3');
+    assert.equal(fs.existsSync(path.join(data, 'saves', 't3', 'clock.json')), false, 'a seed begins on the real day');
+    assert.equal(cli('shift', '--days=0', '--save=t3').now, '2026-09-29T10:00:00.000Z');
+  } finally {
+    done();
+  }
+});
+
 test('a save name is one plain word: a path is refused before anything is read', () => {
   const { data, cli, done } = sandbox();
   try {

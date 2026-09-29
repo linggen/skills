@@ -4,9 +4,10 @@
 //
 //   node rules.mjs <verb> [--key value …]
 //   verbs: init look progress story resolve judge task win duel tame refine tale summarize move trade lang make enter leave
-//          build worlds travel amend art go saves save load forget seclude undo seed
+//          build worlds travel amend art go saves save load forget seclude undo seed shift
 //   --save=<name> on any verb plays a scratch save in data/saves/<name>/ (files.mjs);
-//   `seed --save=<name> --from=fresh|real|<fixture>` begins it (never touching data/state.json).
+//   `seed --save=<name> --from=fresh|real|<fixture>` begins it (never touching data/state.json);
+//   `shift --save=<name> --days=N` sets its clock N days ahead (the 大比's real day, in a check).
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
 // and never changes state. The save says which world it plays; `init` begins
@@ -27,7 +28,7 @@ import { askOf, tapThen, THEN_RECAP, THEN_TELL, withAsk } from './rules/ask.mjs'
 import { guard, onLook, unconfirmed } from './rules/confirm.mjs';
 import { markSeen, notePage, READS_PAGE, unseen } from './rules/did.mjs';
 import { pageNames, pageThrows } from './rules/core.mjs';
-import { clock, dataDir, freshState, homeDir, parseArgs, readQuests, SAVE_NAME, savedFile, savedFor, scratchName, skillDir, userTurn, userWords, withLock, writeAtomic } from './rules/files.mjs';
+import { clock, dataDir, freshState, shiftDays, shiftFile, homeDir, parseArgs, readQuests, SAVE_NAME, savedFile, savedFor, scratchName, skillDir, userTurn, userWords, withLock, writeAtomic } from './rules/files.mjs';
 import { look, stageAt } from './rules/look.mjs';
 import { closeStaleFight, fightHold } from './rules/tasks.mjs';
 import { seclusionHold } from './rules/seclusion.mjs';
@@ -82,6 +83,7 @@ function run(verb, args, reader = null) {
   if (verb === 'guide') return guideVerb(args);
   const stateFile = path.join(dataDir(), 'state.json');
   if (verb === 'seed') return withLock(stateFile, () => seed(args, stateFile), () => ({ ok: false, refused: 'busy', say: null }));
+  if (verb === 'shift') return withLock(stateFile, () => shift(args), () => ({ ok: false, refused: 'busy', say: null }));
   return withLock(stateFile, () => guided(verb, args, reader, stateFile, runLocked(verb, args, stateFile, reader)), () => ({ ok: false, refused: 'busy', say: null }));
 }
 
@@ -242,7 +244,8 @@ function runLocked(verb, args, stateFile, reader) {
    start (`--from=fresh`, the default), from a copy of the player's own save
    (`--from=real`, read and never written), or from a fixture
    (tests/fixtures/saves/<name>.json, a bare state or {state}). Its log goes:
-   Undo in a scratch save never reaches back past the seed. */
+   Undo in a scratch save never reaches back past the seed, and its clock
+   is the real one again (`shift`). */
 function seed(args, stateFile) {
   if (!scratchName()) return { ok: false, refused: 'not-scratch', say: null };
   const from = String(args.from ?? 'fresh');
@@ -254,9 +257,22 @@ function seed(args, stateFile) {
   const doc = source ? JSON.parse(fs.readFileSync(source, 'utf8')) : null;
   const state = doc?.state ?? doc;
   fs.rmSync(logFile, { force: true });
+  fs.rmSync(shiftFile(), { force: true }); // a seed begins on the real day
   if (state) writeAtomic(stateFile, JSON.stringify(state));
   else fs.rmSync(stateFile, { force: true });
   return { ok: true, seeded: from, save: scratchName() };
+}
+
+/* Shift — a scratch save only: its clock runs `--days` whole days ahead of
+   the real one (files.mjs clock), every verb after reading the moved day;
+   `--days=0` puts it back. The player's own save has no such thing. */
+function shift(args) {
+  if (!scratchName()) return { ok: false, refused: 'not-scratch', say: null };
+  const days = Number(args.days ?? 0);
+  if (!Number.isInteger(days) || days < 0 || days > 30) return { ok: false, refused: 'bad-days', say: null };
+  if (days) writeAtomic(shiftFile(), JSON.stringify({ days }) + '\n');
+  else fs.rmSync(shiftFile(), { force: true });
+  return { ok: true, days: shiftDays(), now: clock().toISOString(), save: scratchName() };
 }
 
 /* A passage owed is told before anything else the answer asks (rules/tell.mjs):

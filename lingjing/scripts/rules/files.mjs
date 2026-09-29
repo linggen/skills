@@ -50,7 +50,20 @@ function freshState(content, lang, now) {
   return s;
 }
 const questsDir = () => process.env.LINGJING_QUESTS || path.join(os.homedir(), '.linggen', 'quests');
-const clock = () => (process.env.LINGJING_NOW ? new Date(process.env.LINGJING_NOW) : new Date());
+/* A scratch save may live some days ahead (`shift --days=N`, the page's
+   `&days=N`): its clock.json moves the clock for its own reads and writes
+   only — the 大比's real day, 体力's return — so a live check need not wait a
+   night. The player's own save never has one: it is read only in scratch. */
+const shiftFile = () => path.join(dataDir(), 'clock.json');
+const shiftDays = () => {
+  if (!scratchName()) return 0;
+  try { const d = Number(JSON.parse(fs.readFileSync(shiftFile(), 'utf8')).days); return Number.isFinite(d) ? d : 0; } catch { return 0; }
+};
+const clock = () => {
+  const base = process.env.LINGJING_NOW ? new Date(process.env.LINGJING_NOW) : new Date();
+  const days = shiftDays();
+  return days ? new Date(base.getTime() + days * 86_400_000) : base;
+};
 /* How many messages the player has sent this session, the engine's count
    (LINGGEN_USER_TURNS); null on an engine that does not say. */
 const userTurn = () => (/^\d+$/.test(process.env.LINGGEN_USER_TURNS ?? '') ? Number(process.env.LINGGEN_USER_TURNS) : null);
@@ -135,4 +148,4 @@ export function parseArgs(argv) {
   return args;
 }
 
-export { clock, dataDir, freshState, homeDir, SAVE_NAME, scratchDir, scratchName, LOCK, readQuests, savedFile, savedFor, savesDir, skillDir, userTurn, userWords, withLock, writeAtomic, writeMadeWorld };
+export { clock, dataDir, shiftDays, shiftFile, freshState, homeDir, SAVE_NAME, scratchDir, scratchName, LOCK, readQuests, savedFile, savedFor, savesDir, skillDir, userTurn, userWords, withLock, writeAtomic, writeMadeWorld };
