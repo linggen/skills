@@ -57,9 +57,9 @@
 
 .card.homing:not(.still) .inkmap .cam.zoom { animation: ink-zoom 1.4s cubic-bezier(.3, .1, .2, 1) both; animation-delay: calc(0ms - var(--age)); }
 .card.homing:not(.still) .inkmap .inkdrop { animation: ink-drop 0.55s ease-in both; animation-delay: calc(900ms - var(--age)); }
-.card.homing:not(.still) .inkmap .bleed { animation: ink-spread 2.6s cubic-bezier(.2, .6, .3, 1) both, ink-bleed 2.6s ease-out both; animation-delay: calc(1300ms - var(--age)); }
+.card.homing:not(.still) .inkmap .bleed { animation: ink-spread 3s cubic-bezier(.35, .1, .45, 1) both, ink-bleed 3s ease-out both; animation-delay: calc(1300ms - var(--age)); }
 .inkmap.moment .bleed { transform-box: fill-box; transform-origin: center; }
-.card.homing:not(.still) .inkmap .spread { animation: ink-spread 2.6s cubic-bezier(.2, .6, .3, 1) both; animation-delay: calc(1300ms - var(--age)); }
+.card.homing:not(.still) .inkmap .spread { animation: ink-spread 3s cubic-bezier(.35, .1, .45, 1) both; animation-delay: calc(1300ms - var(--age)); }
 .card.homing:not(.still) .inkmap .rivers.draw path { animation: ink-river 1.6s ease-out both; animation-delay: calc(3300ms - var(--age)); }
 .card.homing:not(.still) .inkmap .inkseal.thud .sealbody { animation: ink-thud 0.5s cubic-bezier(.5, 0, .7, 1.4) both; animation-delay: calc(4800ms - var(--age)); }
 .card.homing:not(.still) .inkmap .waters.ripple path { animation: ink-ripple 1.6s ease-out both; animation-delay: calc(5500ms - var(--age)); }
