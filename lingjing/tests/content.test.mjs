@@ -353,3 +353,11 @@ test('a made world lays its story over the base: its province, its creatures mar
   assert.equal(merged.ladder, base.ladder);
   assert.ok(madeWorldsDir().endsWith('/data/worlds'));
 });
+
+test('every item kind has a word in both languages: a shelf never says robe · 防 +1 in the Chinese game (live, 2026-09-29)', () => {
+  const c = fresh();
+  const words = loadWorld('jiuding').dictionary.words;
+  for (const kind of new Set(c.items.items.map(i => i.kind))) {
+    assert.ok(words[kind]?.zh && words[kind]?.en, `dictionary word for ${kind}`);
+  }
+});

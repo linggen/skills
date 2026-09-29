@@ -106,6 +106,18 @@
       "zh": "储物袋",
       "en": "storage pouch"
     },
+    "robe": {
+      "zh": "法衣",
+      "en": "robe"
+    },
+    "scroll": {
+      "zh": "功法卷",
+      "en": "scroll"
+    },
+    "pendant": {
+      "zh": "佩",
+      "en": "pendant"
+    },
     "item": {
       "zh": "物品",
       "en": "item"
