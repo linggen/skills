@@ -123,6 +123,12 @@ test('one tap, one beat: the page draws the passages a tap owes for its report (
   }
 });
 
+test('a fresh chat\'s opening carries the passages owed, as a tap does: `[scene] opened` goes out through reportTelling', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
+  assert.doesNotMatch(src, /sendHidden\('\[scene\] opened'\)/, 'never a bare opening');
+  assert.equal(src.match(/reportTelling\('\[scene\] opened'\)/g)?.length, 2, 'the opening and the one after an unanswered greeting');
+});
+
 test('nothing lost: a scene is owed the moment it is entered; past two owed, the older ones fold into a catch-up of recaps', () => {
   // tapped through, never told: each exit's passage and each scene entered
   let s = walk(start(), [['resolve', { exit: 'name', value: '墨白', gender: 'male' }]], content, NOW);

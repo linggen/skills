@@ -2343,7 +2343,8 @@ let mounted = false;
 function openWith(sid, greeted = false) {
   if (!sid || openedFor === sid || !chat) return;
   openedFor = sid;
-  if (!greeted) chat.sendHidden('[scene] opened');
+  // The passages owed ride with it (`[tell]`, reportTelling): a model that never Looks still tells them.
+  if (!greeted) reportTelling('[scene] opened');
   else greetWaits = { sid, text: greetText };
 }
 
@@ -2356,7 +2357,7 @@ function greetUnanswered(text = null) {
   const g = greetWaits;
   if (!g || (text && g.text && text !== g.text)) return;
   greetWaits = null;
-  if (chat && chat.getSessionId?.() === g.sid) chat.sendHidden('[scene] opened');
+  if (chat && chat.getSessionId?.() === g.sid) reportTelling('[scene] opened');
 }
 
 /// Mounts the chat; answers whether it is a fresh session (not a day picked up).
