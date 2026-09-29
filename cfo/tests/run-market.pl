@@ -292,6 +292,30 @@ t('a winter session closes 21:00 UTC', session_end('2026-01-15') == timegm_of(20
 t('daylight time starts the second Sunday of March, ends the first of November',
   session_end('2026-03-06') == timegm_of(2026, 3, 6, 21, 0, 0) && session_end('2026-03-09') == timegm_of(2026, 3, 9, 20, 0, 0)
   && session_end('2026-10-30') == timegm_of(2026, 10, 30, 20, 0, 0) && session_end('2026-11-02') == timegm_of(2026, 11, 2, 21, 0, 0));
+
+# ── The NYSE calendar: early closes and holidays, by rule ─────────────────
+t('a normal day closes 16:00', (nyse_close_hour('2026-09-23') // 0) == 16);
+t('the day after Thanksgiving closes 13:00 — 18:00 UTC in winter',
+  (nyse_close_hour('2026-11-27') // 0) == 13 && session_end('2026-11-27') == timegm_of(2026, 11, 27, 18, 0, 0));
+t('Christmas Eve on a weekday closes 13:00', (nyse_close_hour('2026-12-24') // 0) == 13);
+t('July 3 closes 13:00 when July 4 is a weekday', (nyse_close_hour('2025-07-03') // 0) == 13 && (nyse_close_hour('2024-07-03') // 0) == 13);
+t('July 4 on a Saturday is kept Friday July 3: no session', !defined nyse_close_hour('2026-07-03'));
+t('Good Friday is a holiday (2027-03-26, 2026-04-03)', !defined nyse_close_hour('2027-03-26') && !defined nyse_close_hour('2026-04-03'));
+t('Monday holidays: MLK, Presidents, Memorial, Labor; Thanksgiving Thursday',
+  !grep { defined nyse_close_hour($_) } '2026-01-19', '2026-02-16', '2026-05-25', '2026-09-07', '2026-11-26');
+t('Sunday holidays move to Monday, Saturday ones to Friday',
+  !defined nyse_close_hour('2023-01-02') && !defined nyse_close_hour('2027-06-18') && !defined nyse_close_hour('2027-12-24')
+    && !defined nyse_close_hour('2022-12-26'));
+t('New Year\'s on a Saturday is not made up the Friday before', (nyse_close_hour('2021-12-31') // 0) == 16);
+t('Christmas Eve kept as the holiday has no early close before it', (nyse_close_hour('2027-12-23') // 0) == 16);
+t('a Toronto symbol keeps 16:00 on a New York early close',
+  session_end('2026-11-27', 'RY.TO') == timegm_of(2026, 11, 27, 21, 0, 0));
+t('the market is open at 12:00 on an early close, not at 13:30, nor on Good Friday',
+  (market_day(timegm_of(2026, 11, 27, 17, 0, 0)) // '') eq '2026-11-27' && !defined market_day(timegm_of(2026, 11, 27, 18, 30, 0))
+    && !defined market_day(timegm_of(2027, 3, 26, 15, 0, 0)));
+t('with Toronto held, the check runs any weekday until 16:00 (US Thanksgiving; after a New York early close)',
+  (market_day(timegm_of(2026, 11, 26, 16, 0, 0), 1) // '') eq '2026-11-26' && (market_day(timegm_of(2026, 11, 27, 20, 0, 0), 1) // '') eq '2026-11-27'
+    && !defined market_day(timegm_of(2026, 11, 28, 16, 0, 0), 1));
 {
     # A winter "Check now" at 20:30 UTC, before the 21:00 close: the session is
     # left for the night's run, whose window starts at that check.

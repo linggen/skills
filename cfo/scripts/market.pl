@@ -924,12 +924,76 @@ sub history_of {
 }
 
 # A session closes 16:00 New York (and Toronto) time: 20:00 UTC under daylight
-# time, 21:00 UTC in winter. US/Canada daylight time runs from the second
-# Sunday of March to the first Sunday of November; no session falls on
-# either Sunday, so the date alone decides.
+# time, 21:00 UTC in winter; a New York early close (nyse_close_hour) at
+# 13:00. Toronto keeps its own calendar, so a .TO symbol's (and the Bank of
+# Canada's USD/CAD day) stays 16:00.
+# US/Canada daylight time runs from the second Sunday of March to the first
+# Sunday of November; no session falls on either Sunday, so the date alone
+# decides.
 sub session_end {
-    my ($y, $m, $d) = split /-/, $_[0];
-    return timegm(0, 0, 16 + (daylight_time($y, $m, $d) ? 4 : 5), $d, $m - 1, $y);
+    my ($day, $sym) = @_;
+    my ($y, $m, $d) = split /-/, $day;
+    my $hour = ($sym // '') =~ /\.TO$|CAD/ ? 16 : nyse_close_hour($day) // 16;
+    return timegm(0, 0, $hour + (daylight_time($y, $m, $d) ? 4 : 5), $d, $m - 1, $y);
+}
+
+# The hour (New York time) the NYSE closes on a date: 16, 13 on an early
+# close (the day after Thanksgiving; July 3 and Christmas Eve on a weekday
+# that isn't itself a holiday), undef on a weekend or a holiday. By rule,
+# no network.
+sub nyse_close_hour {
+    my ($day) = @_;
+    my ($y, $m, $d) = split /-/, $day;
+    return undef if (gmtime(epoch_of($day)))[6] =~ /^[06]$/ || nyse_holiday($y, $m + 0, $d + 0);
+    return 13 if "$m-$d" eq '07-03' || "$m-$d" eq '12-24' || $day eq shift_date(nth_weekday($y, 11, 4, 4), 1);
+    return 16;
+}
+
+# The NYSE's full holidays, each moved off a weekend: Saturday's to Friday,
+# Sunday's to Monday — but New Year's on a Saturday isn't made up (the
+# Friday before is the last session of the year).
+sub nyse_holiday {
+    my ($y, $m, $d) = @_;
+    my $day = sprintf '%04d-%02d-%02d', $y, $m, $d;
+    return 1 if grep { $_ eq $day } nth_weekday($y, 1, 1, 3), nth_weekday($y, 2, 1, 3), shift_date(easter($y), -2),
+                                    last_weekday($y, 5, 1), nth_weekday($y, 9, 1, 1), nth_weekday($y, 11, 4, 4);
+    return 1 if grep { observed($_) eq $day } "$y-01-01", "$y-07-04", "$y-12-25", ($y >= 2022 ? "$y-06-19" : ());
+    return 0;
+}
+
+# A fixed holiday's weekday: Saturday → Friday, Sunday → Monday; New Year's
+# on a Saturday stays (and so is no session day anyway).
+sub observed {
+    my ($day) = @_;
+    my $dow = (gmtime(epoch_of($day)))[6];
+    return $day =~ /-01-01$/ ? $day : shift_date($day, -1) if $dow == 6;
+    return $dow == 0 ? shift_date($day, 1) : $day;
+}
+
+# The nth weekday (0 = Sunday) of a month, as a date.
+sub nth_weekday {
+    my ($y, $m, $dow, $nth) = @_;
+    my $first = (gmtime(timegm(0, 0, 12, 1, $m - 1, $y)))[6];
+    return sprintf '%04d-%02d-%02d', $y, $m, 1 + ($dow - $first) % 7 + 7 * ($nth - 1);
+}
+
+# The last weekday of a month, as a date.
+sub last_weekday {
+    my ($y, $m, $dow) = @_;
+    my $day = shift_date(sprintf('%04d-%02d-01', $m == 12 ? ($y + 1, 1) : ($y, $m + 1)), -1);
+    $day = shift_date($day, -1) until (gmtime(epoch_of($day)))[6] == $dow;
+    return $day;
+}
+
+# Easter Sunday (Gregorian; the anonymous algorithm).
+sub easter {
+    my ($y) = @_;
+    my ($g, $c, $n) = ($y % 19, int($y / 100), $y % 100);
+    my $h = (19 * $g + $c - int($c / 4) - int(($c - int(($c + 8) / 25) + 1) / 3) + 15) % 30;
+    my $l = (32 + 2 * ($c % 4) + 2 * int($n / 4) - $h - $n % 4) % 7;
+    my $m = int(($g + 11 * $h + 22 * $l) / 451);
+    my $month = int(($h + $l - 7 * $m + 114) / 31);
+    return sprintf '%04d-%02d-%02d', $y, $month, ($h + $l - 7 * $m + 114) % 31 + 1;
 }
 
 sub daylight_time {
@@ -943,7 +1007,7 @@ sub daylight_time {
 
 # A session still open at `now` is left for the next window: the next scan's
 # window starts at this one, before the close, so it looks at it then.
-sub session_closed { my ($day, $now) = @_; return session_end($day) <= ($now // time) }
+sub session_closed { my ($day, $now, $sym) = @_; return session_end($day, $sym) <= ($now // time) }
 
 # Sessions since the window whose move was far past the stock's usual day: at
 # least 2.5 times the standard deviation of the 60 sessions before it, and 2%.
@@ -953,8 +1017,8 @@ sub move_events {
     my @out;
     for my $i (0 .. $#$rows) {
         my $r = $rows->[$i];
-        last if session_end($r->{t}) < $since;
-        next unless defined $r->{ch} && $i < $#$rows && session_closed($r->{t}, $now);
+        last if session_end($r->{t}, $sym) < $since;
+        next unless defined $r->{ch} && $i < $#$rows && session_closed($r->{t}, $now, $sym);
         my @usual = grep { defined } map { $_->{ch} } @$rows[$i + 1 .. min($i + $MOVE_TYPICAL_DAYS, $#$rows)];
         next unless @usual >= 20;
         my $spread = spread(@usual);
@@ -962,7 +1026,7 @@ sub move_events {
         my $prev = $rows->[$i + 1]{c};
         push @out, {
             id => "move:$sym:$r->{t}", symbol => $sym, kind => 'move',
-            at => iso_time(session_end($r->{t})), session => $r->{t},
+            at => iso_time(session_end($r->{t}, $sym)), session => $r->{t},
             change_pct => $r->{ch} + 0, usual_pct => round_to($spread, 2), close => $r->{c} + 0,
             position_change => $shares > 0 ? round_to($shares * ($r->{c} - $prev), 2) : undef,
         };
@@ -983,14 +1047,14 @@ sub break_events {
     my @out;
     for my $i (0 .. $#$rows) {
         my $r = $rows->[$i];
-        last if session_end($r->{t}) < $since;
-        next unless session_closed($r->{t}, $now);
+        last if session_end($r->{t}, $sym) < $since;
+        next unless session_closed($r->{t}, $now, $sym);
         for my $way (['high_52w', 1], ['low_52w', -1]) {
             my ($kind, $dir) = @$way;
             next unless breaks_year($rows, $i, $dir);
             next if grep { breaks_year($rows, $_, $dir) } $i + 1 .. min($i + $BREAK_GAP, $#$rows);
             push @out, { id => "$kind:$sym:$r->{t}", symbol => $sym, kind => $kind,
-                         at => iso_time(session_end($r->{t})), session => $r->{t}, close => $r->{c} + 0 };
+                         at => iso_time(session_end($r->{t}, $sym)), session => $r->{t}, close => $r->{c} + 0 };
         }
     }
     return @out;
@@ -1312,7 +1376,7 @@ sub boc_events {
         next unless @usual >= 20;
         my ($change, $spread) = (($v[0] / $v[1] - 1) * 100, spread(@usual));
         next unless abs($change) >= $FX_MIN_PCT && abs($change) >= $MOVE_SPREAD * $spread;
-        push @out, { id => "fx:USDCAD:$fx[$i]{d}", kind => 'fx', pair => 'USD/CAD', at => iso_time(session_end($fx[$i]{d})),
+        push @out, { id => "fx:USDCAD:$fx[$i]{d}", kind => 'fx', pair => 'USD/CAD', at => iso_time(session_end($fx[$i]{d}, 'USD/CAD')),
                      on => $fx[$i]{d}, rate => $v[0] + 0, change_pct => round_to($change, 2), usual_pct => round_to($spread, 2) };
     }
     return @out;
@@ -1872,13 +1936,13 @@ sub boc_rate_releases {
 
 # While the market is open: holdings 5% or more up or down on the day, once
 # a day each. The day is the quote's own trading day, and only today's
-# counts: on a holiday (Good Friday; a Canada-only one for .TO) the quote
+# counts: on a holiday (Good Friday; one kept by only one exchange) a quote
 # still carries the last session's move, which was said then.
 sub move_alerts {
     my ($now) = @_;
-    my $day = market_day($now) or return;
     my $cells = register_investments();
     my @held = grep { ($cells->{$_}{shares} // 0) > 0 } symbols_of(sort keys %$cells) or return;
+    my $day = market_day($now, scalar grep { /\.TO$/ } @held) or return;
     my $quotes = update_quotes(\@held, \&quote_of);
     my @out;
     for my $sym (@held) {
@@ -1902,15 +1966,18 @@ sub quote_trading_day {
     return iso_date($date);
 }
 
-# New York's date while its market is open (weekdays 9:30–16:00), else undef.
+# New York's date while its market is open (9:30 to the day's close, on a
+# session day), else undef. With `toronto`, any weekday until 16:00: the TSX
+# trades through most New York holidays and early closes.
 sub market_day {
-    my ($now) = @_;
+    my ($now, $toronto) = @_;
     my @utc = gmtime($now);
     my @ny = gmtime($now - (daylight_time($utc[5] + 1900, $utc[4] + 1, $utc[3]) ? 4 : 5) * 3600);
-    return undef if $ny[6] == 0 || $ny[6] == 6;
+    my $day = strftime('%Y-%m-%d', @ny);
+    my $close = $toronto && $ny[6] =~ /^[1-5]$/ ? 16 : nyse_close_hour($day) or return undef;
     my $minute = $ny[2] * 60 + $ny[1];
-    return undef if $minute < 9 * 60 + 30 || $minute > 16 * 60;
-    return strftime('%Y-%m-%d', @ny);
+    return undef if $minute < 9 * 60 + 30 || $minute > $close * 60;
+    return $day;
 }
 
 # ── Dates ──────────────────────────────────────────────────────────────────
