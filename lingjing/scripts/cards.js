@@ -1187,8 +1187,9 @@ function panel(card, ctx) {
 }
 
 /// The book's own passages, shown on the scene card when Ling's telling did
-/// not come: paragraphs, the bold speaker marks dropped.
-const toldText = (tell) => (tell ?? []).flatMap((t) => String(t.text ?? '').split(/\n+/)).map((l) => l.replace(/\*\*/g, '').trim()).filter(Boolean).map((l) => `<p>${esc(l)}</p>`).join('');
+/// not come: paragraphs, the bold speaker marks dropped, and her bare 〔银月〕 marks
+/// (her words are hers — the page never speaks them for her).
+const toldText = (tell) => (tell ?? []).flatMap((t) => String(t.text ?? '').split(/\n+/)).map((l) => l.replace(/\*\*/g, '').trim()).filter((l) => l && !/^〔(银月|Yinyue)〕$/.test(l)).map((l) => `<p>${esc(l)}</p>`).join('');
 
 /// One choice under the scene card: a button for a real decision; the one way
 /// on of a transition is a small quiet link — 「接着」, or its own words when

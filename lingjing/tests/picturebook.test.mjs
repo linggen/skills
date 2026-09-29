@@ -148,7 +148,7 @@ test('nothing lost: a scene is owed the moment it is entered; past two owed, the
 test('the scene card holds its choices while Ling tells, and shows the book\'s text when her telling does not come', () => {
   const s = walk(start('zh'), [['resolve', { exit: 'name', value: '墨白', gender: 'male' }]], content, NOW);
   const l = look(s, content, ctx());
-  const tell = [{ of: 'scene', id: '00-masan', text: '**马三**：租呢？\n\n屋里，安静了。' }];
+  const tell = [{ of: 'scene', id: '00-masan', text: '**马三**：租呢？\n\n〔银月〕\n\n屋里，安静了。' }];
   const waiting = cardHtml({ card: 'panel' }, page(l, { telling: { tell, shown: false } }));
   assert.match(waiting, /class="small dim telling">灵正在讲……</);
   assert.doesNotMatch(waiting, /data-panel-exit/, 'no second tap while she tells');

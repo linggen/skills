@@ -198,7 +198,7 @@ const view = {
   fateOpen: false, fateDraft: '', fateError: false, // the 命格 form: shown again, the date typed, a date refused
   refineMat: null, refineName: '', refineNote: null, // 炼化本命 on the card: the material picked, the name typed, a refusal
   panelBusy: null, panelNote: null, // a 连环画 panel's choice in flight, or its refusal
-  telling: null, // {tell, scene, shown, ends, heard}: a tap's passages, held for Ling's telling (reportTelling)
+  telling: null, // {tell, from, scene, shown, ends, heard}: a tap's passages, held for Ling's telling (reportTelling)
   lookBusy: null, // a 看 chip's look in flight (rules/examine.mjs)
   ledgerOpen: false, // the 恩仇簿 chip's popover
   wxOpen: false, wxSense: null, wxNote: null, // the weather chip's popover: the engine's sense as read, a note
@@ -1560,13 +1560,14 @@ async function valueTap(exitId) {
    Ling is telling the last one, the choices wait. */
 async function panelTap(exitId, label) {
   if (view.telling && !view.telling.shown) return;
+  const from = look?.scene?.id ?? null;
   keep({ panelBusy: exitId, panelNote: null, telling: null });
   render();
   const r = await write('resolve', { exit: exitId, said: label }).catch(failed);
   // A tap on a choice the story already moved past (a second tap in flight) is no refusal to show.
   keep({ panelBusy: null, panelNote: r.ok || r.refused === 'unknown-exit' ? null : refusal(r) });
   await refresh();
-  if (r.ok) await reportTelling(`[scene] took ${r.chose ?? label}`);
+  if (r.ok) await reportTelling(`[scene] took ${r.chose ?? label}`, from);
 }
 
 /* One tap, one beat (Hanli, 2026-09-29). The passages a tap owes ride in its
@@ -1579,17 +1580,24 @@ async function panelTap(exitId, label) {
    shows the book's own text itself — the player is never stuck. */
 const TELL_WAIT_MS = 25000, TELL_MAX_MS = 90000;
 let tellTimer = null;
-const tellingNow = () => (view.telling && view.telling.scene === (look?.scene?.id ?? null) ? view.telling : null);
-async function reportTelling(line) {
+/* Held for the scene the tap walked into — adopted on the first Look past
+   the one it was tapped in (`from`): a Look still in flight must not drop it. */
+const tellingNow = () => {
+  const t = view.telling, at = look?.scene?.id ?? null;
+  if (!t) return null;
+  if (t.scene === undefined && at !== t.from) t.scene = at;
+  return t.scene === undefined || t.scene === at ? t : null;
+};
+async function reportTelling(line, from) {
   const t = await write('tell').catch(() => null);
   const tell = t?.ok && t.tell?.length ? t.tell : null;
-  if (tell) holdForTelling(tell);
+  if (tell) holdForTelling(tell, from);
   await report(tell && t.report ? `${line}\n${t.report}` : line);
 }
-function holdForTelling(tell) {
+function holdForTelling(tell, from) {
   clearTimeout(tellTimer);
   // A scratch save has no Ling: the book's text shows at once.
-  keep({ telling: { tell, scene: look?.scene?.id ?? null, shown: Boolean(SCRATCH), ends: streaming ? 2 : 1, heard: false } });
+  keep({ telling: { tell, from, scene: undefined, shown: Boolean(SCRATCH), ends: streaming ? 2 : 1, heard: false } });
   render();
   if (SCRATCH) return;
   tellTimer = setTimeout(() => {
