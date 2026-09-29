@@ -18,7 +18,7 @@
 .codexcard figcaption small { display: block; margin-top: 8px; font-size: 12px; opacity: .8; }
 /* Narrow — a phone, or the game's stage column: measured on the card's own container. */
 .chapter, .codexwrap, .boxcard, .lu { container-type: inline-size; }
-@container (max-width: 600px) {
+@container (max-width: 480px) {
   .codexcard { flex-direction: column; align-items: stretch; gap: 10px; }
   .codexcard .cpic, .codexcard:not([data-kind="人物"]) .cpic { flex: none; max-width: 100%; }
   .codexcard .cpic img, .codexcard:not([data-kind="人物"]) .cpic img { width: 100%; height: auto; max-height: none; }

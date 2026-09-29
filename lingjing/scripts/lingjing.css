@@ -863,6 +863,10 @@ body.reading .view, body.reading .tray { display: none; }
 .panelcard .scenecap p { margin: 0; }
 .card.codexwrap { padding: 0; border: 0; background: none; }
 .card.codexwrap .codexcard { margin: 0 0 8px; }
+/* On the stage the 图鉴 card shares the main slot with the scene card under it: the
+   picture stays large but never pushes the scene out of sight. */
+body .card.codexwrap .codexcard[data-kind="人物"] .cpic img { height: min(40vh, 340px); width: auto; max-height: none; }
+body .card.codexwrap .codexcard:not([data-kind="人物"]) .cpic img { max-height: min(36vh, 300px); }
 .panelcard .paneltaps { margin-top: 10px; flex-wrap: wrap; }
 .panelcard .paneltap.busy { opacity: .6; }
 
