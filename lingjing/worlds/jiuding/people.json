@@ -192,7 +192,7 @@
       "id": "neimen-shijie",
       "gender": "female",
       "name": {"zh": "内门师姐", "en": "The inner-court senior"},
-      "role": {"zh": "内门下来比外门大比的真灵根师姐", "en": "A true-root senior come down from the inner court for the outer court's contest"},
+      "role": {"zh": "在外门排了三年队、等着进内门的真灵根师姐", "en": "A true-root senior who has queued three years in the outer court for a place in the inner court"},
       "voice": {"zh": "话少，眼尖，出手留三分；看得出别人藏着什么。", "en": "Few words, sharp eyes, always holds a little back; sees what others are hiding."},
       "home": "zhengdian",
       "art": "art/people/neimen-shijie.webp"
