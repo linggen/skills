@@ -537,6 +537,8 @@ function itemBrief(content, state, item) {
     buy: item.buy, sell: item.sell, held: state.bag[item.id] ?? 0,
     effect: effectBrief(content, lang, item.effect),
     worn: Object.values(state.wear ?? {}).includes(item.id),
+    // A furnace pill's 转 (丹纹): the card draws that many lines, nine in gold (design.md § 丹药等级).
+    ...(item.zhuan ? { zhuan: item.zhuan } : {}),
     ...(item.made?.from ? { made_from: pick(itemOf(content, item.made.from)?.name, lang) } : {}),
     ...(tamesOf(content, state, item).length ? { tames: tamesOf(content, state, item) } : {}),
     // A scroll (《吐纳经》): the passage for the layer the player stands on (rules/scrolls.mjs).

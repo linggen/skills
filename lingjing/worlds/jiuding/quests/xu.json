@@ -278,7 +278,7 @@
         "table": "quest",
         "progress": 30,
         "wealth": 5,
-        "item": "qi-pill"
+        "item": "qi-pill-9"
       },
       "opens": {
         "after": "xu-yaoyuan-shouye"

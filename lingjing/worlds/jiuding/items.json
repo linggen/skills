@@ -307,6 +307,50 @@
       "sold": []
     },
     {
+      "id": "mend-pill-9",
+      "kind": "pill",
+      "_furnace": "Made in 银月's furnace (design.md § 丹药等级 — 随主人: the owner's realm, 九转): its own item, never the market's 回春丹. `zhuan` draws its nine gold lines; not sold, and worth nothing at a counter (九转丹不能卖).",
+      "zhuan": 9,
+      "name": {
+        "zh": "九转回春丹",
+        "en": "Nine-turn mending pill"
+      },
+      "art": "art/items/mend-pill.webp",
+      "about": {
+        "zh": "小铜炉里出来的回春丹。药铺柜台上的是一转，一道纹；它九道，金的。伤一夜就好，修为也跟着涨一截。拿出去卖，没人认得——认得的，更坏。",
+        "en": "A mending pill out of the little furnace. The one on the shop counter is one-turn, one ring; this has nine, in gold. A night mends every hurt, and your cultivation climbs with it. Nobody would know it at a counter — and whoever did would be worse."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "effect": {
+        "progress": 60,
+        "table": "scene"
+      }
+    },
+    {
+      "id": "qi-pill-9",
+      "kind": "pill",
+      "_furnace": "Made in 银月's furnace from the garden's culls (xu-yaoyuan-canzhu): 九转, three times the market 聚气丹's 修为; not sold.",
+      "zhuan": 9,
+      "name": {
+        "zh": "九转聚气丹",
+        "en": "Nine-turn qi-gathering pill"
+      },
+      "art": "art/items/qi-pill.webp",
+      "about": {
+        "zh": "残株炼的聚气丹，出炉九道金纹。坊市的聚气丹抵半日打坐；它抵三日。",
+        "en": "A qi-gathering pill from the garden's culls, nine gold rings on it. The market's is worth half a day's sitting; this, three days."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "effect": {
+        "progress": 60,
+        "table": "scene"
+      }
+    },
+    {
       "id": "wangqi-1",
       "kind": "scroll",
       "name": {

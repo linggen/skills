@@ -53,7 +53,15 @@ const artOf = (i, ctx) => (i.art ? `<img src="${esc((ctx.artBase ?? '') + i.art)
 
 function tileHtml(i, ctx, sel) {
   return `<button class="ptile${sel === i.id ? ' sel' : ''}${i.worn ? ' worn' : ''}${i.free ? ' free' : ''}" data-pouch-item="${esc(i.id)}" aria-pressed="${sel === i.id}">
-    ${artOf(i, ctx)}<span class="pname">${esc(i.name)}</span>${i.n > 1 ? `<b class="pn">×${esc(i.n)}</b>` : ''}${i.worn ? `<span class="pmark">${esc(ctx.words.worn)}</span>` : ''}</button>`;
+    ${artOf(i, ctx)}<span class="pname">${esc(i.name)}</span>${zhuanHtml(i.zhuan, ctx.lang)}${i.n > 1 ? `<b class="pn">×${esc(i.n)}</b>` : ''}${i.worn ? `<span class="pmark">${esc(ctx.words.worn)}</span>` : ''}</button>`;
+}
+
+/// 丹纹 — a pill's 转 as lines across it: one per turn, the ninth turn's all
+/// gold (design.md § 丹药等级: 「九道纹。金的。」). Nothing for a pill with no 转.
+export function zhuanHtml(n, lang = 'zh') {
+  if (!(n > 0)) return '';
+  const label = lang === 'en' ? `${n}-turn · ${n} rings` : `${'一二三四五六七八九'[n - 1] ?? n}转 · ${'一二三四五六七八九'[n - 1] ?? n}道纹`;
+  return `<span class="zhuan${n >= 9 ? ' gold' : ''}" role="img" aria-label="${esc(label)}" title="${esc(label)}">${'<i></i>'.repeat(n)}</span>`;
 }
 
 /* A scroll (《吐纳经》): the layer the player stands on, its 功课, and its
@@ -78,12 +86,13 @@ function detailHtml(i, g, ctx, pw, ui) {
   else if (e.pouch) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(pw.carry)}</button>`);
   if (i.slot && !i.worn) acts.push(`<button class="act" data-wear="${esc(i.id)}">${esc(say(w.gearTo, { slot: w.gearSlots[i.slot] ?? g.her?.name ?? i.slot }))}</button>`);
   if (i.worn && (g.slots ?? []).some((s) => s.item?.id === i.id)) acts.push(`<button class="act quiet" data-remove="${esc(i.id)}">${esc(w.gearOff)}</button>`);
-  if (g.market && i.sell != null && !i.free) acts.push(`<button class="act quiet" data-sell="${esc(i.id)}">${esc(say(pw.sell, { n: i.sell }))}</button>`);
+  if (g.market && i.sell > 0 && !i.free) acts.push(`<button class="act quiet" data-sell="${esc(i.id)}">${esc(say(pw.sell, { n: i.sell }))}</button>`);
   if (!i.free && !i.worn) acts.push(`<button class="act quiet danger" data-toss="${esc(i.id)}">${esc(pw.toss)}</button>`);
   // 丢 asks here, on the pane — the page's own confirm, never window.confirm.
   const ask = ui.toss === i.id ? `<div class="ptoss" role="alertdialog"><span>${esc(say(pw.tossAsk, { name: i.name, n: i.n }))}</span>
     <button class="act danger" data-toss-yes="${esc(i.id)}">${esc(pw.tossYes)}</button><button class="act quiet" data-toss-no>${esc(pw.tossNo)}</button></div>` : '';
   return `<div class="pdetail">${artOf(i, ctx)}<div class="pdbody"><b class="pdname">${esc(i.name)}</b>${i.n > 1 ? ` <span class="dim">×${esc(i.n)}</span>` : ''}
+    ${i.zhuan ? `<div class="pzhuan">${zhuanHtml(i.zhuan, ctx.lang)}</div>` : ''}
     <div class="small dim">${esc(kind)}${kind ? ' · ' : ''}${esc(itemDoes(e, ctx))}</div>
     ${i.about ? `<div class="small about">${esc(i.about)}</div>` : ''}${tamesLine(i, ctx)}${readsHtml(i.reads, w)}
     ${i.free ? `<div class="small dim">${esc(pw.free)}</div>` : ''}

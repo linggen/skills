@@ -186,3 +186,31 @@ test('the panel: header used/cap and 待取, tabs with counts, tiles, the detail
   const over = VERBS.gear(at(fill(28)), content, ctx()).result.gear;
   assert.match(pouchHtml({ look: {}, gear: over, lang: 'zh', words: WORDS.zh }, {}), /28\/24 格[\s\S]*超出 4 格/);
 });
+
+test('a pill from 银月\'s furnace is its own 九转 item — more 修为 than the market\'s, not sold, and its card shows nine gold lines (his, 2026-09-29)', async () => {
+  const { zhuanHtml, pouchHtml } = await import('../scripts/pouch.js');
+  const { WORDS } = await import('../scripts/cards.js');
+  const item = id => content.items.items.find(i => i.id === id);
+  for (const [nine, market] of [['mend-pill-9', 'mend-pill'], ['qi-pill-9', 'qi-pill']]) {
+    assert.equal(item(nine).zhuan, 9, nine);
+    assert.ok((item(nine).effect?.progress ?? 0) > (item(market).effect?.progress ?? 0), `${nine} does more than ${market}`);
+    assert.match(item(nine).name.zh, /^九转/);
+    assert.equal(item(nine).sell, 0, '九转丹不能卖');
+    assert.deepEqual(item(nine).sold, []);
+  }
+  const diyilu = content.chapters['00-waimen'].scenes['wm-diyilu'].exits.find(e => e.id === 'swallow');
+  assert.equal(diyilu.grant.item, 'mend-pill-9', 'the furnace\'s first pill is the 九转');
+  assert.equal(content.quests.find(q => q.id === 'xu-yaoyuan-canzhu').grant.item, 'qi-pill-9');
+  const html = zhuanHtml(9);
+  assert.equal((html.match(/<i><\/i>/g) ?? []).length, 9);
+  assert.match(html, /class="zhuan gold"/);
+  assert.match(html, /九转 · 九道纹/);
+  assert.equal(zhuanHtml(undefined), '');
+  const s = at({ 'mend-pill-9': 1 });
+  const gear = VERBS.gear(s, content, ctx(), {}).result.gear;
+  const pill = gear.bag.find(i => i.id === 'mend-pill-9');
+  assert.equal(pill.zhuan, 9);
+  assert.equal(pill.usable, true);
+  const pop = pouchHtml({ gear, words: WORDS.zh, lang: 'zh', look: {} }, { sel: 'mend-pill-9' });
+  assert.match(pop, /class="pzhuan"><span class="zhuan gold"/);
+});

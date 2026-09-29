@@ -1957,8 +1957,10 @@ Listing every menu entry flooded the book. The rules read the menus thus:
 
 A pill is measured twice: its **阶** is bound to a realm — every realm has pills of its own level —
 and its **转** (一至九, 《抱朴子》) says how well it was made, and its **品** (下中上, 《神农本草经》) its toxin. Above the nine mortal 阶 stands **仙丹**, made only in 仙界.
-Today items.json names pills without a grade (聚气丹, 筑基丹, 固基丹, 破境丹, 回春丹…); 阶 and 品 are
-fields each made pill carries, not a new item per grade.
+Today items.json names pills without a grade (聚气丹, 筑基丹, 固基丹, 破境丹, 回春丹…). **Built 2026-09-29**
+(his: a furnace pill is its own item): what 银月's furnace makes is its own 九转 item — 九转回春丹
+(`mend-pill-9`, 第一炉), 九转聚气丹 (`qi-pill-9`, 药园残株) — with `zhuan: 9`, three times the market
+pill's 修为, never sold (`sell: 0`); the 储物袋 draws its 丹纹, nine lines in gold (pouch.js `zhuanHtml`).
 
 **典据 — the grades stand on real classics (his, 2026-09-28)**
 

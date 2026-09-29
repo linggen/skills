@@ -532,6 +532,15 @@ body.fighting .footrow { display: none; }
 .ptile img, .ptile .noart { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 6px; background: var(--raised); }
 .ptile .pname { font-size: 12.5px; line-height: 1.25; text-align: center; overflow-wrap: anywhere; }
 .ptile .pn { position: absolute; top: 4px; right: 5px; font-size: 11.5px; padding: 0 5px; border-radius: 99px; background: var(--surface); color: var(--ling); border: 1px solid var(--line); }
+/* 丹纹: one line per 转; nine, all gold (pouch.js zhuanHtml). */
+.zhuan { display: inline-flex; flex-direction: column; gap: 2px; width: 26px; vertical-align: middle; }
+.zhuan i { display: block; height: 2px; border-radius: 1px; background: var(--faint); }
+.zhuan.gold i { background: linear-gradient(90deg, #b8862b, #f3d27a 50%, #b8862b); box-shadow: 0 0 2px rgb(243 210 122 / .6); }
+.ptile .zhuan { position: absolute; bottom: 30px; right: 6px; width: 18px; gap: 1.5px; }
+.ptile .zhuan i { height: 1.5px; }
+.pzhuan { margin: 4px 0 2px; }
+.pzhuan .zhuan { width: 64px; gap: 3px; }
+.pzhuan .zhuan i { height: 3px; }
 .ptile .pmark { position: absolute; top: 4px; left: 5px; font-size: 10.5px; padding: 0 5px; border-radius: 4px; background: var(--jade-soft); color: var(--jade); }
 .ptile.free { border-style: dashed; }
 .ptile:hover { border-color: var(--ling); }
