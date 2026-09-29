@@ -393,32 +393,6 @@
   },
   "wangqi-1": {
    "tag": "功法"
-  },
-  "bingyi": {
-   "kind": "人物",
-   "name": {
-    "zh": "河伯",
-    "en": "He Bo, Lord of the River"
-   },
-   "image": "art/people/bingyi.webp",
-   "lines": {
-    "zh": [
-     "冰夷，就是河伯。「冰夷人面，乘两龙。」",
-     "漳水底下守着一样东西，一守两千年。"
-    ],
-    "en": [
-     "Bingyi, the Lord of the River. \"Bingyi has a man's face and rides two dragons.\"",
-     "Under the Zhang he keeps a thing in trust, and has kept it two thousand years."
-    ]
-   },
-   "first": {
-    "book": "h04"
-   },
-   "_kind": "人物, not 生物: he speaks, remembers and gives 阿禾 a scale — a person of the story; 生物 is creatures.json's 山海经 beasts, which fight (deck, drops). Not `hebo`: that id is the 河伯祠 place in meets.json.",
-   "_credit": {
-    "zh": "本地 FLUX（FLUX.2 klein 4B）所绘，七选一；据《山海经·海内北经》「冰夷人面，乘两龙」与第四回漳水一节；角上的假落款抹去，龙的青色压淡。",
-    "en": "Painted by the local FLUX (FLUX.2 klein 4B), one of seven seeds, after the Classic's 'Bingyi has a man's face and rides two dragons' and 回 4's Zhang river scene; a fake signature painted out, the dragons' green toned down."
-   }
   }
  }
 }
