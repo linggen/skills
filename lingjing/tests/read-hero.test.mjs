@@ -60,8 +60,8 @@ test('the chapters name the hero only as {name}; every token fills for either he
   assert.ok(names >= 15, `the hero is named ${names} times`);
   assert.ok(words >= 30, `${words} gendered words`);
   const her = renderMarkdown(fillHero(fs.readFileSync(path.join(BOOK, '00-序章上·坠谷遇狐.md'), 'utf8'), { name: '秋白', gender: 'female' }));
-  assert.match(her, /我叫秋白。今年十二岁。家住蒙山脚下石坳村。职业：猎户家的独女。/);
-  assert.match(her, /窗外是隔壁的阿禾。他比我小一岁/);
+  assert.match(her, /我叫秋白，今年十二岁[\s\S]*猎户家的独女/);
+  assert.match(her, /窗外站着隔壁的阿禾。他比我小一岁/);
 });
 
 test('::: 男 / ::: 女 blocks: the hero\'s stays, the other goes, fences never show', () => {
@@ -89,16 +89,16 @@ test('the girl-hero chapters: both readings clean, each told its own way', () =>
     for (const gender of ['male', 'female']) assert.doesNotMatch(read(f, gender), /:::|[{}]|女主变体/, `${f} ${gender}`);
   }
   const [hm, hf] = ['male', 'female'].map((g) => read('02-第一章·外门.md', g));
-  assert.match(hm, /蹲了下去，抱住了头/);
+  assert.match(hm, /蹲下身去，抱住了头/);
   assert.doesNotMatch(hm, /猪圈/);
-  assert.match(hf, /扔进了伙房后面的猪圈/);
+  assert.match(hf, /扔进了伙房后头的猪圈/);
   assert.doesNotMatch(hf, /抱住了头|肿成馒头/);
   assert.match(hf, /嘴里一股泥腥味/);
   const [rm, rf] = ['male', 'female'].map((g) => read('03-第二章·河伯娶妇.md', g));
-  assert.match(rm, /打鼓的那个，是我。/);
-  assert.doesNotMatch(rm, /你长得像交不起河伯钱的|这个，行/);
+  assert.match(rm, /打鼓的那个，便是我。/);
+  assert.doesNotMatch(rm, /你长得像交不起河伯钱的|巫祝眯起眼睛/);
   assert.match(rf, /你长得像交不起河伯钱的/);
-  assert.match(rf, /这个，行。/);
-  assert.doesNotMatch(rf, /打鼓的那个，是我/);
-  for (const html of [rm, rf]) assert.match(html, /「扑通。」/);
+  assert.match(rf, /巫祝眯起眼睛，把我从头看到脚/);
+  assert.doesNotMatch(rf, /打鼓的那个，便是我/);
+  for (const html of [rm, rf]) assert.match(html, /「扑通」一声/);
 });
