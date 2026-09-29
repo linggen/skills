@@ -3,7 +3,8 @@
 // new window). story/index.json names the books; a book's book.json its
 // chapters and appendix; each chapter is a markdown file (read-md.js).
 import { esc } from './esc.js';
-import { renderMarkdown } from './read-md.js';
+import { fillHero, heroOf, renderMarkdown } from './read-md.js';
+import { verb } from './rules.js';
 
 const WORDS = {
   zh: { back: '← 回到灵境', toc: '目录', prev: '← 上一章', next: '下一章 →', none: '书还没有写。', failed: '这一章没能打开。', only: '这一章只有中文。' },
@@ -49,11 +50,14 @@ async function main() {
   $('toc').setAttribute('aria-label', w.toc);
   $('toc').innerHTML = `<div class="toch">${esc(w.toc)}</div>` + all.map((c, i) => `<a href="${esc(hrefWith({ book: bookId, ch: c.id }))}" class="${i === at ? 'on' : ''}">${esc(pick(c.title))}</a>`).join('');
   $('toc').querySelector('a.on')?.scrollIntoView({ block: 'nearest' });
+  // The player's name from the save (Look), asked beside the chapter; no save,
+  // a failed or slow look reads with the drafts' hero — never blocks the book.
+  const hero = Promise.race([verb('look'), new Promise((_, no) => setTimeout(no, 3000))]).then(heroOf, () => heroOf(null));
   try {
     const res = await fetch(`${STORY}${encodeURIComponent(bookId)}/${encodeURIComponent(ch.file)}`);
     if (!res.ok) throw new Error(String(res.status));
     const md = await res.text();
-    $('chapter').innerHTML = (lang === 'en' ? `<p class="note">${esc(w.only)}</p>` : '') + renderMarkdown(md);
+    $('chapter').innerHTML = (lang === 'en' ? `<p class="note">${esc(w.only)}</p>` : '') + renderMarkdown(fillHero(md, await hero));
   } catch {
     $('chapter').innerHTML = `<p class="note">${esc(w.failed)}</p>`;
   }

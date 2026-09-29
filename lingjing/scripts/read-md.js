@@ -2,6 +2,23 @@
 // paragraphs, **bold**, > blockquotes, --- rules and pipe tables. Pure: no DOM,
 // every word escaped (read.html's reader and its test both use it).
 import { esc } from './esc.js';
+import { fill } from './state.mjs';
+
+/// The hero the drafts were written with: the name a page with no save shows.
+export const HERO = '周星星';
+
+/// The hero from what Look says (`name`), or the drafts' own when there is no
+/// save or no name yet.
+export const heroOf = (seen) => ({ name: (typeof seen?.name === 'string' && seen.name.trim()) || HERO });
+
+/// A chapter's markdown with the player in it: `{name}` becomes the hero's
+/// name (state.mjs `fill`, the scenes' own token). Runs before rendering; the
+/// name is a word, never markup, so a `*` or `|` in it is made full-width and
+/// can't open bold or split a table row (renderMarkdown escapes the rest).
+export function fillHero(md, hero = {}) {
+  const name = String(hero.name || HERO).replace(/\*/g, '＊').replace(/\|/g, '｜');
+  return fill(String(md ?? ''), { name });
+}
 
 const inline = (t) => esc(t).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
 const cells = (row) => row.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim());
