@@ -12,7 +12,7 @@
 //      transfer pair and exclude both from spend/income.
 
 import { txnId } from './hash.js';
-import { analyzeTransactions, budgetsFor, keywordRe, cleanMerchant } from './analyze.js';
+import { analyzeTransactions, budgetsFor, keywordRe, cleanMerchant, merchantKey } from './analyze.js';
 import { accountCurrency, fxRate, leadCurrency } from './currency.js';
 
 // The key a merchant rule (`ov:<key>`) is stored under: the cleaned, lowercased
@@ -53,31 +53,85 @@ const CARD_ISSUER_VOCAB = [
 const TRANSFER_RES = TRANSFER_VOCAB.map(keywordRe);
 const CARD_ISSUER_RES = CARD_ISSUER_VOCAB.map(keywordRe);
 
-// Does this single row read as a self-transfer / credit-card payment?
+// Does this single row read as a self-transfer / credit-card payment? Says
+// where the money went: 'card' — a card bill paid from a bank account (the
+// card is not imported, or pairing would have taken it); 'account' — to or
+// from an account of some other kind; null — not a transfer.
 function transferSignal(row, account) {
   const m = row.merchant || '';
-  if (TRANSFER_RES.some((re) => re.test(m))) return true;
   const type = (account?.type || '').toLowerCase();
   // Paying a credit-card bill from chequing/savings → debit to a card issuer.
-  if ((type === 'checking' || type === 'savings') && row.amount < 0 && CARD_ISSUER_RES.some((re) => re.test(m))) return true;
+  if ((type === 'checking' || type === 'savings') && row.amount < 0 && CARD_ISSUER_RES.some((re) => re.test(m))) return 'card';
+  if (TRANSFER_RES.some((re) => re.test(m))) return 'account';
   // The card side of that payment landing as a credit on a credit account.
-  if (type === 'credit' && row.amount > 0 && PAYMENT_RE.test(m) && !REFUND_RE.test(m)) return true;
-  return false;
+  if (type === 'credit' && row.amount > 0 && PAYMENT_RE.test(m) && !REFUND_RE.test(m)) return 'account';
+  return null;
 }
 
-// The user's own ruling on a row (from config.category_overrides), longest
-// keyword wins. 'transfer' → force EXCLUDE; any category / 'income' → the user
-// says it's real money, so force KEEP (overrides the heuristics above).
-function userTransferRule(merchant, overrides) {
+// The user's own rule for a row (config.category_overrides): the value of the
+// longest keyword that matches, or null.
+function userRuleValue(merchant, overrides) {
   if (!overrides) return null;
   const ml = (merchant || '').toLowerCase();
   let val = null, len = -1;
   for (const [kw, v] of Object.entries(overrides)) {
     if (kw && kw.length > len && keywordRe(kw).test(ml)) { val = v; len = kw.length; }
   }
-  if (val == null) return null;
-  return val === 'transfer' ? 'exclude' : 'keep';
+  return val;
 }
+
+// The user's ruling on a row. 'transfer' → force EXCLUDE; 'savings' → out of
+// spend, into Saved; any category / 'income' → the user says it's real money,
+// so force KEEP (overrides the heuristics above).
+const RULE_EFFECT = { transfer: 'exclude', savings: 'saved' };
+function userTransferRule(merchant, overrides) {
+  const val = userRuleValue(merchant, overrides);
+  return val == null ? null : RULE_EFFECT[val] || 'keep';
+}
+
+// ── Money put away: investing wording, bank-neutral — plan acronyms, fund
+// words, plan codes, brokerages. It only ever SUGGESTS 'savings' (the page's
+// approval card); a confirmed rule moves the totals. Never a bare "inv"
+// (an invoice).
+// "IRA" and "ISA" only with a word that makes them a plan: alone they are
+// also names ("Isa's Bakery", "IRA KITCHEN").
+const SAVINGS_WORDS = [
+  'resp', 'rrsp', 'tfsa', 'fhsa', 'rrif', '401k', '401(k)', '403b', '403(b)', 'roth ira', 'traditional ira', 'sep ira',
+  'ira contrib', 'ira contribution', 'ira deposit', 'stocks and shares isa', 'stocks & shares isa', 'lifetime isa', 'cash isa',
+  'junior isa', 'isa contribution', 'isa subscription', 'isa deposit', 'sipp', 'mutual fund', 'mutual funds', 'fonds', 'index fund',
+  'investment contribution', 'investment plan', 'invest contrib', 'pension contribution', 'brokerage',
+];
+const BROKERAGES = [
+  'wealthsimple', 'questrade', 'qtrade', 'vanguard', 'fidelity', 'schwab', 'e*trade', 'etrade', 'interactive brokers',
+  'robinhood', 'betterment', 'wealthfront', 'acorns', 'stash invest', 'm1 finance', 'merrill edge', 'edward jones',
+  'td direct investing', 'rbc direct investing', 'bmo investorline', 'scotia itrade', 'moomoo', 'webull', 'trading 212',
+  'hargreaves lansdown', 'aj bell', 'nutmeg', 'moneybox', 'freetrade', 'vanguard investor', 'trade republic',
+  'scalable capital', 'degiro', 'nordnet', 'avanza', 'sharesies', 'raiz', 'commsec', 'selfwealth', 'betashares',
+];
+const SAVINGS_RES = [...SAVINGS_WORDS, ...BROKERAGES].map(keywordRe);
+// A plan code: "INV/PLA", "INV PLAN", "INVEST/PLN".
+const PLAN_CODE_RE = /\binv(?:est)?\s*[/-]?\s*pl(?:a|an|n)\b/i;
+
+export function savingsWording(merchant) {
+  const m = merchant || '';
+  return PLAN_CODE_RE.test(m) || SAVINGS_RES.some((re) => re.test(m));
+}
+
+// ── The other side of an unpaired transfer: which account the money went to
+// or came from, read off the description with the transfer words dropped —
+// "Online Transfer, TF 0133-482" and "TF 0133-482" are the same account.
+const COUNTERPARTY_NOISE = new Set([
+  'online', 'transfer', 'tf', 'tfr', 'xfer', 'to', 'from', 'payment', 'bill', 'pay', 'banking', 'internal',
+  'account', 'acct', 'funds', 'wire', 'bank', 'mobile', 'web', 'the', 'thank', 'you', 'received', 'autopay',
+  'internet', 'ach', 'pmt', 'pymt', 'epayment', 'e-payment', 'directpay',
+]);
+const bareWord = (w) => w.toLowerCase().replace(/[^a-z0-9]/g, '');
+export function counterpartyLabel(merchant) {
+  const clean = cleanMerchant(merchant);
+  const words = clean.split(/[\s,]+/).filter((w) => bareWord(w) && !COUNTERPARTY_NOISE.has(w.toLowerCase()) && !COUNTERPARTY_NOISE.has(bareWord(w)));
+  return words.join(' ') || clean;
+}
+export const counterpartyKey = (merchant) => counterpartyLabel(merchant).toLowerCase();
 
 // Parsed {date, merchant, amount} list (one statement) → ledger rows for an account.
 // Identical rows within the statement (same date/merchant/amount — e.g. two of
@@ -226,15 +280,25 @@ function preferredCredit(debit, candidate, best) {
 const FX_PAIR_TOLERANCE = 0.08;
 const curOf = (r) => r.currency || null;
 
-export function detectTransfers(rows, accountsById = {}, windowDays = 5, overrides = null, fx = null) {
-  for (const r of rows) { r.transfer = false; r.transfer_pair = null; if ('transfer_fx' in r) delete r.transfer_fx; }
+// Flags a report run sets on rows and never stores: cleared on every run.
+const RUN_FLAGS = ['transfer_fx', 'saved', 'via', 'household', 'refund', 'one_off'];
+
+// `external` = the person's answers about accounts that aren't imported
+// ({counterpartyKey: 'mine' | 'household'}, register `ext:` cells): money in
+// from a 'household' one is income, not a transfer.
+export function detectTransfers(rows, accountsById = {}, windowDays = 5, overrides = null, fx = null, external = null) {
+  for (const r of rows) {
+    r.transfer = false; r.transfer_pair = null;
+    for (const f of RUN_FLAGS) if (f in r) delete r[f];
+  }
 
   // 1. User rules.
   const locked = new Set();
   for (const r of rows) {
     const rule = userTransferRule(r.merchant, overrides);
     if (!rule) continue;
-    if (rule === 'exclude') r.transfer = true;
+    if (rule !== 'keep') r.transfer = true;
+    if (rule === 'saved') r.saved = true; // out of spend, counted as Saved
     locked.add(r.id); // 'keep' too: the user said it's real, shield it below.
   }
 
@@ -306,10 +370,76 @@ export function detectTransfers(rows, accountsById = {}, windowDays = 5, overrid
     }
   }
 
-  // 3. Single-row signals on whatever pairing left unresolved.
+  // 3. Single-row signals on whatever pairing left unresolved. `via` says
+  // where the money went — the report's "not imported" lines read it.
   for (const r of rows) {
     if (locked.has(r.id) || r.transfer) continue;
-    if (transferSignal(r, accountsById[r.account])) r.transfer = true;
+    const via = transferSignal(r, accountsById[r.account]);
+    if (!via) continue;
+    if (via === 'account' && r.amount > 0 && external?.[counterpartyKey(r.merchant)] === 'household') { r.household = true; continue; }
+    r.transfer = true;
+    r.via = via;
+  }
+  return rows;
+}
+
+// Money back — a positive row that is not a payment on a card, or any
+// refund / reversal / rebate / cash-back wording — is spend returning, never
+// income. The person's own 'income' rule says otherwise, and wins. A "card"
+// whose credits outweigh its charges is a bank account typed as a card (a
+// new account's type is a guess): its deposits stay income.
+const isCredit = (acc) => (acc?.type || '').toLowerCase() === 'credit';
+function cardsThatLookLikeCards(rows, accountsById) {
+  const sums = {};
+  for (const r of rows) {
+    if (r.transfer || r.household || !isCredit(accountsById[r.account])) continue;
+    const s = (sums[r.account] ||= { out: 0, back: 0 });
+    if (r.amount < 0) s.out -= cents(r.amount);
+    else if (!PAYMENT_RE.test(r.merchant)) s.back += cents(r.amount);
+  }
+  return new Set(Object.entries(sums).filter(([, s]) => s.back <= s.out).map(([id]) => id));
+}
+export function markRefunds(rows, accountsById = {}, overrides = null) {
+  const cards = cardsThatLookLikeCards(rows, accountsById);
+  for (const r of rows) {
+    if (r.transfer || r.household || !(r.amount > 0)) continue;
+    if (userRuleValue(r.merchant, overrides) === 'income') continue;
+    if ((cards.has(r.account) && !PAYMENT_RE.test(r.merchant)) || REFUND_RE.test(r.merchant)) r.refund = true;
+  }
+  return rows;
+}
+
+// A one-off lump: what one payee took on one day (a fee paid in two parts is
+// one lump) over 3× the median month's spend, from a payee seen on at most
+// two days in the twelve months to the ledger's last day. Label only; the
+// totals keep it. `rows` are the spendable rows (no transfers).
+const ONE_OFF_TIMES = 3;
+const ONE_OFF_MAX_DAYS = 2;
+const median = (xs) => {
+  const s = [...xs].sort((a, b) => a - b);
+  if (!s.length) return 0;
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+};
+export function markOneOffs(rows) {
+  const last = rows.reduce((m, r) => (r.date && r.date > m ? r.date : m), '');
+  if (!last) return rows;
+  const from = `${+last.slice(0, 4) - 1}${last.slice(4)}`;
+  const charges = rows.filter((r) => r.amount < 0 && r.date && r.date > from);
+  // Whole cents: integers add exactly in any order (the phone walks the
+  // ledger sorted, this Mac in file order).
+  const monthly = {}, lumps = new Map(), days = {};
+  const payee = (r) => merchantKey(cleanMerchant(r.merchant));
+  for (const r of charges) {
+    const m = r.date.slice(0, 7);
+    monthly[m] = (monthly[m] || 0) + Math.round(-r.amount * 100);
+    const k = `${payee(r)}|${r.date}`;
+    if (!lumps.has(k)) (days[payee(r)] ||= new Set()).add(r.date);
+    lumps.set(k, (lumps.get(k) || 0) + Math.round(-r.amount * 100));
+  }
+  const bar = ONE_OFF_TIMES * median(Object.values(monthly));
+  for (const r of charges) {
+    if (lumps.get(`${payee(r)}|${r.date}`) > bar && days[payee(r)].size <= ONE_OFF_MAX_DAYS) r.one_off = true;
   }
   return rows;
 }
@@ -384,7 +514,10 @@ export function stampCurrencies(rows, accountsById, home) {
   }
 }
 
-const txnOf = (r) => ({ date: r.date, merchant: r.merchant, amount: r.amount, category: r.category || null });
+const txnOf = (r) => ({
+  date: r.date, merchant: r.merchant, amount: r.amount, category: r.category || null,
+  ...(r.refund ? { refund: true } : {}), ...(r.one_off ? { one_off: true } : {}),
+});
 const tag = (list, currency) => (list || []).map((x) => ({ ...x, currency }));
 
 // What one currency's figures look like beside the others.
@@ -457,8 +590,10 @@ export function viewFromLedger(rows, accountsById = {}, opts = {}, range = null)
   const home = opts.homeCurrency || null;
   const fx = opts.fx || null;
   stampCurrencies(rows, accountsById, home);
-  detectTransfers(rows, accountsById, opts.transferWindowDays || 5, opts.categoryOverrides || null, fx);
+  detectTransfers(rows, accountsById, opts.transferWindowDays || 5, opts.categoryOverrides || null, fx, opts.externalAccounts || null);
+  markRefunds(rows, accountsById, opts.categoryOverrides || null);
   const spendableAll = rows.filter((r) => !r.transfer && !isStatementArtifact(r.merchant));
+  markOneOffs(spendableAll);
   let spendable = spendableAll;
   const months_available = [...new Set(spendable.filter((r) => r.date).map((r) => r.date.slice(0, 7)))].sort();
   if (range && range.from && range.to) {
@@ -479,10 +614,12 @@ export function viewFromLedger(rows, accountsById = {}, opts = {}, range = null)
   report.transfer_count = rows.filter((r) => r.transfer).length;
   if (rows.some((r) => r.transfer_fx)) report.transfer_fx_count = rows.filter((r) => r.transfer_fx).length;
   report.account_count = new Set(rows.map((r) => r.account)).size;
+  Object.assign(report, sideLines(rows, range, multi(currencies) ? report.currency : null, opts.externalAccounts || null));
+  report.saving_suggestions = savingSuggestions(rows, opts.categoryOverrides || null);
   report.payment_schedule = detectPaymentSchedule(rows, accountsById);
-  const multi = currencies.length > 1;
+  const isMulti = multi(currencies);
   const accCur = (id) => rows.find((r) => r.account === id && r.currency)?.currency || null;
-  if (multi) report.payment_schedule = report.payment_schedule.map((p) => ({ ...p, currency: accCur(p.account) }));
+  if (isMulti) report.payment_schedule = report.payment_schedule.map((p) => ({ ...p, currency: accCur(p.account) }));
 
   // Card-payment events for the bill calendar — transfers are excluded from
   // the analyze layer by design, so they join here: paid ones this month from
@@ -493,7 +630,7 @@ export function viewFromLedger(rows, accountsById = {}, opts = {}, range = null)
     const y = +month.slice(0, 4), mo = +month.slice(5, 7);
     const nextMonth = mo === 12 ? `${y + 1}-01` : `${y}-${String(mo + 1).padStart(2, '0')}`;
     const winEnd = `${nextMonth}-${String(new Date(Date.UTC(+nextMonth.slice(0, 4), +nextMonth.slice(5, 7), 0)).getUTCDate()).padStart(2, '0')}`;
-    const cur = (c) => (multi ? { currency: c } : {});
+    const cur = (c) => (isMulti ? { currency: c } : {});
     for (const r of rows) {
       if (r.transfer && r.amount > 0 && r.date && r.date.startsWith(month)
         && (accountsById[r.account]?.type || '').toLowerCase() === 'credit') {
@@ -508,6 +645,75 @@ export function viewFromLedger(rows, accountsById = {}, opts = {}, range = null)
     report.bill_calendar.sort((a, b) => a.date.localeCompare(b.date));
   }
   return report;
+}
+
+const multi = (currencies) => currencies.length > 1;
+const cents = (n) => Math.round(n * 100);
+const inRange = (range) => (r) => r.date && (!range || !range.from || !range.to
+  || (r.date.slice(0, 7) >= range.from && r.date.slice(0, 7) <= range.to));
+
+// Rows summed by a key into lines, in whole cents, largest first then by key
+// — the same list on this Mac and the phone whatever order each walks.
+function linesBy(rows, keyOf, labelOf, sign) {
+  const by = new Map();
+  for (const r of rows) {
+    const k = keyOf(r);
+    const e = by.get(k) || { key: k, label: labelOf(r), in: 0, out: 0, count: 0, last: '' };
+    if (r.amount > 0) e.in += cents(r.amount); else e.out -= cents(r.amount);
+    e.count++;
+    const label = labelOf(r); // the newest row names the line; a same-day tie, the smaller name
+    if (r.date > e.last || (r.date === e.last && label < e.label)) { e.last = r.date; e.label = label; }
+    by.set(k, e);
+  }
+  return [...by.values()]
+    .map((e) => ({ key: e.key, label: e.label, amount: (sign * (e.out - e.in)) / 100, in: e.in / 100, out: e.out / 100, count: e.count }))
+    .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount) || a.key.localeCompare(b.key));
+}
+const sumOf = (lines, f) => lines.reduce((a, l) => a + cents(l[f]), 0) / 100;
+
+// The money the headline doesn't count as spend or income, said as lines so
+// nothing vanishes without a word, over the view's range (and, with several
+// currencies, the lead one's rows):
+//   saved      — rows under a 'savings' rule: put away, not spent;
+//   paid_to_cards_not_imported — card bills paid from a bank account whose
+//                card isn't imported (pairing takes over once it is);
+//   moved_not_imported — transfers to / from accounts not imported, net per
+//                account, each with the person's answer (ext: cell) or
+//                `ask: true` when money came in and nobody said what it is.
+function sideLines(rows, range, currency, external) {
+  const pick = rows.filter(inRange(range)).filter((r) => !currency || r.currency === currency);
+  const saved = linesBy(pick.filter((r) => r.saved), (r) => merchantKey(cleanMerchant(r.merchant)), (r) => cleanMerchant(r.merchant), 1);
+  const cards = linesBy(pick.filter((r) => r.via === 'card'), (r) => counterpartyKey(r.merchant), (r) => counterpartyLabel(r.merchant), 1);
+  const moved = linesBy(pick.filter((r) => r.via === 'account' || r.household), (r) => counterpartyKey(r.merchant), (r) => counterpartyLabel(r.merchant), -1)
+    .map((l) => {
+      const answer = external?.[l.key] || null;
+      return { ...l, answer, ask: !answer && l.in > 0 };
+    });
+  return {
+    saved: { total: sumOf(saved, 'amount'), lines: saved },
+    paid_to_cards_not_imported: { total: sumOf(cards, 'amount'), lines: cards },
+    moved_not_imported: { in: sumOf(moved, 'in'), out: sumOf(moved, 'out'), net: sumOf(moved, 'amount'), lines: moved },
+  };
+}
+
+// Payees whose wording reads as investing, spent from and not yet ruled
+// savings / transfer / income: the page offers 'savings' for each (one tap
+// writes the rule). Full history, not the range — a quiet month hides none.
+const RULED = new Set(['savings', 'transfer', 'income']);
+function savingSuggestions(rows, overrides) {
+  const by = new Map();
+  for (const r of rows) {
+    if (!(r.amount < 0) || r.saved || r.transfer_pair || !savingsWording(r.merchant)) continue;
+    if (RULED.has(userRuleValue(r.merchant, overrides))) continue;
+    const k = ruleKey(r.merchant);
+    const label = cleanMerchant(r.merchant);
+    const e = by.get(k) || { merchant: k, label, type: 'savings', count: 0, cents: 0 };
+    if (label < e.label) e.label = label;
+    e.count++; e.cents -= cents(r.amount);
+    by.set(k, e);
+  }
+  return [...by.values()].map(({ cents: c, ...e }) => ({ ...e, total: c / 100 }))
+    .sort((a, b) => b.total - a.total || a.merchant.localeCompare(b.merchant));
 }
 
 // Several currencies: one analysis per currency, never a sum across them.

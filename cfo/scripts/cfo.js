@@ -11,8 +11,8 @@ import { stampQuest } from './quest.js';
 import { guessType, labelFromFilename, bestAccountMatch } from './accounts.js';
 import { toLedgerRows, mergeImport, onFileIds, idsToRevert, reportFromLedger, viewFromLedger, detectTransfers, stampCurrencies, ruleKey, isStatementArtifact } from './ledger.js';
 import { hashId } from './hash.js';
-import { CURRENCY_CODES as ALL_CURRENCY_CODES, accountCurrency, currencyUnconfirmed, importCurrencyCells, seedAccountCurrencies, accountHints, migrateLedgerText, parseEcbXml, parseBocValet, ECB_URL, BOC_URL } from './currency.js';
-import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, activeRows, seedFromLegacy, saveRegisterFile, updateJsonFile, lockedUpdate } from './lww.js';
+import { CURRENCY_CODES as ALL_CURRENCY_CODES, currencyForLocale, accountCurrency, currencyUnconfirmed, importCurrencyCells, seedAccountCurrencies, accountHints, migrateLedgerText, parseEcbXml, parseBocValet, ECB_URL, BOC_URL } from './currency.js';
+import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, externalOf, activeRows, seedFromLegacy, saveRegisterFile, updateJsonFile, lockedUpdate } from './lww.js';
 import { initInvestments, renderInvestView, leaveInvestView, reportSaved, holdingsIn, proposeHoldings, chipsNow as investChipsNow } from './investments.js';
 import { reportChips, spendChips, txnChips, commitChips } from './chips.js';
 import { importStatus, importNote, pageDidLine, paymentState, PAY_STATES } from './page-did.js';
@@ -144,7 +144,7 @@ let WATCH_TIMER = null, WATCH_BUSY = false;
 // reads the redacted work list (LatestAnalysis.unclassified) + the user's vocab
 // (LatestAnalysis.vocab) and replies ONLY via PageUpdate body.suggestions — the
 // page validates each against the real ledger before showing the Review card.
-const CLASSIFY_PROMPT = 'Categorize my uncategorized transactions. Call LatestAnalysis, then for EACH merchant in `unclassified`: pick the best fit from `vocab.categories`, or "transfer" for a credit-card payment / account transfer, or "income" for money received. If nothing fits, propose a short lowercase new category and set isNew:true. Use ONLY merchant strings exactly as they appear in `unclassified`. Reply by calling PageUpdate with body.suggestions = [{merchant, type, isNew?, reason}] and nothing else — no insight cards, no prose.';
+const CLASSIFY_PROMPT = 'Categorize my uncategorized transactions. Call LatestAnalysis, then for EACH merchant in `unclassified`: pick the best fit from `vocab.categories`, or "transfer" for a credit-card payment / account transfer, or "income" for money received, or "savings" for money put into an investment / retirement account. If nothing fits, propose a short lowercase new category and set isNew:true. Use ONLY merchant strings exactly as they appear in `unclassified`. Reply by calling PageUpdate with body.suggestions = [{merchant, type, isNew?, reason}] and nothing else — no insight cards, no prose.';
 
 async function runBash(command) {
   const res = await fetch('/api/bash', {
@@ -171,6 +171,10 @@ let CURRENCY = '$';
 let CURRENCY_CODE = 'USD';
 let CATEGORY_OVERRIDES = null;
 let BUDGETS = {}; // per-category monthly caps (register `bud:` cells) — the UI is the only writer
+// The person's answers about accounts that aren't imported (register `ext:`
+// cells): counterparty key -> 'mine' | 'household'. 'household' makes money
+// in from that account income.
+let EXTERNAL = {};
 const CURRENCY_CODES = ['USD', 'CAD', 'CNY', 'EUR', 'GBP', 'JPY', 'AUD', 'HKD', 'INR', 'KRW'];
 const currencySymbol = (code) => ({
   USD: '$', CAD: '$', AUD: '$', GBP: '£', EUR: '€', JPY: '¥',
@@ -200,6 +204,7 @@ const analyzeOpts = () => ({
   budgets: Object.keys(BUDGETS).length ? BUDGETS : null,
   homeCurrency: CURRENCY_CODE,
   fx: FX,
+  externalAccounts: Object.keys(EXTERNAL).length ? EXTERNAL : null,
 });
 
 // ── Exchange rates — only when the accounts hold more than one currency.
@@ -273,7 +278,8 @@ async function loadConfig() {
   try {
     const out = await runBash(`cat "$HOME/.linggen/skills/${SKILL}/config.json" 2>/dev/null || true`);
     const cfg = out.trim() ? JSON.parse(out) : {};
-    CURRENCY_CODE = (cfg.currency || 'USD').toUpperCase();
+    // No setting yet: the locale's region says, then USD.
+    CURRENCY_CODE = (cfg.currency || currencyForLocale(navigator.language) || 'USD').toUpperCase();
     CURRENCY = currencySymbol(CURRENCY_CODE);
     // category_overrides / budgets used to live here; they are register cells
     // now (loadEdits migrates the old fields once). config.json keeps settings.
@@ -418,6 +424,7 @@ function applyEdits() {
   BUDGETS = budgetsOf(EDITS);
   COMMITMENTS = commitmentsOf(EDITS);
   ACCOUNTS = accountsOf(EDITS);
+  EXTERNAL = externalOf(EDITS);
   LEDGER = activeRows(EDITS, RAW_LEDGER);
 }
 
@@ -488,7 +495,7 @@ const filterAnomalies = (r) => ({ ...r, anomalies: (r.anomalies || []).filter((a
 // view) so a quiet month doesn't hide them. detectTransfers is idempotent.
 function computeResidual() {
   stampCurrencies(LEDGER, ACCOUNTS, CURRENCY_CODE); // as the report does: currencies first, then
-  detectTransfers(LEDGER, ACCOUNTS, 5, CATEGORY_OVERRIDES, FX); // pairing (across currencies too)
+  detectTransfers(LEDGER, ACCOUNTS, 5, CATEGORY_OVERRIDES, FX, EXTERNAL); // pairing (across currencies too)
   const agg = new Map();
   for (const r of LEDGER) {
     if (r.transfer || r.amount >= 0) continue;
@@ -503,7 +510,7 @@ function computeResidual() {
 // The user's classification vocabulary handed to the agent so it MAPS to what
 // exists instead of inventing near-duplicate categories.
 const vocabForAgent = () => ({
-  categories: knownCategories().filter((c) => c !== 'transfer' && c !== 'income'),
+  categories: knownCategories().filter((c) => !RULE_CLASSES.has(c)),
   transfer_keywords: Object.entries(CATEGORY_OVERRIDES || {}).filter(([, v]) => v === 'transfer').map(([k]) => k),
 });
 const saveReport = (r) => {
@@ -662,7 +669,7 @@ function knownCategories() {
   return [...set].sort();
 }
 
-const effCategory = (r) => (r.transfer ? 'transfer' : r.amount >= 0 ? 'income' : (r.category || categorize(cleanMerchant(r.merchant), CATEGORY_OVERRIDES)));
+const effCategory = (r) => (r.saved ? 'saved' : r.transfer ? 'transfer' : r.amount >= 0 ? 'income' : (r.category || categorize(cleanMerchant(r.merchant), CATEGORY_OVERRIDES)));
 
 function renderTxnView() {
   document.getElementById('txn-staging').hidden = !STAGING;
@@ -671,7 +678,7 @@ function renderTxnView() {
   renderImportHistory();
   renderAccounts();
   stampCurrencies(LEDGER, ACCOUNTS, CURRENCY_CODE); // as the report does: currencies first, then
-  detectTransfers(LEDGER, ACCOUNTS, 5, CATEGORY_OVERRIDES, FX); // pairing (across currencies too)
+  detectTransfers(LEDGER, ACCOUNTS, 5, CATEGORY_OVERRIDES, FX, EXTERNAL); // pairing (across currencies too)
   const cats = knownCategories();
   const f = TXN_FILTERS;
   const months = [...new Set(LEDGER.filter((r) => r.date).map((r) => r.date.slice(0, 7)))].sort().reverse();
@@ -686,7 +693,7 @@ function renderTxnView() {
   document.getElementById('txn-filters').innerHTML = `
     <select id="tf-month"><option value="">All months</option>${months.map((m) => `<option value="${m}" ${f.month === m ? 'selected' : ''}>${monthName(m)} ${m.slice(0, 4)}</option>`).join('')}</select>
     <select id="tf-acct"><option value="">All accounts</option>${Object.entries(ACCOUNTS).map(([id, a]) => `<option value="${esc(id)}" ${f.account === id ? 'selected' : ''}>${esc(a.label)}</option>`).join('')}</select>
-    <select id="tf-cat"><option value="">All categories</option>${['income', 'transfer', ...cats].map((c) => `<option ${f.category === c ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>
+    <select id="tf-cat"><option value="">All categories</option>${['income', 'transfer', 'saved', ...cats].map((c) => `<option ${f.category === c ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>
     <input id="tf-q" type="search" placeholder="Search merchant…" value="${esc(f.q)}">
     <span class="hint">${rows.length} record${rows.length === 1 ? '' : 's'}${rows.length > MAX ? ` — showing ${MAX}` : ''}</span>`;
   const re = () => renderTxnView();
@@ -703,7 +710,7 @@ function renderTxnView() {
   document.getElementById('txn-table').innerHTML = rows.length ? `
     <table><thead><tr><th>Date</th><th>Merchant</th><th>Account</th><th class="num">Amount</th><th>Category</th></tr></thead><tbody>
     ${shown.map((r) => {
-    const lbl = r.transfer ? '⇄ transfer' : effCategory(r);
+    const lbl = r.saved ? '⤓ saved' : r.transfer ? '⇄ transfer' : effCategory(r);
     // Every row is editable: a transfer can be reclassified back to real spend,
     // any row can be marked a transfer/payment. Click opens the picker combobox.
     const catCell = `<button class="cat-pick${r.transfer ? ' is-transfer' : ''}" data-id="${esc(r.id)}">${esc(lbl)}<span class="caret">▾</span></button>`;
@@ -725,11 +732,14 @@ function renderTxnView() {
 // matching rows — this is how CFO learns the user's vocabulary over time.
 const TRANSFER_OPT = { value: 'transfer', label: '⇄ Transfer / Payment', special: true };
 const INCOME_OPT = { value: 'income', label: 'income', special: true };
+const SAVINGS_OPT = { value: 'savings', label: '⤓ Saved / invested', special: true };
+// Values that are a class of money, not a spend category: always a rule.
+const RULE_CLASSES = new Set(['transfer', 'income', 'savings']);
 
 function catOptions(row) {
   if (row.amount >= 0) return [INCOME_OPT, TRANSFER_OPT];
-  const cats = knownCategories().filter((c) => c !== 'transfer' && c !== 'income');
-  return [...cats.map((c) => ({ value: c, label: c })), TRANSFER_OPT];
+  const cats = knownCategories().filter((c) => !RULE_CLASSES.has(c));
+  return [...cats.map((c) => ({ value: c, label: c })), TRANSFER_OPT, SAVINGS_OPT];
 }
 
 let CAT_POP = null;
@@ -737,7 +747,7 @@ function openCatPicker(anchor, row) {
   if (!CAT_POP) { CAT_POP = document.createElement('div'); CAT_POP.id = 'cat-pop'; CAT_POP.hidden = true; document.body.appendChild(CAT_POP); }
   const pop = CAT_POP;
   const opts = catOptions(row);
-  const cur = row.transfer ? 'transfer' : effCategory(row);
+  const cur = row.saved ? 'savings' : row.transfer ? 'transfer' : effCategory(row);
   let active = 0, items = opts;
   const rect = anchor.getBoundingClientRect();
   pop.style.left = `${Math.max(8, rect.left + window.scrollX)}px`;
@@ -764,10 +774,10 @@ function openCatPicker(anchor, row) {
     close();
     if (!o) return;
     const val = o.isNew ? o.value.toLowerCase() : o.value;
-    if (val === 'transfer' || val === 'income' || row.transfer) stampSort(row);
-    // transfer/income, and un-transferring a heuristic transfer, all need a RULE
-    // (a per-row category would just get re-flagged on the next reload).
-    if (val === 'transfer' || val === 'income' || row.transfer) applyRule(row, val);
+    if (RULE_CLASSES.has(val) || row.transfer) stampSort(row);
+    // transfer/income/savings, and un-transferring a heuristic transfer, all
+    // need a RULE (a per-row category would just get re-flagged on reload).
+    if (RULE_CLASSES.has(val) || row.transfer) applyRule(row, val);
     else askScope(anchor, row, val); // plain category — offer rule vs this-row
   };
   document.addEventListener('mousedown', onDoc, true);
@@ -1298,6 +1308,7 @@ function refreshView() {
   renderSubs(view);
   renderPayments(view);
   renderBillCal();
+  renderSuggestions(); // the Saved suggestions come from the view
   showTabSuggestions();
   const cats = view.by_category || [];
   setSecSum('breakdown', [
@@ -1397,7 +1408,7 @@ function renderBudgets(b) {
   const rows = (b && b.categories) || [];
   const budgeted = new Set(rows.map((r) => r.category));
   const unset = knownCategories()
-    .filter((c) => !budgeted.has(c) && c !== BUDGET_EDIT && c !== 'transfer' && c !== 'income');
+    .filter((c) => !budgeted.has(c) && c !== BUDGET_EDIT && !RULE_CLASSES.has(c));
   const stateCls = { over: 'neg', pacing: 'warn', ok: 'ok' };
   const nPace = rows.filter((r) => r.state === 'pacing').length;
   const nOver = rows.filter((r) => r.state === 'over').length;
@@ -1513,12 +1524,68 @@ function renderCards(v, full) {
   if (MULTI_CUR) { renderCardsMulti(v, src, period, current, sub); return; }
   const headCards = `
     <div class="card"><div class="k">Income</div><div class="v">${money(t.income)}</div><div class="sub">${esc(period)}</div></div>
-    <div class="card"><div class="k">Spend</div><div class="v">${money(t.spend)}</div><div class="sub">${current ? 'month to date' : esc(period)}</div></div>
-    <div class="card ${net >= 0 ? 'pos' : 'neg'}"><div class="k">Net</div><div class="v">${money(net)}</div><div class="sub">${esc(sub)}</div></div>`;
+    <div class="card"><div class="k">Spend</div><div class="v">${money(t.spend)}</div><div class="sub">${current ? 'month to date' : esc(period)}</div>${oneOffSub(v)}</div>
+    <div class="card ${net >= 0 ? 'pos' : 'neg'}"><div class="k">Net</div><div class="v">${money(net)}</div><div class="sub">${esc(sub)}</div></div>
+    ${savedCard(v, period)}`;
   document.getElementById('cards').innerHTML = `${headCards}
     <div class="card"><div class="k">Subscriptions</div><div class="v">${moneyExact(src.subscription_monthly_total)}<span class="per">/mo</span></div><div class="sub">${src.active_subscription_count || 0} active${src.stopped_subscription_count ? ` · ${src.stopped_subscription_count} stopped` : ''}</div></div>
     <div class="card link" id="card-commit" title="Loans, insurance, bills, subscriptions — open the Commitments tab"><div class="k">Commitments</div><div class="v">${money(c.monthly_total)}<span class="per">/mo</span></div><div class="sub">${c.pct_of_income != null ? `${Math.round(c.pct_of_income)}% of income` : 'fixed monthly'}</div></div>`;
   document.getElementById('card-commit')?.addEventListener('click', () => switchView('commit'));
+  renderMoneyLines(v);
+}
+
+// The Spend card's second line when the period holds a one-off lump: the
+// total keeps it; the typical month is the period without it.
+function oneOffSub(v, code) {
+  if (!(v.one_off_total > 0)) return '';
+  const typical = v.typical_month_spend != null && (v.totals?.months || 0) > 1 ? ` · typical month ${money(v.typical_month_spend, code)}` : '';
+  return `<div class="sub one-off" title="${esc((v.one_offs || []).map((o) => `${o.merchant} ${o.date}`).join(', '))}">incl. ${money(v.one_off_total, code)} one-off${typical}</div>`;
+}
+
+// Saved: rows under a savings rule — put away, not spent. Shown once there is any.
+function savedCard(v, period, code) {
+  const s = v.saved;
+  if (!s || !s.total) return '';
+  const names = s.lines.slice(0, 2).map((l) => l.label).join(', ');
+  return `<div class="card"><div class="k">Saved</div><div class="v">${money(s.total, code)}</div><div class="sub" title="${esc(names)}">${esc(period)}</div></div>`;
+}
+
+// ── Money the headline leaves out, said as lines: card bills to cards not
+// imported (a nudge to import them), and money moved in or out of accounts
+// not imported — each asked once, in-page, "yours or household income?"; the
+// answer is an `ext:` cell, synced like every other edit.
+function renderMoneyLines(v) {
+  const el = document.getElementById('money-lines');
+  if (!el) return;
+  const code = MULTI_CUR ? v.currency : undefined;
+  const cards = v.paid_to_cards_not_imported || { total: 0, lines: [] };
+  const moved = v.moved_not_imported || { lines: [] };
+  const rows = [];
+  if (cards.total) {
+    rows.push(`<div class="ml-row"><span class="ml-k">Paid to cards not imported</span><span class="ml-v">${money(cards.total, code)}</span>
+      <span class="ml-note">${esc(cards.lines.map((l) => l.label).join(' · '))} — import these cards to see what the bills bought.</span></div>`);
+  }
+  if (moved.lines.length) {
+    rows.push(`<div class="ml-row"><span class="ml-k">Accounts not imported</span><span class="ml-v">${moved.in ? `+${money(moved.in, code)} in` : ''}${moved.in && moved.out ? ' · ' : ''}${moved.out ? `−${money(moved.out, code)} out` : ''}</span></div>`);
+    for (const l of moved.lines) rows.push(movedLine(l, code));
+  }
+  el.innerHTML = rows.length ? `<div class="ml-card">${rows.join('')}</div>` : '';
+  el.querySelectorAll('[data-ext]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); answerExternal(b.dataset.ext, b.dataset.answer || null); }));
+}
+
+const EXT_WORDS = { mine: 'yours — savings or credit line', household: 'household income' };
+function movedLine(l, code) {
+  const amt = l.amount >= 0 ? `+${money(l.amount, code)}` : `−${money(-l.amount, code)}`;
+  const k = esc(l.key);
+  const tail = l.ask
+    ? `<span class="ml-ask">Whose is this? <button class="chip" data-ext="${k}" data-answer="mine">Mine — savings / credit line</button><button class="chip" data-ext="${k}" data-answer="household">Household income</button></span>`
+    : l.answer ? `<span class="ml-note">${esc(EXT_WORDS[l.answer] || l.answer)} <a href="#" class="hint" data-ext="${k}">change</a></span>` : '';
+  return `<div class="ml-row sub-line"><span class="ml-k">${esc(l.label)}</span><span class="ml-v">${amt}</span>${tail}</div>`;
+}
+
+async function answerExternal(key, answer) {
+  await setEdit(`ext:${key}`, answer);
+  await afterCategoriesChanged();
 }
 
 // Several currencies: each head card leads with the ONE combined figure
@@ -1541,10 +1608,12 @@ function renderCardsMulti(v, src, period, current, sub) {
     ${head('Income', 'income', period)}
     ${head('Spend', 'spend', current ? 'month to date' : period)}
     ${head('Net', 'net', sub, net == null ? '' : net >= 0 ? 'pos' : 'neg')}
+    ${savedCard(v, `${period} · ${v.currency}`, v.currency)}
     <div class="card"><div class="k">Subscriptions</div><div class="v">${esc(perCurrency(src, (b) => b.subscription_monthly_total, moneyExact))}<span class="per">/mo</span></div><div class="sub">${src.active_subscription_count || 0} active</div></div>
     <div class="card link" id="card-commit" title="Loans, insurance, bills, subscriptions — open the Commitments tab"><div class="k">Commitments</div><div class="v">${esc(perCurrency(src, (b) => b.commitments?.monthly_total))}<span class="per">/mo</span></div><div class="sub">fixed monthly</div></div>
     ${fxNote(v) ? `<p class="approx-note">${esc(fxNote(v))}</p>` : ''}`;
   document.getElementById('card-commit')?.addEventListener('click', () => switchView('commit'));
+  renderMoneyLines(v);
 }
 
 // What the range covers, in words — "Jun 2026", "May 2026 – Jul 2026", or the
@@ -1569,9 +1638,10 @@ function renderTrendCards(v) {
     return;
   }
   document.getElementById('trend-cards').innerHTML = `
-    <div class="card"><div class="k">Spend</div><div class="v">${money(t.spend)}</div><div class="sub">${esc(period)}</div></div>
+    <div class="card"><div class="k">Spend</div><div class="v">${money(t.spend)}</div><div class="sub">${esc(period)}</div>${oneOffSub(v)}</div>
     <div class="card"><div class="k">Income</div><div class="v">${money(t.income)}</div><div class="sub">${t.months || 0} mo</div></div>
-    <div class="card ${net >= 0 ? 'pos' : 'neg'}"><div class="k">Net</div><div class="v">${money(net)}</div><div class="sub">${net >= 0 ? 'kept' : 'short'}</div></div>`;
+    <div class="card ${net >= 0 ? 'pos' : 'neg'}"><div class="k">Net</div><div class="v">${money(net)}</div><div class="sub">${net >= 0 ? 'kept' : 'short'}</div></div>
+    ${savedCard(v, period)}`;
 }
 
 // Hand-rolled SVG: paired spend/income bars per month + net line. No chart lib.
@@ -1636,7 +1706,7 @@ function renderFacets(v) {
   const byCatM = v.by_category_monthly || {};
   const r = v.range || (v.months_available?.length
     ? { from: v.months_available[0], to: v.months_available[v.months_available.length - 1] } : null);
-  const catsAll = (v.by_category || []).map((c) => c.category).filter((c) => c !== 'transfer' && c !== 'income');
+  const catsAll = (v.by_category || []).map((c) => c.category).filter((c) => !RULE_CLASSES.has(c));
   if (!r || !catsAll.length) { sec.hidden = true; el.innerHTML = ''; return; }
   sec.hidden = false;
   let months = monthSpan(r.from, r.to);
@@ -2031,6 +2101,7 @@ function renderFirstView() {
   const layout = layoutOf(EDITS);
   const fv = compose(full, layout);
   document.getElementById('cards').hidden = !fv.brief;
+  document.getElementById('money-lines').hidden = !fv.brief;
   document.getElementById('forecast').hidden = !fv.brief;
   // The budget editor is one element that lives in Focus or on Trends —
   // moved out before Focus is redrawn, so redrawing never destroys it.
@@ -2371,7 +2442,7 @@ async function applySuggestions(list) {
   };
   const cats = new Set(knownCategories());
   const ovKeys = Object.keys(CATEGORY_OVERRIDES || {});
-  const okType = (t, isNew) => t === 'transfer' || t === 'income' || cats.has(t)
+  const okType = (t, isNew) => RULE_CLASSES.has(t) || cats.has(t)
     || (isNew && /^[a-z][a-z0-9 &-]{1,23}$/.test(t));
   const out = [], seen = new Set();
   for (const s of list || []) {
@@ -2390,8 +2461,8 @@ async function applySuggestions(list) {
   // Stakes-split: a category re-buckets spend but leaves the TOTAL unchanged, so
   // auto-apply it (still reversible in the row combobox). 'transfer'/'income'
   // change spend & income, so they stay in the card for an explicit tap.
-  const autoCats = out.filter((s) => s.type !== 'transfer' && s.type !== 'income');
-  SUGGESTIONS = out.filter((s) => s.type === 'transfer' || s.type === 'income');
+  const autoCats = out.filter((s) => !RULE_CLASSES.has(s.type));
+  SUGGESTIONS = out.filter((s) => RULE_CLASSES.has(s.type));
   LAST_AUTO_APPLIED = autoCats.length;
   saveSuggestions().catch((e) => console.warn('[cfo] suggestions save', e));
   if (autoCats.length) {
@@ -2402,14 +2473,21 @@ async function applySuggestions(list) {
   }
 }
 
+// Payees the engine reads as investing (ledger.js savingSuggestions), minus
+// the ones the person said are not savings (`nosave:` cells, synced).
+const savingSuggestions = () => ((FULL_VIEW && FULL_VIEW.saving_suggestions) || [])
+  .filter((s) => EDITS.get(`nosave:${s.merchant}`) !== true);
+
 function renderSuggestions() {
   const el = document.getElementById('suggestions-wrap');
   if (!el) return;
-  const n = SUGGESTIONS.length;
+  const saves = savingSuggestions();
+  const n = SUGGESTIONS.length + saves.length;
   el.hidden = VIEW_MODE !== 'report' || (!n && !LAST_AUTO_APPLIED);
   if (el.hidden) { el.innerHTML = ''; return; }
-  // Two states: things that need a tap (transfers/income that move totals) and a
-  // note for the categories CFO already auto-applied (they didn't move totals).
+  // Two states: things that need a tap (transfers/income/savings that move
+  // totals) and a note for the categories CFO already auto-applied (they
+  // didn't move totals).
   const autoNote = LAST_AUTO_APPLIED
     ? `<span class="hint">✓ auto-sorted ${LAST_AUTO_APPLIED} into categories — change any in Transactions</span>` : '';
   const title = n
@@ -2418,6 +2496,14 @@ function renderSuggestions() {
   const bulk = n
     ? `<button class="chip" id="sugg-apply-all">Apply all</button><button class="chip ghost" id="sugg-dismiss-all">Dismiss all</button>`
     : `<button class="chip ghost" id="sugg-dismiss-all">Dismiss</button>`;
+  const item = (merchant, type, reason, attrs) => `
+        <li>
+          <span class="sugg-merch" title="${esc(merchant)}">${esc(merchant)}</span>
+          <span class="sugg-arrow">→</span>
+          <span class="tag sugg-type special">${esc(type)}</span>
+          ${reason ? `<span class="sugg-reason" title="${esc(reason)}">${esc(reason)}</span>` : ''}
+          <span class="sugg-row-actions"><button class="chip apply" ${attrs}>Apply</button><button class="chip ghost dismiss" ${attrs} title="Dismiss">✕</button></span>
+        </li>`;
   el.innerHTML = `
     <div class="sugg-card">
       <div class="sugg-head">
@@ -2425,26 +2511,40 @@ function renderSuggestions() {
         ${autoNote}
         <span class="sugg-bulk">${bulk}</span>
       </div>
-      ${n ? `<ul class="sugg-list">${SUGGESTIONS.map((s, i) => `
-        <li>
-          <span class="sugg-merch" title="${esc(s.merchant)}">${esc(s.merchant)}</span>
-          <span class="sugg-arrow">→</span>
-          <span class="tag sugg-type special">${esc(s.type)}</span>
-          ${s.reason ? `<span class="sugg-reason" title="${esc(s.reason)}">${esc(s.reason)}</span>` : ''}
-          <span class="sugg-row-actions"><button class="chip apply" data-i="${i}">Apply</button><button class="chip ghost dismiss" data-i="${i}" title="Dismiss">✕</button></span>
-        </li>`).join('')}</ul>` : ''}
+      ${n ? `<ul class="sugg-list">${SUGGESTIONS.map((s, i) => item(s.merchant, s.type, s.reason, `data-i="${i}"`)).join('')}${
+    saves.map((s) => item(s.label, 'saved', `${money(s.total)} · reads as investing`, `data-save="${esc(s.merchant)}"`)).join('')}</ul>` : ''}
     </div>`;
-  const dismissNote = () => { SUGGESTIONS = []; LAST_AUTO_APPLIED = 0; saveSuggestions().catch(() => {}); renderSuggestions(); };
-  if (n) {
-    el.querySelector('#sugg-apply-all').onclick = () => applyAllSuggestions();
-    el.querySelector('#sugg-dismiss-all').onclick = dismissNote;
-    el.querySelectorAll('.sugg-list .apply').forEach((b) => b.addEventListener('click', () => applyOneSuggestion(+b.dataset.i)));
-    el.querySelectorAll('.sugg-list .dismiss').forEach((b) => b.addEventListener('click', () => {
-      SUGGESTIONS.splice(+b.dataset.i, 1); if (!SUGGESTIONS.length) LAST_AUTO_APPLIED = 0; saveSuggestions().catch(() => {}); renderSuggestions();
-    }));
-  } else {
-    el.querySelector('#sugg-dismiss-all').onclick = dismissNote;
-  }
+  const dismissNote = async () => {
+    SUGGESTIONS = []; LAST_AUTO_APPLIED = 0; saveSuggestions().catch(() => {});
+    await dismissSavings(saves.map((s) => s.merchant));
+    renderSuggestions();
+  };
+  el.querySelector('#sugg-dismiss-all').onclick = dismissNote;
+  if (!n) return;
+  el.querySelector('#sugg-apply-all').onclick = () => applyAllSuggestions();
+  el.querySelectorAll('.sugg-list .apply[data-i]').forEach((b) => b.addEventListener('click', () => applyOneSuggestion(+b.dataset.i)));
+  el.querySelectorAll('.sugg-list .dismiss[data-i]').forEach((b) => b.addEventListener('click', () => {
+    SUGGESTIONS.splice(+b.dataset.i, 1); if (!SUGGESTIONS.length) LAST_AUTO_APPLIED = 0; saveSuggestions().catch(() => {}); renderSuggestions();
+  }));
+  el.querySelectorAll('.sugg-list .apply[data-save]').forEach((b) => b.addEventListener('click', () => applySavings([b.dataset.save])));
+  el.querySelectorAll('.sugg-list .dismiss[data-save]').forEach((b) => b.addEventListener('click', async () => { await dismissSavings([b.dataset.save]); renderSuggestions(); }));
+}
+
+// A Saved suggestion confirmed: the rule, keyed as the engine keyed it.
+async function applySavings(keys) {
+  if (!keys.length) return;
+  for (const k of keys) EDITS.set(`ov:${k}`, 'savings');
+  applyEdits();
+  await saveEdits();
+  await afterCategoriesChanged();
+}
+
+// "Not savings": remembered, so the suggestion never comes back.
+async function dismissSavings(keys) {
+  if (!keys.length) return;
+  for (const k of keys) EDITS.set(`nosave:${k}`, true);
+  applyEdits();
+  await saveEdits();
 }
 
 async function applyOneSuggestion(i) {
@@ -2462,6 +2562,9 @@ async function applyAllSuggestions() {
   SUGGESTIONS = [];
   LAST_AUTO_APPLIED = 0;
   await saveSuggestions().catch(() => {});
+  for (const s of savingSuggestions()) EDITS.set(`ov:${s.merchant}`, 'savings');
+  applyEdits();
+  await saveEdits();
   for (const s of list) await applyRuleByMerchant(s.merchant, s.type, false);
   await afterCategoriesChanged(); // single recompute for the whole batch
   if (list.length) stampQuest(runBash, 'cfo-sort'); // the player sorted them (quest.js)

@@ -15,6 +15,19 @@
 //   3. nothing decides → the home currency (config `currency`), 'assumed', so
 //      the page can offer a one-tap fix.
 
+// A new person's home currency before they pick one: their locale's region
+// ("en-CA" → CAD, "de-AT" → EUR), else null (the caller's default).
+const EURO = ['AT', 'BE', 'CY', 'DE', 'EE', 'ES', 'FI', 'FR', 'GR', 'HR', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 'NL', 'PT', 'SI', 'SK'];
+const REGION_CURRENCY = {
+  US: 'USD', CA: 'CAD', GB: 'GBP', AU: 'AUD', NZ: 'NZD', JP: 'JPY', CN: 'CNY', HK: 'HKD', TW: 'TWD', SG: 'SGD',
+  IN: 'INR', KR: 'KRW', CH: 'CHF', SE: 'SEK', NO: 'NOK', DK: 'DKK', MX: 'MXN',
+  ...Object.fromEntries(EURO.map((r) => [r, 'EUR'])),
+};
+export function currencyForLocale(locale) {
+  const m = /[-_]([A-Za-z]{2})(?![A-Za-z])/.exec(String(locale || ''));
+  return (m && REGION_CURRENCY[m[1].toUpperCase()]) || null;
+}
+
 export const CURRENCY_CODES = [
   'USD', 'CAD', 'EUR', 'GBP', 'CNY', 'JPY', 'HKD', 'AUD', 'NZD', 'CHF',
   'SGD', 'INR', 'KRW', 'MXN', 'SEK', 'NOK', 'DKK', 'TWD',

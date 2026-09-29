@@ -221,8 +221,9 @@ if (!live) {
   // Same exclusions the report applies: transfers, and statement bookkeeping
   // rows ("Closing totals") that are not transactions.
   const spendable = rows.filter((r) => !r.transfer && !isStatementArtifact(r.merchant));
-  const spend = r2(spendable.filter((r) => r.amount < 0).reduce((a, r) => a - r.amount, 0));
-  const income = r2(spendable.filter((r) => r.amount > 0).reduce((a, r) => a + r.amount, 0));
+  // A refund (r.refund, set by the report) is spend coming back, not income.
+  const spend = r2(spendable.filter((r) => r.amount < 0 || r.refund).reduce((a, r) => a - r.amount, 0));
+  const income = r2(spendable.filter((r) => r.amount > 0 && !r.refund).reduce((a, r) => a + r.amount, 0));
   t('B3 report totals == independent row sum', near(spend, rep.totals.spend) && near(income, rep.totals.income),
     `spend ${rep.totals.spend} income ${rep.totals.income}`);
 

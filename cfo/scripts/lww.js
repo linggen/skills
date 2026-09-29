@@ -13,11 +13,13 @@
 //
 // Key space (identical on both sides):
 //   cat:<txnId>        a correction on ONE transaction (null = cleared)
-//   ov:<keyword>       a merchant-keyword rule -> category | 'transfer' | 'income'
+//   ov:<keyword>       a merchant-keyword rule -> category | 'transfer' | 'income' | 'savings'
 //   bud:<category>     monthly cap
 //   com:<key>|<field>  a commitment term (balance, rate_pct, renewal_date, kind)
 //   acc:<id>|<field>   an account field (label, type, currency, currency_source)
 //   del:<txnId>        true = reverted out of the report (rows are grow-only)
+//   ext:<key>          an account not imported, by counterparty key -> 'mine' | 'household'
+//   nosave:<ruleKey>   true = "not savings": the Saved suggestion for it was dismissed
 //   inv:<symbol>|<field>  an investment: watch (true), shares, avg_cost,
 //                      account, rank (its place in the list, lower = higher)
 
@@ -161,6 +163,10 @@ export const commitmentsOf = (reg) => reg.grouped('com:');
 
 /// account id -> {label, type, currency, currency_source}
 export const accountsOf = (reg) => reg.grouped('acc:');
+
+/// An account that isn't imported, by its counterparty key (ledger.js) ->
+/// 'mine' | 'household' — the person's answer to "whose money is this?".
+export const externalOf = (reg) => Object.fromEntries(reg.entries('ext:'));
 
 /// symbol -> {watch, shares, avg_cost, account, rank}. A symbol left with only
 /// its `rank` isn't listed: a removal that raced a move (or a build that didn't

@@ -1,0 +1,2087 @@
+{
+  "clean": [
+    {
+      "in": "Aug. 5 NEW ASIAN FOOD MARKET",
+      "out": "NEW ASIAN FOOD MARKET",
+      "rule_key": "new asian food market"
+    },
+    {
+      "in": "Aug. 14 095 HRM REC ONLINE XP",
+      "out": "HRM REC ONLINE XP",
+      "rule_key": "hrm rec online xp"
+    },
+    {
+      "in": "Sep 03 STARBUCKS",
+      "out": "STARBUCKS",
+      "rule_key": "starbucks"
+    },
+    {
+      "in": "Sept. 30 SHELL",
+      "out": "SHELL",
+      "rule_key": "shell"
+    },
+    {
+      "in": "5 Aug TESCO STORES",
+      "out": "TESCO STORES",
+      "rule_key": "tesco stores"
+    },
+    {
+      "in": "05/08 PRET A MANGER",
+      "out": "PRET A MANGER",
+      "rule_key": "pret a manger"
+    },
+    {
+      "in": "2026-08-05 AMAZON",
+      "out": "AMAZON",
+      "rule_key": "amazon"
+    },
+    {
+      "in": "March 5, UBER EATS",
+      "out": "UBER EATS",
+      "rule_key": "uber eats"
+    },
+    {
+      "in": "7-11 STORE",
+      "out": "7-11 STORE",
+      "rule_key": "7-11 store"
+    },
+    {
+      "in": "MAY 21",
+      "out": "MAY 21",
+      "rule_key": "may 21"
+    },
+    {
+      "in": "3 MARKET ST",
+      "out": "3 MARKET ST",
+      "rule_key": "3 market st"
+    },
+    {
+      "in": "12 DECATHLON",
+      "out": "12 DECATHLON",
+      "rule_key": "12 decathlon"
+    },
+    {
+      "in": "Mar 12 3",
+      "out": "Mar 12 3",
+      "rule_key": "mar 12 3"
+    },
+    {
+      "in": "SUBWAY 26321",
+      "out": "SUBWAY 26321",
+      "rule_key": "subway 26321"
+    },
+    {
+      "in": "[CW]AMEX CARDS",
+      "out": "AMEX CARDS",
+      "rule_key": "amex cards"
+    }
+  ],
+  "savings_wording": [
+    {
+      "in": "BMO INV INC. INV/PLA",
+      "out": true
+    },
+    {
+      "in": "M-FUNDS/FONDS-M MSP/DIV",
+      "out": true
+    },
+    {
+      "in": "VANGUARD BUY INVESTMENT",
+      "out": true
+    },
+    {
+      "in": "Wealthsimple Invest",
+      "out": true
+    },
+    {
+      "in": "HL STOCKS AND SHARES ISA",
+      "out": true
+    },
+    {
+      "in": "ISA CONTRIBUTION",
+      "out": true
+    },
+    {
+      "in": "Isa's Bakery",
+      "out": false
+    },
+    {
+      "in": "Chase ROTH IRA",
+      "out": true
+    },
+    {
+      "in": "IRA KITCHEN",
+      "out": false
+    },
+    {
+      "in": "ISA DELI",
+      "out": false
+    },
+    {
+      "in": "Schwab IRA CONTRIB",
+      "out": true
+    },
+    {
+      "in": "INVOICE 1234",
+      "out": false
+    },
+    {
+      "in": "INV 20931 OFFICE DEPOT",
+      "out": false
+    },
+    {
+      "in": "Fidelity 401(k)",
+      "out": true
+    },
+    {
+      "in": "TRADING 212",
+      "out": true
+    },
+    {
+      "in": "Trade Republic Sparplan",
+      "out": true
+    },
+    {
+      "in": "NETFLIX",
+      "out": false
+    },
+    {
+      "in": "RESP CONTRIBUTION",
+      "out": true
+    }
+  ],
+  "counterparty": [
+    {
+      "in": "Online Transfer, TF 0133-482",
+      "out": "0133-482"
+    },
+    {
+      "in": "TF 0133-482",
+      "out": "0133-482"
+    },
+    {
+      "in": "Online Bill Payment, ROGERS BK MC",
+      "out": "ROGERS BK MC"
+    },
+    {
+      "in": "AMEX CARDS",
+      "out": "AMEX CARDS"
+    },
+    {
+      "in": "TRANSFER FROM 9001",
+      "out": "9001"
+    },
+    {
+      "in": "INTERNET PAYMENT - THANK YOU",
+      "out": "INTERNET PAYMENT - THANK YOU"
+    },
+    {
+      "in": "AMERICAN EXPRESS ACH PMT",
+      "out": "AMERICAN EXPRESS"
+    },
+    {
+      "in": "CAPITAL ONE MOBILE PMT",
+      "out": "CAPITAL ONE"
+    },
+    {
+      "in": "[TF]2335128316 RTCT0000240670",
+      "out": "[TF]2335128316 RTCT0000240670"
+    },
+    {
+      "in": "WIRE TRANSFER 77",
+      "out": "77"
+    }
+  ],
+  "categorize": [
+    {
+      "merchant": "LOCAL BAKE HOUSE",
+      "overrides": {
+        "aug. 5 local bake house": "treats"
+      },
+      "out": "treats"
+    },
+    {
+      "merchant": "BMO INV INC. INV/PLA",
+      "overrides": {
+        "bmo inv inc. inv/pla": "savings"
+      },
+      "out": "other"
+    }
+  ],
+  "locale": [
+    {
+      "in": "en-CA",
+      "out": "CAD"
+    },
+    {
+      "in": "en_CA.UTF-8",
+      "out": "CAD"
+    },
+    {
+      "in": "zh-Hans-CN",
+      "out": "CNY"
+    },
+    {
+      "in": "de-AT",
+      "out": "EUR"
+    },
+    {
+      "in": "en-GB",
+      "out": "GBP"
+    },
+    {
+      "in": "en",
+      "out": null
+    },
+    {
+      "in": "fr",
+      "out": null
+    },
+    {
+      "in": "en-US",
+      "out": "USD"
+    },
+    {
+      "in": "pt-BR",
+      "out": null
+    },
+    {
+      "in": "ja_JP",
+      "out": "JPY"
+    }
+  ],
+  "reports": [
+    {
+      "name": "US card refund nets against its category, not income (Chase-style card, no refund word)",
+      "home": "USD",
+      "accounts": {
+        "card": {
+          "label": "Sapphire",
+          "type": "credit"
+        },
+        "chk": {
+          "label": "Checking",
+          "type": "checking"
+        }
+      },
+      "rows": [
+        {
+          "id": "a1",
+          "account": "chk",
+          "date": "2026-08-01",
+          "merchant": "PAYROLL ACME INC",
+          "amount": 4000,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "a2",
+          "account": "card",
+          "date": "2026-08-03",
+          "merchant": "AMAZON MKTPL",
+          "amount": -120,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "a3",
+          "account": "card",
+          "date": "2026-08-09",
+          "merchant": "AMAZON MKTPL",
+          "amount": 40,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "a4",
+          "account": "card",
+          "date": "2026-08-12",
+          "merchant": "SUSHI RESTAURANT",
+          "amount": -60,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "a5",
+          "account": "card",
+          "date": "2026-08-20",
+          "merchant": "PAYMENT THANK YOU",
+          "amount": 180,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "a6",
+          "account": "chk",
+          "date": "2026-08-19",
+          "merchant": "CHASE CREDIT CRD AUTOPAY",
+          "amount": -180,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "totals": {
+          "spend": 140,
+          "income": 4000,
+          "net": 3860
+        },
+        "refunds_total": 40,
+        "by_category": [
+          {
+            "category": "shopping",
+            "spend": 80
+          },
+          {
+            "category": "dining",
+            "spend": 60
+          }
+        ],
+        "one_off_total": 0,
+        "one_offs": [],
+        "typical_month_spend": 140,
+        "saved": {
+          "total": 0,
+          "lines": []
+        },
+        "paid_to_cards_not_imported": {
+          "total": 0,
+          "lines": []
+        },
+        "moved_not_imported": {
+          "in": 0,
+          "out": 0,
+          "net": 0,
+          "lines": []
+        },
+        "saving_suggestions": [],
+        "subscriptions": [],
+        "anomalies": [],
+        "transfers": [
+          "a5",
+          "a6"
+        ],
+        "refunds": [
+          "a3"
+        ],
+        "one_off_rows": []
+      }
+    },
+    {
+      "name": "UK current account: \"Refund from\" wording nets; a refund with no spend in its category comes off the total",
+      "home": "GBP",
+      "accounts": {
+        "cur": {
+          "label": "Monzo",
+          "type": "checking"
+        }
+      },
+      "rows": [
+        {
+          "id": "b1",
+          "account": "cur",
+          "date": "2026-09-01",
+          "merchant": "SALARY WIDGETS LTD",
+          "amount": 2800,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "b2",
+          "account": "cur",
+          "date": "2026-09-04",
+          "merchant": "ASOS SHOP",
+          "amount": -60,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "b3",
+          "account": "cur",
+          "date": "2026-09-10",
+          "merchant": "Refund from ASOS SHOP",
+          "amount": 25,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "b4",
+          "account": "cur",
+          "date": "2026-09-12",
+          "merchant": "TESCO SUPERMARKET",
+          "amount": -48.2,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "b5",
+          "account": "cur",
+          "date": "2026-09-15",
+          "merchant": "EXPEDIA HOTEL REFUND",
+          "amount": 20,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "b6",
+          "account": "cur",
+          "date": "2026-09-18",
+          "merchant": "CASHBACK REWARD",
+          "amount": 5,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "totals": {
+          "spend": 58.2,
+          "income": 2800,
+          "net": 2741.8
+        },
+        "refunds_total": 50,
+        "by_category": [
+          {
+            "category": "groceries",
+            "spend": 48.2
+          },
+          {
+            "category": "shopping",
+            "spend": 35
+          }
+        ],
+        "one_off_total": 0,
+        "one_offs": [],
+        "typical_month_spend": 58.2,
+        "saved": {
+          "total": 0,
+          "lines": []
+        },
+        "paid_to_cards_not_imported": {
+          "total": 0,
+          "lines": []
+        },
+        "moved_not_imported": {
+          "in": 0,
+          "out": 0,
+          "net": 0,
+          "lines": []
+        },
+        "saving_suggestions": [],
+        "subscriptions": [],
+        "anomalies": [],
+        "transfers": [],
+        "refunds": [
+          "b3",
+          "b5",
+          "b6"
+        ],
+        "one_off_rows": []
+      }
+    },
+    {
+      "name": "a bank account typed as a card: its deposits stay income",
+      "home": "CAD",
+      "accounts": {
+        "acc": {
+          "label": "statement",
+          "type": "credit"
+        }
+      },
+      "rows": [
+        {
+          "id": "m1",
+          "account": "acc",
+          "date": "2026-06-01",
+          "merchant": "ACME PAYROLL",
+          "amount": 3400,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "m2",
+          "account": "acc",
+          "date": "2026-06-03",
+          "merchant": "CAFE MOCHA",
+          "amount": -5.5,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "totals": {
+          "spend": 5.5,
+          "income": 3400,
+          "net": 3394.5
+        },
+        "refunds_total": 0,
+        "by_category": [
+          {
+            "category": "dining",
+            "spend": 5.5
+          }
+        ],
+        "one_off_total": 0,
+        "one_offs": [],
+        "typical_month_spend": 5.5,
+        "saved": {
+          "total": 0,
+          "lines": []
+        },
+        "paid_to_cards_not_imported": {
+          "total": 0,
+          "lines": []
+        },
+        "moved_not_imported": {
+          "in": 0,
+          "out": 0,
+          "net": 0,
+          "lines": []
+        },
+        "saving_suggestions": [],
+        "subscriptions": [],
+        "anomalies": [],
+        "transfers": [],
+        "refunds": [],
+        "one_off_rows": []
+      }
+    },
+    {
+      "name": "income rule wins over refund wording",
+      "home": "USD",
+      "overrides": {
+        "tax refund irs": "income"
+      },
+      "accounts": {
+        "chk": {
+          "type": "checking"
+        }
+      },
+      "rows": [
+        {
+          "id": "c1",
+          "account": "chk",
+          "date": "2026-04-10",
+          "merchant": "TAX REFUND IRS TREAS 310",
+          "amount": 1200,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "c2",
+          "account": "chk",
+          "date": "2026-04-11",
+          "merchant": "GROCERY OUTLET",
+          "amount": -80,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "totals": {
+          "spend": 80,
+          "income": 1200,
+          "net": 1120
+        },
+        "refunds_total": 0,
+        "by_category": [
+          {
+            "category": "groceries",
+            "spend": 80
+          }
+        ],
+        "one_off_total": 0,
+        "one_offs": [],
+        "typical_month_spend": 80,
+        "saved": {
+          "total": 0,
+          "lines": []
+        },
+        "paid_to_cards_not_imported": {
+          "total": 0,
+          "lines": []
+        },
+        "moved_not_imported": {
+          "in": 0,
+          "out": 0,
+          "net": 0,
+          "lines": []
+        },
+        "saving_suggestions": [],
+        "subscriptions": [],
+        "anomalies": [],
+        "transfers": [],
+        "refunds": [],
+        "one_off_rows": []
+      }
+    },
+    {
+      "name": "Vanguard and ISA contributions: suggested as savings, never a bare name or \"inv\"oice",
+      "home": "USD",
+      "accounts": {
+        "chk": {
+          "type": "checking"
+        }
+      },
+      "rows": [
+        {
+          "id": "d1",
+          "account": "chk",
+          "date": "2026-07-02",
+          "merchant": "VANGUARD BUY INVESTMENT",
+          "amount": -500,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "d2",
+          "account": "chk",
+          "date": "2026-08-02",
+          "merchant": "VANGUARD BUY INVESTMENT",
+          "amount": -500,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "d3",
+          "account": "chk",
+          "date": "2026-08-05",
+          "merchant": "HL STOCKS AND SHARES ISA",
+          "amount": -200,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "d4",
+          "account": "chk",
+          "date": "2026-08-06",
+          "merchant": "Isa's Bakery",
+          "amount": -12,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "d5",
+          "account": "chk",
+          "date": "2026-08-07",
+          "merchant": "INV 20931 OFFICE DEPOT",
+          "amount": -45,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "d6",
+          "account": "chk",
+          "date": "2026-08-08",
+          "merchant": "RRSP CONTRIB TD MUTUAL FUNDS",
+          "amount": -150,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "totals": {
+          "spend": 1407,
+          "income": 0,
+          "net": -1407
+        },
+        "refunds_total": 0,
+        "by_category": [
+          {
+            "category": "other",
+            "spend": 1407
+          }
+        ],
+        "one_off_total": 0,
+        "one_offs": [],
+        "typical_month_spend": 703.5,
+        "saved": {
+          "total": 0,
+          "lines": []
+        },
+        "paid_to_cards_not_imported": {
+          "total": 0,
+          "lines": []
+        },
+        "moved_not_imported": {
+          "in": 0,
+          "out": 0,
+          "net": 0,
+          "lines": []
+        },
+        "saving_suggestions": [
+          {
+            "merchant": "vanguard buy investment",
+            "label": "VANGUARD BUY INVESTMENT",
+            "type": "savings",
+            "count": 2,
+            "total": 1000
+          },
+          {
+            "merchant": "hl stocks and shares isa",
+            "label": "HL STOCKS AND SHARES ISA",
+            "type": "savings",
+            "count": 1,
+            "total": 200
+          },
+          {
+            "merchant": "rrsp contrib td mutual funds",
+            "label": "RRSP CONTRIB TD MUTUAL FUNDS",
+            "type": "savings",
+            "count": 1,
+            "total": 150
+          }
+        ],
+        "subscriptions": [
+          {
+            "merchant": "VANGUARD BUY INVESTMENT",
+            "monthly": 500,
+            "charges": 2
+          }
+        ],
+        "anomalies": [
+          {
+            "type": "new_recurring",
+            "merchant": "VANGUARD BUY INVESTMENT",
+            "amount": 500,
+            "date": "2026-07-02"
+          }
+        ],
+        "transfers": [],
+        "refunds": [],
+        "one_off_rows": []
+      }
+    },
+    {
+      "name": "savings rule: out of spend, into Saved; parallel same-day plans read 420/mo, not a double charge",
+      "home": "CAD",
+      "overrides": {
+        "acme inv inc. inv/pla": "savings",
+        "fonds-m msp": "savings"
+      },
+      "accounts": {
+        "chq": {
+          "type": "checking"
+        }
+      },
+      "rows": [
+        {
+          "id": "e0a",
+          "account": "chq",
+          "date": "2026-07-02",
+          "merchant": "ACME INV INC. INV/PLA",
+          "amount": -210,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "e0b",
+          "account": "chq",
+          "date": "2026-07-02",
+          "merchant": "ACME INV INC. INV/PLA",
+          "amount": -210,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "e0c",
+          "account": "chq",
+          "date": "2026-07-15",
+          "merchant": "M-FUNDS/FONDS-M MSP/DIV",
+          "amount": -50,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "e0d",
+          "account": "chq",
+          "date": "2026-07-20",
+          "merchant": "HYDRO QUEBEC",
+          "amount": -90,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "e0e",
+          "account": "chq",
+          "date": "2026-07-25",
+          "merchant": "PAYROLL",
+          "amount": 3000,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "e1a",
+          "account": "chq",
+          "date": "2026-08-02",
+          "merchant": "ACME INV INC. INV/PLA",
+          "amount": -210,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "e1b",
+          "account": "chq",
+          "date": "2026-08-02",
+          "merchant": "ACME INV INC. INV/PLA",
+          "amount": -210,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "e1c",
+          "account": "chq",
+          "date": "2026-08-15",
+          "merchant": "M-FUNDS/FONDS-M MSP/DIV",
+          "amount": -50,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "e1d",
+          "account": "chq",
+          "date": "2026-08-20",
+          "merchant": "HYDRO QUEBEC",
+          "amount": -90,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "e1e",
+          "account": "chq",
+          "date": "2026-08-25",
+          "merchant": "PAYROLL",
+          "amount": 3000,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "e2a",
+          "account": "chq",
+          "date": "2026-09-02",
+          "merchant": "ACME INV INC. INV/PLA",
+          "amount": -210,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "e2b",
+          "account": "chq",
+          "date": "2026-09-02",
+          "merchant": "ACME INV INC. INV/PLA",
+          "amount": -210,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "e2c",
+          "account": "chq",
+          "date": "2026-09-15",
+          "merchant": "M-FUNDS/FONDS-M MSP/DIV",
+          "amount": -50,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "e2d",
+          "account": "chq",
+          "date": "2026-09-20",
+          "merchant": "HYDRO QUEBEC",
+          "amount": -90,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "e2e",
+          "account": "chq",
+          "date": "2026-09-25",
+          "merchant": "PAYROLL",
+          "amount": 3000,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "totals": {
+          "spend": 270,
+          "income": 9000,
+          "net": 8730
+        },
+        "refunds_total": 0,
+        "by_category": [
+          {
+            "category": "utilities",
+            "spend": 270
+          }
+        ],
+        "one_off_total": 0,
+        "one_offs": [],
+        "typical_month_spend": 90,
+        "saved": {
+          "total": 1410,
+          "lines": [
+            {
+              "key": "ACME INV INC",
+              "label": "ACME INV INC. INV/PLA",
+              "amount": 1260,
+              "in": 0,
+              "out": 1260,
+              "count": 6
+            },
+            {
+              "key": "FUNDS FONDS MSP",
+              "label": "M-FUNDS/FONDS-M MSP/DIV",
+              "amount": 150,
+              "in": 0,
+              "out": 150,
+              "count": 3
+            }
+          ]
+        },
+        "paid_to_cards_not_imported": {
+          "total": 0,
+          "lines": []
+        },
+        "moved_not_imported": {
+          "in": 0,
+          "out": 0,
+          "net": 0,
+          "lines": []
+        },
+        "saving_suggestions": [],
+        "subscriptions": [
+          {
+            "merchant": "HYDRO QUEBEC",
+            "monthly": 90,
+            "charges": 3
+          }
+        ],
+        "anomalies": [],
+        "transfers": [
+          "e0a",
+          "e0b",
+          "e0c",
+          "e1a",
+          "e1b",
+          "e1c",
+          "e2a",
+          "e2b",
+          "e2c"
+        ],
+        "refunds": [],
+        "one_off_rows": []
+      }
+    },
+    {
+      "name": "same-day plans at a subscription: one line at their sum",
+      "home": "USD",
+      "accounts": {
+        "card": {
+          "type": "credit"
+        }
+      },
+      "rows": [
+        {
+          "id": "f0a",
+          "account": "card",
+          "date": "2026-06-08",
+          "merchant": "STREAMFLIX.COM",
+          "amount": -9.99,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "f0b",
+          "account": "card",
+          "date": "2026-06-08",
+          "merchant": "STREAMFLIX.COM",
+          "amount": -4.99,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "f1a",
+          "account": "card",
+          "date": "2026-07-08",
+          "merchant": "STREAMFLIX.COM",
+          "amount": -9.99,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "f1b",
+          "account": "card",
+          "date": "2026-07-08",
+          "merchant": "STREAMFLIX.COM",
+          "amount": -4.99,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "f2a",
+          "account": "card",
+          "date": "2026-08-08",
+          "merchant": "STREAMFLIX.COM",
+          "amount": -9.99,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "f2b",
+          "account": "card",
+          "date": "2026-08-08",
+          "merchant": "STREAMFLIX.COM",
+          "amount": -4.99,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "totals": {
+          "spend": 44.94,
+          "income": 0,
+          "net": -44.94
+        },
+        "refunds_total": 0,
+        "by_category": [
+          {
+            "category": "other",
+            "spend": 44.94
+          }
+        ],
+        "one_off_total": 0,
+        "one_offs": [],
+        "typical_month_spend": 14.98,
+        "saved": {
+          "total": 0,
+          "lines": []
+        },
+        "paid_to_cards_not_imported": {
+          "total": 0,
+          "lines": []
+        },
+        "moved_not_imported": {
+          "in": 0,
+          "out": 0,
+          "net": 0,
+          "lines": []
+        },
+        "saving_suggestions": [],
+        "subscriptions": [
+          {
+            "merchant": "STREAMFLIX.COM",
+            "monthly": 14.98,
+            "charges": 3
+          }
+        ],
+        "anomalies": [
+          {
+            "type": "new_recurring",
+            "merchant": "STREAMFLIX.COM",
+            "amount": 14.98,
+            "date": "2026-06-08"
+          }
+        ],
+        "transfers": [],
+        "refunds": [],
+        "one_off_rows": []
+      }
+    },
+    {
+      "name": "UK one-off: a solicitor lump far above a usual month is labelled; totals keep it",
+      "home": "GBP",
+      "accounts": {
+        "cur": {
+          "type": "checking"
+        }
+      },
+      "rows": [
+        {
+          "id": "g0a",
+          "account": "cur",
+          "date": "2026-05-01",
+          "merchant": "RENT HOLDINGS",
+          "amount": -1200,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "g0b",
+          "account": "cur",
+          "date": "2026-05-09",
+          "merchant": "SAINSBURYS",
+          "amount": -300,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "g0c",
+          "account": "cur",
+          "date": "2026-05-28",
+          "merchant": "SALARY",
+          "amount": 3100,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "g1a",
+          "account": "cur",
+          "date": "2026-06-01",
+          "merchant": "RENT HOLDINGS",
+          "amount": -1200,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "g1b",
+          "account": "cur",
+          "date": "2026-06-09",
+          "merchant": "SAINSBURYS",
+          "amount": -300,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "g1c",
+          "account": "cur",
+          "date": "2026-06-28",
+          "merchant": "SALARY",
+          "amount": 3100,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "g2a",
+          "account": "cur",
+          "date": "2026-07-01",
+          "merchant": "RENT HOLDINGS",
+          "amount": -1200,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "g2b",
+          "account": "cur",
+          "date": "2026-07-09",
+          "merchant": "SAINSBURYS",
+          "amount": -300,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "g2c",
+          "account": "cur",
+          "date": "2026-07-28",
+          "merchant": "SALARY",
+          "amount": 3100,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "g3a",
+          "account": "cur",
+          "date": "2026-08-01",
+          "merchant": "RENT HOLDINGS",
+          "amount": -1200,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "g3b",
+          "account": "cur",
+          "date": "2026-08-09",
+          "merchant": "SAINSBURYS",
+          "amount": -300,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "g3c",
+          "account": "cur",
+          "date": "2026-08-28",
+          "merchant": "SALARY",
+          "amount": 3100,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "g9a",
+          "account": "cur",
+          "date": "2026-07-14",
+          "merchant": "SMITH SOLICITORS LLP",
+          "amount": -6000,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "g9b",
+          "account": "cur",
+          "date": "2026-07-14",
+          "merchant": "SMITH SOLICITORS LLP",
+          "amount": -3500,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "totals": {
+          "spend": 15500,
+          "income": 12400,
+          "net": -3100
+        },
+        "refunds_total": 0,
+        "by_category": [
+          {
+            "category": "other",
+            "spend": 10700
+          },
+          {
+            "category": "housing",
+            "spend": 4800
+          }
+        ],
+        "one_off_total": 9500,
+        "one_offs": [
+          {
+            "merchant": "SMITH SOLICITORS LLP",
+            "amount": 9500,
+            "date": "2026-07-14"
+          }
+        ],
+        "typical_month_spend": 1500,
+        "saved": {
+          "total": 0,
+          "lines": []
+        },
+        "paid_to_cards_not_imported": {
+          "total": 0,
+          "lines": []
+        },
+        "moved_not_imported": {
+          "in": 0,
+          "out": 0,
+          "net": 0,
+          "lines": []
+        },
+        "saving_suggestions": [],
+        "subscriptions": [
+          {
+            "merchant": "RENT HOLDINGS",
+            "monthly": 1200,
+            "charges": 4
+          },
+          {
+            "merchant": "SAINSBURYS",
+            "monthly": 300,
+            "charges": 4
+          }
+        ],
+        "anomalies": [],
+        "transfers": [],
+        "refunds": [],
+        "one_off_rows": [
+          "g9a",
+          "g9b"
+        ]
+      }
+    },
+    {
+      "name": "a big payee seen every month is not a one-off",
+      "home": "USD",
+      "accounts": {
+        "chk": {
+          "type": "checking"
+        }
+      },
+      "rows": [
+        {
+          "id": "h0a",
+          "account": "chk",
+          "date": "2026-05-01",
+          "merchant": "MORTGAGE LENDER",
+          "amount": -1500,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "h0b",
+          "account": "chk",
+          "date": "2026-05-10",
+          "merchant": "GROCER",
+          "amount": -100,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "h1a",
+          "account": "chk",
+          "date": "2026-06-01",
+          "merchant": "MORTGAGE LENDER",
+          "amount": -1500,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "h1b",
+          "account": "chk",
+          "date": "2026-06-10",
+          "merchant": "GROCER",
+          "amount": -100,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "h2a",
+          "account": "chk",
+          "date": "2026-07-01",
+          "merchant": "MORTGAGE LENDER",
+          "amount": -1500,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "h2b",
+          "account": "chk",
+          "date": "2026-07-10",
+          "merchant": "GROCER",
+          "amount": -100,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "h3a",
+          "account": "chk",
+          "date": "2026-08-01",
+          "merchant": "MORTGAGE LENDER",
+          "amount": -9000,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "h3b",
+          "account": "chk",
+          "date": "2026-08-10",
+          "merchant": "GROCER",
+          "amount": -100,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "totals": {
+          "spend": 13900,
+          "income": 0,
+          "net": -13900
+        },
+        "refunds_total": 0,
+        "by_category": [
+          {
+            "category": "housing",
+            "spend": 13500
+          },
+          {
+            "category": "other",
+            "spend": 400
+          }
+        ],
+        "one_off_total": 0,
+        "one_offs": [],
+        "typical_month_spend": 3475,
+        "saved": {
+          "total": 0,
+          "lines": []
+        },
+        "paid_to_cards_not_imported": {
+          "total": 0,
+          "lines": []
+        },
+        "moved_not_imported": {
+          "in": 0,
+          "out": 0,
+          "net": 0,
+          "lines": []
+        },
+        "saving_suggestions": [],
+        "subscriptions": [
+          {
+            "merchant": "MORTGAGE LENDER",
+            "monthly": 9000,
+            "charges": 4
+          },
+          {
+            "merchant": "GROCER",
+            "monthly": 100,
+            "charges": 4
+          }
+        ],
+        "anomalies": [
+          {
+            "type": "bill_spike",
+            "merchant": "MORTGAGE LENDER",
+            "amount": 9000,
+            "date": "2026-08-01"
+          }
+        ],
+        "transfers": [],
+        "refunds": [],
+        "one_off_rows": []
+      }
+    },
+    {
+      "name": "card bills to cards not imported: one line per card; an imported card pairs instead",
+      "home": "USD",
+      "accounts": {
+        "chk": {
+          "label": "Checking",
+          "type": "checking"
+        },
+        "disc": {
+          "label": "Discover",
+          "type": "credit"
+        }
+      },
+      "rows": [
+        {
+          "id": "i1",
+          "account": "chk",
+          "date": "2026-09-03",
+          "merchant": "AMERICAN EXPRESS ACH PMT",
+          "amount": -800,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "i2",
+          "account": "chk",
+          "date": "2026-09-17",
+          "merchant": "Online Bill Payment, AMERICAN EXPRESS ACH PMT",
+          "amount": -350,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "i3",
+          "account": "chk",
+          "date": "2026-09-05",
+          "merchant": "CAPITAL ONE MOBILE PMT",
+          "amount": -220,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "i4",
+          "account": "chk",
+          "date": "2026-09-10",
+          "merchant": "DISCOVER E-PAYMENT",
+          "amount": -400,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "i5",
+          "account": "disc",
+          "date": "2026-09-11",
+          "merchant": "INTERNET PAYMENT - THANK YOU",
+          "amount": 400,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "i6",
+          "account": "disc",
+          "date": "2026-09-02",
+          "merchant": "CAFE LUNA",
+          "amount": -18,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "totals": {
+          "spend": 18,
+          "income": 0,
+          "net": -18
+        },
+        "refunds_total": 0,
+        "by_category": [
+          {
+            "category": "dining",
+            "spend": 18
+          }
+        ],
+        "one_off_total": 0,
+        "one_offs": [],
+        "typical_month_spend": 18,
+        "saved": {
+          "total": 0,
+          "lines": []
+        },
+        "paid_to_cards_not_imported": {
+          "total": 1370,
+          "lines": [
+            {
+              "key": "american express",
+              "label": "AMERICAN EXPRESS",
+              "amount": 1150,
+              "in": 0,
+              "out": 1150,
+              "count": 2
+            },
+            {
+              "key": "capital one",
+              "label": "CAPITAL ONE",
+              "amount": 220,
+              "in": 0,
+              "out": 220,
+              "count": 1
+            }
+          ]
+        },
+        "moved_not_imported": {
+          "in": 0,
+          "out": 0,
+          "net": 0,
+          "lines": []
+        },
+        "saving_suggestions": [],
+        "subscriptions": [],
+        "anomalies": [],
+        "transfers": [
+          "i1",
+          "i2",
+          "i3",
+          "i4",
+          "i5"
+        ],
+        "refunds": [],
+        "one_off_rows": []
+      }
+    },
+    {
+      "name": "money moved in from accounts not imported: net per account, asked until answered",
+      "home": "EUR",
+      "accounts": {
+        "giro": {
+          "type": "checking"
+        }
+      },
+      "external": {
+        "9001": "mine",
+        "4471-02": "household"
+      },
+      "rows": [
+        {
+          "id": "j1",
+          "account": "giro",
+          "date": "2026-09-01",
+          "merchant": "Online Transfer, TF 4471-02",
+          "amount": 1500,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "j2",
+          "account": "giro",
+          "date": "2026-09-15",
+          "merchant": "TF 4471-02",
+          "amount": 1500,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "j3",
+          "account": "giro",
+          "date": "2026-09-03",
+          "merchant": "TRANSFER FROM 9001",
+          "amount": 700,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "j4",
+          "account": "giro",
+          "date": "2026-09-20",
+          "merchant": "TRANSFER TO 9001",
+          "amount": -200,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "j5",
+          "account": "giro",
+          "date": "2026-09-08",
+          "merchant": "INTERNAL TRANSFER 55-12",
+          "amount": 900,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "j6",
+          "account": "giro",
+          "date": "2026-09-22",
+          "merchant": "WIRE TRANSFER 77",
+          "amount": -2500,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "j7",
+          "account": "giro",
+          "date": "2026-09-10",
+          "merchant": "REWE MARKT",
+          "amount": -64.3,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "totals": {
+          "spend": 64.3,
+          "income": 3000,
+          "net": 2935.7
+        },
+        "refunds_total": 0,
+        "by_category": [
+          {
+            "category": "other",
+            "spend": 64.3
+          }
+        ],
+        "one_off_total": 0,
+        "one_offs": [],
+        "typical_month_spend": 64.3,
+        "saved": {
+          "total": 0,
+          "lines": []
+        },
+        "paid_to_cards_not_imported": {
+          "total": 0,
+          "lines": []
+        },
+        "moved_not_imported": {
+          "in": 4600,
+          "out": 2700,
+          "net": 1900,
+          "lines": [
+            {
+              "key": "4471-02",
+              "label": "4471-02",
+              "amount": 3000,
+              "in": 3000,
+              "out": 0,
+              "count": 2,
+              "answer": "household",
+              "ask": false
+            },
+            {
+              "key": "77",
+              "label": "77",
+              "amount": -2500,
+              "in": 0,
+              "out": 2500,
+              "count": 1,
+              "answer": null,
+              "ask": false
+            },
+            {
+              "key": "55-12",
+              "label": "55-12",
+              "amount": 900,
+              "in": 900,
+              "out": 0,
+              "count": 1,
+              "answer": null,
+              "ask": true
+            },
+            {
+              "key": "9001",
+              "label": "9001",
+              "amount": 500,
+              "in": 700,
+              "out": 200,
+              "count": 2,
+              "answer": "mine",
+              "ask": false
+            }
+          ]
+        },
+        "saving_suggestions": [],
+        "subscriptions": [],
+        "anomalies": [],
+        "transfers": [
+          "j3",
+          "j4",
+          "j5",
+          "j6"
+        ],
+        "refunds": [],
+        "one_off_rows": []
+      }
+    },
+    {
+      "name": "double charges: a repeat of last month or a refund within two weeks is not one",
+      "home": "GBP",
+      "accounts": {
+        "cur": {
+          "type": "checking"
+        }
+      },
+      "rows": [
+        {
+          "id": "k1",
+          "account": "cur",
+          "date": "2026-08-03",
+          "merchant": "PUREGYM LTD",
+          "amount": -30,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "k2",
+          "account": "cur",
+          "date": "2026-08-03",
+          "merchant": "PUREGYM LTD",
+          "amount": -30,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "k3",
+          "account": "cur",
+          "date": "2026-09-03",
+          "merchant": "PUREGYM LTD",
+          "amount": -30,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "k4",
+          "account": "cur",
+          "date": "2026-09-03",
+          "merchant": "PUREGYM LTD",
+          "amount": -30,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "k5",
+          "account": "cur",
+          "date": "2026-09-10",
+          "merchant": "CITY PARKING CO",
+          "amount": -45,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "k6",
+          "account": "cur",
+          "date": "2026-09-11",
+          "merchant": "CITY PARKING CO",
+          "amount": -45,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "k7",
+          "account": "cur",
+          "date": "2026-09-18",
+          "merchant": "CITY PARKING CO",
+          "amount": 45,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "k8",
+          "account": "cur",
+          "date": "2026-09-20",
+          "merchant": "CURRYS PC WORLD",
+          "amount": -89,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "k9",
+          "account": "cur",
+          "date": "2026-09-21",
+          "merchant": "CURRYS PC WORLD",
+          "amount": -89,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "totals": {
+          "spend": 388,
+          "income": 45,
+          "net": -343
+        },
+        "refunds_total": 0,
+        "by_category": [
+          {
+            "category": "other",
+            "spend": 178
+          },
+          {
+            "category": "health",
+            "spend": 120
+          },
+          {
+            "category": "transport",
+            "spend": 90
+          }
+        ],
+        "one_off_total": 0,
+        "one_offs": [],
+        "typical_month_spend": 194,
+        "saved": {
+          "total": 0,
+          "lines": []
+        },
+        "paid_to_cards_not_imported": {
+          "total": 0,
+          "lines": []
+        },
+        "moved_not_imported": {
+          "in": 0,
+          "out": 0,
+          "net": 0,
+          "lines": []
+        },
+        "saving_suggestions": [],
+        "subscriptions": [
+          {
+            "merchant": "PUREGYM LTD",
+            "monthly": 60,
+            "charges": 2
+          }
+        ],
+        "anomalies": [
+          {
+            "type": "double_charge",
+            "merchant": "CURRYS PC WORLD",
+            "amount": 89,
+            "date": "2026-09-21"
+          },
+          {
+            "type": "double_charge",
+            "merchant": "PUREGYM LTD",
+            "amount": 30,
+            "date": "2026-08-03"
+          },
+          {
+            "type": "new_recurring",
+            "merchant": "PUREGYM LTD",
+            "amount": 60,
+            "date": "2026-08-03"
+          }
+        ],
+        "transfers": [],
+        "refunds": [],
+        "one_off_rows": []
+      }
+    },
+    {
+      "name": "posting dates in names: one merchant, and a rule written with the date still matches",
+      "home": "CAD",
+      "overrides": {
+        "aug. 5 local bake house": "treats"
+      },
+      "accounts": {
+        "mc": {
+          "type": "credit"
+        }
+      },
+      "rows": [
+        {
+          "id": "l1",
+          "account": "mc",
+          "date": "2026-08-04",
+          "merchant": "Aug. 5 NEW ASIAN FOOD MARKET",
+          "amount": -93.87,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "l2",
+          "account": "mc",
+          "date": "2026-08-11",
+          "merchant": "NEW ASIAN FOOD MARKET",
+          "amount": -40,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "l3",
+          "account": "mc",
+          "date": "2026-08-26",
+          "merchant": "Aug. 27 095 HRM REC ONLINE XP",
+          "amount": -117.1,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "l4",
+          "account": "mc",
+          "date": "2026-08-26",
+          "merchant": "Aug. 27 095 HRM REC ONLINE XP",
+          "amount": -117.1,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "l5",
+          "account": "mc",
+          "date": "2026-08-27",
+          "merchant": "HRM REC ONLINE XP",
+          "amount": 117.1,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        },
+        {
+          "id": "l6",
+          "account": "mc",
+          "date": "2026-08-28",
+          "merchant": "Sep 03 LOCAL BAKE HOUSE",
+          "amount": -7.5,
+          "category": null,
+          "transfer": false,
+          "transfer_pair": null
+        }
+      ],
+      "expect": {
+        "totals": {
+          "spend": 258.47,
+          "income": 0,
+          "net": -258.47
+        },
+        "refunds_total": 117.1,
+        "by_category": [
+          {
+            "category": "other",
+            "spend": 250.97
+          },
+          {
+            "category": "treats",
+            "spend": 7.5
+          }
+        ],
+        "one_off_total": 0,
+        "one_offs": [],
+        "typical_month_spend": 258.47,
+        "saved": {
+          "total": 0,
+          "lines": []
+        },
+        "paid_to_cards_not_imported": {
+          "total": 0,
+          "lines": []
+        },
+        "moved_not_imported": {
+          "in": 0,
+          "out": 0,
+          "net": 0,
+          "lines": []
+        },
+        "saving_suggestions": [],
+        "subscriptions": [],
+        "anomalies": [],
+        "transfers": [],
+        "refunds": [
+          "l5"
+        ],
+        "one_off_rows": []
+      }
+    }
+  ]
+}

@@ -178,9 +178,17 @@ export function parseAmount(raw) {
 // deliberately omitted — too many collide with real words (IN, OR, OK, ME, …).
 const CA_PROVINCES = 'AB|BC|MB|NB|NL|NS|NT|NU|ON|PE|QC|SK|YT';
 
+// A posting date a statement printed in front of the name — "Aug. 5 ",
+// "Sep 03 ", "5 Aug ", "05/08 ", "2026-08-05 ". Only with a name after it;
+// "7-11" (a dash) is a shop, never a date.
+const MONTH_WORD = '(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\\.?';
+const DATE_PREFIX_RE = new RegExp(
+  `^(?:${MONTH_WORD}\\s+\\d{1,2},?|\\d{1,2}\\s+${MONTH_WORD}|\\d{1,2}[/.]\\d{1,2}(?:[/.]\\d{2,4})?|\\d{4}-\\d{2}-\\d{2})\\s+(?=.*[A-Za-z])`, 'i');
+export const stripDatePrefix = (s) => String(s || '').replace(DATE_PREFIX_RE, '');
+
 export function cleanMerchant(raw) {
   const orig = (raw || '').trim();
-  let s = orig;
+  let s = stripDatePrefix(orig);
   // Leading bank type-code — BMO "[CW]"/"[DN]"/"[SC]"/"[IN]"/"[DS]" and similar
   // bracketed 2-4 letter codes. The amount sign already encodes in/out, so the
   // code is pure noise: strip it, never interpret it.
@@ -219,9 +227,9 @@ export function keywordRe(kw) {
 
 // Reserved override values that are NOT spend categories — they live in the same
 // user map (config.category_overrides) but mean "exclude from money math"
-// (transfer) or "force-treat-as-income" (income). Handled in ledger.js, skipped
+// (transfer), "force-treat-as-income" (income) or "money put away" (savings). Handled in ledger.js, skipped
 // here so they never leak into the category breakdown.
-const RESERVED_CLASS = new Set(['transfer', 'income']);
+const RESERVED_CLASS = new Set(['transfer', 'income', 'savings']);
 
 export function categorize(m, overrides) {
   const ml = (m || '').toLowerCase();
@@ -230,8 +238,10 @@ export function categorize(m, overrides) {
     // broader earlier one ("uber") regardless of object-key insertion order.
     // Mirrors ledger.js userTransferRule; the two must not disagree.
     let best = null, len = -1;
+    // A rule written from a name that still carried its posting date
+    // ("aug. 5 new asian food market") matches the name without it.
     for (const [kw, cat] of Object.entries(overrides)) {
-      if (kw && !RESERVED_CLASS.has(cat) && kw.length > len && ml.includes(kw.toLowerCase())) { best = cat; len = kw.length; }
+      if (kw && !RESERVED_CLASS.has(cat) && kw.length > len && ml.includes(stripDatePrefix(kw).toLowerCase())) { best = cat; len = kw.length; }
     }
     if (best != null) return best; // user-configured wins
   }
@@ -240,6 +250,8 @@ export function categorize(m, overrides) {
 }
 
 const daysBetween = (a, b) => Math.abs((new Date(a) - new Date(b)) / 86400000);
+// "2026-01" → "2025-12".
+const prevMonth = (m) => (+m.slice(5, 7) === 1 ? `${+m.slice(0, 4) - 1}-12` : `${m.slice(0, 4)}-${pad2(+m.slice(5, 7) - 1)}`);
 const round2 = (n) => Math.round(n * 100) / 100;
 
 // ── Header detection + column mapping ──
@@ -600,15 +612,27 @@ export function amortize(balance, annualRatePct, payment) {
   return { underwater: false, months, total_interest: round2(interest) };
 }
 
+// Parallel plans billed on the same day (two 210 contributions, two phone
+// lines) are one bill that day: their sum is what the month costs.
+function sameDayTotals(items) {
+  const byDate = new Map();
+  for (const t of items) {
+    const d = byDate.get(t.date);
+    byDate.set(t.date, d ? { ...d, amount: round2(d.amount + t.amount), merchant: t.merchant } : t);
+  }
+  return [...byDate.values()];
+}
+
 function detectSubscriptions(txns, lastDate, catOf, kindOf) {
   const groups = {};
   for (const t of txns) {
     if (t.amount < 0 && t.date) (groups[merchantKey(t.merchant)] ||= []).push(t);
   }
   const subs = [];
-  for (const items of Object.values(groups)) {
+  for (const group of Object.values(groups)) {
+    group.sort((a, b) => a.date.localeCompare(b.date));
+    const items = sameDayTotals(group);
     if (items.length < 2) continue;
-    items.sort((a, b) => a.date.localeCompare(b.date));
     const gaps = items.slice(1).map((it, i) => daysBetween(it.date, items[i].date));
     const monthlyish = gaps.filter((g) => g >= 24 && g <= 35);
     if (!monthlyish.length) continue;
@@ -690,16 +714,24 @@ function detectAnomalies(txns, subs, lastDate, catOf) {
   for (const t of charges) (groups[merchantKey(t.merchant)] ||= []).push(t);
   for (const items of Object.values(groups)) items.sort((a, b) => a.date.localeCompare(b.date));
 
-  // Double charges: same merchant, same amount (≥$20), ≤3 days apart.
+  // Double charges: same merchant, same amount (≥$20), ≤3 days apart —
+  // unless the same number of them billed the month before (parallel plans),
+  // or money of that amount came back from them within two weeks (a refund).
   const byKeyAmt = {};
   for (const t of charges) {
     if (-t.amount < 20) continue; // two same-day coffees are life, not fraud
     (byKeyAmt[`${merchantKey(t.merchant)}|${(-t.amount).toFixed(2)}`] ||= []).push(t);
   }
+  const credits = txns.filter((t) => t.amount > 0 && t.date);
+  const refunded = (t, since) => credits.some((c) => merchantKey(c.merchant) === merchantKey(t.merchant)
+    && Math.abs(c.amount + t.amount) <= 0.005 && c.date >= since && daysBetween(c.date, t.date) <= 14);
   for (const [k, items] of Object.entries(byKeyAmt)) {
     items.sort((a, b) => a.date.localeCompare(b.date));
+    const inMonth = (m) => items.filter((t) => t.date.startsWith(m)).length;
     for (let i = 1; i < items.length; i++) {
       if (daysBetween(items[i].date, items[i - 1].date) <= 3) {
+        const month = items[i].date.slice(0, 7);
+        if (inMonth(prevMonth(month)) >= inMonth(month) || refunded(items[i], items[i - 1].date)) continue;
         out.push({
           type: 'double_charge', merchant: items[i].merchant, amount: round2(-items[i].amount),
           date: items[i].date, prior_date: items[i - 1].date,
@@ -766,7 +798,7 @@ const addDaysIso = (iso, days) => new Date(new Date(iso).getTime() + days * 8640
 // cadence. Shared by the forecast and the bill calendar.
 function detectRecurringIncome(txns) {
   const groups = {};
-  for (const t of txns) if (t.amount > 0 && t.date) (groups[merchantKey(t.merchant)] ||= []).push(t);
+  for (const t of txns) if (t.amount > 0 && t.date && !t.refund) (groups[merchantKey(t.merchant)] ||= []).push(t);
   const out = [];
   for (const [key, items] of Object.entries(groups)) {
     if (items.length < 2) continue;
@@ -828,8 +860,8 @@ function buildForecast(txns, subs, lastDate) {
   const monthEndIso = `${month}-${pad2(lastDom)}`;
   const asOfDay = +lastDate.slice(8, 10);
   const inMonth = txns.filter((t) => t.date && t.date.startsWith(month));
-  const income_so_far = round2(inMonth.filter((t) => t.amount > 0).reduce((a, t) => a + t.amount, 0));
-  const spend_so_far = round2(inMonth.filter((t) => t.amount < 0).reduce((a, t) => a - t.amount, 0));
+  const income_so_far = round2(inMonth.filter((t) => t.amount > 0 && !t.refund).reduce((a, t) => a + t.amount, 0));
+  const spend_so_far = round2(inMonth.filter((t) => t.amount < 0 || t.refund).reduce((a, t) => a - t.amount, 0));
 
   // Fixed charges still expected before month end, predicted per active commitment.
   const upcoming_fixed = [];
@@ -1059,6 +1091,22 @@ export function budgetsFor(txns, opts = {}) {
   return buildBudgets(txns, subs, opts.budgets, lastDate, (t) => t.category || categorize(t.merchant, overrides));
 }
 
+// The lumps the ledger labelled one-off (far above a usual month, from a
+// payee seen on a day or two in a year) — one line per payee and day, largest
+// first. Label only: they stay in every total.
+function oneOffLines(txns, overrides) {
+  const by = new Map();
+  for (const t of txns) {
+    if (!t.one_off || !(t.amount < 0)) continue;
+    const k = `${merchantKey(t.merchant)}|${t.date}`;
+    const e = by.get(k) || { merchant: t.merchant, cents: 0, date: t.date || null, category: t.category || categorize(t.merchant, overrides) };
+    e.cents += Math.round(-t.amount * 100);
+    by.set(k, e);
+  }
+  return [...by.values()].map(({ cents, ...e }) => ({ ...e, amount: cents / 100 }))
+    .sort((a, b) => b.amount - a.amount || (a.date || '').localeCompare(b.date || '') || a.merchant.localeCompare(b.merchant));
+}
+
 // ── Public: roll up an already-parsed, redacted transactions array.
 // Shared by the CSV and PDF import paths. `meta` carries source/currency/notes.
 export function analyzeTransactions(txns, meta = {}, opts = {}) {
@@ -1073,15 +1121,18 @@ export function analyzeTransactions(txns, meta = {}, opts = {}) {
   const dates = txns.filter((t) => t.date).map((t) => t.date).sort();
   const lastDate = dates[dates.length - 1] || null;
 
-  const spend = round2(txns.filter((t) => t.amount < 0).reduce((a, t) => a - t.amount, 0));
-  const income = round2(txns.filter((t) => t.amount > 0).reduce((a, t) => a + t.amount, 0));
+  // A refund (flagged by the ledger: money back on a card, or refund wording)
+  // is spend coming back, never income: it nets against spend.
+  const outflow = (t) => t.amount < 0 || t.refund;
+  const spend = round2(txns.filter(outflow).reduce((a, t) => a - t.amount, 0));
+  const income = round2(txns.filter((t) => t.amount > 0 && !t.refund).reduce((a, t) => a + t.amount, 0));
 
   const byMonth = {};
   for (const t of txns) {
     const m = t.date ? t.date.slice(0, 7) : null;
     if (!m) continue;
     (byMonth[m] ||= { spend: 0, income: 0, net: 0 });
-    if (t.amount < 0) byMonth[m].spend -= t.amount; else byMonth[m].income += t.amount;
+    if (outflow(t)) byMonth[m].spend -= t.amount; else byMonth[m].income += t.amount;
     byMonth[m].net += t.amount;
   }
   for (const m of Object.keys(byMonth)) for (const k of Object.keys(byMonth[m])) byMonth[m][k] = round2(byMonth[m][k]);
@@ -1100,11 +1151,24 @@ export function analyzeTransactions(txns, meta = {}, opts = {}) {
     (merch[mk] ||= { spend: 0, count: 0 });
     merch[mk].spend -= t.amount; merch[mk].count += 1;
   }
+  // A refund comes off its own category, never below zero; one whose
+  // category had no spend comes off the total alone.
+  for (const t of txns) {
+    if (!t.refund) continue;
+    const cat = t.category || categorize(t.merchant, overrides);
+    if (!(cat in catSpend)) continue;
+    catSpend[cat] = Math.max(0, catSpend[cat] - t.amount);
+    const m = t.date && t.date.slice(0, 7);
+    if (m && catMonthly[cat]?.[m] != null) catMonthly[cat][m] = Math.max(0, catMonthly[cat][m] - t.amount);
+  }
   const byCategoryMonthly = Object.fromEntries(Object.entries(catMonthly).map(([c, ms]) =>
     [c, Object.fromEntries(Object.entries(ms).sort().map(([m, v]) => [m, round2(v)]))]));
   const byCategory = Object.entries(catSpend)
     .map(([category, v]) => ({ category, spend: round2(v), pct: spend ? round2((100 * v) / spend) : 0 }))
     .sort((a, b) => b.spend - a.spend);
+  const oneOffs = oneOffLines(txns, overrides);
+  const oneOffTotal = round2(oneOffs.reduce((a, o) => a + o.amount, 0));
+  const months = Object.keys(byMonth).length;
   const topMerchants = Object.entries(merch)
     .map(([merchant, v]) => ({ merchant, spend: round2(v.spend), count: v.count }))
     .sort((a, b) => b.spend - a.spend).slice(0, 10);
@@ -1124,7 +1188,7 @@ export function analyzeTransactions(txns, meta = {}, opts = {}) {
     account_fingerprint: meta.account_fingerprint || null,
     date_range: { start: dates[0] || null, end: lastDate },
     notes: meta.notes || [], redacted_columns: meta.redacted_columns || [],
-    totals: { spend, income, net: round2(income - spend), months: Object.keys(byMonth).length },
+    totals: { spend, income, net: round2(income - spend), months },
     by_month: Object.fromEntries(Object.entries(byMonth).sort()),
     by_category: byCategory,
     top_merchants: topMerchants,
@@ -1142,6 +1206,11 @@ export function analyzeTransactions(txns, meta = {}, opts = {}) {
     bill_calendar: buildBillCalendar(txns, subs, lastDate),
     active_subscription_count: active.filter((s) => !s.essential).length,
     stopped_subscription_count: subs.filter((s) => !s.active && !s.essential).length,
+    refunds_total: round2(txns.filter((t) => t.refund).reduce((a, t) => a + t.amount, 0)),
+    one_offs: oneOffs,
+    one_off_total: oneOffTotal,
+    // What a month costs without the one-offs — the headline's "typical month".
+    typical_month_spend: months ? round2((spend - oneOffTotal) / months) : null,
     transactions: txns,
     errors: [],
   };

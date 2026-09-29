@@ -9,7 +9,7 @@
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, activeRows, seedFromLegacy } from '../../scripts/lww.js';
+import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, externalOf, activeRows, seedFromLegacy } from '../../scripts/lww.js';
 
 export const DATA = join(process.env.HOME, '.linggen/skills/cfo/data');
 
@@ -42,6 +42,7 @@ export function loadLive(data = DATA) {
   const ov = overridesOf(reg);
   const budgets = budgetsOf(reg);
   const commitments = commitmentsOf(reg);
+  const external = externalOf(reg);
   return {
     fileIds,
     rawRows,
@@ -51,6 +52,8 @@ export function loadLive(data = DATA) {
       categoryOverrides: Object.keys(ov).length ? ov : null,
       commitments: Object.keys(commitments).length ? commitments : null,
       budgets: Object.keys(budgets).length ? budgets : null,
+      externalAccounts: Object.keys(external).length ? external : null,
+      ...(cfg.currency ? { homeCurrency: String(cfg.currency).toUpperCase() } : {}),
     },
     imports: readJson(join(data, 'imports.json'), []),
   };

@@ -18,7 +18,7 @@ export const LIST = join(ROOT, 'shared.sha256');
 export function sharedFiles() {
   const pdf = readdirSync(join(ROOT, 'pdf')).filter((f) => /\.(pdf|truth\.json)$/.test(f)).map((f) => `pdf/${f}`);
   const csv = readdirSync(join(ROOT, 'csv')).filter((f) => /\.(csv|json)$/.test(f)).map((f) => `csv/${f}`);
-  return [...pdf, ...csv, 'compose/cases.json', 'currency/cases.json', 'import/cases.json'].sort();
+  return [...pdf, ...csv, 'compose/cases.json', 'currency/cases.json', 'import/cases.json', 'spend/cases.json'].sort();
 }
 
 /// The list as `shasum -a 256` writes it: "<hex>  <path>" per line.
