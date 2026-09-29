@@ -183,6 +183,13 @@ function runLocked(verb, args, stateFile, reader) {
     asking.festival_told = out.result.today.date;
     writeAtomic(stateFile, JSON.stringify(asking));
   }
+  // The weather is said once when it changes (rules/weather.mjs): her Look
+  // keeps what she was last handed — never logged.
+  const sky = reader === 'ling' && verb === 'look' ? out.result?.weather?.kind : null;
+  if (sky && asking.weather_told !== sky) {
+    asking.weather_told = sky;
+    writeAtomic(stateFile, JSON.stringify(asking));
+  }
   // 前情提要 is handed to Ling once: told the moment her Look carries it —
   // built from the facts (rules/recap.mjs: the book, where he stands, who
   // walks along, the task in hand); no summary is kept to read back.

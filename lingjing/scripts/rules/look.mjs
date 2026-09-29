@@ -25,6 +25,7 @@ import { building } from './worlds.mjs';
 import { practiceHint } from './scrolls.mjs';
 import { mainRoot, rootName } from './roots.mjs';
 import { todayBrief } from './festival.mjs';
+import { weatherBrief } from './weather.mjs';
 
 /* The market's shelf: the catalog sold in this province — and, while the
    companion is still to be found, her bell at every market, since the call
@@ -368,6 +369,8 @@ export function look(state, content, ctx) {
     words: wordsOf(content, lang),
     // 节日 · 节气 (rules/festival.mjs): the player's real day, reckoned on the device.
     today: todayBrief(content, state, ctx, { day: ctx.day }),
+    // 天气 (rules/weather.mjs): the engine's weather sense at the player's city, else 蒙山's seasons.
+    weather: weatherBrief(state, ctx),
     ...tasksBrief(content, state, ctx),
   };
   // Before a story gate Look carries nothing it keeps shut, and `locked` names it (rules/locks.mjs).

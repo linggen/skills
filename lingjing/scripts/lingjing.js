@@ -26,6 +26,7 @@ import { raiseUnease } from './unease.js';
 import { LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
 import { atmosClasses, atmosOf, particlesHtml } from './atmos.js';
 import { parseDay } from './calendar.js';
+import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -41,7 +42,7 @@ const PREVIEW = (() => {
 })();
 
 // Tools that change the state: the scene re-reads Look once they have run.
-const WRITERS = new Set(['Divine', 'Resolve', 'Practice', 'Tale', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art', 'Lundao', 'Meet', 'Quest', 'Refine', 'Ring', 'Remember']);
+const WRITERS = new Set(['Divine', 'Resolve', 'Practice', 'Tale', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art', 'Lundao', 'Meet', 'Quest', 'Refine', 'Ring']);
 
 /* A 斗法 in play, held by the page: the setup the rules handed over at the
    door, the fight itself, and every action taken so far. When it ends the page
@@ -190,6 +191,7 @@ const view = {
   refineMat: null, refineName: '', refineNote: null, // 炼化本命 on the card: the material picked, the name typed, a refusal
   panelBusy: null, panelNote: null, // a 连环画 panel's choice in flight, or its refusal
   ledgerOpen: false, // the 恩仇簿 chip's popover
+  wxOpen: false, wxSense: null, wxNote: null, // the weather chip's popover: the engine's sense as read, a note
   valuePick: null, valueText: '', valueNote: null, // the 名字 card: an offered name tapped, the player's own typed, a refusal
   valueGender: null, //  the 名字 card's 男 · 女: nothing until tapped
   bornDraft: '', bornError: false, // the 生辰 card: the date typed (never kept past the tap), a date refused
@@ -815,7 +817,7 @@ function footRowHtml(slots) {
 
 /// The chips — 录 · 书 · 事 · 袋 · 恩 — in the footer, under the stage.
 function footChipsHtml() {
-  return `${bout ? '' : festChipHtml()}${bout ? '' : luChipHtml(lang(), view.luOpen)}${bout ? '' : readChipHtml(ctx())}
+  return `${bout ? '' : festChipHtml()}${bout ? '' : wxChipHtml(look?.weather, { lang: lang(), open: view.wxOpen, sense: view.wxSense, note: view.wxNote })}${bout ? '' : luChipHtml(lang(), view.luOpen)}${bout ? '' : readChipHtml(ctx())}
     ${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}
     ${gearChipHtml(ctx(), view.gearOpen)}
     ${ledgerChipHtml(ctx(), view.ledgerOpen)}`;
@@ -846,6 +848,32 @@ function paintAtmos() {
   if (a.key === atmosKey) return;
   atmosKey = a.key;
   $('atmosPts').innerHTML = particlesHtml(a.particles, look?.today?.date ?? '');
+}
+
+/* 天气 — the engine's weather sense (skill-spec § Senses): the city is the
+   player's, set once on the 名字 card or here, and the engine reads the sky;
+   the game never goes online. Look carries the result as `weather`. */
+async function senseCall(body = null) {
+  try {
+    const res = await fetch('/api/senses/weather', body ? { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {});
+    return { ok: res.ok, status: res.status, sense: res.ok ? await res.json() : null };
+  } catch (e) {
+    console.warn('[lingjing] weather', e);
+    return { ok: false, status: 0, sense: null };
+  }
+}
+async function openWx() {
+  show({ wxOpen: !view.wxOpen, wxNote: null, bookOpen: false, gearOpen: false, ledgerOpen: false });
+  if (!view.wxOpen) return;
+  const r = await senseCall();
+  show({ wxSense: r.sense, wxNote: r.ok ? null : cityNote(r, lang()) });
+}
+async function setSense(body) {
+  const r = await senseCall({ ...body, lang: lang() });
+  if (r.ok && body.city) skyDraft.city = '';
+  show({ wxSense: r.sense ?? view.wxSense, wxNote: cityNote(r, lang()) });
+  if (r.ok) await refresh();
+  return r;
 }
 
 /* 银月 on a festival: she hears the day once (a fact, and the kind of thing
@@ -1374,6 +1402,7 @@ document.addEventListener('input', (e) => { if (e.target.id === 'refine-name') k
    2026-09-28: every player had become 青玄). A keystroke is kept without a
    repaint (the field would be replaced); only the chips and the button follow. */
 document.addEventListener('input', (e) => {
+  if (e.target.id === 'city-text' || e.target.id === 'wx-city') { skyDraft.city = e.target.value; return; }
   if (e.target.id !== 'value-text') return;
   keep({ valueText: e.target.value, valuePick: null, valueNote: null });
   const card = e.target.closest('.valuecard'), chosen = valueChoice(null, e.target.value, Number(e.target.dataset.valueMax));
@@ -1389,6 +1418,8 @@ async function valueTap(exitId) {
   const r = await write('resolve', { exit: exitId, value: chosen, ...(v.gender ? { gender: view.valueGender } : {}) }).catch(failed);
   keep(r.ok ? { valuePick: null, valueText: '', valueNote: null, valueGender: null } : { valueNote: refusal(r) });
   await refresh();
+  // The city row, when filled: the engine's weather sense takes it (sky.js).
+  if (r.ok && skyDraft.city.trim()) await setSense({ city: skyDraft.city.trim() });
   if (r.ok) await report(`[scene] named ${r.named?.value ?? chosen}`);
 }
 
@@ -1640,6 +1671,7 @@ const KEY_ROWS = [
 ];
 document.addEventListener('keydown', (e) => {
   if (e.target.id === 'askField' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); sendAsk(); }
+  if (e.target.id === 'wx-city' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); document.querySelector('[data-wx-set]')?.click(); }
   if (e.target.id === 'value-text' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.closest('.valuecard')?.querySelector('[data-value-go]:not(:disabled)')?.click(); }
   if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.luOpen) show({ luOpen: false }); else if (view.pouchToss) show({ pouchToss: null }); else if (view.bookOpen || view.gearOpen || view.ledgerOpen) show({ bookOpen: false, gearOpen: false, ledgerOpen: false }); }
   if (e.key !== 'Enter' && e.key !== ' ') return;
@@ -1719,6 +1751,10 @@ const busy = (key, fn) => () => run(key, fn);
 const CLICKS = [
   ['[data-book]', () => { show({ bookOpen: !view.bookOpen, gearOpen: false, ledgerOpen: false }); if (view.bookOpen) loadKaifu(); }],
   ['[data-ledger]', () => show({ ledgerOpen: !view.ledgerOpen, bookOpen: false, gearOpen: false })],
+  ['[data-wx]', () => run('wx:open', () => openWx())],
+  ['[data-wx-set]', () => { if (skyDraft.city.trim()) run('wx:set', () => setSense({ city: skyDraft.city.trim() })); }],
+  ['[data-wx-off]', (el) => run('wx:off', () => setSense({ off: el.dataset.wxOff === 'off' }))],
+  ['[data-wx-clear]', () => run('wx:clear', () => setSense({ city: null }))],
   ['[data-panel-exit]', (el) => { if (!el.matches(':disabled')) run(`panel:${el.dataset.panelExit}`, () => panelTap(el.dataset.panelExit, el.textContent.trim())); }],
   ['[data-lu]', () => (view.luOpen ? show({ luOpen: false }) : openLu())],
   ['[data-lu-close]', () => show({ luOpen: false })],
@@ -1743,6 +1779,7 @@ const CLICKS = [
   ['*', (el, e) => {
     if (view.bookOpen && !e.target.closest('.bookpop') && !e.target.closest('#askbar')) show({ bookOpen: false });
     if (view.ledgerOpen && !e.target.closest('.ledgerpop')) show({ ledgerOpen: false });
+    if (view.wxOpen && !e.target.closest('.wxpop') && !e.target.closest('[data-wx]')) show({ wxOpen: false });
     return false;
   }],
   ['[data-spoils-close]', () => show({ spoils: null })],

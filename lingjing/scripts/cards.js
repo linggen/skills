@@ -129,6 +129,7 @@ export const WORDS = {
 };
 
 export { esc } from './esc.js';
+import { cityRowHtml } from './sky.js';
 import { esc } from './esc.js';
 
 /// A system the story has not reached yet (Look's `locked`, rules/locks.mjs): its chip, bar and buttons are not drawn at all.
@@ -1111,6 +1112,7 @@ function value(card, ctx) {
     <div class="acts">${chips}</div>
     <div class="fateform"><input type="text" id="value-text" data-value-max="${esc(max)}" maxlength="${esc(max)}" autocomplete="off" placeholder="${esc(say(w.valueOwn, { n: max }))}" value="${esc(text)}">
       <button class="act" data-value-go="${esc(card.id)}"${chosen && gender ? '' : ' disabled'}>${esc(go)}</button></div>
+    ${v.gender ? cityRowHtml(ctx.lang) : ''}
     ${ctx.valueNote ? `<div class="donote">${esc(ctx.valueNote)}</div>` : ''}</div>`;
 }
 

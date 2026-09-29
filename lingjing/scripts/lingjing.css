@@ -989,3 +989,9 @@ body.fighting .atmos { display: none; }
 }
 .bookchip.festchip { border-color: #C22A1C; color: #C22A1C; }
 .bookchip.festchip.done, .bookchip.festchip.term { cursor: default; border-color: var(--line); color: var(--dim); }
+/* 天气 — the chip, its popover, and the 名字 card's city row (sky.js) */
+.bookchip.wxchip { border-color: var(--line); color: var(--dim); }
+.wxpop { width: min(340px, 80vw); }
+.wxpop .acts { margin-top: 6px; }
+.valuecard .cityrow { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
+.valuecard .cityrow input { font: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--text); max-width: 240px; }

@@ -29,6 +29,10 @@ cloud:
 # turn to finish, and never takes an open question's place.
 closing-ask: true
 queue: after-turn
+# The day's weather at the city the player set once (design.md § 真实世界):
+# the engine reads it (skill-spec § Senses) and hands it to every tool call
+# as LINGGEN_WEATHER — the game itself never goes online.
+senses: [weather]
 # 银月 is a guest in Lingjing's chat (skill-spec § Place), and she is found,
 # not given: until the player finds her in the prologue's valley — and while
 # she sleeps in 吴婆婆's fox token (prologue-v3) — she is not here at all
@@ -50,7 +54,8 @@ permission:
   warning: >-
     Lingjing keeps your game — realm, bag, the story so far — in this skill's
     own folder, and reads only whether your other Linggen apps marked a task
-    done. It writes nothing anywhere else.
+    done — and, if you give it a city, the weather there. It writes nothing
+    anywhere else.
 tools:
   - name: Look
     description: >-
