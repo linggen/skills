@@ -200,6 +200,13 @@
       "filename": "August 6, 2026.pdf",
       "kind": "bank",
       "expect": { "match": null, "label": "Account", "type": "checking" }
+    },
+    {
+      "name": "a file carrying its account number never takes an account with none",
+      "accounts": { "acct_mc": { "label": "September 4, 2026", "type": "credit" } },
+      "filename": "statement.csv",
+      "fingerprint": "acct_fp1234",
+      "expect": { "match": null, "label": "Account", "type": "credit" }
     }
   ]
 }

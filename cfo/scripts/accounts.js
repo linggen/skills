@@ -56,12 +56,14 @@ export function labelFromFilename(filename) {
 // ("statement-2026-08.pdf") can only be a labelled account whose label has
 // none either, and only of the type the name — or, when it says nothing, the
 // statement (`kind`, see guessType) — gives: a bank statement never lands on a
-// card, nor a card's on a chequing account.
-export function bestAccountMatch(filename, accounts, kind = null) {
+// card, nor a card's on a chequing account. A file that carries its account
+// number (`fingerprint`) is that account, so a bare name ("statement.csv")
+// never hands it to some other account that has no number.
+export function bestAccountMatch(filename, accounts, kind = null, fingerprint = null) {
   const same = sameName(filename, accounts);
   if (same) return same;
   const ftoks = tokens(filename);
-  if (!ftoks.size) return genericMatch(guessType(filename, kind), accounts);
+  if (!ftoks.size) return fingerprint ? null : genericMatch(guessType(filename, kind), accounts);
   let best = null, bestN = 0;
   for (const [id, a] of Object.entries(accounts || {})) {
     const ltoks = [...tokens(a?.label)];

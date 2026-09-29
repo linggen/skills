@@ -27,7 +27,7 @@ for (const c of CASES.merge) {
 
 for (const c of CASES.accounts) {
   test(`account: ${c.name}`, () => {
-    assert.equal(bestAccountMatch(c.filename, c.accounts, c.kind), c.expect.match);
+    assert.equal(bestAccountMatch(c.filename, c.accounts, c.kind, c.fingerprint), c.expect.match);
     assert.equal(labelFromFilename(c.filename), c.expect.label);
     assert.equal(guessType(c.filename, c.kind), c.expect.type);
   });

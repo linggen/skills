@@ -543,7 +543,7 @@ function stageImport(ctx) {
     return Promise.resolve(null);
   }
   return new Promise((resolve) => {
-    const match = bestAccountMatch(ctx.filename, ACCOUNTS, ctx.kind);
+    const match = bestAccountMatch(ctx.filename, ACCOUNTS, ctx.kind, ctx.fingerprint);
     STAGING = {
       ...ctx,
       // Default to the pre-filled New account (label + type guessed from the
