@@ -84,3 +84,21 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
   .marks circle, .marks.play circle, .marks.play .m-flow { animation: none; }
   .marks circle { opacity: .9; }
 }
+/* 附 · 本章典籍: the classics a chapter names, inline at its end. The name in
+   the text wears the figures' dotted underline and jumps here; 「本章见」 jumps back. */
+.chapter a.dianref { color: inherit; text-decoration: none; }
+.chapter .dian h2 { margin-top: 8px; }
+.dianent { margin: 0 0 1.5em; padding: 12px 14px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); scroll-margin-top: 72px; }
+.dianent h3 { margin: 0 0 2px; font-size: 16px; letter-spacing: .08em; }
+.dianent p { margin: 0 0 .5em; font-size: 15px; line-height: 1.8; }
+.dianent .about { font-size: 13px; color: var(--dim); }
+.dianent blockquote.orig { margin: .6em 0; padding: 4px 12px; border-left: 3px solid var(--seal); color: var(--text); font-size: 16px; line-height: 1.9; }
+.dianent .tag { display: inline-block; margin-right: 6px; padding: 0 5px; font-size: 11px; line-height: 1.6; letter-spacing: .1em; color: var(--seal); border: 1px solid var(--seal); border-radius: 3px; vertical-align: 2px; }
+.dianent .simp { color: var(--dim); }
+.dianent .dnote, .dianent .src { font-size: 12px; color: var(--dim); }
+.dianent .where a, .dianent .src a { color: var(--seal); text-decoration: none; }
+.dianent .src a { word-break: break-all; }
+.chapter a.dianref, .dianent .where a { scroll-margin-top: 72px; }
+.chapter .lit { animation: dian-lit 1.6s ease-out 1; }
+@keyframes dian-lit { 0%, 30% { background: color-mix(in srgb, var(--seal) 18%, transparent); } 100% { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .chapter .lit { animation: none; outline: 2px solid var(--seal); } }

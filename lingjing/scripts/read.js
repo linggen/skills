@@ -60,13 +60,15 @@ async function main() {
   const notes = content(world, 'notes.json').then((n) => n?.notes ?? {}, () => ({}));
   // 银月's memories (`::: 忆 n`): the colour plates, from memories.json.
   const memories = content(world, 'memories.json').then((m) => m?.memories ?? [], () => []);
+  // 附 · 本章典籍: the classics the book names (`《书名》{典=id}`), one file per book; none reads plain.
+  const classics = getJson(`${STORY}${encodeURIComponent(bookId)}/classics.json`).then((c) => c?.classics ?? {}, () => ({}));
   try {
     const res = await fetch(`${STORY}${encodeURIComponent(bookId)}/${encodeURIComponent(ch.file)}`);
     if (!res.ok) throw new Error(String(res.status));
     const md = await res.text();
     $('chapter').innerHTML = (lang === 'en' ? `<p class="note">${esc(w.only)}</p>` : '') + renderMarkdown(fillHero(md, await hero), {
       panel: (id) => worldPath(world, `art/panels/${id}.webp`), notes: await notes, src: (file) => worldPath(world, file), lang,
-      memory: memoryPlate(await memories, world),
+      memory: memoryPlate(await memories, world), classics: await classics,
     });
   } catch {
     $('chapter').innerHTML = `<p class="note">${esc(w.failed)}</p>`;
@@ -99,5 +101,20 @@ function openLarge(e) {
   playMarks(box.querySelector('svg.marks'));
 }
 $('chapter').addEventListener('click', openLarge);
+
+// A classic named in the text jumps to its entry at the chapter's end, and the
+// entry's 「本章见」 jumps back — in place (the app's frame keeps its URL), the
+// spot lit for a moment so the eye finds it.
+function jump(e) {
+  const a = e.target.closest?.('[data-dian-jump]');
+  const to = a && document.getElementById(a.dataset.dianJump);
+  if (!to) return;
+  e.preventDefault();
+  to.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+  to.classList.remove('lit');
+  void to.offsetWidth;
+  to.classList.add('lit');
+}
+$('chapter').addEventListener('click', jump);
 
 main().catch((e) => { console.warn('[lingjing] read', e); $('chapter').innerHTML = `<p class="note">${esc(w.failed)}</p>`; });
