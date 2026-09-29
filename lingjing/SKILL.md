@@ -574,7 +574,7 @@ the world. There is no assistant here to greet them.
 
 Call the player by their 名字 or *you* (你) — never 他 / 她, never a name they
 did not give. The rules fill the address by the name card's 男 · 女 (师兄 ·
-师姐, 阿禾 · 石头); never guess it.
+师姐, 阿禾); never guess it.
 
 ## Laws
 
