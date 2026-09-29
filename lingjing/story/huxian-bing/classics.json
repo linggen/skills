@@ -1,5 +1,5 @@
 {
-  "_about": "附 · 本章典籍 — the classics the chapters name or quote (DESIGN.md § 六·五·一). A chapter writes 《书名》{典=id}; the reader underlines it, links it to its entry at the chapter's end and back. `original` is copied exactly from `source.url` (Wikisource, traditional characters, the edition's own text — checked as a substring of the page's wikitext when it was built, 2026-09-29); `simplified` is a mechanical OpenCC t→cn rendering of it for the reader; `plain` is our 白话. Never write a passage from memory: no source, no entry.",
+  "_about": "附 · 本回典籍 — the classics the 回 name or quote (DESIGN.md § 六·五·一). A chapter writes 《书名》{典=id}; the reader underlines it, links it to its entry at the chapter's end and back. `original` is copied exactly from `source.url` (Wikisource, traditional characters, the edition's own text — checked as a substring of the page's wikitext when it was built, 2026-09-29); `simplified` is a mechanical OpenCC t→cn rendering of it for the reader; `plain` is our 白话. Never write a passage from memory: no source, no entry.",
   "classics": {
     "suwen": {
       "title": "黄帝内经·素问",

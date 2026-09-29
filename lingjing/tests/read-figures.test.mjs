@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { fillHero, NEAR, renderMarkdown } from '../scripts/read-md.js';
+import { bookEntries, fillHero, NEAR, renderMarkdown } from '../scripts/read-md.js';
 import { codexHtml, codexOf, codexRaw, isSubject, ITEM_TAGS, lintCodex, resolveEntry, SUBJECTS } from '../scripts/codex.js';
 import { cardHtml, WORDS } from '../scripts/cards.js';
 import { marksSvg } from '../scripts/marks.js';
@@ -23,7 +23,7 @@ const FILES = { codex: json('codex.json'), people: json('people.json'), creature
 const CODEX = codexOf(FILES);
 const MEMORIES = json('memories.json').memories;
 const exists = (f) => fs.existsSync(path.join(WORLD, f));
-const chapters = [...book.chapters, ...(book.appendix ?? [])].map((c) => ({ ...c, md: fs.readFileSync(path.join(BOOK, c.file), 'utf8') }));
+const chapters = bookEntries(book).map((c) => ({ ...c, md: fs.readFileSync(path.join(BOOK, c.file), 'utf8') }));
 const GLOSS = /\]\{注=([^{}\n]+)\}/g;
 const src = (f) => `../worlds/jiuding/${f}`;
 
@@ -109,25 +109,25 @@ test('a subject\'s card stands once, after the paragraph of its first appearance
   for (const id of ['masan', 'ahe', 'yinyue', 'fox-token', 'longzhi', 'sunergou']) assert.equal(cards.get(id), 1, `${id} is introduced`);
   // in one render: a card once; a mention by it plain words, a farther one a dotted link
   const md = '收租的，是[马三]{注=masan}。\n\n又是[马三]{注=masan}。';
-  const html = renderMarkdown(md, { codex: CODEX, chapter: '00', src });
+  const html = renderMarkdown(md, { codex: CODEX, chapter: 'h01', src });
   assert.equal((html.match(/class="codexcard first"/g) ?? []).length, 1);
   assert.doesNotMatch(html, /class="gloss"[^>]*data-codex="masan"/, 'the card is right there: no link');
-  assert.equal((renderMarkdown(md, { codex: CODEX, chapter: '02', src }).match(/codexcard/g) ?? []).length, 0, 'another chapter: links only');
+  assert.equal((renderMarkdown(md, { codex: CODEX, chapter: 'h03', src }).match(/codexcard/g) ?? []).length, 0, 'another chapter: links only');
 });
 
-test('a mention right by its card reads plain; one farther on, or past a heading, links to the pop-up (his, 2026-09-29)', () => {
-  const links = (md) => (renderMarkdown(md, { codex: CODEX, chapter: '00', src }).match(/class="gloss"[^>]*data-codex="masan"/g) ?? []).length;
+test('a mention right by its card reads plain; one farther on, or past a heading or a scene break, links to the pop-up (his, 2026-09-29)', () => {
+  const links = (md) => (renderMarkdown(md, { codex: CODEX, chapter: 'h01', src }).match(/class="gloss"[^>]*data-codex="masan"/g) ?? []).length;
   const para = (n) => Array.from({ length: n }, (_, i) => `第${i}段。`).join('\n\n');
   assert.equal(links('是[马三]{注=masan}，[马三]{注=masan}。'), 0, 'the card\'s own paragraph');
   assert.equal(links(`是[马三]{注=masan}。\n\n${para(1)}\n\n[马三]{注=masan}。`), 0, `within ${NEAR} blocks`);
   assert.equal(links(`是[马三]{注=masan}。\n\n${para(NEAR)}\n\n[马三]{注=masan}。`), 1, 'farther on');
   assert.equal(links('是[马三]{注=masan}。\n\n## 二\n\n[马三]{注=masan}。'), 1, 'a new section');
   assert.equal(links('是[马三]{注=masan}。\n\n---\n\n[马三]{注=masan}。'), 1, 'past a scene break');
-  assert.equal((renderMarkdown('[马三]{注=masan}。', { codex: CODEX, chapter: '02', src }).match(/data-codex="masan"/g) ?? []).length, 1, 'no card in this chapter: a link');
+  assert.equal((renderMarkdown('[马三]{注=masan}。', { codex: CODEX, chapter: 'h03', src }).match(/data-codex="masan"/g) ?? []).length, 1, 'no card in this chapter: a link');
 });
 
 test('a knowledge figure stands under every paragraph that names it, marks and all', () => {
-  const html = renderMarkdown('**银月**：[尾闾，夹脊，玉枕]{注=三关}。三道关。', { codex: CODEX, src, chapter: '02' });
+  const html = renderMarkdown('**银月**：[尾闾，夹脊，玉枕]{注=三关}。三道关。', { codex: CODEX, src, chapter: 'h03' });
   assert.match(html, /^<div class="noted"><p><b>银月<\/b>：<span class="gloss" role="button" tabindex="0" data-note="三关">尾闾，夹脊，玉枕<\/span>。三道关。<\/p><figure class="notefig" data-note="三关"><div class="pic"><img src="\.\.\/worlds\/jiuding\/art\/codex\/sanguan\.webp"/);
   assert.match(html, /<svg class="marks"/);
   assert.match(html, /<b>三关<\/b><span>督脉/);
@@ -135,8 +135,8 @@ test('a knowledge figure stands under every paragraph that names it, marks and a
   assert.doesNotMatch(html, /<text /, 'the picture carries its own painted labels: the marks draw none');
   assert.match(html, /data-scan="\.\.\/worlds\/jiuding\/art\/codex\/fanzhao-scan\.webp"/, '「原图」 opens the old plate');
   assert.match(renderMarkdown('[a]{注=三关}', { codex: codexOf(FILES, { lang: 'en' }), lang: 'en' }), /<b>The Three Passes<\/b>/);
-  const ch = chapters.find((c) => c.id === '02');
-  assert.equal((renderMarkdown(fillHero(ch.md, {}), { codex: CODEX, chapter: '02', src }).match(/class="notefig"/g) ?? []).length, 1);
+  const ch = chapters.find((c) => c.id === 'h03');
+  assert.equal((renderMarkdown(fillHero(ch.md, {}), { codex: CODEX, chapter: 'h03', src }).match(/class="notefig"/g) ?? []).length, 1);
 });
 
 test('an unknown entry, or no codex at all, reads as just the words', () => {

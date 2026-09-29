@@ -1,6 +1,6 @@
 {
  "version": 1,
- "_about": "图鉴 — the codex, the ONE picture system (Hanli 2026-09-29: 「图片作为图鉴，展示人物、生物、物品、武功、经脉、穴位等」). One entry per subject, one source for the book (read-md.js) and the game (the stage's first-appearance card, Ling's Show, 录's 图鉴): scripts/codex.js resolves and draws them. People, creatures, items and arts are LINKED — every row of people.json, creatures.json (not the foe- stand-ins), items.json and arts.json is an entry under its own id, its name, line and art read from there; an entry here with that id only adds to it: `first` {book: chapter id in book.json, scene: the game scene that introduces it}, `name`/`lines` to override, `image: null` to refuse a picture (`_image` says why; a name card stands instead), `by_hero` {male, female} for one picked by the hero's gender (阿禾). Knowledge (经脉, 穴位, 洛书, 五行 …) lives here whole: name, 2–3 lines, image, source, and `marks` (scripts/marks.js). A picture painted for us (Codex) shows NO credit line on the page (his, 2026-09-29) — its provenance is `_credit` and CREDITS.md; an old print keeps its short source line and the 「原图」 button. The hero has NO entry and is never drawn. The book writes [words]{注=id}: a subject's card sits after the paragraph of its first appearance (first.book), later mentions are a dotted link; a knowledge figure sits under every paragraph that names it.",
+ "_about": "图鉴 — the codex, the ONE picture system (Hanli 2026-09-29: 「图片作为图鉴，展示人物、生物、物品、武功、经脉、穴位等」). One entry per subject, one source for the book (read-md.js) and the game (the stage's first-appearance card, Ling's Show, 录's 图鉴): scripts/codex.js resolves and draws them. People, creatures, items and arts are LINKED — every row of people.json, creatures.json (not the foe- stand-ins), items.json and arts.json is an entry under its own id, its name, line and art read from there; an entry here with that id only adds to it: `first` {book: the 回's id in book.json (h01 = 第一回), scene: the game scene that introduces it}, `name`/`lines` to override, `image: null` to refuse a picture (`_image` says why; a name card stands instead), `by_hero` {male, female} for one picked by the hero's gender (阿禾). Knowledge (经脉, 穴位, 洛书, 五行 …) lives here whole: name, 2–3 lines, image, source, and `marks` (scripts/marks.js). A picture painted for us (Codex) shows NO credit line on the page (his, 2026-09-29) — its provenance is `_credit` and CREDITS.md; an old print keeps its short source line and the 「原图」 button. The hero has NO entry and is never drawn. The book writes [words]{注=id}: a subject's card sits after the paragraph of its first appearance (first.book), later mentions are a dotted link; a knowledge figure sits under every paragraph that names it.",
  "_marks": "The animation layer (scripts/marks.js): ratio = the image's height/width; points [{id, label, x, y}] and paths [{id, d: [[x, y]…], through: [point ids, in flow order]}], x/y in 0–1 of the image, drawn as an SVG over it.",
  "kinds": {
   "人物": {
@@ -44,31 +44,31 @@
  "entries": {
   "baba": {
    "first": {
-    "book": "00",
+    "book": "h01",
     "scene": "00-masan"
    }
   },
   "mama": {
    "first": {
-    "book": "00",
+    "book": "h01",
     "scene": "00-kitchen"
    }
   },
   "masan": {
    "first": {
-    "book": "00",
+    "book": "h01",
     "scene": "00-masan"
    }
   },
   "maxiaobao": {
    "first": {
-    "book": "00",
+    "book": "h01",
     "scene": "00-masan"
    }
   },
   "ahe": {
    "first": {
-    "book": "00",
+    "book": "h01",
     "scene": "00-dawn"
    },
    "by_hero": {
@@ -79,53 +79,53 @@
   },
   "wupo": {
    "first": {
-    "book": "00",
+    "book": "h01",
     "scene": "00-chushan"
    }
   },
   "jiujiu": {
    "first": {
-    "book": "01",
+    "book": "h02",
     "scene": "00-uncle"
    }
   },
   "laozhou": {
    "first": {
-    "book": "01",
+    "book": "h02",
     "scene": "00-cliff"
    }
   },
   "qulao": {
    "first": {
-    "book": "01",
+    "book": "h02",
     "scene": "00-gate"
    }
   },
   "xuanchenzi": {
    "first": {
-    "book": "01",
+    "book": "h02",
     "scene": "00-hall"
    }
   },
   "zhouheng": {
    "first": {
-    "book": "01",
+    "book": "h02",
     "scene": "00-waimen"
    }
   },
   "chuxiansheng": {
    "first": {
-    "book": "02"
+    "book": "h03"
    }
   },
   "sunergou": {
    "first": {
-    "book": "02"
+    "book": "h03"
    }
   },
   "neimen-shijie": {
    "first": {
-    "book": "02"
+    "book": "h03"
    }
   },
   "yinyue": {
@@ -135,7 +135,7 @@
     "en": "Yinyue"
    },
    "first": {
-    "book": "00",
+    "book": "h01",
     "scene": "00-fox"
    },
    "image": "art/people/yinyue-fox.webp",
@@ -152,39 +152,39 @@
   },
   "longzhi": {
    "first": {
-    "book": "01",
+    "book": "h02",
     "scene": "00-longzhi"
    }
   },
   "zheng": {
    "first": {
-    "book": "02"
+    "book": "h03"
    }
   },
   "fox-token": {
    "first": {
-    "book": "00",
+    "book": "h01",
     "scene": "00-chushan"
    },
    "tag": "信物"
   },
   "tuna-jing": {
    "first": {
-    "book": "01",
+    "book": "h02",
     "scene": "00-sleep"
    },
    "tag": "功法"
   },
   "danlu": {
    "first": {
-    "book": "02",
+    "book": "h03",
     "scene": "wm-danlu"
    },
    "tag": "法宝"
   },
   "xirang": {
    "first": {
-    "book": "02",
+    "book": "h03",
     "scene": "wm-xirang"
    },
    "tag": "法宝"
@@ -294,7 +294,7 @@
     ]
    },
    "first": {
-    "book": "02"
+    "book": "h03"
    },
    "_credit": {
     "zh": "Codex 所绘（人体背面·督脉三关），字与点经人眼校过；三关的位置据《性命圭旨》。",
@@ -319,7 +319,7 @@
     ]
    },
    "first": {
-    "book": "01",
+    "book": "h02",
     "scene": "00-sleep"
    },
    "tag": "丹药"

@@ -5,7 +5,7 @@
 // 像小人书。左边chat里放剧情。」 The stage draws a scene as a panel (a picture and
 // two to four lines of caption); the prose is the chat's. A scene's `story` and
 // an exit's `story` are the book's own passage for that beat (story/huxian-bing/
-// 00-序章上 and 01-序章下, zh + en). The rules hand each one to Ling ONCE, in order —
+// 01-第一回 and 02-第二回, once 序章上 and 序章下, zh + en). The rules hand each one to Ling ONCE, in order —
 // the choice's outcome, then the scene it walks into — whoever moved: her own
 // Resolve carries it, and a tap on the panel leaves it owed for her next Look.
 //

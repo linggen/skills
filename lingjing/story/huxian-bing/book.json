@@ -9,42 +9,91 @@
   "en": "The poorest hunter's family under Mount Meng has the mouthiest child. For one deer hide he crosses the stone that says Do Not Enter, and carries home a queen of heaven's foxes — eight tails cut away, starving, unable to recall her own name. She eats his last flatbread and owes him a wish. From then on, his luckless life takes off."
  },
  "world": "jiuding",
- "chapters": [
+ "_form": "《鹿鼎记》's form (Hanli 2026-09-29: 「按回卷改」): a 卷 is one province and its 鼎; a 回 is one whole story, numbered through the whole book, with a 回目 of two matching seven-character lines (DESIGN.md § 回目). read-md.js bookEntries flattens it for the reader.",
+ "volumes": [
   {
-   "id": "00",
-   "title": {
-    "zh": "序章（上）· 坠谷遇狐",
-    "en": "Prologue I · The Fall and the Fox"
+   "id": "juan1",
+   "n": 1,
+   "name": {
+    "zh": "卷一 · 徐州",
+    "en": "Volume One · Xu"
    },
-   "file": "00-序章上·坠谷遇狐.md",
-   "opens": "00-prologue"
+   "hui": [
+    {
+     "id": "h01",
+     "n": 1,
+     "huimu": {
+      "zh": [
+       "一只破碗辞残照",
+       "半张烙饼换妖王"
+      ],
+      "en": [
+       "A Broken Bowl Bids the Sunset Farewell",
+       "Half a Flatbread Buys a Fox Queen"
+      ]
+     },
+     "file": "01-第一回.md",
+     "opens": "00-prologue"
+    },
+    {
+     "id": "h02",
+     "n": 2,
+     "huimu": {
+      "zh": [
+       "一牌藏梦闻沉鼎",
+       "三试凭心叩仙门"
+      ],
+      "en": [
+       "A Token Keeps a Dream and Hears “Sunken Cauldron”",
+       "Three Trials Passed by Heart Knock at the Immortals’ Gate"
+      ]
+     },
+     "file": "02-第二回.md",
+     "opens": "00-prologue"
+    },
+    {
+     "id": "h03",
+     "n": 3,
+     "huimu": {
+      "zh": [
+       "漏勺夜半通三关",
+       "五行台上夺头名"
+      ],
+      "en": [
+       "The Leaky Ladle Opens Three Passes at Midnight",
+       "The Five Phases Take First Place on the Stage"
+      ]
+     },
+     "file": "03-第三回.md",
+     "opens": "01-ji"
+    }
+   ]
   },
   {
-   "id": "01",
-   "title": {
-    "zh": "序章（下）· 仙门",
-    "en": "Prologue II · The Gate"
+   "id": "juan2",
+   "n": 2,
+   "name": {
+    "zh": "卷二 · 冀州",
+    "en": "Volume Two · Ji"
    },
-   "file": "01-序章下·仙门.md",
-   "opens": "00-prologue"
-  },
-  {
-   "id": "02",
-   "title": {
-    "zh": "第一章 · 外门",
-    "en": "Chapter One · The Outer Court"
-   },
-   "file": "02-第一章·外门.md",
-   "opens": "01-ji"
-  },
-  {
-   "id": "03",
-   "title": {
-    "zh": "第二章 · 河伯娶妇",
-    "en": "Chapter Two · The River Lord's Bride"
-   },
-   "file": "03-第二章·河伯娶妇.md",
-   "opens": "01-ji"
+   "hui": [
+    {
+     "id": "h04",
+     "n": 4,
+     "huimu": {
+      "zh": [
+       "九转一炉藏饭桶",
+       "千鱼漳水立龙门"
+      ],
+      "en": [
+       "One Batch of Nine-Turn Pills Hides in the Rice Tub",
+       "A Thousand Fish Raise a Dragon Gate from the Zhang"
+      ]
+     },
+     "file": "04-第四回.md",
+     "opens": "01-ji"
+    }
+   ]
   }
  ],
  "appendix": [
@@ -56,5 +105,12 @@
    },
    "file": "90-附录·吐纳经.md"
   }
- ]
+ ],
+ "_aliases": "Old chapter ids (序章上 00 … 第二章 03), kept so an old read.html?ch= link still opens its 回.",
+ "aliases": {
+  "00": "h01",
+  "01": "h02",
+  "02": "h03",
+  "03": "h04"
+ }
 }

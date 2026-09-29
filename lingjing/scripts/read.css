@@ -22,22 +22,42 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 .toc a { font-size: 14px; line-height: 1.5; padding: 6px 10px; border-left: 2px solid transparent; color: var(--dim); text-decoration: none; }
 .toc a:hover { color: var(--text); }
 .toc a.on { color: var(--seal); border-left-color: var(--seal); background: var(--surface); }
+/* 卷 and 回 (《鹿鼎记》's form): a 卷's name over its 回; a 回 is its number and
+   the 回目's two lines, one under the other beside the number. */
+.tocv { font-size: 13px; letter-spacing: .15em; color: var(--text); font-weight: 600; margin: 14px 10px 4px; }
+.tocv:first-of-type { margin-top: 4px; }
+.toc a.hui { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; }
+.toc a.hui .tn { white-space: nowrap; }
+.toc a.hui .tm { display: flex; flex-direction: column; }
+.toc a.apx { margin-top: 10px; }
 .chapter { grid-area: chapter; }
 .pager { grid-area: pager; }
 @media (max-width: 820px) {
   .reader { grid-template-columns: minmax(0, 1fr); grid-template-areas: "toc" "chapter" "pager"; }
-  .toc { position: static; max-height: none; flex-direction: row; flex-wrap: wrap; gap: 8px; border-right: 0; padding-right: 0; margin-bottom: 12px; }
+  .toc { position: static; max-height: none; border-right: 0; padding-right: 0; margin-bottom: 12px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
   .toch { display: none; }
-  .toc a { font-size: 13px; padding: 3px 10px; border: 1px solid var(--line); border-radius: 99px; }
-  .toc a.on { border-color: var(--seal); background: none; }
+  /* A phone: the number on its own line, the couplet wrapping under it. */
+  .toc a.hui { display: block; }
+  .toc a.hui .tn { display: block; font-size: 12px; letter-spacing: .1em; }
+  .toc a.hui .tm { display: block; }
+  .toc a.hui .tm span + span::before { content: '　'; }
 }
 .chapter { line-height: 1.95; font-size: 17px; }
 .chapter h1 { font-size: 24px; letter-spacing: .1em; margin: 12px 0 18px; }
+/* A 回's title, as printed editions set it: the number, then the 回目 centred
+   on two lines. */
+.chapter h1.huimu { text-align: center; margin: 20px 0 36px; font-weight: 600; }
+.chapter h1.huimu .hui { display: block; font-size: 15px; letter-spacing: .4em; color: var(--dim); margin-bottom: 14px; font-weight: 400; }
+.chapter h1.huimu .line { display: block; font-size: 23px; letter-spacing: .3em; line-height: 1.8; }
+@media (max-width: 420px) { .chapter h1.huimu .line { font-size: 20px; letter-spacing: .2em; } }
 .chapter h2 { font-size: 19px; margin: 32px 0 12px; color: var(--seal); letter-spacing: .06em; }
 .chapter h3 { font-size: 17px; margin: 24px 0 8px; }
 .chapter p { margin: 0 0 1em; }
 .chapter blockquote { margin: 1em 0; padding: 4px 14px; border-left: 3px solid var(--line); color: var(--dim); }
 .chapter hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
+/* A scene break inside a 回 (no subheadings): a quiet 「◇」, centred. */
+.chapter hr.scene { border: 0; height: auto; margin: 26px 0; text-align: center; overflow: visible; }
+.chapter hr.scene::before { content: '◇'; color: var(--dim); opacity: .7; font-size: 13px; }
 .chapter table { border-collapse: collapse; font-size: 14px; width: 100%; overflow-x: auto; display: block; }
 .chapter th, .chapter td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; }
 .note { color: var(--dim); font-size: 14px; }
@@ -56,8 +76,8 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 .lightbox { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgb(0 0 0 / .78); cursor: zoom-out; }
 .lightbox > .pic { background: var(--surface); }
 .lightbox > .pic img, .lightbox > img { max-height: calc(100vh - 32px); max-width: calc(100vw - 32px); }
-/* 附 · 本章典籍: the classics a chapter names, inline at its end. The name in
-   the text wears the figures' dotted underline and jumps here; 「本章见」 jumps back. */
+/* 附 · 本回典籍: the classics a 回 names, inline at its end. The name in
+   the text wears the figures' dotted underline and jumps here; 「本回见」 jumps back. */
 .chapter a.dianref { color: inherit; text-decoration: none; }
 .chapter .dian h2 { margin-top: 8px; }
 .dianent { margin: 0 0 1.5em; padding: 12px 14px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); scroll-margin-top: 72px; }

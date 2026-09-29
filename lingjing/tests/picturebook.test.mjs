@@ -16,7 +16,7 @@ import { forLing, look, resolve } from '../scripts/rules.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
 import { readingOf } from '../scripts/rules/scrolls.mjs';
 import { stageOwns } from '../scripts/stage.mjs';
-import { renderMarkdown } from '../scripts/read-md.js';
+import { bookEntries, renderMarkdown } from '../scripts/read-md.js';
 import { TO_HALL, TO_VALLEY, TO_WAIMEN, walk } from './prologue.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -184,12 +184,13 @@ test('书: every chapter the book names exists and renders; the reader and its c
     const dir = path.join(ROOT, 'story', id);
     const book = JSON.parse(fs.readFileSync(path.join(dir, 'book.json'), 'utf8'));
     assert.ok(book.title?.zh && book.title?.en, id);
-    for (const ch of [...book.chapters, ...(book.appendix ?? [])]) {
+    for (const ch of bookEntries(book)) {
       const file = path.join(dir, ch.file);
       assert.ok(fs.existsSync(file), `${id}/${ch.file}`);
       assert.ok(ch.title?.zh && ch.title?.en, ch.id);
       const html = renderMarkdown(fs.readFileSync(file, 'utf8'));
-      assert.match(html, /^<h1>/, ch.file);
+      assert.match(html, /^<h1[ >]/, ch.file);
+      if (ch.huimu) assert.equal(html.split('\n')[0], `<h1 class="huimu"><span class="hui">${ch.label.zh}</span><span class="line">${ch.huimu.zh[0]}</span><span class="line">${ch.huimu.zh[1]}</span></h1>`, `${ch.file}: its title line is book.json's 回目`);
       assert.doesNotMatch(html, /\*\*|^#/m, `${ch.file}: no markdown left raw`);
     }
   }

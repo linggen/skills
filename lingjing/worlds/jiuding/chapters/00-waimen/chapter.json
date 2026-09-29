@@ -7,7 +7,7 @@
   "cauldron": false,
   "first_scene": "wm-ahe",
   "gate": null,
-  "_id": "The book's 第一章 · 外门 (story/huxian-bing/02-第一章·外门.md), between the prologue and 冀: an id that sorts after 00-prologue and before 01-ji (chapters run in id order, core.mjs advanceChapter).",
+  "_id": "The book's 第一章 · 外门 (story/huxian-bing/03-第三回.md, now the book's 第三回), between the prologue and 冀: an id that sorts after 00-prologue and before 01-ji (chapters run in id order, core.mjs advanceChapter).",
   "_map": "The small area around 沉鼎观 (his, 2026-09-29): 外门, 讲堂, 柴房, 药园, 后山, 藏经阁, 坊市, 渡口, the Si and its stone door, 泗水北岸. Every other place — the rest of 徐 and the eight provinces — refuses with `say` and stands greyed on the map (world.mjs mapOf).",
   "map": {
     "places": [

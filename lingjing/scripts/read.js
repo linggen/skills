@@ -1,16 +1,17 @@
 // read.js — 书: the novel the game is told from, read in the game's own frame
 // (the app runs in a sandboxed iframe: every link here navigates in place, no
 // new window). story/index.json names the books; a book's book.json its
-// chapters and appendix; each chapter is a markdown file (read-md.js).
+// 卷 and 回 (《鹿鼎记》's form: the contents list each 卷, then its 回 with the
+// 回目; prev/next go 回 by 回) and appendix; each is a markdown file (read-md.js).
 import { esc } from './esc.js';
-import { fillHero, heroOf, renderMarkdown } from './read-md.js';
+import { bookEntries, entryById, fillHero, heroOf, renderMarkdown } from './read-md.js';
 import { playMarks, wireMarks } from './marks.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { content, verb, worldPath } from './rules.js';
 
 const WORDS = {
-  zh: { back: '← 回到灵境', toc: '目录', prev: '← 上一章', next: '下一章 →', none: '书还没有写。', failed: '这一章没能打开。', only: '这一章只有中文。' },
-  en: { back: '← Back to Lingjing', toc: 'Contents', prev: '← Previous', next: 'Next →', none: 'The book is not written yet.', failed: 'This chapter could not be opened.', only: 'This chapter is in Chinese only.' },
+  zh: { back: '← 回到灵境', toc: '目录', prev: '←', next: '→', none: '书还没有写。', failed: '这一回没能打开。', only: '这一回只有中文。' },
+  en: { back: '← Back to Lingjing', toc: 'Contents', prev: '←', next: '→', none: 'The book is not written yet.', failed: 'This chapter could not be opened.', only: 'This chapter is in Chinese only.' },
 };
 const STORY = '../story/';
 const params = new URLSearchParams(location.search);
@@ -44,13 +45,14 @@ async function main() {
   const bookId = params.get('book') ?? index.books?.[0];
   if (!bookId) { $('chapter').innerHTML = `<p class="note">${esc(w.none)}</p>`; return; }
   const book = await getJson(`${STORY}${encodeURIComponent(bookId)}/book.json`);
-  const all = [...(book.chapters ?? []), ...(book.appendix ?? [])];
-  const at = Math.max(0, all.findIndex((c) => c.id === params.get('ch')));
+  const all = bookEntries(book);
+  // An old chapter id (read.html?ch=02, before the 回) opens its 回.
+  const at = Math.max(0, all.indexOf(entryById(book, params.get('ch'))));
   const ch = all[at];
-  document.title = `${pick(book.title)} · ${pick(ch.title)}`;
+  document.title = `${pick(book.title)} · ${pick(ch.label ?? ch.title)}`;
   $('booktitle').textContent = pick(book.title);
   $('toc').setAttribute('aria-label', w.toc);
-  $('toc').innerHTML = `<div class="toch">${esc(w.toc)}</div>` + all.map((c, i) => `<a href="${esc(hrefWith({ book: bookId, ch: c.id }))}" class="${i === at ? 'on' : ''}">${esc(pick(c.title))}</a>`).join('');
+  $('toc').innerHTML = `<div class="toch">${esc(w.toc)}</div>` + tocHtml(all, at, bookId);
   $('toc').querySelector('a.on')?.scrollIntoView({ block: 'nearest' });
   // The player's name from the save (Look), asked beside the chapter; no save,
   // a failed or slow look reads with the drafts' hero — never blocks the book.
@@ -63,7 +65,7 @@ async function main() {
     .then(([codex, people, creatures, items, arts]) => ({ codex, people, creatures, items, arts }));
   // 银月's memories (`::: 忆 n`): the colour plates, from memories.json.
   const memories = content(world, 'memories.json').then((m) => m?.memories ?? [], () => []);
-  // 附 · 本章典籍: the classics the book names (`《书名》{典=id}`), one file per book; none reads plain.
+  // 附 · 本回典籍: the classics the book names (`《书名》{典=id}`), one file per book; none reads plain.
   const classics = getJson(`${STORY}${encodeURIComponent(bookId)}/classics.json`).then((c) => c?.classics ?? {}, () => ({}));
   try {
     const res = await fetch(`${STORY}${encodeURIComponent(bookId)}/${encodeURIComponent(ch.file)}`);
@@ -80,8 +82,23 @@ async function main() {
   }
   wireMarks($('chapter'));
   const prev = all[at - 1], next = all[at + 1];
-  $('pager').innerHTML = `${prev ? `<a href="${esc(hrefWith({ book: bookId, ch: prev.id }))}">${esc(w.prev)} ${esc(pick(prev.title))}</a>` : '<span></span>'}${next ? `<a href="${esc(hrefWith({ book: bookId, ch: next.id }))}">${esc(pick(next.title))} ${esc(w.next)}</a>` : '<span></span>'}`;
+  const short = (c) => esc(pick(c.label ?? c.title));
+  $('pager').innerHTML = `${prev ? `<a href="${esc(hrefWith({ book: bookId, ch: prev.id }))}">${esc(w.prev)} ${short(prev)}</a>` : '<span></span>'}${next ? `<a href="${esc(hrefWith({ book: bookId, ch: next.id }))}">${short(next)} ${esc(w.next)}</a>` : '<span></span>'}`;
   window.scrollTo(0, 0);
+}
+
+/// The contents: each 卷's name, then its 回 — the number, and the 回目's two
+/// lines after it (on a phone they wrap under the number); the appendix last.
+function tocHtml(all, at, bookId) {
+  let volume = null;
+  return all.map((c, i) => {
+    const head = c.volume && c.volume.id !== volume ? `<div class="tocv">${esc(pick(c.volume.name))}</div>` : '';
+    if (c.volume) volume = c.volume.id;
+    const words = c.huimu
+      ? `<span class="tn">${esc(pick(c.label))}</span><span class="tm">${(c.huimu[lang] ?? c.huimu.zh ?? []).map((l) => `<span>${esc(l)}</span>`).join('')}</span>`
+      : esc(pick(c.title));
+    return `${head}<a href="${esc(hrefWith({ book: bookId, ch: c.id }))}" class="${[i === at ? 'on' : '', c.huimu ? 'hui' : 'apx'].filter(Boolean).join(' ')}">${words}</a>`;
+  }).join('');
 }
 
 /// Memory n's one colour plate as a src, or null while it is not painted.
@@ -124,7 +141,7 @@ $('chapter').addEventListener('click', openLarge);
 
 // A classic named in the text opens its entry in place, a note over the page
 // (his, 2026-09-29: the jump to the chapter's end and back was too much work);
-// the full 「附 · 本章典籍」 still stands at the end. The entry's own 「本章见」
+// the full 「附 · 本回典籍」 still stands at the end. The entry's own 「本回见」
 // links jump in place, the spot lit so the eye finds it.
 let note = null;
 function closeNote() {

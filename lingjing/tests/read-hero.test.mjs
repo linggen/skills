@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { fillHero, genderBlocks, genderWords, heroOf, HERO, renderMarkdown } from '../scripts/read-md.js';
+import { bookEntries, fillHero, genderBlocks, genderWords, heroOf, HERO, renderMarkdown } from '../scripts/read-md.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BOOK = path.join(ROOT, 'story/huxian-bing');
@@ -47,7 +47,7 @@ test('a name is a word, never markup: escaped, and no bold or table split', () =
 test('the chapters name the hero only as {name}; every token fills for either hero', () => {
   const book = JSON.parse(fs.readFileSync(path.join(BOOK, 'book.json'), 'utf8'));
   let names = 0, words = 0;
-  for (const ch of book.chapters) {
+  for (const ch of bookEntries(book).filter((c) => c.huimu)) {
     const md = fs.readFileSync(path.join(BOOK, ch.file), 'utf8');
     assert.doesNotMatch(md, /周星星|——星星/, `${ch.file}: the hero is {name}`);
     names += (md.match(/\{name\}/g) ?? []).length;
@@ -59,7 +59,7 @@ test('the chapters name the hero only as {name}; every token fills for either he
   }
   assert.ok(names >= 15, `the hero is named ${names} times`);
   assert.ok(words >= 30, `${words} gendered words`);
-  const her = renderMarkdown(fillHero(fs.readFileSync(path.join(BOOK, '00-序章上·坠谷遇狐.md'), 'utf8'), { name: '秋白', gender: 'female' }));
+  const her = renderMarkdown(fillHero(fs.readFileSync(path.join(BOOK, '01-第一回.md'), 'utf8'), { name: '秋白', gender: 'female' }));
   assert.match(her, /我叫秋白，今年十二岁[\s\S]*猎户家的独女/);
   assert.match(her, /窗外站着隔壁的阿禾。他比我小一岁/);
 });
@@ -83,18 +83,18 @@ test('variant blocks leave ::: 忆 plates alone, inside or outside a block', () 
   assert.match(html, /m1\.png[\s\S]*m2\.png/);
 });
 
-test('the girl-hero chapters: both readings clean, each told its own way', () => {
+test('the girl-hero 回 (第三回, 第四回): both readings clean, each told its own way', () => {
   const read = (f, gender) => renderMarkdown(fillHero(fs.readFileSync(path.join(BOOK, f), 'utf8'), { name: '秋白', gender }));
-  for (const f of ['02-第一章·外门.md', '03-第二章·河伯娶妇.md']) {
+  for (const f of ['03-第三回.md', '04-第四回.md']) {
     for (const gender of ['male', 'female']) assert.doesNotMatch(read(f, gender), /:::|[{}]|女主变体/, `${f} ${gender}`);
   }
-  const [hm, hf] = ['male', 'female'].map((g) => read('02-第一章·外门.md', g));
+  const [hm, hf] = ['male', 'female'].map((g) => read('03-第三回.md', g));
   assert.match(hm, /蹲下身去，抱住了头/);
   assert.doesNotMatch(hm, /猪圈/);
   assert.match(hf, /扔进了伙房后头的猪圈/);
   assert.doesNotMatch(hf, /抱住了头|肿成馒头/);
   assert.match(hf, /嘴里一股泥腥味/);
-  const [rm, rf] = ['male', 'female'].map((g) => read('03-第二章·河伯娶妇.md', g));
+  const [rm, rf] = ['male', 'female'].map((g) => read('04-第四回.md', g));
   assert.match(rm, /打鼓的那个，便是我。/);
   assert.doesNotMatch(rm, /你长得像交不起河伯钱的|巫祝眯起眼睛/);
   assert.match(rf, /你长得像交不起河伯钱的/);
