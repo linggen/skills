@@ -36,8 +36,12 @@
 .codexmini .namecard { aspect-ratio: 1; min-height: 0; }
 .codexmini .namecard b { font-size: 15px; }
 .codexslot { justify-content: center; aspect-ratio: 1; color: var(--line); font-size: 22px; cursor: default; border-style: dashed; }
-.boxcard { max-width: min(640px, calc(100vw - 32px)); }
-.boxcard .codexcard { margin: 0; }
+/* A later mention's card, over the book (read.js). The box is an inline-size
+   container, so it must carry its own width — sized by its content it measured
+   0 and the card collapsed into a strip. */
+.boxcard { position: relative; width: min(760px, 94vw); max-height: 90vh; overflow: auto; box-sizing: border-box; border-radius: 6px; background: var(--surface); cursor: auto; }
+.boxcard .codexcard { margin: 0; border: 0; }
+.boxcard .boxclose { position: absolute; top: 4px; right: 6px; z-index: 1; width: 32px; height: 32px; border: 0; background: none; font-size: 22px; line-height: 1; color: var(--dim); cursor: pointer; }
 
 /* A knowledge figure (codex.js codexFigure), and its marks — moved here from read.css so the game draws it the same. */
 .notefig { margin: 0 0 1.5em; padding: 12px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }

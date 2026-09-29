@@ -99,12 +99,14 @@ function openLarge(e) {
   const scan = e.target.closest?.('[data-scan]');
   const link = e.target.closest?.('.gloss[data-codex]');
   const pic = e.target.closest?.('.notefig .pic, figure.panel img, .codexcard .cpic img');
-  let shown = null;
+  let shown = null, card = false;
   if (scan) { shown = document.createElement('img'); shown.src = scan.dataset.scan; }
   else if (link && codex.get(link.dataset.codex)) {
+    card = true;
     shown = document.createElement('div');
     shown.className = 'boxcard';
-    shown.innerHTML = codexHtml(codex.get(link.dataset.codex), { src: (f) => worldPath(worldDir, f), lang });
+    shown.setAttribute('role', 'dialog');
+    shown.innerHTML = `<button class="boxclose" aria-label="×">×</button>${codexHtml(codex.get(link.dataset.codex), { src: (f) => worldPath(worldDir, f), lang })}`;
   } else if (pic) shown = pic.cloneNode(true);
   if (!shown) return;
   const box = document.createElement('div');
@@ -112,7 +114,8 @@ function openLarge(e) {
   box.append(shown);
   const close = () => { box.remove(); removeEventListener('keydown', onKey); };
   const onKey = (k) => { if (k.key === 'Escape') close(); };
-  box.addEventListener('click', close);
+  // A card closes on ×, Esc or a tap outside it; a picture on any tap.
+  box.addEventListener('click', (c) => { if (!card || c.target === box || c.target.closest('.boxclose')) close(); });
   addEventListener('keydown', onKey);
   document.body.append(box);
   playMarks(box.querySelector('svg.marks'));

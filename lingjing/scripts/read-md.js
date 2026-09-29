@@ -72,14 +72,19 @@ const entryOf = (codex, id) => (codex instanceof Map ? codex.get(id) : Object.ha
 // A gloss whose entry is missing reads as its words, nothing more; a classic
 // with no entry (or no `cite`) reads as its 《书名》. A subject links to its card
 // (data-codex), a knowledge figure to the figure under the paragraph (data-note).
-const inline = (t, codex, cite) => esc(t)
+// A subject whose card stands right by (`near(id)`) reads as its words: the card
+// is there (his, 2026-09-29: 「下面就是图片和文字」).
+const inline = (t, codex, cite, near = () => false) => esc(t)
   .replace(GLOSS, (_, words, id) => {
     const e = entryOf(codex, id);
+    if (e && isSubject(e) && near(id)) return words;
     return e ? `<span class="gloss" role="button" tabindex="0" data-${isSubject(e) ? 'codex' : 'note'}="${id}">${words}</span>` : words;
   })
   .replace(CLASSIC, (_, words, id) => cite?.(id, words) ?? `《${words}》`)
   .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
 const glossIds = (lines, codex) => [...new Set(lines.flatMap((l) => [...esc(l).matchAll(GLOSS)].map((m) => m[2])))].filter((id) => entryOf(codex, id));
+/// How many blocks after its card a mention still stands by it (the card's own paragraph is 0).
+export const NEAR = 2;
 const cells = (row) => row.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim());
 
 /// The anchor ids of a classic's entry and of its n-th mention (from 1).
@@ -115,13 +120,18 @@ export function renderMarkdown(md, opts = {}) {
   const codex = opts.codex, classics = opts.classics ?? {};
   // A subject's card stands once: after the first paragraph that names it, in
   // the chapter of its first appearance.
-  const carded = new Set();
+  // A mention in the same section within NEAR blocks after its card links
+  // nowhere; a farther one opens the card over the page.
+  const carded = new Map();
+  let block = 0, section = 0;
+  const near = (id) => { const at = carded.get(id); return !!at && at.section === section && block - at.block <= NEAR; };
   const figures = (ids) => ids.map((id) => entryOf(codex, id)).map((e) => {
     if (!isSubject(e)) return codexHtml(e, opts);
     if (carded.has(e.id) || !opts.chapter || e.first?.book !== opts.chapter) return '';
-    carded.add(e.id);
+    carded.set(e.id, { block, section });
     return codexHtml(e, { ...opts, first: true });
   }).join('');
+  const inl = (l) => inline(l, codex, cite, near);
   // Each classic named: its mentions in order, with the heading each sits under.
   const cited = new Map();
   let heading = '';
@@ -138,20 +148,27 @@ export function renderMarkdown(md, opts = {}) {
   let para = [], quote = [], table = [];
   const flush = () => {
     if (para.length) {
-      const p = `<p>${para.map((l) => inline(l, codex, cite)).join('<br>')}</p>`, figs = figures(glossIds(para, codex));
+      block += 1;
+      const figs = figures(glossIds(para, codex)), p = `<p>${para.map(inl).join('<br>')}</p>`;
       out.push(figs ? `<div class="noted">${p}${figs}</div>` : p);
       para = [];
     }
-    if (quote.length) { out.push(`<blockquote>${quote.map((l) => `<p>${inline(l, codex, cite)}</p>`).join('')}</blockquote>${figures(glossIds(quote, codex))}`); quote = []; }
+    if (quote.length) {
+      block += 1;
+      const figs = figures(glossIds(quote, codex));
+      out.push(`<blockquote>${quote.map((l) => `<p>${inl(l)}</p>`).join('')}</blockquote>${figs}`);
+      quote = [];
+    }
     if (table.length) {
+      block += 1;
       const [head, , ...body] = table;
-      out.push(`<table><thead><tr>${cells(head).map((c) => `<th>${inline(c, codex, cite)}</th>`).join('')}</tr></thead><tbody>${body.map((r) => `<tr>${cells(r).map((c) => `<td>${inline(c, codex, cite)}</td>`).join('')}</tr>`).join('')}</tbody></table>`);
+      out.push(`<table><thead><tr>${cells(head).map((c) => `<th>${inl(c)}</th>`).join('')}</tr></thead><tbody>${body.map((r) => `<tr>${cells(r).map((c) => `<td>${inl(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`);
       table = [];
     }
   };
   for (const line of lines) {
     const h = /^(#{1,4})\s+(.*)$/.exec(line);
-    if (h) { flush(); if (h[1].length <= 2) heading = h[2].replace(CLASSIC, '《$1》').replace(/\*\*/g, ''); out.push(`<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`); continue; }
+    if (h) { flush(); section += 1; if (h[1].length <= 2) heading = h[2].replace(CLASSIC, '《$1》').replace(/\*\*/g, ''); out.push(`<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`); continue; }
     const mem = MEMORY.exec(line.trim());
     if (mem) {
       flush();
@@ -159,7 +176,7 @@ export function renderMarkdown(md, opts = {}) {
       if (src) out.push(`<figure class="panel memplate"><img src="${esc(src)}" alt="${esc(mem[2])}" loading="lazy">${mem[2] ? `<figcaption>${inline(mem[2])}</figcaption>` : ''}</figure>`);
       continue;
     }
-    if (/^\s*(---|\*\*\*)\s*$/.test(line)) { flush(); out.push('<hr>'); continue; }
+    if (/^\s*(---|\*\*\*)\s*$/.test(line)) { flush(); section += 1; out.push('<hr>'); continue; }
     if (/^\s*>/.test(line)) { if (para.length || table.length) flush(); quote.push(line.replace(/^\s*>\s?/, '')); continue; }
     if (/^\s*\|/.test(line)) { if (para.length || quote.length) flush(); table.push(line); continue; }
     if (!line.trim()) { flush(); continue; }

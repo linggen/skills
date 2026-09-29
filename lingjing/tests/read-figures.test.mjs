@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { fillHero, renderMarkdown } from '../scripts/read-md.js';
+import { fillHero, NEAR, renderMarkdown } from '../scripts/read-md.js';
 import { codexHtml, codexOf, codexRaw, isSubject, ITEM_TAGS, lintCodex, resolveEntry, SUBJECTS } from '../scripts/codex.js';
 import { cardHtml, WORDS } from '../scripts/cards.js';
 import { marksSvg } from '../scripts/marks.js';
@@ -107,12 +107,23 @@ test('a subject\'s card stands once, after the paragraph of its first appearance
   }
   for (const [id, ch] of firstIn) if (isSubject(CODEX.get(id))) assert.equal(cards.get(id), 1, `${id}: one card in the book (${ch})`);
   for (const id of ['masan', 'ahe', 'yinyue', 'fox-token', 'longzhi', 'sunergou']) assert.equal(cards.get(id), 1, `${id} is introduced`);
-  // in one render: a card once, the second mention a dotted link
+  // in one render: a card once; a mention by it plain words, a farther one a dotted link
   const md = '收租的，是[马三]{注=masan}。\n\n又是[马三]{注=masan}。';
   const html = renderMarkdown(md, { codex: CODEX, chapter: '00', src });
   assert.equal((html.match(/class="codexcard first"/g) ?? []).length, 1);
-  assert.equal((html.match(/class="gloss" role="button" tabindex="0" data-codex="masan"/g) ?? []).length, 2);
+  assert.doesNotMatch(html, /class="gloss"[^>]*data-codex="masan"/, 'the card is right there: no link');
   assert.equal((renderMarkdown(md, { codex: CODEX, chapter: '02', src }).match(/codexcard/g) ?? []).length, 0, 'another chapter: links only');
+});
+
+test('a mention right by its card reads plain; one farther on, or past a heading, links to the pop-up (his, 2026-09-29)', () => {
+  const links = (md) => (renderMarkdown(md, { codex: CODEX, chapter: '00', src }).match(/class="gloss"[^>]*data-codex="masan"/g) ?? []).length;
+  const para = (n) => Array.from({ length: n }, (_, i) => `第${i}段。`).join('\n\n');
+  assert.equal(links('是[马三]{注=masan}，[马三]{注=masan}。'), 0, 'the card\'s own paragraph');
+  assert.equal(links(`是[马三]{注=masan}。\n\n${para(1)}\n\n[马三]{注=masan}。`), 0, `within ${NEAR} blocks`);
+  assert.equal(links(`是[马三]{注=masan}。\n\n${para(NEAR)}\n\n[马三]{注=masan}。`), 1, 'farther on');
+  assert.equal(links('是[马三]{注=masan}。\n\n## 二\n\n[马三]{注=masan}。'), 1, 'a new section');
+  assert.equal(links('是[马三]{注=masan}。\n\n---\n\n[马三]{注=masan}。'), 1, 'past a scene break');
+  assert.equal((renderMarkdown('[马三]{注=masan}。', { codex: CODEX, chapter: '02', src }).match(/data-codex="masan"/g) ?? []).length, 1, 'no card in this chapter: a link');
 });
 
 test('a knowledge figure stands under every paragraph that names it, marks and all', () => {
@@ -254,5 +265,31 @@ test('every entry with a first appearance in the book is glossed there — a rew
     const c = chapters.find((x) => x.id === ch);
     assert.ok(c, `${id}: chapter ${ch} is in book.json`);
     assert.ok(c.md.includes(`{注=${id}}`), `${id}: glossed in ${c.file}`);
+  }
+});
+
+test('the pop-up card carries its own width — an inline-size container sized by content measures 0 (the 狰 strip, 2026-09-29)', () => {
+  const css = fs.readFileSync(new URL('../scripts/codex.css', import.meta.url), 'utf8');
+  const rule = /\.boxcard \{([^}]*)\}/.exec(css)?.[1] ?? '';
+  assert.match(rule, /(^|;)\s*width: min\(760px, 94vw\)/);
+  assert.match(rule, /max-height: 90vh/);
+  assert.match(rule, /overflow: auto/);
+  const js = fs.readFileSync(new URL('../scripts/read.js', import.meta.url), 'utf8');
+  assert.match(js, /boxclose/, 'a × to close');
+});
+
+test('in every chapter no subject\'s link lies within NEAR blocks before or after its own card, in its section (他: 「检查一下其他的」)', () => {
+  for (const c of chapters) {
+    const blocks = renderMarkdown(fillHero(c.md, { name: '秋白' }), { codex: CODEX, chapter: c.id, src }).split('\n');
+    let section = 0;
+    const at = blocks.map((b) => ({ b, section: /^<h[1-6r]/.test(b) ? ++section : section }));
+    at.forEach(({ b, section: s }, i) => {
+      for (const [, id] of b.matchAll(/<figure class="codexcard first" data-codex="([^"]+)"/g)) {
+        for (let j = Math.max(0, i - NEAR); j <= Math.min(at.length - 1, i + NEAR); j++) {
+          if (at[j].section !== s) continue;
+          assert.doesNotMatch(at[j].b, new RegExp(`class="gloss"[^>]*data-codex="${id}"`), `${c.file}: ${id} links right by its card`);
+        }
+      }
+    });
   }
 });
