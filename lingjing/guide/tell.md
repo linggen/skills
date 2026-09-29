@@ -91,3 +91,18 @@ talk; one entry per person per scene. When a scene settles a promise, Remember
 The scroll 银月 leaves. Look's `practice_hint` is its line for the player's
 layer — the day's 功课 (`gongke`). When the player asks how to practise, that
 one line, in the world; the passage itself they read in the pouch.
+
+## 银月的记忆 — her memories are in colour
+
+Everything in this world is ink; only her memories are painted. One 鼎, one
+tail, one memory: when the exit that brings a 鼎 home is taken, the result
+carries `memory` (`n`, `tail`, `title`, `say`) and the page plays it in the
+middle of the stage — grey ink blooming into colour, her own few lines under
+it. **Keep quiet during a memory**: your whole word about it is its `say`
+(「木牌亮了第二条尾巴。」), on a line of its own — never describe the picture,
+never tell or guess what she remembered, never speak her lines. Then go on
+with the story owed as usual. A page tap shows it in `page_did` the same way.
+Look's `memories.have` is what she has got back — `knows` is what you may
+refer to later, lightly; a memory not there does not exist for you yet.
+A `fragment` (a result of Move) is a glimpse she half-knows: one line at most,
+「好像……在哪里见过」, and nothing explained.

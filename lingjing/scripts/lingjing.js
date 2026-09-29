@@ -24,6 +24,7 @@ import { thinker, stillAsked } from './think.js';
 import { createVoice, nodeMoment } from './voice.js';
 import { raiseUnease } from './unease.js';
 import { LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
+import { colourOn, freshMemory, memoryCardHtml, replayOf } from './memory.js';
 import { atmosClasses, atmosOf, particlesHtml } from './atmos.js';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
@@ -227,6 +228,7 @@ const view = {
   walkedOut: null, //    a fight he left that the rules would not settle: it waits on its card, not pulled back in
   luOpen: false, //      the 录 chip's book (九鼎录), over the stage
   lu: null, //           the rules' `story` read behind it, fetched when it opens
+  memory: null, //       银月's memory on the stage (memory.js): { n, i, play, at } — main holds it while it plays
   // 闭关 (rules/seclusion.mjs): the chooser open, what it may choose (`seclude
   // info`), the pick and pill, a refusal; `emerged` — 出关's result, counted up
   // on its card until put away; `afterEmerge` — the opening (her greeting,
@@ -422,6 +424,7 @@ async function readOnce() {
   }
   watchVeil();
   watchNode();
+  watchMemory();
   festivalMoment();
   render();
 }
@@ -776,6 +779,8 @@ function stageNow() {
   if (view.tookOffer && !cards.some((c) => c.card === 'offer')) cards = [...cards, { card: 'offer' }];
   // 闭关's chooser, opened from the pool or the empty card.
   if (view.secludeOpen && view.seclude && !look.seclusion) cards = [{ card: 'seclude' }, ...cards];
+  // 银月's memory takes the main slot while it plays (memory.js; stage.mjs MAIN).
+  if (view.memory) cards = [{ card: 'memory', id: view.memory.n }, ...cards];
   watchAppear(cards);
   return stageSlots(look, cards.filter(inQueue), { skip: view.qSkip });
 }
@@ -926,7 +931,9 @@ function spoilsCtx() {
   };
 }
 
-const drawCard = (c) => cardHtml(c, ctx());
+const drawCard = (c) => (c.card === 'memory' ? memoryHtml() : cardHtml(c, ctx()));
+/// 银月's memory: ink blooming into colour, carried on from its age on a redraw.
+const memoryHtml = () => (view.memory ? memoryCardHtml(view.memory.play, { i: view.memory.i, age: performance.now() - view.memory.at, still: stillMotion(), artBase: artBase(), lang: lang() }) : '');
 
 /// While a card holds the stage the chat keeps its question, so the roads stand
 /// here instead — quiet must never be stuck (2026-09-18: 「起卦完成, 任务卡住了」;
@@ -989,6 +996,8 @@ function draw() {
   const had = focusKey(document.activeElement);
   const w = words();
   document.documentElement.lang = lang();
+  // The finale's switch (memory.js): the ink comes off every picture at once.
+  document.documentElement.classList.toggle('colour', colourOn(look));
   document.title = `${w.title} · ${look.scene?.place ?? look.place?.name ?? ''}`;
   // An errand just taken went somewhere: the chip shows where, once.
   const lines = look.book?.length ?? 0;
@@ -1758,6 +1767,10 @@ const CLICKS = [
   ['[data-panel-exit]', (el) => { if (!el.matches(':disabled')) run(`panel:${el.dataset.panelExit}`, () => panelTap(el.dataset.panelExit, el.textContent.trim())); }],
   ['[data-lu]', () => (view.luOpen ? show({ luOpen: false }) : openLu())],
   ['[data-lu-close]', () => show({ luOpen: false })],
+  // 银月的记忆: the next panel (it blooms again), put away, or replayed from the album in 录.
+  ['[data-mem-next]', (el) => show({ memory: view.memory && { ...view.memory, i: Number(el.dataset.memNext), at: performance.now() } })],
+  ['[data-mem-close]', () => show({ memory: null })],
+  ['[data-mem-replay]', (el) => { const play = replayOf(view.lu?.album, el.dataset.memReplay); if (play) show({ luOpen: false, memory: { n: play.n, i: 0, play, at: performance.now() } }); }],
   ['[data-titlecard]', (el) => { dismissedTitles.add(el.dataset.titlecard); titleSeen(el.dataset.titlecard, true); render(); }],
   ['[data-gear]', () => (view.gearOpen ? show({ gearOpen: false }) : openGear())],
   ['[data-do]', (el) => { if (!el.matches(':disabled')) run(`do:${el.dataset.do}:${el.dataset.id}`, () => doTap(el.dataset.do, el.dataset.id)); }],
@@ -2305,6 +2318,25 @@ function titleCard() {
    the page raises it once, as facts for 银月, and Ling may answer her once
    (`converse`): they talk over what it means. Never a line to recite. The
    first read only notes where things stand — nothing old is raised. */
+/* 银月的记忆 (memory.js): a memory just come back — from a tap or from Ling's
+   Resolve — plays once in the main slot, from the album the rules' `story`
+   holds. The first read only notes where things stand: nothing old plays. */
+let memorySeen;
+function watchMemory() {
+  const at = look?.memories?.last?.at ?? null;
+  if (memorySeen === undefined) { memorySeen = at; return; }
+  const last = freshMemory(look, memorySeen);
+  memorySeen = at;
+  if (last) playMemory(last.n);
+}
+async function playMemory(n) {
+  const r = await verb('story').catch((e) => { console.warn('[lingjing] memory', e); return null; });
+  const play = replayOf(r?.album, n);
+  // A 鼎 home is often a realm risen too: her memory waits for the gold seal to go (feat).
+  for (let k = 0; k < 40 && document.querySelector('.feat'); k += 1) await pause(200);
+  if (play) show({ memory: { n, i: 0, play, at: performance.now() } });
+}
+
 let nodeSeen;
 function watchNode() {
   const n = look?.story_node, at = n?.at ?? null;

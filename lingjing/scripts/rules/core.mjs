@@ -14,6 +14,7 @@ import { stow, storedLine } from './pouch.mjs';
 import { bornRoots, rootName, starterFor, stoneRoots } from './roots.mjs';
 import { oweExit, spanLines } from './tell.mjs';
 import { companionOf } from './companion.mjs';
+import { grantMemory } from './memories.mjs';
 import { writeLedger } from './ledger.mjs';
 import { atScene, inMade, placeName, placeOf, provinceOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
 
@@ -381,6 +382,8 @@ export function resolve(state, content, ctx, args) {
   // 银月 found in the story itself (prologue-v3 § 九): she walks with the player from here.
   const joined = exit.joins ? joinHer(content, s, ctx) : null;
   const rested = restHer(s, exit);
+  // 一鼎一尾一段记忆: a memory only from the 鼎's own exit, never in a made scene (rules/memories.mjs).
+  const remembered = inMade(s) ? null : grantMemory(content, s, exit, ctx.now);
   if (exit.set?.traits === 'v1') {
     s.traits = [...content.traits.v1];
     // The root test hands over the starter — the first cards he holds.
@@ -435,6 +438,7 @@ export function resolve(state, content, ctx, args) {
       // Her price showing as the chapter ends: Ling opens with what she does (story.mjs uneaseAt).
       ...(node?.unease ? { unease: node.unease } : {}),
       ...(her ? { her_beat: her } : {}),
+      ...(remembered ? { memory: remembered } : {}),
       summarize: Boolean(exit.next || exit.ends),
     },
   };

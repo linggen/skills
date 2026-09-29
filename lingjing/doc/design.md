@@ -854,13 +854,84 @@ His ask: 「让玩家 say wow」. Borrowed from 原神 where it fits, and the tw
 
 1. **鼎归 · 地图晕开** (原神's 七天神像): a 鼎 taken home spreads its 州 across the 行路 map like ink on 宣纸; the 九州 water rises an inch — 「每一处水上一轮月」.
 2. **大场面** (原神's 魔神任务): one per chapter at most — the main slot takes the whole stage (漳水站起来, 冰夷 on two dragons, the furnace flying, 九宫归位); the picture shakes, 银月 looks up.
-3. **银月的记忆是彩色的** (原神's lost sibling): everything is ink; only her memories are painted in colour — one tail, one memory, one colour 小人书 panel (青丘, the heavenly war, 「天下，该归于一」).
+3. **银月的记忆是彩色的** (原神's lost sibling): everything is ink; only her memories are painted in colour — one tail, one memory, one colour 小人书 panel (青丘, the heavenly war, 「天下，该归于一」). **Built 2026-09-29** — § ③ below.
 4. **山海经 图录** (原神's 图鉴): each creature met fills a 1597-woodcut page with its 山海经 line; a finished 经 opens as a readable picture book.
 5. **世界记得你** (AI only): Ling remembers what the player said weeks ago; at the finale a person helped in 第一章 stands beside them and repeats their words. **Built 2026-09-29** (rules/ledger.mjs): a 簿 entry is `{who, kind: 恩|仇|诺, what, said, chapter, day, at}` in the save (cloud with it, reset with the beta; never ling-mem). `said` is the player's words, verbatim, ≤30 characters. Ling writes through **Remember** (`keep`/`break` settle a 诺); the rules refuse an unknown person, a second entry for one person in one scene, and any quote not in what the player typed — the engine's `LINGGEN_USER_WORDS` (their last 8 messages; absent on the page's calls → refused). Authored exits: `ledger[].said: true` keeps the last typed line; `settles` marks a 诺. Look hands Ling only the people present and open 诺; scene text fills `{恩人}` `{仇人}` `{恩人·said}` `{仇人·said}`; the 恩 chip shows 「『…』 —— 你对X说 · 章」. Guide `tell`: real moments only, never to mock, one callback a chapter.
 6. **真实世界进游戏** (AI + host only): festivals and the day's weather — see the next section. Real steps (Health) → 行路 is later.
 7. **你自己的小人书**: each chapter's end prints the player's own chapter — their name, choices, lines, panels — to shelve and share.
 
 Not borrowed: gacha. Paid draws go against 「欠饼还饼」.
+
+### ③ 银月的记忆是彩色的 — built 2026-09-29 (his: 「可以，都按你说的，终章全彩，go」)
+
+Everything in the game is ink; **only 银月's memories are in colour**. 一鼎一尾一段记忆: eight 鼎 → eight
+tails → eight colour memories; the finale is the ninth and turns the whole ink world to colour.
+
+| # | 章 · 州 (game chapter) | Tail | Memory |
+|---|---|---|---|
+| 1★ | 第二章 · 冀 (01-ji) | 二 | **一道光** — a very bright light from 九天之上, and a voice: 「天下，该归于一」 (赵昂's words later) — *painted* |
+| 2 | 第三章 · 兖 (02-yan) | 三 | **青丘** — her nine tails whole, 青丘 in spring; a human child holds up a pancake to her. 欠饼 began here |
+| 3 | 第四章 · 青 (03-qing) | 四 | **兜率宫** — 太上老君 hands her the little furnace: 「拿去玩，别炸了」 (foreshadows the finale's reveal) |
+| 4 | 第五章 · 徐 (04-xu) | 五 | **初到蒙山** — long ago in 黑松岭 she saved a hunter, the hero's ancestor; tied to 吴婆婆's secret |
+| 5 | 第六章 · 扬 (05-yang) | 六 | **战起** — the nine 鼎 gathered, 青丘 refusing to hand hers over, heaven's army at the border |
+| 6 | 第七章 · 荆 (06-jing) | 七 | **巫咸** — she once saved the 巫 people; that is why 巫姑 can see her |
+| 7★ | 第八章 · 梁 (07-liang) | 八 | **那张脸** — the face of the man who cut her tails, remembered at 石纽 |
+| 8★ | 第九章 · 雍 (08-yong) | 九 | **断尾** — 东溟's sword, eight tails falling, and why: he wanted the nine 鼎 in one person's hands |
+| 9 | 终章 (09-yu) | 九尾重生 | **九鼎归位** — the nine tails grow back: THE WHOLE INK WORLD TURNS COLOUR AT ONCE |
+
+★ = already in OUTLINE.md; the rest approved new the same day.
+
+- **Rules.** A memory comes only from the 鼎 — the chapter's key beat: the spine exit that brings the 鼎 home declares
+  `memory: n` (01-ji `01-cauldron` exit `take` holds memory 1; a failed 渡劫 throw gives nothing). No verb, grant
+  table or made scene grants one (rules/memories.mjs `grantMemory`, called from core.mjs `resolve`). Fragments come
+  from exploring. Look's `memories` names the unlocked ones (`title`, `tail`, `knows` — what Ling may refer to) and
+  nothing of the rest. State: `memories` [n…], `memory_last` {n, at}, `fragments` [id…], `colour`.
+- **Presentation** (memory.js, memory.css). The memory takes the main slot (stage.mjs MAIN's first rank, page-owned):
+  one colour picture comes in as grey ink and blooms to full colour over ~4 s (a CSS filter, grayscale + sepia →
+  none); reduced motion shows the colour at once. 1–3 panels, her own short lines under each; nothing else on screen.
+  Ling is silent: the chat gets one line, 「木牌亮了第X条尾巴。」 (the result's `say`; guide `tell`; a page tap hands
+  it to her in `page_did`). A redraw carries the bloom on from its age, never restarts it.
+- **Style.** 工笔重彩 in 敦煌 mural colours — 石绿, 朱砂, 石青, 金 — against the game's ink 白描. **Nothing else may be in
+  colour**: the art lives in `art/memories/` alone and nothing else points there (lint + tests/memories.test.mjs);
+  the page greys every other picture (memory.css `@layer ink`); a memory picture must measure as colour. **The one
+  exception, still hers:** a fragment — an ink picture where ONE thing is in colour.
+- **Album 「银月的记忆」** in the 录 book (lu.js; the rules' `story` → `album`): eight frames lit one by one; a dark frame
+  shows only a tail's outline; tap a lit one to replay it. The beta shows eight empty frames — the teaser.
+- **Book.** `::: 忆 <n>[.<k>] [caption]` is memory n's panel k as a colour plate (read-md.js; read.js resolves it from
+  memories.json; an unpainted one is left out). 第二章 carries memory 1 where the second tail lights, and its voice
+  where she hears the words again.
+- **Fragments** (the Zelda idea). A place may declare `fragment: {id, art, thing, memory?}` — art under
+  `art/memories/fragments/`, off the main roads; found where the player stops (travel.mjs `move` → `findFragment`),
+  once; the album adds 「好像……在哪里见过」. Placed from 第三章 on (the whole map); none yet.
+- **Finale.** The ninth memory carries `colour`: granting it sets `state.colour`, Look's `memories.colour`, and the
+  page puts `html.colour` on — the ink filter comes off every picture at once (a 2.4 s transition). Tested on a
+  scratch save; it reaches players when the 终章 exists. The full-colour look of the ordinary panels is the finale's
+  own art task (today they are ink with a light wash, so the switch shows that wash, saturated).
+
+**To paint (memories 2–8; not yet).** tools/paint-memories.py, the prologue's local FLUX recipe; her words: *a young
+woman with long silver hair falling past her waist, golden eyes with vertical slit pupils, barefoot, in a white robe
+bright as snow with cinnabar red sashes, nine silver fox tails fanned out behind her* (the style line: Dunhuang
+gongbi heavy colour, malachite green, cinnabar red, azurite blue and gold leaf, on aged silk). FLUX follows position
+words; check every picture for fake characters and re-roll. Drafts:
+- **2 青丘**: *a hillside of peach trees in full spring blossom above green terraces and a winding azure stream; {her},
+  sitting on a rock; a small barefoot peasant child in patched clothes stands before her holding up a round flatbread in
+  both hands.*
+- **3 兜率宫**: *inside a heavenly palace hall of red pillars and gold roof beams, smoke curling from a great bronze
+  furnace; an old sage with a long white beard in plain robes, seated, hands a tiny three-legged bronze furnace to {her},
+  who holds out both hands; a small green ox asleep by the door.*
+- **4 初到蒙山**: *night in a forest of giant black pines, rain; a wounded hunter in a straw cape lies against a trunk,
+  his bow broken beside him; {her}, glowing faintly silver, kneels and lays a hand on his chest.*
+- **5 战起**: *on a green mountain ridge nine great bronze cauldrons stand in a row; on the right, ranks of heavenly
+  soldiers in gold armour with banners fill the sky on clouds; on the left {her}, standing alone before one cauldron,
+  arms spread.*
+- **6 巫咸**: *a village of stilt houses by a misty lake, people in feathered headdresses and blue-dyed cloth kneeling;
+  {her} stands on the water, a sick child lifted in her arms, green light around them.*
+- **7 那张脸**: *close view, the upper half filled by a tall man's cold handsome face in a jade crown, looking down, lit
+  by silver light; at the bottom, small, {her} looking up at him.*
+- **8 断尾**: *a white jade terrace above the clouds; a man in white and gold swings a long sword; {her} falls
+  backwards, eight silver tails flying loose in the air behind her like cut ribbons; red ribbons tearing.*
+- **9 九鼎归位** (the finale): *nine bronze cauldrons in a ring on the riverbed of a golden river, water rising; {her}
+  standing in the centre, nine silver tails whole and glowing, a full moon reflected in the water.*
 
 ## 真实世界 — 节日与天气 (his, 2026-09-29; building)
 

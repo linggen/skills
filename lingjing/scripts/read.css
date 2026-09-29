@@ -47,6 +47,8 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 .chapter figure.panel { margin: 1.5em 0; }
 .chapter figure.panel img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 4px; }
 .chapter figure.panel figcaption { font-size: 13px; color: var(--dim); text-align: center; margin-top: 6px; letter-spacing: .1em; }
+/* 银月's memories: the book's only colour plates, framed in gold. */
+.chapter figure.memplate img { border: 2px solid #b8860b; box-shadow: 0 0 0 4px color-mix(in srgb, #b8860b 18%, transparent); }
 /* 注: words with a figure, set in the text right under their paragraph, the
    column's width and at most most of a screen tall; a tap opens it large. */
 .gloss { border-bottom: 1px dotted var(--seal); cursor: pointer; }

@@ -76,6 +76,9 @@ function grownLine(e) {
 }
 const byAction = (table) => (r, a, x) => table[a.action ?? 'take']?.(r, a, x) ?? null;
 
+/* 银月的记忆 come back with the page's move (rules/memories.mjs): Ling's one line, and nothing more. */
+const rememberedDid = (r, what) => (r.memory ? `${what ?? 'moved on'} — 银月的记忆 ${r.memory.n} plays on the stage (tail ${r.memory.tail}): say only 「${r.memory.say}」` : what);
+
 const PAGE_DID = {
   move: (r) => (r.here ? null : `moved to ${r.place?.name}${r.via?.length ? ` via ${r.via.map(p => p.name).join(', ')}` : ''}${r.stopped ? ', stopped where a scene took over' : ''}`),
   tame: (r) => `tamed ${r.tamed?.name} with ${r.fed?.name}`,
@@ -89,7 +92,7 @@ const PAGE_DID = {
   // A value exit named on the page's card (the 名字, and 男 · 女): the name,
   // and the beat Ling speaks for it on `[scene] named`. The 生辰 read there:
   // the roots only — the birthday itself never leaves the card.
-  resolve: (r, a, x) => (r.named ? `named themselves 「${r.named.value}」${r.named.gender ? ` (${r.named.gender === 'female' ? 'a girl' : 'a boy'})` : ''} on the page's card — beat: ${beatOf(r)}`
+  resolve: (r, a, x) => rememberedDid(r, r.named ? `named themselves 「${r.named.value}」${r.named.gender ? ` (${r.named.gender === 'female' ? 'a girl' : 'a boy'})` : ''} on the page's card — beat: ${beatOf(r)}`
     : r.born ? `${r.born.kept ? 'went through the root test, their roots as they were' : r.born.read === 'birth' ? 'gave their birthday on the page\'s card' : 'let the stone read them'}: ${r.born.roots.name} (${r.born.roots.elements.join(' ')}) — beat: ${beatOf(r)}`
       : r.breakthrough?.chance != null ? thrownDid(r, x)
         // A 连环画 panel's choice: which, and what the 恩仇簿 wrote — the story is in `tell`.

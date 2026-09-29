@@ -12,6 +12,7 @@ import { atScene, fittingPlace, inCorridor, inMade, pathOf, placeBrief, placeNam
 import { enteredBeat, refusalBeat } from './story.mjs';
 import { enter } from './worlds.mjs';
 import { bagFull, pouchBrief, roomFor } from './pouch.mjs';
+import { findFragment } from './memories.mjs';
 
 /* ── Story, travel, language ── */
 
@@ -120,6 +121,8 @@ export function move(state, content, ctx, args) {
   // walked through (his pick, 2026-09-21) — and only when the arrival
   // finished nothing: an errand met is the event.
   arriveOnRoad(content, s, ctx, met.length > 0);
+  // A fragment of hers (ink with one coloured thing) where he stops — found by exploring (rules/memories.mjs).
+  const fragment = inMade(s) ? null : findFragment(content, s, reached);
   const left = inMade(s) ? s.made.at : null;
   if (left) s.made.at = null;
   const place = placeBrief(content, s, ctx.now);
@@ -132,7 +135,7 @@ export function move(state, content, ctx, args) {
   // a province crossed, a made scene left — not on every road walked (a
   // Summarize is a whole model call; seen live 2026-09-16, one per step).
   const summarize = Boolean(scene) || reached.province !== from.province || Boolean(left);
-  return { state: s, result: { ok: true, place, scene, show, ...(via.length ? { via } : {}), ...(met.length ? { met } : {}), ...(handed.length ? { handed } : {}), ...(reached.id !== target.id ? { stopped: true } : {}), ...(left ? { left } : {}), ...(her ? { her_beat: her } : {}), director: directorBrief(content, s, ctx), summarize } };
+  return { state: s, result: { ok: true, place, scene, show, ...(via.length ? { via } : {}), ...(met.length ? { met } : {}), ...(handed.length ? { handed } : {}), ...(reached.id !== target.id ? { stopped: true } : {}), ...(left ? { left } : {}), ...(her ? { her_beat: her } : {}), director: directorBrief(content, s, ctx), ...(fragment ? { fragment } : {}), summarize } };
 }
 
 /* A key the story still needs: an exit of the current chapter's scenes not

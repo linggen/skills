@@ -58,12 +58,15 @@ async function main() {
   // no notes file reads the words alone.
   const world = `worlds/${book.world ?? 'jiuding'}`;
   const notes = content(world, 'notes.json').then((n) => n?.notes ?? {}, () => ({}));
+  // 银月's memories (`::: 忆 n`): the colour plates, from memories.json.
+  const memories = content(world, 'memories.json').then((m) => m?.memories ?? [], () => []);
   try {
     const res = await fetch(`${STORY}${encodeURIComponent(bookId)}/${encodeURIComponent(ch.file)}`);
     if (!res.ok) throw new Error(String(res.status));
     const md = await res.text();
     $('chapter').innerHTML = (lang === 'en' ? `<p class="note">${esc(w.only)}</p>` : '') + renderMarkdown(fillHero(md, await hero), {
       panel: (id) => worldPath(world, `art/panels/${id}.webp`), notes: await notes, src: (file) => worldPath(world, file), lang,
+      memory: memoryPlate(await memories, world),
     });
   } catch {
     $('chapter').innerHTML = `<p class="note">${esc(w.failed)}</p>`;
@@ -73,6 +76,12 @@ async function main() {
   $('pager').innerHTML = `${prev ? `<a href="${esc(hrefWith({ book: bookId, ch: prev.id }))}">${esc(w.prev)} ${esc(pick(prev.title))}</a>` : '<span></span>'}${next ? `<a href="${esc(hrefWith({ book: bookId, ch: next.id }))}">${esc(pick(next.title))} ${esc(w.next)}</a>` : '<span></span>'}`;
   window.scrollTo(0, 0);
 }
+
+/// Memory n's panel k (from 1) as a src, or null while it is not painted.
+const memoryPlate = (list, world) => (n, k = 1) => {
+  const art = list.find((m) => m.n === n)?.panels?.[k - 1]?.art;
+  return art ? worldPath(world, art) : null;
+};
 
 // A tap on a figure or a panel opens it large over the page, marks and all;
 // Esc or a tap closes it.

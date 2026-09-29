@@ -35,6 +35,7 @@
    },
    "means": "touches the cauldron, takes its breath, attempts the breakthrough",
    "breakthrough": true,
+   "memory": 1,
    "refuse": {
     "zh": "鼎气扑到你身上又退开。修为未到，装不下。先回人间，把功课做满。",
     "en": "The breath surges over you and draws back. Your cultivation is not yet enough to hold it. Go back to the world and fill your practice first."

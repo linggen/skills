@@ -60,6 +60,8 @@ export function fillHero(md, hero = {}) {
 }
 
 const PANEL = /^:::\s*画\s+([\w-]+)\s*(.*)$/;
+// `::: 忆 <n>[.<k>] [caption]` — 银月's memory n (its panel k, from 1) as a colour plate (memories.json).
+const MEMORY = /^:::\s*忆\s+(\d+)(?:\.(\d+))?\s*(.*)$/;
 const GLOSS = /\[([^\]\n]+)\]\{注=([^{}\n]+)\}/g;
 const known = (notes, id) => Object.hasOwn(notes ?? {}, id);
 // A gloss whose note is missing reads as its words, nothing more.
@@ -78,6 +80,7 @@ export function noteFigure(id, note, { src = (p) => p, lang = 'zh' } = {}) {
   return `<figure class="notefig" data-note="${esc(id)}">${img}<figcaption><b>${esc(pick(note.title))}</b>${lines}<small>${esc(pick(note.credit))}</small></figcaption></figure>`;
 }
 
+/// `opts.memory(n, k)` → memory n's panel k src, or null (none: plates are left out);
 /// `opts.panel(id)` → a panel's src (none: panels are left out); `opts.notes`
 /// → notes.json's notes; `opts.src`, `opts.lang` → noteFigure.
 export function renderMarkdown(md, opts = {}) {
@@ -106,6 +109,13 @@ export function renderMarkdown(md, opts = {}) {
     if (pic) {
       flush();
       if (opts.panel) out.push(`<figure class="panel"><img src="${esc(opts.panel(pic[1]))}" alt="${esc(pic[2])}" loading="lazy">${pic[2] ? `<figcaption>${inline(pic[2])}</figcaption>` : ''}</figure>`);
+      continue;
+    }
+    const mem = MEMORY.exec(line.trim());
+    if (mem) {
+      flush();
+      const src = opts.memory?.(Number(mem[1]), Number(mem[2] ?? 1));
+      if (src) out.push(`<figure class="panel memplate"><img src="${esc(src)}" alt="${esc(mem[3])}" loading="lazy">${mem[3] ? `<figcaption>${inline(mem[3])}</figcaption>` : ''}</figure>`);
       continue;
     }
     if (/^\s*(---|\*\*\*)\s*$/.test(line)) { flush(); out.push('<hr>'); continue; }

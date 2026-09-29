@@ -24,6 +24,7 @@ import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
 import { practiceHint } from './scrolls.mjs';
 import { mainRoot, rootName } from './roots.mjs';
+import { memoriesLook } from './memories.mjs';
 import { todayBrief } from './festival.mjs';
 import { weatherBrief } from './weather.mjs';
 
@@ -344,6 +345,8 @@ export function look(state, content, ctx) {
     place: placeBrief(content, state, ctx.now),
     director: directorBrief(content, state, ctx),
     companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined, ...(state.companion.asleep ? { asleep: true } : {}), recalled: recalledOf(content, state), card: herCard(content, state) } : null,
+    // 银月的记忆 (rules/memories.mjs): the ones unlocked, and what Ling may say of them — never one still locked.
+    ...(memoriesLook(content, state) ? { memories: memoriesLook(content, state) } : {}),
     quest: questBrief(content, state, ctx.now),
     // 差事: what is in hand, and what may be taken where he stands.
     book: bookOf(content, state, lang, ctx),

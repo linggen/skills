@@ -12,6 +12,7 @@ import { fill, pick } from '../state.mjs';
 import { cauldronsFound, companionOf, giftAt, hasCompanion, herAwake, recalledOf } from './companion.mjs';
 import { threadOf } from './errands.mjs';
 import { cardBook } from './cards.mjs';
+import { albumOf } from './memories.mjs';
 import { atScene, creatureOf, inMade, sceneOf } from './world.mjs';
 
 const HOUR = 3600000;
@@ -131,6 +132,8 @@ export function story(state, content, ctx, args = {}) {
       people: short ? people.map(({ name, kind }) => ({ name, kind })) : people,
       her, open: cur?.mystery ? [pick(cur.mystery, lang)] : [], ending: endingOf(content, state),
       ...(short ? {} : { cards: cardBook(content, state) }),
+      // 银月的记忆 — the album in 录: eight frames, lit one by one (rules/memories.mjs).
+      ...(short ? {} : { album: albumOf(content, state) }),
     },
   };
 }

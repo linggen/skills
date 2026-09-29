@@ -23,7 +23,8 @@ const has = (xs) => Array.isArray(xs) && xs.length > 0;
 export const TOPICS = {
   look: () => true, // the first answer of a session: what Look carries
   // 小人书: the first answer that hands Ling a passage to tell (rules/tell.mjs).
-  tell: ({ said, result }) => (result?.tell?.length ?? 0) > 0 || tag(said, /^\[scene\] took\b/),
+  // …and the first memory of hers that comes back (rules/memories.mjs): keep quiet during it.
+  tell: ({ said, result }) => (result?.tell?.length ?? 0) > 0 || Boolean(result?.memory) || tag(said, /^\[scene\] took\b/),
   fight: ({ verb, said, result, state }) => Boolean(state?.fight || result?.fight || result?.place?.encounter)
     || ['tame', 'refine', 'duel'].includes(verb) || result?.refused === 'in-a-fight' || tag(said, /^\[scene\] (won|lost|withdrew)\b/),
   road: ({ verb, said, result }) => ['move', 'trade', 'meet'].includes(verb) || Boolean(result?.place?.meet || result?.place?.has?.shop) || tag(said, /^\[scene\] arrived\b|^(去|go to\s)/i),

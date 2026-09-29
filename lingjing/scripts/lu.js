@@ -3,6 +3,7 @@
 // word esc()'d. The page opens it from the 录 chip; nothing here costs a
 // model turn, and nothing here writes.
 import { esc } from './esc.js';
+import { albumHtml } from './memory.js';
 
 export const LU_WORDS = {
   zh: {
@@ -64,6 +65,7 @@ export function luHtml(book, { lang = 'zh', her = null, artBase = '' } = {}) {
     <section class="lusec">${chapters.length ? chapters.map((c, i) => chapterHtml(c, w, i === last)).join('') : `<p class="dim">${esc(w.none)}</p>`}</section>
     ${people ? `<section class="lusec"><h3>${esc(w.people)}</h3><div class="lupeople">${people}</div></section>` : ''}
     ${recalled}
+    ${albumHtml(book.album, { artBase, lang })}
     ${paipuHtml(book.cards, w, { artBase, her })}
     <section class="lusec"><h3>${esc(w.open)}</h3>${(book.open ?? []).length ? book.open.map((q) => `<p class="luq">${esc(q)}</p>`).join('') : `<p class="dim">${esc(w.noOpen)}</p>`}</section>
   </div>`;
