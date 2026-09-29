@@ -245,6 +245,12 @@ function readRoots(content, s, ctx, args) {
   return { read: birth ? 'birth' : 'stone' };
 }
 
+/* The words said (a tap's label, or the player's typed line) hold the name. */
+const heardName = (rule, said) => {
+  const words = String(said ?? '').toLowerCase();
+  return [rule.value, ...(rule.heard ?? [])].some(w => w && words.includes(String(w).toLowerCase()));
+};
+
 /* The cauldron shut after a failed throw, in the world's words: when. */
 function coolingSay(lang, at, now) {
   const later = at.toDateString() !== now.toDateString();
@@ -309,6 +315,17 @@ export function resolve(state, content, ctx, args) {
     return refuse('not-at-scene', lang === 'zh' ? `你还没到${pick(at.name, 'zh')}。` : `You are not at ${pick(at.name, 'en')} yet.`, { place: placeName(content, s, at) });
   }
   if (exit.needs && !meets(s, exit.needs, ctx.now)) return refuse('needs', pick(exit.refuse, lang));
+  // A choice the scene turns down (`snub`: the furnace ignores a grand name):
+  // its line is said, nothing moves, and it is kept (`mark`) so the card
+  // greys it out. Saved, like a riddle's miss.
+  if (exit.snub) {
+    if (exit.mark) s.marks = [...new Set([...(s.marks ?? []), exit.mark])];
+    return { state: s, result: { ok: false, refused: 'snubbed', say: pick(exit.snub, lang), exit: exit.id } };
+  }
+  // A name the story gives (`names`: 饭桶) is taken only in words that hold
+  // it — the page's tap, or the player's own typed; anything else is refused
+  // in the exit's `refuse` line.
+  if (exit.names && !heardName(exit.names, args.said)) return refuse('not-named', pick(exit.refuse, lang));
   let breakthrough = null, odds = null;
   if (exit.breakthrough) {
     const tier = tierOf(content, s.tier), tiers = content.ladder.tiers, next = tiers[tiers.indexOf(tier) + 1];
@@ -363,6 +380,7 @@ export function resolve(state, content, ctx, args) {
     if (gender) s.gender = gender;
     named = { field: exit.value.field, value, ...(gender ? { gender } : {}) };
   }
+  if (exit.names) { s[exit.names.field] = exit.names.value; named = { field: exit.names.field, value: exit.names.value }; }
   let born = null;
   if (exit.born) {
     born = readRoots(content, s, ctx, args);

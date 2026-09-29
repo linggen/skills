@@ -1024,6 +1024,10 @@ function lintExit(where, exit, chapter, content, ids, speakers, bad) {
   if (exit.take?.wealth != null && !(Number.isInteger(exit.take.wealth) && exit.take.wealth > 0 && exit.needs?.wealth >= exit.take.wealth)) bad(where, 'takes stones it never checks for');
   if (exit.needs?.wealth != null && !(Number.isInteger(exit.needs.wealth) && exit.needs.wealth > 0)) bad(where, 'needs a whole number of stones');
   lintStory(where, exit.story, bad);
+  // A choice turned down (core.mjs `snub`): its line, a mark to grey it by, and it stays.
+  if (exit.snub != null && !(pair(exit.snub) && exit.mark && exit.stay)) bad(where, 'a snub needs its line in zh and en, a mark, and stay');
+  // A name the story gives (core.mjs `names`): the save field, the name, and a refusal for any other.
+  if (exit.names != null && !(typeof exit.names.field === 'string' && typeof exit.names.value === 'string' && exit.names.value && pair(exit.refuse))) bad(where, 'names needs field, value and a refuse line');
   // 恩仇簿: who (a person or a slot), 恩 · 仇 · 诺, and what, in both languages;
   // `said: true` keeps the player's last typed line with it (rules/ledger.mjs).
   // `settles` marks a 诺 to that person kept (or `kept: false`, broken).

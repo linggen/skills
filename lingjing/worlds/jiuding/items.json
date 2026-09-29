@@ -843,6 +843,7 @@
     {
       "id": "danlu",
       "kind": "key",
+      "named": "furnace_name",
       "name": {
         "zh": "小铜炉",
         "en": "The little bronze furnace"

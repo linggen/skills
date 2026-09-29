@@ -334,8 +334,13 @@ let codexMemo = null;
 function codexNow() {
   const f = authored?.codexFiles;
   if (!f?.codex) return null;
-  const key = `${authored.loadedAt}:${lang()}:${look?.gender ?? ''}`;
-  if (codexMemo?.key !== key) codexMemo = { key, map: codexOf(f, { lang: lang(), gender: look?.gender, say: addressSay(f.people, look?.gender, lang()) }) };
+  const named = look?.named ?? {}; // a thing the player named (小铜炉 · 饭桶), as Look names it
+  const key = `${authored.loadedAt}:${lang()}:${look?.gender ?? ''}:${JSON.stringify(named)}`;
+  if (codexMemo?.key !== key) {
+    const map = codexOf(f, { lang: lang(), gender: look?.gender, say: addressSay(f.people, look?.gender, lang()) });
+    for (const [id, name] of Object.entries(named)) if (map.has(id)) map.set(id, { ...map.get(id), name });
+    codexMemo = { key, map };
+  }
   return codexMemo.map;
 }
 

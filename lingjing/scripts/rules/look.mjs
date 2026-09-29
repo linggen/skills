@@ -2,7 +2,7 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { CAST, gameOf } from '../content.mjs';
 import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
-import { dayKey, fill, genderOf, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, stepName, threshold } from '../state.mjs';
+import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, stepName, threshold } from '../state.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, THEN_BORN, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
 import { fightSetup } from './cards.mjs';
@@ -89,9 +89,18 @@ function panelOf(content, state, scene, buttons) {
   const say = pair => fill(pick(pair, state.lang), state, content);
   const own = e => e.value || e.born || gameOf(e) || e.breakthrough;
   // A staying choice already made (看碑背) is not offered again: its passage was told.
-  const done = e => e.stay && e.mark && (state.marks ?? []).includes(e.mark);
-  const taps = buttons.map(id => scene.exits.find(e => e.id === id)).filter(e => e && !own(e) && !done(e)).map(e => ({ id: e.id, label: say(e.label) }));
+  // A choice the scene turned down (`snub`) stays, greyed: tried, and seen to fail.
+  const marked = e => Boolean(e.mark) && (state.marks ?? []).includes(e.mark);
+  const done = e => e.stay && !e.snub && marked(e);
+  const taps = buttons.map(id => scene.exits.find(e => e.id === id)).filter(e => e && !own(e) && !done(e))
+    .map(e => ({ id: e.id, label: say(e.label), ...(e.snub && marked(e) ? { spent: true } : {}) }));
   return { place: say(scene.place), caption: (scene.panel.caption?.[state.lang] ?? scene.panel.caption?.zh ?? []).map(l => fill(l, state, content)), taps };
+}
+
+/* The things this player has named, id → the name the page shows. */
+function namedOf(content, state, lang) {
+  const named = Object.fromEntries((content.items?.items ?? []).filter(i => i.named && state[i.named]).map(i => [i.id, itemName(i, state, lang)]));
+  return Object.keys(named).length ? { named } : {};
 }
 
 /* 恩仇簿 as Look tells it: who, 恩 · 仇 · 诺, what, the player's own words,
@@ -344,7 +353,9 @@ export function look(state, content, ctx) {
     tier: { id: state.tier, step: state.step + 1, name: stepName(content, state.tier, state.step, lang) },
     progress: state.progress, next: threshold(content, state), wealth: state.wealth,
     traits,
-    bag: Object.entries(state.bag).map(([id, n]) => ({ id, name: pick(itemOf(content, id)?.name, lang) ?? id, n })),
+    bag: Object.entries(state.bag).map(([id, n]) => ({ id, name: itemName(itemOf(content, id), state, lang) ?? id, n })),
+    // Things the player named (小铜炉 · 饭桶): the 图鉴 card's title reads it.
+    ...namedOf(content, state, lang),
     wear: state.wear ?? {},
     arts: artsBrief(content, state),
     treasure: treasureBrief(content, state),

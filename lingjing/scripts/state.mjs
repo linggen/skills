@@ -82,6 +82,14 @@ export function lockReset(content, state) {
 
 export const pick = (pair, lang) => (pair ? pair[lang] ?? pair.zh ?? pair.en : null);
 
+/* A thing's name for this player: one the story let them give it (items.json
+   `named`: the save field that holds it — 小铜炉 · 饭桶) stands after its own. */
+export const itemName = (item, state, lang) => {
+  const own = item?.named ? state?.[item.named] : null;
+  const base = pick(item?.name, lang);
+  return base && own ? `${base} · ${own}` : base;
+};
+
 /* The player's gender as the name card set it — `female`, `male`, or `none`
    for a save that never said (the address words then fall back). */
 export const genderOf = state => (state?.gender === 'female' || state?.gender === 'male' ? state.gender : 'none');

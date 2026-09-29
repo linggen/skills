@@ -47,6 +47,7 @@ you once. The book is comic — keep its timing and its jokes.
 - **Off the script** — the player does or says what no choice covers: answer
   in the same voice, briefly, in the world, and let the stage's choices stand.
 - A tap on the scene card reaches you as `[scene] took <choice>`: Look, then tell.
+- **The furnace's name** (`wm-danlu`): a name the player types is Resolved on `keep` with their words as `said` — the rules take only one holding 饭桶 (else say the refusal's 纹丝不动 line); never pick a name for them.
 
 ## The story's people
 

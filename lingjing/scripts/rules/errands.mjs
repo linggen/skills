@@ -2,7 +2,7 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { ARM_SLOTS } from '../content.mjs';
 import { costOf } from '../battle.js';
-import { dayKey, fill, lockedOf, periodKey, pick, stepName, threshold, tierOf } from '../state.mjs';
+import { dayKey, fill, itemName, lockedOf, periodKey, pick, stepName, threshold, tierOf } from '../state.mjs';
 import { canPick, cardCatalog, deckFor, gearFight, ownedCards, pickedCards, rootsOf, usable } from './cards.mjs';
 import { companionOf, hasCompanion, herCard, nearestPlace } from './companion.mjs';
 import { readingOf } from './scrolls.mjs';
@@ -533,7 +533,7 @@ function effectBrief(content, lang, effect) {
 function itemBrief(content, state, item) {
   const lang = state.lang;
   return {
-    id: item.id, kind: item.kind, name: pick(item.name, lang), about: pick(item.about, lang), art: item.art,
+    id: item.id, kind: item.kind, name: itemName(item, state, lang), about: pick(item.about, lang), art: item.art,
     buy: item.buy, sell: item.sell, held: state.bag[item.id] ?? 0,
     effect: effectBrief(content, lang, item.effect),
     worn: Object.values(state.wear ?? {}).includes(item.id),

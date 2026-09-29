@@ -1171,7 +1171,8 @@ function panel(card, ctx) {
   if (!p) return '';
   const caption = (p.caption ?? []).map((l) => `<p>${esc(l)}</p>`).join('');
   const busy = ctx.panelBusy ?? null;
-  const taps = (p.taps ?? []).map((t) => `<button class="act paneltap${busy === t.id ? ' busy' : ''}" data-panel-exit="${esc(t.id)}"${busy ? ' disabled' : ''}>${esc(t.label)}</button>`).join('');
+  // A choice the scene turned down (`spent`: the furnace ignored that name) stays, greyed.
+  const taps = (p.taps ?? []).map((t) => `<button class="act paneltap${busy === t.id ? ' busy' : ''}${t.spent ? ' spent' : ''}" data-panel-exit="${esc(t.id)}"${busy || t.spent ? ' disabled' : ''}>${esc(t.label)}</button>`).join('');
   return `<div class="card panelcard"><div class="panel scenecard">${p.place ? `<div class="sceneplace">${esc(p.place)}</div>` : ''}<div class="scenecap">${caption}</div></div>
     ${taps ? `<div class="acts paneltaps">${taps}</div>` : ''}${ctx.panelNote ? `<div class="donote">${esc(ctx.panelNote)}</div>` : ''}</div>`;
 }
