@@ -110,7 +110,9 @@ function jump(e) {
   const to = a && document.getElementById(a.dataset.dianJump);
   if (!to) return;
   e.preventDefault();
-  to.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+  // At once, not smooth: the jump spans the whole chapter, and a smooth scroll
+  // that long crawls (and stalls in a hidden tab). The light shows where.
+  to.scrollIntoView({ block: 'center' });
   to.classList.remove('lit');
   void to.offsetWidth;
   to.classList.add('lit');
