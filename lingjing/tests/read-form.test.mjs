@@ -15,7 +15,7 @@ const book = JSON.parse(fs.readFileSync(path.join(BOOK, 'book.json'), 'utf8'));
 const hui = bookEntries(book).filter((c) => c.huimu);
 
 test('卷 hold 回; the 回 run 第一回, 第二回 … through the whole book, never restarting', () => {
-  assert.deepEqual(book.volumes.map((v) => v.name.zh), ['卷一']);
+  assert.deepEqual(book.volumes.map((v) => v.name.zh), ['卷一 · 沉鼎']);
   book.volumes.forEach((v) => assert.ok(v.hui.length <= 10, `${v.name.zh}: a 卷 is ten 回`));
   assert.deepEqual(hui.map((h) => h.n), hui.map((_, i) => i + 1));
   assert.deepEqual(hui.map((h) => h.label.zh), ['第一回', '第二回', '第三回', '第四回']);
