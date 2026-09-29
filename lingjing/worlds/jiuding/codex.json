@@ -128,6 +128,31 @@
     "book": "h03"
    }
   },
+  "bingyi": {
+   "kind": "人物",
+   "name": {
+    "zh": "河伯 · 冰夷",
+    "en": "The River Lord · Bingyi"
+   },
+   "first": {
+    "book": "h04"
+   },
+   "image": "art/people/bingyi.webp",
+   "lines": {
+    "zh": [
+     "漳水底下守了两千年的河伯，本名冰夷，也叫冯夷。人的脸，脚下踩着两条青龙，一双眼睛比漳水还深。他不娶媳妇。",
+     "「冰夷人面，乘两龙。」——《山海经 · 海内北经》"
+    ],
+    "en": [
+     "The River Lord who has kept watch under the Zhang for two thousand years; his own name is Bingyi, or Fengyi. A man's face, two green dragons under his feet, eyes deeper than the river. He does not take brides.",
+     "\"Bingyi has a man's face and rides two dragons.\" — Classic of Mountains and Seas, Within the Seas: North"
+    ]
+   },
+   "_credit": {
+    "zh": "本地画手（FLUX.2 klein 4B）所绘，2026-09-29，据《山海经·海内北经》「冰夷人面，乘两龙」；两龙一人，经人眼校过（tools/paint-flux-codex.py）。",
+    "en": "Painted with the local picture model (FLUX.2 klein 4B), 2026-09-29, after the Shanhaijing line; one man, two dragons, checked by eye (tools/paint-flux-codex.py)."
+   }
+  },
   "yinyue": {
    "kind": "人物",
    "name": {
@@ -368,6 +393,32 @@
   },
   "wangqi-1": {
    "tag": "功法"
+  },
+  "bingyi": {
+   "kind": "人物",
+   "name": {
+    "zh": "河伯",
+    "en": "He Bo, Lord of the River"
+   },
+   "image": "art/people/bingyi.webp",
+   "lines": {
+    "zh": [
+     "冰夷，就是河伯。「冰夷人面，乘两龙。」",
+     "漳水底下守着一样东西，一守两千年。"
+    ],
+    "en": [
+     "Bingyi, the Lord of the River. \"Bingyi has a man's face and rides two dragons.\"",
+     "Under the Zhang he keeps a thing in trust, and has kept it two thousand years."
+    ]
+   },
+   "first": {
+    "book": "h04"
+   },
+   "_kind": "人物, not 生物: he speaks, remembers and gives 阿禾 a scale — a person of the story; 生物 is creatures.json's 山海经 beasts, which fight (deck, drops). Not `hebo`: that id is the 河伯祠 place in meets.json.",
+   "_credit": {
+    "zh": "本地 FLUX（FLUX.2 klein 4B）所绘，七选一；据《山海经·海内北经》「冰夷人面，乘两龙」与第四回漳水一节；角上的假落款抹去，龙的青色压淡。",
+    "en": "Painted by the local FLUX (FLUX.2 klein 4B), one of seven seeds, after the Classic's 'Bingyi has a man's face and rides two dragons' and 回 4's Zhang river scene; a fake signature painted out, the dragons' green toned down."
+   }
   }
  }
 }

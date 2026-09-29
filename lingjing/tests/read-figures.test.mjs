@@ -267,7 +267,7 @@ test('a repainted creature keeps its old woodcut as 「原图」; the prologue\'
   assert.match(html, /<small>《山海经 · 中山经》 <button class="origscan"/, 'the classic it is drawn from, never the painter');
   assert.doesNotMatch(html, /重绘|Codex/);
   assert.match(html, /data-scan="\.\.\/worlds\/jiuding\/art\/fuzhu\.webp">原图</);
-  for (const id of ['baba', 'mama', 'masan', 'maxiaobao', 'wupo', 'laozhou', 'qulao', 'yinyue', 'jiujiu', 'xuanchenzi', 'dushu', 'fox-token', 'xisui-pill', 'tuna-jing', 'danlu', 'huangting', 'heluo', 'mend-pill', 'moon-bell']) assert.ok(CODEX.get(id).image, `${id}: a portrait`);
+  for (const id of ['baba', 'mama', 'masan', 'maxiaobao', 'wupo', 'laozhou', 'qulao', 'yinyue', 'jiujiu', 'xuanchenzi', 'dushu', 'bingyi', 'fox-token', 'xisui-pill', 'tuna-jing', 'danlu', 'huangting', 'heluo', 'mend-pill', 'moon-bell']) assert.ok(CODEX.get(id).image, `${id}: a portrait`);
 });
 
 test('every entry with a first appearance in the book is glossed there — a rewrite cannot drop its card', () => {

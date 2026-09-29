@@ -87,6 +87,11 @@ the story's baby 小狰 (five tails, one horn, hugging a stalk of 灵草). Where
 狪狪 雷神 (its first roll had five limbs) and 肥遗 (four rolls, the feet never six — it keeps its woodcut). A creature's
 old woodcut stays at its old path as its 「原图」 (`art_plate`, the table above).
 
+`people/bingyi.webp` — 河伯 冰夷 on his two dragons (his: 「河伯可以配个图吧」), painted by the local FLUX
+(FLUX.2 klein 4B), 2026-09-29, one of seven seeds, from `tools/paint-codex.py`'s prompt (《山海经·海内北经》
+「冰夷人面，乘两龙」 and 第四回's 漳水 scene); a fake signature in the corner painted out with plain paper and
+the dragons' green toned down. No outside source.
+
 The 经脉 · 穴位 figures are painted by Codex with their labels (each checked by eye); the codex's
 `marks` sit on the painted points. `codex/sanguan.webp` — 「人体背面·督脉三关」, painted with Codex
 for Hanli, 2026-09-29 (webp q80, 1448×1086). The plate the passes follow, 《性命圭旨·反照图》 (Ming,
