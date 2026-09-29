@@ -189,15 +189,33 @@ export function recapLook(content, state) {
   return { recap_due: true, recap: { lines: [...new Set(lines)].slice(-RECAP_LINES), ...(cur ? { chapter: pick(cur.title, state.lang), mystery: mysteryOf(cur, state) } : {}) } };
 }
 
+/* A chapter's close (chapter.json `close`), while it is over and the next one
+   waits: its title, one line of what THIS player did — each `did` part whose
+   `if` holds on the save (none: always), joined — and the teaser (his, 2026-09-29). */
+const CLOSE_IF = {
+  cast: (s, id) => (s.cast ?? []).includes(id), //                      walks with him
+  owed: (s, who) => (s.ledger ?? []).some(e => e.who === who && e.kind === '恩'), // an 恩 in the 恩仇簿
+  not: (s, c) => !closeHolds(s, c),
+};
+const closeHolds = (s, c) => Object.entries(c ?? {}).every(([k, v]) => CLOSE_IF[k]?.(s, v) ?? false);
+export function closeOf(content, state) {
+  const ch = content.chapters[state.chapter], c = ch?.close, lang = state.lang;
+  if (!c || state.scene || inMade(state) || !(state.ended ?? []).includes(ch.id)) return null;
+  const parts = (c.did ?? []).filter(d => closeHolds(state, d.if)).map(d => fill(pick(d, lang), state, content));
+  const did = parts.length ? parts.join(lang === 'zh' ? '，' : ', ') + (lang === 'zh' ? '。' : '.') : '';
+  return { id: ch.id, title: pick(c.title, lang), ...(did ? { did } : {}), teaser: pick(c.teaser, lang) };
+}
+
 /* Look's chapter, with its intro while it has only just begun (no scene of it
-   passed yet) — the stage raises its title card then — and the ending once reached. */
+   passed yet) — the stage raises its title card then — its close once it is
+   over (closeOf), and the ending once reached. */
 export function chapterLook(content, state) {
   const ch = content.chapters[state.chapter];
   const fresh = !inMade(state) && !content.world.made && ch?.intro && !(state.ended ?? []).includes(ch.id)
     && !(state.done_scenes ?? []).some(id => ch.scenes?.[id]);
-  const ending = endingOf(content, state);
+  const ending = endingOf(content, state), close = closeOf(content, state);
   return {
-    chapter: { id: ch.id, title: pick(ch.title, state.lang), ...(fresh ? { fresh: true, intro: pick(ch.intro, state.lang) } : {}) },
+    chapter: { id: ch.id, title: pick(ch.title, state.lang), ...(fresh ? { fresh: true, intro: pick(ch.intro, state.lang) } : {}), ...(close ? { close } : {}) },
     ...(ending ? { ending: { id: ending.id, title: ending.title } } : {}),
   };
 }

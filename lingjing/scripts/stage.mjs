@@ -94,6 +94,8 @@ export const CARD_KINDS = {
   // A beast that can still be met today. Won, withdrawn or tamed, its card is a record, not an ask.
   duel: { holds: (look, card) => { const e = look?.place?.encounter; return !e || e.game?.id !== card.id || !(e.won || e.withdrawn || e.tamed); } },
   hexagram: { holds: false }, //   the day's coins: optional, never what an arrival is about
+  // A chapter over, the next one waiting: its ending card (story.mjs closeOf) — told, never asking.
+  closed: { holds: false },
   lundao: { holds: false }, //     论道 at 稷下: offered, or a game under way — never holds the roads
   handed: { holds: false }, //     所得 — told, never waiting on him; the roads stay
   board: { holds: false }, //      a standing practice, offered for days — not this arrival's business
@@ -225,14 +227,16 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // whoever or whatever the scene brings on for the first time.
   const meet = (look.scene?.meet ?? []).map(id => ({ card: 'meet', id }));
   const panel = look.scene?.panel ? [{ card: 'panel' }] : [];
-  return [...meet, ...panel, ...people, ...head, ...cards];
+  // The chapter's ending card, while the next chapter waits: it fills a quiet stage (MAIN's filler).
+  const closed = look.chapter?.close ? [{ card: 'closed' }] : [];
+  return [...meet, ...panel, ...people, ...head, ...cards, ...closed];
 }
 
 /* The kinds the PAGE draws for itself, from Look alone: the scene's panel and
    people, the goal line, the name and 生辰 cards (the scene's exits), a world
    being painted, an empty pool. Never Ling's to Show — the `show` verb drops
    them (rules/verbs.mjs) and the stage drops them from what she showed. */
-export const PAGE_OWNS = new Set(['meet', 'panel', 'people', 'goal', 'value', 'born', 'building', 'empty', 'memory', 'homing', 'doors']);
+export const PAGE_OWNS = new Set(['meet', 'panel', 'people', 'goal', 'value', 'born', 'building', 'empty', 'memory', 'homing', 'doors', 'closed']);
 export const showable = c => Boolean(c) && !PAGE_OWNS.has(c.card);
 
 /* 此地 · 此刻 · 行 — the stage in FIXED SECTIONS (Hanli, 2026-09-29: the same
@@ -260,6 +264,7 @@ export const MAIN = [
   { kinds: ['handed', 'quest', 'tale', 'road', 'offer'] }, //            the line, one at a time
   { kinds: ['building', 'empty'] }, //                                   the page's own notices
   { kinds: ['codex', 'creature', 'item', 'map', 'traits', 'gate', 'tribulation', 'treasure'] }, // what Ling showed
+  { kinds: ['closed'], filler: true }, //                                a chapter's ending card, while the next waits
   { kinds: ['hexagram'], filler: true }, //                              the day's coins
 ];
 

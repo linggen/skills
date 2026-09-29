@@ -1270,7 +1270,18 @@ function breakthrough(card, ctx) {
     <div class="acts"><button class="act btgo" data-throw="${esc(card.id)}"${shut ? ` disabled title="${esc(shut)}"` : ''}>${esc(shut ?? w.go)}</button></div>${note}</div>`;
 }
 
-const RENDER = { meet, codex, panel, value, born, people, breakthrough, handed, tale, lundao, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, road, seclude, seclusion };
+/// A chapter over, the next one waiting (Look's chapter.close): 「第一章 · 外门 · 完」,
+/// one line of what this player did, the next chapter's teaser in the book's
+/// voice, and the goal line's 「第二章 · 即将开放」 under it.
+function closed(card, ctx) {
+  const c = ctx.look.chapter?.close;
+  if (!c) return '';
+  const coming = ctx.look.waypoint?.coming ? ctx.look.waypoint.text : '';
+  return `<div class="card closecard"><div class="closetitle">${esc(c.title)}</div>${c.did ? `<p class="closedid">${esc(c.did)}</p>` : ''}`
+    + `<p class="closetease">${esc(c.teaser)}</p>${coming ? `<div class="closecoming">${esc(coming)}</div>` : ''}</div>`;
+}
+
+const RENDER = { closed, meet, codex, panel, value, born, people, breakthrough, handed, tale, lundao, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, road, seclude, seclusion };
 
 /// Only the kinds the scene knows; anything else Ling sends is dropped.
 export function cardHtml(card, ctx) {

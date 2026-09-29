@@ -373,3 +373,24 @@ test('息壤 keeps his 修为 through the jump, and its moment is the five doors
   assert.ok(MAIN.findIndex(r => r.kinds.includes('doors')) < MAIN.findIndex(r => r.kinds.includes('panel')), 'before the next scene card');
   assert.equal(stageSlots({}, [{ card: 'panel' }, { card: 'doors' }]).main[0].card, 'doors');
 });
+
+test('第一章 ends on its card: 「第一章 · 外门 · 完」, what this player did, the 第二章 teaser in the book\'s voice — and 「第二章 · 即将开放」 stays (his, 2026-09-29)', () => {
+  const s = playThrough('male');
+  const l = look(s, content, ctx(DAY2));
+  const close = l.chapter.close;
+  assert.equal(close.title, '第一章 · 外门 · 完');
+  assert.equal(close.did, '你收了药园那只偷萝卜的小狰，大比把第一轮让给了孙二狗，终究赢下了那颗筑基丹，又拜了扫了五十年台阶的瞿老为师。');
+  assert.match(close.teaser, /邺城[\s\S]*河伯/);
+  assert.ok(l.stage.some(c => c.card === 'closed'), 'on the stage');
+  const quiet = l.stage.filter(c => ['closed', 'hexagram', 'goal'].includes(c.card));
+  assert.equal(stageSlots(l, [...quiet, { card: 'hexagram' }]).main[0].card, 'closed', 'a quiet stage: the ending card fills it, before the coins');
+  assert.equal(stageSlots(l, l.stage).queue.length + 1, stageSlots(l, l.stage).footer.waiting + 1, 'a filler never counts as waiting');
+  const html = cardHtml({ card: 'closed' }, { look: l, lang: 'zh', words: WORDS.zh });
+  assert.match(html, /第一章 · 外门 · 完[\s\S]*小狰[\s\S]*邺城[\s\S]*第二章 · 即将开放/);
+  // another player's chapter reads his own: no 狰, and the first round fought
+  const other = { ...s, cast: s.cast.filter(id => id !== 'zheng'), ledger: s.ledger.filter(e => e.who !== 'sunergou') };
+  assert.match(look(other, content, ctx(DAY2)).chapter.close.did, /^药园的贼，你没收成，大比一轮一轮打了上去，/);
+  assert.match(look({ ...s, lang: 'en' }, content, ctx(DAY2)).chapter.close.did, /^You took in the little Zheng/);
+  // before the end: no card
+  assert.equal(look({ ...opened() }, content, ctx()).chapter.close, undefined);
+});

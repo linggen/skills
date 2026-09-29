@@ -1033,3 +1033,10 @@ body.fighting .atmos { display: none; }
   .card.doors .door, .card.doors .seal, .card.doors .doorsto { animation: none; opacity: 1; }
   .card.doors .seal { background: var(--text); color: var(--surface); }
 }
+
+/* A chapter's ending card (cards.js closed): the title as a seal line, what he did, the teaser in the book's voice. */
+.card.closecard { text-align: center; padding: 22px 20px 18px; }
+.closecard .closetitle { font-family: var(--serif); font-size: 20px; letter-spacing: .3em; margin-bottom: 12px; }
+.closecard .closedid { margin: 0 auto 12px; max-width: 34em; font-size: 14.5px; line-height: 1.8; }
+.closecard .closetease { margin: 0 auto 14px; max-width: 34em; font-family: var(--serif); font-size: 15px; line-height: 1.9; color: var(--dim); text-align: left; text-indent: 2em; }
+.closecard .closecoming { display: inline-block; padding: 3px 14px; border: 1px solid var(--line); border-radius: 99px; font-size: 13px; letter-spacing: .15em; color: var(--ling); }

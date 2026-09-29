@@ -136,6 +136,22 @@
     "zh": "第一章 · 外门",
     "en": "Chapter 1 · The Outer Court"
   },
+  "_close": "The ending card on the stage once the chapter is over and the next one waits (story.mjs closeOf): its title, one line of what THIS player did — each `did` part whose `if` holds on the save (cast · owed · not; none: always), joined — and the next chapter's teaser in the book's voice.",
+  "close": {
+    "title": { "zh": "第一章 · 外门 · 完", "en": "Chapter 1 · The Outer Court · The End" },
+    "did": [
+      { "if": { "cast": "zheng" }, "zh": "你收了药园那只偷萝卜的小狰", "en": "You took in the little Zheng that robbed the herb garden" },
+      { "if": { "not": { "cast": "zheng" } }, "zh": "药园的贼，你没收成", "en": "The garden thief got away from you" },
+      { "if": { "owed": "sunergou" }, "zh": "大比把第一轮让给了孙二狗", "en": "gave the contest's first round to Sun Ergou" },
+      { "if": { "not": { "owed": "sunergou" } }, "zh": "大比一轮一轮打了上去", "en": "fought the contest round by round" },
+      { "zh": "终究赢下了那颗筑基丹", "en": "won the Foundation pill in the end" },
+      { "if": { "owed": "qulao" }, "zh": "又拜了扫了五十年台阶的瞿老为师", "en": "and became the student of Elder Qu, who swept the steps for fifty years" }
+    ],
+    "teaser": {
+      "zh": "却说北边漳水之滨，有一座邺城，城里年年要给河伯娶一回媳妇。今年巫祝挑中的新娘子，是街口卖豆腐的姑娘——那时我还不知道，这门亲事，是要给我去搅上一搅的。",
+      "en": "Up north on the Zhang stands the city of Ye, which marries a bride to the River Lord every year. This year the priestess chose the girl who sells tofu at the corner — and I did not yet know that this wedding was mine to spoil."
+    }
+  },
   "summary": {
     "zh": "外门的日子，是从交钱开始的。褚先生说杂灵根是漏勺；那天夜里，你一夜通了小周天——银月替你凿了两道半。柴房里二十三下，换来一只小铜炉；药园的贼不认字，吃了你的萝卜；沉鼎秘境里一撮息壤，撑开了你的五扇门。外门大比，马小宝在泗水里转了三圈。扫了五十年台阶的瞿老，收你为徒。",
     "en": "Outer-court life starts with paying up. Master Chu says mixed roots are a skimmer; that night your qi goes round the small circuit in one go — Yinyue had chiselled two and a half gates for you. Twenty-three blows in the woodshed buy a little bronze furnace; the garden thief can't read, and eats your radish; a pinch of breathing soil in the hidden realm opens your five doors. At the contest Ma Xiaobao spins three times into the Si. Elder Qu, who swept the steps for fifty years, takes you as his student."
