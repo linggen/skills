@@ -15,7 +15,7 @@ const BOOK = path.join(ROOT, 'story/huxian-bing');
 const book = JSON.parse(fs.readFileSync(path.join(BOOK, 'book.json'), 'utf8'));
 const CLASSICS = JSON.parse(fs.readFileSync(path.join(BOOK, 'classics.json'), 'utf8')).classics;
 const chapters = [...book.chapters, ...(book.appendix ?? [])].map((c) => ({ ...c, md: fs.readFileSync(path.join(BOOK, c.file), 'utf8') }));
-const REF = /《([^》\n]+)》\{典=([^{}\n]+)\}/g;
+const REF = /(?:《([^》\n]+)》|\[([^\]\n]+)\])\{典=([^{}\n]+)\}/g;
 const one = { shennong: CLASSICS.shennong };
 
 test('《书名》{典=id} links to its entry at the chapter\'s end, and the entry links back', () => {
@@ -41,14 +41,15 @@ test('an unknown id, no classics at all, or a heading: the 《书名》 alone, a
   }
   assert.equal(renderMarkdown('《神农本草经》{典=shennong}', {}), '<p>《神农本草经》</p>');
   assert.equal(renderMarkdown('# 《神农本草经》{典=shennong}', { classics: one }), '<h1>《神农本草经》</h1>');
-  assert.equal(renderMarkdown('[x]{典=constructor}', { classics: one }), '<p>[x]{典=constructor}</p>', 'only 《书名》 carries a 典');
+  assert.equal(renderMarkdown('[x]{典=constructor}', { classics: one }), '<p>x</p>', 'a word-link to no entry reads as its words');
+  assert.match(renderMarkdown('[河伯]{典=shennong}', { classics: one }), /data-dian-jump="dian-shennong">河伯<\/a>/, 'a word-link names no book');
   assert.equal(renderMarkdown('《a》{典=constructor}', { classics: one }), '<p>《a》</p>', 'no prototype key is an entry');
   assert.equal(renderMarkdown('《<i>》{典=shennong}', { classics: one }).includes('<i>'), false, 'the words are escaped');
 });
 
 test('every {典=id} in the book is an entry; every entry has a real source and a short passage', () => {
   const used = new Set();
-  for (const c of chapters) for (const [, , id] of c.md.matchAll(REF)) { used.add(id); assert.ok(Object.hasOwn(CLASSICS, id), `${c.file}: 典 ${id}`); }
+  for (const c of chapters) for (const [, , , id] of c.md.matchAll(REF)) { used.add(id); assert.ok(Object.hasOwn(CLASSICS, id), `${c.file}: 典 ${id}`); }
   for (const [id, c] of Object.entries(CLASSICS)) {
     assert.ok(used.has(id), `${id} is named somewhere in the book`);
     assert.ok(c.title && c.about, `${id}: title and background`);

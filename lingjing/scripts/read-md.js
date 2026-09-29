@@ -68,6 +68,9 @@ const MEMORY = /^:::\s*忆\s+(\d+)\s*(.*)$/;
 const GLOSS = /\[([^\]\n]+)\]\{注=([^{}\n]+)\}/g;
 // `《书名》{典=id}` — a classic named in the text (classics.json).
 const CLASSIC = /《([^》\n]+)》\{典=([\w-]+)\}/g;
+// `[words]{典=id}` — a thing the classic tells of (河伯), linked to that classic's entry
+// without naming the book in a speaker's mouth (his, 2026-09-29).
+const CLASSIC_WORDS = /\[([^\]\n]+)\]\{典=([\w-]+)\}/g;
 const entryOf = (codex, id) => (codex instanceof Map ? codex.get(id) : Object.hasOwn(codex ?? {}, id) ? codex[id] : null) ?? null;
 // A gloss whose entry is missing reads as its words, nothing more; a classic
 // with no entry (or no `cite`) reads as its 《书名》. A subject links to its card
@@ -80,6 +83,7 @@ const inline = (t, codex, cite, near = () => false) => esc(t)
     if (e && isSubject(e) && near(id)) return words;
     return e ? `<span class="gloss" role="button" tabindex="0" data-${isSubject(e) ? 'codex' : 'note'}="${id}">${words}</span>` : words;
   })
+  .replace(CLASSIC_WORDS, (_, words, id) => cite?.(id, words, true) ?? words)
   .replace(CLASSIC, (_, words, id) => cite?.(id, words) ?? `《${words}》`)
   .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
 const glossIds = (lines, codex) => [...new Set(lines.flatMap((l) => [...esc(l).matchAll(GLOSS)].map((m) => m[2])))].filter((id) => entryOf(codex, id));
@@ -135,12 +139,12 @@ export function renderMarkdown(md, opts = {}) {
   // Each classic named: its mentions in order, with the heading each sits under.
   const cited = new Map();
   let heading = '';
-  const cite = (id, words) => {
+  const cite = (id, words, bare = false) => {
     if (!Object.hasOwn(classics, id) || !classics[id]?.original || !classics[id]?.source?.url) return null;
     const refs = cited.get(id) ?? [];
     refs.push({ n: refs.length + 1, where: heading });
     cited.set(id, refs);
-    return `<a class="gloss dianref" href="#${classicAnchor(id)}" id="${classicAnchor(id, refs.length)}" data-dian-jump="${classicAnchor(id)}">《${words}》</a>`;
+    return `<a class="gloss dianref" href="#${classicAnchor(id)}" id="${classicAnchor(id, refs.length)}" data-dian-jump="${classicAnchor(id)}">${bare ? words : `《${words}》`}</a>`;
   };
   // <!-- … --> is a note for the writers (女主变体 and the like), never read.
   const lines = String(md ?? '').replace(/\r\n/g, '\n').replace(/<!--[\s\S]*?-->/g, '').split('\n');
