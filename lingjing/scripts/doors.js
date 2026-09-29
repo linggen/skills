@@ -16,13 +16,15 @@ const WORDS = {
 export const DOOR_STEP_MS = 1100;
 
 /// The card: `node` is the story node ({doors: [{el, line}], rose: {from, to}}).
-export function doorsHtml(node, { lang = 'zh', still = false } = {}) {
+/// `age` is how long it has been playing: the stage is redrawn whole, so every
+/// animation starts that far in (a negative delay) and never begins again.
+export function doorsHtml(node, { lang = 'zh', still = false, age = 0 } = {}) {
   const doors = node?.doors ?? [];
   if (!doors.length) return '';
   const w = WORDS[lang] ?? WORDS.zh;
   const rows = doors.map((d, i) => `<div class="door" style="--i:${i}"><b class="seal">${esc(GLYPH[d.el] ?? d.el)}</b><span class="dline">${esc(d.line)}</span></div>`).join('');
   const to = node.rose?.to ? `<div class="doorsto" style="--i:${doors.length}">${esc(node.rose.to)}</div>` : '';
-  return `<div class="card doors${still ? ' still' : ''}" role="group" aria-label="${esc(w.title)}" style="--step:${DOOR_STEP_MS}ms">
+  return `<div class="card doors${still ? ' still' : ''}" role="group" aria-label="${esc(w.title)}" style="--step:${DOOR_STEP_MS}ms;--age:${Math.max(0, Math.round(age))}ms">
     <div class="cardtitle">${esc(w.title)}</div><div class="doorrows">${rows}</div>${to}
     <div class="acts"><button class="act" data-doors>${esc(w.on)}</button></div></div>`;
 }

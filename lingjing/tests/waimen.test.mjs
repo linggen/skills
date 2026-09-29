@@ -422,3 +422,11 @@ test('the walk map never pops over a scene card on arrival (his, 2026-09-29)', a
   const watch = js.slice(js.indexOf('function watchTravel()'), js.indexOf('function playTravel('));
   assert.match(watch, /if \(!prev \|\| prev\.id === p\.id \|\| bout \|\| look\.scene\?\.panel\) return;/);
 });
+
+test('the doors keep playing through the stage\'s redraws: each draw starts the animation as far in as it has run', async () => {
+  const { doorsHtml } = await import('../scripts/doors.js');
+  assert.match(doorsHtml({ doors: [{ el: 'metal', line: '金' }] }, { age: 2345.6 }), /--age:2346ms/);
+  const fs = await import('node:fs');
+  const css = fs.readFileSync(new URL('../scripts/lingjing.css', import.meta.url), 'utf8');
+  assert.equal((css.match(/- var\(--age, 0ms\)\)/g) ?? []).length, 3);
+});

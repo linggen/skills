@@ -995,7 +995,7 @@ function spoilsCtx() {
   };
 }
 
-const PAGE_CARDS = { memory: () => memoryHtml(), homing: () => homingHtml(), doors: () => doorsHtml(view.doors?.node, { lang: lang(), still: stillMotion() }) };
+const PAGE_CARDS = { memory: () => memoryHtml(), homing: () => homingHtml(), doors: () => doorsHtml(view.doors?.node, { lang: lang(), still: stillMotion(), age: performance.now() - (view.doors?.at ?? performance.now()) }) };
 const drawCard = (c) => (PAGE_CARDS[c.card] ?? (() => cardHtml(c, ctx())))();
 const inkNames = () => Object.fromEntries(Object.keys(look?.world?.atlas?.provinces ?? {}).map((id) => [id, authored?.dictionary?.provinces?.[id]?.[lang()] ?? id]));
 const homingHtml = () => (view.homing && atlasPlaces?.ink ? homingCardHtml(inkGeo, atlasPlaces.ink, { province: view.homing.province, frame: view.homing.frame, age: performance.now() - view.homing.at, still: view.homing.still || stillMotion(), lang: lang(), names: inkNames(), labels: look?.world?.atlas?.provinces, paint: inkPaint(), fx: Boolean(view.homing.fx) }) : '');
@@ -2569,7 +2569,7 @@ function watchNode() {
 const nodeFresh = (kinds) => Boolean(look?.story_node && kinds.includes(look.story_node.kind) && Date.now() - Date.parse(look.story_node.at) < 60000);
 function storyMoment(n) {
   // A realm lifted with its doors (息壤): the five open on the stage, one by one.
-  if (n.doors?.length) show({ doors: { node: n } });
+  if (n.doors?.length) show({ doors: { node: n, at: performance.now() } });
   const m = nodeMoment(n);
   // Her price showing (unease.js): the stage shows it on her, then she says it.
   if (m && n.unease && herHere()) return void raiseUnease(n.unease, () => tellYinyue(m.id, m.zh, m.en, { mood: m.mood }), { still: stillMotion() });

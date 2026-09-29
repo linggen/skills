@@ -1021,10 +1021,10 @@ body.fighting .atmos { display: none; }
 /* 息壤's five doors (doors.js): a seal and a line each, opening one after another,
    ink only — colour is for 银月's memories. Reduced motion: the last frame. */
 .card.doors .doorrows { display: flex; flex-direction: column; gap: 10px; margin: 6px 0 10px; }
-.card.doors .door { display: flex; align-items: center; gap: 12px; opacity: .22; animation: door-open .8s ease-out calc(var(--i) * var(--step, 1100ms) + 300ms) both; }
-.card.doors .seal { flex: none; display: grid; place-items: center; width: 38px; height: 38px; border: 1.5px solid var(--text); border-radius: 50%; font-family: var(--serif); font-size: 19px; color: var(--text); background: transparent; animation: seal-ink .8s ease-out calc(var(--i) * var(--step, 1100ms) + 300ms) both; }
+.card.doors .door { display: flex; align-items: center; gap: 12px; opacity: .22; animation: door-open .8s ease-out calc(var(--i) * var(--step, 1100ms) + 300ms - var(--age, 0ms)) both; }
+.card.doors .seal { flex: none; display: grid; place-items: center; width: 38px; height: 38px; border: 1.5px solid var(--text); border-radius: 50%; font-family: var(--serif); font-size: 19px; color: var(--text); background: transparent; animation: seal-ink .8s ease-out calc(var(--i) * var(--step, 1100ms) + 300ms - var(--age, 0ms)) both; }
 .card.doors .dline { font-size: 14.5px; line-height: 1.6; }
-.card.doors .doorsto { font-family: var(--serif); font-size: 18px; letter-spacing: .2em; text-align: center; margin: 4px 0 8px; animation: door-open 1s ease-out calc(var(--i) * var(--step, 1100ms) + 500ms) both; }
+.card.doors .doorsto { font-family: var(--serif); font-size: 18px; letter-spacing: .2em; text-align: center; margin: 4px 0 8px; animation: door-open 1s ease-out calc(var(--i) * var(--step, 1100ms) + 500ms - var(--age, 0ms)) both; }
 @keyframes door-open { from { opacity: .22; transform: translateY(3px); } to { opacity: 1; transform: none; } }
 @keyframes seal-ink { 0% { background: transparent; color: var(--text); box-shadow: none; } 60% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--text) 12%, transparent); } 100% { background: var(--text); color: var(--surface); box-shadow: none; } }
 .card.doors.still .door, .card.doors.still .seal, .card.doors.still .doorsto { animation: none; opacity: 1; }
