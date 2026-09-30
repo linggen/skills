@@ -15,7 +15,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { dayKey, periodKey, periodStart, pick } from '../state.mjs';
+import { dayKey, periodKey, periodStart, pick, seedOf } from '../state.mjs';
 
 const isOnce = q => q.period === 'once';
 const isPool = q => q.pool === true && !isOnce(q);
@@ -38,7 +38,6 @@ function mix(text) {
 }
 const dayNumber = now => Math.round(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 864e5);
 // The save's own id: made once, synced with it, so two devices pick alike.
-const seedOf = state => state.created ?? state.name ?? '';
 
 /* A phone is known to be paired when Linggen's own milestone says so, or a
    phone-only chore was ever seen done. No signal, no phone: a phone chore the

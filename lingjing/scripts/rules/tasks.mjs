@@ -3,7 +3,7 @@
 import { festivalDone } from './festival.mjs';
 import { battle } from '../battle.js';
 import { gameOf } from '../content.mjs';
-import { addStamina, dayKey, periodKey, pick, settleStamina } from '../state.mjs';
+import { addStamina, dayKey, periodKey, pick, settleStamina, seedOf } from '../state.mjs';
 import { drop } from './arms.mjs';
 import { cardCatalog, fightSetup, winCard } from './cards.mjs';
 import { clone, pay, refuse, replaying, spendStamina } from './core.mjs';
@@ -340,9 +340,9 @@ export function lundao(state, content, ctx, args) {
     if (empty) return empty;
     const day = dayKey(ctx.now);
     const games = lang === 'zh' ? ['feihua', 'chengyu', 'duilian'] : ['feihua', 'chengyu'];
-    const game = games[hashOf(`${day}|${s.name ?? ''}|lundao`) % games.length];
+    const game = games[hashOf(`${day}|${seedOf(s)}|lundao`) % games.length];
     const list = game === 'duilian' ? cfg.duilian.zh : cfg[game][lang === 'zh' ? 'zh' : 'en'];
-    const dealt = list[hashOf(`${day}|${s.name ?? ''}|lundao|${game}`) % list.length];
+    const dealt = list[hashOf(`${day}|${seedOf(s)}|lundao|${game}`) % list.length];
     const prompt = game === 'duilian' ? dealt.up : dealt;
     s.lundao = { day, game, prompt, last: prompt, good: 0, misses: 0, used: [prompt], ...(game === 'duilian' ? { model: dealt.down } : {}) };
     return { state: s, result: { ok: true, opened: true, say: prompt, lundao: lundaoBrief(content, s, ctx.now), ...(game === 'duilian' ? { judge: judgeOf(dealt.down) } : {}) } };
@@ -361,7 +361,7 @@ export function lundao(state, content, ctx, args) {
     if (l.game === 'chengyu' && reply) l.used.push(reply);
     // 对对联: a fresh upper line each round; 飞花令 keeps its keyword.
     if (l.game === 'duilian' && l.good < cfg.need) {
-      const next = cfg.duilian.zh[hashOf(`${l.day}|${s.name ?? ''}|lundao|duilian|${l.good}`) % cfg.duilian.zh.length];
+      const next = cfg.duilian.zh[hashOf(`${l.day}|${seedOf(s)}|lundao|duilian|${l.good}`) % cfg.duilian.zh.length];
       l.prompt = next.up; l.model = next.down;
     }
   } else l.misses += 1;

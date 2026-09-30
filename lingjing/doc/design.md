@@ -617,8 +617,8 @@ person, no gender marks, and the game follows 原神 (story DESIGN § 四, § �
   石坳村 goes on by a plain tap (`begin`); `people.json` `hero` names him and
   `newState` / `fitWorld` put him on every save (an old card-named save loads as
   沈小满, a boy); `{name}` fills him by the text's language; `slots.ban` and the
-  `address` words are fixed; 阿禾's portrait pair went (`ahe-boy.webp` is unused);
-  the book page fills the fixed hero; SKILL.md and guide/tell.md say so. The
+  `address` words are fixed; 阿禾's portrait pair went (`ahe-boy.webp` deleted);
+  the book page fills the fixed hero; daily draws are seeded per save (`seedOf`: the save's own `seed` — its creation time, or once the name an old save was given), not by the now-shared name; SKILL.md and guide/tell.md say so. The
   value card stays for a scene that names a thing (tests/naming.test.mjs runs it
   on the old exit, tests/fixtures/name-card-exit.json).
 - **Still open:** the prologue's scene passages still say 「这个少年，就是你」 and

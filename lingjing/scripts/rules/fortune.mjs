@@ -10,7 +10,7 @@
 //          (吉 → 大吉, 凶 → 平, 大凶 → 凶);
 //   望气 — at 吉 and 大吉 the day's fights read the beast's next move, as the
 //          scroll's 上卷 does (`sight`); the 下卷 still reads the numbers.
-import { dayKey, pick } from '../state.mjs';
+import { dayKey, pick, seedOf } from '../state.mjs';
 import { clone, refuse } from './core.mjs';
 import { hashOf } from './travel.mjs';
 
@@ -81,7 +81,7 @@ export function divinationBrief(content, state, now) {
 export function divine(state, content, ctx) {
   if (castToday(state, ctx.now)) return refuse('cast-today', null, { divination: divinationBrief(content, state, ctx.now) });
   const s = clone(state);
-  const throws = castThrows(`${dayKey(ctx.now)}|${s.name ?? ''}|cast`);
+  const throws = castThrows(`${dayKey(ctx.now)}|${seedOf(s)}|cast`);
   const values = throws.map(t => t[0] + t[1] + t[2]);
   const lines = values.map(v => v % 2);
   const moved = lines.map((b, i) => (values[i] === 6 || values[i] === 9 ? 1 - b : b));
@@ -145,7 +145,7 @@ export function fate(state, content, ctx, args) {
   }
   let found;
   if (args.random) {
-    const book = content.traits.fate, h = hashOf(`${s.name ?? ''}|${s.created ?? ''}|fate`);
+    const book = content.traits.fate, h = hashOf(`${seedOf(s)}|fate`);
     const stem = book.stems[h % book.stems.length];
     found = { zodiac: book.zodiac[Math.floor(h / book.stems.length) % book.zodiac.length].id, stem: stem.id, element: stem.element, source: 'random' };
   } else {

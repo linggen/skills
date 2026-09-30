@@ -2,7 +2,7 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { ARM_SLOTS } from '../content.mjs';
 import { costOf } from '../battle.js';
-import { dayKey, fill, itemName, lockedOf, periodKey, pick, stepName, threshold, tierOf } from '../state.mjs';
+import { dayKey, fill, itemName, lockedOf, periodKey, pick, stepName, threshold, tierOf, seedOf } from '../state.mjs';
 import { canPick, cardCatalog, deckFor, gearFight, ownedCards, pickedCards, rootsOf, usable } from './cards.mjs';
 import { companionOf, hasCompanion, herCard, nearestPlace } from './companion.mjs';
 import { readingOf } from './scrolls.mjs';
@@ -209,7 +209,7 @@ function noticeAt(content, state, now) {
     .filter(id => !state.quests?.[id]);
   // hashOf multiplies by 31: a pool of 31 (or a multiple) took the same pick
   // every day — the day's digits vanish mod 31. Mixed first (2026-09-29).
-  return pool.length ? noticeOf(content, pool[mixed(hashOf(`${day}|${state.name ?? ''}|${market.id}|notice|${today.length}`)) % pool.length]) : null;
+  return pool.length ? noticeOf(content, pool[mixed(hashOf(`${day}|${seedOf(state)}|${market.id}|notice|${today.length}`)) % pool.length]) : null;
 }
 
 /* What may be taken where he stands: the giver is here, it is not in the book

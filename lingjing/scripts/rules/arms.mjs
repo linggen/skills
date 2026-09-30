@@ -1,6 +1,6 @@
 // rules/arms.mjs — 本命法宝 and 功法: the bound treasure, the sword, the 符 and the learned arts.
 // Part of the rules engine; rules.mjs is its one door.
-import { dayKey, pick, tierOf } from '../state.mjs';
+import { dayKey, pick, tierOf, seedOf } from '../state.mjs';
 import { clone, refuse } from './core.mjs';
 import { itemOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
@@ -16,7 +16,7 @@ import { stow } from './pouch.mjs';
 function drop(content, state, creature, now) {
   const got = [];
   const one = content.rewards.growth?.charm?.fight_one_in, charm = charmOf(content);
-  const lucky = one && charm && hashOf(`${dayKey(now)}|${creature.id}|${state.name ?? ''}|charm`) % one === 0;
+  const lucky = one && charm && hashOf(`${dayKey(now)}|${creature.id}|${seedOf(state)}|charm`) % one === 0;
   for (const id of [creature.drops, lucky ? charm.id : null].filter(Boolean)) {
     const item = itemOf(content, id);
     if (!item) continue;
@@ -129,6 +129,6 @@ const wornOf = (content, state, slot) => (state.wear?.[slot] && state.bag[state.
 
 /* The same day, creature and 名字 draw the same creature — an undo cannot
    fish for an easier one. */
-const duelSeed = (state, creature, now) => `${dayKey(now)}|${creature.id}|${state.name ?? ''}`;
+const duelSeed = (state, creature, now) => `${dayKey(now)}|${creature.id}|${seedOf(state)}`;
 
 export { artBrief, artOf, artsBrief, canRefine, charmOf, drop, duelSeed, giveCharm, growTreasure, learn, refineWith, tierRank, treasureBrief, wornOf };

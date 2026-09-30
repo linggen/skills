@@ -12,7 +12,7 @@
 // A failure wounds (伤势 is 体力 since redesign-v2 § 四), takes a share of the
 // peak step's 修为 and shuts the cauldron for real hours. The realm, the save
 // and every other thing held are never lost; only the pill carried is spent.
-import { pick, settleStamina, threshold } from '../state.mjs';
+import { pick, settleStamina, threshold, seedOf } from '../state.mjs';
 import { herAwake, herGifts } from './companion.mjs';
 import { itemOf } from './errands.mjs';
 import { strongRoots } from './roots.mjs';
@@ -92,7 +92,7 @@ export function coolingUntil(state, now) {
 }
 
 /* The die for this try: 0–99, the same for the same save, realm and try. */
-export const rollOf = (state, to) => hashOf(`${state.created ?? ''}|${state.name ?? ''}|breakthrough|${to}|${state.breakthrough?.tries?.[to] ?? 0}`) % 100;
+export const rollOf = (state, to) => hashOf(`${seedOf(state)}|breakthrough|${to}|${state.breakthrough?.tries?.[to] ?? 0}`) % 100;
 
 /* What a failure costs, on the state in hand: the wound (a share of the 体力
    pool), a share of the peak step's 修为, and the hours the cauldron is shut. */

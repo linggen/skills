@@ -2,7 +2,7 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { CAST, gameOf } from '../content.mjs';
 import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
-import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, stepName, threshold } from '../state.mjs';
+import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, stepName, threshold, seedOf } from '../state.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, THEN_BORN, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
 import { fightSetup } from './cards.mjs';
@@ -365,7 +365,7 @@ export function look(state, content, ctx) {
     speed: speedOf(content, state),
   };
   const brief = {
-    ok: true, lang, name: state.name, gender: genderOf(state), ...(state.lang_set ? { lang_set: true } : {}),
+    ok: true, lang, name: state.name, gender: genderOf(state), seed: seedOf(state), ...(state.lang_set ? { lang_set: true } : {}),
     // What the story has marked (a choice it will remember), and the beasts whose first sight has played.
     ...(state.marks?.length ? { marks: state.marks } : {}),
     ...(state.appeared?.length ? { appeared: state.appeared } : {}),

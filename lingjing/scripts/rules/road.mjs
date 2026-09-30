@@ -23,7 +23,7 @@
 // (with the `actions` this kind takes), and the kind's own: `needs-answer`,
 // `wrong-answer`, `riddle-closed`, `not-playable`, `already-offered`,
 // `not-offered`, `no-such-way`.
-import { dayKey, normalizeAnswer, pick } from '../state.mjs';
+import { dayKey, normalizeAnswer, pick, seedOf } from '../state.mjs';
 import { winCard } from './cards.mjs';
 import { herAwake } from './companion.mjs';
 import { clone, pay, refuse, RIDDLE_TRIES, spendStamina } from './core.mjs';
@@ -63,7 +63,7 @@ function dealChance(content, s, ctx) {
   if (s.chance?.day === day || !s.traits?.length || inMade(s) || !content.rewards.tables.chance) return null;
   const near = nearPlaces(content, s, ctx.now, CHANCE.reach);
   if (!near.length) return null;
-  const at = near[hashOf(`${day}|${s.name ?? ''}|chance`) % near.length];
+  const at = near[hashOf(`${day}|${seedOf(s)}|chance`) % near.length];
   return { day, place: at.id, until: new Date(ctx.now.getTime() + CHANCE.hours * 3600000).toISOString() };
 }
 const chanceLive = (state, now) => Boolean(state.chance && !state.chance.taken && dayKey(now) === state.chance.day && now < new Date(state.chance.until));
@@ -148,11 +148,11 @@ function dealMeet(content, state, ctx) {
   const allowed = placeOf(content, state.place).meets;
   const kinds = Object.entries(content.meets.weights).filter(([k, w]) => w > 0 && DEAL[k] && pool[k]?.length && (!allowed || allowed.includes(k) || k === 'trial'));
   if (!kinds.length) return null;
-  const roll = hashOf(`${dayKey(ctx.now)}|${state.name ?? ''}|${state.place}|meet`);
+  const roll = hashOf(`${dayKey(ctx.now)}|${seedOf(state)}|${state.place}|meet`);
   let at = roll % kinds.reduce((n, [, w]) => n + w, 0);
   const [kind] = kinds.find(([, w]) => (at -= w) < 0);
-  const nth = list => hashOf(`${dayKey(ctx.now)}|${state.place}|${state.name ?? ''}|which`) % list.length;
-  return { kind, ...DEAL[kind](content, list => list[nth(list)], pool, `${dayKey(ctx.now)}|${state.place}|${state.name ?? ''}`), veiled: true };
+  const nth = list => hashOf(`${dayKey(ctx.now)}|${state.place}|${seedOf(state)}|which`) % list.length;
+  return { kind, ...DEAL[kind](content, list => list[nth(list)], pool, `${dayKey(ctx.now)}|${state.place}|${seedOf(state)}`), veiled: true };
 }
 
 /* Lay down what this arrival meets, on the save being written: nothing when

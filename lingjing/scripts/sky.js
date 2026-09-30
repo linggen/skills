@@ -10,7 +10,6 @@ export const SKY_WORDS = {
     kinds: { clear: '晴', cloudy: '阴', fog: '雾', rain: '雨', snow: '雪', storm: '雷雨' },
     title: '天气',
     note: '填你所在的城市，灵境的天就跟着你那儿走；不填，便是蒙山的四季。',
-    cityAsk: '你在哪座城？（选填，只用来看天气）',
     placeholder: '城市，如 哈尔滨',
     set: '就它', off: '关掉天气', on: '打开天气', clear: '不跟城市了',
     notFound: '没找到这座城。', failed: '天气这会儿读不到。',
@@ -20,7 +19,6 @@ export const SKY_WORDS = {
     kinds: { clear: 'Clear', cloudy: 'Cloudy', fog: 'Fog', rain: 'Rain', snow: 'Snow', storm: 'Storm' },
     title: 'Weather',
     note: 'Name your city and the sky here follows yours; leave it, and it is Mengshan\'s seasons.',
-    cityAsk: 'Your city? (optional — only for the weather)',
     placeholder: 'A city, e.g. Harbin',
     set: 'Use it', off: 'Turn weather off', on: 'Turn weather on', clear: 'Forget my city',
     notFound: 'No city by that name.', failed: 'The weather can\'t be read just now.',
@@ -52,12 +50,6 @@ export function wxPopHtml({ lang = 'zh', sense = null, note = null } = {}) {
   return `<div class="bookpop wxpop" role="dialog"><div class="cardtitle">${esc(w.title)}</div><div class="small dim">${esc(state)}</div>
     <div class="fateform"><input type="text" id="wx-city" maxlength="40" autocomplete="off" placeholder="${esc(w.placeholder)}" value="${esc(draft.city)}"><button class="act" data-wx-set>${esc(w.set)}</button></div>
     ${toggles}${note ? `<div class="donote">${esc(note)}</div>` : ''}</div>`;
-}
-
-/// A city row (the 名字 card's until 2026-09-30; kept for a card that asks it).
-export function cityRowHtml(lang = 'zh') {
-  const w = wordsOf(lang);
-  return `<div class="cityrow"><label class="small dim" for="city-text">${esc(w.cityAsk)}</label><input type="text" id="city-text" maxlength="40" autocomplete="off" placeholder="${esc(w.placeholder)}" value="${esc(draft.city)}"></div>`;
 }
 
 /// The page's note after setting a city: null when it took, else why not.

@@ -56,11 +56,12 @@ export function entryById(book, id) {
 // `# 第三回　上联　下联`: a 回's title line (full-width or plain spaces between).
 const HUIMU = /^(第[零一二三四五六七八九十百]+回)[\s　]+(\S+)[\s　]+(\S+)$/;
 
-/// The hero the drafts were written with: the name a page with no save shows.
-export const HERO = '周星星';
+/// The hero the world fixes (people.json `hero`, 2026-09-30): the name a page
+/// shows when nothing else names him.
+export const HERO = '沈小满';
 
-/// The hero from what Look says (`name`, `gender`), or the drafts' own — 周星星,
-/// and the male words — when there is no save, no name or no gender yet.
+/// The hero from what it is handed (`name`, `gender`), else the fixed one —
+/// 沈小满, and the male words.
 export const heroOf = (seen) => ({
   name: (typeof seen?.name === 'string' && seen.name.trim()) || HERO,
   gender: genderOf(seen) === 'female' ? 'female' : 'male',

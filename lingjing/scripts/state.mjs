@@ -15,6 +15,14 @@ export const heroOf = content => {
   return h ? { name: h.name?.zh ?? h.name?.en ?? null, gender: h.gender === 'female' ? 'female' : 'male' } : null;
 };
 
+/* What a save's daily draws are seeded by (deck order, riddles, notices, 传闻,
+   road meets, 论道 …). It was the save's name; with the hero fixed
+   (2026-09-30) every save has the same name, so each save carries its own
+   `seed`: a new save's creation time; an old save, once, the name it was
+   given on the old name card (its draws stay what they were), else its
+   creation time. Same save + same day → same draws. */
+export const seedOf = s => String(s?.seed ?? s?.created ?? '');
+
 export function newState(content, lang, now) {
   const first = firstChapter(content);
   const at = now.toISOString();
@@ -30,7 +38,7 @@ export function newState(content, lang, now) {
     made: { scenes: {}, at: null },
     day: { key: dayKey(now), progress: 0, wealth: 0 },
     stamina: content.rewards.stamina.max, stamina_at: at,
-    created: at, updated: at,
+    created: at, updated: at, seed: at,
   };
 }
 
@@ -413,6 +421,8 @@ export function fitWorld(saved, content) {
     // The hero is fixed (2026-09-30): a save named on the old name card, or
     // never named, takes the world's — 沈小满, a boy.
     ...(hero && (state.name !== hero.name || state.gender !== hero.gender) ? { name: hero.name, gender: hero.gender } : {}),
+    // Its own seed (seedOf), fixed once: the name it was given, else its creation time.
+    ...(state.seed == null ? { seed: state.name && state.name !== hero?.name ? state.name : (state.created ?? '') } : {}),
   };
   // Before a story gate, nothing the gate keeps (lockReset): read where the save now stands.
   Object.assign(fix, lockReset(content, { ...state, ...fix }));

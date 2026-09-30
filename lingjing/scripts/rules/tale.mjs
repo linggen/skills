@@ -13,7 +13,7 @@
 // it from the step's id, levelled by the realm), the pay (rewards.json §
 // tale), the drop, the counts. A tale that asks for more is not played.
 import { refusedNames } from '../content.mjs';
-import { dayKey, normalizeAnswer, pick } from '../state.mjs';
+import { dayKey, normalizeAnswer, pick, seedOf } from '../state.mjs';
 import { giveCharm, growTreasure, tierRank } from './arms.mjs';
 import { cardCatalog, gainCard, ownedCards, usable } from './cards.mjs';
 import { clone, pay, paysOf, refuse, spendStamina } from './core.mjs';
@@ -54,7 +54,7 @@ function pickSeed(content, state, now) {
   if (!all.length) return null;
   const used = new Set(state.seeds_used ?? []);
   const pool = all.some(x => !used.has(x.id)) ? all.filter(x => !used.has(x.id)) : all;
-  const seed = pool[hashOf(`${dayKey(now)}|${state.name ?? ''}|tale`) % pool.length];
+  const seed = pool[hashOf(`${dayKey(now)}|${seedOf(state)}|tale`) % pool.length];
   const kind = cfgOf(content).seed_kinds?.[seed.kind];
   return { id: seed.id, line: pick(seed.line, state.lang), source: pick(seed.source, state.lang), creature: seed.creature ?? null, ...(kind ? { kind: pick(kind, state.lang) } : {}) };
 }
@@ -283,7 +283,7 @@ function dropOf(content, state, t) {
   if (!open.length) return null;
   const top = Math.max(...open.map(d => tierRank(content, d.tier)));
   const pool = open.filter(d => tierRank(content, d.tier) === top);
-  return pool[hashOf(`${t.id}|${state.name ?? ''}|drop`) % pool.length];
+  return pool[hashOf(`${t.id}|${seedOf(state)}|drop`) % pool.length];
 }
 
 function giveDrop(content, s, d, from = null) {

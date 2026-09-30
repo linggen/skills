@@ -1,7 +1,7 @@
 // rules/cards.mjs — 斗法 v3 and 得牌: the deck a player takes in, and the cards they have obtained.
 // Part of the rules engine; rules.mjs is its one door.
 import { MODES, REALMS as CARD_REALMS, shuffle } from '../battle.js';
-import { dayKey, pick } from '../state.mjs';
+import { dayKey, pick, seedOf } from '../state.mjs';
 import { charmOf, duelSeed, wornOf } from './arms.mjs';
 import { herAwake, herLifts } from './companion.mjs';
 import { clone, refuse } from './core.mjs';
@@ -89,7 +89,7 @@ function autoDeck(content, state) {
   };
   const CURVE = CURVES[state.tier] ?? CURVES.qi;
   const byCost = new Map();
-  for (const c of shuffle(mine.map(x => x.id), `deck|${state.name ?? ''}`)) {
+  for (const c of shuffle(mine.map(x => x.id), `deck|${seedOf(state)}`)) {
     const cost = Math.min(6, Math.max(1, pool.find(x => x.id === c).cost));
     byCost.set(cost, [...(byCost.get(cost) ?? []), c]);
   }
@@ -254,7 +254,7 @@ function winCard(content, state, creature, now, nth = 0, from = { how: 'win', cr
   const own = open.filter(c => c.element === creature.root);
   const pool = own.length ? own : open;
   if (!pool.length) return null;
-  return gainCard(content, state, pool[hashOf(`${dayKey(now)}|${creature.id}|${state.name ?? ''}|card${nth ? `|${nth}` : ''}`) % pool.length].id, { ...from, day: dayKey(now) });
+  return gainCard(content, state, pool[hashOf(`${dayKey(now)}|${creature.id}|${seedOf(state)}|card${nth ? `|${nth}` : ''}`) % pool.length].id, { ...from, day: dayKey(now) });
 }
 
 /* 牌谱 — every card he holds and where it came from (redesign-v2 § 五). A card

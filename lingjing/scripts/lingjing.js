@@ -126,7 +126,7 @@ function taleBoard(taskId) {
   }
   const mod = gameMod(b.page);
   if (!mod) return null;
-  boards.set(taskId, { taskId, mod, day: taskId, state: mod.newGame(`${taskId}|${look.name ?? ''}`, b.level ?? 1) });
+  boards.set(taskId, { taskId, mod, day: taskId, state: mod.newGame(`${taskId}|${look.seed ?? ''}`, b.level ?? 1) });
   return boards.get(taskId);
 }
 const isTale = (id) => String(id ?? '').startsWith('tale:');
@@ -144,7 +144,7 @@ function boardFor(taskId) {
     const spent = old?.day === day && old.state?.won && old.sent && task.status === 'offered' && !task.won;
     if (!old || old.day !== day || spent) {
       const round = spent ? (old.round ?? 0) + 1 : 0;
-      boards.set(taskId, { taskId, mod, day, round, state: mod.newGame(`${day}|${look.name ?? ''}|${taskId}${round ? `|${round}` : ''}`, task.level ?? 1) });
+      boards.set(taskId, { taskId, mod, day, round, state: mod.newGame(`${day}|${look.seed ?? ''}|${taskId}${round ? `|${round}` : ''}`, task.level ?? 1) });
     }
     return boards.get(taskId);
   }
@@ -1543,7 +1543,7 @@ document.addEventListener('input', (e) => { if (e.target.id === 'refine-name') k
    2026-09-28: every player had become 青玄). A keystroke is kept without a
    repaint (the field would be replaced); only the chips and the button follow. */
 document.addEventListener('input', (e) => {
-  if (e.target.id === 'city-text' || e.target.id === 'wx-city') { skyDraft.city = e.target.value; return; }
+  if (e.target.id === 'wx-city') { skyDraft.city = e.target.value; return; }
   if (e.target.id !== 'value-text') return;
   keep({ valueText: e.target.value, valuePick: null, valueNote: null });
   const card = e.target.closest('.valuecard'), chosen = valueChoice(null, e.target.value, Number(e.target.dataset.valueMax));

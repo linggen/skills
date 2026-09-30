@@ -1534,7 +1534,8 @@ test('past the prologue a story step costs 灵气; an empty 丹田 refuses with 
 
 test('chapter 1: the fight at the shrine, and Ximen Bao\'s way', () => {
   // a beast tamed on the way by then (the v1 prologue gave 夫诸; prologue-v3 gives none)
-  let s = { ...toJi(), cast: ['fuzhu'] };
+  // the day's draws follow the save's seed (seedOf); this one deals a winnable hand
+  let s = { ...toJi(), cast: ['fuzhu'], seed: '沈小满' };
   s = { ...s, cards: [...s.cards, 'fuzhu'] };
   s = answer(resolve, s, { exit: 'town' }).state;
   assert.equal(s.place, 'ye');
@@ -2293,7 +2294,7 @@ test('arriving is an event: the errand met there is told with what is seen, 交�
 
 test('榜文: a market posts one templated 差事 a day — near, winnable, rebuilt from its id', () => {
   // The day's draw is seeded by the save's name; this one pins the old seed, so the first posting is a walk or a subdue.
-  const base = { ...toOpenWorld(), name: '青玄', place: 'pengcheng', tier: 'core', bag: {}, cast: ['fuzhu'] };
+  const base = { ...toOpenWorld(), name: '青玄', seed: '青玄', place: 'pengcheng', tier: 'core', bag: {}, cast: ['fuzhu'] };
   const days = Array.from({ length: 14 }, (_, i) => ctx({ now: new Date(2026, 8, 11 + i, 12) }));
   const posted = days.map(at => look(base, content, at).offers.filter(o => o.id.startsWith('daily-')));
   assert.ok(posted.every(p => p.length === 1), 'one a day, every day');
@@ -2932,10 +2933,10 @@ test('论道: dealt at 稷下 when a notice asks for it, the form checked by the
 test('论道 results: `say` is the card\'s prompt; the reference lower line lives only in `judge`, never at the top', () => {
   const at = ctx();
   const base = { ...toOpenWorld(), place: 'jixia', tier: 'core', quests: { 'daily-20260911-trial-jixia': { took: '2026-09-11', have: {} } } };
-  // Deal each game: the dealt game follows the name, so try names until all three come up.
+  // Deal each game: the dealt game follows the save's seed, so try seeds until all three come up.
   const seen = {};
   for (let i = 0; i < 60 && Object.keys(seen).length < 3; i += 1) {
-    const r = must(VERBS.lundao, { ...base, name: `P${i}` }, { action: 'open' }, at);
+    const r = must(VERBS.lundao, { ...base, seed: `P${i}` }, { action: 'open' }, at);
     seen[r.state.lundao.game] ??= r;
   }
   assert.deepEqual(Object.keys(seen).sort(), ['chengyu', 'duilian', 'feihua']);

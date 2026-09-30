@@ -1,7 +1,7 @@
 // rules/core.mjs — Changing it: refusals, pay, riddles, stamina, resolve and judge.
 // Part of the rules engine; rules.mjs is its one door.
 import { gameOf, MADE_GRANT } from '../content.mjs';
-import { addProgress, dayKey, fill, fitValue, lockedOf, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaReturnsAt, stepName, threshold, tierOf } from '../state.mjs';
+import { addProgress, dayKey, fill, fitValue, lockedOf, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaReturnsAt, stepName, threshold, tierOf, seedOf } from '../state.mjs';
 import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
 import { gainCard, starterOf } from './cards.mjs';
@@ -104,7 +104,7 @@ export function riddleOf(state, scene, exit, now) {
   const seen = new Set(state.riddles_seen ?? []);
   let fresh = pool.filter(k => !seen.has(k));
   if (!fresh.length) fresh = pool.length > 1 ? pool.filter(k => k !== slot?.key) : pool;
-  return fresh[hashOf(`${dayKey(now)}|${state.name ?? ''}|${riddleSlot(scene, exit)}`) % fresh.length];
+  return fresh[hashOf(`${dayKey(now)}|${seedOf(state)}|${riddleSlot(scene, exit)}`) % fresh.length];
 }
 const triedToday = (state, scene, exit, key, now) => {
   const slot = state.riddles?.[riddleSlot(scene, exit)];

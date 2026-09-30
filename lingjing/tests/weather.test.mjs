@@ -8,7 +8,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { KINDS, seasonKind, senseReading, weatherBrief } from '../scripts/rules/weather.mjs';
-import { cityNote, cityRowHtml, draft, wxChipHtml, wxPopHtml } from '../scripts/sky.js';
+import { cityNote, draft, wxChipHtml, wxPopHtml } from '../scripts/sky.js';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look } from '../scripts/rules.mjs';
@@ -78,7 +78,7 @@ test('the page: a chip with the sky, a popover to set or change the city, the �
   assert.match(pop, /data-wx-clear/);
   assert.doesNotMatch(wxPopHtml({ sense: { city: null, off: false } }), /data-wx-clear/);
   draft.city = '<b>';
-  assert.match(cityRowHtml(), /id="city-text"[^>]*value="&lt;b&gt;"/);
+  assert.match(wxPopHtml({ sense: { city: null, off: false } }), /id="wx-city"[^>]*value="&lt;b&gt;"/);
   draft.city = '';
   assert.equal(cityNote({ ok: true }), null);
   assert.equal(cityNote({ ok: false, status: 404 }), '没找到这座城。');

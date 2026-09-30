@@ -1,6 +1,6 @@
 // The hero is fixed since 2026-09-30 (沈小满, male; 阿禾 a girl) and all ten 回
 // are in the third person. The reader still knows how to fill `{name}` /
-// `{男词|女词}` (legacy saves, other books); a page with no save reads 周星星.
+// `{男词|女词}` (legacy saves, other books); a page with no hero handed reads 沈小满.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -11,10 +11,11 @@ import { bookEntries, fillHero, genderBlocks, genderWords, heroOf, HERO, renderM
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BOOK = path.join(ROOT, 'story/jiuding-lu');
 
-test('fillHero puts the player\'s name where {name} stands, 周星星 without one', () => {
+test('fillHero puts the name where {name} stands, 沈小满 without one', () => {
   assert.equal(fillHero('**我**：{name}。\n\n**——{name}**', { name: '秋白' }), '**我**：秋白。\n\n**——秋白**');
   assert.equal(fillHero('我叫{name}。', {}), `我叫${HERO}。`);
-  assert.equal(fillHero('我叫{name}。'), '我叫周星星。');
+  assert.equal(fillHero('我叫{name}。'), '我叫沈小满。');
+  assert.equal(HERO, '沈小满');
 });
 
 test('heroOf reads Look\'s name and gender; no save, no name or no gender is the drafts\' hero', () => {
@@ -89,4 +90,18 @@ test('the kept readings (第六回 柴房, 第十回 the drummer) are the only o
   assert.match(ten, /打鼓的那个，便是沈小满。/);
   assert.doesNotMatch(ten, /你长得像交不起河伯钱的/);
   assert.match(ten, /「扑通」一声/);
+});
+
+test('the placeholder 周星星 is gone from the game and the book (only history may name it)', () => {
+  const seen = [];
+  const walk = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) { if (!['archive', 'node_modules', 'vendor'].includes(e.name)) walk(p); continue; }
+      if (!/\.(m?js|json|md|html|css)$/.test(e.name) || p.endsWith('OUTLINE.md') || p.endsWith('read-hero.test.mjs')) continue;
+      if (fs.readFileSync(p, 'utf8').includes('周星星')) seen.push(path.relative(ROOT, p));
+    }
+  };
+  for (const d of ['scripts', 'worlds', 'guide', 'story', 'tests']) walk(path.join(ROOT, d));
+  assert.deepEqual(seen, []);
 });

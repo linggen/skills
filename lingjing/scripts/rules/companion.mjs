@@ -1,6 +1,6 @@
 // rules/companion.mjs — The companion: found, not given — her call, her past, what she brings to a fight.
 // Part of the rules engine; rules.mjs is its one door.
-import { dayKey, pick } from '../state.mjs';
+import { dayKey, pick, seedOf } from '../state.mjs';
 import { wornOf } from './arms.mjs';
 import { itemOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
@@ -36,7 +36,7 @@ function companionRiddle(content, state, now) {
   const seen = new Set(state.riddles_seen ?? []);
   const fresh = c.riddles.filter(k => !seen.has(k));
   const pool = fresh.length ? fresh : c.riddles;
-  return pool[hashOf(`${dayKey(now)}|${state.name ?? ''}|companion`) % pool.length];
+  return pool[hashOf(`${dayKey(now)}|${seedOf(state)}|companion`) % pool.length];
 }
 const riddleWaiting = (state, now) => {
   const slot = state.companion?.riddle;
