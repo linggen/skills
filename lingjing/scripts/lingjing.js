@@ -2562,7 +2562,10 @@ function drawLu() {
 
 /* The chapter's title card: on the stage when a chapter has just begun
    (Look's `chapter.fresh`), until tapped away — once per chapter. */
-const titleKey = (id) => `lingjing:title:${look?.world?.id ?? ''}:${look?.name ?? ''}:${id}`;
+// Per save: its seed (state.mjs seedOf) — with the hero's name fixed (沈小满, 2026-09-30) a name
+// would share every title and ending card put away across saves; an old save's seed is its old
+// name, so what it put away stays put away.
+const titleKey = (id) => `lingjing:title:${look?.world?.id ?? ''}:${look?.seed ?? look?.name ?? ''}:${id}`;
 function titleSeen(id, mark = false) {
   try {
     if (mark) localStorage.setItem(titleKey(id), '1');
