@@ -1837,6 +1837,15 @@
           "sweep": 3
         }
       },
+      "trial": {
+        "yield": 0.35,
+        "outlast": true,
+        "goal": {
+          "zh": "这是试，不是斗：撑到双龙出完招，或把它们逼到三成气血，便算过了。",
+          "en": "A trial, not a fight: stand until the dragons have spent every move, or drive them down to a third, and you have passed."
+        }
+      },
+      "_trial": "试 (battle.js § trial): the dragons yield at 35% of their 气血, and a player still standing when their twelve are spent has passed — not a withdrawal. Weighed with the deck the road deals by 第十回 (tools/trial-sim.mjs): a careful line wins ~99%, a careless one ~47%; before, the careful line won 74% and ran dry into 遁走 7% of fights (2026-09-30).",
       "_deck": "冰夷双龙 —— 一扑一扫，水里来，水里去；是来试人的，不是来杀人的（第十回）。",
       "_signature": "双龙摆尾 —— 两条尾巴贴着河滩一齐扫过来。"
     }

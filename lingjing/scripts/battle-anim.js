@@ -159,6 +159,9 @@ export async function playLog(root, entries, ctx = {}) {
       case 'foe-withdrew':
         await banner(root, ctx.words?.withdrew ?? '', 'foe');
         break;
+      case 'trial-passed':
+        await banner(root, ctx.words?.passed ?? '', 'foe');
+        break;
       default:
         break;
     }

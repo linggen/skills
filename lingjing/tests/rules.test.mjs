@@ -1556,7 +1556,7 @@ test('chapter 1: the shaman sent first, then the dragons\' trial — fought out 
   assert.equal(must(duel, lost.state, { id: 'shuanglong-trial' }, octx()).result.ok, true, 'again, at once');
   // won on some day's hand: then 站着，不跪 walks on to the deep
   let won = null;
-  for (let k = 0; k < 12 && won?.result.outcome !== 'won'; k += 1) won = fightOut({ ...s, seed: `trial-${k}` }, 'shuanglong-trial', { c: octx() });
+  for (let k = 0; k < 3 && won?.result.outcome !== 'won'; k += 1) won = fightOut({ ...s, seed: `trial-${k}` }, 'shuanglong-trial', { c: octx() });
   assert.equal(won.result.outcome, 'won', JSON.stringify(won.result.log?.slice(-3)));
   const r = answer(resolve, won.state, { exit: 'stand' });
   assert.equal(r.state.scene, '01-deep'); assert.equal(r.result.paid.progress, 60);

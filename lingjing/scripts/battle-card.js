@@ -95,8 +95,8 @@ export const WORDS = {
     hp: '气血', mana: '灵力', deck: '牌库', hand: '手牌', power: '主灵根一击', end: '结束回合',
     it: '它', its: '它', itObj: '它',
     yours: '你的阵前', theirs: '它的阵前', empty: '空', taunt: '护主', arriving: '刚到',
-    struck: '已出手', spoils: '所得', spoilsCard: '新得一张牌，往后可带进斗法：', spoilsBag: '收进储物袋：', spoilsClose: '收起', spoilsSpent: '用去：', spentTitle: '用去', xw: '修为', ls: '灵石', quit: '认输', won: '胜', lost: '败', withdrew: '它力竭遁走',
-    wonSay: '它退入雾中。', lostSay: '你退了半里地，它没有追。', withdrewSay: '它一口气用尽，转身走了 —— 这一场不算你赢。',
+    struck: '已出手', spoils: '所得', spoilsCard: '新得一张牌，往后可带进斗法：', spoilsBag: '收进储物袋：', spoilsClose: '收起', spoilsSpent: '用去：', spentTitle: '用去', xw: '修为', ls: '灵石', quit: '认输', won: '胜', passed: '试过了', lost: '败', withdrew: '它力竭遁走',
+    wonSay: '它退入雾中。', passedSay: '它们收了回去，不再动了。', lostSay: '你退了半里地，它没有追。', withdrewSay: '它一口气用尽，转身走了 —— 这一场不算你赢。',
     why: {
       'no-mana': '灵力不够', 'board-full': '阵前满了', 'not-your-turn': '还没轮到你',
       'power-used': '这一回合用过了', taunt: '先过护主', 'just-arrived': '刚到，这一回合不能动',
@@ -132,8 +132,8 @@ export const WORDS = {
     it: 'it', its: 'its', itObj: 'it',
     hp: 'Life', mana: 'Force', deck: 'Deck', hand: 'Hand', power: 'Root Strike', end: 'End turn',
     yours: 'Your rank', theirs: 'Its rank', empty: 'empty', taunt: 'Guard', arriving: 'just arrived',
-    struck: 'has struck', spoils: 'Spoils', spoilsCard: 'A new card, yours to take into a fight:', spoilsBag: 'Into the pouch: ', spoilsClose: 'Put away', spoilsSpent: 'Used up: ', spentTitle: 'Used up', xw: 'Cultivation', ls: 'Stones', quit: 'Yield', won: 'Won', lost: 'Lost', withdrew: 'It withdrew',
-    wonSay: 'It backs into the mist.', lostSay: 'You give ground; it does not follow.', withdrewSay: 'Its breath runs out and it turns away — this one does not count as a win.',
+    struck: 'has struck', spoils: 'Spoils', spoilsCard: 'A new card, yours to take into a fight:', spoilsBag: 'Into the pouch: ', spoilsClose: 'Put away', spoilsSpent: 'Used up: ', spentTitle: 'Used up', xw: 'Cultivation', ls: 'Stones', quit: 'Yield', won: 'Won', passed: 'Passed', lost: 'Lost', withdrew: 'It withdrew',
+    wonSay: 'It backs into the mist.', passedSay: 'They draw back and are still.', lostSay: 'You give ground; it does not follow.', withdrewSay: 'Its breath runs out and it turns away — this one does not count as a win.',
     why: {
       'no-mana': 'not enough Force', 'board-full': 'the rank is full', 'not-your-turn': 'not your turn',
       'power-used': 'used this turn', taunt: 'a Guard stands in the way', 'just-arrived': 'just arrived',
@@ -263,7 +263,8 @@ function deckHtml(n, side, w) {
   </div>`;
 }
 
-const pool = (label, now, max, cls) => `<div class="bpool"><span>${label}</span><div class="bbar ${cls}"><i style="width:${Math.max(0, Math.round((now / Math.max(1, max)) * 100))}%"></i></div><b>${now}</b></div>`;
+/* `mark` draws a line on the bar: where a 试 yields (battle.js § trial). */
+const pool = (label, now, max, cls, mark = null) => `<div class="bpool"><span>${label}</span><div class="bbar ${cls}"><i style="width:${Math.max(0, Math.round((now / Math.max(1, max)) * 100))}%"></i>${mark ? `<s class="bmark" style="left:${Math.round(mark * 100)}%"></s>` : ''}</div><b>${now}</b></div>`;
 
 const crystals = (now, max, cap) => {
   const dots = [];
@@ -501,6 +502,7 @@ function sayTurn(t, ctx) {
     case 'drained': return `${t.who === 'foe' ? (ctx.foeName ?? '') : (zh ? '你' : 'You')} ${fill(w.drainNext, { n: t.amount })}`;
     case 'drought': return `${card(t.id)} ${w.drought}`;
     case 'foe-withdrew': return w.withdrew;
+    case 'trial-passed': return w.passed;
     case 'charge': return `${who} ${zh ? '开始蓄力' : 'gathers'}：${name(ctx.st?.foe?.signature, ctx.lang)}`;
     case 'unleash': return `${who} ${zh ? '放出' : 'lets go'} ${name(ctx.st?.foe?.signature, ctx.lang)}`;
     default: return '';
@@ -539,6 +541,7 @@ export function challengeHtml(brief, ctx) {
         <div class="cname">${spoken(c.name, c.pinyin)} <span class="belem">${GLYPH[c.root] ?? ''}${ctx.lang === 'en' ? ` ${esc(c.root_name ?? '')}` : ''}</span>${c.elite ? ` <span class="celite">${ctx.lang === 'en' ? 'Elite' : '精英'}</span>` : ''}</div>
         ${c.lean ? `<div class="clean">${esc(w.lean?.[c.lean] ?? c.lean)}</div>` : ''}
         ${c.about ? `<p class="cabout">${esc(c.about)}</p>` : ''}
+        ${c.goal ? `<p class="cgoal">${esc(c.goal)}</p>` : ''}
       </div>
     </div>
     ${done ? `<div class="cdone">${esc(done)}</div>${ctx.feed ? `<div class="cacts">${ctx.feed}</div>` : ''}` : `<div class="cacts"><button class="bact end" data-duel-start="${esc(brief.id)}">${esc(w.begin)}</button>${ctx.feed ?? ''}</div>`}
@@ -600,8 +603,9 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
   const stuck = st.outcome === 'open' && st.whose === 'you' && !canDo.length;
   const advice = picked ? (picked.from === 'board' ? w.pickTarget : ctx.verb ? w.pickRank : w.pickCard) : stuck ? w.nothing : null;
   const over = st.outcome !== 'open';
-  const said = st.outcome === 'won' ? w.wonSay : st.outcome === 'lost' ? w.lostSay : st.outcome === 'withdrew' ? w.withdrewSay : '';
-  const title = st.outcome === 'won' ? w.won : st.outcome === 'lost' ? w.lost : st.outcome === 'withdrew' ? w.withdrew : '';
+  const passed = st.outcome === 'won' && (st.log ?? []).some(t => t.act === 'trial-passed');
+  const said = passed ? w.passedSay : st.outcome === 'won' ? w.wonSay : st.outcome === 'lost' ? w.lostSay : st.outcome === 'withdrew' ? w.withdrewSay : '';
+  const title = passed ? w.passed : st.outcome === 'won' ? w.won : st.outcome === 'lost' ? w.lost : st.outcome === 'withdrew' ? w.withdrew : '';
   // The arena wears the beast (2026-09-25, his 「斗法的UI有点简陋」): its
   // painting spread behind the fight, faded into the night. `says` carries the
   // boss's line and 银月's beside you; `stake` is why this fight is fought.
@@ -619,7 +623,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       ${ctx.foeArt ? `<img class="bface" src="${esc(ctx.foeArt)}" alt="">` : ''}
       <div class="bwho"><span>${esc(ctx.foeName ?? '')} <span class="belem">${GLYPH[st.foe.root] ?? ''}</span></span>${bubble('foe', ctx.says?.foe)}</div>
       <div class="bnums">
-        ${pool(w.hp, st.foe.hp, st.foe.hpMax, 'hp')}
+        ${pool(w.hp, st.foe.hp, st.foe.hpMax, 'hp', st.foe.trial?.yield)}
         ${gearHtml(st.foe, 'foe', st, ctx)}
         ${crystals(st.foe.mana, st.foe.manaMax, st.foe.manaCap)}${st.foe.drain ? `<small class="bdrain">${esc(fill(w.drainNext, { n: st.foe.drain }))}</small>` : ''}
       </div>

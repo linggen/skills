@@ -424,3 +424,7 @@
 }
 @media (prefers-reduced-motion: reduce) { .barena { animation: none; } }
 .bdrain { display: block; font-family: var(--ui); font-size: 10px; color: var(--blood); letter-spacing: 0.04em; }
+
+/* A 试's yield line on the beast's 气血 (battle.js § trial). */
+.bbar { position: relative; }
+.bbar .bmark { position: absolute; top: -2px; bottom: -2px; width: 2px; margin-left: -1px; background: #e8d7a8; box-shadow: 0 0 3px rgba(232, 215, 168, 0.8); text-decoration: none; }

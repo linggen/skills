@@ -691,8 +691,23 @@ function riseGains(before, now) {
 const herGrew = (before, now) => Boolean(before.her && now.her && (before.her.atk !== now.her.atk || before.her.hp !== now.her.hp));
 
 /// A great moment on the stage: a gold seal, light behind it, held long
-/// enough to read — then 银月 speaks, asked, at once.
-function feat(kind, name, from = '', quiet = false, gains = '', her = null) {
+/// enough to read — then 银月 speaks, asked, at once. One moment at a time
+/// (seen live at 09-cliff, 2026-09-30: the 筑基 seal, 「第九回 · 完」, the new
+/// 回's card and the dialogue box all stacked at once): a set piece plays
+/// first, then the seal, put away by a tap, then the rest (stageBusy).
+let featOn = false;
+function feat(...args) {
+  const [kind] = args;
+  // A realm risen is held from now: the 回's ending card and the box wait behind it.
+  // A new 回's seal is its opening: it comes after the old 回's ending card is put away.
+  if (kind === 'rise') featOn = true;
+  setTimeout(async () => {
+    for (let k = 0; k < 600 && (pieceOn || (kind !== 'rise' && (closeUp() || featOn))); k += 1) await pause(250);
+    featOn = true;
+    featNow(...args);
+  }, 0);
+}
+function featNow(kind, name, from = '', quiet = false, gains = '', her = null) {
   const w = words();
   const el = document.createElement('div');
   el.className = 'feat';
@@ -702,7 +717,9 @@ function feat(kind, name, from = '', quiet = false, gains = '', her = null) {
   el.innerHTML = `<i class="rays"></i><div class="featbox${against ? ' low' : ''}">${against}<b>${esc(kind === 'rise' ? w.featRise : w.featChapter)}</b><span>${esc(name)}</span>${gains ? `<small class="featgain">${esc(gains)}</small>` : ''}</div>`;
   el.style.animationDelay = `${Math.max(0, riseAfter - performance.now())}ms`;
   $('view')?.appendChild(el);
-  setTimeout(() => el.remove(), 4200 + Math.max(0, riseAfter - performance.now()));
+  const gone = () => { if (!el.isConnected) return; el.remove(); featOn = Boolean(document.querySelector('.feat')); render(); };
+  el.addEventListener('click', gone);
+  setTimeout(gone, 6000 + Math.max(0, riseAfter - performance.now()));
   if (quiet) return;
   // Warm, not polite: a thing they lived through together, and what lies
   // ahead — and the name the game knows them by.
@@ -850,7 +867,7 @@ function stageNow() {
   // 息壤's five doors (stage.mjs MAIN ranks them after 鼎归).
   if (view.doors) cards = [{ card: 'doors' }, ...cards];
   // A chapter's ending card, until he puts it away (合上; kept per save in this browser).
-  cards = cards.filter((c) => c.card !== 'closed' || !closeSeen(look.chapter?.close?.id));
+  cards = cards.filter((c) => c.card !== 'closed' || (!closeSeen(look.chapter?.close?.id) && !stageBusy()));
   watchAppear(cards);
   return stageSlots(look, cards.filter(inQueue), { skip: view.qSkip });
 }
@@ -1608,7 +1625,9 @@ function setReading(r, patch = {}) {
 /* The box yields the stage to a fight, a board, a mini-game, her memory and
    the page's own moments; it plays on when they are done. */
 const YIELDS = new Set(['board', 'duel', 'tale', 'lundao', 'memory', 'homing', 'doors']);
-const boxYields = (slots) => Boolean(bout || view.appearing || !slots || slots.main.some((c) => YIELDS.has(c.card)));
+const boxYields = (slots) => Boolean(bout || view.appearing || !slots || slots.main.some((c) => YIELDS.has(c.card))
+  // …and to the moments in their order, the 回's ending card and the new 回's title card (stageBusy).
+  || stageBusy() || closeUp() || Boolean(titleCard()));
 function dialogBoxHtml(slots) {
   const r = readingHere(), src = (f) => worldPath(look.world?.dir ?? 'worlds/jiuding', f);
   if (!r || boxYields(slots)) return '';
@@ -2544,6 +2563,7 @@ function closeSeen(id, mark = false) {
 function titleCard() {
   const ch = look?.chapter;
   if (!ch?.fresh || bout || dismissedTitles.has(ch.id) || titleSeen(ch.id)) return '';
+  if (stageBusy() || closeUp()) return ''; // after the moments and the 回's ending card
   return titleCardHtml(ch, lang());
 }
 
@@ -2568,6 +2588,12 @@ function watchMemory() {
    after the last beat a tap (or a while) puts it away. The book's line for each
    beat is said under the picture, in DOM; reduced motion plays still frames. */
 let pieceOn = null;
+let homingPending = false; // a 鼎 come home, its map not yet on the stage
+/* The page's own moments in their order — set piece, seal, her memory, 鼎归 —
+   and while any is up or on its way, the 回's ending card, the new 回's title
+   card and the dialogue box wait (one thing at a time, each put away by a tap). */
+const stageBusy = () => Boolean(pieceOn || featOn || view.memory || memoryWaits || view.homing || homingPending);
+const closeUp = () => Boolean(look?.chapter?.close && !closeSeen(look.chapter.close.id));
 async function playPiece(id, beats = null) {
   if (pieceOn) return;
   const en = lang() === 'en';
@@ -2577,7 +2603,7 @@ async function playPiece(id, beats = null) {
   box.innerHTML = `<div class="sphold"></div><p class="spline" aria-live="polite"></p><button class="spskip" type="button">${en ? 'Skip' : '跳过'}</button>`;
   document.body.appendChild(box);
   const mine = pieceOn = { id, box, ctl: null, over: false };
-  const close = () => { if (pieceOn !== mine) return; mine.ctl?.destroy?.(); box.remove(); pieceOn = null; };
+  const close = () => { if (pieceOn !== mine) return; mine.ctl?.destroy?.(); box.remove(); pieceOn = null; render(); };
   box.addEventListener('click', (e) => {
     if (e.target.closest('.spskip')) { mine.ctl?.skip?.(); close(); } else if (mine.over) close();
     // A piece that hears its own taps (筑基天象's .zjhost) is not tapped twice.
@@ -2625,6 +2651,7 @@ let homingFor = null; // the province whose moment is on its way: one moment per
 async function playHoming(province) {
   if (homingFor === province) return;
   homingFor = province;
+  homingPending = true;
   setTimeout(() => { if (homingFor === province) homingFor = null; }, 60000);
   // Her memory first: wait for the gold seal and the memory the beat brings to be over.
   // The 新的一回 seal goes up on the first draw of the read that brought the 鼎 home
@@ -2640,7 +2667,8 @@ async function playHoming(province) {
   // The find spot stands well inside the frame: the drop, the spread's heart and the moon are there.
   const at = home?.map ?? look.world.atlas.provinces[province];
   const frame = frameOf([...pts, at, [at[0], at[1] + 0.06], [at[0] - 0.04, at[1]], [at[0] + 0.04, at[1]]], look.world.atlas.aspect);
-  if (!inkGeo) return;
+  homingPending = false;
+  if (!inkGeo) { render(); return; }
   // WebGL when there is WebGL and motion is welcome (fx.js); else the SVG moment.
   show({ homing: { province, frame, at: performance.now(), still: false, fx: glOK() && !stillMotion() && Boolean(inkPaint()) } });
   // Its words come in at the end: a redraw then shows 收起; it goes by itself a while later.

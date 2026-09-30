@@ -175,6 +175,10 @@ function sideOf(who, cfg, catalog, mode, seed) {
     deck, hand: [...(cfg.extra ?? [])], board: [], fatigue: 0, powerUsed: false, played: [],
     signature: cfg.signature ?? null, charge: null, lifts: cfg.lifts ?? null, insight: cfg.insight ?? 0, intent: null,
     stars: cfg.stars ?? null, drain: 0,
+    // A 试 (a story trial, creatures.json `trial`): the beast is not driven
+    // off, it is PASSED — it yields at `yield` of its 气血, and a player
+    // still standing when its cards run out has passed too (not withdrawn).
+    trial: cfg.trial ?? null,
   };
 }
 
@@ -289,6 +293,14 @@ function draw(st, side) {
     return;
   }
   side.fatigue += 1;
+  // A trial outlasted is a trial passed: he stood through every move it had.
+  if (side.who === 'foe' && side.trial?.outlast) {
+    if (st.outcome === 'open') {
+      st.outcome = 'won';
+      st.log.push({ act: 'trial-passed', how: 'outlast' });
+    }
+    return;
+  }
   if (side.who === 'foe' && st.mode.foeDry === 'withdraw') {
     if (st.outcome === 'open') {
       st.outcome = 'withdrew';
@@ -357,6 +369,12 @@ function withdraw(st, side, minion) {
 
 function settle(st) {
   if (st.outcome !== 'open') return;
+  // A trial yields once it has seen enough (`trial.yield` of its 气血).
+  if (st.foe.trial?.yield && st.foe.hp > 0 && st.foe.hp <= st.foe.hpMax * st.foe.trial.yield) {
+    st.outcome = 'won';
+    st.log.push({ act: 'trial-passed', how: 'yield' });
+    return;
+  }
   if (st.foe.hp <= 0) st.outcome = 'won';
   else if (st.you.hp <= 0) st.outcome = 'lost';
 }

@@ -1148,3 +1148,4 @@ body.fighting .atmos { display: none; }
   .spstage { background: rgba(24, 22, 19, .97); }
   .spstage .spline { color: #e9e2d2; }
 }
+.card.challenge .cgoal { font-size: 13px; line-height: 1.6; margin: 6px 0 0; color: var(--ink, #3a2f25); border-left: 2px solid #b8963e; padding-left: 8px; }
