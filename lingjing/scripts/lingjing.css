@@ -105,20 +105,21 @@ button:disabled { cursor: default; }
 
 /* ── the view: ink hills, the place, Yinyue, the focus card ── */
 .view { position: relative; flex: 1; min-height: 0; overflow: hidden; background: linear-gradient(180deg, var(--sky-a), var(--sky-b));
-        /* Her room beside the cards: the cards start where she ends. */
-        --her-w: 240px; --her-h: 420px; --stage-room: calc(var(--her-w) + 50px); --head-h: 132px; }
+        /* No figure of her on the page (his, 2026-09-30: no 3D body, so no
+           orb either) — the cards and the dialogue box start at the gutter. */
+        --stage-room: 24px; --head-h: 132px; }
 .backdrop { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 62%; color: var(--text); }
 .place { font-family: var(--serif); font-size: 16px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: none; }
 /* The 回 above the place (rules/hui.mjs): the book's own heading, small. */
 .huiline { font-family: var(--serif); font-size: 12.5px; letter-spacing: .12em; color: var(--dim); opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: none; }
 .huiline:empty { display: none; }
-.stage { position: absolute; left: 24px; bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 1; }
-.stage .body { position: relative; width: var(--her-w); height: var(--her-h); display: flex; align-items: flex-end; justify-content: center; }
-.stage[hidden] { display: none; }
-.moon { width: 96px; height: 96px; border-radius: 50%;
-        background: radial-gradient(circle at 38% 35%, #FFFFFF, #DCE4EA 55%, #AFC0CC);
-        box-shadow: 0 0 22px 4px rgba(190, 210, 225, .55); animation: breathe 4s ease-in-out infinite; }
-@keyframes breathe { 50% { transform: scale(.97); box-shadow: 0 0 30px 8px rgba(190, 210, 225, .7); } }
+.stage { position: absolute; top: 12px; right: 24px; display: flex; flex-direction: row; align-items: center; gap: 8px; z-index: 3; }
+/* Her name and the ask, a small chip in the header's top-right corner — once
+   she is found (the chip is empty and takes no room before). `.body` stays,
+   an empty frame over the chip, where unease.js paints her price. */
+.stage .body { position: absolute; inset: 0; pointer-events: none; }
+.stage[hidden], .stage:not(:has(#askHerBtn:not([hidden]))) { display: none; }
+.view:has(#askHerBtn:not([hidden])) .slothead { padding-right: 150px; }
 .stage b { font-family: var(--serif); font-weight: 600; font-size: 15px; color: var(--yinyue); }
 /* 问问银月: a word to her, in the chat (`@银月 …`). */
 .stage .askher { color: var(--yinyue); border-color: color-mix(in srgb, var(--yinyue) 45%, transparent); }
@@ -711,20 +712,16 @@ button.gcard { cursor: pointer; font: inherit; }
    beside it takes 440px. Narrower, she stands smaller; narrower still, the
    stage stacks — she above, the cards below, one column that scrolls, and
    nothing wider than the screen. */
-@container scene (max-width: 820px) {
-  .view { --her-w: 170px; --her-h: 300px; }
-}
 @container scene (max-width: 600px) {
   .status { padding: 8px 12px; gap: 8px 12px; }
   .xw { min-width: 120px; }
-  /* Narrow, she stands small in the header's corner; the slots keep their places. */
-  .view { --her-w: 76px; --her-h: 96px; --stage-room: calc(var(--her-w) + 20px); --head-h: 150px; }
-  .stage { left: 10px; top: 10px; bottom: auto; gap: 4px; z-index: 3; }
+  /* Narrow, her chip sits smaller in the header's corner. */
+  .view { --stage-room: 12px; --head-h: 150px; }
+  .stage { right: 12px; top: 10px; gap: 4px; }
+  .view:has(#askHerBtn:not([hidden])) .slothead { padding-right: 120px; }
   .stage b { font-size: 12px; }
   .stage .askher { font-size: 11px; padding: 2px 6px; }
-  .moon { width: 56px; height: 56px; }
   .slots { left: 12px; right: 12px; bottom: 8px; }
-  .slothead { padding-left: var(--stage-room); }
   .slothead .peoplecard .person figcaption .small { display: none; }
   .slotfoot { padding: 4px 12px; }
   .footchips { overflow-x: auto; scrollbar-width: none; }
@@ -981,7 +978,7 @@ body.fighting .atmos { display: none; }
   color: #1D1B17; background: linear-gradient(180deg, #C8352A, #B02A22); border-radius: 2px; box-shadow: 0 2px 6px rgba(80, 20, 10, .3); }
 .atmos .frame .fl { left: 6px; }
 .atmos .frame .fr { right: 2px; }
-.atmos .frame .ft { top: 6px; left: calc(24px + var(--her-w) / 2 - 64px); width: 128px; height: 28px; font-family: var(--serif); font-size: 15px; font-weight: 600;
+.atmos .frame .ft { top: 6px; left: calc(50% - 64px); width: 128px; height: 28px; font-family: var(--serif); font-size: 15px; font-weight: 600;
   letter-spacing: .3em; line-height: 28px; text-align: center; color: #1D1B17; background: linear-gradient(180deg, #C8352A, #B02A22); border-radius: 2px; box-shadow: 0 2px 6px rgba(80, 20, 10, .3); }
 .fest-chunlian .atmos .frame .fl, .fest-chunlian .atmos .frame .fr, .fest-chunlian .atmos .frame .ft { display: block; }
 .fest-chunlian .atmos .frame .fl::before { content: "天增岁月人增寿"; }
@@ -989,7 +986,7 @@ body.fighting .atmos { display: none; }
 .fest-chunlian .atmos .frame .ft::before { content: "万象更新"; }
 .atmos .frame .la, .atmos .frame .lb { top: 0; width: 40px; height: 70px; transform-origin: 50% 0; animation: atSway 5s ease-in-out infinite alternate; }
 .atmos .frame .la { left: 44px; }
-.atmos .frame .lb { left: calc(var(--her-w) - 20px); animation-delay: -2.5s; }
+.atmos .frame .lb { left: 120px; animation-delay: -2.5s; }
 @keyframes atSway { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
 /* a lantern: the cord, the red body, the gold caps, the tassel */
 .fest-chunlian .atmos .frame .la, .fest-chunlian .atmos .frame .lb, .fest-lantern .atmos .frame .la, .fest-lantern .atmos .frame .lb { display: block;
@@ -999,8 +996,8 @@ body.fighting .atmos { display: none; }
     linear-gradient(#D9AC5E, #D9AC5E) 50% 52px / 18px 4px no-repeat,
     linear-gradient(#C22A1C, #C22A1C) 50% 56px / 2px 14px no-repeat;
   filter: drop-shadow(0 0 8px rgba(240, 100, 50, .45)); }
-.fest-chunlian .atmos .frame .la { left: calc(24px + var(--her-w) / 2 - 110px); }
-.fest-chunlian .atmos .frame .lb { left: calc(24px + var(--her-w) / 2 + 70px); }
+.fest-chunlian .atmos .frame .la { left: calc(50% - 110px); }
+.fest-chunlian .atmos .frame .lb { left: calc(50% + 70px); }
 /* 艾草: a green bundle over the door */
 .fest-aicao .atmos .frame .la { display: block; left: 34px; width: 26px; height: 86px; animation-duration: 7s;
   background: linear-gradient(#B02A22, #B02A22) 50% 0 / 20px 6px no-repeat,
