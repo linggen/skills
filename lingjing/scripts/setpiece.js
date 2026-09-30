@@ -100,6 +100,17 @@ export async function playSetPiece(host, id, { lang = 'zh', still = false, auto 
     get i() { return steps.i; },
     get phase() { return steps.phase; },
     tap: () => react(steps.tap()),
+    /// A look at beat `k` at progress `p` (0–1), drawn at once: for checking frames
+    /// where the page's clock does not run (a hidden tab). Not for play.
+    seek(k, p = 1) {
+      if (!scene) { box.innerHTML = def.stillSvg(def.BEATS[k].id, { W, H, art: art.bingyi?.src }); return; }
+      tl?.kill();
+      for (let j = 0; j < k; j += 1) scene.beat(def.BEATS[j].id).progress(1);
+      tl = scene.beat(def.BEATS[k].id);
+      tl.progress(p);
+      for (let f = 0; f < 90; f += 1) scene.step(16);
+      app.renderer.render(app.stage);
+    },
     skip: () => react(steps.skip()),
     destroy() {
       if (gone) return;

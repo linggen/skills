@@ -490,6 +490,8 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
   };
   return {
     beat(id) { return beats[id](); },
+    /// One frame of the per-frame drawing (the wall's mask, the fish, the waves) — for a still or a seek.
+    step(dt = 16) { for (const f of tick) f(dt); },
     destroy() { tick.length = 0; },
   };
 }
