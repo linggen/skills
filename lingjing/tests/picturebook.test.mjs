@@ -240,15 +240,15 @@ test('《吐纳经》: the pouch reads the passage for the layer, the classic\'s
   const r = readingOf(content, s, 'tuna');
   assert.equal(r.layer, 1);
   assert.equal(r.name, '引气');
-  assert.equal(r.gongke, '子时吐纳一刻，气沉到小腹');
-  assert.equal(r.passage.quotes[0].text, '行气，深则蓄，蓄则伸，伸则下，下则定，定则固，固则萌，萌则长，长则退，退则天。天几舂在上，地几舂在下。顺则生，逆则死。');
+  assert.equal(r.gongke, '心数至一百二十，吐气时鸿毛不动');
+  assert.equal(r.passage.quotes[0].text, '得胎息者，能不以鼻口嘘吸，如在胞胎之中，则道成矣。');
   const seventh = readingOf(content, { ...s, step: 6 }, 'tuna');
   assert.equal(seventh.passage.quotes[1].text, '真人之息以踵，众人之息以喉。');
   assert.equal(readingOf(content, { ...s, tier: 'foundation', step: 0 }, 'tuna').layer, 9, 'past 练气: the last layer');
   const en = readingOf(content, { ...s, lang: 'en' }, 'tuna');
   assert.equal(en.passage.quotes[0].text, r.passage.quotes[0].text, 'the classic stays in its own words');
-  assert.match(en.passage.quotes[0].en, /To move the breath/);
-  assert.deepEqual(look(s, content, ctx()).practice_hint, { scroll: '吐纳经', layer: 1, name: '引气', gongke: '子时吐纳一刻，气沉到小腹' });
+  assert.match(en.passage.quotes[0].en, /embryonic breathing/);
+  assert.deepEqual(look(s, content, ctx()).practice_hint, { scroll: '吐纳经', layer: 1, name: '引气', gongke: '心数至一百二十，吐气时鸿毛不动' });
   assert.equal(look(start(), content, ctx()).practice_hint, undefined, 'no scroll, no hint');
 });
 
