@@ -3,7 +3,7 @@
 //
 // Each app writes its whole MENU to ~/.linggen/quests/<app>.json (design.md §
 // The menu). Listing every entry flooded the book, so the rules read it thus
-// (design.md § 人间功课 — one a day):
+// (design.md § A day, 今日传闻, real-life chores — one a day):
 //
 // - **Fixed** — no `pool`, not `once` (the workout): a line every day.
 // - **Pool** — `pool: true`: ONE is picked a day, the same on every device

@@ -2,279 +2,71 @@
 type: product-spec
 reader: coding agent, contributors
 guide: |
-  What Lingjing is and what each of its systems does, in one read.
-  How it is built belongs in design.md. The idea's first record is
-  linggen-app/doc/app-ideas.md.
-status: Re-derived from the code 2026-09-24; 2026-09-28 the story is reborn — 《狐仙欠我一张饼》 (story/jiuding-lu: DESIGN.md, OUTLINE.md), 银月 found in the prologue, not at 结丹; see design.md § 故事 v3.
+  What the game is, in one page. How it is built: design.md. The book and
+  its world: story/jiuding-lu/DESIGN.md (world rules) and OUTLINE.md (plot).
+status: 2026-09-30 — rewritten as one page at the integration (Hanli: 「可以」). The spec as it stood before is archive.md § doc/product-spec.md as it stood 2026-09-30.
 ---
 
-# Lingjing: The World of Linggen · 《灵境》
+# Lingjing · 《九鼎录》
 
-**A text game: you play it by chatting, and the world is the background.**
+**A novel you play.** 《九鼎录》 is a 修仙 novel — 金庸's storytelling,
+周星驰's way of making you laugh, China's heritage as its world — and the game
+plays it. You read the book on the stage, a paragraph at a time, and in
+between you live in its world: walk it, take errands, fight, tame, cultivate.
+Ling runs the world; 银月 is at your side.
 
-Ling runs a cultivation world drawn from China's public heritage; Yinyue is at
-the player's side. You talk, take Ling's tasks, and grow. Real-life tasks, done in the other
-Linggen apps, count as 修炼. On the phone the chat is the whole game; on the
-Mac a scene beside the chat shows the same cards.
-
-- **Genre:** AI chat game, 13+.
-- **Languages:** English and Chinese at launch.
+- **Genre:** AI chat game, 13+. English and Chinese.
 - **Session:** a few minutes, a few times a day, paced by 体力.
+- **Where:** the Mac (the stage beside the chat); the phone later.
 
-## Story
+## The story
 
-**The main story is 《九鼎》.** 大禹 cast nine cauldrons, one per province,
-bearing every spirit of that land. They vanished at the fall of 周. Since then
-the 灵脉 have thinned. The player cultivates through real life, and that lets
-them sense the cauldrons.
+A poor hunter's son of 蒙山, **沈小满**, crosses a stone that says 勿入 for a
+deer hide, falls into a valley and carries home 银月 — a fox queen of heaven,
+eight tails cut away, starving, her name forgotten. She eats his last
+flatbread and owes him one. From there: the sect, the 鼎, the nine provinces.
+Three lines of equal weight in the book — 沈小满 (人), 赵昂 (天), 阿禾 (地) —
+meet at the end. The world is built on 道统, 《山海经》, 大禹's nine 鼎 and
+the classics, quoted and told as small stories so the reader learns them.
+All of it: story/jiuding-lu/DESIGN.md.
 
-- **Opening:** a rain night on the 泗水 bank; the player takes a 道号 and has
-  their roots tested. Yinyue is found later, at 结丹 — a bell rung where water
-  holds a moon.
-- **Nine chapters,** one per cauldron and province (冀 兖 青 徐 扬 荆 豫 梁 雍).
-  Recovering a cauldron is the chapter's climax.
-- **The main story is hand-written;** the model voices it and never changes its
-  plot. Every player shares it.
-- **Chapters are serialized (连载).** A chapter opens for everyone on a date,
-  and it ships as data, not an app update. While the game is being built
-  and tested no chapter is locked (2026-09-16); the dates are set at launch.
-- **Branch stories are AI-written per player:** province tales, 聊斋-style
-  night tales, festival scenes on the real calendar, 奇遇, and the player's
-  own week told as story.
+## The game
 
-## World
+- **Genshin's shape.** One main line: you are 沈小满. Tasks in an open world
+  drive the story; key beats lock the map, then it opens wider. 阿禾 and 赵昂
+  are playable 传说任务; the nine 鼎缘人 join as the 卷 go by.
+- **The book on the stage.** Each beat's passage plays in a dialogue box; the
+  scene card carries the place and the choices; the 图鉴 shows what you would
+  not know (people, creatures, pills, arts, meridians). Ling speaks for what
+  you type and for what the rules hand her. The full book is one tap away (书).
+- **The fight is a card game** in 《炉石传说》's shape: cards you have earned,
+  灵兽 you have tamed, 银月 in hand, 五行 counters.
+- **Errands** as in 《魔兽世界》: take, track, hand in where you stand; a daily
+  side story Ling writes (今日传闻); mini-games (洛书, 华容道, 炼丹, 论道 …).
+- **Your real life counts.** A workout, a disk scan, a review in the other
+  Linggen apps pays 体力 and 修为 — the app is the witness, never a claim.
+- **The world remembers you.** Your own words, kept in the 恩仇簿, come back.
+- **The rules decide, the model tells.** Every number comes from the rules;
+  the model never invents a reward.
 
-- **Style: 修仙 · 凡人流.** The mortal with poor roots who climbs by
-  diligence; nine realms, 灵根, 灵石, 丹药, 宗门, 秘境 — the 道教 and genre
-  inheritance older than any novel. No name from any novel, ever.
-- **Worlds.** 《九鼎》 is the first world and the shape of every other; a
-  player starts inside a whole world, never builds first. A 山海经 world
-  comes next; 三国, 易经, 黄帝内经 later — same rules, same Ling.
-- **Open.** A province is places and roads, not a corridor. Wander; the
-  rules turn you back from what is too hard, kindly, and Ling keeps the
-  thread of the story in view.
-- **Sources:** China's public heritage only — 道教 cultivation terms,
-  山海经, 佛教 parables, 周易, the dynasties. Never a novel's named
-  characters, places or plot.
-- **Map:** the nine provinces, each drawn from its 山海经 chapter.
-- **灵兽:** the 山海经 bestiary, met in the story and collected, each with its
-  ancient text and a picture. A creature is never named without its picture.
-- **Calendar:** events follow the real 24 节气 and festivals. Once a day the
-  player may cast three coins (起卦) for a 周易 hexagram that tilts the day.
-- **洞府:** the player's home base, which grows with them.
+## What ships first: 卷一 · 沉鼎
 
-## Worlds
+Design big, build only the current 卷 (Hanli, 2026-09-30). 卷一 is the book's
+第一回 to 第十回 and the game's road 石坳村 → 沉鼎观 → 漳水: the village and
+the fall, the sect's trials, the outer court and the 大比, 筑基, and the first
+鼎 rising from the 漳水. 练气 to 筑基; 回春丹, 聚气丹, 筑基丹; the card fight;
+errands; the 图鉴; 银月. Everything beyond waits for its 卷.
 
-**One game, many worlds.** The way you play — talk to Ling, take tasks,
-climb, fight, trade, mind 体力 — is the same in every world. What changes is
-the story and the words.
+## Never
 
-- **《九鼎》 is the built-in world** — 修仙 · 凡人流, the Nine Provinces, the
-  山海经 bestiary. Everyone starts here, whole, with nothing to build.
-- **Ask for another and Ling builds it while you wait** — *a 山海经 hunt*, *a
-  三国 council*, *a 易经 reading* — a title, a map, a cast, the first scene,
-  in under a minute; the rest is written as you play. Nothing to fill in;
-  change anything by saying so.
-- **Each world has its own words for the same things.** Where 《九鼎》 says
-  修为, 灵石, 体力, 境界, a 三国 world says 声望, 粮草, 精力, 官阶. Ling, the
-  cards and every line use the world's words and no others.
-- **Never a novel's names.** A world in the *style* of the tales you love,
-  never their characters, places or plot.
-- Real-life practice counts in every world alike.
+A name, place or plot from any living author's novel · paid draws (gacha) ·
+money that buys power · a number the model made up · health or money data in
+the game.
 
-## Characters
+## Where to read on
 
-- **The player:** takes a 道号 at the start, suggested by Yinyue.
-- **Ling — the game driver.** Runs the world and narrates it, gives every task,
-  and knows everything in the game: rules, story, map, state. Reads the
-  cauldrons' inscriptions.
-- **Yinyue — the player's companion.** Found at 结丹; from then at their side.
-  She speaks for herself — greeting, gladness, comfort, the cast — from the
-  facts the page hands her. Name only, origin unspoken: she remembers nothing of who she is;
-  each cauldron gives back one memory. She is the same Yinyue as in the rest of
-  Linggen and remembers the player.
-- **Everyone else:** NPCs, spirits and 灵兽, voiced by the model from the
-  heritage.
-- Yinyue's 3D model is the only 3D in the game; on the Mac she stands in the
-  scene. Everything else is 2D.
-
-## Chat
-
-- **The chat carries the game.** Messages come from Ling (the world), Yinyue
-  (the player's side) and NPCs, each attributed.
-- **One set of cards, two placements:** task cards, creature cards, the map,
-  puzzle boards. On the phone they arrive inside the chat. On the Mac they sit
-  on the scene — the space left of the chat, with Yinyue standing in the
-  current place.
-- **Choices are asked in the chat** on both screens.
-- **Free text anytime, in the player's language.** Buttons are shortcuts;
-  typing is always allowed.
-
-**Free chat.** The model proposes, the rules decide: Ling replies in words and
-changes the game only through game tools — resolve a scene, give a task, open
-a branch, move the player. The rules check every call and refuse what the
-state does not allow.
-
-- **Free text resolves scenes.** Ling maps the player's words to one of the
-  scene's exits — feeding 夫诸 an herb tames it, if the herb is in hand. A
-  creative answer the model judges right counts.
-- **A question changes nothing.** Ling answers from the heritage and the
-  player's state.
-- **Curiosity can open a branch (奇遇).** A branch never touches the main
-  story; its rewards come from a small capped table.
-- **Out of bounds is refused in the world** — *冀州的路还没开*,
-  *天地灵石，从不白给*. Words never change state.
-- **Real life goes to Yinyue, outside the game.**
-- **A scene of your own.** Ask for one — a ferry tale, a 山海经 hunt, a
-  三国 council — and Ling builds it from a template while you wait, the
-  rules check it, and you play it like any scene. You never build; you ask.
-- **Every reply ends with a way forward** — usually choices.
-- **A running story summary** keeps free chat consistent across days.
-- **The rules own every number, the model owns the words.** Points, realms,
-  体力, inventory and world state are data; the model narrates around them.
-- **The page shows facts, Ling tells the story.** Taking an errand, handing it
-  in, buying, wearing, a fight's spoils are the page's taps and cards; Ling
-  speaks only where the story moves.
-
-## A day
-
-Most days fall between chapters. An ordinary day is: Yinyue's greeting; a due
-real-life quest paid on sight; 差事 taken and handed in; a beast or two fought
-at its haunt; a 遇 on the road; the day's boards; perhaps a 机缘 nearby or a
-奇遇 grown from an authored seed.
-A few minutes. The spine moves on the days a chapter opens; seeds and
-quests carry every other day.
-
-## Task system
-
-**Ling gives tasks; finishing one earns 修为 points.**
-
-- **Real-life tasks** come from the other Linggen apps: scan your disk in Shifu,
-  run a backup, keep a workout, sleep a full night.
-- **In-world tasks** come from the story and the boards: a riddle, 炼丹, a
-  puzzle.
-- **差事 — errands** the world's people give and the player takes (three in
-  hand), counted by the rules and handed in wherever the player stands; a
-  market posts one 榜文 a day. Ling never invents one.
-- **Daily and weekly** tasks.
-- **Real tasks count only when the app confirms them.** Never self-reported.
-- **Each task pays once per period.** Repeating it earns nothing more.
-- **A real task is offered only when it is due.** No busywork.
-- **Each app declares the tasks it offers** and their completion signal. The
-  game names no app.
-
-## Upgrade system
-
-**修为 points reach a threshold, and the player rises a level.**
-
-- **Nine realms, one per cauldron:** 练气 (Qi Condensation, layers 1–9) · 筑基
-  (Foundation Establishment) · 结丹 (Core Formation) · 元婴 (Nascent Soul) ·
-  化神 · 炼虚 · 合体 · 大乘 · 渡劫.
-- **Levels inside a realm are automatic.** Crossing into a new realm is a 突破:
-  a 雷劫 scene in the chat.
-- **A realm breakthrough is paired with its cauldron's chapter.** A player who
-  reaches the peak before the chapter opens holds there.
-- **Pacing:** a realm takes weeks, so the full journey takes about a year.
-  Rewards scale with the realm — a task in 化神 pays more 修为 than the same
-  task in 练气 — so the later, larger realms take weeks too, not years.
-
-## 灵根
-
-**灵根 is the player's 五行 roots — 金 木 水 火 土, alone or mixed. It sets how
-fast 修为 grows.**
-
-- **Fewer roots, faster cultivation:** one root (天灵根) is fastest; the more
-  roots are mixed, the slower 修为 builds from the same task.
-- **Every player is 五行杂灵根 — all five roots, each weak** (Hanli,
-  2026-09-28). The 生辰 decides only the one that leads — the stone's
-  brightest colour, the element seen most in the three pillars (ties by the
-  save's start); skipped, five even. Everyone starts slow and climbs by
-  diligence.
-- Ling reveals it at the 测灵根 scene near the start.
-
-## 体力
-
-**体力 is the game's stamina and the only limit on a day's play** — no daily
-caps on 修为 or 灵石.
-
-- **100,** refilled by the clock, full in five hours. Run to 0, the player
-  rests until it is back to 20.
-- **Actions cost it:** a trip, a story step, a fight, a 奇遇, a 抉择, a taming,
-  a mini-game, 论道. Talking, the market, errands and her tending are free.
-- **Real life refills it:** a quest done in another app.
-- **Shown as a number on the page;** when it runs out Yinyue sends the player
-  to rest and says when it returns.
-- **Sign in to play:** Linggen's free tier, then the $5 Linggen plan — the
-  game is included. The save follows the player to any device.
-
-## Fights
-
-**斗法 is a card game in the shape of Hearthstone**, played on the scene with
-the chat beside it. 气血 on both sides, 灵力 growing each round, a hand of
-灵兽 and 功法, 五行 相克, the player's own 主灵根一击. The deck is ten cards the
-player has obtained — roots, tamed beasts, a card from each win — and picks.
-
-- A beast fights once a day; beaten, it may be tamed by what it likes.
-- What a fight takes stays taken (伤势) until it mends or a pill.
-- Gear counts: a sword strengthens the root strike, a robe gives armor, a
-  pendant softens an element, a 符 is one card; at 结丹 the 本命法宝.
-- A beast has a 杀招; some are 精英; 望气术 reads its intent.
-- Fighting is where 修为 is earned best; winning drops 妖丹, materials, a card.
-
-## Mini-games
-
-**Every mini-game is an action in the world, played on the stage.**
-
-| Game | In the world |
-|---|---|
-| 连连看 | 炼丹 |
-| 七巧板 · 华容道 · 洛书九宫 · 五子棋 · 象棋残局 | the games a place hosts |
-| 飞花令 · 成语接龙 · 对对联 | 论道 with the scholar at 稷下 |
-
-- Once a day each, a little 修为 for 3 体力; rules-run, no model — 论道's
-  meaning is judged by Ling, its form by the rules.
-
-## Social
-
-- **宗门:** family and friends, by invite only.
-- **同修:** two friends keep a task together and both earn a bonus.
-- **论道:** async quiz duels.
-- **切磋:** async board games and same-board 连连看 races.
-- **传音:** messages carried by Yinyue.
-- **v1 is async.** Then the table: friends play live in a room one player
-  hosts, Ling as host — riddles, 飞花令, side stories, 斗法; one team, two
-  teams or each alone.
-
-## Economy
-
-- **灵石** are earned in play and buy things from a catalog: 丹药, 武器,
-  装备, 法器, 宝物, 钥匙, 材料 — each with a picture and a price. Things also
-  come as task rewards, and sell back for 灵石.
-- **A thing does one thing:** opens a way (a key), pays 修为 or mends (a pill),
-  is worn in a fight (a sword, a robe, a pendant, a 符), grows the treasure (a
-  妖丹, a material), or is worn by Yinyue. No durability.
-- **Money buys the Linggen plan,** never power.
-- **The rules run on the player's machine until players meet.** A cheat
-  fakes only their own game. Trade between players, a ranking or the table
-  moves the rules to the cloud first.
-
-## Never does
-
-- Shows a token count.
-- Sells loot boxes.
-- Punishes a missed day or a broken streak.
-- Pays points for a real task the app did not confirm.
-- Sends raw health or finance data into the game. Apps pass the task's done
-  or not done.
-- Writes into another app.
-- Lets strangers chat with players (v1).
-- Uses a novel's named characters, places or plot.
-
-## Open questions
-
-- 灵根 after v1: whether players differ, and how.
-- Playable without any Linggen app (real life as a bonus), or Linggen users
-  only.
-- Surfaces: Mac app page first; the phone's place.
-- Point values and realm thresholds.
-- How Yinyue's memories end.
+- design.md — the game's systems, each tagged built / building / planned.
+- story/jiuding-lu/DESIGN.md — the book and every world rule.
+- story/jiuding-lu/OUTLINE.md — the plot, 卷 by 卷, and the 扣子簿.
+- guide/*.md — what Ling is told at runtime.
+- archive.md — what was designed and replaced, and why.

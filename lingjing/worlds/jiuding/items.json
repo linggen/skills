@@ -309,7 +309,7 @@
     {
       "id": "mend-pill-9",
       "kind": "pill",
-      "_furnace": "Made in 银月's furnace (design.md § 丹药等级 — 随主人: the owner's realm, 九转): its own item, never the market's 回春丹. `zhuan` draws its nine gold lines; not sold, and worth nothing at a counter (九转丹不能卖).",
+      "_furnace": "Made in 银月's furnace (story/jiuding-lu/DESIGN.md § 丹药等级 — 随主人: the owner's realm, 九转): its own item, never the market's 回春丹. `zhuan` draws its nine gold lines; not sold, and worth nothing at a counter (九转丹不能卖).",
       "zhuan": 9,
       "name": {
         "zh": "九转回春丹",

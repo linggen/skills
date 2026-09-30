@@ -37,7 +37,7 @@ YINYUE = ('a young woman with long silver hair falling past her waist, golden ey
           'barefoot, in a white robe bright as snow with cinnabar red sashes, nine silver fox tails fanned out behind her')
 
 # Memory n → its ONE picture (his, 2026-09-29: 「银月一章一图就好」; 1-b, the voice, retired). Only memory 1 is painted
-# (2026-09-29); 2–8 are drafted in doc/design.md § 哇时刻 ③. SEEDS pins the
+# (2026-09-29); 2–8 are drafted in doc/archive.md § doc/design.md as it stood 2026-09-30 § ③ (To paint). SEEDS pins the
 # candidate picked from a sheet (1-a: 3 tried; 1-b: 7 tried over two
 # wordings — a close-up read as a triumphant pose, and one seed put a
 # European heraldic shield on her robe).

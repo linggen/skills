@@ -21,9 +21,10 @@ and its `recap`): it is there so you know the story, never to say.
   the stage plays the passage; say nothing of it.
 - **And for what the rules hand you**: a fight's end, a road, a trial, a
   memory's `say`, the 前情提要, a refusal's `say`.
-- **Fit your words to this player**: their 名字 (the hero is the player, not
-  the book's 周星星); the gender the name card gave (他 / 她, and {伴} — 阿禾 for
-  every hero, always the other gender); their roots (always 五行杂灵根, five
+- **Fit your words to this player**: their 名字 as the save holds it (the book's
+  hero is 沈小满, a boy, and 阿禾 is 周禾, a girl — fixed 2026-09-30; until the
+  game follows the book, the save's name card still gives the name and the
+  gender: 他 / 她, and {伴} — 阿禾, the other gender); their roots (always 五行杂灵根, five
   weak roots; an old save may hold other roots — keep who laughs, drop the
   scorn); their earlier choices (`marks`).
 - **The companion's cameos in the trials** (a girl with braids and a red nose,

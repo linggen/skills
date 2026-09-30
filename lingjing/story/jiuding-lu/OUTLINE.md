@@ -5,8 +5,8 @@ file is the story: every 卷 and 回 in a few lines, the people, the key beats.
 The form is 《鹿鼎记》's (DESIGN.md § 五·五): a 卷 is ten 回, not a province; its
 回 are numbered through the whole book, each under a 回目 couplet. Written:
 卷一 (第一回—第十回, 徐州 → 冀州; split into its ten 回 on 2026-09-30, each to be written full in place before 卷二 opens). A 回 is as long as one of 《鹿鼎记》's, about 24k characters. The rest is planned and will move as the
-writing finds it. notes/outline.md and notes/structure.md are the earlier
-drafts; where they disagree, this file wins. 周星星 is a placeholder name.*
+writing finds it. notes/archive/outline.md and notes/archive/structure.md are the earlier
+drafts; where they disagree, this file wins. The hero is 沈小满 (fixed, 2026-09-30; 周星星 was the draft placeholder). World rules live in DESIGN.md only.*
 
 ---
 
@@ -140,10 +140,10 @@ drafts; where they disagree, this file wins. 周星星 is a placeholder name.*
 
 | 人物 | 是谁 | 笑点 | 线 |
 |---|---|---|---|
-| **周星星**（玩家起名） | 猎户家独子，十二岁起 | 嘴贫，一本正经说最荒唐的话；「正在学」 | 从漏勺到水缸，从杂役到定鼎；账必还 |
+| **沈小满**（人 · 固定，2026-09-30） | 猎户家独子，十二岁起 | 嘴贫，一本正经说最荒唐的话；「正在学」 | 从漏勺到水缸，从杂役到定鼎；账必还 |
 | **爹** | 老猎户，膝盖坏了 | 膝盖"聊天""天气预报"；「我先跪着」 | 老实一辈子；卷五，他第一次挺直腰 |
 | **娘** | 塾师的女儿，识字，会算账 | 全家最清醒；「通风」「鬼不吃饼」 | 教他认字、算账；她早知道银月是谁吗？ |
-| **阿禾**（永远是主角的异性） | 邻家孩子，真灵根，同门 | 什么都记账，利息很高 | 小本子记的是对她好的人；卷六把本子交给他 |
+| **阿禾**（周禾，姑娘；地 · 三主线之一） | 邻家孩子，真灵根，同门 | 什么都记账，利息很高 | 小本子记的是对她好的人；卷六把本子交给他 |
 | **吴婆婆** | 瞎眼老太太 | 十句九句废话 | 向银月低头；卷五临终说出木牌的来历 |
 | **舅舅** | 济世堂账房 | 石阶每讲一次多十级 | 他没走上去的路，外甥替他走了 |
 | **老周** | 阿禾她爹 | —— | 崖顶找了一夜（第一笔恩） |
@@ -164,7 +164,7 @@ drafts; where they disagree, this file wins. 周星星 is a placeholder name.*
 |---|---|---|
 | **银月** | 青丘妖王，断八尾，金丹，失忆，睡在木牌里 | 一鼎一尾一段记忆；嘴毒、饿、爱面子；九鼎篇终问她留不留 |
 | **小狰** | 药园里偷草的五尾独角小兽 | 从猫大长成坐骑；只吃萝卜（嫌弃地） |
-| **丹炉**（玩家起名） | 太上老君送给银月的试丹炉（兜率宫给炼丹童子学手艺用的），随她坠落凡间 | 随主人：别人一转下品，它出本境九转；尝一口记住丹方；会飞；炉盖「咔哒」表态 |
+| **丹炉**（饭桶，2026-09-29 定） | 太上老君送给银月的试丹炉（兜率宫给炼丹童子学手艺用的），随她坠落凡间 | 随主人：别人一转下品，它出本境九转；尝一口记住丹方；会飞；炉盖「咔哒」表态 |
 | **墨七** | 墨门少年匠人 | 一句话不超过五个字；造器搭档 |
 | **赵昂** | 太一宫真传，天灵根 | 对手 → 亦敌亦友 → 并肩 |
 | **白先生** | 稷下老先生 | 只问不答 |
@@ -208,7 +208,7 @@ drafts; where they disagree, this file wins. 周星星 is a placeholder name.*
 
 全书是水墨，**只有银月的记忆是彩色的**（工笔重彩，敦煌壁画的石绿、朱砂、金）。一鼎回来，木牌亮一条尾巴，她想起一段；
 九鼎篇的最后一段是第九段——九鼎归位，九尾重生，整个水墨世界一下子变成彩色（Hanli，2026-09-29：「终章全彩」）。
-游戏里见 ../../doc/design.md § 哇时刻 ③。★＝原大纲已有。
+游戏里见 ../../doc/design.md § 银月 in the game。★＝原大纲已有。
 
 | # | 卷 · 州 | 尾 | 记忆 |
 |---|---|---|---|

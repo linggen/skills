@@ -57,7 +57,7 @@ function tileHtml(i, ctx, sel) {
 }
 
 /// 丹纹 — a pill's 转 as lines across it: one per turn, the ninth turn's all
-/// gold (design.md § 丹药等级: 「九道纹。金的。」). Nothing for a pill with no 转.
+/// gold (story/jiuding-lu/DESIGN.md § 丹药等级: 「九道纹。金的。」). Nothing for a pill with no 转.
 export function zhuanHtml(n, lang = 'zh') {
   if (!(n > 0)) return '';
   const label = lang === 'en' ? `${n}-turn · ${n} rings` : `${'一二三四五六七八九'[n - 1] ?? n}转 · ${'一二三四五六七八九'[n - 1] ?? n}道纹`;

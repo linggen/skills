@@ -1,5 +1,5 @@
 // tests/prologue.mjs — the prologue walked the ordinary way (prologue-v3:
-// story/jiuding-lu/notes/prologue-1-source.md and prologue-2-source.md),
+// story/jiuding-lu/notes/archive/prologue-1-source.md and prologue-2-source.md),
 // for every test that needs a save at a point of it or past it. One walk, so a
 // scene rewritten is one edit here, not one in every test file.
 import assert from 'node:assert/strict';

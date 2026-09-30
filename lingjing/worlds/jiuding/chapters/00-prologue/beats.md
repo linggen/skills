@@ -1,8 +1,12 @@
 # Prologue · 蒙山 — beat sheet
 
-The script is story/jiuding-lu/notes/prologue-1-source.md (sections
+The script is story/jiuding-lu/notes/archive/prologue-1-source.md (sections
 一–九, tasks 1–13) and prologue-2-source.md (十–十九, tasks 14–30), approved by
-Hanli 2026-09-28; the order of part 2 is notes/structure.md. Told as a 小人书:
+Hanli 2026-09-28; the order of part 2 is notes/archive/structure.md. (Since then:
+the panels are words only — the pictures went to the 图鉴, 2026-09-29; the book
+is now 《九鼎录》, told in the third person with the hero fixed as 沈小满 and 阿禾
+as 周禾, a girl — 2026-09-30; the name card and {伴} below are the game as built,
+to follow the book — doc/design.md § Follow-ups.) Told as a 小人书:
 each scene is one painted panel on the stage (`panel`: art/panels/, a caption
 of two to four lines, the choices under it) and one passage in the chat
 (`story`, zh + en — the source's own prose; an exit's `story` is a choice's
