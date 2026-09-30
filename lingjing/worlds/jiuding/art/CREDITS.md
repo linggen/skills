@@ -122,3 +122,5 @@ The chapter has no story panels (his ruling, 2026-09-29). No outside source.
 ## 第十回 · 邺城 — painted for Lingjing (2026-09-30)
 
 `people/zhaoang.webp` — 赵昂 of 太一宫 (white robe, a straight sword, the willow by the 漳水 where he first stands in 第十回; a frame FLUX drew in is cropped off), `people/doufu-xishi.webp` — 豆腐西施, 老胡家的闺女 (mute, a tray of tofu), and `people/wuzhu.webp` — the 巫祝婆婆 of the 河伯庙 (a hand drum): painted by the local picture model (FLUX.2 klein 4B), 2026-09-30, with tools/paint-flux-codex.py (the house STYLE; kept seeds and the crop are in its `SUBJECTS`), six seeds a round, every picture looked at (Chinese cross-collared dress, no text, no seal). No outside source. 蠪侄 was rolled again (six seeds: five to seven heads, one to three tails) and keeps its 1597 woodcut.
+
+`people/xiaoman.webp` — 沈小满 at twelve (第一回: a patched jacket cut down from his father's, a rope belt, straw sandals, grandpa's sinew-wrapped bow on his back): painted by the local picture model (FLUX.2 klein 4B), 2026-09-30, with tools/paint-flux-codex.py (seed 5 of the second round of six), every picture looked at. No outside source.
