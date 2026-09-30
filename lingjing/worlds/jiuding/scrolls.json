@@ -1,6 +1,6 @@
 {
  "version": 1,
- "_about": "Scrolls a thing in the bag can be read as (an item's `reads`): 《吐纳经》, the scroll 银月 leaves (story/huxian-bing/90-附录·吐纳经.md, 41e8a30). Its passages are quoted exactly from the classics (public domain), each with her gloss (a quote's `zh` is the classic's own words, exact; its `en` a rendering); `layers` are the nine layers of 练气, each with its name, the day's 功课 and its source, and the passage it reads. The page shows the passage for the player's current layer; Look hands Ling the layer's 功课 as the day's practice hint.",
+ "_about": "Scrolls a thing in the bag can be read as (an item's `reads`): 《吐纳经》, the scroll 银月 leaves (story/jiuding-lu/90-附录·吐纳经.md, 41e8a30). Its passages are quoted exactly from the classics (public domain), each with her gloss (a quote's `zh` is the classic's own words, exact; its `en` a rendering); `layers` are the nine layers of 练气, each with its name, the day's 功课 and its source, and the passage it reads. The page shows the passage for the player's current layer; Look hands Ling the layer's 功课 as the day's practice hint.",
  "scrolls": {
   "tuna": {
    "title": {

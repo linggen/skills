@@ -1,7 +1,7 @@
 // rules/scrolls.mjs — A thing in the bag read as a scroll: 《吐纳经》 and its nine layers.
 // Part of the rules engine; rules.mjs is its one door.
 //
-// 银月 leaves the child a scroll of breathing (story/huxian-bing/90-附录·吐纳经.md):
+// 银月 leaves the child a scroll of breathing (story/jiuding-lu/90-附录·吐纳经.md):
 // real Daoist classics quoted exactly, each with her gloss, and the nine layers
 // of 练气, each with its 功课 (worlds/<id>/scrolls.json). An item's `reads`
 // names the scroll; opened in the pouch it shows the passage for the layer the

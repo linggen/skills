@@ -1,4 +1,4 @@
-// 外门 — the book's 第三回 (story/huxian-bing/03-第三回.md; once 第一章 · 外门), as shipped: the prologue
+// 外门 — the book's 第三回 (story/jiuding-lu/03-第三回.md; once 第一章 · 外门), as shipped: the prologue
 // leads into it; five key beats lock the map and open it again; the area
 // around 沉鼎观 is the whole map; 狰 is caught at the 药园 and never fought; the
 // 大比 waits a real day and its three duels; 息壤 lifts the realm; the chapter

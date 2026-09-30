@@ -42,7 +42,9 @@ async function main() {
   $('langsw').innerHTML = ['zh', 'en'].map((l) => `<button data-lang="${l}" class="${l === lang ? 'on' : ''}">${l === 'zh' ? '中' : 'En'}</button>`).join('');
   $('langsw').addEventListener('click', (e) => { const l = e.target.closest('[data-lang]')?.dataset.lang; if (l) location.href = hrefWith({ lang: l }); });
   const index = await getJson(`${STORY}index.json`).catch(() => ({ books: [] }));
-  const bookId = params.get('book') ?? index.books?.[0];
+  const asked = params.get('book');
+  // An old book id (?book=huxian-bing, before 《九鼎录》) opens the book it became.
+  const bookId = (asked && index.aliases?.[asked]) ?? asked ?? index.books?.[0];
   if (!bookId) { $('chapter').innerHTML = `<p class="note">${esc(w.none)}</p>`; return; }
   const book = await getJson(`${STORY}${encodeURIComponent(bookId)}/book.json`);
   const all = bookEntries(book);

@@ -1,5 +1,9 @@
 {
  "books": [
-  "huxian-bing"
- ]
+  "jiuding-lu"
+ ],
+ "aliases": {
+  "huxian-bing": "jiuding-lu"
+ },
+ "_aliases": "Old book ids a saved link may still carry (story/huxian-bing was 《狐仙欠我一张饼》, renamed 《九鼎录》 2026-09-30)."
 }

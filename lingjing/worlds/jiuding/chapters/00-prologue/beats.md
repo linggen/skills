@@ -1,6 +1,6 @@
 # Prologue · 蒙山 — beat sheet
 
-The script is story/huxian-bing/notes/prologue-1-source.md (sections
+The script is story/jiuding-lu/notes/prologue-1-source.md (sections
 一–九, tasks 1–13) and prologue-2-source.md (十–十九, tasks 14–30), approved by
 Hanli 2026-09-28; the order of part 2 is notes/structure.md. Told as a 小人书:
 each scene is one painted panel on the stage (`panel`: art/panels/, a caption

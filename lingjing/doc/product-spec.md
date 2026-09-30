@@ -5,7 +5,7 @@ guide: |
   What Lingjing is and what each of its systems does, in one read.
   How it is built belongs in design.md. The idea's first record is
   linggen-app/doc/app-ideas.md.
-status: Re-derived from the code 2026-09-24; 2026-09-28 the story is reborn — 《狐仙欠我一张饼》 (story/huxian-bing: DESIGN.md, OUTLINE.md), 银月 found in the prologue, not at 结丹; see design.md § 故事 v3.
+status: Re-derived from the code 2026-09-24; 2026-09-28 the story is reborn — 《狐仙欠我一张饼》 (story/jiuding-lu: DESIGN.md, OUTLINE.md), 银月 found in the prologue, not at 结丹; see design.md § 故事 v3.
 ---
 
 # Lingjing: The World of Linggen · 《灵境》

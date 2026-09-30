@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { bookEntries, cnNumber, entryById, huiLabel, renderMarkdown } from '../scripts/read-md.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
-const BOOK = path.join(ROOT, 'story/huxian-bing');
+const BOOK = path.join(ROOT, 'story/jiuding-lu');
 const book = JSON.parse(fs.readFileSync(path.join(BOOK, 'book.json'), 'utf8'));
 const hui = bookEntries(book).filter((c) => c.huimu);
 

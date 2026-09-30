@@ -15,7 +15,7 @@ import { cardHtml, WORDS } from '../scripts/cards.js';
 import { marksSvg } from '../scripts/marks.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
-const BOOK = path.join(ROOT, 'story/huxian-bing');
+const BOOK = path.join(ROOT, 'story/jiuding-lu');
 const book = JSON.parse(fs.readFileSync(path.join(BOOK, 'book.json'), 'utf8'));
 const WORLD = path.join(ROOT, 'worlds', book.world);
 const json = (f) => JSON.parse(fs.readFileSync(path.join(WORLD, f), 'utf8'));

@@ -2,7 +2,7 @@
 // Part of the rules engine; rules.mjs is its one door.
 //
 // A scene's `story` and an exit's `story` are the book's own passage for that
-// beat (story/huxian-bing, zh + en). Until 2026-09-29 they were handed to Ling
+// beat (story/jiuding-lu, zh + en). Until 2026-09-29 they were handed to Ling
 // to retell in the chat, and the game read like an essay: models paraphrased
 // the book, and the stage and the chat drifted apart (his screenshot: the
 // whole story in the chat, the stage empty). Now the stage plays them itself,

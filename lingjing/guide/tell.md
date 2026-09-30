@@ -4,7 +4,7 @@
 
 ## The split
 
-The book's own passage for each beat (《九鼎录》, story/huxian-bing:
+The book's own passage for each beat (《九鼎录》, story/jiuding-lu:
 what a choice led to, then the scene entered) is played **on the stage**, in
 a dialogue box, a paragraph at a time — each line under its speaker's name and
 portrait, the narration as captions. The scene card, its 图鉴 cards and its

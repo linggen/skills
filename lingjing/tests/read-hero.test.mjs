@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { bookEntries, fillHero, genderBlocks, genderWords, heroOf, HERO, renderMarkdown } from '../scripts/read-md.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
-const BOOK = path.join(ROOT, 'story/huxian-bing');
+const BOOK = path.join(ROOT, 'story/jiuding-lu');
 
 test('fillHero puts the player\'s name where {name} stands, 周星星 without one', () => {
   assert.equal(fillHero('**我**：{name}。\n\n**——{name}**', { name: '秋白' }), '**我**：秋白。\n\n**——秋白**');

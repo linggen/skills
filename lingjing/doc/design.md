@@ -3,7 +3,7 @@ type: design
 reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
-  and plays is the live page (scripts/index.html); the story is story/huxian-bing
+  and plays is the live page (scripts/index.html); the story is story/jiuding-lu
   (DESIGN.md, OUTLINE.md). This file is the build.
 status: 2026-09-28 — the story reborn (§ 故事 v3): a poor 蒙山 hunter's child, 银月 a fallen fox demon-queen found in the prologue, 废柴逆袭 told as a novel you play — 小人书 stage, story in the chat; § 剧情 × 开放世界: tasks drive the story, key beats lock the map (Genshin's shape); 渡劫 a red check; 名字 not 道号; gender on the name card; 生辰 → 灵根; people.json. Before: 2026-09-24 — redesign v2 steps 2–4 (archive.md § redesign-v2 § 四, § 十): 路上 (遇 · 拾遗 · 抉择 · 机缘 · 拦路 as one on-arrival system, rules/road.mjs), 差事 (errands and 榜文 one kind; no daily boards), 问卦 (起卦 · 望气 · 命格 one card) merged; 伤势 · 羁绊/谈心/疗伤 · 历练 · 温养/强化/写符 · the elite's own rules cut, 组牌 from 结丹 — save v5 migrates; the day resets 今日传闻, the 人间功课 pick and 问卦. Also 2026-09-24: rules split into scripts/rules/*.mjs; one writer at a time (state.json.lock, `busy`); a fight holds the world still (`in-a-fight`); nothing pays twice (`won-already`, `subdued-today`, made grants progress/wealth only and once, Go replay pays nothing); gear counts in the card fight (装备入局); hosted games and 论道 cost 3 体力; the page's verbs go through the declared page_only `Verb` tool; the cloud save is [data/state.json, data/worlds]. Before: 2026-09-23 伤势 · 羁绊 · 历练 · 机缘 · 抉择 · 精英 · 杀招 · 望气 · 组牌 · the mini-games and 论道; 2026-09-18 斗法 v3 (the card fight) and 差事; 2026-09-14–17 the world, places, catalog, made worlds, 银月 at 结丹. Superseded designs live in archive.md.
 ---
@@ -28,7 +28,7 @@ status: 2026-09-28 — the story reborn (§ 故事 v3): a poor 蒙山 hunter's c
   见 `## 故事 v3 — 废柴逆袭，银月随行 (his rulings, 2026-09-28; prologue building)
 
 He found the old spine (a myth-mystery a chapter) "not a 修仙 novel" and too heavy. The new one is
-the 废柴逆袭 shape, light and 爽, our own names and plots throughout. The book — 《九鼎录》 (his title, 2026-09-30; was 《狐仙欠我一张饼》) — lives in `story/huxian-bing/` (reader chapters, book.json, notes/ with the outline, structure, sources, tasks), linked from the game. Kept: the nine 鼎,
+the 废柴逆袭 shape, light and 爽, our own names and plots throughout. The book — 《九鼎录》 (his title, 2026-09-30; was 《狐仙欠我一张饼》) — lives in `story/jiuding-lu/` (reader chapters, book.json, notes/ with the outline, structure, sources, tasks), linked from the game. Kept: the nine 鼎,
 one province and one realm a chapter, the 山海经 creatures, the set pieces.
 
 - **The hero** — a poor hunter's child of 石坳村 under 蒙山, 12 in the prologue. Quick-bodied,
@@ -48,7 +48,7 @@ one province and one realm a chapter, the 山海经 creatures, the set pieces.
   grow whole) and the 外门大比. Then 散修 across the nine provinces — rivals, villains, set pieces
   (鲲鹏, 烛龙…), each chapter a different kind of story.
 - **The 恩仇簿** — every kindness and wrong is written; people come back at key beats.
-- **Voice (his ruling, later the same day)** — a Stephen Chow–style comedy (《大话西游》's register): misery told as epic, ancient people speaking modern sense, deadpan absurdity, every solemn moment collapses, slapstick, running gags that grow, and one true beat at the end of each scene that no joke follows. Homage in technique and genre only — never a line, scene, character or prop from his films. The book's own design: `story/huxian-bing/DESIGN.md`; voice samples in its notes/. Set pieces keep the eight steps below. Earlier voice note: every set piece in the eight steps learned from the
+- **Voice (his ruling, later the same day)** — a Stephen Chow–style comedy (《大话西游》's register): misery told as epic, ancient people speaking modern sense, deadpan absurdity, every solemn moment collapses, slapstick, running gags that grow, and one true beat at the end of each scene that no joke follows. Homage in technique and genre only — never a line, scene, character or prop from his films. The book's own design: `story/jiuding-lu/DESIGN.md`; voice samples in its notes/. Set pieces keep the eight steps below. Earlier voice note: every set piece in the eight steps learned from the
   鲲鹏 passage: the world turns first, a shadow before the body, the hero is struck, a ladder of
   giants, it leaves trailing the sea, someone who knows names it, the classic's line lands, a light
   word after.
@@ -2005,7 +2005,7 @@ pill's 修为, never sold (`sell: 0`); the 储物袋 draws its 丹纹, nine line
 
 **仙丹**：仙界炼的丹。凡间的丹师，没有一个见过。它不分阶、不分品——仙丹就是仙丹。
 
-**丹炉的来历**（his, 2026-09-28）：不是九鼎之一，是**太上老君（道祖，三清之一——照道家传说，见 story/huxian-bing/DESIGN.md § 天上的秩序）送的**——兜率宫里一只小小的**试丹炉**，
+**丹炉的来历**（his, 2026-09-28）：不是九鼎之一，是**太上老君（道祖，三清之一——照道家传说，见 story/jiuding-lu/DESIGN.md § 天上的秩序）送的**——兜率宫里一只小小的**试丹炉**，
 老君给炼丹童子学手艺用的。所以它的本事都有来由：**尝一口记住丹方**（试丹炉本来就是尝丹方用的）；
 **随主人**（给学徒用的炉子，炼出来的永远是学徒吃得下的——免得童子吃坏了）；**不炸炉**（老君的炉子，不会炸）；
 **会飞**（兜率宫在天上，炉子都会飞）。银月小时候，老君把它送给了她（「拿去玩，别炸了」）；她坠落凡间时，
