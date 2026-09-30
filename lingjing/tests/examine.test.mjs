@@ -64,7 +64,7 @@ test('looking is free and written on the save; looked at again, the same line an
 
 test('the key clue opens the chase — as a quiet 「接着」, not a big button — and Resolve takes it', () => {
   const found = examine(atHeisong(), 'stone');
-  assert.deepEqual(found.result.opens, ['追蹄印，三十步刻一道']);
+  assert.deepEqual(found.result.opens, ['追蹄印，一百步刻一道']);
   assert.equal(found.result.looked.clue, true);
   const sc = look(found.state, content, ctx()).scene;
   assert.deepEqual(sc.panel.taps.map(t => [t.id, t.quiet]), [['carve', 'on']]);

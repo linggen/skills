@@ -119,9 +119,9 @@ test('the page draws the passages owed with their beats (Tell) and marks them to
     const t = cli('tell');
     assert.deepEqual(t.tell.map(i => i.id), ['00-masan/strike', '00-dawn']);
     assert.equal(t.report, undefined, 'no report for Ling');
-    assert.match(t.tell[0].beats.zh.map(b => b.text).join('\n'), /你攥紧了拳头/);
-    assert.ok(t.tell[1].beats.zh.some(b => b.name === '阿禾' && b.art), '阿禾 speaks with her face');
-    assert.ok(t.tell[1].beats.en.some(b => b.name === 'Ahe'), 'and in English, for a switch mid-passage');
+    assert.match(t.tell[0].beats.zh.map(b => b.text).join('\n'), /小满攥紧了拳头/);
+    assert.ok(t.tell[1].beats.zh.some(b => /阿禾道：「你别死在里头啊。」/.test(b.text)), '阿禾 at the window, in the book\'s words');
+    assert.ok(t.tell[1].beats.en.some(b => /Ahe said/.test(b.text)), 'and in English, for a switch mid-passage');
     assert.deepEqual(cli('tell').tell, [], 'drawn once');
     assert.equal(cli('look').tell_owed, undefined);
     assert.equal(cli('tell', '--for=ling').ok, false, 'the page\'s alone');
@@ -179,13 +179,13 @@ test('her lines in the book are the book\'s: played in place, awake or asleep (h
   const valley = walk(start(), TO_VALLEY, content, NOW);
   assert.equal(valley.scene, '00-yinyue');
   // at dawn she is not yet with the player: Ling tells her words
-  assert.match(tellOf(content, valley).tell.at(-1).text, /\*\*她\*\*：（嚼）难吃。/);
+  assert.match(tellOf(content, valley).tell.at(-1).text, /她一面嚼，一面道：「难吃。」/);
   const out = resolve(valley, content, ctx(), { exit: 'follow' });
   assert.deepEqual(out.result.joined, { id: 'yinyue' });
   assert.deepEqual(out.state.companion, { joined: '2026-09-28', awake: true });
   const cliff = tellOf(content, out.state).tell.at(-1);
   assert.equal(cliff.id, '00-cliff');
-  assert.match(cliff.text, /懒洋洋地抬了抬下巴。/);
+  assert.match(cliff.text, /懒洋洋地抬了抬下巴/);
   assert.match(cliff.text, /让开/, 'her book line told in place');
   assert.doesNotMatch(cliff.text, /〔银月〕|⟪|⟫/);
   assert.doesNotMatch(out.result.her_beat?.facts?.line ?? '', /让开/, 'never handed to her as well');

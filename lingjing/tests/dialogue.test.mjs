@@ -82,7 +82,7 @@ test('a move plays its two passages in order — the choice\'s outcome, then the
   for (let k = 0; k < total; k++) { const c = current(r); seen.push([c.beat.of, c.beat.text]); r = advance(r); }
   assert.equal(seen[0][0], 'choice');
   assert.equal(seen.at(-1)[0], 'scene');
-  assert.match(seen.map(x => x[1]).join(''), /你攥紧了拳头[\s\S]*阿禾/, 'the outcome, then the dawn');
+  assert.match(seen.map(x => x[1]).join(''), /小满攥紧了拳头[\s\S]*阿禾/, 'the outcome, then the dawn');
   assert.ok(!playing(r), 'the last tap puts the box away');
   assert.ok(choicesUp(r));
   assert.equal(toldSoFar(r).length, total, 'the log holds them all');

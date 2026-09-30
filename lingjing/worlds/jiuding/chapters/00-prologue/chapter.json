@@ -7,7 +7,7 @@
   "free": true,
   "first_scene": "00-shiao",
   "gate": null,
-  "_map": "The map this chapter opens (his, 2026-09-29: 地图分步打开): the prologue (第一回 and 第二回) is 石坳村 and 蒙山, and the road up to the temple. A corridor walks the player anyway; the map is what the page greys and Move refuses past (world.mjs mapOf).",
+  "_map": "The map this chapter opens (his, 2026-09-29: 地图分步打开): the prologue (第一回 to 第四回) is 石坳村 and 蒙山, and the road up to the temple. A corridor walks the player anyway; the map is what the page greys and Move refuses past (world.mjs mapOf).",
   "map": {
     "places": [
       "shiao",

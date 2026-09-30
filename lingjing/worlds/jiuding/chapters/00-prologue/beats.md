@@ -1,28 +1,32 @@
 # Prologue · 蒙山 — beat sheet
 
-The script is story/jiuding-lu/notes/archive/prologue-1-source.md (sections
-一–九, tasks 1–13) and prologue-2-source.md (十–十九, tasks 14–30), approved by
-Hanli 2026-09-28; the order of part 2 is notes/archive/structure.md. (Since then:
-the panels are words only — the pictures went to the 图鉴, 2026-09-29; the book
-is now 《九鼎录》, told in the third person with the hero fixed as 沈小满 and 阿禾
-as 周禾, a girl — 2026-09-30; the name card and {伴} below are the game as built,
-to follow the book — doc/design.md § Follow-ups.) Told as a 小人书:
-each scene is one painted panel on the stage (`panel`: art/panels/, a caption
-of two to four lines, the choices under it) and one passage in the chat
-(`story`, zh + en — the source's own prose; an exit's `story` is a choice's
-outcome). Ling tells the passage; the stage never holds the prose. The hero is
-你 — name and 男 · 女 on the first scene's card; {伴} is 阿禾 for every hero, always
-the other gender (a girl beside a boy, a boy beside a girl).
+The script is now the book itself — story/jiuding-lu/01-第一回.md to 04-第四回.md
+(2026-09-30: 「并行对齐游戏和新书」). Every scene's `story` and every exit's `story`
+is the book's own passage for that beat, zh verbatim in the third person
+(沈小满; 阿禾 = 周禾, a girl), en a faithful translation; markup (`[x]{注=…}`,
+`{典=…}`) is stripped; 银月's words standing alone are marked ⟪…⟫ in both
+languages. A choice the book never took (strike, no-egg, home, alone, chase,
+leave, keep, straight, truth, stay-home, out, wait, rush, pay/refuse) is written
+in the book's voice, third person, no new events. `setup`, `recap`, the panel's
+caption and the buttons speak to the player as 你 (DESIGN.md § 四·五 人称分工).
+The dialogue box plays the passage a paragraph at a time; the book's dialogue is
+inline (`X道：「…」`), so the box reads it as narration — no faces (see the
+follow-up in this lane's report). The first sources (notes/archive/prologue-1/2-source.md,
+structure.md, approved 2026-09-28) are history now.
+
+Book 回 per scene: h01 = 00-shiao … 00-yinyue (第一回), h02 = 00-cliff … 00-sleep
+(第二回), h03 = 00-halfyear, 00-uncle, 00-notice (第三回 — the winter, 舅舅,
+the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 00-mijing (第四回).
 
 | Scene | Source | Choices → mechanics |
 |---|---|---|
-| `00-shiao` 石坳村 | 一 | the name card (名字 · 男 · 女) |
+| `00-shiao` 石坳村 | 一 | one plain exit `begin` (the hero is fixed, 2026-09-30) |
 | `00-masan` 马三 | 一 | 垂眼 (`kept-count`) · 攥拳 (体力 −5): both write 恩仇簿 仇 马小宝, 马三 — task 2 |
 | `00-dawn` 鸡蛋 | 一 | 收下 → 恩 {伴} (task 3) · 推回去 (`no-egg`) |
 | `00-kitchen` 灶间 | 一 | 跟爹进山 → 狐纹木牌 (task 4) |
 | `00-chushan` 前山 | 二 | 爬树眺望 → the map card (task 5) |
 | `00-duanbei` 断碑 | 三 | 看碑背 (`stele-fox`, task 7) · 三条规矩 (`three-rules`, task 6) · 回村 / 独自进 stay |
-| `00-heisong` 黑松岭 | 三 | 三十步一记 (体力 −3, `marks-cut`, task 8) |
+| `00-heisong` 黑松岭 | 三 | 一百步一记 (体力 −3, `marks-cut`, task 8) |
 | `00-storm` 暴雨 | 四 | 掉头 (体力 −4) · 再追半里 (体力 −10, the harder fall — task 9) |
 | `00-fall` 坠谷 | 五 · 六 | 一样一样地查 (task 10) |
 | `00-fox` 银光 | 七 | 裹起它 · 别碰 (stay) — task 11 |

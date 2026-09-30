@@ -96,12 +96,12 @@ test('生辰 at the 入门仪式: the roots are read and the day let go — neve
   // owed since Ling last read — every beat walked here, the root test last but the scene
   const told = tellOf(content, out.state).tell, rite = told.find(t => t.id === "00-hall/born");
   assert.deepEqual(told.slice(-2).map(t => t.id), ['00-hall/born', '00-waimen']);
-  assert.match(rite.text, /\*\*执事\*\*：（念）金木水火土，五行俱全——五行杂灵根。下下之资。/);
-  assert.match(rite.text, /金、青、黑、红、黄，五种颜色，都有一点，哪一种都不多。只有黄的那一点，比别的亮一些。像你娘用剩下的五种碎布/);
-  assert.match(rite.text, /\*\*马小宝\*\*：杂灵根也配进山门？/);
-  assert.doesNotMatch(rite.text, /[{}]|伪灵根|缺/);
+  assert.match(rite.text, /念道：「金、木、水、火、土——五行俱全。五行杂灵根。下下之资。」/);
+  assert.match(rite.text, /金、青、黑、红、黄，五种颜色，一样不少[\s\S]*拼成的一块抹布。只有黄的那一点，比别的亮一些。/);
+  assert.match(rite.text, /杂灵根也配进山门？/);
+  assert.doesNotMatch(rite.text, /[{}]|伪灵根|缺[金木水火土]/);
   const waimen = tellOf(content, resolve(out.state, content, ctx(), { exit: 'pay' }).state).tell.find(t => t.id === '00-waimen/pay');
-  assert.match(waimen.text, /十二岁。五行杂灵根。下下之资。练气零层。/);
+  assert.match(waimen.text, /摸出一块灵石，交了。/);
   assert.match(rite.text, /腿稳。心细。/);
   assert.deepEqual(out.result.show, [{ card: 'traits' }]);
   assert.equal(out.state.fate, undefined, 'the 命格 stays the coins card\'s own choice');
@@ -125,8 +125,8 @@ test('不填: the stone reads five even — none leads — and the starter is th
     assert.equal(a.result.born.roots.name, lang === 'zh' ? '五行杂灵根' : 'Mixed five-element root');
     for (const id of starterFor(content, a.state.traits)) assert.ok(a.state.cards.includes(id), id);
     const rite = tellOf(content, a.state).tell.find(t => t.id === '00-hall/born').text;
-    assert.match(rite, lang === 'zh' ? /（念）金木水火土，五行俱全——五行杂灵根。下下之资。/ : /\(reading out\) Metal, Wood, Water, Fire, Earth — all five elements, every one: a mixed five-element root\. The lowest of the low\./);
-    assert.match(rite, lang === 'zh' ? /哪一种都不多。像你娘用剩下的五种碎布/ : /not much of any\. Like a rag your mother stitched together out of five kinds/, 'even: no colour brighter, no gap left');
+    assert.match(rite, lang === 'zh' ? /念道：「金、木、水、火、土——五行俱全。五行杂灵根。下下之资。」/ : /Metal, wood, water, fire, earth — all five elements\. A mixed five-element root\. The lowest of the low\./);
+    assert.match(rite, lang === 'zh' ? /拼成的一块抹布。\n/ : /five kinds of leftover scraps\.\n/, 'even: no colour brighter, no gap left');
   }
 });
 
@@ -186,7 +186,7 @@ test('the hero is fixed (2026-09-30): {兄姐} is 师兄, {伴} is 阿禾, a gir
   assert.match(tellOf(content, s).tell.at(-1).text, /隔壁的阿禾/);
   const egg = resolve(s, content, ctx(), { exit: 'egg' });
   assert.deepEqual(egg.result.ledger.map(e => [e.who, e.kind]), [['ahe', '恩']]);
-  assert.match(tellOf(content, egg.state).tell.find(t => t.id === '00-dawn/egg').text, /\*\*阿禾\*\*：那记账。/);
+  assert.match(tellOf(content, egg.state).tell.find(t => t.id === '00-dawn/egg').text, /阿禾把手缩回袖子里，一本正经地道：「那记账。/);
   // an old save named on the card, or never named: the same words
   for (const old of [{ ...start(), name: '墨白', gender: 'female' }, { ...start(), name: null, gender: null }]) {
     assert.equal(fill('从此观里的人叫你「{name}{兄姐}」。是{伴}。', old, content), '从此观里的人叫你「沈小满师兄」。是阿禾。');
@@ -336,12 +336,12 @@ test('an old save whose prologue scene the rewrite took away lands on the neares
 test('the catchphrase rides the book\'s beats: the bowl night first, the bow, the vine on his own grandfather, the beam, nine heads', () => {
   const scenes = content.chapters['00-prologue'].scenes;
   const story = (id, exit) => (exit ? scenes[id].exits.find(e => e.id === exit) : scenes[id]).story;
-  const beats = [['00-masan', 'endure', /一个一个地，骂了一遍：\n\n\*\*你爷爷的。\*\*/], ['00-masan', 'strike', /一个一个地，骂了一遍：\n\n\*\*你爷爷的。\*\*/],
-    ['00-notice', null, /\*\*你\*\*：……爹，这话听着像骂人。\n\n\*\*爹\*\*：不许瞎说。（把弓往你怀里一塞）你爷爷的弓。/],
-    ['00-fall', null, /藤，断了。\n\n「你爷爷的——」[\s\S]*「……爷爷，不是说你。」/], ['00-sleep', 'bath', /房梁。\n\n「你爷爷的……」/],
-    ['00-longzhi', null, /「你爷爷的，」你趴在地上想，「九个脑袋。」/]];
+  const beats = [['00-masan', 'endure', /在心里骂得极响：\*\*你爷爷的。\*\*/], ['00-masan', 'strike', /在心里骂得极响：\*\*你爷爷的。\*\*/],
+    ['00-notice', null, /「你爷爷的。你拿着。」[\s\S]*「……爹，这话听着像骂人。」[\s\S]*「你爷爷的弓。」/],
+    ['00-fall', null, /藤断了。\n\n「你爷爷的——」[\s\S]*「……爷爷，不是说你。」/], ['00-sleep', 'bath', /顶梁。「你爷爷的——」/],
+    ['00-longzhi', 'subdue', /心里想：你爷爷的，九个脑袋。/]];
   for (const [id, exit, zh] of beats) {
-    const exitId = exit ?? (id === '00-longzhi' ? scenes[id].exits[0].id : null);
+    const exitId = exit;
     const s = story(id, exitId);
     assert.match(s.zh, zh, `${id}/${exitId}`);
     assert.match(s.en, /Your grandpa's/, `${id}/${exitId} en`);
@@ -359,14 +359,15 @@ test('the companion\'s cameos: 阿禾, a girl — braids, the red nose and noteb
     for (const t of texts()) {
       for (const lang of ['zh', 'en']) {
         const out = fill(t[lang], { ...s, lang }, content);
-        assert.doesNotMatch(out, /\{伴|阿禾|「石头|石头（|Ahe|Shitou/, `${gender} ${lang}: filled, never named`);
+        assert.doesNotMatch(out, /\{伴|「石头|石头（|Shitou/, `${gender} ${lang}: filled`);
+        if (t !== scenes['00-hall'].story) assert.doesNotMatch(out, /阿禾|Ahe/, `${gender} ${lang}: at the steps and the wall she is never named`);
       }
       assert.match(fill(t.zh, s, content), /小辫子|红鼻头|小本子/, gender);
-      assert.doesNotMatch(fill(t.zh, s, content), /翘|小子|大包袱|结巴|红脸蛋/, gender);
+      assert.doesNotMatch(fill(t.zh, s, content), /翘起来的头发|翘头发|结巴|红脸蛋/, gender);
     }
     const hallText = fill(scenes['00-hall'].story.zh, s, content);
-    assert.match(hallText, /红鼻头。小辫子。小本子。\n\n你心里咯噔一下——不会吧？/);
-    assert.match(hallText, /（念）木、水、土，三灵根。真灵根。中上之资。[\s\S]*一定是看错了。\n\n轮到你了。/);
+    assert.match(hallText, /红鼻头。小辫子。小本子。\n\n小满心里咯噔一下：不会吧？/);
+    assert.match(hallText, /木、水、土，三灵根——真灵根。中上之资。[\s\S]*一定是看错了。[\s\S]*\n\n轮到小满了。/);
   }
 });
 
