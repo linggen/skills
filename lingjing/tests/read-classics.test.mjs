@@ -66,7 +66,7 @@ test('each 回 ends with its classics (卷一 in ten since 2026-09-30), and the 
   assert.deepEqual(entries('h05'), ['suwen', 'liezi-yugong', 'shanhai-zheng']);
   assert.deepEqual(entries('h06'), ['shennong', 'zuozhuan-ranzhi', 'baopu', 'jiuding']); // 抱朴子's 转 told in 褚先生's lecture while he grips the bottle — no narrator aside at the first 纹 (2026-09-30)
   assert.deepEqual(entries('h07'), ['shanhai-gui', 'shanhai-xirang']);
-  assert.deepEqual(entries('h08'), ['liji-zha', 'lunyu-shuxiu', 'huangting', 'shangshu-yugong']);
+  assert.deepEqual(entries('h08'), ['liji-zha', 'huangting', 'shangshu-yugong']); // 束脩 told as the radish joke, no quote (review round, 2026-09-30)
   assert.deepEqual(entries('h09'), ['baopu-jiyan', 'zhouyi-xun', 'zhuangzi-keyi', 'suwen', 'huangting']); // 恬惔虚无 moved from 第三回 to the eve of 筑基 (课随境界走, 2026-09-30) // 褚先生's 筑基 lecture moved off the cliff into the autumn 讲堂 (2026-09-30)
   assert.deepEqual(entries('h10'), ['shiji-ximenbao', 'shanhai-bingyi']);
   for (const c of chapters) assert.equal(/《吐纳经》\{典=/.test(c.md), false, `${c.file}: 《吐纳经》 is 银月's own, never a classic`);
