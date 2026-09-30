@@ -78,7 +78,7 @@ function taiSvg({ sway = false, door = false, piles = false, lang = 'zh' } = {})
   const pileXs = [cx - 58, cx - 26, cx + 26, cx + 58];
   const pileSvg = piles ? pileXs.map((x) => `<path d="M${x},${cy - 10} L${x},${cy + 74}" stroke="#231f1a" stroke-width="5" stroke-linecap="round"/>`).join('') : '';
   const w = DOOR_WORDS[lang] ?? DOOR_WORDS.zh;
-  const doorSvg = door ? `<g><rect x="${cx - 44}" y="${cy - 104}" width="88" height="132" fill="#6b5a45" opacity=".85"/><rect x="${cx - 36}" y="${cy - 96}" width="72" height="116" fill="none" stroke="#2a241d" stroke-width="3"/><rect x="${cx - 16}" y="${cy - 80}" width="32" height="64" fill="#efe6d2"/><text x="${cx}" y="${cy - 62}" text-anchor="middle" font-size="12" fill="#231f1a" writing-mode="tb">${w[1]}</text></g>` : '';
+  const doorSvg = door ? `<g><rect x="${cx - 44}" y="${cy - 104}" width="88" height="132" fill="#6b5a45" opacity=".85"/><rect x="${cx - 36}" y="${cy - 96}" width="72" height="116" fill="none" stroke="#2a241d" stroke-width="3"/><rect x="${cx - 16}" y="${cy - 80}" width="32" height="64" fill="#efe6d2"/>${lang === 'en' ? w[1].split(' ').reduce((acc, word) => { const last = acc.at(-1); if (last && (last + ' ' + word).length <= 9) acc[acc.length - 1] = `${last} ${word}`; else acc.push(word); return acc; }, []).map((line, k, all) => `<text x="${cx}" y="${cy - 48 - (all.length - 1) * 5 + k * 10}" text-anchor="middle" font-size="7" fill="#231f1a">${line}</text>`).join('') : `<text x="${cx}" y="${cy - 62}" text-anchor="middle" font-size="12" fill="#231f1a" writing-mode="tb">${w[1]}</text>`}</g>` : '';
   return `<g transform="${sway ? `rotate(-2 ${cx} ${cy})` : ''}"><circle cx="${cx}" cy="${cy}" r="112" fill="#34465c" opacity=".12"/><circle cx="${cx}" cy="${cy}" r="112" fill="none" stroke="#231f1a" stroke-width="2.5" opacity=".6"/>${stones}${pileSvg}${doors}${doorSvg}</g>`;
 }
 const starsSvg = () => starField().map((s) => `<circle cx="${s.x.toFixed(1)}" cy="${(s.y + 26).toFixed(1)}" r="${s.s.toFixed(2)}" fill="#fdf6e3" opacity="${s.a.toFixed(2)}"/>`).join('');
@@ -99,7 +99,7 @@ export function stillSvg(beatId, lang = 'zh') {
 /* ── the frame the moment plays in (DOM): picture, caption, door words, skip ── */
 function frameHost(slot, lang, captions) {
   const host = document.createElement('div');
-  host.className = 'zjhost';
+  host.className = `zjhost ${lang === 'en' ? 'en' : 'zh'}`;
   host.innerHTML = `<div class="zjpic"><div class="zjdoor" hidden><span class="zjw0"></span><span class="zjw1"></span></div><div class="zjhint">${TAPHINT[lang] ?? TAPHINT.zh}</div></div>`
     + `${captions ? '<div class="zjcap" aria-live="polite"></div>' : ''}<button class="zjskip" type="button">${SKIP[lang] ?? SKIP.zh}</button>`;
   const [w0, w1] = DOOR_WORDS[lang] ?? DOOR_WORDS.zh;

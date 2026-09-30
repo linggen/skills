@@ -45,7 +45,7 @@ test('still frames: an svg per beat, drawing that beat', () => {
   }
   assert.match(stillSvg('light'), /url\(#zjlight\)/, 'the light comes down');
   assert.match(stillSvg('door'), /今日放学/, 'the door\'s words are 爹\'s');
-  assert.match(stillSvg('door', 'en'), /NO SCHOOL TODAY/);
+  assert.match(stillSvg('door', 'en'), /NO SCHOOL<\/text>.*TODAY/);
   assert.ok((stillSvg('stars').match(/#fdf6e3/g) ?? []).length >= 50, 'the stars hang low');
   assert.ok(!stillSvg('gather').includes('#fdf6e3'), 'no stars before the 锅 bursts');
 });

@@ -10,6 +10,8 @@
 .zjdoor { position: absolute; left: 46%; top: 34%; width: 8%; height: 12.8%; pointer-events: none; }
 .zjdoor span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; writing-mode: vertical-rl;
   font-family: var(--serif); font-weight: 600; font-size: clamp(10px, 2.4vw, 15px); letter-spacing: .08em; color: #231f1a; opacity: 0; transition: opacity .6s ease, filter .6s ease; }
+/* English doesn't stand in a column: small lines across the strip */
+.zjhost.en .zjdoor span { writing-mode: horizontal-tb; font-size: clamp(7px, 1.7vw, 10px); letter-spacing: 0; text-align: center; line-height: 1.25; padding: 0 1px; }
 .zjdoor.w0 .zjw0 { opacity: 1; color: #8a2b20; }
 .zjdoor.w1 .zjw1 { opacity: 1; }
 .zjdoor.gone span { opacity: 0; filter: blur(3px); }
