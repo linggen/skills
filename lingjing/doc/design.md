@@ -523,7 +523,28 @@ His order of value: **5 > 3 > 1 > 7 > 6 > 2 > 4**.
    wash · ink with rivers, a red seal and a moon; ~7.4 s, tap to skip; **御剑**
    to a homed 鼎 for 1 体力; 卷轴 unroll at 下山. Lesson: a reward must brighten,
    never darken.
-2. **大场面** 【远景】 — one per 卷 at most, the whole stage.
+2. **大场面** 【已建 · 卷一】 — one per 卷 at most, the whole stage. 卷一's is
+   **漳水立起** (第十回; Hanli 2026-09-30): `setpiece.js` (the runner) +
+   `setpieces/zhang.js` (the piece), Pixi + GSAP from fx.js's loaders, ink only,
+   words never painted. Seven beats in the book's order, each tied to a verbatim
+   line of 10-第十回.md (tests/setpiece.test.mjs holds it): `still` 2.8 s · `rise`
+   4.8 s (the river stands, a thousand fish leap, twenty boats on the bare bed) ·
+   `bingyi` 3.6 s (冰夷 on his two dragons rises through a pale pool) · `trial`
+   5.2 s (the left dives, the right sweeps, both stop a foot from the boy with his
+   arms open before the tofu girl) · `fall` 3.4 s · `seal` 4.6 s (the 洛书 stones,
+   six and eight swapped, then traded; five pressed home; the ring lights; a beam)
+   · `ding` 4.2 s (the 鼎 rises and shrinks; dusk; the token's second tail) —
+   28.6 s. A beat plays, then holds for a tap (the dialogue box's next passage;
+   `auto` runs on); a tap mid-beat finishes it; skip ends. Reduced motion: each
+   beat's last frame. No WebGL: an SVG still per beat. After it the page plays
+   what exists — 银月's memory 1, then 鼎归 — never drawn twice.
+   **Declaration** (on the exit that raises 漳水; `story.mjs` carries it on the node):
+   `"setpiece": "zhang"` (or `{ "id": "zhang" }`). **Page wiring** (the scene lane):
+   a `setpiece` view slot ranked first; in `storyMoment(n)`, `const id =
+   setpieceOf(n)` → `playSetPiece(slot, id, { lang, still: stillMotion(), onBeat,
+   onDone })`, and hold `memory`/`homing` until `onDone` (they are already
+   `YIELDS`). **Preview:** `scripts/setpiece.html?name=zhang` (`&auto=1`,
+   `&still=1`, `&lang=en`; `&raf=timeout` for a tab whose frames are parked).
    **筑基天象** 【已建】 (2026-09-30; not the 卷's 大场面 — mid-size, ~12 s): scripts/setpiece-zhuji.js + setpiece-zhuji.css, PixiJS + GSAP through fx.js. Beats follow 09-第九回.md's 筑基: gather (one cloud over the cliff turns into an upturned 锅, the wind stops) · light · tai (inside: the 台 rises, the five doors light) · door (心关 · 惧: 「勿入」 → 爹's 「今日放学」, the door melts) · zhu (黄庭's four gates as piles) · stars (the 锅 bursts; stars hang low) · settle (「几道纹？」「……一道。」). Each beat waits for a tap (the dialogue box's next passage); a tap mid-beat finishes it; 跳过 ends it; reduced motion or no WebGL → an SVG still per beat. **Declaration** (the 冀 lane, on `09-cliff`): `"setpiece": "zhuji"` — played with `playSetPiece(host, 'zhuji', { lang, still, auto: false, captions: false, onBeat(i, beat), onDone })` from setpiece-zhuji.js (the same call shape as setpiece.js's runner; the book's words go to the dialogue box from `onBeat`, `beat.zh` / `beat.en` carry them). Preview: `scripts/try-zhuji.html` (`?lang=en`, `?still=1`, `?auto=1`).
 3. **银月的记忆是彩色的** 【已建】 — § 银月 in the game.
 4. **山海经 图录** 【已建】 — the 图鉴's creature pages; the readable picture book later.
@@ -551,7 +572,7 @@ The page stays web UI; **PixiJS** paints what must be drawn (ink wicking,
 grain, particles, ink to colour); **GSAP** times one moment. Vendored, pinned
 (`scripts/vendor/`); loaded only for a moment; one canvas per moment,
 destroyed after; words never painted; no WebGL → the SVG/CSS version; one
-module, `fx.js`. **Built:** the 鼎归 pilot. **Next, in order:** her colour
+module, `fx.js`. **Built:** the 鼎归 pilot; 卷一's 大场面 (`setpiece.js`, § 哇时刻 ②). **Next, in order:** her colour
 memories in WebGL, weather particles, the big set pieces, chapter transitions.
 
 ## Player state 【已建】
