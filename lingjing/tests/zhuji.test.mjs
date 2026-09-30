@@ -111,3 +111,16 @@ test('the set pieces ride their exits: 筑基天象 on the cliff\'s throw, 漳�
   for (let k = 0; rollOf(t, 'foundation') >= chance; k += 1) t = { ...cliff, breakthrough: { tries: { foundation: k + 1 } } };
   assert.equal(go(t, 'take').state.node?.setpiece, 'zhuji', 'the story node carries it to the page');
 });
+
+test('one runner for both set pieces: setpieces/zhuji.js hands 筑基天象\'s own player to setpiece.js, and the page plays a node\'s piece', async () => {
+  const fs = await import('node:fs');
+  const zhuji = await import('../scripts/setpieces/zhuji.js');
+  assert.equal(typeof zhuji.play, 'function');
+  assert.deepEqual(zhuji.BEATS.map(b => b.id), ['gather', 'light', 'tai', 'door', 'zhu', 'stars', 'settle']);
+  const runner = fs.readFileSync(new URL('../scripts/setpiece.js', import.meta.url), 'utf8');
+  assert.match(runner, /typeof def\.play === 'function'\) return def\.play\(host/);
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /const piece = setpieceOf\(n\);\s*if \(piece\) playPiece\(piece\);/);
+  assert.match(page, /k < 600 && pieceOn; k \+= 1\) await pause\(250\);\s*if \(play\) show\(\{ memory/, 'her memory waits for the piece');
+  assert.match(page, /k < 600 && pieceOn; k \+= 1\) await pause\(250\); \/\/ a set piece first, then the map/, '鼎归 waits for the piece');
+});

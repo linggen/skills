@@ -50,6 +50,8 @@ const loadImage = (src) => new Promise((ok, no) => { const im = new Image(); im.
 export async function playSetPiece(host, id, { lang = 'zh', still = false, auto = false, hold = 900, artBase = ART_BASE, onBeat, onDone } = {}) {
   if (!/^[a-z]+$/.test(id)) throw new Error(`bad set piece: ${id}`);
   const def = await import(`./setpieces/${id}.js`);
+  // A piece that brings its own player (setpieces/zhuji.js → setpiece-zhuji.js): one runner, one call.
+  if (typeof def.play === 'function') return def.play(host, { lang, still, auto, onBeat, onDone });
   const steps = beatStepper(def.BEATS);
   const box = document.createElement('div');
   box.className = 'sphost';

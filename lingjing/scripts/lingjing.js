@@ -36,6 +36,7 @@ import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
 import { advance, dialogHtml, keepReading, loadReading, logHtml, playing, skipAll, withTold } from './dialogue.js';
 import { wireLiveGames } from './live-games.js';
+import { playSetPiece, setpieceOf } from './setpiece.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -2562,6 +2563,35 @@ function watchMemory() {
   memorySeen = at;
   if (last) playMemory(last.n);
 }
+/* 大场面 · 筑基天象 (setpiece.js, one runner for both): a box over the whole stage.
+   A tap plays the next beat (with the dialogue box's rhythm), 跳过 ends it, and
+   after the last beat a tap (or a while) puts it away. The book's line for each
+   beat is said under the picture, in DOM; reduced motion plays still frames. */
+let pieceOn = null;
+async function playPiece(id) {
+  if (pieceOn) return;
+  const en = lang() === 'en';
+  const box = document.createElement('div');
+  box.className = 'spstage';
+  box.dataset.piece = id;
+  box.innerHTML = `<div class="sphold"></div><p class="spline" aria-live="polite"></p><button class="spskip" type="button">${en ? 'Skip' : '跳过'}</button>`;
+  document.body.appendChild(box);
+  const mine = pieceOn = { id, box, ctl: null, over: false };
+  const close = () => { if (pieceOn !== mine) return; mine.ctl?.destroy?.(); box.remove(); pieceOn = null; };
+  box.addEventListener('click', (e) => {
+    if (e.target.closest('.spskip')) { mine.ctl?.skip?.(); close(); } else if (mine.over) close(); else mine.ctl?.tap?.();
+  });
+  try {
+    const line = box.querySelector('.spline');
+    mine.ctl = await playSetPiece(box.querySelector('.sphold'), id, {
+      lang: lang(), still: stillMotion(),
+      onBeat: (i, b) => { line.textContent = b.text ?? b.line?.[lang()] ?? ''; },
+      onDone: () => { mine.over = true; box.classList.add('over'); setTimeout(close, 9000); },
+    });
+    if (pieceOn !== mine) mine.ctl?.destroy?.();
+  } catch (e) { console.warn('[lingjing] set piece', id, e); close(); }
+}
+
 let memoryWaits = false; // a memory come back, not yet on the stage (鼎归 waits for it)
 async function playMemory(n) {
   memoryWaits = true;
@@ -2572,6 +2602,8 @@ async function playMemoryNow(n) {
   const play = replayOf(r?.album, n);
   // A 鼎 home is often a realm risen too: her memory waits for the gold seal to go (feat).
   for (let k = 0; k < 40 && document.querySelector('.feat'); k += 1) await pause(200);
+  // …and for a set piece on the stage to end (the 鼎 rises in 漳水立起 before she remembers).
+  for (let k = 0; k < 600 && pieceOn; k += 1) await pause(250);
   if (play) show({ memory: { n, i: 0, play, at: performance.now() } });
 }
 
@@ -2598,6 +2630,7 @@ async function playHoming(province) {
   const sealed = () => shown?.chapter === look?.chapter?.id;
   await pause(600);
   for (let k = 0; k < 160 && (!sealed() || document.querySelector('.feat') || view.memory || memoryWaits); k += 1) await pause(250);
+  for (let k = 0; k < 600 && pieceOn; k += 1) await pause(250); // a set piece first, then the map
   await loadAtlas();
   const places = atlasPlaces?.provinces?.[province]?.places ?? [];
   const pts = places.map((p) => p.map).filter(Boolean);
@@ -2668,6 +2701,10 @@ function watchNode() {
 }
 const nodeFresh = (kinds) => Boolean(look?.story_node && kinds.includes(look.story_node.kind) && Date.now() - Date.parse(look.story_node.at) < 60000);
 function storyMoment(n) {
+  // A set piece (哇时刻 ②, an exit's `setpiece`: 漳水立起, 筑基天象): the whole stage plays
+  // it first; her memory and 鼎归 wait for it to end (playMemoryNow, playHoming).
+  const piece = setpieceOf(n);
+  if (piece) playPiece(piece);
   // A realm lifted with its doors (息壤): the five open on the stage, one by one.
   if (n.doors?.length) show({ doors: { node: n, at: performance.now() } });
   const m = nodeMoment(n);
