@@ -1,0 +1,48 @@
+{
+ "_about": "Pending classics.json entries for notes/draft-第八回.md — merge into ../classics.json when the draft becomes 08-第八回.md (tests/read-classics requires every entry to be named in a chapter). Originals checked against Wikisource 2026-09-30: 《禮記·郊特牲》 and 《論語·述而》 as substrings of the page wikitext; 《尚書·禹貢》 against the rendered page (its wikitext carries {{另|…}} variant templates — the main reading is kept, variants in note). 第八回 also cites the existing entry huangting.",
+ "liji-zha": {
+  "title": "礼记·郊特牲",
+  "about": "《礼记》，儒家经典，汉代戴圣编定，记先秦礼制与礼说；〈郊特牲〉讲郊祭与年终的蜡祭。",
+  "source": {
+   "edition": "维基文库《禮記/郊特牲》",
+   "section": "〈郊特牲〉·天子大蠟八",
+   "url": "https://zh.wikisource.org/wiki/%E7%A6%AE%E8%A8%98/%E9%83%8A%E7%89%B9%E7%89%B2",
+   "license": "公有领域（古籍；维基文库 PD-old）"
+  },
+  "original": "天子大蠟八。伊耆氏始為蠟，蠟也者，索也。歲十二月，合聚萬物而索饗之也。……古之君子，使之必報之。迎貓，為其食田鼠也；迎虎，為其食田豕也，迎而祭之也。",
+  "plain": [
+   "天子年终举行大蜡祭，祭八种神。伊耆氏开始行蜡祭；蜡，就是求索的意思——每年十二月，把万物都聚拢来，一一寻来祭飨。……古时的君子，用过谁的力，一定要报答。迎猫来祭，因为它吃田里的老鼠；迎虎来祭，因为它吃田里的野猪。"
+  ],
+  "note": "「蠟」这里读 zhà，是年终的蜡祭，与后世的腊祭、腊八并不是一回事；周衡只借它说「年底结账」。周衡说的「先谢教人种地的，再谢管地的、种地的、看田的」，是照原文「主先嗇，而祭司嗇也……饗農及郵表畷」一路说下来的白话。"
+ },
+ "lunyu-shuxiu": {
+  "title": "论语·述而",
+  "about": "《论语》，孔子弟子及再传弟子记孔子言行；〈述而〉第七。",
+  "source": {
+   "edition": "维基文库《論語/述而第七》",
+   "section": "〈述而〉第七·第七章",
+   "url": "https://zh.wikisource.org/wiki/%E8%AB%96%E8%AA%9E/%E8%BF%B0%E8%80%8C%E7%AC%AC%E4%B8%83",
+   "license": "公有领域（古籍；维基文库 PD-old）"
+  },
+  "original": "子曰：「自行束脩以上，吾未嘗無誨焉。」",
+  "plain": [
+   "孔子说：「只要是自己带着十条干肉来求学的，我从没有不教的。」"
+  ],
+  "note": "束脩是十条干肉，古时拜师的薄礼。瞿老的解说——要的不是肉，是自己走过来的那一趟——是他自己的话，古注多只说束脩是最薄的礼。"
+ },
+ "shangshu-yugong": {
+  "title": "尚书·禹贡",
+  "about": "《尚书》，上古的政事文献汇编；〈禹贡〉记大禹治水后分天下为九州，逐州记山川、土田、贡物。",
+  "source": {
+   "edition": "维基文库《尚書/禹貢》",
+   "section": "〈禹貢〉·徐州",
+   "url": "https://zh.wikisource.org/wiki/%E5%B0%9A%E6%9B%B8/%E7%A6%B9%E8%B2%A2",
+   "license": "公有领域（古籍；维基文库 PD-old）"
+  },
+  "original": "海、岱及淮惟徐州：淮、沂其乂，蒙、羽其藝。……厥貢惟土五色，羽畎夏翟，嶧陽孤桐，泗濱浮磬。",
+  "plain": [
+   "东到大海，北到泰山，南到淮水，这一块是徐州：淮水、沂水治理好了，蒙山、羽山可以种植了。……徐州进贡的是五种颜色的土，羽山山谷的五彩雉羽，峄山南坡独生的桐木，泗水边上可以做磬的石头。"
+  ],
+  "note": "维基文库此本「藝」一作「蓺」；「厥」「惟」二字，本子标作或有或无（{厥}貢{惟}），此处从有。「夏翟」，高本汉读作「華翟」，五彩羽毛的雉。「蒙」即蒙山——小满家的那座山。"
+ }
+}
