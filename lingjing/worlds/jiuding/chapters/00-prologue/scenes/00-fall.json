@@ -3,38 +3,38 @@
  "id": "00-fall",
  "chapter": "00-prologue",
  "hui": "h01",
- "at": "yingu",
+ "at": "heisong",
  "place": {
-  "zh": "崖下 · 谷底",
-  "en": "Under the cliff · the valley floor"
+  "zh": "黑松岭 · 第二十七道记号",
+  "en": "Black Pine Ridge · the twenty-seventh mark"
  },
  "setup": {
-  "zh": "你滚下了崖，摔进一片厚苔藓里。崖壁高得看不到顶，天快黑了。",
-  "en": "You tumbled down the cliff into a bed of thick moss. The cliff rises out of sight; night is coming."
+  "zh": "第二十七道记号那里，是一段贴着山崖的窄坡。爹的左膝盖罢了工，整个人往崖外一歪——离你两步，坡外是崖。",
+  "en": "At the twenty-seventh mark the path is a narrow slope hugging the cliff. Father's left knee gives way and he pitches toward the edge — two steps from you, and the cliff beyond."
  },
  "recap": {
-  "zh": "你摔进崖下的山谷，没有哭：先查伤，再找路，活到爹来的时候。",
-  "en": "You fell into the valley under the cliff and did not cry: check the hurts, find the way, live till Father comes."
+  "zh": "暴雨里，你在风歇的空当把爹拽回了山壁，自己却给甩下了崖，摔进谷底的厚苔藓：先查伤，再找路，活到爹来的时候。",
+  "en": "In the storm you hauled Father back against the rock in the lulls of the wind, and were flung over the edge yourself, into thick moss on the valley floor: check the hurts first, then find a way, and stay alive till Father comes."
  },
  "cast": [],
  "people": [],
  "panel": {
   "caption": {
    "zh": [
-    "崖高不见顶，没入雨雾。",
-    "一床湿透的厚苔藓。",
-    "摔了，先别急着起来。"
+    "贴着山崖的窄坡，第二十七道记号。",
+    "爹的膝盖，罢工了。",
+    "风一阵紧，一阵松。"
    ],
    "en": [
-    "The cliff climbs out of sight into the rain.",
-    "A bed of thick, soaked moss.",
-    "When you fall, don't hurry to get up."
+    "A narrow slope on the cliff; the twenty-seventh mark.",
+    "Father's knee has downed tools.",
+    "The wind comes in gusts, and lulls."
    ]
   }
  },
  "story": {
-  "zh": "小满滚了下去。泥浆、石头、断枝、雨水劈头盖脸而来，天和地在他眼前翻了不知多少个跟头，翻得他连哪边是天都分不清了。他护住了头，后背撞上一样硬东西，疼得眼前一黑，伸手乱抓，竟抓住了一根藤。那藤绷得笔直，硬生生把他往下掉的势头拽住了，他挂在半空，长长地松了一口气——藤断了。\n\n「你爷爷的——」话一出口，他才想起来，自己的爷爷便是在这黑松岭里没的，忙又补了一句：「……爷爷，不是说你。」说完把那口气收了回来，继续往下掉。\n\n最后一下，他摔进了一片软乎乎的东西里，却是一层苔藓，极厚极软，像一床吸饱了水的大棉被。他整个人陷进去半尺深，好似一只掉进了大馒头里的蚂蚁。\n\n他没有马上起来。他爹说过，摔了先别急着爬起来，一样一样地查。",
-  "en": "Xiaoman tumbled down. Mud, stones, broken branches, rain came at him from every side; heaven and earth turned who knew how many somersaults before his eyes, till he couldn't tell which way was up. He covered his head; his back struck something hard and the pain blacked out his sight; he clawed wildly and — caught a vine. The vine went taut and wrenched his fall to a stop; he hung in mid-air and let out a long breath of relief — and the vine snapped.\n\n\"Your grandpa's —\" The words were out before he remembered that his own grandfather had died right here in Black Pine Ridge, and he hastily added: \"…Grandpa, not you.\" That said, he took his breath back and went on falling.\n\nAt the last he landed in something soft — a bed of moss, very thick and very soft, like a great quilt that had soaked up all the water it could hold. He sank in half a foot deep, like an ant fallen into a giant steamed bun.\n\nHe didn't get up at once. His father had said: after a fall, don't rush to get up; check yourself, one thing at a time."
+  "zh": "第二十七道记号那里，是一段贴着山崖的窄坡。他爹的左膝盖在这里软了一下。它这一辈子跟他爹聊了无数回天，这一回却一句也没聊，干干脆脆地罢了工，他爹整个人便往崖外一歪。",
+  "en": "At the twenty-seventh mark the path became a narrow slope hugging the cliff. There his father's left knee gave way. All its life it had chatted with his father countless times; this time it said not a word, simply downed tools, and his father pitched toward the edge."
  },
  "lines": [],
  "buttons": [
@@ -50,11 +50,29 @@
    "means": "checks the injuries, gets up carefully, looks for shelter and a way",
    "mark": "fall-checked",
    "story": {
-    "zh": "他先动动手指，手指能动；再动动脚趾，脚趾也能动；膝盖破了，手掌磨掉了一层皮，后背火辣辣的，左手腕肿得像个小馒头，骨头却没断。他这才坐起身来往上看，崖壁高得望不到顶，一直隐进了雨雾里。\n\n他没有喊，只在心里算：爹被自己拽进了山壁里，没掉下来；他膝盖不好，这么大的雨，他下不来，也不该下来；他会等雨停了，顺着记号回村叫人。四十一道记号，是自己刻的，一道都没歪——除了第一道。所以要做的，便是活到那个时候。\n\n十二岁，一个人，在一个从没来过的山谷里，天又快黑了。他爹说过，打猎的人在山里迷了路，头一件事是找个地方躲雨，第二件事是生火，第三件事才是害怕。小满决定，第三件事先欠着。\n\n雨小了些。他扶着崖壁往前走，每走一段，便在崖壁上划一道，好记得回来的路。\n\n这山谷很是古怪。外面的山长的都是松树、柏树、野栗子，这里的树他却一棵也不认得，叶子银白，薄得透光，雨水落上去也不往下淌，滚成一颗一颗圆溜溜的珠子挂在叶尖上，亮晶晶的，倒像满树都结了露水做的果子。他没忍住，伸手碰了一颗，只听得「叮」的一声轻响，像一只极小极小的铃铛，那珠子化作一缕白气，没了。他赶紧把手缩回来，左右看了看，确定没有任何人、任何狐狸、任何松鼠瞧见，便假装什么都没发生过。\n\n地上的草也不一样，每一步踩下去，草叶都微微发亮，一圈淡淡的光从他脚底下漾开，又慢慢暗了下去，倒像是在一面水上走路。他走得很轻很轻，也不知为什么，总觉得这里的东西都在睡觉，不该吵醒了它们。\n\n便在这时，他看见了光。山谷最深处，一片给雨水砸出来的浅坑里，有一点银光一明一暗，一明一暗，像是有什么东西在很慢很慢地呼吸。",
-    "en": "First he moved his fingers: they moved. Then his toes: they moved too. His knees were broken open, the skin of his palms scraped off, his back on fire, his left wrist swollen like a little steamed bun — but no bones broken. Only then did he sit up and look: the cliff rose so high he couldn't see the top; it vanished into the rain and mist.\n\nHe didn't shout. He reckoned instead: he'd hauled his father into the rock face — his father hadn't fallen. His father's knee was bad; in rain like this he couldn't come down, and shouldn't; he'd wait for the rain to stop and follow the marks back to the village for help. Forty-one marks, cut by his own hand, not one of them crooked — except the first. So the thing to do was stay alive till then.\n\nTwelve years old, alone, in a valley he'd never seen, and night about to fall. His father had said: a hunter lost in the mountains first finds shelter from the rain, second makes a fire, and only third gets frightened. Xiaoman decided the third thing could wait.\n\nThe rain eased a little. He made his way along the cliff foot, and every stretch he scratched a line on the rock, to know his way back.\n\nIt was a strange valley. The mountains outside grew pine, cypress and wild chestnut; here he knew not one tree. Their leaves were silver-white, so thin the light came through, and the rain on them didn't run off but rolled into round beads that hung at the leaf tips, glittering, as if every tree bore fruit made of dew. He couldn't help touching one: a tiny *ding*, like a very, very small bell, and the bead turned into a wisp of white air and was gone. He snatched his hand back, looked left and right, made sure that no person, no fox, no squirrel had seen, and pretended nothing had happened.\n\nThe grass was different too: each step, the blades glowed faintly, a ring of pale light spreading out from under his foot and slowly dimming, as though he were walking on water. He walked very, very lightly; he couldn't have said why, but he felt everything here was asleep and oughtn't to be woken.\n\nThen he saw the light. At the very bottom of the valley, in a shallow hollow the rain had beaten out, a point of silver light went bright, then dim, bright, then dim — as if something were breathing, very, very slowly."
+    "zh": "小满想都没想——不对，他想了，而且想得飞快，快得像他娘拨算盘珠子：离他爹两步，坡外是崖；去拉他，爷儿俩可能一起下去；不拉他，他一定下去。这笔账，不难算。\n\n说时迟那时快，小满扑将过去，一把抓住他爹的腰带，拼了命往里一拽，拽得他爹整个人撞在山壁上，「哎哟」一声；他自己却被那股劲一带，甩了出去。他爹回身伸手来抓，手指擦过了他的手腕，终究没抓住。\n\n小满滚了下去。泥浆、石头、断枝、雨水劈头盖脸而来，天和地在他眼前翻了不知多少个跟头，翻得他连哪边是天都分不清了。他护住了头，后背撞上一样硬东西，疼得眼前一黑，伸手乱抓，竟抓住了一根藤。\n\n那藤绷得笔直，硬生生把他往下掉的势头拽住了，他挂在半空，长长地松了一口气——藤断了。\n\n「你爷爷的——」话一出口，他才想起来，自己的爷爷便是在这黑松岭里没的，忙又补了一句：「……爷爷，不是说你。」说完把那口气收了回来，继续往下掉。\n\n最后一下，他摔进了一片软乎乎的东西里，却是一层苔藓，极厚极软，像一床吸饱了水的大棉被。他整个人陷进去半尺深，好似一只掉进了大馒头里的蚂蚁。\n\n他没有马上起来。他爹说过，摔了先别急着爬起来，一样一样地查。他先动动手指，手指能动；再动动脚趾，脚趾也能动；膝盖破了，手掌磨掉了一层皮，后背火辣辣的，左手腕肿得像个小馒头，骨头却没断。\n\n他这才坐起身来往上看，崖壁高得望不到顶，一直隐进了雨雾里。\n\n他没有喊，只在心里算：爹被自己拽进了山壁里，没掉下来；他膝盖不好，这么大的雨，他下不来，也不该下来；他会等雨停了，顺着记号回村叫人。四十一道记号，是自己刻的，一道都没歪——除了第一道。所以要做的，便是活到那个时候。\n\n十二岁，一个人，在一个从没来过的山谷里，天又快黑了。他爹说过，打猎的人在山里迷了路，头一件事是找个地方躲雨，第二件事是生火，第三件事才是害怕。小满决定，第三件事先欠着。\n\n雨小了些。他扶着崖壁往前走，每走一段，便在崖壁上划一道，好记得回来的路。\n\n这山谷很是古怪。外面的山长的都是松树、柏树、野栗子，这里的树他却一棵也不认得，叶子银白，薄得透光，雨水落上去也不往下淌，滚成一颗一颗圆溜溜的珠子挂在叶尖上，亮晶晶的，倒像满树都结了露水做的果子。\n\n他没忍住，伸手碰了一颗，只听得「叮」的一声轻响，像一只极小极小的铃铛，那珠子化作一缕白气，没了。他赶紧把手缩回来，左右看了看，确定没有任何人、任何狐狸、任何松鼠瞧见，便假装什么都没发生过。\n\n地上的草也不一样，每一步踩下去，草叶都微微发亮，一圈淡淡的光从他脚底下漾开，又慢慢暗了下去，倒像是在一面水上走路。他走得很轻很轻，也不知为什么，总觉得这里的东西都在睡觉，不该吵醒了它们。\n\n便在这时，他看见了光。山谷最深处，一片给雨水砸出来的浅坑里，有一点银光一明一暗，一明一暗，像是有什么东西在很慢很慢地呼吸。",
+    "en": "Xiaoman didn't think — no, he did, and thought fast, fast as his mother flicking abacus beads: two steps from his father, the cliff beyond; pull him, and they might both go over; don't, and he certainly would. Not a hard sum. Quick as you like, Xiaoman threw himself forward, grabbed his father's belt, and hauled inward with everything he had, slamming his father against the rock face — *oof* — while the force of it flung Xiaoman himself outward.\n\nHis father spun and reached for him; his fingers brushed Xiaoman's wrist and, in the end, didn't catch.\n\nXiaoman tumbled down. Mud, stones, broken branches, rain came at him from every side; heaven and earth turned who knew how many somersaults before his eyes, till he couldn't tell which way was up. He covered his head; his back struck something hard and the pain blacked out his sight; he clawed wildly and — caught a vine.\n\nThe vine went taut and wrenched his fall to a stop; he hung in mid-air and let out a long breath of relief — and the vine snapped.\n\n\"Your grandpa's —\" The words were out before he remembered that his own grandfather had died right here in Black Pine Ridge, and he hastily added: \"…Grandpa, not you.\" That said, he took his breath back and went on falling.\n\nAt the last he landed in something soft — a bed of moss, very thick and very soft, like a great quilt that had soaked up all the water it could hold. He sank in half a foot deep, like an ant fallen into a giant steamed bun.\n\nHe didn't get up at once. His father had said: after a fall, don't rush to get up; check yourself, one thing at a time. First he moved his fingers: they moved. Then his toes: they moved too. His knees were broken open, the skin of his palms scraped off, his back on fire, his left wrist swollen like a little steamed bun — but no bones broken.\n\nOnly then did he sit up and look: the cliff rose so high he couldn't see the top; it vanished into the rain and mist.\n\nHe didn't shout. He reckoned instead: he'd hauled his father into the rock face — his father hadn't fallen. His father's knee was bad; in rain like this he couldn't come down, and shouldn't; he'd wait for the rain to stop and follow the marks back to the village for help. Forty-one marks, cut by his own hand, not one of them crooked — except the first. So the thing to do was stay alive till then.\n\nTwelve years old, alone, in a valley he'd never seen, and night about to fall. His father had said: a hunter lost in the mountains first finds shelter from the rain, second makes a fire, and only third gets frightened. Xiaoman decided the third thing could wait.\n\nThe rain eased a little. He made his way along the cliff foot, and every stretch he scratched a line on the rock, to know his way back.\n\nIt was a strange valley. The mountains outside grew pine, cypress and wild chestnut; here he knew not one tree. Their leaves were silver-white, so thin the light came through, and the rain on them didn't run off but rolled into round beads that hung at the leaf tips, glittering, as if every tree bore fruit made of dew.\n\nHe couldn't help touching one: a tiny *ding*, like a very, very small bell, and the bead turned into a wisp of white air and was gone. He snatched his hand back, looked left and right, made sure that no person, no fox, no squirrel had seen, and pretended nothing had happened.\n\nThe grass was different too: each step, the blades glowed faintly, a ring of pale light spreading out from under his foot and slowly dimming, as though he were walking on water. He walked very, very lightly; he couldn't have said why, but he felt everything here was asleep and oughtn't to be woken.\n\nThen he saw the light. At the very bottom of the valley, in a shallow hollow the rain had beaten out, a point of silver light went bright, then dim, bright, then dim — as if something were breathing, very, very slowly."
    },
    "beat": [],
-   "next": "00-fox"
+   "next": "00-fox",
+   "needs": {
+    "task": "fall-storm"
+   },
+   "refuse": {
+    "zh": "风一阵紧一阵松。等它歇一口气，再拽。",
+    "en": "The wind comes in gusts. Wait for it to catch its breath, then pull."
+   }
   }
- ]
+ ],
+ "show": [
+  {
+   "card": "board",
+   "id": "fall-storm"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "fall-storm"
+  ]
+ }
 }

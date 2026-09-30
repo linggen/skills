@@ -131,7 +131,7 @@ test('a prologue save refuses every shut verb `not-yet`, in the world\'s words; 
 });
 
 test('before the gate nothing pays 修为 or 灵石: the trial board pays none; the hall\'s three stones land in the outer court', () => {
-  const luoshu = walk(newState(content, 'zh', NOW), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'win') + 1), content, NOW);
+  const luoshu = walk(newState(content, 'zh', NOW), TO_HALL.slice(0, TO_HALL.findIndex(([v, a]) => v === 'win' && a.id === 'gate-luoshu') + 1), content, NOW);
   assert.equal(look(luoshu, content, ctx()).tasks.find(t => t.id === 'gate-luoshu').pays, null, 'the tray promises no 修为');
   const done = VERBS.task(luoshu, content, ctx(), { action: 'done', id: 'gate-luoshu' });
   assert.equal(done.result.ok, true);

@@ -849,7 +849,7 @@ test('a subdued creature leaves what it carries, one new card, and on one win in
 });
 
 test('an in-world task pays only after the page recorded its win', () => {
-  let s = walk(start(), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'win')), content, NOW);
+  let s = walk(start(), TO_HALL.slice(0, TO_HALL.findIndex(([v, a]) => v === 'win' && a.id === 'gate-luoshu')), content, NOW);
   assert.equal(s.scene, '00-luoshu');
   refused(task, s, { action: 'done', id: 'gate-luoshu' }, 'not-won');
   s = must(win, s, { id: 'gate-luoshu' }).state;
@@ -1565,7 +1565,7 @@ test('look carries today\'s cast (none yet) and the offered tasks', () => {
   let s = toPractice();
   const seen = look(s, content, ctx());
   assert.equal(seen.divination, null);
-  assert.deepEqual(seen.tasks.map(t => [t.id, t.status]), [['gate-luoshu', 'done']], 'the 二试 done today');
+  assert.deepEqual(seen.tasks.map(t => [t.id, t.status]), [['fall-storm', 'done'], ['deer-wind', 'done'], ['xisui-hold', 'done'], ['gate-luoshu', 'done']], 'the storm, the stag, the bath and the 二试 done today');
 });
 
 test('问卦: once a day by three coins — nothing asked first, the same throws all day, and what the grade does to the day\'s fights', () => {
@@ -3351,7 +3351,7 @@ test('a hosted game costs a step\'s 体力 when it is counted; with the pool emp
   const later = ctx({ now: new Date(NOW.getTime() + content.rewards.stamina.refill_hours * 3600_000) });
   assert.ok(must(task, empty, { action: 'done', id: 'wuziqi' }, later).result.handed[0].paid.progress > 0);
   // A task that is not a hosted game (the story's 二试) stays free.
-  const story = { ...walk(start(), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'win')), content, NOW), stamina: 100, stamina_at: NOW.toISOString() };
+  const story = { ...walk(start(), TO_HALL.slice(0, TO_HALL.findIndex(([v, a]) => v === 'win' && a.id === 'gate-luoshu')), content, NOW), stamina: 100, stamina_at: NOW.toISOString() };
   const first = must(task, must(win, story, { id: 'gate-luoshu' }).state, { action: 'done', id: 'gate-luoshu' });
   assert.equal(first.state.stamina, 100);
 });
