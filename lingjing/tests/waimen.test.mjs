@@ -67,9 +67,9 @@ function playThrough() {
   s = must(resolve, s, { exit: 'up' }, DAY2);
   s = must(resolve, s, { exit: 'fall' }, DAY2);
   s = must(resolve, s, { exit: 'on' }, DAY2);
+  s = must(resolve, won(s, 'dabi-shijie', DAY2), { exit: 'dodge' }, DAY2);
   s = must(resolve, won(s, 'dabi-ma', DAY2), { exit: 'bark' }, DAY2);
-  s = must(resolve, won(s, 'dabi-final', DAY2), { exit: 'final' }, DAY2);
-  for (const exit of ['follow', 'sign', 'read', 'rest']) s = must(resolve, s, { exit }, DAY2);
+  for (const exit of ['rest', 'follow', 'sign', 'read']) s = must(resolve, s, { exit }, DAY2);
   return s;
 }
 
@@ -220,8 +220,8 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
   assert.deepEqual(l.scene.buttons.map(b => b.id), ['fight']);
   refused(resolve, s, { exit: 'fall' }, 'needs', DAY2);
   assert.equal(l.scene.exits.find(e => e.id === 'fight').duel.creature.name, '孙二狗');
-  // three duels on this path: 孙二狗, 马小宝, the senior — each a trial fought again at once
-  for (const [exit, game, foe] of [['fight', 'dabi-sun', 'foe-sunergou'], ['bark', 'dabi-ma', 'foe-maxiaobao'], ['final', 'dabi-final', 'foe-shijie']]) {
+  // three duels on this path: 孙二狗, 秦雁 (the senior), 马小宝 for the pill — each a trial fought again at once
+  for (const [exit, game, foe] of [['fight', 'dabi-sun', 'foe-sunergou'], ['dodge', 'dabi-shijie', 'foe-shijie'], ['bark', 'dabi-ma', 'foe-maxiaobao']]) {
     const sc = look(s, content, ctx(DAY2)).scene;
     const e = sc.exits.find(x => x.id === exit);
     assert.equal(e.game.creature, foe);
@@ -229,7 +229,7 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
     refused(resolve, s, { exit }, 'game-not-won', DAY2);
     s = must(resolve, won(s, game, DAY2), { exit }, DAY2);
   }
-  assert.equal(s.scene, 'wm-baishi');
+  assert.equal(s.scene, 'wm-jiaxin', 'the night of the contest, before the master');
   assert.ok(s.bag['foundation-pill'] > 0, '筑基丹');
 });
 
@@ -278,7 +278,7 @@ test('the scratch fixture for live checks stands at the chapter\'s first scene (
 });
 
 test('the 大比 is a 比试, not a 降妖: its three foes are people, and the fight card says so; a beast stays 降妖 (live, 2026-09-29)', () => {
-  const s = { ...opened(), scene: 'wm-lun2', place: 'zhengdian' };
+  const s = { ...opened(), scene: 'wm-juesai', place: 'zhengdian' };
   const l = look(s, content, ctx());
   const exit = l.scene.exits.find(e => e.id === 'bark');
   assert.equal(exit.duel.creature.person, true);
@@ -295,7 +295,7 @@ test('the 大比 is a 比试, not a 降妖: its three foes are people, and the f
 
 test('a scene waiting on a game stands with it: the round fight and the wall 洛书 sit under the scene card, never behind 还有 1 件 (live, 2026-09-29)', () => {
   const kinds = slots => slots.main.map(c => `${c.card}:${c.id ?? ''}`);
-  for (const [scene, place, game, before] of [['wm-lun2', 'zhengdian', 'duel:dabi-ma', 'wm-dabi'], ['wm-lun1', 'zhengdian', 'duel:dabi-sun', 'wm-dabi'], ['wm-juesai', 'zhengdian', 'duel:dabi-final', 'wm-dabi'], ['wm-wangzuo', 'shimen', 'board:mijing-wall', 'wm-mijing']]) {
+  for (const [scene, place, game, before] of [['wm-lun2', 'zhengdian', 'duel:dabi-shijie', 'wm-dabi'], ['wm-lun1', 'zhengdian', 'duel:dabi-sun', 'wm-dabi'], ['wm-juesai', 'zhengdian', 'duel:dabi-ma', 'wm-dabi'], ['wm-wangzuo', 'shimen', 'board:mijing-wall', 'wm-mijing']]) {
     const s = { ...opened(), scene, place, tasks: {} };
     s.done_scenes = [...s.done_scenes, 'wm-ahe', before]; // its 回 under way: no close of the 回 before stands over the scene
     const l = look(s, content, ctx());
@@ -346,7 +346,7 @@ test('what is for a person is handed where that person is: 周衡 at 外门, 阿
 
 test('a bout with a person speaks of him or her: 他/她 by the person, 认输, 「今日已比过」, 「他退了下去」 — never 妖, 它 or 今日已降 (his, 2026-09-29)', async () => {
   const { WORDS: BW, boutWords, sayEffect, challengeHtml } = await import('../scripts/battle-card.js');
-  const l = look({ ...opened(), scene: 'wm-lun2', place: 'zhengdian' }, content, ctx());
+  const l = look({ ...opened(), scene: 'wm-juesai', place: 'zhengdian' }, content, ctx());
   const ma = l.scene.exits.find(e => e.id === 'bark').duel.creature;
   assert.equal(ma.gender, 'male');
   const w = boutWords(BW.zh, ma, 'zh');
@@ -363,7 +363,7 @@ test('a bout with a person speaks of him or her: 他/她 by the person, 认输, 
   assert.match(sayEffect({ effect: { sweep: 2 } }, { lang: 'zh', words: BW.zh }), /^它阵前/);
   const done = challengeHtml({ id: 'dabi-ma', creature: ma, today: { outcome: 'won' } }, { lang: 'zh', words: w, title: '比试' });
   assert.match(done, /今日已比过/);
-  const shijie = look({ ...opened(), scene: 'wm-juesai', place: 'zhengdian' }, content, ctx()).scene.exits.find(e => e.id === 'final').duel.creature;
+  const shijie = look({ ...opened(), scene: 'wm-lun2', place: 'zhengdian' }, content, ctx()).scene.exits.find(e => e.id === 'dodge').duel.creature;
   assert.equal(shijie.gender, 'female');
 });
 

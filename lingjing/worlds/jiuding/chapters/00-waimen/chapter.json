@@ -95,7 +95,8 @@
         "wm-lun1",
         "wm-fushi",
         "wm-lun2",
-        "wm-juesai"
+        "wm-juesai",
+        "wm-jiaxin"
       ],
       "say": {
         "zh": "大比正在进行，台下三百双眼睛。",
@@ -111,8 +112,7 @@
       "scenes": [
         "wm-baishi",
         "wm-caowu",
-        "wm-heluo",
-        "wm-jiaxin"
+        "wm-heluo"
       ],
       "say": {
         "zh": "瞿老还在等你。",

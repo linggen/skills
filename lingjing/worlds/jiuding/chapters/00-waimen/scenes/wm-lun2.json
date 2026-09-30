@@ -5,69 +5,68 @@
  "hui": "h08",
  "at": "zhengdian",
  "place": {
-  "zh": "沉鼎观 · 大比 · 对马小宝",
-  "en": "Chending Temple · The contest · Against Ma Xiaobao"
+  "zh": "沉鼎观 · 大比 · 对秦雁",
+  "en": "Chending Temple · The contest · Against Qin Yan"
  },
  "setup": {
-  "zh": "再上台，对面是马小宝。一身新法衣，腰里挂着铜镜：「你跪下，叫三声爷爷，我让你自己走下去。」",
-  "en": "Back on the stage, facing Ma Xiaobao. A new robe, a bronze mirror at his waist: \"Kneel, call me grandpa three times, and I'll let you walk down yourself.\""
+  "zh": "再上台，对面是名册上排头一个的秦雁：真灵根，六层，剑在背上。她冲你一抱拳：「沈师弟，听说你只有二层。」",
+  "en": "Back on the stage, facing the one first on the register, Qin Yan: true root, layer six, a sword on her back. She salutes you: \"Brother Shen, I hear you're only at layer two.\""
  },
  "recap": {
-  "zh": "你对马小宝说：学声狗叫，给你舔一口。你用了三成——他在空中转了三圈，落进了泗水里。",
-  "en": "You told Ma Xiaobao: bark like a dog and you can have a lick. You used three-tenths of your strength — he turned three times in the air and landed in the Si."
+  "zh": "你躲了秦雁三十一剑，一剑也没还；她踩着石缝退出了台子，压低声音说：「藏得好。」袖子里那张雷符，她始终没掏。",
+  "en": "You dodged thirty-one of Qin Yan's thrusts and never struck back; she stepped in the crack and went off the stage, and said low: \"Well hidden.\" The thunder talisman in her sleeve she never drew."
  },
  "cast": [],
  "people": [
-  "maxiaobao",
-  "chuxiansheng",
-  "qulao"
+  "neimen-shijie",
+  "ahe"
  ],
  "panel": {
   "caption": {
    "zh": [
-    "对面，马小宝。一面铜镜。",
-    "「你跪下，叫三声爷爷。」",
-    "一寸，就是一辈子。"
+    "名册上排头一个：秦雁，六层。",
+    "三十一剑。你只看她的脚。",
+    "「藏得好。」「师姐也是。」"
    ],
    "en": [
-    "Across from you, Ma Xiaobao. A bronze mirror.",
-    "\"Kneel, and call me grandpa three times.\"",
-    "An inch is a lifetime."
+    "First on the register: Qin Yan, layer six.",
+    "Thirty-one thrusts. You watch only her feet.",
+    "\"Well hidden.\" \"You too, sister.\""
    ]
   }
  },
  "story": {
-  "zh": "小满往台上走的时候，阿禾挤到了他身边，塞给他一样东西。他低头一看，是半块烙饼，硬得像一块瓦，是她从家里带上山的，一直没舍得吃。\n\n阿禾道：「垫垫肚子。空着肚子挨揍，更疼。」\n\n小满道：「利息多少？」\n\n阿禾想了想，道：「打赢了，不要利息。打输了，两块。」\n\n小满把那半块饼揣进怀里，贴着木牌，贴着一年多前就揣在那里的一个饼角——那饼角早干得像一块石头了，那是谷底那天早上，一个妖王双手捧给他的凭据。他心想：怀里揣着两块饼，一块是人家欠我的，一块是我欠人家的，这一场，怎么也不能输。\n\n马小宝上了台。他今天又换了一身法衣，比早上那身还新，腰里那面铜镜擦得锃亮，太阳一照，晃得台下的人直眯眼。据说这面铜镜是马家祖上拿三亩好地，从一个游方道士手里换来的，那道士说这镜子能照妖，能退敌，能聚气，还能照见人心。马家把它传了三代，照妖照了三代，一个妖也没照着，马家老爷便说，这说明马家门风清正，妖不敢来。\n\n马小宝站在台上，冲小满笑得很是开心：「沈小满。你那个畜生呢？」\n\n小满道：「在药园，看萝卜。」\n\n马小宝道：「还是柴房那天的规矩——你跪下，叫三声爷爷，我让你自己走下去。」\n\n台下有人起哄：「跪！跪！」一声接一声，起哄的人越来越多，喊到后来，竟有了节拍。\n\n便在这一片「跪」声里，人群当中忽然冒出一个嗓子，又尖又哑，破得像一面裂了的锣：「别跪——！」\n\n众人回头一看，是孙二狗。他下巴上贴着膏药，站在人堆里，比旁人高出半个头，脖子伸得老长，脸涨得通红。四下里的人愣了一愣，跟着便哄笑起来：「二狗！你一个输了的，喊什么！」「你那护身符，给他也缝一个？」孙二狗的脸更红了，红到了耳朵根，可他没有坐下，也没有缩回去，就那么直挺挺地站着，也不再喊了，只是站着。\n\n小满在台上看了他一眼，没有说话。\n\n小满站在台上，看着马小宝。他想起了很多事情。他想起灶台上飞出去的那只碗，在半空里滴溜溜翻了两个筋斗，碗沿上白光一闪，他伸手去捞，差了一寸。一寸。他想起他娘蹲在地上，把碎片一片一片捡起来，用布包好，四个角系紧。他想起马小宝站在他家门口，手里捏着桂花糕，说：「学声狗叫，给你吃一口。」\n\n他想了想，开口道：「小宝哥。」\n\n马小宝道：「嗯？」\n\n小满说：「学声狗叫，给你舔一口。」",
-  "en": "As Xiaoman went up to the stage, Ah He squeezed in beside him and pushed something into his hands. He looked down: half a flatbread, hard as a roof tile, brought up the mountain from home and never eaten.\n\n\"Line your stomach,\" said Ah He. \"A beating on an empty stomach hurts more.\"\n\n\"What's the interest?\" said Xiaoman.\n\nAh He thought. \"Win, no interest. Lose, two.\"\n\nXiaoman put the half flatbread in his coat, against the token, against a corner of flatbread he had carried there more than a year — dried hard as a stone long since: the pledge a demon queen had given him in both hands, that morning at the bottom of the valley. He thought: two pieces of flatbread in my coat, one owed to me, one I owe — this one I can't lose.\n\nMa Xiaobao stepped up. He'd changed into yet another robe, newer than this morning's, the bronze mirror at his waist polished bright, flashing in the sun so the crowd squinted. The story was that a Ma ancestor had traded three mu of good land for this mirror from a wandering Taoist, who said it could reveal demons, repel enemies, gather qi, and even show the heart. The Ma family had handed it down three generations, revealing demons for three generations without catching one; old master Ma said this proved the Ma household was so upright no demon dared come.\n\nMa Xiaobao stood on the stage grinning at Xiaoman very happily: \"Shen Xiaoman. Where's that animal of yours?\"\n\n\"At the herb garden,\" said Xiaoman, \"minding the radishes.\"\n\nMa Xiaobao said, \"Same rules as that night at the woodshed — kneel, call me grandpa three times, and I'll let you walk down yourself.\"\n\nSomebody below started a chant: \"Kneel! Kneel!\" Voice after voice, more and more joining, till by the end it had a beat.\n\nAnd in the midst of all that \"Kneel!\" a voice rose out of the crowd, shrill and hoarse, cracked like a split gong: \"Don't kneel —!\"\n\nEveryone turned: Sun Ergou. A plaster on his chin, he stood in the crowd half a head taller than anyone, neck stretched out, face crimson. Those around him stared a moment, then laughed: \"Ergou! You lost — what are you shouting for!\" \"Going to sew him a charm too?\" Sun Ergou went redder still, red to the ears, but he didn't sit down and didn't shrink back; he just stood there bolt upright, not shouting any more, just standing.\n\nOn the stage Xiaoman looked at him once and said nothing.\n\nXiaoman stood on the stage looking at Ma Xiaobao. He thought of many things. He thought of the bowl flying off the stove, turning two somersaults in the air, a white flash off its rim, and his hand reaching for it, an inch short. One inch. He thought of his mother crouching on the floor, picking up the pieces one by one, wrapping them in a cloth, tying the four corners tight. He thought of Ma Xiaobao standing at his door, osmanthus cake in hand, saying: \"Bark like a dog and you can have a bite.\"\n\nHe thought a moment, and spoke: \"Brother Xiaobao.\"\n\n\"Hm?\" said Ma Xiaobao.\n\n\"Bark like a dog,\" said Xiaoman, \"and you can have a lick.\""
+  "zh": "她上台的时候，冲小满抱了抱拳：「沈师弟，听说你只有二层。」小满也抱了抱拳：「是。」秦雁道：「那我让你三招。」小满道：「师姐不用让。我打不过，会跑的。」秦雁一愣，随即笑了。",
+  "en": "Coming up onto the stage she saluted Xiaoman: \"Brother Shen, I hear you're only at layer two.\" Xiaoman saluted back: \"Yes.\" \"Then I'll give you three moves.\" \"No need, sister. If I can't win, I'll run.\" Qin Yan was startled, then laughed."
  },
  "lines": [],
  "buttons": [
-  "bark"
+  "dodge"
  ],
  "exits": [
   {
-   "id": "bark",
+   "id": "dodge",
    "label": {
-    "zh": "学声狗叫，给你舔一口",
-    "en": "Bark like a dog, and you can have a lick"
+    "zh": "只躲，不还手",
+    "en": "Only dodge, never strike"
    },
-   "means": "answers Ma Xiaobao's taunt and fights him",
+   "means": "fights Qin Yan by dodging, never striking back",
    "game": {
-    "id": "dabi-ma",
+    "id": "dabi-shijie",
     "kind": "duel",
-    "creature": "foe-maxiaobao",
+    "creature": "foe-shijie",
     "retry": true
    },
    "withdrawn": {
-    "zh": "马小宝的铜镜又亮了，他笑得更开心了。——再来。",
-    "en": "Ma Xiaobao's mirror flashes again, and he smiles even wider. — Again."
-   },
-   "story": {
-    "zh": "台下先是一愣，愣了足足一口气的工夫，跟着笑声便炸开了，从台下一路炸到了伙房，从伙房一路炸到了山门外，炸得老槐树上歇着的一群老鸹扑棱棱全飞了起来。连廊子底下那几位装作路过的内门师兄，也有一个没忍住，拿袖子捂住了嘴。马小宝那张斑斑点点的脸，先是红，再是紫，再是黑，最后变成了他爹的那种颜色——「完了」色。\n\n他举起铜镜。镜面一亮，一道黄光直奔小满面门而来。\n\n小满没躲，只把一只手抬到了胸前。\n\n那一道黄光撞在他掌心前三寸的地方，便像一滴水落进了一口很大很大的水缸里，没了。连个响也没有。\n\n台下的人什么也没看清。在他们眼里，只是马小宝的镜子亮了一亮，亮完了，便没有下文了，倒像一盏灯芯受了潮的油灯，扑哧一声，灭了。只有离得最近的执事，看见小满掌心里好像有一圈光，一闪而过，金的，青的，黑的，红的，黄的，五种颜色转成一个圈，转得比眨眼还快。他揉了揉眼睛，再看时，什么也没有了。\n\n马小宝举着铜镜，傻站在台上。他把镜子翻过来看看，又翻过去看看，使劲拍了两下，好像那镜子是一只不肯下蛋的鸡。\n\n小满往前走了一步，道：「小宝哥。九月初十，公中，一块灵石。十月初一，一块。冬月初一，两块。腊月初一，两块。」\n\n又往前走了一步：「十月十二，柴房，二十三下。」\n\n再往前走了一步，已到了马小宝跟前，道：「利息，另算。」\n\n一掌拍出。\n\n他没用全力，只用了三成——他在心里算好的，三成，打得倒，打不死，旁人看了，只当马小宝自己站不稳。可他算漏了一样：马小宝那三个月吃下去的一车一车的丹药，丹毒淤在经脉里，灵力本来就是虚的，一碰便散，像一口灌满了水的破缸，外头看着满，底下全是裂缝。三成的力道拍上去，马小宝登时飞了出去，在半空里滴溜溜转了三个圈，姿态倒是颇为优美，跟着越过了台子，越过了台下的人群，越过了外门的院墙，远远地只听得「扑通」一声，落进了泗水里。\n\n台下三百多人，一个声音也没有。\n\n褚先生站在人群最后头，一只手捋着山羊胡子，捋到一半，停在半空，像被冻住了一般。\n\n隔了好一会儿，才有一个声音怯生生地道：「……他……他那是……反噬了吧？」\n\n这一声像是给众人打开了一扇门，底下登时七嘴八舌起来：「对对对，反噬！吃丹吃坏了！」「三个月吃了一车丹，丹毒都淤着呢，灵力是虚的！」「褚先生讲过的！丹毒淤积，灵力逆行，轻则——」「轻则退三层，重则废！」「我就说他脸上那些斑不对劲！」说着说着，大家越说越信，越信越觉得自己早就看出来了。褚先生的山羊胡子终于落了下来，他咳了一声，沉着脸道：「丹药之道，贪多必失。诸位引以为戒。」说罢转身走了，走的时候，回头看了小满一眼。\n\n没有人问沈小满练气几层。人人都觉得，这一场是马小宝自己把自己打飞的，沈小满不过是站在那里，恰好伸了一只手。\n\n只有两个人没这么觉得。一个是台北面竹椅上的观主玄沉子，他从头到尾没动过，这时候却轻轻「嗯」了一声。另一个是山门台阶上的瞿老，他背对着演武场，一直在扫地；可是马小宝飞过院墙的那一刻，他的扫帚停了，停在那一级台阶上。那一级台阶，他扫了五十年，这一天，没有扫完。\n\n小满胸口的木牌烫了一下，一个很困的声音在他耳朵里道：「……三成？」\n\n他小声道：「嗯。」\n\n那声音打了个哈欠：「……下回用两成。泗水离这儿，太近了。」",
-    "en": "For a moment the crowd was stunned — stunned for a full breath — and then the laughter exploded, from below the stage to the kitchen, from the kitchen out past the temple gate, so that a flock of crows resting in the old locust tree burst flapping into the air. Even one of the inner-court brothers under the gallery, pretending to be passing by, couldn't help it and covered his mouth with his sleeve. Ma Xiaobao's blotched face went red, then purple, then black, and at last his father's colour — the colour called \"done for.\"\n\nHe raised the bronze mirror. The face flashed, and a beam of yellow light shot straight at Xiaoman.\n\nXiaoman didn't dodge; he only lifted one hand before his chest.\n\nThe yellow beam struck three inches in front of his palm and vanished like a drop of water falling into a very, very big water vat. Not even a sound.\n\nBelow, nobody saw anything clearly. To them, Ma Xiaobao's mirror had flashed, and then — nothing, like an oil lamp with a damp wick going *pff* and out. Only the steward nearest the stage saw what looked like a ring of light in Xiaoman's palm, gone in a flash — gold, green, black, red, yellow, five colours turning in a circle faster than a blink. He rubbed his eyes; when he looked again there was nothing.\n\nMa Xiaobao stood on the stage holding the mirror like a fool. He turned it over and back, slapped it hard twice, as if it were a hen refusing to lay.\n\nXiaoman took a step forward. \"Brother Xiaobao. Tenth day, ninth month, common fund, one stone. First of the tenth month, one. First of the eleventh, two. First of the twelfth, two.\"\n\nAnother step: \"Twelfth of the tenth month, the woodshed, twenty-three blows.\"\n\nAnother step, and he was right in front of Ma Xiaobao: \"Interest — reckoned separately.\"\n\nOne palm.\n\nHe didn't use his full strength, only three-tenths — he had worked it out: three-tenths, enough to knock him down, not enough to kill; anyone watching would think Ma Xiaobao simply lost his footing. But he had missed one thing in his sums: the cartloads of pills Ma Xiaobao had eaten in three months had left pill poison clogged in his channels, and his qi was hollow — touch it and it scattered, like a cracked vat filled with water, full to look at and split all through the bottom. Three-tenths of a palm, and Ma Xiaobao flew — spun three times in the air, rather gracefully in fact, sailed over the stage, over the crowd, over the outer court wall, and from far off came a *splash* as he landed in the Si.\n\nThree hundred and more below, and not a sound.\n\nMaster Chu, at the very back of the crowd, one hand stroking his goat's beard, stopped halfway, hand in mid-air, as if frozen.\n\nAfter a long moment a timid voice said, \"…He… he backfired, didn't he?\"\n\nThat opened a door for everyone, and at once they were all talking: \"Yes, yes — backfire! Ate too many pills!\" \"A cartload of pills in three months — the poison's all clogged, his qi's hollow!\" \"Master Chu told us! Pill poison clogs, the qi runs backwards, at best —\" \"At best you fall three levels, at worst you're ruined!\" \"I always said those blotches weren't right!\" The more they said, the more they believed, and the more they believed, the surer they were they'd seen it coming. Master Chu's goat's beard at last came down; he coughed and said sternly, \"In the way of pills, greed loses all. Let this be a lesson to you.\" And he turned and left — and as he left he looked back once at Xiaoman.\n\nNobody asked what level of Qi Refining Shen Xiaoman was. Everyone thought Ma Xiaobao had knocked himself flying, and Shen Xiaoman had merely been standing there and happened to put out a hand.\n\nOnly two people did not think so. One was Abbot Xuanchenzi in the bamboo chair on the north side of the stage; he had not moved from start to finish, but now he said, very softly, \"Mm.\" The other was Elder Qu on the steps of the temple gate; back turned to the training ground, he had been sweeping all along — but at the moment Ma Xiaobao flew over the wall, his broom stopped, stopped on that one step. That step he had swept fifty years; that day he did not finish it.\n\nThe token on Xiaoman's chest went hot, and a very sleepy voice said in his ear: \"…Three-tenths?\"\n\nHe whispered, \"Mm.\"\n\nThe voice yawned. \"…Two-tenths next time. The Si's too close.\""
+    "zh": "秦雁收了剑，退后一步：「再来。」",
+    "en": "Qin Yan sheathes her sword and steps back. \"Again.\""
    },
    "beat": [],
-   "next": "wm-juesai"
+   "next": "wm-juesai",
+   "story": {
+    "zh": "这一场，跟孙二狗那一场大不一样。秦雁的剑是真剑，招是真招，一剑一剑递过来，又快又稳，逼得台下的人屏住了气。天下武功，唯快不破——说书先生这么讲。可他爹在黑松岭的山涧边上讲的是另一句：天下的鹿，都是先动脚。小满不看她的剑，看她的脚：剑往哪里去，脚先往哪里挪；脚往哪里挪，肩膀先往哪里沉。她快由她快，他只看她的脚。他躲得很难看，东一跳，西一滚，有两回简直是连滚带爬，引得台下一阵一阵地笑。可笑着笑着，便有人觉出不对来了：三十招过去，那口剑一回也没碰着他。\n\n有一剑来得太快，他来不及看脚，只得往后一仰，剑尖贴着他的鼻子过去，削下了他额前的一绺头发。那绺头发在半空里飘啊飘，飘到台下，正落在阿禾的小本子上。阿禾低头看了一眼，把它夹进了本子里，面无表情，记了一笔。\n\n到第三十一招，秦雁一剑刺空，脚下踩到了五行台边上那道长草的石缝，身子晃了一晃。小满便在这时伸手，在她手腕上轻轻一带——只是一带，像拉住一个要摔倒的人——她便顺着自己那一剑的劲儿，一步一步，退出了台子。执事敲锣：「沈小满，胜。」台下又是一片寂静，跟着便有人叫起来：「运气！」「石缝！她踩着石缝了！」\n\n老槐树底下，钱掌柜拿炭条在木板上添了一行：**决赛　马小宝　一赔一。**又在底下写了个「沈」字，写了一半，停住了，想了想，把炭条一搁，在那半个字后头画了一道杠——不收了。有人问他怎么不收，他拨着算盘道：「看不准的，不开。」\n\n秦雁站在台下，低头看了看自己的手腕，又抬起头来看小满，看了好一会儿。她走到台边，冲他抱了一抱拳，压低了声音：「藏得好。」小满也冲她抱了一抱拳：「师姐也是。」秦雁的眉毛轻轻一挑。她右手的袖子里，一直扣着一张黄纸符，从第一招扣到第三十一招，始终没有掏出来。小满看见了袖口里露出来的那一角，她也知道他看见了。\n\n秦雁道：「雷符。我娘留给我的，就这一张。掏出来，五行台要炸去半边。」她朝台下看了一眼，头一排蹲着几个刚进门的小孩子，正张着嘴看她，「我不是让你。我是没法掏。」她顿了一顿，又道：「你那两步，是猎户的步子吧？」小满一怔：「师姐怎么知道？」秦雁道：「我爹也是打猎的。我这个名字，就是他起的——他说雁是天上最难射的东西，一辈子没射着过一只。」\n\n她转身要走，又停住了，背对着他，声音压得更低：「昨天夜里，马小宝在你们屋里拿那面镜子照了一圈，今天一早，满外门都传遍了：照到沈小满，沈小满翻了个身。」她没有回头，「决赛在日落。你怀里揣着的，不管是什么，捂紧了。」",
+    "en": "This bout was nothing like Sun Ergou's. Qin Yan's sword was a real sword, her moves real moves, thrust after thrust, fast and steady, till the crowd held its breath. In all the martial arts under heaven, only speed can't be beaten — so the storytellers say. But his father, by the stream at Black Pine Ridge, said something else: every deer under heaven moves its feet first. Xiaoman didn't watch her sword; he watched her feet: wherever the sword was going, the foot moved first; wherever the foot moved, the shoulder dipped first. Let her be fast; he watched her feet. He dodged very badly — a hop here, a roll there, twice practically scrambling on all fours — and the crowd laughed wave after wave. But laughing, some began to sense something wrong: thirty moves gone, and that sword hadn't touched him once.\n\nOne thrust came too fast to read her feet; he could only fling himself back, and the point went past the tip of his nose and sheared off a lock of hair from his forehead. The lock floated down and down, off the stage, and landed right on A He's notebook. She glanced at it, tucked it between the pages, and, deadpan, made a note.\n\nAt the thirty-first move Qin Yan's thrust met air, and her foot came down on the grassy crack at the edge of the platform; she wavered. Just then Xiaoman put out a hand and drew lightly on her wrist — only drew, like catching someone about to fall — and she went with her own thrust, step by step, right off the stage. The steward struck the gong: \"Shen Xiaoman wins.\" Silence again below, then shouts: \"Luck!\" \"The crack! She stepped in the crack!\"\n\nUnder the pagoda tree Money-Keeper Qian added a line to the board in charcoal: **Final — Ma Xiaobao, one to one.** Below it he wrote half the character Shen, stopped, thought, put down the charcoal and drew a stroke through the half-character — not taking bets. Someone asked why. Clicking his abacus: \"What I can't call, I don't open.\"\n\nBelow the stage Qin Yan looked down at her wrist, then up at Xiaoman, a long while. She came to the edge, saluted him, and said low: \"Well hidden.\" Xiaoman saluted back: \"You too, sister.\" Her eyebrow lifted slightly. In her right sleeve, all along, she had held a yellow paper talisman, from the first move to the thirty-first, and never drawn it. Xiaoman had seen the corner peeping from her cuff, and she knew he'd seen.\n\n\"A thunder talisman,\" said Qin Yan. \"My mother left it to me, just the one. Draw it, and half the platform goes up.\" She glanced below: in the front row crouched a few new little ones, mouths open, watching her. \"I wasn't letting you win. I couldn't draw it.\" She paused. \"Those steps of yours — hunter's steps, aren't they?\" Xiaoman started. \"How do you know, sister?\" \"My father hunts too. He gave me my name — he said the wild goose is the hardest thing in the sky to shoot; he never hit one in his life.\"\n\nShe turned to go, then stopped with her back to him and spoke lower still: \"Last night Ma Xiaobao swept that mirror round your room, and by this morning the whole outer court knew: when it reached Shen Xiaoman, Shen Xiaoman rolled over.\" She didn't turn. \"The final's at sunset. Whatever you've got in your coat, hold it tight.\""
+   }
   }
  ]
 }
