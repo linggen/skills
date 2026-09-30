@@ -18,7 +18,7 @@
 // `build` is handed Pixi and GSAP by setpiece.js and returns one paused
 // timeline per beat; the runner plays them, holds between, and skips.
 import { tweenBag } from './bag.js';
-import { fibreCanvas, grainCanvas } from '../fx.js';
+import { PAPER, paintedStage, shotOn, stillOf } from './painted.js';
 
 /// The beats in the book's order. `ms` is the beat's own length; `line` is the
 /// passage it follows — a verbatim piece of 10-第十回.md (the test holds it so);
@@ -68,26 +68,6 @@ export const SHOTS = {
 
 /// Where each painting soaks in from (the ink's first drop), 0–1 of the frame.
 const SOAK_FROM = { still: [0.5, 0.7], bingyi: [0.5, 0.42], trial: [0.5, 0.58], fall: [0.5, 0.08], seal: [0.47, 0.5], ding: [0.62, 0.22] };
-const SOAK_S = 2.4; // seconds for a painting to soak in over the last
-const PAPER = 0xf5efe1, INK = 0x2a241e;
-const RIM = 0.008; // the wet rim's width, as a share of the soak's reach
-const RIM_INK = 0.55; // how dark the wet rim goes (multiplied over the painting under it)
-
-/// A soft round light (the paintings' own glows, brightened): white at the
-/// heart, gone at the rim — no edge.
-function glowCanvas(size = 256, [r0, g0, b0] = [255, 240, 200]) {
-  const c = document.createElement('canvas');
-  c.width = c.height = size;
-  const g = c.getContext('2d');
-  const r = size / 2;
-  const grad = g.createRadialGradient(r, r, 0, r, r, r);
-  grad.addColorStop(0, `rgba(${r0},${g0},${b0},0.9)`);
-  grad.addColorStop(0.35, `rgba(${r0},${g0},${b0},0.4)`);
-  grad.addColorStop(1, `rgba(${r0},${g0},${b0},0)`);
-  g.fillStyle = grad;
-  g.fillRect(0, 0, size, size);
-  return c;
-}
 
 /// The stillness as a colour matrix: 0 = the painting as painted, 1 = drained
 /// toward a cold grey (the river stopped, the air gone cold).
@@ -104,127 +84,21 @@ export function coldMatrix(k) {
 
 /// Build the stage and one paused timeline per beat. `env` is {PIXI, gsap, app,
 /// root, W, H, art: {a,b,c,e,f: HTMLImageElement}}; everything is in W×H units
-/// under `root`.
+/// under `root` (painted.js: the paintings' layers, the soak, the grain).
 export function build({ PIXI, gsap, app, root, W, H, art }) {
   const bag = tweenBag(gsap);
-  const made = []; // textures and render targets to free
-  const tex = {};
-  for (const k of Object.keys(ART)) if (art[k]) made.push(tex[k] = PIXI.Texture.from(art[k]));
-  root.addChild(new PIXI.Graphics().rect(0, 0, W, H).fill(PAPER));
+  const stage = paintedStage({ PIXI, app, root, W, H, art });
 
-  // Paper fibres: the displacement that tears each soak's edge (the 鼎归 soak's own).
-  const fibreTex = PIXI.Texture.from(fibreCanvas());
-  fibreTex.source.addressMode = 'repeat';
-  made.push(fibreTex);
-  const R = Math.hypot(W, H) * 1.15; // a soak from anywhere covers the frame
-  const K = 0.5; // the masks drawn at half size: soft and cheap
-
-  /// One use of a painting: its own camera, its own soak mask, stacked above
-  /// the uses before it. A use is unseen until its soak grows.
+  /// One use of a painting: its own camera and soak. The stillness (`cold`) is a
+  /// colour matrix on the river's painting only.
   const layers = {};
   const layer = (id) => {
-    const key = BEATS.find((b) => b.id === id).art;
-    const t = tex[key];
-    const [from] = SHOTS[id];
+    const [from, to] = SHOTS[id];
     const view = { ...from, cold: from.cold ?? 0 };
-    // whole = [pic (masked) = [cam = [painting, glows], overlays], mask]: the mask beside what it masks.
-    const whole = new PIXI.Container();
-    const pic = new PIXI.Container();
-    const cam = new PIXI.Container();
-    const sprite = t ? new PIXI.Sprite(t) : new PIXI.Graphics().rect(0, 0, 1536, 1024).fill(0xd9cfbb);
-    cam.addChild(sprite);
-    pic.addChild(cam);
-    const iw = t?.width ?? 1536, ih = t?.height ?? 1024;
-    const cover = Math.max(W / iw, H / ih);
     let cm = null;
-    if (view.cold !== undefined && SHOTS[id][1].cold !== undefined) { cm = new PIXI.ColorMatrixFilter(); cam.filters = [cm]; }
-    // The soak, as 鼎归's: a disc grown in an offscreen texture, torn by paper fibres
-    // (a crisp fibrous front, only a little softened), used as the painting's mask.
-    // The wet rim: the same torn disc drawn a little ahead of it, masking a wash of
-    // ink over what lies under — so where the new painting eats into the old, the
-    // old goes dark and wet first, in exactly the front's own ragged shape.
-    const [ox, oy] = SOAK_FROM[id] ?? [0.5, 0.5];
-    // Two tears: the broad wander of the front, and the fine fibres of the paper at its lip.
-    const fibres = new PIXI.Sprite(fibreTex);
-    fibres.scale.set(R / 160);
-    fibres.renderable = false;
-    const fine = new PIXI.Sprite(fibreTex);
-    fine.scale.set(R / 900);
-    fine.renderable = false;
-    const blob = new PIXI.Graphics().circle(0, 0, R).fill(0xffffff);
-    blob.position.set(ox * W, oy * H);
-    blob.scale.set(0.001);
-    const sheet = new PIXI.Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.001 });
-    const soakLayer = new PIXI.Container();
-    soakLayer.addChild(sheet, blob);
-    const tear = new PIXI.DisplacementFilter({ sprite: fibres, scale: R * 0.22 });
-    const fray = new PIXI.DisplacementFilter({ sprite: fine, scale: R * 0.012 });
-    const soften = new PIXI.BlurFilter({ strength: 1.2, quality: 2 });
-    soakLayer.filters = [tear, fray, soften];
-    const src = new PIXI.Container();
-    src.scale.set(K);
-    src.addChild(fibres, fine, soakLayer);
-    const rtOf = () => { const t = PIXI.RenderTexture.create({ width: Math.ceil(W * K), height: Math.ceil(H * K) }); made.push(t); return t; };
-    const rt = rtOf(), rimRt = rtOf();
-    const maskOf = (t) => { const m = new PIXI.Sprite(t); m.scale.set(1 / K); return m; };
-    const rimMask = maskOf(rimRt);
-    const rim = new PIXI.Graphics().rect(0, 0, W, H).fill(INK);
-    rim.blendMode = 'multiply';
-    rim.alpha = 0;
-    rim.mask = rimMask;
-    whole.addChild(rim, rimMask);
-    const mask = maskOf(rt);
-    whole.addChild(pic, mask);
-    pic.mask = mask;
-    root.addChild(whole);
-    const soak = { v: 0 }; // 0 unseen … 1 the painting whole
-    let drawn = -1;
-    const L = {
-      id, view, soak, whole, pic, cam,
-      glows: [],
-      /// Put the camera where `view` says, the mask where `soak` says.
-      apply() {
-        const s = cover * view.s;
-        const w = iw * s, h = ih * s;
-        let x = W / 2 - view.fx * w, y = H / 2 - view.fy * h;
-        x = Math.min(0, Math.max(W - w, x));
-        y = Math.min(0, Math.max(H - h, y));
-        cam.scale.set(s);
-        cam.position.set(x, y);
-        if (cm) cm.matrix = coldMatrix(view.cold);
-        whole.visible = soak.v > 0.0005;
-        if (soak.v !== drawn && whole.visible) {
-          drawn = soak.v;
-          // The rim runs ahead of the painting by RIM of the disc, softer, and dries as the soak ends.
-          blob.scale.set(Math.max(0.001, soak.v + RIM));
-          soften.strength = 1.5;
-          app.renderer.render({ container: src, target: rimRt, clear: true });
-          blob.scale.set(Math.max(0.001, soak.v));
-          soften.strength = 1.2;
-          app.renderer.render({ container: src, target: rt, clear: true });
-          rim.alpha = soak.v >= 1 ? 0 : RIM_INK * Math.min(1, soak.v * 6) * Math.min(1, (1 - soak.v) * 3);
-        }
-      },
-      /// A soft light on the painting at (u, v) of it, `size` of the painting's width.
-      glow(u, v, size, t = glowTex) {
-        const g = new PIXI.Sprite(t);
-        g.anchor.set(0.5);
-        g.position.set(u * iw, v * ih);
-        g.width = g.height = size * iw;
-        g.alpha = 0;
-        g.blendMode = 'add';
-        cam.addChild(g);
-        return g;
-      },
-    };
-    layers[id] = L;
-    return L;
+    if (from.cold !== undefined && to.cold !== undefined) cm = new PIXI.ColorMatrixFilter();
+    layers[id] = stage.layer(BEATS.find((b) => b.id === id).art, view, { from: SOAK_FROM[id], filter: cm, each: cm && (() => { cm.matrix = coldMatrix(view.cold); }) });
   };
-  const glowTex = PIXI.Texture.from(glowCanvas());
-  // The token's light: warm silver, the painting's own glow breathing — never a white blot.
-  const silverTex = PIXI.Texture.from(glowCanvas(256, [226, 222, 206]));
-  made.push(glowTex, silverTex);
-
   // The uses, bottom to top: the river (stopped, then standing), 冰夷, the trial,
   // the river again (the wall coming down), the seal under the water, the 鼎.
   for (const b of BEATS) if (b.id !== 'rise') layer(b.id);
@@ -236,43 +110,13 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
   layers.fall.pic.addChild(wash);
 
   const sealGlow = layers.seal.glow(...MARKS.sealCentre, 0.2);
-  const tokenGlow = layers.ding.glow(...MARKS.token, 0.05, silverTex);
-
-  // Rice-paper grain over all of it, very faint.
-  const grainTex = PIXI.Texture.from(grainCanvas());
-  grainTex.source.addressMode = 'repeat';
-  made.push(grainTex);
-  const grain = new PIXI.TilingSprite({ texture: grainTex, width: W, height: H });
-  grain.alpha = 0.07;
-  grain.blendMode = 'multiply';
-  root.addChild(grain);
-
-  const all = [...new Set(Object.values(layers))];
-  const apply = () => {
-    // A painting wholly soaked hides the ones under it (they cost nothing then).
-    let covered = false;
-    for (let i = all.length - 1; i >= 0; i -= 1) {
-      const L = all[i];
-      L.apply();
-      L.whole.renderable = !covered;
-      if (L.soak.v >= 1) covered = true;
-    }
-  };
-  app.ticker.add(apply);
+  // The token's light: warm silver, the painting's own glow breathing — never a white blot.
+  const tokenGlow = layers.ding.glow(...MARKS.token, 0.05, stage.glowTex([226, 222, 206]));
+  stage.grain();
 
   const sec = (ms) => ms / 1000;
   /// A beat: the painting soaks in (unless it is already up), and the camera moves.
-  const shot = (id, { soakIn = true, ease = 'sine.inOut' } = {}) => {
-    const L = layers[id];
-    const b = BEATS.find((x) => x.id === id);
-    const [from, to] = SHOTS[id];
-    const tl = bag.timeline({ paused: true });
-    tl.set(L.view, { ...from, cold: from.cold ?? L.view.cold ?? 0 }, 0);
-    if (soakIn) tl.fromTo(L.soak, { v: 0 }, { v: 1, duration: SOAK_S, ease: 'power1.inOut' }, 0);
-    else tl.set(L.soak, { v: 1 }, 0);
-    tl.to(L.view, { ...to, duration: sec(b.ms), ease }, 0);
-    return tl;
-  };
+  const shot = (id, opts) => shotOn(bag, layers[id], SHOTS[id], sec(BEATS.find((x) => x.id === id).ms), opts);
 
   const beats = {
     still: () => shot('still', { ease: 'power1.out' }),
@@ -288,15 +132,14 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
       .fromTo(tokenGlow, { alpha: 0 }, { keyframes: [{ alpha: 0.3, duration: 1.2, ease: 'sine.inOut' }, { alpha: 0.16, duration: 1.0, ease: 'sine.inOut' }, { alpha: 0.28, duration: 1.1, ease: 'sine.inOut' }] }, 3.8),
   };
   // Hold the camera still at its start until a beat plays (the soak begins unseen).
-  apply();
+  stage.apply();
   return {
     beat(id) { return beats[id](); },
     /// One frame of the per-frame work (the cameras, the masks) — for a still or a seek.
-    step() { apply(); },
+    step() { stage.apply(); },
     destroy() {
       bag.killAll();
-      app.ticker.remove(apply);
-      for (const t of made) t.destroy(true);
+      stage.destroy();
     },
   };
 }
@@ -305,10 +148,6 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
 
 export function stillSvg(id, { W = 1000, H = 1000, arts = {} } = {}) {
   const b = BEATS.find((x) => x.id === id) ?? BEATS[0];
-  const href = arts[b.art] ?? ART[b.art];
-  const [, to] = SHOTS[b.id];
   // The beat's last frame: the painting cropped where the camera ends.
-  const vw = 1536 / to.s, vh = vw * (H / W);
-  const x = Math.max(0, Math.min(1536 - vw, to.fx * 1536 - vw / 2)), y = Math.max(0, Math.min(1024 - vh, to.fy * 1024 - vh / 2));
-  return `<svg class="spstill" viewBox="${x.toFixed(1)} ${y.toFixed(1)} ${vw.toFixed(1)} ${vh.toFixed(1)}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice"><rect width="1536" height="1024" fill="#f5efe1"/><image href="${href}" x="0" y="0" width="1536" height="1024" preserveAspectRatio="none"/></svg>`;
+  return stillOf(arts[b.art] ?? ART[b.art], SHOTS[b.id][1], { W, H });
 }

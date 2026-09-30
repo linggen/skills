@@ -1,61 +1,86 @@
-// 筑基天象 (setpiece-zhuji.js): the beats follow the book's 筑基 in order, both
-// languages carry every beat, the moment stays mid-size (~10–14 s), and the
-// still frames (reduced motion / no WebGL) draw what each beat is about.
+// 筑基天象 (setpieces/zhuji.js): the beats follow the book's 筑基 in order, both
+// languages carry every beat, the moment stays mid-size, and — his ruling
+// (2026-09-30, the code-drawn one was 「太假」) — it is painted, not drawn: every
+// beat plays on a painting, the camera never shows past it, d1 soaks into d2.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DOOR_WORDS, FIVE, SET_PIECES, ZHUJI_BEATS, beatStarts, starField, stillSvg, totalMs } from '../scripts/setpiece-zhuji.js';
+import { ART, ASPECT, BEATS, DOOR_WORDS, FIVE, MARKS, SHOTS, TITLE, camSeconds, stillSvg } from '../scripts/setpieces/zhuji.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+const totalMs = BEATS.reduce((s, b) => s + b.ms, 0);
 
 test('the beats run in the book\'s order, each in both languages', () => {
-  assert.deepEqual(ZHUJI_BEATS.map((b) => b.id), ['gather', 'light', 'tai', 'door', 'zhu', 'stars', 'settle']);
-  for (const b of ZHUJI_BEATS) {
-    assert.ok(b.zh && b.en, b.id);
-    assert.ok(!/你/.test(b.zh), `${b.id}: the moment tells of him, not to you`);
+  assert.deepEqual(BEATS.map((b) => b.id), ['gather', 'light', 'tai', 'door', 'zhu', 'stars', 'settle']);
+  for (const b of BEATS) {
+    assert.ok(b.line.zh && b.line.en, b.id);
+    assert.ok(!/你/.test(b.line.zh), `${b.id}: the moment tells of him, not to you`);
   }
-  assert.equal(ZHUJI_BEATS.at(-1).ms, 0, 'the last beat is a resting frame');
+  assert.equal(BEATS.at(-1).ms, 0, 'the last beat is a resting frame');
+  assert.equal(TITLE.zh, '筑基天象');
 });
 
-test('mid-size: about ten seconds, never the 卷\'s big set piece', () => {
-  const ms = totalMs();
-  assert.ok(ms >= 9000 && ms <= 14000, `total ${ms} ms`);
-  const starts = beatStarts();
-  assert.equal(starts[0], 0);
-  starts.slice(1).forEach((s, i) => assert.ok(s > starts[i]));
+test('mid-size: about ten seconds as the book paces it, never the 卷\'s big set piece; no camera move hurried', () => {
+  assert.ok(totalMs >= 9000 && totalMs <= 14000, `total ${totalMs} ms`);
+  for (const b of BEATS) assert.ok(camSeconds(b) >= 3 && camSeconds(b) <= 4, `${b.id}: ${camSeconds(b)} s`);
 });
 
 test('the words are the book\'s: the 锅 of cloud, 勿入 → 今日放学, the four gates of 黄庭, 几道纹', () => {
   const book = fs.readFileSync(path.join(ROOT, 'story/jiuding-lu/09-第九回.md'), 'utf8');
-  for (const phrase of ['倒扣的大锅', '勿入', '今日放学', '上有黄庭下关元，后有幽阙前命门', '伸手便摘得着', '几道纹']) {
+  for (const phrase of ['倒扣的大锅', '勿入', '今日放学', '上有黄庭下关元，后有幽阙前命门', '星星比平日亮了一些，近了一些', '几道纹']) {
     assert.ok(book.includes(phrase), `the book has ${phrase}`);
-    assert.ok(ZHUJI_BEATS.some((b) => b.zh.includes(phrase)), `a beat carries ${phrase}`);
+    assert.ok(BEATS.some((b) => b.line.zh.includes(phrase)), `a beat carries ${phrase}`);
   }
   assert.deepEqual(DOOR_WORDS.zh, ['勿入', '今日放学']);
   assert.deepEqual(FIVE.map((f) => f.zh), ['金', '木', '水', '火', '土']);
 });
 
-test('still frames: an svg per beat, drawing that beat', () => {
-  for (const b of ZHUJI_BEATS) {
-    const s = stillSvg(b.id);
-    assert.match(s, /^<svg class="zjstill"/);
-    assert.ok(s.includes(`data-beat="${b.id}"`));
+test('painted, not drawn: six paintings on disk (d twice), every beat on one, the camera inside it', () => {
+  assert.deepEqual(Object.keys(ART).sort(), ['a', 'b', 'c', 'd1', 'd2', 'e']);
+  for (const p of Object.values(ART)) assert.ok(fs.existsSync(path.join(ROOT, 'worlds/jiuding', p)), `${p} is on disk`);
+  assert.deepEqual(BEATS.map((b) => b.art), ['a', 'b', 'c', 'd1', 'e', 'e', 'e'], 'the approved frames, beat by beat');
+  for (const b of BEATS) {
+    for (const v of SHOTS[b.id]) {
+      assert.ok(v.s >= 1 && v.s <= 3, `${b.id}: zoom ${v.s} never shows past the painting`);
+      assert.ok(v.fx >= 0 && v.fx <= 1 && v.fy >= 0 && v.fy <= 1, `${b.id}: aim inside the painting`);
+    }
   }
-  assert.match(stillSvg('light'), /url\(#zjlight\)/, 'the light comes down');
-  assert.match(stillSvg('door'), /今日放学/, 'the door\'s words are 爹\'s');
-  assert.match(stillSvg('door', 'en'), /NO SCHOOL<\/text>.*TODAY/);
-  assert.ok((stillSvg('stars').match(/#fdf6e3/g) ?? []).length >= 50, 'the stars hang low');
-  assert.ok(!stillSvg('gather').includes('#fdf6e3'), 'no stars before the 锅 bursts');
+  const pts = Object.values(MARKS).flatMap((m) => (Array.isArray(m[0]) ? m : [m]));
+  for (const [u, v] of pts) assert.ok(u > 0 && u < 1 && v > 0 && v < 1, 'marks inside the painting');
+  assert.equal(MARKS.doors.length, 5, 'a glow per door, 金木水火土');
+  assert.equal(ASPECT, 9 / 16);
+  const src = fs.readFileSync(path.join(ROOT, 'scripts/setpieces/zhuji.js'), 'utf8');
+  assert.doesNotMatch(src, /\.(ellipse|circle|moveTo|lineTo|bezierCurveTo|quadraticCurveTo|poly|roundRect)\(/, 'no strokes or shapes drawn in code');
+  assert.doesNotMatch(src, /\bgsap\.(to|from|fromTo|timeline|delayedCall)\(/, 'its tweens go through the bag');
+  assert.match(src, /destroy\(\) \{\s*bag\.killAll\(\);/);
 });
 
-test('the same sky every play', () => {
-  assert.deepEqual(starField(), starField());
-  assert.equal(starField().length, 72);
+test('the door: d1 soaks into d2 under one camera, and the still ends on 爹\'s note', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'scripts/setpieces/zhuji.js'), 'utf8');
+  assert.match(src, /use\('d2', 'door', \{ view: L\.door\.view/, 'd2 shares d1\'s camera: only the note changes');
+  assert.ok(stillSvg('door').includes(ART.d2));
+  assert.ok(!stillSvg('door').includes(ART.d1));
 });
 
-test('one registry entry, played by id', () => {
-  assert.equal(SET_PIECES.zhuji.beats, ZHUJI_BEATS);
-  assert.equal(typeof SET_PIECES.zhuji.play, 'function');
+test('no WebGL: each beat is its painting, still, cropped where the camera ends; no words drawn', () => {
+  for (const b of BEATS) {
+    const svg = stillSvg(b.id, { W: 1000, H: 562 });
+    assert.match(svg, /^<svg class="spstill"/);
+    assert.doesNotMatch(svg, /<text/);
+  }
+  assert.ok(stillSvg('gather').includes(ART.a));
+  assert.ok(stillSvg('settle').includes(ART.e));
+});
+
+test('small on purpose — the first rung (his: 「筑基有一点天象就可以」): no shake or flash, stars only a little brighter, never hanging down', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'scripts/setpieces/zhuji.js'), 'utf8');
+  assert.doesNotMatch(src, /yoyo|repeat:/, 'no jolts or shakes: the camera only pushes and rises');
+  assert.doesNotMatch(src, /\.fill\(PAPER\)/, 'no white flash');
+  const stars = BEATS.find((b) => b.id === 'stars').line.zh;
+  assert.match(stars, /亮了一些/);
+  assert.doesNotMatch(stars, /往下垂|摘得着|轰/);
+  const book = fs.readFileSync(path.join(ROOT, 'story/jiuding-lu/09-第九回.md'), 'utf8');
+  assert.ok(book.includes(stars.replace('那口锅', '那口「锅」')), 'the book says the same');
 });

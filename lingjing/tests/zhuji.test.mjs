@@ -120,13 +120,19 @@ test('the set pieces ride their exits: 筑基天象 on the cliff\'s throw, 漳�
   assert.equal(go(t, 'take').state.node?.setpiece, 'zhuji', 'the story node carries it to the page');
 });
 
-test('one runner for both set pieces: setpieces/zhuji.js hands 筑基天象\'s own player to setpiece.js, and the page plays a node\'s piece', async () => {
+test('one runner for both set pieces: 筑基天象 is painted like 漳水立起 (setpieces/zhuji.js builds on painted.js), and the page plays a node\'s piece', async () => {
   const fs = await import('node:fs');
   const zhuji = await import('../scripts/setpieces/zhuji.js');
-  assert.equal(typeof zhuji.play, 'function');
+  const zhang = await import('../scripts/setpieces/zhang.js');
+  for (const def of [zhuji, zhang]) {
+    assert.equal(typeof def.build, 'function');
+    assert.equal(typeof def.stillSvg, 'function');
+    assert.equal(def.play, undefined, 'no piece brings its own player');
+  }
   assert.deepEqual(zhuji.BEATS.map(b => b.id), ['gather', 'light', 'tai', 'door', 'zhu', 'stars', 'settle']);
+  for (const f of ['zhuji', 'zhang']) assert.match(fs.readFileSync(new URL(`../scripts/setpieces/${f}.js`, import.meta.url), 'utf8'), /from '\.\/painted\.js'/);
   const runner = fs.readFileSync(new URL('../scripts/setpiece.js', import.meta.url), 'utf8');
-  assert.match(runner, /typeof def\.play === 'function'\) return def\.play\(host/);
+  assert.match(runner, /scene = def\.build\(/);
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(page, /const piece = setpieceOf\(n\);\s*if \(piece\) playPiece\(piece, setpieceBeats\(n\)\);/);
   assert.match(page, /k < 600 && pieceOn; k \+= 1\) await pause\(250\);\s*if \(play\) show\(\{ memory/, 'her memory waits for the piece');

@@ -1,6 +1,7 @@
 // setpiece.js — 大场面 (哇时刻 ②): one per 卷 at most, the whole stage. The
 // runner; each piece lives in setpieces/<id>.js and hands back one paused
-// GSAP timeline per beat (卷一's is `zhang`, 漳水立起).
+// GSAP timeline per beat (卷一's is `zhang`, 漳水立起; 第九回's `zhuji`, 筑基天象),
+// both painted: setpieces/painted.js moves the camera and soaks one painting into the next.
 //
 // A piece moves with the dialogue box: a beat plays, then holds until a tap
 // (the box's next passage) — or runs on by itself with `auto`. A tap during a
@@ -68,8 +69,6 @@ const loadImage = (src) => new Promise((ok, no) => { const im = new Image(); im.
 export async function playSetPiece(host, id, { lang = 'zh', still = false, auto = false, hold = 900, artBase = ART_BASE, beats = null, onBeat, onDone } = {}) {
   if (!/^[a-z]+$/.test(id)) throw new Error(`bad set piece: ${id}`);
   const def = await import(`./setpieces/${id}.js`);
-  // A piece that brings its own player (setpieces/zhuji.js → setpiece-zhuji.js): one runner, one call.
-  if (typeof def.play === 'function') return def.play(host, { lang, still, auto, onBeat, onDone });
   const { play: BEATS, before } = beatRange(def.BEATS, beats);
   const steps = beatStepper(BEATS);
   const box = document.createElement('div');
