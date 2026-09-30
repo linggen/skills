@@ -351,7 +351,7 @@ test('the catchphrase rides the book\'s beats: the bowl night first, the bow, th
 
 /* ── The companion in the trials, half-recognised and never named ── */
 
-test('the companion\'s cameos: 阿禾, a girl — braids, the red nose and notebook — never a name; an old save named a girl reads the same', () => {
+test('the companion\'s cameos: 阿禾, a girl — braids, the red nose and notebook, known to him and dodging him; an old save named a girl reads the same', () => {
   const scenes = content.chapters['00-prologue'].scenes;
   const texts = () => [scenes['00-gate'].exits.find(e => e.id === 'steady').story, scenes['00-gate'].exits.find(e => e.id === 'rush').story, scenes['00-luoshu'].exits[0].story, scenes['00-hall'].story];
   for (const gender of ['male', 'none', 'female']) {
@@ -360,14 +360,13 @@ test('the companion\'s cameos: 阿禾, a girl — braids, the red nose and noteb
       for (const lang of ['zh', 'en']) {
         const out = fill(t[lang], { ...s, lang }, content);
         assert.doesNotMatch(out, /\{伴|「石头|石头（|Shitou/, `${gender} ${lang}: filled`);
-        if (t !== scenes['00-hall'].story) assert.doesNotMatch(out, /阿禾|Ahe/, `${gender} ${lang}: at the steps and the wall she is never named`);
       }
       assert.match(fill(t.zh, s, content), /小辫子|红鼻头|小本子/, gender);
       assert.doesNotMatch(fill(t.zh, s, content), /翘起来的头发|翘头发|结巴|红脸蛋/, gender);
     }
     const hallText = fill(scenes['00-hall'].story.zh, s, content);
-    assert.match(hallText, /红鼻头。小辫子。小本子。\n\n小满心里咯噔一下：不会吧？/);
-    assert.match(hallText, /木、水、土，三灵根——真灵根。中上之资。[\s\S]*一定是看错了。[\s\S]*\n\n轮到小满了。/);
+    // Since the 2026-09-30 review round he knows her (she asked him the road in 第三回) and she dodges him all day: named, never answering
+    assert.match(hallText, /排在小满前面第三个的，是阿禾。她把两根小辫子[\s\S]*木、水、土，三灵根——真灵根。中上之资。[\s\S]*没敢喊出声来。/);
   }
 });
 
