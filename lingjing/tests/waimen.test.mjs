@@ -75,7 +75,7 @@ function playThrough() {
 
 test('the prologue leads into 外门 — 卷一 · 第五回 — which sorts between it and 冀, and opens at 外门 with its title card', () => {
   const ids = Object.keys(content.chapters).sort();
-  assert.deepEqual(ids.slice(0, 3), ['00-prologue', '00-waimen', '01-ji']);
+  assert.deepEqual(ids.slice(0, 4), ['00-prologue', '00-waimen', '00-zhuji', '01-ji']);
   const s = opened();
   assert.equal(s.chapter, '00-waimen');
   assert.equal(s.scene, CH.first_scene);
@@ -99,16 +99,14 @@ test('the prologue leads into 外门 — 卷一 · 第五回 — which sorts bet
   assert.equal(story(s, content, ctx()).result.cauldrons.length, 9, 'no cauldron in it: the nine are still the nine');
 });
 
-test('every scene is reached, and the chapter ends on 「第九回 · 即将开放」', () => {
+test('every scene is reached, and the chapter ends straight into 第九回 (筑基, built 2026-09-30)', () => {
   for (const gender of ['male']) {
     const s = playThrough();
     assert.ok(s.ended.includes('00-waimen'), gender);
-    assert.equal(s.scene, null);
-    assert.equal(s.chapter, '00-waimen', 'waiting: the next chapter is still being written');
+    assert.deepEqual([s.chapter, s.scene], ['00-zhuji', '09-snow'], 'nothing waits: 第九回 opens at once');
     const passed = new Set(s.done_scenes);
     for (const id of Object.keys(CH.scenes)) assert.ok(passed.has(id), `${gender}: ${id}`);
-    assert.equal(look(s, content, ctx(DAY2)).waypoint.text, '第九回 · 即将开放', '冀\'s first 回, from the book (第九回 opens it)');
-    assert.equal(look({ ...s, lang: 'en' }, content, ctx(DAY2)).waypoint.text, 'Chapter 9 · coming soon');
+    assert.equal(look(s, content, ctx(DAY2)).chapter.hui, 'h09');
     assert.deepEqual([s.tier, s.step], ['qi', 4], '息壤: 练气五层');
     for (const item of ['danlu', 'foundation-pill', 'huangting', 'heluo']) assert.ok(s.bag[item] > 0, item);
     assert.ok(s.cast.includes('zheng') && s.cards.includes('zheng'), '小狰 walks with the player, its card in the deck');
@@ -170,9 +168,11 @@ test('the map is the area around 沉鼎观: the rest of 徐 and the eight provin
   assert.equal(refused(move, en, { place: 'pengcheng' }, 'road-closed').say, CH.map.say.en);
 });
 
-test('the chapter ended, the map holds while 第九回 is being written; a save already further along keeps the whole world', () => {
+test('the chapter ended, 第九回 keeps the same mountain on its own map; a save already further along keeps the whole world', () => {
   const done = playThrough();
-  assert.equal(refused(move, done, { place: 'pengcheng' }, 'road-closed', DAY2).say, CH.map.say.zh);
+  const zj = content.chapters['00-zhuji'];
+  assert.deepEqual(zj.map.places, CH.map.places, 'the year is spent on the same mountain');
+  assert.equal(refused(move, done, { place: 'pengcheng' }, 'road-closed', DAY2).say, zj.map.say.zh);
   // an older save standing in 02-yan: no chapter map, every province it had
   const later = { ...opened(), chapter: '02-yan', scene: null, place: 'pengcheng', ended: ['00-prologue', '01-ji'], tier: 'core' };
   const l = look(later, content, ctx());
@@ -387,19 +387,18 @@ test('息壤 keeps his 修为 through the jump, and its moment is the five doors
   assert.equal(stageSlots({}, [{ card: 'panel' }, { card: 'doors' }]).main[0].card, 'doors');
 });
 
-test('外门 ends on its card: 「第八回 · 完」, what this player did, the next teaser in the book\'s voice — and 「第九回 · 即将开放」 stays (his, 2026-09-29; 回 renumbered 2026-09-30)', () => {
+test('外门 ends on its card: 「第八回 · 完」, what this player did, the next teaser in the book\'s voice — standing on 第九回\'s first scene (his, 2026-09-29; 回 renumbered and 第九回 built 2026-09-30)', () => {
   const s = playThrough();
   const l = look(s, content, ctx(DAY2));
   const close = l.chapter.close;
   assert.equal(close.title, '第八回 · 完');
   assert.equal(close.id, 'h08', 'put away once, as the 回 it closes');
   assert.equal(close.did, '你收了药园那只偷萝卜的小狰，大比把第一轮让给了孙二狗，终究赢下了那颗筑基丹，又拜了扫了五十年台阶的瞿老为师。');
-  assert.match(close.teaser, /邺城[\s\S]*河伯/);
+  assert.match(close.teaser, /头场雪[\s\S]*玉盒子/);
   assert.ok(l.stage.some(c => c.card === 'closed'), 'on the stage');
   assert.equal(stageSlots(l, l.stage).main[0].card, 'closed', 'first on the stage, before an errand offered where he stands');
-  assert.ok(l.stage.some(c => c.card === 'offer'), 'an offer was there too');
   const html = cardHtml({ card: 'closed' }, { look: l, lang: 'zh', words: WORDS.zh });
-  assert.match(html, /第八回 · 完[\s\S]*小狰[\s\S]*邺城[\s\S]*第九回 · 即将开放[\s\S]*data-close-chapter="h08">合上/);
+  assert.match(html, /第八回 · 完[\s\S]*小狰[\s\S]*头场雪[\s\S]*data-close-chapter="h08">合上/);
   // another player's chapter reads his own: no 狰, and the first round fought
   const other = { ...s, cast: s.cast.filter(id => id !== 'zheng'), ledger: s.ledger.filter(e => e.who !== 'sunergou') };
   assert.match(look(other, content, ctx(DAY2)).chapter.close.did, /^药园的贼，你没收成，大比一轮一轮打了上去，/);

@@ -232,21 +232,29 @@ test('a road may cross into another province; a breakthrough needs its line and 
   const c = fresh();
   assert.ok(c.places['徐'].places.find(p => p.id === 'sibei').roads.includes('zhangnan'));
   assert.deepEqual(lint(c), []);
-  const take = c.chapters['01-ji'].scenes['01-cauldron'].exits.find(e => e.id === 'take');
+  const take = c.chapters['00-zhuji'].scenes['09-cliff'].exits.find(e => e.id === 'take');
   delete take.refuse;
-  c.chapters['01-ji'].gate = 99;
+  c.chapters['00-zhuji'].gate = 99;
   const problems = lint(c);
   assert.ok(has(problems, 'a breakthrough needs a refusal line'));
   assert.ok(has(problems, 'no tier on the ladder has gate 99'));
 });
 
-test('chapter 1 walks from the Zhang to the cauldron and ends', () => {
-  const ch = fresh().chapters['01-ji'];
-  assert.equal(ch.opens, null, 'no lock while the game is built and tested'); assert.equal(ch.gate, 1); assert.equal(ch.corridor, false);
+test('chapter 1 walks from the Zhang to the cauldron and ends — the Foundation laid before it, on the cliff (第九回)', () => {
+  const c = fresh(), ch = c.chapters['01-ji'];
+  assert.equal(ch.opens, null, 'no lock while the game is built and tested'); assert.equal(ch.gate, null); assert.equal(ch.corridor, false);
+  assert.equal(ch.coming, undefined, '第十回 is built (his, 2026-09-30)');
   const at = Object.values(ch.scenes).map(s => `${s.id}@${s.at}`);
-  assert.deepEqual(at, ['01-altar@hebo', '01-arrive@zhangnan', '01-cauldron@zhangyuan', '01-deep@zhangyuan', '01-end@zhangyuan', '01-ye@ye']);
+  assert.deepEqual(at, ['01-altar@hebo', '01-arrive@zhangnan', '01-cauldron@zhangyuan', '01-deep@zhangyuan', '01-end@zhangyuan', '01-rise@hebo', '01-ye@ye']);
   assert.ok(ch.scenes['01-end'].exits.some(e => e.ends === '01-ji'));
-  assert.ok(ch.scenes['01-cauldron'].exits.find(e => e.id === 'take').breakthrough);
+  assert.ok(!Object.values(ch.scenes).some(s => s.exits.some(e => e.breakthrough)), 'no breakthrough at the 鼎');
+  assert.equal(ch.scenes['01-cauldron'].exits.find(e => e.id === 'take').memory, 1, 'the 鼎 gives her first memory');
+  // 第九回 is its own chapter at 沉鼎观 (徐), gated for the Foundation, between 外门 and 冀.
+  const zj = c.chapters['00-zhuji'];
+  assert.deepEqual([zj.province, zj.gate, zj.first_scene], ['徐', 1, '09-snow']);
+  assert.deepEqual(Object.keys(c.chapters).filter(id => id < '02').sort(), ['00-prologue', '00-waimen', '00-zhuji', '01-ji']);
+  assert.ok(zj.scenes['09-cliff'].exits.find(e => e.id === 'take').breakthrough);
+  assert.ok(zj.scenes['09-cliff'].exits.find(e => e.id === 'take').ends === '00-zhuji');
 });
 
 test('chapter 3 walks from the Wei to the cauldron under the sea and ends', () => {
@@ -288,7 +296,7 @@ test('chapter 9 is the ending: no gate and no breakthrough, 定鼎 marked on the
   assert.ok(end.exits.every(e => e.ends === '09-yu'));
   assert.equal(end.at, 'luoyi', 'the nine are set on the footings at 洛邑');
   // every province has its chapter, each chapter its elite
-  assert.deepEqual(Object.values(c.chapters).map(x => x.province).sort(), ['兖', '冀', '徐', '徐', '徐', '扬', '梁', '荆', '豫', '雍', '青'].sort());
+  assert.deepEqual(Object.values(c.chapters).map(x => x.province).sort(), ['兖', '冀', '徐', '徐', '徐', '徐', '扬', '梁', '荆', '豫', '雍', '青'].sort());
 });
 
 // Every line of Yinyue's from chapter 3 on has its narration for the player who never rang the bell.

@@ -21,7 +21,7 @@ section below says which it is; a 【远景】 section is a plan, not a promise.
 
 **卷一 · 沉鼎 needs, and nothing else:** the road 石坳村 → 沉鼎观 → 漳水,
 ending at the first 鼎 (the book's 第一回 to 第十回; the game's chapters
-`00-prologue`, `00-waimen`, then `01-ji`); 练气 → 筑基; the pills 回春丹 ·
+`00-prologue`, `00-waimen`, `00-zhuji`, then `01-ji`); 练气 → 筑基; the pills 回春丹 ·
 聚气丹 · 筑基丹 (market and 九转); the card fight; 差事; the 图鉴; 银月 (found,
 asleep in the token, waking by the story). Everything past 筑基 and past 冀 —
 元婴 and up, the other eight 鼎, the nine 鼎缘人, PvP, the table — waits for its
@@ -156,9 +156,15 @@ The game's data unit (not the book's 回): `chapter.json` (`id`, `opens`,
 chapter opens of the map), `beats.md` (the one-page beat sheet), `scenes/*.json`.
 Scenes carry `hui`, the book's 回 they play (rules/hui.mjs; the game says
 卷/回, never 章 — 5b955c4). Built: `00-prologue` (27 scenes, 第一回–第四回),
-`00-waimen` (21, 第五回–第八回), and `01-ji` … `09-yu` (six scenes each) — **the
-old spine**, written before the book (银月's old bell backstory); `01-ji` is
-to be rewritten from 第九回–第十回, the rest wait for their 卷.
+`00-waimen` (21, 第五回–第八回), `00-zhuji` (5, 第九回: the winter, the furnace's
+九转, the year as the book's four seasons — each exit a layer by `rise`, the last
+`{layer: 9, full: true}`, in order by `needs.mark`, offered `once`, 25 体力 a season —
+瞿老's last disciple, and the 筑基 on the cliff, `09-cliff`) and `01-ji` (7, 第十回:
+the two failed plans, the wedding, **冰夷's two dragons test him at `01-rise`** —
+`foe-shuanglong`, a trial fought again at once — the seal, the first 鼎 with memory 1
+and no breakthrough, 柳湾); both rebuilt from the book 2026-09-30 (his: 照这样重做冀州).
+`02-yan` … `09-yu` (six scenes each) are **the old spine**, written before the book
+(银月's old bell backstory), and wait for their 卷.
 
 - **Opening dates are local** — `opens` refuses a chapter before its day
   (unset while building). **A realm gate** holds the player at the peak until
@@ -684,8 +690,8 @@ person, no gender marks, and the game follows 原神 (story DESIGN § 四, § �
 
 ## Open
 
-- **Chapters 01–09 are the old spine** (银月's bell backstory, 冀 opening without
-  the sect): `01-ji` to be rebuilt from 第九回–第十回; the rest wait for their 卷.
+- **Chapters 02–09 are the old spine** (银月's bell backstory); `00-zhuji` and `01-ji`
+  follow the book since 2026-09-30; the rest wait for their 卷.
 - **Flash-Lite lessons (2026-09-15):** a weak model tells a side story in one
   breath, drops authored lines in a long session, skips the last button.
 - Offline play (the save needs the network) · the phone's chat · whether the

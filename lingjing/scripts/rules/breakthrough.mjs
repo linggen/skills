@@ -39,8 +39,12 @@ function secludedLately(content, state, rule, now) {
    factor is a row here, never another branch. */
 const FACTORS = {
   pill: (content, state, rule, x) => {
-    const id = pillFor(rule, x.to), held = Boolean(id && state.bag?.[id] > 0);
-    return { n: held ? rule.pill.bonus : 0, on: held, bonus: rule.pill.bonus, item: id ? { id, name: pick(itemOf(content, id)?.name, state.lang) ?? id } : null };
+    // A list names the pills in the order they are reached for: the furnace's
+    // 九转 before the sect's 一转 (第九回: he eats the 九转; the 官丹 stays in 饭桶).
+    const ids = [].concat(pillFor(rule, x.to) ?? []);
+    const id = ids.find(i => state.bag?.[i] > 0) ?? ids[0] ?? null, held = Boolean(id && state.bag?.[id] > 0);
+    const bonus = rule.pill.bonus_of?.[id] ?? rule.pill.bonus;
+    return { n: held ? bonus : 0, on: held, bonus, item: id ? { id, name: pick(itemOf(content, id)?.name, state.lang) ?? id } : null };
   },
   body: (content, state, rule, x) => {
     const whole = x.stamina >= Math.ceil(content.rewards.stamina.max * rule.body.share);

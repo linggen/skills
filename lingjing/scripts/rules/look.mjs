@@ -154,7 +154,10 @@ function sceneBrief(content, state, now = new Date()) {
   // is not offered until the thread is done — the story never set it up.
   // A choice that waits on a clue (`needs.seen`, rules/examine.mjs) is not offered until it is found.
   const setUp = id => {
-    const needs = scene.exits.find(e => e.id === id)?.needs;
+    const exit = scene.exits.find(e => e.id === id), needs = exit?.needs, marks = state.marks ?? [];
+    // A step the story set down first (`needs.mark`) waits for it; a step taken once (`once`, its mark held) is done.
+    if (needs?.mark && !marks.includes(needs.mark)) return false;
+    if (exit?.once && exit.mark && marks.includes(exit.mark)) return false;
     return (!needs?.quest || Boolean(state.quests?.[needs.quest]?.done_at)) && (!needs?.seen || seenMet(state, scene.id, needs.seen));
   };
   const buttons = (scene.buttons ?? []).filter(setUp);

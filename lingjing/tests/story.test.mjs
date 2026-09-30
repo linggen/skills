@@ -80,7 +80,8 @@ test('the people met: the scenes\' cast, beasts tamed and fought, rumor folk —
   const r = story(s, content, ctx()).result;
   const kinds = Object.fromEntries(r.people.map(p => [p.id, p.kind]));
   assert.equal(kinds.fuzhu, 'tamed');
-  assert.equal(kinds.paoxiao, 'story', 'met in 冀 before it was fought');
+  assert.equal(kinds.longzhi, 'story', 'met in the prologue\'s third trial');
+  assert.equal(kinds.paoxiao, 'fought', 'no longer at 冀\'s altar (第十回, 2026-09-30): fought, never met in a scene');
   assert.equal(kinds['known:old-li'], 'known');
   assert.ok(!r.people.some(p => p.id === 'yinyue'), 'she is her own page');
   // 「银月记起的」 is 银月的记忆 unlocked (memories.json), none before a 鼎 brings one home.
@@ -220,7 +221,8 @@ test('the command line: owed on the first call after a while away, kept without 
     assert.ok(ling.recap.chapters.some(c => c.state === 'current' && c.recap.length >= 2), 'the current chapter\'s lines, from the book');
     assert.equal(ling.recap.mystery, pz(content.chapters['01-ji'].mystery));
     assert.ok(ling.recap.here && Array.isArray(ling.recap.with) && Array.isArray(ling.recap.task.book));
-    assert.ok(ling.then.startsWith('A sitting opens'), 'the telling comes first');
+    // 冀's scenes play the book on the stage (第十回, 2026-09-30): the dialogue box's rule leads, the sitting's telling next.
+    assert.ok(/^(The stage is playing[^]*?)?A sitting opens/.test(ling.then), 'the telling comes first, after the stage\'s own rule: ' + ling.then.slice(0, 200));
     assert.equal(cli('look', '--for=ling').recap_due, undefined, 'handed over once');
     assert.equal(cli('look').recap_due, undefined);
   } finally {

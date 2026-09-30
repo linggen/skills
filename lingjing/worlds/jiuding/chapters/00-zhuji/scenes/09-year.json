@@ -1,0 +1,141 @@
+{
+ "version": 1,
+ "id": "09-year",
+ "chapter": "00-zhuji",
+ "hui": "h09",
+ "at": "yaoyuan",
+ "place": {
+  "zh": "沉鼎观 · 药园 · 这一年",
+  "en": "Chending Temple · The herb garden · That year"
+ },
+ "setup": {
+  "zh": "一个月一篮残株，一炉一颗九转聚气丹。清明、端午、伏天、入秋——一季一层；白天，你照旧在讲堂上做漏勺。",
+  "en": "A basket of culls a month, a nine-turn qi pill a batch. Qingming, the Dragon Boat festival, the dog days, autumn — a layer a season; by day you are still the leaky ladle of the lecture hall."
+ },
+ "recap": {
+  "zh": "这一年，你一层一层往上走，人前却一天比一天笨；入秋，丹田那片湖满得往外漾——九层圆满。",
+  "en": "That year you climbed layer by layer, and in front of people grew clumsier by the day; in autumn the lake in your dantian brimmed over — the peak of layer nine."
+ },
+ "cast": [],
+ "people": [
+  "ban",
+  "sunergou"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "一个月一篮，一篮一炉。",
+    "人前，一天比一天笨。",
+    "清明、端午、伏天、入秋。"
+   ],
+   "en": [
+    "A basket a month, a batch a basket.",
+    "In front of people, clumsier by the day.",
+    "Qingming, Dragon Boat, the dog days, autumn."
+   ]
+  }
+ },
+ "story": {
+  "zh": "打那以后，周衡的残株一个月一篮，一篮进炉，出来的都是九转聚气丹，一个月一颗。\n\n那几个月里，最难的倒不是修炼，是装。\n\n一个人一天比一天耳聪目明，走起路来一天比一天轻，偏要在人前一天比一天笨，这比挑水劈柴还累。",
+  "en": "From then on Zhou Heng's culls came a basket a month, and every basket went into the furnace and came out a nine-turn qi pill — one a month.\n\nIn those months the hardest thing was not the cultivating. It was the pretending.\n\nTo hear sharper and see clearer by the day, to walk lighter by the day, and yet to be clumsier by the day in front of people — that was more tiring than carrying water and splitting wood."
+ },
+ "lines": [],
+ "buttons": [
+  "qingming",
+  "duanwu",
+  "futian",
+  "ruqiu"
+ ],
+ "exits": [
+  {
+   "id": "qingming",
+   "label": {
+    "zh": "清明 · 替外公烧纸",
+    "en": "Qingming · Burn paper for Grandfather"
+   },
+   "means": "the spring month: burns paper for his grandfather and eats that month's pill",
+   "stamina": 25,
+   "mark": "y-qingming",
+   "once": true,
+   "rise": 6,
+   "stay": true,
+   "story": {
+    "zh": "练气六层是在清明。\n\n外公的坟在镇上，他去不了，便在后山寻了一块向着徐州的石头，把那一沓黄纸点着了。\n\n念到「五居中央」，纸烧完了，灰飞起来，打着旋儿往山下去，他丹田里那片湖，便漫过了第六道堤。",
+    "en": "Qi Condensation layer six came at Qingming.\n\nGrandfather's grave was in the town and he could not go, so he found a rock on the back hill facing Xu and set the stack of yellow paper alight.\n\nAs he reached \"five in the middle\", the paper burned out, the ash flew up and spun away down the mountain, and the lake in his dantian rose over its sixth bank."
+   }
+  },
+  {
+   "id": "duanwu",
+   "label": {
+    "zh": "端午 · 半颗枣",
+    "en": "Dragon Boat · Half a date"
+   },
+   "means": "the early-summer month: the festival dumpling, the next layer",
+   "needs": {
+    "mark": "y-qingming"
+   },
+   "refuse": {
+    "zh": "一季一季来：先过了前头那一季。",
+    "en": "One season at a time: finish the one before first."
+   },
+   "stamina": 25,
+   "mark": "y-duanwu",
+   "once": true,
+   "rise": 7,
+   "stay": true,
+   "story": {
+    "zh": "七层是在端午，伙房蒸了粽子，一人一个，他那个里头有半颗枣，吃到枣的时候，七层到了，他一口枣核卡在嗓子眼里，咳了半天，也不知是该先高兴还是先咳。",
+    "en": "Seven came at the Dragon Boat festival. The kitchen steamed zongzi, one each, and his had half a date in it; just as he reached the date, layer seven arrived, and the stone stuck in his throat, and he coughed and coughed and could not tell whether to be happy first or cough first."
+   }
+  },
+  {
+   "id": "futian",
+   "label": {
+    "zh": "伏天 · 矮墙上乘凉",
+    "en": "The dog days · Cooling off on the low wall"
+   },
+   "means": "the hot month: nights on the herb-garden wall with A-He and Sun Ergou",
+   "needs": {
+    "mark": "y-duanwu"
+   },
+   "refuse": {
+    "zh": "一季一季来：先过了前头那一季。",
+    "en": "One season at a time: finish the one before first."
+   },
+   "stamina": 25,
+   "mark": "y-futian",
+   "once": true,
+   "rise": 8,
+   "stay": true,
+   "story": {
+    "zh": "八层是在伏天里，热得柴房里的耗子都搬了家，小狰趴在井台上吐舌头，饭桶的炉身烫得能烙饼。\n\n伏天里最热的那几夜，药园巡完了，三个人常常坐在药园的矮墙上乘凉：小满，阿禾，孙二狗。\n\n小满问：「你想叫什么？」孙二狗想了半天，道：「……还叫二狗吧。我娘叫惯了。」\n\n小满没笑。阿禾也没笑。墙底下的小狰翻了个身，打了个响鼻。那一夜的星星很多，多得数不清，三个人谁也没数，就那么坐着。",
+    "en": "Eight came in the dog days, so hot the rats moved out of the woodshed, the little Zheng lay on the well-stone with its tongue out, and the Rice Tub's body was hot enough to bake flatbread on.\n\nOn the hottest nights of the dog days, when the garden round was done, the three of them would sit on the herb garden's low wall to cool off: Xiaoman, A-He, Sun Ergou.\n\nXiaoman asked: \"What would you like to be called?\" Sun Ergou thought for a long time and said: \"…Ergou still. My mother's used to it.\"\n\nXiaoman did not laugh. Nor did A-He. Under the wall the little Zheng rolled over and snorted. There were more stars that night than anyone could count, and none of the three counted them; they just sat there."
+   }
+  },
+  {
+   "id": "ruqiu",
+   "label": {
+    "zh": "入秋 · 九层圆满",
+    "en": "Autumn · The peak of layer nine"
+   },
+   "means": "the autumn month: the lake brims over, the peak of Qi Condensation; his master calls him up the cliff",
+   "needs": {
+    "mark": "y-futian"
+   },
+   "refuse": {
+    "zh": "一季一季来：先过了前头那一季。",
+    "en": "One season at a time: finish the one before first."
+   },
+   "stamina": 25,
+   "rise": {
+    "layer": 9,
+    "full": true
+   },
+   "story": {
+    "zh": "到得入秋，丹田里那片湖满得往外直漾，吸进去一口灵气，便溢出来一口，再也添不进去了——褚先生管这个，叫作「九层圆满」。\n\n八月里，瞿老叫他上了一趟崖顶。",
+    "en": "By autumn the lake in his dantian was brimming over: breathe in one breath of spirit and one spilled out; nothing more would go in — Master Chu called this \"the peak of layer nine\".\n\nIn the eighth month, Old Qu called him up to the clifftop."
+   },
+   "next": "09-qulao"
+  }
+ ]
+}

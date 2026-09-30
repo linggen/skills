@@ -9,12 +9,12 @@
   "en": "South bank of the Zhang"
  },
  "setup": {
-  "zh": "北上的路到漳水尽了。水是黄的，急的，对岸的城墙在雾里。一个渔人坐在船头，不肯开船。",
-  "en": "The road north ends at the Zhang. The water is yellow and fast; the far bank's wall stands in the mist. A fisherman sits in the bow and will not cast off."
+  "zh": "筑基后第十天，观主摊开舆图，指头按在北边一条弯弯的墨线上：邺城年年给河伯娶妇。半个月后，你、周衡，还有石阶底下蹲着的阿禾，北上到了漳水边。",
+  "en": "Ten days after your Foundation, the abbot unrolls a map and presses a finger on a winding ink line in the north: every year the city of Ye gives the River Lord a bride. Half a month later you, Zhou Heng, and A-He — found squatting at the foot of the steps — reach the Zhang."
  },
  "recap": {
-  "zh": "北上到漳水，渔人不肯开船：今晚河伯娶妇，谁也不过河。",
-  "en": "North to the Zhang, where a fisherman would not put out: tonight the River Lord took a bride, and no one crossed."
+  "zh": "北上到了漳水，对岸是邺城；周衡望着河心那片最深的水，一个字也没记。",
+  "en": "North to the Zhang, Ye on the far bank; Zhou Heng stared at the deepest water mid-river and wrote down not a word."
  },
  "cast": [],
  "show": [
@@ -24,22 +24,29 @@
    "here": "冀"
   }
  ],
- "lines": [
-  {
-   "who": "ling",
-   "text": {
-    "zh": "水底下有什么在呼吸。你听得见。",
-    "en": "Something is breathing under the water. You can hear it."
-   }
-  },
-  {
-   "who": "ling",
-   "text": {
-    "zh": "渔人说：今晚河伯娶妇，谁也不过河。要过，去邺城等明天。",
-    "en": "The fisherman says: tonight the River Lord takes his bride; no one crosses. If you must, go to Ye and wait for morning."
-   }
-  }
+ "people": [
+  "zhouheng",
+  "ban"
  ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "第十天傍晚，漳水边上。",
+    "黄里带青，一眼望不到底。",
+    "周衡的账簿合着，一个字也没记。"
+   ],
+   "en": [
+    "The tenth evening, at the Zhang.",
+    "Yellow shot with green, no seeing the bottom.",
+    "Zhou Heng's ledger stays shut; not one word."
+   ]
+  }
+ },
+ "story": {
+  "zh": "第十天傍晚，三人到了漳水边上。\n\n那漳水比泗水宽，也比泗水浑，黄里带青，一眼望不到底，水面上平平的，几乎瞧不出它在流，只偶尔翻起一个漩涡，打个转，又沉了下去。\n\n阿禾「哇」了一声，小狰冲着河面「嗷」了一声，小满也想说句什么，一回头，却见周衡站在岸上，不动了。\n\n小满道：「周师兄？」周衡道：「嗯。」\n\n这一回，他竟没说「记账」。",
+  "en": "On the evening of the tenth day, the three of them reached the Zhang.\n\nThe Zhang was wider than the Si and muddier, yellow shot with green, no seeing the bottom; its surface lay so flat you could hardly tell it was flowing, except now and then an eddy turned over, spun once, and sank again.\n\nA-He said \"Wah\", the little Zheng went \"Aow\" at the water, and Xiaoman wanted to say something too — but turning, he saw Zhou Heng standing on the bank, not moving.\n\nXiaoman said: \"Brother Zhou?\" Zhou Heng said: \"Mm.\"\n\nThis time, for once, he did not say \"put it on the account\"."
+ },
+ "lines": [],
  "buttons": [
   "town",
   "water"
@@ -48,19 +55,14 @@
   {
    "id": "town",
    "label": {
-    "zh": "去邺城",
-    "en": "Go to Ye"
+    "zh": "进邺城",
+    "en": "Into Ye"
    },
-   "means": "goes to the town, follows the road, agrees to wait",
-   "beat": [
-    {
-     "who": "ling",
-     "text": {
-      "zh": "你沿岸往北。邺城的城门上贴着一张新告示。",
-      "en": "You follow the bank north. A fresh notice is pasted on the gate of Ye."
-     }
-    }
-   ],
+   "means": "goes to the town, follows the road, looks for an inn",
+   "story": {
+    "zh": "邺城城池不小，街上却没什么人。说没人也不对，人都缩着：家家户户关着门，门缝里透出一双一双眼睛，瞧见他们三个外乡人，又一双一双地缩了回去。",
+    "en": "Ye was no small city, yet its streets were nearly empty. Not empty, exactly — everyone was shrinking back: every door shut, pair after pair of eyes at the cracks, and at the sight of three strangers, pair after pair shrinking away again."
+   },
    "next": "01-ye"
   },
   {
@@ -69,35 +71,28 @@
     "zh": "下水看看",
     "en": "Wade in"
    },
-   "means": "tries to enter the river, swim, or reach the cauldron now",
+   "means": "tries to enter the river, swim, or reach what lies under it now",
    "stay": true,
    "beat": [
     {
      "who": "ling",
      "text": {
-      "zh": "水没到膝盖就把你往下拽。渔人一把拉你回来。",
-      "en": "The water is at your knees and already pulling you down. The fisherman hauls you back."
-     }
-    },
-    {
-     "who": "ling",
-     "text": {
-      "zh": "从这里下不去。镇上或许有人知道路。",
-      "en": "Not from here. Someone in town may know the way."
+      "zh": "水没到膝盖就把你往下拽。周衡一把拉你回来：「天黑了，渡船要加钱。」",
+      "en": "The water is at your knees and already pulling you down. Zhou Heng hauls you back: \"It's getting dark — the ferry charges extra.\""
      }
     }
    ]
   },
   {
    "id": "ask",
-   "means": "asks the fisherman about the River Lord, the bride, or the town",
+   "means": "asks about the river, the town, or the River Lord",
    "stay": true,
    "beat": [
     {
      "who": "ling",
      "text": {
-      "zh": "渔人压低声音：巫婆年年挑一个姑娘，穿了红衣送下水。河伯收了，一年不发水。",
-      "en": "The fisherman lowers his voice: every year the sorceress picks a girl, dresses her in red and sends her into the water. The River Lord takes her, and the river keeps its banks a year."
+      "zh": "周衡不答，只望着河心那一片最深、最黑的水。",
+      "en": "Zhou Heng does not answer; he only looks at the deepest, darkest water mid-river."
      }
     }
    ]

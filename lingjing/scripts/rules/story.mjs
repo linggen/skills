@@ -236,12 +236,25 @@ export function closeOf(content, state) {
   const ch = content.chapters[state.chapter], c = ch?.close, lang = state.lang;
   if (inMade(state) || content.world.made) return null;
   const turned = huiEnded(content, state);
-  if (turned) return { id: turned, title: endLabel(content, turned, lang), huimu: pick(huiOf(content, turned).huimu, lang), next: huiLabel(content, huiNow(content, state), lang, 'head') };
+  if (turned) {
+    // A chapter that ended on this 回 and went straight on into the next (外门 → 第九回 since
+    // 2026-09-30: nothing waits between them) brings its own close — what he did, the teaser —
+    // onto the first scene of the next, where the 回's close stands.
+    const done = Object.values(content.chapters).find(x => x.close && (state.ended ?? []).includes(x.id) && x.id !== ch.id
+      && Object.values(x.scenes ?? {}).some(sc => sc.hui === turned));
+    return { id: turned, title: endLabel(content, turned, lang), huimu: pick(huiOf(content, turned).huimu, lang), next: huiLabel(content, huiNow(content, state), lang, 'head'), ...(done ? closeWords(content, state, done.close) : {}) };
+  }
   if (!c || state.scene || !(state.ended ?? []).includes(ch.id)) return null;
+  const hui = huiNow(content, state);
+  return { id: hui ?? ch.id, title: endLabel(content, hui, lang) ?? pick(c.title, lang) ?? pick(ch.title, lang), ...closeWords(content, state, c) };
+}
+
+/* A chapter close's words: what THIS player did (each `did` part whose `if` holds), and the teaser. */
+function closeWords(content, state, c) {
+  const lang = state.lang;
   const parts = (c.did ?? []).filter(d => closeHolds(state, d.if)).map(d => fill(pick(d, lang), state, content));
   const did = parts.length ? parts.join(lang === 'zh' ? '，' : ', ') + (lang === 'zh' ? '。' : '.') : '';
-  const hui = huiNow(content, state);
-  return { id: hui ?? ch.id, title: endLabel(content, hui, lang) ?? pick(c.title, lang) ?? pick(ch.title, lang), ...(did ? { did } : {}), teaser: pick(c.teaser, lang) };
+  return { ...(did ? { did } : {}), ...(c.teaser ? { teaser: pick(c.teaser, lang) } : {}) };
 }
 
 /* Look's chapter, named as the book names it — the 回 it stands in

@@ -22,9 +22,10 @@ const NOW = new Date('2026-09-28T12:00:00');
 const ctx = { now: NOW, quests: [] };
 const HOUR = 3600_000;
 
-/* At 冀鼎, the peak of 练气, full 体力, the four roots — nothing prepared. */
+/* On the 沉鼎观 cliff (第九回, 09-cliff: the Foundation is laid there since 2026-09-30),
+   the peak of 练气, full 体力, the four roots — nothing prepared. */
 const atJi = (extra = {}) => ({
-  ...newState(content, 'zh', NOW), chapter: '01-ji', scene: '01-cauldron', place: 'zhangyuan', ended: ['00-prologue'],
+  ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: '09-cliff', place: 'houshan', ended: ['00-prologue', '00-waimen'],
   tier: 'qi', step: 8, progress: 130, name: '清玄', traits: ['wood', 'water', 'fire', 'earth'], stamina: 100, stamina_at: NOW.toISOString(),
   wealth: 300, bag: { lingzhi: 2 }, ...extra,
 });
@@ -47,7 +48,7 @@ test('the chance is the realm\'s base and what feeds it, held between floor and 
   const o = oddsAt(atJi()).odds;
   assert.equal(o.base, rule.base.foundation);
   assert.equal(part(o, 'pill').on, false, 'no pill carried');
-  assert.equal(part(o, 'pill').item.id, 'foundation-pill', 'the realm\'s own pill');
+  assert.equal(part(o, 'pill').item.id, 'foundation-pill-9', 'the realm\'s own pills, the furnace\'s 九转 named first');
   assert.equal(part(o, 'body').n, rule.body.whole, 'unhurt');
   assert.equal(part(o, 'seclusion').n, 0);
   assert.equal(part(o, 'element').how, 'match', 'an earth root for 筑基');
@@ -57,6 +58,12 @@ test('the chance is the realm\'s base and what feeds it, held between floor and 
 
   const pill = oddsAt(atJi({ bag: { 'foundation-pill': 1 } })).odds;
   assert.equal(pill.chance, Math.min(rule.cap, o.chance + rule.pill.bonus), 'a pill carried');
+  assert.equal(part(pill, 'pill').item.id, 'foundation-pill', 'only the sect\'s 一转 held: it is the one');
+  // 第九回: the furnace's 九转 is reached for before the sect's 一转 (the 官丹 stays in 饭桶), and weighs more.
+  const nine = oddsAt(atJi({ bag: { 'foundation-pill': 1, 'foundation-pill-9': 1 } })).odds;
+  assert.equal(part(nine, 'pill').item.id, 'foundation-pill-9');
+  assert.equal(part(nine, 'pill').n, rule.pill.bonus_of['foundation-pill-9']);
+  assert.ok(rule.pill.bonus_of['foundation-pill-9'] > rule.pill.bonus);
   const hurt = oddsAt(atJi({ stamina: 20 })).odds;
   assert.equal(hurt.chance, o.chance - rule.body.whole + rule.body.hurt, '伤势 is 体力: under half is hurt');
   const sat = oddsAt(atJi({ last_seclusion: { at: new Date(NOW - 3 * HOUR).toISOString(), hours: 4 } })).odds;
@@ -101,8 +108,10 @@ test('the throw lands: the realm moves, the pill carried is spent, the tribulati
   assert.equal(r.state.tier, 'foundation');
   assert.equal(r.state.bag['foundation-pill'], undefined, 'spent');
   assert.equal(r.state.bag.lingzhi, 2, 'nothing else taken');
-  assert.equal(r.state.scene, '01-end');
-  assert.deepEqual(r.result.show, [{ card: 'tribulation', strikes: 3 }]);
+  // The cliff ends 第九回: the road north opens on 第十回's first scene.
+  assert.deepEqual([r.state.chapter, r.state.scene], ['01-ji', '01-arrive']);
+  assert.ok(r.state.ended.includes('00-zhuji'));
+  assert.deepEqual(r.result.show, content.chapters['00-zhuji'].scenes['09-cliff'].exits.find(e => e.id === 'take').show ?? []);
   assert.deepEqual(r.state.breakthrough.last, { to: 'foundation', chance: r.result.breakthrough.chance, success: true, at: NOW.toISOString() });
 });
 
@@ -119,7 +128,7 @@ test('the throw fails: hurt, a share of the peak step\'s 修为, the cauldron sh
   assert.equal(r.state.progress, 130 - b.lost.progress);
   assert.equal(r.state.tier, 'qi', 'the realm is never lost');
   assert.equal(r.state.step, 8, 'nor the step');
-  assert.equal(r.state.scene, '01-cauldron', 'the scene stays');
+  assert.equal(r.state.scene, '09-cliff', 'the scene stays');
   assert.equal(r.state.wealth, 300);
   assert.deepEqual(r.state.bag, { lingzhi: 2 }, 'only the pill carried is spent');
   assert.equal(b.again_at, new Date(NOW.getTime() + rule.fail.cooldown_hours * HOUR).toISOString());
@@ -159,7 +168,7 @@ test('Ling never throws it: her Resolve of a cauldron ready to take is refused; 
   assert.equal(ready.refused, 'page-throws');
   assert.match(ready.then, /\[scene\] breakthrough won\|failed/);
   assert.equal(pageThrows(content, atJi({ step: 3, progress: 0 }), { exit: 'take', now: NOW }), null, 'below the peak: not-at-peak is hers to hear');
-  assert.equal(pageThrows(content, atJi(), { exit: 'wait', now: NOW }), null, 'any other exit is untouched');
+  assert.equal(pageThrows(content, atJi(), { exit: 'flee', now: NOW }), null, 'any other exit is untouched');
 });
 
 test('the card stands on the stage; the chat offers no throw and Ling is told the card holds it', () => {

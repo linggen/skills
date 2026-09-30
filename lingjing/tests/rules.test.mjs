@@ -1131,8 +1131,9 @@ function toOpenWorld() {
   const { companion, ...rest } = s;
   return { ...rest, cards: rest.cards.filter(id => id !== 'yinyue') };
 }
-/* 河伯's altar at 邺城 (01-altar): a scene whose question is the chat's — a riddle among its buttons. */
-const atAltar = () => ({ ...toOpenWorld(), chapter: '01-ji', scene: '01-altar', place: 'hebo' });
+/* 雷泽 (02-lake): a scene whose question is the chat's — a riddle among its buttons. (冀's
+   altar was this scene until 2026-09-30; 第十回's scenes now play the book on the stage.) */
+const atAltar = () => ({ ...toOpenWorld(), chapter: '02-yan', scene: '02-lake', place: 'leize', ended: ['00-prologue', '01-ji'] });
 
 test('the corridor walks the player from place to place, and Move waits', () => {
   let s = start();
@@ -1417,7 +1418,7 @@ function toJi() {
   return { ...answer(move, woke, { place: 'zhangnan' }).state, stamina: 100, wealth: 300 };
 }
 
-test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron\'s gate, the end', () => {
+test('chapter 1 (第十回): waypoints, the market of Ye, the two failed plans, the wedding, the dragons\' trial, the seal, the first 鼎, the end', () => {
   let s = toJi();
   // arrive → Ye: the scene moves, and the exit walks the player the one road there
   let r = answer(resolve, s, { exit: 'town' });
@@ -1438,33 +1439,40 @@ test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron
   s = answer(trade, s, { action: 'buy', id: 'iron-sword' }).state;
   assert.equal(s.wealth, 180);
   s = answer(resolve, s, { exit: 'market' }).state; // stays
+  // the two plans that fail (the book's): each stays, each owes its passage
+  for (const plan of ['bribe', 'ghost']) {
+    r = answer(resolve, s, { exit: plan });
+    assert.equal(r.state.scene, '01-ye', plan);
+    s = r.state;
+  }
   s = answer(resolve, s, { exit: 'shrine' }).state;
   assert.equal(s.place, 'hebo');
   const altar = look(s, content, octx()).scene;
   assert.equal(altar.id, '01-altar');
-  assert.ok(altar.exits.find(e => e.id === 'subdue').duel.creature.root === 'earth');
-  assert.equal(answer(duel, s, { id: altar.exits.find(e => e.id === 'subdue').game.id }).state.stamina, s.stamina - content.rewards.stamina.cost.duel, 'a bout here costs');
-  // the riddle way through
-  const wu = riddleAt(s, 'riddle', octx());
-  missed(resolve, s, { exit: 'riddle', answer: wu.wrong }, octx());
-  r = answer(resolve, s, { exit: 'riddle', answer: wu.right });
-  assert.equal(r.state.scene, '01-deep'); assert.equal(r.result.paid.progress, 40);
+  assert.ok(!altar.exits.some(e => e.game), 'no 狍鸮 at the altar: the shaman is sent to take word');
+  r = answer(resolve, s, { exit: 'send' });
+  assert.equal(r.state.scene, '01-rise'); assert.equal(r.result.paid.progress, 40);
+  s = r.state; assert.equal(s.place, 'hebo', 'the river stands up where the wedding was');
+  // the chapter's fight: 冰夷's two dragons test the one who would not kneel — a trial, fought again at once
+  const rise = look(s, content, octx()).scene;
+  const trial = rise.exits.find(e => e.id === 'stand');
+  assert.deepEqual(trial.game, { id: 'shuanglong-trial', kind: 'duel', creature: 'foe-shuanglong', retry: true });
+  assert.equal(trial.duel.creature.root, 'water');
+  refused(resolve, s, { exit: 'stand' }, 'game-not-won', octx());
+  s = { ...s, wins: { ...s.wins, 'shuanglong-trial': OCT.toISOString() } };
+  r = answer(resolve, s, { exit: 'stand' });
+  assert.equal(r.state.scene, '01-deep'); assert.equal(r.result.paid.progress, 60);
   s = r.state; assert.equal(s.place, 'zhangyuan');
   r = answer(resolve, s, { exit: 'seal', answer: '5' });
   assert.equal(r.state.scene, '01-cauldron');
   assert.equal(look(r.state, content, octx()).scene.id, '01-cauldron', 'same place, no walk');
   s = r.state;
-  // the gate: not at the peak of 练气
-  const held = refused(resolve, s, { exit: 'take' }, 'not-at-peak', octx());
-  assert.ok(held.say.startsWith('鼎气扑到你身上'));
-  assert.equal(held.peak_step, 9);
-  // at the peak: the Foundation is laid, then paid into the new tier
-  s = lucky({ ...s, step: 8, progress: 130 }, 'foundation', octx());
+  // the first 鼎: no throw here since the Foundation moved to the cliff (第九回)
+  const tier = s.tier;
   r = answer(resolve, s, { exit: 'take' });
-  assert.deepEqual(btOf(r.result.breakthrough), { from: '练气九层', to: '筑基初期', tier: 'foundation', success: true });
-  assert.equal(r.state.tier, 'foundation'); assert.equal(r.state.step, 0);
-  assert.equal(r.state.progress, 60);
-  assert.deepEqual(r.result.show, [{ card: 'tribulation', strikes: 3 }]);
+  assert.equal(r.result.breakthrough, null);
+  assert.equal(r.state.tier, tier, 'no realm is crossed here: that is the cliff\'s business');
+  assert.deepEqual(r.state.memories, [1]);
   assert.equal(r.state.scene, '01-end');
   r = answer(resolve, r.state, { exit: 'rest' });
   assert.deepEqual(r.state.ended, ['00-prologue', '01-ji']);
@@ -1534,21 +1542,24 @@ test('past the prologue a story step costs 灵气; an empty 丹田 refuses with 
   assert.equal(seen.stamina.returns_at, r.returns_at);
 });
 
-test('chapter 1: the fight at the shrine, and Ximen Bao\'s way', () => {
-  // a beast tamed on the way by then (the v1 prologue gave 夫诸; prologue-v3 gives none)
-  // the day's draws follow the save's seed (seedOf); this one deals a winnable hand
-  let s = { ...toJi(), cast: ['fuzhu'], seed: '沈小满' };
-  s = { ...s, cards: [...s.cards, 'fuzhu'] };
+test('chapter 1: the shaman sent first, then the dragons\' trial — fought out on the cards, lost and fought again', () => {
+  let s = { ...toJi(), seed: '沈小满' };
   s = answer(resolve, s, { exit: 'town' }).state;
   assert.equal(s.place, 'ye');
   s = answer(resolve, s, { exit: 'shrine' }).state;
   assert.equal(s.place, 'hebo', 'the exit walks the one road to the shrine');
-  const won = fightOut(s, 'subdue-paoxiao', { c: octx() });
-  assert.equal(won.result.outcome, 'won', JSON.stringify(won.result.log));
-  const r = answer(resolve, won.state, { exit: 'subdue' });
+  s = answer(resolve, s, { exit: 'send' }).state;
+  assert.equal(s.scene, '01-rise');
+  // lost: a trial (`retry`) withdraws nothing — it may be fought again at once
+  const lost = fightOut(s, 'shuanglong-trial', { line: 'pass', c: octx() });
+  assert.equal(lost.result.outcome, 'lost');
+  assert.equal(must(duel, lost.state, { id: 'shuanglong-trial' }, octx()).result.ok, true, 'again, at once');
+  // won on some day's hand: then 站着，不跪 walks on to the deep
+  let won = null;
+  for (let k = 0; k < 12 && won?.result.outcome !== 'won'; k += 1) won = fightOut({ ...s, seed: `trial-${k}` }, 'shuanglong-trial', { c: octx() });
+  assert.equal(won.result.outcome, 'won', JSON.stringify(won.result.log?.slice(-3)));
+  const r = answer(resolve, won.state, { exit: 'stand' });
   assert.equal(r.state.scene, '01-deep'); assert.equal(r.result.paid.progress, 60);
-  const sent = answer(resolve, s, { exit: 'send' });
-  assert.equal(sent.state.scene, '01-deep');
 });
 
 test('a province is known by its character, its name or its English', () => {
@@ -1659,9 +1670,9 @@ test('a tapped option comes to Look as words, and Look names the tool it is', ()
   const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
   const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
   cli('init', '--lang', 'en');
-  // A scene whose question is the chat's (the prologue's choices stand under its panels): 河伯's altar.
+  // A scene whose question is the chat's (the book's scenes stand their choices under their panels): 雷泽.
   const file = path.join(data, 'state.json');
-  fs.writeFileSync(file, JSON.stringify({ ...JSON.parse(fs.readFileSync(file, 'utf8')), chapter: '01-ji', scene: '01-altar', place: 'hebo', ended: ['00-prologue'] }));
+  fs.writeFileSync(file, JSON.stringify({ ...JSON.parse(fs.readFileSync(file, 'utf8')), chapter: '02-yan', scene: '02-lake', place: 'leize', ended: ['00-prologue', '01-ji'] }));
   const opening = cli('look');
   const option = opening.ask.options.find(o => o.exit);
   const tapped = cli('look', `--said=${option.label}`);

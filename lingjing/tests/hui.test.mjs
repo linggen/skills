@@ -13,7 +13,7 @@ import { TO_VALLEY, walk } from './prologue.mjs';
 const content = loadContent();
 const NOW = new Date('2026-09-28T12:00:00');
 const ctx = () => ({ now: NOW, quests: [] });
-const TOLD = ['00-prologue', '00-waimen', '01-ji']; // the chapters the book tells; the rest wait to be rewritten
+const TOLD = ['00-prologue', '00-waimen', '00-zhuji', '01-ji']; // the chapters the book tells; the rest wait to be rewritten
 const book = new Map(content.book.volumes.flatMap(v => v.hui).map(h => [h.id, h.n]));
 
 test('every scene of the chapters the book tells has a 回 of the book', () => {
@@ -55,6 +55,7 @@ test('the prologue is 第一回 up to her daybreak, 第二回 from the cliff, �
   assert.deepEqual(['wm-ahe', 'wm-qingshi', 'wm-chaifang', 'wm-diyilu', 'wm-mijing', 'wm-chu', 'wm-dabi', 'wm-jiaxin'].map(id => w[id].hui),
     ['h05', 'h05', 'h06', 'h06', 'h07', 'h07', 'h08', 'h08']);
   for (const sc of Object.values(w)) assert.ok(['h05', 'h06', 'h07', 'h08'].includes(sc.hui), sc.id);
+  for (const sc of Object.values(content.chapters['00-zhuji'].scenes)) assert.equal(sc.hui, 'h09', sc.id);
   for (const sc of Object.values(content.chapters['01-ji'].scenes)) assert.equal(sc.hui, 'h10', sc.id);
 });
 
@@ -69,8 +70,10 @@ test('the labels are the book\'s: 卷, 回 and 回目 read from book.json, in bo
   assert.equal(huiLabel(content, 'h05', 'en'), `${juan.en} · Chapter 5`);
   assert.equal(huiLabel(content, 'h05', 'en', 'head'), `${juan.en} · Chapter 5 — The Leaky Ladle Opens Three Passes at Midnight`);
   assert.equal(endLabel(content, 'h08', 'zh'), '第八回 · 完');
-  // 冀 is named by the 回 the book says opens it (第九回, 筑基), though its scenes are 第十回's
-  assert.equal(comingOf(content, content.chapters['01-ji'], 'zh'), '第九回 · 即将开放');
+  // A chapter still being written is named by the 回 the book says opens it: 第九回 opens 筑基
+  // (00-zhuji), 第十回 冀 — both built since 2026-09-30, so the label is read, never shown there.
+  assert.equal(comingOf(content, content.chapters['00-zhuji'], 'zh'), '第九回 · 即将开放');
+  assert.equal(comingOf(content, content.chapters['01-ji'], 'zh'), '第十回 · 即将开放');
   assert.equal(huiLabel(content, 'h99', 'zh'), null, 'a 回 the book does not have');
 });
 

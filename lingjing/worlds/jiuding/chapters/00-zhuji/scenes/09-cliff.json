@@ -1,0 +1,98 @@
+{
+ "version": 1,
+ "id": "09-cliff",
+ "chapter": "00-zhuji",
+ "hui": "h09",
+ "at": "houshan",
+ "place": {
+  "zh": "沉鼎山 · 后山崖顶 · 九月初三",
+  "en": "Mount Chending · The clifftop · The third of the ninth month"
+ },
+ "setup": {
+  "zh": "九月初三，天是晴的。师父一早下山扫台阶去了。你在草屋前的青石上盘腿坐下，胸口揣着那颗九转筑基丹。",
+  "en": "The third of the ninth month, a clear day. Your master went down at dawn to sweep the steps. You sit cross-legged on the bluestone before the hut, the nine-turn Foundation pill against your chest."
+ },
+ "recap": {
+  "zh": "九月初三，崖顶上扣着一团锅盖云——你筑基了。师父问「几道纹？」，你说「一道」。他说：「你外公那一步，你替他走完了。」",
+  "en": "On the third of the ninth month a pot-lid cloud sat over the clifftop — you laid your Foundation. Your master asked, \"How many rings?\" You said, \"One.\" He said: \"The step your grandfather never finished — you have finished it for him.\""
+ },
+ "cast": [],
+ "show": [
+  {
+   "card": "gate",
+   "chapter": "00-zhuji"
+  }
+ ],
+ "people": [
+  "qulao"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "九月初三，天是晴的。",
+    "师父在山下，扫同一级台阶。",
+    "外公，这一步，我替你走。"
+   ],
+   "en": [
+    "The third of the ninth month, a clear day.",
+    "Down below, your master sweeps one step, over and over.",
+    "Grandfather, this step I take for you."
+   ]
+  }
+ },
+ "story": {
+  "zh": "可外公呢？外公手里捏的，是一颗一转、下品、带着黑斑的丹，身后站着的，是一个说「吃」的师父。\n\n小满把那颗九转筑基丹放进嘴里。他没有先嚼，含了一会儿，心里说：外公，这一步，我替你走。说完了，才咽下去。",
+  "en": "And Grandfather? What Grandfather had held was a one-turn, low-grade, dark-flecked pill, and behind him stood a master who said \"eat\".\n\nXiaoman put the nine-turn Foundation pill in his mouth. He did not bite it at once; he held it a while and said in his heart: Grandfather, this step I take for you. Only when he had said it did he swallow."
+ },
+ "lines": [],
+ "buttons": [
+  "take"
+ ],
+ "exits": [
+  {
+   "id": "take",
+   "label": {
+    "zh": "冲关 · 筑基",
+    "en": "Push through · Lay the Foundation"
+   },
+   "means": "swallows the pill and pushes through to the Foundation, attempts the breakthrough",
+   "breakthrough": true,
+   "refuse": {
+    "zh": "丹田那片湖还没满。九层圆满之前，冲不得——先回去，把这一年的功课做满。",
+    "en": "The lake in your dantian is not full yet. Before the peak of layer nine you cannot push — go back and fill this year's practice first."
+   },
+   "show": [
+    {
+     "card": "tribulation",
+     "strikes": 3
+    }
+   ],
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "story": {
+    "zh": "正疑惑间，天忽然暗了下来。\n\n他抬头一看，头顶上不知何时聚起了一团云。那云不大，只罩着这一座崖顶，灰里透白，慢慢地转，越转越快，竟转成了一口倒扣的大锅。\n\n就是这一晃。他心里那点怕，一下子全翻了上来，翻得满满当当。他看见一扇门。\n\n门上贴着一张纸，纸上写着几个字，他一个也看不清，只觉得那几个字，写的一定是「勿入」。\n\n跑吧。他心里有个声音说。\n\n可便在这时，他想起了另一扇门。\n\n他爹不识字，站了一个时辰，还是进去了。他娘识字，嫁给了一个站了一个时辰才敢进门的人。他外公的门，原来他爹早就进过了；门上写的，也从来不是「勿入」。\n\n他不跑了。他往那座晃着的台子上，又夯了一下。\n\n原来这便是**筑基**。\n\n台子落定的那一刻，头顶那口「锅」轰的一声散了。云开处，满天星斗像是一下子给人擦亮了，一颗一颗往下垂，低得仿佛伸手便摘得着。\n\n瞿老道：「几道纹？」\n\n小满道：「……一道。」\n\n可他只是点了点头，道：「嗯。一道。」\n\n「你外公那一步，你替他走完了。」",
+    "en": "Just as he began to wonder, the sky suddenly darkened.\n\nHe looked up: at some moment a cloud had gathered overhead. It was not large — it covered only this one clifftop, grey going white — turning slowly, then faster and faster, until it was a great upturned pot.\n\nIt was that one sway. All the fear in him turned over at once and came up brimming. He saw a door.\n\nOn the door was pasted a sheet of paper with a few words on it; he could not make out one of them, but he felt sure the words must say \"Do not enter\".\n\nRun, said a voice in his heart.\n\nBut just then, he remembered another door.\n\nHis father could not read, stood there for an hour, and went in all the same. His mother could read, and married a man who had stood an hour before daring to go through a door. His grandfather's door — his father had gone through it long ago; and what was written on it had never been \"Do not enter\".\n\nHe did not run. He pounded the swaying platform down once more.\n\nSo this was the **Foundation**.\n\nThe moment the platform settled, the \"pot\" overhead burst apart with a boom. Where the cloud opened, the whole sky of stars looked freshly polished, hanging down one by one, so low it seemed you could reach up and pick them.\n\nOld Qu said: \"How many rings?\"\n\nXiaoman said: \"…One.\"\n\nBut he only nodded and said: \"Mm. One.\"\n\n\"The step your grandfather never finished — you have finished it for him.\""
+   },
+   "ends": "00-zhuji",
+   "setpiece": "zhuji",
+   "_setpiece": "The 筑基天象 (setpiece-zhuji.js, SET_PIECES.zhuji: gather · light · tai · door 「勿入」→「今日放学」 · zhu · stars · settle 「几道纹？」「……一道。」): the story node of this exit carries it. The tribulation card stays until the page plays the piece in its place."
+  },
+  {
+   "id": "flee",
+   "means": "wants to stop, run, or wait before the breakthrough",
+   "stay": true,
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你想起师父那一句：进了一半想退，那一剑，自己先散了。",
+      "en": "You remember your master's words: half-way in and wanting to back out, the sword falls apart on its own."
+     }
+    }
+   ]
+  }
+ ]
+}

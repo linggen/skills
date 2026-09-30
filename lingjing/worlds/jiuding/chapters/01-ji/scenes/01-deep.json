@@ -9,23 +9,37 @@
   "en": "The Zhang deeps"
  },
  "setup": {
-  "zh": "祠后的水向两边退开，露出河床。河床中央嵌着一只青铜鼎，鼎口封着一块石板，板上刻着九个格子，格里有数。",
-  "en": "Behind the shrine the water draws back to either side, baring the riverbed. Set in its centre is a bronze cauldron, its mouth sealed with a stone slab carved with nine squares, a number in each."
+  "zh": "河伯没走。他悬在漳水正中，踩着两条龙，低头看着你的胸口：「……你身上，有青丘的味道。」河心底下，有一样东西在一明一暗地呼吸。",
+  "en": "The River Lord has not gone. He hangs over the middle of the Zhang on his two dragons, looking down at your chest: \"…You smell of Qingqiu.\" Deep in mid-river, something breathes, light and dark, light and dark."
  },
  "recap": {
-  "zh": "祠后的河床里卧着一口鼎，石板上刻着洛书，中格空着。",
-  "en": "In the riverbed behind the shrine lay a cauldron, its slab cut with the Luo square, the centre empty."
+  "zh": "河伯原是冰夷；他守了两千年的东西，在河心的坑底，上头压着洛书之封。你潜下去，数错了一回，又改了过来。",
+  "en": "The River Lord was Bingyi; what he had guarded for two thousand years lay at the bottom of the pit mid-river, under the Luo seal. You dived, counted wrong once, and set it right."
  },
  "cast": [],
- "lines": [
-  {
-   "who": "ling",
-   "text": {
-    "zh": "石板上刻的是洛书。中间那格是空的。",
-    "en": "The slab is carved with the Luo River square. The middle square is empty."
-   }
-  }
+ "people": [
+  "ban",
+  "zhouheng"
  ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "「谁说我要娶媳妇的？」",
+    "「……你身上，有青丘的味道。」",
+    "坑底一点光，一明，一暗。"
+   ],
+   "en": [
+    "\"Who said I wanted a wife?\"",
+    "\"…You smell of Qingqiu.\"",
+    "A light at the bottom of the pit: light, dark."
+   ]
+  }
+ },
+ "story": {
+  "zh": "河伯看着他们，看了很久很久，这才开口。他的声音不大，却震得整条漳水都在嗡嗡作响：「……谁。谁说我要娶媳妇的？」\n\n阿禾仰着头看他，嘴唇冻得发紫，声音却一点不抖：「她欠的账，还没还。人淹死了，账就烂了。」\n\n河伯没走。他悬在漳水正中，踩着两条龙，低头看着小满——说得准些，是看着他胸口。他开口的时候，嘴唇却没有动，那声音是从小满脚底下的水里漫上来的，一个字一个字，只往他一个人耳朵里钻：「……你身上，有青丘的味道。」\n\n小满这才知道，他本名叫冰夷，也有人叫他冯夷；「河伯」两个字，是凡人给他起的官名。\n\n河伯道：「两千年前，有人托我守它。她说，会有人来拿。拿的人，身上有青丘的味道。」顿了一顿，又道：「光有味道不够。方才那两条龙，是替她问你的。」\n\n小满下了水。",
+  "en": "The River Lord looked at them for a long, long time before he spoke. His voice was not loud, yet it set the whole Zhang humming: \"…Who. Who said I wanted a wife?\"\n\nA-He looked up at him, lips blue with cold, her voice not shaking at all: \"She hasn't paid what she owes. If she drowns, the debt goes bad.\"\n\nThe River Lord did not go. He hung over the middle of the Zhang on his two dragons, looking down at Xiaoman — at his chest, to be exact. When he spoke his lips did not move; the voice welled up from the water under Xiaoman's feet, word by word, into his ears alone: \"…You smell of Qingqiu.\"\n\nOnly then did Xiaoman learn that his real name was Bingyi — some called him Fengyi; \"River Lord\" was the official title mortals had given him.\n\nThe River Lord said: \"Two thousand years ago someone asked me to guard it. She said someone would come for it. The one who came would smell of Qingqiu.\" He paused, then said: \"The smell alone is not enough. Those two dragons just now — they were asking you on her behalf.\"\n\nXiaoman went into the water."
+ },
+ "lines": [],
  "buttons": [
   "seal"
  ],
@@ -43,15 +57,10 @@
     "progress": 60,
     "wealth": 20
    },
-   "beat": [
-    {
-     "who": "ling",
-     "text": {
-      "zh": "你在中格写下答案。石板裂成九块，沉进泥里。鼎口的气息扑上来，带着铜味和雨味。",
-      "en": "You write the answer in the heart. The slab cracks into nine and sinks into the mud. The cauldron's breath rushes up, bronze and rain."
-     }
-    }
-   ],
+   "story": {
+    "zh": "便在这时，胸口的木牌，微微一热。只一点点，像冬夜里揣在怀里的一颗炭星。一个声音，又轻又困，像是从很深很深的梦里挣出来的，只说了一个字：\n\n「……足。」\n\n他把左边那块六个点的拿起来，和右边那块八个点的，对调了过来。左八，右六。\n\n然后他拿起最后那块石头，五个点的，按进了正中那一格——第九格。\n\n这一回，它进去了。只听得「咔」的一声轻响，那声音不大，他在水底下却听得清清楚楚，便如沈家那扇装歪了的门，终于给人扶正了，落进了门臼里。",
+    "en": "Just then the token at his chest grew faintly warm. Only a little, like an ember carried inside your coat on a winter night. A voice, soft and sleepy, as if struggling up out of a very deep dream, said a single word:\n\n\"…Feet.\"\n\nHe took up the six-dot stone on the left and swapped it with the eight-dot stone on the right. Eight left, six right.\n\nThen he took the last stone, the five-dot one, and pressed it into the middle square — the ninth.\n\nThis time it went in. There was a soft click — not loud, but under the water he heard it clearly — like the Shen family's crooked door finally set straight and dropped into its socket."
+   },
    "next": "01-cauldron"
   },
   {

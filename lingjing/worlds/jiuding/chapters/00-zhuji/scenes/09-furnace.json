@@ -1,0 +1,65 @@
+{
+ "version": 1,
+ "id": "09-furnace",
+ "chapter": "00-zhuji",
+ "hui": "h09",
+ "at": "chaifang",
+ "place": {
+  "zh": "沉鼎观 · 柴房 · 开春",
+  "en": "Chending Temple · The woodshed · Spring"
+ },
+ "setup": {
+  "zh": "开了春，雪一化，周衡那一篮残株送到了；小狰从后山叼回来两株老参。",
+  "en": "Spring comes and the snow melts; Zhou Heng's basket of culls arrives, and the little Zheng carries two old ginseng roots back from the hill."
+ },
+ "recap": {
+  "zh": "一篮残株、两株老参，饭桶吐出三颗九转筑基丹：一颗你贴肉揣着，两颗藏进饭桶；渣子里又出三颗九转聚气丹——阿禾、孙二狗的书案底下，各多了一个油纸包。",
+  "en": "A basket of culls and two old ginseng, and the Rice Tub gave three nine-turn Foundation pills: one you carry against your skin, two hidden in the Rice Tub; the dregs gave three nine-turn qi pills — and under A-He's desk and Sun Ergou's, an oilpaper packet each."
+ },
+ "cast": [],
+ "people": [
+  "zhouheng"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "一篮残株，扔的。",
+    "两株老参，雪水还挂在须上。",
+    "炉盖「啪」地弹开。"
+   ],
+   "en": [
+    "A basket of culls — for throwing out.",
+    "Two old ginseng, snowmelt still on the whiskers.",
+    "The lid springs open with a snap."
+   ]
+  }
+ },
+ "story": {
+  "zh": "好容易熬到开了春，雪一化，药园开了园，周衡那一篮残株便送到了。这是小满巡夜的工钱，虫咬的，长歪的，灵气散了一半的，满满一篮，周衡递给他的时候，照例在账簿上记一笔：「残株一篮。扔。」\n\n小狰这一冬也憋坏了，一出门便钻进后山，鼻子贴着地皮一路嗅将过去，嗅得满脸是泥，傍晚回来，嘴里叼着两株老参，参须上还挂着化了一半的雪水。\n\n小满道：「周师兄，垃圾也记账？」周衡道：「垃圾，也是账。」",
+  "en": "At last spring came; the snow melted, the herb garden opened, and Zhou Heng's basket of culls arrived. It was Xiaoman's pay for the night watch — worm-eaten, crooked, half their spirit gone, a full basket — and as Zhou Heng handed it over he made his usual entry in the ledger: \"Culls, one basket. Thrown out.\"\n\nThe little Zheng had been cooped up all winter too; out of the door it dived into the back hill, nose to the ground all the way, and came back at dusk with a muddy face and two old ginseng roots in its mouth, half-melted snow still hanging from their whiskers.\n\nXiaoman said: \"Brother Zhou, you keep accounts of rubbish too?\" Zhou Heng said: \"Rubbish is accounts too.\""
+ },
+ "lines": [],
+ "buttons": [
+  "fire"
+ ],
+ "exits": [
+  {
+   "id": "fire",
+   "label": {
+    "zh": "残株、老参，一炉进去",
+    "en": "Culls and ginseng — all into the furnace"
+   },
+   "means": "puts the culls and the two ginseng roots into the furnace and makes pills",
+   "grant": {
+    "table": "scene",
+    "progress": 40,
+    "item": "foundation-pill-9"
+   },
+   "story": {
+    "zh": "一炷香工夫，炉盖「啪」地弹开，炉底并排躺着三颗丹。\n\n他拈起一颗对着油灯一照，登时呆了。\n\n那丹的模样，跟玉盒子里那颗筑基丹一般无二，只不过那颗褐里透红，一道纹，还带着几点黑斑；这三颗却透亮得像三滴凝住的露水，一丝杂色也无，丹身上九道纹，金灿灿的。\n\n当下打定了主意：一颗，是自己的；另外两颗，用油纸裹了三层，塞回饭桶肚里，跟那只玉盒子作伴。\n\n过了两日，讲堂上阿禾的书案底下多了一个油纸包，纸包里一颗聚气丹，一张纸条：**一个鸡蛋的利息。**孙二狗的书案底下也多了一个，纸条上写的是：**牛棚里那半张饼的利息。**\n\n天亮的时候，孙二狗从练气零层，冲到了一层。",
+    "en": "In the time it takes an incense stick to burn, the lid sprang open with a snap, and three pills lay side by side at the bottom.\n\nHe picked one up, held it to the lamp, and froze.\n\nIt looked exactly like the Foundation pill in the jade box — except that one was brown shot with red, with one ring and a few dark flecks, and these three were as clear as three drops of frozen dew, not a speck of other colour in them, with nine rings each, bright gold.\n\nHe made up his mind on the spot: one was his; the other two, wrapped in three layers of oilpaper, went back into the Rice Tub's belly to keep the jade box company.\n\nTwo days later there was an oilpaper packet under A-He's desk in the lecture hall, a qi pill in it and a slip of paper: **Interest on one egg.** There was one under Sun Ergou's desk too, and its slip said: **Interest on half a flatbread in the cowshed.**\n\nAt daybreak, Sun Ergou broke from Qi Condensation layer zero to layer one."
+   },
+   "next": "09-year"
+  }
+ ]
+}

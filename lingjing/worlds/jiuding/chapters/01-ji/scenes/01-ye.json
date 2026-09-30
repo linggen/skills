@@ -5,95 +5,108 @@
  "hui": "h10",
  "at": "ye",
  "place": {
-  "zh": "邺城 · 城门",
-  "en": "Ye · The city gate"
+  "zh": "邺城 · 客栈",
+  "en": "Ye · The inn"
  },
  "setup": {
-  "zh": "告示上写：今岁河伯娶妇，巫已择定东街李氏女，日落祠前行礼，阖城不得喧哗。落款是县令。",
-  "en": "The notice reads: this year the River Lord takes his bride; the sorceress has chosen the Li family's daughter of East Street; the rite at the shrine at sundown; the city shall keep silence. Signed, the magistrate."
+  "zh": "城东客栈。胖掌柜压低了声音：十月十八，河伯娶妇——今年的媳妇，是城西卖豆腐的老胡家的哑女。",
+  "en": "An inn on the east side. The fat innkeeper drops his voice: on the eighteenth of the tenth month the River Lord takes a bride — this year it is Old Hu's mute daughter, who sells tofu on the west side."
  },
  "recap": {
-  "zh": "邺城的告示说，巫已为河伯择定东街李氏女，日落祠前行礼。",
-  "en": "A notice in Ye said the witch had chosen the Li girl of East Street as the River Lord's bride, to be given at sunset before the shrine."
+  "zh": "邺城年年给河伯娶妇；你使了两条计——给三老送钱、扮鬼吓巫祝——都没成。",
+  "en": "Every year Ye gives the River Lord a bride; you tried two plans — money for the Three Elders, a ghost to scare the shaman — and neither worked."
  },
  "cast": [],
- "lines": [
-  {
-   "who": "ling",
-   "text": {
-    "zh": "鼎的气息顺着水走。祠在下游。",
-    "en": "The cauldron’s breath follows the water. The shrine is downstream."
-   }
-  },
-  {
-   "who": "ling",
-   "text": {
-    "zh": "东街有坊市；你要的东西，多半在那儿。",
-    "en": "There is a market on East Street; what you need is most likely there."
-   }
-  }
+ "people": [
+  "zhouheng",
+  "ban"
  ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "一碗面汤，清得照得见人影。",
+    "「十月十八。」",
+    "「河伯要的是人，不是豆腐。」"
+   ],
+   "en": [
+    "A bowl of noodle broth, clear enough to see your face in.",
+    "\"The eighteenth of the tenth month.\"",
+    "\"The River Lord wants a person, not tofu.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "原来邺城这个规矩，已有二十年了。\n\n掌柜道：「……那姑娘就给打扮起来，坐进木船，推到漳水当中去。一开始，船还漂着。漂着漂着，就沉了。」\n\n小满问道：「今年的媳妇，是谁？」\n\n「三老说，河伯要的是人，不是豆腐。」",
+  "en": "This custom of Ye's, it turned out, was twenty years old.\n\nThe innkeeper said: \"…Then the girl is dressed up, sat in a wooden boat, and pushed out into the middle of the Zhang. At first the boat floats. It floats, and floats, and then it sinks.\"\n\nXiaoman asked: \"And this year's bride — who is she?\"\n\n\"The Three Elders said the River Lord wants a person, not tofu.\""
+ },
+ "lines": [],
  "buttons": [
-  "shrine",
-  "market"
+  "bribe",
+  "ghost",
+  "shrine"
  ],
  "exits": [
   {
+   "id": "bribe",
+   "label": {
+    "zh": "给三老送钱",
+    "en": "Money for the Three Elders"
+   },
+   "means": "tries to buy off the three elders with money",
+   "stay": true,
+   "story": {
+    "zh": "第二天一早，三人去见三老。\n\n胖老头拿指甲拨了拨银子，这才抬起眼皮，道：「小哥有什么事？」\n\n小满一愣：「钱收了，人照放？」胖老头道：「茶水钱是茶水钱。河伯娶亲是河伯娶亲。两码事。」\n\n聋老头这时总算听见了一句，扯着嗓子，声如洪钟：「几两？人家一年给十锭——」\n\n小满道：「那就是说……河伯娶媳妇这门亲事，是有人花钱买下的？」周衡没有答话。阿禾在旁边，把这个圈也照样画进了她的小本子里。",
+    "en": "Early next morning the three of them went to see the Three Elders.\n\nThe fat old man flicked the silver with a fingernail and only then raised his eyelids: \"What can we do for you, young man?\"\n\nXiaoman was taken aback: \"You take the money and still put her in?\" The fat old man said: \"Tea money is tea money. The River Lord's wedding is the River Lord's wedding. Two different things.\"\n\nThe deaf old man finally caught a word, and bellowed like a bell: \"A few taels? They pay ten ingots a year—\"\n\nXiaoman said: \"So… this River Lord's wedding is something somebody bought?\" Zhou Heng did not answer. Beside them, A-He drew the same circle into her little notebook."
+   }
+  },
+  {
+   "id": "ghost",
+   "label": {
+    "zh": "蒙上床单扮鬼",
+    "en": "Put a bedsheet on and play ghost"
+   },
+   "means": "dresses as a ghost to frighten the shaman out of the wedding",
+   "stay": true,
+   "story": {
+    "zh": "头一条计不成，小满便使第二条。\n\n那天夜里，他从客栈的床上扯下一条白床单，往头上一蒙，只露出两只眼睛，对着铜镜一照，飘飘荡荡，颇有几分鬼气。\n\n说话的是巫祝。她跪在地上，一身红衣裳都跪皱了，额头贴着青砖，声音抖得厉害：「……仙长放心，十八那天，照旧。」\n\n小满把嗓子压得又粗又哑，道：「……我乃河伯大人座下……巡河夜叉……河伯大人有话……今年，不娶了……」\n\n「沈小满。」\n\n他浑身一僵。回头一看，庙门口站着一个人，红鼻头，手里提着一盏灯笼，正是阿禾。阿禾瞧着他，面无表情地道：「客栈的床单。掌柜的说少了一条，三十文。周师兄让你赔。」\n\n只听得「扑通」一声，他一头栽进了殿前那口放生池里。",
+    "en": "The first plan failed, so Xiaoman tried the second.\n\nThat night he pulled a white sheet off the inn bed, threw it over his head with only his two eyes showing, and looked in the bronze mirror: floating, drifting, fairly ghostly.\n\nThe speaker was the shaman. She was on her knees, her red clothes creased from kneeling, her forehead on the grey brick, her voice shaking badly: \"…Rest easy, Immortal Master — on the eighteenth, as always.\"\n\nXiaoman made his voice rough and hoarse: \"…I am the River Lord's… river-patrolling yaksha… the River Lord says… this year, no bride…\"\n\n\"Shen Xiaoman.\"\n\nHe went rigid. Turning, he saw someone at the temple door with a red nose and a lantern — A-He. She looked at him with no expression at all: \"The inn's sheet. The innkeeper says one's missing — thirty coppers. Brother Zhou says you pay.\"\n\nThere was a splash, and he pitched headfirst into the release pond in front of the hall."
+   }
+  },
+  {
    "id": "shrine",
    "label": {
-    "zh": "日落去祠前",
-    "en": "To the shrine at sundown"
+    "zh": "十月十八，去河边",
+    "en": "The eighteenth — to the river"
    },
-   "means": "goes to the shrine, the rite, or the river at dusk",
-   "beat": [
-    {
-     "who": "ling",
-     "text": {
-      "zh": "日落。鼓声从下游传来。",
-      "en": "Sundown. Drums from downstream."
-     }
-    }
-   ],
-   "next": "01-altar"
+   "means": "goes to the river on the wedding day",
+   "next": "01-altar",
+   "story": {
+    "zh": "手边能算的，只有一笔：明天午时，豆腐西施要坐进那只凿了洞的木船里去。\n\n巫祝说，她跟河伯说得上话。三老说，他们是替河伯办事的。好。那便让她去说，让他们去办。",
+    "en": "There was only one sum he could do with what he had: at noon tomorrow, the Tofu Beauty would sit down in that holed wooden boat.\n\nThe shaman said she could talk to the River Lord. The Three Elders said they did the River Lord's business. Fine. Then let her go and talk, and let them go and do business."
+   }
   },
   {
    "id": "market",
-   "label": {
-    "zh": "先逛坊市",
-    "en": "The market first"
-   },
    "means": "goes shopping, asks about the market, wants to buy or sell",
    "stay": true,
    "beat": [
     {
      "who": "ling",
      "text": {
-      "zh": "东街的坊市摆到城根。铁匠铺的炉火最旺。",
-      "en": "East Street's market runs to the wall. The smith's fire burns brightest."
+      "zh": "东街的坊市摆到城根，可家家户户关着门。",
+      "en": "East Street's market runs to the wall, but every door is shut."
      }
     }
    ]
   },
   {
    "id": "girl",
-   "means": "asks about the girl, the Li family, or tries to stop the rite now",
+   "means": "asks about the bride, the tofu girl, or goes to see her",
    "stay": true,
-   "beat": [
-    {
-     "who": "ling",
-     "text": {
-      "zh": "李家门口挂着红布，屋里没有哭声——哭过了。巫婆的人守在门外。",
-      "en": "Red cloth hangs at the Li door. No crying inside — that was earlier. The sorceress's people keep the gate."
-     }
-    },
-    {
-     "who": "ling",
-     "text": {
-      "zh": "要拦，得在祠前拦。",
-      "en": "If it is to be stopped, it must be stopped at the shrine."
-     }
-    }
-   ]
+   "story": {
+    "zh": "她坐在门槛上磨豆子。石磨一圈一圈地转，豆浆一点一点流下来，流进底下的木桶里。她磨得很慢，很仔细，倒像在磨一件要磨上一辈子的东西。\n\n**爹，一个人，磨不动。**",
+    "en": "She sat on the doorstep grinding beans. The millstone went round and round, the soy milk trickled down into the wooden bucket beneath. She ground very slowly, very carefully, as if grinding something that would take a lifetime.\n\n**Father, alone, can't turn it.**"
+   }
   }
  ]
 }

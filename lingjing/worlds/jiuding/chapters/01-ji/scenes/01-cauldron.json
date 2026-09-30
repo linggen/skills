@@ -5,24 +5,40 @@
  "hui": "h10",
  "at": "zhangyuan",
  "place": {
-  "zh": "漳渊 · 鼎前",
-  "en": "The Zhang deeps · Before the cauldron"
+  "zh": "漳水边 · 月下",
+  "en": "The Zhang · By moonlight"
  },
  "setup": {
-  "zh": "冀鼎从河床里升起来，比你高。鼎身上铸着山川、走兽、飞鸟——冀州的一切。它在等一个装得下它的人。",
-  "en": "The Cauldron of Ji rises from the riverbed, taller than you. Cast on its body are mountains, rivers, beasts and birds — everything of Ji. It is waiting for someone who can hold it."
+  "zh": "你浮上水面的时候，日头已经落尽了。那口鼎跟着你浮了上来，越浮越小，落在你手心里，沉甸甸的，暖的。",
+  "en": "By the time you surface, the sun has set. The cauldron rises with you, smaller and smaller, and lands in your palm, heavy and warm."
  },
  "recap": {
-  "zh": "冀鼎升起，三道雷落进丹田——你筑基了。",
-  "en": "The Cauldron of Ji rose and three bolts fell into your dantian — you laid your Foundation."
+  "zh": "第一鼎归来，木牌亮了第二条尾巴；柳树底下站着一个白衣人：「太一宫，赵昂。」「因为天下，该归于一。」",
+  "en": "The first cauldron came home, and the token lit its second tail; under the willow stood a man in white: \"Taiyi Palace, Zhao Ang.\" \"Because all under heaven should be one.\""
  },
  "cast": [],
- "show": [
-  {
-   "card": "gate",
-   "chapter": "01-ji"
-  }
+ "people": [
+  "ban",
+  "zhouheng"
  ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "一口鼎，巴掌大，暖的。",
+    "木牌上，第二条尾巴亮了。",
+    "柳树底下，一身白衣。"
+   ],
+   "en": [
+    "A cauldron the size of a palm, warm.",
+    "On the token, a second tail alight.",
+    "Under the willow, someone in white."
+   ]
+  }
+ },
+ "story": {
+  "zh": "小满浮上水面的时候，日头已经落尽了，天边只剩一抹暗红。那口鼎跟着他浮了上来，越浮越小，越浮越小，浮出水面时只有巴掌大，落在他手心里，沉甸甸的，暖的。\n\n胸口的木牌烫得前所未有，他低头一看，木牌上那只蜷着的小狐狸，九条尾巴里，第二条亮了。",
+  "en": "When Xiaoman surfaced, the sun had set, with only a streak of dark red left at the sky's edge. The cauldron rose with him, smaller and smaller, and when it broke the surface it was the size of a palm; it landed in his hand, heavy and warm.\n\nThe token at his chest burned as never before; he looked down, and of the nine tails of the little curled fox on it, a second was alight."
+ },
  "lines": [],
  "buttons": [
   "take"
@@ -31,55 +47,32 @@
   {
    "id": "take",
    "label": {
-    "zh": "受鼎气 · 筑基",
-    "en": "Take the cauldron's breath · Lay the Foundation"
+    "zh": "捧起鼎",
+    "en": "Hold up the cauldron"
    },
-   "means": "touches the cauldron, takes its breath, attempts the breakthrough",
-   "breakthrough": true,
+   "means": "takes up the cauldron, keeps it, faces the stranger in white",
    "memory": 1,
-   "refuse": {
-    "zh": "鼎气扑到你身上又退开。修为未到，装不下。先回人间，把功课做满。",
-    "en": "The breath surges over you and draws back. Your cultivation is not yet enough to hold it. Go back to the world and fill your practice first."
-   },
-   "show": [
-    {
-     "card": "tribulation",
-     "strikes": 3
-    }
-   ],
    "grant": {
     "table": "scene",
     "progress": 60,
     "wealth": 20
    },
-   "beat": [
-    {
-     "who": "ling",
-     "text": {
-      "zh": "三道雷从无云的天上落下来，落在你身上，落进丹田。你站住了。鼎小了，小到能握在掌心。",
-      "en": "Three bolts fall from a cloudless sky, into you, into your dantian. You stay standing. The cauldron shrinks until it sits in your palm."
-     }
-    },
-    {
-     "who": "ling",
-     "text": {
-      "zh": "筑基了。你的手在抖。",
-      "en": "The Foundation is laid. Your hand is shaking."
-     }
-    }
-   ],
+   "story": {
+    "zh": "那人站在岸边一株老柳树底下，一身白衣，腰悬长剑，站在月光底下，便如一棵挺拔的松树。\n\n他的目光，落在小满手心里那口巴掌大的鼎上，开口第一句话，却是：「多谢。」\n\n小满一怔：「谢什么？」那人道：「二十年，宫里请不动他。你一个上午，就把他请上来了。」他往前走了两步，月光照在他腰间那柄剑的剑鞘上，剑鞘头上刻着一个记号：一个圆圈，圈里一横。「太一宫，赵昂。」\n\n赵昂这才正眼看了他，道：「因为天下，该归于一。」\n\n小满怀里的银月，猛地一颤。\n\n「在九天之上。」银月一字一字地道，「那道光劈下来的时候，光里那个声音，说的就是这一句：天下，该归于一。」\n\n赵昂盯着他瞧了很久，终于把手从剑柄上放了下来，道：「今日冰夷护着你。我不跟一条河打架。」",
+    "en": "The man stood under an old willow at the water's edge, all in white, a long sword at his waist; in the moonlight he stood like a straight young pine.\n\nHis eyes fell on the palm-sized cauldron in Xiaoman's hand, and the first thing he said was: \"Thank you.\"\n\nXiaoman was startled: \"For what?\" The man said: \"For twenty years the Palace couldn't get him to come up. You did it in one morning.\" He took two steps forward; moonlight fell on the scabbard at his waist, and on its tip was a mark: a circle, with one bar inside it. \"Taiyi Palace. Zhao Ang.\"\n\nOnly then did Zhao Ang really look at him: \"Because all under heaven should be one.\"\n\nYinyue, in Xiaoman's arms, gave a violent start.\n\n\"High in the ninth heaven,\" Yinyue said, word by word. \"When that light struck down, the voice in the light said exactly this: all under heaven should be one.\"\n\nZhao Ang stared at him a long while, and at last took his hand off the hilt: \"Today Bingyi guards you. I don't fight a river.\""
+   },
    "next": "01-end"
   },
   {
    "id": "wait",
-   "means": "hesitates, asks what will happen, wants to prepare first",
+   "means": "hesitates, asks what will happen, wants to wait",
    "stay": true,
    "beat": [
     {
      "who": "ling",
      "text": {
-      "zh": "它等了两千年，不差你这几天。",
-      "en": "It has waited two thousand years; a few days of yours are nothing."
+      "zh": "它在你掌心里，一明，一暗，像在很慢地呼吸。",
+      "en": "It lies in your palm, light and dark, as if breathing very slowly."
      }
     }
    ]

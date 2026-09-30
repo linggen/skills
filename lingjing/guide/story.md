@@ -28,7 +28,7 @@ whole book — you tell it.
   line; say it when it changes, never count days yourself. A step that waits
   on a real day (`needs` refused with its `say`) waits — send the player to
   prepare. A choice not set up by its thread is not on the stage; never
-  offer it. `waypoint.coming` (第九回 · 即将开放): the story is complete so
+  offer it. `waypoint.coming` (e.g. 「第十一回 · 即将开放」): the story is complete so
   far — the world stays open; never tell what comes next.
 - **At a story node** — a scene passed, a cauldron found, a memory come back —
   the page hands Yinyue the facts, and her `[Yinyue]` line may land here on

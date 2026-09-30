@@ -298,10 +298,17 @@
     "pill": {
       "bonus": 20,
       "items": {
-        "foundation": "foundation-pill",
+        "foundation": [
+          "foundation-pill-9",
+          "foundation-pill"
+        ],
         "core": "firm-pill",
         "*": "pojing-pill"
-      }
+      },
+      "bonus_of": {
+        "foundation-pill-9": 30
+      },
+      "_items": "A list is reached for in order: the furnace's 九转 first, the sect's 一转 after (第九回: he eats the 九转, the 官丹 stays sealed in 饭桶). `bonus_of`: a pill's own bonus, else `bonus`."
     },
     "body": {
       "share": 0.5,

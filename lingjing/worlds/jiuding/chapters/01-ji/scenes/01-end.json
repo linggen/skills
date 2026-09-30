@@ -5,16 +5,16 @@
  "hui": "h10",
  "at": "zhangyuan",
  "place": {
-  "zh": "漳水 · 天明",
-  "en": "The Zhang · Daybreak"
+  "zh": "漳水 · 往柳湾",
+  "en": "The Zhang · Toward Willow Bend"
  },
  "setup": {
-  "zh": "水合上了。李家的姑娘回了家；巫婆没有再浮上来。邺城这一年不用再送新娘。",
-  "en": "The water closes. The Li girl has gone home; the sorceress did not come up again. Ye will send no bride this year."
+  "zh": "豆腐西施和她爹挑着一担豆浆追了上来。周衡站在那里，瞧着下游，瞧了很久。",
+  "en": "The Tofu Beauty and her father come after you with a carrying-pole of soy milk. Zhou Heng stands looking downstream for a long time."
  },
  "recap": {
-  "zh": "水合上了，邺城这一年不用再送新娘。第二鼎在东边。",
-  "en": "The water closed; Ye would send no bride that year. The second cauldron lay east."
+  "zh": "水合上了，邺城这一年不用再送新娘；二十个姑娘在下游柳湾。周衡说了一句：「记账的，总要去对一对。」第二鼎的气息，在东边。",
+  "en": "The water closed; Ye would send no bride that year; twenty girls were downstream at Willow Bend. Zhou Heng said: \"Whoever keeps the accounts has to go and check them.\" The second cauldron's breath lay east."
  },
  "cast": [],
  "show": [
@@ -24,15 +24,29 @@
    "here": "冀"
   }
  ],
- "lines": [
-  {
-   "who": "ling",
-   "text": {
-    "zh": "第二鼎的气息在东边——兖州，济水与河之间。",
-    "en": "The second cauldron's breath lies east — Yan, between the Ji River and the He."
-   }
-  }
+ "people": [
+  "zhouheng",
+  "ban"
  ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "一碗豆浆，温的，很甜。",
+    "「柳湾，去不去？」",
+    "「记账的，总要去对一对。」"
+   ],
+   "en": [
+    "A bowl of soy milk, warm and sweet.",
+    "\"Willow Bend — going?\"",
+    "\"Whoever keeps the accounts has to check them.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "豆腐西施舀了一碗，双手捧给小满。豆浆是温的，很甜。他喝完了，把碗还给她，她接过碗，冲他笑了一下。\n\n「周师兄，」小满道，「柳湾，去不去？」\n\n周衡站在那里，瞧着下游，瞧了很久，才道：「……记账的，总要去对一对。」",
+  "en": "The Tofu Beauty ladled out a bowl and held it to Xiaoman in both hands. The soy milk was warm, and very sweet. When he had drunk it he gave her back the bowl; she took it and smiled at him.\n\n\"Brother Zhou,\" said Xiaoman, \"Willow Bend — shall we go?\"\n\nZhou Heng stood there looking downstream for a long time before he said: \"…Whoever keeps the accounts has to go and check them.\""
+ },
+ "lines": [],
  "buttons": [
   "rest"
  ],
@@ -40,19 +54,14 @@
   {
    "id": "rest",
    "label": {
-    "zh": "今日到此",
-    "en": "Rest for today"
+    "zh": "去柳湾",
+    "en": "To Willow Bend"
    },
-   "means": "rests, ends the chapter, asks what comes next",
-   "beat": [
-    {
-     "who": "ling",
-     "text": {
-      "zh": "今日到此为止。兖州的路，开的时候我会告诉你。",
-      "en": "That is all for today. When the road to Yan opens, I will tell you."
-     }
-    }
-   ],
+   "means": "goes down to Willow Bend with Zhou Heng, ends the chapter",
+   "story": {
+    "zh": "走到一半，他忽然开口了。他没有回头，声音也不高，倒像是在跟河说话：「十八年前，十月十八。那一年巫祝挑中的，是城北周家的闺女。」\n\n小满的脚步，一下子顿住了。\n\n小满想起观主那没说完的半句话，想起周衡脚上那双鞋底还白着的新布鞋，想起那本旧账簿上，那一行后头没有数的字。他什么也没说。阿禾也什么也没说。只有小狰在前头跑着，跑一段，停下来，回头看看他们，又接着跑。",
+    "en": "Half-way there he suddenly spoke. He did not turn round, and his voice was not raised; it was as if he were talking to the river: \"Eighteen years ago, the eighteenth of the tenth month. The one the shaman chose that year was the Zhou family's daughter, from the north of town.\"\n\nXiaoman stopped short.\n\nXiaoman thought of the half-sentence the abbot had never finished, of the new cloth shoes on Zhou Heng's feet with their soles still white, of that line in the old ledger with no number after it. He said nothing. Nor did A-He. Only the little Zheng ran on ahead, running a stretch, stopping to look back at them, and running on."
+   },
    "ends": "01-ji"
   }
  ]

@@ -9,146 +9,60 @@
   "en": "The River Lord's shrine · The water's edge"
  },
  "setup": {
-  "zh": "鼓停了。红衣的姑娘站在水边，巫婆举着香。水里慢慢浮起一个东西——羊的身子，人的脸，眼睛长在腋下。它哭得像婴儿。",
-  "en": "The drums stop. The girl in red stands at the water; the sorceress raises the incense. Something rises slowly from the river — a sheep's body, a man's face, eyes under its arms. It cries like an infant."
+  "zh": "十月十八，河伯娶妇。三老坐在大伞底下，巫祝摇着铜铃；豆腐西施穿着嫁衣，坐在那只木船里。打鼓的那个，是你。",
+  "en": "The eighteenth of the tenth month: the River Lord's wedding. The Three Elders sit under a great umbrella, the shaman shakes her bronze bell; the Tofu Beauty sits in the wooden boat in her bridal clothes. The drummer is you."
  },
  "recap": {
-  "zh": "河伯祠前，水里浮起的不是河伯，是狍鸮；新娘没有下水。",
-  "en": "Before the shrine, what rose from the water was no River Lord but Paoxiao; the bride did not go into the water."
+  "zh": "河伯祠前，你把巫祝「送去给河伯报信」；阿禾没有数数，跳下去把她捞了上来；三老跪着，把二十年的河伯钱一文一文吐了出来。",
+  "en": "Before the shrine you \"sent the shaman to take word to the River Lord\"; A-He, without counting, jumped in and pulled her out; the Three Elders knelt and coughed up twenty years of River Lord money coin by coin."
  },
- "cast": [
-  "paoxiao"
+ "cast": [],
+ "people": [
+  "ban",
+  "zhouheng"
  ],
- "show": [
-  {
-   "card": "creature",
-   "id": "paoxiao"
+ "panel": {
+  "caption": {
+   "zh": [
+    "十月十八，河伯娶妇。",
+    "打鼓的那个，脸上抹着锅底灰。",
+    "「这新娘子，不够好看啊。」"
+   ],
+   "en": [
+    "The eighteenth: the River Lord's wedding.",
+    "The drummer has soot on his face.",
+    "\"This bride isn't pretty enough.\""
+   ]
   }
- ],
- "lines": [
-  {
-   "who": "ling",
-   "text": {
-    "zh": "那不是河伯。是狍鸮——羊身人面，眼生腋下；传说它吃人，巫婆一年喂它一个。",
-    "en": "That is no River Lord. It is Paoxiao — a sheep’s body, a human face, eyes under its arms. They say it eats people, and the sorceress feeds it one a year."
-   }
-  },
-  {
-   "who": "ling",
-   "text": {
-    "zh": "巫婆回头看你，笑了：外乡人，河伯问你一句话，答得上，就让你看。",
-    "en": "The sorceress turns and smiles at you: stranger, the River Lord has a question for you. Answer it, and you may watch."
-   }
-  }
- ],
+ },
+ "story": {
+  "zh": "十月十八，河伯娶妇。那天一早，漳水边上便站满了人。三老坐在一顶大伞底下，穿着新做的绸衫，每人面前摆一盘果子。\n\n打鼓的那个，便是沈小满。\n\n巫祝摇着铃，绕着木船走了三圈，嘴里念念有词，然后停下来，冲着漳水高声叫道：「河伯大人——今年的新娘子，给您送来啦——」",
+  "en": "The eighteenth of the tenth month: the River Lord's wedding. From early morning the banks of the Zhang were packed. The Three Elders sat under a great umbrella in new silk gowns, a plate of fruit before each.\n\nThe one beating the drum was Shen Xiaoman.\n\nThe shaman shook her bell and walked three times round the boat, muttering, then stopped and cried out loud to the Zhang: \"Lord of the River — this year's bride, here she comes—\""
+ },
+ "lines": [],
  "buttons": [
-  "subdue",
-  "riddle",
   "send"
  ],
  "exits": [
   {
-   "id": "subdue",
-   "label": {
-    "zh": "降妖 · 五行",
-    "en": "Subdue · The five elements"
-   },
-   "means": "fights the creature, drives it off, protects the girl by force",
-   "game": {
-    "id": "subdue-paoxiao",
-    "kind": "duel",
-    "creature": "paoxiao"
-   },
-   "withdrawn": {
-    "zh": "狍鸮沉回水里，哭声远了。明日它还会来。",
-    "en": "Paoxiao sinks back into the river; the crying fades. It will come again tomorrow."
-   },
-   "grant": {
-    "table": "scene",
-    "progress": 60,
-    "wealth": 20
-   },
-   "beat": [
-    {
-     "who": "ling",
-     "text": {
-      "zh": "狍鸮翻倒在浅水里，人脸朝天。巫婆的香掉在地上。姑娘跑了。",
-      "en": "Paoxiao rolls over in the shallows, its man's face to the sky. The sorceress drops her incense. The girl runs."
-     }
-    },
-    {
-     "who": "ling",
-     "text": {
-      "zh": "水退了。祠后面露出河床。",
-      "en": "The water goes down, and the riverbed shows behind the shrine."
-     }
-    }
-   ],
-   "next": "01-deep"
-  },
-  {
-   "id": "riddle",
-   "label": {
-    "zh": "答河伯的问",
-    "en": "Answer the River Lord's question"
-   },
-   "means": "answers the sorceress's riddle",
-   "key": [
-    "wu-1",
-    "wu-2"
-   ],
-   "grant": {
-    "table": "scene",
-    "progress": 40,
-    "wealth": 10
-   },
-   "beat": [
-    {
-     "who": "ling",
-     "text": {
-      "zh": "你答了。狍鸮的哭声停了一瞬——它听得懂。巫婆的脸白了：河伯从没让人答对过。",
-      "en": "You answer. Paoxiao's crying stops for a breath — it understood. The sorceress goes white: the River Lord has never let anyone answer right."
-     }
-    },
-    {
-     "who": "ling",
-     "text": {
-      "zh": "它退开了。祠后面，正是时候。",
-      "en": "It backs off. Behind the shrine — now is the time."
-     }
-    }
-   ],
-   "next": "01-deep"
-  },
-  {
    "id": "send",
    "label": {
-    "zh": "请巫婆先去问河伯",
-    "en": "Ask the sorceress to go and ask the River Lord"
+    "zh": "请巫祝婆婆先去报信",
+    "en": "Ask the shaman to take word first"
    },
-   "means": "calls the sorceress's bluff, tells her to go into the water herself, does what Ximen Bao did",
+   "means": "calls the shaman's bluff: the bride is not pretty enough, so the shaman must go into the river herself and tell the River Lord",
    "grant": {
     "table": "scene",
     "progress": 40,
     "wealth": 10
    },
-   "beat": [
-    {
-     "who": "ling",
-     "text": {
-      "zh": "你说：新娘不美，烦巫婆先去回禀河伯，改日再送。你把她推进水里。狍鸮转向了她。",
-      "en": "You say: the bride is not fair enough; would the sorceress kindly go and tell the River Lord, and send another day. You push her in. Paoxiao turns toward her."
-     }
-    },
-    {
-     "who": "ling",
-     "text": {
-      "zh": "西门豹当年也是这么办的。祠后面。",
-      "en": "Ximen Bao did it this way long ago. Behind the shrine."
-     }
-    }
-   ],
-   "next": "01-deep"
+   "story": {
+    "zh": "小满放下鼓槌，走上前去，一脸诚恳地道：「巫祝婆婆，等一下。」\n\n他瞧了瞧船里的豆腐西施，皱起眉头，一脸为难，「这新娘子，不够好看啊。」\n\n小满恭恭敬敬地作了一个揖，道：「得有个人，先去河里跟河伯大人说一声：新娘子不太好看，咱们再挑挑，过几天，挑个更好看的送来。这么要紧的话，打鼓的去，不够分量。」说到这里，他抬眼看着她，「得巫祝婆婆您，亲自去。」\n\n只听得「扑通」一声，水花溅起老高，全场鸦雀无声。小满冲着河面拱了拱手，道：「婆婆，辛苦。」\n\n他数到七，身边「扑通」一声。\n\n他转头一看，阿禾已经不见了，岸边只剩下她那本小本子，摊在泥地上，给风吹得哗哗翻页。她跳下去了。她没有数。\n\n那天，三老一个也没下河。三个人跪在漳水边上，冲着河面磕头，磕得额头都青了，把家里那几口箱子全抬了出来，二十年收的河伯钱，花剩下的，一文一文全吐了出来，堆在岸上，堆成了一座小山。",
+    "en": "Xiaoman set down his drumsticks, stepped forward, and said with an earnest face: \"Granny Shaman, wait a moment.\"\n\nHe looked at the Tofu Beauty in the boat, knitted his brows, and looked troubled: \"This bride isn't pretty enough.\"\n\nXiaoman bowed respectfully and said: \"Someone has to go into the river first and tell the River Lord: the bride's not quite pretty enough, we'll pick again and send a prettier one in a few days. A message that important — a drummer doesn't carry the weight.\" Here he raised his eyes to her: \"It has to be you, Granny Shaman, in person.\"\n\nThere was a great splash, the water shot up high, and the whole bank went silent. Xiaoman cupped his hands toward the water: \"Granny, thank you for your trouble.\"\n\nAt seven, there was a splash beside him.\n\nHe turned — A-He was gone; only her little notebook was left on the bank, open on the mud, its pages flipping in the wind. She had jumped in. She had not counted.\n\nThat day not one of the Three Elders went into the river. The three of them knelt by the Zhang knocking their heads toward the water until their foreheads were bruised, had every chest in their houses carried out, and coughed up, coin by coin, what was left of twenty years of River Lord money, heaped on the bank into a little mountain."
+   },
+   "next": "01-rise",
+   "setpiece": "zhang",
+   "_setpiece": "卷一's 大场面, 漳水立起 (setpiece.js + setpieces/zhang.js, doc/design.md § 哇时刻): the story node of this exit carries it, so the whole stage plays the river standing up as he walks into 01-rise."
   },
   {
    "id": "flee",
@@ -158,8 +72,8 @@
     {
      "who": "ling",
      "text": {
-      "zh": "你走出两步，又停下。姑娘在看你。",
-      "en": "You take two steps, and stop. The girl is looking at you."
+      "zh": "你走出两步，又停下。船里的姑娘在看你。",
+      "en": "You take two steps, and stop. The girl in the boat is looking at you."
      }
     }
    ]

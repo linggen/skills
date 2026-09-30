@@ -819,7 +819,9 @@ function lintBreakthrough(content, bad) {
   }
   if (!pct(r.floor) || !pct(r.cap) || r.floor > r.cap) bad(where, 'floor and cap are percents, floor under cap');
   if (!pct(r.low)) bad(where, 'low is a percent');
-  for (const [to, id] of Object.entries(r.pill?.items ?? {})) if (!content.items.items.some(i => i.id === id)) bad(where, `pill for ${to}: unknown item ${id}`);
+  // A realm's pill, or a list reached for in order (breakthrough.mjs: the 九转 before the 一转).
+  for (const [to, ids] of Object.entries(r.pill?.items ?? {})) for (const id of [].concat(ids)) if (!content.items.items.some(i => i.id === id)) bad(where, `pill for ${to}: unknown item ${id}`);
+  for (const id of Object.keys(r.pill?.bonus_of ?? {})) if (!content.items.items.some(i => i.id === id)) bad(where, `pill bonus for unknown item ${id}`);
   if (!share(r.body?.share) || !share(r.fail?.wound) || !share(r.fail?.progress)) bad(where, 'body.share, fail.wound and fail.progress are shares of 0–1');
   if (!(r.fail?.cooldown_hours > 0)) bad(where, 'fail.cooldown_hours is some hours');
 }
@@ -1085,7 +1087,12 @@ function lintExit(where, exit, chapter, content, ids, speakers, bad) {
   if (exit.needs?.quest && !(content.quests ?? []).some(q => q.id === exit.needs.quest)) bad(where, `needs unknown quest ${exit.needs.quest}`);
   if (exit.needs?.day_after && !Object.values(chapter.scenes).some(sc => sc.exits.some(e => e.mark === exit.needs.day_after))) bad(where, `waits a day after ${exit.needs.day_after}, which no exit marks`);
   // The story lifts the realm to a layer of the first tier (core.mjs riseTo).
-  if (exit.rise != null && !(Number.isInteger(exit.rise) && exit.rise >= 1 && exit.rise <= content.ladder.tiers[0].thresholds.length)) bad(where, 'rise is a layer of the first tier');
+  const riseLayer = typeof exit.rise === 'object' && exit.rise ? exit.rise.layer : exit.rise;
+  if (exit.rise != null && !(Number.isInteger(riseLayer) && riseLayer >= 1 && riseLayer <= content.ladder.tiers[0].thresholds.length)) bad(where, 'rise is a layer of the first tier');
+  if (typeof exit.rise === 'object' && exit.rise && exit.rise.full != null && exit.rise.full !== true) bad(where, 'rise.full is true');
+  // A step after a step (`needs.mark`): some exit of the chapter sets that mark.
+  if (exit.needs?.mark && !Object.values(chapter.scenes).some(sc => sc.exits.some(e => e.mark === exit.needs.mark))) bad(where, `needs mark ${exit.needs.mark}, which no exit sets`);
+  if (exit.once != null && !(exit.once === true && exit.mark)) bad(where, 'once is true, with a mark');
   if (exit.take?.wealth != null && !(Number.isInteger(exit.take.wealth) && exit.take.wealth > 0 && exit.needs?.wealth >= exit.take.wealth)) bad(where, 'takes stones it never checks for');
   if (exit.needs?.wealth != null && !(Number.isInteger(exit.needs.wealth) && exit.needs.wealth > 0)) bad(where, 'needs a whole number of stones');
   lintStory(where, exit.story, bad);

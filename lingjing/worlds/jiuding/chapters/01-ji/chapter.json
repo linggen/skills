@@ -5,21 +5,23 @@
   "province": "冀",
   "corridor": false,
   "first_scene": "01-arrive",
-  "gate": 1,
-  "_coming": "Still being rewritten as the book's 第九回 (筑基) and 第十回 (河伯娶妇; its scenes' `hui`) — 第九回 opens it (book.json `opens`): the chapter before it ends and waits here, dateless (core.mjs advanceChapter), on 「第九回 · 即将开放」 — named by its scenes' first 回 (rules/hui.mjs comingOf). Take `coming` out when it is rewritten.",
-  "coming": true,
+  "gate": null,
   "_title": "The arc's own name, no number: the player is told the 回 (book.json via the scenes' `hui`, rules/hui.mjs); this stands only where a chapter has no 回.",
-  "title": { "zh": "冀州之鼎", "en": "The Cauldron of Ji" },
+  "title": {
+    "zh": "冀州之鼎",
+    "en": "The Cauldron of Ji"
+  },
   "summary": {
-    "zh": "北上冀州。漳水边的邺城年年给河伯娶妇，祠后的深水里有鼎在呼吸。揭开河伯的真身，破开洛书之封，第一鼎归来——练气圆满者，在此筑基。",
-    "en": "North into Ji. On the Zhang, the city of Ye marries a bride to the River Lord every year, and in the deep water behind the shrine a cauldron is breathing. Unmask the River Lord, break the Luo seal, and the first cauldron returns — one at the peak of Qi Condensation lays their Foundation here."
+    "zh": "北上冀州。邺城年年给河伯娶妇；你把巫祝「送去报信」，漳水立了起来，冰夷的两条龙试了那个不跪的人。破开洛书之封，第一鼎归来——柳树底下，站着太一宫的赵昂。",
+    "en": "North into Ji. Every year Ye gives the River Lord a bride; you \"send the shaman to take word\", the Zhang stands up, and Bingyi's two dragons test the one who would not kneel. The Luo seal breaks, the first cauldron comes home — and under the willow stands Zhao Ang of the Taiyi Palace."
   },
   "intro": {
-    "zh": "北上冀州。漳水边的邺城年年给河伯娶妇——一个姑娘穿了红衣，送下水去。祠后的深水里，有什么在呼吸。",
-    "en": "North into Ji. Every year the city of Ye on the Zhang gives the River Lord a bride — a girl in red, sent into the water. In the deep water behind the shrine something is breathing."
+    "zh": "筑基后第十天，观主摊开一张舆图：冀州，邺城，漳水边上，有件怪事——每年，都有人给河伯娶媳妇。",
+    "en": "Ten days after your Foundation, the abbot unrolls a map: Ji, the city of Ye, on the Zhang — something strange: every year, somebody marries the River Lord a wife."
   },
   "mystery": {
     "zh": "邺城年年送下水的新娘，嫁的是谁？",
     "en": "Whom do the brides Ye sends into the water really marry?"
-  }
+  },
+  "_gate": "No breakthrough here since 2026-09-30: the Foundation is laid on the 沉鼎观 cliff in 第九回 (00-zhuji, gate 1); 冀 gives the first 鼎, 银月's second tail and her first memory."
 }

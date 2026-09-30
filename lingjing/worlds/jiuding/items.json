@@ -244,6 +244,28 @@
       }
     },
     {
+      "id": "foundation-pill-9",
+      "name": {
+        "zh": "九转筑基丹",
+        "en": "Nine-Turn Foundation Pill"
+      },
+      "kind": "pill",
+      "art": "art/items/foundation-pill.webp",
+      "_furnace": "Made in 银月's furnace (第九回): 饭桶 sniffed the sect's 一转 官丹 once and made three from the garden's culls and 小狰's two old ginseng. The breakthrough reaches for it before the 一转 (ladder.json breakthrough.pill); not sold.",
+      "zhuan": 9,
+      "about": {
+        "zh": "饭桶一炉出的筑基丹，透亮得像一滴凝住的露水，九道金纹，一丝黑斑也没有。沉鼎观三百年最好的一炉是三转。",
+        "en": "A foundation pill from the rice-tub furnace: clear as a drop of frozen dew, nine gold rings, not one dark fleck. The best batch the temple made in three hundred years was three-turn."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "effect": {
+        "progress": 40,
+        "table": "task"
+      }
+    },
+    {
       "id": "firm-pill",
       "kind": "pill",
       "name": {

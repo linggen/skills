@@ -70,8 +70,8 @@ export const TO_OPEN = [...TO_WAIMEN, ['resolve', { exit: 'pay' }], ['resolve', 
    tests the chapter as shipped. Mutates and returns the content it is given. */
 export function beforeChapterOne(content) {
   delete content.chapters['00-waimen'];
+  delete content.chapters['00-zhuji'];
   delete content.chapters['00-prologue'].map;
-  delete content.chapters['01-ji'].coming;
   return content;
 }
 

@@ -59,8 +59,15 @@ test('the first 鼎\'s exit brings memory 1 back — once — and says the one c
   assert.deepEqual(again.memory_last, r.state.memory_last, 'nothing to play again');
 });
 
-test('a failed throw at the 鼎 gives no memory: the 鼎 is not home', () => {
-  const r = takeJi(tryThat(atJi(), false));
+test('the 鼎 is not a throw since the Foundation moved to the cliff (第九回): taken, it is home; a failed throw on the cliff gives no memory', () => {
+  // 冀鼎 after the cliff: already 筑基, no breakthrough at the 鼎 — the memory comes with it.
+  const home = takeJi(atJi({ tier: 'foundation', step: 0, progress: 0 }));
+  assert.equal(home.result.ok, true);
+  assert.equal(home.result.breakthrough, null);
+  assert.deepEqual(home.state.memories, [1]);
+  // The cliff's throw failed: nothing remembered, the 鼎 is not even found.
+  const cliff = tryThat({ ...atJi(), chapter: '00-zhuji', scene: '09-cliff', place: 'houshan', ended: ['00-prologue', '00-waimen'] }, false);
+  const r = resolve(cliff, content, ctx, { exit: 'take' });
   assert.equal(r.result.breakthrough.success, false);
   assert.equal(r.state.memories, undefined);
 });

@@ -1767,6 +1767,74 @@
       },
       "_deck": "真灵根 —— 水一样，打不散。",
       "_signature": "三十招 —— 一招一招，全在水里。"
+    },
+    {
+      "id": "foe-shuanglong",
+      "name": {
+        "zh": "冰夷双龙",
+        "en": "Bingyi's twin dragons"
+      },
+      "pinyin": "bīng yí shuāng lóng",
+      "look": {
+        "zh": "河伯脚下的两条青龙，鳞片有磨盘那么大；一条扑，一条扫。",
+        "en": "The two blue dragons under the River Lord's feet, scales as big as millstones; one lunges, one sweeps."
+      },
+      "quote": {
+        "zh": "冰夷人面，乘两龙。",
+        "en": "Bingyi has a human face and rides two dragons."
+      },
+      "says": {
+        "open": {
+          "zh": "立而不跪者，试之。",
+          "en": "The one who stands while all kneel: we test you."
+        },
+        "won": {
+          "zh": "不避。可。",
+          "en": "You did not step aside. Enough."
+        },
+        "lost": {
+          "zh": "跪下吧，凡人。",
+          "en": "Kneel, mortal."
+        }
+      },
+      "province": "冀",
+      "root": "water",
+      "art": "art/people/bingyi.webp",
+      "art_source": "The 河伯 冰夷 portrait on his two dragons (art/people/bingyi.webp; art/CREDITS.md) — the trial shows the dragons he rides.",
+      "lean": "quick",
+      "pattern": [
+        "strike",
+        "cast",
+        "gather",
+        "strike",
+        "guard"
+      ],
+      "deck": [
+        "changyou",
+        "changyou",
+        "shuiwu",
+        "shuiwu",
+        "hanquan",
+        "hanquan",
+        "hantan",
+        "hantan",
+        "chaoqi",
+        "tingbo",
+        "gupi",
+        "huiqi"
+      ],
+      "signature": {
+        "id": "shuanglong-baiwei",
+        "name": {
+          "zh": "双龙摆尾",
+          "en": "Twin Tails"
+        },
+        "effect": {
+          "sweep": 3
+        }
+      },
+      "_deck": "冰夷双龙 —— 一扑一扫，水里来，水里去；是来试人的，不是来杀人的（第十回）。",
+      "_signature": "双龙摆尾 —— 两条尾巴贴着河滩一齐扫过来。"
     }
   ],
   "_likes": "What a creature will take from the bag to walk with the player: 人参 for the man-eaters (形如人), 玉鱼 for the bird that fills the sea, a bell for the drum god, 齐盐 for the sea beast, 齐纨 for the pearl pig, 灵芝 for 夫诸 as the prologue has it.",

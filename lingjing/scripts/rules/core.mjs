@@ -35,6 +35,8 @@ function meets(state, needs, now = new Date(), sceneId = state.scene) {
   if (needs.day_after && !(state.mark_days?.[needs.day_after] && state.mark_days[needs.day_after] < dayKey(now))) return false;
   // A clue that must be found here first (rules/examine.mjs: 看).
   if (needs.seen && !seenMet(state, sceneId, needs.seen)) return false;
+  // A step the story set down earlier in the same run (`mark`): 第九回's seasons, one after another.
+  if (needs.mark && !(state.marks ?? []).includes(needs.mark)) return false;
   return true;
 }
 
@@ -283,13 +285,18 @@ function offerTasks(content, state) {
    a scene played again lifts nothing, and before a story gate nothing moves.
    The 修为 he had toward the next layer goes with him (his, 2026-09-29: the jump
    reset it to 0) — short of the new layer's own threshold, so it never jumps twice. */
-function riseTo(content, s, layer, replay) {
+function riseTo(content, s, rise, replay) {
   const tier = content.ladder.tiers[0];
-  if (replay || s.tier !== tier.id || s.step >= layer - 1 || lockedOf(content, s).includes('cultivation')) return null;
+  // `{layer, full}`: to that layer and filled — 第九回's 入秋, 练气九层圆满 (his, 2026-09-30:
+  // the year is the book's four seasons, not days of chores).
+  const layer = typeof rise === 'object' ? rise.layer : rise, full = typeof rise === 'object' && rise.full === true;
+  const top = Math.min(layer, tier.thresholds.length) - 1;
+  if (replay || s.tier !== tier.id || lockedOf(content, s).includes('cultivation')) return null;
+  if (s.step > top || (s.step === top && (!full || (s.progress ?? 0) >= threshold(content, s)))) return null;
   const from = stepName(content, s.tier, s.step, s.lang);
-  s.step = Math.min(layer, tier.thresholds.length) - 1;
-  s.progress = Math.max(0, Math.min(s.progress ?? 0, threshold(content, s) - 1));
-  return { from, to: stepName(content, s.tier, s.step, s.lang) };
+  s.step = top;
+  s.progress = full ? threshold(content, s) : Math.max(0, Math.min(s.progress ?? 0, threshold(content, s) - 1));
+  return { from, to: stepName(content, s.tier, s.step, s.lang), ...(full ? { full: true } : {}) };
 }
 
 /* After a chapter ends, the next one that has opened takes over. One still
