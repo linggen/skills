@@ -59,17 +59,14 @@ test('the codex lints clean: every kind known, every picture on disk, one entry 
   assert.ok(lintCodex(broken, exists).some((p) => /三关: picture art\/codex\/nothing\.svg is missing/.test(p)));
 });
 
-test('the hero has no entry and is never drawn; 阿禾 has two portraits, picked by the hero\'s gender', () => {
+test('the hero has no entry and is never drawn; 阿禾 is a girl, one portrait (fixed, 2026-09-30)', () => {
   for (const id of ['hero', 'player', '主角', '你']) assert.equal(CODEX.has(id), false);
   const bad = structuredClone(FILES);
   bad.codex.entries.hero = { kind: '人物', name: { zh: '你', en: 'You' }, lines: { zh: ['x'], en: ['x'] } };
   assert.ok(lintCodex(bad, exists).some((p) => /the hero has no entry/.test(p)));
-  const ahe = FILES.codex.entries.ahe.by_hero;
-  assert.ok(Object.hasOwn(ahe, 'male') && Object.hasOwn(ahe, 'female'), 'a portrait slot for each hero');
+  assert.equal(FILES.codex.entries.ahe.by_hero, undefined, 'no portrait pair any more');
   const raw = codexRaw(FILES).get('ahe');
-  assert.equal(resolveEntry(raw, { gender: 'male' }).image, ahe.male, 'beside a boy hero: the girl');
-  assert.equal(resolveEntry(raw, { gender: 'female' }).image, ahe.female, 'beside a girl hero: the boy');
-  assert.notEqual(ahe.male, ahe.female);
+  for (const gender of ['male', 'female', undefined]) assert.equal(resolveEntry(raw, { gender }).image, 'art/people/ahe-girl.webp', String(gender));
   // the address words fill (邻家{伴·孩} …)
   const say = (t) => t.replaceAll('{伴·孩}', '姑娘').replaceAll('{伴·她}', '她');
   assert.match(resolveEntry(raw, { gender: 'male', say }).lines[0], /邻家姑娘/);
@@ -228,7 +225,7 @@ test('录 holds a 图鉴: met entries by kind, the unmet as empty slots; a tap o
   const content = loadContent();
   const NOW = new Date('2026-09-28T12:00:00');
   const fresh = newState(content, 'zh', NOW);
-  const s = walk(fresh, [['resolve', { exit: 'name', value: '墨白', gender: 'male' }], ['resolve', { exit: 'endure' }]], content, NOW);
+  const s = walk(fresh, [['resolve', { exit: 'begin' }], ['resolve', { exit: 'endure' }]], content, NOW);
   const met = story(s, content, { now: NOW, quests: [] }).result.codex;
   for (const id of ['baba', 'masan', 'maxiaobao', 'ahe']) assert.ok(met.includes(id), `${id} met`);
   assert.ok(!met.includes('wupo') && !met.includes('longzhi'), 'not yet met');

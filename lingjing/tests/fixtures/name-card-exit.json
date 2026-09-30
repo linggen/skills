@@ -1,0 +1,68 @@
+{
+ "_about": "The old 名字 card's exit (00-shiao, until 2026-09-30), kept for the tests of the page's value card — the hero is fixed now and no shipped scene names him; the card stays for a scene that names a thing.",
+ "exit": {
+  "id": "name",
+  "label": {
+   "zh": "爹娘叫你什么",
+   "en": "What your parents call you"
+  },
+  "means": "gives a name to be called by — the page card asks it: offered names to tap, or the player's own",
+  "value": {
+   "field": "name",
+   "max_chars": 8,
+   "offers": [
+    {
+     "zh": "青玄",
+     "en": "Qingxuan"
+    },
+    {
+     "zh": "云舟",
+     "en": "Yunzhou"
+    },
+    {
+     "zh": "墨白",
+     "en": "Mobai"
+    },
+    {
+     "zh": "清和",
+     "en": "Qinghe"
+    },
+    {
+     "zh": "长庚",
+     "en": "Changgeng"
+    },
+    {
+     "zh": "小满",
+     "en": "Xiaoman"
+    },
+    {
+     "zh": "若水",
+     "en": "Ruoshui"
+    },
+    {
+     "zh": "听松",
+     "en": "Tingsong"
+    },
+    {
+     "zh": "秋白",
+     "en": "Qiubai"
+    },
+    {
+     "zh": "知白",
+     "en": "Zhibai"
+    },
+    {
+     "zh": "观澜",
+     "en": "Guanlan"
+    },
+    {
+     "zh": "栖霞",
+     "en": "Qixia"
+    }
+   ],
+   "draw": 4
+  },
+  "beat": [],
+  "next": "00-masan"
+ }
+}

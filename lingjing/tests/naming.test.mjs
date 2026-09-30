@@ -1,9 +1,10 @@
-// 名字 (it was 道号 until the prologue rewrite, 2026-09-28) — a scene exit with `value` is named on the page's card, never by
-// Ling. Live, 2026-09-28: the chat's AskUser offered 「取一个道号」 as its only
-// option; tapped, Ling Resolved it with 青玄 — every player became 青玄. His
-// ruling: 给用户一个card with some options, 用户可以选择或者输入一个自定义的,
-// 不要默认给青玄. These hold the card, the draw, the chat's silence and the
-// refusal; the card is drawn as the page draws it.
+// 名字. Until 2026-09-30 the first scene (石坳村) asked the player's name and
+// 男 · 女 on the page's card; now the hero is fixed — 沈小满, a boy (story
+// DESIGN § 四) — and no shipped scene names him. The page's value card stays
+// for a scene that names a thing, so its tests run on the old exit, put back
+// on a copy of the world (tests/fixtures/name-card-exit.json). Live,
+// 2026-09-28: Ling once Resolved the card with 青玄 for every player — the
+// card is the page's, never Ling's; these hold that too.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -13,16 +14,41 @@ import { spawnSync } from 'node:child_process';
 import { WORDS, cardHtml, valueChoice } from '../scripts/cards.js';
 import { lint, loadContent } from '../scripts/content.mjs';
 import { fitValue, newState } from '../scripts/state.mjs';
-import { askOf, forLing, look, pageNames, resolve } from '../scripts/rules.mjs';
+import { askOf, look, pageNames, resolve } from '../scripts/rules.mjs';
 
-const content = loadContent();
+const shipped = loadContent();
+const FIX = JSON.parse(fs.readFileSync(new URL('./fixtures/name-card-exit.json', import.meta.url), 'utf8'));
+const content = structuredClone(shipped);
+Object.assign(content.chapters['00-prologue'].scenes['00-shiao'], { exits: [FIX.exit], buttons: [FIX.exit.id] });
 const NOW = new Date('2026-09-28T12:00:00');
 const ctx = { now: NOW, quests: [] };
-// prologue-v3: the name card stands on the first scene, 石坳村.
 const waking = (lang = 'zh', created = NOW) => newState(content, lang, created);
-const scene = content.chapters['00-prologue'].scenes['00-shiao'];
-const rule = scene.exits.find(e => e.id === 'name').value;
+const rule = FIX.exit.value;
 const exitOf = l => l.scene.exits.find(e => e.id === 'name');
+
+test('the hero is fixed: the shipped first scene asks no name and no 男 · 女; a new save is 沈小满, a boy; the lint refuses a value that asks a gender', () => {
+  const s = newState(shipped, 'zh', NOW);
+  assert.deepEqual([s.name, s.gender], ['沈小满', 'male']);
+  const l = look(s, shipped, ctx);
+  assert.ok(!l.stage.some(c => c.card === 'value'), 'no name card');
+  assert.ok(!l.scene.exits.some(e => e.value), 'no exit asks a value');
+  assert.deepEqual(l.scene.buttons.map(b => b.id), ['begin']);
+  const bad = structuredClone(content);
+  bad.chapters['00-prologue'].scenes['00-shiao'].exits[0].value.gender = true;
+  assert.match(lint(bad).join('\n'), /the hero's gender is fixed/);
+});
+
+test('an old save named on the card loads as 沈小满, a boy — on the command line too, and a copy is all it touches', () => {
+  const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-hero-'));
+  const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
+  const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
+  fs.writeFileSync(path.join(data, 'state.json'), JSON.stringify({ ...newState(shipped, 'zh', NOW), name: '青玄', gender: 'female', scene: '00-masan', done_scenes: ['00-shiao'] }));
+  const seen = cli('look');
+  assert.equal(seen.scene.id, '00-masan');
+  assert.equal(seen.name, '沈小满');
+  assert.equal(seen.gender, 'male');
+  fs.rmSync(data, { recursive: true, force: true });
+});
 
 test('the opening names from a pool: four drawn per save, the same on a reload, others for another save', () => {
   assert.ok(rule.offers.length >= 12, 'a pool, not three');
@@ -36,7 +62,7 @@ test('the opening names from a pool: four drawn per save, the same on a reload, 
   const en = exitOf(look(waking('en'), content, ctx)).value;
   for (const o of en.offers) assert.equal(rule.offers.find(p => p.zh === o.value).en, o.label, 'in English: the pinyin shown, the name kept in 汉字');
   assert.equal(en.label, 'What your parents call you');
-  assert.equal(one.gender, true, 'the card asks 男 · 女 as well');
+  assert.equal(one.gender, undefined, 'the card asks no 男 · 女');
 });
 
 test('the card stands on the stage; the chat asks nothing and offers no name', () => {
@@ -61,42 +87,11 @@ test('Ling may not name the player: her Resolve of a value exit is refused unles
   assert.equal(pageNames(content, newState(content, 'zh', NOW), { exit: 'endure' }), null, 'any other exit is untouched');
 });
 
-test('the command line: Ling refused and nothing written; the page names, page_did carries the beat, Ling never sees the offers', () => {
-  const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-naming-'));
-  const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
-  const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
-  const state = () => JSON.parse(fs.readFileSync(path.join(data, 'state.json'), 'utf8'));
-  cli('init');
-  const seen = cli('look', '--for=ling');
-  assert.equal(exitOf(seen).value.offers, undefined, 'Ling gets no names to pick from');
-  assert.equal(exitOf(seen).value.max_chars, 8);
-  const before = state();
-  const refused = cli('resolve', '--exit=name', '--value=青玄', '--said=取一个道号', '--for=ling');
-  assert.equal(refused.refused, 'page-names');
-  assert.deepEqual(state(), before, 'a refusal writes nothing');
-  const offered = cli('look').scene.exits.find(e => e.id === 'name').value.offers;
-  const named = cli('resolve', '--exit=name', `--value=${offered[2].value}`, '--gender=male');
-  assert.equal(named.ok, true, JSON.stringify(named));
-  assert.deepEqual(named.named, { field: 'name', value: offered[2].value, gender: 'male' });
-  assert.equal(state().gender, 'male');
-  assert.equal(state().name, offered[2].value);
-  const told = cli('look', `--said=[scene] named ${offered[2].value}`, '--for=ling');
-  const fact = told.page_did.find(d => d.verb === 'resolve');
-  assert.ok(fact, JSON.stringify(told.page_did));
-  assert.match(fact.what, new RegExp(`「${offered[2].value}」 \\(a boy\\) on the page's card`));
-  assert.equal(told.scene.id, '00-masan');
-  assert.equal(told.tell, undefined, 'the book is the stage\'s, never Ling\'s to retell');
-  assert.ok(told.staged.some(x => x.scene === '00-masan'), 'Ling knows what the stage plays');
-  const drawn = cli('tell');
-  assert.match(drawn.tell.at(-1).text, /收租的，是马三。/, 'the next beat\'s passage, drawn by the page for the dialogue box');
-  fs.rmSync(data, { recursive: true, force: true });
-});
-
 /* The page's own drawing of the card (cards.js value), zh and en. */
 const pageCtx = (l, extra = {}) => ({ look: l, lang: l.lang, words: WORDS[l.lang], content: {}, artBase: '../worlds/jiuding/', ...extra });
 const card = { card: 'value', id: 'name' };
 
-test('the 名字 card draws: 男 · 女, the four names as chips, a field for his own, and a confirm shut until both are chosen', () => {
+test('the 名字 card draws: the four names as chips, a field for his own, a confirm shut until one is chosen — and no 男 · 女', () => {
   for (const lang of ['zh', 'en']) {
     const l = look(waking(lang), content, ctx), offers = exitOf(l).value.offers;
     const html = cardHtml(card, pageCtx(l));
@@ -104,18 +99,13 @@ test('the 名字 card draws: 男 · 女, the four names as chips, a field for hi
     assert.equal((html.match(/data-value-pick=/g) ?? []).length, 4, 'four chips');
     for (const o of offers) assert.match(html, new RegExp(`data-value-pick="${o.value}"`));
     assert.doesNotMatch(html, /namechip on/, 'nothing preselected');
+    assert.doesNotMatch(html, /data-gender-pick|genderrow|city-text/, 'no 男 · 女, no city row');
     assert.match(html, /<input type="text" id="value-text" data-value-max="8" maxlength="8"/);
     assert.match(html, /data-value-go="name" disabled>/, 'confirm shut until a name is chosen');
-    assert.match(html, lang === 'zh' ? /爹娘叫你什么[\s\S]*你是[\s\S]*女[\s\S]*男[\s\S]*选一个，或自己写一个。[\s\S]*至多8字/ : /What your parents call you[\s\S]*You are[\s\S]*a girl[\s\S]*a boy[\s\S]*Pick one, or write your own\.[\s\S]*up to 8 characters/);
-    assert.equal((html.match(/data-gender-pick=/g) ?? []).length, 2, '男 · 女');
-    assert.doesNotMatch(html, /namechip on/, 'no gender preselected either');
-    const noGender = cardHtml(card, pageCtx(l, { valuePick: offers[1].value }));
-    assert.match(noGender, new RegExp(`data-value-go="name" disabled>${lang === 'zh' ? '先选男 · 女' : 'Girl or boy first'}<`), 'a name without 男 · 女 stays shut');
-    const picked = cardHtml(card, pageCtx(l, { valuePick: offers[1].value, valueGender: 'female' }));
-    assert.match(picked, /namechip on" data-gender-pick="female" aria-pressed="true"/);
+    const picked = cardHtml(card, pageCtx(l, { valuePick: offers[1].value }));
     assert.match(picked, new RegExp(`namechip on" data-value-pick="${offers[1].value}" aria-pressed="true"`));
     assert.match(picked, new RegExp(`data-value-go="name">${lang === 'zh' ? `就叫「${offers[1].value}」` : `Be called ${offers[1].label}`}<`));
-    const own = cardHtml(card, pageCtx(l, { valuePick: offers[1].value, valueText: 'Alex', valueGender: 'male' }));
+    const own = cardHtml(card, pageCtx(l, { valuePick: offers[1].value, valueText: 'Alex' }));
     assert.doesNotMatch(own, /namechip on" data-value-pick/, 'his own words win over a chip');
     assert.match(own, /value="Alex"[\s\S]*data-value-go="name">/);
     assert.match(cardHtml(card, pageCtx(l, { valueText: '一二三四五六七八九' })), /data-value-go="name" disabled>/, 'too long: shut');

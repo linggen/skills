@@ -8,12 +8,20 @@ export function firstChapter(content) {
   return Object.values(content.chapters).sort((a, b) => a.id.localeCompare(b.id))[0];
 }
 
+/* The hero the world fixes (people.json `hero`, 2026-09-30: 沈小满, a boy) —
+   the save's `name` (its 中文) and `gender`; null in a world that names none. */
+export const heroOf = content => {
+  const h = content?.people?.hero;
+  return h ? { name: h.name?.zh ?? h.name?.en ?? null, gender: h.gender === 'female' ? 'female' : 'male' } : null;
+};
+
 export function newState(content, lang, now) {
   const first = firstChapter(content);
   const at = now.toISOString();
+  const hero = heroOf(content);
   return {
     version: STATE_VERSION, world: content.world.id, lang: lang === 'en' ? 'en' : 'zh',
-    name: null, gender: null, traits: null,
+    name: hero?.name ?? null, gender: hero?.gender ?? null, traits: null,
     tier: content.ladder.tiers[0].id, step: 0, progress: 0, wealth: 0,
     bag: {}, cast: [], wear: {}, duels: {}, arts: [],
     chapter: first.id, scene: first.first_scene, done_scenes: [], ended: [],
@@ -90,15 +98,16 @@ export const itemName = (item, state, lang) => {
   return base && own ? `${base} · ${own}` : base;
 };
 
-/* The player's gender as the name card set it — `female`, `male`, or `none`
-   for a save that never said (the address words then fall back). */
+/* The hero's gender as the save holds it — `female`, `male`, or `none` for a
+   save that never said. Fixed by the world since 2026-09-30 (heroOf). */
 export const genderOf = state => (state?.gender === 'female' || state?.gender === 'male' ? state.gender : 'none');
 
-/* A slot's person for this player — `ban`, the close companion, by gender
-   (people.json `slots`); a person id stands for itself. */
+/* A slot's person — `ban`, the close companion (people.json `slots`: a
+   person id; an older world's {female, male, none} by gender still reads);
+   a person id stands for itself. */
 export function personOf(content, state, who) {
   const slot = content?.people?.slots?.[who];
-  const id = slot ? slot[genderOf(state)] ?? slot.none : who;
+  const id = typeof slot === 'string' ? slot : slot ? slot[genderOf(state)] ?? slot.none : who;
   return content?.people?.people?.find(p => p.id === id) ?? null;
 }
 
@@ -138,13 +147,14 @@ function brightest(content, state, lang) {
 
 export function fill(text, state, content = null) {
   if (text == null) return text;
-  let out = text.replaceAll('{name}', state?.name ?? '');
-  if (!content) return out;
+  if (!content) return text.replaceAll('{name}', state?.name ?? '');
   const bare = text.replace(/\{[^}]*\}/g, ''), lang = /\p{Script=Han}/u.test(bare) ? 'zh' : /[A-Za-z]{2,}/.test(bare) ? 'en' : state?.lang ?? 'zh';
+  // The world's hero by the text's language (沈小满 · Shen Xiaoman); the save's name in a world that fixes none.
+  let out = text.replaceAll('{name}', pick(content.people?.hero?.name, lang) ?? state?.name ?? '');
   const words = {
     '{伴}': pick(personOf(content, state, 'ban')?.name, lang) ?? '',
-    // people.json `address`: {兄姐}, and the companion's unnamed cameos ({伴·阶} …), by gender.
-    ...Object.fromEntries(Object.entries(content.people?.address ?? {}).map(([k, v]) => [`{${k}}`, pick(v?.[genderOf(state)], lang) ?? ''])),
+    // people.json `address`: {兄姐}, and the companion's unnamed cameos ({伴·阶} …) — fixed words; an older world's by gender.
+    ...Object.fromEntries(Object.entries(content.people?.address ?? {}).map(([k, v]) => [`{${k}}`, pick(typeof v?.zh === 'string' ? v : v?.[genderOf(state)], lang) ?? ''])),
     '{灵根}': state?.traits?.length ? pick(content.traits.names[String(state.traits.length)], lang) ?? '' : '',
     '{主亮}': brightest(content, state, lang),
     ...ledgerWords(content, state, lang),
@@ -384,6 +394,7 @@ export function fitWorld(saved, content) {
   const scene = chapter && state.scene != null ? chapter.scenes[alias ?? state.scene] : null;
   const place = state.place != null && Object.values(content.places).some(d => d.places.some(p => p.id === state.place));
   const beasts = new Set(content.creatures.creatures.map(c => c.id));
+  const hero = heroOf(content);
   const fix = {
     ...(!tier ? { tier: content.ladder.tiers[0].id, step: 0, progress: 0 } : {}),
     ...(tier && !(state.step < tier.thresholds.length) ? { step: tier.thresholds.length - 1 } : {}),
@@ -399,6 +410,9 @@ export function fitWorld(saved, content) {
     // A companion found before she could sleep (the bell at 结丹, before
     // prologue-v3) is awake: `awake` is what the engine's presence reads.
     ...(state.companion?.joined && !state.companion.asleep && !state.companion.awake ? { companion: { ...state.companion, awake: true } } : {}),
+    // The hero is fixed (2026-09-30): a save named on the old name card, or
+    // never named, takes the world's — 沈小满, a boy.
+    ...(hero && (state.name !== hero.name || state.gender !== hero.gender) ? { name: hero.name, gender: hero.gender } : {}),
   };
   // Before a story gate, nothing the gate keeps (lockReset): read where the save now stands.
   Object.assign(fix, lockReset(content, { ...state, ...fix }));

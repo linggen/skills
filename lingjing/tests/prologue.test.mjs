@@ -176,31 +176,29 @@ test('the command line: the birthday never reaches the log, and page_did tells L
 
 /* ── 男 · 女: the address and the companion ── */
 
-test('{兄姐} follows the name card (师姐 · 师兄); {伴} is 阿禾 for every hero, the other gender', () => {
+test('the hero is fixed (2026-09-30): {兄姐} is 师兄, {伴} is 阿禾, a girl, {name} is 沈小满 in the text\'s language', () => {
   const at = s => look(s, content, ctx());
-  for (const [gender, ban, id, role] of [['female', '阿禾', 'ahe', '邻家少年，比你小一岁；他家也欠马家的租'], ['male', '阿禾', 'ahe', '邻家姑娘，比你小一岁；她家也欠马家的租']]) {
-    const s = walk(start(), [['resolve', { exit: 'name', value: '墨白', gender }], ['resolve', { exit: 'endure' }]], content, NOW);
-    const dawn = at(s).scene;
-    assert.equal(dawn.id, '00-dawn');
-    assert.equal(dawn.people[0].name, ban);
-    assert.equal(dawn.people[0].role, role, `${gender}: 阿禾 is the other gender`);
-    assert.match(tellOf(content, s).tell.at(-1).text, new RegExp(`隔壁的${ban}`));
-    const egg = resolve(s, content, ctx(), { exit: 'egg' });
-    assert.deepEqual(egg.result.ledger.map(e => [e.who, e.kind]), [[id, '恩']]);
-    assert.match(tellOf(content, egg.state).tell.find(t => t.id === '00-dawn/egg').text, new RegExp(`\\*\\*${ban}\\*\\*：那记账。`));
+  const s = walk(start(), [['resolve', { exit: 'begin' }], ['resolve', { exit: 'endure' }]], content, NOW);
+  const dawn = at(s).scene;
+  assert.equal(dawn.id, '00-dawn');
+  assert.equal(dawn.people[0].name, '阿禾');
+  assert.equal(dawn.people[0].role, '邻家姑娘，比你小一岁；她家也欠马家的租');
+  assert.match(tellOf(content, s).tell.at(-1).text, /隔壁的阿禾/);
+  const egg = resolve(s, content, ctx(), { exit: 'egg' });
+  assert.deepEqual(egg.result.ledger.map(e => [e.who, e.kind]), [['ahe', '恩']]);
+  assert.match(tellOf(content, egg.state).tell.find(t => t.id === '00-dawn/egg').text, /\*\*阿禾\*\*：那记账。/);
+  // an old save named on the card, or never named: the same words
+  for (const old of [{ ...start(), name: '墨白', gender: 'female' }, { ...start(), name: null, gender: null }]) {
+    assert.equal(fill('从此观里的人叫你「{name}{兄姐}」。是{伴}。', old, content), '从此观里的人叫你「沈小满师兄」。是阿禾。');
+    assert.equal(fill('The temple calls you {兄姐} {name}.', { ...old, lang: 'en' }, content), 'The temple calls you Brother Shen Xiaoman.');
   }
-  // never said (a name typed in the chat, an old save): no address, and 阿禾 walks along
-  const none = { ...start(), name: '墨白', gender: null };
-  assert.equal(fill('从此观里的人叫你「{name}{兄姐}」。是{伴}。', none, content), '从此观里的人叫你「墨白」。是阿禾。');
-  assert.equal(fill('The temple calls you {兄姐} {name}.', { ...none, lang: 'en' }, content), 'The temple calls you 墨白.');
-  assert.equal(fill('The temple calls you {兄姐} {name}.', { ...none, lang: 'en', gender: 'male' }, content), 'The temple calls you Brother 墨白.');
-  assert.equal(fill('{name}', none), '墨白', 'without the world only {name} is filled');
+  assert.equal(fill('{name}', { name: '墨白' }), '墨白', 'without the world only the save\'s {name} is filled');
 });
 
 /* ── The people ── */
 
 test('people speak as themselves: a line names them, Look carries their voice for Ling and the portrait for the page', () => {
-  const s = walk(start(), [['resolve', { exit: 'name', value: '墨白', gender: 'male' }]], content, NOW);
+  const s = walk(start(), [['resolve', { exit: 'begin' }]], content, NOW);
   const l = look(s, content, ctx());
   assert.deepEqual(l.scene.people.map(p => p.id), ['masan', 'maxiaobao', 'baba']);
   assert.equal(l.scene.people[0].name, '马三');
@@ -224,18 +222,20 @@ test('people speak as themselves: a line names them, Look carries their voice fo
   for (const p of content.people.people) assert.ok(fs.existsSync(path.join(content.dir, p.art)), p.art);
 });
 
-test('the lint holds people.json: a home, a portrait, a voice, and a slot for every gender', () => {
+test('the lint holds people.json: a home, a portrait, a voice, a slot that names a person, the fixed hero', () => {
   const bad = structuredClone(content);
   bad.people.people[0].home = 'atlantis';
   bad.people.people[1].art = 'art/people/nobody.webp';
   delete bad.people.people[2].voice;
-  bad.people.slots.ban.male = 'nobody';
+  bad.people.slots.ban = 'nobody';
+  bad.people.hero.gender = 'robot';
   bad.chapters['00-prologue'].scenes['00-shiao'].lines = [{ who: 'stranger', text: { zh: '……', en: '…' } }];
   const errors = lint(bad).join('\n');
   assert.match(errors, /person dushu: home atlantis is not a place/);
   assert.match(errors, /person ahe: art art\/people\/nobody\.webp is missing/);
   assert.match(errors, /person qulao: voice needs zh and en/);
-  assert.match(errors, /slot ban: male names no person/);
+  assert.match(errors, /slot ban: nobody is no person/);
+  assert.match(errors, /hero: needs a name in zh and en and a gender/);
   assert.match(errors, /scene 00-shiao: unknown speaker stranger/);
   assert.deepEqual(lint(content), []);
 });
@@ -301,12 +301,13 @@ test('an old save whose prologue scene the rewrite took away lands on the neares
   const m = migrate(his, content);
   assert.equal(m.scene, '00-shiao');
   assert.deepEqual(m.traits, his.traits, 'his roots are kept');
-  assert.equal(m.name, '青玄', 'and his name, until the card asks it again');
+  assert.equal(m.name, '沈小满', 'and the hero is the book\'s now (fixed, 2026-09-30) — his card name gives way');
+  assert.equal(m.gender, 'male');
   assert.deepEqual(m.tasks, {}, 'the old practice, never done, is let go');
   const l = look(m, content, ctx());
   assert.equal(l.scene.id, '00-shiao');
   assert.equal(l.place.id, 'shiao');
-  assert.ok(l.stage.some(c => c.card === 'value'), 'the name card, with 男 · 女 this time');
+  assert.ok(!l.stage.some(c => c.card === 'value'), 'no name card: the hero is fixed');
   for (const [old, now] of [['00-waking', '00-shiao'], ['00-stone', '00-shiao'], ['00-river', '00-shiao'], ['00-ferry', '00-shiao'], ['00-boat', '00-shiao'], ['00-shanlu', '00-shiao'],
     ['00-gate', '00-shiao'], ['00-hall', '00-shiao'], ['00-waimen', '00-shiao'], ['00-fuzhu', '00-mijing'], ['00-north', '00-mijing'], ['nowhere', '00-shiao']]) {
     assert.equal(migrate({ ...his, scene: old }, content).scene, now, old);
@@ -318,7 +319,7 @@ test('an old save whose prologue scene the rewrite took away lands on the neares
   assert.equal(migrate(v3, content).scene, '00-waimen', 'a v3 save stays where it is');
   assert.equal(migrate({ ...start(), scene: '00-gate' }, content).scene, '00-gate', 'a Go to a kept scene stays');
   // walked on from there as the ordinary way: the root test later keeps his roots
-  const s = walk(m, [...TO_HALL.map(([v, a]) => [v, a.exit === 'name' ? { ...a, value: '青玄', gender: 'male' } : a]), ['resolve', { exit: 'born' }]], content, NOW);
+  const s = walk(m, [...TO_HALL, ['resolve', { exit: 'born' }]], content, NOW);
   assert.equal(s.scene, '00-waimen');
   assert.deepEqual(s.traits, his.traits);
   // the command line reads it the same (a copy on disk, never his)
@@ -350,21 +351,21 @@ test('the catchphrase rides the book\'s beats: the bowl night first, the bow, th
 
 /* ── The companion in the trials, half-recognised and never named ── */
 
-test('the companion\'s cameos: 阿禾, the other gender — braids beside a boy, a tuft of hair beside a girl; the red nose and notebook always — never a name', () => {
+test('the companion\'s cameos: 阿禾, a girl — braids, the red nose and notebook — never a name; an old save named a girl reads the same', () => {
   const scenes = content.chapters['00-prologue'].scenes;
-  const texts = s => [scenes['00-gate'].exits.find(e => e.id === 'steady').story, scenes['00-gate'].exits.find(e => e.id === 'rush').story, scenes['00-luoshu'].exits[0].story, scenes['00-hall'].story];
-  for (const [gender, marks, other] of [['male', /小辫子|红鼻头|小本子/, /翘|小子|大包袱|结巴|红脸蛋/], ['none', /小辫子|红鼻头|小本子/, /翘|小子|大包袱|结巴|红脸蛋/], ['female', /翘|红鼻头|小本子/, /小辫子|姑娘|她|大包袱|结巴|红脸蛋/]]) {
+  const texts = () => [scenes['00-gate'].exits.find(e => e.id === 'steady').story, scenes['00-gate'].exits.find(e => e.id === 'rush').story, scenes['00-luoshu'].exits[0].story, scenes['00-hall'].story];
+  for (const gender of ['male', 'none', 'female']) {
     const s = { ...start(), name: '墨白', gender };
     for (const t of texts()) {
       for (const lang of ['zh', 'en']) {
         const out = fill(t[lang], { ...s, lang }, content);
         assert.doesNotMatch(out, /\{伴|阿禾|「石头|石头（|Ahe|Shitou/, `${gender} ${lang}: filled, never named`);
       }
-      assert.match(fill(t.zh, s, content), marks, gender);
-      assert.doesNotMatch(fill(t.zh, s, content), other, gender);
+      assert.match(fill(t.zh, s, content), /小辫子|红鼻头|小本子/, gender);
+      assert.doesNotMatch(fill(t.zh, s, content), /翘|小子|大包袱|结巴|红脸蛋/, gender);
     }
     const hallText = fill(scenes['00-hall'].story.zh, s, content);
-    assert.match(hallText, gender === 'female' ? /红鼻头。翘头发。小本子。\n\n你心里咯噔一下——不会吧？/ : /红鼻头。小辫子。小本子。\n\n你心里咯噔一下——不会吧？/);
+    assert.match(hallText, /红鼻头。小辫子。小本子。\n\n你心里咯噔一下——不会吧？/);
     assert.match(hallText, /（念）木、水、土，三灵根。真灵根。中上之资。[\s\S]*一定是看错了。\n\n轮到你了。/);
   }
 });

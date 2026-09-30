@@ -7,7 +7,7 @@ import { esc } from './esc.js';
 import { bookEntries, entryById, fillHero, heroOf, renderMarkdown } from './read-md.js';
 import { playMarks, wireMarks } from './marks.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
-import { content, verb, worldPath } from './rules.js';
+import { content, worldPath } from './rules.js';
 
 const WORDS = {
   zh: { back: '← 回到灵境', toc: '目录', prev: '←', next: '→', none: '书还没有写。', failed: '这一回没能打开。', only: '这一回只有中文。' },
@@ -57,15 +57,15 @@ async function main() {
   $('toc').setAttribute('aria-label', w.toc);
   $('toc').innerHTML = `<div class="toch">${esc(w.toc)}</div>` + tocHtml(all, at, bookId);
   $('toc').querySelector('a.on')?.scrollIntoView({ block: 'nearest' });
-  // The player's name from the save (Look), asked beside the chapter; no save,
-  // a failed or slow look reads with the drafts' hero — never blocks the book.
-  const hero = Promise.race([verb('look'), new Promise((_, no) => setTimeout(no, 3000))]).then(heroOf, () => heroOf(null));
   // 图鉴 (codex.json and the files it links): the cards and figures in the
   // text — the same entries the game draws. None reads the words alone.
   const world = `worlds/${book.world ?? 'jiuding'}`;
   worldDir = world;
   const files = Promise.all(['codex', 'people', 'creatures', 'items', 'arts'].map((f) => content(world, `${f}.json`).catch(() => null)))
     .then(([codex, people, creatures, items, arts]) => ({ codex, people, creatures, items, arts }));
+  // The hero is the world's, fixed (people.json `hero`, 2026-09-30: 沈小满, a
+  // boy) — the 回 not yet in the third person fill {name} and {他|她} with him.
+  const hero = files.then((f) => heroOf(f.people?.hero ? { name: f.people.hero.name?.zh, gender: f.people.hero.gender } : null));
   // 银月's memories (`::: 忆 n`): the colour plates, from memories.json.
   const memories = content(world, 'memories.json').then((m) => m?.memories ?? [], () => []);
   // 附 · 本回典籍: the classics the book names (`《书名》{典=id}`), one file per book; none reads plain.

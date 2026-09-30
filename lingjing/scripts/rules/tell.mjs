@@ -148,7 +148,8 @@ function spokenOf(content, state, para, sid) {
 }
 
 function speakerOf(content, state, name, sid) {
-  if (HERO.has(name)) return { hero: true, name: state.name || name };
+  // The hero is the world's (people.json `hero`: 沈小满 · Shen Xiaoman), else the save's name.
+  if (HERO.has(name)) return { hero: true, name: pick(content.people?.hero?.name, state.lang) || state.name || name };
   const her = companionOf(content);
   const herNames = new Set([her?.name, ...Object.values(her?.forms ?? {}).map(f => f.name)].flatMap(n => (n ? [n.zh, n.en] : [])));
   if (her && herNames.has(name)) {

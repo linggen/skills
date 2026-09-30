@@ -20,7 +20,7 @@ const content = loadContent();
 const NOW = new Date('2026-09-28T12:00:00');
 const ctx = { now: NOW, quests: [] };
 const one = (beats, scene = 's') => withTold(null, [{ of: 'scene', id: 'x', beats }], scene);
-const named = (lang = 'zh', gender = 'male') => walk(newState(content, lang, NOW), [['resolve', { exit: 'name', value: '墨白', gender }]], content, NOW);
+const named = (lang = 'zh') => walk(newState(content, lang, NOW), [['resolve', { exit: 'begin' }]], content, NOW);
 
 test('a paragraph `**名**：话` is a line spoken — its name and portrait; any other is narration, no face', () => {
   const s = named();
@@ -37,16 +37,17 @@ test('a paragraph `**名**：话` is a line spoken — its name and portrait; an
   assert.deepEqual(beatsOf(content, s, { of: 'scene', id: '00-gate', text: '**扫地的老头**：沉鼎。' })[0], { name: '扫地的老头', text: '沉鼎。' });
 });
 
-test('the hero speaks under the player\'s 名字 and is never drawn; 阿禾 by the hero\'s gender', () => {
-  const [you, ahe] = beatsOf(content, named('zh', 'male'), { of: 'scene', id: '00-dawn', text: '**你**：嗯。\n\n**阿禾**：你别死在里头啊。' });
-  assert.deepEqual(you, { hero: true, name: '墨白', text: '嗯。' });
-  assert.equal(ahe.art, 'art/people/ahe-girl.webp', 'beside a boy, a girl');
-  assert.equal(beatsOf(content, named('zh', 'female'), { of: 'scene', id: '00-dawn', text: '**阿禾**：嗯。' })[0].art, 'art/people/ahe-boy.webp');
+test('the hero speaks as 沈小满 (Shen Xiaoman in English) and is never drawn; 阿禾 is the girl (fixed, 2026-09-30)', () => {
+  const [you, ahe] = beatsOf(content, named('zh'), { of: 'scene', id: '00-dawn', text: '**你**：嗯。\n\n**阿禾**：你别死在里头啊。' });
+  assert.deepEqual(you, { hero: true, name: '沈小满', text: '嗯。' });
+  assert.equal(ahe.art, 'art/people/ahe-girl.webp');
+  // an old save named on the card speaks as him too
+  assert.equal(beatsOf(content, { ...named('zh'), name: '墨白', gender: 'female' }, { of: 'scene', id: '00-dawn', text: '**阿禾**：嗯。' })[0].art, 'art/people/ahe-girl.webp');
   const en = beatsOf(content, named('en'), { of: 'scene', id: '00-dawn', text: '**You:** Mm.' })[0];
-  assert.deepEqual(en, { hero: true, name: '墨白', text: 'Mm.' });
+  assert.deepEqual(en, { hero: true, name: 'Shen Xiaoman', text: 'Mm.' });
   const html = dialogHtml(one([you]));
   assert.doesNotMatch(html, /<img/, 'no portrait for the hero');
-  assert.match(html, /class="dlgname hero">墨白</);
+  assert.match(html, /class="dlgname hero">沈小满</);
 });
 
 test('银月\'s lines carry her face in the form her scene names: the fox in the valley', () => {

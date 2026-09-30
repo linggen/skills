@@ -61,7 +61,7 @@ export const WORDS = {
     building: '灵境绘制中', buildingLine: '还有 {n} 幅画未成，画完即可游历。',
     bt: { title: '渡劫 · {to}', chance: '把握', base: '{to}之关', pillOff: '未带{name}', body: '身无伤势', hurt: '带伤 · 体力不足一半', seclusion: '{h} 小时内出关', seclusionOff: '{h} 小时内未闭关', her: '{name}相伴', herGifts: '{name}相伴 · 鼎赐 {n}', match: '灵根合{el}', feeds: '灵根生{el}', none: '灵根与{el}无缘', bounds: '至少 {floor}%，至多 {cap}%', risk: '失手：体力 −{st} · 修为 −{xw} · {h} 小时后再试。境界与所藏不失。', go: '渡 劫', cooling: '雷劫余威未散 · {at} 后再试', failed: '雷劫未过：体力 −{st} · 修为 −{xw}。{at} 后再试。', low: '逆天而成' },
     valueHint: '选一个，或自己写一个。', valueOwn: '自己写一个 · 至多{n}字', valueGo: '就叫这个', valueGoAs: '就叫「{v}」',
-    gender: '你是', genders: { female: '女', male: '男' }, genderFirst: '先选男 · 女',
+
     bornHint: '只填年月日。只在本机推算灵根：不入存档，不入对话。不填也可，石头自己会看。', bornGo: '测灵根', bornSkip: '不填 · 让石头自己看', bornBad: '这一天不在历中，再看看。',
     peopleTitle: '在场', appearSkip: '继续',
     ledgerChip: '恩仇簿', ledgerTitle: '恩仇簿', ledgerNote: '恩也记，仇也记——打得过那天，一笔一笔地还。', ledgerNone: '簿上还是空的。', ledgerKinds: { 恩: '恩', 仇: '仇', 诺: '诺' }, ledgerSaidTo: '你对{who}说', ledgerKept: '已践', ledgerBroken: '负诺', readChip: '书', readTitle: '读这本书',
@@ -118,7 +118,7 @@ export const WORDS = {
     building: 'Painting the world', buildingLine: '{n} to paint — the world opens when the last is done.',
     bt: { title: 'Tribulation · {to}', chance: 'chance', base: 'The gate of {to}', pillOff: 'No {name}', body: 'Unhurt', hurt: 'Hurt · stamina under half', seclusion: 'Out of seclusion within {h} h', seclusionOff: 'No seclusion within {h} h', her: '{name} beside you', herGifts: '{name} beside you · {n} gifts', match: 'Roots match {el}', feeds: 'Roots feed {el}', none: 'Roots do not touch {el}', bounds: 'At least {floor}%, at most {cap}%', risk: 'If it fails: Stamina −{st} · cultivation −{xw} · again in {h} h. The realm and what you hold are kept.', go: 'Face the lightning', cooling: 'The lightning still runs in you · again after {at}', failed: 'The tribulation threw you back: Stamina −{st} · cultivation −{xw}. Again after {at}.', low: 'Against the odds' },
     valueHint: 'Pick one, or write your own.', valueOwn: 'Your own · up to {n} characters', valueGo: 'Take this name', valueGoAs: 'Be called {v}',
-    gender: 'You are', genders: { female: 'a girl', male: 'a boy' }, genderFirst: 'Girl or boy first',
+
     bornHint: 'Year, month and day only. Read on this machine for the roots — never saved, never said in the chat. Or leave it: the stone will look for itself.', bornGo: 'Test my roots', bornSkip: 'Leave it · let the stone look', bornBad: 'That day is not in the calendar — look again.',
     peopleTitle: 'Here', appearSkip: 'Go on',
     ledgerChip: 'Ledger', ledgerTitle: 'The ledger of debts', ledgerNote: 'Kindness written, wrongs written — paid back one by one, the day you can.', ledgerNone: 'Nothing written yet.', ledgerKinds: { 恩: 'owed', 仇: 'wronged', 诺: 'vow' }, ledgerSaidTo: 'you said to {who}', ledgerKept: 'kept', ledgerBroken: 'broken', readChip: 'Book', readTitle: 'Read the book',
@@ -130,7 +130,6 @@ export const WORDS = {
 };
 
 export { esc } from './esc.js';
-import { cityRowHtml } from './sky.js';
 import { esc } from './esc.js';
 import { codexCompactHtml, codexHtml } from './codex.js';
 import { choicesUp, logLinkHtml } from './dialogue.js';
@@ -1106,7 +1105,8 @@ function building(card, ctx) {
 /// keeps the confirm button shut — nothing is ever preselected.
 export const valueChoice = (picked, text, max) => fitValue(text, max) ?? (picked ? fitValue(picked, max) : null);
 
-/// 名字 — a scene exit with `value` (and, asked, 男 · 女), named here and never by Ling (his,
+/// A name given — a scene exit with `value` (the 名字 until the hero was fixed, 2026-09-30;
+/// no 男 · 女 since), named here and never by Ling (his,
 /// 2026-09-28: 给用户一个card with some options, 用户可以选择或者输入一个自定义
 /// 的, 不要默认给青玄). The offered names are Look's draw for this save; the
 /// player taps one or writes their own, and 就叫这个 is the page's Resolve.
@@ -1117,10 +1117,6 @@ function value(card, ctx) {
   const w = ctx.words, max = v.max_chars, text = ctx.valueText ?? '';
   const picked = text.trim() ? null : ctx.valuePick ?? null;
   const chosen = valueChoice(picked, text, max);
-  // 男 · 女, when the exit asks it (prologue-v1: the address and the companion
-  // follow it; the spine does not). Nothing preselected: the confirm waits for both.
-  const gender = v.gender ? ctx.valueGender ?? null : 'none';
-  const genders = v.gender ? `<div class="acts genderrow"><span class="lbl">${esc(w.gender)}</span>${['female', 'male'].map((g) => `<button class="act namechip${gender === g ? ' on' : ''}" data-gender-pick="${g}" aria-pressed="${gender === g}">${esc(w.genders[g])}</button>`).join('')}</div>` : '';
   const chips = (v.offers ?? []).map((o) => {
     const on = o.value === picked;
     const both = o.label !== o.value ? ` <span class="dim">${esc(o.value)}</span>` : '';
@@ -1128,14 +1124,12 @@ function value(card, ctx) {
   }).join('');
   // An offered name is said as it is shown (Qingxuan in English); the rules keep its 汉字.
   const shown = chosen && chosen === picked ? (v.offers ?? []).find((o) => o.value === picked)?.label ?? chosen : chosen;
-  const go = !gender && shown ? w.genderFirst : shown ? say(w.valueGoAs, { v: shown }) : w.valueGo;
-  return `<div class="card valuecard"${v.gender ? ' data-value-gender="1"' : ''}><div class="cardtitle">${esc(v.label ?? w.valueGo)}</div>
-    ${genders}
+  const go = shown ? say(w.valueGoAs, { v: shown }) : w.valueGo;
+  return `<div class="card valuecard"><div class="cardtitle">${esc(v.label ?? w.valueGo)}</div>
     <div class="small dim">${esc(w.valueHint)}</div>
     <div class="acts">${chips}</div>
     <div class="fateform"><input type="text" id="value-text" data-value-max="${esc(max)}" maxlength="${esc(max)}" autocomplete="off" placeholder="${esc(say(w.valueOwn, { n: max }))}" value="${esc(text)}">
-      <button class="act" data-value-go="${esc(card.id)}"${chosen && gender ? '' : ' disabled'}>${esc(go)}</button></div>
-    ${v.gender ? cityRowHtml(ctx.lang) : ''}
+      <button class="act" data-value-go="${esc(card.id)}"${chosen ? '' : ' disabled'}>${esc(go)}</button></div>
     ${ctx.valueNote ? `<div class="donote">${esc(ctx.valueNote)}</div>` : ''}</div>`;
 }
 

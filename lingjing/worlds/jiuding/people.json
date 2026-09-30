@@ -1,77 +1,30 @@
 {
   "version": 1,
   "_about": "The standing people of the world (story-outline.md § 人物): each a name, what they are, the voice they speak in, where they live and their portrait. A scene line `who: <id>` speaks as them — the page draws the name and the portrait, Look hands Ling the voice. Ling writes their live lines in that voice and never another's. Portraits are original, painted with the local FLUX recipe (art/people/).",
-  "_slots": "A line's `who` may name a slot instead of a person: the rules fill it from the save. `ban` is the close companion — 阿禾, the neighbour's child of 石坳村 (prologue-v3), for every hero: always the other gender (a girl beside a boy, a boy beside a girl), the name neutral on purpose (2026-09-29). Every gender names ahe.",
-  "slots": {
-    "ban": { "female": "ahe", "male": "ahe", "none": "ahe" }
+  "_hero": "The hero is fixed (Hanli, 2026-09-30; story DESIGN § 四): 沈小满, a boy — no name card, no gender pick. The rules fill {name} from here in the scene's language; a save's own name/gender is replaced on load (state.mjs fitWorld).",
+  "hero": {
+    "name": { "zh": "沈小满", "en": "Shen Xiaoman" },
+    "gender": "male"
   },
-  "_address": "Words the rules fill into scene text by the player's gender: {兄姐} how the temple addresses them, {伴} the companion's name; {伴·孩} and {伴·她} what 阿禾 is (the other gender: 姑娘/她 beside a boy or an unsaid save, 少年/他 beside a girl); and the companion's unnamed cameos in the trials ({伴·阶} the steps, {伴·洛书} the 洛书, {伴·殿} the hall — the book's 阿禾, half-recognised, building to chapter 1's reveal: the red nose and the little notebook always; the braids for a girl 阿禾, a tuft of hair sticking up for a boy). Never name the companion in a cameo. `none` when the save never said.",
+  "_slots": "A line's `who` may name a slot instead of a person: the rules fill it from the save. `ban` is the close companion — 阿禾 (周禾), the neighbour's girl of 石坳村, fixed since 2026-09-30 (she was the hero's other gender before).",
+  "slots": {
+    "ban": "ahe"
+  },
+  "_address": "Words the rules fill into scene text: {兄姐} how the temple addresses him, {伴} the companion's name, {伴·孩}/{伴·她} what 阿禾 is, and the companion's unnamed cameos in the trials ({伴·阶} the steps, {伴·洛书} the 洛书, {伴·殿} the hall — the red nose, the little notebook, the braids; never named in a cameo). Fixed words since the hero is fixed (2026-09-30); they were keyed by the player's gender before.",
   "address": {
-    "兄姐": {
-      "female": { "zh": "师姐", "en": "Sister" },
-      "male": { "zh": "师兄", "en": "Brother" },
-      "none": { "zh": "", "en": "" }
-    },
-    "伴·孩": {
-      "female": { "zh": "少年", "en": "boy" },
-      "male": { "zh": "姑娘", "en": "girl" },
-      "none": { "zh": "姑娘", "en": "girl" }
-    },
-    "伴·她": {
-      "female": { "zh": "他", "en": "his" },
-      "male": { "zh": "她", "en": "her" },
-      "none": { "zh": "她", "en": "her" }
-    },
-    "伴·阶": {
-      "female": {"zh": "你从一个头上翘着一撮头发的小子身边走过去——不对，是他从你身边冲过去。他没坐下，也没哭，鼻头冻得通红，像一根萝卜，咬着牙，一口气往上冲。\n\n那个背影……有点眼熟。\n\n你想多看两眼，他已经冲上去了，只剩那撮翘起来的头发，一晃，就没了。", "en": "You pass a boy with a tuft of hair sticking up — no: he passes you, charging. He doesn't sit, doesn't cry; his nose is frozen red as a radish, and he grits his teeth and takes the steps in one breath.\n\nThat back… looks familiar.\n\nYou want a second look, but he's already gone up — that tuft of hair, a flick, and nothing."},
-      "male": {"zh": "你从一个扎两根小辫子的姑娘身边走过去——不对，是她从你身边冲过去。她没坐下，也没哭，鼻头冻得通红，像一根萝卜，咬着牙，一口气往上冲。\n\n那个背影……有点眼熟。\n\n你想多看两眼，她已经冲上去了，只剩一截小辫子，一晃，就没了。", "en": "You pass a girl with two little braids — no: she passes you, charging. She doesn't sit, doesn't cry; her nose is frozen red as a radish, and she grits her teeth and takes the steps in one breath.\n\nThat back… looks familiar.\n\nYou want a second look, but she's already gone up — the end of a braid, a flick, and nothing."},
-      "none": {"zh": "你从一个扎两根小辫子的姑娘身边走过去——不对，是她从你身边冲过去。她没坐下，也没哭，鼻头冻得通红，像一根萝卜，咬着牙，一口气往上冲。\n\n那个背影……有点眼熟。\n\n你想多看两眼，她已经冲上去了，只剩一截小辫子，一晃，就没了。", "en": "You pass a girl with two little braids — no: she passes you, charging. She doesn't sit, doesn't cry; her nose is frozen red as a radish, and she grits her teeth and takes the steps in one breath.\n\nThat back… looks familiar.\n\nYou want a second look, but she's already gone up — the end of a braid, a flick, and nothing."}
-    },
-    "伴·洛书": {
-      "female": {"zh": "石壁那一头，另一面石壁前，早有人摆好了。一个红鼻头的小子，正拿一根炭条，在一个小本子上低头记着什么。\n\n小本子。\n\n你愣了一下。这年头，谁出门还带个本子记账？\n\n你还没想明白，人群一挤，他就不见了。", "en": "At the far end, before another stone wall, someone has already finished. A red-nosed boy, head down, is writing something in a little notebook with a stick of charcoal.\n\nA little notebook.\n\nYou stop short. Who goes out these days carrying a notebook to keep accounts in?\n\nBefore you can work it out, the crowd shifts, and he's gone."},
-      "male": {"zh": "石壁那一头，另一面石壁前，早有人摆好了。一个红鼻头的姑娘，正拿一根炭条，在一个小本子上低头记着什么。\n\n小本子。\n\n你愣了一下。这年头，谁出门还带个本子记账？\n\n你还没想明白，人群一挤，她就不见了。", "en": "At the far end, before another stone wall, someone has already finished. A red-nosed girl, head down, is writing something in a little notebook with a stick of charcoal.\n\nA little notebook.\n\nYou stop short. Who goes out these days carrying a notebook to keep accounts in?\n\nBefore you can work it out, the crowd shifts, and she's gone."},
-      "none": {"zh": "石壁那一头，另一面石壁前，早有人摆好了。一个红鼻头的姑娘，正拿一根炭条，在一个小本子上低头记着什么。\n\n小本子。\n\n你愣了一下。这年头，谁出门还带个本子记账？\n\n你还没想明白，人群一挤，她就不见了。", "en": "At the far end, before another stone wall, someone has already finished. A red-nosed girl, head down, is writing something in a little notebook with a stick of charcoal.\n\nA little notebook.\n\nYou stop short. Who goes out these days carrying a notebook to keep accounts in?\n\nBefore you can work it out, the crowd shifts, and she's gone."}
-    },
-    "伴·殿": {
-      "female": {"zh": "排在你前面第三个的，是一个头上翘着一撮头发的小子。他把手放上去，测灵石亮起三种颜色——青、黑、黄，亮得刺眼。\n\n**执事**：（念）木、水、土，三灵根。真灵根。中上之资。\n\n殿里一阵惊叹。你踮起脚想看看是谁，人太多，只看见那撮翘起来的头发，一晃，就被人群挡住了。\n\n红鼻头。翘头发。小本子。\n\n你心里咯噔一下——不会吧？\n\n可石坳村的小子，怎么会跑到这儿来？他娘连村口都不让他出。\n\n你摇摇头，一定是看错了。", "en": "Third in line ahead of you is a boy with a tuft of hair sticking up. He lays his hand on the stone, and it lights three colours — green, black, yellow — bright enough to sting.\n\n**Steward:** (reading out) Wood, Water, Earth — three roots. A true root. Above the middle.\n\nA murmur of wonder goes round the hall. You go up on your toes to see who it is, but there are too many people — just that tuft of hair, a flick, and the crowd closes over it.\n\nA red nose. That tuft of hair. A little notebook.\n\nSomething in you lurches — surely not?\n\nBut how would a boy from Shi'ao Village end up here? His mother won't even let him past the village gate.\n\nYou shake your head. You must have seen wrong."},
-      "male": {"zh": "排在你前面第三个的，是一个扎两根小辫子的姑娘。她把手放上去，测灵石亮起三种颜色——青、黑、黄，亮得刺眼。\n\n**执事**：（念）木、水、土，三灵根。真灵根。中上之资。\n\n殿里一阵惊叹。你踮起脚想看看是谁，人太多，只看见一截小辫子，一晃，就被人群挡住了。\n\n红鼻头。小辫子。小本子。\n\n你心里咯噔一下——不会吧？\n\n可石坳村的姑娘，怎么会跑到这儿来？她娘连村口都不让她出。\n\n你摇摇头，一定是看错了。", "en": "Third in line ahead of you is a girl with two little braids. She lays her hand on the stone, and it lights three colours — green, black, yellow — bright enough to sting.\n\n**Steward:** (reading out) Wood, Water, Earth — three roots. A true root. Above the middle.\n\nA murmur of wonder goes round the hall. You go up on your toes to see who it is, but there are too many people — just the end of a braid, a flick, and the crowd closes over it.\n\nA red nose. Little braids. A little notebook.\n\nSomething in you lurches — surely not?\n\nBut how would a girl from Shi'ao Village end up here? Her mother won't even let her past the village gate.\n\nYou shake your head. You must have seen wrong."},
-      "none": {"zh": "排在你前面第三个的，是一个扎两根小辫子的姑娘。她把手放上去，测灵石亮起三种颜色——青、黑、黄，亮得刺眼。\n\n**执事**：（念）木、水、土，三灵根。真灵根。中上之资。\n\n殿里一阵惊叹。你踮起脚想看看是谁，人太多，只看见一截小辫子，一晃，就被人群挡住了。\n\n红鼻头。小辫子。小本子。\n\n你心里咯噔一下——不会吧？\n\n可石坳村的姑娘，怎么会跑到这儿来？她娘连村口都不让她出。\n\n你摇摇头，一定是看错了。", "en": "Third in line ahead of you is a girl with two little braids. She lays her hand on the stone, and it lights three colours — green, black, yellow — bright enough to sting.\n\n**Steward:** (reading out) Wood, Water, Earth — three roots. A true root. Above the middle.\n\nA murmur of wonder goes round the hall. You go up on your toes to see who it is, but there are too many people — just the end of a braid, a flick, and the crowd closes over it.\n\nA red nose. Little braids. A little notebook.\n\nSomething in you lurches — surely not?\n\nBut how would a girl from Shi'ao Village end up here? Her mother won't even let her past the village gate.\n\nYou shake your head. You must have seen wrong."}
-    },
-    "弟妹": {
-      "female": {"zh": "师妹", "en": "Sister"},
-      "male": {"zh": "师弟", "en": "Brother"},
-      "none": {"zh": "师弟", "en": "Brother"}
-    },
-    "此子": {
-      "female": {"zh": "此女", "en": "this girl"},
-      "male": {"zh": "此子", "en": "this boy"},
-      "none": {"zh": "此子", "en": "this boy"}
-    },
-    "他她": {
-      "female": {"zh": "她", "en": "she"},
-      "male": {"zh": "他", "en": "he"},
-      "none": {"zh": "他", "en": "he"}
-    },
-    "外门·柴房": {
-      "female": {"zh": "**马小宝**：（上上下下打量你，笑了）打姑娘，传出去不好听。（冲伙房那边一努嘴）让她……洗洗。\n\n两个人架起你，扔进了伙房后面的猪圈。\n\n泥是黑的，没到膝盖，臭得人眼睛疼。\n\n你爬起来。一只脚，把你踹了回去。\n\n你没有还手。你护着胸口那块木牌，又爬起来。\n\n又踹回去。\n\n你数着。一下。两下。十下。二十下。\n\n猪在旁边看着，看得很认真。", "en": "**Ma Xiaobao:** (looking you up and down, and smiling) Beating a girl — sounds bad if it gets out. (jerks his chin toward the kitchen) Let her… have a wash.\n\nTwo of them haul you up and throw you into the pigsty behind the kitchen.\n\nThe mud is black, up to your knees, and stinks enough to sting your eyes.\n\nYou climb out. A foot kicks you back in.\n\nYou don't fight back. You shield the token on your chest and climb out again.\n\nKicked back in again.\n\nYou count. One. Two. Ten. Twenty.\n\nThe pigs watch from the side, very attentively."},
-      "male": {"zh": "你蹲了下去，抱住了头。\n\n拳头和脚，像下雨一样落下来。\n\n你没有还手。你护着胸口那块木牌，缩成一团。\n\n你数着。一下。两下。十下。二十下。", "en": "You crouch down and cover your head.\n\nFists and feet come down like rain.\n\nYou don't fight back. You shield the token on your chest and curl up into a ball.\n\nYou count. One. Two. Ten. Twenty."},
-      "none": {"zh": "你蹲了下去，抱住了头。\n\n拳头和脚，像下雨一样落下来。\n\n你没有还手。你护着胸口那块木牌，缩成一团。\n\n你数着。一下。两下。十下。二十下。", "en": "You crouch down and cover your head.\n\nFists and feet come down like rain.\n\nYou don't fight back. You shield the token on your chest and curl up into a ball.\n\nYou count. One. Two. Ten. Twenty."}
-    },
-    "外门·腥": {
-      "female": {"zh": "泥", "en": "mud"},
-      "male": {"zh": "血", "en": "blood"},
-      "none": {"zh": "血", "en": "blood"}
-    },
-    "外门·伤": {
-      "female": {"zh": "两只膝盖都磕破了，手肘也破了。头发里的泥，一抓一把。", "en": "Both knees skinned, elbows too. The mud in your hair comes out by the handful."},
-      "male": {"zh": "左边眼睛肿得睁不开。肋骨那儿，一吸气就疼。", "en": "Your left eye is swollen shut. Your ribs hurt every time you breathe in."},
-      "none": {"zh": "左边眼睛肿得睁不开。肋骨那儿，一吸气就疼。", "en": "Your left eye is swollen shut. Your ribs hurt every time you breathe in."}
-    },
-    "外门·伤处": {
-      "female": {"zh": "磕破了的额头", "en": "the split skin on your forehead"},
-      "male": {"zh": "肿成馒头的那只眼睛", "en": "the eye swollen up like a steamed bun"},
-      "none": {"zh": "肿成馒头的那只眼睛", "en": "the eye swollen up like a steamed bun"}
-    }
+    "兄姐": { "zh": "师兄", "en": "Brother" },
+    "伴·孩": { "zh": "姑娘", "en": "girl" },
+    "伴·她": { "zh": "她", "en": "her" },
+    "伴·阶": { "zh": "你从一个扎两根小辫子的姑娘身边走过去——不对，是她从你身边冲过去。她没坐下，也没哭，鼻头冻得通红，像一根萝卜，咬着牙，一口气往上冲。\n\n那个背影……有点眼熟。\n\n你想多看两眼，她已经冲上去了，只剩一截小辫子，一晃，就没了。", "en": "You pass a girl with two little braids — no: she passes you, charging. She doesn't sit, doesn't cry; her nose is frozen red as a radish, and she grits her teeth and takes the steps in one breath.\n\nThat back… looks familiar.\n\nYou want a second look, but she's already gone up — the end of a braid, a flick, and nothing." },
+    "伴·洛书": { "zh": "石壁那一头，另一面石壁前，早有人摆好了。一个红鼻头的姑娘，正拿一根炭条，在一个小本子上低头记着什么。\n\n小本子。\n\n你愣了一下。这年头，谁出门还带个本子记账？\n\n你还没想明白，人群一挤，她就不见了。", "en": "At the far end, before another stone wall, someone has already finished. A red-nosed girl, head down, is writing something in a little notebook with a stick of charcoal.\n\nA little notebook.\n\nYou stop short. Who goes out these days carrying a notebook to keep accounts in?\n\nBefore you can work it out, the crowd shifts, and she's gone." },
+    "伴·殿": { "zh": "排在你前面第三个的，是一个扎两根小辫子的姑娘。她把手放上去，测灵石亮起三种颜色——青、黑、黄，亮得刺眼。\n\n**执事**：（念）木、水、土，三灵根。真灵根。中上之资。\n\n殿里一阵惊叹。你踮起脚想看看是谁，人太多，只看见一截小辫子，一晃，就被人群挡住了。\n\n红鼻头。小辫子。小本子。\n\n你心里咯噔一下——不会吧？\n\n可石坳村的姑娘，怎么会跑到这儿来？她娘连村口都不让她出。\n\n你摇摇头，一定是看错了。", "en": "Third in line ahead of you is a girl with two little braids. She lays her hand on the stone, and it lights three colours — green, black, yellow — bright enough to sting.\n\n**Steward:** (reading out) Wood, Water, Earth — three roots. A true root. Above the middle.\n\nA murmur of wonder goes round the hall. You go up on your toes to see who it is, but there are too many people — just the end of a braid, a flick, and the crowd closes over it.\n\nA red nose. Little braids. A little notebook.\n\nSomething in you lurches — surely not?\n\nBut how would a girl from Shi'ao Village end up here? Her mother won't even let her past the village gate.\n\nYou shake your head. You must have seen wrong." },
+    "弟妹": { "zh": "师弟", "en": "Brother" },
+    "此子": { "zh": "此子", "en": "this boy" },
+    "他她": { "zh": "他", "en": "he" },
+    "外门·柴房": { "zh": "你蹲了下去，抱住了头。\n\n拳头和脚，像下雨一样落下来。\n\n你没有还手。你护着胸口那块木牌，缩成一团。\n\n你数着。一下。两下。十下。二十下。", "en": "You crouch down and cover your head.\n\nFists and feet come down like rain.\n\nYou don't fight back. You shield the token on your chest and curl up into a ball.\n\nYou count. One. Two. Ten. Twenty." },
+    "外门·腥": { "zh": "血", "en": "blood" },
+    "外门·伤": { "zh": "左边眼睛肿得睁不开。肋骨那儿，一吸气就疼。", "en": "Your left eye is swollen shut. Your ribs hurt every time you breathe in." },
+    "外门·伤处": { "zh": "肿成馒头的那只眼睛", "en": "the eye swollen up like a steamed bun" }
   },
   "people": [
     {
@@ -173,27 +126,27 @@
     },
     {
       "id": "chuxiansheng",
-      "name": {"zh": "褚先生", "en": "Master Chu"},
-      "role": {"zh": "外门讲课的先生，五十来岁，留一撮山羊胡子", "en": "The outer court's lecturer, about fifty, with a little goat beard"},
-      "voice": {"zh": "先讲一段，再点一个人起来问；心情不好的时候比较多。刻薄，可肚子里是真学问——《内经》《本草》《抱朴子》张口就来。", "en": "Lectures a stretch, then calls someone up to answer; is in a bad mood more often than not. Sharp-tongued, but truly learned — he quotes the Neijing, the Bencao and the Baopuzi without looking."},
+      "name": { "zh": "褚先生", "en": "Master Chu" },
+      "role": { "zh": "外门讲课的先生，五十来岁，留一撮山羊胡子", "en": "The outer court's lecturer, about fifty, with a little goat beard" },
+      "voice": { "zh": "先讲一段，再点一个人起来问；心情不好的时候比较多。刻薄，可肚子里是真学问——《内经》《本草》《抱朴子》张口就来。", "en": "Lectures a stretch, then calls someone up to answer; is in a bad mood more often than not. Sharp-tongued, but truly learned — he quotes the Neijing, the Bencao and the Baopuzi without looking." },
       "home": "jiangtang",
       "art": "art/people/chuxiansheng.webp"
     },
     {
       "id": "sunergou",
       "gender": "male",
-      "name": {"zh": "孙二狗", "en": "Sun Ergou"},
-      "role": {"zh": "外门弟子，灵根比你当初还差；他娘给他缝了一个护身符", "en": "An outer disciple whose roots are worse than yours were; his mother sewed him a charm"},
-      "voice": {"zh": "说话结巴，胆子小，心眼实；在梦里喊「娘，我不吃糠」。", "en": "Stammers, timid, honest to the bone; cries \"Ma, I won't eat chaff\" in his sleep."},
+      "name": { "zh": "孙二狗", "en": "Sun Ergou" },
+      "role": { "zh": "外门弟子，灵根比你当初还差；他娘给他缝了一个护身符", "en": "An outer disciple whose roots are worse than yours were; his mother sewed him a charm" },
+      "voice": { "zh": "说话结巴，胆子小，心眼实；在梦里喊「娘，我不吃糠」。", "en": "Stammers, timid, honest to the bone; cries \"Ma, I won't eat chaff\" in his sleep." },
       "home": "chaifang",
       "art": "art/people/sunergou.webp"
     },
     {
       "id": "neimen-shijie",
       "gender": "female",
-      "name": {"zh": "内门师姐", "en": "The inner-court senior"},
-      "role": {"zh": "在外门排了三年队、等着进内门的真灵根师姐", "en": "A true-root senior who has queued three years in the outer court for a place in the inner court"},
-      "voice": {"zh": "话少，眼尖，出手留三分；看得出别人藏着什么。", "en": "Few words, sharp eyes, always holds a little back; sees what others are hiding."},
+      "name": { "zh": "内门师姐", "en": "The inner-court senior" },
+      "role": { "zh": "在外门排了三年队、等着进内门的真灵根师姐", "en": "A true-root senior who has queued three years in the outer court for a place in the inner court" },
+      "voice": { "zh": "话少，眼尖，出手留三分；看得出别人藏着什么。", "en": "Few words, sharp eyes, always holds a little back; sees what others are hiding." },
       "home": "zhengdian",
       "art": "art/people/neimen-shijie.webp"
     }

@@ -122,7 +122,7 @@ tools:
       value:
         type: string
         required: false
-        description: For an exit with `value` (the player's name in the world, `words.name`) — only a name the player TYPED in their own words, exactly as written; never one you chose. The page's card names it otherwise.
+        description: For an exit with `value` (a thing the player names, e.g. the furnace) — only a name the player TYPED in their own words, exactly as written; never one you chose. The page's card names it otherwise.
       answer:
         type: string
         required: false
@@ -618,8 +618,9 @@ fights, and in real life through their other Linggen apps.
 in a session, whatever the first words, is **Look**; then answer from inside
 the world.
 
-Call the player by their 名字 or *you* (你) — never 他 / 她, never a name they
-did not give; the rules fill 师兄 · 师姐 and 阿禾 from the name card.
+The hero is **沈小满** (小满), a boy; 阿禾 (周禾) is a girl — fixed by the book
+(2026-09-30), no name card. Call the player 小满 or *you* (你); the rules fill
+{name}, 师兄 and 阿禾.
 
 ## Laws
 
@@ -712,8 +713,8 @@ around), `ring` (Ring) or `answer` (Resolve with that answer).
 
 ## The page's own taps
 
-**An exit with `value` (the 名字, with 男 · 女) is the player's, on the page's
-card** — the offered names or their own. Never AskUser for it, never name one
+**An exit with `value` (a name the player gives — the furnace's) is the
+player's, on the page's card** — the offered names or their own. Never AskUser for it, never name one
 for them, never Resolve it; say one line and let the card ask (the rules
 refuse `page-names`). Only a name they type in the chat is Resolved, as written.
 

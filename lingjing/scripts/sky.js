@@ -1,6 +1,7 @@
 // sky.js — 天气 on the page (design.md § 真实世界): the weather chip, its
-// popover (the city, set or changed; the sense off or on) and the optional
-// city row on the 名字 card. Pure markup; the page does the calls — the
+// popover (the city, set or changed; the sense off or on) and a city row
+// (it stood on the 名字 card until the hero was fixed, 2026-09-30; the chip's
+// popover is where the city is set now). Pure markup; the page does the calls — the
 // engine's weather sense (`/api/senses/weather`), never the skill itself.
 import { esc } from './esc.js';
 
@@ -53,7 +54,7 @@ export function wxPopHtml({ lang = 'zh', sense = null, note = null } = {}) {
     ${toggles}${note ? `<div class="donote">${esc(note)}</div>` : ''}</div>`;
 }
 
-/// The 名字 card's optional row: the city, asked once with the name.
+/// A city row (the 名字 card's until 2026-09-30; kept for a card that asks it).
 export function cityRowHtml(lang = 'zh') {
   const w = wordsOf(lang);
   return `<div class="cityrow"><label class="small dim" for="city-text">${esc(w.cityAsk)}</label><input type="text" id="city-text" maxlength="40" autocomplete="off" placeholder="${esc(w.placeholder)}" value="${esc(draft.city)}"></div>`;

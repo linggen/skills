@@ -40,7 +40,7 @@ asleep in the token, waking by the story). Everything past 筑基 and past 冀 �
   world; key beats lock the map, then it opens wider; **one main line — the
   player is 沈小满**; 阿禾 and 赵昂 are playable 传说任务 sealed inside their
   own quests; the nine 鼎缘人 join as playable characters. No character or
-  gender pick at the start (story DESIGN § 四·五).
+  gender pick at the start (story DESIGN § 四·五) — built 2026-09-30 (§ Follow-ups).
 - **Content is data, never prompt. The model proposes, the rules decide. The
   context holds only the moment.** (§ The shape.)
 - **Ling speaks only when needed** (his, 2026-09-22): what only changes the
@@ -175,7 +175,7 @@ field. The fields:
 
 | Field | Means |
 |---|---|
-| `place`, `setup` | Where; what Ling narrates on entry. `{name}` fills the save's 名字; `{兄姐}`, `{伴}` (阿禾 · 石头) follow the name card's gender, `{灵根}` the roots — **to change** (§ Follow-ups). |
+| `place`, `setup` | Where; what Ling narrates on entry. `{name}` fills the world's hero (people.json `hero`: 沈小满 · Shen Xiaoman, by the text's language); `{兄姐}` (师兄), `{伴}` (阿禾) and the other `address` words are fixed; `{灵根}` the roots. |
 | `cast`, `show`, `lines` | Who is present; cards Shown on entry; hand-written lines. |
 | `story` · exit `story` | The book's passage for the beat (zh + en), played by the dialogue box; Ling is handed only what she is owed (`tell`, rules/tell.mjs, guide/tell.md). |
 | `panel` | The scene card, in words: a 2–4 line `caption` under the place (no picture since 2026-09-29). |
@@ -184,7 +184,7 @@ field. The fields:
 | `offers`, `buttons` | Tasks set here; the exits shown as taps (the rest are found by typing). |
 | exit `needs` / `take` / `grant` | What must be held or done; what it uses up; what it pays (never over its table's cap). |
 | exit `key` | A riddle or a pool: the day's is one unseen, `choices` offered; a miss brings the `hint`, a second shuts it till tomorrow. |
-| exit `value` · `born` | The 名字 (+ gender) card; 生辰 → 灵根 (rules/roots.mjs, private, skippable). |
+| exit `value` · `born` | A name the player gives on the page's card (none ships since the hero was fixed; a `gender` on it is refused); 生辰 → 灵根 (rules/roots.mjs, private, skippable). |
 | exit `game`, `stamina`, `mark`, `ledger`, `set` | A board or fight the page witnesses; toil that costs 体力; a remembered choice; 恩仇簿 entries; state set. |
 | exit `joins` · `sleeps` · `wakes` · `memory` | 银月 found, asleep in the token, woken; a colour memory granted (only from a 鼎). |
 | exit `next` · `stay` · `ends` | Exactly one. |
@@ -456,8 +456,8 @@ His ruling (2026-09-29): 「不用小人书的方式了，图片作为图鉴，�
   (`art_plate`; plates from 胡文煥, 蔣應鎬 1597, 《古今圖書集成》, Commons,
   credited in `art/CREDITS.md`). Painters: Codex's image tool (2026-09-29) and
   local FLUX since Codex's quota ran out (his 「用flux吧」).
-- `by_hero` gives 阿禾 two portraits by the hero's gender — **to change**
-  (§ Follow-ups).
+- `by_hero` {male, female} can pick an entry's picture by the hero's gender;
+  none uses it since the hero is fixed (阿禾 is the girl, one portrait).
 
 ## The stage, the dialogue box, the book 【已建】
 
@@ -608,21 +608,24 @@ never sold apart. Any model plays (Linggen Cloud or the player's own).
   (`?save=test`, rules `--save=test`, `&seed=fresh|real|<fixture>`) — the page
   opens no chat and the player's save is never touched.
 
-## Follow-ups from the 2026-09-30 rulings 【远景】
+## Follow-ups from the 2026-09-30 rulings
 
 The book fixed the hero as **沈小满** (male) and **阿禾 = 周禾** (female), third
 person, no gender marks, and the game follows 原神 (story DESIGN § 四, § 四·五).
-The code still assumes a player-chosen name and gender here:
 
-- the 名字 card — `value` exits with `gender: true` (`00-shiao`), `cards.js`,
-  SKILL.md § the name card (line ~715: 「An exit with `value` (the 名字, with 男 · 女)」);
-- `state.mjs` — the name/gender fields and the `{name}` `{兄姐}` `{伴}` fills
-  (`{伴}` = 阿禾 · 石头 by gender), `people.json`'s `ban` slot, `festivals.json`'s `{伴}`;
-- `codex.js` / `codex.json` `by_hero` (阿禾's two portraits), `read-md.js`
-  (the book page filling `{name}` and `{男|女}` from the save);
-- guide/tell.md (fit the words to the save's name and gender — kept until the code changes);
-- the book: 第一回 and 第三回–第十回 still carry `{name}`/`{他|她}` marks and first
-  person (第二回 is done).
+- ✅ **【已建】 the game follows** (2026-09-30): no 名字 card and no 男 · 女 —
+  石坳村 goes on by a plain tap (`begin`); `people.json` `hero` names him and
+  `newState` / `fitWorld` put him on every save (an old card-named save loads as
+  沈小满, a boy); `{name}` fills him by the text's language; `slots.ban` and the
+  `address` words are fixed; 阿禾's portrait pair went (`ahe-boy.webp` is unused);
+  the book page fills the fixed hero; SKILL.md and guide/tell.md say so. The
+  value card stays for a scene that names a thing (tests/naming.test.mjs runs it
+  on the old exit, tests/fixtures/name-card-exit.json).
+- **Still open:** the prologue's scene passages still say 「这个少年，就是你」 and
+  speak to 你 (the book is third person now); the book's 第三回–第十回 still carry
+  `{name}`/`{他|她}` marks and first person; every draw seeded by `state.name`
+  (the deck's order, the day's riddle, notices, 传闻, road meets, 论道) is now the
+  same for every player — seed them by the save's `created` if that matters.
 
 ## Open
 

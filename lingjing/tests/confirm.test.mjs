@@ -25,8 +25,9 @@ function game() {
   cli(0, 'init', '--lang', 'zh');
   return { data, cli, state, write };
 }
-// A game some way in: a name given, so a restart has something to lose.
-const played = (g) => g.write({ ...g.state(), name: '清玄' });
+// A game some way in: a story kept, so a restart has something to lose
+// (the name was the marker before the hero was fixed, 2026-09-30).
+const played = (g) => g.write({ ...g.state(), story: '已走一程' });
 
 test('Restart with nothing asked is refused and changes nothing', () => {
   const g = game(); played(g);
@@ -34,7 +35,7 @@ test('Restart with nothing asked is refused and changes nothing', () => {
   assert.equal(r.refused, 'not-confirmed');
   assert.ok(r.say);
   assert.match(r.then, /never call Restart/);
-  assert.equal(g.state().name, '清玄');
+  assert.equal(g.state().story, '已走一程');
   // A blind second try is refused as well: the refusal asks nothing.
   assert.equal(g.cli(1, 'init', '--for=ling').refused, 'not-confirmed');
 });
@@ -55,12 +56,12 @@ test('重来 → Look asks, over the scene\'s own question; 从头再来 → Res
   assert.match(g.cli(2, 'look', '--said=从头再来', '--for=ling').then, /call Restart now/);
   const r = g.cli(2, 'init', '--for=ling');
   assert.equal(r.restarted, true);
-  assert.notEqual(g.state().name, '清玄');
+  assert.notEqual(g.state().story, '已走一程');
   assert.equal(g.state().confirm, undefined, 'used up');
   assert.equal(g.cli(3, 'init', '--for=ling').refused, 'not-confirmed', 'once only');
   // Undo brings the game back, and never the asking with it.
   assert.equal(g.cli(3, 'undo').undid, 'init');
-  assert.equal(g.state().name, '清玄');
+  assert.equal(g.state().story, '已走一程');
   assert.equal(g.state().confirm, undefined);
 });
 
@@ -72,12 +73,12 @@ test('再想想 lets it be; the asking expires after ten minutes', () => {
   assert.equal(g.cli(2, 'init', '--for=ling').refused, 'not-confirmed');
   g.cli(3, 'look', '--said=从头来过吧', '--for=ling');
   assert.equal(g.cli(14, 'init', '--for=ling').refused, 'not-confirmed', 'expired');
-  assert.equal(g.state().name, '清玄');
+  assert.equal(g.state().story, '已走一程');
 });
 
 test('悔棋 asks before Undo, and Undo unasked is refused', () => {
   const g = game();
-  g.cli(1, 'resolve', '--exit=name', '--value=墨白', '--gender=male');
+  g.cli(1, 'resolve', '--exit=begin');
   assert.equal(g.cli(2, 'undo', '--for=ling').refused, 'not-confirmed');
   const asked = g.cli(2, 'look', '--said=悔棋', '--for=ling');
   assert.equal(asked.ask.question, '悔棋：收回上一步？');

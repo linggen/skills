@@ -32,7 +32,7 @@ const page = (l, extra = {}) => ({ look: l, lang: l.lang, words: WORDS[l.lang], 
 
 test('a beat stands as a scene card in words: the place, its caption, the choices under it — its new faces\' 图鉴 cards first', () => {
   for (const lang of ['zh', 'en']) {
-    const s = walk(start(lang), [['resolve', { exit: 'name', value: '墨白', gender: 'male' }]], content, NOW);
+    const s = walk(start(lang), [['resolve', { exit: 'begin' }]], content, NOW);
     const l = look(s, content, ctx());
     assert.equal(l.scene.panel.art, undefined, 'a story moment is never illustrated');
     assert.deepEqual(l.scene.meet, ['masan', 'maxiaobao'], '马三 and 马小宝 come on here for the first time (爹 met at home; a bow is a bow — no entry)');
@@ -55,7 +55,7 @@ test('a beat stands as a scene card in words: the place, its caption, the choice
 });
 
 test('a face is new once: the next scene brings on only who it has not met; a replay brings no one', () => {
-  const s = walk(start('zh'), [['resolve', { exit: 'name', value: '墨白', gender: 'male' }], ['resolve', { exit: 'endure' }]], content, NOW);
+  const s = walk(start('zh'), [['resolve', { exit: 'begin' }], ['resolve', { exit: 'endure' }]], content, NOW);
   const l = look(s, content, ctx());
   assert.equal(l.scene.id, '00-dawn');
   assert.ok(!(l.scene.meet ?? []).includes('masan'), '马三 was met');
@@ -85,14 +85,14 @@ test('the command line: Ling is never handed the prose — only what the stage p
     assert.equal(first.guide.tell.includes('对话框'), true, 'the guide comes with the first beat the stage plays');
     assert.ok(cli('look', '--said=你好', '--for=ling').staged, 'still owed: Ling\'s Look draws nothing');
     assert.equal(cli('look').tell_owed, true, 'the page sees it owed');
-    // the page draws it, names the player and taps a choice; Ling hears what the stage plays
+    // the page draws it, taps on (no name card: the hero is fixed) and taps a choice; Ling hears what the stage plays
     assert.deepEqual(cli('tell').tell.map(t => t.id), ['00-shiao']);
-    cli('resolve', '--exit=name', '--value=墨白', '--gender=male');
+    cli('resolve', '--exit=begin');
     cli('tell');
     cli('resolve', '--exit=strike', '--said=攥紧拳头');
     const told = cli('look', '--for=ling');
     assert.deepEqual(told.staged, [{ chose: '攥紧拳头' }, { scene: '00-dawn', recap: '天亮前，阿禾隔着窗塞来一个煮鸡蛋。' }]);
-    assert.deepEqual(told.page_did.map(d => d.what).filter(w => /chose/.test(w)), ['chose 「攥紧拳头」 under the picture — 恩仇簿: 仇 maxiaobao, 仇 masan']);
+    assert.deepEqual(told.page_did.map(d => d.what).filter(w => /chose/.test(w)), ['chose 「那天傍晚」 under the picture', 'chose 「攥紧拳头」 under the picture — 恩仇簿: 仇 maxiaobao, 仇 masan']);
     cli('tell');
     // Ling's own Resolve (the player typed it): the stage plays it too
     const egg = cli('resolve', '--exit=egg', '--said=收下鸡蛋', '--for=ling');
@@ -113,7 +113,7 @@ test('the page draws the passages owed with their beats (Tell) and marks them to
   try {
     cli('init', '--lang=zh');
     cli('tell');
-    cli('resolve', '--exit=name', '--value=墨白', '--gender=male');
+    cli('resolve', '--exit=begin');
     cli('tell');
     cli('resolve', '--exit=strike', '--said=攥紧拳头');
     const t = cli('tell');
@@ -138,7 +138,7 @@ test('a fresh chat\'s opening carries no passage: the stage plays the book; `[sc
 
 test('nothing lost: a scene is owed the moment it is entered; past two owed, the older ones fold into a catch-up of recaps', () => {
   // tapped through, never told: each exit's passage and each scene entered
-  let s = walk(start(), [['resolve', { exit: 'name', value: '墨白', gender: 'male' }]], content, NOW);
+  let s = walk(start(), [['resolve', { exit: 'begin' }]], content, NOW);
   s = { ...s, tell_owed: [], told_scenes: ['00-shiao', '00-masan'] };
   for (const exit of ['endure', 'egg']) s = resolve(s, content, ctx(), { exit }).state;
   assert.deepEqual(s.tell_owed, ['00-masan/endure', 'scene/00-dawn', '00-dawn/egg', 'scene/00-kitchen']);
@@ -159,7 +159,7 @@ test('nothing lost: a scene is owed the moment it is entered; past two owed, the
 });
 
 test('the scene card waits while the dialogue box plays: its choices and 看 come with the last beat, 记录 once it is put away', () => {
-  const s = walk(start('zh'), [['resolve', { exit: 'name', value: '墨白', gender: 'male' }]], content, NOW);
+  const s = walk(start('zh'), [['resolve', { exit: 'begin' }]], content, NOW);
   const l = look(s, content, ctx());
   const beats = [{ name: '马三', text: '租呢？' }, { text: '屋里，安静了。' }];
   const reading = { scene: '00-masan', items: [{ of: 'scene', id: '00-masan', beats: { zh: beats, en: beats } }], i: 0, j: 0, closed: false };

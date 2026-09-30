@@ -64,7 +64,7 @@ export function newHere(content, state, scene) {
 }
 
 /* A person's picture as the codex allows it — null when the codex refuses
-   the painted one (a name card stands instead); 阿禾 by the hero's gender. */
+   the painted one (a name card stands instead). */
 export function portraitOf(content, state, id, fallback = null) {
   const raw = rawOf(content).get(id);
   if (!raw) return fallback;

@@ -56,8 +56,9 @@ export function codexRaw(files = {}) {
   return out;
 }
 
-/// One entry for a reader: `lang`, the hero's `gender` (阿禾's portrait follows
-/// it), `say` to fill a line's words ({伴·孩} …). The picture is null when the
+/// One entry for a reader: `lang`, the hero's `gender` (an entry's `by_hero`
+/// {male, female} follows it — none left since the hero is fixed, 2026-09-30),
+/// `say` to fill a line's words ({伴·孩} …). The picture is null when the
 /// codex refuses the linked art (`image: null`) or none is painted: a name card.
 export function resolveEntry(raw, { lang = 'zh', gender = 'male', say = (t) => t } = {}) {
   if (!raw) return null;
@@ -196,7 +197,9 @@ export function lintCodex(files, exists = () => true) {
 /// state.mjs `fill`, which reads the same table.
 export function addressSay(people, gender, lang = 'zh') {
   const g = gender === 'female' || gender === 'male' ? gender : 'none';
-  const words = Object.entries(people?.address ?? {}).map(([k, v]) => [`{${k}}`, pickOf(lang)(v?.[g]) ?? '']);
-  const ban = pickOf(lang)((people?.people ?? []).find((p) => p.id === (people?.slots?.ban?.[g] ?? 'ahe'))?.name) ?? '';
+  // Fixed words since the hero is fixed (2026-09-30); an older world's by gender.
+  const words = Object.entries(people?.address ?? {}).map(([k, v]) => [`{${k}}`, pickOf(lang)(typeof v?.zh === 'string' ? v : v?.[g]) ?? '']);
+  const slot = people?.slots?.ban, banId = typeof slot === 'string' ? slot : slot?.[g] ?? 'ahe';
+  const ban = pickOf(lang)((people?.people ?? []).find((p) => p.id === banId)?.name) ?? '';
   return (t) => [...words, ['{伴}', ban]].reduce((s, [k, w]) => String(s).replaceAll(k, w), t ?? '');
 }

@@ -15,7 +15,7 @@ const FNS = { resolve, task, win, look: VERBS.look };
 /* 石坳村 to the valley: the name card, the rent, the egg, the stele's rules,
    the clue at 黑松岭, the storm, the fall, the fox — and she joins at daybreak (`follow`). */
 export const TO_VALLEY = [
-  ['resolve', { exit: 'name', value: '青玄', gender: 'female' }],
+  ['resolve', { exit: 'begin' }],
   ['resolve', { exit: 'endure' }],
   ['resolve', { exit: 'egg' }],
   ['resolve', { exit: 'go' }],

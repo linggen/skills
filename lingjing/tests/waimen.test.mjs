@@ -31,13 +31,13 @@ const refused = (fn, s, args, code, now = DAY1) => {
 };
 const fresh = (s) => ({ ...s, stamina: 100, stamina_at: DAY1.toISOString() });
 /* The prologue walked to its end, as a boy or a girl. */
-const opened = (gender = 'female', lang = 'zh') => fresh(walk(newState(content, lang, DAY1),
-  TO_OPEN.map(([v, a]) => [v, a.exit === 'name' ? { ...a, gender } : a]), content, DAY1));
+// The hero is fixed (沈小满, a boy — 2026-09-30): no name card on the way in.
+const opened = (lang = 'zh') => fresh(walk(newState(content, lang, DAY1), TO_OPEN, content, DAY1));
 const won = (s, id, now = DAY1) => ({ ...s, wins: { ...s.wins, [id]: now.toISOString() } });
 
 /* The whole chapter, by its buttons and the page's own taps, with the threads done. */
-function playThrough(gender) {
-  let s = opened(gender);
+function playThrough() {
+  let s = opened();
   for (const exit of ['owe', 'can', 'breathe', 'hide']) s = must(resolve, s, { exit });
   s = must(move, s, { place: 'waimen' });
   s = must(quest, s, { action: 'take', id: 'xu-yaoyuan-shouye' });
@@ -93,9 +93,9 @@ test('the prologue leads into 外门 — 卷一 · 第五回 — which sorts bet
   assert.equal(story(s, content, ctx()).result.cauldrons.length, 9, 'no cauldron in it: the nine are still the nine');
 });
 
-test('every scene is reached, and the chapter ends on 「第九回 · 即将开放」, for a boy and for a girl', () => {
-  for (const gender of ['male', 'female']) {
-    const s = playThrough(gender);
+test('every scene is reached, and the chapter ends on 「第九回 · 即将开放」', () => {
+  for (const gender of ['male']) {
+    const s = playThrough();
     assert.ok(s.ended.includes('00-waimen'), gender);
     assert.equal(s.scene, null);
     assert.equal(s.chapter, '00-waimen', 'waiting: the next chapter is still being written');
@@ -162,7 +162,7 @@ test('the map is the area around 沉鼎观: the rest of 徐 and the eight provin
 });
 
 test('the chapter ended, the map holds while 第九回 is being written; a save already further along keeps the whole world', () => {
-  const done = playThrough('female');
+  const done = playThrough();
   assert.equal(refused(move, done, { place: 'pengcheng' }, 'road-closed', DAY2).say, CH.map.say.zh);
   // an older save standing in 02-yan: no chapter map, every province it had
   const later = { ...opened(), chapter: '02-yan', scene: null, place: 'pengcheng', ended: ['00-prologue', '01-ji'], tier: 'core' };
@@ -198,7 +198,7 @@ test('the 守夜 and the tame: 狰 runs from a fight, yields to the watch won, a
 });
 
 test('the 大比 waits a real day: the goal line counts down, the first round refuses today, and 明日 comes', () => {
-  let s = opened('male');
+  let s = opened();
   for (const exit of ['owe', 'can', 'breathe', 'hide']) s = must(resolve, s, { exit });
   s = must(move, s, { place: 'chaifang' });
   for (const exit of ['count', 'keep', 'swallow']) s = must(resolve, fresh(s), { exit, ...(exit === 'keep' ? { said: '你这饭桶' } : {}) });
@@ -240,38 +240,34 @@ test('息壤 lifts the realm to 练气五层 — once, never down, and a scene p
   assert.deepEqual([high.step, high.progress], [6, 30], 'never down');
 });
 
-test('the girl\'s woodshed is hers (the 猪圈), the boy\'s is his — and the words around the hero follow the name card', () => {
+test('the woodshed is his (the boy\'s: 抱住了头, 血腥味) — the words around the hero are fixed; an old save named a girl reads the same', () => {
   const at = (gender) => {
-    let s = opened(gender);
+    let s = { ...opened(), gender };
     for (const exit of ['owe', 'can', 'breathe', 'hide']) s = must(resolve, s, { exit });
     s = must(move, s, { place: 'chaifang' });
     s = must(resolve, s, { exit: 'count' });
     return tellOf(content, s).tell.map(t => t.text).join('\n');
   };
-  const girl = at('female'), boy = at('male');
-  assert.ok(girl.includes('猪圈') && girl.includes('打姑娘'));
-  assert.ok(!girl.includes('抱住了头'));
-  assert.ok(boy.includes('抱住了头') && !boy.includes('猪圈'));
-  assert.ok(girl.includes('泥腥味') && boy.includes('血腥味'));
-  for (const text of [girl, boy]) assert.doesNotMatch(text, /\{[^}]*\}/, 'every word filled');
+  const his = at('male'), old = at('female');
+  assert.ok(his.includes('抱住了头') && his.includes('血腥味') && !his.includes('猪圈'));
+  assert.equal(old, his, 'a card-named girl save reads his words');
+  assert.doesNotMatch(his, /\{[^}]*\}/, 'every word filled');
 });
 
-test('阿禾 walks with every hero as the other gender, and 周衡 calls a girl 师妹', () => {
-  const girl = look(opened('female'), content, ctx());
-  const boy = look(opened('male'), content, ctx());
-  assert.equal(girl.scene.people.find(p => p.id === 'ahe').name, '阿禾');
-  let s = opened('female');
+test('阿禾 walks with him, a girl, and 周衡 calls him 师弟', () => {
+  const l = look(opened(), content, ctx());
+  assert.equal(l.scene.people.find(p => p.id === 'ahe').name, '阿禾');
+  let s = opened();
   for (const exit of ['owe', 'can', 'breathe', 'hide']) s = must(resolve, s, { exit });
   s = must(move, s, { place: 'waimen' });
   const offer = look(s, content, ctx()).offers.find(o => o.id === 'xu-yaoyuan-shouye');
-  assert.ok(offer.say.startsWith('师妹。'), offer.say);
-  assert.ok(boy.scene.people.some(p => p.id === 'ahe'));
+  assert.ok(offer.say.startsWith('师弟。'), offer.say);
 });
 
 test('the scratch fixture for live checks stands at the chapter\'s first scene (tests/fixtures/saves/waimen.json, ?save=test&seed=waimen)', async () => {
   const fs = await import('node:fs');
   const s = JSON.parse(fs.readFileSync(new URL('./fixtures/saves/waimen.json', import.meta.url), 'utf8'));
-  assert.deepEqual([s.chapter, s.scene, s.place, s.gender], ['00-waimen', 'wm-ahe', 'waimen', 'female']);
+  assert.deepEqual([s.chapter, s.scene, s.place, s.name, s.gender], ['00-waimen', 'wm-ahe', 'waimen', '沈小满', 'male']);
   assert.ok(s.ended.includes('00-prologue'));
   assert.equal(look(s, content, ctx()).scene.id, 'wm-ahe');
 });
@@ -388,7 +384,7 @@ test('息壤 keeps his 修为 through the jump, and its moment is the five doors
 });
 
 test('外门 ends on its card: 「第八回 · 完」, what this player did, the next teaser in the book\'s voice — and 「第九回 · 即将开放」 stays (his, 2026-09-29; 回 renumbered 2026-09-30)', () => {
-  const s = playThrough('male');
+  const s = playThrough();
   const l = look(s, content, ctx(DAY2));
   const close = l.chapter.close;
   assert.equal(close.title, '第八回 · 完');

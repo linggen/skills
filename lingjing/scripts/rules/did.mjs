@@ -93,10 +93,10 @@ const PAGE_DID = {
   meet: byAction(MEET_DID),
   tale: (r, a, x) => TALE_DID[a.action]?.(r, a, x) ?? null,
   seclude: (r, a) => SECLUDE_DID[a.action]?.(r) ?? null,
-  // A value exit named on the page's card (the 名字, and 男 · 女): the name,
+  // A value exit named on the page's card: the name,
   // and its beat — Ling reads it here; the stage plays the story. The 生辰 read there:
   // the roots only — the birthday itself never leaves the card.
-  resolve: (r, a, x) => rememberedDid(r, r.named ? `named themselves 「${r.named.value}」${r.named.gender ? ` (${r.named.gender === 'female' ? 'a girl' : 'a boy'})` : ''} on the page's card — beat: ${beatOf(r)}`
+  resolve: (r, a, x) => rememberedDid(r, r.named ? `named 「${r.named.value}」 on the page's card — beat: ${beatOf(r)}`
     : r.born ? `${r.born.kept ? 'went through the root test, their roots as they were' : r.born.read === 'birth' ? 'gave their birthday on the page\'s card' : 'let the stone read them'}: ${r.born.roots.name} (${r.born.roots.elements.join(' ')}) — beat: ${beatOf(r)}`
       : r.breakthrough?.chance != null ? thrownDid(r, x)
         // A scene card's choice: which, and what the 恩仇簿 wrote — the story is the stage's (rules/tell.mjs).

@@ -21,7 +21,7 @@ const content = loadContent();
 const NOW = new Date('2026-09-28T12:00:00');
 const ctx = (words = null, extra = {}) => ({ now: NOW, quests: [], words, ...extra });
 /* At 马三's rent (00-masan): 马三, 马小宝 and 爹 on the scene. */
-const atMasan = (lang = 'zh') => resolve(newState(content, lang, NOW), content, ctx(), { exit: 'name', value: '青玄', gender: 'female' }).state;
+const atMasan = (lang = 'zh') => resolve(newState(content, lang, NOW), content, ctx(), { exit: 'begin' }).state;
 /* When, as a reader is told it: the 回 of the scene written in (第一回 — a small place, the short label), from the book. */
 const H1 = huiLabel(content, 'h01', 'zh', 'short'), H1_EN = huiLabel(content, 'h01', 'en', 'short');
 const re = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -150,7 +150,7 @@ test('the command line: Ling\'s Remember reads LINGGEN_USER_WORDS; the page\'s c
   const cli = (env, ...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: ROOT, env: { ...base, ...env }, encoding: 'utf8' }).stdout);
   try {
     cli({}, 'init', '--lang=zh');
-    cli({}, 'resolve', '--exit=name', '--value=青玄', '--gender=female');
+    cli({}, 'resolve', '--exit=begin');
     const args = ['remember', '--who=马三', '--kind=仇', '--what=逼租', '--quote=这账我记着'];
     assert.equal(cli({}, ...args, '--for=ling').refused, 'unheard', 'no env: refused');
     assert.equal(cli({ LINGGEN_USER_WORDS: JSON.stringify(['马三，这账我记着！']) }, ...args).refused, 'unheard', 'the page\'s call: never trusted');

@@ -205,7 +205,6 @@ const view = {
   ledgerOpen: false, // the 恩仇簿 chip's popover
   wxOpen: false, wxSense: null, wxNote: null, // the weather chip's popover: the engine's sense as read, a note
   valuePick: null, valueText: '', valueNote: null, // the 名字 card: an offered name tapped, the player's own typed, a refusal
-  valueGender: null, //  the 名字 card's 男 · 女: nothing until tapped
   bornDraft: '', bornError: false, // the 生辰 card: the date typed (never kept past the tap), a date refused
   appearing: null, //    a beast's first sight playing over the stage: its id
   throwNote: null, // 渡劫's card: how a failed throw fell, or a refusal
@@ -274,7 +273,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, panelBusy: view.panelBusy, panelNote: view.panelNote, reading: readingHere(), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, valueGender: view.valueGender, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, panelBusy: view.panelBusy, panelNote: view.panelNote, reading: readingHere(), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -929,7 +928,7 @@ function paintAtmos() {
 }
 
 /* 天气 — the engine's weather sense (skill-spec § Senses): the city is the
-   player's, set once on the 名字 card or here, and the engine reads the sky;
+   player's, set here (the chip's popover), and the engine reads the sky;
    the game never goes online. Look carries the result as `weather`. */
 async function senseCall(body = null) {
   try {
@@ -1550,18 +1549,15 @@ document.addEventListener('input', (e) => {
   const card = e.target.closest('.valuecard'), chosen = valueChoice(null, e.target.value, Number(e.target.dataset.valueMax));
   card?.querySelectorAll('[data-value-pick]').forEach((el) => { el.classList.remove('on'); el.setAttribute('aria-pressed', 'false'); });
   const go = card?.querySelector('[data-value-go]');
-  const gendered = !card?.dataset.valueGender || Boolean(view.valueGender);
-  if (go) { go.disabled = !chosen || !gendered; go.textContent = chosen && !gendered ? words().genderFirst : chosen ? fill(words().valueGoAs, { v: chosen }) : words().valueGo; }
+  if (go) { go.disabled = !chosen; go.textContent = chosen ? fill(words().valueGoAs, { v: chosen }) : words().valueGo; }
 });
 async function valueTap(exitId) {
   const v = (look?.scene?.exits ?? []).find((x) => x.id === exitId)?.value;
   const chosen = v && valueChoice(view.valueText.trim() ? null : view.valuePick, view.valueText, v.max_chars);
-  if (!chosen || (v.gender && !view.valueGender)) return;
-  const r = await write('resolve', { exit: exitId, value: chosen, ...(v.gender ? { gender: view.valueGender } : {}) }).catch(failed);
-  keep(r.ok ? { valuePick: null, valueText: '', valueNote: null, valueGender: null } : { valueNote: refusal(r) });
+  if (!chosen) return;
+  const r = await write('resolve', { exit: exitId, value: chosen }).catch(failed);
+  keep(r.ok ? { valuePick: null, valueText: '', valueNote: null } : { valueNote: refusal(r) });
   await refresh();
-  // The city row, when filled: the engine's weather sense takes it (sky.js).
-  if (r.ok && skyDraft.city.trim()) await setSense({ city: skyDraft.city.trim() });
 }
 
 /* A scene card's choice (cards.js panel): the page Resolves the exit itself,
@@ -2034,7 +2030,6 @@ const CLICKS = [
   ['[data-tame]', (el) => { if (!el.matches(':disabled')) run(`tame:${el.dataset.tame}`, () => tameTap(el.dataset.tame)); }],
   ['[data-refine-mat]', (el) => show({ refineMat: el.dataset.refineMat, refineNote: null })],
   ['[data-value-pick]', (el) => show({ valuePick: el.dataset.valuePick, valueText: '', valueNote: null })],
-  ['[data-gender-pick]', (el) => show({ valueGender: el.dataset.genderPick, valueNote: null })],
   ['[data-born]', (el) => { if (!el.matches(':disabled')) run('born', () => bornTap(el.dataset.born)); }],
   ['[data-appear-done]', (el) => endAppear(el.dataset.appearDone)],
   ['[data-throw]', (el) => { if (!el.matches(':disabled')) run(`throw:${el.dataset.throw}`, () => throwTap(el.dataset.throw)); }],

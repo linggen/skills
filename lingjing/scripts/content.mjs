@@ -500,8 +500,8 @@ const peopleIds = content => [...(content.people?.people ?? []).map(p => p.id), 
 
 /* people.json: a lowercase id no creature has, a name, role and voice in both
    languages, a home the map knows, a portrait on disk; each slot names a
-   person for every gender. */
-const GENDERS = ['female', 'male', 'none'];
+   person; each address word is a zh + en pair; the hero (fixed, 2026-09-30)
+   has a name in both languages and a gender. */
 function lintPeople(content, bad) {
   const doc = content.people;
   if (!doc) return;
@@ -518,13 +518,14 @@ function lintPeople(content, bad) {
     if (!p.art) bad(at, 'needs a portrait');
     else if (!fs.existsSync(path.join(content.dir, p.art))) bad(at, `art ${p.art} is missing`);
   }
-  for (const [slot, by] of Object.entries(doc.slots ?? {})) {
+  for (const [slot, id] of Object.entries(doc.slots ?? {})) {
     if (seen.has(slot)) bad(`slot ${slot}`, 'shares an id with a person');
-    for (const g of GENDERS) if (!seen.has(by?.[g])) bad(`slot ${slot}`, `${g} names no person`);
+    if (!seen.has(id)) bad(`slot ${slot}`, `${id} is no person`);
   }
-  for (const [word, by] of Object.entries(doc.address ?? {})) {
-    for (const g of GENDERS) if (!by?.[g] || typeof by[g].zh !== 'string' || typeof by[g].en !== 'string') bad(`address ${word}`, `${g} needs zh and en`);
+  for (const [word, v] of Object.entries(doc.address ?? {})) {
+    if (typeof v?.zh !== 'string' || typeof v?.en !== 'string') bad(`address ${word}`, 'needs zh and en');
   }
+  if (doc.hero && (!pair(doc.hero.name) || !['female', 'male'].includes(doc.hero.gender))) bad('hero', 'needs a name in zh and en and a gender');
 }
 
 /* The animations the stage plays for her unease (scripts/unease.js SHOWS). */
@@ -1129,7 +1130,7 @@ function lintExit(where, exit, chapter, content, ids, speakers, bad) {
     if (game.retry != null && (game.retry !== true || game.kind !== 'duel')) bad(where, 'retry is true, on a duel');
   }
   if (exit.value && !VALUE_FIELDS.has(exit.value.field)) bad(where, `cannot set ${exit.value.field}`);
-  if (exit.value?.gender != null && typeof exit.value.gender !== 'boolean') bad(where, 'a value\'s gender is true or false');
+  if (exit.value?.gender != null) bad(where, 'the hero\'s gender is fixed (people.json hero): a value asks no gender');
   // 生辰 → 灵根 (rules/roots.mjs): read on the page's card, never with `set` or a value beside it.
   if (exit.born != null && (exit.born !== true || exit.value || exit.set)) bad(where, 'born is true, alone — no value, no set');
   // An exit that costs 体力 by itself (the prologue's steps are otherwise free): a whole number.

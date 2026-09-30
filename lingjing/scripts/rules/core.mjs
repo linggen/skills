@@ -225,9 +225,6 @@ export function pageNames(content, state, args) {
 
 const THEN_PAGE_BORN = 'The birthday is given on the page\'s card (or left to the stone) — it is private and never said in the chat; the stage goes on by itself when the roots are read (`page_did`). Nothing changed. End on one line inviting them to the card — never AskUser for it, never ask the date yourself, never Resolve it.';
 
-/* The name card's 男 · 女, as the rules keep it — anything else is not said. */
-const GENDERS = new Set(['female', 'male']);
-
 /* 生辰 → 灵根 at the 入门仪式 (roots.mjs): always five, 五行杂灵根 — the
    birthday, read here and let go, names the one that leads (a tie by the
    save's start); skipped, five even and none leads. A save that already holds
@@ -382,10 +379,7 @@ export function resolve(state, content, ctx, args) {
     const value = cleanValue(args.value, exit.value);
     if (!value) return refuse('value-invalid', null, { max_chars: exit.value.max_chars });
     s[exit.value.field] = value;
-    // The card's 男 · 女: kept when said; a name typed in the chat says none.
-    const gender = exit.value.gender && GENDERS.has(String(args.gender ?? '')) ? String(args.gender) : null;
-    if (gender) s.gender = gender;
-    named = { field: exit.value.field, value, ...(gender ? { gender } : {}) };
+    named = { field: exit.value.field, value };
   }
   if (exit.names) { s[exit.names.field] = exit.names.value; named = { field: exit.names.field, value: exit.names.value }; }
   let born = null;

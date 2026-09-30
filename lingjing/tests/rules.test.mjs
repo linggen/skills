@@ -140,7 +140,7 @@ const toFuzhuV1 = () => ({ ...toFuzhu(), traits: [...content.traits.v1] });
 /* At the outer court, the roots read, the first practice offered. */
 const toPractice = () => must(resolve, toHall(), { exit: 'born', birth: V1_BIRTH }).state;
 
-test('a new game starts at 石坳村, a mortal — 练气一层 at 0 waits for the gate — nothing in hand, the name card up', () => {
+test('a new game starts at 石坳村, a mortal — 练气一层 at 0 waits for the gate — nothing in hand, no name card (the hero is fixed)', () => {
   const s = start();
   assert.equal(s.scene, '00-shiao');
   assert.equal(s.place, 'shiao');
@@ -148,8 +148,8 @@ test('a new game starts at 石坳村, a mortal — 练气一层 at 0 waits for t
   const seen = look(s, content, ctx());
   assert.equal(seen.tier, undefined, 'no realm before the sect');
   assert.ok(seen.locked.includes('cultivation'));
-  assert.deepEqual(seen.scene.buttons.map(b => b.id), ['name']);
-  assert.ok(seen.stage.some(c => c.card === 'value'));
+  assert.deepEqual(seen.scene.buttons.map(b => b.id), ['begin']);
+  assert.ok(!seen.stage.some(c => c.card === 'value'), 'no name card');
 });
 
 test('the prologue walks from 石坳村 to its end by exits alone', () => {
@@ -162,10 +162,10 @@ test('the prologue walks from 石坳村 to its end by exits alone', () => {
   assert.deepEqual(s.ended, ['00-prologue']);
   assert.equal(s.scene, null);
   assert.deepEqual(end.result.waiting, { chapter: '01-ji', opens: '2026-10-01' }, 'this file dates chapter 1 to October');
-  assert.equal(s.name, '青玄');
+  assert.equal(s.name, '沈小满');
   assert.deepEqual(s.traits, ['metal', 'wood', 'water', 'fire', 'earth'], '五行杂灵根');
   assert.deepEqual(s.cast, [], 'no beast tamed: the trials are the child\'s own');
-  assert.equal(s.gender, 'female');
+  assert.equal(s.gender, 'male');
   assert.deepEqual(s.companion, { joined: '2026-09-11', asleep: true }, 'found in the valley, asleep in the fox token');
   assert.equal(s.step, 0, 'the prologue ends at the bottom of 练气 (the source: 练气零层)');
   assert.equal(s.progress, 0, 'the trials were a mortal child\'s: 修为 begins in the outer court');
@@ -175,31 +175,17 @@ test('the prologue walks from 石坳村 to its end by exits alone', () => {
   assert.equal(end.result.ended, '00-prologue');
 });
 
-test('the name card keeps 男 · 女, and the name fills what follows', () => {
+test('the hero is fixed — 沈小满, a boy, from the first Look; 石坳村 goes on by a plain tap (his, 2026-09-30)', () => {
   const s = start();
-  const named = must(resolve, s, { exit: 'name', value: '墨白', gender: 'male' });
-  assert.deepEqual(named.result.named, { field: 'name', value: '墨白', gender: 'male' });
-  assert.equal(named.state.gender, 'male');
-  assert.equal(named.result.scene.id, '00-masan');
-  // a gender the card does not offer is not kept; a name typed in the chat says none
-  assert.equal(must(resolve, s, { exit: 'name', value: '墨白', gender: 'robot' }).state.gender, null);
-  assert.equal(must(resolve, s, { exit: 'name', value: '墨白' }).state.gender, null);
-  const cliff = walk(named.state, [...TO_HALL.slice(1, TO_HALL.findIndex(([, a]) => a.exit === 'follow') + 1)], content, NOW);
+  assert.equal(s.name, '沈小满');
+  assert.equal(s.gender, 'male');
+  const on = must(resolve, s, { exit: 'begin' });
+  assert.equal(on.result.named ?? null, null, 'no name card: nothing is named');
+  assert.equal(on.result.scene.id, '00-masan');
+  assert.equal(on.state.name, '沈小满');
+  const cliff = walk(on.state, [...TO_HALL.slice(1, TO_HALL.findIndex(([, a]) => a.exit === 'follow') + 1)], content, NOW);
   assert.equal(cliff.scene, '00-cliff');
   assert.match(tellOf(content, cliff).tell.at(-1).text, /是阿禾的爹，老周。/);
-})
-
-test('a name must be 1 to 8 characters', () => {
-  const s = start();
-  refused(resolve, s, { exit: 'name', value: '   ' }, 'value-invalid');
-  refused(resolve, s, { exit: 'name', value: '一二三四五六七八九' }, 'value-invalid');
-});
-
-test('an offered name is kept in its Chinese form, a typed one as typed', () => {
-  const s = start('en');
-  for (const [typed, kept] of [['Qingxuan', '青玄'], ['青玄', '青玄'], ['qingxuan ', '青玄'], ['Mobai', '墨白'], ['Alex', 'Alex']]) {
-    assert.equal(must(resolve, s, { exit: 'name', value: typed }).state.name, kept, typed);
-  }
 });
 
 test('the 公中 takes a stone: none in hand, it is refused in the world', () => {
@@ -1711,14 +1697,14 @@ test('the command line keeps state on disk, logs it and undoes it', () => {
   assert.equal(cli('init', '--lang', 'en').world.id, 'jiuding');
   assert.equal(cli('look').scene.id, '00-shiao');
   assert.equal(JSON.parse(fs.readFileSync(path.join(data, 'state.json'), 'utf8')).world, 'jiuding');
-  assert.equal(cli('resolve', '--exit', 'name', '--value', '墨白', '--answer', '{{answer}}').scene.id, '00-masan');
+  assert.equal(cli('resolve', '--exit', 'begin', '--answer', '{{answer}}').scene.id, '00-masan');
   assert.equal(cli('look').scene.id, '00-masan');
   assert.equal(cli('resolve', '--exit', 'nowhere').refused, 'unknown-exit');
   assert.equal(cli('undo').undid, 'resolve');
   assert.equal(cli('look').scene.id, '00-shiao');
   // Restart: `init` with nothing begins the world in play again, in its
   // language, and logs the save it replaced so `undo` brings it back.
-  assert.equal(cli('resolve', '--exit', 'name', '--value', '墨白').scene.id, '00-masan');
+  assert.equal(cli('resolve', '--exit', 'begin').scene.id, '00-masan');
   assert.equal(cli('look', '--said=我在哪里？').lang, 'zh');
   const again = cli('init');
   assert.equal(again.restarted, true);
@@ -1731,7 +1717,7 @@ test('the command line keeps state on disk, logs it and undoes it', () => {
   assert.equal(cli('look').scene.id, '00-shiao');
   assert.equal(cli('look').lang, 'en');
   // What the engine renders for an omitted optional arg: an empty --key=.
-  const sh = spawnSync('sh', ['-c', `"${process.execPath}" scripts/rules.mjs resolve --exit='name' --value='墨白' --gender= --answer=`], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' });
+  const sh = spawnSync('sh', ['-c', `"${process.execPath}" scripts/rules.mjs resolve --exit='begin' --value= --answer=`], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' });
   assert.equal(JSON.parse(sh.stdout).scene.id, '00-masan');
   // Words in the other language switch the game before the verb reads it.
   const heard = cli('look', '--said=我在哪里？');
@@ -1748,7 +1734,7 @@ test('Go jumps to an opened scene; the rules keep each day\'s closing state, the
   const cli = (env, ...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
   const d1 = at('2026-09-12T12:00:00Z'), d2 = at('2026-09-13T12:00:00Z');
   cli(d1, 'init', '--lang=en');
-  assert.equal(cli(d1, 'resolve', '--exit=name', '--value=Mobai').scene.id, '00-masan');
+  assert.equal(cli(d1, 'resolve', '--exit=begin').scene.id, '00-masan');
   const named = cli(d1, 'save', '--title=At the waking').saved;
   assert.equal(named.kind, 'named');
   assert.equal(named.where, "Shi'ao village · your home · dusk");
@@ -2306,7 +2292,8 @@ test('arriving is an event: the errand met there is told with what is seen, 交�
 });
 
 test('榜文: a market posts one templated 差事 a day — near, winnable, rebuilt from its id', () => {
-  const base = { ...toOpenWorld(), place: 'pengcheng', tier: 'core', bag: {}, cast: ['fuzhu'] };
+  // The day's draw is seeded by the save's name; this one pins the old seed, so the first posting is a walk or a subdue.
+  const base = { ...toOpenWorld(), name: '青玄', place: 'pengcheng', tier: 'core', bag: {}, cast: ['fuzhu'] };
   const days = Array.from({ length: 14 }, (_, i) => ctx({ now: new Date(2026, 8, 11 + i, 12) }));
   const posted = days.map(at => look(base, content, at).offers.filter(o => o.id.startsWith('daily-')));
   assert.ok(posted.every(p => p.length === 1), 'one a day, every day');
