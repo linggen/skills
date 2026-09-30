@@ -109,13 +109,14 @@ function frameHost(slot, lang, captions) {
   return host;
 }
 
-/// Plays 筑基天象 in `slot`. Resolves to a handle {host, next(), skip(), done(),
-/// destroy(), beat()}; calls onBeat(beat, index) as each beat starts and onDone()
-/// once the last is shown. `tap` (default true): each beat waits for a tap or
-/// next(). `captions` (default true): the book's words under the picture — the
-/// game passes false and plays them in its own dialogue box from onBeat.
-export async function playZhuji(slot, { lang = 'zh', still = false, tap = true, captions = true, onBeat = () => {}, onDone = () => {} } = {}) {
+/// Plays 筑基天象 in `slot`. Resolves to a handle {host, tap(), skip(), done(),
+/// destroy(), beat()}; calls onBeat(index, beat) as each beat starts and onDone()
+/// once the last is shown. Each beat waits for a tap (the dialogue box's next
+/// passage) unless `auto`. `captions` (default true): the book's words under the
+/// picture — the game passes false and says them in its own box from onBeat.
+export async function playZhuji(slot, { lang = 'zh', still = false, auto = false, captions = true, onBeat = () => {}, onDone = () => {} } = {}) {
   const beats = ZHUJI_BEATS;
+  const tap = !auto;
   const host = frameHost(slot, lang, captions);
   const pic = host.querySelector('.zjpic');
   const cap = host.querySelector('.zjcap');
@@ -127,13 +128,13 @@ export async function playZhuji(slot, { lang = 'zh', still = false, tap = true, 
   // Still: one SVG per beat; a tap (or next) turns the page.
   if (still || !glOK()) {
     host.classList.add('still');
-    const show = (i) => { index = i; const b = beats[i]; pic.querySelector('svg.zjstill')?.remove(); pic.insertAdjacentHTML('afterbegin', stillSvg(b.id, lang)); setCap(b); onBeat(b, i); if (i === beats.length - 1) finish(); };
+    const show = (i) => { index = i; const b = beats[i]; pic.querySelector('svg.zjstill')?.remove(); pic.insertAdjacentHTML('afterbegin', stillSvg(b.id, lang)); setCap(b); onBeat(i, b); if (i === beats.length - 1) finish(); };
     show(0);
     const next = () => { if (!gone && index < beats.length - 1) show(index + 1); };
     const skip = () => { if (!gone) show(beats.length - 1); };
     host.addEventListener('click', (e) => { if (e.target.closest('.zjskip')) skip(); else next(); });
     if (!tap) { const t = setInterval(() => { if (index >= beats.length - 1 || gone) clearInterval(t); else next(); }, 2200); }
-    return { host, next, skip, done: () => finished, beat: () => beats[index], destroy() { gone = true; host.remove(); } };
+    return { host, next, tap: next, skip, done: () => finished, beat: () => beats[index], destroy() { gone = true; host.remove(); } };
   }
 
   const [PIXI, gsap] = await Promise.all([loadPixi(), loadGsap()]);
@@ -300,7 +301,7 @@ export async function playZhuji(slot, { lang = 'zh', still = false, tap = true, 
     index = i;
     const b = beats[i];
     setCap(b);
-    onBeat(b, i);
+    onBeat(i, b);
     if (b.id === 'settle') { tl.seek('end'); finish(); return; }
     playing = tl.tweenFromTo(b.id, endOf(i), { onComplete: () => { playing = null; if (!tap) start(i + 1); else host.classList.add('wait'); } });
   };
@@ -322,7 +323,7 @@ export async function playZhuji(slot, { lang = 'zh', still = false, tap = true, 
   start(0);
 
   return {
-    host, next, skip,
+    host, next, tap: next, skip,
     done: () => finished,
     beat: () => beats[index],
     destroy() {
@@ -338,10 +339,11 @@ export async function playZhuji(slot, { lang = 'zh', still = false, tap = true, 
   };
 }
 
-/// The set pieces by id — one entry here; the page calls playSetPiece(id, slot, opts).
+/// By id, in the same call shape as setpiece.js's runner (the 大场面 lane's):
+/// playSetPiece(host, 'zhuji', {lang, still, auto, onBeat(i, beat), onDone}).
 export const SET_PIECES = { zhuji: { beats: ZHUJI_BEATS, play: playZhuji } };
-export function playSetPiece(id, slot, opts = {}) {
+export function playSetPiece(host, id, opts = {}) {
   const sp = SET_PIECES[id];
   if (!sp) throw new Error(`no set piece "${id}"`);
-  return sp.play(slot, opts);
+  return sp.play(host, opts);
 }
