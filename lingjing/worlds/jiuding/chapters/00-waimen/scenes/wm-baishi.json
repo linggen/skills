@@ -9,8 +9,8 @@
   "en": "Chending Temple · The gate"
  },
  "setup": {
-  "zh": "大比后的第三天，你挑水路过山门。瞿老在那一级台阶上扫地，扫帚忽然停了：「放下。跟我来。」",
-  "en": "Three days after the contest you carry water past the gate. Elder Qu is sweeping that one step, and his broom stops. \"Put it down. Come with me.\""
+  "zh": "腊月十一，大比后的第三天，你挑水路过山门。瞿老在那一级台阶上扫地，扫帚忽然停了：「放下。」",
+  "en": "The eleventh of the twelfth month, three days after the contest, you carry water past the gate. Elder Qu is sweeping that one step; the broom stops: \"Put it down.\""
  },
  "recap": {
   "zh": "大比后的第三天，扫了五十年台阶的瞿老，把扫帚一停：「放下。跟我来。」",
@@ -35,8 +35,8 @@
   }
  },
  "story": {
-  "zh": "大比后的第三天，瞿老来了。\n\n不是他来找你——是你挑水路过山门，他在那一级台阶上扫地，扫帚忽然停了。\n\n**瞿老**：放下。",
-  "en": "On the third day after the contest, Elder Qu comes.\n\nNot to find you — you're carrying water past the mountain gate, he's sweeping that one step, and suddenly the broom stops.\n\n**Elder Qu:** Put it down."
+  "zh": "大比过后的第三天，腊月十一，瞿老来了。其实也不是他来找小满——是小满挑水路过山门，他正在那一级台阶上扫地，扫帚忽然停了，道：「放下。」",
+  "en": "On the third day after the contest, the eleventh of the twelfth month, Elder Qu came. Not that he came looking for Xiaoman — Xiaoman was carrying water past the temple gate, and Elder Qu was sweeping that one step; the broom stopped all at once, and he said: \"Put it down.\""
  },
  "lines": [],
  "buttons": [
@@ -51,8 +51,8 @@
    },
    "means": "sets down the water and follows Elder Qu",
    "story": {
-    "zh": "你把水桶放下。\n\n**瞿老**：跟我来。\n\n他扛着扫帚往后山走。你跟在后面。",
-    "en": "You put the buckets down.\n\n**Elder Qu:** Come with me.\n\nHe shoulders the broom and heads for the back mountain. You follow."
+    "zh": "小满把水桶放下。\n\n瞿老道：「跟我来。」扛起扫帚便往后山走，小满跟在后头。\n\n走了半个时辰，山路越走越窄，走到后来，窄得只容得下一只脚。瞿老扛着扫帚在前头走，走得不快，可小满使出全身的劲儿才跟得上——他一边跟，一边还得记着藏，记着自己只是个练气二层，跟得太轻松了不像话，便故意喘几口粗气。瞿老头也不回，道：「喘得不像。」小满便不喘了。",
+    "en": "Xiaoman put the buckets down.\n\n\"Follow me,\" said Elder Qu, shouldered his broom, and set off for the back mountain, Xiaoman behind.\n\nHalf an hour on, the path narrower and narrower, till it had room for only one foot. Elder Qu walked ahead with his broom, not fast, but Xiaoman had to use all his strength to keep up — and as he kept up he had to remember to hide, to remember he was only at the second level; keeping up too easily wouldn't do, so he made a point of panting. Without turning his head Elder Qu said, \"The panting's not convincing.\" So Xiaoman stopped panting."
    },
    "beat": [],
    "next": "wm-caowu"

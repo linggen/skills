@@ -9,12 +9,12 @@
   "en": "The Si · Before the stone door"
  },
  "setup": {
-  "zh": "十月初一，泗水退潮，露出一道石门。几百个外门弟子挤在门前，手里都攥着地图。马小宝坐在一只描金小木匣后面：「公中，一人一块。」",
-  "en": "The first of the tenth month: the Si draws back and shows a stone door. Hundreds of outer disciples crowd before it, maps in hand. Ma Xiaobao sits behind a little gilded box. \"Common fund. One each.\""
+  "zh": "冬月初一，泗水退潮，秘境开门。领了灵石，往前十步，照旧是那只描金小木匣。马小宝眼皮也不抬：「沈小满。两块。」",
+  "en": "The first of the eleventh month: the Si ebbs and the hidden realm opens. Stones drawn, ten steps on, the same little gilt box. Ma Xiaobao doesn't lift his eyelids: \"Shen Xiaoman. Two.\""
  },
  "recap": {
-  "zh": "十月初一，沉鼎秘境开了。{伴}把{伴·她}的地图借给你——利息，两块。",
-  "en": "On the first of the tenth month the hidden realm opened. {伴} lent you the map — interest, two stones."
+  "zh": "冬月初一，沉鼎秘境开了。阿禾把她背熟了的地图借给你——利息，两块。",
+  "en": "The first of the eleventh month, the Chending hidden realm opened. Ah He lent you the map she'd learned by heart — interest: two."
  },
  "cast": [],
  "people": [
@@ -24,20 +24,20 @@
  "panel": {
   "caption": {
    "zh": [
-    "十月初一，泗水退潮。",
-    "石门前，几百个外门弟子攥着地图。",
+    "冬月初一，泗水退潮。",
+    "「沈小满。两块。」",
     "「借你。利息，两块。」"
    ],
    "en": [
-    "The first of the tenth month: the Si draws back.",
-    "Before the stone door, hundreds of disciples clutch their maps.",
-    "\"I'll lend it. Interest: two stones.\""
+    "The first of the eleventh month; the Si ebbs.",
+    "\"Shen Xiaoman. Two.\"",
+    "\"Lend you. Interest: two.\""
    ]
   }
  },
  "story": {
-  "zh": "十月初一。\n\n沉鼎秘境，开了。\n\n秘境在泗水底下。每十年，泗水退一次潮，露出一道石门。石门后面，是一座不知道多少年前留下来的遗迹——沉鼎观的名字，就是从这里来的。外门弟子进去，各凭本事。捡到什么，归什么。\n\n几百个外门弟子挤在石门前，手里都攥着地图——前人画的，一代一代传下来，画得密密麻麻。哪里有灵草，哪里有机关，哪里有前人留下的破法器，地图上都标着。\n\n**{伴}**：（凑过来）你的地图呢？\n\n**你**：没有。\n\n**{伴}**：你不买？一张地图才一块灵石。\n\n**你**：我的灵石，一块交了公中，一块交了公中，一块……\n\n**{伴}**：交了公中。\n\n**你**：交了公中。\n\n{伴}看了你一会儿，把{伴·她}的地图塞给了你。\n\n**{伴}**：借你。利息，两块。\n\n**你**：……你到底借给多少人过？\n\n**{伴}**：就你一个。（面无表情）所以利息高。\n\n石门边上，马小宝又摆开了那只描金的小木匣。\n\n**马小宝**：秘境门口，公中，一人一块。外门的规矩。",
-  "en": "Tenth month, first day.\n\nThe Chending hidden realm opens.\n\nThe hidden realm lies under the Si. Once every ten years the Si's tide goes out and a stone gate appears. Behind it is a ruin left from who knows how many years ago — it's where Chending Temple gets its name. Outer-court disciples go in on their own wits. Whatever you pick up is yours.\n\nHundreds of outer-court disciples crowd in front of the stone gate, every one clutching a map — drawn by those before, handed down generation to generation, packed dense with marks. Where the spirit herbs are, where the traps are, where old broken artifacts lie — it's all on the map.\n\n**{伴}:** (sidling up) Where's your map?\n\n**You:** Haven't got one.\n\n**{伴}:** You're not buying one? A map's only one spirit stone.\n\n**You:** My spirit stones: one went to the common fund, one went to the common fund, one…\n\n**{伴}:** Went to the common fund.\n\n**You:** Went to the common fund.\n\n{伴} looks at you a moment, then shoves {伴·她} map at you.\n\n**{伴}:** A loan. Interest: two.\n\n**You:** …How many people have you lent to, exactly?\n\n**{伴}:** Just you. (deadpan) That's why the interest is high.\n\nBy the stone gate, Ma Xiaobao has set out that little gilded wooden box again.\n\n**Ma Xiaobao:** At the hidden realm's gate, common fund, one each. Outer-court rules."
+  "zh": "冬月初一，天还没亮，外门执事房门口照例排起了长龙。\n\n周衡坐在榆木桌子后面，面前摊着那本厚得能当枕头的账簿，叫一个名字，发一回灵石，每人三块，一块不多，一块不少。他今日的神色和往常不大一样，发一个，便要抬起头来叮嘱一句：「秘境里头，保命要紧。灵草丢了，明年还长；人丢了，账上不好记。」有个新来的弟子问他：「周师兄，秘境里死过人么？」周衡翻了翻账簿，翻到最后几页，那几页的纸比别的黄，上面记着几个名字，名字底下画着一道红杠。他看了一会儿，把账簿合上了，道：「有前途。」那弟子没听懂，捧着灵石走了。\n\n领到了灵石，往前走不上十步，照旧是那张桌子，照旧是那只描金小木匣，匣上照旧贴着红纸，写着「公中」。只是马小宝身后的那两个跟班，今日换成了三个，一个个抱着胳膊，站得跟门神一般。马小宝拿指节笃笃地敲着木匣，眼皮也不抬：「沈小满。两块。」",
+  "en": "The first of the eleventh month. Before dawn, as usual, a long queue formed outside the stewards' office of the outer court.\n\nZhou Heng sat behind the elm table, the ledger thick enough for a pillow open before him; he called a name and handed out stones, three apiece, not one more, not one fewer. Today he looked different from usual: with every one he handed out he looked up and warned, \"In the hidden realm, your life comes first. Lose a herb, it grows again next year; lose a man, the books won't balance.\" A new disciple asked him, \"Brother Zhou, has anyone died in the hidden realm?\" Zhou Heng leafed through the ledger to its last pages — yellower than the rest, a few names written there, a red stroke under each. He looked at them a while, closed the ledger, and said, \"Promising.\" The disciple didn't understand, and went off holding his stones.\n\nTen steps on from the stones, the same table as ever, the same little gilt box, the same red paper on it: COMMON FUND. Only the two followers behind Ma Xiaobao were three today, arms folded, standing like door gods. Ma Xiaobao rapped the box with a knuckle, not lifting his eyelids: \"Shen Xiaoman. Two.\""
  },
  "lines": [],
  "buttons": [
@@ -51,30 +51,30 @@
     "zh": "交",
     "en": "Pay it"
    },
-   "means": "pays one stone to Ma Xiaobao's common fund",
+   "means": "pays two stones to Ma Xiaobao's common fund",
    "needs": {
-    "wealth": 1
+    "wealth": 2
    },
    "take": {
-    "wealth": 1
+    "wealth": 2
    },
    "refuse": {
-    "zh": "怀里没有灵石。",
-    "en": "You have no spirit stones on you."
+    "zh": "怀里的灵石，不够两块。",
+    "en": "You haven't two spirit stones on you."
    },
    "ledger": [
     {
      "who": "maxiaobao",
      "kind": "仇",
      "what": {
-      "zh": "十月初一，秘境门口，公中：一块灵石。",
-      "en": "The first of the tenth month, at the hidden realm's door, the common fund: one spirit stone."
+      "zh": "冬月初一，秘境门口，公中：两块灵石。",
+      "en": "The first of the eleventh month, at the hidden realm's door, the common fund: two spirit stones."
      }
     }
    ],
    "story": {
-    "zh": "你把一块灵石放进匣子里。\n\n**马小宝**：懂事。\n\n你往前走了十步，停下来，摸出小本子，舔了舔笔尖：**十月初一。公中。灵石一块。马小宝。**",
-    "en": "You put one spirit stone in the box.\n\n**Ma Xiaobao:** Good sense.\n\nYou walk ten steps on, stop, take out your notebook and lick the brush tip: **Tenth month, first day. Common fund. One spirit stone. Ma Xiaobao.**"
+    "zh": "他数出两块灵石，放进匣子里，道：「小宝哥说得对。」马小宝没听出这话里有什么不对，很满意地挥了挥手。\n\n小满往前走了十步，停下来，从怀里摸出那个红糖包纸订的小本子，舔了舔笔尖，写道：\n\n**冬月初一。公中。灵石两块。马小宝。**\n\n执事房外头那片空场上，一早便摆开了七八张桌子，卖的是秘境的地图，一块灵石一张。小满在桌子前头站了很久，把那张地图从头看到尾，没有买。\n\n身后忽然有人拍他肩膀。他回头一看，是阿禾。她穿着那件大一号的灰袍，袖子挽了三道，鼻头冻得通红，手里捏着一张地图，比桌上卖的那些还要新，还要密。\n\n阿禾道：「你的地图呢？」小满道：「没有。」阿禾道：「你不买？」小满道：「不买。」阿禾道：「为什么？」小满想了想，道：「一块灵石，买一张写着『无』的纸，不划算。」\n\n阿禾看了他一会儿，把她手里那张地图塞给了他，道：「借你。」小满一愣：「那你呢？」阿禾面无表情地道：「我背下来了。」小满道：「……什么时候？」阿禾道：「昨天夜里。他们卖一块，我借来看一夜，给了半块。」小满道：「半块？」阿禾道：「我说我只看一半。」小满道：「你看了多少？」阿禾道：「全看了。」\n\n小满张着嘴，半天合不上。阿禾又道：「利息，两块。」小满道：「你借来才花了半块！」阿禾道：「我背下来，花了一夜。一夜的灯油，外门每人每月只有半根蜡烛。」她掰着指头，「蜡烛，辛苦，风险，都要算。」小满道：「……你到底借给多少人过？」阿禾道：「就你一个。」小满道：「那为什么利息这么高？」阿禾道：「就你一个，所以利息高。」\n\n她说完转身便走，走了两步，又回过头来，补了一句：「往右走。右边人多。人多，死不了。」\n\n小满捏着那张地图，没有说话。",
+    "en": "He counted out two stones and put them in the box. \"Brother Xiaobao is quite right.\" Ma Xiaobao heard nothing odd in it, and waved him on, very satisfied.\n\nXiaoman walked ten steps, stopped, took out the little notebook sewn from red-sugar wrapping paper, licked the brush, and wrote:\n\n**First day, eleventh month. Common fund. Two spirit stones. Ma Xiaobao.**\n\nOn the open ground outside the stewards' office seven or eight tables had been set up since early morning, selling maps of the hidden realm, one stone apiece. Xiaoman stood a long time at a table and read a map from end to end, and didn't buy.\n\nSomeone tapped him on the shoulder. He turned: Ah He. She wore that robe a size too big, sleeves rolled three times, nose frozen red, and in her hand a map newer and denser than any on the tables.\n\n\"Where's your map?\" said Ah He. \"Haven't got one,\" said Xiaoman. \"Not buying?\" \"Not buying.\" \"Why not?\" Xiaoman thought, and said, \"A stone for a sheet of paper that says 'none' — bad bargain.\"\n\nAh He looked at him a while, then pushed her map into his hands. \"Lend you.\" Xiaoman stared. \"What about you?\" Ah He said without expression, \"I learned it by heart.\" \"…When?\" \"Last night. They sell for one; I borrowed one to look at for a night, gave half.\" \"Half?\" \"I said I'd only look at half.\" \"How much did you look at?\" \"All of it.\"\n\nXiaoman's mouth hung open a long time. Ah He said, \"Interest: two.\" \"You only paid half to borrow it!\" \"It cost me a night to learn. A night's lamp oil — the outer court gives each of us half a candle a month.\" She counted on her fingers. \"Candle, labour, risk — it all counts.\" \"…How many people have you lent to?\" \"Only you.\" \"Then why's the interest so high?\" \"Only you. That's why.\"\n\nShe turned and went, took two steps, looked back and added, \"Go right. More people on the right. More people, nobody dies.\"\n\nXiaoman held the map and said nothing."
    },
    "beat": [],
    "next": "wm-wangzuo"
@@ -92,14 +92,14 @@
      "who": "maxiaobao",
      "kind": "仇",
      "what": {
-      "zh": "十月初一，秘境门口：你没交公中。他笑着说，秘境里死个把人，可不稀奇。",
-      "en": "The first of the tenth month, at the hidden realm's door: you didn't pay the common fund. He smiled: people die in the hidden realm all the time."
+      "zh": "冬月初一，秘境门口：你没交公中。他笑着说，秘境里死个把人，可不稀奇。",
+      "en": "The first of the eleventh month, at the hidden realm's door: you didn't pay the common fund. He smiled: people die in the hidden realm all the time."
      }
     }
    ],
    "story": {
-    "zh": "你从匣子前面走了过去，像没看见。\n\n**马小宝**：（在你身后，笑得很开心）{name}。秘境里死个把人，可不稀奇。\n\n你没回头。你摸出小本子，舔了舔笔尖：**十月初一。公中。没交。马小宝笑了。**",
-    "en": "You walk past the box as if you don't see it.\n\n**Ma Xiaobao:** (behind you, smiling very happily) {name}. People dying in a hidden realm — nobody's surprised.\n\nYou don't look back. You take out your notebook and lick the brush tip: **Tenth month, first day. Common fund. Didn't pay. Ma Xiaobao smiled.**"
+    "zh": "小满把灵石攥在手心里，道：「小宝哥，初一的公中，是一块。」\n\n马小宝眼皮也不抬，只把指节在木匣上又敲了两下，笑道：「秘境里头，死个把人，可不稀奇。」\n\n小满没有接这句话，攥着灵石走了。走出十步，他从怀里摸出那个红糖包纸订的小本子，写道：**冬月初一。公中。没交。马小宝：秘境里头，死个把人，可不稀奇。**\n\n执事房外头那片空场上，一早便摆开了七八张桌子，卖的是秘境的地图，一块灵石一张。小满在桌子前头站了很久，把那张地图从头看到尾，没有买。\n\n身后忽然有人拍他肩膀。他回头一看，是阿禾。她穿着那件大一号的灰袍，袖子挽了三道，鼻头冻得通红，手里捏着一张地图，比桌上卖的那些还要新，还要密。\n\n阿禾道：「你的地图呢？」小满道：「没有。」阿禾道：「你不买？」小满道：「不买。」阿禾道：「为什么？」小满想了想，道：「一块灵石，买一张写着『无』的纸，不划算。」\n\n阿禾看了他一会儿，把她手里那张地图塞给了他，道：「借你。」小满一愣：「那你呢？」阿禾面无表情地道：「我背下来了。」小满道：「……什么时候？」阿禾道：「昨天夜里。他们卖一块，我借来看一夜，给了半块。」小满道：「半块？」阿禾道：「我说我只看一半。」小满道：「你看了多少？」阿禾道：「全看了。」\n\n小满张着嘴，半天合不上。阿禾又道：「利息，两块。」小满道：「你借来才花了半块！」阿禾道：「我背下来，花了一夜。一夜的灯油，外门每人每月只有半根蜡烛。」她掰着指头，「蜡烛，辛苦，风险，都要算。」小满道：「……你到底借给多少人过？」阿禾道：「就你一个。」小满道：「那为什么利息这么高？」阿禾道：「就你一个，所以利息高。」\n\n她说完转身便走，走了两步，又回过头来，补了一句：「往右走。右边人多。人多，死不了。」\n\n小满捏着那张地图，没有说话。",
+    "en": "Xiaoman closed his hand on his stones. \"Brother Xiaobao, the common fund on the first is one.\"\n\nMa Xiaobao didn't lift his eyelids; he only rapped the box twice more with a knuckle and smiled: \"In the hidden realm, people die now and then. Nothing strange in it.\"\n\nXiaoman didn't answer that. He walked off with his stones in his fist. Ten steps on he took out the little notebook sewn from red-sugar wrapping paper and wrote: **First day, eleventh month. Common fund. Not paid. Ma Xiaobao: in the hidden realm, people die now and then.**\n\nOn the open ground outside the stewards' office seven or eight tables had been set up since early morning, selling maps of the hidden realm, one stone apiece. Xiaoman stood a long time at a table and read a map from end to end, and didn't buy.\n\nSomeone tapped him on the shoulder. He turned: Ah He. She wore that robe a size too big, sleeves rolled three times, nose frozen red, and in her hand a map newer and denser than any on the tables.\n\n\"Where's your map?\" said Ah He. \"Haven't got one,\" said Xiaoman. \"Not buying?\" \"Not buying.\" \"Why not?\" Xiaoman thought, and said, \"A stone for a sheet of paper that says 'none' — bad bargain.\"\n\nAh He looked at him a while, then pushed her map into his hands. \"Lend you.\" Xiaoman stared. \"What about you?\" Ah He said without expression, \"I learned it by heart.\" \"…When?\" \"Last night. They sell for one; I borrowed one to look at for a night, gave half.\" \"Half?\" \"I said I'd only look at half.\" \"How much did you look at?\" \"All of it.\"\n\nXiaoman's mouth hung open a long time. Ah He said, \"Interest: two.\" \"You only paid half to borrow it!\" \"It cost me a night to learn. A night's lamp oil — the outer court gives each of us half a candle a month.\" She counted on her fingers. \"Candle, labour, risk — it all counts.\" \"…How many people have you lent to?\" \"Only you.\" \"Then why's the interest so high?\" \"Only you. That's why.\"\n\nShe turned and went, took two steps, looked back and added, \"Go right. More people on the right. More people, nobody dies.\"\n\nXiaoman held the map and said nothing."
    },
    "beat": [],
    "next": "wm-wangzuo"

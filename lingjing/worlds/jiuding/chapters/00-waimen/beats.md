@@ -1,12 +1,16 @@
-# 第一章 · 外门 — beat sheet
+# 外门 · 第五回至第八回 — beat sheet
 
 The script is story/jiuding-lu/05-第五回.md … 08-第八回.md (the book's 第五回 to 第八回, once 第一章 · 外门, then 第三回 until 卷一 was split into ten on 2026-09-30; approved by Hanli; his plan
 of 2026-09-29: 「可以，按2天做，go」, 「可以，不打，go」). On the stage each scene is
 its caption (two to four lines) and its choices — no picture: a story moment is
 not illustrated (his ruling, 2026-09-29; pictures are for unfamiliar knowledge,
-and figures.md lists where one would help). The passage (`story`) is the
-book's own, turned to 你, and Ling tells it. The prologue already played the
-book's § 一 公中, so the chapter opens on the morning after, with {伴}.
+and figures.md lists where one would help). The passage (`story`, and each
+exit's) is the book's own text, third person, verbatim paragraphs, played by
+the dialogue box (rules/tell.mjs); caption, setup, recap and buttons speak to
+the player as 你 (story DESIGN §四·五 人称分工). Realigned to the new book
+2026-09-30. Where the game lets a thread go undone (小狰 is still an optional
+errand), the passages leave out the lines that need it — marked in the lane's
+report; the 柴房 and 秘境 公中 read without the 狰.
 
 **Shape** (design.md § 剧情 × 开放世界): one goal — the 外门大比, counted down on
 the goal line (`goal`: 腊月初八 until 周衡's 「大比，明日」, then 明日, then 今日) —
@@ -17,11 +21,11 @@ every other place refused with 「外门弟子，无令不得下山」. It ends 
 
 | Beat | Scenes (at) | Choices → mechanics |
 |---|---|---|
-| 入门第一课 | `wm-ahe` 阿禾 (外门) · `wm-jiangtang` 漏勺 (讲堂) · `wm-zhoutian` 小周天 (柴堆) · `wm-qingshi` 青石 (后山) | 认账 / 什么利息 (恩 阿禾) · 能。(「多打几次」) · 一呼一吸 (scene 修为 — 小周天 is 一层) · 把拳头塞进嘴里 / 喊出来 |
-| 柴房 | `wm-chaifang` 二十三下 (柴房) · `wm-danlu` 丹炉 · `wm-diyilu` 第一炉 | 护住木牌，数着 / 攥紧拳头 (体力 −5): 仇 马小宝; the girl's 猪圈 by {外门·柴房} · 起名: 镇天神炉 · 九转金丹炉 · 乾坤一炉 纹丝不动 (greyed), 「你这饭桶」 咔哒 (`danlu`, save `furnace_name`) · 吞下去 (回春丹; the 九转 lecture — 藏经阁 hook) |
-| 沉鼎秘境 | `wm-mijing` 石门 (秘境石门) · `wm-wangzuo` 往左往下 · `wm-kunzhen` 困阵 · `wm-xirang` 息壤 · `wm-chu` 出秘境 | 交 / 不交 (十月初一 公中, 仇) · the wall's 洛书 (`mijing-wall`, the chapter's one puzzle) · 扔一根萝卜 (needs 萝卜) / 走 · 吞下去 (`rise: 5` — 练气五层) · 今日到此 (mark `dabi-eve`) |
-| 外门大比 | `wm-dabi` 开场 (正殿前) · `wm-lun1` 孙二狗 · `wm-fushi` 复试 · `wm-lun2` 马小宝 · `wm-juesai` 决赛 | 上台 (`needs.day_after: dabi-eve` — a real day) · 往后一倒 (only after 孙二狗's charm, `needs.quest`; 恩 孙二狗 → 复试) / 出手 (duel `foe-sunergou`) · 学声狗叫 (duel `foe-maxiaobao`) · 决赛 (duel `foe-shijie` → 筑基丹) |
-| 拜师 | `wm-baishi` 扫帚停了 (山门) · `wm-caowu` 拜师帖 (后山) · `wm-heluo` 河洛剑诀 · `wm-jiaxin` 家信 | 跟上 · 写上名字 (恩 瞿老, 《黄庭经》) · 念开篇 (《河洛剑诀》, 「……你娘，是谁？」, the broom's 徐) · 今日到此 — ends |
+| 入门第一课 | `wm-ahe` 阿禾 (外门, 九月初十) · `wm-jiangtang` 漏勺 (讲堂) · `wm-zhoutian` 小周天 (柴堆, 九月十七) · `wm-qingshi` 青石 (后山) | 认账 / 什么利息 (恩 阿禾) · 能。(「多打几次」) · 一呼一吸 (scene 修为 — 小周天 is 一层) · 把拳头塞进嘴里 / 喊出来 |
+| 柴房 | `wm-chaifang` 二十三下 (柴房, 十月十二夜) · `wm-danlu` 丹炉 · `wm-diyilu` 第一炉 | 护住木牌，数着 / 攥紧拳头 (体力 −5): 仇 马小宝 · 起名: 镇天神炉 · 九转金丹炉 · 乾坤一炉 纹丝不动 (greyed), 「你这饭桶」 咔哒 (`danlu`, save `furnace_name`) · 吞下去 (九纹回春丹 → 练气二) |
+| 沉鼎秘境 | `wm-mijing` 石门 (秘境石门) · `wm-wangzuo` 往左往下 · `wm-kunzhen` 困阵 · `wm-xirang` 息壤 · `wm-chu` 出秘境 | 交两块 / 不交 (冬月初一 公中, 仇) · the wall's 洛书 (`mijing-wall`, the chapter's one puzzle) · 扔一根萝卜 (needs 萝卜) / 走 · 吞下去 (`rise: 5` — 练气五层; the five doors are the book's five memories) · 今日到此 (mark `dabi-eve`) |
+| 外门大比 | `wm-dabi` 开场 (五行台, 腊月初八) · `wm-lun1` 孙二狗 · `wm-fushi` 复试 · `wm-lun2` 马小宝 · `wm-juesai` 决赛 | 上台 (`needs.day_after: dabi-eve` — a real day) · 往后一倒 (only after 孙二狗's charm, `needs.quest`; 恩 孙二狗 → 复试) / 出手 (duel `foe-sunergou`) · 学声狗叫 (duel `foe-maxiaobao`) · 决赛 (duel `foe-shijie` → 筑基丹) |
+| 拜师 | `wm-baishi` 扫帚停了 (山门, 腊月十一) · `wm-caowu` 拜师帖 (后山) · `wm-heluo` 河洛剑诀 · `wm-jiaxin` 家信 | 跟上 · 写上名字 (恩 瞿老, 《黄庭经》) · 念开篇 (《河洛剑诀》, 「……你娘，是谁？」, the broom's 徐) · 今日到此 — ends |
 
 **Threads** (quests/xu.json; people.json):
 

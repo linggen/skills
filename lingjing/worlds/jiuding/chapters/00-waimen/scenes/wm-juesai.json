@@ -9,8 +9,8 @@
   "en": "Chending Temple · The contest · The final"
  },
  "setup": {
-  "zh": "决赛。对手是内门下来的一个真灵根师姐，淡蓝的衣裳，剑在背上。她冲你一抱拳：「请。」",
-  "en": "The final. Your opponent is a true-root senior come down from the inner court, in pale blue, a sword on her back. She salutes you, fist in palm. \"After you.\""
+  "zh": "决赛，在傍晚。对手是一位真灵根的师姐，在外门排了三年的队，等着进内门。她冲你一抱拳：「沈师弟，听说你只有二层。」",
+  "en": "The final, at dusk. Your opponent: a senior sister with a true root, three years queuing in the outer court for the inner. She salutes you: \"Brother Shen, I hear you're only at the second level.\""
  },
  "recap": {
   "zh": "决赛打了三十招，内门师姐输了，冲你一抱拳：「藏得好。」观主玄沉子把筑基丹放在你手里。",
@@ -24,20 +24,20 @@
  "panel": {
   "caption": {
    "zh": [
-    "决赛。内门下来的真灵根师姐。",
-    "三十招。",
+    "决赛。外门排了三年队的真灵根师姐。",
+    "三十一招。",
     "「藏得好。」「师姐也是。」"
    ],
    "en": [
-    "The final. A true-root senior from the inner court.",
-    "Thirty moves.",
-    "\"Well hidden.\" \"You too, senior.\""
+    "The final. A true-root sister, three years in the outer court's queue.",
+    "Thirty-one moves.",
+    "\"Well hidden.\" \"You too, sister.\""
    ]
   }
  },
  "story": {
-  "zh": "决赛。\n\n对手是内门下来的一个真灵根师姐。淡蓝的衣裳，剑在背上，一路打上来，一场都没用全力——你看得出来。\n\n她看了你一眼。她也看得出来。\n\n**内门师姐**：（一抱拳）请。",
-  "en": "The final.\n\nYour opponent is a senior sister down from the inner court, a true root. Pale blue clothes, sword on her back; she's fought her way up without using her full strength once — you can tell.\n\nShe glances at you. She can tell too.\n\n**The senior:** (cupping her fist) Please."
+  "zh": "决赛在傍晚，太阳落到西边山头上的时候。对手是一位真灵根的师姐，在外门排了三年的队，等着进内门。她上台的时候，冲小满抱了抱拳，道：「沈师弟，听说你只有二层。」\n\n小满也抱了抱拳：「是。」\n\n师姐道：「那我让你三招。」\n\n小满道：「师姐不用让。我打不过，会跑的。」\n\n师姐一愣，随即笑了。",
+  "en": "The final was at dusk, as the sun sank onto the western hills. His opponent was a senior sister with a true root, who had queued three years in the outer court to enter the inner. Coming up, she saluted Xiaoman with fist in palm. \"Brother Shen, I hear you're only at the second level.\"\n\nXiaoman saluted back. \"Yes.\"\n\n\"Then I'll give you three moves.\"\n\n\"No need, sister,\" said Xiaoman. \"If I can't beat you, I'll run.\"\n\nThe sister was taken aback, and then she laughed."
  },
  "lines": [],
  "buttons": [
@@ -66,8 +66,8 @@
     "item": "foundation-pill"
    },
    "story": {
-    "zh": "决赛，你赢了。\n\n打了三十招。她输了以后，冲你一抱拳：「藏得好。」\n\n你也冲她一抱拳：「师姐也是。」——她比赛的时候，也一直没用全力。\n\n头名，筑基丹一枚。\n\n观主玄沉子亲手把丹药放在你手里。他看着你，看了很久很久，就像入门那天，看测灵石那样。\n\n**玄沉子**：五行杂灵根？\n\n**你**：原来是。\n\n玄沉子笑了。笑得很温和，说话还是只说半句：\n\n**玄沉子**：沉鼎秘境里，有一间石室。三百年，没人进去过……\n\n他没说完。他拍了拍你的肩膀，转身走了。",
-    "en": "You win the final.\n\nThirty moves. When she's lost, she cups her fist to you: \"Well hidden.\"\n\nYou cup your fist back: \"You too, senior sister.\" — she never used her full strength in her bouts either.\n\nFirst place: one Foundation pill.\n\nXuanchenzi, the abbot, places the pill in your hand himself. He looks at you for a long, long time, the way he looked at the testing stone the day you came in.\n\n**Xuanchenzi:** Five-element mixed roots?\n\n**You:** Used to be.\n\nXuanchenzi smiles. A mild smile, and he still only says half of what he means:\n\n**Xuanchenzi:** In the Chending hidden realm there is a stone chamber. In three hundred years, no one has gone in…\n\nHe doesn't finish. He pats your shoulder, turns, and goes."
+    "zh": "这一场打得跟午后那一场大不一样。师姐的剑是真剑，招是真招，一剑一剑递过来，又快又稳，逼得台下的人屏住了气。小满没有兵器，他连一根木棍都没带，只是在台上躲。他躲得很难看，东一跳，西一滚，有两回简直是连滚带爬，引得台下一阵一阵地笑。可笑着笑着，便有人觉出不对来了：三十招过去，师姐的剑一回也没碰着他。\n\n他躲的法子，是他爹在黑松岭的山涧边教给他的：先看风，后看鹿。他不看师姐的剑，看的是师姐的脚——剑往哪里去，脚先往哪里挪；脚往哪里挪，肩膀先往哪里沉。这跟看一头鹿要往哪边跑，是一个道理。有一剑来得太快，他来不及看脚，只得往后一仰，剑尖贴着他的鼻子过去，削下了他额前的一绺头发。那绺头发在半空里飘啊飘，飘到台下，正落在阿禾的小本子上。阿禾低头看了一眼，把它夹进了本子里，面无表情，记了一笔。他一面躲，一面三步一吸，三步一呼，呼吸匀得像是在山里走一条走熟了的路。\n\n到第三十一招，师姐一剑刺空，脚下踩到了五行台边上那道长草的石缝，身子晃了一晃。小满便在这时伸手，在她手腕上轻轻一带——只是一带，像拉住一个要摔倒的人——师姐便顺着自己那一剑的劲儿，一步一步，退出了台子。\n\n执事敲锣：「沈小满，胜。」\n\n台下又是一片寂静，跟着便有人叫起来：「运气！运气好！」「石缝！她踩着石缝了！」「沈小满这小子，命里带财！」\n\n师姐站在台下，低头看了看自己的手腕，又抬起头来看小满，看了好一会儿。她走到台边，冲他抱了一抱拳，压低了声音，只说了三个字：「藏得好。」\n\n小满也冲她抱了一抱拳，也压低了声音：「师姐也是。」\n\n师姐的眉毛轻轻一挑。她右手的袖子里，一直扣着一张符，从第一招扣到第三十一招，始终没有掏出来——那是一张雷符，掏出来，小满躲不躲得过另说，五行台是一定要炸去半边的。小满看见了她袖口里露出来的那一角黄纸，她也知道他看见了。两个人都没再说什么。\n\n头名，筑基丹一枚。\n\n照观里的老例，头名的名字要当着全外门的面，由周衡写进那本蓝布面的名录，写完了，观主再赐丹。周衡蘸饱了墨，一笔一画地写下「沈小满」三个字，写得比平时慢，写完了，拿嘴吹了吹，又把名录往前翻了几十页，翻到那一页划了一道的，看了一眼，才又翻回来。\n\n便在这时，人群后头一阵骚动，马小宝回来了。他裹着他爹的棉袍，头发上结着冰碴子，湿淋淋地一路走，一路往下滴水，滴到五行台跟前，看见观主正把玉盒子往沈小满手里放，站住了，张了张嘴，打了一个惊天动地的喷嚏。\n\n这颗丹是观主玄沉子亲手赐的，装在一只玉盒子里，玉色青白，盒盖上贴着一道封条，封条上盖着沉鼎观的大印。玄沉子把玉盒放在小满手里，手却没有马上松开，他看着小满，看了很久很久，就像入门那天看测灵石的时候那样，道：「五行杂灵根？」\n\n小满道：「是。」\n\n玄沉子道：「练气二层？」\n\n小满道：「……是。」\n\n玄沉子笑了，笑得很温和，说话却照旧只说半句：「沉鼎秘境里，有一间石室。三百年，没人进去过……」\n\n他没说完，拍了拍小满的肩膀，转身走了。小满捧着玉盒站在那里，后背上的汗，一下子全冒了出来。\n\n他捧着玉盒走下五行台的时候，抬头往山门那边望了一眼。瞿老站在台阶上，拄着扫帚，也在看他。可是瞿老看的不是他，是他手里那只玉盒子。那一眼很长，长得不像是在看一只盒子，倒像是在看一件很多年以前的旧事。然后瞿老转过身去，扫地了。",
+    "en": "This bout was nothing like the afternoon's. The sister's sword was a real sword, her moves real moves, thrust after thrust, quick and steady, till the crowd held its breath. Xiaoman had no weapon — not even a stick — and only dodged about the stage. He dodged very badly, hopping here, rolling there, twice scrambling on all fours, drawing laugh after laugh from below. But as they laughed, some began to feel something was wrong: thirty moves gone, and the sister's sword had not touched him once.\n\nThe way he dodged his father had taught him by the gully at Black Pine Ridge: watch the wind first, then the deer. He didn't watch the sister's sword; he watched her feet — where the sword was going, the feet moved first; where the feet moved, the shoulder sank first. The same as reading which way a deer will bolt. One thrust came too fast to read the feet, and he had to lean back; the point passed his nose and shaved off a lock from his forehead. The lock floated down, down, off the stage, and landed on Ah He's notebook. Ah He glanced down, tucked it between the pages, and, without expression, made an entry. And as he dodged he breathed three steps in, three steps out, as even as walking a well-known mountain path.\n\nOn the thirty-first move the sister thrust at empty air, stepped into the grassy seam at the edge of the Five Elements Platform, and swayed. In that instant Xiaoman reached out and drew lightly at her wrist — only drew, as you'd catch someone about to fall — and the sister, carried on by her own thrust, stepped, stepped, and stepped off the stage.\n\nThe steward struck the gong: \"Shen Xiaoman wins.\"\n\nSilence again below, and then shouts: \"Luck! Pure luck!\" \"The seam! She stepped in the seam!\" \"That Shen Xiaoman — born lucky!\"\n\nThe sister stood below, looked down at her wrist, then up at Xiaoman, a good while. She came to the edge of the stage, saluted him, and in a low voice said just three words: \"Well hidden.\"\n\nXiaoman saluted back, just as low: \"You too, sister.\"\n\nThe sister's eyebrow lifted slightly. In her right sleeve she had held a talisman from the first move to the thirty-first and never drawn it — a thunder talisman; drawn, whether Xiaoman could dodge it or not, half the Five Elements Platform would certainly have been blown away. Xiaoman had seen the corner of yellow paper at her cuff, and she knew he had seen it. Neither said anything more.\n\nFirst place: one Foundation pill.\n\nBy the temple's old custom, the first-place name was written into the blue-cloth register by Zhou Heng before the whole outer court, and then the abbot bestowed the pill. Zhou Heng dipped his brush full and wrote the three characters of Shen Xiaoman stroke by stroke, slower than usual; when he'd finished he blew on them, then turned the register back several dozen pages to the page with the struck-out line, looked at it once, and turned back.\n\nJust then there was a stir at the back of the crowd: Ma Xiaobao was back. Wrapped in his father's padded gown, ice in his hair, he came dripping all the way to the Five Elements Platform, saw the abbot putting the jade box into Shen Xiaoman's hands, stopped, opened his mouth, and let out an earth-shaking sneeze.\n\nThe pill was bestowed by Abbot Xuanchenzi's own hand, in a jade box, the jade a bluish white, a paper seal across the lid stamped with the great seal of Chending Temple. Xuanchenzi put the box in Xiaoman's hands but didn't let go at once; he looked at Xiaoman a long, long time, just as he had looked at the testing stone the day Xiaoman entered, and said: \"Mixed five-element root?\"\n\n\"Yes,\" said Xiaoman.\n\n\"Second level of Qi Refining?\"\n\n\"…Yes.\"\n\nXuanchenzi smiled, very gently, and as always said only half a sentence: \"In the Chending hidden realm there is a stone chamber. Three hundred years, and no one has entered it…\"\n\nHe didn't finish; he patted Xiaoman's shoulder and turned away. Xiaoman stood holding the jade box, sweat breaking out all down his back at once.\n\nAs he came down from the Five Elements Platform with the jade box, he looked up toward the temple gate. Elder Qu stood on the steps leaning on his broom, looking at him too. But it was not him Elder Qu was looking at; it was the jade box in his hands. The look was long — too long for looking at a box; more like looking at something that happened many years ago. Then Elder Qu turned away and swept."
    },
    "beat": [],
    "next": "wm-baishi"

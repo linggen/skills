@@ -9,12 +9,12 @@
   "en": "Chending Temple · The outer court · the steward's door"
  },
  "setup": {
-  "zh": "天没亮，执事房门口排起了长队。身后有人拍你肩膀——{伴}。",
-  "en": "Before dawn a long queue has formed at the steward's door. Someone taps your shoulder — {伴}."
+  "zh": "九月初十，天没亮，执事房门口排起了长龙：领灵石，交公中。身后有人拍你肩膀——阿禾。",
+  "en": "The tenth of the ninth month, before dawn: a long queue at the stewards' door — draw your stones, pay the common fund. Someone taps your shoulder — Ah He."
  },
  "recap": {
-  "zh": "外门的第二天一早，{伴}也来了——考进来的，三灵根，「中上之资」；{伴·她}在小本子上记了你一笔：下下之资，利息以后再算。",
-  "en": "Early on the second day in the outer court, {伴} turned up too — got in on merit, three roots, \"above the middle\"; and wrote you down in a little notebook: bottom of the class, interest to be reckoned later."
+  "zh": "入门第二天，阿禾也在——考进来的，三灵根，「中上之资」；她在小本子上记了你一笔：下下之资，利息以后再算。",
+  "en": "Your second day in the sect, Ah He was there too — passed on merit, three roots, \"above the middle\"; she wrote you into her notebook: bottom of the bottom, interest reckoned later."
  },
  "cast": [],
  "people": [
@@ -24,20 +24,20 @@
  "panel": {
   "caption": {
    "zh": [
-    "天还没亮，执事房门口排起了长队。",
-    "身后有人拍你的肩膀。",
-    "一个小本子，一行字：利息，以后再算。"
+    "九月初十，执事房前，领灵石，交公中。",
+    "身后有人拍你的肩膀——一个红鼻头。",
+    "「利息，以后再算。」"
    ],
    "en": [
-    "Before dawn, a long queue at the steward's door.",
-    "Someone taps you on the shoulder.",
-    "A little notebook, one line: interest, to be reckoned later."
+    "The tenth of the ninth month: draw stones, pay the common fund.",
+    "Someone taps your shoulder — a red nose.",
+    "\"Interest — reckoned later.\""
    ]
   }
  },
  "story": {
-  "zh": "第二天一早，天还没亮，外门执事房门口就排起了长队——领木牌，领功课。\n\n排在你前面的是个瘦高个，叫孙二狗，灵根比你还差，据说测灵石亮的时候，执事以为石头坏了，拍了两下。他回头看了你一眼，冲你咧了咧嘴，像是找到了亲人。\n\n身后有人拍你肩膀。你回头——\n\n{伴}。\n\n{伴·她}穿着一身跟你一样的灰袍，比你还大一号，袖子挽了三道。鼻头还是红的，像一根萝卜。\n\n**你**：……你怎么在这？\n\n**{伴}**：考进来的。\n\n**你**：你怎么没跟我一起来？\n\n**{伴}**：我娘说，你一个人去，会死。我一个人去，也会死。两个人一起去，死一双，不划算。所以分开走。\n\n**你**：……这是什么道理？\n\n**{伴}**：风险分散。\n\n**你**：你什么灵根？\n\n**{伴}**：（面无表情）三灵根。真灵根。执事说我「中上之资」。\n\n**你**：……\n\n**{伴}**：你呢？\n\n**你**：（面无表情）五灵根。五行杂灵根。执事说我「下下之资」。\n\n{伴}看了你一会儿，从袖子里摸出{伴·她}自己的小本子，翻开，舔了舔笔尖，写了一行。\n\n**你**：写什么呢？\n\n**{伴}**：「九月初二。{name}。下下之资。」（合上本子）利息，以后再算。",
-  "en": "Next morning, before it's light, there's already a long queue outside the steward's office — tags to collect, lessons to collect.\n\nIn front of you is a tall skinny boy called Sun Ergou, with roots even worse than yours; they say when the testing stone lit up for him, the steward thought it was broken and slapped it twice. He looks back at you and grins, like he's found family.\n\nSomeone taps your shoulder from behind. You turn —\n\n{伴}.\n\n{伴} is in the same grey robe as you, one size bigger still, sleeves rolled up three times. The tip of the nose is still red, like a radish.\n\n**You:** …What are you doing here?\n\n**{伴}:** Passed the test.\n\n**You:** Why didn't you come with me?\n\n**{伴}:** My mother said if you go alone, you die. If I go alone, I die too. If we go together, two die at once — bad deal. So we split up.\n\n**You:** …What kind of logic is that?\n\n**{伴}:** Spreading the risk.\n\n**You:** What roots have you got?\n\n**{伴}:** (deadpan) Three. A true root. The steward said \"above the middle.\"\n\n**You:** …\n\n**{伴}:** You?\n\n**You:** (deadpan) Five. Five-element mixed roots. The steward said \"bottom of the class.\"\n\n{伴} looks at you for a while, then takes {伴·她} own little notebook out of a sleeve, opens it, licks the brush tip and writes a line.\n\n**You:** What are you writing?\n\n**{伴}:** \"Ninth month, second day. {name}. Bottom of the class.\" (closes the notebook) Interest, reckoned later."
+  "zh": "身后忽然有人拍他肩膀。\n\n小满回头一看，是一个扎两根小辫子的姑娘，穿着一身跟他一样的灰袍，却比他的还大一号，袖子挽了三道，下摆拿草绳在腰里扎了一圈，才不至于拖地。一个红鼻头，冻得像一根萝卜。手里捏着一个巴掌大的小本子，一截炭条夹在耳朵上。\n\n小满瞧着她，觉得面熟。这张脸他昨天在石阶上见过，在石坪上见过，在正殿里测灵石的时候也见过，每一回都只见着一个后脑勺，一截小辫子一晃，便给人群挡住了。他那时候心想，这世上红鼻头的姑娘多了，石坳村的阿禾，她娘连村口都不让她出，怎么会跑到三百里外的泗水来？\n\n他又瞧了一眼。那姑娘也瞧着他，一声不吭，只从耳朵上取下那截炭条，在小本子上写了一个字。\n\n小满张大了嘴，半晌，才道：「……阿禾？」\n\n阿禾道：「嗯。」\n\n「你怎么在这？」\n\n「考进来的。」\n\n「你——你昨天就在？」\n\n「前天就在。」阿禾道，「石阶上，我从你边上冲过去的。洛书，我比你先摆好半炷香。测灵石，我排在你前头第三个。」她顿了一顿，一本正经地道，「你三回都没认出我。」\n\n小满脸上一热，忙道：「我认出来了！我就是……没敢认。」\n\n阿禾把小本子翻开来，指着刚写的那一行给他看。那一行写的是：**九月初十。认出。三回半。**\n\n小满问：「半回是什么？」\n\n阿禾道：「方才你瞧了我两眼，头一眼没认出来，第二眼才认出来，算半回。」\n\n小满没话说了，只好换个问题：「你怎么没跟我一起来？」\n\n阿禾道：「我娘说，你一个人去，会死。我一个人去，也会死。两个人一起去，死一双，不划算。所以分开走。」\n\n小满听得发怔：「……这是什么道理？」\n\n阿禾道：「风险分散。」\n\n小满想了一想，觉得这话虽然难听，账倒是算得明白。他娘说过，阿禾她娘是石坳村第二会算账的人，第一是她自己。\n\n他又问：「你什么灵根？」\n\n阿禾面无表情地道：「三灵根。真灵根。执事说我『中上之资』。」\n\n小满张了张嘴，半个字也没说出来。昨天测灵石的时候，殿里一阵惊叹，他踮起脚来想看是谁，只看见一截小辫子——原来那一阵惊叹，是给阿禾的。\n\n阿禾反问：「你呢？」\n\n她明明是知道的。那时候她排在他前头第三个，测完了就站在殿柱子底下，满殿的人笑成一锅粥，她是没笑的那两个里头的一个。可她偏要问，问得一本正经，像是非得从他嘴里听一遍，才算数。\n\n小满也面无表情地道：「五灵根。五行杂灵根。执事说我『下下之资』。」\n\n阿禾看了他一会儿，舔了舔炭条，在本子上又写了一行。小满伸长脖子问：「写什么呢？」阿禾念道：「『九月初十。沈小满。下下之资。』」念罢合上本子，「利息，以后再算。」",
+  "en": "Someone tapped him on the shoulder from behind.\n\nXiaoman turned. It was a girl with two little braids, in the same grey robe as his, only a size bigger still, the sleeves rolled up three times and the hem tied round her waist with a straw rope so it wouldn't drag. A red nose, frozen like a radish. In her hand a notebook no bigger than a palm; a stick of charcoal tucked behind her ear.\n\nXiaoman looked at her and thought the face familiar. He had seen it yesterday on the stone steps, on the stone terrace, and in the hall at the root-testing too — each time only the back of a head, the flick of a braid, and then the crowd closed over it. He had told himself at the time that the world was full of girls with red noses; Ah He of Stone Hollow, whose mother wouldn't let her past the village gate, could hardly have turned up at the Si, three hundred li away.\n\nHe looked again. The girl looked back at him without a word, took the charcoal from behind her ear, and wrote one character in the notebook.\n\nXiaoman's mouth fell open. At last he said, \"…Ah He?\"\n\n\"Mm,\" said Ah He.\n\n\"What are you doing here?\"\n\n\"Passed the test.\"\n\n\"You — you were here yesterday?\"\n\n\"The day before,\" said Ah He. \"On the steps I ran right past you. On the Luo diagram I was done half a stick of incense before you. At the testing stone I was three ahead of you in the line.\" She paused, and said in all seriousness, \"Three times you didn't recognise me.\"\n\nXiaoman's face went hot. \"I did recognise you! I just… didn't dare.\"\n\nAh He opened the notebook and showed him the line she had just written: **Ninth month, tenth day. Recognised. Three and a half times.**\n\n\"What's the half?\" Xiaoman asked.\n\n\"Just now you looked at me twice. The first look you didn't know me, the second you did. That's a half.\"\n\nXiaoman had nothing to say to that, so he tried another question. \"Why didn't you come with me?\"\n\n\"My mother said if you go alone, you'll die. If I go alone, I'll die too. Two going together and dying as a pair — bad bargain. So we split up.\"\n\nXiaoman stared. \"…What kind of reasoning is that?\"\n\n\"Spreading the risk,\" said Ah He.\n\nXiaoman thought it over; ugly as it sounded, the sum was right. His mother had once said that Ah He's mother was the second-best reckoner in Stone Hollow — the best being herself.\n\nHe asked, \"What roots have you got?\"\n\nAh He said, without expression, \"Three roots. A true root. The steward says I'm 'above the middle.'\"\n\nXiaoman opened his mouth and not half a word came out. Yesterday at the testing stone a gasp had gone round the hall and he had stood on tiptoe to see who it was, and seen only a braid — so that gasp had been for Ah He.\n\n\"And you?\" Ah He asked back.\n\nShe knew perfectly well. She had been three ahead of him; after her test she had stood under a pillar of the hall, and when the whole hall laughed itself into porridge she had been one of the two who didn't laugh. But she asked anyway, quite solemnly, as if it only counted once she'd heard it from his own mouth.\n\nXiaoman said, just as expressionless, \"Five roots. Mixed five-element roots. The steward says I'm 'the bottom of the bottom.'\"\n\nAh He looked at him for a while, licked her charcoal, and wrote another line. Xiaoman craned his neck. \"What are you writing?\" Ah He read it out: \"'Ninth month, tenth day. Shen Xiaoman. Bottom of the bottom.'\" Then she shut the notebook. \"Interest — reckoned later.\""
  },
  "lines": [],
  "buttons": [
@@ -63,8 +63,8 @@
     }
    ],
    "story": {
-    "zh": "**你**：记吧。利息，我认。\n\n{伴}点点头，好像你终于说了一句像样的话。\n\n讲堂那边，辰时的钟响了。",
-    "en": "**You:** Write it down. The interest — I'll own it.\n\n{伴} nods, as if you've finally said something sensible.\n\nOver at the lecture hall, the bell for the hour of Chen rings."
+    "zh": "小满想了一想，道：「记吧。利息，我认。」\n\n阿禾点了点头，像是他总算说了一句像样的话。她转身要走，走了两步，又回过头来，补了一句：「鸡蛋，三个半。别忘了。」\n\n小满站在原地，瞧着她那两截小辫子一跳一跳地走远了，心里头说不出是什么滋味。他想起出门那天，老槐树底下只站着他娘一个人。他那时候还道这丫头在睡懒觉。\n\n原来她早走了一天，走的是另一条路。",
+    "en": "Xiaoman thought it over and said, \"Write it down. The interest — I'll own it.\"\n\nAh He nodded, as if he had finally said something sensible. She turned to go, took two steps, looked back and added, \"Eggs: three and a half. Don't forget.\"\n\nXiaoman stood where he was and watched her two little braids bob away, and could not have said what he felt. He remembered the day he left: under the old locust tree there had been only his mother. He had supposed the girl was sleeping in.\n\nSo she had gone a day early, by another road."
    },
    "beat": [],
    "next": "wm-jiangtang"
@@ -88,8 +88,8 @@
     }
    ],
    "story": {
-    "zh": "**你**：什么利息？我欠你什么了？\n\n{伴}没抬头，又写了一行。\n\n**{伴}**：「不认账。」（合上本子）利息翻倍。\n\n讲堂那边，辰时的钟响了。",
-    "en": "**You:** What interest? What do I owe you?\n\n{伴} doesn't look up, just writes another line.\n\n**{伴}:** \"Denies the debt.\" (closes the notebook) Interest doubled.\n\nOver at the lecture hall, the bell for the hour of Chen rings."
+    "zh": "小满道：「这也要算利息？」\n\n阿禾道：「什么都要算利息。」她转身要走，走了两步，又回过头来，补了一句，「鸡蛋，三个半。别忘了。」\n\n小满站在原地，瞧着她那两截小辫子一跳一跳地走远了，心里头说不出是什么滋味。他想起出门那天，老槐树底下只站着他娘一个人。他那时候还道这丫头在睡懒觉。\n\n原来她早走了一天，走的是另一条路。",
+    "en": "\"Even this earns interest?\" said Xiaoman.\n\n\"Everything earns interest,\" said Ah He. She turned to go, took two steps, looked back and added, \"Eggs: three and a half. Don't forget.\"\n\nXiaoman stood where he was and watched her two little braids bob away, and could not have said what he felt. He remembered the day he left: under the old locust tree there had been only his mother. He had supposed the girl was sleeping in.\n\nSo she had gone a day early, by another road."
    },
    "beat": [],
    "next": "wm-jiangtang"
