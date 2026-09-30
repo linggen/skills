@@ -450,6 +450,10 @@ His ruling (2026-09-29): 「不用小人书的方式了，图片作为图鉴，�
 - **First appearance:** the book's `[words]{注=id}` puts the card after the
   paragraph of first appearance; the game's scene `meet` puts it in the main
   slot before the scene card; 录 has 图鉴 with empty slots for the unmet.
+- **A card says only what the reader knows at its first appearance** (Hanli,
+  2026-09-30): nothing from a later 回 — no later name, identity or reveal (the
+  pit fox is 小银狐 until she names herself; the token has no 银月 in it yet) —
+  and no 「你」: a card names 沈小满. Card lines are static (no unlock by 回).
 - **Pictures:** one house style (fine ink 白描, soft grey wash, warm aged paper,
   one subject, no text), checked by eye, re-rolled until right. 山海经
   creatures painted from their classical line, the woodcut kept as 「原图」

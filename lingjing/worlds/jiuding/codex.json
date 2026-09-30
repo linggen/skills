@@ -237,6 +237,9 @@
     "en": [
      "A little silver fox in the muddy pit, its fur like frost on moonlight: one tail left, and eight stumps at its root."
     ]
+   },
+   "first": {
+    "book": "h01"
    }
   },
   "longzhi": {
@@ -255,7 +258,15 @@
     "book": "h01",
     "scene": "00-chushan"
    },
-   "tag": "信物"
+   "tag": "信物",
+   "lines": {
+    "zh": [
+     "吴婆婆塞给沈小满的小木牌，磨得发亮；刻着一只蜷着的狐狸，尾巴绕着身子——数一数，九条。"
+    ],
+    "en": [
+     "The little wooden token Granny Wu pressed into Shen Xiaoman's hand, worn bright; carved with a curled fox, its tails wrapped round it — count them: nine."
+    ]
+   }
   },
   "tuna-jing": {
    "first": {
@@ -432,7 +443,15 @@
    "tag": "丹药"
   },
   "huangting": {
-   "tag": "功法"
+   "tag": "功法",
+   "lines": {
+    "zh": [
+     "瞿老扔给沈小满的一卷薄书。「上有黄庭下关元，后有幽阙前命门」——三丹田，这回自己练。"
+    ],
+    "en": [
+     "A thin book Elder Qu tossed to Shen Xiaoman. \"Above is the Yellow Court, below the Origin Pass; behind the Hidden Gate, before the Gate of Life\" — the three elixir fields, his to train now."
+    ]
+   }
   },
   "heluo": {
    "tag": "功法"
@@ -452,10 +471,10 @@
    "image": "art/people/zhaoang.webp",
    "lines": {
     "zh": [
-     "太一宫的弟子，天灵根，一身白衣，腰悬长剑，站在漳水边的老柳树下，便如一棵挺拔的松树。「因为天下，该归于一。」"
+     "太一宫的弟子，一身白衣，腰悬长剑，站在漳水边的老柳树下，便如一棵挺拔的松树。「因为天下，该归于一。」"
     ],
     "en": [
-     "A disciple of the Taiyi Palace, heaven-rooted, in white with a long sword, standing under the old willow by the Zhang like a young pine. \"Because all under heaven should be one.\""
+     "A disciple of the Taiyi Palace, in white with a long sword, standing under the old willow by the Zhang like a young pine. \"Because all under heaven should be one.\""
     ]
    }
   },
