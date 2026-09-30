@@ -1139,6 +1139,7 @@ body.fighting .atmos { display: none; }
 .spstage .spskip { position: absolute; top: 12px; right: 12px; border: 1px solid #b8ad96; background: transparent; color: #5b5244;
   border-radius: 999px; padding: 4px 14px; font-size: 14px; cursor: pointer; }
 .spstage.over .spline::after { content: ' ›'; opacity: .6; }
+.spstage .zjskip, .spstage .zjcap { display: none; } /* the page's 跳过 and line stand for the piece's own */
 @media (prefers-color-scheme: dark) {
   .spstage { background: rgba(24, 22, 19, .97); }
   .spstage .spline { color: #e9e2d2; }
