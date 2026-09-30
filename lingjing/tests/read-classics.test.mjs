@@ -67,7 +67,7 @@ test('each 回 ends with its classics (卷一 in ten since 2026-09-30), and the 
   assert.deepEqual(entries('h06'), ['baopu', 'shennong', 'zuozhuan-ranzhi', 'jiuding']); // 抱朴子's 转 told at 饭桶's first 纹, before the lecture (2026-09-30)
   assert.deepEqual(entries('h07'), ['shanhai-gui', 'shanhai-xirang']);
   assert.deepEqual(entries('h08'), ['liji-zha', 'lunyu-shuxiu', 'huangting', 'shangshu-yugong']);
-  assert.deepEqual(entries('h09'), ['zhouyi-xun', 'zhuangzi-keyi', 'baopu-jiyan', 'huangting']);
+  assert.deepEqual(entries('h09'), ['baopu-jiyan', 'zhouyi-xun', 'zhuangzi-keyi', 'huangting']); // 褚先生's 筑基 lecture moved off the cliff into the autumn 讲堂 (2026-09-30)
   assert.deepEqual(entries('h10'), ['shiji-ximenbao', 'shanhai-bingyi']);
   for (const c of chapters) assert.equal(/《吐纳经》\{典=/.test(c.md), false, `${c.file}: 《吐纳经》 is 银月's own, never a classic`);
   const html = renderMarkdown(fillHero(at('h06').md, {}), { classics: CLASSICS });

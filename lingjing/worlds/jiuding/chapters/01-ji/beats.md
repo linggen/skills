@@ -6,7 +6,7 @@
 > fight is **冰夷's two dragons testing the one who would not kneel** (`01-rise`, `foe-shuanglong`),
 > written into the book too. Each scene's `story` is the book's own passage (verbatim zh + en).
 
-1. **Arrive** (`01-arrive`, 漳水南岸). 筑基后第十天 the abbot's map; the tenth evening at the Zhang;
+1. **Arrive** (`01-arrive`, 漳水南岸). the abbot's map (第九回's last scene, the night after the Foundation); the tenth evening at the Zhang;
    周衡 does not write a word.
 2. **Ye** (`01-ye`, 邺城). The inn, the custom, this year's bride (豆腐西施). The two failed plans are
    the player's choices — **bribe the Three Elders** (the ingot's 圈里一横) and **the bedsheet ghost**
