@@ -164,6 +164,8 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
   const tick = [];
   const every = (fn) => { tick.push(fn); };
   const riverTop = H * 0.56, riverBot = H * 0.74, bankY = H * 0.86;
+  // The wall stands on the river's far third; the near bed lies bare in front of it, boats and all.
+  const wallFoot = riverTop + (riverBot - riverTop) * 0.3;
 
   // Paper, sky, the far bank (邺城's wall and willows).
   root.addChild(new PIXI.Graphics().rect(0, 0, W, H).fill(PAPER));
@@ -208,7 +210,7 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
     const b = new PIXI.Sprite(boatTex);
     b.anchor.set(0.5);
     b.scale.set(0.55 + (i % 3) * 0.12);
-    b.position.set(W * (0.05 + (i * 0.047) % 0.9), riverTop + (riverBot - riverTop) * (0.2 + ((i * 37) % 60) / 100));
+    b.position.set(W * (0.05 + (i * 0.047) % 0.9), riverTop + (riverBot - riverTop) * (0.42 + ((i * 37) % 50) / 100));
     b.rotation = ((i * 53) % 40 - 20) / 100;
     bed.addChild(b);
   }
@@ -216,7 +218,7 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
 
   // The wall: a sheet of ink water grown up from the river, torn at the edge, fish leaping in it.
   const wallBox = { x0: W * 0.04, x1: W * 0.96 };
-  const wallP = { top: riverBot, fish: 0 }; // no wall until the river stands up
+  const wallP = { top: riverTop + (riverBot - riverTop) * 0.3, fish: 0 }; // no wall until the river stands up
   const wall = new PIXI.Container();
   const wallTex = PIXI.Texture.from(wallCanvas());
   const wallSprite = new PIXI.Sprite(wallTex);
@@ -248,14 +250,14 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
   wallLayer.filters = [new PIXI.DisplacementFilter({ sprite: fibres, scale: 26 })];
   root.addChild(wallLayer);
   every((dt) => {
-    wallMask.clear().rect(wallBox.x0, wallP.top, wallBox.x1 - wallBox.x0, Math.max(0, riverBot - wallP.top)).fill(0xffffff);
+    wallMask.clear().rect(wallBox.x0, wallP.top, wallBox.x1 - wallBox.x0, Math.max(0, wallFoot - wallP.top)).fill(0xffffff);
     for (const f of fish) {
       f.alpha = wallP.fish;
       if (wallP.fish <= 0) continue;
       f.y -= f.speed * dt * wallP.fish;
       f.x += Math.sin((f.y + f.wig * 40) / 30) * 0.4;
       f.rotation = Math.sin((f.y + f.wig * 50) / 60) * 0.35;
-      if (f.y < wallP.top - 30) f.y = riverBot + 20;
+      if (f.y < wallP.top - 30) f.y = wallFoot + 20;
     }
   });
 
@@ -449,7 +451,7 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
         .to(god0, { alpha: 1, duration: s(700) }, s(4500));
     },
     fall: () => tl()
-      .to(wallP, { top: riverBot, duration: s(2800), ease: 'power2.in' }, 0)
+      .to(wallP, { top: wallFoot, duration: s(2800), ease: 'power2.in' }, 0)
       .to(wallP, { fish: 0, duration: s(1600) }, s(1200))
       .to(god, { alpha: 0, y: H * 0.5, duration: s(2400) }, s(400))
       .to(bed, { alpha: 0, duration: s(1200) }, s(1800))
