@@ -758,6 +758,7 @@ export function view(st) {
     root: s.root, deck: s.deck.length, hand: s.hand.length, fatigue: s.fatigue,
     powerUsed: s.powerUsed, powerHit: s.powerHit, boost: s.boost, armor: s.armor ?? 0, ward: s.ward ?? null,
     signature: s.signature, charge: s.charge?.phase ?? null, lifts: s.lifts, stars: s.stars ?? null, drain: s.drain ?? 0,
+    ...(s.trial ? { trial: s.trial } : {}),
     board: s.board.map(m => ({ id: m.id, name: m.name, element: m.element, atk: m.atk, hp: m.hp, hpMax: m.hpMax, taunt: m.taunt, ready: !m.sick && !m.struck && !m.held, chained: Boolean(m.chain || m.held), drought: m.drought ?? 0 })),
   });
   // 望气术: the plan is shown only to a player who can read it (setup.you.insight).
