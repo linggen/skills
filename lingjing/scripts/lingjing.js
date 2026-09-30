@@ -704,7 +704,7 @@ function feat(...args) {
   // A new 回's seal is its opening: it comes after the old 回's ending card is put away.
   if (kind === 'rise') riseWaits = true;
   setTimeout(async () => {
-    for (let k = 0; k < 600 && (pieceOn || (kind === 'rise' ? oldHuiPlaying() : (closeUp() || featOn))); k += 1) await pause(250);
+    for (let k = 0; k < 600 && (pieceOn || (kind === 'rise' ? (oldHuiPlaying() || Boolean(look?.tell_owed || drawingTold)) : (closeUp() || featOn))); k += 1) await pause(250);
     featOn = true;
     if (kind === 'rise') riseWaits = false;
     featNow(...args);
