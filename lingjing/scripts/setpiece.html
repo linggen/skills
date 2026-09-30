@@ -8,22 +8,22 @@
   <link rel="stylesheet" href="setpiece.css" />
   <style>
     body { overflow: auto; padding: 16px; background: #efe8d8; }
-    .sp { max-width: 860px; margin: 0 auto; }
-    .sp h1 { font-family: var(--serif, serif); font-size: 18px; margin: 0 0 4px; }
-    .sp .stage { width: 100%; aspect-ratio: 4 / 3; cursor: pointer; }
-    @media (max-width: 600px) { .sp .stage { aspect-ratio: 4 / 5; } }
-    .sp .line { min-height: 3.4em; margin: 12px 2px 8px; font-family: var(--serif, serif); font-size: 16px; line-height: 1.7; color: #231f1a; }
-    .sp .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: 13px; }
-    .sp .bar button { padding: 6px 12px; border-radius: 6px; border: 1px solid #8f8a80; background: #f5efe1; color: #231f1a; font: inherit; cursor: pointer; }
-    .sp .bar .dim { margin-left: auto; color: #6f6a60; }
+    .spv { max-width: 860px; width: 100%; margin: 0 auto; box-sizing: border-box; }
+    .spv h1 { font-family: var(--serif, serif); font-size: 18px; margin: 0 0 4px; }
+    .spv .spstage { width: 100%; aspect-ratio: 4 / 3; cursor: pointer; }
+    @media (max-width: 600px) { .spv .spstage { aspect-ratio: 4 / 5; } }
+    .spv .line { min-height: 3.4em; margin: 12px 2px 8px; font-family: var(--serif, serif); font-size: 16px; line-height: 1.7; color: #231f1a; }
+    .spv .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: 13px; }
+    .spv .bar button { padding: 6px 12px; border-radius: 6px; border: 1px solid #8f8a80; background: #f5efe1; color: #231f1a; font: inherit; cursor: pointer; }
+    .spv .bar .dim { margin-left: auto; color: #6f6a60; }
   </style>
 </head>
 <body>
   <!-- A set piece alone, to watch before a scene is wired to it:
        ?name=zhang&lang=zh|en&auto=1&still=1. Nothing is saved; the page only plays the piece. -->
-  <div class="sp">
+  <div class="spv">
     <h1 id="title">…</h1>
-    <div class="stage" id="stage" title="点一下：下一段"></div>
+    <div class="spstage" id="stage" title="点一下：下一段"></div>
     <div class="line" id="line"></div>
     <div class="bar">
       <button id="next">下一段 ›</button><button id="skip">跳过</button><button id="again">重播</button><button id="auto">自动</button>

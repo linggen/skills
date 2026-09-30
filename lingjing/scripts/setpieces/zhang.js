@@ -170,10 +170,14 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
   const far = new PIXI.Graphics();
   far.rect(W * 0.52, riverTop - H * 0.07, W * 0.4, H * 0.07).fill({ color: INK, alpha: 0.28 });
   for (let x = W * 0.54; x < W * 0.9; x += W * 0.04) far.rect(x, riverTop - H * 0.085, W * 0.018, H * 0.016).fill({ color: INK, alpha: 0.28 });
-  for (let i = 0; i < 7; i += 1) {
-    const x = W * (0.06 + i * 0.06), y = riverTop - H * 0.01;
-    far.moveTo(x, y).lineTo(x, y - H * 0.08).stroke({ width: 3, color: INK, alpha: 0.35 });
-    for (let k = 0; k < 6; k += 1) far.moveTo(x, y - H * 0.08).quadraticCurveTo(x + (k - 3) * 10, y - H * 0.06, x + (k - 3) * 14, y - H * 0.02).stroke({ width: 1.2, color: INK, alpha: 0.3 });
+  // Willows: a leaning trunk, a crown of small strokes, long strands hanging straight down.
+  for (let i = 0; i < 6; i += 1) {
+    const x = W * (0.05 + i * 0.075), y = riverTop - H * 0.005, top = y - H * (0.09 + (i % 2) * 0.02);
+    far.moveTo(x, y).quadraticCurveTo(x - 4, (y + top) / 2, x + 6, top).stroke({ width: 3, color: INK, alpha: 0.4 });
+    for (let k = 0; k < 14; k += 1) {
+      const sx = x + 6 + (k - 7) * W * 0.004, sy = top + Math.abs(k - 7) * 1.5, len = H * (0.035 + ((k * 7) % 5) * 0.008);
+      far.moveTo(sx, sy).quadraticCurveTo(sx + 2, sy + len * 0.5, sx - 1, sy + len).stroke({ width: 1, color: INK, alpha: 0.28 });
+    }
   }
   root.addChild(far);
 
@@ -212,7 +216,7 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
 
   // The wall: a sheet of ink water grown up from the river, torn at the edge, fish leaping in it.
   const wallBox = { x0: W * 0.04, x1: W * 0.96 };
-  const wallP = { top: riverTop, fish: 0 };
+  const wallP = { top: riverBot, fish: 0 }; // no wall until the river stands up
   const wall = new PIXI.Container();
   const wallTex = PIXI.Texture.from(wallCanvas());
   const wallSprite = new PIXI.Sprite(wallTex);
@@ -445,7 +449,7 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
         .to(god0, { alpha: 1, duration: s(700) }, s(4500));
     },
     fall: () => tl()
-      .to(wallP, { top: riverTop, duration: s(2800), ease: 'power2.in' }, 0)
+      .to(wallP, { top: riverBot, duration: s(2800), ease: 'power2.in' }, 0)
       .to(wallP, { fish: 0, duration: s(1600) }, s(1200))
       .to(god, { alpha: 0, y: H * 0.5, duration: s(2400) }, s(400))
       .to(bed, { alpha: 0, duration: s(1200) }, s(1800))
