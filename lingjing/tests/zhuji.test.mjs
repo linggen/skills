@@ -103,8 +103,16 @@ test('the cliff: 瞿老\'s last disciple, then the throw — the 九转 reached 
 
 test('the set pieces ride their exits: 筑基天象 on the cliff\'s throw, 漳水立起 as he walks into the river standing up', () => {
   assert.equal(CH.scenes['09-cliff'].exits.find(e => e.id === 'take').setpiece, 'zhuji');
-  const send = content.chapters['01-ji'].scenes['01-altar'].exits.find(e => e.id === 'send');
-  assert.deepEqual([send.setpiece, send.next], ['zhang', '01-rise']);
+  // 漳水立起 in three runs, the picture keeping pace with the play: the river stands (send),
+  // the player fights the trial himself, the wall falls after the win (stand), the seal and the 鼎 (seal).
+  const exitOf = (sc, id) => content.chapters['01-ji'].scenes[sc].exits.find(e => e.id === id);
+  const send = exitOf('01-altar', 'send');
+  assert.deepEqual([send.setpiece, send.next], [{ id: 'zhang', beats: ['still', 'rise', 'bingyi'] }, '01-rise']);
+  assert.deepEqual(exitOf('01-rise', 'stand').setpiece, { id: 'zhang', beats: ['fall'] });
+  assert.equal(exitOf('01-rise', 'stand').game?.creature, 'foe-shuanglong', 'the trial is fought, not watched');
+  assert.deepEqual(exitOf('01-deep', 'seal').setpiece, { id: 'zhang', beats: ['seal', 'ding'] });
+  const played = ['01-altar/send', '01-rise/stand', '01-deep/seal'].flatMap((k) => exitOf(...k.split('/')).setpiece.beats);
+  assert.ok(!played.includes('trial'), 'the trial beat is not replayed as a picture');
   const cliff = { ...atSnow(), scene: '09-cliff', place: 'houshan', step: 8, progress: 130 };
   let t = cliff;
   const chance = oddsOf(content, cliff, NOW, 'foundation').chance;
@@ -120,7 +128,7 @@ test('one runner for both set pieces: setpieces/zhuji.js hands 筑基天象\'s o
   const runner = fs.readFileSync(new URL('../scripts/setpiece.js', import.meta.url), 'utf8');
   assert.match(runner, /typeof def\.play === 'function'\) return def\.play\(host/);
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(page, /const piece = setpieceOf\(n\);\s*if \(piece\) playPiece\(piece\);/);
+  assert.match(page, /const piece = setpieceOf\(n\);\s*if \(piece\) playPiece\(piece, setpieceBeats\(n\)\);/);
   assert.match(page, /k < 600 && pieceOn; k \+= 1\) await pause\(250\);\s*if \(play\) show\(\{ memory/, 'her memory waits for the piece');
   assert.match(page, /k < 600 && pieceOn; k \+= 1\) await pause\(250\); \/\/ a set piece first, then the map/, '鼎归 waits for the piece');
 });

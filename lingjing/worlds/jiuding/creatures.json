@@ -1770,6 +1770,10 @@
     },
     {
       "id": "foe-shuanglong",
+      "title": {
+        "zh": "冰夷之试",
+        "en": "Bingyi's Trial"
+      },
       "name": {
         "zh": "冰夷双龙",
         "en": "Bingyi's twin dragons"

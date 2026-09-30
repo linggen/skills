@@ -241,6 +241,8 @@ function duelBrief(content, state, game, now, { door = false } = {}) {
       root: creature.root, root_name: pick(content.traits.elements[creature.root], lang),
       lean: creature.lean, art: creature.art ?? null, about: pick(creature.about, lang),
       ...(creature.elite ? { elite: true } : {}),
+      // A fight that is no 降妖 names itself (冰夷's dragons: 冰夷之试).
+      ...(creature.title ? { title: pick(creature.title, lang) } : {}),
       // A person met in a bout (the 大比's three), not a beast: the page titles it 比试.
       // Its gender, when people.json says, for the words said of the foe (他/她, battle-card.js boutWords).
       ...(creature.person ? { person: true, ...(personOf(content, state, creature.person)?.gender ? { gender: personOf(content, state, creature.person).gender } : {}) } : {}),

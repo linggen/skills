@@ -36,7 +36,7 @@ import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
 import { advance, dialogHtml, keepReading, loadReading, logHtml, playing, skipAll, withTold } from './dialogue.js';
 import { wireLiveGames } from './live-games.js';
-import { playSetPiece, setpieceOf } from './setpiece.js';
+import { playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -1196,7 +1196,7 @@ function boutCtx() {
     catalog: cardCatalog(), artBase: artBase(),
     lang: lang(), words: boutWords(BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh, c, lang()),
     board: bout.st.mode.board,
-    title: duelTitle(c, words()),
+    title: duelTitle(c, words(), lang()),
     foeName: c.name, foeArt: c.art ? `${artBase()}${c.art}` : null,
     youName: look.name ?? '', herName: look.companion?.name ?? null,
     // Why this fight, and who speaks in it (the brief carries them when the story gives them).
@@ -2568,7 +2568,7 @@ function watchMemory() {
    after the last beat a tap (or a while) puts it away. The book's line for each
    beat is said under the picture, in DOM; reduced motion plays still frames. */
 let pieceOn = null;
-async function playPiece(id) {
+async function playPiece(id, beats = null) {
   if (pieceOn) return;
   const en = lang() === 'en';
   const box = document.createElement('div');
@@ -2586,7 +2586,7 @@ async function playPiece(id) {
   try {
     const line = box.querySelector('.spline');
     mine.ctl = await playSetPiece(box.querySelector('.sphold'), id, {
-      lang: lang(), still: stillMotion(),
+      lang: lang(), still: stillMotion(), beats,
       onBeat: (i, b) => { line.textContent = b.text ?? b.line?.[lang()] ?? ''; },
       onDone: () => { mine.over = true; box.classList.add('over'); setTimeout(close, 9000); },
     });
@@ -2706,7 +2706,7 @@ function storyMoment(n) {
   // A set piece (哇时刻 ②, an exit's `setpiece`: 漳水立起, 筑基天象): the whole stage plays
   // it first; her memory and 鼎归 wait for it to end (playMemoryNow, playHoming).
   const piece = setpieceOf(n);
-  if (piece) playPiece(piece);
+  if (piece) playPiece(piece, setpieceBeats(n));
   // A realm lifted with its doors (息壤): the five open on the stage, one by one.
   if (n.doors?.length) show({ doors: { node: n, at: performance.now() } });
   const m = nodeMoment(n);

@@ -553,8 +553,13 @@ function item(card, ctx) {
 }
 
 /// A fight's title: 降妖 for a beast, 比试 for a person — 马小宝 on the 大比's
-/// stage is no demon (live, 2026-09-29).
-export const duelTitle = (creature, w) => (creature?.person ? w.bout : w.subdue) ?? '降妖';
+/// stage is no demon (live, 2026-09-29); a creature's own `title` first — 冰夷's
+/// dragons test him, they are no demon either: 冰夷之试 (2026-09-30).
+export const duelTitle = (creature, w, lang) => {
+  const own = creature?.title;
+  if (own) return (typeof own === 'string' ? own : own[lang ?? (w?.subdue === 'Subdue' ? 'en' : 'zh')] ?? own.zh);
+  return (creature?.person ? w.bout : w.subdue) ?? '降妖';
+};
 
 /// 降妖 on the scene: the exit's duel from Look, the bout from the page.
 function duel(card, ctx) {
@@ -564,7 +569,7 @@ function duel(card, ctx) {
   if (!exit) return '';
   // 先降后收 (his, 2026-09-24): the duel card is 出手 only. Once beaten, the
   // creature's own card offers 收服 (creature, below).
-  return challengeHtml(exit.duel, { ...ctx, words: boutWords(BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, exit.duel?.creature, ctx.lang), title: duelTitle(exit.duel?.creature, ctx.words), artBase: ctx.artBase ?? '', say: ctx.duelFor?.(card.id)?.text ?? null });
+  return challengeHtml(exit.duel, { ...ctx, words: boutWords(BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, exit.duel?.creature, ctx.lang), title: duelTitle(exit.duel?.creature, ctx.words, ctx.lang), artBase: ctx.artBase ?? '', say: ctx.duelFor?.(card.id)?.text ?? null });
 }
 
 /// 本命法宝 — the treasure bound at 结丹: its name and 重, what it strikes and

@@ -61,12 +61,6 @@
     "zh": "丹田那片湖还没满。九层圆满之前，冲不得——先回去，把这一年的功课做满。",
     "en": "The lake in your dantian is not full yet. Before the peak of layer nine you cannot push — go back and fill this year's practice first."
    },
-   "show": [
-    {
-     "card": "tribulation",
-     "strikes": 3
-    }
-   ],
    "grant": {
     "table": "scene",
     "progress": 60,

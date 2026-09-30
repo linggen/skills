@@ -287,6 +287,10 @@ test('the 大比 is a 比试, not a 降妖: its three foes are people, and the f
   assert.doesNotMatch(html, /降妖/);
   assert.equal(duelTitle({ id: 'zheng' }, WORDS.zh), '降妖');
   assert.equal(duelTitle({ id: 'foe-shijie', person: true }, WORDS.en), 'Bout');
+  // A fight that names itself: 冰夷's dragons test him — no 降妖 (2026-09-30).
+  assert.equal(duelTitle({ id: 'foe-shuanglong', title: { zh: '冰夷之试', en: "Bingyi's Trial" } }, WORDS.zh, 'zh'), '冰夷之试');
+  assert.equal(duelTitle({ id: 'foe-shuanglong', title: { zh: '冰夷之试', en: "Bingyi's Trial" } }, WORDS.en), "Bingyi's Trial");
+  assert.equal(duelTitle({ id: 'foe-shuanglong', title: '冰夷之试' }, WORDS.zh), '冰夷之试', 'the brief carries it already picked');
 });
 
 test('a scene waiting on a game stands with it: the round fight and the wall 洛书 sit under the scene card, never behind 还有 1 件 (live, 2026-09-29)', () => {

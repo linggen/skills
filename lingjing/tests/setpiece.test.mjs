@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BEATS, LUOSHU, TITLE, stillSvg } from '../scripts/setpieces/zhang.js';
-import { beatStepper, setpieceOf } from '../scripts/setpiece.js';
+import { beatRange, beatStepper, setpieceBeats, setpieceOf } from '../scripts/setpiece.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BOOK = fs.readFileSync(path.join(ROOT, 'story/jiuding-lu/10-第十回.md'), 'utf8');
@@ -84,4 +84,21 @@ test('setpieceOf: a string or {id}, lower-case letters only', () => {
 test('story node: an exit’s setpiece reaches the page', async () => {
   const src = fs.readFileSync(path.join(ROOT, 'scripts/rules/story.mjs'), 'utf8');
   assert.match(src, /exit\.setpiece \? \{ setpiece: exit\.setpiece \}/);
+});
+
+test('a run of the piece: {id, beats} plays only those, and the beats before the first stand done', () => {
+  assert.deepEqual(setpieceBeats({ setpiece: { id: 'zhang', beats: ['still', 'rise'] } }), ['still', 'rise']);
+  assert.equal(setpieceBeats({ setpiece: 'zhang' }), null, 'a bare id plays them all');
+  assert.equal(setpieceBeats({ setpiece: { id: 'zhang', beats: [] } }), null);
+  const all = beatRange(BEATS, null);
+  assert.equal(all.play.length, 7);
+  assert.equal(all.before.length, 0);
+  const after = beatRange(BEATS, ['seal', 'ding']);
+  assert.deepEqual(after.play.map(b => b.id), ['seal', 'ding']);
+  assert.deepEqual(after.before.map(b => b.id), ['still', 'rise', 'bingyi', 'trial', 'fall'], 'the picture starts where the river left it');
+  assert.deepEqual(beatRange(BEATS, ['ding', 'still']).play.map(b => b.id), ['still', 'ding'], 'always in the book’s order');
+  assert.equal(beatRange(BEATS, ['nope']).play.length, 7, 'an unknown run falls back to the whole piece');
+  const steps = beatStepper(after.play);
+  assert.deepEqual(steps.start(), { start: 0 });
+  assert.equal(steps.beat.id, 'seal');
 });

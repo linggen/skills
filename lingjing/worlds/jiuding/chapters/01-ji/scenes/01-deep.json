@@ -61,7 +61,14 @@
     "zh": "便在这时，胸口的木牌，微微一热。只一点点，像冬夜里揣在怀里的一颗炭星。一个声音，又轻又困，像是从很深很深的梦里挣出来的，只说了一个字：\n\n「……足。」\n\n他把左边那块六个点的拿起来，和右边那块八个点的，对调了过来。左八，右六。\n\n然后他拿起最后那块石头，五个点的，按进了正中那一格——第九格。\n\n这一回，它进去了。只听得「咔」的一声轻响，那声音不大，他在水底下却听得清清楚楚，便如沈家那扇装歪了的门，终于给人扶正了，落进了门臼里。",
     "en": "Just then the token at his chest grew faintly warm. Only a little, like an ember carried inside your coat on a winter night. A voice, soft and sleepy, as if struggling up out of a very deep dream, said a single word:\n\n\"…Feet.\"\n\nHe took up the six-dot stone on the left and swapped it with the eight-dot stone on the right. Eight left, six right.\n\nThen he took the last stone, the five-dot one, and pressed it into the middle square — the ninth.\n\nThis time it went in. There was a soft click — not loud, but under the water he heard it clearly — like the Shen family's crooked door finally set straight and dropped into its socket."
    },
-   "next": "01-cauldron"
+   "next": "01-cauldron",
+   "setpiece": {
+    "id": "zhang",
+    "beats": [
+     "seal",
+     "ding"
+    ]
+   }
   },
   {
    "id": "force",

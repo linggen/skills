@@ -98,7 +98,7 @@ test('nothing in a later world breaks its content: the rule lints, and a bad one
   assert.match(problems, /shares of 0–1/);
 });
 
-test('the throw lands: the realm moves, the pill carried is spent, the tribulation card comes up', () => {
+test('the throw lands: the realm moves, the pill carried is spent, and 筑基天象 plays in place of the tribulation card', () => {
   const s = tryThat(atJi({ bag: { 'foundation-pill': 1, lingzhi: 2 } }), 'foundation', true);
   const r = resolve(s, content, ctx, { exit: 'take' });
   assert.equal(r.result.ok, true);
@@ -112,6 +112,8 @@ test('the throw lands: the realm moves, the pill carried is spent, the tribulati
   assert.deepEqual([r.state.chapter, r.state.scene], ['01-ji', '01-arrive']);
   assert.ok(r.state.ended.includes('00-zhuji'));
   assert.deepEqual(r.result.show, content.chapters['00-zhuji'].scenes['09-cliff'].exits.find(e => e.id === 'take').show ?? []);
+  assert.ok(!(r.result.show ?? []).some(c => c.card === 'tribulation'), 'the set piece is the 筑基 moment; no separate tribulation card');
+  assert.equal(r.state.node?.setpiece, 'zhuji');
   assert.deepEqual(r.state.breakthrough.last, { to: 'foundation', chance: r.result.breakthrough.chance, success: true, at: NOW.toISOString() });
 });
 

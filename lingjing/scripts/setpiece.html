@@ -44,6 +44,8 @@
     const lang = q.get('lang') === 'en' ? 'en' : 'zh';
     const still = q.get('still') === '1' || matchMedia('(prefers-reduced-motion: reduce)').matches;
     let auto = q.get('auto') === '1';
+    // &beats=still,rise,bingyi plays a run of the piece, as a scene declares it.
+    const beats = (q.get('beats') || '').split(',').map((x) => x.trim()).filter(Boolean);
     const def = await import(`./setpieces/${name}.js`);
     const $ = (id) => document.getElementById(id);
     $('title').textContent = def.TITLE?.[lang] ?? name;
@@ -54,8 +56,8 @@
       ctl?.destroy();
       $('line').textContent = '';
       ctl = await playSetPiece($('stage'), name, {
-        lang, still, auto,
-        onBeat: (i, b) => { $('line').textContent = b.text; $('count').textContent = `${i + 1} / ${def.BEATS.length} · ${b.id}`; },
+        lang, still, auto, beats: beats.length ? beats : null,
+        onBeat: (i, b) => { $('line').textContent = b.text; $('count').textContent = `${i + 1} / ${beats.length || def.BEATS.length} · ${b.id}`; },
         onDone: () => { $('line').textContent += ` ${W.end}`; },
       });
       window.__sp = ctl;

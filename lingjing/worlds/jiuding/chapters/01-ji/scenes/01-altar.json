@@ -61,7 +61,14 @@
     "en": "Xiaoman set down his drumsticks, stepped forward, and said with an earnest face: \"Granny Shaman, wait a moment.\"\n\nHe looked at the Tofu Beauty in the boat, knitted his brows, and looked troubled: \"This bride isn't pretty enough.\"\n\nXiaoman bowed respectfully and said: \"Someone has to go into the river first and tell the River Lord: the bride's not quite pretty enough, we'll pick again and send a prettier one in a few days. A message that important — a drummer doesn't carry the weight.\" Here he raised his eyes to her: \"It has to be you, Granny Shaman, in person.\"\n\nThere was a great splash, the water shot up high, and the whole bank went silent. Xiaoman cupped his hands toward the water: \"Granny, thank you for your trouble.\"\n\nAt seven, there was a splash beside him.\n\nHe turned — A-He was gone; only her little notebook was left on the bank, open on the mud, its pages flipping in the wind. She had jumped in. She had not counted.\n\nThat day not one of the Three Elders went into the river. The three of them knelt by the Zhang knocking their heads toward the water until their foreheads were bruised, had every chest in their houses carried out, and coughed up, coin by coin, what was left of twenty years of River Lord money, heaped on the bank into a little mountain."
    },
    "next": "01-rise",
-   "setpiece": "zhang",
+   "setpiece": {
+    "id": "zhang",
+    "beats": [
+     "still",
+     "rise",
+     "bingyi"
+    ]
+   },
    "_setpiece": "卷一's 大场面, 漳水立起 (setpiece.js + setpieces/zhang.js, doc/design.md § 哇时刻): the story node of this exit carries it, so the whole stage plays the river standing up as he walks into 01-rise."
   },
   {

@@ -43,16 +43,35 @@ export const setpieceOf = (node) => {
   return typeof id === 'string' && /^[a-z]+$/.test(id) ? id : null;
 };
 
+/// The beats a declaration asks for — `{ "id": "zhang", "beats": ["still", "rise"] }`
+/// plays only those (the picture keeps pace with the play: the river stands, the
+/// player fights the trial, the rest plays after the win); a bare id plays them all.
+export const setpieceBeats = (node) => {
+  const b = node?.setpiece?.beats;
+  return Array.isArray(b) && b.length && b.every((x) => typeof x === 'string') ? b : null;
+};
+
+/// The beats to play, in the piece's own order, and the ones before the first of
+/// them that stand already done (their last frame is the start of this run).
+export function beatRange(all, want) {
+  if (!want) return { play: all, before: [] };
+  const play = all.filter((b) => want.includes(b.id));
+  if (!play.length) return { play: all, before: [] };
+  const first = all.indexOf(play[0]);
+  return { play, before: all.slice(0, first) };
+}
+
 const loadImage = (src) => new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => no(new Error(`no picture: ${src}`)); im.src = src; });
 
 /// Play piece `id` in `host` (an empty box the caller sized). Resolves to
 /// {tap(), skip(), destroy(), get i(), get phase()}.
-export async function playSetPiece(host, id, { lang = 'zh', still = false, auto = false, hold = 900, artBase = ART_BASE, onBeat, onDone } = {}) {
+export async function playSetPiece(host, id, { lang = 'zh', still = false, auto = false, hold = 900, artBase = ART_BASE, beats = null, onBeat, onDone } = {}) {
   if (!/^[a-z]+$/.test(id)) throw new Error(`bad set piece: ${id}`);
   const def = await import(`./setpieces/${id}.js`);
   // A piece that brings its own player (setpieces/zhuji.js → setpiece-zhuji.js): one runner, one call.
   if (typeof def.play === 'function') return def.play(host, { lang, still, auto, onBeat, onDone });
-  const steps = beatStepper(def.BEATS);
+  const { play: BEATS, before } = beatRange(def.BEATS, beats);
+  const steps = beatStepper(BEATS);
   const box = document.createElement('div');
   box.className = 'sphost';
   host.appendChild(box);
@@ -72,14 +91,16 @@ export async function playSetPiece(host, id, { lang = 'zh', still = false, auto 
     root.scale.set(Wpx / W);
     app.stage.addChild(root);
     scene = def.build({ PIXI, gsap, app, root, W, H, art });
+    // A later run starts where the earlier beats left the picture (the river up, the trial over).
+    for (const b of before) scene.beat(b.id).progress(1);
   }
 
-  const say = (i) => onBeat?.(i, { ...def.BEATS[i], text: def.BEATS[i].line?.[lang] ?? def.BEATS[i].line?.zh });
+  const say = (i) => onBeat?.(i, { ...BEATS[i], text: BEATS[i].line?.[lang] ?? BEATS[i].line?.zh });
   const react = (ev) => {
     if (gone) return;
     clearTimeout(timer);
     if ('start' in ev) {
-      const b = def.BEATS[ev.start];
+      const b = BEATS[ev.start];
       say(ev.start);
       if (!scene) { box.innerHTML = def.stillSvg(b.id, { W, H, art: art.bingyi?.src }); return react(steps.ended()); }
       tl = scene.beat(b.id);
@@ -92,7 +113,7 @@ export async function playSetPiece(host, id, { lang = 'zh', still = false, auto 
       if (auto) timer = setTimeout(() => react(steps.tap()), hold);
     } else if ('skip' in ev) {
       // The last frame: every beat left, run to its end in order.
-      if (scene) { tl?.progress(1); for (let k = Math.max(0, ev.skip + 1); k < def.BEATS.length; k += 1) scene.beat(def.BEATS[k].id).progress(1); } else box.innerHTML = def.stillSvg(def.BEATS.at(-1).id, { W, H, art: art.bingyi?.src });
+      if (scene) { tl?.progress(1); for (let k = Math.max(0, ev.skip + 1); k < BEATS.length; k += 1) scene.beat(BEATS[k].id).progress(1); } else box.innerHTML = def.stillSvg(BEATS.at(-1).id, { W, H, art: art.bingyi?.src });
       onDone?.();
     } else if (ev.done) onDone?.();
   };
