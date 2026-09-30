@@ -111,7 +111,8 @@ function figure(state, lang) {
   const pts = GATES.map((g, i) => {
     const cls = i < state.at ? 'is-open' : i === state.at && !state.won ? 'is-now' : '';
     const x = (g.x * 100).toFixed(2), y = (g.y * H).toFixed(2);
-    return `<g class="g-zt-pt ${cls}"><circle cx="${x}" cy="${y}" r="2.4"/><text x="${(g.x * 100 + 4).toFixed(2)}" y="${y}">${lang === 'en' ? g.en : g.id}</text></g>`;
+    // The picture carries its own painted labels (codex 三关, `labels: false`); only the dots here.
+    return `<g class="g-zt-pt ${cls}"><circle cx="${x}" cy="${y}" r="2.4"><title>${lang === 'en' ? g.en : g.id}</title></circle></g>`;
   }).join('');
   // The qi's climb so far: from 尾闾 up to the last pass opened.
   const top = state.won ? GATES[2] : GATES[Math.max(0, state.at - 1)];
