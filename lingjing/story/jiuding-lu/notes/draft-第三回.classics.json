@@ -1,0 +1,18 @@
+{
+  "_about": "Pending classics.json entry for notes/draft-第三回.md — merge into ../classics.json when the draft becomes 03-第三回.md (tests/read-classics requires every entry to be named in a chapter). Original checked as a substring of the 周易正義/07.11 wikitext, 2026-09-30.",
+  "zhouyi-heluo": {
+    "title": "周易·系辞上",
+    "about": "《周易》的〈系辞〉是解说《易》的传，旧说出于孔子；这一句在〈系辞上〉，讲圣人从天地间取法。维基文库此页是唐孔颖达《周易正義》的本子，经文之外带着疏。",
+    "source": {
+      "edition": "维基文库《周易正義/07.11》（〈繫辭上〉经文）",
+      "license": "公有领域（古籍；维基文库 PD-old）",
+      "section": "〈繫辭上〉·河出圖",
+      "url": "https://zh.wikisource.org/wiki/%E5%91%A8%E6%98%93%E6%AD%A3%E7%BE%A9/07.11"
+    },
+    "original": "是故天生神物，聖人則之。天地變化，聖人效之。天垂象，見吉凶，聖人象之。河出圖，洛出書，聖人則之。",
+    "plain": [
+      "所以天生出神物，圣人便取法它；天地变化，圣人便效仿它；天上垂下征象、显出吉凶，圣人便摹拟它；黄河出了图，洛水出了书，圣人便取法它。"
+    ],
+    "note": "经文只说「河出圖，洛出書」，并没有说是谁、怎么出的。小满他娘讲的「洛水里爬出一只老龟，背上驮着九个数，禹看了便明白了」，是后人一代一代添上去的；「戴九履一，左三右七，二四为肩，六八为足，五居中央」这句口诀，也是后来的术数书里传下来的，不在《周易》里。"
+  }
+}
