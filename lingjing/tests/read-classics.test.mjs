@@ -63,7 +63,7 @@ test('every {典=id} in the book is an entry; every entry has a real source and 
 test('each 回 ends with its classics (卷一 in ten since 2026-09-30), and the made-up 《吐纳经》 is not one', () => {
   const at = (id) => chapters.find((c) => c.id === id);
   const entries = (id) => [...renderMarkdown(fillHero(at(id).md, {}), { classics: CLASSICS }).matchAll(/<article class="dianent" id="dian-([\w-]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(entries('h05'), ['suwen', 'liezi-yugong', 'shanhai-zheng']);
+  assert.deepEqual(entries('h05'), ['liezi-yugong', 'zhuangzi-dasheng', 'shanhai-zheng']); // 真气 (素问) waits for 第九回; 守一's 用志不分 taught after the 小周天 (课随境界, 2026-09-30)
   assert.deepEqual(entries('h06'), ['shennong', 'zuozhuan-ranzhi', 'baopu', 'jiuding']); // 抱朴子's 转 told in 褚先生's lecture while he grips the bottle — no narrator aside at the first 纹 (2026-09-30)
   assert.deepEqual(entries('h07'), ['shanhai-gui', 'shanhai-xirang']);
   assert.deepEqual(entries('h08'), ['liji-zha', 'lunyu-shuxiu', 'huangting', 'shangshu-yugong']);
