@@ -1,6 +1,6 @@
 // 暴雨 · 拽爹上崖 — 第一回, the storm on 黑松岭 (00-storm / 00-fall; his 2026-09-30:
 // 「先并行做1到4」, the fun audit's first ten minutes). 爹's knee gives out on the
-// slope; 小满 hauls him back to the cliff face, three pulls, in the lulls between
+// slope; 小满 hauls him back to the cliff face, three pulls, one in each lull between
 // gusts. A pull into a gust and 爹 slides back half a foot. He is always saved —
 // the book saves him, and then the mud under 小满 gives way — so the game never
 // fails: at the minute's end the last pull is made by main force. How cleanly
@@ -28,6 +28,7 @@ const T = {
     pull: '拽',
     go: '风灌进耳朵里。等它歇一口气。',
     pulled: '拽上来一截。',
+    regrip: '手还没换过来——等下一阵风过去。',
     slipped: '顶着风头拽——爹往下滑了半尺，泥水糊了你一脸。',
     wind: '风',
     calm: '歇',
@@ -44,6 +45,7 @@ const T = {
     pull: 'Pull',
     go: 'The wind roars in your ears. Wait for it to catch its breath.',
     pulled: 'Up a little way.',
+    regrip: 'You need a fresh grip — wait out the next gust.',
     slipped: 'You pull into the gust — Father slides back half a foot, and mud slaps your face.',
     wind: 'Wind',
     calm: 'lull',
@@ -86,6 +88,12 @@ export function schedule(seed) {
   return out;
 }
 
+/** Which stretch of the storm `t` falls in. */
+export function segAt(sched, t) {
+  const i = sched.findIndex((s) => t < s.to);
+  return i < 0 ? sched.length - 1 : i;
+}
+
 /** The wind at `t` ms: the segment's level, eased over its first 250 ms. */
 export function windAt(sched, t) {
   const i = sched.findIndex((s) => t < s.to);
@@ -96,7 +104,7 @@ export function windAt(sched, t) {
 }
 
 export function newGame(seed) {
-  return { seed: String(seed), sched: schedule(seed), t: 0, live: false, pulls: 0, slips: 0, note: 'ready', won: false, grade: null };
+  return { seed: String(seed), sched: schedule(seed), t: 0, live: false, pulls: 0, slips: 0, lastLull: -1, note: 'ready', won: false, grade: null };
 }
 
 function finish(s, forced) {
@@ -109,7 +117,10 @@ const VERBS = {
   pull: (s) => {
     if (!s.live) return null;
     if (windAt(s.sched, s.t) < CALM) {
-      const n = { ...s, pulls: s.pulls + 1, note: 'pulled' };
+      // One pull a lull: the grip has to be taken again while the next gust blows.
+      const lull = segAt(s.sched, s.t);
+      if (lull === s.lastLull) return { ...s, note: 'regrip' };
+      const n = { ...s, pulls: s.pulls + 1, lastLull: lull, note: 'pulled' };
       return n.pulls >= NEED ? finish(n, false) : n;
     }
     return { ...s, slips: s.slips + 1, pulls: Math.max(0, s.pulls - 1), note: 'slipped' };

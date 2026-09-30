@@ -2,7 +2,7 @@
 // the minute's end saves him anyway (the book), graded rough.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { act, CALM, html, LIMIT, meta, NEED, newGame, schedule, tick, windAt } from '../scripts/games/storm.js';
+import { act, CALM, html, LIMIT, meta, NEED, newGame, schedule, segAt, tick, windAt } from '../scripts/games/storm.js';
 
 const calmAt = (s, from = 0) => { for (let t = from; t < LIMIT; t += 50) if (windAt(s.sched, t) < CALM) return t; return -1; };
 const gustAt = (s, from = 0) => { for (let t = from; t < LIMIT; t += 50) if (windAt(s.sched, t) > 0.6) return t; return -1; };
@@ -15,17 +15,28 @@ test('meta in both languages; the schedule is the seed\'s', () => {
   assert.notDeepEqual(schedule('a'), schedule('b'));
 });
 
-test('three pulls in the lulls win cleanly', () => {
+const nextLullAt = (s) => { const i = segAt(s.sched, s.t); for (let t = s.t; t < LIMIT; t += 50) if (segAt(s.sched, t) !== i && windAt(s.sched, t) < CALM) return t; return -1; };
+
+test('three pulls, one in each lull, win cleanly', () => {
   for (let seed = 0; seed < 20; seed += 1) {
     let s = act(newGame(`s${seed}`), { g: 'start' }).state, won = false;
     for (let i = 0; i < NEED; i += 1) {
-      s = run(s, calmAt(s, s.t + 10));
+      s = run(s, i ? nextLullAt(s) : calmAt(s, 10));
       const r = act(s, { g: 'pull' });
       s = r.state; won = r.won;
     }
     assert.ok(won, `seed ${seed}`);
     assert.equal(s.grade, s.t < 25000 ? 'clean' : 'steady');
   }
+});
+
+test('a second pull in the same lull counts for nothing', () => {
+  let s = act(newGame('l'), { g: 'start' }).state;
+  s = run(s, calmAt(s, 10));
+  s = act(s, { g: 'pull' }).state;
+  const r = act(tick(s, 20), { g: 'pull' });
+  assert.equal(r.state.pulls, 1);
+  assert.equal(r.state.note, 'regrip');
 });
 
 test('a pull into a gust slides him back and never below the start', () => {
