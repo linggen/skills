@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>灵境 · 场面</title>
+  <link rel="stylesheet" href="lingjing.css" />
+  <link rel="stylesheet" href="setpiece.css" />
+  <style>
+    body { overflow: auto; padding: 16px; }
+    .try { max-width: 520px; margin: 0 auto; }
+    .try h1 { font-family: var(--serif); font-size: 18px; margin: 0 0 4px; }
+    .try nav { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 0 12px; font-size: 13px; }
+    .try nav a { color: var(--ling); }
+  </style>
+</head>
+<body>
+  <!-- One set piece, alone, for watching it by hand: ?setpiece=zhuji&lang=zh|en&still=1&auto=1
+       Nothing is saved; the page only plays the moment. Tap to go on, 跳过 to jump to the end. -->
+  <div class="try">
+    <h1 id="title">筑基天象</h1>
+    <nav id="nav"></nav>
+    <div id="slot"></div>
+  </div>
+  <script type="module">
+    import { playSetPiece } from './setpiece-zhuji.js';
+    const q = new URLSearchParams(location.search);
+    const id = (q.get('setpiece') || 'zhuji').replace(/[^a-z]/g, '');
+    const lang = q.get('lang') === 'en' ? 'en' : 'zh';
+    const still = q.get('still') === '1' || matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const tap = q.get('auto') !== '1';
+    document.getElementById('title').textContent = lang === 'en' ? 'Laying the Foundation' : '筑基天象';
+    const url = (o) => `?${new URLSearchParams({ setpiece: id, lang, ...(still ? { still: '1' } : {}), ...(tap ? {} : { auto: '1' }), ...o })}`;
+    document.getElementById('nav').innerHTML = [
+      `<a href="${url({})}">↺ ${lang === 'en' ? 'again' : '重看'}</a>`,
+      `<a href="${url({ lang: lang === 'en' ? 'zh' : 'en' })}">${lang === 'en' ? '中' : 'En'}</a>`,
+      `<a href="${url({ still: still ? '0' : '1' })}">${still ? (lang === 'en' ? 'moving' : '动画') : (lang === 'en' ? 'still frames' : '静帧')}</a>`,
+      `<a href="${url({ auto: tap ? '1' : '0' })}">${tap ? (lang === 'en' ? 'play through' : '自动播放') : (lang === 'en' ? 'tap by tap' : '逐拍点击')}</a>`,
+    ].join('');
+    const h = await playSetPiece(id, document.getElementById('slot'), { lang, still, tap, onBeat: (b, i) => console.log('[setpiece]', i, b.id), onDone: () => console.log('[setpiece] done') });
+    window.__setpiece = h;
+  </script>
+</body>
+</html>
