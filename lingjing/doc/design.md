@@ -439,8 +439,9 @@ His ruling (2026-09-29): 「不用小人书的方式了，图片作为图鉴，�
 武功、经脉、穴位等。银月一章一图就好。」
 
 - **A picture shows what the reader does not know; the plot is never
-  illustrated; the hero is never drawn.** (An audit found 23 of 28 小人书
-  panels wrong.)
+  illustrated.** (An audit found 23 of 28 小人书 panels wrong.) The hero,
+  沈小满, now has a 图鉴 portrait like everyone else (2026-09-30, once the name
+  and gender were fixed); the dialogue box still never shows his face.
 - **One codex, book and game:** `codex.json` resolved by `codex.js` — one
   entry per subject (kind, name, 1–3 lines, picture, credit, source, `marks`,
   `first {book, scene}`); people, creatures, items and arts are linked from
