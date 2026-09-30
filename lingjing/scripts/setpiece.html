@@ -30,6 +30,13 @@
       <span class="dim" id="count"></span>
     </div>
   </div>
+  <script>
+    // ?raf=timeout: a browser that parks requestAnimationFrame (a tab driven by a test harness) still plays.
+    if (new URLSearchParams(location.search).get('raf') === 'timeout') {
+      window.requestAnimationFrame = (cb) => setTimeout(() => cb(performance.now()), 16);
+      window.cancelAnimationFrame = (id) => clearTimeout(id);
+    }
+  </script>
   <script type="module">
     import { playSetPiece } from './setpiece.js';
     const q = new URLSearchParams(location.search);
