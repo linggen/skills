@@ -1,0 +1,31 @@
+{
+ "_about": "Pending classics.json entries for notes/draft-第四回.md — merge into ../classics.json when the draft becomes 04-第四回.md (tests/read-classics requires every entry to be named in a chapter). Originals checked as substrings of the Wikisource wikitext, 2026-09-30.",
+ "shiji-sishui": {
+  "title": "史记·秦始皇本纪",
+  "about": "司马迁《史记》，西汉；〈秦始皇本纪〉记秦始皇一生。这一句记的是始皇二十八年东巡回程，路过彭城，想从泗水里捞出周朝的鼎。",
+  "source": {
+   "edition": "维基文库《史記·卷006》",
+   "section": "〈秦始皇本紀〉·二十八年，泗水求鼎",
+   "url": "https://zh.wikisource.org/wiki/%E5%8F%B2%E8%A8%98/%E5%8D%B7006",
+   "license": "公有领域（古籍；维基文库 PD-old）"
+  },
+  "original": "始皇還，過彭城，齋戒禱祠，欲出周鼎泗水。使千人沒水求之，弗得。",
+  "plain": [
+   "秦始皇东巡回来，路过彭城，斋戒祷告，想把沉在泗水里的周鼎捞出来。派了一千个人下水去找，没有找到。"
+  ]
+ },
+ "shanhai-longzhi": {
+  "title": "山海经·东山经",
+  "about": "《山海经》，先秦至汉初成书，记山川、异兽、神怪；〈东山经〉是其中一篇。",
+  "source": {
+   "edition": "维基文库《山海經·東山經》",
+   "section": "〈東山經〉·鳧麗之山",
+   "url": "https://zh.wikisource.org/wiki/%E5%B1%B1%E6%B5%B7%E7%B6%93/%E6%9D%B1%E5%B1%B1%E7%B6%93",
+   "license": "公有领域（古籍；维基文库 PD-old）"
+  },
+  "original": "有獸焉，其狀如狐，而九尾、九首、虎爪，名曰蠪姪，其音如嬰兒，是食人。",
+  "plain": [
+   "山上有一种兽，样子像狐狸，却有九条尾巴、九个脑袋、老虎的爪子，名叫蠪侄；它的叫声像婴儿啼哭，是吃人的。"
+  ]
+ }
+}
