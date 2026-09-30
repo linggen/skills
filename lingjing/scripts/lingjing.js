@@ -2579,7 +2579,9 @@ async function playPiece(id) {
   const mine = pieceOn = { id, box, ctl: null, over: false };
   const close = () => { if (pieceOn !== mine) return; mine.ctl?.destroy?.(); box.remove(); pieceOn = null; };
   box.addEventListener('click', (e) => {
-    if (e.target.closest('.spskip')) { mine.ctl?.skip?.(); close(); } else if (mine.over) close(); else mine.ctl?.tap?.();
+    if (e.target.closest('.spskip')) { mine.ctl?.skip?.(); close(); } else if (mine.over) close();
+    // A piece that hears its own taps (筑基天象's .zjhost) is not tapped twice.
+    else if (!e.target.closest('.zjhost')) mine.ctl?.tap?.();
   });
   try {
     const line = box.querySelector('.spline');
