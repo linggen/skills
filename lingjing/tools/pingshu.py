@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """pingshu.py — turn a 回 of 《九鼎录》 into a 评书 episode for TTS.
 
-    python3 tools/pingshu.py segments story/jiuding-lu/01-第一回.md [--recap 上回…] [--max-chars 1300] > ep.jsonl
+    python3 tools/pingshu.py segments story/jiuding-lu/01-第一回.md [--recap 上回… | --recaps tools/pingshu-recaps.json] [--max-chars 1300] > ep.jsonl
     <tts venv>/bin/python3 tools/pingshu.py render ep.jsonl out.wav --engine qwen [--voice uncle_fu] [--instruct …]
     GEMINI_API_KEY=… python3 tools/pingshu.py render ep.jsonl out.wav --engine gemini [--voice Algenib]
     … render … --check          # ASR each take (Qwen3-ASR), re-roll any the ear can't follow
+    … render … --keep DIR --report ep.json   # per-segment WAVs (resumable) + ASR scores / flags
 
 `segments` is plain stdlib: it strips the reader's markup ({典=…}, [x]{注=…},
 **bold**, ---), frames the 回 the way a 说书人 would (回目 up front,
@@ -114,8 +115,15 @@ def episode(md, recap='', limit=110, max_chars=0, frame=True):
         items += [line('frame', t, PAUSE['frame']) for t in closing(title)]
     return items
 
+def recap_for(md, path):
+    """The 「上回书说到」 line for this 回 from a {"第二回": "…"} file, else ''."""
+    title = next((t for k, t in blocks(md) if k == 'title'), '')
+    return json.load(open(path, encoding='utf-8')).get(huimu(title)[0], '') if title else ''
+
 def cmd_segments(a):
     md = open(a.file, encoding='utf-8').read()
+    if a.recaps and not a.recap:
+        a.recap = recap_for(md, a.recaps)
     for it in episode(md, a.recap, a.limit, a.max_chars, not a.no_frame):
         print(json.dumps(it, ensure_ascii=False))
 
@@ -186,8 +194,9 @@ def similarity(a, b):
     han = lambda s: re.sub(r'[^\u4e00-\u9fff]', '', s)
     return difflib.SequenceMatcher(None, han(a), han(b), autojunk=False).ratio()
 
-def checked(say, asr_model, tries=3, good=0.9):
-    """Wrap say(): transcribe each take and re-roll a garbled one, keep the best."""
+def checked(say, asr_model, tries=2, good=0.9):
+    """Wrap say(): transcribe each take and re-roll a garbled one, keep the best.
+    Returns (audio, score); a piece still under `good` after `tries` is the caller's to flag."""
     import tempfile
     from mlx_audio.stt.utils import load_model
     asr = load_model(asr_model)
@@ -208,7 +217,7 @@ def checked(say, asr_model, tries=3, good=0.9):
                 break
             print(f'    take {n + 1} heard {score:.2f}, again', file=sys.stderr)
         print(f'    heard {best_score:.2f}', file=sys.stderr)
-        return best
+        return best, best_score
     return say_checked
 
 def patient(call, tries=6):
@@ -243,21 +252,60 @@ def write_wav(path, audio):
         w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR)
         w.writeframes(pcm.tobytes())
 
-def cmd_render(a):
+def read_wav(path):
     import numpy as np
+    with wave.open(path, 'rb') as w:
+        return np.frombuffer(w.readframes(w.getnframes()), '<i2').astype('float32') / 32768
+
+def take(say, it, i, a, scores):
+    """One piece's audio: from the --keep cache when the text matches, else spoken now."""
+    import hashlib
+    key = hashlib.sha1(it['text'].encode()).hexdigest()[:10]
+    path = os.path.join(a.keep, f'{i:04d}-{key}.wav') if a.keep else ''
+    if path and os.path.exists(path) and key in scores:
+        return read_wav(path), scores[key]['score']
+    audio, score = say(it['text']) if a.check else (say(it['text']), None)
+    audio = tighten(audio)
+    if path:
+        write_wav(path, audio)
+    return audio, score
+
+def cmd_render(a):
+    import numpy as np, time
     items = [json.loads(l) for l in open(a.segments, encoding='utf-8') if l.strip()]
     if a.engine == 'gemini':
         items = batches(items, a.batch)
     say = (qwen_speaker if a.engine == 'qwen' else gemini_speaker)(a)
     if a.check:
         say = checked(say, a.check)
-    audio = [silence(400)]
+    if a.keep:
+        os.makedirs(a.keep, exist_ok=True)
+    report = json.load(open(a.report)) if a.report and os.path.exists(a.report) else {}
+    scores = report.get('pieces', {})
+    started, audio = time.time(), [silence(400)]
     for i, it in enumerate(items):
         print(f'[{i + 1}/{len(items)}] {it["text"][:30]}', file=sys.stderr)
-        audio += [tighten(say(it['text'])), silence(it['pause_ms'])]
+        piece, score = take(say, it, i, a, scores)
+        audio += [piece, silence(it['pause_ms'])]
         if it.get('knock'):
             audio += [knock(), silence(500)]
-    write_wav(a.out, np.concatenate(audio))
+        if a.report:
+            import hashlib
+            key = hashlib.sha1(it['text'].encode()).hexdigest()[:10]
+            scores[key] = {'i': i, 'score': score, 'chars': len(it['text']), 'text': it['text']}
+            json.dump({'pieces': scores}, open(a.report, 'w'), ensure_ascii=False, indent=1)
+    out = np.concatenate(audio)
+    write_wav(a.out, out)
+    if a.report:
+        judged = [s for s in scores.values() if s['score'] is not None]
+        chars = sum(s['chars'] for s in judged) or 1
+        report = {'pieces': scores, 'seconds': round(len(out) / SR, 1),
+                  'render_seconds': round(time.time() - started),
+                  'score': round(sum(s['score'] * s['chars'] for s in judged) / chars, 3),
+                  'flagged': sorted((s for s in judged if s['score'] < 0.9), key=lambda s: s['i'])}
+        json.dump(report, open(a.report, 'w'), ensure_ascii=False, indent=1)
+        print(f'DONE {a.out} {report["seconds"]}s score {report["score"]} flagged {len(report["flagged"])}',
+              file=sys.stderr)
 
 DEFAULT_MODEL = {'qwen': 'mlx-community/Qwen3-TTS-12Hz-1.7B-CustomVoice-8bit',
                  'gemini': 'gemini-3.8-flash-tts'}
@@ -270,6 +318,7 @@ def main():
     s = sub.add_parser('segments')
     s.add_argument('file')
     s.add_argument('--recap', default='', help='one line for 「上回书说到」')
+    s.add_argument('--recaps', default='', help='JSON {"第二回": recap, …}; used when --recap is empty')
     s.add_argument('--limit', type=int, default=110, help='max chars per TTS piece')
     s.add_argument('--max-chars', type=int, default=0, help='stop after this much story (a sample)')
     s.add_argument('--no-frame', action='store_true', help='no 说书人 opening/closing')
@@ -283,6 +332,8 @@ def main():
     r.add_argument('--check', nargs='?', const='mlx-community/Qwen3-ASR-1.7B-8bit', default='',
                    help='transcribe each take with this ASR model and re-roll a garbled one')
     r.add_argument('--batch', type=int, default=600, help='gemini: chars per request')
+    r.add_argument('--keep', default='', help='dir for per-piece WAVs; a rerun reuses matching ones')
+    r.add_argument('--report', default='', help='JSON of per-piece ASR scores, total score and flags')
     a = p.parse_args()
     if a.cmd == 'render':
         a.model = a.model or DEFAULT_MODEL[a.engine]
