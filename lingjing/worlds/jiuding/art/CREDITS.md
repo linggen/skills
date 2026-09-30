@@ -75,7 +75,7 @@ Codex CLI's image tool (ChatGPT's image model): `tools/paint-codex.py` holds the
 fine ink 白描 with a soft grey wash on warm aged paper, one subject, no text or seal — and every
 subject's prompt. Each picture was looked at against its description and re-rolled where wrong.
 No outside source. Painted so far (the Codex credits ran out mid-run): the people 爹 娘 马三 马小宝
-阿禾 (twice: `ahe-girl`, `ahe-boy`) 吴婆婆 老周 瞿老 银月 (`yinyue`, and her fox form `yinyue-fox`, the
+阿禾 (`ahe-girl`; the boy variant `ahe-boy` went 2026-09-30 with the fixed hero) 吴婆婆 老周 瞿老 银月 (`yinyue`, and her fox form `yinyue-fox`, the
 house-style reference) 褚先生 孙二狗 内门师姐 周衡, and (the afternoon's round) 舅舅 玄沉子 渡叔; the bow `items/old-bow` (the pouch's picture; a bow has no 图鉴 entry); the things 狐纹木牌 (nine tails)
 洗髓丹 《吐纳经》 小铜炉 (three legs, two ears, the beast on the lid) 《黄庭经》 《河洛剑诀》 回春丹 银月铃
 (`items/{fox-token,xisui-pill,tuna-jing,danlu,huangting,heluo,mend-pill,moon-bell}`); and
@@ -118,3 +118,7 @@ the three-year montage that moved to chapter 1; it is kept for it.
 picture model (FLUX.2 klein 4B), 2026-09-29, with tools/paint-waimen.py — the prologue's recipe; each
 looked at and re-rolled where it painted fake characters (the kept seeds are the script's `SEEDS`).
 The chapter has no story panels (his ruling, 2026-09-29). No outside source.
+
+## 第十回 · 邺城 — painted for Lingjing (2026-09-30)
+
+`people/zhaoang.webp` — 赵昂 of 太一宫 (white robe, a straight sword, the willow by the 漳水 where he first stands in 第十回; a frame FLUX drew in is cropped off), `people/doufu-xishi.webp` — 豆腐西施, 老胡家的闺女 (mute, a tray of tofu), and `people/wuzhu.webp` — the 巫祝婆婆 of the 河伯庙 (a hand drum): painted by the local picture model (FLUX.2 klein 4B), 2026-09-30, with tools/paint-flux-codex.py (the house STYLE; kept seeds and the crop are in its `SUBJECTS`), six seeds a round, every picture looked at (Chinese cross-collared dress, no text, no seal). No outside source. 蠪侄 was rolled again (six seeds: five to seven heads, one to three tails) and keeps its 1597 woodcut.
