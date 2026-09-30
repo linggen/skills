@@ -259,7 +259,7 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
       .fromTo(sealGlow, { alpha: 0 }, { alpha: 0.85, duration: 2.4, ease: 'sine.in' }, 3.2)
       .fromTo(sealGlow.scale, { x: sealGlow.scale.x * 0.6, y: sealGlow.scale.y * 0.6 }, { x: sealGlow.scale.x * 1.15, y: sealGlow.scale.y * 1.15, duration: 2.6, ease: 'sine.out' }, 3.2),
     ding: () => shot('ding', { ease: 'power2.inOut' })
-      .fromTo(tokenGlow, { alpha: 0 }, { keyframes: [{ alpha: 0.9, duration: 0.6 }, { alpha: 0.45, duration: 0.5 }, { alpha: 0.85, duration: 0.8 }] }, 4.6),
+      .fromTo(tokenGlow, { alpha: 0 }, { keyframes: [{ alpha: 0.7, duration: 0.7 }, { alpha: 0.35, duration: 0.6 }, { alpha: 0.6, duration: 0.9 }] }, 4.6),
   };
   // Hold the camera still at its start until a beat plays (the soak begins unseen).
   apply();
