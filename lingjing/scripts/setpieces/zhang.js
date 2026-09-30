@@ -133,6 +133,14 @@ const featherCanvas = (w, h) => canvas(w, h, (g) => {
   g.fillStyle = r; g.fillRect(0, 0, w, h);
 });
 
+/// A soft oval alpha mask: whole in the middle, gone at the rim — so a painting's paper never shows its box.
+const ovalCanvas = (w, h, inner = 0.55) => canvas(w, h, (g) => {
+  g.save(); g.translate(w / 2, h / 2); g.scale(1, h / w);
+  const r = g.createRadialGradient(0, 0, (w / 2) * inner, 0, 0, w / 2);
+  r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = r; g.beginPath(); g.arc(0, 0, w / 2, 0, Math.PI * 2); g.fill(); g.restore();
+});
+
 /// Paper fibres for the torn edge of the wall (as fx.js does the soak).
 const fibreCanvas = () => canvas(256, 256, (g, s) => {
   g.fillStyle = 'rgb(128,128,128)'; g.fillRect(0, 0, s, s);
@@ -265,15 +273,19 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
   const bw = art.bingyi.naturalWidth || 640, bh = art.bingyi.naturalHeight || 960;
   const bingyiTex = PIXI.Texture.from(art.bingyi);
   const god = new PIXI.Container();
-  const halo = new PIXI.Graphics().circle(0, 0, H * 0.3).fill({ color: INK, alpha: 0.55 });
-  halo.filters = [new PIXI.BlurFilter({ strength: 30, quality: 3 })];
+  // A pale pool opens in the black water for him to rise through (the figure must read against it).
+  const halo = new PIXI.Graphics().ellipse(0, 0, H * 0.24, H * 0.34).fill({ color: 0xe9e4d6, alpha: 0.85 });
+  halo.filters = [new PIXI.BlurFilter({ strength: 40, quality: 4 })];
   halo.scale.set(0.01);
   const god0 = new PIXI.Sprite(bingyiTex);
   god0.anchor.set(0.5);
   const gh = Math.min(H * 0.58, W * 0.62 * bh / bw);
   god0.height = gh; god0.width = gh * bw / bh;
   god0.blendMode = 'multiply';
-  god.addChild(halo, god0);
+  const oval = new PIXI.Sprite(PIXI.Texture.from(ovalCanvas(256, Math.round(256 * bh / bw))));
+  oval.anchor.set(0.5); oval.width = god0.width; oval.height = god0.height;
+  god0.mask = oval;
+  god.addChild(halo, god0, oval);
   god.position.set(W / 2, H * 0.62);
   god.alpha = 0;
   root.addChild(god);
