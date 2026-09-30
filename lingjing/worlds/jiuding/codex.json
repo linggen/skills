@@ -515,6 +515,11 @@
      "The shaman of the River Lord's temple, who with the Three Elders collects the River Lord's money door to door each year and picks whose daughter becomes his bride."
     ]
    }
+  },
+  "gui": {
+   "first": {
+    "book": "h07"
+   }
   }
  }
 }

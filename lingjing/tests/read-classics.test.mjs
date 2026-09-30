@@ -65,7 +65,7 @@ test('each 回 ends with its classics (卷一 in ten since 2026-09-30), and the 
   const entries = (id) => [...renderMarkdown(fillHero(at(id).md, {}), { classics: CLASSICS }).matchAll(/<article class="dianent" id="dian-([\w-]+)"/g)].map((m) => m[1]);
   assert.deepEqual(entries('h05'), ['suwen', 'liezi-yugong', 'shanhai-zheng']);
   assert.deepEqual(entries('h06'), ['shennong', 'zuozhuan-ranzhi', 'baopu', 'jiuding']);
-  assert.deepEqual(entries('h07'), ['shanhai-xirang']);
+  assert.deepEqual(entries('h07'), ['shanhai-gui', 'shanhai-xirang']);
   assert.deepEqual(entries('h08'), ['liji-zha', 'lunyu-shuxiu', 'huangting', 'shangshu-yugong']);
   assert.deepEqual(entries('h09'), ['zhouyi-xun', 'zhuangzi-keyi', 'baopu-jiyan', 'huangting']);
   assert.deepEqual(entries('h10'), ['shiji-ximenbao', 'shanhai-bingyi']);
