@@ -102,14 +102,14 @@ const stoneCanvas = (n) => canvas(96, 96, (g, w) => {
 
 /// The 鼎: three legs, two ears, a round belly — a brush drawing.
 const dingCanvas = () => canvas(256, 256, (g) => {
-  g.strokeStyle = '#231f1a'; g.fillStyle = 'rgba(35,31,26,0.82)'; g.lineCap = 'round'; g.lineJoin = 'round';
+  g.strokeStyle = '#231f1a'; g.fillStyle = 'rgba(205,191,154,0.95)'; g.lineCap = 'round'; g.lineJoin = 'round';
   g.lineWidth = 7;
   g.beginPath(); g.moveTo(70, 70); g.lineTo(70, 40); g.lineTo(96, 40); g.lineTo(96, 70); g.stroke();
   g.beginPath(); g.moveTo(160, 70); g.lineTo(160, 40); g.lineTo(186, 40); g.lineTo(186, 70); g.stroke();
-  g.beginPath(); g.moveTo(40, 72); g.lineTo(216, 72); g.quadraticCurveTo(222, 180, 128, 190); g.quadraticCurveTo(34, 180, 40, 72); g.closePath(); g.fill();
+  g.beginPath(); g.moveTo(40, 72); g.lineTo(216, 72); g.quadraticCurveTo(222, 180, 128, 190); g.quadraticCurveTo(34, 180, 40, 72); g.closePath(); g.fill(); g.lineWidth = 5; g.stroke();
   g.lineWidth = 9;
   for (const x of [72, 128, 184]) { g.beginPath(); g.moveTo(x, 180); g.lineTo(x + (x - 128) * 0.12, 236); g.stroke(); }
-  g.strokeStyle = 'rgba(245,239,225,0.35)'; g.lineWidth = 2;
+  g.strokeStyle = 'rgba(35,31,26,0.45)'; g.lineWidth = 2;
   for (let i = 0; i < 5; i += 1) { g.beginPath(); g.moveTo(58, 98 + i * 16); g.bezierCurveTo(100, 92 + i * 16, 156, 104 + i * 16, 198, 98 + i * 16); g.stroke(); }
 });
 
@@ -375,14 +375,17 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
   beam.filters = [new PIXI.BlurFilter({ strength: 18 })];
   beam.position.set(W / 2, gy + 1.5 * cell); beam.scale.set(0.1, 0); beam.blendMode = 'screen';
   under.addChild(beam);
-  const ding = new PIXI.Sprite(PIXI.Texture.from(dingCanvas()));
-  ding.anchor.set(0.5); ding.position.set(W / 2, H * 1.15); ding.scale.set(2.2); ding.alpha = 0;
-  under.addChild(ding);
   const dusk = new PIXI.Graphics().rect(0, 0, W, H).fill({ color: 0x3a3130, alpha: 1 });
   dusk.alpha = 0;
   under.addChild(dusk);
   const moon = new PIXI.Graphics().circle(W * 0.8, H * 0.16, W * 0.04).fill({ color: 0xf2e6c4, alpha: 0.95 });
   moon.alpha = 0; under.addChild(moon);
+  const dingGlow = new PIXI.Graphics().circle(0, 0, W * 0.12).fill({ color: 0xf2e6c4, alpha: 0.5 });
+  dingGlow.filters = [new PIXI.BlurFilter({ strength: 30, quality: 3 })];
+  dingGlow.alpha = 0; under.addChild(dingGlow);
+  const ding = new PIXI.Sprite(PIXI.Texture.from(dingCanvas()));
+  ding.anchor.set(0.5); ding.position.set(W / 2, H * 1.15); ding.scale.set(2.2); ding.alpha = 0;
+  under.addChild(ding);
   const token = new PIXI.Container();
   const tokenS = new PIXI.Sprite(PIXI.Texture.from(tokenCanvas()));
   tokenS.anchor.set(0.5);
@@ -495,6 +498,8 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
       .to(ding, { alpha: 1, duration: s(600) }, 0)
       .to(ding, { y: H * 0.46, duration: s(2400), ease: 'power2.out' }, 0)
       .to(ding.scale, { x: 0.45, y: 0.45, duration: s(2400), ease: 'power2.inOut' }, 0)
+      .add(() => dingGlow.position.set(W / 2, H * 0.46), 0)
+      .to(dingGlow, { alpha: 1, duration: s(1400) }, s(1600))
       .to(beam, { alpha: 0, duration: s(1400) }, s(1200))
       .to(dusk, { alpha: 0.9, duration: s(1600) }, s(1400))
       .to(moon, { alpha: 1, duration: s(1400) }, s(2000))
