@@ -96,11 +96,11 @@ test('an errand that asks for the beast: 差事 · its title', () => {
   assert.equal(door(done, 'haunt:longzhi', c).stake, l.place.name);
 });
 
-test('a spine scene\'s duel: its 回, as the book names it (卷一 · 第二回)', () => {
+test('a spine scene\'s duel: its 回, as the book names it (卷一 · 第四回, the trials)', () => {
   const s = walk(newState(content, 'zh', NOW), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'won')), content, NOW);
   const exit = look(s, content, ctx()).scene.exits.find(e => e.duel);
   assert.equal(exit.duel.stake, huiLabel(content, content.chapters[s.chapter].scenes[s.scene].hui, 'zh'));
-  assert.match(exit.duel.stake, /^卷一.* · 第二回$/);
+  assert.match(exit.duel.stake, /^卷一.* · 第四回$/);
 });
 
 /* 今日传闻 — the finale's beast speaks Ling's lines. */

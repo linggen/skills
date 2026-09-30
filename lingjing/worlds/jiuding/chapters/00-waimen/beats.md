@@ -1,6 +1,6 @@
 # 第一章 · 外门 — beat sheet
 
-The script is story/jiuding-lu/03-第三回.md (the book's 第三回, once 第一章 · 外门; approved by Hanli; his plan
+The script is story/jiuding-lu/05-第五回.md … 08-第八回.md (the book's 第五回 to 第八回, once 第一章 · 外门, then 第三回 until 卷一 was split into ten on 2026-09-30; approved by Hanli; his plan
 of 2026-09-29: 「可以，按2天做，go」, 「可以，不打，go」). On the stage each scene is
 its caption (two to four lines) and its choices — no picture: a story moment is
 not illustrated (his ruling, 2026-09-29; pictures are for unfamiliar knowledge,

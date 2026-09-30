@@ -28,7 +28,7 @@ and its `recap`): it is there so you know the story, never to say.
   scorn); their earlier choices (`marks`).
 - **The companion's cameos in the trials** (a girl with braids and a red nose,
   or a red-cheeked boy with a big bundle and a stammer): never say who it is —
-  the outer court (第三回) is the reveal.
+  the outer court (第五回) is the reveal.
 - **Never list the choices, never read out a 图鉴 card** — both are on the
   stage. The scene card, its 图鉴 cards, the people and the goal are the
   page's own — never Show them.

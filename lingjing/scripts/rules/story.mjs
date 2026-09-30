@@ -30,7 +30,7 @@ const RECAP_LINES = 3;
 const byId = (a, b) => a.id.localeCompare(b.id);
 const chaptersOf = content => Object.values(content.chapters).sort(byId);
 /* A chapter with a cauldron in it: every chapter of the spine but a corridor
-   (the prologue) and one that says it holds none (`cauldron: false`, 外门 — 第三回). */
+   (the prologue) and one that says it holds none (`cauldron: false`, 外门 — 第五回 to 第八回). */
 const holdsCauldron = ch => !ch.corridor && ch.cauldron !== false;
 
 /* scene id → its chapter, once per world. */
@@ -95,7 +95,7 @@ function nowOf(content, state, now) {
 }
 
 /* A chapter's riddle as the player may know it: `mystery`, until the scene
-   `mystery_after.after` is passed — then its own words. 外门 (第三回) names 息壤 only
+   `mystery_after.after` is passed — then its own words. 外门 (第五回 to 第八回) names 息壤 only
    once the 秘境 is behind him (his, 2026-09-29: the 录 spoiled it from the start). */
 export const mysteryOf = (ch, state, lang = state.lang) => {
   const later = ch?.mystery_after;
@@ -153,7 +153,8 @@ export function story(state, content, ctx, args = {}) {
     return parts.map((p, i) => {
       const last = i === parts.length - 1, st = open && last ? 'current' : 'done', lines = recapOf(content, state, p.scenes);
       const title = huiLabel(content, p.hui, lang, 'book') ?? pick(ch.title, lang);
-      if (short && st === 'done') return { title, state: st, recap: lines.slice(ch.id === tail && last ? -3 : -1) };
+      // Ling's short book names a 回 done by its 回目's first line only: 卷一 holds ten 回 (2026-09-30).
+      if (short && st === 'done') return { title: huiLabel(content, p.hui, lang, 'head') ?? title, state: st, recap: lines.slice(ch.id === tail && last ? -3 : -1) };
       return {
         id: p.hui ?? ch.id, chapter: ch.id, title, state: st, ...(i === 0 ? { intro: pick(ch.intro, lang) } : {}), recap: lines,
         ...(last ? { mystery: mysteryOf(ch, state, lang) } : {}), ...(st === 'current' ? { now: nowOf(content, state, ctx.now) } : {}),
@@ -244,7 +245,7 @@ export function closeOf(content, state) {
 }
 
 /* Look's chapter, named as the book names it — the 回 it stands in
-   (「卷一 · 第三回　漏勺夜半通三关」, hui.mjs) — with its intro while it has only
+   (「卷一 · 第五回　漏勺夜半通三关」, hui.mjs) — with its intro while it has only
    just begun (no scene of it passed yet) — the stage raises its title card
    then — its close once a 回 or it is over (closeOf), and the ending once reached. */
 export function chapterLook(content, state) {

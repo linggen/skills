@@ -54,7 +54,7 @@ PEOPLE = {
   'xuanchenzi': 'The abbot of a Taoist mountain temple, about sixty, a mild smiling face that gives nothing away, eyes half-lowered, lips just parted as if he has stopped halfway through a sentence, a neat grey beard, a plain grey Taoist robe and a simple crown on his topknot, a horsetail fly-whisk over one arm, hands folded in his sleeves. Full length.',
   'dushu': 'An old Chinese ferryman of the Si river, lean and weathered, a quiet closed mouth and watchful eyes, a conical bamboo hat, a short patched jacket and rolled trousers, bare feet, leaning on a long bamboo punting pole, a little water at his feet. Full length.',
   'zhouheng': 'A young Chinese Taoist temple steward of about twenty-five, neat topknot, plain grey robe with a crossed collar, a calligraphy brush in one hand and an account ledger in the other, a strict particular face. Full length.',
-  # 河伯 冰夷 (his, 2026-09-29: 「河伯可以配个图吧」) — 《山海经·海内北经》「冰夷人面，乘两龙」 and 第四回's 漳水 scene.
+  # 河伯 冰夷 (his, 2026-09-29: 「河伯可以配个图吧」) — 《山海经·海内北经》「冰夷人面，乘两龙」 and 第十回's 漳水 scene.
   'bingyi': '河伯 冰夷, the river god — 「冰夷人面，乘两龙」: ONE ageless man with a calm human face and eyes as deep as a river, long hair, robes made of flowing water, standing upright on exactly TWO long Chinese dragons (no wings) — one under his left foot and one under his right, each dragon with ONE head, their scales as big as millstones — rising out of a river, the water standing up behind him like a wall. Exactly two dragons, one human face. A very faint green-grey tint on the dragons only. Full length.',
 }
 

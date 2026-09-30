@@ -1124,7 +1124,7 @@ function draw() {
   // the room (his, 2026-09-18). It all comes back when the fight ends.
   document.body.classList.toggle('fighting', Boolean(bout));
   paintAtmos();
-  // The 回 above the place, as the book names it (「卷一 · 第三回　漏勺夜半通三关」, rules/hui.mjs).
+  // The 回 above the place, as the book names it (「卷一 · 第五回　漏勺夜半通三关」, rules/hui.mjs).
   $('huiLine').textContent = look.chapter?.hui ? look.chapter.title : '';
   $('place').textContent = look.scene?.place ?? look.place?.name ?? look.chapter?.title ?? '';
   // She is always at the player's side: on the stage whenever the game is

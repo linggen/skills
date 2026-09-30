@@ -83,18 +83,18 @@ test('variant blocks leave ::: 忆 plates alone, inside or outside a block', () 
   assert.match(html, /m1\.png[\s\S]*m2\.png/);
 });
 
-test('the girl-hero 回 (第三回, 第四回): both readings clean, each told its own way', () => {
+test('the girl-hero 回 (第六回, 第十回): both readings clean, each told its own way', () => {
   const read = (f, gender) => renderMarkdown(fillHero(fs.readFileSync(path.join(BOOK, f), 'utf8'), { name: '秋白', gender }));
-  for (const f of ['03-第三回.md', '04-第四回.md']) {
+  for (const f of ['06-第六回.md', '10-第十回.md']) {
     for (const gender of ['male', 'female']) assert.doesNotMatch(read(f, gender), /:::|[{}]|女主变体/, `${f} ${gender}`);
   }
-  const [hm, hf] = ['male', 'female'].map((g) => read('03-第三回.md', g));
+  const [hm, hf] = ['male', 'female'].map((g) => read('06-第六回.md', g));
   assert.match(hm, /蹲下身去，抱住了头/);
   assert.doesNotMatch(hm, /猪圈/);
   assert.match(hf, /扔进了伙房后头的猪圈/);
   assert.doesNotMatch(hf, /抱住了头|肿成馒头/);
   assert.match(hf, /嘴里一股泥腥味/);
-  const [rm, rf] = ['male', 'female'].map((g) => read('04-第四回.md', g));
+  const [rm, rf] = ['male', 'female'].map((g) => read('10-第十回.md', g));
   assert.match(rm, /打鼓的那个，便是我。/);
   assert.doesNotMatch(rm, /你长得像交不起河伯钱的/);
   assert.match(rf, /你长得像交不起河伯钱的/);

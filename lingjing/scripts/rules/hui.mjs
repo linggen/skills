@@ -43,10 +43,10 @@ export function sceneHui(content, id) {
 }
 
 /* A 回 named, in four sizes:
-     short  第三回                                  · Chapter 3
-     juan   卷一 · 第三回                            · Volume One · Chapter 3
-     head   卷一 · 第三回　漏勺夜半通三关              · … — the 回目's first line
-     book   卷一 · 第三回　漏勺夜半通三关　五行台上夺头名 · … — the 回目 whole
+     short  第五回                                  · Chapter 5
+     juan   卷一 · 第五回                            · Volume One · Chapter 5
+     head   卷一 · 第五回　漏勺夜半通三关              · … — the 回目's first line
+     book   卷一 · 第五回　漏勺夜半通三关　萝卜一根收小狰 · … — the 回目 whole
    null for a 回 the book does not have. */
 const FORMS = {
   short: (h, lang) => (lang === 'en' ? `Chapter ${h.n}` : `第${zhNumber(h.n)}回`),
@@ -63,6 +63,16 @@ export function huiLabel(content, id, lang, form = 'juan') {
 export const chapterHuis = (content, ch) => [...new Set(Object.values(ch?.scenes ?? {}).map(sc => sc.hui).filter(Boolean))]
   .sort((a, b) => (huiOf(content, a)?.n ?? 0) - (huiOf(content, b)?.n ?? 0));
 
+/* A chapter's first 回: the book's own word (a 回 whose `opens` names the
+   chapter — 第九回 opens 01-ji though no scene of it is played yet) or, with
+   none, its scenes' first. */
+export function firstHui(content, ch) {
+  const told = [...bookIndex(content).values()].filter(h => h.opens === ch?.id).sort((a, b) => a.n - b.n)[0]?.id;
+  const played = chapterHuis(content, ch)[0];
+  if (!told) return played ?? null;
+  return !played || huiOf(content, told).n <= huiOf(content, played).n ? told : played;
+}
+
 /* The 回 the save stands in: its scene's; between scenes (the open map, a
    chapter over), the last scene passed of its chapter; before any, the
    chapter's first. null in a chapter with no 回 (one still to be rewritten). */
@@ -78,13 +88,13 @@ export function huiNow(content, state) {
 /* A chapter as the player is told it: the 回 it stands in when it is the
    save's own, else its first — or, with no 回, its own title. */
 export function chapterLabel(content, state, ch, lang = state.lang, form = 'juan') {
-  const id = ch?.id === state.chapter ? huiNow(content, state) : chapterHuis(content, ch)[0];
+  const id = ch?.id === state.chapter ? huiNow(content, state) : firstHui(content, ch);
   return huiLabel(content, id, lang, form) ?? pick(ch?.title, lang) ?? null;
 }
 
-/* 「第四回 · 即将开放」: a chapter still being written (`coming`), named by its first 回. */
+/* 「第九回 · 即将开放」: a chapter still being written (`coming`), named by its first 回. */
 export function comingOf(content, ch, lang) {
-  const name = huiLabel(content, chapterHuis(content, ch)[0], lang, 'short') ?? pick(ch.title, lang);
+  const name = huiLabel(content, firstHui(content, ch), lang, 'short') ?? pick(ch.title, lang);
   return lang === 'en' ? `${name} · coming soon` : `${name} · 即将开放`;
 }
 

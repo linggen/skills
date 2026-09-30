@@ -34,7 +34,7 @@ export function cnNumber(n) {
 export const huiLabel = (n, lang = 'zh') => (lang === 'en' ? `Chapter ${n}` : `第${cnNumber(n)}回`);
 
 /// Every 回 in book order, then the appendix: each with its `title` ({zh, en}:
-/// 「第三回　漏勺夜半通三关　五行台上夺头名」), `label` (第三回) and, for a 回,
+/// 「第五回　漏勺夜半通三关　萝卜一根收小狰」), `label` (第五回) and, for a 回,
 /// its `volume` ({id, n, name}). A book still in plain `chapters` reads as it was.
 export function bookEntries(book) {
   const hui = (book?.volumes ?? []).flatMap((v) => (v.hui ?? []).map((h) => ({

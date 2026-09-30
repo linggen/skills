@@ -6,7 +6,7 @@
   "corridor": false,
   "first_scene": "01-arrive",
   "gate": 1,
-  "_coming": "Still being rewritten as the book's 第四回 (河伯娶妇): the chapter before it ends and waits here, dateless (core.mjs advanceChapter), on 「第四回 · 即将开放」 — named by its scenes' first 回 (rules/hui.mjs comingOf). Take `coming` out when it is rewritten.",
+  "_coming": "Still being rewritten as the book's 第九回 (筑基) and 第十回 (河伯娶妇; its scenes' `hui`) — 第九回 opens it (book.json `opens`): the chapter before it ends and waits here, dateless (core.mjs advanceChapter), on 「第九回 · 即将开放」 — named by its scenes' first 回 (rules/hui.mjs comingOf). Take `coming` out when it is rewritten.",
   "coming": true,
   "_title": "The arc's own name, no number: the player is told the 回 (book.json via the scenes' `hui`, rules/hui.mjs); this stands only where a chapter has no 回.",
   "title": { "zh": "冀州之鼎", "en": "The Cauldron of Ji" },

@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, resolve, story } from '../scripts/rules.mjs';
-import { comingOf, endLabel, huiEnded, huiLabel, huiNow, zhNumber } from '../scripts/rules/hui.mjs';
+import { comingOf, endLabel, huiEnded, huiLabel, huiNow, huiOf, zhNumber } from '../scripts/rules/hui.mjs';
 import { TO_VALLEY, walk } from './prologue.mjs';
 
 const content = loadContent();
@@ -41,27 +41,36 @@ test('along a chapter\'s spine the 回 never goes back — any exit to a next sc
   }
 });
 
-test('the prologue is 第一回 up to her daybreak and 第二回 from the cliff; 外门 is 第三回, 冀 第四回', () => {
+test('the prologue is 第一回 up to her daybreak, 第二回 from the cliff, 第三回 the winter, 第四回 the trials; 外门 is 第五回 to 第八回, 冀 第十回 (the ten 回 of 2026-09-30)', () => {
   const p = content.chapters['00-prologue'].scenes;
   assert.equal(p['00-shiao'].hui, 'h01');
   assert.equal(p['00-yinyue'].hui, 'h01');
   assert.equal(p['00-cliff'].hui, 'h02');
-  assert.equal(p['00-mijing'].hui, 'h02');
-  for (const sc of Object.values(content.chapters['00-waimen'].scenes)) assert.equal(sc.hui, 'h03', sc.id);
-  for (const sc of Object.values(content.chapters['01-ji'].scenes)) assert.equal(sc.hui, 'h04', sc.id);
+  assert.equal(p['00-sleep'].hui, 'h02');
+  assert.equal(p['00-halfyear'].hui, 'h03');
+  assert.equal(p['00-notice'].hui, 'h03');
+  assert.equal(p['00-gate'].hui, 'h04');
+  assert.equal(p['00-mijing'].hui, 'h04');
+  const w = content.chapters['00-waimen'].scenes;
+  assert.deepEqual(['wm-ahe', 'wm-qingshi', 'wm-chaifang', 'wm-diyilu', 'wm-mijing', 'wm-chu', 'wm-dabi', 'wm-jiaxin'].map(id => w[id].hui),
+    ['h05', 'h05', 'h06', 'h06', 'h07', 'h07', 'h08', 'h08']);
+  for (const sc of Object.values(w)) assert.ok(['h05', 'h06', 'h07', 'h08'].includes(sc.hui), sc.id);
+  for (const sc of Object.values(content.chapters['01-ji'].scenes)) assert.equal(sc.hui, 'h10', sc.id);
 });
 
 test('the labels are the book\'s: 卷, 回 and 回目 read from book.json, in both languages', () => {
   assert.deepEqual([1, 3, 10, 11, 20, 21, 99].map(zhNumber), ['一', '三', '十', '十一', '二十', '二十一', '九十九']);
   const juan = content.book.volumes[0].name;
-  assert.equal(huiLabel(content, 'h03', 'zh', 'short'), '第三回');
-  assert.equal(huiLabel(content, 'h03', 'zh'), `${juan.zh} · 第三回`);
-  assert.equal(huiLabel(content, 'h03', 'zh', 'head'), `${juan.zh} · 第三回　漏勺夜半通三关`);
-  assert.equal(huiLabel(content, 'h03', 'zh', 'book'), `${juan.zh} · 第三回　漏勺夜半通三关　五行台上夺头名`);
-  assert.equal(huiLabel(content, 'h03', 'en'), `${juan.en} · Chapter 3`);
-  assert.equal(huiLabel(content, 'h03', 'en', 'head'), `${juan.en} · Chapter 3 — The Leaky Ladle Opens Three Passes at Midnight`);
-  assert.equal(endLabel(content, 'h03', 'zh'), '第三回 · 完');
-  assert.equal(comingOf(content, content.chapters['01-ji'], 'zh'), '第四回 · 即将开放');
+  assert.equal(huiLabel(content, 'h05', 'zh', 'short'), '第五回');
+  assert.equal(huiLabel(content, 'h10', 'zh', 'short'), '第十回');
+  assert.equal(huiLabel(content, 'h05', 'zh'), `${juan.zh} · 第五回`);
+  assert.equal(huiLabel(content, 'h05', 'zh', 'head'), `${juan.zh} · 第五回　漏勺夜半通三关`);
+  assert.equal(huiLabel(content, 'h05', 'zh', 'book'), `${juan.zh} · 第五回　漏勺夜半通三关　萝卜一根收小狰`);
+  assert.equal(huiLabel(content, 'h05', 'en'), `${juan.en} · Chapter 5`);
+  assert.equal(huiLabel(content, 'h05', 'en', 'head'), `${juan.en} · Chapter 5 — The Leaky Ladle Opens Three Passes at Midnight`);
+  assert.equal(endLabel(content, 'h08', 'zh'), '第八回 · 完');
+  // 冀 is named by the 回 the book says opens it (第九回, 筑基), though its scenes are 第十回's
+  assert.equal(comingOf(content, content.chapters['01-ji'], 'zh'), '第九回 · 即将开放');
   assert.equal(huiLabel(content, 'h99', 'zh'), null, 'a 回 the book does not have');
 });
 
@@ -76,7 +85,8 @@ test('a 回 ends where the scenes turn, inside the prologue: 「第一回 · 完
   const l = look(cliff, content, ctx());
   assert.equal(l.chapter.id, '00-prologue', 'the same chapter: the map, the locks, all as they were');
   assert.equal(l.chapter.hui, 'h02');
-  assert.match(l.chapter.title, /^卷一.* · 第二回　一牌藏梦闻沉鼎$/);
+  assert.equal(l.chapter.title.replace(/^.* · 第二回　/, ''), huiOf(content, 'h02').huimu.zh[0]);
+  assert.match(l.chapter.title, /^卷一.* · 第二回　/);
   assert.deepEqual(l.chapter.close, { id: 'h01', title: '第一回 · 完', huimu: ['一只破碗辞残照', '半张烙饼换妖王'], next: l.chapter.title });
   assert.ok(l.stage.some(c => c.card === 'closed'));
   const on = resolve(cliff, content, ctx(), { exit: 'climb' }).state;

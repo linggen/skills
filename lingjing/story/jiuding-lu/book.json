@@ -40,12 +40,12 @@
      "n": 2,
      "huimu": {
       "zh": [
-       "一牌藏梦闻沉鼎",
-       "三试凭心叩仙门"
+       "吃饼鬼骗收租客",
+       "洗髓人撞旧房梁"
       ],
       "en": [
-       "A Token Keeps a Dream and Hears “Sunken Cauldron”",
-       "Three Trials Passed by Heart Knock at the Immortals’ Gate"
+       "The Flatbread Ghost Fools the Rent Collector",
+       "The Marrow-Washed Boy Bangs the Old Rafter"
       ]
      },
      "file": "02-第二回.md",
@@ -56,34 +56,129 @@
      "n": 3,
      "huimu": {
       "zh": [
-       "漏勺夜半通三关",
-       "五行台上夺头名"
+       "一牌藏梦闻沉鼎",
+       "旧弓传家付少年"
       ],
       "en": [
-       "The Leaky Ladle Opens Three Passes at Midnight",
-       "The Five Phases Take First Place on the Stage"
+       "A Token Keeps a Dream and Hears “Sunken Cauldron”",
+       "The Old Family Bow Goes to the Boy"
       ]
      },
      "file": "03-第三回.md",
-     "opens": "01-ji"
+     "opens": "00-prologue"
     },
     {
      "id": "h04",
      "n": 4,
      "huimu": {
       "zh": [
-       "九转一炉藏饭桶",
-       "千鱼漳水立龙门"
+       "三试凭心叩仙门",
+       "五色微光惹哄堂"
       ],
       "en": [
-       "One Batch of Nine-Turn Pills Hides in the Rice Tub",
-       "A Thousand Fish Raise a Dragon Gate from the Zhang"
+       "Three Trials Passed by Heart Knock at the Immortals’ Gate",
+       "Five Faint Colours Bring the Hall Down Laughing"
       ]
      },
      "file": "04-第四回.md",
+     "opens": "00-prologue"
+    },
+    {
+     "id": "h05",
+     "n": 5,
+     "huimu": {
+      "zh": [
+       "漏勺夜半通三关",
+       "萝卜一根收小狰"
+      ],
+      "en": [
+       "The Leaky Ladle Opens Three Passes at Midnight",
+       "One Radish Tames a Little Zheng"
+      ]
+     },
+     "file": "05-第五回.md",
+     "opens": "00-waimen"
+    },
+    {
+     "id": "h06",
+     "n": 6,
+     "huimu": {
+      "zh": [
+       "泥里挨足廿三下",
+       "炉中初炼九纹丹"
+      ],
+      "en": [
+       "Twenty-Three Blows Taken in the Mud",
+       "The First Nine-Line Pill from the Furnace"
+      ]
+     },
+     "file": "06-第六回.md",
+     "opens": "00-waimen"
+    },
+    {
+     "id": "h07",
+     "n": 7,
+     "huimu": {
+      "zh": [
+       "三日石门困恶少",
+       "一撮息壤开五门"
+      ],
+      "en": [
+       "Three Days behind a Stone Door for the Bully",
+       "A Pinch of Living Soil Opens Five Doors"
+      ]
+     },
+     "file": "07-第七回.md",
+     "opens": "00-waimen"
+    },
+    {
+     "id": "h08",
+     "n": 8,
+     "huimu": {
+      "zh": [
+       "五行台上夺头名",
+       "河洛诀中认母声"
+      ],
+      "en": [
+       "The Five Phases Take First Place on the Stage",
+       "A Mother’s Voice in the River-and-Luo Sword Art"
+      ]
+     },
+     "file": "08-第八回.md",
+     "opens": "00-waimen"
+    },
+    {
+     "id": "h09",
+     "n": 9,
+     "huimu": {
+      "zh": [
+       "九转一炉藏饭桶",
+       "孤崖独坐筑仙基"
+      ],
+      "en": [
+       "One Batch of Nine-Turn Pills Hides in the Rice Tub",
+       "Alone on the Cliff, He Lays the Foundation"
+      ]
+     },
+     "file": "09-第九回.md",
+     "opens": "01-ji"
+    },
+    {
+     "id": "h10",
+     "n": 10,
+     "huimu": {
+      "zh": [
+       "巫祝投河捎口信",
+       "千鱼漳水立龙门"
+      ],
+      "en": [
+       "The Shaman Goes into the River with a Message",
+       "A Thousand Fish Raise a Dragon Gate from the Zhang"
+      ]
+     },
+     "file": "10-第十回.md",
      "opens": "01-ji"
     }
-
    ]
   }
  ],
@@ -97,11 +192,11 @@
    "file": "90-附录·吐纳经.md"
   }
  ],
- "_aliases": "Old chapter ids (序章上 00 … 第二章 03), kept so an old read.html?ch= link still opens its 回.",
+ "_aliases": "Old chapter ids (序章上 00 … 第二章 03, before the 回), kept so an old read.html?ch= link still opens the 回 that now holds that chapter's start. 2026-09-30 the four 回 were split into ten (OUTLINE § 二·五): old 第三回 (外门) begins 第五回, old 第四回 begins 第九回; ids h03/h04 now name the new 第三回/第四回.",
  "aliases": {
   "00": "h01",
   "01": "h02",
-  "02": "h03",
-  "03": "h04"
+  "02": "h05",
+  "03": "h09"
  }
 }

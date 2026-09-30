@@ -135,8 +135,8 @@ test('a knowledge figure stands under every paragraph that names it, marks and a
   assert.doesNotMatch(html, /<text /, 'the picture carries its own painted labels: the marks draw none');
   assert.match(html, /data-scan="\.\.\/worlds\/jiuding\/art\/codex\/fanzhao-scan\.webp"/, '「原图」 opens the old plate');
   assert.match(renderMarkdown('[a]{注=三关}', { codex: codexOf(FILES, { lang: 'en' }), lang: 'en' }), /<b>The Three Passes<\/b>/);
-  const ch = chapters.find((c) => c.id === 'h03');
-  assert.equal((renderMarkdown(fillHero(ch.md, {}), { codex: CODEX, chapter: 'h03', src }).match(/class="notefig"/g) ?? []).length, 1);
+  const ch = chapters.find((c) => c.id === 'h05');
+  assert.equal((renderMarkdown(fillHero(ch.md, {}), { codex: CODEX, chapter: 'h05', src }).match(/class="notefig"/g) ?? []).length, 1);
 });
 
 test('an unknown entry, or no codex at all, reads as just the words', () => {

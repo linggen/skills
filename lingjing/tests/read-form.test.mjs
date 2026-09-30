@@ -18,7 +18,7 @@ test('卷 hold 回; the 回 run 第一回, 第二回 … through the whole book,
   assert.deepEqual(book.volumes.map((v) => v.name.zh), ['卷一 · 沉鼎']);
   book.volumes.forEach((v) => assert.ok(v.hui.length <= 10, `${v.name.zh}: a 卷 is ten 回`));
   assert.deepEqual(hui.map((h) => h.n), hui.map((_, i) => i + 1));
-  assert.deepEqual(hui.map((h) => h.label.zh), ['第一回', '第二回', '第三回', '第四回']);
+  assert.deepEqual(hui.map((h) => h.label.zh), ['第一回', '第二回', '第三回', '第四回', '第五回', '第六回', '第七回', '第八回', '第九回', '第十回']);
   assert.equal(new Set(bookEntries(book).map((c) => c.id)).size, bookEntries(book).length, 'ids unique');
   book.volumes.forEach((v, i) => assert.equal(v.name.zh.startsWith(`卷${cnNumber(i + 1)}`), true, v.name.zh));
   assert.equal(bookEntries(book).at(-1).id, 'tuna', 'the appendix comes last');
@@ -40,8 +40,10 @@ test('each 回目 is two seven-character lines; the file opens with the same tit
 });
 
 test('an old ?ch= id opens its 回; the 回 title renders centred as number and couplet; a scene break is a quiet ◇', () => {
-  assert.deepEqual(['00', '01', '02', '03'].map((id) => entryById(book, id)?.label.zh), ['第一回', '第二回', '第三回', '第四回']);
+  // 2026-09-30 卷一 split into ten: the old 第一章 · 外门 (02) begins 第五回, 第二章 (03) 第九回.
+  assert.deepEqual(['00', '01', '02', '03'].map((id) => entryById(book, id)?.label.zh), ['第一回', '第二回', '第五回', '第九回']);
   assert.equal(entryById(book, 'h03').file, '03-第三回.md');
+  assert.equal(entryById(book, 'h10').file, '10-第十回.md');
   assert.equal(entryById(book, 'tuna').id, 'tuna');
   assert.equal(entryById(book, 'nope'), null);
   // read.js finds the 回 it opens by id, never by object identity (entryById builds fresh entries: 2026-09-29, every old link opened 第一回).
