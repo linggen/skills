@@ -1,7 +1,6 @@
-// The book reads with the player in it: chapters write `{name}` and
-// `{男词|女词}` (keyed on the hero; 阿禾, always the other gender, reads
-// `{她|他}`), the reader fills both from Look before rendering, and a page
-// with no save reads 周星星, male.
+// The hero is fixed since 2026-09-30 (沈小满, male; 阿禾 a girl). The reader
+// still fills `{name}` / `{男词|女词}` from Look for the 回 not yet turned to
+// third person; a page with no save reads 周星星, male (legacy default).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -44,24 +43,26 @@ test('a name is a word, never markup: escaped, and no bold or table split', () =
   assert.match(html, /<td>&lt;b&gt;＊甲｜乙＊<\/td><td>1<\/td>/);
 });
 
-test('the chapters name the hero only as {name}; every token fills for either hero', () => {
+test('the hero is 沈小满, fixed (his, 2026-09-30); 回 not yet turned to third person still fill for either hero', () => {
   const book = JSON.parse(fs.readFileSync(path.join(BOOK, 'book.json'), 'utf8'));
-  let names = 0, words = 0;
+  const TOKENS = /\{name\}|\{[^{}|\n]*\|[^{}|\n]*\}|::: [男女]|女主变体/;
   for (const ch of bookEntries(book).filter((c) => c.huimu)) {
     const md = fs.readFileSync(path.join(BOOK, ch.file), 'utf8');
-    assert.doesNotMatch(md, /周星星|——星星/, `${ch.file}: the hero is {name}`);
-    names += (md.match(/\{name\}/g) ?? []).length;
-    words += (md.match(/\{[^{}|\n]*\|[^{}|\n]*\}/g) ?? []).length;
+    assert.doesNotMatch(md, /周星星|——星星/, `${ch.file}: the placeholder name is gone`);
     for (const gender of ['male', 'female']) {
       const html = renderMarkdown(fillHero(md, { name: '秋白', gender }));
       assert.doesNotMatch(html, /[{}]|&lt;!--|女主变体/, `${ch.file} ${gender}: every token filled, no note shown`);
     }
   }
-  assert.ok(names >= 15, `the hero is named ${names} times`);
-  assert.ok(words >= 30, `${words} gendered words`);
-  const her = renderMarkdown(fillHero(fs.readFileSync(path.join(BOOK, '01-第一回.md'), 'utf8'), { name: '秋白', gender: 'female' }));
-  assert.match(her, /我叫秋白，今年十二岁[\s\S]*猎户家的独女/);
-  assert.match(her, /窗外站着隔壁的阿禾。他比我小一岁/);
+  // The 回 already in third person name him and carry no player tokens.
+  for (const file of ['01-第一回.md', '02-第二回.md']) {
+    const md = fs.readFileSync(path.join(BOOK, file), 'utf8');
+    assert.doesNotMatch(md, TOKENS, `${file}: no {name} or gender marks`);
+    assert.match(md, /沈小满/, `${file}: names 沈小满`);
+  }
+  const one = fs.readFileSync(path.join(BOOK, '01-第一回.md'), 'utf8');
+  assert.match(one, /姓沈，名小满，这一年十二岁[\s\S]*猎户家的独子/);
+  assert.match(one, /窗外站着隔壁的阿禾。她比小满小一岁/);
 });
 
 test('::: 男 / ::: 女 blocks: the hero\'s stays, the other goes, fences never show', () => {
