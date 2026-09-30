@@ -46,7 +46,8 @@ test('the prologue is 第一回 up to her daybreak, 第二回 from the cliff, �
   assert.equal(p['00-shiao'].hui, 'h01');
   assert.equal(p['00-yinyue'].hui, 'h01');
   assert.equal(p['00-cliff'].hui, 'h02');
-  assert.equal(p['00-sleep'].hui, 'h02');
+  assert.equal(p['00-xiuxian'].hui, 'h02');
+  assert.equal(p['00-sleep'].hui, 'h03', '第三回 opens on the 洗髓 (2026-09-30 review round)');
   assert.equal(p['00-halfyear'].hui, 'h03');
   assert.equal(p['00-notice'].hui, 'h03');
   assert.equal(p['00-gate'].hui, 'h04');
@@ -105,8 +106,8 @@ test('an old save loads as it was: ids unchanged, its 回 read from where it sta
   const old = { ...newState(content, 'zh', NOW), scene: '00-sleep', place: 'shiao', done_scenes: ['00-shiao', '00-masan', '00-yinyue', '00-cliff', '00-deer'] };
   const l = look(old, content, ctx());
   assert.equal(l.chapter.id, '00-prologue');
-  assert.equal(l.chapter.hui, 'h02');
-  assert.equal(l.chapter.close, undefined, '第二回 is under way');
+  assert.equal(l.chapter.hui, 'h03', '00-sleep is 第三回\'s cold open since the 2026-09-30 review round');
+  assert.equal(l.chapter.close?.id, 'h02', 'standing on 第三回\'s first scene: 「第二回 · 完」, as the cliff closes 第一回');
 });
 
 test('no 章 is shown: chapter titles, closes and the page\'s words say 回 and 卷', async () => {
