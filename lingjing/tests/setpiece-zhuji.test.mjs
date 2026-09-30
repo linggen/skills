@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ART, ASPECT, BEATS, DOOR_WORDS, FIVE, MARKS, SHOTS, TITLE, camSeconds, stillSvg } from '../scripts/setpieces/zhuji.js';
+import { ART, ASPECT, BEATS, DOOR_WORDS, FIVE, MARKS, SHOTS, TITLE, WORLD, camSeconds, stillSvg } from '../scripts/setpieces/zhuji.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const totalMs = BEATS.reduce((s, b) => s + b.ms, 0);
@@ -37,10 +37,10 @@ test('the words are the book\'s: the 锅 of cloud, 勿入 → 今日放学, the 
   assert.deepEqual(FIVE.map((f) => f.zh), ['金', '木', '水', '火', '土']);
 });
 
-test('painted, not drawn: six paintings on disk (d twice), every beat on one, the camera inside it', () => {
-  assert.deepEqual(Object.keys(ART).sort(), ['a', 'b', 'c', 'd1', 'd2', 'e']);
+test('painted, not drawn: seven paintings on disk (d and e twice), every beat on one, the camera inside it', () => {
+  assert.deepEqual(Object.keys(ART).sort(), ['a', 'b', 'c', 'd1', 'd2', 'e1', 'e2']);
   for (const p of Object.values(ART)) assert.ok(fs.existsSync(path.join(ROOT, 'worlds/jiuding', p)), `${p} is on disk`);
-  assert.deepEqual(BEATS.map((b) => b.art), ['a', 'b', 'c', 'd1', 'e', 'e', 'e'], 'the approved frames, beat by beat');
+  assert.deepEqual(BEATS.map((b) => b.art), ['a', 'b', 'c', 'd1', 'e1', 'e2', 'e2'], 'the frames, beat by beat');
   for (const b of BEATS) {
     for (const v of SHOTS[b.id]) {
       assert.ok(v.s >= 1 && v.s <= 3, `${b.id}: zoom ${v.s} never shows past the painting`);
@@ -71,7 +71,7 @@ test('no WebGL: each beat is its painting, still, cropped where the camera ends;
     assert.doesNotMatch(svg, /<text/);
   }
   assert.ok(stillSvg('gather').includes(ART.a));
-  assert.ok(stillSvg('settle').includes(ART.e));
+  assert.ok(stillSvg('settle').includes(ART.e2));
 });
 
 test('small on purpose — the first rung (his: 「筑基有一点天象就可以」): no shake or flash, stars only a little brighter, never hanging down', () => {
@@ -83,4 +83,17 @@ test('small on purpose — the first rung (his: 「筑基有一点天象就可�
   assert.doesNotMatch(stars, /往下垂|摘得着|轰/);
   const book = fs.readFileSync(path.join(ROOT, 'story/jiuding-lu/09-第九回.md'), 'utf8');
   assert.ok(book.includes(stars.replace('那口锅', '那口「锅」')), 'the book says the same');
+  for (const k of ['a', 'b', 'e2']) assert.equal(WORLD[k], 'outer', `${k}: the sky outside is monochrome ink, the 天象 kept small`);
+});
+
+test('the 台 is inside him (his: 「筑基的图片在小满旁边画了个台子, 其实应该是内景的台子吧」): the zhu beat plays on an inner painting, never one with the cliff', () => {
+  assert.deepEqual(Object.keys(WORLD).sort(), Object.keys(ART).sort(), 'every painting is in one world or the other');
+  const worldOf = (id) => WORLD[BEATS.find((b) => b.id === id).art];
+  assert.equal(worldOf('zhu'), 'inner', 'the four piles and the 台: the small cosmos inside him');
+  assert.deepEqual(BEATS.map((b) => worldOf(b.id)), ['outer', 'outer', 'inner', 'inner', 'inner', 'outer', 'outer'],
+    'out on the cliff, in through c → d → e1, and out again as he opens his eyes');
+  assert.equal(WORLD.d2, 'inner');
+  assert.notEqual(BEATS.find((b) => b.id === 'zhu').art, BEATS.find((b) => b.id === 'stars').art, 'the 台 and the cliff never share a painting');
+  const src = fs.readFileSync(path.join(ROOT, 'scripts/setpieces/zhuji.js'), 'utf8');
+  assert.match(src, /L\.stars = use\('e2', 'stars'\)/, 'the cliff soaks in over the cosmos: its own layer, not a rise over one painting');
 });
