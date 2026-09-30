@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BEATS, LUOSHU, TITLE, stillSvg } from '../scripts/setpieces/zhang.js';
+import { ART, ASPECT, BEATS, LUOSHU, MARKS, SHOTS, TITLE, coldMatrix, stillSvg } from '../scripts/setpieces/zhang.js';
 import { beatRange, beatStepper, setpieceBeats, setpieceOf } from '../scripts/setpiece.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -26,10 +26,29 @@ test('zhang: seven beats in the book’s order, each line verbatim from 第十�
   assert.equal(TITLE.zh, '漳水立起');
 });
 
-test('zhang: 20–30 seconds in all, no beat longer than six', () => {
+test('zhang: slow — 30–45 seconds in all, each beat 4–8 s (his: the camera moves over paintings, slowly)', () => {
   const total = BEATS.reduce((a, b) => a + b.ms, 0);
-  assert.ok(total >= 20000 && total <= 30000, `total ${total} ms`);
-  for (const b of BEATS) assert.ok(b.ms >= 2000 && b.ms <= 6000, `${b.id} ${b.ms} ms`);
+  assert.ok(total >= 30000 && total <= 45000, `total ${total} ms`);
+  for (const b of BEATS) assert.ok(b.ms >= 4000 && b.ms <= 8000, `${b.id} ${b.ms} ms`);
+});
+
+test('zhang: painted, not drawn — every beat plays on one of the five paintings, and the code draws no figure', () => {
+  assert.deepEqual(Object.keys(ART).sort(), ['a', 'b', 'c', 'e', 'f']);
+  for (const p of Object.values(ART)) assert.ok(fs.existsSync(path.join(ROOT, 'worlds/jiuding', p)), `${p} is on disk`);
+  for (const b of BEATS) {
+    assert.ok(ART[b.art], `${b.id} plays on a painting`);
+    const [from, to] = SHOTS[b.id];
+    for (const v of [from, to]) {
+      assert.ok(v.s >= 1 && v.s <= 3, `${b.id}: zoom ${v.s} never shows past the painting`);
+      assert.ok(v.fx >= 0 && v.fx <= 1 && v.fy >= 0 && v.fy <= 1, `${b.id}: aim inside the painting`);
+    }
+  }
+  for (const [k, [u, v]] of Object.entries(MARKS)) assert.ok(u > 0 && u < 1 && v > 0 && v < 1, `${k} inside the painting`);
+  assert.equal(ASPECT, 9 / 16);
+  // His ruling (2026-09-30, 「太不好看, 粗糙, 太假」): no code-drawn figures, fish, stones or dragons.
+  const src = fs.readFileSync(path.join(ROOT, 'scripts', 'setpieces', 'zhang.js'), 'utf8');
+  assert.doesNotMatch(src, /\.(ellipse|moveTo|lineTo|bezierCurveTo|quadraticCurveTo|poly)\(/, 'no strokes or outlines drawn in code');
+  assert.deepEqual(coldMatrix(0), [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0], 'the painting as painted before the river stops');
 });
 
 test('zhang: the seal is the 洛书 — every line fifteen, six and eight at the feet', () => {
@@ -40,13 +59,13 @@ test('zhang: the seal is the 洛书 — every line fifteen, six and eight at the
   assert.deepEqual([LUOSHU[2][0], LUOSHU[2][2]], [8, 6]); // 三的底下，是八；七的底下，是六
 });
 
-test('zhang: a still frame for every beat, and no numerals painted on the stones', () => {
+test('zhang: no WebGL — each beat is its painting, still, cropped where the camera ends; no words painted', () => {
   for (const b of BEATS) {
-    const svg = stillSvg(b.id, { W: 1000, H: 800 });
+    const svg = stillSvg(b.id, { W: 1000, H: 562 });
     assert.match(svg, /^<svg class="spstill"/);
-    assert.ok(svg.length > 200, `${b.id} draws something`);
+    assert.ok(svg.includes(ART[b.art]), `${b.id} shows ${ART[b.art]}`);
+    assert.doesNotMatch(svg, /<text/);
   }
-  assert.doesNotMatch(stillSvg('seal'), /<text/);
 });
 
 test('stepper: play, hold for a tap, next — and a tap mid-beat finishes it', () => {
@@ -123,5 +142,5 @@ test('teardown: every tween a piece makes is in its bag, and killAll leaves none
   // …and the piece makes none outside it.
   const zhang = fs.readFileSync(path.join(ROOT, 'scripts', 'setpieces', 'zhang.js'), 'utf8');
   assert.doesNotMatch(zhang, /\bgsap\.(to|from|fromTo|timeline|delayedCall)\(/, 'zhang makes its tweens through the bag');
-  assert.match(zhang, /destroy\(\) \{ bag\.killAll\(\);/);
+  assert.match(zhang, /destroy\(\) \{\s*bag\.killAll\(\);/);
 });

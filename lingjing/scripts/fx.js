@@ -58,7 +58,7 @@ export function glOK() {
 
 /// Paper fibres: short soft strokes in every direction over blotches — the
 /// displacement that tears the ink's edge like 宣纸 wicking it.
-function fibreCanvas(size = 256) {
+export function fibreCanvas(size = 256) {
   const c = document.createElement('canvas');
   c.width = c.height = size;
   const g = c.getContext('2d');
@@ -86,7 +86,7 @@ function fibreCanvas(size = 256) {
 }
 
 /// Rice-paper grain: fine speckle, laid over everything very faintly.
-function grainCanvas(size = 256) {
+export function grainCanvas(size = 256) {
   const c = document.createElement('canvas');
   c.width = c.height = size;
   const g = c.getContext('2d');

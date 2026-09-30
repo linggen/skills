@@ -1139,6 +1139,7 @@ body.fighting .atmos { display: none; }
 .spstage { position: fixed; inset: 0; z-index: 70; display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 10px; padding: 16px; background: rgba(245, 239, 225, .97); cursor: pointer; }
 .spstage .sphold { position: relative; width: min(100%, 920px); aspect-ratio: 4 / 3; max-height: 70vh; }
+.spstage[data-piece="zhang"] .sphold { aspect-ratio: 16 / 9; width: min(100%, 1180px, calc(70vh * 16 / 9)); } /* 漳水: painted 16:9 */
 .spstage .spline { max-width: 36em; min-height: 3.2em; margin: 0; font-size: 16px; line-height: 1.7; color: #2b2620; text-align: center; }
 .spstage .spskip { position: absolute; top: 12px; right: 12px; border: 1px solid #b8ad96; background: transparent; color: #5b5244;
   border-radius: 999px; padding: 4px 14px; font-size: 14px; cursor: pointer; }

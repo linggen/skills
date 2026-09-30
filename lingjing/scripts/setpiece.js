@@ -75,10 +75,19 @@ export async function playSetPiece(host, id, { lang = 'zh', still = false, auto 
   const box = document.createElement('div');
   box.className = 'sphost';
   host.appendChild(box);
-  const Wpx = Math.max(240, host.clientWidth || 480), Hpx = Math.max(240, host.clientHeight || Math.round(Wpx * 0.75));
-  const W = 1000, H = Math.round(W * Math.min(1.6, Math.max(0.6, Hpx / Wpx)));
+  let Wpx = Math.max(240, host.clientWidth || 480), Hpx = Math.max(160, host.clientHeight || Math.round(Wpx * 0.75));
+  // A piece with its own frame (`ASPECT`, height over width: 漳水 is 16:9) is letterboxed in the
+  // host — as wide as it fits, centred; else the frame follows the host.
+  if (def.ASPECT) {
+    box.classList.add('fit');
+    if (Hpx / Wpx > def.ASPECT) Hpx = Math.round(Wpx * def.ASPECT); else Wpx = Math.round(Hpx / def.ASPECT);
+  }
+  const W = 1000, H = Math.round(W * (def.ASPECT ?? Math.min(1.6, Math.max(0.6, Hpx / Wpx))));
   const art = {};
-  for (const [k, p] of Object.entries(def.ART ?? {})) art[k] = await loadImage(new URL(p, artBase).href).catch(() => null);
+  // Every painting before the first beat: a beat never waits on a picture (no jank).
+  await Promise.all(Object.entries(def.ART ?? {}).map(async ([k, p]) => { art[k] = await loadImage(new URL(p, artBase).href).catch(() => null); }));
+  const arts = Object.fromEntries(Object.entries(art).filter(([, v]) => v).map(([k, v]) => [k, v.src]));
+  const still_ = (id) => def.stillSvg(id, { W, H, art: art.bingyi?.src, arts });
 
   let app = null, scene = null, tl = null, timer = null, gone = false;
   const gl = glOK();
@@ -102,7 +111,7 @@ export async function playSetPiece(host, id, { lang = 'zh', still = false, auto 
     if ('start' in ev) {
       const b = BEATS[ev.start];
       say(ev.start);
-      if (!scene) { box.innerHTML = def.stillSvg(b.id, { W, H, art: art.bingyi?.src }); return react(steps.ended()); }
+      if (!scene) { box.innerHTML = still_(b.id); return react(steps.ended()); }
       tl = scene.beat(b.id);
       tl.eventCallback('onComplete', () => react(steps.ended()));
       if (still) tl.progress(1); else tl.play();
@@ -113,7 +122,7 @@ export async function playSetPiece(host, id, { lang = 'zh', still = false, auto 
       if (auto) timer = setTimeout(() => react(steps.tap()), hold);
     } else if ('skip' in ev) {
       // The last frame: every beat left, run to its end in order.
-      if (scene) { tl?.progress(1); for (let k = Math.max(0, ev.skip + 1); k < BEATS.length; k += 1) scene.beat(BEATS[k].id).progress(1); } else box.innerHTML = def.stillSvg(BEATS.at(-1).id, { W, H, art: art.bingyi?.src });
+      if (scene) { tl?.progress(1); for (let k = Math.max(0, ev.skip + 1); k < BEATS.length; k += 1) scene.beat(BEATS[k].id).progress(1); } else box.innerHTML = still_(BEATS.at(-1).id);
       onDone?.();
     } else if (ev.done) onDone?.();
   };
@@ -126,7 +135,7 @@ export async function playSetPiece(host, id, { lang = 'zh', still = false, auto 
     /// A look at beat `k` at progress `p` (0–1), drawn at once: for checking frames
     /// where the page's clock does not run (a hidden tab). Not for play.
     seek(k, p = 1) {
-      if (!scene) { box.innerHTML = def.stillSvg(def.BEATS[k].id, { W, H, art: art.bingyi?.src }); return; }
+      if (!scene) { box.innerHTML = still_(def.BEATS[k].id); return; }
       tl?.kill();
       for (let j = 0; j < k; j += 1) scene.beat(def.BEATS[j].id).progress(1);
       tl = scene.beat(def.BEATS[k].id);
