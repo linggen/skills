@@ -304,7 +304,6 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
     return c;
   };
   const leftHead = head(30, 70, 240, 280, true), rightHead = head(370, 50, 240, 290, true);
-  root.addChild(leftHead, rightHead);
 
   // The near bank, the boy, and — in the trial — the tofu girl behind him.
   root.addChild(new PIXI.Graphics().rect(0, riverBot, W, H - riverBot).fill({ color: 0xd9cfbb, alpha: 0.9 }));
@@ -316,6 +315,8 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
   boy.position.set(W / 2, bankY); boyOpen.position.set(W / 2, bankY); boyOpen.alpha = 0;
   girl.position.set(W / 2 + W * 0.05, bankY + 6); girl.alpha = 0;
   root.addChild(girl, boy, boyOpen);
+  // The heads come down in front of the bank, eye to eye with him.
+  root.addChild(leftHead, rightHead);
   const mud = new PIXI.Container();
   const mudDots = [];
   for (let i = 0; i < 36; i += 1) { const d = new PIXI.Graphics().circle(0, 0, 3 + Math.random() * 6).fill({ color: 0x4a4238, alpha: 0.85 }); d.alpha = 0; mud.addChild(d); mudDots.push(d); }
@@ -431,7 +432,7 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
       leftHead.position.set(god.x - god0.width * 0.27, god.y - god0.height * 0.3);
       rightHead.position.set(god.x + god0.width * 0.27, god.y - god0.height * 0.31);
       leftHead.scale.set(-0.9 * gh / 960 * 2.2, 0.9 * gh / 960 * 2.2); rightHead.scale.set(-0.9 * gh / 960 * 2.2, 0.9 * gh / 960 * 2.2);
-      const big = gh / 960 * 2.2 * 1.9;
+      const big = gh / 960 * 2.2 * 1.15;
       return tl()
         .set([leftHead, rightHead], { alpha: 1 }, 0)
         .to(god0, { alpha: 0.35, duration: s(300) }, 0)
@@ -450,8 +451,8 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
         // Both at her; he steps back in front of her, arms open. They stop a foot away.
         .to(girl, { alpha: 0.75, duration: s(300) }, s(2600))
         .to(boy, { alpha: 0, duration: 0.1 }, s(2900)).to(boyOpen, { alpha: 1, duration: 0.1 }, s(2900))
-        .to(leftHead, { x: W / 2 - W * 0.19, y: bankY - fh * 2.2, duration: s(700), ease: 'power3.in' }, s(2800))
-        .to(rightHead, { x: W / 2 + W * 0.19, y: bankY - fh * 2.2, duration: s(700), ease: 'power3.in' }, s(2800))
+        .to(leftHead, { x: W / 2 - W * 0.15, y: bankY - fh * 1.05, duration: s(700), ease: 'power3.in' }, s(2800))
+        .to(rightHead, { x: W / 2 + W * 0.15, y: bankY - fh * 1.05, duration: s(700), ease: 'power3.in' }, s(2800))
         .to(leftHead.scale, { x: -big, y: big, duration: s(700), ease: 'power3.in' }, s(2800))
         .to(rightHead.scale, { x: big, y: big, duration: s(700), ease: 'power3.in' }, s(2800))
         // A touch on the brow, cold as a well in the twelfth month; then they go back up.
