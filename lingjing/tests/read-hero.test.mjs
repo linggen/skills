@@ -1,6 +1,6 @@
-// The hero is fixed since 2026-09-30 (沈小满, male; 阿禾 a girl). The reader
-// still fills `{name}` / `{男词|女词}` from Look for the 回 not yet turned to
-// third person; a page with no save reads 周星星, male (legacy default).
+// The hero is fixed since 2026-09-30 (沈小满, male; 阿禾 a girl) and all ten 回
+// are in the third person. The reader still knows how to fill `{name}` /
+// `{男词|女词}` (legacy saves, other books); a page with no save reads 周星星.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -43,22 +43,18 @@ test('a name is a word, never markup: escaped, and no bold or table split', () =
   assert.match(html, /<td>&lt;b&gt;＊甲｜乙＊<\/td><td>1<\/td>/);
 });
 
-test('the hero is 沈小满, fixed (his, 2026-09-30); 回 not yet turned to third person still fill for either hero', () => {
+test('the hero is 沈小满, fixed (his, 2026-09-30): all ten 回 in the third person, no player tokens', () => {
   const book = JSON.parse(fs.readFileSync(path.join(BOOK, 'book.json'), 'utf8'));
   const TOKENS = /\{name\}|\{[^{}|\n]*\|[^{}|\n]*\}|::: [男女]|女主变体/;
-  for (const ch of bookEntries(book).filter((c) => c.huimu)) {
+  const hui = bookEntries(book).filter((c) => c.huimu);
+  assert.ok(hui.length >= 10, 'the ten 回 of 卷一');
+  for (const ch of hui) {
     const md = fs.readFileSync(path.join(BOOK, ch.file), 'utf8');
     assert.doesNotMatch(md, /周星星|——星星/, `${ch.file}: the placeholder name is gone`);
-    for (const gender of ['male', 'female']) {
-      const html = renderMarkdown(fillHero(md, { name: '秋白', gender }));
-      assert.doesNotMatch(html, /[{}]|&lt;!--|女主变体/, `${ch.file} ${gender}: every token filled, no note shown`);
-    }
-  }
-  // The 回 already in third person name him and carry no player tokens.
-  for (const file of ['01-第一回.md', '02-第二回.md']) {
-    const md = fs.readFileSync(path.join(BOOK, file), 'utf8');
-    assert.doesNotMatch(md, TOKENS, `${file}: no {name} or gender marks`);
-    assert.match(md, /沈小满/, `${file}: names 沈小满`);
+    assert.doesNotMatch(md, TOKENS, `${ch.file}: no {name} or gender marks`);
+    assert.match(md, /沈小满/, `${ch.file}: names 沈小满`);
+    const html = renderMarkdown(fillHero(md, {}));
+    assert.doesNotMatch(html, /[{}]|&lt;!--|女主变体/, `${ch.file}: nothing left to fill, no note shown`);
   }
   const one = fs.readFileSync(path.join(BOOK, '01-第一回.md'), 'utf8');
   assert.match(one, /姓沈，名小满，这一年十二岁[\s\S]*猎户家的独子/);
@@ -84,21 +80,13 @@ test('variant blocks leave ::: 忆 plates alone, inside or outside a block', () 
   assert.match(html, /m1\.png[\s\S]*m2\.png/);
 });
 
-test('the girl-hero 回 (第六回, 第十回): both readings clean, each told its own way', () => {
-  const read = (f, gender) => renderMarkdown(fillHero(fs.readFileSync(path.join(BOOK, f), 'utf8'), { name: '秋白', gender }));
-  for (const f of ['06-第六回.md', '10-第十回.md']) {
-    for (const gender of ['male', 'female']) assert.doesNotMatch(read(f, gender), /:::|[{}]|女主变体/, `${f} ${gender}`);
-  }
-  const [hm, hf] = ['male', 'female'].map((g) => read('06-第六回.md', g));
-  assert.match(hm, /蹲下身去，抱住了头/);
-  assert.doesNotMatch(hm, /猪圈/);
-  assert.match(hf, /扔进了伙房后头的猪圈/);
-  assert.doesNotMatch(hf, /抱住了头|肿成馒头/);
-  assert.match(hf, /嘴里一股泥腥味/);
-  const [rm, rf] = ['male', 'female'].map((g) => read('10-第十回.md', g));
-  assert.match(rm, /打鼓的那个，便是我。/);
-  assert.doesNotMatch(rm, /你长得像交不起河伯钱的/);
-  assert.match(rf, /你长得像交不起河伯钱的/);
-  assert.doesNotMatch(rf, /打鼓的那个，便是我/);
-  for (const html of [rm, rf]) assert.match(html, /「扑通」一声/);
+test('the kept readings (第六回 柴房, 第十回 the drummer) are the only ones left', () => {
+  const read = (f) => renderMarkdown(fillHero(fs.readFileSync(path.join(BOOK, f), 'utf8'), {}));
+  const six = read('06-第六回.md');
+  assert.match(six, /蹲下身去，抱住了头/);
+  assert.doesNotMatch(six, /猪圈/);
+  const ten = read('10-第十回.md');
+  assert.match(ten, /打鼓的那个，便是沈小满。/);
+  assert.doesNotMatch(ten, /你长得像交不起河伯钱的/);
+  assert.match(ten, /「扑通」一声/);
 });
