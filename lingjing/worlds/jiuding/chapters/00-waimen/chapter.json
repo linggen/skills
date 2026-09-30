@@ -90,6 +90,7 @@
         "en": "The outer court contest"
       },
       "scenes": [
+        "wm-qianye",
         "wm-dabi",
         "wm-lun1",
         "wm-fushi",
@@ -119,7 +120,7 @@
       }
     }
   ],
-  "_goal": "The chapter's one goal and its countdown on the goal line (errands.mjs goalOf): the story's date until 周衡 says 「大比，明日」 (the mark `dabi-eve`), then 明日 that real day and 今日 after; the contest's first exit waits a real day on the same mark (`needs.day_after`).",
+  "_goal": "The chapter's one goal and its countdown on the goal line (errands.mjs goalOf): the story's date until 周衡's notice 「外门大比，明日」 (the mark `dabi-eve`, on wm-chu's rest), then 明日. No real-day wait any more (2026-09-30): the eve is a scene in the story (wm-qianye, 大比前夜 — the book's 第八回 § 一, and the rumour of 马家's trees), and the contest follows it at once.",
   "goal": {
     "title": {
       "zh": "外门大比",

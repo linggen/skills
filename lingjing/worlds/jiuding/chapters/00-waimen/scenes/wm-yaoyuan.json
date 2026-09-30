@@ -1,0 +1,83 @@
+{
+ "version": 1,
+ "id": "wm-yaoyuan",
+ "chapter": "00-waimen",
+ "hui": "h05",
+ "at": "yaoyuan",
+ "place": {
+  "zh": "沉鼎观 · 药园",
+  "en": "Chending Temple · The herb garden"
+ },
+ "setup": {
+  "zh": "十月初十，子时，药园。你蹲在下风口的灵草丛后面，手里攥着一根萝卜。最里头那株紫玉参旁边，「咔、咔」两声。",
+  "en": "The tenth of the tenth month, midnight, the herb garden. You squat downwind behind a clump of herbs, a radish in your fist. By the purple jade ginseng at the far end: crack, crack."
+ },
+ "recap": {
+  "zh": "药园偷草的，是一只狰。它扑过来试你；你没下死手，放下一根萝卜。它吃了萝卜，在你脚边团成一团睡着了——小狰跟了你。",
+  "en": "The herb thief was a zheng. It came at you to try you; you didn't strike to kill, and laid down a radish. It ate the radish and curled up asleep at your feet — Little Zheng is yours."
+ },
+ "cast": [],
+ "people": [],
+ "panel": {
+  "caption": {
+   "zh": [
+    "十月初十，子时，药园。",
+    "五条尾巴，一只独角，一身赤红的毛。",
+    "偷来的，怎么吃都吃不饱；给的，一根就饱了。"
+   ],
+   "en": [
+    "The tenth of the tenth month, midnight, the herb garden.",
+    "Five tails, one horn, fur blazing red.",
+    "Stolen, never full; given, one is enough."
+   ]
+  }
+ },
+ "lines": [],
+ "buttons": [
+  "tame"
+ ],
+ "exits": [
+  {
+   "id": "tame",
+   "label": {
+    "zh": "摊开两只手，放下萝卜",
+    "en": "Open your hands, and set down the radish"
+   },
+   "means": "weathers the zheng's test without striking to kill, then gives it the radish; it joins him",
+   "game": {
+    "id": "yaoyuan-zheng",
+    "kind": "duel",
+    "creature": "zheng",
+    "retry": true
+   },
+   "withdrawn": {
+    "zh": "小狰「咔、咔」两声，窜回了灵草丛里，又探出一只独角来。——再来。",
+    "en": "Little Zheng goes crack, crack, darts back into the herbs, and pokes its one horn out again. — Again."
+   },
+   "grant": {
+    "table": "scene",
+    "cast": "zheng"
+   },
+   "ledger": [
+    {
+     "who": "zhouheng",
+     "kind": "恩",
+     "what": {
+      "zh": "十月初八，周衡把药园巡夜交给了你；工钱是四分之一根蜡烛，和一句「记账」。",
+      "en": "The eighth of the tenth month, Zhou Heng handed you the herb-garden night watch; the pay was a quarter candle and \"on the books.\""
+     }
+    }
+   ],
+   "beat": [],
+   "next": "wm-chaifang",
+   "story": {
+    "zh": "它吃完了一株，又去扒拉第二株。扒拉到一半，它停了下来，抬起头，鼻子朝西边抽了两抽。\n\n小满知道，它闻着了。下风口也不是十成十的，风有时候打个转，气味便漏过去了。\n\n它盯着他藏身的那丛灵草，身子往下一伏，五条尾巴一齐竖了起来，嘴里「咔、咔、咔」地响，这一回响得又急又硬，真像是有人拿石头在砸石头。\n\n小满没有扑上去。他慢慢地站起身来，两只手摊开，让它瞧见他手里什么也没有——除了一根萝卜。他走了三步，停下来，弯下腰，把那根萝卜轻轻放在它面前的地上，然后退了回去，又蹲下了。\n\n它停下嘴，看了看萝卜，又看了看他。\n\n那个眼神，小满到老都记得。那眼神里有三层意思：头一层是「你在侮辱谁？」，第二层是「本兽吃的是灵草，一株值你一个月的灵石」，第三层——第三层他当时没看懂，后来才懂了，那一层是：「……这是给我的？」\n\n它盯着萝卜看了很久很久。月亮往西边又挪了一截。\n\n然后，它把萝卜吃了。\n\n它吃萝卜，跟吃灵草不一样。吃灵草，它是抱着啃，啃一口，四下里张望一眼，像怕人抢；吃萝卜，它是趴在地上，两只前爪按着，一口一口，吃得很慢，连萝卜缨子都吃了。吃完了，它打了个嗝，这一声嗝，打得又长又响，「咔——」的一声，像敲了一记石磬。\n\n然后它慢吞吞地走过来，往小满脚边一趴，五条尾巴把自己团团围住，就这么睡着了。\n\n小满蹲在那里，一动也不敢动。他瞧着脚边这一团红毛，心里想起一件事来。\n\n这东西偷了一个月的灵草，三十六株，三十七株，三十八株，一个月比一个月多，一株比一株值钱，可它越偷越饿，饿得一个月要多偷一株。一根萝卜，不值一文钱，伙房里一筐一筐的，是人家给它的，它倒吃饱了，吃饱了便睡。\n\n偷来的，怎么吃都吃不饱；给的，一根就饱了。\n\n他想起马小宝在通铺上摸了半夜的空食盒，想起本子上那个圈。他蹲在月光底下，把这两件事搁在一处想，想了半天，没想明白，只觉得心口有一点发凉。\n\n他把怀里那第二根萝卜掏出来，搁在它鼻子前头，留着，等它醒了吃。",
+    "en": "It finished one herb and started pawing at a second. Halfway through, it stopped, lifted its head, and sniffed twice toward the west.\n\nXiaoman knew: it had smelled him. Downwind isn't ten parts in ten; the wind sometimes eddies, and the scent slips across.\n\nIt stared at the clump of herbs where he hid, crouched low, all five tails shot up, and its mouth went crack, crack, crack — this time quick and hard, really like stone striking stone.\n\nXiaoman didn't spring. He stood up slowly, both hands open, letting it see he held nothing — except a radish. He took three steps, stopped, bent, laid the radish gently on the ground in front of it, then backed away and squatted again.\n\nIt stopped chewing, looked at the radish, then at him.\n\nThat look Xiaoman remembered into old age. It had three layers: the first, \"Who do you think you're insulting?\"; the second, \"This beast eats spirit herbs — one of them is worth a month of your stones\"; the third — the third he didn't understand at the time, only later: \"…Is this for me?\"\n\nIt stared at the radish a long, long time. The moon moved another stretch west.\n\nThen it ate the radish.\n\nIt ate a radish differently from an herb. An herb it hugged and gnawed, a bite and a look all round, as if afraid of being robbed; the radish it ate lying down, both front paws pinning it, bite by bite, very slowly, leafy top and all. When it had finished it burped — a long, loud burp, \"crrrack,\" like a stroke on a stone chime.\n\nThen it ambled over, flopped down at Xiaoman's feet, wrapped its five tails round itself, and went to sleep just like that.\n\nXiaoman stayed squatting, not daring to move. Looking at the ball of red fur at his feet, something came to him.\n\nThis thing had been stealing herbs a whole month — thirty-six, thirty-seven, thirty-eight — more each month, each one costlier, and the more it stole the hungrier it got, so hungry it had to steal one more every month. A radish isn't worth a copper — the kitchen has them by the basket — but someone gave it, and it was full; full, it slept.\n\nStolen, and however much you eat you're never full; given, and one is enough.\n\nHe thought of Ma Xiaobao on the bunk fumbling half the night in an empty food box, and of the circle in his notebook. He squatted in the moonlight and put the two things side by side and thought a long while and couldn't work it out — only felt a little chill at his heart.\n\nHe took the second radish from his coat and laid it before its nose, to keep for when it woke."
+   }
+  }
+ ],
+ "story": {
+  "zh": "萝卜是从伙房讨来的。\n\n小满傍晚去帮厨，削了一下午的萝卜，削完了，瞅着胖大娘不注意，往袖子里塞了一根。塞进去了，心里又不踏实：他进山门一个月，公中交了两块灵石，记了两笔账，自己倒先偷起东西来了，这一笔，记在谁的账上？\n\n他在灶台边上站了一会儿，把那根萝卜又从袖子里掏了出来，捧到胖大娘跟前，老老实实地道：「大娘，我想要一根萝卜。」\n\n胖大娘低头瞧了瞧萝卜，又抬头瞧了瞧他，道：「要萝卜干什么？」\n\n小满道：「练功。」\n\n胖大娘瞧了他半天，脸上的肉一抽一抽的，想笑又没笑出来。末了，她从筐里又拣了一根最大的，连同小满手里那根，一齐塞进他怀里，道：「两根。练两遍。」顿了一顿，又低声道，「看碗的那个，是你吧？」\n\n小满点点头。\n\n胖大娘道：「我在这灶上掌勺十九年，头一回有人问我，明天的碗还是不是这一只。」她转过身去搅锅，背对着小满，道，「去罢。别让人看见。」\n\n小满抱着两根萝卜出了伙房，走出老远，才想起来，那两根萝卜的账，他也得记一笔。他掏出本子，记道：**十月初八。萝卜两根。伙房胖大娘。恩。**\n\n写完了，看着那个「恩」字，觉得有点重，两根萝卜，担不起这么大一个字。可他想了想，还是没有划掉。\n\n子时，药园。\n\n药园在后山的半腰上，背风向阳，三面是崖，一面是一道矮矮的石墙，墙上爬满了藤。园子里一畦一畦的灵草，排得整整齐齐，叶子在夜里泛着一点幽幽的光，有绿的，有紫的，有白的，像一园子没点着的灯笼。风一吹，那光便一漾一漾的。\n\n那一截四分之一的蜡烛，小满没舍得点。今夜有月亮，用不着。\n\n头一夜，他蹲了一整夜，什么也没蹲着。\n\n可他也没白蹲。天快亮的时候，他打着哈欠，把园子里被啃过的地方一处一处看过去。看着看着，他便不打哈欠了。\n\n他爹说过，打猎的人家有三样东西不能少：一张好弓，一双好腿，一副好耳朵。他爹没说的，还有第四样：一双好眼睛。他爹不识字，可他认得山里每一种蹄印爪印，比他娘认字还认得准。小满跟着他爹蹲了那么多年的鹿，别的没学会，看印子是学会了的。\n\n被啃过的灵草，茬口齐齐的，是一口咬断的，不是扯断的，那东西牙口好。茬口旁边的泥地上，有几个小小的爪印，前头四个圆点，后头一个肉垫，猫儿大小，却比猫爪深，那东西身子沉。爪印边上，泥地上扫出一片扇形的印子，一道一道的，数一数，五道。\n\n小满蹲在那片扇形的印子跟前，看了很久。五道。一条尾巴扫不出五道来，除非是五条尾巴。\n\n他又在墙角的一块石头上，找到了一撮毛。红的，赤红赤红，比马小宝那件狐皮袄还红。\n\n第二夜，他换了个地方蹲。\n\n头一夜他蹲在园子正当中，风从东边来，他的气味顺着风往西边飘，飘了满园子。那东西鼻子灵，闻着了人味，自然不来。第二夜，他绕到园子的西头，蹲在下风口，一丛半人高的灵草后面。先看风，后看鹿。他爹的话，一句顶一句用。\n\n他手里攥着一根萝卜，另一根揣在怀里，一动不动地蹲着，蹲得两条腿都没了知觉。\n\n蹲着蹲着，他便想起在黑松岭的那一回。那一回他跟着他爹蹲鹿，蹲到半路，雨下来了，后来的事，便是坠谷，便是那只断了八条尾巴的小狐狸，便是一张饼。他那时候想，蹲鹿是要蹲出一头鹿来的，蹲出一个妖王，账上不知道该算赚了还是赔了。\n\n后来他算明白了：赚了。她吃了他一张饼，替他凿了一年的门，凿得自己薄成了一层纸。这笔账，是他欠她的，欠得比一张饼大得多。\n\n他摸了摸胸口的木牌，凉的。他小声道：「这回要是蹲着个什么，我先不急着出手。先看风。」\n\n木牌没答。月亮从东边挪到了头顶，又从头顶往西边挪。子时过了，丑时过了。\n\n忽听得「咔嚓」一声轻响，像是什么东西咬断了草茎。\n\n跟着，又是「咔、咔」两声，脆生生的，倒像是有人拿两块小石头在对着敲。\n\n他探出头去，只见药园最里头，那株最值钱的「紫玉参」旁边，蹲着一个东西。猫儿大小，一身赤红的毛，在月光底下红得发亮，身后拖着五条尾巴，一条一条，扫来扫去，扫得地上的泥一片一片的；头上生一只独角，短短的，尖尖的，像一截没长成的笋。它两只前爪抱着一株灵草，吃得咔嚓咔嚓直响，一边吃，一边往下掉渣，吃相实在难看得很。\n\n原来是一只狰。\n\n这名字，小满是后来在藏经阁帮着晒书，才对上号的。《山海经》里说，章莪之山，有兽焉，其状如赤豹，五尾一角，其音如击石，其名如狰。他读到「其音如击石」那一句，才明白那一夜「咔、咔」的两声，不是它在嚼，是它在叫——它一边吃，一边自己跟自己说话，说的大约是「好吃」，或者「还饿」。\n\n那时候他还不知道这些。他只知道，眼前这一只，半点不像书上说的赤豹，倒像一只吃撑了的红毛团子。",
+  "en": "The radish came from the kitchen.\n\nXiaoman went to help in the kitchen towards evening and peeled radishes all afternoon; when he'd finished, while the fat auntie wasn't looking, he slipped one up his sleeve. Once it was there he felt uneasy: a month inside the gate, he'd paid two stones to the common fund and entered two lines in his book, and here he was stealing first — whose account did this line go in?\n\nHe stood by the stove a while, took the radish back out of his sleeve, carried it to the fat auntie, and said honestly: \"Auntie, I'd like a radish.\"\n\nThe fat auntie looked down at the radish, then up at him. \"What do you want a radish for?\"\n\n\"Practice,\" said Xiaoman.\n\nShe looked at him a good while, the flesh of her face twitching — wanting to laugh and not quite. In the end she picked the biggest one out of the basket and pushed it, together with the one in Xiaoman's hand, into his coat. \"Two. Practise twice.\" After a pause she added low: \"The one who watches the bowls — that's you, isn't it?\"\n\nXiaoman nodded.\n\n\"Nineteen years I've run this stove,\" said the fat auntie, \"and it's the first time anyone's asked me if tomorrow's bowl will still be the same one.\" She turned to stir the pot, her back to him. \"Off you go. Don't let anyone see.\"\n\nXiaoman came out of the kitchen with two radishes and only a good way off remembered that the two radishes needed a line in the book too. He took it out and wrote: **Eighth day, tenth month. Two radishes. The fat auntie in the kitchen. Kindness.**\n\nWhen he'd written it he looked at the word \"kindness\" and thought it rather heavy — two radishes couldn't carry so big a word. But he thought it over and didn't strike it out.\n\nMidnight. The herb garden.\n\nThe herb garden lay halfway up the back mountain, out of the wind and facing the sun, cliffs on three sides, and on the fourth a low stone wall covered in vines. Inside, bed after bed of spirit herbs in neat rows, their leaves giving off a faint glow at night — green, purple, white — like a garden of unlit lanterns. When the wind blew, the glow rippled.\n\nThe quarter candle Xiaoman couldn't bear to light. There was a moon tonight; no need.\n\nThe first night he squatted till dawn and caught nothing.\n\nBut he hadn't squatted for nothing. Near dawn, yawning, he went round the garden looking at every nibbled place in turn. And as he looked he stopped yawning.\n\nHis father used to say a hunting family can't do without three things: a good bow, good legs, and good ears. What his father didn't say was the fourth: good eyes. His father couldn't read, but he knew every hoofprint and pawprint on the mountain better than his mother knew her characters. Xiaoman had squatted for deer with his father all those years; whatever else he hadn't learned, reading prints he had.\n\nThe nibbled herbs were cut clean — bitten through in one bite, not torn; the thing had good teeth. On the mud beside the stalks were a few small pawprints, four round dots in front and one pad behind, cat-sized but deeper than a cat's; the thing was heavy. Next to the prints the mud was swept in a fan of marks, one line after another; he counted: five.\n\nXiaoman crouched by that fan of marks a long time. Five. One tail can't sweep five lines — unless there are five tails.\n\nOn a stone in the corner by the wall he found a tuft of fur. Red — blazing red, redder than Ma Xiaobao's fox-fur jacket.\n\nThe second night he squatted somewhere else.\n\nThe first night he had squatted in the middle of the garden with the wind from the east, and his scent drifted west on it, over the whole garden. A thing with a good nose smells a man and naturally stays away. The second night he went round to the west end and squatted downwind, behind a clump of herbs half a man high. Watch the wind first, then the deer. His father's words, each one as useful as the last.\n\nHe held one radish in his hand and kept the other in his coat, and squatted without moving till both legs had lost all feeling.\n\nSquatting there, he thought of that time at Black Pine Ridge. That time he'd been squatting for a deer with his father, and halfway through the rain came, and after that came the fall into the valley, the little fox with eight tails cut off, and one flatbread. He'd thought then: you squat for a deer to get a deer; squat and get a demon queen — who knows if that counts as profit or loss.\n\nLater he worked it out: profit. She ate one flatbread of his and chiselled gates for him a whole year, till she was thin as paper. That account was his debt to her, and far bigger than a flatbread.\n\nHe touched the token on his chest: cold. He whispered, \"If I catch something this time, I won't rush it. Watch the wind first.\"\n\nThe token didn't answer. The moon moved from the east to overhead and from overhead toward the west. Midnight passed; the small hours passed.\n\nThen — a faint crunch, as of something biting through a stalk.\n\nThen two more — crack, crack — crisp, as if someone were knocking two small stones together.\n\nHe poked his head out. At the far end of the garden, beside the costliest \"purple jade ginseng,\" something was squatting. Cat-sized, all red fur, blazing red in the moonlight, trailing five tails that swept back and forth, sweeping the mud into patches; on its head a single horn, short and sharp, like a bamboo shoot not grown out. It held a spirit herb in its two front paws and crunched away, dropping crumbs as it ate — truly ugly table manners.\n\nIt was a zheng.\n\nThat name Xiaoman only matched up later, helping to sun the books in the scripture library. The *Classic of Mountains and Seas* says: on Mount Zhang'e there is a beast like a red leopard, with five tails and one horn; its voice is like struck stone, and its name is Zheng. Reading \"its voice is like struck stone,\" he at last understood that the two crack-cracks that night weren't chewing — they were its cry; it talked to itself as it ate, saying most likely \"tasty,\" or \"still hungry.\"\n\nAt the time he knew none of this. He only knew that the thing in front of him looked nothing like the red leopard in the book — more like an overfed ball of red fur."
+ }
+}

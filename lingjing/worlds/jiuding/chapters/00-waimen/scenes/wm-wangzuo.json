@@ -9,8 +9,8 @@
   "en": "The hidden realm · Below the drop"
  },
  "setup": {
-  "zh": "别人都往右，你往左，往下。崖底是一面光秃秃的石墙——墙后头，有风。",
-  "en": "Everyone goes right; you go left, and down. At the foot of the cliff, a bare stone wall — and behind it, wind."
+  "zh": "别人都往右，你往左，往下。崖底是一面光秃秃的石墙——墙后头，有风。墙脚下一汪滴水积成的浅潭，潭里趴着一只白身赤首、像龟的东西：蛫。它把那面墙护得严严实实。",
+  "en": "Everyone goes right; you go left, and down. At the foot of the cliff, a bare stone wall — and behind it, wind. At the wall's foot, a shallow pool of gathered drips, and in it a white-bodied, red-headed thing like a turtle: a gui. It guards the wall close."
  },
  "recap": {
   "zh": "秘境里，银月领着你往左、往下；墙后头有风，墙上刻着九宫——五居中央，墙开了。",
@@ -33,13 +33,13 @@
   "caption": {
    "zh": [
     "「……这地方。本王来过。」",
-    "往左。往下。",
+    "往左。往下。潭里，一只白身赤首的蛫。",
     "那面墙后头，有风。"
    ],
    "en": [
-    "\"…This place. I have been here before.\"",
-    "Left. Down.",
-    "Behind that wall: a draught."
+    "\"…This place. I've been here.\"",
+    "Left. Down. In the pool, a white-bodied, red-headed gui.",
+    "Behind that wall, there's wind."
    ]
   }
  },
@@ -106,7 +106,17 @@
     "en": "He pressed.\n\nA long, dull rumble — \"*rrrrumble*\" — ran from the foot of the wall up to the top of the cliff, shaking loose pebbles that pattered down the rock. The wall split down the middle; the crack widened and widened, and a wind poured out of it into his face. The wind was warm, warm as spring, and carried a smell Xiaoman had never smelled in his life — he couldn't say what — only that one breath of it and his heart went still."
    },
    "beat": [],
-   "next": "wm-kunzhen"
+   "next": "wm-kunzhen",
+   "game": {
+    "id": "mijing-gui",
+    "kind": "duel",
+    "creature": "gui",
+    "retry": true
+   },
+   "withdrawn": {
+    "zh": "蛫缩回了潭里，把赤红的头又探了出来，一眨不眨地盯着你。——再来。",
+    "en": "The gui draws back into the pool, then pokes its red head out again and stares at you unblinking. — Again."
+   }
   }
  ]
 }

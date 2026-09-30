@@ -52,13 +52,6 @@
     "en": "Step up"
    },
    "means": "steps up onto the contest platform for the first round",
-   "needs": {
-    "day_after": "dabi-eve"
-   },
-   "refuse": {
-    "zh": "大比在明日。今天养足精神——备牌、炼丹、跑跑腿，都来得及。",
-    "en": "The contest is tomorrow. Rest today — there's time to ready your cards, make pills, run errands."
-   },
    "beat": [],
    "next": "wm-lun1"
   }

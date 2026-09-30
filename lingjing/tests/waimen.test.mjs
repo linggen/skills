@@ -1,8 +1,9 @@
 // 外门 — the book's 第五回 to 第八回 (story/jiuding-lu/05-第五回.md … 08-第八回.md; once 第一章 · 外门, then 第三回 until 卷一 was split into ten, 2026-09-30), as shipped: the prologue
 // leads into it; five key beats lock the map and open it again; the area
-// around 沉鼎观 is the whole map; 狰 is caught at the 药园 and never fought; the
-// 大比 waits a real day and its three duels; 息壤 lifts the realm; the chapter
-// ends on 「第九回 · 即将开放」. Both heroes walk it, and the girl's woodshed is hers.
+// around 沉鼎观 is the whole map; 小狰 is the story's — a trial bout at the 药园,
+// then the 萝卜 (2026-09-30); the 蛫 guards the 秘境 wall; the 大比's eve is a scene
+// (wm-qianye) and no real day is waited; its three duels; 息壤 lifts the realm;
+// the chapter ends on 「第九回 · 即将开放」.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
@@ -34,29 +35,34 @@ const fresh = (s) => ({ ...s, stamina: 100, stamina_at: DAY1.toISOString() });
 // The hero is fixed (沈小满, a boy — 2026-09-30): no name card on the way in.
 const opened = (lang = 'zh') => fresh(walk(newState(content, lang, DAY1), TO_OPEN, content, DAY1));
 const won = (s, id, now = DAY1) => ({ ...s, wins: { ...s.wins, [id]: now.toISOString() } });
+/* A scene exit by its button — 小周天 first plays its 三关 board (the exit waits on it, 2026-09-30). */
+function step(s, exit) {
+  if (exit === 'breathe') { s = must(win, s, { id: 'zhoutian-sanguan' }); s = must(task, s, { action: 'done', id: 'zhoutian-sanguan' }); }
+  return must(resolve, s, { exit });
+}
 
 /* The whole chapter, by its buttons and the page's own taps, with the threads done. */
 function playThrough() {
   let s = opened();
-  for (const exit of ['owe', 'can', 'breathe', 'hide']) s = must(resolve, s, { exit });
+  for (const exit of ['owe', 'can', 'breathe', 'hide']) s = step(s, exit);
   s = must(move, s, { place: 'waimen' });
   s = must(quest, s, { action: 'take', id: 'xu-yaoyuan-shouye' });
+  s = must(move, s, { place: 'yaoyuan' });
+  s = must(resolve, won(s, 'yaoyuan-zheng'), { exit: 'tame' });
   s = must(move, s, { place: 'chaifang' });
   s = must(quest, s, { action: 'take', id: 'xu-sun-charm' });
   s = must(win, s, { id: 'qiqiao' }); s = must(task, s, { action: 'done', id: 'qiqiao' });
   assert.ok(s.quests['xu-sun-charm'].done_at, 'the charm mended, the errand hands itself in');
   for (const exit of ['count', 'keep', 'swallow']) s = must(resolve, fresh(s), { exit, ...(exit === 'keep' ? { said: '你这饭桶' } : {}) });
-  s = must(move, s, { place: 'fangshi' });
-  s = must(trade, { ...s, wealth: Math.max(s.wealth, 5) }, { action: 'buy', id: 'luobo' });
-  s = must(trade, s, { action: 'buy', id: 'luobo' });
-  s = must(move, s, { place: 'yaoyuan' });
-  s = must(win, s, { id: 'shouye' }); s = must(task, s, { action: 'done', id: 'shouye' });
-  s = must(tame, s, { creature: 'zheng' });
+  s = must(move, fresh(s), { place: 'waimen' });
+  assert.ok(s.quests['xu-yaoyuan-shouye'].done_at, 'the watch hands itself in at 周衡');
   s = must(move, fresh(s), { place: 'shimen' });
   s = must(resolve, s, { exit: 'refuse' });
   s = must(win, s, { id: 'mijing-wall' }); s = must(task, s, { action: 'done', id: 'mijing-wall' });
-  for (const exit of ['open', 'go', 'swallow', 'rest']) s = must(resolve, s, { exit });
-  s = must(move, s, { place: 'zhengdian' });
+  s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
+  for (const exit of ['go', 'swallow', 'rest']) s = must(resolve, s, { exit });
+  s = must(move, fresh(s), { place: 'waimen' });
+  s = must(resolve, fresh(s), { exit: 'sleep' });
   s = fresh(s);
   s = must(resolve, s, { exit: 'up' }, DAY2);
   s = must(resolve, s, { exit: 'fall' }, DAY2);
@@ -120,7 +126,7 @@ test('a scene nobody can reach, or a beat naming a stranger, does not ship: ever
     for (const e of CH.scenes[id].exits) if (e.next) todo.push(e.next);
   }
   assert.deepEqual([...seen].sort(), Object.keys(CH.scenes).sort());
-  assert.equal(Object.keys(CH.scenes).length, 21);
+  assert.equal(Object.keys(CH.scenes).length, 23);
   for (const b of CH.beats) for (const id of b.scenes) assert.ok(CH.scenes[id], id);
   for (const sc of Object.values(CH.scenes)) assert.ok(CH.map.places.includes(sc.at), `${sc.id} at ${sc.at}`);
 });
@@ -136,10 +142,13 @@ test('a key beat shuts the map from the scene after its entry to its last, in it
   const r = refused(move, s, { place: 'waimen' }, 'corridor');
   assert.equal(r.beat, 'rumen');
   assert.equal(r.say, CH.beats[0].say.zh);
-  for (const exit of ['can', 'breathe', 'hide']) s = must(resolve, s, { exit });
+  for (const exit of ['can', 'breathe', 'hide']) s = step(s, exit);
   assert.equal(look(s, content, ctx()).lock, undefined, 'the beat over, the map opens');
   assert.equal(must(move, s, { place: 'waimen' }).place, 'waimen');
   // the next beat waits at its place, a waypoint with the goal's countdown before it
+  // 小狰 first (十月初十): the story carries him to the 药园; then the next beat waits at its place
+  assert.deepEqual([s.scene, s.place], ['wm-yaoyuan', 'yaoyuan']);
+  s = must(resolve, won(s, 'yaoyuan-zheng'), { exit: 'tame' });
   const w = look(s, content, ctx()).waypoint;
   assert.equal(w.scene, 'wm-chaifang');
   assert.equal(w.text, '外门大比 · 腊月初八。路通向沉鼎观 · 柴房。');
@@ -147,7 +156,7 @@ test('a key beat shuts the map from the scene after its entry to its last, in it
 
 test('the map is the area around 沉鼎观: the rest of 徐 and the eight provinces refuse with one line and stand greyed', () => {
   let s = opened();
-  for (const exit of ['owe', 'can', 'breathe', 'hide']) s = must(resolve, s, { exit });
+  for (const exit of ['owe', 'can', 'breathe', 'hide']) s = step(s, exit);
   for (const far of ['pengcheng', 'yunlong', 'shiao', 'ye', 'leize']) {
     const r = refused(move, s, { place: far }, 'road-closed');
     assert.equal(r.say, CH.map.say.zh, far);
@@ -171,47 +180,41 @@ test('the chapter ended, the map holds while 第九回 is being written; a save 
   assert.equal(must(move, later, { place: 'sishui' }).place, 'sishui');
 });
 
-test('the 守夜 and the tame: 狰 runs from a fight, yields to the watch won, and eats the 萝卜', () => {
+test('小狰 is the story\'s: at the 药园 a trial bout with 狰, fought again at once, then the 萝卜 — it walks with him, and the 守夜 hands itself in at 周衡 (2026-09-30)', () => {
   let s = opened();
-  for (const exit of ['owe', 'can', 'breathe', 'hide']) s = must(resolve, s, { exit });
+  for (const exit of ['owe', 'can', 'breathe', 'hide']) s = step(s, exit);
+  assert.equal(s.scene, 'wm-yaoyuan');
   s = must(move, s, { place: 'yaoyuan' });
   const l = look(s, content, ctx());
-  assert.equal(l.place.encounter.creature.id, 'zheng');
-  assert.equal(l.place.encounter.catch, 'shouye');
-  assert.ok(l.tasks.some(t => t.id === 'shouye' && t.game === 'shouye' && t.status === 'offered'), 'the watch stands on the stage as a board');
-  assert.ok(l.stage.some(c => c.card === 'board' && c.id === 'shouye'));
-  const ran = refused(duel, s, { id: 'haunt:zheng' }, 'runs');
-  assert.match(ran.say, /打什么打/);
-  refused(tame, s, { creature: 'zheng' }, 'not-beaten');
-  s = must(win, s, { id: 'shouye' });
-  s = must(task, s, { action: 'done', id: 'shouye' });
-  assert.equal(look(s, content, ctx()).place.encounter.beaten, true);
-  assert.equal(look(s, content, ctx()).tasks.some(t => t.id === 'shouye' && t.status !== 'done'), false, 'caught once, the board is gone');
-  assert.ok(!look(s, content, ctx()).stage.some(c => c.card === 'duel'), 'caught, its 出手 is gone: the creature card offers 收服');
-  assert.ok(look(s, content, ctx()).stage.some(c => c.card === 'creature' && c.id === 'zheng'));
-  refused(tame, s, { creature: 'zheng' }, 'needs-item');
-  s = must(tame, { ...s, bag: { ...s.bag, luobo: 1 } }, { creature: 'zheng' });
-  assert.ok(s.cast.includes('zheng'));
-  assert.equal(s.bag.luobo, undefined, 'the 萝卜 eaten');
-  // never a bounty, a road beast or a rumor's finale
+  const e = l.scene.exits.find(x => x.id === 'tame');
+  assert.deepEqual([e.game.kind, e.game.creature, e.game.retry], ['duel', 'zheng', true]);
+  refused(resolve, s, { exit: 'tame' }, 'game-not-won');
+  s = must(resolve, won(s, 'yaoyuan-zheng'), { exit: 'tame' });
+  assert.ok(s.cast.includes('zheng') && s.cards.includes('zheng'), 'it walks with him, its card in the deck');
+  assert.equal(s.scene, 'wm-chaifang');
+  assert.match(tellOf(content, s).tell.map(t => t.text).join('\n'), /萝卜[\s\S]*睡着了/, 'the book\'s passage: the 萝卜, and it sleeps at his feet');
   assert.equal(content.creatures.creatures.find(c => c.id === 'zheng').art, 'art/creatures/zheng.webp');
 });
 
-test('the 大比 waits a real day: the goal line counts down, the first round refuses today, and 明日 comes', () => {
+test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前夜, then the contest at once — and its three duels', () => {
   let s = opened();
-  for (const exit of ['owe', 'can', 'breathe', 'hide']) s = must(resolve, s, { exit });
-  s = must(move, s, { place: 'chaifang' });
+  for (const exit of ['owe', 'can', 'breathe', 'hide']) s = step(s, exit);
+  s = must(move, s, { place: 'yaoyuan' });
+  s = must(resolve, won(s, 'yaoyuan-zheng'), { exit: 'tame' });
+  s = must(move, fresh(s), { place: 'chaifang' });
   for (const exit of ['count', 'keep', 'swallow']) s = must(resolve, fresh(s), { exit, ...(exit === 'keep' ? { said: '你这饭桶' } : {}) });
   s = must(move, fresh(s), { place: 'shimen' });
   s = must(resolve, s, { exit: 'refuse' });
   s = must(win, s, { id: 'mijing-wall' }); s = must(task, s, { action: 'done', id: 'mijing-wall' });
-  for (const exit of ['open', 'go', 'swallow', 'rest']) s = must(resolve, s, { exit });
-  assert.equal(look(s, content, ctx(DAY1)).waypoint.text, '外门大比 · 明日。路通向沉鼎观 · 正殿。');
-  s = must(move, fresh(s), { place: 'zhengdian' });
-  const r = refused(resolve, s, { exit: 'up' }, 'needs', DAY1);
-  assert.match(r.say, /明日/);
-  assert.equal(look({ ...s, place: 'dukou' }, content, ctx(DAY2)).waypoint.text, '外门大比 · 今日。路通向沉鼎观 · 正殿。');
-  s = must(resolve, s, { exit: 'up' }, DAY2);
+  refused(resolve, s, { exit: 'open' }, 'game-not-won');
+  s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
+  for (const exit of ['go', 'swallow', 'rest']) s = must(resolve, s, { exit });
+  assert.equal(s.scene, 'wm-qianye');
+  assert.equal(look(s, content, ctx(DAY1)).waypoint.text, '外门大比 · 明日。路通向沉鼎观 · 外门。');
+  s = must(move, fresh(s), { place: 'waimen' });
+  assert.match(look(s, content, ctx()).scene.setup ?? JSON.stringify(look(s, content, ctx()).scene), /传/, 'the eve carries its rumour');
+  s = must(resolve, fresh(s), { exit: 'sleep' });
+  s = must(resolve, s, { exit: 'up' }, DAY1);
   // without 孙二狗's charm the round is fought: no giving it away the story never set up
   const l = look(s, content, ctx(DAY2));
   assert.deepEqual(l.scene.buttons.map(b => b.id), ['fight']);
@@ -243,9 +246,11 @@ test('息壤 lifts the realm to 练气五层 — once, never down, and a scene p
 test('the woodshed is his (the boy\'s: 抱住了头, 血腥味) — the words around the hero are fixed; an old save named a girl reads the same', () => {
   const at = (gender) => {
     let s = { ...opened(), gender };
-    for (const exit of ['owe', 'can', 'breathe', 'hide']) s = must(resolve, s, { exit });
-    s = must(move, s, { place: 'chaifang' });
-    s = must(resolve, s, { exit: 'count' });
+    for (const exit of ['owe', 'can', 'breathe', 'hide']) s = step(s, exit);
+    s = must(move, s, { place: 'yaoyuan' });
+    s = must(resolve, won(s, 'yaoyuan-zheng'), { exit: 'tame' });
+    s = must(move, fresh(s), { place: 'chaifang' });
+    s = must(resolve, fresh(s), { exit: 'count' });
     return tellOf(content, s).tell.map(t => t.text).join('\n');
   };
   const his = at('male'), old = at('female');
@@ -258,7 +263,7 @@ test('阿禾 walks with him, a girl, and 周衡 calls him 师弟', () => {
   const l = look(opened(), content, ctx());
   assert.equal(l.scene.people.find(p => p.id === 'ahe').name, '阿禾');
   let s = opened();
-  for (const exit of ['owe', 'can', 'breathe', 'hide']) s = must(resolve, s, { exit });
+  for (const exit of ['owe', 'can', 'breathe', 'hide']) s = step(s, exit);
   s = must(move, s, { place: 'waimen' });
   const offer = look(s, content, ctx()).offers.find(o => o.id === 'xu-yaoyuan-shouye');
   assert.ok(offer.say.startsWith('师弟。'), offer.say);
@@ -298,12 +303,11 @@ test('a scene waiting on a game stands with it: the round fight and the wall 洛
 
 test('what is for a person is handed where that person is: 周衡 at 外门, 阿禾 at 坊市 — elsewhere the rules refuse in-world and the book shows the way (his, 2026-09-29)', () => {
   let s = opened();
-  for (const exit of ['owe', 'can', 'breathe', 'hide']) s = must(resolve, s, { exit });
+  for (const exit of ['owe', 'can', 'breathe', 'hide']) s = step(s, exit);
   s = must(move, s, { place: 'waimen' });
   s = must(quest, s, { action: 'take', id: 'xu-yaoyuan-shouye' });
   s = must(move, s, { place: 'yaoyuan' });
-  s = must(win, s, { id: 'shouye' }); s = must(task, s, { action: 'done', id: 'shouye' });
-  s = must(tame, { ...s, bag: { ...s.bag, luobo: 1 } }, { creature: 'zheng' });
+  s = must(resolve, won(s, 'yaoyuan-zheng'), { exit: 'tame' });
   assert.equal(s.quests['xu-yaoyuan-shouye'].done_at, undefined, 'tamed at the 药园: 周衡 is not here');
   const row = look(s, content, ctx()).book.find(b => b.id === 'xu-yaoyuan-shouye');
   assert.equal(row.ready, true);
