@@ -142,7 +142,7 @@ test('story nodes: a scene passed carries its recap; a cauldron its memory once 
   const node = storyNode(content, before, { ...before, memories: [1] }, scene鼎, take, NOW);
   assert.equal(node.memory.length, 1);
   assert.ok(node.memory[0].startsWith('「一道光」'), node.memory[0]);
-  assert.equal(found.result.node.next.id, '02-yan');
+  assert.equal(found.result.node.next, undefined, '卷二 is not written yet (02-yan `coming`): 卷一 ends and waits, no chapter opens');
 
   // Walked back into an ended chapter, a scene is story only: no node.
   const replay = { ...at('02-yan'), chapter: '01-ji', scene: first.id, place: first.at, stamina: 100 };

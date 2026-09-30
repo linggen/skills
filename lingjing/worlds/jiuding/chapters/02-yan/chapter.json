@@ -21,5 +21,7 @@
   "mystery": {
     "zh": "雷泽晴天打雷，四十日不歇——雷从哪里来？",
     "en": "Thunder over Lake Lei from a clear sky, forty days without end — where does it come from?"
-  }
+  },
+  "_coming": "卷二 is not written yet (「设计可以大，建造只到当前卷」, 2026-09-30): this chapter still tells the old spine, so 卷一's end waits here, dateless, on 「卷二 · 即将开放」 (core.mjs advanceChapter; hui.mjs comingOf names a chapter without 回 by the next 卷). Take `coming` out when 卷二 is written.",
+  "coming": true
 }

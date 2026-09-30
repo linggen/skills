@@ -1063,6 +1063,9 @@ body.fighting .atmos { display: none; }
 /* A chapter's ending card (cards.js closed): the title as a seal line, what he did, the teaser in the book's voice. */
 .card.closecard { text-align: center; padding: 22px 20px 18px; }
 .closecard .closetitle { font-family: var(--serif); font-size: 20px; letter-spacing: .3em; margin-bottom: 12px; }
+/* The 卷's last 回: 「卷一 · 沉鼎 · 完」 over the 回's own 完, a seal-red rule under it. */
+.closecard .closejuan { font-family: var(--serif); font-size: 24px; font-weight: 600; letter-spacing: .35em; margin: 2px 0 10px; color: var(--ling); }
+.closecard.juanend .closetitle { font-size: 16px; color: var(--dim); padding-top: 10px; border-top: 1px solid color-mix(in srgb, var(--ling) 40%, transparent); display: inline-block; }
 .closecard .closehuimu { margin: -4px auto 12px; font-family: var(--serif); font-size: 14.5px; letter-spacing: .2em; color: var(--dim); }
 .closecard .closehuimu span { display: block; }
 .closecard .closedid { margin: 0 auto 12px; max-width: 34em; font-size: 14.5px; line-height: 1.8; }

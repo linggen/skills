@@ -14,6 +14,7 @@
 
 /// The beats in the book's order. `ms` is the beat's own length; `line` is the
 /// passage it follows — a verbatim piece of 10-第十回.md (the test holds it so).
+import { tweenBag } from './bag.js';
 export const BEATS = [
   { id: 'still', ms: 2800, line: { zh: '不是退，是停：河面上的浪一道一道，全悬在了半空，一滴也不落下来。', en: 'Not ebbing — stopping. Wave after wave hung in the air, and not one drop fell.' } },
   { id: 'rise', ms: 4800, line: { zh: '话音未落，漳水竟站了起来。不是涨，是站——一整条河从河床上立起来，立成了一道墙。', en: 'Before she had finished, the Zhang stood up. Not rising — standing: a whole river lifted off its bed into a wall.' } },
@@ -412,7 +413,9 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
   app.ticker.add((t) => { for (const f of tick) f(t.deltaMS); });
 
   const s = (ms) => ms / 1000;
-  const tl = () => gsap.timeline({ paused: true });
+  // Every tween the piece makes goes in the bag, so the page's close kills them all (setpieces/bag.js).
+  const bag = tweenBag(gsap);
+  const tl = () => bag.timeline({ paused: true });
   const [lx, ly] = [W / 2 - W * 0.2, H * 0.3], [rx, ry] = [W / 2 + W * 0.2, H * 0.28];
   const beats = {
     still: () => tl()
@@ -443,7 +446,7 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
         .to(leftHead, { x: W / 2 - W * 0.08, y: bankY - fh * 1.4, duration: s(700), ease: 'power3.in' }, s(100))
         .to(boy, { y: bankY + fh * 0.25, rotation: -0.5, duration: s(250) }, s(650))
         .to(mudDots, { alpha: 1, duration: 0.05 }, s(750))
-        .add(() => { for (const d of mudDots) { d.position.set(W / 2 - W * 0.06, bankY - 10); gsap.to(d, { x: d.x + (Math.random() - 0.5) * 220, y: d.y - 40 - Math.random() * 90, duration: 0.5, ease: 'power2.out' }); gsap.to(d, { y: bankY + 20, alpha: 0, duration: 0.6, delay: 0.5, ease: 'power2.in' }); } }, s(750))
+        .add(() => { for (const d of mudDots) { d.position.set(W / 2 - W * 0.06, bankY - 10); bag.to(d, { x: d.x + (Math.random() - 0.5) * 220, y: d.y - 40 - Math.random() * 90, duration: 0.5, ease: 'power2.out' }); bag.to(d, { y: bankY + 20, alpha: 0, duration: 0.6, delay: 0.5, ease: 'power2.in' }); } }, s(750))
         .to(leftHead, { x: lx, y: ly, duration: s(700), ease: 'power2.out' }, s(1100))
         // Right sweeps its tail along the bank; he stumbles under it.
         .to(sw, { a: 1, duration: 0.1 }, s(1500))
@@ -510,7 +513,7 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
     beat(id) { return beats[id](); },
     /// One frame of the per-frame drawing (the wall's mask, the fish, the waves) — for a still or a seek.
     step(dt = 16) { for (const f of tick) f(dt); },
-    destroy() { tick.length = 0; },
+    destroy() { bag.killAll(); tick.length = 0; },
   };
 }
 

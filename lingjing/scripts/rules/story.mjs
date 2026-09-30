@@ -16,7 +16,7 @@ import { cardBook } from './cards.mjs';
 import { albumOf } from './memories.mjs';
 import { seenOf } from './codex.mjs';
 import { atScene, creatureOf, inMade, sceneOf } from './world.mjs';
-import { chapterHuis, chapterLabel, endLabel, huiEnded, huiLabel, huiNow, huiOf } from './hui.mjs';
+import { chapterHuis, chapterLabel, endLabel, huiEnded, huiLabel, huiNow, huiOf, juanEndOf } from './hui.mjs';
 
 const HOUR = 3600000;
 /* 前情提要 opens every sitting (his, 2026-09-25: 每次开始游戏时): a sitting is a
@@ -242,11 +242,14 @@ export function closeOf(content, state) {
     // onto the first scene of the next, where the 回's close stands.
     const done = Object.values(content.chapters).find(x => x.close && (state.ended ?? []).includes(x.id) && x.id !== ch.id
       && Object.values(x.scenes ?? {}).some(sc => sc.hui === turned));
-    return { id: turned, title: endLabel(content, turned, lang), huimu: pick(huiOf(content, turned).huimu, lang), next: huiLabel(content, huiNow(content, state), lang, 'head'), ...(done ? closeWords(content, state, done.close) : {}) };
+    const juan = juanEndOf(content, turned, lang);
+    return { id: turned, title: endLabel(content, turned, lang), ...(juan ? { juan } : {}), huimu: pick(huiOf(content, turned).huimu, lang), next: huiLabel(content, huiNow(content, state), lang, 'head'), ...(done ? closeWords(content, state, done.close) : {}) };
   }
   if (!c || state.scene || !(state.ended ?? []).includes(ch.id)) return null;
   const hui = huiNow(content, state);
-  return { id: hui ?? ch.id, title: endLabel(content, hui, lang) ?? pick(c.title, lang) ?? pick(ch.title, lang), ...closeWords(content, state, c) };
+  // The 卷's last 回 closes the 卷 as well: 「卷一 · 沉鼎 · 完」 over 「第十回 · 完」.
+  const juan = hui ? juanEndOf(content, hui, lang) : null;
+  return { id: hui ?? ch.id, title: endLabel(content, hui, lang) ?? pick(c.title, lang) ?? pick(ch.title, lang), ...(juan ? { juan } : {}), ...(hui ? { huimu: pick(huiOf(content, hui)?.huimu, lang) } : {}), ...closeWords(content, state, c) };
 }
 
 /* A chapter close's words: what THIS player did (each `did` part whose `if` holds), and the teaser. */

@@ -696,14 +696,17 @@ const herGrew = (before, now) => Boolean(before.her && now.her && (before.her.at
 /// 回's card and the dialogue box all stacked at once): a set piece plays
 /// first, then the seal, put away by a tap, then the rest (stageBusy).
 let featOn = false;
+let riseWaits = false; // a realm risen, its seal not yet up: the 回's ending card and the new 回's title wait for it
 function feat(...args) {
   const [kind] = args;
-  // A realm risen is held from now: the 回's ending card and the box wait behind it.
+  // A realm risen: its seal comes after the set piece and after the ending 回's last
+  // passage (the box plays it first); the 回's ending card and the new title wait behind it.
   // A new 回's seal is its opening: it comes after the old 回's ending card is put away.
-  if (kind === 'rise') featOn = true;
+  if (kind === 'rise') riseWaits = true;
   setTimeout(async () => {
-    for (let k = 0; k < 600 && (pieceOn || (kind !== 'rise' && (closeUp() || featOn))); k += 1) await pause(250);
+    for (let k = 0; k < 600 && (pieceOn || (kind === 'rise' ? oldHuiPlaying() : (closeUp() || featOn))); k += 1) await pause(250);
     featOn = true;
+    if (kind === 'rise') riseWaits = false;
     featNow(...args);
   }, 0);
 }
@@ -867,7 +870,7 @@ function stageNow() {
   // 息壤's five doors (stage.mjs MAIN ranks them after 鼎归).
   if (view.doors) cards = [{ card: 'doors' }, ...cards];
   // A chapter's ending card, until he puts it away (合上; kept per save in this browser).
-  cards = cards.filter((c) => c.card !== 'closed' || (!closeSeen(look.chapter?.close?.id) && !stageBusy()));
+  cards = cards.filter((c) => c.card !== 'closed' || (!closeSeen(look.chapter?.close?.id) && !stageBusy() && !endingWaits()));
   watchAppear(cards);
   return stageSlots(look, cards.filter(inQueue), { skip: view.qSkip });
 }
@@ -1626,8 +1629,21 @@ function setReading(r, patch = {}) {
    the page's own moments; it plays on when they are done. */
 const YIELDS = new Set(['board', 'duel', 'tale', 'lundao', 'memory', 'homing', 'doors']);
 const boxYields = (slots) => Boolean(bout || view.appearing || !slots || slots.main.some((c) => YIELDS.has(c.card))
-  // …and to the moments in their order, the 回's ending card and the new 回's title card (stageBusy).
-  || stageBusy() || closeUp() || Boolean(titleCard()));
+  // …and to the moments in their order, the 回's ending card and the new 回's title card (stageBusy) —
+  // but a passage of the 回 just ended plays first: its 「完」 waits for it (oldHuiPlaying).
+  || stageBusy() || (!oldHuiPlaying() && (closeUp() || Boolean(titleCard()))));
+/* The box still on a passage of the 回 just ended (the exit that ended it, a scene
+   of it): that 回's 「完」, the realm's seal and the new 回's title wait until it is
+   told — seen live at 09-cliff (2026-09-30): 第九回's last words played under
+   第十回's banner. Each passage carries its 回 (rules/tell.mjs). */
+function oldHuiPlaying() {
+  const r = readingHere();
+  if (!playing(r)) return false;
+  const now = look?.chapter?.hui, h = r.items[r.i]?.hui;
+  return Boolean(now && h && h !== now);
+}
+// …and while passages are owed and not yet drawn (they may be the ending 回's).
+const endingWaits = () => oldHuiPlaying() || riseWaits || Boolean(look?.tell_owed || drawingTold);
 function dialogBoxHtml(slots) {
   const r = readingHere(), src = (f) => worldPath(look.world?.dir ?? 'worlds/jiuding', f);
   if (!r || boxYields(slots)) return '';
@@ -2563,7 +2579,7 @@ function closeSeen(id, mark = false) {
 function titleCard() {
   const ch = look?.chapter;
   if (!ch?.fresh || bout || dismissedTitles.has(ch.id) || titleSeen(ch.id)) return '';
-  if (stageBusy() || closeUp()) return ''; // after the moments and the 回's ending card
+  if (stageBusy() || closeUp() || endingWaits()) return ''; // after the moments, the ending 回's last words and its ending card
   return titleCardHtml(ch, lang());
 }
 

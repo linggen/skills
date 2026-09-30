@@ -94,9 +94,23 @@ export function chapterLabel(content, state, ch, lang = state.lang, form = 'juan
 
 /* 「第九回 · 即将开放」: a chapter still being written (`coming`), named by its first 回. */
 export function comingOf(content, ch, lang) {
-  const name = huiLabel(content, firstHui(content, ch), lang, 'short') ?? pick(ch.title, lang);
+  const name = huiLabel(content, firstHui(content, ch), lang, 'short') ?? nextJuan(content, lang) ?? pick(ch.title, lang);
   return lang === 'en' ? `${name} · coming soon` : `${name} · 即将开放`;
 }
+
+/* A chapter with no 回 yet (the old spine, 卷二 on): named by the 卷 after the
+   book's last — 「卷二」 — so the wait reads 「卷二 · 即将开放」. */
+function nextJuan(content, lang) {
+  const n = (content.book?.volumes ?? []).length + 1;
+  return n > 1 ? (lang === 'en' ? `Volume ${n}` : `卷${zhNumber(n)}`) : null;
+}
+
+/* 「卷一 · 沉鼎 · 完」 when a 回 is its 卷's last; else null. */
+export const juanEndOf = (content, id, lang) => {
+  const h = huiOf(content, id);
+  if (!h || h.juan?.hui?.at(-1)?.id !== id) return null;
+  return lang === 'en' ? `${pick(h.juan.name, 'en')} · The End` : `${pick(h.juan.name, 'zh')} · 完`;
+};
 
 /* 「第三回 · 完」. */
 export const endLabel = (content, id, lang) => {

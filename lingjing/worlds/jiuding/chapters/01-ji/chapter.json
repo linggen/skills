@@ -23,5 +23,26 @@
     "zh": "邺城年年送下水的新娘，嫁的是谁？",
     "en": "Whom do the brides Ye sends into the water really marry?"
   },
-  "_gate": "No breakthrough here since 2026-09-30: the Foundation is laid on the 沉鼎观 cliff in 第九回 (00-zhuji, gate 1); 冀 gives the first 鼎, 银月's second tail and her first memory."
+  "_gate": "No breakthrough here since 2026-09-30: the Foundation is laid on the 沉鼎观 cliff in 第九回 (00-zhuji, gate 1); 冀 gives the first 鼎, 银月's second tail and her first memory.",
+  "_close": "卷一's last 回 ends here (01-end rest): 「第十回 · 完」 with 「卷一 · 沉鼎 · 完」 over it (rules/story.mjs closeOf `juan`), what this player did, and 卷二's opening as a teaser — only OUTLINE 卷二's 起 (太一宫来借鼎、下山为散修、阿禾追下山), nothing past it.",
+  "close": {
+    "did": [
+      {
+        "zh": "漳水立起的那一天，满岸的人都跪了，你没有跪",
+        "en": "The day the Zhang stood up, the whole bank knelt, and you did not"
+      },
+      {
+        "zh": "冰夷的两条龙试过了你",
+        "en": "Bingyi's two dragons tried you"
+      },
+      {
+        "zh": "第一口鼎，跟着你出了水",
+        "en": "and the first cauldron came up out of the water with you"
+      }
+    ],
+    "teaser": {
+      "zh": "却说冀州鼎出水的消息，跑得比漳水还快。不出一月，太一宫便有人上了沉鼎山，说是来「借鼎」；观主为难了三天。第三天夜里，沈小满背起爷爷那张打了补丁的弓，悄悄下了山——从此是个散修。他走到山脚，身后有人喘着气追上来：「利息还没还完，想跑？」要知后事如何，且听卷二分解。",
+      "en": "Word that the Ji cauldron had come out of the water ran faster than the Zhang. Within a month men of the Taiyi Palace climbed the Sunken Cauldron Mountain, come, they said, to \"borrow\" it; the abbot was at a loss for three days. On the third night Shen Xiaoman shouldered his grandfather's patched bow and slipped down the mountain — a wandering cultivator from then on. At the foot of the hill someone came panting after him: \"The interest isn't paid yet — running off?\" What came next, Volume Two will tell."
+    }
+  }
 }

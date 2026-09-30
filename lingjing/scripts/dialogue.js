@@ -37,7 +37,7 @@ const lastJ = (r, i, lang) => Math.max(0, beatsOf(r.items[i], lang).length - 1);
    the same scene they queue after what is showing, and a box put away opens
    on the first of them. */
 export function withTold(reading, tell, scene) {
-  const fresh = (tell ?? []).filter((t) => beatsOf(t, 'zh').length || beatsOf(t, 'en').length).map(({ of, id, beats }) => ({ of, id, beats }));
+  const fresh = (tell ?? []).filter((t) => beatsOf(t, 'zh').length || beatsOf(t, 'en').length).map(({ of, id, beats, hui }) => ({ of, id, beats, ...(hui ? { hui } : {}) }));
   if (!fresh.length) return reading;
   const at = scene ?? null;
   const again = reading?.scene === at && fresh.some((t) => t.of === 'scene' && t.id === at);

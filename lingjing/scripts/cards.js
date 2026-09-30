@@ -1315,7 +1315,7 @@ function closed(card, ctx) {
   if (!c) return '';
   const coming = ctx.look.waypoint?.coming ? ctx.look.waypoint.text : c.next ?? '';
   const huimu = c.huimu?.length ? `<p class="closehuimu">${c.huimu.map((l) => `<span>${esc(l)}</span>`).join('')}</p>` : '';
-  return `<div class="card closecard"><div class="closetitle">${esc(c.title)}</div>${huimu}${c.did ? `<p class="closedid">${esc(c.did)}</p>` : ''}`
+  return `<div class="card closecard${c.juan ? ' juanend' : ''}">${c.juan ? `<div class="closejuan">${esc(c.juan)}</div>` : ''}<div class="closetitle">${esc(c.title)}</div>${huimu}${c.did ? `<p class="closedid">${esc(c.did)}</p>` : ''}`
     + `${c.teaser ? `<p class="closetease">${esc(c.teaser)}</p>` : ''}${coming ? `<div class="closecoming">${esc(coming)}</div>` : ''}`
     + `<div class="acts"><button class="act quiet" data-close-chapter="${esc(c.id)}">${esc(ctx.words.closeAway ?? '合上')}</button></div></div>`;
 }

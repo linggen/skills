@@ -34,6 +34,8 @@ const btOf = b => ({ from: b.from, to: b.to, tier: b.tier, success: b.success })
 // gate exercised with the dates the launch will set.
 content.chapters['01-ji'].opens = '2026-10-01';
 content.chapters['02-yan'].opens = '2026-11-01';
+// 卷二 waits (`coming`, 2026-09-30) until it is written; the old spine's tests still walk it.
+delete content.chapters['02-yan'].coming;
 content.chapters['03-qing'].opens = '2026-12-01';
 content.chapters['04-xu'].opens = '2027-01-01';
 content.chapters['05-yang'].opens = '2027-02-01';

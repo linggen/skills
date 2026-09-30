@@ -120,3 +120,29 @@ test('no 章 is shown: chapter titles, closes and the page\'s words say 回 and 
   const { WORDS } = await import('../scripts/cards.js');
   assert.doesNotMatch(JSON.stringify(WORDS.zh), /章/);
 });
+
+test('a passage carries its 回, so the page plays an ending 回\'s last words before its 「完」 (seen live at 09-cliff, 2026-09-30)', async () => {
+  const { tellOf } = await import('../scripts/rules/tell.mjs');
+  const s = { ...newState(content, 'zh', NOW), chapter: '01-ji', scene: '01-arrive', place: 'yecheng', lang: 'zh', tell_owed: ['09-cliff/take'], done_scenes: ['09-snow', '09-furnace', '09-year', '09-qulao', '09-cliff'] };
+  const tell = tellOf(content, s)?.tell ?? [];
+  const take = tell.find(t => t.id === '09-cliff/take'), arrive = tell.find(t => t.id === '01-arrive');
+  assert.equal(take?.hui, 'h09', 'the exit that ended 第九回 is of 第九回');
+  assert.equal(arrive?.hui, 'h10', 'the new scene is of 第十回');
+  assert.equal(huiEnded(content, s), 'h09', 'and 第九回 is the 回 just ended');
+});
+
+test('卷一 ends on its own card: 01-end rest waits on 「卷二 · 即将开放」 under 「卷一 · 沉鼎 · 完」 over 「第十回 · 完」, what he did, and 卷二\'s opening as the teaser', async () => {
+  const fs = await import('node:fs');
+  const s0 = JSON.parse(fs.readFileSync(new URL('./fixtures/saves/ji-end.json', import.meta.url), 'utf8')).state;
+  const end = resolve(s0, content, ctx(), { exit: 'rest' });
+  assert.equal(end.result.ok, true);
+  assert.deepEqual(end.result.waiting, { chapter: '02-yan', coming: '卷二 · 即将开放' });
+  const close = look(end.state, content, ctx()).chapter.close;
+  assert.equal(close.title, '第十回 · 完');
+  assert.equal(close.juan, '卷一 · 沉鼎 · 完');
+  assert.deepEqual(close.huimu, ['巫祝投河捎口信', '千鱼漳水立龙门']);
+  assert.match(close.did, /没有跪/);
+  assert.match(close.teaser, /借鼎[\s\S]*散修[\s\S]*利息还没还完/);
+  const inner = huiLabel(content, 'h09', 'zh', 'short');
+  assert.equal(inner, '第九回');
+});

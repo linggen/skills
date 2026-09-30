@@ -63,14 +63,15 @@ export function tellOf(content, state) {
     if (!sc?.story || told.has(sid) || seen.has(`scene/${sid}`)) return;
     seen.add(`scene/${sid}`); told.add(sid);
     const text = passageFor(content, state, sc.story);
-    if (text) items.push({ of: 'scene', id: sid, text });
+    if (text) items.push({ of: 'scene', id: sid, text, ...(sc.hui ? { hui: sc.hui } : {}) });
   };
   for (const key of state.tell_owed ?? []) {
     const [sid, eid] = key.split('/');
     if (sid === 'scene') { addScene(eid); continue; }
-    const exit = findScene(content, sid)?.exits?.find(e => e.id === eid);
+    const from = findScene(content, sid), exit = from?.exits?.find(e => e.id === eid);
     const text = exit?.story && !seen.has(key) ? passageFor(content, state, exit.story) : null;
-    if (text) { seen.add(key); items.push({ of: 'choice', id: key, text }); }
+    // Each passage carries its 回: the page plays an ending 回's last passage before its 「完」 card.
+    if (text) { seen.add(key); items.push({ of: 'choice', id: key, text, ...(from?.hui ? { hui: from.hui } : {}) }); }
     if (exit?.next) addScene(exit.next);
   }
   const scene = sceneOf(content, state);
@@ -91,7 +92,8 @@ function caughtUp(content, state, items) {
     const sc = findScene(content, sid);
     return fill(pick(sc?.recap, state.lang) ?? pick(sc?.setup, state.lang), state, content);
   }).filter(Boolean);
-  return lines.length ? [{ of: 'catchup', id: 'catchup', ids: older.map(i => i.id), text: lines.join('\n') }, ...last] : last;
+  const hui = older.find(i => i.hui)?.hui;
+  return lines.length ? [{ of: 'catchup', id: 'catchup', ids: older.map(i => i.id), text: lines.join('\n'), ...(hui ? { hui } : {}) }, ...last] : last;
 }
 
 /* Is anything owed? The page asks Look (`tell_owed`) before it draws: the

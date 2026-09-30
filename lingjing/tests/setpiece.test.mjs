@@ -102,3 +102,26 @@ test('a run of the piece: {id, beats} plays only those, and the beats before the
   assert.deepEqual(steps.start(), { start: 0 });
   assert.equal(steps.beat.id, 'seal');
 });
+
+test('teardown: every tween a piece makes is in its bag, and killAll leaves none running (seen live 2026-09-30: `Cannot set properties of null (setting \'y\')` after 漳水 closed)', async () => {
+  const src = fs.readFileSync(path.join(ROOT, 'scripts', 'vendor', 'gsap-3.15.0.min.js'), 'utf8');
+  const exp = {};
+  new Function('exports', 'module', src).call(globalThis, exp, { exports: exp });
+  const gsap = exp.gsap ?? exp.default;
+  const { tweenBag } = await import('../scripts/setpieces/bag.js');
+  const bag = tweenBag(gsap), o = { y: 0 };
+  bag.timeline({}).to(o, { y: 100, duration: 1 });
+  bag.to(o, { y: 50, duration: 1, delay: 0.05 });
+  await new Promise((r) => setTimeout(r, 120));
+  assert.equal(bag.live, 2, 'both running');
+  bag.killAll();
+  const y = o.y;
+  await new Promise((r) => setTimeout(r, 150));
+  assert.equal(bag.live, 0);
+  assert.equal(bag.size, 0);
+  assert.equal(o.y, y, 'nothing writes after the kill');
+  // …and the piece makes none outside it.
+  const zhang = fs.readFileSync(path.join(ROOT, 'scripts', 'setpieces', 'zhang.js'), 'utf8');
+  assert.doesNotMatch(zhang, /\bgsap\.(to|from|fromTo|timeline|delayedCall)\(/, 'zhang makes its tweens through the bag');
+  assert.match(zhang, /destroy\(\) \{ bag\.killAll\(\);/);
+});
