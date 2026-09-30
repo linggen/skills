@@ -28,7 +28,7 @@ status: 2026-09-28 — the story reborn (§ 故事 v3): a poor 蒙山 hunter's c
   见 `## 故事 v3 — 废柴逆袭，银月随行 (his rulings, 2026-09-28; prologue building)
 
 He found the old spine (a myth-mystery a chapter) "not a 修仙 novel" and too heavy. The new one is
-the 废柴逆袭 shape, light and 爽, our own names and plots throughout. The book — 《狐仙欠我一张饼》 (his title) — lives in `story/huxian-bing/` (reader chapters, book.json, notes/ with the outline, structure, sources, tasks), linked from the game. Kept: the nine 鼎,
+the 废柴逆袭 shape, light and 爽, our own names and plots throughout. The book — 《九鼎录》 (his title, 2026-09-30; was 《狐仙欠我一张饼》) — lives in `story/huxian-bing/` (reader chapters, book.json, notes/ with the outline, structure, sources, tasks), linked from the game. Kept: the nine 鼎,
 one province and one realm a chapter, the 山海经 creatures, the set pieces.
 
 - **The hero** — a poor hunter's child of 石坳村 under 蒙山, 12 in the prologue. Quick-bodied,
