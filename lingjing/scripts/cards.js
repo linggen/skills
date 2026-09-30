@@ -180,7 +180,9 @@ export function spoken(name, pinyin) {
   const chars = [...String(name ?? '')];
   const syllables = String(pinyin ?? '').trim().split(/\s+/).filter(Boolean);
   if (!syllables.length || syllables.length !== chars.length) return esc(name);
-  return `<ruby class="py">${chars.map((ch, i) => `${esc(ch)}<rt>${esc(syllables[i])}</rt>`).join('')}</ruby>`;
+  // One ruby per character: a long syllable (shuāng) widens its own character and
+  // never runs into the next one's (seen live on 冰夷双龙's card, 2026-09-30).
+  return `<span class="pyname">${chars.map((ch, i) => `<ruby class="py">${esc(ch)}<rt>${esc(syllables[i])}</rt></ruby>`).join('')}</span>`;
 }
 
 /// Beaten in a fight today at its haunt: 降 but not 收 — it withdrew, it did not join.

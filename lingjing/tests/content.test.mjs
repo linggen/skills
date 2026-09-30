@@ -184,7 +184,7 @@ test('a shipped creature carries its pinyin, one syllable a character; the card 
   assert.ok(has(problems, 'creature kui: needs pinyin'));
   assert.ok(has(problems, 'creature longzhi: pinyin "lóngzhí" needs one syllable for each of 2 characters'));
   const { spoken } = await import('../scripts/cards.js');
-  assert.equal(spoken('蠪侄', 'lóng zhí'), '<ruby class="py">蠪<rt>lóng</rt>侄<rt>zhí</rt></ruby>');
+  assert.equal(spoken('蠪侄', 'lóng zhí'), '<span class="pyname"><ruby class="py">蠪<rt>lóng</rt></ruby><ruby class="py">侄<rt>zhí</rt></ruby></span>');
   assert.equal(spoken('Kui', 'kuí'), 'Kui');
   assert.equal(spoken('雷神'), '雷神');
 });

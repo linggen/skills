@@ -335,6 +335,10 @@ button.pl:hover { background: var(--ling-soft); }
 
 /* A rare name's pinyin over its characters (夔 kuí). */
 ruby.py rt { font-family: var(--ui); font-size: 0.62em; font-weight: 400; letter-spacing: 0.02em; color: var(--faint); }
+/* Each character its own ruby, a hair apart, so syllables never touch; room above for the line. */
+.pyname { display: inline-block; line-height: 1.2; padding-top: 0.55em; }
+.pyname ruby.py + ruby.py { margin-left: 0.14em; }
+ruby.py rt { ruby-align: center; text-align: center; }
 
 /* The world map: the plate, the player's province up close, places as points.
    The plate is a light drawing, so its marks keep their own colours in dark. */
