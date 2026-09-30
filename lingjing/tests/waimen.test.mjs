@@ -417,7 +417,7 @@ test('a first-appearance 图鉴 card beside the scene card is compact — a smal
   const json = (f) => JSON.parse(fs.readFileSync(new URL(`../worlds/jiuding/${f}`, import.meta.url), 'utf8'));
   const codex = codexOf({ codex: json('codex.json'), people: json('people.json'), creatures: json('creatures.json'), items: json('items.json'), arts: json('arts.json') });
   const l = look(opened(), content, ctx());
-  assert.deepEqual(l.scene.meet, ['sunergou']);
+  assert.deepEqual(l.scene.meet, ['sunergou', 'zhouheng'], '周衡 is met here since 2026-09-30 (the refectory morning moved to 第五回)');
   const c = { look: l, lang: 'zh', words: WORDS.zh, codex };
   const html = cardHtml({ card: 'meet', id: 'sunergou' }, c);
   assert.match(html, /^<div class="card codexwrap compact"><button class="codexcompact" data-codex-big="sunergou"/);

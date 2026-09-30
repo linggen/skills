@@ -16,7 +16,7 @@ structure.md, approved 2026-09-28) are history now.
 
 Book 回 per scene: h01 = 00-shiao … 00-yinyue (第一回), h02 = 00-cliff … 00-sleep
 (第二回), h03 = 00-halfyear, 00-uncle, 00-notice (第三回 — the winter, 舅舅,
-the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 00-mijing (第四回).
+the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 00-waimen (第四回; 00-waimen's passage is the book's tail — 舅舅, 阿禾's diary, the 公中 notice), h05 = 00-mijing (the 九月初十 refectory morning that opens 第五回; the 周衡 scene moved there 2026-09-30).
 
 | Scene | Source | Choices → mechanics |
 |---|---|---|
@@ -45,8 +45,8 @@ the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 
 | `00-luoshu` 二试 | 十八 | 洛书 board (task 27) |
 | `00-longzhi` 三试 | 十八 | 蠪侄, a trial fight (`retry`), its first sight plays; the token's one word (task 28) |
 | `00-hall` 入门 | 十九 | the 生辰 card → roots; 灰袍 + 3 灵石 (task 29) |
-| `00-waimen` 公中 | 十九 | 交 (−1 灵石, 仇 马小宝) · 不交 (task 30) |
-| `00-mijing` 秘境告示 | 十九 | ends the prologue |
+| `00-waimen` 公中 | 十九 | 交 (−1 灵石, 仇 马小宝) · 不交 (task 30) — after 马师兄's notice |
+| `00-mijing` 饭堂 | 第五回 | 周衡's 腰牌, the unchipped bowl; ends the prologue (id kept from the old 秘境告示 scene) |
 
 Narrative only for now: 「风」 as a bow art, 体魄 / 体力上限 from the bath, 「韧」,
 舅舅's stipend and his thread, 马家 raising trouble in chapter 1 (`told-ma`,
