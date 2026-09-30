@@ -2,7 +2,7 @@
 
 The seventh open chapter, in the shape of 1–6: six scenes at four places of
 梁, the spine as waypoints. No lock while the game is built (`opens:
-null`); gate 7 — the cauldron takes one at the peak of 合体 into 大乘. 梁 is
+null`); gate 7 — the cauldron takes one at the peak of 合道 into 归真. 梁 is
 new (places/liang.json): in from 荆's 巫峡 by 江州, on over the Qinling to
 雍 by the 褒斜 plank road.
 
@@ -27,8 +27,8 @@ new (places/liang.json): in from 荆's 巫峡 by 江州, on over the Qinling to
    how many? (《抱朴子·仙药》：如此三步……后有九迹 — 九; 《尸子》: Yu's lameness
    was the pace).
 5. **The cauldron** (`07-cauldron`, 石纽). 梁鼎, cast with 岷, 嶓, 沱, 潜 and a
-   bear (《禹贡》：岷嶓既艺，沱潜既道……熊罴狐狸织皮). At the peak of 合体 the
-   Mahayana (大乘; not yet — *合体未满*). An old shepherd calls Yu *文命*
+   bear (《禹贡》：岷嶓既艺，沱潜既道……熊罴狐狸织皮). At the peak of 合道 the
+   Return to Truth (归真; not yet — *合道未满*). An old shepherd calls Yu *文命*
    (《史记·夏本纪》：夏禹，名曰文命). Yinyue's seventh memory: *就是这个名字。她叫
    的不是我——是一个会走遍九州的人。* (alone: the old man names the name.)
 6. **North** (`07-end`). The 江 runs clear; the stone man's shoulders show.
@@ -40,4 +40,4 @@ Also in 梁: 窃脂 on 岷山 (《中次九经》：状如鸮而赤身白首…�
 (seeds/liang.json). 夔牛's picture is newly drawn — no labelled plate found.
 
 **Never in chapter 7:** her secret said aloud, what happens when the nine
-are gathered, any realm above 大乘.
+are gathered, any realm above 归真.

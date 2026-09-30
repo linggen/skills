@@ -201,12 +201,12 @@ Thresholds: 练气 810 · 筑基 1,500 · 结丹 3,000 · 元婴 6,000 … 渡�
 (the day caps went 2026-09-23). The economy is `rewards.json → _economy`: a
 练气 day ≈170 修为; a fight is the best 修为 per 体力 (3.75); tests lock it.
 
-### 境界 in the game 【在建】
+### 境界 in the game 【已建】
 
 The world's nine realms and their names are story DESIGN § 道统 (补丁①).
-**Pending in the game:** `ladder.json` still says 合体 · 大乘 — rename to 合道 ·
-归真 (ids stay; names derive from ids, so saves need no migration — check);
-地仙 · 天仙 after 渡劫 is content for after the finale.
+`ladder.json` says 合道 (Union with the Dao) · 归真 (Return to Truth) since
+2026-09-30; the ids stay `body` · `maha` and names derive from ids, so saves
+need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale.
 
 ## The open world 【已建】
 

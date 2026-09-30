@@ -44,8 +44,8 @@
   {
    "id": "take",
    "label": {
-    "zh": "受鼎气 · 合体",
-    "en": "Take the cauldron's breath · Body Integration"
+    "zh": "受鼎气 · 合道",
+    "en": "Take the cauldron's breath · Union with the Dao"
    },
    "means": "touches the cauldron, takes its breath, attempts the breakthrough",
    "breakthrough": true,
@@ -68,19 +68,19 @@
     {
      "who": "ling",
      "text": {
-      "zh": "江与汉从两边涌来，在你身上汇成一条。元神与身子再分不出彼此——合体了。鼎小了，小到握在掌心，和前五口并排。",
-      "en": "The Jiang and the Han pour in from two sides and join in you into one river. Spirit and body can no longer be told apart — Body Integration. The cauldron shrinks until it sits in your palm beside the other five."
+      "zh": "江与汉从两边涌来，在你身上汇成一条。元神与天地再分不出彼此——合道了。鼎小了，小到握在掌心，和前五口并排。",
+      "en": "The Jiang and the Han pour in from two sides and join in you into one river. Spirit and the world can no longer be told apart — Union with the Dao. The cauldron shrinks until it sits in your palm beside the other five."
      }
     },
     {
      "who": "yinyue",
      "text": {
-      "zh": "合体了。……六口。",
-      "en": "Body Integration. …Six."
+      "zh": "合道了。……六口。",
+      "en": "Union with the Dao. …Six."
      },
      "alone": {
-      "zh": "合体了。六口鼎。",
-      "en": "Body Integration. Six cauldrons."
+      "zh": "合道了。六口鼎。",
+      "en": "Union with the Dao. Six cauldrons."
      }
     }
    ],

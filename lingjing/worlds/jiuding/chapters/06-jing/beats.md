@@ -2,7 +2,7 @@
 
 The sixth open chapter, in the shape of 1–5: six scenes at four places of
 荆, the spine as waypoints. No lock while the game is built (`opens: null`);
-gate 6 — the cauldron takes one at the peak of 炼虚 into 合体. 荆 is new
+gate 6 — the cauldron takes one at the peak of 炼虚 into 合道. 荆 is new
 (places/jing.json): in from 扬 by 彭蠡 down the Jiang, on to 梁 by 巫峡.
 
 1. **Arrive** (`06-arrive`, 云梦泽). Reeds to the sky; the storm over 洞庭 has
@@ -25,7 +25,7 @@ gate 6 — the cauldron takes one at the peak of 炼虚 into 合体. 荆 is new
    九江纳锡大龟) sleeps with the cauldron on its back. The seal: the four
    emblems on its shell, the south blank (朱雀; Chu honoured the phoenix).
 5. **The cauldron** (`06-cauldron`, 洞庭). 荆鼎, cast with 江, 汉, 九江, 云梦.
-   At the peak of 炼虚 body and spirit become one (合体; not yet — *炼虚未满*).
+   At the peak of 炼虚 the self and the Dao become one (合道; not yet — *炼虚未满*).
    Yinyue's sixth memory: *在德不在鼎——这话是她教我的。* (alone: the words
    worn on the bronze.)
 6. **West** (`06-end`). The storm lifts; the spotted bamboo of 君山 (《博物志》：
@@ -37,4 +37,4 @@ plate 《古今图书集成·禽虫典》蛫圖), 丹砂 at 郢's market, twenty
 (seeds/jing.json). 巴蛇's plate is the same encyclopaedia's 巴蛇圖.
 
 **Never in chapter 6:** the name the hand spoke, her secret said aloud, any
-realm above 合体.
+realm above 合道.

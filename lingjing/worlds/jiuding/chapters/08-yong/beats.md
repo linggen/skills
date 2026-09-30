@@ -2,7 +2,7 @@
 
 The eighth open chapter, in the shape of 1–7: six scenes at four places of
 雍, the spine as waypoints. No lock while the game is built (`opens:
-null`); gate 8 — the cauldron takes one at the peak of 大乘 into 渡劫, the
+null`); gate 8 — the cauldron takes one at the peak of 归真 into 渡劫, the
 last realm on the ladder. 雍 is new (places/yong.json): in from 梁 over the
 Qinling by the 褒斜 plank road; 太华山 looks east to 函谷 (豫).
 
@@ -23,8 +23,8 @@ Qinling by the 褒斜 plank road; 太华山 looks east to 函谷 (豫).
    seal: twelve pitch-pipes, the first missing — 黄钟 (Qin set one measure for
    all: 《史记·秦始皇本纪》：一法度衡石丈尺).
 5. **The cauldron** (`08-cauldron`, 陈仓). 雍鼎, cast with 泾, 渭, 弱水, 黑水
-   (《禹贡》：黑水西河惟雍州。弱水既西，泾属渭汭). At the peak of 大乘 the first
-   thunder: 渡劫 begins (not yet — *大乘未满*). Yinyue remembers the night:
+   (《禹贡》：黑水西河惟雍州。弱水既西，泾属渭汭). At the peak of 归真 the first
+   thunder: 渡劫 begins (not yet — *归真未满*). Yinyue remembers the night:
    the keeper counting the nine into the provinces' waters (《史记·周本纪》: Qin
    took the cauldrons); keeping watch was her own asking. Then: *有件事我没说。*
    — the secret: every cauldron raised, one fewer of her on the water; when

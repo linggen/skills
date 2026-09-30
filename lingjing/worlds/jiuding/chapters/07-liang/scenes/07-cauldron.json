@@ -55,14 +55,14 @@
   {
    "id": "take",
    "label": {
-    "zh": "受鼎气 · 大乘",
-    "en": "Take the cauldron's breath · Mahayana"
+    "zh": "受鼎气 · 归真",
+    "en": "Take the cauldron's breath · Return to Truth"
    },
    "means": "touches the cauldron, takes its breath, attempts the breakthrough",
    "breakthrough": true,
    "refuse": {
-    "zh": "鼎气涌上来又退开。合体未满，乘不起它。先回人间，把功课做满。",
-    "en": "The breath surges over you and draws back. Your Body Integration is not yet full; you cannot bear it yet. Go back to the world and fill your practice first."
+    "zh": "鼎气涌上来又退开。合道未满，乘不起它。先回人间，把功课做满。",
+    "en": "The breath surges over you and draws back. Your Union with the Dao is not yet full; you cannot bear it yet. Go back to the world and fill your practice first."
    },
    "show": [
     {
@@ -79,19 +79,19 @@
     {
      "who": "ling",
      "text": {
-      "zh": "岷山的雪水从头顶灌下来，一路流过全身，流到脚底，流进地里。你站着，像一座山那样站着。大乘了。鼎小了，小到握在掌心，和前六口并排。",
-      "en": "The snowmelt of Mount Min pours down from the crown of your head, through your whole body to your soles and into the ground. You stand the way a mountain stands. Mahayana. The cauldron shrinks until it sits in your palm beside the other six."
+      "zh": "岷山的雪水从头顶灌下来，一路流过全身，流到脚底，流进地里。你站着，像一座山那样站着。归真了。鼎小了，小到握在掌心，和前六口并排。",
+      "en": "The snowmelt of Mount Min pours down from the crown of your head, through your whole body to your soles and into the ground. You stand the way a mountain stands. Return to Truth. The cauldron shrinks until it sits in your palm beside the other six."
      }
     },
     {
      "who": "yinyue",
      "text": {
-      "zh": "大乘了。……七口。",
-      "en": "Mahayana. …Seven."
+      "zh": "归真了。……七口。",
+      "en": "Return to Truth. …Seven."
      },
      "alone": {
-      "zh": "大乘了。七口鼎。",
-      "en": "Mahayana. Seven cauldrons."
+      "zh": "归真了。七口鼎。",
+      "en": "Return to Truth. Seven cauldrons."
      }
     }
    ],

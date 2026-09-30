@@ -257,7 +257,7 @@ where it doesn't we patch — and say so here, so a patch never passes as tradit
 渡劫之后（仙界，照《抱朴子·论仙》）：**地仙 → 天仙**（尸解仙是渡劫失败的去处，可作剧情用，不作一级）。
 **大罗**是天名（大罗天，三清所居），不是境界；**道祖**是老子／太上老君的尊称，不是境界——谁也修不成道祖。
 
-游戏里的改名（ladder.json 合体 → 合道、大乘 → 归真）尚未做，见 ../../doc/design.md § 境界。
+游戏里的改名（ladder.json 合体 → 合道、大乘 → 归真，id 不变）已做（2026-09-30），见 ../../doc/design.md § 境界。
 
 ## 六·六 · 天上的秩序（仙界）
 
