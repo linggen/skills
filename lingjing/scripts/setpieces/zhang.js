@@ -69,19 +69,21 @@ export const SHOTS = {
 /// Where each painting soaks in from (the ink's first drop), 0–1 of the frame.
 const SOAK_FROM = { still: [0.5, 0.7], bingyi: [0.5, 0.42], trial: [0.5, 0.58], fall: [0.5, 0.08], seal: [0.47, 0.5], ding: [0.62, 0.22] };
 const SOAK_S = 2.4; // seconds for a painting to soak in over the last
-const PAPER = 0xf5efe1;
+const PAPER = 0xf5efe1, INK = 0x2a241e;
+const RIM = 0.008; // the wet rim's width, as a share of the soak's reach
+const RIM_INK = 0.55; // how dark the wet rim goes (multiplied over the painting under it)
 
 /// A soft round light (the paintings' own glows, brightened): white at the
 /// heart, gone at the rim — no edge.
-function glowCanvas(size = 256) {
+function glowCanvas(size = 256, [r0, g0, b0] = [255, 240, 200]) {
   const c = document.createElement('canvas');
   c.width = c.height = size;
   const g = c.getContext('2d');
   const r = size / 2;
   const grad = g.createRadialGradient(r, r, 0, r, r, r);
-  grad.addColorStop(0, 'rgba(255,246,214,0.95)');
-  grad.addColorStop(0.35, 'rgba(255,236,190,0.45)');
-  grad.addColorStop(1, 'rgba(255,236,190,0)');
+  grad.addColorStop(0, `rgba(${r0},${g0},${b0},0.9)`);
+  grad.addColorStop(0.35, `rgba(${r0},${g0},${b0},0.4)`);
+  grad.addColorStop(1, `rgba(${r0},${g0},${b0},0)`);
   g.fillStyle = grad;
   g.fillRect(0, 0, size, size);
   return c;
@@ -132,31 +134,47 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
     const sprite = t ? new PIXI.Sprite(t) : new PIXI.Graphics().rect(0, 0, 1536, 1024).fill(0xd9cfbb);
     cam.addChild(sprite);
     pic.addChild(cam);
-    whole.addChild(pic);
     const iw = t?.width ?? 1536, ih = t?.height ?? 1024;
     const cover = Math.max(W / iw, H / ih);
     let cm = null;
     if (view.cold !== undefined && SHOTS[id][1].cold !== undefined) { cm = new PIXI.ColorMatrixFilter(); cam.filters = [cm]; }
-    // The soak: a disc grown in an offscreen texture, torn by fibres, softened, used as the mask.
+    // The soak, as 鼎归's: a disc grown in an offscreen texture, torn by paper fibres
+    // (a crisp fibrous front, only a little softened), used as the painting's mask.
+    // The wet rim: the same torn disc drawn a little ahead of it, masking a wash of
+    // ink over what lies under — so where the new painting eats into the old, the
+    // old goes dark and wet first, in exactly the front's own ragged shape.
     const [ox, oy] = SOAK_FROM[id] ?? [0.5, 0.5];
+    // Two tears: the broad wander of the front, and the fine fibres of the paper at its lip.
     const fibres = new PIXI.Sprite(fibreTex);
     fibres.scale.set(R / 160);
     fibres.renderable = false;
+    const fine = new PIXI.Sprite(fibreTex);
+    fine.scale.set(R / 900);
+    fine.renderable = false;
     const blob = new PIXI.Graphics().circle(0, 0, R).fill(0xffffff);
     blob.position.set(ox * W, oy * H);
     blob.scale.set(0.001);
     const sheet = new PIXI.Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.001 });
     const soakLayer = new PIXI.Container();
     soakLayer.addChild(sheet, blob);
-    soakLayer.filters = [new PIXI.DisplacementFilter({ sprite: fibres, scale: R * 0.16 }), new PIXI.BlurFilter({ strength: 6, quality: 3 })];
+    const tear = new PIXI.DisplacementFilter({ sprite: fibres, scale: R * 0.22 });
+    const fray = new PIXI.DisplacementFilter({ sprite: fine, scale: R * 0.012 });
+    const soften = new PIXI.BlurFilter({ strength: 1.2, quality: 2 });
+    soakLayer.filters = [tear, fray, soften];
     const src = new PIXI.Container();
     src.scale.set(K);
-    src.addChild(fibres, soakLayer);
-    const rt = PIXI.RenderTexture.create({ width: Math.ceil(W * K), height: Math.ceil(H * K) });
-    made.push(rt);
-    const mask = new PIXI.Sprite(rt);
-    mask.scale.set(1 / K);
-    whole.addChild(mask);
+    src.addChild(fibres, fine, soakLayer);
+    const rtOf = () => { const t = PIXI.RenderTexture.create({ width: Math.ceil(W * K), height: Math.ceil(H * K) }); made.push(t); return t; };
+    const rt = rtOf(), rimRt = rtOf();
+    const maskOf = (t) => { const m = new PIXI.Sprite(t); m.scale.set(1 / K); return m; };
+    const rimMask = maskOf(rimRt);
+    const rim = new PIXI.Graphics().rect(0, 0, W, H).fill(INK);
+    rim.blendMode = 'multiply';
+    rim.alpha = 0;
+    rim.mask = rimMask;
+    whole.addChild(rim, rimMask);
+    const mask = maskOf(rt);
+    whole.addChild(pic, mask);
     pic.mask = mask;
     root.addChild(whole);
     const soak = { v: 0 }; // 0 unseen … 1 the painting whole
@@ -177,13 +195,19 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
         whole.visible = soak.v > 0.0005;
         if (soak.v !== drawn && whole.visible) {
           drawn = soak.v;
+          // The rim runs ahead of the painting by RIM of the disc, softer, and dries as the soak ends.
+          blob.scale.set(Math.max(0.001, soak.v + RIM));
+          soften.strength = 1.5;
+          app.renderer.render({ container: src, target: rimRt, clear: true });
           blob.scale.set(Math.max(0.001, soak.v));
+          soften.strength = 1.2;
           app.renderer.render({ container: src, target: rt, clear: true });
+          rim.alpha = soak.v >= 1 ? 0 : RIM_INK * Math.min(1, soak.v * 6) * Math.min(1, (1 - soak.v) * 3);
         }
       },
       /// A soft light on the painting at (u, v) of it, `size` of the painting's width.
-      glow(u, v, size) {
-        const g = new PIXI.Sprite(glowTex);
+      glow(u, v, size, t = glowTex) {
+        const g = new PIXI.Sprite(t);
         g.anchor.set(0.5);
         g.position.set(u * iw, v * ih);
         g.width = g.height = size * iw;
@@ -197,7 +221,9 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
     return L;
   };
   const glowTex = PIXI.Texture.from(glowCanvas());
-  made.push(glowTex);
+  // The token's light: warm silver, the painting's own glow breathing — never a white blot.
+  const silverTex = PIXI.Texture.from(glowCanvas(256, [226, 222, 206]));
+  made.push(glowTex, silverTex);
 
   // The uses, bottom to top: the river (stopped, then standing), 冰夷, the trial,
   // the river again (the wall coming down), the seal under the water, the 鼎.
@@ -210,7 +236,7 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
   layers.fall.pic.addChild(wash);
 
   const sealGlow = layers.seal.glow(...MARKS.sealCentre, 0.2);
-  const tokenGlow = layers.ding.glow(...MARKS.token, 0.12);
+  const tokenGlow = layers.ding.glow(...MARKS.token, 0.05, silverTex);
 
   // Rice-paper grain over all of it, very faint.
   const grainTex = PIXI.Texture.from(grainCanvas());
@@ -259,7 +285,7 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
       .fromTo(sealGlow, { alpha: 0 }, { alpha: 0.85, duration: 2.4, ease: 'sine.in' }, 3.2)
       .fromTo(sealGlow.scale, { x: sealGlow.scale.x * 0.6, y: sealGlow.scale.y * 0.6 }, { x: sealGlow.scale.x * 1.15, y: sealGlow.scale.y * 1.15, duration: 2.6, ease: 'sine.out' }, 3.2),
     ding: () => shot('ding', { ease: 'power2.inOut' })
-      .fromTo(tokenGlow, { alpha: 0 }, { keyframes: [{ alpha: 0.7, duration: 0.7 }, { alpha: 0.35, duration: 0.6 }, { alpha: 0.6, duration: 0.9 }] }, 4.6),
+      .fromTo(tokenGlow, { alpha: 0 }, { keyframes: [{ alpha: 0.3, duration: 1.2, ease: 'sine.inOut' }, { alpha: 0.16, duration: 1.0, ease: 'sine.inOut' }, { alpha: 0.28, duration: 1.1, ease: 'sine.inOut' }] }, 3.8),
   };
   // Hold the camera still at its start until a beat plays (the soak begins unseen).
   apply();
