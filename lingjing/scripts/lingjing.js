@@ -1606,6 +1606,8 @@ async function watchTell() {
   drawingTold = true;
   try {
     const t = await write('tell').catch(() => null);
+    // Drawn: Look's `tell_owed` is spent (the ending card waits on it, endingWaits).
+    if (t?.ok && look) look.tell_owed = false;
     if (t?.ok && t.tell?.length) setReading(withTold(readingNow(), t.tell, look?.scene?.id ?? null));
   } finally { drawingTold = false; }
 }
@@ -1639,7 +1641,11 @@ const boxYields = (slots) => Boolean(bout || view.appearing || !slots || slots.m
 function oldHuiPlaying() {
   const r = readingHere();
   if (!playing(r)) return false;
-  const now = look?.chapter?.hui, h = r.items[r.i]?.hui;
+  const h = r.items[r.i]?.hui, c = look?.chapter?.close;
+  // A 回 closing (its 「完」 standing): its own passages — the exit that ended it too,
+  // 卷一's last at 01-end — are told before the card.
+  if (c && !closeSeen(c.id)) return Boolean(h && h === c.id);
+  const now = look?.chapter?.hui;
   return Boolean(now && h && h !== now);
 }
 // …and while passages are owed and not yet drawn (they may be the ending 回's).
