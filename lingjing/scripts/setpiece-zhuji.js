@@ -322,8 +322,21 @@ export async function playZhuji(slot, { lang = 'zh', still = false, auto = false
   host.addEventListener('click', (e) => { if (e.target.closest('.zjskip')) skip(); else next(); });
   start(0);
 
+  // For looking at one instant (previews, checks): stop and show beat `id` at `frac` of its way.
+  const peek = (id, frac = 0.5) => {
+    const i = beats.findIndex((b) => b.id === id);
+    if (i < 0 || gone) return;
+    if (playing) { playing.kill(); playing = null; }
+    const t = starts[i] + frac * beats[i].ms / 1000;
+    tl.seek(t);
+    index = i; setCap(beats[i]);
+    const d = t - S('door');
+    doorEl.hidden = !(d >= 0.5 && beats[i].id === 'door');
+    doorEl.className = `zjdoor ${d < 1.5 ? 'w0' : d < 2.05 ? 'w1' : 'gone'}`;
+    host.classList.add('wait');
+  };
   return {
-    host, next, tap: next, skip,
+    host, next, tap: next, skip, peek,
     done: () => finished,
     beat: () => beats[index],
     destroy() {

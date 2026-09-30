@@ -44,6 +44,8 @@
     ].join('');
     const h = await playSetPiece(document.getElementById('slot'), id, { lang, still, auto, onBeat: (i, b) => console.log('[setpiece]', i, b.id), onDone: () => console.log('[setpiece] done') });
     window.__setpiece = h;
+    // Timer frames come a second apart in a hidden tab: let GSAP take the whole gap, not smooth it away.
+    if (q.get('raf') === 'timeout') window.gsap?.ticker.lagSmoothing(0);
   </script>
 </body>
 </html>
