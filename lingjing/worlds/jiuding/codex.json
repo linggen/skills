@@ -388,6 +388,63 @@
   },
   "wangqi-1": {
    "tag": "功法"
+  },
+  "zhaoang": {
+   "kind": "人物",
+   "name": {
+    "zh": "赵昂",
+    "en": "Zhao Ang"
+   },
+   "first": {
+    "book": "h10"
+   },
+   "image": "art/people/zhaoang.webp",
+   "lines": {
+    "zh": [
+     "太一宫的弟子，天灵根，一身白衣，腰悬长剑，站在漳水边的老柳树下，便如一棵挺拔的松树。「因为天下，该归于一。」"
+    ],
+    "en": [
+     "A disciple of the Taiyi Palace, heaven-rooted, in white with a long sword, standing under the old willow by the Zhang like a young pine. \"Because all under heaven should be one.\""
+    ]
+   }
+  },
+  "doufu-xishi": {
+   "kind": "人物",
+   "name": {
+    "zh": "豆腐西施",
+    "en": "The Tofu Beauty"
+   },
+   "first": {
+    "book": "h10"
+   },
+   "image": "art/people/doufu-xishi.webp",
+   "lines": {
+    "zh": [
+     "邺城城西老胡家的闺女，卖豆腐，哑巴，长得俊。豆腐坊的账一向是她来记。"
+    ],
+    "en": [
+     "Old Hu's daughter from the west of Ye, who sells tofu; mute, and lovely. She keeps the tofu shop's accounts."
+    ]
+   }
+  },
+  "wuzhu": {
+   "kind": "人物",
+   "name": {
+    "zh": "巫祝婆婆",
+    "en": "The Shaman Crone"
+   },
+   "first": {
+    "book": "h10"
+   },
+   "image": "art/people/wuzhu.webp",
+   "lines": {
+    "zh": [
+     "河伯庙里的巫祝，年年和三老挨家挨户收「河伯钱」，挑谁家的姑娘做河伯的媳妇。"
+    ],
+    "en": [
+     "The shaman of the River Lord's temple, who with the Three Elders collects the River Lord's money door to door each year and picks whose daughter becomes his bride."
+    ]
+   }
   }
  }
 }
