@@ -126,12 +126,6 @@ const tokenCanvas = () => canvas(160, 160, (g) => {
 });
 export const TAIL_ANGLE = (i) => Math.PI * (0.15 + i * 0.1);
 
-/// A soft round alpha mask, for a crop that must not show its edges.
-const featherCanvas = (w, h) => canvas(w, h, (g) => {
-  const r = g.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.18, w / 2, h / 2, Math.min(w, h) * 0.5);
-  r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(1, 'rgba(255,255,255,0)');
-  g.fillStyle = r; g.fillRect(0, 0, w, h);
-});
 
 /// A soft oval alpha mask: whole in the middle, gone at the rim — so a painting's paper never shows its box.
 const ovalCanvas = (w, h, inner = 0.55) => canvas(w, h, (g) => {
@@ -140,6 +134,17 @@ const ovalCanvas = (w, h, inner = 0.55) => canvas(w, h, (g) => {
   r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(1, 'rgba(255,255,255,0)');
   g.fillStyle = r; g.beginPath(); g.arc(0, 0, w / 2, 0, Math.PI * 2); g.fill(); g.restore();
 });
+
+/// A painting (or a piece of it) with its edge faded to nothing, baked into one canvas —
+/// no mask at draw time (a masked sprite under multiply draws black in Pixi 8, seen live).
+function feathered(img, sx, sy, sw, sh, inner = 0.55, maxW = 720) {
+  const k = Math.min(1, maxW / sw), w = Math.round(sw * k), h = Math.round(sh * k);
+  return canvas(w, h, (g) => {
+    g.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+    g.globalCompositeOperation = 'destination-in';
+    g.drawImage(ovalCanvas(w, h, inner), 0, 0);
+  });
+}
 
 /// Paper fibres for the torn edge of the wall (as fx.js does the soak).
 const fibreCanvas = () => canvas(256, 256, (g, s) => {
@@ -271,36 +276,29 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
 
   // 冰夷 on his two dragons, rising out of the black water.
   const bw = art.bingyi.naturalWidth || 640, bh = art.bingyi.naturalHeight || 960;
-  const bingyiTex = PIXI.Texture.from(art.bingyi);
   const god = new PIXI.Container();
   // A pale pool opens in the black water for him to rise through (the figure must read against it).
   const halo = new PIXI.Graphics().ellipse(0, 0, H * 0.24, H * 0.34).fill({ color: 0xe9e4d6, alpha: 0.85 });
   halo.filters = [new PIXI.BlurFilter({ strength: 40, quality: 4 })];
   halo.scale.set(0.01);
-  const god0 = new PIXI.Sprite(bingyiTex);
+  const god0 = new PIXI.Sprite(PIXI.Texture.from(feathered(art.bingyi, 0, 0, bw, bh, 0.62)));
   god0.anchor.set(0.5);
   const gh = Math.min(H * 0.58, W * 0.62 * bh / bw);
   god0.height = gh; god0.width = gh * bw / bh;
   god0.blendMode = 'multiply';
-  const oval = new PIXI.Sprite(PIXI.Texture.from(ovalCanvas(256, Math.round(256 * bh / bw))));
-  oval.anchor.set(0.5); oval.width = god0.width; oval.height = god0.height;
-  god0.mask = oval;
-  god.addChild(halo, god0, oval);
+  god.addChild(halo, god0);
   god.position.set(W / 2, H * 0.62);
   god.alpha = 0;
   root.addChild(god);
 
   // The two heads, cropped from the same painting and feathered, for the trial.
-  const crop = (x, y, w, h) => new PIXI.Texture({ source: bingyiTex.source, frame: new PIXI.Rectangle(x * bw / 640, y * bh / 960, w * bw / 640, h * bh / 960) });
   const head = (x, y, w, h, flip) => {
     const c = new PIXI.Container();
-    const s = new PIXI.Sprite(crop(x, y, w, h));
+    const s = new PIXI.Sprite(PIXI.Texture.from(feathered(art.bingyi, x * bw / 640, y * bh / 960, w * bw / 640, h * bh / 960, 0.45)));
     s.anchor.set(0.5);
-    const m = new PIXI.Sprite(PIXI.Texture.from(featherCanvas(Math.round(w), Math.round(h))));
-    m.anchor.set(0.5);
-    s.mask = m;
+    s.width = w; s.height = h;
     s.blendMode = 'multiply';
-    c.addChild(s, m);
+    c.addChild(s);
     c.scale.set(flip ? -1 : 1, 1);
     c.alpha = 0;
     return c;
