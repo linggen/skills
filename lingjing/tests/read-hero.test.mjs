@@ -84,7 +84,7 @@ test('variant blocks leave ::: 忆 plates alone, inside or outside a block', () 
 test('the kept readings (第六回 柴房, 第十回 the drummer) are the only ones left', () => {
   const read = (f) => renderMarkdown(fillHero(fs.readFileSync(path.join(BOOK, f), 'utf8'), {}));
   const six = read('06-第六回.md');
-  assert.match(six, /蹲下身去，抱住了头/);
+  assert.match(six, /蹲下身去，两只胳膊抱住了头/);
   assert.doesNotMatch(six, /猪圈/);
   const ten = read('10-第十回.md');
   assert.match(ten, /打鼓的那个，便是沈小满。/);
