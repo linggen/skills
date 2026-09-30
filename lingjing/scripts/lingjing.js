@@ -35,6 +35,7 @@ import { atmosClasses, atmosOf, particlesHtml } from './atmos.js';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
 import { advance, dialogHtml, keepReading, loadReading, logHtml, playing, skipAll, withTold } from './dialogue.js';
+import { wireLiveGames } from './live-games.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -2060,6 +2061,9 @@ const CLICKS = [
   ['[data-g]', (el) => gameMove(el)],
   ['[data-tile]', (el) => tileTap(el)],
 ];
+// A game that runs in time (a module with `tick`: 暴雨, 射鹿, 洗髓, 小周天) is
+// stepped and held here; its win goes the way a tapped win does.
+wireLiveGames({ boardFor, lang, onWon: (g) => { g.sent = true; run(`win:${g.taskId}`, () => onWin(g.taskId)); } });
 document.addEventListener('click', (e) => {
   for (const [sel, handle] of CLICKS) {
     const el = sel === '*' ? e.target : e.target.closest?.(sel);

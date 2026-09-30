@@ -12,6 +12,30 @@
       "done_line": { "zh": "八味灵草配齐，丹成。还剩一株灵芝。", "en": "All eight herbs paired. The pill is made — one lingzhi left over." }
     },
     {
+      "id": "fall-storm", "kind": "board", "game": "storm", "period": "once",
+      "title": { "zh": "暴雨 · 拽爹上崖", "en": "The storm · Haul Father back" },
+      "grant": { "table": "task", "progress": 5 },
+      "done_line": { "zh": "爹扒住了崖壁。", "en": "Father clings to the cliff face." }
+    },
+    {
+      "id": "deer-wind", "kind": "board", "game": "deer", "period": "once",
+      "title": { "zh": "射鹿 · 先看风，后看鹿", "en": "The stag · Wind first, then the deer" },
+      "grant": { "table": "task", "progress": 5 },
+      "done_line": { "zh": "溪边那头鹿，倒下了。", "en": "The stag by the stream is down." }
+    },
+    {
+      "id": "xisui-hold", "kind": "board", "game": "xisui", "period": "once",
+      "title": { "zh": "洗髓 · 疼，别喊", "en": "Marrow washing · Don't cry out" },
+      "grant": { "table": "task", "progress": 5 },
+      "done_line": { "zh": "三炷香。水黑了，人轻了。", "en": "Three sticks. The water black, the body light." }
+    },
+    {
+      "id": "zhoutian-sanguan", "kind": "board", "game": "zhoutian", "period": "once",
+      "title": { "zh": "小周天 · 冲三关", "en": "The small circuit · Three passes" },
+      "grant": { "table": "task", "progress": 10 },
+      "done_line": { "zh": "三关俱开，小周天通了。", "en": "All three passes open; the small circuit is through." }
+    },
+    {
       "id": "gate-luoshu", "kind": "board", "game": "luoshu", "period": "once",
       "title": { "zh": "二试 · 洛书九宫", "en": "Second trial · The Luo Shu square" },
       "grant": { "table": "task", "progress": 10 },

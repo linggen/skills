@@ -92,7 +92,8 @@ skills/lingjing/
     stage.mjs              what stands on the stage (CARD_KINDS declare `holds`)
     cards.js, codex.js, pouch.js, lu.js, dialogue.js, memory.js, inkmap.js, fx.js …
     battle.js              the card fight, pure, shared by page and rules
-    games/                 洛书 · 华容道 · 七巧 · 五子 · 象棋残局
+    games/                 洛书 · 华容道 · 七巧 · 五子 · 象棋残局 · 守夜 ·
+                           暴雨 · 射鹿 · 洗髓 · 小周天 (the last four run in time: live-games.js)
     read.html, read.js, read-md.js   the book reader (书)
     rules.mjs              the rules CLI: lock, fight hold, dispatch
     rules/*.mjs            the rules by part (core, look, travel, road, errands, tasks,
@@ -363,6 +364,33 @@ is the pure core; the page draws it on the stage beside the chat.
 - **One thing to tap at a time:** each stage card kind declares `holds` in
   `stage.mjs`; while something holds, no chat question; a test fails any
   kind drawn without saying.
+
+### 小游戏 in the story — boards that run in time 【已建】 (2026-09-30)
+
+From the 卷一 fun audit (his: 「先并行做1到4」): the book's hands-on moments are
+played, not read. Four modules, one each in `scripts/games/`, pure like the
+others (`meta`, `newGame(seed)`, `act`, `html`) plus **`tick(state, ms)`**: while
+the state is `live`, `live-games.js` steps it (100 ms) and repaints only its own
+`[data-game]` host. A control marked **`[data-g-hold]`** is pressed and held
+(pointerdown → `{g:'hold'}`, pointerup/cancel anywhere → `{g:'release'}`); taps
+stay `[data-g]`. Mobile-first (hold and tap, no keys), no native dialogs,
+seeded (the board's seed is the day's, the save's `seed`, the task id).
+
+| game | task id | scene | the play | the book it plays |
+|---|---|---|---|---|
+| `storm` | `fall-storm` | 00-storm / 00-fall (h01) | three pulls in the lulls between gusts; a pull into a gust slides 爹 back; never fails — at 60 s the last pull is by main force; `grade` clean · steady · rough flavours the closing line | 小满 hauls 爹 back, then the mud gives |
+| `deer` | `deer-wind` | 00-deer (h02) | hold to draw (1.2 s to full; past 4 s the swollen wrist shakes it down), let go in the still wind; a miss → the stag drinks again; 2 misses or 15 s → 银月 「风。往左偏半寸。」 and more wind is forgiven | 「先看风，后看鹿」 |
+| `xisui` | `xisui-hold` | 00-sleep (h02) | hold to grit — three sticks of incense burn only while held; holding spends breath, a trough gives it back; letting go (or running out) on a wave restarts the stick; then 「蹦一下」 into the beam | 「疼，别喊」 |
+| `zhoutian` | `zhoutian-sanguan` | wm-zhoutian (h05) | on the 三关 figure: in · out · still; push the qi only in the stillness; 尾闾 and 夹脊 open at one push (银月 dug them), 玉枕 wants three, a push out of time sets it back one | 「最后那半道，得你自己撞」 |
+
+**How a scene uses one** (the pattern of `gate-luoshu`): the task is in
+`tasks/world.json` (`kind: board`, `game`, `period: once`, a small `task` grant);
+the scene declares `"show": [{ "card": "board", "id": "<task id>" }]` and
+`"offers": { "tasks": ["<task id>"] }`, and the exit that goes on declares
+`"needs": { "task": "<task id>" }` with a `refuse` line. The win goes through
+`win` → `payWin` like any board. Every one of the four only ever ends in a win
+(the book does not fail there), so the gate never shuts the story. Try one
+alone: `scripts/try-game.html?game=storm|deer|xisui|zhoutian&lang=zh|en`.
 
 ## A day, 今日传闻, real-life chores 【已建】
 
