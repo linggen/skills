@@ -7,7 +7,8 @@
 // glows the paintings already hold. Nothing pictorial is drawn here.
 import { fibreCanvas, grainCanvas } from '../fx.js';
 
-export const PAPER = 0xf5efe1, INK = 0x2a241e;
+export const PAPER = 0xf5efe1;
+export const INK = 0x2a241e;
 export const SOAK_S = 2.4; // seconds for a painting to soak in over the last
 const RIM = 0.008; // the wet rim's width, as a share of the soak's reach
 const RIM_INK = 0.55; // how dark the wet rim goes (multiplied over the painting under it)
