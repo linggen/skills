@@ -4,7 +4,7 @@
 file is the story: every 卷 and 回 in a few lines, the people, the key beats.
 The form is 《鹿鼎记》's (DESIGN.md § 五·五): a 卷 is ten 回, not a province; its
 回 are numbered through the whole book, each under a 回目 couplet. Written:
-卷一 (第一回—第十回, 徐州 → 冀州; split into its ten 回 on 2026-09-30, each to be written full in place before 卷二 opens). A 回 is as long as one of 《鹿鼎记》's, about 24k characters. The rest is planned and will move as the
+卷一 (第一回—第十回, 徐州 → 冀州; split into its ten 回 on 2026-09-30, each to be written full in place before 卷二 opens). A 回 is about 20k characters, carried by story, never filler (DESIGN § 五·六, 2026-09-30). The rest is planned and will move as the
 writing finds it. notes/archive/outline.md and notes/archive/structure.md are the earlier
 drafts; where they disagree, this file wins. The hero is 沈小满 (fixed, 2026-09-30; 周星星 was the draft placeholder). World rules live in DESIGN.md only.*
 
