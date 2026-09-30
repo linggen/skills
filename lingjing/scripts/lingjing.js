@@ -1639,14 +1639,14 @@ const boxYields = (slots) => Boolean(bout || view.appearing || !slots || slots.m
    told — seen live at 09-cliff (2026-09-30): 第九回's last words played under
    第十回's banner. Each passage carries its 回 (rules/tell.mjs). */
 function oldHuiPlaying() {
-  const r = readingHere();
+  const r = readingNow();
   if (!playing(r)) return false;
-  const h = r.items[r.i]?.hui, c = look?.chapter?.close;
-  // A 回 closing (its 「完」 standing): its own passages — the exit that ended it too,
-  // 卷一's last at 01-end — are told before the card.
-  if (c && !closeSeen(c.id)) return Boolean(h && h === c.id);
-  const now = look?.chapter?.hui;
-  return Boolean(now && h && h !== now);
+  const h = r.items[r.i]?.hui;
+  if (!h) return false;
+  // A passage of an earlier 回 than the one the save now stands in; or, with a 回's
+  // 「完」 standing, that 回's own — the exit that ended it too (卷一's last, at 01-end).
+  const now = look?.chapter?.hui, c = look?.chapter?.close;
+  return Boolean((now && h !== now) || (c && !closeSeen(c.id) && h === c.id));
 }
 // …and while passages are owed and not yet drawn (they may be the ending 回's).
 const endingWaits = () => oldHuiPlaying() || riseWaits || Boolean(look?.tell_owed || drawingTold);
