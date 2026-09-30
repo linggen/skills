@@ -183,11 +183,12 @@ export function paintedStage({ PIXI, app, root, W, H, art }) {
 }
 
 /// A beat's timeline on `layer`: the painting soaks in over the last (unless it
-/// is already up), and the camera moves `from` → `to` over `seconds`.
-export function shotOn(bag, L, [from, to], seconds, { soakIn = true, ease = 'sine.inOut' } = {}) {
+/// is already up; `soakAt` seconds in, when something else goes first), and the
+/// camera moves `from` → `to` over `seconds`.
+export function shotOn(bag, L, [from, to], seconds, { soakIn = true, soakAt = 0, ease = 'sine.inOut' } = {}) {
   const tl = bag.timeline({ paused: true });
   tl.set(L.view, { ...from }, 0);
-  if (soakIn) tl.fromTo(L.soak, { v: 0 }, { v: 1, duration: SOAK_S, ease: 'power1.inOut' }, 0);
+  if (soakIn) tl.set(L.soak, { v: 0 }, 0).fromTo(L.soak, { v: 0 }, { v: 1, duration: SOAK_S, ease: 'power1.inOut' }, soakAt);
   else tl.set(L.soak, { v: 1 }, 0);
   tl.to(L.view, { ...to, duration: seconds, ease }, 0);
   return tl;

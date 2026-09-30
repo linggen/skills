@@ -105,7 +105,9 @@ const SOAK_FROM = { gather: [0.5, 0.35], light: [0.5, 0.05], tai: [0.5, 0.62], d
 const MIN_S = 3.2; // no camera move is hurried (his: the camera moves over paintings, slowly)
 const DOOR_TURN = 2.0; // seconds into `door` when 爹's note starts to soak in
 const RISE_S = 5.5; // the camera's slow rise from him to the stars
-const OUT_OF = 1.0; // how far the inner cosmos falls back (its zoom at the end) as the cliff soaks in
+const OUT_OF = 1.0; // how far the inner cosmos falls back (its zoom at the end) as his eyes open
+const SHUT_S = 1.1; // the cosmos falling back into the dark before the cliff soaks in: the 台 and
+                    // the cliff are never on screen together, even mid-soak (the first cut sat him on it)
 const SWAY = 0.006; // how far the frame drifts, slowly, as the 台 sways (a share of the painting)
 const SETTLE_DARK = 0.5; // how far the night closes over the last painting
 const DUSK = 0.22; // how far the sky darkens as the cloud gathers
@@ -142,6 +144,10 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
   const night = new PIXI.Graphics().rect(0, 0, W, H).fill(INK);
   night.alpha = 0;
   L.stars.pic.addChild(night);
+  // The dark the cosmos falls back into before his eyes open.
+  const shut = new PIXI.Graphics().rect(0, 0, W, H).fill(INK);
+  shut.alpha = 0;
+  L.zhu.pic.addChild(shut);
   stage.grain();
 
   const shot = (id, { seconds = camSeconds(beatOf(id)), ...opts } = {}) => shotOn(bag, L[id], SHOTS[id], seconds, opts);
@@ -157,11 +163,14 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
       // …and 爹's note soaks in over the one he could not read.
       .set(L.note.soak, { v: 0 }, 0)
       .to(L.note.soak, { v: 1, duration: SOAK_S, ease: 'power1.inOut' }, DOOR_TURN),
-    zhu: () => shot('zhu', { ease: 'sine.out' }),
-    // He opens his eyes: the cosmos keeps falling back behind the camera while the cliff
-    // soaks in over it from where he sits; then the camera rises.
-    stars: () => shot('stars', { ease: 'sine.inOut', seconds: RISE_S })
-      .fromTo(L.zhu.view, { ...SHOTS.zhu[1] }, { s: OUT_OF, fx: 0.5, fy: 0.5, duration: SOAK_S + 0.4, ease: 'sine.in' }, 0),
+    zhu: () => shot('zhu', { ease: 'sine.out' }).set(shut, { alpha: 0 }, 0),
+    // He opens his eyes: the cosmos falls back behind the camera into the dark, then the
+    // cliff soaks in over the dark from where he sits; then the camera rises.
+    stars: () => shot('stars', { ease: 'sine.inOut', seconds: RISE_S + SHUT_S, soakAt: SHUT_S })
+      .fromTo(L.zhu.view, { ...SHOTS.zhu[1] }, { s: OUT_OF, fx: 0.5, fy: 0.5, duration: SHUT_S + 0.3, ease: 'sine.in' }, 0)
+      .fromTo(shut, { alpha: 0 }, { alpha: 1, duration: SHUT_S, ease: 'sine.in' }, 0)
+      .set(L.stars.view, { ...SHOTS.stars[0] }, SHUT_S)
+      .fromTo(L.stars.view, { ...SHOTS.stars[0] }, { ...SHOTS.stars[1], duration: RISE_S, ease: 'sine.inOut' }, SHUT_S),
     settle: () => shot('settle', { soakIn: false, ease: 'sine.inOut' })
       .fromTo(night, { alpha: 0 }, { alpha: SETTLE_DARK, duration: 5, ease: 'sine.in' }, 0.4),
   };
