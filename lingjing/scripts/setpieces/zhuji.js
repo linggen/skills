@@ -77,7 +77,7 @@ export const MARKS = {
   boy: [0.658, 0.45], // a: him on the 青石, the 锅盖云 just over him
   crown: [0.495, 0.34], // b: the light on his crown (his topknot)
   tai: [0.51, 0.62], // c: the platform
-  doors: [[0.17, 0.47], [0.3, 0.35], [0.67, 0.32], [0.765, 0.34], [0.865, 0.46]], // c: 金木水火土, gateways round the lake
+  doors: [[0.117, 0.46], [0.3, 0.32], [0.64, 0.3], [0.765, 0.35], [0.9, 0.46]], // c: 金木水火土, gateways round the lake
   note: [0.49, 0.36], // d1/d2: the paper on the door
   piles: [0.5, 0.6], // e1: the 台 on its four piles, in the black lake afloat in the cosmos
   him: [0.353, 0.8], // e2: him alone on the cliff, looking up
