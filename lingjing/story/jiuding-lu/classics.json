@@ -522,7 +522,61 @@
       "note": "维基文库此本作「以爲」。第一回爹转述说书先生的版本是「夜里走林子」，史书没说是夜里。"
     }
   },
-  "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book. Where each one goes: qianjin-dayi: 今二 (or 今一), the first-week 大医精诚 reading — 沈芒 gets it wrong or is moved despite himself. lingshu-hailun: 今二, 严老师/the textbook gives the definition just before the anatomy teacher says no meridian structure has been found. jiayi-xu: 今三, 沈芒's first 古籍部 visit — 葛奶奶 hands him 皇甫谧《针灸甲乙经》 instead of a 秘籍 (her history slightly wrong, corrected); the 回's lesson stays 膈肌/六字诀. lingshu-jiuzhen: 今七, 严老师's 针灸实验课 — 沈芒 asks what 经络 is; 「非皮肉筋骨也」, then the honest modern picture in dialogue. qijing-yinqiao: 今十, the 古籍部 night in the dark (内景) — 葛奶奶 points him to it or he finds it; the page has 「反觀」, not 「返觀」. lingshu-jingmai: 古五, where the 三关 open — 瞿老's one line plus his own plain gloss (〈經脈〉 chosen over 〈本藏〉: 「不可不通」 is the 通 of the 三关). Not added: the 《神农本草经》 序录 上药/中药/下药 passage is already `shennong`, told by 褚先生 in 古六 (06-第六回.md) — a 药园 line would use it twice.",
+  "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; lingshu-jiuzhen 今七 (严老师's 针灸实验课); shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; yangxing-changxi 今九; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: the 《神农本草经》 序录 上药/中药/下药 passage is already `shennong`, told by 褚先生 in 古六 (06-第六回.md) — a 药园 line would use it twice.",
+  "_pending_by_hui": {
+    "今一": [
+      "baopu-zhili",
+      "qianjin-dayi（一笔）"
+    ],
+    "古一": [
+      "zhuangzi-zhibeiyou"
+    ],
+    "今二": [
+      "lingshu-jingmai",
+      "lingshu-hailun（一笔）"
+    ],
+    "古二": [
+      "qijing-bamai"
+    ],
+    "今四": [
+      "baopu-huangbai"
+    ],
+    "古四": [
+      "baopu-bianwen"
+    ],
+    "今五": [
+      "zhuangzi-yangshengzhu"
+    ],
+    "古五": [
+      "zhonglv-sishi"
+    ],
+    "今七": [
+      "lingshu-jiuzhen"
+    ],
+    "古七": [
+      "shangshu-hongfan"
+    ],
+    "今八": [
+      "baopu-jiyan-shang",
+      "jiayi-xu（一笔）"
+    ],
+    "古八": [
+      "laozi-qizhe",
+      "huangting-linggen（D4，建议）"
+    ],
+    "今九": [
+      "yangxing-changxi"
+    ],
+    "古九": [
+      "wu-zhuji"
+    ],
+    "今十": [
+      "qijing-yinqiao"
+    ],
+    "古十": [
+      "neiguan-jing"
+    ]
+  },
   "_pending": {
     "qianjin-dayi": {
       "title": "备急千金要方·大医精诚",
@@ -611,6 +665,214 @@
         "经脉，能定人的死生，能治百病，能调虚实，不能不通。"
       ],
       "note": "原文前有「黃帝曰︰」。"
+    },
+    "baopu-zhili": {
+      "title": "抱朴子·内篇·至理",
+      "about": "东晋葛洪（字稚川，号抱朴子）著；〈至理〉一篇讲形神相依，劝人服药之外兼行气。",
+      "source": {
+        "edition": "维基文库《抱朴子·卷05》",
+        "section": "内篇卷五〈至理〉",
+        "url": "https://zh.wikisource.org/wiki/%E6%8A%B1%E6%9C%B4%E5%AD%90%2F%E5%8D%B705",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "夫人在氣中，氣在人中，自天地至於萬物，無不須氣以生者也。善行氣者，內以養身，外以卻惡，然百姓日用而不知焉。",
+      "plain": [
+        "人在气里，气也在人身里；从天地到万物，没有一样不靠气活着。会行气的人，对内养身，对外驱邪；百姓天天在用它，却不知道。"
+      ]
+    },
+    "zhuangzi-zhibeiyou": {
+      "title": "庄子·知北游",
+      "about": "《庄子》外篇第二十二篇，借「知」向北问道，讲道无所不在、「通天下一气耳」。",
+      "source": {
+        "edition": "维基文库《莊子·知北遊》",
+        "section": "外篇〈知北遊第二十二〉·黄帝答知",
+        "url": "https://zh.wikisource.org/wiki/%E8%8E%8A%E5%AD%90%2F%E7%9F%A5%E5%8C%97%E9%81%8A",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "生也死之徙，死也生之始，孰知其紀！人之生，氣之聚也；聚則為生，散則為死。",
+      "plain": [
+        "生是死的同路，死是生的开头，谁理得清它的头绪！人活着，是气聚在一起；聚了就生，散了就死。"
+      ]
+    },
+    "qijing-bamai": {
+      "title": "奇经八脉考·引《八脉经》",
+      "about": "明代李时珍著，专讲十二正经以外的八条「奇经」；〈阴蹻脉〉一节转引张紫阳《八脉经》，是丹家眼里的八脉。",
+      "source": {
+        "edition": "维基文库《奇經八脈考》",
+        "section": "〈陰蹻脈〉·引張紫陽《八脈經》",
+        "url": "https://zh.wikisource.org/wiki/%E5%A5%87%E7%B6%93%E5%85%AB%E8%84%88%E8%80%83%2F%E9%99%B0%E8%B9%BB%E8%84%88",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "凡人有此八脈，俱屬陰神，閉而不開。惟神仙以陽炁沖開，故能得道。",
+      "plain": [
+        "凡人身上都有这八条脉，都属阴，关着不开；只有神仙拿阳气把它冲开，所以得道。"
+      ],
+      "note": "与 qijing-yinqiao（今十）同一页、不同句。B 表古二银月只说前半句（「閉而不開」），冲开的后半句留给第五回揭开她夜夜在凿。"
+    },
+    "baopu-huangbai": {
+      "title": "抱朴子·内篇·黄白",
+      "about": "东晋葛洪著；〈黄白〉讲点化金银之术，这一句是他转引的《龟甲文》。",
+      "source": {
+        "edition": "维基文库《抱朴子·卷16》",
+        "section": "内篇卷十六〈黃白〉·引《龜甲文》",
+        "url": "https://zh.wikisource.org/wiki/%E6%8A%B1%E6%9C%B4%E5%AD%90%2F%E5%8D%B716",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "龜甲文曰：我命在我不在天，還丹成金億萬年。古人豈欺我哉？",
+      "plain": [
+        "《龟甲文》说：我的命在我自己，不在天；还丹炼成、点化成金，能活亿万年。古人难道会骗我吗？"
+      ],
+      "note": "今四葛奶奶只说前半句「我命在我不在天」；还丹成金的后半句不用。"
+    },
+    "baopu-bianwen": {
+      "title": "抱朴子·内篇·辨问",
+      "about": "东晋葛洪著；〈辨问〉答「圣人为何不都成仙」，说成仙要看天生的禀赋。",
+      "source": {
+        "edition": "维基文库《抱朴子·卷12》",
+        "section": "内篇卷十二〈辨問〉",
+        "url": "https://zh.wikisource.org/wiki/%E6%8A%B1%E6%9C%B4%E5%AD%90%2F%E5%8D%B712",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "按仙經以為諸得仙者，皆其受命偶值神仙之氣，自然所稟。故胞胎之中，已含通道之性，及其有識，則心好其事，必遭明師而得其法",
+      "plain": [
+        "照仙经的说法，凡是成了仙的，都是受命那一刻正碰上神仙之气，是天生的禀赋；所以还在娘胎里，就带着通道的性子，等懂了事，自然心里爱这件事，必定遇上明师、得了法子。"
+      ],
+      "note": "这是「灵根」这层意思（生来的禀赋）最近的经据；「灵根」这个词本身出自《黄庭经》，义是舌根、命根（见 huangting-linggen；补丁②，DESIGN § 六·五·二）。"
+    },
+    "zhuangzi-yangshengzhu": {
+      "title": "庄子·养生主",
+      "about": "《庄子》内篇第三篇，讲养生之道，庖丁解牛就出在这一篇。",
+      "source": {
+        "edition": "维基文库《莊子·養生主》",
+        "section": "内篇〈養生主第三〉·首章",
+        "url": "https://zh.wikisource.org/wiki/%E8%8E%8A%E5%AD%90%2F%E9%A4%8A%E7%94%9F%E4%B8%BB",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "爲善無近名，爲惡無近刑，緣督以爲經，可以保身，可以全生，可以養親，可以盡年。",
+      "plain": [
+        "做好事别近于求名，做坏事别近于受刑；顺着正中那一条「督」走，当作常道，就能保身、全生、养亲、活尽天年。"
+      ],
+      "note": "「督」旧注多解作「中」；医家、丹家借作督脉（脊梁正中那一路）。眼镜的说法是后一种，属比附。"
+    },
+    "zhonglv-sishi": {
+      "title": "钟吕传道集·论四时",
+      "about": "内丹问答，题正阳真人钟离权述、纯阳真人吕岩集、华阳真人施肩吾传，收于《正统道藏》；〈论四时〉讲身中年月日时的用法。",
+      "source": {
+        "edition": "维基文库《鍾呂傳道集》（正統道藏本）",
+        "section": "〈論四時第五〉·鍾曰",
+        "url": "https://zh.wikisource.org/wiki/%E9%8D%BE%E5%91%82%E5%82%B3%E9%81%93%E9%9B%86",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "煉精生真氣，煉氣合陽神，煉神合大道。",
+      "plain": [
+        "炼精，生出真气；炼气，合成阳神；炼神，合于大道。"
+      ],
+      "note": "古五银月只说头一句「煉精生真氣」（凡间管这叫练气一层），后两句课随境界，她不肯说。"
+    },
+    "shangshu-hongfan": {
+      "title": "尚书·洪范",
+      "about": "《尚书·周书》的一篇，箕子向周武王陈说治天下的九条大法（九畴），第一条就是五行，是五行说最早的出处。",
+      "source": {
+        "edition": "维基文库《尚書·洪範》",
+        "section": "〈洪範〉·一、五行",
+        "url": "https://zh.wikisource.org/wiki/%E5%B0%9A%E6%9B%B8%2F%E6%B4%AA%E7%AF%84",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "一曰水，二曰火，三曰木，四曰金，五曰土。水曰潤下，火曰炎上，木曰曲直，金曰從革，土爰稼穡。",
+      "plain": [
+        "五行：一水、二火、三木、四金、五土。水往下润，火往上烧，木能弯能直，金能顺从、能变形，土用来种庄稼、收庄稼。"
+      ],
+      "note": "维基文库此本「土爰稼穡」的「爰」注有异文作「曰」（wikitext 写作 {{另|爰|曰}}），此处照正文取「爰」。"
+    },
+    "baopu-jiyan-shang": {
+      "title": "抱朴子·内篇·极言",
+      "about": "东晋葛洪著；〈极言〉说学仙难成，这一段数的是伤身的十几种过头。",
+      "source": {
+        "edition": "维基文库《抱朴子·内篇·卷十三 極言》",
+        "section": "内篇·卷十三〈极言〉",
+        "url": "https://zh.wikisource.org/wiki/%E6%8A%B1%E6%9C%B4%E5%AD%90%2F%E5%8D%B713",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "且又才所不逮，而困思之，傷也；力所不勝，而強舉之，傷也；……跳走喘乏，傷也；……積傷至盡則早亡，早亡非道也。",
+      "plain": [
+        "才力够不着还硬去苦想，是伤；力气撑不住还硬去举，是伤；……跑跳到喘不上气，是伤；……伤积到尽头就早死，早死不是道。"
+      ],
+      "note": "与 baopu-jiyan（「牛毛麟角」，古九）同篇不同句。"
+    },
+    "laozi-qizhe": {
+      "title": "道德经·二十四章",
+      "about": "老子著，五千言，道家第一部经；这里用三国魏王弼注本。",
+      "source": {
+        "edition": "维基文库《道德經 (王弼本)》",
+        "section": "二十四章",
+        "url": "https://zh.wikisource.org/wiki/%E9%81%93%E5%BE%B7%E7%B6%93_(%E7%8E%8B%E5%BC%BC%E6%9C%AC)",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "企者不立，跨者不行，自見者不明，自是者不彰，自伐者無功，自矜者不長。",
+      "plain": [
+        "踮着脚的站不稳，跨大步的走不远；自己显摆的反倒看不明，自以为是的反倒不显，自夸的没有功，自负的长不了。"
+      ],
+      "note": "此本「企者不立」后夹王弼注「物尚進則失安，故曰，企者不立」，原文照经文连抄，注文略去。"
+    },
+    "yangxing-changxi": {
+      "title": "养性延命录·服气疗病篇",
+      "about": "南朝梁陶弘景辑录前人养生之说而成；卷下〈服气疗病篇〉讲行气、闭气与「吐气六字」。",
+      "source": {
+        "edition": "维基文库《養性延命錄》（正統道藏本）",
+        "section": "卷下〈服氣療病篇第四〉",
+        "url": "https://zh.wikisource.org/wiki/%E9%A4%8A%E6%80%A7%E5%BB%B6%E5%91%BD%E9%8C%84",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "凡行氣，以鼻內氣，以口吐氣，微而引之，名曰長息。",
+      "plain": [
+        "行气时，用鼻子吸，用嘴吐，细细地、慢慢地往长里拉，这叫长息。"
+      ],
+      "note": "紧接其后便是「內氣有一，吐氣有六」（yangxing-liuzi，古三用），这里只取前一句。「內」通「纳」。"
+    },
+    "wu-zhuji": {
+      "title": "天仙正理直论·筑基直论",
+      "about": "明代伍守阳（号冲虚子）著的内丹书，九章；〈筑基直论〉是第六章，专讲筑基。",
+      "source": {
+        "edition": "维基文库《天仙正理直論增註》",
+        "section": "〈築基直論第六〉·沖虛子曰",
+        "url": "https://zh.wikisource.org/wiki/%E5%A4%A9%E4%BB%99%E6%AD%A3%E7%90%86%E7%9B%B4%E8%AB%96%E5%A2%97%E8%A8%BB%2F6",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "築者，漸漸積累增益之義。基者，修煉陽神之本根，安神定息之處所也。",
+      "plain": [
+        "「筑」，是一点一点积累、加厚的意思；「基」，是修炼阳神的根本，安神、定息的地方。"
+      ],
+      "note": "句首「修仙而始曰築基」不引：本书练气在筑基之前（补丁①，DESIGN § 六·五·二）。"
+    },
+    "neiguan-jing": {
+      "title": "太上老君内观经",
+      "about": "道经，撰人不详，收于《正统道藏》；托老君之口，讲向内观照身心的法门。",
+      "source": {
+        "edition": "维基文库《太上老君內觀經》（正統道藏本）",
+        "section": "老君曰·內觀之道",
+        "url": "https://zh.wikisource.org/wiki/%E5%A4%AA%E4%B8%8A%E8%80%81%E5%90%9B%E5%85%A7%E8%A7%80%E7%B6%93",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "內觀之道，靜神定心。亂想不起，邪妄不侵。",
+      "plain": [
+        "往里看的法子：让神静下来，让心定下来；乱想不起，邪念也就侵不进来。"
+      ],
+      "note": "古十的「十六个字」就是这四句；下文「閉目思尋」「內察一心」不引。"
+    },
+    "huangting-linggen": {
+      "title": "黄庭经·外景",
+      "about": "道教上清派存思修炼的七言韵文，分内景、外景二经；底本《正统道藏》洞玄部本文类。",
+      "source": {
+        "edition": "维基文库《黃庭外景經》",
+        "section": "《太上黄庭外景玉经》上·第一、二章",
+        "url": "https://zh.wikisource.org/wiki/%E9%BB%83%E5%BA%AD%E5%A4%96%E6%99%AF%E7%B6%93",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "玉池清水灌靈根。審能修之可長存。……玉池清水上生肥，靈根堅固老不衰。",
+      "plain": [
+        "嘴里那一池清水（津液）灌着灵根（舌根）；真能这样修，就能长存。……津液生得肥厚，灵根坚固，人老了也不衰。"
+      ],
+      "note": "道经里的「灵根」是舌根、命根；书里「灵根＝生来五行之禀」是我们的补丁②（Hanli 2026-10-01，DESIGN § 六·五·二）。与 huangting（第一章「上有黃庭下關元」，第八、九回）同经不同句。"
     }
   }
 }
