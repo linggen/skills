@@ -59,7 +59,11 @@ function playThrough() {
   s = must(move, fresh(s), { place: 'shimen' });
   s = must(resolve, s, { exit: 'refuse' });
   s = must(win, s, { id: 'mijing-wall' }); s = must(task, s, { action: 'done', id: 'mijing-wall' });
+  assert.equal(s.bag.luobo, 1, 'into the 秘境 with a radish in the bundle (第七回)');
   s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
+  // 扔一根萝卜上去 — the book's choice at the 坤阵 can be made (it refused 「你身上没有萝卜」).
+  const tossed = must(resolve, s, { exit: 'radish' });
+  assert.equal(tossed.bag.luobo, undefined, 'the radish thrown');
   for (const exit of ['go', 'swallow', 'rest']) s = must(resolve, s, { exit });
   s = must(move, fresh(s), { place: 'waimen' });
   s = must(resolve, fresh(s), { exit: 'sleep' });
@@ -446,3 +450,4 @@ test('the doors keep playing through the stage\'s redraws: each draw starts the 
   const css = fs.readFileSync(new URL('../scripts/lingjing.css', import.meta.url), 'utf8');
   assert.equal((css.match(/- var\(--age, 0ms\)\)/g) ?? []).length, 3);
 });
+
