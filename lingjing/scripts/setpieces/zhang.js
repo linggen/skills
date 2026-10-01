@@ -29,7 +29,7 @@ export const BEATS = [
   { id: 'bingyi', art: 'b', ms: 6000, line: { zh: '水墙正中，那片最深的黑水里，慢慢浮上来一个人影：人的脸，披着水做的衣裳，脚底下踩着两条龙', en: 'At the heart of the wall, in the deepest black water, a figure rose: a man’s face, a robe of water, two dragons under his feet.' } },
   { id: 'trial', art: 'c', ms: 5500, line: { zh: '两颗比灶屋还大的龙头，在他面前一尺的地方停住了。', en: 'Two dragon heads, each bigger than the kitchen hut, stopped a foot from his face.' } },
   { id: 'fall', art: 'a', ms: 5000, line: { zh: '他身后那道水墙，慢慢地、慢慢地落了下去。', en: 'Behind him the wall of water came down, slowly, slowly.' } },
-  { id: 'seal', art: 'e', ms: 6000, line: { zh: '他拿起最后那块石头，五个点的，按进了正中那一格', en: 'He took the last stone, the one with five dots, and pressed it into the middle square.' } },
+  { id: 'seal', art: 'e', ms: 6000, line: { zh: '五个点的石头，最后一块——第九块——按进了正中那一格', en: 'The five-dot stone, the last one — the ninth — pressed into the middle square.' } },
   { id: 'ding', art: 'f', ms: 7000, line: { zh: '木牌上那只蜷着的小狐狸，九条尾巴里，第二条亮了。', en: 'On the token, of the curled fox’s nine tails, the second lit.' } },
 ];
 
