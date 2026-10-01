@@ -144,6 +144,20 @@
      "opens": "00-prologue"
     },
     {
+     "id": "j05",
+     "line": "jin",
+     "n": 5,
+     "huimu": {
+      "zh": [
+       "两个罚球我一个没进，倒捡回来一条狗"
+      ],
+      "en": [
+       "I Missed Both Free Throws and Came Home with a Dog"
+      ]
+     },
+     "file": "今线/今05.md"
+    },
+    {
      "id": "h05",
      "line": "gu",
      "n": 5,
@@ -161,6 +175,20 @@
      "opens": "00-waimen"
     },
     {
+     "id": "j06",
+     "line": "jin",
+     "n": 6,
+     "huimu": {
+      "zh": [
+       "仙丹我吃了三颗，饭我一口没吃"
+      ],
+      "en": [
+       "I Took Three Magic Pills and Not One Bite of Rice"
+      ]
+     },
+     "file": "今线/今06.md"
+    },
+    {
      "id": "h06",
      "line": "gu",
      "n": 6,
@@ -176,6 +204,20 @@
      },
      "file": "06-第六回.md",
      "opens": "00-waimen"
+    },
+    {
+     "id": "j07",
+     "line": "jin",
+     "n": 7,
+     "huimu": {
+      "zh": [
+       "灯一灭，我一瘸一拐，在古籍部里走了十一步"
+      ],
+      "en": [
+       "When the Lights Went Out, I Limped Eleven Steps Across the Rare-Books Room"
+      ]
+     },
+     "file": "今线/今07.md"
     },
     {
      "id": "h07",
