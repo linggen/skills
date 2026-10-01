@@ -6,12 +6,12 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { afterBook, bookAhead, BOX_FIRST, boxGivesWay, MOMENTS, momentMay } from '../scripts/queue.js';
 
-const cards = [{ card: 'panel' }, { card: 'people' }, { card: 'board', id: 'deer-wind' }, { card: 'duel', id: 'longzhi' }, { card: 'tale' }, { card: 'lundao' }, { card: 'offer' }];
+const cards = [{ card: 'meet', id: 'yinyue' }, { card: 'panel' }, { card: 'people' }, { card: 'board', id: 'deer-wind' }, { card: 'duel', id: 'longzhi' }, { card: 'tale' }, { card: 'lundao' }, { card: 'offer' }];
 
 test('the games wait for the book: while a passage is ahead, no board, duel, 传闻 or 论道 stands; after it, all of them', () => {
   assert.deepEqual(afterBook(cards, true).map(c => c.card), ['panel', 'people', 'offer']);
   assert.deepEqual(afterBook(cards, false), cards);
-  for (const k of ['board', 'duel', 'tale', 'lundao']) assert.ok(BOX_FIRST.has(k));
+  for (const k of ['board', 'duel', 'tale', 'lundao', 'meet']) assert.ok(BOX_FIRST.has(k), k);
 });
 
 test('the book is ahead while passages are owed, being drawn or playing — but not while paused at a 回\'s turn', () => {
@@ -73,4 +73,19 @@ test('冰夷\'s trial waits for 站着，不跪: a scene\'s fight with its own w
   assert.doesNotMatch(card(new Set(['shuanglong-trial'])), /站着，不跪/, 'chosen: the trial card stands instead');
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(page, /c\.card !== 'duel' \|\| !\(look\.scene\?\.panel\?\.taps \?\? \[\]\)\.some\(\(t\) => t\.duel === c\.id\) \|\| called\.has\(c\.id\)/);
+});
+
+test('银月\'s card shows what the dawn tells: the girl with one tail, named — and her lines keep the fox where no form is named', async () => {
+  const { loadContent } = await import('../scripts/content.mjs');
+  const { beatsOf } = await import('../scripts/rules/tell.mjs');
+  const { newState } = await import('../scripts/state.mjs');
+  const content = loadContent();
+  const raw = JSON.parse(fs.readFileSync(new URL('../worlds/jiuding/codex.json', import.meta.url), 'utf8')).entries.yinyue;
+  assert.equal(raw.kind, '人物');
+  assert.equal(raw.image, 'art/people/yinyue.webp');
+  assert.doesNotMatch(raw.lines.zh.join(''), /巴掌大/, 'never the fox of later chapters on her first card');
+  assert.match(raw.lines.zh.join(''), /银发[\s\S]*一条银尾/);
+  const s = { ...newState(content, 'zh', new Date('2026-09-29T11:00:00')), lang: 'zh' };
+  assert.equal(beatsOf(content, s, { of: 'scene', id: '00-yinyue', text: '**银月**：难吃。' })[0].art, 'art/people/yinyue.webp', 'the girl at dawn');
+  assert.equal(beatsOf(content, s, { of: 'scene', id: '00-cliff', text: '**银月**：让开。' })[0].art, 'art/people/yinyue-fox.webp', 'the fox elsewhere');
 });

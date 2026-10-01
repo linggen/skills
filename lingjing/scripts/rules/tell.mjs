@@ -165,7 +165,9 @@ function speakerOf(content, state, name, sid) {
   const herNames = new Set([her?.name, ...Object.values(her?.forms ?? {}).map(f => f.name)].flatMap(n => (n ? [n.zh, n.en] : [])));
   if (her && herNames.has(name)) {
     // The 图鉴 decides the face: the form's own entry (yinyue-fox) where it has one, else hers.
-    const key = findScene(content, sid)?.her ?? 'human', form = her.forms?.[key] ?? her.forms?.human;
+    // A scene that names no form has her as the little fox she mostly is (the token, his shoulder);
+    // her own entry is the girl of the dawn (00-yinyue, `her: human`).
+    const key = findScene(content, sid)?.her ?? 'fox', form = her.forms?.[key] ?? her.forms?.human;
     return { who: her.id, name, art: portraitOf(content, state, `${her.id}-${key}`, portraitOf(content, state, her.id, form?.art ?? null)) };
   }
   const p = (content.people?.people ?? []).find(x => [x.name?.zh, x.name?.en, fill(pick(x.name, state.lang), state, content)].includes(name));

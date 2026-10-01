@@ -209,15 +209,16 @@
     "book": "h01",
     "scene": "00-yinyue"
    },
-   "image": "art/people/yinyue-fox.webp",
+   "_lines": "What the hero knows at her first appearance (00-yinyue, dawn in the cave): a girl with one silver tail, who says she is 青丘之主 and, after a while, 银月 — never more (spoiler rule, 2026-10-01: the card read 「巴掌大的银狐」 under 人物 while the scene showed the girl). The nameless fox of the pit is `yinyue-fox`, which folds into this.",
+   "image": "art/people/yinyue.webp",
    "lines": {
     "zh": [
-     "一只巴掌大的银狐，一条尾巴，身后八截断尾。",
-     "自称青丘之主——别的，她想不起来了。"
+     "洞口坐着的姑娘：银发垂腰，赤着脚，金色的眼睛，瞳仁竖着；身后一条银尾，尾根八道断口。",
+     "自称青丘之主，憋了半天，才想起自己叫银月——别的，她想不起来了。"
     ],
     "en": [
-     "A silver fox no bigger than a palm: one tail, and eight cut stumps behind it.",
-     "She calls herself mistress of Qingqiu — the rest she cannot recall."
+     "The girl at the cave mouth: silver hair to her waist, bare feet, golden eyes with slit pupils; one silver tail behind her, eight cut stumps at its root.",
+     "She calls herself mistress of Qingqiu, and only after a long while recalls she is Yinyue — the rest she cannot recall."
     ]
    }
   },

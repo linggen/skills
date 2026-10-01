@@ -15,8 +15,10 @@
 //
 // Pure: lingjing.js reads the page's flags into plain objects and asks here.
 
-/* The cards that wait for the book: a game to play here. */
-export const BOX_FIRST = new Set(['board', 'duel', 'tale', 'lundao']);
+/* The cards that wait for the book: a game to play here — and the 图鉴 card of
+   whoever the scene brings on, so a card never shows what the passage has not
+   told yet (银月 at dawn was a girl on the card before the box said so). */
+export const BOX_FIRST = new Set(['board', 'duel', 'tale', 'lundao', 'meet']);
 
 /* The page's own moments, in the order they come after the book. */
 export const MOMENTS = ['piece', 'doors', 'feat', 'memory', 'homing'];
