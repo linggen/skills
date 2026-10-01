@@ -547,6 +547,21 @@
       "plain": [
         "身上交会的「节」有三百六十五处，懂得要领一句话就说完，不懂就散得没边。所谓「节」，是神气来往出入的地方，不是皮、肉、筋、骨。"
       ]
+    },
+    "baopu-jiyan-shang": {
+      "title": "抱朴子·内篇·极言",
+      "about": "东晋葛洪著；〈极言〉说学仙难成，这一段数的是伤身的十几种过头。",
+      "source": {
+        "edition": "维基文库《抱朴子·内篇·卷十三 極言》",
+        "section": "内篇·卷十三〈极言〉",
+        "url": "https://zh.wikisource.org/wiki/%E6%8A%B1%E6%9C%B4%E5%AD%90%2F%E5%8D%B713",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "且又才所不逮，而困思之，傷也；力所不勝，而強舉之，傷也；……跳走喘乏，傷也；……積傷至盡則早亡，早亡非道也。",
+      "plain": [
+        "才力够不着还硬去苦想，是伤；力气撑不住还硬去举，是伤；……跑跳到喘不上气，是伤；……伤积到尽头就早死，早死不是道。"
+      ],
+      "note": "与 baopu-jiyan（「牛毛麟角」，古九）同篇不同句。"
     }
   },
   "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; yangxing-changxi 今九; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: a 药园 line from the 《神农本草经》 序录 上药/中药/下药 passage — that is `shennong`, which 褚先生 paraphrases in one untagged sentence in 古六 (06-第六回.md); it would use it twice.",
@@ -566,7 +581,6 @@
       "shangshu-hongfan"
     ],
     "今八": [
-      "baopu-jiyan-shang",
       "jiayi-xu（一笔）"
     ],
     "古八": [
@@ -708,21 +722,6 @@
         "五行：一水、二火、三木、四金、五土。水往下润，火往上烧，木能弯能直，金能顺从、能变形，土用来种庄稼、收庄稼。"
       ],
       "note": "维基文库此本「土爰稼穡」的「爰」注有异文作「曰」（wikitext 写作 {{另|爰|曰}}），此处照正文取「爰」。"
-    },
-    "baopu-jiyan-shang": {
-      "title": "抱朴子·内篇·极言",
-      "about": "东晋葛洪著；〈极言〉说学仙难成，这一段数的是伤身的十几种过头。",
-      "source": {
-        "edition": "维基文库《抱朴子·内篇·卷十三 極言》",
-        "section": "内篇·卷十三〈极言〉",
-        "url": "https://zh.wikisource.org/wiki/%E6%8A%B1%E6%9C%B4%E5%AD%90%2F%E5%8D%B713",
-        "license": "公有领域（古籍；维基文库 PD-old）"
-      },
-      "original": "且又才所不逮，而困思之，傷也；力所不勝，而強舉之，傷也；……跳走喘乏，傷也；……積傷至盡則早亡，早亡非道也。",
-      "plain": [
-        "才力够不着还硬去苦想，是伤；力气撑不住还硬去举，是伤；……跑跳到喘不上气，是伤；……伤积到尽头就早死，早死不是道。"
-      ],
-      "note": "与 baopu-jiyan（「牛毛麟角」，古九）同篇不同句。"
     },
     "laozi-qizhe": {
       "title": "道德经·二十四章",
