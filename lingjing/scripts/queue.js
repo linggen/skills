@@ -17,8 +17,10 @@
 
 /* The cards that wait for the book: a game to play here — and the 图鉴 card of
    whoever the scene brings on, so a card never shows what the passage has not
-   told yet (银月 at dawn was a girl on the card before the box said so). */
-export const BOX_FIRST = new Set(['board', 'duel', 'tale', 'lundao', 'meet']);
+   told yet (银月 at dawn was a girl on the card before the box said so) — and a
+   choice on a card of its own (渡劫's throw, the 生辰, a name): the box goes
+   first, the choices after. */
+export const BOX_FIRST = new Set(['board', 'duel', 'tale', 'lundao', 'meet', 'breakthrough', 'born', 'value']);
 
 /* The page's own moments, in the order they come after the book. */
 export const MOMENTS = ['piece', 'doors', 'feat', 'memory', 'homing'];

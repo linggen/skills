@@ -11,7 +11,7 @@ const cards = [{ card: 'meet', id: 'yinyue' }, { card: 'panel' }, { card: 'peopl
 test('the games wait for the book: while a passage is ahead, no board, duel, 传闻 or 论道 stands; after it, all of them', () => {
   assert.deepEqual(afterBook(cards, true).map(c => c.card), ['panel', 'people', 'offer']);
   assert.deepEqual(afterBook(cards, false), cards);
-  for (const k of ['board', 'duel', 'tale', 'lundao', 'meet']) assert.ok(BOX_FIRST.has(k), k);
+  for (const k of ['board', 'duel', 'tale', 'lundao', 'meet', 'breakthrough', 'born', 'value']) assert.ok(BOX_FIRST.has(k), k);
 });
 
 test('the book is ahead while passages are owed, being drawn or playing — but not while paused at a 回\'s turn', () => {
