@@ -2641,7 +2641,9 @@ function drawLu() {
 // Per save: its seed (state.mjs seedOf) — with the hero's name fixed (沈小满, 2026-09-30) a name
 // would share every title and ending card put away across saves; an old save's seed is its old
 // name, so what it put away stays put away.
-const titleKey = (id) => `lingjing:title:${look?.world?.id ?? ''}:${look?.seed ?? look?.name ?? ''}:${id}`;
+// A scratch save is its own too: every save seeded from one fixture shares its seed, so a 「完」 put
+// away in one never stood again in the next (2026-10-01: 「第九回 · 完」 never appeared on the cliff).
+const titleKey = (id) => `lingjing:title:${look?.world?.id ?? ''}:${SCRATCH ? `${SCRATCH}:` : ''}${look?.seed ?? look?.name ?? ''}:${id}`;
 function titleSeen(id, mark = false) {
   try {
     if (mark) localStorage.setItem(titleKey(id), '1');
