@@ -68,7 +68,7 @@ test('each 回 ends with its classics (卷一 in ten since 2026-09-30), and the 
   const entries = (id) => [...renderMarkdown(fillHero(at(id).md, {}), { classics: CLASSICS }).matchAll(/<article class="dianent" id="dian-([\w-]+)"/g)].map((m) => m[1]);
   assert.deepEqual(entries('h05'), ['liezi-yugong', 'zhuangzi-dasheng', 'shanhai-zheng']); // 真气 (素问) waits for 第九回; 守一's 用志不分 taught after the 小周天 (课随境界, 2026-09-30)
   assert.deepEqual(entries('h06'), ['shennong', 'zuozhuan-ranzhi', 'baopu', 'jiuding']); // 抱朴子's 转 told in 褚先生's lecture while he grips the bottle — no narrator aside at the first 纹 (2026-09-30)
-  assert.deepEqual(entries('h07'), ['shanhai-gui', 'shanhai-xirang']);
+  assert.deepEqual(entries('h07'), ['jiuding', 'shanhai-gui', 'shanhai-xirang']);
   assert.deepEqual(entries('h08'), ['liji-zha', 'lunyu-shuxiu', 'huangting', 'shangshu-yugong']);
   assert.deepEqual(entries('h09'), ['baopu-jiyan', 'zhouyi-xun', 'zhuangzi-keyi', 'suwen', 'huangting']); // 恬惔虚无 moved from 第三回 to the eve of 筑基 (课随境界走, 2026-09-30) // 褚先生's 筑基 lecture moved off the cliff into the autumn 讲堂 (2026-09-30)
   assert.deepEqual(entries('h10'), ['shiji-ximenbao', 'shanhai-bingyi']);
