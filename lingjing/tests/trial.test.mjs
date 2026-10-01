@@ -80,3 +80,16 @@ test('蛫 is a fair story fight: a careful player wins it about three times in f
   assert.ok(full >= 0.65 && full <= 0.9, `the road hand wins ${(full * 100).toFixed(1)}%`);
   assert.ok(then >= 0.65, `the hand held at 第七回 wins ${(then * 100).toFixed(1)}%`);
 });
+
+/* 只躲，不还手 (第八回, wm-lun2): 秦雁 is a 试 passed by standing through her moves,
+   as the book has it — never by driving her down. */
+test('秦雁 is a dodge trial: outlasted, passed; no yield', () => {
+  const qin = creatureOf(content, 'foe-shijie');
+  assert.equal(qin.trial?.outlast, true);
+  assert.equal(qin.trial?.yield, undefined, 'he never drives her down');
+  assert.match(qin.trial.goal.zh, /只躲/);
+  let won = 0;
+  const n = 60, hand = roadHand(fixture, NOW, 'foe-shijie');
+  for (let k = 0; k < n; k += 1) if (fightOnce({ ...fightSetup(content, hand, qin, NOW), seed: `trial|${k}` }).outcome === 'won') won += 1;
+  assert.ok(won / n >= 0.9, `passed ${won}/${n}`);
+});

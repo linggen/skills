@@ -1766,7 +1766,15 @@
         }
       },
       "_deck": "真灵根 —— 水一样，打不散。",
-      "_signature": "三十招 —— 一招一招，全在水里。"
+      "_signature": "三十招 —— 一招一招，全在水里。",
+      "trial": {
+        "outlast": true,
+        "goal": {
+          "zh": "只躲，不还手：撑过她出完的每一招，便算过了。",
+          "en": "Only dodge, never strike: stand through every move she has, and you have passed."
+        }
+      },
+      "_trial": "只躲，不还手 (第八回: 三十招，那口剑一回也没碰着他; 2026-10-01 the label promised a dodge and the fight was a full duel). A 试 passed by outlasting her twelve cards (battle.js § trial), no yield — he never drives her down. node tools/trial-sim.mjs foe-shijie --at."
     },
     {
       "id": "foe-shuanglong",
