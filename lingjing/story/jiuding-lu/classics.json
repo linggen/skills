@@ -548,9 +548,24 @@
         "往里看的法子：让神静下来，让心定下来；乱想不起，邪念也就侵不进来。"
       ],
       "note": "古十的「十六个字」就是这四句；下文「閉目思尋」「內察一心」不引。"
+    },
+    "yangxing-changxi": {
+      "title": "养性延命录·服气疗病篇",
+      "about": "南朝梁陶弘景辑录前人养生之说而成；卷下〈服气疗病篇〉讲行气、闭气与「吐气六字」。",
+      "source": {
+        "edition": "维基文库《養性延命錄》（正統道藏本）",
+        "section": "卷下〈服氣療病篇第四〉",
+        "url": "https://zh.wikisource.org/wiki/%E9%A4%8A%E6%80%A7%E5%BB%B6%E5%91%BD%E9%8C%84",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "凡行氣，以鼻內氣，以口吐氣，微而引之，名曰長息。",
+      "plain": [
+        "行气时，用鼻子吸，用嘴吐，细细地、慢慢地往长里拉，这叫长息。"
+      ],
+      "note": "紧接其后便是「內氣有一，吐氣有六」（yangxing-liuzi，古三用），这里只取前一句。「內」通「纳」。"
     }
   },
-  "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; yangxing-changxi 今九; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: a 药园 line from the 《神农本草经》 序录 上药/中药/下药 passage — that is `shennong`, which 褚先生 paraphrases in one untagged sentence in 古六 (06-第六回.md); it would use it twice.",
+  "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: a 药园 line from the 《神农本草经》 序录 上药/中药/下药 passage — that is `shennong`, which 褚先生 paraphrases in one untagged sentence in 古六 (06-第六回.md); it would use it twice.",
   "_pending_by_hui": {
     "今一": [
       "baopu-zhili",
@@ -572,9 +587,6 @@
     "古八": [
       "laozi-qizhe",
       "huangting-linggen（D4，建议）"
-    ],
-    "今九": [
-      "yangxing-changxi"
     ],
     "古九": [
       "wu-zhuji"
@@ -724,21 +736,6 @@
         "踮着脚的站不稳，跨大步的走不远；自己显摆的反倒看不明，自以为是的反倒不显，自夸的没有功，自负的长不了。"
       ],
       "note": "此本「企者不立」后夹王弼注「物尚進則失安，故曰，企者不立」，原文照经文连抄，注文略去。"
-    },
-    "yangxing-changxi": {
-      "title": "养性延命录·服气疗病篇",
-      "about": "南朝梁陶弘景辑录前人养生之说而成；卷下〈服气疗病篇〉讲行气、闭气与「吐气六字」。",
-      "source": {
-        "edition": "维基文库《養性延命錄》（正統道藏本）",
-        "section": "卷下〈服氣療病篇第四〉",
-        "url": "https://zh.wikisource.org/wiki/%E9%A4%8A%E6%80%A7%E5%BB%B6%E5%91%BD%E9%8C%84",
-        "license": "公有领域（古籍；维基文库 PD-old）"
-      },
-      "original": "凡行氣，以鼻內氣，以口吐氣，微而引之，名曰長息。",
-      "plain": [
-        "行气时，用鼻子吸，用嘴吐，细细地、慢慢地往长里拉，这叫长息。"
-      ],
-      "note": "紧接其后便是「內氣有一，吐氣有六」（yangxing-liuzi，古三用），这里只取前一句。「內」通「纳」。"
     },
     "wu-zhuji": {
       "title": "天仙正理直论·筑基直论",
