@@ -549,6 +549,21 @@
         "做好事别近于求名，做坏事别近于受刑；顺着正中那一条「督」走，当作常道，就能保身、全生、养亲、活尽天年。"
       ],
       "note": "「督」旧注多解作「中」；医家、丹家借作督脉（脊梁正中那一路）。眼镜的说法是后一种，属比附。"
+    },
+    "baopu-huangbai": {
+      "title": "抱朴子·内篇·黄白",
+      "about": "东晋葛洪著；〈黄白〉讲点化金银之术，这一句是他转引的《龟甲文》。",
+      "source": {
+        "edition": "维基文库《抱朴子·卷16》",
+        "section": "内篇卷十六〈黃白〉·引《龜甲文》",
+        "url": "https://zh.wikisource.org/wiki/%E6%8A%B1%E6%9C%B4%E5%AD%90%2F%E5%8D%B716",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "龜甲文曰：我命在我不在天，還丹成金億萬年。古人豈欺我哉？",
+      "plain": [
+        "《龟甲文》说：我的命在我自己，不在天；还丹炼成、点化成金，能活亿万年。古人难道会骗我吗？"
+      ],
+      "note": "今四葛奶奶只说前半句「我命在我不在天」；还丹成金的后半句不用。"
     }
   },
   "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; lingshu-jiuzhen 今七 (严老师's 针灸实验课); shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; yangxing-changxi 今九; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: the 《神农本草经》 序录 上药/中药/下药 passage is already `shennong`, told by 褚先生 in 古六 (06-第六回.md) — a 药园 line would use it twice.",
@@ -560,9 +575,6 @@
     "今二": [
       "lingshu-jingmai",
       "lingshu-hailun（一笔）"
-    ],
-    "今四": [
-      "baopu-huangbai"
     ],
     "古四": [
       "baopu-bianwen"
@@ -699,21 +711,6 @@
       "plain": [
         "人在气里，气也在人身里；从天地到万物，没有一样不靠气活着。会行气的人，对内养身，对外驱邪；百姓天天在用它，却不知道。"
       ]
-    },
-    "baopu-huangbai": {
-      "title": "抱朴子·内篇·黄白",
-      "about": "东晋葛洪著；〈黄白〉讲点化金银之术，这一句是他转引的《龟甲文》。",
-      "source": {
-        "edition": "维基文库《抱朴子·卷16》",
-        "section": "内篇卷十六〈黃白〉·引《龜甲文》",
-        "url": "https://zh.wikisource.org/wiki/%E6%8A%B1%E6%9C%B4%E5%AD%90%2F%E5%8D%B716",
-        "license": "公有领域（古籍；维基文库 PD-old）"
-      },
-      "original": "龜甲文曰：我命在我不在天，還丹成金億萬年。古人豈欺我哉？",
-      "plain": [
-        "《龟甲文》说：我的命在我自己，不在天；还丹炼成、点化成金，能活亿万年。古人难道会骗我吗？"
-      ],
-      "note": "今四葛奶奶只说前半句「我命在我不在天」；还丹成金的后半句不用。"
     },
     "baopu-bianwen": {
       "title": "抱朴子·内篇·辨问",
