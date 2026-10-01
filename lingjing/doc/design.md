@@ -158,7 +158,7 @@ Scenes carry `hui`, the book's 回 they play (rules/hui.mjs; the game says
 卷/回, never 章 — 5b955c4). Built: `00-prologue` (27 scenes, 第一回–第四回),
 `00-waimen` (21, 第五回–第八回), `00-zhuji` (5, 第九回: the winter, the furnace's
 九转, the year as the book's four seasons — each exit a layer by `rise`, the last
-`{layer: 9, full: true}`, in order by `needs.mark`, offered `once`, 25 体力 a season —
+`{layer: 9, full: true}`, in order by `needs.mark`, offered `once`, free of 体力 (主线, 2026-10-01) —
 瞿老's last disciple, and the 筑基 on the cliff, `09-cliff`) and `01-ji` (7, 第十回:
 the two failed plans, the wedding, **冰夷's two dragons test him at `01-rise`** —
 `foe-shuanglong`, a trial fought again at once — the seal, the first 鼎 with memory 1
@@ -222,7 +222,8 @@ need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale
   checks road and tier: `no-road` (with `near`, `toward`), `too-hard` (with
   `fitting` — 银月's 「还不是时候」), `unknown-place`, `road-closed`, `corridor`,
   each with `here`. Move walks the whole road (`via`), stopping only where a
-  scene stands, and reads a name half said. A trip costs 体力 (3, +1 a road, ≤6).
+  scene stands, and reads a name half said. A trip costs 体力 (3, +1 a road, ≤6),
+  except toward the story (§ 体力: 主线赶路不扣体力).
 - **The spine as waypoints.** A scene runs only where it stands (`atScene`;
   `not-at-scene`); Look's `waypoint` and the director's `thread` name the next.
   A corridor chapter (`corridor: true`) walks the player itself.
@@ -430,6 +431,11 @@ alone: `scripts/try-game.html?game=storm|deer|xisui|zhoutian&lang=zh|en`.
   amend 5; the market, errands, talk and 问卦 are free; the prologue's own steps
   cost nothing. A real-life chore refills its own amount (default 20).
   Empty: `no-stamina` with the hour; 银月 sends the player to rest.
+- **主线赶路不扣体力** (Hanli, 2026-10-01: 「可以，主线赶路不扣体力」): a trip toward
+  the place the goal line names (Look's `waypoint`) is free — the place itself or
+  one on a shortest road to it (rules/errands.mjs `onStoryRoad`); 第九回's four
+  seasons carry no toil price. Why: 卷一's play-through hit two 5–6 h lockouts
+  on the story path. 体力 is for side errands, roaming and cultivation.
 - **闭关** (2026-09-24, rules/seclusion.mjs, page-only `seclude`): real hours
   (≤12) on ONE focus — 法术 (one ★ per 6 h, to ★3), 修为 (5 an hour, a 聚气丹
   ×1.5), 本命法宝 (one 重 per 8 h); 8 h fills 体力; the world holds still

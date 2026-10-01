@@ -45,7 +45,7 @@ test('第九回 is its own chapter at 沉鼎观: between 外门 and 冀, the Fou
   assert.deepEqual([...seen].sort(), Object.keys(CH.scenes).sort());
 });
 
-test('the winter and the year: the seal resealed, the furnace\'s 九转, and the four seasons a layer each — 25 体力 a season, in order, once', () => {
+test('the winter and the year: the seal resealed, the furnace\'s 九转, and the four seasons a layer each — the story\'s own seasons, free of 体力 (Hanli, 2026-10-01), in order, once', () => {
   let s = atSnow();
   assert.equal(go(s, 'eat').state.scene, '09-snow', 'eating it now is turned down: the scene stays');
   s = go(s, 'taste').state;
@@ -58,19 +58,23 @@ test('the winter and the year: the seal resealed, the furnace\'s 九转, and the
   // Only the season due is offered; one out of order is refused.
   assert.deepEqual(buttons(s), ['qingming']);
   assert.equal(resolve(s, content, ctx, { exit: 'duanwu' }).result.refused, 'needs');
+  // The seasons are the main story, not optional practice (主线, Hanli 2026-10-01):
+  // no season asks 体力 of its own — not even on an empty pool.
+  assert.ok(CH.scenes['09-year'].exits.every(e => e.stamina == null), 'no season carries a toil price');
   const layers = [];
+  s = { ...s, stamina: 0, resting: true };
   for (const exit of ['qingming', 'duanwu', 'futian']) {
-    const before = s.stamina;
     const r = go(s, exit);
     assert.equal(r.state.scene, '09-year', `${exit} stays`);
-    assert.equal(before - r.state.stamina, 25, `${exit}: a season's practice costs 25 体力`);
+    assert.equal(r.state.stamina, 0, `${exit}: a season costs no 体力`);
     assert.ok(!buttons(r.state).includes(exit), `${exit} is not offered again`);
     s = r.state; layers.push(s.step + 1);
   }
   assert.deepEqual(layers, [6, 7, 8], '清明六 · 端午七 · 伏天八');
-  // The pool is spent: 入秋 waits for 体力 — 闭关 (or the hours) brings it back.
-  assert.equal(resolve(s, content, ctx, { exit: 'ruqiu' }).result.refused, 'no-stamina');
+  // 入秋 moves the story on (`next`): a story step's 3, like every scene's step.
+  assert.equal(resolve(s, content, ctx, { exit: 'ruqiu' }).result.refused, 'no-stamina', 'a spent pool still waits on the step');
   const autumn = go(full(s), 'ruqiu').state;
+  assert.equal(100 - autumn.stamina, content.rewards.stamina.cost.step, '入秋: one story step');
   assert.equal(autumn.step, 8, '九层');
   assert.equal(autumn.progress, threshold(content, autumn), '圆满: the lake full');
   assert.equal(autumn.scene, '09-qulao');

@@ -54,7 +54,6 @@
     "en": "Qingming · Burn paper for Grandfather"
    },
    "means": "the spring month: burns paper for his grandfather and eats that month's pill",
-   "stamina": 25,
    "mark": "y-qingming",
    "once": true,
    "rise": 6,
@@ -78,7 +77,6 @@
     "zh": "一季一季来：先过了前头那一季。",
     "en": "One season at a time: finish the one before first."
    },
-   "stamina": 25,
    "mark": "y-duanwu",
    "once": true,
    "rise": 7,
@@ -102,7 +100,6 @@
     "zh": "一季一季来：先过了前头那一季。",
     "en": "One season at a time: finish the one before first."
    },
-   "stamina": 25,
    "mark": "y-futian",
    "once": true,
    "rise": 8,
@@ -126,7 +123,6 @@
     "zh": "一季一季来：先过了前头那一季。",
     "en": "One season at a time: finish the one before first."
    },
-   "stamina": 25,
    "rise": {
     "layer": 9,
     "full": true

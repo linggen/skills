@@ -5,7 +5,7 @@ import { dayKey, fill, langOf, pick } from '../state.mjs';
 import { tierRank } from './arms.mjs';
 import { companionOf, hasCompanion } from './companion.mjs';
 import { clone, offerTasks, pay, refuse, spendStamina } from './core.mjs';
-import { advance, bookOf, directorBrief, GEAR_SLOTS, itemBrief, itemOf, questOf, settleErrands } from './errands.mjs';
+import { advance, bookOf, directorBrief, GEAR_SLOTS, itemBrief, itemOf, onStoryRoad, questOf, settleErrands } from './errands.mjs';
 import { arriveOnRoad } from './road.mjs';
 import { forSale, sceneBrief, shelfOf, wordsOf } from './look.mjs';
 import { atScene, beatOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard } from './world.mjs';
@@ -103,9 +103,11 @@ export function move(state, content, ctx, args) {
   const from = here;
   // The road is paid for before it is walked: 体力 by the road, the whole way
   // (a scene met on the way stops the walk, and the rest is not charged).
+  // The story's road is free (主线赶路不扣体力, Hanli 2026-10-01; errands.mjs onStoryRoad).
   const stopAt = way.findIndex(p => sceneOf(content, s)?.at === p.id && !s.done_scenes.includes(s.scene));
   const roads = stopAt >= 0 ? stopAt + 1 : way.length;
-  const tired = spendStamina(content, s, ctx, 'move', roads);
+  const story = onStoryRoad(content, s, here, target, ctx);
+  const tired = story ? null : spendStamina(content, s, ctx, 'move', roads);
   if (tired) return tired;
   const wasAtScene = atScene(content, s);
   s.handed = []; // walked on, the last place's 所得 is put away

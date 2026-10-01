@@ -352,6 +352,21 @@ function waypointOf(content, state, ctx) {
   return toward ? { ...thread, toward } : thread;
 }
 
+/* 主线赶路不扣体力 (Hanli, 2026-10-01: 「可以，主线赶路不扣体力」 — 卷一's
+   play-through hit two 5–6 h lockouts on the story path). A trip toward the
+   place the goal line names (waypointOf, the page's own notion) is free: the
+   target is that place, or stands on a shortest road to it. A cauldron that
+   waits on the peak names no road (`gate`), so a trip then is not the story's;
+   roaming, errands and cultivation still pay. */
+function onStoryRoad(content, state, here, target, ctx) {
+  const way = waypointOf(content, state, ctx);
+  const goal = !way?.gate && way?.place?.id ? placeOf(content, way.place.id) : null;
+  if (!goal || !here || !target) return false;
+  const far = (a, b) => (a.id === b.id ? 0 : pathOf(content, state, a, b, ctx.now)?.length);
+  const all = far(here, goal), to = far(here, target), rest = far(target, goal);
+  return all != null && to != null && rest != null && to + rest === all;
+}
+
 /* A cauldron's breath, as the rules would judge it now: `ready` at the peak
    of the tier this chapter's cauldron lifts from; `need` names that peak and
    the 修为 it asks, and the realm it opens. Resolve refuses on the same terms. */
@@ -607,4 +622,4 @@ function gearBrief(content, state) {
   };
 }
 
-export { awayLine, bookOf, breakthroughOf, complete, countsOf, directorBrief, errandFor, filler, FILLERS, GEAR_SLOTS, gearBrief, HANDED_KEEP, handedHere, handedOne, itemBrief, itemOf, noticeAt, noticeOf, offersOf, questDoneBefore, questOf, questReady, settleErrands, withGiver, taskOf, threadOf, TIERS_ORDER, wayBack, waypointOf, whereAt, withinRoads, workOf };
+export { awayLine, bookOf, breakthroughOf, complete, countsOf, directorBrief, errandFor, filler, FILLERS, GEAR_SLOTS, gearBrief, HANDED_KEEP, handedHere, handedOne, itemBrief, itemOf, noticeAt, noticeOf, offersOf, questDoneBefore, questOf, questReady, settleErrands, withGiver, taskOf, threadOf, onStoryRoad, TIERS_ORDER, wayBack, waypointOf, whereAt, withinRoads, workOf };
