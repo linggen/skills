@@ -237,6 +237,20 @@
      "opens": "00-waimen"
     },
     {
+     "id": "j08",
+     "line": "jin",
+     "n": 8,
+     "huimu": {
+      "zh": [
+       "背着人练了三天，我尿出了一瓶可乐"
+      ],
+      "en": [
+       "Three Days of Secret Training, and I Peed a Bottle of Cola"
+      ]
+     },
+     "file": "今线/今08.md"
+    },
+    {
      "id": "h08",
      "line": "gu",
      "n": 8,
@@ -254,6 +268,20 @@
      "opens": "00-waimen"
     },
     {
+     "id": "j09",
+     "line": "jin",
+     "n": 9,
+     "huimu": {
+      "zh": [
+       "最后一个罚球，我是哆嗦着投进去的"
+      ],
+      "en": [
+       "The Last Free Throw — I Was Shaking When It Went In"
+      ]
+     },
+     "file": "今线/今09.md"
+    },
+    {
      "id": "h09",
      "line": "gu",
      "n": 9,
@@ -269,6 +297,20 @@
      },
      "file": "09-第九回.md",
      "opens": "00-zhuji"
+    },
+    {
+     "id": "j10",
+     "line": "jin",
+     "n": 10,
+     "huimu": {
+      "zh": [
+       "冬至夜里关了灯，我数清了自己的心跳"
+      ],
+      "en": [
+       "On the Winter Solstice I Turned Off the Lights and Counted My Own Heartbeat"
+      ]
+     },
+     "file": "今线/今10.md"
     },
     {
      "id": "h10",
