@@ -563,6 +563,21 @@
         "张紫阳《八脉经》里写的经脉，跟医家说的稍有不同；可身体里头的通道，只有向内回看的人才照得见，他的话一定不错。"
       ],
       "note": "维基文库此本作「反觀」，不作「返觀」。"
+    },
+    "shangshu-hongfan": {
+      "title": "尚书·洪范",
+      "about": "《尚书·周书》的一篇，箕子向周武王陈说治天下的九条大法（九畴），第一条就是五行，是五行说最早的出处。",
+      "source": {
+        "edition": "维基文库《尚書·洪範》",
+        "section": "〈洪範〉·一、五行",
+        "url": "https://zh.wikisource.org/wiki/%E5%B0%9A%E6%9B%B8%2F%E6%B4%AA%E7%AF%84",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "一曰水，二曰火，三曰木，四曰金，五曰土。水曰潤下，火曰炎上，木曰曲直，金曰從革，土爰稼穡。",
+      "plain": [
+        "五行：一水、二火、三木、四金、五土。水往下润，火往上烧，木能弯能直，金能顺从、能变形，土用来种庄稼、收庄稼。"
+      ],
+      "note": "维基文库此本「土爰稼穡」的「爰」注有异文作「曰」（wikitext 写作 {{另|爰|曰}}），此处照正文取「爰」。"
     }
   },
   "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: a 药园 line from the 《神农本草经》 序录 上药/中药/下药 passage — that is `shennong`, which 褚先生 paraphrases in one untagged sentence in 古六 (06-第六回.md); it would use it twice.",
@@ -577,9 +592,6 @@
     ],
     "古五": [
       "zhonglv-sishi"
-    ],
-    "古七": [
-      "shangshu-hongfan"
     ],
     "今八": [
       "jiayi-xu（一笔）"
@@ -691,21 +703,6 @@
         "炼精，生出真气；炼气，合成阳神；炼神，合于大道。"
       ],
       "note": "古五银月只说头一句「煉精生真氣」（凡间管这叫练气一层），后两句课随境界，她不肯说。"
-    },
-    "shangshu-hongfan": {
-      "title": "尚书·洪范",
-      "about": "《尚书·周书》的一篇，箕子向周武王陈说治天下的九条大法（九畴），第一条就是五行，是五行说最早的出处。",
-      "source": {
-        "edition": "维基文库《尚書·洪範》",
-        "section": "〈洪範〉·一、五行",
-        "url": "https://zh.wikisource.org/wiki/%E5%B0%9A%E6%9B%B8%2F%E6%B4%AA%E7%AF%84",
-        "license": "公有领域（古籍；维基文库 PD-old）"
-      },
-      "original": "一曰水，二曰火，三曰木，四曰金，五曰土。水曰潤下，火曰炎上，木曰曲直，金曰從革，土爰稼穡。",
-      "plain": [
-        "五行：一水、二火、三木、四金、五土。水往下润，火往上烧，木能弯能直，金能顺从、能变形，土用来种庄稼、收庄稼。"
-      ],
-      "note": "维基文库此本「土爰稼穡」的「爰」注有异文作「曰」（wikitext 写作 {{另|爰|曰}}），此处照正文取「爰」。"
     },
     "laozi-qizhe": {
       "title": "道德经·二十四章",
