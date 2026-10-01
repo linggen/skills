@@ -90,21 +90,6 @@
       ],
       "note": "句首「太上」二字，云笈七签本作「老君」，此处从「閑居」起引。这四处不是后世说的上、中、下三丹田，瞿老也只说「四处要紧的所在」。"
     },
-    "baopu-jiyan": {
-      "title": "抱朴子",
-      "about": "东晋葛洪（字稚川）著，内篇二十卷，讲神仙方药、养生延年；〈极言〉一篇，说的是学仙何其难成。",
-      "source": {
-        "edition": "维基文库《抱朴子·内篇·卷十三 極言》",
-        "section": "内篇·卷十三〈极言〉",
-        "url": "https://zh.wikisource.org/wiki/%E6%8A%B1%E6%9C%B4%E5%AD%90/%E5%8D%B713",
-        "license": "公有领域（古籍；维基文库 PD-old）"
-      },
-      "original": "若夫睹財色而心不戰，聞俗言而志不沮者，萬夫之中，有一人為多矣。故為者如牛毛，獲者如麟角也。",
-      "plain": [
-        "见了钱财美色心不动，听了俗人闲话志不改，这样的人，一万个里有一个就算多了。所以求道的人多如牛毛，得道的人少如麟角。"
-      ],
-      "note": "葛洪说的是心性——见财色不动心的人万中无一；褚先生借来说筑基之难（他自己算的是百个进山门的弟子里出一个）。"
-    },
     "shiji-dinghu": {
       "title": "史记·封禅书",
       "about": "司马迁《史记》，西汉；〈封禅书〉记历代帝王祭天地、求神仙之事。这一段是齐人公孙卿转述申公的话，讲给汉武帝听的。",
@@ -252,21 +237,6 @@
         "孔子到楚国去，走出林子，看见一个驼背老人拿竹竿粘蝉，像在地上拾东西一样容易。……（老人说）我站着，像一截树桩；我举着胳膊，像一根枯树枝；天地再大，万物再多，我心里只有蝉的翅膀。……孔子回头对弟子说：用心专一，不分散，精神就凝聚起来，说的就是这位驼背老人吧！"
       ],
       "note": "第五回褚先生拿这一段挖苦扫台阶的瞿老——瞿老在石阶边的老松底下，正拿竹竿粘寒蝉；沈小满把「用志不分」记进本子，蹲药园时用上了。原文的「痀僂」，书中写作「驼背」。"
-    },
-    "zhouyi-xun": {
-      "title": "周易·巽",
-      "about": "《周易》第五十七卦巽，上下都是巽，巽为风、为入。这两句是〈象传〉解初六爻「進退，利武人之貞」的小象，旧说出于孔门。",
-      "source": {
-        "edition": "维基文库《周易/巽》",
-        "license": "公有领域（古籍；维基文库 PD-old）",
-        "section": "巽卦·象曰·初六",
-        "url": "https://zh.wikisource.org/wiki/%E5%91%A8%E6%98%93/%E5%B7%BD"
-      },
-      "original": "進退，志疑也。利武人之貞，志治也。",
-      "plain": [
-        "进进退退，是因为心里犹疑；利于武人守正，是因为心志得以整治、拿定了主意。"
-      ],
-      "note": "巽四在洛书九宫里属东南、配徐州，本书《河洛剑诀》的巽四一宫由此而来；「进了一半想退，那一剑，自己先散了」是瞿老自己的话，不在经文里。"
     },
     "shanhai-gui": {
       "title": "山海经·中山经",
@@ -578,6 +548,21 @@
         "五行：一水、二火、三木、四金、五土。水往下润，火往上烧，木能弯能直，金能顺从、能变形，土用来种庄稼、收庄稼。"
       ],
       "note": "维基文库此本「土爰稼穡」的「爰」注有异文作「曰」（wikitext 写作 {{另|爰|曰}}），此处照正文取「爰」。"
+    },
+    "wu-zhuji": {
+      "title": "天仙正理直论·筑基直论",
+      "about": "明代伍守阳（号冲虚子）著的内丹书，九章；〈筑基直论〉是第六章，专讲筑基。",
+      "source": {
+        "edition": "维基文库《天仙正理直論增註》",
+        "section": "〈築基直論第六〉·沖虛子曰",
+        "url": "https://zh.wikisource.org/wiki/%E5%A4%A9%E4%BB%99%E6%AD%A3%E7%90%86%E7%9B%B4%E8%AB%96%E5%A2%97%E8%A8%BB%2F6",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "築者，漸漸積累增益之義。基者，修煉陽神之本根，安神定息之處所也。",
+      "plain": [
+        "「筑」，是一点一点积累、加厚的意思；「基」，是修炼阳神的根本，安神、定息的地方。"
+      ],
+      "note": "句首「修仙而始曰築基」不引：本书练气在筑基之前（补丁①，DESIGN § 六·五·二）。"
     }
   },
   "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: a 药园 line from the 《神农本草经》 序录 上药/中药/下药 passage — that is `shennong`, which 褚先生 paraphrases in one untagged sentence in 古六 (06-第六回.md); it would use it twice.",
@@ -600,9 +585,6 @@
       "laozi-qizhe",
       "huangting-linggen（D4，建议）"
     ],
-    "古九": [
-      "wu-zhuji"
-    ],
     "古六（一笔带过，正文改述、不挂典；主典 baopu 照留）": [
       "shennong",
       "zuozhuan-ranzhi"
@@ -613,6 +595,10 @@
     ],
     "今十（一笔带过，眼镜出书名、斗柄指北改述，不挂典；主典 qijing-yinqiao）": [
       "heguanzi-huanliu"
+    ],
+    "古九（一笔带过：巽卦只留「进退」二字、不挂典；牛毛麟角删去）": [
+      "zhouyi-xun",
+      "baopu-jiyan"
     ]
   },
   "_pending": {
@@ -718,21 +704,6 @@
         "踮着脚的站不稳，跨大步的走不远；自己显摆的反倒看不明，自以为是的反倒不显，自夸的没有功，自负的长不了。"
       ],
       "note": "此本「企者不立」后夹王弼注「物尚進則失安，故曰，企者不立」，原文照经文连抄，注文略去。"
-    },
-    "wu-zhuji": {
-      "title": "天仙正理直论·筑基直论",
-      "about": "明代伍守阳（号冲虚子）著的内丹书，九章；〈筑基直论〉是第六章，专讲筑基。",
-      "source": {
-        "edition": "维基文库《天仙正理直論增註》",
-        "section": "〈築基直論第六〉·沖虛子曰",
-        "url": "https://zh.wikisource.org/wiki/%E5%A4%A9%E4%BB%99%E6%AD%A3%E7%90%86%E7%9B%B4%E8%AB%96%E5%A2%97%E8%A8%BB%2F6",
-        "license": "公有领域（古籍；维基文库 PD-old）"
-      },
-      "original": "築者，漸漸積累增益之義。基者，修煉陽神之本根，安神定息之處所也。",
-      "plain": [
-        "「筑」，是一点一点积累、加厚的意思；「基」，是修炼阳神的根本，安神、定息的地方。"
-      ],
-      "note": "句首「修仙而始曰築基」不引：本书练气在筑基之前（补丁①，DESIGN § 六·五·二）。"
     },
     "huangting-linggen": {
       "title": "黄庭经·外景",
@@ -853,6 +824,36 @@
         "北斗的斗柄指向东，天下都是春天；指向南，都是夏天；指向西，都是秋天；指向北，都是冬天。"
       ],
       "note": "维基文库此本作「鬥柄」（「斗」的异写）。古人看黄昏时斗柄的方向定季节。今线第十回眼镜冬至傍晚只一笔带过（出书名、意思改述，不挂典；主典 qijing-yinqiao，修仙词汇表 B）。"
+    },
+    "zhouyi-xun": {
+      "title": "周易·巽",
+      "about": "《周易》第五十七卦巽，上下都是巽，巽为风、为入。这两句是〈象传〉解初六爻「進退，利武人之貞」的小象，旧说出于孔门。",
+      "source": {
+        "edition": "维基文库《周易/巽》",
+        "license": "公有领域（古籍；维基文库 PD-old）",
+        "section": "巽卦·象曰·初六",
+        "url": "https://zh.wikisource.org/wiki/%E5%91%A8%E6%98%93/%E5%B7%BD"
+      },
+      "original": "進退，志疑也。利武人之貞，志治也。",
+      "plain": [
+        "进进退退，是因为心里犹疑；利于武人守正，是因为心志得以整治、拿定了主意。"
+      ],
+      "note": "巽四在洛书九宫里属东南、配徐州，本书《河洛剑诀》的巽四一宫由此而来；「进了一半想退，那一剑，自己先散了」是瞿老自己的话，不在经文里。"
+    },
+    "baopu-jiyan": {
+      "title": "抱朴子",
+      "about": "东晋葛洪（字稚川）著，内篇二十卷，讲神仙方药、养生延年；〈极言〉一篇，说的是学仙何其难成。",
+      "source": {
+        "edition": "维基文库《抱朴子·内篇·卷十三 極言》",
+        "section": "内篇·卷十三〈极言〉",
+        "url": "https://zh.wikisource.org/wiki/%E6%8A%B1%E6%9C%B4%E5%AD%90/%E5%8D%B713",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "若夫睹財色而心不戰，聞俗言而志不沮者，萬夫之中，有一人為多矣。故為者如牛毛，獲者如麟角也。",
+      "plain": [
+        "见了钱财美色心不动，听了俗人闲话志不改，这样的人，一万个里有一个就算多了。所以求道的人多如牛毛，得道的人少如麟角。"
+      ],
+      "note": "葛洪说的是心性——见财色不动心的人万中无一；褚先生借来说筑基之难（他自己算的是百个进山门的弟子里出一个）。"
     }
   }
 }
