@@ -34,9 +34,11 @@ STYLE = ('Fine graphite and ink baimiao line drawing with a soft grey wash, on w
          'Chinese illustrated book. A single subject, plain empty background. No text, no characters, no calligraphy, '
          'no seal, no signature, no border, no frame, no dark edge or vignette — the paper runs to every edge. Ink and grey '
          'only, with at most a very faint warm tint; no strong colour.')
-YINYUE_FIX = ('Repaint the attached drawing; keep everything the same and change ONLY: at the root of the one big tail exactly '
-              'EIGHT short healed stubs, furred silver, in a small fan (not red, no raw flesh); golden irises with clear narrow '
-              'VERTICAL slit pupils. No fox ears.')
+# Hanli 2026-10-01: 「断口去掉就好」 — the eight 断口 stay in the book's words; the picture shows ONE clean tail
+# (drawn stumps came out as a caterpillar of rings). The kept roll was handed back with this to clear them.
+YINYUE_FIX = ('Repaint the attached drawing; keep everything the same and change ONLY the root of the big tail: remove '
+              'every ring, segment, stub or stump there, so the tail root is plain continuous silver fur — ONE clean, '
+              'full tail. Golden irises with clear narrow VERTICAL slit pupils. No fox ears.')
 OLD_CHINA = 'Set in old rural China (Ming dynasty dress), not Japanese, not Western.'
 
 PEOPLE = {
@@ -50,8 +52,8 @@ PEOPLE = {
   'laozhou': 'A sturdy middle-aged Chinese peasant farmer, plain face, patched cotton clothes, a straw rain cape over his shoulders, mud on his trouser legs, holding a burning pine torch. Full length.',
   'qulao': 'A very old Taoist temple steward, lean and straight, long white beard, stern eyes, plain grey Taoist robe, a bamboo broom in his hands. Full length.',
   # 银月 — 第一回: 「看着比他大不了几岁」, 小满 is twelve (Hanli, 2026-10-01: the first portrait drew a grown woman).
-  # Repainted 2026-10-01 in two passes: this prompt (the kept roll), then the roll handed back with YINYUE_FIX.
-  'yinyue': "银月, a fox spirit queen in human form, as a GIRL of about fourteen or fifteen — clearly a young teenager, not a woman: a youthful round-chinned girl's face, a small slight not-yet-grown build, narrow shoulders, flat chest, short of stature, a young teen's proportions (head about one-sixth of her height). Completely modest and non-sexual: the robe closed high at the neck. Silver hair, very long and loose, falling straight to below her waist. Barefoot. A plain modest white robe with a crossed collar tied with a sash, snow-white with a faint watery sheen. Golden eyes (a faint gold tint) with narrow vertical slit pupils. ONE big fluffy silver fox tail; at its root eight short cut stumps. Chin slightly raised, looking down her nose, hands on her hips — proud and imperious, a bit hungry and impish, a sly half-grin. No fox ears. Full length.",
+  # Repainted 2026-10-01: this prompt (the kept roll), then the roll handed back with YINYUE_FIX.
+  'yinyue': "银月, a fox spirit queen in human form, as a GIRL of about fourteen or fifteen — clearly a young teenager, not a woman: a youthful round-chinned girl's face, a small slight not-yet-grown build, narrow shoulders, flat chest, short of stature, a young teen's proportions (head about one-sixth of her height). Completely modest and non-sexual: the robe closed high at the neck. Silver hair, very long and loose, falling straight to below her waist. Barefoot. A plain modest white robe with a crossed collar tied with a sash, snow-white with a faint watery sheen. Golden eyes (a faint gold tint) with narrow vertical slit pupils. ONE big fluffy silver fox tail, clean and full, with no stumps, stubs, rings or segments at its root. Chin slightly raised, looking down her nose, hands on her hips — proud and imperious, a bit hungry and impish, a sly half-grin. No fox ears. Full length.",
 
   'chuxiansheng': 'A Chinese Taoist lecturer of about fifty with a small goat beard, a sour sharp face, plain grey scholar robe with a crossed collar, holding a thread-bound Chinese book rolled in one hand. Full length.',
   'sunergou': 'A thin timid Chinese boy of fourteen, a worried face, a plain grey Taoist disciple robe with a crossed collar and cloth sash, cloth shoes, clutching a small hand-sewn cloth charm pouch to his chest. Full length.',

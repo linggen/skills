@@ -147,3 +147,9 @@ repainted the same day with Codex, given the new portrait as the character and t
 style and layout (the moon on the left); two first rolls without the portrait still read as a young lady with
 hairpins. The FLUX card of 2026-09-18 and the FLUX/Codex portraits before it are in git history. Every picture looked
 at. No outside source.
+
+Later the same day (his: 「断口去掉就好」 — the stumps read as a stack of rings, a caterpillar): both pictures were
+handed back to Codex to clear the tail root only, leaving one clean, full silver tail; everything else unchanged.
+The eight 断口 stay in the book's words and the 图鉴 line; the pictures don't draw them. A round asking for eight
+fanned, healed stubs was painted first and set aside unlooked-at when he changed the ask. Two rolls each, all
+four clean; kept the ones whose face and eyes matched best.

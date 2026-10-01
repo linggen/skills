@@ -212,8 +212,8 @@
    "_lines": "What the hero knows at her first appearance (00-yinyue, dawn in the cave): a girl with one silver tail, who says she is 青丘之主 and, after a while, 银月 — never more (spoiler rule, 2026-10-01: the card read 「巴掌大的银狐」 under 人物 while the scene showed the girl). The nameless fox of the pit is `yinyue-fox`, which folds into this.",
    "image": "art/people/yinyue.webp",
    "_credit": {
-    "zh": "Codex（gpt-5.5 图像生成）所绘，2026-10-01，据第一回「看着比他大不了几岁」：十四五岁的姑娘，银发过腰，赤脚，白衣，金瞳竖仁，一尾，尾根八道断口；经人眼校过（tools/paint-codex.py）。",
-    "en": "Painted with Codex (gpt-5.5 image generation), 2026-10-01, after 第一回 (「看着比他大不了几岁」): a girl of fourteen or fifteen, silver hair past the waist, barefoot, white robe, gold slit-pupil eyes, one tail with eight stumps; checked by eye (tools/paint-codex.py)."
+    "zh": "Codex（gpt-5.5 图像生成）所绘，2026-10-01，据第一回「看着比他大不了几岁」：十四五岁的姑娘，银发过腰，赤脚，白衣，金瞳竖仁，一条银尾（断口只在书里，画上不画，Hanli 2026-10-01「断口去掉就好」）；经人眼校过（tools/paint-codex.py）。",
+    "en": "Painted with Codex (gpt-5.5 image generation), 2026-10-01, after 第一回 (「看着比他大不了几岁」): a girl of fourteen or fifteen, silver hair past the waist, barefoot, white robe, gold slit-pupil eyes, one clean silver tail (the eight stumps stay in the words, not the picture: 「断口去掉就好」); checked by eye (tools/paint-codex.py)."
    },
    "lines": {
     "zh": [
