@@ -32,7 +32,7 @@ queue: after-turn
 # The day's weather at the city the player set once (design.md § 真实世界):
 # the engine reads it (skill-spec § Senses) and hands it to every tool call
 # as LINGGEN_WEATHER — the game itself never goes online.
-senses: [weather]
+senses: [weather, user_words]
 # 银月 is a guest in Lingjing's chat (skill-spec § Place), and she is found,
 # not given: until the player finds her in the prologue's valley — and while
 # she sleeps in 吴婆婆's fox token (prologue-v3) — she is not here at all
