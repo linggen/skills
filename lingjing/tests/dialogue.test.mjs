@@ -174,7 +174,7 @@ test('the box on the page: its place in the view, the keys that go on, and what 
   const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
   assert.match(src, /e\.key === ' ' \|\| e\.key === 'Enter'/);
   assert.match(src, /boxGivesWay\(\{ bout: Boolean\(bout\), appearing: Boolean\(view\.appearing\)/);
-  assert.match(src, /cards = afterBook\(cards, boxAhead\(\)\);/, 'the games wait for the book');
+  assert.match(src, /cards = afterBook\(cards, cardsAhead\(\)\);/, 'the games wait for the book');
   const css = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.css'), 'utf8');
   assert.match(css, /\.view:has\(\.dlgwrap:not\(:empty\)\) \.slots \{ bottom:/);
   assert.match(css, /\.dlgwrap \{ left: 16px; right: 16px;/, 'narrow: 16px gutters');

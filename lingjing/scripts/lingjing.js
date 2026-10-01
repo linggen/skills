@@ -34,7 +34,7 @@ import { fxTimes, glOK, playHoming as playHomingFx } from './fx.js';
 import { atmosClasses, atmosOf, particlesHtml } from './atmos.js';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
-import { advance, current, dialogHtml, keepReading, loadReading, logHtml, playing, skipAll, withTold } from './dialogue.js';
+import { advance, choicesUp, current, dialogHtml, keepReading, loadReading, logHtml, playing, skipAll, withTold } from './dialogue.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
 import { playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
@@ -880,7 +880,7 @@ function stageNow() {
   const called = calledDuels();
   cards = cards.filter((c) => c.card !== 'duel' || !(look.scene?.panel?.taps ?? []).some((t) => t.duel === c.id) || called.has(c.id));
   // The book first: a game waits until the passage that leads into it is told.
-  cards = afterBook(cards, boxAhead());
+  cards = afterBook(cards, cardsAhead());
   watchAppear(cards);
   return stageSlots(look, cards.filter(inQueue), { skip: view.qSkip });
 }
@@ -1671,6 +1671,8 @@ const atHuiTurn = () => !oldHuiPlaying() && (closeUp() || titlePending());
 /* Is the book still ahead of the stage? Passages owed or being drawn, or the
    box playing this scene's (not paused at a 回's turn). */
 const boxAhead = () => bookAhead({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: playing(readingHere()), huiTurn: atHuiTurn() });
+// The cards that wait for the book come up with the scene's choices — on its last beat (dialogue.js choicesUp).
+const cardsAhead = () => bookAhead({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: !choicesUp(readingHere(), lang()), huiTurn: atHuiTurn() });
 const momentUp = () => Boolean(pieceOn || featOn || view.memory || view.homing || view.doors || document.querySelector('.feat'));
 const boxYields = (slots) => boxGivesWay({ bout: Boolean(bout), appearing: Boolean(view.appearing), slots: Boolean(slots), up: momentUp(), huiTurn: atHuiTurn() });
 /* The page's moments in their order — set piece, 息壤's doors, the gold seal,
