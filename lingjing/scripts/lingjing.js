@@ -38,7 +38,7 @@ import { advance, choicesUp, current, dialogHtml, keepReading, loadReading, logH
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
 import { playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
-import { afterBook, bookAhead, boxGivesWay, momentMay } from './queue.js';
+import { afterBook, bookAhead, boxGivesWay, huiLineOf, momentMay, trayWaits } from './queue.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -187,6 +187,9 @@ function sendHeldWins() {
    and repaints. `keep(patch)` is the same without the repaint, for the two
    places where a repaint is wrong — a keystroke in a field the repaint would
    replace, and the draw itself. */
+// The 回 lines shown so far, by language and 回 id: the header keeps the old 回's
+// line while its last passage is still told (queue.js huiLineOf).
+const huiTitles = {};
 const view = {
   /// What Ling just showed, drawn before the rules have written it down — the
   /// save is the truth (`look.stage`), this is only the half-second before the
@@ -879,6 +882,8 @@ function stageNow() {
   // A scene's fight waits for its words to be chosen (站着，不跪) — or a fight already under way.
   const called = calledDuels();
   cards = cards.filter((c) => c.card !== 'duel' || !(look.scene?.panel?.taps ?? []).some((t) => t.duel === c.id) || called.has(c.id));
+  // A board he opened from the tray's 开局 waits for the whole passage (queue.js trayWaits).
+  if (view.opened && trayAhead()) cards = cards.filter((c) => !(c.card === 'board' && c.id === view.opened.id));
   // The book first: a game waits until the passage that leads into it is told.
   cards = afterBook(cards, cardsAhead());
   watchAppear(cards);
@@ -1157,7 +1162,10 @@ function draw() {
   document.body.classList.toggle('fighting', Boolean(bout));
   paintAtmos();
   // The 回 above the place, as the book names it (「卷一 · 第五回　漏勺夜半通三关」, rules/hui.mjs).
-  $('huiLine').textContent = look.chapter?.hui ? look.chapter.title : '';
+  // The old 回's last passage still in the box keeps its own 回 line (queue.js huiLineOf).
+  const titles = (huiTitles[lang()] ??= {}), told = readingHere();
+  if (look.chapter?.hui) titles[look.chapter.hui] = look.chapter.title;
+  $('huiLine').textContent = look.chapter?.hui ? huiLineOf({ hui: look.chapter.hui, title: look.chapter.title, telling: playing(told) ? told.items[told.i]?.hui : null, titles }) : '';
   $('place').textContent = look.scene?.place ?? look.chapter?.close?.place ?? look.place?.name ?? look.chapter?.title ?? '';
   // She is always at the player's side: on the stage whenever the game is
   // open, scene or road, not only where a scene casts her.
@@ -1673,6 +1681,8 @@ const atHuiTurn = () => !oldHuiPlaying() && (closeUp() || titlePending());
 const boxAhead = () => bookAhead({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: playing(readingHere()), huiTurn: atHuiTurn() });
 // The cards that wait for the book come up with the scene's choices — on its last beat (dialogue.js choicesUp).
 const cardsAhead = () => bookAhead({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: !choicesUp(readingHere(), lang()), huiTurn: atHuiTurn() });
+// A board opened from the tray: the box put away first, not only its last beat, nor over a 回's turn.
+const trayAhead = () => trayWaits({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: playing(readingHere()), huiTurn: atHuiTurn() });
 const momentUp = () => Boolean(pieceOn || featOn || view.memory || view.homing || view.doors || document.querySelector('.feat'));
 const boxYields = (slots) => boxGivesWay({ bout: Boolean(bout), appearing: Boolean(view.appearing), slots: Boolean(slots), up: momentUp(), huiTurn: atHuiTurn() });
 /* The page's moments in their order — set piece, 息壤's doors, the gold seal,

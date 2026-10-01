@@ -41,3 +41,15 @@ export function momentMay(kind, { ahead = false, up = false, pending = [] }) {
   const before = MOMENTS.slice(0, MOMENTS.indexOf(kind));
   return !ahead && !up && !before.some((m) => pending.includes(m));
 }
+
+/* A board he opened from the tray's 开局 is his own pick, not the scene's way
+   on: it waits for the whole passage — the box put away, not only its last
+   beat — and for a 回's turn (its 「完」, the new title). Live 2026-10-01: 开局
+   opened a board over a passage still playing. */
+export const trayWaits = ({ owed = false, drawing = false, playing = false, huiTurn = false }) => Boolean(owed || drawing || playing || huiTurn);
+
+/* The 回 line over the stage: while the box still tells a passage of another
+   回 (the old 回's last words, under the new 回's banner — live 2026-10-01),
+   it keeps that 回's line, when the page has it (`titles`, by 回 id); it turns
+   once that passage is told. */
+export const huiLineOf = ({ hui = null, title = '', telling = null, titles = {} }) => (telling && telling !== hui && titles[telling] ? titles[telling] : title);

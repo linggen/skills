@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { afterBook, bookAhead, BOX_FIRST, boxGivesWay, MOMENTS, momentMay } from '../scripts/queue.js';
+import { afterBook, bookAhead, BOX_FIRST, boxGivesWay, huiLineOf, MOMENTS, momentMay, trayWaits } from '../scripts/queue.js';
 
 const cards = [{ card: 'meet', id: 'yinyue' }, { card: 'panel' }, { card: 'people' }, { card: 'board', id: 'deer-wind' }, { card: 'duel', id: 'longzhi' }, { card: 'tale' }, { card: 'lundao' }, { card: 'offer' }];
 
@@ -89,4 +89,29 @@ test('银月\'s card shows what the dawn tells: the girl with one tail, named �
   const s = { ...newState(content, 'zh', new Date('2026-09-29T11:00:00')), lang: 'zh' };
   assert.equal(beatsOf(content, s, { of: 'scene', id: '00-yinyue', text: '**银月**：难吃。' })[0].art, 'art/people/yinyue.webp', 'the girl at dawn');
   assert.equal(beatsOf(content, s, { of: 'scene', id: '00-cliff', text: '**银月**：让开。' })[0].art, 'art/people/yinyue-fox.webp', 'the fox elsewhere');
+});
+
+// Live 卷一 play-through (2026-10-01): 开局 in the tray opened a board over a
+// passage still playing — the tray's board waits, book first, like the rest.
+test('a board opened from the tray\'s 开局 waits for the whole passage, and for a 回\'s turn', () => {
+  assert.equal(trayWaits({ playing: true }), true, 'the box still telling, even on its last beat');
+  assert.equal(trayWaits({ owed: true }), true, 'a passage owed');
+  assert.equal(trayWaits({ drawing: true }), true);
+  assert.equal(trayWaits({ huiTurn: true }), true, 'a 回\'s 「完」 or the new title first');
+  assert.equal(trayWaits({}), false, 'the book told: the board opens');
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /if \(view\.opened && trayAhead\(\)\) cards = cards\.filter\(\(c\) => !\(c\.card === 'board' && c\.id === view\.opened\.id\)\);[\s\S]{0,200}cards = afterBook\(cards, cardsAhead\(\)\);/, 'the page holds the opened board back');
+  assert.match(page, /const trayAhead = \(\) => trayWaits\(\{ owed: [^}]*playing: playing\(readingHere\(\)\), huiTurn: atHuiTurn\(\) \}\);/, 'the box playing, not its choices up');
+});
+
+// Live (2026-10-01): the 回 line turned to the next 回 while the old 回's last passage still played.
+test('the 回 line keeps the old 回 while its last passage is told, and turns once it is', () => {
+  const titles = { h09: '卷一 · 第九回　筑基', h10: '卷一 · 第十回　冀州' };
+  const now = { hui: 'h10', title: titles.h10, titles };
+  assert.equal(huiLineOf({ ...now, telling: 'h09' }), titles.h09, 'the old 回\'s passage under its own line');
+  assert.equal(huiLineOf({ ...now, telling: 'h10' }), titles.h10, 'the new 回\'s passage');
+  assert.equal(huiLineOf({ ...now, telling: null }), titles.h10, 'told: the line turns');
+  assert.equal(huiLineOf({ ...now, telling: 'h08' }), titles.h10, 'a 回 the page never showed: the save\'s line');
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /\$\('huiLine'\)\.textContent = look\.chapter\?\.hui \? huiLineOf\(\{ hui: look\.chapter\.hui, title: look\.chapter\.title, telling: playing\(told\) \? told\.items\[told\.i\]\?\.hui : null, titles \}\) : '';/);
 });
