@@ -51,6 +51,20 @@
      "opens": "00-prologue"
     },
     {
+     "id": "j02",
+     "line": "jin",
+     "n": 2,
+     "huimu": {
+      "zh": [
+       "十二条经背不下来，我只好举手投降"
+      ],
+      "en": [
+       "I Couldn't Memorise the Twelve Meridians, So I Put My Hands Up"
+      ]
+     },
+     "file": "今线/今02.md"
+    },
+    {
      "id": "h02",
      "line": "gu",
      "n": 2,
