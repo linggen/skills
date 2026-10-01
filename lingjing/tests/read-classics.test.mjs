@@ -73,7 +73,7 @@ test('each 回 ends with its classics (卷一 in ten since 2026-09-30), and the 
   assert.deepEqual(entries('h07'), ['jiuding', 'shanhai-gui', 'shanhai-xirang']);
   assert.deepEqual(entries('h08'), ['liji-zha', 'lunyu-shuxiu', 'huangting', 'shangshu-yugong']);
   assert.deepEqual(entries('h09'), ['baopu-jiyan', 'zhouyi-xun', 'zhuangzi-keyi', 'suwen', 'huangting']); // 恬惔虚无 moved from 第三回 to the eve of 筑基 (课随境界走, 2026-09-30) // 褚先生's 筑基 lecture moved off the cliff into the autumn 讲堂 (2026-09-30)
-  assert.deepEqual(entries('h10'), ['shiji-ximenbao', 'shanhai-bingyi']);
+  assert.deepEqual(entries('h10'), ['neiguan-jing']); // 主典 内观经 十六字, 瞿老's parting lesson, at the bottom of the 漳水; 西门豹·冰夷 stay as story, untagged (修仙词汇表 B, Hanli 2026-10-01)
   for (const c of chapters) assert.equal(/《吐纳经》\{典=/.test(c.md), false, `${c.file}: 《吐纳经》 is 银月's own, never a classic`);
   const html = renderMarkdown(fillHero(at('h06').md, {}), { classics: CLASSICS });
   assert.doesNotMatch(html.replace(/<[^>]+>/g, ''), /\{典=/, 'no token shows');
