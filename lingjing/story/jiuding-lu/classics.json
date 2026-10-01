@@ -386,20 +386,6 @@
       ],
       "note": "「炁」即「氣」。鸿是大雁；小满先拿老周家的鹅毛凑合，开春才换上雁毛。"
     },
-    "baopu-zhili": {
-      "title": "抱朴子·内篇·至理",
-      "about": "东晋葛洪（字稚川，号抱朴子）著；〈至理〉一篇讲形神相依，劝人服药之外兼行气。",
-      "source": {
-        "edition": "维基文库《抱朴子·卷05》",
-        "section": "内篇卷五〈至理〉",
-        "url": "https://zh.wikisource.org/wiki/%E6%8A%B1%E6%9C%B4%E5%AD%90%2F%E5%8D%B705",
-        "license": "公有领域（古籍；维基文库 PD-old）"
-      },
-      "original": "夫人在氣中，氣在人中，自天地至於萬物，無不須氣以生者也。善行氣者，內以養身，外以卻惡，然百姓日用而不知焉。",
-      "plain": [
-        "人在气里，气也在人身里；从天地到万物，没有一样不靠气活着。会行气的人，对内养身，对外驱邪；百姓天天在用它，却不知道。"
-      ]
-    },
     "tianxian-zhuji": {
       "title": "天仙道戒忌须知",
       "about": "清代内丹书，题「泥丸氏传，太虚翁述，懒云氏纂，返真子订」，收在《古书隐楼藏书》。",
@@ -533,19 +519,32 @@
       "plain": [
         "生是死的同路，死是生的开头，谁理得清它的头绪！人活着，是气聚在一起；聚了就生，散了就死。"
       ]
+    },
+    "qijing-bamai": {
+      "title": "奇经八脉考·引《八脉经》",
+      "about": "明代李时珍著，专讲十二正经以外的八条「奇经」；〈阴蹻脉〉一节转引张紫阳《八脉经》，是丹家眼里的八脉。",
+      "source": {
+        "edition": "维基文库《奇經八脈考》",
+        "section": "〈陰蹻脈〉·引張紫陽《八脈經》",
+        "url": "https://zh.wikisource.org/wiki/%E5%A5%87%E7%B6%93%E5%85%AB%E8%84%88%E8%80%83%2F%E9%99%B0%E8%B9%BB%E8%84%88",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "凡人有此八脈，俱屬陰神，閉而不開。惟神仙以陽炁沖開，故能得道。",
+      "plain": [
+        "凡人身上都有这八条脉，都属阴，关着不开；只有神仙拿阳气把它冲开，所以得道。"
+      ],
+      "note": "与 qijing-yinqiao（今十）同一页、不同句。B 表古二银月只说前半句（「閉而不開」），冲开的后半句留给第五回揭开她夜夜在凿。"
     }
   },
   "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; lingshu-jiuzhen 今七 (严老师's 针灸实验课); shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; yangxing-changxi 今九; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: the 《神农本草经》 序录 上药/中药/下药 passage is already `shennong`, told by 褚先生 in 古六 (06-第六回.md) — a 药园 line would use it twice.",
   "_pending_by_hui": {
     "今一": [
+      "baopu-zhili",
       "qianjin-dayi（一笔）"
     ],
     "今二": [
       "lingshu-jingmai",
       "lingshu-hailun（一笔）"
-    ],
-    "古二": [
-      "qijing-bamai"
     ],
     "今四": [
       "baopu-huangbai"
@@ -675,20 +674,19 @@
       ],
       "note": "原文前有「黃帝曰︰」。"
     },
-    "qijing-bamai": {
-      "title": "奇经八脉考·引《八脉经》",
-      "about": "明代李时珍著，专讲十二正经以外的八条「奇经」；〈阴蹻脉〉一节转引张紫阳《八脉经》，是丹家眼里的八脉。",
+    "baopu-zhili": {
+      "title": "抱朴子·内篇·至理",
+      "about": "东晋葛洪（字稚川，号抱朴子）著；〈至理〉一篇讲形神相依，劝人服药之外兼行气。",
       "source": {
-        "edition": "维基文库《奇經八脈考》",
-        "section": "〈陰蹻脈〉·引張紫陽《八脈經》",
-        "url": "https://zh.wikisource.org/wiki/%E5%A5%87%E7%B6%93%E5%85%AB%E8%84%88%E8%80%83%2F%E9%99%B0%E8%B9%BB%E8%84%88",
+        "edition": "维基文库《抱朴子·卷05》",
+        "section": "内篇卷五〈至理〉",
+        "url": "https://zh.wikisource.org/wiki/%E6%8A%B1%E6%9C%B4%E5%AD%90%2F%E5%8D%B705",
         "license": "公有领域（古籍；维基文库 PD-old）"
       },
-      "original": "凡人有此八脈，俱屬陰神，閉而不開。惟神仙以陽炁沖開，故能得道。",
+      "original": "夫人在氣中，氣在人中，自天地至於萬物，無不須氣以生者也。善行氣者，內以養身，外以卻惡，然百姓日用而不知焉。",
       "plain": [
-        "凡人身上都有这八条脉，都属阴，关着不开；只有神仙拿阳气把它冲开，所以得道。"
-      ],
-      "note": "与 qijing-yinqiao（今十）同一页、不同句。B 表古二银月只说前半句（「閉而不開」），冲开的后半句留给第五回揭开她夜夜在凿。"
+        "人在气里，气也在人身里；从天地到万物，没有一样不靠气活着。会行气的人，对内养身，对外驱邪；百姓天天在用它，却不知道。"
+      ]
     },
     "baopu-huangbai": {
       "title": "抱朴子·内篇·黄白",
