@@ -1348,7 +1348,8 @@ const boardShut = (t, ctx) => Boolean(t && (t.hosted || t.for_errand) && ctx.qi?
 
 /// The boards at hand: a scene's, or a game an errand asks for here — never a daily chore.
 export function trayHtml(ctx) {
-  const tasks = (ctx.look.tasks || []).map((t) => {
+  // A board finished is not at hand: it leaves the tray (2026-10-01: 射鹿, 洗髓 stood there 已完成).
+  const tasks = (ctx.look.tasks || []).filter((t) => t.status !== 'done').map((t) => {
     const state = t.status === 'done' ? 'done' : t.won ? 'won' : 'offered';
     const shut = state === 'offered' && boardShut(t, ctx);
     const act = state === 'offered' && t.kind === 'board'

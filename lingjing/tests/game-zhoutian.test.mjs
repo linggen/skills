@@ -42,3 +42,17 @@ test('the breath waits for the start; html draws the figure', () => {
   assert.match(html(s, 'zh'), /sanguan\.webp/);
   assert.match(html(s, 'en'), /data-g="start"/);
 });
+
+test('one push to a stillness: tapping fast inside one 歇 never opens the circuit (the exploit, live 2026-10-01)', () => {
+  for (let seed = 0; seed < 20; seed += 1) {
+    let s = act(newGame(`m${seed}`), { g: 'start' }).state, won = false;
+    // Mash: twelve taps inside every stillness, for twenty breaths.
+    for (let b = 0; b < 20 && !won; b += 1) {
+      s = toPhase(toPhase(s, 'in'), 'rest');
+      for (let i = 0; i < 12 && !won; i += 1) { const r = act(s, { g: 'push' }); s = r.state; won = r.won; }
+    }
+    assert.equal(won, false, `seed ${seed}: mashing never wins`);
+    assert.equal(s.at, 2, 'the dug passes open; 玉枕 does not');
+    assert.equal(s.note, 'rush');
+  }
+});

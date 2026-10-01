@@ -47,3 +47,14 @@ test('the page asks queue.js: the games are held, every moment waits its turn, a
   assert.match(page, /async function gainBurst[\s\S]{0,200}boxAhead\(\) \|\| momentUp\(\) \|\| momentPending\.size/, '修为 +n never floats over her memory');
   assert.match(page, /slots\.main\.some\(\(c\) => c\.card === 'closed'\) \? '' : toastsHtml\(\)/, '「完」 stands alone (所得 waits)');
 });
+
+test('a board won: its last line is read first, then the scene\'s way on that waited on it is taken; the tray lets it go', async () => {
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /async function onWin\(taskId\) \{\s*await pause\(stillMotion\(\) \? 1200 : WIN_LINE_MS\);/);
+  assert.match(page, /const on = winExit\(taskId\);\s*if \(on\) await panelTap\(on\.id/);
+  const { trayHtml, WORDS } = await import('../scripts/cards.js');
+  const look = { tasks: [{ id: 'deer-wind', title: '射鹿', kind: 'board', status: 'done' }, { id: 'xisui-hold', title: '洗髓', kind: 'board', status: 'offered' }] };
+  const tray = trayHtml({ look, words: WORDS.zh, lang: 'zh' });
+  assert.doesNotMatch(tray, /射鹿/, 'a finished board leaves the tray');
+  assert.match(tray, /洗髓/);
+});

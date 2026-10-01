@@ -1274,7 +1274,15 @@ const refusal = (r) => r?.say || words().refused?.[r?.refused] || words().notDon
 
 /* ── The board: the one thing the page reports ── */
 
+/* A board's last line is read before it closes (2026-10-01: 「手指一松…轰然倒下」
+   never showed — the win took the board off the stage at once). */
+const WIN_LINE_MS = 2800;
+/* The scene's way on that waited on this board (exit `needs.task`): the win
+   is that deed, so it is taken — live, 射鹿 won still offered 往左偏半寸 /
+   照直射, 洗髓 still offered 泡进去 / 爬出来. */
+const winExit = (taskId) => (look?.scene?.exits ?? []).find((e) => e.needs?.task === taskId && !e.stay);
 async function onWin(taskId) {
+  await pause(stillMotion() ? 1200 : WIN_LINE_MS);
   if (isTale(taskId)) return taleWon(taskId);
   const r = await write('win', { id: taskId }).catch(failed);
   // Refused (not here, not open), the win is kept on the board and sent again
@@ -1296,6 +1304,8 @@ async function onWin(taskId) {
   if (isTask(taskId)) await payWin(taskId);
   else await report(`[scene] won ${taskId}`);
   await refresh();
+  const on = winExit(taskId);
+  if (on) await panelTap(on.id, look?.scene?.panel?.taps?.find((t) => t.id === on.id)?.label ?? on.id);
   return true;
 }
 

@@ -5,6 +5,8 @@
 // 怎么开的」. The breath goes in, out, and rests; push the qi up only in the rest,
 // the way 爹 waits for the wind to catch its breath. The two dug passes open at
 // one push each; 玉枕 wants three, and a push out of time sets it back one.
+// One push to a stillness (2026-10-01: tapping fast inside one 歇 opened the
+// circuit at once): a second push in the same stillness is out of time too.
 // Pure module: newGame / html / act / tick (live-games.js steps the breath).
 
 export const meta = {
@@ -73,20 +75,23 @@ export function phaseAt(b, t) {
 }
 
 export function newGame(seed) {
-  return { seed: String(seed), breath: breathOf(seed), t: 0, live: false, at: 0, got: 0, rushes: 0, note: 'ready', won: false };
+  return { seed: String(seed), breath: breathOf(seed), t: 0, live: false, at: 0, got: 0, rushes: 0, note: 'ready', won: false, used: -1 };
 }
+
+/* Which breath this is: one stillness each. */
+const breathNo = (b, t) => Math.floor(t / (b.in + b.out + b.rest));
 
 function push(s) {
   if (!s.live) return null;
-  const gate = GATES[s.at];
-  if (phaseAt(s.breath, s.t) !== 'rest') {
+  const gate = GATES[s.at], n = breathNo(s.breath, s.t);
+  if (phaseAt(s.breath, s.t) !== 'rest' || s.used === n) {
     return { ...s, rushes: s.rushes + 1, got: gate.need > 1 ? Math.max(0, s.got - 1) : s.got, note: 'rush' };
   }
   const got = s.got + 1;
-  if (got < gate.need) return { ...s, got, note: got === 1 ? 'stuck' : 'nudge' };
+  if (got < gate.need) return { ...s, got, used: n, note: got === 1 ? 'stuck' : 'nudge' };
   const at = s.at + 1;
-  if (at >= GATES.length) return { ...s, at, got: 0, live: false, won: true, note: 'won' };
-  return { ...s, at, got: 0, note: `open${s.at}` };
+  if (at >= GATES.length) return { ...s, at, got: 0, used: n, live: false, won: true, note: 'won' };
+  return { ...s, at, got: 0, used: n, note: `open${s.at}` };
 }
 
 const VERBS = {
