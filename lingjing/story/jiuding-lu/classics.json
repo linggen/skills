@@ -505,10 +505,7 @@
         "到了仲秋那个月，阳在正西，阴在正东，叫作秋分；秋分，阴阳各占一半，所以昼夜一样长，冷热也平了。"
       ],
       "note": "今线宿舍墙上节气挂图秋分那一格印的「昼夜均，寒暑平」，是从这一句摘的。"
-    }
-  },
-  "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. shiji-liguang: 古一 爹's 李广 story (01-第一回.md, 「那说书的还讲李广」). zhouhou-qinghao: 今一 眼镜's 《肘后备急方》 line (今线/今01.md), only if that lane keeps the name.",
-  "_pending": {
+    },
     "shiji-liguang": {
       "title": "史记·李将军列传",
       "about": "司马迁《史记》，西汉；李广是汉武帝时守北边的名将，匈奴叫他「飞将军」。",
@@ -523,21 +520,97 @@
         "李广出去打猎，看见草里一块石头，当是老虎，一箭射去，箭头整个没进石头；走近一看，是石头。他再射，就怎么也射不进去了。"
       ],
       "note": "维基文库此本作「以爲」。第一回爹转述说书先生的版本是「夜里走林子」，史书没说是夜里。"
-    },
-    "zhouhou-qinghao": {
-      "title": "肘后备急方",
-      "about": "东晋葛洪编的急救方书，「肘后」是说可以挂在臂肘后随身带；卷三〈治寒热诸瘧方〉里的青蒿方，是屠呦呦提取青蒿素时读到的那一条。",
+    }
+  },
+  "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book. Where each one goes: qianjin-dayi: 今二 (or 今一), the first-week 大医精诚 reading — 沈芒 gets it wrong or is moved despite himself. lingshu-hailun: 今二, 严老师/the textbook gives the definition just before the anatomy teacher says no meridian structure has been found. jiayi-xu: 今三, 沈芒's first 古籍部 visit — 葛奶奶 hands him 皇甫谧《针灸甲乙经》 instead of a 秘籍 (her history slightly wrong, corrected); the 回's lesson stays 膈肌/六字诀. lingshu-jiuzhen: 今七, 严老师's 针灸实验课 — 沈芒 asks what 经络 is; 「非皮肉筋骨也」, then the honest modern picture in dialogue. qijing-yinqiao: 今十, the 古籍部 night in the dark (内景) — 葛奶奶 points him to it or he finds it; the page has 「反觀」, not 「返觀」. lingshu-jingmai: 古五, where the 三关 open — 瞿老's one line plus his own plain gloss (〈經脈〉 chosen over 〈本藏〉: 「不可不通」 is the 通 of the 三关). Not added: the 《神农本草经》 序录 上药/中药/下药 passage is already `shennong`, told by 褚先生 in 古六 (06-第六回.md) — a 药园 line would use it twice.",
+  "_pending": {
+    "qianjin-dayi": {
+      "title": "备急千金要方·大医精诚",
+      "about": "唐代孙思邈著，医书三十卷；卷一〈论大医精诚〉讲做医生的心和德，今天很多中医院校新生开学都要读它。",
       "source": {
-        "edition": "维基文库《肘後備急方·卷三》",
-        "section": "〈治寒熱諸瘧方第十六〉",
-        "url": "https://zh.wikisource.org/wiki/%E8%82%98%E5%BE%8C%E5%82%99%E6%80%A5%E6%96%B9/%E5%8D%B73",
+        "edition": "维基文库《備急千金要方·第一·諸論》",
+        "section": "〈論大醫精誠第二〉",
+        "url": "https://zh.wikisource.org/wiki/%E5%82%99%E6%80%A5%E5%8D%83%E9%87%91%E8%A6%81%E6%96%B9/%E7%AC%AC%E4%B8%80",
         "license": "公有领域（古籍；维基文库 PD-old）"
       },
-      "original": "青蒿一握。以水二升漬，絞取汁。盡服之。",
+      "original": "凡大醫治病，必當安神定志，無欲無求，先發大慈惻隱之心，誓願普救含靈之苦。",
       "plain": [
-        "青蒿一把，用两升水泡着，绞出汁来，一口气喝完。"
+        "凡是好医生看病，一定先把心神安定下来，不贪不求，先生出一片慈悲怜悯的心，立誓要救一切有生命的人的苦。"
+      ]
+    },
+    "lingshu-hailun": {
+      "title": "黄帝内经·灵枢·海论",
+      "about": "《灵枢》是《黄帝内经》讲针刺和经络的那一半；〈海论〉开头先说十二经脉是什么，再拿人身比四海。",
+      "source": {
+        "edition": "维基文库《黃帝內經·靈樞第六卷》",
+        "section": "〈海論第三十三〉",
+        "url": "https://zh.wikisource.org/wiki/%E9%BB%83%E5%B8%9D%E5%85%A7%E7%B6%93/%E9%9D%88%E6%A8%9E%E7%AC%AC%E5%85%AD%E5%8D%B7",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "夫十二經脈者，內屬於府藏，外絡於肢節",
+      "plain": [
+        "十二条经脉，往里连着五脏六腑，往外络着四肢关节。"
       ],
-      "note": "冷水泡、绞汁，不煎——屠呦呦正是从这一句想到改用低温提取。"
+      "note": "原句下接「夫子乃合之於四海乎」，此处只取前半。"
+    },
+    "jiayi-xu": {
+      "title": "针灸甲乙经·皇甫谧序",
+      "about": "西晋皇甫谧编，现存最早的针灸专书；他四十多岁得了风痹、耳也聋了，自己读医书，把《素问》《针经》《明堂孔穴针灸治要》三部书合编成这一部。",
+      "source": {
+        "edition": "维基文库《針灸甲乙經·宋校本》",
+        "section": "〈皇甫謐序〉",
+        "url": "https://zh.wikisource.org/wiki/%E9%87%9D%E7%81%B8%E7%94%B2%E4%B9%99%E7%B6%93",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "甘露中，吾病風加苦聾百日，方治要皆淺近。乃撰集三部，使事類相從，刪其浮辭，除其重複，論其精要，至為十二卷。",
+      "plain": [
+        "甘露年间，我得了风病，又耳聋了一百天，手头的方书都太浅。于是把三部古书合编起来，同类的放在一起，删掉空话和重复，留下要紧的，编成十二卷。"
+      ],
+      "note": "甘露是三国魏高贵乡公的年号（256—260）。"
+    },
+    "lingshu-jiuzhen": {
+      "title": "黄帝内经·灵枢·九针十二原",
+      "about": "《灵枢》第一篇，讲九种针和十二原穴；这一句说「节」（后人说的穴）是什么。",
+      "source": {
+        "edition": "维基文库《黃帝內經·靈樞第一卷》",
+        "section": "〈九鍼十二原第一〉",
+        "url": "https://zh.wikisource.org/wiki/%E9%BB%83%E5%B8%9D%E5%85%A7%E7%B6%93/%E9%9D%88%E6%A8%9E%E7%AC%AC%E4%B8%80%E5%8D%B7",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "節之交，三百六十五會，知其要者，一言而終，不知其要，流散無窮，所言節者，神氣之所遊行出入也，非皮肉筋骨也。",
+      "plain": [
+        "身上交会的「节」有三百六十五处，懂得要领一句话就说完，不懂就散得没边。所谓「节」，是神气来往出入的地方，不是皮、肉、筋、骨。"
+      ]
+    },
+    "qijing-yinqiao": {
+      "title": "奇经八脉考",
+      "about": "明代李时珍著，专讲十二正经以外的八条「奇经」（任、督、冲、带、阴阳维、阴阳跷），兼采医家与道家之说。",
+      "source": {
+        "edition": "维基文库《奇經八脈考》",
+        "section": "〈陰蹻脈〉",
+        "url": "https://zh.wikisource.org/wiki/%E5%A5%87%E7%B6%93%E5%85%AB%E8%84%88%E8%80%83/%E9%99%B0%E8%B9%BB%E8%84%88",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "而紫陽《八脈經》所載經脈，稍與醫家之說不同，然內景隧道，惟反觀者能照察之，其言必不謬也。",
+      "plain": [
+        "张紫阳《八脉经》里写的经脉，跟医家说的稍有不同；可身体里头的通道，只有向内回看的人才照得见，他的话一定不错。"
+      ],
+      "note": "维基文库此本作「反觀」，不作「返觀」。"
+    },
+    "lingshu-jingmai": {
+      "title": "黄帝内经·灵枢·经脉",
+      "about": "《灵枢》第十篇，一条一条讲十二经脉的走向，是经络学说最核心的一篇。",
+      "source": {
+        "edition": "维基文库《黃帝內經·靈樞第三卷》",
+        "section": "〈經脈第十〉",
+        "url": "https://zh.wikisource.org/wiki/%E9%BB%83%E5%B8%9D%E5%85%A7%E7%B6%93/%E9%9D%88%E6%A8%9E%E7%AC%AC%E4%B8%89%E5%8D%B7",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "經脈者，所以能決死生，處百病，調虛實，不可不通。",
+      "plain": [
+        "经脉，能定人的死生，能治百病，能调虚实，不能不通。"
+      ],
+      "note": "原文前有「黃帝曰︰」。"
     }
   }
 }
