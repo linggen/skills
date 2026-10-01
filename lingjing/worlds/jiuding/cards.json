@@ -190,7 +190,7 @@
       },
       "_about": "开局就在手上，不占牌库的十张。被打到 0 是退到一边，下一局照来 —— 这个世界没有死。",
       "art": "art/cards/yinyue.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-5.5), 2026-10-01, after the 图鉴 portrait art/people/yinyue.webp (a girl of fourteen or fifteen, as 第一回 has her), in the deck's ink-wash style; replaces the FLUX card of 2026-09-18, which showed a grown woman. See art/CREDITS.md."
     },
     {
       "id": "qingteng",

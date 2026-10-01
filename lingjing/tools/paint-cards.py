@@ -30,7 +30,8 @@ SUBJECTS = {
   # ── 小随从 ──
   'xiaoyao': 'a small mischievous mountain imp crouching on a rock, thin limbs, big ears',
   'shanjing': 'a squat moss-covered hill spirit made of stone and roots, arms folded, standing guard',
-  'yinyue': 'a young woman in pale robes under a full moon, silver hairpin, calm and watchful',
+  # yinyue's card was repainted with Codex 2026-10-01 from her 图鉴 portrait (a girl of 14–15, not this woman); see CREDITS.md.
+  'yinyue': 'a silver-haired girl of fourteen in a white robe under a full moon, one silver fox tail, proud and impish',
   'luying': 'the shadow of a leaping deer over rippling water, antlers catching the light',
   'xianshi': 'a small bird carrying a pebble in its beak over grey sea waves',
   'leipu': 'a small thunder servant with a drum on its back, crackling sparks at its heels',

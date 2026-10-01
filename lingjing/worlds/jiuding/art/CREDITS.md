@@ -132,3 +132,18 @@ The chapter has no story panels (his ruling, 2026-09-29). No outside source.
 ## 第十回 · 漳水立起 — set-piece stills (2026-09-30)
 
 `setpiece/zhang-a.webp`, `zhang-b.webp`, `zhang-c.webp`, `zhang-e.webp`, `zhang-f.webp` — five key frames for 卷一's 大场面 (the 漳水 standing up; 冰夷 on his two dragons; the trial; the 洛书 seal on the square four-legged 冀州鼎 under the river; the 鼎 rising at moonrise), following 10-第十回.md: painted with Codex CLI's image generation (gpt-5.5, 1536×1024), 2026-09-30, the frames with people given art/people/bingyi.webp, xiaoman.webp, doufu-xishi.webp (and for f art/items/fox-token.webp) as references, and e/f given a and c as style references. Hanli kept a, b, c and dropped d; e and f were repainted to his note (a square 方鼎 with four legs; 银月 curled inside the jacket, the token's second tail lit). Rejected on the way: a vignetted c, a crowned 冰夷, a photoreal round-鼎 e, a pasted-card e whose tiles Codex overlaid with code, a pendant-shaped token in f. Codex ran out of credits during the last e round; local FLUX (FLUX.2 klein 4B, four seeds) was tried for e and looked at, and did not reach the style of a–c (not underwater, a small child, random dots), so e is the first repaint. Every picture looked at. No outside source. Frame e repainted with Codex 2026-10-01 (tools/paint-setpiece-codex.py), the kept e handed in as the picture to repaint: the 洛书 counts now read 4 9 2 / 3 5 7 / 8 1 6, odd white, even black, all else as it was. The first roll had 8 for 7 and 12 for 8; a second pass on that roll fixed only those two tiles. Every tile counted by eye.
+
+## 银月 at fourteen — portrait and card repainted (2026-10-01)
+
+Hanli's note: 「沈小满12, 银月应该也差不多年纪吧……应该是个女孩子?」 — 第一回 has her 「看着比他大不了几岁」, and both
+the portrait and the card had drawn a grown woman. `people/yinyue.webp` (640×960, webp q84) was repainted with Codex
+CLI's image generation (gpt-5.5), 2026-10-01, from the prompt now in `tools/paint-codex.py`: a girl of fourteen or
+fifteen with a slight, not-yet-grown build in a modest white robe, silver hair past the waist, barefoot, gold
+slit-pupil eyes, one tail with eight stumps at its root, chin up, hands on hips, a sly half-grin. Two passes: the kept
+text-only roll was handed back to Codex to fix only the stumps and the eyes (`YINYUE_FIX`). Rejected on the way: three
+rolls with the old portrait as the style reference (each still a tall young woman), one with fox ears, a kept roll's
+five raw red stumps, and a re-roll whose stubs came out five or six. `cards/yinyue.webp` (448×320, webp q86) was
+repainted the same day with Codex, given the new portrait as the character and the old FLUX card as the ink-wash
+style and layout (the moon on the left); two first rolls without the portrait still read as a young lady with
+hairpins. The FLUX card of 2026-09-18 and the FLUX/Codex portraits before it are in git history. Every picture looked
+at. No outside source.
