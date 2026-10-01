@@ -401,21 +401,6 @@
       ],
       "note": "整条里没有一个字讲长力气、长肌肉。「轻身」是身子轻快，不是掉秤（今六眼镜的话）。另一个维基文库本（《神農本草經》，无辑者名）这一条没有「久服」一句，这里照孙星衍辑本。"
     },
-    "heguanzi-huanliu": {
-      "title": "鹖冠子·环流",
-      "about": "《鹖冠子》，旧题战国楚人鹖冠子作（居深山，以鹖羽为冠），宋陆佃注本十九篇；〈环流〉一篇讲万物「物极则反」，拿北斗斗柄一年转一圈说四时。",
-      "source": {
-        "edition": "维基文库《鶡冠子》（陆佃注本）",
-        "section": "〈環流〉",
-        "url": "https://zh.wikisource.org/wiki/%E9%B6%A1%E5%86%A0%E5%AD%90",
-        "license": "公有领域（古籍；维基文库 PD-old）"
-      },
-      "original": "鬥柄東指，天下皆春，鬥柄南指，天下皆夏，鬥柄西指，天下皆秋，鬥柄北指，天下皆冬。",
-      "plain": [
-        "北斗的斗柄指向东，天下都是春天；指向南，都是夏天；指向西，都是秋天；指向北，都是冬天。"
-      ],
-      "note": "维基文库此本作「鬥柄」（「斗」的异写）。古人看黄昏时斗柄的方向定季节；今线第十回眼镜冬至傍晚引了末一句。"
-    },
     "mengjiao-youzi": {
       "title": "游子吟",
       "about": "唐孟郊的五言古诗，自注「迎母溧上作」；写母亲在儿子远行前缝衣，是最为人熟知的思亲诗之一。",
@@ -563,6 +548,21 @@
         "行气时，用鼻子吸，用嘴吐，细细地、慢慢地往长里拉，这叫长息。"
       ],
       "note": "紧接其后便是「內氣有一，吐氣有六」（yangxing-liuzi，古三用），这里只取前一句。「內」通「纳」。"
+    },
+    "qijing-yinqiao": {
+      "title": "奇经八脉考",
+      "about": "明代李时珍著，专讲十二正经以外的八条「奇经」（任、督、冲、带、阴阳维、阴阳跷），兼采医家与道家之说。",
+      "source": {
+        "edition": "维基文库《奇經八脈考》",
+        "section": "〈陰蹻脈〉",
+        "url": "https://zh.wikisource.org/wiki/%E5%A5%87%E7%B6%93%E5%85%AB%E8%84%88%E8%80%83/%E9%99%B0%E8%B9%BB%E8%84%88",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "而紫陽《八脈經》所載經脈，稍與醫家之說不同，然內景隧道，惟反觀者能照察之，其言必不謬也。",
+      "plain": [
+        "张紫阳《八脉经》里写的经脉，跟医家说的稍有不同；可身体里头的通道，只有向内回看的人才照得见，他的话一定不错。"
+      ],
+      "note": "维基文库此本作「反觀」，不作「返觀」。"
     }
   },
   "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: a 药园 line from the 《神农本草经》 序录 上药/中药/下药 passage — that is `shennong`, which 褚先生 paraphrases in one untagged sentence in 古六 (06-第六回.md); it would use it twice.",
@@ -591,9 +591,6 @@
     "古九": [
       "wu-zhuji"
     ],
-    "今十": [
-      "qijing-yinqiao"
-    ],
     "古六（一笔带过，正文改述、不挂典；主典 baopu 照留）": [
       "shennong",
       "zuozhuan-ranzhi"
@@ -601,6 +598,9 @@
     "古十（一笔带过，故事照讲、不挂典；主典 neiguan-jing）": [
       "shiji-ximenbao",
       "shanhai-bingyi"
+    ],
+    "今十（一笔带过，眼镜出书名、斗柄指北改述，不挂典；主典 qijing-yinqiao）": [
+      "heguanzi-huanliu"
     ]
   },
   "_pending": {
@@ -647,21 +647,6 @@
         "甘露年间，我得了风病，又耳聋了一百天，手头的方书都太浅。于是把三部古书合编起来，同类的放在一起，删掉空话和重复，留下要紧的，编成十二卷。"
       ],
       "note": "甘露是三国魏高贵乡公的年号（256—260）。"
-    },
-    "qijing-yinqiao": {
-      "title": "奇经八脉考",
-      "about": "明代李时珍著，专讲十二正经以外的八条「奇经」（任、督、冲、带、阴阳维、阴阳跷），兼采医家与道家之说。",
-      "source": {
-        "edition": "维基文库《奇經八脈考》",
-        "section": "〈陰蹻脈〉",
-        "url": "https://zh.wikisource.org/wiki/%E5%A5%87%E7%B6%93%E5%85%AB%E8%84%88%E8%80%83/%E9%99%B0%E8%B9%BB%E8%84%88",
-        "license": "公有领域（古籍；维基文库 PD-old）"
-      },
-      "original": "而紫陽《八脈經》所載經脈，稍與醫家之說不同，然內景隧道，惟反觀者能照察之，其言必不謬也。",
-      "plain": [
-        "张紫阳《八脉经》里写的经脉，跟医家说的稍有不同；可身体里头的通道，只有向内回看的人才照得见，他的话一定不错。"
-      ],
-      "note": "维基文库此本作「反觀」，不作「返觀」。"
     },
     "lingshu-jingmai": {
       "title": "黄帝内经·灵枢·经脉",
@@ -856,6 +841,21 @@
         "从极之渊深三百仞，冰夷常住在那里。冰夷长着人的脸，驾着两条龙。"
       ],
       "note": "冰夷「恒都」在从极之渊，那是他的家；河伯管天下的河，漳水也归他管。"
+    },
+    "heguanzi-huanliu": {
+      "title": "鹖冠子·环流",
+      "about": "《鹖冠子》，旧题战国楚人鹖冠子作（居深山，以鹖羽为冠），宋陆佃注本十九篇；〈环流〉一篇讲万物「物极则反」，拿北斗斗柄一年转一圈说四时。",
+      "source": {
+        "edition": "维基文库《鶡冠子》（陆佃注本）",
+        "section": "〈環流〉",
+        "url": "https://zh.wikisource.org/wiki/%E9%B6%A1%E5%86%A0%E5%AD%90",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "鬥柄東指，天下皆春，鬥柄南指，天下皆夏，鬥柄西指，天下皆秋，鬥柄北指，天下皆冬。",
+      "plain": [
+        "北斗的斗柄指向东，天下都是春天；指向南，都是夏天；指向西，都是秋天；指向北，都是冬天。"
+      ],
+      "note": "维基文库此本作「鬥柄」（「斗」的异写）。古人看黄昏时斗柄的方向定季节。今线第十回眼镜冬至傍晚只一笔带过（出书名、意思改述，不挂典；主典 qijing-yinqiao，修仙词汇表 B）。"
     }
   }
 }
