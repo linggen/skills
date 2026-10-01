@@ -277,7 +277,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, panelBusy: view.panelBusy, panelNote: view.panelNote, reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, panelBusy: view.panelBusy, panelNote: view.panelNote, called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -876,6 +876,9 @@ function stageNow() {
   if (view.doors) cards = [{ card: 'doors' }, ...cards];
   // A chapter's ending card, until he puts it away (合上; kept per save in this browser).
   cards = cards.filter((c) => c.card !== 'closed' || (!closeSeen(look.chapter?.close?.id) && !stageBusy() && !endingWaits()));
+  // A scene's fight waits for its words to be chosen (站着，不跪) — or a fight already under way.
+  const called = calledDuels();
+  cards = cards.filter((c) => c.card !== 'duel' || !(look.scene?.panel?.taps ?? []).some((t) => t.duel === c.id) || called.has(c.id));
   // The book first: a game waits until the passage that leads into it is told.
   cards = afterBook(cards, boxAhead());
   watchAppear(cards);
@@ -1270,6 +1273,15 @@ async function write(name, args = {}) {
 }
 const failed = (e) => ({ ok: false, error: String(e) });
 /// A refusal in the rules' own words, else the page's one line for it.
+/* The fights chosen in this scene by their words (look.mjs panelOf `duel`), and any
+   fight the save holds open or already met here — those need no choosing again. */
+function calledDuels() {
+  const here = look?.scene?.id;
+  const ids = (view.called ?? []).filter((k) => k.startsWith(`${here}|`)).map((k) => k.slice(here.length + 1));
+  if (look?.fight?.game) ids.push(look.fight.game);
+  for (const e of look?.scene?.exits ?? []) if (e.game?.kind === 'duel' && (e.won || e.withdrawn)) ids.push(e.game.id);
+  return new Set(ids);
+}
 const refusal = (r) => r?.say || words().refused?.[r?.refused] || words().notDone;
 
 /* ── The board: the one thing the page reports ── */
@@ -2058,6 +2070,7 @@ const CLICKS = [
   ['[data-dlg-next]', () => nextBeat()],
   ['.dlglog', () => true],
   ['[data-look-at]', (el) => { if (!el.matches(':disabled')) run(`look:${el.dataset.lookAt}`, () => lookAt(el.dataset.lookAt)); }],
+  ['[data-panel-duel]', (el) => { if (!el.matches(':disabled')) show({ called: [...(view.called ?? []), `${look?.scene?.id}|${el.dataset.panelDuel}`] }); }],
   ['[data-panel-exit]', (el) => { if (!el.matches(':disabled')) run(`panel:${el.dataset.panelExit}`, () => panelTap(el.dataset.panelExit, el.textContent.trim(), el.dataset.panelAnswer)); }],
   ['[data-lu]', () => (view.luOpen ? show({ luOpen: false }) : openLu())],
   ['[data-lu-close]', () => show({ luOpen: false, codexOpen: null })],

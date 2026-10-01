@@ -1179,7 +1179,9 @@ function panel(card, ctx) {
   // The box goes first: while the scene's passage is still to be drawn, its choices wait (a fast tap skipped the book).
   const up = !ctx.tellPending && choicesUp(ctx.reading, ctx.lang);
   const exitOf = (t) => (ctx.look.scene.exits ?? []).find((e) => e.id === t.id);
-  const taps = up ? (p.taps ?? []).map((t) => (exitOf(t)?.riddle ? riddleTapHtml(t, exitOf(t), busy, w) : panelTapHtml(t, busy, w))).join('') : '';
+  // A fight chosen: its card stands under this one, so its words go (ctx.called, the page's).
+  const shown = (p.taps ?? []).filter((t) => !(t.duel && ctx.called?.has?.(t.duel)));
+  const taps = up ? shown.map((t) => (exitOf(t)?.riddle ? riddleTapHtml(t, exitOf(t), busy, w) : panelTapHtml(t, busy, w))).join('') : '';
   const quiet = (p.taps ?? []).length === 1 && p.taps[0].quiet;
   // 「也可以直接说你想怎么做」 — now and then, where the scene waits on a real choice (rules: `invite`).
   const invite = up && p.invite ? `<div class="sceneinvite">${esc(w.invite)}</div>` : '';
@@ -1194,6 +1196,8 @@ function panel(card, ctx) {
 const QUIET_TEXT = { on: (t, w) => `${w.goOn} ›`, label: (t) => `${t.label} ›` };
 function panelTapHtml(t, busy, w) {
   const off = busy || t.spent ? ' disabled' : '';
+  // A fight's words call its card up on the page (no move until it is won).
+  if (t.duel) return `<button class="act paneltap" data-panel-duel="${esc(t.duel)}"${off}>${esc(t.label)}</button>`;
   if (t.quiet) return `<button class="quietnext${busy === t.id ? ' busy' : ''}" data-panel-exit="${esc(t.id)}" title="${esc(t.label)}" aria-label="${esc(t.label)}"${off}>${esc(QUIET_TEXT[t.quiet]?.(t, w) ?? t.label)}</button>`;
   return `<button class="act paneltap${busy === t.id ? ' busy' : ''}${t.spent ? ' spent' : ''}" data-panel-exit="${esc(t.id)}"${off}>${esc(t.label)}</button>`;
 }

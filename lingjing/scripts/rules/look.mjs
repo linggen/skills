@@ -90,13 +90,17 @@ function peopleIn(content, state, scene) {
 function panelOf(content, state, scene, buttons) {
   if (!scene.panel) return null;
   const say = pair => fill(pick(pair, state.lang), state, content);
-  const own = e => e.value || e.born || gameOf(e) || e.breakthrough;
+  // A scene's fight with the book's own words for it (站着，不跪 · 只躲，不还手) is a
+  // choice first: its words stand under the card, and the fight comes up once
+  // chosen (2026-10-01: 冰夷's trial stood on arrival, before he chose to stand).
+  const called = e => gameOf(e)?.kind === 'duel' && Boolean(e.label);
+  const own = e => e.value || e.born || (gameOf(e) && !called(e)) || e.breakthrough;
   // A staying choice already made (看碑背) is not offered again: its passage was told.
   // A choice the scene turned down (`snub`) stays, greyed: tried, and seen to fail.
   const marked = e => Boolean(e.mark) && (state.marks ?? []).includes(e.mark);
   const done = e => e.stay && !e.snub && marked(e);
   const taps = buttons.map(id => scene.exits.find(e => e.id === id)).filter(e => e && !own(e) && !done(e))
-    .map(e => ({ id: e.id, label: say(e.label), ...(e.snub && marked(e) ? { spent: true } : {}) }));
+    .map(e => ({ id: e.id, label: say(e.label), ...(called(e) ? { duel: gameOf(e).id } : {}), ...(e.snub && marked(e) ? { spent: true } : {}) }));
   // A painted picture for the beat, when the world has one: it fills the stage behind the dialogue box.
   return { place: say(scene.place), ...(scene.panel.art ? { art: scene.panel.art } : {}), caption: (scene.panel.caption?.[state.lang] ?? scene.panel.caption?.zh ?? []).map(l => fill(l, state, content)), taps: quietOne(scene, taps), ...(invites(state, taps) ? { invite: true } : {}) };
 }

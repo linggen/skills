@@ -58,3 +58,19 @@ test('a board won: its last line is read first, then the scene\'s way on that wa
   assert.doesNotMatch(tray, /射鹿/, 'a finished board leaves the tray');
   assert.match(tray, /洗髓/);
 });
+
+test('冰夷\'s trial waits for 站着，不跪: a scene\'s fight with its own words is a choice first, its card after', async () => {
+  const { loadContent } = await import('../scripts/content.mjs');
+  const { look } = await import('../scripts/rules.mjs');
+  const { cardHtml, WORDS } = await import('../scripts/cards.js');
+  const content = loadContent();
+  const base = JSON.parse(fs.readFileSync(new URL('./fixtures/saves/ji-altar.json', import.meta.url), 'utf8'));
+  const l = look({ ...base, scene: '01-rise', place: content.chapters['01-ji'].scenes['01-rise'].at }, content, { now: new Date('2026-09-29T11:00:00'), quests: [] });
+  const tap = l.scene.panel.taps.find(t => t.id === 'stand');
+  assert.equal(tap?.duel, 'shuanglong-trial', JSON.stringify(l.scene.panel.taps));
+  const card = (called) => cardHtml({ card: 'panel' }, { look: l, words: WORDS.zh, lang: 'zh', called });
+  assert.match(card(new Set()), /data-panel-duel="shuanglong-trial"[^>]*>站着，不跪</);
+  assert.doesNotMatch(card(new Set(['shuanglong-trial'])), /站着，不跪/, 'chosen: the trial card stands instead');
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /c\.card !== 'duel' \|\| !\(look\.scene\?\.panel\?\.taps \?\? \[\]\)\.some\(\(t\) => t\.duel === c\.id\) \|\| called\.has\(c\.id\)/);
+});
