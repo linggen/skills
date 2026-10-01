@@ -534,6 +534,21 @@
         "凡人身上都有这八条脉，都属阴，关着不开；只有神仙拿阳气把它冲开，所以得道。"
       ],
       "note": "与 qijing-yinqiao（今十）同一页、不同句。B 表古二银月只说前半句（「閉而不開」），冲开的后半句留给第五回揭开她夜夜在凿。"
+    },
+    "zhuangzi-yangshengzhu": {
+      "title": "庄子·养生主",
+      "about": "《庄子》内篇第三篇，讲养生之道，庖丁解牛就出在这一篇。",
+      "source": {
+        "edition": "维基文库《莊子·養生主》",
+        "section": "内篇〈養生主第三〉·首章",
+        "url": "https://zh.wikisource.org/wiki/%E8%8E%8A%E5%AD%90%2F%E9%A4%8A%E7%94%9F%E4%B8%BB",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "爲善無近名，爲惡無近刑，緣督以爲經，可以保身，可以全生，可以養親，可以盡年。",
+      "plain": [
+        "做好事别近于求名，做坏事别近于受刑；顺着正中那一条「督」走，当作常道，就能保身、全生、养亲、活尽天年。"
+      ],
+      "note": "「督」旧注多解作「中」；医家、丹家借作督脉（脊梁正中那一路）。眼镜的说法是后一种，属比附。"
     }
   },
   "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; lingshu-jiuzhen 今七 (严老师's 针灸实验课); shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; yangxing-changxi 今九; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: the 《神农本草经》 序录 上药/中药/下药 passage is already `shennong`, told by 褚先生 in 古六 (06-第六回.md) — a 药园 line would use it twice.",
@@ -551,9 +566,6 @@
     ],
     "古四": [
       "baopu-bianwen"
-    ],
-    "今五": [
-      "zhuangzi-yangshengzhu"
     ],
     "古五": [
       "zhonglv-sishi"
@@ -717,21 +729,6 @@
         "照仙经的说法，凡是成了仙的，都是受命那一刻正碰上神仙之气，是天生的禀赋；所以还在娘胎里，就带着通道的性子，等懂了事，自然心里爱这件事，必定遇上明师、得了法子。"
       ],
       "note": "这是「灵根」这层意思（生来的禀赋）最近的经据；「灵根」这个词本身出自《黄庭经》，义是舌根、命根（见 huangting-linggen；补丁②，DESIGN § 六·五·二）。"
-    },
-    "zhuangzi-yangshengzhu": {
-      "title": "庄子·养生主",
-      "about": "《庄子》内篇第三篇，讲养生之道，庖丁解牛就出在这一篇。",
-      "source": {
-        "edition": "维基文库《莊子·養生主》",
-        "section": "内篇〈養生主第三〉·首章",
-        "url": "https://zh.wikisource.org/wiki/%E8%8E%8A%E5%AD%90%2F%E9%A4%8A%E7%94%9F%E4%B8%BB",
-        "license": "公有领域（古籍；维基文库 PD-old）"
-      },
-      "original": "爲善無近名，爲惡無近刑，緣督以爲經，可以保身，可以全生，可以養親，可以盡年。",
-      "plain": [
-        "做好事别近于求名，做坏事别近于受刑；顺着正中那一条「督」走，当作常道，就能保身、全生、养亲、活尽天年。"
-      ],
-      "note": "「督」旧注多解作「中」；医家、丹家借作督脉（脊梁正中那一路）。眼镜的说法是后一种，属比附。"
     },
     "zhonglv-sishi": {
       "title": "钟吕传道集·论四时",
