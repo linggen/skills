@@ -44,6 +44,7 @@ test('the page asks queue.js: the games are held, every moment waits its turn, a
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(page, /cards = afterBook\(cards, cardsAhead\(\)\);\s*watchAppear\(cards\);/, 'a beast\'s first sight only for a card that is drawn');
   for (const m of MOMENTS) assert.match(page, new RegExp(`momentTurn\\('${m}'`), `${m} waits its turn`);
+  assert.match(page, /playing: playing\(r\) && r\.items\[r\.i\]\?\.of !== 'scene'/, 'a set piece plays after its choice\'s passage, before the next scene\'s (01-deep: the seal, then 01-cauldron)');
   assert.match(page, /async function gainBurst[\s\S]{0,200}boxAhead\(\) \|\| momentUp\(\) \|\| momentPending\.size/, '修为 +n never floats over her memory');
   assert.match(page, /slots\.main\.some\(\(c\) => c\.card === 'closed'\) \? '' : toastsHtml\(\)/, '「完」 stands alone (所得 waits)');
 });

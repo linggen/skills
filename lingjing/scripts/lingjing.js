@@ -1680,10 +1680,15 @@ const boxYields = (slots) => boxGivesWay({ bout: Boolean(bout), appearing: Boole
    two never stand at once (「完」 over 所得, 突破 over 五门俱开, 修为 +60 over
    her memory, live 2026-10-01). `extra` is a moment's own further wait. */
 const momentPending = new Set();
+/* A set piece is the picture of the choice that brings it (01-deep's seal pressed, the 鼎
+   rising): it plays after that choice's own passage and before the next scene's — the box
+   steps aside for it on a scene's passage (pieceAhead), and plays that scene on after. */
+const pieceAhead = () => { const r = readingHere(); return bookAhead({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: playing(r) && r.items[r.i]?.of !== 'scene', huiTurn: atHuiTurn() }); };
 async function momentTurn(kind, extra = () => false) {
   momentPending.add(kind);
+  const ahead = kind === 'piece' ? pieceAhead : boxAhead;
   try {
-    for (let k = 0; k < 2400 && (!momentMay(kind, { ahead: boxAhead(), up: momentUp(), pending: [...momentPending] }) || extra()); k += 1) await pause(250);
+    for (let k = 0; k < 2400 && (!momentMay(kind, { ahead: ahead(), up: momentUp(), pending: [...momentPending] }) || extra()); k += 1) await pause(250);
   } finally { momentPending.delete(kind); }
 }
 /* The box still on a passage of the 回 just ended (the exit that ended it, a scene
