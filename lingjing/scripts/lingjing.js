@@ -38,6 +38,7 @@ import { advance, current, dialogHtml, keepReading, loadReading, logHtml, playin
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
 import { playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
+import { afterBook, bookAhead, boxGivesWay, momentMay } from './queue.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -276,7 +277,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, panelBusy: view.panelBusy, panelNote: view.panelNote, reading: readingHere(), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, panelBusy: view.panelBusy, panelNote: view.panelNote, reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -661,7 +662,9 @@ function playTravel(stops) {
 /* A gain, where the eye is: 修为 +30 · 灵石 +10 rises in the middle of the
    stage — the strip's count-up alone ran while he read the chat and he never
    saw one (2026-09-23: 还是没看到动画). */
-function gainBurst(g) {
+async function gainBurst(g) {
+  // After the book and the moments: a gain never floats over her memory or a seal.
+  for (let k = 0; k < 720 && (boxAhead() || momentUp() || momentPending.size); k += 1) await pause(250);
   const w = words(), bits = [];
   if (g.progress) bits.push(`<span>${esc(w.xw)} <b>+${g.progress}</b></span>`);
   if (g.wealth) bits.push(`<span>${esc(w.ls)} <b>+${g.wealth}</b></span>`);
@@ -705,7 +708,8 @@ function feat(...args) {
   // A new 回's seal is its opening: it comes after the old 回's ending card is put away.
   if (kind === 'rise') riseWaits = true;
   setTimeout(async () => {
-    for (let k = 0; k < 600 && (pieceOn || (kind === 'rise' ? (oldHuiPlaying() || Boolean(look?.tell_owed || drawingTold)) : (closeUp() || featOn))); k += 1) await pause(250);
+    // A new 回's seal is its opening: after the old 回's 「完」 is put away.
+    await momentTurn('feat', () => (kind === 'rise' ? oldHuiPlaying() : closeUp()));
     featOn = true;
     if (kind === 'rise') riseWaits = false;
     featNow(...args);
@@ -872,6 +876,8 @@ function stageNow() {
   if (view.doors) cards = [{ card: 'doors' }, ...cards];
   // A chapter's ending card, until he puts it away (合上; kept per save in this browser).
   cards = cards.filter((c) => c.card !== 'closed' || (!closeSeen(look.chapter?.close?.id) && !stageBusy() && !endingWaits()));
+  // The book first: a game waits until the passage that leads into it is told.
+  cards = afterBook(cards, boxAhead());
   watchAppear(cards);
   return stageSlots(look, cards.filter(inQueue), { skip: view.qSkip });
 }
@@ -883,7 +889,8 @@ function focusHtml(slots) {
   // A fight takes the stage: while one is open, nothing else is on it, and the
   // chat beside it keeps talking (design.md § 斗法在主界面里).
   if (bout) return battleHtml(boutView(bout.st), boutOffers(bout.st), boutCtx(), bout.picked, bout.openLog, bout.note, bout.help);
-  const toasts = toastsHtml();
+  // One thing at a time: a 回's 「完」 stands alone — 所得 and the other notes wait under it.
+  const toasts = slots.main.some((c) => c.card === 'closed') ? '' : toastsHtml();
   return (toasts ? `<div class="toasts">${toasts}</div>` : '') + slots.main.map(drawCard).join('');
 }
 
@@ -1630,13 +1637,28 @@ function setReading(r, patch = {}) {
   keepReading(SCRATCH, r);
   show({ reading: r, ...patch });
 }
-/* The box yields the stage to a fight, a board, a mini-game, her memory and
-   the page's own moments; it plays on when they are done. */
-const YIELDS = new Set(['board', 'duel', 'tale', 'lundao', 'memory', 'homing', 'doors']);
-const boxYields = (slots) => Boolean(bout || view.appearing || !slots || slots.main.some((c) => YIELDS.has(c.card))
-  // …and to the moments in their order, the 回's ending card and the new 回's title card (stageBusy) —
-  // but a passage of the 回 just ended plays first: its 「完」 waits for it (oldHuiPlaying).
-  || stageBusy() || (!oldHuiPlaying() && (closeUp() || Boolean(titleCard()))));
+/* ── One thing at a time: the box first (queue.js, 2026-10-01) ──
+   The passage that leads into a board, a fight, a set piece or a seal
+   finishes in the box first; then that thing opens. */
+const titlePending = () => { const ch = look?.chapter; return Boolean(ch?.fresh && !bout && !dismissedTitles.has(ch.id) && !titleSeen(ch.id)); };
+// At a 回's turn: the old 回's passages told, its 「完」 or the new title still to come.
+const atHuiTurn = () => !oldHuiPlaying() && (closeUp() || titlePending());
+/* Is the book still ahead of the stage? Passages owed or being drawn, or the
+   box playing this scene's (not paused at a 回's turn). */
+const boxAhead = () => bookAhead({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: playing(readingHere()), huiTurn: atHuiTurn() });
+const momentUp = () => Boolean(pieceOn || featOn || view.memory || view.homing || view.doors || document.querySelector('.feat'));
+const boxYields = (slots) => boxGivesWay({ bout: Boolean(bout), appearing: Boolean(view.appearing), slots: Boolean(slots), up: momentUp(), huiTurn: atHuiTurn() });
+/* The page's moments in their order — set piece, 息壤's doors, the gold seal,
+   her memory, 鼎归 — each waits for the box and for the one before it, so
+   two never stand at once (「完」 over 所得, 突破 over 五门俱开, 修为 +60 over
+   her memory, live 2026-10-01). `extra` is a moment's own further wait. */
+const momentPending = new Set();
+async function momentTurn(kind, extra = () => false) {
+  momentPending.add(kind);
+  try {
+    for (let k = 0; k < 2400 && (!momentMay(kind, { ahead: boxAhead(), up: momentUp(), pending: [...momentPending] }) || extra()); k += 1) await pause(250);
+  } finally { momentPending.delete(kind); }
+}
 /* The box still on a passage of the 回 just ended (the exit that ended it, a scene
    of it): that 回's 「完」, the realm's seal and the new 回's title wait until it is
    told — seen live at 09-cliff (2026-09-30): 第九回's last words played under
@@ -2643,7 +2665,8 @@ let homingPending = false; // a 鼎 come home, its map not yet on the stage
 /* The page's own moments in their order — set piece, seal, her memory, 鼎归 —
    and while any is up or on its way, the 回's ending card, the new 回's title
    card and the dialogue box wait (one thing at a time, each put away by a tap). */
-const stageBusy = () => Boolean(pieceOn || featOn || view.memory || memoryWaits || view.homing || homingPending);
+// A seal on its way is not counted: the realm's waits through riseWaits, and a new 回's waits on the 「完」 itself.
+const stageBusy = () => Boolean(momentUp() || [...momentPending].some((k) => k !== 'feat') || memoryWaits || homingPending);
 const closeUp = () => Boolean(look?.chapter?.close && !closeSeen(look.chapter.close.id));
 async function playPiece(id, beats = null) {
   if (pieceOn) return;
@@ -2678,10 +2701,8 @@ async function playMemory(n) {
 async function playMemoryNow(n) {
   const r = await verb('story').catch((e) => { console.warn('[lingjing] memory', e); return null; });
   const play = replayOf(r?.album, n);
-  // A 鼎 home is often a realm risen too: her memory waits for the gold seal to go (feat).
-  for (let k = 0; k < 40 && document.querySelector('.feat'); k += 1) await pause(200);
-  // …and for a set piece on the stage to end (the 鼎 rises in 漳水立起 before she remembers).
-  for (let k = 0; k < 600 && pieceOn; k += 1) await pause(250);
+  // After the box, the set piece and the gold seal (the 鼎 rises in 漳水立起 before she remembers).
+  await momentTurn('memory');
   if (play) show({ memory: { n, i: 0, play, at: performance.now() } });
 }
 
@@ -2708,8 +2729,8 @@ async function playHoming(province) {
   // (riseStats notes the chapter in `shown`): wait for that draw, then for the seal and her memory to go.
   const sealed = () => shown?.chapter === look?.chapter?.id;
   await pause(600);
-  for (let k = 0; k < 160 && (!sealed() || document.querySelector('.feat') || view.memory || memoryWaits); k += 1) await pause(250);
-  for (let k = 0; k < 600 && pieceOn; k += 1) await pause(250); // a set piece first, then the map
+  for (let k = 0; k < 160 && !sealed(); k += 1) await pause(250);
+  await momentTurn('homing', () => memoryWaits); // the box, the set piece, the seal, her memory — then the map
   await loadAtlas();
   const places = atlasPlaces?.provinces?.[province]?.places ?? [];
   const pts = places.map((p) => p.map).filter(Boolean);
@@ -2784,9 +2805,9 @@ function storyMoment(n) {
   // A set piece (哇时刻 ②, an exit's `setpiece`: 漳水立起, 筑基天象): the whole stage plays
   // it first; her memory and 鼎归 wait for it to end (playMemoryNow, playHoming).
   const piece = setpieceOf(n);
-  if (piece) playPiece(piece, setpieceBeats(n));
-  // A realm lifted with its doors (息壤): the five open on the stage, one by one.
-  if (n.doors?.length) show({ doors: { node: n, at: performance.now() } });
+  if (piece) momentTurn('piece').then(() => playPiece(piece, setpieceBeats(n)));
+  // A realm lifted with its doors (息壤): the five open on the stage, one by one — after the box.
+  if (n.doors?.length) momentTurn('doors').then(() => show({ doors: { node: n, at: performance.now() } }));
   const m = nodeMoment(n);
   // Her price showing (unease.js): the stage shows it on her, then she says it.
   if (m && n.unease && herHere()) return void raiseUnease(n.unease, () => tellYinyue(m.id, m.zh, m.en, { mood: m.mood }), { still: stillMotion() });

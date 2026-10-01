@@ -124,7 +124,8 @@ test('no 章 is shown: chapter titles, closes and the page\'s words say 回 and 
 
 test('a passage carries its 回, so the page plays an ending 回\'s last words before its 「完」 (seen live at 09-cliff, 2026-09-30)', async () => {
   const { tellOf } = await import('../scripts/rules/tell.mjs');
-  const s = { ...newState(content, 'zh', NOW), chapter: '01-ji', scene: '01-arrive', place: 'yecheng', lang: 'zh', tell_owed: ['09-cliff/take'], done_scenes: ['09-snow', '09-furnace', '09-year', '09-qulao', '09-cliff'] };
+  // Arrived at 漳水南岸 (the scene's passage waits for him there — tell.mjs waitsArrival).
+  const s = { ...newState(content, 'zh', NOW), chapter: '01-ji', scene: '01-arrive', place: 'zhangnan', lang: 'zh', tell_owed: ['09-cliff/take'], done_scenes: ['09-snow', '09-furnace', '09-year', '09-qulao', '09-cliff'] };
   const tell = tellOf(content, s)?.tell ?? [];
   const take = tell.find(t => t.id === '09-cliff/take'), arrive = tell.find(t => t.id === '01-arrive');
   assert.equal(take?.hui, 'h09', 'the exit that ended 第九回 is of 第九回');
@@ -146,4 +147,37 @@ test('卷一 ends on its own card: 01-end rest waits on 「卷二 · 即将开�
   assert.match(close.teaser, /借鼎[\s\S]*散修[\s\S]*利息还没还完/);
   const inner = huiLabel(content, 'h09', 'zh', 'short');
   assert.equal(inner, '第九回');
+});
+
+test('story travel: a scene roads away keeps its passage owed until he arrives; the choice\'s own passage plays where it was made', async () => {
+  const { tellOf, owesTell } = await import('../scripts/rules/tell.mjs');
+  const away = { ...newState(content, 'zh', NOW), chapter: '01-ji', scene: '01-arrive', place: 'houshan', lang: 'zh', tell_owed: ['09-cliff/take'], done_scenes: ['09-snow', '09-furnace', '09-year', '09-qulao', '09-cliff'] };
+  const t = tellOf(content, away);
+  assert.deepEqual(t.tell.map(i => i.id), ['09-cliff/take'], 'only the throw\'s passage, on the cliff');
+  assert.ok(!t.keep.told_scenes.includes('01-arrive'), 'the arrival\'s is not marked told');
+  const walking = { ...away, ...t.keep };
+  assert.equal(owesTell(content, walking), false, 'nothing to draw on the road (the stage is not held up)');
+  const there = { ...walking, place: 'zhangnan' };
+  assert.equal(owesTell(content, there), true);
+  assert.deepEqual(tellOf(content, there).tell.map(i => i.id), ['01-arrive'], 'told at 漳水南岸');
+});
+
+test('story travel by an exit\'s `next`: every 卷一 step to a scene at another place keeps that scene\'s passage owed until arrival', async () => {
+  const { tellOf, owesTell } = await import('../scripts/rules/tell.mjs');
+  const { atScene } = await import('../scripts/rules/world.mjs');
+  const scenes = Object.fromEntries(['00-prologue', '00-waimen', '00-zhuji', '01-ji'].flatMap(c => Object.entries(content.chapters[c].scenes)));
+  let n = 0;
+  for (const sc of Object.values(scenes)) for (const e of sc.exits ?? []) {
+    const to = scenes[e.next];
+    if (!to?.story || !to.at || !sc.at || to.at === sc.at || content.chapters[to.chapter]?.corridor) continue;
+    const s = { ...newState(content, 'zh', NOW), chapter: to.chapter, scene: to.id, place: sc.at, lang: 'zh', tell_owed: [`${sc.id}/${e.id}`, `scene/${to.id}`] };
+    if (atScene(content, s)) continue; // a key beat carries him there itself
+    n += 1;
+    const t = tellOf(content, s);
+    assert.ok(!t.tell.some(i => i.id === to.id), `${sc.id}/${e.id}: ${to.id} is not told at ${sc.at}`);
+    assert.ok(t.keep.tell_owed.includes(`scene/${to.id}`), `${to.id} stays owed`);
+    assert.ok(tellOf(content, { ...s, ...t.keep, place: to.at }).tell.some(i => i.id === to.id), `${to.id} told at ${to.at}`);
+    assert.equal(owesTell(content, { ...s, ...t.keep }), false);
+  }
+  assert.ok(n > 3, `${n} steps walk to another place`);
 });

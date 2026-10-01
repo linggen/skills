@@ -168,13 +168,13 @@ test('a tap costs no model turn: the scene card, the name and the birthday are p
   assert.doesNotMatch(box, /report|sendHidden|fetch\(/);
 });
 
-test('the box on the page: its place in the view, the keys that go on, and it yields to a fight or a board', () => {
+test('the box on the page: its place in the view, the keys that go on, and what it yields to (queue.js)', () => {
   const html = fs.readFileSync(path.join(ROOT, 'scripts/index.html'), 'utf8');
   assert.match(html, /<div class="dlgwrap" id="dlg"><\/div>/);
   const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
   assert.match(src, /e\.key === ' ' \|\| e\.key === 'Enter'/);
-  assert.match(src, /const YIELDS = new Set\(\['board', 'duel'/);
-  assert.match(src, /bout \|\| view\.appearing/);
+  assert.match(src, /boxGivesWay\(\{ bout: Boolean\(bout\), appearing: Boolean\(view\.appearing\)/);
+  assert.match(src, /cards = afterBook\(cards, boxAhead\(\)\);/, 'the games wait for the book');
   const css = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.css'), 'utf8');
   assert.match(css, /\.view:has\(\.dlgwrap:not\(:empty\)\) \.slots \{ bottom:/);
   assert.match(css, /\.dlgwrap \{ left: 16px; right: 16px;/, 'narrow: 16px gutters');

@@ -1176,7 +1176,8 @@ function panel(card, ctx) {
   const caption = (p.caption ?? []).map((l) => `<p>${esc(l)}</p>`).join('');
   const art = p.art ? `<div class="panelart"><img src="${esc(worldPath(ctx.look.world?.dir ?? 'worlds/jiuding', p.art))}" alt=""></div>` : '';
   const busy = ctx.panelBusy ?? null, w = ctx.words;
-  const up = choicesUp(ctx.reading, ctx.lang);
+  // The box goes first: while the scene's passage is still to be drawn, its choices wait (a fast tap skipped the book).
+  const up = !ctx.tellPending && choicesUp(ctx.reading, ctx.lang);
   const exitOf = (t) => (ctx.look.scene.exits ?? []).find((e) => e.id === t.id);
   const taps = up ? (p.taps ?? []).map((t) => (exitOf(t)?.riddle ? riddleTapHtml(t, exitOf(t), busy, w) : panelTapHtml(t, busy, w))).join('') : '';
   const quiet = (p.taps ?? []).length === 1 && p.taps[0].quiet;

@@ -18,7 +18,7 @@
 import { fill, pick } from '../state.mjs';
 import { companionOf } from './companion.mjs';
 import { portraitOf } from './codex.mjs';
-import { inMade, sceneOf } from './world.mjs';
+import { atScene, inMade, sceneOf } from './world.mjs';
 
 const SPAN = /⟪([\s\S]*?)⟫/g;
 
@@ -47,6 +47,14 @@ export const CATCHUP_OVER = 2;
 
 const findScene = (content, sid) => Object.values(content.chapters).map(c => c.scenes?.[sid]).find(Boolean);
 
+/* A scene's passage is played where the scene stands (2026-10-01): when the
+   story's next scene is roads away (狰 → 柴房, 第六回 → 石门), its passage stays
+   owed until the player arrives — told on the way, it played at the wrong
+   place, and on arrival the box was empty and the choices already up. The
+   choice's own passage still plays where it was made. */
+const waitsArrival = (content, state, sid) => sid === state.scene && !atScene(content, state);
+const deferredKey = (content, state, key) => key.startsWith('scene/') && waitsArrival(content, state, key.slice(6));
+
 /* What the stage owes now, in order — each choice's outcome, the scene it
    walked into, and the scene the player stands in when it has a passage not
    yet played — and the save with it marked told. More than two owed: the
@@ -57,8 +65,9 @@ export function tellOf(content, state) {
   if (inMade(state)) return null;
   const scenes = content.chapters[state.chapter]?.scenes ?? {};
   const told = new Set(state.told_scenes ?? []);
-  const items = [], seen = new Set();
+  const items = [], seen = new Set(), later = [];
   const addScene = (sid) => {
+    if (waitsArrival(content, state, sid)) { if (!later.includes(`scene/${sid}`)) later.push(`scene/${sid}`); return; }
     const sc = findScene(content, sid);
     if (!sc?.story || told.has(sid) || seen.has(`scene/${sid}`)) return;
     seen.add(`scene/${sid}`); told.add(sid);
@@ -75,9 +84,9 @@ export function tellOf(content, state) {
     if (exit?.next) addScene(exit.next);
   }
   const scene = sceneOf(content, state);
-  if (scene?.story && scenes[scene.id]) addScene(scene.id);
+  if (scene?.story && scenes[scene.id] && atScene(content, state)) addScene(scene.id);
   if (!items.length && !(state.tell_owed ?? []).length) return null;
-  const keep = { ...state, tell_owed: [], told_scenes: [...told] };
+  const keep = { ...state, tell_owed: later, told_scenes: [...told] };
   return { tell: caughtUp(content, state, items), keep };
 }
 
@@ -100,9 +109,9 @@ function caughtUp(content, state, items) {
    same walk as tellOf, without the passages. */
 export function owesTell(content, state) {
   if (inMade(state)) return false;
-  if ((state.tell_owed ?? []).length) return true;
+  if ((state.tell_owed ?? []).some(k => !deferredKey(content, state, k))) return true;
   const scene = sceneOf(content, state);
-  return Boolean(scene?.story && content.chapters[state.chapter]?.scenes?.[scene.id] && !(state.told_scenes ?? []).includes(scene.id));
+  return Boolean(scene?.story && atScene(content, state) && content.chapters[state.chapter]?.scenes?.[scene.id] && !(state.told_scenes ?? []).includes(scene.id));
 }
 
 /* What Ling is handed while the stage plays (`staged`): each owed beat by
@@ -111,7 +120,7 @@ export function owesTell(content, state) {
 export function stagedOf(content, state) {
   if (!owesTell(content, state)) return null;
   const say = pair => fill(pick(pair, state.lang), state, content);
-  const keys = [...(state.tell_owed ?? [])];
+  const keys = (state.tell_owed ?? []).filter(k => !deferredKey(content, state, k));
   const here = sceneOf(content, state);
   if (here?.story && !(state.told_scenes ?? []).includes(here.id) && !keys.includes(`scene/${here.id}`)) keys.push(`scene/${here.id}`);
   return keys.map(key => {
