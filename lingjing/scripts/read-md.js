@@ -14,10 +14,13 @@ import { esc } from './esc.js';
 import { fill, genderOf } from './state.mjs';
 import { codexHtml, isSubject } from './codex.js';
 
-/* ── The book's form (《鹿鼎记》's, Hanli 2026-09-29: 「按回卷改」): book.json's
-   `volumes` (卷 = ten 回) hold its `hui` (回, numbered through
-   the whole book, each with a 回目 of two seven-character lines); the reader
-   walks them flat, 卷 by 卷. ── */
+/* ── The book's form (《鹿鼎记》's, Hanli 2026-09-29: 「按回卷改」; two lines,
+   2026-10-01: 「一句话标题，按你说的做」): book.json's `volumes` (卷 = twenty
+   回, ten 古 and ten 今, alternating, opening on 今) hold its `hui` in the
+   book's order; the reader walks them flat, 卷 by 卷, and NUMBERS them as it
+   walks — 「第N回」 is never stored. Each 回 keeps a stable `id` (h01… 古,
+   j01… 今) and its `line`; book.json's own `n` is the ordinal within its line
+   (古一, 今一), kept as `ord`. ── */
 
 const DIGITS = '零一二三四五六七八九';
 /// 1 → 一, 10 → 十, 14 → 十四, 20 → 二十, 99 → 九十九, 100 → 一百 (a 回's or a 卷's number).
@@ -33,24 +36,53 @@ export function cnNumber(n) {
 /// 「第三回」, or "Chapter 3".
 export const huiLabel = (n, lang = 'zh') => (lang === 'en' ? `Chapter ${n}` : `第${cnNumber(n)}回`);
 
-/// Every 回 in book order, then the appendix: each with its `title` ({zh, en}:
-/// 「第五回　漏勺夜半通三关　萝卜一根收小狰」), `label` (第五回) and, for a 回,
-/// its `volume` ({id, n, name}). A book still in plain `chapters` reads as it was.
-export function bookEntries(book) {
-  const hui = (book?.volumes ?? []).flatMap((v) => (v.hui ?? []).map((h) => ({
-    ...h,
-    volume: { id: v.id, n: v.n, name: v.name },
-    label: { zh: huiLabel(h.n), en: huiLabel(h.n, 'en') },
-    title: { zh: `${huiLabel(h.n)}　${(h.huimu?.zh ?? []).join('　')}`, en: `${huiLabel(h.n, 'en')} · ${(h.huimu?.en ?? []).join(' / ')}` },
-  })));
+/// The two lines' tags: 古 (沈小满's world) and 今 (沈芒's). A 回 with no
+/// `line` is 古 — the book before 2026-10-01.
+export const LINES = { gu: { zh: '古', en: 'Then' }, jin: { zh: '今', en: 'Now' } };
+const lineOf = (h) => (h?.line === 'jin' ? 'jin' : 'gu');
+
+/// The rule for drafts: a 回 flagged `draft` is left out — and so out of the
+/// numbering — unless `opts.draft` (read.html?draft=1). The published view
+/// therefore never shows a gap or a 第二回 with no 第一回; the draft view
+/// numbers every 回 in place, as the book will read once they are approved.
+const shownIn = (opts) => (h) => !!opts?.draft || !h.draft;
+
+/// Every 回 in book order, then the appendix: each numbered by its place in
+/// the view (`n`, `label` 第五回), with its `line` and `tag` (古 / 今), `ord`
+/// (book.json's ordinal within its line), `title` ({zh, en}:
+/// 「第五回　古 · 漏勺夜半通三关　萝卜一根收小狰」) and its `volume` ({id, n,
+/// name}). A book still in plain `chapters` reads as it was.
+export function bookEntries(book, opts = {}) {
+  let n = 0;
+  const hui = (book?.volumes ?? []).flatMap((v) => (v.hui ?? []).filter(shownIn(opts)).map((h) => {
+    n += 1;
+    const line = lineOf(h), tag = LINES[line], words = h.huimu ?? {};
+    return {
+      ...h,
+      ord: h.n, n, line, tag,
+      volume: { id: v.id, n: v.n, name: v.name },
+      label: { zh: huiLabel(n), en: huiLabel(n, 'en') },
+      title: { zh: `${huiLabel(n)}　${tag.zh} · ${(words.zh ?? []).join('　')}`, en: `${huiLabel(n, 'en')} · ${tag.en} · ${(words.en ?? []).join(' / ')}` },
+    };
+  }));
   return [...hui, ...(book?.chapters ?? []), ...(book?.appendix ?? []).map((a) => ({ ...a, volume: null }))];
 }
 
-/// The entry an id names — a 回's own id, or an old chapter id its `aliases` map
-/// (序章上's `00` → `h01`), so an old read.html?ch= link still opens its 回.
-export function entryById(book, id) {
-  const all = bookEntries(book), want = book?.aliases?.[id] ?? id;
+/// The entry an id names in the view — a 回's own id, or an old chapter id its
+/// `aliases` map (序章上's `00` → `h01`), so an old read.html?ch= link still
+/// opens its 回. A draft's id names nothing in the published view.
+export function entryById(book, id, opts = {}) {
+  const all = bookEntries(book, opts), want = book?.aliases?.[id] ?? id;
   return all.find((c) => c.id === want) ?? null;
+}
+
+/// A 回's title as the page sets it, from book.json — never from the file's
+/// own title line, whose number is the line's ordinal: the number with its
+/// 今/古 tag (and 草稿 in the draft view), then the 回目, one line per line.
+export function huimuHtml(h) {
+  const draft = h.draft ? '<span class="tag draft">草稿</span>' : '';
+  return `<h1 class="huimu ${h.line}"><span class="hui">${esc(h.label.zh)}<span class="tag">${esc(h.tag.zh)}</span>${draft}</span>`
+    + `${(h.huimu?.zh ?? []).map((l) => `<span class="line">${esc(l)}</span>`).join('')}</h1>`;
 }
 
 // `# 第三回　上联　下联`: a 回's title line (full-width or plain spaces between).
@@ -167,7 +199,8 @@ export function classicsAppendix(cited, classics = {}) {
 /// `opts.memory(n)` → memory n's plate src, or null (none: plates are left out);
 /// `opts.codex` → the resolved 图鉴 (codex.js codexOf: a Map, or an object) and
 /// `opts.chapter` → this 回's id in book.json (h03), which `first.book` names;
-/// `opts.src`, `opts.lang` → codexHtml.
+/// `opts.src`, `opts.lang` → codexHtml; `opts.hui` → this 回's entry
+/// (bookEntries): the file's first `# ` title line is set from it (huimuHtml).
 export function renderMarkdown(md, opts = {}) {
   const codex = opts.codex, classics = opts.classics ?? {};
   // A subject's card stands once: after the first paragraph that names it, in
@@ -199,7 +232,7 @@ export function renderMarkdown(md, opts = {}) {
   // <!-- … --> is a note for the writers (女主变体 and the like), never read.
   const lines = String(md ?? '').replace(/\r\n/g, '\n').replace(/<!--[\s\S]*?-->/g, '').split('\n');
   const out = [];
-  let para = [], quote = [], table = [];
+  let para = [], quote = [], table = [], titled = false;
   const flush = () => {
     if (para.length) {
       block += 1;
@@ -225,6 +258,7 @@ export function renderMarkdown(md, opts = {}) {
     if (h) {
       flush();
       section += 1;
+      if (h[1].length === 1 && opts.hui?.huimu && !titled) { titled = true; heading = opts.hui.label.zh; out.push(huimuHtml(opts.hui)); continue; }
       const hui = h[1].length === 1 && HUIMU.exec(h[2].trim());
       if (hui) { heading = hui[1]; out.push(`<h1 class="huimu"><span class="hui">${esc(hui[1])}</span><span class="line">${esc(hui[2])}</span><span class="line">${esc(hui[3])}</span></h1>`); continue; }
       if (h[1].length <= 2) heading = h[2].replace(CLASSIC, '《$1》').replace(/\*\*/g, '');

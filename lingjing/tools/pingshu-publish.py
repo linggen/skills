@@ -89,6 +89,8 @@ def huis(book_dir):
     out = []
     for vol in book.get('volumes', []):
         for h in vol.get('hui', []):
+            if h.get('draft'):  # a 回 Hanli has not approved yet (book.json `draft`) is not told
+                continue
             name = os.path.splitext(h['file'])[0].split('-', 1)[1]
             out.append((h['id'], h['file'][:2], os.path.join(book_dir, h['file']), name))
     return out, book.get('world', 'jiuding')

@@ -3,6 +3,8 @@
 // new window). story/index.json names the books; a book's book.json its
 // 卷 and 回 (《鹿鼎记》's form: the contents list each 卷, then its 回 with the
 // 回目; prev/next go 回 by 回) and appendix; each is a markdown file (read-md.js).
+// Two lines, 古 and 今 (2026-10-01): each 回's 「第N回」 and tag are computed
+// from book.json's order; ?draft=1 shows the 回 still in draft, numbered in place.
 import { esc } from './esc.js';
 import { bookEntries, entryById, fillHero, heroOf, renderMarkdown } from './read-md.js';
 import { playMarks, wireMarks } from './marks.js';
@@ -17,6 +19,7 @@ const WORDS = {
 const STORY = '../story/';
 const params = new URLSearchParams(location.search);
 const lang = params.get('lang') === 'en' ? 'en' : 'zh';
+const view = { draft: params.get('draft') === '1' };
 const w = WORDS[lang];
 const pick = (pair) => (pair && typeof pair === 'object' ? pair[lang] ?? pair.zh ?? pair.en : pair ?? '');
 const $ = (id) => document.getElementById(id);
@@ -29,7 +32,7 @@ function hrefWith(changes) {
 }
 function backHref() {
   const q = new URLSearchParams(location.search);
-  for (const k of ['book', 'ch', 'lang']) q.delete(k);
+  for (const k of ['book', 'ch', 'lang', 'draft']) q.delete(k);
   const s = q.toString();
   return `index.html${s ? `?${s}` : ''}`;
 }
@@ -48,9 +51,9 @@ async function main() {
   const bookId = (asked && index.aliases?.[asked]) ?? asked ?? index.books?.[0];
   if (!bookId) { $('chapter').innerHTML = `<p class="note">${esc(w.none)}</p>`; return; }
   const book = await getJson(`${STORY}${encodeURIComponent(bookId)}/book.json`);
-  const all = bookEntries(book);
+  const all = bookEntries(book, view);
   // An old chapter id (read.html?ch=02, before the 回) opens its 回.
-  const want = entryById(book, params.get('ch'))?.id;
+  const want = entryById(book, params.get('ch'), view)?.id;
   const at = Math.max(0, all.findIndex((c) => c.id === want));
   const ch = all[at];
   document.title = `${pick(book.title)} · ${pick(ch.label ?? ch.title)}`;
@@ -72,13 +75,13 @@ async function main() {
   // 附 · 本回典籍: the classics the book names (`《书名》{典=id}`), one file per book; none reads plain.
   const classics = getJson(`${STORY}${encodeURIComponent(bookId)}/classics.json`).then((c) => c?.classics ?? {}, () => ({}));
   try {
-    const res = await fetch(`${STORY}${encodeURIComponent(bookId)}/${encodeURIComponent(ch.file)}`);
+    const res = await fetch(`${STORY}${encodeURIComponent(bookId)}/${ch.file.split('/').map(encodeURIComponent).join('/')}`);
     if (!res.ok) throw new Error(String(res.status));
     const md = await res.text();
     const who = await hero, f = await files;
     codex = codexOf(f, { lang, gender: who.gender, say: addressSay(f.people, who.gender, lang) });
     $('chapter').innerHTML = (lang === 'en' ? `<p class="note">${esc(w.only)}</p>` : '') + renderMarkdown(fillHero(md, who), {
-      codex, chapter: ch.id, src: (file) => worldPath(world, file), lang,
+      codex, chapter: ch.id, hui: ch.huimu ? ch : null, src: (file) => worldPath(world, file), lang,
       memory: memoryPlate(await memories, world), classics: await classics,
     });
   } catch {
@@ -106,17 +109,18 @@ async function ear(bookId, id) {
   });
 }
 
-/// The contents: each 卷's name, then its 回 — the number, and the 回目's two
-/// lines after it (on a phone they wrap under the number); the appendix last.
+/// The contents: each 卷's name, then its 回 — the number and its 古/今 tag,
+/// and the 回目 after it (古 two lines, 今 one; on a phone they wrap under the
+/// number); the appendix last.
 function tocHtml(all, at, bookId) {
   let volume = null;
   return all.map((c, i) => {
     const head = c.volume && c.volume.id !== volume ? `<div class="tocv">${esc(pick(c.volume.name))}</div>` : '';
     if (c.volume) volume = c.volume.id;
     const words = c.huimu
-      ? `<span class="tn">${esc(pick(c.label))}</span><span class="tm">${(c.huimu[lang] ?? c.huimu.zh ?? []).map((l) => `<span>${esc(l)}</span>`).join('')}</span>`
+      ? `<span class="tn">${esc(pick(c.label))}<i class="tag">${esc(pick(c.tag))}</i>${c.draft ? `<i class="tag draft">${lang === 'en' ? 'draft' : '草稿'}</i>` : ''}</span><span class="tm">${(c.huimu[lang] ?? c.huimu.zh ?? []).map((l) => `<span>${esc(l)}</span>`).join('')}</span>`
       : esc(pick(c.title));
-    return `${head}<a href="${esc(hrefWith({ book: bookId, ch: c.id }))}" class="${[i === at ? 'on' : '', c.huimu ? 'hui' : 'apx'].filter(Boolean).join(' ')}">${words}</a>`;
+    return `${head}<a href="${esc(hrefWith({ book: bookId, ch: c.id }))}" class="${[i === at ? 'on' : '', c.huimu ? `hui ${c.line}` : 'apx'].filter(Boolean).join(' ')}">${words}</a>`;
   }).join('');
 }
 

@@ -1,13 +1,13 @@
 /* read.html — the book the game is told from, in the game's paper and ink. */
 :root {
-  --ground: #F1ECE1; --surface: #FBF8F2; --line: #DCD3C1; --text: #1D1B17; --dim: #6A6458; --seal: #B03A2B;
+  --ground: #F1ECE1; --surface: #FBF8F2; --line: #DCD3C1; --text: #1D1B17; --dim: #6A6458; --seal: #B03A2B; --jin: #3D6470;
   --serif: "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", Georgia, serif;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --ground: #12110E; --surface: #1A1815; --line: #353026; --text: #ECE5D6; --dim: #A69E8E; --seal: #E27461; color-scheme: dark; }
+  :root:not([data-theme="light"]) { --ground: #12110E; --surface: #1A1815; --line: #353026; --text: #ECE5D6; --dim: #A69E8E; --seal: #E27461; --jin: #86AFBB; color-scheme: dark; }
 }
-:root[data-theme="dark"] { --ground: #12110E; --surface: #1A1815; --line: #353026; --text: #ECE5D6; --dim: #A69E8E; --seal: #E27461; color-scheme: dark; }
+:root[data-theme="dark"] { --ground: #12110E; --surface: #1A1815; --line: #353026; --text: #ECE5D6; --dim: #A69E8E; --seal: #E27461; --jin: #86AFBB; color-scheme: dark; }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--ground); color: var(--text); font-family: var(--serif); }
 .bar { position: sticky; top: 0; display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--line); z-index: 2; }
@@ -30,6 +30,14 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 .toc a.hui .tn { white-space: nowrap; }
 .toc a.hui .tm { display: flex; flex-direction: column; }
 .toc a.apx { margin-top: 10px; }
+/* Two lines (2026-10-01): each 回 wears a small boxed 古 or 今 after its
+   number — 古 in the paper's dim ink, 今 in a cool blue-grey; a 今 回目 is one
+   line in 沈芒's voice, set a little lighter. 草稿 only in the draft view. */
+.tag { display: inline-block; margin-left: 6px; padding: 0 3px; font-size: 10px; font-style: normal; line-height: 1.4; letter-spacing: 0; color: var(--dim); border: 1px solid currentColor; border-radius: 3px; vertical-align: 2px; opacity: .85; }
+.jin .tag { color: var(--jin); }
+.tag.draft { color: var(--seal); border-style: dashed; }
+.toc a.hui.jin .tm { font-size: 13px; }
+.toc a.hui.jin:not(.on) { border-left-color: color-mix(in srgb, var(--jin) 35%, transparent); }
 .chapter { grid-area: chapter; }
 .pager { grid-area: pager; }
 @media (max-width: 820px) {
@@ -50,6 +58,8 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 .chapter h1.huimu .hui { display: block; font-size: 15px; letter-spacing: .4em; color: var(--dim); margin-bottom: 14px; font-weight: 400; }
 .chapter h1.huimu .line { display: block; font-size: 23px; letter-spacing: .3em; line-height: 1.8; }
 @media (max-width: 420px) { .chapter h1.huimu .line { font-size: 20px; letter-spacing: .2em; } }
+.chapter h1.huimu .hui .tag { font-size: 11px; letter-spacing: 0; padding: 0 4px; margin-left: 8px; }
+.chapter h1.huimu.jin .line { font-size: 20px; letter-spacing: .08em; font-weight: 500; }
 .chapter h2 { font-size: 19px; margin: 32px 0 12px; color: var(--seal); letter-spacing: .06em; }
 .chapter h3 { font-size: 17px; margin: 24px 0 8px; }
 .chapter p { margin: 0 0 1em; }
