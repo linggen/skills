@@ -46,7 +46,7 @@
     "zh": "瞿老四十多年没收过徒弟——他上一个徒弟，后来怎样了？",
     "en": "Old Qu took no disciple for more than forty years — what became of the last one?"
   },
-  "_close": "The ending card (story.mjs closeOf): 第十回 follows at once, so it stands on 01-arrive with 「第九回 · 完」 — what he did and the teaser in the book's voice (third person).",
+  "_close": "The ending card (story.mjs closeOf): 第十回 follows at once, so it stands on 01-arrive with 「第九回 · 完」 — what he did and the teaser, both to 你 (2026-10-01: a card says 你, the dialogue box plays the book in the third person; one card mixed 你 and 沈小满).",
   "close": {
     "did": [
       {
@@ -63,8 +63,8 @@
       }
     ],
     "teaser": {
-      "zh": "却说北边漳水之滨，有一座邺城，城里年年要给河伯娶一回媳妇。今年巫祝挑中的新娘子，是城西卖豆腐的哑女——那时沈小满还不知道，这门亲事，是要他去搅上一搅的。",
-      "en": "Up north on the Zhang stands the city of Ye, which marries a bride to the River Lord every year. This year the shaman chose the mute girl who sells tofu on the west side — and Shen Xiaoman did not yet know that this wedding was his to spoil."
+      "zh": "却说北边漳水之滨，有一座邺城，城里年年要给河伯娶一回媳妇。今年巫祝挑中的新娘子，是城西卖豆腐的哑女——那时你还不知道，这门亲事，是要你去搅上一搅的。",
+      "en": "Up north on the Zhang stands the city of Ye, which marries a bride to the River Lord every year. This year the shaman chose the mute girl who sells tofu on the west side — and you did not yet know that this wedding was yours to spoil."
     }
   }
 }

@@ -182,3 +182,13 @@ test('story travel by an exit\'s `next`: every 卷一 step to a scene at another
   }
   assert.ok(n > 3, `${n} steps walk to another place`);
 });
+
+test('a 回\'s 「完」 card speaks to 你 throughout — what he did and the teaser alike (scene cards say 你; the box plays the book in the third person)', () => {
+  for (const id of ['00-waimen', '00-zhuji', '01-ji']) {
+    const c = content.chapters[id].close;
+    for (const part of [...(c.did ?? []), c.teaser].filter(Boolean)) {
+      assert.doesNotMatch(part.zh, /沈小满|小满/, `${id}: ${part.zh}`);
+      assert.doesNotMatch(part.en, /Xiaoman/, `${id}: ${part.en}`);
+    }
+  }
+});
