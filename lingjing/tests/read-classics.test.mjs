@@ -68,10 +68,10 @@ test('every {典=id} in the book is an entry; every entry has a real source and 
 test('each 回 ends with its classics (卷一 in ten since 2026-09-30), and the made-up 《吐纳经》 is not one', () => {
   const at = (id) => chapters.find((c) => c.id === id);
   const entries = (id) => [...renderMarkdown(fillHero(at(id).md, {}), { classics: CLASSICS }).matchAll(/<article class="dianent" id="dian-([\w-]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(entries('h05'), ['liezi-yugong', 'zhuangzi-dasheng', 'shanhai-zheng']); // 真气 (素问) waits for 第九回; 守一's 用志不分 taught after the 小周天 (课随境界, 2026-09-30)
+  assert.deepEqual(entries('h05'), ['liezi-yugong', 'zhonglv-sishi', 'zhuangzi-dasheng', 'shanhai-zheng']); // 真气 (素问) waits for 第九回; 守一's 用志不分 taught after the 小周天 (课随境界, 2026-09-30); 主典 钟吕「煉精生真氣」 = 练气一层, the rest withheld (Hanli 2026-10-01)
   assert.deepEqual(entries('h06'), ['baopu']); // 抱朴子's 转 told in 褚先生's lecture while he grips the bottle — no narrator aside at the first 纹 (2026-09-30); 主典 only — 神农, 染指, 九鼎神丹经诀 一笔带过 (Hanli 2026-10-01)
   assert.deepEqual(entries('h07'), ['jiuding', 'shanhai-gui', 'shanhai-xirang', 'shangshu-hongfan']); // 主典 洪范五句 on the notebook's surviving page, come alive in the 五行 turn (修仙词汇表 B, Hanli 2026-10-01)
-  assert.deepEqual(entries('h08'), ['liji-zha', 'lunyu-shuxiu', 'huangting', 'shangshu-yugong']);
+  assert.deepEqual(entries('h08'), ['laozi-qizhe', 'huangting-linggen']);
   assert.deepEqual(entries('h09'), ['wu-zhuji', 'suwen', 'huangting']); // 主典 伍冲虚「築者……安神定息之處所也」 read by 褚先生 before his 盖房子, paid off when 神安息定 on the cliff; 巽「进退」 and 庄子刻意 一笔带过, 牛毛麟角 cut (修仙词汇表 B, Hanli 2026-10-01) // 恬惔虚无 moved from 第三回 to the eve of 筑基 (课随境界走, 2026-09-30) // 褚先生's 筑基 lecture moved off the cliff into the autumn 讲堂 (2026-09-30)
   assert.deepEqual(entries('h10'), ['neiguan-jing']); // 主典 内观经 十六字, 瞿老's parting lesson, at the bottom of the 漳水; 西门豹·冰夷 stay as story, untagged (修仙词汇表 B, Hanli 2026-10-01)
   for (const c of chapters) assert.equal(/《吐纳经》\{典=/.test(c.md), false, `${c.file}: 《吐纳经》 is 银月's own, never a classic`);
