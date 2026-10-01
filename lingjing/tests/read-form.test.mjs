@@ -3,7 +3,8 @@
 // alternating and opening on 今; 回 numbered through the whole book, the number
 // and the 今/古 tag computed from book.json's order; 古 has a 回目 of two
 // matching seven-character lines, 今 one line; no subheadings inside a 回, a
-// scene break only (DESIGN.md § 五·五). The reader walks it flat (read-md.js bookEntries).
+// scene break only; a 今 回 is published as written, `draft` only for one held back
+// (DESIGN.md § 五·五). The reader walks it flat (read-md.js bookEntries).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -24,10 +25,18 @@ test('卷 hold 回; the 回 run 第一回, 第二回 … through the whole book,
     const lines = (l) => v.hui.filter((h) => (h.line ?? 'gu') === l).length;
     assert.ok(lines('gu') <= 10 && lines('jin') <= 10, `${v.name.zh}: a 卷 is ten 古 and ten 今`);
   }
-  // The published view: every 回 numbered in turn, no gap — the draft 今 回 left out.
+  // The published view: every 回 numbered in turn, no gap — a 回 Hanli holds back (`draft`) left out.
   assert.deepEqual(hui.map((h) => h.n), hui.map((_, i) => i + 1));
-  assert.deepEqual(hui.map((h) => h.label.zh), ['第一回', '第二回', '第三回', '第四回', '第五回', '第六回', '第七回', '第八回', '第九回', '第十回']);
+  assert.deepEqual(hui.map((h) => h.label.zh), hui.map((_, i) => huiLabel(i + 1)));
   assert.ok(hui.every((h) => !h.draft), 'no draft in the published view');
+  // A 今 回 is published as written (Hanli 2026-10-01: 「今的写好就加进来吧」): the book opens on 今,
+  // and 今 and 古 alternate — 今一, 古一, 今二, 古二 … — for as long as both lines have 回; the line
+  // further ahead runs on alone after that.
+  const written = (l) => hui.filter((h) => h.line === l).length;
+  if (written('jin')) assert.equal(hui[0].line, 'jin', 'the book opens on 今');
+  const pairs = Math.min(written('jin'), written('gu'));
+  assert.deepEqual(hui.slice(0, 2 * pairs).map((h) => h.line), Array.from({ length: 2 * pairs }, (_, i) => (i % 2 ? 'gu' : 'jin')), '今 and 古 alternate');
+  assert.equal(new Set(hui.slice(2 * pairs).map((h) => h.line)).size <= 1, true, 'past the last pair, one line runs on alone');
   assert.equal(new Set(bookEntries(book).map((c) => c.id)).size, bookEntries(book).length, 'ids unique');
   book.volumes.forEach((v, i) => assert.equal(v.name.zh.startsWith(`卷${cnNumber(i + 1)}`), true, v.name.zh));
   assert.equal(bookEntries(book).at(-1).id, 'tuna', 'the appendix comes last');
@@ -39,11 +48,18 @@ test('each 古 回目 is two seven-character lines, each 今 one line; the 古 f
   for (const h of raw) {
     assert.ok(['gu', 'jin'].includes(h.line), `${h.id}: line is gu or jin`);
     assert.match(h.id, h.line === 'jin' ? /^j\d\d$/ : /^h\d\d$/, `${h.id}: 今 ids are j01…, 古 h01…`);
-    // A draft's file may still be on the writer's desk (uncommitted); an approved 回's is in the book.
+    // A held-back draft's file may still be on the writer's desk (uncommitted); a published 回's is in the book.
     if (!h.draft) assert.ok(fs.existsSync(path.join(BOOK, h.file)), `${h.id}: ${h.file} exists`);
     if (h.line === 'jin') {
       assert.equal(h.huimu.zh.length, 1, `${h.id}: a 今 回目 is one line`);
       assert.equal(h.huimu.en.length, 1, h.id);
+      // The 今 files: 今线/今NN.md, their title line 「第N回　今　一句话」 by the line's ordinal (今一), like the 古.
+      assert.equal(h.file, `今线/今${String(h.n).padStart(2, '0')}.md`, `${h.id}: file`);
+      if (fs.existsSync(path.join(BOOK, h.file))) {
+        const md = fs.readFileSync(path.join(BOOK, h.file), 'utf8');
+        assert.equal(md.split('\n')[0], `# ${huiLabel(h.n)}　今　${h.huimu.zh[0]}`, `${h.file}: title line`);
+        assert.doesNotMatch(md, /^#{2,}\s/m, `${h.file}: no subheadings inside a 回`);
+      }
     }
   }
   // The line ordinals (`n`) run 1, 2 … within each line, in book order.
@@ -62,8 +78,10 @@ test('each 古 回目 is two seven-character lines, each 今 one line; the 古 f
 });
 
 test('an old ?ch= id opens its 回; the 回 title renders centred as number and couplet; a scene break is a quiet ◇', () => {
-  // 2026-09-30 卷一 split into ten: the old 第一章 · 外门 (02) begins 第五回, 第二章 (03) 第九回.
-  assert.deepEqual(['00', '01', '02', '03'].map((id) => entryById(book, id)?.label.zh), ['第一回', '第二回', '第五回', '第九回']);
+  // 2026-09-30 卷一 split into ten: the old 第一章 · 外门 (02) begins 古五, 第二章 (03) 古九. An old id
+  // names the same 回 by its stable id, under whatever number the book now gives it.
+  assert.deepEqual(['00', '01', '02', '03'].map((id) => entryById(book, id)?.id), ['h01', 'h02', 'h05', 'h09']);
+  for (const id of ['00', '01', '02', '03']) assert.equal(entryById(book, id).label.zh, hui.find((h) => h.id === entryById(book, id).id).label.zh, id);
   assert.equal(entryById(book, 'h03').file, '03-第三回.md');
   assert.equal(entryById(book, 'h10').file, '10-第十回.md');
   assert.equal(entryById(book, 'tuna').id, 'tuna');
@@ -74,6 +92,9 @@ test('an old ?ch= id opens its 回; the 回 title renders centred as number and 
   assert.doesNotMatch(js, /all\.indexOf\(entryById/);
   assert.equal(renderMarkdown('# 第四回　九转一炉藏饭桶　千鱼漳水立龙门\n\n甲。\n\n---\n\n乙。'),
     '<h1 class="huimu"><span class="hui">第四回</span><span class="line">九转一炉藏饭桶</span><span class="line">千鱼漳水立龙门</span></h1>\n<p>甲。</p>\n<hr class="scene">\n<p>乙。</p>');
+  // A 今 title line: the number, the 今 tag, one line — never the tag taken for a first line.
+  assert.equal(renderMarkdown('# 第一回　今　一千米跑完，我看见了我太奶\n\n甲。'),
+    '<h1 class="huimu jin"><span class="hui">第一回<span class="tag">今</span></span><span class="line">一千米跑完，我看见了我太奶</span></h1>\n<p>甲。</p>');
   assert.equal(renderMarkdown('# 附录 ·《吐纳经》'), '<h1>附录 ·《吐纳经》</h1>', 'a plain title stays plain');
   const css = fs.readFileSync(path.join(ROOT, 'scripts/read.css'), 'utf8');
   assert.match(css, /hr\.scene::before \{ content: '◇'/);
@@ -117,14 +138,13 @@ test('drafts are hidden by default; the published view shows no gap; ?draft=1 nu
   assert.deepEqual(dr.map((h) => `${h.n}${h.id}`), ['1j01', '2h01', '3j02', '4h02', '5j03', '6h03']);
   assert.equal(entryById(b, 'j01'), null, 'a draft id names nothing in the published view');
   assert.equal(entryById(b, 'j01', { draft: true }).label.zh, '第一回');
-  // The real book: j01 is a draft, so 第一回 is still h01 — and with ?draft=1 it is j01, h01 第二回.
-  assert.equal(raw[0].id, 'j01');
-  assert.equal(raw[0].draft, true, 'j01 waits for Hanli');
-  assert.equal(bookEntries(book)[0].id, 'h01');
+  // The 草稿 tag shows in the draft view only; a published 回 never carries it.
+  assert.match(huimuHtml(dr[0]), /^<h1 class="huimu jin"><span class="hui">第一回<span class="tag">今<\/span><span class="tag draft">草稿<\/span><\/span><span class="line">[^<]+<\/span><\/h1>$/);
+  assert.equal(huimuHtml(pub[1]), '<h1 class="huimu jin"><span class="hui">第二回<span class="tag">今</span></span><span class="line">今2的一句话</span></h1>');
+  // The real book, whatever it holds back: the draft view is the published view plus exactly its drafts.
   const drafted = bookEntries(book, { draft: true }).filter((c) => c.huimu);
-  assert.deepEqual(drafted.slice(0, 3).map((h) => `${h.label.zh}${h.tag.zh}${h.id}`), ['第一回今j01', '第二回古h01', '第三回古h02']);
   assert.equal(drafted.length, hui.length + raw.filter((h) => h.draft).length);
-  assert.match(huimuHtml(drafted[0]), /^<h1 class="huimu jin"><span class="hui">第一回<span class="tag">今<\/span><span class="tag draft">草稿<\/span><\/span><span class="line">[^<]+<\/span><\/h1>$/);
+  assert.deepEqual(drafted.filter((h) => !h.draft).map((h) => h.id), hui.map((h) => h.id));
 });
 
 test('old links still resolve to the same chapter, in either view', () => {

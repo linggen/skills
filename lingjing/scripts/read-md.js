@@ -87,6 +87,9 @@ export function huimuHtml(h) {
 
 // `# 第三回　上联　下联`: a 回's title line (full-width or plain spaces between).
 const HUIMU = /^(第[零一二三四五六七八九十百]+回)[\s　]+(\S+)[\s　]+(\S+)$/;
+// `# 第一回　今　一句话`: a 今 回's title line — its number, the 今 tag, one line
+// in 沈芒's voice. Tried before HUIMU, which would take 今 for a first line.
+const HUIMU_JIN = /^(第[零一二三四五六七八九十百]+回)[\s　]+今[\s　]+(\S.*)$/;
 
 /// The hero the world fixes (people.json `hero`, 2026-09-30): the name a page
 /// shows when nothing else names him.
@@ -259,6 +262,8 @@ export function renderMarkdown(md, opts = {}) {
       flush();
       section += 1;
       if (h[1].length === 1 && opts.hui?.huimu && !titled) { titled = true; heading = opts.hui.label.zh; out.push(huimuHtml(opts.hui)); continue; }
+      const jin = h[1].length === 1 && HUIMU_JIN.exec(h[2].trim());
+      if (jin) { heading = jin[1]; out.push(`<h1 class="huimu jin"><span class="hui">${esc(jin[1])}<span class="tag">${esc(LINES.jin.zh)}</span></span><span class="line">${esc(jin[2])}</span></h1>`); continue; }
       const hui = h[1].length === 1 && HUIMU.exec(h[2].trim());
       if (hui) { heading = hui[1]; out.push(`<h1 class="huimu"><span class="hui">${esc(hui[1])}</span><span class="line">${esc(hui[2])}</span><span class="line">${esc(hui[3])}</span></h1>`); continue; }
       if (h[1].length <= 2) heading = h[2].replace(CLASSIC, '《$1》').replace(/\*\*/g, '');

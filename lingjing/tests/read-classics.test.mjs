@@ -80,7 +80,8 @@ test('with no subheadings, 「本回见」 names the 回 — 「第三回」, or
   assert.match(html, /本回见：<a href="#dian-shennong-1" data-dian-jump="dian-shennong-1">↑ 第三回 · 第1处<\/a>　<a href="#dian-shennong-2" data-dian-jump="dian-shennong-2">↑ 第三回 · 第2处<\/a>/);
   assert.match(html, /<a href="#dian-baopu-1" data-dian-jump="dian-baopu-1">↑ 第三回<\/a>/);
   for (const c of chapters.filter((x) => x.huimu)) {
-    const out = renderMarkdown(fillHero(c.md, {}), { classics: CLASSICS });
+    // As the page renders it (read.js passes hui): 「本回见」 names the book's number, not the file's line ordinal.
+    const out = renderMarkdown(fillHero(c.md, {}), { classics: CLASSICS, hui: c });
     for (const [, where] of out.matchAll(/data-dian-jump="dian-[\w-]+-\d+">↑ ([^<]+)</g)) assert.match(where, new RegExp(`^${c.label.zh}( · 第\\d+处)?$`), `${c.file}: ${where}`);
   }
 });

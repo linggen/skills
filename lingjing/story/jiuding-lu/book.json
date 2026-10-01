@@ -9,7 +9,7 @@
   "en": "The poorest hunter's family under Mount Meng has the mouthiest child. For one deer hide he crosses the stone that says Do Not Enter, and carries home a queen of heaven's foxes — eight tails cut away, starving, unable to recall her own name. She eats his last flatbread and owes him a wish. From then on, his luckless life takes off."
  },
  "world": "jiuding",
- "_form": "《鹿鼎记》's form, two lines (Hanli 2026-10-01: 「一句话标题，按你说的做」): a 卷 is twenty 回 — ten 古 (沈小满) and ten 今 (沈芒) — alternating, the book opening on 今; the 回 are numbered through the whole book. Each 回 entry: `id` (stable forever: h01…h10 are the 古 回, j01…j10 the 今 回 — the game's scene `hui`, the 评书 audio and old links name these), `line` (\"gu\" | \"jin\"), `n` (its ordinal WITHIN its line — 古一, 今一 — never the display number; the 古 file names 01-第一回.md … and their title lines carry it), `huimu` (古: two seven-character lines; 今: one line in 沈芒's own voice), `file`, and `draft: true` while Hanli has not approved it. The array order IS the book's order: the reader computes 「第N回」 and the 今/古 tag from it (read-md.js bookEntries), so inserting or moving a 回 is an edit here only. A draft is left out of the published view (and out of its numbering); read.html?draft=1 shows it, numbered in place. DESIGN.md § 五·五.",
+ "_form": "《鹿鼎记》's form, two lines (Hanli 2026-10-01: 「一句话标题，按你说的做」): a 卷 is twenty 回 — ten 古 (沈小满) and ten 今 (沈芒) — alternating, the book opening on 今; the 回 are numbered through the whole book. Each 回 entry: `id` (stable forever: h01…h10 are the 古 回, j01…j10 the 今 回 — the game's scene `hui`, the 评书 audio and old links name these), `line` (\"gu\" | \"jin\"), `n` (its ordinal WITHIN its line — 古一, 今一 — never the display number; the 古 file names 01-第一回.md … and their title lines carry it), `huimu` (古: two seven-character lines; 今: one line in 沈芒's own voice), `file`, and `draft: true` only for a 回 Hanli wants held back. A 今 回 is published when written (Hanli 2026-10-01: 「今的写好就加进来吧」) — no draft flag; its file is 今线/今NN.md, title line 「第N回　今　一句话」 by its line ordinal. The array order IS the book's order: the reader computes 「第N回」 and the 今/古 tag from it (read-md.js bookEntries), so inserting or moving a 回 is an edit here only. A draft is left out of the published view (and out of its numbering); read.html?draft=1 shows it, numbered in place. DESIGN.md § 五·五.",
  "volumes": [
   {
    "id": "juan1",
@@ -23,7 +23,6 @@
      "id": "j01",
      "line": "jin",
      "n": 1,
-     "draft": true,
      "huimu": {
       "zh": [
        "一千米跑完，我看见了我太奶，还有她"
@@ -32,7 +31,7 @@
        "After the Thousand Metres I Saw My Great-Grandmother, and Her"
       ]
      },
-     "file": "今线/今01-草稿.md"
+     "file": "今线/今01.md"
     },
     {
      "id": "h01",

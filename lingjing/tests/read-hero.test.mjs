@@ -1,4 +1,4 @@
-// The hero is fixed since 2026-09-30 (沈小满, male; 阿禾 a girl) and all ten 回
+// The hero is fixed since 2026-09-30 (沈小满, male; 阿禾 a girl) and all ten 古 回
 // are in the third person. The reader still knows how to fill `{name}` /
 // `{男词|女词}` (legacy saves, other books); a page with no hero handed reads 沈小满.
 import test from 'node:test';
@@ -44,11 +44,12 @@ test('a name is a word, never markup: escaped, and no bold or table split', () =
   assert.match(html, /<td>&lt;b&gt;＊甲｜乙＊<\/td><td>1<\/td>/);
 });
 
-test('the hero is 沈小满, fixed (his, 2026-09-30): all ten 回 in the third person, no player tokens', () => {
-  const book = JSON.parse(fs.readFileSync(path.join(BOOK, 'book.json'), 'utf8'));
-  const TOKENS = /\{name\}|\{[^{}|\n]*\|[^{}|\n]*\}|::: [男女]|女主变体/;
-  const hui = bookEntries(book).filter((c) => c.huimu);
-  assert.ok(hui.length >= 10, 'the ten 回 of 卷一');
+const TOKENS = /\{name\}|\{[^{}|\n]*\|[^{}|\n]*\}|::: [男女]|女主变体/;
+const published = () => bookEntries(JSON.parse(fs.readFileSync(path.join(BOOK, 'book.json'), 'utf8'))).filter((c) => c.huimu);
+
+test('the hero is 沈小满, fixed (his, 2026-09-30): all ten 古 回 in the third person, no player tokens', () => {
+  const hui = published().filter((c) => c.line === 'gu');
+  assert.ok(hui.length >= 10, 'the ten 古 回 of 卷一');
   for (const ch of hui) {
     const md = fs.readFileSync(path.join(BOOK, ch.file), 'utf8');
     assert.doesNotMatch(md, /周星星|——星星/, `${ch.file}: the placeholder name is gone`);
@@ -60,6 +61,16 @@ test('the hero is 沈小满, fixed (his, 2026-09-30): all ten 回 in the third p
   const one = fs.readFileSync(path.join(BOOK, '01-第一回.md'), 'utf8');
   assert.match(one, /姓沈，名小满，这一年十二岁[\s\S]*猎户家的独子/);
   assert.match(one, /窗外站着隔壁的阿禾。她比小满小一岁/);
+});
+
+test('the 今 回\'s hero is 沈芒 (Hanli, 2026-10-01): third person, no player tokens', () => {
+  for (const ch of published().filter((c) => c.line === 'jin')) {
+    const md = fs.readFileSync(path.join(BOOK, ch.file), 'utf8');
+    assert.doesNotMatch(md, TOKENS, `${ch.file}: no {name} or gender marks`);
+    assert.match(md, /沈芒/, `${ch.file}: names 沈芒`);
+    const html = renderMarkdown(fillHero(md, {}));
+    assert.doesNotMatch(html, /[{}]|&lt;!--/, `${ch.file}: nothing left to fill, no note shown`);
+  }
 });
 
 test('::: 男 / ::: 女 blocks: the hero\'s stays, the other goes, fences never show', () => {

@@ -7,7 +7,7 @@ ten 今 (沈芒), alternating, the book opening on 今 (Hanli, 2026-10-01) — n
 its 回 are numbered through the whole book, each tagged 今 or 古: a 古 回 under a
 回目 couplet, a 今 回 under one line in 沈芒's voice. The numbers are computed from
 book.json's order, never written; below, 古一…古十 / 今一…今十 name a 回 by its line.
-Written: 卷一's 古 line (古一—古十, 徐州 → 冀州; split into its ten 回 on 2026-09-30, each to be written full in place before 卷二 opens); 今一 in draft. A 回 is about 20k characters, carried by story, never filler (DESIGN § 五·六, 2026-09-30). The rest is planned and will move as the
+Written: 卷一's 古 line (古一—古十, 徐州 → 冀州; split into its ten 回 on 2026-09-30, each to be written full in place before 卷二 opens); 今一 published 2026-10-01 (a 今 回 goes into the book as written, DESIGN § 五·五). A 回 is about 20k characters, carried by story, never filler (DESIGN § 五·六, 2026-09-30). The rest is planned and will move as the
 writing finds it. notes/archive/outline.md and notes/archive/structure.md are the earlier
 drafts; where they disagree, this file wins. The hero is 沈小满 (fixed, 2026-09-30; 周星星 was the draft placeholder). World rules live in DESIGN.md only.*
 
