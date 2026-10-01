@@ -1087,25 +1087,25 @@ body.fighting .atmos { display: none; }
    the book's passage played on the stage a paragraph at a time, at its foot.
    The slots are lifted over it while it plays; a fight or a board never sees
    it (it yields, lingjing.js boxYields). ── */
-.view { --dlg-h: min(168px, 40%); }
+.view { --dlg-h: min(168px, 40vh); }
 /* The box grows with a long beat (2026-10-01: clipped, a scrollbar, 1/38 · 记录 · 跳过 over
    the first line) up to most of the stage; the slots rise over its real height (--dlg-real,
    measured by lingjing.js after each paint). */
 .view:has(.dlgwrap:not(:empty)) .slots { bottom: calc(var(--dlg-real, var(--dlg-h)) + 20px); }
-.dlgwrap { position: absolute; left: var(--stage-room); right: 24px; bottom: 12px; min-height: var(--dlg-h); max-height: 72%; display: flex; flex-direction: column; justify-content: flex-end; z-index: 4; pointer-events: none; }
+.dlgwrap { position: absolute; left: var(--stage-room); right: 24px; bottom: 12px; display: flex; flex-direction: column; justify-content: flex-end; z-index: 4; pointer-events: none; }
 .dlgwrap > * { pointer-events: auto; }
 .dlgwrap:empty { display: none; }
-.dlg { position: relative; display: flex; gap: 14px; align-items: flex-start; width: 100%; max-width: 720px; margin: 0 auto; min-height: var(--dlg-h); max-height: 100%; box-sizing: border-box;
+.dlg { position: relative; display: flex; gap: 14px; align-items: flex-start; width: 100%; max-width: 720px; margin: 0 auto; min-height: var(--dlg-h); box-sizing: border-box;
   padding: 34px 20px 26px; border: 1px solid color-mix(in srgb, var(--text) 22%, var(--line)); border-radius: 10px; cursor: pointer; user-select: none;
   background: color-mix(in srgb, var(--surface) 96%, transparent); box-shadow: 0 6px 22px rgba(40, 30, 15, .16); outline: none; }
 .dlg:focus-visible { border-color: var(--ling); }
 .dlg::before { content: ''; position: absolute; inset: 4px; border: 1px solid var(--line); border-radius: 7px; pointer-events: none; opacity: .7; }
 .dlgface { flex: none; width: 88px; height: min(110px, 100%); object-fit: cover; object-position: top; border-radius: 6px; border: 1px solid var(--line); background: var(--raised); animation: dlgIn .25s ease-out; }
-.dlgbody { flex: 1; min-width: 0; max-height: 100%; overflow-y: auto; scrollbar-width: thin; }
+.dlgbody { flex: 1; min-width: 0; max-height: calc(66vh - 70px); padding-bottom: 4px; overflow-y: auto; scrollbar-width: thin; }
 .dlgname { display: inline-block; margin-bottom: 6px; padding: 1px 12px 1px 0; border-bottom: 1px solid var(--ling); font-family: var(--serif); font-weight: 600; font-size: 15px; letter-spacing: .12em; color: var(--ling); }
 .dlgname.hero { color: var(--text); border-color: var(--dim); }
 .dlgtext { font-family: var(--serif); font-size: 17px; line-height: 1.8; letter-spacing: .03em; color: var(--text); animation: dlgIn .25s ease-out; }
-.dlg.told .dlgbody { display: flex; align-items: center; min-height: calc(var(--dlg-h) - 60px); }
+.dlg.told .dlgbody { display: flex; align-items: center; min-height: calc(var(--dlg-h) - 62px); }
 .dlg.told .dlgtext { width: 100%; text-align: center; color: color-mix(in srgb, var(--text) 82%, var(--dim)); }
 .dlgact { color: var(--dim); font-size: 15px; }
 .dlgrecap { display: inline-block; margin-right: 8px; padding: 0 6px; border: 1px solid var(--line); border-radius: 3px; font-family: var(--ui); font-size: 11px; letter-spacing: .1em; color: var(--faint); vertical-align: 2px; }
@@ -1133,7 +1133,7 @@ body.fighting .atmos { display: none; }
 /* A beat's picture, when the world paints one: it fills the card's head. */
 .panelcard .panelart img { display: block; width: 100%; max-height: 46vh; object-fit: cover; border-radius: 6px; margin-bottom: 8px; }
 @container scene (max-width: 600px) {
-  .view { --dlg-h: min(150px, 42%); }
+  .view { --dlg-h: min(150px, 42vh); }
   /* Short and narrow: while the box plays, the header gives it room (the box shows the faces). */
   .view:has(.dlgwrap:not(:empty)) { --head-h: 72px; }
   .dlgwrap { left: 16px; right: 16px; bottom: 8px; }
