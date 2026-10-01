@@ -103,10 +103,12 @@ function panelOf(content, state, scene, buttons) {
 
 /* Only a real decision is a row of buttons (his, 2026-09-29: tapping on felt
    like turning pages). A scene with one plain way on is a transition: its one
-   tap is `quiet` — the page draws a small 「接着」 link, not a button. An exit
-   that ends the chapter's day keeps its own words (今日到此). */
+   tap is `quiet` — the page draws a small link, not a button. The link keeps
+   the choice's own words (请巫祝婆婆先去报信, 能。, 今日到此——大比，明日):
+   live 2026-10-01 they all read 「接着 ›」 and the book's decisions vanished.
+   Only an exit with no words of its own is a bare 「接着」. */
 const quietOne = (scene, taps) => (taps.length === 1 && !taps[0].spent
-  ? [{ ...taps[0], quiet: scene.exits.find(e => e.id === taps[0].id)?.ends ? 'label' : 'on' }] : taps);
+  ? [{ ...taps[0], quiet: taps[0].label ? 'label' : 'on' }] : taps);
 
 /* 「也可以直接说你想怎么做」 — now and then, not on every scene: a real
    decision (two ways or more), on every INVITE_EVERY-th scene played. */

@@ -1177,7 +1177,8 @@ function panel(card, ctx) {
   const art = p.art ? `<div class="panelart"><img src="${esc(worldPath(ctx.look.world?.dir ?? 'worlds/jiuding', p.art))}" alt=""></div>` : '';
   const busy = ctx.panelBusy ?? null, w = ctx.words;
   const up = choicesUp(ctx.reading, ctx.lang);
-  const taps = up ? (p.taps ?? []).map((t) => panelTapHtml(t, busy, w)).join('') : '';
+  const exitOf = (t) => (ctx.look.scene.exits ?? []).find((e) => e.id === t.id);
+  const taps = up ? (p.taps ?? []).map((t) => (exitOf(t)?.riddle ? riddleTapHtml(t, exitOf(t), busy, w) : panelTapHtml(t, busy, w))).join('') : '';
   const quiet = (p.taps ?? []).length === 1 && p.taps[0].quiet;
   // 「也可以直接说你想怎么做」 — now and then, where the scene waits on a real choice (rules: `invite`).
   const invite = up && p.invite ? `<div class="sceneinvite">${esc(w.invite)}</div>` : '';
@@ -1194,6 +1195,18 @@ function panelTapHtml(t, busy, w) {
   const off = busy || t.spent ? ' disabled' : '';
   if (t.quiet) return `<button class="quietnext${busy === t.id ? ' busy' : ''}" data-panel-exit="${esc(t.id)}" title="${esc(t.label)}" aria-label="${esc(t.label)}"${off}>${esc(QUIET_TEXT[t.quiet]?.(t, w) ?? t.label)}</button>`;
   return `<button class="act paneltap${busy === t.id ? ' busy' : ''}${t.spent ? ' spent' : ''}" data-panel-exit="${esc(t.id)}"${off}>${esc(t.label)}</button>`;
+}
+
+/// A choice that asks a riddle (exit `key`: 01-deep's 读封 · 填中格) is its
+/// question on the card, the choices under it — tapped, it Resolves with the
+/// answer (live 2026-10-01: a bare 「接着」 that the rules refused forever, the
+/// riddle being Ling's to ask). A riddle shut for today says so.
+function riddleTapHtml(t, ex, busy, w) {
+  const head = `<div class="riddlehead">${esc(t.label)}</div><div class="say">${esc(ex.riddle)}</div>`;
+  if (ex.closed) return `<div class="riddletap">${head}<div class="small dim">${esc(w.refused['riddle-closed'])}</div></div>`;
+  const off = busy ? ' disabled' : '';
+  const choices = (ex.choices ?? []).map((c) => `<button class="act paneltap${(ex.tried ?? []).includes(c) ? ' spent' : ''}" data-panel-exit="${esc(t.id)}" data-panel-answer="${esc(c)}"${off}>${esc(c)}</button>`).join('');
+  return `<div class="riddletap">${head}<div class="acts">${choices}</div></div>`;
 }
 
 /// 看 — the scene's hotspots (rules/examine.mjs): small chips; a tap looks, free,

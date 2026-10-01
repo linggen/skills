@@ -702,6 +702,9 @@ button.gcard { cursor: pointer; font: inherit; }
 /* 传闻 — today's rumor: its step, with the 论道 look where it is words */
 .card.tale { border-left: 3px solid var(--ling); }
 .card.tale .say { margin: 8px 0 6px; line-height: 1.7; }
+.riddletap { width: 100%; }
+.riddletap .riddlehead { font-size: 12px; opacity: .7; letter-spacing: .1em; }
+.riddletap .say { margin: 6px 0 8px; line-height: 1.7; font-family: var(--serif); }
 .card.tale .lundaoprompt { margin: 8px 0 6px; font-family: var(--serif); font-size: 20px; color: var(--ling); }
 .card.tale .lundaodots { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
 .card.tale .lundaodots i { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--ling); }

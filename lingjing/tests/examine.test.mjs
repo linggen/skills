@@ -2,7 +2,8 @@
 // like turning pages): small chips on the scene card, a finding in the book's
 // voice, free and written on the save; a choice that waits on a clue, and a
 // hint for the stuck; what was found goes to 录 and to Ling's Look. With it:
-// fewer taps (a transition's one way on is a quiet 「接着」), the chat asks
+// fewer taps (a transition's one way on is a quiet link in its own words —
+// 2026-10-01: never a bare 「接着」 over the book's decision), the chat asks
 // 「你想怎么做？」, and the 图鉴 names her only once the hero knows her name.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -62,12 +63,12 @@ test('looking is free and written on the save; looked at again, the same line an
   assert.deepEqual(none.result.spots, ['prints', 'stone', 'grass']);
 });
 
-test('the key clue opens the chase — as a quiet 「接着」, not a big button — and Resolve takes it', () => {
+test('the key clue opens the chase — as a quiet link in its own words, not a big button — and Resolve takes it', () => {
   const found = examine(atHeisong(), 'stone');
   assert.deepEqual(found.result.opens, ['追蹄印，一百步刻一道']);
   assert.equal(found.result.looked.clue, true);
   const sc = look(found.state, content, ctx()).scene;
-  assert.deepEqual(sc.panel.taps.map(t => [t.id, t.quiet]), [['carve', 'on']]);
+  assert.deepEqual(sc.panel.taps.map(t => [t.id, t.quiet]), [['carve', 'label']]);
   assert.equal(sc.look.find(h => h.id === 'stone').clue, true);
   const on = resolve({ ...found.state, stamina: 100 }, content, ctx(), { exit: 'carve' });
   assert.equal(on.result.ok, true);
@@ -151,7 +152,8 @@ test('fewer taps: a transition\'s one way on is quiet (its own words when it end
     const s = { ...newState(content, 'zh', NOW), chapter: sc.chapter, scene: sc.id, place: sc.at, name: '青玄', ...extra };
     return look(s, content, ctx()).scene.panel.taps;
   };
-  assert.deepEqual(quietOf('00-kitchen').map(t => t.quiet), ['on']);
+  assert.deepEqual(quietOf('00-kitchen').map(t => t.quiet), ['label'], 'a lone choice keeps its words (跟爹进山)');
+  assert.deepEqual(quietOf('wm-jiangtang').map(t => [t.label, t.quiet]), [['能。', 'label']], 'the book\'s answer, never 「接着」');
   assert.deepEqual(quietOf('00-mijing').map(t => t.quiet), ['label'], '今日到此 keeps its words');
   assert.ok(quietOf('00-masan').every(t => !t.quiet), 'a decision is buttons');
 });
@@ -177,7 +179,7 @@ test('the page: 看 chips, the finding under the card, the hint; the quiet link;
   assert.match(html, /class="lookhint"/);
   const on = look(examine(s, 'stone').state, content, ctx());
   const card = cardHtml({ card: 'panel' }, { look: on, words: WORDS.zh, lang: 'zh' });
-  assert.match(card, /class="quietnext"[^>]*data-panel-exit="carve"[^>]*>接着 ›</);
+  assert.match(card, /class="quietnext"[^>]*data-panel-exit="carve"[^>]*>追蹄印，一百步刻一道 ›</);
   assert.doesNotMatch(card, /class="act paneltap"/);
   const masan = { ...newState(content, 'zh', NOW), chapter: '00-prologue', scene: '00-masan', place: 'shiao', name: '青玄', done_scenes: [] };
   assert.match(cardHtml({ card: 'panel' }, { look: look(masan, content, ctx()), words: WORDS.zh, lang: 'zh' }), /也可以直接说你想怎么做/);
@@ -224,4 +226,17 @@ test('图鉴 at the pit: 「小银狐 · 生物」 — no name, nothing of 青�
   const creatures = [...codex.values()].filter(e => e.kind === '生物' && !e.becomes).length;
   assert.deepEqual(count(after), [0, creatures], 'the fox is no empty slot of its own');
   assert.deepEqual(count(before), [1, creatures + 1]);
+});
+
+test('a riddle choice is its question on the card: 01-deep\'s 读封 · 填中格 shows the riddle and its answers, and a tap answers it', () => {
+  const base = JSON.parse(fs.readFileSync(new URL('./fixtures/saves/ji-altar.json', import.meta.url), 'utf8'));
+  const s = { ...base, scene: '01-deep', place: 'zhangyuan' };
+  const lk = look(s, content, ctx());
+  const card = cardHtml({ card: 'panel' }, { look: lk, words: WORDS.zh, lang: 'zh' });
+  assert.match(card, /居中者何/, 'the question stands on the card');
+  for (const c of ['一', '九', '十五', '五']) assert.match(card, new RegExp(`data-panel-exit="seal" data-panel-answer="${c}"`));
+  assert.doesNotMatch(card, />接着 ›</, 'never a bare 接着 the rules refuse');
+  const r = resolve(s, content, ctx(), { exit: 'seal', answer: '五' });
+  assert.equal(r.result.ok, true);
+  assert.equal(r.state.scene, '01-cauldron');
 });

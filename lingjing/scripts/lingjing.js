@@ -1588,12 +1588,13 @@ async function valueTap(exitId) {
    and the stage plays what it owes in the dialogue box — no chat turn: Ling
    reads it in Look's `page_did` (Hanli, 2026-09-29: 「对话框先做，go」).
    Refused (a need not met), the card says why and nothing moves. */
-async function panelTap(exitId, label) {
+async function panelTap(exitId, label, answer) {
   keep({ panelBusy: exitId, panelNote: null });
   render();
-  const r = await write('resolve', { exit: exitId, said: label }).catch(failed);
+  const r = await write('resolve', { exit: exitId, said: label, ...(answer != null ? { answer } : {}) }).catch(failed);
   // A tap on a choice the story already moved past (a second tap in flight) is no refusal to show.
-  keep({ panelBusy: null, panelNote: r.ok || r.refused === 'unknown-exit' ? null : refusal(r) });
+  // A riddle missed: its hint stands under the card (the second miss shuts it for the day).
+  keep({ panelBusy: null, panelNote: r.ok || r.refused === 'unknown-exit' ? null : r.hint ? `${refusal(r)} · ${r.hint}` : refusal(r) });
   await refresh();
 }
 
@@ -2025,7 +2026,7 @@ const CLICKS = [
   ['[data-dlg-next]', () => nextBeat()],
   ['.dlglog', () => true],
   ['[data-look-at]', (el) => { if (!el.matches(':disabled')) run(`look:${el.dataset.lookAt}`, () => lookAt(el.dataset.lookAt)); }],
-  ['[data-panel-exit]', (el) => { if (!el.matches(':disabled')) run(`panel:${el.dataset.panelExit}`, () => panelTap(el.dataset.panelExit, el.textContent.trim())); }],
+  ['[data-panel-exit]', (el) => { if (!el.matches(':disabled')) run(`panel:${el.dataset.panelExit}`, () => panelTap(el.dataset.panelExit, el.textContent.trim(), el.dataset.panelAnswer)); }],
   ['[data-lu]', () => (view.luOpen ? show({ luOpen: false }) : openLu())],
   ['[data-lu-close]', () => show({ luOpen: false, codexOpen: null })],
   // 录: a 回 finished, its whole 评书 (the player takes the button's place).
