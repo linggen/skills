@@ -53,7 +53,10 @@ test('every {典=id} in the book is an entry; every entry has a real source and 
   for (const [id, c] of Object.entries(CLASSICS)) {
     assert.ok(used.has(id), `${id} is named somewhere in the book`);
     assert.ok(c.title && c.about, `${id}: title and background`);
-    assert.match(c.source?.url ?? '', /^https:\/\/(zh\.wikisource\.org|ctext\.org)\//, `${id}: a Wikisource or ctext URL`);
+    // zh.wikipedia only for an excavated inscription no Wikisource/ctext page carries (行气铭; Hanli, 2026-10-01).
+    const WIKIPEDIA_OK = new Set(['xingqi-ming']);
+    const hosts = WIKIPEDIA_OK.has(id) ? /^https:\/\/zh\.wikipedia\.org\// : /^https:\/\/(zh\.wikisource\.org|ctext\.org)\//;
+    assert.match(c.source?.url ?? '', hosts, `${id}: a Wikisource or ctext URL`);
     assert.ok(c.source.edition && c.source.section && c.source.license, `${id}: edition, section, license`);
     assert.ok(c.original && [...c.original].length <= 150, `${id}: the passage, ≤150 characters`);
     assert.ok(Array.isArray(c.plain) && c.plain.length >= 1 && c.plain.length <= 2, `${id}: one or two lines of 白话`);

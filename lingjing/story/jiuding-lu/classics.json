@@ -1,5 +1,5 @@
 {
-  "_about": "附 · 本回典籍 — the classics the 回 name or quote (DESIGN.md § 六·五·一). A chapter writes 《书名》{典=id}; the reader underlines it, links it to its entry at the chapter's end and back. `original` is copied exactly from `source.url` (Wikisource, traditional characters, the edition's own text — checked as a substring of the page's wikitext when it was built, 2026-09-29); `simplified` is a mechanical OpenCC t→cn rendering of it for the reader; `plain` is our 白话. Never write a passage from memory: no source, no entry.",
+  "_about": "附 · 本回典籍 — the classics the 回 name or quote (DESIGN.md § 六·五·一). A chapter writes 《书名》{典=id}; the reader underlines it, links it to its entry at the chapter's end and back. `original` is copied exactly from `source.url` (Wikisource, traditional characters, the edition's own text — checked as a substring of the page's wikitext when it was built, 2026-09-29); `simplified` is a mechanical OpenCC t→cn rendering of it for the reader; `plain` is our 白话. One exception: 行气铭 (xingqi-ming), an excavated inscription, is copied from zh.wikipedia (Hanli, 2026-10-01). Never write a passage from memory: no source, no entry.",
   "classics": {
     "suwen": {
       "title": "黄帝内经·素问",
@@ -400,6 +400,21 @@
         "古时有志修道的人，行、立、坐、卧都不废功夫，各有各的诀窍，所以动静之间没有间断，这才有百日筑基、十月胎圆、三年乳哺的应验。"
       ],
       "note": "「百日筑基」是内丹家的老话，百日是举其大概；本书的筑基是练气九层之后的一大境（DESIGN § 六·五·二），小满照字面算成一百天，算错了。"
+    },
+    "xingqi-ming": {
+      "title": "行气玉佩铭",
+      "about": "战国后期的出土玉器铭文，旧称行气玉佩铭，今称《行气铭》；刻在一根十二面的小玉柱上，柱高5.3厘米，计入重文共四十五字，现藏天津历史博物馆。是现存最早讲行气的文字。",
+      "source": {
+        "edition": "维基百科「行气玉佩铭」条",
+        "section": "〈內容主旨〉所录铭文",
+        "url": "https://zh.wikipedia.org/wiki/%E8%A1%8C%E6%B0%94%E7%8E%89%E4%BD%A9%E9%93%AD",
+        "license": "铭文为战国出土文物，公有领域；释文转录自维基百科（CC BY-SA 4.0）"
+      },
+      "original": "行氣，深則畜（蓄）、畜（蓄）則伸、伸則下、下則定、定則固、固則萌、萌則長、長則退、退則天、天幾舂在上、地幾舂在下。順則生、逆則死。",
+      "plain": [
+        "行气：吸得深，气就蓄住；蓄住了就往外伸；伸了就往下走；往下走就定住；定住了就牢固；牢固了就萌发；萌发了就生长；长满了就退回；退到头便是天。天的机枢在上，地的机枢在下。顺着走就生，逆着走就死。"
+      ],
+      "note": "「畜」读作「蓄」。书中娘念的是十级台阶，略去「天几舂在上、地几舂在下」一句；末了「顺则生，逆则死」照铭文。"
     },
     "yangxing-liuzi": {
       "title": "养性延命录·服气疗病篇",
