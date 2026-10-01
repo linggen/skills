@@ -12,6 +12,7 @@ import { battleHtml, boutSays, WORDS } from '../scripts/battle-card.js';
 import { begin, offers, view } from '../scripts/battle.js';
 import { beforeChapterOne, TO_HALL, TO_WAIMEN, walk } from './prologue.mjs';
 import { huiLabel } from '../scripts/rules/hui.mjs';
+import { bookNo } from './book-num.mjs';
 
 const content = beforeChapterOne(loadContent());
 const NOW = new Date('2026-09-11T12:00:00');
@@ -41,7 +42,7 @@ const GAME_WORDS = /修为|灵力|卡牌|灵石|体力|气血/;
 
 test('every creature speaks: open, won, lost in both languages, short, no digits, no game words', () => {
   const all = content.creatures.creatures.filter(c => !c.made);
-  assert.equal(all.length, 23, 'eighteen beasts, 狰, the three the 外门大比 fights, and 冰夷\'s two dragons (第十回)');
+  assert.equal(all.length, 23, 'eighteen beasts, 狰, the three the 外门大比 fights, and 冰夷\'s two dragons (古十)');
   for (const c of all) {
     for (const k of ['open', 'won', 'lost']) {
       const line = c.says?.[k];
@@ -96,11 +97,11 @@ test('an errand that asks for the beast: 差事 · its title', () => {
   assert.equal(door(done, 'haunt:longzhi', c).stake, l.place.name);
 });
 
-test('a spine scene\'s duel: its 回, as the book names it (卷一 · 第四回, the trials)', () => {
+test('a spine scene\'s duel: its 回, as the book names it (卷一 · 古四\'s number, the trials)', () => {
   const s = walk(newState(content, 'zh', NOW), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'won')), content, NOW);
   const exit = look(s, content, ctx()).scene.exits.find(e => e.duel);
   assert.equal(exit.duel.stake, huiLabel(content, content.chapters[s.chapter].scenes[s.scene].hui, 'zh'));
-  assert.match(exit.duel.stake, /^卷一.* · 第四回$/);
+  assert.ok(exit.duel.stake.startsWith('卷一') && exit.duel.stake.endsWith(` · ${bookNo(content, 'h04')}`), exit.duel.stake);
 });
 
 /* 今日传闻 — the finale's beast speaks Ling's lines. */

@@ -1134,7 +1134,7 @@ function toOpenWorld() {
   return { ...rest, cards: rest.cards.filter(id => id !== 'yinyue') };
 }
 /* 雷泽 (02-lake): a scene whose question is the chat's — a riddle among its buttons. (冀's
-   altar was this scene until 2026-09-30; 第十回's scenes now play the book on the stage.) */
+   altar was this scene until 2026-09-30; 古十's scenes now play the book on the stage.) */
 const atAltar = () => ({ ...toOpenWorld(), chapter: '02-yan', scene: '02-lake', place: 'leize', ended: ['00-prologue', '01-ji'] });
 
 test('the corridor walks the player from place to place, and Move waits', () => {
@@ -1420,7 +1420,7 @@ function toJi() {
   return { ...answer(move, woke, { place: 'zhangnan' }).state, stamina: 100, wealth: 300 };
 }
 
-test('chapter 1 (第十回): waypoints, the market of Ye, the two failed plans, the wedding, the dragons\' trial, the seal, the first 鼎, the end', () => {
+test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the wedding, the dragons\' trial, the seal, the first 鼎, the end', () => {
   let s = toJi();
   // arrive → Ye: the scene moves, and the exit walks the player the one road there
   let r = answer(resolve, s, { exit: 'town' });
@@ -1469,7 +1469,7 @@ test('chapter 1 (第十回): waypoints, the market of Ye, the two failed plans, 
   assert.equal(r.state.scene, '01-cauldron');
   assert.equal(look(r.state, content, octx()).scene.id, '01-cauldron', 'same place, no walk');
   s = r.state;
-  // the first 鼎: no throw here since the Foundation moved to the cliff (第九回)
+  // the first 鼎: no throw here since the Foundation moved to the cliff (古九)
   const tier = s.tier;
   r = answer(resolve, s, { exit: 'take' });
   assert.equal(r.result.breakthrough, null);

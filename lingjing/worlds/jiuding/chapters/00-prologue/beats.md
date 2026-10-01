@@ -11,12 +11,12 @@ in the book's voice, third person, no new events. `setup`, `recap`, the panel's
 caption and the buttons speak to the player as 你 (DESIGN.md § 四·五 人称分工).
 The dialogue box plays the passage a paragraph at a time; the book's dialogue is
 inline (`X道：「…」`), so the box reads it as narration — no faces (see the
-follow-up in this lane's report). 第一回's passages are paced: a book paragraph longer than about 110 characters is cut at its own sentence ends (never inside 「」 or **…**) into beats, the en cut to match — the words are the book's, only the taps are more. The first sources (notes/archive/prologue-1/2-source.md,
+follow-up in this lane's report). 古一's passages are paced: a book paragraph longer than about 110 characters is cut at its own sentence ends (never inside 「」 or **…**) into beats, the en cut to match — the words are the book's, only the taps are more. The first sources (notes/archive/prologue-1/2-source.md,
 structure.md, approved 2026-09-28) are history now.
 
-Book 回 per scene: h01 = 00-shiao … 00-yinyue (第一回), h02 = 00-cliff … 00-xiuxian
-(第二回 — 吴婆婆 at 立冬's dawn before 马三, her leaving and the 谢谢 on 00-xiuxian's `on`), h03 = 00-sleep (the 洗髓, 第三回's cold open), 00-halfyear, 00-uncle, 00-notice (第三回 — the winter, 舅舅,
-the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 00-waimen (第四回; 00-waimen's passage is the book's tail — 舅舅, 阿禾's diary, the 公中 notice), h05 = 00-mijing (the 九月初十 refectory morning that opens 第五回; the 周衡 scene moved there 2026-09-30).
+Book 回 per scene: h01 = 00-shiao … 00-yinyue (古一), h02 = 00-cliff … 00-xiuxian
+(古二 — 吴婆婆 at 立冬's dawn before 马三, her leaving and the 谢谢 on 00-xiuxian's `on`), h03 = 00-sleep (the 洗髓, 古三's cold open), 00-halfyear, 00-uncle, 00-notice (古三 — the winter, 舅舅,
+the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 00-waimen (古四; 00-waimen's passage is the book's tail — 舅舅, 阿禾's diary, the 公中 notice), h05 = 00-mijing (the 九月初十 refectory morning that opens 古五; the 周衡 scene moved there 2026-09-30).
 
 | Scene | Source | Choices → mechanics |
 |---|---|---|
@@ -37,7 +37,7 @@ the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 
 | `00-dusk` 村东头 | 十二 | 立冬天没亮，腌菜坛子里的鹿腿送到吴婆婆家，鼎湖 · 乌号: 去村东头 (`wupo-bowed`, task 17) · 守着它 |
 | `00-rent` 交租 | 十二 | 马三摘弓 · 「下水呢」: 装傻 · 说实话 (`told-ma`) — the 鹿皮 paid (task 16); both wake her |
 | `00-xiuxian` 什么是修仙 | 十三 | 什么是修仙; 让它睡 → next night she leaves into the token (sleeps), the 谢谢 (task 18) |
-| `00-sleep` 洗髓 (第三回's cold open) | 十四 | **board `xisui-hold`** (洗髓: three sticks held through the waves) gates 泡进去 (体力 −6) → 《吐纳经》 (tasks 19–20); 爬出来 stay |
+| `00-sleep` 洗髓 (古三's cold open) | 十四 | **board `xisui-hold`** (洗髓: three sticks held through the waves) gates 泡进去 (体力 −6) → 《吐纳经》 (tasks 19–20); 爬出来 stay |
 | `00-halfyear` 半年 | 十五 | (tasks 21–22) — no 功课 yet: they, 修为, 灵石, 开府, 问卦 and 差事 open at `00-waimen` (chapter.json `locks`) |
 | `00-uncle` 舅舅 | 十六 | 去 · 再等等 stay (tasks 23–24) |
 | `00-notice` 开山门 | 十七 | → 爷爷的弓 (task 25) |
@@ -46,7 +46,7 @@ the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 
 | `00-longzhi` 三试 | 十八 | 蠪侄, a trial fight (`retry`), its first sight plays; the token's one word (task 28) |
 | `00-hall` 入门 | 十九 | the 生辰 card → roots; 灰袍 + 3 灵石 (task 29) |
 | `00-waimen` 公中 | 十九 | 交 (−1 灵石, 仇 马小宝) · 不交 (task 30) — after 马师兄's notice |
-| `00-mijing` 饭堂 | 第五回 | 周衡's 腰牌, the unchipped bowl; ends the prologue (id kept from the old 秘境告示 scene) |
+| `00-mijing` 饭堂 | 古五 | 周衡's 腰牌, the unchipped bowl; ends the prologue (id kept from the old 秘境告示 scene) |
 
 Narrative only for now: 「风」 as a bow art, 体魄 / 体力上限 from the bath, 「韧」,
 舅舅's stipend and his thread, 马家 raising trouble in chapter 1 (`told-ma`,

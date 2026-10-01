@@ -219,8 +219,8 @@ test('恩仇簿: the choices write who and what, once each; Look names them; the
   const l = look(s, content, ctx());
   assert.deepEqual(l.ledger.map(e => [e.name, e.kind]), [['马小宝', '仇'], ['马三', '仇'], ['阿禾', '恩'], ['老周', '恩']]);
   assert.match(l.ledger[2].what, /记账，以后还我/);
-  assert.equal(l.ledger[0].chapter, huiLabel(content, 'h01', 'zh', 'short'), 'written at 马三\'s rent: 第一回');
-  assert.equal(l.ledger[3].chapter, huiLabel(content, 'h02', 'zh', 'short'), 'written at the cliff: 第二回');
+  assert.equal(l.ledger[0].chapter, huiLabel(content, 'h01', 'zh', 'short'), 'written at 马三\'s rent: 古一');
+  assert.equal(l.ledger[3].chapter, huiLabel(content, 'h02', 'zh', 'short'), 'written at the cliff: 古二');
   const w = { look: l, lang: 'zh', words: WORDS.zh };
   assert.match(ledgerChipHtml(w, false), /data-ledger aria-expanded="false">恩仇簿 4</);
   const open = ledgerChipHtml(w, true);

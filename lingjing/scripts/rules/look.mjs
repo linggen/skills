@@ -213,7 +213,7 @@ function taleFinaleOf(state, creature) {
 
 function stakeOf(content, state, game) {
   const lang = state.lang;
-  // A scene's fight is fought for the story: its 回 (卷一 · 第三回, rules/hui.mjs).
+  // A scene's fight is fought for the story: its 回 (卷一 · 沉鼎 · 第N回, the book's number, rules/hui.mjs).
   if (!game.id.startsWith('haunt:')) return chapterLabel(content, state, content.chapters?.[state.chapter], lang);
   const finale = taleFinaleOf(state, game.creature);
   if (finale) return staked('tale', lang, finale.tale.title);

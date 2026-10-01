@@ -7,7 +7,7 @@
   "free": true,
   "first_scene": "00-shiao",
   "gate": null,
-  "_map": "The map this chapter opens (his, 2026-09-29: 地图分步打开): the prologue (第一回 to 第四回) is 石坳村 and 蒙山, and the road up to the temple. A corridor walks the player anyway; the map is what the page greys and Move refuses past (world.mjs mapOf).",
+  "_map": "The map this chapter opens (his, 2026-09-29: 地图分步打开): the prologue (古一 to 古四) is 石坳村 and 蒙山, and the road up to the temple. A corridor walks the player anyway; the map is what the page greys and Move refuses past (world.mjs mapOf).",
   "map": {
     "places": [
       "shiao",
@@ -44,7 +44,7 @@
       "en": "You are still a mortal. Cultivation, chores and errands wait until you join Chending Temple."
     }
   },
-  "_title": "The arc's own name, no number: the player is told the 回 — 第一回 up to 00-yinyue, 第二回 from 00-cliff (book.json via the scenes' `hui`, rules/hui.mjs).",
+  "_title": "The arc's own name, no number: the player is told the 回 — 古一 up to 00-yinyue, 古二 from 00-cliff (book.json via the scenes' `hui`, rules/hui.mjs).",
   "title": {
     "zh": "蒙山",
     "en": "Mount Meng"

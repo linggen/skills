@@ -1,4 +1,4 @@
-// 暴雨 · 拽爹上崖 — 第一回, the storm on 黑松岭 (00-storm / 00-fall; his 2026-09-30:
+// 暴雨 · 拽爹上崖 — 古一, the storm on 黑松岭 (00-storm / 00-fall; his 2026-09-30:
 // 「先并行做1到4」, the fun audit's first ten minutes). 爹's knee gives out on the
 // slope; 小满 hauls him back to the cliff face, three pulls, one in each lull between
 // gusts. A pull into a gust and 爹 slides back half a foot. He is always saved —

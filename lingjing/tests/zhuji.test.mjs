@@ -1,20 +1,21 @@
-// 第九回 · 筑基 (chapter 00-zhuji, his 2026-09-30: 照这样重做冀州) — the book's winter, the
+// 古九 · 筑基 (chapter 00-zhuji, his 2026-09-30: 照这样重做冀州) — the book's winter, the
 // year and the cliff, played at 沉鼎观 before the road north: the official pill sniffed and
 // resealed, the furnace's three 九转, the year as the book's four seasons (one layer each —
 // never days of chores), 瞿老's last disciple, and the Foundation laid on the cliff with the
-// 九转 reached for before the sect's 一转. The cliff ends it straight into 第十回.
+// 九转 reached for before the sect's 一转. The cliff ends it straight into 古十.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { newState, threshold } from '../scripts/state.mjs';
 import { look, oddsOf, resolve, rollOf } from '../scripts/rules.mjs';
+import { bookNo } from './book-num.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-09-30T12:00:00');
 const ctx = { now: NOW, quests: [] };
 const CH = content.chapters['00-zhuji'];
 
-/* Standing at 第九回's first scene: 外门 behind him, 练气五层, full 体力. */
+/* Standing at 古九's first scene: 外门 behind him, 练气五层, full 体力. */
 const atSnow = (extra = {}) => ({
   ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: '09-snow', place: 'chaifang',
   ended: ['00-prologue', '00-waimen'], tier: 'qi', step: 4, progress: 0, traits: ['wood', 'water', 'fire', 'earth', 'metal'],
@@ -28,7 +29,7 @@ const go = (s, exit, extra = {}) => {
 const buttons = s => look(s, content, ctx).scene.buttons.map(b => b.id);
 const full = s => ({ ...s, stamina: 100, stamina_at: NOW.toISOString() });
 
-test('第九回 is its own chapter at 沉鼎观: between 外门 and 冀, the Foundation\'s gate, every scene reached', () => {
+test('古九 is its own chapter at 沉鼎观: between 外门 and 冀, the Foundation\'s gate, every scene reached', () => {
   assert.deepEqual([CH.province, CH.gate, CH.first_scene, CH.coming], ['徐', 1, '09-snow', undefined]);
   for (const sc of Object.values(CH.scenes)) {
     assert.equal(sc.hui, 'h09', sc.id);
@@ -80,7 +81,7 @@ test('the winter and the year: the seal resealed, the furnace\'s 九转, and the
   assert.equal(autumn.scene, '09-qulao');
 });
 
-test('the cliff: 瞿老\'s last disciple, then the throw — the 九转 reached for before the 一转, and 第十回 opens at once', () => {
+test('the cliff: 瞿老\'s last disciple, then the throw — the 九转 reached for before the 一转, and 古十 opens at once', () => {
   let s = { ...atSnow(), scene: '09-qulao', place: 'houshan', step: 8, progress: 130, bag: { 'foundation-pill': 1, 'foundation-pill-9': 1 } };
   s = go(s, 'listen').state;
   assert.equal(s.scene, '09-cliff');
@@ -98,9 +99,9 @@ test('the cliff: 瞿老\'s last disciple, then the throw — the 九转 reached 
   assert.equal(r.state.bag['foundation-pill-9'], undefined, 'the 九转 is eaten');
   assert.equal(r.state.tier, 'foundation');
   assert.deepEqual([r.state.chapter, r.state.scene], ['01-ji', '01-arrive']);
-  // 「第九回 · 完」 stands on 第十回's first scene, with what he did and the teaser.
+  // 古九's 「完」 (the book's number) stands on 古十's first scene, with what he did and the teaser.
   const close = look({ ...r.state, place: 'zhangnan' }, content, ctx).chapter.close;
-  assert.equal(close.title, '第九回 · 完');
+  assert.equal(close.title, `${bookNo(content, 'h09')} · 完`);
   assert.match(close.did, /崖顶筑了基/);
   assert.match(close.teaser, /邺城[\s\S]*豆腐/);
 });

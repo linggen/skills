@@ -14,7 +14,7 @@ const ctx = { now: NOW, quests: [] };
 const cost = content.rewards.stamina.cost.move;
 const trip = n => Math.min(cost.max, cost.base + (n - 1) * cost.per_road);
 
-/* 第十回 with 01-cauldron waiting at 漳源 (sibei › zhangnan › hebo › zhangyuan). */
+/* 古十 with 01-cauldron waiting at 漳源 (sibei › zhangnan › hebo › zhangyuan). */
 const atSibei = (extra = {}) => ({
   ...newState(content, 'zh', NOW), chapter: '01-ji', scene: '01-cauldron', place: 'sibei',
   ended: ['00-prologue', '00-waimen', '00-zhuji'], done_scenes: ['01-arrive', '01-ye', '01-altar', '01-rise'],

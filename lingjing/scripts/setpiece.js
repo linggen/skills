@@ -1,6 +1,6 @@
 // setpiece.js — 大场面 (哇时刻 ②): one per 卷 at most, the whole stage. The
 // runner; each piece lives in setpieces/<id>.js and hands back one paused
-// GSAP timeline per beat (卷一's is `zhang`, 漳水立起; 第九回's `zhuji`, 筑基天象),
+// GSAP timeline per beat (卷一's is `zhang`, 漳水立起; 古九's `zhuji`, 筑基天象),
 // both painted: setpieces/painted.js moves the camera and soaks one painting into the next.
 //
 // A piece moves with the dialogue box: a beat plays, then holds until a tap

@@ -16,7 +16,7 @@ import { cardBook } from './cards.mjs';
 import { albumOf } from './memories.mjs';
 import { seenOf } from './codex.mjs';
 import { atScene, creatureOf, inMade, sceneOf } from './world.mjs';
-import { chapterHuis, chapterLabel, endLabel, huiEnded, huiLabel, huiNow, huiOf, juanEndOf } from './hui.mjs';
+import { chapterHuis, chapterLabel, endLabel, huiEnded, huiLabel, huiNow, huiOf, huiOrder, juanEndOf } from './hui.mjs';
 
 const HOUR = 3600000;
 /* 前情提要 opens every sitting (his, 2026-09-25: 每次开始游戏时): a sitting is a
@@ -30,7 +30,7 @@ const RECAP_LINES = 3;
 const byId = (a, b) => a.id.localeCompare(b.id);
 const chaptersOf = content => Object.values(content.chapters).sort(byId);
 /* A chapter with a cauldron in it: every chapter of the spine but a corridor
-   (the prologue) and one that says it holds none (`cauldron: false`, 外门 — 第五回 to 第八回). */
+   (the prologue) and one that says it holds none (`cauldron: false`, 外门 — 古五 to 古八). */
 const holdsCauldron = ch => !ch.corridor && ch.cauldron !== false;
 
 /* scene id → its chapter, once per world. */
@@ -72,7 +72,7 @@ const recapOf = (content, state, scenes) => scenes.map(sc => sc.recap).filter(Bo
    with none of it passed yet. A chapter with no 回 (one still to be
    rewritten) is one part, `hui` null. */
 function partsOf(content, state, ch) {
-  const by = new Map(), n = id => huiOf(content, id)?.n ?? Infinity;
+  const by = new Map(), n = id => huiOrder(content, id);
   for (const sc of passed(content, state, ch)) {
     const hui = sc.hui ?? null;
     if (!by.has(hui)) by.set(hui, { hui, scenes: [] });
@@ -95,7 +95,7 @@ function nowOf(content, state, now) {
 }
 
 /* A chapter's riddle as the player may know it: `mystery`, until the scene
-   `mystery_after.after` is passed — then its own words. 外门 (第五回 to 第八回) names 息壤 only
+   `mystery_after.after` is passed — then its own words. 外门 (古五 to 古八) names 息壤 only
    once the 秘境 is behind him (his, 2026-09-29: the 录 spoiled it from the start). */
 export const mysteryOf = (ch, state, lang = state.lang) => {
   const later = ch?.mystery_after;
@@ -237,7 +237,7 @@ export function closeOf(content, state) {
   if (inMade(state) || content.world.made) return null;
   const turned = huiEnded(content, state);
   if (turned) {
-    // A chapter that ended on this 回 and went straight on into the next (外门 → 第九回 since
+    // A chapter that ended on this 回 and went straight on into the next (外门 → 古九 since
     // 2026-09-30: nothing waits between them) brings its own close — what he did, the teaser —
     // onto the first scene of the next, where the 回's close stands.
     const done = Object.values(content.chapters).find(x => x.close && (state.ended ?? []).includes(x.id) && x.id !== ch.id
@@ -250,7 +250,7 @@ export function closeOf(content, state) {
   // The stage keeps the last scene's place line (漳水 · 往柳湾), not the map's name for the spot (漳渊).
   const last = [...(state.done_scenes ?? [])].reverse().map(id => ch.scenes?.[id]).find(Boolean);
   const place = last?.place ? fill(pick(last.place, lang), state, content) : null;
-  // The 卷's last 回 closes the 卷 as well: 「卷一 · 沉鼎 · 完」 over 「第十回 · 完」.
+  // The 卷's last 古 回 closes the 卷 for the game as well (hui.mjs juanEndOf): 「卷一 · 沉鼎 · 完」 over 古十's 「完」.
   const juan = hui ? juanEndOf(content, hui, lang) : null;
   return { id: hui ?? ch.id, title: endLabel(content, hui, lang) ?? pick(c.title, lang) ?? pick(ch.title, lang), ...(place ? { place } : {}), ...(juan ? { juan } : {}), ...(hui ? { huimu: pick(huiOf(content, hui)?.huimu, lang) } : {}), ...closeWords(content, state, c) };
 }
@@ -264,7 +264,7 @@ function closeWords(content, state, c) {
 }
 
 /* Look's chapter, named as the book names it — the 回 it stands in
-   (「卷一 · 第五回　漏勺夜半通三关」, hui.mjs) — with its intro while it has only
+   (「卷一 · 沉鼎 · 第十回　古 · 漏勺夜半通三关」 for 古五, hui.mjs) — with its intro while it has only
    just begun (no scene of it passed yet) — the stage raises its title card
    then — its close once a 回 or it is over (closeOf), and the ending once reached. */
 export function chapterLook(content, state) {

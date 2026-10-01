@@ -15,6 +15,7 @@ import { fill, newState } from '../scripts/state.mjs';
 import { forLing, look, remember, resolve, writeLedger } from '../scripts/rules.mjs';
 import { TO_WAIMEN, walk } from './prologue.mjs';
 import { huiLabel } from '../scripts/rules/hui.mjs';
+import { bookNo } from './book-num.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const content = loadContent();
@@ -22,7 +23,7 @@ const NOW = new Date('2026-09-28T12:00:00');
 const ctx = (words = null, extra = {}) => ({ now: NOW, quests: [], words, ...extra });
 /* At 马三's rent (00-masan): 马三, 马小宝 and 爹 on the scene. */
 const atMasan = (lang = 'zh') => resolve(newState(content, lang, NOW), content, ctx(), { exit: 'begin' }).state;
-/* When, as a reader is told it: the 回 of the scene written in (第一回 — a small place, the short label), from the book. */
+/* When, as a reader is told it: the 回 of the scene written in (古一 — a small place, the short label), from the book. */
 const H1 = huiLabel(content, 'h01', 'zh', 'short'), H1_EN = huiLabel(content, 'h01', 'en', 'short');
 const re = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const TYPED = ['[scene] took 照他的话，原样说回去', '马三，这账  我记着。', '阿禾，等我回来'];
@@ -35,7 +36,7 @@ test('Remember writes a real moment in the player\'s own words — who, kind, wh
   assert.deepEqual(e, { who: 'masan', kind: '仇', what: { zh: '一脚踹开柴门，逼租' }, chapter: '00-prologue', day: '2026-09-28', at: '00-masan', by: 'ling', said: '这账 我记着' });
   assert.equal(out.result.wrote.said, '这账 我记着', 'whitespace made one, the quote marks off');
   assert.equal(out.result.wrote.chapter, H1);
-  assert.equal(H1, '第一回', 'the 回, short — never 章 (the header keeps 卷 and 回目)');
+  assert.equal(H1, bookNo(content, 'h01'), 'the 回, short, the book\'s number — never 章 (the header keeps 卷 and 回目)');
   // by id, a slot, a named creature, the companion
   assert.equal(remember(s, content, ctx(TYPED), { who: 'ban', kind: '诺', what: '说好回来' }).state.ledger.at(-1).who, 'ahe');
   assert.equal(remember(s, content, ctx(), { who: '银月', kind: '恩', what: '救命' }).result.ok, true);
@@ -125,7 +126,7 @@ test('Look: the page gets the whole 簿; Ling only the people present and the op
   assert.deepEqual(forLing(look(m, content, ctx())).ledger, [{ name: '马三', kind: '仇', what: '逼租', said: '这账 我记着', chapter: H1 }]);
 });
 
-test('the 恩 chip: each entry\'s quote 「『…』 —— 你对马三说 · 第一回」, a 诺 marked, kept or broken', () => {
+test('the 恩 chip: each entry\'s quote 「『…』 —— 你对马三说 · 第N回」 (古一\'s number), a 诺 marked, kept or broken', () => {
   let s = atMasan();
   s = remember(s, content, ctx(TYPED), { who: '马三', kind: '仇', what: '逼租', quote: '这账 我记着' }).state;
   s = remember(s, content, ctx(TYPED), { who: '阿禾', kind: '诺', what: '说好会回来', quote: '等我回来' }).state;
@@ -138,7 +139,7 @@ test('the 恩 chip: each entry\'s quote 「『…』 —— 你对马三说 · �
   assert.match(html, /<span class="ledgerkept broken">负诺<\/span>/);
   const en = ledgerChipHtml({ look: look({ ...s, lang: 'en' }, content, ctx()), lang: 'en', words: WORDS.en }, true);
   assert.match(en, new RegExp(`『这账 我记着』<span class="small dim"> —— you said to Ma San · ${re(H1_EN)}<`));
-  assert.equal(H1_EN, 'Chapter 1');
+  assert.equal(H1_EN, bookNo(content, 'h01', 'en'));
   assert.match(en, /ledgerkept broken">broken</);
   assert.doesNotMatch(html + en, /undefined|NaN|\{who\}/);
 });

@@ -13,7 +13,7 @@ import { beatRange, beatStepper, setpieceBeats, setpieceOf } from '../scripts/se
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BOOK = fs.readFileSync(path.join(ROOT, 'story/jiuding-lu/10-第十回.md'), 'utf8');
 
-test('zhang: seven beats in the book’s order, each line verbatim from 第十回', () => {
+test('zhang: seven beats in the book’s order, each line verbatim from 古十', () => {
   assert.deepEqual(BEATS.map(b => b.id), ['still', 'rise', 'bingyi', 'trial', 'fall', 'seal', 'ding']);
   let at = -1;
   for (const b of BEATS) {

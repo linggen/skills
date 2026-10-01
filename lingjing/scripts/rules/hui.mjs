@@ -3,33 +3,40 @@
 // Part of the rules engine; rules.mjs is its one door.
 //
 // The words are the book's (story/<id>/book.json: each 卷's name, each 回's
-// number and 回目); a scene says only which 回 it is (`hui`). Every label the
+// 回目); a scene says only which 回 it is (`hui`). A 回's NUMBER is its place
+// in the book as the reader counts it (book-order.js bookEntries, one source
+// for both): 《九鼎录》 runs 今 and 古 alternately from 今一, so 古一 (h01) is
+// 「第二回」 here as on the page. The game plays the 古 line only. Every label the
 // page and Ling show — the header, the close card, 「即将开放」, the 恩仇簿,
 // the 九鼎录, the 前情提要 — is made here from those two, never written twice.
 // The game's chapters (00-prologue, 00-waimen, 01-ji …) stay the internal
 // unit: the map, the locks, the beta's wait. A 回 ends where the scenes'
 // `hui` turns, which may be inside a chapter (序章's 第一回 → 第二回).
 import { pick } from '../state.mjs';
+import { bookEntries, cnNumber, lineOf } from '../book-order.js';
 
-const DIGITS = '〇一二三四五六七八九';
-/* 1 → 一, 10 → 十, 13 → 十三, 21 → 二十一 (a book of ninety-nine 回 at most). */
-export function zhNumber(n) {
-  if (n < 10) return DIGITS[n];
-  const tens = Math.floor(n / 10), ones = n % 10;
-  return `${tens === 1 ? '' : DIGITS[tens]}十${ones ? DIGITS[ones] : ''}`;
-}
+/* 1 → 一, 10 → 十, 13 → 十三, 21 → 二十一: the reader's (book-order.js). */
+export const zhNumber = cnNumber;
 
-/* The book's 回 by id, each with its 卷: {id, n, huimu, juan}. Once per world. */
+/* The book's 回 by id, each with its 卷: {id, line, tag, ord, huimu, juan,
+   at, n}. `at` is its place in the book, drafts and all — the order the game
+   sorts by; `n` its number as the published book reads (bookEntries): a draft
+   takes none, as on the page, and is named by nothing. Once per world. */
 const BOOKS = new WeakMap();
 function bookIndex(content) {
   if (!BOOKS.has(content)) {
+    const juans = new Map((content.book?.volumes ?? []).map(v => [v.id, v]));
+    const shown = new Map(bookEntries(content.book).filter(h => h.volume).map(h => [h.id, h.n]));
     const m = new Map();
-    for (const juan of content.book?.volumes ?? []) for (const h of juan.hui ?? []) m.set(h.id, { ...h, juan });
+    bookEntries(content.book, { draft: true }).filter(h => h.volume)
+      .forEach((h, at) => m.set(h.id, { ...h, juan: juans.get(h.volume.id), at, n: shown.get(h.id) ?? null }));
     BOOKS.set(content, m);
   }
   return BOOKS.get(content);
 }
 export const huiOf = (content, id) => (id ? bookIndex(content).get(id) ?? null : null);
+/* A 回's place in the book, for sorting (a 回 the book has not: last). */
+export const huiOrder = (content, id) => huiOf(content, id)?.at ?? Infinity;
 
 /* scene id → its 回 id. Once per world. */
 const SCENES = new WeakMap();
@@ -42,35 +49,38 @@ export function sceneHui(content, id) {
   return SCENES.get(content).get(id) ?? null;
 }
 
-/* A 回 named, in four sizes:
-     short  第五回                                  · Chapter 5
-     juan   卷一 · 第五回                            · Volume One · Chapter 5
-     head   卷一 · 第五回　漏勺夜半通三关              · … — the 回目's first line
-     book   卷一 · 第五回　漏勺夜半通三关　萝卜一根收小狰 · … — the 回目 whole
-   null for a 回 the book does not have. */
+/* A 回 named, in four sizes — the number the book's (古五, h05, is 第十回
+   once 今 runs beside it); the two with the 回目 carry the line's tag, as the
+   reader's title does, so a player who meets 第二回 first sees it is the 古:
+     short  第十回                                       · Chapter 10
+     juan   卷一 · 第十回                                 · Volume One · Chapter 10
+     head   卷一 · 第十回　古 · 漏勺夜半通三关              · … · Then — the 回目's first line
+     book   卷一 · 第十回　古 · 漏勺夜半通三关　萝卜一根收小狰 · … · Then — the 回目 whole
+   null for a 回 the book does not have, or one still a draft. */
 const FORMS = {
   short: (h, lang) => (lang === 'en' ? `Chapter ${h.n}` : `第${zhNumber(h.n)}回`),
   juan: (h, lang) => `${pick(h.juan.name, lang)} · ${FORMS.short(h, lang)}`,
-  head: (h, lang) => `${FORMS.juan(h, lang)}${lang === 'en' ? ' — ' : '　'}${pick(h.huimu, lang)[0]}`,
-  book: (h, lang) => `${FORMS.juan(h, lang)}${lang === 'en' ? ' — ' : '　'}${pick(h.huimu, lang).join(lang === 'en' ? ' / ' : '　')}`,
+  head: (h, lang) => `${tagged(h, lang)}${pick(h.huimu, lang)[0]}`,
+  book: (h, lang) => `${tagged(h, lang)}${pick(h.huimu, lang).join(lang === 'en' ? ' / ' : '　')}`,
 };
+const tagged = (h, lang) => (lang === 'en' ? `${FORMS.juan(h, lang)} · ${h.tag.en} — ` : `${FORMS.juan(h, lang)}　${h.tag.zh} · `);
 export function huiLabel(content, id, lang, form = 'juan') {
   const h = huiOf(content, id);
-  return h ? FORMS[form](h, lang) : null;
+  return h?.n ? FORMS[form](h, lang) : null;
 }
 
 /* A chapter's 回, in the book's order. */
 export const chapterHuis = (content, ch) => [...new Set(Object.values(ch?.scenes ?? {}).map(sc => sc.hui).filter(Boolean))]
-  .sort((a, b) => (huiOf(content, a)?.n ?? 0) - (huiOf(content, b)?.n ?? 0));
+  .sort((a, b) => huiOrder(content, a) - huiOrder(content, b));
 
 /* A chapter's first 回: the book's own word (a 回 whose `opens` names the
-   chapter — 第九回 opens 01-ji though no scene of it is played yet) or, with
+   chapter — 古九 opens 00-zhuji though no scene of it is played yet) or, with
    none, its scenes' first. */
 export function firstHui(content, ch) {
-  const told = [...bookIndex(content).values()].filter(h => h.opens === ch?.id).sort((a, b) => a.n - b.n)[0]?.id;
+  const told = [...bookIndex(content).values()].filter(h => h.opens === ch?.id).sort((a, b) => a.at - b.at)[0]?.id;
   const played = chapterHuis(content, ch)[0];
   if (!told) return played ?? null;
-  return !played || huiOf(content, told).n <= huiOf(content, played).n ? told : played;
+  return !played || huiOrder(content, told) <= huiOrder(content, played) ? told : played;
 }
 
 /* The 回 the save stands in: its scene's; between scenes (the open map, a
@@ -92,7 +102,7 @@ export function chapterLabel(content, state, ch, lang = state.lang, form = 'juan
   return huiLabel(content, id, lang, form) ?? pick(ch?.title, lang) ?? null;
 }
 
-/* 「第九回 · 即将开放」: a chapter still being written (`coming`), named by its first 回. */
+/* 「第十八回 · 即将开放」: a chapter still being written (`coming`), named by its first 回. */
 export function comingOf(content, ch, lang) {
   const name = huiLabel(content, firstHui(content, ch), lang, 'short') ?? nextJuan(content, lang) ?? pick(ch.title, lang);
   return lang === 'en' ? `${name} · coming soon` : `${name} · 即将开放`;
@@ -105,14 +115,15 @@ function nextJuan(content, lang) {
   return n > 1 ? (lang === 'en' ? `Volume ${n}` : `卷${zhNumber(n)}`) : null;
 }
 
-/* 「卷一 · 沉鼎 · 完」 when a 回 is its 卷's last; else null. */
+/* 「卷一 · 沉鼎 · 完」 when a 回 is its 卷's last of its own line; else null.
+   The book's 卷 ends on 今十, but the game plays the 古 line: its 卷 ends at 古十. */
 export const juanEndOf = (content, id, lang) => {
   const h = huiOf(content, id);
-  if (!h || h.juan?.hui?.at(-1)?.id !== id) return null;
+  if (!h || h.juan?.hui?.filter(x => lineOf(x) === h.line).at(-1)?.id !== id) return null;
   return lang === 'en' ? `${pick(h.juan.name, 'en')} · The End` : `${pick(h.juan.name, 'zh')} · 完`;
 };
 
-/* 「第三回 · 完」. */
+/* 「第六回 · 完」 — the book's number. */
 export const endLabel = (content, id, lang) => {
   const name = huiLabel(content, id, lang, 'short');
   return name && (lang === 'en' ? `${name} · The End` : `${name} · 完`);
@@ -128,6 +139,6 @@ export function huiEnded(content, state) {
   if (!now) return null;
   const passed = (state.done_scenes ?? []).map(id => sceneHui(content, id)).filter(Boolean);
   const last = passed.at(-1);
-  if (!last || passed.includes(now) || (huiOf(content, last)?.n ?? 0) >= (huiOf(content, now)?.n ?? 0)) return null;
+  if (!last || passed.includes(now) || huiOrder(content, last) >= huiOrder(content, now)) return null;
   return last;
 }

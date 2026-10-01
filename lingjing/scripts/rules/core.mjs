@@ -35,7 +35,7 @@ function meets(state, needs, now = new Date(), sceneId = state.scene) {
   if (needs.day_after && !(state.mark_days?.[needs.day_after] && state.mark_days[needs.day_after] < dayKey(now))) return false;
   // A clue that must be found here first (rules/examine.mjs: 看).
   if (needs.seen && !seenMet(state, sceneId, needs.seen)) return false;
-  // A step the story set down earlier in the same run (`mark`): 第九回's seasons, one after another.
+  // A step the story set down earlier in the same run (`mark`): 古九's seasons, one after another.
   if (needs.mark && !(state.marks ?? []).includes(needs.mark)) return false;
   return true;
 }
@@ -297,7 +297,7 @@ function offerTasks(content, state) {
    reset it to 0) — short of the new layer's own threshold, so it never jumps twice. */
 function riseTo(content, s, rise, replay) {
   const tier = content.ladder.tiers[0];
-  // `{layer, full}`: to that layer and filled — 第九回's 入秋, 练气九层圆满 (his, 2026-09-30:
+  // `{layer, full}`: to that layer and filled — 古九's 入秋, 练气九层圆满 (his, 2026-09-30:
   // the year is the book's four seasons, not days of chores).
   const layer = typeof rise === 'object' ? rise.layer : rise, full = typeof rise === 'object' && rise.full === true;
   const top = Math.min(layer, tier.thresholds.length) - 1;

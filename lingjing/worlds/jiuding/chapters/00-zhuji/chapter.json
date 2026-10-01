@@ -7,7 +7,7 @@
   "cauldron": false,
   "first_scene": "09-snow",
   "gate": 1,
-  "_id": "The book's 第九回 (story/jiuding-lu/09-第九回.md): the winter and the year at 沉鼎观 and the 筑基 on the cliff (his, 2026-09-30: 照这样重做冀州 — 筑基 moves out of 冀 to the cliff, before the road north). Its own chapter because its scenes stand at 沉鼎观 (徐) and a chapter's scenes stand in its province (content.mjs lintScene); it sorts after 00-waimen and before 01-ji (chapters run in id order). `gate: 1` — the Foundation's breakthrough (09-cliff) is thrown here.",
+  "_id": "The book's 古九 (story/jiuding-lu/09-第九回.md): the winter and the year at 沉鼎观 and the 筑基 on the cliff (his, 2026-09-30: 照这样重做冀州 — 筑基 moves out of 冀 to the cliff, before the road north). Its own chapter because its scenes stand at 沉鼎观 (徐) and a chapter's scenes stand in its province (content.mjs lintScene); it sorts after 00-waimen and before 01-ji (chapters run in id order). `gate: 1` — the Foundation's breakthrough (09-cliff) is thrown here.",
   "_map": "The same small area around 沉鼎观 as 外门 (his, 2026-09-29: 地图分步打开): the year is spent on the mountain.",
   "map": {
     "places": [
@@ -46,7 +46,7 @@
     "zh": "瞿老四十多年没收过徒弟——他上一个徒弟，后来怎样了？",
     "en": "Old Qu took no disciple for more than forty years — what became of the last one?"
   },
-  "_close": "The ending card (story.mjs closeOf): 第十回 follows at once, so it stands on 01-arrive with 「第九回 · 完」 — what he did and the teaser, both to 你 (2026-10-01: a card says 你, the dialogue box plays the book in the third person; one card mixed 你 and 沈小满).",
+  "_close": "The ending card (story.mjs closeOf): 古十 follows at once, so it stands on 01-arrive with 古九's 「完」 — what he did and the teaser, both to 你 (2026-10-01: a card says 你, the dialogue box plays the book in the third person; one card mixed 你 and 沈小满).",
   "close": {
     "did": [
       {

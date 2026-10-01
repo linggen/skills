@@ -42,7 +42,7 @@ function secludedLately(content, state, rule, now) {
 const FACTORS = {
   pill: (content, state, rule, x) => {
     // A list names the pills in the order they are reached for: the furnace's
-    // 九转 before the sect's 一转 (第九回: he eats the 九转; the 官丹 stays in 饭桶).
+    // 九转 before the sect's 一转 (古九: he eats the 九转; the 官丹 stays in 饭桶).
     const ids = [].concat(pillFor(rule, x.to) ?? []);
     const id = ids.find(i => state.bag?.[i] > 0) ?? ids[0] ?? null, held = Boolean(id && state.bag?.[id] > 0);
     const bonus = rule.pill.bonus_of?.[id] ?? rule.pill.bonus;

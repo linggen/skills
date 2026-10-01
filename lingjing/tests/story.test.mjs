@@ -13,6 +13,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { forLing, look, owesRecap, resolve, story, VERBS } from '../scripts/rules.mjs';
 import { storyNode } from '../scripts/rules/story.mjs';
+import { bookNo } from './book-num.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-09-11T12:00:00');
@@ -41,9 +42,9 @@ test('a new game: nine dark cauldrons, the prologue current, nothing of what lie
   assert.equal(r.ok, true);
   assert.equal(r.cauldrons.length, 9);
   assert.ok(r.cauldrons.every(c => c.state === 'dark' && !c.title), 'a dark cauldron gives only its province');
-  // The book is the novel's 回 (his, 2026-09-29): the prologue opens on 第一回.
+  // The book is the novel's 回 (his, 2026-09-29): the prologue opens on 古一, the book's number for it.
   assert.deepEqual(r.chapters.map(c => [c.id, c.chapter, c.state]), [['h01', '00-prologue', 'current']]);
-  assert.match(r.chapters[0].title, /^卷一.* · 第一回　一只破碗辞残照　半张烙饼换妖王$/);
+  assert.equal(r.chapters[0].title, `卷一 · 沉鼎 · ${bookNo(content, 'h01')}　古 · 一只破碗辞残照　半张烙饼换妖王`);
   assert.deepEqual(r.chapters[0].recap, []);
   assert.equal(r.her, null);
   assert.deepEqual(r.open, [pz(content.chapters['00-prologue'].mystery)]);
@@ -57,7 +58,7 @@ test('mid-chapter: the chapters ended and the current one, recaps in the order p
   const r = story(s, content, ctx()).result;
   assert.deepEqual(r.cauldrons.map(c => c.state), ['found', 'current', 'dark', 'dark', 'dark', 'dark', 'dark', 'dark', 'dark']);
   assert.equal(r.found, 1);
-  // Each chapter cut into its 回, the prologue's four among them (2026-09-30: 卷一 split into ten); 冀 is 第十回; 兖 has none yet (to be rewritten): its own title.
+  // Each chapter cut into its 回, the prologue's four among them (2026-09-30: 卷一 split into ten); 冀 is 古十; 兖 has none yet (to be rewritten): its own title.
   assert.deepEqual(r.chapters.map(c => [c.id, c.state]), [['h01', 'done'], ['h02', 'done'], ['h03', 'done'], ['h04', 'done'], ['h10', 'done'], ['02-yan', 'current']]);
   assert.equal(r.chapters[0].intro, pz(content.chapters['00-prologue'].intro), 'the intro opens a chapter\'s first 回');
   assert.equal(r.chapters[1].intro, undefined);
@@ -81,7 +82,7 @@ test('the people met: the scenes\' cast, beasts tamed and fought, rumor folk —
   const kinds = Object.fromEntries(r.people.map(p => [p.id, p.kind]));
   assert.equal(kinds.fuzhu, 'tamed');
   assert.equal(kinds.longzhi, 'story', 'met in the prologue\'s third trial');
-  assert.equal(kinds.paoxiao, 'fought', 'no longer at 冀\'s altar (第十回, 2026-09-30): fought, never met in a scene');
+  assert.equal(kinds.paoxiao, 'fought', 'no longer at 冀\'s altar (古十, 2026-09-30): fought, never met in a scene');
   assert.equal(kinds['known:old-li'], 'known');
   assert.ok(!r.people.some(p => p.id === 'yinyue'), 'she is her own page');
   // 「银月记起的」 is 银月的记忆 unlocked (memories.json), none before a 鼎 brings one home.
@@ -91,12 +92,12 @@ test('the people met: the scenes\' cast, beasts tamed and fought, rumor folk —
   assert.ok(her[0].startsWith('「一道光」'), her[0]);
 });
 
-test("Ling's Story is small — every chapter ended, in Chinese, under ~3.5 KB (卷一 in ten 回 since 2026-09-30)", () => {
+test("Ling's Story is small — every chapter ended, in Chinese, under ~3.6 KB (卷一 in ten 回 since 2026-09-30; each 回 tagged 古 and numbered as the book, 2026-10-01)", () => {
   const s = { ...at('09-yu', roadOf('09-yu').slice(0, -1)), done_scenes: [...at('09-yu').done_scenes, ...roadOf('09-yu')], ended: ['00-prologue', ...CH], scene: null, companion: { joined: '2026-09-01' }, ending: { id: 'dingding', at: NOW.toISOString() } };
   const full = story(s, content, ctx()).result;
   const short = forLing(story(s, content, ctx(), { short: 'true' }).result);
   assert.equal(full.chapters.length, 13, 'the prologue\'s four 回, 冀\'s one, and eight chapters still to be rewritten');
-  assert.ok(Buffer.byteLength(JSON.stringify(short)) <= 3500, `${Buffer.byteLength(JSON.stringify(short))} bytes`);
+  assert.ok(Buffer.byteLength(JSON.stringify(short)) <= 3600, `${Buffer.byteLength(JSON.stringify(short))} bytes`);
   assert.ok(Buffer.byteLength(JSON.stringify(short)) < Buffer.byteLength(JSON.stringify(full)));
   assert.deepEqual(short.ending, { id: 'dingding', title: '定鼎', at: NOW.toISOString() });
   assert.deepEqual(short.open, []);
@@ -213,7 +214,7 @@ test('the command line: owed on the first call after a while away, kept without 
     // The book is a read — the page's Verb and Ling's short one.
     const book = cli('story');
     assert.equal(book.ok, true);
-    assert.deepEqual([book.chapters.at(-1).id, book.chapters.at(-1).chapter], ['h10', '01-ji'], '冀 is 第十回');
+    assert.deepEqual([book.chapters.at(-1).id, book.chapters.at(-1).chapter], ['h10', '01-ji'], '冀 is 古十');
     const ling = cli('look', '--for=ling');
     assert.equal(ling.recap_due, true);
     assert.equal(ling.story_node, undefined);
@@ -221,7 +222,7 @@ test('the command line: owed on the first call after a while away, kept without 
     assert.ok(ling.recap.chapters.some(c => c.state === 'current' && c.recap.length >= 2), 'the current chapter\'s lines, from the book');
     assert.equal(ling.recap.mystery, pz(content.chapters['01-ji'].mystery));
     assert.ok(ling.recap.here && Array.isArray(ling.recap.with) && Array.isArray(ling.recap.task.book));
-    // 冀's scenes play the book on the stage (第十回, 2026-09-30): the dialogue box's rule leads, the sitting's telling next.
+    // 冀's scenes play the book on the stage (古十, 2026-09-30): the dialogue box's rule leads, the sitting's telling next.
     assert.ok(/^(The stage is playing[^]*?)?A sitting opens/.test(ling.then), 'the telling comes first, after the stage\'s own rule: ' + ling.then.slice(0, 200));
     assert.equal(cli('look', '--for=ling').recap_due, undefined, 'handed over once');
     assert.equal(cli('look').recap_due, undefined);

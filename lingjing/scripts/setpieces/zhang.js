@@ -1,5 +1,5 @@
 // setpieces/zhang.js — 卷一's one 大场面 (哇时刻 ②, Hanli 2026-09-30): 漳水立起.
-// 第十回, as the book tells it: the river stops, stands up as a wall with a
+// 古十, as the book tells it: the river stops, stands up as a wall with a
 // thousand fish leaping in it, 冰夷 rises from the black water on his two
 // dragons, the dragons try the boy who would not kneel, the wall falls back;
 // under the river the 洛书 seal opens, and the first 鼎 rises as her second

@@ -1,5 +1,5 @@
-// 射鹿 · 先看风，后看鹿 — 第二回, the stag by the stream (00-deer; his 2026-09-30:
-// 「先并行做1到4」). 爹's first lesson (第一回): 「先看风，后看鹿」. Hold to draw
+// 射鹿 · 先看风，后看鹿 — 古二, the stag by the stream (00-deer; his 2026-09-30:
+// 「先并行做1到4」). 爹's first lesson (古一): 「先看风，后看鹿」. Hold to draw
 // grandfather's bow — it takes a moment to come full — and let go when the wind
 // catches its breath. Held too long, the swollen wrist shakes and the draw sags.
 // A miss is never the end: the stag lifts its head, listens, drinks again. After

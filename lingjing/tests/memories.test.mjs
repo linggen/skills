@@ -59,7 +59,7 @@ test('the first 鼎\'s exit brings memory 1 back — once — and says the one c
   assert.deepEqual(again.memory_last, r.state.memory_last, 'nothing to play again');
 });
 
-test('the 鼎 is not a throw since the Foundation moved to the cliff (第九回): taken, it is home; a failed throw on the cliff gives no memory', () => {
+test('the 鼎 is not a throw since the Foundation moved to the cliff (古九): taken, it is home; a failed throw on the cliff gives no memory', () => {
   // 冀鼎 after the cliff: already 筑基, no breakthrough at the 鼎 — the memory comes with it.
   const home = takeJi(atJi({ tier: 'foundation', step: 0, progress: 0 }));
   assert.equal(home.result.ok, true);
@@ -206,7 +206,7 @@ test('the album: eight dark frames before (the beta\'s teaser), then lit one by 
 
 /* ── The book ── */
 
-test('the book: ::: 忆 n is memory n\'s one colour plate; 第十回 carries memory 1 at the first 鼎, once', () => {
+test('the book: ::: 忆 n is memory n\'s one colour plate; 古十 carries memory 1 at the first 鼎, once', () => {
   const memory = (n) => doc.memories.find(m => m.n === n)?.art ?? null;
   const html = renderMarkdown('前。\n::: 忆 1 九天之上\n\n::: 忆 2\n后。', { memory });
   assert.match(html, /<figure class="panel memplate"><img src="art\/memories\/1-a\.webp" alt="九天之上" loading="lazy"><figcaption>九天之上<\/figcaption><\/figure>/);

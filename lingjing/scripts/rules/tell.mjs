@@ -48,7 +48,7 @@ export const CATCHUP_OVER = 2;
 const findScene = (content, sid) => Object.values(content.chapters).map(c => c.scenes?.[sid]).find(Boolean);
 
 /* A scene's passage is played where the scene stands (2026-10-01): when the
-   story's next scene is roads away (狰 → 柴房, 第六回 → 石门), its passage stays
+   story's next scene is roads away (狰 → 柴房, 古六 → 石门), its passage stays
    owed until the player arrives — told on the way, it played at the wrong
    place, and on arrival the box was empty and the choices already up. The
    choice's own passage still plays where it was made. */

@@ -23,7 +23,7 @@ const NOW = new Date('2026-09-28T12:00:00');
 const ctx = { now: NOW, quests: [] };
 const HOUR = 3600_000;
 
-/* On the 沉鼎观 cliff (第九回, 09-cliff: the Foundation is laid there since 2026-09-30),
+/* On the 沉鼎观 cliff (古九, 09-cliff: the Foundation is laid there since 2026-09-30),
    the peak of 练气, full 体力, the four roots — nothing prepared. */
 const atJi = (extra = {}) => ({
   ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: '09-cliff', place: 'houshan', ended: ['00-prologue', '00-waimen'],
@@ -60,7 +60,7 @@ test('the chance is the realm\'s base and what feeds it, held between floor and 
   const pill = oddsAt(atJi({ bag: { 'foundation-pill': 1 } })).odds;
   assert.equal(pill.chance, Math.min(rule.cap, o.chance + rule.pill.bonus), 'a pill carried');
   assert.equal(part(pill, 'pill').item.id, 'foundation-pill', 'only the sect\'s 一转 held: it is the one');
-  // 第九回: the furnace's 九转 is reached for before the sect's 一转 (the 官丹 stays in 饭桶), and weighs more.
+  // 古九: the furnace's 九转 is reached for before the sect's 一转 (the 官丹 stays in 饭桶), and weighs more.
   const nine = oddsAt(atJi({ bag: { 'foundation-pill': 1, 'foundation-pill-9': 1 } })).odds;
   assert.equal(part(nine, 'pill').item.id, 'foundation-pill-9');
   assert.equal(part(nine, 'pill').n, rule.pill.bonus_of['foundation-pill-9']);
@@ -109,7 +109,7 @@ test('the throw lands: the realm moves, the pill carried is spent, and 筑基天
   assert.equal(r.state.tier, 'foundation');
   assert.equal(r.state.bag['foundation-pill'], undefined, 'spent');
   assert.equal(r.state.bag.lingzhi, 2, 'nothing else taken');
-  // The cliff ends 第九回: the road north opens on 第十回's first scene.
+  // The cliff ends 古九: the road north opens on 古十's first scene.
   assert.deepEqual([r.state.chapter, r.state.scene], ['01-ji', '01-arrive']);
   assert.ok(r.state.ended.includes('00-zhuji'));
   assert.deepEqual(r.result.show, content.chapters['00-zhuji'].scenes['09-cliff'].exits.find(e => e.id === 'take').show ?? []);

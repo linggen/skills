@@ -1,4 +1,4 @@
-// 洗髓 · 疼，别喊 — 第二回, the night in 娘's washtub (00-sleep; his 2026-09-30:
+// 洗髓 · 疼，别喊 — 古二, the night in 娘's washtub (00-sleep; his 2026-09-30:
 // 「先并行做1到4」, the audit's 「洗髓 hold」). 银月: 「今夜就泡。疼，别喊。」
 // The pain comes in waves, a thousand ants and then a meeting about which bone
 // to start on again. Hold to grit your teeth: three sticks of incense burn only

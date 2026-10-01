@@ -699,7 +699,7 @@ const herGrew = (before, now) => Boolean(before.her && now.her && (before.her.at
 
 /// A great moment on the stage: a gold seal, light behind it, held long
 /// enough to read — then 银月 speaks, asked, at once. One moment at a time
-/// (seen live at 09-cliff, 2026-09-30: the 筑基 seal, 「第九回 · 完」, the new
+/// (seen live at 09-cliff, 2026-09-30: the 筑基 seal, 古九's 「完」, the new
 /// 回's card and the dialogue box all stacked at once): a set piece plays
 /// first, then the seal, put away by a tap, then the rest (stageBusy).
 let featOn = false;
@@ -1161,7 +1161,7 @@ function draw() {
   // the room (his, 2026-09-18). It all comes back when the fight ends.
   document.body.classList.toggle('fighting', Boolean(bout));
   paintAtmos();
-  // The 回 above the place, as the book names it (「卷一 · 第五回　漏勺夜半通三关」, rules/hui.mjs).
+  // The 回 above the place, as the book names and numbers it (古五: 「卷一 · 沉鼎 · 第十回　古 · 漏勺夜半通三关」 once 今五 is in, rules/hui.mjs).
   // The old 回's last passage still in the box keeps its own 回 line (queue.js huiLineOf).
   const titles = (huiTitles[lang()] ??= {}), told = readingHere();
   if (look.chapter?.hui) titles[look.chapter.hui] = look.chapter.title;
@@ -1703,8 +1703,8 @@ async function momentTurn(kind, extra = () => false) {
 }
 /* The box still on a passage of the 回 just ended (the exit that ended it, a scene
    of it): that 回's 「完」, the realm's seal and the new 回's title wait until it is
-   told — seen live at 09-cliff (2026-09-30): 第九回's last words played under
-   第十回's banner. Each passage carries its 回 (rules/tell.mjs). */
+   told — seen live at 09-cliff (2026-09-30): 古九's last words played under
+   古十's banner. Each passage carries its 回 (rules/tell.mjs). */
 function oldHuiPlaying() {
   const r = readingNow();
   if (!playing(r)) return false;
@@ -2657,7 +2657,7 @@ function drawLu() {
 // would share every title and ending card put away across saves; an old save's seed is its old
 // name, so what it put away stays put away.
 // A scratch save is its own too: every save seeded from one fixture shares its seed, so a 「完」 put
-// away in one never stood again in the next (2026-10-01: 「第九回 · 完」 never appeared on the cliff).
+// away in one never stood again in the next (2026-10-01: 古九's 「完」 never appeared on the cliff).
 const titleKey = (id) => `lingjing:title:${look?.world?.id ?? ''}:${SCRATCH ? `${SCRATCH}:` : ''}${look?.seed ?? look?.name ?? ''}:${id}`;
 function titleSeen(id, mark = false) {
   try {

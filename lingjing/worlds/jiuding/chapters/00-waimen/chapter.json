@@ -7,7 +7,7 @@
   "cauldron": false,
   "first_scene": "wm-ahe",
   "gate": null,
-  "_id": "The book's 第五回 to 第八回 (story/jiuding-lu/05-第五回.md … 08-第八回.md; once 第一章 · 外门, then 第三回 until 2026-09-30), between the prologue and 冀: an id that sorts after 00-prologue and before 01-ji (chapters run in id order, core.mjs advanceChapter).",
+  "_id": "The book's 古五 to 古八 (story/jiuding-lu/05-第五回.md … 08-第八回.md; once 第一章 · 外门, then 第三回 until 2026-09-30), between the prologue and 冀: an id that sorts after 00-prologue and before 01-ji (chapters run in id order, core.mjs advanceChapter).",
   "_map": "The small area around 沉鼎观 (his, 2026-09-29): 外门, 讲堂, 柴房, 药园, 后山, 藏经阁, 坊市, 渡口, the Si and its stone door, 泗水北岸. Every other place — the rest of 徐 and the eight provinces — refuses with `say` and stands greyed on the map (world.mjs mapOf).",
   "map": {
     "places": [
@@ -120,7 +120,7 @@
       }
     }
   ],
-  "_goal": "The chapter's one goal and its countdown on the goal line (errands.mjs goalOf): the story's date until 周衡's notice 「外门大比，明日」 (the mark `dabi-eve`, on wm-chu's rest), then 明日. No real-day wait any more (2026-09-30): the eve is a scene in the story (wm-qianye, 大比前夜 — the book's 第八回 § 一, and the rumour of 马家's trees), and the contest follows it at once.",
+  "_goal": "The chapter's one goal and its countdown on the goal line (errands.mjs goalOf): the story's date until 周衡's notice 「外门大比，明日」 (the mark `dabi-eve`, on wm-chu's rest), then 明日. No real-day wait any more (2026-09-30): the eve is a scene in the story (wm-qianye, 大比前夜 — the book's 古八 § 一, and the rumour of 马家's trees), and the contest follows it at once.",
   "goal": {
     "title": {
       "zh": "外门大比",
@@ -133,12 +133,12 @@
     "at": "wm-dabi",
     "eve": "dabi-eve"
   },
-  "_title": "The arc's own name, no number: the player is told the 回 (卷一 · 第五回 … 第八回, book.json via the scenes' `hui`, rules/hui.mjs).",
+  "_title": "The arc's own name, no number: the player is told the 回 (卷一 · 古五 … 古八, book.json via the scenes' `hui`, rules/hui.mjs).",
   "title": {
     "zh": "外门",
     "en": "The Outer Court"
   },
-  "_close": "The ending card on the stage once the chapter is over and the next one waits (story.mjs closeOf): 「第八回 · 完」 for the 回 it ends on (rules/hui.mjs, never written here), one line of what THIS player did — each `did` part whose `if` holds on the save (cast · owed · not; none: always), joined — and the next chapter's teaser in the book's voice.",
+  "_close": "The ending card on the stage once the chapter is over and the next one waits (story.mjs closeOf): 古八's 「完」 for the 回 it ends on (rules/hui.mjs, never written here), one line of what THIS player did — each `did` part whose `if` holds on the save (cast · owed · not; none: always), joined — and the next chapter's teaser in the book's voice.",
   "close": {
     "did": [
       { "if": { "cast": "zheng" }, "zh": "你收了药园那只偷萝卜的小狰", "en": "You took in the little Zheng that robbed the herb garden" },

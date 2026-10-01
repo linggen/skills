@@ -1,6 +1,6 @@
 // A 试 (battle.js § trial): a story trial is passed, not won by a kill — the
 // beast yields at `trial.yield` of its 气血, and a player still standing when
-// its cards are spent has passed (not a withdrawal). 冰夷's dragons (第十回)
+// its cards are spent has passed (not a withdrawal). 冰夷's dragons (古十)
 // must be reliably passable with the hand the road deals by then.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -65,7 +65,7 @@ test('the ji-altar save holds the road\'s hand, and a careful player passes the 
   assert.ok(won / n >= 0.9, `passed ${won}/${n}`);
 });
 
-/* 蛫 (第七回, wm-wangzuo `open`) is mandatory: its 12 cards and its 杀招 must
+/* 蛫 (古七, wm-wangzuo `open`) is mandatory: its 12 cards and its 杀招 must
    not outlast a careful player. Live 2026-10-01 it was 9.8% (four taunt walls
    and a heal of 12 at half); weighed now like 狰 (≈77%) and 蠪侄 (≈77%). */
 test('蛫 is a fair story fight: a careful player wins it about three times in four', () => {
@@ -78,10 +78,10 @@ test('蛫 is a fair story fight: a careful player wins it about three times in f
   };
   const full = rate(roadHand(fixture)), then = rate(roadHand(fixture, NOW, 'gui'));
   assert.ok(full >= 0.65 && full <= 0.9, `the road hand wins ${(full * 100).toFixed(1)}%`);
-  assert.ok(then >= 0.65, `the hand held at 第七回 wins ${(then * 100).toFixed(1)}%`);
+  assert.ok(then >= 0.65, `the hand held at 古七 wins ${(then * 100).toFixed(1)}%`);
 });
 
-/* 只躲，不还手 (第八回, wm-lun2): 秦雁 is a 试 passed by standing through her moves,
+/* 只躲，不还手 (古八, wm-lun2): 秦雁 is a 试 passed by standing through her moves,
    as the book has it — never by driving her down. */
 test('秦雁 is a dodge trial: outlasted, passed; no yield', () => {
   const qin = creatureOf(content, 'foe-shijie');

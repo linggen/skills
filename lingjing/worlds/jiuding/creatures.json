@@ -1774,7 +1774,7 @@
           "en": "Only dodge, never strike: stand through every move she has, and you have passed."
         }
       },
-      "_trial": "只躲，不还手 (第八回: 三十招，那口剑一回也没碰着他; 2026-10-01 the label promised a dodge and the fight was a full duel). A 试 passed by outlasting her twelve cards (battle.js § trial), no yield — he never drives her down. node tools/trial-sim.mjs foe-shijie --at."
+      "_trial": "只躲，不还手 (古八: 三十招，那口剑一回也没碰着他; 2026-10-01 the label promised a dodge and the fight was a full duel). A 试 passed by outlasting her twelve cards (battle.js § trial), no yield — he never drives her down. node tools/trial-sim.mjs foe-shijie --at."
     },
     {
       "id": "foe-shuanglong",
@@ -1853,8 +1853,8 @@
           "en": "A trial, not a fight: stand until the dragons have spent every move, or drive them down to a third, and you have passed."
         }
       },
-      "_trial": "试 (battle.js § trial): the dragons yield at 35% of their 气血, and a player still standing when their twelve are spent has passed — not a withdrawal. Weighed with the deck the road deals by 第十回 (tools/trial-sim.mjs): a careful line wins ~99%, a careless one ~47%; before, the careful line won 74% and ran dry into 遁走 7% of fights (2026-09-30).",
-      "_deck": "冰夷双龙 —— 一扑一扫，水里来，水里去；是来试人的，不是来杀人的（第十回）。",
+      "_trial": "试 (battle.js § trial): the dragons yield at 35% of their 气血, and a player still standing when their twelve are spent has passed — not a withdrawal. Weighed with the deck the road deals by 古十 (tools/trial-sim.mjs): a careful line wins ~99%, a careless one ~47%; before, the careful line won 74% and ran dry into 遁走 7% of fights (2026-09-30).",
+      "_deck": "冰夷双龙 —— 一扑一扫，水里来，水里去；是来试人的，不是来杀人的（古十）。",
       "_signature": "双龙摆尾 —— 两条尾巴贴着河滩一齐扫过来。"
     }
   ],

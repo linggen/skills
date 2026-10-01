@@ -240,16 +240,16 @@ test('a road may cross into another province; a breakthrough needs its line and 
   assert.ok(has(problems, 'no tier on the ladder has gate 99'));
 });
 
-test('chapter 1 walks from the Zhang to the cauldron and ends — the Foundation laid before it, on the cliff (第九回)', () => {
+test('chapter 1 walks from the Zhang to the cauldron and ends — the Foundation laid before it, on the cliff (古九)', () => {
   const c = fresh(), ch = c.chapters['01-ji'];
   assert.equal(ch.opens, null, 'no lock while the game is built and tested'); assert.equal(ch.gate, null); assert.equal(ch.corridor, false);
-  assert.equal(ch.coming, undefined, '第十回 is built (his, 2026-09-30)');
+  assert.equal(ch.coming, undefined, '古十 is built (his, 2026-09-30)');
   const at = Object.values(ch.scenes).map(s => `${s.id}@${s.at}`);
   assert.deepEqual(at, ['01-altar@hebo', '01-arrive@zhangnan', '01-cauldron@zhangyuan', '01-deep@zhangyuan', '01-end@zhangyuan', '01-rise@hebo', '01-ye@ye']);
   assert.ok(ch.scenes['01-end'].exits.some(e => e.ends === '01-ji'));
   assert.ok(!Object.values(ch.scenes).some(s => s.exits.some(e => e.breakthrough)), 'no breakthrough at the 鼎');
   assert.equal(ch.scenes['01-cauldron'].exits.find(e => e.id === 'take').memory, 1, 'the 鼎 gives her first memory');
-  // 第九回 is its own chapter at 沉鼎观 (徐), gated for the Foundation, between 外门 and 冀.
+  // 古九 is its own chapter at 沉鼎观 (徐), gated for the Foundation, between 外门 and 冀.
   const zj = c.chapters['00-zhuji'];
   assert.deepEqual([zj.province, zj.gate, zj.first_scene], ['徐', 1, '09-snow']);
   assert.deepEqual(Object.keys(c.chapters).filter(id => id < '02').sort(), ['00-prologue', '00-waimen', '00-zhuji', '01-ji']);

@@ -24,9 +24,11 @@
     <div id="list"></div>
   </div>
   <script type="module">
+    import { entryById } from './read-md.js';
+    // Each set piece names its 回 by id; its 「第N回」 is the book's (book-order.js), read from book.json.
     const SETS = {
       zhang: {
-        title: { zh: '第十回 · 漳水立起 — 静帧', en: 'Chapter 10 · The River Stands — stills' },
+        hui: 'h10', title: { zh: '漳水立起 — 静帧', en: 'The River Stands — stills' },
         frames: [
           { f: 'zhang-a', zh: '话音未落，漳水竟站了起来。不是涨，是站——一整条河从河床上立起来，立成了一道墙。水墙里千千万万尾鱼……全朝着一个方向，一尾接一尾地往上跃，倒像是整条漳水，都在跳一道看不见的龙门。……河床便露了出来：泥，水草，一只一只的木船，横七竖八地陷在淤泥里，船底都凿着洞。',
             en: 'The Zhang stood up — not rising, standing: a whole river lifted off its bed into a wall, ten thousand fish in it leaping one way, as if the river were leaping an unseen Dragon Gate; below, the bare bed, and the holed boats sunk in the mud.' },
@@ -41,7 +43,7 @@
         ],
       },
       zhuji: {
-        title: { zh: '第九回 · 筑基天象 — 静帧', en: 'Chapter 9 · Laying the Foundation — stills' },
+        hui: 'h09', title: { zh: '筑基天象 — 静帧', en: 'Laying the Foundation — stills' },
         frames: [
           { f: 'zhuji-a', zh: '他抬头一看，头顶上不知何时聚起了一团云。那云不大，只罩着这一座崖顶，灰里透白，慢慢地转，越转越快，竟转成了一口倒扣的大锅。',
             en: 'Overhead a cloud had gathered — not large, over this one cliff alone, grey going white, turning faster and faster until it was an upturned cauldron.' },
@@ -65,6 +67,10 @@
     const lang = q.get('lang') === 'en' ? 'en' : 'zh';
     const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     document.getElementById('title').textContent = set.title[lang];
+    fetch('../story/jiuding-lu/book.json').then((r) => r.json()).then((book) => {
+      const h = entryById(book, set.hui);
+      if (h) document.getElementById('title').textContent = `${h.label[lang]} · ${set.title[lang]}`;
+    }).catch(() => {});
     document.getElementById('sub').textContent = lang === 'zh' ? '只有静帧，还没有动画。' : 'Stills only — no animation yet.';
     document.getElementById('list').innerHTML = set.frames.map((x, i) =>
       `<div class="still"><img src="../worlds/jiuding/art/setpiece/${x.f}.webp" alt="" loading="lazy" /><div class="n">${i + 1} / ${set.frames.length}</div><p>${esc(x[lang])}</p></div>`).join('');

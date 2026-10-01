@@ -1,9 +1,9 @@
-// 外门 — the book's 第五回 to 第八回 (story/jiuding-lu/05-第五回.md … 08-第八回.md; once 第一章 · 外门, then 第三回 until 卷一 was split into ten, 2026-09-30), as shipped: the prologue
+// 外门 — the book's 古五 to 古八 (story/jiuding-lu/05-第五回.md … 08-第八回.md; once 第一章 · 外门, then 第三回 until 卷一 was split into ten, 2026-09-30), as shipped: the prologue
 // leads into it; five key beats lock the map and open it again; the area
 // around 沉鼎观 is the whole map; 小狰 is the story's — a trial bout at the 药园,
 // then the 萝卜 (2026-09-30); the 蛫 guards the 秘境 wall; the 大比's eve is a scene
 // (wm-qianye) and no real day is waited; its three duels; 息壤 lifts the realm;
-// the chapter ends on 「第九回 · 即将开放」.
+// the chapter ends on 古九's 「第N回 · 即将开放」.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
@@ -14,6 +14,7 @@ import { WORDS, bookPopHtml, cardHtml, duelTitle } from '../scripts/cards.js';
 import { stageSlots } from '../scripts/stage.mjs';
 import { TO_OPEN, walk } from './prologue.mjs';
 import { huiLabel, huiOf } from '../scripts/rules/hui.mjs';
+import { bookNo } from './book-num.mjs';
 
 const content = loadContent();
 const CH = content.chapters['00-waimen'];
@@ -59,7 +60,7 @@ function playThrough() {
   s = must(move, fresh(s), { place: 'shimen' });
   s = must(resolve, s, { exit: 'refuse' });
   s = must(win, s, { id: 'mijing-wall' }); s = must(task, s, { action: 'done', id: 'mijing-wall' });
-  assert.equal(s.bag.luobo, 1, 'into the 秘境 with a radish in the bundle (第七回)');
+  assert.equal(s.bag.luobo, 1, 'into the 秘境 with a radish in the bundle (古七)');
   s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
   // 扔一根萝卜上去 — the book's choice at the 坤阵 can be made (it refused 「你身上没有萝卜」).
   const tossed = must(resolve, s, { exit: 'radish' });
@@ -77,7 +78,7 @@ function playThrough() {
   return s;
 }
 
-test('the prologue leads into 外门 — 卷一 · 第五回 — which sorts between it and 冀, and opens at 外门 with its title card', () => {
+test('the prologue leads into 外门 — 卷一 · 古五 — which sorts between it and 冀, and opens at 外门 with its title card', () => {
   const ids = Object.keys(content.chapters).sort();
   assert.deepEqual(ids.slice(0, 4), ['00-prologue', '00-waimen', '00-zhuji', '01-ji']);
   const s = opened();
@@ -86,16 +87,16 @@ test('the prologue leads into 外门 — 卷一 · 第五回 — which sorts bet
   assert.equal(s.place, 'waimen');
   const l = look(s, content, ctx());
   assert.equal(l.chapter.title, huiLabel(content, 'h05', 'zh', 'head'));
-  assert.match(l.chapter.title, /^卷一.* · 第五回　漏勺夜半通三关$/, 'the 回 as the book names it, never 章');
+  assert.equal(l.chapter.title, `卷一 · 沉鼎 · ${bookNo(content, 'h05')}　古 · 漏勺夜半通三关`, 'the 回 as the book names it, never 章');
   assert.equal(l.chapter.hui, 'h05');
-  // 第四回 ended where the scenes turned: its close stands on the first scene of 第五回, until a scene of it is passed.
+  // 古四 ended where the scenes turned: its close stands on the first scene of 古五, until a scene of it is passed.
   const h04 = huiOf(content, 'h04').huimu.zh;
-  assert.deepEqual(l.chapter.close, { id: 'h04', title: '第四回 · 完', huimu: h04, next: l.chapter.title });
+  assert.deepEqual(l.chapter.close, { id: 'h04', title: `${bookNo(content, 'h04')} · 完`, huimu: h04, next: l.chapter.title });
   const html = cardHtml({ card: 'closed' }, { look: l, lang: 'zh', words: WORDS.zh });
-  assert.match(html, new RegExp(`第四回 · 完[\\s\\S]*${h04[0]}[\\s\\S]*${h04[1]}[\\s\\S]*第五回　漏勺夜半通三关[\\s\\S]*data-close-chapter="h04">合上`));
+  assert.match(html, new RegExp(`${bookNo(content, 'h04')} · 完[\\s\\S]*${h04[0]}[\\s\\S]*${h04[1]}[\\s\\S]*${bookNo(content, 'h05')}　古 · 漏勺夜半通三关[\\s\\S]*data-close-chapter="h04">合上`));
   assert.equal(stageSlots(l, l.stage).main[0].card, 'closed', 'before the scene card');
-  assert.equal(look(must(resolve, s, { exit: 'owe' }), content, ctx()).chapter.close, undefined, 'gone once 第五回 is under way');
-  assert.equal(look({ ...s, lang: 'en' }, content, ctx()).chapter.close.title, 'Chapter 4 · The End');
+  assert.equal(look(must(resolve, s, { exit: 'owe' }), content, ctx()).chapter.close, undefined, 'gone once 古五 is under way');
+  assert.equal(look({ ...s, lang: 'en' }, content, ctx()).chapter.close.title, `${bookNo(content, 'h04', 'en')} · The End`);
   assert.equal(l.chapter.fresh, true);
   assert.equal(l.scene.id, 'wm-ahe');
   assert.equal(l.scene.panel.art, undefined, 'a story moment is not illustrated: the caption and the choices stand alone');
@@ -103,11 +104,11 @@ test('the prologue leads into 外门 — 卷一 · 第五回 — which sorts bet
   assert.equal(story(s, content, ctx()).result.cauldrons.length, 9, 'no cauldron in it: the nine are still the nine');
 });
 
-test('every scene is reached, and the chapter ends straight into 第九回 (筑基, built 2026-09-30)', () => {
+test('every scene is reached, and the chapter ends straight into 古九 (筑基, built 2026-09-30)', () => {
   for (const gender of ['male']) {
     const s = playThrough();
     assert.ok(s.ended.includes('00-waimen'), gender);
-    assert.deepEqual([s.chapter, s.scene], ['00-zhuji', '09-snow'], 'nothing waits: 第九回 opens at once');
+    assert.deepEqual([s.chapter, s.scene], ['00-zhuji', '09-snow'], 'nothing waits: 古九 opens at once');
     const passed = new Set(s.done_scenes);
     for (const id of Object.keys(CH.scenes)) assert.ok(passed.has(id), `${gender}: ${id}`);
     assert.equal(look(s, content, ctx(DAY2)).chapter.hui, 'h09');
@@ -172,7 +173,7 @@ test('the map is the area around 沉鼎观: the rest of 徐 and the eight provin
   assert.equal(refused(move, en, { place: 'pengcheng' }, 'road-closed').say, CH.map.say.en);
 });
 
-test('the chapter ended, 第九回 keeps the same mountain on its own map; a save already further along keeps the whole world', () => {
+test('the chapter ended, 古九 keeps the same mountain on its own map; a save already further along keeps the whole world', () => {
   const done = playThrough();
   const zj = content.chapters['00-zhuji'];
   assert.deepEqual(zj.map.places, CH.map.places, 'the year is spent on the same mountain');
@@ -395,23 +396,23 @@ test('息壤 keeps his 修为 through the jump, and its moment is the five doors
   assert.equal(stageSlots({}, [{ card: 'panel' }, { card: 'doors' }]).main[0].card, 'doors');
 });
 
-test('外门 ends on its card: 「第八回 · 完」, what this player did, the next teaser in the book\'s voice — standing on 第九回\'s first scene (his, 2026-09-29; 回 renumbered and 第九回 built 2026-09-30)', () => {
+test('外门 ends on its card: 「古八 · 完」 by the book\'s number, what this player did, the next teaser in the book\'s voice — standing on 古九\'s first scene (his, 2026-09-29; 回 renumbered and 古九 built 2026-09-30)', () => {
   const s = playThrough();
   const l = look(s, content, ctx(DAY2));
   const close = l.chapter.close;
-  assert.equal(close.title, '第八回 · 完');
+  assert.equal(close.title, `${bookNo(content, 'h08')} · 完`);
   assert.equal(close.id, 'h08', 'put away once, as the 回 it closes');
   assert.equal(close.did, '你收了药园那只偷萝卜的小狰，大比把第一轮让给了孙二狗，终究赢下了那颗筑基丹，又拜了扫了五十年台阶的瞿老为师。');
   assert.match(close.teaser, /头场雪[\s\S]*玉盒子/);
   assert.ok(l.stage.some(c => c.card === 'closed'), 'on the stage');
   assert.equal(stageSlots(l, l.stage).main[0].card, 'closed', 'first on the stage, before an errand offered where he stands');
   const html = cardHtml({ card: 'closed' }, { look: l, lang: 'zh', words: WORDS.zh });
-  assert.match(html, /第八回 · 完[\s\S]*小狰[\s\S]*头场雪[\s\S]*data-close-chapter="h08">合上/);
+  assert.match(html, new RegExp(`${bookNo(content, 'h08')} · 完[\\s\\S]*小狰[\\s\\S]*头场雪[\\s\\S]*data-close-chapter="h08">合上`));
   // another player's chapter reads his own: no 狰, and the first round fought
   const other = { ...s, cast: s.cast.filter(id => id !== 'zheng'), ledger: s.ledger.filter(e => e.who !== 'sunergou') };
   assert.match(look(other, content, ctx(DAY2)).chapter.close.did, /^药园的贼，你没收成，大比一轮一轮打了上去，/);
   assert.match(look({ ...s, lang: 'en' }, content, ctx(DAY2)).chapter.close.did, /^You took in the little Zheng/);
-  // before the end: no card (a scene of 第五回 passed, so not 第四回's either)
+  // before the end: no card (a scene of 古五 passed, so not 古四's either)
   assert.equal(look(must(resolve, opened(), { exit: 'owe' }), content, ctx()).chapter.close, undefined);
 });
 
@@ -421,7 +422,7 @@ test('a first-appearance 图鉴 card beside the scene card is compact — a smal
   const json = (f) => JSON.parse(fs.readFileSync(new URL(`../worlds/jiuding/${f}`, import.meta.url), 'utf8'));
   const codex = codexOf({ codex: json('codex.json'), people: json('people.json'), creatures: json('creatures.json'), items: json('items.json'), arts: json('arts.json') });
   const l = look(opened(), content, ctx());
-  assert.deepEqual(l.scene.meet, ['sunergou', 'zhouheng'], '周衡 is met here since 2026-09-30 (the refectory morning moved to 第五回)');
+  assert.deepEqual(l.scene.meet, ['sunergou', 'zhouheng'], '周衡 is met here since 2026-09-30 (the refectory morning moved to 古五)');
   const c = { look: l, lang: 'zh', words: WORDS.zh, codex };
   const html = cardHtml({ card: 'meet', id: 'sunergou' }, c);
   assert.match(html, /^<div class="card codexwrap compact"><button class="codexcompact" data-codex-big="sunergou"/);

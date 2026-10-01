@@ -23,8 +23,8 @@
     "zh": "邺城年年送下水的新娘，嫁的是谁？",
     "en": "Whom do the brides Ye sends into the water really marry?"
   },
-  "_gate": "No breakthrough here since 2026-09-30: the Foundation is laid on the 沉鼎观 cliff in 第九回 (00-zhuji, gate 1); 冀 gives the first 鼎, 银月's second tail and her first memory.",
-  "_close": "卷一's last 回 ends here (01-end rest): 「第十回 · 完」 with 「卷一 · 沉鼎 · 完」 over it (rules/story.mjs closeOf `juan`), what this player did, and 卷二's opening as a teaser — only OUTLINE 卷二's 起 (太一宫来借鼎、下山为散修、阿禾追下山), nothing past it.",
+  "_gate": "No breakthrough here since 2026-09-30: the Foundation is laid on the 沉鼎观 cliff in 古九 (00-zhuji, gate 1); 冀 gives the first 鼎, 银月's second tail and her first memory.",
+  "_close": "卷一's last 回 ends here (01-end rest): 古十's 「完」 with 「卷一 · 沉鼎 · 完」 over it (rules/story.mjs closeOf `juan`), what this player did, and 卷二's opening as a teaser — only OUTLINE 卷二's 起 (太一宫来借鼎、下山为散修、阿禾追下山), nothing past it.",
   "close": {
     "did": [
       {
