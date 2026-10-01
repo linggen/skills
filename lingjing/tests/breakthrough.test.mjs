@@ -2,7 +2,8 @@
 // 红检, "you pick"). The page's card shows the chance and what feeds it; the
 // rules throw, seeded so a reload, an Undo and a replay land alike; a failure
 // wounds, takes a share of the peak step's 修为 and shuts the cauldron for real
-// hours, and never takes the realm, the save or anything but the pill carried.
+// hours, and never takes the realm, the save or anything held — not even the
+// pill carried, eaten only by a throw that lands (the card: 境界与所藏不失).
 // Ling tells the 雷劫 and never decides it. Every number is ladder.json's.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -132,7 +133,8 @@ test('the throw fails: hurt, a share of the peak step\'s 修为, the cauldron sh
   assert.equal(r.state.step, 8, 'nor the step');
   assert.equal(r.state.scene, '09-cliff', 'the scene stays');
   assert.equal(r.state.wealth, 300);
-  assert.deepEqual(r.state.bag, { lingzhi: 2 }, 'only the pill carried is spent');
+  assert.deepEqual(r.state.bag, { 'foundation-pill': 1, lingzhi: 2 }, 'nothing held is lost — the pill carried is kept for the next try');
+  assert.equal(b.pill.kept, true);
   assert.equal(b.again_at, new Date(NOW.getTime() + rule.fail.cooldown_hours * HOUR).toISOString());
   assert.equal(r.result.summarize, false);
 
@@ -234,4 +236,19 @@ test('the page writes what fell down for Ling and Yinyue, and Undo takes the thr
 
   const won = notePage('resolve', {}, { ok: true, breakthrough: { success: true, chance: 42, low: true, to: '筑基初期' }, beat: [{ text: '三道雷。' }] }, { lang: 'zh' }, content, NOW);
   assert.match(won.page_did.at(-1).what, /broke through to 筑基初期 on the page's card \(42% chance, against the odds\) — beat: 三道雷。/);
+});
+
+test('after a failed throw the cliff is never a dead end: the shut hours first, then 闭关 named as the way back to the peak', () => {
+  const s = tryThat(atJi({ bag: { 'foundation-pill-9': 1 } }), 'foundation', false);
+  const failed = resolve(s, content, ctx, { exit: 'take' }).state;
+  assert.equal(failed.bag['foundation-pill-9'], 1, 'the 九转 is kept');
+  const soon = resolve(failed, content, { ...ctx, now: new Date(NOW.getTime() + HOUR) }, { exit: 'take' }).result;
+  assert.equal(soon.refused, 'breakthrough-cooling', 'shut, and said so before the 修为 it lost');
+  const later = { ...ctx, now: new Date(NOW.getTime() + (rule.fail.cooldown_hours + 1) * HOUR) };
+  const under = resolve(failed, content, later, { exit: 'take' }).result;
+  assert.equal(under.refused, 'not-at-peak');
+  assert.match(under.say, /闭关/);
+  assert.ok(!look(failed, content, later).locked?.includes('seclusion'), '闭关 is open on the cliff');
+  const back = resolve({ ...failed, progress: 130 }, content, later, { exit: 'take' });
+  assert.ok(back.result.ok && back.result.breakthrough, 'the peak regained, the throw is his again');
 });

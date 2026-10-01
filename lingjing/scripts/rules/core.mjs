@@ -262,6 +262,16 @@ function coolingSay(lang, at, now) {
     : `The tribulation still runs through your meridians; the cauldron's breath will not come near. Come back after ${hourOf(at, 'en')}${later ? ' tomorrow' : ''}.`;
 }
 
+/* Under the peak: the exit's own line — unless a failed throw took the 修为
+   (breakthrough.mjs fail): then the way back is 闭关, open in every chapter
+   that throws, so the story can never stand on a cauldron with no road to it. */
+function notPeakSay(exit, s, lang) {
+  if (s.breakthrough?.last?.success !== false) return pick(exit.refuse, lang);
+  return lang === 'zh'
+    ? '雷劫震散了几分修为，丹田那片湖又浅了一截。去闭关，几个时辰便养得回来，再来冲。'
+    : 'The tribulation shook loose some of your cultivation; the lake in your dantian sits lower. Go into seclusion — a few hours bring it back — then try again.';
+}
+
 /* A breakthrough is thrown on the page's card, where its odds stand (Hanli,
    2026-09-28): Ling's Resolve of a cauldron ready to take is refused, so the
    throw never lands before the player has seen what feeds it. Not ready —
@@ -342,12 +352,12 @@ export function resolve(state, content, ctx, args) {
     const tier = tierOf(content, s.tier), tiers = content.ladder.tiers, next = tiers[tiers.indexOf(tier) + 1];
     const peak = s.step === tier.thresholds.length - 1 && s.progress >= threshold(content, s);
     const gate = content.chapters[s.chapter]?.gate;
-    if (!peak || !next || next.gate !== gate) {
-      return refuse('not-at-peak', pick(exit.refuse, lang), { tier: s.tier, step: s.step + 1, progress: s.progress, next: threshold(content, s), peak_step: tier.thresholds.length });
-    }
-    // A failed throw shuts the cauldron for real hours (breakthrough.mjs).
-    const until = coolingUntil(s, ctx.now);
+    // A failed throw shuts the cauldron for real hours (breakthrough.mjs) — said first: it is why.
+    const until = next?.gate === gate ? coolingUntil(s, ctx.now) : null;
     if (until) return refuse('breakthrough-cooling', coolingSay(lang, new Date(until), ctx.now), { again_at: until });
+    if (!peak || !next || next.gate !== gate) {
+      return refuse('not-at-peak', notPeakSay(exit, s, lang), { tier: s.tier, step: s.step + 1, progress: s.progress, next: threshold(content, s), peak_step: tier.thresholds.length });
+    }
     // The chance as the card showed it — read before this step's 体力 is paid.
     odds = oddsOf(content, s, ctx.now, next.id);
     breakthrough = { from: stepName(content, s.tier, s.step, lang), to: stepName(content, next.id, 0, lang), tier: next.id };

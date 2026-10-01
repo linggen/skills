@@ -11,7 +11,9 @@
 //
 // A failure wounds (伤势 is 体力 since redesign-v2 § 四), takes a share of the
 // peak step's 修为 and shuts the cauldron for real hours. The realm, the save
-// and every other thing held are never lost; only the pill carried is spent.
+// and every other thing held are never lost — the pill carried included: it
+// is eaten only by a throw that lands (the card's promise, 「境界与所藏不失」;
+// live 2026-10-01 a failed throw ate the one 九转 and the next try had less).
 import { pick, settleStamina, threshold, seedOf } from '../state.mjs';
 import { herAwake, herGifts } from './companion.mjs';
 import { itemOf } from './errands.mjs';
@@ -112,14 +114,14 @@ function fail(content, s, rule, now) {
 }
 
 /* The throw, on the state in hand (its 体力 for this step already paid):
-   `odds` as the card showed them. The pill carried is spent either way; the
-   try is counted, so the next one is a new die. Written down as `last` for
+   `odds` as the card showed them. The pill carried is spent only when the
+   throw lands; the try is counted, so the next one is a new die. Written down as `last` for
    the page's seal. Returns what happened; the caller moves the realm. */
 export function throwOn(content, s, odds, to, now) {
   const rule = RULE(content);
   const roll = rollOf(s, to), success = roll < odds.chance;
   const pill = odds.parts.find(p => p.id === 'pill');
-  if (pill?.on) { s.bag[pill.item.id] -= 1; if (s.bag[pill.item.id] <= 0) delete s.bag[pill.item.id]; }
+  if (pill?.on && success) { s.bag[pill.item.id] -= 1; if (s.bag[pill.item.id] <= 0) delete s.bag[pill.item.id]; }
   const tries = { ...s.breakthrough?.tries, [to]: (s.breakthrough?.tries?.[to] ?? 0) + 1 };
   const failed = success ? null : fail(content, s, rule, now);
   s.breakthrough = {
@@ -127,7 +129,7 @@ export function throwOn(content, s, odds, to, now) {
     last: { to, chance: odds.chance, success, at: now.toISOString() },
   };
   return {
-    success, chance: odds.chance, low: odds.low, ...(pill?.on ? { pill: pill.item } : {}),
+    success, chance: odds.chance, low: odds.low, ...(pill?.on ? { pill: success ? pill.item : { ...pill.item, kept: true } } : {}),
     ...(failed ? { lost: failed.lost, again_at: failed.until } : {}),
   };
 }
