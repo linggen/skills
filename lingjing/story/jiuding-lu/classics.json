@@ -506,20 +506,19 @@
       ],
       "note": "今线宿舍墙上节气挂图秋分那一格印的「昼夜均，寒暑平」，是从这一句摘的。"
     },
-    "shiji-liguang": {
-      "title": "史记·李将军列传",
-      "about": "司马迁《史记》，西汉；李广是汉武帝时守北边的名将，匈奴叫他「飞将军」。",
+    "zhuangzi-zhibeiyou": {
+      "title": "庄子·知北游",
+      "about": "《庄子》外篇第二十二篇，借「知」向北问道，讲道无所不在、「通天下一气耳」。",
       "source": {
-        "edition": "维基文库《史記·卷109》",
-        "section": "〈李將軍列傳第四十九〉",
-        "url": "https://zh.wikisource.org/wiki/%E5%8F%B2%E8%A8%98/%E5%8D%B7109",
+        "edition": "维基文库《莊子·知北遊》",
+        "section": "外篇〈知北遊第二十二〉·黄帝答知",
+        "url": "https://zh.wikisource.org/wiki/%E8%8E%8A%E5%AD%90%2F%E7%9F%A5%E5%8C%97%E9%81%8A",
         "license": "公有领域（古籍；维基文库 PD-old）"
       },
-      "original": "廣出獵，見草中石，以爲虎而射之，中石沒鏃，視之石也。因復更射之，終不能復入石矣。",
+      "original": "生也死之徙，死也生之始，孰知其紀！人之生，氣之聚也；聚則為生，散則為死。",
       "plain": [
-        "李广出去打猎，看见草里一块石头，当是老虎，一箭射去，箭头整个没进石头；走近一看，是石头。他再射，就怎么也射不进去了。"
-      ],
-      "note": "维基文库此本作「以爲」。第一回爹转述说书先生的版本是「夜里走林子」，史书没说是夜里。"
+        "生是死的同路，死是生的开头，谁理得清它的头绪！人活着，是气聚在一起；聚了就生，散了就死。"
+      ]
     }
   },
   "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; lingshu-jiuzhen 今七 (严老师's 针灸实验课); shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; yangxing-changxi 今九; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: the 《神农本草经》 序录 上药/中药/下药 passage is already `shennong`, told by 褚先生 in 古六 (06-第六回.md) — a 药园 line would use it twice.",
@@ -527,9 +526,6 @@
     "今一": [
       "baopu-zhili",
       "qianjin-dayi（一笔）"
-    ],
-    "古一": [
-      "zhuangzi-zhibeiyou"
     ],
     "今二": [
       "lingshu-jingmai",
@@ -678,20 +674,6 @@
       "original": "夫人在氣中，氣在人中，自天地至於萬物，無不須氣以生者也。善行氣者，內以養身，外以卻惡，然百姓日用而不知焉。",
       "plain": [
         "人在气里，气也在人身里；从天地到万物，没有一样不靠气活着。会行气的人，对内养身，对外驱邪；百姓天天在用它，却不知道。"
-      ]
-    },
-    "zhuangzi-zhibeiyou": {
-      "title": "庄子·知北游",
-      "about": "《庄子》外篇第二十二篇，借「知」向北问道，讲道无所不在、「通天下一气耳」。",
-      "source": {
-        "edition": "维基文库《莊子·知北遊》",
-        "section": "外篇〈知北遊第二十二〉·黄帝答知",
-        "url": "https://zh.wikisource.org/wiki/%E8%8E%8A%E5%AD%90%2F%E7%9F%A5%E5%8C%97%E9%81%8A",
-        "license": "公有领域（古籍；维基文库 PD-old）"
-      },
-      "original": "生也死之徙，死也生之始，孰知其紀！人之生，氣之聚也；聚則為生，散則為死。",
-      "plain": [
-        "生是死的同路，死是生的开头，谁理得清它的头绪！人活着，是气聚在一起；聚了就生，散了就死。"
       ]
     },
     "qijing-bamai": {
@@ -873,6 +855,21 @@
         "嘴里那一池清水（津液）灌着灵根（舌根）；真能这样修，就能长存。……津液生得肥厚，灵根坚固，人老了也不衰。"
       ],
       "note": "道经里的「灵根」是舌根、命根；书里「灵根＝生来五行之禀」是我们的补丁②（Hanli 2026-10-01，DESIGN § 六·五·二）。与 huangting（第一章「上有黃庭下關元」，第八、九回）同经不同句。"
+    },
+    "shiji-liguang": {
+      "title": "史记·李将军列传",
+      "about": "司马迁《史记》，西汉；李广是汉武帝时守北边的名将，匈奴叫他「飞将军」。",
+      "source": {
+        "edition": "维基文库《史記·卷109》",
+        "section": "〈李將軍列傳第四十九〉",
+        "url": "https://zh.wikisource.org/wiki/%E5%8F%B2%E8%A8%98/%E5%8D%B7109",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "廣出獵，見草中石，以爲虎而射之，中石沒鏃，視之石也。因復更射之，終不能復入石矣。",
+      "plain": [
+        "李广出去打猎，看见草里一块石头，当是老虎，一箭射去，箭头整个没进石头；走近一看，是石头。他再射，就怎么也射不进去了。"
+      ],
+      "note": "维基文库此本作「以爲」。第一回爹转述说书先生的版本是「夜里走林子」，史书没说是夜里。"
     }
   }
 }
