@@ -478,17 +478,17 @@
       "drops": "xirang",
       "deck": [
         "tuou",
-        "tuou",
-        "shanjing",
-        "gui",
+        "xianshi",
         "gui",
         "houtu",
         "zhuguang",
-        "luoshi",
-        "gui",
-        "shanjing",
-        "zhuguang",
-        "tunshi"
+        "xianshi",
+        "xianshi",
+        "paoxiao",
+        "jixiao",
+        "tunshi",
+        "xianshi",
+        "shanjing"
       ],
       "signature": {
         "id": "yuhuo",
@@ -497,14 +497,14 @@
           "en": "Proof Against Fire"
         },
         "effect": {
-          "heal": 12,
+          "heal": 3,
           "rally": {
             "atk": 0,
-            "hp": 3
+            "hp": 2
           }
         }
       },
-      "_deck": "其状如龟 —— 缩在甲里，挡住，养回来。",
+      "_deck": "其状如龟 —— 缩在甲里，挡住，养回来。2026-10-01 重配：原牌四道嘲讽墙＋杀招回十二，聪明打法只胜 9.8%（tools/trial-sim.mjs gui）；如今一土偶一山精一蛫挡、一珠光养，杀招回三，约 75%，与狰、蠪侄齐。",
       "_signature": "是可以御火 —— 甲一合，它和它的都缓过来了。"
     },
     {

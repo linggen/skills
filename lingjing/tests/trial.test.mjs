@@ -64,3 +64,19 @@ test('the ji-altar save holds the road\'s hand, and a careful player passes the 
   for (let k = 0; k < n; k += 1) if (fightOnce({ ...fightSetup(content, fixture, dragons, NOW), seed: `gate|${k}` }).outcome === 'won') won += 1;
   assert.ok(won / n >= 0.9, `passed ${won}/${n}`);
 });
+
+/* 蛫 (第七回, wm-wangzuo `open`) is mandatory: its 12 cards and its 杀招 must
+   not outlast a careful player. Live 2026-10-01 it was 9.8% (four taunt walls
+   and a heal of 12 at half); weighed now like 狰 (≈77%) and 蠪侄 (≈77%). */
+test('蛫 is a fair story fight: a careful player wins it about three times in four', () => {
+  const gui = creatureOf(content, 'gui');
+  const rate = (hand) => {
+    let won = 0;
+    const n = 120;
+    for (let k = 0; k < n; k += 1) if (fightOnce({ ...fightSetup(content, hand, gui, NOW), seed: `trial|${k}` }).outcome === 'won') won += 1;
+    return won / n;
+  };
+  const full = rate(roadHand(fixture)), then = rate(roadHand(fixture, NOW, 'gui'));
+  assert.ok(full >= 0.65 && full <= 0.9, `the road hand wins ${(full * 100).toFixed(1)}%`);
+  assert.ok(then >= 0.65, `the hand held at 第七回 wins ${(then * 100).toFixed(1)}%`);
+});

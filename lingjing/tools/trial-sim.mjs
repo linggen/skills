@@ -3,7 +3,8 @@
 // (battle-sim.mjs) weighs every beast against built decks; a story fight that
 // must be won to go on is weighed here against the hand the road actually
 // deals: the starter, the tamed 狰, one card from each win before it.
-//   node tools/trial-sim.mjs [creature] [--seeds N]
+//   node tools/trial-sim.mjs [creature] [--seeds N] [--at]
+// --at weighs it with the hand held when that fight comes (only the wins before it).
 import { act, begin, foeTurn, offers } from '../scripts/battle.js';
 import { loadContent } from '../scripts/content.mjs';
 import { deckFor, fightSetup } from '../scripts/rules.mjs';
@@ -15,17 +16,20 @@ const content = loadContent();
 const catalog = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
 const args = process.argv.slice(2);
 const id = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--seeds') ?? 'foe-shuanglong';
+const at = args.includes('--at');
 const seeds = Number(args[args.indexOf('--seeds') + 1]) || 400;
 
 /* The road to 第十回, as the rules deal it: the starter at the root test,
    银月 (asleep in the token here: she does not fight), 狰 tamed at the 药园,
    and one card from each fight won on the way. */
 const BEFORE = ['longzhi', 'zheng', 'gui', 'foe-sunergou', 'foe-maxiaobao', 'foe-shijie'];
-export function roadHand(base, day = new Date('2026-09-29T11:00:00Z')) {
+export function roadHand(base, day = new Date('2026-09-29T11:00:00Z'), upTo = null) {
   const s = structuredClone(base);
   s.cards = [...(content.cards.starter ?? []).filter(c => catalog[c]), 'yinyue'];
   gainCard(content, s, 'zheng', { how: 'tame', creature: 'zheng' });
-  BEFORE.forEach((c, i) => winCard(content, s, creatureOf(content, c), new Date(day.getTime() - (BEFORE.length - i) * 86400000)));
+  // `upTo` (--at): only the wins before that fight — the hand held when it comes.
+  const won = upTo && BEFORE.includes(upTo) ? BEFORE.slice(0, BEFORE.indexOf(upTo)) : BEFORE;
+  won.forEach((c, i) => winCard(content, s, creatureOf(content, c), new Date(day.getTime() - (won.length - i) * 86400000)));
   return s;
 }
 
@@ -55,7 +59,7 @@ export function fightOnce(setup) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const base = JSON.parse(fs.readFileSync(new URL('../tests/fixtures/saves/ji-altar.json', import.meta.url), 'utf8'));
-  const road = roadHand(base);
+  const road = roadHand(base, undefined, at ? id : null);
   const creature = creatureOf(content, id);
   const tally = { won: 0, lost: 0, withdrew: 0, open: 0 }, turns = [];
   for (let k = 0; k < seeds; k += 1) {
