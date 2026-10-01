@@ -1185,6 +1185,9 @@ function draw() {
   // The dialogue box at the stage's foot, the slots lifted over it (lingjing.css .dlgwrap).
   const box = dialogBoxHtml(slots);
   paintIf('dlg', box);
+  // The slots rise over the box's real height: a long beat grows it (lingjing.css --dlg-real).
+  const dlgH = $('dlg')?.offsetHeight ?? 0;
+  $('view')?.style.setProperty('--dlg-real', dlgH ? `${dlgH}px` : 'var(--dlg-h)');
   voiceBeat(box.includes('data-dlg-next'));
   holdFx();
   keep({ castFresh: false });
