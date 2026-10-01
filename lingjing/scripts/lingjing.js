@@ -34,7 +34,8 @@ import { fxTimes, glOK, playHoming as playHomingFx } from './fx.js';
 import { atmosClasses, atmosOf, particlesHtml } from './atmos.js';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
-import { advance, dialogHtml, keepReading, loadReading, logHtml, playing, skipAll, withTold } from './dialogue.js';
+import { advance, current, dialogHtml, keepReading, loadReading, logHtml, playing, skipAll, withTold } from './dialogue.js';
+import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
 import { playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
 
@@ -1174,6 +1175,7 @@ function draw() {
   // The dialogue box at the stage's foot, the slots lifted over it (lingjing.css .dlgwrap).
   const box = dialogBoxHtml(slots);
   paintIf('dlg', box);
+  voiceBeat(box.includes('data-dlg-next'));
   holdFx();
   keep({ castFresh: false });
   drawLu();
@@ -1653,7 +1655,24 @@ const endingWaits = () => oldHuiPlaying() || riseWaits || Boolean(look?.tell_owe
 function dialogBoxHtml(slots) {
   const r = readingHere(), src = (f) => worldPath(look.world?.dir ?? 'worlds/jiuding', f);
   if (!r || boxYields(slots)) return '';
-  return (playing(r) ? dialogHtml(r, { lang: lang(), src }) : '') + (view.logOpen ? logHtml(r, { lang: lang() }) : '');
+  const voice = hasAudio(audio) ? dubOn() : null;
+  return (playing(r) ? dialogHtml(r, { lang: lang(), src, voice }) : '') + (view.logOpen ? logHtml(r, { lang: lang() }) : '');
+}
+
+/* 对话框配音 (Hanli, 2026-10-01): the 说书人 tells the beat on show — its own
+   clip, cut from the 回's 评书 (pingshu.js; story/jiuding-lu/audio.json, on the CDN). A
+   tap or 跳过 moves the box on and the voice with it; the box away, it stops.
+   A beat with no clip (a branch, a recap, English) is silent, and so is any
+   file that fails. The switch is this viewer's (配音 有声/无声). */
+let audio = NO_AUDIO;
+const narrator = createNarrator();
+loadManifest().then((m) => { audio = m; render(); });
+function voiceBeat(shown) {
+  const r = readingHere();
+  if (!shown || !playing(r) || !dubOn()) return narrator.sync(null);
+  const { beat } = current(r, lang());
+  const clip = beat.recap ? null : clipOf(audio, r.items[r.i]?.hui, beat.text);
+  narrator.sync(clip?.url ?? null, `${r.scene}|${r.i}|${r.j}|${clip?.url}`);
 }
 const nextBeat = () => { const r = readingNow(); if (playing(r)) setReading(advance(r, lang())); };
 /* 跳过: the log opens on the first beat skipped. */
@@ -2002,12 +2021,15 @@ const CLICKS = [
   ['[data-dlg-log]', () => show({ logOpen: !view.logOpen })],
   ['[data-dlg-logclose]', () => show({ logOpen: false })],
   ['[data-dlg-skip]', () => skipBeats()],
+  ['[data-dlg-voice]', () => { setDub(!dubOn()); render(); }],
   ['[data-dlg-next]', () => nextBeat()],
   ['.dlglog', () => true],
   ['[data-look-at]', (el) => { if (!el.matches(':disabled')) run(`look:${el.dataset.lookAt}`, () => lookAt(el.dataset.lookAt)); }],
   ['[data-panel-exit]', (el) => { if (!el.matches(':disabled')) run(`panel:${el.dataset.panelExit}`, () => panelTap(el.dataset.panelExit, el.textContent.trim())); }],
   ['[data-lu]', () => (view.luOpen ? show({ luOpen: false }) : openLu())],
   ['[data-lu-close]', () => show({ luOpen: false, codexOpen: null })],
+  // 录: a 回 finished, its whole 评书 (the player takes the button's place).
+  ['[data-listen]', (el) => listener.open(el.closest('[data-listen-slot]'), el.dataset.listen, el.dataset.listenUrl)],
   // 录's 图鉴: a met entry's card opens over its grid; a second tap closes it.
   ['[data-codex-big]', (el) => openCodexBig(el.dataset.codexBig)],
   ['[data-codex-open]', (el) => show({ codexOpen: view.codexOpen === el.dataset.codexOpen ? null : el.dataset.codexOpen })],
@@ -2549,6 +2571,8 @@ async function openLu() {
   if (view.luOpen) show({ lu: r });
 }
 let drawnLu = null;
+// 听书: one player for the 录's 回, kept across its repaints (pingshu.js).
+const listener = createListener();
 function drawLu() {
   const el = $('lubook');
   const open = view.luOpen && !bout;
@@ -2556,8 +2580,9 @@ function drawLu() {
   el.hidden = !open;
   if (!open) { drawnLu = null; return; }
   // Redrawn only when it changed: a stream token must not reset the scroll.
-  const html = view.lu ? luHtml(view.lu, { lang: lang(), her: look?.companion?.name ?? null, artBase: artBase(), codex: codexNow(), codexKinds: authored?.codexFiles?.codex?.kinds, codexOpen: view.codexOpen ?? null }) : `<div class="lu"><div class="loading">${esc(WORDS[lang()].loading)}</div></div>`;
-  if (html !== drawnLu) { el.innerHTML = html; drawnLu = html; }
+  const listen = (hui) => listenHtml(audio, hui, lang(), esc);
+  const html = view.lu ? luHtml(view.lu, { lang: lang(), her: look?.companion?.name ?? null, artBase: artBase(), codex: codexNow(), codexKinds: authored?.codexFiles?.codex?.kinds, codexOpen: view.codexOpen ?? null, listen }) : `<div class="lu"><div class="loading">${esc(WORDS[lang()].loading)}</div></div>`;
+  if (html !== drawnLu) { el.innerHTML = html; drawnLu = html; listener.remount(el); }
 }
 
 /* The chapter's title card: on the stage when a chapter has just begun

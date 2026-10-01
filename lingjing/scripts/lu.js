@@ -43,15 +43,17 @@ function mapHtml(cauldrons, w) {
 
 /* A chapter as a scroll: its intro, the scenes played stitched into one
    passage, and — the chapter being played — where it stands and its riddle. */
-function chapterHtml(ch, w, open) {
+function chapterHtml(ch, w, open, listen) {
   const recap = (ch.recap ?? []).join(w.sep);
   const now = ch.state === 'current' && ch.now ? `<p class="lunow">${esc(say(w.now, { what: ch.now }))}</p>` : '';
   const q = ch.mystery ? `<p class="luq${ch.state === 'done' ? ' dim' : ''}">${esc(say(w.mystery, { q: ch.mystery }))}</p>` : '';
+  // A 回 finished: its whole 评书 to listen to, where the CDN has it (pingshu.js listenHtml).
+  const ear = ch.state === 'done' && listen ? listen(ch.id) : '';
   return `<details class="luch ${esc(ch.state)}"${open ? ' open' : ''}><summary>${esc(ch.title)}</summary>
-    ${ch.intro ? `<p class="luintro">${esc(ch.intro)}</p>` : ''}${recap ? `<p class="lurecap">${esc(recap)}</p>` : ''}${now}${q}</details>`;
+    ${ch.intro ? `<p class="luintro">${esc(ch.intro)}</p>` : ''}${recap ? `<p class="lurecap">${esc(recap)}</p>` : ''}${now}${q}${ear}</details>`;
 }
 
-export function luHtml(book, { lang = 'zh', her = null, artBase = '', codex = null, codexKinds = null, codexOpen = null } = {}) {
+export function luHtml(book, { lang = 'zh', her = null, artBase = '', codex = null, codexKinds = null, codexOpen = null, listen = null } = {}) {
   const w = wordsOf(lang);
   if (!book?.ok) return `<div class="lu"><header class="luhead"><b>${esc(w.title)}</b><button class="act quiet" data-lu-close>${esc(w.close)}</button></header><p class="dim">${esc(w.none)}</p></div>`;
   const chapters = book.chapters ?? [];
@@ -68,7 +70,7 @@ export function luHtml(book, { lang = 'zh', her = null, artBase = '', codex = nu
       ${book.ending ? `<span class="luend">${esc(say(w.ending, { title: book.ending.title }))}</span>` : ''}
       <button class="act quiet" data-lu-close>${esc(w.close)}</button></header>
     ${book.cauldrons?.length ? mapHtml(book.cauldrons, w) : ''}
-    <section class="lusec">${chapters.length ? chapters.map((c, i) => chapterHtml(c, w, i === last)).join('') : `<p class="dim">${esc(w.none)}</p>`}</section>
+    <section class="lusec">${chapters.length ? chapters.map((c, i) => chapterHtml(c, w, i === last, listen)).join('') : `<p class="dim">${esc(w.none)}</p>`}</section>
     ${!tujian && people ? `<section class="lusec"><h3>${esc(w.people)}</h3>${peopleList}</section>` : ''}
     ${recalled}
     ${seenHtml(book.seen, w)}

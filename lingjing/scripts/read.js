@@ -8,6 +8,7 @@ import { bookEntries, entryById, fillHero, heroOf, renderMarkdown } from './read
 import { playMarks, wireMarks } from './marks.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { content, worldPath } from './rules.js';
+import { createListener, listenHtml, loadManifest } from './pingshu.js';
 
 const WORDS = {
   zh: { back: '← 回到灵境', toc: '目录', prev: '←', next: '→', none: '书还没有写。', failed: '这一回没能打开。', only: '这一回只有中文。' },
@@ -84,10 +85,25 @@ async function main() {
     $('chapter').innerHTML = `<p class="note">${esc(w.failed)}</p>`;
   }
   wireMarks($('chapter'));
+  ear(bookId, ch.id);
   const prev = all[at - 1], next = all[at + 1];
   const short = (c) => esc(pick(c.label ?? c.title));
   $('pager').innerHTML = `${prev ? `<a href="${esc(hrefWith({ book: bookId, ch: prev.id }))}">${esc(w.prev)} ${short(prev)}</a>` : '<span></span>'}${next ? `<a href="${esc(hrefWith({ book: bookId, ch: next.id }))}">${short(next)} ${esc(w.next)}</a>` : '<span></span>'}`;
   window.scrollTo(0, 0);
+}
+
+/// ▶ 听书: a 回 with its whole 评书 on the CDN (pingshu.js) gets the player
+/// at its head — play, pause, the seek bar, and the place left remembered
+/// (the same as in the game's 录). No audio, nothing shows.
+const listener = createListener();
+async function ear(bookId, id) {
+  const html = listenHtml(await loadManifest(bookId), id, lang, esc);
+  if (!html) return;
+  $('chapter').insertAdjacentHTML('afterbegin', html);
+  $('chapter').querySelector('[data-listen]')?.addEventListener('click', (e) => {
+    const b = e.currentTarget;
+    listener.open(b.closest('[data-listen-slot]'), b.dataset.listen, b.dataset.listenUrl);
+  });
 }
 
 /// The contents: each 卷's name, then its 回 — the number, and the 回目's two

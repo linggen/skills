@@ -16,8 +16,8 @@
 import { esc } from './esc.js';
 
 export const DLG_WORDS = {
-  zh: { skip: '跳过', log: '记录', close: '收起', logTitle: '此景所述', recap: '前情', on: '点一下，接着', act: (a) => `（${a}）` },
-  en: { skip: 'Skip', log: 'Log', close: 'Close', logTitle: 'Told in this scene', recap: 'Before this', on: 'Tap to go on', act: (a) => `(${a}) ` },
+  zh: { skip: '跳过', log: '记录', close: '收起', logTitle: '此景所述', recap: '前情', on: '点一下，接着', act: (a) => `（${a}）`, voice: ['无声', '有声'], voiceTitle: '评书配音' },
+  en: { skip: 'Skip', log: 'Log', close: 'Close', logTitle: 'Told in this scene', recap: 'Before this', on: 'Tap to go on', act: (a) => `(${a}) `, voice: ['Voice off', 'Voice on'], voiceTitle: 'The pingshu voice (Chinese)' },
 };
 
 /* The reading as it stands: the scene it belongs to, the passages drawn
@@ -101,9 +101,13 @@ function lineHtml(b, w) {
   return `${tag}${act}${esc(b.text ?? '')}`;
 }
 
+/* 配音's switch (pingshu.js): shown only where there is audio to hear
+   (`voice` true or false; null — none — leaves it out). */
+const voiceBtn = (voice, w) => (voice == null ? '' : `<button class="dlgbtn dlgvoice${voice ? ' on' : ''}" data-dlg-voice aria-pressed="${voice ? 'true' : 'false'}" title="${esc(w.voiceTitle)}">${esc(w.voice[voice ? 1 : 0])}</button>`);
+
 /* The box: the beat on show, its speaker (name, portrait) or a caption line,
-   跳过 and 记录 at its corner, and a small mark that a tap goes on. */
-export function dialogHtml(r, { lang = 'zh', src = (f) => f } = {}) {
+   跳过 and 记录 at its corner (and 配音's switch), and a small mark that a tap goes on. */
+export function dialogHtml(r, { lang = 'zh', src = (f) => f, voice = null } = {}) {
   if (!playing(r)) return '';
   const w = DLG_WORDS[lang] ?? DLG_WORDS.zh, { beat: b, k, n } = current(r, lang);
   const spoken = Boolean(b.name);
@@ -111,7 +115,7 @@ export function dialogHtml(r, { lang = 'zh', src = (f) => f } = {}) {
   const last = atLast(r, lang);
   return `<div class="dlg${spoken ? ' spoken' : ' told'}${b.art && !b.hero ? ' withface' : ''}" data-dlg-next role="button" tabindex="0" aria-label="${esc(w.on)}">
     ${face(b, src)}<div class="dlgbody">${who}<div class="dlgtext">${lineHtml(b, w)}</div></div>
-    <div class="dlgctl"><span class="dlgcount">${k + 1} / ${n}</span><button class="dlgbtn" data-dlg-log>${esc(w.log)}</button>${last ? '' : `<button class="dlgbtn" data-dlg-skip>${esc(w.skip)}</button>`}</div>
+    <div class="dlgctl"><span class="dlgcount">${k + 1} / ${n}</span>${voiceBtn(voice, w)}<button class="dlgbtn" data-dlg-log>${esc(w.log)}</button>${last ? '' : `<button class="dlgbtn" data-dlg-skip>${esc(w.skip)}</button>`}</div>
     <div class="dlgon${last ? ' last' : ''}" aria-hidden="true">▾</div></div>`;
 }
 

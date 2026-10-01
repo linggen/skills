@@ -100,3 +100,9 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 .diannote .dianent { margin: 0; border: 0; }
 .diannote.sheet { left: 0; right: 0; bottom: 0; width: auto; max-height: 70vh; border-radius: 12px 12px 0 0; }
 .dianclose { position: absolute; top: 4px; right: 6px; border: 0; background: none; font-size: 20px; line-height: 1; color: var(--dim); cursor: pointer; }
+
+/* ▶ 听书: the 回's whole 评书 (read.js ear, pingshu.js) — a button that becomes the player. */
+.listen { margin: 0 0 18px; }
+.listenbtn { font: inherit; font-size: 14px; padding: 4px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--text); cursor: pointer; }
+.listenbtn:hover { border-color: var(--dim); }
+.listenaudio { display: block; width: 100%; max-width: 520px; }
