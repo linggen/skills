@@ -141,6 +141,7 @@ test('卷一 ends on its own card: 01-end rest waits on 「卷二 · 即将开�
   assert.deepEqual(end.result.waiting, { chapter: '02-yan', coming: '卷二 · 即将开放' });
   const close = look(end.state, content, ctx()).chapter.close;
   assert.equal(close.title, '第十回 · 完');
+  assert.equal(close.place, '漳水 · 往柳湾', 'the stage keeps 往柳湾 over the spot\'s map name (漳渊)');
   assert.equal(close.juan, '卷一 · 沉鼎 · 完');
   assert.deepEqual(close.huimu, ['巫祝投河捎口信', '千鱼漳水立龙门']);
   assert.match(close.did, /没有跪/);

@@ -1158,7 +1158,7 @@ function draw() {
   paintAtmos();
   // The 回 above the place, as the book names it (「卷一 · 第五回　漏勺夜半通三关」, rules/hui.mjs).
   $('huiLine').textContent = look.chapter?.hui ? look.chapter.title : '';
-  $('place').textContent = look.scene?.place ?? look.place?.name ?? look.chapter?.title ?? '';
+  $('place').textContent = look.scene?.place ?? look.chapter?.close?.place ?? look.place?.name ?? look.chapter?.title ?? '';
   // She is always at the player's side: on the stage whenever the game is
   // open, scene or road, not only where a scene casts her.
   $('stage').hidden = false;

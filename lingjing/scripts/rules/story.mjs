@@ -247,9 +247,12 @@ export function closeOf(content, state) {
   }
   if (!c || state.scene || !(state.ended ?? []).includes(ch.id)) return null;
   const hui = huiNow(content, state);
+  // The stage keeps the last scene's place line (漳水 · 往柳湾), not the map's name for the spot (漳渊).
+  const last = [...(state.done_scenes ?? [])].reverse().map(id => ch.scenes?.[id]).find(Boolean);
+  const place = last?.place ? fill(pick(last.place, lang), state, content) : null;
   // The 卷's last 回 closes the 卷 as well: 「卷一 · 沉鼎 · 完」 over 「第十回 · 完」.
   const juan = hui ? juanEndOf(content, hui, lang) : null;
-  return { id: hui ?? ch.id, title: endLabel(content, hui, lang) ?? pick(c.title, lang) ?? pick(ch.title, lang), ...(juan ? { juan } : {}), ...(hui ? { huimu: pick(huiOf(content, hui)?.huimu, lang) } : {}), ...closeWords(content, state, c) };
+  return { id: hui ?? ch.id, title: endLabel(content, hui, lang) ?? pick(c.title, lang) ?? pick(ch.title, lang), ...(place ? { place } : {}), ...(juan ? { juan } : {}), ...(hui ? { huimu: pick(huiOf(content, hui)?.huimu, lang) } : {}), ...closeWords(content, state, c) };
 }
 
 /* A chapter close's words: what THIS player did (each `did` part whose `if` holds), and the teaser. */
