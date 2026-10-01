@@ -17,6 +17,9 @@ import { newState } from '../scripts/state.mjs';
 import { forLing, look, oddsOf, pageThrows, resolve, rollOf } from '../scripts/rules.mjs';
 import { notePage } from '../scripts/rules/did.mjs';
 
+// These tests play the 体力 pool as it was: the command turns it off for live play while we test (state.mjs staminaLimited).
+process.env.LINGJING_STAMINA_LIMIT ??= '1';
+
 const content = loadContent();
 const rule = content.ladder.breakthrough;
 const NOW = new Date('2026-09-28T12:00:00');

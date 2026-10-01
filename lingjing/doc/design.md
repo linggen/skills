@@ -431,6 +431,7 @@ alone: `scripts/try-game.html?game=storm|deer|xisui|zhoutian&lang=zh|en`.
   amend 5; the market, errands, talk and 问卦 are free; the prologue's own steps
   cost nothing. A real-life chore refills its own amount (default 20).
   Empty: `no-stamina` with the hour; 银月 sends the player to rest.
+- **体力 is OFF while we test** (Hanli, 2026-10-01: 「我是说先不要用体力限制我们测试的时长. 体力限制游戏时长的设定, 可以以后加.」): played through the command (`rules.mjs`, the page's and Ling's door), nothing spends 体力, nothing is refused for it, and the pool reads full — `staminaLimited` in state.mjs, thrown by `LINGJING_STAMINA_LIMIT=0`, which the command sets unless it is already set. Every cost and rule below is kept and still tested; `LINGJING_STAMINA_LIMIT=1` (or removing the default in rules.mjs) brings the pool back as it was. 体力 as a play-time limit is designed later.
 - **主线赶路不扣体力** (Hanli, 2026-10-01: 「可以，主线赶路不扣体力」): a trip toward
   the place the goal line names (Look's `waypoint`) is free — the place itself or
   one on a shortest road to it (rules/errands.mjs `onStoryRoad`); 古九's four

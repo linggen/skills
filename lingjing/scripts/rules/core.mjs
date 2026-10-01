@@ -1,7 +1,7 @@
 // rules/core.mjs — Changing it: refusals, pay, riddles, stamina, resolve and judge.
 // Part of the rules engine; rules.mjs is its one door.
 import { gameOf, MADE_GRANT } from '../content.mjs';
-import { addProgress, dayKey, fill, fitValue, lockedOf, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaReturnsAt, stepName, threshold, tierOf, seedOf } from '../state.mjs';
+import { addProgress, dayKey, fill, fitValue, lockedOf, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaLimited, staminaReturnsAt, stepName, threshold, tierOf, seedOf } from '../state.mjs';
 import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
 import { gainCard, starterOf } from './cards.mjs';
@@ -166,6 +166,7 @@ const freeHere = (content, s, kind) => CHAPTER_COSTS.has(kind) && !inMade(s)
 function spendStamina(content, s, ctx, kind, n = 1, fixed = null) {
   if (freeHere(content, s, kind)) return null;
   settleStamina(content, s, ctx.now);
+  if (!staminaLimited(content)) return null;
   // A trip is paid as one (his, 2026-09-23: 几分钟消耗光 — seven roads at 3
   // each emptied a fifth of the pool in one tap): a base, a little per road
   // beyond the first, capped. The pool lasts about an hour of his pace.

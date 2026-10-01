@@ -14,7 +14,7 @@
 // and every other thing held are never lost — the pill carried included: it
 // is eaten only by a throw that lands (the card's promise, 「境界与所藏不失」;
 // live 2026-10-01 a failed throw ate the one 九转 and the next try had less).
-import { pick, settleStamina, threshold, seedOf } from '../state.mjs';
+import { pick, settleStamina, staminaLimited, threshold, seedOf } from '../state.mjs';
 import { herAwake, herGifts } from './companion.mjs';
 import { itemOf } from './errands.mjs';
 import { strongRoots } from './roots.mjs';
@@ -104,7 +104,7 @@ export const rollOf = (state, to) => hashOf(`${seedOf(state)}|breakthrough|${to}
    pool), a share of the peak step's 修为, and the hours the cauldron is shut. */
 function fail(content, s, rule, now) {
   const need = threshold(content, s);
-  const stamina = Math.min(s.stamina, Math.ceil(content.rewards.stamina.max * rule.fail.wound));
+  const stamina = staminaLimited(content) ? Math.min(s.stamina, Math.ceil(content.rewards.stamina.max * rule.fail.wound)) : 0;
   s.stamina -= stamina;
   if (s.stamina === 0) s.resting = true;
   const progress = Math.min(s.progress, Math.round(need * rule.fail.progress));

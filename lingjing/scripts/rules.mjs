@@ -421,6 +421,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       process.exit(0);
     }
     if (save != null) process.env.LINGJING_SAVE = String(save);
+    // 体力 does not limit play while we test (his, 2026-10-01; state.mjs staminaLimited).
+    process.env.LINGJING_STAMINA_LIMIT ??= '0';
     const result = run(verb ?? 'look', args, reader ?? null);
     console.log(JSON.stringify(reader === 'ling' ? forLing(result) : result));
   } catch (err) {

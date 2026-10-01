@@ -23,7 +23,7 @@
 // (with the `actions` this kind takes), and the kind's own: `needs-answer`,
 // `wrong-answer`, `riddle-closed`, `not-playable`, `already-offered`,
 // `not-offered`, `no-such-way`.
-import { dayKey, normalizeAnswer, pick, seedOf } from '../state.mjs';
+import { dayKey, normalizeAnswer, pick, seedOf, staminaLimited } from '../state.mjs';
 import { winCard } from './cards.mjs';
 import { herAwake } from './companion.mjs';
 import { clone, pay, refuse, RIDDLE_TRIES, spendStamina } from './core.mjs';
@@ -214,7 +214,7 @@ const STAKES = {
   // Hurt on the road: 伤势 was cut (redesign-v2 § 四), so a wound is 体力 —
   // the share of the pool (meets.json trial.lose.wound), never below 0.
   wound: (content, s, ctx, share) => {
-    const lost = Math.min(s.stamina, Math.ceil(content.rewards.stamina.max * share));
+    const lost = staminaLimited(content) ? Math.min(s.stamina, Math.ceil(content.rewards.stamina.max * share)) : 0;
     s.stamina -= lost;
     if (s.stamina === 0) s.resting = true;
     return { lost: { stamina: lost } };

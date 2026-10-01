@@ -243,12 +243,24 @@ export function rollDay(state, now) {
 
 /* ── Stamina: the pace ── */
 
+/* Whether 体力 limits play. Off while we test (his, 2026-10-01: 「先不要用体力
+   限制我们测试的时长. 体力限制游戏时长的设定, 可以以后加.」): nothing spends
+   it, nothing is refused for it, the pool stays full. Every cost and rule is
+   kept: the switch is thrown where the game is played — rules.mjs run as the
+   command (the page's and Ling's door) sets LINGJING_STAMINA_LIMIT=0 unless
+   it is already set — so the rules' own tests still play the pool as it was.
+   `LINGJING_STAMINA_LIMIT=1` (or `rewards.stamina.limit: false` to force it
+   off anywhere) is the one place to change. */
+const limitEnv = () => (typeof process === 'undefined' ? undefined : process.env?.LINGJING_STAMINA_LIMIT);
+export const staminaLimited = content => content.rewards?.stamina?.limit !== false && limitEnv() !== '0';
+
 const secsPerPoint = q => (q.refill_hours * 3600) / q.max;
 
 /* Refill by the clock since it was last settled — whole points only, the
    remainder keeps waiting in `qi_at`. A save from before 灵气 wakes full. */
 export function settleStamina(content, state, now) {
   const q = content.rewards.stamina;
+  if (!staminaLimited(content)) { state.stamina = q.max; state.stamina_at = now.toISOString(); delete state.resting; return; }
   if (state.stamina == null || !state.stamina_at) { state.stamina = q.max; state.stamina_at = now.toISOString(); return; }
   // A pool or a clock that is not a number (a hand-edited save, a bad write)
   // starts counting again from now, and never becomes NaN (review, 2026-09-24).

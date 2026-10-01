@@ -15,6 +15,9 @@ import { starterFor } from '../scripts/rules/roots.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
 
+// These tests play the 体力 pool as it was: the command turns it off for live play while we test (state.mjs staminaLimited).
+process.env.LINGJING_STAMINA_LIMIT ??= '1';
+
 const content = beforeChapterOne(loadContent());
 // 夫诸 at the Si's north bank — the v1 prologue's creature scene, retired by
 // prologue-v3 and kept as a fixture for the fight engine's tests (a gift, a
