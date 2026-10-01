@@ -13,10 +13,12 @@ import { bookEntries, classicAnchor, fillHero, renderMarkdown } from '../scripts
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BOOK = path.join(ROOT, 'story/jiuding-lu');
 const book = JSON.parse(fs.readFileSync(path.join(BOOK, 'book.json'), 'utf8'));
-const CLASSICS = JSON.parse(fs.readFileSync(path.join(BOOK, 'classics.json'), 'utf8')).classics;
+const ALL = JSON.parse(fs.readFileSync(path.join(BOOK, 'classics.json'), 'utf8'));
+const CLASSICS = ALL.classics;
 const chapters = bookEntries(book).map((c) => ({ ...c, md: fs.readFileSync(path.join(BOOK, c.file), 'utf8') }));
 const REF = /(?:《([^》\n]+)》|\[([^\]\n]+)\])\{典=([^{}\n]+)\}/g;
-const one = { shennong: CLASSICS.shennong };
+// The renderer's fixture: 神农 (古六 told it in a sentence since 2026-10-01, so it waits in _pending; either shelf serves).
+const one = { shennong: CLASSICS.shennong ?? ALL._pending.shennong };
 
 test('《书名》{典=id} links to its entry at the chapter\'s end, and the entry links back', () => {
   const html = renderMarkdown('## 六·五 · 九转\n\n**褚先生**：《神农本草经》{典=shennong}。\n\n又念一遍《神农本草经》{典=shennong}。', { classics: one });
@@ -26,9 +28,9 @@ test('《书名》{典=id} links to its entry at the chapter\'s end, and the ent
   assert.equal((html.match(/class="dianent"/g) ?? []).length, 1, 'one entry however often it is named');
   assert.match(html, /<a href="#dian-shennong-1" data-dian-jump="dian-shennong-1">↑ 六·五 · 九转 · 第1处<\/a>/, 'back to the spot, named by its section and, named twice, its place');
   assert.match(html, /href="#dian-shennong-2"/);
-  assert.ok(html.includes(CLASSICS.shennong.original), 'the passage, in the edition\'s own text');
+  assert.ok(html.includes(one.shennong.original), 'the passage, in the edition\'s own text');
   assert.ok(!html.includes('简体') && html.includes('白话'), 'no 简体 line (his, 2026-09-29); the 白话 stays');
-  assert.ok(html.includes(`href="${CLASSICS.shennong.source.url}"`), 'the source it was copied from');
+  assert.ok(html.includes(`href="${one.shennong.source.url}"`), 'the source it was copied from');
   assert.ok(html.indexOf('附 · 本回典籍') > html.indexOf('又念一遍'), 'inline, at the end');
   assert.equal(classicAnchor('x'), 'dian-x');
   assert.equal(classicAnchor('x', 2), 'dian-x-2');
@@ -67,7 +69,7 @@ test('each 回 ends with its classics (卷一 in ten since 2026-09-30), and the 
   const at = (id) => chapters.find((c) => c.id === id);
   const entries = (id) => [...renderMarkdown(fillHero(at(id).md, {}), { classics: CLASSICS }).matchAll(/<article class="dianent" id="dian-([\w-]+)"/g)].map((m) => m[1]);
   assert.deepEqual(entries('h05'), ['liezi-yugong', 'zhuangzi-dasheng', 'shanhai-zheng']); // 真气 (素问) waits for 第九回; 守一's 用志不分 taught after the 小周天 (课随境界, 2026-09-30)
-  assert.deepEqual(entries('h06'), ['shennong', 'zuozhuan-ranzhi', 'baopu', 'jiuding']); // 抱朴子's 转 told in 褚先生's lecture while he grips the bottle — no narrator aside at the first 纹 (2026-09-30)
+  assert.deepEqual(entries('h06'), ['baopu']); // 抱朴子's 转 told in 褚先生's lecture while he grips the bottle — no narrator aside at the first 纹 (2026-09-30); 主典 only — 神农, 染指, 九鼎神丹经诀 一笔带过 (Hanli 2026-10-01)
   assert.deepEqual(entries('h07'), ['jiuding', 'shanhai-gui', 'shanhai-xirang']);
   assert.deepEqual(entries('h08'), ['liji-zha', 'lunyu-shuxiu', 'huangting', 'shangshu-yugong']);
   assert.deepEqual(entries('h09'), ['baopu-jiyan', 'zhouyi-xun', 'zhuangzi-keyi', 'suwen', 'huangting']); // 恬惔虚无 moved from 第三回 to the eve of 筑基 (课随境界走, 2026-09-30) // 褚先生's 筑基 lecture moved off the cliff into the autumn 讲堂 (2026-09-30)
@@ -79,7 +81,7 @@ test('each 回 ends with its classics (卷一 in ten since 2026-09-30), and the 
 
 test('with no subheadings, 「本回见」 names the 回 — 「第三回」, or 「第三回 · 第2处」 when named twice', () => {
   const md = '# 第三回　漏勺夜半通三关　五行台上夺头名\n\n《神农本草经》{典=shennong}。\n\n---\n\n又是《神农本草经》{典=shennong}。\n\n《抱朴子》{典=baopu}。';
-  const html = renderMarkdown(md, { classics: CLASSICS });
+  const html = renderMarkdown(md, { classics: { ...CLASSICS, ...one } });
   assert.match(html, /本回见：<a href="#dian-shennong-1" data-dian-jump="dian-shennong-1">↑ 第三回 · 第1处<\/a>　<a href="#dian-shennong-2" data-dian-jump="dian-shennong-2">↑ 第三回 · 第2处<\/a>/);
   assert.match(html, /<a href="#dian-baopu-1" data-dian-jump="dian-baopu-1">↑ 第三回<\/a>/);
   for (const c of chapters.filter((x) => x.huimu)) {

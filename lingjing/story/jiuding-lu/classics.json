@@ -16,21 +16,6 @@
       ],
       "note": "维基文库此本作「恬淡」；书中第三回竹简上、第五回褚先生口中都作「恬惔」（别本字）。"
     },
-    "shennong": {
-      "title": "神农本草经",
-      "about": "托名神农，约成于东汉，现存最早的本草书；序录把三百六十五种药分为上、中、下三品。",
-      "source": {
-        "edition": "维基文库《神農本草經》",
-        "section": "序录",
-        "url": "https://zh.wikisource.org/wiki/%E7%A5%9E%E8%BE%B2%E6%9C%AC%E8%8D%89%E7%B6%93",
-        "license": "公有领域（古籍；维基文库 PD-old）"
-      },
-      "original": "上藥一百二十種為君，主養命以應天，無毒，多服久服不傷人，欲輕身益氣不老延年者，本《上經》。中藥一百二十種為臣，主養性以應人，無毒，有毒，斟酌其宜，欲遏病補虛羸者，本《中經》。下藥一百二十五種為佐使，主治病以應地，多毒，不可久服，欲除寒熱邪氣、破積聚、愈疾者，本《下經》。",
-      "plain": [
-        "上品药一百二十种，是「君」，养命，无毒，久服不伤人；中品一百二十种，是「臣」，养性，有毒无毒要斟酌；下品一百二十五种，是「佐使」，治病，多毒，不能久服。"
-      ],
-      "note": "书中褚先生念的是节文，略去了每品末句「欲……者，本《某经》」。"
-    },
     "baopu": {
       "title": "抱朴子·内篇·金丹",
       "about": "葛洪（字稚川，号抱朴子），东晋；《内篇》讲神仙方药，〈金丹〉一篇论还丹与金液。",
@@ -221,22 +206,6 @@
         "（愚公说：）我死了，还有儿子在；儿子又生孙子，孙子又生儿子，儿子又有儿子，儿子又有孙子，子子孙孙没有穷尽，可山不会再长高，何愁挖不平？河曲的智叟无话可答。山神听说了，怕他挖个没完，报告了天帝。天帝被他的诚心感动，命夸蛾氏的两个儿子把两座山背走了。"
       ],
       "note": "褚先生本想讲到智叟笑话愚公为止，拿来笑「漏勺」；沈小满问「后来呢」，他只得把后半段念完——道理便反了过来。原文里还有一个细节：邻居京城氏的寡妇有个才换牙的儿子，也蹦蹦跳跳地去帮忙。"
-    },
-    "zuozhuan-ranzhi": {
-      "title": "左传·宣公四年",
-      "about": "《春秋左氏传》，相传春秋末左丘明作，记春秋二百余年事。这一段记郑国公子宋（子公）因一口鳖汤「染指于鼎」，后来弑君；「染指」「食指大动」都出自这里。",
-      "source": {
-        "edition": "维基文库《春秋左氏傳·宣公》",
-        "section": "宣公四年",
-        "url": "https://zh.wikisource.org/wiki/%E6%98%A5%E7%A7%8B%E5%B7%A6%E6%B0%8F%E5%82%B3/%E5%AE%A3%E5%85%AC",
-        "license": "公有领域（古籍；维基文库 PD-old）"
-      },
-      "original": "楚人獻黿於鄭靈公，公子宋與子家將見，子公之食指動，以示子家，曰：「他日我如此，必嘗異味。」及入，宰夫將解黿，相視而笑，公問之，子家以告。及食大夫黿，召子公而弗與也。子公怒，染指於鼎，嘗之而出。",
-      "plain": [
-        "楚国人献给郑灵公一只大鳖。公子宋（子公）进宫前食指自己动了，说这是要尝到好东西的兆头；灵公请大夫们吃鳖，偏偏召了他来却不给他吃。",
-        "子公大怒，把手指伸进鼎里蘸了一下，尝了尝，扬长而去——后来便有了弑君之祸。"
-      ],
-      "note": "褚先生在第六回讲丹时讲这个故事，劝弟子吃丹不可贪。"
     },
     "liji-zha": {
       "title": "礼记·郊特牲",
@@ -580,7 +549,7 @@
       ]
     }
   },
-  "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; yangxing-changxi 今九; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: the 《神农本草经》 序录 上药/中药/下药 passage is already `shennong`, told by 褚先生 in 古六 (06-第六回.md) — a 药园 line would use it twice.",
+  "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; yangxing-changxi 今九; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: a 药园 line from the 《神农本草经》 序录 上药/中药/下药 passage — that is `shennong`, which 褚先生 paraphrases in one untagged sentence in 古六 (06-第六回.md); it would use it twice.",
   "_pending_by_hui": {
     "今一": [
       "baopu-zhili",
@@ -615,6 +584,10 @@
     ],
     "古十": [
       "neiguan-jing"
+    ],
+    "古六（一笔带过，正文改述、不挂典；主典 baopu 照留）": [
+      "shennong",
+      "zuozhuan-ranzhi"
     ]
   },
   "_pending": {
@@ -855,6 +828,37 @@
         "到了仲秋那个月，阳在正西，阴在正东，叫作秋分；秋分，阴阳各占一半，所以昼夜一样长，冷热也平了。"
       ],
       "note": "今线宿舍墙上节气挂图秋分那一格印的「昼夜均，寒暑平」，是从这一句摘的。"
+    },
+    "shennong": {
+      "title": "神农本草经",
+      "about": "托名神农，约成于东汉，现存最早的本草书；序录把三百六十五种药分为上、中、下三品。",
+      "source": {
+        "edition": "维基文库《神農本草經》",
+        "section": "序录",
+        "url": "https://zh.wikisource.org/wiki/%E7%A5%9E%E8%BE%B2%E6%9C%AC%E8%8D%89%E7%B6%93",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "上藥一百二十種為君，主養命以應天，無毒，多服久服不傷人，欲輕身益氣不老延年者，本《上經》。中藥一百二十種為臣，主養性以應人，無毒，有毒，斟酌其宜，欲遏病補虛羸者，本《中經》。下藥一百二十五種為佐使，主治病以應地，多毒，不可久服，欲除寒熱邪氣、破積聚、愈疾者，本《下經》。",
+      "plain": [
+        "上品药一百二十种，是「君」，养命，无毒，久服不伤人；中品一百二十种，是「臣」，养性，有毒无毒要斟酌；下品一百二十五种，是「佐使」，治病，多毒，不能久服。"
+      ],
+      "note": "书中褚先生念的是节文，略去了每品末句「欲……者，本《某经》」。"
+    },
+    "zuozhuan-ranzhi": {
+      "title": "左传·宣公四年",
+      "about": "《春秋左氏传》，相传春秋末左丘明作，记春秋二百余年事。这一段记郑国公子宋（子公）因一口鳖汤「染指于鼎」，后来弑君；「染指」「食指大动」都出自这里。",
+      "source": {
+        "edition": "维基文库《春秋左氏傳·宣公》",
+        "section": "宣公四年",
+        "url": "https://zh.wikisource.org/wiki/%E6%98%A5%E7%A7%8B%E5%B7%A6%E6%B0%8F%E5%82%B3/%E5%AE%A3%E5%85%AC",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "楚人獻黿於鄭靈公，公子宋與子家將見，子公之食指動，以示子家，曰：「他日我如此，必嘗異味。」及入，宰夫將解黿，相視而笑，公問之，子家以告。及食大夫黿，召子公而弗與也。子公怒，染指於鼎，嘗之而出。",
+      "plain": [
+        "楚国人献给郑灵公一只大鳖。公子宋（子公）进宫前食指自己动了，说这是要尝到好东西的兆头；灵公请大夫们吃鳖，偏偏召了他来却不给他吃。",
+        "子公大怒，把手指伸进鼎里蘸了一下，尝了尝，扬长而去——后来便有了弑君之祸。"
+      ],
+      "note": "褚先生在第六回讲丹时讲这个故事，劝弟子吃丹不可贪。"
     }
   }
 }
