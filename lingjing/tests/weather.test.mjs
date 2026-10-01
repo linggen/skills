@@ -86,7 +86,7 @@ test('the page: a chip with the sky, a popover to set or change the city, the å
 
 test('the skill declares the sense and never goes online itself', () => {
   const md = fs.readFileSync(path.join(ROOT, 'SKILL.md'), 'utf8');
-  assert.match(md.split('\n---\n')[0], /\nsenses: \[weather\]\n/);
+  assert.match(md.split('\n---\n')[0], /\nsenses: \[weather(, [a-z_]+)*\]\n/);
   const scripts = fs.readdirSync(path.join(ROOT, 'scripts'), { recursive: true }).filter((f) => /\.(m?js|html)$/.test(f));
   for (const f of scripts) {
     const src = fs.readFileSync(path.join(ROOT, 'scripts', f), 'utf8');
