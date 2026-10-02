@@ -20,7 +20,7 @@ that is fine as a bible. **Only what the current 卷 needs gets built.** Every
 section below says which it is; a 【远景】 section is a plan, not a promise.
 
 **卷一 · 沉鼎 needs, and nothing else:** the road 石坳村 → 沉鼎观 → 漳水,
-ending at the first 鼎 (the book's 古一 to 古十; the game's chapters
+ending at the first 鼎 (the book's 古一 to 古八 — eight 古 回 since 2026-10-02; the game's chapters
 `00-prologue`, `00-waimen`, `00-zhuji`, then `01-ji`); 练气 → 筑基; the pills 回春丹 ·
 聚气丹 · 筑基丹 (market and 九转); the card fight; 差事; the 图鉴; 银月 (found,
 asleep in the token, waking by the story). Everything past 筑基 and past 冀 —
@@ -155,11 +155,11 @@ The game's data unit (not the book's 回): `chapter.json` (`id`, `opens`,
 `locks` — systems kept shut until a scene opens them — and `map` — what the
 chapter opens of the map), `beats.md` (the one-page beat sheet), `scenes/*.json`.
 Scenes carry `hui`, the book's 回 they play (rules/hui.mjs; the game says
-卷/回, never 章 — 5b955c4). Built: `00-prologue` (27 scenes, 古一–古四),
-`00-waimen` (21, 古五–古八), `00-zhuji` (5, 古九: the winter, the furnace's
+卷/回, never 章 — 5b955c4). Built: `00-prologue` (27 scenes, 古一–古三),
+`00-waimen` (21, 古四–古六), `00-zhuji` (5, 古七: the winter, the furnace's
 九转, the year as the book's four seasons — each exit a layer by `rise`, the last
 `{layer: 9, full: true}`, in order by `needs.mark`, offered `once`, free of 体力 (主线, 2026-10-01) —
-瞿老's last disciple, and the 筑基 on the cliff, `09-cliff`) and `01-ji` (7, 古十:
+瞿老's last disciple, and the 筑基 on the cliff, `09-cliff`) and `01-ji` (7, 古八:
 the two failed plans, the wedding, **冰夷's two dragons test him at `01-rise`** —
 `foe-shuanglong`, a trial fought again at once — the seal, the first 鼎 with memory 1
 and no breakthrough, 柳湾); both rebuilt from the book 2026-09-30 (his: 照这样重做冀州).
@@ -434,7 +434,7 @@ alone: `scripts/try-game.html?game=storm|deer|xisui|zhoutian&lang=zh|en`.
 - **体力 is OFF while we test** (Hanli, 2026-10-01: 「我是说先不要用体力限制我们测试的时长. 体力限制游戏时长的设定, 可以以后加.」): played through the command (`rules.mjs`, the page's and Ling's door), nothing spends 体力, nothing is refused for it, and the pool reads full — `staminaLimited` in state.mjs, thrown by `LINGJING_STAMINA_LIMIT=0`, which the command sets unless it is already set. Every cost and rule below is kept and still tested; `LINGJING_STAMINA_LIMIT=1` (or removing the default in rules.mjs) brings the pool back as it was. 体力 as a play-time limit is designed later.
 - **主线赶路不扣体力** (Hanli, 2026-10-01: 「可以，主线赶路不扣体力」): a trip toward
   the place the goal line names (Look's `waypoint`) is free — the place itself or
-  one on a shortest road to it (rules/errands.mjs `onStoryRoad`); 古九's four
+  one on a shortest road to it (rules/errands.mjs `onStoryRoad`); 古七's four
   seasons carry no toil price. Why: 卷一's play-through hit two 5–6 h lockouts
   on the story path. 体力 is for side errands, roaming and cultivation.
 - **闭关** (2026-09-24, rules/seclusion.mjs, page-only `seclude`): real hours
@@ -537,7 +537,7 @@ His order of value: **5 > 3 > 1 > 7 > 6 > 2 > 4**.
    to a homed 鼎 for 1 体力; 卷轴 unroll at 下山. Lesson: a reward must brighten,
    never darken.
 2. **大场面** 【已建 · 卷一】 — one per 卷 at most, the whole stage. 卷一's is
-   **漳水立起** (古十; Hanli 2026-09-30): `setpiece.js` (the runner) +
+   **漳水立起** (古八; Hanli 2026-09-30): `setpiece.js` (the runner) +
    `setpieces/zhang.js` (the piece), Pixi + GSAP from fx.js's loaders, ink only,
    words never painted. Seven beats in the book's order, each tied to a verbatim
    line of 08-第八回.md (tests/setpiece.test.mjs holds it): `still` 2.8 s · `rise`
@@ -690,7 +690,7 @@ person, no gender marks, and the game follows 原神 (story DESIGN § 四, § �
   value card stays for a scene that names a thing (tests/naming.test.mjs runs it
   on the old exit, tests/fixtures/name-card-exit.json).
 - **Still open:** the prologue's scene passages still say 「这个少年，就是你」 and
-  speak to 你 (the book is third person now); the book's 古三–古十 still carry
+  speak to 你 (the book is third person now); the book's 古二–古八 (renumbered 2026-10-02) still carry
   `{name}`/`{他|她}` marks and first person; every draw seeded by `state.name`
   (the deck's order, the day's riddle, notices, 传闻, road meets, 论道) is now the
   same for every player — seed them by the save's `created` if that matters.

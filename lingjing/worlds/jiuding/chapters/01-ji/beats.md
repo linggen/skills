@@ -1,12 +1,12 @@
-# Chapter 1 · 冀州之鼎 — beat sheet (古十)
+# Chapter 1 · 冀州之鼎 — beat sheet (古八)
 
-> **Rebuilt 2026-09-30** to the book's 古十 (his: 「可以，照这样重做冀州」). 筑基 moved to the
-> 沉鼎观 cliff in 古九 — its own chapter, `00-zhuji` (its scenes stand in 徐, and a chapter's
+> **Rebuilt 2026-09-30** to the book's 古八 (古十 before the 2026-10-02 renumbering; his: 「可以，照这样重做冀州」). 筑基 moved to the
+> 沉鼎观 cliff in 古七 — its own chapter, `00-zhuji` (its scenes stand in 徐, and a chapter's
 > scenes stand in its province). No 狍鸮 at the altar (it still haunts 冀's places). The chapter's
 > fight is **冰夷's two dragons testing the one who would not kneel** (`01-rise`, `foe-shuanglong`),
 > written into the book too. Each scene's `story` is the book's own passage (verbatim zh + en).
 
-1. **Arrive** (`01-arrive`, 漳水南岸). the abbot's map (古九's last scene, the night after the Foundation); the tenth evening at the Zhang;
+1. **Arrive** (`01-arrive`, 漳水南岸). the abbot's map (古七's last scene, the night after the Foundation); the tenth evening at the Zhang;
    周衡 does not write a word.
 2. **Ye** (`01-ye`, 邺城). The inn, the custom, this year's bride (豆腐西施). The two failed plans are
    the player's choices — **bribe the Three Elders** (the ingot's 圈里一横) and **the bedsheet ghost**

@@ -1,6 +1,6 @@
-# 古九 · 筑基 — beat sheet
+# 古七 · 筑基 — beat sheet
 
-The book's 古九 (story/jiuding-lu/07-第七回.md), played as five scenes at 沉鼎观 (his, 2026-09-30:
+The book's 古七 (story/jiuding-lu/07-第七回.md; 古九 before the 2026-10-02 renumbering), played as five scenes at 沉鼎观 (his, 2026-09-30:
 照这样重做冀州 — the Foundation is laid on the 沉鼎观 cliff before the road north). Each scene's
 `story` is the book's own passage (verbatim zh, en beside it); setup, recap, captions and buttons
 speak to the player as 你 (story/jiuding-lu/DESIGN.md § 四·五 人称分工).
@@ -24,4 +24,4 @@ speak to the player as 你 (story/jiuding-lu/DESIGN.md § 四·五 人称分工)
 5. **The cliff** (`09-cliff`, 后山崖顶) — **the key beat**: 九月初三, the breakthrough (`breakthrough:
    true`; the throw reaches for the 九转 before the 一转 — ladder.json `breakthrough.pill`). The
    心关 惧: the door he reads as 「勿入」, his father's 「今日放学」 door. 「几道纹？」「……一道。」
-   「你外公那一步，你替他走完了。」 Ends the chapter → 01-ji (古十).
+   「你外公那一步，你替他走完了。」 Ends the chapter → 01-ji (古八).
