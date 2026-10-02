@@ -85,8 +85,11 @@ test('each 回 ends with its classics (卷一 in ten since 2026-09-30), and the 
   assert.deepEqual(entries('j07'), ['lingshu-jiuzhen', 'baopu-jiyan-shang']); // 今07 穴 · 今08 走火入魔 (主)
   assert.deepEqual(entries('j09'), ['yangxing-changxi', 'qijing-yinqiao']); // 今09 惧/长息 (主) · 今10 内感受
   const old = fs.readdirSync(path.join(BOOK, '今线/旧稿')).map((f) => fs.readFileSync(path.join(BOOK, '今线/旧稿', f), 'utf8')).join('\n');
+  // 今线 quotes in 简体 (修改单-插曲 15, 2026-10-02): 旧稿 had two in 繁体, so compare with these few characters folded.
+  const simp = (s) => s.replace(/[氣內觀]/g, (ch) => ({ 氣: '气', 內: '内', 觀: '观' })[ch]);
+  const oldSimp = simp(old);
   for (const c of chapters.filter((x) => x.line === 'jin')) {
-    for (const [whole] of c.md.matchAll(REF)) assert.ok(old.includes(whole), `${c.file}: ${whole} is quoted as the 今 回 it came from had it (今线/旧稿)`);
+    for (const [whole] of c.md.matchAll(REF)) assert.ok(oldSimp.includes(simp(whole)), `${c.file}: ${whole} is quoted as the 今 回 it came from had it (今线/旧稿)`);
   }
   for (const c of chapters) assert.equal(/《吐纳经》\{典=/.test(c.md), false, `${c.file}: 《吐纳经》 is 银月's own, never a classic`);
   const html = renderMarkdown(fillHero((at('h06') ?? at('h05')).md, {}), { classics: CLASSICS });
