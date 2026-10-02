@@ -3,12 +3,16 @@
 // 「第N回」 means the same 回 in both. Pure: no DOM, no files.
 //
 /* ── The book's form (《鹿鼎记》's, Hanli 2026-09-29: 「按回卷改」; two lines,
-   2026-10-01: 「一句话标题，按你说的做」): book.json's `volumes` (卷 = twenty
-   回, ten 古 and ten 今, alternating, opening on 今) hold its `hui` in the
-   book's order; the reader walks them flat, 卷 by 卷, and NUMBERS them as it
-   walks — 「第N回」 is never stored. Each 回 keeps a stable `id` (h01… 古,
-   j01… 今) and its `line`; book.json's own `n` is the ordinal within its line
-   (古一, 今一), kept as `ord`. ── */
+   2026-10-01; interludes, 2026-10-02: 「两个线不应该并列写，减轻今线的戏份」):
+   book.json's `volumes` (卷一 = eight 古 回 in four films of two, a 今
+   interlude after each film, the book opening on 古一) hold their `hui` in
+   the book's order; the reader walks them flat, 卷 by 卷, and NUMBERS them as
+   it walks — never stored. The 古 回 count 第一回, 第二回 … through the book;
+   a 今 interlude takes no 回 number — it reads 「今 · 一」 ("Now · 1"),
+   counted within its own line. Each keeps a stable `id` (h01… 古, j01… 今)
+   and its `line`; book.json's own `n` is the ordinal within its line, kept as
+   `ord`. An id folded into another (`absorbs`: h03 into h02, j02 into j01)
+   names the entry that absorbed it, so old links and old scene ids resolve. ── */
 
 const DIGITS = '零一二三四五六七八九';
 /// 1 → 一, 10 → 十, 14 → 十四, 20 → 二十, 99 → 九十九, 100 → 一百 (a 回's or a 卷's number).
@@ -24,6 +28,9 @@ export function cnNumber(n) {
 /// 「第三回」, or "Chapter 3".
 export const huiLabel = (n, lang = 'zh') => (lang === 'en' ? `Chapter ${n}` : `第${cnNumber(n)}回`);
 
+/// 「今 · 一」, or "Now · 1": a 今 interlude's label — it takes no 回 number.
+export const jinLabel = (n, lang = 'zh') => (lang === 'en' ? `Now · ${n}` : `今 · ${cnNumber(n)}`);
+
 /// The two lines' tags: 古 (沈小满's world) and 今 (沈芒's). A 回 with no
 /// `line` is 古 — the book before 2026-10-01.
 export const LINES = { gu: { zh: '古', en: 'Then' }, jin: { zh: '今', en: 'Now' } };
@@ -35,23 +42,34 @@ export const lineOf = (h) => (h?.line === 'jin' ? 'jin' : 'gu');
 /// numbers every 回 in place, as the book will read once they are approved.
 export const shownIn = (opts) => (h) => !!opts?.draft || !h.draft;
 
-/// Every 回 in book order, then the appendix: each numbered by its place in
-/// the view (`n`, `label` 第五回), with its `line` and `tag` (古 / 今), `ord`
-/// (book.json's ordinal within its line), `title` ({zh, en}:
-/// 「第五回　古 · 漏勺夜半通三关　萝卜一根收小狰」) and its `volume` ({id, n,
-/// name}). A book still in plain `chapters` reads as it was.
+/// Every id a 回 answers to: its own, then the ones it absorbed.
+export const idsOf = (h) => [h.id, ...(h.absorbs ?? [])];
+
+/// The id an old one now names: an old chapter id (`aliases`: 序章上's `00` →
+/// h01), or a 回 folded into another (`absorbs`: h03 → h02); else itself.
+export function resolveId(book, id) {
+  if (id == null) return id;
+  if (book?.aliases && Object.hasOwn(book.aliases, id)) return book.aliases[id];
+  const into = (book?.volumes ?? []).flatMap((v) => v.hui ?? []).find((h) => (h.absorbs ?? []).includes(id));
+  return into?.id ?? id;
+}
+
+/// Every 回 in book order, then the appendix: each numbered within its line by
+/// its place in the view (`n`: 古 第五回 → 5, 今 「今 · 二」 → 2), with its
+/// `label` (第五回 / 今 · 二), `line` and `tag` (古 / 今), `ord` (book.json's
+/// ordinal within its line), `title` ({zh, en}: 「第五回　古 · 上联　下联」,
+/// 「今 · 二　一句话」) and its `volume` ({id, n, name}). A book still in plain
+/// `chapters` reads as it was.
 export function bookEntries(book, opts = {}) {
-  let n = 0;
+  const count = { gu: 0, jin: 0 };
   const hui = (book?.volumes ?? []).flatMap((v) => (v.hui ?? []).filter(shownIn(opts)).map((h) => {
-    n += 1;
     const line = lineOf(h), tag = LINES[line], words = h.huimu ?? {};
-    return {
-      ...h,
-      ord: h.n, n, line, tag,
-      volume: { id: v.id, n: v.n, name: v.name },
-      label: { zh: huiLabel(n), en: huiLabel(n, 'en') },
-      title: { zh: `${huiLabel(n)}　${tag.zh} · ${(words.zh ?? []).join('　')}`, en: `${huiLabel(n, 'en')} · ${tag.en} · ${(words.en ?? []).join(' / ')}` },
-    };
+    const n = (count[line] += 1);
+    const label = line === 'jin' ? { zh: jinLabel(n), en: jinLabel(n, 'en') } : { zh: huiLabel(n), en: huiLabel(n, 'en') };
+    const title = line === 'jin'
+      ? { zh: `${label.zh}　${(words.zh ?? []).join('　')}`, en: `${label.en} · ${(words.en ?? []).join(' / ')}` }
+      : { zh: `${label.zh}　${tag.zh} · ${(words.zh ?? []).join('　')}`, en: `${label.en} · ${tag.en} · ${(words.en ?? []).join(' / ')}` };
+    return { ...h, ord: h.n, n, line, tag, volume: { id: v.id, n: v.n, name: v.name }, label, title };
   }));
   return [...hui, ...(book?.chapters ?? []), ...(book?.appendix ?? []).map((a) => ({ ...a, volume: null }))];
 }

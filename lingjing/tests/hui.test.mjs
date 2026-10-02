@@ -8,7 +8,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, resolve, story } from '../scripts/rules.mjs';
 import { chapterHuis, comingOf, endLabel, firstHui, huiEnded, huiLabel, huiNow, huiOf, juanEndOf, zhNumber } from '../scripts/rules/hui.mjs';
-import { bookEntries } from '../scripts/book-order.js';
+import { bookEntries, idsOf } from '../scripts/book-order.js';
 import { TO_VALLEY, walk } from './prologue.mjs';
 import { bookNo } from './book-num.mjs';
 
@@ -16,8 +16,9 @@ const content = loadContent();
 const NOW = new Date('2026-09-28T12:00:00');
 const ctx = () => ({ now: NOW, quests: [] });
 const TOLD = ['00-prologue', '00-waimen', '00-zhuji', '01-ji']; // the chapters the book tells; the rest wait to be rewritten
-// The book's order (book-order.js, as the reader walks it): 今 and 古 alternate, so a 回's place, never its `n`.
-const book = new Map(bookEntries(content.book, { draft: true }).filter(h => h.volume).map((h, at) => [h.id, at]));
+// The book's order (book-order.js, as the reader walks it): 今 interludes sit between the 古 films, so a 回's place,
+// never its `n`. A 回 folded into another (`absorbs`, 2026-10-02: h03 into 古二, h06 into 古四) stands at its absorber's place.
+const book = new Map(bookEntries(content.book, { draft: true }).filter(h => h.volume).flatMap((h, at) => idsOf(h).map(id => [id, at])));
 
 test('every scene of the chapters the book tells has a 回 of the book', () => {
   assert.ok(book.size >= 4, 'book.json is loaded with the world');
@@ -66,8 +67,13 @@ test('the prologue is 第一回 up to her daybreak, 第二回 from the cliff, �
 test('the labels are the book\'s: 卷, 回 and 回目 read from book.json, in both languages — the number the reader\'s', () => {
   assert.deepEqual([1, 3, 10, 11, 20, 21, 99].map(zhNumber), ['一', '三', '十', '十一', '二十', '二十一', '九十九']);
   const juan = content.book.volumes[0].name, h05 = bookNo(content, 'h05'), h05en = bookNo(content, 'h05', 'en');
-  // the book opens on 今一 (2026-10-01): 古一 is never 第一回
-  assert.notEqual(huiLabel(content, 'h01', 'zh', 'short'), '第一回');
+  // the book opens on 古一 and only the 古 回 take numbers (2026-10-02): 古一 is 第一回, 古三 (h04) 第三回,
+  // and a scene still naming a folded 回 (h03, h06) reads as the 回 that absorbed it
+  assert.equal(huiLabel(content, 'h01', 'zh', 'short'), '第一回');
+  assert.equal(huiLabel(content, 'h04', 'zh', 'short'), '第三回');
+  assert.equal(huiLabel(content, 'h03', 'zh', 'short'), '第二回');
+  assert.equal(huiLabel(content, 'h06', 'zh', 'short'), '第四回');
+  assert.equal(huiLabel(content, 'j01', 'zh', 'short'), '今 · 一', 'an interlude takes no 回 number');
   for (const h of bookEntries(content.book).filter(e => e.volume)) assert.equal(huiLabel(content, h.id, 'zh', 'short'), h.label.zh, `${h.id}: the reader's number`);
   assert.equal(huiLabel(content, 'h05', 'zh'), `${juan.zh} · ${h05}`);
   assert.equal(huiLabel(content, 'h05', 'zh', 'head'), `${juan.zh} · ${h05}　古 · 漏勺夜半通三关`);
@@ -112,7 +118,9 @@ test('an old save loads as it was: ids unchanged, its 回 read from where it sta
   const l = look(old, content, ctx());
   assert.equal(l.chapter.id, '00-prologue');
   assert.equal(l.chapter.hui, 'h03', '00-sleep is 古三\'s cold open since the 2026-09-30 review round');
-  assert.equal(l.chapter.close?.id, 'h02', 'standing on 古三\'s first scene: 「古二 · 完」, as the cliff closes 古一');
+  // 2026-10-02: old 古三 (h03) folded into 古二, so 00-sleep is still 古二 — no 「完」 stands between them
+  assert.equal(l.chapter.close, undefined, 'h03 is 古二 now: nothing has ended');
+  assert.equal(huiLabel(content, l.chapter.hui, 'zh', 'short'), bookNo(content, 'h02'));
 });
 
 test('no 章 is shown: chapter titles, closes and the page\'s words say 回 and 卷', async () => {
@@ -155,51 +163,57 @@ test('卷一 ends on its own card: 01-end rest waits on 「卷二 · 即将开�
   assert.equal(inner, bookNo(content, 'h09'));
 });
 
-/* 《九鼎录》 as it will stand once every 今 回 is in (writers add j02… on
-   2026-10-01): j01 h01 j02 h02 … j10 h10. The game's 古 回 are then the
-   book's even 回; nothing in the game depends on how many 今 are in. */
-const fullBook = (draft = null) => {
-  const gu = content.book.volumes[0].hui.filter(h => h.line !== 'jin');
-  const jin = n => ({ id: `j${String(n).padStart(2, '0')}`, line: 'jin', n, huimu: { zh: [`今${zhNumber(n)}`], en: [`Now ${n}`] }, ...(draft === n ? { draft: true } : {}) });
-  const hui = gu.flatMap((h, i) => [jin(i + 1), h]);
+/* 《九鼎录》 as it stands since 2026-10-02: 古一 古二 ‖今 · 一‖ 古三 古四 ‖今 · 二‖ …
+   古七 古八 ‖今 · 四‖. Only the 古 回 are numbered (第一回 … 第八回); the
+   game plays the 古 line, and nothing in it depends on how many 今 are in. */
+const withDraft = (id) => {
+  const hui = content.book.volumes[0].hui.map(h => (h.id === id ? { ...h, draft: true } : h));
   return { ...content, book: { ...content.book, volumes: [{ ...content.book.volumes[0], hui }, ...content.book.volumes.slice(1)] } };
 };
 
-test('a book with all ten 今 回 interleaved: 古N is 第2N回, the order holds, the 卷 ends on 古十, the lint is clean', async () => {
-  const c = fullBook();
-  for (let n = 1; n <= 10; n += 1) assert.equal(huiLabel(c, `h${String(n).padStart(2, '0')}`, 'zh', 'short'), `第${zhNumber(2 * n)}回`);
-  assert.equal(huiLabel(c, 'h01', 'en', 'short'), 'Chapter 2');
-  assert.equal(endLabel(c, 'h10', 'zh'), '第二十回 · 完');
-  assert.equal(juanEndOf(c, 'h10', 'zh'), '卷一 · 沉鼎 · 完', 'the 卷 ends for the game at 古十, not at 今十');
+test('the book in four films with an interlude after each: 古 第一回 … 第八回, the 今 unnumbered, the 卷 ends on 古八 for the game, the lint is clean', async () => {
+  const c = content;
+  const gu = c.book.volumes[0].hui.filter(h => h.line !== 'jin');
+  assert.deepEqual(gu.map(h => h.id), ['h01', 'h02', 'h04', 'h05', 'h07', 'h08', 'h09', 'h10']);
+  gu.forEach((h, i) => assert.equal(huiLabel(c, h.id, 'zh', 'short'), `第${zhNumber(i + 1)}回`, h.id));
+  assert.equal(huiLabel(c, 'h01', 'en', 'short'), 'Chapter 1');
+  assert.deepEqual(['j01', 'j04', 'j07', 'j09'].map(id => huiLabel(c, id, 'zh', 'short')), ['今 · 一', '今 · 二', '今 · 三', '今 · 四']);
+  assert.equal(huiLabel(c, 'j02', 'zh', 'short'), '今 · 一', 'a folded 今 id names the interlude that holds it');
+  assert.equal(endLabel(c, 'h10', 'zh'), '第八回 · 完');
+  assert.equal(juanEndOf(c, 'h10', 'zh'), '卷一 · 沉鼎 · 完', 'the 卷 ends for the game at 古八 (h10)');
   assert.equal(juanEndOf(c, 'h09', 'zh'), null);
-  assert.equal(juanEndOf(c, 'j10', 'zh'), '卷一 · 沉鼎 · 完', 'and for the 今 line at 今十');
-  assert.equal(comingOf(c, c.chapters['01-ji'], 'zh'), '第二十回 · 即将开放');
-  assert.deepEqual(chapterHuis(c, c.chapters['00-prologue']), ['h01', 'h02', 'h03', 'h04']);
+  assert.equal(juanEndOf(c, 'j09', 'zh'), '卷一 · 沉鼎 · 完', 'and for the 今 line at 今 · 四');
+  assert.equal(juanEndOf(c, 'j10', 'zh'), '卷一 · 沉鼎 · 完', 'j10 is folded into 今 · 四');
+  assert.equal(comingOf(c, c.chapters['01-ji'], 'zh'), '第八回 · 即将开放');
+  assert.deepEqual(chapterHuis(c, c.chapters['00-prologue']).filter(id => id !== 'h03'), ['h01', 'h02', 'h04']);
   assert.equal(firstHui(c, c.chapters['00-waimen']), 'h05');
   // a 回 turning inside the prologue, as before
   const valley = walk(newState(c, 'zh', NOW), TO_VALLEY, c, NOW);
   const cliff = resolve(valley, c, ctx(), { exit: 'follow' }).state;
   assert.equal(huiEnded(c, cliff), 'h01');
   const l = look(cliff, c, ctx());
-  assert.equal(l.chapter.close.title, '第二回 · 完');
-  assert.ok(l.chapter.title.startsWith('卷一 · 沉鼎 · 第四回　古 · '), l.chapter.title);
+  assert.equal(l.chapter.close.title, '第一回 · 完');
+  assert.ok(l.chapter.title.startsWith('卷一 · 沉鼎 · 第二回　古 · '), l.chapter.title);
   assert.deepEqual(story(cliff, c, ctx()).result.chapters.map(p => p.id), ['h01', 'h02']);
   // the scenes' spine reads the same in book order
   const { lint } = await import('../scripts/content.mjs');
   assert.deepEqual(lint(c), []);
-  // and the lint reads the book's order, not `n`: 古四 put before 古三 is a step back along the prologue
-  const hui = c.book.volumes[0].hui, i3 = hui.findIndex(h => h.id === 'h03'), i4 = hui.findIndex(h => h.id === 'h04');
-  const swapped = [...hui]; [swapped[i3], swapped[i4]] = [swapped[i4], swapped[i3]];
+  // and the lint reads the book's order, not `n`: 古三 put before 古二 is a step back along the prologue
+  const hui = c.book.volumes[0].hui, i2 = hui.findIndex(h => h.id === 'h02'), i4 = hui.findIndex(h => h.id === 'h04');
+  const swapped = [...hui]; [swapped[i2], swapped[i4]] = [swapped[i4], swapped[i2]];
   const back = { ...c, book: { ...c.book, volumes: [{ ...c.book.volumes[0], hui: swapped }] } };
-  assert.ok(lint(back).some(p => /goes back from h03 to h04|goes back from h04/.test(p)), 'the lint sees the order');
+  assert.ok(lint(back).some(p => /goes back from h0[23] to h04|goes back from h04/.test(p)), 'the lint sees the order');
 });
 
 test('a draft 回 takes no number, as in the reader: the 古 after it close up', () => {
-  const c = fullBook(3); // 今三 still a draft
-  assert.equal(huiLabel(c, 'h02', 'zh', 'short'), '第四回');
-  assert.equal(huiLabel(c, 'h03', 'zh', 'short'), '第五回', 'j01 h01 j02 h02 (j03) h03');
-  assert.equal(huiLabel(c, 'j03', 'zh', 'short'), null, 'a draft is named by nothing');
-  assert.deepEqual(chapterHuis(c, c.chapters['00-prologue']), ['h01', 'h02', 'h03', 'h04'], 'and still sorts in its place');
+  const c = withDraft('h04'); // 古三 still a draft
+  assert.equal(huiLabel(c, 'h02', 'zh', 'short'), '第二回');
+  assert.equal(huiLabel(c, 'h05', 'zh', 'short'), '第三回', 'h01 h02 (h04) h05');
+  assert.equal(huiLabel(c, 'h04', 'zh', 'short'), null, 'a draft is named by nothing');
+  assert.deepEqual(chapterHuis(c, c.chapters['00-prologue']).filter(id => id !== 'h03'), ['h01', 'h02', 'h04'], 'and still sorts in its place');
+  const j = withDraft('j01'); // an interlude held back: the 古 numbers do not move, the next interlude becomes 今 · 一
+  assert.equal(huiLabel(j, 'h04', 'zh', 'short'), '第三回');
+  assert.equal(huiLabel(j, 'j04', 'zh', 'short'), '今 · 一');
 });
 
 test('story travel: a scene roads away keeps its passage owed until he arrives; the choice\'s own passage plays where it was made', async () => {

@@ -9,7 +9,7 @@ import { LOCKABLE, normalizeAnswer } from './state.mjs';
 import { EFFECTS } from './battle.js';
 import { FRAMES, PARTICLES } from './atmos.js';
 import { lintCodex } from './codex.js';
-import { bookEntries } from './book-order.js';
+import { bookEntries, idsOf } from './book-order.js';
 
 /* The worlds ship with the skill, one folder each under `worlds/`; the
    folder's name is the world's id and the save's `world`. */
@@ -989,8 +989,9 @@ function lintChapterShape(chapter, content, bad) {
 /* 卷 and 回 (rules/hui.mjs): a scene's `hui` is a 回 of the world's book, and
    along a chapter's spine — any exit to a next scene — it never goes back. */
 function lintHui(chapter, content, bad) {
-  // Book order (book-order.js, the reader's): 《九鼎录》 alternates 今 and 古, so a 回's place, not its `n` (its ordinal within its line).
-  const book = new Map(bookEntries(content.book, { draft: true }).filter(h => h.volume).map((h, at) => [h.id, at]));
+  // Book order (book-order.js, the reader's): 今 interludes sit between the 古 films, so a 回's place, not its `n`
+  // (its number within its line). A 回 folded into another (`absorbs`: h03 → h02) stands at the place of the one that absorbed it.
+  const book = new Map(bookEntries(content.book, { draft: true }).filter(h => h.volume).flatMap((h, at) => idsOf(h).map(id => [id, at])));
   for (const sc of Object.values(chapter.scenes)) {
     if (sc.hui == null) continue;
     if (!book.has(sc.hui)) { bad(`scene ${sc.id}`, `hui ${sc.hui} is no 回 of the book`); continue; }

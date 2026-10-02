@@ -519,33 +519,33 @@
       "note": "道经里的「灵根」是舌根、命根；书里「灵根＝生来五行之禀」是我们的补丁②（Hanli 2026-10-01，DESIGN § 六·五·二）。与 huangting（第一章「上有黃庭下關元」，第八、九回）同经不同句。"
     }
   },
-  "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: a 药园 line from the 《神农本草经》 序录 上药/中药/下药 passage — that is `shennong`, which 褚先生 paraphrases in one untagged sentence in 古六 (06-第六回.md); it would use it twice.",
+  "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: a 药园 line from the 《神农本草经》 序录 上药/中药/下药 passage — that is `shennong`, which 褚先生 paraphrases in one untagged sentence in 古六 (06-第六回.md); it would use it twice. 2026-10-02 (古线 ten 回 → eight, 今线 → four interludes, book.json `absorbs`): the index keys above are relabelled — 古 by the new 回 (old 古三 into 古二, 古五+古六 into 古四, 古七→古五 … 古十→古八), 今 by its interlude (今 · 一 = old 今一–今三, 今 · 二 = 今四–今六, 今 · 三 = 今七–今八, 今 · 四 = 今九–今十); the 主典 named above by old number keep their entries — every 今 主典 is still quoted, in its interlude (Hanli 2026-10-02: 「小课堂与典籍要保留」).",
   "_pending_by_hui": {
-    "今一": [
+    "今 · 一（旧今一）": [
       "qianjin-dayi（一笔）"
     ],
-    "今二": [
+    "今 · 一（旧今二）": [
       "lingshu-hailun（一笔）"
     ],
-    "古五": [],
-    "今八": [
+    "古四（旧古五）": [],
+    "今 · 三（旧今八）": [
       "jiayi-xu（一笔）"
     ],
-    "古八": [
+    "古六（旧古八）": [
       "huangting-linggen（D4，建议）"
     ],
-    "古六（一笔带过，正文改述、不挂典；主典 baopu 照留）": [
+    "古四（旧古六：一笔带过，正文改述、不挂典；主典 baopu 照留）": [
       "shennong",
       "zuozhuan-ranzhi"
     ],
-    "古十（一笔带过，故事照讲、不挂典；主典 neiguan-jing）": [
+    "古八（旧古十：一笔带过，故事照讲、不挂典；主典 neiguan-jing）": [
       "shiji-ximenbao",
       "shanhai-bingyi"
     ],
-    "今十（一笔带过，眼镜出书名、斗柄指北改述，不挂典；主典 qijing-yinqiao）": [
+    "今 · 四（旧今十：眼镜讲斗柄一段已删，书名也不出；主典 qijing-yinqiao）": [
       "heguanzi-huanliu"
     ],
-    "古九（一笔带过：巽卦只留「进退」二字、不挂典；牛毛麟角删去）": [
+    "古七（旧古九：一笔带过：巽卦只留「进退」二字、不挂典；牛毛麟角删去）": [
       "zhouyi-xun",
       "baopu-jiyan"
     ]

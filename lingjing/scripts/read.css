@@ -35,6 +35,7 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
    line in 沈芒's voice, set a little lighter. 草稿 only in the draft view. */
 .tag { display: inline-block; margin-left: 6px; padding: 0 3px; font-size: 10px; font-style: normal; line-height: 1.4; letter-spacing: 0; color: var(--dim); border: 1px solid currentColor; border-radius: 3px; vertical-align: 2px; opacity: .85; }
 .jin .tag { color: var(--jin); }
+.toc a.hui.jin .tn, .chapter h1.huimu.jin .hui { color: var(--jin); } /* 「今 · 一」: an interlude takes no 回 number; its label in its own colour */
 .tag.draft { color: var(--seal); border-style: dashed; }
 .toc a.hui.jin .tm { font-size: 13px; }
 .chapter { grid-area: chapter; }

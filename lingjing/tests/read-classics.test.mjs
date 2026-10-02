@@ -16,6 +16,11 @@ const book = JSON.parse(fs.readFileSync(path.join(BOOK, 'book.json'), 'utf8'));
 const ALL = JSON.parse(fs.readFileSync(path.join(BOOK, 'classics.json'), 'utf8'));
 const CLASSICS = ALL.classics;
 const chapters = bookEntries(book).map((c) => ({ ...c, md: fs.readFileSync(path.join(BOOK, c.file), 'utf8') }));
+// A 古 回 folded into another (`absorbs`, 2026-10-02: h03 → 古二, h06 → 古四): while its old file is still on
+// disk (the 古 lane folding it in has not landed) it counts as the book's; once it is gone, the absorber alone.
+const absorbed = book.volumes.flatMap((v) => v.hui).flatMap((h) => (h.line === 'gu' ? h.absorbs ?? [] : []));
+const folded = absorbed.flatMap((id) => fs.readdirSync(BOOK).filter((f) => f.startsWith(`${id.slice(1)}-`) && f.endsWith('.md') && !chapters.some((c) => c.file === f))
+  .map((f) => ({ id, file: f, md: fs.readFileSync(path.join(BOOK, f), 'utf8') })));
 const REF = /(?:《([^》\n]+)》|\[([^\]\n]+)\])\{典=([^{}\n]+)\}/g;
 // The renderer's fixture: 神农 (古六 told it in a sentence since 2026-10-01, so it waits in _pending; either shelf serves).
 const one = { shennong: CLASSICS.shennong ?? ALL._pending.shennong };
@@ -51,7 +56,7 @@ test('an unknown id, no classics at all, or a heading: the 《书名》 alone, a
 
 test('every {典=id} in the book is an entry; every entry has a real source and a short passage', () => {
   const used = new Set();
-  for (const c of chapters) for (const [, , , id] of c.md.matchAll(REF)) { used.add(id); assert.ok(Object.hasOwn(CLASSICS, id), `${c.file}: 典 ${id}`); }
+  for (const c of [...chapters, ...folded]) for (const [, , , id] of c.md.matchAll(REF)) { used.add(id); assert.ok(Object.hasOwn(CLASSICS, id), `${c.file}: 典 ${id}`); }
   for (const [id, c] of Object.entries(CLASSICS)) {
     assert.ok(used.has(id), `${id} is named somewhere in the book`);
     assert.ok(c.title && c.about, `${id}: title and background`);
@@ -66,16 +71,25 @@ test('every {典=id} in the book is an entry; every entry has a real source and 
 });
 
 test('each 回 ends with its classics (卷一 in ten since 2026-09-30), and the made-up 《吐纳经》 is not one', () => {
-  const at = (id) => chapters.find((c) => c.id === id);
+  const at = (id) => chapters.find((c) => c.id === id) ?? folded.find((c) => c.id === id);
   const entries = (id) => [...renderMarkdown(fillHero(at(id).md, {}), { classics: CLASSICS }).matchAll(/<article class="dianent" id="dian-([\w-]+)"/g)].map((m) => m[1]);
   assert.deepEqual(entries('h05'), ['liezi-yugong', 'zhonglv-sishi', 'zhuangzi-dasheng', 'shanhai-zheng']); // 真气 (素问) waits for 第九回; 守一's 用志不分 taught after the 小周天 (课随境界, 2026-09-30); 主典 钟吕「煉精生真氣」 = 练气一层, the rest withheld (Hanli 2026-10-01)
-  assert.deepEqual(entries('h06'), ['baopu']); // 抱朴子's 转 told in 褚先生's lecture while he grips the bottle — no narrator aside at the first 纹 (2026-09-30); 主典 only — 神农, 染指, 九鼎神丹经诀 一笔带过 (Hanli 2026-10-01)
+  if (at('h06')) assert.deepEqual(entries('h06'), ['baopu']); // old 古六, while its file stands (folded into 古四 h05, 2026-10-02) — // 抱朴子's 转 told in 褚先生's lecture while he grips the bottle — no narrator aside at the first 纹 (2026-09-30); 主典 only — 神农, 染指, 九鼎神丹经诀 一笔带过 (Hanli 2026-10-01)
   assert.deepEqual(entries('h07'), ['jiuding', 'shanhai-gui', 'shanhai-xirang', 'shangshu-hongfan']); // 主典 洪范五句 on the notebook's surviving page, come alive in the 五行 turn (修仙词汇表 B, Hanli 2026-10-01)
   assert.deepEqual(entries('h08'), ['laozi-qizhe', 'huangting-linggen']);
   assert.deepEqual(entries('h09'), ['wu-zhuji', 'suwen', 'huangting']); // 主典 伍冲虚「築者……安神定息之處所也」 read by 褚先生 before his 盖房子, paid off when 神安息定 on the cliff; 巽「进退」 and 庄子刻意 一笔带过, 牛毛麟角 cut (修仙词汇表 B, Hanli 2026-10-01) // 恬惔虚无 moved from 第三回 to the eve of 筑基 (课随境界走, 2026-09-30) // 褚先生's 筑基 lecture moved off the cliff into the autumn 讲堂 (2026-09-30)
   assert.deepEqual(entries('h10'), ['neiguan-jing']); // 主典 内观经 十六字, 瞿老's parting lesson, at the bottom of the 漳水; 西门豹·冰夷 stay as story, untagged (修仙词汇表 B, Hanli 2026-10-01)
+  // The 今 interludes (2026-10-02) keep every 典 of the 今 回 they fold in (Hanli: 「小课堂与典籍要保留」), each quote verbatim.
+  assert.deepEqual(entries('j01'), ['baopu-zhili', 'lingshu-jingmai', 'yangxing-liuzi']); // 今01 气 · 今02 经脉 · 今03 吐纳 (主)
+  assert.deepEqual(entries('j04'), ['baopu-huangbai', 'zhuangzi-yangshengzhu', 'shennong-renshen']); // 今04 灵根 · 今05 任督/刹车 (主) · 今06 外丹
+  assert.deepEqual(entries('j07'), ['lingshu-jiuzhen', 'baopu-jiyan-shang']); // 今07 穴 · 今08 走火入魔 (主)
+  assert.deepEqual(entries('j09'), ['yangxing-changxi', 'qijing-yinqiao']); // 今09 惧/长息 (主) · 今10 内感受
+  const old = fs.readdirSync(path.join(BOOK, '今线/旧稿')).map((f) => fs.readFileSync(path.join(BOOK, '今线/旧稿', f), 'utf8')).join('\n');
+  for (const c of chapters.filter((x) => x.line === 'jin')) {
+    for (const [whole] of c.md.matchAll(REF)) assert.ok(old.includes(whole), `${c.file}: ${whole} is quoted as the 今 回 it came from had it (今线/旧稿)`);
+  }
   for (const c of chapters) assert.equal(/《吐纳经》\{典=/.test(c.md), false, `${c.file}: 《吐纳经》 is 银月's own, never a classic`);
-  const html = renderMarkdown(fillHero(at('h06').md, {}), { classics: CLASSICS });
+  const html = renderMarkdown(fillHero((at('h06') ?? at('h05')).md, {}), { classics: CLASSICS });
   assert.doesNotMatch(html.replace(/<[^>]+>/g, ''), /\{典=/, 'no token shows');
 });
 

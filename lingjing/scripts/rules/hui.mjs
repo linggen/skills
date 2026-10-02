@@ -5,15 +5,18 @@
 // The words are the book's (story/<id>/book.json: each 卷's name, each 回's
 // 回目); a scene says only which 回 it is (`hui`). A 回's NUMBER is its place
 // in the book as the reader counts it (book-order.js bookEntries, one source
-// for both): 《九鼎录》 runs 今 and 古 alternately from 今一, so 古一 (h01) is
-// 「第二回」 here as on the page. The game plays the 古 line only. Every label the
+// for both): 《九鼎录》 opens on 古一 and numbers only the 古 回 (第一回 …
+// 第八回 in 卷一); a 今 interlude between the films reads 「今 · 一」 and
+// takes no 回 number (2026-10-02). The game plays the 古 line only. A scene
+// may still name a 回 folded into another (h03 → 古二, `absorbs`): it is
+// read as the 回 that absorbed it. Every label the
 // page and Ling show — the header, the close card, 「即将开放」, the 恩仇簿,
 // the 九鼎录, the 前情提要 — is made here from those two, never written twice.
 // The game's chapters (00-prologue, 00-waimen, 01-ji …) stay the internal
 // unit: the map, the locks, the beta's wait. A 回 ends where the scenes'
 // `hui` turns, which may be inside a chapter (序章's 第一回 → 第二回).
 import { pick } from '../state.mjs';
-import { bookEntries, cnNumber, lineOf } from '../book-order.js';
+import { bookEntries, cnNumber, idsOf, lineOf } from '../book-order.js';
 
 /* 1 → 一, 10 → 十, 13 → 十三, 21 → 二十一: the reader's (book-order.js). */
 export const zhNumber = cnNumber;
@@ -26,10 +29,13 @@ const BOOKS = new WeakMap();
 function bookIndex(content) {
   if (!BOOKS.has(content)) {
     const juans = new Map((content.book?.volumes ?? []).map(v => [v.id, v]));
-    const shown = new Map(bookEntries(content.book).filter(h => h.volume).map(h => [h.id, h.n]));
+    const shown = new Map(bookEntries(content.book).filter(h => h.volume).map(h => [h.id, h]));
     const m = new Map();
-    bookEntries(content.book, { draft: true }).filter(h => h.volume)
-      .forEach((h, at) => m.set(h.id, { ...h, juan: juans.get(h.volume.id), at, n: shown.get(h.id) ?? null }));
+    bookEntries(content.book, { draft: true }).filter(h => h.volume).forEach((h, at) => {
+      const pub = shown.get(h.id);
+      const entry = { ...h, juan: juans.get(h.volume.id), at, n: pub?.n ?? null, label: pub?.label ?? null };
+      for (const id of idsOf(h)) m.set(id, entry);
+    });
     BOOKS.set(content, m);
   }
   return BOOKS.get(content);
@@ -49,8 +55,8 @@ export function sceneHui(content, id) {
   return SCENES.get(content).get(id) ?? null;
 }
 
-/* A 回 named, in four sizes — the number the book's (古五, h05, is 第十回
-   once 今 runs beside it); the two with the 回目 carry the line's tag, as the
+/* A 回 named, in four sizes — the label the book's (古三 is h04 since
+   2026-10-02, when h03 folded into 古二; a 今 interlude reads 今 · 一); the two with the 回目 carry the line's tag, as the
    reader's title does, so a player who meets 第二回 first sees it is the 古:
      short  第十回                                       · Chapter 10
      juan   卷一 · 第十回                                 · Volume One · Chapter 10
@@ -58,7 +64,7 @@ export function sceneHui(content, id) {
      book   卷一 · 第十回　古 · 漏勺夜半通三关　萝卜一根收小狰 · … · Then — the 回目 whole
    null for a 回 the book does not have, or one still a draft. */
 const FORMS = {
-  short: (h, lang) => (lang === 'en' ? `Chapter ${h.n}` : `第${zhNumber(h.n)}回`),
+  short: (h, lang) => pick(h.label, lang),
   juan: (h, lang) => `${pick(h.juan.name, lang)} · ${FORMS.short(h, lang)}`,
   head: (h, lang) => `${tagged(h, lang)}${pick(h.huimu, lang)[0]}`,
   book: (h, lang) => `${tagged(h, lang)}${pick(h.huimu, lang).join(lang === 'en' ? ' / ' : '　')}`,
@@ -116,10 +122,10 @@ function nextJuan(content, lang) {
 }
 
 /* 「卷一 · 沉鼎 · 完」 when a 回 is its 卷's last of its own line; else null.
-   The book's 卷 ends on 今十, but the game plays the 古 line: its 卷 ends at 古十. */
+   The book's 卷 ends on its last 今 interlude, but the game plays the 古 line: its 卷 ends at 古八 (h10). */
 export const juanEndOf = (content, id, lang) => {
   const h = huiOf(content, id);
-  if (!h || h.juan?.hui?.filter(x => lineOf(x) === h.line).at(-1)?.id !== id) return null;
+  if (!h || h.juan?.hui?.filter(x => lineOf(x) === h.line).at(-1)?.id !== h.id) return null;
   return lang === 'en' ? `${pick(h.juan.name, 'en')} · The End` : `${pick(h.juan.name, 'zh')} · 完`;
 };
 

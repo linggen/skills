@@ -9,7 +9,7 @@
   "en": "The poorest hunter's family under Mount Meng has the mouthiest child. For one deer hide he crosses the stone that says Do Not Enter, and carries home a queen of heaven's foxes — eight tails cut away, starving, unable to recall her own name. She eats his last flatbread and owes him a wish. From then on, his luckless life takes off."
  },
  "world": "jiuding",
- "_form": "《鹿鼎记》's form, two lines (Hanli 2026-10-01: 「一句话标题，按你说的做」): a 卷 is twenty 回 — ten 古 (沈小满) and ten 今 (沈芒) — alternating, the book opening on 今; the 回 are numbered through the whole book. Each 回 entry: `id` (stable forever: h01…h10 are the 古 回, j01…j10 the 今 回 — the game's scene `hui`, the 评书 audio and old links name these), `line` (\"gu\" | \"jin\"), `n` (its ordinal WITHIN its line — 古一, 今一 — never the display number; the 古 file names 01-第一回.md … and their title lines carry it), `huimu` (古: two seven-character lines; 今: one line in 沈芒's own voice), `file`, and `draft: true` only for a 回 Hanli wants held back. A 今 回 is published when written (Hanli 2026-10-01: 「今的写好就加进来吧」) — no draft flag; its file is 今线/今NN.md, title line 「第N回　今　一句话」 by its line ordinal. The array order IS the book's order: the reader computes 「第N回」 and the 今/古 tag from it (read-md.js bookEntries), so inserting or moving a 回 is an edit here only. A draft is left out of the published view (and out of its numbering); read.html?draft=1 shows it, numbered in place. DESIGN.md § 五·五.",
+ "_form": "《鹿鼎记》's form, two lines, the 今 as interludes (纲要 § 一·四, Hanli 2026-10-02: 「两个线不应该并列写，减轻今线的戏份」; 古线 ten 回 → eight in four films of two, 古线卷一改版纲). A 卷 opens on 古一; its 古 回 run two by two as films, and after each film a 今 interlude (沈芒, modern science for the 古线's 修仙): 古一 古二 ‖今 · 一‖ 古三 古四 ‖今 · 二‖ 古五 古六 ‖今 · 三‖ 古七 古八 ‖今 · 四‖ — 卷一 ends on its last interlude. Only the 古 回 take a 回 number (第一回 … 第八回); an interlude reads 「今 · 一」 (\"Now · 1\") and takes none. Each entry: `id` (stable forever: h01… 古, j01… 今 — the game's scene `hui`, the 评书 audio and old links name these; never reused), `absorbs` (the ids folded into it — h03 into 古二 h02, h06 into 古四 h05, j02+j03 into 今 · 一 j01, j05+j06 into 今 · 二 j04, j08 into 今 · 三 j07, j10 into 今 · 四 j09: an old ?ch= link or a scene's `hui` naming one opens the entry that holds it), `line` (\"gu\" | \"jin\"), `n` (its ordinal WITHIN its line — 古三, 今 · 二 — the 古 file names NN-第N回.md and their title lines carry it), `huimu` (古: two seven-character lines; 今: one line in 沈芒's own voice), `file`, and `draft: true` only for one Hanli wants held back. An interlude's file is 今线/插曲NN.md, title line 「今 · 一　一句话」; the old 今01–今10 are kept in 今线/旧稿/. The array order IS the book's order: the reader computes 「第N回」 / 「今 · N」 and the tag from it (book-order.js bookEntries), so inserting or moving one is an edit here only. A draft is left out of the published view (and out of its numbering); read.html?draft=1 shows it, numbered in place. DESIGN.md § 五·五.",
  "volumes": [
   {
    "id": "juan1",
@@ -19,20 +19,6 @@
     "en": "Volume One · The Sunken Cauldron"
    },
    "hui": [
-    {
-     "id": "j01",
-     "line": "jin",
-     "n": 1,
-     "huimu": {
-      "zh": [
-       "一千米跑完，我看见了我太奶，还有她"
-      ],
-      "en": [
-       "After the Thousand Metres I Saw My Great-Grandmother, and Her"
-      ]
-     },
-     "file": "今线/今01.md"
-    },
     {
      "id": "h01",
      "line": "gu",
@@ -51,23 +37,12 @@
      "opens": "00-prologue"
     },
     {
-     "id": "j02",
-     "line": "jin",
-     "n": 2,
-     "huimu": {
-      "zh": [
-       "十二条经背不下来，我只好举手投降"
-      ],
-      "en": [
-       "I Couldn't Memorise the Twelve Meridians, So I Put My Hands Up"
-      ]
-     },
-     "file": "今线/今02.md"
-    },
-    {
      "id": "h02",
      "line": "gu",
      "n": 2,
+     "absorbs": [
+      "h03"
+     ],
      "huimu": {
       "zh": [
        "一张鹿皮抵旧债",
@@ -82,54 +57,27 @@
      "opens": "00-prologue"
     },
     {
-     "id": "j03",
+     "id": "j01",
      "line": "jin",
-     "n": 3,
+     "n": 1,
+     "absorbs": [
+      "j02",
+      "j03"
+     ],
      "huimu": {
       "zh": [
-       "这回一千米，我只吐了一口气"
+       "一千米我跑吐了一回，后来学会了先吐"
       ],
       "en": [
-       "This Thousand Metres, All I Threw Up Was a Breath"
+       "I Threw Up on the Thousand Metres, Then Learned to Breathe Out First"
       ]
      },
-     "file": "今线/今03.md"
-    },
-    {
-     "id": "h03",
-     "line": "gu",
-     "n": 3,
-     "huimu": {
-      "zh": [
-       "一冬蹲獐灯前字",
-       "三下烫牌袄上狐"
-      ],
-      "en": [
-       "A Winter Stalking Water Deer in the Lamplit Words",
-       "Three Burns of the Token for the Fox on a Coat"
-      ]
-     },
-     "file": "03-第三回.md",
-     "opens": "00-prologue"
-    },
-    {
-     "id": "j04",
-     "line": "jin",
-     "n": 4,
-     "huimu": {
-      "zh": [
-       "憋着一口气卧推，我太奶又来了"
-      ],
-      "en": [
-       "I Held My Breath on the Bench, and Great-Grandma Came Again"
-      ]
-     },
-     "file": "今线/今04.md"
+     "file": "今线/插曲01.md"
     },
     {
      "id": "h04",
      "line": "gu",
-     "n": 4,
+     "n": 3,
      "huimu": {
       "zh": [
        "三试凭心叩仙门",
@@ -144,23 +92,12 @@
      "opens": "00-prologue"
     },
     {
-     "id": "j05",
-     "line": "jin",
-     "n": 5,
-     "huimu": {
-      "zh": [
-       "两个罚球我一个没进，倒捡回来一条狗"
-      ],
-      "en": [
-       "I Missed Both Free Throws and Came Home with a Dog"
-      ]
-     },
-     "file": "今线/今05.md"
-    },
-    {
      "id": "h05",
      "line": "gu",
-     "n": 5,
+     "n": 4,
+     "absorbs": [
+      "h06"
+     ],
      "huimu": {
       "zh": [
        "漏勺夜半通三关",
@@ -175,54 +112,27 @@
      "opens": "00-waimen"
     },
     {
-     "id": "j06",
+     "id": "j04",
      "line": "jin",
-     "n": 6,
+     "n": 2,
+     "absorbs": [
+      "j05",
+      "j06"
+     ],
      "huimu": {
       "zh": [
-       "仙丹我吃了三颗，饭我一口没吃"
+       "两个罚球我一个没进，倒捡回来一条狗"
       ],
       "en": [
-       "I Took Three Magic Pills and Not One Bite of Rice"
+       "I Missed Both Free Throws, and Brought Home a Dog"
       ]
      },
-     "file": "今线/今06.md"
-    },
-    {
-     "id": "h06",
-     "line": "gu",
-     "n": 6,
-     "huimu": {
-      "zh": [
-       "泥里挨足廿三下",
-       "炉中初炼九纹丹"
-      ],
-      "en": [
-       "Twenty-Three Blows Taken in the Mud",
-       "The First Nine-Line Pill from the Furnace"
-      ]
-     },
-     "file": "06-第六回.md",
-     "opens": "00-waimen"
-    },
-    {
-     "id": "j07",
-     "line": "jin",
-     "n": 7,
-     "huimu": {
-      "zh": [
-       "灯一灭，我一瘸一拐，在古籍部里走了十一步"
-      ],
-      "en": [
-       "When the Lights Went Out, I Limped Eleven Steps Across the Rare-Books Room"
-      ]
-     },
-     "file": "今线/今07.md"
+     "file": "今线/插曲02.md"
     },
     {
      "id": "h07",
      "line": "gu",
-     "n": 7,
+     "n": 5,
      "huimu": {
       "zh": [
        "三日崖壁困恶少",
@@ -237,23 +147,9 @@
      "opens": "00-waimen"
     },
     {
-     "id": "j08",
-     "line": "jin",
-     "n": 8,
-     "huimu": {
-      "zh": [
-       "背着人练了三天，我尿出了一瓶可乐"
-      ],
-      "en": [
-       "Three Days of Secret Training, and I Peed a Bottle of Cola"
-      ]
-     },
-     "file": "今线/今08.md"
-    },
-    {
      "id": "h08",
      "line": "gu",
-     "n": 8,
+     "n": 6,
      "huimu": {
       "zh": [
        "五行台上夺头名",
@@ -268,23 +164,26 @@
      "opens": "00-waimen"
     },
     {
-     "id": "j09",
+     "id": "j07",
      "line": "jin",
-     "n": 9,
+     "n": 3,
+     "absorbs": [
+      "j08"
+     ],
      "huimu": {
       "zh": [
-       "最后一个罚球，我是哆嗦着投进去的"
+       "灯一灭我走了十一步，后来背着人练了三天，尿出一瓶可乐"
       ],
       "en": [
-       "The Last Free Throw — I Was Shaking When It Went In"
+       "When the Lights Went Out I Walked Eleven Steps; Then I Trained in Secret for Three Days and Passed a Bottle of Cola"
       ]
      },
-     "file": "今线/今09.md"
+     "file": "今线/插曲03.md"
     },
     {
      "id": "h09",
      "line": "gu",
-     "n": 9,
+     "n": 7,
      "huimu": {
       "zh": [
        "九转一炉藏饭桶",
@@ -299,23 +198,9 @@
      "opens": "00-zhuji"
     },
     {
-     "id": "j10",
-     "line": "jin",
-     "n": 10,
-     "huimu": {
-      "zh": [
-       "冬至夜里关了灯，我数清了自己的心跳"
-      ],
-      "en": [
-       "On the Winter Solstice I Turned Off the Lights and Counted My Own Heartbeat"
-      ]
-     },
-     "file": "今线/今10.md"
-    },
-    {
      "id": "h10",
      "line": "gu",
-     "n": 10,
+     "n": 8,
      "huimu": {
       "zh": [
        "巫祝投河捎口信",
@@ -328,6 +213,23 @@
      },
      "file": "10-第十回.md",
      "opens": "01-ji"
+    },
+    {
+     "id": "j09",
+     "line": "jin",
+     "n": 4,
+     "absorbs": [
+      "j10"
+     ],
+     "huimu": {
+      "zh": [
+       "最后一个罚球我是哆嗦着投的，冬至夜里我数清了自己的心跳"
+      ],
+      "en": [
+       "I Shot the Last Free Throw Shaking, and on the Winter Solstice Night I Counted My Own Heartbeat"
+      ]
+     },
+     "file": "今线/插曲04.md"
     }
    ]
   }
@@ -342,7 +244,7 @@
    "file": "90-附录·吐纳经.md"
   }
  ],
- "_aliases": "Old chapter ids (序章上 00 … 第二章 03, before the 回), kept so an old read.html?ch= link still opens the 回 that now holds that chapter's start. 2026-09-30 the four 回 were split into ten (OUTLINE § 二·五): old 第三回 (外门) begins 第五回, old 第四回 begins 第九回; ids h03/h04 now name the new 第三回/第四回.",
+ "_aliases": "Old chapter ids (序章上 00 … 第二章 03, before the 回), kept so an old read.html?ch= link still opens the 回 that now holds that chapter's start. 2026-09-30 the four 回 were split into ten (OUTLINE § 二·五): old 第三回 (外门) begins 第五回, old 第四回 begins 第九回; ids h03/h04 now name the new 第三回/第四回. 2026-10-02 (卷一 eight 古 回, four 今 interludes): a folded id is no alias but its absorber's `absorbs` (book-order.js resolveId).",
  "aliases": {
   "00": "h01",
   "01": "h02",

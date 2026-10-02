@@ -1,10 +1,12 @@
-// The number the BOOK gives a 回 (「第N回」), counted from book.json's order as
-// the reader counts it (book-order.js) — never written into a test, so the
-// tests hold while 今 回 land between the 古 (2026-10-01: j01, h01, j02, h02 …).
-import { bookEntries, huiLabel } from '../scripts/book-order.js';
+// The label the BOOK gives a 回 (「第N回」, or 「今 · N」 for a 今 interlude),
+// computed from book.json's order as the reader computes it (book-order.js) —
+// never written into a test, so the tests hold while the book's form moves
+// (2026-10-02: 古 回 numbered 第一回…第八回, the 今 between them unnumbered).
+// An id folded into another (`absorbs`, h03 → h02) names the one that holds it.
+import { bookEntries, resolveId } from '../scripts/book-order.js';
 
 export function bookNo(content, id, lang = 'zh') {
-  const i = bookEntries(content.book).findIndex(h => h.id === id);
-  if (i < 0) throw new Error(`${id} is no published 回 of the book`);
-  return huiLabel(i + 1, lang);
+  const h = bookEntries(content.book).find(e => e.id === resolveId(content.book, id));
+  if (!h?.label) throw new Error(`${id} is no published 回 of the book`);
+  return h.label[lang];
 }

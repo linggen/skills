@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { bookEntries, fillHero, NEAR, renderMarkdown } from '../scripts/read-md.js';
+import { bookEntries, fillHero, NEAR, renderMarkdown, resolveId } from '../scripts/read-md.js';
 import { codexHtml, codexOf, codexRaw, isSubject, ITEM_TAGS, lintCodex, resolveEntry, SUBJECTS } from '../scripts/codex.js';
 import { cardHtml, WORDS } from '../scripts/cards.js';
 import { marksSvg } from '../scripts/marks.js';
@@ -271,9 +271,12 @@ test('every entry with a first appearance in the book is glossed there — a rew
   for (const [id, e] of Object.entries(FILES.codex.entries)) {
     const ch = e.first?.book;
     if (!ch) continue;
-    const c = chapters.find((x) => x.id === ch);
+    // A 回 folded into another (`absorbs`, 2026-10-02: h03 → 古二) names its absorber; while the folded 回's
+    // old file is still on disk (its 古 lane not landed), a gloss there counts.
+    const c = chapters.find((x) => x.id === resolveId(book, ch));
     assert.ok(c, `${id}: chapter ${ch} is in book.json`);
-    assert.ok(c.md.includes(`{注=${id}}`), `${id}: glossed in ${c.file}`);
+    const folded = c.id === ch ? [] : fs.readdirSync(BOOK).filter((f) => f.startsWith(`${ch.slice(1)}-`) && f.endsWith('.md') && f !== c.file);
+    assert.ok([c.md, ...folded.map((f) => fs.readFileSync(path.join(BOOK, f), 'utf8'))].some((md) => md.includes(`{注=${id}}`)), `${id}: glossed in ${c.file}`);
   }
 });
 

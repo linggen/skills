@@ -17,31 +17,33 @@ import { codexHtml, isSubject } from './codex.js';
 /* The book's form — its 回 in order and numbered as walked (「第N回」 never
    stored), the 古/今 lines and the draft rule — is book-order.js's, shared
    with the game (rules/hui.mjs). */
-import { LINES, bookEntries } from './book-order.js';
-export { LINES, bookEntries, cnNumber, huiLabel } from './book-order.js';
+import { bookEntries, resolveId } from './book-order.js';
+export { LINES, bookEntries, cnNumber, huiLabel, jinLabel, resolveId } from './book-order.js';
 
-/// The entry an id names in the view — a 回's own id, or an old chapter id its
-/// `aliases` map (序章上's `00` → `h01`), so an old read.html?ch= link still
-/// opens its 回. A draft's id names nothing in the published view.
+/// The entry an id names in the view — a 回's own id, an old chapter id its
+/// `aliases` map (序章上's `00` → `h01`), or a 回 folded into another
+/// (`absorbs`: h03 → 古二, j02 → 今 · 一), so an old read.html?ch= link still
+/// opens the page that holds it. A draft's id names nothing in the published view.
 export function entryById(book, id, opts = {}) {
-  const all = bookEntries(book, opts), want = book?.aliases?.[id] ?? id;
+  const all = bookEntries(book, opts), want = resolveId(book, id);
   return all.find((c) => c.id === want) ?? null;
 }
 
 /// A 回's title as the page sets it, from book.json — never from the file's
-/// own title line, whose number is the line's ordinal: the number with its
-/// 今/古 tag (and 草稿 in the draft view), then the 回目, one line per line.
+/// own title line: a 古 回's number with its 古 tag, a 今 interlude's 「今 · 一」
+/// (its own tag already), 草稿 in the draft view, then the 回目, one line per line.
 export function huimuHtml(h) {
   const draft = h.draft ? '<span class="tag draft">草稿</span>' : '';
-  return `<h1 class="huimu ${h.line}"><span class="hui">${esc(h.label.zh)}<span class="tag">${esc(h.tag.zh)}</span>${draft}</span>`
+  const tag = h.line === 'jin' ? '' : `<span class="tag">${esc(h.tag.zh)}</span>`;
+  return `<h1 class="huimu ${h.line}"><span class="hui">${esc(h.label.zh)}${tag}${draft}</span>`
     + `${(h.huimu?.zh ?? []).map((l) => `<span class="line">${esc(l)}</span>`).join('')}</h1>`;
 }
 
 // `# 第三回　上联　下联`: a 回's title line (full-width or plain spaces between).
 const HUIMU = /^(第[零一二三四五六七八九十百]+回)[\s　]+(\S+)[\s　]+(\S+)$/;
-// `# 第一回　今　一句话`: a 今 回's title line — its number, the 今 tag, one line
-// in 沈芒's voice. Tried before HUIMU, which would take 今 for a first line.
-const HUIMU_JIN = /^(第[零一二三四五六七八九十百]+回)[\s　]+今[\s　]+(\S.*)$/;
+// `# 今 · 一　一句话`: a 今 interlude's title line — 「今 · N」 (no 回 number),
+// then one line in 沈芒's voice. Tried before HUIMU.
+const HUIMU_JIN = /^(今\s*·\s*[零一二三四五六七八九十百]+)[\s　]+(\S.*)$/;
 
 /// The hero the world fixes (people.json `hero`, 2026-09-30): the name a page
 /// shows when nothing else names him.
@@ -153,7 +155,7 @@ export function classicsAppendix(cited, classics = {}) {
 /// at the chapter's end (and back); none, or no entry: the 《书名》 alone.
 /// `opts.memory(n)` → memory n's plate src, or null (none: plates are left out);
 /// `opts.codex` → the resolved 图鉴 (codex.js codexOf: a Map, or an object) and
-/// `opts.chapter` → this 回's id in book.json (h03), which `first.book` names;
+/// `opts.chapter` → this 回's id in book.json (h02), which `first.book` names — or one of `opts.absorbs`, the ids folded into it (h03);
 /// `opts.src`, `opts.lang` → codexHtml; `opts.hui` → this 回's entry
 /// (bookEntries): the file's first `# ` title line is set from it (huimuHtml).
 export function renderMarkdown(md, opts = {}) {
@@ -168,7 +170,7 @@ export function renderMarkdown(md, opts = {}) {
   const near = (id) => { const at = carded.get(id); return !!at && at.section === section && block - at.block <= NEAR; };
   const figures = (ids) => ids.map((id) => entryOf(codex, id)).map((e) => {
     if (!isSubject(e)) return codexHtml(e, opts);
-    if (carded.has(e.id) || !opts.chapter || e.first?.book !== opts.chapter) return '';
+    if (carded.has(e.id) || !opts.chapter || ![opts.chapter, ...(opts.absorbs ?? [])].includes(e.first?.book)) return '';
     carded.set(e.id, { block, section });
     return codexHtml(e, { ...opts, first: true });
   }).join('');
@@ -215,7 +217,7 @@ export function renderMarkdown(md, opts = {}) {
       section += 1;
       if (h[1].length === 1 && opts.hui?.huimu && !titled) { titled = true; heading = opts.hui.label.zh; out.push(huimuHtml(opts.hui)); continue; }
       const jin = h[1].length === 1 && HUIMU_JIN.exec(h[2].trim());
-      if (jin) { heading = jin[1]; out.push(`<h1 class="huimu jin"><span class="hui">${esc(jin[1])}<span class="tag">${esc(LINES.jin.zh)}</span></span><span class="line">${esc(jin[2])}</span></h1>`); continue; }
+      if (jin) { heading = jin[1]; out.push(`<h1 class="huimu jin"><span class="hui">${esc(jin[1])}</span><span class="line">${esc(jin[2])}</span></h1>`); continue; }
       const hui = h[1].length === 1 && HUIMU.exec(h[2].trim());
       if (hui) { heading = hui[1]; out.push(`<h1 class="huimu"><span class="hui">${esc(hui[1])}</span><span class="line">${esc(hui[2])}</span><span class="line">${esc(hui[3])}</span></h1>`); continue; }
       if (h[1].length <= 2) heading = h[2].replace(CLASSIC, '《$1》').replace(/\*\*/g, '');

@@ -49,7 +49,7 @@ const published = () => bookEntries(JSON.parse(fs.readFileSync(path.join(BOOK, '
 
 test('the hero is 沈小满, fixed (his, 2026-09-30): all ten 古 回 in the third person, no player tokens', () => {
   const hui = published().filter((c) => c.line === 'gu');
-  assert.ok(hui.length >= 10, 'the ten 古 回 of 卷一');
+  assert.ok(hui.length >= 8, 'the eight 古 回 of 卷一 (ten folded into eight, 2026-10-02)');
   for (const ch of hui) {
     const md = fs.readFileSync(path.join(BOOK, ch.file), 'utf8');
     assert.doesNotMatch(md, /周星星|——星星/, `${ch.file}: the placeholder name is gone`);
