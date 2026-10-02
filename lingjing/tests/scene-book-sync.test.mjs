@@ -1,6 +1,6 @@
 // Scene passages follow the book (2026-09-30). Every `story` a scene or an
 // exit plays in the dialogue box is the book's own text: each paragraph of it
-// must be found in the scene's 回 (story/jiuding-lu/NN-第N回.md), ignoring
+// must be found in the scene's 回 (book.json's `file` for the scene's `hui` id), ignoring
 // whitespace, **bold**, ⟪⟫, {注=}/{典=} links and {fill} tokens — so a book
 // edit that leaves a scene quoting the old words fails here, not in play.
 // Exceptions are written down below: branches the book never took (written in
@@ -11,7 +11,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
-const NUM = '一二三四五六七八九十';
 const CHAPTERS = ['00-prologue', '00-waimen', '00-zhuji', '01-ji'];
 
 // Exits whose story is a branch the book never took (the book's voice, not its text).
@@ -37,13 +36,10 @@ const norm = (t) => t
   .replace(/---/g, '')
   .replace(/\s+/g, '');
 
+// A scene's `hui` is a stable 古 id (h01…); book.json names its file (03-第三回.md is h04 since the 2026-10-02 rename).
+const BOOK = JSON.parse(fs.readFileSync(path.join(ROOT, 'story/jiuding-lu/book.json'), 'utf8'));
 const book = {};
-for (let i = 1; i <= 10; i++) {
-  const n = String(i).padStart(2, '0');
-  const file = path.join(ROOT, `story/jiuding-lu/${n}-第${NUM[i - 1]}回.md`);
-  // A 回 merged into its neighbour (古三 into 古二, 2026-10-02) has no file; its scenes moved with it.
-  if (fs.existsSync(file)) book[`h${n}`] = norm(fs.readFileSync(file, 'utf8'));
-}
+for (const h of BOOK.volumes.flatMap((v) => v.hui)) if (h.line === 'gu') book[h.id] = norm(fs.readFileSync(path.join(ROOT, 'story/jiuding-lu', h.file), 'utf8'));
 
 function* stories(scene) {
   if (scene.story?.zh) yield [scene.id, scene.story];

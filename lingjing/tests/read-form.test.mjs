@@ -80,14 +80,12 @@ test('each 古 回目 is two seven-character lines, each 今 one line; every fil
     assert.equal(h.huimu.zh.length, 2, h.id);
     for (const line of h.huimu.zh) assert.equal([...line].length, 7, `${h.id}: 「${line}」 is seven characters`);
     assert.equal(h.huimu.en.length, 2, h.id);
-    // A 古 file is named NN-第N回.md and its title line carries the same number and the 回目.
-    // (Renamed to the line's ordinal — 古三 = 03-第三回.md — once the four 古 film lanes land, 2026-10-02.)
-    const m = /^(\d\d)-(第[一二三四五六七八九十]+回)\.md$/.exec(h.file);
-    assert.ok(m, `${h.id}: ${h.file}`);
-    assert.equal(m[2], huiLabel(Number(m[1])), h.file);
+    // A 古 file is named by its line ordinal — 古三 = 03-第三回.md (renamed 2026-10-02) — and its title line
+    // carries the same number and the 回目.
+    assert.equal(h.file, `${String(h.n).padStart(2, '0')}-${huiLabel(h.n)}.md`, `${h.id}: file`);
     const md = fs.readFileSync(path.join(BOOK, h.file), 'utf8');
     assert.equal(md.split('\n')[0].replace(/^# 第[一二三四五六七八九十]+回　/, ''), h.huimu.zh.join('　'), `${h.file}: title line`);
-    assert.match(md.split('\n')[0], new RegExp(`^# ${m[2]}　`), `${h.file}: title line number`);
+    assert.match(md.split('\n')[0], new RegExp(`^# ${huiLabel(h.n)}　`), `${h.file}: title line number`);
     assert.doesNotMatch(md, /^#{2,}\s/m, `${h.file}: no subheadings inside a 回`);
     assert.doesNotMatch(md, /\n---\s*\n\s*\n?---/, `${h.file}: no doubled scene break`);
   }

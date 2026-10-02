@@ -267,10 +267,10 @@ test('书: every chapter the book names exists and renders; the reader and its c
       assert.ok(ch.title?.zh && ch.title?.en, ch.id);
       const html = renderMarkdown(fs.readFileSync(file, 'utf8'));
       assert.match(html, /^<h1[ >]/, ch.file);
-      // The file's own title line carries the number its file name does (01-第一回.md; renamed to the 古 ordinal once
-      // the four film lanes land, 2026-10-02) and book.json's 回目, two lines; an interlude's 「今 · 一」 and one line.
-      const fileNo = Number(/^(\d\d)-/.exec(path.basename(ch.file))?.[1]);
-      if (ch.huimu && ch.line === 'gu') assert.equal(html.split('\n')[0], `<h1 class="huimu"><span class="hui">${bookHuiLabel(fileNo)}</span><span class="line">${ch.huimu.zh[0]}</span><span class="line">${ch.huimu.zh[1]}</span></h1>`, `${ch.file}: its title line is book.json's 回目`);
+      // The file's own title line carries the 古 ordinal its file name does (03-第三回.md = 古三, renamed 2026-10-02)
+      // and book.json's 回目, two lines; an interlude's 「今 · 一」 and one line.
+      if (ch.huimu && ch.line === 'gu') assert.equal(path.basename(ch.file), `${String(ch.ord).padStart(2, '0')}-${bookHuiLabel(ch.ord)}.md`, `${ch.file}: named by its 古 ordinal`);
+      if (ch.huimu && ch.line === 'gu') assert.equal(html.split('\n')[0], `<h1 class="huimu"><span class="hui">${bookHuiLabel(ch.ord)}</span><span class="line">${ch.huimu.zh[0]}</span><span class="line">${ch.huimu.zh[1]}</span></h1>`, `${ch.file}: its title line is book.json's 回目`);
       if (ch.huimu && ch.line === 'jin') assert.equal(html.split('\n')[0], `<h1 class="huimu jin"><span class="hui">${jinLabel(ch.ord)}</span><span class="line">${ch.huimu.zh[0]}</span></h1>`, `${ch.file}: its title line is book.json's 回目, one line`);
       // The page sets the title from book.json (read.js passes hui): the book's number, the tag, then the 回目.
       if (ch.huimu) assert.equal(renderMarkdown(fs.readFileSync(file, 'utf8'), { hui: ch }).split('\n')[0], huimuHtml(ch), `${ch.file}: the page's title is ${ch.label.zh}`);

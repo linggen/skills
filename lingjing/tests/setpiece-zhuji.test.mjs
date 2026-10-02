@@ -28,7 +28,7 @@ test('mid-size: about ten seconds as the book paces it, never the 卷\'s big set
 });
 
 test('the words are the book\'s: the 锅 of cloud, 勿入 → 今日放学, the four gates of 黄庭, 几道纹', () => {
-  const book = fs.readFileSync(path.join(ROOT, 'story/jiuding-lu/09-第九回.md'), 'utf8');
+  const book = fs.readFileSync(path.join(ROOT, 'story/jiuding-lu/07-第七回.md'), 'utf8');
   for (const phrase of ['倒扣的大锅', '勿入', '今日放学', '上有黄庭下关元，后有幽阙前命门', '星星比平日亮了一些，近了一些', '几道纹']) {
     assert.ok(book.includes(phrase), `the book has ${phrase}`);
     assert.ok(BEATS.some((b) => b.line.zh.includes(phrase)), `a beat carries ${phrase}`);
@@ -81,7 +81,7 @@ test('small on purpose — the first rung (his: 「筑基有一点天象就可�
   const stars = BEATS.find((b) => b.id === 'stars').line.zh;
   assert.match(stars, /亮了一些/);
   assert.doesNotMatch(stars, /往下垂|摘得着|轰/);
-  const book = fs.readFileSync(path.join(ROOT, 'story/jiuding-lu/09-第九回.md'), 'utf8');
+  const book = fs.readFileSync(path.join(ROOT, 'story/jiuding-lu/07-第七回.md'), 'utf8');
   assert.ok(book.includes(stars.replace('那口锅', '那口「锅」')), 'the book says the same');
   for (const k of ['a', 'b', 'e2']) assert.equal(WORLD[k], 'outer', `${k}: the sky outside is monochrome ink, the 天象 kept small`);
 });

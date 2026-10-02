@@ -1,5 +1,5 @@
 // setpieces/zhuji.js — 筑基天象 (古九, 09-cliff): the moment 沈小满 lays his
-// foundation on the 沉鼎观 cliff, in the book's order (09-第九回.md, 九月初三):
+// foundation on the 沉鼎观 cliff, in the book's order (07-第七回.md, 九月初三):
 //   gather — one grey-white cloud over this cliff alone turns into an upturned
 //            锅; every wind stops (a 锅盖云, the wide view);
 //   light  — a thread of light from the cloud's heart onto his crown;

@@ -540,7 +540,7 @@ His order of value: **5 > 3 > 1 > 7 > 6 > 2 > 4**.
    **漳水立起** (古十; Hanli 2026-09-30): `setpiece.js` (the runner) +
    `setpieces/zhang.js` (the piece), Pixi + GSAP from fx.js's loaders, ink only,
    words never painted. Seven beats in the book's order, each tied to a verbatim
-   line of 10-第十回.md (tests/setpiece.test.mjs holds it): `still` 2.8 s · `rise`
+   line of 08-第八回.md (tests/setpiece.test.mjs holds it): `still` 2.8 s · `rise`
    4.8 s (the river stands, a thousand fish leap, twenty boats on the bare bed) ·
    `bingyi` 3.6 s (冰夷 on his two dragons rises through a pale pool) · `trial`
    5.2 s (the left dives, the right sweeps, both stop a foot from the boy with his

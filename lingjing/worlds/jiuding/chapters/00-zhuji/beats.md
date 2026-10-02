@@ -1,6 +1,6 @@
 # 古九 · 筑基 — beat sheet
 
-The book's 古九 (story/jiuding-lu/09-第九回.md), played as five scenes at 沉鼎观 (his, 2026-09-30:
+The book's 古九 (story/jiuding-lu/07-第七回.md), played as five scenes at 沉鼎观 (his, 2026-09-30:
 照这样重做冀州 — the Foundation is laid on the 沉鼎观 cliff before the road north). Each scene's
 `story` is the book's own passage (verbatim zh, en beside it); setup, recap, captions and buttons
 speak to the player as 你 (story/jiuding-lu/DESIGN.md § 四·五 人称分工).

@@ -1,4 +1,4 @@
-// 第一章 · 丹炉: the furnace is named 饭桶 (the book's 古六, story/jiuding-lu/06-第六回.md, Hanli
+// 第一章 · 丹炉: the furnace is named 饭桶 (the book's 古六, story/jiuding-lu/04-第四回.md since old 古六 folded into 古四, Hanli
 // 2026-09-29 「饭桶那段不错，用吧」). The grand names are refused on the scene card
 // and grey out; 「你这饭桶」 clicks; typed words are taken only when they hold 饭桶;
 // the name is kept on the save and shown with the furnace (bag, 图鉴 title).

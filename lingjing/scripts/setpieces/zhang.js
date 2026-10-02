@@ -21,7 +21,7 @@ import { tweenBag } from './bag.js';
 import { PAPER, paintedStage, shotOn, stillOf } from './painted.js';
 
 /// The beats in the book's order. `ms` is the beat's own length; `line` is the
-/// passage it follows — a verbatim piece of 10-第十回.md (the test holds it so);
+/// passage it follows — a verbatim piece of 08-第八回.md (the test holds it so);
 /// `art` is the painting it plays on.
 export const BEATS = [
   { id: 'still', art: 'a', ms: 4500, line: { zh: '不是退，是停：河面上的浪一道一道，全悬在了半空，一滴也不落下来。', en: 'Not ebbing — stopping. Wave after wave hung in the air, and not one drop fell.' } },

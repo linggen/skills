@@ -271,12 +271,10 @@ test('every entry with a first appearance in the book is glossed there — a rew
   for (const [id, e] of Object.entries(FILES.codex.entries)) {
     const ch = e.first?.book;
     if (!ch) continue;
-    // A 回 folded into another (`absorbs`, 2026-10-02: h03 → 古二) names its absorber; while the folded 回's
-    // old file is still on disk (its 古 lane not landed), a gloss there counts.
+    // A 回 folded into another (`absorbs`, 2026-10-02: h03 → 古二) names its absorber, whose file holds the gloss.
     const c = chapters.find((x) => x.id === resolveId(book, ch));
     assert.ok(c, `${id}: chapter ${ch} is in book.json`);
-    const folded = c.id === ch ? [] : fs.readdirSync(BOOK).filter((f) => f.startsWith(`${ch.slice(1)}-`) && f.endsWith('.md') && f !== c.file);
-    assert.ok([c.md, ...folded.map((f) => fs.readFileSync(path.join(BOOK, f), 'utf8'))].some((md) => md.includes(`{注=${id}}`)), `${id}: glossed in ${c.file}`);
+    assert.ok(c.md.includes(`{注=${id}}`), `${id}: glossed in ${c.file}`);
   }
 });
 

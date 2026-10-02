@@ -186,7 +186,7 @@ test('the book in four films with an interlude after each: 古 第一回 … 第
   assert.equal(juanEndOf(c, 'j09', 'zh'), '卷一 · 沉鼎 · 完', 'and for the 今 line at 今 · 四');
   assert.equal(juanEndOf(c, 'j10', 'zh'), '卷一 · 沉鼎 · 完', 'j10 is folded into 今 · 四');
   assert.equal(comingOf(c, c.chapters['01-ji'], 'zh'), '第八回 · 即将开放');
-  assert.deepEqual(chapterHuis(c, c.chapters['00-prologue']).filter(id => id !== 'h03'), ['h01', 'h02', 'h04']);
+  assert.deepEqual(chapterHuis(c, c.chapters['00-prologue']), ['h01', 'h02', 'h04']);
   assert.equal(firstHui(c, c.chapters['00-waimen']), 'h05');
   // a 回 turning inside the prologue, as before
   const valley = walk(newState(c, 'zh', NOW), TO_VALLEY, c, NOW);
@@ -211,7 +211,7 @@ test('a draft 回 takes no number, as in the reader: the 古 after it close up',
   assert.equal(huiLabel(c, 'h02', 'zh', 'short'), '第二回');
   assert.equal(huiLabel(c, 'h05', 'zh', 'short'), '第三回', 'h01 h02 (h04) h05');
   assert.equal(huiLabel(c, 'h04', 'zh', 'short'), null, 'a draft is named by nothing');
-  assert.deepEqual(chapterHuis(c, c.chapters['00-prologue']).filter(id => id !== 'h03'), ['h01', 'h02', 'h04'], 'and still sorts in its place');
+  assert.deepEqual(chapterHuis(c, c.chapters['00-prologue']), ['h01', 'h02', 'h04'], 'and still sorts in its place');
   const j = withDraft('j01'); // an interlude held back: the 古 numbers do not move, the next interlude becomes 今 · 一
   assert.equal(huiLabel(j, 'h04', 'zh', 'short'), '第三回');
   assert.equal(huiLabel(j, 'j04', 'zh', 'short'), '今 · 一');

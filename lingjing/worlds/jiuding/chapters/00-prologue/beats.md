@@ -1,6 +1,6 @@
 # Prologue · 蒙山 — beat sheet
 
-The script is now the book itself — story/jiuding-lu/01-第一回.md to 04-第四回.md
+The script is now the book itself — story/jiuding-lu/01-第一回.md to 03-第三回.md
 (2026-09-30: 「并行对齐游戏和新书」). Every scene's `story` and every exit's `story`
 is the book's own passage for that beat, zh verbatim in the third person
 (沈小满; 阿禾 = 周禾, a girl), en a faithful translation; markup (`[x]{注=…}`,

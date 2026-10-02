@@ -1,4 +1,4 @@
-// 外门 — the book's 古五 to 古八 (story/jiuding-lu/05-第五回.md … 08-第八回.md; once 第一章 · 外门, then 第三回 until 卷一 was split into ten, 2026-09-30), as shipped: the prologue
+// 外门 — the book's 古五 to 古八 (story/jiuding-lu/04-第四回.md … 06-第六回.md since the 2026-10-02 rename; once 第一章 · 外门, then 第三回 until 卷一 was split into ten, 2026-09-30), as shipped: the prologue
 // leads into it; five key beats lock the map and open it again; the area
 // around 沉鼎观 is the whole map; 小狰 is the story's — a trial bout at the 药园,
 // then the 萝卜 (2026-09-30); the 蛫 guards the 秘境 wall; the 大比's eve is a scene

@@ -18,9 +18,9 @@ import { EMPTY, clipOf, createNarrator, fullOf, hasAudio, keepListenAt, listenAt
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const BOOK = path.join(ROOT, 'story/jiuding-lu');
-const NUM = '一二三四五六七八九十';
-// A 回 folded into its neighbour (古三 into 古二, 2026-10-02) has no file: nothing of it to key.
-const mdOf = (i) => { const f = path.join(BOOK, `${String(i).padStart(2, '0')}-第${NUM[i - 1]}回.md`); return fs.existsSync(f) ? fs.readFileSync(f, 'utf8') : ''; };
+// Every 古 回's file, as book.json names it (01-第一回.md … 08-第八回.md).
+const GU_FILES = JSON.parse(fs.readFileSync(path.join(BOOK, 'book.json'), 'utf8')).volumes.flatMap((v) => v.hui).filter((h) => h.line === 'gu').map((h) => h.file);
+const mdOf = (file) => fs.readFileSync(path.join(BOOK, file), 'utf8');
 const bookParas = (md) => md.split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#') && !/^(-{3,}|\*{3,})$/.test(l));
 const manifest = JSON.parse(fs.readFileSync(path.join(BOOK, 'audio.json'), 'utf8'));
 
@@ -34,7 +34,7 @@ print(json.dumps([m.para_key(t) for t in json.load(sys.stdin)]))`;
 
 test('the page and the publisher make the same key from the same text — every paragraph of the book, every beat of the scenes', () => {
   const tricky = ['[这个少年]{注=xiaoman}，姓沈——名小满。', '《史记》{典=shiji}说：「一、二、三……」', '**天人合一**', 'ABC 123 ok', '', '——', '𠀀字外'];
-  const texts = [...tricky, ...Array.from({ length: 10 }, (_, i) => i + 1).filter((i) => fs.existsSync(path.join(BOOK, `${String(i).padStart(2, '0')}-第${NUM[i - 1]}回.md`))).map((i) => bookParas(mdOf(i))).flat(), ...playedBeats().map((b) => b.text)];
+  const texts = [...tricky, ...GU_FILES.map((f) => bookParas(mdOf(f))).flat(), ...playedBeats().map((b) => b.text)];
   assert.deepEqual(texts.map(paraKey), pyKeys(texts));
   assert.equal(paraKey('——'), '', 'nothing to say, no key');
   assert.equal(normPara('[娘]{注=mama}说：「好。」'), '娘说好');
