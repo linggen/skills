@@ -918,6 +918,86 @@
       "art_source": "The iron sword's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
     {
+      "id": "dingtai",
+      "kind": "material",
+      "name": {
+        "zh": "鼎苔",
+        "en": "Cauldron moss"
+      },
+      "art": "art/items/lingzhi.webp",
+      "about": {
+        "zh": "只长在站过鼎的地方：鼎在那里站了上千年，地面泡透了鼎气，长出一层青得发黑的苔。筑基丹的主药；生吃，筑基多一分把握。天下只有鼎址才有。",
+        "en": "It grows only where a cauldron once stood: a thousand years of standing soaks the ground with the cauldron's breath, and a moss comes up so green it is nearly black. The chief herb of the Foundation pill; eaten raw, it steadies a Foundation breakthrough a little. Only a cauldron's old footing grows it."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "_about": "古五 (the author, 2026-10-02): the 秘境's own — round the four 七拃 pits in the stone chamber, and in the cracks of the dry riverbed below the wind shaft, where the cauldron's breath seeped down. Every one of the nine cauldrons' old footings will have it (OUTLINE 扣子簿). No effect of its own: carried into the Foundation breakthrough it is the last thing reached for (ladder.json breakthrough.pill), a small bonus.",
+      "art_source": "The lingzhi's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
+    },
+    {
+      "id": "longxu-cao",
+      "kind": "material",
+      "name": {
+        "zh": "龙须草",
+        "en": "Dragon-whisker grass"
+      },
+      "art": "art/items/ginseng.webp",
+      "about": {
+        "zh": "秦始皇派人在泗水捞鼎，水里钻出一条龙，咬断了绳子，崩掉几根龙须，落在河底扎了根。须子又长又硬，泛一点金。只长在泗水底下。吃下去，冲得开经脉。",
+        "en": "When the First Emperor's men fished the Si for the cauldron, a dragon rose and bit the rope through, and a few whiskers snapped off, sank, and took root in the riverbed. Long, stiff blades with a gleam of gold. It grows only under the Si. Eaten, it forces the meridians open."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "effect": {
+        "progress": 40,
+        "table": "task"
+      },
+      "_about": "古五 (the author, 2026-10-02; 《史记·封禅书》「龙髯拔，堕」, 鲁泥鳅's rope): only in the 秘境's dry riverbed, bared the year the Si fell lowest. 冲开经脉 → 修为, the 筑基丹's own table (task).",
+      "art_source": "The ginseng's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
+    },
+    {
+      "id": "xizhu",
+      "kind": "treasure",
+      "name": {
+        "zh": "息珠",
+        "en": "Breath pearl"
+      },
+      "art": "art/items/langgan.webp",
+      "about": {
+        "zh": "秘境十年翻一回身，吸一口气；那口气在最深处凝成珠子，指甲盖大，攥在手心里一跳一跳，像攥着一颗心。跟息壤同出一源。吞一颗，修为涨一截。",
+        "en": "Once in ten years the hidden realm turns over and draws one breath; in its deepest place that breath sets into a bead the size of a fingernail, which beats in the palm like a held heart. Of one source with the breathing soil. Swallow one, and your cultivation climbs a stretch."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "effect": {
+        "progress": 60,
+        "table": "scene"
+      },
+      "_about": "古五 (the author, 2026-10-02): 「河底下有东西在呼吸」 made a thing — 冯九 shows one at the door (「息珠。十年一口气，就凝这么几粒」). The 九转回春丹's table (scene).",
+      "art_source": "The langgan's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24) until its own is painted."
+    },
+    {
+      "id": "tongkuang",
+      "kind": "material",
+      "name": {
+        "zh": "铜矿石",
+        "en": "Copper ore"
+      },
+      "art": "art/items/jingjin.webp",
+      "about": {
+        "zh": "秘境干河床崖壁上的一道铜矿，往年淹在水底下。九鼎是收九州之铜铸的。",
+        "en": "From a copper vein in the wall of the hidden realm's dry riverbed, under water in other years. The nine cauldrons were cast from the copper of the nine provinces."
+      },
+      "buy": 12,
+      "sell": 4,
+      "sold": [],
+      "_about": "古五 (the author, 2026-10-02): the year's low water bared a copper vein; 孙二狗 dug half a lump with his fingernails. A find at shimen (meets.json).",
+      "art_source": "The true gold's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
+    },
+    {
       "id": "tuna-jing",
       "kind": "scroll",
       "name": {
