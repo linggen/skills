@@ -13,6 +13,9 @@
 .codexcard:not([data-kind="人物"]) .cpic.none { flex: 0 0 65%; height: 200px; }
 .codexcard figcaption { flex: 0 1 auto; max-width: 35%; min-width: 9em; font-size: 15px; line-height: 1.75; color: var(--dim); }
 .codexcard figcaption b { display: inline; font-size: 22px; letter-spacing: .12em; color: var(--text); font-family: var(--serif); }
+/* A creature's pinyin over its name and over the name in its classic line. */
+.codexcard rt, .codexcompact rt { font-size: 11px; letter-spacing: 0; color: var(--muted, #8a8172); font-family: system-ui, sans-serif; font-weight: 400; }
+.codexcard figcaption b ruby { ruby-position: over; }
 .codexcard figcaption i { margin-left: 8px; font-style: normal; font-size: 12px; letter-spacing: .12em; padding: 1px 7px; border: 1px solid var(--line); border-radius: 8px; vertical-align: 4px; }
 .codexcard figcaption span { display: block; margin-top: 6px; }
 .codexcard figcaption small { display: block; margin-top: 8px; font-size: 12px; opacity: .8; }

@@ -80,8 +80,23 @@ export function resolveEntry(raw, { lang = 'zh', gender = 'male', say = (t) => t
     ...(over.first ? { first: over.first } : {}),
     ...(over.tag ? { tag: over.tag } : {}),
     ...(over.becomes ? { becomes: over.becomes } : {}),
+    ...(lang === 'zh' && raw.kind === '生物' && (over.pinyin ?? row?.pinyin) ? { pinyin: over.pinyin ?? row.pinyin } : {}),
   };
 }
+
+/// A creature's name with its pinyin over each character (his, 2026-10-02:
+/// 「生僻字……给个拼音吧，在图里的字上」) — 蛫, 蠪侄, 狰 are not read at sight.
+/// Only when there is one syllable per character; else the name as it is.
+export function rubyName(entry) {
+  const chars = [...(entry?.name ?? '')], sy = String(entry?.pinyin ?? '').trim().split(/\s+/);
+  if (!entry?.pinyin || sy.length !== chars.length) return esc(entry?.name ?? '');
+  return chars.map((c, i) => `<ruby>${esc(c)}<rt>${esc(sy[i])}</rt></ruby>`).join('');
+}
+
+/// A card's line with the name in it given its pinyin too (「名曰蛫」).
+const rubyLine = (entry, line) => (entry?.pinyin && entry.name && line.includes(entry.name)
+  ? line.split(entry.name).map(esc).join(rubyName(entry))
+  : esc(line));
 
 /// Every entry resolved: id → entry.
 export function codexOf(files, opts = {}) {
@@ -100,9 +115,9 @@ export function codexHtml(entry, { src = (p) => p, lang = 'zh', first = false } 
     ? `<img src="${esc(src(entry.image))}" alt="${esc(entry.name)}" loading="lazy">`
     : `<span class="namecard" aria-hidden="true"><b>${esc(entry.name)}</b></span>`;
   const kind = entry.tag ? (lang === 'en' ? TAG_EN[entry.tag] : entry.tag) : lang === 'en' ? KIND_EN[entry.kind] ?? entry.kind : entry.kind;
-  const lines = entry.lines.map((l) => `<span>${esc(l)}</span>`).join('');
+  const lines = entry.lines.map((l) => `<span>${rubyLine(entry, l)}</span>`).join('');
   return `<figure class="codexcard${first ? ' first' : ''}" data-codex="${esc(entry.id)}" data-kind="${esc(entry.kind)}"><div class="cpic${entry.image ? '' : ' none'}">${pic}</div>`
-    + `<figcaption><b>${esc(entry.name)}</b><i>${esc(kind)}</i>${lines}${entry.credit || entry.source?.scan ? `<small>${esc(entry.credit ?? '')}${scanButton(entry, src, lang)}</small>` : ''}</figcaption></figure>`;
+    + `<figcaption><b>${rubyName(entry)}</b><i>${esc(kind)}</i>${lines}${entry.credit || entry.source?.scan ? `<small>${esc(entry.credit ?? '')}${scanButton(entry, src, lang)}</small>` : ''}</figcaption></figure>`;
 }
 
 /// The card made small, for the stage when a scene card stands under it (his,
@@ -117,7 +132,7 @@ export function codexCompactHtml(entry, { src = (p) => p, lang = 'zh' } = {}) {
   const kind = entry.tag ? (lang === 'en' ? TAG_EN[entry.tag] : entry.tag) : lang === 'en' ? KIND_EN[entry.kind] ?? entry.kind : entry.kind;
   const open = lang === 'en' ? 'Open the card' : '展开图鉴';
   return `<button class="codexcompact" data-codex-big="${esc(entry.id)}" data-kind="${esc(entry.kind)}" aria-label="${esc(`${entry.name} · ${open}`)}">`
-    + `<span class="cpic">${pic}</span><span class="ccap"><b>${esc(entry.name)}</b><i>${esc(kind)}</i><span>${esc(entry.lines[0] ?? '')}</span></span><span class="cmore" aria-hidden="true">⤢</span></button>`;
+    + `<span class="cpic">${pic}</span><span class="ccap"><b>${rubyName(entry)}</b><i>${esc(kind)}</i><span>${esc(entry.lines[0] ?? '')}</span></span><span class="cmore" aria-hidden="true">⤢</span></button>`;
 }
 
 /// 「原图」: the old print an entry was drawn from, opened large on a tap.
