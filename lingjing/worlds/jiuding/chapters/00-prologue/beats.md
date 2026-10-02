@@ -16,7 +16,7 @@ structure.md, approved 2026-09-28) are history now.
 
 Book 回 per scene: h01 = 00-shiao … 00-yinyue (古一), h02 = 00-cliff … 00-xiuxian
 (古二 — 吴婆婆 at 立冬's dawn before 马三; 00-xiuxian's `on` carries 锁儿 out of the ridge, her leaving and the 谢谢), and since 2026-10-02 (old 古三 folded into 古二; h03 is an absorbed id) also 00-sleep (the 洗髓), 00-halfyear (the scroll, 冬月廿二's man in white, the mirror at the woodpile), 00-uncle, 00-notice (舅舅,
-the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 00-waimen (古四; 00-waimen's passage is the book's tail — 舅舅, 阿禾's diary, the 公中 notice), h05 = 00-mijing (the 九月初十 refectory morning that opens 古五; the 周衡 scene moved there 2026-09-30).
+the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 00-waimen (古四; 00-waimen's passage is the book's tail — 舅舅, then the long bunk up to 孙二狗's 「你交不交？」; 00-mijing plays his notebook and the 公中 notice; 阿禾's diary moved to 古五's opening, 2026-10-02), h05 = 00-mijing (the 九月初十 refectory morning that opens 古五; the 周衡 scene moved there 2026-09-30).
 
 | Scene | Source | Choices → mechanics |
 |---|---|---|
