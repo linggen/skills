@@ -77,10 +77,10 @@ test('the labels are the book\'s: 卷, 回 and 回目 read from book.json, in bo
   assert.equal(huiLabel(content, 'j01', 'zh', 'short'), '今 · 一', 'an interlude takes no 回 number');
   for (const h of bookEntries(content.book).filter(e => e.volume)) assert.equal(huiLabel(content, h.id, 'zh', 'short'), h.label.zh, `${h.id}: the reader's number`);
   assert.equal(huiLabel(content, 'h05', 'zh'), `${juan.zh} · ${h05}`);
-  assert.equal(huiLabel(content, 'h05', 'zh', 'head'), `${juan.zh} · ${h05}　古 · 漏勺夜半通三关`);
-  assert.equal(huiLabel(content, 'h05', 'zh', 'book'), `${juan.zh} · ${h05}　古 · 漏勺夜半通三关　萝卜一根收小狰`);
+  assert.equal(huiLabel(content, 'h05', 'zh', 'head'), `${juan.zh} · ${h05}　古 · 泥里挨足廿三下`);
+  assert.equal(huiLabel(content, 'h05', 'zh', 'book'), `${juan.zh} · ${h05}　古 · 泥里挨足廿三下　瓶中留得九纹丹`);
   assert.equal(huiLabel(content, 'h05', 'en'), `${juan.en} · ${h05en}`);
-  assert.equal(huiLabel(content, 'h05', 'en', 'head'), `${juan.en} · ${h05en} · Then — The Leaky Ladle Opens Three Passes at Midnight`);
+  assert.equal(huiLabel(content, 'h05', 'en', 'head'), `${juan.en} · ${h05en} · Then — Twenty-Three Kicks Taken in the Mud`);
   assert.equal(endLabel(content, 'h08', 'zh'), `${bookNo(content, 'h08')} · 完`);
   // A chapter still being written is named by the 回 the book says opens it: 古九 opens 筑基
   // (00-zhuji), 古十 冀 — both built since 2026-09-30, so the label is read, never shown there.

@@ -54,7 +54,7 @@ function playThrough() {
   s = must(quest, s, { action: 'take', id: 'xu-sun-charm' });
   s = must(win, s, { id: 'qiqiao' }); s = must(task, s, { action: 'done', id: 'qiqiao' });
   assert.ok(s.quests['xu-sun-charm'].done_at, 'the charm mended, the errand hands itself in');
-  for (const exit of ['count', 'keep', 'swallow']) s = must(resolve, fresh(s), { exit, ...(exit === 'keep' ? { said: '你这饭桶' } : {}) });
+  for (const exit of ['count', 'keep', 'save']) s = must(resolve, fresh(s), { exit, ...(exit === 'keep' ? { said: '你这饭桶' } : {}) });
   s = must(move, fresh(s), { place: 'waimen' });
   assert.ok(s.quests['xu-yaoyuan-shouye'].done_at, 'the watch hands itself in at 周衡');
   s = must(move, fresh(s), { place: 'shimen' });
@@ -86,13 +86,13 @@ test('the prologue leads into 外门 — 卷一 · 古五 — which sorts betwee
   assert.equal(s.place, 'waimen');
   const l = look(s, content, ctx());
   assert.equal(l.chapter.title, huiLabel(content, 'h05', 'zh', 'head'));
-  assert.equal(l.chapter.title, `卷一 · 沉鼎 · ${bookNo(content, 'h05')}　古 · 漏勺夜半通三关`, 'the 回 as the book names it, never 章');
+  assert.equal(l.chapter.title, `卷一 · 沉鼎 · ${bookNo(content, 'h05')}　古 · 泥里挨足廿三下`, 'the 回 as the book names it, never 章');
   assert.equal(l.chapter.hui, 'h05');
   // 古四 ended where the scenes turned: its close stands on the first scene of 古五, until a scene of it is passed.
   const h04 = huiOf(content, 'h04').huimu.zh;
   assert.deepEqual(l.chapter.close, { id: 'h04', title: `${bookNo(content, 'h04')} · 完`, huimu: h04, next: l.chapter.title });
   const html = cardHtml({ card: 'closed' }, { look: l, lang: 'zh', words: WORDS.zh });
-  assert.match(html, new RegExp(`${bookNo(content, 'h04')} · 完[\\s\\S]*${h04[0]}[\\s\\S]*${h04[1]}[\\s\\S]*${bookNo(content, 'h05')}　古 · 漏勺夜半通三关[\\s\\S]*data-close-chapter="h04">合上`));
+  assert.match(html, new RegExp(`${bookNo(content, 'h04')} · 完[\\s\\S]*${h04[0]}[\\s\\S]*${h04[1]}[\\s\\S]*${bookNo(content, 'h05')}　古 · 泥里挨足廿三下[\\s\\S]*data-close-chapter="h04">合上`));
   assert.equal(stageSlots(l, l.stage).main[0].card, 'closed', 'before the scene card');
   assert.equal(look(must(resolve, s, { exit: 'owe' }), content, ctx()).chapter.close, undefined, 'gone once 古五 is under way');
   assert.equal(look({ ...s, lang: 'en' }, content, ctx()).chapter.close.title, `${bookNo(content, 'h04', 'en')} · The End`);
@@ -206,7 +206,7 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
   s = must(move, s, { place: 'yaoyuan' });
   s = must(resolve, won(s, 'yaoyuan-zheng'), { exit: 'tame' });
   s = must(move, fresh(s), { place: 'chaifang' });
-  for (const exit of ['count', 'keep', 'swallow']) s = must(resolve, fresh(s), { exit, ...(exit === 'keep' ? { said: '你这饭桶' } : {}) });
+  for (const exit of ['count', 'keep', 'save']) s = must(resolve, fresh(s), { exit, ...(exit === 'keep' ? { said: '你这饭桶' } : {}) });
   s = must(move, fresh(s), { place: 'shimen' });
   s = must(resolve, s, { exit: 'refuse' });
   s = must(win, s, { id: 'mijing-wall' }); s = must(task, s, { action: 'done', id: 'mijing-wall' });
