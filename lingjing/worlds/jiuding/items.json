@@ -527,7 +527,7 @@
       "effect": {
         "charm": true
       },
-      "_about": "古五 (the author, 2026-10-02: 「踏马的符」): one use, drawn in the story (made at story), never sold. Its card (cards.json tama-fu) summons the 蛫 as a 护主 — the existing answer to a 杀招 (battle.js § gather: the blow takes the guard first), which is the book's leap: the four fire snakes hit the shell (「是可以禦火」).",
+      "_about": "古四 (the author, 2026-10-02): the 饭桶 spat it out for one of 银月's tail hairs; he never tried it, kept it in his belt fold, and slapped it on blind in 古五 (「这个用完就没了，留在秘境里用。」). One use, never sold; granted on the way to the 困阵 (wm-wangzuo open). Its card (cards.json tama-fu) summons the 蛫 as a 护主 — the existing answer to a 杀招 (battle.js § gather: the blow takes the guard first), which is the book's leap: the four fire snakes hit the shell (「是可以禦火」).",
       "art_source": "The talisman's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16) until its own is painted.",
       "made": {
         "from": "fox-token",

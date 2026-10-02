@@ -9,12 +9,12 @@
   "en": "The outer court training ground · the Five Elements Platform"
  },
  "setup": {
-  "zh": "外门大比。名册上一百三十来个名字，大半弃了权，剩下四十来个人上台；人人都押马小宝——他练气五层了，马家为了这一枚筑基丹，把蒙山上的树卖了三成。",
-  "en": "The outer court contest. A hundred and thirty-odd names are on the register, most have withdrawn, forty-some will fight — and everyone is betting on Ma Xiaobao — he is at layer five now, and the Ma family sold three-tenths of the trees on Mount Meng for this one Foundation pill."
+  "zh": "宗门大比，内门外门一起比。内门二十来个、外门一百三十来个名字并在一处抽签，外门大半弃了权，剩下三十二个人上台；钱掌柜的板子上，内门的祁长松排头，一赔一。冠军，全观一年就这一颗筑基丹——外门三十年没人拿过。",
+  "en": "The sect contest, inner court and outer court together. Twenty-odd inner names and a hundred and thirty-odd outer ones drawn as one; most of the outer court has withdrawn, thirty-two will fight; on Money-Keeper Qian's board the inner court's Qi Changsong stands first, one to one. The champion gets the one Foundation pill the whole temple has this year — and the outer court hasn't taken it in thirty years."
  },
  "recap": {
-  "zh": "腊月初八，外门大比开场：所有人都押马小宝。抽签，你对孙二狗。",
-  "en": "The eighth of the twelfth month, the contest opens: everyone backs Ma Xiaobao. The lots: you against Sun Ergou."
+  "zh": "腊月初八，宗门大比开场：内门外门一起比，人人押内门。抽签，你对孙二狗。",
+  "en": "The eighth of the twelfth month, the sect contest opens, inner court and outer court together: everyone backs the inner court. The lots: you against Sun Ergou."
  },
  "cast": [],
  "people": [
@@ -25,20 +25,20 @@
  "panel": {
   "caption": {
    "zh": [
-    "腊月初八，外门大比。",
-    "头名，筑基丹一枚。「一年一颗。今年，就这一颗。」",
+    "腊月初八，宗门大比。",
+    "冠军，筑基丹一枚。「一年一颗。全观，就这一颗。」",
     "所有人都押马小宝。"
    ],
    "en": [
-    "The eighth of the twelfth month: the outer court contest.",
-    "First place: one Foundation pill. \"One a year. This year, just this one.\"",
+    "The eighth of the twelfth month: the sect contest.",
+    "Champion: one Foundation pill. \"One a year. For the whole temple, this one.\"",
     "Everyone is betting on Ma Xiaobao."
    ]
   }
  },
  "story": {
-  "zh": "大比的台子搭在外门的演武场上，五块青石板拼成一个圆，缝里都长出了草，名字倒大，叫五行台——台上并没有五行，只有五块石头。外门大比，向来是一日打完的。名册上一百三十来个名字，大半都画了圈，末了剩下四十来个人，捉对厮杀，输一场便下去。一场只给半炷香，香到了分不出胜负，执事便看谁站得离台心近，谁近谁赢。\n\n抽签的时候，周衡坐在竹筒旁边，一个名字一个名字往大比的名录上誊。那名录是一本老账簿，蓝布面，边角都给翻烂了，前头几十页记的是历年的大比，一年一页，一页上头一行，写的是那一年的头名。小满排到周衡跟前，瞧见那名录正翻在前头，墨色从新到旧，旧到后来，黄得像秋天的树叶。有一页上，头名那一行的名字给人拿笔划了一道，划得很直，划过去的墨比字的墨还新些，底下的名字给水渍洇开了，看不清写的是什么。\n\n小满问道：「周师兄，这一个怎么划了？」周衡头也不抬：「划了的，是不在观里了的。」小满道：「死了？」周衡道：「不在观里了。账上只记在不在，不记为什么。为什么，不归我管。」说罢冲他一伸手，「签。」小满把手伸进竹筒里。执事念道：「沈小满——对，孙二狗。」台下有人笑出了声。",
-  "en": "The contest stage stood on the outer court's training ground, five bluestone slabs laid in a circle, grass grown in the seams, and a big name for it: the Five Elements Platform — with no five elements on it, only five stones. The outer court contest was always fought in one day. A hundred and thirty-odd names on the register; most had circled their names, leaving forty-some to be paired off, one loss and out. Each bout got half a stick of incense; if nobody won by the time it burned out, the steward looked at who stood nearer the centre, and nearer won.\n\nWhile lots were drawn, Zhou Heng sat by the bamboo tube copying names one by one into the contest register. It was an old ledger with blue cloth covers, its corners worn to rags; the first few dozen pages recorded past contests, a page a year, and the top line of each the year's first place. At Zhou Heng's table Xiaoman saw the register lying open near the front, the ink going from new to old, old till it was yellow as autumn leaves. On one page the first-place name had been struck through with one straight stroke, the ink of the stroke newer than the name's; the name beneath had blurred in a water stain, past reading.\n\n\"Brother Zhou, why is this one struck out?\" Zhou Heng didn't look up: \"The struck-out ones are the ones no longer at the temple.\" \"Dead?\" \"No longer at the temple. The books record whether you're here, not why. Why isn't mine to see to.\" He held out a hand. \"Your slip.\" Xiaoman put his hand in the tube. The steward read out: \"Shen Xiaoman — against Sun Ergou.\" Someone below laughed out loud."
+  "zh": "大比的台子搭在外门的演武场上，五块青石板拼成一个圆，缝里都长出了草，名字倒大，叫五行台——台上并没有五行，只有五块石头。演武场四角，立着四棵老柏。宗门大比，内门外门一起比，向来一日打完：内门二十来个练气弟子，外门一百三十来个，两本名册并在一处抽签。外门的人一看内门那二十来个名字，大半都画了圈，末了剩下三十二个，捉对厮杀，输一场便下去。一场只给半炷香，香到了分不出胜负，执事便看谁站得离台心近，谁近谁赢。\n\n抽签的时候，周衡坐在竹筒旁边，一个名字一个名字往大比的名录上誊。那名录是一本老账簿，蓝布面，边角都给翻烂了，前头几十页记的是历年的大比，一年一页，一页上头一行，写的是那一年的冠军——近三十年的，一行一行，都是内门的名字。小满排到周衡跟前，瞧见那名录正翻在前头，墨色从新到旧，旧到后来，黄得像秋天的树叶。有一页上，头名那一行的名字给人拿笔划了一道，划得很直，划过去的墨比字的墨还新些，底下的名字给水渍洇开了，看不清写的是什么。\n\n小满问道：「周师兄，这一个怎么划了？」周衡头也不抬：「划了的，是不在观里了的。」小满道：「死了？」周衡道：「不在观里了。账上只记在不在，不记为什么。为什么，不归我管。」说罢冲他一伸手，「签。」小满把手伸进竹筒里。执事念道：「沈小满——对，孙二狗。」台下有人笑出了声。",
+  "en": "The contest stage stood on the outer court's training ground, five bluestone slabs laid in a circle, grass grown in the seams, and a big name for it: the Five Elements Platform — with no five elements on it, only five stones. At the four corners of the ground stood four old cypresses. The sect contest, inner court and outer court together, was always fought in one day: twenty-odd Qi Refining disciples from the inner court, a hundred and thirty-odd from the outer, two registers drawn as one. Most of the outer court took one look at those twenty-odd inner names and circled their own, leaving thirty-two to be paired off, one loss and out. Each bout got half a stick of incense; if nobody won by the time it burned out, the steward looked at who stood nearer the centre, and nearer won.\n\nWhile lots were drawn, Zhou Heng sat by the bamboo tube copying names one by one into the contest register. It was an old ledger with blue cloth covers, its corners worn to rags; the first few dozen pages recorded past contests, a page a year, and the top line of each the year's champion — for the last thirty years, line after line, inner-court names. At Zhou Heng's table Xiaoman saw the register lying open near the front, the ink going from new to old, old till it was yellow as autumn leaves. On one page the first-place name had been struck through with one straight stroke, the ink of the stroke newer than the name's; the name beneath had blurred in a water stain, past reading.\n\n\"Brother Zhou, why is this one struck out?\" Zhou Heng didn't look up: \"The struck-out ones are the ones no longer at the temple.\" \"Dead?\" \"No longer at the temple. The books record whether you're here, not why. Why isn't mine to see to.\" He held out a hand. \"Your slip.\" Xiaoman put his hand in the tube. The steward read out: \"Shen Xiaoman — against Sun Ergou.\" Someone below laughed out loud."
  },
  "lines": [],
  "buttons": [
