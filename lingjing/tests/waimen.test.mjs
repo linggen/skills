@@ -62,9 +62,8 @@ function playThrough() {
   s = must(win, s, { id: 'mijing-wall' }); s = must(task, s, { action: 'done', id: 'mijing-wall' });
   assert.equal(s.bag.luobo, 1, 'into the 秘境 with a radish in the bundle (古七)');
   s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
-  // 在崖脚放一根萝卜 — the branch at the 困阵 can be made (it refused 「你身上没有萝卜」); the book's way is 「三天。」
-  const tossed = must(resolve, s, { exit: 'radish' });
-  assert.equal(tossed.bag.luobo, undefined, 'the radish left at the cliff foot');
+  // The 困阵 has one way, the book's: 「三天。」 (the 萝卜 branch was cut, 修改单-片三 6, 2026-10-02)
+  assert.equal(refused(resolve, s, { exit: 'radish' }, 'unknown-exit').refused, 'unknown-exit');
   for (const exit of ['go', 'swallow', 'rest']) s = must(resolve, s, { exit });
   s = must(move, fresh(s), { place: 'waimen' });
   s = must(resolve, fresh(s), { exit: 'sleep' });
