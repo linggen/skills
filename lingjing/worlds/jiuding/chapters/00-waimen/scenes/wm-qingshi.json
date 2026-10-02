@@ -45,14 +45,14 @@
   {
    "id": "hide",
    "label": {
-    "zh": "把拳头塞进嘴里",
-    "en": "Stuff your fist in your mouth"
+    "zh": "咬住拳头",
+    "en": "Bite your fist"
    },
    "means": "keeps silent, bites the fist, hides the joy",
    "mark": "hid-joy",
    "story": {
-    "zh": "他想笑，张开嘴，正要冲着整座沉鼎山喊上一嗓子——他想喊什么，自己也不知道，大约是「你爷爷的」，也可能是「娘」——话到喉咙口，却一下子把拳头塞进了嘴里。\n\n他咬着自己的拳头，蹲在那块裂开的青石后面，笑得浑身发抖，眼泪都笑了出来，愣是一点声音也没出。一边笑，一边在心里念：「藏。藏，藏，藏……」",
-    "en": "He wanted to laugh. He opened his mouth to shout across the whole of Chending Mountain — what, he didn't know himself, maybe \"Your grandfather's —!\", maybe \"Ma!\" — and with the words in his throat he stuffed his fist into his mouth.\n\nBiting his own fist, he crouched behind the split boulder and laughed till he shook all over and tears ran, without making a single sound. And as he laughed he recited in his heart: \"Hide. Hide, hide, hide…\""
+    "zh": "他想笑，张开嘴，正要冲着整座沉鼎山喊上一嗓子——他想喊什么，自己也不知道，大约是「你爷爷的」，也可能是「娘」——话到喉咙口，却一口咬住了自己的拳头。\n\n他咬着自己的拳头，蹲在那块裂开的青石后面，笑得浑身发抖，眼泪都笑了出来，愣是一点声音也没出。一边笑，一边在心里念：「藏。藏，藏，藏……」",
+    "en": "He wanted to laugh. He opened his mouth to shout across the whole of Chending Mountain — what, he didn't know himself, maybe \"Your grandfather's —!\", maybe \"Ma!\" — and with the words in his throat he bit down on his own fist.\n\nBiting his own fist, he crouched behind the split boulder and laughed till he shook all over and tears ran, without making a single sound. And as he laughed he recited in his heart: \"Hide. Hide, hide, hide…\""
    },
    "beat": [],
    "next": "wm-yaoyuan"

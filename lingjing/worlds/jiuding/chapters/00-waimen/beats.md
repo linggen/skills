@@ -21,7 +21,7 @@ every other place refused with 「外门弟子，无令不得下山」. It ends 
 
 | Beat | Scenes (at) | Choices → mechanics |
 |---|---|---|
-| 入门第一课 | `wm-ahe` 阿禾 (外门, 九月初十) · `wm-jiangtang` 漏勺 (讲堂) · `wm-zhoutian` 小周天 (柴堆, 九月十七; the exit waits on the 三关 board `zhoutian-sanguan`) · `wm-qingshi` 青石 (后山) | 认账 / 什么利息 (恩 阿禾) · 能。(「多打几次」) · 一呼一吸 (scene 修为 — 小周天 is 一层) · 把拳头塞进嘴里 / 喊出来 |
+| 入门第一课 | `wm-ahe` 阿禾 (外门, 九月初十) · `wm-jiangtang` 漏勺 (讲堂) · `wm-zhoutian` 小周天 (柴堆, 九月十七; the exit waits on the 三关 board `zhoutian-sanguan`) · `wm-qingshi` 青石 (后山) | 认账 / 什么利息 (恩 阿禾) · 能。(「多打几次」) · 一呼一吸 (scene 修为 — 小周天 is 一层) · 咬住拳头 / 喊出来 |
 | (thread → spine) | `wm-yaoyuan` 小狰 (药园, 十月初十; no beat — the story carries him there after 青石) | 摊开两只手，放下萝卜: a trial bout with 狰 (duel `yaoyuan-zheng`, retry — a test, not a kill), won → the 萝卜, it sleeps at his feet, `cast: zheng` (then 周衡's 守夜 errand hands itself in at 外门: 灵石十, the 复试's price) |
 | 柴房 | `wm-chaifang` 二十三下 (柴房, 十月十二夜) · `wm-danlu` 丹炉 · `wm-diyilu` 第一炉 | 护住木牌，数着 / 攥紧拳头 (体力 −5): 仇 马小宝 · 起名: 镇天神炉 · 九转金丹炉 · 乾坤一炉 纹丝不动 (greyed), 「你这饭桶」 咔哒 (`danlu`, save `furnace_name`) · 吞下去 (九纹回春丹 → 练气二) |
 | 沉鼎秘境 | `wm-mijing` 石门 (秘境石门) · `wm-wangzuo` 往左往下 · `wm-kunzhen` 困阵 · `wm-xirang` 息壤 · `wm-chu` 出秘境 | 交两块 / 不交 (冬月初一 公中, 仇) · the wall's 洛书 (`mijing-wall`) and the 蛫 in the drip-pool at its foot (duel `mijing-gui`, retry — the book's 蛫, 古七: it guards the wall, and gives way once he pours it his three days' water) · 扔一根萝卜 (needs 萝卜) / 走 · 吞下去 (`rise: 5` — 练气五层; the five doors are the book's five memories) · 今日到此 (mark `dabi-eve`) |
