@@ -15,7 +15,7 @@ follow-up in this lane's report). 古一's passages are paced: a book paragraph 
 structure.md, approved 2026-09-28) are history now.
 
 Book 回 per scene: h01 = 00-shiao … 00-yinyue (古一), h02 = 00-cliff … 00-xiuxian
-(古二 — 吴婆婆 at 立冬's dawn before 马三, her leaving and the 谢谢 on 00-xiuxian's `on`), h03 = 00-sleep (the 洗髓, 古三's cold open), 00-halfyear, 00-uncle, 00-notice (古三 — the winter, 舅舅,
+(古二 — 吴婆婆 at 立冬's dawn before 马三; 00-xiuxian's `on` carries 锁儿 out of the ridge, her leaving and the 谢谢), and since 2026-10-02 (old 古三 folded into 古二; h03 is an absorbed id) also 00-sleep (the 洗髓), 00-halfyear (the scroll, 冬月廿二's man in white, the mirror at the woodpile), 00-uncle, 00-notice (舅舅,
 the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 00-waimen (古四; 00-waimen's passage is the book's tail — 舅舅, 阿禾's diary, the 公中 notice), h05 = 00-mijing (the 九月初十 refectory morning that opens 古五; the 周衡 scene moved there 2026-09-30).
 
 | Scene | Source | Choices → mechanics |
@@ -28,7 +28,8 @@ the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 
 | `00-duanbei` 断碑 | 三 | 看碑背 (`stele-fox`, task 7) · 三条规矩 (`three-rules`, task 6) · 回村 / 独自进 stay |
 | `00-heisong` 黑松岭 | 三 | 一百步一记 (体力 −3, `marks-cut`, task 8) |
 | `00-storm` 暴雨 | 四 | 掉头 (体力 −4) · 再追半里 (体力 −10) (task 9) — the rain breaks; the haul is 00-fall's board |
-| `00-fall` 第二十七道记号 | 五 · 六 | **board `fall-storm`** (lane MG's 暴雨: haul 爹 back in the lulls) gates 一样一样地查 — then the fall, the valley (task 10); `at` heisong |
+| `00-fall` 第二十七道记号 | 五 · 六 | **board `fall-storm`** (lane MG's 暴雨: haul 爹 back in the lulls) gates 把爹拽回山壁 — then the fall, a sound under the rain (task 10); `at` heisong |
+| `00-suoer` 崖根 | 古一 (2026-10-02) | 锁儿, the boy 老井 hired with a silver ingot, dies holding his hand: 攥住他的手 (`suoer-silver`) → the 银叶, the ingot (圈里一横) for his mother, then 查伤 alone, 火镰, the light |
 | `00-fox` 银光 | 七 | 裹起它 · 别碰 (stay) — task 11 |
 | `00-cave` 那一夜 | 八 | 分它一半 · 自己吃 (task 12) |
 | `00-yinyue` 天亮 | 九 | 带她出谷 → she joins (`joins`, task 13) |
@@ -37,8 +38,8 @@ the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 
 | `00-dusk` 村东头 | 十二 | 立冬天没亮，腌菜坛子里的鹿腿送到吴婆婆家，鼎湖 · 乌号: 去村东头 (`wupo-bowed`, task 17) · 守着它 |
 | `00-rent` 交租 | 十二 | 马三摘弓 · 「下水呢」: 装傻 · 说实话 (`told-ma`) — the 鹿皮 paid (task 16); both wake her |
 | `00-xiuxian` 什么是修仙 | 十三 | 什么是修仙; 让它睡 → next night she leaves into the token (sleeps), the 谢谢 (task 18) |
-| `00-sleep` 洗髓 (古三's cold open) | 十四 | **board `xisui-hold`** (洗髓: three sticks held through the waves) gates 泡进去 (体力 −6) → 《吐纳经》 (tasks 19–20); 爬出来 stay |
-| `00-halfyear` 半年 | 十五 | (tasks 21–22) — no 功课 yet: they, 修为, 灵石, 开府, 问卦 and 差事 open at `00-waimen` (chapter.json `locks`) |
+| `00-sleep` 洗髓 | 十四 | **board `xisui-hold`** (洗髓: three sticks held through the waves) gates 泡进去 (体力 −6) → 《吐纳经》 (tasks 19–20); 爬出来 stay |
+| `00-halfyear` 半年 | 十五 | the scroll and the ten characters; 冬月廿二 the man in white; 正月初五 the mirror and 爹's 「它听见的不是你喘，是你心慌」 (tasks 21–22) — no 功课 yet: they, 修为, 灵石, 开府, 问卦 and 差事 open at `00-waimen` (chapter.json `locks`) |
 | `00-uncle` 舅舅 | 十六 | 去 · 再等等 stay (tasks 23–24) |
 | `00-notice` 开山门 | 十七 | → 爷爷的弓 (task 25) |
 | `00-gate` 一试 | 十八 | 三步一吸 (体力 −6) · 冲 (体力 −12) (task 26) |

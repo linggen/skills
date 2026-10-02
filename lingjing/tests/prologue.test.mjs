@@ -333,12 +333,12 @@ test('an old save whose prologue scene the rewrite took away lands on the neares
 
 /* ── 「你爷爷的」 (Hanli, 2026-09-28): the hero's catchphrase, as the book has it ── */
 
-test('the catchphrase rides the book\'s beats: the bowl night first, the bow, the vine on his own grandfather, the beam, nine heads', () => {
+test('the catchphrase rides the book\'s beats: the bowl night first, the bow, the beam, nine heads (the vine line went with the jokes in danger, 2026-10-02)', () => {
   const scenes = content.chapters['00-prologue'].scenes;
   const story = (id, exit) => (exit ? scenes[id].exits.find(e => e.id === exit) : scenes[id]).story;
   const beats = [['00-masan', 'endure', /在心里骂得极响：\*\*你爷爷的。\*\*/], ['00-masan', 'strike', /在心里骂得极响：\*\*你爷爷的。\*\*/],
     ['00-notice', null, /「你爷爷的。你拿着。」[\s\S]*「……爹，这话听着像骂人。」[\s\S]*「你爷爷的弓。」/],
-    ['00-fall', 'check', /藤断了。\n\n「你爷爷的——」[\s\S]*「……爷爷，不是说你。」/], ['00-sleep', 'bath', /顶梁。「你爷爷的——」/],
+    ['00-sleep', 'bath', /顶梁。「你爷爷的——」/],
     ['00-longzhi', 'subdue', /心里想：你爷爷的，九个脑袋。/]];
   for (const [id, exit, zh] of beats) {
     const exitId = exit;

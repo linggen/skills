@@ -72,8 +72,8 @@ it matters (「那块青石上的青苔——你记得的」), never as a list.
   Catchphrase 「你爷爷的」 (en "Your grandpa's —"), said when unlucky, hurt or
   startled. It is born the night of the broken bowl, cursed in the heart at
   the whole 马 family one by one; the father's 「你爷爷的。你拿着。」 over the bow
-  sounds like it; at the broken vine it lands on the hero's own grandfather
-  (「……爷爷，不是说你」). Beyond the passages that carry it, give it to the
+  sounds like it. Never in real danger (纲要 rule 4: the fall into the valley
+  carries none). Beyond the passages that carry it, give it to the
   hero only in your own lines, when the player's action fits — sparingly,
   never twice in a scene.
 - **爹**: old, kind, honest to a fault, a boar-gored knee. **娘**: clever, a

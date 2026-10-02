@@ -58,13 +58,13 @@ test('mid-chapter: the chapters ended and the current one, recaps in the order p
   const r = story(s, content, ctx()).result;
   assert.deepEqual(r.cauldrons.map(c => c.state), ['found', 'current', 'dark', 'dark', 'dark', 'dark', 'dark', 'dark', 'dark']);
   assert.equal(r.found, 1);
-  // Each chapter cut into its 回, the prologue's four among them (2026-09-30: 卷一 split into ten); 冀 is 古十; 兖 has none yet (to be rewritten): its own title.
-  assert.deepEqual(r.chapters.map(c => [c.id, c.state]), [['h01', 'done'], ['h02', 'done'], ['h03', 'done'], ['h04', 'done'], ['h10', 'done'], ['02-yan', 'current']]);
+  // Each chapter cut into its 回, the prologue's three among them (2026-10-02: 古三 folded into 古二); 冀 is 古十; 兖 has none yet (to be rewritten): its own title.
+  assert.deepEqual(r.chapters.map(c => [c.id, c.state]), [['h01', 'done'], ['h02', 'done'], ['h04', 'done'], ['h10', 'done'], ['02-yan', 'current']]);
   assert.equal(r.chapters[0].intro, pz(content.chapters['00-prologue'].intro), 'the intro opens a chapter\'s first 回');
   assert.equal(r.chapters[1].intro, undefined);
   assert.deepEqual(r.chapters[0].mystery, undefined, 'the riddle closes its last');
   assert.equal(r.chapters[1].mystery, undefined);
-  assert.equal(r.chapters[3].mystery, pz(content.chapters['00-prologue'].mystery));
+  assert.equal(r.chapters[2].mystery, pz(content.chapters['00-prologue'].mystery));
   assert.equal(r.chapters.at(-1).title, pz(content.chapters['02-yan'].title));
   const cur = r.chapters.at(-1);
   assert.deepEqual(cur.recap, road.slice(0, 2).map(id => pz(content.chapters['02-yan'].scenes[id].recap)));
@@ -96,7 +96,7 @@ test("Ling's Story is small — every chapter ended, in Chinese, under ~3.6 KB (
   const s = { ...at('09-yu', roadOf('09-yu').slice(0, -1)), done_scenes: [...at('09-yu').done_scenes, ...roadOf('09-yu')], ended: ['00-prologue', ...CH], scene: null, companion: { joined: '2026-09-01' }, ending: { id: 'dingding', at: NOW.toISOString() } };
   const full = story(s, content, ctx()).result;
   const short = forLing(story(s, content, ctx(), { short: 'true' }).result);
-  assert.equal(full.chapters.length, 13, 'the prologue\'s four 回, 冀\'s one, and eight chapters still to be rewritten');
+  assert.equal(full.chapters.length, 12, 'the prologue\'s three 回 (古三 folded into 古二, 2026-10-02), 冀\'s one, and eight chapters still to be rewritten');
   assert.ok(Buffer.byteLength(JSON.stringify(short)) <= 3600, `${Buffer.byteLength(JSON.stringify(short))} bytes`);
   assert.ok(Buffer.byteLength(JSON.stringify(short)) < Buffer.byteLength(JSON.stringify(full)));
   assert.deepEqual(short.ending, { id: 'dingding', title: '定鼎', at: NOW.toISOString() });

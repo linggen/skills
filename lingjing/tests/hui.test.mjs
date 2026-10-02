@@ -51,9 +51,10 @@ test('the prologue is 第一回 up to her daybreak, 第二回 from the cliff, �
   assert.equal(p['00-yinyue'].hui, 'h01');
   assert.equal(p['00-cliff'].hui, 'h02');
   assert.equal(p['00-xiuxian'].hui, 'h02');
-  assert.equal(p['00-sleep'].hui, 'h03', '古三 opens on the 洗髓 (2026-09-30 review round)');
-  assert.equal(p['00-halfyear'].hui, 'h03');
-  assert.equal(p['00-notice'].hui, 'h03');
+  // 2026-10-02: old 古三 folded into 古二 — the winter's scenes name h02 now (h03 stays an absorbed id for old saves)
+  assert.equal(p['00-sleep'].hui, 'h02');
+  assert.equal(p['00-halfyear'].hui, 'h02');
+  assert.equal(p['00-notice'].hui, 'h02');
   assert.equal(p['00-gate'].hui, 'h04');
   assert.equal(p['00-mijing'].hui, 'h04');
   const w = content.chapters['00-waimen'].scenes;
@@ -117,9 +118,9 @@ test('an old save loads as it was: ids unchanged, its 回 read from where it sta
   const old = { ...newState(content, 'zh', NOW), scene: '00-sleep', place: 'shiao', done_scenes: ['00-shiao', '00-masan', '00-yinyue', '00-cliff', '00-deer'] };
   const l = look(old, content, ctx());
   assert.equal(l.chapter.id, '00-prologue');
-  assert.equal(l.chapter.hui, 'h03', '00-sleep is 古三\'s cold open since the 2026-09-30 review round');
+  assert.equal(l.chapter.hui, 'h02', '00-sleep is 古二 since old 古三 folded into it (2026-10-02)');
   // 2026-10-02: old 古三 (h03) folded into 古二, so 00-sleep is still 古二 — no 「完」 stands between them
-  assert.equal(l.chapter.close, undefined, 'h03 is 古二 now: nothing has ended');
+  assert.equal(l.chapter.close, undefined, '古二 goes on: nothing has ended');
   assert.equal(huiLabel(content, l.chapter.hui, 'zh', 'short'), bookNo(content, 'h02'));
 });
 

@@ -41,7 +41,9 @@ const norm = (t) => t
 const book = {};
 for (let i = 1; i <= 10; i++) {
   const n = String(i).padStart(2, '0');
-  book[`h${n}`] = norm(fs.readFileSync(path.join(ROOT, `story/jiuding-lu/${n}-第${NUM[i - 1]}回.md`), 'utf8'));
+  const file = path.join(ROOT, `story/jiuding-lu/${n}-第${NUM[i - 1]}回.md`);
+  // A 回 merged into its neighbour (古三 into 古二, 2026-10-02) has no file; its scenes moved with it.
+  if (fs.existsSync(file)) book[`h${n}`] = norm(fs.readFileSync(file, 'utf8'));
 }
 
 function* stories(scene) {

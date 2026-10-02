@@ -19,7 +19,8 @@ import { EMPTY, clipOf, createNarrator, fullOf, hasAudio, keepListenAt, listenAt
 const ROOT = path.resolve(import.meta.dirname, '..');
 const BOOK = path.join(ROOT, 'story/jiuding-lu');
 const NUM = '一二三四五六七八九十';
-const mdOf = (i) => fs.readFileSync(path.join(BOOK, `${String(i).padStart(2, '0')}-第${NUM[i - 1]}回.md`), 'utf8');
+// A 回 folded into its neighbour (古三 into 古二, 2026-10-02) has no file: nothing of it to key.
+const mdOf = (i) => { const f = path.join(BOOK, `${String(i).padStart(2, '0')}-第${NUM[i - 1]}回.md`); return fs.existsSync(f) ? fs.readFileSync(f, 'utf8') : ''; };
 const bookParas = (md) => md.split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#') && !/^(-{3,}|\*{3,})$/.test(l));
 const manifest = JSON.parse(fs.readFileSync(path.join(BOOK, 'audio.json'), 'utf8'));
 
