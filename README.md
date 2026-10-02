@@ -39,4 +39,4 @@ Skills are automatically installed when you run `ling init --global`.
 
 ## License
 
-Code is Apache-2.0 (`LICENSE`). Exception: the story of Lingjing — `lingjing/story/` and the story text and original art in `lingjing/worlds/` — is © 2026 Hanli (Linggen), CC BY-NC-ND 4.0; see the `LICENSE.md` in each.
+Code is Apache-2.0 (`LICENSE`). Exception: the story of Lingjing — `lingjing/story/` and the story text and original art in `lingjing/worlds/` — is © 2026 沈小满 (Shen Xiaoman), CC BY-NC-ND 4.0; see the `LICENSE.md` in each.
