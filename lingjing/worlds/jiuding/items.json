@@ -339,8 +339,8 @@
       },
       "art": "art/items/mend-pill.webp",
       "about": {
-        "zh": "小铜炉里出来的回春丹。药铺柜台上的是一转，一道纹；它九道，金的。伤一夜就好，修为也跟着涨一截。拿出去卖，没人认得——认得的，更坏。",
-        "en": "A mending pill out of the little furnace. The one on the shop counter is one-turn, one ring; this has nine, in gold. A night mends every hurt, and your cultivation climbs with it. Nobody would know it at a counter — and whoever did would be worse."
+        "zh": "小铜炉里出来的回春丹。药铺柜台上的是一转，一道纹；它九道，金的。骨伤也治得好，修为也跟着涨一截。拿出去卖，没人认得——认得的，更坏。",
+        "en": "A mending pill out of the little furnace. The one on the shop counter is one-turn, one ring; this has nine, in gold. It mends even broken bone, and your cultivation climbs with it. Nobody would know it at a counter — and whoever did would be worse."
       },
       "buy": 0,
       "sell": 0,
