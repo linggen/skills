@@ -83,7 +83,7 @@ house-style reference) 褚先生 孙二狗 内门师姐 周衡, and (the afterno
 line, every head, leg, tail, horn and wing counted) 无支祁 长右 巴蛇 蛫 夔牛 窃脂 羬羊 泰逢 马腹 狍鸮 精卫 and 狰 as
 the story's baby 小狰 (five tails, one horn, hugging a stalk of 灵草). Where Codex painted strong colour
 (小狰, 蛫, 窃脂, 马腹, 《河洛剑诀》) it was toned down to the house's faint tint. They replace the FLUX pictures;
-无支祁 and 夔牛 had no old print (their FLUX woodcuts stay for the 斗法 cards). Still to paint: 防风氏 蠪侄 夔
+无支祁 and 夔牛 had no old print (their FLUX woodcuts stay for the 斗法 cards). Still to paint: 防风氏 夔
 狪狪 雷神 (its first roll had five limbs) and 肥遗 (four rolls, the feet never six — it keeps its woodcut). A creature's
 old woodcut stays at its old path as its 「原图」 (`art_plate`, the table above).
 
@@ -93,8 +93,13 @@ a round, every picture looked at and only a right one kept): `people/bingyi.webp
 one man standing on exactly two dragons, one foot on each; `creatures/fangfeng.webp` — 防风氏 (a giant, one head,
 two arms, two legs, an ankle-high cart beside his foot; his FLUX woodcut `fangfeng.webp` stays for the 斗法 card);
 `creatures/tongtong.webp` — 狪狪 (a pig with one pearl in its mouth; the 1597 print stays its 「原图」). Two rounds
-could not make 肥遗 (six legs), 雷神 (a dragon's body with a man's head), 蠪侄 (nine heads and nine tails) or 夔
+could not make 肥遗 (six legs), 雷神 (a dragon's body with a man's head) or 夔
 (one leg, no horns) come out right: they keep their woodcuts. No outside source.
+
+`creatures/longzhi.webp` — 蠪侄, 「其状如狐，而九尾、九首、虎爪」, 2026-10-02: Codex image edit (gpt-5.5) of a Codex
+base (fresh Codex rolls gave eight heads and eight tails at best; four rounds), the base handed in and one head and one
+tail added in a single edit, first attempt. Nine heads, nine tails, four tiger-clawed feet, counted by eye on zoomed crops.
+The 1597 woodcut stays its 「原图」 (`art_plate`). No outside source.
 
 The 经脉 · 穴位 figures are painted by Codex with their labels (each checked by eye); the codex's
 `marks` sit on the painted points. `codex/sanguan.webp` — 「人体背面·督脉三关」, painted with Codex
@@ -121,7 +126,7 @@ The chapter has no story panels (his ruling, 2026-09-29). No outside source.
 
 ## 第十回 · 邺城 — painted for Lingjing (2026-09-30)
 
-`people/zhaoang.webp` — 赵昂 of 太一宫 (white robe, a straight sword, the willow by the 漳水 where he first stands in 第十回; a frame FLUX drew in is cropped off), `people/doufu-xishi.webp` — 豆腐西施, 老胡家的闺女 (mute, a tray of tofu), and `people/wuzhu.webp` — the 巫祝婆婆 of the 河伯庙 (a hand drum): painted by the local picture model (FLUX.2 klein 4B), 2026-09-30, with tools/paint-flux-codex.py (the house STYLE; kept seeds and the crop are in its `SUBJECTS`), six seeds a round, every picture looked at (Chinese cross-collared dress, no text, no seal). No outside source. 蠪侄 was rolled again (six seeds: five to seven heads, one to three tails) and keeps its 1597 woodcut.
+`people/zhaoang.webp` — 赵昂 of 太一宫 (white robe, a straight sword, the willow by the 漳水 where he first stands in 第十回; a frame FLUX drew in is cropped off), `people/doufu-xishi.webp` — 豆腐西施, 老胡家的闺女 (mute, a tray of tofu), and `people/wuzhu.webp` — the 巫祝婆婆 of the 河伯庙 (a hand drum): painted by the local picture model (FLUX.2 klein 4B), 2026-09-30, with tools/paint-flux-codex.py (the house STYLE; kept seeds and the crop are in its `SUBJECTS`), six seeds a round, every picture looked at (Chinese cross-collared dress, no text, no seal). No outside source. 蠪侄 was rolled again (six seeds: five to seven heads, one to three tails) and kept its 1597 woodcut (painted by Codex 2026-10-02, above).
 
 `people/xiaoman.webp` — 沈小满 at twelve (第一回: a patched jacket cut down from his father's, a rope belt, straw sandals, grandpa's sinew-wrapped bow on his back): painted by the local picture model (FLUX.2 klein 4B), 2026-09-30, with tools/paint-flux-codex.py (seed 5 of the second round of six), every picture looked at. No outside source.
 

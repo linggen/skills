@@ -1263,7 +1263,8 @@
       },
       "province": "徐",
       "root": "metal",
-      "art": "art/longzhi.webp",
+      "art": "art/creatures/longzhi.webp",
+      "art_plate": "art/longzhi.webp",
       "art_source": "《山海經》蔣應鎬繪圖本，明萬曆刊（c. 1597），卷四 東次二經 圖，左葉上方 — public domain, Wikimedia Commons, File:山海經十八卷 蔣應鎬繪圖 明萬曆間刊本.pdf, page 94; kept in art/plates/longzhi-1597-p94.jpg and laid on paper by tools/frame.py. The Qing encyclopaedia's 蠪姪圖 (Commons pic286) exists too.",
       "art_caption": {
         "zh": "蔣應鎬繪圖本，明萬曆刊",
