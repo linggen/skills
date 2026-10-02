@@ -2,7 +2,7 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { MODES, REALMS as CARD_REALMS, shuffle } from '../battle.js';
 import { dayKey, pick, seedOf } from '../state.mjs';
-import { charmOf, duelSeed, wornOf } from './arms.mjs';
+import { duelSeed, wornOf } from './arms.mjs';
 import { herAwake, herLifts } from './companion.mjs';
 import { clone, refuse } from './core.mjs';
 import { gearBrief } from './errands.mjs';
@@ -130,8 +130,11 @@ function gearFight(content, state) {
   const armor = Math.round((robe?.effect?.def ?? 0) * (RATES(content).armor_per_def ?? 0));
   const ward = Object.fromEntries(Object.entries(pendant?.effect?.ward ?? {})
     .map(([el, n]) => [el, Math.round(n * (RATES(content).ward_per_point ?? 0))]).filter(([, n]) => n > 0));
-  const charm = charmOf(content), card = charm && (state.bag?.[charm.id] ?? 0) > 0 && cardCatalog(content)[charm.id]?.charm ? charm.id : null;
-  return { power, armor, ward: Object.keys(ward).length ? ward : null, charm: card };
+  // Every 符 in the bag that is a card (the drawn 符, and a story's one-time
+  // 符 such as 踏马的符, 古五) goes in hand at the door, one of each.
+  const catalog = cardCatalog(content);
+  const charms = content.items.items.filter(i => i.effect?.charm && (state.bag?.[i.id] ?? 0) > 0 && catalog[i.id]?.charm).map(i => i.id);
+  return { power, armor, ward: Object.keys(ward).length ? ward : null, charm: charms[0] ?? null, charms };
 }
 
 /* His roots, and the ones his arms lend: a sword's `root` (佩之借木) and the
@@ -174,7 +177,7 @@ export function fightSetup(content, state, creature, now, game = null) {
     mode: 'pve',
     seed: duelSeed(state, creature, now),
     you: {
-      tier: state.tier, step: state.step ?? 0, root: main, deck, extra: [...(withHer ? ['yinyue'] : []), ...(gear.charm ? [gear.charm] : [])],
+      tier: state.tier, step: state.step ?? 0, root: main, deck, extra: [...(withHer ? ['yinyue'] : []), ...gear.charms],
       ...(lifts ? { lifts } : {}),
       // 望气: how much of the beast's plan he can read — the scroll (items
       // `learn`), or the day's reading at 吉/大吉.
