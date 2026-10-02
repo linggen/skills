@@ -9,12 +9,12 @@
   "en": "The Zhang · Toward Willow Bend"
  },
  "setup": {
-  "zh": "豆腐西施和她爹挑着一担豆浆追了上来。周衡站在那里，瞧着下游，瞧了很久。",
-  "en": "The Tofu Beauty and her father come after you with a carrying-pole of soy milk. Zhou Heng stands looking downstream for a long time."
+  "zh": "二更天，城西豆腐坊的门开着。老胡躺在门板上，盖着白布；他闺女坐在门槛上，一个人推那盘磨。",
+  "en": "At the second watch the tofu shop on the west side stands open. Old Hu lies on a door-plank under a white cloth; his daughter sits on the threshold, turning the millstone alone."
  },
  "recap": {
-  "zh": "水合上了，邺城这一年不用再送新娘；二十个姑娘在下游柳湾。周衡说了一句：「记账的，总要去对一对。」第二鼎的气息，在东边。",
-  "en": "The water closed; Ye would send no bride that year; twenty girls were downstream at Willow Bend. Zhou Heng said: \"Whoever keeps the accounts has to go and check them.\" The second cauldron's breath lay east."
+  "zh": "老胡入了棺，周衡拿观里的钱付了，记在自己账上。二十个姑娘在下游柳湾——最远那株柳树底下，补渔网的女人叫了一声「……阿衡？」第二鼎的气息，在东边。",
+  "en": "Old Hu was coffined; Zhou Heng paid with the temple's money and wrote it in his own account. Twenty girls were downstream at Willow Bend — under the farthest willow, the woman mending a net said: \"…A-Heng?\" The second cauldron's breath lay east."
  },
  "cast": [],
  "show": [
@@ -26,25 +26,26 @@
  ],
  "people": [
   "zhouheng",
+  "ahe",
   "ban"
  ],
  "panel": {
   "caption": {
    "zh": [
-    "一碗豆浆，温的，很甜。",
+    "一碗豆浆，温的，没有放糖。",
     "「柳湾，去不去？」",
-    "「记账的，总要去对一对。」"
+    "「……阿衡？」"
    ],
    "en": [
-    "A bowl of soy milk, warm and sweet.",
+    "A bowl of soy milk, warm, no sugar.",
     "\"Willow Bend — going?\"",
-    "\"Whoever keeps the accounts has to check them.\""
+    "\"…A-Heng?\""
    ]
   }
  },
  "story": {
-  "zh": "豆腐西施舀了一碗，双手捧给小满。豆浆是温的，很甜。他喝完了，把碗还给她，她接过碗，冲他笑了一下。\n\n「周师兄，」小满道，「柳湾，去不去？」\n\n周衡站在那里，瞧着下游，瞧了很久，才道：「……记账的，总要去对一对。」",
-  "en": "The Tofu Beauty ladled out a bowl and held it to Xiaoman in both hands. The soy milk was warm, and very sweet. When he had drunk it he gave her back the bowl; she took it and smiled at him.\n\n\"Brother Zhou,\" said Xiaoman, \"Willow Bend — shall we go?\"\n\nZhou Heng stood there looking downstream for a long time before he said: \"…Whoever keeps the accounts has to go and check them.\""
+  "zh": "豆腐坊的门开着，屋里点着一盏油灯。老胡躺在一张门板上，身上盖着那块白布，门板底下点着一碗长明灯。他闺女已换下了嫁衣，穿着一身旧布衫，坐在门槛上，坐在她爹身边。\n\n她在磨豆子。石磨一圈一圈地转，比那天还慢。她一个人推不动那盘磨，推半圈，便要停一停，换一只手，再推半圈。\n\n门框上那一排炭道，全划掉了。\n\n她见他们来了，便停了手，舀了一碗豆浆，双手捧给小满。豆浆是温的。这一回，没有放糖。\n\n周衡站在门口，从怀里摸出那只青布钱袋——观里查账的盘缠，五两，不许动的——倒出二两，搁在门板旁边的桌角上。他翻开账簿，记道：**十月十八。老胡。棺一口，二两。**记完了，他又在后头添了一行小字：**观里的钱。我的账。**\n\n小满道：「周师兄，柳湾，去不去？」周衡站在那里，瞧着下游，瞧了很久，才道：「……记账的，总要去对一对。」",
+  "en": "The door of the tofu shop stood open; an oil lamp burned inside. Old Hu lay on a door-plank under the white cloth, an ever-burning lamp in a bowl beneath it. His daughter had changed out of the bridal clothes into an old cotton shirt and sat on the threshold beside her father.\n\nShe was grinding beans. The millstone went round and round, slower than that day. Alone she could not push it; she pushed half a turn, stopped, changed hands, pushed another half.\n\nThe row of charcoal strokes on the door frame was all crossed out.\n\nWhen she saw them she stopped, ladled out a bowl of soy milk, and held it out to Xiaoman in both hands. The soy milk was warm. This time there was no sugar in it.\n\nZhou Heng stood in the doorway, took out the blue cloth purse — the temple's money for the audit, five taels, not to be touched — tipped out two, and set them on the corner of the table by the plank. He opened his ledger and wrote: **Eighteenth of the tenth month. Old Hu. One coffin, two taels.** Then he added a line in small writing: **The temple's money. My account.**\n\nXiaoman said: \"Brother Zhou — Willow Bend, are we going?\" Zhou Heng stood looking downstream for a long time, then said: \"…Whoever keeps the accounts has to go and check them.\""
  },
  "lines": [],
  "buttons": [
@@ -57,10 +58,10 @@
     "zh": "去柳湾",
     "en": "To Willow Bend"
    },
-   "means": "goes down to Willow Bend with Zhou Heng, ends the chapter",
+   "means": "goes down to Willow Bend with Zhou Heng, where Zhou Heng finds his sister; ends the chapter",
    "story": {
-    "zh": "从邺城到柳湾，三十里路，顺着漳水往下走。周衡走在最前头，走得极快，也不看路——这条路，他自然是不用看的。",
-    "en": "From Ye to Willow Bend was thirty li, following the Zhang downstream. Zhou Heng walked in front, very fast, and never looked at the road — this road, of course, he had no need to look at."
+    "zh": "从邺城到柳湾，三十里路，顺着漳水往下走。周衡走在最前头，走得极快，也不看路——这条路，他自然是不用看的。\n\n三人到柳湾的时候，正是三更。\n\n最末一堆火，在最远的一株柳树底下，火边没有人来认亲，只坐着一个女人，低着头，在火光底下补一张渔网。\n\n周衡在她面前站住了。\n\n那女人觉出有人，抬起头来。火光一跳，照亮了她的脸，也照亮了他的脸。她瞧着他，瞧了很久很久，手里的梭子停在半空，停住了，不动了。然后，她很轻很轻地叫了一声：\n\n「……阿衡？」\n\n周衡手里的账簿，掉了下去。\n\n他在她面前跪了下去。她把他的头抱在怀里。\n\n周衡把旧账翻到那一页，就着河上的晨光看了很久，从怀里摸出笔，舔了舔笔尖，在那一行后头，添了一个字：\n\n**回。**\n\n他道：「记在人家账上的东西，人家迟早要上门来收。」",
+    "en": "From Ye to Willow Bend was thirty li, following the Zhang downstream. Zhou Heng walked in front, very fast, and never looked at the road — this road, of course, he had no need to look at.\n\nThey reached Willow Bend at the third watch.\n\nThe last fire was under the farthest willow. No one came to it to find their own; only a woman sat there, head bowed, mending a fishing net by the firelight.\n\nZhou Heng stopped in front of her.\n\nThe woman felt someone there and looked up. The fire leapt, lighting her face, and his. She looked at him for a long, long time, the shuttle stopped in mid-air, stopped, not moving. Then, very softly, she said:\n\n\"…A-Heng?\"\n\nThe ledger fell from Zhou Heng's hands.\n\nHe went down on his knees before her. She took his head in her arms.\n\nZhou Heng turned the old ledger to that page, looked at it a long time in the morning light off the river, took out his brush, licked the tip, and after that line added one word:\n\n**Back.**\n\nHe said: \"What is written in someone else's ledger, someone will come to collect sooner or later.\""
    },
    "ends": "01-ji"
   }

@@ -245,7 +245,7 @@ test('chapter 1 walks from the Zhang to the cauldron and ends — the Foundation
   assert.equal(ch.opens, null, 'no lock while the game is built and tested'); assert.equal(ch.gate, null); assert.equal(ch.corridor, false);
   assert.equal(ch.coming, undefined, '古十 is built (his, 2026-09-30)');
   const at = Object.values(ch.scenes).map(s => `${s.id}@${s.at}`);
-  assert.deepEqual(at, ['01-altar@hebo', '01-arrive@zhangnan', '01-cauldron@zhangyuan', '01-deep@zhangyuan', '01-end@zhangyuan', '01-rise@hebo', '01-ye@ye']);
+  assert.deepEqual(at, ['01-altar@hebo', '01-arrive@zhangnan', '01-cauldron@zhangyuan', '01-deep@zhangyuan', '01-end@zhangyuan', '01-rise@hebo', '01-tower@hebo', '01-ye@ye']);
   assert.ok(ch.scenes['01-end'].exits.some(e => e.ends === '01-ji'));
   assert.ok(!Object.values(ch.scenes).some(s => s.exits.some(e => e.breakthrough)), 'no breakthrough at the 鼎');
   assert.equal(ch.scenes['01-cauldron'].exits.find(e => e.id === 'take').memory, 1, 'the 鼎 gives her first memory');

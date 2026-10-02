@@ -1,0 +1,100 @@
+{
+ "version": 1,
+ "id": "01-tower",
+ "chapter": "01-ji",
+ "hui": "h10",
+ "at": "hebo",
+ "place": {
+  "zh": "邺城 · 水门城楼底下",
+  "en": "Ye · Under the water-gate tower"
+ },
+ "setup": {
+  "zh": "河伯一巴掌拍塌了水门城楼的一角。浪退了，豆腐西施光着一只脚往城楼那边跑——瓦砾堆底下，伸出一只沾着豆渣的手。你袖子里，是那只辣椒油瓶子。",
+  "en": "The River Lord's blow brought down a corner of the water-gate tower. The wave has gone back; the Tofu Beauty runs barefoot on one side toward the tower — from under the rubble reaches a hand with soybean pulp on its forearm. In your sleeve is the chili-oil bottle."
+ },
+ "recap": {
+  "zh": "城楼塌下来的一角压住了老胡——他是从家里跑出来拦船的。你拔开了辣椒油瓶子，还是没有拔；一盏茶的工夫，他攥着闺女的手，死了。",
+  "en": "The fallen corner of the tower pinned Old Hu — he had broken out of his house to stop the boat. You unstoppered the chili-oil bottle, or you did not; within the time it takes to drink a cup of tea he died, holding his daughter's hand."
+ },
+ "cast": [],
+ "people": [
+  "ban",
+  "ahe"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "城楼塌了一角。",
+    "瓦砾底下，一只沾着豆渣的手。",
+    "爹的丹。"
+   ],
+   "en": [
+    "A corner of the tower comes down.",
+    "Under the rubble, a hand with soybean pulp on it.",
+    "Father's pill."
+   ]
+  }
+ },
+ "story": {
+  "zh": "河伯看着他们，身后那道水墙立着，一滴也不往下淌，他这才开口。他的声音不大，却震得整条漳水都在嗡嗡作响：「……谁。谁说我要娶媳妇的？」\n\n他每说一句，身后那道水墙便往前倾一分。说到末一句，那水墙的顶上已卷了过来，卷成一道白浪，悬在邺城的城墙上头。浪尖上溅下来的水，打在临河那座城楼上，只听得「喀喇喇」一阵响，城楼的一角竟给砸塌了，檐角连着那串风铃，瓦片哗啦啦往下掉，掉进底下的水门洞里。城里传出一片哭喊。\n\n阿禾仰着头看他，嘴唇冻得发紫，声音却一点不抖：「她欠的账，还没还。人淹死了，账就烂了。」\n\n他身后那道水墙，慢慢地、慢慢地落了下去。\n\n岸上的人还跪着，还没有一个敢站起来，豆腐西施却跑了。\n\n塌下来的那一角城楼，把水门洞堵了一半。断梁、碎瓦、青砖，压成一堆，那串风铃埋在瓦砾底下，还在一声一声地响。瓦砾堆底下，伸出一只手来，小臂上沾着豆渣。\n\n后来街坊说，河水立起来的时候，守门的两个汉子扔下门就跑了。老胡瘸着一条腿，从城西一路往河边跑，要去拦那只船。他跑到水门底下，那一浪便打了下来。\n\n梁底下是老胡。他胸口给压塌了一块，嘴角往外冒着血沫子，一口气一口气地往里抽，抽进去的少，漏出来的多。他睁着眼睛，看见了他闺女，嘴唇动了一动。\n\n小满跪在他旁边，手伸进了袖子里。\n\n袖子里是那只辣椒油瓶子。瓶子里那颗九纹回春丹，九道纹，金的。他断着肋骨巡了半个月的夜，马小宝天天在饭堂里拿筷子戳他的伤处，他没有拔过一回瓶塞。舅舅信上那三行字，他读了几十遍：门槛里头一条板凳，一把柴刀，一个膝盖。",
+  "en": "The River Lord looked at them; the wall of water behind him stood without shedding a drop, and only then did he speak. His voice was not loud, yet it set the whole Zhang humming: \"…Who. Who said I wanted a wife?\"\n\nWith every sentence the wall of water leaned a little further forward. By the last, its crest had curled over into a white wave hanging above the walls of Ye. Water flung from its lip struck the tower over the river gate; there was a long splintering crack, a whole corner of the tower came down, eave and wind-chimes and all, tiles pouring into the gate passage below. A wail went up from the city.\n\nA-He looked up at him, lips blue with cold, her voice not shaking at all: \"She hasn't paid what she owes. If she drowns, the debt goes bad.\"\n\nBehind him the wall of water slowly, slowly sank.\n\nThe crowd on the bank was still kneeling, not one of them yet daring to stand — but the Tofu Beauty ran.\n\nThe fallen corner of the tower had half blocked the gate passage. Broken beams, shattered tiles, grey bricks, crushed into a heap; the string of wind-chimes was buried in the rubble, still ringing, once, and again. From under the heap reached a hand, soybean pulp on its forearm.\n\nThe neighbours said afterwards that when the river stood up, the two men guarding his door dropped it and ran. Old Hu, dragging his bad leg, ran all the way from the west side toward the river to stop that boat. He had reached the water gate when the wave came down.\n\nUnder the beam was Old Hu. His chest was crushed in on one side; bloody froth bubbled at the corner of his mouth; he dragged at each breath, and less went in than leaked out. His eyes were open; he saw his daughter, and his lips moved.\n\nXiaoman knelt beside him and put his hand into his sleeve.\n\nIn his sleeve was the chili-oil bottle. In the bottle, the nine-ring mending pill, nine rings, gold. He had walked the night round for half a month on broken ribs, Ma Xiaobao poking his wound with chopsticks in the dining hall every day, and not once had he pulled the stopper. The three lines in his uncle's letter he had read dozens of times: inside the threshold, a bench, a wood-chopper, a knee."
+ },
+ "lines": [],
+ "buttons": [
+  "give",
+  "hold"
+ ],
+ "exits": [
+  {
+   "id": "give",
+   "label": {
+    "zh": "拔开瓶塞 · 爹的那颗丹",
+    "en": "Pull the stopper · Father's pill"
+   },
+   "means": "feeds Old Hu the nine-ring mending pill he kept for his father's knee; it holds the man up a cup of tea's time, no more",
+   "needs": {
+    "bag": "mend-pill-9"
+   },
+   "refuse": {
+    "zh": "瓶子是空的。那颗丹，早就吃了。",
+    "en": "The bottle is empty. That pill was eaten long ago."
+   },
+   "take": {
+    "bag": "mend-pill-9"
+   },
+   "mark": "gave-father-pill",
+   "story": {
+    "zh": "他的手在袖子里停了一停。只停了一停。\n\n他拔开了瓶塞。一股辣椒油的味道冲出来，冲得他眼睛发酸。他把那颗丹倒在手心里，掰开老胡的嘴，塞了进去。\n\n爹的丹，喂给了一个跟爹一样的爹。\n\n那丹入口即化。老胡嘴角的血沫子止住了，那一口一口往里抽的气，慢慢地匀了一些，长了一些。他的脸上回了一点颜色，眼睛也亮了，亮得认得清人了。他看着他闺女，伸出一只手来。她跪在瓦砾里，攥住了那只手。\n\n老胡也知道。他没有说豆腐坊，也没有说房子，他攥着闺女的手，一字一字地道：「……东街卖油的闺女上船那年……爹没吭声。」他喘了一口气，「爹今天……吭声了。」\n\n老胡道：「……磨得动。你记账，比爹清楚。」\n\n一盏茶的工夫，过得很快。他的手松开的时候，城楼上那串风铃，还在瓦砾底下一声一声地响。\n\n小满坐在瓦砾堆上，手里攥着那只空瓶子。瓶子里还有辣椒油的味道。他把瓶塞塞回去，塞得很紧，揣进了怀里。",
+    "en": "His hand stopped in his sleeve. Only for a moment.\n\nHe pulled the stopper. A smell of chili oil rushed out and stung his eyes. He tipped the pill into his palm, prised Old Hu's mouth open, and put it in.\n\nFather's pill, given to a father just like Father.\n\nIt melted the moment it touched his tongue. The froth at Old Hu's mouth stopped; the breaths he dragged in grew a little steadier, a little longer. Some colour came back to his face, and his eyes cleared, clear enough to know people. He looked at his daughter and reached out a hand. She knelt in the rubble and gripped it.\n\nOld Hu knew it too. He said nothing of the tofu shop, nothing of the house; holding his daughter's hand, he said, word by word: \"…The year the oil-seller's girl on East Street went into the boat… your father kept quiet.\" He took a breath. \"Today… your father spoke up.\"\n\nOld Hu said: \"…You can turn it. You keep the books better than your father.\"\n\nThe time it takes to drink a cup of tea goes quickly. When his hand let go, the wind-chimes from the tower were still ringing under the rubble, once, and again.\n\nXiaoman sat on the rubble heap holding the empty bottle. It still smelled of chili oil. He pushed the stopper back in, hard, and put it inside his coat."
+   },
+   "next": "01-deep"
+  },
+  {
+   "id": "hold",
+   "label": {
+    "zh": "握住他的手",
+    "en": "Hold his hand"
+   },
+   "means": "keeps the pill (or has none) and kneels by Old Hu, holding his hand while he dies",
+   "story": {
+    "zh": "他的手在袖子里停了一停，又抽了出来，空着。\n\n他握住了老胡另一只手。那只手又大又糙，指缝里还嵌着豆渣，攥得他生疼。老胡的眼睛一直看着他闺女，嘴唇动了几回，都没有声音出来。他闺女跪在瓦砾里，把他那只手翻过来，拿手指头，在他掌心里写字，一笔一笔，写得极慢。\n\n没等她写完，那只手松开了。城楼上那串风铃，还在瓦砾底下一声一声地响。\n\n小满跪在那里，袖子里那只瓶子，沉得像一块石头。",
+    "en": "His hand stopped in his sleeve, then came out again, empty.\n\nHe took Old Hu's other hand. It was big and rough, soybean pulp still in the cracks of the fingers, and it gripped him till it hurt. Old Hu's eyes stayed on his daughter; his lips moved several times and no sound came. She knelt in the rubble, turned his hand over, and wrote in his palm with her finger, stroke by stroke, very slowly.\n\nBefore she had finished, the hand let go. The wind-chimes from the tower were still ringing under the rubble, once, and again.\n\nXiaoman knelt there; the bottle in his sleeve was as heavy as a stone."
+   },
+   "next": "01-deep"
+  },
+  {
+   "id": "run",
+   "means": "walks away from the rubble, leaves the dying man to others",
+   "stay": true,
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你站起来，又蹲了下去。她攥着她爹的手，看着你。",
+      "en": "You stand — and crouch down again. She is holding her father's hand, looking at you."
+     }
+    }
+   ]
+  }
+ ]
+}
