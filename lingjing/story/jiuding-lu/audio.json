@@ -680,30 +680,6 @@
   },
   "h07": {
    "paras": {
-    "0106d97622ea4bc1": {
-     "file": "p/9d3b4fee3f74bfae.m4a",
-     "secs": 49.1
-    },
-    "01feedc81ddce279": {
-     "file": "p/99c71d8ca3b6ce8f.m4a",
-     "secs": 59.1
-    },
-    "0cbdbd4277413906": {
-     "file": "p/e401c2a09d0e58b9.m4a",
-     "secs": 15
-    },
-    "1165144f363faa37": {
-     "file": "p/e9ee5b46ae486dc2.m4a",
-     "secs": 26.3
-    },
-    "15be1a88b4733431": {
-     "file": "p/111084d879f9010b.m4a",
-     "secs": 45.8
-    },
-    "18ed5c3ec8e43017": {
-     "file": "p/a251357827d82f30.m4a",
-     "secs": 16
-    },
     "1d9e863a853fced0": {
      "file": "p/16d3c3ac6c44d46a.m4a",
      "secs": 35.1
@@ -720,161 +696,49 @@
      "file": "p/87ebff15a5082a20.m4a",
      "secs": 31.2
     },
-    "278cb77c75534cba": {
-     "file": "p/ae3833fe300c4337.m4a",
-     "secs": 54.3
-    },
     "2e2847d3ea68239f": {
      "file": "p/fb0cac1e8cf306ba.m4a",
      "secs": 21.2
-    },
-    "2f12e6866626138b": {
-     "file": "p/1bb2e5dd854fc21a.m4a",
-     "secs": 57.3
-    },
-    "34c76d4614f1de2a": {
-     "file": "p/193c3de9e1e17852.m4a",
-     "secs": 53.4
     },
     "36a6f30820b4ea53": {
      "file": "p/7959792c1668fdcd.m4a",
      "secs": 35.1
     },
-    "39ff9cd5e4567ad4": {
-     "file": "p/f867a439ca7da5e2.m4a",
-     "secs": 48
-    },
     "4320d965ad549ea3": {
      "file": "p/3882bd90ec3755d6.m4a",
      "secs": 22.4
-    },
-    "4950b479927b376a": {
-     "file": "p/bb58f7641bcafb6b.m4a",
-     "secs": 44.6
     },
     "4cd21755af551740": {
      "file": "p/f5e13fa1f6fcad29.m4a",
      "secs": 41.5
     },
-    "4ebe8540f383435b": {
-     "file": "p/c21632aaaaad317e.m4a",
-     "secs": 51
-    },
-    "560887516e3ff47e": {
-     "file": "p/8eaa9e5b99bb2c7e.m4a",
-     "secs": 70.3
-    },
     "58218f1faae145cd": {
      "file": "p/46bdc5bb95212803.m4a",
      "secs": 26.5
-    },
-    "59a1b1eed9ef6f67": {
-     "file": "p/76b0c0bac9bd5f31.m4a",
-     "secs": 32.3
-    },
-    "5e2a9c02e761da9f": {
-     "file": "p/8315152ce2762b34.m4a",
-     "secs": 28.6
     },
     "5ed24fbfdbdccddd": {
      "file": "p/a487f9bf3ceaf119.m4a",
      "secs": 32.5
     },
-    "5fab997ea930eaf8": {
-     "file": "p/306205957f6fd93f.m4a",
-     "secs": 63.5
-    },
     "6692aded13bfee56": {
      "file": "p/e71037449695b6c8.m4a",
      "secs": 40.8
-    },
-    "6d7cc7d7a94fd0e4": {
-     "file": "p/1e7cee3f36b1de20.m4a",
-     "secs": 62
-    },
-    "6dd861da61bd03f8": {
-     "file": "p/1dc2d1c3cef76cba.m4a",
-     "secs": 48.7
-    },
-    "7593db10384fb2ec": {
-     "file": "p/22d985166887476e.m4a",
-     "secs": 42.6
     },
     "7d7d79d810a078bc": {
      "file": "p/1c18e8855d4a9071.m4a",
      "secs": 29.4
     },
-    "821be02d15fb67d0": {
-     "file": "p/cef105e2631f4f18.m4a",
-     "secs": 41.8
-    },
     "83a083b5b82a6469": {
      "file": "p/ba630291f193bfa7.m4a",
      "secs": 45.7
-    },
-    "85f67c3f246fc19e": {
-     "file": "p/3676e489d9bb9d09.m4a",
-     "secs": 41.2
-    },
-    "86e1c97e9185272b": {
-     "file": "p/1c7efd0b3625dc7b.m4a",
-     "secs": 17.2
-    },
-    "8f069960f72edbf6": {
-     "file": "p/d9bc8b39a25e9ce2.m4a",
-     "secs": 35.2
-    },
-    "9221c837032fd230": {
-     "file": "p/9392245d373547bf.m4a",
-     "secs": 44.2
-    },
-    "959528c995e7d227": {
-     "file": "p/c9902130f7124ca7.m4a",
-     "secs": 30.4
-    },
-    "9c1b61a69f7d6c45": {
-     "file": "p/b06b89d17f7d6198.m4a",
-     "secs": 46.4
-    },
-    "a735f440cbebe812": {
-     "file": "p/b2590ff8683888e8.m4a",
-     "secs": 53.8
-    },
-    "a8204c18791a3198": {
-     "file": "p/39ceb481793c3f60.m4a",
-     "secs": 51
-    },
-    "b4bfc60f67033244": {
-     "file": "p/2fb386d0d7af1d04.m4a",
-     "secs": 40
     },
     "b4f6d242151ff5cb": {
      "file": "p/4e7a124a700edbd2.m4a",
      "secs": 37
     },
-    "bcd8b466325a520e": {
-     "file": "p/57a76bf0639bae11.m4a",
-     "secs": 64.5
-    },
-    "bff8f7669bac481f": {
-     "file": "p/d72dfc76d84d0e79.m4a",
-     "secs": 68.7
-    },
     "c223b87580c7e8a0": {
      "file": "p/3f80d8575da3718a.m4a",
      "secs": 9.6
-    },
-    "c5e77b63fd5160c6": {
-     "file": "p/d8cbaf2928e7d5ed.m4a",
-     "secs": 33.9
-    },
-    "c7489a478054c967": {
-     "file": "p/a8acccd08a632e96.m4a",
-     "secs": 55.5
-    },
-    "c7efff35e6e7b0d5": {
-     "file": "p/05233fc5332fdee5.m4a",
-     "secs": 39.9
     },
     "cea063d59f7cb04e": {
      "file": "p/e907de25d6742f9c.m4a",
@@ -888,25 +752,9 @@
      "file": "p/421ab13d4695a375.m4a",
      "secs": 37.9
     },
-    "d1a0d20572c508f9": {
-     "file": "p/dbc70c17a81330d2.m4a",
-     "secs": 51.5
-    },
-    "d1d0d155512bb791": {
-     "file": "p/217fa86c62f86227.m4a",
-     "secs": 39.7
-    },
-    "d39006e0395d7a60": {
-     "file": "p/d18ccf10c7031e13.m4a",
-     "secs": 46.3
-    },
     "e3ee3042e59c6cd4": {
      "file": "p/408028731af9cdaf.m4a",
      "secs": 16.7
-    },
-    "ec9ff7165352aafd": {
-     "file": "p/0892759c8caa645d.m4a",
-     "secs": 10.6
     },
     "f021b3b920c900bb": {
      "file": "p/784d0ab7f229e1c0.m4a",
@@ -915,10 +763,6 @@
     "f55bd9fb666783cd": {
      "file": "p/34d5410b9be87cad.m4a",
      "secs": 54.7
-    },
-    "fd2e36510150a6e0": {
-     "file": "p/84055ddd8ecd7aa4.m4a",
-     "secs": 25.4
     },
     "fd9e03038736ea45": {
      "file": "p/60a6bc73cd12dc59.m4a",

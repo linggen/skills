@@ -59,7 +59,11 @@ function playThrough() {
   assert.ok(s.quests['xu-yaoyuan-shouye'].done_at, 'the watch hands itself in at 周衡');
   s = must(move, fresh(s), { place: 'shimen' });
   s = must(resolve, s, { exit: 'refuse' });
-  s = must(win, s, { id: 'mijing-wall' }); s = must(task, s, { action: 'done', id: 'mijing-wall' });
+  // The wall is the 蛫 itself (古五, 2026-10-02): prying is turned down in-world, the water opens it.
+  const pried = resolve(s, content, ctx(DAY1), { exit: 'pry' });
+  assert.equal(pried.result.refused, 'snubbed');
+  assert.match(pried.result.say, /咬/, 'it bites; the wall stays shut');
+  assert.equal(pried.state.scene, 'wm-wangzuo');
   assert.equal(s.bag.luobo, 1, 'into the 秘境 with a radish in the bundle (古七)');
   s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
   // The 困阵 has one way, the book's: 「三天。」 (the 萝卜 branch was cut, 修改单-片三 6, 2026-10-02)
@@ -210,7 +214,6 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
   for (const exit of ['count', 'keep', 'save']) s = must(resolve, fresh(s), { exit, ...(exit === 'keep' ? { said: '你这饭桶' } : {}) });
   s = must(move, fresh(s), { place: 'shimen' });
   s = must(resolve, s, { exit: 'refuse' });
-  s = must(win, s, { id: 'mijing-wall' }); s = must(task, s, { action: 'done', id: 'mijing-wall' });
   refused(resolve, s, { exit: 'open' }, 'game-not-won');
   s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
   for (const exit of ['go', 'swallow', 'sit', 'rest']) s = must(resolve, s, { exit });
@@ -299,9 +302,9 @@ test('the 大比 is a 比试, not a 降妖: its three foes are people, and the f
   assert.equal(duelTitle({ id: 'foe-shuanglong', title: '冰夷之试' }, WORDS.zh), '冰夷之试', 'the brief carries it already picked');
 });
 
-test('a scene waiting on a game stands with it: the round fight and the wall 洛书 sit under the scene card, never behind 还有 1 件 (live, 2026-09-29)', () => {
+test('a scene waiting on a game stands with it: the round fight and the 蛫 at the wall sit under the scene card, never behind 还有 1 件 (live, 2026-09-29)', () => {
   const kinds = slots => slots.main.map(c => `${c.card}:${c.id ?? ''}`);
-  for (const [scene, place, game, before] of [['wm-lun2', 'zhengdian', 'duel:dabi-shijie', 'wm-dabi'], ['wm-lun1', 'zhengdian', 'duel:dabi-sun', 'wm-dabi'], ['wm-juesai', 'zhengdian', 'duel:dabi-ma', 'wm-dabi'], ['wm-wangzuo', 'shimen', 'board:mijing-wall', 'wm-mijing']]) {
+  for (const [scene, place, game, before] of [['wm-lun2', 'zhengdian', 'duel:dabi-shijie', 'wm-dabi'], ['wm-lun1', 'zhengdian', 'duel:dabi-sun', 'wm-dabi'], ['wm-juesai', 'zhengdian', 'duel:dabi-ma', 'wm-dabi'], ['wm-wangzuo', 'shimen', 'duel:mijing-gui', 'wm-mijing']]) {
     const s = { ...opened(), scene, place, tasks: {} };
     s.done_scenes = [...s.done_scenes, 'wm-ahe', before]; // its 回 under way: no close of the 回 before stands over the scene
     const l = look(s, content, ctx());
