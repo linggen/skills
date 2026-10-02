@@ -12,7 +12,7 @@
 // reader and its test both use it).
 import { esc } from './esc.js';
 import { fill, genderOf } from './state.mjs';
-import { codexHtml, isSubject } from './codex.js';
+import { codexHtml, isSubject, rubyName } from './codex.js';
 
 /* The book's form — its 回 in order and numbered as walked (「第N回」 never
    stored), the 古/今 lines and the draft rule — is book-order.js's, shared
@@ -109,12 +109,14 @@ const entryOf = (codex, id) => (codex instanceof Map ? codex.get(id) : Object.ha
 // with no entry (or no `cite`) reads as its 《书名》. A subject links to its card
 // (data-codex), a knowledge figure to the figure under the paragraph (data-note).
 // A subject whose card stands right by (`near(id)`) reads as its words: the card
-// is there (his, 2026-09-29: 「下面就是图片和文字」).
+// is there (his, 2026-09-29: 「下面就是图片和文字」). A creature named by its
+// own name carries its pinyin over it (his, 2026-10-02: 蛫, 蠪侄 aren't read at sight).
 const inline = (t, codex, cite, near = () => false) => esc(t)
   .replace(GLOSS, (_, words, id) => {
     const e = entryOf(codex, id);
-    if (e && isSubject(e) && near(id)) return words;
-    return e ? `<span class="gloss" role="button" tabindex="0" data-${isSubject(e) ? 'codex' : 'note'}="${id}">${words}</span>` : words;
+    const said = e?.pinyin && words === esc(e.name) ? rubyName(e) : words;
+    if (e && isSubject(e) && near(id)) return said;
+    return e ? `<span class="gloss" role="button" tabindex="0" data-${isSubject(e) ? 'codex' : 'note'}="${id}">${said}</span>` : said;
   })
   .replace(CLASSIC_WORDS, (_, words, id) => cite?.(id, words, true) ?? words)
   .replace(CLASSIC, (_, words, id) => cite?.(id, words) ?? `《${words}》`)

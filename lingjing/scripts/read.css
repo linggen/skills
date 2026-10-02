@@ -82,6 +82,8 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 /* 注: words with a figure, set in the text right under their paragraph, the
    column's width and at most most of a screen tall; a tap opens it large. */
 .gloss { border-bottom: 1px dotted var(--seal); cursor: pointer; }
+/* A creature's pinyin over its name in the text (蛫 guǐ). */
+.page rt, .gloss rt { font-size: .5em; letter-spacing: 0; color: var(--muted, #8a8172); font-family: system-ui, sans-serif; }
 .chapter figure.panel img { cursor: zoom-in; }
 .lightbox { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgb(0 0 0 / .78); cursor: zoom-out; }
 .lightbox > .pic { background: var(--surface); }
