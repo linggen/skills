@@ -7,6 +7,9 @@ restated elsewhere: ../../doc/design.md is the game's systems and links here;
 OUTLINE.md is the plot and the 扣子簿; notes/archive/ holds the superseded
 drafts. Hanli's rulings of 2026-09-28 on, gathered. Title (his, 2026-09-30): 《九鼎录》 — The Nine Cauldrons (was 《狐仙欠我一张饼》, 2026-09-28; too 网文). 录, not 记 or 传: 传 follows one life, 记 one course of events, 录 registers and gathers — the 鼎 carry the images of all things (铸鼎象物), and the hero keeps the books all his life.*
 
+
+> **2026-10-02 起，写作的规矩只认 [纲要.md](纲要.md)。** 本页是资料库：世界、境界、丹药、道统、九鼎、人物来历都在这里，查得到；里面的字数、幕数、每回几处之类，是旧日的配额，现作参考，不作硬规。本页与纲要打架，以纲要为准。
+
 ---
 
 ## 一 · 一句话
