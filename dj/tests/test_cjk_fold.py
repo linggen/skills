@@ -119,6 +119,10 @@ class TitleGate(unittest.TestCase):
     def test_the_catalogue_name_passes(self):
         self.assertTrue(self.ps.title_matches({"title": "Aaron Kwok", "track": "風裡密碼"}, ["风中密码", "风里密码"]))
         self.assertTrue(self.ps.title_matches({"title": "郭富城 風裡密碼"}, ["风中密码"]))  # one slip
+        self.assertTrue(self.ps.title_matches({"title": "講妳知 (歌詞版)"}, ["講你知"]))
+        # A slip at the edge is a prefix, not the song.
+        self.assertFalse(self.ps.title_matches({"title": "如果這都不算愛"}, ["如果·愛"]))
+        self.assertTrue(self.ps.title_matches({"title": "張學友 如果愛 (歌詞版)"}, ["如果·愛"]))
 
     def test_latin(self):
         self.assertTrue(self.ps.title_matches({"title": "Beyond - Amani (Live 1991)"}, ["Amani"]))

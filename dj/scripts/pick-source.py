@@ -289,7 +289,12 @@ def title_matches(entry, names):
     name) must carry one of `names` — folded across case, width and script,
     decorations such as (歌词版), Live, MV or Official around it allowed, one
     slipped character tolerated. 「听风的歌 郭富城 (歌词版)」 carries no 风中密码
-    and was fetched in its place (2026-09-24)."""
+    and was fetched in its place (2026-09-24).
+
+    The slip sits inside the name: the stretch it is found in must open and
+    close on the name's own first and last characters. A slip at the edge is
+    only a prefix — 如果這都不算愛 passed for 如果·愛 on 如果這 (2026-10-02);
+    風中密碼 / 風裡密碼 and 講你知 / 講妳知 slip in the middle."""
     hay = cjk_fold.key(f"{entry.get('title') or ''} {entry.get('track') or ''}")
     for name in names:
         k = cjk_fold.key(name)
@@ -303,7 +308,9 @@ def title_matches(entry, names):
                 if size <= 0:
                     continue
                 for i in range(0, max(1, len(hay) - size + 1)):
-                    if cjk_fold.distance(k, hay[i:i + size], allow) <= allow:
+                    part = hay[i:i + size]
+                    if (part[:1] == k[:1] and part[-1:] == k[-1:]
+                            and cjk_fold.distance(k, part, allow) <= allow):
                         return True
     return False
 
