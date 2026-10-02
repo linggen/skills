@@ -84,12 +84,6 @@
       "done_line": { "zh": "逮住了。一团红毛，五条尾巴，一只角——它盯着你的萝卜。", "en": "Caught. A ball of red fur, five tails, one horn — and it is staring at your radish." }
     },
     {
-      "id": "mijing-wall", "kind": "board", "game": "luoshu", "period": "once",
-      "title": { "zh": "秘境 · 墙后有风", "en": "The hidden realm · A draught behind the wall" },
-      "grant": { "table": "task", "progress": 10 },
-      "done_line": { "zh": "五居中央。墙，开了。", "en": "Five in the middle. The wall opens." }
-    },
-    {
       "id": "lundao", "kind": "word", "period": "day", "hosted": true,
       "title": { "zh": "论道 · 与稷下先生", "en": "Debate · With the scholar of Jixia" },
       "grant": { "table": "game", "progress": 6, "wealth": 10 },
