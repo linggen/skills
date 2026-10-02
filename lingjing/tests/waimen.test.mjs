@@ -466,9 +466,10 @@ test('古五\'s chase (2026-10-02): 邹青松 is a trial outlasted, 踏马的符
   assert.equal(zou.trial.outlast, true);
   assert.equal(zou.trial.yield, undefined, 'never driven down: the turn is the story\'s');
   assert.equal(zou.says.won.zh, '你这踏马的符是哪来的！？');
-  let s = { ...opened(), scene: 'wm-kunzhen', place: 'shimen' };
+  let s = { ...opened(), scene: 'wm-wangzuo', place: 'shimen' };
+  s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
+  assert.equal(s.bag['tama-fu'], 1, '古四\'s 饭桶 spat it out; in his belt since');
   s = must(resolve, s, { exit: 'go' });
-  assert.equal(s.bag['tama-fu'], 1, '银月 drew it in the stone chamber');
   const e = CH.scenes['wm-xirang'].exits.find(x => x.id === 'swallow');
   assert.deepEqual([e.game.creature, e.game.retry, e.rise], ['foe-zou', true, 4]);
   refused(resolve, s, { exit: 'swallow' }, 'game-not-won');

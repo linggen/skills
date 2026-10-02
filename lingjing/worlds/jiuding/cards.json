@@ -902,7 +902,7 @@
           "id": "gui"
         }
       },
-      "_about": "背包里的踏马的符（items.json tama-fu，古五银月画在他脚底）。在囊中，开局就在手上，不占十张；打出去，他一跳落到蛫背后——蛫上阵护主，下一记杀招先打它（「是可以禦火」）；收场时从背包里扣掉，只灵一回。永不入牌库、不作赏。",
+      "_about": "背包里的踏马的符（items.json tama-fu，古四饭桶吐出来、收在腰带夹层，古五瞎贴脚底）。在囊中，开局就在手上，不占十张；打出去，他一跳落到蛫背后——蛫上阵护主，下一记杀招先打它（「是可以禦火」）；收场时从背包里扣掉，只灵一回。永不入牌库、不作赏。",
       "art": "art/items/talisman.webp",
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the description."
     },
