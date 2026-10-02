@@ -5,7 +5,7 @@ file is the story: every 卷 and 回 in a few lines, the people, the key beats.
 The form is 《鹿鼎记》's (DESIGN.md § 五·五), changed 2026-10-02 (纲要 § 一·四): a 卷's 古 line
 (沈小满) runs in films of two 回, and after each film a 今 interlude (沈芒, modern science
 for the 修仙) that takes no 回 number. 卷一 is eight 古 回 in four films and four interludes,
-opening on 古一 and closing on 今 · 四. The numbers are computed from book.json's order,
+opening on 古一 and closing on 古八 (今 · 四 sits between 古七 and 古八 — 2026-10-02, after the R3 cold read). The numbers are computed from book.json's order,
 never written; below, 古一…古八 name a 古 回, 今 · 一…今 · 四 an interlude (old 今一…今十 and
 旧一…旧十 name the pre-2026-10-02 drafts). Written: all of 卷一 (古一—古八, 徐州 → 冀州, rewritten
 to the 纲要 on 2026-10-02; 今 · 一—今 · 四). A 古 回 is about 20k characters, carried by story,
@@ -27,7 +27,7 @@ the text wins. The hero is 沈小满 (fixed, 2026-09-30). World rules live in DE
 
 ## 二 · 卷与回（书的卷 · 回 ↔ 游戏的章）
 
-**2026-10-02 改版**（纲要 § 一·四；`notes/改版/古线卷一改版纲.md`、`今线插曲纲.md`）：卷一古线**八回、四部片**（每部两回），每部片后一段**今线插曲**（不占回号，书页上标「今 · 一」…「今 · 四」）；书从古一开，卷一收在今 · 四。古回书上叫第一回…第八回；回与文件、id 的对照见 DESIGN § 六·八「回的对照」。卷二以后每卷几回，写到时照卷一的形再定。
+**2026-10-02 改版**（纲要 § 一·四；`notes/改版/古线卷一改版纲.md`、`今线插曲纲.md`）：卷一古线**八回、四部片**（每部两回），每部片后一段**今线插曲**（不占回号，书页上标「今 · 一」…「今 · 四」）；书从古一开；今 · 四夹在古七、古八之间，卷一收在古八（2026-10-02 冷读者 R3 后定）。古回书上叫第一回…第八回；回与文件、id 的对照见 DESIGN § 六·八「回的对照」。卷二以后每卷几回，写到时照卷一的形再定。
 
 | 卷 | 回（古线；今线插曲见「卷一 · 现代线」） | 游戏 | 州 · 地 | 境界 | 状态 |
 |---|---|---|---|---|---|

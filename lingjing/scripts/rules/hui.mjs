@@ -122,7 +122,7 @@ function nextJuan(content, lang) {
 }
 
 /* 「卷一 · 沉鼎 · 完」 when a 回 is its 卷's last of its own line; else null.
-   The book's 卷 ends on its last 今 interlude, but the game plays the 古 line: its 卷 ends at 古八 (h10). */
+   Each line's last entry ends the 卷 for that line: 今 · 四 for the 今, 古八 (h10) — the book's last page — for the 古. */
 export const juanEndOf = (content, id, lang) => {
   const h = huiOf(content, id);
   if (!h || h.juan?.hui?.filter(x => lineOf(x) === h.line).at(-1)?.id !== h.id) return null;

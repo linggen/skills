@@ -30,12 +30,12 @@ test('卷 hold 回; the 古 回 run 第一回, 第二回 … through the whole b
   assert.deepEqual(jin.map((h) => h.label.zh), jin.map((_, i) => jinLabel(i + 1)));
   assert.ok(jin.every((h) => !/第.+回/.test(h.label.zh) && !/第.+回/.test(h.title.zh)), 'an interlude never says 第N回');
   assert.ok(hui.every((h) => !h.draft), 'no draft in the published view');
-  // 卷一 (2026-10-02): 古一 古二 ‖今一‖ 古三 古四 ‖今二‖ 古五 古六 ‖今三‖ 古七 古八 ‖今四‖ —
-  // the book opens on 古, each film of two 古 回 is followed by one interlude, and the 卷 ends on it.
+  // 卷一 (2026-10-02): 古一 古二 ‖今一‖ 古三 古四 ‖今二‖ 古五 古六 ‖今三‖ 古七 ‖今四‖ 古八 —
+  // the book opens on 古, each film of two 古 回 is followed by one interlude, save the last, which holds 今四 inside so the 卷 ends on 古八.
   const v1 = hui.filter((h) => h.volume.id === 'juan1');
   assert.equal(v1[0].line, 'gu', 'the book opens on 古一');
-  assert.deepEqual(v1.map((h) => (h.line === 'jin' ? '今' : '古')).join(''), '古古今古古今古古今古古今');
-  assert.deepEqual(v1.map((h) => h.id), ['h01', 'h02', 'j01', 'h04', 'h05', 'j04', 'h07', 'h08', 'j07', 'h09', 'h10', 'j09']);
+  assert.deepEqual(v1.map((h) => (h.line === 'jin' ? '今' : '古')).join(''), '古古今古古今古古今古今古');
+  assert.deepEqual(v1.map((h) => h.id), ['h01', 'h02', 'j01', 'h04', 'h05', 'j04', 'h07', 'h08', 'j07', 'h09', 'j09', 'h10']);
   assert.equal(new Set(bookEntries(book).map((c) => c.id)).size, bookEntries(book).length, 'ids unique');
   book.volumes.forEach((v, i) => assert.equal(v.name.zh.startsWith(`卷${cnNumber(i + 1)}`), true, v.name.zh));
   assert.equal(bookEntries(book).at(-1).id, 'tuna', 'the appendix comes last');
