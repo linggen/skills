@@ -36,3 +36,7 @@ Skills are automatically installed when you run `ling init --global`.
 
 - Linggen runs locally (default API URL: `http://localhost:9527`).
 - To change the API URL, set `LINGGEN_API_URL` in your environment or in a workspace `.linggen/config` file.
+
+## License
+
+Code is Apache-2.0 (`LICENSE`). Exception: the story of Lingjing — `lingjing/story/` and the story text and original art in `lingjing/worlds/` — is © 2026 Hanli (Linggen), CC BY-NC-ND 4.0; see the `LICENSE.md` in each.
