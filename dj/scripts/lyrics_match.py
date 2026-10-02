@@ -14,6 +14,14 @@
 # ends; 像我这样的人 on a 168 s TV cut carried a set "171 s" long whose last
 # line sings at 3:13.
 #
+# Nor does a copy's own length count. The timings belong to the length most
+# copies of them agree on (their home); a copy filed elsewhere says nothing
+# about that length. 周華健 難念的經: one set, timed for the 289 s TV theme, sits
+# on LRCLIB at 227, 268 (×5), 287–289 (×7) — and the 268 s album take, a
+# different arrangement, was paired with a 268 copy that never lined up
+# (2026-10-02). A set whose clock is broken — sung lines crammed under a second
+# apart, 張學友 如果·愛's first five inside two seconds at 1:09 — fits nothing.
+#
 # When nothing timed fits, the words are still saved, without timings — the
 # recording was chosen for its sound, and every player shows words-only
 # sidecars as such.
@@ -34,6 +42,9 @@ import urllib.request
 UA = "DJ/1.0 (music library; lyrics lookup)"
 
 FIT_SECONDS = 5  # a set timed within this of the file is timed for the file
+HOME_WIDTH = 2  # copies of one set within this of each other agree on a length
+CRAMMED_GAP = 0.8  # sung lines closer than this (seconds) …
+CRAMMED_RUN = 3  # … this many gaps in a row mean the clock is broken
 TITLE_OVERLAP = 2 / 3  # share of a title's characters another must carry
 
 # Words that mark a DIFFERENT RECORDING than the album track — in a video
@@ -175,6 +186,70 @@ def last_line_at(body):
     return last
 
 
+def sung_stamps(body):
+    """Start time of every line that carries words, in order."""
+    out = []
+    for line in str(body or "").splitlines():
+        ms = list(_STAMP.finditer(line))
+        if not ms or not _STAMP.sub("", line).strip():
+            continue
+        for m in ms:
+            frac = m.group(3) or "0"
+            out.append(int(m.group(1)) * 60 + int(m.group(2))
+                       + int(frac) / (10 ** len(frac)))
+    return sorted(out)
+
+
+def crammed(body):
+    """Is this clock broken — CRAMMED_RUN gaps in a row under CRAMMED_GAP?"""
+    stamps, run = sung_stamps(body), 0
+    for a, b in zip(stamps, stamps[1:]):
+        run = run + 1 if b - a < CRAMMED_GAP else 0
+        if run >= CRAMMED_RUN:
+            return True
+    return False
+
+
+def clock_of(body):
+    """The set's timings, to tell copies of one set from another set."""
+    return tuple(round(t, 1) for t in sung_stamps(body))
+
+
+def homes(lengths):
+    """The lengths most copies agree on (within HOME_WIDTH); a tie keeps all."""
+    vals = [v for v in lengths if isinstance(v, (int, float)) and v > 0]
+    votes = {v: sum(abs(w - v) <= HOME_WIDTH for w in vals) for v in vals}
+    top = max(votes.values(), default=0)
+    return [v for v, n in votes.items() if n == top]
+
+
+def timed_sets(entries):
+    """The timed entries whose length can be believed: not instrumental, a
+    working clock, and filed at their set's home — every copy of one set is
+    grouped, and only copies at the length most of them agree on stay.
+
+    Only a copy that could be true votes: its last line must start before its
+    own length ends (像我这样的人's set sings to 3:13, so its nine copies
+    filed at 171–172 s are not votes), and copies marked as another take sit
+    out when any plain one is left (如果·愛's set at 265 s ×3 is the Live
+    filing; the studio copy says 232)."""
+    timed = [e for e in entries
+             if e.get("syncedLyrics") and not e.get("instrumental")
+             and not crammed(e["syncedLyrics"])]
+    by_clock = {}
+    for e in timed:
+        by_clock.setdefault(clock_of(e["syncedLyrics"]), []).append(e)
+    kept = []
+    for copies in by_clock.values():
+        voters = [e for e in copies
+                  if last_line_at(e["syncedLyrics"]) < (e.get("duration") or 0)]
+        voters = [e for e in voters if not e.get("_other")] or voters
+        home = homes([e.get("duration") for e in voters])
+        kept += [e for e in copies
+                 if any(abs((e.get("duration") or 0) - h) <= HOME_WIDTH for h in home)]
+    return kept
+
+
 def file_seconds(path):
     """The file's own length from `afinfo` (macOS's own); 0 when it can't say."""
     try:
@@ -255,12 +330,12 @@ def _rank(e, seconds):
 def timed_fit(entries, seconds):
     """The timed set that belongs to a recording `seconds` long, or None.
 
-    Fits = within FIT_SECONDS of the file and its last line starts before the
-    file ends. With no length to go on (a file afinfo can't read), the length
-    the right singer's entries agree on stands in for it.
+    Fits = a set believed at its length (timed_sets), within FIT_SECONDS of
+    the file, whose last line starts before the file ends. With no length to
+    go on (a file afinfo can't read), the length the right singer's entries
+    agree on stands in for it.
     """
-    timed = [e for e in entries
-             if e.get("syncedLyrics") and not e.get("instrumental")]
+    timed = timed_sets(entries)
     if not timed:
         return None
     if not seconds:

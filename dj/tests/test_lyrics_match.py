@@ -87,5 +87,49 @@ class Fit(unittest.TestCase):
         self.assertEqual(got["duration"], 268)
 
 
+def copies(lengths, last=262.57, other=False, artist=True):
+    """One set of timings re-filed at each of `lengths`."""
+    return [timed(d, last, artist=artist, other=other, lines=40) for d in lengths]
+
+
+class Copies(unittest.TestCase):
+    """A set's length is where most believable copies of it are filed."""
+
+    def test_a_copy_away_from_home_fits_nothing(self):
+        # 難念的經: one set, filed at 268 ×5 and 287–289 ×7 — timed for 289.
+        sets = copies([227, 268, 268, 268, 268, 268, 287, 288, 288, 289, 289, 289, 289])
+        self.assertIsNone(lm.timed_fit(sets, 268.0))
+        self.assertEqual(lm.timed_fit(sets, 289.0)["duration"], 289)
+
+    def test_a_copy_too_short_for_its_own_last_line_is_no_vote(self):
+        # 像我这样的人: the set sings to 3:13, so its 171–172 copies can't be.
+        sets = copies([171, 172, 172, 172, 207, 207], last=193.0)
+        self.assertEqual(lm.timed_fit(sets, 207.0)["duration"], 207)
+
+    def test_live_copies_sit_out_when_a_plain_one_votes(self):
+        sets = copies([265, 265, 265], last=220.0, other=True) + copies([232], last=220.0)
+        self.assertEqual(lm.timed_fit(sets, 231.0)["duration"], 232)
+
+    def test_a_tie_keeps_both_lengths(self):
+        sets = copies([200, 200, 240, 240], last=190.0)
+        self.assertIsNotNone(lm.timed_fit(sets, 200.0))
+        self.assertIsNotNone(lm.timed_fit(sets, 240.0))
+
+
+class BrokenClock(unittest.TestCase):
+    def test_lines_crammed_under_a_second_apart_fit_nothing(self):
+        # 如果·愛's bad upload: five lines inside two seconds at 1:09.
+        body = "\n".join(f"[01:{9 + i * 0.6:05.2f}] line {i}" for i in range(5))
+        body += "\n[03:31.77] last"
+        e = {"duration": 230.0, "syncedLyrics": body, "plainLyrics": "words",
+             "_artist": True, "_other": False}
+        self.assertTrue(lm.crammed(body))
+        self.assertIsNone(lm.timed_fit([e], 230.0))
+        self.assertFalse(lm.fit([e], 230.0)["synced"])
+
+    def test_an_ordinary_set_is_not_crammed(self):
+        self.assertFalse(lm.crammed(timed(230, 220, lines=40)["syncedLyrics"]))
+
+
 if __name__ == "__main__":
     unittest.main()

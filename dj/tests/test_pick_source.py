@@ -100,5 +100,24 @@ class Downloader(Stubbed):
                       "a replacement keeps its file's name")
 
 
+def timed_copy(duration, last=262.57, other=False):
+    body = "\n".join(f"[{int(i * last / 39 // 60):02d}:{i * last / 39 % 60:05.2f}] line {i}"
+                      for i in range(40))
+    return {"duration": duration, "syncedLyrics": body, "plainLyrics": "words",
+            "_artist": True, "_other": other}
+
+
+class LyricsAnchor(unittest.TestCase):
+    def test_the_home_length_not_the_loudest_copy(self):
+        sets = [timed_copy(d) for d in (268, 268, 268, 289, 289, 289, 289)]
+        self.assertEqual(ps.lyrics_anchor(sets), 289)
+
+    def test_a_live_filing_never_sets_the_length(self):
+        sets = [timed_copy(265, last=220, other=True)] * 3
+        sets += [{"duration": 232, "syncedLyrics": None, "plainLyrics": "words",
+                  "_artist": True, "_other": False}]
+        self.assertEqual(ps.lyrics_anchor(sets), 232)
+
+
 if __name__ == "__main__":
     unittest.main()

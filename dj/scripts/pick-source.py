@@ -26,8 +26,10 @@
 # consensus, which a popular TV performance can outvote (像我这样的人: seven
 # sets at the 172 s 明日之子 take against six at the 207 s album track).
 # Each video is then scored WITH the lyrics that fit it (lyrics_match.py), so
-# the pick is a pair. The album track wins over a better lyrics fit: the
-# recording is kept for its sound, and words without timings are still shown.
+# the pick is a pair. The album track wins over a better lyrics fit when some
+# timed set belongs to it — the recording is kept for its sound. When none
+# does and timings exist for another length, the pair wins: lyrics that never
+# line up are the one thing the player can't hide.
 #
 # Reads one JSON object (argv[1] or stdin), writes one JSON line:
 #   in : {artist, title, year?, version?, query_hints?, exclude?, yt_dlp, results?}
@@ -267,12 +269,15 @@ def canonical_title(album, artist, title, lyric_entries=()):
 
 
 def lyrics_anchor(entries):
-    """The length the right singer's timed lyrics agree on, when no album
-    track was found. Entries marked as another take sit out the vote."""
-    for pool in ([e for e in entries if e.get("syncedLyrics")
-                  and e.get("_artist") and not e.get("_other")],
-                 [e for e in entries if e.get("syncedLyrics")],
-                 [e for e in entries if e.get("plainLyrics")]):
+    """The length the lyrics agree on, when no album track was found: timed
+    sets believed at their length first (lm.timed_sets), the right singer's
+    before anyone's — then the plain words' lengths. Entries marked as another
+    take never set it: a concert's length is not the song's (如果·愛's only
+    timings are the 265 s Live filing; its studio take runs 230 s)."""
+    timed = [e for e in lm.timed_sets(entries) if not e.get("_other")]
+    plain = [e for e in entries if e.get("plainLyrics") and not e.get("_other")]
+    for pool in ([e for e in timed if e.get("_artist")], timed,
+                 [e for e in plain if e.get("_artist")], plain):
         seconds = cluster([e.get("duration") for e in pool], 2)
         if seconds:
             return round(seconds)
@@ -441,10 +446,18 @@ def main():
     if not candidates:
         fail("no source matched the title")
 
-    # The length to hold uploads to: the album track's own when there is one,
-    # else what the lyrics agree on, else what the uploads agree on.
+    # The length to hold uploads to: the album track's own when lyrics are
+    # timed for it (or none are timed at all), else what the lyrics agree on,
+    # else what the uploads agree on. An album take no timed set belongs to
+    # would land with lyrics that never line up — 難念的經's 268 s album take
+    # against a set timed for the 289 s TV theme (2026-10-02) — so the pair
+    # wins over it.
+    paired = [a for a in albums if lm.timed_fit(lyric_entries, a["duration"])]
+    if albums and not paired and lm.timed_sets(lyric_entries):
+        notes.append("no lyrics are timed for the album take — following the lyrics' length")
+        albums = []
     if albums:
-        anchor, anchor_source = round(albums[0]["duration"]), "album"
+        anchor, anchor_source = round((paired or albums)[0]["duration"]), "album"
     else:
         anchor = lyrics_anchor(lyric_entries)
         anchor_source = "lrclib" if anchor else None
