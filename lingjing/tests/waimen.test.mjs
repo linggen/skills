@@ -64,7 +64,7 @@ function playThrough() {
   s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
   // The 困阵 has one way, the book's: 「三天。」 (the 萝卜 branch was cut, 修改单-片三 6, 2026-10-02)
   assert.equal(refused(resolve, s, { exit: 'radish' }, 'unknown-exit').refused, 'unknown-exit');
-  for (const exit of ['go', 'swallow', 'rest']) s = must(resolve, s, { exit });
+  for (const exit of ['go', 'swallow', 'sit', 'rest']) s = must(resolve, s, { exit });
   s = must(move, fresh(s), { place: 'waimen' });
   s = must(resolve, fresh(s), { exit: 'sleep' });
   s = fresh(s);
@@ -73,6 +73,7 @@ function playThrough() {
   s = must(resolve, s, { exit: 'on' }, DAY2);
   s = must(resolve, won(s, 'dabi-shijie', DAY2), { exit: 'dodge' }, DAY2);
   s = must(resolve, won(s, 'dabi-ma', DAY2), { exit: 'bark' }, DAY2);
+  s = must(resolve, s, { exit: 'take' }, DAY2); // 掌心的烙印 (wm-laoyin, 古六)
   for (const exit of ['rest', 'follow', 'sign', 'read']) s = must(resolve, s, { exit }, DAY2);
   return s;
 }
@@ -128,7 +129,7 @@ test('a scene nobody can reach, or a beat naming a stranger, does not ship: ever
     for (const e of CH.scenes[id].exits) if (e.next) todo.push(e.next);
   }
   assert.deepEqual([...seen].sort(), Object.keys(CH.scenes).sort());
-  assert.equal(Object.keys(CH.scenes).length, 23);
+  assert.equal(Object.keys(CH.scenes).length, 25); // + wm-kaikai (老蔫, 古五) and wm-laoyin (the brand, 古六)
   for (const b of CH.beats) for (const id of b.scenes) assert.ok(CH.scenes[id], id);
   for (const sc of Object.values(CH.scenes)) assert.ok(CH.map.places.includes(sc.at), `${sc.id} at ${sc.at}`);
 });
@@ -212,7 +213,7 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
   s = must(win, s, { id: 'mijing-wall' }); s = must(task, s, { action: 'done', id: 'mijing-wall' });
   refused(resolve, s, { exit: 'open' }, 'game-not-won');
   s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
-  for (const exit of ['go', 'swallow', 'rest']) s = must(resolve, s, { exit });
+  for (const exit of ['go', 'swallow', 'sit', 'rest']) s = must(resolve, s, { exit });
   assert.equal(s.scene, 'wm-qianye');
   assert.equal(look(s, content, ctx(DAY1)).waypoint.text, '外门大比 · 明日。路通向沉鼎观 · 外门。');
   s = must(move, fresh(s), { place: 'waimen' });
@@ -233,6 +234,7 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
     refused(resolve, s, { exit }, 'game-not-won', DAY2);
     s = must(resolve, won(s, game, DAY2), { exit }, DAY2);
   }
+  s = must(resolve, s, { exit: 'take' }, DAY2); // 掌心的烙印 (wm-laoyin, 古六)
   assert.equal(s.scene, 'wm-jiaxin', 'the night of the contest, before the master');
   assert.ok(s.bag['foundation-pill'] > 0, '筑基丹');
 });

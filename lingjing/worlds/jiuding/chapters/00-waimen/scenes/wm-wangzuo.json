@@ -13,8 +13,8 @@
   "en": "Everyone goes right; you go left, and down. At the foot of the cliff, a bare stone wall — and behind it, wind. At the wall's foot, a shallow pool of gathered drips, and in it a white-bodied, red-headed thing like a turtle: a gui. It guards the wall close."
  },
  "recap": {
-  "zh": "秘境里，银月领着你往左、往下；墙后头有风，墙上刻着九宫——五居中央，墙开了。",
-  "en": "In the hidden realm Yinyue led you left and down; there was a draught behind the wall, the nine squares carved on it — five in the middle, and the wall opened."
+  "zh": "秘境里，银月领着你往左、往下。墙前守着一只蛫，你把三天的水倒给了它；它让出那块九宫石——五居中央，墙开了。",
+  "en": "In the hidden realm Yinyue led you left and down. A gui guarded the wall; you poured it your three days' water, and it gave up the nine-square stone — five in the middle, and the wall opened."
  },
  "cast": [],
  "people": [],
@@ -47,34 +47,34 @@
   {
    "id": "grid",
    "label": {
-    "zh": "墙上的九个格子",
-    "en": "The nine squares on the wall"
+    "zh": "墙角那块凉石头",
+    "en": "The cold stone at the wall's foot"
    },
    "text": {
-    "zh": "九个格子，三三一排，边角给水泡得发白，正中那一格，比别的磨得都亮。",
-    "en": "Nine squares, three by three, their edges bleached by water. The middle one is worn brighter than the rest."
+    "zh": "巴掌大一块石头，比旁边的都凉，凉得发麻。石面上九道浅浅的凹痕，横三竖三，磨得几乎平了——墙上不见花纹，花纹在这里。",
+    "en": "A stone the size of a palm, colder than those around it, cold enough to numb. Nine shallow hollows in its face, three by three, worn almost flat — no pattern on the wall; the pattern is here."
    }
   },
   {
    "id": "stones",
    "label": {
-    "zh": "刻了点子的石块",
-    "en": "The dotted stones"
+    "zh": "凹痕里的石子",
+    "en": "The pebbles in the hollows"
    },
    "text": {
-    "zh": "石块一共九块，点子从一到九，一块不少，只是都给水泡得发黑。",
-    "en": "Nine stones in all, dotted one to nine, not one missing — all of them blackened by the water."
+    "zh": "九道凹痕里各卧着一枚石子，刻着点数，却摆得乱七八糟。",
+    "en": "A pebble lies in each of the nine hollows, cut with dots, all set out of order."
    }
   },
   {
    "id": "wind",
    "label": {
-    "zh": "墙缝里的风",
-    "en": "The draught in the crack"
+    "zh": "墙后的风",
+    "en": "The wind behind the wall"
    },
    "text": {
-    "zh": "风是暖的，带着一股土腥气，从最底下那道缝里一丝一丝透出来。",
-    "en": "The draught is warm and smells of earth; it seeps thread by thread from the lowest crack."
+    "zh": "你拔一根头发举到墙前。它往墙的方向飘了一飘，又一飘——倒像墙那边有一张嘴，隔着一层石头，在慢慢地吸气。",
+    "en": "You pull out a hair and hold it to the wall. It drifts toward the wall, once, and again — as if behind it a mouth were slowly breathing in, through a layer of stone."
    }
   }
  ],
