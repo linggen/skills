@@ -198,7 +198,7 @@ test('a pill from 银月\'s furnace is its own 九转 item — more 修为 than 
     assert.equal(item(nine).sell, 0, '九转丹不能卖');
     assert.deepEqual(item(nine).sold, []);
   }
-  const diyilu = content.chapters['00-waimen'].scenes['wm-diyilu'].exits.find(e => e.id === 'swallow');
+  const diyilu = content.chapters['00-waimen'].scenes['wm-diyilu'].exits.find(e => e.id === 'save'); // 留给爹 (2026-10-02: one pill, kept for his knee)
   assert.equal(diyilu.grant.item, 'mend-pill-9', 'the furnace\'s first pill is the 九转');
   assert.equal(content.quests.find(q => q.id === 'xu-yaoyuan-canzhu').grant.item, 'qi-pill-9');
   const html = zhuanHtml(9);

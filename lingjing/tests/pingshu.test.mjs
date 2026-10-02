@@ -34,7 +34,7 @@ print(json.dumps([m.para_key(t) for t in json.load(sys.stdin)]))`;
 
 test('the page and the publisher make the same key from the same text — every paragraph of the book, every beat of the scenes', () => {
   const tricky = ['[这个少年]{注=xiaoman}，姓沈——名小满。', '《史记》{典=shiji}说：「一、二、三……」', '**天人合一**', 'ABC 123 ok', '', '——', '𠀀字外'];
-  const texts = [...tricky, ...Array.from({ length: 10 }, (_, i) => bookParas(mdOf(i + 1))).flat(), ...playedBeats().map((b) => b.text)];
+  const texts = [...tricky, ...Array.from({ length: 10 }, (_, i) => i + 1).filter((i) => fs.existsSync(path.join(BOOK, `${String(i).padStart(2, '0')}-第${NUM[i - 1]}回.md`))).map((i) => bookParas(mdOf(i))).flat(), ...playedBeats().map((b) => b.text)];
   assert.deepEqual(texts.map(paraKey), pyKeys(texts));
   assert.equal(paraKey('——'), '', 'nothing to say, no key');
   assert.equal(normPara('[娘]{注=mama}说：「好。」'), '娘说好');

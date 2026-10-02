@@ -20,12 +20,11 @@ const BRANCHES = new Set([
   '00-dusk/stay-home', '00-fox/leave', '00-gate/rush', '00-masan/strike', '00-rent/truth',
   '00-sleep/out', '00-storm/chase', '00-uncle/wait', '00-waimen/pay', '00-waimen/refuse', '01-tower/hold',
   'wm-ahe/owe', 'wm-chaifang/fist', 'wm-kunzhen/radish', 'wm-lun1/fight', 'wm-mijing/refuse',
-  'wm-qingshi/shout',
+  'wm-qingshi/shout', 'wm-diyilu/swallow',
 ]);
 // Game-only bridge paragraphs inside book passages: scene (or scene/exit) → opening words.
 const BRIDGES = [
   ['wm-chu/rest', '腊月初七一早，周衡在外门的告示栏上'],
-  ['wm-danlu', '第二天，他蹲在柴房里'],
   ['wm-mijing/pay', '执事房外头那片空场上'],
 ];
 

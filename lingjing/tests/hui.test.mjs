@@ -59,7 +59,7 @@ test('the prologue is 第一回 up to her daybreak, 第二回 from the cliff, �
   assert.equal(p['00-mijing'].hui, 'h04');
   const w = content.chapters['00-waimen'].scenes;
   assert.deepEqual(['wm-ahe', 'wm-qingshi', 'wm-chaifang', 'wm-diyilu', 'wm-mijing', 'wm-chu', 'wm-dabi', 'wm-jiaxin'].map(id => w[id].hui),
-    ['h05', 'h05', 'h06', 'h06', 'h07', 'h07', 'h08', 'h08']);
+    ['h05', 'h05', 'h05', 'h05', 'h07', 'h07', 'h08', 'h08']); // h06 folded into 古四 (2026-10-02)
   for (const sc of Object.values(w)) assert.ok(['h05', 'h06', 'h07', 'h08'].includes(sc.hui), sc.id);
   for (const sc of Object.values(content.chapters['00-zhuji'].scenes)) assert.equal(sc.hui, 'h09', sc.id);
   for (const sc of Object.values(content.chapters['01-ji'].scenes)) assert.equal(sc.hui, 'h10', sc.id);

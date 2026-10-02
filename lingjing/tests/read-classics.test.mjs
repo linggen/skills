@@ -73,7 +73,7 @@ test('every {典=id} in the book is an entry; every entry has a real source and 
 test('each 回 ends with its classics (卷一 in ten since 2026-09-30), and the made-up 《吐纳经》 is not one', () => {
   const at = (id) => chapters.find((c) => c.id === id) ?? folded.find((c) => c.id === id);
   const entries = (id) => [...renderMarkdown(fillHero(at(id).md, {}), { classics: CLASSICS }).matchAll(/<article class="dianent" id="dian-([\w-]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(entries('h05'), ['liezi-yugong', 'zhonglv-sishi', 'zhuangzi-dasheng', 'shanhai-zheng']); // 真气 (素问) waits for 第九回; 守一's 用志不分 taught after the 小周天 (课随境界, 2026-09-30); 主典 钟吕「煉精生真氣」 = 练气一层, the rest withheld (Hanli 2026-10-01)
+  assert.deepEqual(entries('h05'), ['liezi-yugong', 'zhonglv-sishi', 'zhuangzi-dasheng', 'baopu', 'shanhai-zheng']); // 古六 folded in (2026-10-02): its 抱朴子 「九转之丹」 told by 周衡 when he sets the month-end clock; // 真气 (素问) waits for 第九回; 守一's 用志不分 taught after the 小周天 (课随境界, 2026-09-30); 主典 钟吕「煉精生真氣」 = 练气一层, the rest withheld (Hanli 2026-10-01)
   if (at('h06')) assert.deepEqual(entries('h06'), ['baopu']); // old 古六, while its file stands (folded into 古四 h05, 2026-10-02) — // 抱朴子's 转 told in 褚先生's lecture while he grips the bottle — no narrator aside at the first 纹 (2026-09-30); 主典 only — 神农, 染指, 九鼎神丹经诀 一笔带过 (Hanli 2026-10-01)
   assert.deepEqual(entries('h07'), ['jiuding', 'shanhai-gui', 'shanhai-xirang', 'shangshu-hongfan']); // 主典 洪范五句 on the notebook's surviving page, come alive in the 五行 turn (修仙词汇表 B, Hanli 2026-10-01)
   assert.deepEqual(entries('h08'), ['laozi-qizhe', 'huangting-linggen']);
