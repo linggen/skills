@@ -68,7 +68,8 @@ function playThrough() {
   s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
   // The 困阵 has one way, the book's: 「三天。」 (the 萝卜 branch was cut, 修改单-片三 6, 2026-10-02)
   assert.equal(refused(resolve, s, { exit: 'radish' }, 'unknown-exit').refused, 'unknown-exit');
-  for (const exit of ['go', 'swallow', 'sit', 'rest']) s = must(resolve, s, { exit });
+  // The chase is a trial he cannot win by force (古五, 2026-10-02: 邹青松, foe-zou); the turn is the story's.
+  for (const exit of ['go', 'swallow', 'sit', 'rest']) s = must(resolve, exit === 'swallow' ? won(s, 'mijing-zou') : s, { exit });
   s = must(move, fresh(s), { place: 'waimen' });
   s = must(resolve, fresh(s), { exit: 'sleep' });
   s = fresh(s);
@@ -216,7 +217,8 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
   s = must(resolve, s, { exit: 'refuse' });
   refused(resolve, s, { exit: 'open' }, 'game-not-won');
   s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
-  for (const exit of ['go', 'swallow', 'sit', 'rest']) s = must(resolve, s, { exit });
+  // The chase is a trial he cannot win by force (古五, 2026-10-02: 邹青松, foe-zou); the turn is the story's.
+  for (const exit of ['go', 'swallow', 'sit', 'rest']) s = must(resolve, exit === 'swallow' ? won(s, 'mijing-zou') : s, { exit });
   assert.equal(s.scene, 'wm-qianye');
   assert.equal(look(s, content, ctx(DAY1)).waypoint.text, '外门大比 · 明日。路通向沉鼎观 · 外门。');
   s = must(move, fresh(s), { place: 'waimen' });
@@ -246,9 +248,9 @@ test('息壤 lifts the realm to 练气五层 — once, never down, and a scene p
   const sc = CH.scenes['wm-xirang'];
   assert.equal(sc.exits[0].rise, 5);
   let s = { ...opened(), scene: 'wm-xirang', place: 'shimen', done_scenes: ['wm-ahe'] };
-  s = must(resolve, s, { exit: 'swallow' });
+  s = must(resolve, won(s, 'mijing-zou'), { exit: 'swallow' });
   assert.deepEqual([s.tier, s.step, s.progress], ['qi', 4, 0]);
-  const high = must(resolve, { ...opened(), scene: 'wm-xirang', place: 'shimen', step: 6, progress: 30 }, { exit: 'swallow' });
+  const high = must(resolve, won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 6, progress: 30 }, 'mijing-zou'), { exit: 'swallow' });
   assert.deepEqual([high.step, high.progress], [6, 30], 'never down');
 });
 
@@ -379,9 +381,9 @@ test('a bout with a person speaks of him or her: 他/她 by the person, 认输, 
 test('息壤 keeps his 修为 through the jump, and its moment is the five doors opening one by one, in ink (his, 2026-09-29)', async () => {
   const { doorsHtml } = await import('../scripts/doors.js');
   const { MAIN, CARD_KINDS, PAGE_OWNS } = await import('../scripts/stage.mjs');
-  const out = resolve({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 1, progress: 33 }, content, ctx(), { exit: 'swallow' });
+  const out = resolve(won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 1, progress: 33 }, 'mijing-zou'), content, ctx(), { exit: 'swallow' });
   assert.deepEqual([out.state.step, out.state.progress], [4, 33], 'the 修为 goes with him');
-  const capped = resolve({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 3, progress: 79 }, content, ctx(), { exit: 'swallow' }).state;
+  const capped = resolve(won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 3, progress: 79 }, 'mijing-zou'), content, ctx(), { exit: 'swallow' }).state;
   assert.ok(capped.progress < content.ladder.tiers[0].thresholds[4], 'short of the new layer: it never jumps twice');
   const node = out.result.node;
   assert.deepEqual(node.doors.map(d => d.el), ['metal', 'wood', 'water', 'fire', 'earth']);
@@ -456,3 +458,29 @@ test('the doors keep playing through the stage\'s redraws: each draw starts the 
   assert.equal((css.match(/- var\(--age, 0ms\)\)/g) ?? []).length, 3);
 });
 
+
+test('古五\'s chase (2026-10-02): 邹青松 is a trial outlasted, 踏马的符 is in hand at its door and calls the 蛫 as a guard, and the knife is picked up after', async () => {
+  const { fightSetup } = await import('../scripts/rules/cards.mjs');
+  const { begin, act } = await import('../scripts/battle.js');
+  const zou = content.creatures.creatures.find(c => c.id === 'foe-zou');
+  assert.equal(zou.trial.outlast, true);
+  assert.equal(zou.trial.yield, undefined, 'never driven down: the turn is the story\'s');
+  assert.equal(zou.says.won.zh, '你这踏马的符是哪来的！？');
+  let s = { ...opened(), scene: 'wm-kunzhen', place: 'shimen' };
+  s = must(resolve, s, { exit: 'go' });
+  assert.equal(s.bag['tama-fu'], 1, '银月 drew it in the stone chamber');
+  const e = CH.scenes['wm-xirang'].exits.find(x => x.id === 'swallow');
+  assert.deepEqual([e.game.creature, e.game.retry, e.rise], ['foe-zou', true, 5]);
+  refused(resolve, s, { exit: 'swallow' }, 'game-not-won');
+  const setup = fightSetup(content, s, zou, DAY1);
+  assert.ok(setup.you.extra.includes('tama-fu'), 'in hand at the door');
+  const catalog = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
+  const st = begin({ ...setup, you: { ...setup.you, extra: ['tama-fu'] } }, catalog);
+  if (st.whose !== 'you') act(st, { kind: 'end' }, 'foe');
+  st.you.mana = 9;
+  const played = act(st, { kind: 'play', index: st.you.hand.indexOf('tama-fu') }, 'you');
+  assert.ok(played.ok, JSON.stringify(played));
+  assert.ok(st.you.board.some(m => m.id === 'gui' && m.taunt), 'the 蛫 stands guard: a 杀招 takes it first');
+  s = must(resolve, won(s, 'mijing-zou'), { exit: 'swallow' });
+  assert.equal(s.bag['duan-dao'], 1, 'the knife from the dry riverbed');
+});

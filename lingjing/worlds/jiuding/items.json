@@ -512,6 +512,29 @@
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the description."
     },
     {
+      "id": "tama-fu",
+      "kind": "charm",
+      "name": {
+        "zh": "踏马的符",
+        "en": "Hoof-It Charm"
+      },
+      "art": "art/items/talisman.webp",
+      "about": {
+        "zh": "银月拼着最后一点灵气，拿尾巴尖在你脚底画的。她要画的是云，叫它踏云符；画出来四条腿一个脑袋，跟饭桶吐出来的那张废符一模一样——是马。斗法时在手：打出去，一跳躲开一回杀招，落点不由人，落在蛫背后。只灵一回，用了就褪。",
+        "en": "Drawn on your soles with the tip of Yinyue's tail, on the last of her strength. She meant a cloud and called it a Cloud-Step Charm; it came out four legs and a head, the very twin of the junk charm Rice Bucket once spat out — a horse. In hand when you fight: play it and one leap clears a killing blow; where you land is not yours to choose — behind the gui. Good once; used, it fades."
+      },
+      "sold": [],
+      "effect": {
+        "charm": true
+      },
+      "_about": "古五 (the author, 2026-10-02: 「踏马的符」): one use, drawn in the story (made at story), never sold. Its card (cards.json tama-fu) summons the 蛫 as a 护主 — the existing answer to a 杀招 (battle.js § gather: the blow takes the guard first), which is the book's leap: the four fire snakes hit the shell (「是可以禦火」).",
+      "art_source": "The talisman's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16) until its own is painted.",
+      "made": {
+        "from": "fox-token",
+        "at": "story"
+      }
+    },
+    {
       "id": "jingjin",
       "kind": "material",
       "name": {
@@ -871,6 +894,28 @@
         "root": "wood",
         "atk": 2
       }
+    },
+    {
+      "id": "duan-dao",
+      "kind": "weapon",
+      "name": {
+        "zh": "短刀",
+        "en": "Short knife"
+      },
+      "art": "art/items/iron-sword.webp",
+      "about": {
+        "zh": "凡铁，刀口缺了两个牙，后来又缺了一个。秘境干河床上，从一个死人手里一根一根掰开指头拿下来的。猎户放血，就使这么一把。",
+        "en": "Common iron, two nicks in the edge, and later a third. Taken in the hidden realm's dry riverbed from a dead man's hand, one stiff finger at a time. A hunter bleeds a deer with a knife like this."
+      },
+      "buy": 8,
+      "sell": 5,
+      "sold": [],
+      "effect": {
+        "root": "metal",
+        "atk": 1
+      },
+      "_about": "古五: picked up, not given (the author, 2026-10-02: 「在秘境中捡一把武器吧」). The lowest blade there is: 器攻 1.",
+      "art_source": "The iron sword's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
     {
       "id": "tuna-jing",

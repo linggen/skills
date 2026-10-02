@@ -1778,6 +1778,78 @@
       "_trial": "只躲，不还手 (古八: 三十招，那口剑一回也没碰着他; 2026-10-01 the label promised a dodge and the fight was a full duel). A 试 passed by outlasting her twelve cards (battle.js § trial), no yield — he never drives her down. node tools/trial-sim.mjs foe-shijie --at."
     },
     {
+      "id": "foe-zou",
+      "name": {
+        "zh": "邹青松",
+        "en": "Zou Qingsong"
+      },
+      "pinyin": "zōu qīng sōng",
+      "look": {
+        "zh": "彭城赤松观的黄袍，练气四层；白净脸，笑眯眯的。右手一只赤铜火葫芦，放得出火蛇；左臂一面赤铜火纹小盾，同门夸：金丹以下，无人能破。",
+        "en": "A yellow robe of the Red Pine Abbey at Pengcheng, layer four of Qi Refining; pale-faced, always smiling. In his right hand a red-copper gourd that looses fire snakes; on his left arm a little red-copper shield chased with flames — nothing short of a Golden Core can break it, his brothers say."
+      },
+      "says": {
+        "open": {
+          "zh": "匣子放下，狐狸放下。",
+          "en": "Put down the box. Put down the fox."
+        },
+        "won": {
+          "zh": "你这踏马的符是哪来的！？",
+          "en": "Where the hell did you get that Hoof-It charm!?"
+        },
+        "lost": {
+          "zh": "金丹以下，无人能破。",
+          "en": "Nothing short of a Golden Core can break it."
+        }
+      },
+      "province": "徐",
+      "root": "fire",
+      "art": "art/items/huojing.webp",
+      "art_source": "The fire essence's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until his portrait is painted.",
+      "lean": "hide",
+      "pattern": [
+        "cast",
+        "strike",
+        "guard",
+        "gather",
+        "cast"
+      ],
+      "deck": [
+        "huodan",
+        "huodan",
+        "huoya",
+        "huoya",
+        "tongtong",
+        "huodan",
+        "yanxin",
+        "huoya",
+        "fenghuo",
+        "huodan",
+        "huoya",
+        "huiqi"
+      ],
+      "_deck": "赤松观的火 —— 火蛇（火鸦、火弹），一面盾（狪狪护主，lean hide 厚皮）。",
+      "signature": {
+        "id": "simang",
+        "name": {
+          "zh": "四蛇合围",
+          "en": "Four Snakes Close In"
+        },
+        "effect": {
+          "damage": 7
+        }
+      },
+      "_signature": "四蛇合围 —— 四条火蛇，左右前后一齐扑来，地上无处可躲；踏马的符（cards.json tama-fu）一跳，蛫上阵护主，这一记先打蛫。",
+      "trial": {
+        "outlast": true,
+        "goal": {
+          "zh": "被追着打：他有一面盾，金丹以下，无人能破——打不穿他。撑到他出完每一招，便算过了。",
+          "en": "Chased and beaten: his shield, they say, nothing short of a Golden Core can break — you will not get through it. Last until he has spent every move, and you have passed."
+        }
+      },
+      "_trial": "古五 (the author, 2026-10-02: 「九死一生，被追着打……最后是银月出手」): a 试 passed by outlasting his twelve cards (battle.js § trial), no yield — he is never driven down; the turn is the story's (the exit: the leap onto the 蛫, 银月's two hairs break the shield, he finishes it). node tools/trial-sim.mjs foe-zou --at."
+    },
+    {
       "id": "foe-shuanglong",
       "title": {
         "zh": "冰夷之试",

@@ -42,7 +42,7 @@ const GAME_WORDS = /修为|灵力|卡牌|灵石|体力|气血/;
 
 test('every creature speaks: open, won, lost in both languages, short, no digits, no game words', () => {
   const all = content.creatures.creatures.filter(c => !c.made);
-  assert.equal(all.length, 23, 'eighteen beasts, 狰, the three the 外门大比 fights, and 冰夷\'s two dragons (古十)');
+  assert.equal(all.length, 24, 'eighteen beasts, 狰, the three the 外门大比 fights, 邹青松 in the 秘境 (古五), and 冰夷\'s two dragons (古十)');
   for (const c of all) {
     for (const k of ['open', 'won', 'lost']) {
       const line = c.says?.[k];
