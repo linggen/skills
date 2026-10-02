@@ -11,7 +11,10 @@ speak to the player as 你 (story/jiuding-lu/DESIGN.md § 四·五 人称分工)
 2. **The furnace** (`09-furnace`, 柴房). Spring: 周衡's basket of culls, 小狰's two old ginseng →
    three 九转筑基丹; one is his (the bag: `foundation-pill-9`), two stay in 饭桶. The dregs → 九转聚气丹
    for 阿禾 and 孙二狗 (「一个鸡蛋的利息」「牛棚里那半张饼的利息」).
-3. **The year** (`09-year`, 药园). The book's four seasons, one layer each — 清明 → 六, 端午 → 七,
+3. **The year** (`09-year`, 药园). One clock pulls it (2026-10-02): 马小宝 accuses him of selling the
+   官丹, 周衡 sets a public 验封 for 端午 (touched seal = search bunk and body); the rice-water corner
+   lifts in the spring rains, 阿禾's 草木灰 slows it, he holds it down with his thumb at the inspection.
+   The book's four seasons, one layer each — 清明 → 六, 端午 → 七,
    伏天 → 八, 入秋 → 九层圆满 (`rise`, the last `{layer: 9, full: true}`). The seasons are the main
    story, so they cost no 体力 (主线, Hanli 2026-10-01 — was 25 a season; 入秋 pays a story step's 3)
    and each waits on the one before (`needs.mark`); a season done is not offered again (`once`).

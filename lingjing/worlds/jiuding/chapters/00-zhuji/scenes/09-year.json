@@ -9,12 +9,12 @@
   "en": "Chending Temple · The herb garden · That year"
  },
  "setup": {
-  "zh": "一个月一篮残株，一炉一颗九转聚气丹。清明、端午、伏天、入秋——一季一层；白天，你照旧在讲堂上做漏勺。",
-  "en": "A basket of culls a month, a nine-turn qi pill a batch. Qingming, the Dragon Boat festival, the dog days, autumn — a layer a season; by day you are still the leaky ladle of the lecture hall."
+  "zh": "马小宝告到执事房：官丹卖了。周衡定下日子——端午辰时，正殿前，当众验封；封条动过，搜铺，搜身。你那道封条，是去年拿米汤粘回去的。",
+  "en": "Ma Xiaobao has gone to the stewards' office: the temple pill was sold. Zhou Heng has set the day — the Dragon Boat festival, the hour of the dragon, before the main hall, the seal inspected in public; if the seal has been touched, your bunk is searched and so are you. That seal is the one you pasted back with rice water last year."
  },
  "recap": {
-  "zh": "这一年，你一层一层往上走，人前却一天比一天笨；入秋，丹田那片湖满得往外漾——九层圆满。",
-  "en": "That year you climbed layer by layer, and in front of people grew clumsier by the day; in autumn the lake in your dantian brimmed over — the peak of layer nine."
+  "zh": "端午验封，那一角在你拇指底下翘了一翘，你焐住了；周衡记下「验封。完好。」，又问了一句孙二狗那颗丹几道纹——「我看了」。入秋，丹田那片湖满得往外漾——九层圆满。",
+  "en": "At the Dragon Boat inspection the corner lifted under your thumb and you held it down with your own warmth; Zhou Heng wrote \"Seal inspected. Intact.\" — and asked how many rings Sun Ergou's pill had: \"I looked.\" In autumn the lake in your dantian brimmed over — the peak of layer nine."
  },
  "cast": [],
  "people": [
@@ -24,20 +24,20 @@
  "panel": {
   "caption": {
    "zh": [
-    "一个月一篮，一篮一炉。",
-    "人前，一天比一天笨。",
+    "端午辰时，正殿前，验封。",
+    "米汤糊的窗纸，过不了黄梅天。",
     "清明、端午、伏天、入秋。"
    ],
    "en": [
-    "A basket a month, a batch a basket.",
-    "In front of people, clumsier by the day.",
+    "Dragon Boat, the hour of the dragon, before the main hall: the seal.",
+    "Rice-water paste never outlasts the plum rains.",
     "Qingming, Dragon Boat, the dog days, autumn."
    ]
   }
  },
  "story": {
-  "zh": "这一年，周衡的残株一个月一篮，一篮进炉，出来的都是九转聚气丹，一个月一颗。\n\n那几个月里，最难的倒不是修炼，是装。\n\n一个人一天比一天耳聪目明，走起路来一天比一天轻，偏要在人前一天比一天笨，这比挑水劈柴还累。",
-  "en": "That year Zhou Heng's culls came a basket a month, and every basket went into the furnace and came out a nine-turn qi pill — one a month.\n\nIn those months the hardest thing was not the cultivating. It was the pretending.\n\nTo hear sharper and see clearer by the day, to walk lighter by the day, and yet to be clumsier by the day in front of people — that was more tiring than carrying water and splitting wood."
+  "zh": "周衡的笔停了。官丹上了他的账，丢了、卖了，都是他账上一个窟窿。他把小满叫了来，道：「官丹的封，是观主的印。要验，得拿正殿的印模来对。印模在观主手里，观主闭关，端午出关。」他在账簿上记了一行：**端午辰时，正殿前，验封。**记完了，又把观规念了一遍，念得跟念账一样平：「封条若是动过，是私揭官封。搜铺，搜身，交戒律堂。」\n\n马小宝笑了：「搜身好。」\n\n从那天起，马小宝那几个跟班轮着班跟他：他挑水，井边便有人洗手；他上茅房，隔壁便有人蹲着。离端午，还有两个多月。",
+  "en": "Zhou Heng's brush stopped. The temple pill was on his books; lost or sold, it was a hole in his accounts. He sent for Xiaoman and said: \"The seal on a temple pill is the Abbot's stamp. To check it, it must be laid against the stamp mould in the main hall. The mould is in the Abbot's hands; the Abbot is in seclusion, and comes out at the Dragon Boat festival.\" He wrote a line in the ledger: **Dragon Boat, hour of the dragon, before the main hall: seal inspection.** Then he recited the temple rule, as flat as reading out an account: \"If the seal has been touched, that is breaking a temple seal. The bunk is searched, the body is searched, and the matter goes to the Hall of Discipline.\"\n\nMa Xiaobao smiled. \"Searching the body — good.\"\n\nFrom that day Ma Xiaobao's hangers-on took turns following him: when he drew water, someone was washing his hands at the well; when he went to the latrine, someone was squatting next door. The Dragon Boat festival was a little over two months off."
  },
  "lines": [],
  "buttons": [
@@ -59,17 +59,17 @@
    "rise": 6,
    "stay": true,
    "story": {
-    "zh": "练气六层是在清明。\n\n外公的坟在镇上，他去不了，便在后山寻了一块向着蒙山的石头，把一沓黄纸点着了，念着他娘教的口诀，念到「五居中央」，纸烧完了，灰飞起来，打着旋儿往山下去，他丹田里那口水缸，水面又往上涨了一截。",
-    "en": "Qi Condensation layer six came at Qingming.\n\nGrandfather's grave was in the town and he could not go, so he found a rock on the back hill facing Mengshan, set a stack of yellow paper alight, and recited the formula his mother had taught him; as he reached \"five in the middle\", the paper burned out, the ash flew up and spun away down the mountain, and the water in the great jar of his dantian rose another notch."
+    "zh": "练气六层是在清明。\n\n外公的坟在镇上，他去不了，便在后山寻了一块向着蒙山的石头，把一沓黄纸点着了，念着他娘教的口诀，念到「五居中央」，纸烧完了，灰飞起来，打着旋儿往山下去，他丹田里那口水缸，水面又往上涨了一截。\n\n清明过后，雨便没停过。柴房的墙根返了潮，饭桶的铜肚子上，也结了一层细细的水珠。一天夜里，等跟班的鼾声起了，他摸进柴房，把玉盒子掏出来，就着蜡烛一照，心便沉了：去年拿米汤粘回去的那一角，翘起来了，翘得像一只狗耳朵，翘起的地方，还长了一点灰毛。\n\n他娘说过：米汤糊的窗纸，过不了黄梅天。",
+    "en": "Qi Condensation layer six came at Qingming.\n\nGrandfather's grave was in the town and he could not go, so he found a rock on the back hill facing Mengshan, set a stack of yellow paper alight, and recited the formula his mother had taught him; as he reached \"five in the middle\", the paper burned out, the ash flew up and spun away down the mountain, and the water in the great jar of his dantian rose another notch.\n\nAfter Qingming the rain never stopped. The woodshed walls sweated at the foot, and even the Rice Tub's bronze belly beaded with fine drops of water. One night, when the hanger-on's snoring had started, he slipped into the woodshed, took out the jade box, held it to the candle, and his heart sank: the corner he had pasted back with rice water last year had lifted, curled up like a dog's ear, with a little grey fur of mould where it rose.\n\nHis mother used to say: window paper pasted with rice water never outlasts the plum rains."
    }
   },
   {
    "id": "duanwu",
    "label": {
-    "zh": "端午 · 半颗枣",
-    "en": "Dragon Boat · Half a date"
+    "zh": "端午 · 验封",
+    "en": "Dragon Boat · The seal"
    },
-   "means": "the early-summer month: the festival dumpling, the next layer",
+   "means": "the early-summer month: the public seal inspection — he holds the lifting corner down with his thumb; then the festival dumpling, the next layer",
    "needs": {
     "mark": "y-qingming"
    },
@@ -82,8 +82,8 @@
    "rise": 7,
    "stay": true,
    "story": {
-    "zh": "七层是在端午，一口枣核正卡在嗓子眼里。",
-    "en": "Seven came at the Dragon Boat festival, with a date stone stuck in his throat."
+    "zh": "小满捧着玉盒，拇指压在那一角上。雨气从廊檐外头漫进来，他觉得拇指底下，那只狗耳朵轻轻地，又抬了一抬。他不敢动，也不敢使灵力——一个练气二层的人，手上冒不出热气来。他只是压着，拿自己手上那点热，一点一点地焐。马小宝就站在三步开外，眼睛盯着的，正是他那只拇指。\n\n周衡在账簿上记了一行：**验封。完好。**\n\n周衡看着他，道：「我看了。」\n\n七层是在端午，一口枣核正卡在嗓子眼里。",
+    "en": "Xiaoman held the jade box, his thumb pressed on that corner. The damp of the rain drifted in under the eaves, and under his thumb he felt the dog's ear lift, gently, once more. He dared not move, nor use his spirit power — a man of layer two has no heat to give off through his hands. He only pressed, and warmed it, little by little, with the warmth of his own hand. Ma Xiaobao stood three paces off, and what his eyes were fixed on was that thumb.\n\nZhou Heng wrote a line in the ledger: **Seal inspected. Intact.**\n\nZhou Heng looked at him and said: \"I looked.\"\n\nSeven came at the Dragon Boat festival, with a date stone stuck in his throat."
    }
   },
   {
@@ -105,8 +105,8 @@
    "rise": 8,
    "stay": true,
    "story": {
-    "zh": "八层是在伏天里，热得柴房里的耗子都搬了家。\n\n伏天里最热的那几夜，药园巡完了，三个人常坐在药园的矮墙上乘凉：小满，阿禾，孙二狗。\n\n小满问：「你想叫什么？」孙二狗想了半天，道：「……还叫二狗吧。我娘叫惯了。」\n\n小满没笑。阿禾也没笑。墙底下的小狰翻了个身，打了个响鼻。",
-    "en": "Eight came in the dog days, so hot the rats moved out of the woodshed.\n\nOn the hottest nights of the dog days, when the garden round was done, the three of them would sit on the herb garden's low wall to cool off: Xiaoman, A-He, Sun Ergou.\n\nXiaoman asked: \"What would you like to be called?\" Sun Ergou thought for a long time and said: \"…Ergou still. My mother's used to it.\"\n\nXiaoman did not laugh. Nor did A-He. Under the wall the little Zheng rolled over and snorted."
+    "zh": "八层是在伏天里，热得柴房里的耗子都搬了家。跟班们撤了，夜里巡完药园，三个人又能坐在矮墙上乘凉。\n\n小满问：「你想叫什么？」孙二狗想了半天，道：「……还叫二狗吧。我娘叫惯了。」小满没笑。阿禾也没笑。",
+    "en": "Eight came in the dog days, so hot the rats moved out of the woodshed. The hangers-on had been called off, and after the garden round the three of them could sit on the low wall to cool off again.\n\nXiaoman asked: \"What would you like to be called?\" Sun Ergou thought for a long time and said: \"…Ergou still. My mother's used to it.\" Xiaoman did not laugh. Nor did A-He."
    }
   },
   {
