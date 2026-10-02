@@ -15,7 +15,7 @@ follow-up in this lane's report). 古一's passages are paced: a book paragraph 
 structure.md, approved 2026-09-28) are history now.
 
 Book 回 per scene: h01 = 00-shiao … 00-yinyue (古一), h02 = 00-cliff … 00-xiuxian
-(古二 — 吴婆婆 at 立冬's dawn before 马三; 00-xiuxian's `on` carries 锁儿 out of the ridge, her leaving and the 谢谢), and since 2026-10-02 (old 古三 folded into 古二; h03 is an absorbed id) also 00-sleep (the 洗髓), 00-halfyear (the scroll, 冬月廿二's man in white, the mirror at the woodpile), 00-uncle, 00-notice (舅舅,
+(古二 — 吴婆婆 at 立冬's dawn before 马三, her 鼎湖 tale at dusk after he is gone (2.2a, 2026-10-02: moved off the eve of the bow) opening 00-xiuxian; 00-xiuxian's `on` carries 锁儿 out of the ridge, her leaving and the 谢谢), and since 2026-10-02 (old 古三 folded into 古二; h03 is an absorbed id) also 00-sleep (the 洗髓), 00-halfyear (the scroll, 冬月廿二's man in white, the mirror at the woodpile), 00-uncle, 00-notice (舅舅,
 the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 00-waimen (古四; 00-waimen's passage is the book's tail — 舅舅, then the long bunk up to 孙二狗's 「你交不交？」; 00-mijing plays his notebook and the 公中 notice; 阿禾's diary moved to 古五's opening, 2026-10-02), h05 = 00-mijing (the 九月初十 refectory morning that opens 古五; the 周衡 scene moved there 2026-09-30).
 
 | Scene | Source | Choices → mechanics |
@@ -35,9 +35,9 @@ the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 
 | `00-yinyue` 天亮 | 九 | 带她出谷 → she joins (`joins`, task 13) |
 | `00-cliff` 出谷 | 十 | 抓住爹的手 (体力 −3) → 恩 老周 (task 14) |
 | `00-deer` 那头鹿 | 十一 | **board `deer-wind`** (射鹿: hold to draw, loose in the still wind) gates 往左偏半寸 → 鹿皮, she faints (`sleeps`); 照直射 stay (task 15) |
-| `00-dusk` 村东头 | 十二 | 立冬天没亮，腌菜坛子里的鹿腿送到吴婆婆家，鼎湖 · 乌号: 去村东头 (`wupo-bowed`, task 17) · 守着它 |
+| `00-dusk` 村东头 | 十二 | 立冬天没亮，腌菜坛子里的鹿腿送到吴婆婆家，她朝银光低头（鼎湖挪到马三走后的 00-xiuxian 开头）: 去村东头 (`wupo-bowed`, task 17) · 守着它 |
 | `00-rent` 交租 | 十二 | 马三摘弓 · 「下水呢」: 装傻 · 说实话 (`told-ma`) — the 鹿皮 paid (task 16); both wake her |
-| `00-xiuxian` 什么是修仙 | 十三 | 什么是修仙; 让它睡 → next night she leaves into the token (sleeps), the 谢谢 (task 18) |
+| `00-xiuxian` 什么是修仙 | 十三 | 日头偏西 吴婆婆讲鼎湖 · 乌号; 什么是修仙; 让它睡 → next night she leaves into the token (sleeps), the 谢谢 (task 18) |
 | `00-sleep` 洗髓 | 十四 | **board `xisui-hold`** (洗髓: three sticks held through the waves) gates 泡进去 (体力 −6) → 《吐纳经》 (tasks 19–20); 爬出来 stay |
 | `00-halfyear` 半年 | 十五 | the scroll and the ten characters; 冬月廿二 the man in white; 正月初五 the mirror and 爹's 「它听见的不是你喘，是你心慌」 (tasks 21–22) — no 功课 yet: they, 修为, 灵石, 开府, 问卦 and 差事 open at `00-waimen` (chapter.json `locks`) |
 | `00-uncle` 舅舅 | 十六 | 去 · 再等等 stay (tasks 23–24) |
