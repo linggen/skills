@@ -67,6 +67,17 @@
     "zh": "碑脚下的枯草有半人高，一根根朝外倒着，倒像许多年前有人扒开过，又慢慢长拢了。",
     "en": "The dead grass at the stele's foot stands half a man high and leans outward, as if someone parted it long ago and it slowly grew back."
    }
+  },
+  {
+   "id": "rope",
+   "label": {
+    "zh": "碑上的白丝绳",
+    "en": "The white silk cord on the stele"
+   },
+   "text": {
+    "zh": "碑脚一溜小脚印，比你的还小一圈，走进林子，没有走回来；碑身系着一截白丝绳，雨淋过了，还是白的。",
+    "en": "At the stele's foot, a line of small footprints, smaller than yours, going into the trees and not coming back; round the stele, a white silk cord, still white after the rain."
+   }
   }
  ],
  "story": {
@@ -106,7 +117,7 @@
    "mark": "three-rules",
    "story": {
     "zh": "小满没有说「我不」，想了一想，道：「爹。你的腿，追不上鹿。」他爹登时愣住了。\n\n小满竖起三根手指，道：「我跟你进去。但咱们定三条规矩。一，每走一百步，我在树上刻一道记号。二，太阳一过那道山梁，不管追没追到，掉头就走。三——」他看着他爹的眼睛，「只要有一样东西不对劲，不管是什么，不商量。跑。」\n\n他爹看着他，看了很久，道：「好。听你的。」顿了一顿，又道：「……你娘教的？」小满道：「嗯。」他爹长长地叹了一口气，那口气里一半是放心，还有一半，是有点吃醋。\n\n他道：「随她。随她好。」\n\n小满把那只山鸡拴在他爹背后的箭壶带子上。\n\n两人跨过了断碑。跨过去的那一刻，小满耳朵里轻轻「嗡」的一声，像有人在很远很远的地方敲了一记钟。他回头看，断碑还在；往前走了几步，再回头时，断碑竟已没了。\n\n他面不改色，在身边那棵树上刻下了第一道记号，手有点抖，刻歪了；便又在旁边刻了一道，这一回没歪。他当即决定，第一道不算。",
-    "en": "Xiaoman didn't say \"I won't.\" He thought, then said, \"Dad. Your leg can't catch a deer.\" His father stopped short. Xiaoman held up three fingers. \"I'm coming in with you. But we set three rules. One: every hundred paces I cut a mark on a tree.\n\nTwo: once the sun's past that ridge, caught it or not, we turn back. Three —\" he looked his father in the eye, \"— the moment anything's wrong, whatever it is, no arguing. We run.\"\n\nHis father looked at him a long while. \"All right. We'll do it your way.\" A pause. \"…Your mother taught you?\" Xiaoman said, \"Mm.\" His father let out a long sigh, and in that sigh half was relief, and the other half was a little jealousy.\n\n\"Takes after her,\" he said. \"Good that he does.\"\n\nXiaoman tied the pheasant to the strap of the quiver on his father's back.\n\nThe two of them stepped past the broken stele. The moment they crossed it there was a faint *hum* in Xiaoman's ears, like a bell struck very, very far away. He looked back: the stele was still there. A few steps on he looked back again, and the stele was gone.\n\nWithout a flicker he cut the first mark on the tree beside him; his hand shook a little and it came out crooked. So he cut another beside it, and that one was straight. He decided on the spot that the first didn't count."
+    "en": "Xiaoman didn't say \"I won't.\" He thought, then said, \"Dad. Your leg can't catch a deer.\" His father stopped short.\n\nXiaoman held up three fingers. \"I'm coming in with you. But we set three rules. One: every hundred paces I cut a mark on a tree. Two: once the sun's past that ridge, caught it or not, we turn back. Three —\" he looked his father in the eye, \"— the moment anything's wrong, whatever it is, no arguing. We run.\"\n\nHis father looked at him a long while. \"All right. We'll do it your way.\" A pause. \"…Your mother taught you?\" Xiaoman said, \"Mm.\" His father let out a long sigh, and in that sigh half was relief, and the other half was a little jealousy.\n\n\"Takes after her,\" he said. \"Good that he does.\"\n\nXiaoman tied the pheasant to the strap of the quiver on his father's back.\n\nThe two of them stepped past the broken stele. The moment they crossed it there was a faint *hum* in Xiaoman's ears, like a bell struck very, very far away. He looked back: the stele was still there. A few steps on he looked back again, and the stele was gone.\n\nWithout a flicker he cut the first mark on the tree beside him; his hand shook a little and it came out crooked. So he cut another beside it, and that one was straight. He decided on the spot that the first didn't count."
    },
    "beat": [],
    "next": "00-heisong"

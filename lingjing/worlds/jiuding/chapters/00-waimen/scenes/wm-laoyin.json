@@ -1,0 +1,68 @@
+{
+ "version": 1,
+ "id": "wm-laoyin",
+ "chapter": "00-waimen",
+ "hui": "h08",
+ "at": "zhengdian",
+ "place": {
+  "zh": "外门演武场 · 五行台",
+  "en": "The outer court training ground · the Five Elements Platform"
+ },
+ "setup": {
+  "zh": "你站在台心，把那只手翻过来，低头看着自己的掌心。",
+  "en": "You stand at the centre of the platform, turn that hand over, and look down at your palm."
+ },
+ "recap": {
+  "zh": "你的掌心烙下一个印子：一个圈，圈里一横，搓不掉——跟铜镜背上铸的、锁儿那锭银子底下錾的，一模一样。观主把筑基丹放在你左手里；褚先生搭了你的右腕：「脉上是二层。……掌上不是。」",
+  "en": "A mark was branded in your palm: a circle with a bar across it, and it won't rub off — the same as the one cast on the mirror's back and chiselled under Suo'er's ingot. The abbot put the Foundation pill in your left hand; Master Chu took your right wrist: \"By the pulse, layer two. …By the palm, not.\""
+ },
+ "cast": [],
+ "people": [
+  "xuanchenzi",
+  "qulao",
+  "chuxiansheng",
+  "maxiaobao"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "掌心正中，烙着一个印子。",
+    "一个圈，圈里一横。",
+    "「……你拿手接了。」"
+   ],
+   "en": [
+    "In the middle of the palm, a brand.",
+    "A circle, with a bar across it.",
+    "\"…You caught it with your hand.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "小满站在台心，把那只手翻过来，低头看着自己的掌心。\n\n掌心正中，烙着一个印子。不红，不肿，是一道一道发白的细线，像是从肉里头长出来的：一个圈，圈里一横。\n\n他拿拇指去搓，搓不掉；拿指甲去刮，刮得皮都红了，那个圈，那一横，还在那里，白白的，凉凉的。跟铜镜背上铸的，一模一样；跟锁儿领口那锭银子底下錾的，一模一样。\n\n胸口的木牌凉了下来，一个很低的声音在他耳朵里道：「……你拿手接了。」小满小声道：「嗯。」那声音隔了很久，才又道：「……傻子。」便没有声息了。\n\n台上台下三百多人，一个声音也没有。褚先生站在人群最后头，一只手捋着山羊胡子，捋到一半，停在半空。隔了好一会儿，才有一个声音怯生生地道：「……他……他那是……反噬了吧？」这一声像是给众人打开了一扇门：「对对对，反噬！吃丹吃坏了！」「一夜吞了三瓶丹，灵力是虚的！」「褚先生讲过的，轻则退三层，重则废！」「我就说他脸上那些斑不对劲！」越说越信，越信越觉得自己早就看出来了。褚先生的山羊胡子终于落了下来，他咳了一声，沉着脸道：「丹药之道，贪多必失。诸位引以为戒。」说罢转身走了，走的时候，回头看了小满一眼，看的是他垂在身边的那只手。\n\n没有人问沈小满练气几层。只有两个人不这么觉得。一个是台北面竹椅上的观主玄沉子，他从头到尾没动过，这时候却轻轻「嗯」了一声。另一个是山门台阶上的瞿老，他背对着演武场，一直在扫地；镜子裂开的那一声，他的扫帚停了，停在那一级台阶上。那一级台阶，他扫了五十年，这一天，没有扫完。",
+  "en": "Xiaoman stood at the centre of the stage, turned his hand over, and looked down at his palm.\n\nIn the middle of the palm a mark was branded. Not red, not swollen: fine white lines, as if they had grown out of the flesh — a circle, with a bar across it.\n\nHe rubbed it with his thumb and it didn't rub off; he scraped it with a nail till the skin went red, and the circle, the bar, were still there, white, cold. The same as the one cast on the mirror's back; the same as the one chiselled under the ingot at Suo'er's collar.\n\nThe token on his chest cooled, and a very low voice said in his ear: \"…You caught it with your hand.\" \"Mm,\" he whispered. A long while later the voice said: \"…Fool.\" And then nothing.\n\nThree hundred-odd people on and off the stage, and not a sound. At the very back, Master Chu stood with a hand on his goatee, stopped halfway down. After a long while a timid voice said: \"…He… that was… backlash, wasn't it?\" That opened a door: \"Yes, yes, backlash! Ate too many pills!\" \"Three bottles in one night — his power's hollow!\" \"Master Chu told us — at best you drop three layers, at worst you're crippled!\" \"I knew those blotches weren't right!\" The more they said it the more they believed it, and the more they believed it the surer they were they'd seen it all along. Master Chu's goatee finally came down. He coughed, and said sternly: \"In the way of pills, greed brings loss. Take warning, all of you.\" He turned to go, and going, looked back once at Xiaoman — at the hand hanging at his side.\n\nNobody asked what layer Shen Xiaoman was at. Only two people didn't think so. One was the abbot, Xuanchenzi, on his bamboo chair north of the stage; he hadn't moved from first to last, but now he said softly, \"Mm.\" The other was Elder Qu on the steps at the gate, his back to the ground, sweeping all along; the moment the mirror cracked, his broom stopped, stopped on that one step. The step he had swept for fifty years went unfinished that day."
+ },
+ "lines": [],
+ "buttons": [
+  "take"
+ ],
+ "exits": [
+  {
+   "id": "take",
+   "label": {
+    "zh": "左手接玉盒，右手藏进袖子",
+    "en": "Take the jade box left-handed; hide the right in your sleeve"
+   },
+   "means": "takes the Foundation pill from the abbot with the left hand, the branded right hand hidden",
+   "grant": {
+    "table": "scene",
+    "item": "foundation-pill"
+   },
+   "story": {
+    "zh": "头名，筑基丹一枚。照观里的老例，头名的名字要当着全外门的面，由周衡写进那本蓝布面的名录。周衡蘸饱了墨，一笔一画地写下「沈小满」三个字，写得比平时慢，写完了，拿嘴吹了吹，又把名录往前翻了几十页，翻到划了一道的那一页，看了一眼，才又翻回来。人群后头一阵骚动，马小宝回来了，裹着他爹的棉袍，头发上结着冰碴子，湿淋淋地一路走，一路滴水，滴到五行台跟前，看见观主正把一只玉盒子往沈小满手里放，站住了，张了张嘴，什么也没说出来，打了一个寒战。他手里还攥着那面裂了的镜子，落水的时候也没撒手。他看看裂镜，又看看小满垂在身边、攥得紧紧的那只拳头，把裂镜揣进了怀里。\n\n那玉盒子玉色青白，盒盖上贴着一道封条，封条上盖着沉鼎观的大印。小满把左手伸出去接，右手攥着拳，藏在袖子里。玄沉子把玉盒放在他手里，手却没有马上松开，看着他，道：「五行杂灵根？」小满道：「是。」玄沉子道：「练气二层？」小满道：「……是。」玄沉子笑了，笑得很温和，说话却照旧只说半句：「沉鼎秘境里，有一间石室。三百年，没人进去过……」他没说完，低头看了一眼小满藏在袖子里的那只右手，拍了拍他的肩膀，转身走了。小满捧着玉盒站在那里，后背上的汗，一下子全冒了出来。\n\n他捧着玉盒走下五行台的时候，往山门那边望了一眼。瞿老站在台阶上，拄着扫帚，也在看。可瞿老看的不是他，是他手里那只玉盒子。那一眼很长，长得不像是在看一只盒子，倒像是在看一件很多年以前的旧事。然后瞿老转过身去，扫地了。\n\n台阶底下，褚先生在等他。人都往伙房那边散了，老先生一个人站在那里，冲他伸出两根指头：「腕子。」小满把左腕递过去。褚先生不接，道：「那一只。」小满站了一会儿，把右手从袖子里伸了出来。褚先生搭了很久，久到山门那边瞿老的扫帚又响了起来。他把那只手翻过来，看了一眼掌心，又翻了回去，松了手，道：「脉上是二层。」捋了一下山羊胡子，转身走了，走出去三步，头也不回，又补了一句：「掌上不是。」",
+    "en": "First place: one Foundation pill. By temple custom the winner's name was written into the blue register by Zhou Heng before the whole outer court. Zhou Heng dipped his brush full and wrote the three characters Shen Xiaoman stroke by stroke, slower than usual, blew on them, then turned back dozens of pages to the one with the stroke through it, looked, and turned forward again. A stir at the back of the crowd: Ma Xiaobao was back, wrapped in his father's padded gown, ice in his hair, dripping all the way; he dripped up to the platform, saw the abbot placing a jade box in Shen Xiaoman's hands, stopped, opened his mouth, got nothing out, and shivered. In his hand he still clutched the cracked mirror — he hadn't let go of it even in the water. He looked at the cracked mirror, then at the fist Xiaoman held clenched at his side, and tucked the mirror inside his coat.\n\nThe jade box was bluish-white, a seal strip across its lid stamped with the temple's great seal. Xiaoman put out his left hand to take it; his right was a fist, hidden in his sleeve. Xuanchenzi laid the box in his hand but didn't let go at once. He looked at him: \"Five-element mixed roots?\" \"Yes.\" \"Qi Refining, layer two?\" \"…Yes.\" Xuanchenzi smiled, very mildly, and as always said only half: \"In the Chending hidden realm there is a stone chamber. For three hundred years, no one has gone in…\" He didn't finish; he glanced down at the right hand hidden in Xiaoman's sleeve, patted his shoulder, and walked away. Xiaoman stood holding the box, and the sweat broke out all down his back.\n\nAs he carried the box down off the platform he looked toward the gate. Elder Qu stood on the steps leaning on his broom, looking too. But he wasn't looking at Xiaoman; he was looking at the jade box in his hands. A long look, not like looking at a box, more like looking at something that happened many years ago. Then he turned away and swept.\n\nAt the foot of the steps Master Chu was waiting for him. Everyone had drifted off toward the kitchen; the old teacher stood there alone and held out two fingers: \"Your wrist.\" Xiaoman offered his left. Chu didn't take it: \"The other one.\" Xiaoman stood a moment, then brought his right hand out of his sleeve. Chu held it a long time, so long that over at the gate Elder Qu's broom began to sweep again. He turned the hand over, looked once at the palm, turned it back, and let go: \"The pulse says layer two.\" He stroked his goatee, turned and walked away, and three steps on, without looking back, added: \"The palm doesn't.\""
+   },
+   "beat": [],
+   "next": "wm-jiaxin"
+  }
+ ]
+}

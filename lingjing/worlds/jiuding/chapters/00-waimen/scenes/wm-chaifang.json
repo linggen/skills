@@ -9,8 +9,8 @@
   "en": "Chending Temple · Behind the woodshed"
  },
  "setup": {
-  "zh": "十月十二夜里，你在柴房后面码柴。柴房的门「吱呀」一声开了——马小宝，带着五个人。",
-  "en": "The night of the twelfth of the tenth month, you're stacking wood behind the woodshed. The woodshed door creaks open — Ma Xiaobao, with five men."
+  "zh": "十月十二夜里，你蹲在柴房后面，给小狰喂萝卜。柴房的门「吱呀」一声开了——马小宝，带着五个人。",
+  "en": "The night of the twelfth of the tenth month, you crouch behind the woodshed feeding Little Zheng a radish. The woodshed door creaks open — Ma Xiaobao, with five men."
  },
  "recap": {
   "zh": "十月十二夜里，马小宝带五个人堵在柴房后面。你打得过，可你没还手——你数着，二十三下。数到二十，五个里有一个收回了脚：「……够了。」",
@@ -36,14 +36,14 @@
  },
  "look": [
   {
-   "id": "axe",
+   "id": "radish",
    "label": {
-    "zh": "手里的柴刀",
-    "en": "The axe in your hand"
+    "zh": "小狰嘴里的萝卜",
+    "en": "The radish in Little Zheng's mouth"
    },
    "text": {
-    "zh": "刃口是你自己磨的，一刀能劈开一截松木；劈人，你没试过，也不打算今晚试。",
-    "en": "You ground its edge yourself; one blow splits a pine log. You have never tried it on a man and do not mean to start tonight."
+    "zh": "小狰嘴里叼着半截萝卜，也不知听懂了没有。",
+    "en": "Little Zheng has half a radish in its mouth; who knows if it understood."
    }
   },
   {

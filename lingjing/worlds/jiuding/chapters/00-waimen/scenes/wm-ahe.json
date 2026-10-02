@@ -5,8 +5,8 @@
  "hui": "h05",
  "at": "waimen",
  "place": {
-  "zh": "沉鼎观 · 外门 · 执事房前",
-  "en": "Chending Temple · The outer court · the steward's door"
+  "zh": "沉鼎观 · 外门 · 饭堂门口",
+  "en": "Chending Temple · The outer court · the refectory door"
  },
  "setup": {
   "zh": "九月初十，天没亮，饭堂门口排起了长龙：周衡发腰牌、灵石，马小宝收公中。身后有人拍你肩膀——阿禾。",
@@ -25,12 +25,12 @@
  "panel": {
   "caption": {
    "zh": [
-    "九月初十，执事房前，领灵石，交公中。",
+    "九月初十，饭堂门口，领灵石，交公中。",
     "身后有人拍你的肩膀——一个红鼻头。",
     "「利息，以后再算。」"
    ],
    "en": [
-    "The tenth of the ninth month: draw stones, pay the common fund.",
+    "The tenth of the ninth month, the refectory door: draw stones, pay the common fund.",
     "Someone taps your shoulder — a red nose.",
     "\"Interest — reckoned later.\""
    ]
