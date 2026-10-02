@@ -69,6 +69,36 @@
      "zh": "浅水里有东西一闪——是两块灵石。",
      "en": "Something glints in the shallows — two spirit stones."
     }
+   },
+   {
+    "item": "lingzhi",
+    "at": [
+     "shimen"
+    ],
+    "line": {
+     "zh": "往年淹在水底的石缝里，一朵灵芝，伞盖还湿着。",
+     "en": "In a crack that was under water in other years, a lingzhi, its cap still wet."
+    }
+   },
+   {
+    "item": "ginseng",
+    "at": [
+     "shimen"
+    ],
+    "line": {
+     "zh": "干河床的泥里，一支老参露了半截须子——前头那个挖它的人，没挖完。",
+     "en": "Half a whisker of old ginseng shows in the dry riverbed's mud — whoever was digging it never finished."
+    }
+   },
+   {
+    "item": "tongkuang",
+    "at": [
+     "shimen"
+    ],
+    "line": {
+     "zh": "崖壁上一道铜矿，绿莹莹的；你抠下一块来，指甲劈了一个。",
+     "en": "A copper vein in the cliff wall, glowing green; you prise out a lump and split a fingernail doing it."
+    }
    }
   ],
   "冀": [

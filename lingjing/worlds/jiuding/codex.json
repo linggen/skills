@@ -525,6 +525,27 @@
    "first": {
     "book": "h07"
    }
+  },
+  "dingtai": {
+   "first": {
+    "book": "h07",
+    "scene": "wm-xirang"
+   },
+   "tag": "丹药"
+  },
+  "longxu-cao": {
+   "first": {
+    "book": "h07",
+    "scene": "wm-xirang"
+   },
+   "tag": "丹药"
+  },
+  "xizhu": {
+   "first": {
+    "book": "h07",
+    "scene": "wm-xirang"
+   },
+   "tag": "法宝"
   }
  }
 }
