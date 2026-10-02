@@ -13,8 +13,8 @@
   "en": "Noon on the Start of Winter: Ma San comes for the rent. The deer lies spread over the yard, the offal right by the door, and your mother sits waiting inside the threshold. Ma San narrows his eyes: \"The deer of Black Pine Ridge — what's their name?\""
  },
  "recap": {
-  "zh": "皮抵了今年的租，肉抵了去年的欠，角也叫马三拿走了，他连爷爷的弓都摘了下来；娘问了一句「下水呢」，你编了一个吃饼、问「弓呢」的鬼，马三把弓扔了回来。娘摸了摸你的\"围脖\"，什么都没问。",
-  "en": "The hide went for this year's rent, the meat for last year's arrears, Ma San took the antlers too — and took grandfather's bow down off the wall. Your mother asked, \"And the offal?\"; you made up a ghost that eats flatbread and asks \"Where's the bow?\", and Ma San threw the bow back. Your mother touched your \"scarf\" and asked nothing."
+  "zh": "皮抵了去年的欠，肉抵了今年的租，角也叫马三拿走了，他连爷爷的弓都摘了下来；娘问了一句「下水呢」，你编了一个吃饼、问「弓呢」的鬼，马三把弓扔了回来。娘摸了摸你的\"围脖\"，什么都没问。",
+  "en": "The hide went for last year's arrears, the meat for this year's rent, Ma San took the antlers too — and took grandfather's bow down off the wall. Your mother asked, \"And the offal?\"; you made up a ghost that eats flatbread and asks \"Where's the bow?\", and Ma San threw the bow back. Your mother touched your \"scarf\" and asked nothing."
  },
  "cast": [],
  "people": [
@@ -25,12 +25,12 @@
  "panel": {
   "caption": {
    "zh": [
-    "皮，抵今年的租；肉，抵去年的欠。",
+    "皮，抵去年的欠；肉，抵今年的租。",
     "「射马家鹿的弓——也姓马。」",
     "「里头……还有什么？」"
    ],
    "en": [
-    "The hide for this year's rent; the meat for last year's.",
+    "The hide for last year's arrears; the meat for this year's rent.",
     "\"The bow that shot a Ma deer — its name is Ma too.\"",
     "\"What else… is in there?\""
    ]
