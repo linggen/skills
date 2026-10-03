@@ -31,11 +31,12 @@ function pouchCap(content, state) {
   return base + more;
 }
 
-/* A thing that takes no slot: a key, one the chapter or a taken errand still
-   needs, her bell. */
+/* A thing that takes no slot: a key, a story thing (items.json `story`: kept,
+   never sold — 紫须芝 he carries back to 阿禾), one the chapter or a taken
+   errand still needs, her bell. */
 function freeSlot(content, state, id) {
   const item = itemOf(content, id);
-  if (item?.kind === 'key') return true;
+  if (item?.kind === 'key' || item?.story) return true;
   if (companionOf(content)?.bell === id) return true;
   if (keyInUse(content, state, id)) return true;
   return Object.keys(state.quests ?? {}).some(q => !questDoneBefore(state, q)

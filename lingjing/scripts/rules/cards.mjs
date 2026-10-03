@@ -252,6 +252,10 @@ function gainCard(content, state, id, from = null) {
    beast and the 名字, like everything else a fight deals. */
 function winCard(content, state, creature, now, nth = 0, from = { how: 'win', creature: creature.id }) {
   const owned = new Set(ownedCards(content, state)), roots = new Set(state.traits ?? []);
+  // A creature that names its card (creatures.json `card`) deals that one, not yet held:
+  // what it fought with, now his (邹青松's gourd → 火鸦, 杀人必摸尸).
+  const named = !nth && creature.card ? (content.cards?.cards ?? []).find(c => c.id === creature.card) : null;
+  if (named && !owned.has(named.id)) return gainCard(content, state, named.id, { ...from, day: dayKey(now) });
   const open = (content.cards?.cards ?? []).filter(c => !c._token && c.id !== 'yinyue' && !isBeastCard(content, c.id)
     && !owned.has(c.id) && usable(c, roots));
   const own = open.filter(c => c.element === creature.root);

@@ -844,6 +844,124 @@
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-25, from the description."
     },
     {
+      "id": "pouch-low",
+      "kind": "pouch",
+      "name": {
+        "zh": "下品储物袋",
+        "en": "Low-grade storage pouch"
+      },
+      "art": "art/items/pouch-mid.webp",
+      "about": {
+        "zh": "灰布袋子，口上一道绳。主人死了，袋上的印记散了，到你手里便开。换上它，储物袋多出六格。",
+        "en": "A grey cloth bag with a drawstring. Its owner is dead and the mark on it has faded, so it opens to your hand. Carry it and your pouch holds six more kinds."
+      },
+      "buy": 80,
+      "sell": 20,
+      "sold": [],
+      "effect": {
+        "pouch": 6
+      },
+      "_about": "古五: off 邹青松 (赤松观), 杀人必摸尸 (design.md § Items) — the foe-zou win drops it. Smaller than 中品 (+12).",
+      "art_source": "The middle-grade pouch's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-25) until its own is painted."
+    },
+    {
+      "id": "chitong-hulu",
+      "kind": "weapon",
+      "name": {
+        "zh": "赤铜葫芦",
+        "en": "Red-copper gourd"
+      },
+      "art": "art/items/huojing.webp",
+      "about": {
+        "zh": "赤松观的火葫芦，葫芦口放得出火蛇。塞子是你一箭射下来的，从干河床上捡回来塞上。空了，拿你自己的火气一点一点养回来。是赤松观的东西：山上，有赤松观的人在的地方，不能亮。",
+        "en": "Red Pine Abbey's fire gourd; fire snakes pour from its mouth. The cork is the one your arrow shot off, picked up from the dry riverbed and pushed back in. Empty now, it fills slowly from your own fire qi. It is Red Pine Abbey's: on the mountain, or anywhere their people are, it cannot be shown."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "effect": {
+        "root": "fire",
+        "atk": 3
+      },
+      "_about": "古五: 邹青松's gourd, seen in the fight (火蛇) — 摸到的兵器，须是打斗里亮过相的 (design.md § Items). Worn, it lends fire; the win that drops it deals 火鸦 (creatures.json foe-zou `card`), its fire snakes as a card. Never sold.",
+      "art_source": "The fire essence's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
+    },
+    {
+      "id": "lianxi-fu",
+      "kind": "charm",
+      "name": {
+        "zh": "敛息符",
+        "en": "Breath-Hiding Charm"
+      },
+      "art": "art/items/talisman.webp",
+      "about": {
+        "zh": "贴身藏着，一身的气敛进去，旁人看你，看低一两层。一道一回。",
+        "en": "Kept against the skin, it draws your aura in; whoever looks you over reads you a layer or two lower. One use each."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "_about": "古五: two off 邹青松. A story charm: no fight card, no effect in play yet (the 藏 arc uses them in the book: one at the 秘境 exit / before a probe, one kept — OUTLINE 扣子簿).",
+      "art_source": "The talisman's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16) until its own is painted."
+    },
+    {
+      "id": "zixu-zhi",
+      "kind": "material",
+      "name": {
+        "zh": "紫须芝",
+        "en": "Purple-whisker lingzhi"
+      },
+      "art": "art/items/lingzhi.webp",
+      "about": {
+        "zh": "灵草园里拔的，根上缠着阿禾那根红线，土还是园里的土。不是你的，带回去还她。",
+        "en": "Pulled from the spirit-herb garden; A-He's red thread is still round its root, the soil still the garden's. It isn't yours: you carry it back to her."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "story": true,
+      "_about": "古五: 邹青松 took it off 阿禾 at the dry riverbed; 小满 finds it in his pouch and returns it in 古六. A story thing (`story`): no slot, never sold.",
+      "art_source": "The lingzhi's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
+    },
+    {
+      "id": "zou-letter",
+      "kind": "treasure",
+      "name": {
+        "zh": "邹青松的家信",
+        "en": "Zou Qingsong's letter home"
+      },
+      "art": "art/items/wangqi-1.webp",
+      "about": {
+        "zh": "彭城来的家信，叠了几折，说给小妹置一副嫁妆。你看了两遍，叠好收着。",
+        "en": "A letter from home in Pengcheng, folded small: a dowry to be put together for his little sister. You read it twice, folded it, and kept it."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "story": true,
+      "_about": "古五: kept, not put back — a 扣子 for a later 卷 (彭城, 小妹的嫁妆; OUTLINE 扣子簿). A story thing: no slot, never sold.",
+      "art_source": "The scroll's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
+    },
+    {
+      "id": "neimen-map",
+      "kind": "treasure",
+      "name": {
+        "zh": "内门的秘境图",
+        "en": "The inner court's map of the realm"
+      },
+      "art": "art/items/wangqi-1.webp",
+      "about": {
+        "zh": "潭里那个九层身上的，比阿禾借来的那张深几层，石坎底下那一层画得明明白白。内门的东西，藏好。",
+        "en": "Off the ninth-layer man in the pool: several levels deeper than the one A-He borrowed, the level under the stone sill drawn plain. An inner-court thing; keep it hidden."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "story": true,
+      "_about": "古五 (2026-10-03, 穷人家的孩子，见了宝，都拿走): he searched the dead 九层 in the 蛫 pool — 聚气丹 ×5 and this map; the 名牌 and the cloud-pattern pouch went into the dark. A 扣子 for the next time the 秘境 opens (OUTLINE 扣子簿). A story thing: no slot, never sold.",
+      "art_source": "The scroll's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
+    },
+    {
       "id": "fox-token",
       "kind": "key",
       "name": {

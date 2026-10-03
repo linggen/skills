@@ -854,7 +854,8 @@ function lintCreatures(content, bad) {
     // what is written must be one of the ways a creature fights.
     if (c.lean != null && !LEAN_IDS.includes(c.lean)) bad(`creature ${c.id}`, `leans an unknown way: ${c.lean}`);
     for (const i of c.pattern ?? []) if (!INTENTS.includes(i)) bad(`creature ${c.id}`, `fights an unknown way: ${i}`);
-    if (c.drops && !content.items.items.some(i => i.id === c.drops)) bad(`creature ${c.id}`, `drops unknown item ${c.drops}`);
+    if (c.card && !(content.cards?.cards ?? []).some(k => k.id === c.card && !k._token)) bad(`creature ${c.id}`, `deals unknown card ${c.card}`);
+    for (const d of [c.drops ?? []].flat()) if (!content.items.items.some(i => i.id === d)) bad(`creature ${c.id}`, `drops unknown item ${d}`);
     if (!c.made) lintPinyin(c, bad, true);
     if (c.signature) lintSignature(content, c, bad);
     // Caught, not fought (狰): the board it is caught with, and its line when struck at.
@@ -930,7 +931,12 @@ function lintGrant(where, grant, content, ids, bad) {
   }
   if (grant.cast && !ids.creatures.has(grant.cast)) bad(where, `grants unknown creature ${grant.cast}`);
   if (grant.item && !ids.items.has(grant.item)) bad(where, `grants unknown item ${grant.item}`);
+  if (grant.n != null && !(grant.item && Number.isInteger(grant.n) && grant.n >= 1)) bad(where, `n ${grant.n} needs an item and a count of at least 1`);
   if (grant.card && !(content.cards?.cards ?? []).some(c => c.id === grant.card && !c._token)) bad(where, `grants unknown card ${grant.card}`);
+  for (const [id, n] of Object.entries(grant.more ?? {})) {
+    if (!ids.items.has(id)) bad(where, `grants unknown item ${id}`);
+    if (!(Number.isInteger(n) && n >= 1)) bad(where, `more ${id} needs a count of at least 1`);
+  }
 }
 
 function lintChapter(chapter, content, ids, bad) {

@@ -485,3 +485,32 @@ test('古五\'s chase (2026-10-02): 邹青松 is a trial outlasted, 踏马的符
   s = must(resolve, won(s, 'mijing-zou'), { exit: 'swallow' });
   assert.equal(s.bag['duan-dao'], 1, 'the knife from the dry riverbed');
 });
+
+test('杀人必摸尸 (古五, 2026-10-03): 邹青松 killed leaves his 储物袋 — the gourd he fought with, 敛息符, 回春丹, 紫须芝, the letter — and the gourd\'s fire snakes as a card', async () => {
+  const { drop } = await import('../scripts/rules/arms.mjs');
+  const { winCard } = await import('../scripts/rules/cards.mjs');
+  const { pouchBrief } = await import('../scripts/rules/pouch.mjs');
+  const zou = content.creatures.creatures.find(c => c.id === 'foe-zou');
+  const s = { ...opened(), bag: {} };
+  const got = drop(content, s, zou, DAY1);
+  const by = Object.fromEntries(got.map(g => [g.id, g.n]));
+  for (const [id, n] of Object.entries({ 'pouch-low': 1, 'chitong-hulu': 1, 'lianxi-fu': 2, 'mend-pill': 3, 'zixu-zhi': 1, 'zou-letter': 1 })) assert.ok(by[id] >= n, `${id} ×${n} in 所得: ${JSON.stringify(by)}`);
+  assert.equal(new Set(got.map(g => g.id)).size, got.length, 'an id twice is one line in 所得');
+  const items = Object.fromEntries(content.items.items.map(i => [i.id, i]));
+  // 摸到的兵器，须是打斗里亮过相的: the gourd is his fire-snake weapon.
+  assert.deepEqual([items['chitong-hulu'].kind, items['chitong-hulu'].effect.root], ['weapon', 'fire']);
+  assert.ok(items['pouch-low'].effect.pouch < items['pouch-mid'].effect.pouch);
+  // Story things take no slot.
+  const before = pouchBrief(content, s).used;
+  assert.equal(before, Object.keys(s.bag).filter(id => !items[id].story && items[id].kind !== 'key').length);
+  const card = winCard(content, { ...s, cards: [] }, zou, DAY1);
+  assert.equal(card?.id, 'huoya', 'the win deals the gourd\'s fire snakes');
+  const e = CH.scenes['wm-xirang'].exits.find(x => x.id === 'swallow');
+  assert.equal(e.grant.wealth, 9, 'the 钱袋: seven from the fat 公子, two from the riverbed');
+  assert.equal(e.grant.card, 'huiqi', 'the 回气丹 bottle');
+  // 穷人家的孩子，见了宝，都拿走: the dead 九层's pills and map, the 鼎苔 scraped clean — all stowed by the exit.
+  assert.deepEqual(e.grant.more, { 'qi-pill': 5, dingtai: 3, 'neimen-map': 1 });
+  let t = { ...opened(), scene: 'wm-xirang', place: 'shimen', bag: {} };
+  t = must(resolve, won(t, 'mijing-zou'), { exit: 'swallow' });
+  assert.deepEqual([t.bag['qi-pill'], t.bag.dingtai, t.bag['neimen-map'], t.bag['duan-dao']], [5, 3, 1, 1]);
+});

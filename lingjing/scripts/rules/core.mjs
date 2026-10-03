@@ -81,13 +81,16 @@ function pay(content, state, ctx, grant, landing = state) {
   const cards = [[grant.cast, { how: 'tame', creature: grant.cast, day }], [grant.card, { how: 'story', day }]]
     .map(([id, from]) => (id ? gainCard(content, state, id, from) : null)).filter(Boolean);
   // A thing granted goes into the 储物袋 — or, full, waits at the 洞府 (pouch.mjs).
-  const stowed = grant.item ? stow(content, state, grant.item) : null;
-  const full = storedLine(state, [stowed]);
+  // `n`: how many of it (古五's 鼎苔, scraped clean off four pits — 杀人必摸尸's habit, design.md § Items).
+  const stowed = grant.item ? stow(content, state, grant.item, grant.n ?? 1) : null;
+  // `more`: the rest of what the scene put in his hands, {id: n} (杀人必摸尸 — 古五's 石室).
+  const extra = Object.entries(grant.more ?? {}).map(([id, n]) => stow(content, state, id, n));
+  const full = storedLine(state, [stowed, ...extra]);
   // An art is taught by a person, in a scene — never by the beast itself.
   const learned = grant.art ? learn(content, state, grant.art) : null;
   const named = levels.map(l => ({ from: stepName(content, l.from.tier, l.from.step, state.lang), to: stepName(content, l.to.tier, l.to.step, state.lang) }));
   // `progress` is what the realm really took; at the peak the rest is held.
-  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, ...(full ? { stored: true, pouch_full: full } : {}), levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}) };
+  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, ...(extra.length ? { more: extra } : {}), ...(full ? { stored: true, pouch_full: full } : {}), levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}) };
 }
 
 /* A riddle is answered wrong at most this many times a day. */

@@ -281,7 +281,16 @@ from the bag and adds it to the cast (`needs-item`, `already-tamed`,
 - **储物袋** (2026-09-25): room in slots by realm (`pouch.by_tier`: 24/36/48/60),
   bigger pouches used once; story things take no slot; what does not fit
   waits at the 洞府 (`state.held`, 待取). The pouch panel (pouch.js): tabs,
-  tiles, 服用 · 佩戴 · 卖 · 丢, the deck pane.
+  tiles, 服用 · 佩戴 · 卖 · 丢, the deck pane. A story thing (`story: true`, e.g.
+  紫须芝 carried back to 阿禾, 邹青松's letter) takes no slot, like a key.
+- **杀人必摸尸** (the author, 2026-10-03: 「小满杀人后要捡走东西。游戏玩法」):
+  a kill leaves 所得, in the book and the game alike. A foe's `drops` may be a
+  list (an id twice is two of it); `card` names the card its win deals (not
+  yet held) instead of the day's pick. **摸到的兵器，须是打斗里亮过相的** —
+  no weapon the fight never showed. 邹青松 (古五, foe-zou): 下品储物袋 (+6),
+  赤铜葫芦 (weapon, fire, 器攻 3) with its fire snakes as 火鸦, 敛息符 ×2 (a story
+  charm, no fight effect yet), 回春丹 ×3, 紫须芝, the letter; the exit pays the
+  钱袋's 9 灵石 and the 回气丹 card.
 
 ### 丹药 in the game 【在建】
 
@@ -291,7 +300,7 @@ from — are story DESIGN § 六·五. **Built:** the furnace's pills are their 
 items with `zhuan: 9` (`mend-pill-9` 第一炉, `qi-pill-9` from 药园残株), three
 times the market pill's 修为, never sold; the pouch draws the 丹纹 (nine gold
 strokes). **Not yet:** `tier`/`zhuan` on every made pill with a tamed effect
-curve (the story's ×10ⁿ is never the game's number), 丹毒, 炸炉 for mortal
+curve (the story's ×10ⁿ is never the game's number), 丹毒 (and its cure: 闭关 = 补转, the turns the furnace left out made up by the body — story DESIGN § 六·五), 炸炉 for mortal
 furnaces, the furnace making 破境丹, 仙丹 after the finale.
 
 ## 斗法 v3 — one card game, 《炉石传说》's shape 【已建】 (PvE; PvP and the raid 【远景】)

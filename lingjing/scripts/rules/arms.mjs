@@ -10,20 +10,26 @@ import { stow } from './pouch.mjs';
 /* ── 本命法宝: the treasure a cultivator binds at 结丹 ── */
 
 /* What a subdued creature leaves behind: the one thing it carries
-   (creatures.json `drops`), and on one win in `fight_one_in` a 符 (rewards.json
+   (creatures.json `drops`: one id, or a list — a man killed is searched,
+   杀人必摸尸, design.md § Items), and on one win in `fight_one_in` a 符 (rewards.json
    `growth.charm` — 写符 was cut, redesign-v2 § 四). The 妖丹 it left went with
    强化. Both go into the 储物袋 — or, full, wait at the 洞府 (pouch.mjs). */
 function drop(content, state, creature, now) {
   const got = [];
   const one = content.rewards.growth?.charm?.fight_one_in, charm = charmOf(content);
   const lucky = one && charm && hashOf(`${dayKey(now)}|${creature.id}|${seedOf(state)}|charm`) % one === 0;
-  for (const id of [creature.drops, lucky ? charm.id : null].filter(Boolean)) {
-    const item = itemOf(content, id);
-    if (!item) continue;
-    got.push(stow(content, state, id));
+  // An id named twice is two of it, one line in 所得 (邹青松's 火符).
+  const counts = new Map();
+  for (const id of [...dropsOf(creature), lucky ? charm.id : null].filter(Boolean)) counts.set(id, (counts.get(id) ?? 0) + 1);
+  for (const [id, n] of counts) {
+    if (!itemOf(content, id)) continue;
+    got.push(stow(content, state, id, n));
   }
   return got;
 }
+
+/* What a creature carries, as a list: `drops` is one id or several. */
+export const dropsOf = creature => [creature?.drops ?? []].flat().filter(Boolean);
 
 /* One 符 into the bag — a rumor's finale leaves it. Null when the world has none. */
 function giveCharm(content, state) {
