@@ -54,6 +54,11 @@ class Takes(unittest.TestCase):
 
 
 class Fit(unittest.TestCase):
+    def test_word_stamps_never_reach_the_sidecar(self):
+        # 青花瓷 (2026-10-03): LRCLIB timed every word; the car printed the stamps.
+        body = "[00:21.98]<00:21.975>素<00:22.207>胚<00:22.423>勾<00:22.736>勒<00:23.071>"
+        self.assertEqual(lm.line_stamps_only(body), "[00:21.98]素胚勾勒")
+
     def test_last_line_at_reads_the_latest_stamp(self):
         self.assertAlmostEqual(lm.last_line_at("[00:10.50] a\n[03:13.00] b"), 193.0)
         self.assertEqual(lm.last_line_at("words only"), 0)

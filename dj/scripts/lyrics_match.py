@@ -349,12 +349,22 @@ def timed_fit(entries, seconds):
     return min(fits, key=lambda e: _rank(e, seconds)) if fits else None
 
 
+WORD_STAMP = re.compile(r"<\d{1,2}:\d{2}(?:[.:]\d{1,3})?>")
+
+
+def line_stamps_only(body):
+    """Some LRCLIB copies time every word too — `[00:21.98]<00:21.975>素<00:22.207>胚`.
+    Every player here reads line stamps only and would print the word stamps as
+    text, so a sidecar keeps the line clock and drops the rest."""
+    return WORD_STAMP.sub("", body)
+
+
 def fit(entries, seconds):
     """Lyrics for a recording `seconds` long: the timed set that fits it, else
     the words alone. {body, synced, duration, gap} or None."""
     e = timed_fit(entries, seconds)
     if e:
-        return {"body": e["syncedLyrics"], "synced": True,
+        return {"body": line_stamps_only(e["syncedLyrics"]), "synced": True,
                 "duration": round(e.get("duration") or 0),
                 "gap": round(abs((e.get("duration") or 0) - seconds), 1) if seconds else None}
     words = [e for e in entries if (e.get("plainLyrics") or "").strip()]

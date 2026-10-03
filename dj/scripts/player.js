@@ -15,12 +15,14 @@ const fmt = (s) => (Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.fl
 
 // ── parse an .lrc into [{ t, text }] sorted by time ──────────────────────────
 const STAMP = /\[(\d{1,2}):(\d{2})(?:\.(\d{1,3}))?\]/g;
+// A per-word stamp inside a line (`<00:21.975>素`) — read past, never shown.
+const WORD_STAMP = /<\d{1,2}:\d{2}(?:[.:]\d{1,3})?>/g;
 export function parseLrc(text) {
   const out = [];
   for (const raw of String(text).split('\n')) {
     const stamps = [...raw.matchAll(STAMP)];
     if (!stamps.length) continue; // metadata ([ar:], [ti:]…) or junk
-    const line = raw.replace(STAMP, '').trim();
+    const line = raw.replace(STAMP, '').replace(WORD_STAMP, '').trim();
     for (const m of stamps) {
       const t = +m[1] * 60 + +m[2] + (m[3] ? +`0.${m[3]}` : 0);
       out.push({ t, text: line });
