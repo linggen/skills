@@ -33,13 +33,19 @@ queue: after-turn
 # the engine reads it (skill-spec § Senses) and hands it to every tool call
 # as LINGGEN_WEATHER — the game itself never goes online.
 senses: [weather, user_words]
-# 银月 is a guest in Lingjing's chat (skill-spec § Place), and she is found,
-# not given: until the player finds her in the prologue's valley — and while
-# she sleeps in 吴婆婆's fox token (prologue-v3) — she is not here at all
-# (the save's `companion.awake`): `@银月` runs no turn and the page says
-# 「查无此人。」, and no app moment reaches her (Hanli, 2026-09-25 / 09-28).
+# Ling and 银月 share Lingjing's table (doc/shared-session-spec.md): one
+# thread — she reads the scenes and Ling's Look as he plays them — Ling
+# leading. She is found, not given: until the player finds her in the
+# prologue's valley — and while she sleeps in 吴婆婆's fox token
+# (prologue-v3) — she is not here at all (the save's `companion.awake`):
+# `@银月` runs no turn and the page says 「查无此人。」, and no app moment
+# reaches her (Hanli, 2026-09-25 / 09-28). At the table she reads the game
+# and never moves it: her tools here are her own read of it (AppTool →
+# Progress) and the book (Story) — no Resolve, no question widget.
+members: [ling, yinyue]
 place:
   yinyue:
+    tools: [AppTool, Story]
     text: >-
       You are inside Lingjing 《灵境》, the player's companion in the game's
       world, on the road at their side. Speak in the game's language, as
