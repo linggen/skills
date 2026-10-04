@@ -15,7 +15,7 @@ follow-up in this lane's report). 古一's passages are paced: a book paragraph 
 structure.md, approved 2026-09-28) are history now.
 
 Book 回 per scene: h01 = 00-shiao … 00-yinyue (古一), h02 = 00-cliff … 00-xiuxian
-(古二 — 吴婆婆 at 立冬's dawn before 马三, her 鼎湖 tale at dusk after he is gone (2.2a, 2026-10-02: moved off the eve of the bow) opening 00-xiuxian; 00-xiuxian's `on` carries 锁儿 out of the ridge, her leaving and the 谢谢), and since 2026-10-02 (old 古三 folded into 古二; h03 is an absorbed id) also 00-sleep (the 洗髓), 00-halfyear (the scroll, 冬月廿二's man in white, the mirror at the woodpile), 00-uncle, 00-notice (舅舅,
+(古二 — 吴婆婆 at 立冬's dawn before 马三, her 鼎湖 tale at dusk after he is gone (2.2a, 2026-10-02: moved off the eve of the bow) opening 00-xiuxian; 00-xiuxian's `on` carries her leaving and the 谢谢; 锁儿 and his scene `00-suoer` went 2026-10-03, Hanli: 「锁儿的部分删了吧，本来的第一章挺好。前两章不用死人。」 — a save on `00-suoer` goes on to `00-fox` (chapter.json `aliases`)), and since 2026-10-02 (old 古三 folded into 古二; h03 is an absorbed id) also 00-sleep (the 洗髓), 00-halfyear (the scroll, 冬月廿二's man in white, the mirror at the woodpile), 00-uncle, 00-notice (舅舅,
 the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 00-waimen (古三; 00-waimen's passage is the book's tail — 舅舅, then the long bunk up to 孙二狗's 「你交不交？」; 00-mijing plays his notebook and the 公中 notice; 阿禾's diary moved to 古五's opening, 2026-10-02), h05 = 00-mijing (the 九月初十 refectory morning that opens 古五; the 周衡 scene moved there 2026-09-30).
 
 | Scene | Source | Choices → mechanics |
@@ -24,12 +24,11 @@ the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 
 | `00-masan` 马三 | 一 | 垂眼 (`kept-count`) · 攥拳 (体力 −5): both write 恩仇簿 仇 马小宝, 马三 — task 2 |
 | `00-dawn` 鸡蛋 | 一 | 收下 → 恩 {伴} (task 3) · 推回去 (`no-egg`) |
 | `00-kitchen` 灶间 | 一 | 跟爹进山 → 狐纹木牌 (task 4) |
-| `00-chushan` 前山 | 二 | 爬树眺望 → the map card (task 5) |
+| `00-chushan` 前山 | 二 | 爬树眺望 → the map card (task 5); at noon a second tree: a deer lifts its head at 黑松岭's edge, and they track it to the 断碑 (no 马家 dogs since 2026-10-03, Hanli: 「可以写他们看见远处的鹿在黑松岭里面，追进去的」) |
 | `00-duanbei` 断碑 | 三 | 看碑背 (`stele-fox`, task 7) · 三条规矩 (`three-rules`, task 6) · 回村 / 独自进 stay |
 | `00-heisong` 黑松岭 | 三 | 一百步一记 (体力 −3, `marks-cut`, task 8) |
 | `00-storm` 暴雨 | 四 | 掉头 (体力 −4) · 再追半里 (体力 −10) (task 9) — the rain breaks; the haul is 00-fall's board |
-| `00-fall` 第二十七道记号 | 五 · 六 | **board `fall-storm`** (lane MG's 暴雨: haul 爹 back in the lulls) gates 把爹拽回山壁 — then the fall, a sound under the rain (task 10); `at` heisong |
-| `00-suoer` 崖根 | 古一 (2026-10-02) | 锁儿, the boy 老井 hired with a silver ingot, dies holding his hand: 攥住他的手 (`suoer-silver`) → the 银叶, the ingot (圈里一横) for his mother, then 查伤 alone, 火镰, the light |
+| `00-fall` 第二十七道记号 | 五 · 六 | **board `fall-storm`** (lane MG's 暴雨: haul 爹 back in the lulls) gates 把爹拽回山壁 — then the fall, 查伤, 爷爷's 火镰, the light (task 10); `at` heisong |
 | `00-fox` 银光 | 七 | 裹起它 · 别碰 (stay) — task 11 |
 | `00-cave` 那一夜 | 八 | 分它一半 · 自己吃 (task 12) |
 | `00-yinyue` 天亮 | 九 | 带她出谷 → she joins (`joins`, task 13) |

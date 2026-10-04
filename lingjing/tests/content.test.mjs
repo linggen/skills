@@ -63,7 +63,7 @@ test('the prologue runs from 石坳村 to the notice board', () => {
     const onward = scene.exits.find(e => e.next && scene.buttons.includes(e.id));
     id = onward?.next;
   }
-  assert.deepEqual(path, ['00-shiao', '00-masan', '00-dawn', '00-kitchen', '00-chushan', '00-duanbei', '00-heisong', '00-storm', '00-fall', '00-suoer', '00-fox', '00-cave', '00-yinyue',
+  assert.deepEqual(path, ['00-shiao', '00-masan', '00-dawn', '00-kitchen', '00-chushan', '00-duanbei', '00-heisong', '00-storm', '00-fall', '00-fox', '00-cave', '00-yinyue',
     '00-cliff', '00-deer', '00-dusk', '00-rent', '00-xiuxian', '00-sleep', '00-halfyear', '00-uncle', '00-notice', '00-gate', '00-luoshu', '00-longzhi', '00-hall', '00-waimen', '00-mijing']);
   assert.ok(ch.scenes['00-mijing'].exits.some(e => e.ends === '00-prologue'));
 });

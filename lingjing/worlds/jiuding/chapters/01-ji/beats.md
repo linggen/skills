@@ -10,12 +10,12 @@
    周衡 does not write a word. Opens on 瞿老's sixteen characters (内观经, 古八's lesson — paid off in the deep)
    and the sleeper under the Zhang, 「这一个，睡得更沉」.
 2. **Ye** (`01-ye`, 邺城). The inn, the custom, this year's bride (豆腐西施). The two failed plans are
-   the player's choices — **bribe the Three Elders** (the ingot's 圈里一横; 锁儿's ingot under the lamp that night)
+   the player's choices — **bribe the Three Elders** (the ingot's 圈里一横; that night he unwraps his palm's brand under the lamp)
    and **the bedsheet ghost** (the white-robed 「仙长」 in the shrine, 「去年漳水涨了三尺」「他上来的时候，你们谁也不许拦」 —
    the old-well voice that called 「回来」 on 黑松岭) — then **the eighteenth**. `girl` meets 老胡 (the knee like 爹's,
    东街卖油的闺女).
 3. **The wedding** (`01-altar`, 河伯祠). He sends the shaman 「去给河伯报信」 (she cries 「仙长」); 阿禾 jumps in without
-   counting; the Three Elders cough up twenty-five years of River Lord money — and 锁儿's ingot lies beside theirs, the same mark.
+   counting; the Three Elders cough up twenty-five years of River Lord money — and he lays his branded palm beside one of their ingots, the same mark.
 4. **The Zhang stands up** (`01-rise`, 河伯祠) — **the chapter's fight**: the river stands, twenty
    boats, thousands kneel, three stand. 冰夷's dragons lunge and sweep (a duel with `foe-shuanglong`,
    a trial that may be fought again, `retry`); won, the book's passage plays: he steps back in front
@@ -31,9 +31,9 @@
    eight swapped).
 7. **The first 鼎** (`01-cauldron`, 漳渊). The cauldron shrinks into his palm, the token's second tail,
    赵昂 under the willow — 「天下，该归于一」 — 银月's first memory (`memory: 1`); 赵昂 sees the brand in his palm
-   (「烙上了，就是宫里的」), 「锁儿……」「宫里的孩子，没有名字。」; 老井 named only by 赵昂's mouth (「每年入秋到这城里来…来了二十五年」);
+   (「烙上了，就是宫里的」), 「那娃叫小豆。是你们的人么？」「宫里的孩子，没有名字。」; 老井 named only by 赵昂's mouth (「每年入秋到这城里来…来了二十五年」);
    the mark laid out — 「天下，该归于一」. **No breakthrough.**
-8. **Willow Bend** (`01-end`). The tofu shop that night (豆浆, no sugar; 周衡 pays the coffin from the 观's five taels); 「记账的，总要去对一对」; `rest` now plays 柳湾 — 「……阿衡？」, 「回。」, the notebook's 圈 · 锁儿 · 老胡 and 「人家迟早要上门来收」 (the letter's 「爹的药」 line is left out: on `hold` it would not be true). Ends the chapter; the second
+8. **Willow Bend** (`01-end`). The tofu shop that night (豆浆, no sugar; 周衡 pays the coffin from the 观's five taels); 「记账的，总要去对一对」; `rest` now plays 柳湾 — 「……阿衡？」, 「回。」, the notebook's 圈 · 小豆 · 老胡 and 「人家迟早要上门来收」 (the letter's 「爹的药」 line is left out: on `hold` it would not be true). Ends the chapter; the second
    鼎 lies east, in 兖.
 
 **Never in chapter 1:** what the cauldrons are for, 银月's second memory, any realm above 筑基, the

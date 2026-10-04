@@ -29,8 +29,6 @@ export const TO_VALLEY = [
   ['win', { id: 'fall-storm' }],
   ['task', { action: 'done', id: 'fall-storm' }],
   ['resolve', { exit: 'check' }],
-  // 00-suoer: the hired boy at the foot of the cliff (古一, 2026-10-02)
-  ['resolve', { exit: 'hold' }],
   ['resolve', { exit: 'save' }],
   ['resolve', { exit: 'share' }],
 ];

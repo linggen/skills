@@ -50,8 +50,8 @@
     "en": "Mount Meng"
   },
   "summary": {
-    "zh": "蒙山脚下的猎户家，马家的租，一张弓。你和爹越过「勿入」的断碑，暴雨里坠谷；崖根下，一个叫锁儿的孩子死在你手里。你救起一只断了八尾的小银狐——银月。她伤重沉睡在吴婆婆的狐纹木牌里；半年后，舅舅带来沉鼎观开山门的告示。三试凭你自己的腿、脑子和胆子；蠪侄林里，跟在你身后的石蛋死了。外门收下了你；告示栏上，公中的告示落款「马师兄」。",
-    "en": "A hunter's home under Mount Meng, the Ma family's rent, and a bow. You and your father cross the broken stele that says Do not enter; in the storm you fall into a valley, where a boy called Suo'er dies holding your hand; you save a little silver fox with eight tails cut away — Yinyue. Badly hurt, she sleeps in Granny Wu's fox token; half a year on, your uncle brings the notice that Chending Temple opens its gate. You pass the three trials on your own legs, wits and nerve; in the Longzhi wood, Shidan, walking behind you, dies. The outer court takes you in; on its notice board, the common-fund notice is signed \"Senior Brother Ma\"."
+    "zh": "蒙山脚下的猎户家，马家的租，一张弓。你和爹追一头鹿越过「勿入」的断碑，暴雨里你把爹拽回山壁，自己坠谷。谷底，你救起一只断了八尾的小银狐——银月。她伤重沉睡在吴婆婆的狐纹木牌里；半年后，舅舅带来沉鼎观开山门的告示。三试凭你自己的腿、脑子和胆子；蠪侄林里，跟在你身后的石蛋死了。外门收下了你；告示栏上，公中的告示落款「马师兄」。",
+    "en": "A hunter's home under Mount Meng, the Ma family's rent, and a bow. Chasing a deer, you and your father cross the broken stele that says Do not enter; in the storm you haul him back to the rock and fall into a valley yourself, where you save a little silver fox with eight tails cut away — Yinyue. Badly hurt, she sleeps in Granny Wu's fox token; half a year on, your uncle brings the notice that Chending Temple opens its gate. You pass the three trials on your own legs, wits and nerve; in the Longzhi wood, Shidan, walking behind you, dies. The outer court takes you in; on its notice board, the common-fund notice is signed \"Senior Brother Ma\"."
   },
   "intro": {
     "zh": "蒙山脚下的石坳村，十七户人家，一户打猎。那一户，就是你家。",
@@ -61,7 +61,7 @@
     "zh": "吴婆婆的木牌上，为什么刻着一只九尾的狐狸？",
     "en": "Why is a nine-tailed fox carved on Granny Wu's token?"
   },
-  "_aliases": "Scene ids an older save may still hold, and the scene of this chapter nearest to each (state.mjs fitWorld). The prologue-v3 rewrite (2026-09-28): every scene of the v0 and v1 prologues that came before the trials goes to 石坳村, where the story now begins (the name card asks again; roots, bag and progress are kept); the trials and the hall keep their ids; the old outer-court practice goes to the outer court; 夫诸 and the north go to the notice board, the prologue's last scene. A save that walked only the retired scenes and stands on one the rewrite kept (his: v1 put him at 00-waimen) begins again at 石坳村 too (state.mjs fitWorld).",
+  "_aliases": "Scene ids an older save may still hold, and the scene of this chapter nearest to each (state.mjs fitWorld). The prologue-v3 rewrite (2026-09-28): every scene of the v0 and v1 prologues that came before the trials goes to 石坳村, where the story now begins (the name card asks again; roots, bag and progress are kept); the trials and the hall keep their ids; the old outer-court practice goes to the outer court; 夫诸 and the north go to the notice board, the prologue's last scene. A save that walked only the retired scenes and stands on one the rewrite kept (his: v1 put him at 00-waimen) begins again at 石坳村 too (state.mjs fitWorld). 00-suoer (锁儿 at the foot of the cliff, 2026-10-02) went 2026-10-03 with 锁儿 himself (Hanli: 「锁儿的部分删了吧」); a save standing there goes on to 00-fox, the next scene.",
   "aliases": {
     "00-waking": "00-shiao",
     "00-stone": "00-shiao",
@@ -71,6 +71,7 @@
     "00-boat": "00-shiao",
     "00-shanlu": "00-shiao",
     "00-fuzhu": "00-mijing",
-    "00-north": "00-mijing"
+    "00-north": "00-mijing",
+    "00-suoer": "00-fox"
   }
 }
