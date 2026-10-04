@@ -238,9 +238,9 @@
   "suijin",
   "xianshi",
   "canwu",
-  "tunshi",
-  "jiushou",
-  "tingbo"
+  "jinzhen",
+  "gupi",
+  "jiushou"
  ],
  "card_from": {
   "xiaoyao": {
@@ -332,21 +332,21 @@
    "chapter": "00-waimen",
    "day": "2026-09-25"
   },
-  "tunshi": {
+  "jinzhen": {
    "how": "win",
-   "creature": "foe-sunergou",
+   "creature": "foe-lufang",
    "chapter": "00-waimen",
    "day": "2026-09-26"
+  },
+  "gupi": {
+   "how": "win",
+   "creature": "foe-shijie",
+   "chapter": "00-waimen",
+   "day": "2026-09-27"
   },
   "jiushou": {
    "how": "win",
    "creature": "foe-maxiaobao",
-   "chapter": "00-waimen",
-   "day": "2026-09-27"
-  },
-  "tingbo": {
-   "how": "win",
-   "creature": "foe-shijie",
    "chapter": "00-waimen",
    "day": "2026-09-28"
   }

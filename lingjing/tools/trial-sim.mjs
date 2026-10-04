@@ -21,8 +21,10 @@ const seeds = Number(args[args.indexOf('--seeds') + 1]) || 400;
 
 /* The road to 第十回, as the rules deal it: the starter at the root test,
    银月 (asleep in the token here: she does not fight), 狰 tamed at the 药园,
-   and one card from each fight won on the way. */
-const BEFORE = ['longzhi', 'zheng', 'gui', 'foe-sunergou', 'foe-maxiaobao', 'foe-shijie'];
+   and one card from each fight won on the way. The 宗门大比 (古六) by the
+   bracket: 卢方 (wm-fushi), 秦雁 (wm-lun2), 马小宝 (wm-juesai) won; the final
+   to 祁长松 (wm-laoyin) is lost, so it deals nothing and is not counted. */
+const BEFORE = ['longzhi', 'zheng', 'gui', 'foe-lufang', 'foe-shijie', 'foe-maxiaobao'];
 export function roadHand(base, day = new Date('2026-09-29T11:00:00Z'), upTo = null) {
   const s = structuredClone(base);
   s.cards = [...(content.cards.starter ?? []).filter(c => catalog[c]), 'yinyue'];

@@ -92,10 +92,6 @@
         "tier": "foundation"
       },
       {
-        "item": "foundation-pill",
-        "tier": "foundation"
-      },
-      {
         "item": "firm-pill",
         "tier": "core"
       },
