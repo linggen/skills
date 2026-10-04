@@ -74,11 +74,11 @@ function playThrough() {
   s = must(resolve, fresh(s), { exit: 'sleep' });
   s = fresh(s);
   s = must(resolve, s, { exit: 'up' }, DAY2);
-  s = must(resolve, s, { exit: 'fall' }, DAY2);
-  s = must(resolve, s, { exit: 'on' }, DAY2);
+  s = must(resolve, s, { exit: 'hold' }, DAY2);
+  s = must(resolve, won(s, 'dabi-lu', DAY2), { exit: 'flip' }, DAY2);
   s = must(resolve, won(s, 'dabi-shijie', DAY2), { exit: 'dodge' }, DAY2);
-  s = must(resolve, won(s, 'dabi-ma', DAY2), { exit: 'bark' }, DAY2);
-  s = must(resolve, s, { exit: 'take' }, DAY2); // 掌心的烙印 (wm-laoyin, 古六)
+  s = must(resolve, won(s, 'dabi-ma', DAY2), { exit: 'face' }, DAY2);
+  s = must(resolve, s, { exit: 'final' }, DAY2); // 掌心的烙印, then the final lost (wm-laoyin, 古六)
   for (const exit of ['rest', 'follow', 'sign', 'read']) s = must(resolve, s, { exit }, DAY2);
   return s;
 }
@@ -118,9 +118,10 @@ test('every scene is reached, and the chapter ends straight into 古九 (筑基,
     for (const id of Object.keys(CH.scenes)) assert.ok(passed.has(id), `${gender}: ${id}`);
     assert.equal(look(s, content, ctx(DAY2)).chapter.hui, 'h09');
     assert.deepEqual([s.tier, s.step], ['qi', 3], '息壤: 练气四层');
-    for (const item of ['danlu', 'foundation-pill', 'huangting', 'heluo']) assert.ok(s.bag[item] > 0, item);
+    for (const item of ['danlu', 'huangting', 'heluo']) assert.ok(s.bag[item] > 0, item);
+    assert.equal(s.bag['foundation-pill'], undefined, 'the final was lost: the 筑基丹 is 祁长松\'s (古六, 2026-10-03)');
     assert.ok(s.cast.includes('zheng') && s.cards.includes('zheng'), '小狰 walks with the player, its card in the deck');
-    assert.ok(s.ledger.some(e => e.who === 'sunergou' && e.kind === '恩'), 'the round given away is in the 恩仇簿');
+    assert.ok(s.ledger.some(e => e.who === 'sunergou' && e.kind === '恩'), 'pulling 孙二狗 up from the steps is in the 恩仇簿');
     assert.ok(s.ledger.some(e => e.who === 'qulao' && e.kind === '恩'));
   }
 });
@@ -206,7 +207,7 @@ test('小狰 is the story\'s: at the 药园 a trial bout with 狰, fought again 
   assert.equal(content.creatures.creatures.find(c => c.id === 'zheng').art, 'art/creatures/zheng.webp');
 });
 
-test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前夜, then the contest at once — and its three duels', () => {
+test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前夜, then the contest at once — and its three duels (卢方, 秦雁, 马小宝; the bracket of 2026-10-03)', () => {
   let s = opened();
   for (const exit of ['owe', 'can', 'breathe', 'hide']) s = step(s, exit);
   s = must(move, s, { place: 'yaoyuan' });
@@ -225,13 +226,16 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
   assert.match(look(s, content, ctx()).scene.setup ?? JSON.stringify(look(s, content, ctx()).scene), /传/, 'the eve carries its rumour');
   s = must(resolve, fresh(s), { exit: 'sleep' });
   s = must(resolve, s, { exit: 'up' }, DAY1);
-  // without 孙二狗's charm the round is fought: no giving it away the story never set up
+  // round one is his quick win over 何七 (the exit's passage); 孙二狗 vs 卢方 is watched — no giving a round away, no 复试
   const l = look(s, content, ctx(DAY2));
-  assert.deepEqual(l.scene.buttons.map(b => b.id), ['fight']);
-  refused(resolve, s, { exit: 'fall' }, 'needs', DAY2);
-  assert.equal(l.scene.exits.find(e => e.id === 'fight').duel.creature.name, '孙二狗');
-  // three duels on this path: 孙二狗, 秦雁 (the senior), 马小宝 for the pill — each a trial fought again at once
-  for (const [exit, game, foe] of [['fight', 'dabi-sun', 'foe-sunergou'], ['dodge', 'dabi-shijie', 'foe-shijie'], ['bark', 'dabi-ma', 'foe-maxiaobao']]) {
+  assert.equal(s.scene, 'wm-lun1');
+  assert.deepEqual(l.scene.buttons.map(b => b.id), ['hold']);
+  for (const gone of ['fall', 'fight']) refused(resolve, s, { exit: gone }, 'unknown-exit', DAY2);
+  s = must(resolve, s, { exit: 'hold' }, DAY2);
+  assert.ok(s.ledger.some(e => e.who === 'sunergou' && e.kind === '恩'), 'he pulls 孙二狗 up from the steps');
+  assert.equal(look(s, content, ctx(DAY2)).scene.exits.find(e => e.id === 'flip').duel.creature.name, '卢方');
+  // three duels on this path: 卢方 (内门六层), 秦雁 (外门排头), 马小宝 in the semi — each fought again at once
+  for (const [exit, game, foe] of [['flip', 'dabi-lu', 'foe-lufang'], ['dodge', 'dabi-shijie', 'foe-shijie'], ['face', 'dabi-ma', 'foe-maxiaobao']]) {
     const sc = look(s, content, ctx(DAY2)).scene;
     const e = sc.exits.find(x => x.id === exit);
     assert.equal(e.game.creature, foe);
@@ -239,9 +243,25 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
     refused(resolve, s, { exit }, 'game-not-won', DAY2);
     s = must(resolve, won(s, game, DAY2), { exit }, DAY2);
   }
-  s = must(resolve, s, { exit: 'take' }, DAY2); // 掌心的烙印 (wm-laoyin, 古六)
+  s = must(resolve, s, { exit: 'final' }, DAY2); // 掌心的烙印, then the final (wm-laoyin, 古六)
   assert.equal(s.scene, 'wm-jiaxin', 'the night of the contest, before the master');
-  assert.ok(s.bag['foundation-pill'] > 0, '筑基丹');
+  assert.equal(s.bag['foundation-pill'], undefined, 'the final is lost: no 筑基丹');
+});
+
+test('the 大比 final is a loss told as a passage: 「……祁长松，胜。」, no exit of 古六 grants the 筑基丹 (2026-10-03)', () => {
+  const final = CH.scenes['wm-laoyin'].exits.find(e => e.id === 'final');
+  assert.equal(final.game, undefined, 'no duel for the final');
+  assert.equal(final.grant, undefined, 'the final grants nothing');
+  assert.match(final.story.zh, /……祁长松，胜。/);
+  assert.doesNotMatch(final.story.zh, /沈小满，胜。」\s*$/);
+  for (const sc of Object.values(CH.scenes)) for (const e of sc.exits) {
+    assert.notEqual(e.grant?.item, 'foundation-pill', `${sc.id}/${e.id} grants no 筑基丹`);
+  }
+  const s = must(resolve, { ...opened(), scene: 'wm-laoyin', place: 'zhengdian' }, { exit: 'final' }, DAY2);
+  assert.equal(s.bag['foundation-pill'], undefined);
+  assert.match(CH.scenes['wm-jiaxin'].story.zh, /前四，进内门名册/);
+  assert.match(CH.scenes['wm-jiaxin'].story.zh, /一文。利息另算。/);
+  assert.doesNotMatch(JSON.stringify(CH.scenes), /复试|第十七条|当票|往后一倒/);
 });
 
 test('息壤 lifts the realm to 练气四层 — once, never down, and a scene played again lifts nothing', () => {
@@ -291,8 +311,11 @@ test('the scratch fixture for live checks stands at the chapter\'s first scene (
 test('the 大比 is a 比试, not a 降妖: its three foes are people, and the fight card says so; a beast stays 降妖 (live, 2026-09-29)', () => {
   const s = { ...opened(), scene: 'wm-juesai', place: 'zhengdian' };
   const l = look(s, content, ctx());
-  const exit = l.scene.exits.find(e => e.id === 'bark');
+  const exit = l.scene.exits.find(e => e.id === 'face');
   assert.equal(exit.duel.creature.person, true);
+  // 卢方 has no portrait yet, so no people.json row: his fight names itself a bout
+  const lu = look({ ...opened(), scene: 'wm-fushi', place: 'zhengdian' }, content, ctx()).scene.exits.find(e => e.id === 'flip').duel.creature;
+  assert.equal(duelTitle(lu, WORDS.zh, 'zh'), '比试');
   const html = cardHtml({ card: 'duel', id: 'dabi-ma' }, { look: l, lang: 'zh', words: WORDS.zh, content: {}, artBase: '' });
   assert.match(html, /比试/);
   assert.doesNotMatch(html, /降妖/);
@@ -306,7 +329,7 @@ test('the 大比 is a 比试, not a 降妖: its three foes are people, and the f
 
 test('a scene waiting on a game stands with it: the round fight and the 蛫 at the wall sit under the scene card, never behind 还有 1 件 (live, 2026-09-29)', () => {
   const kinds = slots => slots.main.map(c => `${c.card}:${c.id ?? ''}`);
-  for (const [scene, place, game, before] of [['wm-lun2', 'zhengdian', 'duel:dabi-shijie', 'wm-dabi'], ['wm-lun1', 'zhengdian', 'duel:dabi-sun', 'wm-dabi'], ['wm-juesai', 'zhengdian', 'duel:dabi-ma', 'wm-dabi'], ['wm-wangzuo', 'shimen', 'duel:mijing-gui', 'wm-mijing']]) {
+  for (const [scene, place, game, before] of [['wm-lun2', 'zhengdian', 'duel:dabi-shijie', 'wm-dabi'], ['wm-fushi', 'zhengdian', 'duel:dabi-lu', 'wm-dabi'], ['wm-juesai', 'zhengdian', 'duel:dabi-ma', 'wm-dabi'], ['wm-wangzuo', 'shimen', 'duel:mijing-gui', 'wm-mijing']]) {
     const s = { ...opened(), scene, place, tasks: {} };
     s.done_scenes = [...s.done_scenes, 'wm-ahe', before]; // its 回 under way: no close of the 回 before stands over the scene
     const l = look(s, content, ctx());
@@ -358,7 +381,7 @@ test('what is for a person is handed where that person is: 周衡 at 外门, 阿
 test('a bout with a person speaks of him or her: 他/她 by the person, 认输, 「今日已比过」, 「他退了下去」 — never 妖, 它 or 今日已降 (his, 2026-09-29)', async () => {
   const { WORDS: BW, boutWords, sayEffect, challengeHtml } = await import('../scripts/battle-card.js');
   const l = look({ ...opened(), scene: 'wm-juesai', place: 'zhengdian' }, content, ctx());
-  const ma = l.scene.exits.find(e => e.id === 'bark').duel.creature;
+  const ma = l.scene.exits.find(e => e.id === 'face').duel.creature;
   assert.equal(ma.gender, 'male');
   const w = boutWords(BW.zh, ma, 'zh');
   for (const k of ['theirs', 'withdrew', 'wonSay', 'withdrewSay', 'pickCard', 'pickRank', 'pickTarget', 'wonToday', 'lostToday', 'spentToday']) {
@@ -408,15 +431,15 @@ test('外门 ends on its card: 「古八 · 完」 by the book\'s number, what t
   const close = l.chapter.close;
   assert.equal(close.title, `${bookNo(content, 'h08')} · 完`);
   assert.equal(close.id, 'h08', 'put away once, as the 回 it closes');
-  assert.equal(close.did, '你收了药园那只偷萝卜的小狰，大比把第一轮让给了孙二狗，终究赢下了那颗筑基丹，又拜了扫了五十年台阶的瞿老为师。');
-  assert.match(close.teaser, /头场雪[\s\S]*玉盒子/);
+  assert.equal(close.did, '你收了药园那只偷萝卜的小狰，大比台下把站不起来的孙二狗拉了起来，以四层把内门的六层扔下了台，一路打进决赛，输给了九层的祁长松，那颗筑基丹没拿着，名字进了内门名册，又拜了扫了五十年台阶的瞿老为师。');
+  assert.match(close.teaser, /腊月十一[\s\S]*木牌/);
   assert.ok(l.stage.some(c => c.card === 'closed'), 'on the stage');
   assert.equal(stageSlots(l, l.stage).main[0].card, 'closed', 'first on the stage, before an errand offered where he stands');
   const html = cardHtml({ card: 'closed' }, { look: l, lang: 'zh', words: WORDS.zh });
-  assert.match(html, new RegExp(`${bookNo(content, 'h08')} · 完[\\s\\S]*小狰[\\s\\S]*头场雪[\\s\\S]*data-close-chapter="h08">合上`));
-  // another player's chapter reads his own: no 狰, and the first round fought
+  assert.match(html, new RegExp(`${bookNo(content, 'h08')} · 完[\\s\\S]*小狰[\\s\\S]*腊月十一[\\s\\S]*data-close-chapter="h08">合上`));
+  // another player's chapter reads his own: no 狰, and 孙二狗 not pulled up
   const other = { ...s, cast: s.cast.filter(id => id !== 'zheng'), ledger: s.ledger.filter(e => e.who !== 'sunergou') };
-  assert.match(look(other, content, ctx(DAY2)).chapter.close.did, /^药园的贼，你没收成，大比一轮一轮打了上去，/);
+  assert.match(look(other, content, ctx(DAY2)).chapter.close.did, /^药园的贼，你没收成，以四层把内门的六层扔下了台，/);
   assert.match(look({ ...s, lang: 'en' }, content, ctx(DAY2)).chapter.close.did, /^You took in the little Zheng/);
   // before the end: no card (a scene of 古五 passed, so not 古四's either)
   assert.equal(look(must(resolve, opened(), { exit: 'owe' }), content, ctx()).chapter.close, undefined);

@@ -1637,7 +1637,8 @@
           "heal": 4
         }
       },
-      "_signature": "娘缝的护身符 —— 他攥紧它，又站了起来。"
+      "_signature": "娘缝的护身符 —— 他攥紧它，又站了起来。",
+      "_retired": "No scene fights him since 2026-10-03 (古六 rebuilt: round one is 外门 何七, told; 孙二狗 is 内门 卢方's, watched — wm-lun1 `hold`). Kept for saves whose fight record names him (tests/fixtures/saves/ji-altar.json) and for tools/trial-sim.mjs's road hand, which still counts him among the three 大比 wins."
     },
     {
       "id": "foe-maxiaobao",
@@ -1702,7 +1703,76 @@
         }
       },
       "_deck": "半年的丹药吃出来的练气五层 —— 手快，家伙贵。",
-      "_signature": "铜镜黄光 —— 一道黄光，直冲面门。"
+      "_signature": "铜镜黄光 —— 镜子先喝他一口灵力，脸上的斑一红，一道黄光便到（古六）。"
+    },
+    {
+      "id": "foe-lufang",
+      "title": {
+        "zh": "比试",
+        "en": "Bout"
+      },
+      "name": {
+        "zh": "卢方",
+        "en": "Lu Fang"
+      },
+      "pinyin": "lú fāng",
+      "look": {
+        "zh": "内门的练气六层，三十出头，一张长脸，眼皮总耷拉着；外门熬了九年才进的内门，熬白了半头头发，最见不得外门的人往台上爬。金刃削脚，土墙挤人。",
+        "en": "Layer six of Qi Refining in the inner court, a little past thirty, long-faced, eyelids always drooping; nine years grinding in the outer court before he made the inner, and half his hair went white for it — he can't bear to see an outer disciple climb onto the stage. A metal blade at your ankles, an earth wall to crowd you off."
+      },
+      "says": {
+        "open": {
+          "zh": "外门的，一个比一个不知道天高地厚。",
+          "en": "Outer court — each one knows less of heaven and earth than the last."
+        },
+        "won": {
+          "zh": "……外门的？",
+          "en": "…Outer court?"
+        },
+        "lost": {
+          "zh": "下去吧。",
+          "en": "Get down."
+        }
+      },
+      "province": "徐",
+      "root": "metal",
+      "art": "art/items/iron-sword.webp",
+      "art_source": "The iron sword's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until his portrait is painted.",
+      "lean": "fierce",
+      "pattern": [
+        "cast",
+        "strike",
+        "guard",
+        "strike",
+        "cast"
+      ],
+      "deck": [
+        "jinzhua",
+        "jinzhua",
+        "houtu",
+        "houtu",
+        "jinsuo",
+        "jinsuo",
+        "tuou",
+        "shanjing",
+        "jinzhen",
+        "suijin",
+        "luoshi",
+        "huiqi"
+      ],
+      "_deck": "内门六层，金土两行 —— 金刃削脚（金爪、金针雨、碎金），土墙挤人（厚土、山精、落石）。",
+      "signature": {
+        "id": "niancui",
+        "name": {
+          "zh": "踩手一碾",
+          "en": "The Grinding Heel"
+        },
+        "effect": {
+          "damage": 5
+        }
+      },
+      "_signature": "踩手一碾 —— 你扒在台沿上，他一脚踩在你手背上，碾了一碾（古六）。",
+      "_person": "Not a people.json row (no portrait yet; a person foe needs one, content.mjs lintPeople): `title` 比试 keeps the fight card a bout, never 降妖 (cards.js duelTitle). The 宗门大比's second round (古六, wm-fushi)."
     },
     {
       "id": "foe-shijie",
@@ -1713,21 +1783,21 @@
       "pinyin": "qín yàn",
       "person": "neimen-shijie",
       "look": {
-        "zh": "在外门排了三年队、等着进内门的真灵根；淡蓝的衣裳，剑在背上；比赛的时候，一直没用全力。",
-        "en": "A true-root disciple who has queued three years in the outer court for the inner court; in pale blue, a sword on her back; all through the contest she never used her full strength."
+        "zh": "在外门排了三年队、等着进内门的真灵根，练气六层；淡蓝的衣裳，一口下品的法器剑，剑气出去三尺，左手捻得出冰锥；袖子里扣着一张雷符，始终没掏。",
+        "en": "A true-root disciple at layer six who has queued three years in the outer court for the inner court; in pale blue, with a low-grade magic sword whose breath runs three feet past the point, and ice spikes at a twist of her left hand; a thunder talisman held in her sleeve, never drawn."
       },
       "says": {
         "open": {
-          "zh": "请。",
-          "en": "After you."
+          "zh": "我不让你。你也别让我。",
+          "en": "I won't give way to you. Don't you give way to me."
         },
         "won": {
-          "zh": "藏得好。",
-          "en": "Well hidden."
+          "zh": "掉下台的，输。规矩上，就是输了。",
+          "en": "Off the stage, you lose. By the rules, I've lost."
         },
         "lost": {
-          "zh": "还没藏够。",
-          "en": "Not hidden enough yet."
+          "zh": "我说过，不让。",
+          "en": "I told you: I won't give way."
         }
       },
       "province": "徐",
@@ -1771,11 +1841,11 @@
       "trial": {
         "outlast": true,
         "goal": {
-          "zh": "只躲，不还手：撑过她出完的每一招，便算过了。",
-          "en": "Only dodge, never strike: stand through every move she has, and you have passed."
+          "zh": "三十招：看她的脚，撑过她出完的每一招，便算过了。",
+          "en": "Thirty moves: watch her feet, stand through every move she has, and you have passed."
         }
       },
-      "_trial": "只躲，不还手 (古八: 三十招，那口剑一回也没碰着他; 2026-10-01 the label promised a dodge and the fight was a full duel). A 试 passed by outlasting her twelve cards (battle.js § trial), no yield — he never drives her down. node tools/trial-sim.mjs foe-shijie --at."
+      "_trial": "三十招 (古六, 2026-10-03 book: her sword and ice spikes for thirty moves, then the edge — he takes the thrust through his left arm, seizes her scabbard, she lands off the stage first). A 试 passed by outlasting her twelve cards (battle.js § trial), no yield — the edge is the story's. node tools/trial-sim.mjs foe-shijie --at."
     },
     {
       "id": "foe-zou",

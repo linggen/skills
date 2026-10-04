@@ -49,11 +49,10 @@
     "zh": "残株，喂进去",
     "en": "The culls — feed them in"
    },
-   "means": "feeds the spring culls into the Rice Tub one by one: three nine-turn qi pills, two given away (the nine-turn Foundation pills came out of it after the secret realm, 古五)",
+   "means": "feeds the spring culls into the Rice Tub one by one: three nine-turn qi pills, two given away",
    "grant": {
     "table": "scene",
-    "progress": 40,
-    "item": "foundation-pill-9"
+    "progress": 40
    },
    "story": {
     "zh": "好容易熬到开了春，雪一化，药园开了园，周衡那一篮残株便送到了。这是小满巡夜的工钱，虫咬的，长歪的，灵气散了一半的，满满一篮。\n\n开春头一篮攒了一冬，满满三十来株。他嚼一株，喂它一株。灵石它嚼得香，鞋底它吐回来，扔的残株，它倒不嫌，十回里竟有一回开出一颗聚气丹来，也是九道纹；外门份例里每月一颗的，是一道纹的。半个月喂完一篮，开出三颗。第三颗，他当夜自己吃了，丹田里「哗」的一声，像有人往那口水缸里倒了一桶水，一冬给饭桶吸走的，一并补了回来，还往上涨了一截，涨过了五层。往后残株一个月一篮，篮子一年比一年浅，两三个月才出得一颗。\n\n过了两日，讲堂上阿禾和孙二狗的书案底下，各多了一个油纸包，包里一颗聚气丹。小满只说是利息：一个鸡蛋的，牛棚里那半张饼的。\n\n天亮的时候，孙二狗从练气零层，冲到了一层。\n\n他站在大通铺门口，把一只手摊在太阳底下，瞧着掌心里那一缕细细的黄气，瞧得眼泪鼻涕一齐流了下来。\n\n这一哭，哭坏了事。一个零层的杂灵根，一夜引了气，不到晌午便传遍了外门；传到马小宝耳朵里，只剩一句：沈小满手里有丹，好丹。",

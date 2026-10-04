@@ -1,8 +1,10 @@
-// 古九 · 筑基 (chapter 00-zhuji, his 2026-09-30: 照这样重做冀州) — the book's winter, the
-// year and the cliff, played at 沉鼎观 before the road north: the official pill sniffed and
-// resealed, the furnace's three 九转, the year as the book's four seasons (one layer each —
-// never days of chores), 瞿老's last disciple, and the Foundation laid on the cliff with the
-// 九转 reached for before the sect's 一转. The cliff ends it straight into 古十.
+// 古七 · 筑基 (chapter 00-zhuji, his 2026-09-30: 照这样重做冀州) — the book's winter, the
+// year and the cliff, played at 沉鼎观 before the road north: the snow night over the three
+// 九转 (one carried, two in 饭桶 — no 官丹 yet: 古六's final was lost, 2026-10-03), the furnace's
+// culls, the year as the book's seasons (never days of chores) with the five-year skip, where
+// the year-five 大比 is won and the sect's 一转 comes into the bag, 瞿老's last disciple, and the
+// Foundation laid on the cliff with the 九转 reached for before the sect's 一转. The cliff ends it
+// straight into 古八.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
@@ -19,7 +21,7 @@ const CH = content.chapters['00-zhuji'];
 const atSnow = (extra = {}) => ({
   ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: '09-snow', place: 'chaifang',
   ended: ['00-prologue', '00-waimen'], tier: 'qi', step: 4, progress: 0, traits: ['wood', 'water', 'fire', 'earth', 'metal'],
-  stamina: 100, stamina_at: NOW.toISOString(), bag: { 'foundation-pill': 1, danlu: 1 }, ...extra,
+  stamina: 100, stamina_at: NOW.toISOString(), bag: { danlu: 1 }, ...extra,
 });
 const go = (s, exit, extra = {}) => {
   const r = resolve(s, content, ctx, { exit, ...extra });
@@ -46,32 +48,36 @@ test('古九 is its own chapter at 沉鼎观: between 外门 and 冀, the Founda
   assert.deepEqual([...seen].sort(), Object.keys(CH.scenes).sort());
 });
 
-test('the winter and the year: the seal resealed, the furnace\'s 九转, and the four seasons a layer each — the story\'s own seasons, free of 体力 (Hanli, 2026-10-01), in order, once', () => {
+test('the winter and the year: the three 九转 on the snow night, the furnace\'s culls, and the seasons — the story\'s own, free of 体力 (Hanli, 2026-10-01), in order, once', () => {
   let s = atSnow();
-  assert.equal(go(s, 'eat').state.scene, '09-snow', 'eating it now is turned down: the scene stays');
-  s = go(s, 'taste').state;
+  assert.equal(go(s, 'eat').state.scene, '09-snow', 'eating one now is turned down: the scene stays');
+  s = go(s, 'keep').state;
   assert.equal(s.scene, '09-furnace');
-  assert.equal(s.bag['foundation-pill'], 1, 'the sect\'s 一转 is not eaten: resealed, into 饭桶');
-  s = go(s, 'fire').state;
   assert.equal(s.bag['foundation-pill-9'], 1, 'one 九转 is his, carried against the skin');
+  assert.equal(s.bag['foundation-pill'], undefined, 'no 官丹 on the snow night: 祁长松 has the sect\'s one');
+  s = go(s, 'fire').state;
+  assert.equal(s.bag['foundation-pill-9'], 1, 'the furnace gives qi pills, not a second 九转');
   assert.equal(s.scene, '09-year');
   s = full({ ...s, place: 'yaoyuan' });
   // Only the season due is offered; one out of order is refused.
   assert.deepEqual(buttons(s), ['qingming']);
-  assert.equal(resolve(s, content, ctx, { exit: 'duanwu' }).result.refused, 'needs');
+  assert.equal(resolve(s, content, ctx, { exit: 'futian' }).result.refused, 'needs');
+  assert.equal(resolve(s, content, ctx, { exit: 'duanwu' }).result.refused, 'unknown-exit', 'no 端午 验封: cut from the book (2026-10-03)');
   // The seasons are the main story, not optional practice (主线, Hanli 2026-10-01):
   // no season asks 体力 of its own — not even on an empty pool.
   assert.ok(CH.scenes['09-year'].exits.every(e => e.stamina == null), 'no season carries a toil price');
   const layers = [];
   s = { ...s, stamina: 0, resting: true };
-  for (const exit of ['qingming', 'duanwu', 'futian']) {
+  for (const exit of ['qingming', 'futian']) {
     const r = go(s, exit);
     assert.equal(r.state.scene, '09-year', `${exit} stays`);
     assert.equal(r.state.stamina, 0, `${exit}: a season costs no 体力`);
     assert.ok(!buttons(r.state).includes(exit), `${exit} is not offered again`);
     s = r.state; layers.push(s.step + 1);
+    if (exit === 'qingming') assert.equal(s.bag['foundation-pill'], undefined, 'not yet: the 官丹 waits for the year-five 大比');
   }
-  assert.deepEqual(layers, [5, 5, 9], '清明、端午仍是五层（年三）· 伏天一晃五年，九层');
+  assert.deepEqual(layers, [5, 9], '清明仍是五层 · 伏天一晃五年，九层');
+  assert.equal(s.bag['foundation-pill'], 1, 'the skip carries the year-five 大比: the sect\'s 一转 is his, resealed into 饭桶');
   // 入秋 moves the story on (`next`): a story step's 3, like every scene's step.
   assert.equal(resolve(s, content, ctx, { exit: 'ruqiu' }).result.refused, 'no-stamina', 'a spent pool still waits on the step');
   const autumn = go(full(s), 'ruqiu').state;
@@ -142,4 +148,20 @@ test('one runner for both set pieces: 筑基天象 is painted like 漳水立起 
   assert.match(page, /const piece = setpieceOf\(n\);\s*if \(piece\) momentTurn\('piece'\)\.then\(\(\) => playPiece\(piece, setpieceBeats\(n\)\)\);/);
   assert.match(page, /await momentTurn\('memory'\);\s*if \(play\) show\(\{ memory/, 'her memory waits its turn (queue.js MOMENTS: after the piece)');
   assert.match(page, /await momentTurn\('homing'/, '鼎归 waits its turn');
+});
+
+test('the sect\'s 筑基丹 comes from the five-year skip, not from 古六: 09-year\'s 伏天 grants it, nothing before (2026-10-03)', () => {
+  const fu = CH.scenes['09-year'].exits.find(e => e.id === 'futian');
+  assert.equal(fu.grant?.item, 'foundation-pill', '伏天 · 一晃五年 grants the sect\'s pill');
+  assert.match(fu.story.zh, /第五年腊八[\s\S]*写了「沈小满」三个字[\s\S]*米汤/, 'the year-five 大比 won plainly, the seal glued back with rice water');
+  assert.match(fu.story.zh, /祁长松开春出了关，筑了基/);
+  const grants = Object.values(CH.scenes).flatMap(sc => sc.exits.filter(e => e.grant?.item === 'foundation-pill').map(e => `${sc.id}/${e.id}`));
+  assert.deepEqual(grants, ['09-year/futian']);
+  for (const sc of Object.values(content.chapters['00-waimen'].scenes)) for (const e of sc.exits) assert.notEqual(e.grant?.item, 'foundation-pill', `${sc.id}/${e.id}`);
+  assert.doesNotMatch(JSON.stringify(CH.scenes), /验封|戒律堂|草木灰|当众/);
+  let s = full({ ...atSnow(), scene: '09-year', place: 'yaoyuan', marks: ['y-qingming'] });
+  assert.equal(s.bag['foundation-pill'], undefined);
+  s = go(s, 'futian').state;
+  assert.equal(s.bag['foundation-pill'], 1);
+  assert.equal(s.step, 8, '九层');
 });

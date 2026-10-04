@@ -5,101 +5,69 @@
  "hui": "h08",
  "at": "zhengdian",
  "place": {
-  "zh": "沉鼎观 · 大比 · 第一轮",
-  "en": "Chending Temple · The contest · Round one"
+  "zh": "沉鼎观 · 大比 · 第一轮 · 台下",
+  "en": "Chending Temple · The contest · Round one · below the stage"
  },
  "setup": {
-  "zh": "第一轮，你的对手是孙二狗。他上台的时候，腿在抖：「咱俩……都是下下之资……你手下留情……」",
-  "en": "Round one: your opponent is Sun Ergou. His legs shake as he climbs up. \"We're both… the bottom of the class… go easy on me…\""
+  "zh": "孙二狗的头一场，对内门的六层卢方。卢方背着手：「来吧。」他不推孙二狗下台，推倒了，等他爬起来，再推倒。台下的人跨上台去，不问青红皂白，算他出局。",
+  "en": "Sun Ergou's first bout: Lu Fang, layer six of the inner court. Lu Fang puts his hands behind his back: \"Come on.\" He won't push Sun Ergou off — he knocks him down, waits for him to get up, knocks him down again. Anyone who climbs onto the stage from below is out, no questions asked."
  },
  "recap": {
-  "zh": "大比第一轮，你的对手是孙二狗。",
-  "en": "In the first round of the contest you faced Sun Ergou."
+  "zh": "孙二狗的头一场，内门的卢方把他推倒了七回，第六回踩着他的手碾了一碾。你攥着拳，没有跨上台。他自己走下来，在石阶上坐下去便起不来了——你伸手把他拉了起来。",
+  "en": "In Sun Ergou's first bout Lu Fang of the inner court knocked him down seven times, and the sixth time ground his hand under a foot. You kept your fists clenched and didn't step onto the stage. He walked down by himself and sat on the steps and couldn't get up — you held out your hand and pulled him up."
  },
  "cast": [],
  "people": [
   "sunergou",
+  "maxiaobao",
   "ban"
  ],
  "panel": {
   "caption": {
    "zh": [
-    "第一轮。对手，孙二狗。",
-    "他腿在抖。腰上，他娘缝的护身符。",
-    "「你……你手下留情……」"
+    "孙二狗，对内门六层卢方。",
+    "他腰上，他娘缝的护身符。",
+    "推倒了，等他爬起来，再推倒。"
    ],
    "en": [
-    "Round one. Opponent: Sun Ergou.",
-    "His legs shake. At his waist, the charm his mother sewed.",
-    "\"Go… go easy on me…\""
+    "Sun Ergou, against Lu Fang, layer six of the inner court.",
+    "At his waist, the charm his mother sewed.",
+    "Knocked down, waited for, knocked down again."
    ]
   }
  },
  "story": {
-  "zh": "孙二狗上台的时候，腿在抖，一看对手是小满，抖得更厉害了——倒不是怕，是松了一口气，松得太猛，腿便软了。他挨过来，压低了声音：「沈……沈师兄……咱俩都是下下之资……你手下留情……」小满也压低了声音：「你先出手。」\n\n小满瞧见他腰里系着一个小小的布包，蓝布的，四个角缝得方方正正，针脚密得像蚂蚁排队，一针挨着一针，连一根头发丝也插不进去。小满他娘也是缝东西的好手，他看得多了，一眼便估得出：这样的针脚，这样大的一块，是油灯底下三个晚上的活，一个晚上缝一个角，第四个角缝到天亮。\n\n那是一个护身符。",
-  "en": "Coming up onto the stage Sun Ergou's legs shook, and seeing his opponent was Xiaoman they shook harder — not from fear, but from relief, so much relief his legs went soft. He edged closer and whispered: \"Sh… Brother Shen… we're both the bottom grade… go easy on me…\" Xiaoman whispered back: \"You hit first.\"\n\nXiaoman saw a little cloth pouch at his waist, blue, its four corners sewn square, the stitches close as a line of ants, one against the next so tight not a hair could pass between. Xiaoman's mother was a fine hand with a needle too, and he'd watched enough to judge at a glance: stitches like these, a piece this size, three nights' work under an oil lamp, a corner a night, the fourth sewn till dawn.\n\nIt was a charm."
+  "zh": "孙二狗上台的时候，腿在抖。小满瞧见他腰里系着一个小小的布包，蓝布的，四个角缝得方方正正，针脚密得像蚂蚁排队，一针挨着一针，连一根头发丝也插不进去。小满他娘也是缝东西的好手，他看得多了，一眼便估得出：这样的针脚，这样大的一块，是油灯底下三个晚上的活，一个晚上缝一个角，第四个角缝到天亮。\n\n那是一个护身符。孙二狗攥了攥它，抬起头来，冲台下的小满咧了咧嘴——那意思是：我也许能赢一场。\n\n对面的卢方，是内门的六层，三十出头，一张长脸，眼皮总耷拉着。观里的老弟子说，他是外门熬上去的，熬了九年，熬进内门那年，头发白了一半；打那以后，最见不得外门的人往台上爬。他上台以后，连架势都懒得摆，法术也不使，只把手往背后一背，道：「来吧。」孙二狗闭着眼睛冲上去，卢方侧身一让，伸脚一勾，他便扑倒在青石板上，下巴磕出了血。\n\n他爬起来了，又冲上去，又扑倒。卢方不急着把他推下台，偏不推他下台，推倒了，等他爬起来，再推倒。执事坐在台角，只盯着那炷香——香没到，人没下台，也没认输，规矩上便不叫停。台下起先还笑，喊着「二狗，认输吧」「你娘的护身符不管用啦」；到第五回，笑声便稀了；第六回，卢方趁他爬到一半，一脚踩在他手背上，碾了一碾，台下有人「嘶」地抽了一口冷气。马小宝在台下拍手：「好！踩得好！谁叫他跟沈小满好！」\n\n小满站在台下，一句话也没说。他的手在袖子里攥着，攥得指甲掐进了肉里。五扇门后头那一圈光，给这一脚踩得往上一窜，窜到他喉咙口，烫得他眼睛发酸。他只要往台上跨一步——一步，那个人便要在半空里转三个圈。可大比的规矩，台下的人跨上台去，不问青红皂白，算他出局——这一步跨上去，孙二狗白挨了六回，那颗丹，他也不用想了。台角的执事瞧见他往前挪了半步，拿眼睛钉住了他。",
+  "en": "Sun Ergou's legs were shaking as he climbed up. Xiaoman saw a little cloth pouch at his waist, blue, its four corners sewn square, the stitches close as a line of ants, one against the next so tight not a hair could pass between. Xiaoman's mother was a fine hand with a needle too, and he'd watched enough to judge at a glance: stitches like these, a piece this size, three nights' work under an oil lamp, a corner a night, the fourth sewn till dawn.\n\nIt was a charm. Sun Ergou squeezed it, looked up, and grinned at Xiaoman below the stage — meaning: maybe I can win one.\n\nAcross from him stood Lu Fang, layer six of the inner court, a little past thirty, long-faced, his eyelids always drooping. The old disciples said he had ground his way up from the outer court — nine years of it, and the year he made the inner court his hair was half white; ever since, he couldn't bear to see an outer disciple climb onto the stage. On the stage he didn't even take a stance or use a spell; he put his hands behind his back and said: \"Come on.\" Sun Ergou charged with his eyes shut; Lu Fang stepped aside and hooked a foot, and Sun Ergou went flat on the bluestone and split his chin.\n\nHe got up, charged again, fell again. Lu Fang wasn't in a hurry; he wouldn't push him off the stage — he knocked him down, waited for him to get up, knocked him down again. The steward sat at the corner of the stage with his eyes on the incense — until it burned down, so long as no one left the stage and no one yielded, the rules said nothing to stop. At first the crowd laughed and shouted, \"Ergou, give up!\" \"Your ma's charm's no good!\"; by the fifth time the laughter thinned; the sixth time, as he was halfway up, Lu Fang stepped on the back of his hand and ground it, and someone below sucked in a breath. Ma Xiaobao clapped: \"Good! Nice stomp! That's what you get for being Shen Xiaoman's friend!\"\n\nXiaoman stood below and said nothing. His hands were clenched in his sleeves till the nails bit his palms. The ring of light behind his five doors, kicked by that stomp, surged up into his throat, so hot his eyes stung. He had only to take one step onto the stage — one step, and that man would turn three times in the air. But by the contest's rule anyone who climbed onto the stage from below was out, no questions asked — take that step, and Sun Ergou's six falls were for nothing, and the pill he could forget. The steward at the corner of the stage saw him edge half a step forward and pinned him with a look."
  },
  "lines": [],
  "buttons": [
-  "fall",
-  "fight"
+  "hold"
  ],
  "exits": [
   {
-   "id": "fall",
+   "id": "hold",
    "label": {
-    "zh": "往后一倒",
-    "en": "Fall backwards"
+    "zh": "攥着拳，不跨",
+    "en": "Clench your fists; do not step up"
    },
-   "means": "loses on purpose, lets Sun Ergou win",
-   "needs": {
-    "quest": "xu-sun-charm"
-   },
-   "refuse": {
-    "zh": "你看着孙二狗发抖的腿。你不知道他为什么这么想赢一场。",
-    "en": "You look at Sun Ergou's shaking legs. You don't know why he wants one win so badly."
-   },
-   "mark": "let-sun-win",
+   "means": "stays below the stage while Sun Ergou is beaten; pulls him up from the steps after",
    "ledger": [
     {
      "who": "sunergou",
      "kind": "恩",
      "what": {
-      "zh": "宗门大比第一轮，你往后一倒，让孙二狗赢了他入观以来的第一场。",
-      "en": "Round one of the contest: you fell backwards and let Sun Ergou win the first bout of his life in the temple."
+      "zh": "宗门大比，孙二狗叫内门的卢方推倒了七回，在石阶上坐下去便起不来了；你伸手把他拉了起来。",
+      "en": "At the sect contest Lu Fang of the inner court knocked Sun Ergou down seven times; he sat on the steps and couldn't get up, and you held out your hand and pulled him up."
      }
     }
    ],
    "story": {
-    "zh": "孙二狗闭上眼睛，一拳打了过来。那一拳软绵绵的，离小满鼻尖还差着老大一截，小满已「哎呀——」一声大叫，往后便倒，四仰八叉地摔出了台子，连台下的尘土都扬起来半尺高。\n\n台下一片寂静，跟着便是一阵哄笑，笑得最响的是马小宝，桂花糕渣子喷了前头人一后脑勺：「我就说！五行杂灵根，连个零层都打不过！」孙二狗睁开眼睛，看看自己的拳头，满脸茫然，仿佛不太认得这只手了。执事张了两回嘴，才道：「……孙二狗，胜。」这是他入观以来头一回赢。他站在台上愣了一会儿，低下头去摸了摸腰里那个蓝布包，眼泪便啪嗒啪嗒掉了下来，掉在青石板上，一滴一个圆点。\n\n小满在台下爬起来，拍了拍身上的土。阿禾站到了他身边，面无表情地道：「你是故意的。」小满说：「他腰里那个护身符，是他娘缝的。三个晚上。」阿禾道：「你怎么知道是三个晚上？」小满说：「针脚数得出来。」阿禾看了他很久，道：「那颗丹，你不要了？」小满没有答。饭桶肚里躺着三颗九转，可九转说不清来历；将来筑基，人家问吃的是哪一颗，他得有一颗拿得出手的。全观一年一颗。他自己的灵石，一块也没有，第十七条救不了他。他往后一倒的时候，是知道的。",
-    "en": "Sun Ergou shut his eyes and threw a punch. A limp punch that stopped well short of Xiaoman's nose — and Xiaoman had already cried \"Aiya —!\" and gone over backwards, sprawling off the stage so hard the dust below flew half a foot high.\n\nDead silence; then a roar of laughter, loudest from Ma Xiaobao, spraying osmanthus crumbs over the back of the head in front: \"Told you! Mixed roots — can't even beat a layer zero!\" Sun Ergou opened his eyes, looked at his fist, bewildered, as if he didn't quite know this hand. The steward opened his mouth twice before he said: \"…Sun Ergou wins.\" His first win since he entered the temple. He stood there dazed, then looked down and touched the blue pouch at his waist, and tears began to fall, pattering on the bluestone, each drop a round dark spot.\n\nXiaoman got up and dusted himself off. A He stood beside him, deadpan: \"You did that on purpose.\" \"The charm at his waist — his ma sewed it. Three nights.\" \"How do you know it was three nights?\" \"You can count it in the stitches.\" She looked at him a long time. \"The pill — you don't want it?\" Xiaoman didn't answer. There were three nine-turn pills in the rice-bucket's belly, but nine-turn pills had no story he could tell; the day he built his foundation and someone asked which pill he'd eaten, he'd need one he could show. One a year, for the whole temple. Not one spirit stone of his own; Rule Seventeen couldn't save him. When he fell back, he'd known."
+    "zh": "他没有跨。第七回，孙二狗扶着膝盖站起来，满脸是血，那只给碾过的右手垂在身边，五个指头肿得并不拢，腰里那个蓝布包的绳子断了一根，吊在胯骨边上晃荡。他拿左手把它捞起来，塞回腰带里，又冲着卢方走了过去——不是冲，是走，一步一步，腿抖得跟筛糠一样，每一步都踩得实实在在。那半炷香到了头，执事敲响了铜锣：「停。孙二狗，你还能打么？」孙二狗吐出一口血沫子：「……能。」执事道：「我看不能了。」孙二狗想了想，点点头：「……那就不能了。」他冲执事鞠了一躬，冲卢方也鞠了一躬，自己走下了台子。\n\n他没让人扶，一直走到演武场边上那几级石阶跟前，一屁股坐了下去，坐下去便再也站不起来了。小满走过去，在他面前站了一会儿，伸出手去：「起来。地上凉。」孙二狗抓住他的手，他一使劲，把他拉了起来，又摸出一颗回春丹，塞进他嘴里。孙二狗比他高半个头，瘦得一把骨头，拉起来的时候，轻飘飘的，像拉起一根竹竿。九月初九那天，石阶的一百四十级上，有一个兖州来的孩子坐着起不来，小满从他身边走了过去，没有停。他那时想，等我站得够稳了，我要拉。今天他也不算站得多稳，可好歹拉了一个。\n\n孙二狗拿那只好手抹了一把脸，把眼泪和血抹成一片，低头看着腰里那根断了的绳子，看了很久，一个字也没说。",
+    "en": "He didn't step. The seventh time, Sun Ergou pushed himself up by his knees, face all blood, the ground-on right hand hanging at his side, its five fingers too swollen to close, one string of the blue pouch snapped so it dangled at his hip. He caught it with his left hand, tucked it back in his belt, and went at Lu Fang again — not charging, walking, one step at a time, legs shaking like a sieve, every step planted firm. The half stick burned out, and the steward struck the gong: \"Stop. Sun Ergou, can you go on?\" Sun Ergou spat a mouthful of bloody froth: \"…I can.\" \"I say you can't.\" Sun Ergou thought, and nodded: \"…Then I can't.\" He bowed to the steward, bowed to Lu Fang too, and walked down off the stage by himself.\n\nHe let no one help him, walked all the way to the few steps at the edge of the ground and sat down hard, and once down he couldn't get up again. Xiaoman went over, stood before him a moment, and held out his hand: \"Up. The ground's cold.\" Sun Ergou took it and Xiaoman pulled him up, then took out a healing pill and pushed it into his mouth. Sun Ergou was half a head taller and nothing but bones; pulled up, he weighed nothing, like pulling up a bamboo pole. On the ninth of the ninth month, at the hundred-and-fortieth step, a boy from Yan had sat unable to get up, and Xiaoman had walked past without stopping. He'd thought then: when I stand steady enough, I'll pull. Today he wasn't standing all that steady either, but at least he'd pulled one.\n\nSun Ergou wiped his face with his good hand, smearing tears and blood into one, and looked down at the snapped string at his waist a long while, without a word."
    },
    "beat": [],
    "next": "wm-fushi"
-  },
-  {
-   "id": "fight",
-   "label": {
-    "zh": "出手",
-    "en": "Fight"
-   },
-   "means": "fights Sun Ergou in earnest",
-   "game": {
-    "id": "dabi-sun",
-    "kind": "duel",
-    "creature": "foe-sunergou",
-    "retry": true
-   },
-   "withdrawn": {
-    "zh": "孙二狗还站着，腿抖得更厉害了。——再来。",
-    "en": "Sun Ergou is still standing, legs shaking harder than ever. — Again."
-   },
-   "story": {
-    "zh": "孙二狗闭上眼睛，一拳打了过来。那一拳软绵绵的，没有一点力气。\n\n小满看了一眼他腰里那个护身符，又看了一眼他发抖的腿，心里叹了口气，一侧身，让过了那一拳。",
-    "en": "Sun Ergou shut his eyes and threw a punch. A limp punch with no strength in it.\n\nXiaoman glanced at the charm at his waist, then at his shaking legs, sighed inwardly, and turned aside to let the punch go by."
-   },
-   "beat": [],
-   "next": "wm-lun2"
   }
  ]
 }

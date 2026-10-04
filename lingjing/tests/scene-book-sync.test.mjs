@@ -18,7 +18,7 @@ const BRANCHES = new Set([
   '00-cave/keep', '00-dawn/no-egg', '00-deer/straight', '00-duanbei/home', '00-duanbei/alone',
   '00-dusk/stay-home', '00-fox/leave', '00-gate/rush', '00-masan/strike', '00-rent/truth',
   '00-sleep/out', '00-storm/chase', '00-uncle/wait', '00-waimen/pay', '00-waimen/refuse', '01-tower/hold',
-  'wm-ahe/owe', 'wm-chaifang/fist', 'wm-lun1/fight', 'wm-mijing/refuse',
+  'wm-ahe/owe', 'wm-chaifang/fist', 'wm-mijing/refuse',
   'wm-qingshi/shout',
 ]);
 // Game-only bridge paragraphs inside book passages: scene (or scene/exit) → opening words.

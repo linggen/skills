@@ -229,7 +229,7 @@
         "en": "Foundation pill"
       },
       "art": "art/items/foundation-pill.webp",
-      "_sold": "Never on a shelf (2026-10-03, the book: 全观一年一颗, the 宗门大比 champion's prize): a gift or the sect's, not the market's. 一转下品 — one line, a few dark flecks.",
+      "_sold": "Never on a shelf (2026-10-03, the book: 全观一年一颗, the 宗门大比 champion's prize — 祁长松's in 古六, the hero's only at the year-five 大比 in 古七's skip, 09-year `futian`): a gift or the sect's, not the market's. 一转下品 — one line, a few dark flecks.",
       "zhuan": 1,
       "about": {
         "zh": "练气九层大圆满者冲关时服之，多几分把握。一转下品，一道纹，几点黑斑——全观一年只这一颗。",
@@ -251,7 +251,7 @@
       },
       "kind": "pill",
       "art": "art/items/foundation-pill.webp",
-      "_furnace": "Made in 银月's furnace (古九): 饭桶 sniffed the sect's 一转 官丹 once and made three from the garden's culls and 小狰's two old ginseng. The breakthrough reaches for it before the 一转 (ladder.json breakthrough.pill); not sold.",
+      "_furnace": "Made in 银月's furnace: three lie in 饭桶 by the first snow (古七, 2026-10-03 book): one carried against the skin from the snow night (09-snow `keep`), two left in it. The breakthrough reaches for it before the 一转 (ladder.json breakthrough.pill); not sold.",
       "zhuan": 9,
       "about": {
         "zh": "饭桶一炉出的筑基丹，透亮得像一滴凝住的露水，九道金纹，一丝黑斑也没有。沉鼎观三百年最好的一炉是三转。",

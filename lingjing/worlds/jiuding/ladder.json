@@ -469,7 +469,7 @@
       "bonus_of": {
         "dingtai": 10
       },
-      "_items": "A list is reached for in order: the furnace's 九转 first, the sect's 一转 after (古七: he eats the 九转, the 官丹 stays sealed in 饭桶). A pill's bonus is its own `bonus_of`, else by its 转 (`by_zhuan`, items.json `zhuan`: the 官丹 is 一转下品, +25; the furnace's 九转 +80, near-certain), else `bonus`. 鼎苔 (古五) is the last reached for: eaten raw it steadies the throw a little (bonus_of 10).",
+      "_items": "A list is reached for in order: the furnace's 九转 first, the sect's 一转 after (古七: he eats the 九转; the 官丹 he won at the year-five 大比 stays sealed in 饭桶). A pill's bonus is its own `bonus_of`, else by its 转 (`by_zhuan`, items.json `zhuan`: the 官丹 is 一转下品, +25; the furnace's 九转 +80, near-certain), else `bonus`. 鼎苔 (古五) is the last reached for: eaten raw it steadies the throw a little (bonus_of 10).",
       "by_zhuan": {
         "1": 25,
         "2": 30,

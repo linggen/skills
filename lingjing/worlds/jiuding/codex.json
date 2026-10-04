@@ -439,7 +439,8 @@
    "tag": "丹药",
    "first": {
     "book": "h09"
-   }
+   },
+   "_first": "2026-10-03: the gloss moved to the snow night's 「[筑基丹]{注=foundation-pill}是给九层大圆满的人破关用的」 (古七), the jade-box cold open being cut."
   },
   "firm-pill": {
    "tag": "丹药"
@@ -546,6 +547,30 @@
     "scene": "wm-xirang"
    },
    "tag": "法宝"
+  },
+  "yuan": {
+   "_about": "观主玄沉子的坐骑 (古三, 2026-10-03 book: the abbot rises out of the 泗水 on its back before the bell). A codex entry only, never a creatures.json row: a row would be a beast of 徐 to meet and fight, and needs a picture; none is painted yet (`image: null`, a name card stands).",
+   "kind": "生物",
+   "name": {
+    "zh": "鼋",
+    "en": "The Yuan"
+   },
+   "pinyin": "yuán",
+   "image": null,
+   "_image": "not painted yet",
+   "lines": {
+    "zh": [
+     "泗水底下的一只大鼋，观主的坐骑。背壳比马家包的那条船还大，壳上的纹路一格一格，像一块田；脑袋比磨盘还大，一双老眼眯着。它游过的地方，水在身后合拢，不起一个浪花。"
+    ],
+    "en": [
+     "A giant softshell turtle from the bottom of the Si, the abbot's mount. Its shell is bigger than the boat the Ma family hired, its markings square on square like a field; its head is bigger than a millstone, its old eyes narrowed. Where it swims, the water closes behind it without a ripple."
+    ]
+   },
+   "first": {
+    "book": "h04",
+    "scene": "00-gate"
+   },
+   "_first": "Glossed in 03-第三回.md (h04): 「那是一只[鼋]{注=yuan}」 — the abbot's entrance before the bell."
   }
  }
 }
