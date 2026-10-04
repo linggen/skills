@@ -69,7 +69,7 @@ Three destinations, picked from the utterance itself:
    tight — every core row costs tokens on every prompt.
 
 2. **`--tier semantic`** — long-term goals / vision, preferences
-   (standing rules get `--hook "<one line>" --indexed`),
+   (standing rules get `--indexed --summary "<one line>"`),
    decisions whose reasoning is the retrieval value, cross-project
    tech gotchas. Use this when the user **explicitly** asked to
    remember it (*"remember X"*, *"记住 X"*) or used commitment language.
@@ -120,10 +120,10 @@ adding each candidate:
 
 Semantic write (long-term durable; `--scope <dir>` when it is about
 another directory than the session's, `--global` when it is about the
-person, `--hook` on preferences/decisions):
+person, `--indexed --summary` on standing rules):
 
 ```
-ling-mem add "<content>" --tier semantic --type <fact|preference|decision|learned> --from <user|agent|derived> [--scope <dir>|--global] [--hook "<one line>"]
+ling-mem add "<content>" --tier semantic --type <fact|preference|decision|learned> --from <user|agent|derived> [--scope <dir>|--global] [--indexed --summary "<one line>"]
 ```
 
 Core write (always-loaded universals about the person; no scope):
@@ -163,6 +163,6 @@ nothing before or after that final line.
 
 The transcript starts with a `[SESSION_CWD]: <path>` header (emitted
 by `extract_session.sh`). Pass it through as `--cwd <path>` on writes
-so the row records *where* it happened (the project root for a coding
-session, the home dir for a casual chat). If the header is missing,
+so the row's default `scope` is *where* it happened (the project root
+for a coding session, the home dir for a casual chat). If the header is missing,
 omit `--cwd` entirely — never guess.

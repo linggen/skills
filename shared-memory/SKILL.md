@@ -129,11 +129,11 @@ change when you switch agents.
 
 | Op | CLI |
 |:---|:---|
-| Search | `ling-mem search "..." [--cwd-scope <root>] [--app <name>] [--limit N]` |
+| Search | `ling-mem search "..." [--scope-root <root>] [--app <name>] [--limit N]` |
 | Get    | `ling-mem get <id>` |
 | List   | `ling-mem list [--type ...] [--day YYYY-MM-DD] [--indexed true] [--source-session <id>] [--limit N] ...` |
-| Add    | `ling-mem add "..." --type <t> --from <user\|agent\|derived> [--tier ...] [--scope <dir>] [--hook "..."] [--indexed] [--global] [--source-session <id>] [--replace <id>]` — omitted `--tier` = episodic; pass the host session id on live captures so a later `scan` of the day skips sessions that already contributed |
-| Update | `ling-mem edit <id> [--content ...] [--hook "..."\|--clear-hook] [--indexed true\|false] [--cwd <dir>\|--clear-cwd]` (or the back-compat alias `ling-mem update <id> ...`) |
+| Add    | `ling-mem add "..." --type <t> --from <user\|agent\|derived> [--tier ...] [--scope <dir>] [--summary "..."] [--indexed] [--global] [--source-session <id>] [--replace <id>]` — omitted `--tier` = episodic; pass the host session id on live captures so a later `scan` of the day skips sessions that already contributed |
+| Update | `ling-mem edit <id> [--content ...] [--summary "..."\|--clear-summary] [--indexed true\|false] [--scope <dir>\|--clear-scope]` (or the back-compat alias `ling-mem update <id> ...`) |
 | Session start | `ling-mem session-start [--cwd <dir>] [--root <dir>]` — core, the scope candidates line, and the index for that dir |
 | Delete | `ling-mem delete <id> --yes` |
 | Days   | `ling-mem days [--undreamed]` — per-day verb flags (scanned / dreamed) + first_unscanned / first_undreamed; `--undreamed` = the dream worklist, oldest first |
@@ -229,7 +229,7 @@ widget, no confirmation, no verbose reply — just save and continue.
 2. **Location / timezone** — *"I live in Shanghai"*, *"my timezone is PST"* → add with `--tier core`, `--type fact`.
 3. **Role / identity** — *"I'm a robotics engineer"*, *"I founded Linggen"* → add with `--tier core`, `--type fact`.
 4. **Long-term goal / vision** — *"I'm building X as Y"* → add with `--tier semantic --type fact`, scoped to the directory it is about (or `--global` when it spans the person's work). **Do NOT** use `--tier core` — goals belong in the long-term tier.
-5. **Commitment-language preference** — *"always X"*, *"never Y"*, *"from now on Z"* → add with `--type preference --from user --tier semantic --hook "<one line>" --indexed`, `--global` when it holds everywhere, else scoped to its directory. **Not** core (Hanli, 2026-09-09): core is who they are, not how they want the work done — the always-on block stays tiny, and recall surfaces a rule when its subject comes up.
+5. **Commitment-language preference** — *"always X"*, *"never Y"*, *"from now on Z"* → add with `--type preference --from user --tier semantic --summary "<one line>" --indexed`, `--global` when it holds everywhere, else scoped to its directory. **Not** core (Hanli, 2026-09-09): core is who they are, not how they want the work done — the always-on block stays tiny, and recall surfaces a rule when its subject comes up.
 
 Detect these patterns semantically, not lexically — works in any
 language. *"我的猫叫 …"*, *"以后别再 …"* trigger the same routing.
@@ -302,27 +302,29 @@ error"*).
 
 ## Scope and index — where a row belongs
 
-A row's `cwd` is its **scope**: the directory it is about. Null = about
+A row's `scope` is the directory it is about. Null = about
 the person (visible everywhere); core rows never carry one. Modelled on
 CLAUDE.md: a session sees its directory and every parent.
 
 - **Writing.** The host stamps `cwd` (the session cwd, the default
-  scope), `root`, `source_session` and `host` — never fill those by
+  scope; request only, never stored as such), `root`, `source_session` and `host` — never fill those by
   hand. At session start the host shows `Memory scopes here: skills,
   skills/lingjing, … (default: <cwd>)`; pass one as `scope` on
   `memory_add` when the row is about another directory than where you
   stand (a 《九鼎录》 writing rule → `skills/lingjing`; "commit straight to
   main" → `~/workspace`). The daemon accepts an existing dir inside the
   root or a parent of the root below `$HOME`, else falls back to the
-  session cwd. `global: true` = about the person.
-- **Hook.** `preference` and `decision` rows carry a `hook`: one line,
-  ≤ 80 chars, saying what the row is for.
-- **Index.** `indexed: true` puts the row's hook into every session
+  session cwd. `global: true` = about the person. `memory_update`
+  moves a row with `scope` (absolute dir, `~/` ok); `global: true` clears it.
+- **Index.** `indexed: true` puts the row's `summary` into every session
   under its scope at start (nearest dir first, 3000-char budget):
-  `## Index — <dir>` then `- hook (id=…)`. Set it for standing rules the
+  `## Index — <dir>` then `- summary (id=…)`. Set it for standing rules the
   user states ("always…", "以后都…"). An index line is a pointer —
-  `memory_get` the row when its hook bears on the task. Rules already in
-  a project file get a pointer hook (`写作规则见 DESIGN.md § 五·六`).
+  `memory_get` the row when its summary bears on the task.
+- **Summary.** One line, ≤ 80 chars, saying what the row is for. It
+  matters only on indexed rows; one without falls back to the content's
+  opening. Rules already in a project file get a pointer summary
+  (`写作规则见 DESIGN.md § 五·六`).
 - **Recall scope.** A session in a project recalls rows under its root,
   at the root's parents, and about the person. A skill's own session
   (`~/.linggen/skills/<name>`) recalls only its own rows. `$HOME`,
@@ -366,11 +368,11 @@ it's what a bare `/shared-memory` greeting should mention first.
 | `dream` | **Remember all undreamed days, oldest first, then sweep.** Worklist via `days --undreamed`; per day: list its episodic rows → cluster → promote durable signal to semantic → `remember-day` stamp. Never deletes; the final `sweep` ages out judged rows past TTL. See `references/dream-flow.md`. (On Linggen, the memory app's buttons route this to the `dream` **mission** — same procedure, plus the in-flight guard and run report. The chat verb is for hosts without a mission runtime, or explicit chat requests.) |
 | `dream <YYYY-MM-DD>` | **Remember one day.** Same procedure, one day. |
 | `scan <YYYY-MM-DD>` | **Stage one day's session logs (backfill).** Run `scripts/scan.sh <date>`; before encoding, `list --day <date>` the day's existing rows and collect their `source_session` ids — **skip any scanned session already in that set** (live capture or a prior scan covered it; this is what makes scan idempotent). Encode the remaining worthwhile candidates into episodic with `--episodic` + the day's `occurred_at`, then stamp: `ling-mem harvest-day <date>` (stamps scanned only — the day stays *undreamed* and dream judges it later). A day with nothing new: still stamp, report `CLEAN`. |
-| `add "<content>" [--type ...] [--tier ...] [--scope <dir>] [--hook "..."]` | Insert a new memory row. Omitted tier = episodic. |
+| `add "<content>" [--type ...] [--tier ...] [--scope <dir>] [--summary "..."]` | Insert a new memory row. Omitted tier = episodic. |
 | `search "<query>" [--limit N]` | Semantic search across `semantic` + `episodic`. |
 | `list [--type ...] [--tier ...] [--day ...] [--limit N]` | Paginated listing. |
 | `delete <id>` | Remove a specific row by id. |
-| `update <id> --content "<new>"` | Edit a row in-place (content / hook / indexed / scope). |
+| `update <id> --content "<new>"` | Edit a row in-place (content / summary / indexed / scope). |
 | `days` | Show the per-day dream state (the calendar, as text). |
 | `sweep` | Run the forget stage on its own. |
 | `condense` | **Collapse stale same-subject chains in long-term memory** — stage 4, the only pass over semantic-at-rest. Scan via `ling-mem chains --derived-only` (cited = pre-confirmed id-citation chains; `--kind marker` = provisional-state candidates to confirm; `--kind subject` = quiet same-subject clusters to digest, attended); collapse each into one current-truth row — losers are archived (`expired_at`), recoverable via `list --superseded-by <id>`. Back up first (`ling-mem export`), supervise early runs. See `references/condense-flow.md`. (On Linggen the nightly `dream` mission runs the cited slice + completion-bar marker merges + quiet-subject digests automatically as its last stage; this verb is the attended deep pass.) |
@@ -382,9 +384,8 @@ The review queue holds what the nightly dream's audit could NOT solve
 with confidence: uncertain merges (`chain`), status claims likely
 overtaken by the world (`stale-status`), conflicts needing the
 user's pick (`contradiction`), digest clusters of doubtful
-subject coherence (`subject`), and proposals to put a row in or take
-it out of its directory's index (`index`) or move it to another
-directory (`scope`). The daemon only bookkeeps — **you are
+subject coherence (`subject`). Index and scope fixes are not queued —
+the dream applies them itself when sure. The daemon only bookkeeps — **you are
 the solver**, and this is an attended surface: the user is right here.
 
 1. **List.** `memory_issues`. Empty → say so, done.
@@ -410,16 +411,9 @@ the solver**, and this is an attended surface: the user is right here.
    resolve `resolved`; distinct workstreams → resolve `dismissed` —
    the dismissal IS the ruling; the scan never serves that cluster
    again. Ask only when you genuinely can't tell.
-5. **`index` / `scope` items** change what every future session under
-   a directory loads, so they always go to the user: one plain question
-   ("Load '<hook>' at the start of every session in skills/lingjing?").
-   On yes: `index` → `memory_update {"id":..,"indexed":true,"hook":".."}`
-   (or `"indexed":false` to take it out); `scope` → MCP cannot move a
-   row's directory — apply it with `ling-mem edit <id> --cwd <dir>` or
-   the person sets the Scope field in the console. Then resolve.
-6. **Close as you go.** `memory_issue_resolve {"id":"<issue id>","outcome":"resolved","note":"<what you did>"}`
+5. **Close as you go.** `memory_issue_resolve {"id":"<issue id>","outcome":"resolved","note":"<what you did>"}`
    (or `"dismissed"` when not worth fixing).
-7. **Report** one line per item (`SOLVED <id> …` / `DISMISSED <id> …`)
+6. **Report** one line per item (`SOLVED <id> …` / `DISMISSED <id> …`)
    plus a closing count. The page footer's "N to review" refreshes on
    the next dashboard paint.
 
@@ -512,7 +506,7 @@ archived, not deleted (over MCP: `replace_ids`).
 - Two rows that are mostly the same but differ on a specific detail (e.g.
   one says "8 years old in 2026-05-21", another says "9 years old in
   2026-05-25") → time-stamped, may both be valid. Ask before merging.
-- Rows that look like dups but have different `cwd` (scope) or
+- Rows that look like dups but have different `scope` or
   `outcome` — they may apply to different directories. Ask.
 
 When in doubt, **ask**. Cheap. The cost of asking is one turn; the cost of
@@ -524,7 +518,7 @@ silently losing or mangling a fact is much higher.
   `(content, type)` rows at write time. You don't need to handle that case.
 - Cross-tier dedup (`add` handler): if you add to one table and an exact
   match exists in the other, the higher-tier row wins and keeps its own
-  scope; an empty hook or scope fills from the new write. Also automatic.
+  scope; an empty summary or scope fills from the new write. Also automatic.
 
 Fuzzy "same fact, different wording" is **never mechanical** — it always
 needs an LLM judgment + the rule above.

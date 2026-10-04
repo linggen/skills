@@ -51,7 +51,8 @@ never write them.
 - **Status lines, not prose:** `DAY <date> rows=<n>` → `PROMOTE <id>
   "<gist>"` per promotion (`MERGE <new-id> replaces=<k> "<gist>"` per
   derived merge) → `DAY <date> done judged=<n> promoted=<k>` →
-  `SWEEP removed=<n>` → one final totals sentence. Never print a
+  `SWEEP removed=<n>` → `FIX <id> <field>=<new> (was <old>) "<why>"`
+  per scope/index/summary fix → one final totals sentence. Never print a
   status line for a call you didn't make.
 
 ## `dream` (no argument) — remember all undreamed days
@@ -121,13 +122,13 @@ Backfill staging, always user-triggered, idempotent:
      content **verbatim**, its `type`/`from`, `tier=semantic`
      (always explicit — an omitted tier lands episodic), `occurred_at`
      carried forward (else `created_at`), `source_session` if present,
-     `cwd` if present, and its `hook` (write one for a
-     preference/decision that has none: one line, ≤ 80 chars). `cwd` is
-     the directory the memory is ABOUT — carrying it is what keeps the
-     promoted row findable from there; a row with no `cwd` gets none,
-     never this session's own directory. Never pass `id`, never set
-     `indexed` (propose it — below); `tier=core` only for a narrow
-     universal about the person (core carries no `cwd`). Search-first: a quick
+     the row's stored `scope` as the request's `cwd` if present, and its
+     `summary` if present. `scope` is the directory the memory is
+     ABOUT — carrying it is what keeps the promoted row findable from
+     there; a row with no `scope` gets none, never this session's own
+     directory. Never pass `id`; whether the row joins the index is the
+     scope and index lane's call (below); `tier=core` only for a narrow
+     universal about the person (core carries no scope). Search-first: a quick
      semantic `search` on the gist — but a hit with `tier=episodic`
      never counts as "already in semantic". **The promote bar — state
      + lessons, never events.** Test: strip the date and the commit
@@ -197,12 +198,7 @@ can prove, queue the rest for the user. Two capped passes:
      `chain` for an uncertain merge (note: subject + both gists),
      `stale-status` for a provisional claim with no completing
      neighbor (note: the claim + "verify against git/files at solve
-     time"), `contradiction` when user-voice rows disagree, `index`
-     for a user-stated standing rule that should load at session start
-     under its directory (or an indexed row that no longer holds —
-     note: put in / take out, the dir, the proposed hook), `scope` for
-     a row filed under the wrong directory (note: from → to). Index
-     and scope changes are never yours to write — at most 5 per run. A deduped
+     time"), `contradiction` when user-voice rows disagree. A deduped
      response ("already queued") is success. Write every note in
      plain words — it is the solver's whole starting context and may
      become the user's question.
@@ -230,6 +226,27 @@ can prove, queue the rest for the user. Two capped passes:
    queued items is the attended solve verb — the solver works
    evidence-first and asks the user only when evidence cannot
    settle it.
+
+## Scope and index lane
+
+Fixes you apply yourself, never queue. A row's scope, index flag and
+summary say where it is filed and how the index shows it, not what it
+says: change them on any row, `from=user` included, via
+`memory_update` — never its `content`. While judging, fix:
+
+- **scope** — filed under the wrong directory →
+  `{"id":"<id>","scope":"<absolute dir>"}`; about the person but filed
+  under a project → `{"id":"<id>","global":true}`;
+- **index in** — a `from=user` standing rule ("always…", "never…",
+  "以后都…") not indexed → `{"id":"<id>","indexed":true,"summary":"<one line, ≤ 80 chars>"}`;
+- **index out** — an indexed row that is no standing rule, or no
+  longer holds → `{"id":"<id>","indexed":false}`;
+- **summary** — an indexed row with none, or one that misreads the
+  row → `{"id":"<id>","summary":"<one line>"}`. Leave other rows'
+  summaries alone.
+
+Only when sure; unsure → leave it (nothing is queued). At most 10 per
+run, one line each: `FIX <id> <field>=<new> (was <old>) "<why>"`.
 
 ## Reporting (Linggen dashboard)
 
