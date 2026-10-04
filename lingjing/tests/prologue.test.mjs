@@ -367,7 +367,7 @@ test('the companion\'s cameos: 阿禾, a girl — braids, the red nose and noteb
     }
     const hallText = fill(scenes['00-hall'].story.zh, s, content);
     // Since the 2026-09-30 review round he knows her (she asked him the road in 古三) and she dodges him all day: named, never answering
-    assert.match(hallText, /排在小满前面第三个的，是阿禾。她把两根小辫子[\s\S]*木、水、土，三灵根——真灵根。中上之资。[\s\S]*没敢喊出声来。/);
+    assert.match(hallText, /排在小满前面第三个的，是阿禾。她把两根小辫子[\s\S]*只亮了一种颜色。[\s\S]*「这个，我收了。」[\s\S]*没喊出声来/);
   }
 });
 
