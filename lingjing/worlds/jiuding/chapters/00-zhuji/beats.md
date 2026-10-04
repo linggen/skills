@@ -16,12 +16,13 @@ speak to the player as 你 (story/jiuding-lu/DESIGN.md § 四·五 人称分工)
 3. **The year** (`09-year`, 药园). One clock pulls it (2026-10-02): 马小宝 accuses him of selling the
    官丹, 周衡 sets a public 验封 for 端午 (touched seal = search bunk and body); the rice-water corner
    lifts in the spring rains, 阿禾's 草木灰 slows it, he holds it down with his thumb at the inspection.
-   The book's four seasons, one layer each — 清明 → 六, 端午 → 七,
-   伏天 → 八, 入秋 → 九层圆满 (`rise`, the last `{layer: 9, full: true}`). The seasons are the main
+   The book's seasons (2026-10-03, the five-year skip): 清明 and 端午 raise no layer (年三, he
+   stays 五层); 伏天 ends with 「一晃，便是五年」 — the skip's paragraphs play in its passage and lift
+   him to 九层 (`rise: 9`); 入秋 (年八) → 九层大圆满 (`{layer: 9, full: true}`). The seasons are the main
    story, so they cost no 体力 (主线, Hanli 2026-10-01 — was 25 a season; 入秋 pays a story step's 3)
    and each waits on the one before (`needs.mark`); a season done is not offered again (`once`).
    No days of chores (his, 2026-09-30).
-4. **Old Qu** (`09-qulao`, 后山崖顶). Two fingers, then nine — the palm opens on the brand, 瞿老 binds it
+4. **Old Qu** (`09-qulao`, 后山崖顶). 「九层，满了。」 (a 筑基 sees a 练气's level at a glance) — nine fingers, and the palm opens on the brand, 瞿老 binds it
    (「这东西，别给人看。」); 「用哪颗丹？」「观里那颗。」 He tells of
    his last disciple — 外公 (DESIGN § 六·九 「外公是谁」). 「那颗丹，别吃。」
 5. **The cliff** (`09-cliff`, 后山崖顶) — **the key beat**: 九月初三, the breakthrough (`breakthrough:

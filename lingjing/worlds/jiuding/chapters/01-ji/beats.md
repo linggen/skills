@@ -15,7 +15,7 @@
    the old-well voice that called 「回来」 on 黑松岭) — then **the eighteenth**. `girl` meets 老胡 (the knee like 爹's,
    东街卖油的闺女).
 3. **The wedding** (`01-altar`, 河伯祠). He sends the shaman 「去给河伯报信」 (she cries 「仙长」); 阿禾 jumps in without
-   counting; the Three Elders cough up twenty years of River Lord money — and 锁儿's ingot lies beside theirs, the same mark.
+   counting; the Three Elders cough up twenty-five years of River Lord money — and 锁儿's ingot lies beside theirs, the same mark.
 4. **The Zhang stands up** (`01-rise`, 河伯祠) — **the chapter's fight**: the river stands, twenty
    boats, thousands kneel, three stand. 冰夷's dragons lunge and sweep (a duel with `foe-shuanglong`,
    a trial that may be fought again, `retry`); won, the book's passage plays: he steps back in front
@@ -26,12 +26,12 @@
    **The player's choice and price**: `give` (needs `mend-pill-9`, the 九纹回春丹 kept for 爹's knee in 古四 — takes it)
    holds him a cup of tea's time and he dies holding his daughter's hand; `hold` (a branch the book never took) keeps
    the pill, or has none. Either way he dies: the pill buys words, not a life.
-6. **The deeps** (`01-deep`, 漳渊). 二十个姑娘活着，拦船的爹死了; 「你身上，有青丘的味道」; 「把河伯请上来的，是他」;
+6. **The deeps** (`01-deep`, 漳渊). 二十五个姑娘活着，拦船的爹死了; 「你身上，有青丘的味道」; 「把河伯请上来的，是他」;
    the name 冰夷; 「方才那两条龙，是替她问你的」; the Luo seal (riddle `seal-ji`; 「……足。」, six and
    eight swapped).
 7. **The first 鼎** (`01-cauldron`, 漳渊). The cauldron shrinks into his palm, the token's second tail,
    赵昂 under the willow — 「天下，该归于一」 — 银月's first memory (`memory: 1`); 赵昂 sees the brand in his palm
-   (「烙上了，就是宫里的」), 「锁儿……」「宫里的孩子，没有名字。」; 老井 named only by 赵昂's mouth (「每年入秋到这城里来…来了二十年」);
+   (「烙上了，就是宫里的」), 「锁儿……」「宫里的孩子，没有名字。」; 老井 named only by 赵昂's mouth (「每年入秋到这城里来…来了二十五年」);
    the mark laid out — 「天下，该归于一」. **No breakthrough.**
 8. **Willow Bend** (`01-end`). The tofu shop that night (豆浆, no sugar; 周衡 pays the coffin from the 观's five taels); 「记账的，总要去对一对」; `rest` now plays 柳湾 — 「……阿衡？」, 「回。」, the notebook's 圈 · 锁儿 · 老胡 and 「人家迟早要上门来收」 (the letter's 「爹的药」 line is left out: on `hold` it would not be true). Ends the chapter; the second
    鼎 lies east, in 兖.

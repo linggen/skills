@@ -9,8 +9,8 @@
   "en": "Chending Temple · The gate"
  },
  "setup": {
-  "zh": "腊月十一，大比后的第三天，你挑水路过山门。瞿老在那一级台阶上扫地，扫帚忽然停了：「放下。」",
-  "en": "The eleventh of the twelfth month, three days after the contest, you carry water past the gate. Elder Qu is sweeping that one step; the broom stops: \"Put it down.\""
+  "zh": "腊月十一，大比后的第三天，你挑水路过山门。瞿老在山门台阶上扫地，扫帚忽然停了：「放下。」",
+  "en": "The eleventh of the twelfth month, three days after the contest, you carry water past the gate. Elder Qu is sweeping the gate stair; the broom stops: \"Put it down.\""
  },
  "recap": {
   "zh": "大比后的第三天，扫了五十年台阶的瞿老，把扫帚一停：「放下。跟我来。」",
@@ -35,8 +35,8 @@
   }
  },
  "story": {
-  "zh": "大比过后的第三天，腊月十一，小满挑水路过山门，瞿老正在那一级台阶上扫地，扫帚忽然停了：「放下。」",
-  "en": "On the eleventh of the twelfth month, the third day after the contest, Xiaoman was carrying water past the gate; Elder Qu was sweeping that one step, and his broom suddenly stopped: \"Put it down.\""
+  "zh": "大比过后的第三天，腊月十一，小满挑水路过山门，瞿老正在山门台阶上扫地，扫帚忽然停了：「放下。」",
+  "en": "On the eleventh of the twelfth month, the third day after the contest, Xiaoman was carrying water past the gate; Elder Qu was sweeping the gate stair, and his broom suddenly stopped: \"Put it down.\""
  },
  "lines": [],
  "buttons": [
@@ -51,8 +51,8 @@
    },
    "means": "sets down the water and follows Elder Qu",
    "story": {
-    "zh": "小满把水桶放下。瞿老道：「跟我来。」扛起扫帚便往后山走。山路越走越窄，窄得只容得下一只脚，小满一边跟，一边还得记着自己只是个练气二层，跟得太轻松了不像话，便故意喘几口粗气。瞿老头也不回：「喘得不像。」小满便不喘了。",
-    "en": "Xiaoman put the buckets down. \"Come with me,\" said Elder Qu, shouldered his broom and set off for the back mountain. The path grew narrower and narrower till there was room for only one foot; following, Xiaoman had to remember he was only layer two — keeping up too easily wouldn't look right — so he puffed on purpose. Elder Qu didn't turn: \"That's not how panting sounds.\" Xiaoman stopped puffing."
+    "zh": "小满把水桶放下。瞿老道：「跟我来。」扛起扫帚便往后山走。山路越走越窄，窄得只容得下一只脚，小满跟在后头，气也不粗。瞿老头也不回：「四层了。腿倒比上回稳。」",
+    "en": "Xiaoman put the buckets down. \"Come with me,\" said Elder Qu, shouldered his broom and set off for the back mountain. The path grew narrower and narrower till there was room for only one foot; Xiaoman followed without breathing hard. Elder Qu didn't turn: \"Layer four now. Your legs are steadier than last time.\""
    },
    "beat": [],
    "next": "wm-caowu"
