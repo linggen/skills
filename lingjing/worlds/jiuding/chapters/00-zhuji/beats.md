@@ -15,8 +15,8 @@ speak to the player as 你 (story/jiuding-lu/DESIGN.md § 四·五 人称分工)
    by the pills, the one line that tells 回春丹 (治伤, 留给爹) from 九转筑基丹; 孙二狗's tears carry the news to 马小宝.
 3. **The year** (`09-year`, 药园). 马小宝 accuses him of stealing the garden's herbs; 周衡: 「药园，一株
    不少……要告他偷，拿赃来」, then 「我看了」 (the 端午 验封 was cut from the book, 2026-10-03: no seal,
-   no followers, no 戒律堂, no ban on 钱掌柜). The seasons: 清明 (外公's paper, 阿禾's 禾) raises no layer
-   (he stays 五层); 伏天 (the wall, 阿禾's half 文 and her nine-ring pill) ends with 「一晃，便是五年」 —
+   no followers, no 戒律堂, no ban on 钱掌柜). After the accusation, 阿禾's half 文 at 钱掌柜's and the board 「正月十九　头彩一颗　已开」 (2026-10-04). The seasons: 清明 (外公's paper; 阿禾's 禾 drink her qi, her nine-ring pill → 七层, the rice 绿得发黑) raises no layer
+   (he stays 五层); 伏天 (the wall) ends with 「一晃，便是五年」 —
    the skip plays in its passage and lifts him to 九层 (`rise: 9`): 祁长松's Foundation and first flight
    into the 柏, the year-five 大比 won plainly, the 一转 官丹 resealed with 米汤 into 饭桶 — the exit
    grants the sect's `foundation-pill` (古六's final grants none); 入秋 (年八) → 九层大圆满
