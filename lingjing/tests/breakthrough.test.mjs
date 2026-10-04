@@ -36,7 +36,7 @@ const atJi = (extra = {}) => ({
 /* At 青鼎, the peak of 结丹, 银月 found — the third cauldron's gift is hers. */
 const atQing = (extra = {}) => ({
   ...atJi(), chapter: '03-qing', scene: '03-cauldron', place: 'liubo', ended: ['00-prologue', '01-ji', '02-yan'],
-  tier: 'core', step: 2, progress: 1200, companion: { joined: '2026-09-20' }, ...extra,
+  tier: 'core', step: 8, progress: 416, companion: { joined: '2026-09-20' }, ...extra,
 });
 /* The try whose die lands (or not) under the chance. */
 function tryThat(state, to, lands) {
@@ -61,13 +61,13 @@ test('the chance is the realm\'s base and what feeds it, held between floor and 
   assert.deepEqual(o.risk, { stamina: Math.ceil(content.rewards.stamina.max * rule.fail.wound), progress: Math.round(130 * rule.fail.progress), hours: rule.fail.cooldown_hours });
 
   const pill = oddsAt(atJi({ bag: { 'foundation-pill': 1 } })).odds;
-  assert.equal(pill.chance, Math.min(rule.cap, o.chance + rule.pill.bonus), 'a pill carried');
+  assert.equal(pill.chance, Math.min(rule.cap, o.chance + rule.pill.by_zhuan[1]), 'a pill carried: the sect\'s 一转, by its 转');
   assert.equal(part(pill, 'pill').item.id, 'foundation-pill', 'only the sect\'s 一转 held: it is the one');
   // 古九: the furnace's 九转 is reached for before the sect's 一转 (the 官丹 stays in 饭桶), and weighs more.
   const nine = oddsAt(atJi({ bag: { 'foundation-pill': 1, 'foundation-pill-9': 1 } })).odds;
   assert.equal(part(nine, 'pill').item.id, 'foundation-pill-9');
-  assert.equal(part(nine, 'pill').n, rule.pill.bonus_of['foundation-pill-9']);
-  assert.ok(rule.pill.bonus_of['foundation-pill-9'] > rule.pill.bonus);
+  assert.equal(part(nine, 'pill').n, rule.pill.by_zhuan[9]);
+  assert.ok(rule.pill.by_zhuan[9] > rule.pill.by_zhuan[1]);
   const hurt = oddsAt(atJi({ stamina: 20 })).odds;
   assert.equal(hurt.chance, o.chance - rule.body.whole + rule.body.hurt, '伤势 is 体力: under half is hurt');
   const sat = oddsAt(atJi({ last_seclusion: { at: new Date(NOW - 3 * HOUR).toISOString(), hours: 4 } })).odds;
@@ -76,7 +76,7 @@ test('the chance is the realm\'s base and what feeds it, held between floor and 
   assert.equal(part(oddsAt(atJi({ last_seclusion: { at: new Date(NOW - HOUR).toISOString(), hours: 0.2 } })).odds, 'seclusion').n, 0, 'too short a sitting');
   assert.equal(part(oddsAt(atJi({ traits: ['fire'] })).odds, 'element').how, 'feeds', '火生土');
   assert.equal(part(oddsAt(atJi({ traits: ['metal'] })).odds, 'element').n, 0, '金 neither is nor feeds 土');
-  const all = oddsAt(atJi({ bag: { 'foundation-pill': 1 }, last_seclusion: { at: NOW.toISOString(), hours: 5 } })).odds;
+  const all = oddsAt(atJi({ bag: { 'foundation-pill-9': 1 }, last_seclusion: { at: NOW.toISOString(), hours: 5 } })).odds;
   assert.equal(all.chance, rule.cap, 'held at the cap');
   assert.ok(all.raw > rule.cap);
 
@@ -88,6 +88,23 @@ test('the chance is the realm\'s base and what feeds it, held between floor and 
   const low = oddsAt(atQing({ stamina: 5, traits: ['metal'], companion: undefined })).odds;
   assert.ok(low.low, `${low.chance} is under ${rule.low}`);
   assert.ok(low.chance >= rule.floor);
+});
+
+// The book (story DESIGN § 定例 · 沉鼎观的数, 2026-10-03): without a pill about
+// one in ten lays the Foundation; the sect's 一转 lifts it a few in ten; the
+// furnace's 九转 makes it near-certain — the 转 is what weighs.
+test('筑基 follows the book: about one in ten bare, the 一转 modest, the 九转 near-certain', () => {
+  assert.equal(rule.base.foundation, 10);
+  assert.ok(rule.floor <= 10, 'the floor does not lift the bare odds');
+  const bare = oddsAt(atJi({ traits: ['metal'] })).odds;
+  assert.ok(bare.chance >= 5 && bare.chance <= 20, `bare, unprepared: ${bare.chance}%`);
+  const one = oddsAt(atJi({ traits: ['metal'], bag: { 'foundation-pill': 1 } })).odds;
+  assert.equal(content.items.items.find(i => i.id === 'foundation-pill').zhuan, 1, 'the 官丹 is 一转');
+  assert.ok(one.chance - bare.chance >= 20 && one.chance - bare.chance <= 30, `the 一转 adds ${one.chance - bare.chance}`);
+  assert.ok(one.chance < 50, 'still more fail than pass on the 官丹 alone (十个里六七个冲不过)');
+  const nine = oddsAt(atJi({ traits: ['metal'], bag: { 'foundation-pill-9': 1 } })).odds;
+  assert.ok(nine.chance >= 90, `the 九转: ${nine.chance}%`);
+  for (let z = 2; z <= 9; z += 1) assert.ok(rule.pill.by_zhuan[z] > rule.pill.by_zhuan[z - 1], `${z} 转 weighs more than ${z - 1}`);
 });
 
 test('nothing in a later world breaks its content: the rule lints, and a bad one is caught', () => {
@@ -197,7 +214,7 @@ test('the odds card draws: the chance, each row, the price of failing, the throw
     assert.doesNotMatch(html, /undefined|\{\w+\}|NaN/, html.match(/.{0,30}(undefined|\{\w+\}|NaN).{0,30}/)?.[0]);
     assert.match(html, new RegExp(`<b>${o.chance}%</b>`));
     assert.equal((html.match(/<li /g) ?? []).length, 1 + o.parts.length, 'the base and a row a factor');
-    assert.match(html, lang === 'zh' ? /渡劫 · 元婴[\s\S]*破境丹[\s\S]*带伤 · 体力不足一半[\s\S]*−10[\s\S]*银月相伴[\s\S]*失手：体力 −30 · 修为 −360/ : /Tribulation · Nascent Soul[\s\S]*Breach pill[\s\S]*Hurt · stamina under half[\s\S]*Yinyue beside you[\s\S]*If it fails: Stamina −30 · cultivation −360/);
+    assert.match(html, lang === 'zh' ? /渡劫 · 元婴[\s\S]*破境丹[\s\S]*带伤 · 体力不足一半[\s\S]*−10[\s\S]*银月相伴[\s\S]*失手：体力 −30 · 修为 −125/ : /Tribulation · Nascent Soul[\s\S]*Breach pill[\s\S]*Hurt · stamina under half[\s\S]*Yinyue beside you[\s\S]*If it fails: Stamina −30 · cultivation −125/);
     assert.match(html, /data-throw="take">/, 'the throw, open');
     const shut = look({ ...atQing({ lang }), breakthrough: { until: new Date(NOW.getTime() + 2 * HOUR).toISOString() } }, content, ctx);
     const shutHtml = cardHtml({ card: 'breakthrough', id: 'take' }, { ...pageCtx(), look: shut });

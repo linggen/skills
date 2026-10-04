@@ -35,7 +35,7 @@ function pageCtx(l) {
     boardFor: () => null, duelFor: () => null };
 }
 
-const open = { ...newState(content, 'zh', NOW), scene: null, chapter: '02-yan', ended: ['00-prologue', '01-ji', '02-yan'], tier: 'core', step: 0, progress: 306, name: '清玄', bag: {}, companion: { joined: '2026-09-01' } };
+const open = { ...newState(content, 'zh', NOW), scene: null, chapter: '02-yan', ended: ['00-prologue', '01-ji', '02-yan'], tier: 'core', step: 0, progress: 206, name: '清玄', bag: {}, companion: { joined: '2026-09-01' } };
 const chores = [{ id: 'shifu-scan', app: 'apple-shifu', period: 'week', due: true, reward: 30, done_at: '2026-09-21T09:00:00', title: { zh: '扫描', en: 'Scan' } },
   { id: 'health-workout', app: 'health', period: 'day', due: true, reward: 20, title: { zh: '炼体', en: 'Workout' } }];
 const ctx = (extra = {}) => ({ now: NOW, quests: [], ...extra });
@@ -114,7 +114,7 @@ test('the 事 chip: how many in hand, what can be handed in — and its popover 
   assert.equal(bookChipHtml(pageCtx({ ...l, book: [], waypoint: null }), false, false), '');
   // the stage keeps one slim line of it, with nothing to tap
   const line = cardHtml({ card: 'goal' }, pageCtx(look({ ...open, chapter: '03-qing', scene: '03-cauldron', place: 'penglai' }, content, at)));
-  assert.match(line, /class="goalline".*鼎气要结丹后期 · 1200 修为才受得住 — 如今 结丹初期 · 306\/800/s);
+  assert.match(line, /class="goalline".*鼎气要结丹大圆满 · 416 修为才受得住 — 如今 结丹一层 · 206\/256/s);
   assert.doesNotMatch(line, /<button/);
 });
 

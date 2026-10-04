@@ -1,7 +1,7 @@
 // rules/core.mjs — Changing it: refusals, pay, riddles, stamina, resolve and judge.
 // Part of the rules engine; rules.mjs is its one door.
 import { gameOf, MADE_GRANT } from '../content.mjs';
-import { addProgress, dayKey, fill, fitValue, lockedOf, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaLimited, staminaReturnsAt, stepName, threshold, tierOf, seedOf } from '../state.mjs';
+import { addProgress, dayKey, fill, fitValue, lockedOf, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaLimited, staminaReturnsAt, stepName, peakName, phaseName, threshold, tierOf, seedOf } from '../state.mjs';
 import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
 import { gainCard, starterOf } from './cards.mjs';
@@ -301,7 +301,7 @@ function offerTasks(content, state) {
    reset it to 0) — short of the new layer's own threshold, so it never jumps twice. */
 function riseTo(content, s, rise, replay) {
   const tier = content.ladder.tiers[0];
-  // `{layer, full}`: to that layer and filled — 古九's 入秋, 练气九层圆满 (his, 2026-09-30:
+  // `{layer, full}`: to that layer and filled — 古七's 入秋, 练气九层大圆满 (his, 2026-09-30:
   // the year is the book's four seasons, not days of chores).
   const layer = typeof rise === 'object' ? rise.layer : rise, full = typeof rise === 'object' && rise.full === true;
   const top = Math.min(layer, tier.thresholds.length) - 1;
@@ -364,7 +364,8 @@ export function resolve(state, content, ctx, args) {
     }
     // The chance as the card showed it — read before this step's 体力 is paid.
     odds = oddsOf(content, s, ctx.now, next.id);
-    breakthrough = { from: stepName(content, s.tier, s.step, lang), to: stepName(content, next.id, 0, lang), tier: next.id };
+    // From the realm's 大圆满 into its 初期 — the formal words (ladder.json `peak`, `phases`).
+    breakthrough = { from: peakName(content, s.tier, lang), to: phaseName(content, next.id, 0, lang) ?? stepName(content, next.id, 0, lang), tier: next.id };
   }
   if (exit.key) {
     const key = riddleOf(s, scene, exit, ctx.now);

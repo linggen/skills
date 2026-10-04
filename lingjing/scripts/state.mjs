@@ -1,7 +1,7 @@
 // The player's state and the arithmetic over it. Pure: no files, no clock —
 // the caller passes `now`.
 
-export const STATE_VERSION = 5;
+export const STATE_VERSION = 6;
 export const FIRST_WORLD = 'jiuding'; // the world every save before worlds was playing
 
 export function firstChapter(content) {
@@ -305,6 +305,25 @@ export function stepName(content, tierId, step, lang) {
   return lang === 'zh' ? `${name}${s}` : `${name} · ${s}`;
 }
 
+/* The phase a 层 falls in (ladder.json `phases`, three 层 each): 筑基四层 is
+   筑基中期 — the formal word, as a 名册 writes it. Null for a world without phases. */
+export function phaseName(content, tierId, step, lang) {
+  const tier = tierOf(content, tierId), phases = content.ladder.phases;
+  if (!tier || !phases) return null;
+  const per = Math.ceil(tier.thresholds.length / pick(phases, lang).length);
+  const name = pick(tier.name, lang), p = pick(phases, lang)[Math.floor(step / per)];
+  return lang === 'zh' ? `${name}${p}` : `${name} · ${p}`;
+}
+
+/* The realm's top, filled (ladder.json `peak`): 练气大圆满 — the one state a
+   breakthrough is tried from. Without a `peak` word, the last step's name. */
+export function peakName(content, tierId, lang) {
+  const tier = tierOf(content, tierId), peak = content.ladder.peak;
+  if (!peak) return stepName(content, tierId, tier.thresholds.length - 1, lang);
+  const name = pick(tier.name, lang);
+  return lang === 'zh' ? `${name}${pick(peak, lang)}` : `${name} · ${pick(peak, lang)}`;
+}
+
 export function speedOf(content, state) {
   return content.traits.speed[String(state.traits?.length ?? 4)] ?? 1;
 }
@@ -375,6 +394,11 @@ const MIGRATIONS = [
     if (m.day) { delete m.day.nourished; delete m.day.written; }
     if (m.treasure) { const { exp, ...t } = m.treasure; m.treasure = t; }
   }],
+  // v6 (2026-10-03, every realm nine 层 — story DESIGN § 道统, 凡人 our
+  // standard): past the first tier a realm had three steps. The save is only
+  // marked here — the world's ladder is needed to carry it over, so fitWorld
+  // does it (threeToNine) the first time the save meets its world.
+  [6, m => { m.ladder3 = true; }],
 ];
 
 export function migrate(state, content = null) {
@@ -395,10 +419,24 @@ const keptTasks = (tasks, chapter) => {
   const offered = new Set(Object.values(chapter.scenes).flatMap(sc => sc.offers?.tasks ?? []));
   return Object.fromEntries(Object.entries(tasks ?? {}).filter(([id, t]) => t.status === 'done' || offered.has(id)));
 };
+/* A save from the three-step ladder (marked by v6): its old step s became
+   层 3s+1…3s+3, whose thresholds sum to the old step's, so the 修为 it held
+   walks through them and lands exactly — an old 后期 at its peak is 九层,
+   filled: 大圆满. The first tier always had nine and is left as it was. */
+export function threeToNine(content, saved) {
+  const { ladder3, ...s } = saved;
+  const tier = tierOf(content, s.tier), th = tier?.thresholds;
+  if (!tier || tier === content.ladder.tiers[0] || th.length !== 9 || !(s.step >= 0 && s.step <= 2)) return s;
+  let step = s.step * 3, progress = s.progress ?? 0;
+  while (step < s.step * 3 + 2 && progress >= th[step]) { progress -= th[step]; step += 1; }
+  return { ...s, step, progress };
+}
+
 export function fitWorld(saved, content) {
   // 奇遇 (Branch) went 2026-09-24 for 今日传闻: an open one is closed quietly, unpaid.
   const { branch, ...rest } = saved;
-  const state = 'branch' in saved ? rest : saved;
+  let state = 'branch' in saved ? rest : saved;
+  if ('ladder3' in state) state = threeToNine(content, state);
   const tier = tierOf(content, state.tier);
   const chapter = content.chapters[state.chapter];
   // A scene renamed since — the prologue rewrite of 2026-09-28 — goes to the

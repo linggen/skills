@@ -29,6 +29,15 @@ const FEEDS = { wood: 'fire', fire: 'earth', earth: 'metal', metal: 'water', wat
 /* The pill that steadies the throw into `tier`: its own, else the rule's `*`. */
 const pillFor = (rule, tier) => rule.pill?.items?.[tier] ?? rule.pill?.items?.['*'] ?? null;
 
+/* What a pill adds to the throw: its own `bonus_of`, else by its 转 (items.json
+   `zhuan` — the sect's 一转 a little, the furnace's 九转 near-certain), else `bonus`. */
+export function pillBonus(content, rule, id) {
+  const own = rule.pill.bonus_of?.[id];
+  if (own != null) return own;
+  const zhuan = id ? itemOf(content, id)?.zhuan : null;
+  return (zhuan && rule.pill.by_zhuan?.[zhuan]) ?? rule.pill.bonus;
+}
+
 /* Out of a 闭关 long enough, recently enough. */
 function secludedLately(content, state, rule, now) {
   const last = state.last_seclusion, min = content.rewards.seclusion?.min_hours ?? 0;
@@ -45,7 +54,7 @@ const FACTORS = {
     // 九转 before the sect's 一转 (古九: he eats the 九转; the 官丹 stays in 饭桶).
     const ids = [].concat(pillFor(rule, x.to) ?? []);
     const id = ids.find(i => state.bag?.[i] > 0) ?? ids[0] ?? null, held = Boolean(id && state.bag?.[id] > 0);
-    const bonus = rule.pill.bonus_of?.[id] ?? rule.pill.bonus;
+    const bonus = pillBonus(content, rule, id);
     return { n: held ? bonus : 0, on: held, bonus, item: id ? { id, name: pick(itemOf(content, id)?.name, state.lang) ?? id } : null };
   },
   body: (content, state, rule, x) => {

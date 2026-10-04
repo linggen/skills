@@ -42,7 +42,7 @@ test('a save from before the cut migrates: what is held stays, what only the cut
   const old = oldSave();
   const m = migrate(old, content);
   assert.equal(m.version, STATE_VERSION);
-  assert.equal(STATE_VERSION, 5);
+  assert.equal(STATE_VERSION, 6);
   // Kept: the bag (an old 回春丹 and 妖丹 are goods now), the cards, the cast,
   // the treasure and its 重, her joining, the realm.
   assert.deepEqual(m.bag, old.bag);
@@ -50,7 +50,9 @@ test('a save from before the cut migrates: what is held stays, what only the cut
   assert.deepEqual(m.cast, old.cast);
   assert.deepEqual(m.treasure, { name: '青锋', base: 3, element: 'metal', level: 3 }, 'its 重 kept, the 温养 exp gone');
   assert.deepEqual(m.companion, { ...old.companion, awake: true }, 'found by the bell: awake (the engine reads `awake`)');
-  assert.deepEqual([m.tier, m.step, m.progress], ['foundation', 1, 40]);
+  // v6: the old 筑基中期 (step 1) is 四层 on the nine-层 ladder, its 修为 carried (threeToNine).
+  assert.deepEqual([m.tier, m.step, m.progress], ['foundation', 3, 40]);
+  assert.equal('ladder3' in m, false, 'the mark is spent once the save meets its world');
   // Gone: the wound, the bond and its marks, her tending, the day's 温养 and 写符.
   for (const k of ['wounds', 'bond', 'tended', 'journey']) assert.equal(m[k], undefined, k);
   assert.deepEqual(m.day, { key: '2026-10-05', progress: 20, wealth: 5 });
@@ -82,8 +84,12 @@ test('a migrated save plays: whole at the next fight, no bond shown, the treasur
   const l = look(m, content, ctx());
   assert.equal(l.health, undefined);
   assert.equal(l.companion.bond, undefined);
-  assert.deepEqual(Object.keys(l.treasure).sort(), ['atk', 'element', 'element_name', 'level', 'name', 'step', 'top']);
-  assert.equal(l.treasure.level, 3);
+  // 法宝 begin at 结丹 (2026-10-03): the old save's treasure at 筑基 is kept, unread till then.
+  assert.equal(l.treasure, null, 'held below 结丹, not shown');
+  assert.deepEqual(m.treasure, { name: '青锋', base: 3, element: 'metal', level: 3 }, 'and never lost');
+  const core = look({ ...m, tier: 'core', step: 0, progress: 0 }, content, ctx());
+  assert.deepEqual(Object.keys(core.treasure).sort(), ['atk', 'element', 'element_name', 'level', 'name', 'step', 'top']);
+  assert.equal(core.treasure.level, 3);
   const door = VERBS.duel(m, content, ctx(), { id: 'haunt:jingwei' });
   assert.equal(door.result.ok, true, JSON.stringify(door.result));
   assert.equal(door.result.duel.setup.you.wounds, undefined, 'whole: the old wound is not carried in');
@@ -103,11 +109,13 @@ test('the command line migrates the save on disk once, on the first call, and th
     assert.equal(l.ok, true);
     assert.equal(l.health, undefined);
     assert.equal(l.companion.journey, undefined);
-    // A Look that changes nothing else may not write; the first verb that writes writes it at v5.
+    // A Look that changes nothing else may not write; the first verb that writes writes it at v6.
     cli('move', '--place=fajiu');
     cli('lang', '--lang=zh');
     const saved = JSON.parse(fs.readFileSync(file, 'utf8'));
-    assert.equal(saved.version, 5);
+    assert.equal(saved.version, 6);
+    assert.equal('ladder3' in saved, false);
+    assert.deepEqual([saved.tier, saved.step], ['foundation', 3], 'the old 中期 is 四层');
     for (const k of ['wounds', 'bond', 'tended', 'journey']) assert.equal(saved[k], undefined, k);
     assert.equal(saved.treasure.exp, undefined);
     assert.deepEqual(saved.bag, oldSave().bag);

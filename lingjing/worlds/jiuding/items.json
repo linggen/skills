@@ -229,15 +229,15 @@
         "en": "Foundation pill"
       },
       "art": "art/items/foundation-pill.webp",
+      "_sold": "Never on a shelf (2026-10-03, the book: 全观一年一颗, the 宗门大比 champion's prize): a gift or the sect's, not the market's. 一转下品 — one line, a few dark flecks.",
+      "zhuan": 1,
       "about": {
-        "zh": "练气圆满者服之，事半功倍。",
-        "en": "For one at the peak of Qi Condensation: twice the work for half the effort."
+        "zh": "练气九层大圆满者冲关时服之，多几分把握。一转下品，一道纹，几点黑斑——全观一年只这一颗。",
+        "en": "Taken at the Great Perfection of Qi Condensation, it steadies the breakthrough a little. One-turn, low grade: one ring, a few dark flecks — the whole temple gets one a year."
       },
-      "buy": 200,
-      "sell": 50,
-      "sold": [
-        "冀"
-      ],
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
       "effect": {
         "progress": 40,
         "table": "task"

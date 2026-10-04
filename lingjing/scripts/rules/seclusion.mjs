@@ -11,7 +11,7 @@
 // are in rewards.json § seclusion.
 import { addStamina, pick } from '../state.mjs';
 import { costOf } from '../battle.js';
-import { growTreasure, TREASURE_TOP, treasureBrief } from './arms.mjs';
+import { boundOf, growTreasure, TREASURE_TOP, treasureBrief } from './arms.mjs';
 import { cardCatalog, ownedCards, rootsOf, usable } from './cards.mjs';
 import { clone, pay, refuse } from './core.mjs';
 import { itemOf } from './errands.mjs';
@@ -41,7 +41,7 @@ const spellBrief = (content, state, { c, star }) => {
     study, left: round1(Math.max(0, RULE(content).star_hours - study)), next: cost > 1 ? 'cost' : 'power',
   };
 };
-const treasureOpen = (content, state) => Boolean(state.treasure) && state.treasure.level < TREASURE_TOP;
+const treasureOpen = (content, state) => Boolean(boundOf(content, state)) && state.treasure.level < TREASURE_TOP;
 
 /* The pills that quicken it, held now. */
 function pillsOf(content, state) {
@@ -90,7 +90,7 @@ const GROW = {
   },
   treasure: (content, s, sec, hours) => {
     const r = RULE(content), from = s.treasure?.level ?? 0;
-    if (!s.treasure) return { treasure: null };
+    if (!boundOf(content, s)) return { treasure: null };
     let pool = (s.treasure.tempered ?? 0) + hours;
     while (pool >= r.treasure_hours && growTreasure(content, s, 'seclusion')) pool -= r.treasure_hours;
     const top = s.treasure.level >= TREASURE_TOP;
@@ -129,7 +129,7 @@ const TARGET = {
       pool, need: r.star_hours, done: star >= r.star_top };
   },
   progress: (content, s, sec, counted) => ({ now: s.progress, per_hour: RULE(content).progress_per_hour, pool: counted, need: 1 }),
-  treasure: (content, s, sec, counted) => (s.treasure ? { name: s.treasure.name, level: s.treasure.level, step: treasureBrief(content, s).step,
+  treasure: (content, s, sec, counted) => (boundOf(content, s) ? { name: s.treasure.name, level: s.treasure.level, step: treasureBrief(content, s).step,
     pool: (s.treasure.tempered ?? 0) + counted, need: RULE(content).treasure_hours, done: s.treasure.level >= TREASURE_TOP } : null),
 };
 function targetOf(content, state, now) {
@@ -179,7 +179,7 @@ const FOCUS_CHECK = {
   },
   progress: () => null,
   treasure: (content, state) => (treasureOpen(content, state) ? null
-    : [state.treasure ? 'treasure-top' : 'no-treasure', state.treasure ? { zh: '本命法宝已是九重。', en: 'Your treasure is at its ninth layer.' } : { zh: '还没有本命法宝。', en: 'No treasure is bound yet.' }]),
+    : [boundOf(content, state) ? 'treasure-top' : 'no-treasure', boundOf(content, state) ? { zh: '本命法宝已是九重。', en: 'Your treasure is at its ninth layer.' } : { zh: '还没有本命法宝。', en: 'No treasure is bound yet.' }]),
 };
 
 function enterSeclusion(state, content, ctx, args) {

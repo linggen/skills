@@ -46,10 +46,15 @@ export const TREASURE_TOP = 9;
 const REFINE_TIER = 'core';
 const coreOf = (content, id) => content.items.items.find(i => i.id === id && i.effect?.core);
 const canRefine = (content, state) => tierRank(content, REFINE_TIER) <= tierIndex(content, state);
+/* The treasure that counts: 法宝 and 本命法宝 begin at 结丹 (story DESIGN, 2026-10-03 —
+   练气 and 筑基 carry 法器). Below it a treasure a save holds (an old one, or a
+   world that grants it early) is kept and never lost, but nothing reads it —
+   it does not grow, fight, lend or show — until the realm reaches 结丹. */
+export const boundOf = (content, state) => (state.treasure && canRefine(content, state) ? state.treasure : null);
 
 /* The treasure as the card and Look tell it. */
 function treasureBrief(content, state) {
-  const t = state.treasure;
+  const t = boundOf(content, state);
   if (!t) return null;
   const lang = state.lang, steps = content.ladder.treasure_steps ?? null;
   return {
@@ -63,7 +68,7 @@ function treasureBrief(content, state) {
    rose to, or null when there is no treasure, nothing to give, or it is at 九重. */
 function growTreasure(content, state, why) {
   const n = content.rewards.growth?.treasure?.[why] ?? 0;
-  if (!state.treasure || !n || state.treasure.level >= TREASURE_TOP) return null;
+  if (!boundOf(content, state) || !n || state.treasure.level >= TREASURE_TOP) return null;
   const level = Math.min(TREASURE_TOP, state.treasure.level + n);
   state.treasure = { ...state.treasure, level };
   return { name: state.treasure.name, level, why };

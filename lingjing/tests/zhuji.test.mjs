@@ -71,7 +71,7 @@ test('the winter and the year: the seal resealed, the furnace\'s 九转, and the
     assert.ok(!buttons(r.state).includes(exit), `${exit} is not offered again`);
     s = r.state; layers.push(s.step + 1);
   }
-  assert.deepEqual(layers, [6, 7, 8], '清明六 · 端午七 · 伏天八');
+  assert.deepEqual(layers, [5, 5, 9], '清明、端午仍是五层（年三）· 伏天一晃五年，九层');
   // 入秋 moves the story on (`next`): a story step's 3, like every scene's step.
   assert.equal(resolve(s, content, ctx, { exit: 'ruqiu' }).result.refused, 'no-stamina', 'a spent pool still waits on the step');
   const autumn = go(full(s), 'ruqiu').state;
@@ -88,7 +88,7 @@ test('the cliff: 瞿老\'s last disciple, then the throw — the 九转 reached 
   const odds = oddsOf(content, s, NOW, 'foundation');
   const pill = odds.parts.find(p => p.id === 'pill');
   assert.equal(pill.item.id, 'foundation-pill-9');
-  assert.equal(pill.n, content.ladder.breakthrough.pill.bonus_of['foundation-pill-9']);
+  assert.equal(pill.n, content.ladder.breakthrough.pill.by_zhuan[9], 'the 九转 weighs by its 转');
   // the try whose die lands
   let t = s;
   for (let k = 0; rollOf(t, 'foundation') >= odds.chance; k += 1) t = { ...s, breakthrough: { tries: { foundation: k + 1 } } };

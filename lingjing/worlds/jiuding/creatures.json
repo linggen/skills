@@ -1785,8 +1785,8 @@
       },
       "pinyin": "zōu qīng sōng",
       "look": {
-        "zh": "彭城赤松观的黄袍，练气四层；白净脸，笑眯眯的。右手一只赤铜火葫芦，放得出火蛇；左臂一面赤铜火纹小盾，同门夸：金丹以下，无人能破。",
-        "en": "A yellow robe of the Red Pine Abbey at Pengcheng, layer four of Qi Refining; pale-faced, always smiling. In his right hand a red-copper gourd that looses fire snakes; on his left arm a little red-copper shield chased with flames — nothing short of a Golden Core can break it, his brothers say."
+        "zh": "彭城赤松观的黄袍，练气四层；白净脸，笑眯眯的。右手一只赤铜火葫芦，放得出火蛇；左臂一面赤铜火纹小盾，同门夸：结丹以下，无人能破。",
+        "en": "A yellow robe of the Red Pine Abbey at Pengcheng, layer four of Qi Refining; pale-faced, always smiling. In his right hand a red-copper gourd that looses fire snakes; on his left arm a little red-copper shield chased with flames — nothing short of Core Formation can break it, his brothers say."
       },
       "says": {
         "open": {
@@ -1798,8 +1798,8 @@
           "en": "Where the hell did you get that Hoof-It charm!?"
         },
         "lost": {
-          "zh": "金丹以下，无人能破。",
-          "en": "Nothing short of a Golden Core can break it."
+          "zh": "结丹以下，无人能破。",
+          "en": "Nothing short of Core Formation can break it."
         }
       },
       "province": "徐",
@@ -1857,8 +1857,8 @@
       "trial": {
         "outlast": true,
         "goal": {
-          "zh": "被追着打：他有一面盾，金丹以下，无人能破——打不穿他。撑到他出完每一招，便算过了。",
-          "en": "Chased and beaten: his shield, they say, nothing short of a Golden Core can break — you will not get through it. Last until he has spent every move, and you have passed."
+          "zh": "被追着打：他有一面盾，结丹以下，无人能破——打不穿他。撑到他出完每一招，便算过了。",
+          "en": "Chased and beaten: his shield, they say, nothing short of Core Formation can break — you will not get through it. Last until he has spent every move, and you have passed."
         }
       },
       "_trial": "古五 (the author, 2026-10-02: 「九死一生，被追着打……最后是银月出手」): a 试 passed by outlasting his twelve cards (battle.js § trial), no yield — he is never driven down; the turn is the story's (the exit: the leap onto the 蛫, 银月's two hairs break the shield, he finishes it). node tools/trial-sim.mjs foe-zou --at."

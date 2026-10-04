@@ -2,7 +2,7 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { MODES, REALMS as CARD_REALMS, shuffle } from '../battle.js';
 import { dayKey, pick, seedOf } from '../state.mjs';
-import { duelSeed, wornOf } from './arms.mjs';
+import { boundOf, duelSeed, wornOf } from './arms.mjs';
 import { herAwake, herLifts } from './companion.mjs';
 import { clone, refuse } from './core.mjs';
 import { gearBrief } from './errands.mjs';
@@ -126,7 +126,7 @@ const weaponPower = (content, atk) => Math.round((atk ?? 0) * (RATES(content).we
 const treasurePower = (content, t) => weaponPower(content, t.base) + Math.floor((t.level - 1) / Math.max(1, RATES(content).treasure_levels ?? 99));
 function gearFight(content, state) {
   const weapon = wornOf(content, state, 'weapon'), robe = wornOf(content, state, 'robe'), pendant = wornOf(content, state, 'pendant');
-  const power = Math.max(weapon ? weaponPower(content, weapon.effect?.atk) : 0, state.treasure ? treasurePower(content, state.treasure) : 0);
+  const power = Math.max(weapon ? weaponPower(content, weapon.effect?.atk) : 0, boundOf(content, state) ? treasurePower(content, state.treasure) : 0);
   const armor = Math.round((robe?.effect?.def ?? 0) * (RATES(content).armor_per_def ?? 0));
   const ward = Object.fromEntries(Object.entries(pendant?.effect?.ward ?? {})
     .map(([el, n]) => [el, Math.round(n * (RATES(content).ward_per_point ?? 0))]).filter(([, n]) => n > 0));
@@ -142,7 +142,7 @@ function gearFight(content, state) {
    deck while the thing is worn; taken off, the card drops out (deckFor). A
    gift is chosen by his own roots only — a card he could lose is no gift. */
 function rootsOf(content, state) {
-  const lent = [wornOf(content, state, 'weapon')?.effect?.root, state.treasure?.element].filter(Boolean);
+  const lent = [wornOf(content, state, 'weapon')?.effect?.root, boundOf(content, state)?.element].filter(Boolean);
   return new Set([...(state.traits ?? []), ...lent]);
 }
 export const hpMaxOf = state => Math.round((CARD_REALMS[state.tier] ?? CARD_REALMS.qi).hp + (state.step ?? 0) * 0.5);

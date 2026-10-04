@@ -1,7 +1,7 @@
 {
   "version": 1,
   "_balance": "Thresholds are base progress. `pay` scales every reward in that realm (applied last, after the day cap) — design.md § Pacing. 练气 halved 2026-09-15 so the cauldron waits about a week, not two.",
-  "_about": "The ladder: tiers (this world's realms) with their steps and the progress each step asks for; `pay` scales rewards in that tier; `gate` names the chapter a tier waits for.",
+  "_about": "The ladder: tiers (this world's realms) with their steps and the progress each step asks for; `pay` scales rewards in that tier; `gate` names the chapter a tier waits for. Every realm has nine 层 (our one exception to 凡人, story DESIGN § 道统): `phases` names them three by three — 一至三层 初期, 四至六层 中期, 七至九层 后期 — and `peak` is the formal word for the ninth 层 filled, the one state a breakthrough is tried from (大圆满; 巅峰 is only what people call themselves). Past 练气 each realm had three steps until 2026-10-03; each became three 层 whose thresholds sum to the old step, so a save is carried over exactly (state.mjs v6).",
   "tiers": [
     {
       "id": "qi",
@@ -56,20 +56,38 @@
       },
       "steps": {
         "zh": [
-          "初期",
-          "中期",
-          "后期"
+          "一层",
+          "二层",
+          "三层",
+          "四层",
+          "五层",
+          "六层",
+          "七层",
+          "八层",
+          "九层"
         ],
         "en": [
-          "Early",
-          "Middle",
-          "Late"
+          "Layer 1",
+          "Layer 2",
+          "Layer 3",
+          "Layer 4",
+          "Layer 5",
+          "Layer 6",
+          "Layer 7",
+          "Layer 8",
+          "Layer 9"
         ]
       },
       "thresholds": [
-        400,
-        500,
-        600
+        128,
+        133,
+        139,
+        160,
+        167,
+        173,
+        192,
+        200,
+        208
       ]
     },
     {
@@ -82,20 +100,38 @@
       },
       "steps": {
         "zh": [
-          "初期",
-          "中期",
-          "后期"
+          "一层",
+          "二层",
+          "三层",
+          "四层",
+          "五层",
+          "六层",
+          "七层",
+          "八层",
+          "九层"
         ],
         "en": [
-          "Early",
-          "Middle",
-          "Late"
+          "Layer 1",
+          "Layer 2",
+          "Layer 3",
+          "Layer 4",
+          "Layer 5",
+          "Layer 6",
+          "Layer 7",
+          "Layer 8",
+          "Layer 9"
         ]
       },
       "thresholds": [
-        800,
-        1000,
-        1200
+        256,
+        266,
+        278,
+        320,
+        333,
+        347,
+        384,
+        400,
+        416
       ]
     },
     {
@@ -108,20 +144,38 @@
       },
       "steps": {
         "zh": [
-          "初期",
-          "中期",
-          "后期"
+          "一层",
+          "二层",
+          "三层",
+          "四层",
+          "五层",
+          "六层",
+          "七层",
+          "八层",
+          "九层"
         ],
         "en": [
-          "Early",
-          "Middle",
-          "Late"
+          "Layer 1",
+          "Layer 2",
+          "Layer 3",
+          "Layer 4",
+          "Layer 5",
+          "Layer 6",
+          "Layer 7",
+          "Layer 8",
+          "Layer 9"
         ]
       },
       "thresholds": [
-        1600,
-        2000,
-        2400
+        512,
+        533,
+        555,
+        640,
+        666,
+        694,
+        768,
+        799,
+        833
       ]
     },
     {
@@ -134,20 +188,38 @@
       },
       "steps": {
         "zh": [
-          "初期",
-          "中期",
-          "后期"
+          "一层",
+          "二层",
+          "三层",
+          "四层",
+          "五层",
+          "六层",
+          "七层",
+          "八层",
+          "九层"
         ],
         "en": [
-          "Early",
-          "Middle",
-          "Late"
+          "Layer 1",
+          "Layer 2",
+          "Layer 3",
+          "Layer 4",
+          "Layer 5",
+          "Layer 6",
+          "Layer 7",
+          "Layer 8",
+          "Layer 9"
         ]
       },
       "thresholds": [
-        3000,
-        3600,
-        4200
+        960,
+        999,
+        1041,
+        1152,
+        1199,
+        1249,
+        1344,
+        1399,
+        1457
       ]
     },
     {
@@ -160,20 +232,38 @@
       },
       "steps": {
         "zh": [
-          "初期",
-          "中期",
-          "后期"
+          "一层",
+          "二层",
+          "三层",
+          "四层",
+          "五层",
+          "六层",
+          "七层",
+          "八层",
+          "九层"
         ],
         "en": [
-          "Early",
-          "Middle",
-          "Late"
+          "Layer 1",
+          "Layer 2",
+          "Layer 3",
+          "Layer 4",
+          "Layer 5",
+          "Layer 6",
+          "Layer 7",
+          "Layer 8",
+          "Layer 9"
         ]
       },
       "thresholds": [
-        5000,
-        6000,
-        7000
+        1600,
+        1665,
+        1735,
+        1920,
+        1998,
+        2082,
+        2240,
+        2331,
+        2429
       ]
     },
     {
@@ -186,20 +276,38 @@
       },
       "steps": {
         "zh": [
-          "初期",
-          "中期",
-          "后期"
+          "一层",
+          "二层",
+          "三层",
+          "四层",
+          "五层",
+          "六层",
+          "七层",
+          "八层",
+          "九层"
         ],
         "en": [
-          "Early",
-          "Middle",
-          "Late"
+          "Layer 1",
+          "Layer 2",
+          "Layer 3",
+          "Layer 4",
+          "Layer 5",
+          "Layer 6",
+          "Layer 7",
+          "Layer 8",
+          "Layer 9"
         ]
       },
       "thresholds": [
-        8000,
-        9500,
-        11000
+        2560,
+        2664,
+        2776,
+        3040,
+        3164,
+        3296,
+        3520,
+        3663,
+        3817
       ]
     },
     {
@@ -212,20 +320,38 @@
       },
       "steps": {
         "zh": [
-          "初期",
-          "中期",
-          "后期"
+          "一层",
+          "二层",
+          "三层",
+          "四层",
+          "五层",
+          "六层",
+          "七层",
+          "八层",
+          "九层"
         ],
         "en": [
-          "Early",
-          "Middle",
-          "Late"
+          "Layer 1",
+          "Layer 2",
+          "Layer 3",
+          "Layer 4",
+          "Layer 5",
+          "Layer 6",
+          "Layer 7",
+          "Layer 8",
+          "Layer 9"
         ]
       },
       "thresholds": [
-        12500,
-        14500,
-        16500
+        4000,
+        4163,
+        4337,
+        4640,
+        4829,
+        5031,
+        5280,
+        5495,
+        5725
       ]
     },
     {
@@ -238,23 +364,57 @@
       },
       "steps": {
         "zh": [
-          "初期",
-          "中期",
-          "后期"
+          "一层",
+          "二层",
+          "三层",
+          "四层",
+          "五层",
+          "六层",
+          "七层",
+          "八层",
+          "九层"
         ],
         "en": [
-          "Early",
-          "Middle",
-          "Late"
+          "Layer 1",
+          "Layer 2",
+          "Layer 3",
+          "Layer 4",
+          "Layer 5",
+          "Layer 6",
+          "Layer 7",
+          "Layer 8",
+          "Layer 9"
         ]
       },
       "thresholds": [
-        19000,
-        22000,
-        25000
+        6080,
+        6327,
+        6593,
+        7040,
+        7326,
+        7634,
+        8000,
+        8325,
+        8675
       ]
     }
   ],
+  "phases": {
+    "zh": [
+      "初期",
+      "中期",
+      "后期"
+    ],
+    "en": [
+      "Early",
+      "Middle",
+      "Late"
+    ]
+  },
+  "peak": {
+    "zh": "大圆满",
+    "en": "Great Perfection"
+  },
   "treasure_steps": {
     "zh": [
       "一重",
@@ -280,10 +440,10 @@
     ]
   },
   "_treasure": "The nine 重 of a 本命法宝, grown by 温养 and by what a fight leaves — design.md § 斗法.",
-  "_breakthrough": "渡劫 is one throw that can fail (Hanli, 2026-09-28: 红检, you pick). The chance starts at `base` for the realm it opens and each factor adds to it, then it is held between `floor` and `cap`. `pill`: the realm's breakthrough pill carried in the bag (eaten only by a throw that lands — a failed one keeps it, as the card promises: 境界与所藏不失). `body`: 伤势 is 体力 since 2026-09-24 — at least `share` of the pool is `whole`, under it `hurt`. `seclusion`: out of a 闭关 of at least its min_hours within `hours`. `her`: 银月 at the player's side, plus `per_gift` for each gift the cauldrons gave her. `element`: the realm's 五行; a root of it is `match`, a root that feeds it (相生) is `feeds`. A failure wounds (`fail.wound`, a share of the 体力 pool), takes `fail.progress` of the peak step's 修为 and shuts the cauldron for `fail.cooldown_hours` real hours; the realm, the save and every thing held — the pill too — are never lost; under the peak after a failure, 闭关 brings the 修为 back (the refusal says so). Under `low` a success is marked 逆天.",
+  "_breakthrough": "渡劫 is one throw that can fail (Hanli, 2026-09-28: 红检, you pick). The chance starts at `base` for the realm it opens and each factor adds to it, then it is held between `floor` and `cap`. `pill`: the realm's breakthrough pill carried in the bag, worth more the more 转 it has (eaten only by a throw that lands — a failed one keeps it, as the card promises: 境界与所藏不失). `body`: 伤势 is 体力 since 2026-09-24 — at least `share` of the pool is `whole`, under it `hurt`. `seclusion`: out of a 闭关 of at least its min_hours within `hours`. `her`: 银月 at the player's side, plus `per_gift` for each gift the cauldrons gave her. `element`: the realm's 五行; a root of it is `match`, a root that feeds it (相生) is `feeds`. A failure wounds (`fail.wound`, a share of the 体力 pool), takes `fail.progress` of the peak step's 修为 and shuts the cauldron for `fail.cooldown_hours` real hours; the realm, the save and every thing held — the pill too — are never lost; under the peak after a failure, 闭关 brings the 修为 back (the refusal says so). Under `low` a success is marked 逆天.",
   "breakthrough": {
     "base": {
-      "foundation": 60,
+      "foundation": 10,
       "core": 55,
       "nascent": 50,
       "deity": 45,
@@ -292,7 +452,7 @@
       "maha": 35,
       "tribulation": 30
     },
-    "floor": 30,
+    "floor": 5,
     "cap": 95,
     "low": 50,
     "pill": {
@@ -307,10 +467,20 @@
         "*": "pojing-pill"
       },
       "bonus_of": {
-        "foundation-pill-9": 30,
         "dingtai": 10
       },
-      "_items": "A list is reached for in order: the furnace's 九转 first, the sect's 一转 after (古九: he eats the 九转, the 官丹 stays sealed in 饭桶). `bonus_of`: a pill's own bonus, else `bonus`. 鼎苔 (古五) is the last reached for: eaten raw it steadies the throw a little (bonus_of 10)."
+      "_items": "A list is reached for in order: the furnace's 九转 first, the sect's 一转 after (古七: he eats the 九转, the 官丹 stays sealed in 饭桶). A pill's bonus is its own `bonus_of`, else by its 转 (`by_zhuan`, items.json `zhuan`: the 官丹 is 一转下品, +25; the furnace's 九转 +80, near-certain), else `bonus`. 鼎苔 (古五) is the last reached for: eaten raw it steadies the throw a little (bonus_of 10).",
+      "by_zhuan": {
+        "1": 25,
+        "2": 30,
+        "3": 35,
+        "4": 45,
+        "5": 50,
+        "6": 55,
+        "7": 65,
+        "8": 70,
+        "9": 80
+      }
     },
     "body": {
       "share": 0.5,
@@ -343,6 +513,7 @@
       "wound": 0.3,
       "progress": 0.3,
       "cooldown_hours": 6
-    }
+    },
+    "_odds": "筑基 follows the book (story DESIGN § 定例 · 沉鼎观的数; 2026-10-03): without a pill about one in ten gets through (base 10), the sect's one 一转 lifts it to a few in ten, a 九转 makes it near-certain. `floor` 5: a throw is never hopeless."
   }
 }

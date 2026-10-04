@@ -2,7 +2,7 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { ARM_SLOTS } from '../content.mjs';
 import { costOf } from '../battle.js';
-import { dayKey, fill, itemName, lockedOf, periodKey, pick, stepName, threshold, tierOf, seedOf } from '../state.mjs';
+import { dayKey, fill, itemName, lockedOf, periodKey, pick, peakName, stepName, threshold, tierOf, seedOf } from '../state.mjs';
 import { canPick, cardCatalog, deckFor, gearFight, ownedCards, pickedCards, rootsOf, usable } from './cards.mjs';
 import { companionOf, hasCompanion, herCard, nearestPlace } from './companion.mjs';
 import { readingOf } from './scrolls.mjs';
@@ -384,7 +384,7 @@ function breakthroughOf(content, state, now = new Date()) {
   const odds = at && (peak || cooling) ? oddsOf(content, state, now, next.id) : null;
   return {
     ready: Boolean(peak && at && !cooling),
-    need: source ? { step: stepName(content, source.id, last, state.lang), progress: source.thresholds[last], to: pick(target.name, state.lang) } : null,
+    need: source ? { step: peakName(content, source.id, state.lang), progress: source.thresholds[last], to: pick(target.name, state.lang) } : null,
     ...(odds ? { odds } : {}), ...(cooling ? { cooling } : {}),
   };
 }

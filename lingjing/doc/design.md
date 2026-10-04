@@ -22,7 +22,7 @@ section below says which it is; a 【远景】 section is a plan, not a promise.
 **卷一 · 沉鼎 needs, and nothing else:** the road 石坳村 → 沉鼎观 → 漳水,
 ending at the first 鼎 (the book's 古一 to 古八 — eight 古 回 since 2026-10-02; the game's chapters
 `00-prologue`, `00-waimen`, `00-zhuji`, then `01-ji`); 练气 → 筑基; the pills 回春丹 ·
-聚气丹 · 筑基丹 (market and 九转); the card fight; 差事; the 图鉴; 银月 (found,
+聚气丹 · 筑基丹 (the sect's one 一转 and the furnace's 九转 — never on a shelf); the card fight; 差事; the 图鉴; 银月 (found,
 asleep in the token, waking by the story). Everything past 筑基 and past 冀 —
 元婴 and up, the other eight 鼎, the nine 鼎缘人, PvP, the table — waits for its
 卷.
@@ -215,6 +215,25 @@ The world's nine realms and their names are story DESIGN § 道统 (补丁①).
 2026-09-30; the ids stay `body` · `maha` and names derive from ids, so saves
 need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale.
 
+- **Nine 层 a realm** (2026-10-03, the world follows 《凡人修仙传》 with this
+  exception declared in story DESIGN § 道统): every realm, not only 练气, has
+  一层 … 九层; `phases` names them three by three — 一至三层 初期, 四至六层 中期,
+  七至九层 后期 (state.mjs `phaseName`: 筑基四层 is 筑基中期; Look's `tier.phase`);
+  `peak` is **大圆满**, the ninth 层 filled (`peakName`) — the only state a
+  breakthrough is tried from, and the word the cauldron's gate and the
+  breakthrough's `from` use (「鼎气要结丹大圆满」, 筑基大圆满 → 结丹初期).
+  巅峰 is colloquial and never appears in a table. Past 练气 each realm had
+  three steps; each became three 层 whose thresholds sum to the old step, so
+  a realm's whole is unchanged and a save is carried over exactly (save v6:
+  marked by `migrate`, walked through the new 层 by `threeToNine` in
+  `fitWorld` — an old 后期 at its peak is 九层 filled).
+- **渡劫 odds** (rules/breakthrough.mjs, `ladder.json → breakthrough`): 筑基
+  follows the book — `base` 10 (没丹硬冲，十个里只冲得过一个), `floor` 5. A pill
+  weighs by its 转 (`pill.by_zhuan`, items.json `zhuan`): the sect's 一转下品
+  官丹 +25 (still more fail than pass on it alone), the furnace's 九转 +80
+  (near-certain, held at the `cap` 95); 鼎苔 raw +10 (`bonus_of`); a pill
+  with no `zhuan` adds `bonus`.
+
 ## The open world 【已建】
 
 - **Places** — `places/<province>.json`, each `{id, name, tier, roads, has,
@@ -291,6 +310,9 @@ from the bag and adds it to the cast (`needs-item`, `already-tamed`,
   赤铜葫芦 (weapon, fire, 器攻 3) with its fire snakes as 火鸦, 敛息符 ×2 (a story
   charm, no fight effect yet), 回春丹 ×3, 紫须芝, the letter; the exit pays the
   钱袋's 9 灵石 and the 回气丹 card.
+- **No shelf sells a 筑基丹** (2026-10-03, the book: 全观一年一颗, the 宗门大比
+  champion's prize): `foundation-pill` (一转, `zhuan: 1`) and
+  `foundation-pill-9` are `sold: []` — a gift, the sect's, or the furnace's.
 
 ### 丹药 in the game 【在建】
 
@@ -334,7 +356,9 @@ is the pure core; the page draws it on the stage beside the chat.
   上卷 at 筑基, 下卷 at 结丹, or a 吉 reading).
 - **装备入局** (2026-09-24, `cards.json → gear`): each worn thing is one number
   locked at the door — a weapon's 器攻 ×0.5 onto the hero power, the 本命法宝
-  (+1 per 4 重; the bigger of the two counts), lent roots whose 功法 may enter
+  (from 结丹 only — 练气 and 筑基 carry 法器 in the weapon slot; a treasure a
+  save holds below 结丹 is kept but unread: no card, growth, 温养 or lent root,
+  arms.mjs `boundOf`; +1 per 4 重; the bigger of the two counts), lent roots whose 功法 may enter
   the deck, a 法衣's 护体, a 佩's ward, a 符 in the bag as a talisman card.
 - **银月's card grows** with the realm (`rewards.json → her_card`) and by the
   ③ ⑥ ⑨ cauldrons (月华 · 月障 · 月落).
@@ -448,7 +472,7 @@ alone: `scripts/try-game.html?game=storm|deer|xisui|zhoutian&lang=zh|en`.
   on the story path. 体力 is for side errands, roaming and cultivation.
 - **闭关** (2026-09-24, rules/seclusion.mjs, page-only `seclude`): real hours
   (≤12) on ONE focus — 法术 (one ★ per 6 h, to ★3), 修为 (5 an hour, a 聚气丹
-  ×1.5), 本命法宝 (one 重 per 8 h); 8 h fills 体力; the world holds still
+  ×1.5), 本命法宝 (from 结丹; one 重 per 8 h); 8 h fills 体力; the world holds still
   (`in-seclusion`); 出关 · 领取 on opening.
 
 ## 银月 in the game 【已建】
@@ -599,7 +623,7 @@ memories in WebGL, weather particles, the big set pieces, chapter transitions.
 
 ## Player state 【已建】
 
-`data/state.json`, ids only (save **version 5**, `MIGRATIONS` in state.mjs):
+`data/state.json`, ids only (save **version 6**, `MIGRATIONS` in state.mjs; v6 = nine 层 a realm):
 `name`, `traits`, `tier`, `step`, `progress`, `wealth`, `stamina` +
 `stamina_at`, `bag`, `cast`, `cards`, `deck`, `chapter`, `scene`,
 `done_scenes`, `place`, `quests`, `chores`, `tale`, `known`, `ledger`,
