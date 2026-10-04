@@ -1821,8 +1821,8 @@
         "hanquan",
         "hantan",
         "hantan",
-        "chaoqi",
-        "tingbo",
+        "gupi",
+        "gupi",
         "gupi",
         "huiqi"
       ],
@@ -1845,7 +1845,7 @@
           "en": "Thirty moves: watch her feet, stand through every move she has, and you have passed."
         }
       },
-      "_trial": "三十招 (古六, 2026-10-03 book: her sword and ice spikes for thirty moves, then the edge — he takes the thrust through his left arm, seizes her scabbard, she lands off the stage first). A 试 passed by outlasting her twelve cards (battle.js § trial), no yield — the edge is the story's. node tools/trial-sim.mjs foe-shijie --at."
+      "_trial": "三十招 (古六, 2026-10-03 book: her sword and ice spikes for thirty moves, then the edge — he takes the thrust through his left arm, seizes her scabbard, she lands off the stage first). A 试 passed by outlasting her twelve cards (battle.js § trial), no yield — the edge is the story's. Rebalanced 2026-10-03 for the new bracket (she comes before 马小宝, one card fewer in hand: 77%): her two sweeps 潮起/停波 became 鼓皮 walls — she wards, not floods; ≈93% careful play, hard but passable. node tools/trial-sim.mjs foe-shijie --at."
     },
     {
       "id": "foe-zou",
