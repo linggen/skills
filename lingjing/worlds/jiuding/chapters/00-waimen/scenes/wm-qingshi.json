@@ -13,8 +13,8 @@
   "en": "You vault the wall and race up the mountain. At the cliff's edge stands a blue boulder taller than you. You draw the warmth, bit by bit, into your arm — and punch."
  },
  "recap": {
-  "zh": "你一拳打裂了后山崖顶的大青石，然后把笑声咽了回去。下山的路上，瞿老眼皮也没抬：「涧上那块石头，滑。」",
-  "en": "One punch split the great boulder on the clifftop, and you swallowed the laugh. On the way down Elder Qu didn't raise his eyelids: \"That stone in the gully's slippery.\""
+  "zh": "你一拳在后山崖顶的大青石上崩下一块皮，然后把笑声咽了回去。下山的路上，瞿老眼皮也没抬：「涧上那块石头，滑。」",
+  "en": "One punch knocked a flake of skin off the great boulder on the clifftop, and you swallowed the laugh. On the way down Elder Qu didn't raise his eyelids: \"That stone in the gully's slippery.\""
  },
  "cast": [],
  "people": [],
@@ -23,18 +23,18 @@
    "zh": [
     "崖边一块大青石，比你还高。",
     "一拳。「咔。」",
-    "一道缝，从上到下。"
+    "崩下一块皮，拳头没破。"
    ],
    "en": [
     "At the cliff's edge, a blue boulder taller than you.",
     "One punch. Crack.",
-    "A split, from top to bottom."
+    "A flake of skin off. Fist not grazed."
    ]
   }
  },
  "story": {
-  "zh": "小满从柴堆上跳下来。说是跳，其实是飘。他两只脚落在地上，竟没有一点声音，连墙根底下那只蛐蛐都没惊着。那道一丈来高的院墙，他退后两步，往前一蹿，两只手在墙头上一搭，人已经翻了出去。墙外是后山，他一口气冲了上去，一道白天要绕半里地的山涧，脚尖一点便纵了过去，落了地才回头看，那山涧足有两丈宽。\n\n崖顶有一块大青石，比他还高出一头，石面上长满了青苔。他攥紧拳头，把身子里那股转圈的暖一点一点往胳膊上引，引了三回，它才慢吞吞地顺着胳膊爬上来，爬到拳头上，热烘烘的。他一拳打了出去。只听得「咔」的一声，青石上裂开了一道缝，从他拳头落下的地方，一直裂到了石头底。拳头上连一点皮都没破。",
-  "en": "Xiaoman jumped down from the woodpile. Jumped, they'd call it — really he floated. Both feet touched the ground without a sound, not even startling the cricket at the foot of the wall. That court wall, a good ten feet high: he stepped back two paces, sprang forward, put both hands on the top, and was over. Beyond the wall was the back mountain, and he ran up it in one breath; a gully he had to go half a li round by day he cleared with one push of his toes, and only when he landed did he look back — it was a good twenty feet across.\n\nOn the clifftop was a great blue-grey boulder, a head taller than he was, its face grown over with moss. He clenched his fist and drew the circling warmth in his body down his arm bit by bit; three times he drew it before it crept slowly down his arm and into his fist, hot. He threw the punch. *Crack* — a split opened in the boulder, from where his fist landed clear down to its base. Not even the skin of his knuckles was broken."
+  "zh": "小满从柴堆上跳下来。说是跳，其实是飘。他两只脚落在地上，竟没有一点声音，连墙根底下那只蛐蛐都没惊着。那道一丈来高的院墙，他退后两步，往前一蹿，两只手在墙头上一搭，人已经翻了出去。墙外是后山，他一口气冲了上去，一道白天要绕半里地的山涧，脚尖一点便纵了过去，落了地才回头看，那山涧足有一丈来宽。\n\n崖顶有一块大青石，比他还高出一头，石面上长满了青苔。他攥紧拳头，把身子里那股转圈的暖一点一点往胳膊上引，引了三回，它才慢吞吞地顺着胳膊爬上来，爬到拳头上，热烘烘的。他一拳打了出去。只听得「咔」的一声，青石上崩下一块皮，连着青苔落在他脚边，拳头没破。",
+  "en": "Xiaoman jumped down from the woodpile. Jumped, they'd call it — really he floated. Both feet touched the ground without a sound, not even startling the cricket at the foot of the wall. That court wall, a good ten feet high: he stepped back two paces, sprang forward, put both hands on the top, and was over. Beyond the wall was the back mountain, and he ran up it in one breath; a gully he had to go half a li round by day he cleared with one push of his toes, and only when he landed did he look back — it was a good ten feet across.\n\nOn the clifftop was a great blue-grey boulder, a head taller than he was, its face grown over with moss. He clenched his fist and drew the circling warmth in his body down his arm bit by bit; three times he drew it before it crept slowly down his arm and into his fist, hot. He threw the punch. *Crack* — a flake of skin broke off the boulder and dropped at his feet, moss and all. His fist wasn't even grazed."
  },
  "lines": [],
  "buttons": [
@@ -51,8 +51,8 @@
    "means": "keeps silent, bites the fist, hides the joy",
    "mark": "hid-joy",
    "story": {
-    "zh": "他想笑，张开嘴，正要冲着整座沉鼎山喊上一嗓子——话到喉咙口，却一口咬住了自己的拳头。他咬着自己的拳头，蹲在那块裂开的青石后面，笑得浑身发抖，眼泪都笑了出来，愣是一点声音也没出。一边笑，一边在心里念：「藏。藏，藏，藏……」\n\n他下山的时候不敢跑了，一步一步地走，还特意在那道山涧边上绕了半里地，踩着石头过去，踩到一块滑的，还故意打了个趔趄。四下里一个人也没有。走到半山腰，天边刚透出一点鱼肚白，山门石阶边那棵老松底下，瞿老擎着一根细长的竹竿，竿头抹了一点黏胶，往松枝里一点，便粘下一只寒蝉来，再一点，又是一只。小满低着头想从他身后溜过去。瞿老眼皮也没抬，道：「涧上那块石头，滑。」\n\n小满后背上的汗，一下子全凉了。",
-    "en": "He wanted to laugh; he opened his mouth to shout at the whole of Mount Chending — and with the words in his throat, bit down on his own fist. Biting his fist, crouched behind the split boulder, he laughed till he shook all over and the tears came, and not a sound got out. Laughing, he chanted inside: \"Hide. Hide, hide, hide…\"\n\nGoing down he didn't dare run; he walked step by step, and even went half a li round to cross the gully on stepping-stones, and on a slippery one made a show of stumbling. There wasn't a soul about. Halfway down, as the sky first paled, under the old pine by the temple stair Elder Qu held up a long thin bamboo pole tipped with a dab of glue; he touched it into the pine needles and brought down a cicada, touched again, another. Xiaoman ducked his head and tried to slip past behind him. Elder Qu didn't raise his eyelids. \"That stone in the gully's slippery.\"\n\nThe sweat on Xiaoman's back went cold all at once."
+    "zh": "他想笑，张开嘴，正要冲着整座沉鼎山喊上一嗓子——话到喉咙口，却一口咬住了自己的拳头。他咬着自己的拳头，蹲在那块崩了皮的青石后面，笑得浑身发抖，眼泪都笑了出来，愣是一点声音也没出。一边笑，一边在心里念，念的是木牌里那一个：「藏。藏，藏，藏……」\n\n他下山的时候不敢跑了，一步一步地走，还特意在那道山涧边上绕了半里地，踩着石头过去，踩到一块滑的，还故意打了个趔趄。四下里一个人也没有。走到半山腰，天边刚透出一点鱼肚白，山门石阶边那棵老松底下，一把竹扫帚靠在树根上，瞿老擎着一根细长的竹竿，竿头抹了一点黏胶，往松枝里一点，便粘下一只寒蝉来，再一点，又是一只。小满低着头想从他身后溜过去。瞿老眼皮也没抬，道：「涧上那块石头，滑。」\n\n小满后背上的汗，一下子全凉了。",
+    "en": "He wanted to laugh; he opened his mouth to shout at the whole of Mount Chending — and with the words in his throat, bit down on his own fist. Biting his fist, crouched behind the chipped boulder, he laughed till he shook all over and the tears came, and not a sound got out. Laughing, he chanted inside — and what he meant was the one in the token: \"Hide. Hide, hide, hide…\"\n\nGoing down he didn't dare run; he walked step by step, and even went half a li round to cross the gully on stepping-stones, and on a slippery one made a show of stumbling. There wasn't a soul about. Halfway down, as the sky first paled, under the old pine by the temple stair, a bamboo broom leaning against its roots, Elder Qu held up a long thin bamboo pole tipped with a dab of glue; he touched it into the pine needles and brought down a cicada, touched again, another. Xiaoman ducked his head and tried to slip past behind him. Elder Qu didn't raise his eyelids. \"That stone in the gully's slippery.\"\n\nThe sweat on Xiaoman's back went cold all at once."
    },
    "beat": [],
    "next": "wm-yaoyuan"
@@ -66,8 +66,8 @@
    "means": "shouts for joy over the mountain",
    "mark": "shouted-joy",
    "story": {
-    "zh": "他想笑，张开嘴，冲着整座沉鼎山，「嗷——」地喊了一嗓子。那一嗓子在山谷里撞来撞去，撞了七八个来回，惊起一树的老鸹。\n\n喊完了，他才想起那个字来，一缩脖子，蹲在那块裂开的青石后面，捂住了自己的嘴。山下外门的院子里，有人推开窗子骂了一句「哪来的狼」，又把窗子关上了。\n\n他蹲在石头后面，笑得浑身发抖，一边笑，一边在心里念：「藏。藏，藏，藏……下回，藏。」",
-    "en": "He wanted to laugh. He opened his mouth and, across the whole of Chending Mountain, let out one great \"Aoooo—!\" The shout banged back and forth in the valley seven or eight times and startled a whole tree of crows into the air.\n\nOnly when it was done did he remember that word. He ducked, crouched behind the split boulder, and clapped a hand over his mouth. Down in the outer court someone pushed open a window, swore \"Where's that wolf from?\", and shut it again.\n\nHe crouched behind the stone, laughing till he shook, and as he laughed he recited in his heart: \"Hide. Hide, hide, hide… next time — hide.\""
+    "zh": "他想笑，张开嘴，冲着整座沉鼎山，「嗷——」地喊了一嗓子。那一嗓子在山谷里撞来撞去，撞了七八个来回，惊起一树的老鸹。\n\n喊完了，他才想起那个字来，一缩脖子，蹲在那块崩了皮的青石后面，捂住了自己的嘴。山下外门的院子里，有人推开窗子骂了一句「哪来的狼」，又把窗子关上了。\n\n他蹲在石头后面，笑得浑身发抖，一边笑，一边在心里念：「藏。藏，藏，藏……下回，藏。」",
+    "en": "He wanted to laugh. He opened his mouth and, across the whole of Chending Mountain, let out one great \"Aoooo—!\" The shout banged back and forth in the valley seven or eight times and startled a whole tree of crows into the air.\n\nOnly when it was done did he remember that word. He ducked, crouched behind the chipped boulder, and clapped a hand over his mouth. Down in the outer court someone pushed open a window, swore \"Where's that wolf from?\", and shut it again.\n\nHe crouched behind the stone, laughing till he shook, and as he laughed he recited in his heart: \"Hide. Hide, hide, hide… next time — hide.\""
    },
    "beat": [],
    "next": "wm-yaoyuan"
