@@ -12,7 +12,6 @@ command -v ling-mem >/dev/null 2>&1 || exit 0
 input="$(cat)"
 prompt="$(printf '%s' "$input" | jq -r '.prompt // empty' 2>/dev/null || true)"
 cwd="$(printf '%s' "$input"   | jq -r '.cwd    // empty' 2>/dev/null || true)"
-sid="$(printf '%s' "$input"   | jq -r '.session_id // empty' 2>/dev/null || true)"
 
 [ "${#prompt}" -lt 8 ] && exit 0
 
@@ -24,10 +23,17 @@ to="${LING_MEM_RECALL_TIMEOUT:-3}"
 # LING_MEM_RECALL_MIN_SCORE to override per-host.
 min_score="${LING_MEM_RECALL_MIN_SCORE:-}"
 
-proj=""
-if [ -n "$cwd" ] && [ "$cwd" != "$HOME" ]; then
-  proj="$(basename "$cwd")"
+# Recall scope = the session root (git root, else cwd); the daemon reads it
+# (ling-mem doc/scope-index-spec.md): rows under it, at its parents, and about
+# the person; $HOME / ~/.linggen / temp see only rows about the person.
+root=""
+if [ -n "$cwd" ]; then
+  root="$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null || true)"
+  [ "$root" = "$HOME" ] && root=""
+  [ -n "$root" ] || root="$cwd"
 fi
+scope_arg=()
+[ -n "$root" ] && scope_arg=(--cwd-scope "$root")
 
 TIMEOUT_BIN=""
 if   command -v timeout  >/dev/null 2>&1; then TIMEOUT_BIN="timeout"
@@ -63,19 +69,15 @@ score_arg=""
 [ -n "$min_score" ] && score_arg="--min-score $min_score"
 # shellcheck disable=SC2086
 out="$(run_with_timeout "$to" ling-mem search "$prompt" \
-    --limit "$limit" $score_arg \
+    --limit "$limit" $score_arg ${scope_arg[@]+"${scope_arg[@]}"} \
     --format json --quiet || true)"
 
 [ -z "$out" ] && exit 0
 
-hits="$(printf '%s' "$out" | jq -sr --arg proj "$proj" --argjson k "$topk" '
-  map(select(
-    ((.contexts // []) | map(select(startswith("project/"))))
-    | (length == 0 or any(. == ("project/" + $proj)))
-  ))
-  | .[:$k]
+hits="$(printf '%s' "$out" | jq -sr --argjson k "$topk" '
+  .[:$k]
   | .[]
-  | "From memory (\(.type), \(.host // "unknown"), \((.created_at // "")[0:10]), score=\((.score // 0) * 100 | floor / 100), id=\(.id)): \(.content)"
+  | "From memory (\(.type), from=\(.from // "derived"), \(.host // "unknown"), \((.created_at // "")[0:10]), score=\((.score // 0) * 100 | floor / 100), id=\(.id)): \(.content)"
 ' 2>/dev/null || true)"
 
 hit_count="$(printf '%s\n' "$hits" | grep -c .)"
@@ -88,11 +90,8 @@ cat <<'CAPTURE'
 
 Memory capture: before finishing this turn, recognize anything worth remembering and write it at the right tier per the memory protocol (core/semantic = search-first; episodic = incidental); anchor relative time to absolute dates ("last month" → "2026-06"). Nothing worth keeping? Skip silently.
 CAPTURE
-# Session stamp: pass source_session on every add so a later scan of this
-# day's logs skips sessions that already contributed (idempotent backfill).
-if [ -n "$sid" ]; then
-  printf 'On every memory_add, pass source_session:"%s" (this session).\n' "$sid"
-fi
+# No source_session line: it is host-filled, never asked of the model
+# (ling-mem doc/scope-index-spec.md).
 
 if [ "$hit_count" -ge 1 ]; then
   # Mirrors linggen/src/engine/prompt/core_block.rs:RECONCILE_FOOTER.

@@ -88,15 +88,16 @@ One atomic write per chain (MCP/HTTP):
 memory_add {
   "content": "<current state first; history as a short dated span; keep lessons, drop dead provisional markers>",
   "type": "<most current member's type>",
-  "contexts": [<union of members'>],
-  "cwd": "<the members' shared value when they agree; omit otherwise>",
+  "tier": "semantic",
+  "hook": "<one line, when the type is preference or decision>",
   "replace_ids": ["<every member id>"]
 }
 ```
 
-CLI hosts (no atomic replace verb): `ling-mem add` the survivor first,
-then `ling-mem delete <member-id> --yes` each member — write before
-delete.
+No `cwd` / `scope`: with `replace_ids` the daemon files the survivor
+under the members' common directory (none when any member has none).
+CLI: `ling-mem add "<survivor>" --tier semantic --replace <id>` per
+member — the same atomic call.
 
 Drafting rules (same as the memory agent's):
 

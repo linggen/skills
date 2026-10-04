@@ -64,19 +64,19 @@ promote/delete call past-TTL. The bar is "useful later", not
 Three destinations, picked from the utterance itself:
 
 1. **`--tier core` (always-loaded)** — narrow universals about the
-   *person*. Name, role, location, timezone, languages, pets / family,
-   committed standing instructions ("always X", "never Y"). Keep
+   *person*. Name, role, location, timezone, languages, pets / family.
+   Never preferences — "always X" / "never Y" is long-term. Keep
    tight — every core row costs tokens on every prompt.
 
-2. **`--tier semantic` (default)** — long-term goals / vision,
-   cross-project preferences without standing-instruction language,
+2. **`--tier semantic`** — long-term goals / vision, preferences
+   (standing rules get `--hook "<one line>" --indexed`),
    decisions whose reasoning is the retrieval value, cross-project
    tech gotchas. Use this when the user **explicitly** asked to
    remember it (*"remember X"*, *"记住 X"*) or used commitment language.
 
 3. **`--episodic`** — uncertain-durability signal: useful-looking but not
    clearly worth a permanent core/semantic row. This is the default
-   capture lane (the live agent also appends here every turn). The dream
+   capture lane (an add with no tier lands here) (the live agent also appends here every turn). The dream
    (consolidate) clusters near-dups, promotes the durable, and evicts the
    rest at TTL.
 
@@ -118,22 +118,25 @@ adding each candidate:
 
 ## Commands
 
-Semantic write (the default — long-term durable):
+Semantic write (long-term durable; `--scope <dir>` when it is about
+another directory than the session's, `--global` when it is about the
+person, `--hook` on preferences/decisions):
 
 ```
-ling-mem add "<content>" --type <fact|preference|decision|learned> --from <user|agent|derived> [--context <scope>]…
+ling-mem add "<content>" --tier semantic --type <fact|preference|decision|learned> --from <user|agent|derived> [--scope <dir>|--global] [--hook "<one line>"]
 ```
 
-Core write (always-loaded universals about the person):
+Core write (always-loaded universals about the person; no scope):
 
 ```
-ling-mem add "<content>" --type fact --from user --tier core [--context <scope>]…
+ling-mem add "<content>" --type fact --from user --tier core
 ```
 
-Episodic write (uncertain-durability signal, awaits consolidation):
+Episodic write (uncertain-durability signal, awaits consolidation — the
+default when `--tier` is omitted):
 
 ```
-ling-mem add "<content>" --episodic --type <type> --from <from> [--context <scope>]…
+ling-mem add "<content>" --episodic --type <type> --from <from> [--scope <dir>]
 ```
 
 ## Forbidden — what extraction must NOT do

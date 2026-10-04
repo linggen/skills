@@ -16,8 +16,9 @@ the measure.
 If both pass and the fact is about the **person** → core
 (`ling-mem add ... --tier core`).
 If both pass and it's not about the person (goal, preference, decision,
-cross-project learning) → long-term (`tier=semantic`, the default) with
-`contexts: ["cross-project"]`.
+cross-project learning) → long-term (`tier=semantic`, written
+explicitly — an omitted tier lands episodic), scoped to the directory it
+is about (`scope`) or `global` when it holds everywhere.
 If either answer is NO → **skip**. The candidate is not memory.
 **Memory does not write to project files** (`<project>/AGENTS.md`,
 `CLAUDE.md`, source, docs); those are user-curated. If the user wants
@@ -133,7 +134,6 @@ Pure rule application. No LLM judgment, no asking.
 | Append a new row | Anywhere | Pure additive |
 | Exact-content dedup at write (binary `insert_with_dedup` rejects identical content) | Binary | Pure equality check |
 | Cross-tier exact-content dedup on `add` (HTTP path) | Daemon | Equality check + tier-rank merge |
-| Extend `contexts[]` / `tags[]` from new evidence | Anywhere | Array union |
 | Evict past-TTL episodic on remembered days (`sweep`) | `dream` | Mechanical forget — only touches rows a remember pass already judged |
 
 ### Semantic maintenance — silent when confident, AskUser when not
@@ -146,7 +146,7 @@ contradiction (leaves the candidate in episodic) rather than guessing:
 
 | Operation | Silent if… | Ask if… |
 |:---|:---|:---|
-| Dedup two rows that mean the same thing | Same value, near-identical phrasing, no scope difference (same `contexts` / `cwd`) | Different scopes, different timestamps, or any value drift between them |
+| Dedup two rows that mean the same thing | Same value, near-identical phrasing, same scope (`cwd`) | Different scopes, different timestamps, or any value drift between them |
 | Resolve a contradiction (same subject, incompatible values) | **Never silent.** Always ask. | Always |
 | Generalize utterances into a "user always X" rule | **Never.** Append individual utterances; live retrieval surfaces patterns. | — |
 | Merge distinct facts into one synthesized story | **Never.** They're distinct; append both. | — |
@@ -161,10 +161,10 @@ plain chat text + numbered options when neither exists.
 ### Hard rules — what extraction must NEVER do
 
 - Never delete a `semantic` row **silently** to resolve a contradiction.
-  Ask first via AskUser; on the user's pick, write the winner
-  (`ling-mem add "<winner>" --type ... --from ...`) then delete each
-  loser (`ling-mem delete <id> --yes`). Silent deletion is the floor
-  violation.
+  Ask first via AskUser; on the user's pick, write the winner with
+  `ling-mem add "<winner>" --type ... --from ... --replace <id>
+  --user-directed` (losers archived, one atomic call). Silent deletion
+  is the floor violation.
 - Never write a contradicting pair as separate atoms hoping live recall
   resolves it later. That's drift accumulation — the cost we're trying
   to stop paying. Ask now.
@@ -182,8 +182,8 @@ When a candidate emerges, route to one of two tiers or drop it.
 
 | tier | When | Action |
 |:---|:---|:---|
-| `core` | Universal-about-person OR cross-project behavioral rule for the agent | `ling-mem add "..." --tier core --type <fact\|preference> ...` |
-| `semantic` (default) | Cross-project intent / decision / preference / learning | `ling-mem add "..." --type <type> ...` (omit `--tier`) |
+| `core` | Universal about the person (no scope, never a preference) | `ling-mem add "..." --tier core --type fact ...` |
+| `semantic` | Intent / decision / preference / learning | `ling-mem add "..." --tier semantic --type <type> [--scope <dir>\|--global] [--hook "..."] ...` |
 | (skip) | Project-internal implementation detail / activity / session-arc / meta-feedback | Drop. The agent reads code or user-authored project files when needed. |
 
 Most candidates skip. The core tier grows slowly by design — a noisy
@@ -191,17 +191,17 @@ Most candidates skip. The core tier grows slowly by design — a noisy
 we'd rather miss 3 saves than force the user to curate 30 low-signal
 rows.
 
-## Contexts and tags
+## Scope, hook, index
 
-- **`contexts`** — primary scope dimension. 1–3 typical.
-  - `cross-project` — retrieves in any session.
-  - `code/linggen`, `music/piano`, `trip-japan-2026` — domain scopes.
-  - **`project/<name>`** — **legacy only**, do not write new rows with
-    this context. Project-internal facts get dropped under the current
-    rules; they're not memory. Older rows still retrieve normally.
-
-- **`tags`** — free-form metadata (0–5 typical, prefix convention).
-  - `intent:goal`, `topic:networking`, `person:maria`.
+- **Scope (`cwd`)** — the directory a row is about. The host stamps the
+  session cwd as the default; pass `scope` (one of the session's
+  "Memory scopes here" candidates) when the row is about another
+  directory; `global: true` when it is about the person. Core has none.
+- **Hook** — one line, ≤ 80 chars, what the row is for. Expected on
+  `preference` and `decision` rows; the index shows it.
+- **`indexed`** — the hook loads at every session start under the
+  row's scope. For standing rules the user states; the dream only
+  proposes it (review item `index`).
 
 ## Outcome field — only for action-flavored types
 

@@ -118,13 +118,16 @@ Backfill staging, always user-triggered, idempotent:
    - **Promote** durable signal (user biography, cross-project
      preference, decision-with-reasoning, re-hit gotcha, state change
      like a shipped milestone, run learning): `add` with the row's
-     content **verbatim**, its `type`/`from`/`contexts`, `occurred_at`
+     content **verbatim**, its `type`/`from`, `tier=semantic`
+     (always explicit — an omitted tier lands episodic), `occurred_at`
      carried forward (else `created_at`), `source_session` if present,
-     `cwd` if present. `cwd` is WHERE the memory came from — carrying
-     it is what keeps the promoted row findable from that project; a
-     row with no `cwd` gets none, never this session's own directory.
-     Never pass `id`. Omit tier (defaults semantic); `tier=core` only
-     for a narrow universal about the person. Search-first: a quick
+     `cwd` if present, and its `hook` (write one for a
+     preference/decision that has none: one line, ≤ 80 chars). `cwd` is
+     the directory the memory is ABOUT — carrying it is what keeps the
+     promoted row findable from there; a row with no `cwd` gets none,
+     never this session's own directory. Never pass `id`, never set
+     `indexed` (propose it — below); `tier=core` only for a narrow
+     universal about the person (core carries no `cwd`). Search-first: a quick
      semantic `search` on the gist — but a hit with `tier=episodic`
      never counts as "already in semantic". **The promote bar — state
      + lessons, never events.** Test: strip the date and the commit
@@ -194,7 +197,12 @@ can prove, queue the rest for the user. Two capped passes:
      `chain` for an uncertain merge (note: subject + both gists),
      `stale-status` for a provisional claim with no completing
      neighbor (note: the claim + "verify against git/files at solve
-     time"), `contradiction` when user-voice rows disagree. A deduped
+     time"), `contradiction` when user-voice rows disagree, `index`
+     for a user-stated standing rule that should load at session start
+     under its directory (or an indexed row that no longer holds —
+     note: put in / take out, the dir, the proposed hook), `scope` for
+     a row filed under the wrong directory (note: from → to). Index
+     and scope changes are never yours to write — at most 5 per run. A deduped
      response ("already queued") is success. Write every note in
      plain words — it is the solver's whole starting context and may
      become the user's question.
@@ -207,7 +215,7 @@ can prove, queue the rest for the user. Two capped passes:
    Per cluster, exactly one of:
    - **DIGEST** — confident the members (or a coherent 3+ subset)
      share ONE subject: one digest row per the condense drafting
-     rules — `add` with `tags:["digest"]` + `replace_ids` = the
+     rules — `add` with `"tier":"semantic"` + `replace_ids` = the
      coherent subset only (CLI: `--replace <id>` per member);
      outliers untouched. Members are archived, not deleted — a
      wrong digest is an unpack, which is why this runs unattended.
