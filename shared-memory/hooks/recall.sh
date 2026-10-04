@@ -31,10 +31,11 @@ root=""
 if [ -n "$cwd" ]; then
   root="$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null || true)"
   [ "$root" = "$HOME" ] && root=""
+  case "$cwd" in "$HOME"|"$HOME"/*) case "$root" in "$HOME"/*) ;; *) root="" ;; esac ;; esac
   [ -n "$root" ] || root="$cwd"
 fi
 scope_arg=()
-[ -n "$root" ] && scope_arg=(--cwd-scope "$root")
+[ -n "$root" ] && scope_arg=(--scope-root "$root")
 
 TIMEOUT_BIN=""
 if   command -v timeout  >/dev/null 2>&1; then TIMEOUT_BIN="timeout"
