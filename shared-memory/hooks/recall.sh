@@ -25,7 +25,8 @@ min_score="${LING_MEM_RECALL_MIN_SCORE:-}"
 
 # Recall scope = the session root (git root, else cwd); the daemon reads it
 # (ling-mem doc/scope-index-spec.md): rows under it, at its parents, and about
-# the person; $HOME / ~/.linggen / temp see only rows about the person.
+# the person; $HOME / ~/.linggen / temp see rows about the person plus at
+# most two strong non-preference matches filed under a directory.
 root=""
 if [ -n "$cwd" ]; then
   root="$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null || true)"

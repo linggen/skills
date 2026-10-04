@@ -326,7 +326,8 @@ CLAUDE.md: a session sees its directory and every parent.
 - **Recall scope.** A session in a project recalls rows under its root,
   at the root's parents, and about the person. A skill's own session
   (`~/.linggen/skills/<name>`) recalls only its own rows. `$HOME`,
-  `~/.linggen` and temp dirs recall only rows about the person.
+  `~/.linggen` and temp dirs recall rows about the person, plus at most
+  two strong matches filed under a directory — never a preference.
 - **Merges.** A replacement keeps its losers' tier and their common
   scope. A digest is known by the rows whose `superseded_by` points at
   it — there are no tags.
