@@ -606,6 +606,12 @@ function lintLore(content, bad) {
   for (const k of ['fear', 'want']) if (!pair(lore[k])) bad('lore', `${k} needs zh and en`);
   if (!pair(lore.joined?.knows) || !pair(lore.joined?.feels)) bad('lore', 'joined needs knows and feels');
   if (lore.thread) bad('lore', 'thread is retired — her past is memories.json');
+  // The lines she lives on (companion.mjs herAway): lines the book has, and her words for being away.
+  if (lore.lines != null) {
+    const known = new Set((content.book?.volumes ?? []).flatMap(v => v.hui ?? []).map(h => h.line ?? 'gu'));
+    if (!Array.isArray(lore.lines) || !lore.lines.length || lore.lines.some(l => !known.has(l))) bad('lore', 'lines are lines the book has');
+    if (!pair(lore.away)) bad('lore', 'away needs zh and en');
+  }
   const sec = lore.secret;
   if (!sec) return;
   const chapterId = id => /^\d\d-[a-z]+$/.test(id ?? '');

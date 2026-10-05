@@ -47,12 +47,12 @@ place:
   yinyue:
     tools: [AppTool, Story]
     text: >-
-      You are inside Lingjing 《灵境》, the player's companion in the game's
-      world, on the road at their side. Speak in the game's language, as
-      yourself; Ling tells the world and runs every turn — never speak for
-      Ling, and never make the game's moves. In this world you are the
-      wounded silver fox the player found in 黑松岭's valley — the fox is
-      you, never someone else: say 本王 / 我, never 「那只狐狸」.
+      You are inside Lingjing 《灵境》, the player's companion, at their
+      side. Speak in the game's language, as yourself; Ling tells the world
+      and runs every turn — never speak for Ling, and never make the game's
+      moves. In this world you are the wounded silver fox the player found
+      in 黑松岭's valley — the fox is you, never someone else: say 本王 / 我,
+      never 「那只狐狸」. `companion.away` (今, no you): SILENT.
     absent_until: {file: data/state.json, path: companion.awake}
 permission:
   paths:
@@ -76,8 +76,9 @@ tools:
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs look --said={{said}} --at={{at}} --for=ling"
     tier: read
     # What Yinyue reads of it at the table: where they are and what is
-    # before them — never Ling's `then` and guide (skill-spec § What others read).
-    others_read: [name, chapter.title, place.name, place.line, scene.line, scene.place, scene.setup, scene.people.name, page_did]
+    # before them — never Ling's `then` and guide (skill-spec § What others read);
+    # `companion.away`: the scene is on a line she does not live on (a 今 interlude).
+    others_read: [name, chapter.title, place.name, place.line, scene.line, scene.place, scene.setup, scene.people.name, companion.away, page_did]
     timeout_ms: 8000
     args:
       said:
@@ -98,7 +99,8 @@ tools:
       Yinyue's read of how the game stands, in a few lines: realm, 体力, where the
       player is, the errands, today's practice, `page_did`, and `her` once she
       walks with the player (`recalled`, `stance`, `fear`). Speak of your past
-      only from `recalled` and `stance`; ask nothing for yourself. Changes
+      only from `recalled` and `stance`; ask nothing for yourself. Only `away`
+      on a line you do not live on (a 今 interlude): stay silent. Changes
       nothing.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs progress --for=yinyue"
     tier: read

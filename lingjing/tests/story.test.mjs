@@ -433,9 +433,11 @@ for (const lang of ['zh', 'en']) {
   });
 }
 
-test('目前任务 is one finished line from what is in hand, in the game\'s language — none when the scene is the task', () => {
+test('目前任务 is one finished line from what is in hand, in the game\'s language — in a scene with nothing in hand, the scene\'s own words', () => {
   const s = { ...at('01-ji', roadOf('01-ji').slice(0, 2)), updated: NOW.toISOString() };
-  assert.equal(taskLine(content, s, ctx()), null, 'standing in a scene, no errand: the scene is the task');
+  // 2026-10-05: left empty here, Ling wrote one of her own — the setup's first sentence now (tests/side-line.test.mjs).
+  const here = content.chapters['01-ji'].scenes[s.scene];
+  assert.ok(taskLine(content, s, ctx()).startsWith('目前任务：' + fill(here.setup.zh, s, content).split('。')[0]), 'standing in a scene, no errand: the scene says it');
   const walk = { ...s, scene: null };
   const zh = taskLine(content, walk, ctx()), en = taskLine(content, { ...walk, lang: 'en' }, ctx());
   if (zh) assert.ok(zh.startsWith('目前任务：') && !/\d/.test(zh), zh);

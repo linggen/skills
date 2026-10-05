@@ -37,8 +37,30 @@ export function taleHere(look) {
   return t?.step?.at?.here && !t.ended && !t.dropped ? t.step : null;
 }
 
-/* 银月 walks with him and is awake: the coins are hers to throw. */
-export const herAwake = look => Boolean(look?.companion?.joined && !look.companion.asleep);
+/* 银月 walks with him and is awake — and not away on another line (a 今
+   interlude, companion.mjs herAway): the coins are hers to throw. */
+export const herAwake = look => Boolean(look?.companion?.joined && !look.companion.asleep && !look.companion.away);
+
+/* The line of the book the scene is told on, when it is not the book's own
+   (Look's `scene.line`: a 今 interlude — 沈芒's world, no 灵气, no 银月,
+   DESIGN § 四·六). Read off the scene, never an id. */
+export const sideLineOf = look => look?.scene?.line ?? null;
+
+/* The page's own furniture, by the line it belongs to (Hanli, 2026-10-05:
+   今线插曲期间藏起古线的界面). `every` stands on any line: the 回 and the
+   place, the box and the scene's game, the language, the 九鼎录 and the
+   book. The rest is the 古's — the world of 灵气 — and stands only while the
+   scene is on the book's own line; back on it, all of it returns. */
+export const FURNITURE = {
+  every: ['lang', 'lu', 'read'],
+  main: ['name', 'realm', 'pool', 'wealth', 'omen', 'festival', 'weather', 'roads', 'errands', 'bag', 'tray'],
+};
+export const stands = (look, part) => !sideLineOf(look) || FURNITURE.every.includes(part);
+/* On a side line the stage holds the scene alone: its picture, its people,
+   the cards that name a value, the game it offers (`scene.games`) and the
+   ending card — never the 古's goal, coins, errands, road or beasts. */
+const SIDE_CARDS = new Set(['meet', 'panel', 'people', 'value', 'born', 'closed']);
+const onSide = look => c => SIDE_CARDS.has(c.card) || (c.card === 'board' && (look.scene?.games ?? []).includes(c.id));
 
 /* EVERY card kind says whether it HOLDS the stage: whether it is asking the
    player to do something, here, now. While any card holds, the chat keeps its
@@ -229,7 +251,8 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   const panel = look.scene?.panel ? [{ card: 'panel' }] : [];
   // The chapter's ending card, while the next chapter waits: first on the stage until he puts it away (合上, the page's).
   const closed = look.chapter?.close ? [{ card: 'closed' }] : [];
-  return [...meet, ...panel, ...people, ...head, ...cards, ...closed];
+  const all = [...meet, ...panel, ...people, ...head, ...cards, ...closed];
+  return sideLineOf(look) ? all.filter(onSide(look)) : all;
 }
 
 /* The kinds the PAGE draws for itself, from Look alone: the scene's panel and

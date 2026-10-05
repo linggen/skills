@@ -5,7 +5,8 @@ import { wornOf } from './arms.mjs';
 import { itemOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
 import { memoriesOf } from './memories.mjs';
-import { placeName, placeOf, placeOpen, tooHard } from './world.mjs';
+import { inMade, placeName, placeOf, placeOpen, sceneOf, tooHard } from './world.mjs';
+import { sceneLine } from './hui.mjs';
 
 /* The thread — the pull: the scene while one runs, else the next chapter
    and when it opens; nothing when the spine has run out. */
@@ -23,6 +24,29 @@ export const hasCompanion = state => Boolean(state.companion?.joined);
    moments, no fights, and the engine keeps her out of the chat
    (SKILL.md `absent_until: companion.awake`). */
 export const herAwake = state => Boolean(state.companion?.joined && !state.companion?.asleep);
+/* Away: the scene stands on a line of the book she does not live on
+   (companion.json `lines` — 银月 is the 修仙 world's; a 今 interlude is
+   沈芒's, where there is no 灵气 and no her, DESIGN § 四·六). Her words for
+   it, as she reads them (`away`), else null. Read off the scene's 回. */
+export function herAway(content, state) {
+  const lore = content.lore;
+  if (!lore?.lines || !hasCompanion(state) || inMade(state)) return null;
+  const line = sceneLine(content, sceneOf(content, state));
+  return line && !lore.lines.includes(line) ? pick(lore.away, state.lang) : null;
+}
+/* The flag the engine's presence reads (SKILL.md `absent_until:
+   companion.awake`): found, not asleep in the token, and not away — so on a
+   line she does not live on, nothing of hers runs: no turn, no moment, no
+   AppTool. Fitted as a save is read and before it is written; the same
+   object when it fits already. */
+export function fitPresence(content, state) {
+  const c = state?.companion;
+  if (!c?.joined) return state;
+  const want = c.asleep ? {} : herAway(content, state) ? { away: true } : { awake: true };
+  if (Boolean(c.awake) === Boolean(want.awake) && Boolean(c.away) === Boolean(want.away)) return state;
+  const { awake, away, ...rest } = c;
+  return { ...state, companion: { ...rest, ...want } };
+}
 const callDue = (content, state) => {
   const c = companionOf(content);
   if (!c) return false;

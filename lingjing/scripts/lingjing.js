@@ -14,7 +14,7 @@ import { holdPlaceholder } from './invite.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
-import { boardDoneToday, petStageUrl, stageCards, stageSlots } from './stage.mjs';
+import { boardDoneToday, petStageUrl, stageCards, stageSlots, stands } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, pickOf, spoilsHtml } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
@@ -79,8 +79,10 @@ const IDLE_FACT = { zh: '玩家在这页上静了好一会儿，什么也没动�
 /// `companion.joined`; SKILL.md `place.yinyue.absent_until` — the engine keeps
 /// her out of this skill's sessions until then). Every call to her asks this.
 /// Asleep in 吴婆婆's fox token (prologue-v3), she walks with the player but is
-/// not present: no moments, no body on the stage (`companion.asleep`).
-const herHere = () => Boolean(look?.companion?.joined && !look?.companion?.asleep);
+/// not present: no moments, no body on the stage (`companion.asleep`). Nor on
+/// a line of the book she does not live on (`companion.away`: a 今 interlude,
+/// 沈芒's world — the rules drop her presence flag there too).
+const herHere = () => Boolean(look?.companion?.joined && !look?.companion?.asleep && !look?.companion?.away);
 const voice = createVoice({
   // A scratch save (?save=) tells 银月 nothing: she lives in the real game.
   post: (id, fact, flags, opts) => (SCRATCH ? Promise.resolve(false) : postMoment(fact, flags, opts)),
@@ -541,16 +543,18 @@ function qiHtml() {
 function statusHtml() {
   const w = words();
   const pct = look.next ? Math.min(100, Math.round((look.progress / look.next) * 100)) : 0;
-  const name = look.name ? `<span class="daohao">${esc(look.name)}</span>` : '';
+  // A scene on another line (a 今 interlude) keeps only the language here: the rest is the 古's (stage.mjs FURNITURE).
+  const has = (part) => stands(look, part);
+  const name = look.name && has('name') ? `<span class="daohao">${esc(look.name)}</span>` : '';
   // Before the prologue's gate (Look's `locked`) a mortal: no realm, no 修为 bar, no 灵石, no coins — not greyed, not there.
-  const realm = isShut(look, 'cultivation') ? `<span class="realm">${esc(w.mortal)}</span>`
+  const realm = !has('realm') ? '' : isShut(look, 'cultivation') ? `<span class="realm">${esc(w.mortal)}</span>`
     : `<span class="realm">${esc(look.tier.name)}</span>
     <div class="xw"><span class="lbl">${esc(w.xw)}</span><div class="bar"><i style="width:${pct || 0}%"></i></div>
       <span class="num"><span data-count="progress">${esc(look.progress)}</span>/${esc(look.next)}</span></div>`;
-  const stones = isShut(look, 'wealth') ? '' : `<span class="ls"><span class="lbl">${esc(w.ls)}</span> <b data-count="wealth">${esc(look.wealth)}</b></span>`;
+  const stones = !has('wealth') || isShut(look, 'wealth') ? '' : `<span class="ls"><span class="lbl">${esc(w.ls)}</span> <b data-count="wealth">${esc(look.wealth)}</b></span>`;
   return `${name}${realm}
-    ${qiHtml()}
-    ${stones}${omenChip()}
+    ${has('pool') ? qiHtml() : ''}
+    ${stones}${has('omen') ? omenChip() : ''}
     <span class="langsw" title="中文 / English">${['zh', 'en'].map((l) => `<button data-lang="${l}" class="${l === lang() ? 'on' : ''}">${l === 'zh' ? '中' : 'En'}</button>`).join('')}</span>`;
 }
 
@@ -934,7 +938,7 @@ function footRowHtml(slots) {
   if (bout) return '';
   const w = words(), next = slots.queue[0];
   // In 闭关 and inside a corridor (the prologue) the rules keep the roads off (stageSlots).
-  const roads = slots.footer.roads || scratchRoads() ? roadsHtml() : '<span></span>';
+  const roads = (slots.footer.roads || scratchRoads()) && stands(look, 'roads') ? roadsHtml() : '<span></span>';
   const more = next ? `<button class="act quiet more" data-qnext="${esc(slots.key)}" title="${esc(fill(w.queueNext, { what: queueLabel(next.cards[0]) }))}">${esc(fill(w.queueMore, { n: slots.queue.length }))} ›</button>` : '';
   return roads + more;
 }
@@ -946,10 +950,12 @@ const scratchRoads = () => Boolean(SCRATCH) && !look?.seclusion && !look?.direct
 /// The chips — 天气 · 九鼎录 · 原著 · 事 · 袋 — in the footer, under the stage.
 /// 恩仇簿 is written no more (2026-10-03): its chip is off the footer; the
 /// ledger itself stays in the save and in Look (ledgerChipHtml, cards.js).
+/// A scene on another line (a 今 interlude) keeps the 九鼎录 and the book; the rest is the 古's (stage.mjs FURNITURE).
 function footChipsHtml() {
-  return `${bout ? '' : festChipHtml()}${bout ? '' : wxChipHtml(wxHere(), { lang: lang(), open: view.wxOpen, sense: view.wxSense, note: view.wxNote })}${bout ? '' : luChipHtml(lang(), view.luOpen)}${bout ? '' : readChipHtml(ctx())}
-    ${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}
-    ${gearChipHtml(ctx(), view.gearOpen)}`;
+  const has = (part) => !bout && stands(look, part);
+  return `${has('festival') ? festChipHtml() : ''}${has('weather') ? wxChipHtml(wxHere(), { lang: lang(), open: view.wxOpen, sense: view.wxSense, note: view.wxNote }) : ''}${has('lu') ? luChipHtml(lang(), view.luOpen) : ''}${has('read') ? readChipHtml(ctx()) : ''}
+    ${stands(look, 'errands') ? bookChipHtml(ctx(), view.bookOpen, view.bookFresh) : ''}
+    ${stands(look, 'bag') ? gearChipHtml(ctx(), view.gearOpen) : ''}`;
 }
 
 /* The weather chip names where the hero stands (Hanli, 2026-10-05: 「蒙山·晴」
@@ -1245,7 +1251,7 @@ function draw() {
   // — 「今日无事」 under a book with things in it was a contradiction.
   $('trayTitle').textContent = w.tray;
   // What already stands on the stage is not listed again in the tray (Hanli, 2026-10-05: the 九宫格 twice).
-  $('tray').innerHTML = trayHtml({ ...ctx(), onStage: (slots?.main ?? []).map((c) => c.id).filter(Boolean) });
+  $('tray').innerHTML = stands(look, 'tray') ? trayHtml({ ...ctx(), onStage: (slots?.main ?? []).map((c) => c.id).filter(Boolean) }) : '';
   $('tray').parentElement.hidden = !$('tray').innerHTML;
   // A turn with nothing left in it ends itself after a beat long enough to
   // read the board — pressing the button is always faster (his, 2026-09-18).

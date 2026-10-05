@@ -41,6 +41,12 @@ function bookIndex(content) {
   return BOOKS.get(content);
 }
 export const huiOf = (content, id) => (id ? bookIndex(content).get(id) ?? null : null);
+/* The book's line a scene is told on (book.json `line`: "gu" | "jin"), and
+   whether that is a line beside the book's own (古): a 今 interlude is
+   沈芒's world — no 灵气, no 银月 (DESIGN § 四·六). Read off the 回 the scene
+   names, never off an id. */
+export const sceneLine = (content, scene) => huiOf(content, scene?.hui)?.line ?? null;
+export const sideLine = (content, scene) => { const l = sceneLine(content, scene); return l && l !== lineOf(null) ? l : null; };
 /* A 回's place in the book, for sorting (a 回 the book has not: last). */
 export const huiOrder = (content, id) => huiOf(content, id)?.at ?? Infinity;
 

@@ -467,7 +467,8 @@ export function fitWorld(saved, content) {
     ...((state.cast ?? []).some(id => !beasts.has(id)) ? { cast: state.cast.filter(id => beasts.has(id)) } : {}),
     // A companion found before she could sleep (the bell at 结丹, before
     // prologue-v3) is awake: `awake` is what the engine's presence reads.
-    ...(state.companion?.joined && !state.companion.asleep && !state.companion.awake ? { companion: { ...state.companion, awake: true } } : {}),
+    // Away on a line she does not live on (companion.mjs fitPresence) she is not awake either.
+    ...(state.companion?.joined && !state.companion.asleep && !state.companion.away && !state.companion.awake ? { companion: { ...state.companion, awake: true } } : {}),
     // The hero is fixed (2026-09-30): a save named on the old name card, or
     // never named, takes the world's — 沈小满, a boy.
     ...(hero && (state.name !== hero.name || state.gender !== hero.gender) ? { name: hero.name, gender: hero.gender } : {}),

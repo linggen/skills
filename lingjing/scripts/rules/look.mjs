@@ -6,7 +6,7 @@ import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, 
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, THEN_BORN, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
 import { fightSetup } from './cards.mjs';
-import { callDue, companionOf, hasCompanion, herAwake, herCard, questBrief, recalledOf } from './companion.mjs';
+import { callDue, companionOf, hasCompanion, herAwake, herAway, herCard, questBrief, recalledOf } from './companion.mjs';
 import { clone, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mjs';
 import { staminaBrief } from './daily.mjs';
 import { bookOf, breakthroughOf, directorBrief, errandFor, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
@@ -22,7 +22,7 @@ import { hashOf } from './travel.mjs';
 import { atScene, beatOf, creatureOf, encounterOf, ofJuan, passed, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
-import { chapterLabel, huiOf } from './hui.mjs';
+import { chapterLabel, sideLine } from './hui.mjs';
 import { practiceHint } from './scrolls.mjs';
 import { owesTell } from './tell.mjs';
 import { mainRoot, rootName } from './roots.mjs';
@@ -184,11 +184,13 @@ function sceneBrief(content, state, now = new Date()) {
   // 图鉴: who and what this scene brings on for the first time (codex.mjs) — the page shows their cards.
   const meet = newHere(content, state, scene);
   const looks = hotspotsOf(content, state, scene), hint = lookHint(content, state, scene);
-  // 今线 (an interlude, rules/hui.mjs): the page lays the modern stage (`scape`: 体育场, 球场, 古籍部 …), Ling tells it as 沈芒's (guide `tell`).
-  const jin = huiOf(content, scene.hui)?.line === 'jin';
+  // A line beside the book's own (a 今 interlude, rules/hui.mjs sideLine): the page lays the modern stage
+  // (`scape`: 体育场, 球场, 古籍部 …) and keeps the 古's strip off; Ling tells it as 沈芒's (guide `tell`).
+  const line = sideLine(content, scene);
   return {
     id: scene.id,
-    ...(jin ? { line: 'jin', ...(scene.scape ? { scape: scene.scape } : {}) } : {}),
+    // …and its games (`games`, the scene's own boards): the only boards its stage holds (stage.mjs).
+    ...(line ? { line, ...(scene.scape ? { scape: scene.scape } : {}), ...(scene.offers?.tasks?.length ? { games: scene.offers.tasks } : {}) } : {}),
     place: say(scene.place),
     setup: say(scene.setup),
     cast: (scene.cast ?? []).filter(id => id !== companionOf(content)?.id || hasCompanion(state)).map(id => ({ id, name: nameOf(content, id, lang) })),
@@ -430,7 +432,7 @@ export function look(state, content, ctx) {
     waypoint: waypointOf(content, state, ctx),
     place: placeBrief(content, state, ctx.now),
     director: directorBrief(content, state, ctx),
-    companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined, ...(state.companion.asleep ? { asleep: true } : {}), recalled: recalledOf(content, state), card: herCard(content, state) } : null,
+    companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined, ...(state.companion.asleep ? { asleep: true } : {}), ...(herAway(content, state) ? { away: herAway(content, state) } : {}), recalled: recalledOf(content, state), card: herCard(content, state) } : null,
     // 银月的记忆 (rules/memories.mjs): the ones unlocked, and what Ling may say of them — never one still locked.
     ...(memoriesLook(content, state) ? { memories: memoriesLook(content, state) } : {}),
     quest: questBrief(content, state, ctx.now),

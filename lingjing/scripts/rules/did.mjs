@@ -11,7 +11,7 @@
 // 2026-09-24: both of them look it up when they want to).
 import { pick, stepName, threshold } from '../state.mjs';
 import { withoutLocked } from './locks.mjs';
-import { herPast } from './companion.mjs';
+import { herAway, herPast } from './companion.mjs';
 import { staminaBrief } from './daily.mjs';
 import { bookOf, questOf } from './errands.mjs';
 import { seclusionBrief } from './seclusion.mjs';
@@ -157,6 +157,10 @@ function lundaoHelp(content, state, now) {
    what the page did since the reader last asked (rules.mjs adds `page_did`).
    A read: it changes nothing but the reader's place in the log. */
 export function progress(state, content, ctx) {
+  // On a line of the book she does not live on (a 今 interlude): she is not
+  // in that world, and her read of it says only that (companion.mjs herAway).
+  const away = herAway(content, state);
+  if (away) return { state: null, result: { ok: true, away } };
   const lang = state.lang, here = placeOf(content, state.place);
   const st = staminaBrief(content, state, ctx.now);
   const { tasks, quests, kaifu } = tasksBrief(content, state, ctx);
