@@ -568,6 +568,18 @@ button.link:hover { text-decoration: underline; }
   align-items: baseline; flex-wrap: wrap; }
 .inv-watch-level { text-transform: capitalize; }
 .inv-watch-more { margin-top: 8px; font-size: 12px; }
+.wk-table { margin-top: 4px; font-variant-numeric: tabular-nums; }
+.wk-row { display: grid; grid-template-columns: 110px minmax(0, 1fr) auto; gap: 12px; padding: 6px 0;
+  border-top: 1px solid var(--line); align-items: baseline; }
+.wk-total { font-weight: 600; }
+.wk-num { text-align: right; }
+.wk-row .wk-num:nth-child(2) { text-align: left; color: var(--muted); }
+.wk-total .wk-num:nth-child(2) { color: var(--ink); }
+.wk-points { margin: 4px 0 0; padding-left: 18px; line-height: 1.5; }
+.wk-points li { margin: 3px 0; }
+.wk-src { font-size: 11px; color: var(--muted); margin-left: 4px; }
+.wk-next { margin: 4px 0 0; }
+@media (max-width: 520px) { .wk-row { grid-template-columns: 70px minmax(0, 1fr) auto; } }
 
 /* The composed first view (compose.js): Focus, then Attention. */
 #focus .focus-h { display: flex; align-items: center; gap: 8px; }

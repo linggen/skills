@@ -66,6 +66,9 @@ statements; it builds the full picture, finds the leaks, and answers
   report" reads the newest one any time.
 - **Know when one lands** — turn it on, and Yinyue tells you on your
   phone when a company you watch reports.
+- **Your week, Sunday evening** — the markets in Canada and the US, rates
+  and stocks, every figure with its source; and what the week did to each
+  holding.
 - **Ask straight questions** — "is RY expensive right now?", "am I too
   concentrated?" — answers with a view, using your holdings.
 

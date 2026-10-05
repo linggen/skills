@@ -15,6 +15,7 @@ import { CURRENCY_CODES as ALL_CURRENCY_CODES, currencyForLocale, accountCurrenc
 import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, externalOf, activeRows, seedFromLegacy, saveRegisterFile, updateJsonFile, lockedUpdate } from './lww.js';
 import { initInvestments, renderInvestView, leaveInvestView, reportSaved, holdingsIn, proposeHoldings, chipsNow as investChipsNow } from './investments.js';
 import { reportChips, spendChips, txnChips, commitChips } from './chips.js';
+import { initWeekly, renderWeekly } from './weekly.js';
 import { importStatus, importNote, pageDidLine, paymentState, PAY_STATES } from './page-did.js';
 import { compose, layoutOf, FOCUS_IDS } from './compose.js';
 
@@ -1277,7 +1278,7 @@ function switchView(mode) {
   applyVisibility();
   if (mode === 'txn') renderTxnView();
   if (mode === 'commit') renderCommitView();
-  if (mode === 'invest') renderInvestView(); else leaveInvestView();
+  if (mode === 'invest') { renderInvestView(); renderWeekly(); } else leaveInvestView();
 }
 
 function refreshView() {
@@ -2884,6 +2885,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     drawn: () => { if (VIEW_MODE === 'invest') showTabSuggestions(); },
     data: DATA,
   });
+  initWeekly({ readJson, esc, data: DATA });
   document.querySelectorAll('#tabs .tab').forEach((t) => t.addEventListener('click', () => switchView(t.dataset.view)));
   // A link may name the tab to land on (?tab=txn — what a quest's `open` sends).
   const askedTab = new URLSearchParams(location.search).get('tab');

@@ -304,6 +304,63 @@ tools:
     cmd: "node $SKILL_DIR/scripts/spend-watch.js last"
     tier: read
     timeout_ms: 8000
+  # The weekly report (missions/weekly): code finds the figures and checks
+  # every quote, you write the words.
+  - name: WeeklyScan
+    description: >-
+      The facts of the last full trading week, found by code: {week, from,
+      to, language, portfolio{holdings[{symbol, name, shares, currency,
+      prev_close, prev_on, close, close_on, change, change_pct, value,
+      value_change}], totals[{currency, value, value_change, change_pct,
+      missing}]}, reported[{symbol, name, period, filed, url, summary}] (held
+      companies whose saved summary was filed that week), next_week{from, to,
+      events[{on, kind, label, symbol?}]}, sections}. Moves are at today's
+      share count; totals are per currency, never across.
+    cmd: "perl $SKILL_DIR/scripts/weekly.pl scan"
+    tier: read
+    timeout_ms: 120000
+  - name: SaveWeekly
+    description: >-
+      The weekly report's one writer, after WeeklyScan: your market sections,
+      ties to holdings and next-week line. Code adds the portfolio table,
+      the reported companies and next week's events from the scan, checks
+      every bullet's figures against its quote and its source page, and
+      drops what doesn't stand, naming why in `dropped` — mend those and save
+      again (the same week replaces). Returns {saved, points, ties, dropped,
+      notice} — `notice` is the facts Yinyue words her line from.
+    args:
+      sections:
+        type: string
+        required: true
+        description: >-
+          A JSON array: [{"id": "canada" | "us" | "rates" | "stocks", "title":
+          the section's name in the report's language, "bullets": [{"text":
+          one fact, in the report's language, figures exactly as the source
+          writes them, "source": the https page you fetched this run, "quote":
+          that page's own words holding every figure and any rate direction
+          in the text}]}]. A figure you can't quote is a bullet left out.
+      ties:
+        type: string
+        description: >-
+          A JSON array, one per macro point that touches what they hold:
+          [{"text": one line — what the point means for these holdings, no
+          figure a bullet didn't quote, "holdings": ["RY.TO", …]}].
+      next_week:
+        type: string
+        description: >-
+          One short line in the report's language, from WeeklyScan's
+          next_week events only.
+    cmd: "perl $SKILL_DIR/scripts/weekly.pl save sections={{sections}} ties={{ties}} next_week={{next_week}}"
+    tier: read
+    timeout_ms: 90000
+  - name: LastWeekly
+    description: >-
+      The newest weekly report, for telling in chat: {week, from, to,
+      language, portfolio, reported, sections[{id, title, bullets[{text,
+      source}]}], ties, next_week}, or {} before the first one. Read-only.
+    cmd: "perl $SKILL_DIR/scripts/weekly.pl last"
+    tier: read
+    timeout_ms: 8000
 ---
 
 # Personal CFO
@@ -704,6 +761,15 @@ overnight?" → `LastWatch` first, then `WatchScan` for anything since, and tell
 them what matters, with your view when they ask for it. Never call `SaveWatch`
 or `SaveSpend` from chat — the nightly run owns the brief, and saving would
 mark those events as told.
+
+#### The weekly report
+
+On Sunday evenings the weekly mission writes the market week (Canada, the US,
+rates and bonds, stocks — every figure quoted from a page it fetched) and the
+portfolio's week (each holding's move, computed by code). It shows in the
+Weekly card on the Investments tab. "How was my week?" or "what happened in
+the markets?" → `LastWeekly`, then tell them what matters. Never call
+`SaveWeekly` from chat — the Sunday run owns the report.
 
 #### Holdings from chat
 

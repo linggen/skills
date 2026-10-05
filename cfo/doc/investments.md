@@ -337,3 +337,40 @@ lawyer's read before charging for it.
    `GET /api/missions/cfo%3Awatch/runs` (engine `45bdf3a`). First measure,
    2026-09-16, a quiet check on gpt-5.6-terra: 4 calls, 56.5k prompt (39.4k
    cached), 0.4k output.
+
+## The weekly report (Hanli, 2026-10-05)
+
+Sunday at 19:00 (`missions/weekly`, `0 19 * * 0`, catch-up 20 h, off until
+he turns it on): the market week in four sections — 加拿大 / 美国 /
+利率及债券市场 / 证券市场 — and what it did to the holdings.
+
+- **Find** — `weekly.pl scan` (`WeeklyScan`, zero LLM): the last full
+  Monday–Friday before the run (a Sunday run → the Friday just gone; a
+  weekday run → the week before). Each holding's move at today's share
+  count: last week's Friday close against this Friday's, from daily closes
+  (`history_of`; the quote fills a lagging history only with a closing
+  price). Totals per currency, never across; a holding with no closes
+  leaves its currency's total null, named. `reported` = held companies'
+  saved summaries filed that week (the Watch's reads, not a second one).
+  `next_week` = the release calendar (FOMC, BoC, CPI, jobs) and held
+  companies' earnings dates. `language` = config.json `language`, else the
+  Mac's first preferred language. Kept in `data/weekly-candidates.json`.
+- **Write** — Ling: WebSearch + WebFetch for the week; each bullet `{text,
+  source, quote}`. Ties: one line per macro point that touches a holding.
+- **Check** — `weekly.pl save` (`SaveWeekly`): every figure in a bullet is
+  in its quote (a date's parts aside); every rate direction in the text
+  (加息/hike vs 降息/cut) is in the quote; the quote's figures are on the
+  source page, fetched again by code (out of reach → kept, `checked:
+  false`). Ties name held symbols and bring no figure a bullet didn't
+  quote. What fails is dropped and named; the run mends and saves again.
+- **Store** — `data/weekly.json` = `{latest, weeks{id: {week, from, to,
+  made_at, language, portfolio, reported, sections[{id, title,
+  bullets[{text, source, quote, checked}]}], ties[{text, holdings}],
+  next_week{from, to, events, line}}}}`, eight weeks.
+- **Show** — the Weekly card on the Investments tab: the portfolio table,
+  the sections with each source as a small link, ties, reported results,
+  next week; Turn on / Turn off / Run now.
+- **Tell** — the run hands `SaveWeekly`'s `notice` (facts only) to Yinyue
+  with `agent_chat`; she writes the line. The engine's mission-finished
+  herald carries only the mission's name and status.
+- Not built yet: the phone's view and its line.

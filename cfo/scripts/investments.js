@@ -509,7 +509,7 @@ function draw() {
     : '<p class="hint">Add a ticker to watch it. Add shares and your average cost to track value and gain.</p>';
 }
 
-function money(n, currency, digits = 2) {
+export function money(n, currency, digits = 2) {
   if (n === null) return '—';
   return new Intl.NumberFormat(undefined, {
     style: 'currency', currency, minimumFractionDigits: digits, maximumFractionDigits: digits,
@@ -518,7 +518,7 @@ function money(n, currency, digits = 2) {
 
 /// "+$12.30 (+1.20%)" in green, "−…" in red. `digits` matches the figure
 /// it sits beside: cents next to a price, whole dollars next to a value.
-function moveHtml(n, currency, pct, digits = 2) {
+export function moveHtml(n, currency, pct, digits = 2) {
   if (n === null) return '';
   const sign = n > 0 ? '+' : n < 0 ? '−' : '';
   const cls = n > 0 ? 'pos' : n < 0 ? 'neg' : '';
