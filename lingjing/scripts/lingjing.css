@@ -1204,7 +1204,8 @@ body.fighting .atmos { display: none; }
   linear-gradient(90deg, transparent 31.8%, var(--jin-line) 32%, transparent 32.4%, transparent 67.6%, var(--jin-line) 68%, transparent 68.2%) bottom / 100% 26% no-repeat,
   linear-gradient(180deg, transparent 73.6%, var(--jin-line) 74%, transparent 74.4%); }
 .view.jin-stacks .backdrop, .view.jin-dark .backdrop { background:
-  repeating-linear-gradient(90deg, transparent 0 calc(12.5% - 2px), var(--jin-line) calc(12.5% - 2px) 12.5%) bottom / 100% 40% no-repeat,
-  repeating-linear-gradient(180deg, transparent 0 calc(25% - 1px), var(--jin-line) calc(25% - 1px) 25%) bottom / 100% 40% no-repeat; }
+  repeating-linear-gradient(90deg, transparent 0 calc(12.5% - 1px), var(--jin-line) calc(12.5% - 1px) 12.5%) bottom / 100% 34% no-repeat,
+  repeating-linear-gradient(180deg, transparent 0 calc(25% - 1px), var(--jin-line) calc(25% - 1px) 25%) bottom / 100% 34% no-repeat;
+  opacity: .6; -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 70%); mask-image: linear-gradient(180deg, transparent 0, #000 70%); }
 .view.jin-ward .backdrop { background: linear-gradient(180deg, transparent 70%, var(--jin-line) 70.3%, transparent 70.8%, transparent 78%, var(--jin-line) 78.3%, transparent 78.8%); }
 .view.jin-night .backdrop { background: radial-gradient(30% 22% at 76% 86%, color-mix(in srgb, #E8C46A 16%, transparent), transparent 70%); }

@@ -69,7 +69,9 @@ const FORMS = {
   head: (h, lang) => `${tagged(h, lang)}${pick(h.huimu, lang)[0]}`,
   book: (h, lang) => `${tagged(h, lang)}${pick(h.huimu, lang).join(lang === 'en' ? ' / ' : '　')}`,
 };
-const tagged = (h, lang) => (lang === 'en' ? `${FORMS.juan(h, lang)} · ${h.tag.en} — ` : `${FORMS.juan(h, lang)}　${h.tag.zh} · `);
+// A 今 interlude's label already says 今 (「今 · 一」): no second tag, as the reader's title (book-order.js).
+const tagged = (h, lang) => (h.line === 'jin' ? (lang === 'en' ? `${FORMS.juan(h, lang)} — ` : `${FORMS.juan(h, lang)}　`)
+  : lang === 'en' ? `${FORMS.juan(h, lang)} · ${h.tag.en} — ` : `${FORMS.juan(h, lang)}　${h.tag.zh} · `);
 export function huiLabel(content, id, lang, form = 'juan') {
   const h = huiOf(content, id);
   return h?.n ? FORMS[form](h, lang) : null;

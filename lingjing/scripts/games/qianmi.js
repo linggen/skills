@@ -67,7 +67,7 @@ const T = {
 };
 
 export function newGame(seed = '', tries = 0) {
-  return { seed: String(seed), tries, live: false, t: 0, d: 0, air: 0.8, lungs: 0.5, mode: null, vol: 0, pants: 0, note: 'ready', failed: false, won: false };
+  return { seed: String(seed), tries, live: true, started: false, t: 0, d: 0, air: 0.8, lungs: 0.5, mode: null, vol: 0, pants: 0, note: 'ready', failed: false, won: false };
 }
 
 /* An in-breath ends: what it was. A pant counts toward 乱; a full one clears it. */
@@ -78,15 +78,15 @@ function endIn(s) {
 }
 
 const VERBS = {
-  start: (s) => (s.live || s.failed ? null : { ...s, live: true, note: 'running' }),
+  start: (s) => (s.started || s.failed ? null : { ...s, started: true, note: 'running' }),
   hold: (s, d) => {
-    if (!s.live || s.failed) return null;
+    if (!s.started || s.failed) return null;
     const mode = d.gHold === 'in' ? 'in' : 'out';
     const base = endIn(s);
     return { ...base, mode, vol: 0, note: mode === 'out' ? 'exhale' : base.note === 'fresh' ? 'running' : base.note };
   },
   release: (s) => (s.mode === 'in' ? endIn(s) : s.mode === 'out' ? { ...s, mode: null } : null),
-  again: (s) => (s.failed ? { ...newGame(s.seed, s.tries + 1), live: true, note: 'running' } : null),
+  again: (s) => (s.failed ? { ...newGame(s.seed, s.tries + 1), started: true, note: 'running' } : null),
 };
 
 export function act(state, data = {}) {
@@ -97,7 +97,7 @@ export function act(state, data = {}) {
 }
 
 export function tick(state, ms) {
-  if (!state.live || state.won || state.failed) return state;
+  if (!state.live || !state.started || state.won || state.failed) return state;
   let s = { ...state, t: state.t + ms, d: Math.min(DIST, state.d + (DIST / RUN_MS) * ms) };
   let drain = DRAIN * ms;
   if (s.pants >= PANIC) drain *= 1.6;
@@ -128,7 +128,7 @@ export function html(state, lang = 'zh') {
     + bar(t.air, state.air, state.air < 0.25 ? 'is-low' : '')
     + bar(t.lungs, state.lungs, state.lungs >= 0.99 ? 'is-full' : '');
   const btns = state.failed ? `<button type="button" class="g-jin-btn" data-g="again">${t.again}</button>`
-    : !state.live ? `<button type="button" class="g-jin-btn" data-g="start">${t.start}</button>`
+      : !state.started ? `<button type="button" class="g-jin-btn" data-g="start">${t.start}</button>`
       : `<div class="g-jin-pair"><button type="button" class="g-jin-btn${state.mode === 'out' ? ' is-held' : ''}" data-g-hold="out">${t.out}</button>`
         + `<button type="button" class="g-jin-btn${state.mode === 'in' ? ' is-held' : ''}" data-g-hold="in">${t.in}</button></div>`;
   return `<div class="g-jin g-qianmi${state.failed ? ' is-failed' : ''}">${meters}<p class="g-jin-line">${t[state.note] ?? ''}</p>${btns}</div>`;

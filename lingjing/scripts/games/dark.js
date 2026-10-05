@@ -81,7 +81,7 @@ export function swings(seed) {
 export const swayOf = (s) => Math.sin((2 * Math.PI * s.st) / s.swing[Math.min(s.step, STEPS - 1)]);
 
 export function newGame(seed = '') {
-  return { seed: String(seed), phase: 'ready', live: false, step: 0, st: 0, wobbles: 0, falls: 0, swing: swings(seed), breath: calm(), numb: 1, note: 'ready', won: false };
+  return { seed: String(seed), phase: 'ready', live: true, step: 0, st: 0, wobbles: 0, falls: 0, swing: swings(seed), breath: calm(), numb: 1, note: 'ready', won: false };
 }
 
 function landed(s) {
@@ -96,7 +96,7 @@ function landed(s) {
 }
 
 const VERBS = {
-  start: (s) => (s.phase === 'ready' ? { ...s, phase: 'walk', live: true, note: 'walk' } : null),
+  start: (s) => (s.phase === 'ready' ? { ...s, phase: 'walk', note: 'walk' } : null),
   step: (s) => (s.phase === 'walk' ? landed(s) : null),
   hold: (s) => {
     if (s.phase !== 'lead' || s.breath.phase === 'in') return null;
