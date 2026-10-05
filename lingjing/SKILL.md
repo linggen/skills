@@ -77,7 +77,7 @@ tools:
     tier: read
     # What Yinyue reads of it at the table: where they are and what is
     # before them — never Ling's `then` and guide (skill-spec § What others read).
-    others_read: [chapter.title, place.name, place.line, scene.place, scene.setup, scene.people.name, page_did]
+    others_read: [name, chapter.title, place.name, place.line, scene.place, scene.setup, scene.people.name, page_did]
     timeout_ms: 8000
     args:
       said:
