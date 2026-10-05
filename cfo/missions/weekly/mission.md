@@ -32,7 +32,8 @@ watching this run: never ask a question and never wait for an answer.
 
 Call `WeeklyScan` once. It gives the week (`from`–`to`), the `language` to
 write in, `portfolio` (each holding's weekly move and the totals per
-currency — already computed; never add, convert or restate them),
+currency — already computed; never add, convert or restate them; the card
+shows only the totals, the holdings' moves are for your ties),
 `reported` (held companies whose results the Watch already summarized — use
 those summaries, don't read the filings again), `next_week` (rate decisions,
 CPI, jobs and held companies' earnings) and the four `sections`.

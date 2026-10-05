@@ -315,15 +315,16 @@ tools:
       missing}]}, reported[{symbol, name, period, filed, url, summary}] (held
       companies whose saved summary was filed that week), next_week{from, to,
       events[{on, kind, label, symbol?}]}, sections}. Moves are at today's
-      share count; totals are per currency, never across.
+      share count; totals are per currency, never across. Holdings' moves
+      are for your ties; the report keeps only the totals.
     cmd: "perl $SKILL_DIR/scripts/weekly.pl scan"
     tier: read
     timeout_ms: 120000
   - name: SaveWeekly
     description: >-
       The weekly report's one writer, after WeeklyScan: your market sections,
-      ties to holdings and next-week line. Code adds the portfolio table,
-      the reported companies and next week's events from the scan, checks
+      ties to holdings and next-week line. Code adds the portfolio's total
+      per currency, the reported companies and next week's events from the scan, checks
       every bullet's figures against its quote and its source page, and
       drops what doesn't stand, naming why in `dropped` — mend those and save
       again (the same week replaces). Returns {saved, points, ties, dropped,
@@ -356,7 +357,7 @@ tools:
   - name: LastWeekly
     description: >-
       The newest weekly report, for telling in chat: {week, from, to,
-      language, portfolio, reported, sections[{id, title, bullets[{text,
+      language, portfolio{totals}, reported, sections[{id, title, bullets[{text,
       source}]}], ties, next_week}, or {} before the first one. Read-only.
     cmd: "perl $SKILL_DIR/scripts/weekly.pl last"
     tier: read
@@ -741,7 +742,8 @@ they confirm; you never move money.
 The **Investments tab** lists what the user holds and watches — stocks and
 ETFs in the US and on the TSX. Numbers come from tools, never from memory:
 `Investments` for their list, numbers and saved summaries; `Market` for fresh
-numbers on any symbol.
+numbers on any symbol. Each company card has a price chart (1D to 5Y, line or
+candles) with the position's change over the range — point them there.
 - **Say what you think.** "Is Apple expensive?", "should I trim RY?", "what
   would you buy?" — give a direct view and the numbers behind it (P/E against
   forward P/E, growth in the latest report, the position's weight and gain).
@@ -766,7 +768,7 @@ mark those events as told.
 
 On Sunday evenings the weekly mission writes the market week (Canada, the US,
 rates and bonds, stocks — every figure quoted from a page it fetched) and the
-portfolio's week (each holding's move, computed by code). It shows in the
+portfolio's week (one total per currency, computed by code). It shows in the
 Weekly card on the Investments tab. "How was my week?" or "what happened in
 the markets?" → `LastWeekly`, then tell them what matters. Never call
 `SaveWeekly` from chat — the Sunday run owns the report.

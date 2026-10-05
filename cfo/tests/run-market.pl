@@ -752,5 +752,54 @@ t('with Toronto held, the check runs any weekday until 16:00 (US Thanksgiving; a
       join(',', map { $_->{id} } @moves) eq 'alert:move:RY.TO:2026-04-03', JSON::PP->new->canonical->encode(\@moves));
 }
 
+# ── Chart history: rows, the quote's later close, the cache ───────────────
+{
+    my $daily = daily_rows([
+        { t => '2026-10-02', o => 236.055, h => 237.88, l => 233.6, c => 233.95, a => 233.95, v => 1, ch => 1.34 },
+        { t => '2026-10-01', o => 229.975, h => 232.285, l => 228.16, c => 230.86 },
+        { t => '2026-09-30', c => 228.38 },
+        { t => '2026-09-29' }, 'junk',
+    ]);
+    t('daily rows: oldest first, OHLC kept, rows without a close dropped',
+      join(',', map { $_->{t} } @$daily) eq '2026-09-30,2026-10-01,2026-10-02'
+        && $daily->[2]{o} == 236.055 && !exists $daily->[2]{v} && !exists $daily->[0]{o});
+    my $minutes = intraday_rows([ { t => 1790933460, c => 235.21 }, { t => 1790933400, c => 235.35, o => 236.12 }, { t => 1790933520 }, { t => 1790933580, c => undef } ]);
+    t('intraday points: oldest first, empty minutes are gaps',
+      @$minutes == 2 && $minutes->[0]{t} == 1790933400 && !exists $minutes->[0]{o});
+
+    my $doc = { rows => [ { t => '2026-10-01', o => 1, h => 2, l => 1, c => 277.86 } ] };
+    my $later = with_quote($doc, { price => 278.91, price_time => 'Oct 2, 2026, 4:00 PM EST' });
+    t('a quote from a later session ends the daily series, close only',
+      @{ $later->{rows} } == 2 && $later->{rows}[1]{t} eq '2026-10-02' && $later->{rows}[1]{c} == 278.91 && !exists $later->{rows}[1]{o}
+        && @{ $doc->{rows} } == 1);
+    t('a quote from the same day, or a stale one, adds nothing',
+      @{ with_quote($doc, { price => 1, price_time => 'Oct 1, 2026, 4:00 PM EST' })->{rows} } == 1
+        && @{ with_quote($doc, { price => 1, price_time => 'Oct 2, 2026, 4:00 PM EST', stale => 1 })->{rows} } == 1);
+
+    t('a symbol\'s source paths: TSX, US ETF, US stock then ETF',
+      join(' ', source_paths(base_entry('RY.TO'))) eq 'a/tsx-ry'
+        && join(' ', source_paths({ %{ base_entry('QQQ') }, kind => 'etf' })) eq 'e/qqq'
+        && join(' ', source_paths(base_entry('NVDA'))) eq 's/nvda e/nvda');
+
+    local $ENV{SKILL_DIR} = tempdir(CLEANUP => 1);
+    my $calls = 0;
+    my $answer = [ { t => '2026-10-02', c => 1 } ];
+    no warnings qw(redefine once);
+    local *main::fetch_series = sub { $calls++; $answer };
+    my $e = base_entry('NVDA');
+    my $first = history_series($e, '5Y', 1000);
+    my $again = history_series($e, '5Y', 1000 + 60);
+    t('a series is fetched once, then served from data/history/ while fresh',
+      $calls == 1 && $again->{rows}[0]{c} == 1 && -f data_dir() . '/history/NVDA-5Y.json');
+    history_series($e, '1D', 1000);
+    history_series($e, '1D', 1000 + 6 * 60);
+    t('intraday goes stale after five minutes', $calls == 3);
+    $answer = undef;
+    my $down = history_series($e, '5Y', 1000 + 3600);
+    t('a source that fails serves the cache, marked stale', $down->{stale} && $down->{rows}[0]{c} == 1);
+    my $none = history_series(base_entry('TSLA'), '5Y', 1000);
+    t('no cache and no source: an error, no rows', $none->{error} && !$none->{rows});
+}
+
 print "\n$pass passed, $fail failed\n";
 exit($fail ? 1 : 0);

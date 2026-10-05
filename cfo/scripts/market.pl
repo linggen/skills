@@ -31,6 +31,10 @@
 #   perl market.pl watch-alerts          what can't wait for the morning: rate
 #                                        decisions, CPI, jobs, a holding's 5% day;
 #                                        and the releases of the next two weeks
+#   perl market.pl history SYM [5Y|1D|1W]
+#                                        a stock card's chart: five years of daily
+#                                        OHLC, or the last session / five sessions
+#                                        intraday (cached in data/history/)
 #
 # Symbols: AAPL (US) or RY.TO (TSX; TSX:RY is accepted too). Prices and stats
 # come from stockanalysis.com's public pages and merge into data/quotes.json.
@@ -78,6 +82,7 @@ sub main {
         'save-watch'     => \&cmd_save_watch,
         'watch-level'    => \&cmd_watch_level,
         'watch-alerts'   => \&cmd_watch_alerts,
+        history          => \&cmd_history,
     );
     my $run = $commands{ $verb // '' }
         or usage();
@@ -90,7 +95,8 @@ sub usage {
                . "       market.pl read URL | save-report symbol=… period=… form=… filed=… url=… summary=…\n"
                . "       market.pl watch-scan [--since=TIME] [SYMBOL...] | save-watch judgments=JSON\n"
                . "       market.pl watch-level quiet|normal|everything\n"
-               . "       market.pl watch-alerts [--force] [--now=TIME]\n";
+               . "       market.pl watch-alerts [--force] [--now=TIME]\n"
+               . "       market.pl history SYMBOL [5Y|1D|1W]\n";
     exit 2;
 }
 
@@ -910,17 +916,123 @@ sub weigh_positions {
 # A year of daily closes, newest first: [{t, c, ch}] (ch = the day's % change).
 sub history_of {
     my ($e) = @_;
-    my $t = lc ticker($e);
-    my @paths = $e->{exchange} eq 'TSX' ? ("a/tsx-$t")
-              : ($e->{kind} // '') eq 'etf' ? ("e/$t")
-              : ("s/$t", "e/$t");
-    for my $path (@paths) {
+    for my $path (source_paths($e)) {
         my $body = fetch_json("$BASE/api/symbol/$path/history?range=1Y&period=Daily") or next;
         my $rows = $body->{data};
         return [ grep { ref eq 'HASH' && defined $_->{t} && defined $_->{c} } @$rows ]
             if ($body->{status} // 0) == 200 && ref $rows eq 'ARRAY' && @$rows;
     }
     return undef;
+}
+
+# ── Charts ─────────────────────────────────────────────────────────────────
+
+# A stock card's chart series. 5Y = five years of daily OHLC (the page slices
+# 1M…5Y from it and builds weekly candles); 1D = the last session by the
+# minute; 1W = the last five sessions every five minutes. Cached per symbol
+# and series in data/history/, so a chip click never refetches.
+my %SERIES = (
+    '5Y' => { ttl => 30 * 60, url => 'symbol/%s/history?range=5Y&period=Daily', rows => \&daily_rows },
+    '1D' => { ttl => 5 * 60,  url => 'charts/%s/1D/l',                          rows => \&intraday_rows },
+    '1W' => { ttl => 15 * 60, url => 'charts/%s/5D/l',                          rows => \&intraday_rows },
+);
+my $COMPACT = JSON::PP->new->utf8->canonical;
+
+sub cmd_history {
+    my ($raw, $range) = @_;
+    my ($sym) = symbols_of($raw // '');
+    $range = '5Y' unless defined $range && $SERIES{$range};
+    fail('usage: market.pl history SYMBOL [5Y|1D|1W]') unless $sym;
+    my $e = chart_entry($sym);
+    my $doc = history_series($e, $range, time);
+    print $COMPACT->encode($range eq '5Y' ? with_quote($doc, $e) : $doc), "\n";
+}
+
+# The cached series while fresh, else fetched and cached; a failed fetch
+# falls back to the cache marked stale.
+sub history_series {
+    my ($e, $range, $now) = @_;
+    my $sym = $e->{symbol};
+    my $file = history_file($sym, $range);
+    my $cached = read_json($file);
+    return $cached if $cached && $now - ($cached->{at} // 0) < $SERIES{$range}{ttl};
+    my $rows = fetch_series($e, $range);
+    return { %$cached, stale => JSON::PP::true } if !$rows && $cached;
+    return { symbol => $sym, range => $range, error => 'no chart data from stockanalysis.com' } unless $rows;
+    my $doc = { symbol => $sym, range => $range, at => $now, rows => $rows };
+    write_compact($file, $doc);
+    return $doc;
+}
+
+sub history_file {
+    my ($sym, $range) = @_;
+    my $dir = data_dir() . '/history';
+    mkdir $dir unless -d $dir;
+    return "$dir/$sym-$range.json";
+}
+
+sub write_compact {
+    my ($file, $doc) = @_;
+    open(my $out, '>', "$file.tmp") or die "cannot write $file: $!";
+    print $out $COMPACT->encode($doc), "\n";
+    close $out;
+    rename "$file.tmp", $file or die "cannot write $file: $!";
+}
+
+# The daily history can lag the quote by a session (the TSX's often does):
+# the cached quote's price, from a later day than the last row, ends the
+# series — a close only (no open/high/low, so no candle that day).
+sub with_quote {
+    my ($doc, $q) = @_;
+    my $rows = $doc->{rows} or return $doc;
+    my $day = quote_trading_day($q);
+    return $doc unless $day && defined $q->{price} && !$q->{stale} && @$rows && $day gt $rows->[-1]{t};
+    return { %$doc, rows => [ @$rows, { t => $day, c => $q->{price} + 0 } ] };
+}
+
+# The symbol as the quotes cache knows it (an ETF's kind picks its path).
+sub chart_entry {
+    my ($sym) = @_;
+    my $q = ((read_json(data_dir() . '/quotes.json') || {})->{symbols} || {})->{$sym} || {};
+    return { %{ base_entry($sym) }, %$q, symbol => $sym };
+}
+
+sub source_paths {
+    my ($e) = @_;
+    my $t = lc ticker($e);
+    return $e->{exchange} eq 'TSX' ? ("a/tsx-$t")
+         : ($e->{kind} // '') eq 'etf' ? ("e/$t")
+         : ("s/$t", "e/$t");
+}
+
+sub fetch_series {
+    my ($e, $range) = @_;
+    my $s = $SERIES{$range};
+    for my $path (source_paths($e)) {
+        my $body = fetch_json("$BASE/api/" . sprintf($s->{url}, $path)) or next;
+        next unless ($body->{status} // 0) == 200 && ref $body->{data} eq 'ARRAY';
+        my $rows = $s->{rows}->($body->{data});
+        return $rows if @$rows;
+    }
+    return undef;
+}
+
+# Daily rows, oldest first: {t: YYYY-MM-DD, o, h, l, c}. A row without a
+# close is dropped; one without its open/high/low keeps only the close.
+sub daily_rows {
+    my ($data) = @_;
+    my @rows = map { my $r = $_; +{ t => $r->{t}, map { defined $r->{$_} ? ($_ => $r->{$_} + 0) : () } qw(o h l c) } }
+               grep { ref eq 'HASH' && ($_->{t} // '') =~ /^\d{4}-\d\d-\d\d$/ && defined $_->{c} } @$data;
+    return [ sort { $a->{t} cmp $b->{t} } @rows ];
+}
+
+# Minute (or five-minute) points, oldest first: {t: epoch seconds, c}. The
+# source sends empty minutes as nulls; those are gaps, not prices.
+sub intraday_rows {
+    my ($data) = @_;
+    my @rows = map { +{ t => $_->{t} + 0, c => $_->{c} + 0 } }
+               grep { ref eq 'HASH' && defined $_->{c} && ($_->{t} // '') =~ /^\d+$/ } @$data;
+    return [ sort { $a->{t} <=> $b->{t} } @rows ];
 }
 
 # A session closes 16:00 New York (and Toronto) time: 20:00 UTC under daylight

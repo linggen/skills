@@ -408,8 +408,10 @@ sub save_input {
     return { sections => $sections, ties => $ties, next_week => clean($next) };
 }
 
-# The week as stored: code's figures (portfolio, reported, next week's
-# events) beside Ling's checked words.
+# The week as stored: code's figures (the portfolio's total per currency,
+# reported, next week's events) beside Ling's checked words. Each holding's
+# move stays in the scan — the ties and the notice use it; the card shows
+# only the totals.
 sub week_report {
     my ($scan, $checked, $next_line, $now) = @_;
     return {
@@ -418,7 +420,7 @@ sub week_report {
         to        => $scan->{to},
         made_at   => iso_time($now),
         language  => $scan->{language},
-        portfolio => $scan->{portfolio},
+        portfolio => { totals => $scan->{portfolio}{totals} },
         reported  => $scan->{reported},
         sections  => $checked->{sections},
         ties      => $checked->{ties},
@@ -428,8 +430,8 @@ sub week_report {
 
 # The facts Yinyue words her one line from — figures only, no sentences.
 sub notice_of {
-    my ($report) = @_;
-    my @moved = sort { abs($b->{change_pct}) <=> abs($a->{change_pct}) } grep { defined $_->{change_pct} } @{ $report->{portfolio}{holdings} };
+    my ($report, $scan) = @_;
+    my @moved = sort { abs($b->{change_pct}) <=> abs($a->{change_pct}) } grep { defined $_->{change_pct} } @{ $scan->{portfolio}{holdings} || [] };
     return {
         what      => 'CFO weekly report saved',
         week      => "$report->{from}..$report->{to}",
@@ -466,7 +468,7 @@ sub cmd_save {
         points  => scalar(map { @{ $_->{bullets} } } @{ $report->{sections} }),
         ties    => scalar @{ $report->{ties} },
         dropped => $checked->{dropped},
-        notice  => notice_of($report),
+        notice  => notice_of($report, $scan),
     });
 }
 

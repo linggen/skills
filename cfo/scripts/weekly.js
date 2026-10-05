@@ -1,10 +1,11 @@
 // weekly.js — the Weekly card on the Investments tab: the newest weekly
 // report (data/weekly.json, written only by weekly.pl save) and the switch
 // for its mission (cfo:weekly). The page shows the facts as saved — the
-// portfolio table code computed, the market points with their sources — and
-// never asks the model to read it out.
+// portfolio's total per currency code computed, the market points with their
+// sources — and never asks the model to read it out. Each holding's own move
+// lives on its stock card's chart, not here.
 
-import { markedHtml, moveHtml, money } from './investments.js';
+import { markedHtml, moveHtml } from './investments.js';
 
 const MISSION = 'cfo:weekly';
 const POLL_MS = 5000;
@@ -58,6 +59,16 @@ export function weekSpan(from, to) {
 /// A source link's label: the site, without "www.".
 export function hostOf(url) {
   try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return ''; }
+}
+
+/// One line, a total per currency: "CAD −$93.60 (−0.68%) · USD +$116.80
+/// (+0.60%)". A currency missing a holding's closes says so instead of a
+/// total that would read as a real move. Older reports' holdings are ignored.
+export function totalsHtml(portfolio, esc) {
+  const parts = (portfolio?.totals || []).map((t) => (t.value_change === null || t.value_change === undefined
+    ? `${esc(t.currency)} <span class="hint inline">no total — ${esc((t.missing || []).join(', '))} had no closes</span>`
+    : `${esc(t.currency)} ${moveHtml(t.value_change, t.currency, t.change_pct)}`));
+  return parts.length ? `<p class="wk-totals">${parts.join(' · ')}</p>` : '<p class="hint">No holdings this week.</p>';
 }
 
 /// "Oct 14" for a YYYY-MM-DD day.
@@ -114,26 +125,9 @@ function weekHtml(week) {
   const sections = (week.sections || []).map(sectionHtml).join('');
   const rest = `${tiesHtml(week.ties)}${reportedHtml(week.reported)}${nextHtml(week.next_week)}`;
   return `<div class="inv-watch-day">Week of ${esc(weekSpan(week.from, week.to))}</div>
-    ${portfolioHtml(week.portfolio)}
+    ${totalsHtml(week.portfolio, esc)}
     ${open ? sections + rest : ''}
     <button class="link inv-watch-more" data-act="weekly-fold">${open ? 'Fold the market week' : 'The market week'}</button>`;
-}
-
-/// Each holding's week, then the total per currency — as code computed it.
-function portfolioHtml(p) {
-  const { esc } = deps;
-  const rows = (p?.holdings || []).map((h) => `<div class="wk-row">
-      <span class="inv-watch-who">${esc(h.symbol)}</span>
-      <span class="wk-num">${h.missing ? '<span class="hint inline">no closes this week</span>'
-        : `${money(h.prev_close, h.currency)} → ${money(h.close, h.currency)}`}</span>
-      <span class="wk-num">${h.missing ? '' : moveHtml(h.value_change, h.currency, h.change_pct)}</span>
-    </div>`).join('');
-  const totals = (p?.totals || []).map((t) => `<div class="wk-row wk-total">
-      <span class="inv-watch-who">Total ${esc(t.currency)}</span>
-      <span class="wk-num">${t.value === null ? `<span class="hint inline">no total — ${esc(t.missing.join(', '))} had no closes</span>` : money(t.value, t.currency, 0)}</span>
-      <span class="wk-num">${t.value === null ? '' : moveHtml(t.value_change, t.currency, t.change_pct)}</span>
-    </div>`).join('');
-  return rows ? `<div class="wk-table">${rows}${totals}</div>` : '<p class="hint">No holdings this week.</p>';
 }
 
 function sectionHtml(s) {

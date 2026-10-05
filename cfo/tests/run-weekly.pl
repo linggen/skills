@@ -207,7 +207,8 @@ t('a page out of reach checks nothing', !defined on_page('rose 0.4%', undef));
     my ($blocked) = grep { $_->{source} =~ /blocked/ } map { @{ $_->{bullets} } } @{ $week->{sections} };
     t('a page out of reach keeps its bullet, marked unchecked', $blocked && !$blocked->{checked});
     t('every kept bullet carries its source', !grep { $_->{source} !~ m{^https://} } map { @{ $_->{bullets} } } @{ $week->{sections} });
-    t('the portfolio table is code\'s, from the scan', $week->{portfolio}{totals}[0]{value_change} == -134.4
+    t('the stored portfolio is code\'s totals per currency, no per-holding table',
+      $week->{portfolio}{totals}[0]{value_change} == -134.4 && !exists $week->{portfolio}{holdings}
       && $week->{reported}[0]{symbol} eq 'NVDA');
     t('an omitted next-week line is empty, the events stay', $week->{next_week}{line} eq '' && @{ $week->{next_week}{events} } == 1);
     my $n = $res->{notice};

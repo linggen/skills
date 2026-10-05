@@ -13,6 +13,7 @@
 
 import { investmentsOf } from './lww.js';
 import { investChips } from './chips.js';
+import { initStockChart, stockChartHtml, loadChart, onChartAct, onChartHover, onChartLeave } from './stock-chart.js';
 
 const MARKET = '"$HOME/.linggen/skills/cfo/scripts/market.pl"';
 const REFRESH_MS = 5 * 60 * 1000;
@@ -64,6 +65,8 @@ export function initInvestments(d) {
   root.addEventListener('keydown', onKeydown);
   root.addEventListener('change', onChange);
   root.addEventListener('pointerdown', onPointerDown);
+  root.addEventListener('pointermove', onChartHover);
+  root.addEventListener('pointerout', onChartLeave);
   window.addEventListener('pointermove', onPointerMove);
   window.addEventListener('pointerup', onPointerUp);
   window.addEventListener('pointercancel', endDrag);
@@ -73,6 +76,11 @@ export function initInvestments(d) {
   input.addEventListener('keydown', onSymbolKeydown);
   input.addEventListener('blur', () => showSuggestions([]));
   document.getElementById('inv-suggest').addEventListener('mousedown', onSuggestionDown);
+  initStockChart({
+    runBash: d.runBash, esc: d.esc, money, moveHtml,
+    sharesAt: (sym) => d.edits().cells.get(`inv:${sym}|shares`)?.ts || 0,
+    redraw: () => { if (!document.getElementById('invest').hidden) draw(); },
+  });
 }
 
 /// Entering the tab: draw what's cached, then fetch fresh numbers, and keep
@@ -83,7 +91,8 @@ export async function renderInvestView() {
   draw();
   refresh();
   loadWatch();
-  if (!timer) timer = setInterval(() => { if (!document.hidden) { refresh(); loadWatch(); } }, REFRESH_MS);
+  if (open) loadChart(open);
+  if (!timer) timer = setInterval(() => { if (!document.hidden) { refresh(); loadWatch(); if (open) loadChart(open); } }, REFRESH_MS);
 }
 
 export function leaveInvestView() {
@@ -589,8 +598,8 @@ function rowHtml(r) {
   </div>`;
 }
 
-/// The company card: the numbers, the earnings date, and report summaries
-/// newest first.
+/// The company card: the price chart, the numbers, the earnings date, and
+/// report summaries newest first.
 function cardHtml(r) {
   const { esc } = deps;
   const q = quotes[r.symbol] || {};
@@ -610,7 +619,7 @@ function cardHtml(r) {
   const statsHtml = stats.length
     ? `<div class="inv-stats">${stats.map(([k, v]) => `<div><span>${esc(k)}</span><b>${esc(String(v))}</b></div>`).join('')}</div>`
     : '<p class="hint">Numbers load with the next refresh.</p>';
-  return `<div class="inv-card">${statsHtml}${held}${etf ? '' : reportsHtml(r.symbol)}</div>`;
+  return `<div class="inv-card">${stockChartHtml(r)}${statsHtml}${held}${etf ? '' : reportsHtml(r.symbol)}</div>`;
 }
 
 function reportsHtml(symbol) {
@@ -761,6 +770,7 @@ function onClick(e) {
     return;
   }
   const sym = btn.dataset.sym;
+  if (onChartAct(btn.dataset.act, btn)) return;
   const acts = {
     refresh: () => refresh(),
     check: () => checkReports(),
@@ -795,6 +805,7 @@ function onChange(e) {
 
 function toggleCard(sym) {
   open = open === sym ? null : sym;
+  if (open) loadChart(open);
   draw();
 }
 

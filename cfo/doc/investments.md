@@ -24,6 +24,8 @@ Mac; no Linggen Cloud, no data-provider key.
   expense_ratio, cik, quote_at, stats_at, stale?}}}`. `stale` = no quote in
   5 days (a delisted ticker, a quiet source): the row shows "Last price Sep 3
   — no quote since" and the tab's total leaves it out, naming it.
+- `history/<SYM>-<5Y|1D|1W>.json` — a stock card's chart series (market.pl
+  `history`): `{symbol, range, at, rows}`. Page cache only; safe to delete.
 - `reports.json` — `{last_checked, symbols: {SYM: {since, name, reports:
   [{period, form, filed, url, summary, saved_at}]}}}`, newest first.
   `summary` is short markdown, one fact per line: a bold period headline
@@ -66,6 +68,14 @@ Mac; no Linggen Cloud, no data-provider key.
   60,000 characters; PDFs through macOS PDFKit via `osascript`).
   `save-report key=value…` — the one writer; the same period replaces.
   `portfolio` — `investments.json` + listed quotes + `reports.json`.
+- `history SYM [5Y|1D|1W]` — a stock card's chart (compact JSON). `5Y` =
+  `api/symbol/<path>/history?range=5Y&period=Daily`, rows `{t, o, h, l, c}`
+  oldest first, cached 30 min; the cached quote's price ends it when it is
+  from a later session (the TSX history often lags a day — close only, no
+  candle). `1D` = `api/charts/<path>/1D/l` (the last session by the minute,
+  `{t: epoch, c}`, empty minutes dropped), cached 5 min; `1W` =
+  `charts/<path>/5D/l` (five sessions, every 5 min), 15 min. A failed fetch
+  serves the cache with `stale: true`; none → `{error}`.
 - Yahoo Finance answers 429 to plain requests (tested 2026-09-15) — not a
   source. SEC answers 403 to browser-like or anonymous agents, the engine's
   WebFetch included; `market.pl` sends `Linggen CFO https://linggen.dev`.
@@ -90,7 +100,21 @@ Mac; no Linggen Cloud, no data-provider key.
   (`rankMoves`, same cases in the phone's tests). The order syncs.
 - Refresh: quotes on open and every 5 min while the tab is visible; stats
   daily.
-- Company card (click a row): the numbers, next or last earnings date,
+- Company card chart (Hanli, 2026-10-05; `stock-chart.js` + pure
+  `chart.js`): chips 1D · 1W · 1M · 3M · YTD · 1Y · 5Y (default 1M; range
+  and line/candles remembered per viewer in localStorage). Apple Stocks
+  style, inline SVG, nothing external: a line with a soft fill, green when
+  the range is up, red when down; prices on the right, light gridlines,
+  sparse x labels; hover (or a finger along it) shows the time and price.
+  A daily range's base is the last close on or before its start (YTD: last
+  year's final close); 1D and 1W read against the previous session's close
+  (1D draws it dashed and spans the whole session). **Candles** for 1M and
+  up (daily; 5Y folds weekly candles from the daily rows). Beside the chips:
+  the position's change over the range, shares × the price change, at
+  today's count — the tooltip says so, and names the day when the shares
+  cell was edited inside the range; a watched symbol shows the per-share
+  change. Tests: `tests/chart.test.mjs`, `tests/run-market.pl`.
+- Company card (click a row): the chart, the numbers, next or last earnings date,
   report summaries newest first with a Source link (opens in the default
   browser), **Latest report** button. Already summarized → "Already read",
   no model call.
@@ -364,10 +388,13 @@ he turns it on): the market week in four sections — 加拿大 / 美国 /
   false`). Ties name held symbols and bring no figure a bullet didn't
   quote. What fails is dropped and named; the run mends and saves again.
 - **Store** — `data/weekly.json` = `{latest, weeks{id: {week, from, to,
-  made_at, language, portfolio, reported, sections[{id, title,
+  made_at, language, portfolio{totals}, reported, sections[{id, title,
   bullets[{text, source, quote, checked}]}], ties[{text, holdings}],
   next_week{from, to, events, line}}}}`, eight weeks.
-- **Show** — the Weekly card on the Investments tab: the portfolio table,
+- **Show** — the Weekly card on the Investments tab: one line, the total per
+  currency ("CAD −$93.60 (−0.68%) · USD +$116.80 (+0.60%)"; each holding's
+  move is on its card's chart since 2026-10-05 — the scan keeps it for ties
+  and the notice's biggest move),
   the sections with each source as a small link, ties, reported results,
   next week; Turn on / Turn off / Run now.
 - **Tell** — the run hands `SaveWeekly`'s `notice` (facts only) to Yinyue
