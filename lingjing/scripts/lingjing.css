@@ -1149,6 +1149,13 @@ body.fighting .atmos { display: none; }
 /* The scene card with its caption told in the box: only the choices, no frame of its own. */
 .focus .card.panelcard.bare { background: none; border: 0; box-shadow: none; padding: 0; }
 .focus .panelcard.bare .paneltaps { justify-content: center; }
+/* A game up while the box tells on (queue.js EARLY): the box draws in — a smaller
+   line, a shorter frame scrolling inside itself — so the game has the stage to be played. */
+.view:has(.focus .gamecard):has(.dlgwrap:not(:empty)) { --dlg-h: 96px; }
+.view:has(.focus .gamecard) .dlg { padding: 30px 18px 18px; }
+.view:has(.focus .gamecard) .dlgbody { max-height: 128px; }
+.view:has(.focus .gamecard) .dlgtext { font-size: 15px; line-height: 1.7; }
+.view:has(.focus .gamecard):has(.dlgwrap:not(:empty)) .g-luoshu-board { max-width: 250px; }
 /* The caption, the box's first beat: its lines as written. */
 .dlg.cap .dlgtext, .dlglogrow.cap span { white-space: pre-line; }
 @container scene (max-width: 600px) {
