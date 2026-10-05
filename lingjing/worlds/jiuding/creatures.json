@@ -1872,8 +1872,8 @@
       },
       "pinyin": "zōu qīng sōng",
       "look": {
-        "zh": "彭城赤松观的黄袍，练气四层；白净脸，笑眯眯的。右手一只赤铜火葫芦，放得出火蛇；左臂一面赤铜火纹小盾，同门夸：结丹以下，无人能破。",
-        "en": "A yellow robe of the Red Pine Abbey at Pengcheng, layer four of Qi Refining; pale-faced, always smiling. In his right hand a red-copper gourd that looses fire snakes; on his left arm a little red-copper shield chased with flames — nothing short of Core Formation can break it, his brothers say."
+        "zh": "彭城赤松观的黄袍，练气九层；白净脸，笑眯眯的。右手一只赤铜火葫芦，放得出火蛇；左臂一面赤铜火纹小盾，同门夸：结丹以下，无人能破。",
+        "en": "A yellow robe of the Red Pine Abbey at Pengcheng, layer nine of Qi Refining; pale-faced, always smiling. In his right hand a red-copper gourd that looses fire snakes; on his left arm a little red-copper shield chased with flames — nothing short of Core Formation can break it, his brothers say."
       },
       "says": {
         "open": {
@@ -1917,7 +1917,7 @@
       ],
       "deck": [
         "huodan",
-        "huodan",
+        "fenghuo",
         "huoya",
         "huoya",
         "tongtong",
@@ -1929,7 +1929,7 @@
         "huoya",
         "huiqi"
       ],
-      "_deck": "赤松观的火 —— 火蛇（火鸦、火弹），一面盾（狪狪护主，lean hide 厚皮）。",
+      "_deck": "赤松观的火 —— 火蛇（火鸦、火弹），一面盾（狪狪护主，lean hide 厚皮）。九层（Hanli 2026-10-05：「横着走的只能是9层」）：法术快而重 —— 一张火弹换成燎原（燎原两张），四蛇合围 7→9。",
       "signature": {
         "id": "simang",
         "name": {
@@ -1937,7 +1937,7 @@
           "en": "Four Snakes Close In"
         },
         "effect": {
-          "damage": 7
+          "damage": 9
         }
       },
       "_signature": "四蛇合围 —— 四条火蛇，左右前后一齐扑来，地上无处可躲；踏马的符（cards.json tama-fu）一跳，蛫上阵护主，这一记先打蛫。",
