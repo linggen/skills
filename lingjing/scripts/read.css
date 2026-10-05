@@ -127,6 +127,8 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
    stands to the right; narrower, it folds into a drop-down over the text. */
 .chapter .chg { background: var(--chg); border-left: 3px solid var(--chg-edge); margin-left: -11px; padding: 2px 8px; border-radius: 0 4px 4px 0; scroll-margin-top: 80px; }
 .chapter blockquote.chg { border-left-color: var(--chg-edge); }
+/* A rewritten paragraph: only its new sentences washed (what changed since he confirmed it), the edge says where. */
+.chapter .chg.changed:not(.whole) { background: transparent; }
 .chapter mark.chg-s { background: var(--chg-s); color: inherit; border-radius: 2px; padding: 1px 0; }
 .chg-gone { white-space: normal; }
 .chg-x { font: inherit; font-size: 11px; line-height: 1.3; color: var(--seal); background: none; border: 1px dashed var(--chg-edge); border-radius: 3px; padding: 0 3px; margin: 0 2px; vertical-align: 2px; cursor: pointer; }

@@ -20,6 +20,9 @@
 // confirms change n alone (Hanli 2026-10-05: 逐条确认, never the whole 回) —
 // refused `moved` when the text or the confirmed version is no longer the one
 // shown; `--do=undo --id=<id>` takes back the last confirm (`undo` names it).
+// `--do=preview|revert --id=<id> --item=<n> --rev=<rev>`: 「↶ 改回原文」 — the
+// change put back as the confirmed version has it, in the builder's checkout
+// (rules/revert.mjs; `dev` says whether this machine has one).
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -27,6 +30,7 @@ import { bookEntries } from '../book-order.js';
 import { changesOf, confirmItem } from '../book-diff.js';
 import { fillHero } from '../read-md.js';
 import { homeDir, skillDir } from './files.mjs';
+import { isDev, revert } from './revert.mjs';
 
 const BOOK_ID = /^[\w-]+$/;
 const ENTRY_ID = /^[\w-]+$/;
@@ -86,6 +90,7 @@ export function changes(args = {}) {
   const dir = readerDir(book);
   const meta = (() => { try { return JSON.parse(read(path.join(dir, 'meta.json'))); } catch { return null; } })();
   if (!meta) return { ok: true, base: null, entries: {} };
+  const dev = isDev(book);
   const one = args.id == null ? null : all.find((e) => e.id === String(args.id));
   if (args.id != null && !one) return { ok: false, refused: 'no-entry', say: null };
   const act = args.do == null ? null : String(args.do);
@@ -112,8 +117,16 @@ export function changes(args = {}) {
     else write(path.join(dir, `${one.id}.md`), last.text);
     if (stack.length) write(undoFile(book, one.id), JSON.stringify(stack));
     else drop(undoFile(book, one.id));
+  } else if (act === 'preview' || act === 'revert') {
+    const confirmed = read(path.join(dir, `${one.id}.md`));
+    // The book's own lines, never a hero's variant: what is written is what was shown.
+    const text = textOf(book, one);
+    if ((confirmed != null && filled(confirmed) !== confirmed) || (text != null && filled(text) !== text)) return { ok: false, refused: 'variant-text', say: null };
+    const label = one.label?.zh ?? one.id;
+    const out = revert({ book, entry: one, confirmed, item: Number(args.item), rev: String(args.rev ?? ''), revOf, label, readerDir: dir, write: act === 'revert' });
+    return { ...out, dev, base: meta.base ?? null, entries: act === 'revert' && out.ok ? { [one.id]: entryChanges(book, one) } : {} };
   } else if (act != null) return { ok: false, refused: 'bad-do', say: null };
   const list = one ? [one] : all;
   const entries = Object.fromEntries(list.map((e) => [e.id, entryChanges(book, e)]).filter(([, v]) => v));
-  return { ok: true, base: meta.base ?? null, entries };
+  return { ok: true, base: meta.base ?? null, dev, entries };
 }

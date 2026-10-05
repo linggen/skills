@@ -69,39 +69,52 @@ const SCENE = /^\s*(---|\*\*\*)\s*$/;
 /// the 回's title (set from book.json) and is left out; scene breaks, plates
 /// and tables are not text and are left out too.
 export function blocksOf(md) {
-  const lines = String(md ?? '').replace(/\r\n/g, '\n').replace(/<!--[\s\S]*?-->/g, '').split('\n');
+  // A writers' note goes; its line breaks stay, so a block's lines are the file's.
+  const lines = String(md ?? '').replace(/\r\n/g, '\n').replace(/<!--[\s\S]*?-->/g, (c) => '\n'.repeat(c.split('\n').length - 1)).split('\n');
   const out = [], seen = new Map();
-  let para = [], quote = [], table = false, titled = false;
-  const add = (kind, rows) => {
+  let para = [], quote = [], table = false, titled = false, from = 0;
+  // Each block keeps its source (`src`: the lines as written, a quote's without
+  // its `>`) and where it stands in the file (`start`, `end`: line indices,
+  // end exclusive) — what 改回原文 (rules/changes.mjs) rewrites.
+  const add = (kind, rows, src, start, end, level) => {
     const text = rows.map(plainOf).join('\n').replace(/\n+$/, '');
     if (!bare(text)) return;
     const key = keyOf(text), nth = seen.get(key) ?? 0;
     seen.set(key, nth + 1);
-    out.push({ kind, text, key, nth });
+    out.push({ kind, text, key, nth, src, start, end, ...(level ? { level } : {}) });
   };
-  const flush = () => {
-    if (para.length) add('para', para);
-    if (quote.length) add('quote', quote);
+  const flush = (at) => {
+    if (para.length) add('para', para.map((l) => l.trim()), para.join('\n'), from, at);
+    if (quote.length) add('quote', quote, quote.join('\n'), from, at);
     para = []; quote = []; table = false;
   };
-  for (const line of lines) {
+  lines.forEach((line, i) => {
     const h = HEADING.exec(line);
     if (h) {
-      flush();
-      if (h[1].length === 1 && !titled) { titled = true; continue; }
-      add('heading', [h[2].trim()]);
-      continue;
+      flush(i);
+      if (h[1].length === 1 && !titled) { titled = true; return; }
+      add('heading', [h[2].trim()], h[2].trim(), i, i + 1, h[1].length);
+      return;
     }
-    if (MEMORY.test(line.trim()) || SCENE.test(line)) { flush(); continue; }
-    if (/^\s*>/.test(line)) { if (para.length || table) flush(); quote.push(line.replace(/^\s*>\s?/, '')); continue; }
-    if (/^\s*\|/.test(line)) { if (para.length || quote.length) flush(); table = true; continue; }
-    if (!line.trim()) { flush(); continue; }
-    if (quote.length || table) flush();
-    para.push(line.trim());
-  }
-  flush();
+    if (MEMORY.test(line.trim()) || SCENE.test(line)) { flush(i); return; }
+    if (/^\s*>/.test(line)) { if (para.length || table) flush(i); if (!quote.length) from = i; quote.push(line.replace(/^\s*>\s?/, '')); return; }
+    if (/^\s*\|/.test(line)) { if (para.length || quote.length) flush(i); table = true; return; }
+    if (!line.trim()) { flush(i); return; }
+    if (quote.length || table) flush(i);
+    if (!para.length) from = i;
+    para.push(line);
+  });
+  flush(lines.length);
   return out;
 }
+
+/// A block as the book writes it: a heading's #s, a quote's `>`.
+export const blockSrc = (b) => {
+  const src = b.src ?? b.text;
+  if (b.kind === 'heading') return `${'#'.repeat(b.level ?? 2)} ${src}`;
+  if (b.kind === 'quote') return src.split('\n').map((l) => `> ${l}`).join('\n');
+  return src;
+};
 
 /// The longest common subsequence of two key lists, as matched index pairs.
 export function lcs(a, b) {
@@ -237,7 +250,14 @@ function walk(oldMd, newMd) {
     if (j === now.length) break;
     const m = mark.get(j);
     if (!m) { open = null; seq.push({ j, same: same.get(j) }); continue; }
-    const out = { key: now[j].key, nth: now[j].nth, kind: m.kind, item: item(m.kind, headOf(now[j].text)) };
+    // A rewritten block is listed by what is new in it, not by its opening
+    // words (Hanli 2026-10-05: a paragraph edited again after he confirmed it
+    // read as the whole paragraph back) — the first new sentence, else the
+    // first that went.
+    const sents = m.kind === 'changed' ? sentencesOf(now[j].text) : null;
+    const head = m.kind !== 'changed' ? headOf(now[j].text)
+      : m.s.length ? headOf(sents[m.s[0]]) : m.gone.length ? `删：${headOf(m.gone[0].text[0])}` : headOf(now[j].text);
+    const out = { key: now[j].key, nth: now[j].nth, kind: m.kind, item: item(m.kind, head) };
     if (m.kind === 'changed') { out.s = m.s; if (m.gone.length) out.gone = m.gone; }
     marks.push(out);
     seq.push({ j, item: out.item, from: from.get(j) });
@@ -245,14 +265,59 @@ function walk(oldMd, newMd) {
   return { was, now, seq, items, marks, gone };
 }
 
-/// Blocks as the text they stand for, in the book's own markdown — what a
-/// confirmed version is kept as once a part of it was confirmed (blocksOf
-/// reads it back to the same blocks: a title line first, headings as `##`,
-/// quotes as `>`; a paragraph's lines never open with #, >, | or ---).
-export function blocksMd(blocks) {
-  const md = (b) => (b.kind === 'heading' ? `## ${b.text}` : b.kind === 'quote' ? b.text.split('\n').map((l) => `> ${l}`).join('\n') : b.text);
-  return `# 　\n\n${blocks.map(md).join('\n\n')}\n`;
+/// 「改回原文」: `newMd` with change `n` put back as `oldMd` has it — a
+/// rewritten block back to its old words, a new block gone, a cut block back
+/// in its place — every other line of `newMd` as it was. Returns `{md,
+/// swapped: [{now, was}], dropped: [now], restored: [was]}` (block texts as
+/// written), or null when there is no change n.
+export function revertItem(oldMd, newMd, n) {
+  const { was, now, seq, items } = walk(oldMd, newMd);
+  if (!items.some((it) => it.n === n)) return null;
+  const lines = String(newMd).replace(/\r\n/g, '\n').split('\n');
+  const swap = new Map(), before = new Map();
+  const swapped = [], dropped = [], restored = [];
+  seq.forEach((e, k) => {
+    if (e.item !== n) return;
+    if ('cut' in e) {
+      // Before the next block of the new text, or at the end.
+      const next = seq.slice(k + 1).find((x) => 'j' in x);
+      const at = next ? now[next.j].start : lines.length;
+      (before.get(at) ?? before.set(at, []).get(at)).push(blockSrc(was[e.cut]));
+      restored.push(blockSrc(was[e.cut]));
+    } else if (e.from != null) {
+      swap.set(now[e.j].start, { end: now[e.j].end, text: blockSrc(was[e.from]) });
+      swapped.push({ now: blockSrc(now[e.j]), was: blockSrc(was[e.from]) });
+    } else {
+      swap.set(now[e.j].start, { end: now[e.j].end, text: null });
+      dropped.push(blockSrc(now[e.j]));
+    }
+  });
+  const out = [];
+  for (let i = 0; i <= lines.length; i += 1) {
+    for (const t of before.get(i) ?? []) {
+      if (out.length && out.at(-1).trim()) out.push('');
+      out.push(...t.split('\n'), '');
+    }
+    if (i === lines.length) break;
+    const s = swap.get(i);
+    if (!s) { out.push(lines[i]); continue; }
+    if (s.text != null) out.push(...s.text.split('\n'));
+    else if (!(lines[s.end] ?? '').trim() && s.end < lines.length) i = s.end; // the blank after it goes too
+    i = Math.max(i, s.end - 1);
+  }
+  while (out.length > 1 && !out.at(-1).trim() && !out.at(-2).trim()) out.pop();
+  return { md: out.join('\n'), swapped, dropped, restored };
 }
+
+/// Blocks as the text they stand for, in the book's own markdown (marks kept)
+/// — what a confirmed version is kept as once a part of it was confirmed
+/// (blocksOf reads it back to the same blocks: a title line first).
+export function blocksMd(blocks, title = '# 　') {
+  return `${title}\n\n${blocks.map(blockSrc).join('\n\n')}\n`;
+}
+
+/// A file's title line (its first `# `), which blocksOf leaves out.
+export const titleOf = (md) => String(md ?? '').split('\n').find((l) => /^#\s/.test(l)) ?? '# 　';
 
 /// 「确认这一处」: the confirmed version with change `n` (changesOf's item n)
 /// taken in and every other change left as it was — so the next changesOf
@@ -267,7 +332,7 @@ export function confirmItem(oldMd, newMd, n) {
     if (e.item == null || e.item === n) keep.push(now[e.j]);
     else if (e.from != null) keep.push(was[e.from]);
   }
-  return blocksMd(keep);
+  return blocksMd(keep, titleOf(oldMd));
 }
 
 const range = (a, b) => Array.from({ length: Math.max(0, b - a) }, (_, k) => a + k);

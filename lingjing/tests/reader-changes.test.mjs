@@ -145,3 +145,91 @@ test('the shared store: no baseline marks nothing; one change confirmed, then un
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('改回原文: the change goes back in the checkout\'s book and the scene that quotes it, committed by path; refused over uncommitted work', async () => {
+  const { execFileSync } = await import('node:child_process');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-revert-'));
+  const repo = path.join(tmp, 'repo'), inst = path.join(tmp, 'inst'), reader = path.join(tmp, 'reader');
+  const git = (...a) => execFileSync('git', ['-C', repo, ...a], { encoding: 'utf8' });
+  const text = fs.readFileSync(path.join(ROOT, 'story/jiuding-lu/01-第一回.md'), 'utf8');
+  const paras = text.split('\n\n');
+  const k = paras.findIndex((p, i) => i > 2 && /。$/.test(p) && !p.startsWith('#') && p.length > 30);
+  const old = paras.map((p, i) => (i === k ? `${p}他又回头看了一眼。` : p)).join('\n\n');
+  const sceneDir = path.join(repo, 'lingjing/worlds/jiuding/chapters/00-test/scenes');
+  const scene = { version: 1, id: 't-scene', hui: 'h01', story: { zh: `${paras[k]}`, en: 'He went.' }, exits: [{ id: 'go', story: { zh: '别的话。', en: 'Other.' } }] };
+  for (const d of [path.join(repo, 'lingjing/story/jiuding-lu'), sceneDir, path.join(inst, 'story/jiuding-lu'), path.join(inst, 'worlds/jiuding/chapters/00-test/scenes')]) fs.mkdirSync(d, { recursive: true });
+  fs.copyFileSync(path.join(ROOT, 'story/jiuding-lu/book.json'), path.join(repo, 'lingjing/story/jiuding-lu/book.json'));
+  fs.writeFileSync(path.join(repo, 'lingjing/story/jiuding-lu/01-第一回.md'), text);
+  fs.writeFileSync(path.join(sceneDir, 't-scene.json'), `${JSON.stringify(scene, null, 1)}\n`);
+  git('init', '-q'); git('config', 'user.email', 't@t'); git('config', 'user.name', 't'); git('add', '.'); git('commit', '-q', '-m', 'base');
+  fs.mkdirSync(path.join(reader, 'jiuding-lu'), { recursive: true });
+  fs.writeFileSync(path.join(reader, 'jiuding-lu/meta.json'), '{"base":"test"}');
+  fs.writeFileSync(path.join(reader, 'jiuding-lu/h01.md'), old);
+  Object.assign(process.env, { LINGJING_READER: reader, LINGJING_DEV_REPO: repo, LINGJING_INSTALL_DIR: inst });
+  const { changes } = await import('../scripts/rules/changes.mjs');
+  try {
+    const shown = changes({ book: 'jiuding-lu', id: 'h01' });
+    assert.equal(shown.dev, true);
+    const e = shown.entries.h01;
+    // Listed by what changed in it: the sentence that went.
+    assert.equal(e.count, 1);
+    assert.match(e.items[0].head, /^删：他又回头看了一眼/);
+    const n = e.items[0].n;
+    // Shown first: nothing written.
+    const pre = changes({ book: 'jiuding-lu', id: 'h01', do: 'preview', item: n, rev: e.rev });
+    assert.equal(pre.ok, true);
+    assert.equal(pre.swapped[0].was, `${paras[k]}他又回头看了一眼。`);
+    assert.deepEqual(pre.scenes, ['lingjing/worlds/jiuding/chapters/00-test/scenes/t-scene.json']);
+    assert.equal(fs.readFileSync(path.join(repo, 'lingjing/story/jiuding-lu/01-第一回.md'), 'utf8'), text);
+    assert.equal(changes({ book: 'jiuding-lu', id: 'h01', do: 'revert', item: n, rev: 'other' }).refused, 'out-of-sync');
+    // Someone's uncommitted change in the scene: refused, nothing written.
+    fs.appendFileSync(path.join(sceneDir, 't-scene.json'), ' ');
+    assert.equal(changes({ book: 'jiuding-lu', id: 'h01', do: 'revert', item: n, rev: e.rev }).refused, 'dirty');
+    assert.equal(fs.readFileSync(path.join(repo, 'lingjing/story/jiuding-lu/01-第一回.md'), 'utf8'), text);
+    git('checkout', '-q', '--', 'lingjing/worlds');
+    const done = changes({ book: 'jiuding-lu', id: 'h01', do: 'revert', item: n, rev: e.rev });
+    assert.equal(done.ok, true, JSON.stringify(done));
+    assert.equal(fs.readFileSync(path.join(repo, 'lingjing/story/jiuding-lu/01-第一回.md'), 'utf8'), old, 'the book back to its original words, every other line as it was');
+    const s2 = JSON.parse(fs.readFileSync(path.join(sceneDir, 't-scene.json'), 'utf8'));
+    assert.equal(s2.story.zh, `${paras[k]}他又回头看了一眼。`, 'the scene quotes the book again');
+    assert.equal(s2.exits[0].story.zh, '别的话。');
+    assert.equal(git('status', '--porcelain').trim(), '', 'committed');
+    assert.match(git('log', '-1', '--format=%s').trim(), /^lingjing 九鼎录 第一回: 改回原文（Hanli 在阅读器里）$/);
+    assert.equal(fs.readFileSync(path.join(inst, 'story/jiuding-lu/01-第一回.md'), 'utf8'), old, 'the installed copy brought level');
+    const pending = JSON.parse(fs.readFileSync(path.join(reader, 'en-pending.json'), 'utf8'));
+    assert.equal(pending.length, 1);
+    assert.equal(pending[0].where, 't-scene');
+    assert.equal(pending[0].en, 'He went.');
+  } finally {
+    for (const k2 of ['LINGJING_READER', 'LINGJING_DEV_REPO', 'LINGJING_INSTALL_DIR']) delete process.env[k2];
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('a confirmed change stays confirmed: another paragraph edited later never brings it back', () => {
+  const v1 = OLD.replace('他背着弓。', '他背着一张旧弓。').replace('鹿皮挂在墙上，干了。', '鹿皮挂在墙上，干透了。');
+  const c1 = changesOf(OLD, v1);
+  assert.equal(c1.count, 2);
+  const conf = confirmItem(OLD, v1, 1); // 「他背着一张旧弓」 confirmed
+  assert.match(conf, /^# 第一回　上联七个字　下联七个字\n/, 'the title line kept');
+  const v2 = v1.replace('阿禾在[灶台]{注=zao}边等他。', '阿禾在[灶台]{注=zao}边等了他一夜。');
+  const c2 = changesOf(conf, v2);
+  assert.deepEqual(c2.items.map((it) => it.head), ['阿禾在灶台边等了他一夜。', '鹿皮挂在墙上，干透了。']);
+  assert.ok(!c2.marks.some((m) => m.key === keyOf('小满上山。他背着一张旧弓。')), 'the confirmed paragraph is not marked');
+});
+
+test('a confirmed paragraph edited again: only the sentence newly changed is marked, listed by its own words', () => {
+  const para = '小满上山。他背着弓。山风很大。他走得很慢。';
+  const old = `# 第一回　上　下\n\n${para}\n\n别的。`;
+  const v1 = old.replace('他背着弓。', '他背着一张旧弓。');
+  const conf = confirmItem(old, v1, 1);
+  assert.equal(changesOf(conf, v1).count, 0);
+  const v2 = v1.replace('山风很大。', '山风很冷。');
+  const c = changesOf(conf, v2);
+  assert.equal(c.count, 1);
+  assert.deepEqual(c.marks[0].s, [2], 'only 「山风很冷。」');
+  assert.deepEqual(c.marks[0].gone, [{ at: 3, text: ['山风很大。'] }]);
+  assert.equal(c.items[0].head, '山风很冷。');
+  const html = renderMarkdown(v2, { changes: c });
+  assert.match(html, /<p class="chg changed"[^>]*>小满上山。他背着一张旧弓。<mark class="chg-s">山风很冷。<\/mark>/);
+});
