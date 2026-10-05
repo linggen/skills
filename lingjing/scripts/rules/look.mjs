@@ -23,6 +23,7 @@ import { atScene, beatOf, creatureOf, encounterOf, ofJuan, passed, placeBrief, p
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
 import { chapterLabel, sideLine } from './hui.mjs';
+import { capLook } from './cap.mjs';
 import { practiceHint } from './scrolls.mjs';
 import { owesTell } from './tell.mjs';
 import { mainRoot, rootName } from './roots.mjs';
@@ -408,6 +409,8 @@ export function look(state, content, ctx) {
     ...building(content),
     tier: { id: state.tier, step: state.step + 1, name: stepName(content, state.tier, state.step, lang), phase: phaseName(content, state.tier, state.step, lang) },
     progress: state.progress, next: threshold(content, state), wealth: state.wealth,
+    // Filled to the 回's cap (rules/cap.mjs): the full bar and the world's line under it — a wait, not a fault.
+    ...(capLook(content, state, lang) ? { capped: capLook(content, state, lang) } : {}),
     traits,
     bag: Object.entries(state.bag).map(([id, n]) => ({ id, name: itemName(itemOf(content, id), state, lang) ?? id, n })),
     // Things the player named (小铜炉 · 饭桶): the 图鉴 card's title reads it.

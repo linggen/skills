@@ -18,6 +18,7 @@ import { companionOf } from './companion.mjs';
 import { grantMemory } from './memories.mjs';
 import { writeLedger } from './ledger.mjs';
 import { comingOf } from './hui.mjs';
+import { capLook, pastCapSay, storyAllows, underCap } from './cap.mjs';
 import { atScene, inMade, placeName, placeOf, placeOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
 
 /* ── Changing it ── */
@@ -74,7 +75,9 @@ function pay(content, state, ctx, grant, landing = state) {
   const due = amountsOf(content, state, ctx.now, grant);
   const base = shut.includes('cultivation') ? 0 : due.base, progress = shut.includes('cultivation') ? 0 : due.progress, wealth = shut.includes('wealth') ? 0 : due.wealth;
   state.day.progress += base; state.day.wealth += wealth; state.wealth += wealth;
-  const { levels, hold } = addProgress(content, state, progress);
+  const { levels, hold: kept } = addProgress(content, state, progress, (tier, step) => underCap(content, state, tier, step));
+  // At the 回's cap the held part is told in the world's words (rules/cap.mjs).
+  const hold = kept?.cap ? { ...kept, say: capLook(content, state, state.lang)?.say ?? null } : kept;
   if (grant.cast && !state.cast.includes(grant.cast)) state.cast.push(grant.cast);
   // A beast that joins brings its card; a grant may name one outright.
   const day = dayKey(ctx.now);
@@ -307,6 +310,8 @@ function riseTo(content, s, rise, replay) {
   const top = Math.min(layer, tier.thresholds.length) - 1;
   if (replay || s.tier !== tier.id || lockedOf(content, s).includes('cultivation')) return null;
   if (s.step > top || (s.step === top && (!full || (s.progress ?? 0) >= threshold(content, s)))) return null;
+  // Never past where the 回's story stands (rules/cap.mjs) — the data would be wrong; the lint holds it too.
+  if (!storyAllows(content, s, tier.id, top)) return null;
   const from = stepName(content, s.tier, s.step, s.lang);
   s.step = top;
   s.progress = full ? threshold(content, s) : Math.max(0, Math.min(s.progress ?? 0, threshold(content, s) - 1));
@@ -362,6 +367,8 @@ export function resolve(state, content, ctx, args) {
     if (!peak || !next || next.gate !== gate) {
       return refuse('not-at-peak', notPeakSay(exit, s, lang), { tier: s.tier, step: s.step + 1, progress: s.progress, next: threshold(content, s), peak_step: tier.thresholds.length });
     }
+    // Past where the book stands in this 回 (rules/cap.mjs): 火候未到, in the world's words.
+    if (!storyAllows(content, s, next.id, 0)) return refuse('past-cap', pastCapSay(content, lang), { tier: s.tier, to: next.id });
     // The chance as the card showed it — read before this step's 体力 is paid.
     odds = oddsOf(content, s, ctx.now, next.id);
     // From the realm's 大圆满 into its 初期 — the formal words (ladder.json `peak`, `phases`).

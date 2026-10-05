@@ -538,6 +538,10 @@ function qiHtml() {
     <i class="ring" style="--p:${resting ? 0 : Number(d.p) || 0}"></i><span class="st">${esc(qiWord(d.st, w))}</span>${cnt}</span>`;
 }
 
+/// Filled to the 回's cap (Look's `capped`, rules/cap.mjs): the bar stands full
+/// and the world's line sits under the strip, so a full bar reads as a wait.
+const capSay = () => (look.capped?.say ? `<span class="capsay" role="note">${esc(look.capped.say)}</span>` : '');
+
 /// One line in the world while the window is spent — and the boards stay:
 /// they use no model.
 function statusHtml() {
@@ -550,7 +554,7 @@ function statusHtml() {
   const realm = !has('realm') ? '' : isShut(look, 'cultivation') ? `<span class="realm">${esc(w.mortal)}</span>`
     : `<span class="realm">${esc(look.tier.name)}</span>
     <div class="xw"><span class="lbl">${esc(w.xw)}</span><div class="bar"><i style="width:${pct || 0}%"></i></div>
-      <span class="num"><span data-count="progress">${esc(look.progress)}</span>/${esc(look.next)}</span></div>`;
+      <span class="num"><span data-count="progress">${esc(look.progress)}</span>/${esc(look.next)}</span></div>${capSay()}`;
   const stones = !has('wealth') || isShut(look, 'wealth') ? '' : `<span class="ls"><span class="lbl">${esc(w.ls)}</span> <b data-count="wealth">${esc(look.wealth)}</b></span>`;
   return `${name}${realm}
     ${has('pool') ? qiHtml() : ''}

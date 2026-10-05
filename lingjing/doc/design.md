@@ -246,6 +246,20 @@ need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale
   a realm's whole is unchanged and a save is carried over exactly (save v6:
   marked by `migrate`, walked through the new 层 by `threeToNine` in
   `fitWorld` — an old 后期 at its peak is 九层 filled).
+- **修为 caps per 回** (Hanli, 2026-10-05: 「游戏里修炼有个上限吧? 和故事对齐」;
+  rules/cap.mjs, `ladder.json → caps`): each 古 回 declares how far the
+  player's own work reaches (`tier` + `layer`) and, where its scenes carry him
+  further, its `story` — 古三 一层 · 古四 二层 · 古五 二层 (story 四层) · 古六
+  四层 · 古七 四层 (story 筑基一层) · 古八 筑基一层; a 今 interlude takes the 古
+  before it; after 卷一 the save waits in 古八's chapter, so 筑基一层 holds
+  until 卷二 gets its caps. At the cap the layer fills and the rest is held
+  (as at a peak); Look's `capped.say` stands under the full bar in the
+  world's words. The book's jumps are the story's (`rise`): 古四's close lifts
+  to 二层 (wm-diyilu), 息壤 to 四层, the year to 九层大圆满, the cliff to 筑基 —
+  a player behind the book is lifted there, never held back. A rise or
+  breakthrough past `story` is refused `past-cap` (「火候未到」), and the lint
+  refuses such data. A save already past its cap is never pulled down: it
+  fills its own layer and waits.
 - **渡劫 odds** (rules/breakthrough.mjs, `ladder.json → breakthrough`): 筑基
   follows the book — `base` 10 (没丹硬冲，十个里只冲得过一个), `floor` 5. A pill
   weighs by its 转 (`pill.by_zhuan`, items.json `zhuan`): the sect's 一转下品

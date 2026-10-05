@@ -14,6 +14,7 @@ import { hashOf } from './travel.mjs';
 import { coolingUntil, oddsOf } from './breakthrough.mjs';
 import { freeSlot, pouchBrief } from './pouch.mjs';
 import { chapterLabel, comingOf } from './hui.mjs';
+import { storyAllows } from './cap.mjs';
 import { allPlaces, atScene, creatureOf, hauntsOf, huntable, inCorridor, inMade, ofJuan, passed, pathOf, placeName, placeOf, placeOpen, sceneOf, tooHard, towardOf } from './world.mjs';
 
 /* ── 差事 — the errands the player takes (design.md § 差事) ──
@@ -382,7 +383,8 @@ function breakthroughOf(content, state, now = new Date()) {
   const last = source ? source.thresholds.length - 1 : 0;
   // 渡劫 is a throw (breakthrough.mjs): its chance while this cauldron is his
   // to take, and the hours it stays shut after a failed one.
-  const at = Boolean(next && next.gate === gate);
+  // The cauldron is his only where the 回's story reaches the realm past it (rules/cap.mjs).
+  const at = Boolean(next && next.gate === gate && storyAllows(content, state, next.id, 0));
   const cooling = at ? coolingUntil(state, now) : null;
   const odds = at && (peak || cooling) ? oddsOf(content, state, now, next.id) : null;
   return {

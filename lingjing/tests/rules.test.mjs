@@ -885,7 +885,8 @@ test('answers are judged in either language, punctuation and articles aside', ()
 });
 
 test('a layer fills and the next begins, the rest carried over', () => {
-  const s = joined();
+  // In 古四, where the book's cap is 二层 (rules/cap.mjs): 古三's is the first layer.
+  const s = { ...joined(), chapter: '00-waimen', scene: 'wm-ahe', ended: ['00-prologue'] };
   s.progress = 40;
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });

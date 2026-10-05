@@ -48,6 +48,7 @@
     "en": "Save it for Dad"
    },
    "means": "keeps the pill in a chilli-oil bottle for his father's knee, and keeps the night watch half a month on a broken rib",
+   "rise": 2,
    "grant": {
     "table": "scene",
     "progress": 30,

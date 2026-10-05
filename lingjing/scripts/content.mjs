@@ -10,6 +10,8 @@ import { EFFECTS } from './battle.js';
 import { FRAMES, PARTICLES } from './atmos.js';
 import { lintCodex } from './codex.js';
 import { bookEntries, idsOf } from './book-order.js';
+import { rankOf, storyAllows } from './rules/cap.mjs';
+import { huiOf } from './rules/hui.mjs';
 
 /* The worlds ship with the skill, one folder each under `worlds/`; the
    folder's name is the world's id and the save's `world`. */
@@ -482,6 +484,7 @@ export function lint(content) {
   }
   lintLadder(content.ladder, bad);
   lintBreakthrough(content, bad);
+  lintCaps(content, bad);
   lintCreatures(content, bad);
   lintRiddles(content.riddles, bad);
   lintBook(content, bad);
@@ -885,6 +888,33 @@ function lintLadder(ladder, bad) {
   for (const t of ladder.tiers) {
     const n = t.thresholds.length;
     if (t.steps.zh.length !== n) bad(`tier ${t.id}`, `${t.steps.zh.length} steps but ${n} thresholds`);
+  }
+}
+
+/* The cap per 回 (rules/cap.mjs): a 回 the book has, a tier on the ladder, a
+   layer it has, a story reach no lower than the player's own, both words in
+   both languages; and no scene of a 回 lifts him (`rise`) or breaks him
+   through past where its story reaches. Optional. */
+function lintCaps(content, bad) {
+  const caps = content.ladder.caps, where = 'ladder caps';
+  if (!caps) return;
+  if (!caps.say?.zh || !caps.say?.en || !caps.refuse?.zh || !caps.refuse?.en) bad(where, 'say and refuse in zh and en');
+  const layerOk = at => { const t = content.ladder.tiers.find(x => x.id === at?.tier); return t && Number.isInteger(at.layer) && at.layer >= 1 && at.layer <= t.thresholds.length; };
+  for (const [id, e] of Object.entries(caps.hui ?? {})) {
+    if (!huiOf(content, id)) bad(where, `${id} is not a 回 of the book`);
+    if (!layerOk(e) || (e.story && !layerOk(e.story))) { bad(where, `${id}: a tier the ladder has and a layer of it`); continue; }
+    if (e.story && rankOf(content, e.story.tier, e.story.layer - 1) < rankOf(content, e.tier, e.layer - 1)) bad(where, `${id}: story under the player's own reach`);
+  }
+  const first = content.ladder.tiers[0].id;
+  for (const ch of Object.values(content.chapters ?? {})) for (const sc of Object.values(ch.scenes ?? {})) {
+    if (!sc.hui) continue;
+    const at = { chapter: ch.id, scene: sc.id, tier: first, step: 0, done_scenes: [] };
+    for (const e of sc.exits ?? []) {
+      const layer = typeof e.rise === 'object' && e.rise ? e.rise.layer : e.rise;
+      if (Number.isInteger(layer) && !storyAllows(content, at, first, layer - 1)) bad(`scene ${sc.id} exit ${e.id}`, `rises past the cap of ${sc.hui}`);
+      const into = e.breakthrough ? content.ladder.tiers.find(t => t.gate != null && t.gate === ch.gate) : null;
+      if (into && !storyAllows(content, at, into.id, 0)) bad(`scene ${sc.id} exit ${e.id}`, `breaks through past the cap of ${sc.hui}`);
+    }
   }
 }
 

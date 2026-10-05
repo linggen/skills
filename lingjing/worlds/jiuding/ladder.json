@@ -415,6 +415,51 @@
     "zh": "大圆满",
     "en": "Great Perfection"
   },
+  "_caps": "The cap per 回 (Hanli, 2026-10-05: 「游戏里修炼有个上限吧? 和故事对齐」; rules/cap.mjs): `hui` names, for each 古 回, the highest 层 the player's own work reaches there (`tier`, `layer` 1-based) and, when the 回's scenes carry him further, how far its story goes (`story`; else the same). Filled to the cap, 修为 stops and the rest is held, as at a peak (`say` under the full bar); a scene's rise or breakthrough past `story` is refused (`refuse`). A 回 with none takes the one before it in the book (a 今 interlude, its 古); after 卷一 the save waits in 古八's chapter, so it stays 筑基一层 until 卷二 is written and given its caps; a chapter with no 回 (the old spine) has none — its realm gate rules it. A save already past its cap is never pulled down: it fills its own layer and waits for the story. From the book (story/jiuding-lu/OUTLINE.md 境界线, DESIGN § 六·八 定例): 古三 入门 (the game's first 层); 古四 一层, 十月廿五 二层 (lifted at 古四's close, wm-diyilu); 古五 二层 → 四层 by 息壤 (wm-xirang); 古六 四层 (大比 on 四层); 古七 四层 until the year carries him to 九层大圆满 (09-year) and the cliff to 筑基 (09-cliff); 古八 筑基初期 — 筑基一层.",
+  "caps": {
+    "say": {
+      "zh": "这一层坐满了。火候未到，再坐，气也只往外溢。",
+      "en": "This layer is full. The fire is not ready yet; sit on, and the breath only spills over."
+    },
+    "refuse": {
+      "zh": "鼎气不肯近身。火候未到——时候到了，它自己会来。",
+      "en": "The cauldron's breath will not come near. The fire is not ready — when its time comes, it will come to you."
+    },
+    "hui": {
+      "h04": {
+        "tier": "qi",
+        "layer": 1
+      },
+      "h05": {
+        "tier": "qi",
+        "layer": 2
+      },
+      "h07": {
+        "tier": "qi",
+        "layer": 2,
+        "story": {
+          "tier": "qi",
+          "layer": 4
+        }
+      },
+      "h08": {
+        "tier": "qi",
+        "layer": 4
+      },
+      "h09": {
+        "tier": "qi",
+        "layer": 4,
+        "story": {
+          "tier": "foundation",
+          "layer": 1
+        }
+      },
+      "h10": {
+        "tier": "foundation",
+        "layer": 1
+      }
+    }
+  },
   "treasure_steps": {
     "zh": [
       "一重",

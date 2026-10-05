@@ -335,8 +335,9 @@ export function payOf(content, state) {
 }
 
 /* Add progress; rise through the tier's steps; hold at its peak, where only
-   the next tier's chapter can take the player on. */
-export function addProgress(content, state, amount) {
+   the next tier's chapter can take the player on — or, with `mayStep` (the
+   回's cap, rules/cap.mjs), at the last layer it allows. */
+export function addProgress(content, state, amount, mayStep = null) {
   const levels = [];
   let hold = null;
   state.progress += amount;
@@ -344,6 +345,13 @@ export function addProgress(content, state, amount) {
     const need = threshold(content, state);
     if (state.progress < need) break;
     const tier = tierOf(content, state.tier);
+    // The 回's cap (rules/cap.mjs): the layer filled, the next one past where
+    // the book stands — held like the peak, the rest not added.
+    if (state.step < tier.thresholds.length - 1 && mayStep && !mayStep(state.tier, state.step + 1)) {
+      hold = { cap: true, held: state.progress - need };
+      state.progress = need;
+      break;
+    }
     if (state.step < tier.thresholds.length - 1) {
       state.progress -= need;
       levels.push({ from: { tier: state.tier, step: state.step }, to: { tier: state.tier, step: state.step + 1 } });
