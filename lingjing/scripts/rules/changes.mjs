@@ -23,21 +23,34 @@
 // `--do=preview|revert --id=<id> --item=<n> --rev=<rev>`: 「↶ 改回原文」 — the
 // change put back as the confirmed version has it, in the builder's checkout
 // (rules/revert.mjs; `dev` says whether this machine has one).
+// `--do=accept --id=<id> --commit=<sha>[,<sha>…]` or `--text=<words>`: edits
+// Hanli dictated himself, taken into the confirmed version without asking him
+// (2026-10-05: 「每次确认，都被你修改给重制」) — what those commits did to this
+// 回, or the blocks holding those words; nothing else. From the command line:
+//   node lingjing/scripts/rules.mjs changes --book=jiuding-lu --do=accept --id=h02 --commit=33c9f146,23277f95
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { bookEntries } from '../book-order.js';
-import { changesOf, confirmItem } from '../book-diff.js';
+import { acceptDelta, acceptWords, changesOf, commitDelta, confirmItem } from '../book-diff.js';
 import { fillHero } from '../read-md.js';
 import { homeDir, skillDir } from './files.mjs';
-import { isDev, revert } from './revert.mjs';
+import { devRepo, installDir, isDev, revert } from './revert.mjs';
+import { execFileSync } from 'node:child_process';
 
 const BOOK_ID = /^[\w-]+$/;
 const ENTRY_ID = /^[\w-]+$/;
 /// How many confirms 撤销 can walk back.
 export const UNDO_DEPTH = 40;
 
-export const readerDir = (book) => path.join(process.env.LINGJING_READER || path.join(homeDir(), 'reader'), book);
+/// The one store: LINGJING_READER, else this skill's data/reader — or, run
+/// from the checkout (which keeps no store), the installed skill's.
+export const readerDir = (book) => {
+  if (process.env.LINGJING_READER) return path.join(process.env.LINGJING_READER, book);
+  const own = path.join(homeDir(), 'reader', book);
+  const inst = path.join(installDir(), 'data/reader', book);
+  return fs.existsSync(path.join(own, 'meta.json')) || !fs.existsSync(path.join(inst, 'meta.json')) ? own : inst;
+};
 const storyDir = (book) => path.join(skillDir(), 'story', book);
 /// The text's revision: what a confirm must name, so it confirms the text read.
 export const revOf = (text) => crypto.createHash('sha1').update(text ?? '').digest('hex').slice(0, 12);
@@ -117,6 +130,34 @@ export function changes(args = {}) {
     else write(path.join(dir, `${one.id}.md`), last.text);
     if (stack.length) write(undoFile(book, one.id), JSON.stringify(stack));
     else drop(undoFile(book, one.id));
+  } else if (act === 'accept') {
+    const file = path.join(dir, `${one.id}.md`);
+    const was = read(file);
+    const text = textOf(book, one);
+    let next = was ?? '', taken = 0;
+    const missed = [];
+    if (args.commit) {
+      const rel = `lingjing/story/${book}/${one.file}`;
+      const show = (ref) => { try { return execFileSync('git', ['-C', devRepo(), 'show', `${ref}:${rel}`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 << 20 }); } catch { return null; } };
+      let delta;
+      for (const sha of String(args.commit).split(',').map((x) => x.trim()).filter(Boolean)) {
+        if (!/^[0-9a-f]{4,40}$/i.test(sha)) return { ok: false, refused: 'bad-commit', say: sha };
+        const child = show(sha);
+        if (child == null) { missed.push(`${sha}: 不含这一回`); continue; }
+        delta = commitDelta(show(`${sha}^`) ?? '', child, delta);
+      }
+      if (delta && text != null) { const r = acceptDelta(next, text, delta); next = r.md; taken = r.taken; }
+    } else if (args.text) {
+      const r = text == null ? null : acceptWords(next, text, String(args.text));
+      if (!r) return { ok: false, refused: 'no-such-words', say: null };
+      next = r.md; taken = r.taken;
+    } else return { ok: false, refused: 'accept-what', say: '--commit 或 --text' };
+    if (next !== (was ?? '')) {
+      const stack = [...undoStack(book, one.id), { text: was, head: `口述：${args.commit ?? String(args.text).slice(0, 12)}`, at: new Date().toISOString() }].slice(-UNDO_DEPTH);
+      write(undoFile(book, one.id), JSON.stringify(stack));
+      write(file, next);
+    }
+    return { ok: true, base: meta.base ?? null, dev, taken, missed, entries: { [one.id]: entryChanges(book, one) } };
   } else if (act === 'preview' || act === 'revert') {
     const confirmed = read(path.join(dir, `${one.id}.md`));
     // The book's own lines, never a hero's variant: what is written is what was shown.

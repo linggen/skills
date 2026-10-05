@@ -335,6 +335,90 @@ export function confirmItem(oldMd, newMd, n) {
   return blocksMd(keep, titleOf(oldMd));
 }
 
+const sentKey = (x) => keyOf(plainOf(x));
+
+/// What a commit did to a 回, as keys: the sentences it brought in and took
+/// out, and the blocks it added and cut. Several commits merge into one.
+export function commitDelta(parentMd, childMd, into = { added: new Set(), removed: new Set(), addedBlocks: new Set(), removedBlocks: new Set() }) {
+  const { was: P, now: K, seq } = walk(parentMd, childMd);
+  for (const e of seq) {
+    if ('cut' in e) { into.removedBlocks.add(P[e.cut].key); for (const x of sentencesOf(P[e.cut].text)) into.removed.add(keyOf(x)); continue; }
+    if (e.item == null) continue;
+    if (e.from == null) { into.addedBlocks.add(K[e.j].key); for (const x of sentencesOf(K[e.j].text)) into.added.add(keyOf(x)); continue; }
+    const a = sentencesOf(P[e.from].text).map(keyOf), b = sentencesOf(K[e.j].text).map(keyOf);
+    const sa = new Set(a), sb = new Set(b);
+    for (const k of b) if (!sa.has(k)) into.added.add(k);
+    for (const k of a) if (!sb.has(k)) into.removed.add(k);
+  }
+  return into;
+}
+
+/// 「记为已确认」 by what commits did (Hanli's dictated edits, 2026-10-05):
+/// the confirmed version moves toward the text now — never away from it — by
+/// those commits' doing alone: in a rewritten block, the new sentences they
+/// brought in come in and the ones they took out go; a block they added comes
+/// in, one they cut goes. Every other change stays to be confirmed.
+/// Returns `{md, taken}`.
+export function acceptDelta(confMd, newMd, d) {
+  const { was, now, seq } = walk(confMd, newMd);
+  const keep = [];
+  let taken = 0;
+  for (const e of seq) {
+    if ('cut' in e) {
+      const b = was[e.cut];
+      const theirs = d.removedBlocks.has(b.key) || sentencesOf(b.text).every((x) => d.removed.has(keyOf(x)));
+      if (theirs) taken += 1; else keep.push(b);
+      continue;
+    }
+    if (e.item == null) { keep.push(now[e.j]); continue; }
+    const n = now[e.j];
+    if (e.from == null) {
+      const theirs = d.addedBlocks.has(n.key) || sentencesOf(n.text).every((x) => d.added.has(keyOf(x)));
+      if (theirs) { keep.push(n); taken += 1; }
+      continue;
+    }
+    // A rewritten block: their sentences in, their cuts out — sentence by sentence.
+    const c = was[e.from];
+    const cs = sentencesOf(c.src ?? c.text), ns = sentencesOf(n.src);
+    const ck = cs.map(sentKey), nk = ns.map(sentKey);
+    const pairs = lcs(ck, nk);
+    const keptC = new Set(pairs.map(([i]) => i)), keptN = new Set(pairs.map(([, j]) => j));
+    const out = [];
+    let ci = 0;
+    const flushC = (upto) => { for (; ci < upto; ci += 1) if (keptC.has(ci) || !d.removed.has(ck[ci])) out.push(cs[ci]); };
+    ns.forEach((sent, j) => {
+      const pair = pairs.find(([, pj]) => pj === j);
+      if (pair) { flushC(pair[0]); out.push(cs[pair[0]]); ci = pair[0] + 1; return; }
+      if (!keptN.has(j) && d.added.has(nk[j])) out.push(sent);
+    });
+    flushC(cs.length);
+    const src = out.join('');
+    if (src === cs.join('')) { keep.push(c); continue; }
+    taken += 1;
+    keep.push(bare(plainOf(src)) === bare(n.text) ? n : { ...c, src, text: plainOf(src) });
+  }
+  return { md: blocksMd(keep, titleOf(confMd)), taken };
+}
+
+/// 「记为已确认」 by words: the blocks of `newMd` holding `words` (marks and
+/// spaces ignored) taken into the confirmed version as they now read, each
+/// in the place of the old block it rewrote — nothing else.
+export function acceptWords(confMd, newMd, words) {
+  const { was, now, seq } = walk(confMd, newMd);
+  const want = bare(plainOf(words));
+  if (!want) return null;
+  const hit = new Set(now.map((b, j) => (bare(b.text).includes(want) ? j : -1)).filter((j) => j >= 0));
+  if (!hit.size) return null;
+  const keep = [];
+  let taken = 0;
+  for (const e of seq) {
+    if ('cut' in e) { keep.push(was[e.cut]); continue; }
+    if (e.item == null || hit.has(e.j)) { keep.push(now[e.j]); if (e.item != null) taken += 1; }
+    else if (e.from != null) keep.push(was[e.from]);
+  }
+  return { md: blocksMd(keep, titleOf(confMd)), taken };
+}
+
 const range = (a, b) => Array.from({ length: Math.max(0, b - a) }, (_, k) => a + k);
 
 /// The marks of one 回 keyed for drawing: `mark(key, nth)` → its mark or null,

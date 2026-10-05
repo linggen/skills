@@ -10,7 +10,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { blocksMd, blocksOf, changesOf, confirmItem, keyOf, sentencesOf, sentenceDiff } from '../scripts/book-diff.js';
+import { acceptDelta, acceptWords, blocksMd, blocksOf, changesOf, commitDelta, confirmItem, keyOf, sentencesOf, sentenceDiff } from '../scripts/book-diff.js';
 import { renderMarkdown } from '../scripts/read-md.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -234,4 +234,29 @@ test('a confirmed paragraph edited again: only the sentence newly changed is mar
   assert.equal(c.items[0].head, '山风很冷。');
   const html = renderMarkdown(v2, { changes: c });
   assert.match(html, /<p class="chg changed"[^>]*>小满上山。他背着一张旧弓。<mark class="chg-s">山风很冷。<\/mark>/);
+});
+
+test('记为已确认 by commit: a dictated edit is taken in, nothing else; the confirmed version never moves away from the text', () => {
+  const v1 = OLD.replace('他背着弓。', '他背着一张旧弓。'); // someone else's edit, not yet confirmed
+  const dictatedFrom = v1, dictated = v1.replace('鹿皮挂在墙上，干了。', '鹿皮挂在墙上，干透了。').replace('夜里下了雪。\n\n', '');
+  const later = dictated.replace('白', '白'); // nothing more
+  const d = commitDelta(dictatedFrom, dictated);
+  const r = acceptDelta(OLD, later, d);
+  assert.equal(r.taken, 2);
+  const c = changesOf(r.md, later);
+  assert.deepEqual(c.items.map((it) => it.head), ['他背着一张旧弓。'], 'only the edit he never dictated is left');
+  // A dictated edit later undone by another edit is not brought back.
+  const undone = later.replace('干透了', '干了');
+  const r2 = acceptDelta(OLD, undone, d);
+  assert.ok(!changesOf(r2.md, undone).marks.some((m) => m.key === keyOf('鹿皮挂在墙上，干了。')), 'the confirmed version never takes words the text no longer has');
+  // Dictated sentence inside a paragraph that also has another, undictated edit: only its sentence.
+  const two = OLD.replace('他背着弓。', '他背着一张旧弓。');
+  const both = two.replace('小满上山。', '小满一早上山。');
+  const r3 = acceptDelta(OLD, both, commitDelta(two, both));
+  const left = changesOf(r3.md, both);
+  assert.equal(left.count, 1);
+  assert.deepEqual(left.marks[0].s, [1], '「他背着一张旧弓。」 still to confirm; 「小满一早上山。」 taken');
+  // By words.
+  const w = acceptWords(OLD, both, '他背着一张旧弓');
+  assert.equal(changesOf(w.md, both).count, 0, 'the block holding the words, as it now reads');
 });
