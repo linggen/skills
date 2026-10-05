@@ -75,6 +75,9 @@ tools:
       search go here (guide `tell`).
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs look --said={{said}} --at={{at}} --for=ling"
     tier: read
+    # What Yinyue reads of it at the table: where they are and what is
+    # before them — never Ling's `then` and guide (skill-spec § What others read).
+    others_read: [chapter.title, place.name, place.line, scene.place, scene.setup, scene.people.name, page_did]
     timeout_ms: 8000
     args:
       said:
@@ -119,6 +122,7 @@ tools:
       refusal changed nothing.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs resolve --exit={{exit}} --value={{value}} --answer={{answer}} --said={{said}} --for=ling"
     tier: edit
+    others_read: [chose, beat, her_beat, scene.place, scene.setup]
     timeout_ms: 8000
     args:
       exit:
@@ -207,6 +211,7 @@ tools:
       the whole road. Refusals say why and `here` (guide `road`).
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs move --place={{place}} --for=ling"
     tier: read
+    others_read: [place.name, place.line, via.name, handed.title]
     timeout_ms: 8000
     args:
       place:
