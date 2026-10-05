@@ -91,8 +91,7 @@ async function main() {
     };
     const filled = fillHero(md, who);
     paint = (changes) => {
-      $('chapter').innerHTML = (lang === 'en' ? `<p class="note">${esc(w.only)}</p>` : '') + renderMarkdown(filled, { ...opts, changes })
-        + (changes ? okHtml(changes) : '');
+      $('chapter').innerHTML = (lang === 'en' ? `<p class="note">${esc(w.only)}</p>` : '') + renderMarkdown(filled, { ...opts, changes, tail: changes ? okHtml(changes) : '' });
       wireMarks($('chapter'));
       rail(changes);
       tocCount(ch.id, changes?.count ?? 0);

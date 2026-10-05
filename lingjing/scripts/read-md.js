@@ -182,6 +182,7 @@ function sentenceHtml(lines, mark, inl) {
 
 /// `opts.changes` → one 回's changes (rules/changes.mjs entry): the blocks not
 /// yet confirmed are marked (see above); none → the text plain.
+/// `opts.tail` → HTML set after the story and before 「附 · 本回典籍」.
 /// `opts.classics` → classics.json's classics: `《书名》{典=id}` links to its entry
 /// at the chapter's end (and back); none, or no entry: the 《书名》 alone.
 /// `opts.memory(n)` → memory n's plate src, or null (none: plates are left out);
@@ -297,6 +298,8 @@ export function renderMarkdown(md, opts = {}) {
   }
   flush();
   for (const g of marks?.cutsAtEnd ?? []) out.push(cutHtml(g));
+  // What stands at the story's end, before the classics (read.js's 「已读，确认」).
+  if (opts.tail) out.push(opts.tail);
   const appendix = classicsAppendix([...cited], classics);
   if (appendix) out.push(appendix);
   return out.join('\n');
