@@ -242,3 +242,14 @@ test('a face met in the header is not met again mid-stage: its first-meet card g
   assert.match(src, /cards = cards\.filter\(\(c\) => c\.card !== 'meet' \|\| !inHead\.has\(c\.id\)\);/);
   assert.match(cardsSrc, /ctx\.codex\?\.get\?\.\(p\.id\) \? ` data-codex-big=/);
 });
+
+test('the tray never lists a board the stage already shows (Hanli, 2026-10-05: the 九宫格 on the stage and in 手边的棋局)', async () => {
+  const { trayHtml, WORDS } = await import('../scripts/cards.js');
+  const look = { tasks: [{ id: 'gate-luoshu', kind: 'board', game: 'luoshu', title: '二试 · 洛书九宫', status: 'offered' }, { id: 'deer', kind: 'board', title: '射鹿', status: 'offered' }] };
+  const both = trayHtml({ look, words: WORDS.zh });
+  assert.match(both, /洛书九宫[\s\S]*射鹿/);
+  const one = trayHtml({ look, words: WORDS.zh, onStage: ['gate-luoshu'] });
+  assert.doesNotMatch(one, /洛书九宫/);
+  assert.match(one, /射鹿/);
+  assert.doesNotMatch(trayHtml({ look, words: WORDS.zh, onStage: ['luoshu'] }), /洛书九宫/, 'a board named by its game');
+});

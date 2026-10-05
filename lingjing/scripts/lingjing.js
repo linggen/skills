@@ -1235,7 +1235,8 @@ function draw() {
   // The tray holds the world's boards; with none today it is not there at all
   // — 「今日无事」 under a book with things in it was a contradiction.
   $('trayTitle').textContent = w.tray;
-  $('tray').innerHTML = trayHtml(ctx());
+  // What already stands on the stage is not listed again in the tray (Hanli, 2026-10-05: the 九宫格 twice).
+  $('tray').innerHTML = trayHtml({ ...ctx(), onStage: (slots?.main ?? []).map((c) => c.id).filter(Boolean) });
   $('tray').parentElement.hidden = !$('tray').innerHTML;
   // A turn with nothing left in it ends itself after a beat long enough to
   // read the board — pressing the button is always faster (his, 2026-09-18).
