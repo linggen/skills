@@ -26,12 +26,10 @@
     <section class="scene" aria-label="Scene">
       <header class="status" id="status"></header>
       <div class="view" id="view">
-        <svg class="backdrop" viewBox="0 0 320 150" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
-          <circle cx="262" cy="30" r="13" fill="currentColor" opacity=".07"/>
-          <path d="M0 110 L40 70 L66 88 L104 46 L140 84 L170 66 L210 100 L250 72 L286 92 L320 76 L320 150 L0 150Z" fill="currentColor" opacity=".08"/>
-          <path d="M0 126 L52 98 L92 112 L130 90 L176 116 L220 98 L268 118 L320 104 L320 150 L0 150Z" fill="currentColor" opacity=".12"/>
-          <path d="M0 136 Q80 128 160 136 T320 134 L320 150 L0 150Z" fill="currentColor" opacity=".06"/>
-        </svg>
+        <!-- 淡墨: a pale ink wash, or the scene's own picture when the world paints
+             one (scene `panel.art`) — never a hill or a moon drawn in code
+             (Hanli, 2026-10-05). lingjing.js paintBackdrop. -->
+        <div class="backdrop" id="backdrop" aria-hidden="true"></div>
         <!-- Yinyue: her name and the ask button, a chip in the header's corner —
              no 3D body in the game (his, 2026-09-29) and no stand-in orb
              (his, 2026-09-30); her voice frame stays hidden here. -->
@@ -40,7 +38,7 @@
              them changes (stage.mjs stageSlots). HEADER is the page's own —
              the place, the people, the goal; MAIN (#focus) holds ONE thing. -->
         <div class="slots">
-          <div class="slothead" id="slotHead"><div class="huiline" id="huiLine"></div><div class="place" id="place"></div><div class="headcards" id="headCards"></div></div>
+          <div class="slothead" id="slotHead"><div class="titlerow"><span class="huiline" id="huiLine"></span><span class="place" id="place"></span></div><div class="headcards" id="headCards"></div></div>
           <div class="focus" id="focus"></div>
         </div>
         <!-- The dialogue box (dialogue.js): the book's passage for this beat,

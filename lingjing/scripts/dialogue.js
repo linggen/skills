@@ -56,6 +56,18 @@ const atLast = (r, lang) => r.i >= r.items.length - 1 && r.j >= lastJ(r, r.i, la
 /* Are the scene's choices up? Only once the last beat is showing. */
 export const choicesUp = (r, lang = 'zh') => !playing(r) || atLast(r, lang);
 
+/* Is the box on this scene's own passage, past its caption (the `cap` beat
+   rules/tell.mjs opens it with)? Then the scene's games stand on the stage
+   over the box, to be played while the passage tells on (Hanli, 2026-10-05:
+   the 洛书 board waited behind 29 beats). A choice's passage that leads in
+   still plays first: the scene's passage comes after it. */
+export function sceneUnder(r, sid, lang = 'zh') {
+  if (!playing(r) || !sid) return false;
+  const at = r.items.findIndex((it) => it.of === 'scene' && it.id === sid);
+  if (at < 0 || r.i < at) return false;
+  return r.i > at || !current(r, lang).beat.cap;
+}
+
 /* A tap on the box: the next beat; on the last, the box is put away. */
 export function advance(r, lang = 'zh') {
   if (!playing(r)) return r;
@@ -113,7 +125,7 @@ export function dialogHtml(r, { lang = 'zh', src = (f) => f, voice = null } = {}
   const spoken = Boolean(b.name);
   const who = spoken ? `<div class="dlgname${b.hero ? ' hero' : ''}">${esc(b.name)}</div>` : '';
   const last = atLast(r, lang);
-  return `<div class="dlg${spoken ? ' spoken' : ' told'}${b.art && !b.hero ? ' withface' : ''}" data-dlg-next role="button" tabindex="0" aria-label="${esc(w.on)}">
+  return `<div class="dlg${spoken ? ' spoken' : ' told'}${b.cap ? ' cap' : ''}${b.art && !b.hero ? ' withface' : ''}" data-dlg-next role="button" tabindex="0" aria-label="${esc(w.on)}">
     ${face(b, src)}<div class="dlgbody">${who}<div class="dlgtext">${lineHtml(b, w)}</div></div>
     <div class="dlgctl"><span class="dlgcount">${k + 1} / ${n}</span>${voiceBtn(voice, w)}<button class="dlgbtn" data-dlg-log>${esc(w.log)}</button>${last ? '' : `<button class="dlgbtn" data-dlg-skip>${esc(w.skip)}</button>`}</div>
     <div class="dlgon${last ? ' last' : ''}" aria-hidden="true">▾</div></div>`;
@@ -123,7 +135,7 @@ export function dialogHtml(r, { lang = 'zh', src = (f) => f, voice = null } = {}
    beat it skipped. */
 export function logHtml(r, { lang = 'zh' } = {}) {
   const w = DLG_WORDS[lang] ?? DLG_WORDS.zh, from = r?.skipped;
-  const rows = toldSoFar(r, lang).map((b) => `<div class="dlglogrow${b.name ? ' spoken' : ''}"${from && b.i === from.i && b.j === from.j ? ' data-dlg-from' : ''}>${b.name ? `<b>${esc(b.name)}</b>` : ''}<span>${lineHtml(b, w)}</span></div>`).join('');
+  const rows = toldSoFar(r, lang).map((b) => `<div class="dlglogrow${b.name ? ' spoken' : ''}${b.cap ? ' cap' : ''}"${from && b.i === from.i && b.j === from.j ? ' data-dlg-from' : ''}>${b.name ? `<b>${esc(b.name)}</b>` : ''}<span>${lineHtml(b, w)}</span></div>`).join('');
   return `<div class="dlglog" role="dialog" aria-label="${esc(w.logTitle)}"><div class="dlgloghead"><span>${esc(w.logTitle)}</span><button class="dlgbtn" data-dlg-logclose>${esc(w.close)}</button></div><div class="dlglogbody">${rows}</div></div>`;
 }
 

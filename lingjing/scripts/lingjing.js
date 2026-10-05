@@ -19,7 +19,7 @@ import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, pickOf, spoilsH
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { WORDS, say as fill, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, ledgerChipHtml, readChipHtml, cardHtml, emergedHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle } from './cards.js';
+import { WORDS, say as fill, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle } from './cards.js';
 import { pouchHtml } from './pouch.js';
 import { esc } from './esc.js';
 import { thinker, stillAsked } from './think.js';
@@ -34,7 +34,7 @@ import { fxTimes, glOK, playHoming as playHomingFx } from './fx.js';
 import { atmosClasses, atmosOf, particlesHtml } from './atmos.js';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
-import { advance, choicesUp, current, dialogHtml, keepReading, loadReading, logHtml, playing, skipAll, withTold } from './dialogue.js';
+import { advance, choicesUp, current, dialogHtml, keepReading, loadReading, logHtml, playing, sceneUnder, skipAll, withTold } from './dialogue.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
 import { playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
@@ -502,7 +502,8 @@ let contentStale = false;
 /// a player decides whether there is another fight in the day.
 function qi() {
   const q = look?.stamina;
-  if (!q || !q.max) return null;
+  // 体力 off (state.mjs staminaLimited — off while we test): no pool on the strip at all.
+  if (!q || !q.max || q.off) return null;
   const { p, st } = qiState(q.now, q.max, Boolean(q.empty));
   // When the player can go on again: the pool full (rest = max — his,
   // 2026-09-24: 体力为空时, 保障用户离线一定时间, 回复到100才允许再上线; 5 小时).
@@ -884,8 +885,12 @@ function stageNow() {
   cards = cards.filter((c) => c.card !== 'duel' || !(look.scene?.panel?.taps ?? []).some((t) => t.duel === c.id) || called.has(c.id));
   // A board he opened from the tray's 开局 waits for the whole passage (queue.js trayWaits).
   if (view.opened && trayAhead()) cards = cards.filter((c) => !(c.card === 'board' && c.id === view.opened.id));
-  // The book first: a game waits until the passage that leads into it is told.
-  cards = afterBook(cards, cardsAhead());
+  // One text box (Hanli, 2026-10-05): while the book is ahead the scene card's
+  // caption is the box's first beat, so the card stands only with its choices.
+  if (cardsAhead()) cards = cards.filter((c) => c.card !== 'panel');
+  // The book first: a game waits until the passage that leads into it is told —
+  // the scene's own games come up once the box is past its caption (queue.js EARLY).
+  cards = afterBook(cards, cardsAhead(), gamesEarly());
   watchAppear(cards);
   return stageSlots(look, cards.filter(inQueue), { skip: view.qSkip });
 }
@@ -930,12 +935,33 @@ function footRowHtml(slots) {
 /// except where the rules keep them off (闭关, a corridor).
 const scratchRoads = () => Boolean(SCRATCH) && !look?.seclusion && !look?.director?.corridor;
 
-/// The chips — 录 · 书 · 事 · 袋 · 恩 — in the footer, under the stage.
+/// The chips — 天气 · 九鼎录 · 原著 · 事 · 袋 — in the footer, under the stage.
+/// 恩仇簿 is written no more (2026-10-03): its chip is off the footer; the
+/// ledger itself stays in the save and in Look (ledgerChipHtml, cards.js).
 function footChipsHtml() {
-  return `${bout ? '' : festChipHtml()}${bout ? '' : wxChipHtml(look?.weather, { lang: lang(), open: view.wxOpen, sense: view.wxSense, note: view.wxNote })}${bout ? '' : luChipHtml(lang(), view.luOpen)}${bout ? '' : readChipHtml(ctx())}
+  return `${bout ? '' : festChipHtml()}${bout ? '' : wxChipHtml(wxHere(), { lang: lang(), open: view.wxOpen, sense: view.wxSense, note: view.wxNote })}${bout ? '' : luChipHtml(lang(), view.luOpen)}${bout ? '' : readChipHtml(ctx())}
     ${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}
-    ${gearChipHtml(ctx(), view.gearOpen)}
-    ${ledgerChipHtml(ctx(), view.ledgerOpen)}`;
+    ${gearChipHtml(ctx(), view.gearOpen)}`;
+}
+
+/* The weather chip names where the hero stands (Hanli, 2026-10-05: 「蒙山·晴」
+   at 沉鼎观): the place's own name — the sky may be his city's or 蒙山's
+   seasons, which the chip's popover says. */
+const wxHere = () => (look?.weather ? { ...look.weather, where: look.place?.name ?? look.weather.where } : null);
+
+/* 淡墨 under the stage, or the scene's own picture when the world paints one
+   (scene `panel.art`, declared in the content — never chosen by name here). */
+let drawnBackdrop = null;
+function paintBackdrop() {
+  const art = look?.scene?.panel?.art ?? null;
+  const src = art ? worldPath(look.world?.dir ?? 'worlds/jiuding', art) : null;
+  if (src === drawnBackdrop) return;
+  drawnBackdrop = src;
+  const el = $('backdrop');
+  if (!el) return;
+  el.classList.toggle('painted', Boolean(src));
+  if (src) el.style.setProperty('--art', `url("${src.replace(/"/g, '%22')}")`);
+  else el.style.removeProperty('--art');
 }
 
 /* 节日 · 节气: today's festival as a chip — its task a word to Ling (she
@@ -1161,6 +1187,7 @@ function draw() {
   // the room (his, 2026-09-18). It all comes back when the fight ends.
   document.body.classList.toggle('fighting', Boolean(bout));
   paintAtmos();
+  paintBackdrop();
   // The 回 above the place, as the book names and numbers it (古五: 「卷一 · 沉鼎 · 第十回　古 · 漏勺夜半通三关」 once 今五 is in, rules/hui.mjs).
   // The old 回's last passage still in the box keeps its own 回 line (queue.js huiLineOf).
   const titles = (huiTitles[lang()] ??= {}), told = readingHere();
@@ -1681,6 +1708,8 @@ const atHuiTurn = () => !oldHuiPlaying() && (closeUp() || titlePending());
 const boxAhead = () => bookAhead({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: playing(readingHere()), huiTurn: atHuiTurn() });
 // The cards that wait for the book come up with the scene's choices — on its last beat (dialogue.js choicesUp).
 const cardsAhead = () => bookAhead({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: !choicesUp(readingHere(), lang()), huiTurn: atHuiTurn() });
+// The scene's games stand over the box once it tells the scene's own passage, past its caption.
+const gamesEarly = () => !look?.tell_owed && !drawingTold && !atHuiTurn() && sceneUnder(readingHere(), look?.scene?.id, lang());
 // A board opened from the tray: the box put away first, not only its last beat, nor over a 回's turn.
 const trayAhead = () => trayWaits({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: playing(readingHere()), huiTurn: atHuiTurn() });
 const momentUp = () => Boolean(pieceOn || featOn || view.memory || view.homing || view.doors || document.querySelector('.feat'));

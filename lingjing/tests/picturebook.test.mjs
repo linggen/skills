@@ -40,7 +40,7 @@ test('a beat stands as a scene card in words: the place, its caption, the choice
     assert.deepEqual(l.scene.panel.taps.map(t => t.id), ['endure', 'strike']);
     const html = cardHtml({ card: 'panel' }, page(l));
     assert.doesNotMatch(html, /<img/);
-    assert.match(html, lang === 'zh' ? /<div class="sceneplace">石坳村 · 你家 · 傍晚<\/div>/ : /<div class="sceneplace">Shi&#39;ao village/);
+    assert.doesNotMatch(html, /sceneplace/, 'the place is the header\'s alone (Hanli, 2026-10-05)');
     assert.match(html, lang === 'zh' ? /<p>马三来了，一脚踹开柴门。<\/p>/ : /<p>Ma San comes, and kicks the gate open\.<\/p>/);
     assert.match(html, lang === 'zh' ? /data-panel-exit="endure">照他的话，原样说回去</ : /data-panel-exit="endure">Say his words straight back</);
     assert.doesNotMatch(html, /undefined|\{\w+\}|NaN/);
@@ -165,7 +165,9 @@ test('the scene card waits while the dialogue box plays: its choices and 看 com
   const reading = { scene: '00-masan', items: [{ of: 'scene', id: '00-masan', beats: { zh: beats, en: beats } }], i: 0, j: 0, closed: false };
   const waiting = cardHtml({ card: 'panel' }, page(l, { reading }));
   assert.doesNotMatch(waiting, /data-panel-exit|data-look-at|data-dlg-log/, 'nothing to tap while it plays');
-  assert.match(waiting, /panelcard reading/);
+  assert.equal(waiting, '', 'one text box: the caption is the box\'s, and nothing else is on the card yet');
+  const untold = cardHtml({ card: 'panel' }, page(l, { tellPending: true }));
+  assert.match(untold, /panelcard reading[\s\S]*<p>马三来了/, 'no passage told here: the card keeps its caption');
   const last = cardHtml({ card: 'panel' }, page(l, { reading: { ...reading, j: 1 } }));
   assert.match(last, /data-panel-exit="endure"/, 'the last beat brings the choices up');
   const closed = cardHtml({ card: 'panel' }, page(l, { reading: { ...reading, j: 1, closed: true } }));
@@ -283,7 +285,8 @@ test('书: every chapter the book names exists and renders; the reader and its c
   for (const asset of [...html.matchAll(/(?:src|href)="([^"/][^":]*?)"/g)].map(m => m[1]).filter(a => !a.startsWith('index.html'))) assert.ok(fs.existsSync(path.join(ROOT, 'scripts', asset)), asset);
   const reader = fs.readFileSync(path.join(ROOT, 'scripts/read.js'), 'utf8');
   assert.doesNotMatch(reader, /window\.open|target="_blank"/, 'the frame is sandboxed: navigate in place');
-  assert.match(readChipHtml({ lang: 'en', words: WORDS.en }), /<a class="luchip readchip" href="read\.html\?lang=en" title="Read the book">Book<\/a>/);
+  assert.match(readChipHtml({ lang: 'en', words: WORDS.en }), /<a class="luchip readchip" href="read\.html\?lang=en" title="Read the novel this game is told from"><svg class="chipicon"[^>]*>[\s\S]*?<\/svg><span>Read the novel<\/span><\/a>/);
+  assert.match(readChipHtml({ lang: 'zh', words: WORDS.zh }), /<span>读原著<\/span>/);
 });
 
 test('a scene choice refused says why until the next move lands: winning the board it waited on clears the note (live, 2026-09-29)', () => {

@@ -182,7 +182,17 @@ export function playOf(content, state, tell) {
   const there = tellOf(content, { ...state, lang: other })?.tell ?? [];
   return tell.map(t => {
     const twin = there.find(x => x.id === t.id);
-    const beats = { [state.lang]: beatsOf(content, state, t), [other]: twin ? beatsOf(content, { ...state, lang: other }, twin) : [] };
+    const beats = { [state.lang]: withCaption(content, state, t, beatsOf(content, state, t)), [other]: twin ? withCaption(content, { ...state, lang: other }, twin, beatsOf(content, { ...state, lang: other }, twin)) : [] };
     return { ...t, beats };
   });
+}
+
+/* The scene card's caption is the box's first beat (Hanli, 2026-10-05: 「只留一个
+   对白框」): its two to four lines open the scene's own passage, marked `cap`,
+   and no card in the middle of the stage repeats them. The page brings the
+   scene's games up once the box is past it (dialogue.js sceneUnder). */
+export function withCaption(content, state, item, beats) {
+  if (item?.of !== 'scene' || !beats.length) return beats;
+  const lines = (pick(findScene(content, item.id)?.panel?.caption, state.lang) ?? []).map(l => fill(l, state, content)).filter(Boolean);
+  return lines.length ? [{ text: lines.join('\n'), cap: true }, ...beats] : beats;
 }

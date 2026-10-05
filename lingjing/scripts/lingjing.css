@@ -108,10 +108,21 @@ button:disabled { cursor: default; }
         /* No figure of her on the page (his, 2026-09-30: no 3D body, so no
            orb either) — the cards and the dialogue box start at the gutter. */
         --stage-room: 24px; --head-h: 132px; }
-.backdrop { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 62%; color: var(--text); }
-.place { font-family: var(--serif); font-size: 16px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: none; }
-/* The 回 above the place (rules/hui.mjs): the book's own heading, small. */
-.huiline { font-family: var(--serif); font-size: 12.5px; letter-spacing: .12em; color: var(--dim); opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: none; }
+/* 淡墨 (Hanli, 2026-10-05): a pale ink wash pooled low on the paper — no hill
+   or moon drawn in code. A scene the world paints (`panel.art`) lays its picture
+   here instead, faint, fading into the paper at the top (lingjing.js paintBackdrop). */
+.backdrop { position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(120% 55% at 18% 108%, color-mix(in srgb, var(--text) 13%, transparent), transparent 70%),
+    radial-gradient(90% 45% at 82% 104%, color-mix(in srgb, var(--text) 10%, transparent), transparent 72%),
+    radial-gradient(70% 30% at 50% 100%, color-mix(in srgb, var(--text) 7%, transparent), transparent 80%); }
+.backdrop.painted { background: var(--art) center 40% / cover no-repeat; opacity: .32; filter: grayscale(.35);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 30%, #000 100%); mask-image: linear-gradient(180deg, transparent 0, #000 30%, #000 100%); }
+/* 此地, one line (Hanli, 2026-10-05: the place stood three times): the 回 small, then the place. */
+.titlerow { display: flex; align-items: baseline; gap: 12px; min-width: 0; flex: none; }
+.place { font-family: var(--serif); font-size: 17px; color: var(--text); opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; min-width: 0; }
+/* The 回 before the place (rules/hui.mjs): the book's own heading, small. */
+.huiline { font-family: var(--serif); font-size: 12.5px; letter-spacing: .12em; color: var(--dim); opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 2 auto; min-width: 0; }
 .huiline:empty { display: none; }
 .stage { position: absolute; top: 12px; right: 24px; display: flex; flex-direction: row; align-items: center; gap: 8px; z-index: 3; }
 /* Her name and the ask, a small chip in the header's top-right corner — once
@@ -131,14 +142,15 @@ button:disabled { cursor: default; }
 .slothead { min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 6px; padding: 12px 0 8px; }
 .headcards { display: flex; flex-direction: column; gap: 6px; min-height: 0; }
 .slothead .card.peoplecard { padding: 0; border: 0; background: none; box-shadow: none; max-width: none; margin: 0; }
-.slothead .peoplecard .person img, .slothead .peoplecard .person .namecard { width: 40px; height: 50px; border-radius: 6px; }
+/* Who is here: a face big enough to see and the whole line about them (Hanli,
+   2026-10-05: 「三…」 cut short) — up to two lines, the rest in its title. */
+.slothead .peoplecard .person img, .slothead .peoplecard .person .namecard { width: 52px; height: 66px; border-radius: 6px; }
 .slothead .peoplecard .person .namecard b { font-size: 13px; letter-spacing: .05em; }
-.slothead .peoplecard figcaption b { font-size: 14px; }
-.slothead .peoplecard figcaption .small { font-size: 11.5px; max-width: 12em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.slothead .peoplecard figcaption b { font-size: 15px; }
+.slothead .peoplecard figcaption .small { font-size: 12.5px; line-height: 1.5; max-width: 26em; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .slothead .goalline { max-width: none; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .slothead .goalline .goalnext { display: inline; margin: 0 0 0 8px; }
 .focus { position: relative; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 4px; }
-.focus .panelart { max-height: 46vh; }
 /* What just happened, over the one thing: short, and it scrolls if it is not. */
 .toasts { flex: none; width: 100%; max-width: 540px; margin: 0 auto; max-height: 38%; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
 .toasts .card { padding: 10px 12px; font-size: 13px; }
@@ -725,7 +737,8 @@ button.gcard { cursor: pointer; font: inherit; }
   .stage b { font-size: 12px; }
   .stage .askher { font-size: 11px; padding: 2px 6px; }
   .slots { left: 12px; right: 12px; bottom: 8px; }
-  .slothead .peoplecard .person figcaption .small { display: none; }
+  .slothead .peoplecard .person figcaption .small { max-width: 16em; font-size: 11.5px; }
+  .slothead .peoplecard .person img, .slothead .peoplecard .person .namecard { width: 40px; height: 50px; }
   .slotfoot { padding: 4px 12px; }
   .footchips { overflow-x: auto; scrollbar-width: none; }
   .tray { padding: 8px 12px 10px; }
@@ -926,6 +939,9 @@ body .card.codexwrap .codexcard:not([data-kind="人物"]) .cpic img { max-height
 
 /* 书 — the novel's reader, a link beside 录 */
 a.readchip { text-decoration: none; display: inline-block; }
+/* 九鼎录 · 读原著: an icon and the whole name (Hanli, 2026-10-05: 「录」「书」 alone said nothing). */
+.luchip { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.luchip .chipicon { width: 14px; height: 14px; flex: none; }
 
 /* 《吐纳经》 read in the pouch: the classic's words, her note under them */
 .scroll { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
@@ -1130,12 +1146,15 @@ body.fighting .atmos { display: none; }
 /* While the box plays, the scene card waits: its choices come with the last beat. */
 .panelcard.reading .scenecap { opacity: .85; }
 .panelcard .dlgloglink { display: block; margin: 6px 4px 0 auto; font-size: 12px; }
-/* A beat's picture, when the world paints one: it fills the card's head. */
-.panelcard .panelart img { display: block; width: 100%; max-height: 46vh; object-fit: cover; border-radius: 6px; margin-bottom: 8px; }
+/* The scene card with its caption told in the box: only the choices, no frame of its own. */
+.focus .card.panelcard.bare { background: none; border: 0; box-shadow: none; padding: 0; }
+.focus .panelcard.bare .paneltaps { justify-content: center; }
+/* The caption, the box's first beat: its lines as written. */
+.dlg.cap .dlgtext, .dlglogrow.cap span { white-space: pre-line; }
 @container scene (max-width: 600px) {
   .view { --dlg-h: min(150px, 42vh); }
   /* Short and narrow: while the box plays, the header gives it room (the box shows the faces). */
-  .view:has(.dlgwrap:not(:empty)) { --head-h: 72px; }
+  .view:has(.dlgwrap:not(:empty)) { --head-h: 88px; }
   .dlgwrap { left: 16px; right: 16px; bottom: 8px; }
   .dlg { padding: 30px 14px 22px; gap: 10px; }
   .dlgface { width: 60px; height: 76px; }

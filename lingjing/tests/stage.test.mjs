@@ -205,7 +205,7 @@ test('the page draws the slots: header, main (#focus) holding the one thing, foo
   const fs = await import('node:fs');
   const html = fs.readFileSync(new URL('../scripts/index.html', import.meta.url), 'utf8');
   const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(html, /<div class="slothead" id="slotHead"><div class="huiline" id="huiLine"><\/div><div class="place" id="place"><\/div><div class="headcards" id="headCards"><\/div><\/div>\s*<div class="focus" id="focus"><\/div>/);
+  assert.match(html, /<div class="slothead" id="slotHead"><div class="titlerow"><span class="huiline" id="huiLine"><\/span><span class="place" id="place"><\/span><\/div><div class="headcards" id="headCards"><\/div><\/div>\s*<div class="focus" id="focus"><\/div>/);
   assert.match(html, /<footer class="slotfoot" id="slotFoot"><div class="footrow" id="footRow"><\/div><div class="footchips" id="footChips"><\/div><div class="askbar" id="askbar" hidden><\/div><\/footer>/);
   assert.match(html, /id="stage"/, 'her place on the stage stays');
   const focus = src.slice(src.indexOf('function focusHtml(slots)'), src.indexOf('function toastsHtml()'));
@@ -220,4 +220,17 @@ test('the day\'s coins wait for 银月 awake — asleep in the token, or not yet
   assert.deepEqual(kinds(stageCards(world())), ['hexagram']);
   assert.deepEqual(kinds(stageCards(world({ companion: { joined: true, asleep: true } }))), []);
   assert.deepEqual(kinds(stageCards(world({ companion: null }))), []);
+});
+
+test('the footer (Hanli, 2026-10-05): the weather chip names where he stands, 恩仇簿 is off it, the backdrop is ink or the scene\'s own picture', async () => {
+  const fs = await import('node:fs');
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const html = fs.readFileSync(new URL('../scripts/index.html', import.meta.url), 'utf8');
+  const foot = src.slice(src.indexOf('function footChipsHtml()'), src.indexOf('function festChipHtml()'));
+  assert.doesNotMatch(foot, /ledgerChipHtml/, 'the ledger is written no more: no chip');
+  assert.match(foot, /wxChipHtml\(wxHere\(\)/);
+  assert.match(src, /const wxHere = \(\) => \(look\?\.weather \? \{ \.\.\.look\.weather, where: look\.place\?\.name \?\? look\.weather\.where \} : null\);/);
+  assert.doesNotMatch(html, /<svg class="backdrop"|<circle/, 'no hill or moon drawn in code');
+  assert.match(html, /<div class="backdrop" id="backdrop" aria-hidden="true"><\/div>/);
+  assert.match(src, /const art = look\?\.scene\?\.panel\?\.art \?\? null;/, 'a picture only where the content declares one');
 });

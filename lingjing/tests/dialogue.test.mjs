@@ -174,8 +174,22 @@ test('the box on the page: its place in the view, the keys that go on, and what 
   const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
   assert.match(src, /e\.key === ' ' \|\| e\.key === 'Enter'/);
   assert.match(src, /boxGivesWay\(\{ bout: Boolean\(bout\), appearing: Boolean\(view\.appearing\)/);
-  assert.match(src, /cards = afterBook\(cards, cardsAhead\(\)\);/, 'the games wait for the book');
+  assert.match(src, /cards = afterBook\(cards, cardsAhead\(\), gamesEarly\(\)\);/, 'the games wait for the book — the scene\'s own come up past its caption');
+  assert.match(src, /if \(cardsAhead\(\)\) cards = cards\.filter\(\(c\) => c\.card !== 'panel'\);/, 'one text box: no scene card while the box tells');
   const css = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.css'), 'utf8');
   assert.match(css, /\.view:has\(\.dlgwrap:not\(:empty\)\) \.slots \{ bottom:/);
   assert.match(css, /\.dlgwrap \{ left: 16px; right: 16px;/, 'narrow: 16px gutters');
+});
+
+test('one text box (Hanli, 2026-10-05): the scene card\'s caption is the first beat of the scene\'s passage, in both languages', () => {
+  const s = named();
+  const played = playOf(content, s, [{ of: 'scene', id: '00-luoshu', text: '甲。\n\n乙。' }, { of: 'choice', id: '00-luoshu/pass', text: '丙。' }]);
+  const [cap, first] = played[0].beats.zh;
+  assert.deepEqual(cap, { text: '二试，脑子。\n一面石壁，九个空格。\n「横竖斜，加起来都要一样。」', cap: true });
+  assert.equal(first.text, '甲。');
+  assert.ok(played[0].beats.en[0]?.cap || played[0].beats.en.length === 0, 'the other language opens on its own caption');
+  assert.ok(!played[1].beats.zh.some(b => b.cap), 'a choice\'s passage has no caption');
+  const r = withTold(null, played, '00-luoshu');
+  assert.match(dialogHtml(r), /class="dlg told cap"/);
+  assert.match(logHtml(advance(r)), /dlglogrow cap/);
 });

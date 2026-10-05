@@ -4,7 +4,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { afterBook, bookAhead, BOX_FIRST, boxGivesWay, huiLineOf, MOMENTS, momentMay, trayWaits } from '../scripts/queue.js';
+import { afterBook, bookAhead, BOX_FIRST, boxGivesWay, EARLY, huiLineOf, MOMENTS, momentMay, trayWaits } from '../scripts/queue.js';
+import { sceneUnder } from '../scripts/dialogue.js';
 
 const cards = [{ card: 'meet', id: 'yinyue' }, { card: 'panel' }, { card: 'people' }, { card: 'board', id: 'deer-wind' }, { card: 'duel', id: 'longzhi' }, { card: 'tale' }, { card: 'lundao' }, { card: 'offer' }];
 
@@ -12,6 +13,19 @@ test('the games wait for the book: while a passage is ahead, no board, duel, 传
   assert.deepEqual(afterBook(cards, true).map(c => c.card), ['panel', 'people', 'offer']);
   assert.deepEqual(afterBook(cards, false), cards);
   for (const k of ['board', 'duel', 'tale', 'lundao', 'meet', 'breakthrough', 'born', 'value']) assert.ok(BOX_FIRST.has(k), k);
+});
+
+test('the scene\'s games come up over the box once it is past the caption (Hanli, 2026-10-05); new faces and choice cards still wait', () => {
+  assert.deepEqual(afterBook(cards, true, true).map(c => c.card), ['panel', 'people', 'board', 'duel', 'tale', 'lundao', 'offer']);
+  for (const k of ['board', 'duel', 'tale', 'lundao']) assert.ok(EARLY.has(k), k);
+  for (const k of ['meet', 'breakthrough', 'born', 'value']) assert.ok(!EARLY.has(k), k);
+  const items = [{ of: 'choice', id: 'a/b', beats: { zh: [{ text: '选了。' }] } }, { of: 'scene', id: 's1', beats: { zh: [{ text: '题。', cap: true }, { text: '一。' }, { text: '二。' }] } }];
+  const r = (i, j) => ({ scene: 's1', items, i, j, closed: false });
+  assert.equal(sceneUnder(r(0, 0), 's1'), false, 'the choice that leads in plays first');
+  assert.equal(sceneUnder(r(1, 0), 's1'), false, 'the caption first');
+  assert.equal(sceneUnder(r(1, 1), 's1'), true, 'past the caption: the games stand');
+  assert.equal(sceneUnder(r(1, 1), 's2'), false, 'another scene\'s passage');
+  assert.equal(sceneUnder({ ...r(1, 2), closed: true }, 's1'), false, 'the box put away: nothing early about it');
 });
 
 test('the book is ahead while passages are owed, being drawn or playing — but not while paused at a 回\'s turn', () => {
@@ -42,7 +56,7 @@ test('the moments come after the book, one at a time, in their order: set piece,
 
 test('the page asks queue.js: the games are held, every moment waits its turn, a gain waits for a quiet stage', () => {
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(page, /cards = afterBook\(cards, cardsAhead\(\)\);\s*watchAppear\(cards\);/, 'a beast\'s first sight only for a card that is drawn');
+  assert.match(page, /cards = afterBook\(cards, cardsAhead\(\), gamesEarly\(\)\);\s*watchAppear\(cards\);/, 'a beast\'s first sight only for a card that is drawn');
   for (const m of MOMENTS) assert.match(page, new RegExp(`momentTurn\\('${m}'`), `${m} waits its turn`);
   assert.match(page, /playing: playing\(r\) && r\.items\[r\.i\]\?\.of !== 'scene'/, 'a set piece plays after its choice\'s passage, before the next scene\'s (01-deep: the seal, then 01-cauldron)');
   assert.match(page, /async function gainBurst[\s\S]{0,200}boxAhead\(\) \|\| momentUp\(\) \|\| momentPending\.size/, '修为 +n never floats over her memory');
@@ -100,7 +114,7 @@ test('a board opened from the tray\'s 开局 waits for the whole passage, and fo
   assert.equal(trayWaits({ huiTurn: true }), true, 'a 回\'s 「完」 or the new title first');
   assert.equal(trayWaits({}), false, 'the book told: the board opens');
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(page, /if \(view\.opened && trayAhead\(\)\) cards = cards\.filter\(\(c\) => !\(c\.card === 'board' && c\.id === view\.opened\.id\)\);[\s\S]{0,200}cards = afterBook\(cards, cardsAhead\(\)\);/, 'the page holds the opened board back');
+  assert.match(page, /if \(view\.opened && trayAhead\(\)\) cards = cards\.filter\(\(c\) => !\(c\.card === 'board' && c\.id === view\.opened\.id\)\);[\s\S]{0,600}cards = afterBook\(cards, cardsAhead\(\), gamesEarly\(\)\);/, 'the page holds the opened board back');
   assert.match(page, /const trayAhead = \(\) => trayWaits\(\{ owed: [^}]*playing: playing\(readingHere\(\)\), huiTurn: atHuiTurn\(\) \}\);/, 'the box playing, not its choices up');
 });
 

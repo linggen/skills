@@ -40,7 +40,13 @@ test('played through the command, 体力 is off by default: Look shows a full po
     const look = JSON.parse(out.stdout.trim().split('\n').pop());
     assert.equal(look.stamina?.now, look.stamina?.max);
     assert.equal(look.stamina?.empty, false);
+    assert.equal(look.stamina?.off, true, 'off: Look says so, and the page shows no pool (Hanli, 2026-10-05)');
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test('the page draws no 体力 on the strip while it is off', () => {
+  const page = fs.readFileSync(path.resolve(import.meta.dirname, '../scripts/lingjing.js'), 'utf8');
+  assert.match(page, /if \(!q \|\| !q\.max \|\| q\.off\) return null;/);
 });

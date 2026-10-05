@@ -25,8 +25,16 @@ export const BOX_FIRST = new Set(['board', 'duel', 'tale', 'lundao', 'meet', 'br
 /* The page's own moments, in the order they come after the book. */
 export const MOMENTS = ['piece', 'doors', 'feat', 'memory', 'homing'];
 
-/* The stage's cards with the games held back while the book is ahead. */
-export const afterBook = (cards, ahead) => (ahead ? cards.filter((c) => !BOX_FIRST.has(c.card)) : cards);
+/* The games to play here: once the box is on the scene's own passage, past
+   its caption, they stand over the box (Hanli, 2026-10-05: 「对白讲到它时就出现在
+   舞台中央，可以直接上手」) — the passage that leads into them, a choice's, still
+   plays first. The rest of BOX_FIRST (a new face, a choice on its own card)
+   waits for the last beat, as before. */
+export const EARLY = new Set(['board', 'duel', 'tale', 'lundao']);
+
+/* The stage's cards with the games held back while the book is ahead; `early`,
+   the box past the scene's caption, lets the games through. */
+export const afterBook = (cards, ahead, early = false) => (ahead ? cards.filter((c) => !BOX_FIRST.has(c.card) || (early && EARLY.has(c.card))) : cards);
 
 /* Is the book ahead of the stage? Passages owed or being drawn, or the box
    playing — unless it is paused at a 回's turn (its 「完」, the new title). */

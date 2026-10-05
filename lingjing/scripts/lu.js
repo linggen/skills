@@ -8,7 +8,7 @@ import { codexBookHtml, codexHtml } from './codex.js';
 
 export const LU_WORDS = {
   zh: {
-    chip: '录', title: '九鼎录', close: '合上', found: '已寻回 {n}/9', map: '九鼎',
+    chip: '九鼎录', title: '九鼎录', close: '合上', found: '已寻回 {n}/9', map: '九鼎',
     states: { found: '已寻回', current: '寻访中', dark: '未至' },
     seen: '所见', missed: '未细看：{what}', now: '眼下：{what}', mystery: '谜：{q}', people: '人物谱', her: '{name}记起的', open: '悬而未决',
     kinds: { story: '途中所遇', tamed: '随行', fought: '交过手', known: '相识' },
@@ -19,7 +19,7 @@ export const LU_WORDS = {
     at: '于{place}', kinds: { minion: '灵兽', spell: '法术' },
   },
   en: {
-    chip: 'Record', title: 'The Nine Cauldrons', close: 'Close', found: '{n}/9 found', map: 'The nine',
+    chip: 'Nine Cauldrons', title: 'The Nine Cauldrons', close: 'Close', found: '{n}/9 found', map: 'The nine',
     states: { found: 'found', current: 'seeking', dark: 'not yet' },
     seen: 'What you saw', missed: 'Passed by: {what}', now: 'Now: {what}', mystery: 'The riddle: {q}', people: 'People met', her: 'What {name} remembers', open: 'Still open',
     kinds: { story: 'met on the way', tamed: 'walks with you', fought: 'fought', known: 'acquainted' },
@@ -123,4 +123,6 @@ export function titleCardHtml(chapter, lang = 'zh') {
     <button class="act" data-titlecard="${esc(chapter.id)}">${esc(w.titleClose)}</button></div>`;
 }
 
-export const luChipHtml = (lang, open) => `<button class="luchip" data-lu aria-expanded="${open ? 'true' : 'false'}" title="${esc(wordsOf(lang).title)}">${esc(wordsOf(lang).chip)}</button>`;
+/* A small scroll, drawn in the chip's own ink: the 录 is a record, not a book to read. */
+const SCROLL_ICON = '<svg class="chipicon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5h8.5v9.5a1.5 1.5 0 0 1-1.5 1.5H3.5A1.5 1.5 0 0 1 2 12v-1h8v1a1.5 1.5 0 0 0 1.5 1.5M4 2.5A1.5 1.5 0 0 0 2.5 4v7M6 5.5h4.5M6 8h4.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+export const luChipHtml = (lang, open) => `<button class="luchip" data-lu aria-expanded="${open ? 'true' : 'false'}" title="${esc(wordsOf(lang).title)}">${SCROLL_ICON}<span>${esc(wordsOf(lang).chip)}</span></button>`;

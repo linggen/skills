@@ -1,6 +1,6 @@
 // rules/daily.mjs — 问候 and 体力: her greeting on the day's first opening, the pool as the stage draws it.
 // Part of the rules engine; rules.mjs is its one door.
-import { dayKey, lockedOf, pick, staminaReturnsAt, stepName } from '../state.mjs';
+import { dayKey, lockedOf, pick, staminaLimited, staminaReturnsAt, stepName } from '../state.mjs';
 import { herAwake } from './companion.mjs';
 import { clone, refuse } from './core.mjs';
 import { chanceBrief } from './road.mjs';
@@ -57,7 +57,8 @@ function staminaBrief(content, state, now) {
   const resting = Boolean(state.resting) && state.stamina < (q.rest ?? 0);
   const empty = state.stamina <= 0 || resting;
   const at = n => staminaReturnsAt(content, state, n).toISOString();
-  return { now: state.stamina, max: q.max, step: q.cost.step, empty, ...(resting ? { resting: true } : {}),
+  // `off`: 体力 does not limit play (state.mjs staminaLimited) — the page shows no pool.
+  return { now: state.stamina, max: q.max, step: q.cost.step, empty, ...(resting ? { resting: true } : {}), ...(staminaLimited(content) ? {} : { off: true }),
     returns_at: empty ? at(resting ? q.rest : 1) : null,
     rest_at: empty ? at(Math.max(1, q.rest ?? 0)) : null,
     full_at: state.stamina < q.max ? at(q.max) : null };
