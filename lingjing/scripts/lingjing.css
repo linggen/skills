@@ -68,6 +68,7 @@ button:disabled { cursor: default; }
 .topbar .titlerow { order: 1; flex: 1 1 16em; }
 .topbar .langsw { order: 2; }
 .topbar .place { font-size: 15px; }
+.topbar .xw { max-width: 200px; min-width: 100px; }
 .status .daohao { font-family: var(--serif); font-weight: 600; font-size: 15px; }
 .status .realm { font-family: var(--serif); font-weight: 600; font-size: 14px; color: var(--ling); }
 /* 中 / En at the strip's end: the game's language, one tap. */
@@ -1238,14 +1239,14 @@ body.fighting .atmos { display: none; }
 /* 初见 (Hanli, 2026-10-05; sight.js): a face's first coming-on — his portrait large
    in the middle of the stage over the box, his name and one line; the next beat it
    shrinks back to his small card in the header. Never again after. */
-.sight { position: absolute; left: var(--stage-room); right: 24px; top: calc(var(--head-h) * .4); bottom: calc(var(--dlg-real, var(--dlg-h)) + 26px); z-index: 3; pointer-events: none; }
+.sight { position: absolute; left: var(--stage-room); right: 24px; top: calc(var(--head-h) * .4); bottom: calc(var(--dlg-real, var(--dlg-h)) + 26px); z-index: 3; pointer-events: none; container-type: size; }
 .sight:empty { display: none; }
 .sightcard { position: absolute; top: 0; bottom: 0; left: 0; right: 0; margin: 0 auto; width: max-content; max-width: 100%; display: flex; justify-content: center; align-items: flex-end; gap: 28px;
   pointer-events: auto; cursor: pointer; animation: sightIn .55s cubic-bezier(.2, .7, .2, 1) both; }
 .sightone { margin: 0; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 10px; min-width: 0; }
-.sightpic { flex: 0 1 auto; min-height: 90px; height: min(46vh, 440px); aspect-ratio: 4 / 5; width: auto; max-width: 100%; object-fit: cover; object-position: top;
+.sightpic { flex: none; min-height: 0; height: max(60px, min(440px, 100cqh - 86px)); aspect-ratio: 4 / 5; width: auto; max-width: 100%; object-fit: cover; object-position: top;
   border-radius: 10px; border: 1px solid color-mix(in srgb, var(--text) 18%, var(--line)); background: var(--raised); box-shadow: 0 10px 34px rgba(40, 30, 15, .22); }
-.sightpic.namecard { display: flex; align-items: center; justify-content: center; height: min(30vh, 260px); }
+.sightpic.namecard { display: flex; align-items: center; justify-content: center; height: max(60px, min(260px, 100cqh - 86px)); }
 .sightpic.namecard b { font-family: var(--serif); font-size: 30px; letter-spacing: .2em; color: var(--text); writing-mode: vertical-rl; }
 .sightone figcaption { flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; max-width: 26em; padding: 6px 16px; border-radius: 8px; text-align: center;
   background: color-mix(in srgb, var(--surface) 88%, transparent); }
@@ -1258,7 +1259,7 @@ body.fighting .atmos { display: none; }
 body.fighting .sight { display: none; }
 @container scene (max-width: 600px) {
   .sight { right: 12px; top: calc(var(--head-h) * .3); }
-  .sightpic { height: min(34vh, 300px); }
+  .sightpic { height: max(60px, min(300px, 100cqh - 76px)); }
   .sightone figcaption b { font-size: 18px; }
   .sightline { font-size: 12.5px; }
   .sightcard { gap: 14px; }
