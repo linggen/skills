@@ -18,6 +18,7 @@ import { codexHtml, isSubject, rubyName } from './codex.js';
    stored), the 古/今 lines and the draft rule — is book-order.js's, shared
    with the game (rules/hui.mjs). */
 import { bookEntries, resolveId } from './book-order.js';
+import { bare, keyOf, markIndex, plainOf, sentencesOf } from './book-diff.js';
 export { LINES, bookEntries, cnNumber, huiLabel, jinLabel, resolveId } from './book-order.js';
 
 /// The entry an id names in the view — a 回's own id, an old chapter id its
@@ -153,6 +154,34 @@ export function classicsAppendix(cited, classics = {}) {
   return `<hr><section class="dian" aria-label="附 · 本回典籍"><h2>附 · 本回典籍</h2>${cited.map(entry).join('')}</section>`;
 }
 
+/* 「只看改动」 (book-diff.js, rules/changes.mjs): a block the reader has not
+   confirmed wears `chg new` (a new block) or `chg changed` with its new
+   sentences in <mark class="chg-s">; what went is a small ⌫ that opens the
+   old words in place. The first element of each change carries id chg-<n>,
+   the change list's jump target. */
+const goneHtml = (texts, cls) => `<span class="chg-gone ${cls}"><button type="button" class="chg-x" aria-label="删去的原文" title="删去的原文">⌫</button><span class="chg-old" hidden>${texts.map((t) => esc(t)).join('<br>')}</span></span>`;
+
+/// A changed paragraph's lines with its new sentences marked, or null when
+/// the source line will not cut the way its plain words do (a mark across a 。).
+function sentenceHtml(lines, mark, inl) {
+  const pieces = lines.map((l) => sentencesOf(l));
+  const flat = pieces.flat();
+  const plain = sentencesOf(lines.map(plainOf).join('\n'));
+  if (flat.length !== plain.length || flat.some((p, i) => keyOf(plainOf(p)) !== keyOf(plain[i]))) return null;
+  if (flat.some((p) => (p.match(/\*\*/g) ?? []).length % 2 || (p.match(/\[/g) ?? []).length !== (p.match(/\]/g) ?? []).length)) return null;
+  const fresh = new Set(mark.s ?? []), gone = new Map((mark.gone ?? []).map((g) => [g.at, g.text]));
+  let k = 0;
+  const lineHtml = pieces.map((ps) => ps.map((p) => {
+    const at = k;
+    k += 1;
+    return (gone.has(at) ? goneHtml(gone.get(at), 'in') : '') + (fresh.has(at) ? `<mark class="chg-s">${inl(p)}</mark>` : inl(p));
+  }).join(''));
+  const tail = gone.has(k) ? goneHtml(gone.get(k), 'in') : '';
+  return lineHtml.join('<br>') + tail;
+}
+
+/// `opts.changes` → one 回's changes (rules/changes.mjs entry): the blocks not
+/// yet confirmed are marked (see above); none → the text plain.
 /// `opts.classics` → classics.json's classics: `《书名》{典=id}` links to its entry
 /// at the chapter's end (and back); none, or no entry: the 《书名》 alone.
 /// `opts.memory(n)` → memory n's plate src, or null (none: plates are left out);
@@ -191,18 +220,39 @@ export function renderMarkdown(md, opts = {}) {
   // <!-- … --> is a note for the writers (女主变体 and the like), never read.
   const lines = String(md ?? '').replace(/\r\n/g, '\n').replace(/<!--[\s\S]*?-->/g, '').split('\n');
   const out = [];
-  let para = [], quote = [], table = [], titled = false;
+  let para = [], quote = [], table = [], titled = false, firstH1 = false;
+  // 「只看改动」: each text block keyed as book-diff.js blocksOf keys it.
+  const marks = opts.changes ? markIndex(opts.changes) : null;
+  const seenKey = new Map(), firstOf = new Set();
+  const idOf = (n) => (firstOf.has(n) ? '' : (firstOf.add(n), ` id="chg-${n}"`));
+  const unit = (rows) => {
+    if (!marks) return null;
+    const text = rows.map(plainOf).join('\n').replace(/\n+$/, '');
+    if (!bare(text)) return null;
+    const key = keyOf(text), nth = seenKey.get(key) ?? 0;
+    seenKey.set(key, nth + 1);
+    for (const g of marks.cutBefore(key, nth)) out.push(cutHtml(g));
+    return marks.mark(key, nth);
+  };
+  const cutHtml = (g) => `<div class="chg-cut" data-chg="${g.item}"${idOf(g.item)}>${goneHtml(g.text, 'block')}<span class="chg-cutn">删去 ${g.text.length} 段</span></div>`;
+  const attrs = (m) => (m ? ` class="chg ${m.kind}" data-chg="${m.item}"${idOf(m.item)}` : '');
   const flush = () => {
     if (para.length) {
       block += 1;
-      const figs = figures(glossIds(para, codex)), p = `<p>${para.map(inl).join('<br>')}</p>`;
+      const m = unit(para);
+      // The figures first: a card standing makes the words beside it plain (near).
+      const figs = figures(glossIds(para, codex));
+      const inner = m?.kind === 'changed' ? sentenceHtml(para, m, inl) : null;
+      const whole = m?.kind === 'changed' && inner == null ? ' whole' : '';
+      const p = `<p${attrs(m).replace(/"chg changed"/, `"chg changed${whole}"`)}>${inner ?? para.map(inl).join('<br>')}</p>`;
       out.push(figs ? `<div class="noted">${p}${figs}</div>` : p);
       para = [];
     }
     if (quote.length) {
       block += 1;
+      const m = unit(quote);
       const figs = figures(glossIds(quote, codex));
-      out.push(`<blockquote>${quote.map((l) => `<p>${inl(l)}</p>`).join('')}</blockquote>${figs}`);
+      out.push(`<blockquote${attrs(m)}>${quote.map((l) => `<p>${inl(l)}</p>`).join('')}</blockquote>${figs}`);
       quote = [];
     }
     if (table.length) {
@@ -217,13 +267,17 @@ export function renderMarkdown(md, opts = {}) {
     if (h) {
       flush();
       section += 1;
+      // The file's first `# ` line is the 回's title: never a change (book-diff.js blocksOf).
+      const title = h[1].length === 1 && !firstH1;
+      if (h[1].length === 1) firstH1 = true;
+      const hm = title ? null : unit([h[2].trim()]);
       if (h[1].length === 1 && opts.hui?.huimu && !titled) { titled = true; heading = opts.hui.label.zh; out.push(huimuHtml(opts.hui)); continue; }
       const jin = h[1].length === 1 && HUIMU_JIN.exec(h[2].trim());
       if (jin) { heading = jin[1]; out.push(`<h1 class="huimu jin"><span class="hui">${esc(jin[1])}</span><span class="line">${esc(jin[2])}</span></h1>`); continue; }
       const hui = h[1].length === 1 && HUIMU.exec(h[2].trim());
       if (hui) { heading = hui[1]; out.push(`<h1 class="huimu"><span class="hui">${esc(hui[1])}</span><span class="line">${esc(hui[2])}</span><span class="line">${esc(hui[3])}</span></h1>`); continue; }
       if (h[1].length <= 2) heading = h[2].replace(CLASSIC, '《$1》').replace(/\*\*/g, '');
-      out.push(`<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`);
+      out.push(`<h${h[1].length}${attrs(hm)}>${inline(h[2])}</h${h[1].length}>`);
       continue;
     }
     const mem = MEMORY.exec(line.trim());
@@ -242,6 +296,7 @@ export function renderMarkdown(md, opts = {}) {
     para.push(line.trim());
   }
   flush();
+  for (const g of marks?.cutsAtEnd ?? []) out.push(cutHtml(g));
   const appendix = classicsAppendix([...cited], classics);
   if (appendix) out.push(appendix);
   return out.join('\n');

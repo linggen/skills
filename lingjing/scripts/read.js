@@ -9,12 +9,14 @@ import { esc } from './esc.js';
 import { bookEntries, entryById, fillHero, heroOf, renderMarkdown } from './read-md.js';
 import { playMarks, wireMarks } from './marks.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
-import { content, worldPath } from './rules.js';
+import { content, verb, worldPath } from './rules.js';
 import { createListener, listenHtml, loadManifest } from './pingshu.js';
 
 const WORDS = {
-  zh: { back: '← 回到灵境', toc: '目录', prev: '←', next: '→', none: '书还没有写。', failed: '这一回没能打开。', only: '这一回只有中文。' },
-  en: { back: '← Back to Lingjing', toc: 'Contents', prev: '←', next: '→', none: 'The book is not written yet.', failed: 'This chapter could not be opened.', only: 'This chapter is in Chinese only.' },
+  zh: { back: '← 回到灵境', toc: '目录', prev: '←', next: '→', none: '书还没有写。', failed: '这一回没能打开。', only: '这一回只有中文。',
+    chgs: (n) => `本回改动 ${n} 处`, chg: (i, n) => `改 ${i}/${n}`, ok: '已读，确认', okNote: (n) => `确认后，这 ${n} 处不再标出`, oked: '已确认', undo: '撤销', okFailed: '没能确认，稍后再试。' },
+  en: { back: '← Back to Lingjing', toc: 'Contents', prev: '←', next: '→', none: 'The book is not written yet.', failed: 'This chapter could not be opened.', only: 'This chapter is in Chinese only.',
+    chgs: (n) => `${n} change${n === 1 ? '' : 's'} here`, chg: (i, n) => `${i}/${n}`, ok: 'Read — confirm', okNote: (n) => `Confirming clears these ${n} marks`, oked: 'Confirmed', undo: 'Undo', okFailed: 'Could not confirm; try again later.' },
 };
 const STORY = '../story/';
 const params = new URLSearchParams(location.search);
@@ -52,6 +54,9 @@ async function main() {
   if (!bookId) { $('chapter').innerHTML = `<p class="note">${esc(w.none)}</p>`; return; }
   const book = await getJson(`${STORY}${encodeURIComponent(bookId)}/book.json`);
   const all = bookEntries(book, view);
+  // 「只看改动」 (rules/changes.mjs): what changed since each 回 was last confirmed.
+  const changed = await verb('changes', { book: bookId }).catch(() => null);
+  const counts = changed?.ok ? changed.entries ?? {} : {};
   // An old chapter id (read.html?ch=02, before the 回) opens its 回.
   const want = entryById(book, params.get('ch'), view)?.id;
   const at = Math.max(0, all.findIndex((c) => c.id === want));
@@ -59,7 +64,7 @@ async function main() {
   document.title = `${pick(book.title)} · ${pick(ch.label ?? ch.title)}`;
   $('booktitle').textContent = pick(book.title);
   $('toc').setAttribute('aria-label', w.toc);
-  $('toc').innerHTML = `<div class="toch">${esc(w.toc)}</div>` + tocHtml(all, at, bookId);
+  $('toc').innerHTML = `<div class="toch">${esc(w.toc)}</div>` + tocHtml(all, at, bookId, counts);
   $('toc').querySelector('a.on')?.scrollIntoView({ block: 'nearest' });
   // 图鉴 (codex.json and the files it links): the cards and figures in the
   // text — the same entries the game draws. None reads the words alone.
@@ -80,14 +85,23 @@ async function main() {
     const md = await res.text();
     const who = await hero, f = await files;
     codex = codexOf(f, { lang, gender: who.gender, say: addressSay(f.people, who.gender, lang) });
-    $('chapter').innerHTML = (lang === 'en' ? `<p class="note">${esc(w.only)}</p>` : '') + renderMarkdown(fillHero(md, who), {
+    const opts = {
       codex, chapter: ch.id, absorbs: ch.absorbs, hui: ch.huimu ? ch : null, src: (file) => worldPath(world, file), lang,
       memory: memoryPlate(await memories, world), classics: await classics,
-    });
+    };
+    const filled = fillHero(md, who);
+    paint = (changes) => {
+      $('chapter').innerHTML = (lang === 'en' ? `<p class="note">${esc(w.only)}</p>` : '') + renderMarkdown(filled, { ...opts, changes })
+        + (changes ? okHtml(changes) : '');
+      wireMarks($('chapter'));
+      rail(changes);
+      tocCount(ch.id, changes?.count ?? 0);
+    };
+    setCurrent(counts[ch.id] ?? null);
+    reading = { bookId, id: ch.id };
   } catch {
     $('chapter').innerHTML = `<p class="note">${esc(w.failed)}</p>`;
   }
-  wireMarks($('chapter'));
   ear(bookId, ch.id);
   const prev = all[at - 1], next = all[at + 1];
   const short = (c) => esc(pick(c.label ?? c.title));
@@ -102,8 +116,8 @@ const listener = createListener();
 async function ear(bookId, id) {
   const html = listenHtml(await loadManifest(bookId), id, lang, esc);
   if (!html) return;
-  $('chapter').insertAdjacentHTML('afterbegin', html);
-  $('chapter').querySelector('[data-listen]')?.addEventListener('click', (e) => {
+  $('listen').innerHTML = html;
+  $('listen').querySelector('[data-listen]')?.addEventListener('click', (e) => {
     const b = e.currentTarget;
     listener.open(b.closest('[data-listen-slot]'), b.dataset.listen, b.dataset.listenUrl);
   });
@@ -112,17 +126,77 @@ async function ear(bookId, id) {
 /// The contents: each 卷's name, then its 回 — a 古 回's number and its 古 tag, a 今 interlude's 「今 · N」,
 /// and the 回目 after it (古 two lines, 今 one; on a phone they wrap under the
 /// number); the appendix last.
-function tocHtml(all, at, bookId) {
+function tocHtml(all, at, bookId, counts = {}) {
   let volume = null;
   return all.map((c, i) => {
     const head = c.volume && c.volume.id !== volume ? `<div class="tocv">${esc(pick(c.volume.name))}</div>` : '';
     if (c.volume) volume = c.volume.id;
     const words = c.huimu
-      ? `<span class="tn">${esc(pick(c.label))}${c.line === 'jin' ? '' : `<i class="tag">${esc(pick(c.tag))}</i>`}${c.draft ? `<i class="tag draft">${lang === 'en' ? 'draft' : '草稿'}</i>` : ''}</span><span class="tm">${(c.huimu[lang] ?? c.huimu.zh ?? []).map((l) => `<span>${esc(l)}</span>`).join('')}</span>`
-      : esc(pick(c.title));
-    return `${head}<a href="${esc(hrefWith({ book: bookId, ch: c.id }))}" class="${[i === at ? 'on' : '', c.huimu ? `hui ${c.line}` : 'apx'].filter(Boolean).join(' ')}">${words}</a>`;
+      ? `<span class="tn">${esc(pick(c.label))}${c.line === 'jin' ? '' : `<i class="tag">${esc(pick(c.tag))}</i>`}${c.draft ? `<i class="tag draft">${lang === 'en' ? 'draft' : '草稿'}</i>` : ''}${chgBadge(counts[c.id]?.count)}</span><span class="tm">${(c.huimu[lang] ?? c.huimu.zh ?? []).map((l) => `<span>${esc(l)}</span>`).join('')}</span>`
+      : esc(pick(c.title)) + chgBadge(counts[c.id]?.count);
+    return `${head}<a data-id="${esc(c.id)}" href="${esc(hrefWith({ book: bookId, ch: c.id }))}" class="${[i === at ? 'on' : '', c.huimu ? `hui ${c.line}` : 'apx'].filter(Boolean).join(' ')}">${words}</a>`;
   }).join('');
 }
+
+/* ── 「只看改动」 ──
+   The marks are drawn by read-md.js from the rules' changes (rules/changes.mjs,
+   book-diff.js — the phone reads the same); here the list beside the text (a
+   drop-down on a narrow screen), the count in the contents, and 「已读，确认」
+   at the 回's end, which saves the 回 as read (撤销 puts the last one back). */
+let paint = () => {}, reading = null;
+const chgBadge = (n) => (n ? `<i class="chgn" title="${esc(w.chgs(n))}">${n}</i>` : '');
+function tocCount(id, n) {
+  const a = $('toc').querySelector(`a[data-id="${CSS.escape(id)}"]`);
+  if (!a) return;
+  a.querySelector('.chgn')?.remove();
+  (a.querySelector('.tn') ?? a).insertAdjacentHTML('beforeend', chgBadge(n));
+}
+function rail(c) {
+  const box = $('chgrail');
+  if (!c?.count) { box.hidden = true; box.innerHTML = ''; return; }
+  const wide = matchMedia('(min-width: 1241px)').matches;
+  box.hidden = false;
+  box.innerHTML = `<details class="chgbox"${wide ? ' open' : ''}><summary>${esc(w.chgs(c.count))}</summary><ol>`
+    + c.items.map((it) => `<li><button type="button" data-chg-go="${it.n}" class="${esc(it.kind)}"><b>${esc(w.chg(it.n, c.count))}</b>${esc(it.head)}</button></li>`).join('')
+    + `</ol><button type="button" class="chgtoend" data-chg-go="ok">${esc(w.ok)} ↓</button></details>`;
+}
+function okHtml(c) {
+  if (c.count) return `<div class="chgok" id="chgok"><button type="button" class="chgokbtn" data-chg-do="confirm">${esc(w.ok)}</button><span class="dim">${esc(w.okNote(c.count))}</span></div>`;
+  if (c.undo) return `<div class="chgok done" id="chgok"><span class="dim">${esc(w.oked)}</span><button type="button" class="chgundo" data-chg-do="undo">${esc(w.undo)}</button></div>`;
+  return '';
+}
+let current = null;
+const setCurrent = (c) => { current = c; paint(c); };
+async function act(what) {
+  if (!reading) return;
+  const args = { book: reading.bookId, id: reading.id, do: what };
+  if (what === 'confirm') args.rev = current?.rev ?? '';
+  const res = await verb('changes', args).catch(() => null);
+  const next = res?.entries?.[reading.id];
+  // The text moved under the page: read it again, marked against the new text.
+  if (res?.refused === 'moved') { location.reload(); return; }
+  if (next) setCurrent(next);
+  if (res?.ok) return;
+  const ok = $('chgok');
+  ok?.insertAdjacentHTML('beforeend', `<span class="dim warn">${esc(w.okFailed)}</span>`);
+}
+function goChange(n) {
+  const to = n === 'ok' ? $('chgok') : document.getElementById(`chg-${n}`);
+  if (!to) return;
+  to.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  to.classList.remove('flash');
+  void to.offsetWidth;
+  to.classList.add('flash');
+  if (!matchMedia('(min-width: 1241px)').matches) $('chgrail').querySelector('details')?.removeAttribute('open');
+}
+document.addEventListener('click', (e) => {
+  const go = e.target.closest?.('[data-chg-go]');
+  if (go) { e.preventDefault(); goChange(go.dataset.chgGo); return; }
+  const what = e.target.closest?.('[data-chg-do]');
+  if (what) { e.preventDefault(); what.disabled = true; act(what.dataset.chgDo); return; }
+  const x = e.target.closest?.('.chg-x');
+  if (x) { e.preventDefault(); const old = x.nextElementSibling; if (old) old.hidden = !old.hidden; x.classList.toggle('on', !old?.hidden); }
+});
 
 /// Memory n's one colour plate as a src, or null while it is not painted.
 const memoryPlate = (list, world) => (n) => {

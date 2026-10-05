@@ -41,11 +41,13 @@ import { atScene } from './rules/world.mjs';
 import { markBeen } from './rules/inkmap.mjs';
 import { owesTell, playOf, stagedOf, tellOf } from './rules/tell.mjs';
 import { BUILDING_WAITS, keepDay, keepSave, paintList, readSave } from './rules/worlds.mjs';
+import { changes } from './rules/changes.mjs';
 
 export { refine, TREASURE_TOP } from './rules/arms.mjs';
 export { askOf, tapThen, thenFor } from './rules/ask.mjs';
 export { deck, deckFor, fightSetup, hpMaxOf, ownedCards } from './rules/cards.mjs';
 export { hasCompanion } from './rules/companion.mjs';
+import { fitPresence } from './rules/companion.mjs';
 export { judge, pageNames, pageThrows, resolve, riddleOf } from './rules/core.mjs';
 export { heardOf, openPromises, remember, settlePromise, writeLedger } from './rules/ledger.mjs';
 export { oddsOf, rollOf } from './rules/breakthrough.mjs';
@@ -81,6 +83,8 @@ const TELLS = new Set(['look', 'resolve', 'go']);
    none is the page, whose every change is written down (rules/did.mjs). */
 function run(verb, args, reader = null) {
   if (verb === 'guide') return guideVerb(args);
+  // 「只看改动」 (rules/changes.mjs): the book reader's own state, never the save.
+  if (verb === 'changes') return changes(args);
   const stateFile = path.join(dataDir(), 'state.json');
   if (verb === 'seed') return withLock(stateFile, () => seed(args, stateFile), () => ({ ok: false, refused: 'busy', say: null }));
   if (verb === 'shift') return withLock(stateFile, () => shift(args), () => ({ ok: false, refused: 'busy', say: null }));
@@ -117,7 +121,8 @@ function runLocked(verb, args, stateFile, reader) {
   if (unasked) return unasked.result;
   // Fitted to its world (ids renamed since), and a fight left open on an
   // earlier day closed — both written with whatever this call writes.
-  const saved = raw && raw.world === worldId ? closeStaleFight(migrate(raw, content), now) : raw;
+  // Her presence fitted to the scene (companion.mjs fitPresence) — the flag the engine reads.
+  const saved = raw && raw.world === worldId ? fitPresence(content, closeStaleFight(migrate(raw, content), now)) : raw;
   const state = verb === 'init' || !saved ? freshState(content, args.lang ?? saved?.lang, now) : saved;
   // 前情提要 owed as a sitting opens (story.mjs): a chat session of Ling's seen
   // first on her Look, or a while away. Marked in place, and kept below
@@ -162,7 +167,9 @@ function runLocked(verb, args, stateFile, reader) {
   // A save fitted, a stale fight closed or a language heard is a change too.
   const changed = out.state ?? (heard !== (raw ?? state) ? heard : null);
   // What the page did, written down with it, so Ling and Yinyue can read it.
-  const next = (!reader && notePage(verb, args, out.result, changed, content, now)) || changed;
+  const noted = (!reader && notePage(verb, args, out.result, changed, content, now)) || changed;
+  // Into a 今 interlude or out of it: her presence follows the scene it is written with.
+  const next = noted && fitPresence(content, noted);
   // Something of the story happened: 传闻's quiet clock starts again (tale.mjs storyDue).
   if (next && out.result?.ok && STORY_VERBS.has(verb)) next.story_at = now.toISOString();
   if (next) {

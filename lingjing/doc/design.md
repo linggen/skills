@@ -111,6 +111,7 @@ skills/lingjing/
     games/                 洛书 · 华容道 · 七巧 · 五子 · 象棋残局 · 守夜 ·
                            暴雨 · 射鹿 · 洗髓 · 小周天 (the last four run in time: live-games.js)
     read.html, read.js, read-md.js   the book reader (书)
+    book-diff.js           「只看改动」: what changed since a 回 was confirmed (rules/changes.mjs)
     rules.mjs              the rules CLI: lock, fight hold, dispatch
     rules/*.mjs            the rules by part (core, look, travel, road, errands, tasks,
                            cards, arms, companion, memories, ledger, tell, hui, locks,
@@ -618,6 +619,14 @@ His ruling (2026-09-29): 「不用小人书的方式了，图片作为图鉴，�
 - **The book** (`scripts/read.html`, 书 chip): `story/index.json` names the
   books (aliases for old ids), `book.json` the 卷/回 with 回目, `classics.json`
   the classics at each 回's end; `[words]{注=id}` and `《书》{典=id}` marks.
+- **只看改动** (Hanli 2026-10-05): each 回 is marked against the version last
+  confirmed — blocks aligned by LCS, a rewritten one by sentence, `{注=…}`
+  `{典=…}` and spaces ignored (book-diff.js, by rule). The list of changes
+  stands right (a drop-down when narrow), the count in the contents;
+  「已读，确认」 at the 回's end saves it as read, 撤销 puts the last back.
+  One store for the Mac and the phone: data/reader/<book>/ (verb `changes`,
+  rules/changes.mjs); the first confirmed versions come from git once
+  (`node lingjing/tools/reader-base.mjs`, default 93e20ac0 = 「10-04 上午」).
 - **Choices are one question:** the chat owns the question; while an AskUser
   is open the stage hides every button of the same name.
 
