@@ -79,4 +79,6 @@ test('the page: the sight over the box, no first-meet card for a face it showed,
   assert.match(html, /<header class="topbar"><div class="status" id="status"><\/div><div class="titlerow">/);
   assert.match(src, /mountChatToggle\(document\.querySelector\('\.shell'\), lang\);/);
   assert.match(css, /\.shell\.chatfolded \{ grid-template-columns: minmax\(0, 1fr\) 0; \}/);
+  assert.match(css, /\.view:has\(\.sight \.sightcard:not\(\.going\)\) \.dlgface \{ display: none; \}/, 'the large picture up: no small one of him in the box');
+  assert.match(src, /class="scratch-badge"[^`]*style="position:fixed;bottom:6px;right:8px;/, 'the test badge never over the top strip');
 });

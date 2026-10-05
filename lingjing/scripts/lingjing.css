@@ -1177,6 +1177,8 @@ body.fighting .atmos { display: none; }
 /* While the box plays, the scene card waits: its choices come with the last beat. */
 .panelcard.reading .scenecap { opacity: .85; }
 .panelcard .dlgloglink { display: block; margin: 6px 4px 0 auto; font-size: 12px; }
+/* The scene card with no frame (its caption told in the box): 记录 sits under the choices, not adrift at the stage's right. */
+.focus .panelcard.bare .dlgloglink { margin: 6px auto 0; }
 /* The scene card with its caption told in the box: only the choices, no frame of its own. */
 .focus .card.panelcard.bare { background: none; border: 0; box-shadow: none; padding: 0; }
 .focus .panelcard.bare .paneltaps { justify-content: center; }
@@ -1260,6 +1262,8 @@ body.fighting .atmos { display: none; }
   transition: transform .6s cubic-bezier(.4, 0, .2, 1), opacity .6s ease-in; }
 @keyframes sightIn { from { opacity: 0; transform: translateY(14px) scale(.94); } to { opacity: 1; transform: none; } }
 body.fighting .sight { display: none; }
+/* His large picture stands: the box shows no small one of him beside it (it comes back with the next beat). */
+.view:has(.sight .sightcard:not(.going)) .dlgface { display: none; }
 @container scene (max-width: 600px) {
   .sight { right: 12px; top: calc(var(--head-h) * .3); }
   .sightpic { height: max(60px, min(300px, 100cqh - 76px)); }

@@ -3035,7 +3035,8 @@ async function greetByHer(grew = null) {
 const SCRATCH_BADGE = SCRATCH ? `测试存档 · ${SCRATCH}` : '';
 const SCRATCH_NOTE = '不连 Ling，不发 银月 — 只读写 data/saves/' + (SCRATCH ?? '') + '/';
 async function scratchBoot() {
-  document.body.insertAdjacentHTML('beforeend', `<div class="scratch-badge" title="${esc(SCRATCH_NOTE)}" style="position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:99;padding:2px 10px;border:1px solid #b33a2b;border-radius:3px;background:#fff8ef;color:#b33a2b;font:600 12px/1.6 var(--ui, sans-serif);letter-spacing:.08em;pointer-events:none">${esc(SCRATCH_BADGE)}</div>`);
+  // Low in the right corner (2026-10-05): over the top strip it hid the 回 and the place.
+  document.body.insertAdjacentHTML('beforeend', `<div class="scratch-badge" title="${esc(SCRATCH_NOTE)}" style="position:fixed;bottom:6px;right:8px;z-index:99;padding:2px 10px;border:1px solid #b33a2b;border-radius:3px;background:#fff8ef;color:#b33a2b;font:600 12px/1.6 var(--ui, sans-serif);letter-spacing:.08em;pointer-events:none">${esc(SCRATCH_BADGE)}</div>`);
   const url = new URL(location.href), from = url.searchParams.get('seed'), days = url.searchParams.get('days');
   if (!from && days == null) return;
   if (from) {
