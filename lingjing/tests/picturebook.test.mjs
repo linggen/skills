@@ -188,7 +188,7 @@ test('her lines in the book are the book\'s: played in place, awake or asleep (h
   assert.deepEqual(out.state.companion, { joined: '2026-09-28', awake: true });
   const cliff = tellOf(content, out.state).tell.at(-1);
   assert.equal(cliff.id, '00-cliff');
-  assert.match(cliff.text, /懒洋洋地抬了抬下巴/);
+  assert.match(cliff.text, /懒洋洋地把下巴一抬/);
   assert.match(cliff.text, /让开/, 'her book line told in place');
   assert.doesNotMatch(cliff.text, /〔银月〕|⟪|⟫/);
   assert.doesNotMatch(out.result.her_beat?.facts?.line ?? '', /让开/, 'never handed to her as well');
