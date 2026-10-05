@@ -1877,8 +1877,8 @@
       },
       "says": {
         "open": {
-          "zh": "匣子放下，狐狸放下。",
-          "en": "Put down the box. Put down the fox."
+          "zh": "匣子放下。",
+          "en": "Put down the box."
         },
         "won": {
           "zh": "你这踏马的符是哪来的！？",
