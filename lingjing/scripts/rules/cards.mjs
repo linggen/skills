@@ -158,7 +158,8 @@ const openFight = (state, game) => (game && state.fight?.game === game ? state.f
    refused. A save whose fight was opened before the setup was kept falls
    back to the live reading. Every fight begins at full 气血 (伤势 was cut,
    redesign-v2 § 四). */
-export function fightSetup(content, state, creature, now, game = null) {
+/* `deal`: a pool's fight (world.mjs encounterOf) — each of the day's fights its own shuffle. */
+export function fightSetup(content, state, creature, now, game = null, deal = null) {
   const open = openFight(state, game);
   if (open?.setup) return open.setup;
   // 问卦 (fortune.mjs): the day's reading — its element's 功法 ±n, and at 吉
@@ -175,7 +176,7 @@ export function fightSetup(content, state, creature, now, game = null) {
   const deck = state.traits?.length ? deckFor(content, state) : starterFor(content, []), stars = starsIn(state, deck);
   return {
     mode: 'pve',
-    seed: duelSeed(state, creature, now),
+    seed: deal ? `${duelSeed(state, creature, now)}|${deal}` : duelSeed(state, creature, now),
     you: {
       tier: state.tier, step: state.step ?? 0, root: main, deck, extra: [...(withHer ? ['yinyue'] : []), ...gear.charms],
       ...(lifts ? { lifts } : {}),

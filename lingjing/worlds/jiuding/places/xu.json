@@ -3,6 +3,8 @@
  "province": "徐",
  "start": "sishui",
  "_about": "The places of 徐 — a map, not a chain. `roads` go both ways; `tier` is the ladder index a place asks for (0 练气 … 8 渡劫), and a place above the player's tier is refused in the mist with a fitting place to go instead. `has` says what is there: a creature with its card, the province's seed pool, the market, a chapter scene. `line` is one sentence of what is there, for the director's brief.",
+ "_pools": "游荡的怪 (Hanli, 2026-10-05: 一片地方一个游荡怪物池，可重复打): a pool is a stretch of country's beasts and their weights; a place joins it by `has.pool` (world.mjs poolBeast). Only beasts of 卷一's book and a few added: 蒙山's are a hunter's trade (野猪 · 狼 · 熊), 狰 runs wild outside the herb garden, 蠪侄 in the wood outside the gate (古三), 蛫 by the Si (古五's 秘境).",
+ "pools": {"mengshan": {"name": {"zh": "蒙山", "en": "Mount Meng"}, "beasts": [{"creature": "yezhu", "weight": 3}, {"creature": "lang", "weight": 2}, {"creature": "xiong", "weight": 1}]}, "songlin": {"name": {"zh": "山门外的林子", "en": "The wood outside the gate"}, "beasts": [{"creature": "longzhi", "weight": 2}, {"creature": "lang", "weight": 1}]}, "yaoyuan-wai": {"name": {"zh": "药园外", "en": "Outside the herb garden"}, "beasts": [{"creature": "zheng", "weight": 3}, {"creature": "yezhu", "weight": 1}]}, "sishui": {"name": {"zh": "泗水边", "en": "By the Si"}, "beasts": [{"creature": "gui", "weight": 1}]}},
  "places": [
   {
    "id": "sishui",
@@ -21,7 +23,7 @@
     0.804,
     0.433
    ],
-   "has": {
+   "has": {"pool": "sishui", 
     "seeds": true,
     "scene": "04-arrive"
    },
@@ -53,7 +55,7 @@
     0.7957,
     0.4216
    ],
-   "has": {
+   "has": {"pool": "sishui", 
     "seeds": true
    },
    "line": {
@@ -477,6 +479,7 @@
     0.8285,
     0.4395
    ],
+   "has": {"pool": "songlin"},
    "line": {
     "zh": "往沉鼎观的石径，沟深草密，三年一回挤满上山的孩子。",
     "en": "The stone path up to Chending Temple: deep ditches, thick grass, and once in three years, crowded with children climbing."
@@ -590,6 +593,7 @@
     0.826,
     0.386
    ],
+   "has": {"pool": "mengshan"},
    "line": {
     "zh": "马家的山。三场围猎把前山篦了一遍又一遍，满地狗爪印。",
     "en": "The Mas' mountain. Three autumn hunts combed the front slopes bare; dog tracks everywhere."
@@ -610,6 +614,7 @@
     0.83,
     0.376
    ],
+   "has": {"pool": "mengshan"},
    "line": {
     "zh": "岭口的断碑，只剩两个字还看得清：勿入。",
     "en": "The broken stele at the ridge mouth; only two characters still read: Do not enter."
@@ -630,6 +635,7 @@
     0.835,
     0.367
    ],
+   "has": {"pool": "mengshan"},
    "line": {
     "zh": "树比外面的高一倍，树皮黑得像铁；路会自己打结。",
     "en": "Trees twice as tall as outside, bark black as iron; the paths tie themselves in knots."
@@ -760,6 +766,7 @@
     0.8352,
     0.3925
    ],
+   "has": {"pool": "yaoyuan-wai"},
    "line": {
     "zh": "后山崖顶，一块比人还高的大青石。往下看是泗水，泗水再往北，是蒙山。",
     "en": "The cliff top behind the temple, a blue boulder taller than a person. Below runs the Si; north of the Si, Mount Meng."

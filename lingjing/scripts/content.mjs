@@ -666,6 +666,9 @@ function lintPlaces(content, ids, bad) {
         else if (!byId[road].roads?.includes(place.id)) bad(at, `road to ${road} does not come back`);
       }
       if (place.has?.creature && !ids.creatures.has(place.has.creature)) bad(at, `has unknown creature ${place.has.creature}`);
+      // A pool (world.mjs poolBeast): one of its province's, and not beside a haunt of its own.
+      if (place.has?.pool != null && !doc.pools?.[place.has.pool]) bad(at, `joins unknown pool ${place.has.pool}`);
+      if (place.has?.pool != null && place.has?.creature) bad(at, 'a haunt or a pool, not both');
       // A game a place hosts is a hosted board task with a module to play it.
       for (const g of place.has?.games ?? []) {
         const t = (content.tasks?.tasks ?? []).find(x => x.id === g);
@@ -674,6 +677,15 @@ function lintPlaces(content, ids, bad) {
       }
       if (place.has?.scene && !scenes.has(place.has.scene)) bad(at, `has unknown scene ${place.has.scene}`);
       if (content.world?.atlas && !onMap(place.map)) bad(at, 'needs map [x, y] on the world map, fractions 0–1 (tools/pin.py)');
+    }
+    for (const [id, pool] of Object.entries(doc.pools ?? {})) {
+      if (!pair(pool.name)) bad(`pool ${id}`, 'needs a name in zh and en');
+      if (!(pool.beasts ?? []).length) bad(`pool ${id}`, 'holds no beast');
+      for (const b of pool.beasts ?? []) {
+        if (!ids.creatures.has(b.creature)) bad(`pool ${id}`, `holds unknown creature ${b.creature}`);
+        else if (content.creatures.creatures.find(c => c.id === b.creature)?.person) bad(`pool ${id}`, `${b.creature} is a person, fought in a scene`);
+        if (b.weight != null && !(Number.isInteger(b.weight) && b.weight >= 1)) bad(`pool ${id}`, `${b.creature}: weight is a whole number from 1`);
+      }
     }
     const reached = new Set();
     const walk = id => { if (!byId[id] || reached.has(id)) return; reached.add(id); (byId[id].roads ?? []).forEach(walk); };
@@ -929,7 +941,9 @@ function lintCreatures(content, bad) {
     if (c.person != null && (!peopleIds(content).includes(c.person) || c.likes)) bad(`creature ${c.id}`, `a foe is a person of people.json and likes nothing, not ${c.person}`);
     // `appear`: the first meeting played on the stage, a few lines in both languages.
     if (c.appear != null && !(Array.isArray(c.appear.zh) && Array.isArray(c.appear.en) && c.appear.zh.length && c.appear.zh.length <= 8)) bad(`creature ${c.id}`, 'appear is one to eight lines, zh and en');
-    if (!c.art || !c.art_source) { bad(`creature ${c.id}`, 'needs art and art_source'); continue; }
+    // Not yet painted (2026-10-05: 没有画就先不挂画): `unpainted`, and no picture claimed — the 图鉴 shows its words alone.
+    if (c.unpainted === true && !c.art && !c.art_source) continue;
+    if (!c.art || !c.art_source) { bad(`creature ${c.id}`, 'needs art and art_source (or `unpainted: true` and neither)'); continue; }
     if (!fs.existsSync(path.join(content.dir, c.art))) bad(`creature ${c.id}`, `art ${c.art} is missing`);
   }
 }

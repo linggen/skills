@@ -14,7 +14,7 @@ import { hashOf } from './travel.mjs';
 import { coolingUntil, oddsOf } from './breakthrough.mjs';
 import { freeSlot, pouchBrief } from './pouch.mjs';
 import { chapterLabel, comingOf } from './hui.mjs';
-import { allPlaces, atScene, creatureOf, huntable, inCorridor, inMade, ofJuan, pathOf, placeName, placeOf, placeOpen, sceneOf, tooHard, towardOf } from './world.mjs';
+import { allPlaces, atScene, creatureOf, hauntsOf, huntable, inCorridor, inMade, ofJuan, pathOf, placeName, placeOf, placeOpen, sceneOf, tooHard, towardOf } from './world.mjs';
 
 /* ── 差事 — the errands the player takes (design.md § 差事) ──
    接 · 记 · 追 · 交. The world offers, the player takes, the rules count, and
@@ -118,7 +118,7 @@ function whereFor(content, state, quest, need, lang, now) {
   const open = need.find(n => !n.done);
   if (!open) return null;
   const at = open.kind === 'visit' ? placeOf(content, open.place)
-    : open.kind === 'subdue' || open.kind === 'tame' ? Object.values(content.places).flatMap(d => d.places).find(p => p.has?.creature === open.creature)
+    : open.kind === 'subdue' || open.kind === 'tame' ? (hauntsOf(content, open.creature).map(p => placeOf(content, p.id)).find(p => p && placeOpen(content, state, p, now)) ?? hauntsOf(content, open.creature)[0])
       : open.kind === 'carry' ? nearestPlace(content, state, now, p => p.has?.shop)
         // a game: the nearest place that hosts it (his, 2026-09-23: 没有去碣石的按钮)
         : open.kind === 'board' ? (open.at ? placeOf(content, open.at) : nearestPlace(content, state, now, p => (p.has?.games ?? []).includes(open.task)))

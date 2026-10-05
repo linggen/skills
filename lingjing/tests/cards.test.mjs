@@ -539,13 +539,13 @@ test('a board done for the day never enters the stage — not even one Ling show
 test('所得: an errand handed in shows what it paid and the next step in hand', async () => {
   const { WORDS, cardHtml } = await import('../scripts/cards.js');
   const handed = [{ id: 'xu-elder-herb', title: '彭城老人的灵芝', who: '彭城的老人', paid: { progress: 40, wealth: 15 }, gives: '聚气丹',
-    next: { id: 'xu-fuli-longzhi', title: '凫丽山的蠪侄', took: true, at: { id: 'pengcheng', name: '彭城' } } }];
+    next: { id: 'xu-fuli-longzhi', title: '林子里的蠪侄', took: true, at: { id: 'pengcheng', name: '彭城' } } }];
   const html = cardHtml({ card: 'handed' }, { look: { handed }, lang: 'zh', words: WORDS.zh });
   assert.match(html, /交差 · 彭城老人的灵芝/);
   assert.match(html.replace(/<[^>]+>/g, ''), /修为 \+40 · 灵石 \+15 · 聚气丹/);
   assert.doesNotMatch(html, /fresh/, 'no clock given: shown, not animated');
   assert.match(cardHtml({ card: 'handed' }, { look: { handed }, lang: 'zh', words: WORDS.zh, handedAge: () => 100 }), /handedrow fresh" style="animation-delay:-100ms"/, 'fresh: it plays, picked up by its age');
-  assert.match(html, /接下来 · 凫丽山的蠪侄/);
+  assert.match(html, /接下来 · 林子里的蠪侄/);
   const full = cardHtml({ card: 'handed' }, { look: { handed: [{ ...handed[0], next: { ...handed[0].next, took: false } }] }, lang: 'zh', words: WORDS.zh });
   assert.match(full, /手上已满，了一件再去彭城接/);
   assert.equal(cardHtml({ card: 'handed' }, { look: {}, lang: 'zh', words: WORDS.zh }), '');

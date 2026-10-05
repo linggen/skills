@@ -12,7 +12,7 @@ import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from
 import { duelBrief, tasksBrief } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { stow, storedLine } from './pouch.mjs';
-import { creatureOf, encounterOf, placeOf, sceneOf } from './world.mjs';
+import { creatureOf, encounterOf, huntKey, placeOf, sceneOf } from './world.mjs';
 
 /* ── Tasks and quests ── */
 
@@ -170,20 +170,22 @@ export function duel(state, content, ctx, args) {
   if (haunt?.tamed) return refuse('tamed', null, { creature: haunt.creature });
   const game = exit ? gameOf(exit) : haunt.game, creature = creatureOf(content, game.creature);
   // A beast that is caught, not fought (`catch`), runs the moment it is struck at.
-  if (haunt && creature.catch) return refuse('runs', pick(creature.runs, state.lang), { creature: haunt.creature, catch: creature.catch });
+  if (haunt && !haunt.pool && creature.catch) return refuse('runs', pick(creature.runs, state.lang), { creature: haunt.creature, catch: creature.catch });
   const withdrawnLine = exit ? pick(exit.withdrawn, state.lang)
     : pick({ zh: `${pick(creature.name, 'zh')}退入林影，明日再来。`, en: `${pick(creature.name, 'en')} withdraws into the shadows; come back tomorrow.` }, state.lang);
   const s = clone(state);
-  const day = dayKey(ctx.now), today = s.duels?.[creature.id];
+  // A pool's fights are kept by the place, numbered through the day (world.mjs huntKey): fought again and again.
+  const key = game.hunt ? huntKey(game.hunt) : creature.id, hunt = Boolean(game.hunt);
+  const day = dayKey(ctx.now), today = s.duels?.[key];
 
   // ── 出手: the door of the instance ──
   if (!args.picks) {
     // A trial fight (`retry`, the prologue's 三试) is fought again at once — a
     // new player is never shut out of the gate for the day by one loss.
     const again = game.retry && today?.day === day && ['lost', 'withdrew'].includes(today.outcome);
-    if (!again && today?.day === day && today.outcome === 'lost') return refuse('withdrawn', withdrawnLine, { game: id });
-    if (!again && today?.day === day && today.outcome === 'withdrew') return refuse('spent-today', null, { game: id });
-    if (today?.day === day && today.outcome === 'won') return refuse('subdued-today', null, { game: id });
+    if (!hunt && !again && today?.day === day && today.outcome === 'lost') return refuse('withdrawn', withdrawnLine, { game: id });
+    if (!hunt && !again && today?.day === day && today.outcome === 'withdrew') return refuse('spent-today', null, { game: id });
+    if (!hunt && today?.day === day && today.outcome === 'won') return refuse('subdued-today', null, { game: id });
     if (exit && s.wins?.[id]) return refuse('won-already', null, { game: id, exit: exit.id });
     if (s.fight && s.fight.game !== id) return refuse('in-a-fight', null, { game: s.fight.game });
     // Roots unread, only a trial is fought (the 三试, before the 入门仪式): with the rootless starter (cards.mjs fightSetup).
@@ -196,27 +198,28 @@ export function duel(state, content, ctx, args) {
       const empty = spendStamina(content, s, ctx, 'duel');
       if (empty) return empty;
     }
-    s.duels = { ...s.duels, [creature.id]: { day, outcome: 'open' } };
+    const n = hunt && today?.day === day ? today.n ?? 0 : 0;
+    s.duels = { ...s.duels, [key]: { day, outcome: 'open', ...(hunt ? { n } : {}) } };
     // While this is set, Ling advances NOTHING (SKILL.md § 斗法): she knows
     // from the save, not from a message, because a message can be lost.
     s.fight = resuming ? s.fight : { game: id, creature: creature.id, at: ctx.now.toISOString() };
     // The whole setup is kept with it, so the settle replays what the page
     // is handed now (an older save's open fight takes it on resume).
-    if (!s.fight.setup) s.fight.setup = fightSetup(content, s, creature, ctx.now, id);
+    if (!s.fight.setup) s.fight.setup = fightSetup(content, s, creature, ctx.now, id, game.deal);
     return { state: s, result: { ok: true, started: id, ...(resuming ? { resumed: true } : {}), duel: duelBrief(content, s, game, ctx.now, { door: true }) } };
   }
 
   // ── 收场: the page hands back what was played, the rules replay it ──
   if (today?.day !== day || today.outcome !== 'open' || s.fight?.game !== id) return refuse('not-started', null, { game: id });
   // The setup the page was handed at the door, not one made again now.
-  const setup = s.fight.setup ?? fightSetup(content, s, creature, ctx.now, id);
+  const setup = s.fight.setup ?? fightSetup(content, s, creature, ctx.now, id, game.deal);
   const actions = String(args.picks).split(',').map(x => x.trim()).filter(Boolean);
   const played = battle(actions, setup, cardCatalog(content));
   if (played.refused) return refuse(played.refused.why, null, { action: played.refused.action });
   if (played.outcome === 'open') return refuse('unfinished', null, { turn: played.turn });
   delete s.fight;
   // A loss costs nothing but the beast, gone for the day (伤势 was cut, redesign-v2 § 四).
-  s.duels[creature.id] = { day, outcome: played.outcome };
+  s.duels[key] = { day, outcome: played.outcome, ...(hunt ? { n: (today.n ?? 0) + 1 } : {}) };
   // A 符 played is a 符 spent, win or lose (cards.mjs § 装备入局).
   const spent = spentCharms(content, setup, played);
   for (const id of spent) { s.bag[id] = Math.max(0, (s.bag[id] ?? 0) - 1); if (!s.bag[id]) delete s.bag[id]; }

@@ -2388,7 +2388,7 @@ test('差事: taken at the giver, counted by the rules, handed in where he stand
   assert.equal(turned.state.bag.lingzhi, undefined, 'the herb changed hands');
   assert.equal(turned.state.bag['bamboo-sword'], 1, 'and the sword came back');
   // the giver hands the next step over with it (his pick A, 2026-09-23)
-  assert.deepEqual(turned.result.then, { id: 'xu-fuli-longzhi', title: '凫丽山的蠪侄', took: true, at: { id: 'pengcheng', name: '彭城' } });
+  assert.deepEqual(turned.result.then, { id: 'xu-fuli-longzhi', title: '林子里的蠪侄', took: true, at: { id: 'pengcheng', name: '彭城' } });
   assert.deepEqual(turned.result.book.map(b => b.id), ['xu-fuli-longzhi'], 'the finished one leaves, the next is in hand');
   assert.equal(quest(turned.state, content, at, { action: 'turn', id: 'xu-elder-herb' }).result.refused, 'already-done');
   assert.ok(!(look({ ...turned.state, place: 'pengcheng' }, content, at).offers ?? []).some(o => o.id === 'xu-fuli-longzhi'), 'nothing left to take at the giver');
@@ -2825,7 +2825,7 @@ test('language: machine lines never turn it, and a chosen one holds against word
   assert.equal(guessed.lang_set, false, 'a new game\'s guess from the machine is not a choice');
 });
 
-// He fed 蠪侄 its 人参 for 凫丽山的蠪侄 (a 降), and the errand stood at 0/1
+// He fed 蠪侄 its 人参 for 林子里的蠪侄 (a 降), and the errand stood at 0/1
 // with the fight gone: won over either way, it counts (his, 2026-09-23).
 test('a beast tamed meets an errand that asked for it subdued', () => {
   const at = ctx();

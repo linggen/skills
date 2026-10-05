@@ -1,10 +1,10 @@
 // rules/world.mjs — Reading the state, and the places: the province as a map.
 // Part of the rules engine; rules.mjs is its one door.
-import { dayKey, pick } from '../state.mjs';
+import { dayKey, pick, seedOf } from '../state.mjs';
 import { itemBrief, itemOf } from './errands.mjs';
 import { meetBrief, meetHere } from './road.mjs';
 import { duelBrief, shelfOf, shopOf, shopOpen, withMap } from './look.mjs';
-import { provinceOf } from './travel.mjs';
+import { hashOf, provinceOf } from './travel.mjs';
 
 const STORY_WORDS = 300, STORY_CHARS = 600;
 
@@ -127,8 +127,45 @@ const hauntId = creature => `haunt:${creature}`;
    a beast caught instead (`catch`) is never offered as a fight. */
 const huntable = (content, p, now = new Date()) => Boolean(p?.has?.creature) && metNow(content, p.has.creature, now) && !creatureOf(content, p.has.creature)?.catch;
 const caughtBy = (state, creature) => Boolean(creature.catch) && state.tasks?.[creature.catch]?.status === 'done';
+/* 游荡的怪 (his, 2026-10-05: 一片地方一个游荡怪物池，可重复打): a stretch of country
+   shares one pool — places/<province>.json `pools: {id: {name, beasts: [{creature,
+   weight}]}}`, a place's `has.pool`. Standing there with no scene running, one
+   beast of it is up, drawn by the day, the save, the place and the fights already
+   settled there today (`state.duels['hunt:<place>'].n`); every settle — won, lost
+   or run dry — draws the next. Fought as often as he likes (体力 is the limit),
+   paid by the haunt table each win. Never tamed from a pool; a story's boss is a
+   scene's fight, never a pool's. Only beasts of an open 卷 (metNow). */
+const poolOf = (content, place) => (place?.has?.pool ? content.places[place.province]?.pools?.[place.has.pool] ?? null : null);
+const huntKey = id => `hunt:${id}`;
+function poolBeast(content, state, place, now) {
+  const beasts = (poolOf(content, place)?.beasts ?? []).filter(b => (b.weight ?? 1) > 0 && metNow(content, b.creature, now));
+  if (!beasts.length) return null;
+  const day = dayKey(now), rec = state.duels?.[huntKey(place.id)];
+  const n = rec?.day === day ? rec.n ?? 0 : 0;
+  // hashOf moves by one as `n` does (its last digit): mixed first, or the draw only walks round the pool.
+  const h = hashOf(`${day}|${seedOf(state)}|${place.id}|hunt|${n}`), x = Math.imul(h ^ (h >>> 16), 0x45d9f3b);
+  let at = ((x ^ (x >>> 16)) >>> 0) % beasts.reduce((t, b) => t + (b.weight ?? 1), 0);
+  return beasts.find(b => (at -= b.weight ?? 1) < 0).creature;
+}
+/* The places a beast is met at: its haunt, and every place whose pool holds it. */
+const hauntsOf = (content, id) => allPlaces(content).filter(p => p.has?.creature === id || (poolOf(content, p)?.beasts ?? []).some(b => b.creature === id));
+
 function encounterOf(content, state, now) {
   const place = placeOf(content, state.place);
+  if (place && !place.has?.creature && poolOf(content, place) && !atScene(content, state)) {
+    const cid = poolBeast(content, state, place, now);
+    const creature = cid ? creatureOf(content, cid) : null;
+    if (creature) {
+      // `deal`: each fight of the day its own shuffle — the same beast met again is not the same fight again.
+      const n = state.duels?.[huntKey(place.id)]?.day === dayKey(now) ? state.duels[huntKey(place.id)].n ?? 0 : 0;
+      const game = { id: hauntId(cid), kind: 'duel', creature: cid, hunt: place.id, deal: `${hauntId(cid)}|${place.id}|${n}` };
+      return {
+        creature: { id: cid, name: pick(creature.name, state.lang) }, game, pool: { id: place.has.pool, name: pick(poolOf(content, place).name, state.lang) ?? null },
+        duel: duelBrief(content, state, game, now), won: false, withdrawn: false, tamed: false,
+        beaten: Boolean(state.wins?.[game.id]), likes: null,
+      };
+    }
+  }
   // The haunt's own beast, else the one today's 遇 put on this road — until
   // it is passed by or beaten, when it has left the road (review, 2026-09-24).
   const road = meetHere(state, now);
@@ -247,4 +284,4 @@ function fittingPlace(content, state, from) {
    opens when it ends. */
 const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && carried(content, state);
 
-export { juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };
+export { hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };

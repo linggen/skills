@@ -31,7 +31,7 @@ import { itemOf, offersOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
 import { bagFull, roomFor } from './pouch.mjs';
 import { mainRoot } from './roots.mjs';
-import { allPlaces, atScene, creatureOf, huntable, inMade, ofJuan, placeOf, placeOpen, tooHard } from './world.mjs';
+import { allPlaces, atScene, creatureOf, huntable, inMade, ofJuan, placeOf, placeOpen, poolBeast, tooHard } from './world.mjs';
 
 /* ── 机缘 — the day's one chance, somewhere near, for a few real hours ──
    His pick, 2026-09-23 (觅长生's 过时不候, Lifeline's real clock): once a day,
@@ -95,6 +95,8 @@ const meetHere = (state, now) => meetsToday(state, now)[state.place] ?? null;
 function ownHere(content, state, ctx) {
   const place = placeOf(content, state.place), has = place?.has ?? {};
   if (atScene(content, state) || has.shop) return true;
+  // A stretch with its own beasts (a pool, world.mjs poolBeast): the beast up is the arrival.
+  if (has.pool && poolBeast(content, state, place, ctx.now)) return true;
   if (offersOf(content, state, state.lang, ctx.now).length) return true;
   return Boolean(has.creature && !state.cast.includes(has.creature) && state.duels?.[has.creature]?.day !== dayKey(ctx.now));
 }

@@ -66,6 +66,7 @@
       },
       "need": [{ "kind": "visit", "place": "liuwan", "n": 1 }],
       "grant": { "table": "quest", "progress": 30, "wealth": 10, "item": "ganliang" }
-    }
+    },
+    {"id": "ji-liuwan-renyu", "title": {"zh": "夜里哭的鱼", "en": "The fish that cries at night"}, "from": {"place": "liuwan", "who": {"zh": "柳湾的渔家", "en": "the fishermen of Willow Bend"}}, "opens": {"done": "01-rise"}, "say": {"zh": "河里太平了，可一到夜里，浅滩上就有东西哭，跟婴儿似的。孩子们不敢下水。你替我们瞧瞧——不用打死，赶回深水里去就成。", "en": "The river is quiet now, but at night something cries in the shallows, like a baby. The children won't go in the water. Have a look for us — no need to kill it, just drive it back into deep water."}, "done": {"zh": "渔家的老婆婆点了点头：「人鱼。四只脚，哭起来像娃娃。老辈人说，它从北边山里的决决水下来。」", "en": "The fishermen's old grandmother nods: \"A renyu. Four legs, cries like a child. The old folk say it comes down from the Juejue, in the hills up north.\""}, "need": [{"kind": "subdue", "creature": "renyu", "n": 1}], "grant": {"table": "quest", "progress": 40, "wealth": 15}}
   ]
 }

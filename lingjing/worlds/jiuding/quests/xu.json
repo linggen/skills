@@ -111,8 +111,8 @@
     {
       "id": "xu-fuli-longzhi",
       "title": {
-        "zh": "凫丽山的蠪侄",
-        "en": "The Longzhi of Fuli"
+        "zh": "林子里的蠪侄",
+        "en": "The Longzhi in the wood"
       },
       "from": {
         "place": "pengcheng",
@@ -122,8 +122,8 @@
         }
       },
       "say": {
-        "zh": "药是好了。可采药的路断了——凫丽山有蠪侄，九尾九首，见人就扑。你降了它，我再谢你。",
-        "en": "The cough is mended, but the herb road is shut: a Longzhi haunts Mount Fuli, nine tails and nine heads, and it leaps at anyone. Subdue it and I will thank you properly."
+        "zh": "药是好了。可采药的路断了——山门外的林子里又有蠪侄出没，九尾九首，见人就扑。你降了它，我再谢你。",
+        "en": "The cough is mended, but the herb road is shut: a Longzhi haunts the wood outside the temple gate again, nine tails and nine heads, and it leaps at anyone. Subdue it and I will thank you properly."
       },
       "need": [
         {

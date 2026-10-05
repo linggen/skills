@@ -3,6 +3,8 @@
  "province": "冀",
  "start": "zhangnan",
  "_about": "The places of 冀 — the 漳水 and 邺 in the south, 太行 to the west, 发鸠 and 涿鹿 north, 碣石 at the sea. The road in comes from 徐's 泗水北岸; it opens with chapter 1.",
+ "_pools": "冀's pools: the 太行's beasts of 《山海经 · 北次三经》 (天马 of 马成之山, 领胡 of 阳山) and the 漳水's 人鱼 (决决之水) — added for 卷一, used by no later 卷 (DESIGN.md, OUTLINE.md checked 2026-10-05).",
+ "pools": {"taihang": {"name": {"zh": "太行山口", "en": "The Taihang pass"}, "beasts": [{"creature": "tianma", "weight": 2}, {"creature": "linghu", "weight": 2}]}, "liuwan": {"name": {"zh": "漳水下游", "en": "Down the Zhang"}, "beasts": [{"creature": "renyu", "weight": 1}]}},
  "places": [
   {
    "id": "zhangnan",
@@ -127,7 +129,7 @@
     0.6492,
     0.3051
    ],
-   "has": { "seeds": true, "games": ["huarong"] },
+   "has": {"pool": "taihang",  "seeds": true, "games": ["huarong"] },
    "line": {
     "zh": "太行八陉之一。山那边是并州，山这边是冀。",
     "en": "One of the eight passes of the Taihang. Bing lies beyond the mountains; Ji on this side."
@@ -243,6 +245,6 @@
   {"id": "ye-xiangzhu", "name": {"zh": "邺城 · 香烛铺", "en": "Ye · the incense shop"}, "tier": 0, "roads": ["ye"], "map": [0.6888, 0.3232], "has": {"shop": {"name": {"zh": "香烛铺", "en": "The incense shop"}, "keeper": {"zh": "香烛 · 玉器", "en": "incense and jade"}, "goods": ["jade-ring", "jade-fish"]}}, "line": {"zh": "香烛鼓乐，三老一年统共给三贯。柜上摆着几样开过光的玉。", "en": "Incense, drums and pipes: three strings a year from the Three Elders, all told. A few blessed jades lie on the counter."}},
   {"id": "ye-kezhan", "name": {"zh": "邺城 · 城东客栈", "en": "Ye · the inn on the east side"}, "tier": 0, "roads": ["ye"], "map": [0.6922, 0.3296], "has": {"shop": {"name": {"zh": "城东客栈", "en": "The east-side inn"}, "keeper": {"zh": "胖掌柜", "en": "the stout innkeeper"}, "goods": ["ganliang", "mend-pill"]}}, "line": {"zh": "掌柜是个胖子，面汤清得照得见人影。后院有一口井，井台上坐得下一个人算账。", "en": "The innkeeper is stout, the noodle soup clear enough to see your face in. A well in the back yard, its rim wide enough for one person doing sums."}},
   {"id": "ye-sanlao", "name": {"zh": "邺城 · 三老宅", "en": "Ye · the Three Elders' house"}, "tier": 0, "roads": ["ye"], "map": [0.679, 0.3192], "has": {}, "meets": ["find"], "line": {"zh": "城北一座三进的大宅子。漳水那天以后，箱子都抬空了，门也没人守。", "en": "A great house of three courtyards on the north side. Since the day of the Zhang its chests stand empty, and no one keeps the gate."}},
-  {"id": "liuwan", "name": {"zh": "柳湾", "en": "Willow Bend"}, "tier": 0, "roads": ["zhangnan"], "map": [0.6952, 0.3858], "has": {"seeds": true}, "water": true, "meets": ["find", "beast"], "line": {"zh": "漳水下游的渔村，岸上一排老柳。二十五年，谁也不敢往下游看一眼。", "en": "A fishing village downstream on the Zhang, a row of old willows on the bank. For twenty-five years no one dared look downstream."}}
+  {"id": "liuwan", "name": {"zh": "柳湾", "en": "Willow Bend"}, "tier": 0, "roads": ["zhangnan"], "map": [0.6952, 0.3858], "has": {"pool": "liuwan", "seeds": true}, "water": true, "meets": ["find", "beast"], "line": {"zh": "漳水下游的渔村，岸上一排老柳。二十五年，谁也不敢往下游看一眼。", "en": "A fishing village downstream on the Zhang, a row of old willows on the bank. For twenty-five years no one dared look downstream."}}
  ]
 }

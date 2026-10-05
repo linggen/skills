@@ -42,7 +42,7 @@ const GAME_WORDS = /修为|灵力|卡牌|灵石|体力|气血/;
 
 test('every creature speaks: open, won, lost in both languages, short, no digits, no game words', () => {
   const all = content.creatures.creatures.filter(c => !c.made);
-  assert.equal(all.length, 25, 'eighteen beasts, 狰, the three the 宗门大比 fights (卢方, 秦雁, 马小宝 — 2026-10-03) and 孙二狗 kept for old saves, 邹青松 in the 秘境 (古五), and 冰夷\'s two dragons (古八)');
+  assert.equal(all.length, 31, 'the six of 卷一\'s pools (野猪 · 狼 · 熊 of 蒙山; 天马 · 领胡 · 人鱼 of 冀, 2026-10-05), eighteen beasts, 狰, the three the 宗门大比 fights (卢方, 秦雁, 马小宝 — 2026-10-03) and 孙二狗 kept for old saves, 邹青松 in the 秘境 (古五), and 冰夷\'s two dragons (古八)');
   for (const c of all) {
     for (const k of ['open', 'won', 'lost']) {
       const line = c.says?.[k];
@@ -91,7 +91,7 @@ test('an errand that asks for the beast: 差事 · its title', () => {
   const base = atFajiu({ place: 'fuli', chapter: '02-yan', quests: { 'xu-fuli-longzhi': { have: [0], taken: c.now.toISOString() } } });
   const l = look(base, content, c);
   assert.equal(l.place.encounter?.creature.id, 'longzhi', JSON.stringify(l.place.encounter));
-  assert.equal(door(base, 'haunt:longzhi', c).stake, '差事 · 凫丽山的蠪侄');
+  assert.equal(door(base, 'haunt:longzhi', c).stake, '差事 · 林子里的蠪侄');
   // handed in, it is only the haunt again
   const done = { ...base, quests: { 'xu-fuli-longzhi': { have: [1], done_at: c.now.toISOString() } } };
   assert.equal(door(done, 'haunt:longzhi', c).stake, l.place.name);

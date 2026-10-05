@@ -309,6 +309,26 @@ Look's `place.encounter` (no scene here): the creature, its fight
 from the bag and adds it to the cast (`needs-item`, `already-tamed`,
 `untameable`). Every card ends with a button (问询 at least).
 
+### 游荡的怪 — a stretch's pool, fought again and again 【已建】 (2026-10-05)
+
+His: 「一片地方一个游荡怪物池，可重复打」. A province's places file declares
+`pools: {id: {name, beasts: [{creature, weight}]}}`; a place joins one by
+`has.pool` (a haunt or a pool, never both — linted). Where no scene runs, one
+beast of the pool is up (world.mjs `poolBeast`: drawn by the day, the save, the
+place and the fights settled there today, `state.duels['hunt:<place>'].n`); every
+settle — won, lost, run dry — draws the next, so the stretch is fought as often as
+体力 allows, each win paid by the `haunt` table with its drops and a card; each
+fight its own shuffle (`game.deal`, cards.mjs fightSetup). A pool's beast is never
+tamed there, never runs (`catch` is the story's), and a person or a boss is never
+in one — bosses stay the story's single fights (冰夷双龙, the 大比). Only beasts of
+an open 卷. 卷一's pools: **蒙山** (蒙山前山 · 断碑 · 黑松岭) 野猪 · 狼 · 熊, a
+hunter's trade; **山门外的林子** (上山路) 蠪侄 · 狼 (古三); **药园外** (后山崖顶) 狰 run
+wild · 野猪; **泗水边** (泗水岸 · 北岸) 蛫 (古五); **太行山口** 天马 · 领胡 and **漳水下游**
+(柳湾) 人鱼 — the three of 《山海经 · 北次三经》 (马成之山 · 阳山 · 决决之水), used by no
+later 卷 (story DESIGN/OUTLINE checked), quoted in their 图鉴 entries and
+`unpainted` (no picture claimed; the lint lets an `unpainted` creature stand
+without one). An errand for a pool's beast points to its stretch (`hauntsOf`).
+
 ## Items, the 储物袋 【已建】
 
 - `items.json`: `{id, kind, name, about, art, buy, sell, sold, effect?}`.

@@ -235,7 +235,7 @@ function stakeOf(content, state, game) {
   const errand = errandFor(content, state, game.creature);
   if (errand) return staked('errand', lang, pick(errand.title, lang));
   const place = placeOf(content, state.place);
-  return staked(place?.has?.creature === game.creature ? 'haunt' : 'road', lang, pick(place?.name, lang));
+  return staked(place?.has?.creature === game.creature || game.hunt ? 'haunt' : 'road', lang, pick(place?.name, lang));
 }
 
 /* What the beast says: its own lines from its heritage (creatures.json
@@ -251,9 +251,10 @@ function saysOf(content, state, game) {
 
 function duelBrief(content, state, game, now, { door = false } = {}) {
   const creature = creatureOf(content, game.creature);
-  const lang = state.lang, today = state.duels?.[game.creature];
+  // A pool's fight is kept by the place (world.mjs huntKey): only one open now is today's; a settled one drew the next beast.
+  const lang = state.lang, today = state.duels?.[game.hunt ? `hunt:${game.hunt}` : game.creature];
   // A trial fight (`retry`) lost or run dry is simply open again.
-  const open = today?.day === dayKey(now) && !(game.retry && ['lost', 'withdrew'].includes(today.outcome)) ? today : null;
+  const open = today?.day === dayKey(now) && !(game.retry && ['lost', 'withdrew'].includes(today.outcome)) && (!game.hunt || today.outcome === 'open') ? today : null;
   return {
     id: game.id,
     creature: {
@@ -271,7 +272,7 @@ function duelBrief(content, state, game, now, { door = false } = {}) {
       ...(creature.person ? { person: true, ...(personOf(content, state, creature.person)?.gender ? { gender: personOf(content, state, creature.person).gender } : {}) } : {}),
     },
     // Everything the fight is given at the door, and nothing else.
-    setup: fightSetup(content, state, creature, now, game.id),
+    setup: fightSetup(content, state, creature, now, game.id, game.deal),
     today: open ? { outcome: open.outcome } : null,
     stake: stakeOf(content, state, game),
     // The lines only at the door, where the page opens the fight — Look stays lean.
