@@ -64,7 +64,7 @@ test('the prologue runs from 石坳村 to the notice board', () => {
     id = onward?.next;
   }
   assert.deepEqual(path, ['00-shiao', '00-masan', '00-dawn', '00-kitchen', '00-chushan', '00-duanbei', '00-heisong', '00-storm', '00-fall', '00-fox', '00-cave', '00-yinyue',
-    '00-cliff', '00-deer', '00-dusk', '00-rent', '00-xiuxian', '00-sleep', '00-halfyear', '00-uncle', '00-notice', '00-gate', '00-luoshu', '00-longzhi', '00-hall', '00-waimen', '00-mijing']);
+    '00-cliff', '00-deer', '00-dusk', '00-rent', '00-xiuxian', '00-sleep', '00-halfyear', '00-uncle', '00-notice', 'j01-track', 'j01-anatomy', 'j01-retest', '00-gate', '00-luoshu', '00-longzhi', '00-hall', '00-waimen', '00-mijing']);
   assert.ok(ch.scenes['00-mijing'].exits.some(e => e.ends === '00-prologue'));
 });
 
@@ -244,14 +244,15 @@ test('chapter 1 walks from the Zhang to the cauldron and ends — the Foundation
   const c = fresh(), ch = c.chapters['01-ji'];
   assert.equal(ch.opens, null, 'no lock while the game is built and tested'); assert.equal(ch.gate, null); assert.equal(ch.corridor, false);
   assert.equal(ch.coming, undefined, '古十 is built (his, 2026-09-30)');
-  const at = Object.values(ch.scenes).map(s => `${s.id}@${s.at}`);
+  // 今 · 四 (j09) stands before 01-arrive and on no place (2026-10-05, tests/jin.test.mjs).
+  const at = Object.values(ch.scenes).filter(s => s.hui !== 'j09').map(s => `${s.id}@${s.at}`);
   assert.deepEqual(at, ['01-altar@hebo', '01-arrive@zhangnan', '01-cauldron@zhangyuan', '01-deep@zhangyuan', '01-end@zhangyuan', '01-rise@hebo', '01-tower@hebo', '01-ye@ye']);
   assert.ok(ch.scenes['01-end'].exits.some(e => e.ends === '01-ji'));
   assert.ok(!Object.values(ch.scenes).some(s => s.exits.some(e => e.breakthrough)), 'no breakthrough at the 鼎');
   assert.equal(ch.scenes['01-cauldron'].exits.find(e => e.id === 'take').memory, 1, 'the 鼎 gives her first memory');
   // 古九 is its own chapter at 沉鼎观 (徐), gated for the Foundation, between 外门 and 冀.
   const zj = c.chapters['00-zhuji'];
-  assert.deepEqual([zj.province, zj.gate, zj.first_scene], ['徐', 1, '09-snow']);
+  assert.deepEqual([zj.province, zj.gate, zj.first_scene], ['徐', 1, 'j07-ankle'], '今 · 三 opens it, before 09-snow (2026-10-05)');
   assert.deepEqual(Object.keys(c.chapters).filter(id => id < '02').sort(), ['00-prologue', '00-waimen', '00-zhuji', '01-ji']);
   assert.ok(zj.scenes['09-cliff'].exits.find(e => e.id === 'take').breakthrough);
   assert.ok(zj.scenes['09-cliff'].exits.find(e => e.id === 'take').ends === '00-zhuji');

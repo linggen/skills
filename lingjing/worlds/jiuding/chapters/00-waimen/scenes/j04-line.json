@@ -1,0 +1,82 @@
+{
+ "version": 1,
+ "id": "j04-line",
+ "chapter": "00-waimen",
+ "hui": "j04",
+ "scape": "court",
+ "place": {
+  "zh": "沂中医 · 体育馆 · 十月三十一日",
+  "en": "Yizhong · the gym · 31 October"
+ },
+ "setup": {
+  "zh": "队内对抗赛末尾两罚，雷老师喊「深吸一口！憋住！」，一个没进。傍晚空球馆，阿禾把他的指头按在他自己腕子上：吸四拍，吐六拍。",
+  "en": "Two free throws at the end of the scrimmage; Coach Lei shouts \"Big breath! Hold it!\", and neither goes in. In the empty gym at dusk Ahe sets his fingers on his own wrist: in for four, out for six."
+ },
+ "recap": {
+  "zh": "罚球 0/2，出手前憋气；阿禾教他吸四吐六——吐是踩刹车。",
+  "en": "Free throws 0/2, breath held before the shot; Ahe taught him in-four, out-six — breathing out is the brake."
+ },
+ "cast": [],
+ "people": [
+  "jin-shenmang",
+  "jin-lei",
+  "jin-ahe",
+  "jin-maxiaobao"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "两罚，手环上一个数：一百四十一。",
+    "「深吸一口！憋住！」",
+    "吸四拍，吐六拍。"
+   ],
+   "en": [
+    "Two shots; one number on the band: 141.",
+    "\"Big breath! Hold it!\"",
+    "In for four, out for six."
+   ]
+  }
+ },
+ "story": {
+  "zh": "十月三十一日下午，队内对抗赛。馆门口新贴了一张通知：「十二月一日至十五日，球馆换地板。」没人多看一眼。\n\n红队五十八，白队五十七，表上只剩零点几秒。白队板凳上犯满的犯满、抽筋的抽筋，只剩坐在最末的那一个。雷老师一摆手：「0号！上！」\n\n沈芒接住发过来的球，一面墙便压了过来。马小宝两条胳膊一合，结结实实抱了他一下，冲裁判举手：「我的，我的。」又低头冲他笑：「送你上罚球线。」\n\n两罚。看台上小一百号人，没了声。他听得见自己的心，咚，咚，快得像楼上有人跺地板。手环上一个数：一百四十一。\n\n头一个，球从筐前直直掉下去，连筐都没碰。看台炸了，有人喊「三不沾」。\n\n板凳那头两个声音一齐到。雷老师的嗓门大：「深吸一口！憋住！」阿禾的不高，不急：「吐气！」\n\n他听了嗓门大的那个，深深吸了一口，憋住，脖子都粗了，把第二个投了出去。「当」，砸在筐前沿上。终场哨响。\n\n傍晚空球馆，他扫地，阿禾对账。她本子上添了一行：「沈芒　罚球 0/2　出手前憋气。」\n\n「过来。伸手。」她把他左手两根指头按在他右手腕子上，「别看手环，摸。慢慢吸，四拍。」\n\n他吸。吸到第三拍，指头底下那一跳一跳，紧了，快了一点。\n\n「慢慢吐，六拍。」\n\n吐到一半，那跳松了，一下和一下隔得长了。他瞪着眼看她：「它……跟着我喘气走？」\n\n「吸是踩油门，吐是踩刹车。吐得比吸的长，心就慢一截。」阿禾道，「你上线，一百四十一，然后吸一大口，憋住——憋着，刹车是踩不下去的。」",
+  "en": "The afternoon of October the thirty-first, an intra-squad scrimmage. A new notice was taped to the gym door: \"December 1st to 15th, gym floor replacement.\" Nobody gave it a second look.\n\nRed fifty-eight, White fifty-seven, a few tenths of a second left on the clock. On the White bench, those who weren't fouled out were cramping, and only the one sitting at the very end was left. Coach Lei waved: \"Number zero! In!\"\n\nShen Mang caught the inbound pass, and a wall bore down on him. Ma Xiaobao closed both arms and gave him a solid hug, then raised his hand to the ref: \"Mine, mine.\" He grinned down at him: \"Off you go to the line.\"\n\nTwo shots. The hundred-odd people in the stands went quiet. He could hear his own heart, thump, thump, fast as someone stamping on the floor upstairs. A number on his fitness band: a hundred and forty-one.\n\nThe first one dropped straight down in front of the rim without touching it. The stands erupted; someone yelled \"Air ball!\"\n\nFrom the bench two voices arrived at once. Coach Lei's was loud: \"Deep breath! Hold it!\" Ahe's was not loud, not hurried: \"Breathe out!\"\n\nHe listened to the loud one, took a deep breath, held it till his neck swelled, and put up the second. Clang, off the front of the rim. The final whistle blew.\n\nAt dusk in the empty gym he swept the floor and Ahe went over the accounts. A line was added in her notebook: \"Shen Mang   FT 0/2   Held breath before release.\"\n\n\"Come here. Hold out your hand.\" She pressed two fingers of his left hand to his right wrist. \"Don't look at the band, feel it. Breathe in slowly, four counts.\"\n\nHe breathed in. At the third count, the beat under his fingers tightened and quickened a little.\n\n\"Breathe out slowly, six counts.\"\n\nHalfway through the breath out, the beat loosened, longer between one and the next. He stared at her: \"It... follows my breathing?\"\n\n\"Breathing in is the accelerator, breathing out is the brake. Breathe out longer than you breathe in and your heart slows a notch,\" said Ahe. \"You stepped up to the line at a hundred and forty-one, then took a huge breath and held it — while you're holding it, you can't press the brake.\""
+ },
+ "lines": [],
+ "show": [
+  {
+   "card": "board",
+   "id": "jin-faqiu"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "jin-faqiu"
+  ]
+ },
+ "buttons": [
+  "shoot"
+ ],
+ "exits": [
+  {
+   "id": "shoot",
+   "label": {
+    "zh": "吸四，吐六，出手",
+    "en": "In four, out six, shoot"
+   },
+   "means": "breathes in for four and out for six and shoots",
+   "beat": [],
+   "next": "j04-dog",
+   "needs": {
+    "task": "jin-faqiu"
+   },
+   "refuse": {
+    "zh": "心还在楼上跺地板。吸四拍，吐六拍。",
+    "en": "His heart is still stamping upstairs. In for four, out for six."
+   },
+   "story": {
+    "zh": "他走到那条白线上，吸四拍，吐六拍。进了。又进了。砸筐。又进了。\n\n他回头要喊，看见门口靠着一个人，一米九三，拎着落下的大摇杯，笑眯眯地看着。\n\n他转回头，吸四，吐六，心口那一阵跳，怎么也慢不下来了。球砸在篮板上，弹得老远。\n\n马小宝拧开摇杯喝了一口：「你看。有人看着，就不行。」晃着摇杯走了。\n\n阿禾弯腰把球捡起来：「他说得对。从下礼拜起，每天练完，全队站在底线上，看着你投十个。」\n\n沈芒的脸一下子白了：「他怎么就不怕？」\n\n「怕的东西，各人不一样。他也有。」\n\n「他怕什么？」\n\n「不知道。没记过。」\n\n这是他头一回听她说，有一样东西她没记过。",
+    "en": "He walked to that white line, in for four, out for six. In. In again. Off the rim. In again.\n\nHe turned to shout, and saw someone leaning in the doorway, six foot four, carrying the big shaker he'd left behind, watching with a smile.\n\nHe turned back, in for four, out for six, and the pounding in his chest would not slow down no matter what. The ball smashed off the backboard and bounced far away.\n\nMa Xiaobao unscrewed his shaker and took a drink: \"See. Someone's watching, and you can't.\" He swung the shaker and left.\n\nAhe bent down and picked up the ball: \"He's right. Starting next week, after every practice the whole team stands on the baseline and watches you shoot ten.\"\n\nShen Mang's face went white: \"How come he's not afraid?\"\n\n\"Everyone's afraid of different things. He has his too.\"\n\n\"What's he afraid of?\"\n\n\"Don't know. Never recorded it.\"\n\nIt was the first time he had heard her say there was something she hadn't recorded."
+   }
+  }
+ ]
+}

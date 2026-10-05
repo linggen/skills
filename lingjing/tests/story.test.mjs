@@ -14,8 +14,10 @@ import { newState } from '../scripts/state.mjs';
 import { forLing, look, owesRecap, resolve, story, VERBS } from '../scripts/rules.mjs';
 import { storyNode } from '../scripts/rules/story.mjs';
 import { bookNo } from './book-num.mjs';
+import { withoutInterludes } from './prologue.mjs';
 
-const content = loadContent();
+// The spine's 古 回 as the old chapters run them; the 今 interludes are tests/jin.test.mjs's (2026-10-05).
+const content = withoutInterludes(loadContent());
 const NOW = new Date('2026-09-11T12:00:00');
 const ctx = (now = NOW) => ({ now, quests: [] });
 const CH = ['01-ji', '02-yan', '03-qing', '04-xu', '05-yang', '06-jing', '07-liang', '08-yong', '09-yu'];

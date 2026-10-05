@@ -12,7 +12,7 @@ import { duel, look, move, quest, resolve, story, tame, task, trade, win } from 
 import { tellOf } from '../scripts/rules/tell.mjs';
 import { WORDS, bookPopHtml, cardHtml, duelTitle } from '../scripts/cards.js';
 import { stageSlots } from '../scripts/stage.mjs';
-import { TO_OPEN, walk } from './prologue.mjs';
+import { throughJin, TO_OPEN, walk } from './prologue.mjs';
 import { huiLabel, huiOf } from '../scripts/rules/hui.mjs';
 import { bookNo } from './book-num.mjs';
 
@@ -55,6 +55,7 @@ function playThrough() {
   s = must(win, s, { id: 'qiqiao' }); s = must(task, s, { action: 'done', id: 'qiqiao' });
   assert.ok(s.quests['xu-sun-charm'].done_at, 'the charm mended, the errand hands itself in');
   for (const exit of ['count', 'keep', 'save']) s = must(resolve, fresh(s), { exit, ...(exit === 'keep' ? { said: '你这饭桶' } : {}) });
+  s = throughJin(fresh(s), content, DAY1); // 今 · 二, between 古四 and 古五 (2026-10-05)
   s = must(move, fresh(s), { place: 'waimen' });
   assert.ok(s.quests['xu-yaoyuan-shouye'].done_at, 'the watch hands itself in at 周衡');
   s = must(move, fresh(s), { place: 'shimen' });
@@ -113,10 +114,10 @@ test('every scene is reached, and the chapter ends straight into 古九 (筑基,
   for (const gender of ['male']) {
     const s = playThrough();
     assert.ok(s.ended.includes('00-waimen'), gender);
-    assert.deepEqual([s.chapter, s.scene], ['00-zhuji', '09-snow'], 'nothing waits: 古九 opens at once');
+    assert.deepEqual([s.chapter, s.scene], ['00-zhuji', 'j07-ankle'], 'nothing waits: 今 · 三, then 古九 (2026-10-05)');
     const passed = new Set(s.done_scenes);
     for (const id of Object.keys(CH.scenes)) assert.ok(passed.has(id), `${gender}: ${id}`);
-    assert.equal(look(s, content, ctx(DAY2)).chapter.hui, 'h09');
+    assert.equal(look(s, content, ctx(DAY2)).chapter.hui, 'j07', 'standing in 今 · 三, before 古七');
     assert.deepEqual([s.tier, s.step], ['qi', 3], '息壤: 练气四层');
     for (const item of ['danlu', 'huangting', 'heluo']) assert.ok(s.bag[item] > 0, item);
     assert.equal(s.bag['foundation-pill'], undefined, 'the final was lost: the 筑基丹 is 祁长松\'s (古六, 2026-10-03)');
@@ -135,9 +136,9 @@ test('a scene nobody can reach, or a beat naming a stranger, does not ship: ever
     for (const e of CH.scenes[id].exits) if (e.next) todo.push(e.next);
   }
   assert.deepEqual([...seen].sort(), Object.keys(CH.scenes).sort());
-  assert.equal(Object.keys(CH.scenes).length, 25); // + wm-kaikai (老蔫, 古五) and wm-laoyin (the brand, 古六)
+  assert.equal(Object.keys(CH.scenes).length, 28); // + wm-kaikai (老蔫, 古五) and wm-laoyin (the brand, 古六); + 今 · 二's three (2026-10-05)
   for (const b of CH.beats) for (const id of b.scenes) assert.ok(CH.scenes[id], id);
-  for (const sc of Object.values(CH.scenes)) assert.ok(CH.map.places.includes(sc.at), `${sc.id} at ${sc.at}`);
+  for (const sc of Object.values(CH.scenes)) assert.ok(sc.hui === 'j04' ? !sc.at : CH.map.places.includes(sc.at), `${sc.id} at ${sc.at}`);
 });
 
 test('a key beat shuts the map from the scene after its entry to its last, in its own words; between beats the area is open', () => {
@@ -214,6 +215,7 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
   s = must(resolve, won(s, 'yaoyuan-zheng'), { exit: 'tame' });
   s = must(move, fresh(s), { place: 'chaifang' });
   for (const exit of ['count', 'keep', 'save']) s = must(resolve, fresh(s), { exit, ...(exit === 'keep' ? { said: '你这饭桶' } : {}) });
+  s = throughJin(fresh(s), content, DAY1); // 今 · 二, between 古四 and 古五 (2026-10-05)
   s = must(move, fresh(s), { place: 'shimen' });
   s = must(resolve, s, { exit: 'refuse' });
   refused(resolve, s, { exit: 'open' }, 'game-not-won');

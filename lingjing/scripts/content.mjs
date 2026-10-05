@@ -163,10 +163,21 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     places: loadPlaces(path.join(dir, 'places')),
     templates: { made: at('templates/made-scene.json'), world: at('templates/made-world.json') },
     dictionary: at('dictionary.json'),
-    chapters: loadChapters(path.join(dir, 'chapters')),
+    chapters: playedChapters(loadChapters(path.join(dir, 'chapters')), loadBook(path.basename(dir))),
     // The book the world is read from (story/<id>/book.json): its 卷 and 回 name the game's parts (rules/hui.mjs).
     book: loadBook(path.basename(dir)),
   };
+}
+
+/* The chapters as played: each 今 interlude spliced in where it stands
+   (spliceInterludes) — one the book holds back (`draft`) is not played at all. */
+export function playedChapters(chapters, book) {
+  const held = new Set((book?.volumes ?? []).flatMap(v => v.hui ?? []).filter(h => h.draft).flatMap(idsOf));
+  for (const ch of Object.values(chapters)) {
+    for (const sc of Object.values(ch.scenes)) if (held.has(sc.hui) && /^j/.test(sc.hui)) delete ch.scenes[sc.id];
+    spliceInterludes(ch);
+  }
+  return chapters;
 }
 
 /* The novel told in a world (story/index.json's books, the one whose `world`
@@ -184,7 +195,7 @@ function loadBook(world) {
   return null;
 }
 
-function loadChapters(root) {
+export function loadChapters(root) {
   const chapters = {};
   for (const name of fs.readdirSync(root).sort()) {
     const base = path.join(root, name);
@@ -198,6 +209,28 @@ function loadChapters(root) {
     chapters[chapter.id] = chapter;
   }
   return chapters;
+}
+
+/* 今线 in the game (Hanli, 2026-10-05: 今线进游戏，做成四段可玩的插曲): an
+   interlude (a 回 of book.json's `line: "jin"`) is a few scenes of its own,
+   played between two 古 films as the book reads. It stands in the chapter of
+   the 古 scene it leads into, and its first scene declares it — `before:
+   <scene>` — nothing in the 古 scenes names it. Loading splices it in: every
+   road into that scene (an exit's `next`, or the chapter's `first_scene`)
+   leads into the interlude instead, and the interlude's last exit names the
+   scene. A save before the point plays it; a save already past it is never
+   pulled back (it reads the interlude in the book). Returns the heads spliced. */
+export function spliceInterludes(chapter) {
+  const scenes = Object.values(chapter.scenes ?? {}), heads = scenes.filter(sc => typeof sc.before === 'string');
+  for (const head of heads) {
+    const own = new Set(scenes.filter(sc => sc.hui === head.hui).map(sc => sc.id));
+    for (const sc of scenes) {
+      if (own.has(sc.id)) continue;
+      for (const e of sc.exits ?? []) if (e.next === head.before) e.next = head.id;
+    }
+    if (chapter.first_scene === head.before) chapter.first_scene = head.id;
+  }
+  return heads.map(h => h.id);
 }
 
 /* 奇遇 seeds, one file per province: { 徐: { province, seeds } }. */
@@ -539,9 +572,13 @@ function lintPeople(content, bad) {
     if (seen.has(p.id) || creatures.has(p.id) || SPEAKERS.has(p.id)) bad(at, 'id is taken');
     seen.add(p.id);
     for (const k of ['name', 'role', 'voice']) if (!pair(p[k])) bad(at, `${k} needs zh and en`);
-    if (!places.has(p.home)) bad(at, `home ${p.home} is not a place`);
-    if (!p.art) bad(at, 'needs a portrait');
-    else if (!fs.existsSync(path.join(content.dir, p.art))) bad(at, `art ${p.art} is missing`);
+    // 今线's people (`line: "jin"`, the interludes): no home on the map, and a name card until a portrait is painted.
+    if (p.line != null && p.line !== 'jin') bad(at, 'line is jin or absent');
+    const jin = p.line === 'jin';
+    if (!jin && !places.has(p.home)) bad(at, `home ${p.home} is not a place`);
+    if (jin && p.home != null) bad(at, 'a 今 person has no home on the map');
+    if (!p.art && !jin) bad(at, 'needs a portrait');
+    else if (p.art && !fs.existsSync(path.join(content.dir, p.art))) bad(at, `art ${p.art} is missing`);
   }
   for (const [slot, id] of Object.entries(doc.slots ?? {})) {
     if (seen.has(slot)) bad(`slot ${slot}`, 'shares an id with a person');
@@ -1017,6 +1054,32 @@ function lintChapterShape(chapter, content, bad) {
   if (chapter.coming != null && chapter.coming !== true) bad(where, 'coming is true or absent — its words come from the book');
   if (chapter.close?.title) bad(where, 'a close is named by its 回 (「第三回 · 完」), never by its own title');
   lintHui(chapter, content, bad);
+  lintInterludes(chapter, content, bad);
+}
+
+/* An interlude (spliceInterludes): its head names a 古 scene of the same
+   chapter; it is a 今 回 that the book reads between the 回 that led into that
+   scene and the scene's own (book order, book-order.js) — so 今 · 一 stands
+   after 古二 and before 古三, as the book prints it; its scenes have no place
+   on the map (`at`: they are 沈芒's, played wherever the hero stands); and
+   some exit of it leads on into that scene. */
+function lintInterludes(chapter, content, bad) {
+  const entries = bookEntries(content.book, { draft: true }).filter(h => h.volume);
+  const order = new Map(entries.flatMap((h, at) => idsOf(h).map(id => [id, at])));
+  const line = id => entries[order.get(id)]?.line ?? null;
+  const scenes = Object.values(chapter.scenes);
+  for (const sc of scenes) {
+    if (line(sc.hui) !== 'jin') continue;
+    const where = `scene ${sc.id}`;
+    if (sc.at) bad(where, 'an interlude scene stands on no place of the map');
+    if (sc.before == null) continue;
+    const into = chapter.scenes[sc.before];
+    if (!into) { bad(where, `before ${sc.before}, which is not a scene of ${chapter.id}`); continue; }
+    if (line(into.hui) !== 'gu' || order.get(into.hui) !== order.get(sc.hui) + 1) bad(where, `before ${sc.before} (${into.hui}), but the book reads ${sc.hui} right before another 回`);
+    const own = scenes.filter(x => x.hui === sc.hui);
+    if (!own.some(x => x.exits.some(e => e.next === sc.before))) bad(where, `no exit of ${sc.hui} leads on into ${sc.before}`);
+  }
+  for (const sc of scenes) if (sc.before != null && line(sc.hui) !== 'jin') bad(`scene ${sc.id}`, 'only an interlude (a 今 回) is spliced before a scene');
 }
 
 /* 卷 and 回 (rules/hui.mjs): a scene's `hui` is a 回 of the world's book, and

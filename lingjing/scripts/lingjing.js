@@ -990,6 +990,9 @@ function paintAtmos() {
   const v = $('view');
   for (const c of [...v.classList]) if (c.startsWith('fest-') || c.startsWith('wx-')) v.classList.remove(c);
   v.classList.add(...atmosClasses(a));
+  // 今线 (an interlude, Look's scene `line: jin`): a pale modern stage — the scene's `scape` (track, court, stacks …) names which.
+  for (const c of [...v.classList]) if (c === 'jin' || c.startsWith('jin-')) v.classList.remove(c);
+  if (look?.scene?.line === 'jin') v.classList.add('jin', ...(look.scene.scape ? [`jin-${look.scene.scape}`] : []));
   if (a.key === atmosKey) return;
   atmosKey = a.key;
   $('atmosPts').innerHTML = particlesHtml(a.particles, look?.today?.date ?? '');

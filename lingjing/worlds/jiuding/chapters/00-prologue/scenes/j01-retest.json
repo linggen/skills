@@ -1,0 +1,82 @@
+{
+ "version": 1,
+ "id": "j01-retest",
+ "chapter": "00-prologue",
+ "hui": "j01",
+ "scape": "track",
+ "place": {
+  "zh": "沂中医 · 体育场 · 九月二十四日",
+  "en": "Yizhong · the sports field · 24 September"
+ },
+ "setup": {
+  "zh": "补测。看台上马小宝脚边一箱蛋白粉，箱上「第七」。到六百米，胸口发紧，越吸不进越慌。",
+  "en": "The retest. On the stand, a case of protein powder at Ma Xiaobao's feet marked \"7th\". At six hundred metres his chest tightens; the less he can draw in, the more he panics."
+ },
+ "recap": {
+  "zh": "补测四分二十九，七人第三；后半程，他在吐气。",
+  "en": "The retest in 4′29″, third of seven; over the second half he was breathing out."
+ },
+ "cast": [],
+ "people": [
+  "jin-shenmang",
+  "jin-lei",
+  "jin-ahe",
+  "jin-maxiaobao"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "两百米标杆：四十六。",
+    "到六百米，胸口发紧。",
+    "先吐。"
+   ],
+   "en": [
+    "The two-hundred marker: forty-six.",
+    "At six hundred, his chest tightens.",
+    "Out first."
+   ]
+  }
+ },
+ "story": {
+  "zh": "九月二十四日，下午四点。看台第三排，马小宝脚边真放着一箱蛋白粉，箱上马克笔两个大字：「第七」。\n\n哨子一响，六个人冲了出去。那股劲又上来了，心先快，腿先热；他咬着牙硬让腿慢下来，一个人落在最后。看台上有人喊：「跑啊，阿甘！」\n\n两百米标杆底下，蓝马甲报了一声：「四十六！」慢了一秒。\n\n到四百米，前头有两个掉了下来，嗓子眼里那种又快又浅的喘，跟他上回一样。到六百米，他也难受了：胸口发紧，越吸不进越慌，越慌越想快快地吸——",
+  "en": "September the twenty-fourth, four in the afternoon. In the third row of the grandstand, by Ma Xiaobao's feet, there really was a box of protein powder, and on the box, in marker, two big characters: \"SEVENTH.\"\n\nAt the whistle six people shot off. That surge came up in him again, heart quickening first, legs warming first; he gritted his teeth and forced his legs to slow, and fell to the back alone. Someone in the grandstand shouted, \"Run, Forrest!\"\n\nUnder the two-hundred-metre post, a blue vest called out: \"Forty-six!\" One second slow.\n\nBy four hundred, two of those in front had dropped back, with that fast, shallow gasping in their throats, just like his last time. By six hundred he was suffering too: his chest tightened, the less he could breathe in the more he panicked, and the more he panicked the more he wanted to breathe in fast —"
+ },
+ "lines": [],
+ "show": [
+  {
+   "card": "board",
+   "id": "jin-qianmi"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "jin-qianmi"
+  ]
+ },
+ "buttons": [
+  "finish"
+ ],
+ "exits": [
+  {
+   "id": "finish",
+   "label": {
+    "zh": "先吐",
+    "en": "Out first"
+   },
+   "means": "breathes out first and finishes the retest",
+   "beat": [],
+   "next": "00-gate",
+   "needs": {
+    "task": "jin-qianmi"
+   },
+   "refuse": {
+    "zh": "还在跑。先吐，再吸。",
+    "en": "Still running. Out first, then in."
+   },
+   "story": {
+    "zh": "先吐。\n\n「呵——」长长地，吐到肚子都瘪了。吐干净了，那一口新气自己灌了进来，一直灌到肚子底下。\n\n最后一百米，他嘴里还在吐气，吐得像一辆上坡的拖拉机。\n\n「沈芒，四分二十九。」雷老师又看了一眼表，「……过了。」\n\n沈芒没蹲，自己往前走。他等着胃里那阵翻江倒海，没有来。他张开嘴，只吐出一口长长的热气。\n\n「成了！」\n\n阿禾把本子转过来，只给他看一行：「9/24　补测　4′29″　七人第三　奖：免账」。「后半程，你在吐气。谁教的？」\n\n他想说是一个唐朝的人，又想起来不是唐朝：「……一个记错朝代的老太太。」\n\n看台上，马小宝拿马克笔在「第七」上划了一道，拿脚尖把箱子往栏杆边上一推。队群里跳出他一条：「七个里第三。运气。」隔了一会儿，阿禾跟了一条：「后四百米，七人第一。」再没人接。\n\n十点，他妈打来视频：「国庆回来不？车票买了没？」\n\n沈芒张了张嘴：「……还没买。」\n\n那夜他睡不着，摸过眼镜桌上那本《抱朴子》，书签夹在讲喘气的一页：拿一根鸿毛搁在鼻口上头，吐气，毛不许动。\n\n他从老蔡枕头的拉链缝里捏出一根细绒毛，搁在鼻子底下，屏住了，慢慢地，慢慢地，往外吐——\n\n毛飞了。\n\n先吐，他是学会了；吐得那么轻、那么长，还差得远。那根绒毛在路灯光里打了个转，越过墙上那幅节气挂图，从没关严的窗缝里飘了出去——那扇窗朝着西北——飘进了九月的夜里，不见了。",
+    "en": "Breathe out first.\n\n\"Haaa —\" long, out until his belly went flat. Once it was all out, a fresh breath poured in by itself, all the way down to the bottom of his belly.\n\nThe last hundred metres he was still breathing out, puffing like a tractor going uphill.\n\n\"Shen Mang, four twenty-nine.\" Coach Lei glanced at the watch again. \"...Passed.\"\n\nShen Mang didn't squat; he walked on by himself. He waited for his stomach to heave, and it didn't come. He opened his mouth and let out only a long, warm breath.\n\n\"Done it!\"\n\nAhe turned the notebook round and showed him just one line: \"9/24   Retest   4′29″   3rd of 7   Prize: account cleared.\" \"The second half, you were breathing out. Who taught you?\"\n\nHe wanted to say someone from the Tang dynasty, then remembered it wasn't the Tang: \"...An old lady who got the dynasty wrong.\"\n\nIn the grandstand Ma Xiaobao drew a line through \"SEVENTH\" with the marker and nudged the box toward the railing with his toe. A message from him popped up in the team chat: \"Third of seven. Luck.\" A while later Ahe followed with one: \"Last four hundred, first of seven.\" Nobody replied after that.\n\nAt ten his mom video-called: \"Coming home for National Day? Bought your ticket yet?\"\n\nShen Mang opened his mouth: \"...Not yet.\"\n\nThat night he couldn't sleep. He felt for the *Baopuzi* on Specs's desk; the bookmark was in the page on breathing: lay a swan's down feather above the nose and mouth and breathe out, and the feather must not stir.\n\nFrom the zip gap of Old Cai's pillow he pinched out a fine wisp of down, set it under his nose, held still, and slowly, slowly, breathed out —\n\nThe down flew off.\n\nBreathing out first — that he had learned; breathing out so lightly and so long, he was still a long way off. The wisp of down turned once in the streetlight, passed over the solar-term chart on the wall, and drifted out through the gap of the window that hadn't been shut properly — the window faced northwest — out into the September night, and was gone."
+   }
+  }
+ ]
+}

@@ -77,7 +77,7 @@ tools:
     tier: read
     # What Yinyue reads of it at the table: where they are and what is
     # before them — never Ling's `then` and guide (skill-spec § What others read).
-    others_read: [name, chapter.title, place.name, place.line, scene.place, scene.setup, scene.people.name, page_did]
+    others_read: [name, chapter.title, place.name, place.line, scene.line, scene.place, scene.setup, scene.people.name, page_did]
     timeout_ms: 8000
     args:
       said:
@@ -122,7 +122,7 @@ tools:
       refusal changed nothing.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs resolve --exit={{exit}} --value={{value}} --answer={{answer}} --said={{said}} --for=ling"
     tier: edit
-    others_read: [chose, beat, her_beat, scene.place, scene.setup]
+    others_read: [chose, beat, her_beat, scene.line, scene.place, scene.setup]
     timeout_ms: 8000
     args:
       exit:
@@ -661,6 +661,7 @@ The hero is **沈小满** (小满), a boy; 阿禾 (周禾) is a girl — fixed b
   it from then on. It comes once a session; the **Guide** tool reads any part
   again by name.
 - **The stage plays the book** in its dialogue box: never retell a passage (`staged`); you speak for what the player types (guide `tell`).
+- **今 interludes** (`scene.line`): the book alone (guide `tell`).
 
 ## Opening
 

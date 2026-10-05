@@ -36,6 +36,37 @@
       "done_line": { "zh": "三关俱开，小周天通了。", "en": "All three passes open; the small circuit is through." }
     },
     {
+      "_jin": "今线's games (the interludes, 2026-10-05): the science lesson of each 今 played; they pay nothing — the 今 never lifts the 古 (Hanli: 不跨线).",
+      "id": "jin-qianmi", "kind": "board", "game": "qianmi", "period": "once",
+      "title": { "zh": "一千米补测 · 先吐", "en": "The 1000-metre retest · Out first" },
+      "grant": { "table": "task" },
+      "done_line": { "zh": "四分二十九。过了。", "en": "Four twenty-nine. Passed." }
+    },
+    {
+      "id": "jin-faqiu", "kind": "board", "game": "faqiu", "period": "once",
+      "title": { "zh": "罚球 · 吸四吐六", "en": "Free throws · In for four, out for six" },
+      "grant": { "table": "task" },
+      "done_line": { "zh": "进了。又进了。", "en": "In. In again." }
+    },
+    {
+      "id": "jin-dark", "kind": "board", "game": "dark", "period": "once",
+      "title": { "zh": "黑地十一步 · 领着喘", "en": "Eleven steps in the dark · Breathe with him" },
+      "grant": { "table": "task" },
+      "done_line": { "zh": "手不麻了。", "en": "His hands aren't numb." }
+    },
+    {
+      "id": "jin-pulse", "kind": "board", "game": "pulse", "period": "once",
+      "title": { "zh": "晨脉 · 坑填平了才许摸球", "en": "The morning pulse · Not till the pit is filled" },
+      "grant": { "table": "task" },
+      "done_line": { "zh": "出关了。", "en": "Out of seclusion." }
+    },
+    {
+      "id": "jin-lastshot", "kind": "board", "game": "lastshot", "period": "once",
+      "title": { "zh": "最后一罚 · 带着怕投", "en": "The last free throw · Shoot with the fear" },
+      "grant": { "table": "task" },
+      "done_line": { "zh": "成了！", "en": "Done it!" }
+    },
+    {
       "id": "gate-luoshu", "kind": "board", "game": "luoshu", "period": "once",
       "title": { "zh": "二试 · 洛书九宫", "en": "Second trial · The Luo Shu square" },
       "grant": { "table": "task", "progress": 10 },

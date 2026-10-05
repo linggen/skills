@@ -1,0 +1,236 @@
+{
+ "_about": "Standing on 00-notice, the last scene of 古二 — 今 · 一 next (2026-10-05, tests/jin.test.mjs; live check: seed --from=jin-notice).",
+ "state": {
+  "version": 6,
+  "world": "jiuding",
+  "lang": "zh",
+  "name": "沈小满",
+  "gender": "male",
+  "traits": null,
+  "tier": "qi",
+  "step": 0,
+  "progress": 0,
+  "wealth": 0,
+  "bag": {
+   "fox-token": 1,
+   "tuna-jing": 1
+  },
+  "cast": [],
+  "wear": {},
+  "duels": {},
+  "arts": [],
+  "chapter": "00-prologue",
+  "scene": "00-notice",
+  "done_scenes": [
+   "00-shiao",
+   "00-masan",
+   "00-dawn",
+   "00-kitchen",
+   "00-chushan",
+   "00-duanbei",
+   "00-heisong",
+   "00-storm",
+   "00-fall",
+   "00-fox",
+   "00-cave",
+   "00-yinyue",
+   "00-cliff",
+   "00-deer",
+   "00-dusk",
+   "00-rent",
+   "00-xiuxian",
+   "00-sleep",
+   "00-halfyear",
+   "00-uncle"
+  ],
+  "ended": [],
+  "place": "shiao",
+  "tasks": {
+   "fall-storm": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-05T12:00:00.000Z"
+   },
+   "deer-wind": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-05T12:00:00.000Z"
+   },
+   "xisui-hold": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-05T12:00:00.000Z"
+   }
+  },
+  "chores": {},
+  "quests": {},
+  "wins": {},
+  "story": "",
+  "seeds_used": [],
+  "made": {
+   "scenes": {},
+   "at": null
+  },
+  "day": {
+   "key": "2026-10-05",
+   "progress": 0,
+   "wealth": 0
+  },
+  "stamina": 84,
+  "stamina_at": "2026-10-05T12:00:00.000Z",
+  "created": "2026-10-05T12:00:00.000Z",
+  "updated": "2026-10-05T12:00:00.000Z",
+  "seed": "2026-10-05T12:00:00.000Z",
+  "tell_owed": [
+   "scene/00-masan",
+   "00-masan/endure",
+   "scene/00-dawn",
+   "00-dawn/egg",
+   "scene/00-kitchen",
+   "scene/00-chushan",
+   "00-chushan/lookout",
+   "scene/00-duanbei",
+   "00-duanbei/rules",
+   "scene/00-heisong",
+   "00-heisong/carve",
+   "scene/00-storm",
+   "00-storm/turn",
+   "scene/00-fall",
+   "00-fall/check",
+   "scene/00-fox",
+   "00-fox/save",
+   "scene/00-cave",
+   "00-cave/share",
+   "scene/00-yinyue",
+   "00-yinyue/follow",
+   "scene/00-cliff",
+   "00-cliff/climb",
+   "scene/00-deer",
+   "00-deer/left",
+   "scene/00-dusk",
+   "00-dusk/visit",
+   "scene/00-rent",
+   "00-rent/dumb",
+   "scene/00-xiuxian",
+   "00-xiuxian/on",
+   "scene/00-sleep",
+   "00-sleep/bath",
+   "scene/00-halfyear",
+   "00-halfyear/on",
+   "scene/00-uncle",
+   "00-uncle/go",
+   "scene/00-notice"
+  ],
+  "node": {
+   "kind": "scene",
+   "at": "2026-10-05T12:00:00.000Z",
+   "chapter": {
+    "id": "00-prologue",
+    "title": "卷一 · 沉鼎 · 第二回"
+   },
+   "recap": "舅舅带来了沉鼎观开山门的告示；他念到「沉鼎」，木牌烫得像炭——你决定去。开春以后，那一缕热卡在心口底下，账本末页的「下」字一直空着。",
+   "mystery": "吴婆婆的木牌上，为什么刻着一只九尾的狐狸？"
+  },
+  "marks": [
+   "kept-count",
+   "took-egg",
+   "three-rules",
+   "marks-cut",
+   "turned-back",
+   "fall-checked",
+   "fox-saved",
+   "shared-bread",
+   "found-father",
+   "shot-wind",
+   "wupo-bowed",
+   "played-dumb",
+   "asked-them",
+   "marrow-washed",
+   "scroll-by-heart",
+   "resolved-to-go"
+  ],
+  "mark_days": {
+   "resolved-to-go": "2026-10-05",
+   "scroll-by-heart": "2026-10-05",
+   "marrow-washed": "2026-10-05",
+   "asked-them": "2026-10-05",
+   "played-dumb": "2026-10-05",
+   "wupo-bowed": "2026-10-05",
+   "shot-wind": "2026-10-05",
+   "found-father": "2026-10-05",
+   "shared-bread": "2026-10-05",
+   "fox-saved": "2026-10-05",
+   "fall-checked": "2026-10-05",
+   "turned-back": "2026-10-05",
+   "marks-cut": "2026-10-05",
+   "three-rules": "2026-10-05",
+   "took-egg": "2026-10-05",
+   "kept-count": "2026-10-05"
+  },
+  "ledger": [
+   {
+    "who": "maxiaobao",
+    "kind": "仇",
+    "what": {
+     "zh": "推你撞上灶台，摔碎了家里四只碗里的一只。",
+     "en": "Shoved you into the stove and broke one of your family's four bowls."
+    },
+    "chapter": "00-prologue",
+    "day": "2026-10-05",
+    "at": "00-masan"
+   },
+   {
+    "who": "masan",
+    "kind": "仇",
+    "what": {
+     "zh": "要拿走爷爷的弓。",
+     "en": "Means to take grandfather's bow."
+    },
+    "chapter": "00-prologue",
+    "day": "2026-10-05",
+    "at": "00-masan"
+   },
+   {
+    "who": "ahe",
+    "kind": "恩",
+    "what": {
+     "zh": "天没亮，隔着窗塞给你一个煮鸡蛋：「记账，以后还我。」",
+     "en": "Before dawn, pushed a boiled egg through your window: \"Keep count. Pay me back.\""
+    },
+    "chapter": "00-prologue",
+    "day": "2026-10-05",
+    "at": "00-dawn"
+   },
+   {
+    "who": "laozhou",
+    "kind": "恩",
+    "what": {
+     "zh": "天没亮便顺着你刻的那四十一道记号寻进黑松岭，扛着门板来找你。",
+     "en": "Before dawn he followed the forty-one marks you cut into Black Pine Ridge, carrying a door-plank to bring you home."
+    },
+    "chapter": "00-prologue",
+    "day": "2026-10-05",
+    "at": "00-cliff"
+   }
+  ],
+  "looked": [
+   "00-heisong/stone"
+  ],
+  "companion": {
+   "joined": "2026-10-05",
+   "asleep": true
+  },
+  "cards": [
+   "yinyue"
+  ],
+  "card_from": {
+   "yinyue": {
+    "how": "companion",
+    "day": "2026-10-05",
+    "place": "yingu",
+    "chapter": "00-prologue",
+    "scene": "00-yinyue"
+   }
+  }
+ }
+}

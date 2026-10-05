@@ -22,7 +22,7 @@ import { hashOf } from './travel.mjs';
 import { atScene, beatOf, creatureOf, encounterOf, ofJuan, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
-import { chapterLabel } from './hui.mjs';
+import { chapterLabel, huiOf } from './hui.mjs';
 import { practiceHint } from './scrolls.mjs';
 import { owesTell } from './tell.mjs';
 import { mainRoot, rootName } from './roots.mjs';
@@ -173,8 +173,11 @@ function sceneBrief(content, state, now = new Date()) {
   // 图鉴: who and what this scene brings on for the first time (codex.mjs) — the page shows their cards.
   const meet = newHere(content, state, scene);
   const looks = hotspotsOf(content, state, scene), hint = lookHint(content, state, scene);
+  // 今线 (an interlude, rules/hui.mjs): the page lays the modern stage (`scape`: 体育场, 球场, 古籍部 …), Ling tells it as 沈芒's (guide `tell`).
+  const jin = huiOf(content, scene.hui)?.line === 'jin';
   return {
     id: scene.id,
+    ...(jin ? { line: 'jin', ...(scene.scape ? { scape: scene.scape } : {}) } : {}),
     place: say(scene.place),
     setup: say(scene.setup),
     cast: (scene.cast ?? []).filter(id => id !== companionOf(content)?.id || hasCompanion(state)).map(id => ({ id, name: nameOf(content, id, lang) })),

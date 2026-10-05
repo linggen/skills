@@ -32,10 +32,10 @@ const buttons = s => look(s, content, ctx).scene.buttons.map(b => b.id);
 const full = s => ({ ...s, stamina: 100, stamina_at: NOW.toISOString() });
 
 test('古九 is its own chapter at 沉鼎观: between 外门 and 冀, the Foundation\'s gate, every scene reached', () => {
-  assert.deepEqual([CH.province, CH.gate, CH.first_scene, CH.coming], ['徐', 1, '09-snow', undefined]);
+  assert.deepEqual([CH.province, CH.gate, CH.first_scene, CH.coming], ['徐', 1, 'j07-ankle', undefined], '今 · 三 first, then 09-snow (2026-10-05)');
   for (const sc of Object.values(CH.scenes)) {
-    assert.equal(sc.hui, 'h09', sc.id);
-    assert.ok(CH.map.places.includes(sc.at), `${sc.id} stands on the mountain`);
+    assert.ok(['h09', 'j07'].includes(sc.hui), sc.id);
+    assert.ok(sc.hui === 'j07' ? !sc.at : CH.map.places.includes(sc.at), `${sc.id} stands on the mountain (今 · 三 on none)`);
     assert.ok(sc.story?.zh && sc.story?.en, `${sc.id}: the book's passage`);
   }
   const seen = new Set(), todo = [CH.first_scene];
@@ -104,8 +104,8 @@ test('the cliff: 瞿老\'s last disciple, then the throw — the 九转 reached 
   assert.equal(r.state.bag['foundation-pill'], 1, 'the 官丹 stays sealed in 饭桶');
   assert.equal(r.state.bag['foundation-pill-9'], undefined, 'the 九转 is eaten');
   assert.equal(r.state.tier, 'foundation');
-  assert.deepEqual([r.state.chapter, r.state.scene], ['01-ji', '01-arrive']);
-  // 古九's 「完」 (the book's number) stands on 古十's first scene, with what he did and the teaser.
+  assert.deepEqual([r.state.chapter, r.state.scene], ['01-ji', 'j09-noise'], '今 · 四 first (2026-10-05)');
+  // 古九's 「完」 (the book's number) stands on the next 回's first scene — 今 · 四's — with what he did and the teaser.
   const close = look({ ...r.state, place: 'zhangnan' }, content, ctx).chapter.close;
   assert.equal(close.title, `${bookNo(content, 'h09')} · 完`);
   assert.match(close.did, /崖顶筑了基/);

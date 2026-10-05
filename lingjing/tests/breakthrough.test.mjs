@@ -129,8 +129,8 @@ test('the throw lands: the realm moves, the pill carried is spent, and 筑基天
   assert.equal(r.state.tier, 'foundation');
   assert.equal(r.state.bag['foundation-pill'], undefined, 'spent');
   assert.equal(r.state.bag.lingzhi, 2, 'nothing else taken');
-  // The cliff ends 古九: the road north opens on 古十's first scene.
-  assert.deepEqual([r.state.chapter, r.state.scene], ['01-ji', '01-arrive']);
+  // The cliff ends 古九: 冀 opens on 今 · 四, played before 古十's first scene (2026-10-05).
+  assert.deepEqual([r.state.chapter, r.state.scene], ['01-ji', 'j09-noise']);
   assert.ok(r.state.ended.includes('00-zhuji'));
   assert.deepEqual(r.result.show, content.chapters['00-zhuji'].scenes['09-cliff'].exits.find(e => e.id === 'take').show ?? []);
   assert.ok(!(r.result.show ?? []).some(c => c.card === 'tribulation'), 'the set piece is the 筑基 moment; no separate tribulation card');

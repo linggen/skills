@@ -84,7 +84,8 @@ export const chapterHuis = (content, ch) => [...new Set(Object.values(ch?.scenes
    none, its scenes' first. */
 export function firstHui(content, ch) {
   const told = [...bookIndex(content).values()].filter(h => h.opens === ch?.id).sort((a, b) => a.at - b.at)[0]?.id;
-  const played = chapterHuis(content, ch)[0];
+  // A 今 interlude that opens a chapter (今 · 三 before 古七) does not name it: its first 古 回 does.
+  const huis = chapterHuis(content, ch), played = huis.find(id => huiOf(content, id)?.line !== 'jin') ?? huis[0];
   if (!told) return played ?? null;
   return !played || huiOrder(content, told) <= huiOrder(content, played) ? told : played;
 }

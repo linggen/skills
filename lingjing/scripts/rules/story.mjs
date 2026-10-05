@@ -242,7 +242,8 @@ export function closeOf(content, state) {
     // onto the first scene of the next, where the 回's close stands.
     const done = Object.values(content.chapters).find(x => x.close && (state.ended ?? []).includes(x.id) && x.id !== ch.id
       && Object.values(x.scenes ?? {}).some(sc => sc.hui === turned));
-    const juan = juanEndOf(content, turned, lang);
+    // The game's 卷 ends on its last 古 回 (古八): 今 · 四 is played before it, so its close never says 「卷一 · 完」.
+    const juan = huiOf(content, turned)?.line === 'jin' ? null : juanEndOf(content, turned, lang);
     return { id: turned, title: endLabel(content, turned, lang), ...(juan ? { juan } : {}), huimu: pick(huiOf(content, turned).huimu, lang), next: huiLabel(content, huiNow(content, state), lang, 'head'), ...(done ? closeWords(content, state, done.close) : {}) };
   }
   if (!c || state.scene || !(state.ended ?? []).includes(ch.id)) return null;
@@ -269,8 +270,11 @@ function closeWords(content, state, c) {
    then — its close once a 回 or it is over (closeOf), and the ending once reached. */
 export function chapterLook(content, state) {
   const ch = content.chapters[state.chapter];
+  // A 今 interlude that opens a chapter (今 · 三 before 古七's first snow) is not the chapter's beginning:
+  // its intro waits for the chapter's first 古 scene, and the interlude's scenes passed do not spend it.
+  const jinAt = id => huiOf(content, ch?.scenes?.[id]?.hui)?.line === 'jin';
   const fresh = !inMade(state) && !content.world.made && ch?.intro && !(state.ended ?? []).includes(ch.id)
-    && !(state.done_scenes ?? []).some(id => ch.scenes?.[id]);
+    && !jinAt(state.scene) && !(state.done_scenes ?? []).some(id => ch.scenes?.[id] && !jinAt(id));
   const ending = endingOf(content, state), close = closeOf(content, state);
   return {
     chapter: { id: ch.id, title: chapterLabel(content, state, ch, state.lang, 'head'), ...(huiNow(content, state) ? { hui: huiNow(content, state) } : {}), ...(fresh ? { fresh: true, intro: pick(ch.intro, state.lang) } : {}), ...(close ? { close } : {}) },

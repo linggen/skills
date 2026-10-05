@@ -36,10 +36,12 @@ const norm = (t) => t
   .replace(/---/g, '')
   .replace(/\s+/g, '');
 
-// A scene's `hui` is a stable 古 id (h01…); book.json names its file (03-第三回.md is h04 since the 2026-10-02 rename).
+// A scene's `hui` is a stable id — 古 h01…, 今 j01… (the interludes played since 2026-10-05); book.json names
+// its file (03-第三回.md is h04 since the 2026-10-02 rename; 今 · 一 is 今线/插曲01.md). The same check for both lines,
+// and the same exception lists.
 const BOOK = JSON.parse(fs.readFileSync(path.join(ROOT, 'story/jiuding-lu/book.json'), 'utf8'));
 const book = {};
-for (const h of BOOK.volumes.flatMap((v) => v.hui)) if (h.line === 'gu') book[h.id] = norm(fs.readFileSync(path.join(ROOT, 'story/jiuding-lu', h.file), 'utf8'));
+for (const h of BOOK.volumes.flatMap((v) => v.hui)) book[h.id] = norm(fs.readFileSync(path.join(ROOT, 'story/jiuding-lu', h.file), 'utf8'));
 
 function* stories(scene) {
   if (scene.story?.zh) yield [scene.id, scene.story];
@@ -48,7 +50,7 @@ function* stories(scene) {
 
 test('every scene passage is the book\'s own text, paragraph by paragraph', () => {
   const drift = [];
-  let count = 0;
+  let count = 0, jin = 0;
   for (const ch of CHAPTERS) {
     const dir = path.join(ROOT, 'worlds/jiuding/chapters', ch, 'scenes');
     for (const f of fs.readdirSync(dir).filter((f) => f.endsWith('.json')).sort()) {
@@ -61,6 +63,7 @@ test('every scene passage is the book\'s own text, paragraph by paragraph', () =
           const n = norm(para);
           if (!n) continue;
           count++;
+          if (/^j/.test(scene.hui)) jin++;
           if (text.includes(n)) continue;
           if (BRIDGES.some(([w, head]) => w === where && para.startsWith(head))) continue;
           drift.push(`${where} (${scene.hui}): ${para.slice(0, 40)}…`);
@@ -69,6 +72,7 @@ test('every scene passage is the book\'s own text, paragraph by paragraph', () =
     }
   }
   assert.ok(count > 500, `only ${count} passage paragraphs found`);
+  assert.ok(jin > 250, `only ${jin} interlude paragraphs found`);
   assert.deepEqual(drift, [], `scene passages that no longer match the book:\n${drift.join('\n')}`);
 });
 

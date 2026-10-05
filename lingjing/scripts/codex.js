@@ -23,7 +23,8 @@ const linesOf = (lang, v) => {
 
 /* What each linked file gives an entry: its rows, a row's line(s), picture and credit. */
 const LINKS = {
-  people: { rows: (f) => f.people?.people ?? [], lines: (r) => [r.role], credit: () => null },
+  // 今线's people (`line: "jin"`) are the interludes' alone: never in the 古 world's 图鉴 (同魂不同命, never said).
+  people: { rows: (f) => (f.people?.people ?? []).filter((p) => p.line !== 'jin'), lines: (r) => [r.role], credit: () => null },
   // A creature's own classic line (山海经). Painted from that line since
   // 2026-09-29, its old woodcut kept as 「原图」 (`art_plate`) with the edition's name.
   creatures: {

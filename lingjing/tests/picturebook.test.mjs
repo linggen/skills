@@ -64,7 +64,8 @@ test('a face is new once: the next scene brings on only who it has not met; a re
 
 test('no prologue scene has a picture; every person\'s portrait is on disk or a name card', () => {
   for (const scene of Object.values(content.chapters['00-prologue'].scenes)) assert.equal(scene.panel?.art, undefined, scene.id);
-  for (const p of content.people.people) assert.ok(fs.existsSync(path.join(content.dir, p.art)), p.id);
+  // 今线's people (`line: jin`, 2026-10-05) are name cards until a portrait is painted.
+  for (const p of content.people.people) assert.ok(p.line === 'jin' && !p.art ? true : fs.existsSync(path.join(content.dir, p.art)), p.id);
   for (const f of Object.values(content.world.companion.forms)) assert.ok(fs.existsSync(path.join(content.dir, f.art)), f.art);
 });
 

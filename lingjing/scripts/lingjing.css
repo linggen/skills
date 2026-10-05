@@ -1188,3 +1188,23 @@ body.fighting .atmos { display: none; }
   .spstage .spline { color: #e9e2d2; }
 }
 .card.challenge .cgoal { font-size: 13px; line-height: 1.6; margin: 6px 0 0; color: var(--ink, #3a2f25); border-left: 2px solid #b8963e; padding-left: 8px; }
+
+/* ── 今线: the interludes' stage (2026-10-05) ──
+   The same page in another world: the paper turns a cool campus grey and the
+   ink wash gives way to a faint line of the place (Look's scene `scape`) —
+   the track's lanes, the court's key, the rare-books room's shelves, the
+   ward's bed rail. Pale, like the 淡墨 it replaces; no picture, no figure. */
+.view.jin { --sky-a: #E8ECEE; --sky-b: #D6DDE1; --jin-line: color-mix(in srgb, #3E5566 16%, transparent); --jin-warm: color-mix(in srgb, #B5523B 14%, transparent); }
+@media (prefers-color-scheme: dark) { .view.jin { --sky-a: #171B1F; --sky-b: #0D1013; --jin-line: color-mix(in srgb, #9FB6C6 14%, transparent); --jin-warm: color-mix(in srgb, #D9876F 12%, transparent); } }
+.view.jin .backdrop { background: linear-gradient(180deg, transparent 62%, var(--jin-line) 62.2%, transparent 62.6%); }
+.view.jin-track .backdrop { background:
+  radial-gradient(140% 60% at 50% 118%, transparent 46%, var(--jin-warm) 46.4%, transparent 47.2%, transparent 52%, var(--jin-warm) 52.4%, transparent 53.2%, transparent 58%, var(--jin-warm) 58.4%, transparent 59.2%); }
+.view.jin-court .backdrop, .view.jin-gym .backdrop { background:
+  radial-gradient(38% 30% at 50% 104%, transparent 96%, var(--jin-line) 97%, transparent 99%),
+  linear-gradient(90deg, transparent 31.8%, var(--jin-line) 32%, transparent 32.4%, transparent 67.6%, var(--jin-line) 68%, transparent 68.2%) bottom / 100% 26% no-repeat,
+  linear-gradient(180deg, transparent 73.6%, var(--jin-line) 74%, transparent 74.4%); }
+.view.jin-stacks .backdrop, .view.jin-dark .backdrop { background:
+  repeating-linear-gradient(90deg, transparent 0 calc(12.5% - 2px), var(--jin-line) calc(12.5% - 2px) 12.5%) bottom / 100% 40% no-repeat,
+  repeating-linear-gradient(180deg, transparent 0 calc(25% - 1px), var(--jin-line) calc(25% - 1px) 25%) bottom / 100% 40% no-repeat; }
+.view.jin-ward .backdrop { background: linear-gradient(180deg, transparent 70%, var(--jin-line) 70.3%, transparent 70.8%, transparent 78%, var(--jin-line) 78.3%, transparent 78.8%); }
+.view.jin-night .backdrop { background: radial-gradient(30% 22% at 76% 86%, color-mix(in srgb, #E8C46A 16%, transparent), transparent 70%); }

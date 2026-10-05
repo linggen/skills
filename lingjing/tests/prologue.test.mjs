@@ -220,7 +220,7 @@ test('people speak as themselves: a line names them, Look carries their voice fo
   const fox = look(walk(s, TO_VALLEY.slice(1, -2), content, NOW), content, ctx()).scene;
   assert.equal(fox.id, '00-fox');
   assert.deepEqual(fox.people.map(p => [p.id, p.name]), [['yinyue', '小银狐']]);
-  for (const p of content.people.people) assert.ok(fs.existsSync(path.join(content.dir, p.art)), p.art);
+  for (const p of content.people.people.filter(p => p.art || p.line !== 'jin')) assert.ok(fs.existsSync(path.join(content.dir, p.art)), p.art); // 今线's: name cards
 });
 
 test('the lint holds people.json: a home, a portrait, a voice, a slot that names a person, the fixed hero', () => {

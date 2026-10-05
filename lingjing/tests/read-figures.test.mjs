@@ -40,7 +40,8 @@ test('the codex lints clean: every kind known, every picture on disk, one entry 
     if (e.image) assert.ok(exists(e.image), `${e.id}: ${e.image}`);
   }
   // linked, not duplicated: every person, 山海经 creature, item and art is an entry
-  for (const p of FILES.people.people) assert.equal(CODEX.get(p.id)?.kind, '人物', p.id);
+  // 今线's people are the interludes' alone, never in the 古 world's 图鉴 (codex.js, 2026-10-05).
+  for (const p of FILES.people.people) assert.equal(CODEX.get(p.id)?.kind, p.line === 'jin' ? undefined : '人物', p.id);
   for (const c of FILES.creatures.creatures.filter((c) => !c.id.startsWith('foe-'))) assert.equal(CODEX.get(c.id)?.kind, '生物', c.id);
   // an item only when tagged 法宝 · 丹药 · 功法 · 信物 (his: 「鹿皮就不用图鉴了」)
   for (const i of FILES.items.items) {
