@@ -318,6 +318,24 @@ from the bag and adds it to the cast (`needs-item`, `already-tamed`,
 - **`Trade {buy|sell|use, id}`** at a market (a place with `shop`), catalog
   prices, no 体力: `no-market`, `not-for-sale-here`, `no-stones`,
   `not-in-bag`, `key-in-use`, `not-usable`, `bag-full`.
+- **按店进货 — a shelf is a shop's** (Hanli, 2026-10-05): a place's `has.shop` may
+  be `{name, keeper, goods: [item ids], opens: {done: <scene>}, shut}` — its own
+  goods only, nothing until `opens.done` is behind him (`shut` is what Look says
+  meanwhile), the shelf card titled `name · keeper` (look.mjs `shopOf`,
+  `shopOpen`); `shop: true` (older data, a made world) is still the province's
+  shelf by items' `sold`. Before the 灵石 (the prologue's `wealth` lock) a shelf
+  shows nothing. The people and the goods are the book's: 坊市 = **钱掌柜的摊子**
+  (押宝 · 收当: 聚气丹 of one ring, 回春丹, 萝卜, the pawned 竹剑 · 蓑衣 · 望气术上卷;
+  his **押宝** board, `games/yabao.js`, hosted daily — four 门, three bets, his
+  two habits read off a miss, a win pays a one-ring 聚气丹); 彭城 = **济世堂**
+  (灵芝 · 人参 · 回春丹, 古三's apothecary); 石坳村 = the **货郎** (干粮 · 蓑衣 · 短刀);
+  邺城 (古八) = the 东街市, and its own streets as places a road off the city:
+  **老胡家豆腐坊** (shut under the 河伯's seal until the 漳水), **城南裁缝铺**,
+  **香烛铺**, **城东客栈**, and **三老宅** (empty after the 漳水, found things only);
+  downstream, **柳湾** (the fishing village under the willows). 冀's errands are
+  古八's people (`quests/ji.json`), kept to the story's time by `opens.before` /
+  `opens.done` (a scene ahead / behind): the innkeeper and the old drummer before
+  the 漳水; 刘船匠's boat that does not leak and 老胡's bowl for 柳湾 after.
 - **储物袋** (2026-09-25): room in slots by realm (`pouch.by_tier`: 24/36/48/60),
   bigger pouches used once; story things take no slot; what does not fit
   waits at the 洞府 (`state.held`, 待取). The pouch panel (pouch.js): tabs,

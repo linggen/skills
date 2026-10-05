@@ -220,6 +220,9 @@ function offersOf(content, state, lang, now) {
   return [...(content.quests ?? []), ...(notice ? [notice] : [])]
     .filter(q => q.from?.place === state.place && !state.quests?.[q.id] && ofJuan(content, q, now)
       && (!q.opens?.after || questDoneBefore(state, q.opens.after))
+      // Story time: after a scene (`done`), or only while it is still ahead (`before`) — 邺城 before and after the 漳水.
+      && (!q.opens?.done || (state.done_scenes ?? []).includes(q.opens.done))
+      && (!q.opens?.before || !(state.done_scenes ?? []).includes(q.opens.before))
       && (!q.opens?.tier || TIERS_ORDER(content).indexOf(state.tier) >= TIERS_ORDER(content).indexOf(q.opens.tier)))
     .map(q => ({ id: q.id, title: pick(q.title, lang), who: q.from.who ? pick(q.from.who, lang) : null, say: fill(pick(q.say, lang), state, content), need: q.need.map(n => ({ kind: n.kind, n: n.n })), grant: q.grant, pays: paysOf(content, state, now, q.grant) }));
 }
@@ -566,7 +569,7 @@ function itemBrief(content, state, item) {
    (creatures.json; Tame takes it). On the shelf and in the bag, so a player
    buying 灵芝 knows it is for 夫诸 (his, 2026-09-24: 坊市里如果某个物品是收服妖用到的, 显示一下). */
 const tamesOf = (content, state, item) => content.creatures.creatures
-  .filter(c => c.likes === item.id && !(state.cast ?? []).includes(c.id))
+  .filter(c => c.likes === item.id && !(state.cast ?? []).includes(c.id) && ofJuan(content, c))
   .map(c => ({ id: c.id, name: pick(c.name, state.lang) }));
 
 /* 装备 · 背包 — what he wears and what he carries, as the top bar's 装 chip

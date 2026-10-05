@@ -102,6 +102,10 @@
    }
   ],
   "冀": [
+    {"wealth": 6, "at": ["ye-sanlao"], "line": {"zh": "胖的那家后堂，红木匣子空了，匣底的缝里还卡着几块碎灵石——分钱的那一夜漏下的。", "en": "In the stout one's back hall the redwood box is empty; a few chips of spirit stone are still stuck in a crack at its bottom — dropped on some night of sharing out."}},
+    {"item": "ganliang", "at": ["ye-sanlao"], "line": {"zh": "厨房里还剩半袋干饼，三老走得急，没顾上。", "en": "Half a bag of flat cakes left in the kitchen; the Three Elders left in a hurry."}},
+    {"item": "straw-cloak", "at": ["liuwan"], "line": {"zh": "老柳底下挂着一件蓑衣，渔家说：拿去吧，今年河里太平。", "en": "A straw cloak hangs under an old willow. The fishermen say: take it — the river is quiet this year."}},
+    {"wealth": 5, "at": ["liuwan"], "line": {"zh": "柳根底下的泥里，埋着一只烂了的船底板，板缝里嵌着两块灵石。", "en": "In the mud under the willow roots lies a rotted boat plank; two spirit stones are wedged in its seams."}},
    {
     "item": "ginseng",
     "at": [

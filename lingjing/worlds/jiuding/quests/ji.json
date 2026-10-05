@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "province": "冀",
+  "_about": "冀州的差事 (design.md § 差事), all 古八's people (Hanli, 2026-10-05: 人物和货都从书里来). `opens.before` offers one only while the 漳水 (01-rise) is still ahead — the city that pays the 河伯钱 and does not look downstream; `opens.done` only once it is behind him — the city after. 交差 where he stands, the moment the count is met.",
+  "quests": [
+    {
+      "id": "ji-kezhan-hebo",
+      "title": { "zh": "河伯祠的香灰", "en": "The ash at the River Lord's shrine" },
+      "from": { "place": "ye-kezhan", "who": { "zh": "城东客栈的胖掌柜", "en": "the stout innkeeper of the east side" } },
+      "opens": { "before": "01-rise" },
+      "say": {
+        "zh": "（压低了声音）外乡人，你要是闲着，替我去河伯祠瞧一眼：今年的船，打好了没有。别说是我叫你去的——我这客栈，还要开。",
+        "en": "(dropping his voice) Stranger, if you've time on your hands, go and look at the River Lord's shrine for me: is this year's boat built yet? Don't say I sent you — I mean to keep this inn open."
+      },
+      "seen": {
+        "zh": "祠前的香灰堆得齐腰高。水边搁着一只新打的木船，船底朝天，底板上一排七个小孔，孔边的木茬还是白的。",
+        "en": "The incense ash before the shrine is piled waist-high. A newly built boat lies keel-up by the water, a row of seven small holes in its bottom, the wood at their edges still pale."
+      },
+      "need": [{ "kind": "visit", "place": "hebo", "n": 1 }],
+      "grant": { "table": "quest", "progress": 20, "wealth": 8 }
+    },
+    {
+      "id": "ji-gushou-xiangzhu",
+      "title": { "zh": "老鼓手的鼓乐钱", "en": "The old drummer's fee" },
+      "from": { "place": "ye", "who": { "zh": "城南的老鼓手", "en": "the old drummer from the south side" } },
+      "opens": { "before": "01-rise" },
+      "say": {
+        "zh": "（打了个酒嗝）后生，替我跑一趟香烛铺，问问今年送亲的香烛鼓乐钱，三老给下来没有。年年就这一回，喝得上好酒。",
+        "en": "(with a hiccup of wine) Lad, run over to the incense shop for me and ask whether the Three Elders have paid this year's money for the bride's incense and music. Once a year it comes, and I drink good wine on it."
+      },
+      "seen": {
+        "zh": "香烛铺的伙计翻了翻账：「香烛鼓乐，三老一年统共给三贯，打鼓的分三百文。今年的，十月十八以后才给。」",
+        "en": "The incense shop's boy leafs through the book: \"Incense, drums and pipes — three strings a year from the Three Elders, all told; the drummer gets three hundred cash. This year's comes after the eighteenth of the tenth month.\""
+      },
+      "need": [{ "kind": "visit", "place": "ye-xiangzhu", "n": 1 }],
+      "grant": { "table": "quest", "progress": 20, "wealth": 6 }
+    },
+    {
+      "id": "ji-liu-boat",
+      "title": { "zh": "一只不漏的船", "en": "A boat that does not leak" },
+      "from": { "place": "zhangnan", "who": { "zh": "城西的刘船匠", "en": "Liu the boatwright of the west side" } },
+      "opens": { "done": "01-rise" },
+      "say": {
+        "zh": "二十五年，二十五只船，底下都凿了七个洞。今年我想打一只不漏的，渡人过河用。——板子排不齐，你脑子活，替我排一排。",
+        "en": "Twenty-five years, twenty-five boats, every one with seven holes in its bottom. This year I want to build one that doesn't leak, to ferry people across. — The planks won't line up; you've a quick head. Lay them out for me."
+      },
+      "done": {
+        "zh": "刘船匠拿手一块一块敲过船板，没有一块是空的。他把那本工账翻到最后一页，写了一行：渡船一只，不凿。",
+        "en": "Liu taps every plank with his knuckles; not one rings hollow. He turns his work book to the last page and writes a line: one ferry, no holes."
+      },
+      "need": [{ "kind": "board", "task": "huarong", "n": 1, "at": "zhangnan" }],
+      "grant": { "table": "quest", "progress": 40, "wealth": 15 }
+    },
+    {
+      "id": "ji-doufu-liuwan",
+      "title": { "zh": "下游的柳树", "en": "The willow downstream" },
+      "from": { "place": "ye-doufu", "who": { "zh": "老胡和豆腐西施", "en": "Old Hu and the Tofu Beauty" } },
+      "opens": { "done": "01-rise" },
+      "say": {
+        "zh": "（老胡拿碗盛了一碗豆浆，闺女在旁边比划）她说，那天要是船漂下去，是该漂到柳湾那棵老柳底下的。这碗豆浆，替她送给柳湾的渔家——二十五年，那边的人，也一回没敢往上游看。",
+        "en": "(Old Hu ladles a bowl of soy milk while his daughter signs beside him) She says, had the boat floated off that day, it would have come to rest under the old willow at Willow Bend. Take this bowl to the fishermen there for her — for twenty-five years, they never dared look upstream either."
+      },
+      "seen": {
+        "zh": "柳湾的老柳底下，渔家的老婆婆接过那碗豆浆，喝了一口，没说话，望着上游，望了很久。",
+        "en": "Under the old willow at Willow Bend, the fishermen's old grandmother takes the bowl of soy milk, drinks a mouthful and says nothing, looking upstream for a long time."
+      },
+      "need": [{ "kind": "visit", "place": "liuwan", "n": 1 }],
+      "grant": { "table": "quest", "progress": 30, "wealth": 10, "item": "ganliang" }
+    }
+  ]
+}

@@ -11,7 +11,7 @@
     "en": "South bank of the Zhang"
    },
    "tier": 0,
-   "roads": [
+   "roads": ["liuwan", 
     "sibei",
     "ye",
     "hebo"
@@ -21,7 +21,7 @@
     0.3733
    ],
    "has": { "seeds": true,
-    "scene": "01-arrive", "games": ["wuziqi"] },
+    "scene": "01-arrive", "games": ["wuziqi", "huarong"] },
    "line": {
     "zh": "漳水浑黄，北去是邺城。水底有什么在呼吸。",
     "en": "The Zhang runs yellow; north of it lies Ye. Something under the water is breathing."
@@ -39,7 +39,7 @@
     "en": "Ye"
    },
    "tier": 0,
-   "roads": [
+   "roads": ["ye-doufu", "ye-caifeng", "ye-xiangzhu", "ye-kezhan", "ye-sanlao", 
     "zhangnan",
     "hebo",
     "taihang",
@@ -49,8 +49,7 @@
     0.6804,
     0.3278
    ],
-   "has": { "shop": true,
-    "scene": "01-ye", "games": ["alchemy-daily"] },
+   "has": {"shop": {"name": {"zh": "东街市", "en": "East Street market"}, "goods": ["iron-sword", "pouch-mid", "wangqi-1", "mend-pill"]}, "scene": "01-ye", "games": ["alchemy-daily"]},
    "line": {
     "zh": "漳水边的城。城门贴着告示，坊市在东街。",
     "en": "The city on the Zhang. A notice on the gate; the market on East Street."
@@ -238,6 +237,12 @@
     "riddle",
     "find"
    ]
-  }
+  },
+  {"id": "ye-doufu", "name": {"zh": "邺城 · 城西豆腐坊", "en": "Ye · the west-side tofu shop"}, "tier": 0, "roads": ["ye"], "map": [0.6702, 0.3262], "has": {"shop": {"name": {"zh": "老胡家豆腐坊", "en": "Old Hu's tofu shop"}, "keeper": {"zh": "老胡 · 豆腐西施", "en": "Old Hu and the Tofu Beauty"}, "goods": ["ganliang"], "opens": {"done": "01-rise"}, "shut": {"zh": "门关着，门上贴着一张黄纸，盖着河伯庙的红印：这一家，河伯定了。", "en": "The door is shut, a yellow paper on it under the River Lord temple's red seal: this house, the River Lord has chosen."}}}, "line": {"zh": "城西一条窄街，豆浆的气味。门框上拿炭划着道，一天划掉一道。", "en": "A narrow street on the west side, and the smell of soy milk. Charcoal strokes on the door frame, one crossed out each day."}},
+  {"id": "ye-caifeng", "name": {"zh": "邺城 · 城南裁缝铺", "en": "Ye · the south-side tailor's"}, "tier": 0, "roads": ["ye"], "map": [0.6846, 0.3352], "has": {"shop": {"name": {"zh": "城南裁缝铺", "en": "The south-side tailor's"}, "keeper": {"zh": "老板娘", "en": "the proprietress"}, "goods": ["grey-robe", "straw-cloak"]}}, "line": {"zh": "河伯庙的嫁衣，二十五年，一年一身，都是这家的活。一身八百文，三老付钱，从来不还价。", "en": "Twenty-five years of brides' dresses for the River Lord's temple, one a year, all made here. Eight hundred cash each; the Three Elders paid and never haggled."}},
+  {"id": "ye-xiangzhu", "name": {"zh": "邺城 · 香烛铺", "en": "Ye · the incense shop"}, "tier": 0, "roads": ["ye"], "map": [0.6888, 0.3232], "has": {"shop": {"name": {"zh": "香烛铺", "en": "The incense shop"}, "keeper": {"zh": "香烛 · 玉器", "en": "incense and jade"}, "goods": ["jade-ring", "jade-fish"]}}, "line": {"zh": "香烛鼓乐，三老一年统共给三贯。柜上摆着几样开过光的玉。", "en": "Incense, drums and pipes: three strings a year from the Three Elders, all told. A few blessed jades lie on the counter."}},
+  {"id": "ye-kezhan", "name": {"zh": "邺城 · 城东客栈", "en": "Ye · the inn on the east side"}, "tier": 0, "roads": ["ye"], "map": [0.6922, 0.3296], "has": {"shop": {"name": {"zh": "城东客栈", "en": "The east-side inn"}, "keeper": {"zh": "胖掌柜", "en": "the stout innkeeper"}, "goods": ["ganliang", "mend-pill"]}}, "line": {"zh": "掌柜是个胖子，面汤清得照得见人影。后院有一口井，井台上坐得下一个人算账。", "en": "The innkeeper is stout, the noodle soup clear enough to see your face in. A well in the back yard, its rim wide enough for one person doing sums."}},
+  {"id": "ye-sanlao", "name": {"zh": "邺城 · 三老宅", "en": "Ye · the Three Elders' house"}, "tier": 0, "roads": ["ye"], "map": [0.679, 0.3192], "has": {}, "meets": ["find"], "line": {"zh": "城北一座三进的大宅子。漳水那天以后，箱子都抬空了，门也没人守。", "en": "A great house of three courtyards on the north side. Since the day of the Zhang its chests stand empty, and no one keeps the gate."}},
+  {"id": "liuwan", "name": {"zh": "柳湾", "en": "Willow Bend"}, "tier": 0, "roads": ["zhangnan"], "map": [0.6952, 0.3858], "has": {"seeds": true}, "water": true, "meets": ["find", "beast"], "line": {"zh": "漳水下游的渔村，岸上一排老柳。二十五年，谁也不敢往下游看一眼。", "en": "A fishing village downstream on the Zhang, a row of old willows on the bank. For twenty-five years no one dared look downstream."}}
  ]
 }

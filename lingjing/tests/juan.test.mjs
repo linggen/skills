@@ -81,7 +81,7 @@ test('nothing of a later 卷 is met, sold, found, dropped or told', () => {
   assert.equal(encounterOf(content, free('sikou'), NOW), null, '无支祁 is 卷四\'s');
   // No shelf sells a thing of a later 卷.
   for (const p of allPlaces(content).filter(p => p.has?.shop)) {
-    for (const i of shelfOf(content, p.province, free(p.id), NOW)) assert.ok((i.juan ?? 1) <= 1, `${p.id}: ${i.id}`);
+    for (const i of shelfOf(content, p, free(p.id), NOW)) assert.ok((i.juan ?? 1) <= 1, `${p.id}: ${i.id}`);
   }
   // A seed of a later 卷 is never the day's.
   for (let d = 1; d <= 40; d += 1) {

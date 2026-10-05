@@ -3,7 +3,7 @@
 import { dayKey, pick } from '../state.mjs';
 import { itemBrief, itemOf } from './errands.mjs';
 import { meetBrief, meetHere } from './road.mjs';
-import { duelBrief, shelfOf, withMap } from './look.mjs';
+import { duelBrief, shelfOf, shopOf, shopOpen, withMap } from './look.mjs';
 import { provinceOf } from './travel.mjs';
 
 const STORY_WORDS = 300, STORY_CHARS = 600;
@@ -164,7 +164,9 @@ function placeBrief(content, state, now = new Date()) {
   if (!place) return null;
   const lang = state.lang, doc = content.places[place.province];
   const has = place.has ?? {};
-  const shelf = has.shop ? shelfOf(content, place.province, state) : [];
+  const shelf = has.shop ? shelfOf(content, place, state, now) : [];
+  // The shop by its own name and keeper (按店进货, look.mjs shopOf): the shelf card's title.
+  const shop = shopOf(place);
   const show = [
     ...(has.creature && metNow(content, has.creature, now) ? [{ card: 'creature', id: has.creature }] : []),
     ...(shelf.length ? [{ card: 'item', ids: shelf.map(i => i.id) }] : []),
@@ -177,6 +179,7 @@ function placeBrief(content, state, now = new Date()) {
       creature: has.creature && metNow(content, has.creature, now) ? { id: has.creature, name: pick(creatureOf(content, has.creature).name, lang) } : null,
       seeds: Boolean(has.seeds), shop: Boolean(has.shop), scene: has.scene ?? null,
     },
+    ...(shop ? { shop: { name: pick(shop.name, lang) ?? null, keeper: pick(shop.keeper, lang) ?? null, open: shopOpen(shop, state), ...(!shopOpen(shop, state) && shop.shut ? { shut: pick(shop.shut, lang) } : {}) } } : {}),
     roads: place.roads.map(id => placeOf(content, id)).map(p => ({
       ...placeName(content, state, p), tier: p.tier, too_hard: tooHard(content, state, p),
       province: p.province, closed: !placeOpen(content, state, p, now),

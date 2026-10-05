@@ -80,13 +80,7 @@
     0.795,
     0.4898
    ],
-   "has": {
-    "shop": true,
-    "games": [
-     "alchemy-daily"
-    ],
-    "scene": "04-town"
-   },
+   "has": {"shop": {"name": {"zh": "济世堂", "en": "Jishi Hall"}, "keeper": {"zh": "药铺", "en": "the apothecary"}, "goods": ["lingzhi", "ginseng", "mend-pill"]}, "games": ["alchemy-daily"], "scene": "04-town"},
    "line": {
     "zh": "徐州的城，坊市在南门里。",
     "en": "The city of Xu; the market lies inside the south gate."
@@ -575,6 +569,7 @@
     0.822,
     0.398
    ],
+   "has": {"shop": {"name": {"zh": "货郎担子", "en": "the pedlar's pole"}, "keeper": {"zh": "走南路的货郎", "en": "the pedlar of the south road"}, "goods": ["ganliang", "straw-cloak", "duan-dao"]}},
    "line": {
     "zh": "蒙山脚下十七户人家，十六户种地，一户打猎——你家。",
     "en": "Seventeen households at the foot of Mount Meng: sixteen farm, one hunts — yours."
@@ -785,9 +780,7 @@
     0.8272,
     0.4381
    ],
-   "has": {
-    "shop": true
-   },
+   "has": {"shop": {"name": {"zh": "钱掌柜的摊子", "en": "Money Qian's stall"}, "keeper": {"zh": "押宝 · 收当", "en": "bets and pawns"}, "goods": ["qi-pill", "mend-pill", "luobo", "bamboo-sword", "straw-cloak", "wangqi-1"]}, "games": ["yabao"]},
    "line": {
     "zh": "山脚的坊市，一条街，卖符纸的、卖灵草的、卖萝卜的。钱掌柜的铺子最大，算盘打得最响。",
     "en": "The market at the foot of the mountain: one street of talisman paper, spirit herbs and radishes. Shopkeeper Qian's is the biggest stall, and his abacus the loudest."

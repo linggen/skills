@@ -122,6 +122,8 @@ export function everyJuan(content) {
   for (const d of Object.values(content.seeds ?? {})) strip(d.seeds);
   for (const l of Object.values(content.meets?.finds ?? {})) strip(l);
   const at = id => Object.values(content.places).flatMap(d => d.places).find(p => p.id === id);
+  // The old spine's markets: each shop the province's shelf (`shop: true`), not its own goods (按店进货, 2026-10-05).
+  for (const d of Object.values(content.places)) for (const p of d.places) if (p.has?.shop && typeof p.has.shop === 'object') p.has = { ...p.has, shop: true };
   if (at('sibei')) at('sibei').has = { ...at('sibei').has, creature: 'fuzhu' };
   if (at('hebo')) at('hebo').has = { ...at('hebo').has, creature: 'paoxiao' };
   return content;

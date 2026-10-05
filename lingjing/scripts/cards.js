@@ -550,7 +550,9 @@ function item(card, ctx) {
     return `<div class="item">${art}<div class="itemname">${esc(i.name)}</div>
       <div class="small dim">${esc(ctx.look.words?.[i.kind] ?? i.kind)} · ${esc(does)}</div>${about}${made}${tames}${price}${held}${worn}<div class="acts">${tell}${use}</div></div>`;
   });
-  const title = ids.length > 1 ? ctx.look.words?.shop ?? ctx.words.shelf : ctx.look.words?.item ?? ctx.words.shelf;
+  // A shop with its own name (按店进货: 济世堂, 钱掌柜的摊子 …) heads its shelf, the keeper beside it.
+  const shop = ctx.look.place?.shop, own = shop?.name ? `${shop.name}${shop.keeper ? ` · ${shop.keeper}` : ''}` : null;
+  const title = ids.length > 1 ? own ?? ctx.look.words?.shop ?? ctx.words.shelf : ctx.look.words?.item ?? ctx.words.shelf;
   return `<div class="card"><div class="cardtitle">${esc(title)}</div><div class="shelf">${cells.join('')}</div></div>`;
 }
 

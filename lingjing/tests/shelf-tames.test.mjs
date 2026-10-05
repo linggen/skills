@@ -7,10 +7,12 @@ import assert from 'node:assert/strict';
 import { WORDS, cardHtml } from '../scripts/cards.js';
 import { pouchHtml } from '../scripts/pouch.js';
 import { loadContent } from '../scripts/content.mjs';
+import { everyJuan } from './prologue.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, VERBS } from '../scripts/rules.mjs';
 
-const content = loadContent();
+// The old spine's world (prologue.mjs everyJuan): 夫诸 is met, 彭城 shelves the province's goods.
+const content = everyJuan(loadContent());
 const NOW = new Date('2026-10-05T10:00:00');
 const at = (extra = {}) => ({ ...newState(content, 'zh', NOW), name: '清玄', traits: ['wood', 'water', 'fire', 'earth'], place: 'pengcheng', chapter: '02-yan', scene: null,
   ended: ['00-prologue', '01-ji'], tier: 'core', ...extra });

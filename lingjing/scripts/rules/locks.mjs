@@ -61,6 +61,8 @@ export function withoutLocked(content, state, brief) {
   for (const system of shut) for (const key of HIDES[system] ?? []) delete out[key];
   // What the road met is the road's.
   if (shut.includes('road') && out.place?.meet) { const { meet, ...place } = out.place; out.place = place; }
+  // A shelf is the 灵石's: before them, a shop (石坳村's 货郎) shows nothing to buy.
+  if (shut.includes('wealth') && out.place?.shelf?.length) out.place = { ...out.place, shelf: [], show: (out.place.show ?? []).filter(c => c.card !== 'item') };
   return out;
 }
 

@@ -171,14 +171,14 @@ export function trade(state, content, ctx, args) {
   settlePlace(content, s);
   const here = placeOf(content, s.place);
   const lang = s.lang, w = wordsOf(content, lang);
-  if (!item) return refuse('unknown-item', null, { shelf: here?.has?.shop ? shelfOf(content, here.province).map(i => i.id) : [] });
+  if (!item) return refuse('unknown-item', null, { shelf: here?.has?.shop ? shelfOf(content, here, s).map(i => i.id) : [] });
   const held = s.bag[item.id] ?? 0;
   if (args.action === 'buy' || args.action === 'sell') {
     if (!here?.has?.shop) {
       return refuse('no-market', pick({ zh: `这里没有${w.shop}。`, en: `There is no ${w.shop} here.` }, lang));
     }
     if (args.action === 'buy') {
-      if (!forSale(content, s, item, here.province)) return refuse('not-for-sale-here', null, { shelf: shelfOf(content, here.province, s).map(i => i.id) });
+      if (!forSale(content, s, item, here)) return refuse('not-for-sale-here', null, { shelf: shelfOf(content, here, s).map(i => i.id) });
       if (s.wealth < item.buy) {
         return refuse('no-stones', pick({ zh: `${w.wealth}不够。`, en: `Not enough ${w.wealth}.` }, lang), { price: item.buy, wealth: s.wealth });
       }

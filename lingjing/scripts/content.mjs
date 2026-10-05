@@ -748,6 +748,9 @@ function lintQuests(content, ids, bad) {
     if (q.then && !byId.has(q.then)) bad(where, `chains to unknown quest ${q.then}`);
     if (q.opens?.after && !byId.has(q.opens.after)) bad(where, `opens after unknown quest ${q.opens.after}`);
     if (q.opens?.tier && !content.ladder.tiers.some(t => t.id === q.opens.tier)) bad(where, `unknown tier ${q.opens.tier}`);
+    // Story time (errands.mjs offersOf): offered once a scene is behind him (`done`), or only before it (`before`).
+    const sceneIds = new Set(Object.values(content.chapters).flatMap(ch => Object.keys(ch.scenes ?? {})));
+    for (const k of ['done', 'before']) if (q.opens?.[k] != null && !sceneIds.has(q.opens[k])) bad(where, `opens ${k} unknown scene ${q.opens[k]}`);
     const needs = Array.isArray(q.need) ? q.need : [];
     if (!needs.length) bad(where, 'needs at least one thing to do');
     for (const n of needs) {

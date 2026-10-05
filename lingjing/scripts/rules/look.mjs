@@ -35,14 +35,25 @@ import { hotspotsOf, lookHint, seenLog, seenMet, SEEN_KEEP } from './examine.mjs
 /* The market's shelf: the catalog sold in this province — and, while the
    companion is still to be found, her bell at every market, since the call
    comes wherever the player stands. */
-const shelfOf = (content, province, state = null, now = new Date()) => {
-  // Nothing of a 卷 not open is on a shelf (world.mjs ofJuan).
-  const sold = content.items.items.filter(i => (i.sold ?? []).includes(province) && ofJuan(content, i, now));
+/* 按店进货 (his, 2026-10-05): a place's `shop` may say what its own shop
+   sells — `{ name, keeper, goods: [item ids], opens: { done: <scene> } }`, its
+   goods only, and nothing until the scene `opens.done` is behind him (邺城's
+   豆腐坊 stays shut until the 漳水). `shop: true` (older data, a made world) is
+   the province's catalog shelf, by items' `sold`. Either way nothing of a 卷
+   not open is on it (world.mjs ofJuan). `where` is the place, or a province. */
+const shopOf = place => (place?.has?.shop && typeof place.has.shop === 'object' ? place.has.shop : null);
+const shopOpen = (shop, state) => !shop?.opens?.done || (state?.done_scenes ?? []).includes(shop.opens.done);
+const shelfOf = (content, where, state = null, now = new Date()) => {
+  const place = typeof where === 'string' ? null : where, shop = shopOf(place);
+  const province = place ? place.province : where;
+  const sold = shop
+    ? (shopOpen(shop, state) ? (shop.goods ?? []).map(id => itemOf(content, id)).filter(i => i && ofJuan(content, i, now)) : [])
+    : content.items.items.filter(i => (i.sold ?? []).includes(province) && ofJuan(content, i, now));
   const c = companionOf(content);
   const searching = c && state && !state.companion?.joined && (state.companion || callDue(content, state)) && !(state.bag[c.bell] > 0);
   return searching && !sold.some(i => i.id === c.bell) ? [...sold, itemOf(content, c.bell)] : sold;
 };
-const forSale = (content, state, item, province) => shelfOf(content, province, state).some(i => i.id === item.id);
+const forSale = (content, state, item, where) => shelfOf(content, where, state).some(i => i.id === item.id);
 
 /* A speaker's name in the player's language; Ling narrates, unnamed. A
    person (people.json) or a slot (`ban`, the companion by gender) is named
@@ -512,4 +523,4 @@ function worldBrief(content, lang) {
   };
 }
 
-export { duelBrief, forSale, ledgerOf, nameOf, onStage, sceneBrief, shelfOf, shownHere, spoken, stageAt, tasksBrief, withMap, wordsOf };
+export { duelBrief, forSale, shopOf, shopOpen, ledgerOf, nameOf, onStage, sceneBrief, shelfOf, shownHere, spoken, stageAt, tasksBrief, withMap, wordsOf };
