@@ -1,11 +1,50 @@
 {
   "version": 1,
   "id": "01-ji",
+  "juan": 1,
   "opens": null,
   "province": "冀",
   "corridor": false,
   "first_scene": "01-arrive",
   "gate": null,
+  "_map": "卷一's whole map (Hanli, 2026-10-05: 游戏只到卷一，地图和故事只限卷一): after the Foundation he may walk all of 卷一 — 石坳村 and 蒙山, the area round 沉鼎观, 泗水 and 彭城 (古三's county town), and the road north from 泗水北岸 to 漳水南岸 into 冀 — 邺城, 河伯祠, 漳渊 and 太行山口. It holds while 01-ji runs and after it ends, while 卷二 waits (`coming`, world.mjs mapOf). `say` refuses a place of 徐 or 冀 the map leaves out; `beyond` refuses a province of a 卷 not open — greyed on the map, the line said on a tap (world.mjs shutSay, rules/inkmap.mjs).",
+  "map": {
+    "places": [
+      "shiao",
+      "mengshan",
+      "duanbei",
+      "heisong",
+      "yingu",
+      "shanlu",
+      "dukou",
+      "shanmen",
+      "zhengdian",
+      "waimen",
+      "jiangtang",
+      "chaifang",
+      "yaoyuan",
+      "houshan",
+      "cangjing",
+      "fangshi",
+      "shimen",
+      "sishui",
+      "sibei",
+      "pengcheng",
+      "zhangnan",
+      "ye",
+      "hebo",
+      "zhangyuan",
+      "taihang"
+    ],
+    "say": {
+      "zh": "观主那张舆图上，没画这条路。",
+      "en": "The abbot's map does not show that road."
+    },
+    "beyond": {
+      "zh": "观主那张舆图上，只画着徐、冀两州。别处的山水，图上是空的。",
+      "en": "The abbot's map shows only Xu and Ji. Everywhere else, the paper is blank."
+    }
+  },
   "_title": "The arc's own name, no number: the player is told the 回 (book.json via the scenes' `hui`, rules/hui.mjs); this stands only where a chapter has no 回.",
   "title": {
     "zh": "冀州之鼎",

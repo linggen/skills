@@ -4,12 +4,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { lint, loadContent } from '../scripts/content.mjs';
+import { everyJuan } from './prologue.mjs';
 import { dayKey, migrate, newState } from '../scripts/state.mjs';
 import { advance, look, move, progress, quest, tale } from '../scripts/rules.mjs';
 import { CARD_KINDS, stageCards, stageHolds } from '../scripts/stage.mjs';
 import { notePage } from '../scripts/rules/did.mjs';
 
-const content = loadContent();
+// The engine on the old spine, every 卷 open (prologue.mjs everyJuan); tests/juan.test.mjs walls 卷一.
+const content = everyJuan(loadContent());
 const NOW = new Date('2026-09-11T12:00:00');
 const ctx = (extra = {}) => ({ now: NOW, quests: [], ...extra });
 const later = (min, from = NOW) => new Date(from.getTime() + min * 60000);

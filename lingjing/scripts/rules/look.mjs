@@ -19,7 +19,7 @@ import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
 import { kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
 import { catchHere, gameLevel, hostedHere, lundaoBrief, reopened } from './tasks.mjs';
 import { hashOf } from './travel.mjs';
-import { atScene, beatOf, creatureOf, encounterOf, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
+import { atScene, beatOf, creatureOf, encounterOf, ofJuan, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
 import { chapterLabel } from './hui.mjs';
@@ -35,8 +35,9 @@ import { hotspotsOf, lookHint, seenLog, seenMet, SEEN_KEEP } from './examine.mjs
 /* The market's shelf: the catalog sold in this province — and, while the
    companion is still to be found, her bell at every market, since the call
    comes wherever the player stands. */
-const shelfOf = (content, province, state = null) => {
-  const sold = content.items.items.filter(i => (i.sold ?? []).includes(province));
+const shelfOf = (content, province, state = null, now = new Date()) => {
+  // Nothing of a 卷 not open is on a shelf (world.mjs ofJuan).
+  const sold = content.items.items.filter(i => (i.sold ?? []).includes(province) && ofJuan(content, i, now));
   const c = companionOf(content);
   const searching = c && state && !state.companion?.joined && (state.companion || callDue(content, state)) && !(state.bag[c.bell] > 0);
   return searching && !sold.some(i => i.id === c.bell) ? [...sold, itemOf(content, c.bell)] : sold;

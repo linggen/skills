@@ -465,11 +465,35 @@ export function lint(content) {
   lintLore(content, bad);
   lintPeople(content, bad);
   lintFestivals(content, bad);
+  lintJuan(content, bad);
   if (content.codex) for (const p of lintCodex(codexFiles(content), f => fs.existsSync(path.join(content.dir, f)))) bad('codex', p);
   // A codex entry's first scene is a scene of this world.
   const sceneIds = new Set(Object.values(content.chapters).flatMap(ch => Object.keys(ch.scenes ?? {})));
   for (const [id, e] of Object.entries(content.codex?.entries ?? {})) if (e.first?.scene && !sceneIds.has(e.first.scene)) bad('codex', `${id}: first scene ${e.first.scene} is not a scene`);
   return problems;
+}
+
+/* 卷 (world.mjs juanOpen, ofJuan): a `juan` is a 卷 number from 1, on a
+   creature, an item, a seed, an errand or a find alike — and a thing of 卷一
+   names nothing of a later 卷: a haunt's beast, a pool's, a shop's goods, an
+   errand's beast or grant. */
+function lintJuan(content, bad) {
+  const ok = n => n == null || (Number.isInteger(n) && n >= 1);
+  const of = (list, id) => list.find(x => x.id === id)?.juan ?? 1;
+  const things = [
+    ...content.creatures.creatures.map(x => [`creature ${x.id}`, x]),
+    ...content.items.items.map(x => [`item ${x.id}`, x]),
+    ...Object.entries(content.seeds ?? {}).flatMap(([p, d]) => (d.seeds ?? []).map(x => [`seed ${p} ${x.id}`, x])),
+    ...(content.quests ?? []).map(x => [`quest ${x.id}`, x]),
+    ...Object.entries(content.meets?.finds ?? {}).flatMap(([p, l]) => l.map((x, n) => [`find ${p} ${n}`, x])),
+  ];
+  for (const [where, x] of things) if (!ok(x.juan)) bad(where, `juan ${x.juan} is not a 卷 number`);
+  const beasts = content.creatures.creatures, goods = content.items.items;
+  for (const q of content.quests ?? []) {
+    const j = q.juan ?? 1;
+    for (const n of q.need ?? []) if (n.creature && of(beasts, n.creature) > j) bad(`quest ${q.id}`, `asks for ${n.creature}, of a later 卷`);
+    if (q.grant?.item && of(goods, q.grant.item) > j) bad(`quest ${q.id}`, `pays ${q.grant.item}, of a later 卷`);
+  }
 }
 
 /* festivals.json: every festival the calendar names has one entry and no
@@ -966,6 +990,7 @@ function lintChapterShape(chapter, content, bad) {
     if (!Array.isArray(map.places) || !map.places.length) bad(where, 'a map opens at least one place');
     for (const id of map.places ?? []) if (!known.has(id)) bad(where, `map opens unknown place ${id}`);
     if (map.say != null && !pair(map.say)) bad(where, 'the map\'s refusal needs zh and en');
+    if (map.beyond != null && !pair(map.beyond)) bad(where, 'the map\'s line for a province beyond the open 卷 needs zh and en');
     for (const sc of Object.values(chapter.scenes)) if (sc.at && map.places && !map.places.includes(sc.at)) bad(`scene ${sc.id}`, `at ${sc.at}, beyond the map its chapter opens`);
   }
   const inBeats = new Set();
@@ -986,6 +1011,8 @@ function lintChapterShape(chapter, content, bad) {
     if (!chapter.scenes[g.at]) bad(where, `goal at unknown scene ${g.at}`);
     if (!Object.values(chapter.scenes).some(sc => sc.exits.some(e => e.mark === g.eve))) bad(where, `goal eve ${g.eve} is marked by no exit`);
   }
+  // `juan`: the 卷 the chapter is of (world.mjs juanOpen), a whole number from 1.
+  if (chapter.juan != null && !(Number.isInteger(chapter.juan) && chapter.juan >= 1)) bad(where, 'juan is a 卷 number, 1 or more');
   // `coming` is a flag: its words are the first 回's (rules/hui.mjs comingOf), never written here.
   if (chapter.coming != null && chapter.coming !== true) bad(where, 'coming is true or absent — its words come from the book');
   if (chapter.close?.title) bad(where, 'a close is named by its 回 (「第三回 · 完」), never by its own title');

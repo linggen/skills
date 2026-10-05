@@ -14,11 +14,12 @@ import { codexOf } from '../scripts/codex.js';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, quest, tale } from '../scripts/rules.mjs';
-import { TO_WAIMEN, TO_HALL, TO_VALLEY, walk } from './prologue.mjs';
+import { TO_WAIMEN, TO_HALL, TO_VALLEY, walk, everyJuan } from './prologue.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const read = f => JSON.parse(fs.readFileSync(path.join(HERE, '../worlds/jiuding', f), 'utf8'));
-const content = loadContent();
+// The engine on the old spine, every 卷 open (prologue.mjs everyJuan); tests/juan.test.mjs walls 卷一.
+const content = everyJuan(loadContent());
 const NOW = new Date('2026-09-21T12:00:00');
 
 // The page's own reading of the world (lingjing.js loadContent), from the same files.

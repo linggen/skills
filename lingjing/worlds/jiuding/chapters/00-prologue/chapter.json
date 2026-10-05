@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "00-prologue",
+  "juan": 1,
   "opens": null,
   "province": "徐",
   "corridor": true,

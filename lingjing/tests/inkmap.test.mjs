@@ -53,8 +53,10 @@ test('province states: walked is a wash, a 鼎 home is ink, the rest mist — an
   assert.equal(b.provinces['冀'].home.memory, 1, 'its memory in the album');
   assert.ok(b.provinces['冀'].home.line.length > 4, 'one line of its story');
   assert.equal(b.provinces['徐'].state, 'wash');
-  assert.equal(b.provinces['兖'].state, 'mist', 'open but never walked');
-  assert.equal(b.provinces['兖'].locked, false);
+  // 兖 is 卷二's (2026-10-05, world.mjs juanOpen): shut — greyed by the page — with the world's line for it.
+  assert.equal(b.provinces['兖'].state, 'mist');
+  assert.equal(b.provinces['兖'].locked, true, '卷二 waits');
+  assert.equal(b.provinces['兖'].say, content.chapters['01-ji'].map.beyond.zh);
   assert.deepEqual(b.homed, ['冀']);
   assert.deepEqual(b.travel, ['冀']);
 

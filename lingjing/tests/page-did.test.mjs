@@ -22,17 +22,18 @@ function game() {
   const file = path.join(data, 'state.json');
   const save = () => JSON.parse(fs.readFileSync(file, 'utf8'));
   cli('init', '--lang=zh');
-  // Open country in 青州, where the roads lead on.
+  // Open country in 冀州 after 卷一, where the roads lead on (卷一 is all there is, 2026-10-05).
   const s = save();
-  fs.writeFileSync(file, JSON.stringify({ ...s, name: 'Alex', chapter: '03-qing', scene: '03-shore', place: 'linzi', done_scenes: [...s.done_scenes, '03-arrive', '03-town'] }));
+  const ji = Object.keys(content.chapters['01-ji'].scenes);
+  fs.writeFileSync(file, JSON.stringify({ ...s, name: 'Alex', chapter: '01-ji', scene: null, place: 'ye', ended: ['00-prologue', '00-waimen', '00-zhuji', '01-ji'], done_scenes: [...s.done_scenes, ...ji] }));
   return { cli, save, done: () => fs.rmSync(data, { recursive: true, force: true }) };
 }
 
 test("the page's verbs are written down; Ling's are not", () => {
   const g = game();
-  assert.equal(g.cli('move', '--place=weishui').ok, true);
-  assert.deepEqual(g.save().page_did.map(e => [e.verb, e.what]), [['move', 'moved to 潍水']]);
-  assert.equal(g.cli('move', '--place=linzi', '--for=ling').ok, true);
+  assert.equal(g.cli('move', '--place=taihang').ok, true);
+  assert.deepEqual(g.save().page_did.map(e => [e.verb, e.what]), [['move', 'moved to 太行山口']]);
+  assert.equal(g.cli('move', '--place=ye', '--for=ling').ok, true);
   assert.equal(g.save().page_did.length, 1, 'a Move Ling made is hers already');
   // A read the page makes writes nothing down.
   g.cli('look');
@@ -43,20 +44,20 @@ test("the page's verbs are written down; Ling's are not", () => {
 
 test("Ling's Look hands over what she has not seen, and never clears it for Yinyue", () => {
   const g = game();
-  g.cli('move', '--place=weishui');
+  g.cli('move', '--place=taihang');
   const told = g.cli('look', '--for=ling').page_did;
-  assert.deepEqual(told, [{ at: NOW.toISOString(), verb: 'move', what: 'moved to 潍水' }]);
+  assert.deepEqual(told, [{ at: NOW.toISOString(), verb: 'move', what: 'moved to 太行山口' }]);
   assert.equal(g.cli('look', '--for=ling').page_did, undefined, 'seen once, not again');
   assert.equal(g.cli('look').page_did, undefined, "the page's own Look is not a reader");
   assert.equal(g.save().page_did.length, 1, 'the log stays');
   // Yinyue has her own place in it.
   const hers = g.cli('progress', '--for=yinyue');
-  assert.deepEqual(hers.page_did.map(e => e.what), ['moved to 潍水']);
+  assert.deepEqual(hers.page_did.map(e => e.what), ['moved to 太行山口']);
   assert.deepEqual(g.cli('progress', '--for=yinyue').page_did, []);
   // A new fact reaches both, each once.
-  g.cli('move', '--place=linzi');
-  assert.deepEqual(g.cli('look', '--for=ling').page_did.map(e => e.what), ['moved to 临淄']);
-  assert.deepEqual(g.cli('progress', '--for=yinyue').page_did.map(e => e.what), ['moved to 临淄']);
+  g.cli('move', '--place=ye');
+  assert.deepEqual(g.cli('look', '--for=ling').page_did.map(e => e.what), ['moved to 邺城']);
+  assert.deepEqual(g.cli('progress', '--for=yinyue').page_did.map(e => e.what), ['moved to 邺城']);
   assert.deepEqual(g.save().page_seen, { ling: 2, yinyue: 2 });
   g.done();
 });
@@ -65,7 +66,7 @@ test('Progress is small: the realm, the pool, the place, the book, the day — n
   const g = game();
   const p = g.cli('progress', '--for=yinyue');
   assert.deepEqual(Object.keys(p).sort(), ['book', 'chores', 'her', 'name', 'next', 'ok', 'page_did', 'place', 'practice', 'progress', 'stamina', 'tale', 'tier'].sort());
-  assert.deepEqual(p.place, { id: 'linzi', name: '临淄' });
+  assert.deepEqual(p.place, { id: 'ye', name: '邺城' });
   assert.equal(typeof p.tier, 'string');
   assert.ok(p.stamina.max > 0);
   assert.ok(JSON.stringify(p).length < 1500, `Progress is for a pet: ${JSON.stringify(p).length} chars`);
@@ -74,10 +75,10 @@ test('Progress is small: the realm, the pool, the place, the book, the day — n
 
 test("a reader's place is not a move: Undo after Ling's Look takes back the page's walk", () => {
   const g = game();
-  g.cli('move', '--place=weishui');
+  g.cli('move', '--place=taihang');
   g.cli('look', '--for=ling');
   assert.equal(g.cli('undo').undid, 'move');
-  assert.equal(g.save().place, 'linzi');
+  assert.equal(g.save().place, 'ye');
   g.done();
 });
 

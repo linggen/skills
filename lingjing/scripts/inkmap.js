@@ -134,7 +134,7 @@ export function inkMapSvg(geo, ink, { names = {}, labels = {}, lang = 'zh', mome
       + `<g filter="url(#${id}-rough)"><circle class="bleed" cx="${f2(find[0])}" cy="${f2(find[1])}" r="${f2(R)}" stroke-width="${f2(R * 0.035)}"/></g></g>`;
   }).join('');
   const rivers = ids.filter((p) => pv[p]?.state === 'ink').map((p) => `<g clip-path="url(#${key(p)})" class="rivers${p === M ? ' draw' : ''}">${geo.rivers.map((d) => `<path d="${d}" pathLength="1"/>`).join('')}</g>`).join('');
-  const edges = ids.map((p) => shape(p, `pvedge s-${pv[p]?.state ?? 'mist'}${p === M ? ' now' : ''}`)).join('');
+  const edges = ids.map((p) => shape(p, `pvedge s-${pv[p]?.state ?? 'mist'}${pv[p]?.locked ? ' locked' : ''}${p === M ? ' now' : ''}`)).join('');
   const waters = geo.waters.map((d) => `<path d="${d}"/>`).join('');
   const r = geo.w * 0.012;
   const moons = ids.filter((p) => pv[p]?.state === 'ink' && home(p)?.map).map((p) => { const [x, y] = pt(home(p).map); return moonSvg(x + r * 2.4, y + r * 1.2, r, `inkmoon${M ? ' rise' : ''}`, id); }).join('');
@@ -163,7 +163,8 @@ export function inkLayerHtml(geo, ink, frame, opts = {}) {
 }
 
 /// A province's label class on the map: its state, from the rules.
-export const pvState = (ink, id) => (ink?.provinces?.[id] ? ` s-${ink.provinces[id].state}` : '');
+/// A province the rules keep shut (`locked`) is greyed, and says so on a tap.
+export const pvState = (ink, id) => (ink?.provinces?.[id] ? ` s-${ink.provinces[id].state}${ink.provinces[id].locked ? ' locked' : ''}` : '');
 
 /// The line under the map when a province is tapped: one line of its 鼎's
 /// story, 银月's memory in the 录 album, and 御剑 when the rules allow it.
@@ -173,7 +174,9 @@ export function provinceLineHtml(ink, id, { lang = 'zh', name = id, more = '' } 
   if (!p) return '';
   const w = words(lang);
   if (p.state !== 'ink' || !p.home) {
-    const line = p.state === 'mist' ? w.mist : say(w.notHome, { p: name });
+    // Shut: the world's own line from the rules (inkMapOf `say`) — no road there yet, not a mist still to walk.
+    const line = p.locked && p.say ? p.say : p.state === 'mist' ? w.mist : say(w.notHome, { p: name });
+    if (p.locked) return `<div class="pvline shut" data-pvline="${esc(id)}"><b>${esc(name)}</b><span>${esc(line)}</span></div>`;
     return `<div class="pvline" data-pvline="${esc(id)}"><b>${esc(name)}</b><span>${esc(line)}</span>${more ? `<div class="acts">${more}</div>` : ''}</div>`;
   }
   const h = p.home;

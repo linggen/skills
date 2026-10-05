@@ -5,6 +5,7 @@
   "seeds": [
     {
       "id": "xu-01",
+      "juan": 9,
       "kind": "province-tale",
       "line": {
         "zh": "雾里一头四角白鹿，踏水不湿。",
@@ -150,6 +151,7 @@
     },
     {
       "id": "xu-13",
+      "juan": 4,
       "kind": "province-tale",
       "line": {
         "zh": "淮水深处锁着一个水怪，铁链一动，河水就翻。",
@@ -474,6 +476,7 @@
     },
     {
       "id": "xu-n10",
+      "juan": 9,
       "kind": "night-tale",
       "line": {
         "zh": "一只白鹿的影子从雾里经过，却不见鹿。",
@@ -486,6 +489,7 @@
     },
     {
       "id": "xu-41",
+      "juan": 4,
       "kind": "province-tale",
       "creature": "wuzhiqi",
       "line": {

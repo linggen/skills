@@ -32,11 +32,18 @@
 .inkmap .moonreflect { opacity: 0.85; }
 .inkmap .inkdrop { fill: var(--ink-deep); opacity: 0; }
 
+/* Shut (the rules' `locked`: beyond the open 卷, or the chapter's map): greyed, not misted — a road not open,
+   said in the world's words on a tap (inkmap.js provinceLineHtml). */
+.inkmap .pvfill.locked { fill: rgba(110, 110, 110, 0.2); }
+.inkmap .pvedge.locked { stroke: #7a7a7a; stroke-opacity: 0.45; stroke-dasharray: none; }
+
 /* Province names in brush: pale over a wash, dark over ink, all but gone in mist. */
 .atlas .pv.s-wash { color: rgba(40, 34, 24, 0.42); }
 .atlas .pv.s-ink { color: rgba(24, 20, 16, 0.92); text-shadow: 0 0 6px var(--ink-paper); }
 .atlas.whole .pv.s-ink { color: var(--ink-deep); text-shadow: 0 0 4px var(--ink-paper), 0 0 8px var(--ink-paper); }
 .atlas .pv.s-mist { color: rgba(40, 34, 24, 0.12); filter: blur(0.6px); }
+.atlas .pv.locked { color: rgba(95, 95, 95, 0.55); filter: none; }
+.pvline.shut { border-left-color: rgba(110, 110, 110, 0.5); color: rgba(60, 60, 60, 0.75); }
 .pvline { display: grid; gap: 2px; margin-top: 8px; padding: 8px 10px; border-left: 3px solid var(--ink-seal); background: rgba(245, 239, 225, 0.7); font-size: 13px; }
 .pvline b { font-family: var(--serif, serif); letter-spacing: 0.1em; }
 .pvline:not(.ink) { border-left-color: rgba(40, 34, 24, 0.25); color: rgba(40, 34, 24, 0.6); }

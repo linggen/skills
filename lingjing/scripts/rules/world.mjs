@@ -17,6 +17,8 @@ const sceneOf = (content, state) => (inMade(state)
   ? state.made.scenes[state.made.at] ?? null
   : content.chapters[state.chapter]?.scenes[state.scene] ?? null);
 const creatureOf = (content, id) => content.creatures.creatures.find(c => c.id === id);
+/* A creature of an open 卷 (world.mjs ofJuan): one of a later 卷 is not met. */
+const metNow = (content, id, now) => { const c = creatureOf(content, id); return Boolean(c) && ofJuan(content, c, now); };
 
 /* ── Places: the province as a map ── */
 
@@ -24,10 +26,38 @@ const allPlaces = content => Object.values(content.places).flatMap(doc => doc.pl
 const placeOf = (content, id) => allPlaces(content).find(p => p.id === id) ?? null;
 const tierIndex = (content, state) => content.ladder.tiers.findIndex(t => t.id === state.tier);
 
+/* 卷 — what is built (his, 2026-10-05: 游戏只到卷一，不要有后面各卷的内容、怪、物品).
+   A chapter says its 卷 (`juan`, 1 unsaid). A chapter WAITS while it is
+   `coming` or its date is still to come; the 卷 open are those below the
+   lowest 卷 that waits (never below 1), and every 卷 when none waits.
+   Anything of the world — a creature, an item, a seed, an errand, a find —
+   may say its 卷 (`juan`, 1 unsaid): one of a 卷 not open is never met,
+   sold, dropped, found or told (`ofJuan`). The rules filter by the field,
+   never by a name. */
+const waits = (c, now) => Boolean(c.coming) || Boolean(c.opens && new Date(c.opens) > now);
+function juanOpen(content, now = new Date()) {
+  const waiting = Object.values(content.chapters ?? {}).filter(c => waits(c, now)).map(c => c.juan ?? 1);
+  return waiting.length ? Math.max(1, Math.min(...waiting) - 1) : Infinity;
+}
+const ofJuan = (content, thing, now = new Date()) => (thing?.juan ?? 1) <= juanOpen(content, now);
+
 /* A province opens with its chapter: any chapter of it that has opened (or
-   never waits). A province with no chapter stays behind the mist. */
-function provinceOpen(content, province, now) {
-  return Object.values(content.chapters).some(c => c.province === province && (!c.opens || new Date(c.opens) <= now));
+   never waits) in a 卷 that is open. A province with no such chapter stays
+   behind the mist — greyed on the map, its roads refused. */
+function provinceOpen(content, province, now = new Date()) {
+  const open = juanOpen(content, now);
+  return Object.values(content.chapters).some(c => c.province === province && (!c.opens || new Date(c.opens) <= now) && (c.juan ?? 1) <= open);
+}
+
+/* The world's line for a road that is not open — a place beyond the map the
+   chapter opens (`map.say`), or a province beyond the open 卷 (`map.beyond`,
+   else `map.say`). Null when the chapter says none. */
+function shutSay(content, state, now, { province = false } = {}) {
+  const map = mapOf(content, state, now) ?? content.chapters[state?.chapter]?.map;
+  if (!province) return map?.say ?? null;
+  // A save standing where no map is declared still hears the last open chapter's line for the 卷 beyond.
+  const last = Object.values(content.chapters).filter(c => c.map?.beyond && (c.juan ?? 1) <= juanOpen(content, now)).sort((a, b) => a.id.localeCompare(b.id)).pop();
+  return map?.beyond ?? map?.say ?? last?.map.beyond ?? null;
 }
 
 /* The map a chapter opens (his, 2026-09-29: 地图分步打开 — 序章 蒙山, 第一章
@@ -95,15 +125,17 @@ const placeName = (content, state, place) => ({ id: place.id, name: pick(place.n
 const hauntId = creature => `haunt:${creature}`;
 /* A haunt whose beast is fought — a bounty, a road beast, a rumor's finale;
    a beast caught instead (`catch`) is never offered as a fight. */
-const huntable = (content, p) => Boolean(p?.has?.creature) && !creatureOf(content, p.has.creature)?.catch;
+const huntable = (content, p, now = new Date()) => Boolean(p?.has?.creature) && metNow(content, p.has.creature, now) && !creatureOf(content, p.has.creature)?.catch;
 const caughtBy = (state, creature) => Boolean(creature.catch) && state.tasks?.[creature.catch]?.status === 'done';
 function encounterOf(content, state, now) {
   const place = placeOf(content, state.place);
   // The haunt's own beast, else the one today's 遇 put on this road — until
   // it is passed by or beaten, when it has left the road (review, 2026-09-24).
   const road = meetHere(state, now);
-  const onRoad = !place?.has?.creature && road?.kind === 'beast' && !road.veiled && !road.done;
-  const cid = place?.has?.creature ?? (onRoad ? road.creature : null);
+  // A haunt's beast of a 卷 not open is not there (ofJuan): the place is empty.
+  const own = place?.has?.creature && metNow(content, place.has.creature, now) ? place.has.creature : null;
+  const onRoad = !own && road?.kind === 'beast' && !road.veiled && !road.done && metNow(content, road.creature, now);
+  const cid = own ?? (onRoad ? road.creature : null);
   if (!cid || atScene(content, state)) return null;
   const creature = creatureOf(content, cid);
   if (!creature) return null;
@@ -134,7 +166,7 @@ function placeBrief(content, state, now = new Date()) {
   const has = place.has ?? {};
   const shelf = has.shop ? shelfOf(content, place.province, state) : [];
   const show = [
-    ...(has.creature ? [{ card: 'creature', id: has.creature }] : []),
+    ...(has.creature && metNow(content, has.creature, now) ? [{ card: 'creature', id: has.creature }] : []),
     ...(shelf.length ? [{ card: 'item', ids: shelf.map(i => i.id) }] : []),
   ];
   return {
@@ -142,7 +174,7 @@ function placeBrief(content, state, now = new Date()) {
     province: { id: place.province, name: pick(content.dictionary.provinces[place.province], lang), start: doc.start },
     tier: place.tier, line: pick(place.line, lang),
     has: {
-      creature: has.creature ? { id: has.creature, name: pick(creatureOf(content, has.creature).name, lang) } : null,
+      creature: has.creature && metNow(content, has.creature, now) ? { id: has.creature, name: pick(creatureOf(content, has.creature).name, lang) } : null,
       seeds: Boolean(has.seeds), shop: Boolean(has.shop), scene: has.scene ?? null,
     },
     roads: place.roads.map(id => placeOf(content, id)).map(p => ({
@@ -212,4 +244,4 @@ function fittingPlace(content, state, from) {
    opens when it ends. */
 const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && carried(content, state);
 
-export { allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };
+export { juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };

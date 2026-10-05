@@ -5,10 +5,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
+import { everyJuan } from './prologue.mjs';
 import { newState, normalizeAnswer } from '../scripts/state.mjs';
 import { look, oddsOf, resolve, riddleOf, rollOf } from '../scripts/rules.mjs';
 
-const content = loadContent();
+// The engine on the old spine, every 卷 open (prologue.mjs everyJuan); tests/juan.test.mjs walls 卷一.
+const content = everyJuan(loadContent());
 const NOW = new Date('2026-09-24T12:00:00');
 const c = { now: NOW, quests: [] };
 const later = Object.keys(content.chapters).filter(id => id >= '04').sort();

@@ -54,12 +54,11 @@
     0.4216
    ],
    "has": {
-    "creature": "fuzhu",
     "seeds": true
    },
    "line": {
-    "zh": "雾常年不散，夫诸在雾里踏水。",
-    "en": "The mist never lifts; Fuzhu walks the water inside it."
+    "zh": "雾常年不散。往北一条土路，通冀州的漳水。",
+    "en": "The mist never lifts. A dirt road runs north to the Zhang in Ji."
    },
    "water": true
   },

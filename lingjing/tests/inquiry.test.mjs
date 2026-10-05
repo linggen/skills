@@ -50,7 +50,7 @@ function picksFor(setup, pass = false) {
   return { actions, outcome: st.outcome };
 }
 
-const atHaunt = () => ({ ...openWorld(), chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0, stamina: 50, updated: NOW.toISOString() });
+const atHaunt = () => ({ ...openWorld(), chapter: '01-ji', scene: null, place: 'fuli', tier: 'foundation', step: 0, progress: 0, stamina: 50, updated: NOW.toISOString() });
 
 test('说说雷神 away from 雷泽: Look carries the creature from its heritage, and the 问询 then', () => {
   const w = world(atHaunt());
@@ -98,18 +98,18 @@ test('the page\'s own Look (no --for) carries neither', () => {
 test('[scene] won: the finish and the spoils from the settle\'s record, told once', () => {
   const w = world(atHaunt());
   try {
-    const started = w.cli('duel', '--id=haunt:jingwei');
+    const started = w.cli('duel', '--id=haunt:longzhi');
     assert.ok(started.ok, JSON.stringify(started));
     const { actions, outcome } = picksFor(started.duel.setup);
     assert.equal(outcome, 'won');
-    const settled = w.cli('duel', '--id=haunt:jingwei', `--picks=${actions.join(',')}`);
+    const settled = w.cli('duel', '--id=haunt:longzhi', `--picks=${actions.join(',')}`);
     assert.equal(settled.outcome, 'won');
     // The record the bout is told from: the settle, logged with the fight it began from.
     const log = fs.readFileSync(path.join(w.data, 'log.jsonl'), 'utf8');
     assert.ok(log.includes('"verb":"duel"') && log.includes('"picks"'));
-    const r = w.cli('look', '--said=[scene] won haunt:jingwei', '--for=ling');
+    const r = w.cli('look', '--said=[scene] won haunt:longzhi', '--for=ling');
     assert.equal(r.bout.outcome, 'won');
-    assert.equal(r.bout.name, '精卫');
+    assert.equal(r.bout.name, '蠪侄');
     assert.ok(r.bout.turns > 0);
     assert.ok(r.bout.last.length >= 2 && r.bout.last.length <= 3);
     assert.ok(r.bout.last.every(l => !/\d/.test(l)), 'no numbers in the words');
@@ -119,7 +119,7 @@ test('[scene] won: the finish and the spoils from the settle\'s record, told onc
     assert.match(THEN_BOUT, /never a number/);
     assert.ok(w.saved().guided.bout, 'the bout told is kept on the save');
     assert.ok(!fs.readFileSync(path.join(w.data, 'log.jsonl'), 'utf8').includes('"bout"'), 'never logged: Undo takes back moves');
-    assert.equal(w.cli('look', '--said=[scene] won haunt:jingwei', '--for=ling').bout, undefined, 'once');
+    assert.equal(w.cli('look', '--said=[scene] won haunt:longzhi', '--for=ling').bout, undefined, 'once');
     assert.equal(w.cli('look', '--for=ling').bout, undefined, 'not on a later Look');
   } finally { w.done(); }
 });
@@ -127,11 +127,11 @@ test('[scene] won: the finish and the spoils from the settle\'s record, told onc
 test('[scene] lost / withdrew carry their outcome; no record (an old save) gets the plain then', () => {
   const w = world(atHaunt());
   try {
-    const started = w.cli('duel', '--id=haunt:jingwei');
+    const started = w.cli('duel', '--id=haunt:longzhi');
     const { actions, outcome } = picksFor(started.duel.setup, true);
     assert.ok(['lost', 'withdrew'].includes(outcome), outcome);
-    w.cli('duel', '--id=haunt:jingwei', `--picks=${actions.join(',')}`);
-    const r = w.cli('look', `--said=[scene] ${outcome} haunt:jingwei`, '--for=ling');
+    w.cli('duel', '--id=haunt:longzhi', `--picks=${actions.join(',')}`);
+    const r = w.cli('look', `--said=[scene] ${outcome} haunt:longzhi`, '--for=ling');
     assert.equal(r.bout.outcome, outcome);
     assert.deepEqual(r.bout.dropped, []);
     assert.ok(r.then.includes(THEN_BOUT));

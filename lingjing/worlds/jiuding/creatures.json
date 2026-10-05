@@ -1,8 +1,10 @@
 {
   "version": 1,
+  "_juan": "The 卷 a creature belongs to (Hanli, 2026-10-05: 游戏只到卷一 — 不要有后面各卷的怪): `juan`, 1 unsaid. One of a 卷 not open (world.mjs juanOpen — the 卷 below the lowest chapter that waits) is never met: no haunt, no road beast, no pool, no 传闻 finale, no 榜文. Those of 卷一's book: 狰, 蠪侄, 蛫, 冰夷双龙 and the five people of the 外门大比 and 秘境; the rest wait for the 卷 of their province (OUTLINE § 二: 兖 2, 青 3, 徐 4, 扬 5, 荆 6, 梁 7, 雍 8, 豫 9; 冀's own beyond the book, 2).",
   "creatures": [
     {
       "id": "fuzhu",
+      "juan": 9,
       "name": {
         "zh": "夫诸",
         "en": "Fuzhu"
@@ -101,6 +103,7 @@
     },
     {
       "id": "wuzhiqi",
+      "juan": 4,
       "name": {
         "zh": "无支祁",
         "en": "Wuzhiqi"
@@ -181,6 +184,7 @@
     },
     {
       "id": "fangfeng",
+      "juan": 5,
       "name": {
         "zh": "防风氏",
         "en": "Fangfeng"
@@ -265,6 +269,7 @@
     },
     {
       "id": "changyou",
+      "juan": 5,
       "name": {
         "zh": "长右",
         "en": "Changyou"
@@ -345,6 +350,7 @@
     },
     {
       "id": "bashe",
+      "juan": 6,
       "name": {
         "zh": "巴蛇",
         "en": "The Ba Snake"
@@ -509,6 +515,7 @@
     },
     {
       "id": "kuiniu",
+      "juan": 7,
       "name": {
         "zh": "夔牛",
         "en": "The Kui Ox"
@@ -588,6 +595,7 @@
     },
     {
       "id": "qiezhi",
+      "juan": 7,
       "name": {
         "zh": "窃脂",
         "en": "Qiezhi"
@@ -668,6 +676,7 @@
     },
     {
       "id": "feiyi",
+      "juan": 8,
       "name": {
         "zh": "肥遗",
         "en": "Feiyi"
@@ -748,6 +757,7 @@
     },
     {
       "id": "qianyang",
+      "juan": 8,
       "name": {
         "zh": "羬羊",
         "en": "Qianyang"
@@ -828,6 +838,7 @@
     },
     {
       "id": "taifeng",
+      "juan": 9,
       "name": {
         "zh": "泰逢",
         "en": "Taifeng"
@@ -909,6 +920,7 @@
     },
     {
       "id": "mafu",
+      "juan": 9,
       "name": {
         "zh": "马腹",
         "en": "Mafu"
@@ -989,6 +1001,7 @@
     },
     {
       "id": "paoxiao",
+      "juan": 2,
       "name": {
         "zh": "狍鸮",
         "en": "Paoxiao"
@@ -1068,6 +1081,7 @@
     },
     {
       "id": "jingwei",
+      "juan": 2,
       "name": {
         "zh": "精卫",
         "en": "Jingwei"
@@ -1151,6 +1165,7 @@
     },
     {
       "id": "leishen",
+      "juan": 2,
       "name": {
         "zh": "雷神",
         "en": "The Thunder God"
@@ -1329,6 +1344,7 @@
     },
     {
       "id": "kui",
+      "juan": 3,
       "name": {
         "zh": "夔",
         "en": "Kui"
@@ -1409,6 +1425,7 @@
     },
     {
       "id": "tongtong",
+      "juan": 3,
       "name": {
         "zh": "狪狪",
         "en": "Tongtong"

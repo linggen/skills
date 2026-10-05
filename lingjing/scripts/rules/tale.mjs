@@ -21,7 +21,7 @@ import { HANDED_KEEP, itemOf, whereAt, withinRoads } from './errands.mjs';
 import { gameLevel, lundaoForm } from './tasks.mjs';
 import { hashOf } from './travel.mjs';
 import { stow, storedLine } from './pouch.mjs';
-import { allPlaces, atScene, creatureOf, huntable, placeName, placeOf, placeOpen, tierIndex, tooHard } from './world.mjs';
+import { allPlaces, atScene, creatureOf, huntable, ofJuan, placeName, placeOf, placeOpen, tierIndex, tooHard } from './world.mjs';
 
 const WORD_GAMES = new Set(['riddle', 'lundao']);
 const cfgOf = content => content.tale;
@@ -50,7 +50,8 @@ function taleLabel(content, state, t, n = t.n) {
    A province with none written grows the tale from its heritage alone. */
 function pickSeed(content, state, now) {
   const province = placeOf(content, state.place)?.province ?? content.chapters[state.chapter]?.province;
-  const all = content.seeds[province]?.seeds ?? [];
+  // A seed of a 卷 not open is not told (world.mjs ofJuan).
+  const all = (content.seeds[province]?.seeds ?? []).filter(x => ofJuan(content, x, now));
   if (!all.length) return null;
   const used = new Set(state.seeds_used ?? []);
   const pool = all.some(x => !used.has(x.id)) ? all.filter(x => !used.has(x.id)) : all;
@@ -68,7 +69,7 @@ function reachOf(content, state, now) {
   if (!here) return { places: [], haunts: [] };
   const ids = [here.id, ...withinRoads(content, state, here, now, cfg.reach * 3)];
   const places = ids.map(id => placeOf(content, id)).filter(p => walkable(content, state, p, now));
-  const haunts = places.filter(p => huntable(content, p) && !state.cast.includes(p.has.creature)).map(p => {
+  const haunts = places.filter(p => huntable(content, p, now) && !state.cast.includes(p.has.creature)).map(p => {
     const c = creatureOf(content, p.has.creature);
     return { creature: c.id, name: pick(c.name, state.lang), at: p.id, ...(c.elite ? { elite: true } : {}) };
   });
@@ -278,7 +279,7 @@ function grantsOf(content, steps) {
    (a card only if he lacks it and has its root), picked by the tale's id. */
 function dropOf(content, state, t) {
   const rank = tierIndex(content, state), catalog = cardCatalog(content), owned = new Set(ownedCards(content, state)), roots = new Set(state.traits ?? []);
-  const fits = d => tierRank(content, d.tier) <= rank && (d.item ? itemOf(content, d.item) : catalog[d.card] && !owned.has(d.card) && usable(catalog[d.card], roots));
+  const fits = d => tierRank(content, d.tier) <= rank && ofJuan(content, d) && (d.item ? itemOf(content, d.item) && ofJuan(content, itemOf(content, d.item)) : catalog[d.card] && !owned.has(d.card) && usable(catalog[d.card], roots));
   const open = (content.rewards.tale?.drops ?? []).filter(fits);
   if (!open.length) return null;
   const top = Math.max(...open.map(d => tierRank(content, d.tier)));

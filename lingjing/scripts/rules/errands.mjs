@@ -14,7 +14,7 @@ import { hashOf } from './travel.mjs';
 import { coolingUntil, oddsOf } from './breakthrough.mjs';
 import { freeSlot, pouchBrief } from './pouch.mjs';
 import { chapterLabel, comingOf } from './hui.mjs';
-import { allPlaces, atScene, creatureOf, huntable, inCorridor, inMade, pathOf, placeName, placeOf, placeOpen, sceneOf, tooHard, towardOf } from './world.mjs';
+import { allPlaces, atScene, creatureOf, huntable, inCorridor, inMade, ofJuan, pathOf, placeName, placeOf, placeOpen, sceneOf, tooHard, towardOf } from './world.mjs';
 
 /* ── 差事 — the errands the player takes (design.md § 差事) ──
    接 · 记 · 追 · 交. The world offers, the player takes, the rules count, and
@@ -190,7 +190,7 @@ function noticeTargets(content, state, market, t, now) {
   if (t.kind === 'visit') return near.map(p => p.id);
   if (t.kind === 'board') return near.filter(p => (p.has?.games ?? []).some(g => g !== 'alchemy-daily')).map(p => p.id);
   // A bounty that cannot be won is a lie: not a beast that walks with him, nor one already met today.
-  return near.filter(p => huntable(content, p) && !state.cast.includes(p.has.creature) && state.duels?.[p.has.creature]?.day !== dayKey(now)).map(p => p.has.creature);
+  return near.filter(p => huntable(content, p, now) && !state.cast.includes(p.has.creature) && state.duels?.[p.has.creature]?.day !== dayKey(now)).map(p => p.has.creature);
 }
 
 const NOTICES_A_DAY = 3;
@@ -218,7 +218,7 @@ function offersOf(content, state, lang, now) {
   if (state.quests && Object.keys(state.quests).filter(id => !questDoneBefore(state, id)).length >= BOOK_MAX) return [];
   const notice = noticeAt(content, state, now);
   return [...(content.quests ?? []), ...(notice ? [notice] : [])]
-    .filter(q => q.from?.place === state.place && !state.quests?.[q.id]
+    .filter(q => q.from?.place === state.place && !state.quests?.[q.id] && ofJuan(content, q, now)
       && (!q.opens?.after || questDoneBefore(state, q.opens.after))
       && (!q.opens?.tier || TIERS_ORDER(content).indexOf(state.tier) >= TIERS_ORDER(content).indexOf(q.opens.tier)))
     .map(q => ({ id: q.id, title: pick(q.title, lang), who: q.from.who ? pick(q.from.who, lang) : null, say: fill(pick(q.say, lang), state, content), need: q.need.map(n => ({ kind: n.kind, n: n.n })), grant: q.grant, pays: paysOf(content, state, now, q.grant) }));
@@ -237,7 +237,7 @@ const TIERS_ORDER = content => content.ladder.tiers.map(t => t.id);
 function beastWork(content, state, ctx, here) {
   const day = dayKey(ctx.now);
   const at = allPlaces(content)
-    .filter(p => huntable(content, p) && !state.cast.includes(p.has.creature) && state.duels?.[p.has.creature]?.day !== day && !tooHard(content, state, p))
+    .filter(p => huntable(content, p, ctx.now) && !state.cast.includes(p.has.creature) && state.duels?.[p.has.creature]?.day !== day && !tooHard(content, state, p))
     .map(p => ({ p, way: p.id === here.id ? [] : pathOf(content, state, here, p, ctx.now) }))
     .filter(x => x.way)
     .sort((a, b) => a.way.length - b.way.length)[0];

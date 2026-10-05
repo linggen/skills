@@ -5,6 +5,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
+import { everyJuan } from './prologue.mjs';
 import { newState } from '../scripts/state.mjs';
 import { meet, trade, VERBS } from '../scripts/rules.mjs';
 import { drop, giveCharm } from '../scripts/rules/arms.mjs';
@@ -12,7 +13,8 @@ import { pay } from '../scripts/rules/core.mjs';
 import { freeSlot, pouchCap, slotsUsed } from '../scripts/rules/pouch.mjs';
 import { itemOf } from '../scripts/rules/errands.mjs';
 
-const content = loadContent();
+// The engine on the old spine, every 卷 open (prologue.mjs everyJuan); tests/juan.test.mjs walls 卷一.
+const content = everyJuan(loadContent());
 const NOW = new Date('2026-09-25T12:00:00');
 const ctx = () => ({ now: NOW, quests: [] });
 const base = { ...newState(content, 'zh', NOW), scene: null, chapter: '02-yan', ended: ['00-prologue', '01-ji'], name: '清玄', traits: ['wood', 'water'], place: 'pengcheng', wealth: 5000 };

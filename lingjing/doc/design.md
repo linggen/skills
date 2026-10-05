@@ -22,10 +22,26 @@ section below says which it is; a 【远景】 section is a plan, not a promise.
 **卷一 · 沉鼎 needs, and nothing else:** the road 石坳村 → 沉鼎观 → 漳水,
 ending at the first 鼎 (the book's 古一 to 古八 — eight 古 回 since 2026-10-02; the game's chapters
 `00-prologue`, `00-waimen`, `00-zhuji`, then `01-ji`); 练气 → 筑基; the pills 回春丹 ·
-聚气丹 · 筑基丹 (the sect's one 一转 and the furnace's 九转 — never on a shelf); the card fight; 差事; the 图鉴; 银月 (found,
+聚气丹 (the market's are 一道纹 — 钱掌柜: 「我这儿只出一道纹」; the furnace's 九转 never on a shelf) ·
+筑基丹 (the sect's one 一转 and the furnace's 九转 — never on a shelf); the card fight; 差事; the 图鉴; 银月 (found,
 asleep in the token, waking by the story). Everything past 筑基 and past 冀 —
 元婴 and up, the other eight 鼎, the nine 鼎缘人, PvP, the table — waits for its
 卷.
+
+**The game is 卷一, walled by data** (Hanli, 2026-10-05: 「游戏只到卷一……地图上后面8个州显示
+灰色的，或者不能去就好了」; 卷一 plays wider instead — roaming, towns and markets, beasts).
+Every chapter says its 卷 (`chapter.json` **`juan`**, 1 unsaid; 02-yan … 09-yu say 2 … 9 by
+OUTLINE § 二). A chapter **waits** while `coming` or its `opens` is still to come; the 卷
+open are those below the lowest that waits (world.mjs `juanOpen`, never below 1). Anything of
+the world may say its 卷 the same way — **`juan`** on a creature, an item, a seed, an errand, a
+road find, a 传闻 drop — and one of a 卷 not open is never met, shelved, found, dropped,
+told or offered (`ofJuan`, applied where each is dealt: a haunt and the road's beasts, a shelf,
+the road's finds, a beast's drops, a tale's seed and drop, an errand's offer). A province opens
+only with a chapter of an open 卷 (`provinceOpen`): past 卷一 the other seven are shut —
+greyed on the map, and a tap or a road there says the chapter's `map.beyond` line (「观主那张
+舆图上，只画着徐、冀两州……」, `shutSay`). The lint refuses a `juan` that is not a 卷 number and a
+卷一 errand that asks for a later beast or pays a later thing. When 卷二 is written, its chapter
+drops `coming` and its things open with it — no code changes.
 
 ## 设计原则 (his, 2026-09-18 → 30; they outrank anything below)
 
@@ -249,12 +265,17 @@ need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale
 - **Ling as director.** Look's `director`: `here`, `near`, `too_hard`,
   `closed`, `thread`, `pool`, `seed`, and `choice` — the question Ling offers
   verbatim (the thread's place first, the other roads, 在此逗留, 问问银月).
-- **Provinces open with their chapters** (`provinceOpen`); the map card draws
-  the 禹贡九州图 plate (`world.atlas`), places as points, the player a dot.
+- **Provinces open with their chapters** (`provinceOpen`, a chapter of an open 卷
+  only); the map card draws the 禹贡九州图 plate (`world.atlas`), places as points,
+  the player a dot; a shut province (the atlas verb's `locked`) is filled grey and
+  its name greyed (inkmap.css) — here grey reads as locked, which it is.
 - **The map opens in steps** (his, 2026-09-29): a chapter's `map` says what it
-  opens — 序 石坳村 and 蒙山; 外门 the small area round 沉鼎观; then one road
-  徐 → 冀; at 下山 (after 卷一) the whole 九州 unrolls (`unroll`). The beta
-  ships through `00-waimen`.
+  opens — 序 石坳村 and 蒙山; 外门 the small area round 沉鼎观; and at `01-ji`
+  (after the Foundation) all of 卷一: home, the temple's area, 泗水 and 彭城, the
+  road north from 泗水北岸 to 漳水南岸, and 冀 round 邺城 (2026-10-05). It holds after
+  `01-ji` ends while 卷二 waits. A place of an open province the map leaves out is
+  greyed (`closed`) and refused with `map.say`; a province of a later 卷 with
+  `map.beyond`. The whole 九州 unrolls (`unroll`) only with 卷二's 下山.
 
 ### 剧情 × 开放世界 — tasks drive the story, key beats lock the map 【在建】
 

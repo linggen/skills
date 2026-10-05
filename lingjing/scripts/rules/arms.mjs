@@ -4,7 +4,7 @@ import { dayKey, pick, tierOf, seedOf } from '../state.mjs';
 import { clone, refuse } from './core.mjs';
 import { itemOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
-import { tierIndex } from './world.mjs';
+import { ofJuan, tierIndex } from './world.mjs';
 import { stow } from './pouch.mjs';
 
 /* ── 本命法宝: the treasure a cultivator binds at 结丹 ── */
@@ -22,7 +22,8 @@ function drop(content, state, creature, now) {
   const counts = new Map();
   for (const id of [...dropsOf(creature), lucky ? charm.id : null].filter(Boolean)) counts.set(id, (counts.get(id) ?? 0) + 1);
   for (const [id, n] of counts) {
-    if (!itemOf(content, id)) continue;
+    // A thing of a 卷 not open is never dropped (world.mjs ofJuan).
+    if (!itemOf(content, id) || !ofJuan(content, itemOf(content, id), now)) continue;
     got.push(stow(content, state, id, n));
   }
   return got;

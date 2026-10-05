@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "02-yan",
+  "juan": 2,
   "opens": null,
   "province": "兖",
   "corridor": false,

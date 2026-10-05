@@ -8,7 +8,7 @@ import { clone, offerTasks, pay, refuse, spendStamina } from './core.mjs';
 import { advance, bookOf, directorBrief, GEAR_SLOTS, itemBrief, itemOf, onStoryRoad, questOf, settleErrands } from './errands.mjs';
 import { arriveOnRoad } from './road.mjs';
 import { forSale, sceneBrief, shelfOf, wordsOf } from './look.mjs';
-import { atScene, beatOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard } from './world.mjs';
+import { atScene, beatOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeSaid, provinceOpen, sceneOf, settlePlace, shutSay, STORY_CHARS, STORY_WORDS, tierIndex, tooHard } from './world.mjs';
 import { enteredBeat, refusalBeat } from './story.mjs';
 import { enter } from './worlds.mjs';
 import { bagFull, pouchBrief, roomFor } from './pouch.mjs';
@@ -60,7 +60,7 @@ export function move(state, content, ctx, args) {
     const p = provinceOf(content, raw);
     if (p && here?.province === p) return { state: null, result: { ok: true, here: true, place: placeBrief(content, s) } };
     if (p || !here) {
-      const say = { zh: `${p ?? String(raw ?? '').replace(/州$/, '')}州的路还没开。`, en: 'That road has not opened yet.' };
+      const say = shutSay(content, s, ctx.now, { province: true }) ?? { zh: `${p ?? String(raw ?? '').replace(/州$/, '')}州的路还没开。`, en: 'That road has not opened yet.' };
       return stay('road-closed', pick(say, lang));
     }
     return stay('unknown-place', null, { near: near() });
@@ -72,8 +72,9 @@ export function move(state, content, ctx, args) {
     const beat = beatOf(content, s);
     return stay('corridor', pick(beat?.say ?? { zh: '先把眼前的事做完。', en: 'Finish what is before you first.' }, lang), { scene: s.scene, ...(beat ? { beat: beat.id } : {}) });
   }
+  // A province of a 卷 not open: the chapter's own line for it (`map.beyond`, world.mjs shutSay).
   if (!provinceOpen(content, target.province, ctx.now)) {
-    const say = { zh: `${target.province}州的路还没开。`, en: 'That road has not opened yet.' };
+    const say = shutSay(content, s, ctx.now, { province: true }) ?? { zh: `${target.province}州的路还没开。`, en: 'That road has not opened yet.' };
     return stay('road-closed', pick(say, lang), { province: target.province });
   }
   // Beyond the map this chapter opens: its one in-world line (chapter.json `map.say`).

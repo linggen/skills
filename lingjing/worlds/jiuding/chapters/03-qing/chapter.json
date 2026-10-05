@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "03-qing",
+  "juan": 3,
   "opens": null,
   "province": "青",
   "corridor": false,

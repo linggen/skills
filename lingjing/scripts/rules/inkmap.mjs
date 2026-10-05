@@ -90,6 +90,10 @@ export function inkMapOf(content, state, now = new Date()) {
     return [id, { state: stateOf({ locked, home: Boolean(h), been: been.has(id) }), locked, been: been.has(id), ...(h ? { home: h } : {}), ...(flyable ? { fly: true } : {}) }];
   }));
   const of = Object.values(content.chapters).filter(ch => holdsCauldron(ch) && content.places[ch.province]).length;
+  // A province shut is greyed on the page, and a tap on it says why in the world's words (world.mjs shutSay):
+  // `shut` for one beyond the open 卷, the chapter's map line for one it keeps closed.
+  const beyond = Object.keys(provinces).some(id => provinces[id].locked) ? world.shutSay?.(content, state, now, { province: true }) : null;
+  for (const [id, p] of Object.entries(provinces)) if (p.locked && beyond) p.say = pick(beyond, state.lang);
   return { provinces, homed: homed.map(h => h.province), of, travel: Object.keys(provinces).filter(id => provinces[id].fly) };
 }
 

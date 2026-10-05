@@ -1,6 +1,7 @@
 {
   "version": 1,
   "_about": "The catalog: every thing the player can own, with its picture, its price and at most one effect. `key` is needed by an exit; a pill pays `progress` on use from a capped table; `wear` puts it on Yinyue (with a `lift`: her card's atk or hp by 1, or her 疗伤 by 0.1) or the abode; `charm` is a 符 — one in the bag is its card (cards.json, the same id) in hand at a fight's door, spent when it is played. Arms are the fight's own: a weapon's `atk` (器攻) with the `root` it lends, a 法衣's `def` (防), a 佩's `ward` (抗, by element) — each worn in its own slot, and each turned into the fight's numbers at the door by the rates in cards.json `gear` (器攻 → 主灵根一击, 防 → 护体, 抗 → that element lands lighter; the root lent lets its 功法 into the deck). `temper` feeds a 本命法宝 that many points of growth, and `core` on such a material names the element it would lend if the treasure were bound with it. `sold` names the provinces whose market shelves it; an item sold nowhere is a gift or a drop only. `pouch` on a 储物袋 adds that many slots to the bag's room for good, once for each kind (rewards.json `pouch`).",
+  "_juan": "The 卷 a thing belongs to (Hanli, 2026-10-05: 不要有后面各卷的物品): `juan`, 1 unsaid. One of a 卷 not open is never shelved, found, dropped or paid by a 传闻 (world.mjs ofJuan): 固基丹, 破境丹, 望气术·下卷 and four of the 五天材 are 结丹's (卷二; 息壤 is 卷一's, from the 秘境), the provinces' goods wait for their 卷.",
   "items": [
     {
       "id": "lingzhi",
@@ -180,6 +181,7 @@
     },
     {
       "id": "moon-bell",
+      "juan": 2,
       "kind": "artifact",
       "name": {
         "zh": "银月铃",
@@ -267,6 +269,7 @@
     },
     {
       "id": "firm-pill",
+      "juan": 2,
       "kind": "pill",
       "name": {
         "zh": "固基丹",
@@ -290,6 +293,7 @@
     },
     {
       "id": "pojing-pill",
+      "juan": 2,
       "kind": "pill",
       "name": {
         "zh": "破境丹",
@@ -398,6 +402,7 @@
     },
     {
       "id": "wangqi-2",
+      "juan": 2,
       "kind": "scroll",
       "name": {
         "zh": "望气术·下卷",
@@ -427,6 +432,7 @@
     },
     {
       "id": "sang-paper",
+      "juan": 2,
       "kind": "material",
       "name": {
         "zh": "桑皮纸",
@@ -446,6 +452,7 @@
     },
     {
       "id": "qi-salt",
+      "juan": 3,
       "kind": "material",
       "name": {
         "zh": "齐盐",
@@ -465,6 +472,7 @@
     },
     {
       "id": "qi-silk",
+      "juan": 3,
       "kind": "artifact",
       "name": {
         "zh": "齐纨",
@@ -536,6 +544,7 @@
     },
     {
       "id": "jingjin",
+      "juan": 2,
       "kind": "material",
       "name": {
         "zh": "精金",
@@ -559,6 +568,7 @@
     },
     {
       "id": "leijimu",
+      "juan": 2,
       "kind": "material",
       "name": {
         "zh": "雷击木",
@@ -581,6 +591,7 @@
     },
     {
       "id": "hanyu",
+      "juan": 2,
       "kind": "material",
       "name": {
         "zh": "寒玉",
@@ -602,6 +613,7 @@
     },
     {
       "id": "huojing",
+      "juan": 2,
       "kind": "material",
       "name": {
         "zh": "火精",
@@ -662,6 +674,7 @@
     },
     {
       "id": "yaodan-2",
+      "juan": 2,
       "kind": "material",
       "name": {
         "zh": "二阶妖丹",
@@ -678,6 +691,7 @@
     },
     {
       "id": "yaodan-3",
+      "juan": 3,
       "kind": "material",
       "name": {
         "zh": "三阶妖丹",
@@ -717,6 +731,7 @@
     },
     {
       "id": "juyou",
+      "juan": 5,
       "kind": "material",
       "name": {
         "zh": "橘柚",
@@ -737,6 +752,7 @@
     },
     {
       "id": "dansha",
+      "juan": 6,
       "kind": "material",
       "name": {
         "zh": "丹砂",
@@ -757,6 +773,7 @@
     },
     {
       "id": "shujin",
+      "juan": 7,
       "kind": "material",
       "name": {
         "zh": "蜀锦",
@@ -777,6 +794,7 @@
     },
     {
       "id": "langgan",
+      "juan": 8,
       "kind": "material",
       "name": {
         "zh": "琅玕",
@@ -820,6 +838,7 @@
     },
     {
       "id": "pouch-high",
+      "juan": 3,
       "kind": "pouch",
       "name": {
         "zh": "上品储物袋",

@@ -9,10 +9,12 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
+import { everyJuan } from './prologue.mjs';
 import { migrate, newState, STATE_VERSION } from '../scripts/state.mjs';
 import { deckFor, look, VERBS } from '../scripts/rules.mjs';
 
-const content = loadContent();
+// The engine on the old spine, every 卷 open (prologue.mjs everyJuan); tests/juan.test.mjs walls 卷一.
+const content = everyJuan(loadContent());
 const NOW = new Date('2026-10-05T10:00:00');
 const ctx = (extra = {}) => ({ now: NOW, quests: [], ...extra });
 

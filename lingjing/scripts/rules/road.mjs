@@ -31,7 +31,7 @@ import { itemOf, offersOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
 import { bagFull, roomFor } from './pouch.mjs';
 import { mainRoot } from './roots.mjs';
-import { allPlaces, atScene, creatureOf, huntable, inMade, placeOf, placeOpen, tooHard } from './world.mjs';
+import { allPlaces, atScene, creatureOf, huntable, inMade, ofJuan, placeOf, placeOpen, tooHard } from './world.mjs';
 
 /* ── 机缘 — the day's one chance, somewhere near, for a few real hours ──
    His pick, 2026-09-23 (觅长生's 过时不候, Lifeline's real clock): once a day,
@@ -103,7 +103,9 @@ function meetPool(content, state, ctx) {
   const m = content.meets, place = placeOf(content, state.place);
   // A find may say where it belongs (`at`); one that names no place lies
   // anywhere in its province. A province with none written uses `*`.
-  const here = list => (list ?? []).map((f, n) => ({ f, n })).filter(({ f }) => !f.at || f.at.includes(place.id));
+  // A find of a 卷 not open — or of a thing of one — lies nowhere (world.mjs ofJuan).
+  const opened = f => ofJuan(content, f, ctx.now) && (!f.item || !itemOf(content, f.item) || ofJuan(content, itemOf(content, f.item), ctx.now));
+  const here = list => (list ?? []).map((f, n) => ({ f, n })).filter(({ f }) => (!f.at || f.at.includes(place.id)) && opened(f));
   const own = here(m.finds?.[place.province]);
   const finds = own.length ? own.map(x => ({ book: place.province, n: x.n })) : here(m.finds?.['*']).map(x => ({ book: '*', n: x.n }));
   const seen = new Set(state.riddles_seen ?? []);
@@ -111,7 +113,7 @@ function meetPool(content, state, ctx) {
   // Creatures move (his, 2026-09-21) — but not across the world: a wandering
   // beast is one of THIS province's haunts, else of a province a road away.
   // Never one that walks with him, was met today, or lives beyond his tier.
-  const roams = p => huntable(content, p) && p.id !== place.id && !tooHard(content, state, p) && placeOpen(content, state, p, ctx.now)
+  const roams = p => huntable(content, p, ctx.now) && p.id !== place.id && !tooHard(content, state, p) && placeOpen(content, state, p, ctx.now)
     && !state.cast.includes(p.has.creature) && state.duels?.[p.has.creature]?.day !== dayKey(ctx.now);
   const every = allPlaces(content), home = every.filter(p => p.province === place.province && roams(p));
   const nextDoor = new Set(every.filter(p => p.province === place.province).flatMap(p => p.roads).map(id => placeOf(content, id)?.province));

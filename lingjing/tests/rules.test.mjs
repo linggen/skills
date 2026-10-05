@@ -1691,7 +1691,8 @@ test('a tapped option comes to Look as words, and Look names the tool it is', ()
   assert.match(cli('look', '--said=where am I').then, /^Now AskUser exactly/);
   // A place on the director's choice is a Move.
   const s = JSON.parse(fs.readFileSync(path.join(data, 'state.json'), 'utf8'));
-  const open = { ...s, lang: 'zh', chapter: '03-qing', scene: '03-shore', place: 'linzi', done_scenes: [...s.done_scenes, '03-arrive', '03-town'] };
+  // Open country after 卷一 (the only 卷 built, 2026-10-05): 邺城, the roads of 冀 round it.
+  const open = { ...s, lang: 'zh', chapter: '01-ji', scene: null, place: 'ye', ended: ['00-prologue', '00-waimen', '00-zhuji', '01-ji'] };
   fs.writeFileSync(path.join(data, 'state.json'), JSON.stringify(open));
   // The chat may hold its tongue (nothing waits, but this was no arrival) and
   // the map card still shows the roads — so a tap on one is still a Move.
