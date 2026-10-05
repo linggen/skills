@@ -183,7 +183,7 @@ async function act(what) {
 function goChange(n) {
   const to = n === 'ok' ? $('chgok') : document.getElementById(`chg-${n}`);
   if (!to) return;
-  to.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  to.scrollIntoView({ block: 'center' });
   to.classList.remove('flash');
   void to.offsetWidth;
   to.classList.add('flash');

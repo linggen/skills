@@ -133,6 +133,7 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 .chg-x.on { border-style: solid; }
 .chg-old { color: var(--dim); text-decoration: line-through; text-decoration-color: var(--chg-edge); }
 .chg-gone.block .chg-old { display: block; margin: 4px 0 0; font-size: 15px; line-height: 1.8; }
+.chg-old[hidden] { display: none; }
 .chg-cut { margin: -6px 0 12px -11px; padding-left: 8px; border-left: 3px dashed var(--chg-edge); font-size: 12px; color: var(--dim); scroll-margin-top: 80px; }
 .chg-cut .chg-gone.block .chg-x { margin-left: 0; }
 .chg-cutn { margin-left: 4px; }
