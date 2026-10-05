@@ -171,3 +171,13 @@ the style reference only. All modern — a jersey with a plain 0, a team track j
 shaker, oversleeves and reading glasses on a chain, a whistle and stopwatch, a white lab coat. Rejected on the way:
 a first 周禾 who read fifteen and a first 老蔡 who was not plump. Every picture looked at (the face, the age, no
 ancient dress, no text or seal). No outside source.
+
+## 玄沉子 on the 鼋 — portrait repainted (2026-10-05)
+
+Hanli's note: 「观主是骑着鼋出场的，能画好吗」. `people/xuanchenzi.webp` (640×960, webp q84) was repainted with Codex CLI's
+image generation (gpt-5.5), 2026-10-05, from his first appearance in 03-第三回.md: the 泗水 stopped flat as a mirror and
+parted into a channel, the giant 鼋 (blue-black shell bigger than the ferry, moss-grown, its plates square by square like
+a field, a head bigger than a millstone, two squinting old eyes), and on its back the 观主 in a plain grey robe, both
+hands in his sleeves, a plain topknot (the old portrait's crown and whisk dropped — the text has neither). The old
+portrait was handed in to keep only the face. Two rolls, both looked at; kept the one with the flatter, mirror-still
+water (the other's parted water fell like a weir). The 2026-09-29 portrait is in git history. No outside source.
