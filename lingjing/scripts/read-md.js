@@ -235,17 +235,19 @@ export function renderMarkdown(md, opts = {}) {
     if (!bare(text)) return null;
     const key = keyOf(text), nth = seenKey.get(key) ?? 0;
     seenKey.set(key, nth + 1);
-    for (const g of marks.cutBefore(key, nth)) { enter(g.item); out.push(cutHtml(g)); }
+    for (const g of marks.cutBefore(key, nth)) { out.push(cutHtml(g)); tick(g.item); }
     const m = marks.mark(key, nth);
-    enter(m?.item ?? null);
     return m;
   };
-  // Each change ends on its own 「确认这一处」 (Hanli 2026-10-05: 逐条确认).
-  let openItem = null;
-  const okShown = new Set();
-  const enter = (item) => {
-    if (openItem != null && openItem !== item && !okShown.has(openItem)) { okShown.add(openItem); out.push(okOneHtml(openItem)); }
-    openItem = item;
+  // Each change ends on its own 「确认这一处」 (Hanli 2026-10-05: 逐条确认),
+  // right after its last block or cut, however far it runs.
+  const left = new Map();
+  for (const x of [...(opts.changes?.marks ?? []), ...(opts.changes?.gone ?? [])]) left.set(x.item, (left.get(x.item) ?? 0) + 1);
+  const tick = (item) => {
+    if (item == null || !left.has(item)) return;
+    const n = left.get(item) - 1;
+    left.set(item, n);
+    if (n === 0) out.push(okOneHtml(item));
   };
   const cutHtml = (g) => `<div class="chg-cut" data-chg="${g.item}"${idOf(g.item)}>${goneHtml(g.text, 'block')}<span class="chg-cutn">删去 ${g.text.length} 段</span></div>`;
   const attrs = (m) => (m ? ` class="chg ${m.kind}" data-chg="${m.item}"${idOf(m.item)}` : '');
@@ -259,6 +261,7 @@ export function renderMarkdown(md, opts = {}) {
       const whole = m?.kind === 'changed' && inner == null ? ' whole' : '';
       const p = `<p${attrs(m).replace(/"chg changed"/, `"chg changed${whole}"`)}>${inner ?? para.map(inl).join('<br>')}</p>`;
       out.push(figs ? `<div class="noted">${p}${figs}</div>` : p);
+      tick(m?.item);
       para = [];
     }
     if (quote.length) {
@@ -266,6 +269,7 @@ export function renderMarkdown(md, opts = {}) {
       const m = unit(quote);
       const figs = figures(glossIds(quote, codex));
       out.push(`<blockquote${attrs(m)}>${quote.map((l) => `<p>${inl(l)}</p>`).join('')}</blockquote>${figs}`);
+      tick(m?.item);
       quote = [];
     }
     if (table.length) {
@@ -291,6 +295,7 @@ export function renderMarkdown(md, opts = {}) {
       if (hui) { heading = hui[1]; out.push(`<h1 class="huimu"><span class="hui">${esc(hui[1])}</span><span class="line">${esc(hui[2])}</span><span class="line">${esc(hui[3])}</span></h1>`); continue; }
       if (h[1].length <= 2) heading = h[2].replace(CLASSIC, '《$1》').replace(/\*\*/g, '');
       out.push(`<h${h[1].length}${attrs(hm)}>${inline(h[2])}</h${h[1].length}>`);
+      tick(hm?.item);
       continue;
     }
     const mem = MEMORY.exec(line.trim());
@@ -301,8 +306,7 @@ export function renderMarkdown(md, opts = {}) {
       continue;
     }
     // A scene break: a quiet 「◇」 (read.css), and a new section for the cards.
-    // A change's 「确认这一处」 stands before the break, never after it.
-    if (/^\s*(---|\*\*\*)\s*$/.test(line)) { flush(); if (marks) enter(null); section += 1; out.push('<hr class="scene">'); continue; }
+    if (/^\s*(---|\*\*\*)\s*$/.test(line)) { flush(); section += 1; out.push('<hr class="scene">'); continue; }
     if (/^\s*>/.test(line)) { if (para.length || table.length) flush(); quote.push(line.replace(/^\s*>\s?/, '')); continue; }
     if (/^\s*\|/.test(line)) { if (para.length || quote.length) flush(); table.push(line); continue; }
     if (!line.trim()) { flush(); continue; }
@@ -310,8 +314,7 @@ export function renderMarkdown(md, opts = {}) {
     para.push(line.trim());
   }
   flush();
-  for (const g of marks?.cutsAtEnd ?? []) { enter(g.item); out.push(cutHtml(g)); }
-  if (marks) enter(null);
+  for (const g of marks?.cutsAtEnd ?? []) { out.push(cutHtml(g)); tick(g.item); }
   // What stands at the story's end, before the classics (read.js's 「已读，确认」).
   if (opts.tail) out.push(opts.tail);
   const appendix = classicsAppendix([...cited], classics);
