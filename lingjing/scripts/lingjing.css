@@ -67,7 +67,7 @@ button:disabled { cursor: default; }
 .topbar .status { display: contents; }
 .topbar .titlerow { order: 1; flex: 1 1 16em; }
 .topbar .langsw { order: 2; }
-.topbar .place { font-size: 15px; }
+.topbar .place { font-size: 15px; flex: 0 0 auto; max-width: 62%; }
 .topbar .xw { max-width: 200px; min-width: 100px; }
 .status .daohao { font-family: var(--serif); font-weight: 600; font-size: 15px; }
 .status .realm { font-family: var(--serif); font-weight: 600; font-size: 14px; color: var(--ling); }
@@ -763,6 +763,9 @@ button.gcard { cursor: pointer; font: inherit; }
   .slots { left: 12px; right: 12px; bottom: 8px; }
   .slothead .peoplecard .person figcaption .small { max-width: 16em; font-size: 11.5px; }
   .slothead .peoplecard .person img, .slothead .peoplecard .person .namecard { width: 40px; height: 50px; }
+  /* Narrow, the faces keep their width and the strip scrolls sideways — never a name stood on end. */
+  .slothead .peoplecard .person { flex: none; max-width: 15em; }
+  .slothead .peoplecard figcaption b { white-space: nowrap; }
   .slotfoot { padding: 4px 12px; }
   .footchips { overflow-x: auto; scrollbar-width: none; }
   .tray { padding: 8px 12px 10px; }
