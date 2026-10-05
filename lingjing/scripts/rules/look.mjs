@@ -19,7 +19,7 @@ import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
 import { kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
 import { catchHere, gameLevel, hostedHere, lundaoBrief, reopened, stallHere } from './tasks.mjs';
 import { hashOf } from './travel.mjs';
-import { atScene, beatOf, creatureOf, encounterOf, ofJuan, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
+import { atScene, beatOf, creatureOf, encounterOf, ofJuan, passed, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
 import { chapterLabel, huiOf } from './hui.mjs';
@@ -42,12 +42,12 @@ import { hotspotsOf, lookHint, seenLog, seenMet, SEEN_KEEP } from './examine.mjs
    the province's catalog shelf, by items' `sold`. Either way nothing of a 卷
    not open is on it (world.mjs ofJuan). `where` is the place, or a province. */
 const shopOf = place => (place?.has?.shop && typeof place.has.shop === 'object' ? place.has.shop : null);
-const shopOpen = (shop, state) => !shop?.opens?.done || (state?.done_scenes ?? []).includes(shop.opens.done);
+const shopOpen = (shop, state, content = null) => !shop?.opens?.done || (content ? passed(content, state, shop.opens.done) : (state?.done_scenes ?? []).includes(shop.opens.done));
 const shelfOf = (content, where, state = null, now = new Date()) => {
   const place = typeof where === 'string' ? null : where, shop = shopOf(place);
   const province = place ? place.province : where;
   const sold = shop
-    ? (shopOpen(shop, state) ? (shop.goods ?? []).map(id => itemOf(content, id)).filter(i => i && ofJuan(content, i, now)) : [])
+    ? (shopOpen(shop, state, content) ? (shop.goods ?? []).map(id => itemOf(content, id)).filter(i => i && ofJuan(content, i, now)) : [])
     : content.items.items.filter(i => (i.sold ?? []).includes(province) && ofJuan(content, i, now));
   const c = companionOf(content);
   const searching = c && state && !state.companion?.joined && (state.companion || callDue(content, state)) && !(state.bag[c.bell] > 0);

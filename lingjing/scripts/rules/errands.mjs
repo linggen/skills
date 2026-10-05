@@ -14,7 +14,7 @@ import { hashOf } from './travel.mjs';
 import { coolingUntil, oddsOf } from './breakthrough.mjs';
 import { freeSlot, pouchBrief } from './pouch.mjs';
 import { chapterLabel, comingOf } from './hui.mjs';
-import { allPlaces, atScene, creatureOf, hauntsOf, huntable, inCorridor, inMade, ofJuan, pathOf, placeName, placeOf, placeOpen, sceneOf, tooHard, towardOf } from './world.mjs';
+import { allPlaces, atScene, creatureOf, hauntsOf, huntable, inCorridor, inMade, ofJuan, passed, pathOf, placeName, placeOf, placeOpen, sceneOf, tooHard, towardOf } from './world.mjs';
 
 /* ── 差事 — the errands the player takes (design.md § 差事) ──
    接 · 记 · 追 · 交. The world offers, the player takes, the rules count, and
@@ -221,8 +221,8 @@ function offersOf(content, state, lang, now) {
     .filter(q => q.from?.place === state.place && !state.quests?.[q.id] && ofJuan(content, q, now)
       && (!q.opens?.after || questDoneBefore(state, q.opens.after))
       // Story time: after a scene (`done`), or only while it is still ahead (`before`) — 邺城 before and after the 漳水.
-      && (!q.opens?.done || (state.done_scenes ?? []).includes(q.opens.done))
-      && (!q.opens?.before || !(state.done_scenes ?? []).includes(q.opens.before))
+      && (!q.opens?.done || passed(content, state, q.opens.done))
+      && (!q.opens?.before || !passed(content, state, q.opens.before))
       && (!q.opens?.tier || TIERS_ORDER(content).indexOf(state.tier) >= TIERS_ORDER(content).indexOf(q.opens.tier)))
     .map(q => ({ id: q.id, title: pick(q.title, lang), who: q.from.who ? pick(q.from.who, lang) : null, say: fill(pick(q.say, lang), state, content), need: q.need.map(n => ({ kind: n.kind, n: n.n })), grant: q.grant, pays: paysOf(content, state, now, q.grant) }));
 }

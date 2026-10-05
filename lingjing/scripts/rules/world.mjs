@@ -17,6 +17,9 @@ const sceneOf = (content, state) => (inMade(state)
   ? state.made.scenes[state.made.at] ?? null
   : content.chapters[state.chapter]?.scenes[state.scene] ?? null);
 const creatureOf = (content, id) => content.creatures.creatures.find(c => c.id === id);
+/* A scene behind him: played, or its chapter ended (a save may have ended a chapter by a way that skipped it). */
+const passed = (content, state, id) => (state?.done_scenes ?? []).includes(id)
+  || Object.values(content.chapters).some(c => c.scenes?.[id] && (state?.ended ?? []).includes(c.id));
 /* A creature of an open 卷 (world.mjs ofJuan): one of a later 卷 is not met. */
 const metNow = (content, id, now) => { const c = creatureOf(content, id); return Boolean(c) && ofJuan(content, c, now); };
 
@@ -216,7 +219,7 @@ function placeBrief(content, state, now = new Date()) {
       creature: has.creature && metNow(content, has.creature, now) ? { id: has.creature, name: pick(creatureOf(content, has.creature).name, lang) } : null,
       seeds: Boolean(has.seeds), shop: Boolean(has.shop), scene: has.scene ?? null,
     },
-    ...(shop ? { shop: { name: pick(shop.name, lang) ?? null, keeper: pick(shop.keeper, lang) ?? null, open: shopOpen(shop, state), ...(!shopOpen(shop, state) && shop.shut ? { shut: pick(shop.shut, lang) } : {}) } } : {}),
+    ...(shop ? { shop: { name: pick(shop.name, lang) ?? null, keeper: pick(shop.keeper, lang) ?? null, open: shopOpen(shop, state, content), ...(!shopOpen(shop, state, content) && shop.shut ? { shut: pick(shop.shut, lang) } : {}) } } : {}),
     roads: place.roads.map(id => placeOf(content, id)).map(p => ({
       ...placeName(content, state, p), tier: p.tier, too_hard: tooHard(content, state, p),
       province: p.province, closed: !placeOpen(content, state, p, now),
@@ -284,4 +287,4 @@ function fittingPlace(content, state, from) {
    opens when it ends. */
 const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && carried(content, state);
 
-export { hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };
+export { passed, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };

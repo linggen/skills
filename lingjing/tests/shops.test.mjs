@@ -103,3 +103,10 @@ test('押宝 is a stall: played at the 坊市 whenever he stands there, once a d
   assert.ok(!look(paid.state, content, ctx).tasks.some(t => t.id === 'yabao' && t.status === 'offered'), 'once a day');
   assert.equal(win(paid.state, content, ctx, { id: 'yabao' }).result.refused, 'not-here');
 });
+
+test('story time reads a chapter ended as every scene of it behind him', () => {
+  // An older save ended 01-ji without 01-rise in its record: the city is the city after the 漳水.
+  const s = at('ye-kezhan', { done_scenes: ['01-arrive', '01-ye', '01-altar', '01-deep', '01-cauldron', '01-end'] });
+  assert.ok(!(look(s, content, ctx).offers ?? []).some(o => o.id === 'ji-kezhan-hebo'));
+  assert.deepEqual(look({ ...s, place: 'ye-doufu' }, content, ctx).place.shelf.map(i => i.id), ['ganliang']);
+});
