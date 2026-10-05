@@ -19,8 +19,9 @@ function dailyRows() {
   return rows;
 }
 
-// Friday 2026-10-02's session by the minute: 9:30 to 16:00 New York.
-const OPEN = Date.UTC(2026, 9, 2, 13, 30) / 1000;
+// Friday 2026-10-02's session by the minute: 9:30 to 16:00 New York, as the
+// source stamps it (the wall clock written as UTC).
+const OPEN = Date.UTC(2026, 9, 2, 9, 30) / 1000;
 const intraday = Array.from({ length: 391 }, (_, i) => ({ t: OPEN + i * 60, c: 300 + Math.sin(i / 30) }));
 
 test('months back clamp to the month’s last day', () => {
@@ -109,7 +110,8 @@ test('x labels are sparse and fall where the unit turns over', () => {
   assert.ok(ticks.length <= 6 && ticks.length >= 4, JSON.stringify(ticks));
   for (const { i } of ticks) assert.notEqual(points[i].t.slice(0, 7), points[i - 1].t.slice(0, 7));
   assert.deepEqual(xTicks(sliceDaily(rows, '5Y', '2026-10-05').points, '5Y').map((x) => x.label), ['2026']);
-  assert.ok(xTicks(intraday, '1D').every((x) => /AM|PM/.test(x.label)));
+  assert.deepEqual(xTicks(intraday, '1D').map((x) => x.label), ['11 AM', '1 PM', '3 PM'], 'session hours, New York');
+  assert.deepEqual(xTicks(intraday, '1W').map((x) => x.label), [], 'one session: no day turns over');
 });
 
 test('1D spans the whole session; a half day sits on the left', () => {
@@ -142,6 +144,7 @@ test('every range draws, green when up and red when down', () => {
   const down = chartView({ points: rows.slice(0, 5).reverse(), base: rows[4], range: '1M', kind: 'line', id: 'b', price: String });
   assert.match(down.html, /ch-down/);
   const w = chartView({ ...rangeView('5Y', series, '2026-10-05'), range: '5Y', kind: 'candle', id: 'c', price: String });
+  assert.ok(w.hover.xs[0] > 0 && w.hover.xs.at(-1) < 1, 'the edge candles sit inside the plot');
   assert.equal(w.hover.tips.length, weeklyCandles(rangeView('5Y', series, '2026-10-05').points).length, '5Y candles are weekly');
 });
 

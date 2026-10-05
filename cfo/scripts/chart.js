@@ -5,13 +5,14 @@
 //
 // Points come from market.pl history: daily rows {t: 'YYYY-MM-DD', o, h, l, c}
 // oldest first (the 5Y series every daily range is cut from), or intraday
-// rows {t: epoch seconds, c} for 1D (the last session) and 1W (five sessions).
+// rows {t, c} for 1D (the last session) and 1W (five sessions). An intraday
+// `t` is the exchange's wall clock written as UTC seconds — stockanalysis.com
+// stamps the 9:30 New York open as 09:30Z — so it is read in UTC.
 
 export const RANGES = ['1D', '1W', '1M', '3M', 'YTD', '1Y', '5Y'];
 /// Ranges that offer candles: daily ones; 5Y draws weekly candles.
 export const CANDLE_RANGES = new Set(['1M', '3M', 'YTD', '1Y', '5Y']);
 const MONTHS_BACK = { '1M': 1, '3M': 3, '1Y': 12, '5Y': 60 };
-const TZ = 'America/New_York'; // US and TSX sessions both keep New York time
 const SESSION_S = 6.5 * 3600;
 
 // The drawing's own units: the plot is stretched to the card's width.
@@ -53,7 +54,7 @@ export function sliceDaily(rows, range, today) {
   return { base: rows[i], points: rows.slice(i) };
 }
 
-/// The New York day of an epoch-seconds time.
+/// The session day of an intraday time (its wall clock is New York's).
 export const nyDay = (t) => NY_DAY.format(new Date(t * 1000));
 
 /// An intraday range: base = the daily close of the session before its
@@ -165,10 +166,10 @@ const dailyFmt = (opts) => {
   return (p) => f.format(utcDate(p.t));
 };
 const nyFmt = (opts) => {
-  const f = new Intl.DateTimeFormat('en-US', { timeZone: TZ, ...opts });
+  const f = new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', ...opts });
   return (p) => f.format(new Date(p.t * 1000));
 };
-const NY_DAY = new Intl.DateTimeFormat('en-CA', { timeZone: TZ });
+const NY_DAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC' });
 
 // Per range: what makes a new x label (`key`), how it reads (`label`), and
 // how a hovered point reads (`tip`).
@@ -238,7 +239,7 @@ export function chartView({ points, base, range, kind, id, price }) {
   const drawn = candles || points;
   const { lo, hi } = domainOf(points, base.c, candles);
   const y = (v) => H - ((v - lo) / (hi - lo)) * H;
-  const xs = xsOf(drawn, range);
+  const xs = candles ? inset(xsOf(drawn, range), W / candles.length / 2) : xsOf(drawn, range);
   const { step, ticks } = niceTicks(lo, hi);
   const dec = tickDecimals(step);
   const grid = ticks.map((v) => `<line class="ch-grid" x1="0" x2="${W}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join('');
@@ -266,6 +267,9 @@ function lineSvg(points, xs, y, id) {
     <path class="ch-area" d="${area}" fill="url(#${id})"/>
     <path class="ch-line" d="${d}" fill="none"/>`;
 }
+
+/// Candles keep half a slot from each edge, so the first and last aren't cut.
+const inset = (xs, m) => xs.map((x) => m + (x / W) * (W - 2 * m));
 
 function candlesSvg(candles, xs, y) {
   const w = Math.max(1, (W / Math.max(candles.length, 1)) * 0.65);

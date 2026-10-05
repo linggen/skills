@@ -73,7 +73,8 @@ Mac; no Linggen Cloud, no data-provider key.
   oldest first, cached 30 min; the cached quote's price ends it when it is
   from a later session (the TSX history often lags a day — close only, no
   candle). `1D` = `api/charts/<path>/1D/l` (the last session by the minute,
-  `{t: epoch, c}`, empty minutes dropped), cached 5 min; `1W` =
+  `{t, c}` — `t` is New York's wall clock written as UTC seconds, 09:30Z =
+  the open, so the page reads it in UTC; empty minutes dropped), cached 5 min; `1W` =
   `charts/<path>/5D/l` (five sessions, every 5 min), 15 min. A failed fetch
   serves the cache with `stale: true`; none → `{error}`.
 - Yahoo Finance answers 429 to plain requests (tested 2026-09-15) — not a
