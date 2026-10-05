@@ -14,9 +14,9 @@ import { createListener, listenHtml, loadManifest } from './pingshu.js';
 
 const WORDS = {
   zh: { back: '← 回到灵境', toc: '目录', prev: '←', next: '→', none: '书还没有写。', failed: '这一回没能打开。', only: '这一回只有中文。',
-    chgs: (n) => `本回改动 ${n} 处`, chg: (i, n) => `改 ${i}/${n}`, okOne: '确认这一处', oked: (h) => `已确认：${h}`, undoLast: (h) => `撤销上一处确认（${h}）`, undone: '已撤销', none0: '本回改动都已确认', okFailed: '没能确认，稍后再试。' },
+    chgs: (n) => `本回改动 ${n} 处`, chg: (i, n) => `改 ${i}/${n}`, okOne: '确认这一处', undo: '撤销', oked: (h) => `已确认：${h}`, undoLast: (h) => `撤销上一处确认（${h}）`, undone: '已撤销', none0: '本回改动都已确认', okFailed: '没能确认，稍后再试。' },
   en: { back: '← Back to Lingjing', toc: 'Contents', prev: '←', next: '→', none: 'The book is not written yet.', failed: 'This chapter could not be opened.', only: 'This chapter is in Chinese only.',
-    chgs: (n) => `${n} change${n === 1 ? '' : 's'} here`, chg: (i, n) => `${i}/${n}`, okOne: 'Confirm this one', oked: (h) => `Confirmed: ${h}`, undoLast: (h) => `Undo the last confirm (${h})`, undone: 'Undone', none0: 'All changes here confirmed', okFailed: 'Could not confirm; try again later.' },
+    chgs: (n) => `${n} change${n === 1 ? '' : 's'} here`, chg: (i, n) => `${i}/${n}`, okOne: 'Confirm this one', undo: 'Undo', oked: (h) => `Confirmed: ${h}`, undoLast: (h) => `Undo the last confirm (${h})`, undone: 'Undone', none0: 'All changes here confirmed', okFailed: 'Could not confirm; try again later.' },
 };
 const STORY = '../story/';
 const params = new URLSearchParams(location.search);
@@ -195,7 +195,7 @@ async function act(what, n) {
   // The text moved under the page: read it again, marked against the new text.
   if (res?.refused === 'moved') { location.reload(); return; }
   if (next) { const y = scrollY; setCurrent(next); scrollTo(0, y); holdAnchor(anchor); }
-  if (res?.ok) { toast(what === 'confirm' ? `${esc(w.oked(head ?? ''))} ${undoHtml(next)}` : esc(w.undone)); return; }
+  if (res?.ok) { toast(what === 'confirm' ? `${esc(w.oked(head ?? ''))}<button type="button" class="chgundo" data-chg-undo="1">${esc(w.undo)}</button>` : esc(w.undone)); return; }
   toast(esc(w.okFailed));
 }
 function goChange(n) {
