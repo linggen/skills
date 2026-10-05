@@ -22,8 +22,8 @@ export const meta = {
 export const START_HR = 128;
 export const FLOOR = 100; //      the brake takes it no lower: 刹不干净
 export const NEED_BREATHS = 2;
-export const CHANT_MS = 4500; //  a chant every so often
-const CHANT_UP = 5, BRAKE = 10, LATE = 3 * BEAT;
+export const CHANT_MS = 6000; //  a chant every so often
+const CHANT_UP = 4, BRAKE = 14, LATE = 3 * BEAT;
 
 const T = {
   zh: {
@@ -91,7 +91,7 @@ export function act(state, data = {}) {
 export function tick(state, ms) {
   if (!state.live || state.won) return state;
   let s = { ...state, t: state.t + ms, breath: flow(state.breath, ms) };
-  if (s.t >= s.chantAt) s = { ...s, chantAt: s.chantAt + CHANT_MS, hr: Math.min(150, s.hr + CHANT_UP), note: 'chant' };
+  if (s.t >= s.chantAt) s = { ...s, chantAt: s.chantAt + CHANT_MS, hr: Math.min(150, s.hr + CHANT_UP), note: s.note === 'brake' ? 'brake' : 'chant' };
   return s;
 }
 

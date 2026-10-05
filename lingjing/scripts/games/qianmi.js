@@ -38,6 +38,7 @@ const T = {
     dist: '米',
     running: '腿自己在跑。你管喘气。',
     exhale: '「呵——」长长地吐。',
+    inhale: '吸——',
     fresh: '吐干净了，那一口新气自己灌了进来，一直灌到肚子底下。',
     pant: '又快又浅——一口刚吸到喉咙，下一口已经急着出来。',
     bie: '胸口发紧，吸不进去了——越吸不进越慌。',
@@ -56,6 +57,7 @@ const T = {
     dist: 'm',
     running: 'The legs run by themselves. You see to the breathing.',
     exhale: '"Hooo —" a long breath out.',
+    inhale: 'In —',
     fresh: 'Emptied out, the new breath came in by itself, all the way down to his belly.',
     pant: 'Quick and shallow — one breath barely in, the next already hurrying out.',
     bie: 'His chest tightens; he can\'t get any more in — and the less he can, the more he panics.',
@@ -83,7 +85,7 @@ const VERBS = {
     if (!s.started || s.failed) return null;
     const mode = d.gHold === 'in' ? 'in' : 'out';
     const base = endIn(s);
-    return { ...base, mode, vol: 0, note: mode === 'out' ? 'exhale' : base.note === 'fresh' ? 'running' : base.note };
+    return { ...base, mode, vol: 0, note: mode === 'out' ? 'exhale' : base.note === 'exhale' || base.note === 'fresh' ? 'inhale' : base.note };
   },
   release: (s) => (s.mode === 'in' ? endIn(s) : s.mode === 'out' ? { ...s, mode: null } : null),
   again: (s) => (s.failed ? { ...newGame(s.seed, s.tries + 1), started: true, note: 'running' } : null),
