@@ -348,7 +348,7 @@ without one). An errand for a pool's beast points to its stretch (`hauntsOf`).
   shelf by items' `sold`. Before the 灵石 (the prologue's `wealth` lock) a shelf
   shows nothing. The people and the goods are the book's: 坊市 = **钱掌柜的摊子**
   (押宝 · 收当: 聚气丹 of one ring, 回春丹, 萝卜, the pawned 竹剑 · 蓑衣 · 望气术上卷;
-  his **押宝** board, `games/yabao.js`, hosted daily — four 门, three bets, his
+  his **押宝** board, `games/yabao.js`, a `stall` (tasks.mjs `stallHere`: a hosted board played wherever its place stands, once a period, for its own pay, no errand needed) — four 门, three bets, his
   two habits read off a miss, a win pays a one-ring 聚气丹); 彭城 = **济世堂**
   (灵芝 · 人参 · 回春丹, 古三's apothecary); 石坳村 = the **货郎** (干粮 · 蓑衣 · 短刀);
   邺城 (古八) = the 东街市, and its own streets as places a road off the city:

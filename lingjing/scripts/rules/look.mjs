@@ -17,7 +17,7 @@ import { seclusionBrief } from './seclusion.mjs';
 import { chapterLook, nodeLook, recapLook } from './story.mjs';
 import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
 import { kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
-import { catchHere, gameLevel, hostedHere, lundaoBrief, reopened } from './tasks.mjs';
+import { catchHere, gameLevel, hostedHere, lundaoBrief, reopened, stallHere } from './tasks.mjs';
 import { hashOf } from './travel.mjs';
 import { atScene, beatOf, creatureOf, encounterOf, ofJuan, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
 import { rowOf } from './ledger.mjs';
@@ -327,7 +327,7 @@ function tasksBrief(content, state, ctx) {
   const today = dayKey(ctx.now);
   // A board an errand wants stands offered, whatever it was: the errand pays.
   const hosted = Object.fromEntries((placeOf(content, state.place)?.has?.games ?? [])
-    .filter(id => hostedHere(content, state, id)).map(id => [id, { status: 'offered' }]));
+    .filter(id => hostedHere(content, state, id) || stallHere(content, state, id, ctx.now)).map(id => [id, { status: 'offered' }]));
   // The board a beast here is caught with (狰's 守夜), until it is caught.
   const cid = placeOf(content, state.place)?.has?.creature, katch = cid ? creatureOf(content, cid)?.catch : null;
   if (katch && catchHere(content, state, katch)) hosted[katch] = { status: 'offered' };

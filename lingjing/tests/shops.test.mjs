@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
-import { look, trade } from '../scripts/rules.mjs';
+import { look, task, trade, win } from '../scripts/rules.mjs';
 import { placeOf } from '../scripts/rules/world.mjs';
 import { shelfOf } from '../scripts/rules/look.mjs';
 import * as yabao from '../scripts/games/yabao.js';
@@ -89,4 +89,17 @@ test('押宝: three bets; a miss shows his habits, and the third, read right, is
   const t = content.tasks.tasks.find(x => x.id === 'yabao');
   assert.deepEqual([t.hosted, t.period, t.grant.item], [true, 'day', 'qi-pill']);
   assert.ok(placeOf(content, 'fangshi').has.games.includes('yabao'));
+});
+
+test('押宝 is a stall: played at the 坊市 whenever he stands there, once a day, its win a one-ring 聚气丹', () => {
+  const s = at('fangshi');
+  assert.ok(look(s, content, ctx).tasks.some(t => t.id === 'yabao' && t.status === 'offered'));
+  assert.ok(!look(at('pengcheng'), content, ctx).tasks.some(t => t.id === 'yabao'), 'only where it stands');
+  const won = win(s, content, ctx, { id: 'yabao' });
+  assert.equal(won.result.ok, true, JSON.stringify(won.result));
+  const paid = task(won.state, content, ctx, { action: 'done', id: 'yabao' });
+  assert.equal(paid.result.ok, true, JSON.stringify(paid.result));
+  assert.equal(paid.state.bag['qi-pill'], (s.bag['qi-pill'] ?? 0) + 1);
+  assert.ok(!look(paid.state, content, ctx).tasks.some(t => t.id === 'yabao' && t.status === 'offered'), 'once a day');
+  assert.equal(win(paid.state, content, ctx, { id: 'yabao' }).result.refused, 'not-here');
 });

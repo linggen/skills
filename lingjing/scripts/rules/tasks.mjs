@@ -56,6 +56,14 @@ function hostedHere(content, state, id) {
   const t = taskOf(content, id);
   return Boolean(t?.hosted) && (placeOf(content, state.place)?.has?.games ?? []).includes(id) && errandWants(content, state, id, state.place);
 }
+/* A stall's board (tasks/world.json `stall: true`, 钱掌柜's 押宝): played where a
+   place hosts it whenever he stands there, once a period, for its own pay — no
+   errand needed. An errand that wants it still takes it first (it pays the errand). */
+function stallHere(content, state, id, now) {
+  const t = taskOf(content, id);
+  return Boolean(t?.stall && t.hosted) && (placeOf(content, state.place)?.has?.games ?? []).includes(id)
+    && !doneThisPeriod(content, state, id, now) && !errandWants(content, state, id, state.place);
+}
 const doneThisPeriod = (content, state, id, now) => {
   const t = taskOf(content, id), held = state.tasks[id];
   return held?.status === 'done' && (t?.period === 'once' || held.period === periodKey(t?.period, now));
@@ -79,7 +87,7 @@ function catchHere(content, state, id) {
 function taskOpen(content, state, id, now) {
   const t = taskOf(content, id), held = state.tasks[id];
   if (!t) return false;
-  if (reopened(content, state, id, now) || hostedHere(content, state, id) || catchHere(content, state, id)) return true;
+  if (reopened(content, state, id, now) || hostedHere(content, state, id) || catchHere(content, state, id) || stallHere(content, state, id, now)) return true;
   if (!held) return false;
   return !(held.status === 'done' && (t.period === 'once' || held.period === periodKey(t.period, now)));
 }
@@ -94,7 +102,8 @@ function taskDone(state, content, ctx, id) {
   // Kept across midnight: while the errand still asks for it, a win kept on
   // an empty pool counts whenever 体力 is back (the page says so).
   const wonHere = Boolean(t.hosted && state.wins?.[id] && errandWants(content, state, id));
-  if (!state.tasks[id] && !again && !hostedHere(content, state, id) && !catchHere(content, state, id) && !wonHere) return refuse('not-offered', null);
+  const stall = stallHere(content, state, id, ctx.now);
+  if (!state.tasks[id] && !again && !hostedHere(content, state, id) && !catchHere(content, state, id) && !wonHere && !stall) return refuse('not-offered', null);
   if (!wonHere && !taskOpen(content, state, id, ctx.now)) return refuse('already-done', null);
   if (!state.wins?.[id]) return refuse('not-won', null);
   const s = clone(state);
@@ -103,7 +112,7 @@ function taskDone(state, content, ctx, id) {
   // A hosted game costs a little 体力, as a step does (rewards.json
   // stamina.cost.game — his, 2026-09-24): taken as it is counted, and a win
   // kept while the pool is empty is counted once it refills, the same day.
-  if (again || t.hosted) {
+  if (again || (t.hosted && !stall)) {
     if (t.hosted) {
       const empty = spendStamina(content, s, ctx, 'game');
       if (empty) return empty;
@@ -384,4 +393,4 @@ export function lundao(state, content, ctx, args) {
   return { state: s, result: { ok: true, good, ...(form ? { form } : {}), ...(!form && !judged ? { judged: false } : {}), lundao: lundaoBrief(content, s, ctx.now), ...(fresh ? { say: l.prompt } : {}), ...(l.model && !l.outcome ? { judge: judgeOf(l.model) } : {}), ...(l.outcome === 'won' ? { line: pick(taskOf(content, 'lundao').done_line, lang), ...(paid ? { paid } : {}), ...(handed.length ? { handed } : {}) } : {}) } };
 }
 
-export { catchHere, doneThisPeriod, gameLevel, hostedHere, lundaoBrief, lundaoForm, lundaoName, questCheck, questDone, reopened };
+export { catchHere, doneThisPeriod, gameLevel, hostedHere, stallHere, lundaoBrief, lundaoForm, lundaoName, questCheck, questDone, reopened };

@@ -79,8 +79,8 @@
       "done_line": { "zh": "成了。", "en": "Done." }
     },
     {
-      "id": "yabao", "kind": "board", "game": "yabao", "period": "day", "hosted": true,
-      "_yabao": "钱掌柜's 押宝 at the 坊市 (古六/古七, 2026-10-05): hosted at fangshi; a sitting won pays the day's game and the market's pill — one ring (「我这儿只出一道纹」).",
+      "id": "yabao", "kind": "board", "game": "yabao", "period": "day", "hosted": true, "stall": true,
+      "_yabao": "钱掌柜's 押宝 at the 坊市 (古六/古七, 2026-10-05): hosted at fangshi and a `stall` (tasks.mjs stallHere): playable whenever he stands there, once a day, no errand needed; a sitting won pays the day's game and the market's pill — one ring (「我这儿只出一道纹」).",
       "title": { "zh": "押宝 · 钱掌柜的摊子", "en": "The bet · Money Qian's stall" },
       "grant": { "table": "game", "progress": 5, "wealth": 0, "item": "qi-pill" },
       "done_line": { "zh": "一颗聚气丹，一道纹。", "en": "One qi pill, one ring." }
