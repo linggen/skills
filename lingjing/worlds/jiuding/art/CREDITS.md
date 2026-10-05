@@ -59,6 +59,7 @@ followed) remain the CC BY-SA map above. The 鼎归 map shows it province by pro
 klein 4B), 2026-09-15 (齐盐, 齐纨 and 符 2026-09-16; the five 天材地宝, the three
 妖丹 and 玉珏 2026-09-17), from each item's description. No outside source.
 橘柚 (juyou), 丹砂 (dansha), 蜀锦 (shujin) and 琅玕 (langgan) were painted the same way, 2026-09-24.
+鼎苔 (dingtai) was repainted by the local picture model (FLUX.2 klein 4B), 2026-10-05, when Codex was out of credits (第五回: one square footing pit sunk in the stone chamber floor, straight walls, flat bottom, a ring of blackish-green moss on its rim, a faint glow; a corner of a second pit). The Codex picture of 2026-10-02 had drawn a round stone slab. Seed 15 of the second round of six; every picture looked at.
 
 ## Scenes — painted for Lingjing
 
