@@ -81,6 +81,8 @@ test('the page draws the marks where the changes say: ids for the list, new sent
   assert.match(html, /<\/p>\n<div class="chg-okrow" data-chg-end="1"><button type="button" class="chg-okone" data-chg-ok="1">/);
   assert.match(html, /删去 1 段<\/span><\/div>\n<div class="chg-okrow" data-chg-end="2">/);
   assert.equal((html.match(/chg-okrow/g) ?? []).length, 2);
+  assert.ok(!html.includes('data-chg-back'), '改回原文 only on the builder\'s machine');
+  assert.equal((renderMarkdown(now, { changes: c, revert: true }).match(/data-chg-back="/g) ?? []).length, 2);
   assert.ok(!/class="chg/.test(renderMarkdown(now, {})), 'no changes, no marks');
 });
 

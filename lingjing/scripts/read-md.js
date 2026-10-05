@@ -161,7 +161,9 @@ export function classicsAppendix(cited, classics = {}) {
    the change list's jump target. */
 const goneHtml = (texts, cls) => `<span class="chg-gone ${cls}"><button type="button" class="chg-x" aria-label="删去的原文" title="删去的原文">⌫</button><span class="chg-old" hidden>${texts.map((t) => esc(t)).join('<br>')}</span></span>`;
 
-const okOneHtml = (n) => `<div class="chg-okrow" data-chg-end="${n}"><button type="button" class="chg-okone" data-chg-ok="${n}">✓ 确认这一处</button></div>`;
+// With `revert` (the builder's machine: rules/revert.mjs), 「↶ 改回原文」 beside it.
+const okOneHtml = (n, revert) => `<div class="chg-okrow" data-chg-end="${n}"><button type="button" class="chg-okone" data-chg-ok="${n}">✓ 确认这一处</button>`
+  + `${revert ? `<button type="button" class="chg-back" data-chg-back="${n}">↶ 改回原文</button>` : ''}</div>`;
 
 /// A changed paragraph's lines with its new sentences marked, or null when
 /// the source line will not cut the way its plain words do (a mark across a 。).
@@ -184,7 +186,8 @@ function sentenceHtml(lines, mark, inl) {
 
 /// `opts.changes` → one 回's changes (rules/changes.mjs entry): the blocks not
 /// yet confirmed are marked (see above), each change closed by its own
-/// 「✓ 确认这一处」 (data-chg-ok=n); none → the text plain.
+/// 「✓ 确认这一处」 (data-chg-ok=n), and with `opts.revert` 「↶ 改回原文」
+/// (data-chg-back=n); none → the text plain.
 /// `opts.tail` → HTML set after the story and before 「附 · 本回典籍」.
 /// `opts.classics` → classics.json's classics: `《书名》{典=id}` links to its entry
 /// at the chapter's end (and back); none, or no entry: the 《书名》 alone.
@@ -247,7 +250,7 @@ export function renderMarkdown(md, opts = {}) {
     if (item == null || !left.has(item)) return;
     const n = left.get(item) - 1;
     left.set(item, n);
-    if (n === 0) out.push(okOneHtml(item));
+    if (n === 0) out.push(okOneHtml(item, opts.revert));
   };
   const cutHtml = (g) => `<div class="chg-cut" data-chg="${g.item}"${idOf(g.item)}>${goneHtml(g.text, 'block')}<span class="chg-cutn">删去 ${g.text.length} 段</span></div>`;
   const attrs = (m) => (m ? ` class="chg ${m.kind}" data-chg="${m.item}"${idOf(m.item)}` : '');

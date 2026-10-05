@@ -14,9 +14,15 @@ import { createListener, listenHtml, loadManifest } from './pingshu.js';
 
 const WORDS = {
   zh: { back: '← 回到灵境', toc: '目录', prev: '←', next: '→', none: '书还没有写。', failed: '这一回没能打开。', only: '这一回只有中文。',
-    chgs: (n) => `本回改动 ${n} 处`, chg: (i, n) => `改 ${i}/${n}`, okOne: '确认这一处', undo: '撤销', oked: (h) => `已确认：${h}`, undoLast: (h) => `撤销上一处确认（${h}）`, undone: '已撤销', none0: '本回改动都已确认', okFailed: '没能确认，稍后再试。' },
+    chgs: (n) => `本回改动 ${n} 处`, chg: (i, n) => `改 ${i}/${n}`, okOne: '确认这一处', undo: '撤销', oked: (h) => `已确认：${h}`, undoLast: (h) => `撤销上一处确认（${h}）`, undone: '已撤销', none0: '本回改动都已确认', okFailed: '没能确认，稍后再试。',
+    backLooking: '正在取原文……', backFailed: '没能改回。', close: '关闭', cancel: '取消', backNow: '现文', backWas: '改回后（原文）', backNone: '（无）', backYes: '确认改回',
+    backWhere: (s, en) => `写入工作区的这一回${s ? `，并同步 ${s} 个场景` : ''}，随即提交${en ? `；英文待同步 ${en} 处` : ''}。`,
+    backDone: (c, en) => `已改回原文（提交 ${c}）${en ? `；英文待同步 ${en} 处` : ''}` },
   en: { back: '← Back to Lingjing', toc: 'Contents', prev: '←', next: '→', none: 'The book is not written yet.', failed: 'This chapter could not be opened.', only: 'This chapter is in Chinese only.',
-    chgs: (n) => `${n} change${n === 1 ? '' : 's'} here`, chg: (i, n) => `${i}/${n}`, okOne: 'Confirm this one', undo: 'Undo', oked: (h) => `Confirmed: ${h}`, undoLast: (h) => `Undo the last confirm (${h})`, undone: 'Undone', none0: 'All changes here confirmed', okFailed: 'Could not confirm; try again later.' },
+    chgs: (n) => `${n} change${n === 1 ? '' : 's'} here`, chg: (i, n) => `${i}/${n}`, okOne: 'Confirm this one', undo: 'Undo', oked: (h) => `Confirmed: ${h}`, undoLast: (h) => `Undo the last confirm (${h})`, undone: 'Undone', none0: 'All changes here confirmed', okFailed: 'Could not confirm; try again later.',
+    backLooking: 'Fetching the original…', backFailed: 'Could not put it back.', close: 'Close', cancel: 'Cancel', backNow: 'Now', backWas: 'Put back (original)', backNone: '(none)', backYes: 'Put it back',
+    backWhere: (s, en) => `Written to the checkout${s ? `, ${s} scene(s) kept in step` : ''}, then committed${en ? `; English to follow at ${en}` : ''}.`,
+    backDone: (c, en) => `Put back (commit ${c})${en ? `; English to follow at ${en}` : ''}` },
 };
 const STORY = '../story/';
 const params = new URLSearchParams(location.search);
@@ -57,6 +63,8 @@ async function main() {
   // 「只看改动」 (rules/changes.mjs): what changed since each 回 was last confirmed.
   const changed = await verb('changes', { book: bookId }).catch(() => null);
   const counts = changed?.ok ? changed.entries ?? {} : {};
+  // 「↶ 改回原文」 only on the builder's machine (the skills checkout is there).
+  devTools = !!changed?.dev;
   // An old chapter id (read.html?ch=02, before the 回) opens its 回.
   const want = entryById(book, params.get('ch'), view)?.id;
   const at = Math.max(0, all.findIndex((c) => c.id === want));
@@ -91,7 +99,7 @@ async function main() {
     };
     const filled = fillHero(md, who);
     paint = (changes) => {
-      $('chapter').innerHTML = (lang === 'en' ? `<p class="note">${esc(w.only)}</p>` : '') + renderMarkdown(filled, { ...opts, changes });
+      $('chapter').innerHTML = (lang === 'en' ? `<p class="note">${esc(w.only)}</p>` : '') + renderMarkdown(filled, { ...opts, changes, revert: devTools });
       wireMarks($('chapter'));
       rail(changes);
       tocCount(ch.id, changes?.count ?? 0);
@@ -210,6 +218,11 @@ function goChange(n) {
 document.addEventListener('click', (e) => {
   const go = e.target.closest?.('[data-chg-go]');
   if (go) { e.preventDefault(); goChange(go.dataset.chgGo); return; }
+  const back = e.target.closest?.('[data-chg-back]');
+  if (back) { e.preventDefault(); previewBack(back, Number(back.dataset.chgBack)); return; }
+  const yes = e.target.closest?.('[data-chg-back-do]');
+  if (yes) { e.preventDefault(); yes.disabled = true; doBack(yes, Number(yes.dataset.chgBackDo)); return; }
+  if (e.target.closest?.('[data-chg-back-no]')) { e.preventDefault(); e.target.closest('.chg-backbox')?.remove(); return; }
   const ok = e.target.closest?.('[data-chg-ok]');
   if (ok) { e.preventDefault(); ok.disabled = true; act('confirm', Number(ok.dataset.chgOk)); return; }
   const undo = e.target.closest?.('[data-chg-undo]');
@@ -217,6 +230,37 @@ document.addEventListener('click', (e) => {
   const x = e.target.closest?.('.chg-x');
   if (x) { e.preventDefault(); const old = x.nextElementSibling; if (old) old.hidden = !old.hidden; x.classList.toggle('on', !old?.hidden); }
 });
+
+/* 「↶ 改回原文」 (Hanli 2026-10-05; the builder's tool): two steps — the
+   change as it would read put back (原文) beside the words now (现文), then
+   「确认改回」 writes it in the skills checkout, with the scenes that quote it,
+   and commits (rules/revert.mjs); the page then reads the new text. */
+let devTools = false;
+const blockLines = (list, cls) => list.map((t) => `<p class="${cls}">${esc(t.replace(/^#+\s*/, '').replace(/^>\s?/gm, ''))}</p>`).join('');
+async function previewBack(btn, n) {
+  const row = btn.closest('.chg-okrow');
+  row.querySelector('.chg-backbox')?.remove();
+  row.insertAdjacentHTML('beforeend', `<div class="chg-backbox"><p class="dim">${esc(w.backLooking)}</p></div>`);
+  const box = row.querySelector('.chg-backbox');
+  const res = await verb('changes', { book: reading.bookId, id: reading.id, do: 'preview', item: n, rev: current?.rev ?? '' }).catch(() => null);
+  if (!res?.ok) {
+    box.innerHTML = `<p class="warn">${esc(res?.say ?? w.backFailed)}</p>${[...(res?.dirty ?? []), ...(res?.stuck ?? [])].map((d) => `<p class="dim">${esc(d)}</p>`).join('')}<button type="button" class="chgundo" data-chg-back-no="1">${esc(w.close)}</button>`;
+    return;
+  }
+  const was = [...res.swapped.map((x) => x.was), ...res.restored], now = [...res.swapped.map((x) => x.now), ...res.dropped];
+  box.innerHTML = `<div class="cols"><div><b>${esc(w.backNow)}</b>${blockLines(now, 'now') || `<p class="dim">${esc(w.backNone)}</p>`}</div>`
+    + `<div><b>${esc(w.backWas)}</b>${blockLines(was, 'was') || `<p class="dim">${esc(w.backNone)}</p>`}</div></div>`
+    + `<p class="dim">${esc(w.backWhere(res.scenes.length, res.en_pending))}</p>`
+    + `<button type="button" class="chg-okone" data-chg-back-do="${n}">${esc(w.backYes)}</button> <button type="button" class="chgundo" data-chg-back-no="1">${esc(w.cancel)}</button>`;
+}
+async function doBack(btn, n) {
+  const box = btn.closest('.chg-backbox');
+  const res = await verb('changes', { book: reading.bookId, id: reading.id, do: 'revert', item: n, rev: current?.rev ?? '' }).catch(() => null);
+  if (!res?.ok) { box.insertAdjacentHTML('beforeend', `<p class="warn">${esc(res?.say ?? w.backFailed)}</p>`); btn.disabled = false; return; }
+  try { sessionStorage.setItem('lj-back', w.backDone(res.commit, res.en_pending)); } catch { /* none */ }
+  location.reload();
+}
+try { const said = sessionStorage.getItem('lj-back'); if (said) { sessionStorage.removeItem('lj-back'); setTimeout(() => toast(esc(said)), 600); } } catch { /* none */ }
 
 /// Memory n's one colour plate as a src, or null while it is not painted.
 const memoryPlate = (list, world) => (n) => {

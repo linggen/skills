@@ -175,3 +175,14 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 .chgtoast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 60; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px); padding: 8px 14px; font-size: 13px; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.18); }
 .chgtoast .chgundo { margin: 0; padding: 0; color: var(--seal); text-decoration: underline; }
 @media (max-width: 820px) { .chg-okrow { margin-left: -8px; padding-left: 8px; } }
+/* 「↶ 改回原文」 (the builder's machine only): the preview, 现文 beside 原文, under the change. */
+.chg-back { font: inherit; font-size: 12px; line-height: 1.6; padding: 1px 10px; margin-left: 8px; border: 1px dashed var(--line); border-radius: 999px; background: none; color: var(--dim); cursor: pointer; }
+.chg-back:hover { color: var(--seal); border-color: var(--chg-edge); }
+.chg-backbox { margin: 10px 0 4px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); font-size: 14px; line-height: 1.8; }
+.chg-backbox .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.chg-backbox .cols b { display: block; font-size: 12px; color: var(--dim); font-weight: 600; letter-spacing: .1em; }
+.chg-backbox p { margin: 0 0 .5em; }
+.chg-backbox p.now { color: var(--dim); text-decoration: line-through; text-decoration-color: var(--chg-edge); }
+.chg-backbox .dim { color: var(--dim); font-size: 12px; }
+.chg-backbox .warn { color: var(--seal); font-size: 13px; }
+@media (max-width: 820px) { .chg-backbox .cols { grid-template-columns: 1fr; } }
