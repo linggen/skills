@@ -180,7 +180,9 @@ the two failed plans, the wedding, **冰夷's two dragons test him at `01-rise`*
 `foe-shuanglong`, a trial fought again at once — the seal, the first 鼎 with memory 1
 and no breakthrough, 柳湾); both rebuilt from the book 2026-09-30 (his: 照这样重做冀州).
 `02-yan` … `09-yu` (six scenes each) are **the old spine**, written before the book
-(银月's old bell backstory), and wait for their 卷.
+(银月's old bell backstory), and wait for their 卷 (`juan` 2 … 9; 02-yan `coming`).
+卷一's last card says what he did and then only 「卷二待续」 — no teaser of 卷二
+(2026-10-05); the wait reads 「卷二 · 即将开放」.
 
 - **Opening dates are local** — `opens` refuses a chapter before its day
   (unset while building). **A realm gate** holds the player at the peak until

@@ -148,7 +148,7 @@ test('a passage carries its 回, so the page plays an ending 回\'s last words b
   assert.equal(huiEnded(content, s), 'h09', 'and 古九 is the 回 just ended');
 });
 
-test('卷一 ends on its own card: 01-end rest waits on 「卷二 · 即将开放」 under 「卷一 · 沉鼎 · 完」 over 「第十回 · 完」, what he did, and 卷二\'s opening as the teaser', async () => {
+test('卷一 ends on its own card: 01-end rest waits on 「卷二 · 即将开放」 under 「卷一 · 沉鼎 · 完」 over 「第十回 · 完」, what he did, and only 「卷二待续」 — nothing of 卷二 (Hanli, 2026-10-05: 游戏只到卷一)', async () => {
   const fs = await import('node:fs');
   const s0 = JSON.parse(fs.readFileSync(new URL('./fixtures/saves/ji-end.json', import.meta.url), 'utf8')).state;
   const end = resolve(s0, content, ctx(), { exit: 'rest' });
@@ -160,7 +160,7 @@ test('卷一 ends on its own card: 01-end rest waits on 「卷二 · 即将开�
   assert.equal(close.juan, '卷一 · 沉鼎 · 完');
   assert.deepEqual(close.huimu, ['巫祝投河捎口信', '千鱼漳水立龙门']);
   assert.match(close.did, /没有跪/);
-  assert.match(close.teaser, /借鼎[\s\S]*散修[\s\S]*利息还没还完/);
+  assert.equal(close.teaser, '卷二待续。');
   const inner = huiLabel(content, 'h09', 'zh', 'short');
   assert.equal(inner, bookNo(content, 'h09'));
 });

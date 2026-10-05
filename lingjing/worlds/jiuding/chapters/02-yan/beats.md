@@ -1,9 +1,13 @@
 # Chapter 2 · 兖州之鼎 — beat sheet
 
-The second open chapter, in chapter 1's shape: six scenes at four places
-of 兖, the spine as waypoints; the province's seeds, market and creatures
-fill the days between. Opens 2026-11-01 for everyone; its gate is 2, so
-the cauldron takes one at the peak of 筑基 into 结丹.
+**Not played** (Hanli, 2026-10-05: 游戏只到卷一): this is the old spine, written
+before the book, and it waits as 卷二 (`juan: 2`, `coming: true`). No date opens
+it; while it waits, 兖 is shut on the map and nothing of it is met, sold or told
+(doc/design.md § 规矩). 卷一 ends on 「卷二待续」. When 卷二 is written this sheet
+is rewritten from the book, not revived.
+
+The old plan, kept for reference: six scenes at four places of 兖, the spine as
+waypoints; its gate is 2, so the cauldron takes one at the peak of 筑基 into 结丹.
 
 1. **Arrive** (`02-arrive`, 濮水). South from 冀 the road flattens at the
    Pu. Clear water, mulberries along the bank, and thunder from the east
