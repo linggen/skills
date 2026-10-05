@@ -134,8 +134,8 @@
       },
       "art": "art/items/ganliang.webp",
       "about": {
-        "zh": "渡叔塞给你的一袋干饼，硬得能砸核桃。",
-        "en": "A bag of flat cakes Du Shu pressed on you, hard enough to crack walnuts."
+        "zh": "一袋干饼，硬得能砸核桃。货郎担子上、客栈柜上论袋卖，渡叔那样的人也爱往你手里塞一袋。",
+        "en": "A bag of flat cakes, hard enough to crack walnuts. Pedlars and inns sell them by the bag, and people like Du Shu will press one on you."
       },
       "buy": 6,
       "sell": 2

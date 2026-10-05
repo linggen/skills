@@ -331,6 +331,14 @@ wild · 野猪; **泗水边** (泗水岸 · 北岸) 蛫 (古五); **太行山口
 later 卷 (story DESIGN/OUTLINE checked), quoted in their 图鉴 entries and
 `unpainted` (no picture claimed; the lint lets an `unpainted` creature stand
 without one). An errand for a pool's beast points to its stretch (`hauntsOf`).
+Weighed **in 蛫's band** (Hanli, 2026-10-05; `tools/battle-sim.mjs --pools`, part of
+the gate): the starter of every root set (four of five, each as the main root) with
+银月, at 练气 and 筑基, the attentive line — no pool beast more than 8 points from 蛫
+(87.5% · 87.5%). Numbers and decks only: 天马 had no 护主 and 银月 is 金 (100% →
+86 · 93, 山精 · 土偶 in front of it), 人鱼 98 → 87 · 83, 领胡 98 · 90 → 89 · 83,
+野猪 93 · 96 → 86 · 88, 熊 75 · 70 → 81 · 83 (one 石兽 for 饥啸), 狼 92 · 89 as it was.
+蠪侄 and 狰 (99 · 98, 99 · 97) are the story's own fights too (古三, the 药园) and
+were left as they are — the gate reports them.
 
 ## Items, the 储物袋 【已建】
 
@@ -350,8 +358,10 @@ without one). An errand for a pool's beast points to its stretch (`hauntsOf`).
   shows nothing. The people and the goods are the book's: 坊市 = **钱掌柜的摊子**
   (押宝 · 收当: 聚气丹 of one ring, 回春丹, 萝卜, the pawned 竹剑 · 蓑衣 · 望气术上卷;
   his **押宝** board, `games/yabao.js`, a `stall` (tasks.mjs `stallHere`: a hosted board played wherever its place stands, once a period, for its own pay, no errand needed) — four 门, three bets, his
-  two habits read off a miss, a win pays a one-ring 聚气丹); 彭城 = **济世堂**
-  (灵芝 · 人参 · 回春丹, 古三's apothecary); 石坳村 = the **货郎** (干粮 · 蓑衣 · 短刀);
+  two habits read off a miss, a win pays a one-ring 聚气丹); 彭城 = **南门药铺**
+  (灵芝 · 人参 · 回春丹; a plain apothecary — **济世堂** is the book's, in the 县城
+  where 舅舅 keeps its accounts, 古二–古四, and the 县城 is not on the map, so no
+  shop of the game takes its name; Hanli 2026-10-05); 石坳村 = the **货郎** (干粮 · 蓑衣 · 短刀);
   邺城 (古八) = the 东街市, and its own streets as places a road off the city:
   **老胡家豆腐坊** (shut under the 河伯's seal until the 漳水), **城南裁缝铺**,
   **香烛铺**, **城东客栈**, and **三老宅** (empty after the 漳水, found things only);

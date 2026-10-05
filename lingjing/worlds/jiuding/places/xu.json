@@ -82,7 +82,7 @@
     0.795,
     0.4898
    ],
-   "has": {"shop": {"name": {"zh": "济世堂", "en": "Jishi Hall"}, "keeper": {"zh": "药铺", "en": "the apothecary"}, "goods": ["lingzhi", "ginseng", "mend-pill"]}, "games": ["alchemy-daily"], "scene": "04-town"},
+   "has": {"shop": {"name": {"zh": "南门药铺", "en": "The south-gate apothecary"}, "keeper": {"zh": "灵草 · 丹药", "en": "herbs and pills"}, "goods": ["lingzhi", "ginseng", "mend-pill"]}, "games": ["alchemy-daily"], "scene": "04-town"},
    "line": {
     "zh": "徐州的城，坊市在南门里。",
     "en": "The city of Xu; the market lies inside the south gate."

@@ -496,6 +496,53 @@ function bossRows(problems) {
   }
 }
 
+/* 游荡的怪 (design.md § 游荡的怪) — a pool's beasts are fought again and again
+   with whatever a player holds, so each is weighed against the starter of every
+   root set (four of five; each of the four as the main root), at 练气 and 筑基,
+   and must stand in 蛫's band (古五's beast by the Si, the pools' measure): no
+   pool beast more than POOL_BAND points from it. Before this (2026-10-05) 天马
+   won 100% (银月 is 金 and a wood deck had no 护主), 人鱼 98%, 熊 70%. */
+const POOL_BAND = 8;
+const POOL_MEASURE = 'gui';
+function poolRows(problems) {
+  const dir = path.join(HERE, '../worlds/jiuding/places');
+  const ids = new Set([POOL_MEASURE]);
+  for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.json'))) {
+    for (const p of Object.values(JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')).pools ?? {})) for (const b of p.beasts) ids.add(b.creature);
+  }
+  const starterOf = traits => (world.starter ?? []).filter(id => CATALOG[id] && (!CATALOG[id].element || traits.includes(CATALOG[id].element)));
+  const rateOf = (c, tier) => {
+    let w = 0, n = 0;
+    for (const missing of ELEMENTS) {
+      const traits = ELEMENTS.filter(e => e !== missing), deck = starterOf(traits);
+      for (const root of traits) for (let d = 0; d < 6; d += 1) {
+        const st = play({ mode: 'pve', seed: `p|${c.id}|${missing}|${root}|${d}|${tier}`, you: { tier, root, deck, extra: ['yinyue'] }, foe: { tier, root: c.root, deck: c.deck, ...(process.env.NO_SIG ? {} : { signature: c.signature }) } }, smart);
+        n += 1; if (st.outcome === 'won') w += 1;
+      }
+    }
+    return w / n;
+  };
+  const rows = [...ids].map(id => CREATURES.find(c => c.id === id)).filter(c => c?.deck).map(c => ({ c, qi: rateOf(c, 'qi'), foundation: rateOf(c, 'foundation') }));
+  const measure = rows.find(r => r.c.id === POOL_MEASURE);
+  console.log(`\n游荡的怪（起手十张 + 银月，各灵根组合；与蛫差 ${POOL_BAND} 点以上报越界）`);
+  for (const r of rows) {
+    console.log(`${r.c.name.zh.padEnd(4)} ${r.c.root.padEnd(6)} 练气 ${(r.qi * 100).toFixed(1)}% · 筑基 ${(r.foundation * 100).toFixed(1)}%`);
+    for (const tier of ['qi', 'foundation']) {
+      const d = (r[tier] - measure[tier]) * 100;
+      if (Math.abs(d) > POOL_BAND) problems.push(`${r.c.name.zh} ${tier === 'qi' ? '练气' : '筑基'} 赢 ${(r[tier] * 100).toFixed(1)}%，比蛫 ${d >= 0 ? '+' : ''}${d.toFixed(1)} — 不在一档`);
+    }
+  }
+}
+
+async function poolOnly() {
+  const { foeTurn } = await import('../scripts/battle.js');
+  globalThis.__battle = { foeTurn };
+  const problems = [];
+  poolRows(problems);
+  console.log(problems.length ? `\n闸：${problems.length} 处越界\n · ${problems.join('\n · ')}` : '\n闸：全部在带内');
+  if (process.argv.includes('--gate') && problems.length) process.exit(1);
+}
+
 async function bossOnly() {
   const { foeTurn } = await import('../scripts/battle.js');
   globalThis.__battle = { foeTurn };
@@ -507,6 +554,7 @@ async function bossOnly() {
 
 async function main() {
   if (process.argv.includes('--bosses')) return bossOnly();
+  if (process.argv.includes('--pools')) return poolOnly();
   if (process.argv.includes('--kit')) return kitOnly();
   if (process.argv.includes('--her')) return herOnly();
   const { foeTurn } = await import('../scripts/battle.js');
@@ -604,6 +652,7 @@ async function main() {
   gearRows(decks, problems);
   herRows(decks, problems);
   bossRows(problems);
+  poolRows(problems);
 
   // 杀招 — the key turn (battle.js § 杀招). A climax, not a wall: most won
   // fights meet it, and it should cost a careless player, not end the day.

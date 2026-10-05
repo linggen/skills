@@ -1,6 +1,6 @@
 // 按店进货 (Hanli, 2026-10-05): a shelf is a shop's, declared on its place — its name, its
 // keeper, its goods — and the people and goods are the book's: 钱掌柜's 押宝 at the 坊市,
-// 济世堂 at 彭城, the 货郎 at 石坳村, 邺城's tofu shop, tailor's, incense shop and inn.
+// 彭城's 南门药铺 (济世堂 is the county town's, the book's — not on the map), the 货郎 at 石坳村, 邺城's tofu shop, tailor's, incense shop and inn.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
@@ -24,10 +24,11 @@ const ids = s => look(s, content, ctx).place.shelf.map(i => i.id);
 test('each shop sells its own goods, under its own name', () => {
   assert.deepEqual(ids(at('fangshi')), content.places['徐'].places.find(p => p.id === 'fangshi').has.shop.goods);
   assert.ok(ids(at('fangshi')).includes('qi-pill'), '钱掌柜: 聚气丹, one ring');
-  assert.deepEqual(ids(at('pengcheng')).sort(), ['ginseng', 'lingzhi', 'mend-pill'], '济世堂, the apothecary');
+  assert.deepEqual(ids(at('pengcheng')).sort(), ['ginseng', 'lingzhi', 'mend-pill'], '彭城\'s apothecary');
   assert.notDeepEqual(ids(at('fangshi')), ids(at('pengcheng')), 'two shops of 徐, two shelves');
   const l = look(at('pengcheng'), content, ctx);
-  assert.equal(l.place.shop.name, '济世堂');
+  assert.equal(l.place.shop.name, '南门药铺');
+  assert.ok(!JSON.stringify(placeOf(content, 'pengcheng')).includes('济世堂'), '济世堂 is the county town\'s (古二–古四), never 彭城\'s');
   assert.equal(look(at('fangshi'), content, ctx).place.shop.name, '钱掌柜的摊子');
   for (const id of ['ye-caifeng', 'ye-xiangzhu', 'ye-kezhan', 'ye']) assert.ok(ids(at(id)).length, id);
   // Bought only where it is sold.
