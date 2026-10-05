@@ -694,6 +694,9 @@ function lintPlaces(content, ids, bad) {
         if (!ids.creatures.has(b.creature)) bad(`pool ${id}`, `holds unknown creature ${b.creature}`);
         else if (content.creatures.creatures.find(c => c.id === b.creature)?.person) bad(`pool ${id}`, `${b.creature} is a person, fought in a scene`);
         if (b.weight != null && !(Number.isInteger(b.weight) && b.weight >= 1)) bad(`pool ${id}`, `${b.creature}: weight is a whole number from 1`);
+        // The pool's own deck (world.mjs foeOf): a deck of real, dealt cards, standing over the creature's.
+        const known = new Set((content.cards?.cards ?? []).filter(c => !c._token).map(c => c.id));
+        if (b.deck != null && !(Array.isArray(b.deck) && b.deck.length === 12 && b.deck.every(c => known.has(c)))) bad(`pool ${id}`, `${b.creature}: deck is twelve known cards`);
       }
     }
     const reached = new Set();

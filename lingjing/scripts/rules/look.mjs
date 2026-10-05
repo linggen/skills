@@ -19,7 +19,7 @@ import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
 import { kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
 import { catchHere, gameLevel, hostedHere, lundaoBrief, reopened, stallHere } from './tasks.mjs';
 import { hashOf } from './travel.mjs';
-import { atScene, beatOf, creatureOf, encounterOf, ofJuan, passed, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
+import { atScene, beatOf, creatureOf, encounterOf, foeOf, ofJuan, passed, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
 import { chapterLabel, sideLine } from './hui.mjs';
@@ -275,7 +275,8 @@ function duelBrief(content, state, game, now, { door = false } = {}) {
       ...(creature.person ? { person: true, ...(personOf(content, state, creature.person)?.gender ? { gender: personOf(content, state, creature.person).gender } : {}) } : {}),
     },
     // Everything the fight is given at the door, and nothing else.
-    setup: fightSetup(content, state, creature, now, game.id, game.deal),
+    // A pool's beast with its pool's deck (world.mjs foeOf); a scene's, its own.
+    setup: fightSetup(content, state, foeOf(content, game), now, game.id, game.deal),
     today: open ? { outcome: open.outcome } : null,
     stake: stakeOf(content, state, game),
     // The lines only at the door, where the page opens the fight — Look stays lean.

@@ -506,9 +506,10 @@ const POOL_BAND = 8;
 const POOL_MEASURE = 'gui';
 function poolRows(problems) {
   const dir = path.join(HERE, '../worlds/jiuding/places');
-  const ids = new Set([POOL_MEASURE]);
+  // Each beast as its pool deals it: an entry's own `deck` stands over the creature's (world.mjs foeOf).
+  const foes = new Map([[POOL_MEASURE, null]]);
   for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.json'))) {
-    for (const p of Object.values(JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')).pools ?? {})) for (const b of p.beasts) ids.add(b.creature);
+    for (const p of Object.values(JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')).pools ?? {})) for (const b of p.beasts) foes.set(b.creature, b.deck ?? foes.get(b.creature) ?? null);
   }
   const starterOf = traits => (world.starter ?? []).filter(id => CATALOG[id] && (!CATALOG[id].element || traits.includes(CATALOG[id].element)));
   const rateOf = (c, tier) => {
@@ -522,7 +523,8 @@ function poolRows(problems) {
     }
     return w / n;
   };
-  const rows = [...ids].map(id => CREATURES.find(c => c.id === id)).filter(c => c?.deck).map(c => ({ c, qi: rateOf(c, 'qi'), foundation: rateOf(c, 'foundation') }));
+  const rows = [...foes].map(([id, deck]) => { const c = CREATURES.find(x => x.id === id); return c && deck ? { ...c, deck } : c; })
+    .filter(c => c?.deck).map(c => ({ c, qi: rateOf(c, 'qi'), foundation: rateOf(c, 'foundation') }));
   const measure = rows.find(r => r.c.id === POOL_MEASURE);
   console.log(`\n游荡的怪（起手十张 + 银月，各灵根组合；与蛫差 ${POOL_BAND} 点以上报越界）`);
   for (const r of rows) {

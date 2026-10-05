@@ -329,7 +329,7 @@ from the bag and adds it to the cast (`needs-item`, `already-tamed`,
 ### 游荡的怪 — a stretch's pool, fought again and again 【已建】 (2026-10-05)
 
 His: 「一片地方一个游荡怪物池，可重复打」. A province's places file declares
-`pools: {id: {name, beasts: [{creature, weight}]}}`; a place joins one by
+`pools: {id: {name, beasts: [{creature, weight, deck?}]}}`; a place joins one by
 `has.pool` (a haunt or a pool, never both — linted). Where no scene runs, one
 beast of the pool is up (world.mjs `poolBeast`: drawn by the day, the save, the
 place and the fights settled there today, `state.duels['hunt:<place>'].n`); every
@@ -351,8 +351,13 @@ the gate): the starter of every root set (four of five, each as the main root) w
 (87.5% · 87.5%). Numbers and decks only: 天马 had no 护主 and 银月 is 金 (100% →
 86 · 93, 山精 · 土偶 in front of it), 人鱼 98 → 87 · 83, 领胡 98 · 90 → 89 · 83,
 野猪 93 · 96 → 86 · 88, 熊 75 · 70 → 81 · 83 (one 石兽 for 饥啸), 狼 92 · 89 as it was.
-蠪侄 and 狰 (99 · 98, 99 · 97) are the story's own fights too (古三, the 药园) and
-were left as they are — the gate reports them.
+天马 is 金 (Hanli, 2026-10-05: 马成之山「其状如白犬而黑头」, white is metal): a deck of
+金 — 金梭 · 羬羊 · 金爪 · 九首 · 金针雨 · 碎金 — 86 · 93 → 92 · 88. 蠪侄 and 狰 are the story's
+own fights too (古三's wood, the 药园): a pool entry may carry its own `deck`, how the
+pool deals that beast (world.mjs `foeOf`, by the game's `hunt`; linted twelve known
+cards), and the scene's game keeps the creature's — 蠪侄 99 · 98 → 87 · 88 (more 金梭,
+two 羬羊 in front), 狰 99 · 97 → 90 · 84 (领胡's fire, one 山精). tests/hunt.test.mjs
+locks the two apart.
 
 ## Items, the 储物袋 【已建】
 

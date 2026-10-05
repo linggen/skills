@@ -12,7 +12,7 @@ import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from
 import { duelBrief, tasksBrief } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { stow, storedLine } from './pouch.mjs';
-import { creatureOf, encounterOf, huntKey, placeOf, sceneOf } from './world.mjs';
+import { creatureOf, encounterOf, foeOf, huntKey, placeOf, sceneOf } from './world.mjs';
 
 /* ── Tasks and quests ── */
 
@@ -214,14 +214,14 @@ export function duel(state, content, ctx, args) {
     s.fight = resuming ? s.fight : { game: id, creature: creature.id, at: ctx.now.toISOString() };
     // The whole setup is kept with it, so the settle replays what the page
     // is handed now (an older save's open fight takes it on resume).
-    if (!s.fight.setup) s.fight.setup = fightSetup(content, s, creature, ctx.now, id, game.deal);
+    if (!s.fight.setup) s.fight.setup = fightSetup(content, s, foeOf(content, game), ctx.now, id, game.deal);
     return { state: s, result: { ok: true, started: id, ...(resuming ? { resumed: true } : {}), duel: duelBrief(content, s, game, ctx.now, { door: true }) } };
   }
 
   // ── 收场: the page hands back what was played, the rules replay it ──
   if (today?.day !== day || today.outcome !== 'open' || s.fight?.game !== id) return refuse('not-started', null, { game: id });
   // The setup the page was handed at the door, not one made again now.
-  const setup = s.fight.setup ?? fightSetup(content, s, creature, ctx.now, id, game.deal);
+  const setup = s.fight.setup ?? fightSetup(content, s, foeOf(content, game), ctx.now, id, game.deal);
   const actions = String(args.picks).split(',').map(x => x.trim()).filter(Boolean);
   const played = battle(actions, setup, cardCatalog(content));
   if (played.refused) return refuse(played.refused.why, null, { action: played.refused.action });
