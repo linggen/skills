@@ -234,3 +234,11 @@ test('the footer (Hanli, 2026-10-05): the weather chip names where he stands, �
   assert.match(html, /<div class="backdrop" id="backdrop" aria-hidden="true"><\/div>/);
   assert.match(src, /const art = look\?\.scene\?\.panel\?\.art \?\? null;/, 'a picture only where the content declares one');
 });
+
+test('a face met in the header is not met again mid-stage: its first-meet card goes, a tap on the header opens its 图鉴', async () => {
+  const fs = await import('node:fs');
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const cardsSrc = fs.readFileSync(new URL('../scripts/cards.js', import.meta.url), 'utf8');
+  assert.match(src, /cards = cards\.filter\(\(c\) => c\.card !== 'meet' \|\| !inHead\.has\(c\.id\)\);/);
+  assert.match(cardsSrc, /ctx\.codex\?\.get\?\.\(p\.id\) \? ` data-codex-big=/);
+});

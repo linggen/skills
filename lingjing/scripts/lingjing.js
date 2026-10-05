@@ -883,6 +883,10 @@ function stageNow() {
   // A scene's fight waits for its words to be chosen (站着，不跪) — or a fight already under way.
   const called = calledDuels();
   cards = cards.filter((c) => c.card !== 'duel' || !(look.scene?.panel?.taps ?? []).some((t) => t.duel === c.id) || called.has(c.id));
+  // Met in the header (the people, a tap opens their 图鉴): no first-meet card of the
+  // same face in the middle of the stage, pushing the scene's choices under the box.
+  const inHead = new Set((look.scene?.people ?? []).map((p) => p.id));
+  cards = cards.filter((c) => c.card !== 'meet' || !inHead.has(c.id));
   // A board he opened from the tray's 开局 waits for the whole passage (queue.js trayWaits).
   if (view.opened && trayAhead()) cards = cards.filter((c) => !(c.card === 'board' && c.id === view.opened.id));
   // One text box (Hanli, 2026-10-05): while the book is ahead the scene card's

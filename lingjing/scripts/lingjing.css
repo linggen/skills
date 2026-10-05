@@ -142,6 +142,8 @@ button:disabled { cursor: default; }
 .slothead { min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 6px; padding: 12px 0 8px; }
 .headcards { display: flex; flex-direction: column; gap: 6px; min-height: 0; }
 .slothead .card.peoplecard { padding: 0; border: 0; background: none; box-shadow: none; max-width: none; margin: 0; }
+.slothead .peoplecard .person[data-codex-big] { cursor: pointer; border-radius: 8px; }
+.slothead .peoplecard .person[data-codex-big]:hover figcaption b { color: var(--ling); }
 /* Who is here: a face big enough to see and the whole line about them (Hanli,
    2026-10-05: 「三…」 cut short) — up to two lines, the rest in its title. */
 .slothead .peoplecard .person img, .slothead .peoplecard .person .namecard { width: 52px; height: 66px; border-radius: 6px; }

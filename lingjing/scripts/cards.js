@@ -1161,7 +1161,10 @@ function people(card, ctx) {
   if (!ps.length) return '';
   // A portrait where the 图鉴 has a good one; else a clean name card.
   const face = (p) => (p.art ? `<img src="${esc(worldPath(ctx.look.world?.dir ?? 'worlds/jiuding', p.art))}" alt="${esc(p.name)}">` : `<span class="namecard" aria-hidden="true"><b>${esc(p.name)}</b></span>`);
-  const faces = ps.map((p) => `<figure class="person">${face(p)}<figcaption><b>${esc(p.name)}</b><span class="small dim">${esc(p.role ?? '')}</span></figcaption></figure>`).join('');
+  // One with a 图鉴 entry opens it full size on a tap (the scene's first-meet card
+  // no longer stands in the middle of the stage — the header is where they are met).
+  const open = (p) => (ctx.codex?.get?.(p.id) ? ` data-codex-big="${esc(p.id)}" role="button" tabindex="0"` : '');
+  const faces = ps.map((p) => `<figure class="person"${open(p)} title="${esc(p.role ? `${p.name} · ${p.role}` : p.name)}">${face(p)}<figcaption><b>${esc(p.name)}</b><span class="small dim">${esc(p.role ?? '')}</span></figcaption></figure>`).join('');
   return `<div class="card peoplecard"><div class="people">${faces}</div></div>`;
 }
 
