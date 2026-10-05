@@ -202,12 +202,13 @@ function runLocked(verb, args, stateFile, reader) {
     writeAtomic(stateFile, JSON.stringify(asking));
   }
   // 前情提要 is handed to Ling once: told the moment her Look carries it —
-  // built from the facts (rules/recap.mjs: the book, where he stands, who
-  // walks along, the task in hand); no summary is kept to read back.
+  // finished text she reads as written (rules/recap.mjs: the book's own
+  // lines, the riddle, 目前任务); no summary is kept to read back. `scenes`
+  // marks how far the story had come, so nothing lived since owes it again.
   const recapped = reader === 'ling' && verb === 'look' && out.result?.recap_due
     ? { ...out.result, recap: recapFacts(content, asking, { now, quests: readQuests() }), then: THEN_RECAP + (out.result.then ?? '') } : out.result;
   if (recapped !== out.result) {
-    asking.recap = { told: now.toISOString(), ...(session ? { session } : {}) };
+    asking.recap = { told: now.toISOString(), scenes: (asking.done_scenes ?? []).length, ...(session ? { session } : {}) };
     writeAtomic(stateFile, JSON.stringify(asking));
   } else if (owed && !next) writeAtomic(stateFile, JSON.stringify(asking));
   const said = heard !== state ? { ...recapped, lang_set: heard.lang } : recapped;

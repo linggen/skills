@@ -197,6 +197,10 @@ export function owesRecap(state, now, session = null) {
   }
   if (!lived) return false;
   if (r.owed && now - new Date(r.owed) < RECAP_STALE) return false;
+  // Told, and nothing lived since: the telling still stands in the chat — a
+  // reopened page an hour on is the same sitting, never the same lines twice
+  // (2026-10-05: told at 12:10, told again at 13:17 with nothing played).
+  if (r.told && !r.owed && r.scenes === state.done_scenes.length) return false;
   const last = Math.max(new Date(state.updated).getTime(), r.told ? new Date(r.told).getTime() : 0);
   if (now - last < RECAP_AWAY) {
     if (r.owed) { delete state.recap.owed; return true; }
@@ -207,17 +211,39 @@ export function owesRecap(state, now, session = null) {
   return true;
 }
 
+/* 前情提要 as it is read out — the book's own lines, word for word (Hanli,
+   2026-10-05: 「前情提要照原句念」): the last few scenes' `recap` in the order
+   lived, then the chapter's riddle. Nothing is joined but by the label. */
+const RECAP_SAY = {
+  zh: { head: '前情提要：', sep: '' },
+  en: { head: 'Previously: ', sep: ' ' },
+};
+export const recapText = (lines, mystery, lang) => {
+  const w = RECAP_SAY[lang] ?? RECAP_SAY.zh;
+  return w.head + [...lines, ...(mystery ? [mystery] : [])].join(w.sep);
+};
+
 /* Look's 前情提要 while owed: the last few lines the player lived, and the question still open. */
 export function recapLook(content, state) {
-  if (!state.recap?.owed || content.world.made) return {};
+  if (!state.recap?.owed) return {};
+  const recap = sittingRecap(content, state);
+  return recap ? { recap_due: true, recap } : {};
+}
+
+/* The 前情提要 itself, owed or not: null with no line lived (or in a made world). */
+export function sittingRecap(content, state) {
+  if (content.world.made) return null;
   const lines = [];
   for (const sid of state.done_scenes ?? []) {
     const r = sceneIndex(content).get(sid)?.scene.recap;
     if (r) lines.push(fill(pick(r, state.lang), state, content));
   }
-  if (!lines.length) return {};
-  const cur = currentOf(content, state);
-  return { recap_due: true, recap: { lines: [...new Set(lines)].slice(-RECAP_LINES), ...(cur ? { chapter: chapterLabel(content, state, cur, state.lang, 'head'), mystery: mysteryOf(cur, state) } : {}) } };
+  if (!lines.length) return null;
+  const cur = currentOf(content, state), last = [...new Set(lines)].slice(-RECAP_LINES), mystery = cur ? mysteryOf(cur, state) : null;
+  return {
+    text: recapText(last, mystery, state.lang), lines: last,
+    ...(cur ? { chapter: chapterLabel(content, state, cur, state.lang, 'head'), mystery } : {}),
+  };
 }
 
 /* A 回's close — 「第二回 · 完」, its 回目 and the 回 now beginning — on the

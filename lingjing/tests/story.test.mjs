@@ -13,6 +13,8 @@ import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { forLing, look, owesRecap, resolve, story, VERBS } from '../scripts/rules.mjs';
 import { storyNode } from '../scripts/rules/story.mjs';
+import { taskLine } from '../scripts/rules/recap.mjs';
+import { fill } from '../scripts/state.mjs';
 import { bookNo } from './book-num.mjs';
 import { withoutInterludes } from './prologue.mjs';
 
@@ -174,6 +176,7 @@ test('前情提要 is owed as a sitting opens — back after a while, not after 
   const recapOf = id => Object.values(content.chapters).find(c => c.scenes[id]).scenes[id].recap;
   assert.deepEqual(r.recap.lines, s.done_scenes.map(id => pz(recapOf(id))).slice(-3), 'the last three lines lived, in order');
   assert.equal(r.recap.mystery, pz(content.chapters['01-ji'].mystery));
+  assert.equal(r.recap.text, '前情提要：' + r.recap.lines.join('') + r.recap.mystery, 'the book\'s own lines, then the riddle — nothing else');
   // Told, it is not owed again right away.
   const told = { ...s, recap: { told: day(30).toISOString() } };
   assert.equal(owesRecap(told, day(30.5)), false);
@@ -220,10 +223,11 @@ test('the command line: owed on the first call after a while away, kept without 
     const ling = cli('look', '--for=ling');
     assert.equal(ling.recap_due, true);
     assert.equal(ling.story_node, undefined);
-    // Ling's recap is the facts: the book's lines, where he stands, who walks along, the task.
-    assert.ok(ling.recap.chapters.some(c => c.state === 'current' && c.recap.length >= 2), 'the current chapter\'s lines, from the book');
-    assert.equal(ling.recap.mystery, pz(content.chapters['01-ji'].mystery));
-    assert.ok(ling.recap.here && Array.isArray(ling.recap.with) && Array.isArray(ling.recap.task.book));
+    // Ling's recap is finished text, the page's own: the book's lines word for word, then 目前任务.
+    assert.equal(ling.recap.text, page.recap.text, 'the same lines the page holds');
+    assert.deepEqual(Object.keys(ling.recap).filter(k => k !== 'task'), ['text'], 'no facts to tell a story of her own from');
+    assert.ok(/read `recap\.text` out exactly as written, word for word/.test(ling.then));
+    assert.equal(/of your own from|two or three lines of story/.test(ling.then), false);
     // 冀's scenes play the book on the stage (古十, 2026-09-30): the dialogue box's rule leads, the sitting's telling next.
     assert.ok(/^(The stage is playing[^]*?)?A sitting opens/.test(ling.then), 'the telling comes first, after the stage\'s own rule: ' + ling.then.slice(0, 200));
     assert.equal(cli('look', '--for=ling').recap_due, undefined, 'handed over once');
@@ -384,7 +388,7 @@ test('a session opens with the recap for Ling, once; no saved summary reaches he
     assert.equal(cli('s1', 'look').recap_due, undefined, 'the page alone, five minutes on: no sitting');
     const first = cli('s1', 'look', '--for=ling');
     assert.equal(first.recap_due, true, 'the session\'s first Look');
-    assert.ok(first.recap.task, '目前任务 with it');
+    assert.ok(first.recap.text.startsWith('前情提要：'), '前情提要 with it');
     assert.equal(JSON.stringify(first).includes('蓬莱'), false, 'the old summary never reaches her');
     assert.equal('story' in first, false);
     assert.equal(cli('s1', 'look', '--for=ling').recap_due, undefined, 'once a session');
@@ -408,4 +412,56 @@ test('第一章\'s riddle hints until the 秘境 is behind him — 息壤 is nam
   assert.doesNotMatch(mysteryOf(ch, { lang: 'en', done_scenes: [] }), /breathing soil/i);
   assert.ok(ch.scenes[ch.mystery_after.after], 'the scene it waits on is the chapter\'s own');
   for (const c of Object.values(content.chapters)) if (c.mystery_after) assert.ok(c.mystery_after.zh && c.mystery_after.en && c.scenes[c.mystery_after.after], c.id);
+});
+
+/* 前情提要照原句念 (Hanli, 2026-10-05): Ling was handed facts and told "two or
+   three lines of your own" — she wrote 「银月化作的姑娘仍留在吴婆婆的木牌之谜里」,
+   a line no scene has. The rules now put the text together; she reads it. */
+const recapLine = (id, lang) => fill(pz(Object.values(content.chapters).find(c => c.scenes[id]).scenes[id].recap, lang), { lang }, content);
+for (const lang of ['zh', 'en']) {
+  test(`前情提要 (${lang}): the last three scenes' own recap lines in the order lived, deduped, then the chapter's riddle — word for word`, () => {
+    const road = roadOf('01-ji').slice(0, 3);
+    const s = { ...at('01-ji', road), lang, updated: NOW.toISOString() };
+    s.done_scenes = [...s.done_scenes, road[0]]; // a scene passed twice is told once
+    owesRecap(s, new Date(NOW.getTime() + 30 * 3600000));
+    const r = look(s, content, ctx(new Date(NOW.getTime() + 30 * 3600000)));
+    const lived = [...new Set(s.done_scenes.map(id => recapLine(id, lang)).filter(Boolean))].slice(-3);
+    const riddle = pz(content.chapters['01-ji'].mystery, lang);
+    const want = lang === 'zh' ? '前情提要：' + lived.join('') + riddle : 'Previously: ' + [...lived, riddle].join(' ');
+    assert.equal(r.recap_due, true);
+    assert.equal(r.recap.text, want);
+  });
+}
+
+test('目前任务 is one finished line from what is in hand, in the game\'s language — none when the scene is the task', () => {
+  const s = { ...at('01-ji', roadOf('01-ji').slice(0, 2)), updated: NOW.toISOString() };
+  assert.equal(taskLine(content, s, ctx()), null, 'standing in a scene, no errand: the scene is the task');
+  const walk = { ...s, scene: null };
+  const zh = taskLine(content, walk, ctx()), en = taskLine(content, { ...walk, lang: 'en' }, ctx());
+  if (zh) assert.ok(zh.startsWith('目前任务：') && !/\d/.test(zh), zh);
+  if (en) assert.ok(en.startsWith('Now: '), en);
+});
+
+test('once a sitting: told on the opening Look, the page reopened an hour on with nothing lived owes no second telling', () => {
+  const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-once-'));
+  try {
+    const file = path.join(data, 'state.json');
+    fs.writeFileSync(file, JSON.stringify({ ...at('01-ji', roadOf('01-ji').slice(0, 2)), updated: NOW.toISOString() }));
+    const cli = (mins, ...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], {
+      cwd: path.resolve(import.meta.dirname, '..'), encoding: 'utf8',
+      env: { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: new Date(NOW.getTime() + mins * 60000).toISOString(), LINGGEN_SESSION_ID: 's1' },
+    }).stdout);
+    assert.equal(cli(1, 'look', '--for=ling').recap_due, true, 'the opening');
+    // 2026-10-05: the page came back 67 minutes on, its own Look marked the
+    // recap owed again, sent `[scene] recap`, and Ling told it twice.
+    assert.equal(cli(68, 'look').recap_due, undefined, 'the page, an hour on, nothing lived: the telling still stands');
+    assert.equal(cli(69, 'look', '--for=ling').recap_due, undefined, 'and Ling\'s next Look has none');
+    const here = content.chapters['01-ji'].scenes[nextOf('01-ji', roadOf('01-ji')[1])];
+    const exit = here.exits.find(e => e.next && !e.game && !e.key && !e.needs && !e.value);
+    const step = cli(70, 'resolve', `--exit=${exit.id}`);
+    assert.equal(step.ok, true, 'a scene lived on the page: ' + JSON.stringify(step).slice(0, 200));
+    assert.equal(cli(140, 'look').recap_due, true, 'an hour away after more story: a new sitting');
+  } finally {
+    fs.rmSync(data, { recursive: true, force: true });
+  }
 });
