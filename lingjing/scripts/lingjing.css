@@ -39,16 +39,35 @@ button:disabled { cursor: default; }
 .shell { display: grid; grid-template-columns: minmax(0, 1fr) 440px; height: 100vh; }
 .shell > * { min-height: 0; min-width: 0; }
 #chat-panel { border-left: 1px solid var(--line); background: var(--surface); }
+/* 收起对话 (Hanli, 2026-10-05): a handle on the seam folds the chat away and the
+   stage takes the whole width (sight.js mountChatToggle; kept in this browser). */
+.shell { position: relative; }
+.shell.chatfolded { grid-template-columns: minmax(0, 1fr) 0; }
+.shell.chatfolded #chat-panel { display: none; }
+.chattoggle { position: absolute; top: 50%; right: 440px; z-index: 40; width: 18px; height: 60px; padding: 0; transform: translate(50%, -50%);
+  display: flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 9px; background: var(--surface);
+  color: var(--dim); font: 16px/1 var(--ui, sans-serif); cursor: pointer; box-shadow: 0 2px 8px rgba(40, 30, 15, .12); }
+.chattoggle:hover, .chattoggle:focus-visible { color: var(--ling); border-color: var(--ling); }
+.shell.chatfolded .chattoggle { right: 0; transform: translateY(-50%); border-radius: 9px 0 0 9px; border-right: 0; }
 @media (max-width: 860px) {
   .shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); }
   #chat-panel { border-left: none; border-top: 1px solid var(--line); }
+  .shell.chatfolded { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) 0; }
+  .chattoggle { top: 50%; right: auto; left: 50%; width: 60px; height: 18px; transform: translate(-50%, -50%); }
+  .chattoggle span { display: inline-block; transform: rotate(90deg); }
+  .shell.chatfolded .chattoggle { top: auto; bottom: 0; transform: translateX(-50%); border-radius: 9px 9px 0 0; border: 1px solid var(--line); border-bottom: 0; }
 }
 
 .scene { display: flex; flex-direction: column; container: scene / inline-size; }
 
-/* ── status strip ── */
-.status { flex: none; display: flex; align-items: center; gap: 14px; padding: 10px 18px; border-bottom: 1px solid var(--line);
+/* ── status strip ── one line with the 回 and the place (Hanli, 2026-10-05: two
+   rows made one): the strip's own items, then the title, 中/En at the end. */
+.topbar { flex: none; display: flex; align-items: center; gap: 6px 14px; padding: 8px 18px; border-bottom: 1px solid var(--line);
           background: var(--surface); font-size: 12.5px; flex-wrap: wrap; min-height: 44px; }
+.topbar .status { display: contents; }
+.topbar .titlerow { order: 1; flex: 1 1 16em; }
+.topbar .langsw { order: 2; }
+.topbar .place { font-size: 15px; }
 .status .daohao { font-family: var(--serif); font-weight: 600; font-size: 15px; }
 .status .realm { font-family: var(--serif); font-weight: 600; font-size: 14px; color: var(--ling); }
 /* 中 / En at the strip's end: the game's language, one tap. */
@@ -107,7 +126,7 @@ button:disabled { cursor: default; }
 .view { position: relative; flex: 1; min-height: 0; overflow: hidden; background: linear-gradient(180deg, var(--sky-a), var(--sky-b));
         /* No figure of her on the page (his, 2026-09-30: no 3D body, so no
            orb either) — the cards and the dialogue box start at the gutter. */
-        --stage-room: 24px; --head-h: 132px; }
+        --stage-room: 24px; --head-h: 104px; }
 /* 淡墨 (Hanli, 2026-10-05): a pale ink wash pooled low on the paper — no hill
    or moon drawn in code. A scene the world paints (`panel.art`) lays its picture
    here instead, faint, fading into the paper at the top (lingjing.js paintBackdrop). */
@@ -120,6 +139,7 @@ button:disabled { cursor: default; }
   -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 30%, #000 100%); mask-image: linear-gradient(180deg, transparent 0, #000 30%, #000 100%); }
 /* 此地, one line (Hanli, 2026-10-05: the place stood three times): the 回 small, then the place. */
 .titlerow { display: flex; align-items: baseline; gap: 12px; min-width: 0; flex: none; }
+.titlerow:not(:has(:not(:empty))) { display: none; }
 .place { font-family: var(--serif); font-size: 17px; color: var(--text); opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; min-width: 0; }
 /* The 回 before the place (rules/hui.mjs): the book's own heading, small. */
 .huiline { font-family: var(--serif); font-size: 12.5px; letter-spacing: .12em; color: var(--dim); opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 2 auto; min-width: 0; }
@@ -730,10 +750,11 @@ button.gcard { cursor: pointer; font: inherit; }
    stage stacks — she above, the cards below, one column that scrolls, and
    nothing wider than the screen. */
 @container scene (max-width: 600px) {
-  .status { padding: 8px 12px; gap: 8px 12px; }
+  .topbar { padding: 8px 12px; gap: 4px 12px; }
+  .topbar .titlerow { order: 3; flex: 1 1 100%; }
   .xw { min-width: 120px; }
   /* Narrow, her chip sits smaller in the header's corner. */
-  .view { --stage-room: 12px; --head-h: 150px; }
+  .view { --stage-room: 12px; --head-h: 124px; }
   .stage { right: 12px; top: 10px; gap: 4px; }
   .view:has(#askHerBtn:not([hidden])) .slothead { padding-right: 120px; }
   .stage b { font-size: 12px; }
@@ -1105,7 +1126,7 @@ body.fighting .atmos { display: none; }
    the book's passage played on the stage a paragraph at a time, at its foot.
    The slots are lifted over it while it plays; a fight or a board never sees
    it (it yields, lingjing.js boxYields). ── */
-.view { --dlg-h: min(168px, 40vh); }
+.view { --dlg-h: min(132px, 34vh); }
 /* The box grows with a long beat (2026-10-01: clipped, a scrollbar, 1/38 · 记录 · 跳过 over
    the first line) up to most of the stage; the slots rise over its real height (--dlg-real,
    measured by lingjing.js after each paint). */
@@ -1114,17 +1135,21 @@ body.fighting .atmos { display: none; }
 .dlgwrap > * { pointer-events: auto; }
 .dlgwrap:empty { display: none; }
 .dlg { position: relative; display: flex; gap: 14px; align-items: flex-start; width: 100%; max-width: 720px; margin: 0 auto; min-height: var(--dlg-h); box-sizing: border-box;
-  padding: 34px 20px 26px; border: 1px solid color-mix(in srgb, var(--text) 22%, var(--line)); border-radius: 10px; cursor: pointer; user-select: none;
+  padding: 26px 22px 22px; border: 1px solid color-mix(in srgb, var(--text) 22%, var(--line)); border-radius: 10px; cursor: pointer; user-select: none;
   background: color-mix(in srgb, var(--surface) 96%, transparent); box-shadow: 0 6px 22px rgba(40, 30, 15, .16); outline: none; }
 .dlg:focus-visible { border-color: var(--ling); }
 .dlg::before { content: ''; position: absolute; inset: 4px; border: 1px solid var(--line); border-radius: 7px; pointer-events: none; opacity: .7; }
 .dlgface { flex: none; width: 88px; height: min(110px, 100%); object-fit: cover; object-position: top; border-radius: 6px; border: 1px solid var(--line); background: var(--raised); animation: dlgIn .25s ease-out; }
 .dlgbody { flex: 1; min-width: 0; max-height: calc(66vh - 70px); padding-bottom: 4px; overflow-y: auto; scrollbar-width: thin; }
-.dlgname { display: inline-block; margin-bottom: 6px; padding: 1px 12px 1px 0; border-bottom: 1px solid var(--ling); font-family: var(--serif); font-weight: 600; font-size: 15px; letter-spacing: .12em; color: var(--ling); }
-.dlgname.hero { color: var(--text); border-color: var(--dim); }
-.dlgtext { font-family: var(--serif); font-size: 17px; line-height: 1.8; letter-spacing: .03em; color: var(--text); animation: dlgIn .25s ease-out; }
-.dlg.told .dlgbody { display: flex; align-items: center; min-height: calc(var(--dlg-h) - 62px); }
-.dlg.told .dlgtext { width: 100%; text-align: center; color: color-mix(in srgb, var(--text) 82%, var(--dim)); }
+/* 名牌 (Hanli, 2026-10-05): the speaker's name hangs on the box's top-left edge, as a
+   visual novel's does; narration hangs none. The text reads from the left. */
+.dlgname { position: absolute; top: -14px; left: 18px; z-index: 1; padding: 3px 14px; border: 1px solid color-mix(in srgb, var(--ling) 55%, var(--line)); border-radius: 6px;
+  background: var(--surface); box-shadow: 0 2px 8px rgba(40, 30, 15, .12); font-family: var(--serif); font-weight: 600; font-size: 14.5px; line-height: 1.4; letter-spacing: .14em; color: var(--ling); white-space: nowrap; animation: dlgIn .25s ease-out; }
+.dlgname.hero { color: var(--text); border-color: color-mix(in srgb, var(--text) 30%, var(--line)); }
+.dlgtext { font-family: var(--serif); font-size: 17px; line-height: 1.85; letter-spacing: .03em; color: var(--text); text-align: left; animation: dlgIn .25s ease-out; }
+:lang(en) .dlgtext { letter-spacing: 0; line-height: 1.7; }
+:lang(en) .dlgname { letter-spacing: .04em; }
+.dlg.told .dlgtext { color: color-mix(in srgb, var(--text) 82%, var(--dim)); }
 .dlgact { color: var(--dim); font-size: 15px; }
 .dlgrecap { display: inline-block; margin-right: 8px; padding: 0 6px; border: 1px solid var(--line); border-radius: 3px; font-family: var(--ui); font-size: 11px; letter-spacing: .1em; color: var(--faint); vertical-align: 2px; }
 .dlgctl { position: absolute; top: 8px; right: 12px; display: flex; align-items: center; gap: 6px; }
@@ -1161,14 +1186,14 @@ body.fighting .atmos { display: none; }
 /* The caption, the box's first beat: its lines as written. */
 .dlg.cap .dlgtext, .dlglogrow.cap span { white-space: pre-line; }
 @container scene (max-width: 600px) {
-  .view { --dlg-h: min(150px, 42vh); }
+  .view { --dlg-h: min(120px, 36vh); }
   /* Short and narrow: while the box plays, the header gives it room (the box shows the faces). */
   .view:has(.dlgwrap:not(:empty)) { --head-h: 88px; }
   .dlgwrap { left: 16px; right: 16px; bottom: 8px; }
-  .dlg { padding: 30px 14px 22px; gap: 10px; }
+  .dlg { padding: 24px 14px 20px; gap: 10px; }
   .dlgface { width: 60px; height: 76px; }
   .dlgtext { font-size: 15.5px; line-height: 1.7; }
-  .dlgname { font-size: 14px; margin-bottom: 4px; }
+  .dlgname { font-size: 13.5px; left: 12px; padding: 2px 10px; }
   .dlglog { max-height: 240px; }
 }
 
@@ -1209,3 +1234,33 @@ body.fighting .atmos { display: none; }
   opacity: .6; -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 70%); mask-image: linear-gradient(180deg, transparent 0, #000 70%); }
 .view.jin-ward .backdrop { background: linear-gradient(180deg, transparent 70%, var(--jin-line) 70.3%, transparent 70.8%, transparent 78%, var(--jin-line) 78.3%, transparent 78.8%); }
 .view.jin-night .backdrop { background: radial-gradient(30% 22% at 76% 86%, color-mix(in srgb, #E8C46A 16%, transparent), transparent 70%); }
+
+/* 初见 (Hanli, 2026-10-05; sight.js): a face's first coming-on — his portrait large
+   in the middle of the stage over the box, his name and one line; the next beat it
+   shrinks back to his small card in the header. Never again after. */
+.sight { position: absolute; left: var(--stage-room); right: 24px; top: calc(var(--head-h) * .4); bottom: calc(var(--dlg-real, var(--dlg-h)) + 26px); z-index: 3; pointer-events: none; }
+.sight:empty { display: none; }
+.sightcard { position: absolute; top: 0; bottom: 0; left: 0; right: 0; margin: 0 auto; width: max-content; max-width: 100%; display: flex; justify-content: center; align-items: flex-end; gap: 28px;
+  pointer-events: auto; cursor: pointer; animation: sightIn .55s cubic-bezier(.2, .7, .2, 1) both; }
+.sightone { margin: 0; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 10px; min-width: 0; }
+.sightpic { flex: 0 1 auto; min-height: 90px; height: min(46vh, 440px); aspect-ratio: 4 / 5; width: auto; max-width: 100%; object-fit: cover; object-position: top;
+  border-radius: 10px; border: 1px solid color-mix(in srgb, var(--text) 18%, var(--line)); background: var(--raised); box-shadow: 0 10px 34px rgba(40, 30, 15, .22); }
+.sightpic.namecard { display: flex; align-items: center; justify-content: center; height: min(30vh, 260px); }
+.sightpic.namecard b { font-family: var(--serif); font-size: 30px; letter-spacing: .2em; color: var(--text); writing-mode: vertical-rl; }
+.sightone figcaption { flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; max-width: 26em; padding: 6px 16px; border-radius: 8px; text-align: center;
+  background: color-mix(in srgb, var(--surface) 88%, transparent); }
+.sightone figcaption b { font-family: var(--serif); font-size: 22px; letter-spacing: .16em; color: var(--text); }
+.sightline { font-family: var(--serif); font-size: 13.5px; line-height: 1.6; color: var(--dim); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+:lang(en) .sightone figcaption b { letter-spacing: .04em; }
+.sightcard.going { pointer-events: none; animation: none; opacity: 0; transform: var(--to, translateY(-36px) scale(.5));
+  transition: transform .6s cubic-bezier(.4, 0, .2, 1), opacity .6s ease-in; }
+@keyframes sightIn { from { opacity: 0; transform: translateY(14px) scale(.94); } to { opacity: 1; transform: none; } }
+body.fighting .sight { display: none; }
+@container scene (max-width: 600px) {
+  .sight { right: 12px; top: calc(var(--head-h) * .3); }
+  .sightpic { height: min(34vh, 300px); }
+  .sightone figcaption b { font-size: 18px; }
+  .sightline { font-size: 12.5px; }
+  .sightcard { gap: 14px; }
+}
+@media (prefers-reduced-motion: reduce) { .sightcard { animation: none; } .sightcard.going { transform: none; transition: opacity .2s; } }

@@ -34,7 +34,8 @@ import { fxTimes, glOK, playHoming as playHomingFx } from './fx.js';
 import { atmosClasses, atmosOf, particlesHtml } from './atmos.js';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
-import { advance, choicesUp, current, dialogHtml, keepReading, loadReading, logHtml, playing, sceneUnder, skipAll, withTold } from './dialogue.js';
+import { advance, choicesUp, current, dialogHtml, keepReading, loadReading, logHtml, playing, sceneUnder, sightNow, sightings, skipAll, withTold } from './dialogue.js';
+import { SIGHT_KINDS, mountChatToggle, paintSight } from './sight.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
 import { playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
@@ -887,6 +888,9 @@ function stageNow() {
   // same face in the middle of the stage, pushing the scene's choices under the box.
   const inHead = new Set((look.scene?.people ?? []).map((p) => p.id));
   cards = cards.filter((c) => c.card !== 'meet' || !inHead.has(c.id));
+  // 初见: a face the box brings on stands large at that beat (sight.js) — no card of him at the end too.
+  const sighted = sightings(readingHere(), firstFaces(), lang());
+  cards = cards.filter((c) => c.card !== 'meet' || !sighted.has(c.id));
   // A board he opened from the tray's 开局 waits for the whole passage (queue.js trayWaits).
   if (view.opened && trayAhead()) cards = cards.filter((c) => !(c.card === 'board' && c.id === view.opened.id));
   // One text box (Hanli, 2026-10-05): while the book is ahead the scene card's
@@ -1227,6 +1231,8 @@ function draw() {
   // The dialogue box at the stage's foot, the slots lifted over it (lingjing.css .dlgwrap).
   const box = dialogBoxHtml(slots);
   paintIf('dlg', box);
+  // 初见: his first beat on show, he stands large over the box (sight.js).
+  paintSight($('sight'), box.includes('data-dlg-next') ? sightNow(readingHere(), firstFaces(), lang()) : [], { src: (f) => worldPath(look.world?.made ? `worlds/${look.world.base}` : look.world?.dir ?? 'worlds/jiuding', f) });
   // The slots rise over the box's real height: a long beat grows it (lingjing.css --dlg-real).
   const dlgH = $('dlg')?.offsetHeight ?? 0;
   $('view')?.style.setProperty('--dlg-real', dlgH ? `${dlgH}px` : 'var(--dlg-h)');
@@ -1776,6 +1782,9 @@ function voiceBeat(shown) {
   const clip = beat.recap ? null : clipOf(audio, r.items[r.i]?.hui, beat.text);
   narrator.sync(clip?.url ?? null, `${r.scene}|${r.i}|${r.j}|${clip?.url}`);
 }
+/* The people and foes this scene brings on for the first time (Look's `scene.meet`,
+   read off the save — rules/codex.mjs newHere), as their 图鉴 entries. */
+const firstFaces = () => (look?.scene?.meet ?? []).map((id) => codexNow()?.get?.(id)).filter((e) => e && SIGHT_KINDS.has(e.kind));
 const nextBeat = () => { const r = readingNow(); if (playing(r)) setReading(advance(r, lang())); };
 /* 跳过: the log opens on the first beat skipped. */
 function skipBeats() {
@@ -2544,6 +2553,8 @@ function greetUnanswered(text = null) {
 
 /// Mounts the chat; answers whether it is a fresh session (not a day picked up).
 async function mountChat() {
+  // The chat folds away on a handle at the seam; the stage then has the whole width (sight.js).
+  mountChatToggle(document.querySelector('.shell'), lang);
   // A scratch save (?save=) never starts or messages Ling's chat: no recap, no opening turn.
   if (SCRATCH) { $('chat-panel').innerHTML = `<div class="scratch-chat" style="padding:24px 16px;color:#8a7a66;font-size:13px;line-height:1.8;text-align:center">${esc(SCRATCH_BADGE)}<br>${esc(SCRATCH_NOTE)}</div>`; return false; }
   const resume = await recentSessionId();

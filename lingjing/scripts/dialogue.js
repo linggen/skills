@@ -68,6 +68,29 @@ export function sceneUnder(r, sid, lang = 'zh') {
   return r.i > at || !current(r, lang).beat.cap;
 }
 
+/* 初见 (Hanli, 2026-10-05: 「中间放大显示人物，只在第一次出场的时候」): a face
+   the scene brings on for the first time (`entries`, the 图鉴 entries of Look's
+   `scene.meet` — never named here) comes on at the first beat that has him:
+   he speaks it, or the narration names him. Recaps are not his coming on.
+   `sightings` — each entry's first beat in the reading (its place among them
+   all); `sightNow` — the entries whose first beat is the one on show. */
+const has = (text, name) => String(text ?? '').toLowerCase().includes(String(name).toLowerCase());
+const sightHit = (b, e) => !b.recap && (b.who === e.id || (b.name ? b.name === e.name : has(b.text, e.name)));
+export function sightings(r, entries, lang = 'zh') {
+  const all = flat(r, lang), out = new Map();
+  for (const e of entries ?? []) {
+    if (!e?.id || !e.name) continue;
+    const k = all.findIndex((b) => sightHit(b, e));
+    if (k >= 0) out.set(e.id, k);
+  }
+  return out;
+}
+export function sightNow(r, entries, lang = 'zh') {
+  if (!playing(r)) return [];
+  const at = sightings(r, entries, lang), { k } = current(r, lang);
+  return (entries ?? []).filter((e) => at.get(e?.id) === k);
+}
+
 /* A tap on the box: the next beat; on the last, the box is put away. */
 export function advance(r, lang = 'zh') {
   if (!playing(r)) return r;
@@ -123,10 +146,11 @@ export function dialogHtml(r, { lang = 'zh', src = (f) => f, voice = null } = {}
   if (!playing(r)) return '';
   const w = DLG_WORDS[lang] ?? DLG_WORDS.zh, { beat: b, k, n } = current(r, lang);
   const spoken = Boolean(b.name);
+  // 名牌: the speaker's name hangs on the box's top-left edge; narration hangs none.
   const who = spoken ? `<div class="dlgname${b.hero ? ' hero' : ''}">${esc(b.name)}</div>` : '';
   const last = atLast(r, lang);
   return `<div class="dlg${spoken ? ' spoken' : ' told'}${b.cap ? ' cap' : ''}${b.art && !b.hero ? ' withface' : ''}" data-dlg-next role="button" tabindex="0" aria-label="${esc(w.on)}">
-    ${face(b, src)}<div class="dlgbody">${who}<div class="dlgtext">${lineHtml(b, w)}</div></div>
+    ${who}${face(b, src)}<div class="dlgbody"><div class="dlgtext">${lineHtml(b, w)}</div></div>
     <div class="dlgctl"><span class="dlgcount">${k + 1} / ${n}</span>${voiceBtn(voice, w)}<button class="dlgbtn" data-dlg-log>${esc(w.log)}</button>${last ? '' : `<button class="dlgbtn" data-dlg-skip>${esc(w.skip)}</button>`}</div>
     <div class="dlgon${last ? ' last' : ''}" aria-hidden="true">▾</div></div>`;
 }

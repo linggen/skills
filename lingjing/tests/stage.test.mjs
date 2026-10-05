@@ -205,7 +205,9 @@ test('the page draws the slots: header, main (#focus) holding the one thing, foo
   const fs = await import('node:fs');
   const html = fs.readFileSync(new URL('../scripts/index.html', import.meta.url), 'utf8');
   const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(html, /<div class="slothead" id="slotHead"><div class="titlerow"><span class="huiline" id="huiLine"><\/span><span class="place" id="place"><\/span><\/div><div class="headcards" id="headCards"><\/div><\/div>\s*<div class="focus" id="focus"><\/div>/);
+  assert.match(html, /<div class="slothead" id="slotHead"><div class="headcards" id="headCards"><\/div><\/div>\s*<div class="focus" id="focus"><\/div>/);
+  // The 回 and the place on the strip's own line (Hanli, 2026-10-05: two rows made one).
+  assert.match(html, /<header class="topbar"><div class="status" id="status"><\/div><div class="titlerow"><span class="huiline" id="huiLine"><\/span><span class="place" id="place"><\/span><\/div><\/header>/);
   assert.match(html, /<footer class="slotfoot" id="slotFoot"><div class="footrow" id="footRow"><\/div><div class="footchips" id="footChips"><\/div><div class="askbar" id="askbar" hidden><\/div><\/footer>/);
   assert.match(html, /id="stage"/, 'her place on the stage stays');
   const focus = src.slice(src.indexOf('function focusHtml(slots)'), src.indexOf('function toastsHtml()'));

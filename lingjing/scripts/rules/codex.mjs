@@ -26,6 +26,10 @@ export function meetsOf(content, state, scene) {
   // (`yinyue-fox`: the nameless fox of the pit), else hers — never her name
   // before the hero has heard it.
   if (scene.her) ids.push(herEntry(content, raw, scene.her));
+  // The foes it stands up: its cast and its fights' creatures — a foe that is a
+  // person (`person`: 马小宝 in the 大比) is that person's entry. Never her.
+  const foes = [...(scene.cast ?? []), ...(scene.exits ?? []).filter(e => e.game?.kind === 'duel').map(e => e.game.creature)];
+  for (const id of foes) if (id && id !== content.world.companion?.id) ids.push((content.creatures?.creatures ?? []).find(c => c.id === id)?.person ?? id);
   for (const [id, r] of raw) if (r.over.first?.scene === scene.id) ids.push(id);
   return [...new Set(ids)].filter(id => raw.has(id));
 }

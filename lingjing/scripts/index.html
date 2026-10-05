@@ -24,7 +24,9 @@
     <!-- The scene: everything here is drawn from the rules' Look and the
          authored content. Ling moves it with Show; the rules own the numbers. -->
     <section class="scene" aria-label="Scene">
-      <header class="status" id="status"></header>
+      <!-- One line (Hanli, 2026-10-05): who he is, then the 回 and the place;
+           a narrow scene folds it onto a second line. -->
+      <header class="topbar"><div class="status" id="status"></div><div class="titlerow"><span class="huiline" id="huiLine"></span><span class="place" id="place"></span></div></header>
       <div class="view" id="view">
         <!-- 淡墨: a pale ink wash, or the scene's own picture when the world paints
              one (scene `panel.art`) — never a hill or a moon drawn in code
@@ -38,9 +40,11 @@
              them changes (stage.mjs stageSlots). HEADER is the page's own —
              the place, the people, the goal; MAIN (#focus) holds ONE thing. -->
         <div class="slots">
-          <div class="slothead" id="slotHead"><div class="titlerow"><span class="huiline" id="huiLine"></span><span class="place" id="place"></span></div><div class="headcards" id="headCards"></div></div>
+          <div class="slothead" id="slotHead"><div class="headcards" id="headCards"></div></div>
           <div class="focus" id="focus"></div>
         </div>
+        <!-- 初见 (sight.js): a face's first coming-on, large over the box, then back to the header. -->
+        <div class="sight" id="sight"></div>
         <!-- The dialogue box (dialogue.js): the book's passage for this beat,
              played here a paragraph at a time; the slots stand above it. -->
         <div class="dlgwrap" id="dlg"></div>
