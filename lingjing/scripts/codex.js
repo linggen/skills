@@ -23,8 +23,9 @@ const linesOf = (lang, v) => {
 
 /* What each linked file gives an entry: its rows, a row's line(s), picture and credit. */
 const LINKS = {
-  // 今线's people (`line: "jin"`) are the interludes' alone: never in the 古 world's 图鉴 (同魂不同命, never said).
-  people: { rows: (f) => (f.people?.people ?? []).filter((p) => p.line !== 'jin'), lines: (r) => [r.role], credit: () => null },
+  // 今线's people (`line: "jin"`) link too: their entries are `book_only` (codex.json) — a card in the book at
+  // their first appearance, never on the game's stage or in 录's 图鉴 (同魂不同命, never said; lintCodex holds it).
+  people: { rows: (f) => f.people?.people ?? [], lines: (r) => [r.role], credit: () => null },
   // A creature's own classic line (山海经). Painted from that line since
   // 2026-09-29, its old woodcut kept as 「原图」 (`art_plate`) with the edition's name.
   creatures: {
@@ -79,6 +80,7 @@ export function resolveEntry(raw, { lang = 'zh', gender = 'male', say = (t) => t
     ...(source ? { source } : {}),
     ...(over.marks ? { marks: over.marks } : {}),
     ...(over.first ? { first: over.first } : {}),
+    ...(over.book_only ? { book_only: true } : {}),
     ...(over.tag ? { tag: over.tag } : {}),
     ...(over.becomes ? { becomes: over.becomes } : {}),
     ...(lang === 'zh' && raw.kind === '生物' && (over.pinyin ?? row?.pinyin) ? { pinyin: over.pinyin ?? row.pinyin } : {}),
@@ -155,7 +157,8 @@ export function codexBookHtml(codex, seen, { src = (p) => p, lang = 'zh', kinds 
   const title = lang === 'en' ? 'Codex' : '图鉴';
   const groups = Object.keys(kinds).map((kind) => {
     // An entry that becomes another (the nameless fox → 银月) is no slot of its own.
-    const all = [...codex.values()].filter((e) => e.kind === kind && (!e.becomes || seen.has(e.id)));
+    // A `book_only` entry (今线's people) is the book's card alone: no slot here.
+    const all = [...codex.values()].filter((e) => e.kind === kind && !e.book_only && (!e.becomes || seen.has(e.id)));
     if (!all.length) return '';
     const met = all.filter((e) => seen.has(e.id));
     const name = pickOf(lang)(kinds[kind]) ?? kind;
@@ -188,6 +191,7 @@ export function lintCodex(files, exists = () => true) {
     if (e.by_hero && !(Object.hasOwn(e.by_hero, 'male') && Object.hasOwn(e.by_hero, 'female'))) bad.push(`${id}: by_hero names both male and female`);
     if (e.first && typeof e.first !== 'object') bad.push(`${id}: first is {book, scene}`);
     if (e.becomes != null && !(codex.entries ?? {})[e.becomes]) bad.push(`${id}: becomes ${e.becomes}, which is no entry`);
+    if (e.book_only != null && e.book_only !== true) bad.push(`${id}: book_only is true or absent`);
     const isItem = e.kind ? e.kind === '物品' : (files.items?.items ?? []).some((i) => i.id === id);
     if (isItem && !ITEM_TAGS.includes(e.tag)) bad.push(`${id}: an item's entry is tagged ${ITEM_TAGS.join(' · ')} — an everyday thing has none`);
   }
@@ -199,6 +203,7 @@ export function lintCodex(files, exists = () => true) {
   }
   for (const [id, r] of raw) {
     if (!r.kind || !kinds[r.kind]) bad.push(`${id}: no kind`);
+    if (r.row?.line === 'jin' && r.over.book_only !== true) bad.push(`${id}: a 今线 person is book_only — never in the game's 图鉴`);
     const e = resolveEntry(r);
     if (!(r.over.name ?? r.row?.name)?.zh) bad.push(`${id}: no name`);
     if (!r.row && !(Array.isArray(r.over.lines?.zh) && r.over.lines.zh.length && Array.isArray(r.over.lines?.en))) bad.push(`${id}: lines in zh and en`);

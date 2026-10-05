@@ -38,45 +38,66 @@ FACE = ('The attached drawing is the SAME PERSON in another life: keep ONLY the 
 STYLE_REF = ('The attached drawing is only a STYLE reference (fine ink line, soft grey wash, warm aged paper, one '
              'full-length figure on bare paper); do not copy its person, dress or props.')
 
-# id: (reference portrait in art/people, subject) — from 定例 § 三 and the interludes' own lines.
+# id: (reference portrait in art/people, subject) — Hanli 2026-10-05: 「衣着按照出场时的画」 — each as he or she
+# FIRST appears in the interludes (all in 插曲01, 今 · 一): what the text puts on them and in their hands, in that
+# place; what it leaves out comes from 定例 § 三, never an invented prop.
+ADULT = ('Clearly a young ADULT man of eighteen, a college freshman — NOT a boy, NOT a young teenager: adult height and '
+         'proportions (head about one-seventh of his height), a longer, leaner adult face with a defined jaw and cheekbones, an Adam\'s '
+         'apple, a faint shadow of stubble on the upper lip; he must look as old as any university student, not a '
+         'schoolboy — drawn as realistically as an adult figure, not as a cartoon child.')
 SUBJECTS = {
-  'jin-shenmang': ('xiaoman', 'Shen Mang, a Chinese young man of EIGHTEEN, a first-year college student: 176 cm, thin and '
-                   'not muscular at all, a lean face with bright cheeky eyes and a crooked half-guilty grin (he is about '
-                   'to make an excuse). Short messy modern black hair. A loose sleeveless basketball jersey whose only '
-                   'marking is a big plain number 0 on the chest, over a white T-shirt, baggy basketball shorts, cheap '
-                   'white sneakers, a cheap black fitness band on his left wrist; a basketball tucked under one arm. Full length.'),
-  'jin-ahe': ('ahe-girl', 'Zhou He, a Chinese young woman of TWENTY, a second-year sports rehabilitation student and the '
-              'manager of the college basketball team — clearly a grown young woman, NOT a girl: adult height and '
-              'proportions, a slimmer, longer adult face, a calm deadpan look, not smiling, a neat ponytail tied with a hair tie. A zip-up team '
-              'track jacket with the sleeves pushed up to the elbows, track trousers, white sneakers. She holds a small '
-              'open notebook and a ballpoint pen, writing something down; a pocket calculator in the other hand. Plain, '
-              'no logos. Full length.'),
-  'jin-maxiaobao': ('maxiaobao', 'Ma Xiaobao, a Chinese young man of TWENTY-ONE, very tall (193 cm) and heavy (98 kg), a '
-                    'big centre on the basketball team: a round smug but good-natured grinning face. Short modern hair. An '
-                    'expensive oversized plain hoodie, basketball shorts, big expensive high-top basketball sneakers, a '
-                    'chunky wristwatch, over-ear headphones hanging round his neck; he weighs a big plastic protein shaker '
-                    'bottle in his palm as if judging how heavy it is. No logos. Full length.'),
-  'jin-ge': ('wupo', 'Granny Ge, a Chinese woman of SEVENTY-TWO, a retired rare-books restorer rehired at the university '
-             'library: clear, sharp, kindly eyes (NOT blind), deeply wrinkled, grey hair in a small bun. A plain modern '
-             'cardigan over a blouse, dark-blue cloth oversleeves on both forearms, reading glasses hanging on a thin chain '
-             'round her neck, a pencil in one hand. Sitting on a plain wooden chair, an old thread-bound book open on her '
-             'lap (its pages blank). Full length.'),
-  'jin-lei': ('qulao', 'Coach Lei, a Chinese PE teacher in his forties, head coach of the college basketball team: stocky, '
-              'a square face tanned very dark like braised beef, short cropped hair, mouth open bellowing an order, holding '
-              'up three fingers. A plain zip-up tracksuit, a whistle on a lanyard round his neck, a stopwatch in the other '
-              'hand, sports shoes. No logos. Full length.'),
-  'jin-yanjing': ('qulao', 'Lin Yuan, nicknamed Specs, a Chinese young man of EIGHTEEN, a first-year student: tall and thin, '
-                  'a dead-serious face, pushing his glasses up his nose with one finger. Short neat hair. A plain checked '
-                  'shirt over a T-shirt, jeans, canvas shoes; a library book held under one arm (plain cover). Full length.'),
-  'jin-laocai': ('qulao', 'Old Cai, a Chinese young man of nineteen, a first-year student: clearly PLUMP and soft — a round '
-                 'chubby face with full cheeks and a double chin, a round soft belly under the hoodie — a sleepy '
-                 'half-awake face with drooping eyelids, his short hair squashed flat on one side from the pillow. A '
-                 'baggy plain hoodie, track trousers, plastic slippers; a fat paperback novel held against his chest '
-                 '(plain cover). Full length.'),
-  'jin-yan': ('qulao', 'Teacher Yan, a Chinese lecturer in his fifties who teaches acupuncture: upright and proper, a '
-              'stiff correct face, neatly combed short greying hair, rimmed glasses. A crisp white lab coat buttoned over '
-              'a shirt and tie, trousers, leather shoes; holding a closed textbook against his chest (plain cover). Full length.'),
+  # 9/11, the 1000 m fitness test (体测): ran himself out at 400 m, 「提着一袋自己的午饭」 walked the lap; a 99-yuan band (定例).
+  'jin-shenmang': ('xiaoman+jin-yanjing', f'Shen Mang, a Chinese student of EIGHTEEN, 176 cm. {ADULT} Thin and not muscular at all, '
+                   'drenched in sweat and out of breath after a 1000-metre fitness-test run, yet with the same bright '
+                   'cheeky eyes and a sheepish crooked grin. Short messy modern black hair. A plain sweat-soaked T-shirt, '
+                   'plain athletic shorts, ordinary running shoes, a cheap black fitness band on his left wrist; he carries '
+                   'a small tied plastic bag in one hand. The white line of a running track at his feet. Full length.'),
+  # 9/11, the same finish line: 「一双白球鞋、一截蓝色的志愿者马甲、一只攥着小本子的手」; the ponytail from 定例 / the 招新摊.
+  'jin-ahe': ('ahe-girl', 'Zhou He, a Chinese young woman of TWENTY, a second-year student volunteering at the freshman '
+              'fitness test — clearly a grown young woman, NOT a girl: adult height and proportions, a slimmer, longer adult '
+              'face, a calm deadpan look, not smiling, a neat ponytail. A plain blue volunteer vest (mesh tabard, no '
+              'lettering) over a white T-shirt, plain trousers, white sneakers. She grips a small notebook and writes in it '
+              'with a ballpoint pen. The white line of a running track at her feet. Full length.'),
+  # 9/12, the basketball team's stall at the club fair: 「一米九几，手腕上一块表，手里一只大摇杯」, 「锅盖似的手」, his sneakers;
+  # 定例: 贵球鞋, 耳机挂脖子.
+  'jin-maxiaobao': ('maxiaobao', 'Ma Xiaobao, a Chinese young man of TWENTY-ONE, very tall (193 cm) and heavy (98 kg), with '
+                    'huge hands like pot lids: a round smug but good-natured grinning face. Short modern hair. A plain '
+                    'oversized T-shirt and basketball shorts in early-autumn heat, big expensive high-top basketball '
+                    'sneakers, a chunky wristwatch, over-ear headphones hanging round his neck; he weighs a big plastic '
+                    'protein shaker bottle in his palm as if judging how heavy it is. No logos. Full length.'),
+  # 9/22, the library basement: 「门里出来一个老太太，蓝布套袖，老花镜挂在链子上」; 定例: a pencil always in hand.
+  'jin-ge': ('wupo', 'Granny Ge, a Chinese woman of SEVENTY-TWO who restores old books in a university library: clear, '
+             'sharp, kindly eyes (NOT blind), deeply wrinkled, grey hair in a small bun. A plain modern cardigan over a '
+             'blouse, dark-blue cloth oversleeves on both forearms, reading glasses hanging on a thin chain round her neck, '
+             'a pencil in one hand and NOTHING else in her hands — no book, no folder. Standing, just stepped out of a plain grey steel fire door behind her (no sign on it). '
+             'Full length.'),
+  # 9/11, the finish line: 「按停秒表，像念一张罚单」, then 「一把薅住他的后领子」; 定例: 脸晒得像一块酱牛肉, 哨子、秒表.
+  'jin-lei': ('qulao', 'Coach Lei, a Chinese PE teacher in his forties: stocky, a square face tanned very dark like braised '
+              'beef, short cropped hair, a stern face reading out a result like a traffic ticket. A plain short-sleeved '
+              'sports polo shirt, track trousers, sports shoes, a whistle on a lanyard round his neck; he holds up a '
+              'stopwatch, thumb just pressed on it. The white line of a running track at his feet. No logos. Full length.'),
+  # 9/11 night, dorm 617: 「眼镜扶了扶眼镜」, then 「从桌上拿起一本图书馆的旧书」; 定例: 瘦高.
+  'jin-yanjing': ('qulao', 'Lin Yuan, nicknamed Specs, a Chinese young man of EIGHTEEN, a first-year student, in his '
+                  'dorm at night: tall and thin, a dead-serious face, pushing his glasses up his nose with one finger. '
+                  'Short neat hair. A plain T-shirt, loose shorts, plastic slippers; in the other hand an old worn '
+                  'library book with a plain cover. Full length.'),
+  # 9/11 night, dorm 617: 「上铺的老蔡探出头」; 定例: 胖乎乎，头发总压扁一边, sleeps hugging a cultivation novel.
+  'jin-laocai': ('qulao', 'Old Cai, a Chinese young man of nineteen, a first-year student, at night on the top bunk of a '
+                 'plain metal dormitory bunk bed (the bunk is the only thing drawn): clearly PLUMP and soft — a round '
+                 'chubby face with full cheeks and a double chin, a soft round belly — sleepy drooping eyelids, his short '
+                 'hair squashed flat on one side from the pillow. A plain T-shirt and shorts; he leans his head and '
+                 'shoulders out over the bunk rail to look down, a fat paperback novel (plain cover) in one hand.'),
+  # Thursday morning, 针灸推拿学导论: writes on the board, 「粉笔敲得笃笃响」, then 「背着手一排一排地走」; 定例: 五十来岁，板正.
+  'jin-yan': ('qulao', 'Teacher Yan, a Chinese lecturer in his fifties, upright and proper: a stiff correct face, neatly '
+              'combed short greying hair. A plain long-sleeved shirt buttoned to the collar, neat trousers, leather shoes. '
+              'He walks along the rows with his hands clasped behind his back, a stick of white chalk between his fingers. '
+              'No blackboard, no writing anywhere. Full length.'),
 }
+
+
+AGE_REF = ('The SECOND attached drawing is his roommate, another eighteen-year-old freshman: draw Shen Mang at that same '
+           'age, with the same adult build and the same realistic manner of drawing a face — but with the FIRST drawing\'s '
+           'face, not the roommate\'s.')
 
 
 def ref_png(name, tmp):
@@ -88,13 +109,14 @@ def ref_png(name, tmp):
 
 def codex(key, ref, subject, out_dir):
   png = out_dir / f'{key}.png'
-  lead = FACE if ref != 'qulao' else STYLE_REF
+  refs = ref.split('+')  # the face first; a second picture (沈芒: the kept 眼镜) is the age to draw
+  lead = (FACE if refs[0] != 'qulao' else STYLE_REF) + (f' {AGE_REF}' if len(refs) > 1 else '')
   prompt = (f'Use your image generation tool to make ONE image in portrait (2:3) orientation, then save it in the current '
             f'directory as {png.name}. {lead} Subject: {subject} {MODERN} Style: {pc.STYLE} Reply with the saved file path only.')
   with tempfile.TemporaryDirectory() as tmp:
     try:
       r = subprocess.run(['codex', 'exec', '-m', 'gpt-5.5', '--skip-git-repo-check', '-s', 'workspace-write',
-                          '-i', str(ref_png(ref, tmp)), '--', prompt],
+                          *[a for n in refs for a in ('-i', str(ref_png(n, tmp)))], '--', prompt],
                          cwd=out_dir, capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=600)
     except subprocess.TimeoutExpired:
       return None, 'failed: no picture in 10 minutes'

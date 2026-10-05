@@ -1,6 +1,7 @@
 {
  "version": 1,
  "_about": "图鉴 — the codex, the ONE picture system (Hanli 2026-09-29: 「图片作为图鉴，展示人物、生物、物品、武功、经脉、穴位等」). One entry per subject, one source for the book (read-md.js) and the game (the stage's first-appearance card, Ling's Show, 录's 图鉴): scripts/codex.js resolves and draws them. People, creatures, items and arts are LINKED — every row of people.json, creatures.json (not the foe- stand-ins), items.json and arts.json is an entry under its own id, its name, line and art read from there; an entry here with that id only adds to it: `first` {book: the 回's id in book.json (h01 = 第一回), scene: the game scene that introduces it}, `name`/`lines` to override, `image: null` to refuse a picture (`_image` says why; a name card stands instead). Knowledge (经脉, 穴位, 洛书, 五行 …) lives here whole: name, 2–3 lines, image, source, and `marks` (scripts/marks.js). A picture painted for us (Codex) shows NO credit line on the page (his, 2026-09-29) — its provenance is `_credit` and CREDITS.md; an old print keeps its short source line and the 「原图」 button. The hero has one entry, `xiaoman` — 沈小满 at twelve (Hanli, 2026-09-30: 「也给沈小满和阿禾来个人物图鉴」); the dialogue box still shows no face for him. Lines name him in full, 沈小满, and never say 你 (the same lines show in the book, which is in the third person). The book writes [words]{注=id}: a subject's card sits after the paragraph of its first appearance (first.book), later mentions are a dotted link; a knowledge figure sits under every paragraph that names it.",
+ "_book_only": "`book_only: true` — a card in the book alone (read-md.js, at the entry's `first.book`), never a first-appearance card on the game's stage, never met, no slot in 录's 图鉴 (the stage's people row still shows the people.json portrait): 今线's people (people.json `line: \"jin\"`, Hanli 2026-10-05 「放到原著书里」; 同魂不同命 is never said in play). lintCodex requires it of every 今线 person.",
  "_marks": "The animation layer (scripts/marks.js): ratio = the image's height/width; points [{id, label, x, y}] and paths [{id, d: [[x, y]…], through: [point ids, in flow order]}], x/y in 0–1 of the image, drawn as an SVG over it.",
  "kinds": {
   "人物": {
@@ -570,6 +571,54 @@
     "scene": "00-gate"
    },
    "_first": "No book card (Hanli 2026-10-05: 「这个可以删了」) — the game stage keeps its first-appearance card at 00-gate."
+  },
+  "jin-shenmang": {
+   "first": {
+    "book": "j01"
+   },
+   "book_only": true
+  },
+  "jin-ahe": {
+   "first": {
+    "book": "j01"
+   },
+   "book_only": true
+  },
+  "jin-maxiaobao": {
+   "first": {
+    "book": "j01"
+   },
+   "book_only": true
+  },
+  "jin-lei": {
+   "first": {
+    "book": "j01"
+   },
+   "book_only": true
+  },
+  "jin-ge": {
+   "first": {
+    "book": "j01"
+   },
+   "book_only": true
+  },
+  "jin-yanjing": {
+   "first": {
+    "book": "j01"
+   },
+   "book_only": true
+  },
+  "jin-laocai": {
+   "first": {
+    "book": "j01"
+   },
+   "book_only": true
+  },
+  "jin-yan": {
+   "first": {
+    "book": "j01"
+   },
+   "book_only": true
   }
  }
 }

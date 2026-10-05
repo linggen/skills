@@ -161,23 +161,22 @@ four clean; kept the ones whose face and eyes matched best.
 
 ## 今线 · 人物志 — the interludes' people (2026-10-05)
 
-Hanli's note: 「今线也补一遍人物志的图。注意和古线只保留脸一致，装扮等都是现代的。」 `people/jin-*.webp` (640×960,
-webp q84) — 沈芒, 周禾 (阿禾), 马小宝, 雷老师, 葛奶奶, 眼镜 (林远), 老蔡, 严老师 — were painted with Codex CLI's image
-generation (gpt-5.5), 2026-10-05, with `tools/paint-jin-codex.py` (the house STYLE of `tools/paint-codex.py`; age,
-build, hair and clothes from `story/jiuding-lu/今线/定例.md` § 三 and the interludes). The same souls were handed
-their 古线 portrait to keep ONLY the face: 沈芒 ← `xiaoman.webp`, 周禾 ← `ahe-girl.webp`, 马小宝 ←
-`maxiaobao.webp`, 葛奶奶 ← `wupo.webp` (吴婆婆's soul, her eyes clear); the other four were given `qulao.webp` as
-the style reference only. All modern — a jersey with a plain 0, a team track jacket and notebook, a hoodie and a
-shaker, oversleeves and reading glasses on a chain, a whistle and stopwatch, a white lab coat. Rejected on the way:
-a first 周禾 who read fifteen and a first 老蔡 who was not plump. Every picture looked at (the face, the age, no
-ancient dress, no text or seal). No outside source.
+Hanli's notes: 「今线也补一遍人物志的图。注意和古线只保留脸一致，装扮等都是现代的。」, then 「衣着按照出场时的画」.
+`people/jin-*.webp` (640×960, webp q84) — 沈芒, 周禾 (阿禾), 马小宝, 雷老师, 葛奶奶, 眼镜 (林远), 老蔡, 严老师 — were
+painted with Codex CLI's image generation (gpt-5.5), 2026-10-05, with `tools/paint-jin-codex.py` (the house STYLE of
+`tools/paint-codex.py`), each as he or she first appears in 今 · 一 (`story/jiuding-lu/今线/插曲01.md`): what the text
+puts on them and in their hands, in that place; what it leaves out from `今线/定例.md` § 三. 沈芒 after the 1000 m
+test (sweat-soaked T-shirt, a cheap band, the plastic bag), 周禾 at the finish line (blue volunteer vest, white
+sneakers, the notebook), 雷老师 with the stopwatch, 马小宝 at the club-fair stall (watch, shaker, headphones), 眼镜
+and 老蔡 in dorm 617 at night (the library book; the top bunk), 严老师 in the lecture (hands behind his back, chalk),
+葛奶奶 at the basement fire door (oversleeves, glasses on a chain, a pencil). The same souls were handed their 古线
+portrait to keep ONLY the face: 沈芒 ← `xiaoman.webp` (and the kept 眼镜 as the age to draw — alone, the boy's face
+came back fourteen), 周禾 ← `ahe-girl.webp`, 马小宝 ← `maxiaobao.webp`, 葛奶奶 ← `wupo.webp` (吴婆婆's soul, her
+eyes clear); the other four had `qulao.webp` as the style reference only. A first round in team kit (before his
+second note) is in git history. Rejected on the way: a 周禾 who read fifteen, a 老蔡 not plump, a 葛奶奶 holding a
+book the text never gives her, a 眼镜 roll that came back as a fox girl, three 沈芒 who still read fifteen. Every
+picture looked at (the dress against the text, the age, no ancient dress, no text or seal). No outside source.
 
-## 玄沉子 on the 鼋 — portrait repainted (2026-10-05)
-
-Hanli's note: 「观主是骑着鼋出场的，能画好吗」. `people/xuanchenzi.webp` (640×960, webp q84) was repainted with Codex CLI's
-image generation (gpt-5.5), 2026-10-05, from his first appearance in 03-第三回.md: the 泗水 stopped flat as a mirror and
-parted into a channel, the giant 鼋 (blue-black shell bigger than the ferry, moss-grown, its plates square by square like
-a field, a head bigger than a millstone, two squinting old eyes), and on its back the 观主 in a plain grey robe, both
-hands in his sleeves, a plain topknot (the old portrait's crown and whisk dropped — the text has neither). The old
-portrait was handed in to keep only the face. Two rolls, both looked at; kept the one with the flatter, mirror-still
-water (the other's parted water fell like a weir). The 2026-09-29 portrait is in git history. No outside source.
+The book shows them: each has a codex.json entry, `book_only` with `first.book: "j01"` — a card after the paragraph
+of their first appearance in 今 · 一; in play they keep their portrait on the stage's people row, but never get a
+first-appearance card, are never met, and have no slot in 录's 图鉴.

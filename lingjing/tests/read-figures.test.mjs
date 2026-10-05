@@ -40,8 +40,9 @@ test('the codex lints clean: every kind known, every picture on disk, one entry 
     if (e.image) assert.ok(exists(e.image), `${e.id}: ${e.image}`);
   }
   // linked, not duplicated: every person, 山海经 creature, item and art is an entry
-  // 今线's people are the interludes' alone, never in the 古 world's 图鉴 (codex.js, 2026-10-05).
-  for (const p of FILES.people.people) assert.equal(CODEX.get(p.id)?.kind, p.line === 'jin' ? undefined : '人物', p.id);
+  // 今线's people are entries too, `book_only`: a card in the book, never in the game's 图鉴 (Hanli 2026-10-05: 「放到原著书里」).
+  for (const p of FILES.people.people) assert.equal(CODEX.get(p.id)?.kind, '人物', p.id);
+  for (const p of FILES.people.people) assert.equal(Boolean(CODEX.get(p.id)?.book_only), p.line === 'jin', `${p.id}: book_only`);
   for (const c of FILES.creatures.creatures.filter((c) => !c.id.startsWith('foe-'))) assert.equal(CODEX.get(c.id)?.kind, '生物', c.id);
   // an item only when tagged 法宝 · 丹药 · 功法 · 信物 (his: 「鹿皮就不用图鉴了」)
   for (const i of FILES.items.items) {
@@ -234,7 +235,7 @@ test('录 holds a 图鉴: met entries by kind, the unmet as empty slots; a tap o
   const book = story(s, content, { now: NOW, quests: [] }).result;
   const html = luHtml(book, { lang: 'zh', artBase: 'A/', codex: CODEX, codexKinds: FILES.codex.kinds });
   assert.match(html, /<section class="lusec lucodex"><h3>图鉴<\/h3>/);
-  const people = [...CODEX.values()].filter((e) => e.kind === '人物').length;
+  const people = [...CODEX.values()].filter((e) => e.kind === '人物' && !e.book_only).length; // 今线's people: the book's cards alone
   assert.match(html, new RegExp(`<h4>人物 <span class="dim">\\d+/${people}</span></h4>`));
   assert.match(html, /data-codex-open="masan"/);
   assert.doesNotMatch(html, /data-codex-open="wupo"/, 'an unmet entry is never named');

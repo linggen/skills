@@ -10,7 +10,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { lint, loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
-import { look, resolve, task, win } from '../scripts/rules.mjs';
+import { look, resolve, story, task, win } from '../scripts/rules.mjs';
+import { codexFiles } from '../scripts/content.mjs';
 import { bookEntries } from '../scripts/book-order.js';
 import { huiEnded } from '../scripts/rules/hui.mjs';
 import { throughJin } from './prologue.mjs';
@@ -241,4 +242,20 @@ test('every game is in both languages, its task pays nothing, and its scene wait
     assert.ok(at && /^j\d\d$/.test(at.sc.hui), `${t.id} is an interlude's`);
     assert.ok(at.sc.exits.some(e => e.needs?.task === t.id && e.refuse?.zh && e.refuse?.en));
   }
+});
+
+test("今线's people: a card in the book at their first appearance (今 · 一), never brought on or met in play (Hanli 2026-10-05: 「放到原著书里」)", async () => {
+  const { codexOf } = await import('../scripts/codex.js');
+  const { renderMarkdown } = await import('../scripts/read-md.js');
+  const codex = codexOf(codexFiles(content), { lang: 'zh' });
+  const jin = content.people.people.filter(p => p.line === 'jin').map(p => p.id);
+  assert.equal(jin.length, 8);
+  for (const id of jin) assert.ok(codex.get(id)?.book_only && codex.get(id).first?.book === 'j01' && codex.get(id).image, id);
+  const md = fs.readFileSync(new URL('../story/jiuding-lu/今线/插曲01.md', import.meta.url), 'utf8');
+  const html = renderMarkdown(md, { codex, chapter: 'j01', lang: 'zh' });
+  for (const id of jin) assert.equal((html.match(new RegExp(`class="codexcard first" data-codex="${id}"`, 'g')) ?? []).length, 1, `${id}: one card in 今 · 一`);
+  let s = { ...newState(content, 'zh', NOW), chapter: '00-prologue', scene: '00-notice', place: 'shiao', done_scenes: ['00-uncle'] };
+  s = resolve(s, content, ctx, { exit: 'go' }).state;
+  const met = story(s, content, { now: NOW, quests: [] }).result.codex ?? [];
+  for (const id of jin) assert.ok(!met.includes(id), `${id} never met in play`);
 });

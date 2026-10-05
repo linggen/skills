@@ -31,7 +31,8 @@ export function meetsOf(content, state, scene) {
   const foes = [...(scene.cast ?? []), ...(scene.exits ?? []).filter(e => e.game?.kind === 'duel').map(e => e.game.creature)];
   for (const id of foes) if (id && id !== content.world.companion?.id) ids.push((content.creatures?.creatures ?? []).find(c => c.id === id)?.person ?? id);
   for (const [id, r] of raw) if (r.over.first?.scene === scene.id) ids.push(id);
-  return [...new Set(ids)].filter(id => raw.has(id));
+  // A `book_only` entry (今线's people) is the book's card alone: never brought on, met or listed in play.
+  return [...new Set(ids)].filter(id => raw.has(id) && !raw.get(id).over.book_only);
 }
 
 const herEntry = (content, raw, form) => {
