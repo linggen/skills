@@ -72,7 +72,7 @@ test('a save walks 古二 → 今 · 一 → 古三: the close of 第二回, the
   assert.equal(l.scene.scape, 'track');
   assert.ok(l.chapter.title.includes('今 · 一'), l.chapter.title);
   assert.equal(huiEnded(content, s), 'h02');
-  assert.ok(l.scene.people.some(p => p.name === '沈芒' && !p.art), 'his name card, no portrait');
+  assert.ok(l.scene.people.some(p => p.name === '沈芒' && p.art === 'art/people/jin-shenmang.webp'), 'his 人物志 portrait (2026-10-05)');
   s = resolve(s, content, ctx, { exit: 'on' }).state;
   s = resolve(s, content, ctx, { exit: 'on' }).state;
   assert.equal(s.scene, 'j01-retest');

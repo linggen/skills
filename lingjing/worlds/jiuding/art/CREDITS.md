@@ -158,3 +158,16 @@ handed back to Codex to clear the tail root only, leaving one clean, full silver
 The eight 断口 stay in the book's words and the 图鉴 line; the pictures don't draw them. A round asking for eight
 fanned, healed stubs was painted first and set aside unlooked-at when he changed the ask. Two rolls each, all
 four clean; kept the ones whose face and eyes matched best.
+
+## 今线 · 人物志 — the interludes' people (2026-10-05)
+
+Hanli's note: 「今线也补一遍人物志的图。注意和古线只保留脸一致，装扮等都是现代的。」 `people/jin-*.webp` (640×960,
+webp q84) — 沈芒, 周禾 (阿禾), 马小宝, 雷老师, 葛奶奶, 眼镜 (林远), 老蔡, 严老师 — were painted with Codex CLI's image
+generation (gpt-5.5), 2026-10-05, with `tools/paint-jin-codex.py` (the house STYLE of `tools/paint-codex.py`; age,
+build, hair and clothes from `story/jiuding-lu/今线/定例.md` § 三 and the interludes). The same souls were handed
+their 古线 portrait to keep ONLY the face: 沈芒 ← `xiaoman.webp`, 周禾 ← `ahe-girl.webp`, 马小宝 ←
+`maxiaobao.webp`, 葛奶奶 ← `wupo.webp` (吴婆婆's soul, her eyes clear); the other four were given `qulao.webp` as
+the style reference only. All modern — a jersey with a plain 0, a team track jacket and notebook, a hoodie and a
+shaker, oversleeves and reading glasses on a chain, a whistle and stopwatch, a white lab coat. Rejected on the way:
+a first 周禾 who read fifteen and a first 老蔡 who was not plump. Every picture looked at (the face, the age, no
+ancient dress, no text or seal). No outside source.

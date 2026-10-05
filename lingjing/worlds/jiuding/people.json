@@ -26,7 +26,7 @@
     "外门·伤": { "zh": "左边眼睛肿得睁不开。肋骨那儿，一吸气就疼。", "en": "Your left eye is swollen shut. Your ribs hurt every time you breathe in." },
     "外门·伤处": { "zh": "肿成馒头的那只眼睛", "en": "the eye swollen up like a steamed bun" }
   },
-  "_jin": "今线's people (the interludes, 2026-10-05; story/jiuding-lu/今线/定例.md § 三): `line: \"jin\"`, no home on the map, a name card until a portrait is painted, and never in the 图鉴 (codex.js) — 同魂不同命 is never said.",
+  "_jin": "今线's people (the interludes, 2026-10-05; story/jiuding-lu/今线/定例.md § 三): `line: \"jin\"`, no home on the map, its 人物志 portrait on the stage (art/people/jin-*.webp, 2026-10-05: the same souls keep only the 古线 face, all else modern), and never in the 图鉴 (codex.js) — 同魂不同命 is never said.",
   "people": [
     {
       "id": "dushu",
@@ -157,7 +157,8 @@
       "gender": "male",
       "name": { "zh": "沈芒", "en": "Shen Mang" },
       "role": { "zh": "针灸推拿学大一，十八岁，山东德州乡下人；校篮球队末一名替补，0号", "en": "First-year acupuncture and tuina student, eighteen, from the Dezhou countryside in Shandong; the last substitute on the college basketball team, number 0" },
-      "voice": { "zh": "话多，一张嘴先替自己找补；心里管自己叫「沈芒啊沈芒」。", "en": "Talks a lot, and every time he opens his mouth he is covering for himself first; in his head he calls himself \"Shen Mang, oh Shen Mang\"." }
+      "voice": { "zh": "话多，一张嘴先替自己找补；心里管自己叫「沈芒啊沈芒」。", "en": "Talks a lot, and every time he opens his mouth he is covering for himself first; in his head he calls himself \"Shen Mang, oh Shen Mang\"." },
+      "art": "art/people/jin-shenmang.webp"
     },
     {
       "id": "jin-ahe",
@@ -165,7 +166,8 @@
       "gender": "female",
       "name": { "zh": "阿禾", "en": "Ahe" },
       "role": { "zh": "周禾，运动康复大二，二十岁；校篮球队领队，本子、笔、计算器不离手", "en": "Zhou He, second-year sports rehabilitation, twenty; manager of the college basketball team, never without her notebook, pen and calculator" },
-      "voice": { "zh": "不高不急，像在报一个数；什么都先记一笔，再说话；人家说笑话，她不笑，记。", "en": "Never loud, never hurried, as if reading out a number; she writes it down first and speaks after; when someone makes a joke she doesn't laugh — she notes it." }
+      "voice": { "zh": "不高不急，像在报一个数；什么都先记一笔，再说话；人家说笑话，她不笑，记。", "en": "Never loud, never hurried, as if reading out a number; she writes it down first and speaks after; when someone makes a joke she doesn't laugh — she notes it." },
+      "art": "art/people/jin-ahe.webp"
     },
     {
       "id": "jin-maxiaobao",
@@ -173,7 +175,8 @@
       "gender": "male",
       "name": { "zh": "马小宝", "en": "Ma Xiaobao" },
       "role": { "zh": "中药学大三，一米九三，校队中锋；家里开马氏大药房", "en": "Third-year Chinese materia medica, one ninety-three, the team's centre; his family owns Ma's Pharmacy" },
-      "voice": { "zh": "随随便便、和和气气，笑着说吓人的话；「没事」「小意思」。", "en": "Easy-going and friendly, saying frightening things with a smile; \"No problem.\" \"Small stuff.\"" }
+      "voice": { "zh": "随随便便、和和气气，笑着说吓人的话；「没事」「小意思」。", "en": "Easy-going and friendly, saying frightening things with a smile; \"No problem.\" \"Small stuff.\"" },
+      "art": "art/people/jin-maxiaobao.webp"
     },
     {
       "id": "jin-lei",
@@ -181,7 +184,8 @@
       "gender": "male",
       "name": { "zh": "雷老师", "en": "Coach Lei" },
       "role": { "zh": "雷建军，体育部老师，校篮球队主教练、院系杯裁判长", "en": "Lei Jianjun, PE teacher, head coach of the college basketball team and chief referee of the inter-school cup" },
-      "voice": { "zh": "吼；脸晒得像一块酱牛肉，哨子、秒表不离身。", "en": "Bellows; a face tanned like braised beef, whistle and stopwatch always on him." }
+      "voice": { "zh": "吼；脸晒得像一块酱牛肉，哨子、秒表不离身。", "en": "Bellows; a face tanned like braised beef, whistle and stopwatch always on him." },
+      "art": "art/people/jin-lei.webp"
     },
     {
       "id": "jin-ge",
@@ -189,7 +193,8 @@
       "gender": "female",
       "name": { "zh": "葛奶奶", "en": "Granny Ge" },
       "role": { "zh": "葛秀英，图书馆古籍部返聘的老馆员，七十二岁", "en": "Ge Xiuying, seventy-two, the retired restorer rehired at the library's rare-books room" },
-      "voice": { "zh": "慢，一句扯出十句；讲古总讲错朝代，絮叨半天，顺嘴夹一句有用的。", "en": "Slow; one sentence pulls out ten; always gets the dynasty wrong, rambles on, and slips in one useful thing on the way." }
+      "voice": { "zh": "慢，一句扯出十句；讲古总讲错朝代，絮叨半天，顺嘴夹一句有用的。", "en": "Slow; one sentence pulls out ten; always gets the dynasty wrong, rambles on, and slips in one useful thing on the way." },
+      "art": "art/people/jin-ge.webp"
     },
     {
       "id": "jin-yanjing",
@@ -197,7 +202,8 @@
       "gender": "male",
       "name": { "zh": "眼镜", "en": "Specs" },
       "role": { "zh": "林远，同宿舍对床，天文社；全班唯一照书单借书的人", "en": "Lin Yuan, the bed opposite in the dorm, astronomy club; the only one in the class who borrows from the reading list" },
-      "voice": { "zh": "一本正经；扶一下眼镜：「我查了。」——他查的都对。", "en": "Dead serious; pushes up his glasses: \"I looked it up.\" What he looks up is always right." }
+      "voice": { "zh": "一本正经；扶一下眼镜：「我查了。」——他查的都对。", "en": "Dead serious; pushes up his glasses: \"I looked it up.\" What he looks up is always right." },
+      "art": "art/people/jin-yanjing.webp"
     },
     {
       "id": "jin-laocai",
@@ -205,7 +211,8 @@
       "gender": "male",
       "name": { "zh": "老蔡", "en": "Old Cai" },
       "role": { "zh": "蔡文博，同宿舍上铺，复读过一年", "en": "Cai Wenbo, the top bunk in the dorm, a year older for resitting the exam" },
-      "voice": { "zh": "慢吞吞，半睡不醒；什么都拿修仙小说讲，讲得离谱，又离真的不远。", "en": "Slow, half asleep; explains everything by cultivation novels — absurdly, and yet not far from the truth." }
+      "voice": { "zh": "慢吞吞，半睡不醒；什么都拿修仙小说讲，讲得离谱，又离真的不远。", "en": "Slow, half asleep; explains everything by cultivation novels — absurdly, and yet not far from the truth." },
+      "art": "art/people/jin-laocai.webp"
     },
     {
       "id": "jin-yan",
@@ -213,7 +220,8 @@
       "gender": "male",
       "name": { "zh": "严老师", "en": "Teacher Yan" },
       "role": { "zh": "严振华，教针灸推拿学导论和针灸实验课", "en": "Yan Zhenhua, who teaches Introduction to Acupuncture and Tuina and the acupuncture lab" },
-      "voice": { "zh": "板正，照本宣科；下课前默写。", "en": "Upright and by the book; a dictation before the bell." }
+      "voice": { "zh": "板正，照本宣科；下课前默写。", "en": "Upright and by the book; a dictation before the bell." },
+      "art": "art/people/jin-yan.webp"
     }
   ]
 }
