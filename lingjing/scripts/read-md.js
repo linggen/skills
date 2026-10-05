@@ -242,8 +242,9 @@ export function renderMarkdown(md, opts = {}) {
   };
   // Each change ends on its own 「确认这一处」 (Hanli 2026-10-05: 逐条确认).
   let openItem = null;
+  const okShown = new Set();
   const enter = (item) => {
-    if (openItem != null && openItem !== item) out.push(okOneHtml(openItem));
+    if (openItem != null && openItem !== item && !okShown.has(openItem)) { okShown.add(openItem); out.push(okOneHtml(openItem)); }
     openItem = item;
   };
   const cutHtml = (g) => `<div class="chg-cut" data-chg="${g.item}"${idOf(g.item)}>${goneHtml(g.text, 'block')}<span class="chg-cutn">删去 ${g.text.length} 段</span></div>`;
@@ -300,7 +301,8 @@ export function renderMarkdown(md, opts = {}) {
       continue;
     }
     // A scene break: a quiet 「◇」 (read.css), and a new section for the cards.
-    if (/^\s*(---|\*\*\*)\s*$/.test(line)) { flush(); section += 1; out.push('<hr class="scene">'); continue; }
+    // A change's 「确认这一处」 stands before the break, never after it.
+    if (/^\s*(---|\*\*\*)\s*$/.test(line)) { flush(); if (marks) enter(null); section += 1; out.push('<hr class="scene">'); continue; }
     if (/^\s*>/.test(line)) { if (para.length || table.length) flush(); quote.push(line.replace(/^\s*>\s?/, '')); continue; }
     if (/^\s*\|/.test(line)) { if (para.length || quote.length) flush(); table.push(line); continue; }
     if (!line.trim()) { flush(); continue; }
