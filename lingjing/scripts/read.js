@@ -14,9 +14,9 @@ import { createListener, listenHtml, loadManifest } from './pingshu.js';
 
 const WORDS = {
   zh: { back: '← 回到灵境', toc: '目录', prev: '←', next: '→', none: '书还没有写。', failed: '这一回没能打开。', only: '这一回只有中文。',
-    chgs: (n) => `本回改动 ${n} 处`, chg: (i, n) => `改 ${i}/${n}`, ok: '已读，确认', okNote: (n) => `确认后，这 ${n} 处不再标出`, oked: '已确认', undo: '撤销', okFailed: '没能确认，稍后再试。' },
+    chgs: (n) => `本回改动 ${n} 处`, chg: (i, n) => `改 ${i}/${n}`, okOne: '确认这一处', oked: (h) => `已确认：${h}`, undoLast: (h) => `撤销上一处确认（${h}）`, undone: '已撤销', none0: '本回改动都已确认', okFailed: '没能确认，稍后再试。' },
   en: { back: '← Back to Lingjing', toc: 'Contents', prev: '←', next: '→', none: 'The book is not written yet.', failed: 'This chapter could not be opened.', only: 'This chapter is in Chinese only.',
-    chgs: (n) => `${n} change${n === 1 ? '' : 's'} here`, chg: (i, n) => `${i}/${n}`, ok: 'Read — confirm', okNote: (n) => `Confirming clears these ${n} marks`, oked: 'Confirmed', undo: 'Undo', okFailed: 'Could not confirm; try again later.' },
+    chgs: (n) => `${n} change${n === 1 ? '' : 's'} here`, chg: (i, n) => `${i}/${n}`, okOne: 'Confirm this one', oked: (h) => `Confirmed: ${h}`, undoLast: (h) => `Undo the last confirm (${h})`, undone: 'Undone', none0: 'All changes here confirmed', okFailed: 'Could not confirm; try again later.' },
 };
 const STORY = '../story/';
 const params = new URLSearchParams(location.search);
@@ -91,7 +91,7 @@ async function main() {
     };
     const filled = fillHero(md, who);
     paint = (changes) => {
-      $('chapter').innerHTML = (lang === 'en' ? `<p class="note">${esc(w.only)}</p>` : '') + renderMarkdown(filled, { ...opts, changes, tail: changes ? okHtml(changes) : '' });
+      $('chapter').innerHTML = (lang === 'en' ? `<p class="note">${esc(w.only)}</p>` : '') + renderMarkdown(filled, { ...opts, changes });
       wireMarks($('chapter'));
       rail(changes);
       tocCount(ch.id, changes?.count ?? 0);
@@ -140,8 +140,10 @@ function tocHtml(all, at, bookId, counts = {}) {
 /* ── 「只看改动」 ──
    The marks are drawn by read-md.js from the rules' changes (rules/changes.mjs,
    book-diff.js — the phone reads the same); here the list beside the text (a
-   drop-down on a narrow screen), the count in the contents, and 「已读，确认」
-   at the 回's end, which saves the 回 as read (撤销 puts the last one back). */
+   drop-down on a narrow screen) and the count in the contents. Each change is
+   confirmed on its own (Hanli 2026-10-05: 逐条确认, no whole-回 confirm) — its
+   「✓ 确认这一处」 at its end, or ✓ on its row in the list; 撤销 takes back the
+   last confirm, one at a time. */
 let paint = () => {}, reading = null;
 const chgBadge = (n) => (n ? `<i class="chgn" title="${esc(w.chgs(n))}">${n}</i>` : '');
 function tocCount(id, n) {
@@ -150,37 +152,54 @@ function tocCount(id, n) {
   a.querySelector('.chgn')?.remove();
   (a.querySelector('.tn') ?? a).insertAdjacentHTML('beforeend', chgBadge(n));
 }
+const undoHtml = (c) => (c?.undo ? `<button type="button" class="chgundo" data-chg-undo="1" title="${esc(c.undo.head)}">↶ ${esc(w.undoLast(c.undo.head))}</button>` : '');
 function rail(c) {
   const box = $('chgrail');
-  if (!c?.count) { box.hidden = true; box.innerHTML = ''; return; }
+  if (!c?.count && !c?.undo) { box.hidden = true; box.innerHTML = ''; return; }
   const wide = matchMedia('(min-width: 1241px)').matches;
+  const was = box.querySelector('details');
+  const open = was ? was.open : wide;
   box.hidden = false;
-  box.innerHTML = `<details class="chgbox"${wide ? ' open' : ''}><summary>${esc(w.chgs(c.count))}</summary><ol>`
-    + c.items.map((it) => `<li><button type="button" data-chg-go="${it.n}" class="${esc(it.kind)}"><b>${esc(w.chg(it.n, c.count))}</b>${esc(it.head)}</button></li>`).join('')
-    + `</ol><button type="button" class="chgtoend" data-chg-go="ok">${esc(w.ok)} ↓</button></details>`;
+  box.innerHTML = `<details class="chgbox"${open ? ' open' : ''}><summary>${esc(c.count ? w.chgs(c.count) : w.none0)}</summary><ol>`
+    + c.items.map((it) => `<li><button type="button" data-chg-go="${it.n}" class="go ${esc(it.kind)}"><b>${esc(w.chg(it.n, c.count))}</b>${esc(it.head)}</button><button type="button" class="okmini" data-chg-ok="${it.n}" title="${esc(w.okOne)}" aria-label="${esc(w.okOne)}">✓</button></li>`).join('')
+    + `</ol>${undoHtml(c)}</details>`;
 }
-function okHtml(c) {
-  if (c.count) return `<div class="chgok" id="chgok"><button type="button" class="chgokbtn" data-chg-do="confirm">${esc(w.ok)}</button><span class="dim">${esc(w.okNote(c.count))}</span></div>`;
-  if (c.undo) return `<div class="chgok done" id="chgok"><span class="dim">${esc(w.oked)}</span><button type="button" class="chgundo" data-chg-do="undo">${esc(w.undo)}</button></div>`;
-  return '';
-}
-let current = null;
+let current = null, toastOff = 0;
 const setCurrent = (c) => { current = c; paint(c); };
-async function act(what) {
+function toast(html) {
+  document.getElementById('chgtoast')?.remove();
+  if (!html) return;
+  document.body.insertAdjacentHTML('beforeend', `<div class="chgtoast" id="chgtoast" role="status">${html}</div>`);
+  clearTimeout(toastOff);
+  toastOff = setTimeout(() => document.getElementById('chgtoast')?.remove(), 6000);
+}
+/// The block after change n (unchanged), to hold still on screen while the marks redraw.
+function anchorAfter(n) {
+  const end = n == null ? null : document.querySelector(`[data-chg-end="${n}"]`);
+  const el = end?.nextElementSibling ?? null;
+  return el ? { tag: el.tagName, text: el.textContent.slice(0, 40), top: el.getBoundingClientRect().top } : null;
+}
+function holdAnchor(a) {
+  if (!a) return;
+  const el = [...$('chapter').children].find((x) => x.tagName === a.tag && x.textContent.slice(0, 40) === a.text);
+  if (el) scrollBy(0, el.getBoundingClientRect().top - a.top);
+}
+async function act(what, n) {
   if (!reading) return;
   const args = { book: reading.bookId, id: reading.id, do: what };
-  if (what === 'confirm') args.rev = current?.rev ?? '';
+  if (what === 'confirm') Object.assign(args, { item: n, rev: current?.rev ?? '', crev: current?.crev ?? '' });
+  const head = current?.items?.find((it) => it.n === n)?.head;
+  const anchor = anchorAfter(what === 'confirm' ? n : null);
   const res = await verb('changes', args).catch(() => null);
   const next = res?.entries?.[reading.id];
   // The text moved under the page: read it again, marked against the new text.
   if (res?.refused === 'moved') { location.reload(); return; }
-  if (next) setCurrent(next);
-  if (res?.ok) return;
-  const ok = $('chgok');
-  ok?.insertAdjacentHTML('beforeend', `<span class="dim warn">${esc(w.okFailed)}</span>`);
+  if (next) { const y = scrollY; setCurrent(next); scrollTo(0, y); holdAnchor(anchor); }
+  if (res?.ok) { toast(what === 'confirm' ? `${esc(w.oked(head ?? ''))} ${undoHtml(next)}` : esc(w.undone)); return; }
+  toast(esc(w.okFailed));
 }
 function goChange(n) {
-  const to = n === 'ok' ? $('chgok') : document.getElementById(`chg-${n}`);
+  const to = document.getElementById(`chg-${n}`);
   if (!to) return;
   to.scrollIntoView({ block: 'center' });
   to.classList.remove('flash');
@@ -191,8 +210,10 @@ function goChange(n) {
 document.addEventListener('click', (e) => {
   const go = e.target.closest?.('[data-chg-go]');
   if (go) { e.preventDefault(); goChange(go.dataset.chgGo); return; }
-  const what = e.target.closest?.('[data-chg-do]');
-  if (what) { e.preventDefault(); what.disabled = true; act(what.dataset.chgDo); return; }
+  const ok = e.target.closest?.('[data-chg-ok]');
+  if (ok) { e.preventDefault(); ok.disabled = true; act('confirm', Number(ok.dataset.chgOk)); return; }
+  const undo = e.target.closest?.('[data-chg-undo]');
+  if (undo) { e.preventDefault(); undo.disabled = true; act('undo'); return; }
   const x = e.target.closest?.('.chg-x');
   if (x) { e.preventDefault(); const old = x.nextElementSibling; if (old) old.hidden = !old.hidden; x.classList.toggle('on', !old?.hidden); }
 });

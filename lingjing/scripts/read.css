@@ -141,23 +141,16 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 @keyframes chg-flash { 0%, 35% { outline: 3px solid var(--seal); outline-offset: 3px; } 100% { outline: 3px solid transparent; outline-offset: 3px; } }
 @media (prefers-reduced-motion: reduce) { .chapter .flash { animation: none; outline: 2px solid var(--seal); } }
 .chgn { display: inline-block; margin-left: 6px; min-width: 16px; padding: 0 4px; font-size: 10px; font-style: normal; line-height: 16px; text-align: center; color: #fff; background: var(--seal); border-radius: 8px; vertical-align: 2px; letter-spacing: 0; }
-.chgok { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 36px 0 8px; padding-top: 18px; border-top: 1px solid var(--line); scroll-margin-top: 80px; }
-.chgok .dim { color: var(--dim); font-size: 13px; }
-.chgok .warn { color: var(--seal); }
-.chgokbtn { font: inherit; font-size: 15px; padding: 6px 20px; border: 0; border-radius: 999px; background: var(--seal); color: #fff; cursor: pointer; }
-.chgokbtn:disabled, .chgundo:disabled { opacity: .5; cursor: default; }
-.chgundo { font: inherit; font-size: 13px; padding: 0; border: 0; background: none; color: var(--seal); text-decoration: underline; cursor: pointer; }
 .chgrail { grid-area: rail; align-self: start; position: sticky; top: 60px; max-height: calc(100vh - 76px); overflow: auto; font-size: 13px; }
 .chgbox summary { cursor: pointer; color: var(--seal); font-weight: 600; letter-spacing: .06em; padding: 6px 0; list-style: none; }
 .chgbox summary::-webkit-details-marker { display: none; }
 .chgbox summary::after { content: ' ▾'; font-weight: 400; }
 .chgbox[open] summary::after { content: ' ▴'; }
 .chgbox ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
-.chgbox ol button, .chgtoend { display: block; width: 100%; text-align: left; font: inherit; font-size: 13px; line-height: 1.5; padding: 5px 8px; border: 0; border-left: 2px solid var(--chg-edge); background: none; color: var(--text); cursor: pointer; border-radius: 0 4px 4px 0; }
-.chgbox ol button:hover, .chgtoend:hover { background: var(--chg); }
+.chgbox ol button.go { display: block; flex: 1; min-width: 0; text-align: left; font: inherit; font-size: 13px; line-height: 1.5; padding: 5px 8px; border: 0; border-left: 2px solid var(--chg-edge); background: none; color: var(--text); cursor: pointer; border-radius: 0 4px 4px 0; }
+.chgbox ol button.go:hover { background: var(--chg); }
 .chgbox ol button b { color: var(--seal); font-weight: 600; margin-right: 4px; }
 .chgbox ol button.removed { color: var(--dim); }
-.chgtoend { margin-top: 8px; border-left-color: transparent; color: var(--seal); }
 .reader:has(> .chgrail:not([hidden])) { grid-template-columns: 240px minmax(0, 720px) 210px; grid-template-areas: "toc chapter rail" "toc pager rail"; column-gap: 32px; }
 @media (max-width: 1240px) {
   .reader:has(> .chgrail:not([hidden])) { grid-template-columns: 260px minmax(0, 720px); grid-template-areas: "toc rail" "toc chapter" "toc pager"; column-gap: 40px; }
@@ -168,3 +161,15 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
   .reader:has(> .chgrail:not([hidden])) { grid-template-columns: minmax(0, 1fr); grid-template-areas: "toc" "rail" "chapter" "pager"; }
   .chapter .chg, .chg-cut { margin-left: -8px; }
 }
+/* 逐条确认: each change ends on a small 「✓ 确认这一处」; the list's rows carry a ✓ too. */
+.chg-okrow { margin: -8px 0 18px -11px; padding-left: 11px; }
+.chg-okone { font: inherit; font-size: 12px; line-height: 1.6; padding: 1px 10px; border: 1px solid var(--chg-edge); border-radius: 999px; background: var(--surface); color: var(--seal); cursor: pointer; }
+.chg-okone:hover, .okmini:hover { background: var(--seal); color: #fff; }
+.chg-okone:disabled, .okmini:disabled, .chgundo:disabled { opacity: .5; cursor: default; }
+.chgbox ol li { display: flex; align-items: stretch; gap: 4px; }
+.okmini { flex: none; align-self: center; width: 26px; height: 26px; font-size: 13px; line-height: 1; padding: 0; border: 1px solid var(--chg-edge); border-radius: 50%; background: none; color: var(--seal); cursor: pointer; }
+.chgundo { display: block; margin-top: 10px; font: inherit; font-size: 12px; line-height: 1.5; text-align: left; padding: 0 8px; border: 0; background: none; color: var(--dim); cursor: pointer; }
+.chgundo:hover { color: var(--seal); }
+.chgtoast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 60; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px); padding: 8px 14px; font-size: 13px; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+.chgtoast .chgundo { margin: 0; padding: 0; color: var(--seal); text-decoration: underline; }
+@media (max-width: 820px) { .chg-okrow { margin-left: -8px; padding-left: 8px; } }

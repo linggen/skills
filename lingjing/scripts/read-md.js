@@ -161,6 +161,8 @@ export function classicsAppendix(cited, classics = {}) {
    the change list's jump target. */
 const goneHtml = (texts, cls) => `<span class="chg-gone ${cls}"><button type="button" class="chg-x" aria-label="删去的原文" title="删去的原文">⌫</button><span class="chg-old" hidden>${texts.map((t) => esc(t)).join('<br>')}</span></span>`;
 
+const okOneHtml = (n) => `<div class="chg-okrow" data-chg-end="${n}"><button type="button" class="chg-okone" data-chg-ok="${n}">✓ 确认这一处</button></div>`;
+
 /// A changed paragraph's lines with its new sentences marked, or null when
 /// the source line will not cut the way its plain words do (a mark across a 。).
 function sentenceHtml(lines, mark, inl) {
@@ -181,7 +183,8 @@ function sentenceHtml(lines, mark, inl) {
 }
 
 /// `opts.changes` → one 回's changes (rules/changes.mjs entry): the blocks not
-/// yet confirmed are marked (see above); none → the text plain.
+/// yet confirmed are marked (see above), each change closed by its own
+/// 「✓ 确认这一处」 (data-chg-ok=n); none → the text plain.
 /// `opts.tail` → HTML set after the story and before 「附 · 本回典籍」.
 /// `opts.classics` → classics.json's classics: `《书名》{典=id}` links to its entry
 /// at the chapter's end (and back); none, or no entry: the 《书名》 alone.
@@ -232,8 +235,16 @@ export function renderMarkdown(md, opts = {}) {
     if (!bare(text)) return null;
     const key = keyOf(text), nth = seenKey.get(key) ?? 0;
     seenKey.set(key, nth + 1);
-    for (const g of marks.cutBefore(key, nth)) out.push(cutHtml(g));
-    return marks.mark(key, nth);
+    for (const g of marks.cutBefore(key, nth)) { enter(g.item); out.push(cutHtml(g)); }
+    const m = marks.mark(key, nth);
+    enter(m?.item ?? null);
+    return m;
+  };
+  // Each change ends on its own 「确认这一处」 (Hanli 2026-10-05: 逐条确认).
+  let openItem = null;
+  const enter = (item) => {
+    if (openItem != null && openItem !== item) out.push(okOneHtml(openItem));
+    openItem = item;
   };
   const cutHtml = (g) => `<div class="chg-cut" data-chg="${g.item}"${idOf(g.item)}>${goneHtml(g.text, 'block')}<span class="chg-cutn">删去 ${g.text.length} 段</span></div>`;
   const attrs = (m) => (m ? ` class="chg ${m.kind}" data-chg="${m.item}"${idOf(m.item)}` : '');
@@ -297,7 +308,8 @@ export function renderMarkdown(md, opts = {}) {
     para.push(line.trim());
   }
   flush();
-  for (const g of marks?.cutsAtEnd ?? []) out.push(cutHtml(g));
+  for (const g of marks?.cutsAtEnd ?? []) { enter(g.item); out.push(cutHtml(g)); }
+  if (marks) enter(null);
   // What stands at the story's end, before the classics (read.js's 「已读，确认」).
   if (opts.tail) out.push(opts.tail);
   const appendix = classicsAppendix([...cited], classics);

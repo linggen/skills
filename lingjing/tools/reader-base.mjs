@@ -42,7 +42,7 @@ for (const e of bookEntries(now, { draft: true })) {
   if (!e.id || !e.file) continue;
   const was = oldFile(e.id);
   const text = was ? show(was) : null;
-  for (const f of [`${e.id}.md`, `${e.id}.prev.md`, `${e.id}.prev.none`]) fs.rmSync(path.join(to, f), { force: true });
+  for (const f of [`${e.id}.md`, `${e.id}.undo.json`]) fs.rmSync(path.join(to, f), { force: true });
   if (text != null) fs.writeFileSync(path.join(to, `${e.id}.md`), text);
   report.push(`${e.id}\t${text == null ? '(none — all new)' : was}`);
 }

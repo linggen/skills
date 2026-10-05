@@ -7,25 +7,31 @@
 // never touches data/):
 //   meta.json      {base, made_at} — written once, by tools/reader-base.mjs
 //                  (the first confirmed versions: Hanli's 「10-04 上午」 = skills 93e20ac0)
-//   <id>.md        the 回's text as last confirmed; none → the whole 回 is new
-//   <id>.prev.md   the one before it, kept for 撤销 (<id>.prev.none: there was none)
+//   <id>.md        the 回's text as last confirmed; none → the whole 回 is new.
+//                  Once a single change is confirmed it is kept as blocks
+//                  (book-diff.js blocksMd), the other changes left as they were.
+//   <id>.undo.json the versions before each confirm, latest last (撤销 takes
+//                  back one confirm at a time; text null: there was none)
 // No meta.json → no marks at all: a reader that never set a baseline sees the
 // book plain.
 //
-// Verb `changes --book=<id>` → {ok, base, entries: {<id>: {rev, count, items, marks, gone, confirmed_at, undo}}};
-// `--id=<id>` narrows to one; `--do=confirm --id=<id> --rev=<rev>` saves the
-// 回 as confirmed (refused `moved` when the text is no longer the one shown);
-// `--do=undo --id=<id>` puts back the version before.
+// Verb `changes --book=<id>` → {ok, base, entries: {<id>: {rev, crev, count, items, marks, gone, confirmed_at, undo}}};
+// `--id=<id>` narrows to one; `--do=confirm --id=<id> --item=<n> --rev=<rev> --crev=<crev>`
+// confirms change n alone (Hanli 2026-10-05: 逐条确认, never the whole 回) —
+// refused `moved` when the text or the confirmed version is no longer the one
+// shown; `--do=undo --id=<id>` takes back the last confirm (`undo` names it).
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { bookEntries } from '../book-order.js';
-import { changesOf } from '../book-diff.js';
+import { changesOf, confirmItem } from '../book-diff.js';
 import { fillHero } from '../read-md.js';
 import { homeDir, skillDir } from './files.mjs';
 
 const BOOK_ID = /^[\w-]+$/;
 const ENTRY_ID = /^[\w-]+$/;
+/// How many confirms 撤销 can walk back.
+export const UNDO_DEPTH = 40;
 
 export const readerDir = (book) => path.join(process.env.LINGJING_READER || path.join(homeDir(), 'reader'), book);
 const storyDir = (book) => path.join(skillDir(), 'story', book);
@@ -62,8 +68,13 @@ export function entryChanges(book, e) {
   const confirmed = read(path.join(dir, `${e.id}.md`));
   const c = changesOf(filled(confirmed), filled(text));
   const at = (() => { try { return fs.statSync(path.join(dir, `${e.id}.md`)).mtime.toISOString(); } catch { return null; } })();
-  const undo = fs.existsSync(path.join(dir, `${e.id}.prev.md`)) || fs.existsSync(path.join(dir, `${e.id}.prev.none`));
-  return { rev: revOf(text), ...c, confirmed_at: at, undo };
+  const last = undoStack(book, e.id).at(-1);
+  return { rev: revOf(text), crev: revOf(confirmed ?? ''), ...c, confirmed_at: at, undo: last ? { head: last.head ?? '', at: last.at ?? null } : null };
+}
+
+const undoFile = (book, id) => path.join(readerDir(book), `${id}.undo.json`);
+function undoStack(book, id) {
+  try { const v = JSON.parse(read(undoFile(book, id))); return Array.isArray(v) ? v : []; } catch { return []; }
 }
 
 export function changes(args = {}) {
@@ -82,19 +93,25 @@ export function changes(args = {}) {
   if (act === 'confirm') {
     const text = textOf(book, one);
     if (text == null) return { ok: false, refused: 'no-entry', say: null };
-    if (String(args.rev ?? '') !== revOf(text)) return { ok: false, refused: 'moved', say: null, entries: { [one.id]: entryChanges(book, one) } };
-    const was = read(path.join(dir, `${one.id}.md`));
-    if (was == null) { drop(path.join(dir, `${one.id}.prev.md`)); write(path.join(dir, `${one.id}.prev.none`), ''); }
-    else { drop(path.join(dir, `${one.id}.prev.none`)); write(path.join(dir, `${one.id}.prev.md`), was); }
-    write(path.join(dir, `${one.id}.md`), text);
+    const file = path.join(dir, `${one.id}.md`);
+    const was = read(file);
+    const shown = { [one.id]: entryChanges(book, one) };
+    if (String(args.rev ?? '') !== revOf(text) || String(args.crev ?? '') !== revOf(was ?? '')) return { ok: false, refused: 'moved', say: null, entries: shown };
+    const n = Number(args.item);
+    const head = shown[one.id].items.find((it) => it.n === n)?.head;
+    const next = Number.isInteger(n) ? confirmItem(filled(was), filled(text), n) : null;
+    if (next == null) return { ok: false, refused: 'no-item', say: null, entries: shown };
+    const stack = [...undoStack(book, one.id), { text: was, head, at: new Date().toISOString() }].slice(-UNDO_DEPTH);
+    write(undoFile(book, one.id), JSON.stringify(stack));
+    write(file, next);
   } else if (act === 'undo') {
-    const prev = read(path.join(dir, `${one.id}.prev.md`));
-    const none = fs.existsSync(path.join(dir, `${one.id}.prev.none`));
-    if (prev == null && !none) return { ok: false, refused: 'nothing-to-undo', say: null };
-    if (prev != null) write(path.join(dir, `${one.id}.md`), prev);
-    else drop(path.join(dir, `${one.id}.md`));
-    drop(path.join(dir, `${one.id}.prev.md`));
-    drop(path.join(dir, `${one.id}.prev.none`));
+    const stack = undoStack(book, one.id);
+    const last = stack.pop();
+    if (!last) return { ok: false, refused: 'nothing-to-undo', say: null };
+    if (last.text == null) drop(path.join(dir, `${one.id}.md`));
+    else write(path.join(dir, `${one.id}.md`), last.text);
+    if (stack.length) write(undoFile(book, one.id), JSON.stringify(stack));
+    else drop(undoFile(book, one.id));
   } else if (act != null) return { ok: false, refused: 'bad-do', say: null };
   const list = one ? [one] : all;
   const entries = Object.fromEntries(list.map((e) => [e.id, entryChanges(book, e)]).filter(([, v]) => v));

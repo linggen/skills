@@ -622,8 +622,10 @@ His ruling (2026-09-29): 「不用小人书的方式了，图片作为图鉴，�
 - **只看改动** (Hanli 2026-10-05): each 回 is marked against the version last
   confirmed — blocks aligned by LCS, a rewritten one by sentence, `{注=…}`
   `{典=…}` and spaces ignored (book-diff.js, by rule). The list of changes
-  stands right (a drop-down when narrow), the count in the contents;
-  「已读，确认」 at the 回's end saves it as read, 撤销 puts the last back.
+  stands right (a drop-down when narrow), the count in the contents. Each
+  change is confirmed on its own (「✓ 确认这一处」 at its end, or ✓ in the
+  list; never the whole 回), the rest still marked; 撤销 takes back the last
+  confirm, one at a time.
   One store for the Mac and the phone: data/reader/<book>/ (verb `changes`,
   rules/changes.mjs); the first confirmed versions come from git once
   (`node lingjing/tools/reader-base.mjs`, default 93e20ac0 = 「10-04 上午」).

@@ -171,13 +171,19 @@ export const headOf = (text, n = 12) => { const t = String(text ?? '').replace(/
 ///   blocks with nothing unchanged between them (from 1, in reading order);
 ///   `count` = items.length.
 export function changesOf(oldMd, newMd) {
+  const { items, marks, gone } = walk(oldMd, newMd);
+  return { count: items.length, items, marks, gone };
+}
+
+/// The two texts aligned, in reading order: `seq` holds each old block that
+/// went (`{cut: i, item}`) before the new block it stands ahead of, and each
+/// new block (`{j, same: i}` when unchanged, `{j, item, from: i?}` when new or
+/// rewritten from old block i) — what changesOf reports and confirmItem keeps.
+function walk(oldMd, newMd) {
   const now = blocksOf(newMd);
-  if (oldMd == null) {
-    if (!now.length) return { count: 0, items: [], marks: [], gone: [] };
-    return { count: 1, items: [{ n: 1, kind: 'new', head: headOf(now[0].text) }], marks: now.map((b) => ({ key: b.key, nth: b.nth, kind: 'new', item: 1 })), gone: [] };
-  }
-  const was = blocksOf(oldMd);
+  const was = oldMd == null ? [] : blocksOf(oldMd);
   const pairs = lcs(was.map((b) => b.key), now.map((b) => b.key));
+  const same = new Map(pairs.map(([i, j]) => [j, i]));
   // Each gap between matched blocks: the old blocks that went and the new that came.
   const gaps = [];
   let pi = 0, pj = 0;
@@ -186,34 +192,34 @@ export function changesOf(oldMd, newMd) {
     pi = i + 1; pj = j + 1;
   }
   const mark = new Map(); // new index → mark
-  const cut = new Map(); // new index it sits before (now.length = end) → old texts
+  const from = new Map(); // new index → the old block it was rewritten from
+  const cut = new Map(); // new index it sits before (now.length = end) → old indices
   for (const g of gaps) {
     // A new block takes the most alike old block still ahead of it in the gap (order kept).
-    let from = 0;
-    const paired = new Map();
+    let at = 0;
     for (const j of g.new) {
       let best = -1, score = ALIKE;
-      for (let k = from; k < g.old.length; k += 1) {
+      for (let k = at; k < g.old.length; k += 1) {
         const l = likeness(was[g.old[k]].text, now[j].text);
         if (l > score) { score = l; best = k; }
       }
-      if (best >= 0) { paired.set(j, g.old[best]); from = best + 1; }
+      if (best >= 0) { from.set(j, g.old[best]); at = best + 1; }
     }
-    const takenOld = new Set(paired.values());
+    const takenOld = new Set(g.new.map((j) => from.get(j)).filter((i) => i != null));
     for (const j of g.new) {
-      const o = paired.get(j);
+      const o = from.get(j);
       mark.set(j, o == null ? { kind: 'new' } : { kind: 'changed', ...sentenceDiff(was[o].text, now[j].text) });
     }
     // An old block that went sits before the first new block of the gap
     // rewritten from a later old block, else at the gap's end.
     for (const i of g.old) {
       if (takenOld.has(i)) continue;
-      const pos = g.new.find((j) => (paired.get(j) ?? -1) > i) ?? g.end;
-      (cut.get(pos) ?? cut.set(pos, []).get(pos)).push(was[i].text);
+      const pos = g.new.find((j) => (from.get(j) ?? -1) > i) ?? g.end;
+      (cut.get(pos) ?? cut.set(pos, []).get(pos)).push(i);
     }
   }
   // Items: runs of marked blocks and cuts with no unchanged block between.
-  const items = [], marks = [], gone = [];
+  const items = [], marks = [], gone = [], seq = [];
   let open = null;
   const item = (kind, head) => {
     if (open) { if (open.kind !== kind) open.kind = 'mixed'; return open.n; }
@@ -223,17 +229,45 @@ export function changesOf(oldMd, newMd) {
   };
   for (let j = 0; j <= now.length; j += 1) {
     if (cut.has(j)) {
-      const text = cut.get(j);
-      gone.push({ before: j < now.length ? { key: now[j].key, nth: now[j].nth } : null, text, item: item('removed', `删：${headOf(text[0])}`) });
+      const olds = cut.get(j), text = olds.map((i) => was[i].text);
+      const n = item('removed', `删：${headOf(text[0])}`);
+      gone.push({ before: j < now.length ? { key: now[j].key, nth: now[j].nth } : null, text, item: n });
+      for (const i of olds) seq.push({ cut: i, item: n });
     }
     if (j === now.length) break;
     const m = mark.get(j);
-    if (!m) { open = null; continue; }
+    if (!m) { open = null; seq.push({ j, same: same.get(j) }); continue; }
     const out = { key: now[j].key, nth: now[j].nth, kind: m.kind, item: item(m.kind, headOf(now[j].text)) };
     if (m.kind === 'changed') { out.s = m.s; if (m.gone.length) out.gone = m.gone; }
     marks.push(out);
+    seq.push({ j, item: out.item, from: from.get(j) });
   }
-  return { count: items.length, items, marks, gone };
+  return { was, now, seq, items, marks, gone };
+}
+
+/// Blocks as the text they stand for, in the book's own markdown — what a
+/// confirmed version is kept as once a part of it was confirmed (blocksOf
+/// reads it back to the same blocks: a title line first, headings as `##`,
+/// quotes as `>`; a paragraph's lines never open with #, >, | or ---).
+export function blocksMd(blocks) {
+  const md = (b) => (b.kind === 'heading' ? `## ${b.text}` : b.kind === 'quote' ? b.text.split('\n').map((l) => `> ${l}`).join('\n') : b.text);
+  return `# 　\n\n${blocks.map(md).join('\n\n')}\n`;
+}
+
+/// 「确认这一处」: the confirmed version with change `n` (changesOf's item n)
+/// taken in and every other change left as it was — so the next changesOf
+/// shows them all but that one. Returns the new confirmed text, or null when
+/// there is no such change.
+export function confirmItem(oldMd, newMd, n) {
+  const { was, now, seq, items } = walk(oldMd, newMd);
+  if (!items.some((it) => it.n === n)) return null;
+  const keep = [];
+  for (const e of seq) {
+    if ('cut' in e) { if (e.item !== n) keep.push(was[e.cut]); continue; }
+    if (e.item == null || e.item === n) keep.push(now[e.j]);
+    else if (e.from != null) keep.push(was[e.from]);
+  }
+  return blocksMd(keep);
 }
 
 const range = (a, b) => Array.from({ length: Math.max(0, b - a) }, (_, k) => a + k);
