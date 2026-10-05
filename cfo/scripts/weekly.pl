@@ -36,6 +36,8 @@ my $QUOTE_MAX = 600;
 my $TIES_MAX = 8;
 my $NEXT_MAX = 300;
 my $PAGE_WAIT = 15;                # seconds for all source pages, fetched at once
+my $WEB_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36';
+my $SEC_AGENT = 'Linggen CFO https://linggen.dev';
 my $JSON_OUT = JSON::PP->new->utf8->canonical->pretty;
 
 sub weekly_main {
@@ -242,9 +244,14 @@ sub cmd_scan {
 # The figures in a piece of text, normalized ("150,000" → 150000, "4.20" →
 # 4.2). With `dates`, a date's parts don't count — a month, a day, a year, a
 # quarter: "9月", "29日", "2026", "Q3" are when, not what.
+# An index's name is not a figure: S&P 500, Nasdaq 100, Russell 2000,
+# S&P/TSX 60 — "纳斯达克100" in a tie names ZNQ's index, it says no number.
+my $INDEX_NAME = qr/(?:S&P|标普)\s*500|(?:Nasdaq|纳斯达克|纳指)[\s-]*100|(?:Russell|罗素)\s*2000|TSX\s*60/i;
+
 sub figures_in {
     my ($text, $dates) = @_;
     my @out;
+    ($text = $text // '') =~ s/$INDEX_NAME/ /g if $dates;
     while (($text // '') =~ /(Q|第)?(?<![0-9.,])([0-9][0-9,]*(?:\.[0-9]+)?)(?![0-9])(\s*(?:月|日|年|号|季度))?/g) {
         my ($pre, $n, $unit) = ($1, $2, $3);
         $n =~ s/,//g;
@@ -296,25 +303,41 @@ sub tie_problem {
 }
 
 # Each source page, fetched once and all at once: its raw text (scripts
-# kept — a page's numbers often live in its data), or undef when it didn't
-# answer. `fetch_pages` is swapped out in tests.
+# kept — a page's numbers often live in its data; a PDF as its text), or
+# undef when it didn't answer. sec.gov answers only a named agent.
+# `fetch_pages` is swapped out in tests.
 sub fetch_pages {
     my (@urls) = @_;
     return {} unless @urls;
     my $tmp = tempdir(CLEANUP => 1);
-    my @args = ('curl', '-s', '-L', '-f', '--compressed', '-Z', '--max-time', $PAGE_WAIT, '-A',
-                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36');
-    push @args, '-o', "$tmp/$_", $urls[$_] for 0 .. $#urls;
-    system(@args);
+    my %file = map { $urls[$_] => "$tmp/$_" } 0 .. $#urls;
+    my @sec = grep { m{^https://www\.sec\.gov/} } @urls;
+    my @web = grep { !m{^https://www\.sec\.gov/} } @urls;
+    fetch_all($SEC_AGENT, map { ($_, $file{$_}) } @sec) if @sec;
+    fetch_all($WEB_AGENT, map { ($_, $file{$_}) } @web) if @web;
     my %pages;
-    for my $i (0 .. $#urls) {
-        open(my $in, '<:raw', "$tmp/$i") or next;
-        local $/;
-        my $body = <$in>;
-        next unless defined $body && length $body && substr($body, 0, 5) ne '%PDF-';
-        $pages{ $urls[$i] } = eval { decode('UTF-8', $body, Encode::FB_CROAK) } // decode('cp1252', $body);
+    for my $url (@urls) {
+        my $text = page_text($file{$url});
+        $pages{$url} = $text if defined $text && length $text;
     }
     return \%pages;
+}
+
+sub fetch_all {
+    my ($agent, %to) = @_;
+    my @args = ('curl', '-s', '-L', '-f', '--compressed', '-Z', '--max-time', $PAGE_WAIT, '-A', $agent);
+    push @args, '-o', $to{$_}, $_ for sort keys %to;
+    system(@args);
+}
+
+sub page_text {
+    my ($file) = @_;
+    open(my $in, '<:raw', $file) or return undef;
+    local $/;
+    my $body = <$in>;
+    return undef unless defined $body && length $body;
+    return pdf_text($body) if substr($body, 0, 5) eq '%PDF-';
+    return eval { decode('UTF-8', $body, Encode::FB_CROAK) } // decode('cp1252', $body);
 }
 
 # A quote whose figures are on its page: 1. Not on it: 0. Page out of

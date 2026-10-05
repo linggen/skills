@@ -130,6 +130,7 @@ t('language: the config\'s, else the Mac\'s, else English',
 # ── Figures and directions ─────────────────────────────────────────────────
 t('figures normalize commas and trailing zeros', join(',', figures_in('payrolls 150,000; rate 4.20%')) eq '150000,4.2');
 t('a date\'s parts are not figures', join(',', figures_in('9月非农新增150,000，Q3，2026年，10月29日', 1)) eq '150000');
+t('an index\'s name is not a figure', join(',', figures_in('纳斯达克100与标普500上涨1.2%，S&P/TSX 60', 1)) eq '1.2');
 t('a decimal is one figure, not two', join(',', figures_in('PMI 49.1', 1)) eq '49.1');
 {
     my $ok = { text => '美国9月非农就业新增 150,000，失业率 4.1%', source => 'https://bls.gov/news',

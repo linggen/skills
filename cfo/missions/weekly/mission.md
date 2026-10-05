@@ -56,6 +56,14 @@ count — never one from memory, a search snippet or another week.
 - **证券市场 / Stocks** — the S&P 500, Nasdaq and TSX for the week, notable
   earnings.
 
+Work each section until it has its facts: search with the week's dates and
+the release's own name ("Labour Force Survey September 2026", "Treasury
+yields week October 2 2026"), try again with other words when a search
+brings back another week, and fetch the pages that hold the figures — the
+agency's own release (statcan.gc.ca, bls.gov, bea.gov, bankofcanada.ca,
+federalreserve.gov) or a dated market wrap. A search snippet is a lead, not
+a source: fetch the page.
+
 Each bullet is one fact: `text` in the report's language, `source` the page
 you fetched, `quote` that page's own words holding the figure. Code checks
 that every figure in your text is in the quote and the quote is on the page:
