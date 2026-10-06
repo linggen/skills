@@ -968,8 +968,8 @@
       },
       "art": "art/items/huojing.webp",
       "about": {
-        "zh": "赤松观的火葫芦，葫芦口放得出火蛇。塞子是你一箭射下来的，从干河床上捡回来塞上。空了，拿你自己的火气一点一点养回来。是赤松观的东西：山上，有赤松观的人在的地方，不能亮。",
-        "en": "Red Pine Abbey's fire gourd; fire snakes pour from its mouth. The cork is the one your arrow shot off, picked up from the dry riverbed and pushed back in. Empty now, it fills slowly from your own fire qi. It is Red Pine Abbey's: on the mountain, or anywhere their people are, it cannot be shown."
+        "zh": "赤松观的火葫芦，葫芦口放得出火蛇。塞子是你一箭射下来的，从干河床上捡回来塞上。空了。是赤松观的东西：山上，有赤松观的人在的地方，不能亮。",
+        "en": "Red Pine Abbey's fire gourd; fire snakes pour from its mouth. The cork is the one your arrow shot off, picked up from the dry riverbed and pushed back in. Empty now. It is Red Pine Abbey's: on the mountain, or anywhere their people are, it cannot be shown."
       },
       "buy": 0,
       "sell": 0,
@@ -978,8 +978,30 @@
         "root": "fire",
         "atk": 3
       },
-      "_about": "古五: 邹青松's gourd, seen in the fight (火蛇) — 摸到的兵器，须是打斗里亮过相的 (design.md § Items). Worn, it lends fire; the win that drops it deals 火鸦 (creatures.json foe-zou `card`), its fire snakes as a card. Never sold.",
+      "_about": "古五: 邹青松's gourd, seen in the fight (火蛇) — 摸到的兵器，须是打斗里亮过相的 (design.md § Items). Worn, it lends fire; the win that drops it deals 火鸦 (creatures.json foe-zou `card`), its fire snakes as a card. Never sold. In the book (古七, Hanli 2026-10-06) it goes into the 饭桶 with the shield shards and comes out a plain sword (pichai-jian).",
       "art_source": "The fire essence's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
+    },
+    {
+      "id": "pichai-jian",
+      "kind": "weapon",
+      "name": {
+        "zh": "劈柴",
+        "en": "Kindling"
+      },
+      "art": "art/items/iron-sword.webp",
+      "about": {
+        "zh": "赤铜葫芦连七八瓣盾片喂进饭桶，吸了你五口气，吐出来这一口：三尺来长，剑身暗红，火纹一道也没有了，剑脊上一溜锤印，像铁匠铺学徒打坏的。最寻常的法器，砍得动。银月要给它起名字，你劈开一根柴：「劈柴。」",
+        "en": "The red-copper gourd and seven or eight shield shards fed to the Rice Tub, five mouthfuls of your qi, and out came this: three feet or so, the blade a dull red with not one line of the fire pattern left, a row of hammer marks down the spine like an apprentice's botched piece. The commonest kind of artifact; it cuts. Yinyue wanted to name it; you split a log: \"Kindling.\""
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "effect": {
+        "root": "metal",
+        "atk": 3
+      },
+      "_about": "古七 (Hanli 2026-10-06): the 赤松观 gourd and shield shards are useless now — two nights after the snow night he feeds them to the 饭桶 and it gives a plain sword, the one he practises the 《河洛剑诀》 with (瞿老 teaches with a broom handle). Granted at 09-snow/keep. Copper in, so it lends 金. Never sold. In the game the gourd stays in the bag (a worn weapon is never taken).",
+      "art_source": "The iron sword's picture until its own is painted."
     },
     {
       "id": "lianxi-fu",

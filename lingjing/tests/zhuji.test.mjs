@@ -154,7 +154,7 @@ test('the sect\'s 筑基丹 comes from the five-year skip, not from 古六: 09-y
   const fu = CH.scenes['09-year'].exits.find(e => e.id === 'futian');
   assert.equal(fu.grant?.item, 'foundation-pill', '伏天 · 一晃五年 grants the sect\'s pill');
   assert.match(fu.story.zh, /第五年腊八[\s\S]*写了「沈小满」三个字[\s\S]*米汤/, 'the year-five 大比 won plainly, the seal glued back with rice water');
-  assert.match(fu.story.zh, /祁长松转过年开春便出了关，筑了基/, '祁长松 筑基 the spring after 古六 (book 07 wording since the 古七 pass, 2026-10-03)');
+  assert.match(fu.story.zh, /祁长松转过年开春出了关。[\s\S]*还是一个九层[\s\S]*「身子记下了。下回。」[\s\S]*第二回闭关，这一回，筑了基/, '祁长松 fails his first 筑基 the spring after 古六 and lays it on the second (Hanli 2026-10-06: a failed attempt is experience)');
   const grants = Object.values(CH.scenes).flatMap(sc => sc.exits.filter(e => e.grant?.item === 'foundation-pill').map(e => `${sc.id}/${e.id}`));
   assert.deepEqual(grants, ['09-year/futian']);
   for (const sc of Object.values(content.chapters['00-waimen'].scenes)) for (const e of sc.exits) assert.notEqual(e.grant?.item, 'foundation-pill', `${sc.id}/${e.id}`);
