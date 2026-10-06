@@ -1034,27 +1034,8 @@
       "sell": 0,
       "sold": [],
       "story": true,
-      "_about": "古五 (Hanli 2026-10-05「丰厚一点」— a layer nine carries more): in the book (Hanli 2026-10-06) the whole purse, 中品 too, goes into the 饭桶 at 古五's end (「想出仙品，得喂仙品」) and nothing comes out; the letter (zou-letter) stays, a debt to 彭城 with no money behind it. A story thing: no slot, never sold, adds no wealth.",
+      "_about": "古五 (Hanli 2026-10-05「丰厚一点」— a layer nine carries more): in the book (Hanli 2026-10-06) the whole purse, 中品 too, goes into the 饭桶 at 古五's end (「想出仙品，得喂仙品」) and nothing comes out. A story thing: no slot, never sold, adds no wealth.",
       "art_source": "The middle-grade pouch's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-25) until its own is painted."
-    },
-    {
-      "id": "zou-letter",
-      "kind": "treasure",
-      "name": {
-        "zh": "邹青松的家信",
-        "en": "Zou Qingsong's letter home"
-      },
-      "art": "art/items/wangqi-1.webp",
-      "about": {
-        "zh": "彭城来的家信，叠了几折，说给小妹置一副嫁妆。你看了两遍，叠好收着。",
-        "en": "A letter from home in Pengcheng, folded small: a dowry to be put together for his little sister. You read it twice, folded it, and kept it."
-      },
-      "buy": 0,
-      "sell": 0,
-      "sold": [],
-      "story": true,
-      "_about": "古五: kept, not put back — a 扣子 for a later 卷 (彭城, 小妹的嫁妆; OUTLINE 扣子簿). A story thing: no slot, never sold.",
-      "art_source": "The scroll's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
     {
       "id": "neimen-map",

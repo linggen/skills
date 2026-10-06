@@ -511,7 +511,7 @@ test('古五\'s chase (2026-10-02): 邹青松 is a trial outlasted, 踏马的符
   assert.equal(s.bag['duan-dao'], 1, 'the knife from the dry riverbed');
 });
 
-test('杀人必摸尸 (古五, 2026-10-03): 邹青松 killed leaves his 储物袋 — the gourd he fought with, 敛息符, 回春丹, 紫须芝, the letter — and the gourd\'s fire snakes as a card', async () => {
+test('杀人必摸尸 (古五, 2026-10-03): 邹青松 killed leaves his 储物袋 — the gourd he fought with, 敛息符, 回春丹, 紫须芝 — and the gourd\'s fire snakes as a card', async () => {
   const { drop } = await import('../scripts/rules/arms.mjs');
   const { winCard } = await import('../scripts/rules/cards.mjs');
   const { pouchBrief } = await import('../scripts/rules/pouch.mjs');
@@ -519,7 +519,7 @@ test('杀人必摸尸 (古五, 2026-10-03): 邹青松 killed leaves his 储物�
   const s = { ...opened(), bag: {} };
   const got = drop(content, s, zou, DAY1);
   const by = Object.fromEntries(got.map(g => [g.id, g.n]));
-  for (const [id, n] of Object.entries({ 'pouch-low': 1, 'chitong-hulu': 1, 'lianxi-fu': 2, 'mend-pill': 3, 'zixu-zhi': 1, 'zou-letter': 1 })) assert.ok(by[id] >= n, `${id} ×${n} in 所得: ${JSON.stringify(by)}`);
+  for (const [id, n] of Object.entries({ 'pouch-low': 1, 'chitong-hulu': 1, 'lianxi-fu': 2, 'mend-pill': 3, 'zixu-zhi': 1 })) assert.ok(by[id] >= n, `${id} ×${n} in 所得: ${JSON.stringify(by)}`);
   assert.equal(new Set(got.map(g => g.id)).size, got.length, 'an id twice is one line in 所得');
   const items = Object.fromEntries(content.items.items.map(i => [i.id, i]));
   // 摸到的兵器，须是打斗里亮过相的: the gourd is his fire-snake weapon.

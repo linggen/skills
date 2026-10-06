@@ -1904,11 +1904,10 @@
         "mend-pill",
         "longxu-cao",
         "zixu-zhi",
-        "zou-purse",
-        "zou-letter"
+        "zou-purse"
       ],
       "card": "huoya",
-      "_drops": "杀人必摸尸 (古五; design.md § Items): his 储物袋 and what was in it — the gourd whose fire snakes he fought (摸到的兵器，须是打斗里亮过相的), two 敛息符, a bottle of 回春丹 (three), the 龙须草 from the riverbed dead man's fist, 阿禾's 紫须芝, his own red-cord purse (twenty-three 灵石 and one 中品, held for him — zou-purse, a story thing, Hanli 2026-10-05 「丰厚一点」), the letter home. The 钱袋's nine 灵石 and the 回气丹 bottle (its card, huiqi) are the exit's (wm-xirang swallow); the 银镯子, the 青苔 pinch and the 赤铜 shield shards have no item. `card`: the card the win deals — the gourd's fire snakes (火鸦).",
+      "_drops": "杀人必摸尸 (古五; design.md § Items): his 储物袋 and what was in it — the gourd whose fire snakes he fought (摸到的兵器，须是打斗里亮过相的), two 敛息符, a bottle of 回春丹 (three), the 龙须草 from the riverbed dead man's fist, 阿禾's 紫须芝, his own red-cord purse (twenty-three 灵石 and one 中品, held for him — zou-purse, a story thing, Hanli 2026-10-05 「丰厚一点」). The 钱袋's nine 灵石 and the 回气丹 bottle (its card, huiqi) are the exit's (wm-xirang swallow); the 银镯子, the 青苔 pinch and the 赤铜 shield shards have no item. `card`: the card the win deals — the gourd's fire snakes (火鸦).",
       "pattern": [
         "cast",
         "strike",
