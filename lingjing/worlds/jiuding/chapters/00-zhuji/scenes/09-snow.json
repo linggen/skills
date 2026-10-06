@@ -5,36 +5,36 @@
  "hui": "h09",
  "at": "chaifang",
  "place": {
-  "zh": "沉鼎观 · 柴房 · 夜里",
-  "en": "Chending Temple · The woodshed · Night"
+  "zh": "沉鼎观 · 柴房 · 腊月初九",
+  "en": "Chending Temple · The woodshed · Ninth of the twelfth month"
  },
  "setup": {
-  "zh": "剑诀拿到了手，剑却没有。拜师以后没几夜，你摸进柴房，闩上门，从储物袋里倒出邹青松那只赤铜葫芦和七八瓣盾片。",
-  "en": "You have the sword canon, but no sword. A few nights after you were taken as a disciple you slip into the woodshed, bar the door, and tip Zou Qingsong's red-copper gourd and seven or eight shield shards out of the storage pouch."
+  "zh": "大比第二天，你从外门的大通铺搬进内门西廊。理储物袋，理出邹青松那只赤铜葫芦和七八瓣盾片——废物，又是一张名帖。",
+  "en": "The day after the contest you move from the outer court's long bunk to the inner court's west wing. Sorting the storage pouch turns up Zou Qingsong's red-copper gourd and seven or eight shield shards — rubbish, and a calling card besides."
  },
  "recap": {
-  "zh": "拜师以后没几夜，你把赤铜葫芦和盾片喂了饭桶，它吐出一口剑，你管它叫劈柴。",
-  "en": "A few nights after you were taken as a disciple, you fed the red-copper gourd and the shield shards to the Rice Tub, and it spat out a sword; you called it Kindling."
+  "zh": "搬屋那天，你把赤铜葫芦和盾片扔进饭桶，图个干净；它吐出一口剑，剑脊上自己刻着：劈柴。",
+  "en": "The day you moved, you tossed the red-copper gourd and the shield shards into the Rice Tub just to be rid of them; it spat out a sword with its own name cut in the spine: Kindling."
  },
  "cast": [],
  "people": [],
  "panel": {
   "caption": {
    "zh": [
-    "剑诀拿到了手，剑却没有。",
-    "一只赤铜葫芦，七八瓣盾片。",
-    "「给我一口剑。不要好看的，要砍得动的。」"
+    "大比第二天，搬屋。",
+    "一只空葫芦，七八瓣盾片——废物，也是名帖。",
+    "扔进饭桶，扔了干净。"
    ],
    "en": [
-    "The sword canon in hand, and no sword.",
-    "One red-copper gourd, seven or eight shield shards.",
-    "\"Give me a sword. Not a pretty one. One that cuts.\""
+    "The day after the contest: moving house.",
+    "An empty gourd, seven or eight shards — rubbish, and a calling card.",
+    "Into the Rice Tub, just to be rid of them."
    ]
   }
  },
  "story": {
-  "zh": "剑诀拿到了手，剑却没有。瞿老教剑，拿的是扫帚把；他总不能也拿一根扫帚把。\n\n拜师以后没几夜，他摸进后头柴房，闩上门，从储物袋里倒出两样东西：邹青松那只赤铜葫芦，塞子还塞着，肚里空空的；那七八瓣赤铜盾片，叮叮当当一小堆。赤松观的东西，山上亮不得，留着，是一条人命挂在腰上；葫芦里那口火，他喂了一个月，喂进去一缕，漏出来半缕——他自己五扇门里就有一扇火，用不着它。",
-  "en": "He had the sword canon now, but no sword. Old Qu taught the sword with a broom handle; he could hardly take up a broom handle too.\n\nA few nights after he was taken as a disciple he slipped into the woodshed at the back, barred the door, and tipped two things out of the storage pouch: Zou Qingsong's red-copper gourd, cork still in, nothing in its belly; and the seven or eight shards of the red-copper shield, a little clinking heap. Red Pine things could not be shown on the mountain, and to keep them was to wear a man's life at his waist; and the fire in the gourd — he had fed it for a month, a wisp in, half a wisp leaking out — he had a fire door of his own among his five, and no need of it."
+  "zh": "大比第二天搬屋，他把储物袋倒了个底朝天，一样一样理，理出两样废物：邹青松那只赤铜葫芦，塞子还塞着，肚里空空的；那七八瓣赤铜盾片，叮叮当当一小堆。葫芦里那口火，他喂了一个月，喂进去一缕，漏出来半缕；赤松观的东西，山上又亮不得，叫认得的人瞧见，便是一张名帖，上头写着：邹青松，是我杀的。",
+  "en": "The day after the contest he moved, and turned the storage pouch out onto the boards to sort it, one thing at a time; two pieces of rubbish came out: Zou Qingsong's red-copper gourd, cork still in, nothing in its belly; and the seven or eight shards of the red-copper shield, a little clinking heap. The fire in the gourd he had fed for a month, a wisp in, half a wisp leaking out; and Red Pine things could not be shown on the mountain — to anyone who knew them they were a calling card, and on it was written: I killed Zou Qingsong."
  },
  "lines": [],
  "buttons": [
@@ -44,18 +44,18 @@
   {
    "id": "feed",
    "label": {
-    "zh": "喂给饭桶：「给我一口剑。」",
-    "en": "Feed them to the Rice Tub: \"Give me a sword.\""
+    "zh": "扔进饭桶，扔了干净",
+    "en": "Toss them into the Rice Tub, just to be rid of them"
    },
-   "means": "feeds the red-copper gourd and the shield shards to the Rice Tub and gets a plain sword, Kindling",
+   "means": "tosses the red-copper gourd and the shield shards into the Rice Tub to be rid of them, wanting nothing; it spits out a plain sword, Kindling",
    "grant": {
     "table": "scene",
     "progress": 20,
     "item": "pichai-jian"
    },
    "story": {
-    "zh": "他拿袖子把饭桶擦了一遍，按到第三回，盖子开了。他先把盾片一片一片丢进去，末了丢进葫芦，两只手按上铜肚子：「给我一口剑。不要好看的，要砍得动的。」\n\n饭桶嚼了很久。「咯嘣」，「咯嘣」，嚼那只葫芦，嚼得比嚼哪一样都费劲，嚼一阵，歇一歇，像一个没牙的老头啃一块冻硬了的饼；歇一回，吸他一口气，吸到第五口，他眼前一阵一阵发黑。末了，盖子「咔哒」一声弹开，一道红光窜出来，「笃」的一声，钉在了柴房的门板上，剑柄还在嗡嗡地颤。小狰吓得一头扎进了柴堆。\n\n小满拔了三回，才拔下来。一口剑，三尺来长，剑身暗红，是那葫芦和盾片的铜色，火纹一道也没有了；剑脊上一溜锤印，坑坑洼洼，像镇上铁匠铺里学徒打坏了的。他灌一丝气进去，剑身上浮起一层淡淡的光，薄得像一层油——是件法器，最寻常的那一种。他拿它劈了一根柴，柴应声两半，切口齐得像拿尺子比过。\n\n木牌一烫，银月钻了出来，绕着那口剑看了一圈，懒懒地道：「起个名字。剑要有名字。本王给你想一个——」小满把剑翻过来：剑脊近柄那一截，锤印当中歪歪扭扭刻着两个字，劈柴；底下一行小字：不好看，砍得动。他又劈了一根：「劈柴。」银月的胡子翘了一翘：「……那是名字？」小满道：「它自己刻的。头一件干的，也是这个。」他把剑往柴堆上一插，又去捡第三根。",
-    "en": "He wiped the Rice Tub over with his sleeve and pressed; on the third press the lid opened. In went the shards, one by one, and last of all the gourd; then both his hands on the bronze belly: \"Give me a sword. Not a pretty one. One that cuts.\"\n\nThe Rice Tub chewed a long time. *Crunch*, *crunch* — the gourd it chewed harder than anything yet, chewing a while and resting, like a toothless old man at a frozen flatbread; every rest it took a mouthful of his qi, and by the fifth his sight was going black in waves. At last the lid sprang open with a *clack*, a streak of red shot out — *thock* — and stuck in the woodshed door, the hilt still humming. Little Zheng dived headfirst into the woodpile.\n\nIt took Xiaoman three pulls to work it loose. A sword, three feet or so, its blade a dull red — the copper of the gourd and the shards — with not one line of the fire pattern left; down the spine a row of hammer marks, pitted and uneven, like a botched piece from an apprentice at the town smithy. He sent a thread of qi into it, and a faint light rose on the blade, thin as a film of oil — an artifact, of the commonest kind. He split a log with it: the log fell in two, the cut as straight as if ruled.\n\nThe token burned; Yinyue slipped out, walked once round the sword, and said lazily: \"Give it a name. A sword wants a name. This king will think of one —\" Xiaoman turned the sword over: near the hilt, among the hammer marks, two crooked characters were cut into the spine — *Kindling* — and under them a line of small ones: *Not pretty. Cuts.* He split another log. \"Kindling.\" Her whiskers twitched up. \"…That's a name?\" \"It carved it itself,\" said Xiaoman. \"And it's the first thing it did.\" He stuck the sword in the woodpile and went for a third log."
+    "zh": "他摸进柴房，按开饭桶，一股脑儿倒了进去，心里什么也没想——扔了干净。\n\n饭桶嚼了很久。「咯嘣」，「咯嘣」，嚼一阵，歇一歇，像一个没牙的老头啃一块冻硬了的饼；歇一回，吸他一口气，吸到第五口，他眼前一阵一阵发黑。末了，盖子「咔哒」一弹，一道红光窜出来，「笃」的一声，钉在了门板上，剑柄还在嗡嗡地颤。小狰一头扎进了柴堆。\n\n他拔了三回才拔下来。一口剑，三尺来长，剑身暗红，是那葫芦和盾片的铜色，火纹一道也没有了；剑脊上一溜锤印，坑坑洼洼，像镇上铁匠铺里学徒打坏了的。灌一丝气进去，剑身上浮起薄薄一层光，像一层油——是件法器，最寻常的那一种。剑脊近柄那一截，锤印当中歪歪扭扭刻着两个字：劈柴；底下一行小字：劈得开，点得着。\n\n他顺手劈了一根柴。柴应声两半，切口齐得像拿尺子比过。过了一会儿，两片切口上各冒起一缕青烟。他拿脚踩了三脚，踩灭了，把剑卷进铺盖，塞到了新铺底下。",
+    "en": "He slipped into the woodshed, pressed the Rice Tub open, and tipped the lot in, wanting nothing at all — just to be rid of it.\n\nThe Rice Tub chewed a long time. *Crunch*, *crunch* — chewing a while and resting, like a toothless old man at a frozen flatbread; every rest it took a mouthful of his qi, and by the fifth his sight was going black in waves. At last the lid sprang open with a *clack*, a streak of red shot out — *thock* — and stuck in the door, the hilt still humming. Little Zheng dived headfirst into the woodpile.\n\nIt took him three pulls to work it loose. A sword, three feet or so, its blade a dull red — the copper of the gourd and the shards — with not one line of the fire pattern left; down the spine a row of hammer marks, pitted and uneven, like a botched piece from an apprentice at the town smithy. He sent a thread of qi into it, and a thin light rose on the blade like a film of oil — an artifact, of the commonest kind. Near the hilt, among the hammer marks, two crooked characters were cut into the spine: *Kindling*; and under them a line of small ones: *What it splits, it lights.*\n\nHe split a log with it, just to see. The log fell in two, the cut as straight as if ruled. A moment later a thread of blue smoke rose from each face of the cut. He stamped on them three times, stamped them out, rolled the sword into his bedding, and pushed it under his new bunk."
    },
    "next": "09-furnace"
   }

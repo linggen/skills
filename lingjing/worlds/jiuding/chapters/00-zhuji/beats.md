@@ -5,8 +5,9 @@ The book's 古七 (story/jiuding-lu/07-第七回.md; 古九 before the 2026-10-0
 `story` is the book's own passage (verbatim zh, en beside it); setup, recap, captions and buttons
 speak to the player as 你 (story/jiuding-lu/DESIGN.md § 四·五 人称分工).
 
-1. **The sword** (`09-snow` — id kept, 柴房). 「剑诀拿到了手，剑却没有。」 A few nights after 拜师 the 赤铜葫芦 and
-   the shield shards go into the 饭桶 → 劈柴 (`pichai-jian`). The snow night over the 九转 was cut (Hanli 2026-10-06:
+1. **The sword** (`09-snow` — id kept, 柴房, 腊月初九). The day after the 大比 he moves into the 内门西廊; sorting the
+   bag, the 赤铜葫芦 and the shield shards are rubbish and a 名帖 — tossed into the 饭桶 wanting nothing (Hanli 2026-10-06:
+   no asking — 「要什么，不出什么」) → 劈柴 (`pichai-jian`), the label its name and 「劈得开，点得着」; the first log smoulders. The snow night over the 九转 was cut (Hanli 2026-10-06:
    「不要提这个筑基丹了，等筑基的时候再拿出来」) — no scene shows the 九转 before the eve of 筑基; `foundation-pill-9`
    comes into the bag on 09-qulao `listen` (the eve), and the book's 九月初二 is where he takes it out.
 2. **The furnace** (`09-furnace`, 柴房). Spring: 周衡's basket of culls → 九转聚气丹

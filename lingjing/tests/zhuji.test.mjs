@@ -48,12 +48,12 @@ test('古九 is its own chapter at 沉鼎观: between 外门 and 冀, the Founda
   assert.deepEqual([...seen].sort(), Object.keys(CH.scenes).sort());
 });
 
-test('the winter and the year: the one 九转 on the snow night, the furnace\'s culls, and the seasons — the story\'s own, free of 体力 (Hanli, 2026-10-01), in order, once', () => {
+test('the winter and the year: 劈柴 at the move, the furnace\'s culls, and the seasons — the story\'s own, free of 体力 (Hanli, 2026-10-01), in order, once', () => {
   let s = atSnow();
-  assert.deepEqual(buttons(s), ['feed'], 'the gourd and the shards into the 饭桶 — nothing else');
+  assert.deepEqual(buttons(s), ['feed'], 'the gourd and the shards tossed into the 饭桶 to be rid of them — nothing asked (Hanli 2026-10-06)');
   s = go(s, 'feed').state;
   assert.equal(s.scene, '09-furnace');
-  assert.equal(s.bag['pichai-jian'], 1, 'a plain sword');
+  assert.equal(s.bag['pichai-jian'], 1, 'a plain sword, at the move into the 内门 the day after the 大比');
   assert.equal(s.bag['foundation-pill-9'], undefined, 'the 九转 is not shown before the eve of 筑基 (Hanli 2026-10-06)');
   assert.equal(s.bag['foundation-pill'], undefined, 'no 官丹 yet: 祁长松 has the sect\'s one');
   s = go(s, 'fire').state;

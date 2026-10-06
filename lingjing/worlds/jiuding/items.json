@@ -978,7 +978,7 @@
         "root": "fire",
         "atk": 3
       },
-      "_about": "古五: 邹青松's gourd, seen in the fight (火蛇) — 摸到的兵器，须是打斗里亮过相的 (design.md § Items). Worn, it lends fire; the win that drops it deals 火鸦 (creatures.json foe-zou `card`), its fire snakes as a card. Never sold. In the book (古七, Hanli 2026-10-06) it goes into the 饭桶 with the shield shards and comes out a plain sword (pichai-jian).",
+      "_about": "古五: 邹青松's gourd, seen in the fight (火蛇) — 摸到的兵器，须是打斗里亮过相的 (design.md § Items). Worn, it lends fire; the win that drops it deals 火鸦 (creatures.json foe-zou `card`), its fire snakes as a card. Never sold. In the book (古七, Hanli 2026-10-06) he tosses it into the 饭桶 with the shield shards to be rid of them, and out comes a plain sword (pichai-jian).",
       "art_source": "The fire essence's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
     {
@@ -990,8 +990,8 @@
       },
       "art": "art/items/iron-sword.webp",
       "about": {
-        "zh": "赤铜葫芦连七八瓣盾片喂进饭桶，吸了你五口气，吐出来这一口：三尺来长，剑身暗红，火纹一道也没有了，剑脊上一溜锤印，像铁匠铺学徒打坏的。最寻常的法器。剑脊近柄，锤印当中刻着两个字：劈柴；底下一行小字：不好看，砍得动。",
-        "en": "The red-copper gourd and seven or eight shield shards fed to the Rice Tub, five mouthfuls of your qi, and out came this: three feet or so, the blade a dull red with not one line of the fire pattern left, a row of hammer marks down the spine like an apprentice's botched piece. The commonest kind of artifact. Cut into the spine near the hilt, among the hammer marks: Kindling; and a line of small ones: Not pretty. Cuts."
+        "zh": "赤铜葫芦连七八瓣盾片，你扔进饭桶图个干净，它吸了你五口气，吐出这一口：三尺来长，剑身暗红，火纹一道也没有了，剑脊上一溜锤印，像铁匠铺学徒打坏的。最寻常的法器。剑脊近柄刻着两个字：劈柴；底下一行小字：劈得开，点得着。",
+        "en": "The red-copper gourd and seven or eight shield shards, tossed into the Rice Tub just to be rid of them; it took five mouthfuls of your qi and out came this: three feet or so, the blade a dull red with not one line of the fire pattern left, a row of hammer marks down the spine like an apprentice's botched piece. The commonest kind of artifact. Cut into the spine near the hilt: Kindling; and a line of small ones: What it splits, it lights."
       },
       "buy": 0,
       "sell": 0,
@@ -1000,7 +1000,7 @@
         "root": "metal",
         "atk": 3
       },
-      "_about": "古七 (Hanli 2026-10-06): the 赤松观 gourd and shield shards are useless now — a few nights after 拜师 he feeds them to the 饭桶 and it gives a plain sword, the one he practises the 《河洛剑诀》 with (瞿老 teaches with a broom handle). Granted at 09-snow/feed. Copper in, so it lends 金. Never sold. In the game the gourd stays in the bag (a worn weapon is never taken).",
+      "_about": "古七 (Hanli 2026-10-06): the day after the 大比 he moves into the 内门西廊; sorting the bag, the 赤松观 gourd and shield shards are rubbish and a 名帖 to anyone who knows them — he tosses them into the 饭桶 wanting nothing (要什么，不出什么) and it gives a plain sword, already under his bunk when 瞿老 gives him the 《河洛剑诀》. The label names it (劈柴; 小字「劈得开，点得着」): copper from a fire gourd, so what it splits catches a lick of fire — shown in use, never explained (the first log smoulders; 古八's 河伯庙 ghost-fire comes off a splinter it cut). It cannot cut a 七层's 护体灵光 (屠七). Granted at 09-snow/feed. Copper in, so it lends 金. Never sold. In the game the gourd stays in the bag (a worn weapon is never taken).",
       "art_source": "The iron sword's picture until its own is painted."
     },
     {
