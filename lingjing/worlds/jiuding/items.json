@@ -543,6 +543,82 @@
       }
     },
     {
+      "id": "penti-fu",
+      "kind": "treasure",
+      "name": {
+        "zh": "喷嚏符",
+        "en": "Sneezing Charm"
+      },
+      "art": "art/items/talisman.webp",
+      "about": {
+        "zh": "小狰换下来的一撮红毛，喂进饭桶，吸你一口灵气，飘出一张黄纸：朱砂画一只鼻子，鼻孔朝天。小狰闻了一闻，一连打了七个喷嚏。贴在谁身上，谁便打喷嚏，打到停不下来。一张，一回。",
+        "en": "A pinch of the zheng's moulted red fur, fed to the Rice Tub for a mouthful of your qi: out floats a yellow slip with a nose drawn on it in cinnabar, nostrils to the sky. The zheng sniffed it and sneezed seven times running. Whoever it's stuck on sneezes and can't stop. One slip, one go."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "story": true,
+      "_about": "古六 (Hanli 2026-10-06): the 开炉夜 of 腊月初七 — broke, he feeds the 饭桶 凡物 and each feeding sucks a mouthful of his 灵气; granted at wm-qianye/sleep. A story thing: no slot, never sold. Used in bout one: slapped on 何七's neck, he sneezes himself off the stage, the slip goes to ash.",
+      "art_source": "The talisman's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16) until its own is painted."
+    },
+    {
+      "id": "yangyang-zhen",
+      "kind": "treasure",
+      "name": {
+        "zh": "痒痒针",
+        "en": "Tickle Needles"
+      },
+      "art": "art/items/iron-sword.webp",
+      "about": {
+        "zh": "小狰的一根胡子换来的三根针，细得像牛毛，针尖一点绿。扎着一点，先麻，后痒，痒得人笑，一盏茶的工夫收不住。凡铁的东西，打不进比你高得多的人的护体灵光。",
+        "en": "Three needles for one of the zheng's whiskers, fine as ox-hair, a dot of green at each tip. A prick goes numb, then itches, itches till you laugh, and you can't stop for the time it takes to drink a cup of tea. Common iron: it won't get through the guarding light of someone far above you."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "story": true,
+      "_about": "古六 (Hanli 2026-10-06): the 开炉夜 of 腊月初七 — broke, he feeds the 饭桶 凡物 and each feeding sucks a mouthful of his 灵气; granted at wm-qianye/sleep. A story thing: no slot, never sold. Touched and let go against 秦雁; thrown in the final, they glance off 祁长松's 护体灵光 and one finds an inner-court senior in the crowd.",
+      "art_source": "The iron sword's picture until its own is painted."
+    },
+    {
+      "id": "zipai-jing",
+      "kind": "treasure",
+      "name": {
+        "zh": "自拍镜",
+        "en": "Selfie Mirror"
+      },
+      "art": "art/items/jade-ring.webp",
+      "about": {
+        "zh": "伙房大娘扔掉的一面裂手镜，喂进饭桶，吐出来一面巴掌大的铜镜，缺一个角。谁拿起来照，照出来的都是你的脸；什么光打上去，它原样扔回去。你说：「它只照我。叫自拍镜吧。」",
+        "en": "A cracked hand-mirror the kitchen auntie threw out, fed to the Rice Tub: out came a palm-sized bronze mirror with a corner chipped off. Whoever looks into it sees your face; whatever light strikes it, it throws straight back. You said: \"It only shows me. Call it the selfie mirror.\""
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "story": true,
+      "_about": "古六 (Hanli 2026-10-06): the 开炉夜 of 腊月初七 — broke, he feeds the 饭桶 凡物 and each feeding sucks a mouthful of his 灵气; granted at wm-qianye/sleep. A story thing: no slot, never sold. In the semifinal it throws 马小宝's beam back into his own mirror and shatters; the light through the crack brands the palm (圈里一横).",
+      "art_source": "The jade ring's picture until its own is painted."
+    },
+    {
+      "id": "niuzhi-ganlu",
+      "kind": "treasure",
+      "name": {
+        "zh": "牛脂甘露",
+        "en": "Beef-Tallow Nectar"
+      },
+      "art": "art/items/qi-salt.webp",
+      "about": {
+        "zh": "一只小陶罐，牛油花椒味，罐上歪歪扭扭四个字。十月里喂一只破袜子换来的；银月说是火锅底料，说了两个月。",
+        "en": "A little clay jar that smells of beef tallow and Sichuan pepper, four crooked characters on it. Traded in the tenth month for one holey sock; Yinyue has been calling it hotpot base for two months."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "story": true,
+      "_about": "古四 (the 饭桶's first feeding: 一只破袜子 → 牛脂甘露); 古六 (Hanli 2026-10-06): the morning of 腊月初八 he greases his soles with it and slides across the frozen yard into 钱掌柜's board — the jar empties; that night two socks give a 鸳鸯 base. Granted at wm-qianye/sleep, where he takes it out from under the woodpile. A story thing: no slot, never sold.",
+      "art_source": "The qi salt's picture until its own is painted."
+    },
+    {
       "id": "jingjin",
       "juan": 2,
       "kind": "material",
