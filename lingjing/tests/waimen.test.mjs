@@ -508,7 +508,7 @@ test('古五\'s chase (2026-10-02): 邹青松 is a trial outlasted, 踏马的符
   assert.ok(played.ok, JSON.stringify(played));
   assert.ok(st.you.board.some(m => m.id === 'gui' && m.taunt), 'the 蛫 stands guard: a 杀招 takes it first');
   s = must(resolve, won(s, 'mijing-zou'), { exit: 'swallow' });
-  assert.equal(s.bag['duan-dao'], 1, 'the knife from the dry riverbed');
+  assert.equal(s.bag['duan-dao'], 1, 'the knife from the dry underground river');
 });
 
 test('杀人必摸尸 (古五, 2026-10-03): 邹青松 killed leaves his 储物袋 — the gourd he fought with, 敛息符, 回春丹, 紫须芝 — and the gourd\'s fire snakes as a card', async () => {
@@ -531,7 +531,7 @@ test('杀人必摸尸 (古五, 2026-10-03): 邹青松 killed leaves his 储物�
   const card = winCard(content, { ...s, cards: [] }, zou, DAY1);
   assert.equal(card?.id, 'huoya', 'the win deals the gourd\'s fire snakes');
   const e = CH.scenes['wm-xirang'].exits.find(x => x.id === 'swallow');
-  assert.equal(e.grant.wealth, 9, 'the 钱袋: seven from the fat 公子, two from the riverbed');
+  assert.equal(e.grant.wealth, 9, 'the 钱袋: seven from the fat 公子, two from the underground river');
   assert.equal(e.grant.card, 'huiqi', 'the 回气丹 bottle');
   // 穷人家的孩子，见了宝，都拿走: the dead 九层's pills and map, the 鼎苔 scraped clean — all stowed by the exit.
   assert.deepEqual(e.grant.more, { 'qi-pill': 5, dingtai: 3, 'neimen-map': 1 });

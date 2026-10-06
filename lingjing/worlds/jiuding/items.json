@@ -1006,8 +1006,8 @@
       },
       "art": "art/items/huojing.webp",
       "about": {
-        "zh": "赤松观的火葫芦，葫芦口放得出火蛇。塞子是你一箭射下来的，从干河床上捡回来塞上。空了。是赤松观的东西：山上，有赤松观的人在的地方，不能亮。",
-        "en": "Red Pine Abbey's fire gourd; fire snakes pour from its mouth. The cork is the one your arrow shot off, picked up from the dry riverbed and pushed back in. Empty now. It is Red Pine Abbey's: on the mountain, or anywhere their people are, it cannot be shown."
+        "zh": "赤松观的火葫芦，葫芦口放得出火蛇。塞子是你一箭射下来的，从干了的暗河里捡回来塞上。空了。是赤松观的东西：山上，有赤松观的人在的地方，不能亮。",
+        "en": "Red Pine Abbey's fire gourd; fire snakes pour from its mouth. The cork is the one your arrow shot off, picked up from the dry underground river and pushed back in. Empty now. It is Red Pine Abbey's: on the mountain, or anywhere their people are, it cannot be shown."
       },
       "buy": 0,
       "sell": 0,
@@ -1075,7 +1075,7 @@
       "sell": 0,
       "sold": [],
       "story": true,
-      "_about": "古五: 邹青松 took it off 阿禾 at the dry riverbed; 小满 finds it in his pouch and returns it in 古六. A story thing (`story`): no slot, never sold.",
+      "_about": "古五: 邹青松 took it off 阿禾 at the dry underground river; 小满 finds it in his pouch and returns it in 古六. A story thing (`story`): no slot, never sold.",
       "art_source": "The lingzhi's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
     {
@@ -1177,8 +1177,8 @@
       },
       "art": "art/items/iron-sword.webp",
       "about": {
-        "zh": "凡铁，刀口缺了两个牙，后来又缺了一个。秘境干河床上，从一个死人手里一根一根掰开指头拿下来的。猎户放血，就使这么一把。",
-        "en": "Common iron, two nicks in the edge, and later a third. Taken in the hidden realm's dry riverbed from a dead man's hand, one stiff finger at a time. A hunter bleeds a deer with a knife like this."
+        "zh": "凡铁，刀口缺了两个牙，后来又缺了一个。秘境那道干了的暗河里，从一个死人手里一根一根掰开指头拿下来的。猎户放血，就使这么一把。",
+        "en": "Common iron, two nicks in the edge, and later a third. Taken in the hidden realm's dry underground river from a dead man's hand, one stiff finger at a time. A hunter bleeds a deer with a knife like this."
       },
       "buy": 8,
       "sell": 5,
@@ -1205,7 +1205,7 @@
       "buy": 0,
       "sell": 0,
       "sold": [],
-      "_about": "古五 (the author, 2026-10-02): the 秘境's own — round the four 七拃 pits in the stone chamber, and in the cracks of the dry riverbed below the wind shaft, where the cauldron's breath seeped down. Every one of the nine cauldrons' old footings will have it (OUTLINE 扣子簿). No effect of its own: carried into the Foundation breakthrough it is the last thing reached for (ladder.json breakthrough.pill), a small bonus.",
+      "_about": "古五 (the author, 2026-10-02): the 秘境's own — round the four 七拃 pits in the stone chamber, and in the cracks of the dry underground river below the wind shaft, where the cauldron's breath seeped down. Every one of the nine cauldrons' old footings will have it (OUTLINE 扣子簿). No effect of its own: carried into the Foundation breakthrough it is the last thing reached for (ladder.json breakthrough.pill), a small bonus.",
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-05: one square footing pit in the stone chamber floor, its rim ringed with blackish-green moss."
     },
     {
@@ -1227,7 +1227,7 @@
         "progress": 40,
         "table": "task"
       },
-      "_about": "古五 (the author, 2026-10-02; 《史记·封禅书》「龙髯拔，堕」, 鲁泥鳅's rope): only in the 秘境's dry riverbed, bared the year the Si fell lowest. 冲开经脉 → 修为, the 筑基丹's own table (task).",
+      "_about": "古五 (the author, 2026-10-02; 《史记·封禅书》「龙髯拔，堕」, 鲁泥鳅's rope): only in the 秘境's dry underground river, bared the year the Si fell lowest. 冲开经脉 → 修为, the 筑基丹's own table (task).",
       "art_source": "The ginseng's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
     {
@@ -1261,8 +1261,8 @@
       },
       "art": "art/items/tongkuang.webp",
       "about": {
-        "zh": "秘境干河床崖壁上的一道铜矿，往年淹在水底下。九鼎是收九州之铜铸的。",
-        "en": "From a copper vein in the wall of the hidden realm's dry riverbed, under water in other years. The nine cauldrons were cast from the copper of the nine provinces."
+        "zh": "秘境暗河崖壁上的一道铜矿，往年淹在水底下。九鼎是收九州之铜铸的。",
+        "en": "From a copper vein in the wall of the hidden realm's underground river, under water in other years. The nine cauldrons were cast from the copper of the nine provinces."
       },
       "buy": 12,
       "sell": 4,
