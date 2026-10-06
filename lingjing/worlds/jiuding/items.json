@@ -627,14 +627,14 @@
       },
       "art": "art/items/firm-pill.webp",
       "about": {
-        "zh": "饭桶吃了两块灵石吐出来的，桂圆大小，粉里透红，一道红纹两头上翘，像一张抿着嘴的笑脸，香得小狰口水挂了一尺长。银月闻一闻便叫出了名字：吃一颗，见谁都笑，走半步栽一跤。油纸包三层，塞在腰带夹层里。",
-        "en": "What the Rice Tub gave for two spirit stones: the size of a longan, pink shading to red, one red line turned up at both ends like a mouth pressed shut on a smile, smelling so good the zheng drooled a foot. Yinyue named it at a sniff: eat one, and you grin at everyone and go over every half step. Three layers of oiled paper, in your belt fold."
+        "zh": "饭桶吐出来的一颗丹，桂圆大小，没有纹，灰里透红，闻着香，香得小狰口水挂了一尺长。银月闻一闻便叫出了名字：吃一颗，见谁都笑，走半步栽一跤。油纸包三层，塞在腰带夹层里。",
+        "en": "A pill the Rice Tub spat out: the size of a longan, no lines, grey shot through with red, smelling so sweet the zheng drooled a foot. Yinyue named it at a sniff: eat one, and you grin at everyone and go over every half step. Three layers of oiled paper, in your belt fold."
       },
       "buy": 0,
       "sell": 0,
       "sold": [],
       "story": true,
-      "_about": "古四 (Hanli 2026-10-06: 「让小满吃了吧。两颗丹一个毒药，一个解药。」): the two 灵石 he feeds the 饭桶 give a poison and its antidote; 银月 names both; he wraps them and keeps them in his belt fold. 古六: at the 腊八 hotpot the poison rolls into the red broth, he eats it for a 丸子, laughs and falls every half step round the 柴房 until he remembers 「粉的毒，灰的解」 and takes the antidote. Granted at wm-diyilu/save with the 回春丹. A story thing: no slot, never sold; resolved in 卷一 — no open hook.",
+      "_about": "古四 (Hanli 2026-10-06: 「让小满吃了吧。两颗丹一个毒药，一个解药。」): the two 灵石 he feeds the 饭桶 give a poison and its antidote; 银月 names both; he wraps them and keeps them in his belt fold. 古六: at the 腊八 hotpot the poison rolls into the red broth, he eats it for a 丸子, laughs and falls every half step round the 柴房 until he remembers 「香的毒，苦的解」 and takes the antidote. Granted at wm-diyilu/save with the 回春丹. A story thing: no slot, never sold; resolved in 卷一 — no open hook.",
       "art_source": "The firm pill's picture until its own is painted."
     },
     {
@@ -646,14 +646,14 @@
       },
       "art": "art/items/qi-pill.webp",
       "about": {
-        "zh": "同一口吐出来的另一颗，灰不溜秋，皱得像一颗晒干的枣，一股苦味。银月拿鼻子拱了拱：「这一颗，是它的解药。」粉的毒，灰的解。",
-        "en": "The other pill from the same mouthful: dull grey, wrinkled like a dried jujube, bitter-smelling. Yinyue nosed it: \"And this one is its antidote.\" Pink the poison, grey the cure."
+        "zh": "同一口吐出来的另一颗，一样大，一样没有纹，一样灰里透红，只是闻着苦。银月拿鼻子拱了拱：「这一颗，是它的解药。」香的毒，苦的解。",
+        "en": "The other pill from the same mouthful: the same size, no lines, the same grey shot through with red — only it smells bitter. Yinyue nosed it: \"And this one is its antidote.\" Sweet the poison, bitter the cure."
       },
       "buy": 0,
       "sell": 0,
       "sold": [],
       "story": true,
-      "_about": "古四 (Hanli 2026-10-06: 「让小满吃了吧。两颗丹一个毒药，一个解药。」): the two 灵石 he feeds the 饭桶 give a poison and its antidote; 银月 names both; he wraps them and keeps them in his belt fold. 古六: at the 腊八 hotpot the poison rolls into the red broth, he eats it for a 丸子, laughs and falls every half step round the 柴房 until he remembers 「粉的毒，灰的解」 and takes the antidote. Granted at wm-diyilu/save with the 回春丹. A story thing: no slot, never sold; resolved in 卷一 — no open hook.",
+      "_about": "古四 (Hanli 2026-10-06: 「让小满吃了吧。两颗丹一个毒药，一个解药。」): the two 灵石 he feeds the 饭桶 give a poison and its antidote; 银月 names both; he wraps them and keeps them in his belt fold. 古六: at the 腊八 hotpot the poison rolls into the red broth, he eats it for a 丸子, laughs and falls every half step round the 柴房 until he remembers 「香的毒，苦的解」 and takes the antidote. Granted at wm-diyilu/save with the 回春丹. A story thing: no slot, never sold; resolved in 卷一 — no open hook.",
       "art_source": "The qi pill's picture until its own is painted."
     },
     {
