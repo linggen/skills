@@ -951,14 +951,14 @@
       },
       "art": "art/items/pouch-mid.webp",
       "about": {
-        "zh": "邹青松自己攒的，袋口红绳扎了三道死结。二十三块灵石，一颗中品，碧透，里头一缕光自己在转。你数回袋里，扎好，替他拿着。",
-        "en": "Zou Qingsong's own savings, the mouth tied with red cord in three dead knots. Twenty-three spirit stones and one of middle grade, clear green, a wisp of light turning inside it. You counted them back in, tied it up, and hold it for him."
+        "zh": "邹青松自己攒的，袋口红绳扎了三道死结。二十三块灵石，一颗中品，碧透，里头一缕光自己在转。你数回袋里，扎好。",
+        "en": "Zou Qingsong's own savings, the mouth tied with red cord in three dead knots. Twenty-three spirit stones and one of middle grade, clear green, a wisp of light turning inside it. You counted them back in and tied it up."
       },
       "buy": 0,
       "sell": 0,
       "sold": [],
       "story": true,
-      "_about": "古五 (Hanli 2026-10-05「丰厚一点」— a layer nine carries more): kept whole, not spent — 「钱，我先替他拿着」; its 去处 rides with zou-letter (彭城, 小妹的嫁妆; OUTLINE 扣子簿). A story thing: no slot, never sold, adds no wealth.",
+      "_about": "古五 (Hanli 2026-10-05「丰厚一点」— a layer nine carries more): in the book (Hanli 2026-10-06) the whole purse, 中品 too, goes into the 饭桶 at 古五's end (「想出仙品，得喂仙品」) and nothing comes out; the letter (zou-letter) stays, a debt to 彭城 with no money behind it. A story thing: no slot, never sold, adds no wealth.",
       "art_source": "The middle-grade pouch's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-25) until its own is painted."
     },
     {
