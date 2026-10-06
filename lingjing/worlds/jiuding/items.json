@@ -608,14 +608,14 @@
       },
       "art": "art/items/qi-salt.webp",
       "about": {
-        "zh": "一只小陶罐，牛油花椒味，罐上歪歪扭扭四个字：牛脂甘露；底下一行小字：麻辣鲜香。十月里喂一只破袜子换来的；银月说是火锅底料，说了两个月。",
-        "en": "A little clay jar that smells of beef tallow and Sichuan pepper, four crooked characters on it — Beef-Tallow Nectar — and under them a line of small ones: Hot, numbing, fragrant. Traded in the tenth month for one holey sock; Yinyue has been calling it hotpot base for two months."
+        "zh": "一只小陶罐，牛油花椒味，罐上歪歪扭扭四个字：牛脂甘露；底下一行小字：麻辣鲜香。十月里喂一根伙房熬汤剩下的牛骨头换来的；银月说是火锅底料，说了两个月。",
+        "en": "A little clay jar that smells of beef tallow and Sichuan pepper, four crooked characters on it — Beef-Tallow Nectar — and under them a line of small ones: Hot, numbing, fragrant. Traded in the tenth month for a beef bone left over from the kitchen's soup; Yinyue has been calling it hotpot base for two months."
       },
       "buy": 0,
       "sell": 0,
       "sold": [],
       "story": true,
-      "_about": "古四 (the 饭桶's first feeding: 一只破袜子 → 牛脂甘露); 古六 (Hanli 2026-10-06): in the 卢方 bout (Hanli 2026-10-06), hanging off the rim, he flings out whatever his hand finds in the 储物袋 — this jar; it breaks on the stone and 卢方's stamp skates off the stage on the tallow; that night two socks give a 鸳鸯 base. Granted at wm-qianye/sleep, where he takes it out from under the woodpile. A story thing: no slot, never sold.",
+      "_about": "古四 (the 饭桶's first feeding: 一根牛骨头 → 牛脂甘露); 古六 (Hanli 2026-10-06): in the 卢方 bout (Hanli 2026-10-06), hanging off the rim, he flings out whatever his hand finds in the 储物袋 — this jar; it breaks on the stone and 卢方's stamp skates off the stage on the tallow; that night two soup bones give a 鸳鸯 base. Granted at wm-qianye/sleep, where he takes it out from under the woodpile. A story thing: no slot, never sold.",
       "art_source": "The qi salt's picture until its own is painted."
     },
     {
