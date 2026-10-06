@@ -528,8 +528,8 @@
       },
       "art": "art/items/talisman.webp",
       "about": {
-        "zh": "银月从尾巴尖上拔下一根银毛，丢进饭桶，「本王给你开个张」——飘出来一张黄纸：朱砂画的一匹马，脑袋大，身子小，四条腿像四根筷子插在一个馒头上。你骂了一句「这踏马的，是什么符？」，它便叫了这个名字。不知何用，叠成小方块，跟含笑半步颠塞在腰带夹层里。斗法时在手：打出去，一跳躲开一回杀招，落点不由人，落在蛫背上。只灵一回，用完成一撮黄灰。",
-        "en": "Yinyue plucked one silver hair from the tip of her tail and dropped it into the Rice Tub — \"Let this king open shop for you\" — and out floated a slip of yellow paper: a horse in cinnabar, big head, small body, four legs like four chopsticks stuck in a steamed bun. You swore at it — \"What the hoof is this charm?\" — and the name stuck. You had no idea what it was for; you folded it small and tucked it into your belt fold beside the Smiling Half-Step Topple. In hand when you fight: play it and one leap clears a killing blow; where you land is not yours to choose — onto the gui's back. Good once; used, it is a pinch of yellow ash."
+        "zh": "银月从尾巴尖上拔下一根银毛，丢进饭桶，「本王给你开个张」——飘出来一张黄纸：朱砂画的一匹马，脑袋大，身子小，四条腿像四根筷子插在一个馒头上。你骂了一句「这踏马的，是什么符？」，它便叫了这个名字。不知何用，叠成小方块，塞在腰带夹层里。斗法时在手：打出去，一跳躲开一回杀招，落点不由人，落在蛫背上。只灵一回，用完成一撮黄灰。",
+        "en": "Yinyue plucked one silver hair from the tip of her tail and dropped it into the Rice Tub — \"Let this king open shop for you\" — and out floated a slip of yellow paper: a horse in cinnabar, big head, small body, four legs like four chopsticks stuck in a steamed bun. You swore at it — \"What the hoof is this charm?\" — and the name stuck. You had no idea what it was for; you folded it small and tucked it into your belt fold. In hand when you fight: play it and one leap clears a killing blow; where you land is not yours to choose — onto the gui's back. Good once; used, it is a pinch of yellow ash."
       },
       "sold": [],
       "effect": {
@@ -617,44 +617,6 @@
       "story": true,
       "_about": "古四 (the 饭桶's first feeding: 一只破袜子 → 牛脂甘露); 古六 (Hanli 2026-10-06): in the 卢方 bout (Hanli 2026-10-06), hanging off the rim, he flings out whatever his hand finds in the 储物袋 — this jar; it breaks on the stone and 卢方's stamp skates off the stage on the tallow; that night two socks give a 鸳鸯 base. Granted at wm-qianye/sleep, where he takes it out from under the woodpile. A story thing: no slot, never sold.",
       "art_source": "The qi salt's picture until its own is painted."
-    },
-    {
-      "id": "hanxiao-bandian",
-      "kind": "treasure",
-      "name": {
-        "zh": "含笑半步颠",
-        "en": "Smiling Half-Step Topple"
-      },
-      "art": "art/items/firm-pill.webp",
-      "about": {
-        "zh": "饭桶吐出来的一颗丹，桂圆大小，没有纹，灰里透红，闻着香，香得小狰口水挂了一尺长。银月闻一闻便叫出了名字：吃一颗，见谁都笑，走半步栽一跤。油纸包三层，塞在腰带夹层里。",
-        "en": "A pill the Rice Tub spat out: the size of a longan, no lines, grey shot through with red, smelling so sweet the zheng drooled a foot. Yinyue named it at a sniff: eat one, and you grin at everyone and go over every half step. Three layers of oiled paper, in your belt fold."
-      },
-      "buy": 0,
-      "sell": 0,
-      "sold": [],
-      "story": true,
-      "_about": "古四 (Hanli 2026-10-06: 「让小满吃了吧。两颗丹一个毒药，一个解药。」): the two 灵石 he feeds the 饭桶 give a poison and its antidote; 银月 names both; he wraps them and keeps them in his belt fold. 古六: at the 腊八 hotpot the poison rolls into the red broth, he eats it for a 丸子, laughs and falls every half step round the 柴房 until he remembers 「香的毒，苦的解」 and takes the antidote. Granted at wm-diyilu/save with the 回春丹. A story thing: no slot, never sold; resolved in 卷一 — no open hook.",
-      "art_source": "The firm pill's picture until its own is painted."
-    },
-    {
-      "id": "bandian-jieyao",
-      "kind": "treasure",
-      "name": {
-        "zh": "半步颠的解药",
-        "en": "The Topple's Cure"
-      },
-      "art": "art/items/qi-pill.webp",
-      "about": {
-        "zh": "同一口吐出来的另一颗，一样大，一样没有纹，一样灰里透红，只是闻着苦。银月拿鼻子拱了拱：「这一颗，是它的解药。」香的毒，苦的解。",
-        "en": "The other pill from the same mouthful: the same size, no lines, the same grey shot through with red — only it smells bitter. Yinyue nosed it: \"And this one is its antidote.\" Sweet the poison, bitter the cure."
-      },
-      "buy": 0,
-      "sell": 0,
-      "sold": [],
-      "story": true,
-      "_about": "古四 (Hanli 2026-10-06: 「让小满吃了吧。两颗丹一个毒药，一个解药。」): the two 灵石 he feeds the 饭桶 give a poison and its antidote; 银月 names both; he wraps them and keeps them in his belt fold. 古六: at the 腊八 hotpot the poison rolls into the red broth, he eats it for a 丸子, laughs and falls every half step round the 柴房 until he remembers 「香的毒，苦的解」 and takes the antidote. Granted at wm-diyilu/save with the 回春丹. A story thing: no slot, never sold; resolved in 卷一 — no open hook.",
-      "art_source": "The qi pill's picture until its own is painted."
     },
     {
       "id": "jingjin",
