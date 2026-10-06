@@ -98,7 +98,7 @@ test('生辰 at the 入门仪式: the roots are read and the day let go — neve
   assert.deepEqual(told.slice(-2).map(t => t.id), ['00-hall/born', '00-waimen']);
   assert.match(rite.text, /念道：「金、木、水、火、土——五行俱全。五门俱全的伪灵根，外门叫杂灵根。下下之资。」/);
   assert.match(rite.text, /金白、青、黑、红、黄，五种颜色，一样不少[\s\S]*拼成的一块抹布。只有黄的那一点，比别的亮一些。/);
-  assert.match(rite.text, /杂灵根也配进山门？/);
+  assert.match(rite.text, /杂灵根，也进山门啊？/);
   // 伪灵根 is the official name since 2026-10-03 (凡人's grading; 杂灵根 the nickname) — only template braces and a 缺 line are banned.
   assert.doesNotMatch(rite.text, /[{}]|缺[金木水火土]/);
   const waimen = tellOf(content, resolve(out.state, content, ctx(), { exit: 'pay' }).state).tell.find(t => t.id === '00-waimen/pay');
