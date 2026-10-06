@@ -253,7 +253,7 @@
       },
       "kind": "pill",
       "art": "art/items/foundation-pill.webp",
-      "_furnace": "Made in 银月's furnace: one pill, from a 萝卜 at the end of 古五 (Hanli 2026-10-06: 「改成一颗」), carried against the skin from the snow night (09-snow `keep`) and eaten at his 筑基 (古七). The breakthrough reaches for it before the 一转 (ladder.json breakthrough.pill); not sold.",
+      "_furnace": "Made in 银月's furnace: one pill, from a 萝卜 at the end of 古五 (Hanli 2026-10-06: 「改成一颗」), never shown again until the eve of his 筑基 (Hanli 2026-10-06: 「等筑基的时候再拿出来」 — the bag gets it on 09-qulao `listen`) and eaten there (古七). The breakthrough reaches for it before the 一转 (ladder.json breakthrough.pill); not sold.",
       "zhuan": 9,
       "about": {
         "zh": "饭桶一炉出的筑基丹，透亮得像一滴凝住的露水，九道金纹，一丝黑斑也没有，一个字也没有。沉鼎观三百年最好的一炉是三转。",
@@ -1000,7 +1000,7 @@
         "root": "metal",
         "atk": 3
       },
-      "_about": "古七 (Hanli 2026-10-06): the 赤松观 gourd and shield shards are useless now — two nights after the snow night he feeds them to the 饭桶 and it gives a plain sword, the one he practises the 《河洛剑诀》 with (瞿老 teaches with a broom handle). Granted at 09-snow/keep. Copper in, so it lends 金. Never sold. In the game the gourd stays in the bag (a worn weapon is never taken).",
+      "_about": "古七 (Hanli 2026-10-06): the 赤松观 gourd and shield shards are useless now — a few nights after 拜师 he feeds them to the 饭桶 and it gives a plain sword, the one he practises the 《河洛剑诀》 with (瞿老 teaches with a broom handle). Granted at 09-snow/feed. Copper in, so it lends 金. Never sold. In the game the gourd stays in the bag (a worn weapon is never taken).",
       "art_source": "The iron sword's picture until its own is painted."
     },
     {

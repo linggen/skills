@@ -1,6 +1,6 @@
 // 古七 · 筑基 (chapter 00-zhuji, his 2026-09-30: 照这样重做冀州) — the book's winter, the
-// year and the cliff, played at 沉鼎观 before the road north: the snow night over the one
-// 九转 (carried against the skin, Hanli 2026-10-06 — no 官丹 yet: 古六's final was lost, 2026-10-03), the furnace's
+// year and the cliff, played at 沉鼎观 before the road north: 劈柴 from the 饭桶 (the
+// 九转 is not shown until the eve of 筑基, Hanli 2026-10-06 — no 官丹 yet: 古六's final was lost, 2026-10-03), the furnace's
 // culls, the year as the book's seasons (never days of chores) with the five-year skip, where
 // the year-five 大比 is won and the sect's 一转 comes into the bag, 瞿老's last disciple, and the
 // Foundation laid on the cliff with the 九转 reached for before the sect's 一转. The cliff ends it
@@ -50,13 +50,14 @@ test('古九 is its own chapter at 沉鼎观: between 外门 and 冀, the Founda
 
 test('the winter and the year: the one 九转 on the snow night, the furnace\'s culls, and the seasons — the story\'s own, free of 体力 (Hanli, 2026-10-01), in order, once', () => {
   let s = atSnow();
-  assert.equal(go(s, 'eat').state.scene, '09-snow', 'eating one now is turned down: the scene stays');
-  s = go(s, 'keep').state;
+  assert.deepEqual(buttons(s), ['feed'], 'the gourd and the shards into the 饭桶 — nothing else');
+  s = go(s, 'feed').state;
   assert.equal(s.scene, '09-furnace');
-  assert.equal(s.bag['foundation-pill-9'], 1, 'one 九转 is his, carried against the skin');
-  assert.equal(s.bag['foundation-pill'], undefined, 'no 官丹 on the snow night: 祁长松 has the sect\'s one');
+  assert.equal(s.bag['pichai-jian'], 1, 'a plain sword');
+  assert.equal(s.bag['foundation-pill-9'], undefined, 'the 九转 is not shown before the eve of 筑基 (Hanli 2026-10-06)');
+  assert.equal(s.bag['foundation-pill'], undefined, 'no 官丹 yet: 祁长松 has the sect\'s one');
   s = go(s, 'fire').state;
-  assert.equal(s.bag['foundation-pill-9'], 1, 'the furnace gives qi pills, not a second 九转');
+  assert.equal(s.bag['foundation-pill-9'], undefined, 'the furnace gives qi pills, not a 九转');
   assert.equal(s.scene, '09-year');
   s = full({ ...s, place: 'yaoyuan' });
   // Only the season due is offered; one out of order is refused.
@@ -88,9 +89,10 @@ test('the winter and the year: the one 九转 on the snow night, the furnace\'s 
 });
 
 test('the cliff: 瞿老\'s last disciple, then the throw — the 九转 reached for before the 一转, and 古十 opens at once', () => {
-  let s = { ...atSnow(), scene: '09-qulao', place: 'houshan', step: 8, progress: 130, bag: { 'foundation-pill': 1, 'foundation-pill-9': 1 } };
+  let s = { ...atSnow(), scene: '09-qulao', place: 'houshan', step: 8, progress: 130, bag: { 'foundation-pill': 1 } };
   s = go(s, 'listen').state;
   assert.equal(s.scene, '09-cliff');
+  assert.equal(s.bag['foundation-pill-9'], 1, 'the 九转 comes out on the eve of 筑基');
   const odds = oddsOf(content, s, NOW, 'foundation');
   const pill = odds.parts.find(p => p.id === 'pill');
   assert.equal(pill.item.id, 'foundation-pill-9');
