@@ -180,9 +180,11 @@ export const headOf = (text, n = 12) => { const t = String(text ?? '').replace(/
 /// - `gone`: `[{before: {key, nth}|null, text: [..], item}]` — old blocks
 ///   that went, shown as one small mark before the block now standing there
 ///   (null: at the end);
-/// - `items`: `[{n, kind, head}]` — the change list, one per run of marked
-///   blocks with nothing unchanged between them (from 1, in reading order);
-///   `count` = items.length.
+/// - `items`: `[{n, kind, head, match}]` — the change list, one per run of
+///   marked blocks with nothing unchanged between them (from 1, in reading
+///   order); `count` = items.length. `match` names the change by what it is,
+///   not where it stands (matchOf): the phone's offline confirm finds it by
+///   that once the numbers have moved.
 export function changesOf(oldMd, newMd) {
   const { items, marks, gone } = walk(oldMd, newMd);
   return { count: items.length, items, marks, gone };
@@ -262,7 +264,17 @@ function walk(oldMd, newMd) {
     marks.push(out);
     seq.push({ j, item: out.item, from: from.get(j) });
   }
+  for (const it of items) it.match = matchOf(seq, was, now, it.n);
   return { was, now, seq, items, marks, gone };
+}
+
+/// A change's content key: its old blocks and its new ones, in reading order
+/// (`-old` cut, `+new` added, `old>new` rewritten), hashed. The same change
+/// keeps it while other changes are confirmed or edited around it; an edit to
+/// its own words gives another.
+function matchOf(seq, was, now, n) {
+  const part = (e) => ('cut' in e ? `-${was[e.cut].key}` : e.from != null ? `${was[e.from].key}>${now[e.j].key}` : `+${now[e.j].key}`);
+  return fnv(seq.filter((e) => e.item === n).map(part).join('|'));
 }
 
 /// 「改回原文」: `newMd` with change `n` put back as `oldMd` has it — a

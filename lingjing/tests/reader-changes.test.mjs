@@ -260,3 +260,58 @@ test('记为已确认 by commit: a dictated edit is taken in, nothing else; the 
   const w = acceptWords(OLD, both, '他背着一张旧弓');
   assert.equal(changesOf(w.md, both).count, 0, 'the block holding the words, as it now reads');
 });
+
+test('each change carries a content key: kept while others are confirmed or edited around it, new once its own words change', () => {
+  const now = OLD.replace('他背着弓。', '他背着一张旧弓。').replace('夜里下了雪。\n\n', '').replace('鹿皮挂在墙上，干了。', '鹿皮挂在墙上，干了。\n\n白衣人进了村。');
+  const c = changesOf(OLD, now);
+  assert.equal(new Set(c.items.map((it) => it.match)).size, 3);
+  assert.ok(c.items.every((it) => /^[0-9a-f]{8}$/.test(it.match)));
+  const after = changesOf(confirmItem(OLD, now, 1), now);
+  assert.deepEqual(after.items.map((it) => it.match), c.items.slice(1).map((it) => it.match), 'numbers move, keys stay');
+  const elsewhere = now.replace('小满上山。', '小满一早上山。');
+  assert.equal(changesOf(OLD, elsewhere).items.at(-1).match, c.items.at(-1).match, 'another paragraph edited: same key');
+  const own = now.replace('白衣人进了村。', '白衣人进了城。');
+  assert.ok(!changesOf(OLD, own).items.some((it) => it.match === c.items.at(-1).match), 'its own words edited: no longer that change');
+});
+
+test('confirm by content key (the phone\'s offline queue): found wherever it stands, once only; refused `gone` once its words changed', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-match-'));
+  const text = fs.readFileSync(path.join(ROOT, 'story/jiuding-lu/01-第一回.md'), 'utf8');
+  const paras = text.split('\n\n');
+  const old = [...paras.slice(0, 3), ...paras.slice(4, 9), ...paras.slice(10)].join('\n\n');
+  const book = path.join(dir, 'reader/jiuding-lu');
+  fs.mkdirSync(book, { recursive: true });
+  fs.writeFileSync(path.join(book, 'meta.json'), JSON.stringify({ base: 'test' }));
+  fs.writeFileSync(path.join(book, 'h01.md'), old);
+  process.env.LINGJING_READER = path.join(dir, 'reader');
+  const { changes } = await import('../scripts/rules/changes.mjs');
+  try {
+    const go = (match) => changes({ book: 'jiuding-lu', id: 'h01', do: 'confirm', match });
+    const before = changes({ book: 'jiuding-lu', id: 'h01' }).entries.h01;
+    assert.equal(before.count, 2);
+    const [first, second] = before.items;
+    // Tapped in order 2 then 1, offline: replayed by key, the numbers having moved.
+    const a = go(second.match);
+    assert.equal(a.ok, true, JSON.stringify(a));
+    assert.deepEqual(a.entries.h01.items.map((it) => it.match), [first.match]);
+    assert.equal(a.entries.h01.undo.head, second.head);
+    assert.equal(go(second.match).ok, true, 'sent twice (a reply lost): ok, nothing more');
+    assert.equal(changes({ book: 'jiuding-lu', id: 'h01' }).entries.h01.count, 1);
+    const b = go(first.match);
+    assert.equal(b.entries.h01.count, 0);
+    assert.equal(go('zz').refused, 'bad-match');
+    // The change no longer reads as tapped (here: what it was rewritten from
+    // moved on the Mac meanwhile): refused, nothing written, shown again.
+    fs.rmSync(path.join(book, 'h01.undo.json'));
+    fs.writeFileSync(path.join(book, 'h01.md'), [...paras.slice(0, 3), `${paras[3]}他又回头看了一眼。`, ...paras.slice(4, 9), ...paras.slice(10)].join('\n\n'));
+    const left = changes({ book: 'jiuding-lu', id: 'h01' }).entries.h01;
+    assert.ok(!left.items.some((it) => it.match === first.match));
+    const r = go(first.match);
+    assert.equal(r.refused, 'gone');
+    assert.deepEqual(r.entries.h01.items, left.items, 'the changes as they now stand, to show again');
+    assert.equal(changes({ book: 'jiuding-lu', id: 'h01' }).entries.h01.count, left.count);
+  } finally {
+    delete process.env.LINGJING_READER;
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

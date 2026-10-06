@@ -19,7 +19,12 @@
 // `--id=<id>` narrows to one; `--do=confirm --id=<id> --item=<n> --rev=<rev> --crev=<crev>`
 // confirms change n alone (Hanli 2026-10-05: 逐条确认, never the whole 回) —
 // refused `moved` when the text or the confirmed version is no longer the one
-// shown; `--do=undo --id=<id>` takes back the last confirm (`undo` names it).
+// shown; `--do=confirm --id=<id> --match=<key>` confirms the change whose
+// content key (book-diff.js items' `match`) is that one, wherever it now
+// stands — the phone's offline confirms, sent once the Mac is back (Hanli
+// 2026-10-06): refused `gone` when no change reads as it did when tapped;
+// one already confirmed (a reply lost on the way) is ok, nothing written.
+// `--do=undo --id=<id>` takes back the last confirm (`undo` names it).
 // `--do=preview|revert --id=<id> --item=<n> --rev=<rev>`: 「↶ 改回原文」 — the
 // change put back as the confirmed version has it, in the builder's checkout
 // (rules/revert.mjs; `dev` says whether this machine has one).
@@ -40,6 +45,7 @@ import { execFileSync } from 'node:child_process';
 
 const BOOK_ID = /^[\w-]+$/;
 const ENTRY_ID = /^[\w-]+$/;
+const MATCH = /^[0-9a-f]{8}$/;
 /// How many confirms 撤销 can walk back.
 export const UNDO_DEPTH = 40;
 
@@ -94,6 +100,43 @@ function undoStack(book, id) {
   try { const v = JSON.parse(read(undoFile(book, id))); return Array.isArray(v) ? v : []; } catch { return []; }
 }
 
+/// 「确认这一处」 as shown: change `item` of the text and confirmed version
+/// named by `rev`/`crev`. A refusal, or null once written.
+function confirmShown(book, e, args) {
+  const text = textOf(book, e);
+  if (text == null) return { ok: false, refused: 'no-entry', say: null };
+  const was = read(path.join(readerDir(book), `${e.id}.md`));
+  const shown = entryChanges(book, e);
+  const entries = { [e.id]: shown };
+  if (String(args.rev ?? '') !== revOf(text) || String(args.crev ?? '') !== revOf(was ?? '')) return { ok: false, refused: 'moved', say: null, entries };
+  const it = shown.items.find((x) => x.n === Number(args.item));
+  return it ? takeIn(book, e, was, text, it) : { ok: false, refused: 'no-item', say: null, entries };
+}
+
+/// 「确认这一处」 sent later: the change named by its content key, wherever it
+/// now stands. A refusal, or null once written (or already confirmed).
+function confirmByMatch(book, e, match) {
+  if (!MATCH.test(match)) return { ok: false, refused: 'bad-match', say: null };
+  const text = textOf(book, e);
+  if (text == null) return { ok: false, refused: 'no-entry', say: null };
+  const was = read(path.join(readerDir(book), `${e.id}.md`));
+  const shown = entryChanges(book, e);
+  const it = shown.items.find((x) => x.match === match);
+  if (it) return takeIn(book, e, was, text, it);
+  if (undoStack(book, e.id).some((u) => u.match === match)) return null;
+  return { ok: false, refused: 'gone', say: null, entries: { [e.id]: shown } };
+}
+
+/// Change `it` taken into the confirmed version `was`, the version before kept for 撤销.
+function takeIn(book, e, was, text, it) {
+  const next = confirmItem(filled(was), filled(text), it.n);
+  if (next == null) return { ok: false, refused: 'no-item', say: null };
+  const stack = [...undoStack(book, e.id), { text: was, head: it.head, match: it.match, at: new Date().toISOString() }].slice(-UNDO_DEPTH);
+  write(undoFile(book, e.id), JSON.stringify(stack));
+  write(path.join(readerDir(book), `${e.id}.md`), next);
+  return null;
+}
+
 export function changes(args = {}) {
   const book = String(args.book ?? '');
   if (!BOOK_ID.test(book)) return { ok: false, refused: 'bad-book', say: null };
@@ -109,19 +152,8 @@ export function changes(args = {}) {
   const act = args.do == null ? null : String(args.do);
   if (act != null && !one) return { ok: false, refused: 'no-entry', say: null };
   if (act === 'confirm') {
-    const text = textOf(book, one);
-    if (text == null) return { ok: false, refused: 'no-entry', say: null };
-    const file = path.join(dir, `${one.id}.md`);
-    const was = read(file);
-    const shown = { [one.id]: entryChanges(book, one) };
-    if (String(args.rev ?? '') !== revOf(text) || String(args.crev ?? '') !== revOf(was ?? '')) return { ok: false, refused: 'moved', say: null, entries: shown };
-    const n = Number(args.item);
-    const head = shown[one.id].items.find((it) => it.n === n)?.head;
-    const next = Number.isInteger(n) ? confirmItem(filled(was), filled(text), n) : null;
-    if (next == null) return { ok: false, refused: 'no-item', say: null, entries: shown };
-    const stack = [...undoStack(book, one.id), { text: was, head, at: new Date().toISOString() }].slice(-UNDO_DEPTH);
-    write(undoFile(book, one.id), JSON.stringify(stack));
-    write(file, next);
+    const refused = args.match != null ? confirmByMatch(book, one, String(args.match)) : confirmShown(book, one, args);
+    if (refused) return refused;
   } else if (act === 'undo') {
     const stack = undoStack(book, one.id);
     const last = stack.pop();
