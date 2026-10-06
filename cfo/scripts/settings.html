@@ -120,6 +120,9 @@
   .rule-type.special { background: rgba(59,130,246,.14); color: var(--accent); text-transform: none; }
 
 </style>
+  <!-- Its engine calls ride the data channel, never plain HTTP (first, so
+       every script below has it). -->
+  <script src="/shared/channel.js"></script>
 </head>
 <body>
   <div class="wrap">

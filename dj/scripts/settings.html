@@ -36,6 +36,9 @@
     .lm-qr svg { width: 108px; height: 108px; border-radius: 8px; background: #fff; padding: 5px; flex: none; }
     .lm-steps { font-size: 12px; color: var(--muted); line-height: 1.9; }
   </style>
+  <!-- Its engine calls ride the data channel, never plain HTTP (first, so
+       every script below has it). -->
+  <script src="/shared/channel.js"></script>
 </head>
 <body>
   <h1>DJ settings</h1>

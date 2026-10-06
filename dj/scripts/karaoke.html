@@ -6,6 +6,9 @@
   <title>DJ · Karaoke</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="stylesheet" href="karaoke.css" />
+  <!-- Its engine calls ride the data channel, never plain HTTP (first, so
+       every script below has it). -->
+  <script src="/shared/channel.js"></script>
 </head>
 <body>
   <!-- The stage: full-screen, always dark — this is what mirrors to the TV. -->

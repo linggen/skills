@@ -76,11 +76,12 @@ for (const skill of SKILLS) {
 }
 
 // ── The engine's page helpers (/shared/*) ──────────────────────────────────
-// Pages take the chat bridge, the API client and app-mode from the engine
-// (linggen/shared/, served at /shared/<file>) instead of carrying copies.
+// Pages take the data channel, the chat bridge, the API client and app-mode
+// from the engine (linggen/shared/, served at /shared/<file>) instead of
+// carrying copies.
 // These checks read the engine's copy from a sibling linggen checkout when
 // there is one, and skip otherwise.
-const SHARED_FILES = ['chat-bridge.js', 'api.js', 'app-mode.js'];
+const SHARED_FILES = ['channel.js', 'chat-bridge.js', 'api.js', 'app-mode.js'];
 const SHARED_DIR = path.resolve(ROOT, '..', 'linggen', 'shared');
 const haveShared = fs.existsSync(path.join(SHARED_DIR, 'chat-bridge.js'));
 
@@ -176,4 +177,51 @@ for (const skill of SKILLS) {
       assert.deepEqual(bad, []);
     });
   }
+}
+
+// ── Engine calls ride the data channel ──────────────────────────────────────
+// A page sends no data over plain HTTP: its engine calls — fetch('/api/…'), a
+// capability POST — ride the WebRTC data channel /shared/channel.js routes
+// them onto. So a page whose code calls the engine loads the channel: through
+// /shared/api.js or /shared/chat-bridge.js, or as a classic script in <head>
+// (first, when an inline script calls the engine while the page parses).
+const ENGINE_CALL = /fetch\(\s*(?:['"`]\/(?:api|apps)\/|[A-Z_]+_URL\b|missionUrl\(|`\$\{)/;
+const LOADS_CHANNEL = /['"]\/shared\/(?:channel|api|chat-bridge)\.js['"]/;
+
+/** The page and every local script it loads or imports, transitively. */
+function pageCode(page) {
+  const seen = new Set();
+  const stack = [page];
+  while (stack.length) {
+    const file = stack.pop();
+    if (seen.has(file) || !fs.existsSync(file)) continue;
+    seen.add(file);
+    const text = fs.readFileSync(file, 'utf8');
+    const specs = [
+      ...[...text.matchAll(/<script[^>]*\bsrc=["']([^"']+)["']/g)].map(m => m[1]),
+      ...[...text.matchAll(IMPORT_RE)].map(m => m[1]),
+      ...[...text.matchAll(/import\(\s*['"]([^'"]+)['"]\s*\)/g)].map(m => m[1]),
+    ];
+    for (const spec of specs) {
+      if (!spec.startsWith('.') && !/^[\w-]+[\w./-]*\.m?js$/.test(spec)) continue;
+      if (spec.includes('/vendor/')) continue;
+      stack.push(path.resolve(path.dirname(file), spec.split(/[?#]/)[0]));
+    }
+  }
+  return [...seen];
+}
+
+for (const skill of SKILLS) {
+  const html = walk(path.join(ROOT, skill)).filter(f => f.endsWith('.html'));
+  if (!html.length) continue;
+  test(`${skill}: a page that calls the engine loads its data channel`, () => {
+    const bad = [];
+    for (const page of html) {
+      const code = pageCode(page).map(f => fs.readFileSync(f, 'utf8'));
+      if (code.some(t => ENGINE_CALL.test(t)) && !code.some(t => LOADS_CHANNEL.test(t))) {
+        bad.push(path.relative(ROOT, page));
+      }
+    }
+    assert.deepEqual(bad, []);
+  });
 }
