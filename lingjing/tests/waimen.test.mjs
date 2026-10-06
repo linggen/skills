@@ -262,7 +262,7 @@ test('the 大比 final is a loss told as a passage: 「……祁长松，胜。�
   const s = must(resolve, { ...opened(), scene: 'wm-laoyin', place: 'zhengdian' }, { exit: 'final' }, DAY2);
   assert.equal(s.bag['foundation-pill'], undefined);
   assert.match(CH.scenes['wm-jiaxin'].story.zh, /前四，进内门名册/);
-  assert.match(CH.scenes['wm-jiaxin'].story.zh, /一文。利息另算。/);
+  assert.match(CH.scenes['wm-jiaxin'].story.zh, /我押的那一文，输了。」[^]*拿炭条一笔一笔地写/); // the line itself surfaces in 古七 (Hanli 2026-10-06)
   assert.doesNotMatch(JSON.stringify(CH.scenes), /复试|第十七条|当票|往后一倒/);
 });
 
