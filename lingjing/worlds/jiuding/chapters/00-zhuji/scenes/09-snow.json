@@ -13,8 +13,8 @@
   "en": "The first snow falls all night. With the dormitory snoring as one, you slip into the woodshed, bar the door, take the oilpaper packet out of the storage pouch and tip the three nine-turn pills onto the chopping block."
  },
  "recap": {
-  "zh": "雪夜，你对着那三颗九转算账：宗门那一颗在祁长松手里，九转说不清来历。一颗你贴肉揣着，跟木牌挨在一处；两颗塞回饭桶。说得清来历的那一颗，全观一年一颗——总有一年。",
-  "en": "On a snowy night you did your sums over the three nine-turn pills: the sect's one was in Qi Changsong's hands, and a nine-turn pill has no history you can tell. One you carried against your skin, beside the token; two went back into the Rice Tub. The one with a history you can tell — the whole temple gets one a year. Some year."
+  "zh": "雪夜，你对着那三颗九转算账：宗门那一颗在祁长松手里，九转说不清来历。一颗你贴肉揣着，跟木牌挨在一处；两颗收回储物袋。说得清来历的那一颗，全观一年一颗——总有一年。",
+  "en": "On a snowy night you did your sums over the three nine-turn pills: the sect's one was in Qi Changsong's hands, and a nine-turn pill has no history you can tell. One you carried against your skin, beside the token; two went back into the storage pouch. The one with a history you can tell — the whole temple gets one a year. Some year."
  },
  "cast": [],
  "people": [],
@@ -45,18 +45,18 @@
   {
    "id": "keep",
    "label": {
-    "zh": "一颗贴肉揣着，两颗塞回饭桶",
-    "en": "One against your skin; two back in the Rice Tub"
+    "zh": "一颗贴肉揣着，两颗收回储物袋",
+    "en": "One against your skin; two back in the storage pouch"
    },
-   "means": "keeps one nine-turn Foundation pill against his skin beside the token and puts the other two back in the furnace; waits for the year he can win the sect's",
+   "means": "keeps one nine-turn Foundation pill against his skin beside the token and puts the other two back in the storage pouch; waits for the year he can win the sect's",
    "grant": {
     "table": "scene",
     "progress": 20,
     "item": "foundation-pill-9"
    },
    "story": {
-    "zh": "那三颗九转，他当下打定了主意：一颗，是自己的；另外两颗，仍用油纸裹了三层，收回储物袋里。筑基丹是给九层大圆满的人破关用的，他才练气四层，吃不得。自己那一颗另拿油纸包了，贴肉揣着，跟那块木牌挨在一处，一个凉，一个暖。木牌背面那道裂纹，是秘境里破那面盾裂的，隔着油纸也摸得出来。她醒是醒了，话却比从前少。至于说得清来历的那一颗——全观一年一颗，年年腊八摆在五行台上。他吹了蜡烛，在黑地里想：总有一年。",
-    "en": "About the three nine-turn pills he made up his mind on the spot: one was his own; the other two he wrapped again in three layers of oilpaper and put back in the storage pouch. A Foundation pill is for someone at layer nine, great perfection, to break through; he was at Qi Refining layer four, and couldn't take it. His own he wrapped in oilpaper separately and carried against his skin, next to the wooden token, one cool, one warm. The crack across the back of the token, from breaking that shield in the hidden realm, he could feel even through the oilpaper. She was awake, but she said less than before. As for a pill whose history he could tell — the whole temple got one a year, set out on the Five Elements Platform every Laba. He blew out the candle and thought in the dark: some year."
+    "zh": "那三颗九转，他当下打定了主意：一颗，是自己的；一颗，留着救命；还有一颗，先留着。那两颗仍用油纸裹了三层，收回储物袋里。筑基丹是给九层大圆满的人破关用的，他才练气四层，吃不得。自己那一颗另拿油纸包了，贴肉揣着，跟那块木牌挨在一处，一个凉，一个暖。木牌背面那道裂纹，是秘境里破那面盾裂的，隔着油纸也摸得出来。她醒是醒了，话却比从前少。至于说得清来历的那一颗——全观一年一颗，年年腊八摆在五行台上。他吹了蜡烛，在黑地里想：总有一年。",
+    "en": "About the three nine-turn pills he made up his mind on the spot: one was his own; one to save a life; and one, kept for now. Those two he wrapped again in three layers of oilpaper and put back in the storage pouch. A Foundation pill is for someone at layer nine, great perfection, to break through; he was at Qi Refining layer four, and couldn't take it. His own he wrapped in oilpaper separately and carried against his skin, next to the wooden token, one cool, one warm. The crack across the back of the token, from breaking that shield in the hidden realm, he could feel even through the oilpaper. She was awake, but she said less than before. As for a pill whose history he could tell — the whole temple got one a year, set out on the Five Elements Platform every Laba. He blew out the candle and thought in the dark: some year."
    },
    "next": "09-furnace"
   },
