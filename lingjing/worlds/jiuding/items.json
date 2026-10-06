@@ -551,14 +551,14 @@
       },
       "art": "art/items/talisman.webp",
       "about": {
-        "zh": "小狰换下来的一撮红毛，喂进饭桶，吸你一口灵气，飘出一张黄纸：朱砂画一只鼻子，鼻孔朝天。小狰闻了一闻，一连打了七个喷嚏。贴在谁身上，谁便打喷嚏，打到停不下来。一张，一回。",
-        "en": "A pinch of the zheng's moulted red fur, fed to the Rice Tub for a mouthful of your qi: out floats a yellow slip with a nose drawn on it in cinnabar, nostrils to the sky. The zheng sniffed it and sneezed seven times running. Whoever it's stuck on sneezes and can't stop. One slip, one go."
+        "zh": "小狰换下来的一撮红毛，喂进饭桶，吸你一口灵气，飘出一张黄纸：朱砂画一只鼻子，鼻孔朝天。小狰闻了一闻，一连打了七个喷嚏。捏着它送一丝灵气，封在纸里的那道法便醒，一缕黑烟钻进对面那人的口鼻，喷嚏打到停不下来。一张，一回。",
+        "en": "A pinch of the zheng's moulted red fur, fed to the Rice Tub for a mouthful of your qi: out floats a yellow slip with a nose drawn on it in cinnabar, nostrils to the sky. The zheng sniffed it and sneezed seven times running. Pinch it and send in a thread of qi, and the spell sealed in it wakes: a wisp of black smoke shoots into the nose and mouth of whoever faces you, who sneezes and can't stop. One slip, one go."
       },
       "buy": 0,
       "sell": 0,
       "sold": [],
       "story": true,
-      "_about": "古六 (Hanli 2026-10-06): the 开炉夜 of 腊月初七 — broke, he feeds the 饭桶 凡物 and each feeding sucks a mouthful of his 灵气; granted at wm-qianye/sleep. A story thing: no slot, never sold. Used in bout one: slapped on 何七's neck, he sneezes himself off the stage, the slip goes to ash.",
+      "_about": "古六 (Hanli 2026-10-06): the 开炉夜 of 腊月初七 — broke, he feeds the 饭桶 凡物 and each feeding sucks a mouthful of his 灵气; granted at wm-qianye/sleep. A story thing: no slot, never sold. Used in bout one (Hanli 2026-10-06): woken, its black smoke shoots into 何七's nose and mouth; mid-sneeze he is pushed off; the slip goes to ash.",
       "art_source": "The talisman's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16) until its own is painted."
     },
     {
@@ -596,7 +596,7 @@
       "sell": 0,
       "sold": [],
       "story": true,
-      "_about": "古六 (Hanli 2026-10-06): the 开炉夜 of 腊月初七 — broke, he feeds the 饭桶 凡物 and each feeding sucks a mouthful of his 灵气; granted at wm-qianye/sleep. A story thing: no slot, never sold. In the semifinal it throws 马小宝's beam back into his own mirror and shatters; the light through the crack brands the palm (圈里一横).",
+      "_about": "古六 (Hanli 2026-10-06): the 开炉夜 of 腊月初七 — broke, he feeds the 饭桶 凡物 and each feeding sucks a mouthful of his 灵气; granted at wm-qianye/sleep. A story thing: no slot, never sold. In the semifinal it throws 马小宝's beam back into his own face — it brands his blotches white (Hanli 2026-10-06) — and shatters; the light through the crack brands the palm (圈里一横).",
       "art_source": "The jade ring's picture until its own is painted."
     },
     {
@@ -615,7 +615,7 @@
       "sell": 0,
       "sold": [],
       "story": true,
-      "_about": "古四 (the 饭桶's first feeding: 一只破袜子 → 牛脂甘露); 古六 (Hanli 2026-10-06): the morning of 腊月初八 he greases his soles with it and slides across the frozen yard into 钱掌柜's board — the jar empties; that night two socks give a 鸳鸯 base. Granted at wm-qianye/sleep, where he takes it out from under the woodpile. A story thing: no slot, never sold.",
+      "_about": "古四 (the 饭桶's first feeding: 一只破袜子 → 牛脂甘露); 古六 (Hanli 2026-10-06): in the 卢方 bout (Hanli 2026-10-06), hanging off the rim, he flings out whatever his hand finds in the 储物袋 — this jar; it breaks on the stone and 卢方's stamp skates off the stage on the tallow; that night two socks give a 鸳鸯 base. Granted at wm-qianye/sleep, where he takes it out from under the woodpile. A story thing: no slot, never sold.",
       "art_source": "The qi salt's picture until its own is painted."
     },
     {

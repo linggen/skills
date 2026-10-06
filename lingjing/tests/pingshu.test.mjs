@@ -83,7 +83,8 @@ test('the manifest: its shape, and every clip a beat the box plays today, found 
   // the story settles (his ruling 2026-10-01: 「先不着急做评书音频，最后一起做」) — the
   // re-render is the round's last step; put it back to 0.2 once tools/pingshu-publish.py has run.
   // 0.4 → 0.45 on 2026-10-05 (R4/R5 fixes, 爽点, 漫画式 pass, Hanli's line edits while he reads: 90/224).
-  assert.ok(!all || stale / all <= 0.45, `${stale}/${all} clips match no beat: the keys have drifted`);
+  // 0.45 → 0.5 on 2026-10-06 (Hanli's 古五–古七 revisions: 牛脂甘露 at 卢方, 喷嚏符, 阿禾's 疗伤, 自拍镜, 筑基 odds, the 饭桶 sword).
+  assert.ok(!all || stale / all <= 0.5, `${stale}/${all} clips match no beat: the keys have drifted`);
 });
 
 test('a beat finds its clip — the hit rate on the scenes\' own text', () => {
