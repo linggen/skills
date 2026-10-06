@@ -10,7 +10,7 @@ speak to the player as 你 (story/jiuding-lu/DESIGN.md § 四·五 人称分工)
    pill with a history he can tell is the 官丹, 全观一年一颗 — 「总有一年」. (**Eat one now** is turned
    down: a 筑基丹 is for 九层大圆满, he is 四层.)
 2. **The furnace** (`09-furnace`, 柴房). Spring: 周衡's basket of culls → 九转聚气丹
-   for 阿禾 and 孙二狗 (「一个鸡蛋的利息」「牛棚里那半张饼的利息」). Before the fire, 舅舅's three lines and who
+   for 阿禾 and 孙二狗 (「牛棚里那半张饼的」; 阿禾's he doesn't name). Before the fire, 舅舅's three lines and who
    stood at the door (the 柴垛 man — 老井: 脸白得看不出年纪, 老井嗓子) and 爹's pill kept in the chili-oil bottle;
    by the pills, the one line that tells 回春丹 (治伤, 留给爹) from 九转筑基丹; 孙二狗's tears carry the news to 马小宝.
 3. **The year** (`09-year`, 药园). 马小宝 accuses him of stealing the garden's herbs; 周衡: 「药园，一株
