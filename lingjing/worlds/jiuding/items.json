@@ -256,8 +256,8 @@
       "_furnace": "Made in 银月's furnace: one pill, from a 萝卜 at the end of 古五 (Hanli 2026-10-06: 「改成一颗」), carried against the skin from the snow night (09-snow `keep`) and eaten at his 筑基 (古七). The breakthrough reaches for it before the 一转 (ladder.json breakthrough.pill); not sold.",
       "zhuan": 9,
       "about": {
-        "zh": "饭桶一炉出的筑基丹，透亮得像一滴凝住的露水，九道金纹，一丝黑斑也没有。沉鼎观三百年最好的一炉是三转。",
-        "en": "A foundation pill from the rice-tub furnace: clear as a drop of frozen dew, nine gold rings, not one dark fleck. The best batch the temple made in three hundred years was three-turn."
+        "zh": "饭桶一炉出的筑基丹，透亮得像一滴凝住的露水，九道金纹，一丝黑斑也没有，一个字也没有。沉鼎观三百年最好的一炉是三转。",
+        "en": "A foundation pill from the rice-tub furnace: clear as a drop of frozen dew, nine gold rings, not one dark fleck, not one word on it. The best batch the temple made in three hundred years was three-turn."
       },
       "buy": 0,
       "sell": 0,
@@ -523,13 +523,13 @@
       "id": "tama-fu",
       "kind": "charm",
       "name": {
-        "zh": "踏马的符",
+        "zh": "踏马符",
         "en": "Hoof-It Charm"
       },
       "art": "art/items/talisman.webp",
       "about": {
-        "zh": "银月从尾巴尖上拔下一根银毛，丢进饭桶，「本王给你开个张」——飘出来一张黄纸：朱砂画的一匹马，脑袋大，身子小，四条腿像四根筷子插在一个馒头上。你骂了一句「这踏马的，是什么符？」，它便叫了这个名字。不知何用，叠成小方块，塞在腰带夹层里。斗法时在手：打出去，一跳躲开一回杀招，落点不由人，落在蛫背上。只灵一回，用完成一撮黄灰。",
-        "en": "Yinyue plucked one silver hair from the tip of her tail and dropped it into the Rice Tub — \"Let this king open shop for you\" — and out floated a slip of yellow paper: a horse in cinnabar, big head, small body, four legs like four chopsticks stuck in a steamed bun. You swore at it — \"What the hoof is this charm?\" — and the name stuck. You had no idea what it was for; you folded it small and tucked it into your belt fold. In hand when you fight: play it and one leap clears a killing blow; where you land is not yours to choose — onto the gui's back. Good once; used, it is a pinch of yellow ash."
+        "zh": "银月从尾巴尖上拔下一根银毛，丢进饭桶，「本王给你开个张」——飘出来一张黄纸：朱砂画的一匹马，脑袋大，身子小，四条腿像四根筷子插在一个馒头上。你骂了一句「这踏马的，是什么符？」，符角一行米粒大的朱字答你：踏马符。底下一行更小：足下一踏，马上便走。叠成小方块，塞在腰带夹层里。只灵一回。",
+        "en": "Yinyue plucked one silver hair from the tip of her tail and dropped it into the Rice Tub — \"Let this king open shop for you\" — and out floated a slip of yellow paper: a horse in cinnabar, big head, small body, four legs like four chopsticks stuck in a steamed bun. You swore at it — \"What the hoof is this charm?\" — and a line of rice-grain cinnabar in the corner answered: Hoof-It Charm. Under it, smaller still: One stamp underfoot, and off at once. Folded small, tucked into your belt fold. Good once."
       },
       "sold": [],
       "effect": {
@@ -551,8 +551,8 @@
       },
       "art": "art/items/talisman.webp",
       "about": {
-        "zh": "小狰换下来的一撮红毛，喂进饭桶，吸你一口灵气，飘出一张黄纸：朱砂画一只鼻子，鼻孔朝天。小狰闻了一闻，一连打了七个喷嚏。捏着它送一丝灵气，封在纸里的那道法便醒，一缕黑烟钻进对面那人的口鼻，喷嚏打到停不下来。一张，一回。",
-        "en": "A pinch of the zheng's moulted red fur, fed to the Rice Tub for a mouthful of your qi: out floats a yellow slip with a nose drawn on it in cinnabar, nostrils to the sky. The zheng sniffed it and sneezed seven times running. Pinch it and send in a thread of qi, and the spell sealed in it wakes: a wisp of black smoke shoots into the nose and mouth of whoever faces you, who sneezes and can't stop. One slip, one go."
+        "zh": "小狰换下来的一撮红毛，喂进饭桶，吸你一口灵气，飘出一张黄纸：朱砂画一只鼻子，鼻孔朝天，两个鼻孔比鼻子还大。符脚一行小字：一缕清气，通窍。一张，一回。",
+        "en": "A pinch of the zheng's moulted red fur, fed to the Rice Tub for a mouthful of your qi: out floats a yellow slip with a nose drawn on it in cinnabar, nostrils to the sky, the nostrils bigger than the nose. Small print at its foot: A wisp of clear air, to open the passages. One slip, one go."
       },
       "buy": 0,
       "sell": 0,
@@ -570,8 +570,8 @@
       },
       "art": "art/items/iron-sword.webp",
       "about": {
-        "zh": "小狰的一根胡子换来的三根针，细得像牛毛，针尖一点绿。扎着一点，先麻，后痒，痒得人笑，一盏茶的工夫收不住。凡铁的东西，打不进比你高得多的人的护体灵光。",
-        "en": "Three needles for one of the zheng's whiskers, fine as ox-hair, a dot of green at each tip. A prick goes numb, then itches, itches till you laugh, and you can't stop for the time it takes to drink a cup of tea. Common iron: it won't get through the guarding light of someone far above you."
+        "zh": "小狰的一根胡子换来的三根针，细得像牛毛，针尖一点绿，并排插在一张小红纸片上。纸片上印着：痒痒针；底下一行小字：一针见笑。凡铁的东西，打不进比你高得多的人的护体灵光。",
+        "en": "Three needles for one of the zheng's whiskers, fine as ox-hair, a dot of green at each tip, stuck side by side in a little red card. Printed on the card: Tickle Needles; and a line of small print: One prick, one laugh. Common iron: it won't get through the guarding light of someone far above you."
       },
       "buy": 0,
       "sell": 0,
@@ -589,8 +589,8 @@
       },
       "art": "art/items/jade-ring.webp",
       "about": {
-        "zh": "伙房大娘扔掉的一面裂手镜，喂进饭桶，吐出来一面巴掌大的铜镜，缺一个角。谁拿起来照，照出来的都是你的脸；什么光打上去，它原样扔回去。你说：「它只照我。叫自拍镜吧。」",
-        "en": "A cracked hand-mirror the kitchen auntie threw out, fed to the Rice Tub: out came a palm-sized bronze mirror with a corner chipped off. Whoever looks into it sees your face; whatever light strikes it, it throws straight back. You said: \"It only shows me. Call it the selfie mirror.\""
+        "zh": "伙房大娘扔掉的一面裂手镜，喂进饭桶，吐出来一面巴掌大的铜镜，缺一个角。谁拿起来照，照出来的都是你的脸；烛光打上去，原样弹回来。背面刻着三个字：自拍镜；底下一行小字：照人，先照己。",
+        "en": "A cracked hand-mirror the kitchen auntie threw out, fed to the Rice Tub: out came a palm-sized bronze mirror with a corner chipped off. Whoever looks into it sees your face; candlelight bounces straight off it. Carved on the back: Selfie Mirror; and a line of small print: Before it shows another, it shows you."
       },
       "buy": 0,
       "sell": 0,
@@ -608,8 +608,8 @@
       },
       "art": "art/items/qi-salt.webp",
       "about": {
-        "zh": "一只小陶罐，牛油花椒味，罐上歪歪扭扭四个字。十月里喂一只破袜子换来的；银月说是火锅底料，说了两个月。",
-        "en": "A little clay jar that smells of beef tallow and Sichuan pepper, four crooked characters on it. Traded in the tenth month for one holey sock; Yinyue has been calling it hotpot base for two months."
+        "zh": "一只小陶罐，牛油花椒味，罐上歪歪扭扭四个字：牛脂甘露；底下一行小字：麻辣鲜香。十月里喂一只破袜子换来的；银月说是火锅底料，说了两个月。",
+        "en": "A little clay jar that smells of beef tallow and Sichuan pepper, four crooked characters on it — Beef-Tallow Nectar — and under them a line of small ones: Hot, numbing, fragrant. Traded in the tenth month for one holey sock; Yinyue has been calling it hotpot base for two months."
       },
       "buy": 0,
       "sell": 0,
@@ -990,8 +990,8 @@
       },
       "art": "art/items/iron-sword.webp",
       "about": {
-        "zh": "赤铜葫芦连七八瓣盾片喂进饭桶，吸了你五口气，吐出来这一口：三尺来长，剑身暗红，火纹一道也没有了，剑脊上一溜锤印，像铁匠铺学徒打坏的。最寻常的法器，砍得动。银月要给它起名字，你劈开一根柴：「劈柴。」",
-        "en": "The red-copper gourd and seven or eight shield shards fed to the Rice Tub, five mouthfuls of your qi, and out came this: three feet or so, the blade a dull red with not one line of the fire pattern left, a row of hammer marks down the spine like an apprentice's botched piece. The commonest kind of artifact; it cuts. Yinyue wanted to name it; you split a log: \"Kindling.\""
+        "zh": "赤铜葫芦连七八瓣盾片喂进饭桶，吸了你五口气，吐出来这一口：三尺来长，剑身暗红，火纹一道也没有了，剑脊上一溜锤印，像铁匠铺学徒打坏的。最寻常的法器。剑脊近柄，锤印当中刻着两个字：劈柴；底下一行小字：不好看，砍得动。",
+        "en": "The red-copper gourd and seven or eight shield shards fed to the Rice Tub, five mouthfuls of your qi, and out came this: three feet or so, the blade a dull red with not one line of the fire pattern left, a row of hammer marks down the spine like an apprentice's botched piece. The commonest kind of artifact. Cut into the spine near the hilt, among the hammer marks: Kindling; and a line of small ones: Not pretty. Cuts."
       },
       "buy": 0,
       "sell": 0,
