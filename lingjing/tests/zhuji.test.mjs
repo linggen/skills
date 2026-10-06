@@ -1,5 +1,5 @@
 // 古七 · 筑基 (chapter 00-zhuji, his 2026-09-30: 照这样重做冀州) — the book's winter, the
-// year and the cliff, played at 沉鼎观 before the road north: 劈柴 from the 饭桶 (the
+// year and the cliff, played at 沉鼎观 before the road north: 火柴 from the 饭桶 (the
 // 九转 is not shown until the eve of 筑基, Hanli 2026-10-06 — no 官丹 yet: 古六's final was lost, 2026-10-03), the furnace's
 // culls, the year as the book's seasons (never days of chores) with the five-year skip, where
 // the year-five 大比 is won and the sect's 一转 comes into the bag, 瞿老's last disciple, and the
@@ -48,12 +48,12 @@ test('古九 is its own chapter at 沉鼎观: between 外门 and 冀, the Founda
   assert.deepEqual([...seen].sort(), Object.keys(CH.scenes).sort());
 });
 
-test('the winter and the year: 劈柴 at the move, the furnace\'s culls, and the seasons — the story\'s own, free of 体力 (Hanli, 2026-10-01), in order, once', () => {
+test('the winter and the year: 火柴 at the move, the furnace\'s culls, and the seasons — the story\'s own, free of 体力 (Hanli, 2026-10-01), in order, once', () => {
   let s = atSnow();
   assert.deepEqual(buttons(s), ['feed'], 'the gourd and the shards tossed into the 饭桶 to be rid of them — nothing asked (Hanli 2026-10-06)');
   s = go(s, 'feed').state;
   assert.equal(s.scene, '09-furnace');
-  assert.equal(s.bag['pichai-jian'], 1, 'a plain sword, at the move into the 内门 the day after the 大比');
+  assert.equal(s.bag['huochai-jian'], 1, 'a plain sword, 火柴, at the move into the 内门 the day after the 大比 (renamed from 劈柴, Hanli 2026-10-06)');
   assert.equal(s.bag['foundation-pill-9'], undefined, 'the 九转 is not shown before the eve of 筑基 (Hanli 2026-10-06)');
   assert.equal(s.bag['foundation-pill'], undefined, 'no 官丹 yet: 祁长松 has the sect\'s one');
   s = go(s, 'fire').state;

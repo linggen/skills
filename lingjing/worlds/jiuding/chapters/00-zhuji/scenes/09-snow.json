@@ -13,8 +13,8 @@
   "en": "The day after the contest you move from the outer court's long bunk to the inner court's west wing. Sorting the storage pouch turns up Zou Qingsong's red-copper gourd and seven or eight shield shards — rubbish, and a calling card besides."
  },
  "recap": {
-  "zh": "搬屋那天，你把赤铜葫芦和盾片扔进饭桶，图个干净；它吐出一口剑，剑脊上自己刻着：劈柴。",
-  "en": "The day you moved, you tossed the red-copper gourd and the shield shards into the Rice Tub just to be rid of them; it spat out a sword with its own name cut in the spine: Kindling."
+  "zh": "搬屋那天，你把赤铜葫芦和盾片扔进饭桶，图个干净；它吐出一口剑，剑脊上自己刻着：火柴。",
+  "en": "The day you moved, you tossed the red-copper gourd and the shield shards into the Rice Tub just to be rid of them; it spat out a sword with its own name cut in the spine: Matchstick."
  },
  "cast": [],
  "people": [],
@@ -47,15 +47,15 @@
     "zh": "扔进饭桶，扔了干净",
     "en": "Toss them into the Rice Tub, just to be rid of them"
    },
-   "means": "tosses the red-copper gourd and the shield shards into the Rice Tub to be rid of them, wanting nothing; it spits out a plain sword, Kindling",
+   "means": "tosses the red-copper gourd and the shield shards into the Rice Tub to be rid of them, wanting nothing; it spits out a plain sword, Matchstick",
    "grant": {
     "table": "scene",
     "progress": 20,
-    "item": "pichai-jian"
+    "item": "huochai-jian"
    },
    "story": {
-    "zh": "他摸进柴房，按开饭桶，一股脑儿倒了进去，心里什么也没想——扔了干净。\n\n饭桶嚼了很久。「咯嘣」，「咯嘣」，嚼一阵，歇一歇，像一个没牙的老头啃一块冻硬了的饼；歇一回，吸他一口气，吸到第五口，他眼前一阵一阵发黑。末了，盖子「咔哒」一弹，一道红光窜出来，「笃」的一声，钉在了门板上，剑柄还在嗡嗡地颤。小狰一头扎进了柴堆。\n\n他拔了三回才拔下来。一口剑，三尺来长，剑身暗红，是那葫芦和盾片的铜色，火纹一道也没有了；剑脊上一溜锤印，坑坑洼洼，像镇上铁匠铺里学徒打坏了的。灌一丝气进去，剑身上浮起薄薄一层光，像一层油——是件法器，最寻常的那一种。剑脊近柄那一截，锤印当中歪歪扭扭刻着两个字：劈柴；底下一行小字：劈得开，点得着。\n\n他顺手劈了一根柴。柴应声两半，切口齐得像拿尺子比过。过了一会儿，两片切口上各冒起一缕青烟。他拿脚踩了三脚，踩灭了，把剑卷进铺盖，塞到了新铺底下。",
-    "en": "He slipped into the woodshed, pressed the Rice Tub open, and tipped the lot in, wanting nothing at all — just to be rid of it.\n\nThe Rice Tub chewed a long time. *Crunch*, *crunch* — chewing a while and resting, like a toothless old man at a frozen flatbread; every rest it took a mouthful of his qi, and by the fifth his sight was going black in waves. At last the lid sprang open with a *clack*, a streak of red shot out — *thock* — and stuck in the door, the hilt still humming. Little Zheng dived headfirst into the woodpile.\n\nIt took him three pulls to work it loose. A sword, three feet or so, its blade a dull red — the copper of the gourd and the shards — with not one line of the fire pattern left; down the spine a row of hammer marks, pitted and uneven, like a botched piece from an apprentice at the town smithy. He sent a thread of qi into it, and a thin light rose on the blade like a film of oil — an artifact, of the commonest kind. Near the hilt, among the hammer marks, two crooked characters were cut into the spine: *Kindling*; and under them a line of small ones: *What it splits, it lights.*\n\nHe split a log with it, just to see. The log fell in two, the cut as straight as if ruled. A moment later a thread of blue smoke rose from each face of the cut. He stamped on them three times, stamped them out, rolled the sword into his bedding, and pushed it under his new bunk."
+    "zh": "他摸进柴房，按开饭桶，一股脑儿倒了进去，心里什么也没想——扔了干净。\n\n饭桶嚼了很久。「咯嘣」，「咯嘣」，嚼一阵，歇一歇，像一个没牙的老头啃一块冻硬了的饼；歇一回，吸他一口气，吸到第五口，他眼前一阵一阵发黑。末了，盖子「咔哒」一弹，一道红光窜出来，「笃」的一声，钉在了门板上，剑柄还在嗡嗡地颤。小狰一头扎进了柴堆。\n\n剑钉在门板上，他伸手一拔，剑便出来了，门板上只留一道缝，顺着木纹一直裂到底，齐得像刨过。一口剑，三尺来长，剑身暗红，是那葫芦和盾片的铜色，火纹一道也没有了；剑脊上一溜锤印，坑坑洼洼，像镇上铁匠铺里学徒打坏了的。灌一丝气进去，剑身上浮起薄薄一层光，像一层油——是件法器，最寻常的那一种。剑脊近柄那一截，锤印当中歪歪扭扭刻着两个字：火柴；底下一行小字：一划火起，一横盾生。\n\n他顺手劈了一根柴。柴应声两半，切口齐得像拿尺子比过。一口剑叫火柴，头一件干的是劈柴，他看了看那两个字，把剑卷进铺盖，塞到了新铺底下。",
+    "en": "He slipped into the woodshed, pressed the Rice Tub open, and tipped the lot in, wanting nothing at all — just to be rid of it.\n\nThe Rice Tub chewed a long time. *Crunch*, *crunch* — chewing a while and resting, like a toothless old man at a frozen flatbread; every rest it took a mouthful of his qi, and by the fifth his sight was going black in waves. At last the lid sprang open with a *clack*, a streak of red shot out — *thock* — and stuck in the door, the hilt still humming. Little Zheng dived headfirst into the woodpile.\n\nThe sword stood in the door; he reached up and drew it with one hand, and out it came, leaving only a seam in the board that split clean down the grain, as straight as if planed. A sword, three feet or so, its blade a dull red — the copper of the gourd and the shards — with not one line of the fire pattern left; down the spine a row of hammer marks, pitted and uneven, like a botched piece from an apprentice at the town smithy. He sent a thread of qi into it, and a thin light rose on the blade like a film of oil — an artifact, of the commonest kind. Near the hilt, among the hammer marks, two crooked characters were cut into the spine: *Matchstick*; and under them a line of small ones: *One strike, fire; held flat, a shield.*\n\nHe split a log with it, just to see. The log fell in two, the cut as straight as if ruled. A sword called Matchstick, and the first thing it did was split kindling; he looked at the two characters a moment, rolled the sword into his bedding, and pushed it under his new bunk."
    },
    "next": "09-furnace"
   }
