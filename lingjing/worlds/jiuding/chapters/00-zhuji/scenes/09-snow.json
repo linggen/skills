@@ -9,8 +9,8 @@
   "en": "Chending Temple · The woodshed · A snowy night"
  },
  "setup": {
-  "zh": "头场雪下了一夜。大通铺上鼾声连成一片，你摸进柴房，闩上门，把饭桶从柴垛底下请出来，掀开盖子，把那三颗九转倒在柴墩上。",
-  "en": "The first snow falls all night. With the dormitory snoring as one, you slip into the woodshed, bar the door, bring the Rice Tub out from under the woodpile, lift its lid, and tip the three nine-turn pills onto the chopping block."
+  "zh": "头场雪下了一夜。大通铺上鼾声连成一片，你摸进柴房，闩上门，从储物袋里摸出那个油纸包，把那三颗九转倒在柴墩上。",
+  "en": "The first snow falls all night. With the dormitory snoring as one, you slip into the woodshed, bar the door, take the oilpaper packet out of the storage pouch and tip the three nine-turn pills onto the chopping block."
  },
  "recap": {
   "zh": "雪夜，你对着那三颗九转算账：宗门那一颗在祁长松手里，九转说不清来历。一颗你贴肉揣着，跟木牌挨在一处；两颗塞回饭桶。说得清来历的那一颗，全观一年一颗——总有一年。",
@@ -33,8 +33,8 @@
   }
  },
  "story": {
-  "zh": "拜过了师，外头下起雪来。那是那一年的头场雪，下得又密又静，一夜之间，把沉鼎山的三百级石阶埋得只剩一道白坡。\n\n小满寻了个夜里，等大通铺上鼾声连成了一片，悄悄起身，摸到后头柴房，闩上门，点起那半根蜡烛，把饭桶从柴垛底下请出来，掀开盖子，把那三颗九转倒在柴墩上，对着它们坐了半晌。\n\n他是在算账。宗门那一颗，在祁长松手里，祁长松这时候正闭着关。他手里这三颗，九道金纹，透亮得像三滴凝住的露水，一颗比全观那一颗强了不知多少倍——可九转说不清来历。将来他筑基，周衡的账上要记一笔，师父要问一句，全观的眼睛都要看：吃的是哪一颗？这一问，他拿什么答？",
-  "en": "Once he had bowed to his master, the snow began. It was that year's first snow, thick and silent, and in a single night it buried the three hundred steps of Mount Chending until only a white slope was left.\n\nXiaoman picked a night, waited until the snoring on the long bunk ran together into one, got up quietly, felt his way to the woodshed at the back, barred the door, lit the half candle, brought the Rice Tub out from under the woodpile, lifted its lid, tipped the three nine-turn pills onto the chopping block, and sat looking at them for a long while.\n\nHe was doing his sums. The sect's pill was in Qi Changsong's hands, and Qi Changsong was in seclusion. These three in his own hands, nine gold rings each, clear as three drops of frozen dew, were each better than the whole temple's one by who knew how much — but a nine-turn pill has no history he could tell. When he came to lay his Foundation, Zhou Heng's ledger would want a line, his master would ask a question, and the whole temple's eyes would look: which one did you eat? What answer would he give?"
+  "zh": "拜过了师，外头下起雪来。那是那一年的头场雪，下得又密又静，一夜之间，把沉鼎山的三百级石阶埋得只剩一道白坡。\n\n小满寻了个夜里，等大通铺上鼾声连成了一片，悄悄起身，摸到后头柴房，闩上门，点起那半根蜡烛，从储物袋里摸出那个油纸包，把那三颗九转倒在柴墩上，对着它们坐了半晌。\n\n他是在算账。宗门那一颗，在祁长松手里，祁长松这时候正闭着关。他手里这三颗，九道金纹，透亮得像三滴凝住的露水，一颗比全观那一颗强了不知多少倍——可九转说不清来历。将来他筑基，周衡的账上要记一笔，师父要问一句，全观的眼睛都要看：吃的是哪一颗？这一问，他拿什么答？",
+  "en": "Once he had bowed to his master, the snow began. It was that year's first snow, thick and silent, and in a single night it buried the three hundred steps of Mount Chending until only a white slope was left.\n\nXiaoman picked a night, waited until the snoring on the long bunk ran together into one, got up quietly, felt his way to the woodshed at the back, barred the door, lit the half candle, took the oilpaper packet out of the storage pouch, tipped the three nine-turn pills onto the chopping block, and sat looking at them for a long while.\n\nHe was doing his sums. The sect's pill was in Qi Changsong's hands, and Qi Changsong was in seclusion. These three in his own hands, nine gold rings each, clear as three drops of frozen dew, were each better than the whole temple's one by who knew how much — but a nine-turn pill has no history he could tell. When he came to lay his Foundation, Zhou Heng's ledger would want a line, his master would ask a question, and the whole temple's eyes would look: which one did you eat? What answer would he give?"
  },
  "lines": [],
  "buttons": [
@@ -55,8 +55,8 @@
     "item": "foundation-pill-9"
    },
    "story": {
-    "zh": "那三颗九转，他当下打定了主意：一颗，是自己的；另外两颗，仍用油纸裹了三层，塞回饭桶肚里。筑基丹是给九层大圆满的人破关用的，他才练气四层，吃不得。自己那一颗另拿油纸包了，贴肉揣着，跟那块木牌挨在一处，一个凉，一个暖。木牌背面那道裂纹，是秘境里破那面盾裂的，隔着油纸也摸得出来。她醒是醒了，话却比从前少。至于说得清来历的那一颗——全观一年一颗，年年腊八摆在五行台上。他吹了蜡烛，在黑地里想：总有一年。",
-    "en": "About the three nine-turn pills he made up his mind on the spot: one was his own; the other two he wrapped again in three layers of oilpaper and tucked back into the Rice Tub's belly. A Foundation pill is for someone at layer nine, great perfection, to break through; he was at Qi Refining layer four, and couldn't take it. His own he wrapped in oilpaper separately and carried against his skin, next to the wooden token, one cool, one warm. The crack across the back of the token, from breaking that shield in the hidden realm, he could feel even through the oilpaper. She was awake, but she said less than before. As for a pill whose history he could tell — the whole temple got one a year, set out on the Five Elements Platform every Laba. He blew out the candle and thought in the dark: some year."
+    "zh": "那三颗九转，他当下打定了主意：一颗，是自己的；另外两颗，仍用油纸裹了三层，收回储物袋里。筑基丹是给九层大圆满的人破关用的，他才练气四层，吃不得。自己那一颗另拿油纸包了，贴肉揣着，跟那块木牌挨在一处，一个凉，一个暖。木牌背面那道裂纹，是秘境里破那面盾裂的，隔着油纸也摸得出来。她醒是醒了，话却比从前少。至于说得清来历的那一颗——全观一年一颗，年年腊八摆在五行台上。他吹了蜡烛，在黑地里想：总有一年。",
+    "en": "About the three nine-turn pills he made up his mind on the spot: one was his own; the other two he wrapped again in three layers of oilpaper and put back in the storage pouch. A Foundation pill is for someone at layer nine, great perfection, to break through; he was at Qi Refining layer four, and couldn't take it. His own he wrapped in oilpaper separately and carried against his skin, next to the wooden token, one cool, one warm. The crack across the back of the token, from breaking that shield in the hidden realm, he could feel even through the oilpaper. She was awake, but she said less than before. As for a pill whose history he could tell — the whole temple got one a year, set out on the Five Elements Platform every Laba. He blew out the candle and thought in the dark: some year."
    },
    "next": "09-furnace"
   },
