@@ -1,6 +1,6 @@
 // 古七 · 筑基 (chapter 00-zhuji, his 2026-09-30: 照这样重做冀州) — the book's winter, the
-// year and the cliff, played at 沉鼎观 before the road north: the snow night over the three
-// 九转 (one carried, two in 饭桶 — no 官丹 yet: 古六's final was lost, 2026-10-03), the furnace's
+// year and the cliff, played at 沉鼎观 before the road north: the snow night over the one
+// 九转 (carried against the skin, Hanli 2026-10-06 — no 官丹 yet: 古六's final was lost, 2026-10-03), the furnace's
 // culls, the year as the book's seasons (never days of chores) with the five-year skip, where
 // the year-five 大比 is won and the sect's 一转 comes into the bag, 瞿老's last disciple, and the
 // Foundation laid on the cliff with the 九转 reached for before the sect's 一转. The cliff ends it
@@ -48,7 +48,7 @@ test('古九 is its own chapter at 沉鼎观: between 外门 and 冀, the Founda
   assert.deepEqual([...seen].sort(), Object.keys(CH.scenes).sort());
 });
 
-test('the winter and the year: the three 九转 on the snow night, the furnace\'s culls, and the seasons — the story\'s own, free of 体力 (Hanli, 2026-10-01), in order, once', () => {
+test('the winter and the year: the one 九转 on the snow night, the furnace\'s culls, and the seasons — the story\'s own, free of 体力 (Hanli, 2026-10-01), in order, once', () => {
   let s = atSnow();
   assert.equal(go(s, 'eat').state.scene, '09-snow', 'eating one now is turned down: the scene stays');
   s = go(s, 'keep').state;

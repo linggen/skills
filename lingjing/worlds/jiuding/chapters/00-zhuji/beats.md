@@ -5,8 +5,8 @@ The book's 古七 (story/jiuding-lu/07-第七回.md; 古九 before the 2026-10-0
 `story` is the book's own passage (verbatim zh, en beside it); setup, recap, captions and buttons
 speak to the player as 你 (story/jiuding-lu/DESIGN.md § 四·五 人称分工).
 
-1. **Snow** (`09-snow`, 柴房). The three 九转 on the chopping block (the sect's one is 祁长松's — 古六's
-   final was lost). **One against the skin, two back in 饭桶** → the bag gets `foundation-pill-9`; the
+1. **Snow** (`09-snow`, 柴房). The one 九转 on the chopping block (the sect's one is 祁长松's — 古六's
+   final was lost). **Against the skin, kept for 九层大圆满** (one pill, Hanli 2026-10-06) → the bag gets `foundation-pill-9`; the
    pill with a history he can tell is the 官丹, 全观一年一颗 — 「总有一年」. (**Eat one now** is turned
    down: a 筑基丹 is for 九层大圆满, he is 四层.)
 2. **The furnace** (`09-furnace`, 柴房). Spring: 周衡's basket of culls → 九转聚气丹
