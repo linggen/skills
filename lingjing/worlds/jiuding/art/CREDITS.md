@@ -107,6 +107,10 @@ The 经脉 · 穴位 figures are painted by Codex with their labels (each checke
 for Hanli, 2026-09-29 (webp q80, 1448×1086). The plate the passes follow, 《性命圭旨·反照图》 (Ming,
 public domain, Wikimedia Commons), is kept as `codex/fanzhao-scan.webp`, its 「原图」.
 
+`people/min-danshi.webp` — 闵丹师, the 丹房 pill-master (古七, Hanli 2026-10-07), painted the same way by
+Codex CLI's image tool from `tools/paint-codex.py` (thin, stooped, a burnt-through grey robe, an iron poker, a pill
+held to his nose), 2026-10-07. No outside source.
+
 ## The prologue — people and panels (2026-09-28; the panels retired and the people repainted 2026-09-29, above)
 
 `people/baba.webp`, `mama`, `wupo`, `masan`, `maxiaobao`, `laozhou`, `jiujiu`,

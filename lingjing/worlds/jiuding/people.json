@@ -134,6 +134,15 @@
       "art": "art/people/chuxiansheng.webp"
     },
     {
+      "id": "min-danshi",
+      "gender": "male",
+      "name": { "zh": "闵丹师", "en": "Pill-master Min" },
+      "role": { "zh": "内门的丹师，筑基初期，在丹房那口炉子跟前守了三十年；观里的份例聚气丹和大比那颗筑基丹，都是他的手艺", "en": "The inner court's pill-master, early Foundation, thirty years at the one furnace in the pill house; the ration qi pills and the contest's Foundation pill are his work" },
+      "voice": { "zh": "话少，先看后闻再开口；一炉十颗出两颗一纹便算好的，他自己说得出口。不信也不揭，只说「先拿来我看」。", "en": "Few words; looks, then smells, then speaks. Two one-ring pills in a batch of ten is a good batch, and he says so himself. Neither believes nor exposes — only \"bring it to me first\"." },
+      "home": "zhengdian",
+      "art": "art/people/min-danshi.webp"
+    },
+    {
       "id": "sunergou",
       "gender": "male",
       "name": { "zh": "孙二狗", "en": "Sun Ergou" },

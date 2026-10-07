@@ -13,13 +13,13 @@ speak to the player as 你 (story/jiuding-lu/DESIGN.md § 四·五 人称分工)
 2. **The furnace** (`09-furnace`, 柴房). Spring: 周衡's basket of culls → 九转聚气丹
    for 阿禾 and 孙二狗 (「牛棚里那半张饼的」; 阿禾's he doesn't name). Before the fire, 舅舅's three lines and who
    stood at the door (the 柴垛 man — 老井: 脸白得看不出年纪, 老井嗓子); the letter is three lines (吴婆婆's 「牙还在」 kept; the bowls, 护膝 and chili-oil bottle cut, Hanli 2026-10-06), the recipes a few lines (进步神速; 灵石 run out → the 执事堂 wall);
-   孙二狗's tears carry the news to 马小宝.
-3. **The year** (`09-year`, 药园). 马小宝 accuses him of stealing the garden's herbs; 周衡: 「药园，一株
-   不少……要告他偷，拿赃来」, then 「我看了」 (the 端午 验封 was cut from the book, 2026-10-03: no seal,
-   no followers, no 戒律堂, no ban on 钱掌柜). After the accusation, 涧边屠七 (2026-10-05, replacing 阿禾's half 文): he goes down on 二月十九 for a letter, 钱掌柜 sells him the warning, the 散修 屠七 (hired by 马小宝 through 钱掌柜) names his parents at the back-hill gully; he stays, a one-ring ration pill as bait, the slick stone mid-stream, an arrow through the throat, a 金刃 in his left shoulder; the 押条 he keeps; 钱掌柜 nails up 「正月十九　头彩一颗　已开」 on the day 阿禾 names. It plays inside the scene's own passage (no new exits). The seasons: 清明 (外公's paper; 阿禾's 禾 drink her qi, her nine-ring pill → 七层, the rice 绿得发黑) raises no layer
+   孙二狗's tears carry the news into the 内门 (the cover story for the pills is a dead man's bag in the 秘境 — the 头彩 lie went with the 屠七 thread, Hanli 2026-10-07).
+3. **The year** (`09-year`, 药园). The 饭堂 says he steals the garden's herbs to make pills; 周衡: 「药园，一株
+   不少……要说他偷，拿赃来」, then 「我看了」 (the 端午 验封 was cut from the book, 2026-10-03: no seal,
+   no followers, no 戒律堂, no ban on 钱掌柜; 马小宝's 告状 cut 2026-10-07, Hanli: he is quiet for the rest of 卷一 after the 木牌 offer). Then 丹房 (Hanli 2026-10-07): the line reaches 闵丹师, thirty years at the sect's furnace; he sends for him, counts to the ninth ring with his lips, smells it three times — 「这丹，不是炉里出来的。没有火气。」; the dead-man's-bag lie; 「这一颗，我炼不出来」「往后有这样的，先拿来我看」 — a watcher, not an accuser; the line dies on its own. (涧边屠七 of 2026-10-05 — the 二月十九 letter, 钱掌柜's warning, the gully, the 押条, the 「已开」 board, the shoulder — cut whole, Hanli 2026-10-07: 「直接一箭被秒杀不太合理」; no replacement fight.) It plays inside the scene's own passage (no new exits). The seasons: 清明 (外公's paper; 阿禾's 禾 drink her qi, her nine-ring pill → 七层, the rice 绿得发黑) raises no layer
    (he stays 五层); 伏天 (the wall) ends with 「一晃，便是五年」 —
    the skip plays in its passage and lifts him to 九层 (`rise: 9`): the five years run on the 执事堂's 差事牌 (Hanli 2026-10-06; three to a tag — 阿禾 plans, 小满 fights, 孙二狗 takes the blows): 年三 the 犰狳 at 王家庄, 年六 the 老熊 on the 下邳北道 with 秦雁, 瞿老's lines 巽，入也 / 随风，巽; 祁长松's Foundation and first flight
-   into the 柏, the year-five 大比 won plainly, the 一转 官丹 resealed with 米汤 into 饭桶 — the exit
+   into the 柏, the year-five 大比 won plainly, the 一转 官丹 resealed with 米汤 into 饭桶 (next day 闵丹师 meets him at the 丹房 door — a twitch of the nose, a look at the pouch, nothing said; 2026-10-07) — the exit
    grants the sect's `foundation-pill` (古六's final grants none); 入秋 (年八) → 九层大圆满
    (`{layer: 9, full: true}`). The seasons are the main
    story, so they cost no 体力 (主线, Hanli 2026-10-01 — was 25 a season; 入秋 pays a story step's 3)
