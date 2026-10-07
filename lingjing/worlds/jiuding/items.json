@@ -990,8 +990,8 @@
       },
       "art": "art/items/iron-sword.webp",
       "about": {
-        "zh": "赤铜葫芦连七八瓣盾片，你扔进饭桶图个干净，它吸了你五口气，吐出这一口：三尺来长，剑身暗红，火纹一道也没有了，剑脊上一溜锤印，像铁匠铺学徒打坏的。最寻常的法器。剑脊近柄刻着两个字：火柴；底下一行小字：一划火起，一横盾生。",
-        "en": "The red-copper gourd and seven or eight shield shards, tossed into the Rice Tub just to be rid of them; it took five mouthfuls of your qi and out came this: three feet or so, the blade a dull red with not one line of the fire pattern left, a row of hammer marks down the spine like an apprentice's botched piece. The commonest kind of artifact. Cut into the spine near the hilt: Matchstick; and a line of small ones: One strike, fire; held flat, a shield."
+        "zh": "赤铜葫芦连七八瓣盾片，你扔进饭桶图个干净，它吸了你五口气，吐出这一口：三尺来长，剑身暗红，火纹一道也没有了，剑脊上一溜锤印，像铁匠铺学徒打坏的。最寻常的法器。剑脊近柄刻着两个字：火柴；底下一行小字：剑起火升，攻守兼备。",
+        "en": "The red-copper gourd and seven or eight shield shards, tossed into the Rice Tub just to be rid of them; it took five mouthfuls of your qi and out came this: three feet or so, the blade a dull red with not one line of the fire pattern left, a row of hammer marks down the spine like an apprentice's botched piece. The commonest kind of artifact. Cut into the spine near the hilt: Matchstick; and a line of small ones: The sword rises, the fire climbs; attack and guard in one."
       },
       "buy": 0,
       "sell": 0,
@@ -1000,7 +1000,7 @@
         "root": "fire",
         "atk": 3
       },
-      "_about": "古七 (Hanli 2026-10-06): the day after the 大比 he moves into the 内门西廊; sorting the bag, the 赤松观 gourd and shield shards are rubbish and a 名帖 to anyone who knows them — he tosses them into the 饭桶 wanting nothing (要什么，不出什么) and it gives a plain sword, already under his bunk when 瞿老 gives him the 《河洛剑诀》. The label names it (火柴; 小字「一划火起，一横盾生」). It carries both its sources, and NOTHING is shown in 卷一 (Hanli 2026-10-06): a strike (划) looses fire, then fire snakes like the gourd's — revealed at its first real fight; held flat (横) the copper of the spine spreads into a red shield of light, like 邹青松's 赤铜盾 — a later second surprise. Both draw on the holder's own 灵力 and scale with his level (finger-thin snakes early; the shield stops equals, not someone three layers up). It cannot cut a 七层's 护体灵光 (屠七); in 古七 it kills the 合窳 only as a sword, through the throat as it cries. Fire-attribute (root fire; stats otherwise unchanged). Granted at 09-snow/feed. Never sold. In the game the gourd stays in the bag (a worn weapon is never taken).",
+      "_about": "古七 (Hanli 2026-10-06): the day after the 大比 he moves into the 内门西廊; sorting the bag, the 赤松观 gourd and shield shards are rubbish — he tosses them into the 饭桶 wanting nothing (要什么，不出什么) and it gives a plain sword, already under his bunk when 瞿老 gives him the 《河洛剑诀》. The label names it (火柴; 小字「剑起火升，攻守兼备」). It carries both its sources, and NOTHING is shown in 卷一 (Hanli 2026-10-06): a strike (划) looses fire, then fire snakes like the gourd's — revealed at its first real fight; held flat (横) the copper of the spine spreads into a red shield of light, like 邹青松's 赤铜盾 — a later second surprise. Both draw on the holder's own 灵力 and scale with his level (finger-thin snakes early; the shield stops equals, not someone three layers up). It cannot cut a 七层's 护体灵光 (屠七); in 古七 it kills the 合窳 only as a sword, through the throat as it cries. Fire-attribute (root fire; stats otherwise unchanged). Granted at 09-snow/feed. Never sold. In the game the gourd stays in the bag (a worn weapon is never taken).",
       "art_source": "The iron sword's picture until its own is painted."
     },
     {
