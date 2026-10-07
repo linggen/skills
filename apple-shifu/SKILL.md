@@ -38,7 +38,9 @@ tools:
       first), UNMEASURED (folders skipped, with the reason — report them as
       not measured and never guess a size for one), CACHES, CLEARABLE (the
       Files tab pile's totals — build output and dev caches live there, not
-      here), OLD_DOWNLOADS_COUNT, APPLICATIONS. Every size is already in GB —
+      here), OLD_DOWNLOADS_COUNT, APPLICATIONS (installed apps, then app
+      bundles found elsewhere in home, marked `not installed · <folder>`).
+      Every size is already in GB —
       Apple's GB, the same figure Finder shows — so quote them as they come
       and never re-scale them.
       Call this when a question in chat needs a fresh read of the disk

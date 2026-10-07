@@ -441,8 +441,9 @@ const CLEANUP_COMMANDS = {
 };
 
 // The one shape of command the agent may still write itself: moving an app to
-// the Trash, which stays recoverable (Apps to Review).
-const AGENT_COMMAND = /^mv -i "\/Applications\/[^"]+\.app" ~\/\.Trash\/$/;
+// the Trash, which stays recoverable (Apps to Review) — from /Applications, or
+// from a home folder for a bundle found there (`mv -i ~/"dir/Foo.app" ~/.Trash/`).
+const AGENT_COMMAND = /^mv -i (?:"\/Applications\/[^"]+\.app"|~\/"[^"]+\.app") ~\/\.Trash\/$/;
 
 function cleanupEntry(r) {
   const known = CLEANUP_COMMANDS[r.id];

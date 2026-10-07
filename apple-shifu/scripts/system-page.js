@@ -128,6 +128,10 @@ const PAID_SUITE = /^Microsoft |^Adobe /;
 const DORMANT_DAYS = 90;
 const MIN_NEVER_GB = 0.05;
 const APPS_CAP = 12;
+/** Bundles found outside /Applications (old build output) — a few at most,
+    so they never crowd installed apps off the card. */
+const ELSEWHERE_CAP = 4;
+const ELSEWHERE = /^not installed · (.+)$/;
 
 function appNote(name) {
   if (APPLE_BUNDLED.test(name)) return 'Apple bundled — keep if you ever might use it.';
@@ -135,35 +139,45 @@ function appNote(name) {
   return 'Not opened recently.';
 }
 
-/** Lines of `<last-used>\t<size>\t<name>` → the Apps to Review widget, or
+/** Lines of `<last-used>\t<size>\t<name>[\t<where>]` → the Apps to Review widget, or
     null. Never-opened apps of 50 MB and up, and anything unopened for 90
-    days; maintenance entries left out. The command only ever moves an app to
-    the Trash — recoverable — and the renderer accepts no other shape. */
+    days; maintenance entries left out. A `not installed · <folder>` 4th field
+    marks a bundle found elsewhere in home; its row says so and names the
+    folder. The command only ever moves an app to the Trash — recoverable —
+    and the renderer accepts no other shape. */
 export function appsWidget(raw, now = Date.now()) {
   const items = [];
   for (const line of String(raw || '').split('\n')) {
-    const [used, size, name] = line.split('\t');
+    const [used, size, name, where] = line.split('\t');
+    const dir = ELSEWHERE.exec(where || '')?.[1];
     if (!name || MAINTENANCE.test(name)) continue;
     const gb = sizeToGb(size);
     let when = null;
     if (used === 'never') {
       if (gb < MIN_NEVER_GB) continue;
     } else {
-      const t = Date.parse(used.replace(' +0000', 'Z').replace(' ', 'T'));
+      // "2023-09-21 10:25:36 -0300" → ISO; any offset, not just +0000 (the
+      // state-folder signals carry the Mac's local offset).
+      const t = Date.parse(used.replace(/^(\S+) (\S+) ([+-]\d\d)(\d\d)$/, '$1T$2$3:$4'));
       if (!Number.isFinite(t) || now - t < DORMANT_DAYS * 86400e3) continue;
       when = new Date(t).toISOString().slice(0, 10);
     }
     items.push({
       title: name,
-      description: `Last opened ${when || '— never'} · ${fmtGb(gb)} · ${appNote(name)}`,
+      description: `Last opened ${when || '— never'} · ${fmtGb(gb)} · ${dir ? where : appNote(name)}`,
       savings_gb: +gb.toFixed(3),
       risk: 'review',
-      command: `mv -i "/Applications/${name}" ~/.Trash/`,
+      command: dir
+        ? `mv -i ~/"${dir.replace(/^~\/?/, '')}/${name}" ~/.Trash/`
+        : `mv -i "/Applications/${name}" ~/.Trash/`,
+      elsewhere: !!dir,
     });
   }
   if (!items.length) return null;
   items.sort((a, b) => b.savings_gb - a.savings_gb);
-  const shown = items.slice(0, APPS_CAP);
+  let elsewhere = 0;
+  const shown = items.filter((i) => !i.elsewhere || ++elsewhere <= ELSEWHERE_CAP).slice(0, APPS_CAP);
+  for (const i of shown) delete i.elsewhere;
   const total = shown.reduce((s, i) => s + i.savings_gb, 0);
   return {
     type: 'recommendations',

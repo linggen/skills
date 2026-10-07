@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 # Per-app metadata used by scan-applications.sh.
 # Output: <sort-key>\t<last-used>\t<size>\t<name>  (tab-separated)
+# With `--where` first, a 5th field: `not installed · <folder, ~-relative>`
+# (for bundles found outside /Applications).
 # Designed to run in parallel via xargs -P. Uses Spotlight's pre-computed
 # size and a multi-source last-used signal (Spotlight + Containers + Saved
 # State + Preferences + Application Support, max wins).
 set -u
+where=0
+[ "${1:-}" = "--where" ] && { where=1; shift; }
 app="${1:-}"
 [ -d "$app" ] || exit 0
 
@@ -101,4 +105,9 @@ else
   size="?"
 fi
 
-printf "%s\t%s\t%s\t%s\n" "$key" "$last" "$size" "$(basename "$app")"
+if [ "$where" = 1 ]; then
+  dir=$(dirname "$app")
+  printf "%s\t%s\t%s\t%s\tnot installed · %s\n" "$key" "$last" "$size" "$(basename "$app")" "~${dir#"$HOME"}"
+else
+  printf "%s\t%s\t%s\t%s\n" "$key" "$last" "$size" "$(basename "$app")"
+fi

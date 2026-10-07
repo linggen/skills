@@ -61,6 +61,20 @@ test('apps to review: never-opened big apps and 90-day dormant ones, maintenance
   assert.equal(w.badge, '3 apps · 2.8 GB');
 });
 
+test('apps to review: bundles found outside /Applications say so, capped apart', () => {
+  const far = (i) => `2023-09-21 10:25:36 -0300\t${900 - i}M\tSailSim${i}.app\tnot installed · ~/workspace/unity/build`;
+  const raw = [
+    '2023-07-25 09:11:28 +0000\t417M\tFirefox.app',
+    ...[0, 1, 2, 3, 4, 5].map(far),
+  ].join('\n');
+  const w = appsWidget(raw, NOW);
+  assert.deepEqual(w.items.map((i) => i.title), ['SailSim0.app', 'SailSim1.app', 'SailSim2.app', 'SailSim3.app', 'Firefox.app']);
+  assert.match(w.items[0].description, /^Last opened 2023-09-21 · 900 MB · not installed · ~\/workspace\/unity\/build$/);
+  assert.equal(w.items[0].command, 'mv -i ~/"workspace/unity/build/SailSim0.app" ~/.Trash/');
+  assert.equal(w.items[4].command, 'mv -i "/Applications/Firefox.app" ~/.Trash/');
+  assert.ok(!('elsewhere' in w.items[0]));
+});
+
 test('sizes are Apple GB', () => {
   assert.equal(sizeToGb('1.4G'), 1.4);
   assert.equal(sizeToGb('120M'), 0.12);

@@ -109,7 +109,8 @@ limited 15 bash -c 'find ~/Downloads -maxdepth 1 -mtime +180 -type f 2>/dev/null
 echo ""
 echo "=== APPLICATIONS ==="
 echo "# REQUIRED: emit 'Apps to Review' recommendations widget from these rows."
-echo "# Format per line: <last-used>\\t<size>\\t<name>. last-used='never' = no usage signal."
+echo "# Format per line: <last-used>\\t<size>\\t<name>[\\t<where>]. last-used='never' = no usage signal."
+echo "# A 4th field 'not installed · <folder>' = a bundle found in that home folder, not an installed app."
 "$(dirname "$0")/scan-applications.sh"
 
 # The finished scan is the quest fact other apps may count. Silent.
