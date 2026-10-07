@@ -1,7 +1,7 @@
 {
   "version": 1,
   "province": "冀",
-  "_about": "冀州的差事 (design.md § 差事), all 古八's people (Hanli, 2026-10-05: 人物和货都从书里来). `opens.before` offers one only while the 漳水 (01-rise) is still ahead — the city that pays the 河伯钱 and does not look downstream; `opens.done` only once it is behind him — the city after. 交差 where he stands, the moment the count is met.",
+  "_about": "冀州的差事 (design.md § 差事), all 古九's people (古八 before the 2026-10-07 split) (Hanli, 2026-10-05: 人物和货都从书里来). `opens.before` offers one only while the 漳水 (01-rise) is still ahead — the city that pays the 河伯钱 and does not look downstream; `opens.done` only once it is behind him — the city after. 交差 where he stands, the moment the count is met.",
   "quests": [
     {
       "id": "ji-kezhan-hebo",

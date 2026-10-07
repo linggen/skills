@@ -1,13 +1,13 @@
-# Chapter 1 · 冀州之鼎 — beat sheet (古八)
+# Chapter 1 · 冀州之鼎 — beat sheet (古九; 古八 until 古七 was split in two, 2026-10-07)
 
-> **Rebuilt 2026-09-30** to the book's 古八 (古十 before the 2026-10-02 renumbering; his: 「可以，照这样重做冀州」). 筑基 moved to the
-> 沉鼎观 cliff in 古七 — its own chapter, `00-zhuji` (its scenes stand in 徐, and a chapter's
+> **Rebuilt 2026-09-30** to the book's 古九 (古八 until the 2026-10-07 split; 古十 before the 2026-10-02 renumbering; his: 「可以，照这样重做冀州」). 筑基 moved to the
+> 沉鼎观 cliff in 古七 (古八 since the 2026-10-07 split) — its own chapter, `00-zhuji` (its scenes stand in 徐, and a chapter's
 > scenes stand in its province). No 狍鸮 at the altar (it still haunts 冀's places). The chapter's
 > fight is **冰夷's two dragons testing the one who would not kneel** (`01-rise`, `foe-shuanglong`),
 > written into the book too. Each scene's `story` is the book's own passage (verbatim zh + en).
 
-1. **Arrive** (`01-arrive`, 漳水南岸). the abbot's map (古七's last scene, the night after the Foundation); the tenth evening at the Zhang;
-   周衡 does not write a word. Opens on 瞿老's sixteen characters (内观经, 古八's lesson — paid off in the deep)
+1. **Arrive** (`01-arrive`, 漳水南岸). the abbot's map (古八's last scene — 古七's before the 2026-10-07 split — the night after the Foundation); the tenth evening at the Zhang;
+   周衡 does not write a word. Opens on 瞿老's sixteen characters (内观经, 古九's lesson — paid off in the deep)
    and the sleeper under the Zhang, 「这一个，睡得更沉」.
 2. **Ye** (`01-ye`, 邺城). The inn, the custom, this year's bride (豆腐西施). The two failed plans are
    the player's choices — **bribe the Three Elders** (the ingot's 圈里一横; that night he unwraps his palm's brand under the lamp)
@@ -20,7 +20,7 @@
    a trial that may be fought again, `retry`); won, the book's passage plays: he steps back in front
    of 豆腐西施 and stands between the dragons without a spell, palms out — 「她是卖豆腐的。她没招谁。」 A second white
    robe under the willows (老井) sees the brand in his palm.
-5. **The tower** (`01-tower`, 河伯祠; 古八 rewrite 2026-10-02). 「谁说我要娶媳妇的？」; the wave brings down a
+5. **The tower** (`01-tower`, 河伯祠; 古九 (then 古八) rewrite 2026-10-02). 「谁说我要娶媳妇的？」; the wave brings down a
    corner of the water-gate tower; 阿禾's 「账就烂了」; under the rubble, 老胡 — he broke out to stop the boat.
    **The player's choice and price**: `give` (needs `mend-pill-9`, the 九纹回春丹 kept for 爹's knee in 古四 — takes it)
    holds him a cup of tea's time and he dies holding his daughter's hand; `hold` (a branch the book never took) keeps
