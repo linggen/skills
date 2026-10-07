@@ -260,7 +260,7 @@
    "file": "90-附录·吐纳经.md"
   }
  ],
- "_aliases": "Old chapter ids (序章上 00 … 第二章 03, before the 回), kept so an old read.html?ch= link still opens the 回 that now holds that chapter's start. 2026-09-30 the four 回 were split into ten (OUTLINE § 二·五): old 第三回 (外门) begins 第五回, old 第四回 begins 第九回; ids h03/h04 now name the new 第三回/第四回. 2026-10-02 (卷一 eight 古 回, four 今 interludes): a folded id is no alias but its absorber's `absorbs` (book-order.js resolveId). 2026-10-07 (古七 split): old 第二章 (03) began at the move into the 内门 (腊月十一), now the first half of the old h09 — 03 → h11.",
+ "_aliases": "Old chapter ids (序章上 00 … 第二章 03, before the 回), kept so an old read.html?ch= link still opens the 回 that now holds that chapter's start. 2026-09-30 the four 回 were split into ten (OUTLINE § 二·五): old 第三回 (外门) begins 第五回, old 第四回 begins 第九回; ids h03/h04 now name the new 第三回/第四回. 2026-10-02 (卷一 eight 古 回, four 今 interludes): a folded id is no alias but its absorber's `absorbs` (book-order.js resolveId). 2026-10-07 (古七 split): old 第二章 (03) began at the move into the 内门 (腊月初九, the day after the 大比), now the first half of the old h09 — 03 → h11.",
  "aliases": {
   "00": "h01",
   "01": "h02",

@@ -94,7 +94,7 @@ test('each 古 回目 is two seven-character lines, each 今 one line; every fil
 
 test('an old ?ch= id opens its 回; the 回 title renders centred as number and couplet; a scene break is a quiet ◇', () => {
   // 2026-09-30 卷一 split into ten: the old 第一章 · 外门 (02) begins old 古五 (h05), 第二章 (03) old 古九 (h09) —
-  // whose start (the move into the 内门, 腊月十一) is 古七's first half, h11, since the 2026-10-07 split.
+  // whose start (the move into the 内门, 腊月初九) is 古七's first half, h11, since the 2026-10-07 split.
   // An old id names the same 回 by its stable id, under whatever number the book now gives it.
   assert.deepEqual(['00', '01', '02', '03'].map((id) => entryById(book, id)?.id), ['h01', 'h02', 'h05', 'h11']);
   for (const id of ['00', '01', '02', '03']) assert.equal(entryById(book, id).label.zh, hui.find((h) => h.id === entryById(book, id).id).label.zh, id);

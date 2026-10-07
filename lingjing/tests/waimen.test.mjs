@@ -434,11 +434,11 @@ test('外门 ends on its card: 「古八 · 完」 by the book\'s number, what t
   assert.equal(close.title, `${bookNo(content, 'h08')} · 完`);
   assert.equal(close.id, 'h08', 'put away once, as the 回 it closes');
   assert.equal(close.did, '你收了药园那只偷萝卜的小狰，大比台下把站不起来的孙二狗拉了起来，以四层把内门的六层扔下了台，一路打进决赛，输给了九层的祁长松，那颗筑基丹没拿着，名字进了内门名册，又拜了扫了五十年台阶的瞿老为师。');
-  assert.match(close.teaser, /腊月十一[\s\S]*木牌/);
+  assert.match(close.teaser, /大比第二天[\s\S]*内门西廊[\s\S]*木牌/);
   assert.ok(l.stage.some(c => c.card === 'closed'), 'on the stage');
   assert.equal(stageSlots(l, l.stage).main[0].card, 'closed', 'first on the stage, before an errand offered where he stands');
   const html = cardHtml({ card: 'closed' }, { look: l, lang: 'zh', words: WORDS.zh });
-  assert.match(html, new RegExp(`${bookNo(content, 'h08')} · 完[\\s\\S]*小狰[\\s\\S]*腊月十一[\\s\\S]*data-close-chapter="h08">合上`));
+  assert.match(html, new RegExp(`${bookNo(content, 'h08')} · 完[\\s\\S]*小狰[\\s\\S]*内门西廊[\\s\\S]*data-close-chapter="h08">合上`));
   // another player's chapter reads his own: no 狰, and 孙二狗 not pulled up
   const other = { ...s, cast: s.cast.filter(id => id !== 'zheng'), ledger: s.ledger.filter(e => e.who !== 'sunergou') };
   assert.match(look(other, content, ctx(DAY2)).chapter.close.did, /^药园的贼，你没收成，以四层把内门的六层扔下了台，/);
