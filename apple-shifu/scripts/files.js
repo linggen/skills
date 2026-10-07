@@ -146,6 +146,7 @@ function clearVerbs() {
         run: () => clearPaths([...selected]),
       }
       : { label: 'Clear', blocked: 'Check items to clear them' },
+    ...(clear.running ? { clean: { label: 'Clear', blocked: 'scanning…' } } : {}),
   };
 }
 
@@ -173,6 +174,13 @@ function removalBlocked() {
     if (op.kind !== 'remove') return 'Wait for the scan to finish';
   }
   return null;
+}
+
+/** Why a Clearable clear cannot start: a removal's reasons, or the Clearable
+    scan still measuring — the two never overlap (clearables.sh holds the same
+    line). */
+function clearBlocked() {
+  return removalBlocked() || (clear.running ? 'scanning…' : null);
 }
 
 // ── scan ──
@@ -580,10 +588,19 @@ async function startClearScan() {
   if (clear.running) return;
   if (!clear.loaded) await loadClearables();
   clear.running = true;
+  const res = await bash(`bash ${CLEAR_SH} start "${CLEAR_DIR}"`);
+  // A clear still running (another page, or one not re-attached yet): the
+  // shell will not scan beside it. Keep the rows as they are.
+  if ((res.stdout || '').includes('"busy"')) {
+    clear.running = false;
+    const said = 'Clearable not scanned · clearing…';
+    showToast(said).done(said);
+    refreshVerbs();
+    return;
+  }
   clear.scan = parseScan('');
   regroup();
   render();
-  await bash(`bash ${CLEAR_SH} start "${CLEAR_DIR}"`);
   pollClear();
 }
 
@@ -655,7 +672,7 @@ const METHOD_WORDS = {
 /** Clear Clearable rows — every one the way its rule says. clearables.sh
     re-verifies each path against the catalog and refuses what does not fit. */
 async function clearPaths(paths) {
-  const blocked = removalBlocked();
+  const blocked = clearBlocked();
   const rowsGoing = paths.map((p) => clear.byPath.get(p))
     .filter((r) => r && r.method !== 'report' && !removing.has(r.path));
   if (blocked || !rowsGoing.length) return;
@@ -677,7 +694,7 @@ async function clearPaths(paths) {
       ? ` <b>${reviews} marked REVIEW</b> — clearing costs a rebuild, a download, or your data.` : ''}`,
     n === 1 ? 'Clear' : `Clear ${n.toLocaleString()}`,
     true);
-  if (!ok || removalBlocked()) return;
+  if (!ok || clearBlocked()) return;
   const trashed = by('trash').map((r) => r.path);
   const { gone, result, note, lost } = await runListJob(
     rowsGoing.map((r) => r.path), rowsGoing.map((r) => `${r.rule}\t${r.path}`), 'Clearing', sizes,
@@ -686,7 +703,15 @@ async function clearPaths(paths) {
 }
 
 function finishClear({ gone, note }, result, sizes, trashedPaths, lost) {
+  // Rows already off the disk (an earlier clear took them): drop them here
+  // too — clearables.sh has taken them out of rows.txt.
+  for (const p of result.gone_paths || []) dropPath(p);
+  if (result.gone) render();
   writeSummary();
+  if (result.busy) {
+    note.done(`Not cleared · ${result.busy}…`);
+    return;
+  }
   const freed = [...gone].reduce((s, p) => s + (sizes.get(p) || 0), 0);
   if (lost) {
     note.done(`Lost touch with Linggen after ${fmtBytes(freed)} — the clear keeps going. Reopen Files to pick it up.`);
@@ -694,6 +719,7 @@ function finishClear({ gone, note }, result, sizes, trashedPaths, lost) {
   }
   const notes = [];
   if (result.failed) notes.push(`${result.failed} could not be cleared`);
+  if (result.gone) notes.push(`${result.gone} already gone`);
   // The shell's guard said no — say so out loud, with its first reason.
   if (result.refused) notes.push(`${result.refused} refused (${(result.reasons || [])[0] || 'outside its rule'})`);
   const trashed = [...gone].some((p) => trashedPaths.has(p));
@@ -911,8 +937,8 @@ const CLEAR_HINT = { purge: 'deleted outright', trash: 'to the Trash', tool: 'by
 
 /** A row's ⋯: look first, then remove — the destructive verb last. */
 function openRowMenu(anchor, path) {
-  const blocked = removalBlocked();
   const row = clear.byPath.get(path);
+  const blocked = row ? clearBlocked() : removalBlocked();
   const items = [
     { label: 'Show in Finder', run: () => revealInFinder(path) },
     { label: 'Copy command', run: () => copyText(removeCommand(path)) },

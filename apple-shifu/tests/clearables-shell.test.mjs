@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -154,6 +154,85 @@ test('clear: the guard refuses anything that does not fit its rule', () => {
   assert.ok(fs.existsSync(path.join(fx.home, 'notes/a.txt')));
   assert.ok(r.reasons.some((x) => /git tracks/.test(x)));
   assert.ok(r.reasons.some((x) => /symlink/.test(x)));
+});
+
+test('clear: a row already gone drops out of rows.txt instead of refusing', () => {
+  const fx = makeHome({ 'w/luffy/Cargo.toml': '[package]', 'w/kept/Cargo.toml': '[package]', 'w/kept/target/x': 'x' });
+  const dir = path.join(fx.data, 'clearables');
+  fs.mkdirSync(dir, { recursive: true });
+  const gonePath = path.join(fx.home, 'w/luffy/target');
+  const keptPath = path.join(fx.home, 'w/kept/target');
+  fs.writeFileSync(path.join(dir, 'rows.txt'), [
+    'S|1791393026', 'P|2',
+    `R|cargo-target|211856285696|ok|1791393180|0|project=luffy|${gonePath}`,
+    `R|cargo-target|4096|ok|1791393180|0|project=kept|${keptPath}`,
+    'D|1791393746|720', '',
+  ].join('\n'));
+  const r = clear(fx, [['cargo-target', 'w/luffy/target']]);
+  assert.equal(r.refused, 0, JSON.stringify(r));
+  assert.equal(r.gone, 1);
+  assert.deepEqual(r.gone_paths, [gonePath]);
+  const rows = fs.readFileSync(path.join(dir, 'rows.txt'), 'utf8');
+  assert.ok(!rows.includes(gonePath), 'gone row forgotten');
+  assert.ok(rows.includes(keptPath) && rows.includes('D|1791393746'), 'the rest stays');
+  // A row that really clears leaves rows.txt too, so a reload does not bring it back.
+  const r2 = clear(fx, [['cargo-target', 'w/kept/target']]);
+  assert.equal(r2.removed, 1, JSON.stringify(r2));
+  assert.ok(!fs.readFileSync(path.join(dir, 'rows.txt'), 'utf8').includes(keptPath));
+});
+
+/** A live process whose command line reads like a running clearables.sh. */
+function fakeJob() {
+  return spawn('bash', ['-c', 'sleep 60; :', 'clearables.sh'], { stdio: 'ignore' });
+}
+
+function deadPid() {
+  return spawnSync('bash', ['-c', 'echo $$'], { encoding: 'utf8' }).stdout.trim();
+}
+
+test('lock: clear refuses while a scan is running, and touches nothing', () => {
+  const fx = makeHome({ 'w/luffy/Cargo.toml': '[package]', 'w/luffy/target/x': 'x' });
+  const dir = path.join(fx.data, 'clearables');
+  fs.mkdirSync(dir, { recursive: true });
+  const job = fakeJob();
+  try {
+    fs.writeFileSync(path.join(dir, 'pid'), `${job.pid}\n`);
+    const r = clear(fx, [['cargo-target', 'w/luffy/target']]);
+    assert.equal(r.busy, 'scanning');
+    assert.equal(r.removed, 0);
+    assert.ok(fs.existsSync(path.join(fx.home, 'w/luffy/target/x')), 'nothing cleared');
+    assert.deepEqual(fs.readdirSync(path.join(dir, 'clearing')), [], 'its lock is released');
+  } finally { job.kill(); }
+});
+
+test('lock: scan and start refuse while a clear is running', () => {
+  const fx = makeHome({ 'w/luffy/Cargo.toml': '[package]', 'w/luffy/target/x': 'x' });
+  const dir = path.join(fx.data, 'clearables');
+  fs.mkdirSync(path.join(dir, 'clearing'), { recursive: true });
+  const job = fakeJob();
+  try {
+    fs.writeFileSync(path.join(dir, 'clearing', String(job.pid)), `${job.pid}\n`);
+    const started = run(fx, ['start', dir]);
+    assert.equal(started.out.trim(), '{"busy":"clearing"}');
+    const scanned = run(fx, ['scan', dir]);
+    assert.equal(scanned.code, 4);
+    assert.ok(!fs.existsSync(path.join(dir, 'rows.txt')), 'no scan ran');
+  } finally { job.kill(); }
+});
+
+test('lock: a stale pid (dead, or not clearables.sh) blocks nothing', () => {
+  const fx = makeHome({ 'w/luffy/Cargo.toml': '[package]', 'w/luffy/target/x': 'x' });
+  const dir = path.join(fx.data, 'clearables');
+  fs.mkdirSync(path.join(dir, 'clearing'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'pid'), `${process.pid}\n`);           // alive, but not a scan
+  const r = clear(fx, [['cargo-target', 'w/luffy/target']]);
+  assert.equal(r.busy, undefined, JSON.stringify(r));
+  assert.equal(r.removed, 1);
+  const dead = deadPid();
+  fs.writeFileSync(path.join(dir, 'clearing', dead), `${dead}\n`);
+  const { rows } = scan(fx);
+  assert.ok(Array.isArray(rows), 'the scan ran');
+  assert.ok(!fs.existsSync(path.join(dir, 'clearing', dead)), 'the stale lock is swept');
 });
 
 test('clear: logs and installers go to the Trash, a series only past keep_days', () => {

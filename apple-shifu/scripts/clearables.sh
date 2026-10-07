@@ -10,6 +10,11 @@
 #   start <out-dir>          run `scan` in the background (one at a time)
 #   scan <out-dir>           stream rows into <out-dir>/rows.txt
 #   clear <list-file>        remove `rule<TAB>path` lines — every one re-verified
+#
+# A scan and a clear never run at once: a scan measuring a folder that a clear
+# is deleting records a half-gone size with today's date (2026-10-07: a 212 GB
+# target/ listed again after it was cleared). `start`/`scan` answer
+# {"busy":"clearing"} and `clear` answers {"busy":"scanning"} instead.
 #   tree [rows] [json]       the deep walk alone (scan runs it last)
 #   look <path>              a folder's children from the saved tree (for Ling)
 #   hotspots                 the tree's hotspots and unexplained total (for Ling)
@@ -283,6 +288,33 @@ proposable() {
   git_tracked "$p" && { echo "git tracks files here"; return; }
 }
 
+# ── one job at a time ──────────────────────────────────────────────────────
+# A running scan is <data>/clearables/pid; each running clear is one file
+# under <data>/clearables/clearing/ named by its pid (row ⋯ clears overlap).
+
+JOBS="$DATA/clearables"
+CLEARING="$JOBS/clearing"
+
+# The pid in file $1 is a live clearables.sh. A dead pid, or one the system
+# has since handed to another program, blocks nothing.
+live_job() {
+  local pid; pid=$(cat "$1" 2>/dev/null)
+  case "$pid" in ''|*[!0-9]*) return 1 ;; esac
+  kill -0 "$pid" 2>/dev/null && ps -p "$pid" -o command= 2>/dev/null | grep -q 'clearables\.sh'
+}
+
+scanning() { live_job "$JOBS/pid"; }
+
+clearing() {
+  local f
+  for f in "$CLEARING"/*; do
+    [ -f "$f" ] || continue
+    live_job "$f" && return 0
+    rm -f "$f"   # left by a clear that was killed outright
+  done
+  return 1
+}
+
 # ── scan ───────────────────────────────────────────────────────────────────
 
 emit() { printf '%s\n' "$1" >> "$ROWS"; }
@@ -530,6 +562,8 @@ skip_cand() { local id extra p; IFS="$US" read -r id extra p <<<"$1"; emit "R|$i
 scan() {
   local out="${1:?out dir required}" started id
   mkdir -p "$out"
+  if clearing; then echo '{"busy":"clearing"}'; exit 4; fi
+  echo $$ > "$out/pid"   # `start` wrote the same pid; a direct scan registers too
   WORK=$(mktemp -d); trap 'rm -rf "$WORK"' EXIT
   ROWS="$out/rows.txt.part"; : > "$ROWS"
   started=$(now)
@@ -557,10 +591,10 @@ scan() {
 }
 
 start() {
-  local out="${1:?out dir required}" pid
+  local out="${1:?out dir required}"
   mkdir -p "$out"
-  pid=$(cat "$out/pid" 2>/dev/null)
-  if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then echo '{"running":true}'; return; fi
+  if live_job "$out/pid"; then echo '{"running":true}'; return; fi
+  if clearing; then echo '{"busy":"clearing"}'; return; fi
   nohup bash "$HERE/clearables.sh" scan "$out" >/dev/null 2>"$out/scan.err" &
   echo $! > "$out/pid"
   echo '{"started":true}'
@@ -634,30 +668,54 @@ method_run() {
   esac
 }
 
+# Take path $1's row out of the saved scan, so a reload does not bring back a
+# row that is not on disk any more.
+forget_row() {
+  [ -f "$LAST_ROWS" ] || return 0
+  awk -F'|' -v p="$1" '$1 == "R" { q = $8; for (i = 9; i <= NF; i++) q = q "|" $i; if (q == p) next } { print }' \
+    "$LAST_ROWS" > "$LAST_ROWS.tmp" && mv "$LAST_ROWS.tmp" "$LAST_ROWS"
+}
+
 clear_list() {
-  local list="${1:?list file required}" id p why removed=0 refused=0 failed=0 reasons="" project
-  WORK=$(mktemp -d); trap 'rm -rf "$WORK"' EXIT
-  load_catalog
+  local list="${1:?list file required}" id p why removed=0 refused=0 failed=0 gone=0 reasons="" gone_paths="" project
+  # Register first, then look for a scan: whichever starts second sees the other.
+  mkdir -p "$CLEARING"; echo $$ > "$CLEARING/$$"
+  WORK=$(mktemp -d); trap 'rm -rf "$WORK"; rm -f "$CLEARING/$$"' EXIT
+  trap 'exit 130' INT TERM HUP
   : > "$list.done"
+  if scanning; then
+    echo '{"removed":0,"refused":0,"failed":0,"gone":0,"busy":"scanning","reasons":[],"gone_paths":[]}' | tee "$list.result"
+    return 0
+  fi
+  load_catalog
   while IFS=$'\t' read -r id p; do
     [ -n "$p" ] || continue
     why=$(refusal "$id" "$p")
+    # Already gone (cleared by an earlier job): drop its row, not a refusal.
+    if [ "$why" = "no longer there" ]; then
+      gone=$((gone + 1)); gone_paths="$gone_paths$(json_str "$p"),"
+      forget_row "$p"; [ "$id" = "found" ] && unpropose "$p" >/dev/null
+      continue
+    fi
     if [ -n "$why" ]; then
       refused=$((refused + 1)); reasons="$reasons$(json_str "$(basename "$p"): $why"),"; continue
     fi
     # refusal ran in a subshell; load the rule here for the method.
     if [ "$id" = "found" ]; then
-      r_kind=found; to_trash "$p" && { unpropose "$p" >/dev/null; ok=1; } || ok=0
+      r_kind=found; r_partial=0; to_trash "$p" && { unpropose "$p" >/dev/null; ok=1; } || ok=0
     else
       load_rule "$id"
       project=""; [ "$r_kind" = marker ] && project=$(project_of "$p" "$r_outputs")
       method_run "$r_method" "$p" "$project" && ok=1 || ok=0
     fi
-    if [ "$ok" = 1 ]; then removed=$((removed + 1)); printf '%s\n' "$p" >> "$list.done"
+    if [ "$ok" = 1 ]; then
+      removed=$((removed + 1)); printf '%s\n' "$p" >> "$list.done"
+      # A partial row (a log series) keeps its folder and newer files.
+      [ "${r_partial:-0}" = 1 ] || forget_row "$p"
     else failed=$((failed + 1)); fi
   done < "$list"
-  printf '{"removed":%d,"refused":%d,"failed":%d,"reasons":[%s]}\n' \
-    "$removed" "$refused" "$failed" "${reasons%,}" | tee "$list.result"
+  printf '{"removed":%d,"refused":%d,"failed":%d,"gone":%d,"reasons":[%s],"gone_paths":[%s]}\n' \
+    "$removed" "$refused" "$failed" "$gone" "${reasons%,}" "${gone_paths%,}" | tee "$list.result"
   # Something really went: the quest fact other apps may count. Silent.
   [ "$removed" -gt 0 ] && "$HERE/quest.sh" shifu-clear
   return 0
