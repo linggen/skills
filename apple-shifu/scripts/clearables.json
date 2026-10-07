@@ -58,7 +58,8 @@
       "find": { "kind": "marker", "markers": ["pubspec.yaml"], "outputs": ["build", ".dart_tool"] },
       "probes": ["package_config.json", "flutter_build"],
       "git": true, "regen": "`flutter build` rebuilds it — minutes",
-      "remove": { "method": "purge" }, "age_label": "last built", "safety": "safe", "active_days": 30
+      "remove": { "method": "tool", "cmd": "flutter clean", "cwd": "{project}", "fallback": "purge" },
+      "age_label": "last built", "safety": "safe", "active_days": 30
     },
     {
       "id": "gradle-build", "group": "build", "label": "Gradle build output",
