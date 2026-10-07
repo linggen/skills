@@ -143,6 +143,15 @@
       "art": "art/people/min-danshi.webp"
     },
     {
+      "id": "laotietou",
+      "gender": "male",
+      "name": { "zh": "老铁头", "en": "Old Ironhead" },
+      "role": { "zh": "器房的器师，内门，练气九层，筑基冲了两回没过去，左眼叫炉里崩出的铁渣打没了；观里发下来的法器——剑、符、储物袋——都是他砧子上出的", "en": "The smith of the forge house, inner court, Qi Condensation layer nine, twice failed at Foundation, his left eye lost to a cinder from the furnace; every artifact the sect issues — swords, talismans, storage pouches — comes off his anvil" },
+      "voice": { "zh": "一天说不上三句话；火不对，锤子往砧子上一磕。刻了一辈子金纹火纹，风纹刻一回歪一回；看见一道直的，问的是「你师父是谁？」", "en": "Not three sentences a day; when the fire is wrong, one tap of the hammer on the anvil. A lifetime of metal and fire runes, and every wind rune he cuts comes out crooked; shown a straight one, he asks \"who is your master?\"" },
+      "home": "zhengdian",
+      "art": "art/people/laotietou.webp"
+    },
+    {
       "id": "sunergou",
       "gender": "male",
       "name": { "zh": "孙二狗", "en": "Sun Ergou" },

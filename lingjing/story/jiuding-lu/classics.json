@@ -546,9 +546,114 @@
         "顺着牛身上天生的纹理，劈开筋骨间的大缝，引刀走进骨节间的空处，全照着它本来的样子。"
       ],
       "note": "古二娘卸鹿腿时引。"
+    },
+    "laozi-zhirou": {
+      "title": "道德经·四十三章",
+      "about": "老子著，五千言，道家第一部经；这里用三国魏王弼注本。",
+      "source": {
+        "edition": "维基文库《道德經 (王弼本)》",
+        "section": "四十三章",
+        "url": "https://zh.wikisource.org/wiki/%E9%81%93%E5%BE%B7%E7%B6%93_(%E7%8E%8B%E5%BC%BC%E6%9C%AC)",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "天下之至柔，馳騁天下之至堅。無有入無間，吾是以知無為之有益。",
+      "plain": [
+        "天下最柔软的东西，能在最坚硬的东西里来去自如；没有形体的东西，钻得进没有缝隙的地方——我由此知道无为的好处。"
+      ],
+      "note": "两句之间夹王弼注「氣無所不入，水無所不出於經」，原文照经文连抄，注文略去。古七崖顶第一课瞿老只念到「無有入無間」（Hanli 2026-10-07）。"
+    },
+    "zhuangzi-liezi": {
+      "title": "庄子·逍遥游",
+      "about": "《庄子》内篇第一篇；列子御风一节，讲列子乘风而行，轻快极了，可到底还得等风。",
+      "source": {
+        "edition": "维基文库《莊子/逍遙遊》",
+        "section": "內篇·逍遙遊第一·列子御風",
+        "url": "https://zh.wikisource.org/wiki/%E8%8E%8A%E5%AD%90/%E9%80%8D%E9%81%99%E9%81%8A",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "夫列子御風而行，泠然善也，旬有五日而後反。彼於致福者，未數數然也。此雖免乎行，猶有所待者也。",
+      "plain": [
+        "列子乘着风走，轻快极了，十五天才回来。他对求福的事，并不汲汲追求。这样虽然免了走路，到底还得等风。"
+      ],
+      "note": "「旬有五日」此本注有异文作「又」（wikitext {{另|有|又}}），此处照正文取「有」。古七随风一课：这门剑诀借的是风，所以残本到结丹为止（Hanli 2026-10-07）。"
+    },
+    "shanhai-lu": {
+      "title": "山海经·南山经",
+      "about": "先秦古书，作者不详，记山川、异兽、神怪；〈南山经〉记南方诸山，柢山在焉。",
+      "source": {
+        "edition": "维基文库《山海經·南山經》",
+        "section": "〈南山經〉柢山",
+        "url": "https://zh.wikisource.org/wiki/%E5%B1%B1%E6%B5%B7%E7%B6%93/%E5%8D%97%E5%B1%B1%E7%B6%93",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "又東三百里柢山，多水，無草木。有魚焉，其狀如牛，陵居，蛇尾有翼，其羽在魼下，其音如留牛，其名曰鯥，冬死而夏生，食之無腫疾。",
+      "plain": [
+        "再往东三百里，是柢山，水多，不长草木。山里有一种鱼，样子像牛，住在山坡上，蛇尾巴，有翅膀，翅膀长在肋下，叫声像留牛，名叫鯥，冬天死去夏天复生，吃了它不生肿病。"
+      ],
+      "note": "此本「柢」「魼」「留牛」「鯥」「冬死而夏生」下各夹郭璞注（wikitext {{*|…}}），原文照经文连抄，注文略去；「魼」注「亦作脅」。古七沂水东岸一场，阿禾念（Hanli 2026-10-07）。"
+    },
+    "zhuangzi-wuhou": {
+      "title": "庄子·养生主",
+      "about": "《庄子》内篇第三篇里庖丁解牛的一段：牛的骨节有空隙，刀刃没有厚度，拿没有厚度的进有空隙的，刀用了十九年还像新磨的。",
+      "source": {
+        "edition": "维基文库《莊子·養生主》",
+        "section": "内篇〈養生主第三〉·庖丁解牛",
+        "url": "https://zh.wikisource.org/wiki/%E8%8E%8A%E5%AD%90%2F%E9%A4%8A%E7%94%9F%E4%B8%BB",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "彼節者有間，而刀刃者无厚，以无厚入有間，恢恢乎其於遊刃必有餘地矣。",
+      "plain": [
+        "牛的骨节有空隙，刀刃却没有厚度；拿没有厚度的进有空隙的，宽宽绰绰，刀刃转起来一定还有余地。"
+      ],
+      "note": "此本「無」作「无」，照抄；「遊刃」注有异文作「遊刀」，此处照正文取「刃」。与 zhuangzi-paoding（古二娘卸鹿腿「依乎天理」）同段不同句：回末附录一条只展示一段原文，故另立（Hanli 2026-10-07 纲要原拟经由现有 id）。古七七层入隙一课，瞿老念。"
+    },
+    "laozi-piaofeng": {
+      "title": "道德经·二十三章",
+      "about": "老子著，五千言，道家第一部经；这里用三国魏王弼注本。",
+      "source": {
+        "edition": "维基文库《道德經 (王弼本)》",
+        "section": "二十三章",
+        "url": "https://zh.wikisource.org/wiki/%E9%81%93%E5%BE%B7%E7%B6%93_(%E7%8E%8B%E5%BC%BC%E6%9C%AC)",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "飄風不終朝，驟雨不終日。孰為此者？天地。天地尚不能久，而況於人乎？",
+      "plain": [
+        "狂风刮不了一早上，暴雨下不了一整天。是谁在刮风下雨？天地。天地尚且不能长久，何况人呢？"
+      ],
+      "note": "经文句首有一「故」字，此处从「飄風」起引。古七七→八层：定风不是站着不动，是等它吹完（Hanli 2026-10-07）。"
+    },
+    "zhouyi-xun": {
+      "title": "周易·巽",
+      "about": "《周易》第五十七卦巽，上下都是巽，巽为风、为入。这是初六的爻辞；〈象传〉解它：「進退，志疑也。利武人之貞，志治也。」",
+      "source": {
+        "edition": "维基文库《周易/巽》",
+        "section": "巽卦·初六爻辞",
+        "url": "https://zh.wikisource.org/wiki/%E5%91%A8%E6%98%93/%E5%B7%BD",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "初六：進退，利武人之貞。",
+      "plain": [
+        "初六：进退不定，利于武人守正。"
+      ],
+      "note": "巽四在洛书九宫里属东南、配徐州，本书《河洛剑诀》的巽四一宫由此而来；「进了一半想退，那一剑，自己先散了」是瞿老自己的话，不在经文里。 2026-10-07 自 _pending 升入（Hanli：补全「进退」一句，八→九层瞿老引爻辞全句）；原拟引的〈象传〉两句改入 about。"
+    },
+    "laozi-hebao": {
+      "title": "道德经·六十四章",
+      "about": "老子著，五千言，道家第一部经；这里用三国魏王弼注本。",
+      "source": {
+        "edition": "维基文库《道德經 (王弼本)》",
+        "section": "六十四章",
+        "url": "https://zh.wikisource.org/wiki/%E9%81%93%E5%BE%B7%E7%B6%93_(%E7%8E%8B%E5%BC%BC%E6%9C%AC)",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "合抱之木，生於毫末；九層之臺，起於累土；千里之行，始於足下。",
+      "plain": [
+        "合抱粗的大树，从细小的萌芽长起；九层高的台子，从一筐一筐的土垒起；千里的远路，从脚下一步开始。"
+      ],
+      "note": "瞿老只念前两句——「九層之臺」正合练气九层（古七八月崖顶，九格落叶之后；Hanli 2026-10-07）。"
     }
   },
-  "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: a 药园 line from the 《神农本草经》 序录 上药/中药/下药 passage — that is `shennong`, which 褚先生 paraphrases in one untagged sentence in 古六 (06-第六回.md); it would use it twice. 2026-10-02 (古线 ten 回 → eight, 今线 → four interludes, book.json `absorbs`): the index keys above are relabelled — 古 by the new 回 (old 古三 into 古二, 古五+古六 into 古四, 古七→古五 … 古十→古八), 今 by its interlude (今 · 一 = old 今一–今三, 今 · 二 = 今四–今六, 今 · 三 = 今七–今八, 今 · 四 = 今九–今十); the 主典 named above by old number keep their entries — every 今 主典 is still quoted, in its interlude (Hanli 2026-10-02: 「小课堂与典籍要保留」).",
+  "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: a 药园 line from the 《神农本草经》 序录 上药/中药/下药 passage — that is `shennong`, which 褚先生 paraphrases in one untagged sentence in 古六 (06-第六回.md); it would use it twice. 2026-10-02 (古线 ten 回 → eight, 今线 → four interludes, book.json `absorbs`): the index keys above are relabelled — 古 by the new 回 (old 古三 into 古二, 古五+古六 into 古四, 古七→古五 … 古十→古八), 今 by its interlude (今 · 一 = old 今一–今三, 今 · 二 = 今四–今六, 今 · 三 = 今七–今八, 今 · 四 = 今九–今十); the 主典 named above by old number keep their entries — every 今 主典 is still quoted, in its interlude (Hanli 2026-10-02: 「小课堂与典籍要保留」). 2026-10-07（Hanli 古七第二轮）：古七新引 laozi-zhirou（崖顶第一课）、shanhai-lu（沂水鯥）、zhuangzi-liezi（随风）、zhuangzi-wuhou（入隙）、laozi-piaofeng（定风）、laozi-hebao（九格落叶）；zhouyi-xun 升入。",
   "_pending_by_hui": {
     "今 · 一（旧今一）": [
       "qianjin-dayi（一笔）"
@@ -574,12 +679,11 @@
     "今 · 四（旧今十：眼镜讲斗柄一段已删，书名也不出；主典 qijing-yinqiao）": [
       "heguanzi-huanliu"
     ],
-    "古七（旧古九：一笔带过：巽卦只留「进退」二字、不挂典；牛毛麟角删去）": [
-      "zhouyi-xun",
-      "baopu-jiyan"
-    ],
     "古二（2026-10-02 终改：竹简只留「吹呴呼吸」一句 + 娘「进门一个，出门六个」；「真人之息以踵」降回，正文爹「气往脚底下沉」照留不挂典）": [
       "zhuangzi-dazongshi"
+    ],
+    "古七（旧古九：2026-10-07 zhouyi-xun 升入 classics——瞿老八→九层引爻辞全句「初六：進退，利武人之貞」；牛毛麟角仍删去，baopu-jiyan 照留）": [
+      "baopu-jiyan"
     ]
   },
   "_pending": {
@@ -731,21 +835,6 @@
         "北斗的斗柄指向东，天下都是春天；指向南，都是夏天；指向西，都是秋天；指向北，都是冬天。"
       ],
       "note": "维基文库此本作「鬥柄」（「斗」的异写）。古人看黄昏时斗柄的方向定季节。今线第十回眼镜冬至傍晚只一笔带过（出书名、意思改述，不挂典；主典 qijing-yinqiao，修仙词汇表 B）。"
-    },
-    "zhouyi-xun": {
-      "title": "周易·巽",
-      "about": "《周易》第五十七卦巽，上下都是巽，巽为风、为入。这两句是〈象传〉解初六爻「進退，利武人之貞」的小象，旧说出于孔门。",
-      "source": {
-        "edition": "维基文库《周易/巽》",
-        "license": "公有领域（古籍；维基文库 PD-old）",
-        "section": "巽卦·象曰·初六",
-        "url": "https://zh.wikisource.org/wiki/%E5%91%A8%E6%98%93/%E5%B7%BD"
-      },
-      "original": "進退，志疑也。利武人之貞，志治也。",
-      "plain": [
-        "进进退退，是因为心里犹疑；利于武人守正，是因为心志得以整治、拿定了主意。"
-      ],
-      "note": "巽四在洛书九宫里属东南、配徐州，本书《河洛剑诀》的巽四一宫由此而来；「进了一半想退，那一剑，自己先散了」是瞿老自己的话，不在经文里。"
     },
     "baopu-jiyan": {
       "title": "抱朴子",

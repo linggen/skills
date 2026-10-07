@@ -62,6 +62,8 @@ PEOPLE = {
   'dushu': 'An old Chinese ferryman of the Si river, lean and weathered, a quiet closed mouth and watchful eyes, a conical bamboo hat, a short patched jacket and rolled trousers, bare feet, leaning on a long bamboo punting pole, a little water at his feet. Full length.',
   'zhouheng': 'A young Chinese Taoist temple steward of about twenty-five, neat topknot, plain grey robe with a crossed collar, a calligraphy brush in one hand and an account ledger in the other, a strict particular face. Full length.',
   'min-danshi': 'An old Chinese Taoist pill-master of about sixty, thin and stooped, a lined sallow face and narrowed watchful eyes, sparse grey beard, a plain grey Taoist robe with a crossed collar burnt through with a dozen small holes at the sleeves and hem, holding a long iron poker in one hand and lifting a single small round pill to his nose with the other, as if smelling it. Full length.',
+  # 老铁头 — the 器房's smith (古七, Hanli 2026-10-07): 内门 练气九层, failed 筑基 twice, one-eyed, spare of words.
+  'laotietou': 'An old Chinese Taoist temple blacksmith of about sixty, broad-shouldered and thick-armed, his left eye lost and closed under a scar, the right eye small and sharp, a cropped grey beard, a plain grey Taoist robe with a crossed collar, its sleeves rolled to the elbow and a scorched leather apron over it, soot on his forearms, holding a smith\'s hammer in one hand and a pair of long tongs gripping a short sword blank in the other, standing beside a small anvil. Full length.',
   # 河伯 冰夷 (his, 2026-09-29: 「河伯可以配个图吧」) — 《山海经·海内北经》「冰夷人面，乘两龙」 and 第十回's 漳水 scene.
   'bingyi': '河伯 冰夷, the river god — 「冰夷人面，乘两龙」: ONE ageless man with a calm human face and eyes as deep as a river, long hair, robes made of flowing water, standing upright on exactly TWO long Chinese dragons (no wings) — one under his left foot and one under his right, each dragon with ONE head, their scales as big as millstones — rising out of a river, the water standing up behind him like a wall. Exactly two dragons, one human face. A very faint green-grey tint on the dragons only. Full length.',
 }
@@ -76,6 +78,8 @@ ITEMS = {
   'huangting': 'A thin old Chinese thread-bound book lying slightly open, stitched along the spine, plain paper cover with no writing, a little worn; its pages blank.',
   'heluo': 'Half of an old bundle of Chinese bamboo slips, tied with cord, the slips blank and dark with age, one end broken off jaggedly as if the other half was torn away.',
   'mend-pill': 'A single round Chinese elixir pill, pale jade green (a very faint green tint), in a small plain celadon dish.',
+  # 顺风溜 — 小满's first self-made 法器 (古七, Hanli 2026-10-07): 鯥皮 soles, 鯥翅膜 uppers, a gill-slit on each heel.
+  'shunfeng-liu': 'A pair of ugly old Chinese low ankle boots, grey-brown, made of fish hide with a faint fish-scale grain, soft thin translucent membrane uppers, a short slit like a fish gill cut into the back of each heel, plain stitched soles, lying side by side on bare paper. Only the two boots, nothing else.',
   'moon-bell': 'A small old Chinese silver bell, round and closed like a jingle bell with a slit, a thin crescent moon engraved on it, on a thin faded cord.',
 }
 

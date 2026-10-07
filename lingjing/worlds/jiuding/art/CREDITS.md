@@ -111,6 +111,10 @@ public domain, Wikimedia Commons), is kept as `codex/fanzhao-scan.webp`, its 「
 Codex CLI's image tool from `tools/paint-codex.py` (thin, stooped, a burnt-through grey robe, an iron poker, a pill
 held to his nose), 2026-10-07. No outside source.
 
+`people/laotietou.webp` — 老铁头, the 器房's one-eyed smith (古七, Hanli 2026-10-07), painted the same way by Codex CLI's
+image tool from `tools/paint-codex.py` (a scorched leather apron, hammer and tongs, a small anvil), 2026-10-07. No outside
+source. `items/shunfeng-liu.webp` — 顺风溜, the fish-hide boots with a gill slit on each heel, painted the same way, 2026-10-07.
+
 ## The prologue — people and panels (2026-09-28; the panels retired and the people repainted 2026-09-29, above)
 
 `people/baba.webp`, `mama`, `wupo`, `masan`, `maxiaobao`, `laozhou`, `jiujiu`,
