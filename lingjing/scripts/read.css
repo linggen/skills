@@ -186,3 +186,5 @@ body { margin: 0; background: var(--ground); color: var(--text); font-family: va
 .chg-backbox .dim { color: var(--dim); font-size: 12px; }
 .chg-backbox .warn { color: var(--seal); font-size: 13px; }
 @media (max-width: 820px) { .chg-backbox .cols { grid-template-columns: 1fr; } }
+/* A rare word's pinyin over it in the text ([坎]{音=kǎn}). */
+ruby.py rt { font-size: 0.5em; letter-spacing: 0; color: var(--dim); font-family: system-ui, sans-serif; font-weight: 400; }

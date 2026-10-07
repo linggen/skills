@@ -191,3 +191,10 @@ test('the page sets a 回 title from book.json, not from the file\'s own number'
   assert.match(css, /\.jin \.tag \{ color: var\(--jin\); \}/);
   assert.match(css, /\.chapter h1\.huimu\.jin \.hui \{ color: var\(--jin\); \}|h1\.huimu\.jin \.hui \{ color: var\(--jin\); \}/);
 });
+
+test('[字]{音=…} sets the pinyin over each character; a count that does not match reads the word bare', () => {
+  const html = renderMarkdown('「[坎]{音=kǎn}，[巽]{音=xùn}。」[九宫]{音=jiǔ}');
+  assert.ok(html.includes('<ruby class="py">坎<rt>kǎn</rt></ruby>'));
+  assert.ok(html.includes('<ruby class="py">巽<rt>xùn</rt></ruby>'));
+  assert.ok(html.includes('九宫') && !html.includes('音='));
+});

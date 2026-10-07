@@ -6,7 +6,8 @@
 // `[words]{注=id}`, words naming a 图鉴 entry (worlds/<world>/codex.json,
 // scripts/codex.js) — a subject's card after the paragraph of its first
 // appearance (the entry's `first.book`), a dotted link after that; a knowledge
-// figure under every paragraph that names it; and `《书名》{典=id}`, a classic the chapter names,
+// figure under every paragraph that names it; `[字]{音=pīn yīn}`, a rare word
+// with its pinyin over each character (坎 kǎn); and `《书名》{典=id}`, a classic the chapter names,
 // linked both ways to its entry in 「附 · 本回典籍」 at the 回's end
 // (story/<book>/classics.json). Pure: no DOM, every word escaped (read.html's
 // reader and its test both use it).
@@ -100,6 +101,13 @@ export function fillHero(md, hero = {}) {
 // `::: 忆 <n> [caption]` — 银月's memory n as its one colour plate (memories.json).
 const MEMORY = /^:::\s*忆\s+(\d+)\s*(.*)$/;
 const GLOSS = /\[([^\]\n]+)\]\{注=([^{}\n]+)\}/g;
+// `[字]{音=pīn yīn}` — a word not read at sight, its pinyin over each character
+// (his, 2026-10-07: 坎 巽 兑 艮). One syllable a character, else the word bare.
+const PINYIN = /\[([^\]\n]+)\]\{音=([^{}\n]+)\}/g;
+const rubyWord = (words, py) => {
+  const chars = [...words], sy = py.trim().split(/\s+/);
+  return sy.length === chars.length ? chars.map((c, i) => `<ruby class="py">${c}<rt>${sy[i]}</rt></ruby>`).join('') : words;
+};
 // `《书名》{典=id}` — a classic named in the text (classics.json).
 const CLASSIC = /《([^》\n]+)》\{典=([\w-]+)\}/g;
 // `[words]{典=id}` — a thing the classic tells of (河伯), linked to that classic's entry
@@ -113,6 +121,7 @@ const entryOf = (codex, id) => (codex instanceof Map ? codex.get(id) : Object.ha
 // is there (his, 2026-09-29: 「下面就是图片和文字」). A creature named by its
 // own name carries its pinyin over it (his, 2026-10-02: 蛫, 蠪侄 aren't read at sight).
 const inline = (t, codex, cite, near = () => false) => esc(t)
+  .replace(PINYIN, (_, words, py) => rubyWord(words, py))
   .replace(GLOSS, (_, words, id) => {
     const e = entryOf(codex, id);
     const said = e?.pinyin && words === esc(e.name) ? rubyName(e) : words;
