@@ -45,7 +45,7 @@ test('catalog: the design\'s must-haves are covered', () => {
   for (const m of ['Cargo.toml', 'package.json', 'pubspec.yaml', 'build.gradle', 'CMakeLists.txt',
     'pyproject.toml', 'ProjectSettings', 'CACHEDIR.TAG']) assert.ok(markers.includes(m), m);
   const cargo = rules.get('cargo-target');
-  assert.equal(cargo.remove.cmd, 'cargo clean');
+  assert.equal(cargo.remove.method, 'purge');
   assert.equal(cargo.active_days, 30);
 });
 
@@ -102,9 +102,10 @@ test('whyLine: built from facts, in the design\'s words', () => {
   assert.match(whyLine(rules.get('cargo-target'), unmeasured, NOW), /not measured/);
 });
 
-test('commandFor: from the catalog, shell-quoted, tool run in its project', () => {
+test('commandFor: from the catalog, shell-quoted; build output deleted, a cache tool run as is', () => {
   const row = { rule: 'cargo-target', path: "/Volumes/w/it's/target", extra: {} };
-  assert.equal(commandFor(rules.get('cargo-target'), row), `cd '/Volumes/w/it'\\''s' && cargo clean`);
+  assert.equal(commandFor(rules.get('cargo-target'), row), `rm -rf '/Volumes/w/it'\\''s/target'`);
+  assert.equal(commandFor(rules.get('uv-cache'), { path: '/Users/a/.cache/uv', extra: {} }), 'uv cache clean');
   assert.equal(commandFor(rules.get('library-caches'), { path: '/Users/a/Library/Caches/x', extra: {} }),
     `rm -rf "$HOME"/'Library/Caches/x'`);
   assert.equal(commandFor(rules.get('ollama-models'),

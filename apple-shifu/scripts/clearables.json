@@ -43,7 +43,7 @@
       "find": { "kind": "marker", "markers": ["Cargo.toml"], "outputs": ["target"] },
       "probes": ["debug/.fingerprint", "release/.fingerprint", ".rustc_info.json", "debug", "release"],
       "git": true, "regen": "`cargo build` rebuilds it — minutes",
-      "remove": { "method": "tool", "cmd": "cargo clean", "cwd": "{project}", "fallback": "purge" },
+      "remove": { "method": "purge" },
       "age_label": "last built", "safety": "safe", "active_days": 30
     },
     {
@@ -58,7 +58,7 @@
       "find": { "kind": "marker", "markers": ["pubspec.yaml"], "outputs": ["build", ".dart_tool"] },
       "probes": ["package_config.json", "flutter_build"],
       "git": true, "regen": "`flutter build` rebuilds it — minutes",
-      "remove": { "method": "tool", "cmd": "flutter clean", "cwd": "{project}", "fallback": "purge" },
+      "remove": { "method": "purge" },
       "age_label": "last built", "safety": "safe", "active_days": 30
     },
     {

@@ -801,7 +801,7 @@ const pileDone = (key) => (PILE_DONE[key] ? PILE_DONE[key]() : measured.has(key)
 const pileCount = (key) => (key === 'dupe' ? dupeGroups.length : itemsFor(key).length);
 
 const POSTURE = {
-  rule: 'each row clears its own way: caches deleted, build output by its tool, your data to the Trash',
+  rule: 'each row clears its own way: caches and build output deleted, your data to the Trash',
   trash: 'checked items go to the macOS Trash — the space frees when you empty it',
 };
 
