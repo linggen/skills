@@ -96,6 +96,8 @@ async function main() {
     const opts = {
       codex, chapter: ch.id, absorbs: ch.absorbs, hui: ch.huimu ? ch : null, src: (file) => worldPath(world, file), lang,
       memory: memoryPlate(await memories, world), classics: await classics,
+      // The words not read at sight (book.json `pinyin`): pinyin over every one.
+      pinyin: book.pinyin ?? {},
     };
     const filled = fillHero(md, who);
     paint = (changes) => {

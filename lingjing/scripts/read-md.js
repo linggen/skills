@@ -108,6 +108,21 @@ const rubyWord = (words, py) => {
   const chars = [...words], sy = py.trim().split(/\s+/);
   return sy.length === chars.length ? chars.map((c, i) => `<ruby class="py">${c}<rt>${sy[i]}</rt></ruby>`).join('') : words;
 };
+// A tag, or a whole <ruby>…</ruby> (its <rt> too): never given pinyin again.
+const TAG_OR_RUBY = /(<ruby\b[\s\S]*?<\/ruby>|<[^>]*>)/;
+const escRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/// The book's word list (book.json `pinyin`: word → one syllable a character)
+/// over every occurrence in the page's text, longest word first — inside a
+/// gloss, a 回目, a 典 link or a table cell too, never in a tag or a ruby
+/// already set (his, 2026-10-07: 只要出现就加拼音).
+export function pinyinAll(html, list) {
+  const words = Object.keys(list ?? {}).filter((w) => w && rubyWord(w, list[w]) !== w).sort((a, b) => [...b].length - [...a].length);
+  if (!words.length) return html;
+  const re = new RegExp(words.map(escRe).join('|'), 'g');
+  return html.split(TAG_OR_RUBY).map((s, i) => (i % 2 ? s : s.replace(re, (w) => rubyWord(w, list[w])))).join('');
+}
+
 // `《书名》{典=id}` — a classic named in the text (classics.json).
 const CLASSIC = /《([^》\n]+)》\{典=([\w-]+)\}/g;
 // `[words]{典=id}` — a thing the classic tells of (河伯), linked to that classic's entry
@@ -205,6 +220,7 @@ function sentenceHtml(lines, mark, inl) {
 /// `opts.chapter` → this 回's id in book.json (h02), which `first.book` names — or one of `opts.absorbs`, the ids folded into it (h03);
 /// `opts.src`, `opts.lang` → codexHtml; `opts.hui` → this 回's entry
 /// (bookEntries): the file's first `# ` title line is set from it (huimuHtml).
+/// `opts.pinyin` → book.json's `pinyin` word list, over every occurrence (pinyinAll).
 export function renderMarkdown(md, opts = {}) {
   const codex = opts.codex, classics = opts.classics ?? {};
   // A subject's card stands once: after the first paragraph that names it, in
@@ -331,5 +347,5 @@ export function renderMarkdown(md, opts = {}) {
   if (opts.tail) out.push(opts.tail);
   const appendix = classicsAppendix([...cited], classics);
   if (appendix) out.push(appendix);
-  return out.join('\n');
+  return pinyinAll(out.join('\n'), opts.pinyin);
 }
