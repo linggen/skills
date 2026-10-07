@@ -9,8 +9,8 @@
   "en": "Chending Temple · The woodshed · Spring"
  },
  "setup": {
-  "zh": "正月里，家里的回信到了；背面三行是舅舅的字。开了春，周衡那一篮残株送到了。",
-  "en": "In the first month the letter from home came; three lines on the back were your uncle's. In spring, Zhou Heng's basket of culls arrives."
+  "zh": "正月里，家里的回信到了。开了春，周衡那一篮残株送到了。",
+  "en": "In the first month the letter from home came. In spring, Zhou Heng's basket of culls arrives."
  },
  "recap": {
   "zh": "开春的残株一株一株喂进饭桶，开出三颗九转聚气丹；分堆一认，认出三张方子——打那夜起，照方子喂，进步神速；灵石先见了底。阿禾、孙二狗的书案底下，各多了一个油纸包。",
@@ -23,20 +23,20 @@
  "panel": {
   "caption": {
    "zh": [
-    "正月的家信，背面三行。",
+    "正月的家信，屋顶修了。",
     "一篮残株，扔的。",
     "三颗，九道纹。"
    ],
    "en": [
-    "The letter from home; three lines on the back.",
+    "The letter from home: the roof is mended.",
     "A basket of culls, thrown out.",
     "Three, nine rings each."
    ]
   }
  },
  "story": {
-  "zh": "信纸背面最底下，还有三行，字大，墨重，一笔一画像拨算盘，是他舅舅的手笔：\n\n腊月里，马家来过一个穿白的，在你家门口站了一夜。你爹搬了条板凳，坐在门槛里头，膝盖上横着那把柴刀，也坐了一夜。天亮，那人走了。\n\n一个穿白的。在自家门口一站一夜的，他心里只想得到一个：那副老井嗓子。腊月里，正是腊八之后。他那只手不知什么时候攥成了拳头，攥得指甲掐进肉里。\n\n他想的却是另一样：他爹那条腿。腊月的夜，门槛里头透风，一条板凳，一把柴刀，一个膝盖，坐到天亮。",
-  "en": "At the very bottom of the back of the letter were three more lines, big, heavy with ink, each stroke like a flick of an abacus bead — his uncle's hand:\n\nIn the twelfth month a man in white came to the Ma house, and stood at your door all night. Your father brought out a bench and sat just inside the threshold with the wood-chopper across his knees, all night too. At dawn the man left.\n\nA man in white. One who would stand a whole night at his own door — he could think of only one: that old-well voice. The twelfth month — right after Laba. At some point his hand had closed into a fist, so hard the nails bit into the flesh.\n\nBut what he thought of was something else: his father's leg. A twelfth-month night, the draught under the threshold, a bench, a wood-chopper, a knee, sitting till dawn."
+  "zh": "正月里，家里的回信到了。他娘的字小，写得密：屋顶修了；五两银子腊月里送到了，你爹便再没往黑松岭那头去过。末了一句是：吴婆婆让我捎一句话给你，她说：「告诉那孩子，牙还在。」我问她什么牙，她不说，只是笑。",
+  "en": "In the first month the reply from home arrived. His mother's hand was small and close: the roof was mended; the five taels had come in the twelfth month, and your father has not gone out toward Black Pine Ridge since. The last line was: Granny Wu asked me to pass you a message. She said: \"Tell the boy, the tooth is still there.\" I asked her what tooth; she wouldn't say, only smiled."
  },
  "lines": [],
  "buttons": [
