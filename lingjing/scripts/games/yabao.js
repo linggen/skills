@@ -1,4 +1,4 @@
-// 押宝 — 钱掌柜's board at the 坊市 (the book's 古六 / 古七: 「明码标价，童叟无欺」;
+// 押宝 — 钱掌柜's board at the 坊市 (the book's 古六 / 古八: 「明码标价，童叟无欺」;
 // 「我这儿只出一道纹」). A 宝盒 with four 门; he turns the 宝 inside and sets it down;
 // you 押 a 门. Three 押 a sitting. He has two habits, and a miss shows them: he never
 // turns the 宝 to a 门 it has already pointed at this sitting, and never to the 门

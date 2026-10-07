@@ -231,7 +231,7 @@
         "en": "Foundation pill"
       },
       "art": "art/items/foundation-pill.webp",
-      "_sold": "Never on a shelf (2026-10-03, the book: 全观一年一颗, the 宗门大比 champion's prize — 祁长松's in 古六, the hero's only at the year-five 大比 in 古七's skip, 09-year `futian`): a gift or the sect's, not the market's. 一转下品 — one line, a few dark flecks.",
+      "_sold": "Never on a shelf (2026-10-03, the book: 全观一年一颗, the 宗门大比 champion's prize — 祁长松's in 古六, the hero's only at the year-five 大比 in 古八's skip, 09-dabi `dabi` — 古七's skip before the 2026-10-07 split): a gift or the sect's, not the market's. 一转下品 — one line, a few dark flecks.",
       "zhuan": 1,
       "about": {
         "zh": "练气九层大圆满者冲关时服之，多几分把握。一转下品，一道纹，几点黑斑——全观一年只这一颗。",
@@ -253,7 +253,7 @@
       },
       "kind": "pill",
       "art": "art/items/foundation-pill.webp",
-      "_furnace": "Made in 银月's furnace: one pill, from a 萝卜 at the end of 古五 (Hanli 2026-10-06: 「改成一颗」), never shown again until the eve of his 筑基 (Hanli 2026-10-06: 「等筑基的时候再拿出来」 — the bag gets it on 09-qulao `listen`) and eaten there (古七). The breakthrough reaches for it before the 一转 (ladder.json breakthrough.pill); not sold.",
+      "_furnace": "Made in 银月's furnace: one pill, from a 萝卜 at the end of 古五 (Hanli 2026-10-06: 「改成一颗」), never shown again until the eve of his 筑基 (Hanli 2026-10-06: 「等筑基的时候再拿出来」 — the bag gets it on 09-qulao `listen`) and eaten there (古八; 古七 before the 2026-10-07 split). The breakthrough reaches for it before the 一转 (ladder.json breakthrough.pill); not sold.",
       "zhuan": 9,
       "about": {
         "zh": "饭桶一炉出的筑基丹，透亮得像一滴凝住的露水，九道金纹，一丝黑斑也没有，一个字也没有。沉鼎观三百年最好的一炉是三转。",
@@ -1000,7 +1000,7 @@
         "root": "fire",
         "atk": 3
       },
-      "_about": "古七 (Hanli 2026-10-06): the day after the 大比 he moves into the 内门西廊; sorting the bag, the 赤松观 gourd and shield shards are rubbish — he tosses them into the 饭桶 wanting nothing (要什么，不出什么) and it gives a plain sword, already under his bunk when 瞿老 gives him the 《河洛剑诀》. The label names it (火柴; 小字「剑起火升，攻守兼备」). It carries both its sources, and NOTHING is shown in 卷一 (Hanli 2026-10-06): a strike (划) looses fire, then fire snakes like the gourd's — revealed at its first real fight; held flat (横) the copper of the spine spreads into a red shield of light, like 邹青松's 赤铜盾 — a later second surprise. Both draw on the holder's own 灵力 and scale with his level (finger-thin snakes early; the shield stops equals, not someone three layers up). It cannot cut a 七层's 护体灵光 (屠七); in 古七 it kills the 合窳 only as a sword, through the throat as it cries. Fire-attribute (root fire; stats otherwise unchanged). Granted at 09-snow/feed. Never sold. In the game the gourd stays in the bag (a worn weapon is never taken).",
+      "_about": "古七 (Hanli 2026-10-06): the day after the 大比 he moves into the 内门西廊; sorting the bag, the 赤松观 gourd and shield shards are rubbish — he tosses them into the 饭桶 wanting nothing (要什么，不出什么) and it gives a plain sword, already under his bunk when 瞿老 gives him the 《河洛剑诀》. The label names it (火柴; 小字「剑起火升，攻守兼备」). It carries both its sources, and NOTHING is shown in 卷一 (Hanli 2026-10-06): a strike (划) looses fire, then fire snakes like the gourd's — revealed at its first real fight; held flat (横) the copper of the spine spreads into a red shield of light, like 邹青松's 赤铜盾 — a later second surprise. Both draw on the holder's own 灵力 and scale with his level (finger-thin snakes early; the shield stops equals, not someone three layers up). It cannot cut a 七层's 护体灵光 (屠七); in 古八 (古七 before the 2026-10-07 split) it kills the 合窳 only as a sword, through the throat as it cries. Fire-attribute (root fire; stats otherwise unchanged). Granted at 09-snow/feed. Never sold. In the game the gourd stays in the bag (a worn weapon is never taken).",
       "art_source": "The iron sword's picture until its own is painted."
     },
     {

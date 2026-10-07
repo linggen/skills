@@ -1,7 +1,7 @@
 // 今线 in the game (Hanli, 2026-10-05: 今线进游戏，做成四段可玩的插曲): each 今
 // interlude is two or three scenes and a game, played between two 古 films as
 // the book reads — 今 · 一 after 古二, 今 · 二 after 古四, 今 · 三 after 古六, 今 · 四
-// after 古七 — spliced in by its own declaration (`before`, content.mjs
+// after 古八 (古七 before the 2026-10-07 split) — spliced in by its own declaration (`before`, content.mjs
 // spliceInterludes), never by a 古 scene naming it. A save before the point
 // plays it; a save already past it is not pulled back. Its games pay nothing to
 // the 古 line. Its passages are the 插曲 files' own text (scene-book-sync.test.mjs).
@@ -29,7 +29,7 @@ const jinScenes = id => scenes().filter(({ sc }) => sc.hui === id);
 const save = name => { const d = JSON.parse(fs.readFileSync(new URL(`./fixtures/saves/${name}.json`, import.meta.url), 'utf8')); return d.state ?? d; };
 
 /* Where each interlude stands: the 古 scene it leads into, and the 古 回 the book reads before and after it. */
-const PLACES = { j01: ['00-prologue', '00-gate', 'h02', 'h04'], j04: ['00-waimen', 'wm-mijing', 'h05', 'h07'], j07: ['00-zhuji', '09-snow', 'h08', 'h09'], j09: ['01-ji', '01-arrive', 'h09', 'h10'] };
+const PLACES = { j01: ['00-prologue', '00-gate', 'h02', 'h04'], j04: ['00-waimen', 'wm-mijing', 'h05', 'h07'], j07: ['00-zhuji', '09-snow', 'h08', 'h11'], j09: ['01-ji', '01-arrive', 'h09', 'h10'] };
 
 test('four interludes, each two or three scenes and one game or two, in the book\'s place', () => {
   const book = bookEntries(content.book).filter(h => h.volume).map(h => h.id);
@@ -100,10 +100,10 @@ test('old saves: before the point they meet the interlude; past it they go on as
   // 外门 from its first scene: 今 · 二 waits after 古四.
   const w = save('waimen');
   assert.equal(look(w, content, ctx).scene.id, 'wm-ahe');
-  // At the cliff (古七): the throw lands on 今 · 四 before 古八 — the interlude is made up as he walks on.
+  // At the cliff (古八 since the 2026-10-07 split): the throw lands on 今 · 四 before 古九 — the interlude is made up as he walks on.
   const z = save('zhuji-cliff');
   assert.equal(look(z, content, ctx).scene.id, '09-cliff');
-  // Already in 古八: nothing pulls him back; Look and the 回 are as they were.
+  // Already in 古九: nothing pulls him back; Look and the 回 are as they were.
   const j = save('ji-altar');
   const l = look(j, content, ctx);
   assert.equal(l.scene.id, '01-altar');
@@ -114,20 +114,20 @@ test('old saves: before the point they meet the interlude; past it they go on as
   assert.equal(look(gate, content, ctx).scene.id, '00-gate');
 });
 
-test('今 · 三 opens 古九\'s chapter without spending its intro; 今 · 四 never closes the 卷', () => {
+test('今 · 三 opens 筑基\'s chapter (古七, the old 古九) without spending its intro; 今 · 四 never closes the 卷', () => {
   let s = { ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: 'j07-ankle', place: 'houshan', ended: ['00-prologue', '00-waimen'], done_scenes: ['wm-heluo'] };
   assert.equal(look(s, content, ctx).chapter.fresh, undefined, 'the snow\'s intro waits for the snow');
   s = throughJin(s, content, NOW);
   assert.equal(s.scene, '09-snow');
   const snow = look(s, content, ctx);
   assert.equal(snow.chapter.fresh, true, 'and comes up there');
-  assert.equal(snow.chapter.hui, 'h09');
+  assert.equal(snow.chapter.hui, 'h11', '古七 — its first half since the 2026-10-07 split');
   let t = { ...newState(content, 'zh', NOW), chapter: '01-ji', scene: 'j09-noise', place: 'houshan', ended: ['00-prologue', '00-waimen', '00-zhuji'], done_scenes: ['09-cliff'] };
   t = throughJin(t, content, NOW);
   assert.equal(t.scene, '01-arrive');
   const arrive = look(t, content, ctx).chapter;
   assert.equal(arrive.close.title, '今 · 四 · 完');
-  assert.equal(arrive.close.juan, undefined, '卷一 ends on 古八, not here');
+  assert.equal(arrive.close.juan, undefined, '卷一 ends on 古九, not here');
 });
 
 test('an interlude the book holds back (`draft`) is not played', async () => {

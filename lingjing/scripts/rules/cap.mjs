@@ -6,7 +6,7 @@
 // further (息壤's 四层, the cliff's 筑基), the highest its story reaches
 // (`story`; else the same). A 回 with no entry takes the nearest earlier one's
 // in the book's order (a 今 interlude takes the 古 回 before it). After 卷一 the
-// save waits in 古八's chapter (卷二 · 即将开放), so 古八's cap holds: 筑基一层.
+// save waits in 古九's chapter (卷二 · 即将开放), so 古九's cap holds: 筑基一层.
 // A chapter with no 回 yet (the old spine) has none — its realm gate rules it,
 // as before; a world without `caps` has none.
 //

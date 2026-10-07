@@ -415,7 +415,7 @@
     "zh": "大圆满",
     "en": "Great Perfection"
   },
-  "_caps": "The cap per 回 (Hanli, 2026-10-05: 「游戏里修炼有个上限吧? 和故事对齐」; rules/cap.mjs): `hui` names, for each 古 回, the highest 层 the player's own work reaches there (`tier`, `layer` 1-based) and, when the 回's scenes carry him further, how far its story goes (`story`; else the same). Filled to the cap, 修为 stops and the rest is held, as at a peak (`say` under the full bar); a scene's rise or breakthrough past `story` is refused (`refuse`). A 回 with none takes the one before it in the book (a 今 interlude, its 古); after 卷一 the save waits in 古八's chapter, so it stays 筑基一层 until 卷二 is written and given its caps; a chapter with no 回 (the old spine) has none — its realm gate rules it. A save already past its cap is never pulled down: it fills its own layer and waits for the story. From the book (story/jiuding-lu/OUTLINE.md 境界线, DESIGN § 六·八 定例): 古三 入门 (the game's first 层); 古四 一层, 十月廿五 二层 (lifted at 古四's close, wm-diyilu); 古五 二层 → 四层 by 息壤 (wm-xirang); 古六 四层 (大比 on 四层); 古七 四层 until the year carries him to 九层大圆满 (09-year) and the cliff to 筑基 (09-cliff); 古八 筑基初期 — 筑基一层.",
+  "_caps": "The cap per 回 (Hanli, 2026-10-05: 「游戏里修炼有个上限吧? 和故事对齐」; rules/cap.mjs): `hui` names, for each 古 回, the highest 层 the player's own work reaches there (`tier`, `layer` 1-based) and, when the 回's scenes carry him further, how far its story goes (`story`; else the same). Filled to the cap, 修为 stops and the rest is held, as at a peak (`say` under the full bar); a scene's rise or breakthrough past `story` is refused (`refuse`). A 回 with none takes the one before it in the book (a 今 interlude, its 古); after 卷一 the save waits in 古九's chapter, so it stays 筑基一层 until 卷二 is written and given its caps; a chapter with no 回 (the old spine) has none — its realm gate rules it. A save already past its cap is never pulled down: it fills its own layer and waits for the story. From the book (story/jiuding-lu/OUTLINE.md 境界线, DESIGN § 六·八 定例): 古三 入门 (the game's first 层); 古四 一层, 十月廿五 二层 (lifted at 古四's close, wm-diyilu); 古五 二层 → 四层 by 息壤 (wm-xirang); 古六 四层 (大比 on 四层); 古七 (h11) 四层 until the years carry him to 七层 (09-year `futian`); 古八 (h09) 七层, the years after to 九层大圆满 (09-dabi) and the cliff to 筑基 (09-cliff); 古九 (h10) 筑基初期 — 筑基一层 (古七 split in two, Hanli 2026-10-07).",
   "caps": {
     "say": {
       "zh": "这一层坐满了。火候未到，再坐，气也只往外溢。",
@@ -446,9 +446,17 @@
         "tier": "qi",
         "layer": 4
       },
-      "h09": {
+      "h11": {
         "tier": "qi",
         "layer": 4,
+        "story": {
+          "tier": "qi",
+          "layer": 7
+        }
+      },
+      "h09": {
+        "tier": "qi",
+        "layer": 7,
         "story": {
           "tier": "foundation",
           "layer": 1
@@ -514,7 +522,7 @@
       "bonus_of": {
         "dingtai": 10
       },
-      "_items": "A list is reached for in order: the furnace's 九转 first, the sect's 一转 after (古七: he eats the 九转; the 官丹 he won at the year-five 大比 stays sealed in the 储物袋, unused). A pill's bonus is its own `bonus_of`, else by its 转 (`by_zhuan`, items.json `zhuan`: the 官丹 is 一转下品, +25; the furnace's 九转 +80, near-certain), else `bonus`. 鼎苔 (古五) is the last reached for: eaten raw it steadies the throw a little (bonus_of 10).",
+      "_items": "A list is reached for in order: the furnace's 九转 first, the sect's 一转 after (古八 — the 筑基 half of the old 古七, split 2026-10-07: he eats the 九转; the 官丹 he won at the year-five 大比 stays sealed in the 储物袋, unused). A pill's bonus is its own `bonus_of`, else by its 转 (`by_zhuan`, items.json `zhuan`: the 官丹 is 一转下品, +25; the furnace's 九转 +80, near-certain), else `bonus`. 鼎苔 (古五) is the last reached for: eaten raw it steadies the throw a little (bonus_of 10).",
       "by_zhuan": {
         "1": 25,
         "2": 30,

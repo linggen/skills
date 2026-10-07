@@ -1468,7 +1468,7 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
   s = { ...s, wins: { ...s.wins, 'shuanglong-trial': OCT.toISOString() } };
   r = answer(resolve, s, { exit: 'stand' });
   assert.equal(r.state.scene, '01-tower'); assert.equal(r.result.paid.progress, 60);
-  // 老胡 under the fallen tower (古八): 爹's pill only if it was kept — here it was eaten, so the bottle is empty
+  // 老胡 under the fallen tower (古九): 爹's pill only if it was kept — here it was eaten, so the bottle is empty
   refused(resolve, r.state, { exit: 'give' }, 'needs', octx());
   r = answer(resolve, r.state, { exit: 'hold' });
   assert.equal(r.state.scene, '01-deep');
@@ -1564,7 +1564,7 @@ test('chapter 1: the shaman sent first, then the dragons\' trial — fought out 
   const lost = fightOut(s, 'shuanglong-trial', { line: 'pass', c: octx() });
   assert.equal(lost.result.outcome, 'lost');
   assert.equal(must(duel, lost.state, { id: 'shuanglong-trial' }, octx()).result.ok, true, 'again, at once');
-  // won on some day's hand: then 站着，不跪 walks on to the fallen tower (古八's 老胡), then the deep
+  // won on some day's hand: then 站着，不跪 walks on to the fallen tower (古九's 老胡), then the deep
   let won = null;
   for (let k = 0; k < 3 && won?.result.outcome !== 'won'; k += 1) won = fightOut({ ...s, seed: `trial-${k}` }, 'shuanglong-trial', { c: octx() });
   assert.equal(won.result.outcome, 'won', JSON.stringify(won.result.log?.slice(-3)));

@@ -30,12 +30,13 @@ test('卷 hold 回; the 古 回 run 第一回, 第二回 … through the whole b
   assert.deepEqual(jin.map((h) => h.label.zh), jin.map((_, i) => jinLabel(i + 1)));
   assert.ok(jin.every((h) => !/第.+回/.test(h.label.zh) && !/第.+回/.test(h.title.zh)), 'an interlude never says 第N回');
   assert.ok(hui.every((h) => !h.draft), 'no draft in the published view');
-  // 卷一 (2026-10-02): 古一 古二 ‖今一‖ 古三 古四 ‖今二‖ 古五 古六 ‖今三‖ 古七 ‖今四‖ 古八 —
-  // the book opens on 古, each film of two 古 回 is followed by one interlude, save the last, which holds 今四 inside so the 卷 ends on 古八.
+  // 卷一 (2026-10-02; 古七 split in two, Hanli 2026-10-07): 古一 古二 ‖今一‖ 古三 古四 ‖今二‖ 古五 古六 ‖今三‖ 古七 古八 ‖今四‖ 古九 —
+  // the book opens on 古, each film of two 古 回 is followed by one interlude, save the last, which holds 今四 inside, right before
+  // the 卷's last 回, so the 卷 ends on 古九 (the 漳水).
   const v1 = hui.filter((h) => h.volume.id === 'juan1');
   assert.equal(v1[0].line, 'gu', 'the book opens on 古一');
-  assert.deepEqual(v1.map((h) => (h.line === 'jin' ? '今' : '古')).join(''), '古古今古古今古古今古今古');
-  assert.deepEqual(v1.map((h) => h.id), ['h01', 'h02', 'j01', 'h04', 'h05', 'j04', 'h07', 'h08', 'j07', 'h09', 'j09', 'h10']);
+  assert.deepEqual(v1.map((h) => (h.line === 'jin' ? '今' : '古')).join(''), '古古今古古今古古今古古今古');
+  assert.deepEqual(v1.map((h) => h.id), ['h01', 'h02', 'j01', 'h04', 'h05', 'j04', 'h07', 'h08', 'j07', 'h11', 'h09', 'j09', 'h10']);
   assert.equal(new Set(bookEntries(book).map((c) => c.id)).size, bookEntries(book).length, 'ids unique');
   book.volumes.forEach((v, i) => assert.equal(v.name.zh.startsWith(`卷${cnNumber(i + 1)}`), true, v.name.zh));
   assert.equal(bookEntries(book).at(-1).id, 'tuna', 'the appendix comes last');
@@ -48,7 +49,7 @@ test('卷 hold 回; the 古 回 run 第一回, 第二回 … through the whole b
 test('ids are stable forever: a folded 回 is absorbed, never reused, and names its absorber', () => {
   const ids = raw.flatMap((h) => [h.id, ...(h.absorbs ?? [])]);
   assert.equal(new Set(ids).size, ids.length, 'no id twice, absorbed or not');
-  assert.deepEqual(ids.filter((id) => /^h/.test(id)).sort(), ['h01', 'h02', 'h03', 'h04', 'h05', 'h06', 'h07', 'h08', 'h09', 'h10'], 'every 古 id of the ten-回 book still answers');
+  assert.deepEqual(ids.filter((id) => /^h/.test(id)).sort(), ['h01', 'h02', 'h03', 'h04', 'h05', 'h06', 'h07', 'h08', 'h09', 'h10', 'h11'], 'every 古 id of the ten-回 book still answers, and h11 (古七\'s first half, 2026-10-07) is new, never reused');
   assert.deepEqual(ids.filter((id) => /^j/.test(id)).sort(), ['j01', 'j02', 'j03', 'j04', 'j05', 'j06', 'j07', 'j08', 'j09', 'j10'], 'every 今 id still answers');
   for (const h of raw) for (const id of h.absorbs ?? []) {
     assert.equal(resolveId(book, id), h.id, `${id} → ${h.id}`);
@@ -92,9 +93,10 @@ test('each 古 回目 is two seven-character lines, each 今 one line; every fil
 });
 
 test('an old ?ch= id opens its 回; the 回 title renders centred as number and couplet; a scene break is a quiet ◇', () => {
-  // 2026-09-30 卷一 split into ten: the old 第一章 · 外门 (02) begins old 古五 (h05), 第二章 (03) old 古九 (h09).
+  // 2026-09-30 卷一 split into ten: the old 第一章 · 外门 (02) begins old 古五 (h05), 第二章 (03) old 古九 (h09) —
+  // whose start (the move into the 内门, 腊月十一) is 古七's first half, h11, since the 2026-10-07 split.
   // An old id names the same 回 by its stable id, under whatever number the book now gives it.
-  assert.deepEqual(['00', '01', '02', '03'].map((id) => entryById(book, id)?.id), ['h01', 'h02', 'h05', 'h09']);
+  assert.deepEqual(['00', '01', '02', '03'].map((id) => entryById(book, id)?.id), ['h01', 'h02', 'h05', 'h11']);
   for (const id of ['00', '01', '02', '03']) assert.equal(entryById(book, id).label.zh, hui.find((h) => h.id === entryById(book, id).id).label.zh, id);
   // 2026-10-02: h03 folded into 古二, h06 into 古四; the 今 回 into four interludes.
   assert.deepEqual(['h03', 'h06', 'j02', 'j03', 'j05', 'j06', 'j08', 'j10'].map((id) => entryById(book, id)?.id), ['h02', 'h05', 'j01', 'j01', 'j04', 'j04', 'j07', 'j09']);
@@ -166,8 +168,8 @@ test('drafts are hidden by default; the published view shows no gap; ?draft=1 nu
 
 test('old links still resolve to the same chapter, in either view', () => {
   for (const view of [{}, { draft: true }]) {
-    assert.deepEqual(['00', '01', '02', '03', 'h01', 'h03', 'h05', 'h06', 'h10', 'j03'].map((id) => entryById(book, id, view)?.id),
-      ['h01', 'h02', 'h05', 'h09', 'h01', 'h02', 'h05', 'h05', 'h10', 'j01']);
+    assert.deepEqual(['00', '01', '02', '03', 'h01', 'h03', 'h05', 'h06', 'h09', 'h10', 'h11', 'j03'].map((id) => entryById(book, id, view)?.id),
+      ['h01', 'h02', 'h05', 'h11', 'h01', 'h02', 'h05', 'h05', 'h09', 'h10', 'h11', 'j01']);
   }
   const b = two([G('h01', 1, { absorbs: ['h00'] }), J('j01', 1, { absorbs: ['j02'] })], { '00': 'h01' });
   assert.equal(entryById(b, '00').id, 'h01');

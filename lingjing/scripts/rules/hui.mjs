@@ -6,7 +6,7 @@
 // 回目); a scene says only which 回 it is (`hui`). A 回's NUMBER is its place
 // in the book as the reader counts it (book-order.js bookEntries, one source
 // for both): 《九鼎录》 opens on 古一 and numbers only the 古 回 (第一回 …
-// 第八回 in 卷一); a 今 interlude between the films reads 「今 · 一」 and
+// 第九回 in 卷一 since 古七 was split, 2026-10-07); a 今 interlude between the films reads 「今 · 一」 and
 // takes no 回 number (2026-10-02). The game plays the 古 line only. A scene
 // may still name a 回 folded into another (h03 → 古二, `absorbs`): it is
 // read as the 回 that absorbed it. Every label the
@@ -131,7 +131,7 @@ function nextJuan(content, lang) {
 }
 
 /* 「卷一 · 沉鼎 · 完」 when a 回 is its 卷's last of its own line; else null.
-   Each line's last entry ends the 卷 for that line: 今 · 四 for the 今, 古八 (h10) — the book's last page — for the 古. */
+   Each line's last entry ends the 卷 for that line: 今 · 四 for the 今, 古九 (h10) — the book's last page — for the 古. */
 export const juanEndOf = (content, id, lang) => {
   const h = huiOf(content, id);
   if (!h || h.juan?.hui?.filter(x => lineOf(x) === h.line).at(-1)?.id !== h.id) return null;

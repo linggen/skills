@@ -11,7 +11,7 @@ import { ART, ASPECT, BEATS, LUOSHU, MARKS, SHOTS, TITLE, coldMatrix, stillSvg }
 import { beatRange, beatStepper, setpieceBeats, setpieceOf } from '../scripts/setpiece.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
-const BOOK = fs.readFileSync(path.join(ROOT, 'story/jiuding-lu/08-第八回.md'), 'utf8');
+const BOOK = fs.readFileSync(path.join(ROOT, 'story/jiuding-lu/09-第九回.md'), 'utf8');
 
 test('zhang: seven beats in the book’s order, each line verbatim from 古十', () => {
   assert.deepEqual(BEATS.map(b => b.id), ['still', 'rise', 'bingyi', 'trial', 'fall', 'seal', 'ding']);
@@ -19,7 +19,7 @@ test('zhang: seven beats in the book’s order, each line verbatim from 古十',
   for (const b of BEATS) {
     assert.ok(b.line.en?.length > 10, `${b.id} has an English line`);
     const k = BOOK.indexOf(b.line.zh);
-    assert.ok(k >= 0, `${b.id}: 「${b.line.zh}」 is in 08-第八回.md`);
+    assert.ok(k >= 0, `${b.id}: 「${b.line.zh}」 is in 09-第九回.md`);
     assert.ok(k > at, `${b.id} comes after the beat before it in the book`);
     at = k;
   }

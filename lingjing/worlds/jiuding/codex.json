@@ -443,7 +443,7 @@
   "qi-pill": {
    "tag": "丹药",
    "first": {
-    "book": "h09"
+    "book": "h11"
    }
   },
   "foundation-pill": {
@@ -545,7 +545,7 @@
   },
   "qiuyu": {
    "first": {
-    "book": "h09"
+    "book": "h11"
    }
   },
   "dingtai": {

@@ -42,7 +42,7 @@ const GAME_WORDS = /修为|灵力|卡牌|灵石|体力|气血/;
 
 test('every creature speaks: open, won, lost in both languages, short, no digits, no game words', () => {
   const all = content.creatures.creatures.filter(c => !c.made);
-  assert.equal(all.length, 33, 'the two 执事堂 beasts of 古七 (犰狳 · 合窳, 2026-10-06; not pooled), the six of 卷一\'s pools (野猪 · 狼 · 熊 of 蒙山; 天马 · 领胡 · 人鱼 of 冀, 2026-10-05), eighteen beasts, 狰, the three the 宗门大比 fights (卢方, 秦雁, 马小宝 — 2026-10-03) and 孙二狗 kept for old saves, 邹青松 in the 秘境 (古五), and 冰夷\'s two dragons (古八)');
+  assert.equal(all.length, 33, 'the two 执事堂 beasts of 古七 · 古八 (犰狳 · 合窳, 2026-10-06; not pooled; 合窳 in 古八 since the 2026-10-07 split), the six of 卷一\'s pools (野猪 · 狼 · 熊 of 蒙山; 天马 · 领胡 · 人鱼 of 冀, 2026-10-05), eighteen beasts, 狰, the three the 宗门大比 fights (卢方, 秦雁, 马小宝 — 2026-10-03) and 孙二狗 kept for old saves, 邹青松 in the 秘境 (古五), and 冰夷\'s two dragons (古八)');
   for (const c of all) {
     for (const k of ['open', 'won', 'lost']) {
       const line = c.says?.[k];

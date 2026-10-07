@@ -18,7 +18,7 @@ import { EMPTY, clipOf, createNarrator, fullOf, hasAudio, keepListenAt, listenAt
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const BOOK = path.join(ROOT, 'story/jiuding-lu');
-// Every 古 回's file, as book.json names it (01-第一回.md … 08-第八回.md).
+// Every 古 回's file, as book.json names it (01-第一回.md … 09-第九回.md).
 const GU_FILES = JSON.parse(fs.readFileSync(path.join(BOOK, 'book.json'), 'utf8')).volumes.flatMap((v) => v.hui).filter((h) => h.line === 'gu').map((h) => h.file);
 const mdOf = (file) => fs.readFileSync(path.join(BOOK, file), 'utf8');
 const bookParas = (md) => md.split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#') && !/^(-{3,}|\*{3,})$/.test(l));

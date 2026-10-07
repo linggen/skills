@@ -20,7 +20,7 @@ that is fine as a bible. **Only what the current 卷 needs gets built.** Every
 section below says which it is; a 【远景】 section is a plan, not a promise.
 
 **卷一 · 沉鼎 needs, and nothing else:** the road 石坳村 → 沉鼎观 → 漳水,
-ending at the first 鼎 (the book's 古一 to 古八 — eight 古 回 since 2026-10-02; the game's chapters
+ending at the first 鼎 (the book's 古一 to 古九 — eight 古 回 since 2026-10-02, nine since 古七 was split in two, Hanli 2026-10-07; the game's chapters
 `00-prologue`, `00-waimen`, `00-zhuji`, then `01-ji`); 练气 → 筑基; the pills 回春丹 ·
 聚气丹 (the market's are 一道纹 — 钱掌柜: 「我这儿只出一道纹」; the furnace's 九转 never on a shelf) ·
 筑基丹 (the sect's one 一转 and the furnace's 九转 — never on a shelf); the card fight; 差事; the 图鉴; 银月 (found,
@@ -173,10 +173,10 @@ The game's data unit (not the book's 回): `chapter.json` (`id`, `opens`,
 chapter opens of the map), `beats.md` (the one-page beat sheet), `scenes/*.json`.
 Scenes carry `hui`, the book's 回 they play (rules/hui.mjs; the game says
 卷/回, never 章 — 5b955c4). Built: `00-prologue` (27 scenes, 古一–古三),
-`00-waimen` (21, 古四–古六), `00-zhuji` (5, 古七: the winter, the furnace's
+`00-waimen` (21, 古四–古六), `00-zhuji` (6, 古七 + 古八 — one 回 until the 2026-10-07 split; 古七 h11 is 09-snow · 09-furnace · 09-year, 古八 h09 09-dabi · 09-qulao · 09-cliff, so 「第七回 · 完」 stands on 09-dabi: the winter, the furnace's
 九转, the year as the book's four seasons — each exit a layer by `rise`, the last
 `{layer: 9, full: true}`, in order by `needs.mark`, offered `once`, free of 体力 (主线, 2026-10-01) —
-瞿老's last disciple, and the 筑基 on the cliff, `09-cliff`) and `01-ji` (7, 古八:
+瞿老's last disciple, and the 筑基 on the cliff, `09-cliff`) and `01-ji` (7, 古九:
 the two failed plans, the wedding, **冰夷's two dragons test him at `01-rise`** —
 `foe-shuanglong`, a trial fought again at once — the seal, the first 鼎 with memory 1
 and no breakthrough, 柳湾); both rebuilt from the book 2026-09-30 (his: 照这样重做冀州).
@@ -250,8 +250,8 @@ need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale
   rules/cap.mjs, `ladder.json → caps`): each 古 回 declares how far the
   player's own work reaches (`tier` + `layer`) and, where its scenes carry him
   further, its `story` — 古三 一层 · 古四 二层 · 古五 二层 (story 四层) · 古六
-  四层 · 古七 四层 (story 筑基一层) · 古八 筑基一层; a 今 interlude takes the 古
-  before it; after 卷一 the save waits in 古八's chapter, so 筑基一层 holds
+  四层 · 古七 四层 (story 七层) · 古八 七层 (story 筑基一层) · 古九 筑基一层; a 今 interlude takes the 古
+  before it; after 卷一 the save waits in 古九's chapter, so 筑基一层 holds
   until 卷二 gets its caps. At the cap the layer fills and the rest is held
   (as at a peak); Look's `capped.say` stands under the full bar in the
   world's words. The book's jumps are the story's (`rise`): 古四's close lifts
@@ -381,11 +381,11 @@ locks the two apart.
   (灵芝 · 人参 · 回春丹; a plain apothecary — **济世堂** is the book's, in the 县城
   where 舅舅 keeps its accounts, 古二–古四, and the 县城 is not on the map, so no
   shop of the game takes its name; Hanli 2026-10-05); 石坳村 = the **货郎** (干粮 · 蓑衣 · 短刀);
-  邺城 (古八) = the 东街市, and its own streets as places a road off the city:
+  邺城 (古九) = the 东街市, and its own streets as places a road off the city:
   **老胡家豆腐坊** (shut under the 河伯's seal until the 漳水), **城南裁缝铺**,
   **香烛铺**, **城东客栈**, and **三老宅** (empty after the 漳水, found things only);
   downstream, **柳湾** (the fishing village under the willows). 冀's errands are
-  古八's people (`quests/ji.json`), kept to the story's time by `opens.before` /
+  古九's people (`quests/ji.json`), kept to the story's time by `opens.before` /
   `opens.done` (a scene ahead / behind): the innkeeper and the old drummer before
   the 漳水; 刘船匠's boat that does not leak and 老胡's bowl for 柳湾 after.
 - **储物袋** (2026-09-25): room in slots by realm (`pouch.by_tier`: 24/36/48/60),
@@ -558,8 +558,8 @@ alone: `scripts/try-game.html?game=storm|deer|xisui|zhoutian&lang=zh|en`.
 - **体力 is OFF while we test** (Hanli, 2026-10-01: 「我是说先不要用体力限制我们测试的时长. 体力限制游戏时长的设定, 可以以后加.」): played through the command (`rules.mjs`, the page's and Ling's door), nothing spends 体力, nothing is refused for it, and the pool reads full — `staminaLimited` in state.mjs, thrown by `LINGJING_STAMINA_LIMIT=0`, which the command sets unless it is already set. Every cost and rule below is kept and still tested; `LINGJING_STAMINA_LIMIT=1` (or removing the default in rules.mjs) brings the pool back as it was. 体力 as a play-time limit is designed later.
 - **主线赶路不扣体力** (Hanli, 2026-10-01: 「可以，主线赶路不扣体力」): a trip toward
   the place the goal line names (Look's `waypoint`) is free — the place itself or
-  one on a shortest road to it (rules/errands.mjs `onStoryRoad`); 古七's four
-  seasons carry no toil price. Why: 卷一's play-through hit two 5–6 h lockouts
+  one on a shortest road to it (rules/errands.mjs `onStoryRoad`); 古七–古八's
+  seasons carry no toil price (伏天, where 古七 turns into 古八, pays a story step, as 入秋 does). Why: 卷一's play-through hit two 5–6 h lockouts
   on the story path. 体力 is for side errands, roaming and cultivation.
 - **闭关** (2026-09-24, rules/seclusion.mjs, page-only `seclude`): real hours
   (≤12) on ONE focus — 法术 (one ★ per 6 h, to ★3), 修为 (5 an hour, a 聚气丹
@@ -671,10 +671,10 @@ His order of value: **5 > 3 > 1 > 7 > 6 > 2 > 4**.
    to a homed 鼎 for 1 体力; 卷轴 unroll at 下山. Lesson: a reward must brighten,
    never darken.
 2. **大场面** 【已建 · 卷一】 — one per 卷 at most, the whole stage. 卷一's is
-   **漳水立起** (古八; Hanli 2026-09-30): `setpiece.js` (the runner) +
+   **漳水立起** (古九; Hanli 2026-09-30): `setpiece.js` (the runner) +
    `setpieces/zhang.js` (the piece), Pixi + GSAP from fx.js's loaders, ink only,
    words never painted. Seven beats in the book's order, each tied to a verbatim
-   line of 08-第八回.md (tests/setpiece.test.mjs holds it): `still` 2.8 s · `rise`
+   line of 09-第九回.md (tests/setpiece.test.mjs holds it): `still` 2.8 s · `rise`
    4.8 s (the river stands, a thousand fish leap, twenty boats on the bare bed) ·
    `bingyi` 3.6 s (冰夷 on his two dragons rises through a pale pool) · `trial`
    5.2 s (the left dives, the right sweeps, both stop a foot from the boy with his

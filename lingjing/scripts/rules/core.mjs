@@ -304,7 +304,7 @@ function offerTasks(content, state) {
    reset it to 0) — short of the new layer's own threshold, so it never jumps twice. */
 function riseTo(content, s, rise, replay) {
   const tier = content.ladder.tiers[0];
-  // `{layer, full}`: to that layer and filled — 古七's 入秋, 练气九层大圆满 (his, 2026-09-30:
+  // `{layer, full}`: to that layer and filled — 古八's 入秋 (古七's before the 2026-10-07 split), 练气九层大圆满 (his, 2026-09-30:
   // the year is the book's four seasons, not days of chores).
   const layer = typeof rise === 'object' ? rise.layer : rise, full = typeof rise === 'object' && rise.full === true;
   const top = Math.min(layer, tier.thresholds.length) - 1;

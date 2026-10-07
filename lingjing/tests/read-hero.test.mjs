@@ -97,7 +97,7 @@ test('the kept readings (柴房 — 第五回 since 古六 folded into it — an
   const six = read('04-第四回.md');
   assert.match(six, /蹲下身去，两只胳膊抱住了头/);
   assert.doesNotMatch(six, /猪圈/);
-  const ten = read('08-第八回.md');
+  const ten = read('09-第九回.md');
   assert.match(ten, /打鼓的那个，便是沈小满。/);
   assert.doesNotMatch(ten, /你长得像交不起河伯钱的/);
   assert.match(ten, /「扑通」一声/);

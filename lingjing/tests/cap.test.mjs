@@ -35,8 +35,9 @@ test('every 古 回 declares its cap, as the book\'s realm line stands', () => {
     h05: ['qi2', null], // 古四: 一层, 十月廿五 二层
     h07: ['qi2', 'qi4'], // 古五: 二层, 息壤 → 四层
     h08: ['qi4', null], // 古六: 四层, 大比 on 四层
-    h09: ['qi4', 'foundation1'], // 古七: 四层, the year → 九层大圆满, the cliff → 筑基
-    h10: ['foundation1', null], // 古八: 筑基初期
+    h11: ['qi4', 'qi7'], // 古七 (its first half since 2026-10-07): 四层, 年三–年五 → 七层
+    h09: ['qi7', 'foundation1'], // 古八: 七层, the years after → 九层大圆满, the cliff → 筑基
+    h10: ['foundation1', null], // 古九: 筑基初期
   });
   assert.deepEqual(lint(content).filter(p => /cap/.test(p)), []);
 });
@@ -82,12 +83,18 @@ test('古四\'s close lifts him to 二层 (十月廿五, by the story); 古五 g
   assert.equal(s.progress, threshold(content, s));
 });
 
-test('古七: 四层 until the year — the seasons lift him to 九层大圆满, the cliff is the story\'s breakthrough', () => {
+test('古七: 四层 until the year — the seasons lift him to 七层, 古八\'s to 九层大圆满, the cliff is the story\'s breakthrough', () => {
   const s = at('00-zhuji', '09-year', 'yaoyuan', ['00-prologue', '00-waimen'], { step: 3 });
   grind(s);
   assert.equal(named(s), '练气四层', 'the five years are the story\'s, not a grind');
   const cap = capOf(content, s);
   assert.ok(cap.story > cap.grind, 'the 回\'s story reaches past what grinding may');
+  // 古八 (09-dabi, the second half since 2026-10-07): 七层 by the story, and grinding holds there.
+  const t = at('00-zhuji', '09-dabi', 'yaoyuan', ['00-prologue', '00-waimen'], { step: 6 });
+  grind(t);
+  assert.equal(named(t), '练气七层', '古八\'s years are the story\'s too');
+  const later = capOf(content, t);
+  assert.ok(later.story > later.grind, '古八\'s story reaches on to 筑基');
 });
 
 test('a breakthrough past where the 回\'s story reaches is refused in the world\'s words', () => {

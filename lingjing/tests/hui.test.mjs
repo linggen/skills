@@ -62,7 +62,9 @@ test('the prologue is 第一回 up to her daybreak, 第二回 from the cliff, �
     ['h05', 'h05', 'h05', 'h05', 'h07', 'h07', 'h08', 'h08']); // h06 folded into 古四 (2026-10-02)
   // 今 · 二, 三, 四 stand in the chapter of the 古 scene they lead into (2026-10-05, tests/jin.test.mjs).
   for (const sc of Object.values(w)) assert.ok(['h05', 'h06', 'h07', 'h08', 'j04'].includes(sc.hui), sc.id);
-  for (const sc of Object.values(content.chapters['00-zhuji'].scenes)) assert.ok(['h09', 'j07'].includes(sc.hui), sc.id);
+  // 古七 split in two (Hanli 2026-10-07): 筑基's chapter holds 古七 (h11) and 古八 (h09), 今 · 三 before them.
+  for (const sc of Object.values(content.chapters['00-zhuji'].scenes)) assert.ok(['h11', 'h09', 'j07'].includes(sc.hui), sc.id);
+  assert.deepEqual(chapterHuis(content, content.chapters['00-zhuji']), ['j07', 'h11', 'h09']);
   for (const sc of Object.values(content.chapters['01-ji'].scenes)) assert.ok(['h10', 'j09'].includes(sc.hui), sc.id);
 });
 
@@ -83,9 +85,9 @@ test('the labels are the book\'s: 卷, 回 and 回目 read from book.json, in bo
   assert.equal(huiLabel(content, 'h05', 'en'), `${juan.en} · ${h05en}`);
   assert.equal(huiLabel(content, 'h05', 'en', 'head'), `${juan.en} · ${h05en} · Then — Twenty-Three Kicks Taken in the Mud`);
   assert.equal(endLabel(content, 'h08', 'zh'), `${bookNo(content, 'h08')} · 完`);
-  // A chapter still being written is named by the 回 the book says opens it: 古九 opens 筑基
-  // (00-zhuji), 古十 冀 — both built since 2026-09-30, so the label is read, never shown there.
-  assert.equal(comingOf(content, content.chapters['00-zhuji'], 'zh'), `${bookNo(content, 'h09')} · 即将开放`);
+  // A chapter still being written is named by the 回 the book says opens it: 古七 (h11, since the 2026-10-07 split) opens 筑基
+  // (00-zhuji), 古九 冀 — both built since 2026-09-30, so the label is read, never shown there.
+  assert.equal(comingOf(content, content.chapters['00-zhuji'], 'zh'), `${bookNo(content, 'h11')} · 即将开放`);
   assert.equal(comingOf(content, content.chapters['01-ji'], 'zh'), `${bookNo(content, 'h10')} · 即将开放`);
   assert.equal(huiLabel(content, 'h99', 'zh'), null, 'a 回 the book does not have');
 });
@@ -166,27 +168,30 @@ test('卷一 ends on its own card: 01-end rest waits on 「卷二 · 即将开�
 });
 
 /* 《九鼎录》 as it stands since 2026-10-02: 古一 古二 ‖今 · 一‖ 古三 古四 ‖今 · 二‖ …
-   古七 古八 ‖今 · 四‖. Only the 古 回 are numbered (第一回 … 第八回); the
+   古七 古八 ‖今 · 四‖ 古九 (古七 split in two, Hanli 2026-10-07). Only the 古 回 are numbered (第一回 … 第九回); the
    game plays the 古 line, and nothing in it depends on how many 今 are in. */
 const withDraft = (id) => {
   const hui = content.book.volumes[0].hui.map(h => (h.id === id ? { ...h, draft: true } : h));
   return { ...content, book: { ...content.book, volumes: [{ ...content.book.volumes[0], hui }, ...content.book.volumes.slice(1)] } };
 };
 
-test('the book in four films with an interlude after each: 古 第一回 … 第八回, the 今 unnumbered, the 卷 ends on 古八 for the game, the lint is clean', async () => {
+test('the book in four films with an interlude after each: 古 第一回 … 第九回, the 今 unnumbered, the 卷 ends on 古九 for the game, the lint is clean', async () => {
   const c = content;
   const gu = c.book.volumes[0].hui.filter(h => h.line !== 'jin');
-  assert.deepEqual(gu.map(h => h.id), ['h01', 'h02', 'h04', 'h05', 'h07', 'h08', 'h09', 'h10']);
+  assert.deepEqual(gu.map(h => h.id), ['h01', 'h02', 'h04', 'h05', 'h07', 'h08', 'h11', 'h09', 'h10']);
   gu.forEach((h, i) => assert.equal(huiLabel(c, h.id, 'zh', 'short'), `第${zhNumber(i + 1)}回`, h.id));
   assert.equal(huiLabel(c, 'h01', 'en', 'short'), 'Chapter 1');
   assert.deepEqual(['j01', 'j04', 'j07', 'j09'].map(id => huiLabel(c, id, 'zh', 'short')), ['今 · 一', '今 · 二', '今 · 三', '今 · 四']);
   assert.equal(huiLabel(c, 'j02', 'zh', 'short'), '今 · 一', 'a folded 今 id names the interlude that holds it');
-  assert.equal(endLabel(c, 'h10', 'zh'), '第八回 · 完');
-  assert.equal(juanEndOf(c, 'h10', 'zh'), '卷一 · 沉鼎 · 完', 'the 卷 ends for the game at 古八 (h10)');
+  assert.equal(endLabel(c, 'h10', 'zh'), '第九回 · 完');
+  assert.equal(endLabel(c, 'h11', 'zh'), '第七回 · 完');
+  assert.equal(endLabel(c, 'h09', 'zh'), '第八回 · 完');
+  assert.equal(juanEndOf(c, 'h10', 'zh'), '卷一 · 沉鼎 · 完', 'the 卷 ends for the game at 古九 (h10)');
   assert.equal(juanEndOf(c, 'h09', 'zh'), null);
+  assert.equal(juanEndOf(c, 'h11', 'zh'), null);
   assert.equal(juanEndOf(c, 'j09', 'zh'), '卷一 · 沉鼎 · 完', 'and for the 今 line at 今 · 四');
   assert.equal(juanEndOf(c, 'j10', 'zh'), '卷一 · 沉鼎 · 完', 'j10 is folded into 今 · 四');
-  assert.equal(comingOf(c, c.chapters['01-ji'], 'zh'), '第八回 · 即将开放');
+  assert.equal(comingOf(c, c.chapters['01-ji'], 'zh'), '第九回 · 即将开放');
   assert.deepEqual(chapterHuis(c, c.chapters['00-prologue']), ['h01', 'h02', 'j01', 'h04'], '今 · 一 played between 古二 and 古三 (2026-10-05)');
   assert.equal(firstHui(c, c.chapters['00-waimen']), 'h05');
   // a 回 turning inside the prologue, as before

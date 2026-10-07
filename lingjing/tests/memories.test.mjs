@@ -212,7 +212,7 @@ test('the book: ::: 忆 n is memory n\'s one colour plate; 古十 carries memory
   assert.match(html, /<figure class="panel memplate"><img src="art\/memories\/1-a\.webp" alt="九天之上" loading="lazy"><figcaption>九天之上<\/figcaption><\/figure>/);
   assert.equal((html.match(/memplate/g) ?? []).length, 1, 'an unpainted memory is left out, never shown as text');
   assert.equal(renderMarkdown('::: 忆 1\n\n一段。'), '<p>一段。</p>', 'no resolver: left out');
-  const ch = fs.readFileSync(path.join(ROOT, 'story/jiuding-lu/08-第八回.md'), 'utf8');
+  const ch = fs.readFileSync(path.join(ROOT, 'story/jiuding-lu/09-第九回.md'), 'utf8');
   const at = ch.indexOf('::: 忆 1 ');
   assert.ok(at > ch.indexOf('第二条，亮了。') && at > ch.indexOf('本王想起来一点了'), 'memory 1 is where the second tail lights');
   assert.equal((ch.match(/^::: 忆 /gm) ?? []).length, 1, '银月一鼎一图: one plate in the 回');

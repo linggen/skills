@@ -52,7 +52,7 @@ All of it: story/jiuding-lu/DESIGN.md.
 ## What ships first: 卷一 · 沉鼎
 
 Design big, build only the current 卷 (Hanli, 2026-09-30). 卷一 is the book's
-古一 to 古八 (eight 古 回 since 2026-10-02) and the game's road 石坳村 → 沉鼎观 → 漳水: the village and
+古一 to 古九 (eight 古 回 since 2026-10-02; nine since 古七 was split in two, 2026-10-07) and the game's road 石坳村 → 沉鼎观 → 漳水: the village and
 the fall, the sect's trials, the outer court and the 大比, 筑基, and the first
 鼎 rising from the 漳水. 练气 to 筑基; 回春丹, 聚气丹, 筑基丹; the card fight;
 errands; the 图鉴; 银月. Everything beyond waits for its 卷.
