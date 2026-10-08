@@ -52,10 +52,13 @@ sync:
     - { name: karaoke_audio, subdir: karaoke, suffix: " (Karaoke)", exts: [mp3] }
     - { name: karaoke_video, subdir: karaoke, suffix: " (Karaoke)", exts: [mp4] }
 tools:
+  # `remote: true` — the phone's Ling calls it over mac/tools: the read and the
+  # playlist edits. Never a download (QueueTracks keeps the user's confirm card).
   # Track args everywhere are ListLibrary `file` values (basenames); "artist|title"
   # also resolves. Every write runs actions.mjs — the same writer the page's
   # buttons call — so a tool call and a click never drift.
   - name: ListLibrary
+    remote: true
     description: >-
       The user's library. Returns { track_count, playlist_count, match_count,
       has_more, tracks: [{ artist, title, year?, file, lyrics, karaoke,
@@ -158,6 +161,7 @@ tools:
     tier: edit
     timeout_ms: 900000
   - name: CreatePlaylist
+    remote: true
     description: >-
       Create an empty playlist (idempotent). Returns { ok, playlist }. Usually
       AddToPlaylist instead — it creates as it files.
@@ -174,6 +178,7 @@ tools:
     tier: edit
     timeout_ms: 15000
   - name: AddToPlaylist
+    remote: true
     description: >-
       File owned songs into a playlist, creating it if new; reuse an exact
       name to merge. Returns { ok, playlist, added }. Filing into a phone
@@ -196,6 +201,7 @@ tools:
     tier: edit
     timeout_ms: 15000
   - name: RemoveFromPlaylist
+    remote: true
     description: >-
       Take songs out of one playlist; they stay in the library. Returns { ok,
       playlist, removed }.
@@ -217,6 +223,7 @@ tools:
     tier: edit
     timeout_ms: 15000
   - name: ReorderPlaylist
+    remote: true
     description: >-
       Set a playlist's running order; members left out keep their place at the
       end. Returns { ok, playlist, order }.
@@ -238,6 +245,7 @@ tools:
     tier: edit
     timeout_ms: 15000
   - name: RenamePlaylist
+    remote: true
     description: >-
       Rename a playlist; onto an existing name it MERGES. Returns { ok,
       playlist, merged }.
@@ -258,6 +266,7 @@ tools:
     tier: edit
     timeout_ms: 15000
   - name: DeletePlaylist
+    remote: true
     description: >-
       Delete a playlist; the songs stay. Returns { ok, deleted, songs_kept }.
       Destroys curation — confirm first (Hard rails).
