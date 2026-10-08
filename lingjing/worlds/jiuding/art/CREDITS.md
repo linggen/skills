@@ -27,6 +27,7 @@ paper, a warm paper ground with grain, the red seal).
 | bashe | 巴蛇 | 《古今圖書集成·禽蟲典》巴蛇圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic510 - 巴蛇圖.svg* |
 | gui | 蛫 | 《古今圖書集成·禽蟲典》蛫圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic313 - 蛫圖.svg* |
 | kuiniu | 夔牛 | **Drawn for Lingjing** by the local picture model (FLUX.2 klein 4B), 2026-09-24, as a woodcut after 《中次九经》 and 郭璞's note — no labelled classical plate of 夔牛 was found |
+| qiuyu | 犰狳 | 《古今圖書集成·禽蟲典》犰狳圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic283 - 犰狳圖.svg* (兔形鳥喙、鴟目蛇尾 — as the 東次二經 says) |
 | qiezhi | 竊脂 | 《古今圖書集成·禽蟲典》竊脂圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic137 - 竊脂圖.svg* |
 | feiyi | 肥遺 | 《古今圖書集成·禽蟲典》肥遺圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic506 - 肥遺圖.svg* |
 | qianyang | 羬羊 | 《古今圖書集成·禽蟲典》羬羊圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic229 - 羬羊圖.svg* |
