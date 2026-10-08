@@ -195,7 +195,7 @@ tools:
   - name: AskPhone
     description: >-
       Ask the paired iPhone to run one of its actions (from PhoneActions),
-      e.g. photos-photo_backup. Queued as a retained request: a connected
+      e.g. photos_backup. Queued as a retained request: a connected
       phone runs it in seconds; one that is away runs it on next connect
       (requests expire after a day). The phone refuses destructive actions
       queued this way — those need the user present on the phone. Returns
@@ -205,8 +205,8 @@ tools:
         type: string
         required: true
         description: >-
-          The action as <app>-<tool>, exactly as PhoneActions lists it —
-          e.g. "photos-photo_backup".
+          The action's name, exactly as PhoneActions lists it — e.g.
+          "photos_backup".
       params:
         type: string
         required: true
@@ -221,12 +221,12 @@ tools:
       Read the phone's latest outcome for an action requested via AskPhone:
       { ok, result-or-error, requested_at }, or done:false while nothing has
       come back yet (a connected phone answers in seconds; an away phone on
-      its next connect). Pass the same <app>-<tool> you requested.
+      its next connect). Pass the same action name you requested.
     args:
       action:
         type: string
         required: true
-        description: The <app>-<tool> you asked for, e.g. "photos-photo_backup".
+        description: The action name you asked for, e.g. "photos_backup".
     cmd: "bash $SKILL_DIR/scripts/phone-actions.sh result {{action}}"
     tier: read
     timeout_ms: 8000

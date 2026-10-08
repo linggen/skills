@@ -1007,7 +1007,7 @@ confirms on the executing device.
 | `ConnectService` | Oura / Garmin / Whoop / Strava / Withings on the Mac (later) | edit |
 
 Cross-app actions the plan may propose use the owning app's tools:
-`dj-play_playlist` for the wind-down, Yinyue's quiet window, the calendar tool
+`dj_play` (with a playlist) for the wind-down, Yinyue's quiet window, the calendar tool
 for moving a meeting. Health never writes another app's data.
 
 ## Prompt rules that ride with the passes
