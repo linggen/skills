@@ -100,6 +100,8 @@ CREATURES = {
   # 肥遗: four rolls 2026-09-29 (side view ×3, this top-down view ×1) — the wings came right, the feet never
   # (7, 5, 5, 7): still its 1725 woodcut. 雷神: the first roll had five limbs; this four-limb prompt is untried.
   'feiyi': '肥遗 — 「有蛇焉，名曰肥遗，六足四翼」: a snake seen from directly ABOVE, lying stretched in a gentle S on a square flat cliff top, like a specimen plate: ONE plain snake head (no horns, no whiskers, not a dragon), exactly SIX short lizard legs splayed out flat to the sides — three on the left, three on the right, all six feet clearly separate and countable — and exactly FOUR feathered wings spread flat — two on the left, two on the right — the long tail bare.',
+  # 犰狳 (his, 2026-10-08: 「你先让gpt画一个qiuyu的图」) — 《山海经·东次二经》; the story's 灵草谷 monster: it plays dead.
+  'qiuyu': '犰狳 — 「其状如菟而鸟喙，鸱目蛇尾，见人则眠」: a rabbit-sized beast with a RABBIT\'s plump furry body, ONE head, a short hooked BIRD\'S BEAK in place of a mouth, TWO big round staring OWL eyes, FOUR legs, and ONE long scaly SNAKE tail with faint bands; lying on its back with its legs in the air and its eyes shut, as if fast asleep, in a field of low spirit-herb plants. No shell, no armour.',
   'qianyang': '羬羊 — 「其状如羊而马尾」: a goat with ONE head, TWO horns, FOUR legs and ONE long flowing HORSE tail, standing among pines.',
   'taifeng': '泰逢 — 「其状如人而虎尾……出入有光」: a benevolent mountain god in the shape of a man, ONE head, TWO arms, TWO legs, in simple ancient robes, with ONE striped TIGER tail, a soft glow around him.',
   'mafu': '马腹 — 「其状如人面虎身」: a tiger\'s body with a HUMAN face, ONE head, FOUR legs, ONE tail, crouching by a river among bamboo.',
