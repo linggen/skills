@@ -96,10 +96,10 @@ test('生辰 at the 入门仪式: the roots are read and the day let go — neve
   // owed since Ling last read — every beat walked here, the root test last but the scene
   const told = tellOf(content, out.state).tell, rite = told.find(t => t.id === "00-hall/born");
   assert.deepEqual(told.slice(-2).map(t => t.id), ['00-hall/born', '00-waimen']);
-  assert.match(rite.text, /念道：「金、木、水、火、土——五行俱全。五门俱全的伪灵根，外门叫杂灵根。下下之资。」/);
+  assert.match(rite.text, /念道：「金、木、水、火、土——五行俱全。五门俱全，杂灵根。下下之资。」/);
   assert.match(rite.text, /金白、青、黑、红、黄，五种颜色，一样不少[\s\S]*拼成的一块抹布。只有黄的那一点，比别的亮一些。/);
   assert.match(rite.text, /杂灵根，也进山门啊？/);
-  // 伪灵根 is the official name since 2026-10-03 (凡人's grading; 杂灵根 the nickname) — only template braces and a 缺 line are banned.
+  // 天·真·中·伪·杂 are the names (Hanli 2026-10-08: 2门真灵根, 3门中灵根, 4门伪灵根, 5门杂灵根) — only template braces and a 缺 line are banned.
   assert.doesNotMatch(rite.text, /[{}]|缺[金木水火土]/);
   const waimen = tellOf(content, resolve(out.state, content, ctx(), { exit: 'pay' }).state).tell.find(t => t.id === '00-waimen/pay');
   assert.match(waimen.text, /摸出一块灵石，交了。/);
@@ -126,7 +126,7 @@ test('不填: the stone reads five even — none leads — and the starter is th
     assert.equal(a.result.born.roots.name, lang === 'zh' ? '五行杂灵根' : 'Mixed five-element root');
     for (const id of starterFor(content, a.state.traits)) assert.ok(a.state.cards.includes(id), id);
     const rite = tellOf(content, a.state).tell.find(t => t.id === '00-hall/born').text;
-    assert.match(rite, lang === 'zh' ? /念道：「金、木、水、火、土——五行俱全。五门俱全的伪灵根，外门叫杂灵根。下下之资。」/ : /Metal, wood, water, fire, earth — all five elements\. A false root with all five gates — the outer court calls it a mixed root\. The lowest of the low\./);
+    assert.match(rite, lang === 'zh' ? /念道：「金、木、水、火、土——五行俱全。五门俱全，杂灵根。下下之资。」/ : /Metal, wood, water, fire, earth — all five elements\. All five gates — a mixed root\. The lowest of the low\./);
     assert.match(rite, lang === 'zh' ? /拼成的一块抹布。\n/ : /five kinds of leftover scraps\.\n/, 'even: no colour brighter, no gap left');
   }
 });
