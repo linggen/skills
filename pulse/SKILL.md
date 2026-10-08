@@ -72,6 +72,14 @@ tools:
       {id, title, url, hn_url, points, num_comments, author, text,
       created_iso, age_hours}. Prefer hits with num_comments > 0 and low
       age_hours (active threads). Gated on sites.hackernews.enabled.
+    args:
+      query:
+        type: string
+        description: Optional. The topic; empty OR-joins sites.hackernews.keywords.
+      days:
+        type: integer
+        default: 7
+        description: Optional. Recency window in days.
     cmd: "$SKILL_DIR/scripts/sites/hn-search.sh {{query}} {{days}}"
     tier: read
     timeout_ms: 30000
@@ -85,6 +93,11 @@ tools:
       url. Returns { thread_url, thread_title, op:{author,body,url,
       age_hours}, comments:[{author,body,url,age_hours}] (cap 25), errors }
       — same shape as FetchRedditThread.
+    args:
+      thread:
+        type: string
+        required: true
+        description: An HN item id or news.ycombinator.com/item?id=… url.
     cmd: "$SKILL_DIR/scripts/sites/hn-thread.sh {{thread}}"
     tier: read
     timeout_ms: 30000
@@ -101,6 +114,11 @@ tools:
       parent_comment_body?}], count, errors}. Arg: [hours=336] look-back.
       Needs sites.hackernews.username (Settings); gated on
       sites.hackernews.enabled.
+    args:
+      hours:
+        type: integer
+        default: 336
+        description: Optional. Look-back in hours.
     cmd: "$SKILL_DIR/scripts/sites/hn-mentions.sh {{hours}}"
     tier: read
     timeout_ms: 45000
