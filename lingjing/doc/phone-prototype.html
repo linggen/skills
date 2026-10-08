@@ -101,15 +101,15 @@ nav button b { font-family: var(--serif); font-weight: 600; margin-right: 6px; c
   padding: 5px 10px; border-radius: 999px; backdrop-filter: blur(6px); }
 .qi i { width: 44px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.25); position: relative; overflow: hidden; }
 .qi i::after { content: ""; position: absolute; inset: 0; width: 72%; background: var(--jade); border-radius: 3px; }
-.scene { height: 46%; flex: none; background: center 30%/cover no-repeat; position: relative; }
+.scene { flex: 1; min-height: 0; flex: none; background: center 30%/cover no-repeat; position: relative; }
 .scene::after { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(0,0,0,.35), transparent 30%, transparent 75%, var(--sky-b)); }
-.dlg { flex: 1; display: flex; flex-direction: column; padding: 4px 14px 0; min-height: 0; }
-.box { flex: 1; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px 16px 10px;
+.dlg { flex: none; display: flex; flex-direction: column; padding: 4px 14px 0; min-height: 0; }
+.box { min-height: 150px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px 16px 10px;
   display: flex; flex-direction: column; cursor: pointer; position: relative; min-height: 0; user-select: none; }
 .box .who { font: 600 13px var(--serif); color: var(--ling); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
 .box .who img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
 .box .who.yy { color: var(--yinyue); }
-.box .t { font: 16.5px/1.75 var(--serif); flex: 1; overflow: hidden; }
+.box .t { font: 16.5px/1.75 var(--serif); flex: 1; }
 .box .t.yy { color: var(--yinyue); }
 .box .ctl { display: flex; align-items: center; gap: 14px; font-size: 12px; color: var(--faint); padding-top: 6px; }
 .box .ctl span { cursor: pointer; }
@@ -364,7 +364,6 @@ function render() {
     ? `<div class="looks">${looks.map(l => `<span class="look">看 · ${l}</span>`).join('')}</div>
        <div class="choices">${choices.map(c => `<div class="choice${c.main ? ' main' : ''}">${c.t}</div>`).join('')}</div>`
     : '';
-  $('#box').style.flex = last ? '0 0 auto' : '1';
 }
 function step() { if (i < beats.length - 1) { i++; render(); } else stopAuto(); }
 function stopAuto() { auto = false; clearTimeout(timer); $('#auto').classList.remove('on'); $('#auto').textContent = '▶ 自动'; }
@@ -391,7 +390,7 @@ const screens = [
 <div class="ask"><b>To discuss:</b> should she also nudge you when you're away, e.g. 「灵气满了」 or 「立冬还有三天」? That would go through her notification budget.</div>` },
   { id: 'stage', k: 'B', n: '舞台 · 段落',
     notes: `<h2>The stage</h2><ul>
-<li>Top 46% is the scene art, full-bleed. The HUD floats over it: ✕, 回目 + place, and 灵气.</li>
+<li>The scene art fills everything above the dialogue box, full-bleed. The HUD floats over it: ✕, 回目 + place, and 灵气.</li>
 <li>Below is the dialogue box. <b>Tap</b> = next beat. A speaker gets a portrait chip, and Yinyue's ⟪⟫ lines show in her blue.</li>
 <li><b>▶ 自动</b> plays on by itself, with 评书 audio where it exists (timed by length in this mock).</li>
 <li><b>≡ 全文</b> opens the passage as a scroll. <b>Long-press</b> the box to skip to the end.</li>
