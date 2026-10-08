@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>灵境 Phone Prototype</title>
+<link rel="icon" href="/logo.svg">
+<style>
+:root {
+  --ground: #F1ECE1; --surface: #FBF8F2; --raised: #EFE9DC; --line: #DCD3C1;
+  --text: #1D1B17; --dim: #6A6458; --faint: #9A9284;
+  --ling: #8A6224; --ling-soft: #F2E6CE;
+  --yinyue: #46708C; --yinyue-soft: #E2EBF1;
+  --seal: #B03A2B; --seal-soft: #F5DFDA;
+  --jade: #2E7A57; --jade-soft: #DCEBE3;
+  --sky-a: #E9E2D2; --sky-b: #D9CFBB;
+  --page: #E6E0D3;
+  --serif: "Noto Serif SC", "Songti SC", "STSong", "Source Han Serif SC", Georgia, serif;
+  --ui: "PingFang SC", "Hiragino Sans GB", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #12110E; --surface: #1A1815; --raised: #242119; --line: #353026;
+    --text: #ECE5D6; --dim: #A69E8E; --faint: #7A7365;
+    --ling: #D9AC5E; --ling-soft: #3A2F1B;
+    --yinyue: #9DBCD3; --yinyue-soft: #1F2C36;
+    --seal: #E27461; --seal-soft: #3D211C;
+    --jade: #78C4A2; --jade-soft: #1B352A;
+    --sky-a: #1D1B24; --sky-b: #0E0D12; --page: #0B0A08;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #12110E; --surface: #1A1815; --raised: #242119; --line: #353026;
+  --text: #ECE5D6; --dim: #A69E8E; --faint: #7A7365;
+  --ling: #D9AC5E; --ling-soft: #3A2F1B;
+  --yinyue: #9DBCD3; --yinyue-soft: #1F2C36;
+  --seal: #E27461; --seal-soft: #3D211C;
+  --jade: #78C4A2; --jade-soft: #1B352A;
+  --sky-a: #1D1B24; --sky-b: #0E0D12; --page: #0B0A08;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--text); font-family: var(--ui); }
+.wrap { display: grid; grid-template-columns: 220px 400px minmax(260px, 420px); gap: 28px;
+  justify-content: center; padding: 28px 16px 60px; align-items: start; }
+h1 { font-family: var(--serif); font-size: 20px; margin: 0 0 4px; }
+.sub { color: var(--dim); font-size: 13px; margin: 0 0 18px; line-height: 1.5; }
+nav button { display: block; width: 100%; text-align: left; border: 0; background: none; color: var(--dim);
+  padding: 8px 10px; border-radius: 8px; font: 14px var(--ui); cursor: pointer; }
+nav button:hover { background: var(--raised); }
+nav button.on { background: var(--surface); color: var(--text); box-shadow: 0 0 0 1px var(--line); }
+nav button b { font-family: var(--serif); font-weight: 600; margin-right: 6px; color: var(--ling); }
+.notes { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px;
+  font-size: 14px; line-height: 1.65; position: sticky; top: 24px; }
+.notes h2 { font-family: var(--serif); font-size: 17px; margin: 0 0 8px; }
+.notes ul { padding-left: 18px; margin: 8px 0; }
+.notes .ask { margin-top: 14px; padding: 10px 12px; background: var(--ling-soft); border-radius: 10px; }
+.notes .ask b { color: var(--ling); }
+
+/* phone */
+.phone { width: 390px; height: 844px; border-radius: 52px; padding: 12px; background: #0d0c0a;
+  box-shadow: 0 30px 60px rgba(0,0,0,.25), inset 0 0 0 2px #2a2722; position: relative; }
+.screen { width: 100%; height: 100%; border-radius: 42px; overflow: hidden; position: relative;
+  background: var(--ground); display: flex; flex-direction: column; }
+.island { position: absolute; top: 11px; left: 50%; translate: -50% 0; width: 118px; height: 34px;
+  background: #000; border-radius: 20px; z-index: 50; }
+.status { height: 50px; flex: none; display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 30px 0; font: 600 15px var(--ui); z-index: 40; }
+.view { position: absolute; inset: 0; display: none; flex-direction: column; }
+.view.on { display: flex; }
+
+/* yinyue home */
+.yy { padding: 60px 18px 18px; flex: 1; display: flex; flex-direction: column; gap: 14px; }
+.yy-head { display: flex; align-items: center; gap: 12px; }
+.yy-head img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--yinyue-soft); }
+.yy-head .n { font: 600 17px var(--serif); }
+.yy-head .s { font-size: 12px; color: var(--faint); }
+.bubble { background: var(--yinyue-soft); color: var(--text); padding: 12px 14px; border-radius: 4px 16px 16px 16px;
+  font-size: 15px; line-height: 1.55; max-width: 88%; }
+.gamecard { border-radius: 16px; overflow: hidden; background: var(--surface); border: 1px solid var(--line); cursor: pointer; }
+.gamecard .art { height: 150px; background: center/cover no-repeat; position: relative; }
+.gamecard .art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 40%, rgba(0,0,0,.55)); }
+.gamecard .art span { position: absolute; left: 14px; bottom: 10px; color: #fff; font: 600 18px var(--serif); z-index: 1; }
+.gamecard .meta { padding: 10px 14px 12px; display: flex; justify-content: space-between; align-items: center; }
+.gamecard .meta .w { font-size: 13px; color: var(--dim); }
+.pill { font-size: 13px; padding: 7px 14px; border-radius: 999px; background: var(--ling); color: var(--surface); font-weight: 600; }
+.yy-other { font-size: 13px; color: var(--faint); border-top: 1px solid var(--line); padding-top: 12px; margin-top: auto; }
+.inputbar { display: flex; gap: 8px; align-items: center; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 22px; padding: 10px 14px; color: var(--faint); font-size: 15px; }
+.inputbar .mic { margin-left: auto; }
+
+/* stage */
+.stage { flex: 1; display: flex; flex-direction: column; background: linear-gradient(var(--sky-a), var(--sky-b)); }
+.hud { position: absolute; top: 50px; left: 0; right: 0; display: flex; align-items: center; gap: 10px;
+  padding: 6px 14px; z-index: 30; }
+.hud .x { width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,.35); color: #fff; display: grid;
+  place-items: center; font-size: 15px; cursor: pointer; backdrop-filter: blur(6px); }
+.hud .where { flex: 1; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.6); }
+.hud .where .h { font: 600 14px var(--serif); }
+.hud .where .p { font-size: 11px; opacity: .85; }
+.qi { display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,.35); color: #fff; font-size: 12px;
+  padding: 5px 10px; border-radius: 999px; backdrop-filter: blur(6px); }
+.qi i { width: 44px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.25); position: relative; overflow: hidden; }
+.qi i::after { content: ""; position: absolute; inset: 0; width: 72%; background: var(--jade); border-radius: 3px; }
+.scene { height: 46%; flex: none; background: center 30%/cover no-repeat; position: relative; }
+.scene::after { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(0,0,0,.35), transparent 30%, transparent 75%, var(--sky-b)); }
+.dlg { flex: 1; display: flex; flex-direction: column; padding: 4px 14px 0; min-height: 0; }
+.box { flex: 1; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px 16px 10px;
+  display: flex; flex-direction: column; cursor: pointer; position: relative; min-height: 0; user-select: none; }
+.box .who { font: 600 13px var(--serif); color: var(--ling); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.box .who img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
+.box .who.yy { color: var(--yinyue); }
+.box .t { font: 16.5px/1.75 var(--serif); flex: 1; overflow: hidden; }
+.box .t.yy { color: var(--yinyue); }
+.box .ctl { display: flex; align-items: center; gap: 14px; font-size: 12px; color: var(--faint); padding-top: 6px; }
+.box .ctl span { cursor: pointer; }
+.box .ctl span.on { color: var(--ling); font-weight: 600; }
+.box .ctl .n { margin-left: auto; }
+.box .next { position: absolute; right: 16px; bottom: 34px; color: var(--ling); animation: bob 1.2s infinite; }
+@keyframes bob { 50% { translate: 0 3px; } }
+.choices { display: flex; flex-direction: column; gap: 8px; padding: 10px 0 4px; }
+.choice { border: 1px solid var(--ling); color: var(--ling); background: var(--surface); border-radius: 14px;
+  padding: 13px 14px; font: 15px var(--serif); text-align: left; cursor: pointer; }
+.choice.main { background: var(--ling); color: var(--surface); }
+.looks { display: flex; gap: 6px; overflow-x: auto; padding: 8px 0 2px; scrollbar-width: none; }
+.look { flex: none; font-size: 12.5px; padding: 6px 11px; border-radius: 999px; background: var(--raised);
+  color: var(--dim); cursor: pointer; border: 1px solid var(--line); }
+.dock { flex: none; display: flex; align-items: center; padding: 8px 14px 26px; gap: 4px; }
+.dock .t { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px;
+  color: var(--dim); cursor: pointer; padding: 4px 0; }
+.dock .t b { font: 600 17px var(--serif); color: var(--text); }
+.dock .ling { flex: 1.4; background: var(--ling-soft); color: var(--ling); border-radius: 999px; padding: 9px 0;
+  text-align: center; font: 600 14px var(--serif); cursor: pointer; }
+
+/* sheets */
+.scrim { position: absolute; inset: 0; background: rgba(0,0,0,.35); z-index: 60; display: none; }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--surface); border-radius: 22px 22px 0 0;
+  z-index: 61; display: none; flex-direction: column; max-height: 78%; box-shadow: 0 -8px 30px rgba(0,0,0,.2); }
+.sheet.tall { height: 78%; }
+.sheet .grab { width: 38px; height: 5px; border-radius: 3px; background: var(--line); margin: 8px auto 4px; }
+.sheet .hd { display: flex; align-items: baseline; padding: 6px 18px 10px; gap: 8px; border-bottom: 1px solid var(--line); }
+.sheet .hd b { font: 600 18px var(--serif); }
+.sheet .hd span { font-size: 12px; color: var(--faint); }
+.sheet .hd .close { margin-left: auto; color: var(--dim); cursor: pointer; font-size: 14px; }
+.sheet .bd { padding: 14px 18px 30px; overflow-y: auto; flex: 1; }
+.show .scrim, .show .sheet.on { display: flex; }
+.show .scrim { display: block; }
+
+.msg { margin-bottom: 12px; font-size: 15px; line-height: 1.6; }
+.msg.ling { font-family: var(--serif); }
+.msg.ling::before { content: "灵"; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--ling-soft); color: var(--ling); font-size: 12px; margin-right: 8px; font-family: var(--serif); }
+.msg.me { margin-left: auto; background: var(--raised); padding: 8px 12px; border-radius: 14px 4px 14px 14px; width: fit-content; max-width: 80%; }
+.qa { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 14px; }
+.qa span { font-size: 13px; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); color: var(--dim); }
+
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.cell { background: var(--raised); border-radius: 12px; padding: 8px 4px 6px; text-align: center; font-size: 11.5px; color: var(--dim); position: relative; }
+.cell img { width: 52px; height: 52px; object-fit: contain; display: block; margin: 0 auto 4px; }
+.cell em { position: absolute; top: 4px; right: 6px; font-style: normal; font-size: 11px; color: var(--ling); font-weight: 600; }
+.money { display: flex; gap: 14px; font-size: 13px; color: var(--dim); margin-bottom: 12px; }
+.money b { color: var(--text); }
+
+.crt img { width: 100%; border-radius: 12px; background: #f4efe4; display: block; }
+.crt .nm { font: 600 24px var(--serif); margin: 12px 0 0; }
+.crt .py { color: var(--faint); font-size: 13px; }
+.crt q { display: block; font: 15px/1.7 var(--serif); color: var(--dim); margin: 10px 0; padding-left: 12px; border-left: 3px solid var(--seal); quotes: none; }
+.crt .src { font-size: 12px; color: var(--faint); }
+
+.map img { width: 100%; border-radius: 12px; display: block; }
+.map .here { font-size: 13px; color: var(--dim); margin-top: 10px; line-height: 1.6; }
+
+.full { padding: 96px 20px 30px; overflow-y: auto; flex: 1; background: var(--surface); }
+.full .hero { height: 170px; margin: -96px -20px 16px; background: center 30%/cover; position: relative; }
+.full p { font: 16.5px/1.95 var(--serif); margin: 0 0 14px; text-indent: 2em; }
+.full .end { text-align: center; color: var(--faint); font-size: 13px; margin: 20px 0; }
+
+.handoff { position: absolute; top: 96px; left: 14px; right: 14px; z-index: 35; background: var(--yinyue-soft);
+  color: var(--text); border-radius: 14px; padding: 10px 12px; font-size: 13.5px; line-height: 1.5; display: flex; gap: 10px; align-items: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,.15); }
+.handoff img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
+.dimmed { filter: saturate(.6) brightness(.85); }
+
+@media (max-width: 1080px) {
+  .wrap { grid-template-columns: 1fr; justify-items: center; }
+  nav { display: flex; flex-wrap: wrap; gap: 4px; max-width: 420px; }
+  nav button { width: auto; }
+  .notes { position: static; max-width: 420px; }
+}
+@media (max-width: 430px) {
+  .phone { width: 100%; height: 780px; padding: 6px; border-radius: 40px; }
+  .screen { border-radius: 34px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside>
+    <h1>灵境 · 手机</h1>
+    <p class="sub">Phone prototype for discussion. No app code yet. The text and art are the real ones from the prologue's 马三 scene. Click the phone to play it.</p>
+    <nav id="nav"></nav>
+  </aside>
+
+  <div class="phone"><div class="screen" id="screen">
+    <div class="island"></div>
+    <div class="status"><span>19:42</span><span>●●● ▮</span></div>
+
+    <!-- A: Yinyue home -->
+    <section class="view" data-v="home">
+      <div class="yy">
+        <div class="yy-head"><img src="../worlds/jiuding/art/people/yinyue.webp" alt=""><div><div class="n">银月</div><div class="s">Linggen</div></div></div>
+        <div class="bubble">昨晚停在马三踹门那儿。你那张弓，还挂在墙上。接着上回？</div>
+        <div class="gamecard" data-go="stage">
+          <div class="art" style="background-image:url(../worlds/jiuding/art/people/masan.webp)"><span>灵境 · 第一回</span></div>
+          <div class="meta"><span class="w">石坳村 · 你家 · 傍晚　·　灵气 72%</span><span class="pill">继续</span></div>
+        </div>
+        <div class="yy-other">Her other cards (Health, DJ…) stack below as usual.</div>
+        <div class="inputbar">和银月说…<span class="mic">🎙</span></div>
+      </div>
+    </section>
+
+    <!-- B: stage -->
+    <section class="view" data-v="stage">
+      <div class="stage">
+        <div class="hud">
+          <div class="x" data-go="home">✕</div>
+          <div class="where"><div class="h">卷一 · 第一回</div><div class="p">石坳村 · 你家 · 傍晚</div></div>
+          <div class="qi">灵气<i></i></div>
+        </div>
+        <div class="scene" id="sceneArt" style="background-image:url(../worlds/jiuding/art/people/masan.webp)"></div>
+        <div class="dlg">
+          <div class="box" id="box">
+            <div class="who" id="who"></div>
+            <div class="t" id="txt"></div>
+            <div class="next" id="nextMark">▾</div>
+            <div class="ctl">
+              <span id="auto">▶ 自动</span>
+              <span id="fullBtn">≡ 全文</span>
+              <span class="n" id="cnt"></span>
+            </div>
+          </div>
+          <div id="choiceArea"></div>
+        </div>
+        <div class="dock">
+          <div class="t" data-sheet="map"><b>图</b>地图</div>
+          <div class="t" data-sheet="bag"><b>袋</b>储物袋</div>
+          <div class="t" data-sheet="codex"><b>鉴</b>图鉴</div>
+          <div class="t" data-go="book"><b>书</b>九鼎录</div>
+          <div class="ling" data-sheet="ling">灵 · 问</div>
+        </div>
+      </div>
+      <div class="handoff" id="handoff" style="display:none">
+        <img src="../worlds/jiuding/art/people/yinyue.webp" alt="">
+        <div>你在 Mac 上走了一步——灵境跟过来了，现在到了门口。</div>
+      </div>
+    </section>
+
+    <!-- C: full text -->
+    <section class="view" data-v="full">
+      <div class="hud" style="top:50px">
+        <div class="x" data-go="stage">‹</div>
+        <div class="where"><div class="h">全文</div><div class="p">马三来了</div></div>
+      </div>
+      <div class="full" id="fullText">
+        <div class="hero" style="background-image:url(../worlds/jiuding/art/people/masan.webp)"></div>
+      </div>
+    </section>
+
+    <!-- D: book (reader) -->
+    <section class="view" data-v="book">
+      <div class="hud" style="top:50px"><div class="x" data-go="stage">‹</div>
+        <div class="where" style="color:var(--text);text-shadow:none"><div class="h">九鼎录</div><div class="p" style="opacity:1;color:var(--faint)">第一回 · 一只破碗辞残照　半张烙饼换妖王</div></div></div>
+      <div class="full" style="padding-top:110px">
+        <p>收租的是马三。这马三是马家老爷的远房侄子，长得跟一扇门似的——其实说他像门，还是抬举了门……</p>
+        <div class="end">The existing 九鼎录 reader, opened at the passage you're playing. Back returns to the stage.</div>
+      </div>
+    </section>
+
+    <div class="scrim" id="scrim"></div>
+
+    <div class="sheet tall" data-s="ling">
+      <div class="grab"></div>
+      <div class="hd"><b>灵</b><span>说书人 · 只在需要时说话</span><span class="close" data-close>完成</span></div>
+      <div class="bd">
+        <div class="msg ling">马三的短棍，还在门框上一下一下地敲。你想好了吗？</div>
+        <div class="msg me">墙上那张弓，能不能先藏起来？</div>
+        <div class="msg ling">弓挂得高，马三的眼睛早已在上头停了两回——这会儿去摘，他看得见。</div>
+        <div class="qa"><span>悔棋</span><span>存档</span><span>读档</span><span>今日传闻</span></div>
+        <div class="inputbar">问灵…<span class="mic">🎙</span></div>
+      </div>
+    </div>
+
+    <div class="sheet" data-s="bag">
+      <div class="grab"></div>
+      <div class="hd"><b>储物袋</b><span>6 / 12</span><span class="close" data-close>完成</span></div>
+      <div class="bd">
+        <div class="money"><span>铜钱 <b>37</b></span><span>灵石 <b>0</b></span></div>
+        <div class="grid">
+          <div class="cell"><img src="../worlds/jiuding/art/items/old-bow.webp" alt="">爷爷的弓</div>
+          <div class="cell"><img src="../worlds/jiuding/art/items/luobo.webp" alt=""><em>3</em>萝卜</div>
+          <div class="cell"><img src="../worlds/jiuding/art/items/straw-cloak.webp" alt="">蓑衣</div>
+          <div class="cell"><img src="../worlds/jiuding/art/items/deer-hide.webp" alt="">鹿皮</div>
+          <div class="cell"><img src="../worlds/jiuding/art/items/ganliang.webp" alt=""><em>2</em>干粮</div>
+          <div class="cell"><img src="../worlds/jiuding/art/items/moon-bell.webp" alt="">银月铃</div>
+        </div>
+        <p style="font-size:12.5px;color:var(--faint);margin-top:14px">Tap an item for its card. ⋯ or long-press for 服用 · 佩戴 · 丢弃, all in one menu.</p>
+      </div>
+    </div>
+
+    <div class="sheet tall" data-s="codex">
+      <div class="grab"></div>
+      <div class="hd"><b>图鉴</b><span>1 / 7 见过</span><span class="close" data-close>完成</span></div>
+      <div class="bd crt">
+        <img src="../worlds/jiuding/art/plates/fuzhu-1597-p108.jpg" alt="">
+        <div class="nm">夫诸</div><div class="py">fū zhū</div>
+        <q>有兽焉，其状如白鹿而四角，名曰夫诸，见则其邑大水。</q>
+        <div class="src">《山海经 · 中山经》　1597 胡文煥本</div>
+      </div>
+    </div>
+
+    <div class="sheet tall" data-s="map">
+      <div class="grab"></div>
+      <div class="hd"><b>九州</b><span>徐州 · 蒙山</span><span class="close" data-close>完成</span></div>
+      <div class="bd map">
+        <img src="../worlds/jiuding/art/map/jiuzhou-ink.webp" alt="">
+        <div class="here">● 你在：石坳村 · 你家<br>路：东坡 · 老槐树（村口） · 后山<br><span style="color:var(--faint)">Pinch to zoom. Tapping a road asks 「去东坡？」, and Move goes through the rules.</span></div>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="notes" id="notes"></div>
+</div>
+
+<script>
+const A = '../worlds/jiuding/art/people/';
+const beats = [
+  { who: '', t: '那天傍晚，天边的云忽然一暗，一阵狂风卷着落叶灌进村来，村口的狗一齐闭上了嘴。' },
+  { who: '', t: '只听得「砰」的一声大响，沈家的柴门飞了出去，在半空里转了三个圈子，不偏不倚，落在隔壁阿禾家的菜地里，砸扁了一颗白菜。' },
+  { who: '马三', img: 'masan.webp', t: '「山——租——」' },
+  { who: '爹', img: 'baba.webp', t: '「三爷！」' },
+  { who: '马三', img: 'masan.webp', t: '「我还没说完。」' },
+  { who: '爹', img: 'baba.webp', t: '「我先跪着。您慢慢说。」' },
+  { who: '马三', img: 'masan.webp', t: '「……还差一张鹿皮，二十斤肉。立冬那天晌午，我来拿。拿不着——那张弓，我就收了。」' },
+  { who: '银月', img: 'yinyue-fox.webp', yy: true, t: '⟪那张弓，你爷爷的。别让他拿走。⟫' },
+  { who: '马小宝', img: 'maxiaobao.webp', t: '「沈——小——满，想吃吗？学声狗叫，给你舔一口。」' },
+];
+const choices = [
+  { t: '照他的话，原样说回去', main: true },
+  { t: '动手' },
+];
+const looks = ['墙上的旧弓', '灶台上的碗', '马三的短棍'];
+
+let i = 0, auto = false, timer = null;
+const $ = s => document.querySelector(s);
+function render() {
+  const b = beats[i];
+  $('#who').className = 'who' + (b.yy ? ' yy' : '');
+  $('#who').innerHTML = b.who ? (b.img ? `<img src="${A + b.img}" alt="">` : '') + b.who : '';
+  $('#txt').className = 't' + (b.yy ? ' yy' : '');
+  $('#txt').textContent = b.t;
+  $('#cnt').textContent = `${i + 1} / ${beats.length}`;
+  const last = i === beats.length - 1;
+  $('#nextMark').style.display = last ? 'none' : '';
+  $('#choiceArea').innerHTML = last
+    ? `<div class="looks">${looks.map(l => `<span class="look">看 · ${l}</span>`).join('')}</div>
+       <div class="choices">${choices.map(c => `<div class="choice${c.main ? ' main' : ''}">${c.t}</div>`).join('')}</div>`
+    : '';
+  $('#box').style.flex = last ? '0 0 auto' : '1';
+}
+function step() { if (i < beats.length - 1) { i++; render(); } else stopAuto(); }
+function stopAuto() { auto = false; clearTimeout(timer); $('#auto').classList.remove('on'); $('#auto').textContent = '▶ 自动'; }
+function loop() { if (!auto) return; timer = setTimeout(() => { step(); if (i < beats.length - 1) loop(); else stopAuto(); }, 900 + beats[i].t.length * 70); }
+$('#box').addEventListener('click', e => {
+  if (e.target.closest('#auto')) { auto = !auto; $('#auto').classList.toggle('on', auto); $('#auto').textContent = auto ? '❚❚ 自动' : '▶ 自动'; if (auto) loop(); else stopAuto(); return; }
+  if (e.target.closest('#fullBtn')) { show('full'); return; }
+  stopAuto(); step();
+});
+let pressT;
+$('#box').addEventListener('pointerdown', () => { pressT = setTimeout(() => { i = beats.length - 1; render(); }, 600); });
+['pointerup', 'pointerleave'].forEach(ev => $('#box').addEventListener(ev, () => clearTimeout(pressT)));
+
+$('#fullText').insertAdjacentHTML('beforeend',
+  beats.map(b => `<p${b.yy ? ' style="color:var(--yinyue)"' : ''}>${b.who ? b.who + '：' : ''}${b.t}</p>`).join('') +
+  '<div class="end">— the passage ends; back to the stage for the choice —</div>');
+
+const screens = [
+  { id: 'home', k: 'A', n: '银月 · 入口',
+    notes: `<h2>Entry through Yinyue</h2><ul>
+<li>The app opens on her page. When a game is in play she shows a 灵境 card and words it herself: where you stopped, plus one hook.</li>
+<li>The card shows the scene art, the place and 灵气. 继续 opens the stage full-screen.</li>
+<li>A plain 灵境 row also sits in the drawer under 九鼎录. Closing the stage (✕) returns you to where you came from.</li></ul>
+<div class="ask"><b>To discuss:</b> should she also nudge you when you're away, e.g. 「灵气满了」 or 「立冬还有三天」? That would go through her notification budget.</div>` },
+  { id: 'stage', k: 'B', n: '舞台 · 段落',
+    notes: `<h2>The stage</h2><ul>
+<li>Top 46% is the scene art, full-bleed. The HUD floats over it: ✕, 回目 + place, and 灵气.</li>
+<li>Below is the dialogue box. <b>Tap</b> = next beat. A speaker gets a portrait chip, and Yinyue's ⟪⟫ lines show in her blue.</li>
+<li><b>▶ 自动</b> plays on by itself, with 评书 audio where it exists (timed by length in this mock).</li>
+<li><b>≡ 全文</b> opens the passage as a scroll. <b>Long-press</b> the box to skip to the end.</li>
+<li>At the end, choices come up as big thumb buttons, the main exit filled. 看 chips (the scene's <code>look</code>) sit above them.</li>
+<li>Dock: 图 · 袋 · 鉴 · 书 + 「灵 · 问」, which pulls up Ling.</li></ul>
+<div class="ask"><b>To discuss:</b> the art stays fixed per scene (the person who speaks only gets a chip). Or should the big art swap to whoever speaks, VN style?</div>` },
+  { id: 'full', k: 'C', n: '全文',
+    notes: `<h2>全文 — read it as text</h2><ul>
+<li>The same passage as one scroll, with the art as a hero image. It's for long 外门 stretches (27 passages, ~124 beats) when tapping wears thin.</li>
+<li>Back (‹) returns to the stage at the end of the passage, so the choice is waiting.</li></ul>
+<div class="ask"><b>To discuss:</b> should 全文 be remembered as your default reading mode once you pick it?</div>` },
+  { id: 'ling', k: 'D', n: '灵 · 问', stage: true, sheet: 'ling',
+    notes: `<h2>Ling in a pull-up sheet</h2><ul>
+<li>Ling speaks only when needed, so she lives under the stage, not over it.</li>
+<li>Free text + 🎙 voice. Quick chips for her steer tools: 悔棋 · 存档 · 读档 · 今日传闻. Restart/Load/Forget still ask once in the world's words.</li>
+<li>When she <i>does</i> speak unasked (a ruling, a fight call), a one-line toast rises from the dock; tapping it opens this sheet.</li></ul>
+<div class="ask"><b>To discuss:</b> on the phone, voice-first? Hold 「灵」 to talk, release to send.</div>` },
+  { id: 'bag', k: 'E', n: '储物袋', stage: true, sheet: 'bag',
+    notes: `<h2>储物袋</h2><ul>
+<li>A half-height sheet: money line, then a 4-column grid with counts.</li>
+<li>Tap = the item card. ⋯ / long-press = one menu (服用 · 佩戴 · 丢弃), per the item-menu law; no swipe.</li>
+<li>These are page verbs, so they go straight to the rules with no Ling turn.</li></ul>` },
+  { id: 'codex', k: 'F', n: '图鉴 · 夫诸', stage: true, sheet: 'codex',
+    notes: `<h2>图鉴</h2><ul>
+<li>The 1597 woodcut, the name with its pinyin, and the 山海经 line with its source.</li>
+<li>When a creature first appears in a scene, the same card rises over the stage once, and then it's filed here.</li></ul>
+<div class="ask"><b>To discuss:</b> fights. On the Mac they're a board. On the phone I'd make them a full-screen card turn: your 五行 cards in a fan along the bottom, the beast on top. That's its own design round.</div>` },
+  { id: 'map', k: 'G', n: '地图', stage: true, sheet: 'map',
+    notes: `<h2>地图</h2><ul>
+<li>The ink 九州 map, pinch-to-zoom, with you marked. The roads from here are listed under it as taps.</li>
+<li>Tapping a road asks once, then Move runs through the rules, the same as the Mac.</li></ul>` },
+  { id: 'handoff', k: 'H', n: 'Mac ⇄ 手机', stage: true, handoff: true,
+    notes: `<h2>One save, both screens</h2><ul>
+<li>The phone and the Mac drive the same save through the same rules, and Ling's session is shared.</li>
+<li>Whichever screen moves last holds the stage. The other quietly follows, and Yinyue says so in one line (her words, not the code's).</li>
+<li>The Mac must be on. If it's asleep, the card on her page says so in her words, and the book still reads offline.</li></ul>
+<div class="ask"><b>To discuss:</b> Mac asleep = no play is the biggest phone weakness. Is that acceptable for now, with phone-only play (cloud model + cloud save) as a later step?</div>` },
+  { id: 'book', k: 'I', n: '书 · 九鼎录',
+    notes: `<h2>书</h2><ul>
+<li>Opens the existing phone 九鼎录 reader at the passage in play. The game and the book stay one thumb apart.</li></ul>` },
+];
+function show(v, sheet, handoff) {
+  document.querySelectorAll('.view').forEach(e => e.classList.toggle('on', e.dataset.v === v));
+  const scr = $('#screen');
+  scr.classList.toggle('show', !!sheet);
+  document.querySelectorAll('.sheet').forEach(e => e.classList.toggle('on', e.dataset.s === sheet));
+  $('#handoff').style.display = handoff ? 'flex' : 'none';
+  $('#sceneArt').classList.toggle('dimmed', !!handoff);
+}
+function pick(s) {
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.id === s.id));
+  $('#notes').innerHTML = s.notes;
+  if (s.stage) show('stage', s.sheet, s.handoff); else show(s.id);
+}
+$('#nav').innerHTML = screens.map(s => `<button data-id="${s.id}"><b>${s.k}</b>${s.n}</button>`).join('');
+$('#nav').addEventListener('click', e => { const b = e.target.closest('button'); if (b) pick(screens.find(s => s.id === b.dataset.id)); });
+document.addEventListener('click', e => {
+  const g = e.target.closest('[data-go]'); if (g) { const s = screens.find(x => x.id === g.dataset.go); s ? pick(s) : show(g.dataset.go); }
+  const sh = e.target.closest('[data-sheet]'); if (sh) pick(screens.find(x => x.sheet === sh.dataset.sheet));
+  if (e.target.closest('[data-close]') || e.target.id === 'scrim') pick(screens.find(x => x.id === 'stage'));
+});
+render();
+pick(screens[0]);
+</script>
+</body>
+</html>
