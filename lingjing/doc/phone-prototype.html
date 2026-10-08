@@ -180,6 +180,55 @@ nav button b { font-family: var(--serif); font-weight: 600; margin-right: 6px; c
 .handoff img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
 .dimmed { filter: saturate(.6) brightness(.85); }
 
+/* 初见 + people row */
+.people { position: absolute; top: 96px; left: 14px; display: flex; gap: 6px; z-index: 30; }
+.people img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,.8); }
+.meet { position: absolute; inset: 0; z-index: 45; display: none; flex-direction: column; justify-content: flex-end;
+  background: center 20%/cover no-repeat; }
+.meet.on { display: flex; animation: rise .5s ease-out; }
+.meet::before { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 45%, rgba(0,0,0,.75)); }
+.meet div { position: relative; color: #fff; padding: 0 22px 120px; }
+.meet b { font: 600 30px var(--serif); display: block; }
+.meet span { font-size: 13px; opacity: .85; }
+@keyframes rise { from { opacity: 0; transform: scale(1.04); } }
+.roads { display: flex; gap: 6px; padding: 8px 0 0; font-size: 12.5px; color: var(--faint); align-items: center; overflow-x: auto; }
+.roads span { flex: none; padding: 5px 10px; border-radius: 999px; border: 1px dashed var(--line); color: var(--dim); }
+
+/* moments */
+.moment { flex: 1; display: flex; flex-direction: column; padding: 100px 18px 30px; gap: 14px; background: linear-gradient(var(--sky-a), var(--sky-b)); }
+.moment .title { font: 600 20px var(--serif); text-align: center; }
+.moment .hint { font-size: 13px; color: var(--dim); text-align: center; line-height: 1.6; }
+.bowfield { flex: 1; border-radius: 18px; background: center/cover url(../worlds/jiuding/art/people/xiaoman.webp); position: relative; overflow: hidden; }
+.bowfield::after { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,.25); }
+.meter { height: 14px; border-radius: 7px; background: var(--raised); position: relative; overflow: hidden; border: 1px solid var(--line); }
+.meter .zone { position: absolute; left: 68%; width: 12%; top: 0; bottom: 0; background: var(--jade-soft); border-left: 2px solid var(--jade); border-right: 2px solid var(--jade); }
+.meter .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--ling); }
+.hold { height: 84px; border-radius: 42px; background: var(--ling); color: var(--surface); font: 600 20px var(--serif);
+  display: grid; place-items: center; user-select: none; cursor: pointer; touch-action: none; }
+.foe { display: flex; gap: 12px; align-items: center; background: var(--surface); border-radius: 16px; padding: 10px; border: 1px solid var(--line); }
+.foe img { width: 96px; height: 64px; object-fit: cover; border-radius: 10px; }
+.bar { height: 6px; border-radius: 3px; background: var(--raised); margin-top: 6px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--seal); }
+.bar.me i { background: var(--jade); }
+.log { flex: 1; font: 14.5px/1.7 var(--serif); color: var(--dim); background: var(--surface); border-radius: 14px; padding: 12px 14px; border: 1px solid var(--line); }
+.hand { display: flex; justify-content: center; gap: 0; height: 150px; align-items: flex-end; }
+.card { width: 86px; height: 128px; border-radius: 10px; background: center/cover var(--raised); border: 2px solid var(--surface);
+  box-shadow: 0 4px 12px rgba(0,0,0,.2); margin: 0 -10px; transition: transform .15s; cursor: pointer; position: relative; }
+.card:nth-child(1) { transform: rotate(-10deg) translateY(10px); } .card:nth-child(2) { transform: rotate(-4deg); }
+.card:nth-child(3) { transform: rotate(4deg); } .card:nth-child(4) { transform: rotate(10deg) translateY(10px); }
+.card:hover { transform: translateY(-24px) rotate(0); z-index: 2; }
+.card span { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,.55); color: #fff; font: 12px var(--serif); text-align: center; padding: 3px 0; border-radius: 0 0 8px 8px; }
+.born { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.born .stone { height: 150px; border-radius: 14px; background: radial-gradient(circle at 50% 45%, #fff8, transparent 40%), linear-gradient(#cfc6b4, #9d9482); }
+.field { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: 15px; color: var(--dim); background: var(--ground); }
+.row2 { display: flex; gap: 10px; } .row2 > * { flex: 1; text-align: center; }
+.ghost { border: 1px solid var(--line); border-radius: 14px; padding: 13px; color: var(--dim); font: 15px var(--serif); }
+.closecard { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 0 30px;
+  background: var(--surface); text-align: center; }
+.closecard .seal { color: var(--seal); border: 2px solid var(--seal); padding: 6px 12px; font: 600 15px var(--serif); border-radius: 4px; }
+.closecard .hm { font: 600 21px/1.7 var(--serif); }
+.closecard .did { font: 14.5px/1.8 var(--serif); color: var(--dim); }
+
 @media (max-width: 1080px) {
   .wrap { grid-template-columns: 1fr; justify-items: center; }
   nav { display: flex; flex-wrap: wrap; gap: 4px; max-width: 420px; }
@@ -226,7 +275,9 @@ nav button b { font-family: var(--serif); font-weight: 600; margin-right: 6px; c
           <div class="where"><div class="h">卷一 · 第一回</div><div class="p">石坳村 · 你家 · 傍晚</div></div>
           <div class="qi">灵气<i></i></div>
         </div>
-        <div class="scene" id="sceneArt" style="background-image:url(../worlds/jiuding/art/people/masan.webp)"></div>
+        <div class="scene" id="sceneArt"></div>
+        <div class="people" id="people"></div>
+        <div class="meet" id="meet" style="background-image:url(../worlds/jiuding/art/people/masan.webp)"><div><b>马三</b><span>马家老爷的远房侄子 · 收租的</span></div></div>
         <div class="dlg">
           <div class="box" id="box">
             <div class="who" id="who"></div>
@@ -251,6 +302,61 @@ nav button b { font-family: var(--serif); font-weight: 600; margin-right: 6px; c
       <div class="handoff" id="handoff" style="display:none">
         <img src="../worlds/jiuding/art/people/yinyue.webp" alt="">
         <div>你在 Mac 上走了一步——灵境跟过来了，现在到了门口。</div>
+      </div>
+    </section>
+
+    <!-- board: 射鹿 -->
+    <section class="view" data-v="board">
+      <div class="hud" style="top:50px"><div class="x" data-go="stage">‹</div>
+        <div class="where" style="color:var(--text);text-shadow:none"><div class="h">射鹿</div><div class="p" style="opacity:1;color:var(--faint)">蒙山 · 林间 · 清晨</div></div></div>
+      <div class="moment">
+        <div class="bowfield"></div>
+        <div class="hint">按住拉弓，松手放箭。<br>停在绿格里。</div>
+        <div class="meter"><div class="zone"></div><div class="fill" id="fill"></div></div>
+        <div class="hold" id="hold">按住 · 拉弓</div>
+      </div>
+    </section>
+
+    <!-- duel -->
+    <section class="view" data-v="duel">
+      <div class="hud" style="top:50px"><div class="x" data-go="stage">‹</div>
+        <div class="where" style="color:var(--text);text-shadow:none"><div class="h">斗法 · 蠪侄</div><div class="p" style="opacity:1;color:var(--faint)">山门 · 试炼 · 可再来</div></div>
+        <div class="qi" style="background:var(--raised);color:var(--dim)">体力 82</div></div>
+      <div class="moment" style="gap:10px">
+        <div class="foe"><img src="../worlds/jiuding/art/longzhi.webp" alt=""><div style="flex:1"><b style="font-family:var(--serif)">蠪侄</b>
+          <div style="font-size:12px;color:var(--faint)">九尾九首 · 虎爪</div><div class="bar"><i style="width:64%"></i></div></div></div>
+        <div class="log">蠪侄九个脑袋一齐叫了一声，像婴儿哭。<br>你退了半步——它扑空了。<br><span style="color:var(--ling)">你的回合。出一张牌。</span></div>
+        <div style="font-size:12px;color:var(--dim)">你 · 练气一层<div class="bar me"><i style="width:80%"></i></div></div>
+        <div class="hand">
+          <div class="card" style="background-image:url(../worlds/jiuding/art/cards/jianying.webp)"><span>剑影</span></div>
+          <div class="card" style="background-image:url(../worlds/jiuding/art/cards/qingteng.webp)"><span>青藤</span></div>
+          <div class="card" style="background-image:url(../worlds/jiuding/art/cards/huiqi.webp)"><span>回气</span></div>
+          <div class="card" style="background-image:url(../worlds/jiuding/art/cards/jingang.webp)"><span>金刚</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- born / root test -->
+    <section class="view" data-v="born">
+      <div class="hud" style="top:50px"><div class="x" data-go="stage">‹</div>
+        <div class="where" style="color:var(--text);text-shadow:none"><div class="h">测灵根</div><div class="p" style="opacity:1;color:var(--faint)">沉鼎观 · 大殿</div></div></div>
+      <div class="moment">
+        <div class="born">
+          <div class="stone"></div>
+          <div style="font:15px/1.7 var(--serif)">测灵石凉凉的。执事道：「生辰报来。」</div>
+          <div class="field">生辰 · 年 / 月 / 日（可不填）</div>
+          <div class="row2"><div class="choice main">测</div><div class="ghost">不填 · 让石头读</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 回 closing card -->
+    <section class="view" data-v="close">
+      <div class="closecard">
+        <div class="seal">第一回 · 完</div>
+        <div class="hm">一只破碗辞残照<br>半张烙饼换妖王</div>
+        <div class="did">你没学狗叫。碗碎了一只，弓还在墙上。<br>山里有只狐狸，记住了你。</div>
+        <div class="choice main" style="width:100%;text-align:center" data-go="stage">合上 · 第二回</div>
       </div>
     </section>
 
@@ -333,15 +439,13 @@ nav button b { font-family: var(--serif); font-weight: 600; margin-right: 6px; c
 <script>
 const A = '../worlds/jiuding/art/people/';
 const beats = [
-  { who: '', t: '那天傍晚，天边的云忽然一暗，一阵狂风卷着落叶灌进村来，村口的狗一齐闭上了嘴。' },
-  { who: '', t: '只听得「砰」的一声大响，沈家的柴门飞了出去，在半空里转了三个圈子，不偏不倚，落在隔壁阿禾家的菜地里，砸扁了一颗白菜。' },
-  { who: '马三', img: 'masan.webp', t: '「山——租——」' },
-  { who: '爹', img: 'baba.webp', t: '「三爷！」' },
-  { who: '马三', img: 'masan.webp', t: '「我还没说完。」' },
-  { who: '爹', img: 'baba.webp', t: '「我先跪着。您慢慢说。」' },
-  { who: '马三', img: 'masan.webp', t: '「……还差一张鹿皮，二十斤肉。立冬那天晌午，我来拿。拿不着——那张弓，我就收了。」' },
-  { who: '银月', img: 'yinyue-fox.webp', yy: true, t: '⟪那张弓，你爷爷的。别让他拿走。⟫' },
-  { who: '马小宝', img: 'maxiaobao.webp', t: '「沈——小——满，想吃吗？学声狗叫，给你舔一口。」' },
+  { t: '石坳村 · 你家 · 傍晚', cap: true },
+  { t: '那天傍晚，天边的云忽然一暗，一阵狂风卷着落叶灌进村来，村口的狗一齐闭上了嘴。小满放下手里的柴刀，叹了口气，心里知道，他来了。' },
+  { t: '只听得「砰」的一声大响，沈家的柴门飞了出去，在半空里转了三个圈子，不偏不倚，落在隔壁阿禾家的菜地里，砸扁了一颗白菜。' },
+  { t: '门口站着一个人，把夕阳挡得严严实实，正是马三。', meet: 'masan' },
+  { t: '马三拿短棍一下一下地敲着门框，拖长了声音道：「山——租——」话音未落，小满他爹已扑通一声跪倒，叫道：「三爷！」' },
+  { t: '马三道：「我还没说完。」他爹道：「我先跪着。您慢慢说。」' },
+  { t: '「……还差一张鹿皮，二十斤肉。立冬那天晌午，我来拿。拿不着——那张弓，我就收了。」' },
 ];
 const choices = [
   { t: '照他的话，原样说回去', main: true },
@@ -351,20 +455,27 @@ const looks = ['墙上的旧弓', '灶台上的碗', '马三的短棍'];
 
 let i = 0, auto = false, timer = null;
 const $ = s => document.querySelector(s);
+let met = false;
 function render() {
   const b = beats[i];
-  $('#who').className = 'who' + (b.yy ? ' yy' : '');
-  $('#who').innerHTML = b.who ? (b.img ? `<img src="${A + b.img}" alt="">` : '') + b.who : '';
-  $('#txt').className = 't' + (b.yy ? ' yy' : '');
+  $('#who').className = 'who';
+  $('#who').innerHTML = b.cap ? '' : '';
+  $('#txt').className = 't';
+  $('#txt').style.cssText = b.cap ? 'font-size:14px;color:var(--faint);letter-spacing:.1em' : '';
   $('#txt').textContent = b.t;
   $('#cnt').textContent = `${i + 1} / ${beats.length}`;
+  if (b.meet && !met) { met = true; $('#meet').classList.add('on'); }
+  $('#sceneArt').style.backgroundImage = met ? `url(${A}masan.webp)` : 'none';
+  $('#people').innerHTML = met ? `<img src="${A}masan.webp" alt="马三">` : '';
   const last = i === beats.length - 1;
   $('#nextMark').style.display = last ? 'none' : '';
   $('#choiceArea').innerHTML = last
     ? `<div class="looks">${looks.map(l => `<span class="look">看 · ${l}</span>`).join('')}</div>
-       <div class="choices">${choices.map(c => `<div class="choice${c.main ? ' main' : ''}">${c.t}</div>`).join('')}</div>`
+       <div class="choices">${choices.map(c => `<div class="choice${c.main ? ' main' : ''}">${c.t}</div>`).join('')}</div>
+       <div class="roads">或往<span>东坡</span><span>老槐树</span><span>阿禾家</span></div>`
     : '';
 }
+$('#meet').addEventListener('click', () => $('#meet').classList.remove('on'));
 function step() { if (i < beats.length - 1) { i++; render(); } else stopAuto(); }
 function stopAuto() { auto = false; clearTimeout(timer); $('#auto').classList.remove('on'); $('#auto').textContent = '▶ 自动'; }
 function loop() { if (!auto) return; timer = setTimeout(() => { step(); if (i < beats.length - 1) loop(); else stopAuto(); }, 900 + beats[i].t.length * 70); }
@@ -378,7 +489,7 @@ $('#box').addEventListener('pointerdown', () => { pressT = setTimeout(() => { i 
 ['pointerup', 'pointerleave'].forEach(ev => $('#box').addEventListener(ev, () => clearTimeout(pressT)));
 
 $('#fullText').insertAdjacentHTML('beforeend',
-  beats.map(b => `<p${b.yy ? ' style="color:var(--yinyue)"' : ''}>${b.who ? b.who + '：' : ''}${b.t}</p>`).join('') +
+  beats.filter(b => !b.cap).map(b => `<p>${b.t}</p>`).join('') +
   '<div class="end">— the passage ends; back to the stage for the choice —</div>');
 
 const screens = [
@@ -387,16 +498,38 @@ const screens = [
 <li>The app opens on her page. When a game is in play she shows a 灵境 card and words it herself: where you stopped, plus one hook.</li>
 <li>The card shows the scene art, the place and 灵气. 继续 opens the stage full-screen.</li>
 <li>A plain 灵境 row also sits in the drawer under 九鼎录. Closing the stage (✕) returns you to where you came from.</li></ul>
-<div class="ask"><b>To discuss:</b> should she also nudge you when you're away, e.g. 「灵气满了」 or 「立冬还有三天」? That would go through her notification budget.</div>` },
+<div class="ask"><b>To discuss:</b> in the story 银月 sleeps in the token from 修仙 through all of 冀州, so she can't be spoken to in-game. Is the phone's Yinyue on her page the same 银月 (then she shouldn't chat about the game while she sleeps), or the app's assistant standing outside the story?<br><br>And should she nudge you when you're away, e.g. 「灵气满了」 or 「立冬还有三天」? That would go through her notification budget.</div>` },
   { id: 'stage', k: 'B', n: '舞台 · 段落',
     notes: `<h2>The stage</h2><ul>
-<li>The scene art fills everything above the dialogue box, full-bleed. The HUD floats over it: ✕, 回目 + place, and 灵气.</li>
-<li>Below is the dialogue box. <b>Tap</b> = next beat. A speaker gets a portrait chip, and Yinyue's ⟪⟫ lines show in her blue.</li>
-<li><b>▶ 自动</b> plays on by itself, with 评书 audio where it exists (timed by length in this mock).</li>
-<li><b>≡ 全文</b> opens the passage as a scroll. <b>Long-press</b> the box to skip to the end.</li>
-<li>At the end, choices come up as big thumb buttons, the main exit filled. 看 chips (the scene's <code>look</code>) sit above them.</li>
-<li>Dock: 图 · 袋 · 鉴 · 书 + 「灵 · 问」, which pulls up Ling.</li></ul>
-<div class="ask"><b>To discuss:</b> the art stays fixed per scene (the person who speaks only gets a chip). Or should the big art swap to whoever speaks, VN style?</div>` },
+<li>The book has <b>no speaker lines</b>: every beat is narration, with dialogue inline in 「」. The box plays one paragraph per tap, the same as the Mac.</li>
+<li>No scene has its own picture. The top starts as pale ink with the scene's caption beat. The first time a person is named, their <b>初见</b> portrait rises full-screen (tap to dismiss), then fills the top and sits as a chip in the people row. There are 28 of these across chapter 1.</li>
+<li><b>▶ 自动</b> advances on its own with the 评书 clip per paragraph. <b>≡ 全文</b> opens the passage as a scroll. <b>Long-press</b> skips.</li>
+<li>At the end: 看 chips, then the choices (most scenes have 1, a few up to 4), then 「或往」 roads in small dashed pills.</li>
+<li>Dock: 图 · 袋 · 鉴 · 书 + 「灵 · 问」.</li></ul>
+<div class="ask"><b>To discuss:</b> the size of it. Chapter 1 is 145 passages, 2,311 beats, ~204k 字. Is tap-a-paragraph right for a phone, or should 全文 (scroll) be the default and VN tapping the option?</div>` },
+  { id: 'meet', k: 'B2', n: '初见', meet: true,
+    notes: `<h2>初见 — first sight</h2><ul>
+<li>The portrait (640×960) takes the whole screen once, with name and one line, then settles at the top of the stage and into the people row.</li>
+<li>Beasts work the same way, using their <code>appear</code> lines (夫诸, 蠪侄).</li></ul>` },
+  { id: 'board', k: 'J', n: '小游戏 · 射鹿',
+    notes: `<h2>Boards — 12 in chapter 1</h2><ul>
+<li>Most are hold/release timing: 射鹿, 洗髓, 拽爹, 小周天, 罚球, 黑地十一步… Those suit a thumb: one big HOLD pad at the bottom and the meter above it. (Try it: hold the button.)</li>
+<li>Three are puzzles: 洛书 3×3, 七巧板, 守夜 (pick a spot). They need their own phone layouts.</li>
+<li>A won board opens the exit, and Ling hears <code>[scene] won</code>.</li></ul>
+<div class="ask"><b>To discuss:</b> the spine can't pass without them. Port all 12 natively in Flutter (one shared hold-pad widget covers ~9), or let the first slice end before the first board?</div>` },
+  { id: 'duel', k: 'K', n: '斗法',
+    notes: `<h2>Duels — 8 card fights</h2><ul>
+<li>Portrait layout: the foe on top with its HP, the round log in the middle, your hand fanned along the bottom for the thumb. Tap to lift a card, tap again to play it.</li>
+<li>体力 sits in the HUD. Trials like 蠪侄 can be retried.</li>
+<li>It's battle.js (~815 lines) on the Mac, a real port. The rules stay on the Mac; the phone only draws and sends the played card.</li></ul>` },
+  { id: 'born', k: 'L', n: '测灵根',
+    notes: `<h2>生辰 · 测灵根</h2><ul>
+<li>A page card, never a chat turn: the 测灵石, one date field (optional), then 测 or 不填.</li>
+<li>The result shows the 灵根 traits card.</li></ul>` },
+  { id: 'close', k: 'M', n: '回 · 完',
+    notes: `<h2>The 回 closing card</h2><ul>
+<li>About 12 in chapter 1: the 回目, what you did, then 合上 into the next 回.</li>
+<li>A natural place to stop on a phone. Yinyue's card on her page picks up from here.</li></ul>` },
   { id: 'full', k: 'C', n: '全文',
     notes: `<h2>全文 — read it as text</h2><ul>
 <li>The same passage as one scroll, with the art as a hero image. It's for long 外门 stretches (27 passages, ~124 beats) when tapping wears thin.</li>
@@ -443,7 +576,9 @@ function show(v, sheet, handoff) {
 function pick(s) {
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.id === s.id));
   $('#notes').innerHTML = s.notes;
+  if (s.meet) { i = 3; met = false; render(); show('stage'); return; }
   if (s.stage) show('stage', s.sheet, s.handoff); else show(s.id);
+  if (s.id === 'stage') { i = 0; met = false; $('#meet').classList.remove('on'); render(); }
 }
 $('#nav').innerHTML = screens.map(s => `<button data-id="${s.id}"><b>${s.k}</b>${s.n}</button>`).join('');
 $('#nav').addEventListener('click', e => { const b = e.target.closest('button'); if (b) pick(screens.find(s => s.id === b.dataset.id)); });
@@ -452,6 +587,10 @@ document.addEventListener('click', e => {
   const sh = e.target.closest('[data-sheet]'); if (sh) pick(screens.find(x => x.sheet === sh.dataset.sheet));
   if (e.target.closest('[data-close]') || e.target.id === 'scrim') pick(screens.find(x => x.id === 'stage'));
 });
+let hv = 0, ht = null;
+$('#hold').addEventListener('pointerdown', () => { hv = 0; clearInterval(ht); ht = setInterval(() => { hv = Math.min(100, hv + 1.6); $('#fill').style.width = hv + '%'; }, 16); $('#hold').textContent = '拉……'; });
+['pointerup', 'pointerleave'].forEach(ev => $('#hold').addEventListener(ev, () => { if (!ht) return; clearInterval(ht); ht = null;
+  $('#hold').textContent = hv >= 68 && hv <= 80 ? '中！鹿倒了' : hv < 68 ? '箭软了 · 再来' : '弓拉过了 · 再来'; }));
 render();
 pick(screens[0]);
 </script>
