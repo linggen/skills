@@ -118,9 +118,9 @@ test('Go asks on its first call, 去 then goes; the asking is used up', () => {
   assert.notEqual(g.state().scene, '01-altar');
   assert.match(g.cli(2, 'look', '--said=去', '--for=ling').then, /call Go \{scene: 01-altar\} now/);
   // A confirmation for one scene is not one for another.
-  assert.equal(g.cli(2, 'go', '--scene=02-arrive', '--for=ling').refused, 'not-confirmed');
-  assert.equal(g.cli(3, 'go', '--scene=02-arrive', '--for=ling').scene.id, '02-arrive');
-  assert.equal(g.state().scene, '02-arrive');
+  assert.equal(g.cli(2, 'go', '--scene=01-deep', '--for=ling').refused, 'not-confirmed');
+  assert.equal(g.cli(3, 'go', '--scene=01-deep', '--for=ling').scene.id, '01-deep');
+  assert.equal(g.state().scene, '01-deep');
   assert.equal(g.state().confirm, undefined);
   assert.equal(g.cli(4, 'go', '--scene=01-altar', '--for=ling').refused, 'not-confirmed', 'once only');
   // An unknown scene is the verb's own refusal, not a question.
@@ -136,9 +136,21 @@ test('Go: 再想想 lets it be; the asking expires after ten minutes; English as
   assert.equal(g.cli(14, 'go', '--scene=01-altar', '--for=ling').refused, 'not-confirmed', 'expired');
   assert.notEqual(g.state().scene, '01-altar');
   g.write({ ...g.state(), lang: 'en', lang_set: true });
-  const en = g.cli(15, 'go', '--scene=02-arrive', '--for=ling');
-  assert.equal(en.ask.question, 'Go straight to The Pu? What lies on the road is passed by.');
+  const en = g.cli(15, 'go', '--scene=01-deep', '--for=ling');
+  assert.equal(en.ask.question, 'Go straight to The Zhang deeps? What lies on the road is passed by.');
   assert.deepEqual(en.ask.options.map(o => o.label), ['Go', 'Not yet']);
+});
+
+test('Go never steps past the 卷 wall: a chapter still being written (兖, 卷二) is refused not-open, asked or not (2026-10-08)', () => {
+  const g = game(); played(g);
+  const asked = g.cli(1, 'go', '--scene=02-arrive', '--for=ling');
+  assert.equal(asked.refused, 'not-open');
+  assert.equal(asked.chapter, '02-yan');
+  assert.match(asked.coming, /即将开放|coming soon/);
+  assert.equal(g.state().confirm, undefined, 'nothing to ask about');
+  assert.equal(g.cli(2, 'go', '--scene=03-arrive').refused, 'not-open', 'the page too, and every 卷 behind it');
+  assert.notEqual(g.state().scene, '02-arrive');
+  assert.ok(!g.cli(3, 'go', '--scene=nope').scenes.includes('02-arrive'), 'the scenes there are: 卷一 only');
 });
 
 test('the page\'s own calls (no reader) are never gated', () => {

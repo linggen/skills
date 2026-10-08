@@ -18,7 +18,7 @@
 import { fill, pick } from '../state.mjs';
 import { sceneBrief } from './look.mjs';
 import { saveBrief, saveOf } from './worlds.mjs';
-import { atScene, placeBrief } from './world.mjs';
+import { atScene, chapterOpen, placeBrief } from './world.mjs';
 
 export const CONFIRM_TTL_MS = 10 * 60 * 1000;
 /* The verb Ling calls → what it lets go. */
@@ -49,7 +49,7 @@ function saveName(save, lang) {
    the player's made scenes. Null otherwise — the verb refuses it itself. */
 function sceneTo(content, state, id, now) {
   const chapter = Object.values(content?.chapters ?? {}).find(c => c.scenes[id]);
-  if (chapter) return chapter.opens && new Date(chapter.opens) > now ? null : chapter.scenes[id];
+  if (chapter) return chapterOpen(content, chapter, now) ? chapter.scenes[id] : null;
   return state.made?.scenes?.[id] ?? null;
 }
 

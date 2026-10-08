@@ -43,6 +43,9 @@ function juanOpen(content, now = new Date()) {
   return waiting.length ? Math.max(1, Math.min(...waiting) - 1) : Infinity;
 }
 const ofJuan = (content, thing, now = new Date()) => (thing?.juan ?? 1) <= juanOpen(content, now);
+/* A chapter a scene may be stood in by id (Go): neither waiting itself nor of a 卷 behind the wall —
+   the same law the road and the chapter's end keep (a coming 兖, 卷二 on, is never entered). */
+const chapterOpen = (content, c, now = new Date()) => Boolean(c) && !waits(c, now) && (c.juan ?? 1) <= juanOpen(content, now);
 
 /* A province opens with its chapter: any chapter of it that has opened (or
    never waits) in a 卷 that is open. A province with no such chapter stays
@@ -297,4 +300,4 @@ function fittingPlace(content, state, from) {
    opens when it ends. */
 const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && carried(content, state);
 
-export { passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };
+export { chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };

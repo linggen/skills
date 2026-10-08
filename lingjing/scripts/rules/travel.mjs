@@ -8,8 +8,9 @@ import { clone, offerTasks, pay, refuse, spendStamina } from './core.mjs';
 import { advance, bookOf, directorBrief, GEAR_SLOTS, itemBrief, itemOf, onStoryRoad, questOf, settleErrands } from './errands.mjs';
 import { arriveOnRoad } from './road.mjs';
 import { forSale, sceneBrief, shelfOf, wordsOf } from './look.mjs';
-import { atScene, beatOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeSaid, provinceOpen, sceneOf, settlePlace, shutSay, STORY_CHARS, STORY_WORDS, tierIndex, tooHard } from './world.mjs';
+import { atScene, beatOf, chapterOpen, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeSaid, provinceOpen, sceneOf, settlePlace, shutSay, STORY_CHARS, STORY_WORDS, tierIndex, tooHard } from './world.mjs';
 import { enteredBeat, refusalBeat } from './story.mjs';
+import { comingOf } from './hui.mjs';
 import { enter } from './worlds.mjs';
 import { bagFull, pouchBrief, roomFor } from './pouch.mjs';
 import { findFragment } from './memories.mjs';
@@ -301,10 +302,13 @@ export function go(state, content, ctx, args) {
   const chapter = Object.values(content.chapters).find(c => c.scenes[id]);
   if (!chapter) {
     if (state.made?.scenes?.[id]) return enter(state, content, ctx, args);
-    const scenes = Object.values(content.chapters).filter(c => !c.opens || new Date(c.opens) <= ctx.now).flatMap(c => Object.keys(c.scenes));
+    const scenes = Object.values(content.chapters).filter(c => chapterOpen(content, c, ctx.now)).flatMap(c => Object.keys(c.scenes));
     return refuse('unknown-scene', null, { scenes: [...scenes, ...Object.keys(state.made?.scenes ?? {})] });
   }
-  if (chapter.opens && new Date(chapter.opens) > ctx.now) return refuse('not-open', null, { chapter: chapter.id, opens: chapter.opens });
+  // Not open: a date to come (with when), or still being written / of a 卷 behind the wall (「卷二 · 即将开放」).
+  if (!chapterOpen(content, chapter, ctx.now)) {
+    return refuse('not-open', null, { chapter: chapter.id, ...(chapter.opens && new Date(chapter.opens) > ctx.now ? { opens: chapter.opens } : { coming: comingOf(content, chapter, state.lang) }) });
+  }
   const s = clone(state);
   s.chapter = chapter.id; s.scene = id;
   if (s.made) s.made.at = null;
