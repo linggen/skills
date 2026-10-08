@@ -101,7 +101,8 @@ nav button b { font-family: var(--serif); font-weight: 600; margin-right: 6px; c
   padding: 5px 10px; border-radius: 999px; backdrop-filter: blur(6px); }
 .qi i { width: 44px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.25); position: relative; overflow: hidden; }
 .qi i::after { content: ""; position: absolute; inset: 0; width: 72%; background: var(--jade); border-radius: 3px; }
-.scene { flex: 1; min-height: 0; flex: none; background: center 30%/cover no-repeat; position: relative; }
+.scene { flex: 1; min-height: 0; background: center 30%/cover no-repeat; position: relative; }
+.scene { background-color: transparent; }
 .scene::after { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(0,0,0,.35), transparent 30%, transparent 75%, var(--sky-b)); }
 .dlg { flex: none; display: flex; flex-direction: column; padding: 4px 14px 0; min-height: 0; }
 .box { min-height: 150px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px 16px 10px;
@@ -183,8 +184,8 @@ nav button b { font-family: var(--serif); font-weight: 600; margin-right: 6px; c
 /* 初见 + people row */
 .people { position: absolute; top: 96px; left: 14px; display: flex; gap: 6px; z-index: 30; }
 .people img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,.8); }
-.meet { position: absolute; inset: 0; z-index: 45; display: none; flex-direction: column; justify-content: flex-end;
-  background: center 20%/cover no-repeat; }
+.meet { position: absolute; inset: 0; z-index: 45; display: none; flex-direction: column; justify-content: flex-end; background-color: var(--sky-b);
+  background: var(--sky-b) center 20%/cover no-repeat; }
 .meet.on { display: flex; animation: rise .5s ease-out; }
 .meet::before { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 45%, rgba(0,0,0,.75)); }
 .meet div { position: relative; color: #fff; padding: 0 22px 120px; }
