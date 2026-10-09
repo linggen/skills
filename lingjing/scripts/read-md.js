@@ -18,9 +18,9 @@ import { codexHtml, isSubject, rubyName } from './codex.js';
 /* The book's form — its 回 in order and numbered as walked (「第N回」 never
    stored), the 古/今 lines and the draft rule — is book-order.js's, shared
    with the game (rules/hui.mjs). */
-import { bookEntries, resolveId } from './book-order.js';
+import { LINES, bookEntries, numbered, resolveId } from './book-order.js';
 import { bare, keyOf, markIndex, plainOf, sentencesOf } from './book-diff.js';
-export { LINES, bookEntries, cnNumber, huiLabel, jinLabel, resolveId } from './book-order.js';
+export { LINES, bookEntries, cnNumber, huiLabel, jinLabel, lineLabel, resolveId } from './book-order.js';
 
 /// The entry an id names in the view — a 回's own id, an old chapter id its
 /// `aliases` map (序章上's `00` → `h01`), or a 回 folded into another
@@ -32,20 +32,22 @@ export function entryById(book, id, opts = {}) {
 }
 
 /// A 回's title as the page sets it, from book.json — never from the file's
-/// own title line: a 古 回's number with its 古 tag, a 今 interlude's 「今 · 一」
-/// (its own tag already), 草稿 in the draft view, then the 回目, one line per line.
+/// own title line: a 古 回's number with its 古 tag, a side line's 「今 · 一」 /
+/// 「未 · 序」 (its own tag already), 草稿 in the draft view, then the 回目, one line per line.
 export function huimuHtml(h) {
   const draft = h.draft ? '<span class="tag draft">草稿</span>' : '';
-  const tag = h.line === 'jin' ? '' : `<span class="tag">${esc(h.tag.zh)}</span>`;
+  const tag = !numbered(h.line) ? '' : `<span class="tag">${esc(h.tag.zh)}</span>`;
   return `<h1 class="huimu ${h.line}"><span class="hui">${esc(h.label.zh)}${tag}${draft}</span>`
     + `${(h.huimu?.zh ?? []).map((l) => `<span class="line">${esc(l)}</span>`).join('')}</h1>`;
 }
 
 // `# 第三回　上联　下联`: a 回's title line (full-width or plain spaces between).
 const HUIMU = /^(第[零一二三四五六七八九十百]+回)[\s　]+(\S+)[\s　]+(\S+)$/;
-// `# 今 · 一　一句话`: a 今 interlude's title line — 「今 · N」 (no 回 number),
-// then one line in 沈芒's voice. Tried before HUIMU.
-const HUIMU_JIN = /^(今\s*·\s*[零一二三四五六七八九十百]+)[\s　]+(\S.*)$/;
+// `# 今 · 一　一句话`, `# 未 · 序　一句话`: a side line's title line — its tag
+// and 「N」 or 「序」 (no 回 number), then one line. Tried before HUIMU. The
+// h1's class is the line's key (jin, wei), read off the tag.
+const SIDE = new Map(Object.entries(LINES).filter(([k]) => !numbered(k)).map(([k, t]) => [t.zh, k]));
+const HUIMU_SIDE = new RegExp(`^((${[...SIDE.keys()].join('|')})\\s*·\\s*(?:[零一二三四五六七八九十百]+|序))[\\s　]+(\\S.*)$`);
 
 /// The hero the world fixes (people.json `hero`, 2026-09-30): the name a page
 /// shows when nothing else names him.
@@ -317,8 +319,8 @@ export function renderMarkdown(md, opts = {}) {
       if (h[1].length === 1) firstH1 = true;
       const hm = title ? null : unit([h[2].trim()]);
       if (h[1].length === 1 && opts.hui?.huimu && !titled) { titled = true; heading = opts.hui.label.zh; out.push(huimuHtml(opts.hui)); continue; }
-      const jin = h[1].length === 1 && HUIMU_JIN.exec(h[2].trim());
-      if (jin) { heading = jin[1]; out.push(`<h1 class="huimu jin"><span class="hui">${esc(jin[1])}</span><span class="line">${esc(jin[2])}</span></h1>`); continue; }
+      const side = h[1].length === 1 && HUIMU_SIDE.exec(h[2].trim());
+      if (side) { heading = side[1]; out.push(`<h1 class="huimu ${SIDE.get(side[2])}"><span class="hui">${esc(side[1])}</span><span class="line">${esc(side[3])}</span></h1>`); continue; }
       const hui = h[1].length === 1 && HUIMU.exec(h[2].trim());
       if (hui) { heading = hui[1]; out.push(`<h1 class="huimu"><span class="hui">${esc(hui[1])}</span><span class="line">${esc(hui[2])}</span><span class="line">${esc(hui[3])}</span></h1>`); continue; }
       if (h[1].length <= 2) heading = h[2].replace(CLASSIC, '《$1》').replace(/\*\*/g, '');

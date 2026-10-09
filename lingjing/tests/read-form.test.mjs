@@ -3,6 +3,8 @@
 // 减轻今线的戏份」): 卷一 is eight 古 回 in four films of two, a 今 interlude
 // after each film, the book opening on 古一 and the 卷 ending on its last
 // interlude. Only the 古 回 are numbered (第一回 …); an interlude reads 「今 · 一」.
+// A third line, 未 (the future, Hanli 2026-10-09): one short coda after 古九,
+// 「未 · 序」 by its own `label`, the 科幻篇's seed — no 回 number either.
 // Numbers and tags are computed from book.json's order; 古 has a 回目 of two
 // matching seven-character lines, 今 one line; no subheadings inside a 回, a
 // scene break only; `draft` only for one held back (DESIGN.md § 五·五). An id
@@ -12,7 +14,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { bookEntries, cnNumber, entryById, huiLabel, huimuHtml, jinLabel, renderMarkdown, resolveId } from '../scripts/read-md.js';
+import { LINES, bookEntries, cnNumber, entryById, huiLabel, huimuHtml, jinLabel, lineLabel, renderMarkdown, resolveId } from '../scripts/read-md.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BOOK = path.join(ROOT, 'story/jiuding-lu');
@@ -21,6 +23,7 @@ const hui = bookEntries(book).filter((c) => c.huimu);
 const raw = book.volumes.flatMap((v) => v.hui);
 const gu = hui.filter((h) => h.line === 'gu');
 const jin = hui.filter((h) => h.line === 'jin');
+const wei = hui.filter((h) => h.line === 'wei');
 
 test('卷 hold 回; the 古 回 run 第一回, 第二回 … through the whole book; each 今 interlude reads 今 · N and takes no number', () => {
   assert.deepEqual(book.volumes.map((v) => v.name.zh), ['卷一 · 沉鼎']);
@@ -28,15 +31,22 @@ test('卷 hold 回; the 古 回 run 第一回, 第二回 … through the whole b
   assert.deepEqual(gu.map((h) => h.n), gu.map((_, i) => i + 1));
   assert.deepEqual(gu.map((h) => h.label.zh), gu.map((_, i) => huiLabel(i + 1)));
   assert.deepEqual(jin.map((h) => h.label.zh), jin.map((_, i) => jinLabel(i + 1)));
-  assert.ok(jin.every((h) => !/第.+回/.test(h.label.zh) && !/第.+回/.test(h.title.zh)), 'an interlude never says 第N回');
+  assert.ok([...jin, ...wei].every((h) => !/第.+回/.test(h.label.zh) && !/第.+回/.test(h.title.zh)), 'a side line never says 第N回');
+  // 未 (2026-10-09): 「未 · 序」 by its own label, else 「未 · N」 by its place.
+  assert.deepEqual(wei.map((h) => h.label.zh), wei.map((h, i) => h.label?.zh ?? lineLabel('wei', i + 1)));
+  assert.deepEqual(wei.map((h) => [h.id, h.label.zh, h.label.en]), [['w01', '未 · 序', 'Later · Prelude']]);
   assert.ok(hui.every((h) => !h.draft), 'no draft in the published view');
   // 卷一 (2026-10-02; 古七 split in two, Hanli 2026-10-07): 古一 古二 ‖今一‖ 古三 古四 ‖今二‖ 古五 古六 ‖今三‖ 古七 古八 ‖今四‖ 古九 —
   // the book opens on 古, each film of two 古 回 is followed by one interlude, save the last, which holds 今四 inside, right before
   // the 卷's last 回, so the 卷 ends on 古九 (the 漳水).
   const v1 = hui.filter((h) => h.volume.id === 'juan1');
   assert.equal(v1[0].line, 'gu', 'the book opens on 古一');
-  assert.deepEqual(v1.map((h) => (h.line === 'jin' ? '今' : '古')).join(''), '古古今古古今古古今古古今古');
-  assert.deepEqual(v1.map((h) => h.id), ['h01', 'h02', 'j01', 'h04', 'h05', 'j04', 'h07', 'h08', 'j07', 'h11', 'h09', 'j09', 'h10']);
+  // 2026-10-09: 未 · 序 after 古九, the 卷's last page — newer than the 2026-10-02 rule that took 今 · 四 off the end;
+  // 古九 is still the 古 line's last 回 and the game's 卷 still closes on it.
+  assert.deepEqual(v1.map((h) => LINES[h.line].zh).join(''), '古古今古古今古古今古古今古未');
+  assert.deepEqual(v1.map((h) => h.id), ['h01', 'h02', 'j01', 'h04', 'h05', 'j04', 'h07', 'h08', 'j07', 'h11', 'h09', 'j09', 'h10', 'w01']);
+  assert.equal(gu.at(-1).id, 'h10', '古九 is still the last 古 回: 未 · 序 shifts no number');
+  assert.equal(gu.at(-1).label.zh, '第九回');
   assert.equal(new Set(bookEntries(book).map((c) => c.id)).size, bookEntries(book).length, 'ids unique');
   book.volumes.forEach((v, i) => assert.equal(v.name.zh.startsWith(`卷${cnNumber(i + 1)}`), true, v.name.zh));
   assert.equal(bookEntries(book).at(-1).id, 'tuna', 'the appendix comes last');
@@ -44,6 +54,8 @@ test('卷 hold 回; the 古 回 run 第一回, 第二回 … through the whole b
   assert.equal(huiLabel(14), '第十四回');
   assert.equal(jinLabel(3), '今 · 三');
   assert.equal(jinLabel(3, 'en'), 'Now · 3');
+  assert.equal(lineLabel('wei', 2), '未 · 二');
+  assert.equal(lineLabel('wei', 2, 'en'), 'Later · 2');
 });
 
 test('ids are stable forever: a folded 回 is absorbed, never reused, and names its absorber', () => {
@@ -51,6 +63,7 @@ test('ids are stable forever: a folded 回 is absorbed, never reused, and names 
   assert.equal(new Set(ids).size, ids.length, 'no id twice, absorbed or not');
   assert.deepEqual(ids.filter((id) => /^h/.test(id)).sort(), ['h01', 'h02', 'h03', 'h04', 'h05', 'h06', 'h07', 'h08', 'h09', 'h10', 'h11'], 'every 古 id of the ten-回 book still answers, and h11 (古七\'s first half, 2026-10-07) is new, never reused');
   assert.deepEqual(ids.filter((id) => /^j/.test(id)).sort(), ['j01', 'j02', 'j03', 'j04', 'j05', 'j06', 'j07', 'j08', 'j09', 'j10'], 'every 今 id still answers');
+  assert.deepEqual(ids.filter((id) => /^w/.test(id)).sort(), ['w01'], 'the 未 line, w01… (2026-10-09)');
   for (const h of raw) for (const id of h.absorbs ?? []) {
     assert.equal(resolveId(book, id), h.id, `${id} → ${h.id}`);
     assert.equal((id[0] === 'h') === (h.line === 'gu'), true, `${id}: absorbed within its own line`);
@@ -59,8 +72,8 @@ test('ids are stable forever: a folded 回 is absorbed, never reused, and names 
 
 test('each 古 回目 is two seven-character lines, each 今 one line; every file opens with its title and holds no subheading', () => {
   for (const h of raw) {
-    assert.ok(['gu', 'jin'].includes(h.line), `${h.id}: line is gu or jin`);
-    assert.match(h.id, h.line === 'jin' ? /^j\d\d$/ : /^h\d\d$/, `${h.id}: 今 ids are j01…, 古 h01…`);
+    assert.ok(['gu', 'jin', 'wei'].includes(h.line), `${h.id}: line is gu, jin or wei`);
+    assert.match(h.id, { gu: /^h\d\d$/, jin: /^j\d\d$/, wei: /^w\d\d$/ }[h.line], `${h.id}: 古 ids are h01…, 今 j01…, 未 w01…`);
     // A held-back draft's file may still be on the writer's desk (uncommitted); a published 回's is in the book.
     if (!h.draft) assert.ok(fs.existsSync(path.join(BOOK, h.file)), `${h.id}: ${h.file} exists`);
     if (h.line === 'jin') {
@@ -74,9 +87,19 @@ test('each 古 回目 is two seven-character lines, each 今 one line; every fil
         assert.doesNotMatch(md, /^#{2,}\s/m, `${h.file}: no subheadings inside an interlude`);
       }
     }
+    if (h.line === 'wei') {
+      // 未来线/: one short line of 回目, the title line its label (「未 · 序」, or 「未 · N」 by its place) then that line.
+      assert.equal(h.huimu.zh.length, 1, `${h.id}: a 未 回目 is one line`);
+      assert.equal(h.huimu.en.length, 1, h.id);
+      assert.match(h.file, /^未来线\//, `${h.id}: file`);
+      const label = bookEntries(book, { draft: true }).find((e) => e.id === h.id).label.zh;
+      const md = fs.readFileSync(path.join(BOOK, h.file), 'utf8');
+      assert.equal(md.split('\n')[0], `# ${label}　${h.huimu.zh[0]}`, `${h.file}: title line`);
+      assert.doesNotMatch(md, /^#{2,}\s/m, `${h.file}: no subheadings`);
+    }
   }
   // The line ordinals (`n`) run 1, 2 … within each line, in book order.
-  for (const l of ['gu', 'jin']) assert.deepEqual(raw.filter((h) => h.line === l).map((h) => h.n), raw.filter((h) => h.line === l).map((_, i) => i + 1), l);
+  for (const l of Object.keys(LINES)) assert.deepEqual(raw.filter((h) => h.line === l).map((h) => h.n), raw.filter((h) => h.line === l).map((_, i) => i + 1), l);
   for (const h of gu) {
     assert.equal(h.huimu.zh.length, 2, h.id);
     for (const line of h.huimu.zh) assert.equal([...line].length, 7, `${h.id}: 「${line}」 is seven characters`);
@@ -130,6 +153,21 @@ test('every 图鉴 first appearance names a 回 of the book (or one folded into 
 const two = (hui, aliases = {}) => ({ volumes: [{ id: 'juan1', n: 1, name: { zh: '卷一', en: 'Volume One' }, hui }], aliases });
 const G = (id, n, extra = {}) => ({ id, line: 'gu', n, huimu: { zh: ['上联上联上联上', '下联下联下联下'], en: ['A', 'B'] }, file: `${id}.md`, ...extra });
 const J = (id, n, extra = {}) => ({ id, line: 'jin', n, huimu: { zh: [`今${n}的一句话`], en: [`Now ${n}`] }, file: `j/${id}.md`, ...extra });
+const W = (id, n, extra = {}) => ({ id, line: 'wei', n, huimu: { zh: [`未${n}的一句话`], en: [`Later ${n}`] }, file: `w/${id}.md`, ...extra });
+
+test('a third line, 未 (2026-10-09): unnumbered, no tag, its own label or its place; the 古 numbering untouched', () => {
+  const all = bookEntries(two([G('h01', 1), J('j01', 1), G('h02', 2), W('w01', 1, { label: { zh: '未 · 序', en: 'Later · Prelude' } }), W('w02', 2), G('h03', 3)]));
+  assert.deepEqual(all.map((h) => `${h.label.zh}${h.tag.zh}${h.id}`), ['第一回古h01', '今 · 一今j01', '第二回古h02', '未 · 序未w01', '未 · 二未w02', '第三回古h03']);
+  assert.equal(all[3].title.zh, '未 · 序　未1的一句话');
+  assert.equal(all[3].title.en, 'Later · Prelude · Later 1');
+  assert.equal(all[4].label.en, 'Later · 2');
+  assert.equal(huimuHtml(all[3]), '<h1 class="huimu wei"><span class="hui">未 · 序</span><span class="line">未1的一句话</span></h1>');
+  // The file's own title line: 「未 · 序」 or 「未 · 一」, then one line, set in the 未's class.
+  assert.equal(renderMarkdown('# 未 · 序　它说，我怕\n\n甲。'), '<h1 class="huimu wei"><span class="hui">未 · 序</span><span class="line">它说，我怕</span></h1>\n<p>甲。</p>');
+  assert.match(renderMarkdown('# 未 · 二　一句话'), /^<h1 class="huimu wei"><span class="hui">未 · 二<\/span>/);
+  // A line the book does not know is 古, as a 回 with none.
+  assert.equal(bookEntries(two([G('h01', 1, { line: 'zzz' })]))[0].label.zh, '第一回');
+});
 
 test('the label is derived from the order: 古 回 numbered through, the 今 between them 今 · N', () => {
   const b = two([G('h01', 1), G('h02', 2), J('j01', 1), G('h03', 3), G('h04', 4), J('j02', 2)]);

@@ -177,12 +177,16 @@ const withDraft = (id) => {
 
 test('the book in four films with an interlude after each: 古 第一回 … 第九回, the 今 unnumbered, the 卷 ends on 古九 for the game, the lint is clean', async () => {
   const c = content;
-  const gu = c.book.volumes[0].hui.filter(h => h.line !== 'jin');
+  const gu = c.book.volumes[0].hui.filter(h => h.line === 'gu');
   assert.deepEqual(gu.map(h => h.id), ['h01', 'h02', 'h04', 'h05', 'h07', 'h08', 'h11', 'h09', 'h10']);
   gu.forEach((h, i) => assert.equal(huiLabel(c, h.id, 'zh', 'short'), `第${zhNumber(i + 1)}回`, h.id));
   assert.equal(huiLabel(c, 'h01', 'en', 'short'), 'Chapter 1');
   assert.deepEqual(['j01', 'j04', 'j07', 'j09'].map(id => huiLabel(c, id, 'zh', 'short')), ['今 · 一', '今 · 二', '今 · 三', '今 · 四']);
   assert.equal(huiLabel(c, 'j02', 'zh', 'short'), '今 · 一', 'a folded 今 id names the interlude that holds it');
+  // 未 · 序 (2026-10-09), the book's last page after 古九: unnumbered, no 古 tag, no scene — the game never plays it.
+  assert.equal(huiLabel(c, 'w01', 'zh', 'short'), '未 · 序');
+  assert.equal(huiLabel(c, 'w01', 'zh', 'head'), '卷一 · 沉鼎 · 未 · 序　它说，我怕');
+  assert.ok(Object.values(c.chapters).every(ch => Object.values(ch.scenes ?? {}).every(sc => sc.hui !== 'w01')), 'no scene names w01');
   assert.equal(endLabel(c, 'h10', 'zh'), '第九回 · 完');
   assert.equal(endLabel(c, 'h11', 'zh'), '第七回 · 完');
   assert.equal(endLabel(c, 'h09', 'zh'), '第八回 · 完');

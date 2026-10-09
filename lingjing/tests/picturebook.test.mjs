@@ -274,6 +274,7 @@ test('书: every chapter the book names exists and renders; the reader and its c
       // and book.json's 回目, two lines; an interlude's 「今 · 一」 and one line.
       if (ch.huimu && ch.line === 'gu') assert.equal(path.basename(ch.file), `${String(ch.ord).padStart(2, '0')}-${bookHuiLabel(ch.ord)}.md`, `${ch.file}: named by its 古 ordinal`);
       if (ch.huimu && ch.line === 'gu') assert.equal(html.split('\n')[0], `<h1 class="huimu"><span class="hui">${bookHuiLabel(ch.ord)}</span><span class="line">${ch.huimu.zh[0]}</span><span class="line">${ch.huimu.zh[1]}</span></h1>`, `${ch.file}: its title line is book.json's 回目`);
+      if (ch.huimu && ch.line === 'wei') assert.equal(html.split('\n')[0], `<h1 class="huimu wei"><span class="hui">${ch.label.zh}</span><span class="line">${ch.huimu.zh[0]}</span></h1>`, `${ch.file}: 未's title line, its label and one line`);
       if (ch.huimu && ch.line === 'jin') assert.equal(html.split('\n')[0], `<h1 class="huimu jin"><span class="hui">${jinLabel(ch.ord)}</span><span class="line">${ch.huimu.zh[0]}</span></h1>`, `${ch.file}: its title line is book.json's 回目, one line`);
       // The page sets the title from book.json (read.js passes hui): the book's number, the tag, then the 回目.
       if (ch.huimu) assert.equal(renderMarkdown(fs.readFileSync(file, 'utf8'), { hui: ch }).split('\n')[0], huimuHtml(ch), `${ch.file}: the page's title is ${ch.label.zh}`);

@@ -9,7 +9,7 @@
   "en": "The poorest hunter's family under Mount Meng has the mouthiest child. For one deer hide he crosses the stone that says Do Not Enter, and carries home a queen of heaven's foxes — eight tails cut away, starving, unable to recall her own name. She eats his last flatbread and owes him a wish. From then on, his luckless life takes off."
  },
  "world": "jiuding",
- "_form": "《鹿鼎记》's form, two lines, the 今 as interludes (纲要 § 一·四, Hanli 2026-10-02: 「两个线不应该并列写，减轻今线的戏份」; 古线 ten 回 → eight in four films of two, 古线卷一改版纲; nine since Hanli 2026-10-07 split 古七 in two: 「可以，拆成两回」). A 卷 opens on 古一; its 古 回 run two by two as films, and after each film a 今 interlude (沈芒, modern science for the 古线's 修仙): 古一 古二 ‖今 · 一‖ 古三 古四 ‖今 · 二‖ 古五 古六 ‖今 · 三‖ 古七 古八 ‖今 · 四‖ 古九 — 今 · 四 sits inside the last film, right before the 卷's last 回, so 卷一 ends on 古九's climax (the 漳水) (Hanli 2026-10-02, after the R3 cold read: both readers said 今 · 四 at the end deflated 漳水 and 赵昂). Only the 古 回 take a 回 number (第一回 … 第九回); an interlude reads 「今 · 一」 (\"Now · 1\") and takes none. Each entry: `id` (stable forever: h01… 古, j01… 今 — the game's scene `hui`, the 评书 audio and old links name these; never reused), `absorbs` (the ids folded into it — h03 into 古二 h02, h06 into 古四 h05, j02+j03 into 今 · 一 j01, j05+j06 into 今 · 二 j04, j08 into 今 · 三 j07, j10 into 今 · 四 j09: an old ?ch= link or a scene's `hui` naming one opens the entry that holds it), `line` (\"gu\" | \"jin\"), `n` (its ordinal WITHIN its line — 古三, 今 · 二 — the 古 file names NN-第N回.md and their title lines carry it: 01-第一回.md … 09-第九回.md, renamed to the 古 ordinal 2026-10-02 (h04 = 03-第三回.md …); 2026-10-07 古七 split: its first half (年二腊月 to 年五, ending on 阿禾's 「亲传，不算外门」) is the new id h11 = 07-第七回.md, its second half (年六 to the 筑基) keeps h09 = 08-第八回.md, and the 漳水 h10 = 09-第九回.md), `huimu` (古: two seven-character lines; 今: one line in 沈芒's own voice), `file`, and `draft: true` only for one Hanli wants held back. An interlude's file is 今线/插曲NN.md, title line 「今 · 一　一句话」; the old 今01–今10 are kept in 今线/旧稿/. The array order IS the book's order: the reader computes 「第N回」 / 「今 · N」 and the tag from it (book-order.js bookEntries), so inserting or moving one is an edit here only. A draft is left out of the published view (and out of its numbering); read.html?draft=1 shows it, numbered in place. DESIGN.md § 五·五.",
+ "_form": "《鹿鼎记》's form, two lines, the 今 as interludes (纲要 § 一·四, Hanli 2026-10-02: 「两个线不应该并列写，减轻今线的戏份」; 古线 ten 回 → eight in four films of two, 古线卷一改版纲; nine since Hanli 2026-10-07 split 古七 in two: 「可以，拆成两回」). A 卷 opens on 古一; its 古 回 run two by two as films, and after each film a 今 interlude (沈芒, modern science for the 古线's 修仙): 古一 古二 ‖今 · 一‖ 古三 古四 ‖今 · 二‖ 古五 古六 ‖今 · 三‖ 古七 古八 ‖今 · 四‖ 古九 — 今 · 四 sits inside the last film, right before the 卷's last 回, so 卷一 ends on 古九's climax (the 漳水) (Hanli 2026-10-02, after the R3 cold read: both readers said 今 · 四 at the end deflated 漳水 and 赵昂). Only the 古 回 take a 回 number (第一回 … 第九回); an interlude reads 「今 · 一」 (\"Now · 1\") and takes none. Each entry: `id` (stable forever: h01… 古, j01… 今 — the game's scene `hui`, the 评书 audio and old links name these; never reused), `absorbs` (the ids folded into it — h03 into 古二 h02, h06 into 古四 h05, j02+j03 into 今 · 一 j01, j05+j06 into 今 · 二 j04, j08 into 今 · 三 j07, j10 into 今 · 四 j09: an old ?ch= link or a scene's `hui` naming one opens the entry that holds it), `line` (\"gu\" | \"jin\" | \"wei\"), `n` (its ordinal WITHIN its line — 古三, 今 · 二 — the 古 file names NN-第N回.md and their title lines carry it: 01-第一回.md … 09-第九回.md, renamed to the 古 ordinal 2026-10-02 (h04 = 03-第三回.md …); 2026-10-07 古七 split: its first half (年二腊月 to 年五, ending on 阿禾's 「亲传，不算外门」) is the new id h11 = 07-第七回.md, its second half (年六 to the 筑基) keeps h09 = 08-第八回.md, and the 漳水 h10 = 09-第九回.md), `huimu` (古: two seven-character lines; 今: one line in 沈芒's own voice), `file`, and `draft: true` only for one Hanli wants held back. An interlude's file is 今线/插曲NN.md, title line 「今 · 一　一句话」; the old 今01–今10 are kept in 今线/旧稿/. The array order IS the book's order: the reader computes 「第N回」 / 「今 · N」 and the tag from it (book-order.js bookEntries), so inserting or moving one is an edit here only. A draft is left out of the published view (and out of its numbering); read.html?draft=1 shows it, numbered in place. DESIGN.md § 五·五. A third line, 未 (未来线, the future; en \"Later\"), since Hanli 2026-10-09: 「我甚至想在第一卷最后加一个未来世界描写，作为科幻篇的引子」 — a very short coda AFTER 古九, the seed of the 科幻篇: 古一 古二 ‖今 · 一‖ … ‖今 · 四‖ 古九 ‖未 · 序‖. This is newer than the 2026-10-02 note above (今 · 四 moved off the end so 卷一 ends on 古九's climax): that still holds for the 今 — the 古 line's last 回 is still 古九, and the 卷 still closes on it for the game — but the book's last page is now the 未 coda. A 未 entry, like a 今 one, takes no 回 number and never shifts the 古 numbering; it reads 「未 · 一」 (\"Later · 1\") by its place in its line unless it carries a `label` ({zh, en}) of its own — the first one is 「未 · 序」 (\"Later · Prelude\"), file 未来线/序.md, title line 「未 · 序　它说，我怕」. Ids w01… (stable, never reused); no game scenes.",
  "volumes": [
   {
    "id": "juan1",
@@ -246,6 +246,24 @@
      },
      "file": "09-第九回.md",
      "opens": "01-ji"
+    },
+    {
+     "id": "w01",
+     "line": "wei",
+     "n": 1,
+     "label": {
+      "zh": "未 · 序",
+      "en": "Later · Prelude"
+     },
+     "huimu": {
+      "zh": [
+       "它说，我怕"
+      ],
+      "en": [
+       "It Said: I'm Afraid"
+      ]
+     },
+     "file": "未来线/序.md"
     }
    ]
   }

@@ -16,7 +16,7 @@
 // unit: the map, the locks, the beta's wait. A 回 ends where the scenes'
 // `hui` turns, which may be inside a chapter (序章's 第一回 → 第二回).
 import { pick } from '../state.mjs';
-import { bookEntries, cnNumber, idsOf, lineOf } from '../book-order.js';
+import { bookEntries, cnNumber, idsOf, lineOf, numbered } from '../book-order.js';
 
 /* 1 → 一, 10 → 十, 13 → 十三, 21 → 二十一: the reader's (book-order.js). */
 export const zhNumber = cnNumber;
@@ -75,8 +75,8 @@ const FORMS = {
   head: (h, lang) => `${tagged(h, lang)}${pick(h.huimu, lang)[0]}`,
   book: (h, lang) => `${tagged(h, lang)}${pick(h.huimu, lang).join(lang === 'en' ? ' / ' : '　')}`,
 };
-// A 今 interlude's label already says 今 (「今 · 一」): no second tag, as the reader's title (book-order.js).
-const tagged = (h, lang) => (h.line === 'jin' ? (lang === 'en' ? `${FORMS.juan(h, lang)} — ` : `${FORMS.juan(h, lang)}　`)
+// A side line's label already says its line (「今 · 一」, 「未 · 序」): no second tag, as the reader's title (book-order.js).
+const tagged = (h, lang) => (!numbered(h.line) ? (lang === 'en' ? `${FORMS.juan(h, lang)} — ` : `${FORMS.juan(h, lang)}　`)
   : lang === 'en' ? `${FORMS.juan(h, lang)} · ${h.tag.en} — ` : `${FORMS.juan(h, lang)}　${h.tag.zh} · `);
 export function huiLabel(content, id, lang, form = 'juan') {
   const h = huiOf(content, id);
@@ -93,7 +93,7 @@ export const chapterHuis = (content, ch) => [...new Set(Object.values(ch?.scenes
 export function firstHui(content, ch) {
   const told = [...bookIndex(content).values()].filter(h => h.opens === ch?.id).sort((a, b) => a.at - b.at)[0]?.id;
   // A 今 interlude that opens a chapter (今 · 三 before 古七) does not name it: its first 古 回 does.
-  const huis = chapterHuis(content, ch), played = huis.find(id => huiOf(content, id)?.line !== 'jin') ?? huis[0];
+  const huis = chapterHuis(content, ch), played = huis.find(id => numbered(huiOf(content, id)?.line)) ?? huis[0];
   if (!told) return played ?? null;
   return !played || huiOrder(content, told) <= huiOrder(content, played) ? told : played;
 }

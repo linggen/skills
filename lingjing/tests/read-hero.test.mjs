@@ -103,6 +103,9 @@ test('the kept readings (柴房 — 第五回 since 古六 folded into it — an
   assert.match(ten, /「扑通」一声/);
 });
 
+// 周星星 is the 未来线's own lead since Hanli named him there (2026-10-09, story/宇宙.md): the future line and the
+// universe note may name him; the 古 hero's old placeholder stays gone everywhere else.
+const FUTURE = [path.join('story', '宇宙.md'), path.join('story', 'jiuding-lu', '未来线') + path.sep];
 test('the placeholder 周星星 is gone from the game and the book (only history may name it)', () => {
   const seen = [];
   const walk = (dir) => {
@@ -110,6 +113,7 @@ test('the placeholder 周星星 is gone from the game and the book (only history
       const p = path.join(dir, e.name);
       if (e.isDirectory()) { if (!['archive', 'node_modules', 'vendor'].includes(e.name)) walk(p); continue; }
       if (!/\.(m?js|json|md|html|css)$/.test(e.name) || p.endsWith('OUTLINE.md') || p.endsWith('read-hero.test.mjs')) continue;
+      if (FUTURE.some((f) => path.relative(ROOT, p) === f || path.relative(ROOT, p).startsWith(f))) continue;
       if (fs.readFileSync(p, 'utf8').includes('周星星')) seen.push(path.relative(ROOT, p));
     }
   };

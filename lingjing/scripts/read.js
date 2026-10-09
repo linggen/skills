@@ -132,7 +132,7 @@ async function ear(bookId, id) {
   });
 }
 
-/// The contents: each 卷's name, then its 回 — a 古 回's number and its 古 tag, a 今 interlude's 「今 · N」,
+/// The contents: each 卷's name, then its 回 — a 古 回's number and its 古 tag, a side line's 「今 · N」 / 「未 · 序」,
 /// and the 回目 after it (古 two lines, 今 one; on a phone they wrap under the
 /// number); the appendix last.
 function tocHtml(all, at, bookId, counts = {}) {
@@ -141,7 +141,7 @@ function tocHtml(all, at, bookId, counts = {}) {
     const head = c.volume && c.volume.id !== volume ? `<div class="tocv">${esc(pick(c.volume.name))}</div>` : '';
     if (c.volume) volume = c.volume.id;
     const words = c.huimu
-      ? `<span class="tn">${esc(pick(c.label))}${c.line === 'jin' ? '' : `<i class="tag">${esc(pick(c.tag))}</i>`}${c.draft ? `<i class="tag draft">${lang === 'en' ? 'draft' : '草稿'}</i>` : ''}${chgBadge(counts[c.id]?.count)}</span><span class="tm">${(c.huimu[lang] ?? c.huimu.zh ?? []).map((l) => `<span>${esc(l)}</span>`).join('')}</span>`
+      ? `<span class="tn">${esc(pick(c.label))}${c.line !== 'gu' ? '' : `<i class="tag">${esc(pick(c.tag))}</i>`}${c.draft ? `<i class="tag draft">${lang === 'en' ? 'draft' : '草稿'}</i>` : ''}${chgBadge(counts[c.id]?.count)}</span><span class="tm">${(c.huimu[lang] ?? c.huimu.zh ?? []).map((l) => `<span>${esc(l)}</span>`).join('')}</span>`
       : esc(pick(c.title)) + chgBadge(counts[c.id]?.count);
     return `${head}<a data-id="${esc(c.id)}" href="${esc(hrefWith({ book: bookId, ch: c.id }))}" class="${[i === at ? 'on' : '', c.huimu ? `hui ${c.line}` : 'apx'].filter(Boolean).join(' ')}">${words}</a>`;
   }).join('');
