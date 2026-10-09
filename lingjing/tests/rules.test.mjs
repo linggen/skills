@@ -1080,7 +1080,7 @@ test('a save from before the dictionary migrates to the ids', () => {
   const old = { version: 1, lang: 'zh', daohao: '青玄', root: ['wood'], realm: 'qi', stage: 2, xw: 30, ls: 5, beasts: ['fuzhu'], qi: 40, qi_at: NOW.toISOString(),
     bag: {}, chapter: '00-prologue', scene: '00-practice', done_scenes: [], ended: [], tasks: {}, quests: {}, wins: {}, branch: null, story: '', day: { key: '2026-09-11', xw: 30, ls: 5, branches: 0 } };
   const m = migrate(old);
-  assert.equal(m.version, 6);
+  assert.equal(m.version, 7);
   assert.equal(m.world, 'jiuding', 'a save from before worlds was playing 《九鼎》');
   assert.equal(m.name, '青玄'); assert.deepEqual(m.traits, ['wood']); assert.equal(m.tier, 'qi'); assert.equal(m.step, 2);
   assert.equal(m.progress, 30); assert.equal(m.wealth, 5); assert.deepEqual(m.cast, ['fuzhu']); assert.equal(m.stamina, 40);
@@ -1993,11 +1993,11 @@ test('chapter 2 opens in November: the road from Ye, the Pu, Puyang\'s market, t
   // the gate: not at the peak of 筑基
   const held = refused(resolve, s, { exit: 'take' }, 'not-at-peak', nctx());
   assert.ok(held.say.startsWith('鼎气扑到你身上'));
-  assert.equal(held.peak_step, 9, 'nine 层 a realm');
-  // at the peak (筑基大圆满): the Core forms, then paid into the new tier
-  s = lucky({ ...s, step: 8, progress: 208 }, 'core', nctx());
+  assert.equal(held.peak_step, 3, 'three steps a realm past 练气: 小成, 中成, 大成');
+  // at the peak (筑基圆满): the Core forms, then paid into the new tier
+  s = lucky({ ...s, step: 2, progress: 600 }, 'core', nctx());
   r = answerN(resolve, s, { exit: 'take' });
-  assert.deepEqual(btOf(r.result.breakthrough), { from: '筑基大圆满', to: '结丹初期', tier: 'core', success: true });
+  assert.deepEqual(btOf(r.result.breakthrough), { from: '筑基圆满', to: '结丹小成', tier: 'core', success: true });
   assert.equal(r.state.tier, 'core'); assert.equal(r.state.step, 0);
   assert.equal(r.state.progress, 60);
   assert.equal(r.state.scene, '02-end');
@@ -2075,11 +2075,11 @@ test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market,
   // the gate: not at the peak of 结丹
   const held = refused(resolve, s, { exit: 'take' }, 'not-at-peak', dctx());
   assert.ok(held.say.startsWith('鼎气涌上来'));
-  assert.equal(held.peak_step, 9);
-  // at the peak (结丹大圆满): the Nascent Soul forms, then paid into the new tier — which pays double
-  s = lucky({ ...s, step: 8, progress: 416 }, 'nascent', dctx());
+  assert.equal(held.peak_step, 3);
+  // at the peak (结丹圆满): the Nascent Soul forms, then paid into the new tier — which pays double
+  s = lucky({ ...s, step: 2, progress: 1200 }, 'nascent', dctx());
   r = answerD(resolve, s, { exit: 'take' });
-  assert.deepEqual(btOf(r.result.breakthrough), { from: '结丹大圆满', to: '元婴初期', tier: 'nascent', success: true });
+  assert.deepEqual(btOf(r.result.breakthrough), { from: '结丹圆满', to: '元婴小成', tier: 'nascent', success: true });
   assert.equal(r.state.tier, 'nascent'); assert.equal(r.state.step, 0);
   assert.equal(r.state.progress, 120);
   assert.equal(r.state.scene, '03-end');
@@ -2115,7 +2115,7 @@ test('a cauldron the player cannot take yet offers the way back, and says what i
   const l = look(s, content, c);
   const take = l.scene.exits.find(e => e.id === 'take');
   assert.equal(take.breakthrough.ready, false);
-  assert.deepEqual(take.breakthrough.need, { step: '结丹大圆满', progress: 416, to: '元婴' });
+  assert.deepEqual(take.breakthrough.need, { step: '结丹圆满', progress: 1200, to: '元婴' });
   assert.ok(!l.ask.options.some(o => o.exit === 'take'), 'no breath to tap');
   const back = l.ask.options.find(o => o.move);
   assert.equal(back?.label, '先回蓬莱');
@@ -2126,10 +2126,10 @@ test('a cauldron the player cannot take yet offers the way back, and says what i
   assert.notEqual(choice.options.find(o => o.move)?.move, 'liubo');
   // and the goal says why the story waits: what the breath asks, where he stands, no road to it
   const waits = look(away.state, content, c).waypoint;
-  assert.deepEqual(waits.gate, { step: '结丹大圆满', progress: 416, to: '元婴', now: { step: '结丹一层', progress: 222, of: 256 } });
+  assert.deepEqual(waits.gate, { step: '结丹圆满', progress: 1200, to: '元婴', now: { step: '结丹小成', progress: 222, of: 800 } });
   assert.equal(waits.toward, undefined);
   // at the peak, the breath is the odds card's throw — never the chat's (Hanli, 2026-09-28)
-  const peak = { ...s, step: 8, progress: 416 };
+  const peak = { ...s, step: 2, progress: 1200 };
   const ready = look(peak, content, c);
   assert.equal(ready.scene.exits.find(e => e.id === 'take').breakthrough.ready, true);
   assert.ok(ready.stage.some(x => x.card === 'breakthrough' && x.id === 'take'), JSON.stringify(ready.stage));

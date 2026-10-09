@@ -2,7 +2,7 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { CAST, gameOf } from '../content.mjs';
 import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
-import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, phaseName, stepName, threshold, seedOf } from '../state.mjs';
+import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, phaseName, realmName, threshold, seedOf } from '../state.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, THEN_BORN, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
 import { fightSetup } from './cards.mjs';
@@ -408,7 +408,7 @@ export function look(state, content, ctx) {
     ...(practiceHint(content, state) ? { practice_hint: practiceHint(content, state) } : {}),
     world: worldBrief(content, lang),
     ...building(content),
-    tier: { id: state.tier, step: state.step + 1, name: stepName(content, state.tier, state.step, lang), phase: phaseName(content, state.tier, state.step, lang) },
+    tier: { id: state.tier, step: state.step + 1, name: realmName(content, state, lang), phase: phaseName(content, state.tier, state.step, lang) },
     progress: state.progress, next: threshold(content, state), wealth: state.wealth,
     // Filled to the 回's cap (rules/cap.mjs): the full bar and the world's line under it — a wait, not a fault.
     ...(capLook(content, state, lang) ? { capped: capLook(content, state, lang) } : {}),

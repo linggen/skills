@@ -234,32 +234,43 @@ The world's nine realms and their names are story DESIGN § 道统 (补丁①).
 2026-09-30; the ids stay `body` · `maha` and names derive from ids, so saves
 need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale.
 
-- **Nine 层 a realm** (2026-10-03, the world follows 《凡人修仙传》 with this
-  exception declared in story DESIGN § 道统): every realm, not only 练气, has
-  一层 … 九层; `phases` names them three by three — 一至三层 初期, 四至六层 中期,
-  七至九层 后期 (state.mjs `phaseName`: 筑基四层 is 筑基中期; Look's `tier.phase`);
-  `peak` is **大圆满**, the ninth 层 filled (`peakName`) — the only state a
-  breakthrough is tried from, and the word the cauldron's gate and the
-  breakthrough's `from` use (「鼎气要结丹大圆满」, 筑基大圆满 → 结丹初期).
-  巅峰 is colloquial and never appears in a table. Past 练气 each realm had
-  three steps; each became three 层 whose thresholds sum to the old step, so
-  a realm's whole is unchanged and a save is carried over exactly (save v6:
-  marked by `migrate`, walked through the new 层 by `threeToNine` in
-  `fitWorld` — an old 后期 at its peak is 九层 filled).
+- **练气 in nine 层, every realm above it in three steps** (Hanli,
+  2026-10-09; the stage words are the Daoist 小成/中成/大成 of 《钟吕传道集》,
+  replacing 初期/中期/后期): 练气 has 一层 … 九层, and `phases` names them three
+  by three — 一至三层 小成, 四至六层 中成, 七至九层 大成 (state.mjs `phaseName`:
+  练气四层 is 练气中成; Look's `tier.phase`). 筑基 and every realm past it have
+  no 层: their three steps are 小成, 中成, 大成 themselves (筑基中成).
+  `full` is **圆满**, the full point of any step (`fullName`: 练气二层圆满,
+  筑基中成圆满, 筑基大成圆满) — nothing more goes in until the next step; Look's
+  `tier.name` says it whenever the step is full (`realmName`: held at a cap
+  or the realm's top). Only the realm's last step at 圆满 is tried for a
+  breakthrough, and its short form (`peakName`: 筑基圆满, 练气圆满) is the word
+  the cauldron's gate and the breakthrough's `from` use (「鼎气要结丹圆满」,
+  筑基圆满 → 结丹小成). Was 大圆满 until 2026-10-09 (a Tibetan Buddhist term).
+  巅峰 is the spoken word for the same point (外门's 「九层巅峰」, 小满's
+  「二层巅峰」) and never appears in a table. The ladder's history, all carried
+  exactly in saves: past 练气 three steps until 2026-10-03; nine 层 from then
+  (save v6, `threeToNine`, each old step split into three 层 summing to it);
+  three steps again since 2026-10-09, with the pre-10-03 thresholds (save v7:
+  `migrate` marks `ladder9`, `fitWorld` runs `nineToThree` — 层 1–3 → 小成,
+  4–6 → 中成, 7–9 → 大成, the 修为 of the 层 already passed in that step, from
+  `ladder.json → layers_were`, added to what it held; 结丹一层 · 222 is
+  结丹小成 · 222, 筑基九层 filled is 筑基圆满). A v5 save is already on three
+  steps and is never marked `ladder9`.
 - **修为 caps per 回** (Hanli, 2026-10-05: 「游戏里修炼有个上限吧? 和故事对齐」;
   rules/cap.mjs, `ladder.json → caps`): each 古 回 declares how far the
-  player's own work reaches (`tier` + `layer`) and, where its scenes carry him
+  player's own work reaches (`tier` + `layer`, a 层 of 练气 or a step above it) and, where its scenes carry him
   further, its `story` — 古三 一层 · 古四 二层 · 古五 二层 (story 四层) · 古六
-  四层 · 古七 四层 (story 七层) · 古八 七层 (story 筑基一层) · 古九 筑基一层; a 今 interlude takes the 古
-  before it; after 卷一 the save waits in 古九's chapter, so 筑基一层 holds
-  until 卷二 gets its caps. At the cap the layer fills and the rest is held
+  四层 · 古七 四层 (story 七层) · 古八 七层 (story 筑基小成) · 古九 筑基小成; a 今 interlude takes the 古
+  before it; after 卷一 the save waits in 古九's chapter, so 筑基小成 holds
+  until 卷二 gets its caps. At the cap the step fills (圆满) and the rest is held
   (as at a peak); Look's `capped.say` stands under the full bar in the
   world's words. The book's jumps are the story's (`rise`): 古四's close lifts
-  to 二层 (wm-diyilu), 息壤 to 四层, the year to 九层大圆满, the cliff to 筑基 —
+  to 二层 (wm-diyilu), 息壤 to 四层, the year to 九层圆满, the cliff to 筑基 —
   a player behind the book is lifted there, never held back. A rise or
   breakthrough past `story` is refused `past-cap` (「火候未到」), and the lint
   refuses such data. A save already past its cap is never pulled down: it
-  fills its own layer and waits.
+  fills its own step and waits.
 - **渡劫 odds** (rules/breakthrough.mjs, `ladder.json → breakthrough`): 筑基
   follows the book — `base` 10 (没丹硬冲，十个里只冲得过一个), `floor` 5. A pill
   weighs by its 转 (`pill.by_zhuan`, items.json `zhuan`): the sect's 一转下品
@@ -724,7 +735,7 @@ memories in WebGL, weather particles, the big set pieces, chapter transitions.
 
 ## Player state 【已建】
 
-`data/state.json`, ids only (save **version 6**, `MIGRATIONS` in state.mjs; v6 = nine 层 a realm):
+`data/state.json`, ids only (save **version 7**, `MIGRATIONS` in state.mjs; v6 = nine 层 a realm, v7 = 练气 nine 层, three steps above it):
 `name`, `traits`, `tier`, `step`, `progress`, `wealth`, `stamina` +
 `stamina_at`, `bag`, `cast`, `cards`, `deck`, `chapter`, `scene`,
 `done_scenes`, `place`, `quests`, `chores`, `tale`, `known`, `ledger`,

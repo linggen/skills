@@ -50,7 +50,7 @@ export function askOf(content, state, ctx, result = {}, ungated = false) {
     const gone = new Set(scene.exits.filter(e => (e.withdrawn && !e.won) || e.closed).map(e => e.id));
     // A breath the player cannot take yet is not a button: the way back to
     // the world is (his "way back until ready", 2026-09-17 — 化婴 offered at
-    // 结丹一层 · 初期, tapped, refused).
+    // 结丹小成 (then 结丹一层), tapped, refused).
     const unready = new Set(scene.exits.filter(e => e.breakthrough && !e.breakthrough.ready).map(e => e.id));
     // One clickable place for one thing (his law, 2026-09-17): an exit whose
     // game is played on its own card — a bout, a board — is not asked here

@@ -1,12 +1,12 @@
 // rules/cap.mjs — 修为 stops where the book stands (Hanli, 2026-10-05: 「游戏里修炼有个上限吧?
 // 和故事对齐」). Part of the rules engine; rules.mjs is its one door.
 //
-// The world declares, per 回 (ladder.json `caps.hui`), the highest 层 a player's
+// The world declares, per 回 (ladder.json `caps.hui`), the highest step a player's
 // own work reaches there (`tier` + `layer`) and, when the 回's scenes carry him
 // further (息壤's 四层, the cliff's 筑基), the highest its story reaches
 // (`story`; else the same). A 回 with no entry takes the nearest earlier one's
 // in the book's order (a 今 interlude takes the 古 回 before it). After 卷一 the
-// save waits in 古九's chapter (卷二 · 即将开放), so 古九's cap holds: 筑基一层.
+// save waits in 古九's chapter (卷二 · 即将开放), so 古九's cap holds: 筑基小成.
 // A chapter with no 回 yet (the old spine) has none — its realm gate rules it,
 // as before; a world without `caps` has none.
 //

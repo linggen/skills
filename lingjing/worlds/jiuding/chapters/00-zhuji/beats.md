@@ -20,7 +20,7 @@ speak to the player as 你 (story/jiuding-lu/DESIGN.md § 四·五 人称分工)
    (he stays 五层); 伏天 (the wall) ends with 「一晃，便是五年」 —
    the skip plays in its passage, 年三 to 年五 (古七's end: 阿禾's hidden 筑基, 「亲传，不算外门」), lifts him to 七层 (`rise: 7`) and moves on to `09-dabi` (2026-10-07 split; the rest below is 3b's): the five years run on the 执事堂's 差事牌 (Hanli 2026-10-06; three to a tag — 阿禾 plans, 小满 fights, 孙二狗 takes the blows): a mission and a 巽四 form per layer (Hanli 2026-10-07 二轮): 年三 the sham-sleeping 犰狳 at 灵草谷 (定风), 年四 the 鯥 of 沂水东岸 (随风 · 入隙 at the fin root; his first red tag, 六层 from the fight) and 老铁头's 器房 (the 顺风溜 from its hide and membrane), 年五 the widow's shoe and the 七层 stall (入隙, 庖丁), 年六 the 老熊 on the 下邳北道 with 秦雁 (the sword through the seam as it roars; 阿禾 heals 孙二狗's arm), 年七 飘风不终朝 and 进退 (the pine bough), 九层; 祁长松's Foundation and first flight
    into the 柏, the year-five 大比 won plainly, the 一转 官丹 resealed with 米汤 into 饭桶 (next day 闵丹师 meets him at the 丹房 door — a twitch of the nose, a look at the pouch, nothing said; 2026-10-07) — 3b's `dabi` exit
-   grants the sect's `foundation-pill` (古六's final grants none); 入秋 (年八) → 九层大圆满
+   grants the sect's `foundation-pill` (古六's final grants none); 入秋 (年八) → 九层圆满
    (`{layer: 9, full: true}`). The seasons are the main
    story, so they cost no 体力 (主线, Hanli 2026-10-01 — was 25 a season; 入秋 pays a story step's 3)
    and each waits on the one before (`needs.mark`); a season done is not offered again (`once`).

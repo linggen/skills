@@ -44,7 +44,7 @@ test('a save from before the cut migrates: what is held stays, what only the cut
   const old = oldSave();
   const m = migrate(old, content);
   assert.equal(m.version, STATE_VERSION);
-  assert.equal(STATE_VERSION, 6);
+  assert.equal(STATE_VERSION, 7);
   // Kept: the bag (an old 回春丹 and 妖丹 are goods now), the cards, the cast,
   // the treasure and its 重, her joining, the realm.
   assert.deepEqual(m.bag, old.bag);
@@ -52,8 +52,9 @@ test('a save from before the cut migrates: what is held stays, what only the cut
   assert.deepEqual(m.cast, old.cast);
   assert.deepEqual(m.treasure, { name: '青锋', base: 3, element: 'metal', level: 3 }, 'its 重 kept, the 温养 exp gone');
   assert.deepEqual(m.companion, { ...old.companion, awake: true }, 'found by the bell: awake (the engine reads `awake`)');
-  // v6: the old 筑基中期 (step 1) is 四层 on the nine-层 ladder, its 修为 carried (threeToNine).
-  assert.deepEqual([m.tier, m.step, m.progress], ['foundation', 3, 40]);
+  // v6/v7: the old 筑基中期 (step 1) is 筑基中成 again — the three steps are back (2026-10-09), its 修为 as it was.
+  assert.deepEqual([m.tier, m.step, m.progress], ['foundation', 1, 40]);
+  assert.equal('ladder9' in m, false, 'a three-step save is never carried as a nine-层 one');
   assert.equal('ladder3' in m, false, 'the mark is spent once the save meets its world');
   // Gone: the wound, the bond and its marks, her tending, the day's 温养 and 写符.
   for (const k of ['wounds', 'bond', 'tended', 'journey']) assert.equal(m[k], undefined, k);
@@ -111,13 +112,13 @@ test('the command line migrates the save on disk once, on the first call, and th
     assert.equal(l.ok, true);
     assert.equal(l.health, undefined);
     assert.equal(l.companion.journey, undefined);
-    // A Look that changes nothing else may not write; the first verb that writes writes it at v6.
+    // A Look that changes nothing else may not write; the first verb that writes writes it at v7.
     cli('move', '--place=fajiu');
     cli('lang', '--lang=zh');
     const saved = JSON.parse(fs.readFileSync(file, 'utf8'));
-    assert.equal(saved.version, 6);
+    assert.equal(saved.version, 7);
     assert.equal('ladder3' in saved, false);
-    assert.deepEqual([saved.tier, saved.step], ['foundation', 3], 'the old 中期 is 四层');
+    assert.deepEqual([saved.tier, saved.step], ['foundation', 1], 'the old 中期 is 中成');
     for (const k of ['wounds', 'bond', 'tended', 'journey']) assert.equal(saved[k], undefined, k);
     assert.equal(saved.treasure.exp, undefined);
     assert.deepEqual(saved.bag, oldSave().bag);

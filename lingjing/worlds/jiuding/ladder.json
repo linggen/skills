@@ -1,7 +1,7 @@
 {
   "version": 1,
   "_balance": "Thresholds are base progress. `pay` scales every reward in that realm (applied last, after the day cap) — design.md § Pacing. 练气 halved 2026-09-15 so the cauldron waits about a week, not two.",
-  "_about": "The ladder: tiers (this world's realms) with their steps and the progress each step asks for; `pay` scales rewards in that tier; `gate` names the chapter a tier waits for. Every realm has nine 层 (our one exception to 凡人, story DESIGN § 道统): `phases` names them three by three — 一至三层 初期, 四至六层 中期, 七至九层 后期 — and `peak` is the formal word for the ninth 层 filled, the one state a breakthrough is tried from (大圆满; 巅峰 is only what people call themselves). Past 练气 each realm had three steps until 2026-10-03; each became three 层 whose thresholds sum to the old step, so a save is carried over exactly (state.mjs v6).",
+  "_about": "The ladder: tiers (this world's realms) with their steps and the progress each step asks for; `pay` scales rewards in that tier; `gate` names the chapter a tier waits for. 练气 has nine 层 (our one exception to 凡人, story DESIGN § 道统): `phases` names them three by three — 一至三层 小成, 四至六层 中成, 七至九层 大成. Every realm past 练气 has no 层: its three steps are 小成, 中成, 大成 themselves (Hanli, 2026-10-09; 小成/中成/大成 is the Daoist word, 《钟吕传道集》, replacing 初期/中期/后期). `full` is the word for a step filled — 练气二层圆满, 筑基中成圆满, 筑基大成圆满 — nothing more goes in until the next step; only the realm's last step filled, its 圆满 (筑基圆满, 练气圆满), is tried for a breakthrough. 巅峰 is the spoken word for the same point (外门's 「九层巅峰」); 圆满 is the formal one, and only it stands in a table. Past 练气 each realm had three steps until 2026-10-03, nine 层 from then to 2026-10-09, and three steps again since, each the sum of its three 层 (state.mjs v6 threeToNine, v7 nineToThree; the thresholds are the pre-10-03 ones, so the realm's whole never changed).",
   "tiers": [
     {
       "id": "qi",
@@ -56,38 +56,20 @@
       },
       "steps": {
         "zh": [
-          "一层",
-          "二层",
-          "三层",
-          "四层",
-          "五层",
-          "六层",
-          "七层",
-          "八层",
-          "九层"
+          "小成",
+          "中成",
+          "大成"
         ],
         "en": [
-          "Layer 1",
-          "Layer 2",
-          "Layer 3",
-          "Layer 4",
-          "Layer 5",
-          "Layer 6",
-          "Layer 7",
-          "Layer 8",
-          "Layer 9"
+          "Lesser Attainment",
+          "Middle Attainment",
+          "Greater Attainment"
         ]
       },
       "thresholds": [
-        128,
-        133,
-        139,
-        160,
-        167,
-        173,
-        192,
-        200,
-        208
+        400,
+        500,
+        600
       ]
     },
     {
@@ -100,38 +82,20 @@
       },
       "steps": {
         "zh": [
-          "一层",
-          "二层",
-          "三层",
-          "四层",
-          "五层",
-          "六层",
-          "七层",
-          "八层",
-          "九层"
+          "小成",
+          "中成",
+          "大成"
         ],
         "en": [
-          "Layer 1",
-          "Layer 2",
-          "Layer 3",
-          "Layer 4",
-          "Layer 5",
-          "Layer 6",
-          "Layer 7",
-          "Layer 8",
-          "Layer 9"
+          "Lesser Attainment",
+          "Middle Attainment",
+          "Greater Attainment"
         ]
       },
       "thresholds": [
-        256,
-        266,
-        278,
-        320,
-        333,
-        347,
-        384,
-        400,
-        416
+        800,
+        1000,
+        1200
       ]
     },
     {
@@ -144,38 +108,20 @@
       },
       "steps": {
         "zh": [
-          "一层",
-          "二层",
-          "三层",
-          "四层",
-          "五层",
-          "六层",
-          "七层",
-          "八层",
-          "九层"
+          "小成",
+          "中成",
+          "大成"
         ],
         "en": [
-          "Layer 1",
-          "Layer 2",
-          "Layer 3",
-          "Layer 4",
-          "Layer 5",
-          "Layer 6",
-          "Layer 7",
-          "Layer 8",
-          "Layer 9"
+          "Lesser Attainment",
+          "Middle Attainment",
+          "Greater Attainment"
         ]
       },
       "thresholds": [
-        512,
-        533,
-        555,
-        640,
-        666,
-        694,
-        768,
-        799,
-        833
+        1600,
+        2000,
+        2400
       ]
     },
     {
@@ -188,38 +134,20 @@
       },
       "steps": {
         "zh": [
-          "一层",
-          "二层",
-          "三层",
-          "四层",
-          "五层",
-          "六层",
-          "七层",
-          "八层",
-          "九层"
+          "小成",
+          "中成",
+          "大成"
         ],
         "en": [
-          "Layer 1",
-          "Layer 2",
-          "Layer 3",
-          "Layer 4",
-          "Layer 5",
-          "Layer 6",
-          "Layer 7",
-          "Layer 8",
-          "Layer 9"
+          "Lesser Attainment",
+          "Middle Attainment",
+          "Greater Attainment"
         ]
       },
       "thresholds": [
-        960,
-        999,
-        1041,
-        1152,
-        1199,
-        1249,
-        1344,
-        1399,
-        1457
+        3000,
+        3600,
+        4200
       ]
     },
     {
@@ -232,38 +160,20 @@
       },
       "steps": {
         "zh": [
-          "一层",
-          "二层",
-          "三层",
-          "四层",
-          "五层",
-          "六层",
-          "七层",
-          "八层",
-          "九层"
+          "小成",
+          "中成",
+          "大成"
         ],
         "en": [
-          "Layer 1",
-          "Layer 2",
-          "Layer 3",
-          "Layer 4",
-          "Layer 5",
-          "Layer 6",
-          "Layer 7",
-          "Layer 8",
-          "Layer 9"
+          "Lesser Attainment",
+          "Middle Attainment",
+          "Greater Attainment"
         ]
       },
       "thresholds": [
-        1600,
-        1665,
-        1735,
-        1920,
-        1998,
-        2082,
-        2240,
-        2331,
-        2429
+        5000,
+        6000,
+        7000
       ]
     },
     {
@@ -276,38 +186,20 @@
       },
       "steps": {
         "zh": [
-          "一层",
-          "二层",
-          "三层",
-          "四层",
-          "五层",
-          "六层",
-          "七层",
-          "八层",
-          "九层"
+          "小成",
+          "中成",
+          "大成"
         ],
         "en": [
-          "Layer 1",
-          "Layer 2",
-          "Layer 3",
-          "Layer 4",
-          "Layer 5",
-          "Layer 6",
-          "Layer 7",
-          "Layer 8",
-          "Layer 9"
+          "Lesser Attainment",
+          "Middle Attainment",
+          "Greater Attainment"
         ]
       },
       "thresholds": [
-        2560,
-        2664,
-        2776,
-        3040,
-        3164,
-        3296,
-        3520,
-        3663,
-        3817
+        8000,
+        9500,
+        11000
       ]
     },
     {
@@ -320,38 +212,20 @@
       },
       "steps": {
         "zh": [
-          "一层",
-          "二层",
-          "三层",
-          "四层",
-          "五层",
-          "六层",
-          "七层",
-          "八层",
-          "九层"
+          "小成",
+          "中成",
+          "大成"
         ],
         "en": [
-          "Layer 1",
-          "Layer 2",
-          "Layer 3",
-          "Layer 4",
-          "Layer 5",
-          "Layer 6",
-          "Layer 7",
-          "Layer 8",
-          "Layer 9"
+          "Lesser Attainment",
+          "Middle Attainment",
+          "Greater Attainment"
         ]
       },
       "thresholds": [
-        4000,
-        4163,
-        4337,
-        4640,
-        4829,
-        5031,
-        5280,
-        5495,
-        5725
+        12500,
+        14500,
+        16500
       ]
     },
     {
@@ -364,62 +238,136 @@
       },
       "steps": {
         "zh": [
-          "一层",
-          "二层",
-          "三层",
-          "四层",
-          "五层",
-          "六层",
-          "七层",
-          "八层",
-          "九层"
+          "小成",
+          "中成",
+          "大成"
         ],
         "en": [
-          "Layer 1",
-          "Layer 2",
-          "Layer 3",
-          "Layer 4",
-          "Layer 5",
-          "Layer 6",
-          "Layer 7",
-          "Layer 8",
-          "Layer 9"
+          "Lesser Attainment",
+          "Middle Attainment",
+          "Greater Attainment"
         ]
       },
       "thresholds": [
-        6080,
-        6327,
-        6593,
-        7040,
-        7326,
-        7634,
-        8000,
-        8325,
-        8675
+        19000,
+        22000,
+        25000
       ]
     }
   ],
   "phases": {
     "zh": [
-      "初期",
-      "中期",
-      "后期"
+      "小成",
+      "中成",
+      "大成"
     ],
     "en": [
-      "Early",
-      "Middle",
-      "Late"
+      "Lesser Attainment",
+      "Middle Attainment",
+      "Greater Attainment"
     ]
   },
-  "peak": {
-    "zh": "大圆满",
-    "en": "Great Perfection"
+  "_full": "`full`: appended to a step's name when its progress is full (state.mjs fullName; zh 筑基中成圆满, en 'Foundation Establishment · Middle Attainment, Consummation'). The realm's last step filled reads short, realm + word (peakName: 筑基圆满, 练气圆满) — a breakthrough's `from`. Was 大圆满 until 2026-10-09: a Tibetan Buddhist term; 圆满 alone is the Daoist one.",
+  "full": {
+    "zh": "圆满",
+    "en": "Consummation"
   },
-  "_caps": "The cap per 回 (Hanli, 2026-10-05: 「游戏里修炼有个上限吧? 和故事对齐」; rules/cap.mjs): `hui` names, for each 古 回, the highest 层 the player's own work reaches there (`tier`, `layer` 1-based) and, when the 回's scenes carry him further, how far its story goes (`story`; else the same). Filled to the cap, 修为 stops and the rest is held, as at a peak (`say` under the full bar); a scene's rise or breakthrough past `story` is refused (`refuse`). A 回 with none takes the one before it in the book (a 今 interlude, its 古); after 卷一 the save waits in 古九's chapter, so it stays 筑基一层 until 卷二 is written and given its caps; a chapter with no 回 (the old spine) has none — its realm gate rules it. A save already past its cap is never pulled down: it fills its own layer and waits for the story. From the book (story/jiuding-lu/OUTLINE.md 境界线, DESIGN § 六·八 定例): 古三 入门 (the game's first 层); 古四 一层, 十月廿五 二层 (lifted at 古四's close, wm-diyilu); 古五 二层 → 四层 by 息壤 (wm-xirang); 古六 四层 (大比 on 四层); 古七 (h11) 四层 until the years carry him to 七层 (09-year `futian`); 古八 (h09) 七层, the years after to 九层大圆满 (09-dabi) and the cliff to 筑基 (09-cliff); 古九 (h10) 筑基初期 — 筑基一层 (古七 split in two, Hanli 2026-10-07).",
+  "_layers_were": "`layers_were`: each realm's nine 层 thresholds as they stood 2026-10-03 → 2026-10-09, kept only so a save made then is carried into the three steps exactly (state.mjs nineToThree): 层 1–3 → 小成, 4–6 → 中成, 7–9 → 大成, the 修为 of the 层 passed in that step added to what it held.",
+  "layers_were": {
+    "foundation": [
+      128,
+      133,
+      139,
+      160,
+      167,
+      173,
+      192,
+      200,
+      208
+    ],
+    "core": [
+      256,
+      266,
+      278,
+      320,
+      333,
+      347,
+      384,
+      400,
+      416
+    ],
+    "nascent": [
+      512,
+      533,
+      555,
+      640,
+      666,
+      694,
+      768,
+      799,
+      833
+    ],
+    "deity": [
+      960,
+      999,
+      1041,
+      1152,
+      1199,
+      1249,
+      1344,
+      1399,
+      1457
+    ],
+    "void": [
+      1600,
+      1665,
+      1735,
+      1920,
+      1998,
+      2082,
+      2240,
+      2331,
+      2429
+    ],
+    "body": [
+      2560,
+      2664,
+      2776,
+      3040,
+      3164,
+      3296,
+      3520,
+      3663,
+      3817
+    ],
+    "maha": [
+      4000,
+      4163,
+      4337,
+      4640,
+      4829,
+      5031,
+      5280,
+      5495,
+      5725
+    ],
+    "tribulation": [
+      6080,
+      6327,
+      6593,
+      7040,
+      7326,
+      7634,
+      8000,
+      8325,
+      8675
+    ]
+  },
+  "_caps": "The cap per 回 (Hanli, 2026-10-05: 「游戏里修炼有个上限吧? 和故事对齐」; rules/cap.mjs): `hui` names, for each 古 回, the highest step (a 层 of 练气, a 成 above it) the player's own work reaches there (`tier`, `layer` 1-based) and, when the 回's scenes carry him further, how far its story goes (`story`; else the same). Filled to the cap, 修为 stops and the rest is held, as at a peak (`say` under the full bar); a scene's rise or breakthrough past `story` is refused (`refuse`). A 回 with none takes the one before it in the book (a 今 interlude, its 古); after 卷一 the save waits in 古九's chapter, so it stays 筑基小成 until 卷二 is written and given its caps; a chapter with no 回 (the old spine) has none — its realm gate rules it. A save already past its cap is never pulled down: it fills its own step and waits for the story. From the book (story/jiuding-lu/OUTLINE.md 境界线, DESIGN § 六·八 定例): 古三 入门 (the game's first 层); 古四 一层, 十月廿五 二层 (lifted at 古四's close, wm-diyilu); 古五 二层 → 四层 by 息壤 (wm-xirang); 古六 四层 (大比 on 四层); 古七 (h11) 四层 until the years carry him to 七层 (09-year `futian`); 古八 (h09) 七层, the years after to 九层圆满 (09-dabi) and the cliff to 筑基 (09-cliff); 古九 (h10) 筑基小成 — the first step of 筑基 (古七 split in two, Hanli 2026-10-07).",
   "caps": {
     "say": {
-      "zh": "这一层坐满了。火候未到，再坐，气也只往外溢。",
-      "en": "This layer is full. The fire is not ready yet; sit on, and the breath only spills over."
+      "zh": "坐到圆满了。火候未到，再坐，气也只往外溢。",
+      "en": "Filled to Consummation. The fire is not ready yet; sit on, and the breath only spills over."
     },
     "refuse": {
       "zh": "鼎气不肯近身。火候未到——时候到了，它自己会来。",

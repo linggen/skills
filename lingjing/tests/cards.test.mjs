@@ -553,7 +553,7 @@ test('所得: an errand handed in shows what it paid and the next step in hand',
 
 test('short of the gate, the goal line names the next thing to do', async () => {
   const { WORDS, cardHtml } = await import('../scripts/cards.js');
-  const waypoint = { text: '路通向流波山。', gate: { step: '结丹后期', progress: 1200, now: { step: '结丹初期', progress: 716, of: 800 } } };
+  const waypoint = { text: '路通向流波山。', gate: { step: '结丹圆满', progress: 1200, now: { step: '结丹小成', progress: 716, of: 800 } } };
   const errand = cardHtml({ card: 'goal' }, { look: { waypoint, work: { kind: 'errand', place: { name: '临淄' }, here: false, titles: ['榜文 · 走一趟琅琊台'] } }, lang: 'zh', words: WORDS.zh });
   assert.match(errand, /可做：临淄 · 榜文 · 走一趟琅琊台/);
   const beast = cardHtml({ card: 'goal' }, { look: { waypoint, work: { kind: 'beast', place: { name: '空桑' }, here: false, titles: ['夔'] } }, lang: 'zh', words: WORDS.zh });

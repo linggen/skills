@@ -2,7 +2,7 @@
 // a player's own work never carries him ahead of the book's realm line (OUTLINE 境界线,
 // DESIGN § 六·八) — the story's jumps (古四's close, 息壤, the year, the cliff) are the
 // story's; at the cap the layer fills and the rest is held; a breakthrough past where the
-// 回's story reaches is refused in the world's words; after 卷一 it stays 筑基一层; a save
+// 回's story reaches is refused in the world's words; after 卷一 it stays 筑基小成; a save
 // already past its cap is never pulled down.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -36,8 +36,8 @@ test('every 古 回 declares its cap, as the book\'s realm line stands', () => {
     h07: ['qi2', 'qi4'], // 古五: 二层, 息壤 → 四层
     h08: ['qi4', null], // 古六: 四层, 大比 on 四层
     h11: ['qi4', 'qi7'], // 古七 (its first half since 2026-10-07): 四层, 年三–年五 → 七层
-    h09: ['qi7', 'foundation1'], // 古八: 七层, the years after → 九层大圆满, the cliff → 筑基
-    h10: ['foundation1', null], // 古九: 筑基初期
+    h09: ['qi7', 'foundation1'], // 古八: 七层, the years after → 九层圆满, the cliff → 筑基
+    h10: ['foundation1', null], // 古九: 筑基小成
   });
   assert.deepEqual(lint(content).filter(p => /cap/.test(p)), []);
 });
@@ -83,7 +83,7 @@ test('古四\'s close lifts him to 二层 (十月廿五, by the story); 古五 g
   assert.equal(s.progress, threshold(content, s));
 });
 
-test('古七: 四层 until the year — the seasons lift him to 七层, 古八\'s to 九层大圆满, the cliff is the story\'s breakthrough', () => {
+test('古七: 四层 until the year — the seasons lift him to 七层, 古八\'s to 九层圆满, the cliff is the story\'s breakthrough', () => {
   const s = at('00-zhuji', '09-year', 'yaoyuan', ['00-prologue', '00-waimen'], { step: 3 });
   grind(s);
   assert.equal(named(s), '练气四层', 'the five years are the story\'s, not a grind');
@@ -112,20 +112,21 @@ test('a breakthrough past where the 回\'s story reaches is refused in the world
   assert.ok(lint(tight).some(p => /09-cliff.*breaks through past the cap of h09/.test(p)));
 });
 
-test('卷一\'s end: 古八 over, 卷二 waiting — 筑基一层 filled, and nothing ground carries him past it', () => {
+test('卷一\'s end: 古八 over, 卷二 waiting — 筑基小成 filled, and nothing ground carries him past it', () => {
   const ch = content.chapters['01-ji'];
   const s = at('01-ji', null, 'zhangyuan', ['00-prologue', '00-waimen', '00-zhuji', '01-ji'], { tier: 'foundation', done_scenes: Object.keys(ch.scenes) });
   const { got } = grind(s, 300);
-  assert.equal(named(s), '筑基一层');
+  assert.equal(named(s), '筑基小成');
   assert.equal(got, threshold(content, s));
   assert.equal(look(s, content, ctx).capped.say, content.ladder.caps.say.zh);
+  assert.equal(look(s, content, ctx).tier.name, '筑基小成圆满', 'a step filled reads 圆满');
   // In 古八 itself, the same.
   const t = at('01-ji', '01-arrive', 'yecheng', ['00-prologue', '00-waimen', '00-zhuji'], { tier: 'foundation' });
   grind(t, 300);
-  assert.equal(named(t), '筑基一层');
+  assert.equal(named(t), '筑基小成');
 });
 
-test('an old save already past its cap is never pulled down: it fills its own layer and goes no higher', () => {
+test('an old save already past its cap is never pulled down: it fills its own step and goes no higher', () => {
   const s = gusi({ step: 5, progress: 40 }); // 练气六层 in 古四, from before the caps
   const l = look(s, content, ctx);
   assert.equal(l.tier.name, '练气六层', 'Look reads it as it is');
@@ -133,8 +134,8 @@ test('an old save already past its cap is never pulled down: it fills its own la
   assert.equal(named(s), '练气六层', 'not one layer down, not one up');
   assert.equal(s.progress, threshold(content, s));
   assert.equal(got, threshold(content, s) - 40);
-  // 筑基五层 in 古八: kept, filled, held.
-  const f = at('01-ji', '01-arrive', 'yecheng', ['00-prologue', '00-waimen', '00-zhuji'], { tier: 'foundation', step: 4, progress: 0 });
+  // 筑基中成 in 古八: kept, filled, held.
+  const f = at('01-ji', '01-arrive', 'yecheng', ['00-prologue', '00-waimen', '00-zhuji'], { tier: 'foundation', step: 1, progress: 0 });
   grind(f, 300);
-  assert.equal(named(f), '筑基五层');
+  assert.equal(named(f), '筑基中成');
 });

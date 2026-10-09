@@ -14,7 +14,7 @@
    and **the bedsheet ghost** (the white-robed 「仙长」 in the shrine, 「去年漳水涨了三尺」「他上来的时候，你们谁也不许拦」 —
    the old-well voice that called 「回来」 on 黑松岭) — then **the eighteenth**. `girl` meets 老胡 (the knee like 爹's,
    东街卖油的闺女).
-3. **The wedding** (`01-altar`, 河伯祠). He sends the shaman 「去给河伯报信」 (she cries 「仙长」); 阿禾 (筑基中期, passing as 练气) jumps in at the count of seven; the 三老 shout 「推船」, she gives her own count aloud (三百文 × 三千户 asked door to door, 刘船匠's 工账, the 裁缝铺 and the 鼓手 — 八百九十五贯 a year left, 「进了伞底下这几位的口袋」; she does not know the split), the shaman testifies to the split (巫祝 一百, each 三老 二百六十五 a year); the Three Elders cough up twenty-five years of River Lord money — and he lays his branded palm beside one of their ingots, the same mark.
+3. **The wedding** (`01-altar`, 河伯祠). He sends the shaman 「去给河伯报信」 (she cries 「仙长」); 阿禾 (筑基中成, passing as 练气) jumps in at the count of seven; the 三老 shout 「推船」, she gives her own count aloud (三百文 × 三千户 asked door to door, 刘船匠's 工账, the 裁缝铺 and the 鼓手 — 八百九十五贯 a year left, 「进了伞底下这几位的口袋」; she does not know the split), the shaman testifies to the split (巫祝 一百, each 三老 二百六十五 a year); the Three Elders cough up twenty-five years of River Lord money — and he lays his branded palm beside one of their ingots, the same mark.
 4. **The Zhang stands up** (`01-rise`, 河伯祠) — **the chapter's fight**: the river stands, twenty
    boats, thousands kneel, three stand. 冰夷's dragons lunge and sweep (a duel with `foe-shuanglong`,
    a trial that may be fought again, `retry`); won, the book's passage plays: he steps back in front

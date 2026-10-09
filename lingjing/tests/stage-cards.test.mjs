@@ -115,7 +115,7 @@ test('the 事 chip: how many in hand, what can be handed in — and its popover 
   assert.equal(bookChipHtml(pageCtx({ ...l, book: [], waypoint: null }), false, false), '');
   // the stage keeps one slim line of it, with nothing to tap
   const line = cardHtml({ card: 'goal' }, pageCtx(look({ ...open, chapter: '03-qing', scene: '03-cauldron', place: 'penglai' }, content, at)));
-  assert.match(line, /class="goalline".*鼎气要结丹大圆满 · 416 修为才受得住 — 如今 结丹一层 · 206\/256/s);
+  assert.match(line, /class="goalline".*鼎气要结丹圆满 · 1200 修为才受得住 — 如今 结丹小成 · 206\/800/s);
   assert.doesNotMatch(line, /<button/);
 });
 
