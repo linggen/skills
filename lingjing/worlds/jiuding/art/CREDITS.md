@@ -34,6 +34,7 @@ paper, a warm paper ground with grain, the red seal).
 | taifeng | 太逢（泰逢） | 《古今圖書集成·神異典》太逢神圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Spirits and the Supernatural - pic30 - 太逢神圖.svg* |
 | mafu | 馬腹 | 《古今圖書集成·禽蟲典》馬腹圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic297 - 馬腹圖.svg* |
 | zheng | 猙 | 《古今圖書集成·禽蟲典》猙圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic252 - 猙圖.svg* (五尾一角, the leopard's spots — as the 西次三經 says) |
+| lu | 鯥 | 《古今圖書集成·禽蟲典》鯥魚圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic404 - 鯥魚圖.svg* (牛形、蛇尾有翼、鱗身 — as the 南山經 says; the 牛首之怪 of 古七's 沂水). A 图鉴 entry only (`codex.json` `lu`), no creatures.json row; the framed picture is `art/lu.webp` (no `art/creatures/` copy — like 肥遺 the woodcut is the card). The seal font's Black face lacks 鯥, so the seal is set in Songti SC Bold (`frame.py --font-index 1`). |
 
 The FLUX paintings of 2026-09-15 (夫諸, 狍鴞, 精衛, 雷神, 蠪侄) were replaced
 on 2026-09-16; the seal font lacks 蠪 and 狪, so those seals read 侄 and 珠.

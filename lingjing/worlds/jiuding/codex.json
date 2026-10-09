@@ -592,6 +592,28 @@
    },
    "_first": "No book card (Hanli 2026-10-05: 「这个可以删了」) — the game stage keeps its first-appearance card at 00-gate."
   },
+  "lu": {
+   "_about": "古七 · 年四: the 牛首之怪 of 沂水东岸 (the book names it 鯥 through 阿禾's reading of 《南山经》; its hide and wing-membrane become 顺风溜). A codex entry only, never a creatures.json row: it has no 斗法 deck and is not a beast of the map to meet. The picture is found, not drawn (art/CREDITS.md): 《古今圖書集成》鯥魚圖, art/plates/lu.svg. No `first` yet: the book card comes with a tag `[鯥]{注=lu}` in 07-第七回.md's 年四 passage (h07), where the card then stands after its first paragraph.",
+   "kind": "生物",
+   "name": {
+    "zh": "鯥",
+    "en": "The Lu"
+   },
+   "pinyin": "lù",
+   "image": "art/lu.webp",
+   "credit": {
+    "zh": "《古今圖書集成·禽蟲典》鯥魚圖，清雍正本",
+    "en": "Gujin Tushu Jicheng, Qing, 1725"
+   },
+   "lines": {
+    "zh": [
+     "沂水东岸夜里上岸、拖走耕牛的牛首之怪。《南山经》：「其状如牛，陵居，蛇尾有翼，其羽在魼下，其音如留牛。」身披鱼鳞，翅膜长在肋下，皮硬得针扎不进。"
+    ],
+    "en": [
+     "The ox-headed thing that came ashore on the Yi's east bank at night and dragged off the farmers' oxen. The Classic: \"shaped like an ox, living on the slopes, with a snake's tail and wings, its feathers under the ribs, its voice like a lowing calf.\" Fish-scaled, its wing-membrane set under the ribs, its hide too hard for a needle."
+    ]
+   }
+  },
   "jin-shenmang": {
    "first": {
     "book": "j01"

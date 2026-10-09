@@ -35,13 +35,13 @@ def paper(w, h, seed=7):
     grain = Image.effect_noise((w, h), 18).point(lambda v: 255 - int((255 - v) * 0.10))
     return ImageChops.multiply(g, Image.merge('RGB', (grain, grain, grain)))
 
-def seal(img, ch, size):
+def seal(img, ch, size, face=0):
     d = ImageDraw.Draw(img)
     m = int(size * 0.55)
     x1, y1 = img.width - m, img.height - m
     x0, y0 = x1 - size, y1 - size
     d.rounded_rectangle([x0, y0, x1, y1], radius=int(size * 0.08), fill=SEAL)
-    font = ImageFont.truetype(FONT, int(size * 0.68))
+    font = ImageFont.truetype(FONT, int(size * 0.68), index=face)
     bbox = d.textbbox((0, 0), ch, font=font)
     tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
     d.text((x0 + (size - tw) / 2 - bbox[0], y0 + (size - th) / 2 - bbox[1]), ch, font=font, fill=(247, 242, 231))
@@ -54,6 +54,7 @@ def main():
     ap.add_argument('--width', type=int, default=1200)
     ap.add_argument('--margin', type=float, default=0.03)
     ap.add_argument('--quality', type=int, default=80)
+    ap.add_argument('--font-index', type=int, default=0, help='face in Songti.ttc (0 Black lacks some rare characters, e.g. 鯥; 1 Bold has them)')
     ap.add_argument('--levels', action='store_true', help='a scan on toned paper: stretch so the paper reads white and the ink black')
     a = ap.parse_args()
     plate = rasterise(a.src, a.width * 2)
@@ -80,7 +81,7 @@ def main():
     ground = paper(w, h)
     ink = Image.new('L', (w, h), 255); ink.paste(plate, (mx, mx))
     out = ImageChops.multiply(ground, Image.merge('RGB', (ink, ink, ink)))
-    seal(out, a.seal, int(a.width * 0.055))
+    seal(out, a.seal, int(a.width * 0.055), a.font_index)
     out.save(a.out, 'WEBP', quality=a.quality, method=6)
     print(a.out, out.size, os.path.getsize(a.out), 'bytes')
 
