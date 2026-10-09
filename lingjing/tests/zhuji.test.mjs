@@ -176,7 +176,7 @@ test('the sect\'s 筑基丹 comes from the five-year skip, not from 古六: 古�
   assert.match(dabi.story.zh, /第五年腊八[\s\S]*写了「沈小满」三个字[\s\S]*米汤/, 'the year-five 大比 won plainly, the seal glued back with rice water');
   assert.match(fu.story.zh, /亲传，不算外门。」$/, '伏天 ends where 古七 ends');
   assert.match(CH.scenes['09-dabi'].story.zh, /^年六，沈小满十七岁，练气七层[\s\S]*那年秋天，沉鼎观执事堂西墙上/, 'and 古八 opens on 年六 (grounding: 七层, 火柴, 顺风溜, 丹房), then the bear tag');
-  assert.match(fu.story.zh, /祁长松是年三开春出的关。[\s\S]*还是一个九层[\s\S]*「身子记下了。下回。」[\s\S]*第二回闭关，这一回，筑了基/, '祁长松 fails his first 筑基 the spring after 古六 and lays it on the second (Hanli 2026-10-06: a failed attempt is experience)');
+  assert.match(fu.story.zh, /祁长松是年三开春出的关。[\s\S]*还是一个九层[\s\S]*「身子记下了，下回再来。」[\s\S]*第二回闭关，这一回，筑了基/, '祁长松 fails his first 筑基 the spring after 古六 and lays it on the second (Hanli 2026-10-06: a failed attempt is experience)');
   const grants = Object.values(CH.scenes).flatMap(sc => sc.exits.filter(e => e.grant?.item === 'foundation-pill').map(e => `${sc.id}/${e.id}`));
   assert.deepEqual(grants, ['09-dabi/dabi']);
   for (const sc of Object.values(content.chapters['00-waimen'].scenes)) for (const e of sc.exits) assert.notEqual(e.grant?.item, 'foundation-pill', `${sc.id}/${e.id}`);
