@@ -1012,8 +1012,8 @@
       },
       "art": "art/items/shunfeng-liu.webp",
       "about": {
-        "zh": "一双丑鞋：灰褐色的矮靿靴子，鱼鳞的纹路一片一片还在皮面上，两只脚后跟上各开一道缝，像鱼鳃。鞋底上烙着三个字：顺风溜；底下一行米粒大的小字：「面前有风，身后有路。」",
-        "en": "An ugly pair: grey-brown low boots, the fish-scale grain still on the leather, a slit on each heel like a gill. Burned into the sole: Tailwind Slippers; and beneath, in letters the size of rice grains: \"Wind in your face, a road at your back.\""
+        "zh": "一双丑鞋：灰褐色的矮靿靴子，鱼鳞的纹路一片一片还在皮面上，两只脚后跟上各开一道缝，像鱼鳃。鞋底上烙着三个字：顺风溜；底下一行米粒大的小字：「背后有风，脚下有路。」",
+        "en": "An ugly pair: grey-brown low boots, the fish-scale grain still on the leather, a slit on each heel like a gill. Burned into the sole: Tailwind Slippers; and beneath, in letters the size of rice grains: \"Wind at your back, a road at your feet.\""
       },
       "buy": 0,
       "sell": 0,
@@ -1021,7 +1021,7 @@
       "effect": {
         "def": 1
       },
-      "_about": "古七 (Hanli 2026-10-09: 「小满自己做鞋子吗？……这之前都扔饭桶吧」; replaces the 2026-10-07 器房/老铁头 forging): the 鯥 of 沂水东岸 leaves its hide and gliding membrane; a winter stinking up the woodshed, then 年五开春 he feeds them to the 饭桶, which spits out the boots — name and one vague line on the sole (饭桶 item rule); the effect is found by trying: facing the wind, one step back, a ten-丈 glide downwind; wind at your back only 「噗」. 银月, first words after a winter asleep: 「鱼皮鞋。还带响的。」 A 法器 for running, not fighting; three glides drain a 六层; the heel gills go 「噗」 so no sneaking. Used once more in 卷一: off the 黑松岭 cliff after the 合窳 throws him, downwind, three glides to the glowing grass. Game: worn in the 法衣 slot for a modest 防 +1 (the schema has no running effect); not granted by a scene yet, never sold.",
+      "_about": "古七 (Hanli 2026-10-09: 「小满自己做鞋子吗？……这之前都扔饭桶吧」; replaces the 2026-10-07 器房/老铁头 forging): the 鯥 of 沂水东岸 leaves its hide and gliding membrane; a winter stinking up the woodshed, then 年五开春 he feeds them to the 饭桶, which spits out the boots — name and one vague line on the sole (饭桶 item rule); the effect is found by trying: one step back with the wind, a ten-丈 glide downwind; against the wind only 「噗」. 银月, first words after a winter asleep: 「鱼皮鞋。还带响的。」 A 法器 for running, not fighting; three glides drain a 六层; the heel gills go 「噗」 so no sneaking. Used once more in 卷一: off the 黑松岭 cliff after the 合窳 throws him, downwind, three glides to the glowing grass. Game: worn in the 法衣 slot for a modest 防 +1 (the schema has no running effect); not granted by a scene yet, never sold.",
       "art_source": "Painted for Lingjing by Codex CLI's image tool (tools/paint-codex.py), 2026-10-07, from the description."
     },
     {

@@ -651,6 +651,21 @@
         "合抱粗的大树，从细小的萌芽长起；九层高的台子，从一筐一筐的土垒起；千里的远路，从脚下一步开始。"
       ],
       "note": "瞿老只念前两句——「九層之臺」正合练气九层（古七八月崖顶，九格落叶之后；Hanli 2026-10-07）。"
+    },
+    "baopu-jinhuo": {
+      "title": "抱朴子·内篇·金丹",
+      "about": "葛洪（字稚川，号抱朴子），东晋；《内篇》讲神仙方药，〈金丹〉一篇论还丹与金液。",
+      "source": {
+        "edition": "维基文库《抱朴子·卷04》",
+        "section": "内篇卷四〈金丹〉",
+        "url": "https://zh.wikisource.org/wiki/%E6%8A%B1%E6%9C%B4%E5%AD%90/%E5%8D%B704",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "夫金丹之為物，燒之愈久，變化愈妙。黃金入火，百煉不消，埋之，畢天不朽。",
+      "plain": [
+        "金丹这东西，烧得越久，变化越妙。黄金放进火里，炼一百回也不消损；埋在地下，天地终了也不朽坏。"
+      ],
+      "note": "古八年六开春，闵丹师考小满背《金丹》，借这一句讲「先经得起烧，才烧得久」，引到挑料。"
     }
   },
   "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: a 药园 line from the 《神农本草经》 序录 上药/中药/下药 passage — that is `shennong`, which 褚先生 paraphrases in one untagged sentence in 古六 (06-第六回.md); it would use it twice. 2026-10-02 (古线 ten 回 → eight, 今线 → four interludes, book.json `absorbs`): the index keys above are relabelled — 古 by the new 回 (old 古三 into 古二, 古五+古六 into 古四, 古七→古五 … 古十→古八), 今 by its interlude (今 · 一 = old 今一–今三, 今 · 二 = 今四–今六, 今 · 三 = 今七–今八, 今 · 四 = 今九–今十); the 主典 named above by old number keep their entries — every 今 主典 is still quoted, in its interlude (Hanli 2026-10-02: 「小课堂与典籍要保留」). 2026-10-07（Hanli 古七第二轮）：古七新引 laozi-zhirou（崖顶第一课）、shanhai-lu（沂水鯥）、zhuangzi-liezi（随风）、zhuangzi-wuhou（入隙）、laozi-piaofeng（定风）、laozi-hebao（九格落叶）；zhouyi-xun 升入。",
