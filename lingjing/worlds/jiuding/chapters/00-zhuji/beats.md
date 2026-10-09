@@ -25,7 +25,7 @@ speak to the player as 你 (story/jiuding-lu/DESIGN.md § 四·五 人称分工)
    story, so they cost no 体力 (主线, Hanli 2026-10-01 — was 25 a season; 入秋 pays a story step's 3)
    and each waits on the one before (`needs.mark`); a season done is not offered again (`once`).
    No days of chores (his, 2026-09-30).
-3b. **The three years** (`09-dabi`, 药园, 古八 h09 — 2026-10-07 split; 「第七回 · 完」 stands here). The scene's passage is 年六's 老熊 (秦雁's tag); `dabi` (腊八 · 再上五行台) carries 八层 → 九层 (`rise: 9`), the furnace of his own, the year-five 大比 and the 官丹 (`foundation-pill`); 入秋 (`ruqiu`, needs `y-dabi`) → 09-qulao.
+3b. **The three years** (`09-dabi`, 药园, 古八 h09 — 2026-10-07 split; 「第七回 · 完」 stands here). The scene's passage is 年六's 丹房 lesson with 闵丹师 (the 九节聚气 recipe; better 饭桶 pills); `dabi` (腊八 · 再上五行台) carries 八层 → 九层 (`rise: 9`), the furnace of his own, the year-five 大比 and the 官丹 (`foundation-pill`); 入秋 (`ruqiu`, needs `y-dabi`) → 09-qulao.
    **Not yet a scene** (listed for later, 2026-10-06): the 黑松岭 big mission between 入秋 and 八月 — the 蒙山县 tag (seven taken, 马家's dogs stop at the 断碑), 瞿老 「去。别进村。」, the 合窳 in the valley pit, 爹 seen once from the ridge.
 4. **Old Qu** (`09-qulao`, 后山崖顶). 「九层，满了。」 (a 筑基 sees a 练气's level at a glance) — nine fingers; 「渡口那一回，你是爬着上来的。」「练气的腿，跑不过筑基的剑。」
    (no palm mark, Hanli 2026-10-09); 「用哪颗丹？」「观里那颗。」 He tells of
