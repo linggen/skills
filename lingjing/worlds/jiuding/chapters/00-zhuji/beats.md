@@ -27,8 +27,8 @@ speak to the player as 你 (story/jiuding-lu/DESIGN.md § 四·五 人称分工)
    No days of chores (his, 2026-09-30).
 3b. **The three years** (`09-dabi`, 药园, 古八 h09 — 2026-10-07 split; 「第七回 · 完」 stands here). The scene's passage is 年六's 老熊 (秦雁's tag); `dabi` (腊八 · 再上五行台) carries 八层 → 九层 (`rise: 9`), the furnace of his own, the year-five 大比 and the 官丹 (`foundation-pill`); 入秋 (`ruqiu`, needs `y-dabi`) → 09-qulao.
    **Not yet a scene** (listed for later, 2026-10-06): the 黑松岭 big mission between 入秋 and 八月 — the 蒙山县 tag (seven taken, 马家's dogs stop at the 断碑), 瞿老 「去。别进村。」, the 合窳 in the valley pit, 爹 seen once from the ridge.
-4. **Old Qu** (`09-qulao`, 后山崖顶). 「九层，满了。」 (a 筑基 sees a 练气's level at a glance) — nine fingers, and the palm opens on the brand, 瞿老 binds it
-   (「这东西，别给人看。」); 「用哪颗丹？」「观里那颗。」 He tells of
+4. **Old Qu** (`09-qulao`, 后山崖顶). 「九层，满了。」 (a 筑基 sees a 练气's level at a glance) — nine fingers; 「渡口那一回，你是爬着上来的。」「练气的腿，跑不过筑基的剑。」
+   (no palm mark, Hanli 2026-10-09); 「用哪颗丹？」「观里那颗。」 He tells of
    his last disciple — 外公 (DESIGN § 六·九 「外公是谁」). 「那颗丹，别吃。」
 5. **The cliff** (`09-cliff`, 后山崖顶) — **the key beat**: 九月初三, the breakthrough (`breakthrough:
    true`; the throw reaches for the 九转 before the 一转 — ladder.json `breakthrough.pill`). The
