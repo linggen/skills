@@ -593,7 +593,10 @@
    "_first": "No book card (Hanli 2026-10-05: 「这个可以删了」) — the game stage keeps its first-appearance card at 00-gate."
   },
   "lu": {
-   "_about": "古七 · 年四: the 牛首之怪 of 沂水东岸 (the book names it 鯥 through 阿禾's reading of 《南山经》; its hide and wing-membrane become 顺风溜). A codex entry only, never a creatures.json row: it has no 斗法 deck and is not a beast of the map to meet. The picture is found, not drawn (art/CREDITS.md): 《古今圖書集成》鯥魚圖, art/plates/lu.svg. No `first` yet: the book card comes with a tag `[鯥]{注=lu}` in 07-第七回.md's 年四 passage (h07), where the card then stands after its first paragraph.",
+   "_about": "古七 · 年四: the 牛首之怪 of 沂水东岸 (the book names it 鯥 through 阿禾's reading of 《南山经》; its hide and wing-membrane become 顺风溜). A codex entry only, never a creatures.json row: it has no 斗法 deck and is not a beast of the map to meet. The picture is found, not drawn (art/CREDITS.md): 《古今圖書集成》鯥魚圖, art/plates/lu.svg. Tagged `[鯥]{注=lu}` in 07-第七回.md's 年四 passage (h11), where 阿禾 names it; `first.book` h11.",
+   "first": {
+    "book": "h11"
+   },
    "kind": "生物",
    "name": {
     "zh": "鯥",

@@ -1012,8 +1012,8 @@
       },
       "art": "art/items/shunfeng-liu.webp",
       "about": {
-        "zh": "一双丑鞋：灰褐色的矮靿靴子，鯥皮的底，鯥翅膜的帮，皮面上还看得出鱼鳞的纹路，两只脚后跟上各开一道缝，像鱼鳃。鞋底上一道风纹，一阴在下，二阳在上，三笔，一口气划的。灌一丝气，背对着风往后退一步，人便贴着地滑出去十丈；逆着风，它屁用没有。",
-        "en": "An ugly pair: grey-brown low boots, soles of Lu hide, uppers of the Lu's gliding membrane, the fish-scale grain still showing, and a slit on each heel like a gill. On each sole one wind rune — one broken line below, two whole lines above, three strokes in a single breath. Feed it a thread of qi and step back with the wind behind you, and you skim ten zhang low over the ground; against the wind it is no use at all."
+        "zh": "一双丑鞋：灰褐色的矮靿靴子，鱼鳞的纹路一片一片还在皮面上，两只脚后跟上各开一道缝，像鱼鳃。鞋底上烙着三个字：顺风溜；底下一行米粒大的小字：「背后有风，脚下有路。」",
+        "en": "An ugly pair: grey-brown low boots, the fish-scale grain still on the leather, a slit on each heel like a gill. Burned into the sole: Tailwind Slippers; and beneath, in letters the size of rice grains: \"Wind at your back, a road at your feet.\""
       },
       "buy": 0,
       "sell": 0,
@@ -1021,7 +1021,7 @@
       "effect": {
         "def": 1
       },
-      "_about": "古七 (Hanli 2026-10-07): his first self-made 法器. The 鯥 of 沂水东岸 (a red tag, 五层 → 六层) leaves him its gliding membrane and the back hide the 火柴 could not cut; a month on the 器房 bellows (east-wall chore, paid in merit) buys one night at 老铁头's forge — 洗料 (fingertips seared three times), 合形 (two hundred awl holes a sole), 刻纹 (the 巽 lines from 瞿老's first lesson, straight in one pass; 老铁头: 「……你师父是谁？」). 老铁头 names it; 银月: 「鱼皮鞋。还带响的。」 A 法器 for running, not fighting: a tailwind or a downhill slope, ten 丈 a glide, three glides drain a 六层, the heel gills go 「噗」 so no sneaking. Used once more in 卷一: off the 黑松岭 cliff after the 合窳 throws him, downwind, three glides to the glowing grass. Replaced after 筑基 (never said in text). Game: worn in the 法衣 slot for a modest 防 +1 (the schema has no running effect); not granted by a scene yet, never sold.",
+      "_about": "古七 (Hanli 2026-10-09: 「小满自己做鞋子吗？……这之前都扔饭桶吧」; replaces the 2026-10-07 器房/老铁头 forging): the 鯥 of 沂水东岸 leaves its hide and gliding membrane; a winter stinking up the woodshed, then 年五开春 he feeds them to the 饭桶, which spits out the boots — name and one vague line on the sole (饭桶 item rule); the effect is found by trying: back to the wind, one step, a ten-丈 glide; against the wind only 「噗」. 银月, first words after a winter asleep: 「鱼皮鞋。还带响的。」 A 法器 for running, not fighting; three glides drain a 六层; the heel gills go 「噗」 so no sneaking. Used once more in 卷一: off the 黑松岭 cliff after the 合窳 throws him, downwind, three glides to the glowing grass. Game: worn in the 法衣 slot for a modest 防 +1 (the schema has no running effect); not granted by a scene yet, never sold.",
       "art_source": "Painted for Lingjing by Codex CLI's image tool (tools/paint-codex.py), 2026-10-07, from the description."
     },
     {
