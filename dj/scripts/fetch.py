@@ -3,7 +3,7 @@
 
     fetch.py track <json>          one song, now (the karaoke page's on-the-fly get)
     fetch.py karaoke <json>        one karaoke render, now (the karaoke page)
-    fetch.py queue <json> [phone]  QueueTracks: the user's Get from the phone —
+    fetch.py queue <json> [phone]  QueueTracks: a download asked for, no page —
                                    held songs skipped, the rest queued
     fetch.py karaoke-batch <json>  GetKaraoke
     fetch.py start-worker          launch the queue worker, detached; prints its pid
@@ -384,7 +384,8 @@ def karaoke_batch(tracks):
 
 
 def queue_tracks(tracks, for_phone):
-    """The user's Get, from a door with no page (the phone's confirm card): the
+    """The download from a door with no page (DJ's QueueTracks, the phone's
+    dj_get_songs), once the user asked for it: the
     songs the library holds — in any script, or a slip away unless forced —
     are skipped with the reason, the rest go on the Mac's queue and the worker
     starts. Nothing downloads in this call."""

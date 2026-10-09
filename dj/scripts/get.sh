@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# get.sh — backs QueueTracks, the user's Get from a door with no page (the
-# phone's confirm card). Never the model's: DJ proposes, the user's tap fetches.
+# get.sh — backs QueueTracks, the download from a door with no page: DJ's own
+# call when the user asked to download, and the phone's dj_get_songs.
 #
 # Takes a JSON array of {artist, title, year?, version?, query_hints?, force?}
 # as $1 (or on stdin) and `for_phone` as $2. scripts/fetch.py `queue` skips the

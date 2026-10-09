@@ -7,9 +7,11 @@ songs you choose, offline.
 ## Split
 
 - **Agent curates.** NL brief → research → a proposed set (`PageUpdate`), and
-  library tools (playlists, `AddToPhone`) when asked — never a download: the user taps Get. No file or
-  shell tools of its own.
-- **User gets.** Taps **Get** on the set; the page queues it on the Mac.
+  library tools (playlists, `AddToPhone`) when asked. Asked to find or
+  recommend, it only proposes. No file or shell tools of its own.
+- **Download on request.** Asked to download, the agent queues the songs
+  (`QueueTracks`); otherwise the user taps **Get** on the set, and the page
+  queues it on the Mac.
 - **One writer.** Every library change — page, agent, phone — runs
   `actions.mjs`.
 
