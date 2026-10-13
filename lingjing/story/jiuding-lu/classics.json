@@ -681,6 +681,51 @@
         "掐诀是用来通神、制邪的。诀有七百多种，如今常用的不多：从无名指根起一节一节数过去，共十二处，配十二地支；里头又分出八卦、七星、九宫、三台，各管各的事。"
       ],
       "note": "古六褚先生头一天的掐诀课。「九官」是底本的字，当作「九宫」。下文「惟中指中文為玉清訣……總三界萬事」是课上「土居中」那一节的来处。十二文各在哪一节，书里照通行的掌图排（子在无名指根，午在中指尖）。火掐午文见《上清天心正法》卷四「次再掐午文，吸南炁一口」；雷局见同卷「掐子文，成雷局」；吹枣治病见同卷「右法午文南炁，念呪七徧，取炁七口吹棗上」。"
+    },
+    "laozi-wogu": {
+      "title": "道德经·五十五章",
+      "about": "《老子》五十五章拿初生的婴儿比「含德之厚」的人：骨头软、筋柔，小拳头却攥得牢。道门把拇指掐在指根、四指包住的攥法叫「握固」。",
+      "source": {
+        "edition": "维基文库《道德經 (王弼本)》",
+        "section": "五十五章",
+        "url": "https://zh.wikisource.org/wiki/%E9%81%93%E5%BE%B7%E7%B6%93_(%E7%8E%8B%E5%BC%BC%E6%9C%AC)",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "含德之厚，比於赤子。蜂蠆虺蛇不螫，猛獸不據，攫鳥不搏。骨弱筋柔而握固。",
+      "plain": [
+        "德行深厚的人，好比初生的婴儿：毒虫不螫他，猛兽不扑他，恶鸟不抓他。他骨头软、筋柔，小拳头却握得牢牢的。"
+      ],
+      "note": "古六褚先生掐诀课：雷局的攥法就是娃娃拳，第三天的扣诀也是这个攥法。王弼注：「以柔弱之故，故握能周固。」"
+    },
+    "baopu-liujia": {
+      "title": "抱朴子·内篇·登涉",
+      "about": "葛洪《抱朴子》内篇卷十七〈登涉〉，讲进山要知道的事；其中记了一句九个字的「六甲秘祝」。",
+      "source": {
+        "edition": "维基文库《抱朴子·卷17》",
+        "section": "内篇卷十七〈登涉〉",
+        "url": "https://zh.wikisource.org/wiki/%E6%8A%B1%E6%9C%B4%E5%AD%90/%E5%8D%B717",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "入山宜知六甲秘祝。祝曰，臨兵鬥者，皆陣列前行。凡九字，常當密祝之，無所不辟。要道不煩，此之謂也。",
+      "plain": [
+        "进山应当知道六甲秘祝。祝词是：「临兵斗者，皆阵列前行。」一共九个字，常常默念它，什么都避得开。要紧的道理不啰嗦，说的就是这个。"
+      ],
+      "note": "古六褚先生第二天的咒课：咒不在长；路走熟了九个字够，新手八句一个字不许落。"
+    },
+    "suwen-wusheng": {
+      "title": "黄帝内经·素问·宝命全形论",
+      "about": "《素问》第二十五篇，黄帝问针法，岐伯先讲五行一样胜一样的道理。",
+      "source": {
+        "edition": "维基文库《黃帝內經·素問第八卷》",
+        "section": "〈寶命全形論二十五〉",
+        "url": "https://zh.wikisource.org/wiki/%E9%BB%83%E5%B8%9D%E5%85%A7%E7%B6%93/%E7%B4%A0%E5%95%8F%E7%AC%AC%E5%85%AB%E5%8D%B7",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "木得金而伐，火得水而滅，土得木而達，金得火而缺，水得土而絕，萬物盡然，不可勝竭。",
+      "plain": [
+        "木碰上金就被砍伐，火碰上水就熄灭，土碰上木就被穿透，金碰上火就残缺，水碰上土就断流。万物都是这样，说也说不完。"
+      ],
+      "note": "古六褚先生讲五样法术怎么配着使：木藤裂土墙，金刃断木藤，火弹卷金刃，冰锥灭火弹，土墙挡冰锥——大比四场都照这五句打。"
     }
   },
   "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: a 药园 line from the 《神农本草经》 序录 上药/中药/下药 passage — that is `shennong`, which 褚先生 paraphrases in one untagged sentence in 古六 (06-第六回.md); it would use it twice. 2026-10-02 (古线 ten 回 → eight, 今线 → four interludes, book.json `absorbs`): the index keys above are relabelled — 古 by the new 回 (old 古三 into 古二, 古五+古六 into 古四, 古七→古五 … 古十→古八), 今 by its interlude (今 · 一 = old 今一–今三, 今 · 二 = 今四–今六, 今 · 三 = 今七–今八, 今 · 四 = 今九–今十); the 主典 named above by old number keep their entries — every 今 主典 is still quoted, in its interlude (Hanli 2026-10-02: 「小课堂与典籍要保留」). 2026-10-07（Hanli 古七第二轮）：古七新引 laozi-zhirou（崖顶第一课）、shanhai-lu（沂水鯥）、zhuangzi-liezi（随风）、zhuangzi-wuhou（入隙）、laozi-piaofeng（定风）、laozi-hebao（九格落叶）；zhouyi-xun 升入。",
