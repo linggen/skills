@@ -13,7 +13,7 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const totalMs = BEATS.reduce((s, b) => s + b.ms, 0);
 
 test('the beats run in the book\'s order, each in both languages', () => {
-  assert.deepEqual(BEATS.map((b) => b.id), ['gather', 'light', 'tai', 'door', 'zhu', 'stars', 'settle']);
+  assert.deepEqual(BEATS.map((b) => b.id), ['door', 'gather', 'light', 'tai', 'zhu', 'stars', 'settle']);
   for (const b of BEATS) {
     assert.ok(b.line.zh && b.line.en, b.id);
     assert.ok(!/你/.test(b.line.zh), `${b.id}: the moment tells of him, not to you`);
@@ -40,7 +40,7 @@ test('the words are the book\'s: the 锅 of cloud, 勿入 → 今日放学, the 
 test('painted, not drawn: seven paintings on disk (d and e twice), every beat on one, the camera inside it', () => {
   assert.deepEqual(Object.keys(ART).sort(), ['a', 'b', 'c', 'd1', 'd2', 'e1', 'e2']);
   for (const p of Object.values(ART)) assert.ok(fs.existsSync(path.join(ROOT, 'worlds/jiuding', p)), `${p} is on disk`);
-  assert.deepEqual(BEATS.map((b) => b.art), ['a', 'b', 'c', 'd1', 'e1', 'e2', 'e2'], 'the frames, beat by beat');
+  assert.deepEqual(BEATS.map((b) => b.art), ['d1', 'a', 'b', 'c', 'e1', 'e2', 'e2'], 'the frames, beat by beat');
   for (const b of BEATS) {
     for (const v of SHOTS[b.id]) {
       assert.ok(v.s >= 1 && v.s <= 3, `${b.id}: zoom ${v.s} never shows past the painting`);
@@ -90,8 +90,8 @@ test('the 台 is inside him (his: 「筑基的图片在小满旁边画了个台�
   assert.deepEqual(Object.keys(WORLD).sort(), Object.keys(ART).sort(), 'every painting is in one world or the other');
   const worldOf = (id) => WORLD[BEATS.find((b) => b.id === id).art];
   assert.equal(worldOf('zhu'), 'inner', 'the four piles and the 台: the small cosmos inside him');
-  assert.deepEqual(BEATS.map((b) => worldOf(b.id)), ['outer', 'outer', 'inner', 'inner', 'inner', 'outer', 'outer'],
-    'out on the cliff, in through c → d → e1, and out again as he opens his eyes');
+  assert.deepEqual(BEATS.map((b) => worldOf(b.id)), ['inner', 'outer', 'outer', 'inner', 'inner', 'outer', 'outer'],
+    'the door first (eyes shut, before the pill), out on the cliff, in through c → e1, and out again as he opens his eyes');
   assert.equal(WORLD.d2, 'inner');
   assert.notEqual(BEATS.find((b) => b.id === 'zhu').art, BEATS.find((b) => b.id === 'stars').art, 'the 台 and the cliff never share a painting');
   const src = fs.readFileSync(path.join(ROOT, 'scripts/setpieces/zhuji.js'), 'utf8');

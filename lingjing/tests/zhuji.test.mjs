@@ -159,7 +159,7 @@ test('one runner for both set pieces: 筑基天象 is painted like 漳水立起 
     assert.equal(typeof def.stillSvg, 'function');
     assert.equal(def.play, undefined, 'no piece brings its own player');
   }
-  assert.deepEqual(zhuji.BEATS.map(b => b.id), ['gather', 'light', 'tai', 'door', 'zhu', 'stars', 'settle']);
+  assert.deepEqual(zhuji.BEATS.map(b => b.id), ['door', 'gather', 'light', 'tai', 'zhu', 'stars', 'settle']);
   for (const f of ['zhuji', 'zhang']) assert.match(fs.readFileSync(new URL(`../scripts/setpieces/${f}.js`, import.meta.url), 'utf8'), /from '\.\/painted\.js'/);
   const runner = fs.readFileSync(new URL('../scripts/setpiece.js', import.meta.url), 'utf8');
   assert.match(runner, /scene = def\.build\(/);

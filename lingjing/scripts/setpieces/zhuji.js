@@ -1,12 +1,13 @@
 // setpieces/zhuji.js — 筑基天象 (古九, 09-cliff): the moment 沈小满 lays his
 // foundation on the 沉鼎观 cliff, in the book's order (08-第八回.md, 九月初三):
+//   door   — before the pill, eyes shut (the 心关 comes first, Hanli 2026-10-13): an old
+//            door, its note unreadable (「勿入」, he is sure) — and the note soaks into
+//            爹's 「今日放学」 as the camera pushes in;
 //   gather — one grey-white cloud over this cliff alone turns into an upturned
 //            锅; every wind stops (a 锅盖云, the wide view);
 //   light  — a thread of light from the cloud's heart onto his crown;
 //   tai    — inside: stones rise from the lake's floor and stack into a 台;
 //            the five doors, 金木水火土, light one after another;
-//   door   — the 台 sways; an old door, its note unreadable (「勿入」, he is sure)
-//            — and the note soaks into 爹's 「今日放学」 as the camera pushes in;
 //   zhu    — 「上有黄庭下关元，后有幽阙前命门」: four piles, the 台 holds — still inside,
 //            the camera easing back from the 台 into the small cosmos around it;
 //   stars  — he opens his eyes: the cosmos falls away behind the camera as the cliff
@@ -38,10 +39,10 @@ import { INK, SOAK_S, paintedStage, shotOn, stillOf } from './painted.js';
 /// The beats in the book's order: `ms` the beat's length as the book paces it,
 /// `line` its words (the page's dialogue box says them), `art` its painting.
 export const BEATS = [
+  { id: 'door', art: 'd1', ms: 2800, line: { zh: '吃丹之前，他闭上了眼睛。雾里，他看见一扇门，门上的字，他只觉得写的是「勿入」。——可他爹早就进过这扇门了。写的是「今日放学」。', en: 'Before the pill, he closed his eyes. In the mist he saw a door, and the words on it, he was sure, said Keep Out. — But his father had walked through this door long ago. It said: No School Today.' } },
   { id: 'gather', art: 'a', ms: 2600, line: { zh: '天忽然暗了下来。一团云只罩着这一座崖顶，越转越快，转成一口倒扣的大锅。四下里的风，一齐停了。', en: 'The sky darkened. A single cloud hung over this one cliff, turning faster and faster into an upturned cauldron. Every wind stopped.' } },
   { id: 'light', art: 'b', ms: 1300, line: { zh: '云心里透下一缕光来，不偏不倚，正照在他头顶上。', en: 'From the heart of the cloud a thread of light came down, straight onto the crown of his head.' } },
   { id: 'tai', art: 'c', ms: 2600, line: { zh: '丹田湖底，一块一块，垒起了一座台子。金木水火土五扇门，一扇接一扇地亮起来。', en: 'From the floor of the lake within, stone by stone, a platform rose. The five doors — metal, wood, water, fire, earth — lit one after another.' } },
-  { id: 'door', art: 'd1', ms: 2800, line: { zh: '台子晃了一晃。他看见一扇门，门上的字，他只觉得写的是「勿入」。——可他爹早就进过这扇门了。写的是「今日放学」。', en: 'The platform swayed. He saw a door, and the words on it, he was sure, said Keep Out. — But his father had walked through this door long ago. It said: No School Today.' } },
   { id: 'zhu', art: 'e1', ms: 1400, line: { zh: '上有黄庭下关元，后有幽阙前命门。四根桩一落定，那台子便稳了。', en: 'Yellow Court above, the Pass Gate below; the Hidden Gate behind, the Gate of Life before. Four piles driven home, and the platform held.' } },
   { id: 'stars', art: 'e2', ms: 1900, line: { zh: '头顶那口锅悄没声地散了。云开处，星星比平日亮了一些，近了一些。', en: 'The cauldron overhead thinned away without a sound. Where the cloud parted, the stars were a little brighter than usual, a little nearer.' } },
   { id: 'settle', art: 'e2', ms: 0, line: { zh: '「几道纹？」「……一道。」「嗯。一道。」', en: '"How many lines?" "…One." "Mm. One."' } },
@@ -108,7 +109,7 @@ const RISE_S = 5.5; // the camera's slow rise from him to the stars
 const OUT_OF = 1.0; // how far the inner cosmos falls back (its zoom at the end) as his eyes open
 const SHUT_S = 1.1; // the cosmos falling back into the dark before the cliff soaks in: the 台 and
                     // the cliff are never on screen together, even mid-soak (the first cut sat him on it)
-const SWAY = 0.006; // how far the frame drifts, slowly, as the 台 sways (a share of the painting)
+const SWAY = 0.006; // how far the frame drifts, slowly, as his hand shakes (a share of the painting)
 const SETTLE_DARK = 0.5; // how far the night closes over the last painting
 const DUSK = 0.22; // how far the sky darkens as the cloud gathers
 
@@ -128,11 +129,11 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
   // The sky darkening as the cloud gathers: a colour matrix on the wide view.
   const dusk = new PIXI.ColorMatrixFilter();
   const L = {};
+  L.door = use('d1', 'door', { view: { ...SHOTS.door[0], dx: 0 } });
+  L.note = use('d2', 'door', { view: L.door.view, from: SOAK_FROM.note }); // the same camera: only the note changes
   L.gather = use('a', 'gather', { view: { ...SHOTS.gather[0], dim: 0 }, filter: dusk, each: () => dusk.brightness(1 - L.gather.view.dim, false) });
   L.light = use('b', 'light');
   L.tai = use('c', 'tai');
-  L.door = use('d1', 'door', { view: { ...SHOTS.door[0], dx: 0 } });
-  L.note = use('d2', 'door', { view: L.door.view, from: SOAK_FROM.note }); // the same camera: only the note changes
   L.zhu = use('e1', 'zhu');
   L.stars = use('e2', 'stars');
   L.settle = L.stars; // the night closes over the same painting
@@ -158,7 +159,7 @@ export function build({ PIXI, gsap, app, root, W, H, art }) {
       .fromTo(crown, { alpha: 0 }, { alpha: 0.3, duration: 2.0, ease: 'sine.inOut' }, 1.2),
     tai: () => doors.reduce((tl, g, k) => tl.fromTo(g, { alpha: 0 }, { alpha: 0.55, duration: 0.5, ease: 'sine.out' }, 1.0 + k * 0.4), shot('tai', { ease: 'power2.out' })),
     door: () => shot('door', { ease: 'power1.inOut', seconds: DOOR_TURN + SOAK_S })
-      // 台子晃了一晃: the frame drifts once, slowly, as the door comes.
+      // His hand shakes: the frame drifts once, slowly, as the door comes (the 心关 is before the pill).
       .fromTo(L.door.view, { dx: 0 }, { keyframes: [{ dx: SWAY, duration: 0.7, ease: 'sine.inOut' }, { dx: 0, duration: 0.9, ease: 'sine.inOut' }] }, 0.2)
       // …and 爹's note soaks in over the one he could not read.
       .set(L.note.soak, { v: 0 }, 0)
