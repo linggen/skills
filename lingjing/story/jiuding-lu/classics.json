@@ -666,6 +666,21 @@
         "金丹这东西，烧得越久，变化越妙。黄金放进火里，炼一百回也不消损；埋在地下，天地终了也不朽坏。"
       ],
       "note": "古八年六开春，闵丹师考小满背《金丹》，借这一句讲「先经得起烧，才烧得久」，引到挑料。"
+    },
+    "yuce-qiajue": {
+      "title": "天皇至道太清玉册",
+      "about": "明代朱权（宁献王，号臞仙）编的道教类书，二卷十九章，收在《万历续道藏》；其中一条专讲掐诀。",
+      "source": {
+        "edition": "维基文库《天皇至道太清玉冊》",
+        "section": "掐訣（底本标题作「埳訣」）",
+        "url": "https://zh.wikisource.org/wiki/%E5%A4%A9%E7%9A%87%E8%87%B3%E9%81%93%E5%A4%AA%E6%B8%85%E7%8E%89%E5%86%8A",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "掐訣者，所以通真制邪，役訣各不一，罡訣有七百餘目，今所用者不多，四維八方，自四指根逐節數，共十二目，以按十二辰，於內又分出八卦、七星、九官、三臺，各主其所行之事。",
+      "plain": [
+        "掐诀是用来通神、制邪的。诀有七百多种，如今常用的不多：从无名指根起一节一节数过去，共十二处，配十二地支；里头又分出八卦、七星、九宫、三台，各管各的事。"
+      ],
+      "note": "古六褚先生头一天的掐诀课。「九官」是底本的字，当作「九宫」。下文「惟中指中文為玉清訣……總三界萬事」是课上「土居中」那一节的来处。十二文各在哪一节，书里照通行的掌图排（子在无名指根，午在中指尖）。火掐午文见《上清天心正法》卷四「次再掐午文，吸南炁一口」；雷局见同卷「掐子文，成雷局」；吹枣治病见同卷「右法午文南炁，念呪七徧，取炁七口吹棗上」。"
     }
   },
   "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: a 药园 line from the 《神农本草经》 序录 上药/中药/下药 passage — that is `shennong`, which 褚先生 paraphrases in one untagged sentence in 古六 (06-第六回.md); it would use it twice. 2026-10-02 (古线 ten 回 → eight, 今线 → four interludes, book.json `absorbs`): the index keys above are relabelled — 古 by the new 回 (old 古三 into 古二, 古五+古六 into 古四, 古七→古五 … 古十→古八), 今 by its interlude (今 · 一 = old 今一–今三, 今 · 二 = 今四–今六, 今 · 三 = 今七–今八, 今 · 四 = 今九–今十); the 主典 named above by old number keep their entries — every 今 主典 is still quoted, in its interlude (Hanli 2026-10-02: 「小课堂与典籍要保留」). 2026-10-07（Hanli 古七第二轮）：古七新引 laozi-zhirou（崖顶第一课）、shanhai-lu（沂水鯥）、zhuangzi-liezi（随风）、zhuangzi-wuhou（入隙）、laozi-piaofeng（定风）、laozi-hebao（九格落叶）；zhouyi-xun 升入。",
