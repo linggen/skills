@@ -29,7 +29,7 @@ speak to the player as 你 (story/jiuding-lu/DESIGN.md § 四·五 人称分工)
    **Not yet a scene** (listed for later, 2026-10-06): the 黑松岭 big mission between 入秋 and 八月 — the 蒙山县 tag (seven taken, 马家's dogs stop at the 断碑), 瞿老 「去。别进村。」, the 合窳 in the valley pit, 爹 seen once from the ridge.
 4. **Old Qu** (`09-qulao`, 后山崖顶). 「九层，满了。」 (a 筑基 sees a 练气's level at a glance) — nine fingers; 「渡口那一回，你是爬着上来的。」「练气的腿，跑不过筑基的剑。」
    (no palm mark, Hanli 2026-10-09); 「用哪颗丹？」「观里那颗。」 He tells of
-   his last disciple — 外公 (DESIGN § 六·九 「外公是谁」). 「那颗丹，别吃。」
+   his last disciple — 外公 (DESIGN § 六·九 「外公是谁」). 「那颗丹，别急着吃。」
 5. **The cliff** (`09-cliff`, 后山崖顶) — **the key beat**: 九月初三, the breakthrough (`breakthrough:
    true`; the throw reaches for the 九转 before the 一转 — ladder.json `breakthrough.pill`). The
    心关 惧: the door he reads as 「勿入」, his father's 「今日放学」 door. 「几道纹？」「……一道。」
