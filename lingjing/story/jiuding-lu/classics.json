@@ -726,6 +726,81 @@
         "木碰上金就被砍伐，火碰上水就熄灭，土碰上木就被穿透，金碰上火就残缺，水碰上土就断流。万物都是这样，说也说不完。"
       ],
       "note": "古六褚先生讲五样法术怎么配着使：木藤裂土墙，金刃断木藤，火弹卷金刃，冰锥灭火弹，土墙挡冰锥——大比四场都照这五句打。"
+    },
+    "mengzi-beishui": {
+      "title": "孟子·告子上",
+      "about": "《孟子》告子上第十八章，拿水和火比仁与不仁。",
+      "source": {
+        "edition": "维基文库《孟子·告子上》",
+        "section": "〈告子上〉第十八章",
+        "url": "https://zh.wikisource.org/wiki/%E5%AD%9F%E5%AD%90/%E5%91%8A%E5%AD%90%E4%B8%8A",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "仁之勝不仁也，猶水之勝火。今之為仁者，猶以一杯水救一車薪之火也。不熄，則謂之水不勝火。",
+      "plain": [
+        "仁胜过不仁，就像水胜过火。如今行仁的人，好比拿一杯水去救一车柴的火；火不灭，就说水胜不了火。"
+      ],
+      "note": "古六褚先生答「天灵根只有一门岂不吃亏」：相克看多少，一瓢水泼不灭一山的火（Hanli 2026-10-13）。「杯水车薪」的出处。"
+    },
+    "mozi-wuxing": {
+      "title": "墨子·经下",
+      "about": "《墨子》的〈经〉和〈经说〉是墨家讲逻辑、物理的短条；这一条说五行没有哪一样永远赢。",
+      "source": {
+        "edition": "维基文库《墨子·經下》",
+        "section": "〈經下〉；解释见〈經說下〉",
+        "url": "https://zh.wikisource.org/wiki/%E5%A2%A8%E5%AD%90/%E7%B6%93%E4%B8%8B",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "五行毋常勝，說在宜。",
+      "plain": [
+        "五行里没有哪一样总是赢，道理在于看合不合适、够不够多。"
+      ],
+      "note": "〈经说下〉的解释：「火鑠金，火多也；金靡炭，金多也。」火化得了金是火多，金压得灭炭火是金多。古六褚先生的课上跟《孟子》一杯水连着讲。"
+    },
+    "baopu-fu": {
+      "title": "抱朴子·内篇·遐览",
+      "about": "葛洪《抱朴子》内篇卷十九〈遐览〉，记他老师郑隐的藏书和谈话；这一段讲符为什么常常不灵。",
+      "source": {
+        "edition": "维基文库《抱朴子·卷19》",
+        "section": "内篇卷十九〈遐览〉",
+        "url": "https://zh.wikisource.org/wiki/%E6%8A%B1%E6%9C%B4%E5%AD%90/%E5%8D%B719",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "鄭君言符出於老君，皆天文也。……今人用之少驗者，由於出來歷久，傳寫之多誤故也。……符誤者，不但無益，將能有害也。……故諺曰，書三寫，魚成魯，虛成虎，此之謂也。",
+      "plain": [
+        "郑先生说，符出自老君，都是天上的文字。如今的人用了不大灵，是因为传得太久、抄错的太多。符画错了，不但没用，还会有害。俗话说，字抄三遍，鱼抄成鲁，虚抄成虎，说的就是这个。"
+      ],
+      "note": "古七内门讲堂的符课：符是别人替你掐好、封在纸上的诀；褚先生拿一张差一笔的符燎了自己的胡子尖。"
+    },
+    "baopu-jing": {
+      "title": "抱朴子·内篇·登涉",
+      "about": "葛洪《抱朴子》内篇卷十七〈登涉〉，讲进山的防备；这一段讲为什么进山要背一面镜子。",
+      "source": {
+        "edition": "维基文库《抱朴子·卷17》",
+        "section": "内篇卷十七〈登涉〉",
+        "url": "https://zh.wikisource.org/wiki/%E6%8A%B1%E6%9C%B4%E5%AD%90/%E5%8D%B717",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "萬物之老者，其精悉能假讬人形，以眩惑人目而常試人，唯不能於鏡中易其真形耳。是以古之入山道士，皆以明鏡徑九寸已上，懸於背後，則老魅不敢近人。",
+      "plain": [
+        "东西活得老了，它的精怪都能变成人的样子来迷惑人、试探人，只是在镜子里变不了原形。所以古时候进山的道士，都把直径九寸以上的明镜挂在背后，老精怪就不敢靠近。"
+      ],
+      "note": "古七内门讲堂的法器课：镜子不打人，只照——照出来的是你藏着的那一样。暗接马小宝那面铜镜和太一宫。"
+    },
+    "guitian-maiyou": {
+      "title": "归田录·卖油翁",
+      "about": "欧阳修《归田录》里的一则：陈尧咨射箭自夸，卖油的老头拿铜钱和葫芦给他看什么叫手熟。",
+      "source": {
+        "edition": "维基文库《賣油翁》",
+        "section": "〈賣油翁〉",
+        "url": "https://zh.wikisource.org/wiki/%E8%B3%A3%E6%B2%B9%E7%BF%81",
+        "license": "公有领域（古籍；维基文库 PD-old）"
+      },
+      "original": "乃取一葫蘆置於地，以錢覆其口，徐以杓酌油瀝之，自錢孔入而錢不濕。因曰：「我亦無他，惟手熟爾。」",
+      "plain": [
+        "他拿一只葫芦放在地上，用一枚铜钱盖住葫芦口，慢慢拿勺子舀油往里倒，油从钱眼里进去，钱却不湿。他说：「我也没有别的，只是手熟罢了。」"
+      ],
+      "note": "古七小满七层，褚先生讲「胳膊可以放下来了」：五年前课上那句「熟能生巧」到这里兑现。"
     }
   },
   "_pending_about": "Entries checked against their source (Wikisource, 2026-10-01) but not yet named by any 回. A 回 lane that tags the passage (《书名》{典=id} or [词]{典=id}) moves its entry up into `classics` in the same commit — the classics test requires every entry to be named. Each passage is used once in the whole book (a line on both the 古 and 今 side only where each side does a different job — 古 practises it, 今 decodes it; DESIGN § 五·六 第五条, Hanli 2026-10-01). Where each one goes is 修仙词汇表.md part B (定, Hanli 2026-10-01 「ok. 都按你说的」); `_pending_by_hui` below is the index. 主典 (one per 回): baopu-zhili 今一; zhuangzi-zhibeiyou 古一; lingshu-jingmai 今二 (the teacher writes it on the board before the 十二经 dictation; he hands in a blank sheet facing 「不可不通」); qijing-bamai 古二; baopu-huangbai 今四; baopu-bianwen 古四; zhuangzi-yangshengzhu 今五; zhonglv-sishi 古五; shangshu-hongfan 古七; baopu-jiyan-shang 今八; laozi-qizhe 古八; wu-zhuji 古九; qijing-yinqiao 今十 (the page has 「反觀」, not 「返觀」); neiguan-jing 古十. 一笔带过 only: qianjin-dayi 今一 (开学); lingshu-hailun 今二 (the 河与湖 comparison); jiayi-xu 今八 (皇甫谧 fell ill and taught himself — told at the hospital bed). D4 (修仙词汇表; Hanli's ruling D3): huangting-linggen is the one line where someone (瞿老, or whoever naturally teaches it) gives the old meaning of 灵根 — suggested 古八, when 瞿老 hands over 《黄庭经》; 古四's 测灵 is the fallback. Not added: a 药园 line from the 《神农本草经》 序录 上药/中药/下药 passage — that is `shennong`, which 褚先生 paraphrases in one untagged sentence in 古六 (06-第六回.md); it would use it twice. 2026-10-02 (古线 ten 回 → eight, 今线 → four interludes, book.json `absorbs`): the index keys above are relabelled — 古 by the new 回 (old 古三 into 古二, 古五+古六 into 古四, 古七→古五 … 古十→古八), 今 by its interlude (今 · 一 = old 今一–今三, 今 · 二 = 今四–今六, 今 · 三 = 今七–今八, 今 · 四 = 今九–今十); the 主典 named above by old number keep their entries — every 今 主典 is still quoted, in its interlude (Hanli 2026-10-02: 「小课堂与典籍要保留」). 2026-10-07（Hanli 古七第二轮）：古七新引 laozi-zhirou（崖顶第一课）、shanhai-lu（沂水鯥）、zhuangzi-liezi（随风）、zhuangzi-wuhou（入隙）、laozi-piaofeng（定风）、laozi-hebao（九格落叶）；zhouyi-xun 升入。",
