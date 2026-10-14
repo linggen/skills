@@ -10,6 +10,7 @@ import * as listen from '../scripts/games/listen.js';
 import * as storm from '../scripts/games/storm.js';
 import * as stone from '../scripts/games/stone.js';
 import * as way from '../scripts/games/way.js';
+import * as climb from '../scripts/games/climb.js';
 import { loadContent } from '../scripts/content.mjs';
 import { look, resolve, task, win } from '../scripts/rules.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
@@ -27,7 +28,7 @@ const atScene = (id) => {
   return s.scene === id ? s : null;
 };
 
-const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/], [listen, /data-g="start"/], [storm, /data-g="start"/], [stone, /data-g="hole"/], [way, /data-g="go"/]];
+const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/], [listen, /data-g="start"/], [storm, /data-g="start"/], [stone, /data-g="hole"/], [way, /data-g="go"/], [climb, /data-g="start"/]];
 
 test('every batch-two game: meta in both languages, a control at open, both languages drawn, a skip that ends it won with no grade', () => {
   for (const [mod, control] of GAMES) {
@@ -198,4 +199,31 @@ test('认路: his marks along the cliff lead from the cave to the moss — the o
   assert.equal(lost.moves, way.LEAD);
   assert.equal(lost.grade, 'wandered');
   assert.match(way.html(lost, 'en'), /That way/);
+});
+
+test('攀: the living branch holds, the dead one snaps; the grip drains while he hangs, the stone gives it back; past the limit, the rope', () => {
+  let s = climb.act(climb.newGame('c'), { g: 'start' }).state;
+  const dead = (st) => (st.live_side[st.rung] === 'left' ? 'right' : 'left');
+  s = climb.act(s, { g: 'grab', side: dead(s) }).state;
+  assert.equal(s.note, 'snapped');
+  assert.equal(s.rung, 0);
+  while (s.rung < climb.RUNGS) {
+    s = climb.tick(s, 600);
+    if (s.rung === climb.LEDGE && s.grip < 1) s = climb.act(s, { g: 'rest' }).state;
+    s = climb.act(s, { g: 'grab', side: s.live_side[s.rung] }).state;
+  }
+  assert.equal(s.note, 'top');
+  s = climb.act(s, { g: 'hand' }).state;
+  assert.equal(s.won, true);
+  assert.equal(s.grade, 'steady', 'one snap is forgiven');
+  assert.match(climb.html(s, 'zh'), /这一回，它抓住了/);
+  // Hanging still: the grip runs out and he slides back — to the ledge once past it, never below.
+  let h = climb.act(climb.newGame('c'), { g: 'start' }).state;
+  for (let i = 0; i < climb.LEDGE + 1; i += 1) h = climb.act(h, { g: 'grab', side: h.live_side[h.rung] }).state;
+  while (h.note !== 'slid') h = climb.tick(h, 500);
+  assert.equal(h.rung, climb.LEDGE);
+  const idle = climb.tick(climb.act(climb.newGame('c'), { g: 'start' }).state, climb.LIMIT);
+  assert.equal(idle.won, true);
+  assert.equal(idle.grade, 'scraped');
+  assert.match(climb.html(idle, 'en'), /Old Zhou lets the rope down/);
 });

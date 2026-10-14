@@ -108,7 +108,7 @@ test('a 回 ends where the scenes turn, inside the prologue: 「第一回 · 完
   assert.ok(l.chapter.title.startsWith(`卷一 · 沉鼎 · ${bookNo(content, 'h02')}　古 · `), l.chapter.title);
   assert.deepEqual(l.chapter.close, { id: 'h01', title: `${bookNo(content, 'h01')} · 完`, huimu: ['一只破碗辞残照', '半张烙饼换妖王'], next: l.chapter.title });
   assert.ok(l.stage.some(c => c.card === 'closed'));
-  const on = resolve(cliff, content, ctx(), { exit: 'climb' }).state;
+  const on = resolve(walk(cliff, [['played']], content, NOW), content, ctx(), { exit: 'climb' }).state;
   assert.equal(look(on, content, ctx()).chapter.close, undefined);
   // 九鼎录: the prologue as its two 回, the intro on the first, the riddle on the one being played
   const lu = story(on, content, ctx()).result.chapters;

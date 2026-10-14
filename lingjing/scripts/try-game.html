@@ -43,7 +43,7 @@
     const onWon = () => { g.sent = true; document.getElementById('won').textContent = lang() === 'en' ? '— won (the page would now send the win) —' : '——胜（游戏里此刻会把胜局交给规则）——'; };
     document.getElementById('title').textContent = mod.meta.name[lang()];
     document.getElementById('how').textContent = mod.meta.how[lang()];
-    document.getElementById('nav').innerHTML = ['rain', 'track', 'bread', 'deer', 'scale', 'feather', 'taunt', 'griddle', 'listen', 'stone', 'way', 'storm', 'xisui', 'zhoutian'].map((k) => `<a href="?game=${k}&lang=${lang()}">${k}</a>`).join('')
+    document.getElementById('nav').innerHTML = ['rain', 'track', 'bread', 'deer', 'scale', 'feather', 'taunt', 'griddle', 'listen', 'stone', 'way', 'climb', 'storm', 'xisui', 'zhoutian'].map((k) => `<a href="?game=${k}&lang=${lang()}">${k}</a>`).join('')
       + `<a href="?game=${id}&lang=${lang() === 'en' ? 'zh' : 'en'}">${lang() === 'en' ? '中' : 'En'}</a><a href="?game=${id}&lang=${lang()}">↺</a>`;
     host.addEventListener('click', (e) => {
       const el = e.target.closest('[data-g]');
