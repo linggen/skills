@@ -22,7 +22,7 @@ import { story } from './story.mjs';
 import { tale, taleInfo } from './tale.mjs';
 import { go, lang, move, summarize, trade } from './travel.mjs';
 import { placeName, placeOf } from './world.mjs';
-import { fly, inkMapOf, jiudingBrief, unrolled } from './inkmap.mjs';
+import { fly, inkMapOf, jiudingBrief, unfolded, unrolled } from './inkmap.mjs';
 import { amend, art, atlas, build, enter, forget, leave, load, make, ring, save, saves, tame, travel, wake, worlds } from './worlds.mjs';
 
 /* Every verb kept to the story gates (rules/locks.mjs): a shut system's verb is refused `not-yet`. */
@@ -56,7 +56,7 @@ export const VERBS = gated({
     const out = atlas(s, c, x, args), ink = inkMapOf(c, s, x.now);
     return ink ? { ...out, result: { ...out.result, ink: { ...ink, shapes: c.world.atlas.shapes ?? {}, ...(c.world.atlas.paint ? { paint: c.world.atlas.paint } : {}) } } } : out;
   },
-  fly, unrolled,
+  fly, unrolled, unfolded,
 });
 
 /* A beast's first sight (creatures.json `appear`) played on the page's stage

@@ -526,6 +526,28 @@ seeded (the board's seed is the day's, the save's `seed`, the task id).
 | `xisui` | `xisui-hold` | 00-sleep (h02) | hold to grit — three sticks of incense burn only while held; holding spends breath, a trough gives it back; letting go (or running out) on a wave restarts the stick; then 「蹦一下」 into the beam | 「疼，别喊」 |
 | `zhoutian` | `zhoutian-sanguan` | wm-zhoutian (h05) | on the 三关 figure: in · out · still; push the qi only in the stillness; 尾闾 and 夹脊 open at one push (银月 dug them), 玉枕 wants three, a push out of time sets it back one | 「最后那半道，得你自己撞」 |
 
+**The opening's beats** (Hanli, 2026-10-14: 「每看一会儿剧情就要有游戏可以玩」 — the game is played, not
+read-and-tap): six more boards in the prologue, each the book's own action where its scene stands —
+
+| game | task id | scene | the play | grade → |
+|---|---|---|---|---|
+| `rain` | `rain-basins` | 00-shiao (h01) | the night's drips move; set and lift basins until seventeen are full; the fifth watch ends it anyway | dry · wet (mark) |
+| `track` | `track-marks` | 00-heisong | four rounds: the deer's sign among the forest's, then carve at a hundred steps | true · rough (mark) |
+| `bread` | `bread-share` | 00-cave | seven pieces of the flatbread, to the fox or to himself; the corner always kept | none · little → 自己吃, half · most → 分它一半 (`needs.grade`) + mark |
+| `deer` | `deer-wind` | 00-deer (h02) | as above, and the aim: dead on skims the antlers, 偏左半寸 hits | clean · steady · rough |
+| `scale` | `rent-scale` | 00-rent | the hide, then cuts on the steelyard to twenty 斤; light is never taken | exact · over (mark); 装傻 / 照实说 both wait, his choice |
+| `feather` | `feather-breath` | 00-halfyear | the breath out as a slow, steady stroke (`[data-g-drag]`): stop and it bursts, rush and it flies; three breaths | still · shaky (mark) |
+
+A game ends `won` always, with its `grade`; the page sends it with the win (`win --grade`), the
+task's **`marks`** (grade → mark) write it, and an exit's **`needs.grade`** takes only that grade —
+the page taps a way on for him only when exactly one waits on the board. A save standing in a scene
+since given a board is offered it on load (state.mjs fitWorld). **Rhythm** (rhythm.mjs, content.mjs
+`warnings`): along a chapter's main line, no more than **1,500** zh characters of passage between two
+play beats (a board or fight on the stage, a riddle, a look-gate, the 突破 card, a set piece) — a
+warning list for now. **地图展开**: a chapter's map unfolds once per save on its map card — at its first
+map card in a corridor (00-chushan's tree), the moment it can be walked outside one (Look's
+`jiuding.unfold`, verb `unfolded`; the page's `unfold` moment, after 鼎归).
+
 **How a scene uses one** (the pattern of `gate-luoshu`): the task is in
 `tasks/world.json` (`kind: board`, `game`, `period: once`, a small `task` grant);
 the scene declares `"show": [{ "card": "board", "id": "<task id>" }]` and

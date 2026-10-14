@@ -136,7 +136,7 @@ test('the cut verbs are gone from the rules and from Ling\'s tools', () => {
 });
 
 test('the day resets three things: 今日传闻, the day\'s 人间功课 pick, 问卦 — a place\'s game is not one of them', () => {
-  const s = { ...migrate(oldSave(), content), chapter: '04-xu', scene: null, place: 'yunlong', tier: 'core', ended: ['00-prologue', '01-ji', '02-yan', '03-qing'] };
+  const s = { ...migrate(oldSave(), content), chapter: '04-xu', scene: null, place: 'yunlong', tier: 'core', ended: ['00-prologue', '01-ji', '02-yan', '03-qing'], tasks: {} };
   const l = look(s, content, ctx());
   assert.deepEqual(l.tasks, [], 'no board stands for the day by itself');
   assert.equal(l.divination, null, 'the day\'s reading, still to cast');

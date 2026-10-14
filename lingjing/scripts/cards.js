@@ -16,7 +16,7 @@ export const WORDS = {
     title: '灵境', lookHead: '看', lookAt: '看看{label}', goOn: '接着', invite: '也可以直接说你想怎么做', chatHint: '你想怎么做？', xw: '修为', ls: '灵石', tray: '手边的棋局', trayEmpty: '手边无局，随处走走。',
     play: '炼丹', done: '已完成', won: '丹成，待收', offered: '待做', quest: '人间功课',
     paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。', boardDoneToday: '今日丹已成 · 明日再炼', gameDoneToday: '今日已成 · 明日再来', lundaoWon: '今日论道已胜 · 明日再来', lundaoLost: '今日论道已毕 · 明日再来',
-    tamed: '已收服', untamed: '未收服', beatenToday: '今日已降', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', mapLocked: '{title} · 剧情未完，地图暂不开放', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
+    tamed: '已收服', untamed: '未收服', beatenToday: '今日已降', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', mapLocked: '{title} · 剧情未完，地图暂不开放', unfoldNew: '地图展开', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
     sayBuy: '买{name}', go: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayGateAbout: '说说下一鼎', sayTrib: '说说雷劫', sayRoots: '说说我的灵根', sayBoard: '说说炼丹', sayMap: '说说九州',
     choreOpen: '去 {app} 做', about: '问询', askHint: '想问什么？留空，便请她说说', askHer: '问问{name}', askHerHint: '想对她说什么？留空，便请她说说', askHerEmpty: '说说看？', askSend: '问', drop: '撂 下', paysWord: '酬', nextWord: '其后', feed: '喂它{item}', offer: '献上{item}', feedNone: '囊中没有{item}', tameHint: '降了它，再献上{item}，即可收服', tameBy: '收服 · {what}', likesNone: '它喜欢{item}，囊中没有', playGame: '开局', lundaoTitle: '论道 · 稷下先生', lundaoOffer: '先生在此，以诗文会友。三句过关，今日一回。', lundaoBegin: '请先生论道', sayLundao: '请先生论道', lundaoKey: '飞花令 · 句中须有「{key}」', lundaoChain: '接「{last}」的末字', lundaoUp: '上联：{up}', lundaoMiss: '失 {n}/{max}', lundaoHow: '在对话里作答。', featRise: '突破', featHp: '气血 {a}→{b}', featMana: '灵力上限 {a}→{b}', featPower: '一击 +{n}', featHer: '{name} {a}→{b}', featChapter: '新的一回', wonOver: '收服', subdue: '降妖', bout: '比试',
     effProgress: '服下：{xw} +{n}', effLearn1: '习之：斗法时看出妖下回合的架势', effLearn2: '习之：看清妖下回合的每一招与点数', effPouch: '储物袋多 {n} 格，永久', effWear: '可赠银月佩戴', effLift: { atk: '她的牌攻 +{n}', hp: '她的牌气血 +{n}' }, effKey: '路上有用之物', effNone: '可买卖的货物', effRoot: '佩之借{root}', effAtk: '器攻 +{n}', effDef: '防 +{n}', effWard: '抗{root} +{n}', effCore: '可炼{root}行本命', effCharm: '斗法时掷出，不计防抗', use: '服用', wear: '佩戴', worn: '已佩', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '{app} · {t} 完成', questWait: '{app} · {when}待做', periods: { day: '今日', week: '本周', once: '' },
@@ -74,7 +74,7 @@ export const WORDS = {
     title: 'Lingjing', lookHead: 'Look', lookAt: 'Look at {label}', goOn: 'Go on', invite: 'Or just say what you do', chatHint: 'What do you do?', xw: 'Cultivation', ls: 'Spirit stones', tray: 'Boards at hand', trayEmpty: 'No board at hand. Wander a while.',
     play: 'Make the pill', done: 'Done', won: 'Pill made — to collect', offered: 'To do', quest: 'Real-life practice',
     paid: 'Counted', due: 'To do', seen: 'Done — to collect', boardHint: 'Tap pairs. When all eight herbs are paired, the pill is made.', boardDone: 'The pill is made.', boardDoneToday: 'Done for today — brew again tomorrow', gameDoneToday: 'Done for today — again tomorrow', lundaoWon: 'Won for today — again tomorrow', lundaoLost: 'Done for today — again tomorrow',
-    tamed: 'Won over', untamed: 'Not won over', beatenToday: 'Beaten today', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', mapWhole: 'All nine provinces', mapLocked: '{title} · the story is under way; the map waits', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
+    tamed: 'Won over', untamed: 'Not won over', beatenToday: 'Beaten today', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', mapWhole: 'All nine provinces', mapLocked: '{title} · the story is under way; the map waits', unfoldNew: 'A new region', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
     questTitle: 'The promise under the moon', questSteps: { bell: 'Find a silver-moon bell.', water: 'Carry it to water that holds a moon.', ring: 'There is a moon on this water — ring it.', riddle: 'She is waiting for your answer.' },
     questAt: 'A market at {name}', questWater: 'The nearest water is {name}', ringBell: 'Ring the bell', sayRing: 'Ring the bell', sayQuest: 'Tell me about the promise under the moon',
     gateNeed: 'To {to}: {step} · {n} {xw}', sayBuy: 'Buy {name}', go: 'Go to {name}', sayTask: 'Tell me about: {title}', sayGate: 'On to the next cauldron', sayOmen: "Tell me about today's omen", sayCreature: 'Tell me about {name}', sayItem: 'Tell me about {name}', sayGateAbout: 'Tell me about the next cauldron', sayTrib: 'Tell me about the tribulation', sayRoots: 'Tell me about my spirit roots', sayBoard: 'Tell me about alchemy', sayMap: 'Tell me about the Nine Provinces',
@@ -304,17 +304,19 @@ function atlasMap(ctx) {
         ? `<button class="${cls}" data-mapview="${id === own ? 'province' : esc(id)}" style="${pos(at)}">${esc(provinceName(id))}</button>`
         : `<span class="${cls}" style="${pos(at)}">${esc(provinceName(id))}</span>`;
     });
-  const dots = (whole ? points.filter((p) => p.here) : shown).map((p) => {
+  const dots = (whole ? points.filter((p) => p.here) : shown).map((p, k) => {
     // The whole map marks where the player is with the dot alone: a name
     // there would sit on the province's own.
     if (whole) return `<span class="pt here" style="${pos(p.map)}"><i></i></span>`;
     const kind = other ? '' : p.here ? 'here' : p.road ? 'road' : '';
     const cls = `pt${kind ? ` ${kind}` : ''}${p.too_hard || p.closed ? ' far' : ''}${p.closed ? ' shut' : ''}${within(frame, p.map).left > 78 ? ' flip' : ''}`;
     const label = `<i></i><span>${esc(p.name)}</span>`;
+    // 地图展开: the places come out of the mist one after another (--k).
+    const at = `${pos(p.map)}${ctx.unfold ? `;--k:${k}` : ''}`;
     // Beyond the map this chapter opens: greyed, and nothing to tap.
     return (p.here && !other) || p.closed
-      ? `<span class="${cls}" style="${pos(p.map)}">${label}</span>`
-      : `<button class="${cls}" ${goAttr(p.id)} style="${pos(p.map)}">${label}</button>`;
+      ? `<span class="${cls}" style="${at}">${label}</span>`
+      : `<button class="${cls}" ${goAttr(p.id)} style="${at}">${label}</button>`;
   });
   const title = whole ? ctx.words.mapTitle : other ? other.name : place.province.name;
   const toWhole = `<button class="act" data-mapview="world">${esc(ctx.words.mapWhole)}</button>`;
@@ -324,8 +326,11 @@ function atlasMap(ctx) {
   const lookAt = (id) => (hasPlaces(id) ? `<button class="act quiet" data-mapview="${id === own ? 'province' : esc(id)}">${esc(names[id])} ›</button>` : '');
   const pvLine = whole && ctx.mapPv && ctx.ink ? provinceLineHtml(ctx.ink, ctx.mapPv, { lang: ctx.lang, name: names[ctx.mapPv], more: lookAt(ctx.mapPv) }) : '';
   const locked = ctx.look.lock ? `<div class="small dim maplock">${esc(say(ctx.words.mapLocked, { title: ctx.look.lock.title }))}</div>` : '';
-  return `<div class="card"><div class="cardtitle">${esc(title)}</div>${locked}
-    <div class="atlas${whole ? ' whole' : ''}" style="aspect-ratio:${(frame.w * atlas.aspect).toFixed(4)} / ${frame.h.toFixed(4)}">${img}${provinces.join('')}${dots.join('')}</div>${pvLine}
+  // 地图展开 (2026-10-14): the first time this chapter's map can be walked, it unfolds — mist
+  // lifting off the paper, the places coming out, the region's name — once (the page's moment).
+  const unfold = ctx.unfold ? `<div class="unfoldveil" aria-hidden="true"></div><div class="unfoldtitle"><small>${esc(ctx.words.unfoldNew)}</small><b>${esc(ctx.unfold.title)}</b></div>` : '';
+  return `<div class="card${ctx.unfold ? ` unfolding${ctx.unfold.still ? ' still' : ''}` : ''}"${ctx.unfold ? ' data-unfold role="button" tabindex="0"' : ''}><div class="cardtitle">${esc(title)}</div>${locked}
+    <div class="atlas${whole ? ' whole' : ''}" style="aspect-ratio:${(frame.w * atlas.aspect).toFixed(4)} / ${frame.h.toFixed(4)}">${img}${provinces.join('')}${dots.join('')}${unfold}</div>${pvLine}
     <div class="acts">${views}<button class="act ask" ${askAttr(ctx.words.sayMap)}>${esc(ctx.words.about)}</button></div></div>`;
 }
 

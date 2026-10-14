@@ -250,6 +250,7 @@ const view = {
   lu: null, //           the rules' `story` read behind it, fetched when it opens
   mapPv: null, //        the whole map's province tapped: its line (inkmap.js provinceLineHtml)
   homing: null, //       鼎归 · 地图晕开 on the stage (inkmap.js): { province, frame, at, still }
+  unfold: null, //       地图展开 on the map card (cards.js atlasMap): { chapter, title, at, still }
   doors: null, //        息壤's five doors opening (doors.js): { node } — main holds it until he taps on
   memory: null, //       银月's memory on the stage (memory.js): { n, i, play, at } — main holds it while it plays
   // 闭关 (rules/seclusion.mjs): the chooser open, what it may choose (`seclude
@@ -887,6 +888,8 @@ function stageNow() {
   if (view.homing) cards = [{ card: 'homing', id: view.homing.province }, ...cards];
   // 息壤's five doors (stage.mjs MAIN ranks them after 鼎归).
   if (view.doors) cards = [{ card: 'doors' }, ...cards];
+  // 地图展开: the chapter's map card unfolding (stage.mjs MAIN ranks it after the doors).
+  if (view.unfold) cards = [{ card: 'unfold' }, ...cards.filter((c) => c.card !== 'map')];
   // A chapter's ending card, until he puts it away (合上; kept per save in this browser).
   cards = cards.filter((c) => c.card !== 'closed' || (!closeSeen(look.chapter?.close?.id) && !stageBusy() && !endingWaits()));
   // A scene's fight waits for its words to be chosen (站着，不跪) — or a fight already under way.
@@ -1088,7 +1091,7 @@ function spoilsCtx() {
   };
 }
 
-const PAGE_CARDS = { memory: () => memoryHtml(), homing: () => homingHtml(), doors: () => doorsHtml(view.doors?.node, { lang: lang(), still: stillMotion(), age: performance.now() - (view.doors?.at ?? performance.now()) }) };
+const PAGE_CARDS = { unfold: () => cardHtml({ card: 'map' }, { ...ctx(), mapView: 'province', unfold: view.unfold }), memory: () => memoryHtml(), homing: () => homingHtml(), doors: () => doorsHtml(view.doors?.node, { lang: lang(), still: stillMotion(), age: performance.now() - (view.doors?.at ?? performance.now()) }) };
 const drawCard = (c) => (PAGE_CARDS[c.card] ?? (() => cardHtml(c, ctx())))();
 const inkNames = () => Object.fromEntries(Object.keys(look?.world?.atlas?.provinces ?? {}).map((id) => [id, authored?.dictionary?.provinces?.[id]?.[lang()] ?? id]));
 const homingHtml = () => (view.homing && atlasPlaces?.ink ? homingCardHtml(inkGeo, atlasPlaces.ink, { province: view.homing.province, frame: view.homing.frame, age: performance.now() - view.homing.at, still: view.homing.still || stillMotion(), lang: lang(), names: inkNames(), labels: look?.world?.atlas?.provinces, paint: inkPaint(), fx: Boolean(view.homing.fx) }) : '');
@@ -1354,12 +1357,21 @@ const refusal = (r) => r?.say || words().refused?.[r?.refused] || words().notDon
 const WIN_LINE_MS = 2800;
 /* The scene's way on that waited on this board (exit `needs.task`): the win
    is that deed, so it is taken — live, 射鹿 won still offered 往左偏半寸 /
-   照直射, 洗髓 still offered 泡进去 / 爬出来. */
-const winExit = (taskId) => (look?.scene?.exits ?? []).find((e) => e.needs?.task === taskId && !e.stay);
+   照直射, 洗髓 still offered 泡进去 / 爬出来. A board that ends with a
+   `grade` (2026-10-14's opening beats) takes the exit that waits on that
+   grade (`needs.grade`, 喂饼's 分它一半 / 自己吃); and only one way on is ever
+   taken for him — two that wait on the same board (算账's 装傻 / 照实说)
+   are his to choose. */
+const gradeFits = (e, grade) => e.needs?.grade == null || [e.needs.grade].flat().includes(grade);
+const winExit = (taskId, grade = null) => {
+  const ways = (look?.scene?.exits ?? []).filter((e) => e.needs?.task === taskId && !e.stay && gradeFits(e, grade));
+  return ways.length === 1 ? ways[0] : null;
+};
 async function onWin(taskId) {
   await pause(stillMotion() ? 1200 : WIN_LINE_MS);
   if (isTale(taskId)) return taleWon(taskId);
-  const r = await write('win', { id: taskId }).catch(failed);
+  const grade = boards.get(taskId)?.state?.grade ?? null;
+  const r = await write('win', { id: taskId, ...(grade ? { grade } : {}) }).catch(failed);
   // Refused (not here, not open), the win is kept on the board and sent again
   // when it can count — never told to Ling as a win he cannot pay (2026-09-23:
   // 洛书 solved at 邺城 showed solved at 碣石 and was never paid). Said once;
@@ -1379,7 +1391,7 @@ async function onWin(taskId) {
   if (isTask(taskId)) await payWin(taskId);
   else await report(`[scene] won ${taskId}`);
   await refresh();
-  const on = winExit(taskId);
+  const on = winExit(taskId, grade);
   if (on) await panelTap(on.id, look?.scene?.panel?.taps?.find((t) => t.id === on.id)?.label ?? on.id);
   return true;
 }
@@ -1739,7 +1751,7 @@ const cardsAhead = () => bookAhead({ owed: Boolean(look?.tell_owed), drawing: dr
 const gamesEarly = () => !look?.tell_owed && !drawingTold && !atHuiTurn() && sceneUnder(readingHere(), look?.scene?.id, lang());
 // A board opened from the tray: the box put away first, not only its last beat, nor over a 回's turn.
 const trayAhead = () => trayWaits({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: playing(readingHere()), huiTurn: atHuiTurn() });
-const momentUp = () => Boolean(pieceOn || featOn || view.memory || view.homing || view.doors || document.querySelector('.feat'));
+const momentUp = () => Boolean(pieceOn || featOn || view.memory || view.homing || view.doors || view.unfold || document.querySelector('.feat'));
 const boxYields = (slots) => boxGivesWay({ bout: Boolean(bout), appearing: Boolean(view.appearing), slots: Boolean(slots), up: momentUp(), huiTurn: atHuiTurn() });
 /* The page's moments in their order — set piece, 息壤's doors, the gold seal,
    her memory, 鼎归 — each waits for the box and for the one before it, so
@@ -2168,6 +2180,7 @@ const CLICKS = [
   ['[data-fly]', (el) => run(`fly:${el.dataset.fly}`, () => flyTo(el.dataset.fly))],
   ['[data-lu-album]', () => openLu().then(() => document.querySelector('.lualbum')?.scrollIntoView({ block: 'start' }))],
   ['[data-unroll]', () => closeUnroll()],
+  ['[data-unfold]', (el, e) => { if (e?.target?.closest?.('button')) return false; closeUnfold(); return true; }],
   ['[data-mem-replay]', (el) => { const play = replayOf(view.lu?.album, el.dataset.memReplay); if (play) show({ luOpen: false, memory: { n: play.n, i: 0, play, at: performance.now() } }); }],
   ['[data-close-chapter]', (el) => { closeSeen(el.dataset.closeChapter, true); render(); }],
   ['[data-titlecard]', (el) => { dismissedTitles.add(titleKey(el.dataset.titlecard)); titleSeen(el.dataset.titlecard, true); render(); }],
@@ -2824,6 +2837,36 @@ async function watchHoming() {
   homedSeen = now ? [...now] : homedSeen;
   if (fresh) playHoming(fresh);
   watchUnroll();
+  watchUnfold();
+}
+
+/* 地图展开 (2026-10-14; the way 《原神》 opens a new region): a chapter's map
+   unfolds on its map card once per save — when it can first be walked (Look's
+   `jiuding.unfold.walk`), or the first time its map card comes on the stage
+   (00-chushan's tree: 蒙山 from the top). After the box and the moments before
+   it (queue.js MOMENTS); a tap finishes it; then the rules mark it unfolded. */
+const UNFOLD_MS = 4200;
+let unfoldFor = null;
+const mapOnStage = () => [...(look?.stage ?? []), ...view.focus].some((c) => c.card === 'map');
+async function watchUnfold() {
+  const u = look?.jiuding?.unfold;
+  if (!u || unfoldFor === u.chapter || !look?.world?.atlas) return;
+  if (!u.walk && !mapOnStage()) return;
+  unfoldFor = u.chapter;
+  await momentTurn('unfold');
+  if (look?.jiuding?.unfold?.chapter !== u.chapter) return;
+  const mine = { chapter: u.chapter, title: u.title, at: performance.now(), still: stillMotion() };
+  show({ unfold: mine, mapView: 'province' });
+  write('unfolded', { chapter: u.chapter }).catch(failed);
+  setTimeout(() => { if (view.unfold === mine) show({ unfold: { ...mine, still: true } }); }, UNFOLD_MS);
+  setTimeout(() => { if (view.unfold?.at === mine.at) closeUnfold(); }, UNFOLD_MS + 2600);
+}
+/* A tap on the unfolding map: the rest at once, then a second tap (or the wait) puts it away. */
+function closeUnfold() {
+  const u = view.unfold;
+  if (!u) return;
+  if (!u.still) { show({ unfold: { ...u, still: true } }); return; }
+  show({ unfold: null });
 }
 let homingFor = null; // the province whose moment is on its way: one moment per 鼎, never two
 async function playHoming(province) {

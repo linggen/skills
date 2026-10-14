@@ -6,6 +6,10 @@
 // [data-g-hold] is pressed and held: pointerdown sends {g:'hold', …its data},
 // pointerup or cancel anywhere sends {g:'release'} — a finger may slide off
 // the button while it holds. Taps stay [data-g], routed by the page as before.
+// A control marked [data-g-drag] is a hold that also moves (吹鹅毛, 2026-10-14:
+// the breath let out as a slow, steady stroke): while it is held, every
+// pointermove sends {g:'move', d} — the distance in CSS pixels since the last
+// one — and the game reads its own pace from them.
 // Nothing here knows a game; the win goes back through `onWon`.
 
 export function wireLiveGames({ boardFor, lang, onWon, step = 100 }) {
@@ -40,14 +44,25 @@ export function wireLiveGames({ boardFor, lang, onWon, step = 100 }) {
   }, step);
 
   document.addEventListener('pointerdown', (e) => {
-    const el = e.target.closest?.('[data-g-hold]');
+    const el = e.target.closest?.('[data-g-hold],[data-g-drag]');
     const host = el?.closest('[data-game]');
     if (!host || el.disabled) return;
     const g = boardFor(host.dataset.game);
     if (!g?.mod || g.state?.won) return;
     e.preventDefault();
-    held = { g, host };
+    held = { g, host, drag: el.hasAttribute('data-g-drag'), x: e.clientX, y: e.clientY };
+    // A stroke is captured by the host, which outlives the repaints of what is in it.
+    if (held.drag) try { host.setPointerCapture(e.pointerId); } catch { /* an old browser: the document still hears it */ }
     apply(held, { ...el.dataset, g: 'hold' });
+  });
+  document.addEventListener('pointermove', (e) => {
+    if (!held?.drag) return;
+    const d = Math.hypot(e.clientX - held.x, e.clientY - held.y);
+    held.x = e.clientX;
+    held.y = e.clientY;
+    if (!d) return;
+    held.host = document.querySelector(`[data-game="${CSS.escape(held.g.taskId)}"]`) ?? held.host;
+    apply(held, { g: 'move', d });
   });
   const up = () => {
     if (!held) return;
@@ -61,6 +76,6 @@ export function wireLiveGames({ boardFor, lang, onWon, step = 100 }) {
   document.addEventListener('pointercancel', up);
   // A long press must not open the phone's menu over the game.
   document.addEventListener('contextmenu', (e) => {
-    if (e.target.closest?.('[data-g-hold]')) e.preventDefault();
+    if (e.target.closest?.('[data-g-hold],[data-g-drag]')) e.preventDefault();
   });
 }

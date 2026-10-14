@@ -90,6 +90,8 @@ export const CARD_KINDS = {
   homing: { holds: true },
   // 息壤's five doors opening (doors.js): the page's own moment, until he taps on.
   doors: { holds: true },
+  // 地图展开 (2026-10-14): a chapter's map, walkable for the first time, unfolding — the page's own moment.
+  unfold: { holds: true },
   seclusion: { holds: true }, //   闭关 running: 出关 is the one way on (rules/seclusion.mjs)
   seclude: { holds: false }, //    闭关's choices, offered on an empty pool or a tap on 体力 — never an ask
   offer: { holds: true }, //       接下 — the errands held out where he stands, one card
@@ -266,7 +268,7 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
    people, the goal line, the name and 生辰 cards (the scene's exits), a world
    being painted, an empty pool. Never Ling's to Show — the `show` verb drops
    them (rules/verbs.mjs) and the stage drops them from what she showed. */
-export const PAGE_OWNS = new Set(['meet', 'panel', 'people', 'goal', 'value', 'born', 'building', 'empty', 'memory', 'homing', 'doors', 'closed']);
+export const PAGE_OWNS = new Set(['meet', 'panel', 'people', 'goal', 'value', 'born', 'building', 'empty', 'memory', 'homing', 'doors', 'unfold', 'closed']);
 export const showable = c => Boolean(c) && !PAGE_OWNS.has(c.card);
 
 /* 此地 · 此刻 · 行 — the stage in FIXED SECTIONS (Hanli, 2026-09-29: the same
@@ -288,6 +290,7 @@ export const MAIN = [
   { kinds: ['memory'] }, //                                              银月's memory, while it plays
   { kinds: ['homing'] }, //                                              then the 鼎's province in ink (鼎归)
   { kinds: ['doors'] }, //                                               then 息壤's five doors, one by one
+  { kinds: ['unfold'] }, //                                              then a chapter's map unfolding, the first time it can be walked
   { kinds: ['closed'] }, //                                              a chapter's ending card, until he puts it away
   { kinds: ['fight', 'seclusion', 'seclude'] }, //                      the fight, 闭关
   { kinds: ['meet', 'panel', 'value', 'born', 'breakthrough'], together: true }, // the scene waiting on a choice, its new faces first

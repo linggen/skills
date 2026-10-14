@@ -87,3 +87,97 @@
 .g-lastshot .g-jin-hr b { display: inline-block; animation: g-jin-shake .12s infinite alternate; }
 @keyframes g-jin-shake { from { transform: translateX(calc(var(--shake, .3) * -2px)); } to { transform: translateX(calc(var(--shake, .3) * 2px)); } }
 @media (prefers-reduced-motion: reduce) { .g-lastshot .g-jin-hr b { animation: none; } }
+
+/* 2026-10-14 — the opening's playable beats: 接雨 (.g-rain), 追踪 (.g-track), 喂饼
+   (.g-bread), 射鹿's aim (.g-deer-aim), 算账 (.g-scale), 吹鹅毛 (.g-feather).
+   Phone first: every control is at least 44px high; touch and mouse alike. */
+.g-rain, .g-track, .g-bread, .g-scale, .g-feather { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 380px; margin: 0 auto; }
+.g-rain-line, .g-track-line, .g-bread-line, .g-scale-line, .g-feather-line { font-family: var(--serif); font-size: 15px; line-height: 1.7; margin: 0; text-align: center; min-height: 3.4em; }
+.g-rain-btn, .g-track-btn, .g-scale-btn {
+  min-height: 52px; min-width: 60%; padding: 10px 22px; border-radius: 10px; border: 1px solid var(--ling);
+  background: var(--ling-soft); color: var(--ling); font-family: var(--serif); font-size: 18px; cursor: pointer;
+  touch-action: manipulation; user-select: none; -webkit-user-select: none;
+}
+.g-rain-btn:active, .g-track-btn:active, .g-scale-btn:active { background: var(--ling); color: var(--surface); }
+.g-scale-btn:disabled { opacity: .45; cursor: default; }
+.g-rain-head, .g-track-head, .g-bread-tally, .g-scale-home, .g-feather-head { display: flex; justify-content: space-between; gap: 10px; width: 100%; font-size: 12.5px; color: var(--faint); }
+.g-rain-head b, .g-track-head b, .g-bread-tally b, .g-scale-home b, .g-feather-head b { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+.g-rain-head .is-wet b { color: var(--seal); }
+
+/* 接雨: two rooms of six spots; a drop falls where it leaks; a basin fills */
+.g-rain-pips, .g-feather-pips { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+.g-rain-pips i { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--water); }
+.g-rain-pips i.is-on { background: var(--water); }
+.g-rain-house { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
+.g-rain-spot { position: relative; min-height: 88px; padding: 26px 4px 6px; border-radius: 10px; border: 1px solid var(--line); background: var(--raised);
+  color: var(--dim); font-size: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px;
+  touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+.g-rain-spot.is-drip { border-color: var(--water); }
+.g-rain-drop { position: absolute; top: 6px; left: 50%; width: 8px; height: 11px; margin-left: -4px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: var(--water); opacity: 0; }
+.g-rain-spot.is-drip .g-rain-drop { animation: g-rain-drip .9s ease-in infinite; }
+@keyframes g-rain-drip { 0% { opacity: 0; transform: translateY(0); } 20% { opacity: .9; } 100% { opacity: 0; transform: translateY(34px); } }
+.g-rain-basin { width: 46px; height: 22px; border: 2px solid var(--dim); border-top: 0; border-radius: 0 0 22px 22px; display: flex; align-items: flex-end; overflow: hidden; background: var(--surface); }
+.g-rain-basin i { display: block; width: 100%; background: var(--water); opacity: .75; transition: height .2s; }
+.g-rain-basin.is-full { border-color: var(--water); box-shadow: 0 0 0 2px color-mix(in srgb, var(--water) 25%, transparent); }
+.g-rain-name { white-space: nowrap; }
+.g-rain-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+@media (prefers-reduced-motion: reduce) { .g-rain-spot.is-drip .g-rain-drop { animation: none; opacity: .9; } }
+
+/* 追踪: the ground's signs, the step count, the marks cut */
+.g-track-marks { display: flex; gap: 6px; }
+.g-track-marks i { width: 4px; height: 16px; border-radius: 1px; background: var(--line); }
+.g-track-marks i.is-true { background: var(--ling); }
+.g-track-marks i.is-crooked, .g-track-marks i.is-late { background: var(--dim); transform: rotate(18deg); }
+.g-track-ground { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; width: 100%; }
+.g-track-sign { min-height: 52px; padding: 8px; border-radius: 10px; border: 1px solid var(--line); background: var(--raised); color: var(--text);
+  font-family: var(--serif); font-size: 14px; cursor: pointer; touch-action: manipulation; }
+.g-track-sign.is-tried { opacity: .4; text-decoration: line-through; cursor: default; }
+.g-track-count { font-size: 14px; color: var(--dim); font-variant-numeric: tabular-nums; }
+.g-track-count b { font-size: 40px; font-weight: 600; color: var(--text); }
+.g-track-count.is-near b { color: var(--ling); }
+
+/* 喂饼: the flatbread in eight, the corner kept */
+.g-bread-cake { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; width: 168px; height: 84px; border-radius: 84px 84px 12px 12px; overflow: hidden; }
+.g-bread-cake i { background: #d9b46f; }
+.g-bread-cake i.is-it { background: color-mix(in srgb, #c8d1dc 70%, var(--surface)); }
+.g-bread-cake i.is-me { background: var(--raised); }
+.g-bread-cake i.is-corner { background: #b8904b; }
+.g-bread-acts { display: flex; gap: 10px; width: 100%; }
+.g-bread-btn { flex: 1; min-height: 52px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--ling); background: var(--ling-soft); color: var(--ling);
+  font-family: var(--serif); font-size: 15px; cursor: pointer; touch-action: manipulation; }
+.g-bread-btn.is-me { border-color: var(--line); background: var(--raised); color: var(--text); }
+.g-bread-quiet { min-height: 44px; border: 0; background: none; color: var(--dim); font-size: 13px; text-decoration: underline; cursor: pointer; }
+
+/* 射鹿: the aim, dead on or half an inch left */
+.g-deer-aim { display: flex; align-items: center; gap: 8px; width: 100%; font-size: 12px; color: var(--faint); }
+.g-deer-aimbtn { flex: 1; min-height: 44px; border-radius: 8px; border: 1px solid var(--line); background: var(--raised); color: var(--text); font-size: 14px; cursor: pointer; touch-action: manipulation; }
+.g-deer-aimbtn.is-on { border-color: var(--ling); background: var(--ling-soft); color: var(--ling); font-weight: 600; }
+.g-deer-aimbtn.is-hinted { border-color: var(--ling); animation: g-deer-hinted 1.2s ease-in-out infinite; }
+@keyframes g-deer-hinted { 50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--ling) 30%, transparent); } }
+
+/* 算账: the steelyard beam, the cuts */
+.g-scale-beam { position: relative; width: 82%; height: 46px; display: grid; place-items: center; }
+.g-scale-beam i { position: absolute; left: 0; right: 0; top: 50%; height: 4px; border-radius: 2px; background: var(--dim); transform: rotate(calc(var(--tilt, 0) * -12deg)); transition: transform .3s ease; }
+.g-scale-beam b { position: relative; top: -16px; font-size: 13px; color: var(--ling); font-variant-numeric: tabular-nums; }
+.g-scale-cuts { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 8px; width: 100%; }
+.g-scale-cut { min-height: 52px; padding: 6px; border-radius: 10px; border: 1px solid var(--line); background: var(--raised); color: var(--text);
+  font-family: var(--serif); font-size: 14px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; touch-action: manipulation; }
+.g-scale-cut small { font-family: inherit; font-size: 11.5px; color: var(--dim); }
+.g-scale-cut.is-on { border-color: var(--seal); background: var(--seal-soft); }
+
+/* 吹鹅毛: the feather on its strip, the count, the pad the breath is drawn on */
+.g-feather-strip { position: relative; width: 140px; height: 40px; border-bottom: 3px solid #b8904b; }
+.g-feather-quill { position: absolute; left: 50%; bottom: 0; width: 6px; height: 34px; margin-left: -3px; border-radius: 3px 3px 1px 1px;
+  background: linear-gradient(90deg, transparent 0 2px, var(--faint) 2px 4px, transparent 4px), radial-gradient(ellipse at 50% 30%, var(--surface) 40%, var(--line) 75%);
+  box-shadow: 0 0 0 1px var(--line); transform-origin: bottom center; transform: rotate(calc(var(--shake, 0) * 28deg)); transition: transform .1s; }
+.g-feather-quill.is-flown { transform: translate(40px, -26px) rotate(120deg); opacity: .25; }
+.g-feather-pips i { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--ling); }
+.g-feather-pips i.is-on { background: var(--ling); }
+.g-feather-count b { font-size: 40px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text); }
+.g-feather-lung { display: flex; align-items: center; gap: 8px; width: 100%; font-size: 12px; color: var(--faint); }
+.g-feather-bar { flex: 1; height: 8px; border-radius: 4px; background: var(--raised); overflow: hidden; }
+.g-feather-bar i { display: block; height: 100%; background: var(--water); transition: width .1s linear; }
+.g-feather-pad { width: 100%; min-height: 150px; border-radius: 14px; border: 1px dashed var(--ling); background: var(--ling-soft); color: var(--ling);
+  display: grid; place-items: center; font-family: var(--serif); font-size: 16px; cursor: grab;
+  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.g-feather-pad.is-held { background: var(--ling); color: var(--surface); cursor: grabbing; }

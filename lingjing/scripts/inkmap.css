@@ -111,3 +111,30 @@
 .fxhost { position: absolute; inset: 0; }
 .fxhost canvas, .fxhost svg.inkmap { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .fxhost svg.inkmap.overlay .waters path { fill: rgba(70, 86, 96, 0.05); }
+
+/* ── 地图展开 (2026-10-14): a chapter's map, walkable for the first time ──
+   Mist lifts off the paper from the middle out, the places come out of it one
+   after another (--k), and the region's name settles in the middle and fades.
+   `.still` (a tap, reduced motion, or the end): the last frame. */
+.unfolding { cursor: pointer; }
+.unfolding .atlas { animation: unfold-paper 1.6s cubic-bezier(.3, .1, .3, 1) both; }
+.unfolding .unfoldveil { position: absolute; inset: 0; pointer-events: none; z-index: 2;
+  background: radial-gradient(closest-side, transparent 0%, var(--ink-paper, #f4efe3) 70%), var(--ink-paper, #f4efe3);
+  animation: unfold-veil 2.4s ease-out .2s both; }
+.unfolding .pt { animation: unfold-pt .7s ease-out both; animation-delay: calc(1s + var(--k, 0) * 140ms); }
+.unfoldtitle { position: absolute; inset: 0; z-index: 3; display: grid; place-content: center; text-align: center; pointer-events: none;
+  font-family: var(--serif); color: var(--ink-deep, #2a241c); text-shadow: 0 0 8px var(--ink-paper, #f4efe3), 0 0 16px var(--ink-paper, #f4efe3);
+  animation: unfold-title 4s ease-in-out .5s both; }
+.unfoldtitle small { font-size: 12px; letter-spacing: .5em; opacity: .7; }
+.unfoldtitle b { font-size: clamp(26px, 8vw, 40px); font-weight: 600; letter-spacing: .35em; margin-left: .35em; }
+.unfolding.still .atlas, .unfolding.still .pt { animation: none; }
+.unfolding.still .unfoldveil { display: none; }
+.unfolding.still .unfoldtitle { animation: none; opacity: 0; }
+@keyframes unfold-paper { from { clip-path: inset(0 50% 0 50%); } to { clip-path: inset(0 0 0 0); } }
+@keyframes unfold-veil { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(1.6); } }
+@keyframes unfold-pt { from { opacity: 0; filter: blur(3px); } to { opacity: 1; filter: none; } }
+@keyframes unfold-title { 0% { opacity: 0; transform: translateY(6px); } 25%, 70% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .unfolding .atlas, .unfolding .pt, .unfolding .unfoldveil { animation: none; }
+  .unfolding .unfoldveil { display: none; }
+}

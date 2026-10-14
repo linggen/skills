@@ -23,7 +23,7 @@
 export const BOX_FIRST = new Set(['board', 'duel', 'tale', 'lundao', 'meet', 'breakthrough', 'born', 'value']);
 
 /* The page's own moments, in the order they come after the book. */
-export const MOMENTS = ['piece', 'doors', 'feat', 'memory', 'homing'];
+export const MOMENTS = ['piece', 'doors', 'feat', 'memory', 'homing', 'unfold'];
 
 /* The games to play here: once the box is on the scene's own passage, past
    its caption, they stand over the box (Hanli, 2026-10-05: 「对白讲到它时就出现在

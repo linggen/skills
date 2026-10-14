@@ -24,6 +24,42 @@
       "done_line": { "zh": "溪边那头鹿，倒下了。", "en": "The stag by the stream is down." }
     },
     {
+      "_beats": "The opening's playable beats (Hanli 2026-10-14: 「每看一会儿剧情就要有游戏可以玩」): each plays the book's own action where its scene stands. A board ends in a win always; its `grade` (the game's) picks the mark from `marks` (tasks.mjs win) and, where the scene's exits say `needs.grade`, which of them the win takes.",
+      "id": "rain-basins", "kind": "board", "game": "rain", "period": "once",
+      "title": { "zh": "接雨 · 十七个盆", "en": "Catching the rain · Seventeen basins" },
+      "grant": { "table": "task", "progress": 5 },
+      "marks": { "dry": "rain-caught", "wet": "rain-puddled" },
+      "done_line": { "zh": "十七个盆，一个不少。", "en": "Seventeen basins, not one missing." }
+    },
+    {
+      "id": "track-marks", "kind": "board", "game": "track", "period": "once",
+      "title": { "zh": "追踪 · 一百步刻一道", "en": "Tracking · A mark every hundred steps" },
+      "grant": { "table": "task", "progress": 5 },
+      "marks": { "true": "marks-true", "rough": "marks-rough" },
+      "done_line": { "zh": "一路的记号，认得回去。", "en": "A line of marks to find the way back." }
+    },
+    {
+      "id": "bread-share", "kind": "board", "game": "bread", "period": "once",
+      "title": { "zh": "喂饼 · 那张厚饼", "en": "The flatbread · Breaking it" },
+      "grant": { "table": "task", "progress": 5 },
+      "marks": { "none": "bread-none", "little": "bread-little", "half": "bread-half", "most": "bread-most" },
+      "done_line": { "zh": "一个小角包好了，留作明天的早饭。", "en": "A corner wrapped for tomorrow's breakfast." }
+    },
+    {
+      "id": "rent-scale", "kind": "board", "game": "scale", "period": "once",
+      "title": { "zh": "算账 · 皮抵欠，肉抵租", "en": "Settling up · Hide and meat" },
+      "grant": { "table": "task", "progress": 5 },
+      "marks": { "exact": "rent-exact", "over": "rent-over" },
+      "done_line": { "zh": "皮抵了去年的欠，肉抵了今年的租。", "en": "The hide for last year, the meat for this." }
+    },
+    {
+      "id": "feather-breath", "kind": "board", "game": "feather", "period": "once",
+      "title": { "zh": "吹鹅毛 · 吐气，毛不许动", "en": "The goose feather · It mustn't stir" },
+      "grant": { "table": "task", "progress": 5 },
+      "marks": { "still": "feather-still", "shaky": "feather-shaky" },
+      "done_line": { "zh": "鹅毛还在竹篾上。", "en": "The feather is still on its strip." }
+    },
+    {
       "id": "xisui-hold", "kind": "board", "game": "xisui", "period": "once",
       "title": { "zh": "洗髓 · 疼，别喊", "en": "Marrow washing · Don't cry out" },
       "grant": { "table": "task", "progress": 5 },

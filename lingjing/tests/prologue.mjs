@@ -131,12 +131,26 @@ export function everyJuan(content) {
   return content;
 }
 
+/* The board an exit waits on (`needs.task`), not yet done: played as the page
+   plays it — won with a grade that exit takes, and handed in (the opening's
+   boards, 2026-10-14: 接雨, 追踪, 喂饼, 算账, 吹鹅毛). A walk tapping 那天傍晚
+   has played 接雨 first, as the player must. */
+export function boardsFor(state, content, exitId) {
+  const scene = content.chapters[state.chapter]?.scenes?.[state.scene];
+  const need = scene?.exits?.find(e => e.id === exitId)?.needs;
+  if (!need?.task || state.tasks?.[need.task]?.status === 'done') return [];
+  const marks = content.tasks.tasks.find(t => t.id === need.task)?.marks;
+  const grade = need.grade != null ? [need.grade].flat()[0] : marks ? Object.keys(marks)[0] : null;
+  return [['win', { id: need.task, ...(grade ? { grade } : {}) }], ['task', { action: 'done', id: need.task }]];
+}
+
 /* Walk `steps` from `state`; every step must land. */
 export function walk(state, steps, content, now) {
   let s = state;
   for (const [verb, args, line] of steps) {
     if (line === 'jin' && !/^j\d\d$/.test(content.chapters[s.chapter]?.scenes?.[s.scene]?.hui ?? '')) continue;
     if (verb === 'won') { s = { ...s, wins: { ...s.wins, [args.id]: now.toISOString() } }; continue; }
+    if (verb === 'resolve') for (const [v, a] of boardsFor(s, content, args.exit)) s = FNS[v](s, content, { now, quests: [] }, a).state ?? s;
     const out = FNS[verb](s, content, { now, quests: [] }, args);
     assert.equal(out.result.ok, true, `${verb} ${JSON.stringify(args)} at ${s.scene}: ${JSON.stringify(out.result)}`);
     s = out.state ?? s;

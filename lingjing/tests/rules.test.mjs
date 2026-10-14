@@ -184,7 +184,8 @@ test('the hero is fixed — 沈小满, a boy, from the first Look; 石坳村 goe
   const s = start();
   assert.equal(s.name, '沈小满');
   assert.equal(s.gender, 'male');
-  const on = must(resolve, s, { exit: 'begin' });
+  refused(resolve, s, { exit: 'begin' }, 'needs'); // 接雨 first (2026-10-14)
+  const on = must(resolve, walk(s, [['win', { id: 'rain-basins', grade: 'wet' }], ['task', { action: 'done', id: 'rain-basins' }]], content, NOW), { exit: 'begin' });
   assert.equal(on.result.named ?? null, null, 'no name card: nothing is named');
   assert.equal(on.result.scene.id, '00-masan');
   assert.equal(on.state.name, '沈小满');
@@ -209,11 +210,15 @@ test('the rent is paid with the deer hide the shot brought, and refused without 
   const s = walk(start(), TO_HALL.slice(0, TO_HALL.findIndex(([, a]) => a.exit === 'dumb')), content, NOW);
   assert.equal(s.scene, '00-rent');
   assert.equal(s.bag['deer-hide'], 1);
-  const paid = must(resolve, s, { exit: 'truth' });
+  // 算账 (2026-10-14): the hide and twenty catties go on the scale first; both ways on wait for it.
+  assert.equal(refused(resolve, s, { exit: 'truth' }, 'needs').say, '租还没交清——先把皮和肉过了秤。');
+  const weighed = walk(s, [['win', { id: 'rent-scale', grade: 'exact' }], ['task', { action: 'done', id: 'rent-scale' }]], content, NOW);
+  const paid = must(resolve, weighed, { exit: 'truth' });
   assert.equal(paid.state.bag['deer-hide'], undefined);
   assert.ok(paid.state.marks.includes('told-ma'));
-  const bare = { ...s, bag: {} };
-  assert.equal(refused(resolve, bare, { exit: 'dumb' }, 'needs').say, '手里没有鹿皮。');
+  assert.ok(paid.state.marks.includes('rent-exact'));
+  const bare = { ...weighed, bag: {} };
+  refused(resolve, bare, { exit: 'dumb' }, 'needs');
 });
 
 test('staying exits tell their passage and keep the scene; a staying choice made is not offered again', () => {
@@ -930,6 +935,8 @@ test('the prologue is free: its steps and bouts cost no 灵气, with the 丹田 
   assert.equal(s.scene, '00-heisong');
   assert.equal(s.stamina, 0, 'looking (看) is free');
   // …but an exit that is toil by itself (the marks, the storm, the steps) spends its own 体力
+  s = walk(s, [['win', { id: 'track-marks', grade: 'true' }], ['task', { action: 'done', id: 'track-marks' }]], content, NOW);
+  assert.equal(s.stamina, 0, 'the tracking board costs nothing in the free prologue');
   refused(resolve, s, { exit: 'carve' }, 'no-stamina');
   const full = must(resolve, { ...s, stamina: 100 }, { exit: 'carve' }).state;
   assert.equal(full.stamina, 97);
@@ -1101,6 +1108,8 @@ test('a Restart keeps the language the player pinned (`lang_set`); each replaced
     // How the play was replaced (`run_by`): a Restart or a Load opens a fresh chat, an Undo keeps it (lingjing.js).
     assert.equal(run('look').run_by, 'init');
     const first = run('look').run;
+    run('win', '--id=rain-basins', '--grade=dry');
+    run('task', '--action=done', '--id=rain-basins');
     run('resolve', '--exit=begin');
     assert.equal(run('look').run, first, 'a move is the same play');
     run('undo');
@@ -1634,7 +1643,7 @@ test('look carries today\'s cast (none yet) and the offered tasks', () => {
   let s = toPractice();
   const seen = look(s, content, ctx());
   assert.equal(seen.divination, null);
-  assert.deepEqual(seen.tasks.map(t => [t.id, t.status]), [['fall-storm', 'done'], ['deer-wind', 'done'], ['xisui-hold', 'done'], ['gate-luoshu', 'done']], 'the storm, the stag, the bath and the 二试 done today');
+  assert.deepEqual(seen.tasks.map(t => [t.id, t.status]), [['rain-basins', 'done'], ['track-marks', 'done'], ['fall-storm', 'done'], ['bread-share', 'done'], ['deer-wind', 'done'], ['rent-scale', 'done'], ['xisui-hold', 'done'], ['feather-breath', 'done'], ['gate-luoshu', 'done']], 'the rain, the tracks, the storm, the bread, the stag, the rent, the bath, the feather and the 二试 done today');
 });
 
 test('问卦: once a day by three coins — nothing asked first, the same throws all day, and what the grade does to the day\'s fights', () => {
@@ -1770,6 +1779,9 @@ test('the command line keeps state on disk, logs it and undoes it', () => {
   assert.equal(cli('init', '--lang', 'en').world.id, 'jiuding');
   assert.equal(cli('look').scene.id, '00-shiao');
   assert.equal(JSON.parse(fs.readFileSync(path.join(data, 'state.json'), 'utf8')).world, 'jiuding');
+  // 接雨 first (2026-10-14): the board 那天傍晚 waits for, won and handed in as the page does.
+  cli('win', '--id=rain-basins', '--grade=dry');
+  cli('task', '--action=done', '--id=rain-basins');
   assert.equal(cli('resolve', '--exit', 'begin', '--answer', '{{answer}}').scene.id, '00-masan');
   assert.equal(cli('look').scene.id, '00-masan');
   assert.equal(cli('resolve', '--exit', 'nowhere').refused, 'unknown-exit');
@@ -1808,6 +1820,8 @@ test('Look\'s `run` holds through moves and is new whenever the play is replaced
   const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
   const first = cli('init', '--lang=zh').run;
   assert.match(first, /^[0-9a-f]{12}$/);
+  cli('win', '--id=rain-basins', '--grade=dry');
+  cli('task', '--action=done', '--id=rain-basins');
   assert.equal(cli('resolve', '--exit=begin').scene.id, '00-masan');
   assert.equal(cli('look').run, first, 'a forward move is the same play');
   const named = cli('save', '--title=醒来').saved;
@@ -1825,6 +1839,8 @@ test('Look\'s `run` holds through moves and is new whenever the play is replaced
   const { run: _, ...bare } = JSON.parse(fs.readFileSync(file, 'utf8'));
   fs.writeFileSync(file, JSON.stringify(bare));
   assert.equal(cli('look').run, undefined);
+  cli('win', '--id=rain-basins', '--grade=dry');
+  cli('task', '--action=done', '--id=rain-basins');
   cli('resolve', '--exit=begin');
   assert.equal(cli('look').run, undefined);
   assert.equal(cli('undo').undid, 'resolve');
@@ -1839,6 +1855,8 @@ test('Go jumps to an opened scene; the rules keep each day\'s closing state, the
   const cli = (env, ...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
   const d1 = at('2026-09-12T12:00:00Z'), d2 = at('2026-09-13T12:00:00Z');
   cli(d1, 'init', '--lang=en');
+  cli(d1, 'win', '--id=rain-basins', '--grade=dry');
+  cli(d1, 'task', '--action=done', '--id=rain-basins');
   assert.equal(cli(d1, 'resolve', '--exit=begin').scene.id, '00-masan');
   const named = cli(d1, 'save', '--title=At the waking').saved;
   assert.equal(named.kind, 'named');

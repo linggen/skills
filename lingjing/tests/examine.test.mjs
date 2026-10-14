@@ -70,9 +70,10 @@ test('the key clue opens the chase — as a quiet link in its own words, not a b
   const sc = look(found.state, content, ctx()).scene;
   assert.deepEqual(sc.panel.taps.map(t => [t.id, t.quiet]), [['carve', 'label']]);
   assert.equal(sc.look.find(h => h.id === 'stone').clue, true);
-  const on = resolve({ ...found.state, stamina: 100 }, content, ctx(), { exit: 'carve' });
-  assert.equal(on.result.ok, true);
-  assert.equal(on.state.scene, '00-storm');
+  // The clue found, the tracking is still to play (追踪, 2026-10-14): the way on waits for the board too.
+  assert.equal(resolve({ ...found.state, stamina: 100 }, content, ctx(), { exit: 'carve' }).result.refused, 'needs');
+  const on = walk({ ...found.state, stamina: 100 }, [['resolve', { exit: 'carve' }]], content, NOW);
+  assert.equal(on.scene, '00-storm');
 });
 
 test(`stuck: ${STALL_LOOKS} looks without the key bring the scene's hint, in the result and on the card`, () => {
@@ -90,7 +91,7 @@ test('所见: Look hands Ling what was found and what was passed by; 录 lists i
   const here = look(s, content, ctx()).seen;
   assert.deepEqual(here.map(r => r.scene), ['00-heisong']);
   assert.equal(here[0].missed, undefined, 'the scene he stands in misses nothing yet');
-  s = resolve({ ...s, stamina: 100 }, content, ctx(), { exit: 'carve' }).state;
+  s = walk({ ...s, stamina: 100 }, [['resolve', { exit: 'carve' }]], content, NOW);
   const seen = forLing(look(s, content, ctx())).seen;
   assert.deepEqual(seen[0].found.map(f => f.label), ['枯草', '石上的痕迹'], 'in the order found');
   assert.deepEqual(seen[0].missed, ['蹄印']);
@@ -132,7 +133,7 @@ test('the hotspots written: the prologue and 第一章\'s key scenes, two to fou
   for (const id of ['00-masan', '00-chushan', '00-duanbei', '00-heisong', '00-fox', '00-hall', 'wm-jiangtang', 'wm-chaifang', 'wm-danlu', 'wm-wangzuo', 'wm-caowu']) {
     assert.ok(have[id] >= 2 && have[id] <= 4, `${id}: ${have[id]}`);
   }
-  assert.deepEqual(content.chapters['00-prologue'].scenes['00-heisong'].exits[0].needs, { seen: ['stone'] });
+  assert.deepEqual(content.chapters['00-prologue'].scenes['00-heisong'].exits[0].needs, { seen: ['stone'], task: 'track-marks' });
 });
 
 test('nothing seen reveals what the hero does not know yet: before 银月 names herself no finding names her or where she is from', () => {

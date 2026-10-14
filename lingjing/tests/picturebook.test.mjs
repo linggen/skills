@@ -88,6 +88,8 @@ test('the command line: Ling is never handed the prose — only what the stage p
     assert.equal(cli('look').tell_owed, true, 'the page sees it owed');
     // the page draws it, taps on (no name card: the hero is fixed) and taps a choice; Ling hears what the stage plays
     assert.deepEqual(cli('tell').tell.map(t => t.id), ['00-shiao']);
+    cli('win', '--id=rain-basins', '--grade=dry');
+    cli('task', '--action=done', '--id=rain-basins');
     cli('resolve', '--exit=begin');
     cli('tell');
     cli('resolve', '--exit=strike', '--said=攥紧拳头');
@@ -114,6 +116,8 @@ test('the page draws the passages owed with their beats (Tell) and marks them to
   try {
     cli('init', '--lang=zh');
     cli('tell');
+    cli('win', '--id=rain-basins', '--grade=dry');
+    cli('task', '--action=done', '--id=rain-basins');
     cli('resolve', '--exit=begin');
     cli('tell');
     cli('resolve', '--exit=strike', '--said=攥紧拳头');

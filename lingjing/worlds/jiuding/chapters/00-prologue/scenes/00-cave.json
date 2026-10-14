@@ -57,7 +57,18 @@
     "en": "He peeled the egg, broke off half, and put it by the fox's mouth. It sniffed it, looked at him, and only then slowly ate it. He thought about it, then put the other half by its mouth too. It sniffed, looked at him again, and ate that as well. Xiaoman groaned to himself: Ahe, I'm sorry. The interest on this egg is going to be three, at least.\n\nThen came the flatbread. He broke it in two, gave half to the fox, and kept half himself. He'd been hungry all day, and the half flatbread in his hand was as heavy as a lump of gold. The fox finished its half and looked at the half in his hand, then looked at him. He looked at it; it looked at him; the fire crackled.\n\nHe broke a big piece off his own half and put it by its mouth, wrapped up the small corner that was left, and stuffed it into the very bottom of his bundle, to save for tomorrow's breakfast. The fox finished, licked its lips, turned its head away and shut its eyes, without so much as a thank-you.\n\nHe tore a strip off the hem of his shirt, wet it with rainwater, and bit by bit cleaned the mud out of its wounds. It didn't bite him any more. Only, when he touched a sore place, its ears would flatten back and it would give a small whimper. In the firelight he saw its wounds closing, slowly, slowly.\n\nThe wounds closed; but not long after full dark the fox ran a fever. Through the old jacket, heat came off it in waves, hot enough to make his palms sweat. He lifted a corner of the cloth and saw it curled up tighter than ever, the skin on its nose dry and flaking, its breath short and fast, each breath reaching its throat and turning back, like a torn pair of bellows.\n\nHis father had said that when a creature in the mountains is badly hurt, it always runs a fever the first night: get through it and you live, don't and you don't.\n\nHe remembered that very clearly, because when his father had said it he'd added: \"Same with people.\"\n\nHe had no medicine, only rainwater. He tore the strip of hem into two pieces. One he soaked and laid on the fox's forehead; the other he held out at the mouth of the cave to catch the rain, and when the first one warmed up he swapped it for the second. Whoever keeps the fire can't sleep; fall asleep, and the fire goes out. He thought and thought, and there was only one way to keep himself awake, and that was to talk.\n\nThere was nobody else in the cave, only a fox, so he talked to the fox. He was soaked through himself, and his jacket was wrapped round the fox, so he was so cold his teeth chattered, and he kept shifting closer and closer to the fire.\n\nHe'd meant to start by telling it his name, then thought: a fox — even if it remembered, it would have nowhere to write it down. So he skipped that. He told it about his mother's seventeen basins; about his father's knee that could chat; that the first day of winter was the day after tomorrow, and Ma San was coming to take his grandpa's bow, and that this was called a son paying his father's debts.\n\nWhen he got to Ma Xiaobao he said, \"He's always got a piece of osmanthus cake in his hand. I still don't know what osmanthus cake tastes like. It smells nice. Have you ever had any? — Oh, you're a fox. You eat chickens.\" At the words \"osmanthus cake\" its ear twitched. He thought it was just the fever bothering it. A fox — how could it understand people talk?\n\nHe told it about the bowl, too: how it turned two somersaults in the air, and he grabbed for it, and was an inch short.\n\n\"That's how everyone in my family is,\" he said. \"When somebody hurts, nobody says it hurts. Pa's knee hurts, and he says it's chatting. Ma crouches on the floor picking up the bowl and doesn't say anything. I'm all smashed up like this, and I'm not saying anything either. In our family, the rule is: if it hurts, you don't say so, and nobody asks. If they ask, you have to answer; if you answer, you'll cry; if you cry, the food goes cold.\"\n\nWhen he'd said that, he got up and changed the cloth again. The fox was still hot.\n\nAround midnight the fire burned low. He ducked out of the cave, felt his way to the foot of the cliff and snapped off a few dead branches. Every branch he snapped set the whole tree's silver leaves *tinging* all together, as if they were telling him off.\n\nHe could only say, quietly, \"Sorry. Just borrowing a couple. I'll give them back tomorrow.\" With the wood in his arms he pricked up his ears towards the top of the cliff and listened. All he could hear was the rain; nothing else. His father's ears could hear a river deer three li off. His own ears were only ordinary.\n\nHe ducked back into the cave with the wood, stirred the fire up again, turned round — and saw it lying there, not moving at all.\n\nHis head went *hummm*. He threw himself down and scooped it up. It was still hot, but the rise and fall of its chest — he looked and looked, and couldn't see it. He put his ear against it and listened, and couldn't hear a thing, only his own heart hammering away.\n\nHolding it, he didn't know what to do with his hands or feet. On an ordinary day he had an answer for everything, and now, round and round, the only thing he could get out was: \"Hey. Hey. Don't you—\" And then, somehow, he started doing sums again, and as he did them he shouted at it: \"You ate my family's last white flour! You ate Ahe's egg! You bit me! If you die, who am I supposed to collect those debts from?\"\n\nWhen he'd finished shouting, the cave was dead quiet. The fire crackled once. After a good while — maybe only as long as one breath, though to him it felt longer than a whole night — its chest, gently, swelled once. And swelled again. Holding it, he sat down hard on the ground and couldn't speak for a long time. His back was soaked in cold sweat.\n\nAfter that he didn't dare stop talking, as if, if he stopped, its breath would stop with him.\n\nHe went over his whole twelve years again and again, and by the end he didn't know what he was saying himself; only his mouth didn't stop and his hands didn't stop: change the cloth, add wood, change the cloth again, add wood again. Towards dawn the rain stopped.\n\nHe reached out and felt it. It wasn't hot any more, and its breathing had evened out, one breath after another, long and steady, exactly like that point of silver light in the hollow, glowing and dimming.\n\nHe was worn out. Holding it, he leaned back against the rock and at some point fell asleep. Just before he fell asleep, he thought he heard someone say something by his ear in a very, very small voice — not a fox's cry, but people talk, a girl's voice, rather grudging: ⟪\"…Mortal. This queen will remember you.\"⟫"
    },
    "beat": [],
-   "next": "00-yinyue"
+   "next": "00-yinyue",
+   "needs": {
+    "task": "bread-share",
+    "grade": [
+     "most",
+     "half"
+    ]
+   },
+   "refuse": {
+    "zh": "饼得一块一块地掰——给它多少，看你的手。",
+    "en": "The bread is broken piece by piece — how much it gets is up to your hands."
+   }
   },
   {
    "id": "keep",
@@ -72,7 +83,30 @@
     "en": "Xiaoman ate the peeled egg himself. The flatbread — he broke off the larger part and stuffed that in his mouth too; the little corner left over he wrapped and tucked at the bottom of his bundle, for tomorrow's breakfast.\n\nThat wasn't stinginess; that was keeping accounts. He'd been hungry all day, and tomorrow there might be nothing to eat at all.\n\nInside his jacket it watched him — kept watching, without a sound. The watching made him feel a little guilty; he tore a strip from his hem, wet it with rainwater, and bit by bit wiped the mud from its wounds. It didn't bite him any more; only when he touched a sore place its ears went flat.\n\nHe was too tired. Holding it, he leaned against the rock wall and at some point fell asleep. Just before he slept he seemed to hear someone speak in his ear, very, very softly — a girl's voice, a little grudging: ⟪\"…Mortal. Stingy. — This queen will remember you.\"⟫"
    },
    "beat": [],
-   "next": "00-yinyue"
+   "next": "00-yinyue",
+   "needs": {
+    "task": "bread-share",
+    "grade": [
+     "none",
+     "little"
+    ]
+   },
+   "refuse": {
+    "zh": "饼得一块一块地掰——给它多少，看你的手。",
+    "en": "The bread is broken piece by piece — how much it gets is up to your hands."
+   }
   }
- ]
+ ],
+ "_beats": "喂饼 (bread-share, 2026-10-14): the board is the breaking of the flatbread; its grade (how much the fox had) takes 分它一半 (half · most) or 自己吃 (none · little), and the task's marks keep the amount (bread-none … bread-most) for the 恩仇簿 and 「本王欠你一张饼」. The corner is always kept: the dawn needs it.",
+ "show": [
+  {
+   "card": "board",
+   "id": "bread-share"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "bread-share"
+  ]
+ }
 }

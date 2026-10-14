@@ -20,25 +20,25 @@ the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 
 
 | Scene | Source | Choices → mechanics |
 |---|---|---|
-| `00-shiao` 石坳村 | 一 | one plain exit `begin` (the hero is fixed, 2026-09-30); the morning plays 阿禾 guarding her cabbage and the 东坡 woodcutting, so 00-masan's flattened cabbage and the 「磨盘」 land |
+| `00-shiao` 石坳村 | 一 | one plain exit `begin` (the hero is fixed, 2026-09-30); the morning plays 阿禾 guarding her cabbage and the 东坡 woodcutting, so 00-masan's flattened cabbage and the 「磨盘」 land; **board `rain-basins`** (接雨: basins under the moving drips until seventeen are full — the passage split after 「……一直下到五更天」, the rest is `begin`'s; grade dry · wet → `rain-caught` · `rain-puddled`) |
 | `00-masan` 马三 | 一 | 原样说回去 (`kept-count`; the night's 洛书口诀 plays here, 二试's callback) · 攥拳 (体力 −5): both write 恩仇簿 仇 马小宝, 马三 — task 2 |
 | `00-dawn` 鸡蛋 | 一 | 收下 → 恩 {伴} (task 3) · 推回去 (`no-egg`) |
 | `00-kitchen` 灶间 | 一 | 跟爹进山 → 狐纹木牌 (task 4) |
 | `00-chushan` 前山 | 二 | 爬树眺望 → the map card (task 5); at noon a second tree: a deer lifts its head at 黑松岭's edge, and they track it to the 断碑 (no 马家 dogs since 2026-10-03, Hanli: 「可以写他们看见远处的鹿在黑松岭里面，追进去的」) |
 | `00-duanbei` 断碑 | 三 | 看碑背 (`stele-fox`, task 7) · 三条规矩 (`three-rules`, task 6) · 回村 / 独自进 stay |
-| `00-heisong` 黑松岭 | 三 | 一百步一记 (体力 −3, `marks-cut`, task 8) |
+| `00-heisong` 黑松岭 | 三 | 一百步一记 (体力 −3, `marks-cut`, task 8); **board `track-marks`** (追踪: pick the deer's sign among the forest's, carve at a hundred steps, four marks; grade true · rough → `marks-true` · `marks-rough`) gates `carve` with the stone clue |
 | `00-storm` 暴雨 | 四 | 掉头 (体力 −4) · 再追半里 (体力 −10) (task 9) — the rain breaks; the haul is 00-fall's board |
 | `00-fall` 第二十七道记号 | 五 · 六 | **board `fall-storm`** (lane MG's 暴雨: haul 爹 back in the lulls) gates 把爹拽回山壁 — then the fall, 查伤, 爷爷's 火镰, the light (task 10); `at` heisong |
 | `00-fox` 银光 | 七 | 裹起它 · 别碰 (stay) — task 11 |
-| `00-cave` 那一夜 | 八 | 分它一半 · 自己吃 (task 12) |
+| `00-cave` 那一夜 | 八 | 分它一半 · 自己吃 (task 12); **board `bread-share`** (喂饼: seven pieces to the fox or to himself, the corner kept for the dawn) — its grade takes the way on: none · little → 自己吃, half · most → 分它一半; `bread-<grade>` marks how much (欠饼) |
 | `00-yinyue` 天亮 | 九 | 带她出谷 → she joins (`joins`, task 13) |
 | `00-cliff` 出谷 | 十 | 抓住爹的手 (体力 −3) → 恩 老周 (task 14) |
-| `00-deer` 那头鹿 | 十一 | **board `deer-wind`** (射鹿: hold to draw, loose in the still wind) gates 往左偏半寸 → 鹿皮, she faints (`sleeps`); 照直射 stay (task 15) |
+| `00-deer` 那头鹿 | 十一 | **board `deer-wind`** (射鹿: hold to draw, loose in the still wind) gates 往左偏半寸 → 鹿皮, she faints (`sleeps`); 照直射 stay (task 15); since 2026-10-14 the aim is his too: dead on skims the antlers, 偏左半寸 hits, four misses and her voice moves his hands (grade clean · steady · rough) |
 | `00-dusk` 村东头 | 十二 | 立冬天没亮，腌芥菜缸底的鹿腿（背在背上，走屋后头，不走井台）送到吴婆婆家，她朝银光低头（鼎湖挪到马三走后的 00-xiuxian 开头）: 去村东头 (`wupo-bowed`, task 17) · 守着它 |
-| `00-rent` 交租 | 十二 | 马三摘弓 · 「下水呢」: 装傻 · 说实话 (`told-ma`) — the 鹿皮 paid (task 16); both wake her |
+| `00-rent` 交租 | 十二 | 马三摘弓 · 「下水呢」: 装傻 · 说实话 (`told-ma`) — the 鹿皮 paid (task 16); both wake her; **board `rent-scale`** (算账: the hide, then cuts onto the steelyard until twenty 斤; grade exact · over → `rent-exact` · `rent-over`) — both ways on wait for it, the choice stays his |
 | `00-xiuxian` 什么是修仙 | 十三 | 日头偏西 吴婆婆讲鼎湖 · 乌号; 什么是修仙; 让它睡 → next night she leaves into the token (sleeps), the 谢谢 (task 18) |
 | `00-sleep` 洗髓 | 十四 | **board `xisui-hold`** (洗髓: three sticks held through the waves) gates 泡进去 (体力 −6) → 《吐纳经》 (tasks 19–20); 爬出来 stay |
-| `00-halfyear` 半年 | 十五 | the scroll and the ten characters; 冬月廿二 the man in white; 正月初五 the mirror and 爹's 「它听见的不是你喘，是你心慌」 (tasks 21–22) — no 功课 yet: they, 修为, 灵石, 开府, 问卦 and 差事 open at `00-waimen` (chapter.json `locks`) |
+| `00-halfyear` 半年 | 十五 | the scroll and the ten characters; 冬月廿二 the man in white; 正月初五 the mirror and 爹's 「它听见的不是你喘，是你心慌」 (tasks 21–22) — no 功课 yet: they, 修为, 灵石, 开府, 问卦 and 差事 open at `00-waimen` (chapter.json `locks`); **board `feather-breath`** (吹鹅毛: the breath out as a slow, steady stroke, three breaths; grade still · shaky → `feather-still` · `feather-shaky`) gates `on` — the book's 九月十九 feather is this scene's, not 00-xiuxian's |
 | `00-uncle` 舅舅 | 十六 | 去 · 再等等 stay (tasks 23–24) |
 | `00-notice` 开山门 | 十七 | → 爷爷的弓 (task 25) |
 | `00-gate` 一试 | 十八 | 三步一吸 (体力 −6) · 冲 (体力 −12) (task 26) |

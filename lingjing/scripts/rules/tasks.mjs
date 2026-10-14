@@ -156,7 +156,22 @@ export function win(state, content, ctx, args) {
   if (!inScene && !taskOpen(content, state, id, ctx.now)) return refuse('not-here', null);
   const s = clone(state);
   s.wins = { ...s.wins, [id]: ctx.now.toISOString() };
-  return { state: s, result: { ok: true, won: id } };
+  // How the board went (the game's `grade`, 2026-10-14's opening beats): kept
+  // by the task, and the task's `marks` for it written — a grade the task
+  // does not name is not kept. The scene's exits may wait on it (`needs.grade`).
+  const graded = gradeOf(content, id, args.grade);
+  if (graded) {
+    s.grades = { ...s.grades, [id]: graded.grade };
+    if (graded.mark) s.marks = [...new Set([...(s.marks ?? []), graded.mark])];
+  }
+  return { state: s, result: { ok: true, won: id, ...(graded ? { grade: graded.grade } : {}) } };
+}
+
+/* A board's grade as its task names it: `marks` (grade → mark) lists the grades it keeps. */
+function gradeOf(content, id, grade) {
+  const marks = content.tasks.tasks.find(t => t.id === id)?.marks;
+  const g = String(grade ?? '');
+  return marks && Object.hasOwn(marks, g) ? { grade: g, mark: marks[g] } : null;
 }
 
 /* 降妖 — the scene plays the fight turn by turn, the rules decide it.

@@ -34,7 +34,9 @@ export function newState(content, lang, now) {
     bag: {}, cast: [], wear: {}, duels: {}, arts: [],
     chapter: first.id, scene: first.first_scene, done_scenes: [], ended: [],
     place: first.scenes[first.first_scene]?.at ?? content.places[first.province]?.start ?? null,
-    tasks: {}, chores: {}, quests: {}, wins: {}, story: '', seeds_used: [],
+    // The first scene's boards are offered as any scene's are on entry (core.mjs offerTasks; 接雨, 2026-10-14).
+    tasks: Object.fromEntries((first.scenes[first.first_scene]?.offers?.tasks ?? []).map(id => [id, { status: 'offered' }])),
+    chores: {}, quests: {}, wins: {}, story: '', seeds_used: [],
     made: { scenes: {}, at: null },
     day: { key: dayKey(now), progress: 0, wealth: 0 },
     stamina: content.rewards.stamina.max, stamina_at: at,
@@ -534,6 +536,12 @@ export function fitWorld(saved, content) {
     // Its own seed (seedOf), fixed once: the name it was given, else its creation time.
     ...(state.seed == null ? { seed: state.name && state.name !== hero?.name ? state.name : (state.created ?? '') } : {}),
   };
+  // A scene given a board after the save walked into it (the opening's beats, 2026-10-14):
+  // its tasks are offered now, as entering it would have — a save standing there is never shut out.
+  const here = chapter?.scenes?.[fix.scene ?? state.scene];
+  const held = fix.tasks ?? state.tasks ?? {};
+  const unoffered = (here?.offers?.tasks ?? []).filter(id => !held[id]);
+  if (unoffered.length) fix.tasks = { ...held, ...Object.fromEntries(unoffered.map(id => [id, { status: 'offered' }])) };
   // Before a story gate, nothing the gate keeps (lockReset): read where the save now stands.
   Object.assign(fix, lockReset(content, { ...state, ...fix }));
   if ('seclusion' in fix) { const { seclusion, ...kept } = { ...state, ...fix }; return kept; }

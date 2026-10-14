@@ -44,14 +44,15 @@ test('the box gives the stage away only to what is UP — never to a game or a m
   assert.equal(boxGivesWay({ huiTurn: true }), true, 'a 回\'s 「完」 and the new title');
 });
 
-test('the moments come after the book, one at a time, in their order: set piece, doors, seal, memory, 鼎归', () => {
-  assert.deepEqual(MOMENTS, ['piece', 'doors', 'feat', 'memory', 'homing']);
+test('the moments come after the book, one at a time, in their order: set piece, doors, seal, memory, 鼎归, the map unfolding', () => {
+  assert.deepEqual(MOMENTS, ['piece', 'doors', 'feat', 'memory', 'homing', 'unfold']);
   assert.equal(momentMay('piece', { ahead: true }), false, 'the passage first (漳水立起 after 巫祝投河)');
   assert.equal(momentMay('feat', { up: true }), false, 'never a seal over the doors (突破 over 五门俱开)');
   assert.equal(momentMay('feat', { pending: ['doors', 'feat'] }), false, 'the doors are on their way: they go first');
   assert.equal(momentMay('memory', { pending: ['feat', 'memory'] }), false, 'the seal before her memory');
   assert.equal(momentMay('doors', { pending: ['feat', 'memory', 'doors'] }), true, 'a later moment never holds an earlier one');
   assert.equal(momentMay('homing', {}), true);
+  assert.equal(momentMay('unfold', { pending: ['homing', 'unfold'] }), false, 'a 鼎 home first, then a new map');
 });
 
 test('the page asks queue.js: the games are held, every moment waits its turn, a gain waits for a quiet stage', () => {
@@ -66,7 +67,10 @@ test('the page asks queue.js: the games are held, every moment waits its turn, a
 test('a board won: its last line is read first, then the scene\'s way on that waited on it is taken; the tray lets it go', async () => {
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(page, /async function onWin\(taskId\) \{\s*await pause\(stillMotion\(\) \? 1200 : WIN_LINE_MS\);/);
-  assert.match(page, /const on = winExit\(taskId\);\s*if \(on\) await panelTap\(on\.id/);
+  assert.match(page, /const on = winExit\(taskId, grade\);\s*if \(on\) await panelTap\(on\.id/);
+  // The grade goes with the win, and one way on is taken for him only when it is the only one (算账's two are his).
+  assert.match(page, /write\('win', \{ id: taskId, \.\.\.\(grade \? \{ grade \} : \{\}\) \}\)/);
+  assert.match(page, /return ways\.length === 1 \? ways\[0\] : null;/);
   const { trayHtml, WORDS } = await import('../scripts/cards.js');
   const look = { tasks: [{ id: 'deer-wind', title: '射鹿', kind: 'board', status: 'done' }, { id: 'xisui-hold', title: '洗髓', kind: 'board', status: 'offered' }] };
   const tray = trayHtml({ look, words: WORDS.zh, lang: 'zh' });

@@ -54,14 +54,15 @@
    },
    "means": "plays dumb, says there is nothing in there, scared, hides what they saw",
    "needs": {
-    "bag": "deer-hide"
+    "bag": "deer-hide",
+    "task": "rent-scale"
    },
    "take": {
     "bag": "deer-hide"
    },
    "refuse": {
-    "zh": "手里没有鹿皮。",
-    "en": "You have no deer hide."
+    "zh": "租还没交清——先把皮和肉过了秤。",
+    "en": "The rent isn't settled — put the hide and the meat on the scale first."
    },
    "mark": "played-dumb",
    "story": {
@@ -80,14 +81,15 @@
    },
    "means": "tells the truth about the ridge, lets father answer honestly",
    "needs": {
-    "bag": "deer-hide"
+    "bag": "deer-hide",
+    "task": "rent-scale"
    },
    "take": {
     "bag": "deer-hide"
    },
    "refuse": {
-    "zh": "手里没有鹿皮。",
-    "en": "You have no deer hide."
+    "zh": "租还没交清——先把皮和肉过了秤。",
+    "en": "The rent isn't settled — put the hide and the meat on the scale first."
    },
    "mark": "told-ma",
    "story": {
@@ -98,5 +100,16 @@
    "next": "00-xiuxian",
    "wakes": true
   }
- ]
+ ],
+ "show": [
+  {
+   "card": "board",
+   "id": "rent-scale"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "rent-scale"
+  ]
+ }
 }

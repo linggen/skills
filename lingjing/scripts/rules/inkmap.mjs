@@ -106,7 +106,29 @@ export function jiudingBrief(content, state) {
   const of = Object.values(content.chapters).filter(ch => holdsCauldron(ch) && content.places[ch.province]).length;
   const ch = content.chapters[state.chapter];
   const unroll = ch?.unroll && !(state.unrolled ?? []).includes(ch.id) ? ch.id : null;
-  return { homed, of, ...(unroll ? { unroll } : {}) };
+  const unfold = unfoldOf(content, state);
+  return { homed, of, ...(unroll ? { unroll } : {}), ...(unfold ? { unfold } : {}) };
+}
+
+/* 地图展开 (2026-10-14, the way a new region opens in 《原神》): a chapter's map
+   (chapter.json `map.places`) not yet unfolded in this save. `walk`: it can
+   be walked now — outside a corridor and a key beat (world.mjs inCorridor) —
+   and the page unfolds it at once; else the page unfolds it the first time
+   its map card comes on the stage (00-chushan's tree, 蒙山 from the top). */
+function unfoldOf(content, state) {
+  const ch = content.chapters[state.chapter];
+  if (!ch?.map?.places?.length || world.inMade(state) || (state.unfolded ?? []).includes(ch.id) || (state.ended ?? []).includes(ch.id)) return null;
+  return { chapter: ch.id, title: pick(ch.title, state.lang) ?? ch.id, walk: !world.inCorridor(content, state) };
+}
+
+/* Unfolded — the page played a chapter's map unfolding: never again in this save. */
+export function unfolded(state, content, ctx, args) {
+  const id = String(args.chapter ?? state.chapter);
+  if (!content.chapters[id]?.map?.places?.length) return refuse('no-map', null);
+  if ((state.unfolded ?? []).includes(id)) return { state: null, result: { ok: true, unfolded: id, seen: true } };
+  const s = clone(state);
+  s.unfolded = [...(state.unfolded ?? []), id];
+  return { state: s, result: { ok: true, unfolded: id } };
 }
 
 /* Unrolled — the page played the scroll for this chapter: never again. */

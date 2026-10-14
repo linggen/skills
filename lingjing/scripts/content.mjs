@@ -11,6 +11,7 @@ import { FRAMES, PARTICLES } from './atmos.js';
 import { lintCodex } from './codex.js';
 import { bookEntries, idsOf } from './book-order.js';
 import { rankOf, storyAllows } from './rules/cap.mjs';
+import { rhythm } from './rhythm.mjs';
 import { huiOf } from './rules/hui.mjs';
 import { KINDS as WEATHER_KINDS } from './rules/weather.mjs';
 
@@ -467,6 +468,11 @@ export function lintMade(scene, madeScenes, content) {
 }
 
 /* ── Lint ── */
+
+/* Warnings: what the lint lets through for now and lists — the rhythm of a
+   chapter's main line (rhythm.mjs: the book read between two play beats). */
+export { RHYTHM_CAP } from './rhythm.mjs';
+export const warnings = (content, opts = {}) => rhythm(content, opts);
 
 export function lint(content) {
   const problems = [];
@@ -1047,6 +1053,8 @@ function lintRiddles(riddles, bad) {
 function lintTask(task, content, ids, bad) {
   const where = `task ${task.id}`;
   lintGrant(where, task.grant, content, ids, bad);
+  // A board's grades, each with the mark it writes (tasks.mjs win).
+  if (task.marks != null && !(task.kind === 'board' && task.game && Object.entries(task.marks).length && Object.entries(task.marks).every(([g, m]) => /^[a-z][a-z0-9-]*$/.test(g) && /^[a-z][a-z0-9-]*$/.test(String(m))))) bad(where, 'marks are a game board\'s grades, each to a lowercase mark id');
   if (task.gives?.bag && !ids.items.has(task.gives.bag)) bad(where, `gives unknown item ${task.gives.bag}`);
 }
 
@@ -1249,6 +1257,11 @@ function lintExit(where, exit, chapter, content, ids, speakers, bad) {
     if (rule?.task && !ids.tasks.has(rule.task)) bad(where, `unknown task ${rule.task}`);
   }
   if (exit.take && !exit.needs) bad(where, 'takes what it never checks for');
+  // A board's grade (tasks.mjs win): a grade of the task it waits on, from the task's `marks`.
+  if (exit.needs?.grade != null) {
+    const marks = content.tasks.tasks.find(t => t.id === exit.needs.task)?.marks ?? {};
+    for (const g of [exit.needs.grade].flat()) if (!Object.hasOwn(marks, g)) bad(where, `needs grade ${g}, which task ${exit.needs.task ?? '(none)'} does not mark`);
+  }
   // A choice a thread sets up; a day that must pass since a mark of the chapter.
   if (exit.needs?.quest && !(content.quests ?? []).some(q => q.id === exit.needs.quest)) bad(where, `needs unknown quest ${exit.needs.quest}`);
   if (exit.needs?.day_after && !Object.values(chapter.scenes).some(sc => sc.exits.some(e => e.mark === exit.needs.day_after))) bad(where, `waits a day after ${exit.needs.day_after}, which no exit marks`);

@@ -78,6 +78,9 @@ test('再想想 lets it be; the asking expires after ten minutes', () => {
 
 test('悔棋 asks before Undo, and Undo unasked is refused', () => {
   const g = game();
+  // 接雨 first (2026-10-14): the board the way on waits for, won and handed in as the page does.
+  g.cli(1, 'win', '--id=rain-basins', '--grade=dry');
+  g.cli(1, 'task', '--action=done', '--id=rain-basins');
   g.cli(1, 'resolve', '--exit=begin');
   assert.equal(g.cli(2, 'undo', '--for=ling').refused, 'not-confirmed');
   const asked = g.cli(2, 'look', '--said=悔棋', '--for=ling');
