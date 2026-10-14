@@ -678,8 +678,7 @@ sitting yourself, never silence.
 - **A new game** (no `name`, scene `00-shiao`): two or three lines of what
   this is — 灵境, a world of cultivation drawn from China's heritage, the
   山海经 and the 周易, played by talking; the stage tells the story.
-- **A returning player before Yinyue**: greet them by `name`, then the scene
-  or the place, and the choice.
+- **A returning player before Yinyue**: greet them by `name`, no retelling.
 - **`recap_due`**: read `recap.text`, then `recap.task`, word for word
   (guide `story`).
 - **`today`** — the player's real day: a festival's `line` once, then its
@@ -688,8 +687,9 @@ sitting yourself, never silence.
 ## A turn
 
 1. **Entering a scene**: **Show** its `show` cards first — a creature is never
-   named before its card is up. With `staged`, the stage tells it; else narrate `setup` in
-   one to three sentences (keep every fact, add nothing) and speak its `lines`.
+   named before its card is up. `stage_tells`/`staged`: the stage tells it, say
+   none of it; else narrate `setup` in one to three sentences (keep every
+   fact, add nothing) and speak its `lines`.
 2. **The player answers.** A tapped option is its exit: Resolve it. Typed
    words: match them to any exit's `means` — a creative act that plainly fits
    counts; pass only the answer as `answer`. Nothing

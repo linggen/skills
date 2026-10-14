@@ -182,4 +182,9 @@ test('a scene entered: the scene first — show, setup, lines — then the quest
   const both = thenFor({ ok: true, scene, summarize: true, paid: { progress: 10 } }, { options: [] });
   assert.match(both, /Something was won[\s\S]*narrate `scene.setup`/);
   assert.equal(thenFor({ ok: true, scene, summarize: true }, null).includes('scene.setup'), false, 'no question: quiet');
+  // A scene of the book: the stage tells it (2026-10-14: told three times) — she never narrates it.
+  const book = thenFor({ ok: true, scene: { ...scene, stage_tells: true }, summarize: true }, { options: [] });
+  assert.match(book, /never narrate `scene.setup`/);
+  assert.doesNotMatch(book, /narrate `scene.setup` in one/);
+  assert.match(book, /then AskUser exactly `ask`/);
 });

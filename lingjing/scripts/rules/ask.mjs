@@ -151,6 +151,11 @@ const THEN_CHEER = CHEER + THEN;
 /* A scene just entered: Ling asked AskUser before narrating it and typed its
    options into the reply (live test, 2026-09-25). The scene first, then the question. */
 const THEN_SCENE = 'A scene was entered: Show its `scene.show` cards, narrate `scene.setup` in one to three sentences and speak its `scene.lines`, then AskUser exactly `ask` — never the options in your own words. The reply ends only there.';
+/* A scene the book tells on the stage (`scene.stage_tells`): the place, its
+   caption and the passage are the page's — told three times once (2026-10-14:
+   the caption as a beat, the passage, Ling's narration). She says nothing of it. */
+const THEN_SCENE_STAGED = 'A scene was entered and the stage tells it — the place, its caption and the book\'s passage: never narrate `scene.setup`, never retell the passage, never speak its `scene.lines`. Show its `scene.show` cards, then AskUser exactly `ask` — never the options in your own words. The reply ends only there.';
+const sceneThen = r => (r?.scene?.stage_tells ? THEN_SCENE_STAGED : THEN_SCENE);
 const entered = r => Boolean(r?.ok && r.scene && r.summarize);
 const won = r => {
   const p = r?.paid;
@@ -171,9 +176,9 @@ const THEN_VEIL = 'Something waits on this road (`place.meet`, still veiled): th
    bare it closes as nothing); her Meet offer lifts the mist. */
 const THEN_TRIAL = 'A 抉择 waits on this road (`place.meet` kind trial, veiled): you write it now — guide `trial`: set the moment in two or three lines, then Meet {action: offer} with the ways (it reveals), and stop.';
 /* The naming card is up (stage.mjs `value`): the player names themselves there. */
-export const THEN_VALUE = ' The stage\'s card asks the player for their name (offered names to tap, or their own). A scene just entered with nothing `staged` is told first (Show its `scene.show` cards, its `scene.setup` in one to three sentences, its `scene.lines`); then end on one line inviting the name — never AskUser for it, never name one for them, never Resolve it; the stage goes on by itself when it is done (`page_did`).';
+export const THEN_VALUE = ' The stage\'s card asks the player for their name (offered names to tap, or their own). A scene just entered that the stage does not tell (no `scene.stage_tells`, nothing `staged`) is told first (Show its `scene.show` cards, its `scene.setup` in one to three sentences, its `scene.lines`); then end on one line inviting the name — never AskUser for it, never name one for them, never Resolve it; the stage goes on by itself when it is done (`page_did`).';
 /* The 生辰 card is up (stage.mjs `born`): the player gives it there, privately. */
-export const THEN_BORN = ' The stage\'s card asks the player\'s birthday for the root test (or lets the stone read them). A scene just entered with nothing `staged` is told first (Show its `scene.show` cards, its `scene.setup` in one to three sentences, its `scene.lines`); then end on one line inviting them to the card — never AskUser for it, never ask the date in the chat, never Resolve it; the stage goes on by itself when the roots are read (`page_did`).';
+export const THEN_BORN = ' The stage\'s card asks the player\'s birthday for the root test (or lets the stone read them). A scene just entered that the stage does not tell (no `scene.stage_tells`, nothing `staged`) is told first (Show its `scene.show` cards, its `scene.setup` in one to three sentences, its `scene.lines`); then end on one line inviting them to the card — never AskUser for it, never ask the date in the chat, never Resolve it; the stage goes on by itself when the roots are read (`page_did`).';
 /* 渡劫's card is up (stage.mjs `breakthrough`): the player throws there, seeing the odds. */
 export const THEN_THROW = ' The stage\'s card shows the breakthrough\'s chance and what feeds it; the player throws there. Tell the cauldron; end on one line — never AskUser for it, never promise how it will go, never Resolve it; the page tells you `[scene] breakthrough won|failed`.';
 const THEN_QUIET = 'No question this time — the stage holds what is before him, or he has already been asked here. End on your words: name a way on in the line if it is worth naming, and do NOT call AskUser.';
@@ -181,7 +186,7 @@ const THEN_QUIET = 'No question this time — the stage holds what is before him
    Ling never retells it — `staged` is only what it is playing. */
 export const THEN_STAGED = 'The stage is playing the book\'s passage for this beat in its dialogue box (`staged`: what it plays, so you know the story): never retell it, never narrate the scene or its people, never list the choices. Answer only what the player typed, in a line or two in the world; else a line at most. ';
 export const thenFor = (result, ask = undefined) => (result?.staged?.length ? THEN_STAGED : '') + (result?.place?.meet?.veiled ? (result.place.meet.kind === 'trial' ? THEN_TRIAL : THEN_VEIL) : (result?.quest?.say ? THEN_CALL : '')
-  + (ask === null ? THEN_QUIET : entered(result) ? (won(result) ? CHEER : '') + THEN_SCENE : won(result) ? THEN_CHEER : THEN));
+  + (ask === null ? THEN_QUIET : entered(result) ? (won(result) ? CHEER : '') + sceneThen(result) : won(result) ? THEN_CHEER : THEN));
 const withAsk = (result, content, state, ctx) => ({ ...onStage(content, state, ctx, result), ...result });
 
 /* The player's words are an option of the question on screen — a tap on a
