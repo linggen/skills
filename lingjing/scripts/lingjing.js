@@ -34,7 +34,7 @@ import { fxTimes, glOK, playHoming as playHomingFx } from './fx.js';
 import { atmosClasses, atmosOf, particlesHtml } from './atmos.js';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
-import { advance, atLast, choicesUp, current, dialogHtml, keepReading, loadReading, logHtml, ofPlay, playing, readingFor, sceneUnder, showAll, sightNow, sightings, withTold } from './dialogue.js';
+import { advance, atLast, choicesUp, current, dialogHtml, keepReading, loadReading, logHtml, noted, ofPlay, playing, readingFor, sceneUnder, showAll, sightNow, sightings, withTold } from './dialogue.js';
 import { SIGHT_KINDS, mountChatToggle, paintSight } from './sight.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
@@ -1859,9 +1859,10 @@ function voiceBeat(shown) {
   const clip = beat.recap ? null : clipOf(audio, r.items[r.i]?.hui, beat.text);
   narrator.sync(clip?.url ?? null, `${r.scene}|${r.i}|${r.j}|${clip?.url}`);
 }
-/* The people and foes this scene brings on for the first time (Look's `scene.meet`,
-   read off the save — rules/codex.mjs newHere), as their 图鉴 entries. */
-const firstFaces = () => (look?.scene?.meet ?? []).map((id) => codexNow()?.get?.(id)).filter((e) => e && SIGHT_KINDS.has(e.kind));
+/* The faces whose 亮相 the reading holds — the beats the book marks `{注=id}` (rules/tell.mjs
+   beatsOf `notes`) — as their 图鉴 entries: people and creatures, never a thing. A passage is
+   told once a play (told_scenes), so each comes on large once, at the book's own point. */
+const firstFaces = () => noted(readingHere(), lang()).map((id) => codexNow()?.get?.(id)).filter((e) => e && SIGHT_KINDS.has(e.kind));
 const nextBeat = () => { const r = readingOfPlay(); if (playing(r)) setReading(advance(r, lang())); };
 /* 显示全文: the rest of the passage at once, in the box; the choices at its end. */
 function showAllBeats() {

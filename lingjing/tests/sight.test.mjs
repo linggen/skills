@@ -22,19 +22,17 @@ const read = (beats) => withTold(null, [{ of: 'scene', id: 'x', beats }], 'x');
 const qu = { id: 'qulao', kind: '人物', name: '瞿老', lines: ['扫地的老人。'] };
 const ma = { id: 'maxiaobao', kind: '人物', name: '马小宝', lines: [] };
 
-test('his first beat: the narration names him, or he speaks — never a later one, never a recap', () => {
-  const r = read([{ text: '山门前，风大。' }, { text: '「前情」瞿老', recap: true }, { text: '台阶上坐着瞿老。' }, { who: 'qulao', name: '瞿老', text: '来了？' }, { who: 'maxiaobao', name: '马小宝', text: '哼。' }]);
+test('his 亮相 beat: the paragraph the book marks {注=id} — never a mention before it, a line he speaks, a recap', () => {
+  const r = read([{ text: '山门前，风大。' }, { text: '「前情」瞿老', recap: true, notes: ['qulao'] }, { text: '台阶上坐着瞿老。' }, { text: '那扫地的老头，是瞿老。', notes: ['qulao'] }, { who: 'maxiaobao', name: '马小宝', text: '哼。' }, { text: '这人叫马小宝。', notes: ['maxiaobao'] }]);
   const at = sightings(r, [qu, ma]);
-  assert.equal(at.get('qulao'), 2, 'the narration that names him, not the recap before it');
-  assert.equal(at.get('maxiaobao'), 4, 'he speaks');
+  assert.equal(at.get('qulao'), 3, 'the marked paragraph, not the recap nor the mention before it');
+  assert.equal(at.get('maxiaobao'), 5, 'not the line he speaks first: the paragraph that brings him on');
   let x = r;
   const seen = [];
-  for (let k = 0; k < 5; k += 1) { seen.push(sightNow(x, [qu, ma]).map((e) => e.id).join()); x = advance(x); }
-  assert.deepEqual(seen, ['', '', 'qulao', '', 'maxiaobao'], 'large once, at that beat only');
-  assert.deepEqual(sightNow(advance(advance(advance(advance(advance(r))))), [qu, ma]), [], 'the box put away: nothing');
-  // English names are matched without case
-  const en = read([{ text: 'Elder qu sweeps the steps.' }]);
-  assert.equal(sightings(en, [{ ...qu, name: 'Elder Qu' }], 'en').get('qulao'), 0);
+  for (let k = 0; k < 6; k += 1) { seen.push(sightNow(x, [qu, ma]).map((e) => e.id).join()); x = advance(x); }
+  assert.deepEqual(seen, ['', '', '', 'qulao', '', 'maxiaobao'], 'large once, at that beat only');
+  assert.deepEqual(sightNow(x, [qu, ma]), [], 'the box put away: nothing');
+  assert.equal(sightings(read([{ text: 'Elder Qu sweeps the steps.' }]), [{ ...qu, name: 'Elder Qu' }], 'en').size, 0, 'a name alone brings no one on');
 });
 
 test('who comes on: the scene\'s people, its cast, its fights\' foes (a foe that is a person is that person) — never her', () => {
@@ -75,7 +73,7 @@ test('the page: the sight over the box, no first-meet card for a face it showed,
   const css = fs.readFileSync(new URL('../scripts/lingjing.css', import.meta.url), 'utf8');
   assert.match(src, /const sighted = sightings\(readingHere\(\), firstFaces\(\), lang\(\)\);\n {2}cards = cards\.filter\(\(c\) => c\.card !== 'meet' \|\| !sighted\.has\(c\.id\)\);/);
   assert.match(src, /paintSight\(\$\('sight'\), box\.includes\('data-dlg-on'\) \? sightNow\(readingHere\(\), firstFaces\(\), lang\(\)\) : \[\]/);
-  assert.match(src, /const firstFaces = \(\) => \(look\?\.scene\?\.meet \?\? \[\]\)/, 'only whom Look says is new here — no name in code');
+  assert.match(src, /const firstFaces = \(\) => noted\(readingHere\(\), lang\(\)\)/, 'only the faces the book marks in the reading — no name in code');
   assert.match(html, /<div class="sight" id="sight"><\/div>\s*(<!--[\s\S]*?-->\s*)?<div class="dlgwrap" id="dlg"><\/div>/);
   assert.match(html, /<header class="topbar"><div class="status" id="status"><\/div><div class="titlerow">/);
   assert.match(src, /mountChatToggle\(document\.querySelector\('\.shell'\), lang\);/);

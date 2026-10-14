@@ -24,12 +24,28 @@ const SPAN = /⟪([\s\S]*?)⟫/g;
 // The book's reader marks (read-md.js): `[词]{注=id}` / `[句]{典=id}` → the words, a bare
 // `《书》{典=id}` → the title. The reader links them; the box says the words only.
 const MARK = /\[([^\]\n]+)\]\{(?:注|典|音)=[^{}\n]*\}/g, BARE = /\{(?:注|典|音)=[^{}\n]*\}/g;
+// 亮相 (Hanli, 2026-10-13: 「亮相就是正式出场, 我们描写人物容貌等的地方」): the book marks a
+// face's formal entrance `[名]{注=id}` — its card stands after that paragraph (read-md.js) —
+// and the scene quoting the paragraph carries the same mark (tests/liangxiang.test.mjs). The
+// passage keeps its 注 marks (`marked`) down to the beat, which notes them (beatsOf `notes`):
+// that beat, and no other, brings the face on large (dialogue.js sightings).
+const NOTE = /\[([^\]\n]+)\]\{注=([^{}\n]+)\}/g;
+const OTHER = /\[([^\]\n]+)\]\{(?:典|音)=[^{}\n]*\}/g, OTHER_BARE = /\{(?:典|音)=[^{}\n]*\}/g;
 
-/* A passage as the box plays it: her marked words told as the book's. */
-export function passageFor(content, state, pair) {
+/* A passage as the box plays it: her marked words told as the book's. `notes`: its 注 marks kept. */
+export function passageFor(content, state, pair, { notes = false } = {}) {
   const text = fill(pick(pair, state.lang), state, content);
-  return text == null ? null : text.replace(SPAN, '$1').replace(MARK, '$1').replace(BARE, '');
+  if (text == null) return null;
+  const said = text.replace(SPAN, '$1');
+  return notes ? said.replace(OTHER, '$1').replace(OTHER_BARE, '') : said.replace(MARK, '$1').replace(BARE, '');
 }
+/* A passage owed: its words, and (when it has any) the same words with their 注 marks. */
+const toldOf = (content, state, pair) => {
+  const text = passageFor(content, state, pair);
+  if (!text) return null;
+  const marked = passageFor(content, state, pair, { notes: true });
+  return { text, ...(marked !== text ? { marked } : {}) };
+};
 
 /* A move owes the stage its passages: the exit's own (when it has one), and the
    scene it walks into (`scene/<id>`), recorded the moment the player ENTERS
@@ -74,22 +90,22 @@ export function tellOf(content, state) {
     const sc = findScene(content, sid);
     if (!sc?.story || told.has(sid) || seen.has(`scene/${sid}`)) return;
     seen.add(`scene/${sid}`); told.add(sid);
-    const text = passageFor(content, state, sc.story);
-    if (text) items.push({ of: 'scene', id: sid, text, ...(sc.hui ? { hui: sc.hui } : {}) });
+    const passage = toldOf(content, state, sc.story);
+    if (passage) items.push({ of: 'scene', id: sid, ...passage, ...(sc.hui ? { hui: sc.hui } : {}) });
   };
   for (const key of state.tell_owed ?? []) {
     const [sid, eid] = key.split('/');
     if (sid === 'scene') { addScene(eid); continue; }
     // The rest of a scene's passage, after the game inside it (`story_after`): the scene's own.
     if (sid === 'after') {
-      const sc = findScene(content, eid), text = sc?.story_after && !seen.has(key) ? passageFor(content, state, sc.story_after) : null;
-      if (text) { seen.add(key); items.push({ of: 'after', id: `${eid}/after`, text, ...(sc.hui ? { hui: sc.hui } : {}) }); }
+      const sc = findScene(content, eid), passage = sc?.story_after && !seen.has(key) ? toldOf(content, state, sc.story_after) : null;
+      if (passage) { seen.add(key); items.push({ of: 'after', id: `${eid}/after`, ...passage, ...(sc.hui ? { hui: sc.hui } : {}) }); }
       continue;
     }
     const from = findScene(content, sid), exit = from?.exits?.find(e => e.id === eid);
-    const text = exit?.story && !seen.has(key) ? passageFor(content, state, exit.story) : null;
+    const passage = exit?.story && !seen.has(key) ? toldOf(content, state, exit.story) : null;
     // Each passage carries its 回: the page plays an ending 回's last passage before its 「完」 card.
-    if (text) { seen.add(key); items.push({ of: 'choice', id: key, text, ...(from?.hui ? { hui: from.hui } : {}) }); }
+    if (passage) { seen.add(key); items.push({ of: 'choice', id: key, ...passage, ...(from?.hui ? { hui: from.hui } : {}) }); }
     if (exit?.next) addScene(exit.next);
   }
   const scene = sceneOf(content, state);
@@ -155,9 +171,11 @@ const plain = t => t.replace(/\*/g, '').trim();
 
 export function beatsOf(content, state, item) {
   const sid = item.of === 'scene' ? item.id : item.id.split('/')[0];
-  const paras = String(item.text ?? '').split(/\n+/).map(p => p.trim()).filter(p => p && !/^〔(银月|Yinyue)〕$/.test(p) && !/^([-*_])\1{2,}$/.test(p));
-  if (item.of === 'catchup') return paras.map(p => ({ text: plain(p), recap: true }));
-  return paras.map(p => spokenOf(content, state, p, sid) ?? { text: plain(p) });
+  const paras = String(item.marked ?? item.text ?? '').split(/\n+/).map(p => p.trim()).map(p => ({ p: p.replace(NOTE, '$1'), notes: [...p.matchAll(NOTE)].map(m => m[2]) }))
+    .filter(({ p }) => p && !/^〔(银月|Yinyue)〕$/.test(p) && !/^([-*_])\1{2,}$/.test(p));
+  if (item.of === 'catchup') return paras.map(({ p }) => ({ text: plain(p), recap: true }));
+  // A paragraph the book marks as someone's 亮相 notes them (`notes`, the 注 ids in it).
+  return paras.map(({ p, notes }) => ({ ...(spokenOf(content, state, p, sid) ?? { text: plain(p) }), ...(notes.length ? { notes: [...new Set(notes)] } : {}) }));
 }
 
 function spokenOf(content, state, para, sid) {
@@ -196,7 +214,8 @@ export function playOf(content, state, tell) {
   return tell.map(t => {
     const twin = there.find(x => x.id === t.id);
     const beats = { [state.lang]: beatsOf(content, state, t), [other]: twin ? beatsOf(content, { ...state, lang: other }, twin) : [] };
-    return { ...t, beats };
+    const { marked, ...item } = t; // the marks live on in the beats' `notes`
+    return { ...item, beats };
   });
 }
 

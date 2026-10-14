@@ -1,10 +1,10 @@
 // sight.js — 初见: a face's first coming-on, drawn large on the stage.
 //
 // Hanli, 2026-10-05: 「中间放大显示人物，只在第一次出场的时候就可以，之后不用放大了」.
-// A person or a foe the scene brings on for the first time (Look's
-// `scene.meet`, read off the save's scenes done — rules/codex.mjs newHere, so
-// an old save never meets again whom it met) stands in the middle of the stage
-// over the box at the beat that first has him (dialogue.js sightNow): his 图鉴
+// A person or a creature stands in the middle of the stage over the box at his
+// 亮相 — the beat the book marks `[名]{注=id}`, his formal entrance, the paragraph
+// his card stands after in the book (2026-10-13; rules/tell.mjs beatsOf `notes`,
+// dialogue.js sightNow, tests/liangxiang.test.mjs): his 图鉴
 // portrait — a name card where none is painted — his name and one line. The
 // next beat, it shrinks back to his small card in the header and is gone.
 //

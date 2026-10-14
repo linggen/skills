@@ -103,18 +103,20 @@ export function sceneUnder(r, sid, lang = 'zh') {
   return r.i > at || !current(r, lang).beat.cap;
 }
 
-/* 初见 (Hanli, 2026-10-05: 「中间放大显示人物，只在第一次出场的时候」): a face
-   the scene brings on for the first time (`entries`, the 图鉴 entries of Look's
-   `scene.meet` — never named here) comes on at the first beat that has him:
-   he speaks it, or the narration names him. Recaps are not his coming on.
-   `sightings` — each entry's first beat in the reading (its place among them
-   all); `sightNow` — the entries whose first beat is the one on show. */
-const has = (text, name) => String(text ?? '').toLowerCase().includes(String(name).toLowerCase());
-const sightHit = (b, e) => !b.recap && (b.who === e.id || (b.name ? b.name === e.name : has(b.text, e.name)));
+/* 初见 (Hanli, 2026-10-05: 「中间放大显示人物，只在第一次出场的时候」) at his 亮相
+   (2026-10-13: 「亮相就是正式出场, 我们描写人物容貌等的地方」): a face comes on large
+   at the beat the book marks as his formal entrance — the paragraph carrying his
+   `[名]{注=id}`, the one his card stands after in the book (rules/tell.mjs beatsOf
+   `notes`) — never at a mention before it, a name in passing, or a recap.
+   `noted` — the ids the reading's beats note; `sightings` — each entry's 亮相 beat
+   in the reading (its place among them all); `sightNow` — the entries whose 亮相
+   is the beat on show. */
+const sightHit = (b, e) => !b.recap && (b.notes ?? []).includes(e.id);
+export const noted = (r, lang = 'zh') => [...new Set(flat(r, lang).filter((b) => !b.recap).flatMap((b) => b.notes ?? []))];
 export function sightings(r, entries, lang = 'zh') {
   const all = flat(r, lang), out = new Map();
   for (const e of entries ?? []) {
-    if (!e?.id || !e.name) continue;
+    if (!e?.id) continue;
     const k = all.findIndex((b) => sightHit(b, e));
     if (k >= 0) out.set(e.id, k);
   }
