@@ -10,6 +10,7 @@
 // After four misses her voice is in his hands and the aim goes left by itself
 // — the stag always falls. How it went is the `grade` (clean · steady · rough).
 // Pure module: newGame / html / act / tick. Hold is [data-g-hold] (live-games.js).
+import { btn, n, reeds, scene, splash, still } from './ink.js';
 
 export const meta = {
   id: 'deer',
@@ -115,7 +116,7 @@ export const gradeOf = (misses) => (misses === 0 ? 'clean' : misses <= 2 ? 'stea
 function loose(s) {
   const draw = drawAt(s.held), wind = windAt(s.sched, s.t);
   const tol = s.hint ? TOL_HINT : TOL;
-  const base = { ...s, drawing: false, held: 0, shots: s.shots + 1 };
+  const base = { ...s, drawing: false, held: 0, shots: s.shots + 1, lastAt: s.t };
   if (draw >= 0.9 && wind <= tol && s.aim === 'left') return { ...base, live: false, won: true, note: 'hit', grade: gradeOf(s.misses) };
   const misses = s.misses + 1, guided = misses >= GUIDED && s.aim !== 'left';
   const note = guided ? 'guided' : draw < 0.9 ? 'short' : wind > tol ? 'drift' : 'wide';
@@ -146,19 +147,56 @@ export function tick(state, ms) {
   return s;
 }
 
+/* ── The picture (2026-10-14, his: 「小游戏的UI太粗糙了」): the stream at the valley mouth in
+   ink — reeds and a few leaves that lean and drift with the wind, the stag drinking, the aim a
+   cinnabar mark on its neck nudged half an inch, grandfather's bow whose string comes back as
+   it is held. Everything is drawn at the state's own clock (live-games repaints each step). */
+const NECK = [212, 108], NUDGE = 8;
+const LEAVES = [[0, 52], [120, 38], [230, 64]];
+const STAG = `<g class="g-stag">`
+  + `<ellipse cx="244" cy="104" rx="33" ry="14"/>`
+  + `<path d="M216 100 C208 104 200 116 196 128 L203 131 C207 120 214 112 222 108Z"/>`
+  + `<ellipse cx="195" cy="132" rx="8" ry="4.2" transform="rotate(25 195 132)"/>`
+  + `<path class="g-line" d="M226 115 L223 142 M234 117 L236 143 M258 116 L255 143 M268 112 L272 142"/>`
+  + `<path class="g-line g-thin" d="M201 126 L188 112 L180 104 M188 112 L184 98 M194 120 L196 104 L190 92 M196 104 L204 94 M180 104 L172 100"/>`
+  + `<path d="M276 98 l8 -4 l-3 7z"/></g>`;
+function deerScene(state, w, rest) {
+  const t = state.t, age = state.t - (state.lastAt ?? -1e9);
+  const hills = `<path class="g-wash" d="M0 82 Q60 58 120 74 T240 64 T320 70 V170 H0Z"/>`;
+  const water = `<path class="g-water" d="M0 146 H320 M14 154 H120 M150 158 H300 M40 163 H210"/>`;
+  const reedsAt = reeds([18, 30, 44, 58, 72, 300, 310], 150, 34, w, t);
+  const leaves = LEAVES.map(([off, y], i) => {
+    const tt = still() ? 0 : t, x = ((off + tt * (0.004 + w * 0.05)) % 360) - 20, yy = y + Math.sin(tt / 500 + i) * (3 + w * 6);
+    return `<ellipse class="g-leaf" cx="${n(x)}" cy="${n(yy)}" rx="4" ry="1.6" transform="rotate(${n(20 + w * 40 + Math.sin(tt / 300 + i) * 25)} ${n(x)} ${n(yy)})"/>`;
+  }).join('');
+  const [ax, ay] = [NECK[0] - (state.aim === 'left' ? NUDGE : 0), NECK[1]];
+  const aim = state.won ? '' : `<g class="g-aim${state.aim === 'left' ? ' is-left' : ''}"><circle cx="${ax}" cy="${ay}" r="6"/><path d="M${ax - 10} ${ay} h6 M${ax + 4} ${ay} h6 M${ax} ${ay - 10} v6 M${ax} ${ay + 4} v6"/></g>`;
+  const miss = { drift: [262, 70], wide: [238, 76], short: [150, 150], guided: [238, 76] }[state.note];
+  const fx = state.won ? splash(NECK[0], NECK[1], 240, { r: 16, seal: true }) : miss ? splash(miss[0], miss[1], age, { r: 9 }) : '';
+  const breeze = `<text class="g-scene-note${rest ? ' is-calm' : ''}" x="314" y="16" text-anchor="end">${rest ? '·' : '~'}</text>`;
+  return scene(320, 170, hills + water + leaves + `<g class="${state.won ? 'g-fallen' : ''}">${STAG}</g>` + reedsAt + aim + fx + breeze);
+}
+function bowScene(state) {
+  const draw = state.drawing ? drawAt(state.held) : 0, shake = state.drawing && state.held > SHAKE_MS ? Math.sin(state.t / 30) * 1.6 : 0;
+  const sx = n(46 + draw * 30 + shake), y = n(30 + shake * 0.5);
+  const limb = `<path class="g-bow" d="M46 4 C22 14 22 46 46 56"/><path class="g-line g-thin" d="M44 26 h5 M44 34 h5"/>`;
+  const string = `<path class="g-line g-thin" d="M46 4 L${sx} ${y} L46 56"/>`;
+  const arrow = `<path class="g-line" d="M${sx} ${y} H${n(sx + 170)}"/><path d="M${n(sx + 170)} ${y - 4} l9 4 l-9 4z"/><path class="g-line g-thin" d="M${sx} ${y} l6 -4 M${sx} ${y} l6 4"/>`;
+  const full = draw >= 0.9 ? `<text class="g-scene-note is-calm" x="312" y="34" text-anchor="end">满</text>` : '';
+  return scene(320, 60, limb + string + arrow + full, `g-bowscene${draw >= 0.9 ? ' is-full' : ''}`);
+}
+
 export function html(state, lang = 'zh') {
   const t = T[lang] || T.zh;
-  if (state.won) return `<div class="g-deer is-won"><p class="g-deer-line">${t.hit}</p></div>`;
   const w = windAt(state.sched, state.t), rest = w <= (state.hint ? TOL_HINT : TOL);
-  const grass = Array.from({ length: 9 }, () => '<i></i>').join('');
-  const draw = state.drawing ? drawAt(state.held) : 0;
-  const hint = state.hint ? `<p class="g-deer-hint">${lang === 'en' ? 'Yinyue: ' : '银月：'}「${t.hint}」</p>` : '';
-  return `<div class="g-deer">`
-    + `<div class="g-deer-grass" style="--w:${w.toFixed(2)}">${grass}</div>`
-    + `<div class="g-deer-meter"><span>${t.wind}</span><b class="${rest ? 'is-calm' : ''}">${rest ? t.rest : t.blow}</b></div>`
-    + `<div class="g-deer-meter"><span>${t.draw}</span><span class="g-deer-bar"><i style="width:${Math.round(draw * 100)}%" class="${draw >= 0.9 ? 'is-full' : ''}"></i></span></div>`
-    + `<div class="g-deer-aim"><span>${t.aim}</span>${['straight', 'left'].map((k) => `<button type="button" class="g-deer-aimbtn${state.aim === k ? ' is-on' : ''}${k === 'left' && state.hint && state.aim !== 'left' ? ' is-hinted' : ''}" data-g="aim" data-to="${k}" aria-pressed="${state.aim === k}">${t[k]}</button>`).join('')}</div>`
-    + `<p class="g-deer-line">${t[state.note] ?? t.stag}</p>${hint}`
-    + `<button type="button" class="g-deer-btn${state.drawing ? ' is-held' : ''}" data-g-hold="draw">${t.hold}</button>`
+  if (state.won) return `<div class="g-deer g-ink is-won">${deerScene(state, 0, true)}<p class="g-line-say">${t.hit}</p></div>`;
+  const hint = state.hint ? `<p class="g-hint">${lang === 'en' ? 'Yinyue: ' : '银月：'}「${t.hint}」</p>` : '';
+  const wind = `<span class="g-chip${rest ? ' is-calm' : ''}">${t.wind} · ${rest ? t.rest : t.blow}</span>`;
+  const nudge = `<div class="g-nudge"><button type="button" class="g-nudgebtn${state.hint && state.aim !== 'left' ? ' is-hinted' : ''}" data-g="aim" data-to="left" aria-pressed="${state.aim === 'left'}" aria-label="${t.left}">‹</button>`
+    + `<span class="g-nudgesay">${t.aim} · <b>${t[state.aim]}</b></span>`
+    + `<button type="button" class="g-nudgebtn" data-g="aim" data-to="straight" aria-pressed="${state.aim === 'straight'}" aria-label="${t.straight}">›</button>${wind}</div>`;
+  return `<div class="g-deer g-ink">${deerScene(state, w, rest)}${nudge}${bowScene(state)}`
+    + `<p class="g-line-say">${t[state.note] ?? t.stag}</p>${hint}`
+    + btn(t.hold, 'data-g-hold="draw"', 'main', `g-hold${state.drawing ? ' is-held' : ''}`)
     + `</div>`;
 }

@@ -9,6 +9,7 @@
 // and flies. The stroke used up, the breath is spent. Three breaths; the best
 // count is the `grade` (still · shaky), written as a mark. Never a fail.
 // Pure module: newGame / html / act / tick. The stroke is [data-g-drag] (live-games.js).
+import { n, scene, splash, still } from './ink.js';
 
 export const meta = {
   id: 'feather',
@@ -113,19 +114,35 @@ export function tick(state, ms) {
   return s.lung <= 0 ? endBreath({ ...s, lung: 0 }, 'empty') : s;
 }
 
+/* ── The picture (2026-10-14): the goose feather on its strip of bamboo under his nose, in ink.
+   It trembles a little while the breath runs right, shakes when it runs fast, and tumbles away
+   when it bursts or rushes; the breath shows as a faint mist; the count stands beside it. */
+const FEATHER = '<path class="g-quill" d="M0 0 C-1 -20 1 -40 3 -58"/><path class="g-vane" d="M1 -8 C-10 -16 -14 -34 -6 -52 C-2 -56 2 -58 3 -58 C8 -48 12 -30 4 -10 Z"/>'
+  + '<path class="g-line g-thin g-faint" d="M1 -16 l-7 -4 M1 -24 l-8 -4 M2 -32 l-8 -4 M2 -40 l-6 -4 M2 -18 l5 -4 M2 -28 l6 -4 M2 -38 l5 -4"/>';
+function featherScene(state) {
+  const out = state.phase === 'out', flown = ['puff', 'burst'].includes(state.note);
+  const shake = out ? Math.min(1, Math.max(0, (state.v - VMAX * 0.6) / VMAX)) : 0;
+  const sway = out ? (still() ? 0 : Math.sin(state.t / 260)) * (1.5 + shake * 14) + shake * 18 : 0;
+  const face = '<path class="g-line g-faint" d="M40 20 C30 34 28 46 34 54 L26 62 C30 66 34 66 36 68 C34 74 38 80 46 84 C42 96 46 110 54 120"/>';
+  const strip = '<path class="g-strip" d="M60 86 H250"/><path class="g-line g-thin g-faint" d="M90 86 v3 M150 86 v3 M210 86 v3"/>';
+  const at = flown ? 'translate(218 70) rotate(112)' : `translate(160 86) rotate(${n(sway)})`;
+  const mist = out && state.v > VMIN ? [0, 1, 2].map((k) => `<path class="g-mist" d="M42 ${70 + k * 5} q${n(20 + Math.min(state.v, 140) * 0.5)} ${-4 + k * 2} ${n(40 + Math.min(state.v, 140))} ${-2 + k * 3}" opacity="${n(0.12 + Math.min(1, state.v / VMAX) * 0.25, 2)}"/>`).join('') : '';
+  const count = state.phase === 'out' ? Math.floor(state.count) : state.phase === 'rest' ? state.last : 0;
+  const num = `<text class="g-count" x="298" y="48" text-anchor="end">${count}</text><text class="g-scene-note" x="298" y="66" text-anchor="end">/ ${TARGET}</text>`;
+  const fx = state.won ? splash(160, 40, 240, { r: 10, seal: state.grade === 'still' }) : flown ? splash(214, 66, 200, { r: 7 }) : '';
+  return scene(320, 130, face + strip + mist + `<g transform="${at}" class="${flown ? 'is-flown' : ''}">${FEATHER}</g>` + num + fx);
+}
+
 export function html(state, lang = 'zh') {
   const t = T[lang] || T.zh;
   const say = (k, n) => (t[k] ?? '').replace('{n}', String(n));
   const pips = Array.from({ length: TRIES }, (_, i) => `<i class="${i < state.breaths ? 'is-on' : ''}"></i>`).join('');
-  const shake = state.phase === 'out' ? Math.min(1, Math.max(0, (state.v - VMAX * 0.6) / VMAX)) : 0;
-  const flown = ['puff', 'burst'].includes(state.note);
-  const feather = `<div class="g-feather-strip"><span class="g-feather-quill${flown ? ' is-flown' : ''}" style="--shake:${shake.toFixed(2)}"></span></div>`;
-  const head = `<div class="g-feather-head"><span>${t.best} <b>${state.best}</b> / ${TARGET}</span><span class="g-feather-pips">${pips}</span></div>`;
-  if (state.won) return `<div class="g-feather is-won">${feather}${head}<p class="g-feather-line">${say(state.grade, state.best)}</p></div>`;
+  const head = `<div class="g-feather-head g-head"><span>${t.best} <b>${state.best}</b> / ${TARGET}</span><span>${t.breaths} <span class="g-feather-pips">${pips}</span></span></div>`;
+  if (state.won) return `<div class="g-feather g-ink is-won">${featherScene(state)}${head}<p class="g-line-say">${say(state.grade, state.best)}</p></div>`;
   const count = state.phase === 'out' ? Math.floor(state.count) : state.phase === 'rest' ? state.last : 0;
   const line = state.phase === 'rest' ? say(state.note, state.last) : say(state.note, count);
-  const lung = `<div class="g-feather-lung"><span>${t.lung}</span><span class="g-feather-bar"><i style="width:${Math.round(Math.max(0, state.lung) * 100)}%"></i></span></div>`;
-  return `<div class="g-feather">${feather}${head}<div class="g-feather-count"><b>${count}</b></div>${state.phase === 'out' ? lung : ''}`
-    + `<p class="g-feather-line">${line}</p>`
-    + `<div class="g-feather-pad${state.phase === 'out' ? ' is-held' : ''}" data-g-drag="breath" role="button" tabindex="0">${state.phase === 'rest' ? t.again : t.pad}</div></div>`;
+  const lung = state.phase === 'out' ? `<div class="g-meter"><span>${t.lung}</span><span class="g-bar"><i style="width:${Math.round(Math.max(0, state.lung) * 100)}%"></i></span></div>` : '';
+  return `<div class="g-feather g-ink">${featherScene(state)}${head}${lung}`
+    + `<p class="g-line-say">${line}</p>`
+    + `<div class="g-feather-pad${state.phase === 'out' ? ' is-held' : ''}" data-g-drag="breath" role="button" tabindex="0">${scene(120, 120, '<circle class="g-guide" cx="60" cy="60" r="40"/><path class="g-guide-arrow" d="M96 46 l4 10 l-10 -2"/>', 'g-padring')}<span>${state.phase === 'rest' ? t.again : t.pad}</span></div></div>`;
 }

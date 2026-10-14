@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { WORDS, bookChipHtml, bookPopHtml, cardHtml } from '../scripts/cards.js';
+import { WORDS, bookChipHtml, bookPopHtml, cardHtml, gameOpen } from '../scripts/cards.js';
 import { codexOf } from '../scripts/codex.js';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
@@ -72,7 +72,8 @@ for (const [name, [state, c]] of Object.entries(SITUATIONS)) {
     assert.ok(l.stage.length, 'something stands on the stage');
     for (const card of l.stage) {
       const html = cardHtml(card, pageCtx(l));
-      assert.ok(html.trim(), `${card.card}${card.id ? `:${card.id}` : ''} draws nothing`);
+      // The scene's ways on wait under a game it stands open (cards.js gameOpen): an empty panel, by design.
+      if (!(card.card === 'panel' && gameOpen(l))) assert.ok(html.trim(), `${card.card}${card.id ? `:${card.id}` : ''} draws nothing`);
       assert.doesNotMatch(html, /undefined|\{\w+\}|NaN/, `${card.card} leaks a hole: ${html.match(/.{0,30}(undefined|\{\w+\}|NaN).{0,30}/)?.[0]}`);
     }
   });

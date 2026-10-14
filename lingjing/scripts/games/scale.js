@@ -8,6 +8,7 @@
 // written as a mark, and the scene's own choices follow as before.
 // Pure module: newGame / html / act.
 import { rng, shuffled } from './seeded.js';
+import { btn, n, scene, splash } from './ink.js';
 
 export const meta = {
   id: 'scale',
@@ -90,19 +91,38 @@ function lineOf(s, t, lang) {
   return t[s.note] ?? '';
 }
 
+/* ── The picture (2026-10-14): a steelyard (杆秤) in ink — the hook, the beam tipping with the
+   load, the pan on its three cords with the cuts piled on it, the weight on its loop — and the
+   hide (its 图鉴 picture) before it goes over 马三's shoulder. */
+const HIDE = '../worlds/jiuding/art/items/deer-hide.webp';
+function scaleScene(state, w) {
+  const tilt = Math.max(-1, Math.min(1, (w - RENT) / 8)), a = -tilt * 12, rad = a * Math.PI / 180;
+  const px = 160, py = 40, end = (dx) => [n(px + dx * Math.cos(rad)), n(py + dx * Math.sin(rad))];
+  const [lx, ly] = end(-100), [rx, ry] = end(92);
+  const ticks = [20, 34, 48, 62, 76].map((d) => { const [x, y] = end(d); return `<path class="g-line g-thin g-faint" d="M${x} ${y - 3} v6"/>`; }).join('');
+  const beam = `<path class="g-line g-hook" d="M160 4 v12 q0 6 -5 6"/><path class="g-beam" d="M${lx} ${ly} L${rx} ${ry}"/>${ticks}`;
+  const panY = ly + 62;
+  const cords = `<path class="g-line g-thin" d="M${lx} ${ly} L${n(lx - 30)} ${n(panY)} M${lx} ${ly} L${lx} ${n(panY)} M${lx} ${ly} L${n(lx + 30)} ${n(panY)}"/>`;
+  const pan = `<path class="g-line" d="M${n(lx - 36)} ${n(panY)} Q${lx} ${n(panY + 14)} ${n(lx + 36)} ${n(panY)}"/>`;
+  const meat = state.pan.map((id, i) => `<ellipse class="g-meat" cx="${n(lx - 18 + (i % 3) * 18)}" cy="${n(panY - 4 - Math.floor(i / 3) * 8)}" rx="${n(6 + (CUTS.find((c) => c.id === id)?.jin ?? 1))}" ry="5"/>`).join('');
+  const wt = `<path class="g-line g-thin" d="M${rx} ${ry} v18"/><path class="g-weight" d="M${n(rx - 9)} ${n(ry + 18)} h18 l-3 16 h-12z"/>`;
+  const read = `<text class="g-count g-small" x="${px}" y="${n(py + 26)}" text-anchor="middle">${w}</text>`;
+  const hide = state.hide ? '' : `<image href="${HIDE}" x="196" y="66" width="118" height="92" preserveAspectRatio="xMidYMid meet"/>`;
+  const fx = state.won ? splash(n(lx + 44), n(panY - 14), 420, { r: 9, seal: state.grade === 'exact' }) : state.note === 'light' ? splash(lx, n(panY + 10), 420, { r: 7 }) : '';
+  return scene(320, 160, beam + cords + pan + meat + wt + read + hide + fx);
+}
+
 export function html(state, lang = 'zh') {
   const t = T[lang] || T.zh;
   const w = weightOf(state.pan);
-  const tilt = Math.max(-1, Math.min(1, (w - RENT) / 8)); // the beam: down when light, up when over
-  const beam = `<div class="g-scale-beam" style="--tilt:${tilt.toFixed(2)}"><i></i><b>${w} ${t.jin}</b></div>`;
-  const home = `<div class="g-scale-home"><span>${t.pan} <b>${w}</b> / ${RENT} ${t.jin}</span><span>${t.home} <b>${ALL - w}</b> ${t.jin}</span></div>`;
-  if (state.won) return `<div class="g-scale is-won">${beam}${home}<p class="g-scale-line">${lineOf(state, t, lang)}</p></div>`;
-  if (!state.hide) return `<div class="g-scale"><p class="g-scale-line">${t.hide}</p><button type="button" class="g-scale-btn" data-g="hide">${t.handHide}</button></div>`;
+  const home = `<div class="g-scale-home g-head"><span>${t.pan} <b>${w}</b> / ${RENT} ${t.jin}</span><span>${t.home} <b>${ALL - w}</b> ${t.jin}</span></div>`;
+  if (state.won) return `<div class="g-scale g-ink is-won">${scaleScene(state, w)}${home}<p class="g-line-say">${lineOf(state, t, lang)}</p></div>`;
+  if (!state.hide) return `<div class="g-scale g-ink">${scaleScene(state, w)}<p class="g-line-say">${t.hide}</p>${btn(t.handHide, 'data-g="hide"')}</div>`;
   const cuts = state.order.map((id) => {
     const c = CUTS.find((x) => x.id === id), on = state.pan.includes(id);
-    return `<button type="button" class="g-scale-cut${on ? ' is-on' : ''}" data-g="cut" data-id="${id}" aria-pressed="${on}">${c[lang] ?? c.zh}<small>${c.jin} ${t.jin}</small></button>`;
+    return `<button type="button" class="g-tag${on ? ' is-on' : ''}" data-g="cut" data-id="${id}" aria-pressed="${on}">${c[lang] ?? c.zh}<small>${c.jin} ${t.jin}</small></button>`;
   }).join('');
-  return `<div class="g-scale">${beam}${home}<div class="g-scale-cuts">${cuts}</div>`
-    + `<p class="g-scale-line">${lineOf(state, t, lang)}</p>`
-    + `<button type="button" class="g-scale-btn" data-g="weigh"${state.pan.length ? '' : ' disabled'}>${t.weigh}</button></div>`;
+  return `<div class="g-scale g-ink">${scaleScene(state, w)}${home}<div class="g-tags">${cuts}</div>`
+    + `<p class="g-line-say">${lineOf(state, t, lang)}</p>`
+    + btn(t.weigh, `data-g="weigh"${state.pan.length ? '' : ' disabled'}`) + `</div>`;
 }

@@ -9,6 +9,7 @@
 // `grade` (dry · wet) — the rules write it as a mark, nothing more.
 // Pure module: newGame / html / act / tick (live-games.js runs the clock).
 import { rng } from './seeded.js';
+import { btn, n, scene, splash, still, stroke } from './ink.js';
 
 export const meta = {
   id: 'rain',
@@ -162,25 +163,48 @@ export function tick(state, ms) {
   return s.t >= LIMIT ? finish(s, true) : s;
 }
 
+/* ── The picture (2026-10-14): each spot of the two rooms in ink — the thatch above, a drop
+   falling where it leaks (drawn at the state's clock), a basin filling, a stain where it
+   lands on the floor. A basin brimming rings; a full one carried to the wall is a dot more
+   in the row; a drop on the floor is a small ink splash. */
+const DROP_MS = 800;
+function spotScene(s, i) {
+  const b = s.basins[i], drip = s.live && leakingAt(s.sched, i, s.t);
+  const k = still() ? 0.4 : ((s.t + i * 137) % DROP_MS) / DROP_MS;
+  const thatch = `<path class="g-line g-thin g-faint" d="M4 7 Q24 3 45 7 T86 7"/><path class="g-line g-thin g-faint" d="M10 7 l-3 5 M30 6 l-2 5 M52 7 l-2 5 M74 6 l-3 5"/>`;
+  const drop = drip ? `<path class="g-drop" transform="translate(45 ${n(10 + k * (b == null ? 52 : 34))})" d="M0 -5 C2 -1 3 1 3 2.5 A3 3 0 0 1 -3 2.5 C-3 1 -2 -1 0 -5Z"/>` : '';
+  const land = drip && k > 0.82 ? (b == null || b >= CAP ? splash(45, 62, (k - 0.82) * 2400, { r: 6 }) : `<ellipse class="g-ripple" cx="45" cy="47" rx="${n(6 + (k - 0.82) * 60)}" ry="2"/>`) : '';
+  const lvl = b == null ? 0 : b / CAP;
+  const basin = b == null ? '' : `<g class="g-rain-basin${b >= CAP ? ' is-full' : ''}"><clipPath id="bw${i}"><path d="M20 46 Q45 66 70 46Z"/></clipPath>`
+    + `<rect class="g-waterfill" x="18" y="${n(62 - lvl * 18)}" width="56" height="20" clip-path="url(#bw${i})"/>`
+    + `<path class="g-line" d="M17 46 H73 M20 46 Q45 66 70 46"/></g>`;
+  const stain = b == null && drip ? `<ellipse class="g-stain" cx="45" cy="63" rx="13" ry="3"/>` : '';
+  return scene(90, 70, thatch + stain + basin + drop + land);
+}
 function spotHtml(s, i, t, lang) {
   const b = s.basins[i], drip = s.live && leakingAt(s.sched, i, s.t);
-  const fill = b == null ? '' : `<span class="g-rain-basin${b >= CAP ? ' is-full' : ''}"><i style="height:${Math.round((b / CAP) * 100)}%"></i></span>`;
   return `<button type="button" class="g-rain-spot${drip ? ' is-drip' : ''}${b == null ? '' : ' has-basin'}" data-g="spot" data-i="${i}">`
-    + `<span class="g-rain-drop" aria-hidden="true"></span>${fill}<span class="g-rain-name">${SPOTS[i][lang] ?? SPOTS[i].zh}</span>`
-    + `${drip ? `<span class="g-rain-sr">${t.drip}</span>` : ''}</button>`;
+    + `${spotScene(s, i)}<span class="g-rain-name">${SPOTS[i][lang] ?? SPOTS[i].zh}</span>`
+    + `${drip ? `<span class="g-sr">${t.drip}</span>` : ''}</button>`;
 }
+
+const bowls = (full) => `<div class="g-rain-pips" aria-hidden="true">${Array.from({ length: NEED }, (_, i) => `<i class="${i < full ? 'is-on' : ''}"></i>`).join('')}</div>`;
 
 export function html(state, lang = 'zh') {
   const t = T[lang] || T.zh;
   const full = fullCount(state);
-  const pips = Array.from({ length: NEED }, (_, i) => `<i class="${i < full ? 'is-on' : ''}"></i>`).join('');
-  if (state.won) return `<div class="g-rain is-won"><div class="g-rain-pips">${pips}</div><p class="g-rain-line">${t[state.note] ?? t[state.grade]}</p></div>`;
-  if (!state.live) return `<div class="g-rain"><p class="g-rain-line">${t.ready}</p><button type="button" class="g-rain-btn" data-g="start">${t.start}</button></div>`;
+  if (state.won) {
+    // The seventeen in a row by the wall, full or not, and the floor as it was left.
+    const row = Array.from({ length: NEED }, (_, i) => { const x = 14 + i * 17.4, on = i < full; return `<g transform="translate(${n(x)} 30)">${on ? '<path class="g-waterfill" d="M-7 -1 Q0 6 7 -1Z"/>' : ''}<path class="g-line g-thin" d="M-8 -2 H8 M-7 -2 Q0 8 7 -2"/></g>`; }).join('');
+    const stains = state.grade === 'wet' ? [40, 120, 210, 280].map((x, i) => `<ellipse class="g-stain" cx="${x}" cy="${48 + (i % 2) * 3}" rx="${16 + i * 3}" ry="3.5"/>`).join('') : stroke(110, 50, 100, 400);
+    return `<div class="g-rain g-ink is-won">${scene(320, 58, row + stains)}<p class="g-line-say">${t[state.note] ?? t[state.grade]}</p></div>`;
+  }
+  if (!state.live) return `<div class="g-rain g-ink">${scene(320, 90, `<path class="g-line g-faint" d="M10 24 Q80 8 160 22 T310 20"/>` + [40, 95, 160, 220, 280].map((x, i) => `<path class="g-drop" transform="translate(${x} ${40 + (i % 3) * 12})" d="M0 -5 C2 -1 3 1 3 2.5 A3 3 0 0 1 -3 2.5 C-3 1 -2 -1 0 -5Z"/>`).join('') + `<path class="g-line" d="M60 78 Q95 92 130 78 M190 78 Q225 92 260 78"/>`)}<p class="g-line-say">${t.ready}</p>${btn(t.start, 'data-g="start"')}</div>`;
   const spots = SPOTS.map((_, i) => spotHtml(state, i, t, lang)).join('');
   const hand = state.spare + state.hand.length;
-  return `<div class="g-rain">`
-    + `<div class="g-rain-head"><span>${t.full} <b>${full}</b> / ${NEED}</span><span>${t.spare} <b>${hand}</b></span><span class="${state.puddles > DRY ? 'is-wet' : ''}">${t.floor} <b>${state.puddles}</b></span></div>`
-    + `<div class="g-rain-pips">${pips}</div>`
+  return `<div class="g-rain g-ink">`
+    + `<div class="g-rain-head g-head"><span>${t.full} <b>${full}</b> / ${NEED}</span><span>${t.spare} <b>${hand}</b></span><span class="${state.puddles > DRY ? 'is-wet' : ''}">${t.floor} <b>${state.puddles}</b></span></div>`
+    + bowls(full)
     + `<div class="g-rain-house">${spots}</div>`
-    + `<p class="g-rain-line">${t[state.note] ?? ''}</p></div>`;
+    + `<p class="g-line-say">${t[state.note] ?? ''}</p></div>`;
 }

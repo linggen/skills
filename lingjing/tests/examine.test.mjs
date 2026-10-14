@@ -178,7 +178,10 @@ test('the page: 看 chips, the finding under the card, the hint; the quiet link;
   assert.match(html, /<li><b>蹄印<\/b>印子边上的泥还湿着/);
   assert.doesNotMatch(html, /青苔刮掉/, 'the clue unfound is not on the page');
   assert.match(html, /class="lookhint"/);
-  const on = look(examine(s, 'stone').state, content, ctx());
+  // While 追踪 is still to play its board makes the choice: the way on waits under it (cards.js gameOpen).
+  const found = examine(s, 'stone').state;
+  assert.doesNotMatch(cardHtml({ card: 'panel' }, { look: look(found, content, ctx()), words: WORDS.zh, lang: 'zh' }), /data-panel-exit="carve"/);
+  const on = look(walk(found, [['win', { id: 'track-marks', grade: 'true' }], ['task', { action: 'done', id: 'track-marks' }]], content, NOW), content, ctx());
   const card = cardHtml({ card: 'panel' }, { look: on, words: WORDS.zh, lang: 'zh' });
   assert.match(card, /class="quietnext"[^>]*data-panel-exit="carve"[^>]*>追蹄印，一百步刻一道 ›</);
   assert.doesNotMatch(card, /class="act paneltap"/);

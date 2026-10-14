@@ -69,7 +69,8 @@ test('银月\'s lines carry her face in the form her scene names: the fox in the
 });
 
 test('a move plays its two passages in order — the choice\'s outcome, then the scene entered — one beat a tap', () => {
-  const s = walk(named(), [['resolve', { exit: 'strike' }]], content, NOW);
+  // What the opening owed is drawn first, as the page does (石坳村's morning is `begin`'s passage since 接雨, 2026-10-14).
+  const s = walk(tellOf(content, named()).keep, [['resolve', { exit: 'strike' }]], content, NOW);
   const { tell } = tellOf(content, s);
   const played = playOf(content, s, tell);
   assert.deepEqual(played.map(t => t.id), ['00-masan/strike', '00-dawn']);

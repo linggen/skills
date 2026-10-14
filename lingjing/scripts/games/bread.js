@@ -9,6 +9,7 @@
 // 自己吃, half or more is 分它一半; the rules write it as a mark the 恩仇簿 and
 // the story can read. No clock, no fail: a choice with the hands.
 // Pure module: newGame / html / act.
+import { btn, n, scene, splash } from './ink.js';
 
 export const meta = {
   id: 'bread',
@@ -69,17 +70,35 @@ function lineOf(s, t) {
   return t.start;
 }
 
+/* ── The picture (2026-10-14): the thick flatbread in ink, cut in eight, and the fox in its
+   jacket (her 图鉴 portrait). A piece broken for it slides over to it; a piece he eats leaves
+   crumbs; the eighth, the corner, is tied in a cloth for the dawn. */
+const FOX = '../worlds/jiuding/art/people/yinyue-fox.webp';
+const CX = 222, CY = 76, R = 54;
+function wedge(i, dx = 0, dy = 0) {
+  const a0 = (-90 + i * 45) * Math.PI / 180, a1 = (-90 + (i + 1) * 45) * Math.PI / 180;
+  const p = (a) => `${n(CX + dx + R * Math.cos(a))} ${n(CY + dy + R * Math.sin(a))}`;
+  return `M${n(CX + dx)} ${n(CY + dy)} L${p(a0)} A${R} ${R} 0 0 1 ${p(a1)}Z`;
+}
+function breadScene(state) {
+  const fox = `<image href="${FOX}" x="4" y="22" width="112" height="112" preserveAspectRatio="xMidYMid meet" class="g-fox"/>`;
+  const pieces = Array.from({ length: PIECES + 1 }, (_, i) => {
+    if (i === PIECES) return `<path class="g-bread is-corner" d="${wedge(i)}"/><path class="g-cloth" d="${wedge(i, 2, -2)}"/><circle class="g-knot" cx="${n(CX + 30)}" cy="${n(CY - 46)}" r="3"/>`;
+    if (i < state.given) { const k = i; return `<path class="g-bread is-given" transform="translate(${n(-128 + (k % 3) * 6)} ${n(22 + k * 4)}) scale(0.42)" transform-origin="${CX} ${CY}" d="${wedge(i)}"/>`; }
+    if (i < state.given + state.eaten) return `<path class="g-crumbs" d="${wedge(i)}"/>`;
+    return `<path class="g-bread" d="${wedge(i)}"/>`;
+  }).join('');
+  const dots = [[200, 50], [236, 64], [214, 96], [246, 92], [228, 40]].map(([x, y]) => `<circle class="g-scorch" cx="${x}" cy="${y}" r="2"/>`).join('');
+  const fx = state.note === 'give' ? splash(112, 96, 200, { r: 6 }) : '';
+  return scene(320, 150, fox + pieces + dots + fx);
+}
+
 export function html(state, lang = 'zh') {
   const t = T[lang] || T.zh;
-  const bits = Array.from({ length: PIECES + 1 }, (_, i) => {
-    const who = i === PIECES ? 'corner' : i < state.given ? 'it' : i < state.given + state.eaten ? 'me' : 'whole';
-    return `<i class="is-${who}"></i>`;
-  }).join('');
-  const tally = `<div class="g-bread-tally"><span>${t.it} <b>${state.given}</b></span><span>${t.you} <b>${state.eaten}</b></span><span>${t.left} <b>${left(state)}</b></span></div>`;
-  const bread = `<div class="g-bread-cake" aria-hidden="true">${bits}</div>`;
-  if (state.won) return `<div class="g-bread is-won">${bread}${tally}<p class="g-bread-line">${lineOf(state, t)}</p></div>`;
-  return `<div class="g-bread">${bread}${tally}<p class="g-bread-line">${lineOf(state, t)}</p>`
-    + `<div class="g-bread-acts"><button type="button" class="g-bread-btn" data-g="give">${t.toIt}</button><button type="button" class="g-bread-btn is-me" data-g="eat">${t.toMe}</button></div>`
-    + (state.given + state.eaten ? `<button type="button" class="g-bread-quiet" data-g="rest">${t.rest}</button>` : '')
+  const tally = `<div class="g-bread-tally g-head"><span>${t.it} <b>${state.given}</b></span><span>${t.you} <b>${state.eaten}</b></span><span>${t.left} <b>${left(state)}</b></span></div>`;
+  if (state.won) return `<div class="g-bread g-ink is-won">${breadScene(state)}${tally}<p class="g-line-say">${lineOf(state, t)}</p></div>`;
+  return `<div class="g-bread g-ink">${breadScene(state)}${tally}<p class="g-line-say">${lineOf(state, t)}</p>`
+    + `<div class="g-pair">${btn(t.toIt, 'data-g="give"', 'main')}${btn(t.toMe, 'data-g="eat"', 'soft')}</div>`
+    + (state.given + state.eaten ? btn(t.rest, 'data-g="rest"', 'quiet') : '')
     + `</div>`;
 }
