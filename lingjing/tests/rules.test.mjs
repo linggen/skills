@@ -1468,8 +1468,8 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
   s = { ...s, wins: { ...s.wins, 'shuanglong-trial': OCT.toISOString() } };
   r = answer(resolve, s, { exit: 'stand' });
   assert.equal(r.state.scene, '01-tower'); assert.equal(r.result.paid.progress, 60);
-  // 老胡 under the fallen tower (古九): 爹's pill only if it was kept — here it was eaten, so the bottle is empty
-  refused(resolve, r.state, { exit: 'give' }, 'needs', octx());
+  // 老胡 under the fallen tower (古九): 阿禾's 青光 holds him a cup of tea's time — no pill (the book, 2026-10-13: 九纹 is not for mortals)
+  assert.deepEqual(look(r.state, content, octx()).scene.exits.map(e => e.id).filter(id => id !== 'run'), ['hold']);
   r = answer(resolve, r.state, { exit: 'hold' });
   assert.equal(r.state.scene, '01-deep');
   s = r.state; assert.equal(s.place, 'zhangyuan');

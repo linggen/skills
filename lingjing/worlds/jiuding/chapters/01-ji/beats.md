@@ -9,31 +9,13 @@
 1. **Arrive** (`01-arrive`, 漳水南岸). the abbot's map (古八's last scene — 古七's before the 2026-10-07 split — the night after the Foundation); the tenth evening at the Zhang;
    周衡 does not write a word. Opens on 瞿老's sixteen characters (内观经, 古九's lesson — paid off in the deep)
    and the sleeper under the Zhang, 「这一个，睡得更沉」.
-2. **Ye** (`01-ye`, 邺城). The inn, the custom, this year's bride (豆腐西施). The two failed plans are
-   the player's choices — **bribe the Three Elders** (the ingot's 圈里一横; that night by the lamp he thinks of the 码头 ingot)
-   and **the bedsheet ghost** (the white-robed 「仙长」 in the shrine, 「去年漳水涨了三尺」「他上来的时候，你们谁也不许拦」 —
-   the old-well voice that called 「回来」 on 黑松岭) — then **the eighteenth**. `girl` meets 老胡 (the knee like 爹's,
-   东街卖油的闺女).
-3. **The wedding** (`01-altar`, 河伯祠). He sends the shaman 「去给河伯报信」 (she cries 「仙长」); 阿禾 (筑基中成, passing as 练气) jumps in at the count of seven; the 三老 shout 「推船」, she gives her own count aloud (三百文 × 三千户 asked door to door, 刘船匠's 工账, the 裁缝铺 and the 鼓手 — 八百九十五贯 a year left, 「进了伞底下这几位的口袋」; she does not know the split), the shaman testifies to the split (巫祝 一百, each 三老 二百六十五 a year); the Three Elders cough up twenty-five years of River Lord money — and he turns one of their ingots over: the same mark as the 码头 ingot.
-4. **The Zhang stands up** (`01-rise`, 河伯祠) — **the chapter's fight**: the river stands, twenty
-   boats, thousands kneel, three stand. 冰夷's dragons lunge and sweep (a duel with `foe-shuanglong`,
-   a trial that may be fought again, `retry`); won, the book's passage plays: he steps back in front
-   of 豆腐西施 and stands between the dragons without a spell, palms out — 「她是卖豆腐的。她没招谁。」 A second white
-   robe under the willows (老井) looks at him once.
-5. **The tower** (`01-tower`, 河伯祠; 古九 (then 古八) rewrite 2026-10-02). 「谁说我要娶媳妇的？」; the wave brings down a
-   corner of the water-gate tower; 阿禾's 「账就烂了」; under the rubble, 老胡 — he broke out to stop the boat.
-   **The player's choice and price**: `give` (needs `mend-pill-9`, the 九纹回春丹 kept for 爹's knee in 古四 — takes it)
-   holds him a cup of tea's time and he dies holding his daughter's hand; `hold` (a branch the book never took) keeps
-   the pill, or has none. Either way he dies: the pill buys words, not a life.
-6. **The deeps** (`01-deep`, 漳渊). 二十五个姑娘活着，拦船的爹死了; 「你身上，有青丘的味道」; 「把河伯请上来的，是他」;
-   the name 冰夷; 「方才那两条龙，是替她问你的」; the Luo seal (riddle `seal-ji`; 「……足。」, six and
-   eight swapped).
-7. **The first 鼎** (`01-cauldron`, 漳渊). The cauldron shrinks into his palm, the token's second tail,
-   赵昂 under the willow — 「天下，该归于一」 — 银月's first memory (`memory: 1`); 小满 sees the mark on 赵昂's scabbard
-   (「宫里的印。」), 「那娃叫小豆。是你们的人么？」「宫里的孩子，没有名字。」; 老井 named only by 赵昂's mouth (「每年入秋到这城里来…来了二十五年」);
-   the mark laid out — 「天下，该归于一」. **No breakthrough.**
-8. **Willow Bend** (`01-end`). The tofu shop that night (豆浆, no sugar; 周衡 pays the coffin from the 观's five taels); 「记账的，总要去对一对」; `rest` now plays 柳湾 — 「……阿衡？」, 「回。」, the notebook's 圈 · 小豆 · 老胡 and 「人家迟早要上门来收」 (the letter's 「爹的药」 line is left out: on `hold` it would not be true). Ends the chapter; the second
-   鼎 lies east, in 兖.
+2. **Ye** (`01-ye`, 邺城). The inn, the custom, this year's bride (豆腐西施, 老胡's mute daughter). Rewritten 2026-10-13 (Hanli: 修士该愁的是老井，不是跟凡人纠缠) — the exits keep their ids: **bribe** is short and only for the ingot's mark (圈里一横; that night by the lamp he thinks of the 码头 ingot); **ghost** is no longer a bedsheet ruse — on the night of the fourteenth, from behind a willow a hundred paces off, he hears 老井 paying the shaman (「去年漳水涨了三尺。今年，他该忍不住了」「他上来的时候，你们谁也不许拦」), refuses 银月's 搜魂, 阿禾 tugs his sleeve; back at the inn the three reckon (老井 筑基大成, he two steps below, 阿禾 one) and decide to stop the wedding by mortal means; three days of preparing (阿禾's vines at every willow, he learns the bank as nine squares). **shrine** plays the seventeenth night (刘船匠's 工账, the 八百九十五贯, the borrowed bridal dress, 「这新娘子……太好看了」) and walks to the wedding. `girl` meets 老胡 (the knee like 爹's, 东街卖油的闺女, 「爹，一个人，磨不动。」).
+3. **The wedding** (`01-altar`, 河伯祠). He sends the shaman 「去给河伯报信」 (she cries 「仙长」); 阿禾 (筑基中成, passing as 练气) jumps in at the count of seven; the 三老 shout 「推船」, she reads her ledger aloud (九百贯 in, 五贯 out, 八百九十五贯 「进了伞底下这几位的口袋」; she does not know the split), the shaman testifies to it (巫祝 一百, each 三老 二百六十五 a year); the Three Elders cough up twenty-five years of River Lord money — and he turns one of their ingots over: the same mark as the 码头 ingot.
+4. **The Zhang stands up** (`01-rise`, 河伯祠) — **the chapter's fight**: the river stands, twenty-five boats, thousands kneel, three stand (豆腐西施, a sword-bearing youth in white under the upstream willows — 赵昂 — and he; 老井 half a step behind the youth). 冰夷's dragons lunge and sweep (a duel with `foe-shuanglong`, a trial that may be fought again, `retry`); won, the book's passage plays: he steps back in front of 豆腐西施 and stands between the dragons without a spell, palms out — 「她是卖豆腐的。她没招谁。」 老井 steps out of the shade and looks once at him and the silver light under his collar.
+5. **The tower** (`01-tower`, 河伯祠). 「谁说我要娶媳妇的？」; the wave brings down a corner of the water-gate tower; 「您的水，分得清谁扔人、谁捞人；您的浪，分不清」, 阿禾's 「账就烂了」, the wall sinks, a scale for 阿禾. Under the rubble, 老胡 — he broke out to stop the boat. One way on (`hold`, 2026-10-14 sync): 阿禾's 青光 holds him a cup of tea's time — 「爹今天……吭声了」「……磨得动」 — and he dies holding his daughter's hand. **No pill**: the 九纹回春丹 is not for mortals and stays unused in 卷一 (Hanli 2026-10-13; DESIGN § items); the old `give` branch is gone.
+6. **The deeps** (`01-deep`, 漳渊). 二十五个姑娘活着 at 柳湾, 拦船的爹死了; 「你身上，有青丘的味道」; 银月 names him — 冰夷, the Zhang's guardian god; 「把河伯请上来的，是他」; 「方才那两条龙，是替她问你的」; he cannot help inside the seal. The descent and the slab: nine squares, nine stones. Riddle `seal-ji` (「居中者何？」 — 五); then the book's passage: he places all eight right, the five will not go in; he chokes, the token warms, 瞿老's sixteen characters, his mother's 九宫 — the slab asks whether his heart is steady, not whether he remembers; he sets the five down gently and it drops in. **No swapped stones**: he places nothing wrong.
+7. **The first 鼎** (`01-cauldron`, 漳渊). The cauldron shrinks into his palm, the token's second tail, 银月's 「有光」; on the bank 赵昂 (「多谢」, 「太一宫，赵昂」, 「天下，该归于一」 — 银月's first memory, `memory: 1`); the dragons' eyes surface, 「蒙的」, 「宫里的印。」, 「那娃叫小豆。是你们的人么？」「宫里的孩子，没有名字。」; 「这东西，你拿不稳的。」 Then 老井 comes back alone (「找着了」): the 九宫 sidestep, the 自拍镜 shard cracks his mirror, a palm throws him into the river, 阿禾's vines hold 老井's arm for a breath — 入隙 — and 火柴 takes the arm off at the shoulder. 「这一笔，记下了。」 赵昂 watched from the wall and took no side. **No breakthrough.**
+8. **Willow Bend and the Yellow River** (`01-end`). The tofu shop that night (豆浆, no sugar; 周衡 pays the coffin from the 观's five taels); 阿禾 heals the daughter's throat — her first word is 「……爹」; 「记账的，总要去对一对」; `rest` plays 柳湾 — 「……阿衡？」, the ledger in the mud, 「这一行，不用往后添了」, 阿禾 plants three black grains, the letter (its 「爹的药」 line left out: in the book's own tower scene no pill is given), 「人家迟早要上门来收」, 「这东西，你拿不稳的」 — then the 黄河 ferry, the twenty-second: 观主's paper crane (「……司马烈是结丹。别过河。」) arrives mid-river; 司马烈 on the south bank with one-armed 老井 behind him, two white robes on the north bank; 「沉鼎观的沈小满？太一宫，司马烈。东西，带来了吧。」 Ends the chapter and 卷一 (卷二待续).
 
 **Never in chapter 1:** what the cauldrons are for, 银月's second memory, any realm above 筑基, the
 names of the other eight cauldrons.

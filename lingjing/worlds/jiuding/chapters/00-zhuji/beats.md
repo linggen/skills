@@ -29,8 +29,8 @@ speak to the player as 你 (story/jiuding-lu/DESIGN.md § 四·五 人称分工)
    **Not yet a scene** (listed for later, 2026-10-06): the 黑松岭 big mission between 入秋 and 八月 — the 蒙山县 tag (seven taken, 马家's dogs stop at the 断碑), 瞿老 「去。别进村。」, the 合窳 in the valley pit, 爹 seen once from the ridge.
 4. **Old Qu** (`09-qulao`, 后山崖顶). 「九层，满了。」 (a 筑基 sees a 练气's level at a glance) — nine fingers; 「渡口那一回，你是爬着上来的。」「练气的腿，跑不过筑基的剑。」
    (no palm mark, Hanli 2026-10-09); 「用哪颗丹？」「观里那颗。」 He tells of
-   his last disciple — 外公 (DESIGN § 六·九 「外公是谁」). 「那颗丹，吃。」 (2026-10-13: he failed on his heart — he did not go home when his father was dying — not on the pill.)
-5. **The cliff** (`09-cliff`, 后山崖顶) — **the key beat**: 九月初三, the breakthrough (`breakthrough:
-   true`; the throw reaches for the 九转 before the 一转 — ladder.json `breakthrough.pill`). The
-   心关 惧: the door he reads as 「勿入」, his father's 「今日放学」 door. 「几道纹？」「……一道。」
-   「你外公那一步，你替他走完了。」 Ends the chapter → 01-ji (古九, after 今 · 四).
+   his last disciple — 外公 (DESIGN § 六·九 「外公是谁」). 「那颗丹，吃。」 (2026-10-13: he failed on his heart — he did not go home when his father was dying — not on the pill.) `listen` plays on through that night's fear (「要是我也过不去呢？」) and 回家一夜 — 瞿老 flies him to 西山梁 on the broom, a night at 爹娘's 灶, 「牵挂还在，可是它不绊我的脚了」.
+5. **The cliff** (`09-cliff`, 后山崖顶) — **the key beat**. The passage opens on 九月初二 (阿禾's 禾, seventeen black grains; the night on the 160th step, 「恬惔虚无」, 「银月。我有点怕。」), then 九月初三, the breakthrough (`breakthrough:
+   true`; the throw reaches for the 九转 before the 一转 — ladder.json `breakthrough.pill`). In the book's order (Hanli 2026-10-13): the
+   心关 comes FIRST, before the pill — the door he reads as 「勿入」, 「跑吧」, the long breath out, the home door with the white robe in the snow, his father's 「今日放学」 door, 「他不跑了」 — then the pill, the 锅盖云, the 台, the four piles, the inner lake; 银月: 筑基小成，圆满; 「几道纹？」「……一道。」
+   「你外公那一步，你替他走完了。」 The set piece `zhuji` plays the same order (door · gather · light · tai · zhu · stars · settle). Ends the chapter → 01-ji (古九, after 今 · 四).
