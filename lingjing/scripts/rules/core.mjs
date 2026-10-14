@@ -1,11 +1,11 @@
 // rules/core.mjs — Changing it: refusals, pay, riddles, stamina, resolve and judge.
 // Part of the rules engine; rules.mjs is its one door.
 import { gameOf, MADE_GRANT } from '../content.mjs';
-import { addProgress, dayKey, fill, fitValue, lockedOf, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaLimited, staminaReturnsAt, stepName, peakName, phaseName, threshold, tierOf, seedOf } from '../state.mjs';
+import { addProgress, dayKey, fill, fitValue, fullName, lockedOf, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaLimited, staminaReturnsAt, stepName, peakName, phaseName, threshold, tierOf, seedOf } from '../state.mjs';
 import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
 import { gainCard, starterOf } from './cards.mjs';
-import { breakthroughOf, threadOf } from './errands.mjs';
+import { breakthroughOf, itemOf, threadOf } from './errands.mjs';
 import { coolingUntil, oddsOf, throwOn } from './breakthrough.mjs';
 import { sceneBrief, spoken, wordsOf } from './look.mjs';
 import { hashOf } from './travel.mjs';
@@ -318,6 +318,15 @@ function riseTo(content, s, rise, replay) {
   return { from, to: stepName(content, s.tier, s.step, s.lang), ...(full ? { full: true } : {}) };
 }
 
+/* How far a breakthrough that lands fills the step it lands on: the pill it
+   ate declares it (items.json `fill` — the 九转's "full": 筑基小成圆满 in one
+   night, Hanli 2026-10-14), else the exit (`fill`, for a world with no
+   breakthrough pills), else nothing — the step's start, 修为 0. "full" is the
+   one value: the step filled, shown with the ladder's `full` word; the next
+   step stays the ladder's and the 回's cap's to open. */
+const landFill = (content, exit, breakthrough) =>
+  (breakthrough.pill?.id ? itemOf(content, breakthrough.pill.id)?.fill : null) ?? exit.fill ?? null;
+
 /* After a chapter ends, the next one that has opened takes over. One still
    being written (`coming`: 「第四回 · 即将开放」, named by its first 回 — hui.mjs) is waited on, dateless. */
 function advanceChapter(content, state, now) {
@@ -459,7 +468,12 @@ export function resolve(state, content, ctx, args) {
     s.cards = [...new Set([...(s.cards ?? []), ...starterOf(content, s.traits)])];
     s.card_from = { ...Object.fromEntries(starterOf(content, s.traits).map(id => [id, { how: 'starter', place: s.place ?? null, chapter: s.chapter ?? null, day: dayKey(ctx.now) }])), ...(s.card_from ?? {}) };
   }
-  if (breakthrough) { s.tier = breakthrough.tier; s.step = 0; s.progress = 0; }
+  if (breakthrough) {
+    s.tier = breakthrough.tier; s.step = 0;
+    const filled = landFill(content, exit, breakthrough) === 'full';
+    s.progress = filled ? threshold(content, s) : 0;
+    if (filled) breakthrough = { ...breakthrough, to: fullName(content, s.tier, 0, lang), full: true };
+  }
   // The story lifts the realm (小周天, 息壤): to that layer of the first tier, never down.
   const rose = exit.rise ? riseTo(content, s, exit.rise, replaying(content, s, scene)) : null;
   const grant = grantOf(s, scene, exit);

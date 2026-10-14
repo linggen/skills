@@ -255,6 +255,8 @@
       "art": "art/items/foundation-pill.webp",
       "_furnace": "Made in 银月's furnace: one pill, from a 萝卜 at the end of 古五 (Hanli 2026-10-06: 「改成一颗」), never shown again until the eve of his 筑基 (Hanli 2026-10-06: 「等筑基的时候再拿出来」 — the bag gets it on 09-qulao `listen`) and eaten there (古八; 古七 before the 2026-10-07 split). The breakthrough reaches for it before the 一转 (ladder.json breakthrough.pill); not sold.",
       "zhuan": 9,
+      "_fill": "`fill`: how far a breakthrough this pill carries fills the step it lands on — \"full\" lands it 圆满 (ladder.json `full`). The 九转 takes 小满 to 筑基小成圆满 in one night; the rest of its power sinks into the lake bed (古八, Hanli 2026-10-14: 「因为9转筑基丹, 小成得以圆满」). A pill without it lands at the step's start, 修为 0. Read by rules/core.mjs landFill; an exit may declare the same for a world with no breakthrough pills.",
+      "fill": "full",
       "about": {
         "zh": "饭桶一炉出的筑基丹，透亮得像一滴凝住的露水，九道金纹，一丝黑斑也没有，一个字也没有。沉鼎观三百年最好的一炉是三转。",
         "en": "A foundation pill from the rice-tub furnace: clear as a drop of frozen dew, nine gold rings, not one dark fleck, not one word on it. The best batch the temple made in three hundred years was three-turn."
