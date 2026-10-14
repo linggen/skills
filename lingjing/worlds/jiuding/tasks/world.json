@@ -103,6 +103,13 @@
       "done_line": {"zh": "爹的手，这一回抓住了。", "en": "Father's hand — this time it held."}
     },
     {
+      "id": "halfyear-carry", "kind": "board", "game": "carry", "period": "once",
+      "title": {"zh": "练功 · 挑水上坡不喘", "en": "Practice · Water up the slope without a pant"},
+      "grant": { "table": "task", "progress": 5 },
+      "marks": {"even": "carry-even", "panting": "carry-panting"},
+      "done_line": {"zh": "六担水，缸满了。", "en": "Six loads of water; the vat is full."}
+    },
+    {
       "id": "xisui-hold", "kind": "board", "game": "xisui", "period": "once",
       "title": { "zh": "洗髓 · 疼，别喊", "en": "Marrow washing · Don't cry out" },
       "grant": { "table": "task", "progress": 5 },

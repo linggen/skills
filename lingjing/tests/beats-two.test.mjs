@@ -12,6 +12,7 @@ import * as stone from '../scripts/games/stone.js';
 import * as way from '../scripts/games/way.js';
 import * as climb from '../scripts/games/climb.js';
 import * as xisui from '../scripts/games/xisui.js';
+import * as carry from '../scripts/games/carry.js';
 import { loadContent } from '../scripts/content.mjs';
 import { look, resolve, task, win } from '../scripts/rules.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
@@ -29,7 +30,7 @@ const atScene = (id) => {
   return s.scene === id ? s : null;
 };
 
-const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/], [listen, /data-g="start"/], [storm, /data-g="start"/], [stone, /data-g="hole"/], [way, /data-g="go"/], [climb, /data-g="start"/], [xisui, /data-g-hold="grit"/]];
+const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/], [listen, /data-g="start"/], [storm, /data-g="start"/], [stone, /data-g="hole"/], [way, /data-g="go"/], [climb, /data-g="start"/], [xisui, /data-g-hold="grit"/], [carry, /data-g="start"/]];
 
 test('every batch-two game: meta in both languages, a control at open, both languages drawn, a skip that ends it won with no grade', () => {
   for (const [mod, control] of GAMES) {
@@ -237,4 +238,32 @@ test('忍 (00-sleep\'s 洗髓, redrawn in ink): drawn as a scene; never held, th
   assert.equal(late.note, 'moon');
   assert.match(xisui.html(late, 'zh'), /data-g="jump"/);
   assert.equal(xisui.act(late, { g: 'jump' }).won, true);
+});
+
+test('练功: step as the buckets swing through the middle — the water stays in and the breath low; on the swing it slops; it always ends', () => {
+  const walk2 = (good) => {
+    let s = carry.act(carry.newGame('w'), { g: 'start' }).state;
+    while (!s.won) {
+      s = carry.tick(s, 50);
+      const sw = Math.abs(carry.swayAt(s.t));
+      if (good ? sw < 0.1 : sw > 0.95) s = carry.act(s, { g: 'step' }).state;
+    }
+    return s;
+  };
+  const even = walk2(true);
+  assert.equal(even.grade, 'even');
+  assert.equal(even.spills, 0);
+  assert.ok(even.t < 30000);
+  assert.match(carry.html(even, 'zh'), /只好装喘/);
+  const rough = walk2(false);
+  assert.equal(rough.grade, 'panting');
+  assert.match(carry.html(rough, 'en'), /bellows/);
+  const idle = carry.tick(carry.act(carry.newGame('w'), { g: 'start' }).state, carry.LIMIT);
+  assert.equal(idle.won, true);
+});
+
+test('00-halfyear\'s two boards: 吹鹅毛, the winter, then 练功 — 开春 waits on the second', () => {
+  const sc = content.chapters['00-prologue'].scenes['00-halfyear'];
+  assert.deepEqual(sc.show.filter(c => c.card === 'board').map(c => c.id), ['feather-breath', 'halfyear-carry']);
+  assert.equal(sc.exits.find(e => e.id === 'on').needs.task, 'halfyear-carry');
 });

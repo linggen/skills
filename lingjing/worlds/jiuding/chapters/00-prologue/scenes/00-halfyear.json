@@ -63,11 +63,11 @@
    "beat": [],
    "next": "00-uncle",
    "needs": {
-    "task": "feather-breath"
+    "task": "halfyear-carry"
    },
    "refuse": {
-    "zh": "鹅毛还在竹篾上等着——吐气，毛不许动。",
-    "en": "The feather is waiting on its strip — breathe out, and it mustn't stir."
+    "zh": "缸还没满——挑水上坡，桶荡到正中再迈步。",
+    "en": "The vat isn't full — carry the water up the slope, stepping as the buckets swing through the middle."
    }
   }
  ],
@@ -75,12 +75,17 @@
   {
    "card": "board",
    "id": "feather-breath"
+  },
+  {
+   "card": "board",
+   "id": "halfyear-carry"
   }
  ],
  "offers": {
   "tasks": [
-   "feather-breath"
+   "feather-breath",
+   "halfyear-carry"
   ]
  },
- "_beats": "吹鹅毛 (feather-breath, 2026-10-14): the passage is split after the first night's burst (「……鸡窝里一阵大乱。」) — the game is his breath at the feather; the rest of the winter (the scene's own `story_after`: 「他这才觉出来……」, 冬月廿二's man in white, 正月初五's mirror) is told right after the game, before 开春."
+ "_beats": "吹鹅毛 (feather-breath, 2026-10-14): the passage is split after the first night's burst (「……鸡窝里一阵大乱。」) — the game is his breath at the feather; the rest of the winter (the scene's own `story_after`: 「他这才觉出来……」, 冬月廿二's man in white, 正月初五's mirror) is told right after the game, before 开春. · 练功 (halfyear-carry, batch two 2026-10-14): the scene's second board, after the winter's rest of the passage — the fifth and sixth loads of water up the slope (「从四担挑到了六担，上坡不喘」), stepping as the buckets swing through the middle; grade even · panting → `carry-even` · `carry-panting`; 开春 now waits on it (吹鹅毛 plays first, `show` order)"
 }

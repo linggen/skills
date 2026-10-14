@@ -160,6 +160,9 @@ const atScene = (id) => {
 };
 /* The board won as the page reports it — with its grade — and handed in. */
 const won = (s, id, grade) => {
+  // A scene's boards play in `show` order (batch two): any before this one are played first.
+  const order = (content.chapters[s.chapter]?.scenes?.[s.scene]?.show ?? []).filter(c => c.card === 'board').map(c => c.id);
+  for (const b of order.slice(0, Math.max(0, order.indexOf(id)))) if (s.tasks?.[b]?.status !== 'done') s = won(s, b, Object.keys(content.tasks.tasks.find(t => t.id === b)?.marks ?? {})[0]);
   const w = win(s, content, ctx(), { id, grade });
   assert.equal(w.result.ok, true, JSON.stringify(w.result));
   const d = task(w.state, content, ctx(), { action: 'done', id });
@@ -171,7 +174,8 @@ const BEATS = [
   ['00-shiao', 'rain-basins', 'begin', ['dry', 'wet'], { dry: 'rain-caught', wet: 'rain-puddled' }],
   ['00-heisong', 'track-marks', 'carve', ['true', 'rough'], { true: 'marks-true', rough: 'marks-rough' }],
   ['00-rent', 'rent-scale', 'dumb', ['exact', 'over'], { exact: 'rent-exact', over: 'rent-over' }],
-  ['00-halfyear', 'feather-breath', 'on', ['still', 'shaky'], { still: 'feather-still', shaky: 'feather-shaky' }],
+  // 00-halfyear: 吹鹅毛 first, then 练功 (batch two) — the way on waits on the second.
+  ['00-halfyear', 'halfyear-carry', 'on', ['even', 'panting'], { even: 'carry-even', panting: 'carry-panting' }],
   // Batch two (2026-10-14): tests/beats-two.test.mjs plays the games themselves.
   ['00-masan', 'masan-taunt', 'endure', ['word', 'fist'], { word: 'taunt-word', fist: 'taunt-fist' }],
   ['00-yinyue', 'yinyue-way', 'follow', ['straight', 'wandered'], { straight: 'way-straight', wandered: 'way-wandered' }],
