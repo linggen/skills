@@ -34,7 +34,7 @@ import { fxTimes, glOK, playHoming as playHomingFx } from './fx.js';
 import { atmosClasses, atmosOf, particlesHtml } from './atmos.js';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
-import { advance, atLast, choicesUp, current, dialogHtml, keepReading, loadReading, logHtml, noted, ofPlay, playing, readingFor, sceneUnder, showAll, sightNow, sightings, withTold } from './dialogue.js';
+import { advance, atLast, choicesUp, current, dialogHtml, huiAt, keepReading, leadsIn, loadReading, logHtml, noted, ofPlay, playing, readingFor, sceneUnder, showAll, sightNow, sightings, withTold } from './dialogue.js';
 import { SIGHT_KINDS, mountChatToggle, paintSight } from './sight.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
@@ -64,7 +64,7 @@ const WRITERS = new Set(['Divine', 'Resolve', 'Practice', 'Tale', 'Lang', 'Summa
 let bout = null;
 let idleTimer = null;
 let look = null; //       the rules' view of the game — the only source of numbers
-let prevLook = null; //   the scene before this one: its header holds while its choice's passage plays
+let prevLook = null; //   the scene before this one (leftLook): its header holds while what leads in from it plays
 let authored = null; //   the world's content files, for the world Look names
 let cloud = null; //      the engine's view of the account: {signed_in, meter}; null = no cloud
 let atlasPlaces = null; // every province's places for the map, read by the atlas verb: {key, provinces}
@@ -460,7 +460,7 @@ async function readOnce() {
   try {
     const [seen, ,] = await Promise.all([verb('look', PREVIEW.day ? { day: PREVIEW.day } : {}), readCloud()]);
     // The scene just left, kept for its header while its choice's passage is still told.
-    if (look && seen?.scene?.id !== look.scene?.id) prevLook = look;
+    if (look?.scene && seen?.scene?.id !== look.scene.id) leftLook(look);
     look = seen;
     watchRun();
     if (look.divination) keep({ casting: false });
@@ -1241,9 +1241,11 @@ function draw() {
   paintBackdrop();
   // The 回 above the place, as the book names and numbers it (古五: 「卷一 · 沉鼎 · 第十回　古 · 漏勺夜半通三关」 once 今五 is in, rules/hui.mjs).
   // The old 回's last passage still in the box keeps its own 回 line (queue.js huiLineOf).
-  const titles = (huiTitles[lang()] ??= {}), told = readingHere();
+  // The ended 回's line comes with its close (rules/story.mjs closeOf `line`): a fresh tab at the turn has it too.
+  const titles = (huiTitles[lang()] ??= {}), told = readingHere(), ended = look.chapter?.close;
   if (look.chapter?.hui) titles[look.chapter.hui] = look.chapter.title;
-  $('huiLine').textContent = look.chapter?.hui ? huiLineOf({ hui: look.chapter.hui, title: look.chapter.title, telling: playing(told) ? told.items[told.i]?.hui : null, titles }) : '';
+  if (ended?.id && ended.line) titles[ended.id] = ended.line;
+  $('huiLine').textContent = look.chapter?.hui ? huiLineOf({ hui: look.chapter.hui, title: look.chapter.title, telling: huiAt(told), titles }) : '';
   $('place').textContent = look.scene?.place ?? look.chapter?.close?.place ?? look.place?.name ?? look.chapter?.title ?? '';
   // The scene's caption, small under the place (2026-10-14: never a beat in the box — told three times).
   $('placeCap').textContent = (look.scene?.panel?.caption ?? []).join(' ');
@@ -1791,12 +1793,22 @@ const gamesEarly = () => !look?.tell_owed && !drawingTold && !atHuiTurn() && sce
 const trayAhead = () => trayWaits({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: playing(readingHere()), huiTurn: atHuiTurn() });
 /* The scene's passage still to be told (owed, being drawn, or in the box): its games wait. */
 const storyAhead = () => Boolean(look?.tell_owed || drawingTold || playing(readingHere()));
-/* The look whose header stands now: the last scene's, while the box tells the passage of the choice
-   that left it (the first item of the new reading, `of: 'choice'`, its id that scene's); else this one. */
+/* The look whose header stands now: the last scene's, while the box tells what leads into this one
+   — the choice that left it, and a 前情 or that scene's unplayed beats before it (dialogue.js leadsIn;
+   live 2026-10-14: a 前情 first in the reading put 00-waimen's people over 00-hall/born); else this one. */
 function headLook() {
-  const r = readingHere(), it = playing(r) ? r.items[r.i] : null;
-  const from = it?.of === 'choice' ? String(it.id).split('/')[0] : null;
-  return from && prevLook?.scene?.id === from && look?.scene?.id !== from ? { ...look, scene: prevLook.scene, place: prevLook.place, weather: prevLook.weather, stage: prevLook.stage } : look;
+  const prev = lastLook();
+  return leadsIn(readingHere(), look?.scene?.id, prev?.scene?.id) ? { ...look, scene: prev.scene, place: prev.place, weather: prev.weather, stage: prev.stage } : look;
+}
+/* The scene just left, kept per save in this browser beside the reading, so a reload mid-passage holds its header too. */
+const HELD_KEY = `lingjing.held.${SCRATCH || 'main'}`;
+function leftLook(lk) {
+  prevLook = { scene: lk.scene, place: lk.place, weather: lk.weather, stage: lk.stage };
+  try { localStorage.setItem(HELD_KEY, JSON.stringify(prevLook)); } catch { /* no storage: this load only */ }
+}
+function lastLook() {
+  if (!prevLook) { try { prevLook = JSON.parse(localStorage.getItem(HELD_KEY) ?? 'null'); } catch { /* none */ } }
+  return prevLook;
 }
 /* A held header's own cards (the people, the goal) from the look it stands on. */
 const headOf = (lk) => stageSlots(lk, lk.stage ?? []).header;

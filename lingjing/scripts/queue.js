@@ -15,12 +15,15 @@
 //
 // Pure: lingjing.js reads the page's flags into plain objects and asks here.
 
-/* The cards that wait for the book: a game to play here — and the 图鉴 card of
-   whoever the scene brings on, so a card never shows what the passage has not
-   told yet (银月 at dawn was a girl on the card before the box said so) — and a
-   choice on a card of its own (渡劫's throw, the 生辰, a name): the box goes
-   first, the choices after. */
-export const BOX_FIRST = new Set(['board', 'duel', 'tale', 'lundao', 'meet', 'breakthrough', 'born', 'value']);
+/* What may stand while the story is told (Hanli: one thing on the stage, and nothing stands
+   while the story is told): the header (whoever is in the scene, the goal), the page's moments
+   and a 回's 「完」 — each comes in its turn (momentMay, atTurn) — a fight or 闭关 already up, the
+   闭关 chooser he opened himself, and the scene card, which keeps its own rule (it waits for the
+   box's last beat, its choices inside the box). EVERY other card waits for the book: a game, a
+   new face's 图鉴 card (银月 at dawn was a girl on the card before the box said so), a choice on
+   a card of its own (渡劫's throw, the 生辰, a name), an errand offered (live 2026-10-14: 可接的差事
+   stood behind 秦雁's 亮相), 所得, the line, the road, what Ling showed, the day's coins. */
+export const STANDS = new Set(['people', 'goal', 'memory', 'homing', 'doors', 'unfold', 'closed', 'fight', 'seclusion', 'seclude', 'panel']);
 
 /* The page's own moments, in the order they come after the book. */
 export const MOMENTS = ['piece', 'doors', 'feat', 'memory', 'homing', 'unfold'];
@@ -28,7 +31,7 @@ export const MOMENTS = ['piece', 'doors', 'feat', 'memory', 'homing', 'unfold'];
 /* The games to play here: once the box is on the scene's own passage, past
    its caption, they stand over the box (Hanli, 2026-10-05: 「对白讲到它时就出现在
    舞台中央，可以直接上手」) — the passage that leads into them, a choice's, still
-   plays first. The rest of BOX_FIRST (a new face, a choice on its own card)
+   plays first. Every other card that waits (a new face, a choice on its own card…)
    waits for the last beat, as before. */
 // Never a board (Hanli, 2026-10-14: 「小游戏，和剧情不要同时显示」 — 吹鹅毛 stood over the box
 // at 6 / 16): a board waits for the passage that leads into it, to the beat it belongs at
@@ -36,9 +39,9 @@ export const MOMENTS = ['piece', 'doors', 'feat', 'memory', 'homing', 'unfold'];
 // aside (boxGivesWay `game`) until it is played.
 export const EARLY = new Set(['duel', 'tale', 'lundao']);
 
-/* The stage's cards with the games held back while the book is ahead; `early`,
-   the box past the scene's caption, lets the games through. */
-export const afterBook = (cards, ahead, early = false) => (ahead ? cards.filter((c) => !BOX_FIRST.has(c.card) || (early && EARLY.has(c.card))) : cards);
+/* The stage's cards while the book is ahead: only what STANDS; `early`, the box
+   past the scene's caption, lets the scene's fights through. */
+export const afterBook = (cards, ahead, early = false) => (ahead ? cards.filter((c) => STANDS.has(c.card) || (early && EARLY.has(c.card))) : cards);
 
 /* Is the book ahead of the stage? Passages owed or being drawn, or the box
    playing — unless it is paused at a 回's turn (its 「完」, the new title). */
@@ -90,5 +93,6 @@ export const atTurn = ({ oldPlaying = false, closeUp = false, titlePending = fal
    so nothing queues behind the 「完」, there is no 「还有 N 件 ›」 to put it off with, and
    no choice to take past the passage unread (the scene card stood behind the 「完」 and
    one tap on 还有 1 件 put the 「完」 off and 开课 on the stage, j01-track's 55 beats unplayed). */
-export const TURN_KEEPS = new Set(['closed', 'memory', 'homing', 'doors', 'unfold', 'fight', 'seclusion', 'people', 'goal']);
+// What stands while any story is told (STANDS), less the scene card: it waits behind the 「完」 too.
+export const TURN_KEEPS = new Set([...STANDS].filter((k) => k !== 'panel'));
 export const atTurnCards = (cards, { turn = false, ahead = false } = {}) => (turn && ahead ? cards.filter((c) => TURN_KEEPS.has(c.card)) : cards);

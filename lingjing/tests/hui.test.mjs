@@ -106,7 +106,7 @@ test('a 回 ends where the scenes turn, inside the prologue: 「第一回 · 完
   assert.equal(l.chapter.title, huiLabel(content, 'h02', 'zh', 'head'));
   assert.equal(l.chapter.title.replace(/^.*　古 · /, ''), huiOf(content, 'h02').huimu.zh[0]);
   assert.ok(l.chapter.title.startsWith(`卷一 · 沉鼎 · ${bookNo(content, 'h02')}　古 · `), l.chapter.title);
-  assert.deepEqual(l.chapter.close, { id: 'h01', title: `${bookNo(content, 'h01')} · 完`, huimu: ['一只破碗辞残照', '半张烙饼换妖王'], next: l.chapter.title });
+  assert.deepEqual(l.chapter.close, { id: 'h01', title: `${bookNo(content, 'h01')} · 完`, huimu: ['一只破碗辞残照', '半张烙饼换妖王'], line: huiLabel(content, 'h01', 'zh', 'head'), next: l.chapter.title });
   assert.ok(l.stage.some(c => c.card === 'closed'));
   const on = resolve(walk(cliff, [['played']], content, NOW), content, ctx(), { exit: 'climb' }).state;
   assert.equal(look(on, content, ctx()).chapter.close, undefined);

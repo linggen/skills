@@ -4,19 +4,35 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { afterBook, bookAhead, BOX_FIRST, boxGivesWay, EARLY, huiLineOf, MOMENTS, momentMay, onStage, trayWaits } from '../scripts/queue.js';
+import { afterBook, bookAhead, boxGivesWay, EARLY, huiLineOf, MOMENTS, momentMay, onStage, STANDS, trayWaits, TURN_KEEPS } from '../scripts/queue.js';
+import { CARD_KINDS } from '../scripts/stage.mjs';
 import { sceneUnder } from '../scripts/dialogue.js';
 
 const cards = [{ card: 'meet', id: 'yinyue' }, { card: 'panel' }, { card: 'people' }, { card: 'board', id: 'deer-wind' }, { card: 'duel', id: 'longzhi' }, { card: 'tale' }, { card: 'lundao' }, { card: 'offer' }];
 
 test('the games wait for the book: while a passage is ahead, no board, duel, 传闻 or 论道 stands; after it, all of them', () => {
-  assert.deepEqual(afterBook(cards, true).map(c => c.card), ['panel', 'people', 'offer']);
+  assert.deepEqual(afterBook(cards, true).map(c => c.card), ['panel', 'people']);
   assert.deepEqual(afterBook(cards, false), cards);
-  for (const k of ['board', 'duel', 'tale', 'lundao', 'meet', 'breakthrough', 'born', 'value']) assert.ok(BOX_FIRST.has(k), k);
+  for (const k of ['board', 'duel', 'tale', 'lundao', 'meet', 'breakthrough', 'born', 'value']) assert.ok(!STANDS.has(k), k);
+});
+
+// Live 2026-10-14: 可接的差事 stood behind 秦雁's large 亮相 card while the box told on. One thing on the
+// stage, and nothing stands while the story is told: every card waits for the book but the few that STAND.
+test('nothing stands while the story is told: only the header, the page\'s moments, the 「完」, a fight or 闭关 up — an errand waits too', () => {
+  const waits = ['offer', 'handed', 'quest', 'road', 'building', 'empty', 'hexagram', 'codex', 'creature', 'item', 'map', 'traits', 'gate', 'tribulation', 'treasure'];
+  for (const k of waits) assert.deepEqual(afterBook([{ card: k }], true), [], `${k} waits for the book`);
+  for (const k of waits) assert.deepEqual(afterBook([{ card: k }], false), [{ card: k }], `${k} after it`);
+  // the class, not a list of exceptions: of every kind the stage draws, only these stand
+  const kinds = Object.keys(CARD_KINDS);
+  const standing = kinds.filter(k => afterBook([{ card: k }], true).length);
+  assert.deepEqual(standing.sort(), [...STANDS].filter(k => kinds.includes(k)).sort());
+  assert.deepEqual([...STANDS].sort(), ['closed', 'doors', 'fight', 'goal', 'homing', 'memory', 'panel', 'people', 'seclude', 'seclusion', 'unfold']);
+  // a 回's turn keeps the same, less the scene card (it waits behind the 「完」)
+  assert.deepEqual([...TURN_KEEPS].sort(), [...STANDS].filter(k => k !== 'panel').sort());
 });
 
 test('the scene\'s fights come up over the box once it is past the caption (Hanli, 2026-10-05) — never a board (2026-10-14); new faces and choice cards still wait', () => {
-  assert.deepEqual(afterBook(cards, true, true).map(c => c.card), ['panel', 'people', 'duel', 'tale', 'lundao', 'offer']);
+  assert.deepEqual(afterBook(cards, true, true).map(c => c.card), ['panel', 'people', 'duel', 'tale', 'lundao']);
   for (const k of ['duel', 'tale', 'lundao']) assert.ok(EARLY.has(k), k);
   assert.ok(!EARLY.has('board'), 'a board never stands over the passage (「小游戏，和剧情不要同时显示」)');
   for (const k of ['meet', 'breakthrough', 'born', 'value']) assert.ok(!EARLY.has(k), k);
@@ -135,7 +151,8 @@ test('the 回 line keeps the old 回 while its last passage is told, and turns o
   assert.equal(huiLineOf({ ...now, telling: null }), titles.h10, 'told: the line turns');
   assert.equal(huiLineOf({ ...now, telling: 'h08' }), titles.h10, 'a 回 the page never showed: the save\'s line');
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(page, /\$\('huiLine'\)\.textContent = look\.chapter\?\.hui \? huiLineOf\(\{ hui: look\.chapter\.hui, title: look\.chapter\.title, telling: playing\(told\) \? told\.items\[told\.i\]\?\.hui : null, titles \}\) : '';/);
+  assert.match(page, /\$\('huiLine'\)\.textContent = look\.chapter\?\.hui \? huiLineOf\(\{ hui: look\.chapter\.hui, title: look\.chapter\.title, telling: huiAt\(told\), titles \}\) : '';/);
+  assert.match(page, /if \(ended\?\.id && ended\.line\) titles\[ended\.id\] = ended\.line;/, 'the ended 回\'s line from its close (a fresh tab has no memory of it)');
 });
 
 test('a game and the box are never on the stage together (Hanli, 2026-10-14: 「小游戏，和剧情不要同时显示」)', () => {

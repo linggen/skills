@@ -97,7 +97,7 @@ test('the prologue leads into 外门 — 卷一 · 古五 — which sorts betwee
   assert.equal(l.chapter.hui, 'h05');
   // 古四 ended where the scenes turned: its close stands on the first scene of 古五, until a scene of it is passed.
   const h04 = huiOf(content, 'h04').huimu.zh;
-  assert.deepEqual(l.chapter.close, { id: 'h04', title: `${bookNo(content, 'h04')} · 完`, huimu: h04, next: l.chapter.title });
+  assert.deepEqual(l.chapter.close, { id: 'h04', title: `${bookNo(content, 'h04')} · 完`, huimu: h04, line: huiLabel(content, 'h04', 'zh', 'head'), next: l.chapter.title });
   const html = cardHtml({ card: 'closed' }, { look: l, lang: 'zh', words: WORDS.zh });
   assert.match(html, new RegExp(`${bookNo(content, 'h04')} · 完[\\s\\S]*${h04[0]}[\\s\\S]*${h04[1]}[\\s\\S]*${bookNo(content, 'h05')}　古 · 泥里挨足廿三下[\\s\\S]*data-close-chapter="h04">合上`));
   assert.equal(stageSlots(l, l.stage).main[0].card, 'closed', 'before the scene card');

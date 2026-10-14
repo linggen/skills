@@ -82,8 +82,8 @@ test('a scene\'s game is not at hand before its passage reaches it — not on th
 
 test('the header changes only when the story gets there: the last scene\'s holds through its choice\'s passage', () => {
   // The page keeps the scene it left, and stands the header on it while the box tells that choice.
-  assert.match(page, /if \(look && seen\?\.scene\?\.id !== look\.scene\?\.id\) prevLook = look;/);
-  assert.match(page, /const from = it\?\.of === 'choice' \? String\(it\.id\)\.split\('\/'\)\[0\] : null;/);
+  assert.match(page, /if \(look\?\.scene && seen\?\.scene\?\.id !== look\.scene\.id\) leftLook\(look\);/);
+  assert.match(page, /return leadsIn\(readingHere\(\), look\?\.scene\?\.id, prev\?\.scene\?\.id\) \? \{ \.\.\.look, scene: prev\.scene,/, 'held through all that leads in (dialogue.js leadsIn, tests/stage-hold.test.mjs)');
   assert.match(page, /look = headLook\(\);\s*try \{\s*paintAtmos\(\);\s*paintBackdrop\(\);/, 'the sky switches with the header');
   assert.match(page, /\$\('placeCap'\)\.textContent = [^\n]*\n\s*\} finally \{ look = realLook; \}/);
   assert.match(page, /paintIf\('headCards', headHtml\(slots && look !== realLook \? \{ \.\.\.slots, header: headOf\(look\) \} : slots\)\)/, 'the cast strip too');

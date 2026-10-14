@@ -151,15 +151,39 @@ export function showAll(r, lang = 'zh') {
    passage with none belongs to whichever it stands among, and so does the 前情 (`catchup`,
    a recap of earlier 回s that leads into this one). */
 const huiOfItem = (it) => (it?.of === 'catchup' ? null : it?.hui ?? null);
+/* Each passage's 回 run, by its place: a new run where a passage names a 回 other than its run's. */
+function runsOf(r) {
+  let run = 0, cur = null;
+  return (r?.items ?? []).map((it) => {
+    const hui = huiOfItem(it);
+    if (cur && hui && hui !== cur) run += 1;
+    cur = hui ?? cur;
+    return run;
+  });
+}
 export function huiEndOf(r) {
-  let i = r.i, hui = huiOfItem(r.items[i]);
-  while (i < r.items.length - 1) {
-    const next = huiOfItem(r.items[i + 1]);
-    if (hui && next && next !== hui) break;
-    i += 1;
-    hui ??= next;
-  }
-  return i;
+  const runs = runsOf(r);
+  return runs.lastIndexOf(runs[r.i]);
+}
+/* The 回 the box is telling: its run's (a 前情 leading in tells the 回 it leads into). */
+export function huiAt(r) {
+  if (!playing(r)) return null;
+  const runs = runsOf(r);
+  return huiOfItem(r.items.find((it, i) => runs[i] === runs[r.i] && huiOfItem(it)));
+}
+
+/* Whose passage an item is: the scene it was told at — a choice's and an `after`'s the scene
+   they belong to (`sid/…`), a scene's its own; the 前情 is no scene's. */
+export const sceneOfItem = (it) => (!it || it.of === 'catchup' ? null : String(it.id ?? '').split('/')[0] || null);
+/* Does the box still tell what leads into `here` from `from` — the passages before here's own
+   (a 前情, the last scene's unplayed beats, the choice that left it), one of them `from`'s?
+   Then `from`'s header holds (Hanli, 2026-10-14: the header holds the old scene until the
+   exit passage ends) — whatever passage stands first in the reading. */
+export function leadsIn(r, here, from) {
+  if (!playing(r) || !here || !from || from === here) return false;
+  const own = r.items.findIndex((it) => sceneOfItem(it) === here);
+  const upto = own < 0 ? r.items.length : own;
+  return r.i < upto && r.items.slice(0, upto).some((it) => sceneOfItem(it) === from);
 }
 
 /* Every beat in order, in a language, with where each stands. */
@@ -167,12 +191,13 @@ const flat = (r, lang) => (r?.items ?? []).flatMap((it, i) => beatsOf(it, lang).
   .filter((b) => !(b.before && b.i === 0 && b.j < (r.lead ?? 0)));
 /* The beat on show: `at` its place among them all; `k` of `n` its place in
    its own count — this scene's passages, or (`before`) the last scene's
-   unplayed beats that lead in. */
+   unplayed beats that lead in — and never across a 回's turn (2026-10-14, 古二 →
+   今 · 一 read 「8 / 62」: 古二's last passage counted in): each 回's passages count alone. */
 export function current(r, lang = 'zh') {
   const all = flat(r, lang), j = Math.min(r.j, lastJ(r, r.i, lang));
   const at = Math.max(0, all.findIndex((b) => b.i === r.i && b.j === j));
-  const before = r.i < baseOf(r);
-  const group = all.filter((b) => (before ? b.i < baseOf(r) : b.i >= baseOf(r)));
+  const before = r.i < baseOf(r), runs = runsOf(r);
+  const group = all.filter((b) => (before ? b.i < baseOf(r) : b.i >= baseOf(r)) && runs[b.i] === runs[r.i]);
   const k = Math.max(0, group.findIndex((b) => b.i === r.i && b.j === j));
   return { beat: all[at] ?? {}, at, k, n: group.length, before };
 }

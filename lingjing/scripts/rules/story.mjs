@@ -270,7 +270,8 @@ export function closeOf(content, state) {
       && Object.values(x.scenes ?? {}).some(sc => sc.hui === turned));
     // The game's 卷 ends on its last 古 回 (古九): 今 · 四 is played before it, so its close never says 「卷一 · 完」.
     const juan = huiOf(content, turned)?.line !== 'gu' ? null : juanEndOf(content, turned, lang);
-    return { id: turned, title: endLabel(content, turned, lang), ...(juan ? { juan } : {}), huimu: pick(huiOf(content, turned).huimu, lang), next: huiLabel(content, huiNow(content, state), lang, 'head'), ...(done ? closeWords(content, state, done.close) : {}) };
+    // `line`: the ended 回's own heading, which the header keeps while its last passage is told (queue.js huiLineOf).
+    return { id: turned, title: endLabel(content, turned, lang), ...(juan ? { juan } : {}), huimu: pick(huiOf(content, turned).huimu, lang), line: huiLabel(content, turned, lang, 'head'), next: huiLabel(content, huiNow(content, state), lang, 'head'), ...(done ? closeWords(content, state, done.close) : {}) };
   }
   if (!c || state.scene || !(state.ended ?? []).includes(ch.id)) return null;
   const hui = huiNow(content, state);
