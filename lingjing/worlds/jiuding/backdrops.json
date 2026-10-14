@@ -1,13 +1,30 @@
 {
  "version": 1,
- "_about": "The stage's backdrop (lingjing.js paintBackdrop, atmos.js backdropOf): one painting per weather kind (rules/weather.mjs KINDS — the scene's own `weather` tag, else the real sky, else 蒙山's seasons), by day and by night. The twelve are being painted (2026-10-14) and not yet picked: every slot points at a stand-in until Hanli picks, so swapping the picks in is this file only. A scene may declare its own picture (`backdrop`), and a set piece or a beast's 出场 brings its own.",
- "stand_in": "art/setpiece/chendingshan.webp",
+ "_about": "The stage's backdrop (lingjing.js paintBackdrop, atmos.js backdropOf): one painting per weather kind (rules/weather.mjs KINDS — the scene's own `weather` tag, else the real sky, else 蒙山's seasons), by day and by night. Painted 2026-10-14 by tools/paint-backdrop.py (its KEPT table holds each slot's seed) and picked that day; swapping a painting is this file only. A scene may declare its own picture (`backdrop`), and a set piece or a beast's 出场 brings its own.",
  "kinds": {
-  "clear": { "day": "art/setpiece/chendingshan.webp", "night": "art/setpiece/chendingshan.webp" },
-  "cloudy": { "day": "art/setpiece/chendingshan.webp", "night": "art/setpiece/chendingshan.webp" },
-  "fog": { "day": "art/setpiece/chendingshan.webp", "night": "art/setpiece/chendingshan.webp" },
-  "rain": { "day": "art/setpiece/chendingshan.webp", "night": "art/setpiece/chendingshan.webp" },
-  "snow": { "day": "art/setpiece/chendingshan.webp", "night": "art/setpiece/chendingshan.webp" },
-  "storm": { "day": "art/setpiece/chendingshan.webp", "night": "art/setpiece/chendingshan.webp" }
+  "clear": {
+   "day": "art/backdrop/clear-day.webp",
+   "night": "art/backdrop/clear-night.webp"
+  },
+  "cloudy": {
+   "day": "art/backdrop/cloudy-day.webp",
+   "night": "art/backdrop/cloudy-night.webp"
+  },
+  "fog": {
+   "day": "art/backdrop/fog-day.webp",
+   "night": "art/backdrop/fog-night.webp"
+  },
+  "rain": {
+   "day": "art/backdrop/rain-day.webp",
+   "night": "art/backdrop/rain-night.webp"
+  },
+  "snow": {
+   "day": "art/backdrop/snow-day.webp",
+   "night": "art/backdrop/snow-night.webp"
+  },
+  "storm": {
+   "day": "art/backdrop/storm-day.webp",
+   "night": "art/backdrop/storm-night.webp"
+  }
  }
 }
