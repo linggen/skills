@@ -9,6 +9,7 @@ allowed-tools: [AskUser, GenerateImage]
 user-invocable: true
 cwd: ~/.linggen/skills/lingjing
 app:
+  title: Lingjing
   launcher: web
   entry: scripts/index.html
   width: 1280

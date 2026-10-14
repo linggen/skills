@@ -23,6 +23,7 @@ suggestions:
 cwd: ~/.linggen/skills/cfo
 install: install.sh
 app:
+  title: CFO
   launcher: web
   entry: scripts/index.html
   width: 1200

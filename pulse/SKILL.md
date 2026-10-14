@@ -31,6 +31,7 @@ user-invocable: true
 cwd: ~/.linggen/skills/pulse
 install: install.sh
 app:
+  title: Pulse
   launcher: web
   entry: scripts/pulse.html
   width: 1200

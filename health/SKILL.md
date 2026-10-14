@@ -16,6 +16,7 @@ user-invocable: true
 cwd: ~/.linggen/skills/health
 install: install.sh
 app:
+  title: Health
   launcher: web
   entry: scripts/index.html
   width: 1200

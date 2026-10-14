@@ -35,6 +35,7 @@ permission:
     # grant). Same level cfo and pulse already declare.
     - { path: ~/.linggen/skills/dj, mode: edit }
 app:
+  title: DJ
   launcher: web
   entry: scripts/index.html
   width: 1100

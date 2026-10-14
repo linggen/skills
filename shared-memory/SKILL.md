@@ -30,6 +30,7 @@ cwd: ~/.linggen
 # host's own plugin. The install script that used to do all three is
 # gone — it was a second writer for every one of them.
 app:
+  title: Memory
   launcher: web
   entry: scripts/memory.html
   width: 1100

@@ -11,6 +11,7 @@ renamed-from: [mac-shifu, sys-doctor]
 user-invocable: true
 argument-hint: "[full | disk | apps | quick | --web]"
 app:
+  title: Apple Shifu
   launcher: web
   entry: scripts/index.html
   width: 1100
