@@ -19,7 +19,7 @@ import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, pickOf, spoilsH
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { gameOpen, WORDS, say as fill, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle } from './cards.js';
+import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle } from './cards.js';
 import { pouchHtml } from './pouch.js';
 import { esc } from './esc.js';
 import { thinker, stillAsked } from './think.js';
@@ -964,10 +964,13 @@ const headHtml = (slots) => (bout ? '' : slots.header.map(drawCard).join(''));
 /// end of the line (his, 2026-09-24: 「用一个队列，一个完成，再从队列取出下一个显示」).
 function footRowHtml(slots) {
   if (bout) return '';
-  const w = words(), next = slots.queue[0];
+  // ONE thing to tap (Hanli, 2026-10-14): while main is the way on — or the box holds the
+  // scene's choices itself — nothing is counted; else the line names what waits (stage.mjs footer.next).
+  const w = words(), next = choicesInBox() ? null : slots.footer.next;
   // In 闭关 and inside a corridor (the prologue) the rules keep the roads off (stageSlots).
   const roads = (slots.footer.roads || scratchRoads()) && stands(look, 'roads') ? roadsHtml() : '<span></span>';
-  const more = next ? `<button class="act quiet more" data-qnext="${esc(slots.key)}" title="${esc(fill(w.queueNext, { what: queueLabel(next.cards[0]) }))}">${esc(fill(w.queueMore, { n: slots.queue.length }))} ›</button>` : '';
+  const what = next ? queueLabel(next.cards[0]) : null;
+  const more = next ? `<button class="act quiet more" data-qnext="${esc(slots.key)}" title="${esc(fill(w.queueNext, { what: [what.name, what.kind].filter(Boolean).join(' · ') }))}">${esc(waitingLine({ ...what, more: slots.footer.waiting - 1 }, w))} ›</button>` : '';
   return roads + more;
 }
 
@@ -1095,11 +1098,14 @@ function inQueue(c) {
   return !task || Boolean(task.hosted || task.for_errand);
 }
 
+/// What waits, by its own name and its kind (「蠪侄 · 图鉴」): a face or a thing from the 图鉴,
+/// a board by its task's title, a 传闻 by its label; else the kind alone.
 function queueLabel(c) {
-  const w = words();
-  if (c.card === 'board') return look?.tasks?.find((t) => t.id === c.id)?.title ?? w.queueKinds.board;
-  if (c.card === 'tale') return look?.tale?.label ?? w.queueKinds.tale;
-  return w.queueKinds[c.card] ?? c.card;
+  const w = words(), kind = w.queueKinds[c.card] ?? '';
+  if (c.card === 'board') return { name: look?.tasks?.find((t) => t.id === c.id)?.title ?? '', kind };
+  if (c.card === 'tale') return { name: look?.tale?.label ?? '', kind };
+  if (c.id && ['creature', 'codex', 'meet'].includes(c.card)) return { name: codexNow()?.get?.(c.id)?.name ?? '', kind };
+  return { name: kind ? '' : c.card, kind };
 }
 
 function putOff(key) {

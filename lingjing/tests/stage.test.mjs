@@ -3,7 +3,7 @@
 // one of them shows it.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { askMinusStage, companionShown, lineHere, stageCards, stageOwns } from '../scripts/stage.mjs';
+import { askMinusStage, companionShown, lineHere, stageCards, stageOwns, stageSlots } from '../scripts/stage.mjs';
 
 const kinds = cards => cards.map(c => (c.id ? `${c.card}:${c.id}` : c.card));
 const AWAKE = { companion: { joined: true } }; // 银月 awake: the coins are hers to throw
@@ -167,12 +167,17 @@ test('the slots: the header is the page\'s, main holds ONE thing by fixed priori
   assert.deepEqual(kinds(slots.header), ['people', 'goal']);
   assert.deepEqual(kinds(slots.main), ['panel', 'value:name']);
   assert.deepEqual(slots.queue.map(t => kinds(t.cards).join(' ')), ['board:b', 'offer'], 'a board before an errand; Ling\'s creature gives way to the errand');
-  assert.equal(slots.footer.waiting, 2);
+  // the scene card is the way on: what waits stands after it, and the footer counts nothing (Hanli, 2026-10-14)
+  assert.equal(slots.footer.step, true);
+  assert.equal(slots.footer.waiting, 0);
+  assert.equal(slots.footer.next, null);
   assert.equal(slots.key, 'panel:');
-  // 还有 N 件 › puts the one in main off to the end of the line
+  // a key put off (an old save's qSkip) still goes to the end of the line; a practice in main is no step, so the footer names what waits
   const next = stageSlots(l, stageCards(l), { skip: ['panel:'] });
   assert.deepEqual(kinds(next.main), ['board:b']);
   assert.equal(next.queue.at(-1).key, 'panel:');
+  assert.equal(next.footer.waiting, 2);
+  assert.equal(next.footer.next.key, 'offer:');
   // a fight or 闭关 is the whole of main
   assert.deepEqual(kinds(stageSlots(l, stageCards(l, { fight: true })).main), ['fight']);
   // the coins are filler: alone they stand, beside anything else they go
@@ -260,4 +265,67 @@ test('the game never shows her 3D body, whatever the save says (Hanli, 2026-10-1
   for (const look of [null, { companion: null }, { companion: { joined: true } }, { companion: { joined: true, asleep: true } }, { companion: { joined: true, away: 'elsewhere' } }]) {
     assert.equal(companionShown(look), false, JSON.stringify(look));
   }
+});
+
+/* ONE thing to tap (Hanli, 2026-10-14, at 三试: 「出手」 on the fight card and 「还有 1 件 ›」
+   queueing 蠪侄's own 图鉴 card — which should he tap?). While main is the way on, the footer
+   counts nothing; a card that only tells, of a face another card already pictures, is dropped. */
+test('三试 · 蠪侄: main is the fight under the scene card, no 「还有」, and no second 蠪侄 card', async () => {
+  const { loadContent } = await import('../scripts/content.mjs');
+  const { newState } = await import('../scripts/state.mjs');
+  const { look } = await import('../scripts/rules.mjs');
+  const { stageSlots, duelCreature } = await import('../scripts/stage.mjs');
+  const { TO_HALL, walk } = await import('./prologue.mjs');
+  const content = loadContent(), NOW = new Date('2026-10-14T18:00:00'), ctx = { now: NOW, quests: [] };
+  const s = walk(newState(content, 'zh', NOW), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'won')), content, NOW);
+  assert.equal(s.scene, '00-longzhi');
+  const l = look(s, content, ctx);
+  assert.ok((l.scene.show ?? []).some(c => c.card === 'creature' && c.id === 'longzhi'), 'the scene still declares its creature card');
+  assert.equal(duelCreature(l, { card: 'duel', id: 'gate-longzhi' }), 'longzhi', 'the fight card pictures 蠪侄');
+  assert.ok(!l.stage.some(c => c.card === 'creature'), 'the duplicate 图鉴 card is dropped, not queued');
+  const slots = stageSlots(l, l.stage);
+  assert.ok(kinds(slots.main).includes('duel:gate-longzhi'), '出手 is in main');
+  assert.equal(slots.footer.step, true);
+  assert.equal(slots.footer.waiting, 0, 'no 还有 N 件');
+  assert.equal(slots.footer.next, null);
+  assert.deepEqual(slots.queue, []);
+});
+
+test('a beaten beast\'s own card carries 收服: beside its fight card it is no duplicate, and stays', () => {
+  const e = { game: { id: 'haunt:fuzhu' }, creature: { id: 'fuzhu' }, beaten: true, tamed: false, likes: { id: 'x', name: 'X', held: 1 } };
+  const l = world({ place: { id: 'sibei', encounter: e }, companion: null });
+  assert.deepEqual(kinds(stageCards(l)), ['duel:haunt:fuzhu', 'creature:fuzhu']);
+  // not beaten: the creature card Ling shows only tells — the fight card already pictures it
+  const fresh = world({ place: { id: 'sibei', encounter: { ...e, beaten: false } }, companion: null });
+  assert.deepEqual(kinds(stageCards(fresh, { focus: [{ card: 'creature', id: 'fuzhu' }] })), ['duel:haunt:fuzhu']);
+  // another beast's card is not a duplicate
+  assert.deepEqual(kinds(stageCards(fresh, { focus: [{ card: 'creature', id: 'kui' }] })), ['creature:kui', 'duel:haunt:fuzhu']);
+});
+
+test('nothing to tap: the footer names what waits — 「还有：夫诸 · 图鉴」, +N for the rest, within 20', async () => {
+  const { waitingLine, WORDS } = await import('../scripts/cards.js');
+  const l = world();
+  const slots = stageSlots(l, stageCards(l, { focus: [{ card: 'map' }, { card: 'creature', id: 'fuzhu' }] }));
+  assert.deepEqual(kinds(slots.main), ['creature:fuzhu']);
+  assert.equal(slots.footer.step, false);
+  assert.equal(slots.footer.waiting, 1);
+  assert.equal(slots.footer.next.key, 'map:');
+  const zh = WORDS.zh, en = WORDS.en;
+  assert.equal(waitingLine({ name: '夫诸', kind: zh.queueKinds.creature }, zh), '还有：夫诸 · 图鉴');
+  assert.equal(waitingLine({ name: '蠪侄', kind: zh.queueKinds.creature, more: 2 }, zh), '还有：蠪侄 · 图鉴 +2');
+  assert.equal(waitingLine({ kind: zh.queueKinds.map }, zh), '还有：地图');
+  assert.equal(waitingLine({ name: 'Longzhi', kind: en.queueKinds.creature, more: 1 }, en), 'Next: Longzhi · Codex +1');
+  const long = waitingLine({ name: '一个很长很长很长很长很长的功课名字', kind: zh.queueKinds.board, more: 3 }, zh);
+  assert.ok([...long].length <= 20 && long.includes('…') && long.endsWith('· 功课 +3'), long);
+  for (const k of Object.keys((await import('../scripts/stage.mjs')).CARD_KINDS)) {
+    if (['fight', 'memory', 'homing', 'doors', 'unfold', 'seclusion', 'seclude', 'panel', 'people', 'goal', 'value', 'born', 'closed', 'breakthrough'].includes(k)) continue;
+    assert.ok(zh.queueKinds[k] && en.queueKinds[k], `a card of kind "${k}" can wait: it needs a name in the footer`);
+  }
+  // the page draws it from the footer's `next`, never a bare count
+  const fs = await import('node:fs');
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const foot = src.slice(src.indexOf('function footRowHtml(slots)'), src.indexOf('const scratchRoads'));
+  assert.match(foot, /choicesInBox\(\) \? null : slots\.footer\.next/);
+  assert.match(foot, /waitingLine\(/);
+  assert.doesNotMatch(foot, /queueMore/);
 });

@@ -260,7 +260,30 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // The chapter's ending card, while the next chapter waits: first on the stage until he puts it away (合上, the page's).
   const closed = look.chapter?.close ? [{ card: 'closed' }] : [];
   const all = [...meet, ...panel, ...people, ...head, ...cards, ...closed].filter(c => !(c.card === 'board' && boardWaits(look, c.id)));
-  return sideLineOf(look) ? all.filter(onSide(look)) : all;
+  const staged = sideLineOf(look) ? all.filter(onSide(look)) : all;
+  return staged.filter(c => !duplicate(look, c, staged));
+}
+
+/* Who a fight card pictures: the creature of the scene's own fight (its exit's
+   `game.creature`), or of the beast at its haunt. */
+export function duelCreature(look, c) {
+  if (c?.card !== 'duel') return null;
+  const exit = (look?.scene?.exits ?? []).find(e => e.game?.kind === 'duel' && e.game.id === c.id);
+  if (exit?.game?.creature) return exit.game.creature;
+  const e = look?.place?.encounter;
+  return e?.game?.id === c.id ? e.creature?.id ?? null : null;
+}
+
+/* One thing to tap (Hanli, 2026-10-14, at 三试: the fight card pictured 蠪侄 and
+   「还有 1 件 ›」 queued 蠪侄's own 图鉴 card behind it — which should he tap?). A
+   card that only TELLS — a 图鉴 entry, a creature's card — is dropped when another
+   card on the stage already pictures the same face; it stays in the 九鼎录's 图鉴.
+   A beaten beast's card that carries 收服 is not telling, and stays. */
+const TELLS = new Set(['codex', 'creature']);
+function duplicate(look, c, cards) {
+  if (!TELLS.has(c.card) || !c.id) return false;
+  if (c.card === 'creature' && winnable(look?.place?.encounter) && look.place.encounter.creature.id === c.id) return false;
+  return cards.some(o => o !== c && duelCreature(look, o) === c.id);
 }
 
 /* A scene's boards are played one after another, in `show` order (batch two, 2026-10-14:
@@ -337,8 +360,20 @@ function thingsOf(rank, r, cards, look) {
   return group.map((g, i) => ({ cards: g, key: slotKey(g[0]), rank: r, i, filler: Boolean(rank.filler) }));
 }
 
+/* Is what stands in MAIN the step to take — the way on (Hanli, 2026-10-14: the
+   player only ever sees ONE thing to tap)? The scene card and its choices, a game
+   an exit needs (sceneGame), a name, a 生辰, 渡劫's throw, a fight, 闭关 and its
+   chooser, the page's moments, a 「完」, the road's answer, the line's step on this
+   spot — or anything else that holds the stage. While it is, the footer counts
+   nothing: what waits behind it stands once that step is taken. */
+const STEP_KINDS = new Set(['panel', 'value', 'born', 'breakthrough', 'fight', 'seclusion', 'seclude', 'memory', 'homing', 'doors', 'unfold', 'closed', 'road']);
+export const mainIsStep = (look, main = []) => main.some(c => STEP_KINDS.has(c.card) || sceneGame(look, c) || (c.card === 'quest' && Boolean(lineHere(look))));
+
 /* The stage's list, cut into its slots. `skip` holds the keys he put off with
-   还有 N 件 ›, oldest first: they go to the end of the line in that order. */
+   还有 N 件 ›, oldest first: they go to the end of the line in that order.
+   The footer's `next` is the first thing waiting, named only when nothing on
+   the stage needs a tap (the page adds one more: the box holding the scene's
+   choices itself, at its last beat — lingjing.js footRowHtml). */
 export function stageSlots(look, cards = [], { skip = [] } = {}) {
   const header = HEADER.flatMap(k => cards.filter(c => c.card === k));
   const things = MAIN.flatMap((rank, r) => thingsOf(rank, r, cards, look));
@@ -346,7 +381,10 @@ export function stageSlots(look, cards = [], { skip = [] } = {}) {
   const order = t => { const put = skip.indexOf(t.key); return put < 0 ? t.rank * 1000 + t.i : 1e6 + put; };
   const [now = null, ...queue] = (real.length ? real : things).sort((a, b) => order(a) - order(b));
   const roads = stageHolds(look, cards) && !look?.seclusion && !look?.director?.corridor;
-  return { header, main: now?.cards ?? [], key: now?.key ?? null, queue: queue.map(t => ({ key: t.key, cards: t.cards })), footer: { roads, waiting: queue.length } };
+  const main = now?.cards ?? [];
+  const step = mainIsStep(look, main);
+  const waits = queue.map(t => ({ key: t.key, cards: t.cards }));
+  return { header, main, key: now?.key ?? null, queue: waits, footer: { roads, step, waiting: step ? 0 : waits.length, next: step ? null : waits[0] ?? null } };
 }
 
 /* What those cards already offer, as option keys the question is measured

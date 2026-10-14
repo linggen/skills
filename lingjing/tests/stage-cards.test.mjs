@@ -64,6 +64,8 @@ const SITUATIONS = {
   '蠪侄 met again: one line of its first sight': [{ ...walk(newState(content, 'zh', NOW), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'won')), content, NOW), appeared: ['longzhi'] }, ctx()],
   '公中 at the outer court: stones to hand over': [walk(newState(content, 'zh', NOW), TO_WAIMEN, content, NOW), ctx()],
   'the same, in English': [{ ...open, place: 'pengcheng', lang: 'en' }, ctx({ quests: chores })],
+  // 2026-10-14: a 图鉴 card beside a fight card of the same beast is dropped (stage.mjs duplicate); Shown with no fight, it stands.
+  'a creature Ling showed, no fight beside it': [{ ...open, place: 'sishui', shown: [{ card: 'creature', id: 'fuzhu' }], shown_at: 'place:sishui' }, ctx()],
 };
 
 for (const [name, [state, c]] of Object.entries(SITUATIONS)) {
