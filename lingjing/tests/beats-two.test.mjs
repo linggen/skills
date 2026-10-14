@@ -11,6 +11,7 @@ import * as storm from '../scripts/games/storm.js';
 import * as stone from '../scripts/games/stone.js';
 import * as way from '../scripts/games/way.js';
 import * as climb from '../scripts/games/climb.js';
+import * as xisui from '../scripts/games/xisui.js';
 import { loadContent } from '../scripts/content.mjs';
 import { look, resolve, task, win } from '../scripts/rules.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
@@ -28,7 +29,7 @@ const atScene = (id) => {
   return s.scene === id ? s : null;
 };
 
-const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/], [listen, /data-g="start"/], [storm, /data-g="start"/], [stone, /data-g="hole"/], [way, /data-g="go"/], [climb, /data-g="start"/]];
+const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/], [listen, /data-g="start"/], [storm, /data-g="start"/], [stone, /data-g="hole"/], [way, /data-g="go"/], [climb, /data-g="start"/], [xisui, /data-g-hold="grit"/]];
 
 test('every batch-two game: meta in both languages, a control at open, both languages drawn, a skip that ends it won with no grade', () => {
   for (const [mod, control] of GAMES) {
@@ -226,4 +227,14 @@ test('攀: the living branch holds, the dead one snaps; the grip drains while he
   assert.equal(idle.won, true);
   assert.equal(idle.grade, 'scraped');
   assert.match(climb.html(idle, 'en'), /Old Zhou lets the rope down/);
+});
+
+test('忍 (00-sleep\'s 洗髓, redrawn in ink): drawn as a scene; never held, the moon goes over and the sticks are burned by the limit', () => {
+  const s = xisui.newGame('x');
+  assert.match(xisui.html(s, 'zh'), /class="g-scene/);
+  const late = xisui.tick(s, xisui.LIMIT);
+  assert.equal(late.stick, xisui.STICKS);
+  assert.equal(late.note, 'moon');
+  assert.match(xisui.html(late, 'zh'), /data-g="jump"/);
+  assert.equal(xisui.act(late, { g: 'jump' }).won, true);
 });

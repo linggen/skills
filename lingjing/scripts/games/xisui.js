@@ -7,6 +7,11 @@
 // on a wave and you nearly cry out, and that stick of incense starts again. After
 // three the water is black enough to write with; then the jump — and the beam.
 // Pure module: newGame / html / act / tick. Hold is [data-g-hold] (live-games.js).
+// 忍 — drawn in ink since batch two (2026-10-14): the washtub by the woodpile, the water going
+// from green to black stick by stick, the pain as rings off it, the three sticks of incense in
+// their pot, the token on its branch; at most 75 s (the moon goes over the woodpile and the
+// sticks are burned), and the quiet 「算了，往下走」 every beat keeps.
+import { SKIP, btn, n, scene, skipBtn, skipped, still } from './ink.js';
 
 export const meta = {
   id: 'xisui',
@@ -20,6 +25,7 @@ export const meta = {
 export const STICKS = 3;
 export const STICK_MS = 6000; // held time per stick of incense
 export const WAVE = 0.5; //      pain above this is a wave
+export const LIMIT = 75000; //   ms: the moon has gone over the woodpile — the sticks are burned
 const DRAIN = 0.12 / 1000; //   breath spent per ms held
 const RECOVER = 0.35 / 1000; // breath back per ms let go
 
@@ -37,6 +43,8 @@ const T = {
     breath: '气',
     incense: '香',
     won: '「咚」的一声，脑袋撞上了柴棚的顶梁——离地少说也有一丈。你捂着脑袋蹲在地上，一边疼，一边笑。',
+    moon: '疼停下来的时候，月亮已经从柴垛这头挪到了那头。',
+    skipped: '你咬住了自己的胳膊，一声没吭，直到疼停下来。',
   },
   en: {
     tub: 'Dark green water bubbles like a pot of soup gone wrong. You get in.',
@@ -51,6 +59,8 @@ const T = {
     breath: 'Breath',
     incense: 'Incense',
     won: 'Thunk — your head hits the woodshed\'s ridge beam, a good ten feet up. You crouch, clutching your head, hurting and laughing at once.',
+    moon: 'By the time the pain stops, the moon has moved from one end of the woodpile to the other.',
+    skipped: 'You bite your own arm and make not a sound, until the pain stops.',
   },
 };
 
@@ -104,6 +114,7 @@ const VERBS = {
   hold: (s) => (s.holding || s.stick >= STICKS || s.breath <= 0.05 ? null : { ...s, holding: true, note: 'holding' }),
   release: (s) => letGo(s),
   jump: (s) => (s.stick >= STICKS ? { ...s, live: false, won: true, note: 'won' } : null),
+  skip: (s) => skipped(s),
 };
 
 export function act(state, data = {}) {
@@ -116,6 +127,7 @@ export function act(state, data = {}) {
 export function tick(state, ms) {
   if (!state.live || state.won) return state;
   let s = { ...state, t: state.t + ms };
+  if (s.t >= LIMIT && s.stick < STICKS) return { ...s, holding: false, stick: STICKS, prog: 0, note: 'moon' };
   if (s.holding && s.stick < STICKS) {
     s.breath = Math.max(0, s.breath - DRAIN * ms);
     s.prog += ms;
@@ -133,22 +145,37 @@ export function tick(state, ms) {
   return s;
 }
 
-const bar = (label, v, cls = '') => `<div class="g-xisui-meter"><span>${label}</span><span class="g-xisui-bar ${cls}"><i style="width:${Math.round(v * 100)}%"></i></span></div>`;
+const bar = (label, v, cls = '') => `<div class="g-meter"><span>${label}</span><span class="g-bar ${cls}"><i style="width:${Math.round(v * 100)}%"></i></span></div>`;
+
+/* ── The picture: the woodpile, the token on its branch (its tail light breathing), the big
+   washtub with him in it up to the chin — the water from green to black as the sticks burn —
+   the pain going out from him as rings, the three sticks in their pot with their smoke. */
+function tubScene(state, pain) {
+  const t = still() ? 0 : state.t, dark = Math.min(1, (state.stick + state.prog / STICK_MS) / STICKS);
+  const water = `rgb(${Math.round(60 - dark * 45)},${Math.round(92 - dark * 72)},${Math.round(56 - dark * 40)})`;
+  const pile = '<path class="g-line g-thin g-faint" d="M200 30 H312 M196 44 H316 M192 58 H318 M204 30 V58 M240 30 V58 M276 30 V58"/><path class="g-line g-thin" d="M220 30 l-8 -14"/>';
+  const token = `<rect class="g-line g-thin" x="206" y="12" width="10" height="14" rx="2" fill="none"/><path class="g-tail" d="M211 22 q3 -4 0 -7" opacity="${n(0.4 + 0.4 * Math.sin(t / 700), 2)}"/>`;
+  const tub = `<ellipse class="g-line" cx="110" cy="96" rx="80" ry="22" fill="none"/><ellipse class="g-tubwater" cx="110" cy="92" rx="74" ry="16" style="fill:${water}"/><path class="g-line" d="M30 96 Q34 126 110 128 Q186 126 190 96"/>`;
+  const head = `<circle class="g-line" cx="110" cy="80" r="10" fill="none"/><path class="g-line g-thin" d="${state.holding ? 'M104 84 h12' : 'M105 84 q5 2 10 0'}"/>`;
+  const rings = pain > WAVE && !still() ? [14, 24, 34].map((r, k) => `<ellipse class="g-line g-thin g-seal" cx="110" cy="90" rx="${n(r + (t / 30 + k * 8) % 12)}" ry="${n((r + (t / 30 + k * 8) % 12) * 0.35)}" fill="none" opacity="${n(0.5 * pain, 2)}"/>`).join('') : '';
+  const pot = '<path class="g-line" d="M236 118 h40 l-4 12 h-32z"/>';
+  const sticks = Array.from({ length: STICKS }, (_, i) => {
+    const burnt = i < state.stick ? 1 : i === state.stick ? state.prog / STICK_MS : 0, h = n(40 * (1 - burnt)), x = 246 + i * 10;
+    const smoke = burnt > 0 && burnt < 1 ? `<path class="g-mist" d="M${x} ${n(116 - h)} q-4 -8 0 -16 q4 -8 0 -16" opacity=".35"/>` : '';
+    return `<path class="g-line g-thin" d="M${x} 118 v${-h}"/>${h > 0 ? `<circle class="g-ember" cx="${x}" cy="${n(118 - h)}" r="1.6"/>` : ''}${smoke}`;
+  }).join('');
+  return scene(320, 132, pile + token + tub + rings + head + pot + sticks);
+}
 
 export function html(state, lang = 'zh') {
   const t = T[lang] || T.zh;
-  if (state.won) return `<div class="g-xisui is-won"><p class="g-xisui-line">${t.won}</p></div>`;
   const pain = painAt(state.sched, state.t);
-  const sticks = Array.from({ length: STICKS }, (_, i) => {
-    const burnt = i < state.stick ? 1 : i === state.stick ? state.prog / STICK_MS : 0;
-    return `<span class="g-xisui-stick"><i style="height:${Math.round((1 - burnt) * 100)}%"></i></span>`;
-  }).join('');
+  if (state.won) return `<div class="g-xisui2 g-ink is-won">${tubScene(state, 0)}<p class="g-line-say">${state.note === 'skipped' ? t.skipped : t.won}</p></div>`;
   const done = state.stick >= STICKS;
-  const btn = done
-    ? `<button type="button" class="g-xisui-btn" data-g="jump">${t.jump}</button>`
-    : `<button type="button" class="g-xisui-btn${state.holding ? ' is-held' : ''}" data-g-hold="grit">${t.hold}</button>`;
-  return `<div class="g-xisui" style="--dark:${(state.stick / STICKS).toFixed(2)}">`
-    + `<div class="g-xisui-sticks" aria-label="${t.incense}">${sticks}</div>`
-    + (done ? '' : bar(t.pain, pain, pain > WAVE ? 'is-wave' : '') + bar(t.breath, state.breath, state.breath < 0.25 ? 'is-low' : ''))
-    + `<p class="g-xisui-line">${t[state.note] ?? ''}</p>${btn}</div>`;
+  const act = done ? btn(t.jump, 'data-g="jump"')
+    : `<button type="button" class="g-btn g-btn-main g-hold${state.holding ? ' is-held' : ''}" data-g-hold="grit">${t.hold}</button>`;
+  const head = `<div class="g-head"><span>${t.incense} <b>${state.stick}</b> / ${STICKS}</span></div>`;
+  return `<div class="g-xisui2 g-ink">${tubScene(state, pain)}${head}`
+    + (done ? '' : bar(t.pain, pain, pain > WAVE ? 'is-seal' : '') + bar(t.breath, state.breath, state.breath < 0.25 ? 'is-seal' : ''))
+    + `<p class="g-line-say">${t[state.note] ?? ''}</p>${act}${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
 }

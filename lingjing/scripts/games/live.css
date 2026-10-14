@@ -259,3 +259,8 @@
 .g-way-pad .g-way-down { grid-column: 2; grid-row: 2; }
 .g-way-pad .g-way-right { grid-column: 3; grid-row: 2; }
 .g-scene .g-fox { fill: #c9ced6; stroke: currentColor; stroke-width: .6; }
+/* 忍 (洗髓, redrawn) */
+.g-scene .g-tubwater { opacity: .85; }
+.g-scene .g-tail { fill: none; stroke: #c9ced6; stroke-width: 2; }
+.g-scene .g-seal { stroke: var(--seal); }
+.g-scene .g-ember { fill: var(--seal); }
