@@ -28,7 +28,7 @@ the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 
 | `00-duanbei` 断碑 | 三 | 看碑背 (`stele-fox`, task 7) · 三条规矩 (`three-rules`, task 6) · 回村 / 独自进 stay |
 | `00-heisong` 黑松岭 | 三 | 一百步一记 (体力 −3, `marks-cut`, task 8); **board `track-marks`** (追踪: pick the deer's sign among the forest's, carve at a hundred steps, four marks; grade true · rough → `marks-true` · `marks-rough`) gates `carve` with the stone clue |
 | `00-storm` 暴雨 | 四 | 掉头 (体力 −4) · 再追半里 (体力 −10) (task 9) — the rain breaks; the haul is 00-fall's board; **board `storm-listen`** (听: 「不对」 the moment the birds stop, then the sky's sign — the cloud on the ridge; grade sharp · late → `listen-sharp` · `listen-late`) — both ways on wait for it, his choice |
-| `00-fall` 第二十七道记号 | 五 · 六 | **board `fall-storm`** (lane MG's 暴雨: haul 爹 back in the lulls) gates 把爹拽回山壁 — then the fall, 查伤, 爷爷's 火镰, the light (task 10); `at` heisong |
+| `00-fall` 第二十七道记号 | 五 · 六 | **board `fall-storm`** (拽 — lane MG's 暴雨: haul 爹 back in the lulls; drawn in ink and cut to half a minute in batch two) gates 把爹拽回山壁 — then the fall, 查伤, 爷爷's 火镰, the light (task 10); `at` heisong |
 | `00-fox` 银光 | 七 | 裹起它 · 别碰 (stay) — task 11 |
 | `00-cave` 那一夜 | 八 | 分它一半 · 自己吃 (task 12); **board `bread-share`** (喂饼: seven pieces to the fox or to himself, the corner kept for the dawn) — its grade takes the way on: none · little → 自己吃, half · most → 分它一半; `bread-<grade>` marks how much (欠饼) |
 | `00-yinyue` 天亮 | 九 | 带她出谷 → she joins (`joins`, task 13) |

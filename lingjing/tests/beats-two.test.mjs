@@ -7,8 +7,9 @@ import assert from 'node:assert/strict';
 import * as taunt from '../scripts/games/taunt.js';
 import * as griddle from '../scripts/games/griddle.js';
 import * as listen from '../scripts/games/listen.js';
+import * as storm from '../scripts/games/storm.js';
 
-const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/], [listen, /data-g="start"/]];
+const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/], [listen, /data-g="start"/], [storm, /data-g="start"/]];
 
 test('every batch-two game: meta in both languages, a control at open, both languages drawn, a skip that ends it won with no grade', () => {
   for (const [mod, control] of GAMES) {
@@ -103,4 +104,14 @@ test('听: say it the moment the birds stop, then read the sky — a false alarm
   b = listen.act(b, { g: 'sign', id: 'cloud' }).state;
   assert.equal(b.grade, 'late');
   assert.match(listen.html(b, 'en'), /Father has seen it too/);
+});
+
+test('拽 (00-fall\'s 暴雨, redrawn in ink): the scene in an SVG, no CSS-animated rain; always over within half a minute', () => {
+  const s = storm.act(storm.newGame('f'), { g: 'start' }).state;
+  assert.match(storm.html(s, 'zh'), /class="g-scene/);
+  assert.doesNotMatch(storm.html(s, 'zh'), /g-storm-rain/);
+  assert.ok(storm.LIMIT <= 30000);
+  const end = storm.tick(s, storm.LIMIT);
+  assert.equal(end.won, true);
+  assert.match(storm.html(end, 'en'), /gives way/);
 });

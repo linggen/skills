@@ -7,6 +7,9 @@
 // he did it (`grade`) only flavours the closing line.
 // Pure module: newGame / html / act / tick. No DOM; the host routes [data-g]
 // taps to act() and steps tick() while `live` (live-games.js).
+// Drawn in ink since batch two (2026-10-14): the slope and the drop, 爹 hauled up it pull by
+// pull, the rain slanting with the wind — and the quiet 「算了，往下走」 every beat keeps.
+import { SKIP, btn, n, scene, skipBtn, skipped, splash, still } from './ink.js';
 
 export const meta = {
   id: 'storm',
@@ -18,7 +21,7 @@ export const meta = {
 };
 
 export const NEED = 3; //       pulls to get him to the cliff face
-export const LIMIT = 60000; //  ms: after this the last pull is made by main force
+export const LIMIT = 30000; //  ms: after this the last pull is made by main force (half a minute, batch two)
 export const CALM = 0.35; //    wind below this is a lull
 
 const T = {
@@ -38,6 +41,7 @@ const T = {
     steady: '拽上去了。爹的膝盖在石头上磕了两下，他一声没吭。',
     rough: '最后那一下，是拿命拽的。爹扒住了崖壁，你的胳膊已经没了知觉。',
     fall: '你松了一口气——脚底下那块泥，塌了。',
+    skipped: '你攥着爹的腰带，拼了命往里一拽。',
   },
   en: {
     ready: 'Rain like a flood. Father\'s knee gives and he slides down the slope — you catch his wrist.',
@@ -55,6 +59,7 @@ const T = {
     steady: 'Up. Father\'s knee struck the rock twice; he never made a sound.',
     rough: 'The last pull took everything you had. Father clings to the cliff face; your arm has gone numb.',
     fall: 'You let out a breath — and the mud under your feet gives way.',
+    skipped: 'You grab Father\'s belt and haul inward with everything you have.',
   },
 };
 
@@ -120,11 +125,12 @@ const VERBS = {
       // One pull a lull: the grip has to be taken again while the next gust blows.
       const lull = segAt(s.sched, s.t);
       if (lull === s.lastLull) return { ...s, note: 'regrip' };
-      const n = { ...s, pulls: s.pulls + 1, lastLull: lull, note: 'pulled' };
-      return n.pulls >= NEED ? finish(n, false) : n;
+      const up = { ...s, pulls: s.pulls + 1, lastLull: lull, fx: { at: s.t, ok: true }, note: 'pulled' };
+      return up.pulls >= NEED ? finish(up, false) : up;
     }
-    return { ...s, slips: s.slips + 1, pulls: Math.max(0, s.pulls - 1), note: 'slipped' };
+    return { ...s, slips: s.slips + 1, pulls: Math.max(0, s.pulls - 1), fx: { at: s.t, ok: false }, note: 'slipped' };
   },
+  skip: (s) => skipped(s),
 };
 
 export function act(state, data = {}) {
@@ -140,19 +146,37 @@ export function tick(state, ms) {
   return s.t >= LIMIT ? finish(s, true) : s;
 }
 
+/* ── The picture (ink, batch two): the narrow slope against the rock, the drop beyond it, 爹
+   held by the wrist and hauled toward the rock face a stretch at a time, the rain slanting with
+   the wind (drawn where it falls at the state's clock, so a repaint never restarts it). */
+function stormScene(state, w) {
+  const t = still() ? 0 : state.t, k = state.won ? 1 : state.pulls / NEED;
+  const rock = '<path class="g-rock" d="M0 0 H70 Q80 40 72 80 Q66 110 74 130 H0Z"/><path class="g-line g-thin g-faint" d="M20 20 l12 8 M14 60 l16 6 M24 100 l10 10"/>';
+  const slope = '<path class="g-line" d="M70 96 Q170 104 236 120"/><path class="g-line g-faint" d="M236 120 Q250 126 252 130"/><path class="g-line g-thin g-faint" d="M246 118 l18 -4 M256 124 l20 2"/>';
+  // 爹: a figure on the slope, from the drop's lip (k = 0) to the rock (k = 1).
+  const fx = 214 - k * 120, fy = 112 - k * 8, lean = n(20 - k * 20);
+  const baba = `<g transform="translate(${n(fx)} ${n(fy)}) rotate(${lean})"><circle class="g-line" cx="0" cy="-26" r="6" fill="none"/><path class="g-line" d="M0 -20 V-4 L-6 8 M0 -4 L8 6 M0 -16 L-12 -10"/></g>`;
+  const you = `<g transform="translate(${n(fx - 30)} ${n(fy - 2)})"><circle class="g-line" cx="0" cy="-24" r="5" fill="none"/><path class="g-line" d="M0 -19 V-4 L-5 8 M0 -4 L6 8 M0 -15 L${n(14)} -12"/></g>`;
+  const drops = Array.from({ length: 26 }, (_, i) => {
+    const x0 = (i * 53 + t * 0.35) % 340 - 10, y0 = (i * 37 + t * 0.6) % 140 - 10, dx = n(4 + w * 14);
+    return `<path class="g-line g-thin g-water" d="M${n(x0)} ${n(y0)} l${dx} 12"/>`;
+  }).join('');
+  const gusts = w > CALM ? `<path class="g-line g-thin g-faint" d="M200 30 q30 -8 60 0 M220 46 q30 -8 70 0" opacity="${n(w, 2)}"/>` : '';
+  const hit = state.fx ? splash(state.fx.ok ? n(fx - 14) : n(fx), n(fy - 14), state.t - state.fx.at, { r: 8, seal: state.fx.ok }) : '';
+  return scene(320, 130, rock + slope + drops + gusts + baba + you + hit);
+}
+
 export function html(state, lang = 'zh') {
   const t = T[lang] || T.zh;
   const w = windAt(state.sched, state.t);
   const calm = w < CALM;
-  const pips = Array.from({ length: NEED }, (_, i) => `<span class="g-storm-pip${i < state.pulls ? ' is-on' : ''}"></span>`).join('');
-  const rain = `<div class="g-storm-rain${state.live ? ' is-live' : ''}" style="--w:${w.toFixed(2)}"></div>`;
+  const pips = Array.from({ length: NEED }, (_, i) => `<i class="${i < state.pulls ? 'is-on' : ''}"></i>`).join('');
   if (state.won) {
-    return `<div class="g-storm is-won">${rain}<p class="g-storm-line">${t[state.grade]}</p><p class="g-storm-line g-storm-fall">${t.fall}</p></div>`;
+    const end = state.note === 'skipped' ? t.skipped : `${t[state.grade]}<br>${t.fall}`;
+    return `<div class="g-storm2 g-ink is-won">${stormScene(state, w)}<p class="g-line-say">${end}</p></div>`;
   }
-  const meter = `<div class="g-storm-meter"><span>${t.wind}</span><span class="g-storm-bar"><i style="width:${Math.round(w * 100)}%" class="${calm ? 'is-calm' : ''}"></i></span><b class="${calm ? 'is-calm' : ''}">${calm ? t.calm : t.gust}</b></div>`;
-  const dist = `<div class="g-storm-dist"><span>${t.dist}</span>${pips}</div>`;
-  const btn = state.live
-    ? `<button type="button" class="g-storm-btn" data-g="pull">${t.pull}</button>`
-    : `<button type="button" class="g-storm-btn" data-g="start">${t.start}</button>`;
-  return `<div class="g-storm">${rain}<p class="g-storm-line">${t[state.note] ?? ''}</p>${state.live ? meter + dist : ''}${btn}</div>`;
+  const head = `<div class="g-head"><span>${t.dist} <span class="g-feather-pips">${pips}</span></span><span class="g-chip${calm ? ' is-calm' : ''}">${t.wind} · ${calm ? t.calm : t.gust}</span></div>`;
+  const meter = `<div class="g-meter"><span>${t.wind}</span><span class="g-bar${calm ? '' : ' is-seal'}"><i style="width:${Math.round(w * 100)}%"></i></span></div>`;
+  const act = state.live ? btn(t.pull, 'data-g="pull"') : btn(t.start, 'data-g="start"');
+  return `<div class="g-storm2 g-ink">${stormScene(state, w)}${state.live ? head + meter : ''}<p class="g-line-say">${t[state.note] ?? ''}</p>${act}${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
 }

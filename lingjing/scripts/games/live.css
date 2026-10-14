@@ -243,3 +243,4 @@
 /* 听 */
 .g-scene .g-pine { fill: var(--wood); opacity: .55; }
 .g-scene .g-cloud { fill: currentColor; }
+.g-scene .g-rock { fill: currentColor; opacity: .16; }
