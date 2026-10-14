@@ -1234,7 +1234,9 @@ function draw() {
   // The header — place, caption, people, the sky — changes only when the story gets there: while the
   // box still tells the passage of the choice that left the last scene, that scene's header holds
   // (his, 2026-10-14: 「天快亮」 and 阿禾 over 马小宝's taunt at dusk).
-  const realLook = look;
+  // The box's reading is the real scene's: read it before the header stands on the held one
+  // (live 2026-10-14: read under the held 00-notice it was none, and the 回 line turned to 今 · 一).
+  const realLook = look, told = readingHere();
   look = headLook();
   try {
   paintAtmos();
@@ -1242,7 +1244,7 @@ function draw() {
   // The 回 above the place, as the book names and numbers it (古五: 「卷一 · 沉鼎 · 第十回　古 · 漏勺夜半通三关」 once 今五 is in, rules/hui.mjs).
   // The old 回's last passage still in the box keeps its own 回 line (queue.js huiLineOf).
   // The ended 回's line comes with its close (rules/story.mjs closeOf `line`): a fresh tab at the turn has it too.
-  const titles = (huiTitles[lang()] ??= {}), told = readingHere(), ended = look.chapter?.close;
+  const titles = (huiTitles[lang()] ??= {}), ended = look.chapter?.close;
   if (look.chapter?.hui) titles[look.chapter.hui] = look.chapter.title;
   if (ended?.id && ended.line) titles[ended.id] = ended.line;
   $('huiLine').textContent = look.chapter?.hui ? huiLineOf({ hui: look.chapter.hui, title: look.chapter.title, telling: huiAt(told), titles }) : '';

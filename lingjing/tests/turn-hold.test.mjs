@@ -19,6 +19,9 @@ import { huiLineOf } from '../scripts/queue.js';
 import { advance, current, huiAt, leadsIn, sceneOfItem, withTold } from '../scripts/dialogue.js';
 import { TO_HALL, walk } from './prologue.mjs';
 
+// 00-notice's village map played (batch two, 2026-10-14): its way on waits on it.
+const eveDone = (s) => ({ ...s, tasks: { ...s.tasks, 'village-eve': { status: 'done', period: 'once', done_at: '2026-10-01T00:00:00Z' } } });
+
 const content = loadContent();
 const NOW = new Date('2026-10-05T10:00:00');
 const ctx = { now: NOW, quests: [] };
@@ -27,7 +30,7 @@ const css = fs.readFileSync(new URL('../scripts/lingjing.css', import.meta.url),
 
 /* 古二's last choice taken: the save on j01-track, the reading the page draws there. */
 function turned({ catchup = true } = {}) {
-  const s = resolve(save('jin-notice'), content, ctx, { exit: 'go' }).state;
+  const s = resolve(eveDone(save('jin-notice')), content, ctx, { exit: 'go' }).state;
   const tell = playOf(content, s, tellOf(content, s).tell).filter((t) => catchup || t.of !== 'catchup');
   return { s, l: look(s, content, ctx), r: withTold(null, tell, s.scene) };
 }
@@ -66,6 +69,11 @@ test('the 回 line keeps 古二 while its last passage is told — from the clos
   assert.equal(lineOf(r), line);
   assert.equal(lineOf(at(r, 'choice')), line);
   assert.equal(lineOf(at(r, 'scene')), l.chapter.title, 'the new 回\'s passage: the new line');
+  // The page reads the box's 回 off the REAL scene's reading — under the held header's scene
+  // (00-notice) there is none, and the line turned (live 2026-10-14).
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /const realLook = look, told = readingHere\(\);\s*look = headLook\(\);/);
+  assert.match(page, /telling: huiAt\(told\), titles/);
 });
 
 test('the header holds the old scene through all that leads in — a 前情 first, the last scene\'s unplayed beats, the choice', () => {
