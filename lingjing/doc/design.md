@@ -540,7 +540,7 @@ read-and-tap): six more boards in the prologue, each the book's own action where
 
 A game ends `won` always, with its `grade`; the page sends it with the win (`win --grade`), the
 task's **`marks`** (grade → mark) write it, and an exit's **`needs.grade`** takes only that grade —
-the page taps a way on for him only when exactly one waits on the board. A save standing in a scene
+the page taps a way on for him only when exactly one waits on the board. **A game and the story are never on the stage at once** (Hanli, 2026-10-14: 「小游戏，和剧情不要同时显示」): a board waits for its passage to the beat it belongs at (its last; a game mid-passage has the passage split — 接雨, 吹鹅毛 — the rest on the way on), the box steps wholly aside while it is played (queue.js `onStage`, boxGivesWay `game`), and the played board closes for the box to come back. A save standing in a scene
 since given a board is offered it on load (state.mjs fitWorld). **Rhythm** (rhythm.mjs, content.mjs
 `warnings`): along a chapter's main line, no more than **1,500** zh characters of passage between two
 play beats (a board or fight on the stage, a riddle, a look-gate, the 突破 card, a set piece) — a
