@@ -3077,7 +3077,7 @@ function holdHerVoice(on) {
 
 /* Whether the app shows its companion's body while this page is open — the
    app-mode message to the host (skill-spec § App-mode, `linggen:companion`):
-   hidden until she is found and while she is away (stage.mjs companionShown).
+   always hidden in the game (stage.mjs companionShown; 「游戏里不需要3D模型」).
    Said on every change, and the first time always; a scratch save says it too,
    as it is only what the screen shows. */
 let companionSaid = null;

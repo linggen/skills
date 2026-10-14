@@ -256,14 +256,8 @@ test('the tray never lists a board the stage already shows (Hanli, 2026-10-05: t
   assert.doesNotMatch(trayHtml({ look, words: WORDS.zh, onStage: ['luoshu'] }), /洛书九宫/, 'a board named by its game');
 });
 
-test('the app shows her body only once she is found, and not while she is away (Hanli, 2026-10-14)', () => {
-  // before 00-yinyue the save has no companion: the desktop girl stays hidden
-  assert.equal(companionShown({ companion: null }), false);
-  assert.equal(companionShown(null), false);
-  // found and here: as before
-  assert.equal(companionShown({ companion: { joined: true } }), true);
-  // asleep in the token she is still his
-  assert.equal(companionShown({ companion: { joined: true, asleep: true } }), true);
-  // a 今 interlude: away on another line
-  assert.equal(companionShown({ companion: { joined: true, away: 'elsewhere' } }), false);
+test('the game never shows her 3D body, whatever the save says (Hanli, 2026-10-14: 「游戏里不需要3D模型」)', () => {
+  for (const look of [null, { companion: null }, { companion: { joined: true } }, { companion: { joined: true, asleep: true } }, { companion: { joined: true, away: 'elsewhere' } }]) {
+    assert.equal(companionShown(look), false, JSON.stringify(look));
+  }
 });

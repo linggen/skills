@@ -42,11 +42,10 @@ export function taleHere(look) {
 export const herAwake = look => Boolean(look?.companion?.joined && !look.companion.asleep && !look.companion.away);
 
 /* Whether the app may show its companion's body (the desktop corner's 3D
-   girl) while this page is open: not before 银月 has been found — she has not
-   come into the story yet — nor while she is away on another line (a 今
-   interlude). Asleep in the token she is still his, so the corner keeps her.
-   Hanli, 2026-10-14: 「lingjing里yinyue没出场前, 不显示她的3D model」. */
-export const companionShown = look => Boolean(look?.companion?.joined && !look.companion.away);
+   girl) while this page is open: never. Hanli, 2026-10-14: 「游戏里不需要3D模型」
+   (earlier the same day: not before 银月 is found). In the game she is the
+   silver fox of the story and her voice-only stage; the girl never stands. */
+export const companionShown = () => false;
 
 /* The line of the book the scene is told on, when it is not the book's own
    (Look's `scene.line`: a 今 interlude — 沈芒's world, no 灵气, no 银月,
