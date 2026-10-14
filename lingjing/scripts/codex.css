@@ -54,6 +54,18 @@
 .codexcompact .cmore { flex: none; color: var(--faint); font-size: 16px; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .codexcompact .cpic img { mix-blend-mode: normal; } }
 :root[data-theme="dark"] .codexcompact .cpic img { mix-blend-mode: normal; }
+/* A thing's card (not a face): the picture large enough to read its carving, every line whole. */
+.codexcompact.big { align-items: flex-start; gap: 16px; padding: 12px 14px 12px 12px; }
+.codexcompact.big .cpic { width: 176px; height: 176px; }
+.codexcompact.big .cpic img { object-fit: contain; }
+.codexcompact.big .ccap { white-space: normal; overflow: visible; font-size: 14.5px; line-height: 1.75; padding-top: 4px; }
+.codexcompact.big .ccap > span { display: block; margin-top: 6px; }
+.codexcompact.big .ccap b { font-size: 19px; }
+@container scene (max-width: 600px) {
+  .codexcompact.big { gap: 12px; padding: 10px; }
+  .codexcompact.big .cpic { width: 124px; height: 124px; }
+  .codexcompact.big .ccap { font-size: 14px; line-height: 1.65; }
+}
 /* The game's own box for a full card (lingjing.js openCodexBig); the book uses read.css's .lightbox. */
 .codexbox { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgb(0 0 0 / .72); }
 

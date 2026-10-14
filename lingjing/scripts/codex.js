@@ -106,6 +106,8 @@ export function codexOf(files, opts = {}) {
   return new Map([...codexRaw(files)].map(([id, raw]) => [id, resolveEntry(raw, opts)]));
 }
 
+/* The kinds that come on as a face (sight.js SIGHT_KINDS): their compact card stays a row. */
+const FACE_KINDS = new Set(['人物', '生物']);
 const KIND_EN = { 人物: 'Person', 生物: 'Creature', 物品: 'Thing', 武功: 'Art' };
 
 /// The card: a portrait (or a clean name card) and beside it the name, the
@@ -134,8 +136,14 @@ export function codexCompactHtml(entry, { src = (p) => p, lang = 'zh' } = {}) {
     : `<span class="namecard" aria-hidden="true"><b>${esc(entry.name.slice(0, 2))}</b></span>`;
   const kind = entry.tag ? (lang === 'en' ? TAG_EN[entry.tag] : entry.tag) : lang === 'en' ? KIND_EN[entry.kind] ?? entry.kind : entry.kind;
   const open = lang === 'en' ? 'Open the card' : '展开图鉴';
-  return `<button class="codexcompact" data-codex-big="${esc(entry.id)}" data-kind="${esc(entry.kind)}" aria-label="${esc(`${entry.name} · ${open}`)}">`
-    + `<span class="cpic">${pic}</span><span class="ccap"><b>${rubyName(entry)}</b><i>${esc(kind)}</i><span>${esc(entry.lines[0] ?? '')}</span></span><span class="cmore" aria-hidden="true">⤢</span></button>`;
+  // A thing (a token, a pill, a scroll) comes on as no one's face does — no
+  // 初见 over the box (sight.js holds people and creatures) — so its card is
+  // big enough to read: the picture large, every line whole (2026-10-14, his:
+  // 「木牌图片放大一点, 看不清」 — the carved fox was 64px, its line cut off).
+  const big = !FACE_KINDS.has(entry.kind);
+  const lines = big ? entry.lines.map((l) => `<span>${rubyLine(entry, l)}</span>`).join('') : `<span>${esc(entry.lines[0] ?? '')}</span>`;
+  return `<button class="codexcompact${big ? ' big' : ''}" data-codex-big="${esc(entry.id)}" data-kind="${esc(entry.kind)}" aria-label="${esc(`${entry.name} · ${open}`)}">`
+    + `<span class="cpic">${pic}</span><span class="ccap"><b>${rubyName(entry)}</b><i>${esc(kind)}</i>${lines}</span><span class="cmore" aria-hidden="true">⤢</span></button>`;
 }
 
 /// 「原图」: the old print an entry was drawn from, opened large on a tap.
