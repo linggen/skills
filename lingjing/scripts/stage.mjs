@@ -259,8 +259,19 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   const panel = look.scene?.panel ? [{ card: 'panel' }] : [];
   // The chapter's ending card, while the next chapter waits: first on the stage until he puts it away (合上, the page's).
   const closed = look.chapter?.close ? [{ card: 'closed' }] : [];
-  const all = [...meet, ...panel, ...people, ...head, ...cards, ...closed];
+  const all = [...meet, ...panel, ...people, ...head, ...cards, ...closed].filter(c => !(c.card === 'board' && boardWaits(look, c.id)));
   return sideLineOf(look) ? all.filter(onSide(look)) : all;
+}
+
+/* A scene's boards are played one after another, in `show` order (batch two, 2026-10-14:
+   00-cave's 扔石听声 before 喂饼, 00-halfyear's 吹鹅毛 before 练功): a board waits while one
+   before it in the scene's `show` is still open — on the stage and in the tray. */
+export function boardWaits(look, id) {
+  const order = (look?.scene?.show ?? []).filter(c => c.card === 'board').map(c => c.id);
+  const at = order.indexOf(id);
+  if (at <= 0) return false;
+  const open = bid => (look.tasks ?? []).some(t => t.id === bid && t.status !== 'done');
+  return order.slice(0, at).some(open);
 }
 
 /* The kinds the PAGE draws for itself, from Look alone: the scene's panel and
@@ -310,6 +321,8 @@ export const slotKey = c => `${c.card}:${c.id ?? ''}`;
    caption and no way to fight). */
 export function sceneGame(look, c) {
   if (!look?.scene?.panel || (c.card !== 'duel' && c.card !== 'board')) return false;
+  // …and a board the scene stands itself (`show`), though no way on waits on it: the first of two (扔石听声, batch two).
+  if (c.card === 'board' && (look.scene.show ?? []).some(s => s.card === 'board' && s.id === c.id)) return true;
   return (look.scene.exits ?? []).some(e => (c.card === 'duel' ? e.game?.kind === 'duel' && e.game.id === c.id : e.needs?.task === c.id));
 }
 

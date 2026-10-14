@@ -124,7 +124,8 @@ function taskDone(state, content, ctx, id) {
   // A game inside its scene's passage (`story_after`, 2026-10-14): the rest of the passage is the
   // scene's, owed the moment the game is counted — told right after it, before the choices.
   const here = sceneOf(content, s);
-  if (here?.story_after && (here.show ?? []).some(c => c.card === 'board' && c.id === id)) s.tell_owed = [...(s.tell_owed ?? []), `after/${here.id}`];
+  // With two boards (batch two: 00-cave, 00-halfyear) the split belongs to the first in `show`; the second comes after the rest.
+  if (here?.story_after && sceneBoards(here)[0] === id) s.tell_owed = [...(s.tell_owed ?? []), `after/${here.id}`];
   const full = t.gives?.bag ? storedLine(s, [stow(content, s, t.gives.bag)]) : null;
   const paid = pay(content, s, ctx, t.grant);
   const handed = advance(content, s, { kind: 'board', task: id }, ctx);
@@ -158,6 +159,9 @@ export function win(state, content, ctx, args) {
   const id = String(args.id ?? '');
   const inScene = sceneOf(content, state)?.exits.some(e => gameOf(e)?.id === id && gameOf(e).kind !== 'duel');
   if (!inScene && !taskOpen(content, state, id, ctx.now)) return refuse('not-here', null);
+  // A scene's boards are played in `show` order: a later one waits for those before it.
+  const scene = sceneOf(content, state), order = scene ? sceneBoards(scene) : [];
+  if (order.slice(0, Math.max(0, order.indexOf(id))).some(b => state.tasks?.[b]?.status !== 'done')) return refuse('board-waits', null);
   const s = clone(state);
   s.wins = { ...s.wins, [id]: ctx.now.toISOString() };
   // How the board went (the game's `grade`, 2026-10-14's opening beats): kept
@@ -170,6 +174,9 @@ export function win(state, content, ctx, args) {
   }
   return { state: s, result: { ok: true, won: id, ...(graded ? { grade: graded.grade } : {}) } };
 }
+
+/* A scene's boards, in the order they are played (its `show`). */
+const sceneBoards = scene => (scene.show ?? []).filter(c => c.card === 'board').map(c => c.id);
 
 /* A board's grade as its task names it: `marks` (grade → mark) lists the grades it keeps. */
 function gradeOf(content, id, grade) {

@@ -82,6 +82,13 @@
       "done_line": {"zh": "山梁上的云，正往下压。", "en": "The cloud on the ridge is pressing down."}
     },
     {
+      "id": "cave-stone", "kind": "board", "game": "stone", "period": "once",
+      "title": {"zh": "扔石听声 · 先往里扔一块石头", "en": "A stone and an ear · Throw one in first"},
+      "grant": { "table": "task", "progress": 5 },
+      "marks": {"sure": "stone-sure", "lucky": "stone-lucky"},
+      "done_line": {"zh": "一个浅浅的石洞，空的。", "en": "A shallow cave, and empty."}
+    },
+    {
       "id": "xisui-hold", "kind": "board", "game": "xisui", "period": "once",
       "title": { "zh": "洗髓 · 疼，别喊", "en": "Marrow washing · Don't cry out" },
       "grant": { "table": "task", "progress": 5 },

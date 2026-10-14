@@ -8,7 +8,7 @@ import { WORDS as BATTLE_WORDS, boutWords, challengeHtml } from './battle-card.j
 import { layoutRoads } from './roadmap.js';
 import { frameOf, inside, within } from './atlas.js';
 import { inkLayerHtml, provinceLineHtml, pvState } from './inkmap.js';
-import { boardDoneToday, herAwake, onRoad, winnable } from './stage.mjs';
+import { boardDoneToday, boardWaits, herAwake, onRoad, winnable } from './stage.mjs';
 import { fitValue } from './state.mjs';
 
 export const WORDS = {
@@ -1392,7 +1392,8 @@ export function trayHtml(ctx) {
   // A board finished is not at hand: it leaves the tray (2026-10-01: 射鹿, 洗髓 stood there 已完成).
   // …nor a board the stage already shows (ctx.onStage: the ids of the cards in main) — one place for one thing.
   const shown = new Set(ctx.onStage ?? []);
-  const tasks = (ctx.look.tasks || []).filter((t) => t.status !== 'done' && !shown.has(t.id) && !(t.game && shown.has(t.game))).map((t) => {
+  // …nor a scene's later board while one before it is still to play (stage.mjs boardWaits).
+  const tasks = (ctx.look.tasks || []).filter((t) => t.status !== 'done' && !shown.has(t.id) && !(t.game && shown.has(t.game)) && !boardWaits(ctx.look, t.id)).map((t) => {
     const state = t.status === 'done' ? 'done' : t.won ? 'won' : 'offered';
     const shut = state === 'offered' && boardShut(t, ctx);
     const act = state === 'offered' && t.kind === 'board'

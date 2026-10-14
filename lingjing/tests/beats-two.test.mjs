@@ -8,8 +8,25 @@ import * as taunt from '../scripts/games/taunt.js';
 import * as griddle from '../scripts/games/griddle.js';
 import * as listen from '../scripts/games/listen.js';
 import * as storm from '../scripts/games/storm.js';
+import * as stone from '../scripts/games/stone.js';
+import { loadContent } from '../scripts/content.mjs';
+import { look, resolve, task, win } from '../scripts/rules.mjs';
+import { tellOf } from '../scripts/rules/tell.mjs';
+import { newState } from '../scripts/state.mjs';
+import { boardWaits, sceneGame } from '../scripts/stage.mjs';
+import { trayHtml, WORDS } from '../scripts/cards.js';
+import { TO_VALLEY, walk } from './prologue.mjs';
 
-const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/], [listen, /data-g="start"/], [storm, /data-g="start"/]];
+const content = loadContent();
+const NOW = new Date('2026-10-14T10:00:00');
+const ctx = () => ({ now: NOW, quests: [] });
+const atScene = (id) => {
+  let s = newState(content, 'zh', NOW);
+  for (const step of TO_VALLEY) { if (s.scene === id) return s; s = walk(s, [step], content, NOW); }
+  return s.scene === id ? s : null;
+};
+
+const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/], [listen, /data-g="start"/], [storm, /data-g="start"/], [stone, /data-g="hole"/]];
 
 test('every batch-two game: meta in both languages, a control at open, both languages drawn, a skip that ends it won with no grade', () => {
   for (const [mod, control] of GAMES) {
@@ -114,4 +131,53 @@ test('拽 (00-fall\'s 暴雨, redrawn in ink): the scene in an SVG, no CSS-anima
   const end = storm.tick(s, storm.LIMIT);
   assert.equal(end.won, true);
   assert.match(storm.html(end, 'en'), /gives way/);
+});
+
+test('扔石听声: a stone into each hollow comes back as its sound; the shallow, empty one is the cave — a wrong one only sends him out', () => {
+  const s0 = stone.newGame('c');
+  const at = (kind) => s0.holes.indexOf(kind);
+  let s = stone.act(s0, { g: 'hole', i: at('deep') }).state;
+  s = stone.act(s, { g: 'throw' }).state;
+  assert.equal(s.note, 'deep');
+  s = stone.act(s, { g: 'enter' }).state;
+  assert.equal(s.note, 'inDeep');
+  assert.equal(s.won, false, 'backed out, never lost');
+  s = stone.act(stone.act(s, { g: 'hole', i: at('shallow') }).state, { g: 'throw' }).state;
+  s = stone.act(s, { g: 'throw' }).state;
+  assert.equal(s.note, 'shallow2', '还是空的');
+  s = stone.act(s, { g: 'enter' }).state;
+  assert.equal(s.won, true);
+  assert.equal(s.grade, 'lucky', 'a wrong hollow first');
+  let sure = stone.act(stone.act(s0, { g: 'hole', i: at('shallow') }).state, { g: 'throw' }).state;
+  sure = stone.act(sure, { g: 'enter' }).state;
+  assert.equal(sure.grade, 'sure');
+  assert.match(stone.html(sure, 'zh'), /先生火/);
+  assert.equal(stone.act(stone.act(s0, { g: 'hole', i: at('shallow') }).state, { g: 'enter' }).state.grade, 'lucky', 'in without listening');
+});
+
+test('two boards in one scene (00-cave): 扔石听声, the rest of the passage, then 喂饼 — in `show` order, on the stage, in the tray and in the rules', () => {
+  const sc = content.chapters['00-prologue'].scenes['00-cave'];
+  assert.deepEqual(sc.show.filter(c => c.card === 'board').map(c => c.id), ['cave-stone', 'bread-share']);
+  let s = atScene('00-cave');
+  assert.ok(s, 'walked to the cave');
+  s = tellOf(content, s)?.keep ?? s;
+  let l = look(s, content, ctx());
+  assert.ok(boardWaits(l, 'bread-share'), '喂饼 waits for the stone');
+  assert.ok(!boardWaits(l, 'cave-stone'));
+  assert.deepEqual(l.stage.filter(c => c.card === 'board').map(c => c.id), ['cave-stone'], 'only the first board stands');
+  assert.ok(sceneGame(l, { card: 'board', id: 'cave-stone' }), 'the scene\'s own game though no way on waits on it: it stands with the scene, never queued behind it');
+  assert.doesNotMatch(trayHtml({ look: l, words: WORDS.zh, lang: 'zh', onStage: [] }), /喂饼/, 'nor is the second in the tray');
+  assert.equal(win(s, content, ctx(), { id: 'bread-share', grade: 'half' }).result.refused, 'board-waits', 'the rules keep the order too');
+  s = win(s, content, ctx(), { id: 'cave-stone', grade: 'sure' }).state;
+  s = task(s, content, ctx(), { action: 'done', id: 'cave-stone' }).state;
+  assert.ok(s.marks.includes('stone-sure'));
+  const told = tellOf(content, s);
+  assert.deepEqual(told.tell.map(t => [t.of, t.id]), [['after', '00-cave/after']], 'the rest of the passage, right after the stone');
+  assert.match(told.tell[0].text, /火镰敲着火石/);
+  s = told.keep;
+  l = look(s, content, ctx());
+  assert.deepEqual(l.stage.filter(c => c.card === 'board').map(c => c.id), ['bread-share'], 'then 喂饼');
+  s = task(win(s, content, ctx(), { id: 'bread-share', grade: 'half' }).state, content, ctx(), { action: 'done', id: 'bread-share' }).state;
+  assert.equal(tellOf(content, s), null, 'the passage is not owed twice');
+  assert.equal(resolve(s, content, ctx(), { exit: 'share' }).state.scene, '00-yinyue');
 });

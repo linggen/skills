@@ -244,3 +244,4 @@
 .g-scene .g-pine { fill: var(--wood); opacity: .55; }
 .g-scene .g-cloud { fill: currentColor; }
 .g-scene .g-rock { fill: currentColor; opacity: .16; }
+.g-scene .g-mouthdark { fill: currentColor; opacity: .7; }

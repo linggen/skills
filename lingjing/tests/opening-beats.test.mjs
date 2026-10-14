@@ -217,7 +217,8 @@ test('算账\'s choice stays the player\'s: both ways on wait for the scale, eit
 });
 
 test('喂饼: the grade takes 分它一半 or 自己吃 — the amount a mark for the 恩仇簿 and the story', () => {
-  const cave = atScene('00-cave');
+  // 扔石听声 first: the cave's boards play in `show` order.
+  const cave = won(atScene('00-cave'), 'cave-stone', 'sure');
   for (const [grade, exit, other] of [['most', 'share', 'keep'], ['half', 'share', 'keep'], ['little', 'keep', 'share'], ['none', 'keep', 'share']]) {
     const s = won(cave, 'bread-share', grade);
     assert.ok(s.marks.includes(`bread-${grade}`));
