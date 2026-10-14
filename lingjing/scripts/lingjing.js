@@ -910,7 +910,8 @@ function stageNow() {
   cards = cards.filter((c) => !(c.card === 'board' && played(c.id) && !boards.get(c.id)?.winning));
   // A scene's game waits for the whole passage too — its last beat read and the box put away
   // (live 2026-10-14: at 吹鹅毛 the box hid on its last beat, 「……鸡窝里一阵大乱」, unread).
-  if (boxAhead()) cards = cards.filter((c) => c.card !== 'board' || c.id === view.opened?.id);
+  // Not under a 回's title card either: the passage is still to be told after it (a fresh 石坳村).
+  if (look?.tell_owed || drawingTold || playing(readingHere())) cards = cards.filter((c) => c.card !== 'board' || c.id === view.opened?.id);
   // A board he opened from the tray's 开局 waits for the whole passage (queue.js trayWaits).
   if (view.opened && trayAhead()) cards = cards.filter((c) => !(c.card === 'board' && c.id === view.opened.id));
   // One text box (Hanli, 2026-10-05): while the book is ahead — or the box holds
