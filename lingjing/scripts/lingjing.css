@@ -1166,7 +1166,7 @@ body.fighting .atmos { display: none; }
 .dlghead .dlgbtn, .dlghead .dlgbtn.dlgvoice { min-height: 26px; padding: 1px 10px; }
 /* A short stage with the choices up (a phone, the chat open): the choices keep their room, the
    text keeps at least a line and scrolls. */
-.dlgmain { flex: 1 1 auto; min-height: 1.9em; display: flex; gap: 14px; align-items: flex-start; }
+.dlgmain { flex: 1 100 auto; min-height: 1.9em; display: flex; gap: 14px; align-items: flex-start; }
 .dlgfoot { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .dlgtools { display: flex; flex-wrap: wrap; gap: 6px; }
 .dlgnext { flex: none; font: inherit; font-family: var(--serif); font-size: 15px; letter-spacing: .12em; min-height: 40px; min-width: 104px; padding: 6px 18px;
@@ -1178,7 +1178,7 @@ body.fighting .atmos { display: none; }
 /* The scene's choices inside the box at its last beat, where the eye already is. */
 .dlgacts { flex: 0 1 auto; min-height: 52px; max-height: 34vh; overflow-y: auto; padding-top: 8px; border-top: 1px dashed var(--line); }
 .dlgacts .paneltaps { margin-top: 0; justify-content: center; }
-.dlgacts .looks { justify-content: center; margin: 0 0 8px; }
+.dlgacts .looks { justify-content: center; margin: 8px 0 0; }
 .dlgacts .paneltap { min-height: 40px; }
 .dlgall .dlglogrow { font-size: 16px; }
 .dlgface { flex: none; width: 88px; height: min(110px, 100%); object-fit: cover; object-position: top; border-radius: 6px; border: 1px solid var(--line); background: var(--raised); animation: dlgIn .25s ease-out; }
