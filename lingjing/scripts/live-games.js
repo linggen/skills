@@ -16,13 +16,25 @@ export function wireLiveGames({ boardFor, lang, onWon, step = 100 }) {
   let last = performance.now();
   let held = null;
 
+  // Only what changed is laid again (2026-10-14, 千米: before 起跑 the clock repainted the board
+  // every 100 ms with the same html, and a real tap — the button pressed, then let go on its
+  // fresh copy — never made a click: 「起跑」 did nothing). Each host keeps the html it was last given.
+  // A host the page drew itself holds the html of the state it was drawn from: noted (`seen`)
+  // before that state moves on.
+  const drawn = new WeakMap();
+  const seen = (host, g) => { if (!drawn.has(host)) drawn.set(host, g.mod.html(g.state, lang())); };
   const paint = (host, g) => {
-    if (host.isConnected) host.innerHTML = g.mod.html(g.state, lang());
+    if (!host.isConnected) return;
+    const html = g.mod.html(g.state, lang());
+    if (drawn.get(host) === html) return;
+    drawn.set(host, html);
+    host.innerHTML = html;
   };
   const settle = (g) => {
     if (g.state?.won && !g.sent) onWon(g);
   };
   const apply = (h, data) => {
+    seen(h.host, h.g);
     const r = h.g.mod.act(h.g.state, data);
     h.g.state = r.state;
     paint(h.host, h.g);
@@ -37,6 +49,7 @@ export function wireLiveGames({ boardFor, lang, onWon, step = 100 }) {
     for (const host of document.querySelectorAll('[data-game]')) {
       const g = boardFor(host.dataset.game);
       if (!g?.mod?.tick || !g.state?.live || g.state.won) continue;
+      seen(host, g);
       g.state = g.mod.tick(g.state, dt);
       paint(host, g);
       settle(g);

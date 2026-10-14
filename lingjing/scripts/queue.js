@@ -74,3 +74,21 @@ export const trayWaits = ({ owed = false, drawing = false, playing = false, huiT
    it keeps that 回's line, when the page has it (`titles`, by 回 id); it turns
    once that passage is told. */
 export const huiLineOf = ({ hui = null, title = '', telling = null, titles = {} }) => (telling && telling !== hui && titles[telling] ? titles[telling] : title);
+
+/* A 回's turn (Hanli, 2026-10-14, at 古二 → 今 · 一: 「今线突然从半道出来了」, and the
+   新的一回 seal came up three scenes later, over the 千米 board). The old 回's last
+   passage told, the turn stands until its 「完」 is put away (`closeUp`), the new
+   chapter's title card is gone (`titlePending`) and the new 回's seal has played
+   (`sealOwed`: on its way or up) — and only then does the box tell the new 回's first
+   passage. The seal is the turn's own: it never waits for that passage to end. */
+export const atTurn = ({ oldPlaying = false, closeUp = false, titlePending = false, sealOwed = false }) => Boolean(!oldPlaying && (closeUp || titlePending || sealOwed));
+
+/* What may stand on the stage at a 回's turn while the new 回's passage is still to be told
+   (`ahead`): the turn's own (its 「完」), the page's moments and a fight or 闭关 already up,
+   and the header (whoever is in the scene) — nothing that waits for the passage. The scene
+   card and its choices, its games, an errand, a 所得 come after the passage, as anywhere:
+   so nothing queues behind the 「完」, there is no 「还有 N 件 ›」 to put it off with, and
+   no choice to take past the passage unread (the scene card stood behind the 「完」 and
+   one tap on 还有 1 件 put the 「完」 off and 开课 on the stage, j01-track's 55 beats unplayed). */
+export const TURN_KEEPS = new Set(['closed', 'memory', 'homing', 'doors', 'unfold', 'fight', 'seclusion', 'people', 'goal']);
+export const atTurnCards = (cards, { turn = false, ahead = false } = {}) => (turn && ahead ? cards.filter((c) => TURN_KEEPS.has(c.card)) : cards);

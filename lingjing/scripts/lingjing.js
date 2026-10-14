@@ -39,7 +39,7 @@ import { SIGHT_KINDS, mountChatToggle, paintSight } from './sight.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
 import { playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
-import { afterBook, bookAhead, boxGivesWay, huiLineOf, momentMay, trayWaits } from './queue.js';
+import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, huiLineOf, momentMay, trayWaits } from './queue.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -720,8 +720,12 @@ const herGrew = (before, now) => Boolean(before.her && now.her && (before.her.at
 /// first, then the seal, put away by a tap, then the rest (stageBusy).
 let featOn = false;
 let riseWaits = false; // a realm risen, its seal not yet up: the 回's ending card and the new 回's title wait for it
+// A new 回's seal on its way: the 回's turn (queue.js atTurn) — the box holds the new 回's
+// first passage until the seal has played, never the seal until that passage is over.
+let sealOwed = false;
 function feat(...args) {
   const [kind] = args;
+  if (kind === 'chapter') sealOwed = true;
   // A realm risen: its seal comes after the set piece and after the ending 回's last
   // passage (the box plays it first); the 回's ending card and the new title wait behind it.
   // A new 回's seal is its opening: it comes after the old 回's ending card is put away.
@@ -730,6 +734,8 @@ function feat(...args) {
     // A new 回's seal is its opening: after the old 回's 「完」 is put away.
     await momentTurn('feat', () => (kind === 'rise' ? oldHuiPlaying() : closeUp()));
     featOn = true;
+    // Up now: the seal itself holds the box (momentUp) until it goes.
+    if (kind === 'chapter') sealOwed = false;
     if (kind === 'rise') riseWaits = false;
     featNow(...args);
   }, 0);
@@ -911,6 +917,8 @@ function stageNow() {
   // the box comes back alone, with the rest of the passage or the choices — never beside it.
   const played = (id) => (look?.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id) && (look?.tasks ?? []).some((t) => t.id === id && t.status === 'done');
   cards = cards.filter((c) => !(c.card === 'board' && played(c.id) && !boards.get(c.id)?.winning));
+  // A 回's turn, the new 回's passage still to tell: its 「完」 alone, nothing queued behind it (queue.js atTurnCards).
+  cards = atTurnCards(cards, { turn: atHuiTurn(), ahead: storyAhead() });
   // A scene's game waits for the whole passage too — its last beat read and the box put away
   // (live 2026-10-14: at 吹鹅毛 the box hid on its last beat, 「……鸡窝里一阵大乱」, unread).
   // Not under a 回's title card either: the passage is still to be told after it (a fresh 石坳村).
@@ -1771,7 +1779,7 @@ function setReading(r, patch = {}) {
    finishes in the box first; then that thing opens. */
 const titlePending = () => { const ch = look?.chapter; return Boolean(ch?.fresh && !bout && !dismissedTitles.has(titleKey(ch.id)) && !titleSeen(ch.id)); };
 // At a 回's turn: the old 回's passages told, its 「完」 or the new title still to come.
-const atHuiTurn = () => !oldHuiPlaying() && (closeUp() || titlePending());
+const atHuiTurn = () => atTurn({ oldPlaying: oldHuiPlaying(), closeUp: closeUp(), titlePending: titlePending(), sealOwed });
 /* Is the book still ahead of the stage? Passages owed or being drawn, or the
    box playing this scene's (not paused at a 回's turn). */
 const boxAhead = () => bookAhead({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: playing(readingHere()), huiTurn: atHuiTurn() });

@@ -138,10 +138,28 @@ export function advance(r, lang = 'zh') {
 /* 显示全文 (2026-10-14, his: 「跳过」 dumped the rest into a panel and closing
    it closed the box): the rest of the passage shows at once, in the box, and
    the choices come up at its end. The box stays. */
+// Never past a 回's turn (2026-10-14, 古二 → 今 · 一: 显示全文 on 古二's last passage showed
+// j01-track's 55 beats with it, under 古二's words, before the 「完」 and the new 回's seal):
+// the rest of THIS 回's passages; the next 回's begin after its turn, from their first beat.
 export function showAll(r, lang = 'zh') {
   if (!playing(r) || atLast(r, lang)) return r;
-  const i = r.items.length - 1;
+  const i = huiEndOf(r);
+  if (i === r.i && r.j >= lastJ(r, i, lang)) return r;
   return { ...r, all: { i: r.i, j: Math.min(r.j, lastJ(r, r.i, lang)) }, i, j: lastJ(r, i, lang) };
+}
+/* The last passage of the 回 on show: the run of passages from `i` on that carry its 回. A
+   passage with none belongs to whichever it stands among, and so does the 前情 (`catchup`,
+   a recap of earlier 回s that leads into this one). */
+const huiOfItem = (it) => (it?.of === 'catchup' ? null : it?.hui ?? null);
+export function huiEndOf(r) {
+  let i = r.i, hui = huiOfItem(r.items[i]);
+  while (i < r.items.length - 1) {
+    const next = huiOfItem(r.items[i + 1]);
+    if (hui && next && next !== hui) break;
+    i += 1;
+    hui ??= next;
+  }
+  return i;
 }
 
 /* Every beat in order, in a language, with where each stands. */
