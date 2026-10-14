@@ -138,7 +138,9 @@ function openAt(at) {
     c.querySelectorAll('rt, rp, .chg-old, button').forEach((x) => x.remove());
     return join(unitsOf(c.textContent, lang));
   };
-  const p = [...document.querySelectorAll('#chapter p, #chapter blockquote')].find((el) => said(el).includes(want));
+  // A paragraph that opens on the words first (「……左边。」 is its own paragraph, and 左边 is in many), then any holding them.
+  const all = [...document.querySelectorAll('#chapter p, #chapter blockquote')].map((el) => [el, said(el)]);
+  const p = (all.find(([, s]) => s.startsWith(want)) ?? all.find(([, s]) => s.includes(want)))?.[0];
   if (!p) return;
   p.classList.add('bookhere');
   p.scrollIntoView({ block: 'center' });
