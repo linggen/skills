@@ -1163,6 +1163,7 @@ body.fighting .atmos { display: none; }
    the choices, then 回看 · 显示全文 and 「继续 ▸」 under it — never clipped. */
 .dlghead { flex: none; display: flex; justify-content: flex-end; align-items: center; gap: 8px; min-height: 20px; }
 .dlghead [data-dlg-log] { margin-right: auto; }
+.dlghead .dlgbtn, .dlghead .dlgbtn.dlgvoice { min-height: 26px; padding: 1px 10px; }
 /* A short stage with the choices up (a phone, the chat open): the choices keep their room, the
    text keeps at least a line and scrolls. */
 .dlgmain { flex: 1 1 auto; min-height: 1.9em; display: flex; gap: 14px; align-items: flex-start; }
@@ -1175,7 +1176,7 @@ body.fighting .atmos { display: none; }
 .dlgnext > span { display: inline-block; animation: dlgNudge 1.4s ease-in-out infinite; }
 :lang(en) .dlgnext { letter-spacing: .04em; }
 /* The scene's choices inside the box at its last beat, where the eye already is. */
-.dlgacts { flex: none; max-height: 34vh; overflow-y: auto; padding-top: 8px; border-top: 1px dashed var(--line); }
+.dlgacts { flex: 0 1 auto; min-height: 52px; max-height: 34vh; overflow-y: auto; padding-top: 8px; border-top: 1px dashed var(--line); }
 .dlgacts .paneltaps { margin-top: 0; justify-content: center; }
 .dlgacts .looks { justify-content: center; margin: 0 0 8px; }
 .dlgacts .paneltap { min-height: 40px; }
