@@ -88,9 +88,9 @@ async function main() {
   // 附 · 本回典籍: the classics the book names (`《书名》{典=id}`), one file per book; none reads plain.
   const classics = getJson(`${STORY}${encodeURIComponent(bookId)}/classics.json`).then((c) => c?.classics ?? {}, () => ({}));
   try {
-    // English reads the translation (book.json entry `en`, e.g. en/h01.md) when there is one; else the Chinese with a note.
-    const english = lang === 'en' && ch.en;
-    const res = await fetch(`${STORY}${encodeURIComponent(bookId)}/${(english ? ch.en : ch.file).split('/').map(encodeURIComponent).join('/')}`);
+    // English reads the translation (book.json entry `file_en`, e.g. en/h01.md) when there is one; else the Chinese with a note.
+    const english = lang === 'en' && ch.file_en;
+    const res = await fetch(`${STORY}${encodeURIComponent(bookId)}/${(english ? ch.file_en : ch.file).split('/').map(encodeURIComponent).join('/')}`);
     if (!res.ok) throw new Error(String(res.status));
     const md = await res.text();
     const who = await hero, f = await files;

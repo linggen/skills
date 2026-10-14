@@ -33,7 +33,7 @@
        "Half a Flatbread Buys a Fox Queen"
       ]
      },
-     "file": "01-第一回.md", "en": "en/h01.md",
+     "file": "01-第一回.md", "file_en": "en/h01.md",
      "opens": "00-prologue"
     },
     {
@@ -53,7 +53,7 @@
        "Half a Word of Thanks, Owed for a New Kindness"
       ]
      },
-     "file": "02-第二回.md", "en": "en/h02.md",
+     "file": "02-第二回.md", "file_en": "en/h02.md",
      "opens": "00-prologue"
     },
     {
@@ -72,7 +72,7 @@
        "I Threw Up on the Thousand Metres, Then Learned to Breathe Out First"
       ]
      },
-     "file": "今线/插曲01.md", "en": "en/j01.md"
+     "file": "今线/插曲01.md", "file_en": "en/j01.md"
     },
     {
      "id": "h04",
@@ -88,7 +88,7 @@
        "Five Faint Colours Set the Whole Hall Laughing"
       ]
      },
-     "file": "03-第三回.md", "en": "en/h04.md",
+     "file": "03-第三回.md", "file_en": "en/h04.md",
      "opens": "00-prologue"
     },
     {
@@ -108,7 +108,7 @@
        "A Nine-Line Pill Kept in a Bottle"
       ]
      },
-     "file": "04-第四回.md", "en": "en/h05.md",
+     "file": "04-第四回.md", "file_en": "en/h05.md",
      "opens": "00-waimen"
     },
     {
@@ -127,7 +127,7 @@
        "I Missed Both Free Throws, and Brought Home a Dog"
       ]
      },
-     "file": "今线/插曲02.md", "en": "en/j04.md"
+     "file": "今线/插曲02.md", "file_en": "en/j04.md"
     },
     {
      "id": "h07",
@@ -143,7 +143,7 @@
        "A Pinch of Living Soil Opens Five Doors"
       ]
      },
-     "file": "05-第五回.md", "en": "en/h07.md",
+     "file": "05-第五回.md", "file_en": "en/h07.md",
      "opens": "00-waimen"
     },
     {
@@ -160,7 +160,7 @@
        "A Mother’s Voice in the River-and-Luo Sword Art"
       ]
      },
-     "file": "06-第六回.md", "en": "en/h08.md",
+     "file": "06-第六回.md", "file_en": "en/h08.md",
      "opens": "00-waimen"
     },
     {
@@ -178,7 +178,7 @@
        "When the Lights Went Out I Walked Eleven Steps; Then I Trained in Secret for Three Days and Passed a Bottle of Cola"
       ]
      },
-     "file": "今线/插曲03.md", "en": "en/j07.md"
+     "file": "今线/插曲03.md", "file_en": "en/j07.md"
     },
     {
      "id": "h11",
@@ -194,7 +194,7 @@
        "One Pill in the Pill House: No Fire in It"
       ]
      },
-     "file": "07-第七回.md", "en": "en/h11.md",
+     "file": "07-第七回.md", "file_en": "en/h11.md",
      "opens": "00-zhuji"
     },
     {
@@ -211,7 +211,7 @@
        "Alone on the Cliff, He Lays the Foundation"
       ]
      },
-     "file": "08-第八回.md", "en": "en/h09.md"
+     "file": "08-第八回.md", "file_en": "en/h09.md"
     },
     {
      "id": "j09",
@@ -228,7 +228,7 @@
        "I Shot the Last Free Throw Shaking, and on the Winter Solstice Night I Counted My Own Heartbeat"
       ]
      },
-     "file": "今线/插曲04.md", "en": "en/j09.md"
+     "file": "今线/插曲04.md", "file_en": "en/j09.md"
     },
     {
      "id": "h10",
@@ -244,7 +244,7 @@
        "A Thousand Fish Raise a Dragon Gate from the Zhang"
       ]
      },
-     "file": "09-第九回.md", "en": "en/h10.md",
+     "file": "09-第九回.md", "file_en": "en/h10.md",
      "opens": "01-ji"
     },
     {
@@ -263,7 +263,7 @@
        "It Said: I'm Afraid"
       ]
      },
-     "file": "未来线/序.md", "en": "en/w01.md"
+     "file": "未来线/序.md", "file_en": "en/w01.md"
     }
    ]
   }
@@ -275,7 +275,15 @@
     "zh": "附录 ·《吐纳经》",
     "en": "Appendix · The Scroll of Breath"
    },
-   "file": "90-附录·吐纳经.md", "en": "en/tuna.md"
+   "file": "90-附录·吐纳经.md", "file_en": "en/tuna.md"
+  },
+  {
+   "id": "houji",
+   "title": {
+    "zh": "后记",
+    "en": "Afterword"
+   },
+   "file": "91-后记.md"
   }
  ],
  "_aliases": "Old chapter ids (序章上 00 … 第二章 03, before the 回), kept so an old read.html?ch= link still opens the 回 that now holds that chapter's start. 2026-09-30 the four 回 were split into ten (OUTLINE § 二·五): old 第三回 (外门) begins 第五回, old 第四回 begins 第九回; ids h03/h04 now name the new 第三回/第四回. 2026-10-02 (卷一 eight 古 回, four 今 interludes): a folded id is no alias but its absorber's `absorbs` (book-order.js resolveId). 2026-10-07 (古七 split): old 第二章 (03) began at the move into the 内门 (腊月初九, the day after the 大比), now the first half of the old h09 — 03 → h11.",

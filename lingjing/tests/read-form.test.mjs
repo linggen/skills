@@ -49,7 +49,7 @@ test('卷 hold 回; the 古 回 run 第一回, 第二回 … through the whole b
   assert.equal(gu.at(-1).label.zh, '第九回');
   assert.equal(new Set(bookEntries(book).map((c) => c.id)).size, bookEntries(book).length, 'ids unique');
   book.volumes.forEach((v, i) => assert.equal(v.name.zh.startsWith(`卷${cnNumber(i + 1)}`), true, v.name.zh));
-  assert.equal(bookEntries(book).at(-1).id, 'tuna', 'the appendix comes last');
+  assert.equal(bookEntries(book).at(-1).id, 'houji', 'the appendix comes last, the 后记 last of all');
   assert.deepEqual([1, 10, 12, 20, 21, 100].map(cnNumber), ['一', '十', '十二', '二十', '二十一', '一百']);
   assert.equal(huiLabel(14), '第十四回');
   assert.equal(jinLabel(3), '今 · 三');
@@ -224,7 +224,7 @@ test('the page sets a 回 title from book.json, not from the file\'s own number'
   assert.match(js, /absorbs: ch\.absorbs/, 'a card whose first appearance names a folded 回 stands in its absorber');
   assert.match(js, /const view = \{ draft: params\.get\('draft'\) === '1' \};/);
   // A file in a folder (今线/…) is fetched by its path, each part encoded.
-  assert.match(js, /\(english \? ch\.en : ch\.file\)\.split\('\/'\)\.map\(encodeURIComponent\)\.join\('\/'\)/);
+  assert.match(js, /\(english \? ch\.file_en : ch\.file\)\.split\('\/'\)\.map\(encodeURIComponent\)\.join\('\/'\)/);
   const css = fs.readFileSync(path.join(ROOT, 'scripts/read.css'), 'utf8');
   assert.match(css, /\.jin \.tag \{ color: var\(--jin\); \}/);
   assert.match(css, /\.chapter h1\.huimu\.jin \.hui \{ color: var\(--jin\); \}|h1\.huimu\.jin \.hui \{ color: var\(--jin\); \}/);
