@@ -1162,6 +1162,7 @@ body.fighting .atmos { display: none; }
 /* The count and 配音 over the text; the text (and a face) in the middle, scrolling when long;
    the choices, then 回看 · 显示全文 and 「继续 ▸」 under it — never clipped. */
 .dlghead { flex: none; display: flex; justify-content: flex-end; align-items: center; gap: 8px; min-height: 20px; }
+.dlghead [data-dlg-log] { margin-right: auto; }
 /* A short stage with the choices up (a phone, the chat open): the choices keep their room, the
    text keeps at least a line and scrolls. */
 .dlgmain { flex: 1 1 auto; min-height: 1.9em; display: flex; gap: 14px; align-items: flex-start; }

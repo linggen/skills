@@ -209,11 +209,13 @@ export function dialogHtml(r, { lang = 'zh', src = (f) => f, voice = null, acts 
   const text = shown ? `<div class="dlgall">${rows.map((x) => rowHtml(x, w)).join('')}</div>` : `<div class="dlgtext">${lineHtml(b, w)}</div>`;
   const tap = choices ? '' : ' data-dlg-next role="button" tabindex="0"';
   const next = choices ? '' : `<button class="dlgnext" data-dlg-next aria-label="${esc(w.on)}">${esc(w.next)} <span aria-hidden="true">▸</span></button>`;
+  const log = `<button class="dlgbtn" data-dlg-log>${esc(w.log)}</button>`;
+  // With the choices up there is no foot: 回看 moves up beside the count, so a short stage keeps the choices whole.
+  const foot = choices ? '' : `<div class="dlgfoot"><span class="dlgtools">${log}${last ? '' : `<button class="dlgbtn" data-dlg-all>${esc(w.all)}</button>`}</span>${next}</div>`;
   return `<div class="dlg${spoken ? ' spoken' : ' told'}${shown ? ' all' : ''}${choices ? ' choosing' : ''}${!shown && b.art && !b.hero ? ' withface' : ''}" data-dlg-on${tap} aria-label="${esc(w.on)}">
-    ${who}<div class="dlghead">${count}${voiceBtn(voice, w)}</div>
+    ${who}<div class="dlghead">${choices ? log : ''}${count}${voiceBtn(voice, w)}</div>
     <div class="dlgmain">${shown ? '' : face(b, src)}<div class="dlgbody">${text}</div></div>
-    ${choices ? `<div class="dlgacts panelcard">${choices}</div>` : ''}
-    <div class="dlgfoot"><span class="dlgtools"><button class="dlgbtn" data-dlg-log>${esc(w.log)}</button>${last ? '' : `<button class="dlgbtn" data-dlg-all>${esc(w.all)}</button>`}</span>${next}</div></div>`;
+    ${choices ? `<div class="dlgacts panelcard">${choices}</div>` : ''}${foot}</div>`;
 }
 
 /* 回看: what was told so far — the scenes before (`past`), then this one up

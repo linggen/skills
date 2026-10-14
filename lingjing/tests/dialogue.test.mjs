@@ -108,6 +108,8 @@ test('the last beat brings the choices up — inside the box, where 继续 stood
   assert.match(box, /<div class="dlgacts panelcard"><button data-panel-exit="go">走<\/button><\/div>/, 'the choices in the box');
   assert.doesNotMatch(box, /data-dlg-next|data-dlg-all/, 'no 继续, no 显示全文 — and a tap on the text does not put the choices away');
   assert.match(box, /data-dlg-on/);
+  assert.match(box, /<div class="dlghead"><button class="dlgbtn" data-dlg-log>回看<\/button>/, '回看 beside the count; no foot under the choices');
+  assert.doesNotMatch(box, /dlgfoot/);
   assert.match(dialogHtml(r), /data-dlg-next/, 'no choices to offer: 继续 puts the box away');
   // a passage drawn while one plays (Ling Resolved what the player typed) queues behind it
   const mid = advance(one(beats, 's1'));
