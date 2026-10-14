@@ -115,6 +115,7 @@
 .g-scene .g-aim circle, .g-scene .g-aim path { fill: none; stroke: var(--seal); stroke-width: 1.6; }
 .g-scene .g-splash { fill: currentColor; }
 .g-scene .g-splash.is-seal { fill: var(--seal); }
+.g-scene .g-splash path, .g-scene .g-splash circle { fill: inherit; }
 .g-scene .g-stroke { stroke: var(--seal); stroke-width: 3; }
 .g-scene .g-bow { stroke: var(--earth); stroke-width: 4.5; }
 .g-scene-note { font-family: var(--serif); font-size: 13px; fill: var(--faint) !important; }
