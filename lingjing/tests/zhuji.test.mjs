@@ -11,6 +11,7 @@ import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { newState, threshold } from '../scripts/state.mjs';
 import { look, oddsOf, resolve, rollOf } from '../scripts/rules.mjs';
+import { pay } from '../scripts/rules/core.mjs';
 import { bookNo } from './book-num.mjs';
 
 const content = loadContent();
@@ -123,12 +124,49 @@ test('the cliff: 瞿老\'s last disciple, then the throw — the 九转 reached 
   assert.equal(r.state.bag['foundation-pill'], 1, 'the 官丹 stays sealed in 饭桶');
   assert.equal(r.state.bag['foundation-pill-9'], undefined, 'the 九转 is eaten');
   assert.equal(r.state.tier, 'foundation');
+  // 「因为9转筑基丹, 小成得以圆满」 (Hanli, 2026-10-14): the 九转 declares `fill: "full"` — 筑基小成, filled.
+  assert.equal(r.state.step, 0);
+  assert.equal(r.state.progress, threshold(content, r.state), '小成圆满: the step filled in one night');
+  assert.equal(r.result.breakthrough.full, true);
+  assert.equal(r.result.breakthrough.to, '筑基小成圆满', 'Ling hears it as it stands');
+  assert.equal(look(r.state, content, ctx).tier.name, '筑基小成圆满');
   assert.deepEqual([r.state.chapter, r.state.scene], ['01-ji', 'j09-noise'], '今 · 四 first (2026-10-05)');
   // 古九's 「完」 (the book's number) stands on the next 回's first scene — 今 · 四's — with what he did and the teaser.
   const close = look({ ...r.state, place: 'zhangnan' }, content, ctx).chapter.close;
   assert.equal(close.title, `${bookNo(content, 'h09')} · 完`);
   assert.match(close.did, /崖顶筑了基/);
   assert.match(close.teaser, /邺城[\s\S]*豆腐/);
+});
+
+test('the fill is the pill\'s, declared: only the 九转 lands 小成圆满; the sect\'s 一转 lands 筑基小成 at 0; and 中成 stays shut by the 回\'s cap', () => {
+  assert.equal(content.items.items.find(i => i.id === 'foundation-pill-9').fill, 'full');
+  assert.equal(content.items.items.find(i => i.id === 'foundation-pill').fill, undefined);
+  assert.equal(CH.scenes['09-cliff'].exits.find(e => e.id === 'take').fill, undefined, 'the exit declares nothing: the pill eaten decides');
+  const win = s => {
+    const chance = oddsOf(content, s, NOW, 'foundation').chance;
+    let t = s;
+    for (let k = 0; rollOf(t, 'foundation') >= chance; k += 1) t = { ...s, breakthrough: { tries: { foundation: k + 1 } } };
+    return go(t, 'take');
+  };
+  const cliff = bag => ({ ...atSnow(), scene: '09-cliff', place: 'houshan', step: 8, progress: 130, bag });
+  // The 一转 alone (no 九转 in the bag): plain 筑基小成, 修为 0 — the cliff's own grant is all that goes in.
+  const plain = win(cliff({ 'foundation-pill': 1 }));
+  assert.equal(plain.result.breakthrough.pill.id, 'foundation-pill');
+  assert.equal(plain.result.breakthrough.full, undefined);
+  assert.equal(plain.result.breakthrough.to, '筑基小成');
+  assert.equal(plain.state.step, 0);
+  assert.ok(plain.state.progress < threshold(content, plain.state), '小成, not filled');
+  assert.equal(look(plain.state, content, ctx).tier.name, '筑基小成');
+  // The 九转: filled, and no work carries it on to 中成 — 古九 (卷一's end) stops at 筑基小成.
+  const filled = win(cliff({ 'foundation-pill-9': 1, 'foundation-pill': 1 })).state;
+  for (const s of [filled, { ...filled, chapter: '01-ji', scene: null, place: 'zhangyuan', ended: [...filled.ended, '01-ji'], done_scenes: Object.keys(content.chapters['01-ji'].scenes) }]) {
+    let got = 0, last = null;
+    for (let i = 0; i < 50; i += 1) { last = pay(content, s, ctx, { table: 'seclusion', progress: 90 }); got += last.progress; }
+    assert.equal(got, 0, 'nothing more goes in');
+    assert.ok(last.hold?.held > 0, 'what came is held');
+    assert.deepEqual([s.tier, s.step, s.progress], ['foundation', 0, threshold(content, s)]);
+    assert.equal(look(s, content, ctx).tier.name, '筑基小成圆满');
+  }
 });
 
 test('the set pieces ride their exits: 筑基天象 on the cliff\'s throw, 漳水立起 as he walks into the river standing up', () => {
@@ -180,7 +218,8 @@ test('the sect\'s 筑基丹 comes from the five-year skip, not from 古六: 古�
   const grants = Object.values(CH.scenes).flatMap(sc => sc.exits.filter(e => e.grant?.item === 'foundation-pill').map(e => `${sc.id}/${e.id}`));
   assert.deepEqual(grants, ['09-dabi/dabi']);
   for (const sc of Object.values(content.chapters['00-waimen'].scenes)) for (const e of sc.exits) assert.notEqual(e.grant?.item, 'foundation-pill', `${sc.id}/${e.id}`);
-  assert.doesNotMatch(JSON.stringify(CH.scenes), /验封|戒律堂|草木灰|当众/);
+  assert.doesNotMatch(JSON.stringify(CH.scenes), /验封|戒律堂执事|草木灰|当众/); // the cut 端午验封 (2026-10-03); 周衡's 「戒律堂头一个问你」 stays (Hanli 2026-10-14)
+  assert.match(CH.scenes['09-furnace'].story.zh, /空着也是空着[\s\S]*戒律堂头一个问你/, 'the 巡夜令 handed back on 正月初一, as 古七 has it');
   let s = full({ ...atSnow(), scene: '09-year', place: 'yaoyuan', marks: ['y-qingming'] });
   assert.equal(s.bag['foundation-pill'], undefined);
   s = go(s, 'futian').state;
