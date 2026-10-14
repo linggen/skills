@@ -309,7 +309,7 @@ test('Lang never hands over a scene the player has not reached', () => {
 test('the engine\'s empty-reply nudge is not the player\'s word: it sets no language', () => {
   const s = { ...toFuzhu(), lang: 'zh' };
   assert.equal(heed(s, 'Your response was empty. Please respond with either a tool call or text.').lang, 'zh');
-  assert.equal(heed(s, 'hello there').lang, 'en');
+  assert.equal(heed(s, 'hello there friend').lang, 'en');
 });
 
 test('every answer carries the question ready: the scene\'s buttons, the riddle when one waits, the choice when the world is open', () => {
@@ -1056,13 +1056,49 @@ test('switching language returns the scene in it; the same language writes nothi
 test('the player’s words set the language; a tap, an emoji or the page’s report do not', () => {
   assert.equal(langOf('我伸手去摸那道光'), 'zh');
   assert.equal(langOf('call me Mobai'), 'en');
-  assert.equal(langOf('hi'), 'en');
+  assert.equal(langOf('hi'), null, 'a bare word is no sentence (2026-10-14)');
   assert.equal(langOf('ok 好'), 'zh');
   for (const quiet of ['', '👍', '42', '[scene] won alchemy-first', null]) assert.equal(langOf(quiet), null);
   const zh = start('zh');
   assert.equal(heed(zh, '伸手入水'), zh, 'a tapped Chinese label leaves a Chinese game alone');
   assert.equal(heed(zh, 'where am I?').lang, 'en');
   assert.equal(zh.lang, 'zh', 'heed never mutates');
+});
+
+// 2026-10-14, his play: after a Restart his English 「restart game」 turned his
+// pinned Chinese game English — the new game had dropped the pin, and a
+// command read as a sentence. Both closed.
+test('language: a bare word or a command never turns it; an English sentence (three words, not all commands) does', () => {
+  for (const said of ['restart game', 'restart the game', 'Restart', 'undo', 'undo last move', 'load my save', 'ok', 'OK!', 'go', 'yes', 'no', 'start a new game', 'hi', 'hello there', '重来', '好']) {
+    assert.equal(langOf(said), null, said);
+  }
+  const zh = start('zh');
+  for (const said of ['restart game', 'undo', 'yes', 'ok go']) assert.equal(heed(zh, said), zh, said);
+  assert.equal(heed(zh, 'I open the door').lang, 'en', 'a sentence still leads an unpinned game');
+  const en = start('en');
+  assert.equal(heed(en, '重来'), en, 'a Chinese command is a command too');
+  assert.equal(heed(en, '我推开门').lang, 'zh');
+});
+
+test('a Restart keeps the language the player pinned (`lang_set`); an unpinned game stays unpinned', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-pin-'));
+  const rules = path.join(path.resolve(import.meta.dirname, '..'), 'scripts/rules.mjs');
+  const run = (...args) => {
+    const out = spawnSync(process.execPath, [rules, ...args], { env: { ...process.env, LINGJING_DATA: dir, LINGJING_NOW: NOW.toISOString() }, encoding: 'utf8' });
+    return JSON.parse(out.stdout.trim().split('\n').pop());
+  };
+  const saved = () => JSON.parse(fs.readFileSync(path.join(dir, 'state.json'), 'utf8'));
+  try {
+    run('init', '--lang=zh');
+    assert.equal(saved().lang_set, undefined, 'a new game guesses; nothing is pinned');
+    run('lang', '--lang=zh');
+    assert.equal(saved().lang_set, true);
+    run('init');
+    assert.deepEqual([saved().lang, saved().lang_set], ['zh', true], 'the pin survives the Restart');
+    assert.equal(run('look', '--said=restart game').lang, 'zh');
+    assert.equal(run('look', '--said=I open the door and look').lang, 'zh', 'pinned: even a sentence never turns it');
+    assert.equal(saved().lang, 'zh');
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
 test('Look carries the world’s words for the harness’s ids, in the player’s language', () => {

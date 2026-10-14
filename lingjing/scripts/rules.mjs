@@ -123,7 +123,7 @@ function runLocked(verb, args, stateFile, reader) {
   // earlier day closed — both written with whatever this call writes.
   // Her presence fitted to the scene (companion.mjs fitPresence) — the flag the engine reads.
   const saved = raw && raw.world === worldId ? fitPresence(content, closeStaleFight(migrate(raw, content), now)) : raw;
-  const state = verb === 'init' || !saved ? freshState(content, args.lang ?? saved?.lang, now) : saved;
+  const state = verb === 'init' || !saved ? freshState(content, args.lang ?? saved?.lang, now, saved) : saved;
   // 前情提要 owed as a sitting opens (story.mjs): a chat session of Ling's seen
   // first on her Look, or a while away. Marked in place, and kept below
   // without a log line — Undo takes back moves, not the clock.
@@ -323,7 +323,7 @@ function travelTo(id, current, { stateFile, logFile, now, verb }) {
   const content = loadWorld(id);
   const parked = savedFor(id) ? readSave(savedFile(id)).state : null;
   if (parked) fs.rmSync(savedFile(id), { force: true }); // in play now, not kept
-  const state = withRun(unconfirmed(parked)) ?? freshState(content, current.lang, now);
+  const state = withRun(unconfirmed(parked)) ?? freshState(content, current.lang, now, current);
   state.updated = now.toISOString();
   writeAtomic(stateFile, JSON.stringify(state));
   fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb: 'travel', args: { world: id, by: verb }, before: unconfirmed(current), parked: parkedBefore }) + '\n');
