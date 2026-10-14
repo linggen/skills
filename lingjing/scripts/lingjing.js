@@ -2290,7 +2290,7 @@ document.addEventListener('keydown', (e) => {
   if (e.target.id === 'askField' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); sendAsk(); }
   if (e.target.id === 'wx-city' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); document.querySelector('[data-wx-set]')?.click(); }
   if (e.target.id === 'value-text' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.closest('.valuecard')?.querySelector('[data-value-go]:not(:disabled)')?.click(); }
-  if (e.key === 'Escape' && view.logOpen) { show({ logOpen: false }); return; }
+  if (e.key === 'Escape' && view.logOpen) { show({ logOpen: false }); lines.hold(false); return; }
   if ((e.key === ' ' || e.key === 'Enter') && !e.isComposing && !e.target.closest?.('input, textarea, select, [contenteditable], #chat-panel') && titleAway()) { e.preventDefault(); return; }
   if (boxKey(e)) { e.preventDefault(); storyTap(); return; }
   if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.luOpen) show({ luOpen: false }); else if (view.pouchToss) show({ pouchToss: null }); else if (view.bookOpen || view.gearOpen || view.ledgerOpen) show({ bookOpen: false, gearOpen: false, ledgerOpen: false }); }
@@ -2380,8 +2380,9 @@ const CLICKS = [
   ['[data-panel-duel]', (el) => { if (!el.matches(':disabled')) callDuel(el.dataset.panelDuel); }],
   ['[data-panel-exit]', (el) => { if (!el.matches(':disabled')) run(`panel:${el.dataset.panelExit}`, () => panelTap(el.dataset.panelExit, el.textContent.trim(), el.dataset.panelAnswer)); }],
   // The story's quiet controls — 回看, 跳过, 配音, 慢 中 快 — first; then a tap anywhere on the stage (the next sentence).
-  ['[data-dlg-log]', () => show({ logOpen: !view.logOpen })],
-  ['[data-dlg-logclose]', () => show({ logOpen: false })],
+  // 回看 open, the lines wait under it (proto a: 「回看」 pauses the passage); closed, they go on.
+  ['[data-dlg-log]', () => { show({ logOpen: !view.logOpen }); lines.hold(view.logOpen); }],
+  ['[data-dlg-logclose]', () => { show({ logOpen: false }); lines.hold(false); }],
   ['[data-dlg-all]', () => showAllBeats()],
   ['[data-dlg-voice]', () => { setDub(!dubOn()); render(); }],
   ['[data-dlg-speed]', (el) => setSpeed(el.dataset.dlgSpeed)],

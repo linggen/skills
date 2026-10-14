@@ -120,7 +120,7 @@ body.storying .slots { visibility: hidden; }
 .story .wayacts .riddle, .story .wayacts .card { color: var(--text); }
 
 /* 回看: everything shown so far, scrolled back, dark over the stage. */
-.dlglog { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; background: rgba(13, 17, 20, .9); color: var(--on-stage); cursor: default; }
+.dlglog { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; background: rgba(13, 17, 20, .96); color: var(--on-stage); cursor: default; }
 .dlgloghead { order: 2; display: flex; justify-content: center; padding: 12px; }
 .dlgloghead > span { display: none; }
 .dlglogbody { order: 1; width: min(44em, 100%); flex: 1; overflow-y: auto; padding: 40px 28px 20px; }
