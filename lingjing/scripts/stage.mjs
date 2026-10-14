@@ -59,7 +59,8 @@ export const sideLineOf = look => look?.scene?.line ?? null;
    scene is on the book's own line; back on it, all of it returns. */
 export const FURNITURE = {
   every: ['lang', 'lu', 'read'],
-  main: ['name', 'realm', 'pool', 'wealth', 'omen', 'festival', 'weather', 'roads', 'errands', 'bag', 'tray'],
+  // `her`: 银月's 木牌 in the footer (2026-10-14) — she is the 古's; 今线 keeps only 九鼎录 and 读原著.
+  main: ['name', 'realm', 'pool', 'wealth', 'omen', 'her', 'festival', 'weather', 'roads', 'errands', 'bag', 'tray'],
 };
 export const stands = (look, part) => !sideLineOf(look) || FURNITURE.every.includes(part);
 /* On a side line the stage holds the scene alone: its picture, its people,

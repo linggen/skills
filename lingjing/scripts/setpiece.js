@@ -66,7 +66,7 @@ const loadImage = (src) => new Promise((ok, no) => { const im = new Image(); im.
 
 /// Play piece `id` in `host` (an empty box the caller sized). Resolves to
 /// {tap(), skip(), destroy(), get i(), get phase()}.
-export async function playSetPiece(host, id, { lang = 'zh', still = false, auto = false, hold = 900, artBase = ART_BASE, beats = null, onBeat, onDone } = {}) {
+export async function playSetPiece(host, id, { lang = 'zh', still = false, auto = false, hold = 900, artBase = ART_BASE, beats = null, cover = false, onBeat, onDone } = {}) {
   if (!/^[a-z]+$/.test(id)) throw new Error(`bad set piece: ${id}`);
   const def = await import(`./setpieces/${id}.js`);
   const { play: BEATS, before } = beatRange(def.BEATS, beats);
@@ -77,11 +77,13 @@ export async function playSetPiece(host, id, { lang = 'zh', still = false, auto 
   let Wpx = Math.max(240, host.clientWidth || 480), Hpx = Math.max(160, host.clientHeight || Math.round(Wpx * 0.75));
   // A piece with its own frame (`ASPECT`, height over width: 漳水 is 16:9) is letterboxed in the
   // host — as wide as it fits, centred; else the frame follows the host.
-  if (def.ASPECT) {
+  // `cover` (a beat's piece as the whole stage, lingjing.js layBeatPiece): the frame is the host's
+  // own, the camera's cover fit filling it — no letterbox.
+  if (def.ASPECT && !cover) {
     box.classList.add('fit');
     if (Hpx / Wpx > def.ASPECT) Hpx = Math.round(Wpx * def.ASPECT); else Wpx = Math.round(Hpx / def.ASPECT);
   }
-  const W = 1000, H = Math.round(W * (def.ASPECT ?? Math.min(1.6, Math.max(0.6, Hpx / Wpx))));
+  const W = 1000, H = Math.round(W * (cover ? Hpx / Wpx : def.ASPECT ?? Math.min(1.6, Math.max(0.6, Hpx / Wpx))));
   const art = {};
   // Every painting before the first beat: a beat never waits on a picture (no jank).
   await Promise.all(Object.entries(def.ART ?? {}).map(async ([k, p]) => { art[k] = await loadImage(new URL(p, artBase).href).catch(() => null); }));

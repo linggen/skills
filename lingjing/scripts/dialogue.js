@@ -1,25 +1,27 @@
-// dialogue.js — the stage's dialogue box: the book told on the stage itself.
+// dialogue.js — the reading: the book told on the stage itself.
 //
 // Hanli, 2026-09-29: 「对话框先做，go」. The book's passage for each beat
 // (rules/tell.mjs) used to be handed to Ling to retell in the narrow chat,
 // while the big stage showed three lines of caption; models paraphrased the
 // book and the two drifted apart. Now the page draws what is owed (`tell`,
-// its own verb — each passage with its beats) and plays it here, a paragraph
-// at a time, the way a Genshin dialogue runs: a line spoken shows the
-// speaker's name and 图鉴 portrait (the hero's, the player's 名字 and never a
-// face), narration shows as a caption line. A tap, Space, Enter or 「继续 ▸」
-// goes on; 显示全文 shows the rest at once, in the box; 回看 opens what was
-// told so far. At the last beat the scene's choices come up inside the box.
-// Nothing here reaches Ling.
+// its own verb — each passage with its beats) and plays it on the stage.
+// Since 2026-10-14 (the approved prototypes) there is no box: the beat's words
+// stand over the whole stage and come up a sentence at a time by themselves
+// (lines.js), and the page goes on to the next beat when they are read; a tap
+// brings the next sentence now, 「跳过」 shows the rest of this 回 at once, 回看
+// opens what was told so far. At the last beat the scene's choices stand on the
+// stage. Nothing here reaches Ling.
 //
 // Pure: the reading is a plain object, kept per save in localStorage so a
 // reload finds its place (lingjing.js holds it; tests read these directly).
 import { esc } from './esc.js';
 import { headOf } from './jieben.mjs';
+import { linesHtml, screensOf } from './lines.js';
 
+// 跳过 (Hanli, 2026-10-14: 「2改跳过」): the skip reads 跳过 / Skip — never 继续, which is the way on.
 export const DLG_WORDS = {
-  zh: { all: '显示全文', log: '回看', close: '收起', logTitle: '回看', logNow: '此景', next: '继续', recap: '前情', before: '上一景', on: '点一下，接着', act: (a) => `（${a}）`, voice: ['无声', '有声'], voiceTitle: '评书配音' },
-  en: { all: 'Show all', log: 'Look back', close: 'Close', logTitle: 'Look back', logNow: 'This scene', next: 'Next', recap: 'Before this', before: 'Before this', on: 'Tap to go on', act: (a) => `(${a}) `, voice: ['Voice off', 'Voice on'], voiceTitle: 'The pingshu voice (Chinese)' },
+  zh: { skip: '跳过', log: '回看', close: '回到这里', logTitle: '回看', logNow: '此景', recap: '前情', before: '上一景', on: '点一下，下一句', held: '停', speed: '读的快慢', speeds: ['慢', '中', '快'], ling: 'Ling', act: (a) => `（${a}）`, voice: ['无声', '有声'], voiceTitle: '评书配音' },
+  en: { skip: 'Skip', log: 'Look back', close: 'Back to it', logTitle: 'Look back', logNow: 'This scene', recap: 'Before this', before: 'Before this', on: 'Tap for the next line', held: 'Paused', speed: 'Reading pace', speeds: ['Slow', 'Mid', 'Fast'], ling: 'Ling', act: (a) => `(${a}) `, voice: ['Voice off', 'Voice on'], voiceTitle: 'The pingshu voice (Chinese)' },
 };
 
 /* The reading as it stands: the play and scene it belongs to, the passages
@@ -129,16 +131,17 @@ export function sightNow(r, entries, lang = 'zh') {
   return (entries ?? []).filter((e) => at.get(e?.id) === k);
 }
 
-/* A tap on the box (or 继续): the next beat; on the last, the box is put away. */
+/* The beat read (lines.js, by itself or a tap): the next; on the last, the reading is put away. */
 export function advance(r, lang = 'zh') {
   if (!playing(r)) return r;
   if (r.j < lastJ(r, r.i, lang)) return { ...r, j: r.j + 1 };
   if (r.i < r.items.length - 1) return { ...r, i: r.i + 1, j: 0 };
   return { ...r, closed: true };
 }
-/* 显示全文 (2026-10-14, his: 「跳过」 dumped the rest into a panel and closing
-   it closed the box): the rest of the passage shows at once, in the box, and
-   the choices come up at its end. The box stays. */
+/* 跳过 (2026-10-14; it was 显示全文 in the box, and before that a 「跳过」 that dumped the rest
+   into a panel and closing it closed the box): the rest of this 回's passage at once — the
+   stage stands on its last beat, shown whole, and the choices come up at its end; what was
+   skipped is in 回看. */
 // Never past a 回's turn (2026-10-14, 古二 → 今 · 一: 显示全文 on 古二's last passage showed
 // j01-track's 55 beats with it, under 古二's words, before the 「完」 and the new 回's seal):
 // the rest of THIS 回's passages; the next 回's begin after its turn, from their first beat.
@@ -230,11 +233,7 @@ export function keepReading(save, r, store = globalThis.localStorage) {
   try { store?.setItem(keyOf(save), JSON.stringify(r)); } catch { /* no storage: this load only */ }
 }
 
-/* One beat, as the box and 回看 show it. */
-function face(b, src) {
-  if (b.hero || !b.art) return '';
-  return `<img class="dlgface" src="${esc(src(b.art))}" alt="${esc(b.name ?? '')}">`;
-}
+/* One beat, as 回看 shows it. */
 function lineHtml(b, w) {
   const act = b.act ? `<span class="dlgact">${esc(w.act(b.act))}</span>` : '';
   const tag = b.recap ? `<span class="dlgrecap">${esc(w.recap)}</span>` : '';
@@ -244,36 +243,36 @@ const rowHtml = (b, w, extra = '') => `<div class="dlglogrow${b.name ? ' spoken'
 
 /* 配音's switch (pingshu.js): shown only where there is audio to hear
    (`voice` true or false; null — none — leaves it out). */
-const voiceBtn = (voice, w) => (voice == null ? '' : `<button class="dlgbtn dlgvoice${voice ? ' on' : ''}" data-dlg-voice aria-pressed="${voice ? 'true' : 'false'}" title="${esc(w.voiceTitle)}">${esc(w.voice[voice ? 1 : 0])}</button>`);
+const voiceBtn = (voice, w) => (voice == null ? '' : `<button class="q dlgvoice${voice ? ' on' : ''}" data-dlg-voice aria-pressed="${voice ? 'true' : 'false'}" title="${esc(w.voiceTitle)}">${esc(w.voice[voice ? 1 : 0])}</button>`);
 
-/* The box: the beat on show, its speaker (name, portrait) or a caption line;
-   over it the count (this scene's own — 「上一景」 on the last scene's unplayed
-   beats) and 配音's switch; under it 回看 and 显示全文, and 「继续 ▸」, big
-   enough for a thumb (2026-10-14: a tiny ▾ was the only cue). The whole box
-   is a tap too. At the last beat the scene's choices (`acts`, the page's —
-   cards.js panelActsHtml) stand inside it, where the eye already is, and
-   take 继续's place. 显示全文 shows the rest, scrolling inside the box. */
-export function dialogHtml(r, { lang = 'zh', src = (f) => f, voice = null, acts = '' } = {}) {
+/* The beat on show, as the stage's clock knows it (lines.js createLines): a new
+   key, the beat starts from its first sentence; 跳过 (`all`) shows it whole. */
+export const beatKey = (r, lang = 'zh') => (playing(r) ? `${r.run ?? ''}|${r.scene ?? ''}|${r.i}|${Math.min(r.j, lastJ(r, r.i, lang))}|${lang}${r.all ? '|all' : ''}` : null);
+
+/* The full stage (Hanli, 2026-10-14, the approved prototypes a–k): the beat's words
+   over the picture, coming up a sentence at a time by themselves (lines.js), and
+   the quiet controls under them — 回看 · 慢 中 快 · this 回's count (「上一景」 on the last
+   scene's unplayed beats) · 配音 — and 「跳过」, which is never the way on. At the
+   last beat the scene's choices (`acts`, cards.js panelActsHtml) stand on the stage
+   once its words are read, its last line faint above them (`.story.done .ways`).
+   The whole stage is a tap: the next sentence now. `speed` the viewer's
+   (lines.js speedNow). Nothing here reaches Ling. */
+export function storyHtml(r, { lang = 'zh', voice = null, acts = '', herId = null, speed = 'mid' } = {}) {
   if (!playing(r)) return '';
   const w = DLG_WORDS[lang] ?? DLG_WORDS.zh, { beat: b, k, n, before } = current(r, lang);
-  const last = atLast(r, lang), shown = Boolean(r.all) && last;
+  const last = atLast(r, lang), key = beatKey(r, lang);
   const choices = last && acts ? acts : '';
-  // 显示全文: every beat from the first not yet seen, in order, as rows.
-  const rows = shown ? flat(r, lang).filter((x) => x.i > r.all.i || (x.i === r.all.i && x.j >= r.all.j)) : null;
-  const spoken = !shown && Boolean(b.name);
-  // 名牌: the speaker's name hangs on the box's top-left edge; narration hangs none.
-  const who = spoken ? `<div class="dlgname${b.hero ? ' hero' : ''}">${esc(b.name)}</div>` : '';
-  const count = before ? `<span class="dlgcount before">${esc(w.before)} · ${k + 1} / ${n}</span>` : `<span class="dlgcount">${k + 1} / ${n}</span>`;
-  const text = shown ? `<div class="dlgall">${rows.map((x) => rowHtml(x, w)).join('')}</div>` : `<div class="dlgtext">${lineHtml(b, w)}</div>`;
-  const tap = choices ? '' : ' data-dlg-next role="button" tabindex="0"';
-  const next = choices ? '' : `<button class="dlgnext" data-dlg-next aria-label="${esc(w.on)}">${esc(w.next)} <span aria-hidden="true">▸</span></button>`;
-  const log = `<button class="dlgbtn" data-dlg-log>${esc(w.log)}</button>`;
-  // With the choices up there is no foot: 回看 moves up beside the count, so a short stage keeps the choices whole.
-  const foot = choices ? '' : `<div class="dlgfoot"><span class="dlgtools">${log}${last ? '' : `<button class="dlgbtn" data-dlg-all>${esc(w.all)}</button>`}</span>${next}</div>`;
-  return `<div class="dlg${spoken ? ' spoken' : ' told'}${shown ? ' all' : ''}${choices ? ' choosing' : ''}${!shown && b.art && !b.hero ? ' withface' : ''}" data-dlg-on${tap} aria-label="${esc(w.on)}">
-    ${who}<div class="dlghead">${choices ? log : ''}${count}${voiceBtn(voice, w)}</div>
-    <div class="dlgmain">${shown ? '' : face(b, src)}<div class="dlgbody">${text}</div></div>
-    ${choices ? `<div class="dlgacts panelcard">${choices}</div>` : ''}${foot}</div>`;
+  const count = before ? `<span class="count before">${esc(w.before)} · ${k + 1} / ${n}</span>` : `<span class="count">${k + 1} / ${n}</span>`;
+  const seg = `<span class="seg" role="group" aria-label="${esc(w.speed)}">${['slow', 'mid', 'fast'].map((v, x) => `<button data-dlg-speed="${v}"${v === speed ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}>${esc(w.speeds[x])}</button>`).join('')}</span>`;
+  // 跳过 skips (never past the 回's turn, dialogue.js showAll); at the last beat there is nothing left to skip.
+  const skip = last ? '' : `<button class="q skip" data-dlg-all>${esc(w.skip)} <span aria-hidden="true">»</span></button>`;
+  // Its last line, faint above the way on (b-choices): the beat's final screen.
+  const tail = screensOf(b.text, lang).at(-1)?.join('') ?? '';
+  const ways = choices ? `<div class="ways"><div class="last">${esc(tail)}</div><div class="wayacts">${choices}</div></div>` : '';
+  return `<div class="story${choices ? ' choosing' : ''}${r.all && last ? ' shown' : ''}" data-dlg-on data-dlg-next data-story="${esc(key)}" role="button" tabindex="0" aria-label="${esc(w.on)}">
+    <div class="lines" aria-live="polite">${linesHtml(b, { lang, herId, words: w })}</div>${ways}
+    <div class="held" aria-hidden="true">${esc(w.held)}</div>
+    <div class="ctrl"><button class="q" data-dlg-log>${esc(w.log)}</button>${seg}${count}${voiceBtn(voice, w)}<span class="sp"></span>${skip}</div></div>`;
 }
 
 /* 回看: what was told so far — the scenes before (`past`), then this one up
@@ -284,7 +283,7 @@ export function logHtml(r, { lang = 'zh' } = {}) {
   const past = (r?.past ?? []).map((g) => (g[lang]?.length ? g[lang] : g[other] ?? [])).filter((g) => g.length)
     .map((g) => `<div class="dlglogscene">${g.map((b) => rowHtml(b, w)).join('')}</div>`).join('');
   const now = toldSoFar(r, lang).map((b) => rowHtml(b, w)).join('');
-  return `<div class="dlglog" role="dialog" aria-label="${esc(w.logTitle)}"><div class="dlgloghead"><span>${esc(w.logTitle)}</span><button class="dlgbtn dlgclose" data-dlg-logclose>✕ ${esc(w.close)}</button></div><div class="dlglogbody">${past}${now ? `<div class="dlglogscene now"><div class="dlglogmark">${esc(w.logNow)}</div>${now}</div>` : ''}</div></div>`;
+  return `<div class="dlglog" role="dialog" aria-label="${esc(w.logTitle)}"><div class="dlgloghead"><span>${esc(w.logTitle)}</span><button class="q dlgclose" data-dlg-logclose>${esc(w.close)}</button></div><div class="dlglogbody">${past}${now ? `<div class="dlglogscene now"><div class="dlglogmark">${esc(w.logNow)}</div>${now}</div>` : ''}</div></div>`;
 }
 
 /* The small 回看 link under a scene card once the box is put away. */

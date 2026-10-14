@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="codex.css" />
   <link rel="stylesheet" href="inkmap.css" />
   <link rel="stylesheet" href="setpiece.css" />
+  <link rel="stylesheet" href="story.css" />
   <link rel="stylesheet" href="games/luoshu.css" />
   <link rel="stylesheet" href="games/huarong.css" />
   <link rel="stylesheet" href="games/qiqiao.css" />
@@ -24,29 +25,30 @@
     <!-- The scene: everything here is drawn from the rules' Look and the
          authored content. Ling moves it with Show; the rules own the numbers. -->
     <section class="scene" aria-label="Scene">
-      <!-- One line (Hanli, 2026-10-05): who he is, then the 回 and the place;
-           a narrow scene folds it onto a second line. -->
-      <header class="topbar"><div class="status" id="status"></div><div class="titlerow"><span class="huiline" id="huiLine"></span><span class="place" id="place"></span></div><div class="placecap" id="placeCap"></div></header>
+      <!-- A thin paper bar (Hanli, 2026-10-14, the approved prototypes): who he is, the 回
+           and the place, then the people here as small faces (a tap opens their 图鉴) and
+           the goal; a narrow scene folds it onto a second line. -->
+      <header class="topbar"><div class="status" id="status"></div><div class="titlerow"><span class="huiline" id="huiLine"></span><span class="place" id="place"></span></div><div class="placecap" id="placeCap"></div><div class="headcards" id="headCards"></div></header>
       <div class="view" id="view">
-        <!-- 淡墨: a pale ink wash, or the scene's own picture when the world paints
-             one (scene `panel.art`) — never a hill or a moon drawn in code
-             (Hanli, 2026-10-05). lingjing.js paintBackdrop. -->
+        <!-- The backdrop (2026-10-14): the whole stage, a painting of the weather — the
+             scene's own sky, else the real one — by day or night (worlds/<w>/backdrops.json),
+             or the scene's own picture (`backdrop`); a set piece's beat lays its own over it.
+             Darkened toward the foot, where the lines are. lingjing.js paintBackdrop. -->
         <div class="backdrop" id="backdrop" aria-hidden="true"></div>
+        <div class="shade" aria-hidden="true"></div>
         <!-- Yinyue: her name and the ask button, a chip in the header's corner —
              no 3D body in the game (his, 2026-09-29) and no stand-in orb
              (his, 2026-09-30); her voice frame stays hidden here. -->
         <div class="stage" id="stage" hidden><div class="body" aria-hidden="true"></div><b id="stageName"></b><iframe id="herVoice" title="Yinyue" hidden></iframe><button class="act quiet askher" id="askHerBtn" data-ask-her hidden></button></div>
-        <!-- 此地 · 此刻: fixed slots, the layout stays put and only what fills
-             them changes (stage.mjs stageSlots). HEADER is the page's own —
-             the place, the people, the goal; MAIN (#focus) holds ONE thing. -->
+        <!-- 此刻: MAIN (#focus) holds ONE thing (stage.mjs stageSlots); HEADER — the people,
+             the goal — is the top bar's (#headCards). -->
         <div class="slots">
-          <div class="slothead" id="slotHead"><div class="headcards" id="headCards"></div></div>
           <div class="focus" id="focus"></div>
         </div>
-        <!-- 初见 (sight.js): a face's first coming-on, large over the box, then back to the header. -->
+        <!-- 初见 (sight.js): a face's first coming-on, large on the stage, then into the header. -->
         <div class="sight" id="sight"></div>
-        <!-- The dialogue box (dialogue.js): the book's passage for this beat,
-             played here a paragraph at a time; the slots stand above it. -->
+        <!-- The story (dialogue.js storyHtml, lines.js): the book's passage over the whole
+             stage, a sentence at a time; the choices stand on it at the passage's end. -->
         <div class="dlgwrap" id="dlg"></div>
         <!-- 真实世界: a festival's dressing and the day's weather, one layer
              over the stage (atmos.js). Faint, and never in the way. -->

@@ -12,7 +12,7 @@ import { execFileSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { beatsOf, passageFor } from '../scripts/rules/tell.mjs';
-import { dialogHtml, withTold } from '../scripts/dialogue.js';
+import { storyHtml, withTold } from '../scripts/dialogue.js';
 import { luHtml } from '../scripts/lu.js';
 import { EMPTY, clipOf, createNarrator, fullOf, hasAudio, keepListenAt, listenAt, listenHtml, loadManifest, normPara, paraKey, setVoice, voiceOn, withBase } from '../scripts/pingshu.js';
 
@@ -115,11 +115,11 @@ test('no manifest, no audio: nothing breaks, nothing shows', async () => {
   assert.deepEqual(await loadManifest('jiuding-lu', { fetcher: async () => { throw new Error('offline'); } }), EMPTY);
   assert.deepEqual(await loadManifest('jiuding-lu', { fetcher: async () => ({ ok: false }) }), EMPTY);
   assert.deepEqual(await loadManifest('jiuding-lu', { fetcher: async () => ({ ok: true, json: async () => { throw new SyntaxError('bad'); } }) }), EMPTY);
-  // the box: no audio, no switch
+  // the stage: no audio, no switch
   const r = withTold(null, [{ of: 'scene', id: 'x', beats: [{ text: 'a' }] }], 's');
-  assert.doesNotMatch(dialogHtml(r), /data-dlg-voice/);
-  assert.match(dialogHtml(r, { voice: true }), /data-dlg-voice aria-pressed="true"[^>]*>有声</);
-  assert.match(dialogHtml(r, { voice: false, lang: 'en' }), /aria-pressed="false"[^>]*>Voice off</);
+  assert.doesNotMatch(storyHtml(r), /data-dlg-voice/);
+  assert.match(storyHtml(r, { voice: true }), /data-dlg-voice aria-pressed="true"[^>]*>有声</);
+  assert.match(storyHtml(r, { voice: false, lang: 'en' }), /aria-pressed="false"[^>]*>Voice off</);
   // 录: a 回 done with no audio has no 听书
   const book = { ok: true, chapters: [{ id: 'h01', title: '第一回', state: 'done', recap: [] }, { id: 'h02', title: '第二回', state: 'current', recap: [] }] };
   assert.doesNotMatch(luHtml(book, { listen: (h) => listenHtml(EMPTY, h) }), /data-listen/);

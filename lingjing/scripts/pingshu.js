@@ -108,7 +108,8 @@ export function createNarrator(make = () => new Audio()) {
     el.src = url;
     el.play?.()?.catch?.(() => { /* autoplay refused or the file failed: stay silent */ });
   }
-  return { sync, stop, get playing() { return now; } };
+  // `sounding`: a clip is being heard right now — the stage's lines wait for its end (lingjing.js storyDone).
+  return { sync, stop, get playing() { return now; }, get sounding() { return Boolean(el && now && !el.paused && !el.ended); } };
 }
 
 /* ── 听书 ── a 回's whole telling: one <audio controls> per page, kept across

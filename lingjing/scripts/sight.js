@@ -9,7 +9,8 @@
 // next beat, it shrinks back to his small card in the header and is gone.
 //
 // Also here: the chat beside the stage folds away (a handle on the seam), kept
-// per viewer in this browser.
+// per viewer in this browser — and the page's own fold for a game, the map or a
+// fight (setAutoFold), which keeps nothing.
 import { esc } from './esc.js';
 
 /* The kinds that come on in person: a 人物 or a 生物 — a thing or an art does not. */
@@ -59,6 +60,14 @@ function leave(card) {
 /* 收起/展开 the chat: a handle on the seam between the stage and the chat;
    folded, the stage has the whole width. Kept in this browser (it may refuse). */
 const CHAT_KEY = 'lingjing.chatFolded';
+/* The page's own fold (2026-10-14, the approved prototypes: games, the map and a fight fold the
+   chat; story pages keep it open): `autofold` on the shell, apart from the viewer's handle —
+   nothing kept. A tap on the handle while it holds opens the chat for that game (`autoopen`). */
+export function setAutoFold(shell, on) {
+  if (!shell) return;
+  if (!on) shell.classList.remove('autoopen');
+  shell.classList.toggle('autofold', Boolean(on));
+}
 const CHAT_WORDS = { zh: ['收起对话', '展开对话'], en: ['Fold the chat away', 'Open the chat'] };
 export function mountChatToggle(shell, lang = () => 'zh') {
   if (!shell || shell.querySelector('.chattoggle')) return;
@@ -67,17 +76,27 @@ export function mountChatToggle(shell, lang = () => 'zh') {
   const btn = document.createElement('button');
   btn.className = 'chattoggle';
   btn.type = 'button';
+  const paint = () => {
+    const shut = shell.classList.contains('autofold') ? !shell.classList.contains('autoopen') : folded;
+    const w = CHAT_WORDS[lang()] ?? CHAT_WORDS.zh;
+    btn.setAttribute('aria-pressed', shut ? 'true' : 'false');
+    btn.title = w[shut ? 1 : 0];
+    btn.setAttribute('aria-label', w[shut ? 1 : 0]);
+    btn.innerHTML = `<span aria-hidden="true">${shut ? '‹' : '›'}</span>`;
+  };
+  // The page's fold comes and goes with the stage: the handle's arrow follows it.
+  new MutationObserver(paint).observe(shell, { attributes: true, attributeFilter: ['class'] });
   const set = (on, keepIt) => {
     folded = on;
     shell.classList.toggle('chatfolded', on);
-    const w = CHAT_WORDS[lang()] ?? CHAT_WORDS.zh;
-    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    btn.title = w[on ? 1 : 0];
-    btn.setAttribute('aria-label', w[on ? 1 : 0]);
-    btn.innerHTML = `<span aria-hidden="true">${on ? '‹' : '›'}</span>`;
+    paint();
     if (keepIt) { try { localStorage.setItem(CHAT_KEY, on ? '1' : '0'); } catch { /* this load only */ } }
   };
-  btn.addEventListener('click', () => set(!folded, true));
+  btn.addEventListener('click', () => {
+    // Folded by the page for a game: the handle opens it for this game only, and keeps nothing.
+    if (shell.classList.contains('autofold')) { shell.classList.toggle('autoopen'); paint(); return; }
+    set(!folded, true);
+  });
   shell.appendChild(btn);
   set(folded, false);
 }

@@ -46,3 +46,16 @@ export function particlesHtml(particles, seed = 'lingjing') {
 
 /// The body's classes for a layer: `fest-<frame>` and `wx-<weather>`.
 export const atmosClasses = (a) => [a.frame ? `fest-${a.frame}` : null, a.weather ? `wx-${a.weather}` : null].filter(Boolean);
+
+/// The stage's backdrop (2026-10-14): a painting per weather kind, by day and by night, from
+/// the world's declared table (worlds/<w>/backdrops.json `kinds` → { day, night }: a file
+/// under the world). Swapping a painting in is a data change only. A kind the table lacks
+/// falls back to its `clear` row; a world with no table keeps the paper (null).
+export const DAYPARTS = ['day', 'night'];
+export function backdropOf(table, kind, isDay = true) {
+  const rows = table?.kinds;
+  if (!rows) return null;
+  const row = rows[Object.hasOwn(WEATHER, kind ?? '') ? kind : 'clear'] ?? rows.clear;
+  const part = isDay === false ? 'night' : 'day';
+  return row?.[part] ?? row?.day ?? null;
+}

@@ -1,0 +1,272 @@
+/* story.css — the full stage (Hanli, 2026-10-14: the approved prototypes, proto/a–k).
+   The header and the footer are thin paper bars; only the middle goes full-bleed: a
+   painting of the sky (lingjing.js paintBackdrop), darkened toward its foot, the weather
+   over it (atmos.js), and the book's words coming up a sentence at a time (lines.js). The
+   choices stand on the stage once the passage is read. 今线 keeps a pale modern stage. */
+.view { --ink-night: #0d1114; --on-stage: #F1ECE1; --on-dim: rgba(241, 236, 225, .62); --yinyue-glow: #B9D3E6; --ling-glow: #E3C07E; --head-h: 0px; }
+
+/* ── the thin bars ── */
+.topbar { flex-wrap: nowrap; min-height: 52px; padding: 6px 18px; gap: 6px 14px; overflow: hidden; }
+.topbar .titlerow { order: 1; flex: 0 1 auto; min-width: 0; }
+.topbar .placecap { order: 1; flex: 1 1 0; min-width: 0; margin: 0; display: block; -webkit-line-clamp: unset; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; color: var(--faint); }
+.topbar .langsw { order: 3; margin-left: 0; }
+.topbar .headcards { order: 2; flex: 0 0 auto; display: flex; align-items: center; gap: 8px; min-width: 0; margin-left: auto; }
+.topbar .headcards:empty { display: none; }
+.topbar .card.peoplecard { padding: 0; border: 0; background: none; box-shadow: none; max-width: none; margin: 0; }
+.topbar .peoplecard .people { display: flex; flex-wrap: nowrap; gap: 8px; }
+.topbar .peoplecard .person { display: flex; align-items: center; gap: 6px; margin: 0; padding: 2px 8px 2px 2px; border: 1px solid var(--line); border-radius: 10px; background: var(--ground); }
+.topbar .peoplecard .person[data-codex-big] { cursor: pointer; }
+.topbar .peoplecard .person[data-codex-big]:hover { border-color: var(--ling); }
+.topbar .peoplecard .person img, .topbar .peoplecard .person .namecard { width: 30px; height: 40px; border-radius: 7px; border: 0; object-fit: cover; object-position: 50% 18%; }
+.topbar .peoplecard .person .namecard b { font-size: 11px; letter-spacing: 0; }
+.topbar .peoplecard figcaption b { font-family: var(--serif); font-weight: 600; font-size: 13px; white-space: nowrap; }
+.topbar .peoplecard figcaption .small { display: none; }
+.topbar .goalline { max-width: 26em; margin: 0; font-size: 12px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar .goalline .goalnext { display: inline; margin: 0 0 0 8px; }
+.slotfoot { height: 46px; display: flex; align-items: center; gap: 8px; padding: 0 16px; grid-template-rows: none; }
+.slotfoot .footrow { flex: 0 1 auto; min-width: 0; }
+.slotfoot .footrow:has(> span:only-child:empty), .slotfoot .footrow:empty { display: none; }
+.slotfoot .footchips { flex: 1 1 auto; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.slotfoot .footchips [data-lu] { margin-left: auto; }
+body.fighting .slotfoot { height: 46px; }
+
+/* 银月's 木牌 (proto k): grey while she sleeps, warm while her words are up. */
+.yytoken { display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 2px 10px 2px 3px; border-radius: 99px; font: inherit; font-size: 12.5px; cursor: pointer;
+  border: 1px solid color-mix(in srgb, var(--yinyue) 35%, transparent); color: var(--yinyue); background: var(--yinyue-soft); white-space: nowrap; transition: box-shadow .4s, background .4s; }
+.yytoken img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+.yytoken.sleep img { filter: grayscale(.5); opacity: .8; }
+.yytoken.warm { box-shadow: 0 0 0 4px color-mix(in srgb, var(--yinyue) 22%, transparent), 0 0 18px color-mix(in srgb, var(--yinyue) 45%, transparent); background: var(--surface); }
+.yytoken.warm img { filter: none; opacity: 1; }
+/* Her corner chip is the 木牌 now; the frame stays for unease.js, shown only while her price plays. */
+.view .stage:not(.unease) { display: none; }
+
+/* ── the stage: the painting, its shade, the weather over it ── */
+.view:has(.backdrop.painted) { background: var(--ink-night); }
+.backdrop.painted { background: none; opacity: 1; filter: none; -webkit-mask-image: none; mask-image: none; overflow: hidden; }
+.backdrop .bd { position: absolute; inset: 0; background: var(--art) center 40% / cover no-repeat; animation: bdIn 1.6s ease both, ken 40s ease-in-out infinite alternate; }
+.backdrop .bd.going { animation: bdOut 1.6s ease both; }
+@keyframes bdIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes bdOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes ken { from { transform: scale(1.02); } to { transform: scale(1.09) translate(-1%, -1%); } }
+.view > .shade { position: absolute; inset: 0; pointer-events: none; z-index: 1; display: none; }
+.view:has(.backdrop.painted) > .shade { display: block; background: linear-gradient(to bottom, rgba(13, 17, 20, .3), rgba(13, 17, 20, .38)); }
+body.storying .view:has(.backdrop.painted) > .shade { background: linear-gradient(to bottom, rgba(13, 17, 20, .18) 0%, rgba(13, 17, 20, 0) 22%, rgba(13, 17, 20, 0) 38%, rgba(13, 17, 20, .72) 64%, rgba(13, 17, 20, .94) 100%); }
+body.fighting .view > .shade { display: none; }
+
+/* ── the story over the stage ── */
+.dlgwrap { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.dlgwrap:empty { display: none; }
+.dlgwrap > * { pointer-events: auto; }
+body.storying .slots { visibility: hidden; }
+.story { position: absolute; inset: 0; color: var(--on-stage); cursor: pointer; user-select: none; -webkit-user-select: none; outline: none; }
+.story:focus-visible { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ling-glow) 60%, transparent); }
+.story .lines { position: absolute; left: 0; right: 0; bottom: 74px; display: flex; justify-content: center; padding: 0 56px; pointer-events: none; transition: opacity .45s ease; }
+.story .screen { width: min(44em, 100%); font-family: var(--serif); font-size: 19px; line-height: 1.95; letter-spacing: .03em; text-shadow: 0 1px 12px rgba(0, 0, 0, .55); transition: opacity .42s ease; }
+.story .screen[hidden] { display: none; }
+.story .screen.out { opacity: 0; }
+.story .screen p { margin: 0; }
+.story .s { opacity: 0; filter: blur(2px); transition: opacity .9s ease, filter .9s ease; }
+.story .s.on { opacity: 1; filter: none; }
+.story .who { display: block; font-family: var(--serif); font-weight: 600; font-size: 13.5px; letter-spacing: .3em; color: var(--ling-glow); margin-bottom: 2px; }
+.story .act { color: var(--on-dim); }
+.story .line.yy .s { color: var(--yinyue-glow); }
+.story .line.yy .who { color: var(--yinyue-glow); }
+.story .line.ling { font-family: var(--ui); font-size: 15px; line-height: 1.7; letter-spacing: .02em; color: var(--ling-glow); border-left: 2px solid color-mix(in srgb, var(--ling-glow) 60%, transparent); padding-left: 12px; }
+.story .line.ling .who { display: inline; margin: 0 8px 0 0; letter-spacing: .04em; }
+:lang(en) .story .screen { letter-spacing: 0; line-height: 1.75; }
+/* Her words up: the stage's foot glows silver-blue (proto k). */
+.story:has(.line.yy)::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 40%; pointer-events: none;
+  background: radial-gradient(50% 60% at 50% 100%, rgba(157, 188, 211, .35), transparent 70%); animation: bdIn .8s ease both; }
+
+/* The quiet controls: never the way on. */
+.story .ctrl { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 8px; padding: 0 18px 16px; }
+.story .ctrl .sp { flex: 1; }
+.story .q, .appear .q { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 99px; border: 1px solid rgba(241, 236, 225, .28); background: rgba(13, 17, 20, .25);
+  color: var(--on-dim); font: inherit; font-size: 12.5px; line-height: 1.4; cursor: pointer; transition: color .2s, border-color .2s; }
+.story .q:hover, .appear .q:hover { color: var(--on-stage); border-color: rgba(241, 236, 225, .6); }
+.story .q.on { color: var(--on-stage); }
+.story .seg { display: inline-flex; border: 1px solid rgba(241, 236, 225, .28); border-radius: 99px; overflow: hidden; background: rgba(13, 17, 20, .25); }
+.story .seg button { border: 0; background: none; color: var(--on-dim); font: inherit; font-size: 12px; padding: 4px 10px; cursor: pointer; }
+.story .seg button.on { color: var(--ink-night); background: rgba(241, 236, 225, .82); }
+.story .count { margin: 0 4px; font-size: 12px; color: var(--on-dim); font-variant-numeric: tabular-nums; }
+.story .count.before { padding: 0 6px; border: 1px solid rgba(241, 236, 225, .28); border-radius: 3px; }
+.story .held { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); font-size: 12px; letter-spacing: .2em; padding: 3px 12px; border-radius: 99px;
+  background: rgba(13, 17, 20, .55); color: var(--on-stage); opacity: 0; transition: opacity .2s; pointer-events: none; }
+.story.held .held { opacity: 1; }
+
+/* The way on: only once the passage is read, its last line faint above it (proto b). */
+.story .ways { position: absolute; left: 0; right: 0; bottom: 70px; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 0 24px; visibility: hidden; opacity: 0; transition: opacity .6s ease; cursor: default; }
+.story.done .ways { visibility: visible; opacity: 1; }
+.story.choosing.done .lines { opacity: 0; }
+.story .ways .last { width: min(44em, 100%); font-family: var(--serif); font-size: 17px; line-height: 1.9; color: var(--on-dim); text-align: left; margin-bottom: 6px; text-shadow: 0 1px 10px rgba(0, 0, 0, .5); }
+.story .wayacts { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; max-height: 52vh; overflow-y: auto; }
+.story .wayacts .paneltaps { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; margin: 0; }
+.story .wayacts .paneltap, .story .wayacts .quietnext { min-width: min(420px, 100%); max-width: 100%; padding: 13px 26px; border-radius: 10px; border: 1px solid rgba(227, 192, 126, .7);
+  background: rgba(251, 248, 242, .94); color: #1D1B17; font-family: var(--serif); font-size: 17px; letter-spacing: .06em; text-decoration: none; box-shadow: 0 6px 24px rgba(0, 0, 0, .35);
+  transition: transform .15s ease, box-shadow .15s ease; }
+.story .wayacts .paneltap:hover:not(:disabled), .story .wayacts .quietnext:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0, 0, 0, .45); border-color: var(--ling); }
+.story .wayacts .paneltap.spent { opacity: .55; }
+.story .wayacts [data-panel-duel] { background: var(--seal); color: #fff; border-color: var(--seal); letter-spacing: .2em; }
+.story .wayacts .paneltap.errand { background: rgba(251, 248, 242, .8); font-size: 15px; }
+.story.done .wayacts > *, .story.done .wayacts .paneltaps > * { animation: wayIn .6s ease-out both; }
+.story.done .wayacts .paneltaps > :nth-child(2) { animation-delay: .18s; }
+.story.done .wayacts .paneltaps > :nth-child(3) { animation-delay: .3s; }
+@keyframes wayIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.story .wayacts .looks { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.story .wayacts .lookhead, .story .wayacts .lookfound li, .story .wayacts .sceneinvite { color: var(--on-dim); }
+.story .wayacts .lookfound li b { color: var(--on-stage); }
+.story .wayacts .lookchip { background: rgba(13, 17, 20, .35); color: var(--on-stage); border-color: rgba(241, 236, 225, .4); }
+.story .wayacts .donote { color: #f3c2b8; }
+.story .wayacts .riddle, .story .wayacts .card { color: var(--text); }
+
+/* 回看: everything shown so far, scrolled back, dark over the stage. */
+.dlglog { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; background: rgba(13, 17, 20, .9); color: var(--on-stage); cursor: default; }
+.dlgloghead { order: 2; display: flex; justify-content: center; padding: 12px; }
+.dlgloghead > span { display: none; }
+.dlglogbody { order: 1; width: min(44em, 100%); flex: 1; overflow-y: auto; padding: 40px 28px 20px; }
+.dlglogrow { font-family: var(--serif); font-size: 16.5px; line-height: 1.95; padding: 0 0 1em; color: color-mix(in srgb, var(--on-stage) 82%, transparent); }
+.dlglogrow.spoken { color: var(--on-stage); }
+.dlglogrow b { font-weight: 600; color: var(--ling-glow); margin-right: .6em; }
+.dlglogscene + .dlglogscene { margin-top: 8px; padding-top: 18px; border-top: 1px dashed rgba(241, 236, 225, .2); }
+.dlglogscene.now .dlglogrow:last-child { color: var(--ling-glow); }
+.dlglogmark { font-family: var(--ui); font-size: 12px; letter-spacing: .2em; color: var(--on-dim); margin: 0 0 18px; }
+.dlgrecap { display: inline-block; margin-right: 8px; padding: 0 6px; border: 1px solid rgba(241, 236, 225, .3); border-radius: 3px; font-family: var(--ui); font-size: 11px; letter-spacing: .1em; color: var(--on-dim); vertical-align: 2px; }
+.dlgact { color: var(--on-dim); }
+.dlglog .q { display: inline-flex; padding: 4px 14px; border-radius: 99px; border: 1px solid rgba(241, 236, 225, .35); background: rgba(13, 17, 20, .25); color: var(--on-stage); font: inherit; font-size: 13px; cursor: pointer; }
+/* The 回看 link under a scene card once the reading is put away. */
+.panelcard .dlgloglink { display: block; margin: 6px 4px 0 auto; font-size: 12px; }
+.focus .panelcard.bare .dlgloglink { margin: 6px auto 0; }
+
+/* The scene card with the reading put away (after a game, after a reload): its choices as the stage's. */
+.focus .card.panelcard.bare { background: none; border: 0; box-shadow: none; padding: 0; }
+.focus .panelcard.bare:has(.paneltaps) { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; box-shadow: 0 4px 18px rgba(0, 0, 0, .18); }
+.focus .panelcard.bare .paneltaps { margin-top: 0; justify-content: center; }
+.focus .panelcard.bare .paneltap { min-height: 44px; padding: 8px 18px; font-family: var(--serif); font-size: 15px; }
+.focus .panelcard.bare .looks { justify-content: center; margin: 10px 0 0; }
+.panelcard.reading .scenecap { opacity: .85; }
+
+/* ── 亮相 (proto c): his portrait large on the right of the stage, the name upright beside it,
+   one line; at the next beat it flies into his face in the header (sight.js). ── */
+.sight { position: absolute; inset: 0; top: calc(var(--head-h) + 0px); z-index: 3; pointer-events: none; }
+.sight:empty { display: none; }
+.sightcard { position: absolute; right: 9%; top: 6%; bottom: 30%; display: flex; align-items: flex-end; gap: 14px; pointer-events: auto; cursor: pointer; animation: sightIn 1.1s cubic-bezier(.2, .8, .2, 1) both; }
+.sightone { margin: 0; height: 100%; display: flex; flex-direction: row; align-items: flex-end; gap: 14px; }
+.sightpic { height: 100%; aspect-ratio: 2 / 3; width: auto; object-fit: cover; object-position: 50% 18%; border: 0; border-radius: 10px; background: none; box-shadow: none;
+  -webkit-mask-image: radial-gradient(ellipse 58% 62% at 50% 46%, #000 42%, transparent 76%); mask-image: radial-gradient(ellipse 58% 62% at 50% 46%, #000 42%, transparent 76%); }
+.sightpic.namecard { display: flex; align-items: center; justify-content: center; height: 70%; aspect-ratio: 2 / 3; background: rgba(241, 236, 225, .1); -webkit-mask-image: none; mask-image: none; }
+.sightpic.namecard b { font-family: var(--serif); font-size: 30px; letter-spacing: .2em; color: var(--on-stage); writing-mode: vertical-rl; }
+.sightone figcaption { flex: none; margin-bottom: 12%; padding: 16px 12px; border-radius: 10px; background: rgba(13, 17, 20, .62); color: var(--on-stage); font-family: var(--serif); text-shadow: 0 1px 8px rgba(0, 0, 0, .5); display: flex; flex-direction: column; align-items: center; }
+.sightone figcaption b { display: block; font-size: 30px; letter-spacing: .18em; writing-mode: vertical-rl; color: var(--on-stage); }
+.sightline { display: block; margin-top: 10px; font-size: 13.5px; color: rgba(241, 236, 225, .85); max-width: 9em; line-height: 1.6; }
+:lang(en) .sightone figcaption b { writing-mode: horizontal-tb; letter-spacing: .04em; font-size: 22px; }
+.sightcard.two { right: 4%; }
+.sightcard.going { pointer-events: none; animation: none; opacity: 0; transform: var(--to, translateY(-36px) scale(.5)); transition: transform .75s cubic-bezier(.5, 0, .3, 1), opacity .75s ease; }
+@keyframes sightIn { from { opacity: 0; transform: translateY(14px) scale(.96); } to { opacity: 1; transform: none; } }
+body.fighting .sight { display: none; }
+
+/* ── 出场 (proto d): the painting on the right, the words on the darkened left ── */
+.appear .appearart { left: 24%; width: 76%; object-position: 50% 45%; filter: grayscale(.25) sepia(.2) brightness(.7);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 30%); mask-image: linear-gradient(to right, transparent 0, #000 30%); }
+.appear .appearshade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to right, rgba(13, 18, 22, .92) 0%, rgba(13, 18, 22, .78) 34%, rgba(13, 18, 22, .2) 62%, rgba(13, 18, 22, 0) 80%), linear-gradient(to bottom, rgba(13, 18, 22, .3), rgba(13, 18, 22, 0) 30%, rgba(13, 18, 22, 0) 70%, rgba(13, 18, 22, .6)); }
+.appear .appeartext { position: relative; z-index: 2; padding: 0 64px 70px; max-width: 52em; background: none; }
+.appear .appeartext p { font-family: var(--serif); font-size: 19px; line-height: 1.85; letter-spacing: .04em; margin: 0 0 6px; text-shadow: 0 1px 12px rgba(0, 0, 0, .6); }
+.appear .appeartext q { margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(243, 231, 196, .25); font-family: var(--serif); font-size: 17px; letter-spacing: .1em; color: #f3e7c4; quotes: none; }
+.appear .appeartext q small { display: block; font-family: var(--ui); font-size: 12px; letter-spacing: .06em; color: rgba(243, 231, 196, .6); margin-top: 4px; }
+.appear .appearname { display: block; font-size: 15px; letter-spacing: .5em; color: rgba(243, 231, 196, .75); margin-bottom: 12px; }
+.appear .appearname b { font-size: 34px; letter-spacing: .3em; color: #f6eedb; font-weight: 600; margin-right: 12px; }
+.appear .appearskip { position: absolute; right: 18px; bottom: 16px; z-index: 3; }
+.appear.all .appearart { animation: none; opacity: .92; transform: scale(1.08); }
+.appear.all .appeartext p, .appear.all .appeartext q { animation: none; opacity: 1; transform: none; }
+
+/* ── 大场面 in the stage (the header and the footer stay) ── */
+.view .spstage { position: absolute; z-index: 30; }
+/* 景 at its beat (beatPiece): the piece's painting is the stage, its words come up over it. */
+.view .spback { position: absolute; inset: 0; z-index: 0; overflow: hidden; background: var(--ink-night); }
+.view .spback .sphost, .view .spback .sphost.fit { width: 100%; height: 100%; border-radius: 0; background: none; }
+.view .spback canvas { width: 100% !important; height: 100% !important; object-fit: cover; }
+.view .spback .spstill { width: 100%; height: 100%; object-fit: cover; }
+.view .sptitle { position: absolute; top: 34px; left: 40px; z-index: 2; display: flex; gap: 10px; align-items: flex-start; color: #2a241b; pointer-events: none; animation: spTitle 2.4s ease-out 1.6s both; }
+.view .sptitle b { writing-mode: vertical-rl; font-family: var(--serif); font-size: 40px; letter-spacing: .4em; font-weight: 600; text-shadow: 0 0 18px rgba(255, 255, 255, .8); }
+:lang(en) .view .sptitle b { writing-mode: horizontal-tb; font-size: 30px; letter-spacing: .06em; }
+@keyframes spTitle { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+.view:has(.spback) .backdrop, .view:has(.spback) .atmos .pts { opacity: 0; }
+
+/* ── 今线 (proto j): a pale modern stage, dark ink in the middle; no picture, no weather ── */
+.view.jin { background: linear-gradient(180deg, #E8ECEE, #D6DDE1); }
+.view.jin > .shade { display: none; }
+.view.jin .atmos { display: none; }
+.view.jin .story { color: #1f2a33; }
+.view.jin .story .lines { bottom: auto; top: 38%; }
+.view.jin .story .screen { text-shadow: none; }
+.view.jin .story .who { color: #3e5566; }
+.view.jin .story .q, .view.jin .story .seg { color: #5b6a76; border-color: rgba(62, 85, 102, .28); background: rgba(255, 255, 255, .45); }
+.view.jin .story .seg button { color: #5b6a76; }
+.view.jin .story .seg button.on { background: #3e5566; color: #fff; }
+.view.jin .story .count { color: #5b6a76; }
+.view.jin .story .held { background: rgba(62, 85, 102, .7); }
+.view.jin .story .ways { top: auto; }
+.view.jin .story .ways .last { color: #5b6a76; text-shadow: none; }
+.view.jin .story .wayacts .paneltap, .view.jin .story .wayacts .quietnext { background: #fff; border-color: #3e5566; box-shadow: 0 6px 20px rgba(30, 40, 50, .14); }
+@media (prefers-color-scheme: dark) {
+  .view.jin { background: linear-gradient(180deg, #171B1F, #0D1013); }
+  .view.jin .story { color: #dfe6ea; }
+  .view.jin .story .ways .last { color: #9aa8b3; }
+}
+
+/* ── narrow: the phone ── */
+@container scene (max-width: 640px) {
+  .topbar { flex-wrap: wrap; padding: 8px 12px; gap: 4px 10px; }
+  .topbar .placecap { display: none; }
+  .topbar .peoplecard figcaption { display: none; }
+  .topbar .peoplecard .person { padding: 1px; border-radius: 8px; }
+  .topbar .peoplecard .person img, .topbar .peoplecard .person .namecard { width: 26px; height: 34px; }
+  .slotfoot { padding: 0 10px; gap: 6px; }
+  .slotfoot .wxchip { display: none; }
+  .story .lines { padding: 0 20px; bottom: 64px; }
+  .story .screen { font-size: 17px; line-height: 1.9; }
+  .story .ctrl { padding: 0 12px 12px; gap: 6px; }
+  .story .count { display: none; }
+  .story .q { padding: 4px 9px; font-size: 12px; }
+  .story .seg button { padding: 4px 8px; }
+  .story .wayacts .paneltap, .story .wayacts .quietnext { min-width: 100%; font-size: 16px; padding: 12px 18px; }
+  .story .ways { bottom: 62px; padding: 0 16px; }
+  .sightcard { right: 4%; left: 4%; top: 4%; bottom: 42%; justify-content: center; }
+  .appear .appeartext { padding: 0 20px 60px; }
+  .appear .appeartext p { font-size: 16.5px; }
+  .appear .appearname b { font-size: 26px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .backdrop .bd { animation: bdIn .01s both; }
+  .story .s { transition: none; filter: none; }
+  .sightcard { animation: none; }
+  .sightcard.going { transform: none; transition: opacity .2s; }
+}
+
+/* 「完」 (proto f): a paper card over the darkened last picture; 合上 its one tap. */
+.focus .card.closecard { max-width: 520px; padding: 34px 54px 28px; border-radius: 12px; background: var(--surface); box-shadow: 0 18px 60px rgba(0, 0, 0, .4); }
+.closecard .closetitle { font-size: 26px; letter-spacing: .35em; margin-bottom: 14px; }
+.closecard .closehuimu { margin: 0 0 16px; font-size: 15px; letter-spacing: .25em; line-height: 1.9; }
+.closecard .closedid { margin: 0 auto 20px; max-width: 26em; font-family: var(--serif); font-size: 15px; line-height: 1.9; padding-top: 14px; border-top: 1px solid var(--line); }
+.closecard .acts { justify-content: center; margin-top: 10px; }
+.closecard .closeshut { min-width: 200px; padding: 11px 26px; border-radius: 10px; border: 1px solid rgba(227, 192, 126, .7); background: var(--surface); color: var(--text);
+  font-family: var(--serif); font-size: 16px; letter-spacing: .3em; box-shadow: 0 6px 24px rgba(0, 0, 0, .18); }
+.closecard .closeshut:hover { border-color: var(--ling); transform: translateY(-1px); }
+@container scene (max-width: 640px) { .focus .card.closecard { padding: 26px 18px 22px; } }
+
+/* The page's own fold (sight.js setAutoFold): games, the map and a fight take the width;
+   the handle opens the chat for that game alone (`autoopen`). Story pages keep it open. */
+.shell.autofold:not(.autoopen) { grid-template-columns: minmax(0, 1fr) 0; }
+.shell.autofold:not(.autoopen) #chat-panel { display: none; }
+.shell.autofold:not(.autoopen) .chattoggle { right: 0; transform: translateY(-50%); border-radius: 9px 0 0 9px; border-right: 0; }
+.shell.autofold.autoopen { grid-template-columns: minmax(0, 1fr) 440px; }
+.shell.autofold.autoopen #chat-panel { display: block; }
+.shell.autofold.autoopen .chattoggle { right: 440px; transform: translate(50%, -50%); border-radius: 9px; border-right: 1px solid var(--line); }
+@media (max-width: 860px) {
+  .shell.autofold:not(.autoopen) { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) 0; }
+  .shell.autofold:not(.autoopen) .chattoggle { top: auto; bottom: 0; right: auto; transform: translateX(-50%); border-radius: 9px 9px 0 0; border: 1px solid var(--line); border-bottom: 0; }
+  .shell.autofold.autoopen { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); }
+}
+.story .tag { display: inline-block; margin-right: 8px; padding: 0 6px; border: 1px solid color-mix(in srgb, var(--ling-glow) 45%, transparent); border-radius: 3px; font-size: 11px; letter-spacing: .1em; vertical-align: 2px; }
+/* A scratch save's quiet transcript: Ling's and 银月's lines copied off the stage (lingjing.js quietCopy). */
+#chat-panel .scratch-lines { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: calc(100vh - 120px); }
+#chat-panel .scratch-line { font-size: 13px; line-height: 1.65; padding: 8px 12px; border-radius: 12px; background: var(--ground); border: 1px solid var(--line); }

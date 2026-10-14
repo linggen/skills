@@ -31,11 +31,12 @@ import { doorsHtml } from './doors.js';
 import { HOMING_MS, freshHome, homingCardHtml, inkMapSvg, shapesOf, unrollHtml } from './inkmap.js';
 import { frameOf } from './atlas.js';
 import { fxTimes, glOK, playHoming as playHomingFx } from './fx.js';
-import { atmosClasses, atmosOf, particlesHtml } from './atmos.js';
+import { atmosClasses, atmosOf, backdropOf, particlesHtml } from './atmos.js';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
-import { advance, atLast, choicesUp, current, dialogHtml, huiAt, keepReading, leadsIn, loadReading, logHtml, noted, ofPlay, playing, readingFor, showAll, sightNow, sightings, withTold } from './dialogue.js';
-import { SIGHT_KINDS, mountChatToggle, paintSight } from './sight.js';
+import { advance, atLast, beatKey, choicesUp, current, huiAt, keepReading, leadsIn, loadReading, logHtml, noted, ofPlay, playing, readingFor, showAll, sightNow, sightings, storyHtml, withTold } from './dialogue.js';
+import { createLines, keepSpeed, speedNow, voiceOf } from './lines.js';
+import { SIGHT_KINDS, mountChatToggle, paintSight, setAutoFold } from './sight.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
 import { playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
@@ -342,8 +343,10 @@ async function loadContent(world, force = false) {
   }
   // 图鉴: the codex and the files it links — the same entries the book draws (codex.js).
   const [codex, people, items, arts] = await Promise.all(['codex.json', 'people.json', 'items.json', 'arts.json'].map((f) => content(baseDir, f).catch(() => null)));
+  // The stage's backdrops, by the weather and the hour (atmos.js backdropOf); a world without them keeps the paper.
+  const backdrops = await content(baseDir, 'backdrops.json').catch(() => null);
   const sameWorld = authored?.world === world.id;
-  authored = { world: world.id, dir: baseDir, creatures: all, herbs: herbs.herbs, hexagrams: hexagrams.hexagrams, traits: roots, dictionary, cards, codexFiles: { codex, people, creatures, items, arts }, loadedAt: Date.now() };
+  authored = { world: world.id, dir: baseDir, creatures: all, herbs: herbs.herbs, hexagrams: hexagrams.hexagrams, traits: roots, dictionary, cards, codexFiles: { codex, people, creatures, items, arts }, backdrops, loadedAt: Date.now() };
   if (!sameWorld) boards.clear();
 }
 
@@ -719,6 +722,7 @@ const herGrew = (before, now) => Boolean(before.her && now.her && (before.her.at
 /// 回's card and the dialogue box all stacked at once): a set piece plays
 /// first, then the seal, put away by a tap, then the rest (stageBusy).
 let featOn = false;
+const CHAPTER_SEAL_MS = 3600;
 let riseWaits = false; // a realm risen, its seal not yet up: the 回's ending card and the new 回's title wait for it
 // A new 回's seal on its way: the 回's turn (queue.js atTurn) — the box holds the new 回's
 // first passage until the seal has played, never the seal until that passage is over.
@@ -752,7 +756,8 @@ function featNow(kind, name, from = '', quiet = false, gains = '', her = null) {
   $('view')?.appendChild(el);
   const gone = () => { if (!el.isConnected) return; el.remove(); featOn = Boolean(document.querySelector('.feat')); render(); };
   el.addEventListener('click', gone);
-  setTimeout(gone, 6000 + Math.max(0, riseAfter - performance.now()));
+  // 「新的一回」 clears by itself in ~3.6 s (Hanli, 2026-10-14 choice 9: the 完 card's 合上 is the one tap); a realm's seal holds longer.
+  setTimeout(gone, (kind === 'chapter' ? CHAPTER_SEAL_MS : 6000) + Math.max(0, riseAfter - performance.now()));
   if (quiet) return;
   // Warm, not polite: a thing they lived through together, and what lies
   // ahead — and the name the game knows them by.
@@ -986,9 +991,22 @@ const scratchRoads = () => Boolean(SCRATCH) && !look?.seclusion && !look?.direct
 /// A scene on another line (a 今 interlude) keeps the 九鼎录 and the book; the rest is the 古's (stage.mjs FURNITURE).
 function footChipsHtml() {
   const has = (part) => !bout && stands(look, part);
-  return `${has('festival') ? festChipHtml() : ''}${has('weather') ? wxChipHtml(wxHere(), { lang: lang(), open: view.wxOpen, sense: view.wxSense, note: view.wxNote }) : ''}${has('lu') ? luChipHtml(lang(), view.luOpen) : ''}${has('read') ? readChipHtml(ctx()) : ''}
+  return `${has('her') ? herTokenHtml() : ''}${has('festival') ? festChipHtml() : ''}${has('weather') ? wxChipHtml(wxHere(), { lang: lang(), open: view.wxOpen, sense: view.wxSense, note: view.wxNote }) : ''}${has('lu') ? luChipHtml(lang(), view.luOpen) : ''}${has('read') ? readChipHtml(ctx()) : ''}
     ${stands(look, 'errands') ? bookChipHtml(ctx(), view.bookOpen, view.bookFresh) : ''}
     ${stands(look, 'bag') ? gearChipHtml(ctx(), view.gearOpen) : ''}`;
+}
+
+/* 银月 in the footer (proto k, 2026-10-14 choice 13): the 木牌 she sleeps in, once she has been
+   met — grey while she sleeps, warm while her words are on the stage (companionBeat); a tap
+   is a word to her, as the corner chip's 问问银月 was. Never on 今线 (stage.mjs FURNITURE `her`). */
+function herTokenHtml() {
+  const c = look?.companion;
+  if (!c?.joined || c.away) return '';
+  const w = words(), e = codexNow()?.get?.(`${c.id}-fox`) ?? codexNow()?.get?.(c.id);
+  const dir = look.world?.made ? `worlds/${look.world.base}` : look.world?.dir ?? 'worlds/jiuding';
+  const pic = e?.image ? `<img src="${esc(worldPath(dir, e.image))}" alt="">` : '';
+  const label = c.asleep ? w.herAsleep : c.name;
+  return `<button class="yytoken${c.asleep ? ' sleep' : ''}" data-ask-her title="${esc(w.askHer.replace('{name}', c.name))}">${pic}<span>${esc(label)}</span></button>`;
 }
 
 /* The weather chip names where the hero stands (Hanli, 2026-10-05: 「蒙山·晴」
@@ -996,20 +1014,34 @@ function footChipsHtml() {
    seasons, which the chip's popover says. */
 const wxHere = () => (look?.weather ? { ...look.weather, where: look.place?.name ?? look.weather.where } : null);
 
-/* 淡墨 under the stage, or the scene's own picture when the world paints one
-   (scene `panel.art`, declared in the content — never chosen by name here). */
+/* The backdrop (2026-10-14, the approved prototypes: 「底图 = 天气」): the whole stage, a
+   painting of the sky over the scene — its own, else the real one (Look's `weather`: the
+   scene's `weather` tag, else the engine's weather sense, else 蒙山's seasons) — by day or by
+   night, from the world's declared table (backdrops.json, atmos.js backdropOf). A scene may
+   declare its own picture (`backdrop`); a set piece's beat lays its painting over this one
+   (beatPiece) and a beast's 出场 its own (watchAppear). 今线 keeps its pale modern stage: no
+   picture and no weather. Never chosen by name here; a change cross-fades. */
 let drawnBackdrop = null;
 function paintBackdrop() {
-  const art = look?.scene?.panel?.art ?? null;
-  const src = art ? worldPath(look.world?.dir ?? 'worlds/jiuding', art) : null;
+  const dir = look?.world?.made ? `worlds/${look.world.base}` : look?.world?.dir ?? 'worlds/jiuding';
+  const own = look?.scene?.backdrop ?? null;
+  const day = look?.weather?.is_day ?? isDayNow();
+  const art = look?.scene?.line === 'jin' ? null : own ?? backdropOf(authored?.backdrops, look?.weather?.kind ?? null, day);
+  const src = art ? worldPath(dir, art) : null;
   if (src === drawnBackdrop) return;
   drawnBackdrop = src;
   const el = $('backdrop');
   if (!el) return;
   el.classList.toggle('painted', Boolean(src));
-  if (src) el.style.setProperty('--art', `url("${src.replace(/"/g, '%22')}")`);
-  else el.style.removeProperty('--art');
+  for (const old of el.querySelectorAll('.bd:not(.going)')) { old.classList.add('going'); setTimeout(() => old.remove(), 1700); }
+  if (!src) return;
+  const bd = document.createElement('i');
+  bd.className = 'bd';
+  bd.style.setProperty('--art', `url("${src.replace(/"/g, '%22')}")`);
+  el.appendChild(bd);
 }
+/* Day or night by the clock here (the sense's own `is_day` wins where Look carries one). */
+const isDayNow = (d = new Date()) => d.getHours() >= 6 && d.getHours() < 18;
 
 /* 节日 · 节气: today's festival as a chip — its task a word to Ling (she
    plays it out and pays it) until done — or the 节气's name, just said. */
@@ -1029,7 +1061,9 @@ function festChipHtml() {
    a redraw never restarts them. */
 let atmosKey = null;
 function paintAtmos() {
-  const a = atmosOf(look?.today?.festival?.dressing, PREVIEW.weather ?? look?.weather?.kind ?? null);
+  // 今线 has no weather (Hanli, 2026-10-14: a pale modern stage) — and no festival dressing of the 古's.
+  const jin = look?.scene?.line === 'jin';
+  const a = jin ? atmosOf(null, null) : atmosOf(look?.today?.festival?.dressing, PREVIEW.weather ?? look?.weather?.kind ?? null);
   const v = $('view');
   for (const c of [...v.classList]) if (c.startsWith('fest-') || c.startsWith('wx-')) v.classList.remove(c);
   v.classList.add(...atmosClasses(a));
@@ -1258,6 +1292,8 @@ function draw() {
   $('huiLine').textContent = look.chapter?.hui ? huiLineOf({ hui: look.chapter.hui, title: look.chapter.title, telling: huiAt(told), titles }) : '';
   $('place').textContent = look.scene?.place ?? look.chapter?.close?.place ?? look.place?.name ?? look.chapter?.title ?? '';
   // The scene's caption, small under the place (2026-10-14: never a beat in the box — told three times).
+  // The bar is thin now (2026-10-14): the caption keeps its small line where there is room, and is the place's title always.
+  $('place').title = (look.scene?.panel?.caption ?? []).join(' ');
   $('placeCap').textContent = (look.scene?.panel?.caption ?? []).join(' ');
   } finally { look = realLook; }
   // She is always at the player's side: on the stage whenever the game is
@@ -1270,9 +1306,10 @@ function draw() {
   const her = herHere() && !bout;
   holdHerVoice(herHere());
   tellCompanion(companionShown(look));
-  $('stageName').textContent = her ? look.companion.name : '';
-  $('askHerBtn').hidden = !her;
-  if (her) $('askHerBtn').textContent = words().askHer.replace('{name}', look.companion.name);
+  // Her name and the ask are the footer's 木牌 now (footChipsHtml herTokenHtml); the corner chip
+  // stays empty — unease.js still draws her price on its frame (#stage .body).
+  $('stageName').textContent = '';
+  $('askHerBtn').hidden = true;
   const cast = look.divination ? JSON.stringify(look.divination.throws) : null;
   keep({ castFresh: view.castSeen !== undefined && cast !== null && cast !== view.castSeen, castSeen: cast });
   if (view.castFresh) readingByHer(look.divination);
@@ -1284,17 +1321,19 @@ function draw() {
   paintIf('footRow', footRowHtml(slots));
   paintIf('footChips', footChipsHtml());
   $('focus').innerHTML = focusHtml(slots);
-  // The dialogue box at the stage's foot, the slots lifted over it (lingjing.css .dlgwrap).
-  // 景: a beat marked with its set piece plays the piece first, in the box's place (beatPiece).
+  // The story on the full stage (lines.js): the beat's words over the picture, a sentence at a time.
+  // 景: a beat marked with its set piece lays the piece's picture under its words (beatPiece).
   beatPiece(slots);
   const box = dialogBoxHtml(slots);
   paintIf('dlg', box);
-  // 初见: his first beat on show, he stands large over the box (sight.js).
+  document.body.classList.toggle('storying', box.includes('data-dlg-on'));
+  syncLines();
+  companionBeat(box.includes('data-dlg-on'));
+  // 初见: his first beat on show, he stands large on the stage (sight.js).
   paintSight($('sight'), box.includes('data-dlg-on') ? sightNow(readingHere(), firstFaces(), lang()) : [], { src: (f) => worldPath(look.world?.made ? `worlds/${look.world.base}` : look.world?.dir ?? 'worlds/jiuding', f) });
-  // The slots rise over the box's real height: a long beat grows it (lingjing.css --dlg-real).
-  const dlgH = $('dlg')?.offsetHeight ?? 0;
-  $('view')?.style.setProperty('--dlg-real', dlgH ? `${dlgH}px` : 'var(--dlg-h)');
   voiceBeat(box.includes('data-dlg-on'));
+  // Games, the map and a fight fold the chat away (they want the width); the story keeps it open.
+  foldFor(slots);
   holdFx();
   keep({ castFresh: false });
   drawLu();
@@ -1875,11 +1914,88 @@ function choicesInBox() {
   return Boolean(playing(r) && atLast(r, lang()) && !look?.tell_owed && !drawingTold && !boxYields(true) && !gameOpen(look));
 }
 function dialogBoxHtml(slots) {
-  const r = readingHere(), src = (f) => worldPath(look.world?.dir ?? 'worlds/jiuding', f);
+  const r = readingHere();
   if (!r || boxYields(slots)) return '';
   const voice = hasAudio(audio) ? dubOn() : null;
   const acts = choicesInBox() ? panelActsHtml(ctx(), { inBox: true }) : '';
-  return (playing(r) ? dialogHtml(r, { lang: lang(), src, voice, acts }) : '') + (view.logOpen ? logHtml(r, { lang: lang() }) : '');
+  return (playing(r) ? storyHtml(r, { lang: lang(), voice, acts, herId: look.companion?.id ?? null, speed: speedNow() }) : '') + (view.logOpen ? logHtml(r, { lang: lang() }) : '');
+}
+
+/* ── The lines' clock (lines.js) ──
+   One clock for the beat on show, keyed by the beat (dialogue.js beatKey): a repaint of the
+   same beat carries on; a new beat starts at its first sentence. Read through, the page goes
+   on by itself — the same `advance` a tap was (dialogue.js), so every order rule holds as it
+   did: the 回's turn, the games after the passage, the choices at its last beat. */
+const lines = createLines({ onDone: (key, tapped) => storyDone(key, tapped) });
+function syncLines() {
+  const el = $('dlg')?.querySelector('.story'), r = readingHere();
+  if (!el || !playing(r)) { lines.sync(null); return; }
+  // 跳过 stands on the 回's last beat shown whole, read at once.
+  lines.sync(el, el.dataset.story, { lang: lang(), instant: Boolean(r.all && atLast(r, lang())) });
+}
+/* A beat read (or tapped once read): the next — unless the way on is up (the choices: his
+   tap), or something holds the page: 回看 or the book open, a hold, more passages still to
+   draw behind the last beat, the 说书人 still telling this one. Then it looks again soon. */
+let doneWait = null;
+function storyDone(key, tapped = false) {
+  clearTimeout(doneWait);
+  const r = readingHere();
+  if (!playing(r) || beatKey(r, lang()) !== key) return;
+  const last = atLast(r, lang());
+  if (last && $('dlg')?.querySelector('.story .ways')) return;
+  const held = view.logOpen || view.luOpen || view.gearOpen || lines.paused || document.body.classList.contains('reading')
+    || (last && (look?.tell_owed || drawingTold)) || (!tapped && narrator.sounding);
+  if (held) { doneWait = setTimeout(() => storyDone(key), 700); return; }
+  nextBeat();
+}
+/* A tap on the stage: the next sentence now (lines.js); read through, the next beat. */
+let holdSwallow = false;
+function storyTap() {
+  if (holdSwallow) { holdSwallow = false; return; }
+  if (lines.key && $('dlg')?.querySelector('.story')) lines.tap();
+  else nextBeat();
+}
+/* 慢 · 中 · 快 — this viewer's, kept in this browser (lines.js keepSpeed). */
+function setSpeed(v) { keepSpeed(v); render(); }
+/* Holding the stage down pauses the lines; letting go goes on (and the release is no tap). */
+let holdTimer = null, holding = false;
+document.addEventListener('pointerdown', (e) => {
+  if (!e.target.closest?.('#dlg .story') || e.target.closest('button, .ways, .dlglog')) return;
+  clearTimeout(holdTimer);
+  holdTimer = setTimeout(() => { holding = true; lines.hold(true); }, 380);
+});
+const letGo = () => { clearTimeout(holdTimer); if (!holding) return; holding = false; holdSwallow = true; lines.hold(false); setTimeout(() => { holdSwallow = false; }, 400); };
+document.addEventListener('pointerup', letGo);
+document.addEventListener('pointercancel', letGo);
+
+/* Ling's and 银月's lines in the passage (proto k): played in place, her 木牌 in the footer warm
+   while her words are up; each copied once, quietly, into the chat — no turn, no badge. */
+const copied = new Set();
+function companionBeat(shown) {
+  const r = readingHere(), herId = look?.companion?.id ?? null;
+  const beat = shown && playing(r) ? current(r, lang()).beat : null;
+  const who = beat ? voiceOf(beat, herId) : null;
+  document.querySelector('.yytoken')?.classList.toggle('warm', who === 'yy');
+  if (!beat || (who !== 'yy' && who !== 'ling')) return;
+  const key = beatKey(r, lang()).replace(/\|all$/, '');
+  if (copied.has(key)) return;
+  copied.add(key);
+  const line = who === 'yy' ? `${beat.name ?? words().yinyue}：${beat.text}` : `${beat.text}`;
+  quietCopy(line);
+}
+function quietCopy(line) {
+  if (chat) { chat.addMessage('assistant', line); return; }
+  // A scratch save has no chat: the line goes into its quiet transcript beside the stage.
+  const log = document.querySelector('#chat-panel .scratch-lines');
+  if (log) { log.insertAdjacentHTML('beforeend', `<div class="scratch-line">${esc(line)}</div>`); log.scrollTop = log.scrollHeight; }
+}
+
+/* Games, the map and a fight fold the chat (proto g/h/i: 「对话收起」); the story keeps it open.
+   Only the page's own fold: the viewer's handle (sight.js, kept in this browser) is untouched. */
+function foldFor(slots) {
+  const main = slots?.main ?? [];
+  const wide = Boolean(bout) || gameUp(slots) || main.some((c) => c.card === 'map' || c.card === 'unfold') || Boolean(view.unfold);
+  setAutoFold(document.querySelector('.shell'), wide);
 }
 
 /* 对话框配音 (Hanli, 2026-10-01): the 说书人 tells the beat on show — its own
@@ -1902,7 +2018,7 @@ function voiceBeat(shown) {
    told once a play (told_scenes), so each comes on large once, at the book's own point. */
 const firstFaces = () => noted(readingHere(), lang()).map((id) => codexNow()?.get?.(id)).filter((e) => e && SIGHT_KINDS.has(e.kind));
 const nextBeat = () => { const r = readingOfPlay(); if (playing(r)) setReading(advance(r, lang())); };
-/* 显示全文: the rest of the passage at once, in the box; the choices at its end. */
+/* 跳过: the rest of this 回's passage at once — its last beat whole, the choices at its end. */
 function showAllBeats() {
   const r = readingOfPlay();
   if (playing(r)) setReading(showAll(r, lang()));
@@ -1954,6 +2070,15 @@ function watchAppear(cards) {
   // The last line strikes: the whole frame shakes with it.
   if (!stillMotion()) setTimeout(() => el?.classList.add('shaking'), 1200 + (lines - 1) * 2200);
   setTimeout(() => endAppear(c.id), stillMotion() ? 60000 : 1600 + lines * 2200 + 4200);
+}
+/* 跳过 on a beast's 出场 (proto d): the rest at once, the name and the classic's line with it;
+   then it goes by itself (or at a second tap). */
+function skipAppear(id) {
+  const el = $('view').querySelector(`.appear[data-appear="${CSS.escape(id)}"]`);
+  if (!el || el.classList.contains('all')) { endAppear(id); return; }
+  el.classList.remove('shaking');
+  el.classList.add('all');
+  setTimeout(() => endAppear(id), 3200);
 }
 async function endAppear(id) {
   if (view.appearing !== id) return;
@@ -2160,7 +2285,7 @@ document.addEventListener('keydown', (e) => {
   if (e.target.id === 'value-text' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.closest('.valuecard')?.querySelector('[data-value-go]:not(:disabled)')?.click(); }
   if (e.key === 'Escape' && view.logOpen) { show({ logOpen: false }); return; }
   if ((e.key === ' ' || e.key === 'Enter') && !e.isComposing && !e.target.closest?.('input, textarea, select, [contenteditable], #chat-panel') && titleAway()) { e.preventDefault(); return; }
-  if (boxKey(e)) { e.preventDefault(); nextBeat(); return; }
+  if (boxKey(e)) { e.preventDefault(); storyTap(); return; }
   if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.luOpen) show({ luOpen: false }); else if (view.pouchToss) show({ pouchToss: null }); else if (view.bookOpen || view.gearOpen || view.ledgerOpen) show({ bookOpen: false, gearOpen: false, ledgerOpen: false }); }
   if (e.key !== 'Enter' && e.key !== ' ') return;
   for (const [sel, open] of KEY_ROWS) {
@@ -2247,12 +2372,13 @@ const CLICKS = [
   ['[data-look-at]', (el) => { if (!el.matches(':disabled')) run(`look:${el.dataset.lookAt}`, () => lookAt(el.dataset.lookAt)); }],
   ['[data-panel-duel]', (el) => { if (!el.matches(':disabled')) callDuel(el.dataset.panelDuel); }],
   ['[data-panel-exit]', (el) => { if (!el.matches(':disabled')) run(`panel:${el.dataset.panelExit}`, () => panelTap(el.dataset.panelExit, el.textContent.trim(), el.dataset.panelAnswer)); }],
-  // The dialogue box: 回看 and 显示全文 first, then 「继续 ▸」 or a tap anywhere on it goes on.
+  // The story's quiet controls — 回看, 跳过, 配音, 慢 中 快 — first; then a tap anywhere on the stage (the next sentence).
   ['[data-dlg-log]', () => show({ logOpen: !view.logOpen })],
   ['[data-dlg-logclose]', () => show({ logOpen: false })],
   ['[data-dlg-all]', () => showAllBeats()],
   ['[data-dlg-voice]', () => { setDub(!dubOn()); render(); }],
-  ['[data-dlg-next]', () => nextBeat()],
+  ['[data-dlg-speed]', (el) => setSpeed(el.dataset.dlgSpeed)],
+  ['[data-dlg-next]', () => storyTap()],
   ['.dlglog', () => true],
   ['[data-lu]', () => (view.luOpen ? show({ luOpen: false }) : openLu())],
   ['[data-lu-close]', () => show({ luOpen: false, codexOpen: null })],
@@ -2324,7 +2450,8 @@ const CLICKS = [
   ['[data-refine-mat]', (el) => show({ refineMat: el.dataset.refineMat, refineNote: null })],
   ['[data-value-pick]', (el) => show({ valuePick: el.dataset.valuePick, valueText: '', valueNote: null })],
   ['[data-born]', (el) => { if (!el.matches(':disabled')) run('born', () => bornTap(el.dataset.born)); }],
-  ['[data-appear-done]', (el) => endAppear(el.dataset.appearDone)],
+  ['[data-appear-done]', (el) => skipAppear(el.dataset.appearDone)],
+  ['[data-appear]', (el) => skipAppear(el.dataset.appear)],
   ['[data-throw]', (el) => { if (!el.matches(':disabled')) run(`throw:${el.dataset.throw}`, () => throwTap(el.dataset.throw)); }],
   ['[data-value-go]', (el) => { if (!el.matches(':disabled')) run(`value:${el.dataset.valueGo}`, () => valueTap(el.dataset.valueGo)); }],
   ['[data-refine]', (el) => { if (el.dataset.refine) run('refine', () => refineTap(el.dataset.refine)); }],
@@ -2704,7 +2831,7 @@ async function mountChat() {
   // The chat folds away on a handle at the seam; the stage then has the whole width (sight.js).
   mountChatToggle(document.querySelector('.shell'), lang);
   // A scratch save (?save=) never starts or messages Ling's chat: no recap, no opening turn.
-  if (SCRATCH) { $('chat-panel').innerHTML = `<div class="scratch-chat" style="padding:24px 16px;color:#8a7a66;font-size:13px;line-height:1.8;text-align:center">${esc(SCRATCH_BADGE)}<br>${esc(SCRATCH_NOTE)}</div>`; return false; }
+  if (SCRATCH) { $('chat-panel').innerHTML = `<div class="scratch-chat" style="padding:24px 16px;color:#8a7a66;font-size:13px;line-height:1.8;text-align:center">${esc(SCRATCH_BADGE)}<br>${esc(SCRATCH_NOTE)}</div><div class="scratch-lines"></div>`; return false; }
   const resume = await recentSessionId();
   chat = await window.LinggenUI.mount($('chat-panel'), {
     skillName: SKILL,
@@ -2945,7 +3072,8 @@ async function playPiece(id, beats = null, said = null) {
   box.className = 'spstage';
   box.dataset.piece = id;
   box.innerHTML = `<div class="sphold"></div><p class="spline" aria-live="polite"></p><button class="spskip" type="button">${en ? 'Skip' : '跳过'}</button>`;
-  document.body.appendChild(box);
+  // In the stage (2026-10-14: the header and the footer are thin bars that stay; the chat stays beside).
+  ($('view') ?? document.body).appendChild(box);
   const mine = pieceOn = { id, box, ctl: null, over: false };
   const close = () => { if (pieceOn !== mine) return; mine.ctl?.destroy?.(); box.remove(); pieceOn = null; render(); };
   box.addEventListener('click', (e) => {
@@ -2964,27 +3092,54 @@ async function playPiece(id, beats = null, said = null) {
 }
 
 /* 景 — a set piece tied to a beat of the scene's own passage (rules/tell.mjs `{景=id}`, beatsOf
-   `piece`: 00-gate's 「沉鼎山并不怎么高」 → 沉鼎山). When the box is about to show that beat — so
-   after the 回's turn (the box yields at it) and every beat before it — the piece plays over the
-   whole stage first, the box stepping aside (momentUp); put away, the box comes back on that
-   beat. Once a save (kept in this browser beside the reading): a reload there does not replay it. */
+   `piece`: 00-gate's 「沉鼎山并不怎么高」 → 沉鼎山). Since 2026-10-14 (proto e) the piece IS the stage
+   at that beat: its painting under the beat's words — the camera moving on it, its name upright in
+   the corner — while the words come up over it as any beat's do (lines.js), never a box of its own.
+   Only where the story shows the beat (after the 回's turn and every beat before it: the box
+   yields there), nothing else up or on its way. The camera moves once a save (kept in this browser
+   beside the reading); a reload there shows its painting still. The next beat takes it away. */
 const PIECES_KEY = `lingjing.pieces.${SCRATCH || 'main'}`;
 let piecesPlayed = null;
 const playedPieces = () => {
   if (!piecesPlayed) { try { piecesPlayed = new Set(JSON.parse(localStorage.getItem(PIECES_KEY) ?? '[]')); } catch { piecesPlayed = new Set(); } }
   return piecesPlayed;
 };
+let beatBack = null; // { key, box, ctl } — the piece under the beat on show
 function beatPiece(slots) {
   const r = readingHere();
-  if (pieceOn || !playing(r) || boxYields(slots) || momentPending.size || stageBusy()) return;
+  if (pieceOn || !playing(r) || boxYields(slots) || momentPending.size || stageBusy()) return dropBeatPiece();
   const { beat } = current(r, lang());
-  if (!beat?.piece || beat.recap) return;
+  if (!beat?.piece || beat.recap) return dropBeatPiece();
   const key = `${look?.run ?? ''}|${r.items[r.i]?.id}|${beat.piece}`;
-  const done = playedPieces();
-  if (done.has(key)) return;
+  if (beatBack?.key === key) return;
+  dropBeatPiece();
+  const done = playedPieces(), again = done.has(key);
   done.add(key);
   try { localStorage.setItem(PIECES_KEY, JSON.stringify([...done].slice(-40))); } catch { /* no storage: this load only */ }
-  playPiece(beat.piece, null, beat.text);
+  layBeatPiece(key, beat.piece, again);
+}
+function dropBeatPiece() {
+  if (!beatBack) return;
+  const b = beatBack;
+  beatBack = null;
+  b.box.classList.add('going');
+  setTimeout(() => { b.ctl?.destroy?.(); b.box.remove(); }, 900);
+}
+async function layBeatPiece(key, id, still) {
+  const view$ = $('view');
+  if (!view$) return;
+  const box = document.createElement('div');
+  box.className = 'spback';
+  box.dataset.piece = id;
+  view$.insertBefore(box, view$.querySelector('.shade')?.nextSibling ?? null);
+  const mine = beatBack = { key, box, ctl: null };
+  try {
+    const def = await import(`./setpieces/${id}.js`);
+    const name = def.TITLE?.[lang()] ?? def.TITLE?.zh;
+    if (name) box.insertAdjacentHTML('beforeend', `<div class="sptitle"><b>${esc(name)}</b></div>`);
+    mine.ctl = await playSetPiece(box, id, { lang: lang(), still: still || stillMotion(), cover: true, auto: true });
+    if (beatBack !== mine) mine.ctl?.destroy?.();
+  } catch (e) { console.warn('[lingjing] set piece', id, e); if (beatBack === mine) dropBeatPiece(); }
 }
 
 let memoryWaits = false; // a memory come back, not yet on the stage (鼎归 waits for it)

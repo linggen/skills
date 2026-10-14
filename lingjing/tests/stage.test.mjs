@@ -211,9 +211,10 @@ test('the page draws the slots: header, main (#focus) holding the one thing, foo
   const fs = await import('node:fs');
   const html = fs.readFileSync(new URL('../scripts/index.html', import.meta.url), 'utf8');
   const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(html, /<div class="slothead" id="slotHead"><div class="headcards" id="headCards"><\/div><\/div>\s*<div class="focus" id="focus"><\/div>/);
-  // The 回 and the place on the strip's own line (Hanli, 2026-10-05: two rows made one).
-  assert.match(html, /<header class="topbar"><div class="status" id="status"><\/div><div class="titlerow"><span class="huiline" id="huiLine"><\/span><span class="place" id="place"><\/span><\/div><div class="placecap" id="placeCap"><\/div><\/header>/);
+  assert.match(html, /<div class="slots">\s*<div class="focus" id="focus"><\/div>\s*<\/div>/);
+  // The 回 and the place on the strip's own line (Hanli, 2026-10-05: two rows made one); the header's
+  // cards — the people, the goal — on the same thin bar since 2026-10-14 (the approved prototypes).
+  assert.match(html, /<header class="topbar"><div class="status" id="status"><\/div><div class="titlerow"><span class="huiline" id="huiLine"><\/span><span class="place" id="place"><\/span><\/div><div class="placecap" id="placeCap"><\/div><div class="headcards" id="headCards"><\/div><\/header>/);
   assert.match(html, /<footer class="slotfoot" id="slotFoot"><div class="footrow" id="footRow"><\/div><div class="footchips" id="footChips"><\/div><div class="askbar" id="askbar" hidden><\/div><\/footer>/);
   assert.match(html, /id="stage"/, 'her place on the stage stays');
   const focus = src.slice(src.indexOf('function focusHtml(slots)'), src.indexOf('function toastsHtml()'));
@@ -230,7 +231,7 @@ test('the day\'s coins wait for 银月 awake — asleep in the token, or not yet
   assert.deepEqual(kinds(stageCards(world({ companion: null }))), []);
 });
 
-test('the footer (Hanli, 2026-10-05): the weather chip names where he stands, 恩仇簿 is off it, the backdrop is ink or the scene\'s own picture', async () => {
+test('the footer (Hanli, 2026-10-05): the weather chip names where he stands, 恩仇簿 is off it; the backdrop is the weather\'s painting or the scene\'s own (2026-10-14)', async () => {
   const fs = await import('node:fs');
   const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   const html = fs.readFileSync(new URL('../scripts/index.html', import.meta.url), 'utf8');
@@ -240,7 +241,11 @@ test('the footer (Hanli, 2026-10-05): the weather chip names where he stands, �
   assert.match(src, /const wxHere = \(\) => \(look\?\.weather \? \{ \.\.\.look\.weather, where: look\.place\?\.name \?\? look\.weather\.where \} : null\);/);
   assert.doesNotMatch(html, /<svg class="backdrop"|<circle/, 'no hill or moon drawn in code');
   assert.match(html, /<div class="backdrop" id="backdrop" aria-hidden="true"><\/div>/);
-  assert.match(src, /const art = look\?\.scene\?\.panel\?\.art \?\? null;/, 'a picture only where the content declares one');
+  // A picture only where the content declares one: the scene's own `backdrop`, else the world's weather table.
+  assert.match(src, /const art = look\?\.scene\?\.line === 'jin' \? null : own \?\? backdropOf\(authored\?\.backdrops, look\?\.weather\?\.kind \?\? null, day\);/);
+  assert.match(html, /<div class="backdrop" id="backdrop" aria-hidden="true"><\/div>\s*<div class="shade" aria-hidden="true"><\/div>/);
+  // 银月's 木牌 in the footer, once met; never on 今线 (FURNITURE `her`).
+  assert.match(foot, /\$\{has\('her'\) \? herTokenHtml\(\) : ''\}/);
 });
 
 test('a face met in the header is not met again mid-stage: its first-meet card goes, a tap on the header opens its 图鉴', async () => {

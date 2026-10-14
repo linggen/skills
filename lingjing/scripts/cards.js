@@ -63,7 +63,7 @@ export const WORDS = {
     valueHint: '选一个，或自己写一个。', valueOwn: '自己写一个 · 至多{n}字', valueGo: '就叫这个', valueGoAs: '就叫「{v}」',
 
     bornHint: '只填年月日。只在本机推算灵根：不入存档，不入对话。不填也可，石头自己会看。', bornGo: '测灵根', bornSkip: '不填 · 让石头自己看', bornBad: '这一天不在历中，再看看。',
-    peopleTitle: '在场', appearSkip: '继续',
+    peopleTitle: '在场', appearSkip: '跳过', herAsleep: '木牌 · 睡着',
     ledgerChip: '恩仇簿', ledgerTitle: '恩仇簿', ledgerNote: '恩也记，仇也记——打得过那天，一笔一笔地还。', ledgerNone: '簿上还是空的。', ledgerKinds: { 恩: '恩', 仇: '仇', 诺: '诺' }, ledgerSaidTo: '你对{who}说', ledgerKept: '已践', ledgerBroken: '负诺', readChip: '读原著', readTitle: '读这本书的原著小说',
     scrollLayer: '第{n}层 · {name}', scrollDaily: '今日功课：{what}',
     notDone: '这一下没成，稍后再点。', fightRefused: '这一战没记上，牌还在原处。',
@@ -120,7 +120,7 @@ export const WORDS = {
     valueHint: 'Pick one, or write your own.', valueOwn: 'Your own · up to {n} characters', valueGo: 'Take this name', valueGoAs: 'Be called {v}',
 
     bornHint: 'Year, month and day only. Read on this machine for the roots — never saved, never said in the chat. Or leave it: the stone will look for itself.', bornGo: 'Test my roots', bornSkip: 'Leave it · let the stone look', bornBad: 'That day is not in the calendar — look again.',
-    peopleTitle: 'Here', appearSkip: 'Go on',
+    peopleTitle: 'Here', appearSkip: 'Skip', herAsleep: 'The tablet · asleep',
     ledgerChip: 'Ledger', ledgerTitle: 'The ledger of debts', ledgerNote: 'Kindness written, wrongs written — paid back one by one, the day you can.', ledgerNone: 'Nothing written yet.', ledgerKinds: { 恩: 'owed', 仇: 'wronged', 诺: 'vow' }, ledgerSaidTo: 'you said to {who}', ledgerKept: 'kept', ledgerBroken: 'broken', readChip: 'Read the novel', readTitle: 'Read the novel this game is told from',
     scrollLayer: 'Layer {n} · {name}', scrollDaily: "Today's practice: {what}",
     notDone: 'That did not go through — tap again in a moment.', fightRefused: 'This fight was not recorded; its card is still here.',
@@ -1347,11 +1347,15 @@ export function readChipHtml(ctx) {
 export function appearHtml(c, ctx) {
   const lines = c?.appear?.[ctx.lang] ?? c?.appear?.zh;
   if (!lines?.length) return '';
+  // 出场 (proto d, 2026-10-14): the painting on the right, the words on the darkened left; the
+  // name and the classic's line settle last. 跳过 shows the rest at once; then it goes by itself.
   const art = c.art ? `<img class="appearart" src="${esc(worldPath(c.dir ?? ctx.look?.world?.dir, c.art))}" alt="">` : '';
   const ps = lines.map((t, i) => `<p style="--i:${i}"${i === lines.length - 1 ? ' class="struck"' : ''}>${esc(t)}</p>`).join('');
-  return `<div class="appear" data-appear="${esc(c.id)}" style="--n:${lines.length}">${art}<div class="appeartext">${ps}
-    <q style="--i:${lines.length}">${esc(pick(c.quote, ctx.lang))}</q></div>
-    <button class="act quiet appearskip" data-appear-done="${esc(c.id)}">${esc(ctx.words.appearSkip)}</button></div>`;
+  const name = pick(c.name, ctx.lang) ?? c.name ?? '';
+  const sound = c.pinyin ? `<span class="appearpy">${esc(c.pinyin)}</span>` : '';
+  return `<div class="appear" data-appear="${esc(c.id)}" style="--n:${lines.length}">${art}<div class="appearshade"></div><div class="appeartext">${ps}
+    <q style="--i:${lines.length}">${name ? `<span class="appearname"><b>${esc(name)}</b>${sound}</span>` : ''}${esc(pick(c.quote, ctx.lang))}${c.source ? `<small>${esc(pick(c.source, ctx.lang))}</small>` : ''}</q></div>
+    <button class="q appearskip" data-appear-done="${esc(c.id)}">${esc(ctx.words.appearSkip)} <span aria-hidden="true">»</span></button></div>`;
 }
 
 /// 渡劫 — the breakthrough as one throw (rules/breakthrough.mjs; Hanli,
@@ -1393,7 +1397,7 @@ function closed(card, ctx) {
   const huimu = c.huimu?.length ? `<p class="closehuimu">${c.huimu.map((l) => `<span>${esc(l)}</span>`).join('')}</p>` : '';
   return `<div class="card closecard${c.juan ? ' juanend' : ''}">${c.juan ? `<div class="closejuan">${esc(c.juan)}</div>` : ''}<div class="closetitle">${esc(c.title)}</div>${huimu}${c.did ? `<p class="closedid">${esc(c.did)}</p>` : ''}`
     + `${c.teaser ? `<p class="closetease">${esc(c.teaser)}</p>` : ''}${coming ? `<div class="closecoming">${esc(coming)}</div>` : ''}`
-    + `<div class="acts"><button class="act quiet" data-close-chapter="${esc(c.id)}">${esc(ctx.words.closeAway ?? '合上')}</button></div></div>`;
+    + `<div class="acts"><button class="act closeshut" data-close-chapter="${esc(c.id)}">${esc(ctx.words.closeAway ?? '合上')}</button></div></div>`;
 }
 
 const RENDER = { closed, meet, codex, panel, value, born, people, breakthrough, handed, tale, lundao, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, road, seclude, seclusion };

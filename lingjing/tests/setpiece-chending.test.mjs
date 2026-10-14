@@ -135,15 +135,18 @@ test('the box never says the mark; the beat carries the piece, at its own paragr
   }
 });
 
-test('the page plays it at that beat, in the box\'s place: never at the 回\'s turn, never over a game or another moment', () => {
+test('the page lays it under that beat\'s words, as the whole stage: never at the 回\'s turn, never over a game or another moment', () => {
   // At the turn (今 · 一 · 完 up, 第三回's seal owed) the box steps aside, so no beat of it is on show.
   assert.equal(boxGivesWay({ huiTurn: atTurn({ closeUp: true, sealOwed: true }) }), true);
   const fn = src.slice(src.indexOf('function beatPiece('), src.indexOf('function beatPiece(') + 900);
-  assert.match(fn, /if \(pieceOn \|\| !playing\(r\) \|\| boxYields\(slots\) \|\| momentPending\.size \|\| stageBusy\(\)\) return;/, 'only where the box would show the beat, nothing else up or on its way');
-  assert.match(fn, /const \{ beat \} = current\(r, lang\(\)\);\s*if \(!beat\?\.piece \|\| beat\.recap\) return;/);
-  assert.match(fn, /playPiece\(beat\.piece, null, beat\.text\)/, 'the piece says the box\'s words: a 节本 cut, never the book\'s longer paragraph');
-  assert.match(fn, /done\.add\(key\)/, 'once a save');
-  // Before the box is drawn: the piece is up (momentUp) and the box yields the same render.
+  assert.match(fn, /if \(pieceOn \|\| !playing\(r\) \|\| boxYields\(slots\) \|\| momentPending\.size \|\| stageBusy\(\)\) return dropBeatPiece\(\);/, 'only where the story shows the beat, nothing else up or on its way');
+  assert.match(fn, /const \{ beat \} = current\(r, lang\(\)\);\s*if \(!beat\?\.piece \|\| beat\.recap\) return dropBeatPiece\(\);/, 'the next beat takes it away');
+  assert.match(fn, /layBeatPiece\(key, beat\.piece, again\)/, 'its painting under the beat; the words are the beat\'s own (a 节本 cut), never the book\'s longer paragraph');
+  assert.match(fn, /done\.add\(key\)/, 'the camera once a save');
+  const lay = src.slice(src.indexOf('async function layBeatPiece('), src.indexOf('async function layBeatPiece(') + 1200);
+  assert.match(lay, /playSetPiece\(box, id, \{ lang: lang\(\), still: still \|\| stillMotion\(\), cover: true, auto: true \}\)/, 'the whole stage, no letterbox');
+  assert.match(lay, /def\.TITLE/, 'its name upright in the corner (proto e)');
+  // Before the story is drawn, the same render.
   assert.match(src, /beatPiece\(slots\);\n {2}const box = dialogBoxHtml\(slots\);/);
   assert.match(src, /const momentUp = \(\) => Boolean\(pieceOn \|\|/);
   assert.doesNotMatch(fn, /00-gate|chending/, 'no scene named in code');

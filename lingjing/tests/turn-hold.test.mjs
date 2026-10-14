@@ -102,7 +102,9 @@ test('the header holds the old scene through all that leads in — a 前情 firs
 });
 
 test('the large 亮相 card stands under the header, never over its people row', () => {
-  const rules = [...css.matchAll(/(?:^|\n)\s*\.sight \{([^}]*)\}/g)].map((m) => m[1]);
+  // The header's people are the top bar's since 2026-10-14 (story.css): the stage starts under it.
+  const story = fs.readFileSync(new URL('../scripts/story.css', import.meta.url), 'utf8');
+  const rules = [...`${css}\n${story}`.matchAll(/(?:^|\n)\s*\.sight \{([^}]*)\}/g)].map((m) => m[1]);
   assert.ok(rules.length >= 1);
   for (const r of rules) {
     const top = r.match(/top:\s*([^;]+);/)?.[1];

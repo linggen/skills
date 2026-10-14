@@ -2,16 +2,17 @@
 // a person or a foe the scene brings on for the first time stands large on the
 // stage at the beat that first has him — he speaks, or the narration names him —
 // and never again. Who is new is read off the save (rules/codex.mjs newHere), so
-// an old save never meets again whom it met. Also: the box's name plate, the top
-// strip as one line, the chat folding away.
+// an old save never meets again whom it met. Also: the speaker's name over his
+// line, the top strip as one line, the chat folding away (the viewer's, and the
+// page's own for a game).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { meetsOf, newHere } from '../scripts/rules/codex.mjs';
-import { dialogHtml, sightings, sightNow, advance, withTold } from '../scripts/dialogue.js';
-import { SIGHT_KINDS, sightHtml } from '../scripts/sight.js';
+import { storyHtml, sightings, sightNow, advance, withTold } from '../scripts/dialogue.js';
+import { SIGHT_KINDS, setAutoFold, sightHtml } from '../scripts/sight.js';
 import { codexCompactHtml } from '../scripts/codex.js';
 
 const content = loadContent();
@@ -61,16 +62,18 @@ test('the large card: his picture or a name card, his name and one line; a tap g
   assert.deepEqual([...SIGHT_KINDS], ['人物', '生物']);
 });
 
-test('the name plate hangs on the box (outside its text); narration hangs none', () => {
-  const spoken = dialogHtml(read([{ who: 'qulao', name: '瞿老', text: '来了？' }]));
-  assert.match(spoken, /<div class="dlgname">瞿老<\/div><div class="dlghead">[\s\S]*<div class="dlgbody"><div class="dlgtext">来了？/);
-  assert.doesNotMatch(dialogHtml(read([{ text: '风大。' }])), /dlgname/);
+test('the speaker\'s name leads his line on the stage; narration has none', () => {
+  const spoken = storyHtml(read([{ who: 'qulao', name: '瞿老', text: '来了？' }]));
+  assert.match(spoken, /<p class="line spoken"><b class="who">瞿老<\/b><span class="s">来了？<\/span><\/p>/);
+  assert.match(storyHtml(read([{ text: '风大。' }])), /<p class="line told"><span class="s">风大。<\/span><\/p>/);
+  assert.doesNotMatch(storyHtml(read([{ text: '风大。' }])), /class="who"/);
 });
 
-test('the page: the sight over the box, no first-meet card for a face it showed, one top line, the chat folds', () => {
+test('the page: the sight on the stage, no first-meet card for a face it showed, one top line with the faces, the chat folds', () => {
   const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   const html = fs.readFileSync(new URL('../scripts/index.html', import.meta.url), 'utf8');
   const css = fs.readFileSync(new URL('../scripts/lingjing.css', import.meta.url), 'utf8');
+  const story = fs.readFileSync(new URL('../scripts/story.css', import.meta.url), 'utf8');
   assert.match(src, /const sighted = sightings\(readingHere\(\), firstFaces\(\), lang\(\)\);\n {2}cards = cards\.filter\(\(c\) => c\.card !== 'meet' \|\| !sighted\.has\(c\.id\)\);/);
   assert.match(src, /paintSight\(\$\('sight'\), box\.includes\('data-dlg-on'\) \? sightNow\(readingHere\(\), firstFaces\(\), lang\(\)\) : \[\]/);
   assert.match(src, /const firstFaces = \(\) => noted\(readingHere\(\), lang\(\)\)/, 'only the faces the book marks in the reading — no name in code');
@@ -78,7 +81,19 @@ test('the page: the sight over the box, no first-meet card for a face it showed,
   assert.match(html, /<header class="topbar"><div class="status" id="status"><\/div><div class="titlerow">/);
   assert.match(src, /mountChatToggle\(document\.querySelector\('\.shell'\), lang\);/);
   assert.match(css, /\.shell\.chatfolded \{ grid-template-columns: minmax\(0, 1fr\) 0; \}/);
-  assert.match(css, /\.view:has\(\.sight \.sightcard:not\(\.going\)\) \.dlgface \{ display: none; \}/, 'the large picture up: no small one of him in the box');
+  // 亮相 (proto c): on the stage's right, his name upright; at the next beat into his face in the header bar.
+  assert.match(story, /\.sightcard \{ position: absolute; right: 9%; top: 6%; bottom: 30%;/);
+  assert.match(story, /\.sightone figcaption b \{ display: block; font-size: 30px; letter-spacing: \.18em; writing-mode: vertical-rl;/);
+  assert.match(html, /<div class="headcards" id="headCards"><\/div><\/header>/, 'the faces he flies to are the top bar\'s');
+  // Games, the map and a fight fold the chat; the page's fold keeps nothing of the viewer's.
+  assert.match(src, /setAutoFold\(document\.querySelector\('\.shell'\), wide\);/);
+  const cls = new Set();
+  const shell = { classList: { toggle: (c, on) => (on ? cls.add(c) : cls.delete(c)), remove: (c) => cls.delete(c) } };
+  setAutoFold(shell, true);
+  assert.ok(cls.has('autofold'));
+  setAutoFold(shell, false);
+  assert.ok(!cls.has('autofold'));
+  assert.match(story, /\.shell\.autofold:not\(\.autoopen\) #chat-panel \{ display: none; \}/);
   assert.match(src, /class="scratch-badge"[^`]*style="position:fixed;bottom:6px;right:8px;/, 'the test badge never over the top strip');
 });
 
