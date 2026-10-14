@@ -11,7 +11,7 @@ import path from 'node:path';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { resolve } from '../scripts/rules.mjs';
-import { beatsOf, playOf, tellOf } from '../scripts/rules/tell.mjs';
+import { beatsOf, passageFor, playOf, tellOf } from '../scripts/rules/tell.mjs';
 import { advance, choicesUp, current, dialogHtml, keepReading, loadReading, logHtml, playing, skipAll, toldSoFar, withTold } from '../scripts/dialogue.js';
 import { walk } from './prologue.mjs';
 
@@ -192,4 +192,19 @@ test('one text box (Hanli, 2026-10-05): the scene card\'s caption is the first b
   const r = withTold(null, played, '00-luoshu');
   assert.match(dialogHtml(r), /class="dlg told cap"/);
   assert.match(logHtml(advance(r)), /dlglogrow cap/);
+});
+
+test('the box says the book\'s words, not its reader marks: [词]{注=…}, [句]{典=…} and a bare {典=…} are the reader\'s links (2026-10-14: 赵昂 showed raw in 01-cauldron)', () => {
+  const s = newState(content, 'zh', NOW);
+  const scenes = Object.values(content.chapters).flatMap((c) => Object.values(c.scenes ?? {}));
+  let n = 0;
+  for (const sc of scenes) {
+    for (const pair of [sc.story, ...(sc.exits ?? []).map((x) => x.story)]) {
+      if (!pair?.zh || !/\{(?:注|典|音)=/.test(pair.zh)) continue;
+      n++;
+      assert.doesNotMatch(passageFor(content, s, pair), /\{(?:注|典|音)=|\]\{/, sc.id);
+    }
+  }
+  assert.ok(n > 0, 'some passage carries a mark');
+  assert.equal(passageFor(content, s, { zh: '「太一宫，[赵昂]{注=zhaoang}。」《抱朴子》{典=baopu-jishan}里说' }), '「太一宫，赵昂。」《抱朴子》里说');
 });

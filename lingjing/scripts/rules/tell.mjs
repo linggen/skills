@@ -21,11 +21,14 @@ import { portraitOf } from './codex.mjs';
 import { atScene, inMade, sceneOf } from './world.mjs';
 
 const SPAN = /⟪([\s\S]*?)⟫/g;
+// The book's reader marks (read-md.js): `[词]{注=id}` / `[句]{典=id}` → the words, a bare
+// `《书》{典=id}` → the title. The reader links them; the box says the words only.
+const MARK = /\[([^\]\n]+)\]\{(?:注|典|音)=[^{}\n]*\}/g, BARE = /\{(?:注|典|音)=[^{}\n]*\}/g;
 
 /* A passage as the box plays it: her marked words told as the book's. */
 export function passageFor(content, state, pair) {
   const text = fill(pick(pair, state.lang), state, content);
-  return text == null ? null : text.replace(SPAN, '$1');
+  return text == null ? null : text.replace(SPAN, '$1').replace(MARK, '$1').replace(BARE, '');
 }
 
 /* A move owes the stage its passages: the exit's own (when it has one), and the
