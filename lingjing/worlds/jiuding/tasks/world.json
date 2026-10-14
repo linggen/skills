@@ -110,6 +110,13 @@
       "done_line": {"zh": "六担水，缸满了。", "en": "Six loads of water; the vat is full."}
     },
     {
+      "id": "uncle-abacus", "kind": "board", "game": "abacus", "period": "once",
+      "title": {"zh": "算盘 · 一笔一笔地算账", "en": "The abacus · Sum by sum"},
+      "grant": { "table": "task", "progress": 5 },
+      "marks": {"clean": "abacus-clean", "fumbled": "abacus-fumbled"},
+      "done_line": {"zh": "三笔账，算清了。", "en": "Three sums, settled."}
+    },
+    {
       "id": "xisui-hold", "kind": "board", "game": "xisui", "period": "once",
       "title": { "zh": "洗髓 · 疼，别喊", "en": "Marrow washing · Don't cry out" },
       "grant": { "table": "task", "progress": 5 },

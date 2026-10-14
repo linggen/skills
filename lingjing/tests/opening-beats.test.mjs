@@ -180,6 +180,7 @@ const BEATS = [
   ['00-masan', 'masan-taunt', 'endure', ['word', 'fist'], { word: 'taunt-word', fist: 'taunt-fist' }],
   ['00-yinyue', 'yinyue-way', 'follow', ['straight', 'wandered'], { straight: 'way-straight', wandered: 'way-wandered' }],
   ['00-cliff', 'cliff-climb', 'climb', ['steady', 'scraped'], { steady: 'climb-steady', scraped: 'climb-scraped' }],
+  ['00-uncle', 'uncle-abacus', 'go', ['clean', 'fumbled'], { clean: 'abacus-clean', fumbled: 'abacus-fumbled' }],
   ['00-storm', 'storm-listen', 'turn', ['sharp', 'late'], { sharp: 'listen-sharp', late: 'listen-late' }],
   ['00-kitchen', 'kitchen-griddle', 'go', ['golden', 'scorched'], { golden: 'griddle-golden', scorched: 'griddle-scorched' }],
 ];

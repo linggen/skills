@@ -13,6 +13,7 @@ import * as way from '../scripts/games/way.js';
 import * as climb from '../scripts/games/climb.js';
 import * as xisui from '../scripts/games/xisui.js';
 import * as carry from '../scripts/games/carry.js';
+import * as abacus from '../scripts/games/abacus.js';
 import { loadContent } from '../scripts/content.mjs';
 import { look, resolve, task, win } from '../scripts/rules.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
@@ -30,7 +31,7 @@ const atScene = (id) => {
   return s.scene === id ? s : null;
 };
 
-const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/], [listen, /data-g="start"/], [storm, /data-g="start"/], [stone, /data-g="hole"/], [way, /data-g="go"/], [climb, /data-g="start"/], [xisui, /data-g-hold="grit"/], [carry, /data-g="start"/]];
+const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/], [listen, /data-g="start"/], [storm, /data-g="start"/], [stone, /data-g="hole"/], [way, /data-g="go"/], [climb, /data-g="start"/], [xisui, /data-g-hold="grit"/], [carry, /data-g="start"/], [abacus, /data-g="five"/]];
 
 test('every batch-two game: meta in both languages, a control at open, both languages drawn, a skip that ends it won with no grade', () => {
   for (const [mod, control] of GAMES) {
@@ -266,4 +267,33 @@ test('00-halfyear\'s two boards: 吹鹅毛, the winter, then 练功 — 开春 w
   const sc = content.chapters['00-prologue'].scenes['00-halfyear'];
   assert.deepEqual(sc.show.filter(c => c.card === 'board').map(c => c.id), ['feather-breath', 'halfyear-carry']);
   assert.equal(sc.exits.find(e => e.id === 'on').needs.task, 'halfyear-carry');
+});
+
+test('算盘: the scene\'s three sums set on the beads and checked — a wrong one gets a cough, a second and 舅舅 sets them', () => {
+  const set = (s, v) => {
+    s = abacus.act(s, { g: 'clear' }).state;
+    String(v).padStart(3, '0').split('').forEach((d, r) => {
+      if (+d >= 5) s = abacus.act(s, { g: 'five', r }).state;
+      if (+d % 5) s = abacus.act(s, { g: 'one', r, k: +d % 5 }).state;
+    });
+    return s;
+  };
+  let s = abacus.newGame('u');
+  for (const { answer } of abacus.SUMS) { s = set(s, answer); assert.equal(abacus.valueOf(s.rods), answer); s = abacus.act(s, { g: 'check' }).state; }
+  assert.equal(s.won, true);
+  assert.equal(s.grade, 'clean');
+  assert.match(abacus.html(s, 'zh'), /都对上了/);
+  let b = abacus.act(abacus.newGame('u'), { g: 'check' }).state;
+  assert.equal(b.note, 'wrong');
+  b = abacus.act(b, { g: 'check' }).state;
+  assert.equal(b.note, 'shown');
+  assert.equal(abacus.valueOf(b.rods), 130, 'his hand on the beads');
+  b = abacus.act(b, { g: 'check' }).state;
+  for (const { answer } of abacus.SUMS.slice(1)) b = abacus.act(set(b, answer), { g: 'check' }).state;
+  assert.equal(b.grade, 'fumbled');
+  assert.match(abacus.html(b, 'en'), /set by Uncle's hand/);
+  // A one-bead tapped again lets it down: 3 → 2.
+  let r = abacus.act(abacus.newGame('u'), { g: 'one', r: 2, k: 3 }).state;
+  assert.equal(abacus.valueOf(r.rods), 3);
+  assert.equal(abacus.valueOf(abacus.act(r, { g: 'one', r: 2, k: 3 }).state.rods), 2);
 });
