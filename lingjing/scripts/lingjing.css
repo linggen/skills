@@ -1162,8 +1162,9 @@ body.fighting .atmos { display: none; }
 /* The count and 配音 over the text; the text (and a face) in the middle, scrolling when long;
    the choices, then 回看 · 显示全文 and 「继续 ▸」 under it — never clipped. */
 .dlghead { flex: none; display: flex; justify-content: flex-end; align-items: center; gap: 8px; min-height: 20px; }
-/* At least two lines of text always stay (a short stage, the choices up: the text was squeezed away). */
-.dlgmain { flex: 1 1 auto; min-height: 3.8em; display: flex; gap: 14px; align-items: flex-start; }
+/* A short stage with the choices up (a phone, the chat open): the choices keep their room, the
+   text keeps at least a line and scrolls. */
+.dlgmain { flex: 1 1 auto; min-height: 1.9em; display: flex; gap: 14px; align-items: flex-start; }
 .dlgfoot { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .dlgtools { display: flex; flex-wrap: wrap; gap: 6px; }
 .dlgnext { flex: none; font: inherit; font-family: var(--serif); font-size: 15px; letter-spacing: .12em; min-height: 40px; min-width: 104px; padding: 6px 18px;
@@ -1173,7 +1174,7 @@ body.fighting .atmos { display: none; }
 .dlgnext > span { display: inline-block; animation: dlgNudge 1.4s ease-in-out infinite; }
 :lang(en) .dlgnext { letter-spacing: .04em; }
 /* The scene's choices inside the box at its last beat, where the eye already is. */
-.dlgacts { flex: 0 1 auto; min-height: 0; max-height: 34vh; overflow-y: auto; padding-top: 8px; border-top: 1px dashed var(--line); }
+.dlgacts { flex: none; max-height: 34vh; overflow-y: auto; padding-top: 8px; border-top: 1px dashed var(--line); }
 .dlgacts .paneltaps { margin-top: 0; justify-content: center; }
 .dlgacts .looks { justify-content: center; margin: 0 0 8px; }
 .dlgacts .paneltap { min-height: 40px; }
