@@ -30,7 +30,11 @@ export const MOMENTS = ['piece', 'doors', 'feat', 'memory', 'homing', 'unfold'];
    舞台中央，可以直接上手」) — the passage that leads into them, a choice's, still
    plays first. The rest of BOX_FIRST (a new face, a choice on its own card)
    waits for the last beat, as before. */
-export const EARLY = new Set(['board', 'duel', 'tale', 'lundao']);
+// Never a board (Hanli, 2026-10-14: 「小游戏，和剧情不要同时显示」 — 吹鹅毛 stood over the box
+// at 6 / 16): a board waits for the passage that leads into it, to the beat it belongs at
+// (the last of it — a game mid-passage has its passage split, 接雨), and then the box steps
+// aside (boxGivesWay `game`) until it is played.
+export const EARLY = new Set(['duel', 'tale', 'lundao']);
 
 /* The stage's cards with the games held back while the book is ahead; `early`,
    the box past the scene's caption, lets the games through. */
@@ -40,8 +44,17 @@ export const afterBook = (cards, ahead, early = false) => (ahead ? cards.filter(
    playing — unless it is paused at a 回's turn (its 「完」, the new title). */
 export const bookAhead = ({ owed = false, drawing = false, playing = false, huiTurn = false }) => Boolean(owed || drawing || (playing && !huiTurn));
 
-/* Does the box give the stage away now? Only to what is up, never to what waits for it. */
-export const boxGivesWay = ({ bout = false, appearing = false, slots = true, up = false, huiTurn = false }) => Boolean(bout || appearing || !slots || up || huiTurn);
+/* Does the box give the stage away now? Only to what is up, never to what waits for it —
+   and to a game to play on the stage (`game`): the box is hidden, not shrunk, until the game
+   is done; then it comes back with the rest of the passage, or the choices. */
+export const boxGivesWay = ({ bout = false, appearing = false, slots = true, up = false, huiTurn = false, game = false }) => Boolean(bout || appearing || !slots || up || huiTurn || game);
+
+/* What stands on the stage, the box and the cards: never a game and the box at once. */
+export function onStage({ cards = [], ahead = false, early = false, game = (c) => c.card === 'board', ...box }) {
+  const shown = afterBook(cards, ahead, early);
+  const gameUp = shown.some(game);
+  return { cards: shown, box: Boolean(box.playing) && !boxGivesWay({ ...box, game: gameUp }) };
+}
 
 /* May this moment come up now? The book told, nothing else up, and no moment
    before it in MOMENTS still on its way. */

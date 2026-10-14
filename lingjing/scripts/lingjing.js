@@ -19,7 +19,7 @@ import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, pickOf, spoilsH
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { WORDS, say as fill, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle } from './cards.js';
+import { gameOpen, WORDS, say as fill, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle } from './cards.js';
 import { pouchHtml } from './pouch.js';
 import { esc } from './esc.js';
 import { thinker, stillAsked } from './think.js';
@@ -904,6 +904,10 @@ function stageNow() {
   // 初见: a face the box brings on stands large at that beat (sight.js) — no card of him at the end too.
   const sighted = sightings(readingHere(), firstFaces(), lang());
   cards = cards.filter((c) => c.card !== 'meet' || !sighted.has(c.id));
+  // A scene's own game played and counted closes (its last line was read in onWin's pause):
+  // the box comes back alone, with the rest of the passage or the choices — never beside it.
+  const played = (id) => (look?.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id) && (look?.tasks ?? []).some((t) => t.id === id && t.status === 'done');
+  cards = cards.filter((c) => !(c.card === 'board' && played(c.id) && !boards.get(c.id)?.winning));
   // A board he opened from the tray's 开局 waits for the whole passage (queue.js trayWaits).
   if (view.opened && trayAhead()) cards = cards.filter((c) => !(c.card === 'board' && c.id === view.opened.id));
   // One text box (Hanli, 2026-10-05): while the book is ahead — or the box holds
@@ -1758,7 +1762,11 @@ const gamesEarly = () => !look?.tell_owed && !drawingTold && !atHuiTurn() && sce
 // A board opened from the tray: the box put away first, not only its last beat, nor over a 回's turn.
 const trayAhead = () => trayWaits({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: playing(readingHere()), huiTurn: atHuiTurn() });
 const momentUp = () => Boolean(pieceOn || featOn || view.memory || view.homing || view.doors || view.unfold || document.querySelector('.feat'));
-const boxYields = (slots) => boxGivesWay({ bout: Boolean(bout), appearing: Boolean(view.appearing), slots: Boolean(slots), up: momentUp(), huiTurn: atHuiTurn() });
+/* A game to play on the stage now (a board in main, its task still open): the box steps
+   aside for it, wholly (queue.js boxGivesWay `game`; his 「小游戏，和剧情不要同时显示」). */
+const boardOpenNow = (id) => (look?.tasks ?? []).some((t) => t.id === id && t.status !== 'done' && !t.won) || Boolean(boards.get(id)?.state && !boards.get(id).sent);
+const gameUp = (slots) => Boolean(slots?.main?.some?.((c) => c.card === 'board' && boardOpenNow(c.id)));
+const boxYields = (slots) => boxGivesWay({ bout: Boolean(bout), appearing: Boolean(view.appearing), slots: Boolean(slots), up: momentUp(), huiTurn: atHuiTurn(), game: gameUp(slots) });
 /* The page's moments in their order — set piece, 息壤's doors, the gold seal,
    her memory, 鼎归 — each waits for the box and for the one before it, so
    two never stand at once (「完」 over 所得, 突破 over 五门俱开, 修为 +60 over
@@ -1795,7 +1803,7 @@ const endingWaits = () => oldHuiPlaying() || riseWaits || Boolean(look?.tell_owe
    choices stand inside it (2026-10-14, his: 「那天傍晚 ›」 was a small link mid-stage). */
 function choicesInBox() {
   const r = readingHere();
-  return Boolean(playing(r) && atLast(r, lang()) && !look?.tell_owed && !drawingTold && !boxYields(true));
+  return Boolean(playing(r) && atLast(r, lang()) && !look?.tell_owed && !drawingTold && !boxYields(true) && !gameOpen(look));
 }
 function dialogBoxHtml(slots) {
   const r = readingHere(), src = (f) => worldPath(look.world?.dir ?? 'worlds/jiuding', f);

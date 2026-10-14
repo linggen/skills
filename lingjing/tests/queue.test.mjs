@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { afterBook, bookAhead, BOX_FIRST, boxGivesWay, EARLY, huiLineOf, MOMENTS, momentMay, trayWaits } from '../scripts/queue.js';
+import { afterBook, bookAhead, BOX_FIRST, boxGivesWay, EARLY, huiLineOf, MOMENTS, momentMay, onStage, trayWaits } from '../scripts/queue.js';
 import { sceneUnder } from '../scripts/dialogue.js';
 
 const cards = [{ card: 'meet', id: 'yinyue' }, { card: 'panel' }, { card: 'people' }, { card: 'board', id: 'deer-wind' }, { card: 'duel', id: 'longzhi' }, { card: 'tale' }, { card: 'lundao' }, { card: 'offer' }];
@@ -15,9 +15,10 @@ test('the games wait for the book: while a passage is ahead, no board, duel, 传
   for (const k of ['board', 'duel', 'tale', 'lundao', 'meet', 'breakthrough', 'born', 'value']) assert.ok(BOX_FIRST.has(k), k);
 });
 
-test('the scene\'s games come up over the box once it is past the caption (Hanli, 2026-10-05); new faces and choice cards still wait', () => {
-  assert.deepEqual(afterBook(cards, true, true).map(c => c.card), ['panel', 'people', 'board', 'duel', 'tale', 'lundao', 'offer']);
-  for (const k of ['board', 'duel', 'tale', 'lundao']) assert.ok(EARLY.has(k), k);
+test('the scene\'s fights come up over the box once it is past the caption (Hanli, 2026-10-05) — never a board (2026-10-14); new faces and choice cards still wait', () => {
+  assert.deepEqual(afterBook(cards, true, true).map(c => c.card), ['panel', 'people', 'duel', 'tale', 'lundao', 'offer']);
+  for (const k of ['duel', 'tale', 'lundao']) assert.ok(EARLY.has(k), k);
+  assert.ok(!EARLY.has('board'), 'a board never stands over the passage (「小游戏，和剧情不要同时显示」)');
   for (const k of ['meet', 'breakthrough', 'born', 'value']) assert.ok(!EARLY.has(k), k);
   const items = [{ of: 'choice', id: 'a/b', beats: { zh: [{ text: '选了。' }] } }, { of: 'scene', id: 's1', beats: { zh: [{ text: '题。', cap: true }, { text: '一。' }, { text: '二。' }] } }];
   const r = (i, j) => ({ scene: 's1', items, i, j, closed: false });
@@ -135,4 +136,26 @@ test('the 回 line keeps the old 回 while its last passage is told, and turns o
   assert.equal(huiLineOf({ ...now, telling: 'h08' }), titles.h10, 'a 回 the page never showed: the save\'s line');
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(page, /\$\('huiLine'\)\.textContent = look\.chapter\?\.hui \? huiLineOf\(\{ hui: look\.chapter\.hui, title: look\.chapter\.title, telling: playing\(told\) \? told\.items\[told\.i\]\?\.hui : null, titles \}\) : '';/);
+});
+
+test('a game and the box are never on the stage together (Hanli, 2026-10-14: 「小游戏，和剧情不要同时显示」)', () => {
+  const cards = [{ card: 'panel' }, { card: 'board', id: 'feather-breath' }];
+  // every state of the book: the passage owed, mid-passage (past its caption or not), at its last beat, put away
+  const states = [];
+  for (const ahead of [true, false]) for (const early of [true, false]) for (const playing of [true, false]) for (const huiTurn of [true, false]) states.push({ ahead, early, playing, huiTurn });
+  for (const st of states) {
+    const { cards: shown, box } = onStage({ cards, ...st });
+    const game = shown.some((c) => c.card === 'board');
+    assert.ok(!(game && box), `both up: ${JSON.stringify(st)}`);
+    if (st.ahead) assert.ok(!game, `the game waits for its passage: ${JSON.stringify(st)}`);
+  }
+  // the passage told to its last beat: the game takes the stage alone, the box hidden
+  const at = onStage({ cards, ahead: false, playing: true });
+  assert.deepEqual([at.cards.some((c) => c.card === 'board'), at.box], [true, false]);
+  // the game played and closed: the box comes back with the rest, or the choices
+  assert.deepEqual(onStage({ cards: [{ card: 'panel' }], ahead: false, playing: true }).box, true);
+  // the page asks the same: the box yields to an open board in main, and a played scene board closes
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /const boxYields = \(slots\) => boxGivesWay\(\{[^}]*game: gameUp\(slots\) \}\);/);
+  assert.match(page, /cards = cards\.filter\(\(c\) => !\(c\.card === 'board' && played\(c\.id\) && !boards\.get\(c\.id\)\?\.winning\)\);/);
 });
