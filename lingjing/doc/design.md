@@ -549,6 +549,7 @@ mark, and the scene goes on. The rhythm counts a split passage's rest (`story_af
 | `listen` | `storm-listen` | 00-storm | 听: the pines' birds call, then stop all at once — 「不对」 then (early is only 爹's word; silent, 爹 sees it), then the sign: the cloud on the ridge, not the treetops or the prints | sharp · late (mark); 掉头 / 再追半里 both wait |
 | `storm` | `fall-storm` | 00-fall | 拽: the 2026-09-30 暴雨, redrawn in ink (the slope, the drop, 爹 hauled toward the rock pull by pull, rain slanting with the wind), its limit cut to 30 s, a skip | clean · steady · rough |
 | `stone` | `cave-stone` | 00-cave (first of two) | 扔石听声: three hollows under the cliff; a stone thrown in comes back as its sound (a long hum, a scurry, one dry knock); go into the shallow, empty one — a wrong one only sends him back out; the passage split after its first paragraph | sure · lucky (mark); then 喂饼 |
+| `way` | `yinyue-way` | 00-yinyue | 认路: the valley a small grid seen a step around him, the grass glowing where he walked; his marks on the cells by the cliff are the only way from the cave to the moss; a rock only stops him; after 30 steps she points | straight · wandered (mark) |
 
 **Two boards in one scene** (00-cave, 00-halfyear): they play in `show` order — `story`, the first board, `story_after` (owed when the first is counted, tasks.mjs), the second board, the ways on. A later board waits while one before it is open, on the stage and in the tray (stage.mjs `boardWaits`), and the rules refuse its win until then (`board-waits`); an exit waits on the last.
 

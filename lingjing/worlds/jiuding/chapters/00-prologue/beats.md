@@ -31,7 +31,7 @@ the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 
 | `00-fall` 第二十七道记号 | 五 · 六 | **board `fall-storm`** (拽 — lane MG's 暴雨: haul 爹 back in the lulls; drawn in ink and cut to half a minute in batch two) gates 把爹拽回山壁 — then the fall, 查伤, 爷爷's 火镰, the light (task 10); `at` heisong |
 | `00-fox` 银光 | 七 | 裹起它 · 别碰 (stay) — task 11 |
 | `00-cave` 那一夜 | 八 | 分它一半 · 自己吃 (task 12); first **board `cave-stone`** (扔石听声: a stone into each of three hollows, the deep hum, the scurry, the one dry knock — go into the shallow, empty one; the passage split after its first paragraph, the fire and the food `story_after`; grade sure · lucky → `stone-sure` · `stone-lucky`), then **board `bread-share`** (喂饼: seven pieces to the fox or to himself, the corner kept for the dawn) — its grade takes the way on: none · little → 自己吃, half · most → 分它一半; `bread-<grade>` marks how much (欠饼) |
-| `00-yinyue` 天亮 | 九 | 带她出谷 → she joins (`joins`, task 13) |
+| `00-yinyue` 天亮 | 九 | 带她出谷 → she joins (`joins`, task 13); **board `yinyue-way`** (认路: the valley a fogged grid, his marks by the cliff lead from the cave to the moss; grade straight · wandered → `way-straight` · `way-wandered`) gates 带她出谷 |
 | `00-cliff` 出谷 | 十 | 抓住爹的手 (体力 −3) → 恩 老周 (task 14) |
 | `00-deer` 那头鹿 | 十一 | **board `deer-wind`** (射鹿: hold to draw, loose in the still wind) gates 往左偏半寸 → 鹿皮, she faints (`sleeps`); 照直射 stay (task 15); since 2026-10-14 the aim is his too: dead on skims the antlers, 偏左半寸 hits, four misses and her voice moves his hands (grade clean · steady · rough) |
 | `00-dusk` 村东头 | 十二 | 立冬天没亮，腌芥菜缸底的鹿腿（背在背上，走屋后头，不走井台）送到吴婆婆家，她朝银光低头（鼎湖挪到马三走后的 00-xiuxian 开头）: 去村东头 (`wupo-bowed`, task 17) · 守着它 |

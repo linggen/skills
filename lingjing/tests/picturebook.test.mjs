@@ -192,7 +192,7 @@ test('the scene card waits while the dialogue box plays: its choices and 看 com
 });
 
 test('her lines in the book are the book\'s: played in place, awake or asleep (his, 2026-09-29)', () => {
-  const valley = walk(start(), TO_VALLEY, content, NOW);
+  const valley = walk(start(), [...TO_VALLEY, ['played']], content, NOW);
   assert.equal(valley.scene, '00-yinyue');
   // at dawn she is not yet with the player: Ling tells her words
   assert.match(tellOf(content, valley).tell.at(-1).text, /她一面嚼，一面道：「难吃。」/);

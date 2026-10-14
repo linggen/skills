@@ -245,3 +245,16 @@
 .g-scene .g-cloud { fill: currentColor; }
 .g-scene .g-rock { fill: currentColor; opacity: .16; }
 .g-scene .g-mouthdark { fill: currentColor; opacity: .7; }
+/* 认路 */
+.g-scene .g-fog { fill: currentColor; opacity: .05; }
+.g-scene .g-glow { fill: var(--ling); opacity: .14; }
+.g-scene .g-rockblock { fill: currentColor; opacity: .35; }
+.g-scene .g-moss { fill: var(--wood); opacity: .55; }
+.g-scene .g-silver { fill: var(--surface); stroke: currentColor; stroke-width: 1; opacity: .7; }
+.g-scene .g-markstroke { fill: none; stroke: var(--seal); stroke-width: 2.2; stroke-linecap: round; }
+.g-scene .g-me { fill: var(--seal); }
+.g-way-pad { display: grid; grid-template-columns: repeat(3, 48px); grid-template-rows: repeat(2, 48px); gap: 6px; justify-content: center; }
+.g-way-pad .g-way-up { grid-column: 2; grid-row: 1; }
+.g-way-pad .g-way-left { grid-column: 1; grid-row: 2; }
+.g-way-pad .g-way-down { grid-column: 2; grid-row: 2; }
+.g-way-pad .g-way-right { grid-column: 3; grid-row: 2; }

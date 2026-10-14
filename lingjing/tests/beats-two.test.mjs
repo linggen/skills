@@ -9,6 +9,7 @@ import * as griddle from '../scripts/games/griddle.js';
 import * as listen from '../scripts/games/listen.js';
 import * as storm from '../scripts/games/storm.js';
 import * as stone from '../scripts/games/stone.js';
+import * as way from '../scripts/games/way.js';
 import { loadContent } from '../scripts/content.mjs';
 import { look, resolve, task, win } from '../scripts/rules.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
@@ -26,7 +27,7 @@ const atScene = (id) => {
   return s.scene === id ? s : null;
 };
 
-const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/], [listen, /data-g="start"/], [storm, /data-g="start"/], [stone, /data-g="hole"/]];
+const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/], [listen, /data-g="start"/], [storm, /data-g="start"/], [stone, /data-g="hole"/], [way, /data-g="go"/]];
 
 test('every batch-two game: meta in both languages, a control at open, both languages drawn, a skip that ends it won with no grade', () => {
   for (const [mod, control] of GAMES) {
@@ -180,4 +181,21 @@ test('two boards in one scene (00-cave): 扔石听声, the rest of the passage, 
   s = task(win(s, content, ctx(), { id: 'bread-share', grade: 'half' }).state, content, ctx(), { action: 'done', id: 'bread-share' }).state;
   assert.equal(tellOf(content, s), null, 'the passage is not owed twice');
   assert.equal(resolve(s, content, ctx(), { exit: 'share' }).state.scene, '00-yinyue');
+});
+
+test('认路: his marks along the cliff lead from the cave to the moss — the only way through; a rock only stops him; lost, she points', () => {
+  let s = way.newGame('y');
+  s = way.act(s, { g: 'go', d: 'left' }).state;
+  assert.equal(s.note, 'wall');
+  assert.equal(s.moves, 0, 'the cliff costs no step');
+  for (const d of ['right', 'up', 'up', 'left', 'up', 'up', 'right', 'right', 'right', 'right', 'right']) s = way.act(s, { g: 'go', d }).state;
+  assert.equal(s.won, true);
+  assert.equal(s.moves, way.BEST);
+  assert.equal(s.grade, 'straight');
+  assert.match(way.html(s, 'zh'), /一道都没错/);
+  let lost = way.newGame('y');
+  for (let i = 0; !lost.won; i += 1) lost = way.act(lost, { g: 'go', d: i % 2 ? 'left' : 'right' }).state;
+  assert.equal(lost.moves, way.LEAD);
+  assert.equal(lost.grade, 'wandered');
+  assert.match(way.html(lost, 'en'), /That way/);
 });

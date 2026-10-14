@@ -93,7 +93,7 @@ test('the labels are the book\'s: 卷, 回 and 回目 read from book.json, in bo
 });
 
 test('a 回 ends where the scenes turn, inside the prologue: 「第一回 · 完」 on the cliff, gone once it is passed', () => {
-  const valley = walk(newState(content, 'zh', NOW), TO_VALLEY, content, NOW);
+  const valley = walk(newState(content, 'zh', NOW), [...TO_VALLEY, ['played']], content, NOW);
   assert.equal(valley.scene, '00-yinyue');
   assert.equal(huiNow(content, valley), 'h01');
   assert.equal(look(valley, content, ctx()).chapter.close, undefined);
@@ -199,7 +199,7 @@ test('the book in four films with an interlude after each: 古 第一回 … 第
   assert.deepEqual(chapterHuis(c, c.chapters['00-prologue']), ['h01', 'h02', 'j01', 'h04'], '今 · 一 played between 古二 and 古三 (2026-10-05)');
   assert.equal(firstHui(c, c.chapters['00-waimen']), 'h05');
   // a 回 turning inside the prologue, as before
-  const valley = walk(newState(c, 'zh', NOW), TO_VALLEY, c, NOW);
+  const valley = walk(newState(c, 'zh', NOW), [...TO_VALLEY, ['played']], c, NOW);
   const cliff = resolve(valley, c, ctx(), { exit: 'follow' }).state;
   assert.equal(huiEnded(c, cliff), 'h01');
   const l = look(cliff, c, ctx());

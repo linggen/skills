@@ -89,6 +89,13 @@
       "done_line": {"zh": "一个浅浅的石洞，空的。", "en": "A shallow cave, and empty."}
     },
     {
+      "id": "yinyue-way", "kind": "board", "game": "way", "period": "once",
+      "title": {"zh": "认路 · 崖壁上一段划了一道", "en": "Finding the way · A line on the cliff every so often"},
+      "grant": { "table": "task", "progress": 5 },
+      "marks": {"straight": "way-straight", "wandered": "way-wandered"},
+      "done_line": {"zh": "崖壁上的道道，一道都还在。", "en": "The lines on the cliff are all still there."}
+    },
+    {
       "id": "xisui-hold", "kind": "board", "game": "xisui", "period": "once",
       "title": { "zh": "洗髓 · 疼，别喊", "en": "Marrow washing · Don't cry out" },
       "grant": { "table": "task", "progress": 5 },
