@@ -126,8 +126,8 @@ test('不填: the stone reads five even — none leads — and the starter is th
     assert.equal(a.result.born.roots.name, lang === 'zh' ? '五行杂灵根' : 'Mixed five-element root');
     for (const id of starterFor(content, a.state.traits)) assert.ok(a.state.cards.includes(id), id);
     const rite = tellOf(content, a.state).tell.find(t => t.id === '00-hall/born').text;
-    assert.match(rite, lang === 'zh' ? /念道：「金、木、水、火、土——五行俱全。五门俱全，杂灵根。」/ : /Metal, wood, water, fire, earth — all five elements\. All five gates — a mixed root\./);
-    assert.match(rite, lang === 'zh' ? /拼成的一块抹布。\n/ : /five kinds of leftover scraps\.\n/, 'even: no colour brighter, no gap left');
+    assert.match(rite, lang === 'zh' ? /念道：「金、木、水、火、土——五行俱全。五门俱全，杂灵根。」/ : /Metal, wood, water, fire, earth: all five elements\. All five kinds, a mixed spirit root\./);
+    assert.match(rite, lang === 'zh' ? /拼成的一块抹布。\n/ : /five kinds of leftover scraps from around the house\.\n/, 'even: no colour brighter, no gap left');
   }
 });
 
