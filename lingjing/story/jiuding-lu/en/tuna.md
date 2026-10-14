@@ -88,7 +88,7 @@ At the very end you need neither nose nor mouth; like a child in its mother's wo
 refine the spirit back into emptiness. What you're doing now is the first step of the first stretch — **Qi Condensation**.
 The hundred days of "a hundred days to lay the foundation" is an alchemist's round figure; don't take it seriously and count the days. There's a long way still to go. This queen is waiting for you up ahead.
 
-### The Nine Layers of Qi Condensation (each layer in the game)
+### The Nine Layers of Qi Condensation
 
 | Layer | Name | Work (daily) | Source |
 |---|---|---|---|
