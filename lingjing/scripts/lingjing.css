@@ -1320,3 +1320,9 @@ body.fighting .sight { display: none; }
   .sightcard { gap: 14px; }
 }
 @media (prefers-reduced-motion: reduce) { .sightcard { animation: none; } .sightcard.going { transform: none; transition: opacity .2s; } }
+
+/* The scene's choices with the box put away (after a game, after a reload — 2026-10-14, his: never
+   the bare 「那天傍晚 ›」 link): a small choice card, its buttons as the box's own. */
+.focus .panelcard.bare:has(.paneltaps) { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; box-shadow: 0 4px 18px rgba(0, 0, 0, .06); }
+.focus .panelcard.bare .paneltaps { margin-top: 0; justify-content: center; }
+.focus .panelcard.bare .paneltap { min-height: 44px; padding: 8px 18px; font-family: var(--serif); font-size: 15px; }
