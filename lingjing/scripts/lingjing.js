@@ -14,7 +14,7 @@ import { holdPlaceholder } from './invite.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
-import { boardDoneToday, companionShown, petStageUrl, stageCards, stageSlots, stands } from './stage.mjs';
+import { boardDoneToday, companionShown, petStageUrl, sceneGame, stageCards, stageSlots, stands } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, pickOf, spoilsHtml } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
@@ -34,7 +34,7 @@ import { fxTimes, glOK, playHoming as playHomingFx } from './fx.js';
 import { atmosClasses, atmosOf, particlesHtml } from './atmos.js';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
-import { advance, atLast, choicesUp, current, dialogHtml, huiAt, keepReading, leadsIn, loadReading, logHtml, noted, ofPlay, playing, readingFor, sceneUnder, showAll, sightNow, sightings, withTold } from './dialogue.js';
+import { advance, atLast, choicesUp, current, dialogHtml, huiAt, keepReading, leadsIn, loadReading, logHtml, noted, ofPlay, playing, readingFor, showAll, sightNow, sightings, withTold } from './dialogue.js';
 import { SIGHT_KINDS, mountChatToggle, paintSight } from './sight.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
@@ -889,8 +889,9 @@ function stageNow() {
   // A board he opened from the tray stays before him through the next Look
   // and whatever Ling shows, until he walks on.
   if (view.opened && !cards.some((c) => c.card === 'board' && c.id === view.opened.id)) cards = [...cards, { card: 'board', id: view.opened.id }];
-  // The errand just taken keeps its card a moment, sealed 已接下.
-  if (view.tookOffer && !cards.some((c) => c.card === 'offer')) cards = [...cards, { card: 'offer' }];
+  // The errand just taken keeps its card a moment, sealed 已接下 — not where a scene card stands:
+  // there it was one of the scene's choices, and it simply leaves them (stage.mjs).
+  if (view.tookOffer && !look.scene?.panel && !cards.some((c) => c.card === 'offer')) cards = [...cards, { card: 'offer' }];
   // 闭关's chooser, opened from the pool or the empty card.
   if (view.secludeOpen && view.seclude && !look.seclusion) cards = [{ card: 'seclude' }, ...cards];
   // 银月's memory takes the main slot while it plays (memory.js; stage.mjs MAIN).
@@ -922,15 +923,16 @@ function stageNow() {
   // A scene's game waits for the whole passage too — its last beat read and the box put away
   // (live 2026-10-14: at 吹鹅毛 the box hid on its last beat, 「……鸡窝里一阵大乱」, unread).
   // Not under a 回's title card either: the passage is still to be told after it (a fresh 石坳村).
-  if (storyAhead()) cards = cards.filter((c) => c.card !== 'board' || c.id === view.opened?.id);
+  // A scene's fight too (Hanli, 2026-10-14: the box's 「继续」 under 出手): it stands once the box is
+  // put away — or once its words were chosen in the box, which puts the box away (data-panel-duel).
+  if (storyAhead()) cards = cards.filter((c) => (c.card !== 'board' || c.id === view.opened?.id) && !(c.card === 'duel' && sceneGame(look, c) && !called.has(c.id)));
   // A board he opened from the tray's 开局 waits for the whole passage (queue.js trayWaits).
   if (view.opened && trayAhead()) cards = cards.filter((c) => !(c.card === 'board' && c.id === view.opened.id));
   // One text box (Hanli, 2026-10-05): while the book is ahead — or the box holds
   // its last beat, the choices inside it (2026-10-14) — no scene card stands.
   if (cardsAhead() || choicesInBox()) cards = cards.filter((c) => c.card !== 'panel');
-  // The book first: a game waits until the passage that leads into it is told —
-  // the scene's own games come up once the box is past its caption (queue.js EARLY).
-  cards = afterBook(cards, cardsAhead(), gamesEarly());
+  // The book first: a game waits until the passage that leads into it is told (queue.js afterBook).
+  cards = afterBook(cards, cardsAhead());
   watchAppear(cards);
   return stageSlots(look, cards.filter(inQueue), { skip: view.qSkip });
 }
@@ -1385,6 +1387,14 @@ const failed = (e) => ({ ok: false, error: String(e) });
 /// A refusal in the rules' own words, else the page's one line for it.
 /* The fights chosen in this scene by their words (look.mjs panelOf `duel`), and any
    fight the save holds open or already met here — those need no choosing again. */
+/* A fight's words chosen (站着，不跪 · 三试 · 听真头): its card comes up — and the box, its last
+   beat read with the choice in it, is put away, so 出手 never stands over its 「继续」. */
+function callDuel(id) {
+  const called = [...(view.called ?? []), `${look?.scene?.id}|${id}`];
+  const r = readingOfPlay();
+  if (playing(r) && atLast(r, lang())) setReading(advance(r, lang()), { called });
+  else show({ called });
+}
 function calledDuels() {
   const here = look?.scene?.id;
   const ids = (view.called ?? []).filter((k) => k.startsWith(`${here}|`)).map((k) => k.slice(here.length + 1));
@@ -1797,8 +1807,6 @@ const atHuiTurn = () => atTurn({ oldPlaying: oldHuiPlaying(), closeUp: closeUp()
 const boxAhead = () => bookAhead({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: playing(readingHere()), huiTurn: atHuiTurn() });
 // The cards that wait for the book come up with the scene's choices — on its last beat (dialogue.js choicesUp).
 const cardsAhead = () => bookAhead({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: !choicesUp(readingHere(), lang()), huiTurn: atHuiTurn() });
-// The scene's games stand over the box once it tells the scene's own passage, past its caption.
-const gamesEarly = () => !look?.tell_owed && !drawingTold && !atHuiTurn() && sceneUnder(readingHere(), look?.scene?.id, lang());
 // A board opened from the tray: the box put away first, not only its last beat, nor over a 回's turn.
 const trayAhead = () => trayWaits({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: playing(readingHere()), huiTurn: atHuiTurn() });
 /* The scene's passage still to be told (owed, being drawn, or in the box): its games wait. */
@@ -2237,7 +2245,7 @@ const CLICKS = [
   ['[data-wx-clear]', () => run('wx:clear', () => setSense({ city: null }))],
   // The scene's choices (on its card, or inside the box at its last beat) come before the box's own taps.
   ['[data-look-at]', (el) => { if (!el.matches(':disabled')) run(`look:${el.dataset.lookAt}`, () => lookAt(el.dataset.lookAt)); }],
-  ['[data-panel-duel]', (el) => { if (!el.matches(':disabled')) show({ called: [...(view.called ?? []), `${look?.scene?.id}|${el.dataset.panelDuel}`] }); }],
+  ['[data-panel-duel]', (el) => { if (!el.matches(':disabled')) callDuel(el.dataset.panelDuel); }],
   ['[data-panel-exit]', (el) => { if (!el.matches(':disabled')) run(`panel:${el.dataset.panelExit}`, () => panelTap(el.dataset.panelExit, el.textContent.trim(), el.dataset.panelAnswer)); }],
   // The dialogue box: 回看 and 显示全文 first, then 「继续 ▸」 or a tap anywhere on it goes on.
   ['[data-dlg-log]', () => show({ logOpen: !view.logOpen })],
@@ -2927,7 +2935,10 @@ let homingPending = false; // a 鼎 come home, its map not yet on the stage
 // A seal on its way is not counted: the realm's waits through riseWaits, and a new 回's waits on the 「完」 itself.
 const stageBusy = () => Boolean(momentUp() || [...momentPending].some((k) => k !== 'feat') || memoryWaits || homingPending);
 const closeUp = () => Boolean(look?.chapter?.close && !closeSeen(look.chapter.close.id));
-async function playPiece(id, beats = null) {
+/* `said` — the words of the paragraph a piece is tied to, as the box plays them (a 节本's cut,
+   jieben.mjs): a one-beat piece speaks them in place of its own line, so the picture never
+   brings back the book's longer paragraph the game has cut. */
+async function playPiece(id, beats = null, said = null) {
   if (pieceOn) return;
   const en = lang() === 'en';
   const box = document.createElement('div');
@@ -2945,7 +2956,7 @@ async function playPiece(id, beats = null) {
     const line = box.querySelector('.spline');
     mine.ctl = await playSetPiece(box.querySelector('.sphold'), id, {
       lang: lang(), still: stillMotion(), beats,
-      onBeat: (i, b) => { line.textContent = b.text ?? b.line?.[lang()] ?? ''; },
+      onBeat: (i, b, all) => { line.textContent = (said && (all ?? 1) === 1 ? said : null) ?? b.text ?? b.line?.[lang()] ?? ''; },
       onDone: () => { mine.over = true; box.classList.add('over'); setTimeout(close, 9000); },
     });
     if (pieceOn !== mine) mine.ctl?.destroy?.();
@@ -2973,7 +2984,7 @@ function beatPiece(slots) {
   if (done.has(key)) return;
   done.add(key);
   try { localStorage.setItem(PIECES_KEY, JSON.stringify([...done].slice(-40))); } catch { /* no storage: this load only */ }
-  playPiece(beat.piece);
+  playPiece(beat.piece, null, beat.text);
 }
 
 let memoryWaits = false; // a memory come back, not yet on the stage (鼎归 waits for it)

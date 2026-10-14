@@ -103,7 +103,7 @@ export async function playSetPiece(host, id, { lang = 'zh', still = false, auto 
     for (const b of before) scene.beat(b.id).progress(1);
   }
 
-  const say = (i) => onBeat?.(i, { ...BEATS[i], text: BEATS[i].line?.[lang] ?? BEATS[i].line?.zh });
+  const say = (i) => onBeat?.(i, { ...BEATS[i], text: BEATS[i].line?.[lang] ?? BEATS[i].line?.zh }, BEATS.length);
   const react = (ev) => {
     if (gone) return;
     clearTimeout(timer);

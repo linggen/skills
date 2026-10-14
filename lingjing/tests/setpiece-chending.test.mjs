@@ -141,7 +141,7 @@ test('the page plays it at that beat, in the box\'s place: never at the 回\'s t
   const fn = src.slice(src.indexOf('function beatPiece('), src.indexOf('function beatPiece(') + 900);
   assert.match(fn, /if \(pieceOn \|\| !playing\(r\) \|\| boxYields\(slots\) \|\| momentPending\.size \|\| stageBusy\(\)\) return;/, 'only where the box would show the beat, nothing else up or on its way');
   assert.match(fn, /const \{ beat \} = current\(r, lang\(\)\);\s*if \(!beat\?\.piece \|\| beat\.recap\) return;/);
-  assert.match(fn, /playPiece\(beat\.piece\)/);
+  assert.match(fn, /playPiece\(beat\.piece, null, beat\.text\)/, 'the piece says the box\'s words: a 节本 cut, never the book\'s longer paragraph');
   assert.match(fn, /done\.add\(key\)/, 'once a save');
   // Before the box is drawn: the piece is up (momentUp) and the box yields the same render.
   assert.match(src, /beatPiece\(slots\);\n {2}const box = dialogBoxHtml\(slots\);/);
