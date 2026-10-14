@@ -1,6 +1,6 @@
 # 《九鼎录》 English — style sheet
 
-The Chinese is final (tag `jiuding-lu-juan1-zh-v1`). Translate it as it stands: don't improve it, cut it or add to it. One file per book entry, named by the entry's stable id: `en/h01.md` … `en/j01.md` … `en/w01.md`, `en/tuna.md`. book.json's `en` field points at the file; read.js reads it when `lang=en`.
+The Chinese is final (tag `jiuding-lu-juan1-zh-v1`). Translate it as it stands: don't improve it, cut it or add to it. One file per book entry, named by the entry's stable id: `en/h01.md` … `en/j01.md` … `en/w01.md`, `en/tuna.md`. book.json's `file_en` field points at the file; read.js reads it when `lang=en`.
 
 ## Shape
 - **Paragraph for paragraph.** Each Chinese paragraph becomes one English paragraph, in the same order, with `---` scene breaks where the Chinese has them. Future fixes and the audio are matched paragraph by paragraph.
