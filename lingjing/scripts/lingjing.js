@@ -1971,6 +1971,8 @@ document.addEventListener('pointerdown', (e) => {
 });
 const letGo = () => { clearTimeout(holdTimer); if (!holding) return; holding = false; holdSwallow = true; lines.hold(false); setTimeout(() => { holdSwallow = false; }, 400); };
 document.addEventListener('pointerup', letGo);
+// A tab out of sight reads nothing: the lines wait for him to come back (they run on timers).
+document.addEventListener('visibilitychange', () => { if (!holding) lines.hold(document.hidden); });
 document.addEventListener('pointercancel', letGo);
 
 /* Ling's and 银月's lines in the passage (proto k): played in place, her 木牌 in the footer warm
