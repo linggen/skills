@@ -148,7 +148,8 @@ function boardFor(taskId) {
     // A board won and counted, asked for again by another errand the same
     // day, is a new game — not the old one standing there 「你胜了」, never
     // sent again (his 五子 at 桑间, 2026-09-24, after 漳南's was paid).
-    const spent = old?.day === day && old.state?.won && old.sent && task.status === 'offered' && !task.won;
+    // Not while its own win is on its way (onWin's pause for the last line): that is not a new game.
+    const spent = old?.day === day && old.state?.won && old.sent && !old.winning && task.status === 'offered' && !task.won;
     if (!old || old.day !== day || spent) {
       const round = spent ? (old.round ?? 0) + 1 : 0;
       boards.set(taskId, { taskId, mod, day, round, state: mod.newGame(`${day}|${look.seed ?? ''}|${taskId}${round ? `|${round}` : ''}`, task.level ?? 1) });
@@ -1371,9 +1372,11 @@ const winExit = (taskId, grade = null) => {
   return ways.length === 1 ? ways[0] : null;
 };
 async function onWin(taskId) {
-  await pause(stillMotion() ? 1200 : WIN_LINE_MS);
+  // How it went, read off the board that was won — before the pause, while it is still that board.
+  const won = boards.get(taskId), grade = won?.state?.grade ?? null;
+  if (won) won.winning = true;
+  try { await pause(stillMotion() ? 1200 : WIN_LINE_MS); } finally { if (won) won.winning = false; }
   if (isTale(taskId)) return taleWon(taskId);
-  const grade = boards.get(taskId)?.state?.grade ?? null;
   const r = await write('win', { id: taskId, ...(grade ? { grade } : {}) }).catch(failed);
   // Refused (not here, not open), the win is kept on the board and sent again
   // when it can count — never told to Ling as a win he cannot pay (2026-09-23:
