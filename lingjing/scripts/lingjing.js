@@ -14,7 +14,7 @@ import { holdPlaceholder } from './invite.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
-import { boardDoneToday, petStageUrl, stageCards, stageSlots, stands } from './stage.mjs';
+import { boardDoneToday, companionShown, petStageUrl, stageCards, stageSlots, stands } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, pickOf, spoilsHtml } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
@@ -1224,6 +1224,7 @@ function draw() {
   // 2026-09-29: 「3D 模型就不用放在webUI了吧，和剧情合不上」).
   const her = herHere() && !bout;
   holdHerVoice(herHere());
+  tellCompanion(companionShown(look));
   $('stageName').textContent = her ? look.companion.name : '';
   $('askHerBtn').hidden = !her;
   if (her) $('askHerBtn').textContent = words().askHer.replace('{name}', look.companion.name);
@@ -2960,6 +2961,19 @@ function holdHerVoice(on) {
   if (f.dataset.on) return;
   f.dataset.on = '1';
   f.src = petStageUrl(sharedApi, location.origin);
+}
+
+/* Whether the app shows its companion's body while this page is open — the
+   app-mode message to the host (skill-spec § App-mode, `linggen:companion`):
+   hidden until she is found and while she is away (stage.mjs companionShown).
+   Said on every change, and the first time always; a scratch save says it too,
+   as it is only what the screen shows. */
+let companionSaid = null;
+function tellCompanion(shown) {
+  const companion = shown ? 'shown' : 'hidden';
+  if (companion === companionSaid || window.parent === window) return;
+  companionSaid = companion;
+  window.parent.postMessage({ type: 'linggen:companion', companion }, location.origin);
 }
 
 /* ── The gate: sign in to play ── */

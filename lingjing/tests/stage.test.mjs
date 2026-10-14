@@ -3,7 +3,7 @@
 // one of them shows it.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { askMinusStage, lineHere, stageCards, stageOwns } from '../scripts/stage.mjs';
+import { askMinusStage, companionShown, lineHere, stageCards, stageOwns } from '../scripts/stage.mjs';
 
 const kinds = cards => cards.map(c => (c.id ? `${c.card}:${c.id}` : c.card));
 const AWAKE = { companion: { joined: true } }; // 银月 awake: the coins are hers to throw
@@ -254,4 +254,16 @@ test('the tray never lists a board the stage already shows (Hanli, 2026-10-05: t
   assert.doesNotMatch(one, /洛书九宫/);
   assert.match(one, /射鹿/);
   assert.doesNotMatch(trayHtml({ look, words: WORDS.zh, onStage: ['luoshu'] }), /洛书九宫/, 'a board named by its game');
+});
+
+test('the app shows her body only once she is found, and not while she is away (Hanli, 2026-10-14)', () => {
+  // before 00-yinyue the save has no companion: the desktop girl stays hidden
+  assert.equal(companionShown({ companion: null }), false);
+  assert.equal(companionShown(null), false);
+  // found and here: as before
+  assert.equal(companionShown({ companion: { joined: true } }), true);
+  // asleep in the token she is still his
+  assert.equal(companionShown({ companion: { joined: true, asleep: true } }), true);
+  // a 今 interlude: away on another line
+  assert.equal(companionShown({ companion: { joined: true, away: 'elsewhere' } }), false);
 });
