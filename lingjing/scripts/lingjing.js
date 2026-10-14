@@ -1710,6 +1710,8 @@ async function panelTap(exitId, label, answer) {
   keep({ panelBusy: exitId, panelNote: null });
   render();
   const r = await write('resolve', { exit: exitId, said: label, ...(answer != null ? { answer } : {}) }).catch(failed);
+  // A way on that shows the map (00-chushan's tree): the chapter's map unfolds there, the first time.
+  if (r?.ok && (r.show ?? []).some((c) => c.card === 'map')) mapAsked = true;
   // A tap on a choice the story already moved past (a second tap in flight) is no refusal to show.
   // A riddle missed: its hint stands under the card (the second miss shuts it for the day).
   keep({ panelBusy: null, panelNote: r.ok || r.refused === 'unknown-exit' ? null : r.hint ? `${refusal(r)} · ${r.hint}` : refusal(r) });
@@ -2928,12 +2930,14 @@ async function watchHoming() {
    it (queue.js MOMENTS); a tap finishes it; then the rules mark it unfolded. */
 const UNFOLD_MS = 4200;
 let unfoldFor = null;
-const mapOnStage = () => [...(look?.stage ?? []), ...view.focus].some((c) => c.card === 'map');
+let mapAsked = false; // a choice just taken showed the map (its `show`)
+const mapOnStage = () => mapAsked || [...(look?.stage ?? []), ...view.focus].some((c) => c.card === 'map');
 async function watchUnfold() {
   const u = look?.jiuding?.unfold;
   if (!u || unfoldFor === u.chapter || !look?.world?.atlas) return;
   if (!u.walk && !mapOnStage()) return;
   unfoldFor = u.chapter;
+  mapAsked = false;
   await momentTurn('unfold');
   if (look?.jiuding?.unfold?.chapter !== u.chapter) return;
   const mine = { chapter: u.chapter, title: u.title, at: performance.now(), still: stillMotion() };
