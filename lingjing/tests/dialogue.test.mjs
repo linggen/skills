@@ -294,9 +294,9 @@ test('the box says the book\'s words, not its reader marks: [词]{注=…}, [句
   let n = 0;
   for (const sc of scenes) {
     for (const pair of [sc.story, ...(sc.exits ?? []).map((x) => x.story)]) {
-      if (!pair?.zh || !/\{(?:注|典|音)=/.test(pair.zh)) continue;
+      if (!pair?.zh || !/\{(?:注|典|音|景)=/.test(pair.zh)) continue;
       n++;
-      assert.doesNotMatch(passageFor(content, s, pair), /\{(?:注|典|音)=|\]\{/, sc.id);
+      assert.doesNotMatch(passageFor(content, s, pair), /\{(?:注|典|音|景)=|\]\{/, sc.id);
     }
   }
   assert.ok(n > 0, 'some passage carries a mark');

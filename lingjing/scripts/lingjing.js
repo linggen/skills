@@ -1277,6 +1277,8 @@ function draw() {
   paintIf('footChips', footChipsHtml());
   $('focus').innerHTML = focusHtml(slots);
   // The dialogue box at the stage's foot, the slots lifted over it (lingjing.css .dlgwrap).
+  // 景: a beat marked with its set piece plays the piece first, in the box's place (beatPiece).
+  beatPiece(slots);
   const box = dialogBoxHtml(slots);
   paintIf('dlg', box);
   // 初见: his first beat on show, he stands large over the box (sight.js).
@@ -2942,6 +2944,30 @@ async function playPiece(id, beats = null) {
     });
     if (pieceOn !== mine) mine.ctl?.destroy?.();
   } catch (e) { console.warn('[lingjing] set piece', id, e); close(); }
+}
+
+/* 景 — a set piece tied to a beat of the scene's own passage (rules/tell.mjs `{景=id}`, beatsOf
+   `piece`: 00-gate's 「沉鼎山并不怎么高」 → 沉鼎山). When the box is about to show that beat — so
+   after the 回's turn (the box yields at it) and every beat before it — the piece plays over the
+   whole stage first, the box stepping aside (momentUp); put away, the box comes back on that
+   beat. Once a save (kept in this browser beside the reading): a reload there does not replay it. */
+const PIECES_KEY = `lingjing.pieces.${SCRATCH || 'main'}`;
+let piecesPlayed = null;
+const playedPieces = () => {
+  if (!piecesPlayed) { try { piecesPlayed = new Set(JSON.parse(localStorage.getItem(PIECES_KEY) ?? '[]')); } catch { piecesPlayed = new Set(); } }
+  return piecesPlayed;
+};
+function beatPiece(slots) {
+  const r = readingHere();
+  if (pieceOn || !playing(r) || boxYields(slots) || momentPending.size || stageBusy()) return;
+  const { beat } = current(r, lang());
+  if (!beat?.piece || beat.recap) return;
+  const key = `${look?.run ?? ''}|${r.items[r.i]?.id}|${beat.piece}`;
+  const done = playedPieces();
+  if (done.has(key)) return;
+  done.add(key);
+  try { localStorage.setItem(PIECES_KEY, JSON.stringify([...done].slice(-40))); } catch { /* no storage: this load only */ }
+  playPiece(beat.piece);
 }
 
 let memoryWaits = false; // a memory come back, not yet on the stage (鼎归 waits for it)

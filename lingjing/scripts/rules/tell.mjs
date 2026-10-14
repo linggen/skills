@@ -23,23 +23,31 @@ import { atScene, inMade, sceneOf } from './world.mjs';
 const SPAN = /⟪([\s\S]*?)⟫/g;
 // The book's reader marks (read-md.js): `[词]{注=id}` / `[句]{典=id}` → the words, a bare
 // `《书》{典=id}` → the title. The reader links them; the box says the words only.
-const MARK = /\[([^\]\n]+)\]\{(?:注|典|音)=[^{}\n]*\}/g, BARE = /\{(?:注|典|音)=[^{}\n]*\}/g;
+const MARK = /\[([^\]\n]+)\]\{(?:注|典|音|景)=[^{}\n]*\}/g, BARE = /\{(?:注|典|音|景)=[^{}\n]*\}/g;
 // 亮相 (Hanli, 2026-10-13: 「亮相就是正式出场, 我们描写人物容貌等的地方」): the book marks a
 // face's formal entrance `[名]{注=id}` — its card stands after that paragraph (read-md.js) —
 // and the scene quoting the paragraph carries the same mark (tests/liangxiang.test.mjs). The
 // passage keeps its 注 marks (`marked`) down to the beat, which notes them (beatsOf `notes`):
 // that beat, and no other, brings the face on large (dialogue.js sightings).
 const NOTE = /\[([^\]\n]+)\]\{注=([^{}\n]+)\}/g;
+// 景 — a set piece tied to a beat of the scene's own passage: a bare `{景=id}` on the paragraph
+// it is the picture of (00-gate's 「沉鼎山并不怎么高，只是陡」, `{景=chending}`), zh and en. The
+// passage keeps it (`marked`) down to the beat (beatsOf `piece`); when the box comes to that beat
+// the page plays setpieces/<id>.js in its place (lingjing.js beatPiece) — after the 回's turn and
+// the passage before it, by construction. An exit's `setpiece` is the picture of a choice (it plays
+// after that choice's passage, before the next scene's); `{景=…}` is the picture of a paragraph.
+const PIECE = /\{景=([a-z]+)\}/g;
 const OTHER = /\[([^\]\n]+)\]\{(?:典|音)=[^{}\n]*\}/g, OTHER_BARE = /\{(?:典|音)=[^{}\n]*\}/g;
+const KEPT = (p) => ({ p: p.replace(NOTE, '$1').replace(PIECE, '').trim(), notes: [...p.matchAll(NOTE)].map(m => m[2]), piece: [...p.matchAll(PIECE)].map(m => m[1])[0] ?? null });
 
-/* A passage as the box plays it: her marked words told as the book's. `notes`: its 注 marks kept. */
+/* A passage as the box plays it: her marked words told as the book's. `notes`: its 注 and 景 marks kept. */
 export function passageFor(content, state, pair, { notes = false } = {}) {
   const text = fill(pick(pair, state.lang), state, content);
   if (text == null) return null;
   const said = text.replace(SPAN, '$1');
   return notes ? said.replace(OTHER, '$1').replace(OTHER_BARE, '') : said.replace(MARK, '$1').replace(BARE, '');
 }
-/* A passage owed: its words, and (when it has any) the same words with their 注 marks. */
+/* A passage owed: its words, and (when it has any) the same words with their 注 and 景 marks. */
 const toldOf = (content, state, pair) => {
   const text = passageFor(content, state, pair);
   if (!text) return null;
@@ -171,11 +179,12 @@ const plain = t => t.replace(/\*/g, '').trim();
 
 export function beatsOf(content, state, item) {
   const sid = item.of === 'scene' ? item.id : item.id.split('/')[0];
-  const paras = String(item.marked ?? item.text ?? '').split(/\n+/).map(p => p.trim()).map(p => ({ p: p.replace(NOTE, '$1'), notes: [...p.matchAll(NOTE)].map(m => m[2]) }))
+  const paras = String(item.marked ?? item.text ?? '').split(/\n+/).map(p => p.trim()).map(KEPT)
     .filter(({ p }) => p && !/^〔(银月|Yinyue)〕$/.test(p) && !/^([-*_])\1{2,}$/.test(p));
   if (item.of === 'catchup') return paras.map(({ p }) => ({ text: plain(p), recap: true }));
-  // A paragraph the book marks as someone's 亮相 notes them (`notes`, the 注 ids in it).
-  return paras.map(({ p, notes }) => ({ ...(spokenOf(content, state, p, sid) ?? { text: plain(p) }), ...(notes.length ? { notes: [...new Set(notes)] } : {}) }));
+  // A paragraph the book marks as someone's 亮相 notes them (`notes`, the 注 ids in it);
+  // one marked `{景=id}` carries its set piece (`piece`).
+  return paras.map(({ p, notes, piece }) => ({ ...(spokenOf(content, state, p, sid) ?? { text: plain(p) }), ...(notes.length ? { notes: [...new Set(notes)] } : {}), ...(piece ? { piece } : {}) }));
 }
 
 function spokenOf(content, state, para, sid) {
