@@ -5,10 +5,16 @@
 // edit that leaves a scene quoting the old words fails here, not in play.
 // Exceptions are written down below: branches the book never took (written in
 // its voice for the game) and a few game-only bridge lines.
+//
+// 节本 (2026-10-14, Hanli: 「可以，先做古三」): a condensed passage plays the game's own cut
+// (`story`) and keeps the book's passage beside it (`story_full`, `story_after_full`). The book's
+// passage takes the check above, word for word; the cut takes jieben.mjs's: every sentence from
+// the book's own words, in the book's order (its tolerance is stated there), zh and en.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { checkJieben, unitsOf } from '../scripts/jieben.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const CHAPTERS = ['00-prologue', '00-waimen', '00-zhuji', '01-ji'];
@@ -43,11 +49,19 @@ const BOOK = JSON.parse(fs.readFileSync(path.join(ROOT, 'story/jiuding-lu/book.j
 const book = {};
 for (const h of BOOK.volumes.flatMap((v) => v.hui)) book[h.id] = norm(fs.readFileSync(path.join(ROOT, 'story/jiuding-lu', h.file), 'utf8'));
 
+// Each passage as the book is checked against: the book's own passage where the game plays a cut of it.
 function* stories(scene) {
-  if (scene.story?.zh) yield [scene.id, scene.story];
-  if (scene.story_after?.zh) yield [`${scene.id}/after`, scene.story_after];
-  for (const x of scene.exits ?? []) if (x.story?.zh) yield [`${scene.id}/${x.id}`, x.story];
+  for (const [where, pair, full] of passages(scene)) yield [where, full ?? pair];
 }
+function* passages(scene) {
+  if (scene.story?.zh) yield [scene.id, scene.story, scene.story_full];
+  if (scene.story_after?.zh) yield [`${scene.id}/after`, scene.story_after, scene.story_after_full];
+  for (const x of scene.exits ?? []) if (x.story?.zh) yield [`${scene.id}/${x.id}`, x.story, x.story_full];
+}
+const allScenes = () => CHAPTERS.flatMap((ch) => {
+  const dir = path.join(ROOT, 'worlds/jiuding/chapters', ch, 'scenes');
+  return fs.readdirSync(dir).filter((f) => f.endsWith('.json')).sort().map((f) => JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')));
+});
 
 test('every scene passage is the book\'s own text, paragraph by paragraph', () => {
   const drift = [];
@@ -91,4 +105,43 @@ test('the exceptions still exist (a stale allow-list hides nothing)', () => {
   }
   for (const b of BRANCHES) assert.ok(seen.has(b), `branch ${b} is gone — drop it from BRANCHES`);
   for (const [w] of BRIDGES) assert.ok(seen.has(`bridge:${w}`), `bridge in ${w} is gone — drop it from BRIDGES`);
+});
+
+test('a condensed passage comes from the book: every sentence in the book\'s own words, in its order, zh and en', () => {
+  const off = [];
+  let cut = 0;
+  for (const scene of allScenes()) {
+    for (const [where, pair, full] of passages(scene)) {
+      if (!full) continue;
+      cut++;
+      for (const lang of ['zh', 'en']) {
+        const r = checkJieben(pair[lang], full[lang], lang);
+        if (!r.ok) off.push(`${where} ${lang} (cover ${r.cover.toFixed(2)}): ${r.bad.map((b) => `「${b.s.slice(0, 30)}」 ${b.cov.toFixed(2)}`).join(' · ') || 'the whole too loose'}`);
+        // about a third (Hanli's standard); never more than two thirds of the book's
+        const share = unitsOf(pair[lang], lang).length / unitsOf(full[lang], lang).length;
+        if (share > 0.75) off.push(`${where} ${lang}: ${Math.round(share * 100)}% of the book's passage — not a cut`);
+      }
+    }
+  }
+  assert.ok(cut >= 11, `condensed passages found: ${cut}`);
+  assert.deepEqual(off, [], off.join('\n'));
+});
+
+test('the check holds the standard: Hanli\'s approved sample passes; a new line, a paraphrase and a swap fail', () => {
+  const gate = allScenes().find((s) => s.id === '00-gate');
+  const book = gate.story_full.zh;
+  const sample = [
+    '沉鼎山并不怎么高，只是陡。一道石阶笔直地插进雾里，瞧不见尽头。小满张着嘴，半天合不上。',
+    '庙廊下生着一堆火。马家雇的镖师葛六捏碎一颗核桃：「二十年前考过。外门，练气三层，在第三层蹲了六年。」他一根指头点过一圈孩子：「你们这几千个，明天进门的，一百来个。一百来个里头，能筑基的——一个。」',
+    '小满问：「百日筑基，是不是一百天？」葛六笑了：「百日是打底子。我打了六年。」',
+    '一个光脚的孩子站起来：「那我就当那一个！我家七张嘴，一年五两，够他们吃三年。」满廊的人笑了，葛六没笑：「……我当年，也这么说。」',
+    '马家的家丁挑灯来问：「三爷问，那个摆法画好了没有？」「画好了。五两银子，一个格子也不差。」',
+  ];
+  assert.ok(checkJieben(sample.join('\n\n'), book, 'zh').ok, 'the 2026-10-14 sample');
+  const invented = [sample[0], '葛六是个很厉害的镖师，大家都很怕他，谁也不敢多说一句话。', ...sample.slice(1)];
+  assert.equal(checkJieben(invented.join('\n\n'), book, 'zh').ok, false, 'a line the book never wrote');
+  const paraphrase = [sample[0], '庙里有一堆火，一个镖师坐在边上，捏碎了核桃，说他二十年前也考过。', ...sample.slice(2)];
+  assert.equal(checkJieben(paraphrase.join('\n\n'), book, 'zh').ok, false, 'the book retold in other words');
+  const swapped = [sample[4], sample[0], sample[1], sample[2], sample[3]];
+  assert.equal(checkJieben(swapped.join('\n\n'), book, 'zh').ok, false, 'out of the book\'s order');
 });

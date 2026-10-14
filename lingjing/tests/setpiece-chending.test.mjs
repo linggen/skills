@@ -1,6 +1,6 @@
 // 沉鼎山 (setpieces/chending.js): the first sight of the mountain plays AT its paragraph —
 // 00-gate's 「沉鼎山并不怎么高，只是陡。…小满张着嘴，半天合不上。」 — never before the 回's turn
-// (今 · 一 · 完, 第三回's seal) or the passage's first five beats.
+// (今 · 一 · 完, 第三回's seal) or the passage's beat before it (the 节本's first, since 2026-10-14).
 //
 // An exit's `setpiece` is the picture of a choice: it plays after that choice's passage and
 // before the next scene's (lingjing.js pieceAhead) — on 00-notice/go it would have played
@@ -19,6 +19,7 @@ import { resolve, task, win } from '../scripts/rules.mjs';
 import { passageFor, playOf, tellOf } from '../scripts/rules/tell.mjs';
 import { advance, current, emptyReading, withTold } from '../scripts/dialogue.js';
 import { atTurn, boxGivesWay } from '../scripts/queue.js';
+import { checkJieben } from '../scripts/jieben.mjs';
 import { ART, ASPECT, BEATS, MARKS, SHOTS, TITLE, camSeconds, stillSvg } from '../scripts/setpieces/chending.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -77,10 +78,16 @@ test('painted, not drawn: the painting on disk, the camera inside it, a push fro
 
 test('the scene marks the paragraph, zh and en, and every 景 mark names a piece that exists', () => {
   const gate = scenes.find((sc) => sc.id === '00-gate');
+  // 00-gate plays the game's cut (节本, jieben.mjs) with the book's passage beside it: the book's
+  // paragraph is the piece's line, word for word; the box's is its cut, and both carry the mark.
   for (const lang of ['zh', 'en']) {
+    const book = gate.story_full[lang].split(/\n+/).filter((p) => /\{景=/.test(p));
+    assert.equal(book.length, 1, `${lang}: one paragraph of the book's passage`);
+    assert.equal(book[0].replace(PIECE, ''), BEATS[0].line[lang], `${lang}: the book's paragraph is the piece's line`);
     const marked = gate.story[lang].split(/\n+/).filter((p) => /\{景=/.test(p));
     assert.equal(marked.length, 1, `${lang}: one paragraph`);
-    assert.equal(marked[0].replace(PIECE, ''), BEATS[0].line[lang], `${lang}: the paragraph is the piece's line`);
+    assert.ok(checkJieben(marked[0], BEATS[0].line[lang], lang).ok, `${lang}: the box's paragraph is cut from the piece's line`);
+    assert.ok(marked[0].startsWith(lang === 'zh' ? '沉鼎山并不怎么高，只是陡。' : "Sunken Cauldron Mountain wasn't very tall, only steep."), lang);
   }
   for (const sc of scenes) {
     for (const pair of [sc.story, sc.story_after, ...(sc.exits ?? []).map((x) => x.story)]) {
@@ -96,7 +103,7 @@ test('the scene marks the paragraph, zh and en, and every 景 mark names a piece
   }
 });
 
-test('the box never says the mark; the beat carries the piece, the passage\'s sixth, after the 回\'s turn', () => {
+test('the box never says the mark; the beat carries the piece, at its own paragraph, after the 回\'s turn', () => {
   for (const lang of ['zh', 'en']) {
     const s = atGate(lang);
     assert.equal(s.scene, '00-gate');
@@ -110,16 +117,19 @@ test('the box never says the mark; the beat carries the piece, the passage\'s si
     assert.equal(before.hui, 'j01', '今 · 一\'s last words first');
     assert.equal(tell[at].hui, 'h04', 'then 第三回\'s');
     // Only that one beat of everything told carries a piece — and it is the paragraph.
+    const gate = scenes.find((sc) => sc.id === '00-gate'), paras = gate.story[lang].split(/\n\n+/);
+    const k = paras.findIndex((p) => /\{景=/.test(p));
     const pieces = tell.flatMap((t, i) => t.beats[lang].map((b, j) => [i, j, b])).filter(([, , b]) => b.piece);
-    assert.deepEqual(pieces.map(([i, j, b]) => [i, j, b.piece]), [[at, 5, 'chending']], lang);
-    assert.equal(pieces[0][2].text, BEATS[0].line[lang], 'the beat says the paragraph, the mark gone');
+    assert.deepEqual(pieces.map(([i, j, b]) => [i, j, b.piece]), [[at, k, 'chending']], lang);
+    assert.ok(k > 0, 'a beat of the passage leads to it');
+    assert.equal(pieces[0][2].text, paras[k].replace(PIECE, ''), 'the beat says the paragraph, the mark gone');
     for (const t of tell) for (const b of t.beats[lang === 'zh' ? 'en' : 'zh']) if (t.id === '00-gate' && b.piece) assert.equal(b.piece, 'chending', 'the other language marks the same beat');
     // Walking the box: the piece's beat is reached only past the turn and the five beats before it.
     let r = withTold(emptyReading('j01-retest'), tell, s.scene);
     const seen = [];
     for (let k = 0; k < 400 && !r.closed; k += 1) { const c = current(r, lang); seen.push([r.i, r.j, c.beat.piece ?? null]); r = advance(r, lang); }
     const first = seen.findIndex(([, , p]) => p);
-    assert.deepEqual(seen[first].slice(0, 2), [at, 5]);
+    assert.deepEqual(seen[first].slice(0, 2), [at, k]);
     assert.ok(seen.slice(0, first).some(([i]) => i === at - 1), 'the 回 before it told first');
     assert.equal(seen.filter(([, , p]) => p).length, 1, 'once');
   }

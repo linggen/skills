@@ -15,6 +15,7 @@
 // Pure: the reading is a plain object, kept per save in localStorage so a
 // reload finds its place (lingjing.js holds it; tests read these directly).
 import { esc } from './esc.js';
+import { headOf } from './jieben.mjs';
 
 export const DLG_WORDS = {
   zh: { all: '显示全文', log: '回看', close: '收起', logTitle: '回看', logNow: '此景', next: '继续', recap: '前情', before: '上一景', on: '点一下，接着', act: (a) => `（${a}）`, voice: ['无声', '有声'], voiceTitle: '评书配音' },
@@ -201,6 +202,18 @@ export function current(r, lang = 'zh') {
   const k = Math.max(0, group.findIndex((b) => b.i === r.i && b.j === j));
   return { beat: all[at] ?? {}, at, k, n: group.length, before };
 }
+/* 读原著 at the box (Hanli, 2026-10-14): the 回 of the passage on show (book.json's id, its
+   `hui`) and the words the reader finds its paragraph by (read.js openAt) — a condensed beat's
+   `at`, the opening of the book's paragraph it is cut from (rules/tell.mjs, jieben.mjs), else the
+   beat's own words, which are the book's. Null with nothing told; a catch-up names its 回 only. */
+export function bookPlace(r, lang = 'zh') {
+  if (!r?.items?.length) return null;
+  const { beat } = current(r, lang), hui = r.items[Math.min(r.i, r.items.length - 1)]?.hui;
+  if (!hui) return null;
+  const at = beat.recap ? null : beat.at ?? (beat.text ? headOf(beat.text, lang) : null);
+  return { hui, ...(at ? { at } : {}) };
+}
+
 /* The beats told so far in this scene: up to the one on show (all of them, once put away). */
 export const toldSoFar = (r, lang = 'zh') => (!r?.items ? [] : r.closed ? flat(r, lang) : flat(r, lang).slice(0, current(r, lang).at + 1));
 

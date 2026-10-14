@@ -11,6 +11,7 @@ import { playMarks, wireMarks } from './marks.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { content, verb, worldPath } from './rules.js';
 import { createListener, listenHtml, loadManifest } from './pingshu.js';
+import { unitsOf } from './jieben.mjs';
 
 const WORDS = {
   zh: { back: '← 回到灵境', toc: '目录', prev: '←', next: '→', none: '书还没有写。', failed: '这一回没能打开。', only: '这一回只有中文。',
@@ -35,12 +36,13 @@ const $ = (id) => document.getElementById(id);
 /* A link back into this reader, the app's own query kept (app_mode and the rest). */
 function hrefWith(changes) {
   const q = new URLSearchParams(location.search);
+  q.delete('at'); // the game's box (openAt) is this page's place only, never a link's
   for (const [k, v] of Object.entries(changes)) (v == null ? q.delete(k) : q.set(k, v));
   return `read.html?${q.toString()}`;
 }
 function backHref() {
   const q = new URLSearchParams(location.search);
-  for (const k of ['book', 'ch', 'lang', 'draft']) q.delete(k);
+  for (const k of ['book', 'ch', 'lang', 'draft', 'at']) q.delete(k);
   const s = q.toString();
   return `index.html${s ? `?${s}` : ''}`;
 }
@@ -120,6 +122,26 @@ async function main() {
   const short = (c) => esc(pick(c.label ?? c.title));
   $('pager').innerHTML = `${prev ? `<a href="${esc(hrefWith({ book: bookId, ch: prev.id }))}">${esc(w.prev)} ${short(prev)}</a>` : '<span></span>'}${next ? `<a href="${esc(hrefWith({ book: bookId, ch: next.id }))}">${short(next)} ${esc(w.next)}</a>` : '<span></span>'}`;
   window.scrollTo(0, 0);
+  if (params.get('at')) openAt(params.get('at'));
+}
+
+/// 读原著 from the game (lingjing.js readAt) opens the 回 at the box on show: `?at=` is the
+/// opening words of the book's paragraph it comes from (a condensed beat, jieben.mjs headOf), or
+/// the box's own words (a beat that is the book's paragraph). The first paragraph holding them is
+/// brought to the middle and lit a moment; none, and the 回 opens at its head as before.
+function openAt(at) {
+  const join = (u) => u.join(lang === 'en' ? ' ' : '');
+  const want = join(unitsOf(at, lang));
+  if (!want) return;
+  const said = (el) => {
+    const c = el.cloneNode(true);
+    c.querySelectorAll('rt, rp, .chg-old, button').forEach((x) => x.remove());
+    return join(unitsOf(c.textContent, lang));
+  };
+  const p = [...document.querySelectorAll('#chapter p, #chapter blockquote')].find((el) => said(el).includes(want));
+  if (!p) return;
+  p.classList.add('bookhere');
+  p.scrollIntoView({ block: 'center' });
 }
 
 /// ▶ 听书: a 回 with its whole 评书 on the CDN (pingshu.js) gets the player

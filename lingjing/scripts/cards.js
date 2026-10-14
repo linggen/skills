@@ -132,7 +132,7 @@ export const WORDS = {
 export { esc } from './esc.js';
 import { esc } from './esc.js';
 import { codexCompactHtml, codexHtml } from './codex.js';
-import { choicesUp, logLinkHtml } from './dialogue.js';
+import { bookPlace, choicesUp, logLinkHtml } from './dialogue.js';
 
 /// A system the story has not reached yet (Look's `locked`, rules/locks.mjs): its chip, bar and buttons are not drawn at all.
 export const isShut = (look, system) => (look?.locked ?? []).includes(system);
@@ -1325,10 +1325,14 @@ function ledgerRowHtml(w, e) {
 /* An open book, in the chip's own ink. */
 const BOOK_ICON = '<svg class="chipicon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 4.2C6.6 3.2 4.6 2.8 2 3v9.3c2.6-.2 4.6.2 6 1.2 1.4-1 3.4-1.4 6-1.2V3c-2.6-.2-4.6.2-6 1.2Zm0 0v9.3" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>';
 /// 书 — the novel the game is told from (story/<book>/), read in the same
-/// frame: read.html loads story/index.json, the book and its chapters.
+/// frame: read.html loads story/index.json, the book and its chapters. It opens
+/// at the box on show (2026-10-14, 节本): that passage's 回 and paragraph
+/// (dialogue.js bookPlace) — the full text one tap from the game's cut.
 export function readChipHtml(ctx) {
   const w = ctx.words, q = new URLSearchParams(typeof location === 'undefined' ? '' : location.search);
   q.set('lang', ctx.lang ?? 'zh');
+  const place = bookPlace(ctx.reading, ctx.lang ?? 'zh');
+  for (const [k, v] of [['ch', place?.hui], ['at', place?.at]]) (v ? q.set(k, v) : q.delete(k));
   return `<a class="luchip readchip" href="read.html?${esc(q.toString())}" title="${esc(w.readTitle)}">${BOOK_ICON}<span>${esc(w.readChip)}</span></a>`;
 }
 
