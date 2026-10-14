@@ -546,6 +546,7 @@ mark, and the scene goes on. The rhythm counts a split passage's rest (`story_af
 |---|---|---|---|---|
 | `taunt` | `masan-taunt` | 00-masan | 忍字: 马小宝's taunt heard once, then said back piece by piece from near misses (猫叫, 咬一口, 「汪！」); a wrong piece and every second close the fist | word · fist (mark); 原样说回去 / 攥紧拳头 both wait, his choice |
 | `griddle` | `kitchen-griddle` | 00-kitchen | 烙饼: the passage split after 「一张厚，一张薄」; he minds the fire and calls 「翻！」 when a side goes golden — early she waits, late it scorches, silent she turns it; thin then thick | golden · scorched (mark) |
+| `listen` | `storm-listen` | 00-storm | 听: the pines' birds call, then stop all at once — 「不对」 then (early is only 爹's word; silent, 爹 sees it), then the sign: the cloud on the ridge, not the treetops or the prints | sharp · late (mark); 掉头 / 再追半里 both wait |
 
 A game ends `won` always, with its `grade`; the page sends it with the win (`win --grade`), the
 task's **`marks`** (grade → mark) write it, and an exit's **`needs.grade`** takes only that grade —

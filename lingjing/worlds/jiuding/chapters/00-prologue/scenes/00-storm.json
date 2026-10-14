@@ -60,7 +60,14 @@
     "en": "One deer hide, twenty catties of meat, the bow on the wall, two days left — Xiaoman saw his father clench his jaw, then turn round. \"Come on. We're going back.\"\n\nThe two of them ran back the way they'd come. Xiaoman counted the marks back, one by one: forty-one, forty, thirty-nine… And then the sky fell in. One moment there was still a thread of light leaking through the trees, and the next the forest was pitch black, as if someone had pulled a black cloth bigger than the sky over the whole of Mount Meng in one go.\n\nWind poured down off the peak, every black pine on the mountain bent at the waist together and moaned, as if the whole mountain were crying. Then the rain came smashing down — not falling, smashing. Drops as big as soybeans, stinging on the face, crackling on the leaves like a thousand people letting off firecrackers at once.\n\nIn the blink of an eye the mountain path became a river, muddy water carrying broken stones, rushing straight downhill. Xiaoman couldn't see more than three steps ahead. All he could see was his father's limping back, swaying in and out of the curtain of rain."
    },
    "beat": [],
-   "next": "00-fall"
+   "next": "00-fall",
+   "needs": {
+    "task": "storm-listen"
+   },
+   "refuse": {
+    "zh": "林子里还有鸟叫——先听，再看风。",
+    "en": "The birds are still calling — listen first, then look to the wind."
+   }
   },
   {
    "id": "chase",
@@ -76,7 +83,26 @@
     "en": "One deer hide, twenty catties of meat, the bow on the wall, his mother's hand stopped in mid-air — Xiaoman saw his father set his jaw. \"Half a li. Just half a li.\"\n\nThey chased another half li. Deep in the forest a tine of antler flashed behind a tree — and then the sky fell in.\n\nOne moment a thread of light still leaked through the branches; the next the forest was pitch black; wind poured down from the peak and every black pine bent double, moaning; the rain came down — not fell: hurled — and in the blink of an eye the path became a river.\n\nThe extra half li now had to be paid back step by step through the mud. Xiaoman counted back by the marks, far slower than on the way in."
    },
    "beat": [],
-   "next": "00-fall"
+   "next": "00-fall",
+   "needs": {
+    "task": "storm-listen"
+   },
+   "refuse": {
+    "zh": "林子里还有鸟叫——先听，再看风。",
+    "en": "The birds are still calling — listen first, then look to the wind."
+   }
   }
- ]
+ ],
+ "show": [
+  {
+   "card": "board",
+   "id": "storm-listen"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "storm-listen"
+  ]
+ },
+ "_beats": "听 (storm-listen, batch two 2026-10-14): played at the end of the passage — the birds calling in the pines stop all at once; 「不对」 the moment it goes quiet, then the sign in the sky (the cloud on the ridge, not the still treetops or the prints); grade sharp · late → `listen-sharp` · `listen-late`; 掉头 and 再追半里 both wait for it and stay his choice"
 }

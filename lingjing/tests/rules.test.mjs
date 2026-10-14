@@ -938,8 +938,8 @@ test('the prologue is free: its steps and bouts cost no 灵气, with the 丹田 
   s = walk(s, [['win', { id: 'track-marks', grade: 'true' }], ['task', { action: 'done', id: 'track-marks' }]], content, NOW);
   assert.equal(s.stamina, 0, 'the tracking board costs nothing in the free prologue');
   refused(resolve, s, { exit: 'carve' }, 'no-stamina');
-  const full = must(resolve, { ...s, stamina: 100 }, { exit: 'carve' }).state;
-  assert.equal(full.stamina, 97);
+  const full = walk(must(resolve, { ...s, stamina: 100 }, { exit: 'carve' }).state, [['played']], content, NOW);
+  assert.equal(full.stamina, 97, 'and 听 at the storm costs nothing either');
   assert.equal(must(resolve, full, { exit: 'chase' }).state.stamina, 87);
   assert.equal(must(resolve, full, { exit: 'turn' }).state.stamina, 93, 'turning back by the third rule costs less');
   // making a scene inside it still costs

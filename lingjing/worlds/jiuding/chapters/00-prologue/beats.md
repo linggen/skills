@@ -27,7 +27,7 @@ the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 
 | `00-chushan` 前山 | 二 | 爬树眺望 → the map card (task 5); at noon a second tree: a deer lifts its head at 黑松岭's edge, and they track it to the 断碑 (no 马家 dogs since 2026-10-03, Hanli: 「可以写他们看见远处的鹿在黑松岭里面，追进去的」) |
 | `00-duanbei` 断碑 | 三 | 看碑背 (`stele-fox`, task 7) · 三条规矩 (`three-rules`, task 6) · 回村 / 独自进 stay |
 | `00-heisong` 黑松岭 | 三 | 一百步一记 (体力 −3, `marks-cut`, task 8); **board `track-marks`** (追踪: pick the deer's sign among the forest's, carve at a hundred steps, four marks; grade true · rough → `marks-true` · `marks-rough`) gates `carve` with the stone clue |
-| `00-storm` 暴雨 | 四 | 掉头 (体力 −4) · 再追半里 (体力 −10) (task 9) — the rain breaks; the haul is 00-fall's board |
+| `00-storm` 暴雨 | 四 | 掉头 (体力 −4) · 再追半里 (体力 −10) (task 9) — the rain breaks; the haul is 00-fall's board; **board `storm-listen`** (听: 「不对」 the moment the birds stop, then the sky's sign — the cloud on the ridge; grade sharp · late → `listen-sharp` · `listen-late`) — both ways on wait for it, his choice |
 | `00-fall` 第二十七道记号 | 五 · 六 | **board `fall-storm`** (lane MG's 暴雨: haul 爹 back in the lulls) gates 把爹拽回山壁 — then the fall, 查伤, 爷爷's 火镰, the light (task 10); `at` heisong |
 | `00-fox` 银光 | 七 | 裹起它 · 别碰 (stay) — task 11 |
 | `00-cave` 那一夜 | 八 | 分它一半 · 自己吃 (task 12); **board `bread-share`** (喂饼: seven pieces to the fox or to himself, the corner kept for the dawn) — its grade takes the way on: none · little → 自己吃, half · most → 分它一半; `bread-<grade>` marks how much (欠饼) |

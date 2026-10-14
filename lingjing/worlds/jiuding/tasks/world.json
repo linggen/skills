@@ -75,6 +75,13 @@
       "done_line": {"zh": "厚的那张饼，包好了，揣在你怀里。", "en": "The thick flatbread, wrapped, is inside your jacket."}
     },
     {
+      "id": "storm-listen", "kind": "board", "game": "listen", "period": "once",
+      "title": {"zh": "听 · 鸟忽然全停了", "en": "Listening · The birds stop all at once"},
+      "grant": { "table": "task", "progress": 5 },
+      "marks": {"sharp": "listen-sharp", "late": "listen-late"},
+      "done_line": {"zh": "山梁上的云，正往下压。", "en": "The cloud on the ridge is pressing down."}
+    },
+    {
       "id": "xisui-hold", "kind": "board", "game": "xisui", "period": "once",
       "title": { "zh": "洗髓 · 疼，别喊", "en": "Marrow washing · Don't cry out" },
       "grant": { "table": "task", "progress": 5 },

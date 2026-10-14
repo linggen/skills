@@ -6,8 +6,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as taunt from '../scripts/games/taunt.js';
 import * as griddle from '../scripts/games/griddle.js';
+import * as listen from '../scripts/games/listen.js';
 
-const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/]];
+const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/], [listen, /data-g="start"/]];
 
 test('every batch-two game: meta in both languages, a control at open, both languages drawn, a skip that ends it won with no grade', () => {
   for (const [mod, control] of GAMES) {
@@ -79,4 +80,27 @@ test('烙饼: call the turn when each side is golden — too soon she waits, too
   assert.equal(idle.grade, 'scorched');
   assert.ok(idle.t < 30000, 'she finishes it within half a minute');
   assert.match(griddle.html(idle, 'en'), /scorched side in/);
+});
+
+test('听: say it the moment the birds stop, then read the sky — a false alarm is only a word from 爹; silence, and 爹 sees it himself', () => {
+  let s = listen.act(listen.newGame('h'), { g: 'start' }).state;
+  s = listen.act(s, { g: 'wrong' }).state;
+  assert.equal(s.note, 'early');
+  assert.equal(s.phase, 'listen', 'the birds still sing: nothing happens');
+  while (s.t < s.quietAt + 600) s = listen.tick(s, 100);
+  s = listen.act(s, { g: 'wrong' }).state;
+  assert.equal(s.phase, 'sky');
+  s = listen.act(s, { g: 'sign', id: 'cloud' }).state;
+  assert.equal(s.won, true);
+  assert.equal(s.grade, 'sharp');
+  assert.match(listen.html(s, 'zh'), /第三条规矩/);
+  let b = listen.act(listen.newGame('h'), { g: 'start' }).state;
+  while (b.phase === 'listen') b = listen.tick(b, 100);
+  assert.equal(b.note, 'father');
+  assert.ok(b.t < 20000);
+  b = listen.act(b, { g: 'sign', id: 'tops' }).state;
+  assert.equal(b.note, 'topsSay');
+  b = listen.act(b, { g: 'sign', id: 'cloud' }).state;
+  assert.equal(b.grade, 'late');
+  assert.match(listen.html(b, 'en'), /Father has seen it too/);
 });

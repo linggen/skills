@@ -240,3 +240,6 @@
 .g-griddle-pips i.is-on { background: #d6a048; border-color: #8a6224; }
 .g-griddle-pips i.is-burnt { background: #604222; border-color: #604222; }
 .g-scene .g-mouth { fill: currentColor; opacity: .12; }
+/* 听 */
+.g-scene .g-pine { fill: var(--wood); opacity: .55; }
+.g-scene .g-cloud { fill: currentColor; }
