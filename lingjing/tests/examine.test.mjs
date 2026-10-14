@@ -183,8 +183,9 @@ test('the page: 看 chips, the finding under the card, the hint; the quiet link;
   assert.doesNotMatch(cardHtml({ card: 'panel' }, { look: look(found, content, ctx()), words: WORDS.zh, lang: 'zh' }), /data-panel-exit="carve"/);
   const on = look(walk(found, [['win', { id: 'track-marks', grade: 'true' }], ['task', { action: 'done', id: 'track-marks' }]], content, NOW), content, ctx());
   const card = cardHtml({ card: 'panel' }, { look: on, words: WORDS.zh, lang: 'zh' });
-  assert.match(card, /class="quietnext"[^>]*data-panel-exit="carve"[^>]*>追蹄印，一百步刻一道 ›</);
-  assert.doesNotMatch(card, /class="act paneltap"/);
+  // A proper button, never the bare link (2026-10-14): the box's own way of showing it.
+  assert.match(card, /class="act paneltap"[^>]*data-panel-exit="carve"[^>]*>追蹄印，一百步刻一道 ›</);
+  assert.doesNotMatch(card, /class="quietnext"/);
   const masan = { ...newState(content, 'zh', NOW), chapter: '00-prologue', scene: '00-masan', place: 'shiao', name: '青玄', done_scenes: [] };
   assert.match(cardHtml({ card: 'panel' }, { look: look(masan, content, ctx()), words: WORDS.zh, lang: 'zh' }), /也可以直接说你想怎么做/);
   assert.equal(WORDS.zh.chatHint, '你想怎么做？');

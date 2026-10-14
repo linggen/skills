@@ -64,6 +64,7 @@ const WRITERS = new Set(['Divine', 'Resolve', 'Practice', 'Tale', 'Lang', 'Summa
 let bout = null;
 let idleTimer = null;
 let look = null; //       the rules' view of the game — the only source of numbers
+let prevLook = null; //   the scene before this one: its header holds while its choice's passage plays
 let authored = null; //   the world's content files, for the world Look names
 let cloud = null; //      the engine's view of the account: {signed_in, meter}; null = no cloud
 let atlasPlaces = null; // every province's places for the map, read by the atlas verb: {key, provinces}
@@ -458,6 +459,8 @@ function refresh() {
 async function readOnce() {
   try {
     const [seen, ,] = await Promise.all([verb('look', PREVIEW.day ? { day: PREVIEW.day } : {}), readCloud()]);
+    // The scene just left, kept for its header while its choice's passage is still told.
+    if (look && seen?.scene?.id !== look.scene?.id) prevLook = look;
     look = seen;
     watchRun();
     if (look.divination) keep({ casting: false });
@@ -911,7 +914,7 @@ function stageNow() {
   // A scene's game waits for the whole passage too — its last beat read and the box put away
   // (live 2026-10-14: at 吹鹅毛 the box hid on its last beat, 「……鸡窝里一阵大乱」, unread).
   // Not under a 回's title card either: the passage is still to be told after it (a fresh 石坳村).
-  if (look?.tell_owed || drawingTold || playing(readingHere())) cards = cards.filter((c) => c.card !== 'board' || c.id === view.opened?.id);
+  if (storyAhead()) cards = cards.filter((c) => c.card !== 'board' || c.id === view.opened?.id);
   // A board he opened from the tray's 开局 waits for the whole passage (queue.js trayWaits).
   if (view.opened && trayAhead()) cards = cards.filter((c) => !(c.card === 'board' && c.id === view.opened.id));
   // One text box (Hanli, 2026-10-05): while the book is ahead — or the box holds
@@ -1220,6 +1223,12 @@ function draw() {
   // body give way, because she is IN the fight as a card and the cards need
   // the room (his, 2026-09-18). It all comes back when the fight ends.
   document.body.classList.toggle('fighting', Boolean(bout));
+  // The header — place, caption, people, the sky — changes only when the story gets there: while the
+  // box still tells the passage of the choice that left the last scene, that scene's header holds
+  // (his, 2026-10-14: 「天快亮」 and 阿禾 over 马小宝's taunt at dusk).
+  const realLook = look;
+  look = headLook();
+  try {
   paintAtmos();
   paintBackdrop();
   // The 回 above the place, as the book names and numbers it (古五: 「卷一 · 沉鼎 · 第十回　古 · 漏勺夜半通三关」 once 今五 is in, rules/hui.mjs).
@@ -1230,6 +1239,7 @@ function draw() {
   $('place').textContent = look.scene?.place ?? look.chapter?.close?.place ?? look.place?.name ?? look.chapter?.title ?? '';
   // The scene's caption, small under the place (2026-10-14: never a beat in the box — told three times).
   $('placeCap').textContent = (look.scene?.panel?.caption ?? []).join(' ');
+  } finally { look = realLook; }
   // She is always at the player's side: on the stage whenever the game is
   // open, scene or road, not only where a scene casts her.
   $('stage').hidden = false;
@@ -1250,7 +1260,7 @@ function draw() {
   // footer are redrawn only when they changed (a stream token must not
   // restart a portrait's fade or reset a chip's pop).
   const slots = bout ? null : stageNow();
-  paintIf('headCards', headHtml(slots));
+  { const realLook = look; look = headLook(); try { paintIf('headCards', headHtml(slots && look !== realLook ? { ...slots, header: headOf(look) } : slots)); } finally { look = realLook; } }
   paintIf('footRow', footRowHtml(slots));
   paintIf('footChips', footChipsHtml());
   $('focus').innerHTML = focusHtml(slots);
@@ -1271,7 +1281,9 @@ function draw() {
   // — 「今日无事」 under a book with things in it was a contradiction.
   $('trayTitle').textContent = w.tray;
   // What already stands on the stage is not listed again in the tray (Hanli, 2026-10-05: the 九宫格 twice).
-  $('tray').innerHTML = stands(look, 'tray') ? trayHtml({ ...ctx(), onStage: (slots?.main ?? []).map((c) => c.id).filter(Boolean) }) : '';
+  // A scene's own game is not at hand before its passage reaches it (his, 2026-10-14: 接雨 in the tray at load).
+  const gamesAhead = storyAhead() ? (look.scene?.show ?? []).filter((c) => c.card === 'board').map((c) => c.id) : [];
+  $('tray').innerHTML = stands(look, 'tray') ? trayHtml({ ...ctx(), onStage: [...(slots?.main ?? []).map((c) => c.id).filter(Boolean), ...gamesAhead] }) : '';
   $('tray').parentElement.hidden = !$('tray').innerHTML;
   // A turn with nothing left in it ends itself after a beat long enough to
   // read the board — pressing the button is always faster (his, 2026-09-18).
@@ -1406,7 +1418,9 @@ async function onWin(taskId) {
   else await report(`[scene] won ${taskId}`);
   await refresh();
   const on = winExit(taskId, grade);
-  if (on) await panelTap(on.id, look?.scene?.panel?.taps?.find((t) => t.id === on.id)?.label ?? on.id);
+  // A passage owed after the game (the rest of the scene's, `story_after`): the box tells it first,
+  // and the way on stays his to take — never tapped over the words still to come.
+  if (on && !look?.tell_owed) await panelTap(on.id, look?.scene?.panel?.taps?.find((t) => t.id === on.id)?.label ?? on.id);
   return true;
 }
 
@@ -1767,6 +1781,17 @@ const cardsAhead = () => bookAhead({ owed: Boolean(look?.tell_owed), drawing: dr
 const gamesEarly = () => !look?.tell_owed && !drawingTold && !atHuiTurn() && sceneUnder(readingHere(), look?.scene?.id, lang());
 // A board opened from the tray: the box put away first, not only its last beat, nor over a 回's turn.
 const trayAhead = () => trayWaits({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: playing(readingHere()), huiTurn: atHuiTurn() });
+/* The scene's passage still to be told (owed, being drawn, or in the box): its games wait. */
+const storyAhead = () => Boolean(look?.tell_owed || drawingTold || playing(readingHere()));
+/* The look whose header stands now: the last scene's, while the box tells the passage of the choice
+   that left it (the first item of the new reading, `of: 'choice'`, its id that scene's); else this one. */
+function headLook() {
+  const r = readingHere(), it = playing(r) ? r.items[r.i] : null;
+  const from = it?.of === 'choice' ? String(it.id).split('/')[0] : null;
+  return from && prevLook?.scene?.id === from && look?.scene?.id !== from ? { ...look, scene: prevLook.scene, place: prevLook.place, weather: prevLook.weather, stage: prevLook.stage } : look;
+}
+/* A held header's own cards (the people, the goal) from the look it stands on. */
+const headOf = (lk) => stageSlots(lk, lk.stage ?? []).header;
 const momentUp = () => Boolean(pieceOn || featOn || view.memory || view.homing || view.doors || view.unfold || document.querySelector('.feat'));
 /* A game to play on the stage now (a board in main, its task still open): the box steps
    aside for it, wholly (queue.js boxGivesWay `game`; his 「小游戏，和剧情不要同时显示」). */

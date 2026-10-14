@@ -80,6 +80,12 @@ export function tellOf(content, state) {
   for (const key of state.tell_owed ?? []) {
     const [sid, eid] = key.split('/');
     if (sid === 'scene') { addScene(eid); continue; }
+    // The rest of a scene's passage, after the game inside it (`story_after`): the scene's own.
+    if (sid === 'after') {
+      const sc = findScene(content, eid), text = sc?.story_after && !seen.has(key) ? passageFor(content, state, sc.story_after) : null;
+      if (text) { seen.add(key); items.push({ of: 'after', id: `${eid}/after`, text, ...(sc.hui ? { hui: sc.hui } : {}) }); }
+      continue;
+    }
     const from = findScene(content, sid), exit = from?.exits?.find(e => e.id === eid);
     const text = exit?.story && !seen.has(key) ? passageFor(content, state, exit.story) : null;
     // Each passage carries its 回: the page plays an ending 回's last passage before its 「完」 card.
@@ -129,6 +135,7 @@ export function stagedOf(content, state) {
   return keys.map(key => {
     const [sid, eid] = key.split('/');
     if (sid === 'scene') { const sc = findScene(content, eid); return { scene: eid, recap: say(sc?.recap ?? sc?.setup) ?? null }; }
+    if (sid === 'after') return { scene: eid, after: true };
     const exit = findScene(content, sid)?.exits?.find(e => e.id === eid);
     return { chose: say(exit?.label) ?? eid };
   });

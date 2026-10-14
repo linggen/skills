@@ -121,6 +121,10 @@ function taskDone(state, content, ctx, id) {
     return { state: s, result: { ok: true, done: id, paid: null, gives: null, for: 'errand', ...(handed.length ? { handed } : {}) } };
   }
   s.tasks[id] = { status: 'done', period: periodKey(t.period, ctx.now), done_at: ctx.now.toISOString() };
+  // A game inside its scene's passage (`story_after`, 2026-10-14): the rest of the passage is the
+  // scene's, owed the moment the game is counted — told right after it, before the choices.
+  const here = sceneOf(content, s);
+  if (here?.story_after && (here.show ?? []).some(c => c.card === 'board' && c.id === id)) s.tell_owed = [...(s.tell_owed ?? []), `after/${here.id}`];
   const full = t.gives?.bag ? storedLine(s, [stow(content, s, t.gives.bag)]) : null;
   const paid = pay(content, s, ctx, t.grant);
   const handed = advance(content, s, { kind: 'board', task: id }, ctx);

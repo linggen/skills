@@ -1188,7 +1188,9 @@ function panel(card, ctx) {
   if (!p) return '';
   // The box goes first: while the scene's passage is still to be drawn, its choices wait (a fast tap skipped the book).
   const up = !ctx.tellPending && choicesUp(ctx.reading, ctx.lang);
-  const acts = up ? panelActsHtml(ctx) : ctx.panelNote ? `<div class="donote">${esc(ctx.panelNote)}</div>` : '';
+  // The choices are proper buttons wherever they stand (his, 2026-10-14: never the bare 「那天傍晚 ›」 link):
+  // with the box put away, the scene card shows them as the box does.
+  const acts = up ? panelActsHtml(ctx, { inBox: true }) : ctx.panelNote ? `<div class="donote">${esc(ctx.panelNote)}</div>` : '';
   const log = logLinkHtml(ctx.reading, ctx.lang);
   if (!acts && !log) return '';
   return `<div class="card panelcard bare${up ? '' : ' reading'}">${acts}${log}</div>`;

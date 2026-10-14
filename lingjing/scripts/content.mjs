@@ -1222,6 +1222,11 @@ function lintScene(scene, chapter, content, ids, bad) {
   for (const exit of scene.exits) lintExit(`${where} exit ${exit.id}`, exit, chapter, content, ids, speakers, bad);
   // A 连环画 beat (rules/tell.mjs): the passage told in the chat, the panel on the stage.
   lintStory(where, scene.story, bad);
+  // The rest of a passage a game stands inside: played after it, the scene's own (tasks.mjs, tell.mjs).
+  if (scene.story_after != null) {
+    lintStory(`${where}.story_after`, scene.story_after, bad);
+    if (!scene.story || !(scene.show ?? []).some(c => c.card === 'board')) bad(where, 'story_after needs a story and a board the passage leads into');
+  }
   if (scene.panel) {
     // A story moment is never illustrated (his, 2026-09-29): the scene card is its words; pictures are the 图鉴's.
     if (scene.panel.art) bad(where, 'a scene has no picture — pictures are the 图鉴\'s (codex.json)');
