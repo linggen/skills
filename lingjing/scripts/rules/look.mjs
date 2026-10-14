@@ -398,7 +398,7 @@ export function look(state, content, ctx) {
     speed: speedOf(content, state),
   };
   const brief = {
-    ok: true, lang, name: state.name, gender: genderOf(state), seed: seedOf(state), ...(state.lang_set ? { lang_set: true } : {}),
+    ok: true, lang, name: state.name, gender: genderOf(state), seed: seedOf(state), ...(state.run ? { run: state.run } : {}), ...(state.lang_set ? { lang_set: true } : {}),
     // What the story has marked (a choice it will remember), and the beasts whose first sight has played.
     ...(state.marks?.length ? { marks: state.marks } : {}),
     ...(state.appeared?.length ? { appeared: state.appeared } : {}),

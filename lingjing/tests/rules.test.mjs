@@ -1752,6 +1752,38 @@ test('the command line keeps state on disk, logs it and undoes it', () => {
   fs.rmSync(data, { recursive: true, force: true });
 });
 
+// The play's identity (2026-10-14): the page keeps its dialogue box per play, so
+// a Restart's opening never plays the old play's unplayed beats first.
+test('Look\'s `run` holds through moves and is new whenever the play is replaced: init, load, undo', () => {
+  const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-run-'));
+  const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
+  const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
+  const first = cli('init', '--lang=zh').run;
+  assert.match(first, /^[0-9a-f]{12}$/);
+  assert.equal(cli('resolve', '--exit=begin').scene.id, '00-masan');
+  assert.equal(cli('look').run, first, 'a forward move is the same play');
+  const named = cli('save', '--title=醒来').saved;
+  const restarted = cli('init');
+  assert.equal(restarted.scene.id, '00-shiao');
+  assert.notEqual(restarted.run, first, 'a Restart is a new play');
+  const loaded = cli('load', `--id=${named.id}`);
+  assert.ok(![first, restarted.run].includes(loaded.run), 'a Load is a new play, even of a save kept from this one');
+  assert.equal(cli('undo').undid, 'load');
+  const back = cli('look');
+  assert.equal(back.scene.id, '00-shiao');
+  assert.ok(![first, restarted.run, loaded.run].includes(back.run), 'an Undo is a new play');
+  // A save from before runs has none until it is replaced: nothing is minted on a Look.
+  const file = path.join(data, 'state.json');
+  const { run: _, ...bare } = JSON.parse(fs.readFileSync(file, 'utf8'));
+  fs.writeFileSync(file, JSON.stringify(bare));
+  assert.equal(cli('look').run, undefined);
+  cli('resolve', '--exit=begin');
+  assert.equal(cli('look').run, undefined);
+  assert.equal(cli('undo').undid, 'resolve');
+  assert.match(cli('look').run, /^[0-9a-f]{12}$/, 'replaced once, it has its own');
+  fs.rmSync(data, { recursive: true, force: true });
+});
+
 // ── Ling drives: Go, and the library of kept games ──
 test('Go jumps to an opened scene; the rules keep each day\'s closing state, the player keeps named ones, and Load takes one up', () => {
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-saves-'));

@@ -1,5 +1,6 @@
 // rules/files.mjs — Files: where the data lives, atomic writes, the clock, argument parsing.
 // Part of the rules engine; rules.mjs is its one door.
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -42,8 +43,17 @@ function writeMadeWorld(outline, now) {
 
 /* A save begun in a world: a made world's opening scene is entered at
    once — its story starts there, not on a spine. */
+/* The play's own identity (2026-10-14): a new one whenever the game in play
+   is replaced rather than moved on — begun (init, a new save, a seed), loaded,
+   undone, or a world travelled to. The page keys what it keeps of a play (the
+   dialogue box's reading, dialogue.js) on it: an old play's unplayed beats
+   once ran on into the opening after a Restart. A save from before it has
+   none until it is first replaced. */
+const newRun = () => crypto.randomBytes(6).toString('hex');
+const withRun = (state) => (state ? { ...state, run: newRun() } : state);
 function freshState(content, lang, now) {
   const s = newState(content, lang, now);
+  s.run = newRun();
   if (content.opening && content.world.opening) {
     s.made = { scenes: { ...content.opening }, at: content.world.opening };
   }
@@ -148,4 +158,4 @@ export function parseArgs(argv) {
   return args;
 }
 
-export { clock, dataDir, shiftDays, shiftFile, freshState, homeDir, SAVE_NAME, scratchDir, scratchName, LOCK, readQuests, savedFile, savedFor, savesDir, skillDir, userTurn, userWords, withLock, writeAtomic, writeMadeWorld };
+export { clock, dataDir, newRun, withRun, shiftDays, shiftFile, freshState, homeDir, SAVE_NAME, scratchDir, scratchName, LOCK, readQuests, savedFile, savedFor, savesDir, skillDir, userTurn, userWords, withLock, writeAtomic, writeMadeWorld };

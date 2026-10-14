@@ -20,11 +20,20 @@ export const DLG_WORDS = {
   en: { skip: 'Skip', log: 'Log', close: 'Close', logTitle: 'Told in this scene', recap: 'Before this', on: 'Tap to go on', act: (a) => `(${a}) `, voice: ['Voice off', 'Voice on'], voiceTitle: 'The pingshu voice (Chinese)' },
 };
 
-/* The reading as it stands: the scene it belongs to, the passages drawn
-   there in order (each with its beats in both languages — a switch of
+/* The reading as it stands: the play and scene it belongs to, the passages
+   drawn there in order (each with its beats in both languages — a switch of
    language plays on in the other), the one on show (passage `i`, beat `j`),
-   and whether the last was put away. */
-export const emptyReading = (scene) => ({ scene: scene ?? null, items: [], i: 0, j: 0, closed: false });
+   and whether the last was put away. The play is Look's `run` (rules/files.mjs
+   newRun), new whenever the game is replaced — a Restart, a Load, an Undo, a
+   seed, a world travelled to. A save from before runs has none: a reading
+   with none belongs to it, and never to a play that has one (2026-10-14: an
+   old play's unplayed beats ran on into the opening after a Restart). */
+export const emptyReading = (scene, run = null) => ({ scene: scene ?? null, run: run ?? null, items: [], i: 0, j: 0, closed: false });
+const samePlay = (r, run) => (r?.run ?? null) === (run ?? null);
+/* The reading if it is this play's, else none. */
+export const ofPlay = (r, run = null) => (r && samePlay(r, run) ? r : null);
+/* The reading that belongs on the stage: this play's, at this scene. */
+export const readingFor = (r, scene, run = null) => (ofPlay(r, run)?.scene === (scene ?? null) ? r : null);
 const beatsOf = (item, lang) => {
   const b = item?.beats;
   if (Array.isArray(b)) return b;
@@ -35,19 +44,21 @@ const lastJ = (r, i, lang) => Math.max(0, beatsOf(r.items[i], lang).length - 1);
 /* Passages drawn (the rules' `tell`) added to the reading: a new scene — or
    its own passage told again (a new game, a replay) — begins a new one; in
    the same scene they queue after what is showing, and a box put away opens
-   on the first of them. */
-export function withTold(reading, tell, scene) {
+   on the first of them. A reading of another play (`run`) is not carried
+   on: the new play begins its own. */
+export function withTold(was, tell, scene, run = null) {
+  const reading = samePlay(was, run) ? was : null;
   const fresh = (tell ?? []).filter((t) => beatsOf(t, 'zh').length || beatsOf(t, 'en').length).map(({ of, id, beats, hui }) => ({ of, id, beats, ...(hui ? { hui } : {}) }));
   if (!fresh.length) return reading;
   const at = scene ?? null;
   const again = reading?.scene === at && fresh.some((t) => t.of === 'scene' && t.id === at);
   if (reading?.items && reading.scene === at && !again) {
     const open = reading.items.length && !reading.closed;
-    return { ...reading, items: [...reading.items, ...fresh], ...(open ? {} : { i: reading.items.length, j: 0 }), closed: false };
+    return { ...reading, run: run ?? null, items: [...reading.items, ...fresh], ...(open ? {} : { i: reading.items.length, j: 0 }), closed: false };
   }
-  // A new scene: what was still unplayed of the last one goes first, where it stood.
+  // A new scene of the same play: what was still unplayed of the last one goes first, where it stood.
   const left = playing(reading) && !again ? reading.items.slice(reading.i) : [];
-  return { ...emptyReading(at), items: [...left, ...fresh], j: left.length ? reading.j : 0 };
+  return { ...emptyReading(at, run), items: [...left, ...fresh], j: left.length ? reading.j : 0 };
 }
 
 /* Is the box playing? — beats left to show, or the last one still up. */

@@ -12,7 +12,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { resolve } from '../scripts/rules.mjs';
 import { beatsOf, passageFor, playOf, tellOf } from '../scripts/rules/tell.mjs';
-import { advance, choicesUp, current, dialogHtml, keepReading, loadReading, logHtml, playing, skipAll, toldSoFar, withTold } from '../scripts/dialogue.js';
+import { advance, choicesUp, current, dialogHtml, keepReading, loadReading, logHtml, ofPlay, playing, readingFor, skipAll, toldSoFar, withTold } from '../scripts/dialogue.js';
 import { walk } from './prologue.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -121,6 +121,31 @@ test('the last beat brings the choices up; 跳过 shows the rest at once; new pa
   assert.deepEqual([current(carried).k, current(carried).n, current(carried).beat.text], [1, 4, 'b']);
   // the scene's own passage told again (a new game) begins afresh
   assert.equal(current(withTold({ ...mid, closed: true }, [{ of: 'scene', id: 's1', beats: [{ text: 'z' }] }], 's1')).n, 1);
+});
+
+test('a reading belongs to its play (Look\'s `run`): a forward move carries the unplayed beats; a Restart, Load or Undo drops them (2026-10-14)', () => {
+  const beats = [{ text: 'a' }, { text: 'b' }, { text: 'c' }];
+  const mid = advance(withTold(null, [{ of: 'scene', id: 'gate', beats }], 'gate', 'r1'));
+  assert.equal(mid.run, 'r1');
+  // (a) a forward move in the same play: the rest of the old scene plays first, from where it stood
+  const on = withTold(mid, [{ of: 'scene', id: 'next', beats: [{ text: 'x' }] }], 'next', 'r1');
+  assert.deepEqual([on.run, current(on).k, current(on).n, current(on).beat.text], ['r1', 1, 4, 'b']);
+  // (b) the play replaced (init / load / undo: a new run): the old play's beats never lead in
+  const anew = withTold(mid, [{ of: 'scene', id: 'opening', beats: [{ text: '蒙山脚下' }] }], 'opening', 'r2');
+  assert.deepEqual([anew.run, current(anew).k, current(anew).n, current(anew).beat.text], ['r2', 0, 1, '蒙山脚下']);
+  // (c) a restart into the same scene id: the old reading is not resumed, nor queued behind
+  assert.equal(readingFor(mid, 'gate', 'r1'), mid);
+  assert.equal(readingFor(mid, 'gate', 'r2'), null, 'the stage shows no old reading for the new play');
+  const same = withTold(mid, [{ of: 'choice', id: 'gate/x', beats: [{ text: 'z' }] }], 'gate', 'r2');
+  assert.deepEqual([current(same).k, current(same).n, current(same).beat.text], [0, 1, 'z']);
+  assert.equal(ofPlay(mid, 'r2'), null);
+  // A save from before runs (Look has none) keeps a reading with none — the first Look after
+  // the update wipes nothing — but a reading with none never runs on into a play that has one.
+  const old = { ...mid, run: undefined };
+  assert.equal(readingFor(old, 'gate', null), old);
+  assert.equal(current(withTold(old, [{ of: 'scene', id: 'next', beats: [{ text: 'x' }] }], 'next', null)).n, 4);
+  assert.equal(readingFor(old, 'gate', 'r1'), null);
+  assert.equal(current(withTold(old, [{ of: 'scene', id: 'next', beats: [{ text: 'x' }] }], 'next', 'r1')).n, 1);
 });
 
 test('catch-up: past two passages owed, the older ones play as recap lines, marked 前情, then the last two whole', () => {

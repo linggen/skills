@@ -34,7 +34,7 @@ import { fxTimes, glOK, playHoming as playHomingFx } from './fx.js';
 import { atmosClasses, atmosOf, particlesHtml } from './atmos.js';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
-import { advance, choicesUp, current, dialogHtml, keepReading, loadReading, logHtml, playing, sceneUnder, sightNow, sightings, skipAll, withTold } from './dialogue.js';
+import { advance, choicesUp, current, dialogHtml, keepReading, loadReading, logHtml, ofPlay, playing, readingFor, sceneUnder, sightNow, sightings, skipAll, withTold } from './dialogue.js';
 import { SIGHT_KINDS, mountChatToggle, paintSight } from './sight.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
@@ -1702,7 +1702,7 @@ async function watchTell() {
     const t = await write('tell').catch(() => null);
     // Drawn: Look's `tell_owed` is spent (the ending card waits on it, endingWaits).
     if (t?.ok && look) look.tell_owed = false;
-    if (t?.ok && t.tell?.length) setReading(withTold(readingNow(), t.tell, look?.scene?.id ?? null));
+    if (t?.ok && t.tell?.length) setReading(withTold(readingNow(), t.tell, look?.scene?.id ?? null, look?.run ?? null));
   } finally { drawingTold = false; }
 }
 /* The reading, read back from this browser the first time it is asked for. */
@@ -1710,13 +1710,15 @@ function readingNow() {
   if (view.reading === undefined) keep({ reading: loadReading(SCRATCH) });
   return view.reading;
 }
-/* The reading that belongs on the stage now: this scene's (or the open
-   world's) — one left from another scene (an Undo, a Load, a save begun
-   again) is not played over this one. */
+/* The reading that belongs on the stage now: this play's (Look's `run`),
+   at this scene (or the open world's) — one left from another scene, or from
+   a play since replaced (a Restart, an Undo, a Load — even into the same
+   scene), is not played over this one. */
 function readingHere() {
-  const r = readingNow();
-  return r && r.scene === (look?.scene?.id ?? null) ? r : null;
+  return readingFor(readingNow(), look?.scene?.id ?? null, look?.run ?? null);
 }
+/* This play's reading, at whatever scene it stands (a replaced play's holds nothing back). */
+function readingOfPlay() { return ofPlay(readingNow(), look?.run ?? null); }
 function setReading(r, patch = {}) {
   keepReading(SCRATCH, r);
   show({ reading: r, ...patch });
@@ -1759,7 +1761,7 @@ async function momentTurn(kind, extra = () => false) {
    told — seen live at 09-cliff (2026-09-30): 古九's last words played under
    古十's banner. Each passage carries its 回 (rules/tell.mjs). */
 function oldHuiPlaying() {
-  const r = readingNow();
+  const r = readingOfPlay();
   if (!playing(r)) return false;
   const h = r.items[r.i]?.hui;
   if (!h) return false;
@@ -1795,10 +1797,10 @@ function voiceBeat(shown) {
 /* The people and foes this scene brings on for the first time (Look's `scene.meet`,
    read off the save — rules/codex.mjs newHere), as their 图鉴 entries. */
 const firstFaces = () => (look?.scene?.meet ?? []).map((id) => codexNow()?.get?.(id)).filter((e) => e && SIGHT_KINDS.has(e.kind));
-const nextBeat = () => { const r = readingNow(); if (playing(r)) setReading(advance(r, lang())); };
+const nextBeat = () => { const r = readingOfPlay(); if (playing(r)) setReading(advance(r, lang())); };
 /* 跳过: the log opens on the first beat skipped. */
 function skipBeats() {
-  const r = readingNow();
+  const r = readingOfPlay();
   if (!playing(r)) return;
   setReading(skipAll(r, lang()), { logOpen: true });
   requestAnimationFrame(() => requestAnimationFrame(() => $('dlg').querySelector('[data-dlg-from]')?.scrollIntoView({ block: 'start' })));
