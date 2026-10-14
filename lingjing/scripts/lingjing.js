@@ -1782,9 +1782,9 @@ const momentPending = new Set();
    rising): it plays after that choice's own passage and before the next scene's — the box
    steps aside for it on a scene's passage (pieceAhead), and plays that scene on after. */
 const pieceAhead = () => { const r = readingHere(); return bookAhead({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: playing(r) && r.items[r.i]?.of !== 'scene', huiTurn: atHuiTurn() }); };
-async function momentTurn(kind, extra = () => false) {
+async function momentTurn(kind, extra = () => false, after = null) {
   momentPending.add(kind);
-  const ahead = kind === 'piece' ? pieceAhead : boxAhead;
+  const ahead = after ?? (kind === 'piece' ? pieceAhead : boxAhead);
   try {
     for (let k = 0; k < 2400 && (!momentMay(kind, { ahead: ahead(), up: momentUp(), pending: [...momentPending] }) || extra()); k += 1) await pause(250);
   } finally { momentPending.delete(kind); }
@@ -2937,8 +2937,10 @@ async function watchUnfold() {
   if (!u || unfoldFor === u.chapter || !look?.world?.atlas) return;
   if (!u.walk && !mapOnStage()) return;
   unfoldFor = u.chapter;
+  // Shown by a choice (the tree): after that choice's passage, before the next scene's — as a set piece.
+  const byChoice = mapAsked;
   mapAsked = false;
-  await momentTurn('unfold');
+  await momentTurn('unfold', () => false, byChoice ? pieceAhead : null);
   if (look?.jiuding?.unfold?.chapter !== u.chapter) return;
   const mine = { chapter: u.chapter, title: u.title, at: performance.now(), still: stillMotion() };
   show({ unfold: mine, mapView: 'province' });
