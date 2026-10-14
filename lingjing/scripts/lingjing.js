@@ -908,6 +908,9 @@ function stageNow() {
   // the box comes back alone, with the rest of the passage or the choices — never beside it.
   const played = (id) => (look?.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id) && (look?.tasks ?? []).some((t) => t.id === id && t.status === 'done');
   cards = cards.filter((c) => !(c.card === 'board' && played(c.id) && !boards.get(c.id)?.winning));
+  // A scene's game waits for the whole passage too — its last beat read and the box put away
+  // (live 2026-10-14: at 吹鹅毛 the box hid on its last beat, 「……鸡窝里一阵大乱」, unread).
+  if (boxAhead()) cards = cards.filter((c) => c.card !== 'board' || c.id === view.opened?.id);
   // A board he opened from the tray's 开局 waits for the whole passage (queue.js trayWaits).
   if (view.opened && trayAhead()) cards = cards.filter((c) => !(c.card === 'board' && c.id === view.opened.id));
   // One text box (Hanli, 2026-10-05): while the book is ahead — or the box holds

@@ -157,5 +157,7 @@ test('a game and the box are never on the stage together (Hanli, 2026-10-14: 「
   // the page asks the same: the box yields to an open board in main, and a played scene board closes
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(page, /const boxYields = \(slots\) => boxGivesWay\(\{[^}]*game: gameUp\(slots\) \}\);/);
+  // and a scene's game waits for the box to be put away, its last beat read
+  assert.match(page, /if \(boxAhead\(\)\) cards = cards\.filter\(\(c\) => c\.card !== 'board' \|\| c\.id === view\.opened\?\.id\);/);
   assert.match(page, /cards = cards\.filter\(\(c\) => !\(c\.card === 'board' && played\(c\.id\) && !boards\.get\(c\.id\)\?\.winning\)\);/);
 });
