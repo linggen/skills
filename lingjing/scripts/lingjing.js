@@ -1289,7 +1289,9 @@ function draw() {
   const titles = (huiTitles[lang()] ??= {}), ended = look.chapter?.close;
   if (look.chapter?.hui) titles[look.chapter.hui] = look.chapter.title;
   if (ended?.id && ended.line) titles[ended.id] = ended.line;
-  $('huiLine').textContent = look.chapter?.hui ? huiLineOf({ hui: look.chapter.hui, title: look.chapter.title, telling: huiAt(told), titles }) : '';
+  // Under the old 回's 「完」 at the turn, its own line holds with its header (headLook).
+  const closing = closeUp() && atHuiTurn() ? ended?.id ?? null : null;
+  $('huiLine').textContent = look.chapter?.hui ? huiLineOf({ hui: look.chapter.hui, title: look.chapter.title, telling: closing ?? huiAt(told), titles }) : '';
   $('place').textContent = look.scene?.place ?? look.chapter?.close?.place ?? look.place?.name ?? look.chapter?.title ?? '';
   // The scene's caption, small under the place (2026-10-14: never a beat in the box — told three times).
   // The bar is thin now (2026-10-14): the caption keeps its small line where there is room, and is the place's title always.
@@ -1855,7 +1857,10 @@ const storyAhead = () => Boolean(look?.tell_owed || drawingTold || playing(readi
    live 2026-10-14: a 前情 first in the reading put 00-waimen's people over 00-hall/born); else this one. */
 function headLook() {
   const prev = lastLook();
-  return leadsIn(readingHere(), look?.scene?.id, prev?.scene?.id) ? { ...look, scene: prev.scene, place: prev.place, weather: prev.weather, stage: prev.stage } : look;
+  // …and at a 回's turn, while the old 回's 「完」 stands (proto f, 2026-10-14): its last scene's header and picture
+  // hold under the card; they turn with 合上, before the new 回's first words.
+  const held = leadsIn(readingHere(), look?.scene?.id, prev?.scene?.id) || Boolean(prev?.scene && prev.scene.id !== look?.scene?.id && closeUp() && atHuiTurn());
+  return held ? { ...look, scene: prev.scene, place: prev.place, weather: prev.weather, stage: prev.stage } : look;
 }
 /* The scene just left, kept per save in this browser beside the reading, so a reload mid-passage holds its header too. */
 const HELD_KEY = `lingjing.held.${SCRATCH || 'main'}`;

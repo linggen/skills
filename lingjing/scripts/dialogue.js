@@ -247,7 +247,7 @@ const voiceBtn = (voice, w) => (voice == null ? '' : `<button class="q dlgvoice$
 
 /* The beat on show, as the stage's clock knows it (lines.js createLines): a new
    key, the beat starts from its first sentence; 跳过 (`all`) shows it whole. */
-export const beatKey = (r, lang = 'zh') => (playing(r) ? `${r.run ?? ''}|${r.scene ?? ''}|${r.i}|${Math.min(r.j, lastJ(r, r.i, lang))}|${lang}${r.all ? '|all' : ''}` : null);
+export const beatKey = (r, lang = 'zh') => (playing(r) ? `${r.run ?? ''}|${r.scene ?? ''}|${r.i}|${Math.min(r.j, lastJ(r, r.i, lang))}|${lang}${r.all && atLast(r, lang) ? '|all' : ''}` : null);
 
 /* The full stage (Hanli, 2026-10-14, the approved prototypes a–k): the beat's words
    over the picture, coming up a sentence at a time by themselves (lines.js), and

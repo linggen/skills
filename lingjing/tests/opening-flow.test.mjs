@@ -87,7 +87,9 @@ test('a scene\'s game is not at hand before its passage reaches it — not on th
 test('the header changes only when the story gets there: the last scene\'s holds through its choice\'s passage', () => {
   // The page keeps the scene it left, and stands the header on it while the box tells that choice.
   assert.match(page, /if \(look\?\.scene && seen\?\.scene\?\.id !== look\.scene\.id\) leftLook\(look\);/);
-  assert.match(page, /return leadsIn\(readingHere\(\), look\?\.scene\?\.id, prev\?\.scene\?\.id\) \? \{ \.\.\.look, scene: prev\.scene,/, 'held through all that leads in (dialogue.js leadsIn, tests/stage-hold.test.mjs)');
+  assert.match(page, /const held = leadsIn\(readingHere\(\), look\?\.scene\?\.id, prev\?\.scene\?\.id\) \|\| /, 'held through all that leads in (dialogue.js leadsIn, tests/stage-hold.test.mjs)');
+  // …and under the old 回's 「完」 at its turn (proto f, 2026-10-14): it turns with 合上.
+  assert.match(page, /\|\| Boolean\(prev\?\.scene && prev\.scene\.id !== look\?\.scene\?\.id && closeUp\(\) && atHuiTurn\(\)\);\n {2}return held \? \{ \.\.\.look, scene: prev\.scene,/);
   assert.match(page, /look = headLook\(\);\s*try \{\s*paintAtmos\(\);\s*paintBackdrop\(\);/, 'the sky switches with the header');
   assert.match(page, /\$\('placeCap'\)\.textContent = [^\n]*\n\s*\} finally \{ look = realLook; \}/);
   assert.match(page, /paintIf\('headCards', headHtml\(slots && look !== realLook \? \{ \.\.\.slots, header: headOf\(look\) \} : slots\)\)/, 'the cast strip too');

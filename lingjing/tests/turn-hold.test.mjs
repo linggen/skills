@@ -73,7 +73,7 @@ test('the 回 line keeps 古二 while its last passage is told — from the clos
   // (00-notice) there is none, and the line turned (live 2026-10-14).
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(page, /const realLook = look, told = readingHere\(\);\s*look = headLook\(\);/);
-  assert.match(page, /telling: huiAt\(told\), titles/);
+  assert.match(page, /telling: closing \?\? huiAt\(told\), titles/);
 });
 
 test('the header holds the old scene through all that leads in — a 前情 first, the last scene\'s unplayed beats, the choice', () => {

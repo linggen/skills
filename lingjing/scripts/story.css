@@ -270,3 +270,7 @@ body.fighting .sight { display: none; }
 /* A scratch save's quiet transcript: Ling's and 银月's lines copied off the stage (lingjing.js quietCopy). */
 #chat-panel .scratch-lines { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: calc(100vh - 120px); }
 #chat-panel .scratch-line { font-size: 13px; line-height: 1.65; padding: 8px 12px; border-radius: 12px; background: var(--ground); border: 1px solid var(--line); }
+/* …over the painted stage, the 回看 link reads as the stage's own quiet control. */
+.view:has(.backdrop.painted) .focus .panelcard.bare .dlgloglink { width: max-content; padding: 4px 12px; border-radius: 99px; border: 1px solid rgba(241, 236, 225, .35); background: rgba(13, 17, 20, .35); color: rgba(241, 236, 225, .8); text-decoration: none; }
+/* Under a 回's 「完」 the last picture darkens (proto f). */
+.view:has(.backdrop.painted):has(.focus .closecard) > .shade { background: rgba(13, 17, 20, .55); }
