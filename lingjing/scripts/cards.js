@@ -484,9 +484,7 @@ function board(card, ctx) {
       : g ? boardHtml(g, ctx.words) : `<div class="dim small">…</div>`;
   const title = task?.game ? task.title : ctx.words.play;
   const ask = task?.game ? say(ctx.words.sayTask, { title: task.title }) : ctx.words.sayBoard;
-  // A scene's own game (the opening's beats, 射鹿 …) is played, not asked about: no 问询 in its corner.
-  const own = task?.game && (ctx.look.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id);
-  return `<div class="card gamecard${own ? ' scenegame' : ''}"><div class="cardtitle">${esc(title)}</div>${body}${own ? '' : acts([{ label: ctx.words.about, ask: true, say: ask }])}</div>`;
+  return `<div class="card gamecard"><div class="cardtitle">${esc(title)}</div>${body}${acts([{ label: ctx.words.about, ask: true, say: ask }])}</div>`;
 }
 
 /// What an item does, in one line — a pill's dose, arms' numbers, a 符.
@@ -1194,9 +1192,6 @@ function panel(card, ctx) {
   return `<div class="card panelcard bare${up ? '' : ' reading'}">${acts}${log}</div>`;
 }
 
-/* A board the scene stands on the stage (`show`) whose task is still to play. */
-export const gameOpen = (look) => (look?.scene?.show ?? []).some((c) => c.card === 'board' && (look.tasks ?? []).some((t) => t.id === c.id && t.game && t.status !== 'done' && !t.won));
-
 /// The scene's choices, its 看 and the note under them — on the scene card,
 /// or inside the dialogue box at its last beat (`inBox`: there the one quiet
 /// way on is a proper button too — 2026-10-14, his: 「那天傍晚 ›」 was missed).
@@ -1206,10 +1201,7 @@ export function panelActsHtml(ctx, { inBox = false } = {}) {
   const busy = ctx.panelBusy ?? null, w = ctx.words;
   const exitOf = (t) => (ctx.look.scene.exits ?? []).find((e) => e.id === t.id);
   // A fight chosen: its card stands under this one, so its words go (ctx.called, the page's).
-  // A game the scene stands on the stage and not yet played (射鹿, 接雨 …): the game makes the
-  // choice, so the scene's ways on wait under it — never the same choice twice (his, 2026-10-14).
-  const playing = gameOpen(ctx.look);
-  const shown = playing ? [] : (p.taps ?? []).filter((t) => !(t.duel && ctx.called?.has?.(t.duel)));
+  const shown = (p.taps ?? []).filter((t) => !(t.duel && ctx.called?.has?.(t.duel)));
   const tapOf = (t) => (exitOf(t)?.riddle ? riddleTapHtml(t, exitOf(t), busy, w) : panelTapHtml(inBox && t.quiet ? { ...t, quiet: null, label: QUIET_TEXT[t.quiet]?.(t, w) ?? t.label } : t, busy, w));
   const taps = shown.map(tapOf).join('');
   const quiet = !inBox && (p.taps ?? []).length === 1 && p.taps[0].quiet;
