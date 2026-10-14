@@ -23,7 +23,7 @@ the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 
 | `00-shiao` 石坳村 | 一 | one plain exit `begin` (the hero is fixed, 2026-09-30); the morning plays 阿禾 guarding her cabbage and the 东坡 woodcutting, so 00-masan's flattened cabbage and the 「磨盘」 land; **board `rain-basins`** (接雨: basins under the moving drips until seventeen are full — the passage split after 「……一直下到五更天」, the rest is `begin`'s; grade dry · wet → `rain-caught` · `rain-puddled`) |
 | `00-masan` 马三 | 一 | 原样说回去 (`kept-count`; the night's 洛书口诀 plays here, 二试's callback) · 攥拳 (体力 −5): both write 恩仇簿 仇 马小宝, 马三 — task 2; **board `masan-taunt`** (忍字: the taunt said back piece by piece while the fist closes; grade word · fist → `taunt-word` · `taunt-fist`) — both ways on wait for it, his choice |
 | `00-dawn` 鸡蛋 | 一 | 收下 → 恩 {伴} (task 3) · 推回去 (`no-egg`) |
-| `00-kitchen` 灶间 | 一 | 跟爹进山 → 狐纹木牌 (task 4) |
+| `00-kitchen` 灶间 | 一 | 跟爹进山 → 狐纹木牌 (task 4); **board `kitchen-griddle`** (烙饼: the fire under the griddle, 「翻！」 when each side is golden — thin, then thick; the passage split after 「……一张厚，一张薄。」, the rest `story_after`; grade golden · scorched → `griddle-golden` · `griddle-scorched`) |
 | `00-chushan` 前山 | 二 | 爬树眺望 → the map card (task 5); at noon a second tree: a deer lifts its head at 黑松岭's edge, and they track it to the 断碑 (no 马家 dogs since 2026-10-03, Hanli: 「可以写他们看见远处的鹿在黑松岭里面，追进去的」) |
 | `00-duanbei` 断碑 | 三 | 看碑背 (`stele-fox`, task 7) · 三条规矩 (`three-rules`, task 6) · 回村 / 独自进 stay |
 | `00-heisong` 黑松岭 | 三 | 一百步一记 (体力 −3, `marks-cut`, task 8); **board `track-marks`** (追踪: pick the deer's sign among the forest's, carve at a hundred steps, four marks; grade true · rough → `marks-true` · `marks-rough`) gates `carve` with the stone clue |

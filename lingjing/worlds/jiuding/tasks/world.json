@@ -68,6 +68,13 @@
       "done_line": {"zh": "那块桂花糕，还在马小宝手里。", "en": "The osmanthus cake is still in Ma Xiaobao's hand."}
     },
     {
+      "id": "kitchen-griddle", "kind": "board", "game": "griddle", "period": "once",
+      "title": {"zh": "烙饼 · 一张厚，一张薄", "en": "The flatbreads · One thick, one thin"},
+      "grant": { "table": "task", "progress": 5 },
+      "marks": {"golden": "griddle-golden", "scorched": "griddle-scorched"},
+      "done_line": {"zh": "厚的那张饼，包好了，揣在你怀里。", "en": "The thick flatbread, wrapped, is inside your jacket."}
+    },
+    {
       "id": "xisui-hold", "kind": "board", "game": "xisui", "period": "once",
       "title": { "zh": "洗髓 · 疼，别喊", "en": "Marrow washing · Don't cry out" },
       "grant": { "table": "task", "progress": 5 },

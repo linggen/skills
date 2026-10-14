@@ -5,8 +5,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as taunt from '../scripts/games/taunt.js';
+import * as griddle from '../scripts/games/griddle.js';
 
-const GAMES = [[taunt, /data-g="start"/]];
+const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/]];
 
 test('every batch-two game: meta in both languages, a control at open, both languages drawn, a skip that ends it won with no grade', () => {
   for (const [mod, control] of GAMES) {
@@ -52,4 +53,30 @@ test('忍字: said back piece by piece — word for word keeps the fist open; wr
   assert.equal(idle.won, true);
   assert.equal(idle.grade, 'fist');
   assert.match(taunt.html(idle, 'zh'), /拳头攥得指节发白/);
+});
+
+test('烙饼: call the turn when each side is golden — too soon she waits, too late it scorches, silence and she turns it herself', () => {
+  const cook = (to) => {
+    let s = griddle.act(griddle.newGame('k'), { g: 'start' }).state;
+    for (let i = 0; i < griddle.SIDES.length; i += 1) {
+      while (s.d < to) s = griddle.tick(s, 100);
+      s = griddle.act(s, { g: 'flip' }).state;
+    }
+    return s;
+  };
+  const good = cook(0.8);
+  assert.equal(good.won, true);
+  assert.equal(good.grade, 'golden');
+  assert.ok(good.t < 30000, 'under half a minute');
+  assert.match(griddle.html(good, 'zh'), /四面黄澄澄的/);
+  assert.equal(cook(1.2).grade, 'scorched');
+  let early = griddle.tick(griddle.act(griddle.newGame('k'), { g: 'start' }).state, 500);
+  early = griddle.act(early, { g: 'flip' }).state;
+  assert.equal(early.note, 'raw', 'still white: nothing turned');
+  assert.equal(early.side, 0);
+  let idle = griddle.act(griddle.newGame('k'), { g: 'start' }).state;
+  while (!idle.won) idle = griddle.tick(idle, 100);
+  assert.equal(idle.grade, 'scorched');
+  assert.ok(idle.t < 30000, 'she finishes it within half a minute');
+  assert.match(griddle.html(idle, 'en'), /scorched side in/);
 });

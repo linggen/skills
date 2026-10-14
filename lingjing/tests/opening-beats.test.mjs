@@ -174,6 +174,7 @@ const BEATS = [
   ['00-halfyear', 'feather-breath', 'on', ['still', 'shaky'], { still: 'feather-still', shaky: 'feather-shaky' }],
   // Batch two (2026-10-14): tests/beats-two.test.mjs plays the games themselves.
   ['00-masan', 'masan-taunt', 'endure', ['word', 'fist'], { word: 'taunt-word', fist: 'taunt-fist' }],
+  ['00-kitchen', 'kitchen-griddle', 'go', ['golden', 'scorched'], { golden: 'griddle-golden', scorched: 'griddle-scorched' }],
 ];
 
 test('each scene stands its board on the stage, offers it, and its way on waits for it', () => {

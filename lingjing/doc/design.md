@@ -545,6 +545,7 @@ mark, and the scene goes on. The rhythm counts a split passage's rest (`story_af
 | game | task id | scene | the play | grade → |
 |---|---|---|---|---|
 | `taunt` | `masan-taunt` | 00-masan | 忍字: 马小宝's taunt heard once, then said back piece by piece from near misses (猫叫, 咬一口, 「汪！」); a wrong piece and every second close the fist | word · fist (mark); 原样说回去 / 攥紧拳头 both wait, his choice |
+| `griddle` | `kitchen-griddle` | 00-kitchen | 烙饼: the passage split after 「一张厚，一张薄」; he minds the fire and calls 「翻！」 when a side goes golden — early she waits, late it scorches, silent she turns it; thin then thick | golden · scorched (mark) |
 
 A game ends `won` always, with its `grade`; the page sends it with the win (`win --grade`), the
 task's **`marks`** (grade → mark) write it, and an exit's **`needs.grade`** takes only that grade —

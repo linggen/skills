@@ -1643,7 +1643,11 @@ test('look carries today\'s cast (none yet) and the offered tasks', () => {
   let s = toPractice();
   const seen = look(s, content, ctx());
   assert.equal(seen.divination, null);
-  assert.deepEqual(seen.tasks.map(t => [t.id, t.status]), [['rain-basins', 'done'], ['masan-taunt', 'done'], ['track-marks', 'done'], ['fall-storm', 'done'], ['bread-share', 'done'], ['deer-wind', 'done'], ['rent-scale', 'done'], ['xisui-hold', 'done'], ['feather-breath', 'done'], ['gate-luoshu', 'done']], 'the rain, the taunt, the tracks, the storm, the bread, the stag, the rent, the bath, the feather and the 二试 done today');
+  // The opening's play beats grow (batch two, 2026-10-14): every board on the way here done, the first six among them.
+  assert.ok(seen.tasks.every(t => t.status === 'done'), JSON.stringify(seen.tasks.map(t => [t.id, t.status])));
+  const ids = seen.tasks.map(t => t.id);
+  for (const id of ['rain-basins', 'track-marks', 'fall-storm', 'bread-share', 'deer-wind', 'rent-scale', 'xisui-hold', 'feather-breath', 'gate-luoshu']) assert.ok(ids.includes(id), id);
+  assert.deepEqual(ids.filter(id => ['rain-basins', 'track-marks', 'bread-share', 'gate-luoshu'].includes(id)), ['rain-basins', 'track-marks', 'bread-share', 'gate-luoshu'], 'in the order they were played');
 });
 
 test('问卦: once a day by three coins — nothing asked first, the same throws all day, and what the grade does to the day\'s fights', () => {
