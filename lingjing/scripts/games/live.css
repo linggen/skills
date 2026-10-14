@@ -220,3 +220,15 @@
 .g-btn:disabled { opacity: .45; cursor: default; }
 .g-hold { touch-action: none; }
 .gamecard.scenegame .cardtitle { font-family: var(--serif); letter-spacing: .12em; }
+
+/* Batch two (2026-10-14): 忍字 (.g-taunt), 烙饼 (.g-griddle), 听 (.g-listen), 扔石听声 (.g-stone),
+   认路 (.g-way), 攀 (.g-climb), 练功 (.g-carry), 算盘 (.g-abacus), 石坳村 (.g-village) — the same
+   .g-ink look; every one keeps a quiet 「算了，往下走」 (ink.js skipBtn). */
+.g-scene .g-bigchar { font-family: var(--serif); font-size: 104px; fill: currentColor; opacity: .07; }
+.g-scene .g-dot { fill: currentColor; opacity: .25; }
+.g-scene .g-dot.is-seal { fill: var(--seal); opacity: .9; }
+.g-scene .g-cake { fill: #e2b44c; stroke: #8a6224; stroke-width: 1.1; }
+.g-quote { margin: 0; font-size: 15px; color: var(--seal); text-align: center; min-height: 1.6em; }
+.g-tag.is-tried { opacity: .38; text-decoration: line-through; cursor: default; }
+.g-tag:disabled { cursor: default; }
+.g-bar.is-seal i { background: var(--seal); }

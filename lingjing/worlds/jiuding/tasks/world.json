@@ -60,6 +60,14 @@
       "done_line": { "zh": "鹅毛还在竹篾上。", "en": "The feather is still on its strip." }
     },
     {
+      "_beats": "Batch two (2026-10-14, Hanli 「都可以，按你的单子做」): each beat ends won always — a `skip` (算了，往下走) ends it with no grade, so no mark — and never picks the way on unless an exit says `needs.grade`.",
+      "id": "masan-taunt", "kind": "board", "game": "taunt", "period": "once",
+      "title": {"zh": "忍字 · 原样说回去", "en": "Holding it in · Say it back, word for word"},
+      "grant": { "table": "task", "progress": 5 },
+      "marks": {"word": "taunt-word", "fist": "taunt-fist"},
+      "done_line": {"zh": "那块桂花糕，还在马小宝手里。", "en": "The osmanthus cake is still in Ma Xiaobao's hand."}
+    },
+    {
       "id": "xisui-hold", "kind": "board", "game": "xisui", "period": "once",
       "title": { "zh": "洗髓 · 疼，别喊", "en": "Marrow washing · Don't cry out" },
       "grant": { "table": "task", "progress": 5 },

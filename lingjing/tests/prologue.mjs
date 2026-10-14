@@ -139,9 +139,30 @@ export function boardsFor(state, content, exitId) {
   const scene = content.chapters[state.chapter]?.scenes?.[state.scene];
   const need = scene?.exits?.find(e => e.id === exitId)?.needs;
   if (!need?.task || state.tasks?.[need.task]?.status === 'done') return [];
-  const marks = content.tasks.tasks.find(t => t.id === need.task)?.marks;
-  const grade = need.grade != null ? [need.grade].flat()[0] : marks ? Object.keys(marks)[0] : null;
-  return [['win', { id: need.task, ...(grade ? { grade } : {}) }], ['task', { action: 'done', id: need.task }]];
+  // A scene's boards are played in `show` order (batch two, 2026-10-14: 扔石听声 before 喂饼):
+  // every one before the board this exit waits on is played first.
+  const order = (scene.show ?? []).filter(c => c.card === 'board').map(c => c.id);
+  const before = order.slice(0, Math.max(0, order.indexOf(need.task))).filter(id => state.tasks?.[id]?.status !== 'done');
+  const one = (id, wanted) => {
+    const marks = content.tasks.tasks.find(t => t.id === id)?.marks;
+    const grade = wanted != null ? [wanted].flat()[0] : marks ? Object.keys(marks)[0] : null;
+    return [['win', { id, ...(grade ? { grade } : {}) }], ['task', { action: 'done', id }]];
+  };
+  return [...before.flatMap(id => one(id)), ...one(need.task, need.grade)];
+}
+
+/* Every board the scene stands on the stage, not yet done, played and handed in (a test that
+   taps one of the scene's ways on by hand, after the page has played its games). */
+export function playScene(state, content, now) {
+  const scene = content.chapters[state.chapter]?.scenes?.[state.scene];
+  let s = state;
+  for (const c of scene?.show ?? []) {
+    if (c.card !== 'board' || s.tasks?.[c.id]?.status === 'done') continue;
+    const marks = content.tasks.tasks.find(t => t.id === c.id)?.marks;
+    const grade = marks ? Object.keys(marks)[0] : null;
+    s = walk(s, [['win', { id: c.id, ...(grade ? { grade } : {}) }], ['task', { action: 'done', id: c.id }]], content, now);
+  }
+  return s;
 }
 
 /* Walk `steps` from `state`; every step must land. */
@@ -150,6 +171,7 @@ export function walk(state, steps, content, now) {
   for (const [verb, args, line] of steps) {
     if (line === 'jin' && !/^j\d\d$/.test(content.chapters[s.chapter]?.scenes?.[s.scene]?.hui ?? '')) continue;
     if (verb === 'won') { s = { ...s, wins: { ...s.wins, [args.id]: now.toISOString() } }; continue; }
+    if (verb === 'played') { s = playScene(s, content, now); continue; }
     if (verb === 'resolve') for (const [v, a] of boardsFor(s, content, args.exit)) s = FNS[v](s, content, { now, quests: [] }, a).state ?? s;
     const out = FNS[verb](s, content, { now, quests: [] }, args);
     assert.equal(out.result.ok, true, `${verb} ${JSON.stringify(args)} at ${s.scene}: ${JSON.stringify(out.result)}`);

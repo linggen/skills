@@ -538,6 +538,14 @@ read-and-tap): six more boards in the prologue, each the book's own action where
 | `scale` | `rent-scale` | 00-rent | the hide, then cuts on the steelyard to twenty 斤; light is never taken | exact · over (mark); 装傻 / 照实说 both wait, his choice |
 | `feather` | `feather-breath` | 00-halfyear | the breath out as a slow, steady stroke (`[data-g-drag]`): stop and it bursts, rush and it flies; three breaths | still · shaky (mark) |
 
+**Batch two** (Hanli, 2026-10-14: 「都可以，按你的单子做」) — each short (under half a minute), forgiving,
+and with a quiet **「算了，往下走」** (`{g:'skip'}`, ink.js `skipBtn`): skipped is won with no grade, so no
+mark, and the scene goes on. The rhythm counts a split passage's rest (`story_after`) after its board.
+
+| game | task id | scene | the play | grade → |
+|---|---|---|---|---|
+| `taunt` | `masan-taunt` | 00-masan | 忍字: 马小宝's taunt heard once, then said back piece by piece from near misses (猫叫, 咬一口, 「汪！」); a wrong piece and every second close the fist | word · fist (mark); 原样说回去 / 攥紧拳头 both wait, his choice |
+
 A game ends `won` always, with its `grade`; the page sends it with the win (`win --grade`), the
 task's **`marks`** (grade → mark) write it, and an exit's **`needs.grade`** takes only that grade —
 the page taps a way on for him only when exactly one waits on the board. **A game and the story are never on the stage at once** (Hanli, 2026-10-14: 「小游戏，和剧情不要同时显示」): a board waits for its passage to the beat it belongs at (its last; a game mid-passage has the passage split — 接雨, 吹鹅毛 — the rest on the way on), the box steps wholly aside while it is played (queue.js `onStage`, boxGivesWay `game`), and the played board closes for the box to come back. A save standing in a scene

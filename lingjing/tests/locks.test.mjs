@@ -33,7 +33,7 @@ const MENU = [
 const ctx = (quests = MENU) => ({ now: NOW, quests });
 
 /* A new game at 马三's rent (the scene of his screenshot); and one past the gate. */
-const masan = () => walk(newState(content, 'zh', NOW), TO_VALLEY.slice(0, 1), content, NOW);
+const masan = () => walk(newState(content, 'zh', NOW), [...TO_VALLEY.slice(0, 1), ['played']], content, NOW);
 const waimen = () => walk(newState(content, 'zh', NOW), TO_WAIMEN, content, NOW);
 
 /* His live save as it stood on 2026-09-28, in shape: the v3 restart put him at
@@ -42,7 +42,7 @@ const hisSave = () => ({
   version: 5, world: 'jiuding', lang: 'zh', name: '青玄', gender: 'male', traits: ['wood', 'water', 'fire', 'earth'],
   tier: 'qi', step: 0, progress: 40, wealth: 20, bag: { 'moon-bell': 1 }, cast: [], wear: {}, duels: {}, arts: [],
   chapter: '00-prologue', scene: '00-masan', done_scenes: ['00-river', '00-waking', '00-stone', '00-shiao'], ended: [], place: 'shiao',
-  tasks: {}, chores: { 'linggen-pair': { period: 'once', paid_at: '2026-09-28T10:00:00Z' } }, quests: {}, wins: {}, story: '', seeds_used: [],
+  tasks: { 'masan-taunt': { status: 'done', period: 'once', done_at: '2026-09-28T09:00:00Z' } }, chores: { 'linggen-pair': { period: 'once', paid_at: '2026-09-28T10:00:00Z' } }, quests: {}, wins: {}, story: '', seeds_used: [],
   made: { scenes: {}, at: null }, day: { key: '2026-09-28', progress: 40, wealth: 20 }, stamina: 80, stamina_at: NOW.toISOString(),
   divination: { day: '2026-09-28', throws: [[3, 3, 3], [2, 2, 3], [2, 2, 3], [2, 2, 2], [3, 3, 2], [3, 2, 2]], hexagram: 26, changed: 50, grade: 'good', at: '2026-09-28T12:19:32.756Z' },
   created: '2026-09-11T00:00:00Z', updated: NOW.toISOString(),

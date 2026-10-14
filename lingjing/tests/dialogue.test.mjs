@@ -20,7 +20,7 @@ const content = loadContent();
 const NOW = new Date('2026-09-28T12:00:00');
 const ctx = { now: NOW, quests: [] };
 const one = (beats, scene = 's') => withTold(null, [{ of: 'scene', id: 'x', beats }], scene);
-const named = (lang = 'zh') => walk(newState(content, lang, NOW), [['resolve', { exit: 'begin' }]], content, NOW);
+const named = (lang = 'zh') => walk(newState(content, lang, NOW), [['resolve', { exit: 'begin' }], ['played']], content, NOW);
 
 test('a paragraph `**名**：话` is a line spoken — its name and portrait; any other is narration, no face', () => {
   const s = named();

@@ -17,6 +17,13 @@ export const n = (v, d = 1) => (Number.isFinite(v) ? Number(v.toFixed(d)) : 0);
 /** The page's button, in the game: `main` (the one thing to do) or `soft`. */
 export const btn = (label, attrs, kind = 'main', extra = '') => `<button type="button" class="g-btn g-btn-${kind}${extra ? ` ${extra}` : ''}" ${attrs}>${label}</button>`;
 
+/** The quiet way out every beat keeps (batch two, 2026-10-14: a beat never blocks the story):
+    `{g:'skip'}` ends the game won, with no grade — so no mark is written and the scene goes on. */
+export const skipBtn = (label) => btn(label, 'data-g="skip"', 'quiet');
+export const SKIP = { zh: '算了，往下走', en: 'Skip — go on' };
+/** The state a skipped game ends in: won, no grade, the module's own `skipped` line. */
+export const skipped = (s) => ({ ...s, live: false, won: true, grade: null, note: 'skipped' });
+
 /** A drawing on the paper: `w`×`h` units, scaled to the card's width. */
 export const scene = (w, h, inner, cls = '') => `<svg class="g-scene${cls ? ` ${cls}` : ''}" viewBox="0 0 ${w} ${h}" role="img" aria-hidden="true" focusable="false">${inner}</svg>`;
 

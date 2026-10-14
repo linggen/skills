@@ -1643,7 +1643,7 @@ test('look carries today\'s cast (none yet) and the offered tasks', () => {
   let s = toPractice();
   const seen = look(s, content, ctx());
   assert.equal(seen.divination, null);
-  assert.deepEqual(seen.tasks.map(t => [t.id, t.status]), [['rain-basins', 'done'], ['track-marks', 'done'], ['fall-storm', 'done'], ['bread-share', 'done'], ['deer-wind', 'done'], ['rent-scale', 'done'], ['xisui-hold', 'done'], ['feather-breath', 'done'], ['gate-luoshu', 'done']], 'the rain, the tracks, the storm, the bread, the stag, the rent, the bath, the feather and the 二试 done today');
+  assert.deepEqual(seen.tasks.map(t => [t.id, t.status]), [['rain-basins', 'done'], ['masan-taunt', 'done'], ['track-marks', 'done'], ['fall-storm', 'done'], ['bread-share', 'done'], ['deer-wind', 'done'], ['rent-scale', 'done'], ['xisui-hold', 'done'], ['feather-breath', 'done'], ['gate-luoshu', 'done']], 'the rain, the taunt, the tracks, the storm, the bread, the stag, the rent, the bath, the feather and the 二试 done today');
 });
 
 test('问卦: once a day by three coins — nothing asked first, the same throws all day, and what the grade does to the day\'s fights', () => {

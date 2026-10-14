@@ -9,7 +9,7 @@ import { lint, loadContent, warnings, RHYTHM_CAP } from '../scripts/content.mjs'
 import { look, resolve, task, win } from '../scripts/rules.mjs';
 import { fitWorld, newState } from '../scripts/state.mjs';
 import { jiudingBrief, unfolded } from '../scripts/rules/inkmap.mjs';
-import { stretchesOf } from '../scripts/rhythm.mjs';
+import { storyChars, stretchesOf } from '../scripts/rhythm.mjs';
 import { TO_HALL, TO_VALLEY, walk } from './prologue.mjs';
 import * as rain from '../scripts/games/rain.js';
 import * as track from '../scripts/games/track.js';
@@ -172,6 +172,8 @@ const BEATS = [
   ['00-heisong', 'track-marks', 'carve', ['true', 'rough'], { true: 'marks-true', rough: 'marks-rough' }],
   ['00-rent', 'rent-scale', 'dumb', ['exact', 'over'], { exact: 'rent-exact', over: 'rent-over' }],
   ['00-halfyear', 'feather-breath', 'on', ['still', 'shaky'], { still: 'feather-still', shaky: 'feather-shaky' }],
+  // Batch two (2026-10-14): tests/beats-two.test.mjs plays the games themselves.
+  ['00-masan', 'masan-taunt', 'endure', ['word', 'fist'], { word: 'taunt-word', fist: 'taunt-fist' }],
 ];
 
 test('each scene stands its board on the stage, offers it, and its way on waits for it', () => {
@@ -258,8 +260,10 @@ test('the rhythm: the main line read between two beats, a board resetting it whe
   const ch = content.chapters['00-prologue'];
   const parts = stretchesOf(ch);
   assert.equal(parts[0].from, 'start');
-  assert.equal(parts[0].to, '00-shiao', '接雨 opens the game: nothing is read before it');
-  assert.equal(parts[0].chars, 0);
+  assert.equal(parts[0].to, '00-shiao', '接雨 opens the game: only its lead is read before it');
+  assert.equal(parts[0].chars, storyChars(ch.scenes['00-shiao'].story), 'a board waits for the passage that leads into it');
+  assert.equal(parts[1].from, '00-shiao');
+  assert.ok(parts[1].chars >= storyChars(ch.scenes['00-shiao'].story_after), 'the rest of a split passage is read after its board');
   for (const at of ['00-heisong', '00-cave', '00-deer', '00-rent', '00-halfyear']) assert.ok(parts.some(p => p.to === at), `a beat at ${at}`);
   const warn = warnings(content, { chapters: ['00-prologue'] });
   assert.ok(warn.every(w => w.startsWith('00-prologue: ') && w.includes('(cap 1500)')));
