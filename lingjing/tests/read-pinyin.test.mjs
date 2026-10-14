@@ -67,5 +67,5 @@ test('the book: its list one syllable a character, of the 八卦 only 巽 艮 (�
 });
 
 test('the reader hands the book\'s list to renderMarkdown', () => {
-  assert.match(fs.readFileSync(path.join(ROOT, 'scripts/read.js'), 'utf8'), /pinyin: book\.pinyin \?\? \{\}/);
+  assert.match(fs.readFileSync(path.join(ROOT, 'scripts/read.js'), 'utf8'), /pinyin: english \? \{\} : book\.pinyin \?\? \{\}/);
 });

@@ -224,7 +224,7 @@ test('the page sets a 回 title from book.json, not from the file\'s own number'
   assert.match(js, /absorbs: ch\.absorbs/, 'a card whose first appearance names a folded 回 stands in its absorber');
   assert.match(js, /const view = \{ draft: params\.get\('draft'\) === '1' \};/);
   // A file in a folder (今线/…) is fetched by its path, each part encoded.
-  assert.match(js, /ch\.file\.split\('\/'\)\.map\(encodeURIComponent\)\.join\('\/'\)/);
+  assert.match(js, /\(english \? ch\.en : ch\.file\)\.split\('\/'\)\.map\(encodeURIComponent\)\.join\('\/'\)/);
   const css = fs.readFileSync(path.join(ROOT, 'scripts/read.css'), 'utf8');
   assert.match(css, /\.jin \.tag \{ color: var\(--jin\); \}/);
   assert.match(css, /\.chapter h1\.huimu\.jin \.hui \{ color: var\(--jin\); \}|h1\.huimu\.jin \.hui \{ color: var\(--jin\); \}/);

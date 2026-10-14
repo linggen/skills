@@ -88,7 +88,9 @@ async function main() {
   // 附 · 本回典籍: the classics the book names (`《书名》{典=id}`), one file per book; none reads plain.
   const classics = getJson(`${STORY}${encodeURIComponent(bookId)}/classics.json`).then((c) => c?.classics ?? {}, () => ({}));
   try {
-    const res = await fetch(`${STORY}${encodeURIComponent(bookId)}/${ch.file.split('/').map(encodeURIComponent).join('/')}`);
+    // English reads the translation (book.json entry `en`, e.g. en/h01.md) when there is one; else the Chinese with a note.
+    const english = lang === 'en' && ch.en;
+    const res = await fetch(`${STORY}${encodeURIComponent(bookId)}/${(english ? ch.en : ch.file).split('/').map(encodeURIComponent).join('/')}`);
     if (!res.ok) throw new Error(String(res.status));
     const md = await res.text();
     const who = await hero, f = await files;
@@ -97,11 +99,13 @@ async function main() {
       codex, chapter: ch.id, absorbs: ch.absorbs, hui: ch.huimu ? ch : null, src: (file) => worldPath(world, file), lang,
       memory: memoryPlate(await memories, world), classics: await classics,
       // The words not read at sight (book.json `pinyin`): pinyin over every one.
-      pinyin: book.pinyin ?? {},
+      pinyin: english ? {} : book.pinyin ?? {},
     };
     const filled = fillHero(md, who);
-    paint = (changes) => {
-      $('chapter').innerHTML = (lang === 'en' ? `<p class="note">${esc(w.only)}</p>` : '') + renderMarkdown(filled, { ...opts, changes, revert: devTools });
+    paint = (zhChanges) => {
+      // 「只看改动」 marks the Chinese text only; a translation reads plain.
+      const changes = english ? null : zhChanges;
+      $('chapter').innerHTML = (lang === 'en' && !english ? `<p class="note">${esc(w.only)}</p>` : '') + renderMarkdown(filled, { ...opts, changes, revert: devTools });
       wireMarks($('chapter'));
       rail(changes);
       tocCount(ch.id, changes?.count ?? 0);
