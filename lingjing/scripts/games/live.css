@@ -274,3 +274,18 @@
 .g-abacus-bead { width: 52px; height: 30px; border-radius: 15px; border: 1px solid var(--line); background: var(--surface); font-size: 12px; color: var(--dim); cursor: pointer; touch-action: manipulation; }
 .g-abacus-bead.is-five { margin-bottom: 6px; }
 .g-abacus-bead.is-on { background: var(--wood); border-color: var(--wood); color: var(--surface); }
+/* 石坳村 */
+.g-scene .g-spot { fill: var(--surface); stroke: var(--seal); stroke-width: 1.4; }
+.g-scene .g-spot.is-done { fill: var(--seal); }
+.g-scene .g-spotnum { font-size: 9px; fill: var(--seal); font-family: var(--ui); }
+.g-scene .g-spot.is-done + .g-spotnum { fill: var(--surface); }
+.g-scene .g-cabbage { fill: var(--wood); opacity: .6; }
+.g-scene .g-henbody { fill: var(--surface); stroke: currentColor; stroke-width: 1.1; }
+.g-scene .g-hen.is-pecked .g-henbody { fill: var(--seal-soft); }
+.g-scene .g-print2 { fill: currentColor; opacity: .7; }
+.g-scene .g-print2.is-grey, .g-scene .is-grey { fill: none; stroke: currentColor; stroke-width: 1.4; opacity: .85; }
+.g-pic { width: 64px; border: 0; background: none; }
+.g-printbox { display: flex; justify-content: center; }
+.g-printbox .g-pic { width: 110px; border: 1px solid var(--line); background: var(--raised); }
+.g-plant .g-pic { width: 52px; }
+.g-tale { text-align: left; font-size: 14.5px; }

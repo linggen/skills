@@ -185,7 +185,7 @@ test('the hero is fixed — 沈小满, a boy, from the first Look; 石坳村 goe
   assert.equal(s.name, '沈小满');
   assert.equal(s.gender, 'male');
   refused(resolve, s, { exit: 'begin' }, 'needs'); // 接雨 first (2026-10-14)
-  const on = must(resolve, walk(s, [['win', { id: 'rain-basins', grade: 'wet' }], ['task', { action: 'done', id: 'rain-basins' }]], content, NOW), { exit: 'begin' });
+  const on = must(resolve, walk(s, [['win', { id: 'rain-basins', grade: 'wet' }], ['task', { action: 'done', id: 'rain-basins' }], ['played']], content, NOW), { exit: 'begin' });
   assert.equal(on.result.named ?? null, null, 'no name card: nothing is named');
   assert.equal(on.result.scene.id, '00-masan');
   assert.equal(on.state.name, '沈小满');
@@ -1110,6 +1110,8 @@ test('a Restart keeps the language the player pinned (`lang_set`); each replaced
     const first = run('look').run;
     run('win', '--id=rain-basins', '--grade=dry');
     run('task', '--action=done', '--id=rain-basins');
+    run('win', '--id=village-day', '--grade=light');
+    run('task', '--action=done', '--id=village-day');
     run('resolve', '--exit=begin');
     assert.equal(run('look').run, first, 'a move is the same play');
     run('undo');
@@ -1786,6 +1788,8 @@ test('the command line keeps state on disk, logs it and undoes it', () => {
   // 接雨 first (2026-10-14): the board 那天傍晚 waits for, won and handed in as the page does.
   cli('win', '--id=rain-basins', '--grade=dry');
   cli('task', '--action=done', '--id=rain-basins');
+  cli('win', '--id=village-day', '--grade=light');
+  cli('task', '--action=done', '--id=village-day');
   assert.equal(cli('resolve', '--exit', 'begin', '--answer', '{{answer}}').scene.id, '00-masan');
   assert.equal(cli('look').scene.id, '00-masan');
   assert.equal(cli('resolve', '--exit', 'nowhere').refused, 'unknown-exit');
@@ -1826,6 +1830,8 @@ test('Look\'s `run` holds through moves and is new whenever the play is replaced
   assert.match(first, /^[0-9a-f]{12}$/);
   cli('win', '--id=rain-basins', '--grade=dry');
   cli('task', '--action=done', '--id=rain-basins');
+  cli('win', '--id=village-day', '--grade=light');
+  cli('task', '--action=done', '--id=village-day');
   assert.equal(cli('resolve', '--exit=begin').scene.id, '00-masan');
   assert.equal(cli('look').run, first, 'a forward move is the same play');
   const named = cli('save', '--title=醒来').saved;
@@ -1845,6 +1851,8 @@ test('Look\'s `run` holds through moves and is new whenever the play is replaced
   assert.equal(cli('look').run, undefined);
   cli('win', '--id=rain-basins', '--grade=dry');
   cli('task', '--action=done', '--id=rain-basins');
+  cli('win', '--id=village-day', '--grade=light');
+  cli('task', '--action=done', '--id=village-day');
   cli('resolve', '--exit=begin');
   assert.equal(cli('look').run, undefined);
   assert.equal(cli('undo').undid, 'resolve');
@@ -1861,6 +1869,8 @@ test('Go jumps to an opened scene; the rules keep each day\'s closing state, the
   cli(d1, 'init', '--lang=en');
   cli(d1, 'win', '--id=rain-basins', '--grade=dry');
   cli(d1, 'task', '--action=done', '--id=rain-basins');
+  cli(d1, 'win', '--id=village-day', '--grade=light');
+  cli(d1, 'task', '--action=done', '--id=village-day');
   assert.equal(cli(d1, 'resolve', '--exit=begin').scene.id, '00-masan');
   const named = cli(d1, 'save', '--title=At the waking').saved;
   assert.equal(named.kind, 'named');

@@ -304,7 +304,7 @@ test('an old save whose prologue scene the rewrite took away lands on the neares
   assert.deepEqual(m.traits, his.traits, 'his roots are kept');
   assert.equal(m.name, '沈小满', 'and the hero is the book\'s now (fixed, 2026-09-30) — his card name gives way');
   assert.equal(m.gender, 'male');
-  assert.deepEqual(m.tasks, { 'rain-basins': { status: 'offered' } }, 'the old practice, never done, is let go — 石坳村 offers its own board (接雨)');
+  assert.deepEqual(m.tasks, { 'rain-basins': { status: 'offered' }, 'village-day': { status: 'offered' } }, 'the old practice, never done, is let go — 石坳村 offers its own boards (接雨, the village map)');
   const l = look(m, content, ctx());
   assert.equal(l.scene.id, '00-shiao');
   assert.equal(l.place.id, 'shiao');

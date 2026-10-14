@@ -171,7 +171,10 @@ const won = (s, id, grade) => {
 };
 
 const BEATS = [
-  ['00-shiao', 'rain-basins', 'begin', ['dry', 'wet'], { dry: 'rain-caught', wet: 'rain-puddled' }],
+  // 00-shiao: 接雨 first, then the village map (batch two) — 那天傍晚 waits on the second.
+  ['00-shiao', 'village-day', 'begin', ['full', 'light'], { full: 'village-day-full', light: 'village-day-light' }],
+  ['00-xiuxian', 'village-dong', 'on', ['full', 'light'], { full: 'village-dong-full', light: 'village-dong-light' }],
+  ['00-notice', 'village-eve', 'go', ['full', 'light'], { full: 'village-eve-full', light: 'village-eve-light' }],
   ['00-heisong', 'track-marks', 'carve', ['true', 'rough'], { true: 'marks-true', rough: 'marks-rough' }],
   ['00-rent', 'rent-scale', 'dumb', ['exact', 'over'], { exact: 'rent-exact', over: 'rent-over' }],
   // 00-halfyear: 吹鹅毛 first, then 练功 (batch two) — the way on waits on the second.

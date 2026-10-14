@@ -60,24 +60,29 @@
    "beat": [],
    "next": "00-masan",
    "needs": {
-    "task": "rain-basins"
+    "task": "village-day"
    },
    "refuse": {
-    "zh": "屋里还滴答着——先把盆摆好。",
-    "en": "It is still dripping indoors — set the basins out first."
+    "zh": "天还早——村里走一走，或者回家。",
+    "en": "It's still early — a walk round the village, or go home."
    }
   }
  ],
- "_beats": "Hanli 2026-10-14: the passage is split after 「那天一早，小满是给盆吵醒的……一直下到五更天」 — 接雨 (rain-basins) is played there, then the rest of the morning (`story_after`, the scene's own) is told right after it, before the way on (「那天傍晚」).",
+ "_beats": "Hanli 2026-10-14: the passage is split after 「那天一早，小满是给盆吵醒的……一直下到五更天」 — 接雨 (rain-basins) is played there, then the rest of the morning (`story_after`, the scene's own) is told right after it, before the way on (「那天傍晚」). · 石坳村 (village-day, batch two 2026-10-14): the village map, the scene's second board after the morning (`story_after`), before 「那天傍晚」 — 阿禾's cabbage and the hens, 爹's prints by the well, 艾草 on 东坡, the 货郎's prices, 吴婆婆's 精卫; every one optional, 「回家」 ends it; grade full · light → `village-day-full` · `village-day-light`",
  "show": [
   {
    "card": "board",
    "id": "rain-basins"
+  },
+  {
+   "card": "board",
+   "id": "village-day"
   }
  ],
  "offers": {
   "tasks": [
-   "rain-basins"
+   "rain-basins",
+   "village-day"
   ]
  }
 }

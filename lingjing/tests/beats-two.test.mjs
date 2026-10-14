@@ -14,6 +14,10 @@ import * as climb from '../scripts/games/climb.js';
 import * as xisui from '../scripts/games/xisui.js';
 import * as carry from '../scripts/games/carry.js';
 import * as abacus from '../scripts/games/abacus.js';
+import * as vday from '../scripts/games/villageday.js';
+import * as vdong from '../scripts/games/villagedong.js';
+import * as veve from '../scripts/games/villageeve.js';
+import { STOPS } from '../scripts/games/village.js';
 import { loadContent } from '../scripts/content.mjs';
 import { look, resolve, task, win } from '../scripts/rules.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
@@ -31,7 +35,7 @@ const atScene = (id) => {
   return s.scene === id ? s : null;
 };
 
-const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/], [listen, /data-g="start"/], [storm, /data-g="start"/], [stone, /data-g="hole"/], [way, /data-g="go"/], [climb, /data-g="start"/], [xisui, /data-g-hold="grit"/], [carry, /data-g="start"/], [abacus, /data-g="five"/]];
+const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/], [listen, /data-g="start"/], [storm, /data-g="start"/], [stone, /data-g="hole"/], [way, /data-g="go"/], [climb, /data-g="start"/], [xisui, /data-g-hold="grit"/], [carry, /data-g="start"/], [abacus, /data-g="five"/], [vday, /data-g="spot"/], [vdong, /data-g="spot"/], [veve, /data-g="spot"/]];
 
 test('every batch-two game: meta in both languages, a control at open, both languages drawn, a skip that ends it won with no grade', () => {
   for (const [mod, control] of GAMES) {
@@ -296,4 +300,42 @@ test('算盘: the scene\'s three sums set on the beads and checked — a wrong o
   let r = abacus.act(abacus.newGame('u'), { g: 'one', r: 2, k: 3 }).state;
   assert.equal(abacus.valueOf(r.rods), 3);
   assert.equal(abacus.valueOf(abacus.act(r, { g: 'one', r: 2, k: 3 }).state.rods), 2);
+});
+
+test('石坳村: the village map — each place a small optional thing; 「回家」 ends it whenever, full when most were done', () => {
+  for (const [mod, stop] of [[vday, 'day'], [vdong, 'dong'], [veve, 'eve']]) {
+    const spots = STOPS[stop].spots;
+    let s = mod.newGame('v');
+    assert.equal(mod.act(s, { g: 'home' }).state.grade, 'light', `${stop}: home at once is allowed`);
+    for (const id of spots) {
+      s = mod.act(s, { g: 'spot', id }).state;
+      assert.equal(s.at, id);
+      for (let k = 0; k < 40 && s.sub; k += 1) {
+        const sub = s.sub;
+        if (sub.kind === 'prints') s = mod.act(s, { g: 'pick', id: sub.list[sub.i] }).state;
+        else if (sub.kind === 'herb') s = mod.act(s, { g: 'pick', id: 'ai' }).state;
+        else if (sub.kind === 'peddler') s = mod.act(s, { g: 'price', p: [1, 3, 5][sub.i] }).state;
+        else if (sub.kind === 'tale') s = sub.answered ? mod.act(s, { g: 'heard' }).state : mod.act(s, { g: 'pick', id: sub.id === 'jingwei' ? 'stones' : 'sun' }).state;
+        else { s = mod.tick(s, 300); sub.hens.forEach((_, i) => { s = s.sub ? mod.act(s, { g: 'shoo', i }).state : s; }); }
+        for (const lang of ['zh', 'en']) assert.doesNotMatch(mod.html(s, lang), /undefined|NaN|\{\w+\}/, `${stop} ${id} ${lang}`);
+      }
+      assert.ok(s.done.includes(id), `${stop}: ${id} done`);
+      assert.equal(mod.act(s, { g: 'spot', id }).won, false, 'a thing done is not done twice');
+    }
+    const end = mod.act(s, { g: 'home' }).state;
+    assert.equal(end.won, true);
+    assert.equal(end.grade, 'full', stop);
+  }
+  // A place left half-done is left: back on the map, nothing written.
+  let h = vday.act(vday.newGame('v'), { g: 'spot', id: 'herb' }).state;
+  h = vday.act(h, { g: 'leave' }).state;
+  assert.equal(h.sub, null);
+  assert.deepEqual(h.done, []);
+  // The hens: unshooed, they reach the cabbage — a few leaves lost, never a fail.
+  let hens = vday.act(vday.newGame('v'), { g: 'spot', id: 'hens' }).state;
+  while (hens.sub) hens = vday.tick(hens, 200);
+  assert.equal(hens.lost, 6);
+  assert.match(vday.html(hens, 'zh'), /被啄掉 6 片叶子/);
+  // No 吴婆婆 on the last day: her farewell is 00-notice's way on.
+  assert.ok(!STOPS.eve.spots.includes('tale'));
 });

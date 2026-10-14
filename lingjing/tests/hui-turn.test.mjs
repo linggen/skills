@@ -20,6 +20,9 @@ import { advance, atLast, emptyReading, showAll, withTold } from '../scripts/dia
 import { wireLiveGames } from '../scripts/live-games.js';
 import * as qianmi from '../scripts/games/qianmi.js';
 
+// 00-notice's village map played (batch two, 2026-10-14): its way on waits on it.
+const eveDone = (s) => ({ ...s, tasks: { ...s.tasks, 'village-eve': { status: 'done', period: 'once', done_at: '2026-10-01T00:00:00Z' } } });
+
 const content = loadContent();
 const ctx = { now: new Date('2026-10-05T10:00:00'), quests: [] };
 const save = name => { const d = JSON.parse(fs.readFileSync(new URL(`./fixtures/saves/${name}.json`, import.meta.url), 'utf8')); return d.state ?? d; };
@@ -27,7 +30,7 @@ const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 
 
 /* 古二's last choice taken: the save on j01-track, 今 · 一's first scene. */
 function turned() {
-  const s = resolve(save('jin-notice'), content, ctx, { exit: 'go' }).state;
+  const s = resolve(eveDone(save('jin-notice')), content, ctx, { exit: 'go' }).state;
   return { s, l: look(s, content, ctx) };
 }
 

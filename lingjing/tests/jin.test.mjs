@@ -21,6 +21,9 @@ import * as dark from '../scripts/games/dark.js';
 import * as pulse from '../scripts/games/pulse.js';
 import * as lastshot from '../scripts/games/lastshot.js';
 
+// 00-notice's village map played (batch two, 2026-10-14): its way on waits on it.
+const eveDone = (s) => ({ ...s, tasks: { ...s.tasks, 'village-eve': { status: 'done', period: 'once', done_at: '2026-10-01T00:00:00Z' } } });
+
 const content = loadContent();
 const NOW = new Date('2026-10-05T10:00:00');
 const ctx = { now: NOW, quests: [] };
@@ -66,7 +69,7 @@ test('the 古 scenes never name an interlude: the splice is the interlude\'s own
 
 test('a save walks 古二 → 今 · 一 → 古三: the close of 第二回, the modern stage, the game won, then the gate', () => {
   let s = { ...newState(content, 'zh', NOW), chapter: '00-prologue', scene: '00-notice', place: 'shiao', done_scenes: ['00-uncle'] };
-  s = resolve(s, content, ctx, { exit: 'go' }).state;
+  s = resolve(eveDone(s), content, ctx, { exit: 'go' }).state;
   assert.equal(s.scene, 'j01-track');
   const l = look(s, content, ctx);
   assert.equal(l.scene.line, 'jin');
@@ -96,7 +99,7 @@ test('old saves: before the point they meet the interlude; past it they go on as
   // A save made before the interludes, on 古二's last scene: its next step is 今 · 一.
   const n = save('jin-notice');
   assert.equal(n.scene, '00-notice');
-  assert.equal(resolve(n, content, ctx, { exit: 'go' }).state.scene, 'j01-track');
+  assert.equal(resolve(eveDone(n), content, ctx, { exit: 'go' }).state.scene, 'j01-track');
   // 外门 from its first scene: 今 · 二 waits after 古四.
   const w = save('waimen');
   assert.equal(look(w, content, ctx).scene.id, 'wm-ahe');
@@ -255,7 +258,7 @@ test("今线's people: a card in the book at their first appearance (今 · 一)
   const html = renderMarkdown(md, { codex, chapter: 'j01', lang: 'zh' });
   for (const id of jin) assert.equal((html.match(new RegExp(`class="codexcard first" data-codex="${id}"`, 'g')) ?? []).length, 1, `${id}: one card in 今 · 一`);
   let s = { ...newState(content, 'zh', NOW), chapter: '00-prologue', scene: '00-notice', place: 'shiao', done_scenes: ['00-uncle'] };
-  s = resolve(s, content, ctx, { exit: 'go' }).state;
+  s = resolve(eveDone(s), content, ctx, { exit: 'go' }).state;
   const met = story(s, content, { now: NOW, quests: [] }).result.codex ?? [];
   for (const id of jin) assert.ok(!met.includes(id), `${id} never met in play`);
 });

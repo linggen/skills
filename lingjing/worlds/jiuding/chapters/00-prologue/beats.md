@@ -20,7 +20,7 @@ the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 
 
 | Scene | Source | Choices → mechanics |
 |---|---|---|
-| `00-shiao` 石坳村 | 一 | one plain exit `begin` (the hero is fixed, 2026-09-30); the morning plays 阿禾 guarding her cabbage and the 东坡 woodcutting, so 00-masan's flattened cabbage and the 「磨盘」 land; **board `rain-basins`** (接雨: basins under the moving drips until seventeen are full — the passage split after 「……一直下到五更天」, the rest is `begin`'s; grade dry · wet → `rain-caught` · `rain-puddled`) |
+| `00-shiao` 石坳村 | 一 | one plain exit `begin` (the hero is fixed, 2026-09-30); the morning plays 阿禾 guarding her cabbage and the 东坡 woodcutting, so 00-masan's flattened cabbage and the 「磨盘」 land; **board `rain-basins`** (接雨: basins under the moving drips until seventeen are full — the passage split after 「……一直下到五更天」, the rest is `begin`'s; grade dry · wet → `rain-caught` · `rain-puddled`); then **board `village-day`** (石坳村 the village map — the day before 马三: 阿禾's cabbage and the hens, 爹's prints, 艾草, the 货郎's prices, 吴婆婆's 精卫; optional, 「回家」 ends it; grade full · light) gates `begin` |
 | `00-masan` 马三 | 一 | 原样说回去 (`kept-count`; the night's 洛书口诀 plays here, 二试's callback) · 攥拳 (体力 −5): both write 恩仇簿 仇 马小宝, 马三 — task 2; **board `masan-taunt`** (忍字: the taunt said back piece by piece while the fist closes; grade word · fist → `taunt-word` · `taunt-fist`) — both ways on wait for it, his choice |
 | `00-dawn` 鸡蛋 | 一 | 收下 → 恩 {伴} (task 3) · 推回去 (`no-egg`) |
 | `00-kitchen` 灶间 | 一 | 跟爹进山 → 狐纹木牌 (task 4); **board `kitchen-griddle`** (烙饼: the fire under the griddle, 「翻！」 when each side is golden — thin, then thick; the passage split after 「……一张厚，一张薄。」, the rest `story_after`; grade golden · scorched → `griddle-golden` · `griddle-scorched`) |
@@ -36,11 +36,11 @@ the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 
 | `00-deer` 那头鹿 | 十一 | **board `deer-wind`** (射鹿: hold to draw, loose in the still wind) gates 往左偏半寸 → 鹿皮, she faints (`sleeps`); 照直射 stay (task 15); since 2026-10-14 the aim is his too: dead on skims the antlers, 偏左半寸 hits, four misses and her voice moves his hands (grade clean · steady · rough) |
 | `00-dusk` 村东头 | 十二 | 立冬天没亮，腌芥菜缸底的鹿腿（背在背上，走屋后头，不走井台）送到吴婆婆家，她朝银光低头（鼎湖挪到马三走后的 00-xiuxian 开头）: 去村东头 (`wupo-bowed`, task 17) · 守着它 |
 | `00-rent` 交租 | 十二 | 马三摘弓 · 「下水呢」: 装傻 · 说实话 (`told-ma`) — the 鹿皮 paid (task 16); both wake her; **board `rent-scale`** (算账: the hide, then cuts onto the steelyard until twenty 斤; grade exact · over → `rent-exact` · `rent-over`) — both ways on wait for it, the choice stays his |
-| `00-xiuxian` 什么是修仙 | 十三 | 日头偏西 吴婆婆讲鼎湖 · 乌号; 什么是修仙; 让它睡 → next night she leaves into the token (sleeps), the 谢谢 (task 18) |
+| `00-xiuxian` 什么是修仙 | 十三 | 日头偏西 吴婆婆讲鼎湖 · 乌号; 什么是修仙; 让它睡 → next night she leaves into the token (sleeps), the 谢谢 (task 18); **board `village-dong`** (the village map — the day she does not wake: prints, 艾草, 吴婆婆's 夸父) gates `on` |
 | `00-sleep` 洗髓 | 十四 | **board `xisui-hold`** (忍 — 洗髓: three sticks held through the waves; drawn in ink in batch two, 75 s at most) gates 泡进去 (体力 −6) → 《吐纳经》 (tasks 19–20); 爬出来 stay |
 | `00-halfyear` 半年 | 十五 | the scroll and the ten characters; 冬月廿二 the man in white; 正月初五 the mirror and 爹's 「它听见的不是你喘，是你心慌」 (tasks 21–22) — no 功课 yet: they, 修为, 灵石, 开府, 问卦 and 差事 open at `00-waimen` (chapter.json `locks`); **board `feather-breath`** (吹鹅毛: the breath out as a slow, steady stroke, three breaths; grade still · shaky → `feather-still` · `feather-shaky`) — the book's 九月十九 feather is this scene's, not 00-xiuxian's; the passage is split after the first night's burst (「……鸡窝里一阵大乱。」), the winter's progress is `story_after`; then **board `halfyear-carry`** (练功: the fifth and sixth loads of water up the slope, stepping as the buckets swing through the middle; grade even · panting → `carry-even` · `carry-panting`) gates `on` |
 | `00-uncle` 舅舅 | 十六 | 去 · 再等等 stay (tasks 23–24); **board `uncle-abacus`** (算盘: the scene's three sums on 舅舅's abacus — 130 steps, 150 文, 83 days; grade clean · fumbled → `abacus-clean` · `abacus-fumbled`) gates 去 |
-| `00-notice` 开山门 | 十七 | → 爷爷的弓 (task 25) |
+| `00-notice` 开山门 | 十七 | → 爷爷的弓 (task 25); **board `village-eve`** (the village map — the last day at home: the hens into the coop for 娘, 爹's last prints, 艾草; no 吴婆婆, her farewell is `go`'s) gates `go` |
 | `00-gate` 一试 | 十八 | 三步一吸 (体力 −6) · 冲 (体力 −12) (task 26) |
 | `00-luoshu` 二试 | 十八 | 洛书 board (task 27) |
 | `00-longzhi` 三试 | 十八 | 蠪侄, a trial fight (`retry`), its first sight plays; the token's one word (task 28) |
