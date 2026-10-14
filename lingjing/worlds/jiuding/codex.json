@@ -575,15 +575,18 @@
    "tag": "法宝"
   },
   "yuan": {
-   "_about": "观主玄沉子的坐骑 (古三, 2026-10-03 book: the abbot rises out of the 泗水 on its back before the bell). A codex entry only, never a creatures.json row: a row would be a beast of 徐 to meet and fight, and needs a picture; none is painted yet (`image: null`, a name card stands).",
+   "_about": "观主玄沉子的坐骑 (古三, 2026-10-03 book: the abbot rises out of the 泗水 on its back before the bell). A codex entry only, never a creatures.json row: a row would be a beast of 徐 to meet and fight. The picture is found, not drawn (art/CREDITS.md): 《古今圖書集成·禽蟲典》黿圖, art/plates/yuan.svg.",
    "kind": "生物",
    "name": {
     "zh": "鼋",
     "en": "The Yuan"
    },
    "pinyin": "yuán",
-   "image": null,
-   "_image": "not painted yet",
+   "image": "art/yuan.webp",
+   "credit": {
+    "zh": "《古今圖書集成·禽蟲典》黿圖，清雍正本",
+    "en": "Gujin Tushu Jicheng, Qing, 1725"
+   },
    "lines": {
     "zh": [
      "泗水底下的一只大鼋，观主的坐骑。背壳比马家包的那条船还大，壳上的纹路一格一格，像一块田；脑袋比磨盘还大，一双老眼眯着。它游过的地方，水在身后合拢，不起一个浪花。"
