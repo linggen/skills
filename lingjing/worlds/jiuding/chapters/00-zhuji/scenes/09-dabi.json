@@ -13,7 +13,7 @@
   "en": "In the spring of the sixth year Pill-master Min, for the first time, does not set you to grinding; he tips a bundle of rock sweet-flag onto the table: \"Pick out the ones fit for medicine.\""
  },
  "recap": {
-  "zh": "年六开春，闵丹师教你挑料、教「君」，传你「九节聚气」一方，饭桶照方吐出两纹的丹，八层；「飘风不终朝」，「进退，利武人之贞」，九层；丹房角上一口旁炉，第五炉出一颗一纹的——「我炼的」；第五年腊八你随风、入隙，差一霎赢了大比，观里那颗一转的官丹，揭了封，米汤粘回去，收进了储物袋——转天闵丹师在丹房门口跟你打了个照面，鼻子动了一动；入秋，九层圆满。",
+  "zh": "年六开春，闵丹师教你挑料、教「君」，传你「九节聚气」一方，饭桶照方吐出三纹的丹；那年冬天，八层。年七，「飘风不终朝」，「进退，利武人之贞」，九层；丹房角上一口旁炉，第五炉出一颗一纹的——「有火气。」「能吃。」第五年腊八你随风、等那一口喘，差一霎赢了大比，观里那颗一转的官丹，揭了封，米汤粘回去，收进了储物袋——转天闵丹师在丹房门口跟你打了个照面，鼻子动了一动。年八入秋，宁师伯讲筑基：「所以筑基丹，不是赏，是赌。」你九层圆满。",
   "en": "Year six: Pill-master Min taught you to choose stock and to choose the sovereign, and gave you the Nine-Joint Qi-Gathering recipe; the Rice Tub, fed by it, gave two-ring pills, layer eight; 'a gale does not last a morning', 'it profits a warrior to hold firm', layer nine; a side furnace in the corner of the pill house, one one-ring pill in the fifth batch — \"I made it\"; at Laba in the fifth year you won the contest by an instant, going with the wind and entering the gap; the temple's one-turn pill, its seal lifted and glued back with rice water, went into the storage pouch — next day Pill-master Min met you at the pill-house door, and his nose twitched; by autumn, layer nine, Consummation."
  },
  "cast": [],
@@ -26,7 +26,7 @@
  "panel": {
   "caption": {
    "zh": [
-    "「上头。」",
+    "「一寸之内，九个节。」",
     "「姑娘，五年前你押过他一回。」「输了。」",
     "腊八、入秋。"
    ],
@@ -53,7 +53,7 @@
     "zh": "腊八 · 再上五行台",
     "en": "Laba · Up on the stage again"
    },
-   "means": "year six 闵丹师's lesson in the 丹房 (choosing stock by winters, the 君), the 九节聚气 recipe and a ten-year 黄精; the 饭桶 fed by it gives two-ring pills; 八层; year seven 飘风不终朝 (定风 = waiting it out), 进退 (「初六：进退，利武人之贞」; the pine bough), 九层, the 火柴's line of sparks; a furnace of his own, a true 一纹 pill, 「我炼的」; at Laba in year five he goes up again after four years away, Shopkeeper Qian lists him at one-pays-fifty, A-He's single cash is the only stake; the final against a 九层圆满 won by an instant with 随风 and 入隙, a cut under the ribs; Qian counts out fifty-one cash to her; the sect's one-turn pill resealed with rice water into the storage pouch; 闵丹师's sniff after five years at one furnace; five brides on the Zhang",
+   "means": "year six 闵丹师's lesson in the 丹房 (choosing stock by winters, the 君), the 九节聚气 recipe and a ten-year 黄精; the 饭桶 fed by it gives three-ring pills; 八层 that winter; year seven 飘风不终朝 (定风 = waiting it out), 进退 (「初六：进退，利武人之贞」; the pine bough), 九层, the 火柴's line of sparks; a furnace of his own, a true 一纹 pill on the fifth batch — 「有火气。」「能吃。」; at the Laba of year seven (the book's 第五年腊八) he goes up again after four years away, Shopkeeper Qian lists him at one-pays-fifty, A-He's single cash is the only stake; the final against a 九层圆满 won by an instant with 随风, waiting out his gasp between blades, a cut under the ribs; Qian counts out fifty-one cash to her; the sect's one-turn pill resealed with rice water into the storage pouch; 闵丹师's sniff after five years at one furnace; five brides on the Zhang",
    "mark": "y-dabi",
    "once": true,
    "rise": 9,
@@ -73,7 +73,7 @@
     "zh": "入秋 · 九层圆满",
     "en": "Autumn · Layer nine, Consummation"
    },
-   "means": "the autumn month: the lake brims over, layer nine, Consummation; his master calls him up the cliff",
+   "means": "the autumn of year eight: 宁师伯's one 筑基 lecture (the brick and the loose earth; one 筑基 pill a year; 「不是赏，是赌」); the jar brims over, layer nine, Consummation; his master calls him up the cliff",
    "needs": {
     "mark": "y-dabi"
    },
@@ -86,7 +86,7 @@
     "full": true
    },
    "story": {
-    "zh": "下了课，小满在讲经堂的台阶上坐了一会儿，把手按在小腹上。宁师伯说的那口缸，他这一个月里天天摸得着：吸进去一口灵气，便溢出来一口，再也添不进去了。九层圆满，他已经到了；剩下的，便是那一个「赌」字。\n\n八月里，瞿老叫他上了一趟崖顶。",
+    "zh": "年八，秋风一起，讲经堂门上那块木牌的第三行底下，添了一个日子。筑基课一季只开一讲，七层往上才许进门；讲的不是褚先生，是藏经阁的宁师伯。\n\n宁师伯六十来岁的样子，瘦高，背有一点驼，一件灰袍洗得发白；左边的袖管是空的，拿一根麻绳扎着。三十年前他冲结丹，没冲过去，废了一条胳膊，一身筑基圆满的修为倒保住了。打那以后他守藏经阁，一年下来说不了几句话；只这一门课，观里没人讲得过他——筑基是怎么成的，他知道；是怎么不成的，他也知道。\n\n这一课，讲堂里一个打瞌睡的也没有。宁师伯拿那只右手把一块砖头往讲台上一放，却不先讲砖头，翻开伍冲虚的《天仙正理》{典=wu-zhuji}，照本念道：「筑者，渐渐积累增益之义。基者，修炼阳神之本根，安神定息之处所也。」念完了，见满堂的眼睛都是直的，便拍了拍那块砖头：「说白了，盖房子。练气是往地里运土，运得再多，也只是一堆散土；筑基，是把这堆土夯实了。土，得先运够。丹田里那口缸，吸进去一口，溢出来一口，再也添不进去了，才算够——你们嘴上管这个叫『九层巅峰』，名册上写的是四个字：九层圆满。没到这一步的，筑基丹吃了也是白吃。」\n\n宁师伯从窗台上的花盆里抓了一把土，撒在砖头旁边，冲第一排道：「马小宝，你来。」\n\n马小宝那几年过得不大顺当：马家往山上送丹药，送了五年，他一层一层吃到了七层，一张脸上斑摞着斑；桂花糕照旧一天十一块。秘境里出来那天，他说老蔫是「自己爬的」；打那以后，他夜里睡觉，要点着灯。这时候他把桂花糕往桌上一搁，走上去，一掌拍在那把散土上，土扬了满讲台；又一掌拍在砖头上，砖头纹丝不动，他那只手掌，却红了一大片。\n\n宁师伯道：「丹吃得多，是土运得多。没夯实的土，一拍就散——散的是你自己。」\n\n满堂想笑，没一个敢笑出声。宁师伯又掰着那一只手的指头算：筑基丹一年只赏一颗，一转，下品。「人间的丹师，炼出一炉五转，就该收拾收拾，准备飞升了。」最后一排，小满隔着衣裳，按了按心口。「本观开山三百年，一万来人进过山门，筑了基的，一百来个。」算到这里，他又翻开一本旧册子，看了半晌，喃喃地道：「……头一百年，倒占了一半。」\n\n全堂没人听出这句话有什么要紧。小满却听见了：头一百年，一半；后二百年，一半。像一只碗，盛出来的饭，一年比一年少。\n\n宁师伯把那本旧册子合上，那只空袖管晃了一晃，道：「所以筑基丹，不是赏，是赌。」\n\n「赌」字刚落，马小宝还站在讲台边上，那只拍红了的手攥成了拳头。他往最后一排看了一眼，只一眼，便收回来了，拿起桌上那块桂花糕，回座位去了。这五年，他跟小满说过的话，拢共不到十句。\n\n下了课，小满在讲经堂的台阶上坐了一会儿，把手按在小腹上。宁师伯说的那口缸，他这一个月里天天摸得着：吸进去一口灵气，便溢出来一口，再也添不进去了。九层圆满，他已经到了；剩下的，便是那一个「赌」字。\n\n八月里，瞿老叫他上了一趟崖顶。",
     "en": "Before many days had passed, the great jar in his dantian was brimming over: breathe in one breath of spirit and one spilled out; nothing more would go in — the outer court called this \"the peak of layer nine\"; in Master Chu's register it was written in four characters only: layer nine, Consummation.\n\nIn the eighth month, Old Qu called him up to the clifftop."
    },
    "next": "09-qulao"
