@@ -1726,7 +1726,7 @@ function setReading(r, patch = {}) {
 /* ── One thing at a time: the box first (queue.js, 2026-10-01) ──
    The passage that leads into a board, a fight, a set piece or a seal
    finishes in the box first; then that thing opens. */
-const titlePending = () => { const ch = look?.chapter; return Boolean(ch?.fresh && !bout && !dismissedTitles.has(ch.id) && !titleSeen(ch.id)); };
+const titlePending = () => { const ch = look?.chapter; return Boolean(ch?.fresh && !bout && !dismissedTitles.has(titleKey(ch.id)) && !titleSeen(ch.id)); };
 // At a 回's turn: the old 回's passages told, its 「完」 or the new title still to come.
 const atHuiTurn = () => !oldHuiPlaying() && (closeUp() || titlePending());
 /* Is the book still ahead of the stage? Passages owed or being drawn, or the
@@ -2169,7 +2169,7 @@ const CLICKS = [
   ['[data-unroll]', () => closeUnroll()],
   ['[data-mem-replay]', (el) => { const play = replayOf(view.lu?.album, el.dataset.memReplay); if (play) show({ luOpen: false, memory: { n: play.n, i: 0, play, at: performance.now() } }); }],
   ['[data-close-chapter]', (el) => { closeSeen(el.dataset.closeChapter, true); render(); }],
-  ['[data-titlecard]', (el) => { dismissedTitles.add(el.dataset.titlecard); titleSeen(el.dataset.titlecard, true); render(); }],
+  ['[data-titlecard]', (el) => { dismissedTitles.add(titleKey(el.dataset.titlecard)); titleSeen(el.dataset.titlecard, true); render(); }],
   ['[data-gear]', () => (view.gearOpen ? show({ gearOpen: false }) : openGear())],
   ['[data-do]', (el) => { if (!el.matches(':disabled')) run(`do:${el.dataset.do}:${el.dataset.id}`, () => doTap(el.dataset.do, el.dataset.id)); }],
   ['[data-deck]', (el) => run(`deck:${el.dataset.deck}`, () => deckTap({ action: 'toggle', id: el.dataset.deck }))],
@@ -2727,6 +2727,7 @@ function titleSeen(id, mark = false) {
     return mark;
   }
 }
+// Keyed as the mark is (titleKey): a Restart without a reload is a new seed, and its 第一回 stands again.
 const dismissedTitles = new Set();
 /* The chapter's ending card, put away once (合上): remembered like the title card. */
 function closeSeen(id, mark = false) {
@@ -2740,7 +2741,7 @@ function closeSeen(id, mark = false) {
 }
 function titleCard() {
   const ch = look?.chapter;
-  if (!ch?.fresh || bout || dismissedTitles.has(ch.id) || titleSeen(ch.id)) return '';
+  if (!ch?.fresh || bout || dismissedTitles.has(titleKey(ch.id)) || titleSeen(ch.id)) return '';
   if (stageBusy() || closeUp() || endingWaits()) return ''; // after the moments, the ending 回's last words and its ending card
   return titleCardHtml(ch, lang());
 }
