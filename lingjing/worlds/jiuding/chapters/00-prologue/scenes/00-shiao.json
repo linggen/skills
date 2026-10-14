@@ -8,6 +8,8 @@
   "zh": "蒙山脚下 · 石坳村",
   "en": "Foot of Mount Meng · Shi'ao village"
  },
+ "weather": "cloudy",
+ "_weather": "「头天夜里下过一场雨……一直下到五更天」, then 「那天一直阴着，阴到了傍晚」: the rain is over before the scene opens; the day is overcast",
  "setup": {
   "zh": "蒙山脚下的石坳村，十七户人家，一户打猎——你家。屋顶漏雨，一场雨接满十七个盆；山，是马家的。",
   "en": "Shi'ao village at the foot of Mount Meng: seventeen households, one of them hunters — yours. The roof leaks, the rice jar is empty half the year; the mountain belongs to the Mas."

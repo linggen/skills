@@ -8,6 +8,8 @@
   "zh": "银叶谷 · 天亮",
   "en": "The Silver-leaf Vale · daybreak"
  },
+ "weather": "cloudy",
+ "_weather": "「洞口透进灰白的天光，雨停了」 — the rain is over, a grey dawn",
  "setup": {
   "zh": "天亮了，狐狸不见了。洞口坐着一个银发赤脚的姑娘，金色的竖瞳，正在吃你留作早饭的那个饼角。",
   "en": "Day has come and the fox is gone. At the cave mouth sits a barefoot girl with silver hair and gold slit eyes, eating your half of the bread."

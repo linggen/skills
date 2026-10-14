@@ -8,6 +8,8 @@
   "zh": "银叶谷 · 石洞 · 夜",
   "en": "The Silver-leaf Vale · a cave · night"
  },
+ "weather": "rain",
+ "_weather": "「蘸着雨水」「只听见雨」 until 「快到天亮的时候，雨停了」 at its end",
  "setup": {
   "zh": "崖壁下一个浅石洞。你生起一小堆火挡在洞口，怀里是阿禾的鸡蛋和娘烙的那张厚饼。",
   "en": "A shallow cave under the cliff. You light a small fire across the mouth; inside your jacket, Ahe's egg and the thick flatbread your mother made."

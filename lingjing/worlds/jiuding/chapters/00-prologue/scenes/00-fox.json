@@ -8,6 +8,8 @@
   "zh": "银叶谷 · 浅坑",
   "en": "The Silver-leaf Vale · the pit"
  },
+ "weather": "rain",
+ "_weather": "「雨水落上去，不沾也不湿」",
  "setup": {
   "zh": "坑底蜷着一只小银狐，伤得很重，只剩一条尾巴，尾根八处断口。它睁眼，龇牙。",
   "en": "A little silver fox lies curled in the pit, badly hurt: one tail left, eight clean cuts at its root. It opens its eyes and bares its teeth."

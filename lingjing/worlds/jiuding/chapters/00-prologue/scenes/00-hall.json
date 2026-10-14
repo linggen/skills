@@ -8,6 +8,8 @@
   "zh": "沉鼎观 · 正殿",
   "en": "Chending Temple · The main hall"
  },
+ "weather": "clear",
+ "_weather": "「殿门外头什么也没有，只有日头」",
  "setup": {
   "zh": "正殿里没有神像，只有一口空的石座，四方，四足。石座前立着测灵石，观主玄沉子坐在一旁。轮到你了。",
   "en": "No statue in the main hall — only an empty stone seat, square, on four feet. Before it stands the spirit stone; the abbot Xuanchenzi sits beside it. It is your turn."

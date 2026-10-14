@@ -8,6 +8,8 @@
   "zh": "黑松岭 · 天变",
   "en": "Black Pine Ridge · the sky turns"
  },
+ "weather": "storm",
+ "_weather": "「暴雨砸了下来」「雷雨前翻起来的土腥」",
  "setup": {
   "zh": "鸟忽然全停了，风里一股铁锈味，山梁上的云往下压。蹄印还新，鹿就在前面。",
   "en": "The birds stop all at once; the wind smells of rust; cloud presses down over the ridge. The tracks are fresh, the deer just ahead."
