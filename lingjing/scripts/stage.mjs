@@ -185,7 +185,10 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   if (look.waypoint) head.push({ card: 'goal' });
   // 差事 offered where he stands: ONE card, a row each (his, 2026-09-22 — two
   // tall errand cards and a shelf crowded 彭城; WoW's list of what an NPC has).
-  if (look.offers?.length) head.push({ card: 'offer' });
+  // …but while a scene card stands, its errands are among the scene's own choices (cards.js
+  // panelActsHtml, 「接下差事：…」): one place to tap, never a card queued behind the way on
+  // (Hanli, 2026-10-14 — 外门's 修屋顶 sat behind every scene card, never seen).
+  if (look.offers?.length && !look.scene?.panel) head.push({ card: 'offer' });
   // 所得: an errand met handed itself in (his pick, 2026-09-23) — what it paid
   // and the next step, already in hand, until he walks on.
   if (look.handed?.length) head.unshift({ card: 'handed' });

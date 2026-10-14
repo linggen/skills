@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { afterBook, bookAhead, boxGivesWay, EARLY, huiLineOf, MOMENTS, momentMay, onStage, STANDS, trayWaits, TURN_KEEPS } from '../scripts/queue.js';
+import { afterBook, bookAhead, boxGivesWay, huiLineOf, MOMENTS, momentMay, onStage, STANDS, trayWaits, TURN_KEEPS } from '../scripts/queue.js';
 import { CARD_KINDS } from '../scripts/stage.mjs';
 import { sceneUnder } from '../scripts/dialogue.js';
 
@@ -31,18 +31,18 @@ test('nothing stands while the story is told: only the header, the page\'s momen
   assert.deepEqual([...TURN_KEEPS].sort(), [...STANDS].filter(k => k !== 'panel').sort());
 });
 
-test('the scene\'s fights come up over the box once it is past the caption (Hanli, 2026-10-05) — never a board (2026-10-14); new faces and choice cards still wait', () => {
-  assert.deepEqual(afterBook(cards, true, true).map(c => c.card), ['panel', 'people', 'duel', 'tale', 'lundao']);
-  for (const k of ['duel', 'tale', 'lundao']) assert.ok(EARLY.has(k), k);
-  assert.ok(!EARLY.has('board'), 'a board never stands over the passage (「小游戏，和剧情不要同时显示」)');
-  for (const k of ['meet', 'breakthrough', 'born', 'value']) assert.ok(!EARLY.has(k), k);
-  const items = [{ of: 'choice', id: 'a/b', beats: { zh: [{ text: '选了。' }] } }, { of: 'scene', id: 's1', beats: { zh: [{ text: '题。', cap: true }, { text: '一。' }, { text: '二。' }] } }];
-  const r = (i, j) => ({ scene: 's1', items, i, j, closed: false });
-  assert.equal(sceneUnder(r(0, 0), 's1'), false, 'the choice that leads in plays first');
-  assert.equal(sceneUnder(r(1, 0), 's1'), false, 'the caption first');
-  assert.equal(sceneUnder(r(1, 1), 's1'), true, 'past the caption: the games stand');
-  assert.equal(sceneUnder(r(1, 1), 's2'), false, 'another scene\'s passage');
-  assert.equal(sceneUnder({ ...r(1, 2), closed: true }, 's1'), false, 'the box put away: nothing early about it');
+// Hanli, 2026-10-14 (at 三试: the box's 「继续」 under the 降妖 card's 出手): the early rule is gone —
+// no game stands over the passage, a fight no more than a board.
+test('no game stands over the passage: a fight, a 传闻, a 论道 wait for the book like a board', () => {
+  assert.deepEqual(afterBook(cards, true).map(c => c.card), ['panel', 'people']);
+  assert.equal(afterBook.length, 2, 'no `early` switch left');
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(page, /gamesEarly|sceneUnder\(/, 'the page lets nothing through early');
+  // a scene's fight waits for the box to be put away, unless its words were chosen in the box — which puts it away
+  assert.match(page, /if \(storyAhead\(\)\) cards = cards\.filter\(\(c\) => \(c\.card !== 'board' \|\| c\.id === view\.opened\?\.id\) && !\(c\.card === 'duel' && sceneGame\(look, c\) && !called\.has\(c\.id\)\)\);/);
+  assert.match(page, /function callDuel\(id\) \{[\s\S]{0,300}if \(playing\(r\) && atLast\(r, lang\(\)\)\) setReading\(advance\(r, lang\(\)\), \{ called \}\);/);
+  const items = [{ of: 'scene', id: 's1', beats: { zh: [{ text: '题。', cap: true }, { text: '一。' }] } }];
+  assert.equal(sceneUnder({ scene: 's1', items, i: 0, j: 1, closed: false }, 's1'), true, 'the reading still knows where it is; the stage no longer asks');
 });
 
 test('the book is ahead while passages are owed, being drawn or playing — but not while paused at a 回\'s turn', () => {
@@ -74,7 +74,7 @@ test('the moments come after the book, one at a time, in their order: set piece,
 
 test('the page asks queue.js: the games are held, every moment waits its turn, a gain waits for a quiet stage', () => {
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(page, /cards = afterBook\(cards, cardsAhead\(\), gamesEarly\(\)\);\s*watchAppear\(cards\);/, 'a beast\'s first sight only for a card that is drawn');
+  assert.match(page, /cards = afterBook\(cards, cardsAhead\(\)\);\s*watchAppear\(cards\);/, 'a beast\'s first sight only for a card that is drawn');
   for (const m of MOMENTS) assert.match(page, new RegExp(`momentTurn\\('${m}'`), `${m} waits its turn`);
   assert.match(page, /playing: playing\(r\) && r\.items\[r\.i\]\?\.of !== 'scene'/, 'a set piece plays after its choice\'s passage, before the next scene\'s (01-deep: the seal, then 01-cauldron)');
   assert.match(page, /async function gainBurst[\s\S]{0,200}boxAhead\(\) \|\| momentUp\(\) \|\| momentPending\.size/, '修为 +n never floats over her memory');
@@ -138,7 +138,7 @@ test('a board opened from the tray\'s 开局 waits for the whole passage, and fo
   assert.equal(trayWaits({ huiTurn: true }), true, 'a 回\'s 「完」 or the new title first');
   assert.equal(trayWaits({}), false, 'the book told: the board opens');
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(page, /if \(view\.opened && trayAhead\(\)\) cards = cards\.filter\(\(c\) => !\(c\.card === 'board' && c\.id === view\.opened\.id\)\);[\s\S]{0,600}cards = afterBook\(cards, cardsAhead\(\), gamesEarly\(\)\);/, 'the page holds the opened board back');
+  assert.match(page, /if \(view\.opened && trayAhead\(\)\) cards = cards\.filter\(\(c\) => !\(c\.card === 'board' && c\.id === view\.opened\.id\)\);[\s\S]{0,900}cards = afterBook\(cards, cardsAhead\(\)\);/, 'the page holds the opened board back');
   assert.match(page, /const trayAhead = \(\) => trayWaits\(\{ owed: [^}]*playing: playing\(readingHere\(\)\), huiTurn: atHuiTurn\(\) \}\);/, 'the box playing, not its choices up');
 });
 
@@ -156,15 +156,17 @@ test('the 回 line keeps the old 回 while its last passage is told, and turns o
 });
 
 test('a game and the box are never on the stage together (Hanli, 2026-10-14: 「小游戏，和剧情不要同时显示」)', () => {
-  const cards = [{ card: 'panel' }, { card: 'board', id: 'feather-breath' }];
+  for (const g of [{ card: 'board', id: 'feather-breath' }, { card: 'duel', id: 'gate-longzhi' }]) {
+  const cards = [{ card: 'panel' }, g];
   // every state of the book: the passage owed, mid-passage (past its caption or not), at its last beat, put away
   const states = [];
   for (const ahead of [true, false]) for (const early of [true, false]) for (const playing of [true, false]) for (const huiTurn of [true, false]) states.push({ ahead, early, playing, huiTurn });
   for (const st of states) {
-    const { cards: shown, box } = onStage({ cards, ...st });
-    const game = shown.some((c) => c.card === 'board');
+    const { cards: shown, box } = onStage({ cards, ...st, game: (c) => c.card === g.card });
+    const game = shown.some((c) => c.card === g.card);
     assert.ok(!(game && box), `both up: ${JSON.stringify(st)}`);
     if (st.ahead) assert.ok(!game, `the game waits for its passage: ${JSON.stringify(st)}`);
+  }
   }
   // the passage told to its last beat: the game takes the stage alone, the box hidden
   const at = onStage({ cards, ahead: false, playing: true });
@@ -175,7 +177,7 @@ test('a game and the box are never on the stage together (Hanli, 2026-10-14: 「
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(page, /const boxYields = \(slots\) => boxGivesWay\(\{[^}]*game: gameUp\(slots\) \}\);/);
   // and a scene's game waits for the box to be put away, its last beat read
-  assert.match(page, /if \(storyAhead\(\)\) cards = cards\.filter\(\(c\) => c\.card !== 'board' \|\| c\.id === view\.opened\?\.id\);/);
+  assert.match(page, /if \(storyAhead\(\)\) cards = cards\.filter\(\(c\) => \(c\.card !== 'board' \|\| c\.id === view\.opened\?\.id\) && /);
   assert.match(page, /const storyAhead = \(\) => Boolean\(look\?\.tell_owed \|\| drawingTold \|\| playing\(readingHere\(\)\)\);/);
   assert.match(page, /cards = cards\.filter\(\(c\) => !\(c\.card === 'board' && played\(c\.id\) && !boards\.get\(c\.id\)\?\.winning\)\);/);
 });

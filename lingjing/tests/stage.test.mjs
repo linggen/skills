@@ -166,7 +166,8 @@ test('the slots: the header is the page\'s, main holds ONE thing by fixed priori
   const slots = stageSlots(l, stageCards(l, { focus: [{ card: 'creature', id: 'fuzhu' }] }));
   assert.deepEqual(kinds(slots.header), ['people', 'goal']);
   assert.deepEqual(kinds(slots.main), ['panel', 'value:name']);
-  assert.deepEqual(slots.queue.map(t => kinds(t.cards).join(' ')), ['board:b', 'offer'], 'a board before an errand; Ling\'s creature gives way to the errand');
+  // the errand is one of the scene card's own choices (cards.js panelActsHtml), never a card behind it; Ling's creature still gives way to it
+  assert.deepEqual(slots.queue.map(t => kinds(t.cards).join(' ')), ['board:b']);
   // the scene card is the way on: what waits stands after it, and the footer counts nothing (Hanli, 2026-10-14)
   assert.equal(slots.footer.step, true);
   assert.equal(slots.footer.waiting, 0);
@@ -176,8 +177,8 @@ test('the slots: the header is the page\'s, main holds ONE thing by fixed priori
   const next = stageSlots(l, stageCards(l), { skip: ['panel:'] });
   assert.deepEqual(kinds(next.main), ['board:b']);
   assert.equal(next.queue.at(-1).key, 'panel:');
-  assert.equal(next.footer.waiting, 2);
-  assert.equal(next.footer.next.key, 'offer:');
+  assert.equal(next.footer.waiting, 1);
+  assert.equal(next.footer.next.key, 'panel:');
   // a fight or 闭关 is the whole of main
   assert.deepEqual(kinds(stageSlots(l, stageCards(l, { fight: true })).main), ['fight']);
   // the coins are filler: alone they stand, beside anything else they go
@@ -328,4 +329,53 @@ test('nothing to tap: the footer names what waits — 「还有：夫诸 · 图�
   assert.match(foot, /choicesInBox\(\) \? null : slots\.footer\.next/);
   assert.match(foot, /waitingLine\(/);
   assert.doesNotMatch(foot, /queueMore/);
+});
+
+/* The errands where a scene card stands are among its choices (Hanli, 2026-10-14: 外门's 修屋顶
+   and 药园巡夜 sat behind every scene card — the 2 stones for wm-mijing's 交钱 never earnable). */
+test('外门 · wm-ahe: the errands are buttons among the scene\'s choices, taken by the card\'s own 接下, and the way on still works', async () => {
+  const fs = await import('node:fs');
+  const { loadContent } = await import('../scripts/content.mjs');
+  const { look, quest, resolve } = await import('../scripts/rules.mjs');
+  const { panelActsHtml, WORDS } = await import('../scripts/cards.js');
+  const content = loadContent(), NOW = new Date('2026-10-14T18:00:00'), ctx = { now: NOW, quests: [] };
+  const doc = JSON.parse(fs.readFileSync(new URL('./fixtures/saves/waimen.json', import.meta.url), 'utf8'));
+  const s = doc.state ?? doc;
+  const l = look(s, content, ctx);
+  assert.equal(l.scene.id, 'wm-ahe');
+  assert.ok(l.offers.length >= 2, 'the outer court has errands here');
+  assert.ok(!l.stage.some(c => c.card === 'offer'), 'no errand card queued behind the scene card');
+  const acts = panelActsHtml({ look: l, words: WORDS.zh });
+  for (const o of l.offers) assert.match(acts, new RegExp(`data-do="take" data-id="${o.id}">接下差事：${o.title}<`), o.title);
+  assert.match(acts, /data-panel-exit="owe"/, 'the scene\'s own ways on stand beside them');
+  assert.match(panelActsHtml({ look: l, words: WORDS.zh }, { inBox: true }), /接下差事：修屋顶/, 'in the box too, where the choices come up');
+  assert.match(panelActsHtml({ look: l, words: WORDS.en }), /Take the errand: /);
+  // 接下 — the card's verb — takes it, and it leaves the choices
+  const roof = l.offers.find(o => o.title === '修屋顶');
+  const took = quest(s, content, ctx, { action: 'take', id: roof.id });
+  assert.equal(took.result.ok, true, JSON.stringify(took.result));
+  const after = look(took.state, content, ctx);
+  assert.ok(!after.offers.some(o => o.id === roof.id));
+  assert.doesNotMatch(panelActsHtml({ look: after, words: WORDS.zh }), /修屋顶/);
+  // …and the way on is untouched
+  const on = resolve(took.state, content, ctx, { exit: 'owe' });
+  assert.equal(on.result.ok, true, JSON.stringify(on.result));
+  assert.notEqual(on.state.scene, 'wm-ahe');
+  // the free road keeps its errand card: no scene card, the 彭城 shelf case
+  const road = { place: { id: 'pengcheng' }, tasks: [], offers: [{ id: 'x', title: 'x' }] };
+  assert.deepEqual(stageCards(road, { focus: [{ card: 'item', ids: ['lingzhi'] }] }).map(c => c.card), ['offer', 'item']);
+});
+
+test('三试 · 蠪侄 mid-passage: no fight card on the stage — the box first, then 出手 alone', async () => {
+  const { loadContent } = await import('../scripts/content.mjs');
+  const { newState } = await import('../scripts/state.mjs');
+  const { look } = await import('../scripts/rules.mjs');
+  const { afterBook } = await import('../scripts/queue.js');
+  const { TO_HALL, walk } = await import('./prologue.mjs');
+  const content = loadContent(), NOW = new Date('2026-10-14T18:00:00'), ctx = { now: NOW, quests: [] };
+  const s = walk(newState(content, 'zh', NOW), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'won')), content, NOW);
+  const l = look(s, content, ctx);
+  assert.ok(l.stage.some(c => c.card === 'duel'), 'the rules stand the fight');
+  assert.ok(!afterBook(l.stage, true).some(c => c.card === 'duel'), 'mid-passage it waits — even past the caption');
+  assert.ok(afterBook(l.stage, false).some(c => c.card === 'duel'), 'the passage told, it stands');
 });

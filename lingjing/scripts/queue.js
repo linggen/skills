@@ -28,20 +28,13 @@ export const STANDS = new Set(['people', 'goal', 'memory', 'homing', 'doors', 'u
 /* The page's own moments, in the order they come after the book. */
 export const MOMENTS = ['piece', 'doors', 'feat', 'memory', 'homing', 'unfold'];
 
-/* The games to play here: once the box is on the scene's own passage, past
-   its caption, they stand over the box (Hanli, 2026-10-05: 「对白讲到它时就出现在
-   舞台中央，可以直接上手」) — the passage that leads into them, a choice's, still
-   plays first. Every other card that waits (a new face, a choice on its own card…)
-   waits for the last beat, as before. */
-// Never a board (Hanli, 2026-10-14: 「小游戏，和剧情不要同时显示」 — 吹鹅毛 stood over the box
-// at 6 / 16): a board waits for the passage that leads into it, to the beat it belongs at
-// (the last of it — a game mid-passage has its passage split, 接雨), and then the box steps
-// aside (boxGivesWay `game`) until it is played.
-export const EARLY = new Set(['duel', 'tale', 'lundao']);
-
-/* The stage's cards while the book is ahead: only what STANDS; `early`, the box
-   past the scene's caption, lets the scene's fights through. */
-export const afterBook = (cards, ahead, early = false) => (ahead ? cards.filter((c) => STANDS.has(c.card) || (early && EARLY.has(c.card))) : cards);
+/* No game stands over the passage (Hanli, 2026-10-14: 「小游戏，和剧情不要同时显示」; then at
+   三试, the box's 「继续」 under the 降妖 card's 出手 — two things to tap). A board, a fight, a
+   传闻 or a 论道 waits for the passage that leads into it, like every card that does not STAND;
+   a scene's own game waits for the box to be put away (lingjing.js stageNow), and the box
+   steps aside for a game in play (boxGivesWay `game`). The early rule (2026-10-05: the scene's
+   fights over the box past its caption) is gone. */
+export const afterBook = (cards, ahead) => (ahead ? cards.filter((c) => STANDS.has(c.card)) : cards);
 
 /* Is the book ahead of the stage? Passages owed or being drawn, or the box
    playing — unless it is paused at a 回's turn (its 「完」, the new title). */
@@ -53,8 +46,8 @@ export const bookAhead = ({ owed = false, drawing = false, playing = false, huiT
 export const boxGivesWay = ({ bout = false, appearing = false, slots = true, up = false, huiTurn = false, game = false }) => Boolean(bout || appearing || !slots || up || huiTurn || game);
 
 /* What stands on the stage, the box and the cards: never a game and the box at once. */
-export function onStage({ cards = [], ahead = false, early = false, game = (c) => c.card === 'board', ...box }) {
-  const shown = afterBook(cards, ahead, early);
+export function onStage({ cards = [], ahead = false, game = (c) => c.card === 'board', ...box }) {
+  const shown = afterBook(cards, ahead);
   const gameUp = shown.some(game);
   return { cards: shown, box: Boolean(box.playing) && !boxGivesWay({ ...box, game: gameUp }) };
 }

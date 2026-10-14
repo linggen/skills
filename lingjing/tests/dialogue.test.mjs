@@ -267,7 +267,7 @@ test('the box on the page: its place in the view, the keys that go on, and what 
   const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
   assert.match(src, /e\.key === ' ' \|\| e\.key === 'Enter'/);
   assert.match(src, /boxGivesWay\(\{ bout: Boolean\(bout\), appearing: Boolean\(view\.appearing\)/);
-  assert.match(src, /cards = afterBook\(cards, cardsAhead\(\), gamesEarly\(\)\);/, 'the games wait for the book — the scene\'s own come up past its caption');
+  assert.match(src, /cards = afterBook\(cards, cardsAhead\(\)\);/, 'the games wait for the book — none over the passage');
   assert.match(src, /if \(cardsAhead\(\) \|\| choicesInBox\(\)\) cards = cards\.filter\(\(c\) => c\.card !== 'panel'\);/, 'one text box: no scene card while the box tells, nor while its choices stand inside it');
   // the scene's choices come before the box's own taps: a choice inside the box resolves, never goes on
   assert.ok(src.indexOf("['[data-panel-exit]'") < src.indexOf("['[data-dlg-next]'"));
