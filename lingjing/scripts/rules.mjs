@@ -268,7 +268,7 @@ function seed(args, stateFile) {
   const state = doc?.state ?? doc;
   fs.rmSync(logFile, { force: true });
   fs.rmSync(shiftFile(), { force: true }); // a seed begins on the real day
-  if (state) writeAtomic(stateFile, JSON.stringify(withRun(state)));
+  if (state) writeAtomic(stateFile, JSON.stringify(withRun(state, 'seed')));
   else fs.rmSync(stateFile, { force: true });
   return { ok: true, seeded: from, save: scratchName() };
 }
@@ -323,7 +323,7 @@ function travelTo(id, current, { stateFile, logFile, now, verb }) {
   const content = loadWorld(id);
   const parked = savedFor(id) ? readSave(savedFile(id)).state : null;
   if (parked) fs.rmSync(savedFile(id), { force: true }); // in play now, not kept
-  const state = withRun(unconfirmed(parked)) ?? freshState(content, current.lang, now, current);
+  const state = withRun(unconfirmed(parked), 'travel') ?? freshState(content, current.lang, now, current, 'travel');
   state.updated = now.toISOString();
   writeAtomic(stateFile, JSON.stringify(state));
   fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb: 'travel', args: { world: id, by: verb }, before: unconfirmed(current), parked: parkedBefore }) + '\n');
@@ -335,7 +335,7 @@ function travelTo(id, current, { stateFile, logFile, now, verb }) {
    play — is let go. The answer is its Look, with `loaded` saying which. */
 function loadSave(found, current, { stateFile, logFile, now }) {
   const parkedBefore = parkedFiles([current.world, ...(found.kind === 'world' ? [found.id] : [])]);
-  const state = withRun(migrate(unconfirmed(found.state), loadWorld(found.state.world)));
+  const state = withRun(migrate(unconfirmed(found.state), loadWorld(found.state.world)), 'load');
   if (state.world !== current.world) keepSave('world', current.world, current, now.toISOString());
   if (found.kind === 'world') fs.rmSync(savedFile(found.id), { force: true });
   state.updated = now.toISOString();
@@ -362,7 +362,7 @@ function undo(stateFile, logFile) {
     else writeAtomic(savedFile(id), text);
   }
   // The play put back is another play to the page (files.mjs newRun): its own run.
-  writeAtomic(stateFile, JSON.stringify(withRun(unconfirmed(last.before))));
+  writeAtomic(stateFile, JSON.stringify(withRun(unconfirmed(last.before), 'undo')));
   writeAtomic(logFile, lines.length ? lines.join('\n') + '\n' : '');
   return { ok: true, undid: last.verb, at: last.at };
 }

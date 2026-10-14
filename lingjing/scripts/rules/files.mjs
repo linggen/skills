@@ -48,15 +48,18 @@ function writeMadeWorld(outline, now) {
    undone, or a world travelled to. The page keys what it keeps of a play (the
    dialogue box's reading, dialogue.js) on it: an old play's unplayed beats
    once ran on into the opening after a Restart. A save from before it has
-   none until it is first replaced. */
+   none until it is first replaced. `run_by` says how it was replaced — init,
+   load, undo, travel, seed — so the page knows a Restart or a Load (a fresh
+   chat with Ling) from an Undo (the talk still holds; 2026-10-14). */
 const newRun = () => crypto.randomBytes(6).toString('hex');
-const withRun = (state) => (state ? { ...state, run: newRun() } : state);
+const withRun = (state, by = null) => (state ? { ...state, run: newRun(), ...(by ? { run_by: by } : {}) } : state);
 /* `was` — the game it replaces: a language the player pinned (`lang_set`, the
    page's 中/EN tapped) stays pinned through a Restart (2026-10-14: after one,
    his English 「restart game」 flipped his pinned Chinese game to English). */
-function freshState(content, lang, now, was = null) {
+function freshState(content, lang, now, was = null, by = 'init') {
   const s = newState(content, lang, now);
   s.run = newRun();
+  s.run_by = by;
   if (was?.lang_set && s.lang === was.lang) s.lang_set = true;
   if (content.opening && content.world.opening) {
     s.made = { scenes: { ...content.opening }, at: content.world.opening };

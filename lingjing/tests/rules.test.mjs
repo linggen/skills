@@ -1080,7 +1080,7 @@ test('language: a bare word or a command never turns it; an English sentence (th
   assert.equal(heed(en, '我推开门').lang, 'zh');
 });
 
-test('a Restart keeps the language the player pinned (`lang_set`); an unpinned game stays unpinned', () => {
+test('a Restart keeps the language the player pinned (`lang_set`); each replaced play says how (`run_by`)', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-pin-'));
   const rules = path.join(path.resolve(import.meta.dirname, '..'), 'scripts/rules.mjs');
   const run = (...args) => {
@@ -1098,6 +1098,18 @@ test('a Restart keeps the language the player pinned (`lang_set`); an unpinned g
     assert.equal(run('look', '--said=restart game').lang, 'zh');
     assert.equal(run('look', '--said=I open the door and look').lang, 'zh', 'pinned: even a sentence never turns it');
     assert.equal(saved().lang, 'zh');
+    // How the play was replaced (`run_by`): a Restart or a Load opens a fresh chat, an Undo keeps it (lingjing.js).
+    assert.equal(run('look').run_by, 'init');
+    const first = run('look').run;
+    run('resolve', '--exit=begin');
+    assert.equal(run('look').run, first, 'a move is the same play');
+    run('undo');
+    assert.equal(run('look').run_by, 'undo');
+    assert.notEqual(run('look').run, first);
+    const kept = run('save', '--title=pin');
+    run('init');
+    run('load', `--id=${kept.saved?.id ?? kept.id}`);
+    assert.equal(run('look').run_by, 'load');
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
