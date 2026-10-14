@@ -104,8 +104,8 @@
       "element": "metal",
       "atk": 4,
       "hp": 2,
-      "art": "art/longzhi.webp",
-      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
+      "art": "art/creatures/longzhi.webp",
+      "art_source": "图鉴的蠪侄图（2026-10-02 新画，九首九尾）— 见 art/CREDITS.md；古本原图留在 art/longzhi.webp。"
     },
     {
       "id": "paoxiao",
