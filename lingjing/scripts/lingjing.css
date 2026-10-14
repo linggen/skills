@@ -147,6 +147,12 @@ button:disabled { cursor: default; }
 /* The 回 before the place (rules/hui.mjs): the book's own heading, small. */
 .huiline { font-family: var(--serif); font-size: 12.5px; letter-spacing: .12em; color: var(--dim); opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 2 auto; min-width: 0; }
 .huiline:empty { display: none; }
+/* The scene's caption (2026-10-14): a small line under the place — never a beat in the
+   box, which plays the book alone (rules/tell.mjs playOf). */
+.placecap { order: 9; flex: 1 1 100%; min-width: 0; margin-top: -2px; font-family: var(--serif); font-size: 13px; line-height: 1.55; color: var(--dim);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.placecap:empty { display: none; }
+body.fighting .placecap { display: none; }
 .stage { position: absolute; top: 12px; right: 24px; display: flex; flex-direction: row; align-items: center; gap: 8px; z-index: 3; }
 /* Her name and the ask, a small chip in the header's top-right corner — once
    she is found (the chip is empty and takes no room before). `.body` stays,
@@ -836,9 +842,13 @@ body.reading .view, body.reading .tray { display: none; }
 .luher blockquote { margin: 6px 0; padding: 6px 12px; border-left: 3px solid var(--yinyue); background: var(--yinyue-soft); color: var(--yinyue); border-radius: 0 8px 8px 0; }
 @media (max-width: 560px) { .lu { padding: 12px 14px 32px; } .luhead > b { font-size: 19px; } }
 
-/* A chapter's title card: on the stage when it has just begun, until tapped away. */
-.titlecard { margin: 0 auto 12px; max-width: 520px; padding: 20px 22px; text-align: center; font-family: var(--serif);
+/* A chapter's title card: on the stage when it has just begun; it fades by itself after
+   a moment, or goes on a tap anywhere or Space (2026-10-14: no 「且看」 button). */
+.titlecard { margin: 0 auto 12px; max-width: 520px; padding: 20px 22px; text-align: center; font-family: var(--serif); cursor: pointer;
              background: var(--surface); border: 3px double var(--ling); border-radius: 10px; }
+.titlecard.fading { animation: titleOut .6s ease-in forwards; }
+@keyframes titleOut { to { opacity: 0; transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .titlecard.fading { animation: none; opacity: 0; } }
 .titlecard b { display: block; font-size: 21px; letter-spacing: .15em; color: var(--ling); }
 .titlecard p { margin: 10px 0 12px; line-height: 1.8; color: var(--dim); }
 /* A board or 论道 done for the day says so, plainly — never dead tiles. */
@@ -1137,16 +1147,38 @@ body.fighting .atmos { display: none; }
    the first line) up to most of the stage; the slots rise over its real height (--dlg-real,
    measured by lingjing.js after each paint). */
 .view:has(.dlgwrap:not(:empty)) .slots { bottom: calc(var(--dlg-real, var(--dlg-h)) + 20px); }
-.dlgwrap { position: absolute; left: var(--stage-room); right: 24px; bottom: 12px; display: flex; flex-direction: column; justify-content: flex-end; z-index: 4; pointer-events: none; }
+.dlgwrap { position: absolute; left: var(--stage-room); right: 24px; bottom: 12px; display: flex; flex-direction: column; justify-content: flex-end; z-index: 4; pointer-events: none;
+  /* Never taller than the stage (2026-10-14: a five-line beat pushed the count and the buttons
+     off its top): the box shrinks to this and scrolls its text inside. Room left for the name. */
+  max-height: calc(100% - 34px); }
 .dlgwrap > * { pointer-events: auto; }
 .dlgwrap:empty { display: none; }
-.dlg { position: relative; display: flex; gap: 14px; align-items: flex-start; width: 100%; max-width: 720px; margin: 0 auto; min-height: var(--dlg-h); box-sizing: border-box;
-  padding: 26px 22px 22px; border: 1px solid color-mix(in srgb, var(--text) 22%, var(--line)); border-radius: 10px; cursor: pointer; user-select: none;
+.dlg { position: relative; display: flex; flex-direction: column; gap: 6px; flex: 0 1 auto; width: 100%; max-width: 720px; margin: 0 auto; min-height: min(var(--dlg-h), 100%); box-sizing: border-box;
+  padding: 14px 20px 12px; border: 1px solid color-mix(in srgb, var(--text) 22%, var(--line)); border-radius: 10px; cursor: pointer; user-select: none;
   background: color-mix(in srgb, var(--surface) 96%, transparent); box-shadow: 0 6px 22px rgba(40, 30, 15, .16); outline: none; }
 .dlg:focus-visible { border-color: var(--ling); }
 .dlg::before { content: ''; position: absolute; inset: 4px; border: 1px solid var(--line); border-radius: 7px; pointer-events: none; opacity: .7; }
+.dlg.choosing { cursor: default; }
+/* The count and 配音 over the text; the text (and a face) in the middle, scrolling when long;
+   the choices, then 回看 · 显示全文 and 「继续 ▸」 under it — never clipped. */
+.dlghead { flex: none; display: flex; justify-content: flex-end; align-items: center; gap: 8px; min-height: 20px; }
+.dlgmain { flex: 1 1 auto; min-height: 0; display: flex; gap: 14px; align-items: flex-start; }
+.dlgfoot { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.dlgtools { display: flex; flex-wrap: wrap; gap: 6px; }
+.dlgnext { flex: none; font: inherit; font-family: var(--serif); font-size: 15px; letter-spacing: .12em; min-height: 40px; min-width: 104px; padding: 6px 18px;
+  border: 1px solid color-mix(in srgb, var(--ling) 60%, var(--line)); border-radius: 999px; background: color-mix(in srgb, var(--ling) 12%, var(--surface)); color: var(--ling); cursor: pointer; }
+.dlgnext:hover { background: color-mix(in srgb, var(--ling) 20%, var(--surface)); }
+.dlgnext:focus-visible { outline: 2px solid var(--ling); outline-offset: 2px; }
+.dlgnext > span { display: inline-block; animation: dlgNudge 1.4s ease-in-out infinite; }
+:lang(en) .dlgnext { letter-spacing: .04em; }
+/* The scene's choices inside the box at its last beat, where the eye already is. */
+.dlgacts { flex: none; padding-top: 8px; border-top: 1px dashed var(--line); }
+.dlgacts .paneltaps { margin-top: 0; justify-content: center; }
+.dlgacts .looks { justify-content: center; margin: 0 0 8px; }
+.dlgacts .paneltap { min-height: 40px; }
+.dlgall .dlglogrow { font-size: 16px; }
 .dlgface { flex: none; width: 88px; height: min(110px, 100%); object-fit: cover; object-position: top; border-radius: 6px; border: 1px solid var(--line); background: var(--raised); animation: dlgIn .25s ease-out; }
-.dlgbody { flex: 1; min-width: 0; max-height: calc(66vh - 70px); padding-bottom: 4px; overflow-y: auto; scrollbar-width: thin; }
+.dlgbody { flex: 1; min-width: 0; align-self: stretch; max-height: 100%; padding-bottom: 4px; overflow-y: auto; scrollbar-width: thin; overscroll-behavior: contain; }
 /* 名牌 (Hanli, 2026-10-05): the speaker's name hangs on the box's top-left edge, as a
    visual novel's does; narration hangs none. The text reads from the left. */
 .dlgname { position: absolute; top: -14px; left: 18px; z-index: 1; padding: 3px 14px; border: 1px solid color-mix(in srgb, var(--ling) 55%, var(--line)); border-radius: 6px;
@@ -1158,17 +1190,16 @@ body.fighting .atmos { display: none; }
 .dlg.told .dlgtext { color: color-mix(in srgb, var(--text) 82%, var(--dim)); }
 .dlgact { color: var(--dim); font-size: 15px; }
 .dlgrecap { display: inline-block; margin-right: 8px; padding: 0 6px; border: 1px solid var(--line); border-radius: 3px; font-family: var(--ui); font-size: 11px; letter-spacing: .1em; color: var(--faint); vertical-align: 2px; }
-.dlgctl { position: absolute; top: 8px; right: 12px; display: flex; align-items: center; gap: 6px; }
-.dlgcount { font-size: 11px; color: var(--faint); margin-right: 2px; font-variant-numeric: tabular-nums; }
-.dlgbtn { font: inherit; font-size: 12px; padding: 1px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--dim); cursor: pointer; }
+.dlgcount { font-size: 12px; color: var(--faint); font-variant-numeric: tabular-nums; }
+/* The last scene's unplayed beats leading in: their own small count, under 「上一景」. */
+.dlgcount.before { padding: 0 6px; border: 1px solid var(--line); border-radius: 3px; color: var(--dim); }
+.dlgbtn { font: inherit; font-size: 13px; min-height: 30px; padding: 3px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--dim); cursor: pointer; }
 .dlgbtn:hover { color: var(--text); border-color: var(--dim); }
 .dlgvoice.on { color: var(--text); }
-.dlgon { position: absolute; right: 18px; bottom: 6px; font-size: 12px; color: var(--ling); animation: dlgBob 1.2s ease-in-out infinite; }
-.dlgon.last { color: var(--faint); animation: none; }
 @keyframes dlgIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
-@keyframes dlgBob { 50% { transform: translateY(3px); } }
-@media (prefers-reduced-motion: reduce) { .dlgface, .dlgtext, .dlgon { animation: none; } }
-/* 记录 — what was told in this scene, over the stage. */
+@keyframes dlgNudge { 50% { transform: translateX(3px); } }
+@media (prefers-reduced-motion: reduce) { .dlgface, .dlgtext, .dlgnext > span { animation: none; } }
+/* 回看 — what was told so far (the scenes before, then this one), over the stage. */
 .dlglog { position: absolute; left: 0; right: 0; bottom: 0; max-width: 720px; margin: 0 auto; max-height: min(70vh, 520px); display: flex; flex-direction: column;
   border: 1px solid var(--line); border-radius: 10px; background: var(--surface); box-shadow: 0 8px 28px rgba(40, 30, 15, .2); z-index: 5; cursor: default; }
 .dlgloghead { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); font-family: var(--serif); font-size: 13px; letter-spacing: .12em; color: var(--dim); }
@@ -1176,6 +1207,9 @@ body.fighting .atmos { display: none; }
 .dlglogrow { font-family: var(--serif); font-size: 15px; line-height: 1.8; padding: 4px 0; color: color-mix(in srgb, var(--text) 80%, var(--dim)); }
 .dlglogrow.spoken { color: var(--text); }
 .dlglogrow b { font-weight: 600; color: var(--ling); margin-right: .6em; }
+.dlglogscene + .dlglogscene { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); }
+.dlglogmark { font-size: 11px; letter-spacing: .12em; color: var(--faint); }
+.dlgclose { min-height: 32px; padding: 4px 14px; }
 /* While the box plays, the scene card waits: its choices come with the last beat. */
 .panelcard.reading .scenecap { opacity: .85; }
 .panelcard .dlgloglink { display: block; margin: 6px 4px 0 auto; font-size: 12px; }
@@ -1189,22 +1223,25 @@ body.fighting .atmos { display: none; }
 /* A game up while the box tells on (queue.js EARLY): the box draws in — a smaller
    line, a shorter frame scrolling inside itself — so the game has the stage to be played. */
 .view:has(.focus .gamecard):has(.dlgwrap:not(:empty)) { --dlg-h: 96px; }
-.view:has(.focus .gamecard) .dlg { padding: 30px 18px 18px; }
+.view:has(.focus .gamecard) .dlg { padding: 12px 16px 10px; }
 .view:has(.focus .gamecard) .dlgbody { max-height: 128px; }
 .view:has(.focus .gamecard) .dlgtext { font-size: 15px; line-height: 1.7; }
 .view:has(.focus .gamecard):has(.dlgwrap:not(:empty)) .g-luoshu-board { max-width: 250px; }
-/* The caption, the box's first beat: its lines as written. */
-.dlg.cap .dlgtext, .dlglogrow.cap span { white-space: pre-line; }
 @container scene (max-width: 600px) {
   .view { --dlg-h: min(120px, 36vh); }
   /* Short and narrow: while the box plays, the header gives it room (the box shows the faces). */
   .view:has(.dlgwrap:not(:empty)) { --head-h: 88px; }
   .dlgwrap { left: 16px; right: 16px; bottom: 8px; }
-  .dlg { padding: 24px 14px 20px; gap: 10px; }
+  .dlg { padding: 12px 12px 10px; gap: 6px; }
+  .dlgmain { gap: 10px; }
+  /* Thumb-sized on the phone. */
+  .dlgnext { min-height: 44px; min-width: 96px; font-size: 15px; }
+  .dlgbtn { min-height: 36px; padding: 4px 12px; }
+  .dlgacts .paneltap { min-height: 44px; }
   .dlgface { width: 60px; height: 76px; }
   .dlgtext { font-size: 15.5px; line-height: 1.7; }
   .dlgname { font-size: 13.5px; left: 12px; padding: 2px 10px; }
-  .dlglog { max-height: 240px; }
+  .dlglog { max-height: min(62vh, 440px); }
 }
 
 /* 大场面 · 筑基天象 on the page (lingjing.js playPiece): a box over the whole stage, the

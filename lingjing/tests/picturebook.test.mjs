@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { WORDS, cardHtml, ledgerChipHtml, readChipHtml } from '../scripts/cards.js';
+import { WORDS, cardHtml, ledgerChipHtml, panelActsHtml, readChipHtml } from '../scripts/cards.js';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { forLing, look, resolve } from '../scripts/rules.mjs';
@@ -30,7 +30,7 @@ const page = (l, extra = {}) => ({ look: l, lang: l.lang, words: WORDS[l.lang], 
 
 /* ── The scene card (his, 2026-09-29: 「不用小人书的方式了」 — no picture) ── */
 
-test('a beat stands as a scene card in words: the place, its caption, the choices under it — its new faces\' 图鉴 cards first', () => {
+test('a beat stands as a scene card in words: the choices under the box (its caption the header\'s line) — its new faces\' 图鉴 cards first', () => {
   for (const lang of ['zh', 'en']) {
     const s = walk(start(lang), [['resolve', { exit: 'begin' }]], content, NOW);
     const l = look(s, content, ctx());
@@ -41,7 +41,8 @@ test('a beat stands as a scene card in words: the place, its caption, the choice
     const html = cardHtml({ card: 'panel' }, page(l));
     assert.doesNotMatch(html, /<img/);
     assert.doesNotMatch(html, /sceneplace/, 'the place is the header\'s alone (Hanli, 2026-10-05)');
-    assert.match(html, lang === 'zh' ? /<p>马三来了，一脚踹开柴门。<\/p>/ : /<p>Ma San comes, and kicks the gate open\.<\/p>/);
+    assert.doesNotMatch(html, /马三来了|Ma San comes/, 'the caption is the header\'s line (placeCap), never the card\'s (2026-10-14)');
+    assert.match(l.scene.panel.caption.join(''), lang === 'zh' ? /马三来了，一脚踹开柴门。/ : /Ma San comes, and kicks the gate open\./);
     assert.match(html, lang === 'zh' ? /data-panel-exit="endure">照他的话，原样说回去</ : /data-panel-exit="endure">Say his words straight back</);
     assert.doesNotMatch(html, /undefined|\{\w+\}|NaN/);
     assert.match(cardHtml({ card: 'panel' }, page(l, { panelBusy: 'strike' })), /paneltap busy" data-panel-exit="strike" disabled/);
@@ -163,21 +164,25 @@ test('nothing lost: a scene is owed the moment it is entered; past two owed, the
   assert.deepEqual(tellOf(content, two).tell.map(i => i.of), ['choice', 'scene']);
 });
 
-test('the scene card waits while the dialogue box plays: its choices and 看 come with the last beat, 记录 once it is put away', () => {
+test('the scene card waits while the dialogue box plays: its choices and 看 come with the last beat (inside the box, panelActsHtml), 回看 once it is put away', () => {
   const s = walk(start('zh'), [['resolve', { exit: 'begin' }]], content, NOW);
   const l = look(s, content, ctx());
   const beats = [{ name: '马三', text: '租呢？' }, { text: '屋里，安静了。' }];
   const reading = { scene: '00-masan', items: [{ of: 'scene', id: '00-masan', beats: { zh: beats, en: beats } }], i: 0, j: 0, closed: false };
   const waiting = cardHtml({ card: 'panel' }, page(l, { reading }));
   assert.doesNotMatch(waiting, /data-panel-exit|data-look-at|data-dlg-log/, 'nothing to tap while it plays');
-  assert.equal(waiting, '', 'one text box: the caption is the box\'s, and nothing else is on the card yet');
+  assert.equal(waiting, '', 'one text box: nothing on the card yet');
   const untold = cardHtml({ card: 'panel' }, page(l, { tellPending: true }));
-  assert.match(untold, /panelcard reading[\s\S]*<p>马三来了/, 'no passage told here: the card keeps its caption');
+  assert.doesNotMatch(untold, /马三来了|scenecap/, 'the caption is the header\'s (placeCap), never the card\'s (2026-10-14)');
   const last = cardHtml({ card: 'panel' }, page(l, { reading: { ...reading, j: 1 } }));
   assert.match(last, /data-panel-exit="endure"/, 'the last beat brings the choices up');
   const closed = cardHtml({ card: 'panel' }, page(l, { reading: { ...reading, j: 1, closed: true } }));
   assert.match(closed, /data-panel-exit="endure"/);
-  assert.match(closed, /class="quietnext dlgloglink" data-dlg-log>记录</);
+  assert.match(closed, /class="quietnext dlgloglink" data-dlg-log>回看</);
+  // inside the box, the one quiet way on is a proper button
+  const inBox = panelActsHtml(page(l, { reading: { ...reading, j: 1 } }), { inBox: true });
+  assert.match(inBox, /data-panel-exit="endure"/);
+  assert.doesNotMatch(inBox, /quietnext|paneltaps quiet/);
   assert.match(cardHtml({ card: 'panel' }, page(l)), /data-panel-exit="endure"/, 'no reading: the choices stand');
   assert.equal(WORDS.en.lingTelling, undefined);
 });

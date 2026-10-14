@@ -1175,36 +1175,42 @@ function people(card, ctx) {
   return `<div class="card peoplecard"><div class="people">${faces}</div></div>`;
 }
 
-/// The scene card: the place, two to four lines of caption (or the beat's
-/// picture, when the world paints one), and the scene's own choices under it,
-/// each a tap the page resolves itself — no chat turn. While the dialogue box
-/// plays the book's passage (dialogue.js) the choices wait; they come up with
-/// its last beat (Hanli, 2026-09-29: 「对话框先做，go」).
+/// The scene card: the scene's own choices (and its 看), each a tap the page
+/// resolves itself — no chat turn. The place and its caption are the header's
+/// (lingjing.js placeCap, 2026-10-14); a beat's picture is the stage's
+/// backdrop. While the dialogue box plays the book's passage (dialogue.js)
+/// the choices wait; at its last beat they stand inside the box
+/// (panelActsHtml), and here once it is put away.
 function panel(card, ctx) {
   const p = ctx.look?.scene?.panel;
   if (!p) return '';
-  // One text box (Hanli, 2026-10-05): the caption is the dialogue box's first
-  // beat (rules/tell.mjs withCaption) and the place is the header's alone, so
-  // the card says them only where no passage was told here (a scene with no
-  // `story`). A beat's picture is the stage's backdrop (lingjing.js paintBackdrop).
-  const told = (ctx.reading?.items ?? []).some((it) => it.of === 'scene' && it.id === ctx.look.scene.id);
-  const caption = told ? '' : (p.caption ?? []).map((l) => `<p>${esc(l)}</p>`).join('');
-  const busy = ctx.panelBusy ?? null, w = ctx.words;
   // The box goes first: while the scene's passage is still to be drawn, its choices wait (a fast tap skipped the book).
   const up = !ctx.tellPending && choicesUp(ctx.reading, ctx.lang);
+  const acts = up ? panelActsHtml(ctx) : ctx.panelNote ? `<div class="donote">${esc(ctx.panelNote)}</div>` : '';
+  const log = logLinkHtml(ctx.reading, ctx.lang);
+  if (!acts && !log) return '';
+  return `<div class="card panelcard bare${up ? '' : ' reading'}">${acts}${log}</div>`;
+}
+
+/// The scene's choices, its 看 and the note under them — on the scene card,
+/// or inside the dialogue box at its last beat (`inBox`: there the one quiet
+/// way on is a proper button too — 2026-10-14, his: 「那天傍晚 ›」 was missed).
+export function panelActsHtml(ctx, { inBox = false } = {}) {
+  const p = ctx.look?.scene?.panel;
+  if (!p) return '';
+  const busy = ctx.panelBusy ?? null, w = ctx.words;
   const exitOf = (t) => (ctx.look.scene.exits ?? []).find((e) => e.id === t.id);
   // A fight chosen: its card stands under this one, so its words go (ctx.called, the page's).
   const shown = (p.taps ?? []).filter((t) => !(t.duel && ctx.called?.has?.(t.duel)));
-  const taps = up ? shown.map((t) => (exitOf(t)?.riddle ? riddleTapHtml(t, exitOf(t), busy, w) : panelTapHtml(t, busy, w))).join('') : '';
-  const quiet = (p.taps ?? []).length === 1 && p.taps[0].quiet;
+  const tapOf = (t) => (exitOf(t)?.riddle ? riddleTapHtml(t, exitOf(t), busy, w) : panelTapHtml(inBox && t.quiet ? { ...t, quiet: null, label: QUIET_TEXT[t.quiet]?.(t, w) ?? t.label } : t, busy, w));
+  const taps = shown.map(tapOf).join('');
+  const quiet = !inBox && (p.taps ?? []).length === 1 && p.taps[0].quiet;
   // 「也可以直接说你想怎么做」 — now and then, where the scene waits on a real choice (rules: `invite`).
-  const invite = up && p.invite ? `<div class="sceneinvite">${esc(w.invite)}</div>` : '';
-  const looks = up ? lookHtml(ctx.look.scene, ctx.lookBusy ?? null, w) : '';
-  const log = logLinkHtml(ctx.reading, ctx.lang);
-  if (!caption && !looks && !taps && !log && !ctx.panelNote) return '';
-  return `<div class="card panelcard${up ? '' : ' reading'}${caption ? '' : ' bare'}">${caption ? `<div class="panel scenecard"><div class="scenecap">${caption}</div></div>` : ''}
-    ${looks}
-    ${taps ? `<div class="acts paneltaps${quiet ? ' quiet' : ''}">${taps}</div>` : ''}${invite}${log}${ctx.panelNote ? `<div class="donote">${esc(ctx.panelNote)}</div>` : ''}</div>`;
+  const invite = p.invite ? `<div class="sceneinvite">${esc(w.invite)}</div>` : '';
+  const looks = lookHtml(ctx.look.scene, ctx.lookBusy ?? null, w);
+  const note = ctx.panelNote ? `<div class="donote">${esc(ctx.panelNote)}</div>` : '';
+  if (!taps && !looks && !note) return '';
+  return `${looks}${taps ? `<div class="acts paneltaps${quiet ? ' quiet' : ''}">${taps}</div>` : ''}${invite}${note}`;
 }
 
 /// One choice under the scene card: a button for a real decision; the one way

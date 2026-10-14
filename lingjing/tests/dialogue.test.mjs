@@ -12,7 +12,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { resolve } from '../scripts/rules.mjs';
 import { beatsOf, passageFor, playOf, tellOf } from '../scripts/rules/tell.mjs';
-import { advance, choicesUp, current, dialogHtml, keepReading, loadReading, logHtml, ofPlay, playing, readingFor, skipAll, toldSoFar, withTold } from '../scripts/dialogue.js';
+import { advance, atLast, choicesUp, current, dialogHtml, keepReading, loadReading, logHtml, logLinkHtml, ofPlay, playing, readingFor, showAll, toldSoFar, withTold } from '../scripts/dialogue.js';
 import { walk } from './prologue.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -92,35 +92,100 @@ test('a move plays its two passages in order — the choice\'s outcome, then the
   assert.equal(current(mid, 'en').beat.of, 'choice');
 });
 
-test('the last beat brings the choices up; 跳过 shows the rest at once; new passages in the same scene queue behind', () => {
+test('the last beat brings the choices up — inside the box, where 继续 stood; new passages in the same scene queue behind', () => {
   const beats = [{ text: 'a' }, { name: '马三', text: 'b' }, { text: 'c' }];
   let r = one(beats, 's1');
   assert.equal(choicesUp(r), false);
+  assert.match(dialogHtml(r), /class="dlgnext" data-dlg-next[^>]*>继续 <span aria-hidden="true">▸<\/span>/, '「继续 ▸」, a control of its own');
+  assert.match(dialogHtml(r, { lang: 'en' }), />Next <span aria-hidden="true">▸<\/span>/);
+  assert.match(dialogHtml(r), /data-dlg-all>显示全文</);
+  assert.match(dialogHtml(r), /data-dlg-log>回看</);
+  assert.doesNotMatch(dialogHtml(r, { acts: '<button data-panel-exit="go">走</button>' }), /data-panel-exit/, 'no choices before the last beat');
   r = advance(advance(r));
   assert.equal(current(r).k, 2);
   assert.ok(playing(r) && choicesUp(r), 'the last beat stays up with the choices');
-  assert.doesNotMatch(dialogHtml(r), /data-dlg-skip/, 'nothing left to skip');
-  assert.match(dialogHtml(one(beats)), /data-dlg-skip/);
-  const skipped = skipAll(one(beats, 's1'));
-  assert.ok(!playing(skipped) && choicesUp(skipped));
-  assert.match(logHtml(skipped), /data-dlg-from/);
-  assert.equal((logHtml(skipped).match(/dlglogrow/g) ?? []).length, 3);
+  const box = dialogHtml(r, { acts: '<button data-panel-exit="go">走</button>' });
+  assert.match(box, /<div class="dlgacts panelcard"><button data-panel-exit="go">走<\/button><\/div>/, 'the choices in the box');
+  assert.doesNotMatch(box, /data-dlg-next|data-dlg-all/, 'no 继续, no 显示全文 — and a tap on the text does not put the choices away');
+  assert.match(box, /data-dlg-on/);
+  assert.match(dialogHtml(r), /data-dlg-next/, 'no choices to offer: 继续 puts the box away');
   // a passage drawn while one plays (Ling Resolved what the player typed) queues behind it
   const mid = advance(one(beats, 's1'));
   const more = withTold(mid, [{ of: 'choice', id: 'x/y', beats: [{ text: 'd' }] }], 's1');
   assert.equal(current(more).k, 1, 'the one on show stays');
   assert.equal(current(more).n, 4);
-  // a new scene begins a new reading; a closed one opens on the new beats
+  // a closed box — or one at its last beat — opens on the new beats, counted afresh
+  for (const was of [{ ...mid, closed: true }, r]) {
+    const again = withTold(was, [{ of: 'choice', id: 'x/y', beats: [{ text: 'd' }] }], 's1');
+    assert.deepEqual([current(again).k, current(again).n, current(again).beat.text], [0, 1, 'd']);
+    assert.ok(playing(again));
+  }
+  // a new scene begins a new reading
   assert.equal(current(withTold({ ...mid, closed: true }, [{ of: 'scene', id: 's2', beats: [{ text: 'x' }] }], 's2')).n, 1);
-  const again = withTold({ ...mid, closed: true }, [{ of: 'choice', id: 'x/y', beats: [{ text: 'd' }] }], 's1');
-  assert.equal(current(again).k, 3);
-  assert.ok(playing(again));
-  // moved on to a new scene mid-passage: the rest of the old plays first, from where it stood
-  const carried = withTold(mid, [{ of: 'scene', id: 's2', beats: [{ text: 'x' }] }], 's2');
-  assert.equal(carried.scene, 's2');
-  assert.deepEqual([current(carried).k, current(carried).n, current(carried).beat.text], [1, 4, 'b']);
   // the scene's own passage told again (a new game) begins afresh
   assert.equal(current(withTold({ ...mid, closed: true }, [{ of: 'scene', id: 's1', beats: [{ text: 'z' }] }], 's1')).n, 1);
+});
+
+test('the count is the scene\'s own (2026-10-14: 00-masan opened on 「27 / 44」, replaying 00-shiao\'s last beat)', () => {
+  const shiao = Array.from({ length: 26 }, (_, n) => ({ text: `石坳${n + 1}` }));
+  const masan = [{ text: '马三来了。' }, { name: '马三', text: '租呢？' }];
+  // 00-shiao played to its last beat (its choices up), then a choice taken: 00-masan starts at 1 / N
+  let r = withTold(null, [{ of: 'scene', id: '00-shiao', beats: shiao }], '00-shiao', 'r1');
+  while (!atLast(r)) r = advance(r);
+  const next = withTold(r, [{ of: 'choice', id: '00-shiao/go', beats: [{ text: '那天傍晚。' }] }, { of: 'scene', id: '00-masan', beats: masan }], '00-masan', 'r1');
+  assert.deepEqual([current(next).k, current(next).n, current(next).beat.text, current(next).before], [0, 3, '那天傍晚。', false]);
+  assert.match(dialogHtml(next), /<span class="dlgcount">1 \/ 3<\/span>/);
+  assert.ok(!flatTexts(next).includes('石坳26'), 'the last beat already seen does not play again');
+  // left mid-passage (Ling moved on for a typed word): the rest of the old scene plays first,
+  // from the beat AFTER the one on show, under 「上一景」 with a count of its own
+  let mid = withTold(null, [{ of: 'scene', id: '00-shiao', beats: shiao.slice(0, 5) }], '00-shiao', 'r1');
+  mid = advance(advance(mid)); // 石坳3 on show
+  const carried = withTold(mid, [{ of: 'scene', id: '00-masan', beats: masan }], '00-masan', 'r1');
+  assert.deepEqual([current(carried).beat.text, current(carried).k, current(carried).n, current(carried).before], ['石坳4', 0, 2, true]);
+  assert.match(dialogHtml(carried), /<span class="dlgcount before">上一景 · 1 \/ 2<\/span>/);
+  assert.match(dialogHtml(carried, { lang: 'en' }), /Before this · 1 \/ 2/);
+  const own = advance(advance(carried));
+  assert.deepEqual([current(own).beat.text, current(own).k, current(own).n, current(own).before], ['马三来了。', 0, 2, false]);
+});
+const flatTexts = (r) => r.items.flatMap((it) => (Array.isArray(it.beats) ? it.beats : it.beats.zh).map((b) => b.text));
+
+test('显示全文 (2026-10-14: 跳过 dumped the rest into a panel, and closing it closed the box): the rest shows in the box, the choices at its end', () => {
+  const beats = [{ text: 'a' }, { name: '马三', text: 'b' }, { text: 'c' }, { text: 'd' }];
+  const r = advance(one(beats, 's1'));
+  const all = showAll(r);
+  assert.ok(playing(all), 'the box stays');
+  assert.ok(choicesUp(all), 'the choices come up');
+  const html = dialogHtml(all, { acts: '<button data-panel-exit="go">走</button>' });
+  assert.match(html, /class="dlg told all choosing"/);
+  assert.match(html, /<div class="dlgall"><div class="dlglogrow spoken"><b>马三<\/b><span>b<\/span><\/div><div class="dlglogrow"><span>c<\/span><\/div><div class="dlglogrow"><span>d<\/span><\/div><\/div>/, 'from the beat on show to the end, in order');
+  assert.match(html, /<div class="dlgacts panelcard"><button data-panel-exit="go">走<\/button><\/div>/);
+  assert.doesNotMatch(html, /data-dlg-all|dlglog"/, 'no panel, nothing more to show');
+  assert.equal(showAll(all), all, 'once is enough');
+  assert.equal(advance(all).closed, true, 'with no choices, 继续 puts it away');
+  // a passage that comes after (a choice in the same scene) plays in the box as ever
+  const then = withTold(all, [{ of: 'choice', id: 's1/x', beats: [{ text: 'e' }] }], 's1');
+  assert.deepEqual([current(then).beat.text, then.all], ['e', null]);
+  assert.doesNotMatch(dialogHtml(then), /dlgall/);
+});
+
+test('回看: what was told so far — the scenes before, then this one to the beat on show — with a plain close', () => {
+  let r = withTold(null, [{ of: 'scene', id: 'a', beats: [{ text: '甲一' }, { text: '甲二' }] }], 'a', 'r1');
+  r = advance(r);
+  r = withTold(r, [{ of: 'scene', id: 'b', beats: [{ text: '乙一' }, { name: '马三', text: '乙二' }, { text: '乙三' }] }], 'b', 'r1');
+  r = advance(r);
+  const log = logHtml(r);
+  assert.match(log, /aria-label="回看"/);
+  assert.match(log, /data-dlg-logclose>✕ 收起</);
+  assert.match(log, /甲一[\s\S]*甲二[\s\S]*dlglogscene now[\s\S]*乙一[\s\S]*乙二/, 'the scene before, then this one');
+  assert.doesNotMatch(log, /乙三/, 'nothing not yet told');
+  assert.match(logHtml(r, { lang: 'en' }), /aria-label="Look back"[\s\S]*✕ Close/);
+  // the past is this play's: a Restart begins with none
+  assert.deepEqual(withTold(r, [{ of: 'scene', id: 'a', beats: [{ text: 'x' }] }], 'a', 'r2').past, []);
+  // kept short in this browser: the last six scenes
+  let long = null;
+  for (let n = 0; n < 9; n++) long = withTold(long, [{ of: 'scene', id: `s${n}`, beats: [{ text: `第${n}景` }] }], `s${n}`, 'r1');
+  assert.equal(long.past.length, 6);
+  assert.match(logLinkHtml({ ...r, closed: true }), /data-dlg-log>回看</);
 });
 
 test('a reading belongs to its play (Look\'s `run`): a forward move carries the unplayed beats; a Restart, Load or Undo drops them (2026-10-14)', () => {
@@ -129,7 +194,7 @@ test('a reading belongs to its play (Look\'s `run`): a forward move carries the 
   assert.equal(mid.run, 'r1');
   // (a) a forward move in the same play: the rest of the old scene plays first, from where it stood
   const on = withTold(mid, [{ of: 'scene', id: 'next', beats: [{ text: 'x' }] }], 'next', 'r1');
-  assert.deepEqual([on.run, current(on).k, current(on).n, current(on).beat.text], ['r1', 1, 4, 'b']);
+  assert.deepEqual([on.run, current(on).before, current(on).beat.text], ['r1', true, 'c'], 'from the beat after the one on show');
   // (b) the play replaced (init / load / undo: a new run): the old play's beats never lead in
   const anew = withTold(mid, [{ of: 'scene', id: 'opening', beats: [{ text: '蒙山脚下' }] }], 'opening', 'r2');
   assert.deepEqual([anew.run, current(anew).k, current(anew).n, current(anew).beat.text], ['r2', 0, 1, '蒙山脚下']);
@@ -143,7 +208,7 @@ test('a reading belongs to its play (Look\'s `run`): a forward move carries the 
   // the update wipes nothing — but a reading with none never runs on into a play that has one.
   const old = { ...mid, run: undefined };
   assert.equal(readingFor(old, 'gate', null), old);
-  assert.equal(current(withTold(old, [{ of: 'scene', id: 'next', beats: [{ text: 'x' }] }], 'next', null)).n, 4);
+  assert.equal(withTold(old, [{ of: 'scene', id: 'next', beats: [{ text: 'x' }] }], 'next', null).items.length, 2, 'carried on');
   assert.equal(readingFor(old, 'gate', 'r1'), null);
   assert.equal(current(withTold(old, [{ of: 'scene', id: 'next', beats: [{ text: 'x' }] }], 'next', 'r1')).n, 1);
 });
@@ -200,23 +265,24 @@ test('the box on the page: its place in the view, the keys that go on, and what 
   assert.match(src, /e\.key === ' ' \|\| e\.key === 'Enter'/);
   assert.match(src, /boxGivesWay\(\{ bout: Boolean\(bout\), appearing: Boolean\(view\.appearing\)/);
   assert.match(src, /cards = afterBook\(cards, cardsAhead\(\), gamesEarly\(\)\);/, 'the games wait for the book — the scene\'s own come up past its caption');
-  assert.match(src, /if \(cardsAhead\(\)\) cards = cards\.filter\(\(c\) => c\.card !== 'panel'\);/, 'one text box: no scene card while the box tells');
+  assert.match(src, /if \(cardsAhead\(\) \|\| choicesInBox\(\)\) cards = cards\.filter\(\(c\) => c\.card !== 'panel'\);/, 'one text box: no scene card while the box tells, nor while its choices stand inside it');
+  // the scene's choices come before the box's own taps: a choice inside the box resolves, never goes on
+  assert.ok(src.indexOf("['[data-panel-exit]'") < src.indexOf("['[data-dlg-next]'"));
+  assert.ok(src.indexOf("['[data-look-at]'") < src.indexOf("['[data-dlg-next]'"));
   const css = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.css'), 'utf8');
   assert.match(css, /\.view:has\(\.dlgwrap:not\(:empty\)\) \.slots \{ bottom:/);
   assert.match(css, /\.dlgwrap \{ left: 16px; right: 16px;/, 'narrow: 16px gutters');
 });
 
-test('one text box (Hanli, 2026-10-05): the scene card\'s caption is the first beat of the scene\'s passage, in both languages', () => {
+test('the caption is no beat (2026-10-14: told three times) — the box plays the book alone; the caption stands under the place', () => {
   const s = named();
   const played = playOf(content, s, [{ of: 'scene', id: '00-luoshu', text: '甲。\n\n乙。' }, { of: 'choice', id: '00-luoshu/pass', text: '丙。' }]);
-  const [cap, first] = played[0].beats.zh;
-  assert.deepEqual(cap, { text: '二试，脑子。\n一面石壁，九个空格。\n「横竖斜，加起来都要一样。」', cap: true });
-  assert.equal(first.text, '甲。');
-  assert.ok(played[0].beats.en[0]?.cap || played[0].beats.en.length === 0, 'the other language opens on its own caption');
-  assert.ok(!played[1].beats.zh.some(b => b.cap), 'a choice\'s passage has no caption');
-  const r = withTold(null, played, '00-luoshu');
-  assert.match(dialogHtml(r), /class="dlg told cap"/);
-  assert.match(logHtml(advance(r)), /dlglogrow cap/);
+  assert.deepEqual(played[0].beats.zh.map((b) => b.text), ['甲。', '乙。']);
+  assert.ok(played.every((t) => !t.beats.zh.some((b) => b.cap) && !t.beats.en.some((b) => b.cap)));
+  const html = fs.readFileSync(path.join(ROOT, 'scripts/index.html'), 'utf8');
+  assert.match(html, /<span class="place" id="place"><\/span><\/div><div class="placecap" id="placeCap"><\/div>/);
+  const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
+  assert.match(src, /\$\('placeCap'\)\.textContent = /);
 });
 
 test('the box says the book\'s words, not its reader marks: [词]{注=…}, [句]{典=…} and a bare {典=…} are the reader\'s links (2026-10-14: 赵昂 showed raw in 01-cauldron)', () => {

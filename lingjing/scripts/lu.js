@@ -13,7 +13,7 @@ export const LU_WORDS = {
     seen: '所见', missed: '未细看：{what}', now: '眼下：{what}', mystery: '谜：{q}', people: '人物谱', her: '{name}记起的', open: '悬而未决',
     kinds: { story: '途中所遇', tamed: '随行', fought: '交过手', known: '相识' },
     none: '还没有什么可记的。', ending: '终局 · {title}', noOpen: '眼下没有悬着的谜。',
-    titleClose: '且看', sep: '',
+    sep: '',
     paipu: '牌谱 · {n}', paipuNote: '你手上的每一张牌，和它从哪里来。',
     how: { starter: '测灵根时所得', companion: '{creature}随你而来', tame: '收服{creature}', win: '胜{creature}所得', chance: '机缘所得', tale: '传闻《{tale}》', story: '{chapter}', old: '旧日所得' },
     at: '于{place}', kinds: { minion: '灵兽', spell: '法术' },
@@ -24,7 +24,7 @@ export const LU_WORDS = {
     seen: 'What you saw', missed: 'Passed by: {what}', now: 'Now: {what}', mystery: 'The riddle: {q}', people: 'People met', her: 'What {name} remembers', open: 'Still open',
     kinds: { story: 'met on the way', tamed: 'walks with you', fought: 'fought', known: 'acquainted' },
     none: 'Nothing to record yet.', ending: 'The end · {title}', noOpen: 'No riddle open now.',
-    titleClose: 'Begin', sep: ' ',
+    sep: ' ',
     paipu: 'Cards · {n}', paipuNote: 'Every card you hold, and where it came from.',
     how: { starter: 'From the root test', companion: '{creature} came with you', tame: 'Tamed {creature}', win: 'Won from {creature}', chance: 'A chance taken', tale: 'The rumor “{tale}”', story: '{chapter}', old: 'From earlier days' },
     at: 'at {place}', kinds: { minion: 'Beast', spell: 'Spell' },
@@ -116,11 +116,11 @@ function paipuHtml(cards, w, { artBase = '', her = null } = {}) {
 }
 
 /* The chapter's title card on the stage, once, when a chapter has just begun. */
-export function titleCardHtml(chapter, lang = 'zh') {
+export function titleCardHtml(chapter, lang = 'zh', { fading = false } = {}) {
   if (!chapter?.fresh || !chapter.intro) return '';
-  const w = wordsOf(lang);
-  return `<div class="titlecard" role="note"><b>${esc(chapter.title)}</b><p>${esc(chapter.intro)}</p>
-    <button class="act" data-titlecard="${esc(chapter.id)}">${esc(w.titleClose)}</button></div>`;
+  // No button (2026-10-14, his: 「且看」 was one more tap): the card fades by
+  // itself after a moment, or goes on a tap anywhere or Space (lingjing.js).
+  return `<div class="titlecard${fading ? ' fading' : ''}" role="note" data-titlecard="${esc(chapter.id)}"><b>${esc(chapter.title)}</b><p>${esc(chapter.intro)}</p></div>`;
 }
 
 /* A small scroll, drawn in the chip's own ink: the 录 is a record, not a book to read. */

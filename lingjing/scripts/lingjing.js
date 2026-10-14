@@ -5,7 +5,7 @@
 // a word to Ling, sent as the player's own line; Ling and the rules do the rest.
 
 import '/shared/chat-bridge.js';
-import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from '/shared/api.js';
+import { createSession, listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from '/shared/api.js';
 // And a namespace: a name the served /shared/api.js doesn't export yet
 // (`engineUiUrl`) must not fail the whole page.
 import * as sharedApi from '/shared/api.js';
@@ -19,7 +19,7 @@ import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, pickOf, spoilsH
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { WORDS, say as fill, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle } from './cards.js';
+import { WORDS, say as fill, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle } from './cards.js';
 import { pouchHtml } from './pouch.js';
 import { esc } from './esc.js';
 import { thinker, stillAsked } from './think.js';
@@ -34,7 +34,7 @@ import { fxTimes, glOK, playHoming as playHomingFx } from './fx.js';
 import { atmosClasses, atmosOf, particlesHtml } from './atmos.js';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
-import { advance, choicesUp, current, dialogHtml, keepReading, loadReading, logHtml, ofPlay, playing, readingFor, sceneUnder, sightNow, sightings, skipAll, withTold } from './dialogue.js';
+import { advance, atLast, choicesUp, current, dialogHtml, keepReading, loadReading, logHtml, ofPlay, playing, readingFor, sceneUnder, showAll, sightNow, sightings, withTold } from './dialogue.js';
 import { SIGHT_KINDS, mountChatToggle, paintSight } from './sight.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
@@ -458,6 +458,7 @@ async function readOnce() {
   try {
     const [seen, ,] = await Promise.all([verb('look', PREVIEW.day ? { day: PREVIEW.day } : {}), readCloud()]);
     look = seen;
+    watchRun();
     if (look.divination) keep({ casting: false });
     await loadContent(look.world, contentStale);
     contentStale = false;
@@ -904,9 +905,9 @@ function stageNow() {
   cards = cards.filter((c) => c.card !== 'meet' || !sighted.has(c.id));
   // A board he opened from the tray's 开局 waits for the whole passage (queue.js trayWaits).
   if (view.opened && trayAhead()) cards = cards.filter((c) => !(c.card === 'board' && c.id === view.opened.id));
-  // One text box (Hanli, 2026-10-05): while the book is ahead the scene card's
-  // caption is the box's first beat, so the card stands only with its choices.
-  if (cardsAhead()) cards = cards.filter((c) => c.card !== 'panel');
+  // One text box (Hanli, 2026-10-05): while the book is ahead — or the box holds
+  // its last beat, the choices inside it (2026-10-14) — no scene card stands.
+  if (cardsAhead() || choicesInBox()) cards = cards.filter((c) => c.card !== 'panel');
   // The book first: a game waits until the passage that leads into it is told —
   // the scene's own games come up once the box is past its caption (queue.js EARLY).
   cards = afterBook(cards, cardsAhead(), gamesEarly());
@@ -1218,6 +1219,8 @@ function draw() {
   if (look.chapter?.hui) titles[look.chapter.hui] = look.chapter.title;
   $('huiLine').textContent = look.chapter?.hui ? huiLineOf({ hui: look.chapter.hui, title: look.chapter.title, telling: playing(told) ? told.items[told.i]?.hui : null, titles }) : '';
   $('place').textContent = look.scene?.place ?? look.chapter?.close?.place ?? look.place?.name ?? look.chapter?.title ?? '';
+  // The scene's caption, small under the place (2026-10-14: never a beat in the box — told three times).
+  $('placeCap').textContent = (look.scene?.panel?.caption ?? []).join(' ');
   // She is always at the player's side: on the stage whenever the game is
   // open, scene or road, not only where a scene casts her.
   $('stage').hidden = false;
@@ -1246,11 +1249,11 @@ function draw() {
   const box = dialogBoxHtml(slots);
   paintIf('dlg', box);
   // 初见: his first beat on show, he stands large over the box (sight.js).
-  paintSight($('sight'), box.includes('data-dlg-next') ? sightNow(readingHere(), firstFaces(), lang()) : [], { src: (f) => worldPath(look.world?.made ? `worlds/${look.world.base}` : look.world?.dir ?? 'worlds/jiuding', f) });
+  paintSight($('sight'), box.includes('data-dlg-on') ? sightNow(readingHere(), firstFaces(), lang()) : [], { src: (f) => worldPath(look.world?.made ? `worlds/${look.world.base}` : look.world?.dir ?? 'worlds/jiuding', f) });
   // The slots rise over the box's real height: a long beat grows it (lingjing.css --dlg-real).
   const dlgH = $('dlg')?.offsetHeight ?? 0;
   $('view')?.style.setProperty('--dlg-real', dlgH ? `${dlgH}px` : 'var(--dlg-h)');
-  voiceBeat(box.includes('data-dlg-next'));
+  voiceBeat(box.includes('data-dlg-on'));
   holdFx();
   keep({ castFresh: false });
   drawLu();
@@ -1715,7 +1718,7 @@ async function watchTell() {
     const t = await write('tell').catch(() => null);
     // Drawn: Look's `tell_owed` is spent (the ending card waits on it, endingWaits).
     if (t?.ok && look) look.tell_owed = false;
-    if (t?.ok && t.tell?.length) setReading(withTold(readingNow(), t.tell, look?.scene?.id ?? null, look?.run ?? null));
+    if (t?.ok && t.tell?.length) setReading(withTold(readingNow(), t.tell, look?.scene?.id ?? null, look?.run ?? null, lang()));
   } finally { drawingTold = false; }
 }
 /* The reading, read back from this browser the first time it is asked for. */
@@ -1785,11 +1788,18 @@ function oldHuiPlaying() {
 }
 // …and while passages are owed and not yet drawn (they may be the ending 回's).
 const endingWaits = () => oldHuiPlaying() || riseWaits || Boolean(look?.tell_owed || drawingTold);
+/* The box is up at its last beat with nothing owed behind it: the scene's
+   choices stand inside it (2026-10-14, his: 「那天傍晚 ›」 was a small link mid-stage). */
+function choicesInBox() {
+  const r = readingHere();
+  return Boolean(playing(r) && atLast(r, lang()) && !look?.tell_owed && !drawingTold && !boxYields(true));
+}
 function dialogBoxHtml(slots) {
   const r = readingHere(), src = (f) => worldPath(look.world?.dir ?? 'worlds/jiuding', f);
   if (!r || boxYields(slots)) return '';
   const voice = hasAudio(audio) ? dubOn() : null;
-  return (playing(r) ? dialogHtml(r, { lang: lang(), src, voice }) : '') + (view.logOpen ? logHtml(r, { lang: lang() }) : '');
+  const acts = choicesInBox() ? panelActsHtml(ctx(), { inBox: true }) : '';
+  return (playing(r) ? dialogHtml(r, { lang: lang(), src, voice, acts }) : '') + (view.logOpen ? logHtml(r, { lang: lang() }) : '');
 }
 
 /* 对话框配音 (Hanli, 2026-10-01): the 说书人 tells the beat on show — its own
@@ -1802,7 +1812,7 @@ const narrator = createNarrator();
 loadManifest().then((m) => { audio = m; render(); });
 function voiceBeat(shown) {
   const r = readingHere();
-  if (!shown || !playing(r) || !dubOn()) return narrator.sync(null);
+  if (!shown || !playing(r) || r.all || !dubOn()) return narrator.sync(null);
   const { beat } = current(r, lang());
   const clip = beat.recap ? null : clipOf(audio, r.items[r.i]?.hui, beat.text);
   narrator.sync(clip?.url ?? null, `${r.scene}|${r.i}|${r.j}|${clip?.url}`);
@@ -1811,12 +1821,10 @@ function voiceBeat(shown) {
    read off the save — rules/codex.mjs newHere), as their 图鉴 entries. */
 const firstFaces = () => (look?.scene?.meet ?? []).map((id) => codexNow()?.get?.(id)).filter((e) => e && SIGHT_KINDS.has(e.kind));
 const nextBeat = () => { const r = readingOfPlay(); if (playing(r)) setReading(advance(r, lang())); };
-/* 跳过: the log opens on the first beat skipped. */
-function skipBeats() {
+/* 显示全文: the rest of the passage at once, in the box; the choices at its end. */
+function showAllBeats() {
   const r = readingOfPlay();
-  if (!playing(r)) return;
-  setReading(skipAll(r, lang()), { logOpen: true });
-  requestAnimationFrame(() => requestAnimationFrame(() => $('dlg').querySelector('[data-dlg-from]')?.scrollIntoView({ block: 'start' })));
+  if (playing(r)) setReading(showAll(r, lang()));
 }
 
 /* 看 — a hotspot on the scene card (cards.js lookHtml): the rules look
@@ -2070,6 +2078,7 @@ document.addEventListener('keydown', (e) => {
   if (e.target.id === 'wx-city' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); document.querySelector('[data-wx-set]')?.click(); }
   if (e.target.id === 'value-text' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.closest('.valuecard')?.querySelector('[data-value-go]:not(:disabled)')?.click(); }
   if (e.key === 'Escape' && view.logOpen) { show({ logOpen: false }); return; }
+  if ((e.key === ' ' || e.key === 'Enter') && !e.isComposing && !e.target.closest?.('input, textarea, select, [contenteditable], #chat-panel') && titleAway()) { e.preventDefault(); return; }
   if (boxKey(e)) { e.preventDefault(); nextBeat(); return; }
   if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.luOpen) show({ luOpen: false }); else if (view.pouchToss) show({ pouchToss: null }); else if (view.bookOpen || view.gearOpen || view.ledgerOpen) show({ bookOpen: false, gearOpen: false, ledgerOpen: false }); }
   if (e.key !== 'Enter' && e.key !== ' ') return;
@@ -2153,16 +2162,17 @@ const CLICKS = [
   ['[data-wx-set]', () => { if (skyDraft.city.trim()) run('wx:set', () => setSense({ city: skyDraft.city.trim() })); }],
   ['[data-wx-off]', (el) => run('wx:off', () => setSense({ off: el.dataset.wxOff === 'off' }))],
   ['[data-wx-clear]', () => run('wx:clear', () => setSense({ city: null }))],
-  // The dialogue box: 记录 and 跳过 first, then a tap anywhere on it goes on.
-  ['[data-dlg-log]', () => show({ logOpen: !view.logOpen })],
-  ['[data-dlg-logclose]', () => show({ logOpen: false })],
-  ['[data-dlg-skip]', () => skipBeats()],
-  ['[data-dlg-voice]', () => { setDub(!dubOn()); render(); }],
-  ['[data-dlg-next]', () => nextBeat()],
-  ['.dlglog', () => true],
+  // The scene's choices (on its card, or inside the box at its last beat) come before the box's own taps.
   ['[data-look-at]', (el) => { if (!el.matches(':disabled')) run(`look:${el.dataset.lookAt}`, () => lookAt(el.dataset.lookAt)); }],
   ['[data-panel-duel]', (el) => { if (!el.matches(':disabled')) show({ called: [...(view.called ?? []), `${look?.scene?.id}|${el.dataset.panelDuel}`] }); }],
   ['[data-panel-exit]', (el) => { if (!el.matches(':disabled')) run(`panel:${el.dataset.panelExit}`, () => panelTap(el.dataset.panelExit, el.textContent.trim(), el.dataset.panelAnswer)); }],
+  // The dialogue box: 回看 and 显示全文 first, then 「继续 ▸」 or a tap anywhere on it goes on.
+  ['[data-dlg-log]', () => show({ logOpen: !view.logOpen })],
+  ['[data-dlg-logclose]', () => show({ logOpen: false })],
+  ['[data-dlg-all]', () => showAllBeats()],
+  ['[data-dlg-voice]', () => { setDub(!dubOn()); render(); }],
+  ['[data-dlg-next]', () => nextBeat()],
+  ['.dlglog', () => true],
   ['[data-lu]', () => (view.luOpen ? show({ luOpen: false }) : openLu())],
   ['[data-lu-close]', () => show({ luOpen: false, codexOpen: null })],
   // 录: a 回 finished, its whole 评书 (the player takes the button's place).
@@ -2183,7 +2193,6 @@ const CLICKS = [
   ['[data-unfold]', (el, e) => { if (e?.target?.closest?.('button')) return false; closeUnfold(); return true; }],
   ['[data-mem-replay]', (el) => { const play = replayOf(view.lu?.album, el.dataset.memReplay); if (play) show({ luOpen: false, memory: { n: play.n, i: 0, play, at: performance.now() } }); }],
   ['[data-close-chapter]', (el) => { closeSeen(el.dataset.closeChapter, true); render(); }],
-  ['[data-titlecard]', (el) => { dismissedTitles.add(titleKey(el.dataset.titlecard)); titleSeen(el.dataset.titlecard, true); render(); }],
   ['[data-gear]', () => (view.gearOpen ? show({ gearOpen: false }) : openGear())],
   ['[data-do]', (el) => { if (!el.matches(':disabled')) run(`do:${el.dataset.do}:${el.dataset.id}`, () => doTap(el.dataset.do, el.dataset.id)); }],
   ['[data-deck]', (el) => run(`deck:${el.dataset.deck}`, () => deckTap({ action: 'toggle', id: el.dataset.deck }))],
@@ -2267,6 +2276,8 @@ const CLICKS = [
 // stepped and held here; its win goes the way a tapped win does.
 wireLiveGames({ boardFor, lang, onWon: (g) => { g.sent = true; run(`win:${g.taskId}`, () => onWin(g.taskId)); } });
 document.addEventListener('click', (e) => {
+  // The 回's title card goes on a tap anywhere, and the tap does nothing else (2026-10-14).
+  if (titleAway()) return;
   for (const [sel, handle] of CLICKS) {
     const el = sel === '*' ? e.target : e.target.closest?.(sel);
     if (el && handle(el, e) !== false) return;
@@ -2565,6 +2576,36 @@ function openWith(sid, greeted = false) {
   else greetWaits = { sid, text: greetText };
 }
 
+/* A new play, a new chat (approved 2026-10-14: 「可以，按表做」) — as Claude
+   Code's /clear: a Restart or a Load (Look's `run` new, `run_by` init or
+   load) opens a fresh session with Ling; the old one is kept in the list,
+   never deleted. An Undo keeps the chat (one step back; the talk still
+   holds). A Restart Ling runs herself happens inside her turn: the switch
+   waits for that turn to end, so her reply is never cut off. */
+const FRESH_BY = new Set(['init', 'load']);
+const FRESH_LINE = { zh: '—— 新的一局 ——', en: '— A new game —' };
+let runSeen; // undefined until the first Look: nothing old opens a chat
+let freshOwed = false;
+function watchRun() {
+  const run = look?.run ?? null;
+  if (runSeen !== undefined && run && run !== runSeen && FRESH_BY.has(look?.run_by)) freshOwed = true;
+  runSeen = run;
+  freshChatWhenFree();
+}
+async function freshChatWhenFree() {
+  if (!freshOwed || streaming || saying || !chat || SCRATCH) return;
+  freshOwed = false;
+  try {
+    const { id } = await createSession('Lingjing', SKILL);
+    if (!id) return;
+    await chat.setSession(id);
+    chat.addMessage('assistant', FRESH_LINE[lang()]);
+    openWith(id);
+  } catch (e) {
+    console.warn('[lingjing] fresh chat', e);
+  }
+}
+
 /* Her greeting stands in for Ling's opening. If nobody will say it (the pet
    is off: `device_topic` yinyue/unanswered, or the event refused at once),
    Ling opens after all — the chat never waits on a silence. */
@@ -2753,11 +2794,36 @@ function closeSeen(id, mark = false) {
     return mark;
   }
 }
+/* The 回's title card has no button (2026-10-14, his: 「且看」 was one more
+   tap): once it is on the stage it fades by itself after TITLE_MS, or goes
+   on a tap anywhere or Space. The queue rules hold: it is timed only once it
+   actually shows, never over the box. */
+const TITLE_MS = 2000, TITLE_FADE_MS = 600;
+const titleFading = new Map(); // titleKey → 'up' | 'fading'
 function titleCard() {
   const ch = look?.chapter;
   if (!ch?.fresh || bout || dismissedTitles.has(titleKey(ch.id)) || titleSeen(ch.id)) return '';
   if (stageBusy() || closeUp() || endingWaits()) return ''; // after the moments, the ending 回's last words and its ending card
-  return titleCardHtml(ch, lang());
+  const key = titleKey(ch.id), id = ch.id;
+  if (!titleFading.has(key)) {
+    titleFading.set(key, 'up');
+    setTimeout(() => { if (titleFading.get(key) !== 'up') return; titleFading.set(key, 'fading'); render(); setTimeout(() => dismissTitle(id, key), TITLE_FADE_MS); }, TITLE_MS);
+  }
+  return titleCardHtml(ch, lang(), { fading: titleFading.get(key) === 'fading' });
+}
+function dismissTitle(id, key = titleKey(id)) {
+  if (dismissedTitles.has(key)) return;
+  titleFading.set(key, 'gone');
+  dismissedTitles.add(key);
+  titleSeen(id, true);
+  render();
+}
+/* A title card on the stage is put away (a tap anywhere, Space): true when one was. */
+function titleAway() {
+  const card = document.querySelector('.titlecard[data-titlecard]');
+  if (!card) return false;
+  dismissTitle(card.dataset.titlecard);
+  return true;
 }
 
 /* Story nodes — a scene passed, a cauldron found, a memory come back. The

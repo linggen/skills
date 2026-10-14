@@ -12,6 +12,7 @@ import { newState } from '../scripts/state.mjs';
 import { meetsOf, newHere } from '../scripts/rules/codex.mjs';
 import { dialogHtml, sightings, sightNow, advance, withTold } from '../scripts/dialogue.js';
 import { SIGHT_KINDS, sightHtml } from '../scripts/sight.js';
+import { codexCompactHtml } from '../scripts/codex.js';
 
 const content = loadContent();
 const NOW = new Date('2026-10-05T12:00:00');
@@ -64,7 +65,7 @@ test('the large card: his picture or a name card, his name and one line; a tap g
 
 test('the name plate hangs on the box (outside its text); narration hangs none', () => {
   const spoken = dialogHtml(read([{ who: 'qulao', name: '瞿老', text: '来了？' }]));
-  assert.match(spoken, /<div class="dlgname">瞿老<\/div><div class="dlgbody"><div class="dlgtext">来了？/);
+  assert.match(spoken, /<div class="dlgname">瞿老<\/div><div class="dlghead">[\s\S]*<div class="dlgbody"><div class="dlgtext">来了？/);
   assert.doesNotMatch(dialogHtml(read([{ text: '风大。' }])), /dlgname/);
 });
 
@@ -73,7 +74,7 @@ test('the page: the sight over the box, no first-meet card for a face it showed,
   const html = fs.readFileSync(new URL('../scripts/index.html', import.meta.url), 'utf8');
   const css = fs.readFileSync(new URL('../scripts/lingjing.css', import.meta.url), 'utf8');
   assert.match(src, /const sighted = sightings\(readingHere\(\), firstFaces\(\), lang\(\)\);\n {2}cards = cards\.filter\(\(c\) => c\.card !== 'meet' \|\| !sighted\.has\(c\.id\)\);/);
-  assert.match(src, /paintSight\(\$\('sight'\), box\.includes\('data-dlg-next'\) \? sightNow\(readingHere\(\), firstFaces\(\), lang\(\)\) : \[\]/);
+  assert.match(src, /paintSight\(\$\('sight'\), box\.includes\('data-dlg-on'\) \? sightNow\(readingHere\(\), firstFaces\(\), lang\(\)\) : \[\]/);
   assert.match(src, /const firstFaces = \(\) => \(look\?\.scene\?\.meet \?\? \[\]\)/, 'only whom Look says is new here — no name in code');
   assert.match(html, /<div class="sight" id="sight"><\/div>\s*(<!--[\s\S]*?-->\s*)?<div class="dlgwrap" id="dlg"><\/div>/);
   assert.match(html, /<header class="topbar"><div class="status" id="status"><\/div><div class="titlerow">/);
@@ -81,4 +82,16 @@ test('the page: the sight over the box, no first-meet card for a face it showed,
   assert.match(css, /\.shell\.chatfolded \{ grid-template-columns: minmax\(0, 1fr\) 0; \}/);
   assert.match(css, /\.view:has\(\.sight \.sightcard:not\(\.going\)\) \.dlgface \{ display: none; \}/, 'the large picture up: no small one of him in the box');
   assert.match(src, /class="scratch-badge"[^`]*style="position:fixed;bottom:6px;right:8px;/, 'the test badge never over the top strip');
+});
+
+test('a thing\'s first card is big enough to read: its picture large, every line whole (2026-10-14: 狐纹木牌); a face\'s stays a row', () => {
+  const token = { id: 'fox-token', kind: '物品', name: '狐纹木牌', image: 'art/items/fox-token.webp', lines: ['吴婆婆塞给沈小满的小木牌，磨得发亮；刻着一只九尾狐。', '第二行。'] };
+  const html = codexCompactHtml(token);
+  assert.match(html, /class="codexcompact big"/);
+  assert.match(html, /<span>吴婆婆塞给沈小满的小木牌，磨得发亮；刻着一只九尾狐。<\/span><span>第二行。<\/span>/, 'every line, whole');
+  assert.match(html, /data-codex-big="fox-token"/, 'a tap still opens it full size');
+  assert.doesNotMatch(codexCompactHtml(qu), /codexcompact big/, 'a person comes on large over the box instead (初见)');
+  const css = fs.readFileSync(new URL('../scripts/codex.css', import.meta.url), 'utf8');
+  assert.match(css, /\.codexcompact\.big \.cpic \{ width: 176px; height: 176px; \}/);
+  assert.match(css, /\.codexcompact\.big \.ccap \{ white-space: normal;/);
 });
