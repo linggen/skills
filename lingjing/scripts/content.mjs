@@ -12,6 +12,7 @@ import { lintCodex } from './codex.js';
 import { bookEntries, idsOf } from './book-order.js';
 import { rankOf, storyAllows } from './rules/cap.mjs';
 import { huiOf } from './rules/hui.mjs';
+import { KINDS as WEATHER_KINDS } from './rules/weather.mjs';
 
 /* The worlds ship with the skill, one folder each under `worlds/`; the
    folder's name is the world's id and the save's `world`. */
@@ -501,6 +502,7 @@ export function lint(content) {
   lintLore(content, bad);
   lintPeople(content, bad);
   lintFestivals(content, bad);
+  lintWeather(content, bad);
   lintJuan(content, bad);
   if (content.codex) for (const p of lintCodex(codexFiles(content), f => fs.existsSync(path.join(content.dir, f)))) bad('codex', p);
   // A codex entry's first scene is a scene of this world.
@@ -563,6 +565,15 @@ const peopleIds = content => [...(content.people?.people ?? []).map(p => p.id), 
    languages, a home the map knows, a portrait on disk; each slot names a
    person; each address word is a zh + en pair; the hero (fixed, 2026-09-30)
    has a name in both languages and a gender. */
+/* A scene's `weather` is the story's sky (rules/weather.mjs): one of KINDS, or absent. */
+function lintWeather(content, bad) {
+  for (const chapter of Object.values(content.chapters)) {
+    for (const [id, scene] of Object.entries(chapter.scenes ?? {})) {
+      if (scene.weather != null && !WEATHER_KINDS.includes(scene.weather)) bad(`scene ${id}`, `weather ${scene.weather} is not one of ${WEATHER_KINDS.join(' · ')}`);
+    }
+  }
+}
+
 function lintPeople(content, bad) {
   const doc = content.people;
   if (!doc) return;

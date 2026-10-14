@@ -204,6 +204,7 @@ field. The fields:
 | `place`, `setup` | Where; what Ling narrates on entry. `{name}` fills the world's hero (people.json `hero`: 沈小满 · Shen Xiaoman, by the text's language); `{兄姐}` (师兄), `{伴}` (阿禾) and the other `address` words are fixed; `{灵根}` the roots. |
 | `cast`, `show`, `lines` | Who is present; cards Shown on entry; hand-written lines. |
 | `story` · exit `story` | The book's passage for the beat (zh + en), played by the dialogue box; Ling is handed only what she is owed (`tell`, rules/tell.mjs, guide/tell.md). |
+| `weather` · `_weather` | The story's sky here, one of rules/weather.mjs `KINDS` (clear · cloudy · fog · rain · snow · storm), tagged once where the scene's own text names it — `_weather` quotes the phrase. No field → the real weather. Never inferred at runtime. |
 | `panel` | The scene card, in words: a 2–4 line `caption` under the place (no picture since 2026-09-29). |
 | `people` · `her` | Who the people strip shows; 银月's form before she walks with the player. |
 | (Look's `scene.meet`) | Derived, not written: the 图鉴 entries whose `first.scene` this is, while none was met before. |
@@ -722,7 +723,12 @@ Not borrowed: gacha.
 - **天气** (rules/weather.mjs): the engine's `weather` sense (the skill never
   goes online) hands the reading for the city the player set once; drawn as a
   layer (snow · rain · fog); said once when it changes; never harder, at most
-  a texture.
+  a texture. **The plot never follows the real weather** (Hanli, 2026-10-14):
+  a scene whose story names its sky declares it (`weather`, § A scene), and
+  there Look's `weather` is the story's — `source: "story"` (else `city` /
+  `season`), no temperature (that is the real city's), never `new`, so Ling
+  never announces the real sky over the book's. The chip's popover still
+  sets the city for every other scene.
 
 ## 画面效果 — PixiJS + GSAP 【在建】
 

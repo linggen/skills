@@ -8,6 +8,12 @@
 // (snow on some winter days). Look carries `weather`; `new` marks a change
 // worth one line from Ling — rules.mjs keeps `weather_told`, never logged.
 // Weather never makes the game harder: nothing here touches a number.
+//
+// The plot never follows the real weather (Hanli, 2026-10-14): a scene
+// whose book names its sky declares it once in data — `weather`, one of
+// KINDS — and while he stands in it Look's `weather` is the story's
+// (`source: "story"`: no temperature, since that is the real city's, and
+// never `new`, so Ling says nothing of the real sky over the book's).
 import { localDay } from '../calendar.js';
 
 export const KINDS = ['clear', 'cloudy', 'fog', 'rain', 'snow', 'storm'];
@@ -45,9 +51,11 @@ export function seasonKind(day) {
   return table.find(([, upTo]) => r < upTo)?.[0] ?? 'clear';
 }
 
-/* `weather` as Look tells it. */
-export function weatherBrief(state, ctx) {
+/* `weather` as Look tells it. `story` is the scene's own sky (a KINDS
+   kind, or nothing): it wins over the reading. */
+export function weatherBrief(state, ctx, story = null) {
   const lang = state.lang === 'en' ? 'en' : 'zh';
+  if (KINDS.includes(story)) return { kind: story, where: HOME[lang], source: 'story' };
   const reading = ctx.weather === undefined ? senseReading() : ctx.weather;
   const out = reading
     ? { kind: reading.kind, where: reading.city, ...(Number.isFinite(reading.temp_c) ? { temp_c: Math.round(reading.temp_c) } : {}), source: 'city' }

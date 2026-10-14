@@ -202,8 +202,10 @@ function runLocked(verb, args, stateFile, reader) {
     writeAtomic(stateFile, JSON.stringify(asking));
   }
   // The weather is said once when it changes (rules/weather.mjs): her Look
-  // keeps what she was last handed — never logged.
-  const sky = reader === 'ling' && verb === 'look' ? out.result?.weather?.kind : null;
+  // keeps what she was last handed — never logged. A scene's own sky
+  // (`source: "story"`) is the book's, not news: it is never handed as told.
+  const wx = out.result?.weather;
+  const sky = reader === 'ling' && verb === 'look' && wx?.source !== 'story' ? wx?.kind : null;
   if (sky && asking.weather_told !== sky) {
     asking.weather_told = sky;
     writeAtomic(stateFile, JSON.stringify(asking));

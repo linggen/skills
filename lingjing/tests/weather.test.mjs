@@ -66,6 +66,61 @@ test('the command line: the engine\'s reading reaches Look; Ling\'s Look keeps w
   }
 });
 
+/* The plot never follows the real weather (Hanli, 2026-10-14): a scene whose
+   story names its sky declares `weather`; there Look's is the story's. */
+const RAIN = { kind: 'rain', code: 61, temp_c: 11.2, is_day: true, city: '杭州', at: 1 };
+const startAt = (now) => newState(content, 'zh', now); // 00-shiao, at 石坳村
+
+test('a scene that names its sky shows the story\'s, not the real one: 00-shiao is overcast under a real rain', () => {
+  const s = startAt(at('2026-10-14'));
+  assert.equal(s.scene, '00-shiao');
+  const wx = look(s, content, { now: at('2026-10-14'), quests: [], weather: RAIN }).weather;
+  assert.deepEqual(wx, { kind: 'cloudy', where: '蒙山', source: 'story' }); // 「那天一直阴着」 — no temp (that is the city's), never `new`
+  // The page: the chip reads the story's sky, no degrees; the layer draws no rain.
+  assert.equal(wxChipHtml({ ...wx, where: '石坳村' }).includes('石坳村 · 阴<'), true);
+  // A fog-tagged scene draws fog under a real rain (the path the data takes, whatever the kind).
+  const foggy = { ...content, chapters: { ...content.chapters, '00-prologue': { ...content.chapters['00-prologue'], scenes: { ...content.chapters['00-prologue'].scenes, '00-shiao': { ...content.chapters['00-prologue'].scenes['00-shiao'], weather: 'fog' } } } } };
+  assert.deepEqual(look(s, foggy, { now: at('2026-10-14'), quests: [], weather: RAIN }).weather, { kind: 'fog', where: '蒙山', source: 'story' });
+  assert.equal(weatherBrief({ ...s, weather_told: 'rain' }, { now: at('2026-10-14'), weather: RAIN }, 'fog').new, undefined);
+});
+
+test('a scene that names no sky shows the real one; off the scene, the real one too', () => {
+  const s = { ...startAt(at('2026-10-14')), scene: '00-dawn' };
+  assert.equal(content.chapters['00-prologue'].scenes['00-dawn'].weather, undefined);
+  assert.deepEqual(look(s, content, { now: at('2026-10-14'), quests: [], weather: RAIN }).weather, { kind: 'rain', where: '杭州', temp_c: 11, source: 'city', new: true });
+  // No scene running (out on the map): the real one.
+  assert.equal(look(open(at('2026-10-14')), content, { now: at('2026-10-14'), quests: [], weather: RAIN }).weather.source, 'city');
+  // A kind outside KINDS is no story sky.
+  assert.equal(weatherBrief(s, { now: at('2026-10-14'), weather: RAIN }, 'hail').source, 'city');
+});
+
+test('every scene\'s `weather` is one of KINDS, and the lint refuses any other', async () => {
+  const { lint } = await import('../scripts/content.mjs');
+  const tagged = Object.values(content.chapters).flatMap(c => Object.values(c.scenes)).filter(sc => sc.weather != null);
+  assert.ok(tagged.length > 20);
+  for (const sc of tagged) assert.ok(KINDS.includes(sc.weather), `${sc.id}: ${sc.weather}`);
+  for (const sc of tagged) assert.equal(typeof sc._weather, 'string', `${sc.id} quotes its phrase in _weather`);
+  const ch = content.chapters['00-prologue'];
+  const bent = { ...content, chapters: { ...content.chapters, '00-prologue': { ...ch, scenes: { ...ch.scenes, '00-shiao': { ...ch.scenes['00-shiao'], weather: 'hail' } } } } };
+  assert.ok(lint(bent).some(p => p.startsWith('scene 00-shiao: weather hail')));
+});
+
+test('the command line: Ling\'s Look over a story sky says nothing of the weather and keeps nothing told', () => {
+  const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-wx-'));
+  try {
+    const file = path.join(data, 'state.json');
+    fs.writeFileSync(file, JSON.stringify(startAt(at('2026-10-14'))));
+    const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: at('2026-10-14').toISOString(), LINGGEN_WEATHER: JSON.stringify(RAIN) };
+    const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: ROOT, env, encoding: 'utf8' }).stdout);
+    const wx = cli('look', '--said=你好', '--for=ling').weather;
+    assert.equal(wx.source, 'story');
+    assert.equal(wx.new, undefined);
+    assert.equal(JSON.parse(fs.readFileSync(file, 'utf8')).weather_told, undefined);
+  } finally {
+    fs.rmSync(data, { recursive: true, force: true });
+  }
+});
+
 test('the page: a chip with the sky, a popover to set or change the city, the 名字 card\'s row', () => {
   assert.equal(wxChipHtml(null), '');
   const chip = wxChipHtml({ kind: 'snow', where: '哈尔滨', temp_c: -18 });

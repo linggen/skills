@@ -464,8 +464,9 @@ export function look(state, content, ctx) {
     words: wordsOf(content, lang),
     // 节日 · 节气 (rules/festival.mjs): the player's real day, reckoned on the device.
     today: todayBrief(content, state, ctx, { day: ctx.day }),
-    // 天气 (rules/weather.mjs): the engine's weather sense at the player's city, else 蒙山's seasons.
-    weather: weatherBrief(state, ctx),
+    // 天气 (rules/weather.mjs): the scene's own sky where the book names one, else
+    // the engine's weather sense at the player's city, else 蒙山's seasons.
+    weather: weatherBrief(state, ctx, atScene(content, state) ? sceneOf(content, state)?.weather : null),
     ...tasksBrief(content, state, ctx),
   };
   // Before a story gate Look carries nothing it keeps shut, and `locked` names it (rules/locks.mjs).
