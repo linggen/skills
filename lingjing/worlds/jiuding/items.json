@@ -117,7 +117,7 @@
       "art": "art/items/grey-robe.webp",
       "about": {
         "zh": "沉鼎观弟子的粗布袍，入门那天发的。",
-        "en": "The coarse robe of a Chending Temple disciple, given on the day of entry."
+        "en": "The coarse robe of a Sunken Cauldron Abbey disciple, given on the day of entry."
       },
       "buy": 30,
       "sell": 8,
@@ -526,12 +526,12 @@
       "kind": "charm",
       "name": {
         "zh": "踏马符",
-        "en": "Hoof-It Charm"
+        "en": "Hell-for-Leather Charm"
       },
       "art": "art/items/talisman.webp",
       "about": {
         "zh": "银月从尾巴尖上拔下一根银毛，丢进饭桶，「本王给你开个张」——飘出来一张黄纸：朱砂画的一匹马，脑袋大，身子小，四条腿像四根筷子插在一个馒头上。你骂了一句「这踏马的，是什么符？」，符角一行米粒大的朱字答你：踏马符。底下一行更小：足下一踏，马上便走。叠成小方块，塞在腰带夹层里。只灵一回。",
-        "en": "Yinyue plucked one silver hair from the tip of her tail and dropped it into the Rice Tub — \"Let this king open shop for you\" — and out floated a slip of yellow paper: a horse in cinnabar, big head, small body, four legs like four chopsticks stuck in a steamed bun. You swore at it — \"What the hoof is this charm?\" — and a line of rice-grain cinnabar in the corner answered: Hoof-It Charm. Under it, smaller still: One stamp underfoot, and off at once. Folded small, tucked into your belt fold. Good once."
+        "en": "Yinyue plucked one silver hair from the tip of her tail and dropped it into the Rice Bucket — \"Let this queen open shop for you\" — and out floated a slip of yellow paper: a horse in cinnabar, big head, small body, four legs like four chopsticks stuck in a steamed bun. You swore at it — \"What the hoof is this charm?\" — and a line of rice-grain cinnabar in the corner answered: Hell-for-Leather Charm. Under it, smaller still: One stamp underfoot, and off at once. Folded small, tucked into your belt fold. Good once."
       },
       "sold": [],
       "effect": {
@@ -554,7 +554,7 @@
       "art": "art/items/talisman.webp",
       "about": {
         "zh": "小狰换下来的一撮红毛，喂进饭桶，吸你一口灵气，飘出一张黄纸：朱砂画一只鼻子，鼻孔朝天，两个鼻孔比鼻子还大。符脚一行小字：一缕清气，通窍。一张，一回。",
-        "en": "A pinch of the zheng's moulted red fur, fed to the Rice Tub for a mouthful of your qi: out floats a yellow slip with a nose drawn on it in cinnabar, nostrils to the sky, the nostrils bigger than the nose. Small print at its foot: A wisp of clear air, to open the passages. One slip, one go."
+        "en": "A pinch of the zheng's moulted red fur, fed to the Rice Bucket for a mouthful of your qi: out floats a yellow slip with a nose drawn on it in cinnabar, nostrils to the sky, the nostrils bigger than the nose. Small print at its foot: A wisp of clear air, to open the passages. One slip, one go."
       },
       "buy": 0,
       "sell": 0,
@@ -592,7 +592,7 @@
       "art": "art/items/jade-ring.webp",
       "about": {
         "zh": "伙房大娘扔掉的一面裂手镜，喂进饭桶，吐出来一面巴掌大的铜镜，缺一个角。谁拿起来照，照出来的都是你的脸；烛光打上去，原样弹回来。背面刻着三个字：自拍镜；底下一行小字：照人，先照己。",
-        "en": "A cracked hand-mirror the kitchen auntie threw out, fed to the Rice Tub: out came a palm-sized bronze mirror with a corner chipped off. Whoever looks into it sees your face; candlelight bounces straight off it. Carved on the back: Selfie Mirror; and a line of small print: Before it shows another, it shows you."
+        "en": "A cracked hand-mirror the kitchen auntie threw out, fed to the Rice Bucket: out came a palm-sized bronze mirror with a corner chipped off. Whoever looks into it sees your face; candlelight bounces straight off it. Carved on the back: Selfie Mirror; and a line of small print: Before it shows another, it shows you."
       },
       "buy": 0,
       "sell": 0,
@@ -993,7 +993,7 @@
       "art": "art/items/iron-sword.webp",
       "about": {
         "zh": "赤铜葫芦连七八瓣盾片，你扔进饭桶图个干净，它吸了你五口气，吐出这一口：三尺来长，剑身暗红，火纹一道也没有了，剑脊上一溜锤印，像铁匠铺学徒打坏的。最寻常的法器。剑脊近柄刻着两个字：火柴；底下一行小字：剑起火升，攻守兼备。",
-        "en": "The red-copper gourd and seven or eight shield shards, tossed into the Rice Tub just to be rid of them; it took five mouthfuls of your qi and out came this: three feet or so, the blade a dull red with not one line of the fire pattern left, a row of hammer marks down the spine like an apprentice's botched piece. The commonest kind of artifact. Cut into the spine near the hilt: Matchstick; and a line of small ones: The sword rises, the fire climbs; attack and guard in one."
+        "en": "The red-copper gourd and seven or eight shield shards, tossed into the Rice Bucket just to be rid of them; it took five mouthfuls of your qi and out came this: three feet or so, the blade a dull red with not one line of the fire pattern left, a row of hammer marks down the spine like an apprentice's botched piece. The commonest kind of artifact. Cut into the spine near the hilt: Matchstick; and a line of small ones: The sword rises, the fire climbs; attack and guard in one."
       },
       "buy": 0,
       "sell": 0,
@@ -1010,12 +1010,12 @@
       "kind": "robe",
       "name": {
         "zh": "顺风溜",
-        "en": "Tailwind Slippers"
+        "en": "Tailwind"
       },
       "art": "art/items/shunfeng-liu.webp",
       "about": {
         "zh": "一双丑鞋：灰褐色的矮靿靴子，鱼鳞的纹路一片一片还在皮面上，两只脚后跟上各开一道缝，像鱼鳃。鞋底上烙着三个字：顺风溜；底下一行米粒大的小字：「背后有风，脚下有路。」",
-        "en": "An ugly pair: grey-brown low boots, the fish-scale grain still on the leather, a slit on each heel like a gill. Burned into the sole: Tailwind Slippers; and beneath, in letters the size of rice grains: \"Wind at your back, a road at your feet.\""
+        "en": "An ugly pair: grey-brown low boots, the fish-scale grain still on the leather, a slit on each heel like a gill. Burned into the sole: Tailwind; and beneath, in letters the size of rice grains: \"Wind at your back, a road at your feet.\""
       },
       "buy": 0,
       "sell": 0,
@@ -1054,7 +1054,7 @@
       "art": "art/items/lingzhi.webp",
       "about": {
         "zh": "灵草园里拔的，根上缠着阿禾那根红线，土还是园里的土。不是你的，带回去还她。",
-        "en": "Pulled from the spirit-herb garden; A-He's red thread is still round its root, the soil still the garden's. It isn't yours: you carry it back to her."
+        "en": "Pulled from the spirit-herb garden; Ahe's red thread is still round its root, the soil still the garden's. It isn't yours: you carry it back to her."
       },
       "buy": 0,
       "sell": 0,
@@ -1092,7 +1092,7 @@
       "art": "art/items/wangqi-1.webp",
       "about": {
         "zh": "潭里那个九层身上的，石坎底下那一层画得明明白白——阿禾那张亲传的图上，那一层是空白。内门的东西，藏好。",
-        "en": "Off the ninth-layer man in the pool: the level under the stone sill drawn plain — on A-He's map, the Abbot's disciple's map, that level is blank. An inner-court thing; keep it hidden."
+        "en": "Off the ninth-layer man in the pool: the level under the stone sill drawn plain — on Ahe's map, the Abbot's disciple's map, that level is blank. An inner-court thing; keep it hidden."
       },
       "buy": 0,
       "sell": 0,
@@ -1225,7 +1225,7 @@
       "art": "art/items/xizhu.webp",
       "about": {
         "zh": "秘境十年翻一回身，吸一口气；那口气在最深处凝成珠子，指甲盖大，攥在手心里一跳一跳，像攥着一颗心。跟息壤同出一源。吞一颗，修为涨一截。",
-        "en": "Once in ten years the hidden realm turns over and draws one breath; in its deepest place that breath sets into a bead the size of a fingernail, which beats in the palm like a held heart. Of one source with the breathing soil. Swallow one, and your cultivation climbs a stretch."
+        "en": "Once in ten years the hidden realm turns over and draws one breath; in its deepest place that breath sets into a bead the size of a fingernail, which beats in the palm like a held heart. Of one source with the living soil. Swallow one, and your cultivation climbs a stretch."
       },
       "buy": 0,
       "sell": 0,

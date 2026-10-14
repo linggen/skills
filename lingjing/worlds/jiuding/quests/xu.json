@@ -265,7 +265,7 @@
       },
       "done": {
         "zh": "小狰的鼻子一抽一抽，从一堆残株里拱出八味还能用的。炉盖上的小兽睁开一只眼，又闭上了——像是在说：勉强。炉底躺着一颗聚气丹。",
-        "en": "Little Zheng's nose twitches, and from the heap of culls it roots out eight herbs still good. The little beast on the furnace lid opens one eye and closes it — as if to say: passable. At the bottom of the furnace lies a Gathering pill."
+        "en": "the little zheng's nose twitches, and from the heap of culls it roots out eight herbs still good. The little beast on the furnace lid opens one eye and closes it — as if to say: passable. At the bottom of the furnace lies a Gathering pill."
       },
       "need": [
         {
@@ -324,13 +324,13 @@
       "id": "xu-ahe-lixi",
       "title": {
         "zh": "阿禾的利息",
-        "en": "Ah He's interest"
+        "en": "Ahe's interest"
       },
       "from": {
         "place": "fangshi",
         "who": {
           "zh": "阿禾",
-          "en": "Ah He"
+          "en": "Ahe"
         },
         "person": "ahe"
       },
@@ -340,7 +340,7 @@
       },
       "done": {
         "zh": "阿禾接过萝卜，在本子上划掉一行，又写了一行，没告诉你写的什么。临走，{伴·她}塞给你一张符，墨还没干：「大比那天带着。我押你。」",
-        "en": "Ah He takes the radishes, crosses out one line in the notebook and writes another — and doesn't tell you what. Leaving, Ah He presses a talisman on you, the ink still wet: \"Bring it to the contest. I'm betting on you.\""
+        "en": "Ahe takes the radishes, crosses out one line in the notebook and writes another — and doesn't tell you what. Leaving, Ahe presses a talisman on you, the ink still wet: \"Bring it to the contest. I'm betting on you.\""
       },
       "need": [
         {
