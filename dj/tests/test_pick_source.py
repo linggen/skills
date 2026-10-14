@@ -33,12 +33,15 @@ PLAIN = {"id": 18929827, "trackName": "風裡密碼", "artistName": "郭富城",
 
 class Stubbed(unittest.TestCase):
     def setUp(self):
-        self.saved = (lm.simplified, lm.traditional, lm.lyric_sets, lm.file_seconds)
+        self.saved = (lm.simplified, lm.traditional, lm.lyric_sets, lm.file_seconds,
+                      lm._netease_get)
+        lm._netease_get = lambda path, params: None  # NetEase is offline here
         lm.simplified = lambda texts: [TO_SIMP.get(t, t) for t in texts]
         lm.traditional = lambda texts: [TO_TRAD.get(t, t) for t in texts]
 
     def tearDown(self):
-        lm.simplified, lm.traditional, lm.lyric_sets, lm.file_seconds = self.saved
+        (lm.simplified, lm.traditional, lm.lyric_sets, lm.file_seconds,
+         lm._netease_get) = self.saved
 
 
 class CanonicalTitle(Stubbed):

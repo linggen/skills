@@ -22,13 +22,18 @@
 # (2026-10-02). A set whose clock is broken — sung lines crammed under a second
 # apart, 張學友 如果·愛's first five inside two seconds at 1:09 — fits nothing.
 #
+# When LRCLIB has no timed set that fits, NetEase Cloud Music (网易云) is asked
+# once: some Cantonese catalogue sits on LRCLIB as words only (郭富城 風裡密碼:
+# seven copies, not one timing) while NetEase times it. Its best-matching song
+# goes through the same fit as any LRCLIB set, and any failure there is silent.
+#
 # When nothing timed fits, the words are still saved, without timings — the
 # recording was chosen for its sound, and every player shows words-only
 # sidecars as such.
 #
 # CLI: one JSON object (argv[1] or stdin) → one JSON line.
 #   in : {artist, title, file, version?, other_titles?}
-#   out: {ok, body, synced, duration, gap, seconds, title} — or {ok:false, error}
+#   out: {ok, body, synced, duration, gap, seconds, title, source} — or {ok:false, error}
 
 import concurrent.futures
 import json
@@ -318,6 +323,75 @@ def lyric_sets(artist, title, version="studio"):
     return kept
 
 
+# --------------------------------------------------------------------- netease
+
+NETEASE = "https://music.163.com/api"
+NETEASE_TIMEOUT = 8
+
+# NetEase opens a set with its credits, stamped like sung lines —
+# `[00:00.000] 作词 : 小美`. Only named roles followed by a colon, so a sung
+# line is never taken for one.
+_CREDIT = re.compile(
+    r"^\s*(?:\[[^\]]*\])+\s*(?:作词|作詞|作曲|编曲|編曲|制作人|製作人|监制|監製"
+    r"|制作|製作|混音|母带|母帶|录音|錄音|和声|和聲|吉他|贝斯|貝斯|鼓|键盘|鍵盤"
+    r"|弦乐|弦樂|出品|发行|發行|企划|企劃|统筹|統籌|原唱|演唱|词|詞|曲)\s*[:：]")
+
+
+def _netease_get(path, params):
+    """One NetEase API call → its JSON object, or None for anything else
+    (offline, blocked, not JSON). It wants a music.163.com Referer, no login."""
+    url = f"{NETEASE}/{path}?" + urllib.parse.urlencode(params)
+    try:
+        req = urllib.request.Request(url, headers={
+            "User-Agent": UA, "Referer": "https://music.163.com"})
+        got = json.loads(urllib.request.urlopen(req, timeout=NETEASE_TIMEOUT).read().decode())
+    except Exception:
+        return None
+    return got if isinstance(got, dict) else None
+
+
+def without_credits(body):
+    """The set with its credit lines gone."""
+    return "\n".join(l for l in str(body or "").splitlines() if not _CREDIT.match(l))
+
+
+def _netease_entry(song, simp_title, simp_artist, version):
+    """A search hit in LRCLIB's shape, or None when it is another song."""
+    name = str(song.get("name") or "")
+    who = str(((song.get("artists") or [{}])[0] or {}).get("name") or "")
+    album = str((song.get("album") or {}).get("name") or "")
+    track, who_s = simplified([name, who])
+    if simp_title and not same_title(track, simp_title):
+        return None
+    return {"id": song.get("id"), "trackName": name, "artistName": who,
+            "albumName": album, "duration": (song.get("duration") or 0) / 1000,
+            "_artist": not simp_artist or same_artist(simp_artist, who_s),
+            "_other": other_take(" ".join([name, album, *map(str, song.get("alias") or [])]), version)}
+
+
+def netease_fit(artist, title, seconds, version="studio"):
+    """The NetEase set that fits a recording `seconds` long, or None. Two
+    calls: one search, then the lyric of the one song that matches best on
+    singer, take and length — never the first hit blindly."""
+    if not seconds:
+        return None
+    simp_both, simp_title, simp_artist = simplified(
+        [f"{artist or ''} {title or ''}".strip(), str(title or ""), str(artist or "")])
+    found = _netease_get("search/get", {"s": simp_both, "type": 1, "limit": 10}) or {}
+    songs = (found.get("result") or {}).get("songs") or []
+    hits = [e for e in (_netease_entry(s, simp_title, simp_artist, version)
+                        for s in songs if isinstance(s, dict)) if e]
+    hits = [e for e in hits if abs(e["duration"] - seconds) <= FIT_SECONDS]
+    if not hits:
+        return None
+    best = min(hits, key=lambda e: _rank(e, seconds))
+    lyric = _netease_get("song/lyric", {"id": best["id"], "lv": 1}) or {}
+    best["syncedLyrics"] = without_credits((lyric.get("lrc") or {}).get("lyric"))
+    if not sung_stamps(best["syncedLyrics"]):
+        return None
+    return timed_fit([best], seconds)
+
+
 # ------------------------------------------------------------------------- fit
 
 def _rank(e, seconds):
@@ -384,12 +458,30 @@ def for_file(artist, title, path, version="studio", other_titles=()):
     ladder before the song is given up on."""
     seconds = file_seconds(path) if path else 0
     titles = list(dict.fromkeys(t for t in [title, *other_titles] if str(t or "").strip()))
+    words = None
     for name in titles or [title]:
         got = fit(lyric_sets(artist, name, version), seconds)
         if got:
-            got["seconds"] = round(seconds, 1)
-            got["title"] = name
-            return got
+            words = _found(got, seconds, name, "lrclib")
+            break
+    if words and words["synced"]:
+        return words
+    return _from_netease(artist, titles or [title], seconds, version) or words
+
+
+def _found(got, seconds, name, source):
+    return {**got, "seconds": round(seconds, 1), "title": name, "source": source}
+
+
+def _from_netease(artist, titles, seconds, version):
+    """LRCLIB had no timings that fit: NetEase's, for the first name it times."""
+    for name in titles:
+        e = netease_fit(artist, name, seconds, version)
+        if e:
+            got = {"body": line_stamps_only(e["syncedLyrics"]), "synced": True,
+                   "duration": round(e["duration"]),
+                   "gap": round(abs(e["duration"] - seconds), 1)}
+            return _found(got, seconds, name, "netease")
     return None
 
 

@@ -136,5 +136,102 @@ class BrokenClock(unittest.TestCase):
         self.assertFalse(lm.crammed(timed(230, 220, lines=40)["syncedLyrics"]))
 
 
+NE_BODY = ("[00:00.000] 作词 : 小美\n[00:01.000] 作曲 : 谭国政\n"
+           "[00:02.000] 编曲 : 谭国政\n[00:03.000] 制作人 : 小美/谭国政/郭富城\n"
+           + "\n".join(f"[{(20 + i * 5) // 60:02d}:{(20 + i * 5) % 60:02d}.600]line {i}"
+                       for i in range(36)))
+
+
+def ne_song(duration_ms, name="风里密码", artist="郭富城", id=88393):
+    return {"id": id, "name": name, "artists": [{"name": artist}],
+            "album": {"name": "风里密码"}, "duration": duration_ms, "alias": []}
+
+
+class NetEase(unittest.TestCase):
+    """NetEase is asked only when LRCLIB has no timed set that fits."""
+
+    def setUp(self):
+        self.saved = {k: getattr(lm, k) for k in
+                      ("simplified", "file_seconds", "lyric_sets", "_netease_get")}
+        lm.simplified = lambda xs: list(xs)
+        lm.file_seconds = lambda path: 221.067
+        self.lrclib = [{"id": 1, "duration": 221, "plainLyrics": "words",
+                        "_artist": True, "_other": False}]
+        lm.lyric_sets = lambda artist, title, version="studio": self.lrclib
+        self.calls = []
+        self.songs = [ne_song(240000, id=1), ne_song(221066)]
+
+        def get(path, params):
+            self.calls.append(path)
+            if path == "search/get":
+                return {"code": 200, "result": {"songs": self.songs}}
+            return {"lrc": {"lyric": NE_BODY}} if params["id"] == 88393 else {}
+        lm._netease_get = get
+
+    def tearDown(self):
+        for k, v in self.saved.items():
+            setattr(lm, k, v)
+
+    def ask(self):
+        return lm.for_file("郭富城", "风里密码", "/x.mp3")
+
+    def test_lrclib_timed_fit_never_asks_netease(self):
+        self.lrclib = [timed(221, 200)]
+        got = self.ask()
+        self.assertEqual((got["synced"], got["source"]), (True, "lrclib"))
+        self.assertEqual(self.calls, [])
+
+    def test_no_timed_fit_on_lrclib_takes_the_netease_set_of_this_length(self):
+        got = self.ask()
+        self.assertEqual((got["synced"], got["source"], got["duration"]), (True, "netease", 221))
+        self.assertEqual(self.calls, ["search/get", "song/lyric"])
+
+    def test_credit_lines_are_stripped(self):
+        body = self.ask()["body"]
+        self.assertTrue(body.startswith("[00:20.600]line 0"))
+        for word in ("作词", "作曲", "编曲", "制作人"):
+            self.assertNotIn(word, body)
+
+    def test_no_netease_song_of_this_length_keeps_the_lrclib_words(self):
+        self.songs = [ne_song(240000), ne_song(180000)]
+        got = self.ask()
+        self.assertEqual((got["body"], got["synced"], got["source"]), ("words", False, "lrclib"))
+        self.assertEqual(self.calls, ["search/get"])
+
+    def test_another_song_of_the_same_length_is_not_taken(self):
+        self.songs = [ne_song(221066, name="恋爱态度1998")]
+        self.assertFalse(self.ask()["synced"])
+
+    def test_a_set_that_runs_past_the_file_does_not_fit(self):
+        self.lrclib = []
+        lm._netease_get = lambda path, params: (
+            {"result": {"songs": [ne_song(221066)]}} if path == "search/get"
+            else {"lrc": {"lyric": "[00:20.00]a\n[03:50.00]b"}})
+        self.assertIsNone(self.ask())
+
+    def test_a_netease_failure_falls_back_to_the_words(self):
+        lm._netease_get = lambda path, params: None
+        got = self.ask()
+        self.assertEqual((got["body"], got["synced"]), ("words", False))
+
+    def test_a_real_failure_inside_the_helper_returns_none(self):
+        lm._netease_get = self.saved["_netease_get"]
+        lm.NETEASE, saved = "http://127.0.0.1:9/api", lm.NETEASE
+        try:
+            self.assertIsNone(lm._netease_get("search/get", {"s": "x"}))
+        finally:
+            lm.NETEASE = saved
+
+    def test_nothing_anywhere_is_nothing(self):
+        self.lrclib = []
+        lm._netease_get = lambda path, params: {"result": {}}
+        self.assertIsNone(self.ask())
+
+    def test_no_file_length_never_asks_netease(self):
+        lm.file_seconds = lambda path: 0
+        self.assertFalse(self.ask()["synced"])
+        self.assertEqual(self.calls, [])
+
+
 if __name__ == "__main__":
     unittest.main()
