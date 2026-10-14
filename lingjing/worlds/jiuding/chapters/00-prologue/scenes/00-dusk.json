@@ -9,11 +9,11 @@
   "en": "Shi'ao village · home · before dawn"
  },
  "setup": {
-  "zh": "立冬这天，天还没亮。娘卸下一条鹿腿，塞进一只小腌菜坛子，往你怀里一塞：「给吴婆婆送一坛腌菜去。走屋后头，趁天没亮。」",
+  "zh": "立冬这天，天还没亮。娘卸下一条鹿后腿，斩作两截，埋进腌芥菜的缸底，拿草绳把缸绑在你背上：「给吴婆婆送一缸腌菜去。走屋后头，别走井台。趁天没亮。」",
   "en": "The Start of Winter, before dawn. Your mother takes off one leg of the deer, stuffs it into a small pickle jar and pushes the jar into your arms: \"Take Granny Wu a jar of pickles. Go round the back. Before it's light.\""
  },
  "recap": {
-  "zh": "立冬天没亮，你抱着一坛「腌菜」躲过马家的家丁，给吴婆婆送去了鹿腿——她说是你爹在山涧边上答应的。然后她朝你肩上看不见的银光，慢慢低下了头。",
+  "zh": "立冬天没亮，你背着一缸「腌菜」从屋后头绕过井台，给吴婆婆送去了鹿腿——她说是你爹在山涧边上答应的。然后她朝你肩上看不见的银光，慢慢低下了头。",
   "en": "Before dawn on the Start of Winter you carried a jar of \"pickles\" past the Mas' men and brought Granny Wu the leg of venison — your father promised it, she said, by the mountain stream. Then she slowly bowed her head toward the silver on your shoulder she could not see."
  },
  "cast": [],
@@ -23,7 +23,7 @@
  "panel": {
   "caption": {
    "zh": [
-    "一只腌菜坛子，芥菜底下压着一条鹿腿。",
+    "一缸腌菜，芥菜底下埋着一条鹿腿。",
     "「鹿腿来了？你爹答应的。」",
     "她朝着那团看不见的银光，低下了头。"
    ],

@@ -9,11 +9,11 @@
   "en": "Mount Chending · The cliff top"
  },
  "setup": {
-  "zh": "你翻出院墙，冲上后山。崖边有一块大青石，比你还高。你把那股暖，一点一点引到胳膊上——一拳。",
+  "zh": "你翻出院墙，冲上后山。崖顶有一块大青石，比你还高出一头。你把那股暖，一点一点引到胳膊上——一拳。",
   "en": "You vault the wall and race up the mountain. At the cliff's edge stands a blue boulder taller than you. You draw the warmth, bit by bit, into your arm — and punch."
  },
  "recap": {
-  "zh": "你一拳在后山崖顶的大青石上崩下一块皮，然后把笑声咽了回去。下山的路上，瞿老眼皮也没抬：「涧上那块石头，滑。」",
+  "zh": "你一拳在后山崖顶的大青石上崩下一块皮，然后把笑声咽了回去。下山的路上，瞿老眼皮也没抬：「涧上那块石头，滑得很。」",
   "en": "One punch knocked a flake of skin off the great boulder on the clifftop, and you swallowed the laugh. On the way down Elder Qu didn't raise his eyelids: \"That stone in the gully's slippery.\""
  },
  "cast": [],
@@ -21,7 +21,7 @@
  "panel": {
   "caption": {
    "zh": [
-    "崖边一块大青石，比你还高。",
+    "崖顶一块大青石，比你还高出一头。",
     "一拳。「咔。」",
     "崩下一块皮，拳头没破。"
    ],

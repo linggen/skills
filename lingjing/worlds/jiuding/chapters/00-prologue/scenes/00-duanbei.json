@@ -42,7 +42,7 @@
     "en": "The words “Do not enter”"
    },
    "text": {
-    "zh": "两个字刻得极深，笔画里积满了黑泥，倒像刻字的人生怕后人看不清。",
+    "zh": "两个字刻得极深，几百年风吹雨打，笔画还是清清楚楚的，倒像刻字的人生怕后人看不清。",
     "en": "The two characters are cut very deep, their strokes packed with black mud, as if whoever carved them feared no one after would read them."
    }
   },
@@ -66,17 +66,6 @@
    "text": {
     "zh": "碑脚下的枯草有半人高，一根根朝外倒着，倒像许多年前有人扒开过，又慢慢长拢了。",
     "en": "The dead grass at the stele's foot stands half a man high and leans outward, as if someone parted it long ago and it slowly grew back."
-   }
-  },
-  {
-   "id": "rope",
-   "label": {
-    "zh": "碑上的白丝绳",
-    "en": "The white silk cord on the stele"
-   },
-   "text": {
-    "zh": "碑脚一溜小脚印，比你的还小一圈，走进林子，没有走回来；碑身系着一截白丝绳，雨淋过了，还是白的。",
-    "en": "At the stele's foot, a line of small footprints, smaller than yours, going into the trees and not coming back; round the stele, a white silk cord, still white after the rain."
    }
   }
  ],
@@ -130,7 +119,7 @@
    },
    "means": "wants to go back to the village, gives up the hunt",
    "story": {
-    "zh": "小满道：「爹，咱回吧。」他爹没回头，道：「回去，弓就没了。」顿了一顿，又道：「没了弓，冬天拿什么打肉？拿我的膝盖？」\n\n小满看了看他缠着麻布的膝盖。那膝盖今天一句话都没说。他也没再说话。",
+    "zh": "小满道：「爹，咱回吧。」他爹没回头，道：「回去，弓就没了。」顿了一顿，又道：「没了弓，冬天拿什么打肉？拿我的膝盖？」\n\n小满看了看他缠着麻布的膝盖。那膝盖早上还话多，这会儿一句话都没说。他也没再说话。",
     "en": "Xiaoman said, \"Dad, let's go home.\" His father didn't turn round. \"Go home, and the bow's gone.\" A pause. \"No bow, and what do we hunt meat with this winter? My knee?\"\n\nXiaoman looked at the hemp-bound knee. It hadn't said a word all day. He didn't say any more either."
    },
    "beat": [],

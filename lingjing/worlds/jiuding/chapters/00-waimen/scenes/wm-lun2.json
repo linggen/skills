@@ -9,11 +9,11 @@
   "en": "Chending Temple · The contest · Against Qin Yan"
  },
  "setup": {
-  "zh": "第三轮，对面是外门排头的秦雁：真灵根，六层，一口下阶的法器剑，剑气出去三尺。她在外门熬了三年，两回差一场进前四，今年再进不去，家里就熬不住了：「我不让你。你也别让我。」",
+  "zh": "第三轮，对面是内门的秦雁：八层，真灵根，使剑，一口下阶的法器，人在一丈开外，剑气已到了跟前。前两回大比，两回打进前四，两回都输在祁长松手上；她八层卡了两年，要那颗筑基丹筑基：「我不让你。你也别让我。」",
   "en": "Round three, and across from you is Qin Yan, first on the outer register: true root, layer six, a low-tier magic sword whose breath reaches three feet past the point. Three years in the outer court, twice one bout short of the last four; if she misses this year, her family can't hold out. \"I won't give way to you. Don't you give way to me.\""
  },
  "recap": {
-  "zh": "第三轮你对秦雁：她的剑，她的冰锥，你土墙挡冰，火打脚。三十招上她把你逼到台边，袖子里的雷符始终没掏——剑尖往前一送，你拿左臂接了，一把攥住她的剑鞘，两个人一齐往外一歪，她先落了地。",
+  "zh": "第三轮你对秦雁：她的剑，她的冰锥，你土墙挡冰，火打脚；二十招里，你一步一步往西北角那摊红油上挪。三十招上她把你逼到台边，袖子里的雷符始终没掏——剑尖往前一送，你迎了上去，剑上的青气从肘弯犁到肩头；你一把攥住她的剑鞘。她那一掌收了三分，你脚下一勾，她的脚跟踩在油上，溜出了台沿。",
   "en": "In round three you fought Qin Yan: against her sword and her ice spikes you raised earth to stop the ice and threw fire at her feet. At the thirtieth move she drove you to the edge, the thunder talisman in her sleeve never drawn — when the point came forward you took it through your left arm, seized her scabbard, and the two of you tipped out together; she landed first."
  },
  "cast": [],
@@ -26,7 +26,7 @@
  "panel": {
   "caption": {
    "zh": [
-    "外门排头：秦雁，六层。",
+    "内门第二：秦雁，八层。",
     "「我不让你。你也别让我。」",
     "你只看她的脚。"
    ],
@@ -52,7 +52,7 @@
     "zh": "看她的脚，撑过三十招",
     "en": "Watch her feet; last thirty moves"
    },
-   "means": "fights Qin Yan, outlasting her moves; at the edge takes her thrust through his left arm, seizes her scabbard, and she lands off the stage first",
+   "means": "fights Qin Yan, outlasting her moves while edging toward the spilt tallow; at the edge steps into her thrust — its edge-light ploughs his left arm open — seizes her scabbard, hooks her back foot as she pulls her palm, and her heel slides on the oil off the stage",
    "game": {
     "id": "dabi-shijie",
     "kind": "duel",

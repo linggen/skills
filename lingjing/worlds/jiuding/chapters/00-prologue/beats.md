@@ -16,12 +16,12 @@ structure.md, approved 2026-09-28) are history now.
 
 Book 回 per scene: h01 = 00-shiao … 00-yinyue (古一), h02 = 00-cliff … 00-xiuxian
 (古二 — 吴婆婆 at 立冬's dawn before 马三, her 鼎湖 tale at dusk after he is gone (2.2a, 2026-10-02: moved off the eve of the bow) opening 00-xiuxian; 00-xiuxian's `on` carries her leaving and the 谢谢; 锁儿 and his scene `00-suoer` went 2026-10-03, Hanli: 「锁儿的部分删了吧，本来的第一章挺好。前两章不用死人。」 — a save on `00-suoer` goes on to `00-fox` (chapter.json `aliases`)), and since 2026-10-02 (old 古三 folded into 古二; h03 is an absorbed id) also 00-sleep (the 洗髓), 00-halfyear (the scroll, 冬月廿二's man in white, the mirror at the woodpile), 00-uncle, 00-notice (舅舅,
-the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 00-waimen (古三; 00-waimen's passage is the book's tail — 舅舅, then the long bunk up to 孙二狗's 「你交不交？」; 00-mijing plays his notebook and the 公中 notice; 阿禾's diary moved to 古五's opening, 2026-10-02), h05 = 00-mijing (the 九月初十 refectory morning that opens 古五; the 周衡 scene moved there 2026-09-30).
+the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 00-waimen (古三; 00-waimen's passage is the book's tail — 舅舅, then the long bunk up to 孙二狗's 「你交不交？」; 00-mijing plays his notebook and the 公中 notice; 阿禾's diary moved to 古五's opening, 2026-10-02); the 九月初十 refectory morning that opens 古五 and the 周衡 scene (moved there 2026-09-30) play in the 外门 chapter (00-waimen) now, not the prologue).
 
 | Scene | Source | Choices → mechanics |
 |---|---|---|
-| `00-shiao` 石坳村 | 一 | one plain exit `begin` (the hero is fixed, 2026-09-30) |
-| `00-masan` 马三 | 一 | 垂眼 (`kept-count`) · 攥拳 (体力 −5): both write 恩仇簿 仇 马小宝, 马三 — task 2 |
+| `00-shiao` 石坳村 | 一 | one plain exit `begin` (the hero is fixed, 2026-09-30); the morning plays 阿禾 guarding her cabbage and the 东坡 woodcutting, so 00-masan's flattened cabbage and the 「磨盘」 land |
+| `00-masan` 马三 | 一 | 原样说回去 (`kept-count`; the night's 洛书口诀 plays here, 二试's callback) · 攥拳 (体力 −5): both write 恩仇簿 仇 马小宝, 马三 — task 2 |
 | `00-dawn` 鸡蛋 | 一 | 收下 → 恩 {伴} (task 3) · 推回去 (`no-egg`) |
 | `00-kitchen` 灶间 | 一 | 跟爹进山 → 狐纹木牌 (task 4) |
 | `00-chushan` 前山 | 二 | 爬树眺望 → the map card (task 5); at noon a second tree: a deer lifts its head at 黑松岭's edge, and they track it to the 断碑 (no 马家 dogs since 2026-10-03, Hanli: 「可以写他们看见远处的鹿在黑松岭里面，追进去的」) |
@@ -34,7 +34,7 @@ the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 
 | `00-yinyue` 天亮 | 九 | 带她出谷 → she joins (`joins`, task 13) |
 | `00-cliff` 出谷 | 十 | 抓住爹的手 (体力 −3) → 恩 老周 (task 14) |
 | `00-deer` 那头鹿 | 十一 | **board `deer-wind`** (射鹿: hold to draw, loose in the still wind) gates 往左偏半寸 → 鹿皮, she faints (`sleeps`); 照直射 stay (task 15) |
-| `00-dusk` 村东头 | 十二 | 立冬天没亮，腌菜坛子里的鹿腿送到吴婆婆家，她朝银光低头（鼎湖挪到马三走后的 00-xiuxian 开头）: 去村东头 (`wupo-bowed`, task 17) · 守着它 |
+| `00-dusk` 村东头 | 十二 | 立冬天没亮，腌芥菜缸底的鹿腿（背在背上，走屋后头，不走井台）送到吴婆婆家，她朝银光低头（鼎湖挪到马三走后的 00-xiuxian 开头）: 去村东头 (`wupo-bowed`, task 17) · 守着它 |
 | `00-rent` 交租 | 十二 | 马三摘弓 · 「下水呢」: 装傻 · 说实话 (`told-ma`) — the 鹿皮 paid (task 16); both wake her |
 | `00-xiuxian` 什么是修仙 | 十三 | 日头偏西 吴婆婆讲鼎湖 · 乌号; 什么是修仙; 让它睡 → next night she leaves into the token (sleeps), the 谢谢 (task 18) |
 | `00-sleep` 洗髓 | 十四 | **board `xisui-hold`** (洗髓: three sticks held through the waves) gates 泡进去 (体力 −6) → 《吐纳经》 (tasks 19–20); 爬出来 stay |
@@ -46,7 +46,7 @@ the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 
 | `00-longzhi` 三试 | 十八 | 蠪侄, a trial fight (`retry`), its first sight plays; the token's one word (task 28) |
 | `00-hall` 入门 | 十九 | the 生辰 card → roots; 灰袍 + 3 灵石 (task 29) |
 | `00-waimen` 公中 | 十九 | 交 (−1 灵石, 仇 马小宝) · 不交 (task 30) — after 马师兄's notice |
-| `00-mijing` 饭堂 | 古五 | 周衡's 腰牌, the unchipped bowl; ends the prologue (id kept from the old 秘境告示 scene) |
+| `00-mijing` 告示栏 | 十九 | the first night on the bunk: his notebook (石蛋。小豆。太华。), the token's one word, and the 公中 notice signed 马师兄; ends the prologue (id kept from the old 秘境告示 scene) |
 
 Narrative only for now: 「风」 as a bow art, 体魄 / 体力上限 from the bath, 「韧」,
 舅舅's stipend and his thread, 马家 raising trouble in chapter 1 (`told-ma`,

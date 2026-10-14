@@ -9,11 +9,11 @@
   "en": "The hidden realm · Below the drop"
  },
  "setup": {
-  "zh": "别人都往右，你往左，往下。崖底是一面光秃秃的石墙——墙后头，有风。墙脚下一汪滴水积成的浅潭，潭里趴着一只白身赤首、像龟的东西：蛫。它把那面墙护得严严实实。",
+  "zh": "七八个口子，人都往人多的里头挤；你挑了没人要的那一个——石头上刻着「凶」字的石缝。崖下一道窄窄的石台，一面光秃秃的石墙——墙后头，有风。墙脚一汪半干的水潭，潭边卧着一块碾盘大的黑石头：白身赤首、像龟的蛫。内门那个九层劈了它一剑，叫它拖进了潭里。",
   "en": "Everyone goes right; you go left, and down. At the foot of the cliff, a bare stone wall — and behind it, wind. At the wall's foot, a shallow pool of gathered drips, and in it a white-bodied, red-headed thing like a turtle: a gui. It guards the wall close."
  },
  "recap": {
-  "zh": "秘境里，银月领着你往左、往下。墙前守着一只蛫；你没打它，没撬它，把三天的水倒给了它。它喝够了，爬回墙脚趴了不知多少年的那个窝——它就是门闩。墙，开了。",
+  "zh": "秘境里，你挑了没人要的凶崖。墙脚卧着一只蛫，渴得快死了。你把三天的水全倒进墙脚那个浅窝，檐上拿背绳吊了一块石头，底下绑着剑。它挪进窝里，墙里「轰隆隆」一响——它就是门闩；剑扎进它壳沿的裂纹，它咬穿了你的左小臂，你压着剑柄，一寸一寸。墙，开了。",
   "en": "In the hidden realm Yinyue led you left and down. A gui guarded the wall; you didn't strike it or pry it — you poured it your three days' water. When it had drunk its fill it crawled back into the hollow at the wall's foot where it had lain for who knows how many years — it was the latch. The wall opened."
  },
  "cast": [],
@@ -22,7 +22,7 @@
   "caption": {
    "zh": [
     "「……这地方。本王来过。」",
-    "往左。往下。潭里，一只白身赤首的蛫。",
+    "凶崖底下。潭边，一只白身赤首的蛫。",
     "那面墙后头，有风。"
    ],
    "en": [
@@ -36,11 +36,11 @@
   {
    "id": "latch",
    "label": {
-    "zh": "墙脚那块凉石头",
+    "zh": "墙脚的浅窝",
     "en": "The cold stone at the wall's foot"
    },
    "text": {
-    "zh": "巴掌大一块石头，比旁边的都凉，凉得发麻，四边一道极细的缝，按下去纹丝不动。跟前的地上，磨出一个椭圆的浅窝，溜光溜光。",
+    "zh": "墙脚的地上，凿着一个极大的浅窝，凿得溜光，窝底积着一层干泥：椭圆的，一头尖，四边各一个小凹——跟那口铁锅一般大小。",
     "en": "A stone the size of a palm, colder than those around it, cold enough to numb, a hairline seam round it; pressed, it doesn't stir. On the ground before it, a shallow oval hollow worn smooth as glass."
    }
   },
@@ -51,7 +51,7 @@
     "en": "The water marks round the pool"
    },
    "text": {
-    "zh": "潭边的石头上，一圈一圈，全是水印子：齐膝，齐小腿，齐脚踝。最底下那汪水，如今只剩一巴掌深。",
+    "zh": "潭边的石头上，一圈一圈，全是水印子，最高的一圈齐它的壳顶。如今那汪水，只剩一巴掌深。",
     "en": "The rock round the pool is ringed with water marks: knee-high, shin-high, ankle-high. What is left at the bottom is a hand's depth."
    }
   },
@@ -94,10 +94,10 @@
   {
    "id": "open",
    "label": {
-    "zh": "把水倒给它",
+    "zh": "把水倒进浅窝",
     "en": "Pour it your water"
    },
-   "means": "turns the gui over, then pours it his three days' water; it crawls into its hollow at the wall's foot — it is the latch — and the wall opens",
+   "means": "pours his three days' water into the hollow at the wall's foot, under a stone with the dead man's sword tied point-down on the ledge above; the gui crawls in — it is the latch — the wall rumbles open, and the sword drives into its cracked shell while it bites his arm",
    "grant": {
     "table": "scene",
     "item": "tama-fu"
