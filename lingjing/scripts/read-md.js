@@ -130,6 +130,8 @@ const CLASSIC = /《([^》\n]+)》\{典=([\w-]+)\}/g;
 // `[words]{典=id}` — a thing the classic tells of (河伯), linked to that classic's entry
 // without naming the book in a speaker's mouth (his, 2026-09-29).
 const CLASSIC_WORDS = /\[([^\]\n]+)\]\{典=([\w-]+)\}/g;
+// The English book's titles: `*Title*{典=id}`, cited like 《书名》{典=id}, the title in italics.
+const CLASSIC_ITALIC = /\*([^*\n]+)\*\{典=([\w-]+)\}/g;
 const entryOf = (codex, id) => (codex instanceof Map ? codex.get(id) : Object.hasOwn(codex ?? {}, id) ? codex[id] : null) ?? null;
 // A gloss whose entry is missing reads as its words, nothing more; a classic
 // with no entry (or no `cite`) reads as its 《书名》. A subject links to its card
@@ -147,7 +149,9 @@ const inline = (t, codex, cite, near = () => false) => esc(t)
   })
   .replace(CLASSIC_WORDS, (_, words, id) => cite?.(id, words, true) ?? words)
   .replace(CLASSIC, (_, words, id) => cite?.(id, words) ?? `《${words}》`)
-  .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+  .replace(CLASSIC_ITALIC, (_, words, id) => cite?.(id, `<i>${words}</i>`, true) ?? `<i>${words}</i>`)
+  .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+  .replace(/\*([^*\n]+)\*/g, '<i>$1</i>');
 const glossIds = (lines, codex) => [...new Set(lines.flatMap((l) => [...esc(l).matchAll(GLOSS)].map((m) => m[2])))].filter((id) => entryOf(codex, id));
 /// How many blocks after its card a mention still stands by it (the card's own paragraph is 0).
 export const NEAR = 2;
