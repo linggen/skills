@@ -1181,6 +1181,9 @@ body.fighting .atmos { display: none; }
 .dlgacts .looks { justify-content: center; margin: 8px 0 0; }
 .dlgacts .paneltap { min-height: 40px; }
 .dlgall .dlglogrow { font-size: 16px; }
+/* 显示全文 scrolls inside a box that leaves the upper stage free: what comes up with the last
+   beat (a thing's first card, a new face) stands there, not hidden behind the passage. */
+.dlgwrap:has(.dlg.all) { max-height: min(calc(100% - 34px), max(58%, 220px)); }
 .dlgface { flex: none; width: 88px; height: min(110px, 100%); object-fit: cover; object-position: top; border-radius: 6px; border: 1px solid var(--line); background: var(--raised); animation: dlgIn .25s ease-out; }
 .dlgbody { flex: 1; min-width: 0; align-self: stretch; max-height: 100%; padding-bottom: 4px; overflow-y: auto; scrollbar-width: thin; overscroll-behavior: contain; }
 /* 名牌 (Hanli, 2026-10-05): the speaker's name hangs on the box's top-left edge, as a
