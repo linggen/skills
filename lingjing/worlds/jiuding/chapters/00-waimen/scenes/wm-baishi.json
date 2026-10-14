@@ -10,7 +10,7 @@
  },
  "setup": {
   "zh": "腊月十一，大比后的第三天，你挑水路过山门。瞿老在山门台阶上扫地，扫帚忽然停了：「把桶放下。」",
-  "en": "The eleventh of the twelfth month, three days after the contest, you carry water past the gate. Elder Qu is sweeping the gate stair; the broom stops: \"Put it down.\""
+  "en": "The eleventh of the twelfth month, three days after the contest, you carry water past the mountain gate. Elder Qu is sweeping the gate steps; the broom suddenly stops: \"Put the buckets down.\""
  },
  "recap": {
   "zh": "大比后的第三天，扫了五十年台阶的瞿老，把扫帚一停：「放下。跟我来。」",
@@ -36,7 +36,7 @@
  },
  "story": {
   "zh": "大比过后的第三天，腊月十一，小满挑水路过山门，瞿老正在山门台阶上扫地，扫帚忽然停了：「把桶放下。」",
-  "en": "On the eleventh of the twelfth month, the third day after the contest, Xiaoman was carrying water past the gate; Elder Qu was sweeping the gate stair, and his broom suddenly stopped: \"Put the bucket down.\""
+  "en": "On the third day after the contest, the eleventh of the twelfth month, Xiaoman was carrying water past the mountain gate. Elder Qu was sweeping the steps of the mountain gate, and his broom suddenly stopped: \"Put the buckets down.\""
  },
  "lines": [],
  "buttons": [
@@ -52,7 +52,7 @@
    "means": "sets down the water and follows Elder Qu",
    "story": {
     "zh": "小满把水桶放下。瞿老道：「跟我来。」扛起扫帚便往后山走。山路越走越窄，窄得只容得下一只脚，小满跟在后头，气也不粗。瞿老头也不回：「四层了。腿倒比上回稳。」",
-    "en": "Xiaoman put the buckets down. \"Come with me,\" said Elder Qu, shouldered his broom and set off for the back mountain. The path grew narrower and narrower till there was room for only one foot; Xiaoman followed without breathing hard. Elder Qu didn't turn: \"Layer four now. Your legs are steadier than last time.\""
+    "en": "Xiaoman put the buckets down. Elder Qu said: \"Come with me.\" He shouldered his broom and set off up the back of the mountain. The path got narrower and narrower, until there was room for only one foot, and Xiaoman, following behind, didn't even breathe hard. Elder Qu didn't look back: \"Fourth layer now. Your legs are steadier than last time.\""
    },
    "beat": [],
    "next": "wm-caowu"
