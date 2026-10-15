@@ -22,7 +22,7 @@ import { banner, ghostsOf, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
 import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, skipButton } from './cards.js';
-import { stuckNow } from './stuck.js';
+import { slotNext } from './stuck.js';
 import { pouchHtml } from './pouch.js';
 import { fantongHtml, wireFantongDrag } from './fantong-free.js';
 import { esc } from './esc.js';
@@ -2794,11 +2794,12 @@ async function onSkip(g) {
 }
 /* The skip's slot fills itself the moment he is stuck — the clock, or the game saying so — without
    a repaint of the page: a live game's own repaints never touch it (it is outside [data-game]). */
+/* …and empties itself once the board is won or left (stuck.js slotNext). */
 function openStuckSlots() {
   for (const slot of document.querySelectorAll('[data-skip-slot]')) {
-    if (slot.firstElementChild) continue;
-    const g = boards.get(slot.dataset.skipSlot);
-    if (stuckNow(g, Date.now())) slot.innerHTML = skipButton(slot.dataset.skipSlot, lang());
+    const next = slotNext(boards.get(slot.dataset.skipSlot), Date.now(), Boolean(slot.firstElementChild));
+    if (next === 'fill') slot.innerHTML = skipButton(slot.dataset.skipSlot, lang());
+    else if (next === 'clear') slot.innerHTML = '';
   }
 }
 setInterval(openStuckSlots, 1000);
@@ -3059,7 +3060,7 @@ const CLICKS = [
 ];
 // A game that runs in time (a module with `tick`: 暴雨, 射鹿, 洗髓, 小周天) is
 // stepped and held here; its win goes the way a tapped win does.
-wireLiveGames({ boardFor, lang, paused: () => view.logOpen, onWon: (g) => { g.sent = true; run(`win:${g.taskId}`, () => onWin(g.taskId)); } });
+wireLiveGames({ boardFor, lang, paused: () => view.logOpen, onWon: (g) => { g.sent = true; openStuckSlots(); run(`win:${g.taskId}`, () => onWin(g.taskId)); } });
 document.addEventListener('click', (e) => {
   // The 回's title card goes on a tap anywhere, and the tap does nothing else (2026-10-14).
   if (titleAway()) return;

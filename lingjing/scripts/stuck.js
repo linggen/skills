@@ -28,3 +28,10 @@ export function stuckNow(g, now) {
   }
 }
 
+/** What the skip's slot should do now, its button shown or not: fill it once stuck; clear it once the
+    board is won, left or gone (live, 2026-10-15: 「算了，往下走」 stood on under the won 最后一罚 —
+    the slot was only ever filled, and a live game's win repaints only its own host). */
+export function slotNext(g, now, shown) {
+  if (shown) return !g || g.state?.won || g.skipped ? 'clear' : null;
+  return stuckNow(g, now) ? 'fill' : null;
+}

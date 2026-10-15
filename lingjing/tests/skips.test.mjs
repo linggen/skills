@@ -14,7 +14,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { look, resolve, task, win, pageOnly } from '../scripts/rules.mjs';
 import { dayKey } from '../scripts/state.mjs';
 import { stageCards, stageSlots, CARD_KINDS } from '../scripts/stage.mjs';
-import { STUCK_MS, stampShown, stuckNow } from '../scripts/stuck.js';
+import { STUCK_MS, slotNext, stampShown, stuckNow } from '../scripts/stuck.js';
 import { crawlRules } from './crawl.mjs';
 
 const content = loadContent();
@@ -203,4 +203,18 @@ test('one rule for every board: no game draws a skip of its own; the page lays i
   // A board chosen again puts the box away, so it stands (live at j07-guan: the box held 数晨脉 › over it).
   assert.match(page.slice(page.indexOf('function choicesInBox'), page.indexOf('function dialogBoxHtml')), /!replayUp\(look\)/);
   assert.match(page.slice(page.indexOf('function inQueue'), page.indexOf('function inQueue') + 900), /task\.replay/, 'and it queues on the stage');
+});
+
+// Live 2026-10-15: 「算了，往下走」 stood on under the won 最后一罚 — the slot was only filled, never emptied.
+test('the skip slot empties once its board is won or left, and fills only when stuck', () => {
+  const mod = { meta: {}, stuck: () => false };
+  const g = { mod, state: { won: false }, shownAt: 0 };
+  assert.equal(slotNext(g, 1000, false), null, 'not at the start');
+  assert.equal(slotNext(g, STUCK_MS + 1, false), 'fill', 'stuck: filled');
+  assert.equal(slotNext(g, STUCK_MS + 1, true), null, 'shown and still unwon: kept');
+  g.state = { won: true };
+  assert.equal(slotNext(g, STUCK_MS + 2, true), 'clear', 'won: cleared');
+  assert.equal(slotNext(g, STUCK_MS + 2, false), null, 'won: never filled again');
+  assert.equal(slotNext({ ...g, state: { won: false }, skipped: true }, STUCK_MS + 2, true), 'clear', 'left: cleared');
+  assert.equal(slotNext(undefined, 0, true), 'clear', 'gone: cleared');
 });
