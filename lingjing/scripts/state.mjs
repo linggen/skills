@@ -157,6 +157,8 @@ function brightest(content, state, lang) {
 
 export function fill(text, state, content = null) {
   if (text == null) return text;
+  // Nothing to fill — most of the book's lines: handed back as it is (the words below cost a Look dearly).
+  if (typeof text === 'string' && !text.includes('{')) return text;
   if (!content) return text.replaceAll('{name}', state?.name ?? '');
   const bare = text.replace(/\{[^}]*\}/g, ''), lang = /\p{Script=Han}/u.test(bare) ? 'zh' : /[A-Za-z]{2,}/.test(bare) ? 'en' : state?.lang ?? 'zh';
   // The world's hero by the text's language (沈小满 · Shen Xiaoman); the save's name in a world that fixes none.

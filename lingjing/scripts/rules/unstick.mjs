@@ -10,9 +10,10 @@
 // call is refused `not-confirmed` with the `ask`; its first option tapped, Unstick
 // runs) — and the save before it is logged like any move, so Undo takes it back.
 // The page never calls it.
-import { dayKey, periodKey, pick } from '../state.mjs';
+import { dayKey, pick } from '../state.mjs';
 import { clone } from './core.mjs';
 import { health } from './health.mjs';
+import { skipBoard as leaveBoard } from './skips.mjs';
 import { placeName, placeOf, sceneOf } from './world.mjs';
 
 /* The repairs Unstick applies now: every error's repair, then — when no error
@@ -49,19 +50,14 @@ const APPLY = {
   'drop-owed': (s, r) => { s.tell_owed = (s.tell_owed ?? []).filter(k => k !== r.key); return true; },
 };
 
-/* The page's 「算了，往下走」 as the rules keep it: the board ends with no grade (so no
-   mark) and — unlike a win handed in — no reward: no 修为, no 灵石, no thing, and no
-   errand counts it. The rest of the scene's passage after its first board is owed, as
-   a board counted owes it (tasks.mjs taskDone). */
+/* The page's 「算了，往下走」, the one rule (rules/skips.mjs): the board stands done and
+   skipped — no grant, no grade, no mark, no errand counted; its passage owed as after a win;
+   offered again by itself on a later day. Applied to the copy in hand. */
 export function skipBoard(s, content, id, now) {
-  const t = content.tasks.tasks.find(x => x.id === id);
-  if (!t || s.tasks?.[id]?.status === 'done') return false;
-  if (s.wins) delete s.wins[id];
-  if (s.grades) delete s.grades[id];
-  s.tasks = { ...s.tasks, [id]: { status: 'done', period: periodKey(t.period, now), done_at: now.toISOString(), skipped: true } };
-  const here = sceneOf(content, s);
-  const first = (here?.show ?? []).filter(c => c.card === 'board').map(c => c.id)[0];
-  if (here?.story_after && first === id) s.tell_owed = [...(s.tell_owed ?? []), `after/${here.id}`];
+  const r = leaveBoard(s, content, { now, quests: [] }, id);
+  if (!r.state) return false;
+  for (const k of Object.keys(s)) delete s[k];
+  Object.assign(s, r.state);
   return true;
 }
 

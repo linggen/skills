@@ -27,7 +27,23 @@ const metNow = (content, id, now) => { const c = creatureOf(content, id); return
 /* ── Places: the province as a map ── */
 
 const allPlaces = content => Object.values(content.places).flatMap(doc => doc.places.map(p => ({ ...p, province: doc.province })));
-const placeOf = (content, id) => allPlaces(content).find(p => p.id === id) ?? null;
+/* placeOf is on every Look's path many times over (tools/explore.mjs, 2026-10-15: 40% of a
+   卷一 walk): an index by id, rebuilt whenever a province's list is not the one indexed.
+   Each call still hands back a fresh copy, read from the place as it is now. */
+const PLACE_INDEX = new WeakMap();
+const placeIndex = content => {
+  const docs = Object.values(content.places ?? {});
+  const was = PLACE_INDEX.get(content);
+  if (was && was.docs.length === docs.length && docs.every((d, i) => was.docs[i] === d && was.lists[i] === d.places && was.sizes[i] === d.places.length)) return was.by;
+  const by = new Map();
+  for (const doc of docs) for (const p of doc.places) if (!by.has(p.id)) by.set(p.id, [doc, p]);
+  PLACE_INDEX.set(content, { docs, lists: docs.map(d => d.places), sizes: docs.map(d => d.places.length), by });
+  return by;
+};
+const placeOf = (content, id) => {
+  const hit = placeIndex(content).get(id);
+  return hit && hit[0].places.includes(hit[1]) ? { ...hit[1], province: hit[0].province } : (allPlaces(content).find(p => p.id === id) ?? null);
+};
 const tierIndex = (content, state) => content.ladder.tiers.findIndex(t => t.id === state.tier);
 
 /* 卷 — what is built (his, 2026-10-05: 游戏只到卷一，不要有后面各卷的内容、怪、物品).

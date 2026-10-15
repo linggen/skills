@@ -114,7 +114,7 @@ function blockOf(content, state, scene, exit, lk) {
   if (n.task) {
     const t = state.tasks?.[n.task];
     if (t?.status === 'done') {
-      if (n.grade && ![n.grade].flat().includes(state.grades?.[n.task])) return { text: `${n.task} done with another grade` };
+      if (n.grade && !t.skipped && state.grades?.[n.task] != null && ![n.grade].flat().includes(state.grades[n.task])) return { text: `${n.task} done with another grade` };
     } else if (!boardsOf(scene).includes(n.task) && !content.tasks.tasks.some(x => x.id === n.task && x.hosted)) {
       return { text: `board ${n.task} is offered nowhere here`, board: n.task };
     }
