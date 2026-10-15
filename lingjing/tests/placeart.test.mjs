@@ -53,3 +53,31 @@ test('the stage: a festival over the place, the place over the 节气 and the we
   assert.deepEqual(stagePick({ scene: { line: 'jin' }, place: { backdrop: jin.src }, table: tb }), { tier: 'place', art: 'a/stacks.webp' });
   assert.deepEqual(stagePick({ scene: { line: 'jin' }, place: {}, table: tb }), { tier: null, art: null });
 });
+
+test('卷一: every scene stands at a painted place, and every painting is on disk', async () => {
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  const world = new URL('../worlds/jiuding/', import.meta.url).pathname;
+  const tb = JSON.parse(fs.readFileSync(path.join(world, 'backdrops.json'), 'utf8'));
+  for (const [id, e] of Object.entries(tb.places)) {
+    assert.ok(e.day || e.night, id);
+    for (const f of [e.day, e.night].filter(Boolean)) assert.ok(fs.existsSync(path.join(world, f)), `${id}: ${f}`);
+    assert.equal(typeof e.indoor, 'boolean', `${id} says whether it is a room`);
+  }
+  const chapters = ['00-prologue', '00-waimen', '00-zhuji'];
+  let n = 0;
+  for (const ch of chapters) for (const f of fs.readdirSync(path.join(world, 'chapters', ch, 'scenes'))) {
+    const s = JSON.parse(fs.readFileSync(path.join(world, 'chapters', ch, 'scenes', f), 'utf8'));
+    const got = placeArtOf(tb, { at: s.at ?? null, name: s.place?.zh ?? '', scape: s.scape ?? null });
+    assert.ok(got, `${ch}/${f} (${s.place?.zh}) has a painting`);
+    n++;
+  }
+  assert.ok(n > 60);
+  // a few spots, by their names
+  const at = (a, name) => placeArtOf(tb, { at: a, name }).id;
+  assert.equal(at('shiao', '石坳村 · 灶间'), 'shiao-zaojian');
+  assert.equal(at('chaifang', '沉鼎观 · 柴房后面 · 泥地里'), 'chaifang-back');
+  assert.equal(at('zhengdian', '沉鼎观 · 大比 · 对秦雁'), 'yanwu');
+  assert.equal(at('shimen', '沉鼎秘境 · 石室'), 'mijing-shishi');
+  assert.equal(placeArtOf(tb, { scape: 'dark' }, true).night, true, '古籍部 at night is the night painting');
+});

@@ -22,8 +22,42 @@ FLUX.2 klein 4B through mflux (paint-backdrop.py's recipe; HF_HOME ~/.linggen/mo
 offline, nothing downloaded), English prompt only. Each render waits until no other
 mlx_picture.py is running (another painter may share the machine). Output 1536×1024, webp q84.
 """
-# The kept picks, once Hanli picks: '<place>': {'seed': N, 'round': 'r1'} → worlds/jiuding/art/places/<place>.webp
-KEPT = {}
+# The kept picks (2026-10-15, round r1 of seeds 11 and 23; picked by the builder's coordinator for Hanli, who
+# delegated it): '<place>': seed → worlds/jiuding/art/places/<place>.webp; `night` → <place>-night.webp, the same seed
+# with the NIGHT line (--night), which keeps the day picture's composition.
+KEPT = {
+    'shiao': {'seed': 11, 'round': 'r1'},
+    'shiao-home': {'seed': 11, 'round': 'r1', 'night': True},
+    'shiao-zaojian': {'seed': 11, 'round': 'r1'},
+    'shiao-chaiduo': {'seed': 11, 'round': 'r1', 'night': True},
+    'mengshan': {'seed': 11, 'round': 'r1'},
+    'heisong': {'seed': 11, 'round': 'r1'},
+    'duanbei': {'seed': 23, 'round': 'r1'},
+    'heisong-creek': {'seed': 11, 'round': 'r1'},
+    'heisong-cliff': {'seed': 23, 'round': 'r1'},
+    'yingu': {'seed': 23, 'round': 'r1'},
+    'yingu-cave': {'seed': 23, 'round': 'r1', 'night': True},
+    'shanmen': {'seed': 11, 'round': 'r1'},
+    'songlin': {'seed': 11, 'round': 'r1'},
+    'houshan': {'seed': 11, 'round': 'r1'},
+    'sishui-shimen': {'seed': 11, 'round': 'r1'},
+    'yanwu': {'seed': 11, 'round': 'r1'},
+    'yaoyuan': {'seed': 11, 'round': 'r1', 'night': True},
+    'zhengdian': {'seed': 11, 'round': 'r1'},
+    'jiangtang': {'seed': 11, 'round': 'r1'},
+    'chaifang': {'seed': 11, 'round': 'r1', 'night': True},
+    'chaifang-back': {'seed': 11, 'round': 'r1'},
+    'waimen': {'seed': 11, 'round': 'r1'},
+    'waimen-dorm': {'seed': 23, 'round': 'r1', 'night': True},
+    'mijing-shishi': {'seed': 11, 'round': 'r1'},
+    'mijing-cliff': {'seed': 11, 'round': 'r1'},
+    'jin-track': {'seed': 23, 'round': 'r1'},
+    'jin-court': {'seed': 11, 'round': 'r1'},
+    'jin-gym': {'seed': 11, 'round': 'r1'},
+    'jin-stacks': {'seed': 11, 'round': 'r1', 'night': True},
+    'jin-ward': {'seed': 11, 'round': 'r1'},
+    'jin-night': {'seed': 11, 'round': 'r1', 'night': True},
+}
 
 import argparse, json, os, subprocess, time
 from pathlib import Path

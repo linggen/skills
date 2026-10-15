@@ -53,5 +53,232 @@
   "xiaohan": "art/jieqi/xiaohan.webp",
   "dahan": "art/jieqi/dahan.webp"
  },
- "_terms": "The 节气's pictures (atmos.js stageArt, tier `term`): from a 节气's day until the next, the stage's picture for an outdoor scene at a place with no painting of its own. Painted 2026-10-15 by tools/paint-jieqi.py (its KEPT table holds each slot's seed)."
+ "_terms": "The 节气's pictures (atmos.js stageArt, tier `term`): from a 节气's day until the next, the stage's picture for an outdoor scene at a place with no painting of its own. Painted 2026-10-15 by tools/paint-jieqi.py (its KEPT table holds each slot's seed).",
+ "_places": "One painting per location (Hanli, 2026-10-15: 「go indoors images」; scripts/placeart.js): `at` the place id (a 今线 scene by its `scape`), `match` the tokens of a spot within it (the scene's zh place name; the longest wins), `indoor` a room (no rain, snow or wind over it, only the season's tint), `night` only where the story spends nights (else the stage darkens the day one). Painted by tools/paint-places.py (its KEPT table holds each seed). Over the 节气 and the weather; a festival day, a set piece and a beast's 出场 still win.",
+ "places": {
+  "shiao": {
+   "at": "shiao",
+   "indoor": false,
+   "day": "art/places/shiao.webp"
+  },
+  "shiao-home": {
+   "at": "shiao",
+   "match": [
+    "家中",
+    "你家",
+    "舅舅来了"
+   ],
+   "indoor": true,
+   "day": "art/places/shiao-home.webp",
+   "night": "art/places/shiao-home-night.webp"
+  },
+  "shiao-zaojian": {
+   "at": "shiao",
+   "match": [
+    "灶间"
+   ],
+   "indoor": true,
+   "day": "art/places/shiao-zaojian.webp"
+  },
+  "shiao-chaiduo": {
+   "at": "shiao",
+   "match": [
+    "柴垛"
+   ],
+   "indoor": false,
+   "day": "art/places/shiao-chaiduo.webp",
+   "night": "art/places/shiao-chaiduo-night.webp"
+  },
+  "mengshan": {
+   "at": "mengshan",
+   "indoor": false,
+   "day": "art/places/mengshan.webp"
+  },
+  "heisong": {
+   "at": "heisong",
+   "indoor": false,
+   "day": "art/places/heisong.webp"
+  },
+  "heisong-creek": {
+   "at": "heisong",
+   "match": [
+    "溪边"
+   ],
+   "indoor": false,
+   "day": "art/places/heisong-creek.webp"
+  },
+  "heisong-cliff": {
+   "at": "heisong",
+   "match": [
+    "崖下"
+   ],
+   "indoor": false,
+   "day": "art/places/heisong-cliff.webp"
+  },
+  "duanbei": {
+   "at": "duanbei",
+   "indoor": false,
+   "day": "art/places/duanbei.webp"
+  },
+  "yingu": {
+   "at": "yingu",
+   "indoor": false,
+   "day": "art/places/yingu.webp"
+  },
+  "yingu-cave": {
+   "at": "yingu",
+   "match": [
+    "石洞",
+    "天亮"
+   ],
+   "indoor": true,
+   "day": "art/places/yingu-cave.webp",
+   "night": "art/places/yingu-cave-night.webp"
+  },
+  "shanmen": {
+   "at": "shanmen",
+   "indoor": false,
+   "day": "art/places/shanmen.webp"
+  },
+  "songlin": {
+   "at": "shanmen",
+   "match": [
+    "林子"
+   ],
+   "indoor": false,
+   "day": "art/places/songlin.webp"
+  },
+  "zhengdian": {
+   "at": "zhengdian",
+   "indoor": true,
+   "day": "art/places/zhengdian.webp"
+  },
+  "yanwu": {
+   "at": "zhengdian",
+   "match": [
+    "大比",
+    "演武场",
+    "五行台"
+   ],
+   "indoor": false,
+   "day": "art/places/yanwu.webp"
+  },
+  "jiangtang": {
+   "at": "jiangtang",
+   "indoor": true,
+   "day": "art/places/jiangtang.webp"
+  },
+  "waimen": {
+   "at": "waimen",
+   "indoor": false,
+   "day": "art/places/waimen.webp"
+  },
+  "waimen-dorm": {
+   "at": "waimen",
+   "match": [
+    "大通铺"
+   ],
+   "indoor": true,
+   "day": "art/places/waimen-dorm.webp",
+   "night": "art/places/waimen-dorm-night.webp"
+  },
+  "chaifang": {
+   "at": "chaifang",
+   "indoor": true,
+   "day": "art/places/chaifang.webp",
+   "night": "art/places/chaifang-night.webp"
+  },
+  "chaifang-back": {
+   "at": "chaifang",
+   "match": [
+    "柴房后面",
+    "后院"
+   ],
+   "indoor": false,
+   "day": "art/places/chaifang-back.webp"
+  },
+  "yaoyuan": {
+   "at": "yaoyuan",
+   "indoor": false,
+   "day": "art/places/yaoyuan.webp",
+   "night": "art/places/yaoyuan-night.webp"
+  },
+  "houshan": {
+   "at": "houshan",
+   "indoor": false,
+   "day": "art/places/houshan.webp"
+  },
+  "sishui-shimen": {
+   "at": "shimen",
+   "indoor": false,
+   "day": "art/places/sishui-shimen.webp"
+  },
+  "mijing-shishi": {
+   "at": "shimen",
+   "match": [
+    "石室"
+   ],
+   "indoor": true,
+   "day": "art/places/mijing-shishi.webp"
+  },
+  "mijing-cliff": {
+   "at": "shimen",
+   "match": [
+    "崖壁",
+    "断崖"
+   ],
+   "indoor": true,
+   "day": "art/places/mijing-cliff.webp"
+  },
+  "jin-track": {
+   "scape": [
+    "track"
+   ],
+   "indoor": false,
+   "day": "art/places/jin-track.webp"
+  },
+  "jin-court": {
+   "scape": [
+    "court"
+   ],
+   "indoor": true,
+   "day": "art/places/jin-court.webp"
+  },
+  "jin-gym": {
+   "scape": [
+    "gym"
+   ],
+   "indoor": true,
+   "day": "art/places/jin-gym.webp"
+  },
+  "jin-stacks": {
+   "scape": [
+    "stacks"
+   ],
+   "indoor": true,
+   "day": "art/places/jin-stacks.webp",
+   "night": "art/places/jin-stacks-night.webp"
+  },
+  "jin-dark": {
+   "scape": [
+    "dark"
+   ],
+   "indoor": true,
+   "night": "art/places/jin-stacks-night.webp"
+  },
+  "jin-ward": {
+   "scape": [
+    "ward"
+   ],
+   "indoor": true,
+   "day": "art/places/jin-ward.webp"
+  },
+  "jin-night": {
+   "scape": [
+    "night"
+   ],
+   "indoor": false,
+   "night": "art/places/jin-night-night.webp"
+  }
+ }
 }
