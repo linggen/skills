@@ -210,7 +210,8 @@ test('one runner for both set pieces: 筑基天象 is painted like 漳水立起 
   const runner = fs.readFileSync(new URL('../scripts/setpiece.js', import.meta.url), 'utf8');
   assert.match(runner, /scene = def\.build\(/);
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(page, /const piece = setpieceOf\(n\);\s*if \(piece\) momentTurn\('piece'\)\.then\(\(\) => playPiece\(piece, setpieceBeats\(n\)\)\);/);
+  assert.match(page, /const piece = setpieceOf\(n\);[\s\S]{0,300}?if \(piece\) pieceOfChoice\(piece, setpieceBeats\(n\)\);/);
+  assert.match(page, /await momentTurn\('piece'\);\s*playPiece\(piece, beats\);/, 'the piece waits its turn (queue.js MOMENTS: first)');
   assert.match(page, /await momentTurn\('memory'\);\s*if \(play\) show\(\{ memory/, 'her memory waits its turn (queue.js MOMENTS: after the piece)');
   assert.match(page, /await momentTurn\('homing'/, '鼎归 waits its turn');
 });
