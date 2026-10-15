@@ -242,6 +242,8 @@ function fitSealed(content, state, now = new Date()) {
   const reached = state.sealed?.scene !== state.scene;
   state.sealed = { id: sealed.beat, since: state.sealed?.since ?? now.toISOString(), scene: state.scene };
   if (reached && state.scene !== sealed.first && rooms.includes(at)) state.place = at;
+  // A save that came in before a scene's board was declared is offered it as it stands (core.mjs offerTasks does it on entry).
+  if (reached) for (const id of sceneOf(content, state)?.offers?.tasks ?? []) { state.tasks ??= {}; state.tasks[id] ??= { status: 'offered' }; }
   if (!rooms.includes(state.place)) state.place = sealed.home ?? rooms[0];
   delete state.returned;
   return true;
@@ -396,6 +398,8 @@ function placeBrief(content, state, now = new Date()) {
     tier: place.tier, line: pick(visitor?.line ?? place.line, lang),
     // Put back inside the 观 (fitLeave): the world's line, once, where he was set down.
     ...(returnedLine(content, state, now) ? { returned: returnedLine(content, state, now) } : {}),
+    // A room that holds the way on, what it still asks (guardOf): its line.
+    ...(guardHere(content, state, place) ? { guard: guardHere(content, state, place) } : {}),
     // A 令 in his belt: where it lets him go.
     ...(state.pass ? { pass: { to: placeName(content, state, placeOf(content, state.pass.to)), quest: state.pass.quest } } : {}),
     has: {
@@ -438,6 +442,22 @@ function plateBrief(content, state, place, now) {
     ...(visitorHere(content, state, p, now) ? { visitor: true } : {}),
   }));
   return { id, name: pick(plate.name, state.lang), ...(plate.file ? { file: plate.file } : {}), aspect: plate.aspect, spots };
+}
+
+/* A room that holds the way on (places' `has.guard`, the 秘境's 凶崖): its roads to the places it
+   `holds` stay shut until what it asks is done there — `won.n` fights won at its pool
+   (state.hunted, tasks.mjs duel), its board `task.id` played. The first thing still asked, with its
+   line, or null. Walking through it toward one of them stops there (travel.mjs move). */
+const guardHere = (content, state, place) => {
+  const g = (place?.has?.guard?.holds ?? []).map(id => guardOf(content, state, place, placeOf(content, id))).find(Boolean);
+  return g ? pick(g.say, state.lang) : null;
+};
+function guardOf(content, state, from, to) {
+  const g = from?.has?.guard;
+  if (!g || !(g.holds ?? []).includes(to?.id)) return null;
+  if (g.won && (state.hunted?.[from.id] ?? 0) < g.won.n) return { place: from.id, say: g.won.say };
+  if (g.task && state.tasks?.[g.task.id]?.status !== 'done') return { place: from.id, say: g.task.say };
+  return null;
 }
 
 /* The shortest way from one place to another, walking only places the player
@@ -495,4 +515,4 @@ function fittingPlace(content, state, from) {
    opens when it ends. */
 const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && carried(content, state);
 
-export { fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };
+export { guardOf, fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };

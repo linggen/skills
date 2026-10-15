@@ -43,6 +43,18 @@
   "en": "Xiaoman looked up. A row of people stood at the top of the cliff, six of them exactly. The tubby one in the middle, whose new cultivator's robe looked brand new even in the dark, was Ma Xiaobao; the five behind him were the five from that night in the woodshed. The two map sellers were among them, and Old Wilt was among them, and the big coil of hemp rope had come off his shoulder and was in the hands of the hanger-on with folded arms. Ma Xiaobao looked down on him: \"Shen Xiaoman, did you think if you hid down here I wouldn't find you?\" He jerked his chin at the hanger-on behind him. \"The moment you came through the door, someone ran and told me. So you know quality when you see it. That wall, it's open?\" Xiaoman stood in front of the wall and said nothing. Ma Xiaobao glanced at the black mouth of the drop by Xiaoman's feet and looked back, and his voice wasn't loud any more: \"In a secret realm, a person or two dying is nothing new. Ten years ago three went down and one came up. This year one fewer comes up, and nobody will say a word.\" With that, he led the five of them down the cliff face.\n\nGravel clattered, and the six of them reached the ledge. His left arm was bitten through by the gui, and the bone under his ribs still hadn't knitted. He swung his right fist and hit back just once, and caught one of them; then the shoe with the black-patched toe came kicking in, right on the bone that hadn't knitted. He went down on his face and couldn't push himself up again. Ma Xiaobao didn't lift a hand. He stood at the back and watched. Old Wilt stood at the very back and didn't raise a foot. Ma Xiaobao jerked his chin at the drop: \"Push him over. If he grabs the edge, tie his hands and push him again.\" Two of them dragged him by the feet towards the drop, and the one with folded arms squatted to undo the coil of rope.\n\nOnly now did he really understand: this time, they meant to kill him.\n\nYinyue didn't yawn. She was inside his robe, and her voice was low and quick: \"The stone by your left hand. Press it down.\" His hand clawed at the ground and found a round stone half buried in the earth. On its face were nine small shallow pits, three across and three down; eight of them had pebbles set in them, and the one in the middle was empty. He had no time to ask. With his last breath of strength he pressed down on it with his palm. The stone sank.\n\nAt once a ring of faint light lit up on the cliff, bluish-white, from the foot of the cliff right up to the top, as if someone had taken an enormous brush and drawn a circle on that cliff. As the circle lit, the six on the ledge felt their feet go light, as if a great invisible hand had scooped them up, and one after another they were slapped against the cliff face, arms and legs spread, faces to the stone. However they struggled and kicked, they couldn't move half an inch. The one nearest the ledge had his toes a foot short of the ground. The coil of rope slipped from the folded-arms hanger-on's hands, spilled loose ring after ring, and hung in mid-air, and didn't move either. Ma Xiaobao was stuck in the very middle and could only squint down sideways. He yelled: \"You—what did you do!\"\n\nXiaoman didn't answer. He lay on the ground and for a long while couldn't get up. Yinyue said in his ear: \"A trapping array left by the ones before, to guard this wall. The moment it starts, it slaps everyone inside it onto the cliff, except the one who pressed the array's eye; after that, it holds whoever's on the cliff. Leave it alone and it'll hold them till the secret realm closes. In three days, an hour before the stone door shuts, it lets go by itself. The array's eye is right under your hand. Nine pits, the middle one missing. Press the middle and it opens now.\"\n\nMa Xiaobao struggled a long time, struggled till his head ran with sweat, and the fierceness in his face melted bit by bit, and his voice went soft: \"Sh... Junior Brother Shen. We're from the same village. Let us down and I'll give you ten taels of silver.\" Xiaoman said nothing. Ma Xiaobao said: \"Twenty!\" Xiaoman still said nothing. Ma Xiaobao strained for a long time and said: \"Then... then the Common Fund, you don't have to pay it any more!\"\n\nXiaoman raised his head and looked at them one by one. At the one with folded arms, at the one who had kicked his right ribs, at the coil of rope hanging in mid-air, at Ma Xiaobao. Last of all he looked at the one nearest the drop. Old Wilt was stuck at the very outer edge of the cliff, half his body hanging over that black mouth. He hadn't made a sound. He only looked down at him from the corner of his eye.\n\nHe knew how to open it. The empty pit in the middle; he had only to reach out one finger. But open meant all six came down together. This array didn't know who had said \"That's enough,\" or who had brought the rope."
  },
  "lines": [],
+ "show": [
+  {
+   "card": "board",
+   "id": "mijing-zhenyan"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "mijing-zhenyan"
+  ]
+ },
+ "_zhenyan": "困阵 (the 秘境 as a room, 2026-10-15): 「左手边那块石头。按下去。」 — nine shallow hollows, the middle one empty; he presses the eye with his last breath. Played before 「三天。」 as the book has it (tasks mijing-zhenyan, luoshu).",
  "buttons": [
   "go"
  ],
@@ -59,7 +71,14 @@
     "en": "Xiaoman took his hand off the stone, got up with a hand on the wall, and said: \"Three days.\"\n\nHaving said it, he turned and walked into the wall.\n\nBehind him, Ma Xiaobao swore first, swore at his ancestors, swore at his mother, and the swearing turned at last into begging, and the begging at last into nothing you could make out. Old Wilt didn't say a word. Xiaoman walked through the crack in the wall, one step, two, his feet unsteady, as if he were walking on cotton. In his life he'd shot hares, he'd shot river deer, and this was the first time he had left six people stuck on a cliff. One of them, a few hours before, had said in his ear: \"The rope's for you.\""
    },
    "beat": [],
-   "next": "wm-xirang"
+   "next": "wm-xirang",
+   "needs": {
+    "task": "mijing-zhenyan"
+   },
+   "refuse": {
+    "zh": "阵眼还没按下去。",
+    "en": "The eye of the binding is not pressed yet."
+   }
   }
  ]
 }

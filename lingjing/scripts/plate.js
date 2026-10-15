@@ -15,7 +15,8 @@ export function plateHtml(plate, { src = null, here = '' } = {}) {
     const at = `left:${pct(s.at[0])};top:${pct(s.at[1])}`;
     // A visiting shop there today (rules/visiting.mjs): the seal wears a small mark.
     const cls = `spot${s.here ? ' here' : ''}${s.closed ? ' shut' : ''}${s.visitor ? ' visitor' : ''}`;
-    const label = `<span class="spotname">${esc(s.name)}</span>`;
+    // In ink (one instance's rooms) the seal says the room alone: 「沉鼎秘境 · 石室」 → 石室.
+    const label = `<span class="spotname">${esc(src ? s.name : String(s.name).split(' · ').pop())}</span>`;
     return s.here || s.closed
       ? `<span class="${cls}" style="${at}" title="${esc(s.here ? `${s.name} · ${here}` : s.name)}" aria-disabled="true">${label}</span>`
       : `<button class="${cls}" style="${at}" data-go="${esc(s.id)}" title="${esc(s.name)}">${label}</button>`;

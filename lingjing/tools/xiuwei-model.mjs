@@ -25,6 +25,10 @@
 //     今日传闻, ROAD road-meets; the errands that pay 修为 or a pill (ERRANDS_AT)
 //     and the story's own pills, eaten at once; PILLS_BOUGHT market pills a 回;
 //     the errand lump lands a third of the way in, the days spread over its scenes;
+//   - a sealed instance's rooms (chapter.json beat `sealed`, places' `has`; roomsPay): what a
+//     guarded room asks (its pool fights `won.n`, its board) every player pays on the way — the
+//     story's; its other boards (one-offs) and one fight at each other pool room (EVERYTHING),
+//     landing as the instance is entered;
 //   - 杂役 errands, 开府 and the day's pick pay 灵石 only: nothing here.
 import { fileURLToPath } from 'node:url';
 import { loadContent } from '../scripts/content.mjs';
@@ -56,6 +60,30 @@ const BREAK_PILLS = content => new Set(Object.values(content.ladder.breakthrough
 const pillOf = (content, id) => { const e = itemOf(content, id)?.effect; return id && e?.progress && !BREAK_PILLS(content).has(id) ? tableCap(content, e) : 0; };
 /* What an errand pays toward 修为: its grant's, and the pill it hands over. */
 export const errandPays = (content, q) => tableCap(content, q.grant) + pillOf(content, q.grant?.item);
+
+/* A sealed instance's rooms (Hanli, 2026-10-15: 「秘境太短了, 里面多加点战斗和小游戏」): per 回 it
+   is entered in, its first scene inside and what its rooms pay — `story` (a guarded room's fights
+   and board: on the way, for everyone), `boards` (the rooms' other boards, once each) and `fights`
+   (one fight at each other room with a pool). Read from the data, never named. */
+export function roomsPay(content) {
+  const out = {}, haunt = content.rewards.tables.haunt.progress;
+  const placeOf = id => Object.values(content.places).flatMap(d => d.places).find(p => p.id === id);
+  const taskOf = id => content.tasks.tasks.find(t => t.id === id);
+  for (const ch of Object.values(content.chapters).filter(c => c.juan === 1)) {
+    for (const b of (ch.beats ?? []).filter(x => x.sealed)) {
+      const first = b.scenes[1], hui = ch.scenes[first]?.hui, r = { first, story: 0, boards: 0, fights: 0 };
+      for (const p of b.sealed.places.map(placeOf).filter(Boolean)) {
+        const g = p.has?.guard, guardTask = g?.task?.id;
+        if (g?.won) r.story += g.won.n * haunt;
+        if (guardTask) r.story += tableCap(content, taskOf(guardTask)?.grant);
+        for (const id of (p.has?.games ?? []).filter(id => id !== guardTask)) r.boards += tableCap(content, taskOf(id)?.grant);
+        if (p.has?.pool && !g?.won) r.fights += haunt;
+      }
+      if (hui) out[hui] = r;
+    }
+  }
+  return out;
+}
 
 /* 卷一's 古 scenes in the order a player meets them. */
 export function bookScenes(content) {
@@ -95,6 +123,7 @@ export function runJuan1(content, { ladder = content.ladder, play = EVERYTHING }
   const quests = new Map(content.quests.map(q => [q.id, q]));
   const market = content.items.items.filter(i => i.effect?.progress && (i.sold ?? []).length && !BREAK_PILLS(content).has(i.id));
   const day = dayIncome(content, play) * play.SPEED;
+  const rooms = roomsPay(content);
   const s = { tier: tiers[0].id, step: 0, progress: 0, stretch: 0, pill9: false };
   const need = () => tierAt(s.tier).thresholds[s.step] + s.stretch;
   const zero = () => tierAt(s.tier).zero && s.step === 0;
@@ -126,6 +155,13 @@ export function runJuan1(content, { ladder = content.ladder, play = EVERYTHING }
       lump = row.errands;
     }
     const k = row.k++;
+    // A sealed instance entered: its rooms' play lands (roomsPay) — what holds the way for all, the rest as played.
+    const room = rooms[sc.hui]?.first === sc.id ? rooms[sc.hui] : null;
+    if (room) {
+      const extra = (play.BOARDS === false ? 0 : room.boards) + (play.FIGHTS > 0 ? room.fights : 0);
+      row.story += room.story; row.rooms = room.story + extra;
+      gain((room.story + extra) * play.SPEED, k);
+    }
     const boards = play.BOARDS === false ? [] : (sc.show ?? []).filter(c => c.card === 'board').map(c => content.tasks.tasks.find(t => t.id === c.id)).filter(Boolean);
     const b = boards.reduce((n, t) => n + tableCap(content, t.grant), 0);
     row.story += b; gain(b * play.SPEED, k);

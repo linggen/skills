@@ -266,6 +266,8 @@ export function duel(state, content, ctx, args) {
   const pays = won && !(exit && replaying(content, s, sceneOf(content, s)));
   const handed = pays ? advance(content, s, { kind: 'subdue', creature: creature.id }, ctx) : [];
   if (won) s.wins = { ...s.wins, [id]: ctx.now.toISOString() };
+  // A pool's fights won, by the place (a guarded room counts them, world.mjs guardOf).
+  if (won && hunt) s.hunted = { ...s.hunted, [game.hunt]: (s.hunted?.[game.hunt] ?? 0) + 1 };
   // A beast met on the road, beaten, has been met: it leaves the road.
   if (won && haunt?.road) s.meets.places[s.place] = { ...s.meets.places[s.place], done: true };
   const say = played.outcome === 'lost' ? withdrawnLine

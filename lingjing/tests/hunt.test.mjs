@@ -55,7 +55,7 @@ test('the pools are declared, of 卷一\'s beasts and a few added — none of a 
     assert.ok(pool, p.id);
     for (const b of pool.beasts) pooled.add(b.creature);
   }
-  assert.deepEqual([...pooled].sort(), ['gui', 'lang', 'linghu', 'longzhi', 'renyu', 'tianma', 'xiong', 'yezhu', 'zheng'].sort());
+  assert.deepEqual([...pooled].sort(), ['gui', 'heyu', 'lang', 'linghu', 'longzhi', 'qiuyu', 'renyu', 'tianma', 'xiong', 'yezhu', 'zheng'].sort(), '+ 犰狳 and 合窳 in the 秘境\'s rooms (2026-10-15)');
   for (const id of pooled) {
     const c = content.creatures.creatures.find(x => x.id === id);
     assert.ok((c.juan ?? 1) === 1 && !c.person && !c.trial, id);

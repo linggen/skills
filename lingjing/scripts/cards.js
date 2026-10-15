@@ -891,7 +891,9 @@ function next(card, ctx) {
     : work ? `<button class="act go primary" data-go="${esc(work.id)}">${esc(say(t.work, { name: work.name }))}</button>` : '';
   const ready = (look.book ?? []).filter((q) => q.ready && !q.away).length + (look.kaifu?.ready ?? 0);
   const book = ready ? `<button class="act quiet" data-book>${esc(say(t.ready, { n: ready }))}</button>` : '';
-  return `<div class="card next"><div class="cardtitle">${esc(t.title)}</div><div class="say">${esc(goalText(ctx) || t.idle)}</div>${visitorsLine(look)}<div class="acts">${go}${book}${visitorGo(look)}</div></div>`;
+  // A room that holds the way on (Look's place.guard): what it still asks, under the goal.
+  const guard = look.place?.guard ? `<div class="small dim guardnote">${esc(look.place.guard)}</div>` : '';
+  return `<div class="card next"><div class="cardtitle">${esc(t.title)}</div><div class="say">${esc(goalText(ctx) || t.idle)}</div>${guard}${visitorsLine(look)}<div class="acts">${go}${book}${visitorGo(look)}</div></div>`;
 }
 
 /// A visiting shop in season (rules/visiting.mjs): its own line — 「货郎今日上山 · 演武场」 or

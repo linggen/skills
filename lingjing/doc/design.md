@@ -385,6 +385,17 @@ the book's own `days` — 「沉鼎秘境 · 第二夜」), the room, and the sc
 goal line and 下一步). The stage shows the rooms' paintings (backdrops.json `places` by room id);
 the sealed tier outranks festival and 节气 (atmos.js `stagePick`), with no weather, season, wind or
 particles. Nothing names the 秘境: the 外门大比 or a later 秘境 declares the same.
+**Rooms as a small dungeon** (Hanli, 2026-10-15: 「秘境太短了, 里面多加点战斗和小游戏等」): each room
+holds something between the beats, in the book's places and never against it — 岔口 华容道
+「挤出石厅」 (a stall board); 凶崖 the 犰狳 on the stair (pool `mijing-ya`, 见人则眠) and 下崖
+(games/descend.js — the drip, the wet hold, the unknit rib), and it **holds the way down**
+(places' `has.guard {holds, won {n, say}, task {id, say}}`: the walk stops there, Move refuses
+`guarded`; pool wins counted in `state.hunted`); 断崖下 the 蛫 (the scene's); 崖壁 the 困阵's 洛书
+(「九个小坑，正中那个是空的」 — 「三天。」 waits on it, `needs.task`); 石室 邹青松 (the scene's
+trial); 暗河 合窳 and 犰狳 (pool `mijing-anhe`) and 拾遗 (games/gather.js — herbs and ore in the
+cracks, 灵芝 and 灵石). Fights pay the haunt table (修为), boards their grants, gleaning stones and a
+herb. ~80 修为 more in 古五 for one who plays it all (tools/xiuwei-model.mjs roomsPay), carried into
+四层 by 息壤: 四层 asks 660 (was 620). A natural player: about 20 minutes inside.
 
 ### 剧情 × 开放世界 — tasks drive the story, key beats lock the map 【在建】
 

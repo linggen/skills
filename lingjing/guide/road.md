@@ -28,7 +28,10 @@
   gives, and a way out is Move's refusal with `say`. The world outside is
   frozen — no errand, 令, chore, 货郎, 机缘, festival or weather is in Look,
   and never speak of one; Quest, Tale, Meet and Seclude are refused `sealed`.
-  The one thing to do is `goal`. It all comes back on the way out.
+  The one thing to do is `goal`. It all comes back on the way out. The rooms
+  hold play between the beats (a pool's beast, a board); a room that holds the
+  way on (Look's place `guard`) stops the walk there — Move's `guarded` line —
+  until its fight is won and its board played.
 - **Arriving is an event.** Show the cards a Move returns, and say in one
   line what is HERE before the roads. A
   Move with `met` reached what an errand sent them for: speak its `seen` as

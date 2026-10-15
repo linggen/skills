@@ -28,7 +28,12 @@ function argsFor(content, s, exit) {
 function prepare(content, s, exit, now, forced) {
   const sc = sceneOf(content, s);
   if (sc?.at && s.place !== sc.at) {
-    const r = move(s, content, { now, quests: [] }, { place: sc.at });
+    let r = move(s, content, { now, quests: [] }, { place: sc.at });
+    // A room that holds the way (places' has.guard): played as the page plays it — its pool fight won, its board — then on.
+    for (let k = 0; k < 3 && (r.result.guarded || r.result.refused === 'guarded'); k++) {
+      s = clearGuard(content, r.state ?? s);
+      r = move(s, content, { now, quests: [] }, { place: sc.at });
+    }
     if (r.result.ok && r.state) s = r.state;
     else forced.push(`walk to ${sc.at}: ${r.result.refused}`);
   }
@@ -46,6 +51,11 @@ function prepare(content, s, exit, now, forced) {
     s = peakOf(content, s);
   }
   return s;
+}
+function clearGuard(content, s) {
+  const g = content.places && Object.values(content.places).flatMap(d => d.places).find(p => p.id === s.place)?.has?.guard;
+  if (!g) return s;
+  return { ...s, ...(g.won ? { hunted: { ...s.hunted, [s.place]: g.won.n } } : {}), ...(g.task ? { tasks: { ...s.tasks, [g.task.id]: { status: 'done' } } } : {}) };
 }
 const atPeak = (content, s) => {
   const tier = content.ladder.tiers.find((t) => t.id === s.tier);

@@ -36,6 +36,9 @@ const fresh = (s) => ({ ...s, stamina: 100, stamina_at: DAY1.toISOString() });
 // The hero is fixed (沈小满, a boy — 2026-09-30): no name card on the way in.
 const opened = (lang = 'zh') => fresh(walk(newState(content, lang, DAY1), TO_OPEN, content, DAY1));
 const won = (s, id, now = DAY1) => ({ ...s, wins: { ...s.wins, [id]: now.toISOString() } });
+/* The 秘境's rooms played as a player plays them (tests/sealed.test.mjs plays them for real): the
+   凶崖's 犰狳 beaten and its 下崖 board, the 困阵's 洛书 — the way down and the way on are open. */
+const clearRooms = (s) => ({ ...s, hunted: { ...s.hunted, 'mijing-xiongya': 1 }, tasks: { ...s.tasks, 'mijing-descend': { status: 'done' }, 'mijing-zhenyan': { status: 'done' } } });
 /* A scene exit by its button — 小周天 first plays its 三关 board (the exit waits on it, 2026-09-30). */
 function step(s, exit) {
   if (exit === 'breathe') { s = must(win, s, { id: 'zhoutian-sanguan' }); s = must(task, s, { action: 'done', id: 'zhoutian-sanguan' }); }
@@ -62,6 +65,7 @@ function playThrough() {
   s = must(resolve, s, { exit: 'refuse' });
   // Through the door the 秘境 is sealed (chapter.json beat `sealed`): he stands in its forking hall and walks down to the wall.
   assert.equal(s.place, 'mijing-kou');
+  s = clearRooms(s);
   s = must(move, fresh(s), { place: 'mijing-duanya' });
   // The wall is the 蛫 itself (古五, 2026-10-02): prying is turned down in-world, the water opens it.
   const pried = resolve(s, content, ctx(DAY1), { exit: 'pry' });
@@ -224,6 +228,7 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
   s = must(resolve, s, { exit: 'refuse' });
   // Through the door the 秘境 is sealed (chapter.json beat `sealed`): he stands in its forking hall and walks down to the wall.
   assert.equal(s.place, 'mijing-kou');
+  s = clearRooms(s);
   s = must(move, fresh(s), { place: 'mijing-duanya' });
   refused(resolve, s, { exit: 'open' }, 'game-not-won');
   s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
@@ -521,7 +526,7 @@ test('古五\'s chase (2026-10-02): 邹青松 is a trial outlasted, 踏马的符
   assert.equal(zou.trial.outlast, true);
   assert.equal(zou.trial.yield, undefined, 'never driven down: the turn is the story\'s');
   assert.equal(zou.says.won.zh, '你这踏马的符是哪来的！？');
-  let s = { ...opened(), scene: 'wm-wangzuo', place: 'mijing-duanya' };
+  let s = clearRooms({ ...opened(), scene: 'wm-wangzuo', place: 'mijing-duanya' });
   s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
   assert.equal(s.bag['tama-fu'], 1, '古四\'s 饭桶 spat it out; in his belt since');
   s = must(resolve, s, { exit: 'go' });

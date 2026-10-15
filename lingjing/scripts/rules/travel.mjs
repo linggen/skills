@@ -10,7 +10,7 @@ import { advance, bookOf, directorBrief, GEAR_SLOTS, itemBrief, itemOf, onStoryR
 import { arriveOnRoad } from './road.mjs';
 import { forSale, sceneBrief, shelfOf, shopOf, wordsOf } from './look.mjs';
 import { buyBack, visitorAway, visitorHere } from './visiting.mjs';
-import { atScene, beatOf, chapterOpen, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeSaid, provinceOpen, sceneOf, settlePlace, shutSay, STORY_CHARS, STORY_WORDS, tierIndex, tooHard } from './world.mjs';
+import { guardOf, atScene, beatOf, chapterOpen, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeSaid, provinceOpen, sceneOf, settlePlace, shutSay, STORY_CHARS, STORY_WORDS, tierIndex, tooHard } from './world.mjs';
 import { enteredBeat, refusalBeat } from './story.mjs';
 import { comingOf } from './hui.mjs';
 import { enter } from './worlds.mjs';
@@ -99,7 +99,12 @@ export function move(state, content, ctx, args) {
   // one leg and a question at every ford (his, 2026-09-21: 「去泗水」 and the
   // chat asked 何去何从 again). Walking costs nothing. Only a place no open
   // road reaches is refused.
-  const way = pathOf(content, s, here, target, ctx.now);
+  let way = pathOf(content, s, here, target, ctx.now);
+  // A room that holds the way on (world.mjs guardOf): refused from it, or the walk stops at it.
+  const held = way ? way.map((p, i) => guardOf(content, s, i ? way[i - 1] : here, p)).findIndex(Boolean) : -1;
+  const guarded = held >= 0 ? guardOf(content, s, held ? way[held - 1] : here, way[held]) : null;
+  if (guarded && held === 0) return stay('guarded', pick(guarded.say, lang));
+  if (guarded) way = way.slice(0, held);
   if (!way) {
     const say = { zh: `从${pick(here.name, 'zh')}没有路通向${pick(target.name, 'zh')}。`, en: `No road runs from ${pick(here.name, 'en')} to ${pick(target.name, 'en')}.` };
     return stay('no-road', pick(say, lang), { near: near() });
@@ -148,7 +153,7 @@ export function move(state, content, ctx, args) {
   // a province crossed, a made scene left — not on every road walked (a
   // Summarize is a whole model call; seen live 2026-09-16, one per step).
   const summarize = Boolean(scene) || reached.province !== from.province || Boolean(left);
-  return { state: s, result: { ok: true, place, scene, show, ...(via.length ? { via } : {}), ...(met.length ? { met } : {}), ...(handed.length ? { handed } : {}), ...(reached.id !== target.id ? { stopped: true } : {}), ...(left ? { left } : {}), ...(her ? { her_beat: her } : {}), director: directorBrief(content, s, ctx), ...(fragment ? { fragment } : {}), summarize } };
+  return { state: s, result: { ok: true, place, scene, show, ...(via.length ? { via } : {}), ...(met.length ? { met } : {}), ...(handed.length ? { handed } : {}), ...(reached.id !== target.id ? { stopped: true } : {}), ...(guarded ? { guarded: pick(guarded.say, lang) } : {}), ...(left ? { left } : {}), ...(her ? { her_beat: her } : {}), director: directorBrief(content, s, ctx), ...(fragment ? { fragment } : {}), summarize } };
 }
 
 /* A key the story still needs: an exit of the current chapter's scenes not
