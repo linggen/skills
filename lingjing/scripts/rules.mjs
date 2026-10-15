@@ -7,6 +7,7 @@
 //          build worlds travel amend art go saves save load forget seclude undo seed shift tell (the page's)
 //   --save=<name> on any verb plays a scratch save in data/saves/<name>/ (files.mjs);
 //   `seed --save=<name> --from=fresh|real|<fixture>` begins it (never touching data/state.json);
+//   `seed --save=<name> --at=<scene|回|古五|今二|秘境>` begins it fresh and plays it there (rules/progress.mjs);
 //   `shift --save=<name> --days=N` sets its clock N days ahead (the 大比's real day, in a check).
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
@@ -43,6 +44,7 @@ import { markBeen } from './rules/inkmap.mjs';
 import { owesTell, playOf, stagedOf, tellOf } from './rules/tell.mjs';
 import { BUILDING_WAITS, keepDay, keepSave, paintList, readSave } from './rules/worlds.mjs';
 import { changes } from './rules/changes.mjs';
+import { playTo, summaryOf } from './rules/progress.mjs';
 
 export { refine, TREASURE_TOP } from './rules/arms.mjs';
 export { askOf, tapThen, thenFor } from './rules/ask.mjs';
@@ -66,6 +68,7 @@ export { lintTale, tale } from './rules/tale.mjs';
 export { seclude, seclusionBrief, seclusionHold } from './rules/seclusion.mjs';
 export { quest, show, VERBS } from './rules/verbs.mjs';
 export { PAGE_KEEP, progress } from './rules/did.mjs';
+export { playTo, summaryOf, targetOf } from './rules/progress.mjs';
 export { amend, art, atlas, build, BUILDING_WAITS, enter, forget, leave, load, make, paintList, ring, save, saves, tame, travel, wake, worlds } from './rules/worlds.mjs';
 
 /* A birthday (the 生辰 card, the 命格 form) is read and let go: never in the log. */
@@ -273,9 +276,35 @@ function seed(args, stateFile) {
   const state = doc?.state ?? doc;
   fs.rmSync(logFile, { force: true });
   fs.rmSync(shiftFile(), { force: true }); // a seed begins on the real day
+  if (args.at != null) return seedAt(args, state, stateFile, from);
   if (state) writeAtomic(stateFile, stateText(withRun(state, 'seed')));
   else fs.rmSync(stateFile, { force: true });
   return { ok: true, seeded: from, save: scratchName() };
+}
+
+/* Seed `--at=<target>` (rules/progress.mjs): the save begun (fresh, or `--from`)
+   and played forward by the rules alone until it stands there — every board
+   won (`--policy=skip` / `--grades=skip`: left), every fight won, the 今 played,
+   a real day waited where the story asks one (the clock shifted, as `shift`).
+   `--route=exit,exit` takes those ways first. Refused with the scene it stuck at. */
+function seedAt(args, base, stateFile, from) {
+  const now = clock();
+  const begun = base ? migrate(base) : null;
+  const content = loadWorld(begun?.world ?? DEFAULT_WORLD);
+  const start = begun ? migrate(begun, content) : freshState(content, langNow(), now, null, 'seed');
+  const policy = args.policy === 'skip' || args.grades === 'skip' ? 'skip' : 'win';
+  const route = args.route ? String(args.route).split(',').map(x => x.trim()).filter(Boolean) : [];
+  let out;
+  try {
+    out = playTo(content, start, String(args.at), { now, policy, route });
+  } catch (err) {
+    fs.rmSync(stateFile, { force: true });
+    return { ok: false, refused: 'cannot-advance', at: String(args.at), scene: err.scene ?? null, why: err.why ?? String(err?.message ?? err), say: null };
+  }
+  if (out.days) writeAtomic(shiftFile(), JSON.stringify({ days: out.days }) + '\n');
+  const state = { ...withRun(out.state, 'seed'), updated: out.now.toISOString() };
+  writeAtomic(stateFile, stateText(state));
+  return { ok: true, seeded: from, at: String(args.at), save: scratchName(), ...summaryOf(content, state), days: out.days, steps: out.steps.length };
 }
 
 /* Shift — a scratch save only: its clock runs `--days` whole days ahead of
@@ -444,6 +473,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const chose = verb === 'lang' ? await chooseLang(String(args.lang ?? '')) : null;
     const result = chose?.ok === false ? chose : run(verb ?? 'look', args, reader ?? null);
     console.log(JSON.stringify(reader === 'ling' ? forLing(result) : result));
+    // A seed that could not reach its target fails loudly (rules/progress.mjs): the scene and why are in the answer.
+    if (verb === 'seed' && result?.refused === 'cannot-advance') process.exitCode = 1;
   } catch (err) {
     console.log(JSON.stringify({ ok: false, refused: 'error', error: String(err?.message ?? err) }));
     process.exit(1);
