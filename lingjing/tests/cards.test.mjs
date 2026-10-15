@@ -650,3 +650,28 @@ test('a choice that stays in the scene: its beat stands under the scene card, un
   assert.match(tap, /r\?\.ok && !r\.summarize && r\.beat\?\.length\) keep\(\{ panelSaid:/, 'kept from the rules\' beat');
   assert.match(src, /const saidHere = \(\) => \(view\.panelSaid && view\.panelSaid\.scene === /, 'never another scene\'s');
 });
+
+// Live 2026-10-15 (古九): the 香烛铺 errand's payoff (`seen`) was never shown and nothing led back to the
+// story. The arrival that finishes it (or a hand-in) brings `seen`; the page stands it with 下一步's go.
+test('an errand finished: what it found stands on the stage, with the way back to the story', async () => {
+  const { WORDS, handinHtml } = await import('../scripts/cards.js');
+  const { loadContent } = await import('../scripts/content.mjs');
+  const { newState } = await import('../scripts/state.mjs');
+  const R = await import('../scripts/rules.mjs');
+  const content = loadContent(), now = new Date('2026-09-28T12:00:00'), c = { now, quests: [] };
+  let s = newState(content, 'zh', now);
+  Object.assign(s, { chapter: '01-ji', scene: '01-ye', place: 'ye', traits: ['wood'], stamina: 99 });
+  s = R.quest(s, content, c, { action: 'take', id: 'ji-gushou-xiangzhu' }).state;
+  const go = R.move(s, content, c, { place: 'ye-xiangzhu' });
+  const met = go.result.met.find(m => m.id === 'ji-gushou-xiangzhu');
+  assert.match(met.seen, /香烛铺的伙计/);
+  const paid = go.result.handed.find(h => h.id === met.id).paid;
+  const l = R.look(go.state, content, c);
+  const html = handinHtml({ title: met.title, seen: met.seen, paid }, { look: l, lang: 'zh', words: WORDS.zh });
+  assert.match(html, /香烛铺的伙计/); assert.match(html, /灵石 \+10/); assert.match(html, /data-handin-close/);
+  if (l.waypoint?.place && l.waypoint.place.id !== l.place.id) assert.match(html, /data-go="/, '下一步: the way back to the story');
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(src, /const found = \(r\.met \?\? \[\]\)\.find\(\(m\) => m\.seen\);\n\s+if \(found\) show\(\{ handin:/, 'the arrival shows it');
+  assert.match(src, /action === 'turn' && r\.turned\) show\(\{ bookOpen: false, handin:/, 'and a hand-in');
+  assert.match(src, /'emerged', 'handin'\]\) if \(view\[k\] && view\[k\]\.place !== here\)/, 'walked on, it is put away');
+});

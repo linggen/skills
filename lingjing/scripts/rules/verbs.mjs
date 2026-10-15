@@ -145,8 +145,9 @@ export function quest(state, content, ctx, args) {
   const h = complete(content, s, ctx, id, q);
   s.handed = [...(s.handed ?? []), h].slice(-HANDED_KEEP);
   const told = handedOne(content, s, h);
+  // What the errand found (`seen`: the 香烛铺's ledger) comes back with the hand-in — the page shows it then.
   return { state: s, result: { ok: true, turned: id, title: told.title, paid: h.paid, book: bookOf(content, s, lang, ctx),
-    ...(told.next ? { then: told.next } : {}) } };
+    ...(q.seen ? { seen: fill(pick(q.seen, lang), s, content) } : {}), ...(told.next ? { then: told.next } : {}) } };
 }
 
 function taleQuest(state, content, ctx, action) {

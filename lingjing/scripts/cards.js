@@ -944,6 +944,17 @@ function next(card, ctx) {
   return `<div class="card next"><div class="cardtitle">${esc(t.title)}</div><div class="say">${esc(goalText(ctx) || t.idle)}</div>${guard}${rr.note}${visitorsLine(look)}<div class="acts">${go}${book}${visitorGo(look)}${rr.acts}</div></div>`;
 }
 
+/// An errand handed in (Quest turn): what it found (`seen`, the 香烛铺's ledger), what it paid, and the
+/// way back to the story — 下一步's own go (live, 2026-10-15: the payoff was never shown, nothing led on).
+export function handinHtml(h, ctx) {
+  const t = NEXT_WORDS[ctx.lang] ?? NEXT_WORDS.zh, w = ctx.words, look = ctx.look ?? {};
+  const to = sideLineOf(look) ? null : nextTo(look);
+  const pays = [w.turnedDone, ...turnedPays(h.paid, w, ctx.lang)].join(' · ');
+  const go = to ? `<button class="act go primary" data-go="${esc(to.id)}">${esc(say(t.go, { name: to.name }))}</button>` : '';
+  return `<div class="card handin"><div class="cardtitle">${esc(h.title)}</div>${h.seen ? `<div class="say">${esc(h.seen)}</div>` : ''}<div class="small dim">${esc(pays)}</div>`
+    + `<div class="acts">${go}<button class="act quiet" data-handin-close>${esc(w.closeAway)}</button></div></div>`;
+}
+
 /// 下一步 on a side line: where the 今 scene stands and its ways on, each tapped as the scene card's.
 function sideNext(t, look, ctx) {
   const steps = sideStep(look);

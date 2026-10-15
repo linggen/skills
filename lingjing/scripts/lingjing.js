@@ -21,7 +21,7 @@ import { wireDrag } from './battle-drag.js';
 import { banner, ghostsOf, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, skipButton } from './cards.js';
+import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, skipButton } from './cards.js';
 import { stuckNow } from './stuck.js';
 import { pouchHtml } from './pouch.js';
 import { fantongHtml, wireFantongDrag } from './fantong-free.js';
@@ -264,6 +264,7 @@ const view = {
   ftResult: null, //     the last feed's answer: what came out, its name and small print
   ftAt: 0, //            when it spat (the bucket shakes, the splash fades)
   ftNote: null, //       a refusal on the board, in the rules' words
+  handin: null, //       an errand handed in: { place, title, seen, paid }, until put away or walked on
   spoils: null, //       what a won fight left: { place, cards, items }, until put away or walked on
   bookSeen: null, //     how many lines the book held when last drawn: one more and the chip says so
   bookFresh: false,
@@ -1030,10 +1031,11 @@ function focusHtml(slots) {
 function toastsHtml() {
   // Walked on, the spoils are put away by themselves.
   const here = look?.place?.id ?? null;
-  for (const k of ['spoils', 'trialTold', 'emerged']) if (view[k] && view[k].place !== here) keep({ [k]: null });
+  for (const k of ['spoils', 'trialTold', 'emerged', 'handin']) if (view[k] && view[k].place !== here) keep({ [k]: null });
   return titleCard() + (view.doNote ? `<div class="donote">${esc(view.doNote)}</div>` : '')
     + (view.emerged ? emergedHtml({ ...view.emerged, age: performance.now() - view.emerged.at }, ctx()) : '')
-    + (view.trialTold ? trialToldHtml(view.trialTold, ctx()) : '') + (spoilsShown() ? spoilsHtml(view.spoils, spoilsCtx()) : '');
+    + (view.trialTold ? trialToldHtml(view.trialTold, ctx()) : '') + (spoilsShown() ? spoilsHtml(view.spoils, spoilsCtx()) : '')
+    + (view.handin ? handinHtml(view.handin, ctx()) : '');
 }
 
 /* After a won fight, one order, every time (live, 2026-10-15: after 蠪侄 either its death passage or the 所得
@@ -1826,6 +1828,11 @@ async function goTo(place) {
   keep({ doNote: null });
   await refresh();
   cheer(before);
+  // An errand finished by this arrival with what it found (`seen`: the 香烛铺's ledger) — on the stage, with the
+  // way back to the story (live, 2026-10-15: the payoff never showed; only Ling was told, and a scratch save
+  // tells no one).
+  const found = (r.met ?? []).find((m) => m.seen);
+  if (found) show({ handin: { place: look?.place?.id ?? null, title: found.title ?? '', seen: found.seen, paid: (r.handed ?? []).find((h) => h.id === found.id)?.paid ?? null } });
   // Something veiled on the road (not a 抉择, Ling's to write): the page
   // reveals it after the mist and tells her then (liftVeil) — one beat, after.
   const veiled = r.place?.meet?.veiled && r.place.meet.kind !== 'trial';
@@ -2507,6 +2514,8 @@ async function doTap(action, id) {
   await refresh();
   if (r.ok && (action === 'turn' || action === 'skip') && view.bookOpen) await loadKaifu();
   if (r.ok && action === 'turn') showTurned(id, r);
+  // An errand handed in: the book is put away and its payoff stands on the stage, with the way back to the story.
+  if (r.ok && action === 'turn' && r.turned) show({ bookOpen: false, handin: { place: look?.place?.id ?? null, title: r.title ?? '', seen: r.seen ?? null, paid: r.paid ?? null } });
   // 交差 on 传闻's line counts a kept win: the next step is the story's.
   if (r.ok && id === 'tale' && r.ended) taleEnded(r.handed?.[0]?.title ?? r.title);
   if (r.ok && id === 'tale' && (r.ended || r.step)) await report(`[scene] tale ${r.ended ? 'end' : 'step'}`);
@@ -2961,6 +2970,7 @@ const CLICKS = [
     run(`item:${action}:${id}`, () => useItem(id, action));
   }],
   ['[data-spoils-close]', () => show({ spoils: null })],
+  ['[data-handin-close]', () => show({ handin: null })],
   ['[data-seclude-open]', () => run('seclude', () => openSeclude())],
   ['[data-seclude-close]', () => show({ secludeOpen: false, secludeNote: null })],
   ['[data-seclude-focus]', (el) => show({ secludeFocus: { focus: el.dataset.secludeFocus, id: el.dataset.id ?? null }, secludeNote: null })],
