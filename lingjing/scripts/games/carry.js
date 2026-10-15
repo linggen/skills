@@ -51,7 +51,7 @@ export function newGame(seed) {
 export const swayAt = (t) => Math.sin((t / PERIOD) * Math.PI * 2);
 const end = (s, forced) => {
   const grade = !forced && s.spills <= 2 ? 'even' : 'panting';
-  return { ...s, live: false, won: true, grade, note: grade === 'even' ? 'evenEnd' : 'pantingEnd' };
+  return { ...s, load: LOADS, step: STEPS, live: false, won: true, grade, note: grade === 'even' ? 'evenEnd' : 'pantingEnd' };
 };
 
 function stepUp(s, ok) {
