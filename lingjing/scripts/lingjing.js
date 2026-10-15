@@ -1437,6 +1437,7 @@ function draw() {
   beatPiece(slots);
   const box = dialogBoxHtml(slots);
   paintIf('dlg', box);
+  logAtEnd();
   document.body.classList.toggle('storying', box.includes('data-dlg-on'));
   syncLines();
   companionBeat(box.includes('data-dlg-on'));
@@ -2073,6 +2074,15 @@ function dialogBoxHtml(slots) {
   const acts = choicesInBox() ? panelActsHtml(ctx(), { inBox: true }) : '';
   const story = playing(r) ? storyHtml(r, { lang: lang(), voice, acts, herId: look.companion?.id ?? null, speed: speedNow(), faces: r.all?.whole ? firstFaces() : [] }) : '';
   return story + log;
+}
+
+/* 回看 opens at the latest line, where he is (live, 2026-10-15: it opened at the top of 8000px of earlier
+   scenes). Once per painted log: a log he has scrolled is left where he put it until its lines change. */
+function logAtEnd() {
+  const body = $('dlg')?.querySelector('.dlglogbody:not([data-at-end])');
+  if (!body) return;
+  body.dataset.atEnd = '1';
+  body.scrollTop = body.scrollHeight;
 }
 
 /* ── The lines' clock (lines.js) ──
