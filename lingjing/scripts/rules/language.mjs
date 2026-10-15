@@ -44,7 +44,11 @@ export const TAG_OF = { zh: 'zh-Hans', en: 'en' };
    Linggen speaks it after, not only the game. Config is one document, so it
    is read, its `language` set, and posted back whole (the Settings page does
    the same). `{ok:false, why}` when the engine is not there or refuses. */
+/* Under `node --test` (and the rules it spawns) the live engine is never
+   reached: a test hands its own fetch, or the write is refused. */
+const underTest = (env) => Boolean(env.NODE_TEST_CONTEXT || process.env.NODE_TEST_CONTEXT || process.execArgv.some(a => a.startsWith('--test')));
 export async function writeGlobalLang(lang, { env = process.env, fetchFn = globalThis.fetch } = {}) {
+  if (fetchFn === globalThis.fetch && underTest(env)) return { ok: false, why: 'a test never writes the live setting' };
   const base = `http://127.0.0.1:${env.LINGGEN_PORT || 9527}`;
   try {
     const got = await fetchFn(`${base}/api/config`);

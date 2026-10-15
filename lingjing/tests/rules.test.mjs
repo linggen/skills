@@ -1123,6 +1123,21 @@ test('Lang under the engine: written first, and this process speaks the new lang
   assert.equal(bare.calls.length, 0, 'no engine: nothing to write');
 });
 
+test('no test ever POSTs the live /api/config: the real fetch under node --test is refused before the network', async () => {
+  const real = globalThis.fetch;
+  const seen = [];
+  globalThis.fetch = async (url, opts = {}) => { seen.push([opts.method ?? 'GET', String(url)]); return { ok: true, status: 200, json: async () => ({}) }; };
+  try {
+    const wrote = await writeGlobalLang('en', { env: { LINGGEN_PORT: '9527' }, fetchFn: globalThis.fetch });
+    assert.equal(wrote.ok, false);
+    const chose = await chooseLang('en', { env: { LINGGEN_LANGUAGE: 'zh-Hans' } });
+    assert.equal(chose.ok, false, 'the real save path, unstubbed in a test: refused');
+    assert.deepEqual(seen, [], 'nothing reached the network');
+  } finally {
+    globalThis.fetch = real;
+  }
+});
+
 test('Lang on a scratch save (`--save=<x>`) never writes the global setting; that save alone then plays in it', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-scratch-lang-'));
   try {
