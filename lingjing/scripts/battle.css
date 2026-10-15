@@ -402,3 +402,9 @@
 .cacts { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 .bact:disabled { opacity: .45; cursor: default; transform: none; }
 .cacts .feedhint { align-self: center; font-family: var(--ui); font-size: 11px; color: var(--faint); max-width: 180px; }
+
+/* The way into a fight never scrolls out of reach (the crawler, 2026-10-15: at phone width with the
+   chat open, 降妖's 出手 sat under the stage's foot): the action row sticks to the foot of the
+   stage's scroller, and a narrow stage draws the beast's face smaller. */
+.focus .card.challenge .cacts { position: sticky; bottom: 0; z-index: 1; padding: 8px 0 2px; background: color-mix(in srgb, var(--surface) 96%, transparent); }
+@media (max-width: 600px) { .card.challenge .cface { width: 64px; height: 64px; } }

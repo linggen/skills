@@ -52,3 +52,17 @@ test('the card names the places passed, the work while the cauldron waits, and w
   assert.match(ready, /可交 1/);
   assert.match(ready, /四处走走/, 'no goal: still a line, never empty');
 });
+
+test('a thing a scene brings on is one line while the scene\'s game waits beside it — the board stays in view (00-sleep\'s 洗髓, the crawler 2026-10-15)', async () => {
+  const { sceneGameOpen } = await import('../scripts/cards.js');
+  const { codexCompactHtml } = await import('../scripts/codex.js');
+  const look = { scene: { show: [{ card: 'board', id: 'xisui-hold' }], exits: [] }, tasks: [{ id: 'xisui-hold', status: 'offered' }] };
+  assert.equal(sceneGameOpen(look), true);
+  assert.equal(sceneGameOpen({ ...look, tasks: [{ id: 'xisui-hold', status: 'done' }] }), false, 'played: the thing has its large card again');
+  assert.equal(sceneGameOpen({ scene: { exits: [{ game: { kind: 'duel' } }] }, tasks: [] }), true, 'a fight not yet won');
+  const pill = { id: 'xisui-dan', kind: '物品', tag: '丹药', name: '洗髓丹', lines: ['一颗黑丸子。', '「疼，别喊。」'], image: 'x.webp' };
+  assert.match(codexCompactHtml(pill), /codexcompact big/);
+  const small = codexCompactHtml(pill, { small: true });
+  assert.doesNotMatch(small, /codexcompact big/);
+  assert.doesNotMatch(small, /疼，别喊/, 'one line only; a tap opens it whole');
+});

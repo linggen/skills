@@ -366,7 +366,9 @@ async function fightTurn(page, outcome) {
   if (outcome === 'win') {
     // The attentive move (fightline.js, read through the seam), made with real taps: lift, then aim.
     for (let guard = 0; guard < 16; guard++) {
-      const m = await page.evaluate('globalThis.__lingjingPlay?.move?.() ?? null');
+      // Only once the last move has played out (the seam answers null while the bout is busy).
+      let m = null;
+      for (let w = 0; w < 30 && !m; w++) { await waitIdle(); m = await page.evaluate('globalThis.__lingjingPlay?.move?.() ?? null'); if (!m) await sleep(300); }
       if (!m || m.kind === 'end') break;
       const before = JSON.stringify(await bout());
       const from = m.kind === 'play' ? ['hand', m.index] : m.kind === 'attack' ? ['mine', m.index] : ['power', null];

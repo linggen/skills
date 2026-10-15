@@ -1382,10 +1382,16 @@ function codexCard(card, ctx, first = false) {
   const opts = { src: (f) => worldPath(dir, f), lang: ctx.lang ?? 'zh', first };
   // With the scene card under it, the card is made small so the choices stay on
   // screen (his, 2026-09-29); a tap opens it full size.
-  if (first && ctx.look?.scene?.panel) return `<div class="card codexwrap compact">${codexCompactHtml(entry, opts)}</div>`;
+  // …and with a game of the scene's still to play beside it, a thing's card is one line too, not
+  // its large picture: the board stays in view without a scroll (the crawler, 2026-10-15: 00-sleep's
+  // 吐纳经 and 洗髓丹 pushed the 洗髓 board under the fold at 1280×820).
+  if (first && ctx.look?.scene?.panel) return `<div class="card codexwrap compact">${codexCompactHtml(entry, { ...opts, small: sceneGameOpen(ctx.look) })}</div>`;
   return `<div class="card codexwrap">${codexHtml(entry, opts)}</div>`;
 }
 const meet = (card, ctx) => codexCard(card, ctx, true);
+/* A game of this scene still to play: a board it stands (`show`) not yet done, or a fight not yet won. */
+export const sceneGameOpen = (look) => (look?.scene?.show ?? []).some((c) => c.card === 'board' && (look.tasks ?? []).some((t) => t.id === c.id && t.status !== 'done'))
+  || (look?.scene?.exits ?? []).some((e) => e.game?.kind === 'duel' && !e.won);
 const codex = (card, ctx) => codexCard(card, ctx);
 
 /// 恩仇簿 — the top bar's chip and what it opens: every kindness and every

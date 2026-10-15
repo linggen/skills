@@ -129,7 +129,7 @@ export function codexHtml(entry, { src = (p) => p, lang = 'zh', first = false } 
 /// 2026-09-29: the choices must stay on screen): a little picture, and beside it
 /// the name, the kind and the first line on one line; the whole is a tap that
 /// opens the full card (`data-codex-big`).
-export function codexCompactHtml(entry, { src = (p) => p, lang = 'zh' } = {}) {
+export function codexCompactHtml(entry, { src = (p) => p, lang = 'zh', small = false } = {}) {
   if (!entry || !isSubject(entry)) return '';
   const pic = entry.image
     ? `<img src="${esc(src(entry.image))}" alt="" loading="lazy">`
@@ -140,7 +140,8 @@ export function codexCompactHtml(entry, { src = (p) => p, lang = 'zh' } = {}) {
   // 初见 over the box (sight.js holds people and creatures) — so its card is
   // big enough to read: the picture large, every line whole (2026-10-14, his:
   // 「木牌图片放大一点, 看不清」 — the carved fox was 64px, its line cut off).
-  const big = !FACE_KINDS.has(entry.kind);
+  // `small`: a game stands beside it — one line, the picture small, a tap opens it whole.
+  const big = !small && !FACE_KINDS.has(entry.kind);
   const lines = big ? entry.lines.map((l) => `<span>${rubyLine(entry, l)}</span>`).join('') : `<span>${esc(entry.lines[0] ?? '')}</span>`;
   return `<button class="codexcompact${big ? ' big' : ''}" data-codex-big="${esc(entry.id)}" data-kind="${esc(entry.kind)}" aria-label="${esc(`${entry.name} · ${open}`)}">`
     + `<span class="cpic">${pic}</span><span class="ccap"><b>${rubyName(entry)}</b><i>${esc(kind)}</i>${lines}</span><span class="cmore" aria-hidden="true">⤢</span></button>`;
