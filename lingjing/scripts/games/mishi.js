@@ -243,7 +243,8 @@ export function html(state, lang = 'zh') {
   const intro = v.step === 0 && !state.picks.length && !state.note ? `<p class="g-line-say g-mishi-dim">${esc(v.room.line)}</p>` : '';
   if (!p) return wrap(head + roomScene(v));
   const mech = MECH[p.kind]?.(state, p, t, lang) ?? '';
-  const note = noteOf(state, t);
+  // The line of the mechanism just opened already stands above (its `right`): not said twice.
+  const note = String(state.note ?? '').startsWith('right:') ? '' : noteOf(state, t);
   const herBtn = btn(state.present ? t.her : t.herAsleep, 'data-g="her"', 'soft', state.live ? 'is-wait' : '');
   const waitLine = state.live ? `<p class="g-mishi-wait">${esc(state.present ? t.waiting : t.asleep)} <b>${Math.ceil(state.wait / 1000)}</b></p>` : '';
   const hint = p.hint ? `<div class="g-mishi-hint"><b>${esc(t.hintHead)}</b>${esc(p.hint)}</div>` : hintOpen(state, v) ? btn(t.hintBtn, 'data-g="hint"', 'soft') : '';
