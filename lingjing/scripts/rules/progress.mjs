@@ -22,6 +22,7 @@ import { bookEntries, idsOf } from '../book-order.js';
 import { VERBS } from './verbs.mjs';
 import { allPlaces, encounterOf, placeOf } from './world.mjs';
 import { riddleOf } from './core.mjs';
+import { tellOf } from './tell.mjs';
 
 const DAY = 86_400_000;
 /* The birthday a way on that reads the roots is taken with (tests/prologue.mjs V1_BIRTH). */
@@ -270,6 +271,21 @@ export function playTo(content, state, target, { now = new Date(), policy = 'win
   if (pending.size) throw new Stuck(s, `not reached in ${limit} scenes: ${[...pending.keys()].join(', ')}`);
   if (rest.length) throw new Stuck(s, `--route ${rest.join(',')} never offered on the way`);
   return { state: s, now: r.now, days: r.days, steps: r.log };
+}
+
+/* The save a seed hands over owes the stage only the target scene's own passage:
+   everything the run walked through is marked told, and the scene it stands in
+   is owed afresh. The run's owed list (40-odd passages) once folded into a 前情
+   catch-up on the first load, and the target scene's own opening could be lost
+   behind it (今一, 2026-10-15). A key waiting for arrival stays owed. */
+export function toldUpTo(content, s) {
+  const t = tellOf(content, s);
+  if (!t) return s;
+  const here = s.scene;
+  const told = t.keep.told_scenes.filter((id) => id !== here);
+  const owed = t.keep.tell_owed.filter((k) => k !== `scene/${here}`);
+  const story = content.chapters[s.chapter]?.scenes?.[here]?.story;
+  return { ...t.keep, told_scenes: told, tell_owed: story ? [...owed, `scene/${here}`] : owed };
 }
 
 /* The one line a seed prints: where the save stands and what it holds. */

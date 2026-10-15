@@ -91,6 +91,9 @@ test('the command: seed --at writes only the scratch save, says where it stands,
     assert.equal(fs.existsSync(path.join(data, 'state.json')), false, 'the player\'s own save untouched');
     const lk = cli('look', '--save=sd-a').out;
     assert.equal(lk.scene?.id, 'j09-noise');
+    // The stage owes the target scene's own passage, and only it — not the run's 40-odd folded into a 前情 (今一, 2026-10-15).
+    const told = cli('tell', '--save=sd-a').out.tell ?? [];
+    assert.deepEqual(told.map((t) => `${t.of}:${t.id}`), ['scene:j09-noise'], JSON.stringify(told.map((t) => t.id)));
     // Not a scratch save: refused.
     assert.equal(cli('seed', '--at=古五').out.refused, 'not-scratch');
     // A route taken where offered: 古一's fork the other way.

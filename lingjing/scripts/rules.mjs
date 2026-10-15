@@ -44,7 +44,7 @@ import { markBeen } from './rules/inkmap.mjs';
 import { owesTell, playOf, stagedOf, tellOf } from './rules/tell.mjs';
 import { BUILDING_WAITS, keepDay, keepSave, paintList, readSave } from './rules/worlds.mjs';
 import { changes } from './rules/changes.mjs';
-import { playTo, summaryOf } from './rules/progress.mjs';
+import { playTo, summaryOf, toldUpTo } from './rules/progress.mjs';
 
 export { refine, TREASURE_TOP } from './rules/arms.mjs';
 export { askOf, tapThen, thenFor } from './rules/ask.mjs';
@@ -303,7 +303,7 @@ function seedAt(args, base, stateFile, from) {
     return { ok: false, refused: 'cannot-advance', at: String(args.at), scene: err.scene ?? null, why: err.why ?? String(err?.message ?? err), say: null };
   }
   if (out.days) writeAtomic(shiftFile(), JSON.stringify({ days: out.days }) + '\n');
-  const state = { ...withRun(out.state, 'seed'), updated: out.now.toISOString() };
+  const state = { ...withRun(toldUpTo(content, out.state), 'seed'), updated: out.now.toISOString() };
   writeAtomic(stateFile, stateText(state));
   return { ok: true, seeded: from, at: String(args.at), save: scratchName(), ...summaryOf(content, state), days: out.days, steps: out.steps.length };
 }
