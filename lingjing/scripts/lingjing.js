@@ -767,8 +767,9 @@ function feat(...args) {
     // A new 回's seal is its opening: after the old 回's 「完」 is put away.
     await momentTurn('feat', () => (kind === 'rise' ? oldHuiPlaying() : closeUp()));
     featOn = true;
-    // Up now: the seal itself holds the box (momentUp) until it goes.
-    if (kind === 'chapter') sealOwed = false;
+    // Up now: the seal itself holds the box (momentUp) until it goes — and the turn with it
+    // (sealOwed stays until the seal is put away, featNow's `gone`): live at 今 · 三 → 古七
+    // (2026-10-15) the scene's 「扔进饭桶 ›」 stood under 「新的一回」 before 09-snow's passage.
     if (kind === 'rise') riseWaits = false;
     featNow(...args);
   }, 0);
@@ -783,7 +784,7 @@ function featNow(kind, name, from = '', quiet = false, gains = '', her = null) {
   el.innerHTML = `<i class="rays"></i><div class="featbox${against ? ' low' : ''}">${against}<b>${esc(kind === 'rise' ? w.featRise : w.featChapter)}</b><span>${esc(name)}</span>${gains ? `<small class="featgain">${esc(gains)}</small>` : ''}</div>`;
   el.style.animationDelay = `${Math.max(0, riseAfter - performance.now())}ms`;
   $('view')?.appendChild(el);
-  const gone = () => { if (!el.isConnected) return; el.remove(); featOn = Boolean(document.querySelector('.feat')); render(); };
+  const gone = () => { if (!el.isConnected) return; el.remove(); featOn = Boolean(document.querySelector('.feat')); if (kind === 'chapter') sealOwed = false; render(); };
   el.addEventListener('click', gone);
   // 「新的一回」 clears by itself in ~3.6 s (Hanli, 2026-10-14 choice 9: the 完 card's 合上 is the one tap); a realm's seal holds longer.
   setTimeout(gone, (kind === 'chapter' ? CHAPTER_SEAL_MS : 6000) + Math.max(0, riseAfter - performance.now()));
@@ -3257,6 +3258,9 @@ function titleCard() {
   const ch = look?.chapter;
   if (!ch?.fresh || bout || dismissedTitles.has(titleKey(ch.id)) || titleSeen(ch.id)) return '';
   if (stageBusy() || closeUp() || endingWaits()) return ''; // after the moments, the ending 回's last words and its ending card
+  // …and after the new 回's seal, on its way or up: one card at a time — 「新的一回」, then the chapter's own
+  // title (live 2026-10-15 at 09-snow, back from 今 · 三: the two stood one over the other).
+  if (sealOwed || momentUp()) return '';
   const key = titleKey(ch.id), id = ch.id;
   if (!titleFading.has(key)) {
     titleFading.set(key, 'up');
