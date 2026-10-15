@@ -32,6 +32,13 @@
 .topbar .peoplecard .person .namecard b { font-size: 11px; letter-spacing: 0; }
 .topbar .peoplecard figcaption b { font-family: var(--serif); font-weight: 600; font-size: 13px; white-space: nowrap; }
 .topbar .peoplecard figcaption .small { display: none; }
+/* Too many for the bar (1280 with the chat open: the last face cut in half, live 2026-10-15): every
+   face stays whole and the names give way, to an ellipsis, then to nothing. */
+.topbar .card.peoplecard, .topbar .peoplecard .people { min-width: 0; }
+.topbar .peoplecard .person { flex: 0 1 auto; min-width: 34px; overflow: hidden; }
+.topbar .peoplecard .person img, .topbar .peoplecard .person .namecard { flex: none; }
+.topbar .peoplecard figcaption { min-width: 0; overflow: hidden; }
+.topbar .peoplecard figcaption b { display: block; overflow: hidden; text-overflow: ellipsis; }
 .topbar .goalline { max-width: 26em; margin: 0; font-size: 12px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .topbar .goalline .goalnext { display: inline; margin: 0 0 0 8px; }
 .slotfoot { height: 46px; display: flex; align-items: center; gap: 8px; padding: 0 16px; grid-template-rows: none; }

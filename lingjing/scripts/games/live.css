@@ -85,6 +85,9 @@
 .g-jin-sway i { position: absolute; top: 3px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--text); }
 .g-dark { padding: 10px; border-radius: 10px; background: color-mix(in srgb, #0d0f12 70%, var(--surface)); color: #d9dde2; }
 .g-dark .g-jin-line { color: #d9dde2; }
+/* The steps on the dark card: light rims, the taken ones filled light (live, 2026-10-15: --dim rims vanished on it). */
+.g-dark .g-jin-dot { border-color: rgb(217 221 226 / 55%); }
+.g-dark .g-jin-dot.is-on { background: #d9dde2; border-color: #d9dde2; }
 .g-lastshot .g-jin-hr b { display: inline-block; animation: g-jin-shake .12s infinite alternate; }
 @keyframes g-jin-shake { from { transform: translateX(calc(var(--shake, .3) * -2px)); } to { transform: translateX(calc(var(--shake, .3) * 2px)); } }
 @media (prefers-reduced-motion: reduce) { .g-lastshot .g-jin-hr b { animation: none; } }
