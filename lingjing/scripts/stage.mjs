@@ -58,15 +58,10 @@ export const sideLineOf = look => look?.scene?.line ?? null;
    book. The rest is the 古's — the world of 灵气 — and stands only while the
    scene is on the book's own line; back on it, all of it returns. */
 export const FURNITURE = {
-  every: ['lang', 'books'],
-  // `her`: 银月's 木牌 in the footer (2026-10-14) — she is the 古's; 今线 keeps only the 书 chip (九鼎录 · 读原著).
+  every: ['lang', 'lu', 'read'],
+  // `her`: 银月's 木牌 in the footer (2026-10-14) — she is the 古's; 今线 keeps only 九鼎录 and 读原著.
   main: ['name', 'realm', 'pool', 'wealth', 'omen', 'her', 'festival', 'weather', 'roads', 'errands', 'bag', 'tray'],
 };
-/* The footer's chips, in their order (Hanli, 2026-10-15: 「top bar and bottom bar both have too
-   much widgets」): 银月's 木牌 · the festival · the sky (an icon and degrees) · 书 (九鼎录 and 读原著
-   in one popover) · 事 · 物品. The roads and what waits are the footer's other row (footRowHtml).
-   Each is a part of FURNITURE, so a 今 interlude keeps only what stands on every line. */
-export const FOOTER = ['her', 'festival', 'weather', 'books', 'errands', 'bag'];
 export const stands = (look, part) => !sideLineOf(look) || FURNITURE.every.includes(part);
 /* On a side line the stage holds the scene alone: its picture, its people,
    the cards that name a value, the game it offers (`scene.games`) and the
@@ -345,8 +340,7 @@ export const showable = c => Boolean(c) && !PAGE_OWNS.has(c.card);
    小人书 panel was drawn twice, because the stage was one list). The layout
    stays put; only what fills each slot changes.
 
-   HEADER (此地) is the page's own: the place line and the people. The goal
-   reads in the 事 book (BOOK; Hanli, 2026-10-15: 「top bar … too much widgets」).
+   HEADER (此地) is the page's own: the place line, the people, the goal.
    MAIN (此刻) holds EXACTLY ONE thing, the first of these ranks with anything
    in it — replaced, never stacked. Everything else in MAIN's ranks waits in the
    queue, and the footer counts it (还有 N 件 ›). A `together` rank is one thing
@@ -356,9 +350,7 @@ export const showable = c => Boolean(c) && !PAGE_OWNS.has(c.card);
    then), the count of what waits; the page adds the ask bar and the chips.
 
    Every kind in CARD_KINDS lives in exactly one slot (tests/stage.test.mjs). */
-export const HEADER = ['people'];
-/* The goal's slot: the top of the 事 chip's book (cards.js bookPopHtml), never the bar. */
-export const BOOK = ['goal'];
+export const HEADER = ['people', 'goal'];
 export const MAIN = [
   { kinds: ['memory'] }, //                                              银月's memory, while it plays
   { kinds: ['homing'] }, //                                              then the 鼎's province in ink (鼎归)

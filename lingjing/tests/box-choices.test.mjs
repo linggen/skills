@@ -76,6 +76,6 @@ for (const [name, steps] of Object.entries(SCENES)) {
 test('the footer chips\' popovers are anchored to the footer, not clipped by the chips\' scrolling row', () => {
   const css = fs.readFileSync(new URL('../scripts/story.css', import.meta.url), 'utf8');
   assert.match(css, /\.slotfoot \.footchips \{[^}]*overflow-x: auto/, 'the row scrolls (why the anchor moved)');
-  assert.match(css, /\.slotfoot \.bookwrap \{ position: static; \}/, 'every footer chip, the 去往 list too (2026-10-15)');
+  assert.match(css, /\.slotfoot \.footchips \.bookwrap \{ position: static; \}/);
   assert.match(css, /\.slotfoot \.bookpop \{[^}]*bottom: calc\(100% \+ 10px\)/);
 });
