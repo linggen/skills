@@ -345,7 +345,7 @@ body.fighting .sight { display: none; }
 .story .pager .pgn { min-width: 3em; text-align: center; font-variant-numeric: tabular-nums; font-size: 12.5px; color: var(--on-stage); }
 .story .pager .q:disabled { opacity: .35; cursor: default; }
 /* A page's 亮相 stands in the upper half, over the band (lingjing.js pageSight). */
-.view:has(.story.whole) .sightcard { top: 4%; bottom: calc(100% - var(--band-top) + 4px); }
+.view:has(.story.whole) .sightcard, .view.jin:not(:has(.backdrop.painted)):has(.story.whole) .sightcard { top: 4%; bottom: calc(100% - var(--band-top) + 4px); }
 .story .wholetext { width: min(44em, 100%); font-family: var(--serif); font-size: 18px; line-height: 1.9; letter-spacing: .03em; text-shadow: 0 1px 3px rgba(0, 0, 0, .5); }
 .story .wholetext .line { margin: 0 0 1.05em; }
 .story .wholetext .line.ling { font-size: 15px; }
