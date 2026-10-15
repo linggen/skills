@@ -11,7 +11,7 @@
 // `drop_tables`). Fights pay the haunt table (rules/core.mjs pay: under the 回's cap,
 // at 圆满 as 灵石). Leaving, or `lasts_min` gone by, ends the run.
 // Nothing here names an instance: the data declares it.
-import { pick, seedOf } from '../state.mjs';
+import { dayKey, pick, seedOf } from '../state.mjs';
 import { clone, refuse } from './core.mjs';
 import { duelBrief } from './look.mjs';
 import { stow } from './pouch.mjs';
@@ -188,7 +188,9 @@ export function runEncounter(content, state, place, now) {
   const creature = creatureOf(content, foe.creature), r = rerunById(content, state.rerun.id);
   if (!creature || !r) return null;
   const i = room.beaten, deck = foe.elite ? r.rerun.elite?.decks?.[foe.creature] : null;
-  const game = { id: `haunt:${foe.creature}`, kind: 'duel', creature: foe.creature, hunt: place.id, deal: `${state.rerun.seed}|${place.id}|${i}`, run: { room: place.id, i }, ...(deck ? { elite: true, deck } : {}) };
+  // `deal`: each try at the beast its own shuffle (the place's fights of the day, numbered as a pool's) — a loss is not the same fight again.
+  const rec = state.duels?.[`hunt:${place.id}`], tries = rec?.day === dayKey(now) ? rec.n ?? 0 : 0;
+  const game = { id: `haunt:${foe.creature}`, kind: 'duel', creature: foe.creature, hunt: place.id, deal: `${state.rerun.seed}|${place.id}|${i}|${tries}`, run: { room: place.id, i }, ...(deck ? { elite: true, deck } : {}) };
   const pool = r.rerun.spawns?.[place.id]?.pool, named = pool ? content.places[place.province]?.pools?.[pool]?.name : null;
   return {
     creature: { id: foe.creature, name: pick(creature.name, state.lang) }, game,

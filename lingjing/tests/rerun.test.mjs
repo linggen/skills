@@ -10,6 +10,7 @@ import fs from 'node:fs';
 import { loadContent } from '../scripts/content.mjs';
 import { dayKey, newState, threshold } from '../scripts/state.mjs';
 import { duel, look, move, playTo, rerun, rollRun, runsPay, task, win, VERBS } from '../scripts/rules.mjs';
+import { winningPicks } from '../scripts/rules/progress.mjs';
 import { pay } from '../scripts/rules/core.mjs';
 import { fightSetup, gearFight } from '../scripts/rules/cards.mjs';
 import { rerunHere } from '../scripts/rules/rerun.mjs';
@@ -54,6 +55,9 @@ const inside = (now = openAt()) => must(rerun, atDoor(now), { action: 'enter' },
 function fightOut(state, id, now) {
   const started = duel(state, content, at(now), { id });
   assert.equal(started.result.ok, true, JSON.stringify(started.result));
+  // A winning line when one is there (rules/progress.mjs, as seed --at plays), else the page-like greedy line.
+  const line = winningPicks(started.result.duel.setup, catalog);
+  if (line) return duel(started.state, content, at(now), { id, picks: line.join(',') });
   const { setup } = started.result.duel, st = begin(setup, catalog), actions = [];
   for (let guard = 0; guard < 160 && st.outcome === 'open'; guard += 1) {
     if (st.whose === 'foe') { foeTurn(st); continue; }
@@ -231,22 +235,25 @@ test('the drop table lints: 卷一 things that exist, weights and chances sane, 
   assert.ok(RERUN.finds['mijing-anhe'].some(f => f.item === 'dingtai'), '鼎苔 among the finds (古五: scraped from the pits\' cracks)');
 });
 
-test('arms in three rarities, small and rising: 器攻, 护体, 抗 through the fight\'s own rates', () => {
+test('arms in three rarities, small and rising: 器攻, 护体, 抗 through the fight\'s own rates — never one that makes the stair trivial', () => {
   const table = content.rewards.drop_tables[RERUN.drops], items = content.items.items.filter(i => table.gear.includes(i.id));
   const order = ['common', 'fine', 'rare'];
   const size = i => i.effect.atk ?? i.effect.def ?? Object.values(i.effect.ward ?? {}).reduce((t, n) => t + n, 0);
+  for (const r of order) assert.ok(items.some(i => i.rarity === r), `some arm is ${r}`);
   for (const kind of ['weapon', 'robe', 'pendant']) {
-    const list = order.map(r => items.find(i => i.kind === kind && i.rarity === r));
-    assert.ok(list.every(Boolean), `${kind}: one of each rarity`);
-    for (let k = 1; k < 3; k += 1) assert.ok(size(list[k]) > size(list[k - 1]), `${kind}: ${list[k].id} over ${list[k - 1].id}`);
+    const list = order.map(r => items.find(i => i.kind === kind && i.rarity === r)).filter(Boolean);
+    assert.ok(list.length >= 2, `${kind}: at least two rarities`);
+    for (let k = 1; k < list.length; k += 1) assert.ok(size(list[k]) > size(list[k - 1]), `${kind}: ${list[k].id} over ${list[k - 1].id}`);
   }
-  assert.ok(items.every(i => (i.effect.atk ?? 0) <= 3 && (i.effect.def ?? 0) <= 3 && Object.values(i.effect.ward ?? {}).every(n => n <= 2)), 'no 法宝: 卷一\'s scale');
+  // 卷一's scale (no 法宝), and the balance measured 2026-10-15 (a 防 3 or a wood 抗 took the 犰狳 from ~50% to 80–90%).
+  assert.ok(items.every(i => (i.effect.atk ?? 0) <= 3 && (i.effect.def ?? 0) <= 2 && Object.values(i.effect.ward ?? {}).every(n => n <= 2)), 'small');
+  assert.ok(items.every(i => !i.effect.ward?.wood), 'no wood 抗: the stair\'s beast is wood');
   // Worn, each turns into the fight's numbers at the door.
-  const s = { ...past(), bag: { ...past().bag, 'qingtong-jian': 1, 'gu-daopao': 1, 'anhe-yu': 1 }, wear: { weapon: 'qingtong-jian', robe: 'gu-daopao', pendant: 'anhe-yu' } };
+  const s = { ...past(), bag: { ...past().bag, 'qingtong-jian': 1, 'heyu-ao': 1, 'anhe-yu': 1 }, wear: { weapon: 'qingtong-jian', robe: 'heyu-ao', pendant: 'anhe-yu' } };
   const g = gearFight(content, s), rates = content.cards.gear;
   assert.equal(g.power, Math.round(3 * rates.weapon_power));
-  assert.equal(g.armor, Math.round(3 * rates.armor_per_def));
-  assert.deepEqual(g.ward, { earth: 2 * rates.ward_per_point, wood: 2 * rates.ward_per_point });
+  assert.equal(g.armor, Math.round(2 * rates.armor_per_def));
+  assert.deepEqual(g.ward, { earth: 2 * rates.ward_per_point, water: 2 * rates.ward_per_point });
   const setup = fightSetup(content, s, content.creatures.creatures.find(c => c.id === 'heyu'), openAt());
   assert.ok(setup.you.power > 0 && setup.you.armor > 0 && setup.you.ward.earth > 0);
 });

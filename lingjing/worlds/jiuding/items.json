@@ -2,7 +2,7 @@
   "version": 1,
   "_about": "The catalog: every thing the player can own, with its picture, its price and at most one effect. `key` is needed by an exit; a pill pays `progress` on use from a capped table; `wear` puts it on Yinyue (with a `lift`: her card's atk or hp by 1, or her 疗伤 by 0.1) or the abode; `charm` is a 符 — one in the bag is its card (cards.json, the same id) in hand at a fight's door, spent when it is played. Arms are the fight's own: a weapon's `atk` (器攻) with the `root` it lends, a 法衣's `def` (防), a 佩's `ward` (抗, by element) — each worn in its own slot, and each turned into the fight's numbers at the door by the rates in cards.json `gear` (器攻 → 主灵根一击, 防 → 护体, 抗 → that element lands lighter; the root lent lets its 功法 into the deck). `temper` feeds a 本命法宝 that many points of growth, and `core` on such a material names the element it would lend if the treasure were bound with it. `sold` names the provinces whose market shelves it; an item sold nowhere is a gift or a drop only. `pouch` on a 储物袋 adds that many slots to the bag's room for good, once for each kind (rewards.json `pouch`).",
   "_juan": "The 卷 a thing belongs to (Hanli, 2026-10-05: 不要有后面各卷的物品): `juan`, 1 unsaid. One of a 卷 not open is never shelved, found, dropped or paid by a 传闻 (world.mjs ofJuan): 固基丹, 破境丹, 望气术·下卷 and four of the 五天材 are 结丹's (卷二; 息壤 is 卷一's, from the 秘境), the provinces' goods wait for their 卷.",
-  "_rarities": "刷副本 (2026-10-15): a dropped arm's `rarity` (rewards.json drop_tables pick a rarity, then an arm of it) and the word the page and Ling say for it. The bonus stays small: 普通 器攻 1 / 防 1 / 抗 1, 精良 2 / 2 / 2, 稀有 3 / 3 / 2+2, through the same rates as any arm (cards.json gear).",
+  "_rarities": "刷副本 (2026-10-15): a dropped arm's `rarity` (rewards.json drop_tables pick a rarity, then an arm of it) and the word the page and Ling say for it. The bonus stays small: 普通 器攻 1 / 防 1 / 抗土 1, 精良 2 / 2 / 抗土 2, 稀有 器攻 3 / 抗土 2+水 2 (no rare 法衣: 防 3 took the stair's 犰狳 from ~50% to ~80%; no wood ward at all), through the same rates as any arm (cards.json gear).",
   "rarities": {
     "common": { "zh": "普通", "en": "Common" },
     "fine": { "zh": "精良", "en": "Fine" },
@@ -1850,28 +1850,6 @@
       "art_source": "The grey robe's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
     {
-      "id": "gu-daopao",
-      "kind": "robe",
-      "rarity": "rare",
-      "name": {
-        "zh": "前人道袍",
-        "en": "An old Daoist robe"
-      },
-      "art": "art/items/grey-robe.webp",
-      "about": {
-        "zh": "石缝深处一只朽了的箱子里，一件道袍竟没烂，袖口绣着看不懂的纹。",
-        "en": "In a rotted chest deep in a crack, a Daoist robe that has not rotted at all, its cuffs stitched with a pattern no one can read."
-      },
-      "buy": 100,
-      "sell": 35,
-      "sold": [],
-      "effect": {
-        "def": 3
-      },
-      "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
-      "art_source": "The grey robe's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
-    },
-    {
       "id": "shi-zhui",
       "kind": "pendant",
       "rarity": "common",
@@ -1896,27 +1874,27 @@
       "art_source": "The jade ring's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
     {
-      "id": "teng-jie",
+      "id": "shisui-zhui",
       "kind": "pendant",
       "rarity": "fine",
       "name": {
-        "zh": "青藤结",
-        "en": "Green-vine knot"
+        "zh": "石髓坠",
+        "en": "Stone-marrow pendant"
       },
       "art": "art/items/jade-ring.webp",
       "about": {
-        "zh": "凶崖石阶上的老藤，打成一个结，挂着不枯。挡得住木行法术。",
-        "en": "Old vine from the stair of the Cliff of Danger, tied in a knot; hung up, it never withers. It turns a wood spell."
+        "zh": "凶崖石缝里渗出来的石髓，凝成一颗，穿绳挂着。土气厚，挡得住土行法术。",
+        "en": "Stone marrow seeped from a crack of the Cliff of Danger and set into a bead, hung on a cord. Its earth is thick enough to turn an earth spell."
       },
       "buy": 36,
       "sell": 12,
       "sold": [],
       "effect": {
         "ward": {
-          "wood": 2
+          "earth": 2
         }
       },
-      "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
+      "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold. No wood ward among the drops: it turns the stair's 犰狳 (wood) into nothing (tools: a wood ward of 1 took its fight from ~50% to ~90%).",
       "art_source": "The jade ring's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
     {
@@ -1929,8 +1907,8 @@
       },
       "art": "art/items/jade-ring.webp",
       "about": {
-        "zh": "暗河底下一块青玉，摸着是暖的。土行木行的法术打到身上，都轻了。",
-        "en": "A piece of green jade from the bottom of the dry river, warm to the touch. Earth and wood spells land lighter."
+        "zh": "暗河底下一块青玉，摸着是暖的。土行水行的法术打到身上，都轻了。",
+        "en": "A piece of green jade from the bottom of the dry river, warm to the touch. Earth and water spells land lighter."
       },
       "buy": 100,
       "sell": 35,
@@ -1938,7 +1916,7 @@
       "effect": {
         "ward": {
           "earth": 2,
-          "wood": 2
+          "water": 2
         }
       },
       "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
