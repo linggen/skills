@@ -706,6 +706,7 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
 | **Now** | 二十问 | 银月 thinks of an **ordinary animal** (猫, 狗, 牛, 喜鹊, 狐狸 …), he asks yes/no; a win records it in 录 as a known animal (not the 图鉴) |
 | **Now** | 讨价还价 | haggle with 钱掌柜 or the 货郎; the price band is the rules' |
 | **Now** | 断案 | 药园灵草案, 河伯娶妇's 账; the truth is fixed by the rules, the AI plays the suspects |
+| **Built** | 密室 | the first popular AI game (2026-10-15): a hidden room of 2–3 linked mechanisms (干支 dial · 掐诀 hand · 洛书 lid · 二十八宿 ring · an annals page), **asymmetric** — he sees the mechanisms, 银月 reads the old pages through her own pet tool Mishi (never Look, the page or Ling); seeded solutions the rules check; written hint only after she was asked and did not answer in time; gated skip pays nothing; pay, anti-repeat (a room once a week, then a quarter) and the day's limit in `worlds/jiuding/mishi.json`. Door at 藏经阁; a 秘境 rerun may roll one (`mishiRoll` / `mishiOffer`). 卷一 has her asleep in the token, so there it plays on the torn page — her half lights up once she is awake |
 | Later | 猜灯谜 | festivals, both ways |
 | Later | 银月的心事 | her questions → 恩仇簿; no win or loss |
 | Later | 斗嘴 | with 马小宝, judged by rubric |

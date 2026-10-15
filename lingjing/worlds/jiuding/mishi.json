@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "_doc": "密室 (Hanli, 2026-10-15) — the first of the popular AI games. A hidden room of 2–3 linked mechanisms; ASYMMETRIC: the player sees the mechanisms on the page, 银月 reads the old pages (`her`) through her own tool result (SKILL.md Mishi, --for=yinyue) and never on the page. Neither half solves it alone; the rules (rules/mishi.mjs) hold the solution, seeded per entry, and check every input. `hint` is her half paraphrased, given on the page only after he asked her and `hint_wait_s` went by without her (the model slow, or she sleeps in the token). Kinds: dial (干支盘, 60-cycle), hand (掐诀 铜掌, qiajue.js WEN — the twelve 文 as 古六 teaches them), luoshu (洛书九宫, 戴九履一 — items.json's 半卷竹简), stars (二十八宿), scroll (an annals page read right to left). Placeholders in braces are filled by the variant. Numbers here are defaults; the economy agent tunes them (worlds/jiuding/balance.json `mishi`, read over these when present).",
+  "limits": {
+    "_doc": "per_day: rooms entered a day (token cost — about ten minutes of her each; the ~30 min routine). repeat: a room escaped and paid within `days` pays `factor` of its 灵石 and no find. hint_wait_s: after he asks her, how long before the page may show the written hint. skip: the gated skip shows after `wrong` misses on one mechanism or `minutes` on it; a skip opens it and the room then pays nothing.",
+    "per_day": 2,
+    "repeat": { "days": 7, "factor": 0.25 },
+    "hint_wait_s": 25,
+    "skip": { "wrong": 3, "minutes": 5 }
+  },
+  "entries": [
+    { "task": "mishi", "place": "cangjing", "rooms": ["cangjing-jiabi", "cangjing-shuku"] },
+    { "task": "mishi-mijing", "rerun": "mijing", "chance": 0.2, "rooms": ["mijing-anshi"], "_doc": "A 秘境 rerun with no cache may roll a 暗室 instead: rules/rerun.mjs enterRun calls mishiRoll (rules/mishi.mjs) with the run's seed, and on a hit mishiOffer in one of the run's rooms. Offered that day, in that room, while the run is on." }
+  ],
+  "pay": {
+    "_doc": "On escape, nothing skipped: `grant` through the rules' pay (rewards.json table caps it), plus the room's `find`, and its `rare` by a seeded roll.",
+    "grant": { "table": "labor", "progress": 0, "wealth": 20 }
+  },
+  "rooms": [
+    {
+      "id": "cangjing-jiabi",
+      "name": { "zh": "藏经阁 · 三层夹壁", "en": "The scripture hall · Behind the third-floor wall" },
+      "line": {
+        "zh": "三层最里头一排书架，第三格一本《道德经》的注疏抽出来，后面的木板敲着是空的。木板一推，陈纸的潮气扑出来——一间夹壁，一人宽，两步深。灯台上的油早干了，墙上一只铜盘。",
+        "en": "In the last row of shelves on the third floor, a commentary on the Daodejing slides out of the third slot, and the board behind it rings hollow. Push it, and the damp of old paper breathes out — a gap in the wall, one person wide, two steps deep. The lamp's oil dried long ago; on the wall, a bronze dial."
+      },
+      "find": { "item": "sang-paper", "n": 2 },
+      "rare": { "item": "lianxi-fu", "chance": 0.15 },
+      "escape": { "zh": "铜匣里垫着油纸：几张没用过的好纸，压得平平的。", "en": "The bronze box is lined with oiled paper: a few sheets of good, unused paper, pressed flat." },
+      "puzzles": [
+        {
+          "kind": "dial", "split": "seal-her",
+          "his": { "zh": "门背后嵌着一只铜盘，两圈：外圈十天干，内圈十二地支，各自能转，也能扣在一起同转——一转一岁。盘底一行刻字：『封后{n}岁乃启。』", "en": "Set into the back of the door, a bronze dial of two rings: ten Heavenly Stems outside, twelve Earthly Branches inside. Each turns alone, or locked together — one turn, one year. A line cut under it: \"Opens {n} years after the sealing.\"" },
+          "her": { "zh": "（夹壁地上一页执事的日记，旧篆，他认不得）『……此室封于{seal}年冬。后之来者，依盘上所刻之数推之。』", "en": "(A page of a steward's diary on the floor, in old seal script he cannot read) \"…This room was sealed in the winter of the {seal} year. Who comes after, reckon it by the number cut on the dial.\"" },
+          "hint": { "zh": "日记上说，这间夹壁是{seal}年封的。先把铜盘拨到{seal}，再扣在一起，照盘底的数一岁一岁往后转。", "en": "The diary says the room was sealed in the {seal} year. Set the dial to {seal} first, then lock the rings and turn on, a year at a time, by the number under it." },
+          "right": { "zh": "咔嗒一声，书架后头第二道小门松了。", "en": "A click: the second little door behind the shelves gives." }
+        },
+        {
+          "kind": "hand", "link": "dial",
+          "his": { "zh": "小门里一张矮案，案上嵌一只铜手掌：左手，掌心朝上，指节上十三颗小铜钉，钉上没有字。按下去，会陷一下。", "en": "Behind the little door, a low desk with a bronze hand set in it: a left hand, palm up, thirteen small studs on its joints, none of them marked. Press one, and it sinks a little." },
+          "her": { "zh": "（案下压着一张诀谱）『启匣三掐：首掐所启之岁其支之文，次掐{w2}文，终掐{w3s}之文。掌诀：子在无名指根，自四指根逐节而数——丑中指根，寅食指根，卯辰巳上食指，午未申过三指之尖，酉戌亥下小指，共十二目。火南午，水北子，木东卯，金西酉，土在当中，中指中节。』", "en": "(A chart of hand-signs under the desk) \"Three pinches open the box: first the mark of the branch of the year that opened the door, then the {w2} mark, last the mark of {w3s}. The palm: zi at the root of the ring finger; from that root count joint by joint — chou the middle finger's root, yin the index finger's root, mao, chen, si up the index finger, wu, wei, shen across the three fingertips, you, xu, hai down the little finger: twelve marks. Fire is south, wu; water north, zi; wood east, mao; metal west, you; earth in the middle — the middle finger's middle joint.\"" },
+          "hint": { "zh": "诀谱说：先掐刚才铜盘上那一岁的地支，再掐{w2}，最后掐{w3s}的那个文（{w3}）。无名指根是子，往食指那边数。", "en": "The chart says: first the branch of the year you set on the dial, then {w2}, last the mark of {w3s} ({w3}). The ring finger's root is zi; count toward the index finger." },
+          "right": { "zh": "铜掌往下一沉，案底一只抽屉滑了出来，里头一只铜匣。", "en": "The bronze hand sinks; a drawer slides out under the desk, a bronze box in it." }
+        },
+        {
+          "kind": "luoshu",
+          "his": { "zh": "铜匣盖上九个方格，三三排着，格里是黑白圆点，点数各不相同。匣盖四边光秃秃的，看不出哪头是上。", "en": "Nine squares on the box's lid, three by three, each with black and white dots, no two counts the same. The lid's edges are bare: no telling which way is up." },
+          "her": { "zh": "（匣底压着半页古谱）『叩匣之序：先{k1}，次{k2}，终{k3}。古谱：戴九履一，左三右七，左肩四，右肩二，左足八，右足六，五居中央。』", "en": "(Half a page of an old chart under the box) \"Knock the box in this order: first {k1}, then {k2}, last {k3}. The chart: wear nine, tread one; three on the left, seven on the right; four the left shoulder, two the right; eight the left foot, six the right; five in the middle.\"" },
+          "hint": { "zh": "古谱要叩的是{n1}、{n2}、{n3}：先找{n1}个点的那一格，再{n2}个，最后{n3}个。", "en": "The chart wants {n1}, {n2}, {n3}: first the square with {n1} dots, then {n2}, last {n3}." },
+          "right": { "zh": "匣盖弹开了。", "en": "The lid springs open." }
+        }
+      ]
+    },
+    {
+      "id": "cangjing-shuku",
+      "name": { "zh": "藏经阁 · 底层书库", "en": "The scripture hall · The cellar stacks" },
+      "line": {
+        "zh": "一层最里头一块地砖踩着发空。撬开，一道窄梯下去，是间不大的书库：四壁空架，一盏没油的灯。顶上凿着一圈星图，墙上一只干支盘，倒还新着。",
+        "en": "At the back of the ground floor one flagstone sounds hollow underfoot. Prise it up: a narrow stair down to a small stack room — bare shelves on every wall, a lamp with no oil. A ring of stars is cut into the ceiling, and a stem-and-branch dial on the wall still looks new."
+      },
+      "find": { "item": "talisman", "n": 1 },
+      "rare": { "item": "wangqi-1", "chance": 0.1 },
+      "escape": { "zh": "最后一道暗格里一只扁木盒，盒里一张符，朱砂还亮。", "en": "In the last hidden slot, a flat wooden case, and in it a talisman, its cinnabar still bright." },
+      "puzzles": [
+        {
+          "kind": "stars",
+          "his": { "zh": "顶上一圈星图，分作四片，每片刻一个象的名字，各七簇星，靠一头刻着一道起刻。墙上一根铜针，能指到任何一簇。", "en": "A ring of stars overhead in four parts, each part cut with the name of a Symbol, seven clusters each, a starting notch at one end. A bronze needle on the wall can point at any cluster." },
+          "her": { "zh": "（梯脚一块砖上刻着字）『启库者，针指{xiu}宿。{xiang}七宿，自起刻而数：{list}。』", "en": "(Words cut into a brick at the foot of the stair) \"To open the stacks, point the needle at the {xiu} lodge. The seven lodges of the {xiang}, counted from the notch: {list}.\"" },
+          "hint": { "zh": "砖上说要指{xiu}宿：在{xiang}那一片里，从起刻那头数第{idx}簇。", "en": "The brick says to point at {xiu}: in the {xiang} part, the cluster {idx} from the notch." },
+          "right": { "zh": "铜针一停，空架后头一格暗屉弹开，里头一卷经。", "en": "The needle stops; a hidden drawer behind the bare shelves springs open, a scroll inside." }
+        },
+        {
+          "kind": "scroll",
+          "his": { "zh": "展开是一页观志，竖写，五行，每行五个字，记的是年月。", "en": "Unrolled, it is a page of the temple's annals, written in columns — five columns of five characters, years and months." },
+          "her": { "zh": "（灯座底下一张字条）『朱笔所圈二字，便是开盘之岁：先取自右数第{ca}行、自上第{ra}字；次取自右数第{cb}行、自上第{rb}字。』", "en": "(A slip under the lamp's base) \"The two characters ringed in red are the year that opens the dial: first, the column {ca} from the right, character {ra} from the top; then the column {cb} from the right, character {rb} from the top.\"" },
+          "hint": { "zh": "字条说：从右往左数第{ca}行、从上往下第{ra}个字；再第{cb}行、第{rb}个字。", "en": "The slip says: column {ca} counting from the right, character {ra} from the top; then column {cb}, character {rb}." },
+          "right": { "zh": "你把那两个字念了出来：{year}。墙上的干支盘轻轻一响。", "en": "You read the two characters aloud: {year}. The dial on the wall gives a small sound." }
+        },
+        {
+          "kind": "dial", "split": "n-her", "base": "scroll",
+          "his": { "zh": "干支盘：外圈天干，内圈地支，各自能转，也能扣在一起同转——一转一岁。盘底刻：『自所得之岁起。』", "en": "The dial: stems outside, branches inside, each turning alone or locked together — one turn, one year. Cut under it: \"Begin from the year you found.\"" },
+          "her": { "zh": "（字条背面）『得岁之后，扣盘顺转{n}岁，乃启。』", "en": "(The back of the slip) \"Having the year, lock the dial and turn on {n} years; then it opens.\"" },
+          "hint": { "zh": "字条背面说：从卷上念出的那一岁起，两圈扣在一起，再往后转{n}岁。", "en": "The back of the slip says: from the year you read off the scroll, lock the rings and turn on {n} years." },
+          "right": { "zh": "盘心一松，墙里退出一道暗格。", "en": "The dial's heart loosens, and a hidden slot backs out of the wall." }
+        }
+      ]
+    },
+    {
+      "id": "mijing-anshi",
+      "name": { "zh": "沉鼎秘境 · 暗室", "en": "The Sunken Cauldron realm · A hidden chamber" },
+      "line": {
+        "zh": "塌了半边的石阶底下一扇矮门，门楣上凿着星。侧身进去，是间圆顶的小石室，顶上一圈星图，北墙一只干支盘，地上九块方砖。门在身后合上了。",
+        "en": "Under a half-fallen stair, a low door with stars cut over its lintel. Turn sideways and in: a small domed chamber — a ring of stars overhead, a stem-and-branch dial on the north wall, nine square flags on the floor. The door closes behind you."
+      },
+      "find": { "item": "tongkuang", "n": 2 },
+      "rare": { "item": "lianxi-fu", "chance": 0.15 },
+      "escape": { "zh": "最后一块砖陷下去，墙角露出个石龛：几块铜矿石，码得整整齐齐。门开了。", "en": "The last flag sinks, and a niche opens in the corner: a few lumps of copper ore, stacked neatly. The door opens." },
+      "puzzles": [
+        {
+          "kind": "stars",
+          "his": { "zh": "圆顶一圈星图，分作四片，每片刻一个象的名字，各七簇星，靠一头刻着一道起刻。一根铜针能指到任何一簇。", "en": "A ring of stars on the dome in four parts, each cut with the name of a Symbol, seven clusters each, a starting notch at one end. A bronze needle can point at any cluster." },
+          "her": { "zh": "（门楣内侧的刻字）『入室者，针指{xiu}宿。{xiang}七宿，自起刻而数：{list}。』", "en": "(Words cut inside the lintel) \"Who enters, point the needle at the {xiu} lodge. The seven lodges of the {xiang}, counted from the notch: {list}.\"" },
+          "hint": { "zh": "门楣上说要指{xiu}宿：在{xiang}那一片里，从起刻那头数第{idx}簇。", "en": "The lintel says to point at {xiu}: in the {xiang} part, the cluster {idx} from the notch." },
+          "right": { "zh": "星图转了半寸，北墙的干支盘露了出来。", "en": "The star ring turns half an inch, and the dial on the north wall comes clear." }
+        },
+        {
+          "kind": "dial", "split": "seal-her",
+          "his": { "zh": "北墙的干支盘，两圈各自能转，也能扣在一起同转——一转一岁。盘底刻：『封后{n}岁乃启。』", "en": "The north wall's dial, two rings turning alone or locked together — one turn, one year. Cut under it: \"Opens {n} years after the sealing.\"" },
+          "her": { "zh": "（墙角一块碑，字被苔盖了一半）『……{seal}年，九人入，封此室……』", "en": "(A stele in the corner, half its words under moss) \"…In the {seal} year, nine went in, and sealed this chamber…\"" },
+          "hint": { "zh": "碑上说，这间石室是{seal}年封的。先把盘拨到{seal}，再扣在一起，照盘底的数往后转。", "en": "The stele says the chamber was sealed in the {seal} year. Set the dial to {seal}, lock the rings and turn on by the number under it." },
+          "right": { "zh": "盘心一响，地上九块方砖亮出了点子。", "en": "The dial sounds, and dots show on the nine flags of the floor." }
+        },
+        {
+          "kind": "luoshu",
+          "his": { "zh": "地上九块方砖，三三铺着，砖面是黑白圆点，点数各不相同。看不出哪头朝北。", "en": "Nine flags on the floor, three by three, black and white dots on each, no two counts the same. No telling which way is north." },
+          "her": { "zh": "（碑的背面）『出室之法：先踏{k1}，次踏{k2}，终踏{k3}。戴九履一，左三右七，左肩四，右肩二，左足八，右足六，五居中央。』", "en": "(The back of the stele) \"To leave: tread first {k1}, then {k2}, last {k3}. Wear nine, tread one; three on the left, seven on the right; four the left shoulder, two the right; eight the left foot, six the right; five in the middle.\"" },
+          "hint": { "zh": "碑背面要踏的是{n1}、{n2}、{n3}：先踏{n1}个点的砖，再{n2}个，最后{n3}个。", "en": "The stele's back wants {n1}, {n2}, {n3}: first the flag with {n1} dots, then {n2}, last {n3}." },
+          "right": { "zh": "最后一块砖沉了下去。", "en": "The last flag sinks." }
+        }
+      ]
+    }
+  ],
+  "words": {
+    "_doc": "Names the variants fill in: the 洛书 positions (canonical grid, row-major, 戴 on top: 4 9 2 / 3 5 7 / 8 1 6), the five spells' marks (qiajue.js SPELLS), the four Symbols and their seven lodges.",
+    "luoshu": {
+      "dai": { "at": 1, "zh": "所戴", "en": "what it wears" },
+      "lv": { "at": 7, "zh": "所履", "en": "what it treads" },
+      "zuo": { "at": 3, "zh": "左", "en": "the left" },
+      "you": { "at": 5, "zh": "右", "en": "the right" },
+      "zuojian": { "at": 0, "zh": "左肩", "en": "the left shoulder" },
+      "youjian": { "at": 2, "zh": "右肩", "en": "the right shoulder" },
+      "zuozu": { "at": 6, "zh": "左足", "en": "the left foot" },
+      "youzu": { "at": 8, "zh": "右足", "en": "the right foot" }
+    },
+    "spells": {
+      "fire": { "wen": "wu", "zh": "火弹", "en": "the fireball" },
+      "ice": { "wen": "zi", "zh": "冰锥", "en": "the ice spike" },
+      "vine": { "wen": "mao", "zh": "木藤", "en": "the vine" },
+      "blade": { "wen": "you", "zh": "金刃", "en": "the metal blade" },
+      "wall": { "wen": "yuqing", "zh": "土墙", "en": "the earth wall" }
+    },
+    "symbols": [
+      { "id": "long", "zh": "东方苍龙", "en": "Azure Dragon of the East", "label": { "zh": "苍龙", "en": "Dragon" }, "lodges": { "zh": ["角", "亢", "氐", "房", "心", "尾", "箕"], "en": ["Horn", "Neck", "Root", "Room", "Heart", "Tail", "Winnowing Basket"] } },
+      { "id": "wu", "zh": "北方玄武", "en": "Black Tortoise of the North", "label": { "zh": "玄武", "en": "Tortoise" }, "lodges": { "zh": ["斗", "牛", "女", "虚", "危", "室", "壁"], "en": ["Dipper", "Ox", "Girl", "Emptiness", "Rooftop", "Encampment", "Wall"] } },
+      { "id": "hu", "zh": "西方白虎", "en": "White Tiger of the West", "label": { "zh": "白虎", "en": "Tiger" }, "lodges": { "zh": ["奎", "娄", "胃", "昴", "毕", "觜", "参"], "en": ["Legs", "Bond", "Stomach", "Hairy Head", "Net", "Turtle Beak", "Three Stars"] } },
+      { "id": "que", "zh": "南方朱雀", "en": "Vermilion Bird of the South", "label": { "zh": "朱雀", "en": "Bird" }, "lodges": { "zh": ["井", "鬼", "柳", "星", "张", "翼", "轸"], "en": ["Well", "Ghost", "Willow", "Star", "Extended Net", "Wings", "Chariot"] } }
+    ],
+    "months": { "zh": ["正月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "冬月", "腊月"], "en": ["1st month", "2nd month", "3rd month", "4th month", "5th month", "6th month", "7th month", "8th month", "9th month", "10th month", "11th month", "12th month"] }
+  }
+}

@@ -174,7 +174,10 @@ function boardFor(taskId) {
       const round = spent ? (old.round ?? 0) + 1 : 0;
       boards.set(taskId, { taskId, mod, day, round, state: mod.newGame(`${day}|${look.seed ?? ''}|${taskId}${round ? `|${round}` : ''}`, task.level ?? 1, task.deal ?? {}) });
     }
-    return boards.get(taskId);
+    // A board the rules judge (密室, games/mishi.js `fromLook`): what it is comes from Look, laid in on every draw.
+    const g = boards.get(taskId);
+    if (mod.fromLook) g.state = mod.fromLook(g.state, look, { task: taskId, present: herHere() && !SCRATCH });
+    return g;
   }
   if (!boards.has(taskId)) {
     const herbs = authored.herbs.map((h) => ({ id: h.id, tile: h.tile, label: h.name[lang()] }));
@@ -2654,6 +2657,8 @@ function sendAsk() {
   // In a fight, his words go with the position (fightsay.js) — while asks are left.
   if (bout && askHerInFight(bout, q)) return;
   deliver(`@银月 ${q || words().askHerEmpty}`, false);
+  // A board waiting on her (密室): its clock starts with the words sent.
+  if (boardWaitsOnHer) herClock(boardWaitsOnHer);
 }
 /// Rows that open where they lie answer the keyboard as a button does.
 const KEY_ROWS = [
@@ -2764,10 +2769,54 @@ function gameMove(gmove) {
   const r = g.mod.act(g.state, { ...gmove.dataset });
   g.state = r.state;
   render();
+  // A board the rules judge hands back a verb to run (`send`) and a turn to 银月 (`her`) — never a win of its own.
+  if (r.her) boardAsksHer(g);
+  if (r.send) { g.sent = true; run(`send:${g.taskId}:${r.send.args?.action ?? ''}`, () => boardSends(g, r.send)); return true; }
   if (r.won && !g.sent) { g.sent = true; run(`win:${g.taskId}`, () => onWin(g.taskId)); }
   if (r.state.wait && g.mod.think) rivalTurn(g);
   return true;
 }
+/* A rules-judged board's verb (密室: open, try, asked, hint, skip, leave): the answer goes back to the
+   module (`heard`), then the save is read again — the room's view, the pay on the strip. Opened, she
+   hears that the old pages here are hers to read (her own tool, Mishi, carries them — never this page). */
+async function boardSends(g, send) {
+  const res = await write(send.verb, send.args ?? {}).catch(failed);
+  if (g.mod.heard) g.state = g.mod.heard(g.state, res);
+  render();
+  if (res?.ok && res.opened) tellYinyue('mishi', MISHI_FACT.zh, MISHI_FACT.en, { mood: 'neutral' });
+  else if (res?.ok && res.right && !res.out) tellYinyue('mishi', MISHI_STEP.zh, MISHI_STEP.en, { mood: 'happy' });
+  await refresh();
+}
+/* 问银月 from a board: the ask bar turned to her, when she is here to hear it (a scratch save never
+   messages her); her clock starts when the words go (sendAsk). Absent, it starts now — the module
+   waits out its short wait and offers the torn page itself. */
+let boardWaitsOnHer = null;
+function boardAsksHer(g) {
+  boardWaitsOnHer = g;
+  if (herHere() && !SCRATCH) openAsk(words().askHer.replace('{name}', look?.companion?.name ?? words().yinyue));
+  else herClock(g);
+}
+function herClock(g) {
+  if (!g?.mod?.heard) return;
+  g.state = g.mod.heard(g.state, { her: 'asked' });
+  render();
+  run(`send:${g.taskId}:asked`, () => write('mishi', { action: 'asked' }).catch(failed));
+}
+/* Her guest turn ended: the board that waited on her stops its clock — she answered in time. */
+function herAnswered() {
+  const g = boardWaitsOnHer;
+  boardWaitsOnHer = null;
+  if (g?.mod?.heard) { g.state = g.mod.heard(g.state, { her: 'spoke' }); render(); }
+}
+const MISHI_FACT = {
+  zh: '你们进了一间密室。机关他看得见；墙上、地上的古籍和刻字是旧篆，只有你读得懂——用 AppTool 调 Mishi 读你手里的那几页。用你自己的话告诉他你读到了什么，问他机关上看见了什么；答案你不知道，别猜别编。',
+  en: 'You two are in a hidden room. He sees the mechanisms; the old pages and carvings are in old seal script only you can read — read them with AppTool → Mishi. Tell him in your own words what you read and ask what he sees on the mechanism; you do not know the answer, so never guess or make one up.',
+};
+const MISHI_STEP = {
+  zh: '密室里一道机关开了，下一道露了出来；你手里的古籍也翻到了下一页（AppTool → Mishi）。',
+  en: 'A mechanism in the hidden room gave way and the next one shows; your old pages turn to the next one too (AppTool → Mishi).',
+};
+
 /* The rival's turn (a module that `think`s, as 象棋 does): thought in a Worker so
    the page stays live, laid in by the module's `answer` — only if the board is
    still the one it was thought for. */
@@ -3449,7 +3498,7 @@ async function mountChat() {
     onStreamEnd: (_text, info) => {
       // Ling or 银月 wrote: on a phone with the sheet shut, a dot on the chat's bar (sight.js).
       chatHeard(document.querySelector('.shell'));
-      if (info?.own === false) { voice.heard(); herLineCame(_text); return; }
+      if (info?.own === false) { voice.heard(); herLineCame(_text); herAnswered(); return; }
       turnEnded();
       voice.heard();
       streaming = false;

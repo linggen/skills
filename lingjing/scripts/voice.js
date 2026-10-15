@@ -75,6 +75,8 @@ export const MOMENTS = {
   // fightsay keeps their limits (two asks, three words a fight).
   fight_ask: { who: 'yinyue', priority: 'asked' },
   fight_cue: { who: 'yinyue', priority: 'big', now: true },
+  // 密室 (games/mishi.js): the room opened, a mechanism given way — his own taps, so always told; her pages are her Progress.
+  mishi: { who: 'yinyue', priority: 'asked' },
 };
 
 /* The flags a moment is posted with (the engine's § App moments). */

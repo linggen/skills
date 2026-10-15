@@ -39,6 +39,7 @@ import { newHere, portraitOf } from './codex.mjs';
 import { withoutSealed } from './sealed.mjs';
 import { rerunBoardId, rerunBrief, runBoardHere } from './rerun.mjs';
 import { hotspotsOf, lookHint, seenLog, seenMet, SEEN_KEEP } from './examine.mjs';
+import { mishiHosted, mishiLook } from './mishi.mjs';
 
 /* The market's shelf: the catalog sold in this province — and, while the
    companion is still to be found, her bell at every market, since the call
@@ -405,6 +406,8 @@ function tasksBrief(content, state, ctx) {
   // The board a beast here is caught with (狰's 守夜), until it is caught.
   const cid = placeOf(content, state.place)?.has?.creature, katch = cid ? creatureOf(content, cid)?.catch : null;
   if (katch && catchHere(content, state, katch)) hosted[katch] = { status: 'offered' };
+  // 密室's door where he stands (rules/mishi.mjs): its board offered as a hosted game is.
+  Object.assign(hosted, mishiHosted(content, state, ctx.now));
   const again = new Set([...(content.tasks?.tasks ?? []).map(t => t.id).filter(id => reopened(content, state, id, ctx.now)), ...Object.keys(hosted)]);
   const held = Object.fromEntries([...again].map(id => [id, { status: 'offered' }]));
   const hereShows = new Set((sceneOf(content, state)?.show ?? []).filter(c => c.card === 'board').map(c => c.id));
@@ -561,6 +564,8 @@ export function look(state, content, ctx) {
     stamina: staminaBrief(content, state, ctx.now),
     // 闭关 running: the hours in and what 出关 would grow now (rules/seclusion.mjs).
     ...(state.seclusion ? { seclusion: seclusionBrief(content, state, ctx.now) } : {}),
+    // 密室 (rules/mishi.mjs): the door here, or the room open — the mechanisms only, never her pages.
+    ...mishiLook(content, state, ctx),
     made: { at: state.made?.at ?? null, scenes: Object.keys(state.made?.scenes ?? {}) },
     words: wordsOf(content, lang),
     // 节日 · 节气 (rules/festival.mjs): the player's real day, reckoned on the device.

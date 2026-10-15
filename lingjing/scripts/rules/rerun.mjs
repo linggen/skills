@@ -17,6 +17,7 @@ import { duelBrief } from './look.mjs';
 import { stow } from './pouch.mjs';
 import { hashOf } from './travel.mjs';
 import { beatOf, creatureOf, mapOf, metNow, passed, placeBrief, placeName, placeOf, settlePlace } from './world.mjs';
+import { mishiOffer, mishiRoll } from './mishi.mjs';
 
 const HOUR = 3600000, MIN = 60000;
 
@@ -124,6 +125,9 @@ function enterRun(state, content, ctx) {
   const s = clone(state);
   const n = (state.reruns?.[here.beat.id]?.n ?? 0) + 1, seed = `${seedOf(state)}|${here.beat.id}|run${n}`;
   s.rerun = { id: here.beat.id, n, seed, since: ctx.now.toISOString(), rooms: rollRun(content, state, here, seed, ctx.now) };
+  // A run with no cache may roll a 暗室 instead (密室, rules/mishi.mjs — its chance and rooms are mishi.json's): offered in one of the run's rooms.
+  const dark = !Object.values(s.rerun.rooms).some(r => r.cache) && mishiRoll(content, state, { seed, now: ctx.now });
+  if (dark) s.mishi_offer = mishiOffer(content, s, { place: x.rooms[Math.floor(draw(`${seed}|anshi`) * x.rooms.length)], now: ctx.now }).mishi_offer;
   s.reruns = { ...s.reruns, [here.beat.id]: { ...s.reruns?.[here.beat.id], n } };
   s.place = x.home ?? x.rooms[0];
   delete s.returned;
