@@ -217,7 +217,27 @@ const SECOND = {
   },
 };
 
-function firstTap(spot, st, catalog) {
+/* Every move the rules allow from what this tap would lift. */
+const MATCH = {
+  hand: (a, spot) => a.kind === 'play' && a.index === spot.index,
+  mine: (a, spot) => a.kind === 'attack' && a.index === spot.index,
+  power: a => a.kind === 'power',
+};
+const allowedFrom = (spot, offers) => (offers ?? []).filter(o => o.ok && MATCH[spot.kind]?.(o.action, spot));
+
+/* Only one place it may go: go there (Hanli, 2026-10-15: 只有一个可以攻击的目标,
+   点了牌就攻击). The count is `offers` — the rules' own legality — so a 护主
+   standing alone, a beast with an empty rank, a 锁 with one body to take and a
+   lift with one friend to lift all act on the first tap; two or more ask where. */
+function onlyOne(spot, offers) {
+  if (!offers) return null;
+  const ok = allowedFrom(spot, offers);
+  return ok.length === 1 ? { action: ok[0].action } : null;
+}
+
+function firstTap(spot, st, catalog, offers = null) {
+  const one = onlyOne(spot, offers);
+  if (one) return one;
   if (spot.kind === 'hand') {
     const card = catalog?.[st.you.hand[spot.index]];
     return wantsTarget(card, st) ? { pick: { from: 'hand', index: spot.index } } : { action: { kind: 'play', index: spot.index } };
@@ -227,14 +247,16 @@ function firstTap(spot, st, catalog) {
   return { clear: true };
 }
 
-export function pickOf(picked, spot, st, catalog = null) {
+/* `offers` (battle.js offers, optional): with them, a lift that has exactly
+   one legal place acts on the first tap (onlyOne). */
+export function pickOf(picked, spot, st, catalog = null, offers = null) {
   if (spot.kind === 'end') return { action: { kind: 'end' } };
   if (spot.kind === 'quit') return { quit: true };
-  if (!picked) return firstTap(spot, st, catalog);
+  if (!picked) return firstTap(spot, st, catalog, offers);
   if (sameSpot(picked, spot)) return { clear: true };
   const second = SECOND[picked.from]?.[spot.kind];
   if (second) return second(picked, spot, st, catalog);
-  return LIFTS.has(spot.kind) ? firstTap(spot, st, catalog) : { clear: true };
+  return LIFTS.has(spot.kind) ? firstTap(spot, st, catalog, offers) : { clear: true };
 }
 
 /* A drag is the two taps in one gesture (the Mac's mouse; nothing depends on
@@ -242,6 +264,7 @@ export function pickOf(picked, spot, st, catalog = null) {
    nothing plays once it leaves the hand; let go on another thing that lifts,
    or back on the hand, and nothing happens. */
 export function dropOf(from, to, st, catalog = null) {
+  // A drag says where itself, so it never takes the one-place shortcut.
   const first = firstTap(from, st, catalog);
   if (first.action) return to && to.kind !== 'hand' && to.kind !== 'end' && to.kind !== 'quit' ? first : { clear: true };
   if (!first.pick || !to) return { clear: true };
@@ -325,7 +348,7 @@ function minionHtml(m, side, index, ctx, picked) {
   // name under it, and 攻 / 血 in the two bottom corners where a card player's
   // eye already looks. A 22px strip of a painting is a smudge, not a picture
   // (his, 2026-09-18: 放到阵前, 图片看不到了).
-  return `<button class="bminion ${side} el-${esc(m.element ?? 'none')}${held ? ' held' : ''}${m.taunt ? ' taunt' : ''}${can ? ' can' : ''}${aimed ? ' aimed' : ''}${side === 'mine' && why ? ' dim' : ''}${herOf(m.id, ctx)}" data-spot="${side === 'mine' ? 'mine' : 'theirs'}" data-index="${index}" data-id="${esc(m.id)}">
+  return `<button class="bminion ${side} el-${esc(m.element ?? 'none')}${held ? ' held' : ''}${m.taunt ? ' taunt' : ''}${can ? ' can' : ''}${aimed ? ' aimed' : ''}${side === 'mine' && why ? ' dim' : ''}${herOf(m.id, ctx)}" data-spot="${side === 'mine' ? 'mine' : 'theirs'}" data-index="${index}" data-id="${esc(m.id)}"${m.uid != null ? ` data-uid="${esc(m.uid)}"` : ''}>
     <span class="bface-wrap">
       ${pic ? `<img class="bpic small" src="${esc(pic)}" alt="" loading="lazy">` : '<span class="bpic small none"></span>'}
       <span class="bglyph">${GLYPH[m.element] ?? ''}</span>
@@ -381,7 +404,7 @@ function handHtml(st, ctx, picked) {
     const held = picked?.from === 'hand' && picked.index === index;
     const b = bodyOf(st.you, c);
     // 闭关's ★: the cost it has now, and the stars by its name.
-    const text = `${esc(sayEffect({ ...c, effect: effectOf(st.you, c), keywords: keywordsOf(st.you, c) }, ctx))}${liftOf(st.you, c, ctx)}${onBeast(st, c, ctx)}`;
+    const text = `${esc(sayEffect({ ...c, effect: effectOf(st.you, c), keywords: keywordsOf(st.you, c) }, ctx))}${liftOf(st.you, c, ctx)}${onBeast(st, c, ctx)}${backlash(st, c, ctx)}`;
     return `<button class="bcard el-${esc(c.element ?? 'none')}${herOf(id, ctx)}${held ? ' held' : ''}${why ? ' dim' : ''}${!why && !held ? ' can' : ''}" data-spot="hand" data-index="${index}" data-id="${esc(id)}" style="${fanOf(index, n)}"${why ? ` title="${esc(w.why[why] ?? why)}"` : ''}>
       ${leafHtml(c, ctx, { cost: costOf(st.you, c), atk: b.atk, hp: b.hp, stars: starsOf(st.you, c), text, why: why ? (w.why[why] ?? why) : null })}
     </button>`;
@@ -420,6 +443,23 @@ function onBeast(st, c, ctx) {
   if (!word) return '';
   const n = dealt(st, 'you', e.damage, c.element, st.foe.root);
   return ` <b class="bon${clash(c.element, st.foe.root) < 1 ? ' down' : ''}">${ctx.lang === 'en' ? `→ ${n} on ${pro(ctx).itObj} · ${word}` : `→ 对${pro(ctx).itObj} ${n} · ${word}`}</b>`;
+}
+
+/* 反噬 a draw would cost, reckoned now: each card wanted past a dry deck costs
+   1, then 2, then 3 气血 (battle.js draw). 参悟 hurt him with no word on it
+   (Hanli, 2026-10-15) — the rule was fair, the card was silent. */
+export function backlashOf(side, c) {
+  const want = effectOf(side, c)?.draw;
+  const deck = typeof side?.deck === 'number' ? side.deck : side?.deck?.length ?? 0;
+  const over = want == null ? 0 : Math.max(0, want - deck);
+  let n = 0;
+  for (let k = 1; k <= over; k += 1) n += (side.fatigue ?? 0) + k;
+  return { over, n, deck };
+}
+function backlash(st, c, ctx) {
+  const { n, deck } = backlashOf(st.you, c);
+  if (!n) return '';
+  return ` <b class="bon down">${ctx.lang === 'en' ? `deck has ${deck} · backlash −${n} Life` : `牌库剩 ${deck} 张 · 反噬 −${n} 气血`}</b>`;
 }
 
 /* The day's cast on a card it touches — so a number that differs from the

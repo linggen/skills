@@ -2778,7 +2778,8 @@ async function onBoutTap(spot) {
   if (b.busy || b.st.outcome !== 'open') return;
   // A tap on the bare stage with nothing lifted is no move at all — not even a repaint.
   if (spot.kind === 'stage' && !b.picked) return;
-  return boutDo(b, pickOf(b.picked, spot, boutView(b.st), cardCatalog()));
+  // With the rules' offers, a lift with one legal place acts on the first tap.
+  return boutDo(b, pickOf(b.picked, spot, boutView(b.st), cardCatalog(), boutOffers(b.st)));
 }
 
 /* A drag on the Mac (battle-drag.js): the same two taps in one gesture. */

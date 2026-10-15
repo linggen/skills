@@ -12,18 +12,24 @@
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 /* How long each beat takes. Tuned so a whole exchange lands in about a second:
-   this is a game you open for six minutes, not an epic. */
-export const BEATS = { card: 260, hit: 340, withdraw: 520, banner: 620, draw: 280, gap: 90, stroke: 240, splash: 1300 };
+   this is a game you open for six minutes, not an epic. An attack — the
+   stroke, the blow, the blow back — stays near 600ms. */
+export const BEATS = { card: 260, hit: 300, withdraw: 460, banner: 620, draw: 280, gap: 90, stroke: 200, splash: 1300, fx: 560 };
 
 const q = (root, sel) => root.querySelector(sel);
+
+/* A body by its own number (battle.js `uid`), never by its card: two of the
+   same card on a rank are two bodies, and a blow at the second one is drawn on
+   the second one (Hanli, 2026-10-15). An entry from before uids falls back to the card. */
+const bodySel = t => (t.uid != null ? `[data-uid="${CSS.escape(String(t.uid))}"]` : `[data-id="${CSS.escape(t.id)}"]`);
 
 /* Where a thing lives on screen, so a number can leap off it. A body driven
    off in this stretch is gone from the room already; its ink ghost stands in. */
 function spotOf(root, t) {
   if (t.act === 'hurt' || t.act === 'heal') return q(root, t.who === 'foe' ? '.bside.foe .bplate' : '.bside.you .bwho') ?? q(root, t.who === 'foe' ? '.bside.foe' : '.bside.you');
   if (t.id) {
-    const side = t.who === 'foe' ? 'theirs' : 'mine', id = CSS.escape(t.id);
-    return q(root, `.brank.${side} [data-id="${id}"]`) ?? q(root, `.bghost.${side}[data-id="${id}"]`) ?? q(root, `.brank.${side}`);
+    const side = t.who === 'foe' ? 'theirs' : 'mine', at = bodySel(t);
+    return q(root, `.brank.${side} ${at}`) ?? q(root, `.bghost.${side}${at}`) ?? q(root, `.brank.${side}`);
   }
   return null;
 }
@@ -50,7 +56,7 @@ export function ghostsOf(root, entries, by = null) {
   const taken = new Set();
   const bodies = entries.filter(t => t.act === 'withdrew').map((t) => {
     const side = t.who === 'foe' ? 'theirs' : 'mine';
-    const el = [...root.querySelectorAll(`.brank.${side} [data-id="${CSS.escape(t.id)}"]`)].find(n => !taken.has(n));
+    const el = [...root.querySelectorAll(`.brank.${side} ${bodySel(t)}`)].find(n => !taken.has(n));
     if (!el) return null;
     taken.add(el);
     return { side, id: t.id, html: el.outerHTML, box: inRoom(root, el) };
@@ -78,7 +84,7 @@ function raiseGhosts(root, ghosts) {
 /* A body driven off: its ghost goes to ink and is gone (never a death —
    nothing dies in this world; the ink only takes it off the board). */
 function dissolve(root, t) {
-  const el = q(root, `.bghost.${t.who === 'foe' ? 'theirs' : 'mine'}[data-id="${CSS.escape(t.id)}"]:not(.going)`);
+  const el = q(root, `.bghost.${t.who === 'foe' ? 'theirs' : 'mine'}${bodySel(t)}:not(.going)`);
   if (!el) return false;
   el.classList.add('going');
   setTimeout(() => el.remove(), BEATS.withdraw + 200);
@@ -86,17 +92,65 @@ function dissolve(root, t) {
 }
 
 /* The brush stroke of a blow: from where it began to what it hits, one tapered
-   line of ink drawn across and lifted off. */
-async function stroke(root, from, el) {
+   line of ink drawn across and lifted off, a blot of the blow's colour riding
+   its tip so the eye follows it from striker to target. */
+async function stroke(root, from, el, element = null) {
   if (!from || !el) return;
   const to = inRoom(root, el);
   const a = { x: from.x + from.w / 2, y: from.y + from.h / 2 }, b = { x: to.x + to.w / 2, y: to.y + to.h / 2 };
+  const len = Math.hypot(b.x - a.x, b.y - a.y);
   const s = document.createElement('i');
-  s.className = 'bstroke';
-  Object.assign(s.style, { left: `${a.x}px`, top: `${a.y}px`, width: `${Math.hypot(b.x - a.x, b.y - a.y)}px`, transform: `rotate(${Math.atan2(b.y - a.y, b.x - a.x)}rad)` });
+  s.className = `bstroke${FX[element] ? ` el-${element}` : ''}`;
+  s.innerHTML = '<b></b>';
+  Object.assign(s.style, { left: `${a.x}px`, top: `${a.y}px`, width: `${len}px`, transform: `rotate(${Math.atan2(b.y - a.y, b.x - a.x)}rad)` });
+  s.style.setProperty('--len', `${len}px`);
   root.appendChild(s);
   await sleep(BEATS.stroke);
   setTimeout(() => s.remove(), 400);
+}
+
+/* ── The five roots, each its own hit (水墨淡彩: ink with a wash of colour) ──
+   火 embers and an ink-red bloom · 水 a splash ring, drops and frost shards ·
+   木 a vine drawn and leaves thrown · 金 bright slash streaks · 土 a dust cloud
+   and stone chips. Each is a few absolutely placed marks animated on transform
+   and opacity only (battle.css § 五行之击) — no layout touched, gone in ~0.6s.
+   `n` is how many marks; the angles are fixed, so nothing here is random. */
+const FX = { fire: 9, water: 8, wood: 6, metal: 3, earth: 9 };
+const VINE = '<svg viewBox="-40 -40 80 80" aria-hidden="true"><path d="M-30 22 C -14 -18, 6 28, 30 -20"/><path d="M-6 6 c 4 -8, 12 -8, 14 -2"/></svg>';
+function burst(root, el, element) {
+  const n = FX[element];
+  if (!el || !n) return;
+  const box = inRoom(root, el);
+  const fx = document.createElement('i');
+  fx.className = `bfx el-${element}`;
+  Object.assign(fx.style, { left: `${box.x + box.w / 2}px`, top: `${box.y + box.h / 2}px` });
+  const marks = Array.from({ length: n }, (_, i) => {
+    const a = Math.round((i * 360) / n + ((i * 47) % 29) - 14);
+    const d = 34 + ((i * 13) % 4) * 9;
+    return `<i style="--a:${a}deg;--d:${d}px;--k:${i}"></i>`;
+  }).join('');
+  fx.innerHTML = `<b></b>${element === 'wood' ? VINE : ''}${marks}`;
+  root.appendChild(fx);
+  setTimeout(() => fx.remove(), BEATS.fx + 200);
+}
+
+/* A flash over what was hit: the blow's light, then gone. Its own mark over
+   the target, so it never fights the target's shake for the animation slot. */
+function flash(root, el, element) {
+  if (!el) return;
+  const box = inRoom(root, el);
+  const f = document.createElement('i');
+  f.className = `bflash${FX[element] ? ` el-${element}` : ''}`;
+  Object.assign(f.style, { left: `${box.x}px`, top: `${box.y}px`, width: `${box.w}px`, height: `${box.h}px` });
+  root.appendChild(f);
+  setTimeout(() => f.remove(), 360);
+}
+
+/* Everything a landed blow draws on its target. */
+function struckAt(root, el, t) {
+  flash(root, el, t.element);
+  burst(root, el, t.element);
+  pulse(el, 'shaken', BEATS.hit);
 }
 
 /* The 杀招 let go: ink thrown across the whole stage, its name in it. */
@@ -181,7 +235,7 @@ export async function playLog(root, entries, ctx = {}) {
   for (const t of entries) {
     if (!struck && (t.act === 'hurt' || t.act === 'hurt-minion') && t.from !== 'return') {
       struck = true;
-      await stroke(root, ctx.ghosts.from, spotOf(root, t));
+      await stroke(root, ctx.ghosts.from, spotOf(root, t), t.element);
     }
     switch (t.act) {
       case 'drew': {
@@ -211,15 +265,16 @@ export async function playLog(root, entries, ctx = {}) {
           if (t.amount) await sleep(BEATS.gap);
         }
         if (t.amount || !t.absorbed) float(root, el, `−${t.amount}`, 'hurt');
-        pulse(el, 'shaken', BEATS.hit);
+        struckAt(root, el, t);
         await sleep(BEATS.hit);
         break;
       }
       case 'hurt-minion': {
         const el = spotOf(root, t);
         float(root, el, `−${t.amount}`, 'hurt');
-        pulse(el, 'shaken', BEATS.hit);
-        await sleep(BEATS.hit - 120);
+        struckAt(root, el, t);
+        // A sweep or a drought lands on the whole rank at once, not one by one.
+        await sleep(t.from === 'sweep' || t.from === 'drought' ? 50 : BEATS.hit - 120);
         break;
       }
       case 'heal': {

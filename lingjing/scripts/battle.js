@@ -202,7 +202,11 @@ export function begin(setup, catalog) {
   // Every beast stands at the mode's share of its 气血; an elite is only its
   // harder deck (redesign-v2 § 四 — its full 气血 was cut with its own rules).
   const foe = sideOf('foe', { ...setup.foe, hpScale: mode.foeHp }, catalog, mode, seed);
-  const st = { mode, catalog, seed, you, foe, turn: 0, whose: mode.youFirst ? 'you' : 'foe', outcome: 'open', log: [] };
+  // `uid`: each body that stands gets its own number, in the order it arrives —
+  // two of the same card on one rank are two bodies, and the log and the
+  // screen must tell them apart (Hanli, 2026-10-15: hitting the second 夫诸 lit
+  // the first). Counted, never random, so a replay numbers them the same.
+  const st = { mode, catalog, seed, you, foe, turn: 0, whose: mode.youFirst ? 'you' : 'foe', outcome: 'open', log: [], uid: 0 };
   for (let i = 0; i < mode.hand; i += 1) draw(st, you);
   for (let i = 0; i < mode.foeHand; i += 1) draw(st, foe);
   for (let i = 0; i < (mode.headStart ?? 0); i += 1) draw(st, you);
@@ -328,8 +332,8 @@ function parch(st, side) {
   const them = other(st, side);
   for (const m of [...side.board]) {
     if (!m.drought || !side.board.includes(m)) continue;
-    st.log.push({ act: 'drought', who: side.who, id: m.id, n: m.drought });
-    for (const t of [...them.board]) hurtMinion(st, them, t, dealt(st, side.who, m.drought, m.element, t.element), { from: 'drought' });
+    st.log.push({ act: 'drought', who: side.who, id: m.id, uid: m.uid, n: m.drought });
+    for (const t of [...them.board]) hurtMinion(st, them, t, dealt(st, side.who, m.drought, m.element, t.element), { from: 'drought', element: m.element });
   }
 }
 
@@ -357,14 +361,22 @@ function hurt(st, side, amount, why = {}) {
 
 function hurtMinion(st, side, minion, amount, why = {}) {
   minion.hp -= amount;
-  st.log.push({ act: 'hurt-minion', who: side.who, id: minion.id, amount, hp: minion.hp, ...why });
+  st.log.push({ act: 'hurt-minion', who: side.who, id: minion.id, uid: minion.uid, amount, hp: minion.hp, ...why });
   if (minion.hp <= 0) withdraw(st, side, minion);
 }
 
 /* A minion at 0 is 退 — driven off, never killed. */
 function withdraw(st, side, minion) {
   side.board = side.board.filter(m => m !== minion);
-  st.log.push({ act: 'withdrew', who: side.who, id: minion.id });
+  st.log.push({ act: 'withdrew', who: side.who, id: minion.id, uid: minion.uid });
+}
+
+/* A body taking its place on a rank, with its own number (§ begin, `uid`). */
+function stand(st, side, m) {
+  st.uid = (st.uid ?? 0) + 1;
+  m.uid = st.uid;
+  side.board.push(m);
+  return m;
 }
 
 function settle(st) {
@@ -390,22 +402,22 @@ function resolve(st, side, effect, target) {
   if (effect.damage != null) {
     if (target?.kind === 'minion') {
       const m = them.board[target.index];
-      if (m) hurtMinion(st, them, m, hit(effect.damage, effect.element, m.element), { from: 'spell' });
+      if (m) hurtMinion(st, them, m, hit(effect.damage, effect.element, m.element), { from: 'spell', element: effect.element ?? null });
     } else {
-      hurt(st, them, landed(st, side.who, effect.damage, effect.element), { from: 'spell' });
+      hurt(st, them, landed(st, side.who, effect.damage, effect.element), { from: 'spell', element: effect.element ?? null });
     }
   }
   if (effect.sweep != null) {
-    for (const m of [...them.board]) hurtMinion(st, them, m, hit(effect.sweep, effect.element, m.element), { from: 'sweep' });
+    for (const m of [...them.board]) hurtMinion(st, them, m, hit(effect.sweep, effect.element, m.element), { from: 'sweep', element: effect.element ?? null });
   }
   if ((effect.chain != null || effect.swallow != null) && target?.kind === 'minion') {
     const m = them.board[target.index];
     if (m && effect.chain != null) {
       m.chain = 1;
-      st.log.push({ act: 'chained', who: them.who, id: m.id });
+      st.log.push({ act: 'chained', who: them.who, id: m.id, uid: m.uid });
     }
     if (fits(effect, m) && effect.swallow != null) {
-      st.log.push({ act: 'swallowed', who: them.who, id: m.id, by: side.who });
+      st.log.push({ act: 'swallowed', who: them.who, id: m.id, uid: m.uid, by: side.who });
       withdraw(st, them, m);
     }
   }
@@ -422,8 +434,8 @@ function resolve(st, side, effect, target) {
     const { id, n = 1 } = effect.summon;
     const c = st.catalog[id];
     for (let i = 0; i < n && c && side.board.length < st.mode.board; i += 1) {
-      side.board.push({ id, name: c.name, element: c.element, atk: c.atk, hp: c.hp, hpMax: c.hp, taunt: Boolean(c.keywords?.includes('taunt')), sick: true, struck: false });
-      st.log.push({ act: 'summoned', who: side.who, id });
+      const m = stand(st, side, { id, name: c.name, element: c.element, atk: c.atk, hp: c.hp, hpMax: c.hp, taunt: Boolean(c.keywords?.includes('taunt')), sick: true, struck: false });
+      st.log.push({ act: 'summoned', who: side.who, id, uid: m.uid });
     }
   }
   if (effect.rally) {
@@ -440,7 +452,7 @@ function resolve(st, side, effect, target) {
       m.atk += effect.buff.atk ?? 0;
       m.hp += effect.buff.hp ?? 0;
       m.hpMax += effect.buff.hp ?? 0;
-      st.log.push({ act: 'buff', who: side.who, id: m.id, ...effect.buff });
+      st.log.push({ act: 'buff', who: side.who, id: m.id, uid: m.uid, ...effect.buff });
     }
   }
   settle(st);
@@ -584,8 +596,8 @@ export function act(st, action, who = 'you') {
       const { atk, hp } = bodyOf(side, c), keys = keywordsOf(side, c);
       const drought = effectOf(side, c)?.drought;
       const m = { id, name: c.name, element: c.element, atk, hp, hpMax: hp, taunt: keys.includes('taunt'), sick: true, struck: false, ...(drought ? { drought } : {}) };
-      side.board.push(m);
-      st.log.push({ act: 'played', who: side.who, id, kind: 'minion' });
+      stand(st, side, m);
+      st.log.push({ act: 'played', who: side.who, id, uid: m.uid, kind: 'minion' });
       if (keys.includes('battlecry')) resolve(st, side, { ...effectOf(side, c), element: c.element }, action.target);
     } else {
       st.log.push({ act: 'played', who: side.who, id, kind: 'spell' });
@@ -598,10 +610,10 @@ export function act(st, action, who = 'you') {
   m.struck = true;
   if (action.target?.kind === 'minion') {
     const t = them.board[action.target.index];
-    hurtMinion(st, them, t, dealt(st, side.who, m.atk, m.element, t.element), { from: 'attack' });
-    if (t.atk > 0) hurtMinion(st, side, m, Math.max(1, Math.round(t.atk * clash(t.element, m.element))), { from: 'return' });
+    hurtMinion(st, them, t, dealt(st, side.who, m.atk, m.element, t.element), { from: 'attack', element: m.element ?? null });
+    if (t.atk > 0) hurtMinion(st, side, m, Math.max(1, Math.round(t.atk * clash(t.element, m.element))), { from: 'return', element: t.element ?? null });
   } else {
-    hurt(st, them, landed(st, side.who, m.atk, m.element), { from: 'attack' });
+    hurt(st, them, landed(st, side.who, m.atk, m.element), { from: 'attack', element: m.element ?? null });
   }
   return { ok: true };
 }
@@ -759,7 +771,7 @@ export function view(st) {
     powerUsed: s.powerUsed, powerHit: s.powerHit, boost: s.boost, armor: s.armor ?? 0, ward: s.ward ?? null,
     signature: s.signature, charge: s.charge?.phase ?? null, lifts: s.lifts, stars: s.stars ?? null, drain: s.drain ?? 0,
     ...(s.trial ? { trial: s.trial } : {}),
-    board: s.board.map(m => ({ id: m.id, name: m.name, element: m.element, atk: m.atk, hp: m.hp, hpMax: m.hpMax, taunt: m.taunt, ready: !m.sick && !m.struck && !m.held, chained: Boolean(m.chain || m.held), drought: m.drought ?? 0 })),
+    board: s.board.map(m => ({ id: m.id, uid: m.uid ?? null, name: m.name, element: m.element, atk: m.atk, hp: m.hp, hpMax: m.hpMax, taunt: m.taunt, ready: !m.sick && !m.struck && !m.held, chained: Boolean(m.chain || m.held), drought: m.drought ?? 0 })),
   });
   // 望气术: the plan is shown only to a player who can read it (setup.you.insight).
   const sight = st.you.insight ?? 0;
