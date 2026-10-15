@@ -3,13 +3,39 @@
 // "zh-Hans", any BCP-47 tag). Lingjing has two languages, so zh* is zh and
 // everything else English. A save's old `lang` field is never read for it,
 // and never written again (files.mjs writeState).
+//
+// A scratch save (`--save=<name>`, the page's `?save=`) never touches the
+// global setting: its Lang is kept in data/saves/<name>/lang.json, and that
+// save plays in it (2026-10-15 — play-testers' 中/En flipped the real page).
+
+import fs from 'node:fs';
+import path from 'node:path';
+import { homeDir, SAVE_NAME, writeAtomic } from './files.mjs';
 
 /* A BCP-47 tag as one of the game's two languages. */
 export const langOfTag = (tag) => (/^zh/i.test(String(tag ?? '').trim()) ? 'zh' : 'en');
 
-/* The language in play: the engine's setting; with no engine (a test, the
-   command line by hand), Chinese, the game's first language. */
-export const langNow = (env = process.env) => (env.LINGGEN_LANGUAGE ? langOfTag(env.LINGGEN_LANGUAGE) : 'zh');
+/* A scratch save's own language file, or null on the real save. */
+export function scratchLangFile(env = process.env) {
+  const name = env.LINGJING_SAVE;
+  if (!SAVE_NAME.test(name ?? '')) return null;
+  return path.join(env.LINGJING_DATA || homeDir(), 'saves', name, 'lang.json');
+}
+const scratchLang = (env) => {
+  const file = scratchLangFile(env);
+  if (!file) return null;
+  try {
+    const got = JSON.parse(fs.readFileSync(file, 'utf8'))?.lang;
+    return got === 'zh' || got === 'en' ? got : null;
+  } catch {
+    return null;
+  }
+};
+
+/* The language in play: a scratch save's own Lang if it set one, else the
+   engine's setting; with no engine (a test, the command line by hand),
+   Chinese, the game's first language. */
+export const langNow = (env = process.env) => scratchLang(env) ?? (env.LINGGEN_LANGUAGE ? langOfTag(env.LINGGEN_LANGUAGE) : 'zh');
 
 /* The tag Linggen's setting is written as. */
 export const TAG_OF = { zh: 'zh-Hans', en: 'en' };
@@ -46,6 +72,13 @@ export const langWas = () => was;
 export async function chooseLang(lang, { env = process.env, fetchFn } = {}) {
   if (!TAG_OF[lang]) return { ok: true }; // the verb refuses it
   const before = langNow(env);
+  // A scratch save keeps its Lang to itself — the global setting is never written.
+  const local = scratchLangFile(env);
+  if (local) {
+    writeAtomic(local, JSON.stringify({ lang }));
+    was = before;
+    return { ok: true, was: before };
+  }
   // A sandboxed save (LINGJING_DATA, the tests') never writes the real setting.
   if (env.LINGGEN_LANGUAGE && !env.LINGJING_DATA && langOfTag(env.LINGGEN_LANGUAGE) !== lang) {
     const wrote = await writeGlobalLang(lang, { env, fetchFn });

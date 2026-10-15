@@ -911,6 +911,7 @@ function omenChip() {
 /// The game's language, at a tap — the rules' Lang, the same word Ling
 /// would use: it sets Linggen's language (all of it, not only the game); the
 /// page redraws in it and Ling's next reply follows Look.
+/// On a scratch save (?save=) it stays that save's own, never the global.
 async function switchLang(to) {
   if (to === lang()) return;
   try {

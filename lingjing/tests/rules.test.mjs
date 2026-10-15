@@ -1123,6 +1123,39 @@ test('Lang under the engine: written first, and this process speaks the new lang
   assert.equal(bare.calls.length, 0, 'no engine: nothing to write');
 });
 
+test('Lang on a scratch save (`--save=<x>`) never writes the global setting; that save alone then plays in it', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-scratch-lang-'));
+  try {
+    const eng = fakeEngine();
+    const env = { LINGGEN_LANGUAGE: 'zh-Hans', LINGJING_DATA: dir, LINGJING_SAVE: 'tester' };
+    const r = await chooseLang('en', { env, fetchFn: eng.fetchFn });
+    assert.deepEqual(r, { ok: true, was: 'zh' });
+    assert.equal(eng.calls.length, 0, 'no GET or POST /api/config from a scratch save');
+    assert.equal(env.LINGGEN_LANGUAGE, 'zh-Hans', 'the global setting as it was');
+    assert.equal(langNow(env), 'en', 'the scratch save reads English');
+    assert.equal(langNow({ LINGGEN_LANGUAGE: 'zh-Hans', LINGJING_DATA: dir }), 'zh', 'the real save keeps the global setting');
+    // The real save path still posts.
+    const real = fakeEngine();
+    await chooseLang('en', { env: { LINGGEN_LANGUAGE: 'zh-Hans' }, fetchFn: real.fetchFn });
+    assert.deepEqual(real.calls.map(c => c.method), ['GET', 'POST']);
+    // Through the command line: Lang then Look on the scratch save, no engine reached.
+    const rules = path.join(path.resolve(import.meta.dirname, '..'), 'scripts/rules.mjs');
+    const run = (...args) => JSON.parse(spawnSync(process.execPath, [rules, ...args], {
+      env: { ...process.env, LINGJING_DATA: dir, LINGJING_NOW: NOW.toISOString(), LINGGEN_LANGUAGE: 'zh-Hans', LINGGEN_PORT: '1' }, encoding: 'utf8',
+    }).stdout.trim().split('\n').pop());
+    run('seed', '--save=cli');
+    const switched = run('lang', '--lang=en', '--save=cli');
+    assert.equal(switched.ok, true, 'no engine needed: nothing global is written');
+    assert.equal(switched.lang, 'en');
+    assert.equal(run('look', '--save=cli').lang, 'en');
+    assert.equal(run('look').lang, 'zh', 'the real save untouched');
+    run('seed', '--save=cli', '--at=古五');
+    assert.equal(run('look', '--save=cli').lang, 'en', 'a reseed keeps the tester\'s language');
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test('the command line: the game speaks LINGGEN_LANGUAGE whatever the save says; typed words never switch it; a Restart says how (`run_by`)', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-pin-'));
   const rules = path.join(path.resolve(import.meta.dirname, '..'), 'scripts/rules.mjs');
