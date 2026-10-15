@@ -39,8 +39,8 @@ import { placeArtOf } from './placeart.js';
 import { WINDS } from './rules/weather.mjs';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
-import { advance, atLast, beatKey, choicesUp, current, huiAt, keepReading, leadsIn, loadReading, logHtml, noted, ofPlay, playing, readingFor, showAll, sightNow, sightings, storyHtml, withTold } from './dialogue.js';
-import { createLines, keepSpeed, speedNow, voiceOf } from './lines.js';
+import { advance, atLast, beatKey, choicesUp, current, huiAt, keepReading, leadsIn, loadReading, logHtml, noted, ofPlay, pacedAt, playing, readingFor, showAll, sightNow, sightings, storyHtml, wholeBeats, wholeOf, withTold } from './dialogue.js';
+import { createLines, keepSpeed, speedNow, voiceOf, wholeNow } from './lines.js';
 import { SIGHT_KINDS, mountChatToggle, paintSight, setAutoFold } from './sight.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
@@ -1407,6 +1407,7 @@ function draw() {
   $('focus').innerHTML = focusHtml(slots);
   // The story on the full stage (lines.js): the beat's words over the picture, a sentence at a time.
   // 景: a beat marked with its set piece lays the piece's picture under its words (beatPiece).
+  matchPace();
   beatPiece(slots);
   const box = dialogBoxHtml(slots);
   paintIf('dlg', box);
@@ -1414,7 +1415,9 @@ function draw() {
   syncLines();
   companionBeat(box.includes('data-dlg-on'));
   // 初见: his first beat on show, he stands large on the stage (sight.js).
-  paintSight($('sight'), box.includes('data-dlg-on') ? sightNow(readingHere(), firstFaces(), lang()) : [], { src: (f) => worldPath(look.world?.made ? `worlds/${look.world.base}` : look.world?.dir ?? 'worlds/jiuding', f) });
+  // 快's column carries its 亮相 inline (dialogue.js wholeHtml): nothing comes on large over it.
+  const sightOn = box.includes('data-dlg-on') && !readingHere()?.all?.whole;
+  paintSight($('sight'), sightOn ? sightNow(readingHere(), firstFaces(), lang()) : [], { src: faceSrc });
   voiceBeat(box.includes('data-dlg-on'));
   // Games, the map and a fight fold the chat away (they want the width); the story keeps it open.
   foldFor(slots);
@@ -2018,7 +2021,8 @@ function dialogBoxHtml(slots) {
   if (!r || boxYields(slots)) return '';
   const voice = hasAudio(audio) ? dubOn() : null;
   const acts = choicesInBox() ? panelActsHtml(ctx(), { inBox: true }) : '';
-  return (playing(r) ? storyHtml(r, { lang: lang(), voice, acts, herId: look.companion?.id ?? null, speed: speedNow() }) : '') + (view.logOpen ? logHtml(r, { lang: lang() }) : '');
+  const story = playing(r) ? storyHtml(r, { lang: lang(), voice, acts, herId: look.companion?.id ?? null, speed: speedNow(), faces: r.all?.whole ? firstFaces() : [], src: faceSrc }) : '';
+  return story + (view.logOpen ? logHtml(r, { lang: lang() }) : '');
 }
 
 /* ── The lines' clock (lines.js) ──
@@ -2030,8 +2034,28 @@ const lines = createLines({ onDone: (key, tapped) => storyDone(key, tapped) });
 function syncLines() {
   const el = $('dlg')?.querySelector('.story'), r = readingHere();
   if (!el || !playing(r)) { lines.sync(null); return; }
-  // 跳过 stands on the 回's last beat shown whole, read at once.
-  lines.sync(el, el.dataset.story, { lang: lang(), instant: Boolean(r.all && atLast(r, lang())) });
+  // 跳过 stands on the 回's last beat shown whole, read at once; 快's column is read at once too.
+  lines.sync(el, el.dataset.story, { lang: lang(), instant: Boolean(r.all && (r.all.whole || atLast(r, lang()))) });
+}
+/* The pace is read live at every paint: 快 opens whatever passage comes on the stage whole
+   (dialogue.js wholeOf) — a new one, one tapped to mid-passage, one found on a reload — and 慢 or
+   中 over a column puts it back to its sentences from the beat in view (pacedAt). Before the
+   paint (render), so no beat of it plays, speaks or brings a face on first. */
+function matchPace() {
+  const r = readingOfPlay();
+  if (!playing(r) || wholeNow() === Boolean(r.all?.whole)) return;
+  const next = wholeNow() ? wholeOf(r, lang()) : pacedAt(r, beatInView(), lang());
+  keepReading(SCRATCH, next);
+  keep({ reading: next });
+}
+/* The column's paragraph at the top of its view — the beat he is reading. */
+function beatInView() {
+  const col = $('dlg')?.querySelector('.wholecol');
+  if (!col) return null;
+  const top = col.getBoundingClientRect().top + 8;
+  const p = [...col.querySelectorAll('[data-beat]')].find((el) => el.getBoundingClientRect().bottom > top);
+  const [i, j] = String(p?.dataset.beat ?? '').split('.').map(Number);
+  return Number.isInteger(i) && Number.isInteger(j) ? { i, j } : null;
 }
 /* A beat read (or tapped once read): the next — unless the way on is up (the choices: his
    tap), or something holds the page: 回看 or the book open, a hold, more passages still to
@@ -2043,6 +2067,9 @@ function storyDone(key, tapped = false) {
   if (!playing(r) || beatKey(r, lang()) !== key) return;
   const last = atLast(r, lang());
   if (last && $('dlg')?.querySelector('.story .ways')) return;
+  // 快's column is his to read: it goes on only at his 「接着往下」 (or a key), never by itself —
+  // and never past its choices.
+  if (r.all?.whole && (!tapped || (last && $('dlg')?.querySelector('.story .wholecol .wayacts')))) return;
   const held = view.logOpen || view.luOpen || view.gearOpen || lines.paused || document.body.classList.contains('reading')
     || (last && (look?.tell_owed || drawingTold)) || (!tapped && narrator.sounding);
   if (held) { doneWait = setTimeout(() => storyDone(key), 700); return; }
@@ -2055,12 +2082,13 @@ function storyTap() {
   if (lines.key && $('dlg')?.querySelector('.story')) lines.tap();
   else nextBeat();
 }
-/* 慢 · 中 · 快 — this viewer's, kept in this browser (lines.js keepSpeed). */
+/* 慢 · 中 · 快 — this viewer's, kept in this browser (lines.js keepSpeed); the paint matches the
+   passage to it (matchPace): 快 whole, 慢 or 中 by sentence from the beat in view. */
 function setSpeed(v) { keepSpeed(v); render(); }
 /* Holding the stage down pauses the lines; letting go goes on (and the release is no tap). */
 let holdTimer = null, holding = false;
 document.addEventListener('pointerdown', (e) => {
-  if (!e.target.closest?.('#dlg .story') || e.target.closest('button, .ways, .dlglog')) return;
+  if (!e.target.closest?.('#dlg .story') || e.target.closest('button, .ways, .dlglog, .wholecol')) return;
   clearTimeout(holdTimer);
   holdTimer = setTimeout(() => { holding = true; lines.hold(true); }, 380);
 });
@@ -2075,15 +2103,17 @@ document.addEventListener('pointercancel', letGo);
 const copied = new Set();
 function companionBeat(shown) {
   const r = readingHere(), herId = look?.companion?.id ?? null;
-  const beat = shown && playing(r) ? current(r, lang()).beat : null;
-  const who = beat ? voiceOf(beat, herId) : null;
-  document.querySelector('.yytoken')?.classList.toggle('warm', who === 'yy');
-  if (!beat || (who !== 'yy' && who !== 'ling')) return;
-  const key = beatKey(r, lang()).replace(/\|all$/, '');
-  if (copied.has(key)) return;
-  copied.add(key);
-  const line = who === 'yy' ? `${beat.name ?? words().yinyue}：${beat.text}` : `${beat.text}`;
-  quietCopy(line);
+  // The beat on show — or every beat of 快's column, each copied as if it had played.
+  const beats = !shown || !playing(r) ? [] : r.all?.whole ? wholeBeats(r, lang()) : [current(r, lang()).beat];
+  const who = (b) => voiceOf(b, herId);
+  document.querySelector('.yytoken')?.classList.toggle('warm', beats.length > 0 && who(beats.at(-1)) === 'yy');
+  for (const b of beats) {
+    if (who(b) !== 'yy' && who(b) !== 'ling') continue;
+    const key = `${r.run ?? ''}|${r.scene ?? ''}|${b.i}|${b.j}|${lang()}`;
+    if (copied.has(key)) continue;
+    copied.add(key);
+    quietCopy(who(b) === 'yy' ? `${b.name ?? words().yinyue}：${b.text}` : `${b.text}`);
+  }
 }
 function quietCopy(line) {
   if (chat) { chat.addMessage('assistant', line); return; }
@@ -2119,6 +2149,7 @@ function voiceBeat(shown) {
    beatsOf `notes`) — as their 图鉴 entries: people and creatures, never a thing. A passage is
    told once a play (told_scenes), so each comes on large once, at the book's own point. */
 const firstFaces = () => noted(readingHere(), lang()).map((id) => codexNow()?.get?.(id)).filter((e) => e && SIGHT_KINDS.has(e.kind));
+const faceSrc = (f) => worldPath(look.world?.made ? `worlds/${look.world.base}` : look.world?.dir ?? 'worlds/jiuding', f);
 const nextBeat = () => { const r = readingOfPlay(); if (playing(r)) setReading(advance(r, lang())); };
 /* 跳过: the rest of this 回's passage at once — its last beat whole, the choices at its end. */
 function showAllBeats() {
@@ -2513,7 +2544,9 @@ const CLICKS = [
   // …but a choice inside the box (its last beat's ways: an errand's 接下, any button there) is that choice's
   // own tap, never the next sentence — the box's catch-all yields to the rest of this list (2026-10-15, live:
   // 外门's 「接下差事：修屋顶」 inside the story view landed here and did nothing).
-  ['[data-dlg-next]', (el, e) => (e?.target?.closest?.('.ways button') ? false : storyTap())],
+  // 快's column: 「接着往下」 is its way on; a tap on its words is reading (scrolling, a pause), never the next.
+  ['[data-dlg-onward]', () => storyTap()],
+  ['[data-dlg-next]', (el, e) => (e?.target?.closest?.('.ways button, .wayacts button') ? false : e?.target?.closest?.('.wholecol') ? true : storyTap())],
   ['.dlglog', () => true],
   ['[data-lu]', () => (view.luOpen ? show({ luOpen: false }) : openLu())],
   ['[data-lu-close]', () => show({ luOpen: false, codexOpen: null })],
@@ -3251,9 +3284,10 @@ let beatBack = null; // { key, box, ctl } — the piece under the beat on show
 function beatPiece(slots) {
   const r = readingHere();
   if (pieceOn || !playing(r) || boxYields(slots) || momentPending.size || stageBusy()) return dropBeatPiece();
-  const { beat } = current(r, lang());
+  // 快's column lays the first set piece it holds under all of it: the words stand over its picture.
+  const beat = r.all?.whole ? wholeBeats(r, lang()).find((b) => b.piece && !b.recap) : current(r, lang()).beat;
   if (!beat?.piece || beat.recap) return dropBeatPiece();
-  const key = `${look?.run ?? ''}|${r.items[r.i]?.id}|${beat.piece}`;
+  const key = `${look?.run ?? ''}|${r.items[beat.i ?? r.i]?.id}|${beat.piece}`;
   if (beatBack?.key === key) return;
   dropBeatPiece();
   const done = playedPieces(), again = done.has(key);

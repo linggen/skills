@@ -33,7 +33,7 @@ function landsOn(attrs, { inWays = true } = {}) {
   for (const { sel, rest } of clicks()) {
     const hit = sel.split(',').some(s => attrs.some(a => s.trim() === `[${a}]`));
     if (!hit) continue;
-    if (inWays && sel === '[data-dlg-next]' && /closest\?\.\('\.ways button'\) \? false/.test(rest)) continue;
+    if (inWays && sel === '[data-dlg-next]' && /closest\?\.\('\.ways button[^']*'\) \? false/.test(rest)) continue;
     return sel;
   }
   return null;

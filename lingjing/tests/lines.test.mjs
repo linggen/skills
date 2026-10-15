@@ -8,7 +8,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { END_PAUSE_MS, SPEEDS, createLines, keepSpeed, linesHtml, paceOf, screensOf, sentencesOf, speedNow, voiceOf } from '../scripts/lines.js';
+import { END_PAUSE_MS, SPEEDS, WHOLE, createLines, keepSpeed, linesHtml, paceOf, paraHtml, screensOf, sentencesOf, speedNow, voiceOf, wholeNow } from '../scripts/lines.js';
 import { DAYPARTS, WEATHER, backdropOf } from '../scripts/atmos.js';
 import { KINDS } from '../scripts/rules/weather.mjs';
 
@@ -33,10 +33,11 @@ test('the pace: ~165 ms a character, never under 2.6 s nor over 11 s, the screen
   assert.equal(paceOf('一'.repeat(200)), 11000);
   assert.equal(paceOf('短。', { last: true }), 2600 + END_PAUSE_MS);
   assert.equal(paceOf('一'.repeat(40), { f: SPEEDS.fast }), Math.round((900 + 40 * 165) * SPEEDS.fast));
-  // 中 is the approved pace; 慢 and 快 far enough either side to be felt (2026-10-15)
-  assert.equal(SPEEDS.mid, 1);
-  assert.ok(SPEEDS.slow >= 1.6 && SPEEDS.fast <= 0.45, 'the three speeds are clearly apart');
-  assert.ok(SPEEDS.slow / SPEEDS.fast >= 3, '慢 is at least three times 快');
+  // 2026-10-15, his: 「中可以用现在快的速度」 — 慢 the old 中 (×1), 中 the old 快 (×0.45); 快 is the whole passage at once
+  assert.equal(SPEEDS.slow, 1);
+  assert.equal(SPEEDS.mid, 0.45);
+  assert.equal(WHOLE, 'fast');
+  assert.equal(paceOf('短。', { f: SPEEDS.mid }), Math.round(2600 * 0.45), 'the floor scales with the speed: a short sentence 1.2 s at 中');
   assert.ok(paceOf('a'.repeat(60), { lang: 'en' }) < paceOf('一'.repeat(60)), 'English reads by the word');
   // 慢 中 快 is kept in this browser; storage off, it is 中
   const mem = new Map(), store = { getItem: (k) => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, v) };
@@ -46,6 +47,14 @@ test('the pace: ~165 ms a character, never under 2.6 s nor over 11 s, the screen
   keepSpeed('nonsense', store);
   assert.equal(speedNow(store), 'slow');
   assert.equal(speedNow({ getItem: () => { throw new Error('denied'); } }), 'mid');
+  // 快 is kept like the others: every later passage opens whole until a speed is picked again
+  assert.equal(wholeNow(store), false);
+  keepSpeed('fast', store);
+  assert.equal(wholeNow(store), true);
+  assert.equal(wholeNow({ getItem: (k) => mem.get(k) ?? null }), true, 'read back on a reload');
+  keepSpeed('mid', store);
+  assert.equal(wholeNow(store), false);
+  keepSpeed('fast', { setItem: () => { throw new Error('denied'); } }); // storage off: no throw
 });
 
 test('whose words: 银月 silver-blue (her id), a 前情 the teller\'s (Ling), a named speaker, else the book', () => {
@@ -129,48 +138,86 @@ test('a tap brings the next sentence now; holding stops the clock, letting go go
   assert.equal(lines.key, null, 'nothing on the stage: no clock');
 });
 
+test('快\'s paragraph: one beat whole, every sentence lit, the speaker kept, 银月\'s words silver-blue where they stand', () => {
+  assert.equal(paraHtml({ text: '甲。乙。' }), '<p class="line told"><span class="s on">甲。</span><span class="s on">乙。</span></p>');
+  assert.equal(paraHtml({ name: '葛六', text: '走。' }), '<p class="line spoken"><b class="who">葛六</b><span class="s on">走。</span></p>');
+  assert.match(paraHtml({ text: '风停了。她说别回头。他走了。', asides: ['她说别回头。'] }), /<span class="s on"><span class="yy">她说别回头。<\/span><\/span>/);
+  assert.match(paraHtml({ who: 'yinyue', name: '银月', text: '左边。' }, { herId: 'yinyue' }), /^<p class="line yy"><b class="who">银月<\/b>/);
+  assert.equal(paraHtml({ text: '' }), '');
+  assert.match(paraHtml({ text: '甲。' }, { place: '2.5' }), /^<p class="line told" data-beat="2\.5">/, 'its place, for 中 to pick up from');
+});
+
+test('快\'s column on the clock: shown at once, storyDone fires once by itself, and his tap is the way on', () => {
+  const t = clock(), done = [];
+  const lines = createLines({ onDone: (k, tapped) => done.push([k, Boolean(tapped)]), timer: t, f: () => 1 });
+  const { host } = fakeHost([]); // the column has no screens to walk
+  lines.sync(host, 'b|whole', { instant: true });
+  assert.equal(t.size, 0, 'nothing timed');
+  assert.ok(lines.done && host.classList.contains('done'), 'read at once: `.done` lights the choices');
+  assert.deepEqual(done, [['b|whole', false]], 'storyDone hears it, once (lingjing.js holds a column until a tap)');
+  lines.sync(host, 'b|whole', { instant: true });
+  assert.equal(done.length, 1, 'a repaint is no second end');
+  lines.tap();
+  assert.deepEqual(done.at(-1), ['b|whole', true], '「接着往下」 or a key: the tap goes on');
+});
+
+test('快 on the page: opened before the paint, held for his tap, the voice stopped, the 亮相 inline', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
+  assert.match(src, /matchPace\(\);\n {2}beatPiece\(slots\);/, 'the passage matches the pace before anything of the beat plays');
+  // read live at every paint, both ways (2026-10-15, his: 「由快切回中时, 仍然是全屏」)
+  assert.match(src, /if \(!playing\(r\) \|\| wholeNow\(\) === Boolean\(r\.all\?\.whole\)\) return;\n {2}const next = wholeNow\(\) \? wholeOf\(r, lang\(\)\) : pacedAt\(r, beatInView\(\), lang\(\)\);/);
+  assert.match(src, /function setSpeed\(v\) \{ keepSpeed\(v\); render\(\); \}/, 'a speed tap only keeps the choice; the paint does the rest');
+  assert.match(src, /if \(r\.all\?\.whole && \(!tapped \|\|/, 'a column never goes on by itself');
+  assert.match(src, /\['\[data-dlg-onward\]', \(\) => storyTap\(\)\]/);
+  assert.match(src, /if \(!shown \|\| !playing\(r\) \|\| r\.all \|\| !dubOn\(\)\) return narrator\.sync\(null\);/, '配音 stops for a column (as for 跳过)');
+  assert.match(src, /r\.all\?\.whole \? wholeBeats\(r, lang\(\)\) : \[current\(r, lang\(\)\)\.beat\]/, 'her lines in a column are copied to the chat as if played');
+  const css = fs.readFileSync(path.join(ROOT, 'scripts/story.css'), 'utf8');
+  assert.match(css, /\.story \.wholecol \{[^}]*overflow-y: auto/, 'the column scrolls');
+  assert.match(css, /\.story\.whole::before[^{]*\{[^}]*rgba\(13, 17, 20, \.74\)/, 'the ink wash behind it');
+});
+
 test('慢 · 中 · 快 is felt at once: the running wait rescales on the tap, both ways; every wait and the fades follow', () => {
   const t = clock();
-  let sp = 'mid';
+  let sp = 'slow';
   const lines = createLines({ timer: t, f: () => SPEEDS[sp] });
   const { host, lit } = fakeHost([['一'.repeat(40) + '。', '乙。'], ['丙。']]);
   lines.sync(host, 'b4');
-  assert.equal(host.style.getPropertyValue('--pace'), '1', 'the fades at 中');
+  assert.equal(host.style.getPropertyValue('--pace'), '1', 'the fades at 慢');
   t.next(); // the lead-in: the first sentence lights
   assert.deepEqual(lit(), [1, 0]);
   const full = paceOf('一'.repeat(40) + '。');
   assert.deepEqual(t.pending(), [full]);
-  // half of it gone, then 快: what is left runs at 快 — now, not from the next sentence
+  // half of it gone, then 中: what is left runs at 中 — now, not from the next sentence
   t.at += full / 2;
-  sp = 'fast';
+  sp = 'mid';
   lines.sync(host, 'b4'); // setSpeed repaints: the same beat, synced again
-  assert.deepEqual(t.pending(), [Math.round((full / 2) * SPEEDS.fast)]);
-  assert.equal(host.style.getPropertyValue('--pace'), String(SPEEDS.fast), 'the fades quicken too');
+  assert.deepEqual(t.pending(), [Math.round((full / 2) * SPEEDS.mid)]);
+  assert.equal(host.style.getPropertyValue('--pace'), String(SPEEDS.mid), 'the fades quicken too');
   // and back up to 慢 a moment later: the rest stretches
   t.at += 100;
   sp = 'slow';
   lines.sync(host, 'b4');
-  const left = Math.round((full / 2) * SPEEDS.fast) - 100;
-  assert.deepEqual(t.pending(), [Math.round(left * (SPEEDS.slow / SPEEDS.fast))]);
+  const left = Math.round((full / 2) * SPEEDS.mid) - 100;
+  assert.deepEqual(t.pending(), [Math.round(left * (SPEEDS.slow / SPEEDS.mid))]);
   // the same speed again changes nothing
   lines.sync(host, 'b4');
-  assert.deepEqual(t.pending(), [Math.round(left * (SPEEDS.slow / SPEEDS.fast))]);
+  assert.deepEqual(t.pending(), [Math.round(left * (SPEEDS.slow / SPEEDS.mid))]);
   // a repaint on a new node carries the rescale too
-  sp = 'mid';
+  sp = 'slow';
   const again = fakeHost([['一'.repeat(40) + '。', '乙。'], ['丙。']]);
   lines.sync(again.host, 'b4');
   assert.equal(t.pending().length, 1, 'one wait, never two');
   assert.equal(again.host.style.getPropertyValue('--pace'), '1');
   // the fixed waits scale: the next sentence, the screen change, the next beat's lead-in, a let-go
-  sp = 'fast';
+  sp = 'mid';
   lines.sync(again.host, 'b4');
   t.next();
-  assert.deepEqual(t.pending(), [Math.round(paceOf('乙。', { last: true }) * SPEEDS.fast)]);
+  assert.deepEqual(t.pending(), [Math.round(paceOf('乙。', { last: true }) * SPEEDS.mid)]);
   t.next();
-  assert.deepEqual(t.pending(), [Math.round(420 * SPEEDS.fast)], 'the screen change at 快');
+  assert.deepEqual(t.pending(), [Math.round(420 * SPEEDS.mid)], 'the screen change at 中');
   const b = fakeHost([['子。']]);
   lines.sync(b.host, 'b5');
-  assert.deepEqual(t.pending(), [Math.round(500 * SPEEDS.fast)], 'the lead-in at 快');
+  assert.deepEqual(t.pending(), [Math.round(500 * SPEEDS.mid)], 'the lead-in at 中');
   sp = 'slow';
   lines.hold(true);
   lines.sync(b.host, 'b5');

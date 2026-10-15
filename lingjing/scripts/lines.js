@@ -8,7 +8,7 @@
 // a character, never under 2.6 s — and a screen holds a moment at its end. Then
 // the page goes on by itself (lingjing.js storyDone → dialogue.js advance). A tap
 // brings the next sentence now, holding pauses, 慢 · 中 · 快 is the viewer's own
-// (kept in this browser), 回看 scrolls back.
+// (kept in this browser; 快 shows the rest of the passage at once), 回看 scrolls back.
 //
 // Pure where it can be: the cutting, the pace and the markup are plain functions
 // (tests/lines.test.mjs); `createLines` is the small clock that walks one beat's
@@ -42,17 +42,21 @@ export function screensOf(text, lang = 'zh') {
 
 /* The pace (Hanli's approved numbers): a sentence holds ~165 ms a character, at
    least 2.6 s, at most 11 s; the screen's last sentence holds 1.8 s more. `f` the
-   viewer's speed. English reads by the word, so a character there counts a third.
-   中 is the approved pace; 慢 and 快 sit far enough either side to be felt at once
-   (2026-10-15, his: 「慢 · 中 · 快 没反应」 — 1.45 / 0.6 only showed from the next sentence). */
-export const SPEEDS = { slow: 1.6, mid: 1, fast: 0.45 };
+   viewer's speed, scaling the floor and the ceiling with the rest. English reads by
+   the word, so a character there counts a third.
+   2026-10-15, his: 「中可以用现在快的速度」 · 「快的速度, 不要一句一句显示, 直接都显示出来」 —
+   慢 is the old 中 (×1), 中 the old 快 (×0.45: a short sentence 1.2 s), and 快 is no pace
+   at all: the rest of the passage at once, one column to read (`WHOLE`, dialogue.js
+   wholeOf). Its factor only times a beat caught before the column opens. */
+export const SPEEDS = { slow: 1, mid: 0.45, fast: 0.3 };
+export const WHOLE = 'fast';
 export const END_PAUSE_MS = 1800;
 export function paceOf(sentence, { f = 1, last = false, lang = 'zh' } = {}) {
   const n = String(sentence ?? '').length * (lang === 'en' ? 1 / 3 : 1);
   return Math.round((Math.min(11000, Math.max(2600, 900 + n * 165)) + (last ? END_PAUSE_MS : 0)) * f);
 }
 
-/* 慢 · 中 · 快, this viewer's own, kept in this browser (it may refuse). */
+/* 慢 · 中 · 快, this viewer's own, kept in this browser (it may refuse); 中 for a new viewer. */
 const SPEED_KEY = 'lingjing.pace';
 export function speedNow(store = globalThis.localStorage) {
   try { const v = store?.getItem(SPEED_KEY); return Object.hasOwn(SPEEDS, v) ? v : 'mid'; } catch { return 'mid'; }
@@ -61,6 +65,8 @@ export function keepSpeed(v, store = globalThis.localStorage) {
   if (!Object.hasOwn(SPEEDS, v)) return;
   try { store?.setItem(SPEED_KEY, v); } catch { /* this load only */ }
 }
+/* 快: every passage opens whole. */
+export const wholeNow = (store = globalThis.localStorage) => speedNow(store) === WHOLE;
 
 /* Who speaks the beat, as the stage colours it: 银月 silver-blue (her words in the
    book, beat `who` her id), Ling bronze (the 前情 — the teller's own recap), else
@@ -94,25 +100,41 @@ export function markAsides(s, start, ranges) {
   return html + esc(s.slice(at));
 }
 
-/* One beat's screens as the stage shows them: every sentence a span the clock
-   lights (`.s.on`); the first screen up, the rest waiting (`hidden`). A spoken
-   beat leads with its speaker; 银月's and Ling's carry their own colour. */
-export function linesHtml(b, { lang = 'zh', herId = null, words = {} } = {}) {
+/* A beat's lead and its sentences marked (her words silver-blue, where they stand). */
+function beatParts(b, { herId = null, words = {} } = {}) {
   const who = voiceOf(b, herId);
-  const screens = screensOf(b?.text, lang);
-  if (!screens.length) return '';
   // The speaker leads a spoken line (the hero too, by his name — never a face); a 前情 is Ling's, marked so.
   const label = who === 'ling' ? `<b class="who">${esc(words.ling ?? 'Ling')}</b><span class="tag">${esc(words.recap ?? '前情')}</span>` : b?.name ? `<b class="who">${esc(b.name)}</b>` : '';
   const act = b?.act ? `<span class="act">${esc(words.act ? words.act(b.act) : `（${b.act}）`)}</span>` : '';
   // Her words inside a told beat (⟪…⟫ in the book) in her colour, where they stand.
-  const ranges = who === 'yy' ? [] : asideRanges(b.text, b.asides);
+  const ranges = who === 'yy' ? [] : asideRanges(b?.text, b?.asides);
   let cursor = 0;
   const sentence = (s) => {
     const start = String(b.text).indexOf(s, cursor);
     if (start >= 0) cursor = start + s.length;
     return start >= 0 && ranges.length ? markAsides(s, start, ranges) : esc(s);
   };
-  return screens.map((ss, k) => `<div class="screen" data-screen="${k}"${k ? ' hidden' : ''}><p class="line ${who}">${k ? '' : label + act}${ss.map((s) => `<span class="s">${sentence(s)}</span>`).join('')}</p></div>`).join('');
+  return { who, lead: label + act, sentence };
+}
+
+/* One beat's screens as the stage shows them: every sentence a span the clock
+   lights (`.s.on`); the first screen up, the rest waiting (`hidden`). A spoken
+   beat leads with its speaker; 银月's and Ling's carry their own colour. */
+export function linesHtml(b, { lang = 'zh', herId = null, words = {} } = {}) {
+  const screens = screensOf(b?.text, lang);
+  if (!screens.length) return '';
+  const { who, lead, sentence } = beatParts(b, { herId, words });
+  return screens.map((ss, k) => `<div class="screen" data-screen="${k}"${k ? ' hidden' : ''}><p class="line ${who}">${k ? '' : lead}${ss.map((s) => `<span class="s">${sentence(s)}</span>`).join('')}</p></div>`).join('');
+}
+
+/* One beat whole, as 快's column shows it (dialogue.js storyHtml): one paragraph, every
+   sentence lit, the speaker and her colour kept. */
+export function paraHtml(b, { herId = null, words = {}, place = null } = {}) {
+  const ss = sentencesOf(b?.text);
+  if (!ss.length) return '';
+  const { who, lead, sentence } = beatParts(b, { herId, words });
+  // `place` — where the beat stands in the reading (「i.j」), so 慢 · 中 picks up from the one in view.
+  return `<p class="line ${who}"${place ? ` data-beat="${esc(place)}"` : ''}>${lead}${ss.map((s) => `<span class="s on">${sentence(s)}</span>`).join('')}</p>`;
 }
 
 /* The clock for one beat on the stage: which screen, how many of its sentences

@@ -140,7 +140,7 @@ test('the page lays it under that beat\'s words, as the whole stage: never at th
   assert.equal(boxGivesWay({ huiTurn: atTurn({ closeUp: true, sealOwed: true }) }), true);
   const fn = src.slice(src.indexOf('function beatPiece('), src.indexOf('function beatPiece(') + 900);
   assert.match(fn, /if \(pieceOn \|\| !playing\(r\) \|\| boxYields\(slots\) \|\| momentPending\.size \|\| stageBusy\(\)\) return dropBeatPiece\(\);/, 'only where the story shows the beat, nothing else up or on its way');
-  assert.match(fn, /const \{ beat \} = current\(r, lang\(\)\);\s*if \(!beat\?\.piece \|\| beat\.recap\) return dropBeatPiece\(\);/, 'the next beat takes it away');
+  assert.match(fn, /const beat = r\.all\?\.whole \? wholeBeats\(r, lang\(\)\)\.find\(\(b\) => b\.piece && !b\.recap\) : current\(r, lang\(\)\)\.beat;\s*if \(!beat\?\.piece \|\| beat\.recap\) return dropBeatPiece\(\);/, 'the next beat takes it away; 快\'s column lays the piece it holds under all of it');
   assert.match(fn, /layBeatPiece\(key, beat\.piece, again\)/, 'its painting under the beat; the words are the beat\'s own (a 节本 cut), never the book\'s longer paragraph');
   assert.match(fn, /done\.add\(key\)/, 'the camera once a save');
   const lay = src.slice(src.indexOf('async function layBeatPiece('), src.indexOf('async function layBeatPiece(') + 1200);

@@ -289,6 +289,37 @@ body.fighting .sight { display: none; }
   .view.jin .sightline { color: rgba(241, 236, 225, .85); }
 }
 
+/* ── 快: the rest of the passage at once (Hanli, 2026-10-15: 「快的速度, 不要一句一句显示, 直接都显示出来」) ──
+   One column over the whole stage, on a dark ink wash deep enough that the paper-white words read
+   at ≥ 7:1 over the brightest painting (.8 ink over white leaves ~#424547); it scrolls, and the
+   choices — or 「接着往下」 — stand at its end. 亮相 cards sit inline after their paragraph. */
+.story.whole { cursor: default; user-select: text; -webkit-user-select: text; }
+.story.whole::before, .story.whole:has(.line.yy)::before { content: ""; position: absolute; inset: 0; pointer-events: none; animation: bdIn .5s ease both;
+  background: linear-gradient(to bottom, rgba(13, 17, 20, .74), rgba(13, 17, 20, .82) 30%, rgba(13, 17, 20, .86)); }
+.story .wholecol { position: absolute; left: 0; right: 0; top: 0; bottom: 58px; overflow-y: auto; overscroll-behavior: contain; padding: 28px 56px 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 18px; scrollbar-width: thin; scrollbar-color: rgba(241, 236, 225, .3) transparent; }
+.story .wholetext { width: min(44em, 100%); font-family: var(--serif); font-size: 18px; line-height: 1.9; letter-spacing: .03em; text-shadow: 0 1px 3px rgba(0, 0, 0, .5); }
+.story .wholetext .line { margin: 0 0 1.05em; }
+.story .wholetext .line.ling { font-size: 15px; }
+.story .wholetext .s { transition: none; filter: none; }
+.story .wholecol .wayacts { flex: none; min-height: 0; overflow: visible; padding-bottom: 8px; }
+.story .wholecol .onward { flex: none; padding-bottom: 8px; }
+.story .wholecol .onward .q { padding: 8px 22px; font-size: 14px; color: var(--on-stage); border-color: rgba(227, 192, 126, .6); }
+.story .wface { display: flex; align-items: center; gap: 12px; margin: -.3em 0 1.2em; padding: 8px 14px 8px 8px; width: max-content; max-width: 100%; border-radius: 10px;
+  background: rgba(241, 236, 225, .07); border: 1px solid rgba(241, 236, 225, .16); }
+.story .wface img, .story .wface .namecard { flex: none; width: 54px; height: 76px; border-radius: 7px; object-fit: cover; object-position: 50% 18%; }
+.story .wface .namecard { display: flex; align-items: center; justify-content: center; background: rgba(241, 236, 225, .1); }
+.story .wface .namecard b { font-size: 15px; writing-mode: vertical-rl; letter-spacing: .15em; }
+.story .wface figcaption { display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; line-height: 1.6; color: rgba(241, 236, 225, .85); }
+.story .wface figcaption b { font-size: 16px; letter-spacing: .15em; color: var(--on-stage); }
+:lang(en) .story .wholetext { letter-spacing: 0; line-height: 1.7; }
+.view.jin .story.whole::before { background: rgba(250, 251, 252, .84); }
+.view.jin .story .wholetext { text-shadow: none; }
+.view.jin .story .wface { background: rgba(62, 85, 102, .06); border-color: rgba(62, 85, 102, .2); }
+.view.jin .story .wface figcaption, .view.jin .story .wface figcaption b { color: inherit; }
+.view.jin .story .wholecol .onward .q { color: #1f2a33; border-color: #3e5566; }
+@media (prefers-color-scheme: dark) { .view.jin .story.whole::before { background: rgba(13, 16, 19, .84); } }
+
 /* ── narrow: the phone ── */
 @container scene (max-width: 640px) {
   .topbar { flex-wrap: wrap; padding: 8px 12px; gap: 4px 10px; }
@@ -308,6 +339,8 @@ body.fighting .sight { display: none; }
   .topbar .headcards { order: 5; margin-left: 0; }
   .topbar .langsw { order: 6; }
   .story .lines { padding: 0 20px; bottom: 64px; }
+  .story .wholecol { padding: 18px 16px 14px; bottom: 52px; }
+  .story .wholetext { font-size: 16.5px; line-height: 1.85; }
   .story .screen { font-size: 17px; line-height: 1.9; }
   .story .ctrl { padding: 0 12px 12px; gap: 6px; }
   .story .count { display: none; }

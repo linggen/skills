@@ -12,7 +12,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { resolve } from '../scripts/rules.mjs';
 import { beatsOf, passageFor, playOf, tellOf } from '../scripts/rules/tell.mjs';
-import { advance, atLast, beatKey, choicesUp, current, keepReading, loadReading, logHtml, logLinkHtml, ofPlay, playing, readingFor, showAll, storyHtml, toldSoFar, withTold } from '../scripts/dialogue.js';
+import { advance, atLast, beatKey, choicesUp, current, keepReading, loadReading, logHtml, logLinkHtml, ofPlay, playing, readingFor, showAll, storyHtml, toldSoFar, pacedAt, wholeBeats, wholeOf, withTold } from '../scripts/dialogue.js';
 import { walk } from './prologue.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -176,6 +176,72 @@ test('跳过 (2026-10-14; it was 显示全文 in the box): the stage stands on t
   assert.deepEqual([current(then).beat.text, then.all], ['e', null]);
   assert.doesNotMatch(storyHtml(then), /shown/);
   assert.doesNotMatch(beatKey(then), /all/);
+});
+
+test('快 (2026-10-15, his: 「快的速度, 不要一句一句显示, 直接都显示出来」): the rest of the passage at once, one column — speakers, her words, 亮相 cards, then the choices', () => {
+  const beats = [{ text: '甲。' }, { name: '马三', text: '走吧。' }, { text: '风停了。她说别回头。', asides: ['她说别回头。'], notes: ['masan'] }, { text: '丁。' }];
+  const faces = [{ id: 'masan', name: '马三', image: 'p/masan.webp', lines: ['卖饼的'] }];
+  // tapped mid-passage (beat 2 of 4 on show): the remainder, from the beat on show to the end
+  const mid = advance(one(beats, 's1'));
+  const w = wholeOf(mid);
+  assert.deepEqual([w.i, w.j, w.all], [0, 3, { i: 0, j: 1, whole: true }], 'the reading stands on the last beat; the column opens at the beat on show');
+  assert.deepEqual(wholeBeats(w).map((b) => b.text), ['走吧。', '风停了。她说别回头。', '丁。']);
+  assert.equal(wholeOf(w), w, 'once is enough');
+  assert.ok(choicesUp(w), 'its end is the passage\'s end: the choices are up');
+  assert.match(beatKey(w), /\|whole$/, 'a key of its own: the clock shows it at once (syncLines `instant`), and storyDone fires');
+  const html = storyHtml(w, { acts: '<button data-panel-exit="go">走</button>', speed: 'fast', faces, src: (f) => `/w/${f}` });
+  assert.match(html, /class="story choosing whole"/);
+  assert.doesNotMatch(html, /甲。/, 'what was read already is not shown again');
+  assert.match(html, /<p class="line spoken" data-beat="0\.1"><b class="who">马三<\/b><span class="s on">走吧。<\/span><\/p>/, 'paragraphs apart, the speaker kept');
+  assert.match(html, /<span class="yy">她说别回头。<\/span>/, '⟪银月⟫ stays silver-blue');
+  assert.match(html, /她说别回头。<\/span><\/span><\/p><figure class="wface" data-sight-id="masan"><img src="\/w\/p\/masan.webp" alt=""><figcaption><b>马三<\/b><span>卖饼的<\/span>/, 'his 亮相 card inline, after the paragraph that brings him on');
+  assert.match(html, /丁。<\/span><\/p><\/div><div class="wayacts"><button data-panel-exit="go">走<\/button><\/div><\/div>/, 'the choices after the text, at the column\'s end');
+  assert.doesNotMatch(html, /class="ways"|data-dlg-all|data-dlg-onward/, 'no faint last line, nothing to skip, no 接着 where the choices stand');
+  assert.match(html, /<span class="count">2–4 \/ 4<\/span>/, 'the count names the beats the column holds');
+  assert.match(html, /data-dlg-speed="fast" class="on"/);
+  assert.match(logHtml(w), /甲。[\s\S]*走吧。[\s\S]*丁。/, '回看 holds them all');
+  // no choices to offer: 「接着往下」, his own tap, is the way on; then the reading is put away
+  assert.match(storyHtml(w), /<div class="onward"><button class="q" data-dlg-onward>接着往下 <span aria-hidden="true">›<\/span><\/button><\/div>/);
+  assert.equal(advance(w).closed, true);
+  // from the first beat, the whole passage
+  assert.equal(wholeBeats(wholeOf(one(beats, 's1'))).length, 4);
+  // a passage that comes after (the choice taken) begins afresh: a new column once 快 opens it
+  const then = withTold(w, [{ of: 'choice', id: 's1/go', beats: [{ text: '戊。' }, { text: '己。' }] }], 's1');
+  assert.deepEqual([current(then).beat.text, then.all], ['戊。', null], 'moved on, the old column is left behind');
+  assert.deepEqual(wholeBeats(wholeOf(then)).map((b) => b.text), ['戊。', '己。']);
+});
+
+test('快 → 中 mid-passage (2026-10-15, his: 「由快切回中时, 仍然是全屏」): paced again at once, from the beat in view — never from the end', () => {
+  const beats = [{ text: '甲。' }, { text: '乙。' }, { text: '丙。' }, { text: '丁。' }, { text: '戊。' }];
+  const w = wholeOf(advance(one(beats, 's1')));
+  assert.match(storyHtml(w), /<p class="line told" data-beat="0\.1">/, 'each paragraph names its beat');
+  // he had scrolled to 丙 (the paragraph at the top of the column's view)
+  const back = pacedAt(w, { i: 0, j: 2 });
+  assert.deepEqual([back.i, back.j, back.all], [0, 2, null]);
+  assert.equal(current(back).beat.text, '丙。');
+  assert.doesNotMatch(storyHtml(back), /whole|wholecol/, 'the sentences again, not the column');
+  assert.match(beatKey(back), /\|0\|2\|zh$/, 'a beat key of its own: the clock plays it from its first sentence');
+  assert.equal(choicesUp(back), false, 'the choices wait for the end again');
+  assert.match(logHtml(back), /甲。[\s\S]*乙。[\s\S]*丙。/, 'what stood above it is in 回看');
+  // nothing known in view (or a place outside the column): from where the column opened
+  assert.deepEqual([pacedAt(w).i, pacedAt(w).j], [0, 1]);
+  assert.deepEqual([pacedAt(w, { i: 0, j: 0 }).j, pacedAt(w, { i: 7, j: 7 }).j], [1, 1]);
+  assert.equal(pacedAt(back), back, 'a paced reading is left alone');
+  // and back to 快: whole again from there
+  assert.deepEqual(wholeBeats(wholeOf(back)).map((b) => b.text), ['丙。', '丁。', '戊。']);
+});
+
+test('快 never runs past a 回\'s turn: the column ends at the 回\'s last beat, 「接着往下」 goes on, and the next 回 opens as its own column', () => {
+  const r = withTold(null, [{ of: 'scene', id: 'a', hui: 'h1', beats: [{ text: '一。' }, { text: '二。' }] }, { of: 'scene', id: 'b', hui: 'h2', beats: [{ text: '三。' }, { text: '四。' }] }], 'a');
+  const w = wholeOf(r);
+  assert.deepEqual(wholeBeats(w).map((b) => b.text), ['一。', '二。']);
+  assert.equal(atLast(w), false);
+  assert.match(storyHtml(w, { acts: '<button data-panel-exit="go">走</button>' }), /data-dlg-onward/, 'no choices before the reading\'s end');
+  const next = advance(w);
+  assert.deepEqual([current(next).beat.text, next.all], ['三。', null], 'the next 回 is a beat of its own, its voice and clock back');
+  assert.deepEqual(wholeBeats(wholeOf(next)).map((b) => b.text), ['三。', '四。']);
+  // after 跳过, 快 shows what 跳过 skipped as the column
+  assert.deepEqual(wholeBeats(wholeOf(showAll(r))).map((b) => b.text), ['一。', '二。']);
 });
 
 test('回看: what was told so far — the scenes before, then this one to the beat on show — with a plain close', () => {

@@ -75,7 +75,7 @@ test('the page: the sight on the stage, no first-meet card for a face it showed,
   const css = fs.readFileSync(new URL('../scripts/lingjing.css', import.meta.url), 'utf8');
   const story = fs.readFileSync(new URL('../scripts/story.css', import.meta.url), 'utf8');
   assert.match(src, /const sighted = sightings\(readingHere\(\), firstFaces\(\), lang\(\)\);\n {2}cards = cards\.filter\(\(c\) => c\.card !== 'meet' \|\| !sighted\.has\(c\.id\)\);/);
-  assert.match(src, /paintSight\(\$\('sight'\), box\.includes\('data-dlg-on'\) \? sightNow\(readingHere\(\), firstFaces\(\), lang\(\)\) : \[\]/);
+  assert.match(src, /const sightOn = box\.includes\('data-dlg-on'\) && !readingHere\(\)\?\.all\?\.whole;\n {2}paintSight\(\$\('sight'\), sightOn \? sightNow\(readingHere\(\), firstFaces\(\), lang\(\)\) : \[\]/, '快\'s column carries its 亮相 inline: nothing large over it');
   assert.match(src, /const firstFaces = \(\) => noted\(readingHere\(\), lang\(\)\)/, 'only the faces the book marks in the reading — no name in code');
   assert.match(html, /<div class="sight" id="sight"><\/div>\s*(<!--[\s\S]*?-->\s*)?<div class="dlgwrap" id="dlg"><\/div>/);
   assert.match(html, /<header class="topbar"><div class="status" id="status"><\/div><div class="titlerow">/);
