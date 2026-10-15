@@ -1,7 +1,7 @@
 // xiuwei-model.mjs — 卷一's 修为 budget per 回 (Hanli, 2026-10-15: 「让游戏修为和故事
 // match」; 「得到奖励应该有变化……确保用户交差能看到提升」).
 //
-// `node tools/xiuwei-model.mjs` prints, per 古 回 and for two players, what the
+// `node tools/xiuwei-model.mjs [--skips]` prints, per 古 回 and for two players, what the
 // 回 offers and where it leaves the realm beside the book's layer (ladder.json
 // `caps.hui`): EVERYTHING does every task on offer at a natural pace; NOTHING
 // only walks the story. `--try=0,200,400,…` runs other 练气 thresholds.
@@ -41,6 +41,9 @@ import { loadContent } from '../scripts/content.mjs';
 export const EVERYTHING = { SCENES_PER_SESSION: 5, GONGKE: 1, FIGHTS: 2, TALE: 0.5, ROAD: 1, ERRANDS: true, PILLS: true, PILLS_BOUGHT: 1, SPEED: 1 };
 /* Only the story: its scenes' grants, no task, no pill, no day's play. */
 export const NOTHING = { ...EVERYTHING, GONGKE: 0, FIGHTS: 0, TALE: 0, ROAD: 0, ERRANDS: false, PILLS: false, PILLS_BOUGHT: 0, BOARDS: false };
+/* Everything on offer, but every story board left (「算了，往下走」, Hanli 2026-10-15: 跳过没有奖励 —
+   a skip pays nothing): the story floor must still carry him to the book's layer. */
+export const ALL_SKIPS = { ...EVERYTHING, BOARDS: false };
 /* The story, its boards and the errands — no repeatables: one-offs alone. */
 export const ONE_OFFS = { ...EVERYTHING, GONGKE: 0, FIGHTS: 0, TALE: 0, ROAD: 0, PILLS_BOUGHT: 0 };
 export const PLAY = EVERYTHING;
@@ -216,4 +219,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const tried = process.argv.find(a => a.startsWith('--try='));
   if (tried) content.ladder.tiers[0].thresholds = tried.slice(6).split(',').map(Number);
   console.log(budgetTable(content));
+  // `--skips`: the same 回s with every story board left (a skip pays nothing).
+  if (process.argv.includes('--skips')) {
+    const rows = runJuan1(content, { play: ALL_SKIPS });
+    console.log('\n全跳过 (every board left):');
+    for (const r of rows) console.log(`${r.hui} ${nameOf(content, r.end.tier, r.end.step)} ${r.end.progress}/${r.end.need} | 书中 ${nameOf(content, r.book.tier, r.book.step)} | 剧情补 ${Math.round(r.filled)}`);
+  }
 }

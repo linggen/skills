@@ -9,7 +9,7 @@
 // past the limit 老周's rope does the rest. Grade steady · scraped, written as a mark.
 // Pure module: newGame / html / act / tick (live while he climbs; live-games.js).
 import { rng } from './seeded.js';
-import { SKIP, btn, n, scene, skipBtn, skipped, splash } from './ink.js';
+import { btn, n, scene, skipped, splash } from './ink.js';
 
 export const meta = {
   id: 'climb',
@@ -115,9 +115,12 @@ export function html(state, lang = 'zh') {
   const t = T[lang] || T.zh;
   const head = `<div class="g-head"><span>${t.up} <b>${Math.min(state.rung, RUNGS)}</b> / ${RUNGS}</span></div>`;
   if (state.won) return `<div class="g-climb g-ink is-won">${climbScene(state)}${head}<p class="g-line-say">${t[state.note] ?? ''}</p></div>`;
-  if (state.phase === 'ready') return `<div class="g-climb g-ink">${climbScene(state)}<p class="g-line-say">${t.ready}</p>${btn(t.start, 'data-g="start"')}${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
+  if (state.phase === 'ready') return `<div class="g-climb g-ink">${climbScene(state)}<p class="g-line-say">${t.ready}</p>${btn(t.start, 'data-g="start"')}</div>`;
   const meter = `<div class="g-meter"><span>${t.grip}</span><span class="g-bar${state.grip < 0.3 ? ' is-seal' : ''}"><i style="width:${Math.round(state.grip * 100)}%"></i></span></div>`;
   const acts = atTop(state) ? btn(t.hand, 'data-g="hand"')
     : `<div class="g-pair">${btn(t.left, 'data-g="grab" data-side="left"', 'soft')}${btn(t.right, 'data-g="grab" data-side="right"', 'soft')}</div>${onLedge(state) ? btn(t.rest, 'data-g="rest"', 'quiet') : ''}`;
-  return `<div class="g-climb g-ink">${climbScene(state)}${head}${meter}<p class="g-line-say">${t[state.note] ?? ''}</p>${acts}${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
+  return `<div class="g-climb g-ink">${climbScene(state)}${head}${meter}<p class="g-line-say">${t[state.note] ?? ''}</p>${acts}</div>`;
 }
+
+/** Stuck (scripts/stuck.js): slid back twice — the page may offer 「算了，往下走」 now. */
+export const stuck = (s) => (s.slips ?? 0) >= 2;

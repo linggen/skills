@@ -23,6 +23,21 @@ test('卷一 from a fresh save: every scene reached, every exit taken, a way on 
   assert.deepEqual(r.forced, [], 'steps the walk had to force — a road no earlier step opens');
 });
 
+test('卷一 skipping every board (Hanli, 2026-10-15: 「对游戏进展要确保没有影响」): every scene reached, every exit taken, nothing forced', () => {
+  const r = crawlRules(content, { boards: 'skip' });
+  const scenes = JUAN_ONE.flatMap((ch) => Object.keys(content.chapters[ch].scenes).map((id) => `${ch}/${id}`));
+  const exits = JUAN_ONE.flatMap((ch) => Object.values(content.chapters[ch].scenes).flatMap((s) => s.exits.map((e) => `${s.id}:${e.id}`)));
+  assert.deepEqual(scenes.filter((id) => !r.scenes.has(id)), [], 'scenes never reached with every board left');
+  assert.deepEqual(exits.filter((id) => !r.exits.has(id)), [], 'exits never taken with every board left (a grade gate, an item a board gave)');
+  assert.deepEqual(r.findings, [], 'stalls on the way');
+  assert.deepEqual(r.forced, [], 'nothing a skipped board should have given had to be forced');
+  // Every story board of 卷一 was met and left.
+  const boards = JUAN_ONE.flatMap((ch) => Object.values(content.chapters[ch].scenes).flatMap((s) => (s.show ?? []).filter((c) => c.card === 'board').map((c) => c.id)));
+  const left = new Set([...r.states.values()].flatMap(({ s }) => (s.skipped ?? []).map((e) => e.task)));
+  assert.ok(boards.length >= 20);
+  assert.deepEqual(boards.filter((id) => !left.has(id)), [], 'every story board was left on the way');
+});
+
 test('every card kind the stage can hold has a place: the header, the book, or one rank of main — never dropped', () => {
   const look = { scene: null, tasks: [], place: null };
   for (const kind of Object.keys(CARD_KINDS)) {

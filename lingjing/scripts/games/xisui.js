@@ -11,7 +11,7 @@
 // from green to black stick by stick, the pain as rings off it, the three sticks of incense in
 // their pot, the token on its branch; at most 75 s (the moon goes over the woodpile and the
 // sticks are burned), and the quiet 「算了，往下走」 every beat keeps.
-import { SKIP, btn, n, scene, skipBtn, skipped, still } from './ink.js';
+import { btn, n, scene, skipped, still } from './ink.js';
 
 export const meta = {
   id: 'xisui',
@@ -177,5 +177,5 @@ export function html(state, lang = 'zh') {
   const head = `<div class="g-head"><span>${t.incense} <b>${state.stick}</b> / ${STICKS}</span></div>`;
   return `<div class="g-xisui2 g-ink">${tubScene(state, pain)}${head}`
     + (done ? '' : bar(t.pain, pain, pain > WAVE ? 'is-seal' : '') + bar(t.breath, state.breath, state.breath < 0.25 ? 'is-seal' : ''))
-    + `<p class="g-line-say">${t[state.note] ?? ''}</p>${act}${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
+    + `<p class="g-line-say">${t[state.note] ?? ''}</p>${act}</div>`;
 }

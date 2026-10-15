@@ -9,7 +9,7 @@
 // before 马三, 00-xiuxian's day after 立冬 (she does not wake), 00-notice's last day at home.
 // Pure module factory: makeVillage(stop) → { meta, newGame, act, tick, html }.
 import { rng, shuffled } from './seeded.js';
-import { SKIP, btn, n, scene, skipBtn, skipped, splash, still } from './ink.js';
+import { btn, n, scene, skipped, splash, still } from './ink.js';
 
 /* ── The things to do ── */
 
@@ -262,7 +262,7 @@ export function makeVillage(stop) {
     const name = (id) => (stop === 'eve' && t.spotEve[id]) || t.spot[id];
     const spots = cfg.spots.map((id, k) => `<button type="button" class="g-tag${state.done.includes(id) ? ' is-on' : ''}" data-g="spot" data-id="${id}"${state.done.includes(id) ? ' disabled' : ''}>${k + 1} · ${name(id)}<small>${state.done.includes(id) ? t.done : ' '}</small></button>`).join('');
     const line = (state.note && t[state.note] ? t[state.note] : t[stop]).replace('{n}', String(state.lost ?? ''));
-    return `<div class="g-village g-ink">${mapScene(state)}${head}<p class="g-line-say">${line}</p><div class="g-tags">${spots}</div>${btn(t.home, 'data-g="home"')}${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
+    return `<div class="g-village g-ink">${mapScene(state)}${head}<p class="g-line-say">${line}</p><div class="g-tags">${spots}</div>${btn(t.home, 'data-g="home"')}</div>`;
   }
 
   return { meta, newGame, act, tick, html };

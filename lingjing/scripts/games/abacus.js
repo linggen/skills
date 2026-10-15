@@ -7,7 +7,7 @@
 // A wrong sum only gets 舅舅's cough; a second, and he pushes the beads into place himself.
 // Grade clean · fumbled, written as a mark.
 // Pure module: newGame / html / act.
-import { SKIP, btn, scene, skipBtn, skipped, splash } from './ink.js';
+import { btn, scene, skipped, splash } from './ink.js';
 
 export const meta = {
   id: 'abacus',
@@ -111,5 +111,8 @@ export function html(state, lang = 'zh') {
     + [1, 2, 3, 4].map((b) => `<button type="button" class="g-abacus-bead${b <= r.ones ? ' is-on' : ''}" data-g="one" data-r="${k}" data-k="${b}" aria-pressed="${b <= r.ones}">1</button>`).join('')
     + '</div>').join('');
   return `<div class="g-abacus g-ink">${abacusScene(state)}${head}<p class="g-line-say">${say}</p><div class="g-abacus-pad">${pad}</div>`
-    + `<div class="g-pair">${btn(t.clear, 'data-g="clear"', 'soft')}${btn(t.check, 'data-g="check"')}</div>${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
+    + `<div class="g-pair">${btn(t.clear, 'data-g="clear"', 'soft')}${btn(t.check, 'data-g="check"')}</div></div>`;
 }
+
+/** Stuck (scripts/stuck.js): four sums wrong — the page may offer 「算了，往下走」 now. */
+export const stuck = (s) => (s.wrongs ?? 0) >= 4;

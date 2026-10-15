@@ -7,7 +7,7 @@
 // moss where he fell. A rock or the cliff only stops him; lost long enough, 银月 points the way.
 // Grade straight · wandered, written as a mark.
 // Pure module: newGame / html / act.
-import { SKIP, n, scene, skipBtn, skipped, splash } from './ink.js';
+import { n, scene, skipped, splash } from './ink.js';
 
 export const meta = {
   id: 'way',
@@ -115,5 +115,5 @@ export function html(state, lang = 'zh') {
   const head = `<div class="g-head"><span>${t.moves} <b>${state.moves}</b></span><span>${t.marks} <b>${marksSeen(state)}</b></span></div>`;
   if (state.won) return `<div class="g-way g-ink is-won">${wayScene(state)}${head}<p class="g-line-say">${t[state.note] ?? ''}</p></div>`;
   const pad = ['up', 'left', 'right', 'down'].map((d) => `<button type="button" class="g-nudgebtn g-way-${d}" data-g="go" data-d="${d}" aria-label="${t[d]}">${{ up: '↑', down: '↓', left: '←', right: '→' }[d]}</button>`).join('');
-  return `<div class="g-way g-ink">${wayScene(state)}${head}<p class="g-line-say">${t[state.note] ?? ''}</p><div class="g-way-pad">${pad}</div>${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
+  return `<div class="g-way g-ink">${wayScene(state)}${head}<p class="g-line-say">${t[state.note] ?? ''}</p><div class="g-way-pad">${pad}</div></div>`;
 }

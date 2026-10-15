@@ -71,7 +71,7 @@ export const stands = (look, part) => !sideLineOf(look) || FURNITURE.every.inclu
 /* On a side line the stage holds the scene alone: its picture, its people,
    the cards that name a value, the game it offers (`scene.games`) and the
    ending card — never the 古's goal, coins, errands, road or beasts. */
-const SIDE_CARDS = new Set(['meet', 'panel', 'people', 'value', 'born', 'closed']);
+const SIDE_CARDS = new Set(['meet', 'panel', 'people', 'value', 'born', 'closed', 'replay']);
 const onSide = look => c => SIDE_CARDS.has(c.card) || (c.card === 'board' && (look.scene?.games ?? []).includes(c.id));
 
 /* EVERY card kind says whether it HOLDS the stage: whether it is asking the
@@ -135,6 +135,8 @@ export const CARD_KINDS = {
   lundao: { holds: false }, //     论道 at 稷下: offered, or a game under way — never holds the roads
   handed: { holds: false }, //     所得 — told, never waiting on him; the roads stay
   board: { holds: false }, //      a standing practice, offered for days — not this arrival's business
+  // A board left on an earlier day, offered again (rules/skips.mjs): optional — 再试一回 or 改日, never asking.
+  replay: { holds: false },
   goal: { holds: false }, building: { holds: false }, empty: { holds: false },
   // 下一步: where the story goes and the one tap toward it, when nothing else stands (withNext).
   next: { holds: false },
@@ -273,7 +275,10 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   const panel = look.scene?.panel ? [{ card: 'panel' }] : [];
   // The chapter's ending card, while the next chapter waits: first on the stage until he puts it away (合上, the page's).
   const closed = look.chapter?.close ? [{ card: 'closed' }] : [];
-  const all = [...meet, ...panel, ...people, ...head, ...cards, ...closed].filter(c => !(c.card === 'board' && boardWaits(look, c.id)));
+  // A board left on an earlier day, offered again — the rules say when (Look's `replay`: the stage
+  // idle, its line, one a day); it stands under the scene card, after the story's own choices.
+  const again = look.replay && !line ? [{ card: 'replay', id: look.replay.task }] : [];
+  const all = [...meet, ...panel, ...people, ...head, ...cards, ...again, ...closed].filter(c => !(c.card === 'board' && boardWaits(look, c.id)));
   const staged = sideLineOf(look) ? all.filter(onSide(look)) : all;
   return withNext(look, staged.filter(c => !duplicate(look, c, staged)));
 }
@@ -359,7 +364,7 @@ export function withNext(look, cards) {
    药园's fight the stage held 狰's 已收服 card and nothing said 柴房 was next). A shelf, the map's
    roads and a beast still to win over are things to do. */
 const TELLING = new Set(['codex', 'creature', 'traits', 'gate', 'tribulation', 'treasure']);
-const TELLS_ONLY = (look, c) => TELLING.has(c.card) && !(c.card === 'creature' && winnable(look?.place?.encounter) && look.place.encounter.creature.id === c.id);
+const TELLS_ONLY = (look, c) => c.card === 'replay' /* optional: 下一步 still stands */ || TELLING.has(c.card) && !(c.card === 'creature' && winnable(look?.place?.encounter) && look.place.encounter.creature.id === c.id);
 export const showable = c => Boolean(c) && !PAGE_OWNS.has(c.card);
 
 /* 此地 · 此刻 · 行 — the stage in FIXED SECTIONS (Hanli, 2026-09-29: the same
@@ -388,7 +393,7 @@ export const MAIN = [
   { kinds: ['unfold'] }, //                                              then a chapter's map unfolding, the first time it can be walked
   { kinds: ['closed'] }, //                                              a chapter's ending card, until he puts it away
   { kinds: ['fight', 'seclusion', 'seclude'] }, //                      the fight, 闭关
-  { kinds: ['meet', 'panel', 'value', 'born', 'breakthrough'], together: true }, // the scene waiting on a choice, its new faces first
+  { kinds: ['meet', 'panel', 'value', 'born', 'breakthrough', 'replay'], together: true }, // the scene waiting on a choice, its new faces first; a board left, offered again, under it
   { kinds: ['board', 'duel', 'lundao'] }, //                             a game to play here
   { kinds: ['handed', 'quest', 'tale', 'road', 'offer'] }, //            the line, one at a time
   { kinds: ['building', 'empty'] }, //                                   the page's own notices

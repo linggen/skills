@@ -17,9 +17,12 @@ export const n = (v, d = 1) => (Number.isFinite(v) ? Number(v.toFixed(d)) : 0);
 /** The page's button, in the game: `main` (the one thing to do) or `soft`. */
 export const btn = (label, attrs, kind = 'main', extra = '') => `<button type="button" class="g-btn g-btn-${kind}${extra ? ` ${extra}` : ''}" ${attrs}>${label}</button>`;
 
-/** The quiet way out every beat keeps (batch two, 2026-10-14: a beat never blocks the story):
-    `{g:'skip'}` ends the game won, with no grade — so no mark is written and the scene goes on. */
-export const skipBtn = (label) => btn(label, 'data-g="skip"', 'quiet');
+/** RETIRED (Hanli, 2026-10-15: 「跳过这个按钮不要一开始就显示, 玩家卡住了才显示」): a module draws
+    no skip of its own. The page lays 「算了，往下走」 under EVERY story board, only once the player
+    is stuck (scripts/stuck.js: the board unwon a while, or the module's optional `stuck(state)`),
+    and a skip pays nothing (rules/skips.mjs). Kept as a no-op so a module that still calls it
+    draws nothing; a new game neither calls it nor needs to — it may export `stuck(state)`. */
+export const skipBtn = () => '';
 export const SKIP = { zh: '算了，往下走', en: 'Skip — go on' };
 /** The state a skipped game ends in: won, no grade, the module's own `skipped` line. */
 export const skipped = (s) => ({ ...s, live: false, won: true, grade: null, note: 'skipped' });

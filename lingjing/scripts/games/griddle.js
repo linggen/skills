@@ -7,7 +7,7 @@
 // then the thick one, which takes longer. Four sides; the grade (golden · scorched) is written
 // as a mark. Never a fail.
 // Pure module: newGame / html / act / tick (live while the fire burns; live-games.js).
-import { SKIP, btn, n, scene, skipBtn, skipped, splash, still } from './ink.js';
+import { btn, n, scene, skipped, splash, still } from './ink.js';
 
 export const meta = {
   id: 'griddle',
@@ -115,7 +115,7 @@ export function html(state, lang = 'zh') {
   const cur = SIDES[Math.min(state.side, SIDES.length - 1)];
   const head = `<div class="g-head"><span>${t[cur.bread]} · ${Math.min(state.side, SIDES.length - 1) % 2 + 1} ${t.side}</span><span class="g-griddle-pips">${pips}</span></div>`;
   if (state.won) return `<div class="g-griddle g-ink is-won">${griddleScene(state)}${head}<p class="g-line-say">${t[state.note] ?? ''}</p></div>`;
-  if (state.phase === 'ready') return `<div class="g-griddle g-ink">${griddleScene(state)}<p class="g-line-say">${t.ready}</p>${btn(t.start, 'data-g="start"')}${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
+  if (state.phase === 'ready') return `<div class="g-griddle g-ink">${griddleScene(state)}<p class="g-line-say">${t.ready}</p>${btn(t.start, 'data-g="start"')}</div>`;
   return `<div class="g-griddle g-ink">${griddleScene(state)}${head}<p class="g-line-say">${t[state.note] ?? ''}</p>`
-    + `${btn(t.flip, 'data-g="flip"')}${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
+    + `${btn(t.flip, 'data-g="flip"')}</div>`;
 }

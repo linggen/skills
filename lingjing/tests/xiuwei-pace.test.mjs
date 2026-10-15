@@ -16,7 +16,7 @@ import { fitWorld, migrate, newState, realmName } from '../scripts/state.mjs';
 import { look, quest, resolve } from '../scripts/rules.mjs';
 import { pay, paysOf } from '../scripts/rules/core.mjs';
 import { choreGrant } from '../scripts/rules/chores.mjs';
-import { ERRANDS_AT, EVERYTHING, NOTHING, ONE_OFFS, budgetTable, dayIncome, errandPays, runJuan1 } from '../tools/xiuwei-model.mjs';
+import { ALL_SKIPS, ERRANDS_AT, EVERYTHING, NOTHING, ONE_OFFS, budgetTable, dayIncome, errandPays, runJuan1 } from '../tools/xiuwei-model.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-10-15T12:00:00');
@@ -102,6 +102,13 @@ test('one who does nothing is carried by the story\'s floor: never behind the bo
   // The story and errands alone never fill a held layer: the climb is cultivation.
   const rows = runJuan1(content, { play: ONE_OFFS });
   for (const id of ['h07', 'h08']) assert.equal(rows.find(x => x.hui === id).full_at, null, `${id}: one-offs alone stay under the layer\n${table}`);
+});
+
+test('one who leaves every story board (a skip pays nothing, 2026-10-15) still stands at the book\'s layer each 回: the story\'s floor carries him', () => {
+  const table = budgetTable(content);
+  const rows = runJuan1(content, { play: ALL_SKIPS });
+  assert.ok(rows.length >= 7);
+  for (const r of rows) assert.equal(rank(r.end.tier, r.end.step), rank(r.book.tier, r.book.step), `${r.hui}: every board left\n${table}`);
 });
 
 test('a grinder (ten times the fights) stays only somewhat ahead: never past the book\'s layer, the stretch on each rise', () => {

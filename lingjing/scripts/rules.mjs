@@ -103,12 +103,16 @@ function guided(verb, args, reader, stateFile, result) {
   return out.result;
 }
 
+const PAGE_ACTIONS = { task: ['skip', 'replay', 'later'], tale: ['skip'] };
+export const pageOnly = (verb, args = {}) => Boolean(PAGE_ACTIONS[verb]?.includes(String(args.action ?? '')));
 function runLocked(verb, args, stateFile, reader) {
   const logFile = path.join(dataDir(), 'log.jsonl');
   const now = clock();
   // The language is Linggen's (rules/language.mjs): the save's own `lang` is let go on read.
   const raw = fs.existsSync(stateFile) ? inPlay(migrate(JSON.parse(fs.readFileSync(stateFile, 'utf8')))) : null;
 
+  // A board left or offered again is the player's own tap on the page (rules/skips.mjs) — never Ling's to make.
+  if (reader === 'ling' && pageOnly(verb, args)) return { ok: false, refused: 'page-only', say: null };
   // Ling's Restart / Undo / Load / Forget only after the one question was
   // asked (rules/confirm.mjs); the page's own calls are never gated.
   if (verb === 'undo') {

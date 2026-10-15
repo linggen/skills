@@ -24,8 +24,19 @@ function argsFor(content, s, exit) {
   return a;
 }
 
-/* Make what the exit waits on true, the page's way first; what only forcing can do is named. */
-function prepare(content, s, exit, now, forced) {
+/* The boards an exit waits on, left (「算了，往下走」, rules/skips.mjs) — every one before it in the
+   scene's `show` first, as the page lays them. A skip pays nothing; the story must go on all the same. */
+function skipsFor(content, s, exit) {
+  const sc = sceneOf(content, s), need = exit.needs?.task;
+  if (!need || s.tasks?.[need]?.status === 'done') return [];
+  const order = (sc?.show ?? []).filter((c) => c.card === 'board').map((c) => c.id);
+  const ids = [...order.slice(0, Math.max(0, order.indexOf(need))), need].filter((id) => s.tasks?.[id]?.status !== 'done');
+  return ids.map((id) => ['task', { action: 'skip', id }]);
+}
+
+/* Make what the exit waits on true, the page's way first; what only forcing can do is named.
+   `boards`: 'play' wins each board (with the grade the exit wants), 'skip' leaves each. */
+function prepare(content, s, exit, now, forced, boards = 'play') {
   const sc = sceneOf(content, s);
   if (sc?.at && s.place !== sc.at) {
     let r = move(s, content, { now, quests: [] }, { place: sc.at });
@@ -37,7 +48,7 @@ function prepare(content, s, exit, now, forced) {
     if (r.result.ok && r.state) s = r.state;
     else forced.push(`walk to ${sc.at}: ${r.result.refused}`);
   }
-  if (exit.needs?.task) s = walk(s, boardsFor(s, content, exit.id), content, now);
+  if (exit.needs?.task) s = walk(s, boards === 'skip' ? skipsFor(content, s, exit) : boardsFor(s, content, exit.id), content, now);
   const n = exit.needs ?? {};
   if (n.seen) for (const at of [n.seen].flat()) s = VERBS.look(s, content, { now, quests: [] }, { at }).state ?? s;
   if (n.mark && !(s.marks ?? []).includes(n.mark)) { forced.push(`mark ${n.mark}`); s = { ...s, marks: [...(s.marks ?? []), n.mark] }; }
@@ -77,8 +88,8 @@ export function wayOn(content, s, now) {
 
 /* The crawl: breadth first over scenes, each exit of each scene once, from the state the
    scene was first reached in. */
-export function crawlRules(content, { start = new Date('2026-09-29T09:00:00'), chapters = JUAN_ONE, lang = 'zh', limit = 600 } = {}) {
-  const scenes = new Map(), exits = new Map(), findings = [], forcedAll = [];
+export function crawlRules(content, { start = new Date('2026-09-29T09:00:00'), chapters = JUAN_ONE, lang = 'zh', limit = 600, boards = 'play' } = {}) {
+  const scenes = new Map(), exits = new Map(), findings = [], forcedAll = [], states = new Map();
   const key = (s) => `${s.chapter}/${s.scene}`;
   const queue = [{ s: newState(content, lang, start), now: start, path: [] }];
   let n = 0;
@@ -87,6 +98,7 @@ export function crawlRules(content, { start = new Date('2026-09-29T09:00:00'), c
     let s0 = arrived;
     if (!chapters.includes(s0.chapter) || !s0.scene || scenes.has(key(s0))) continue;
     scenes.set(key(s0), path);
+    states.set(key(s0), { s: s0, now: t0 });
     const sc = sceneOf(content, s0);
     if (!sc) { findings.push({ scene: key(s0), what: 'no such scene', path }); continue; }
     const way = wayOn(content, fresh(s0, t0), t0);
@@ -94,12 +106,12 @@ export function crawlRules(content, { start = new Date('2026-09-29T09:00:00'), c
     for (const exit of sc.exits) {
       let now = t0;
       const forced = [];
-      let s = prepare(content, fresh(s0, now), exit, now, forced);
+      let s = prepare(content, fresh(s0, now), exit, now, forced, boards);
       let r = resolve(s, content, { now, quests: [] }, argsFor(content, s, exit));
       // A day that must pass (the 大比 is tomorrow): the page's clock moves on.
       for (let d = 0; d < 3 && r.result.refused === 'needs' && exit.needs?.day_after; d++) {
         now = new Date(now.getTime() + DAY);
-        s = prepare(content, fresh(s, now), exit, now, forced);
+        s = prepare(content, fresh(s, now), exit, now, forced, boards);
         r = resolve(s, content, { now, quests: [] }, argsFor(content, s, exit));
       }
       const id = `${sc.id}:${exit.id}`;
@@ -124,5 +136,5 @@ export function crawlRules(content, { start = new Date('2026-09-29T09:00:00'), c
       if (!snub) queue.push({ s: next, now, path: [...path, id] });
     }
   }
-  return { scenes, exits, findings, forced: forcedAll };
+  return { scenes, exits, findings, forced: forcedAll, states };
 }

@@ -8,7 +8,7 @@
 // sends him back out. Grade sure · lucky, written as a mark. Then 喂饼, the scene's second board.
 // Pure module: newGame / html / act.
 import { rng, shuffled } from './seeded.js';
-import { SKIP, btn, n, scene, skipBtn, skipped, splash } from './ink.js';
+import { btn, n, scene, skipped, splash } from './ink.js';
 
 export const meta = {
   id: 'stone',
@@ -99,5 +99,8 @@ export function html(state, lang = 'zh') {
   if (state.won) return `<div class="g-stone g-ink is-won">${stoneScene(state)}<p class="g-line-say">${t[state.note] ?? ''}</p></div>`;
   const holes = [0, 1, 2].map((i) => `<button type="button" class="g-tag${state.at === i ? ' is-on' : ''}" data-g="hole" data-i="${i}" aria-pressed="${state.at === i}">${t.hole} ${i + 1}<small>${'·'.repeat(state.thrown[i]) || ' '}</small></button>`).join('');
   const acts = state.at == null ? '' : `<div class="g-pair">${btn(t.throw, 'data-g="throw"', 'soft')}${btn(t.enter, 'data-g="enter"')}</div>`;
-  return `<div class="g-stone g-ink">${stoneScene(state)}<div class="g-tags">${holes}</div><p class="g-line-say">${t[state.note] ?? ''}</p>${acts}${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
+  return `<div class="g-stone g-ink">${stoneScene(state)}<div class="g-tags">${holes}</div><p class="g-line-say">${t[state.note] ?? ''}</p>${acts}</div>`;
 }
+
+/** Stuck (scripts/stuck.js): two wrong holes — the page may offer 「算了，往下走」 now. */
+export const stuck = (s) => (s.wrong ?? 0) >= 2;

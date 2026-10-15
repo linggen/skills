@@ -147,3 +147,6 @@ export function html(state, lang = 'zh') {
     : `<button type="button" class="g-jin-btn" data-g="step">${t.step}</button>`;
   return `<div class="g-jin g-dark"><div class="g-jin-dots">${steps}</div>${state.phase === 'walk' ? sway : ''}<p class="g-jin-line">${t[state.note] ?? ''}</p>${btn}</div>`;
 }
+
+/** Stuck (scripts/stuck.js): fallen twice in the dark — the page may offer 「算了，往下走」 now. */
+export const stuck = (s) => (s.falls ?? 0) >= 2;

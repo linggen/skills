@@ -135,3 +135,6 @@ export function html(state, lang = 'zh') {
         + `<button type="button" class="g-jin-btn${state.mode === 'in' ? ' is-held' : ''}" data-g-hold="in">${t.in}</button></div>`;
   return `<div class="g-jin g-qianmi${state.failed ? ' is-failed' : ''}">${meters}<p class="g-jin-line">${t[state.note] ?? ''}</p>${btns}</div>`;
 }
+
+/** Stuck (scripts/stuck.js): two runs failed — the page may offer 「算了，往下走」 now. */
+export const stuck = (s) => (s.tries ?? 0) >= 2;

@@ -300,8 +300,11 @@ function giveDrop(content, s, d, from = null) {
    the finale, the drop given, the tale done and its cast remembered. A
    step's board costs a hosted game's 体力 when it is counted; empty, the win
    is kept (`won`) and counted once the pool is back. */
-function settle(content, s, ctx) {
+function settle(content, s, ctx, { skipped = false } = {}) {
   const t = s.tale, link = linkOf(t), n = t.n;
+  // A step's board left (「算了，往下走」, Hanli 2026-10-15: 跳过没有奖励): the tale goes on, nothing paid —
+  // no 修为, no 灵石, and a finale left gives no drop, no 符, no growth.
+  if (skipped) return skipStep(content, s, ctx, t, link, n);
   if (link.game !== 'duel') {
     const empty = spendStamina(content, s, ctx, 'game');
     if (empty) { t.won = true; return { kept: true, returns_at: empty.result.returns_at }; }
@@ -329,6 +332,14 @@ function settle(content, s, ctx) {
   s.handed = [...(s.handed ?? []), h].slice(-HANDED_KEEP);
   const full = storedLine(s, [gives, charm]);
   return { handed: [taleHanded(content, s, h)], ...(full ? { pouch_full: full } : {}), ...(link.end ? { ended: true, ...(grew ? { treasure_grew: grew } : {}) } : { step: stepBrief(content, s, ctx.now) }) };
+}
+
+function skipStep(content, s, ctx, t, link, n) {
+  const at = ctx.now.toISOString();
+  delete t.won; delete t.tried; delete t.lundao;
+  if (link.end) { t.done_at = at; remember(content, s, t, ctx.now); } else { t.n += 1; t.step_at = at; }
+  s.story_at = at;
+  return { skipped: boardId(t, n), ...(link.end ? { ended: true } : { step: stepBrief(content, s, ctx.now) }) };
 }
 
 /* 相识 — the people of a finished tale are remembered, and may come back. */
@@ -360,6 +371,15 @@ function winBoard(content, s, ctx, args) {
   if (t.won) return refuse('won-already', null);
   if (!here(s, link)) return notHere(content, s, link);
   return { state: s, result: { ok: true, ...settle(content, s, ctx) } };
+}
+
+/* A step's board left: the tale goes on, paid nothing (settle `skipped`). */
+function skipBoardStep(content, s, ctx, args) {
+  const t = liveTale(s), link = t && linkOf(t);
+  if (!t) return refuse('no-tale', null);
+  if (String(args.board ?? '') !== boardId(t) || WORD_GAMES.has(link.game) || link.game === 'duel') return refuse('not-this-step', null, { step: boardId(t) });
+  if (!here(s, link)) return notHere(content, s, link);
+  return { state: s, result: { ok: true, ...settle(content, s, ctx, { skipped: true }) } };
 }
 
 /* A riddle answered, or a 论道 line judged (`ok` is Ling's word on its meaning). */
@@ -419,7 +439,7 @@ function makeTale(content, s, ctx, args) {
   return { state: s, result: { ok: true, tale: taleBrief(content, s, ctx.now), pays: { step: paysOf(content, s, ctx.now, g.step), end: paysOf(content, s, ctx.now, g.end) } } };
 }
 
-/* Tale — seed · make · info · drop for Ling; win · answer · turn from the page (and answer from Ling). */
+/* Tale — seed · make · info · drop for Ling; win · skip · answer · turn from the page (and answer from Ling). */
 const ACTIONS = {
   seed: (content, s, ctx) => {
     if (liveTale(s)) return refuse('tale-open', null, { tale: taleBrief(content, s, ctx.now) });
@@ -435,6 +455,7 @@ const ACTIONS = {
     return { state: n, result: { ok: true, dropped: n.tale.id } };
   },
   win: (content, s, ctx, args) => winBoard(content, clone(s), ctx, args),
+  skip: (content, s, ctx, args) => skipBoardStep(content, clone(s), ctx, args),
   answer: (content, s, ctx, args) => answerStep(content, clone(s), ctx, args),
   turn: (content, s, ctx) => turnKept(content, clone(s), ctx),
 };

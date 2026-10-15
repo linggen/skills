@@ -103,11 +103,13 @@ export function choose(snap, ctx) {
   // Moments the page plays: a tap puts them on.
   for (const key of ['spoils-close', 'emerged-close', 'mem-next', 'mem-close', 'doors', 'homing', 'unfold', 'unroll', 'close-chapter', 'appear-done', 'appear'])
     { const t = first((x) => isA(x, key)); if (t) return { kind: key, tap: t, why: key }; }
-  // A game on the stage: its quiet skip, or (games=play) its own buttons.
+  // A game on the stage: the page's 「算了，往下走」 under it, or (games=play) its own buttons. The skip
+  // stands only once the player is stuck (scripts/stuck.js, 2026-10-15) — the crawler opens that gate
+  // through the scratch seam (`game-stuck`), then taps the real button.
   const gameTaps = live.filter((t) => t.game && Object.keys(t.data).some((k) => k === 'g' || k.startsWith('g-') || k === 'tile'));
   if (gameTaps.length) {
-    const id = gameTaps[0].game, skipGame = gameTaps.find((t) => t.data.g === 'skip');
-    if (skipGame && ctx.gameMode(id) === 'skip') return { kind: 'game-skip', tap: skipGame, game: id, why: '算了，往下走' };
+    const id = gameTaps[0].game, skipGame = live.find((t) => t.data['game-skip'] === id);
+    if (ctx.gameMode(id) === 'skip') return skipGame ? { kind: 'game-skip', tap: skipGame, game: id, why: '算了，往下走' } : { kind: 'game-stuck', game: id, why: `stuck at ${id}` };
     return { kind: 'game', game: id, why: `the game ${id}` };
   }
   // A fight: the page's fight driver plays it (ctx.fight).
@@ -199,7 +201,7 @@ export async function crawl(opts) {
   const shot = (name) => page.screenshot(path.join(out, 'shots', `${save}-${String(name).replace(/[^\w.-]+/g, '_')}.png`)).catch(() => null);
   const ctx = {
     looked: new Set(), valuePicked: false, fights: {}, chipsDone: new Set(), blankSeen: new Set(), overSeen: new Set(),
-    // A game is skipped (its quiet 「算了，往下走」) or won (the page's own onWin, through the seam):
+    // A game is skipped (the page's 「算了，往下走」, once stuck — it pays nothing) or won (the page's own onWin, through the seam):
     // `--games=skip|win`, else whichever this game has had less of.
     gameMode(id) {
       if (opts.games === 'skip' || opts.games === 'win') return opts.games;
@@ -300,6 +302,12 @@ export async function crawl(opts) {
         break;
       }
       if (act.kind === 'fight') { await playFight(page, snap, { rec, sceneId, shot, outcome: ctx.fightMode(sceneId), reload: opts.reloads && ctx.fights[sceneId] === 1 ? async () => { await page.goto(`${base}/apps/lingjing/scripts/index.html?save=${save}`); await sleep(5000); } : null }); continue; }
+      if (act.kind === 'game-stuck') {
+        const ok = await page.evaluate(`globalThis.__lingjingPlay?.stuck?.(${JSON.stringify(act.game)}) ?? 'no-seam'`);
+        if (ok === 'no-seam') throw new Error('the page has no __lingjingPlay.stuck seam — install the skill first');
+        await sleep(400);
+        continue;
+      }
       if (act.kind === 'game') {
         const grade = gradeFor(lk, act.game, route, rec.cov, sceneId);
         rec.seen('games', `${act.game}:win`);

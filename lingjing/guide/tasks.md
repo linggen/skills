@@ -16,6 +16,11 @@
   the finish; never Resolve it for him. With 体力 empty the win is kept and
   counted once 体力 is back. A player *saying* they won is not a win; never
   ask to be told of one. **论道** is yours to host: see Lundao.
+- **A board left** (「算了，往下走」 — the page offers it only once the player is
+  stuck): Look's task says `skipped`; it paid nothing — never call it won or
+  paid, never mention a reward. The story goes on as after a win. On a later
+  day the page itself offers it again (Look's `replay`, 再试一回 / 改日) —
+  the page's beat, never yours to offer or Resolve; won then, it pays as any.
 - **Real-life quests (每日 / 每周)** come from the player's other apps. **One a
   day**: the rules pick one chore from the apps' menus (Mac and phone days
   alternate) beside the fixed workout — only those two show and pay; any

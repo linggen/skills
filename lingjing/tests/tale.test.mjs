@@ -149,6 +149,20 @@ test('play: each step a board of its own at its place, handed in there, the next
   assert.equal(look(s, content, ctx()).book.some(b => b.tale), false, 'done, it leaves the book');
 });
 
+test('a step\'s board left (「算了，往下走」, 2026-10-15): the tale goes on, nothing paid — no 修为, 灵石, 体力', () => {
+  const s = made();
+  const step = look(s, content, ctx()).tale.step;
+  refused(s, { action: 'skip', board: 'alchemy-daily' }, 'not-this-step');
+  refused(walk(s, 'pengcheng'), { action: 'skip', board: step.board.id }, 'not-here');
+  const left = must(s, { action: 'skip', board: step.board.id });
+  const n = left.state;
+  assert.deepEqual([n.progress, n.wealth, n.stamina, n.step], [s.progress, s.wealth, s.stamina, s.step], 'nothing paid, nothing spent');
+  assert.equal(left.result.skipped, step.board.id);
+  assert.equal(left.result.handed, undefined, 'no 所得 for a step left');
+  assert.equal(look(n, content, ctx()).tale.step.game, 'riddle', 'the next step opened all the same');
+  refused(n, { action: 'skip', board: step.board.id }, 'not-this-step');
+});
+
 test('the pay: the tables\' caps, a fifth step eating into the finale — nothing Ling wrote', () => {
   const r = content.rewards;
   const four = made().tale.grants;

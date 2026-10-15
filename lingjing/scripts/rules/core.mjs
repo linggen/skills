@@ -30,7 +30,8 @@ function meets(state, needs, now = new Date(), sceneId = state.scene) {
   if (needs.bag && !(state.bag[needs.bag] > 0)) return false;
   if (needs.task && state.tasks[needs.task]?.status !== 'done') return false;
   // A board's grade (tasks.mjs win): the exit a won board's `grade` takes.
-  if (needs.grade && ![needs.grade].flat().includes(state.grades?.[needs.task])) return false;
+  // A board left (skipped, rules/skips.mjs) has no grade: every way on that waits on one is his to choose.
+  if (needs.grade && !state.tasks[needs.task]?.skipped && ![needs.grade].flat().includes(state.grades?.[needs.task])) return false;
   if (needs.wealth && !(state.wealth >= needs.wealth)) return false;
   // A choice a thread sets up (an errand handed in), and a day that must pass
   // since the story marked its eve (the 大比 is tomorrow: a real local day).

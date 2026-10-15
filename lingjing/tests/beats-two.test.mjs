@@ -1,7 +1,7 @@
 // The opening's play beats, batch two (2026-10-14, Hanli 「都可以，按你的单子做」): each game
 // opens with a control to touch, draws in both languages, can be finished well and badly,
-// always ends won within its limit, and can be skipped — won, no grade, no mark — so a beat
-// never blocks the story. The scenes' wiring is tests/opening-beats.test.mjs's BEATS.
+// always ends won within its limit, and never blocks the story: once the player is stuck the
+// page lays 「算了，往下走」 under it (scripts/stuck.js; a skip pays nothing, rules/skips.mjs). The scenes' wiring is tests/opening-beats.test.mjs's BEATS.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as taunt from '../scripts/games/taunt.js';
@@ -37,7 +37,7 @@ const atScene = (id) => {
 
 const GAMES = [[taunt, /data-g="start"/], [griddle, /data-g="start"/], [listen, /data-g="start"/], [storm, /data-g="start"/], [stone, /data-g="hole"/], [way, /data-g="go"/], [climb, /data-g="start"/], [xisui, /data-g-hold="grit"/], [carry, /data-g="start"/], [abacus, /data-g="five"/], [vday, /data-g="spot"/], [vdong, /data-g="spot"/], [veve, /data-g="spot"/]];
 
-test('every batch-two game: meta in both languages, a control at open, both languages drawn, a skip that ends it won with no grade', () => {
+test('every batch-two game: meta in both languages, a control at open, both languages drawn, and no skip of its own — the page\'s stuck gate lays it (2026-10-15)', () => {
   for (const [mod, control] of GAMES) {
     assert.ok(mod.meta.name.zh && mod.meta.name.en && mod.meta.how.zh && mod.meta.how.en, mod.meta.id);
     const s = mod.newGame('seed');
@@ -46,13 +46,10 @@ test('every batch-two game: meta in both languages, a control at open, both lang
       const h = mod.html(s, lang);
       assert.ok(h.length > 40, `${mod.meta.id} ${lang}`);
       assert.doesNotMatch(h, /undefined|NaN|\{\w+\}/, `${mod.meta.id} ${lang}`);
-      assert.match(h, /data-g="skip"/, `${mod.meta.id}: the quiet way out`);
+      // 「跳过这个按钮不要一开始就显示」: never drawn by the game, at the start or ever (scripts/stuck.js).
+      assert.doesNotMatch(h, /data-g="skip"|data-game-skip/, `${mod.meta.id}: no skip from the start`);
     }
     assert.equal(mod.act(s, { g: 'nonsense' }).won, false, 'an unknown move changes nothing');
-    const sk = mod.act(s, { g: 'skip' });
-    assert.equal(sk.won, true, `${mod.meta.id}: skipped is won`);
-    assert.equal(sk.state.grade, null, `${mod.meta.id}: skipped writes no grade`);
-    for (const lang of ['zh', 'en']) assert.doesNotMatch(mod.html(sk.state, lang), /undefined|NaN/, `${mod.meta.id} skipped ${lang}`);
   }
 });
 

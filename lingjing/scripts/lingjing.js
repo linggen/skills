@@ -21,7 +21,8 @@ import { wireDrag } from './battle-drag.js';
 import { banner, ghostsOf, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle } from './cards.js';
+import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, skipButton } from './cards.js';
+import { stuckNow } from './stuck.js';
 import { pouchHtml } from './pouch.js';
 import { esc } from './esc.js';
 import { HANDED_STAY_MS, TURNED_MS, handedStale } from './turned.js';
@@ -186,7 +187,8 @@ function boardFor(taskId) {
 function sendHeldWins() {
   for (const g of boards.values()) {
     const won = g.state ? g.state.won : g.won;
-    if (!won || g.sent) continue;
+    // A board left (skipGame) is never a win to send again.
+    if (!won || g.sent || g.skipped) continue;
     const task = look?.tasks?.find((t) => t.id === g.taskId);
     const tale = isTale(g.taskId) && look?.tale?.step?.board?.id === g.taskId && !look.tale.step.won;
     if (!tale && (!task || task.status !== 'offered' || task.won)) continue;
@@ -1553,9 +1555,10 @@ const WIN_LINE_MS = 2800;
    grade (`needs.grade`, 喂饼's 分它一半 / 自己吃); and only one way on is ever
    taken for him — two that wait on the same board (算账's 装傻 / 照实说)
    are his to choose. */
-const gradeFits = (e, grade) => e.needs?.grade == null || [e.needs.grade].flat().includes(grade);
-const winExit = (taskId, grade = null) => {
-  const ways = (look?.scene?.exits ?? []).filter((e) => e.needs?.task === taskId && !e.stay && gradeFits(e, grade));
+// A board left has no grade: every way on that waits on one is his to choose (rules core.mjs meets).
+const gradeFits = (e, grade, left = false) => left || e.needs?.grade == null || [e.needs.grade].flat().includes(grade);
+const winExit = (taskId, grade = null, left = false) => {
+  const ways = (look?.scene?.exits ?? []).filter((e) => e.needs?.task === taskId && !e.stay && gradeFits(e, grade, left));
   return ways.length === 1 ? ways[0] : null;
 };
 async function onWin(taskId) {
@@ -2470,15 +2473,50 @@ function toggleOffer(id) { show({ offerRow: view.offerRow === id ? null : id });
 
 /* A game module's move: the rules of the game are the module's; the win is
    the rules' (`win`, then Ling hears `[scene] won`), as for 炼丹. */
-/* 「算了，往下走」 under a story's board: won with no grade (no mark), the story goes on. */
+/* 「算了，往下走」 under a story's board, there once he is stuck (stuck.js): left, not won — the rules
+   pay nothing for it (rules/skips.mjs), no win line is read, and the story goes on as after a win.
+   A board the rules would not let go is laid again as it was. */
 function skipGame(id) {
   const g = boardFor(id);
-  if (!g?.mod || g.state?.won || g.sent) return true;
-  g.state = { ...g.state, won: true, live: false, grade: null };
+  if (!g?.mod || g.state?.won || g.sent || g.skipped) return true;
+  g.skipped = true;
+  g.state = { ...g.state, live: false };
   render();
-  g.sent = true;
-  run(`win:${g.taskId}`, () => onWin(g.taskId));
+  run(`skip:${g.taskId}`, () => onSkip(g));
   return true;
+}
+async function onSkip(g) {
+  const id = g.taskId;
+  const r = isTale(id) ? await write('tale', { action: 'skip', board: id }).catch(failed) : await write('task', { action: 'skip', id }).catch(failed);
+  if (!r.ok) {
+    console.warn('[lingjing] skip refused', r);
+    g.skipped = false;
+    g.state = { ...g.state, live: true };
+    keep({ doNote: refusal(r) });
+    await refresh();
+    return false;
+  }
+  if (isTale(id)) return taleDone(r);
+  await refresh();
+  const on = winExit(id, null, true);
+  if (on && !look?.tell_owed) await panelTap(on.id, look?.scene?.panel?.taps?.find((t) => t.id === on.id)?.label ?? on.id);
+  return true;
+}
+/* The skip's slot fills itself the moment he is stuck — the clock, or the game saying so — without
+   a repaint of the page: a live game's own repaints never touch it (it is outside [data-game]). */
+function openStuckSlots() {
+  for (const slot of document.querySelectorAll('[data-skip-slot]')) {
+    if (slot.firstElementChild) continue;
+    const g = boards.get(slot.dataset.skipSlot);
+    if (stuckNow(g, Date.now())) slot.innerHTML = skipButton(slot.dataset.skipSlot, lang());
+  }
+}
+setInterval(openStuckSlots, 1000);
+/* A board left on an earlier day, offered again (Look's replay): 再试一回 lays it as it was; 改日 puts it off. */
+async function replayTap(id, play) {
+  const r = await write('task', { action: play ? 'replay' : 'later', id }).catch(failed);
+  if (!r.ok) keep({ doNote: refusal(r) });
+  await refresh();
 }
 function gameMove(gmove) {
   const ghost = gmove.closest('[data-game]');
@@ -2554,6 +2592,8 @@ const CLICKS = [
   // The story's quiet controls — 回看, 跳过, 配音, 慢 中 快 — first; then a tap anywhere on the stage (the next sentence).
   // 回看 open, the lines wait under it (proto a: 「回看」 pauses the passage); closed, they go on.
   ['[data-game-skip]', (el) => skipGame(el.dataset.gameSkip)],
+  ['[data-replay-play]', (el) => { run(`replay:${el.dataset.replayPlay}`, () => replayTap(el.dataset.replayPlay, true)); return true; }],
+  ['[data-replay-later]', (el) => { run(`replay:${el.dataset.replayLater}`, () => replayTap(el.dataset.replayLater, false)); return true; }],
   ['[data-dlg-log]', () => { show({ logOpen: !view.logOpen }); lines.hold(view.logOpen); }],
   ['[data-dlg-logclose]', () => { show({ logOpen: false }); lines.hold(false); }],
   ['[data-dlg-all]', () => showAllBeats()],
@@ -3675,6 +3715,9 @@ if (SCRATCH) {
       run(`win:${id}`, () => onWin(id));
       return true;
     },
+    // The stuck gate opened at once (stuck.js), and the board left the way the player leaves it.
+    stuck: (id) => { const g = boardFor(id); if (!g) return false; g.shownAt = 0; openStuckSlots(); return true; },
+    skip: (id) => { const g = boardFor(id); if (!g?.mod) return false; g.shownAt = 0; return skipGame(id); },
     bout: () => (bout ? { outcome: bout.st.outcome, whose: bout.st.whose, you: bout.st.you.hp, foe: bout.st.foe.hp, busy: Boolean(bout.busy), picked: bout.picked ?? null } : null),
     // The attentive move now (fightline.js), for the crawler to make with real taps.
     move: () => (bout && !bout.busy ? bestMove(bout.st) : null),

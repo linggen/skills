@@ -200,3 +200,6 @@ export function html(state, lang = 'zh') {
     + btn(t.hold, 'data-g-hold="draw"', 'main', `g-hold${state.drawing ? ' is-held' : ''}`)
     + `</div>`;
 }
+
+/** Stuck (scripts/stuck.js): three arrows gone wide — the page may offer 「算了，往下走」 now. */
+export const stuck = (s) => (s.misses ?? 0) >= 3;

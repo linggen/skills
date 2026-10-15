@@ -7,7 +7,7 @@
 // Out of breath, he stops a beat by himself. Two loads of five steps; the grade (even · panting)
 // is written as a mark. Past the limit the loads are carried anyway. Never a fail.
 // Pure module: newGame / html / act / tick (live while he carries; live-games.js).
-import { SKIP, btn, n, scene, skipBtn, skipped, splash, still } from './ink.js';
+import { btn, n, scene, skipped, splash, still } from './ink.js';
 
 export const meta = {
   id: 'carry',
@@ -107,7 +107,7 @@ export function html(state, lang = 'zh') {
   const t = T[lang] || T.zh;
   const head = `<div class="g-head"><span>${t.loads} <b>${4 + state.load}</b> / 6</span><span>${t.steps} <b>${state.step}</b> / ${STEPS}</span></div>`;
   if (state.won) return `<div class="g-carry g-ink is-won">${carryScene(state)}${head}<p class="g-line-say">${t[state.note] ?? ''}</p></div>`;
-  if (state.phase === 'ready') return `<div class="g-carry g-ink">${carryScene(state)}<p class="g-line-say">${t.ready}</p>${btn(t.start, 'data-g="start"')}${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
+  if (state.phase === 'ready') return `<div class="g-carry g-ink">${carryScene(state)}<p class="g-line-say">${t.ready}</p>${btn(t.start, 'data-g="start"')}</div>`;
   const meter = `<div class="g-meter"><span>${t.breath}</span><span class="g-bar${state.breath > 0.6 ? ' is-seal' : ''}"><i style="width:${Math.round(state.breath * 100)}%"></i></span></div>`;
-  return `<div class="g-carry g-ink">${carryScene(state)}${head}${meter}<p class="g-line-say">${t[state.note] ?? ''}</p>${btn(t.step, 'data-g="step"')}${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
+  return `<div class="g-carry g-ink">${carryScene(state)}${head}${meter}<p class="g-line-say">${t[state.note] ?? ''}</p>${btn(t.step, 'data-g="step"')}</div>`;
 }

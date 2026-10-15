@@ -24,6 +24,7 @@ import { atScene, beatOf, creatureOf, encounterOf, foeOf, ofJuan, passed, placeB
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
 import { chapterLabel, huiOf, sideLine } from './hui.mjs';
+import { replayBrief } from './skips.mjs';
 import { capLook } from './cap.mjs';
 import { practiceHint } from './scrolls.mjs';
 import { owesTell } from './tell.mjs';
@@ -361,7 +362,8 @@ function tasksBrief(content, state, ctx) {
       return {
         id, title: pick(task.title, lang), kind: task.kind, status: t.status,
         won: Boolean(state.wins?.[id]),
-        paid: t.status === 'done', period: t.period ?? task.period ?? null, // done = paid, once or per period
+        // A board left (「算了，往下走」) is over for the story and paid nothing (rules/skips.mjs).
+        paid: t.status === 'done' && !t.skipped, ...(t.skipped ? { skipped: true } : {}), ...(t.replay ? { replay: true } : {}), period: t.period ?? task.period ?? null, // done = paid, once or per period
         ...(again.has(id) ? { for_errand: true } : {}),
         done_at: t.done_at ?? null,
         // what it asks and what it pays, so Ling can tell the practice
@@ -486,6 +488,8 @@ export function look(state, content, ctx) {
     ...(offersOf(content, state, lang, ctx.now).length ? { offers: offersOf(content, state, lang, ctx.now) } : {}),
     // 今日传闻 (tale.mjs): the step open now and its people; `story_due` when nothing story-like happened for a while.
     ...taleLook(content, state, ctx),
+    // A board left on an earlier day, offered again now the stage is idle (rules/skips.mjs): the page's optional beat.
+    ...(replayBrief(content, state, ctx.now) ? { replay: replayBrief(content, state, ctx.now) } : {}),
     ended: state.ended, story: state.story,
     // 前情提要 while owed, and the last story node while fresh (story.mjs).
     ...recapLook(content, state), ...nodeLook(state, ctx.now),

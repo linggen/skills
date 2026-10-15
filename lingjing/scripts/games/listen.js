@@ -8,7 +8,7 @@
 // Grade sharp · late, written as a mark; both of the scene's ways on stay his.
 // Pure module: newGame / html / act / tick (live while he listens; live-games.js).
 import { rng } from './seeded.js';
-import { SKIP, btn, n, scene, skipBtn, skipped, splash } from './ink.js';
+import { btn, n, scene, skipped, splash } from './ink.js';
 
 export const meta = {
   id: 'listen',
@@ -111,11 +111,11 @@ function listenScene(state) {
 export function html(state, lang = 'zh') {
   const t = T[lang] || T.zh;
   if (state.won) return `<div class="g-listen g-ink is-won">${listenScene(state)}<p class="g-line-say">${t[state.note] ?? ''}</p></div>`;
-  if (state.phase === 'ready') return `<div class="g-listen g-ink">${listenScene(state)}<p class="g-line-say">${t.ready}</p>${btn(t.start, 'data-g="start"')}${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
+  if (state.phase === 'ready') return `<div class="g-listen g-ink">${listenScene(state)}<p class="g-line-say">${t.ready}</p>${btn(t.start, 'data-g="start"')}</div>`;
   if (state.phase === 'sky') {
     const tiles = SIGNS.map((id) => `<button type="button" class="g-tag${state.looked.includes(id) ? ' is-tried' : ''}" data-g="sign" data-id="${id}"${state.looked.includes(id) ? ' disabled' : ''}>${t[id]}</button>`).join('');
-    return `<div class="g-listen g-ink">${listenScene(state)}<p class="g-line-say">${t[state.note] ?? ''}</p><div class="g-tags">${tiles}</div>${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
+    return `<div class="g-listen g-ink">${listenScene(state)}<p class="g-line-say">${t[state.note] ?? ''}</p><div class="g-tags">${tiles}</div></div>`;
   }
   const line = quiet(state) ? t.quiet : state.note === 'early' ? t.early : t.listening;
-  return `<div class="g-listen g-ink">${listenScene(state)}<p class="g-line-say">${line}</p>${btn(t.wrong, 'data-g="wrong"')}${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
+  return `<div class="g-listen g-ink">${listenScene(state)}<p class="g-line-say">${line}</p>${btn(t.wrong, 'data-g="wrong"')}</div>`;
 }

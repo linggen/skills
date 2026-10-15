@@ -7,7 +7,7 @@
 // grade (word · fist) is written as a mark; both of the scene's ways on stay his.
 // Pure module: newGame / html / act / tick (live while he answers; live-games.js).
 import { rng, shuffled } from './seeded.js';
-import { SKIP, btn, n, scene, skipBtn, skipped, splash } from './ink.js';
+import { btn, n, scene, skipped, splash } from './ink.js';
 
 export const meta = {
   id: 'taunt',
@@ -112,7 +112,7 @@ export function html(state, lang = 'zh') {
     return `<div class="g-taunt g-ink is-won">${tauntScene(state)}${head}${quote}<p class="g-line-say">${t[state.note] ?? ''}</p></div>`;
   }
   if (state.phase === 'ready') {
-    return `<div class="g-taunt g-ink">${tauntScene(state)}<p class="g-line-say">${t.ready}<br><b>${q(P.lines.join(lang === 'en' ? ' ' : ''))}</b></p>${btn(t.start, 'data-g="start"')}${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
+    return `<div class="g-taunt g-ink">${tauntScene(state)}<p class="g-line-say">${t.ready}<br><b>${q(P.lines.join(lang === 'en' ? ' ' : ''))}</b></p>${btn(t.start, 'data-g="start"')}</div>`;
   }
   const tiles = state.order.map((i) => {
     const done = i < state.said, tried = state.tried.includes(i);
@@ -120,5 +120,5 @@ export function html(state, lang = 'zh') {
   }).join('');
   const meter = `<div class="g-meter"><span>${t.fist}</span><span class="g-bar is-seal"><i style="width:${Math.round(state.fist * 100)}%"></i></span></div>`;
   return `<div class="g-taunt g-ink">${tauntScene(state)}${head}${meter}<p class="g-quote">${q(saidLine || '…')}</p>`
-    + `<div class="g-tags">${tiles}</div><p class="g-line-say">${t[state.note] ?? ''}</p>${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
+    + `<div class="g-tags">${tiles}</div><p class="g-line-say">${t[state.note] ?? ''}</p></div>`;
 }

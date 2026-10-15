@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "_about": "In-world tasks. Real-life ones are never here — each app writes its own to ~/.linggen/quests/<app>.json. A hosted game costs rewards.json stamina.cost.game when it is paid (论道 when it opens) and pays from the `game` table: a little, every day — the card fight is where 修为 is earned.",
+  "_about": "In-world tasks. Real-life ones are never here — each app writes its own to ~/.linggen/quests/<app>.json. A hosted game costs rewards.json stamina.cost.game when it is paid (论道 when it opens) and pays from the `game` table: a little, every day — the card fight is where 修为 is earned. A story board may be left once the player is stuck (「算了，往下走」, rules/skips.mjs): a skip pays NOTHING of `grant` (no 修为, 灵石, item), writes no grade or mark, and the story goes on; what the story itself needs from a board goes in `gives` (handed over even on a skip), never in `grant`. A board left comes back by itself on a later day, offered with its `replay` line (else one made from its title); won then, it pays in full.",
   "tasks": [
     {
       "id": "alchemy-first",
@@ -166,7 +166,8 @@
       "id": "jin-dark", "kind": "board", "game": "dark", "period": "once",
       "title": { "zh": "黑地十一步 · 领着喘", "en": "Eleven steps in the dark · Breathe with him" },
       "grant": { "table": "task" },
-      "done_line": { "zh": "手不麻了。", "en": "His hands aren't numb." }
+      "done_line": { "zh": "手不麻了。", "en": "His hands aren't numb." },
+      "replay": { "zh": "那夜没走完的十一步……再试一回？", "en": "Those eleven steps in the dark, left unfinished… try again?" }
     },
     {
       "id": "jin-pulse", "kind": "board", "game": "pulse", "period": "once",

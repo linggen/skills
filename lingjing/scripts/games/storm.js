@@ -9,7 +9,7 @@
 // taps to act() and steps tick() while `live` (live-games.js).
 // Drawn in ink since batch two (2026-10-14): the slope and the drop, 爹 hauled up it pull by
 // pull, the rain slanting with the wind — and the quiet 「算了，往下走」 every beat keeps.
-import { SKIP, btn, n, scene, skipBtn, skipped, splash, still } from './ink.js';
+import { btn, n, scene, skipped, splash, still } from './ink.js';
 
 export const meta = {
   id: 'storm',
@@ -178,5 +178,5 @@ export function html(state, lang = 'zh') {
   const head = `<div class="g-head"><span>${t.dist} <span class="g-feather-pips">${pips}</span></span><span class="g-chip${calm ? ' is-calm' : ''}">${t.wind} · ${calm ? t.calm : t.gust}</span></div>`;
   const meter = `<div class="g-meter"><span>${t.wind}</span><span class="g-bar${calm ? '' : ' is-seal'}"><i style="width:${Math.round(w * 100)}%"></i></span></div>`;
   const act = state.live ? btn(t.pull, 'data-g="pull"') : btn(t.start, 'data-g="start"');
-  return `<div class="g-storm2 g-ink">${stormScene(state, w)}${state.live ? head + meter : ''}<p class="g-line-say">${t[state.note] ?? ''}</p>${act}${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
+  return `<div class="g-storm2 g-ink">${stormScene(state, w)}${state.live ? head + meter : ''}<p class="g-line-say">${t[state.note] ?? ''}</p>${act}</div>`;
 }

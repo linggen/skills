@@ -12,6 +12,7 @@ import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from
 import { duelBrief, tasksBrief } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { stow, storedLine } from './pouch.mjs';
+import { laterBoard, replayBoard, sceneBoards, skipBoard } from './skips.mjs';
 import { creatureOf, encounterOf, foeOf, huntKey, placeOf, sceneOf } from './world.mjs';
 
 /* ── Tasks and quests ── */
@@ -22,7 +23,11 @@ export function task(state, content, ctx, args) {
   if (args.action === 'done' && args.id === 'festival') return festivalDone(state, content, ctx);
   if (args.action === 'done') return taskDone(state, content, ctx, args.id);
   if (args.action === 'check') return questCheck(state, content, ctx, args.id);
-  return refuse('unknown-action', null, { actions: ['list', 'done', 'check'] });
+  // A story board left (「算了，往下走」, paid nothing), and offered again later (rules/skips.mjs).
+  if (args.action === 'skip') return skipBoard(state, content, ctx, String(args.id ?? ''));
+  if (args.action === 'replay') return replayBoard(state, content, ctx, String(args.id ?? ''));
+  if (args.action === 'later') return laterBoard(state, content, ctx, String(args.id ?? ''));
+  return refuse('unknown-action', null, { actions: ['list', 'done', 'check', 'skip', 'replay', 'later'] });
 }
 
 /* An errand held and not yet met that asks for a win on this board. It
@@ -121,12 +126,14 @@ function taskDone(state, content, ctx, id) {
     const handed = advance(content, s, { kind: 'board', task: id }, ctx);
     return { state: s, result: { ok: true, done: id, paid: null, gives: null, for: 'errand', ...(handed.length ? { handed } : {}) } };
   }
+  // A board left and offered again (rules/skips.mjs) pays in full now — its passage was told the day it was left.
+  const replayed = Boolean(state.tasks[id]?.replay);
   s.tasks[id] = { status: 'done', period: periodKey(t.period, ctx.now), done_at: ctx.now.toISOString() };
   // A game inside its scene's passage (`story_after`, 2026-10-14): the rest of the passage is the
   // scene's, owed the moment the game is counted — told right after it, before the choices.
   const here = sceneOf(content, s);
   // With two boards (batch two: 00-cave, 00-halfyear) the split belongs to the first in `show`; the second comes after the rest.
-  if (here?.story_after && sceneBoards(here)[0] === id) s.tell_owed = [...(s.tell_owed ?? []), `after/${here.id}`];
+  if (!replayed && here?.story_after && sceneBoards(here)[0] === id) s.tell_owed = [...(s.tell_owed ?? []), `after/${here.id}`];
   const full = t.gives?.bag ? storedLine(s, [stow(content, s, t.gives.bag)]) : null;
   const paid = pay(content, s, ctx, t.grant);
   const handed = advance(content, s, { kind: 'board', task: id }, ctx);
@@ -163,7 +170,7 @@ export function win(state, content, ctx, args) {
   const inScene = sceneOf(content, state)?.exits.some(e => gameOf(e)?.id === id && gameOf(e).kind !== 'duel');
   if (!inScene && !taskOpen(content, state, id, ctx.now)) return refuse('not-here', null);
   // A scene's boards are played in `show` order: a later one waits for those before it.
-  const scene = sceneOf(content, state), order = scene ? sceneBoards(scene) : [];
+  const scene = sceneOf(content, state), order = sceneBoards(scene);
   if (order.slice(0, Math.max(0, order.indexOf(id))).some(b => state.tasks?.[b]?.status !== 'done')) return refuse('board-waits', null);
   const s = clone(state);
   s.wins = { ...s.wins, [id]: ctx.now.toISOString() };
@@ -178,8 +185,6 @@ export function win(state, content, ctx, args) {
   return { state: s, result: { ok: true, won: id, ...(graded ? { grade: graded.grade } : {}) } };
 }
 
-/* A scene's boards, in the order they are played (its `show`). */
-const sceneBoards = scene => (scene.show ?? []).filter(c => c.card === 'board').map(c => c.id);
 
 /* A board's grade as its task names it: `marks` (grade → mark) lists the grades it keeps. */
 function gradeOf(content, id, grade) {

@@ -109,3 +109,6 @@ export function html(state, lang = 'zh') {
     + `<button type="button" class="g-jin-btn${b.phase === 'in' ? ' is-held' : ''}" data-g-hold="in">${t.in}</button>`
     + `<button type="button" class="g-jin-btn is-small" data-g="shoot">${t.shoot}</button></div>`;
 }
+
+/** Stuck (scripts/stuck.js): three chants broken — the page may offer 「算了，往下走」 now. */
+export const stuck = (s) => (s.misses ?? 0) >= 3;
