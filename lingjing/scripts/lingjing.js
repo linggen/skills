@@ -43,7 +43,7 @@ import { WINDS } from './rules/weather.mjs';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
 import { advance, atLast, beatKey, choicesUp, current, huiAt, keepReading, leadsIn, loadReading, sceneOfItem, logHtml, noted, ofPlay, pacedAt, playing, readingFor, showAll, sightNow, sightings, storyHtml, wholeBeats, wholeOf, withTold } from './dialogue.js';
-import { createLines, keepSpeed, speedNow, voiceOf, wholeNow } from './lines.js';
+import { createLines, keepSpeed, paceOf, SPEEDS, speedNow, voiceOf, wholeNow } from './lines.js';
 import { SIGHT_KINDS, artRoom, chatHeard, fitBox, mountChatToggle, paintSight, setAutoFold } from './sight.js';
 import { createPager } from './pager.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
@@ -3784,7 +3784,7 @@ async function playPiece(id, beats = null, said = null) {
   const box = document.createElement('div');
   box.className = 'spstage';
   box.dataset.piece = id;
-  box.innerHTML = `<div class="sphold"></div><p class="spline" aria-live="polite"></p><button class="spskip" type="button">${en ? 'Skip' : '跳过'}</button>`;
+  box.innerHTML = `<div class="sphold"></div><p class="spline" aria-live="polite"></p><p class="sphint">${en ? 'Tap to go on' : '轻触继续'}</p><button class="spskip" type="button">${en ? 'Skip' : '跳过'}</button>`;
   // In the stage (2026-10-14: the header and the footer are thin bars that stay; the chat stays beside).
   ($('view') ?? document.body).appendChild(box);
   const mine = pieceOn = { id, box, ctl: null, over: false };
@@ -3795,9 +3795,15 @@ async function playPiece(id, beats = null, said = null) {
   });
   try {
     const line = box.querySelector('.spline');
+    // A picture held at a beat's end goes on by itself at 中 and 快, after its line's reading time (古九's
+    // tester, 2026-10-15: never, even at 快, and nothing said a tap was wanted) — 中's pace at least, a
+    // picture wants looking at; at 慢 it waits for the tap, and 「轻触继续」 says so while it waits.
+    const auto = speedNow() !== 'slow';
     mine.ctl = await playSetPiece(box.querySelector('.sphold'), id, {
-      lang: lang(), still: stillMotion(), beats,
-      onBeat: (i, b, all) => { line.textContent = (said && (all ?? 1) === 1 ? said : null) ?? b.text ?? b.line?.[lang()] ?? ''; },
+      lang: lang(), still: stillMotion(), beats, auto,
+      hold: (b) => paceOf(line.textContent || b.text || '', { f: SPEEDS.mid, last: true, lang: lang() }),
+      onHold: () => box.classList.add('held'),
+      onBeat: (i, b, all) => { box.classList.remove('held'); line.textContent = (said && (all ?? 1) === 1 ? said : null) ?? b.text ?? b.line?.[lang()] ?? ''; },
       onDone: () => { mine.over = true; box.classList.add('over'); setTimeout(close, 9000); },
     });
     if (pieceOn !== mine) mine.ctl?.destroy?.();

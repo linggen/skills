@@ -76,7 +76,9 @@ const loadImage = (src) => new Promise((ok, no) => { const im = new Image(); im.
 
 /// Play piece `id` in `host` (an empty box the caller sized). Resolves to
 /// {tap(), skip(), destroy(), get i(), get phase()}.
-export async function playSetPiece(host, id, { lang = 'zh', still = false, auto = false, hold = 900, artBase = ART_BASE, beats = null, cover = false, onBeat, onDone } = {}) {
+/// `hold` — how long a beat ends held before `auto` goes on: ms, or (beat) => ms (its line's reading
+/// time). `onHold(i)` — beat i ended and waits (the caller says 「轻触继续」).
+export async function playSetPiece(host, id, { lang = 'zh', still = false, auto = false, hold = 900, artBase = ART_BASE, beats = null, cover = false, onBeat, onHold, onDone } = {}) {
   if (!/^[a-z]+$/.test(id)) throw new Error(`bad set piece: ${id}`);
   const def = await import(`./setpieces/${id}.js`);
   const { play: BEATS, before } = beatRange(def.BEATS, beats);
@@ -130,7 +132,8 @@ export async function playSetPiece(host, id, { lang = 'zh', still = false, auto 
       tl?.progress(1);
       react({ hold: ev.finish });
     } else if ('hold' in ev) {
-      if (auto) timer = setTimeout(() => react(steps.tap()), hold);
+      onHold?.(ev.hold);
+      if (auto) timer = setTimeout(() => react(steps.tap()), typeof hold === 'function' ? hold({ ...BEATS[ev.hold], text: BEATS[ev.hold].line?.[lang] ?? BEATS[ev.hold].line?.zh }) : hold);
     } else if ('skip' in ev) {
       // The last frame: every beat left, run to its end in order.
       if (scene) { tl?.progress(1); for (let k = Math.max(0, ev.skip + 1); k < BEATS.length; k += 1) scene.beat(BEATS[k].id).progress(1); } else box.innerHTML = still_(BEATS.at(-1).id);

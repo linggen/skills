@@ -1250,6 +1250,9 @@ body.fighting .atmos { display: none; }
 .spstage .spskip { position: absolute; top: 12px; right: 12px; border: 1px solid #b8ad96; background: transparent; color: #5b5244;
   border-radius: 999px; padding: 4px 14px; font-size: 14px; cursor: pointer; }
 .spstage.over .spline::after { content: ' ›'; opacity: .6; }
+/* 「轻触继续」 while a beat holds (or the piece is over): a quiet line under the words, kept in its place so nothing jumps. */
+.spstage .sphint { margin: 0; font-size: 12px; letter-spacing: .2em; color: #8a7f6c; visibility: hidden; opacity: 0; transition: opacity .4s; }
+.spstage.held .sphint, .spstage.over .sphint { visibility: visible; opacity: 1; }
 .spstage .zjskip, .spstage .zjcap { display: none; } /* the page's 跳过 and line stand for the piece's own */
 @media (prefers-color-scheme: dark) {
   .spstage { background: rgba(24, 22, 19, .97); }

@@ -144,3 +144,19 @@ test('teardown: every tween a piece makes is in its bag, and killAll leaves none
   assert.doesNotMatch(zhang, /\bgsap\.(to|from|fromTo|timeline|delayedCall)\(/, 'zhang makes its tweens through the bag');
   assert.match(zhang, /destroy\(\) \{\s*bag\.killAll\(\);/);
 });
+
+// 古九's tester (2026-10-15): the full-picture stills never went on by themselves, even at 快, and nothing said
+// a tap was wanted. At 中 and 快 a held beat goes on after its line's reading time; 「轻触继续」 while it waits.
+test('a still held at a beat\'s end goes on by itself at 中 and 快, and says 轻触继续 while it waits', async () => {
+  const fsm = await import('node:fs');
+  const page = fsm.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const body = page.slice(page.indexOf('async function playPiece('), page.indexOf('\n}\n', page.indexOf('async function playPiece(')));
+  assert.match(body, /const auto = speedNow\(\) !== 'slow';/);
+  assert.match(body, /hold: \(b\) => paceOf\(/);
+  assert.match(body, /onHold: \(\) => box\.classList\.add\('held'\)/);
+  assert.match(body, /class="sphint">\$\{en \? 'Tap to go on' : '轻触继续'\}/);
+  const runner = fsm.readFileSync(new URL('../scripts/setpiece.js', import.meta.url), 'utf8');
+  assert.match(runner, /onHold\?\.\(ev\.hold\);\n\s+if \(auto\) timer = setTimeout\(\(\) => react\(steps\.tap\(\)\), typeof hold === 'function'/);
+  const css = fsm.readFileSync(new URL('../scripts/lingjing.css', import.meta.url), 'utf8');
+  assert.match(css, /\.spstage\.held \.sphint, \.spstage\.over \.sphint \{ visibility: visible/);
+});
