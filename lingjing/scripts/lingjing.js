@@ -41,7 +41,7 @@ import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
 import { advance, atLast, beatKey, choicesUp, current, huiAt, keepReading, leadsIn, loadReading, logHtml, noted, ofPlay, pacedAt, playing, readingFor, showAll, sightNow, sightings, storyHtml, wholeBeats, wholeOf, withTold } from './dialogue.js';
 import { createLines, keepSpeed, speedNow, voiceOf, wholeNow } from './lines.js';
-import { SIGHT_KINDS, mountChatToggle, paintSight, setAutoFold } from './sight.js';
+import { SIGHT_KINDS, chatHeard, mountChatToggle, paintSight, setAutoFold } from './sight.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
 import { playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
@@ -3013,6 +3013,7 @@ async function freshChatWhenFree() {
     if (!id) return;
     await chat.setSession(id);
     chat.addMessage('assistant', FRESH_LINE[lang()]);
+    chatHeard(document.querySelector('.shell'));
     openWith(id);
   } catch (e) {
     console.warn('[lingjing] fresh chat', e);
@@ -3055,6 +3056,8 @@ async function mountChat() {
     guestStreams: true,
     onStreamToken: (_text, info) => { if (info?.own !== false) streaming = true; },
     onStreamEnd: (_text, info) => {
+      // Ling or 银月 wrote: on a phone with the sheet shut, a dot on the chat's bar (sight.js).
+      chatHeard(document.querySelector('.shell'));
       if (info?.own === false) { voice.heard(); return; }
       turnEnded();
       voice.heard();

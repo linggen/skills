@@ -10,7 +10,8 @@
 //
 // Also here: the chat beside the stage folds away (a handle on the seam), kept
 // per viewer in this browser — and the page's own fold for a game, the map or a
-// fight (setAutoFold), which keeps nothing.
+// fight (setAutoFold), which keeps nothing. On a phone the chat is a bottom sheet
+// behind a slim bar instead (PHONE_QUERY, phone.css).
 import { esc } from './esc.js';
 
 /* The kinds that come on in person: a 人物 or a 生物 — a thing or an art does not. */
@@ -35,11 +36,24 @@ export function sightHtml(entries, { src = (p) => p } = {}) {
 let shownKey = null;
 export function paintSight(host, entries, opts = {}) {
   if (!host) return;
+  wordsRoom(host);
   const key = entries.length ? entries.map((e) => e.id).join(',') : null;
   if (key === shownKey) return;
   shownKey = key;
   for (const old of host.querySelectorAll('.sightcard:not(.going)')) leave(old);
   if (key) host.insertAdjacentHTML('beforeend', sightHtml(entries, opts));
+}
+
+/* Where the words begin on the stage (the beat's whole paragraph is laid out, its unread sentences
+   only faint): `--words-top` on the sight's layer, so on a phone the portrait ends above the words
+   and shrinks rather than stand over them (phone.css). */
+function wordsRoom(host) {
+  const words = document.querySelector('#dlg .story .screen:not([hidden])');
+  if (!words) { host.style.removeProperty('--words-top'); return; }
+  // Measured from the stage (the layer is hidden while empty, so it has no box of its own yet).
+  const stage = host.parentElement ?? host;
+  const top = Math.round(words.getBoundingClientRect().top - stage.getBoundingClientRect().top - (parseFloat(getComputedStyle(host).top) || 0));
+  host.style.setProperty('--words-top', `${Math.max(0, top)}px`);
 }
 
 function leave(card) {
@@ -69,6 +83,23 @@ export function setAutoFold(shell, on) {
   shell.classList.toggle('autofold', Boolean(on));
 }
 const CHAT_WORDS = { zh: ['收起对话', '展开对话'], en: ['Fold the chat away', 'Open the chat'] };
+/* The phone (Hanli, 2026-10-15: 「手机layout也一起改」): on a narrow or short screen the stage takes
+   the screen and the chat is a sheet — folded to a slim bar under the stage; a tap opens it from the
+   bottom over the stage, a tap outside (or Esc) closes it, and a dot shows while Ling or 银月 wrote
+   something unseen. Kept nowhere: it opens folded. The same query as phone.css. */
+export const PHONE_QUERY = '(max-width: 600px), (max-width: 860px) and (max-height: 700px)';
+const onPhone = () => Boolean(globalThis.matchMedia?.(PHONE_QUERY).matches);
+const BAR_WORDS = { zh: ['和灵说话', '收起'], en: ['Talk to Ling', 'Close'] };
+/* Is the chat out of sight now — the phone's sheet shut, the viewer's fold, or the page's? */
+export function chatHidden(shell, phone = onPhone()) {
+  const c = shell.classList;
+  if (phone) return !c.contains('chatsheet');
+  return c.contains('autofold') ? !c.contains('autoopen') : c.contains('chatfolded');
+}
+/* Ling or 银月 wrote in the chat: a dot on the bar while it is out of sight; opening it clears it. */
+export function chatHeard(shell) {
+  if (shell && chatHidden(shell)) shell.classList.add('chatunread');
+}
 export function mountChatToggle(shell, lang = () => 'zh') {
   if (!shell || shell.querySelector('.chattoggle')) return;
   let folded = false;
@@ -77,12 +108,14 @@ export function mountChatToggle(shell, lang = () => 'zh') {
   btn.className = 'chattoggle';
   btn.type = 'button';
   const paint = () => {
-    const shut = shell.classList.contains('autofold') ? !shell.classList.contains('autoopen') : folded;
-    const w = CHAT_WORDS[lang()] ?? CHAT_WORDS.zh;
+    const phone = onPhone(), shut = chatHidden(shell, phone);
+    const w = phone ? (BAR_WORDS[lang()] ?? BAR_WORDS.zh) : (CHAT_WORDS[lang()] ?? CHAT_WORDS.zh);
+    const say = phone ? w[shut ? 0 : 1] : w[shut ? 1 : 0];
     btn.setAttribute('aria-pressed', shut ? 'true' : 'false');
-    btn.title = w[shut ? 1 : 0];
-    btn.setAttribute('aria-label', w[shut ? 1 : 0]);
-    btn.innerHTML = `<span aria-hidden="true">${shut ? '‹' : '›'}</span>`;
+    btn.title = say;
+    btn.setAttribute('aria-label', say);
+    const html = `<span aria-hidden="true">${shut ? '‹' : '›'}</span><b class="barword">${esc(say)}</b><i class="unread" aria-hidden="true"></i>`;
+    if (btn.innerHTML !== html) btn.innerHTML = html;
   };
   // The page's fold comes and goes with the stage: the handle's arrow follows it.
   new MutationObserver(paint).observe(shell, { attributes: true, attributeFilter: ['class'] });
@@ -92,11 +125,25 @@ export function mountChatToggle(shell, lang = () => 'zh') {
     paint();
     if (keepIt) { try { localStorage.setItem(CHAT_KEY, on ? '1' : '0'); } catch { /* this load only */ } }
   };
+  // The phone's sheet: open on the bar, shut on the scrim, Esc, or the bar again.
+  const sheet = (on) => {
+    shell.classList.toggle('chatsheet', on);
+    if (on) shell.classList.remove('chatunread');
+  };
+  const scrim = document.createElement('div');
+  scrim.className = 'chatscrim';
+  scrim.setAttribute('aria-hidden', 'true');
+  scrim.addEventListener('click', () => sheet(false));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && shell.classList.contains('chatsheet')) sheet(false); });
+  globalThis.matchMedia?.(PHONE_QUERY).addEventListener?.('change', () => { sheet(false); paint(); });
   btn.addEventListener('click', () => {
+    if (onPhone()) { sheet(!shell.classList.contains('chatsheet')); return; }
+    shell.classList.remove('chatunread');
     // Folded by the page for a game: the handle opens it for this game only, and keeps nothing.
     if (shell.classList.contains('autofold')) { shell.classList.toggle('autoopen'); paint(); return; }
     set(!folded, true);
   });
+  shell.appendChild(scrim);
   shell.appendChild(btn);
   set(folded, false);
 }
