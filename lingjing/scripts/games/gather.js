@@ -14,7 +14,7 @@ export const meta = {
   name: { zh: '拾遗 · 石缝里的灵草', en: 'Gleaning · Herbs in the cracks' },
   how: {
     zh: '河床的石缝里，有的透着光：金的是上品灵草，暗绿的是中品下品，铜色一闪的是矿，黑的什么也没有。只拔得了四处，那几个九层就要过来了。',
-    en: 'Some cracks in the riverbed glow: gold is a high-grade herb, dim green a middle or low one, a copper glint is ore, and dark is nothing. You can pull four before the 九层 come this way.',
+    en: 'Some cracks in the riverbed glow: gold is a high-grade herb, dim green a middle or low one, a copper glint is ore, and dark is nothing. You can pull four before the ninth-layers come this way.',
   },
 };
 

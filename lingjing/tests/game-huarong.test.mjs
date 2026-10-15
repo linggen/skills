@@ -116,8 +116,10 @@ test('replaying the BFS solution through act() wins', () => {
       const after = act(state, { g: 'block', b: '1' });
       assert.equal(after.state, state, 'acts after winning are no-ops');
       assert.equal(after.won, false);
-      assert.match(html(state, 'zh'), /出了秘境/);
-      assert.match(html(state, 'en'), new RegExp(`Out of the hidden realm · ${state.moves} moves`));
+      // The board stands in many rooms (the 秘境's 岔口 is its way in, not out): the win line names no place.
+      assert.match(html(state, 'zh'), new RegExp(`挤出来了 · ${state.moves} 步`));
+      assert.doesNotMatch(html(state, 'zh'), /秘境/);
+      assert.match(html(state, 'en'), new RegExp(`Squeezed out · ${state.moves} moves`));
     });
   }
 });

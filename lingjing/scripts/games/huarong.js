@@ -130,8 +130,8 @@ export function act(state, data = {}) {
 }
 
 const T = {
-  zh: { you: '你', v: '岩', h: '藤', s: '石', moves: '步数', exit: '出口', won: (n) => `出了秘境 · ${n} 步`, pick: '先点一块' },
-  en: { you: 'You', v: '', h: '', s: '', moves: 'Moves', exit: 'Exit', won: (n) => `Out of the hidden realm · ${n} moves`, pick: 'Tap a block first' },
+  zh: { you: '你', v: '岩', h: '藤', s: '石', moves: '步数', exit: '出口', won: (n) => `挤出来了 · ${n} 步`, pick: '先点一块' },
+  en: { you: 'You', v: '', h: '', s: '', moves: 'Moves', exit: 'Exit', won: (n) => `Squeezed out · ${n} moves`, pick: 'Tap a block first' },
 };
 
 export function html(state, lang = 'zh') {

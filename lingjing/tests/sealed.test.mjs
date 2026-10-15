@@ -246,6 +246,8 @@ test('the two new boards: a control at open, both languages, played well and bad
     const g = mod.newGame('seed');
     assert.match(mod.html(g, 'zh'), control);
     for (const lang of ['zh', 'en']) { assert.doesNotMatch(mod.html(g, lang), /undefined|NaN/); assert.doesNotMatch(mod.html(g, lang), /data-g="skip"/); }
+    // No Chinese leaks into the English board (played: 「before the 九层 come this way」).
+    assert.doesNotMatch(mod.meta.how.en + mod.meta.name.en, /[\u4e00-\u9fff]/);
   }
   // 下崖: listening first, never a slip — steady; grabbing the wet side — scraped, and three stabs ask a breath.
   let d = descend.act(descend.newGame('x'), { g: 'start' }).state;
