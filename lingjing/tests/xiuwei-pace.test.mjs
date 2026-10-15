@@ -16,6 +16,7 @@ import { fitWorld, migrate, newState, realmName } from '../scripts/state.mjs';
 import { look, quest, resolve } from '../scripts/rules.mjs';
 import { pay, paysOf } from '../scripts/rules/core.mjs';
 import { choreGrant } from '../scripts/rules/chores.mjs';
+import { turnedPays } from '../scripts/turned.js';
 import { ALL_SKIPS, ERRANDS_AT, EVERYTHING, NOTHING, ONE_OFFS, budgetTable, dayIncome, errandPays, runJuan1 } from '../tools/xiuwei-model.mjs';
 
 const content = loadContent();
@@ -68,6 +69,23 @@ test('real life: the workout is the day\'s 功课 (修为); the day\'s pick and 
   assert.deepEqual(pick, { progress: 0, wealth: T.life.wealth }, 'a pick: stones, capped');
   const milestone = payOf({ id: 'linggen-pair', period: 'once', reward: 50 });
   assert.deepEqual(milestone, { progress: 0, wealth: T.once.wealth }, '开府: stones');
+});
+
+test('the day\'s 功课 at 零层 pays a few 灵石 — 零层 takes no 修为, and the hand-in still shows a gain', () => {
+  const s = { ...newState(content, 'zh', NOW), chapter: '00-waimen', scene: null, place: 'waimen', ended: ['00-prologue'], tier: 'qi', step: 0, progress: 0, traits: ROOTS };
+  const workout = { id: 'health-workout', app: 'health', period: 'day', reward: 20, due: true, done_at: NOW.toISOString(), title: { zh: '锻炼', en: 'Workout' } };
+  assert.equal(choreGrant(content, workout, s).table, 'gongke_zero', 'declared in rewards.json, not hardcoded');
+  assert.ok(T.gongke_zero.wealth > 0 && T.gongke_zero.wealth <= T.labor.wealth && T.gongke_zero.progress === 0, 'a few 灵石, no more than a 杂役 pays');
+  assert.deepEqual(paysOf(content, s, NOW, choreGrant(content, workout, s)), { progress: 0, wealth: T.gongke_zero.wealth }, 'the card says it');
+  const turned = quest(s, content, { ...ctx, quests: [workout] }, { action: 'turn', id: 'health-workout' });
+  assert.ok(turned.result.ok, JSON.stringify(turned.result));
+  assert.equal(turned.result.paid.wealth, T.gongke_zero.wealth);
+  assert.equal(turned.state.wealth, s.wealth + T.gongke_zero.wealth);
+  assert.equal(turned.result.paid.hold, null, 'nothing said as not taken');
+  assert.deepEqual(turnedPays(turned.result.paid, { xw: '修为', ls: '灵石' }, 'zh'), [`灵石 +${T.gongke_zero.wealth}`], 'the hand-in line shows it');
+  // From 一层 on, the 功课 is 修为 again.
+  assert.equal(choreGrant(content, workout, { ...s, step: 1 }).table, 'gongke');
+  assert.equal(choreGrant(content, workout).table, 'gongke', 'no save given: the authored table');
 });
 
 /* The 回s where the book holds him on a 练气 layer: the cap is a layer, and he leaves it by the story. */

@@ -155,7 +155,7 @@ function questCheck(state, content, ctx, id) {
   s.chores[id] = { period, paid_at: ctx.now.toISOString() };
   // 开府 drips: the open one handed in, the next opens tomorrow (chores.mjs).
   if (isOnce(q)) s.kaifu = kaifuAfter(state, content, quests, ctx.now, id);
-  const grant = choreGrant(content, q);
+  const grant = choreGrant(content, q, state);
   const paid = pay(content, s, ctx, grant);
   settleStamina(content, s, ctx.now);
   const stamina = addStamina(content, s, grant.stamina, ctx.now);

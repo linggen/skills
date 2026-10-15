@@ -68,11 +68,16 @@
       "progress": 20,
       "wealth": 0
     },
+    "gongke_zero": {
+      "progress": 0,
+      "wealth": 5
+    },
     "life": {
       "progress": 0,
       "wealth": 10
     }
   },
+  "_gongke_zero": "The day's 功课 handed in at 练气零层 (Hanli, 2026-10-15: every hand-in visibly raises 修为 or 灵石): 零层 takes no 修为 (state.mjs addProgress), so it pays this table instead — a few 灵石, what a 外门 杂役 errand pays (修屋顶 5). From 一层 on, `gongke`.",
   "_tale": "今日传闻 (design.md § 今日传闻): Ling writes no number. Each step pays the `tale` table and the finale the `tale_end` table, both capped; the whole tale never pays more than `cap` (a fifth step eats into the finale), and pay() scales it by the roots and the realm like any grant. One finale `drop`: the highest-tier entry at or below the player's realm (an item, or a card not held and of a root the player has), picked by the tale's id — and the finale also leaves a 符 and raises the 本命法宝 one 重 (`growth`). Raised 2026-09-24 (redesign-v2: the rumor is the day's main dish, the daily boards are gone): 15 a step, 30 the finale, 90 the cap — see `_economy`.",
   "tale": {
     "cap": {

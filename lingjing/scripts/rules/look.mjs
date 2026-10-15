@@ -387,12 +387,12 @@ function tasksBrief(content, state, ctx) {
     done_at: questDone(q, ctx.now) ? q.done_at : null, // when its app saw it done — the scene says so
     period: q.period, reward: q.reward ?? null, stamina: q.stamina ?? null,
     // What lands (2026-10-15: the workout 修为, the pick and 开府 灵石), so Ling tells the practice right.
-    pays: paysOf(content, state, ctx.now, choreGrant(content, q)),
+    pays: paysOf(content, state, ctx.now, choreGrant(content, q, state)),
   }));
   const kaifu = shut.includes('kaifu') ? null : kaifuBrief(state, menu, ctx.now, lang, content);
   // The open 一次 step's pay, so the book's row says it before it is done.
   const open = kaifu?.next && menu.find(q => q.id === kaifu.next.id);
-  if (open) kaifu.next.pays = paysOf(content, state, ctx.now, choreGrant(content, open));
+  if (open) kaifu.next.pays = paysOf(content, state, ctx.now, choreGrant(content, open, state));
   if (shut.includes('cultivation')) for (const t of tasks) t.pays = null;
   return { tasks, quests, ...(kaifu ? { kaifu } : {}) };
 }

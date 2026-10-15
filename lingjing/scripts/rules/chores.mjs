@@ -19,7 +19,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { dayKey, periodKey, periodStart, pick, seedOf } from '../state.mjs';
+import { dayKey, periodKey, periodStart, pick, seedOf, zeroAt } from '../state.mjs';
 
 const isOnce = q => q.period === 'once';
 const isPool = q => q.pool === true && !isOnce(q);
@@ -91,14 +91,19 @@ export function choreCounts(state, quests, q, now, content) {
    灵石): the fixed one — the workout, the day's 功课 — on the `gongke` table,
    修为; the day's pick (a scan, the books, a backup) on the `life` table,
    灵石 — its `reward` read as stones; a 开府 milestone on the `once` table,
-   灵石. rewards.json caps each; 体力 is the app's own, else the quest refill. */
-const choreTable = q => (isOnce(q) ? 'once' : isFixed(q) ? 'gongke' : 'life');
-export function choreGrant(content, q) {
-  const table = choreTable(q), cap = content.rewards.tables[table] ?? {};
+   灵石. rewards.json caps each; 体力 is the app's own, else the quest refill.
+   At 练气零层, which takes no 修为, the 功课 pays the `gongke_zero` table's
+   灵石 instead (Hanli, 2026-10-15: every hand-in visibly raises one or the
+   other) — `state` is the save it is paid to. */
+const choreTable = (content, q, state) => (isOnce(q) ? 'once' : !isFixed(q) ? 'life'
+  : state && content.rewards.tables.gongke_zero && zeroAt(content, state.tier, state.step) ? 'gongke_zero' : 'gongke');
+const FLAT = new Set(['once', 'gongke_zero']); // the table's own 灵石, not the chore's `reward`
+export function choreGrant(content, q, state = null) {
+  const table = choreTable(content, q, state), cap = content.rewards.tables[table] ?? {};
   return {
     table,
-    progress: q.reward ?? 0,
-    wealth: table === 'once' ? cap.wealth ?? 0 : q.reward ?? 0,
+    progress: table === 'gongke_zero' ? 0 : q.reward ?? 0,
+    wealth: FLAT.has(table) ? cap.wealth ?? 0 : q.reward ?? 0,
     stamina: q.stamina ?? content.rewards.stamina.refill.quest,
   };
 }

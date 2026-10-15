@@ -146,7 +146,7 @@ function questInfo(state, content, ctx, id) {
   // `grant` is what was authored; `pays` is what lands — caps, roots, the
   // day's cast and the tier counted (the card shows `pays`).
   if (chore) {
-    const { table, ...grant } = choreGrant(content, chore);
+    const { table, ...grant } = choreGrant(content, chore, state);
     return { ok: true, id, kind: 'chore', title: pick(chore.title, lang), app: chore.app, period: chore.period, device: chore.device ?? null, grant,
       pays: { ...paysOf(content, state, ctx.now, { table, ...grant }), stamina: grant.stamina }, ...(row ? { need: row.need, ready: row.ready } : {}) };
   }
