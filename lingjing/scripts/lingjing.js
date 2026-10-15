@@ -1959,12 +1959,13 @@ function headLook() {
   // …and at a 回's turn, while the old 回's 「完」 stands (proto f, 2026-10-14): its last scene's header and picture
   // hold under the card; they turn with 合上, before the new 回's first words.
   const held = leadsIn(readingHere(), look?.scene?.id, prev?.scene?.id) || Boolean(prev?.scene && prev.scene.id !== look?.scene?.id && closeUp() && atHuiTurn());
-  return held ? { ...look, scene: prev.scene, place: prev.place, weather: prev.weather, stage: prev.stage } : look;
+  // A sealed instance's header and stage (`sealed`) hold with the scene they belong to.
+  return held ? { ...look, scene: prev.scene, place: prev.place, weather: prev.weather, stage: prev.stage, sealed: prev.sealed } : look;
 }
 /* The scene just left, kept per save in this browser beside the reading, so a reload mid-passage holds its header too. */
 const HELD_KEY = `lingjing.held.${SCRATCH || 'main'}`;
 function leftLook(lk) {
-  prevLook = { scene: lk.scene, place: lk.place, weather: lk.weather, stage: lk.stage };
+  prevLook = { scene: lk.scene, place: lk.place, weather: lk.weather, stage: lk.stage, sealed: lk.sealed };
   try { localStorage.setItem(HELD_KEY, JSON.stringify(prevLook)); } catch { /* no storage: this load only */ }
 }
 function lastLook() {
