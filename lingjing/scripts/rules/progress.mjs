@@ -18,6 +18,7 @@
 // its entry scene).
 import { pick, realmName } from '../state.mjs';
 import { act, begin, foeTurn, offers, tokenOf } from '../battle.js';
+import { lookahead } from '../fightline.js';
 import { bookEntries, idsOf } from '../book-order.js';
 import { VERBS } from './verbs.mjs';
 import { allPlaces, encounterOf, placeOf } from './world.mjs';
@@ -87,13 +88,34 @@ function playLine(setup, catalog, wobble) {
   }
   return { outcome: st.outcome, picks };
 }
+/* A player who thinks a turn ahead (fightline.js lookahead) — the fights are
+   tuned to be lost by a careless line, so the seed tries this one first. */
+function thinkLine(setup, catalog, deep) {
+  const st = begin(setup, catalog), picks = [];
+  for (let g = 0; g < 400 && st.outcome === 'open'; g += 1) {
+    if (st.whose === 'foe') { foeTurn(st); continue; }
+    const action = lookahead(st, { deep });
+    act(st, action, 'you');
+    picks.push(tokenOf(action));
+  }
+  return { outcome: st.outcome, picks };
+}
 export function winningPicks(setup, catalog, tries = 24) {
+  for (const deep of [false, true]) {
+    const line = thinkLine(setup, catalog, deep);
+    if (line.outcome === 'won') return line.picks;
+  }
   for (let w = 0; w < tries; w += 1) {
     const line = playLine(setup, catalog, w);
     if (line.outcome === 'won') return line.picks;
   }
   return null;
 }
+
+/* A fight is weighed to be won about 60% of the first times by a player who
+   thinks a turn ahead (tests/fight-band.test.mjs): a day's deal may be lost
+   by every line, so the seed tries the next day's deal, up to this many. */
+const FIGHT_DAYS = 12;
 
 /* ── one step ── */
 class Stuck extends Error {
@@ -112,7 +134,7 @@ function makeRunner(content, opts) {
   };
   r.nextDay = () => { r.now = new Date(r.now.getTime() + DAY); r.days += 1; };
   r.fight = (s, game) => {
-    for (let d = 0; d < 4; d += 1) {
+    for (let d = 0; d < FIGHT_DAYS; d += 1) {
       const started = r.call('duel', s, { id: game.id });
       if (!started.result.ok) {
         if (['withdrawn', 'spent-today', 'subdued-today'].includes(started.result.refused)) { r.nextDay(); continue; }
@@ -131,7 +153,7 @@ function makeRunner(content, opts) {
       if (!settled.result.ok || !settled.state?.wins?.[game.id]) throw new Stuck(s, `fight ${game.id} settle ${settled.result.refused ?? 'not won'}`);
       return settled.state;
     }
-    throw new Stuck(s, `fight ${game.id}: no winning line in 4 days`);
+    throw new Stuck(s, `fight ${game.id}: no winning line in ${FIGHT_DAYS} days`);
   };
   return r;
 }

@@ -49,32 +49,9 @@ function careful(st) {
   }
   return best;
 }
-/* A player who thinks a turn ahead: every move tried on a copy and the
-   fight played out from there by a plain line (bodies, then spells, then the
-   root strike, every body at the beast) — the move whose ending is best is
-   made. Deterministic and much stronger than `careful`; the tests that need a
-   fight WON to test what follows (a win the exit takes, a guard passed) play
-   with it, so a fight tuned to 60% for `careful` does not make them flaky. */
-const plain = st => offers(st).find(o => o.ok && o.action.kind === 'play') ?? offers(st).find(o => o.ok && o.action.kind === 'attack') ?? offers(st).find(o => o.ok && o.action.kind === 'power');
-const copyOf = st => { const c = structuredClone({ ...st, catalog: undefined }); c.catalog = st.catalog; return c; };
-function playOut(st, line) {
-  for (let g = 0; g < 300 && st.outcome === 'open'; g += 1) {
-    if (st.whose === 'foe') { foeTurn(st); continue; }
-    const o = line(st);
-    act(st, o ? o.action : { kind: 'end' }, 'you');
-  }
-  return st.outcome === 'won' ? 1000 + st.you.hp : st.outcome === 'lost' ? -1000 - st.foe.hp : -st.foe.hp;
-}
-export function lookahead(st, { deep = false } = {}) {
-  let best = { kind: 'end' }, top = -Infinity;
-  for (const o of [...offers(st).filter(x => x.ok && x.action.kind !== 'end'), { action: { kind: 'end' } }]) {
-    const c = copyOf(st);
-    if (!act(c, o.action, 'you').ok) continue;
-    const v = playOut(c, deep ? careful : plain);
-    if (v > top) { top = v; best = o.action; }
-  }
-  return best;
-}
+/* A player who thinks a turn ahead lives in scripts/fightline.js (the seeding
+   runner plays with it too); re-exported for the tests. */
+export { lookahead } from '../scripts/fightline.js';
 
 export function fightOnce(setup) {
   const st = begin(setup, catalog);

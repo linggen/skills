@@ -2,7 +2,7 @@
 // the page's scratch-only seam: of everything the rules let through now, the move that does the
 // most — read off a copy of the fight, never an opinion (the same measure as tools/battle-sim.mjs).
 // Pure; it never touches the fight it reads. The crawler then makes that move with real taps.
-import { act, offers } from './battle.js';
+import { act, foeTurn, offers } from './battle.js';
 
 const sum = (board, f) => board.reduce((n, m) => n + f(m), 0);
 const snap = (st) => ({
@@ -26,4 +26,44 @@ export function bestMove(st) {
   const best = offers(st).filter((o) => o.ok && o.action.kind !== 'end').map((o) => ({ o, v: worth(st, o.action) })).sort((x, y) => y.v - x.v)[0];
   if (!best || best.v <= 0) return { kind: 'end' };
   return { ...best.o.action, buff: Boolean(best.o.card?.effect?.buff) };
+}
+
+/* A player who thinks a turn ahead: every move tried on a copy and the
+   fight played out from there by a plain line (bodies, then spells, then the
+   root strike, every body at the beast) — the move whose ending is best is
+   made. Deterministic and much stronger than `careful`; the tests that need a
+   fight WON to test what follows (a win the exit takes, a guard passed) play
+   with it, so a fight tuned to 60% for `careful` does not make them flaky. */
+const plain = st => offers(st).find(o => o.ok && o.action.kind === 'play') ?? offers(st).find(o => o.ok && o.action.kind === 'attack') ?? offers(st).find(o => o.ok && o.action.kind === 'power');
+const copyOf = st => { const c = structuredClone({ ...st, catalog: undefined }); c.catalog = st.catalog; return c; };
+function playOut(st, line) {
+  for (let g = 0; g < 300 && st.outcome === 'open'; g += 1) {
+    if (st.whose === 'foe') { foeTurn(st); continue; }
+    const o = line(st);
+    act(st, o ? o.action : { kind: 'end' }, 'you');
+  }
+  return st.outcome === 'won' ? 1000 + st.you.hp : st.outcome === 'lost' ? -1000 - st.foe.hp : -st.foe.hp;
+}
+/* The careful line, in small: every legal move weighed by what it leaves on the board. */
+const bodyOf = side => side.board.reduce((n, m) => n + m.atk + m.hp * 0.6 + (m.taunt ? 2 : 0), 0);
+function careful(st) {
+  let best = null, top = 0.5;
+  for (const o of offers(st).filter(x => x.ok && x.action.kind !== 'end')) {
+    const copy = copyOf(st);
+    if (!act(copy, o.action, 'you').ok) continue;
+    const v = (st.foe.hp - copy.foe.hp) * 2 + (copy.you.hp - st.you.hp) + (bodyOf(copy.you) - bodyOf(st.you)) * 1.2 + (bodyOf(st.foe) - bodyOf(copy.foe));
+    if (v > top) { top = v; best = o; }
+  }
+  return best;
+}
+
+export function lookahead(st, { deep = false } = {}) {
+  let best = { kind: 'end' }, top = -Infinity;
+  for (const o of [...offers(st).filter(x => x.ok && x.action.kind !== 'end'), { action: { kind: 'end' } }]) {
+    const c = copyOf(st);
+    if (!act(c, o.action, 'you').ok) continue;
+    const v = playOut(c, deep ? careful : plain);
+    if (v > top) { top = v; best = o.action; }
+  }
+  return best;
 }
