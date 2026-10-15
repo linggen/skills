@@ -6,7 +6,7 @@
 // till the rest are fed — he did not dare throw it in first. What comes out is the book's.
 // No grade: it ends when everything is fed.
 // A stop is data (STOPS): 'qianye' is 古六's 开炉夜 (wm-zhaojing). 古四's first feeding, 古五's
-// 「给我一样保命的」, 古七's 火柴 and 古八's 九节聚气 are meant to be added the same way.
+// 「给我一样保命的」 and 古八's 九节聚气 are meant to be added the same way; 'huochai' is 古七's 火柴 (09-snow).
 // Pure: makeFantong(stop) → { meta, newGame, act, html, stuck }; fantongqianye.js is the stop's module.
 import { btn, n, scene, skipped, splash } from './ink.js';
 
@@ -39,6 +39,31 @@ export const STOPS = {
       wait: 'The spirit stone is the only one he has, clutched in his palm; he can\'t bring himself to throw it in first.', qi: 'Dantian', feed: 'Feed',
       done: 'Five things in, five mouthfuls drawn from him; his dantian is bare, and he cannot get up off the woodpile. Yinyue, squatting on the chopping block, looks at the row on the floor: "…A rag-and-bone man."',
       skipped: 'That night the Rice Bucket opened. Five things in, and his dantian was bare.',
+    },
+  },
+  // 古七's first night in the 内门 (09-snow): 邹青松's gourd and the shield shards, rubbish, tipped in
+  // wanting nothing — 「心里什么也没想——扔了干净」 — and out comes 火柴 (the way on hands it over).
+  huochai: {
+    press: 1, // 按开饭桶 — it opens at once tonight
+    name: { zh: '喂饭桶 · 扔了干净', en: 'Feeding the Rice Bucket · Good riddance' },
+    how: { zh: '按开饭桶，把两样废物倒进去。它嚼，就由它嚼——一嚼，吸你一口气。', en: 'Open the Rice Bucket and tip the two pieces of rubbish in. Let it chew — each chew draws a breath from you.' },
+    feeds: [
+      { id: 'gourd', zh: ['赤铜葫芦', '邹青松的，葫芦嘴敞着，肚里空空的'], en: ['The red-copper gourd', 'Zou Qingsong\'s, its mouth open, empty inside'],
+        out: { zh: '饭桶嚼了很久。「咯嘣」，「咯嘣」，嚼一阵，歇一歇，像一个没牙的老头啃一块冻硬了的饼。', en: 'The Rice Bucket chewed for a long time. *Crunch*, *crunch*: it chewed a while, rested a while, like a toothless old man gnawing a frozen flatbread.' } },
+      { id: 'shards', zh: ['七八瓣盾片', '赤铜的，叮叮当当一小堆'], en: ['Seven or eight shield shards', 'red copper, a little jangling heap'],
+        out: { zh: '歇一回，吸他一口气，吸到第五口，他眼前一阵一阵发黑。末了，盖子「咔哒」一弹，一道红光窜出来，「笃」的一声，钉在了门板上，剑柄还在嗡嗡地颤。', en: 'Each time it rested it drew a breath from him, and by the fifth breath his sight was going dark in waves. At last the lid sprang open with a *click*, a red light shot out, and with a *thock* it stuck fast in the door, the hilt still humming.' } },
+    ],
+    zh: {
+      ready: '他摸进柴房。饭桶在柴垛底下，盖子合着。', press: '按开饭桶', shut: [], open: '盖子开了。心里什么也没想——扔了干净。',
+      wait: '', qi: '丹田', feed: '倒进去',
+      done: '小狰一头扎进了柴堆。',
+      skipped: '饭桶嚼了很久。末了，一道红光窜出来，钉在了门板上。',
+    },
+    en: {
+      ready: 'He slips into the woodshed. The Rice Bucket sits under the woodpile, its lid shut.', press: 'Open the Rice Bucket', shut: [], open: 'The lid is open. Thinking nothing at all. Good riddance.',
+      wait: '', qi: 'Dantian', feed: 'Tip it in',
+      done: 'The little zheng dived headfirst into the woodpile.',
+      skipped: 'The Rice Bucket chewed for a long time. At last a red light shot out and stuck fast in the door.',
     },
   },
 };
