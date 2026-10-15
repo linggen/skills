@@ -134,7 +134,13 @@ test('改日 puts it off to another day; left again, it keeps where it was first
   assert.equal(look(put, content, ctxAt(d1)).replay, undefined, 'not again today');
   assert.equal(look(put, content, ctxAt(later(now, 2))).replay?.task, 'jin-dark', 'back another day');
   const d2 = later(now, 2);
-  const again = must(task, must(task, put, d2, { action: 'replay', id: 'jin-dark' }), d2, { action: 'skip', id: 'jin-dark' });
+  const chosen = must(task, put, d2, { action: 'replay', id: 'jin-dark' });
+  // On the 今 line too, the board chosen again stands on the stage (live, j07-guan: the side line's filter dropped it).
+  const g = at('00-zhuji/j07-guan');
+  const guan = must(task, { ...g.s, tell_owed: [], told_scenes: [...(g.s.told_scenes ?? []), 'j07-guan'], tasks: { ...g.s.tasks, 'jin-dark': { status: 'done', skipped: true }, 'jin-pulse': { status: 'done', done_at: d2.toISOString() } }, skipped: [put.skipped[0]], replay_day: null }, d2, { action: 'replay', id: 'jin-dark' });
+  const lc = look(guan, content, ctxAt(d2));
+  assert.ok(stageSlots(lc, stageCards(lc)).main.some((c) => c.card === 'board' && c.id === 'jin-dark'), 'at the next 今 scene the board chosen again stands');
+  const again = must(task, chosen, d2, { action: 'skip', id: 'jin-dark' });
   assert.deepEqual(again.skipped.map((e) => [e.task, e.scene, e.line, e.day]), [['jin-dark', 'j07-dark', 'jin', dayKey(d2)]]);
   assert.equal(again.tasks['jin-dark'].skipped, true);
   // Not offered while the stage is not idle: a passage owed, a fight open, on another line.

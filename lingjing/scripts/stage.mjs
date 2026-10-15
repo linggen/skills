@@ -72,7 +72,9 @@ export const stands = (look, part) => !sideLineOf(look) || FURNITURE.every.inclu
    the cards that name a value, the game it offers (`scene.games`) and the
    ending card — never the 古's goal, coins, errands, road or beasts. */
 const SIDE_CARDS = new Set(['meet', 'panel', 'people', 'value', 'born', 'closed', 'replay']);
-const onSide = look => c => SIDE_CARDS.has(c.card) || (c.card === 'board' && (look.scene?.games ?? []).includes(c.id));
+const replayBoard = (look, id) => (look.tasks ?? []).some(t => t.id === id && t.replay && t.status !== 'done');
+// …and a board left on the line and chosen again (再试一回 — the rules offer only the line's own, rules/skips.mjs).
+const onSide = look => c => SIDE_CARDS.has(c.card) || (c.card === 'board' && ((look.scene?.games ?? []).includes(c.id) || replayBoard(look, c.id)));
 
 /* EVERY card kind says whether it HOLDS the stage: whether it is asking the
    player to do something, here, now. While any card holds, the chat keeps its
@@ -421,7 +423,7 @@ export function sceneGame(look, c) {
   if (c.card === 'board' && (look.scene.show ?? []).some(s => s.card === 'board' && s.id === c.id)) return true;
   // …and a board left on an earlier day that he chose to try again (再试一回, rules/skips.mjs): it stands
   // with the scene card, so the box steps aside for it — the scene's ways on stay his to take.
-  if (c.card === 'board' && (look.tasks ?? []).some(t => t.id === c.id && t.replay && t.status !== 'done')) return true;
+  if (c.card === 'board' && replayBoard(look, c.id)) return true;
   return (look.scene.exits ?? []).some(e => (c.card === 'duel' ? e.game?.kind === 'duel' && e.game.id === c.id : e.needs?.task === c.id));
 }
 
