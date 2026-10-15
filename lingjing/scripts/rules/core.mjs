@@ -83,7 +83,7 @@ const converting = (content, grant) => {
 /* How much of `progress` would land past a mark he may not leave — tried on a copy. */
 function pastMark(content, state, progress) {
   if (progress <= 0 || zeroAt(content, state.tier, state.step)) return 0;
-  const trial = structuredClone(state);
+  const trial = { tier: state.tier, step: state.step, progress: state.progress, ...(state.stretch ? { stretch: { ...state.stretch } } : {}) };
   const { hold } = addProgress(content, trial, progress, (tier, step) => underCap(content, state, tier, step));
   return hold ? Math.min(progress, Math.max(0, hold.over ?? 0)) : 0;
 }
