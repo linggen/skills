@@ -97,3 +97,29 @@ test('the 台 is inside him (his: 「筑基的图片在小满旁边画了个台�
   const src = fs.readFileSync(path.join(ROOT, 'scripts/setpieces/zhuji.js'), 'utf8');
   assert.match(src, /L\.stars = use\('e2', 'stars'\)/, 'the cliff soaks in over the cosmos: its own layer, not a rise over one painting');
 });
+
+// Live 2026-10-15: after 冲关 the passage told the 天象 and the piece then replayed it whole in its own box.
+// The passage lays the piece under its 天象 paragraph (`{景=zhuji}`), and the choice's piece is not played again.
+test('冲关\'s passage carries the 筑基天象 at its paragraph; the choice\'s piece is then not replayed', async () => {
+  const { loadContent } = await import('../scripts/content.mjs');
+  const { newState } = await import('../scripts/state.mjs');
+  const { beatsOf, passageFor } = await import('../scripts/rules/tell.mjs');
+  const { carriesPiece } = await import('../scripts/setpiece.js');
+  const content = loadContent();
+  const cliff = JSON.parse(fs.readFileSync(path.join(ROOT, 'worlds/jiuding/chapters/00-zhuji/scenes/09-cliff.json'), 'utf8'));
+  const take = cliff.exits.find((x) => x.id === 'take');
+  assert.equal(take.setpiece, 'zhuji');
+  for (const k of ['story', 'story_full']) for (const lang of ['zh', 'en']) assert.equal((take[k][lang].match(/\{景=zhuji\}/g) ?? []).length, 1, `${k} ${lang}`);
+  for (const lang of ['zh', 'en']) {
+    const s = newState(content, lang, new Date('2026-09-28T12:00:00'));
+    const item = { of: 'exit', id: '09-cliff/take', marked: passageFor(content, s, take.story, { notes: true }) };
+    const beats = beatsOf(content, s, item);
+    assert.equal(beats.filter((b) => b.piece === 'zhuji').length, 1, `${lang}: one beat carries it`);
+    assert.ok(beats.every((b) => !/景=/.test(b.text ?? '')), `${lang}: the words only`);
+    assert.equal(carriesPiece({ items: [{ ...item, beats: { [lang]: beats } }] }, 'zhuji'), true);
+    assert.equal(carriesPiece({ items: [{ ...item, beats: { [lang]: beats } }] }, 'zhang'), false);
+  }
+  const page = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
+  const body = page.slice(page.indexOf('async function pieceOfChoice('), page.indexOf('\n}\n', page.indexOf('async function pieceOfChoice(')));
+  assert.match(body, /if \(carriesPiece\(readingOfPlay\(\), piece\)\) return;\n\s+await momentTurn\('piece'\);/, 'looked at before the piece waits (a waiting piece holds the beat\'s)');
+});

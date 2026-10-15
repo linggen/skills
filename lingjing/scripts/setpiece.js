@@ -44,6 +44,16 @@ export const setpieceOf = (node) => {
   return typeof id === 'string' && /^[a-z]+$/.test(id) ? id : null;
 };
 
+/// Did the passage already lay this piece under its words (a beat marked `{景=id}`, rules/tell.mjs)? Then a
+/// choice's `setpiece` of the same id is not played again as its own box after it (live, 2026-10-15: the
+/// 筑基天象 replayed whole after 09-cliff's 冲关 passage had told it). `reading`: the play's reading
+/// (dialogue.js — its items' beats, flat or by language).
+export function carriesPiece(reading, id) {
+  if (!id) return false;
+  const beats = (it) => (Array.isArray(it?.beats) ? it.beats : [...(it?.beats?.zh ?? []), ...(it?.beats?.en ?? [])]);
+  return (reading?.items ?? []).some((it) => beats(it).some((b) => b?.piece === id));
+}
+
 /// The beats a declaration asks for — `{ "id": "zhang", "beats": ["still", "rise"] }`
 /// plays only those (the picture keeps pace with the play: the river stands, the
 /// player fights the trial, the rest plays after the win); a bare id plays them all.

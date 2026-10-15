@@ -48,7 +48,7 @@ import { SIGHT_KINDS, artRoom, chatHeard, fitBox, mountChatToggle, paintSight, s
 import { createPager } from './pager.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
-import { playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
+import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
 import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, huiLineOf, momentMay, momentsHold, trayWaits } from './queue.js';
 
 const SKILL = 'lingjing';
@@ -3983,11 +3983,19 @@ function watchNode() {
   storyMoment(n);
 }
 const nodeFresh = (kinds) => Boolean(look?.story_node && kinds.includes(look.story_node.kind) && Date.now() - Date.parse(look.story_node.at) < 60000);
+async function pieceOfChoice(piece, beats) {
+  for (let k = 0; k < 240 && (look?.tell_owed || drawingTold); k += 1) await pause(250);
+  if (carriesPiece(readingOfPlay(), piece)) return;
+  await momentTurn('piece');
+  playPiece(piece, beats);
+}
 function storyMoment(n) {
   // A set piece (哇时刻 ②, an exit's `setpiece`: 漳水立起, 筑基天象): the whole stage plays
   // it first; her memory and 鼎归 wait for it to end (playMemoryNow, playHoming).
   const piece = setpieceOf(n);
-  if (piece) momentTurn('piece').then(() => playPiece(piece, setpieceBeats(n)));
+  // Once: a passage that lays the same piece under its words (a `{景=id}` beat) shows it there (carriesPiece) —
+  // looked at once that passage is drawn, before the piece waits its turn (a piece waiting holds the beat's).
+  if (piece) pieceOfChoice(piece, setpieceBeats(n));
   // A realm lifted with its doors (息壤): the five open on the stage, one by one — after the box.
   if (n.doors?.length) momentTurn('doors').then(() => show({ doors: { node: n, at: performance.now() } }));
   const m = nodeMoment(n);
