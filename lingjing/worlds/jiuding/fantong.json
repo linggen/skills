@@ -24,8 +24,8 @@
   "kinds": {
     "_about": "What went in decides the odds and the pools: each kind's grade weights (junk · useful · best, out of 100) and, per grade, the pool it draws from. An item not listed under any kind is `junk`. `best` is 卷一's 逆天: convenience, never a power card.",
     "junk": { "grades": { "junk": 82, "useful": 16, "best": 2 }, "useful": "plain", "best": "lucky" },
-    "herb": { "items": ["lingzhi", "ginseng", "huangjing-gen", "huangqi-canzhu", "luobo"], "grades": { "junk": 62, "useful": 33, "best": 5 }, "useful": "pills", "best": "pills-best" },
-    "beast": { "items": ["yaodan-1", "yaodan-2", "yaodan-3", "deer-hide"], "grades": { "junk": 64, "useful": 31, "best": 5 }, "useful": "fu", "best": "lucky" }
+    "herb": { "items": ["lingzhi", "ginseng", "huangjing-gen", "huangqi-canzhu", "luobo", "huangjing", "heshouwu", "fuling", "cangzhu", "chaihu", "yuanzhi", "chonglou", "shihu", "banxia", "songmo"], "grades": { "junk": 62, "useful": 33, "best": 5 }, "useful": "pills", "best": "pills-best" },
+    "beast": { "items": ["yaodan-1", "yaodan-2", "yaodan-3", "deer-hide", "hu-pi", "li-pi", "she-tui", "she-dan", "ying-yu", "chai-ya", "zhu-ya", "lang-pi", "xiong-dan", "congcong-zhua", "xiegou-yu", "lingling-pi", "yumu", "jingjing-wei", "bibi-ling", "dangkang-ya", "geju-zong", "qique-zhua"], "grades": { "junk": 64, "useful": 31, "best": 5 }, "useful": "fu", "best": "lucky" }
   },
   "lingshi": {
     "_about": "灵石 fed with it (0 to `max`), each moving `shift` points of weight from junk to useful and best — 「这才是一口正经饭」.",

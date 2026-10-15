@@ -173,3 +173,76 @@ test('a win of the wild drops its loot; the first of a thing is marked new and r
   const story = at(content, 'mengshan');
   assert.ok(!drop(content, story, { id: 'yezhu', loot: [{ item: 'deer-hide' }] }, NOW).some(g => g.id === 'deer-hide'));
 });
+
+/* ── The roster (2026-10-15): 后山崖顶 grows with the 回 — the 观's one stretch to grind while
+   外门弟子 may not go down. 山海经 beasts of the 东山经 (the mountains of 徐 and the sea), each its
+   line quoted and its classical plate; the hunter's ordinary animals painted in 水墨淡彩. ── */
+const ROOT = new URL('..', import.meta.url).pathname;
+const { existsSync } = await import('node:fs');
+const C = id => base.creatures.creatures.find(c => c.id === id);
+const WOODCUT = ['congcong', 'xiegou', 'lingling', 'yuanhu', 'jingjing', 'bibi', 'dangkang', 'geju', 'qique'];
+const PAINTED = ['chihu', 'shanli', 'mihou', 'fushe', 'cangying', 'chai'];
+const HOUSHAN = () => Object.values(base.places).map(d => d.pools?.['yaoyuan-wai']).find(Boolean);
+
+test('the new beasts are whole: of 卷一, a plate or a painting that ships, a deck of twelve known cards, a 杀招, lines, loot of real things', () => {
+  const cards = new Set(base.cards.cards.filter(c => !c._token).map(c => c.id));
+  for (const id of [...WOODCUT, ...PAINTED]) {
+    const c = C(id);
+    assert.ok(c, id);
+    assert.equal(c.juan ?? 1, 1, `${id} is of 卷一`);
+    assert.ok(existsSync(ROOT + 'worlds/jiuding/' + c.art), `${id}'s picture ships`);
+    assert.equal(c.deck.length, 12, id);
+    assert.ok(c.deck.every(k => cards.has(k)), `${id}: a deck of known cards`);
+    assert.ok(c.signature?.effect, `${id}: a 杀招`);
+    for (const k of ['open', 'won', 'lost']) assert.ok(c.says[k].zh && c.says[k].en && [...c.says[k].zh].length <= 24, `${id}: says ${k}`);
+    assert.ok(c.hp > 0, `${id}: weighed (hp)`);
+    assert.ok(c.loot?.length >= 2 && c.loot.every(r => base.items.items.some(i => i.id === r.item)), `${id}: loot of real things`);
+  }
+  for (const id of WOODCUT) {
+    const c = C(id);
+    assert.match(c.source.zh, /东(次[二三四])?(山)?经/, `${id} is of the 东山经`);
+    assert.ok(c.quote.zh.includes(c.name.zh), `${id}'s quote names it`);
+    assert.match(c.art_source, /Public domain/, `${id} wears its plate`);
+    assert.ok(existsSync(ROOT + `worlds/jiuding/art/plates/${id}.svg`), `${id}'s plate is kept`);
+  }
+  for (const id of PAINTED) assert.match(C(id).art_source, /FLUX/, `${id} is painted`);
+});
+
+test('后山崖顶 grows with the 回: about ten beasts in 古四 (day and night, with the wood on a 令), more every 回 after', () => {
+  const pool = HOUSHAN();
+  const HUI = ['h05', 'h07', 'h08', 'h11', 'h09']; // 古四 … 古八, the book's order
+  const by = hui => [...new Set(pool.beasts.filter(b => !b.from || HUI.indexOf(b.from) <= HUI.indexOf(hui)).map(b => b.creature))];
+  const counts = ['h05', 'h07', 'h08', 'h11', 'h09'].map(h => by(h).length);
+  for (let i = 1; i < counts.length; i += 1) assert.ok(counts[i] > counts[i - 1], `each 回 adds beasts: ${counts}`);
+  assert.ok(counts[0] >= 8, `古四 at the cliff alone: ${counts[0]}`);
+  assert.ok(counts[3] >= 12, `古七: ${counts[3]}`);
+});
+
+test('a 古七 save at 后山崖顶 fights twenty times and meets most of the stretch, never one twice running', () => {
+  const scenes = Object.values(base.chapters).flatMap(ch => Object.values(ch.scenes ?? {}).map(sc => ({ ...sc, chapter: ch.id })));
+  const done = scenes.filter(sc => ['h01', 'h02', 'h04', 'h05', 'h07', 'h08', 'h11'].includes(sc.hui)).map(sc => sc.id);
+  const chapter = scenes.find(sc => sc.hui === 'h11').chapter;
+  const s = { ...at(base, 'houshan'), chapter, scene: null, done_scenes: done, ended: ['00-prologue'], cast: ['zheng'] };
+  for (const [now, label] of [[NOW, 'day'], [NIGHT, 'night']]) {
+    const { seen } = walk(base, s, 'houshan', 20, now);
+    for (let i = 1; i < seen.length; i += 1) assert.notEqual(seen[i], seen[i - 1], `${label}: ${seen.join(' ')}`);
+    assert.ok(new Set(seen).size >= 9, `${label}: ${new Set(seen).size} distinct in twenty — ${seen.join(' ')}`);
+    assert.ok(!seen.includes('zheng'), 'the tamed 狰 is never drawn');
+  }
+});
+
+test('the new things are whole: a picture, a hint, a price, and a use — the furnace, the 饭桶, a shop or the body', () => {
+  const ids = ['hu-pi', 'li-pi', 'houer-jiu', 'she-tui', 'she-dan', 'ying-yu', 'chai-ya', 'zhu-ya', 'lang-pi', 'xiong-dan', 'congcong-zhua', 'xiegou-yu', 'lingling-pi', 'yumu', 'jingjing-wei', 'bibi-ling', 'dangkang-ya', 'geju-zong', 'qique-zhua',
+    'huangjing', 'heshouwu', 'fuling', 'cangzhu', 'chaihu', 'yuanzhi', 'chonglou', 'shihu', 'banxia', 'songmo', 'tie-sha', 'yunmu', 'cishi', 'xionghuang', 'chishizhi', 'lipi-kanjian', 'chaiya-zhui'];
+  const fed = new Set(Object.values(base.fantong?.kinds ?? {}).flatMap(k => k.items ?? []));
+  for (const id of ids) {
+    const it = base.items.items.find(i => i.id === id);
+    assert.ok(it, id);
+    assert.equal(it.juan ?? 1, 1, `${id} is of 卷一`);
+    assert.ok(existsSync(ROOT + 'worlds/jiuding/' + it.art), `${id}'s picture ships`);
+    assert.ok(it.hint?.zh && it.hint?.en, `${id}: one line of small print`);
+    assert.ok(it.sell > 0, `${id}: sells`);
+    assert.ok(it.kind !== 'material' || fed.has(id) || ['tie-sha', 'yunmu', 'cishi', 'xionghuang', 'chishizhi', 'houer-jiu'].includes(id), `${id}: the 饭桶 knows it`);
+    if (['robe', 'pendant'].includes(it.kind)) assert.equal(it.once, true, `${id}: a piece of gear is a one-off`);
+  }
+});

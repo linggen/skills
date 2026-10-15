@@ -48,8 +48,12 @@ const STOPS = {
   h08: { tier: 'qi', step: 4, won: ['longzhi', 'zheng', 'gui', 'foe-zou'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'duan-dao' } },
   h08b: { tier: 'qi', step: 4, won: ['longzhi', 'zheng', 'gui', 'foe-zou', 'foe-lufang'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'duan-dao' } },
   h08c: { tier: 'qi', step: 4, won: ['longzhi', 'zheng', 'gui', 'foe-zou', 'foe-lufang', 'foe-shijie'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'duan-dao' } },
+  // 古七 and 古八 (the pools' new beasts meet him there — tests/bestiary.test.mjs): the 大比 behind
+  // him, 马小宝's card, 火柴 worn from 09-snow; 古七 opens at 练气五层 (the comment above), 古八 at
+  // 七层 (ladder.json caps.hui h09).
   h11: { tier: 'qi', step: 5, won: ['longzhi', 'zheng', 'gui', 'foe-zou', 'foe-lufang', 'foe-shijie', 'foe-maxiaobao'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' } },
   h11b: { tier: 'qi', step: 6, won: ['longzhi', 'zheng', 'gui', 'foe-zou', 'foe-lufang', 'foe-shijie', 'foe-maxiaobao', 'qiuyu'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' } },
+  h09: { tier: 'qi', step: 7, won: ['longzhi', 'zheng', 'gui', 'foe-zou', 'foe-lufang', 'foe-shijie', 'foe-maxiaobao'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' } },
   h10: { tier: 'foundation', step: 1, won: ['longzhi', 'zheng', 'gui', 'foe-zou', 'foe-lufang', 'foe-shijie', 'foe-maxiaobao'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' } },
 };
 
@@ -93,6 +97,22 @@ export const FIGHTS = [
   { id: 'tianma', name: '天马 (太行)', at: 'h10', pool: 'taihang' },
   { id: 'linghu', name: '领胡 (太行)', at: 'h10', pool: 'taihang' },
   { id: 'renyu', name: '人鱼 (柳湾)', at: 'h10', pool: 'liuwan' },
+  // 后山崖顶's beasts by the 回 their entry opens (2026-10-15, 不打重复的怪 — places/xu.json `from`).
+  { id: 'chihu', name: '赤狐 (后山崖顶)', at: 'h05', pool: 'yaoyuan-wai' },
+  { id: 'shanli', name: '山狸 (后山崖顶 · 夜)', at: 'h05', pool: 'yaoyuan-wai' },
+  { id: 'mihou', name: '猕猴 (后山崖顶 · 昼)', at: 'h05', pool: 'yaoyuan-wai' },
+  { id: 'fushe', name: '蝮蛇 (后山崖顶 · 昼)', at: 'h05', pool: 'yaoyuan-wai' },
+  { id: 'congcong', name: '从从 (后山崖顶)', at: 'h05', pool: 'yaoyuan-wai' },
+  { id: 'xiegou', name: '絜钩 (后山崖顶 · 夜)', at: 'h05', pool: 'yaoyuan-wai' },
+  { id: 'lingling', name: '軨軨 (后山崖顶, 古五)', at: 'h07', pool: 'yaoyuan-wai' },
+  { id: 'cangying', name: '苍鹰 (后山崖顶 · 昼, 古六)', at: 'h08', pool: 'yaoyuan-wai' },
+  { id: 'yuanhu', name: '妴胡 (后山崖顶, 古六)', at: 'h08', pool: 'yaoyuan-wai' },
+  { id: 'jingjing', name: '精精 (后山崖顶, 古六)', at: 'h08', pool: 'yaoyuan-wai' },
+  { id: 'chai', name: '豺 (后山崖顶, 古七)', at: 'h11', pool: 'yaoyuan-wai' },
+  { id: 'bibi', name: '獙獙 (后山崖顶, 古七)', at: 'h11', pool: 'yaoyuan-wai' },
+  { id: 'dangkang', name: '当康 (后山崖顶, 古七)', at: 'h11', pool: 'yaoyuan-wai' },
+  { id: 'geju', name: '猲狙 (后山崖顶 · 夜, 古八)', at: 'h09', pool: 'yaoyuan-wai' },
+  { id: 'qique', name: '鬿雀 (后山崖顶, 古八)', at: 'h09', pool: 'yaoyuan-wai' },
 ];
 export const keyOf = f => (f.pool ? `${f.id}@${f.pool}` : f.scene ? `${f.id}@${f.scene}` : f.id);
 

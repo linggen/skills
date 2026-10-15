@@ -1921,6 +1921,772 @@
       },
       "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
       "art_source": "The jade ring's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
+    },
+    {
+      "id": "hu-pi",
+      "kind": "material",
+      "name": {
+        "zh": "狐皮",
+        "en": "Fox pelt"
+      },
+      "art": "art/items/hu-pi.webp",
+      "about": {
+        "zh": "后山赤狐的皮，一身火红，尾巴尖那一点白最值钱。货郎收皮货。",
+        "en": "A red fox's pelt from the back hill, fire-red, the white tail-tip the dearest part. The pedlar buys pelts."
+      },
+      "hint": {
+        "zh": "毛顺着摸。",
+        "en": "Stroke it with the fur."
+      },
+      "buy": 36,
+      "sell": 12,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a folded red fox pelt with a white-tipped bushy tail lying on a flat stone). No outside source."
+    },
+    {
+      "id": "li-pi",
+      "kind": "material",
+      "name": {
+        "zh": "狸皮",
+        "en": "Leopard-cat pelt"
+      },
+      "art": "art/items/li-pi.webp",
+      "about": {
+        "zh": "山狸的皮，灰褐底子一身铜钱斑。小，做不成袄，够做个坎肩。",
+        "en": "A leopard cat's pelt, grey-brown with coin spots. Too small for a coat; enough for a vest."
+      },
+      "hint": {
+        "zh": "铜钱斑，不是铜钱。",
+        "en": "Coin spots, not coins."
+      },
+      "buy": 30,
+      "sell": 10,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 31, picked from two candidates (a small spotted grey-brown wildcat pelt with a ringed tail, laid flat). No outside source."
+    },
+    {
+      "id": "houer-jiu",
+      "kind": "material",
+      "name": {
+        "zh": "猴儿酒",
+        "en": "Monkey wine"
+      },
+      "art": "art/items/houer-jiu.webp",
+      "about": {
+        "zh": "猕猴把野果藏在石窝里忘了吃，日子一久，自己酿成了酒。一股酸甜气，招蜂。",
+        "en": "Wild fruit a macaque hid in a hollow of the rock and forgot; given time, it brewed itself. Sour-sweet, and the bees find it."
+      },
+      "hint": {
+        "zh": "猴子攒的，人喝的。",
+        "en": "Saved by monkeys, drunk by men."
+      },
+      "buy": 24,
+      "sell": 8,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a hollow in a grey rock filled with fermenting wild berries and dark amber liquid, a gourd beside it). No outside source."
+    },
+    {
+      "id": "she-tui",
+      "kind": "material",
+      "name": {
+        "zh": "蛇蜕",
+        "en": "Snake slough"
+      },
+      "art": "art/items/she-tui.webp",
+      "about": {
+        "zh": "蝮蛇蜕下的一整张皮，薄得透光，连眼睛上那层都在。药铺收，入药。",
+        "en": "A whole skin a pit viper slipped out of, thin enough to see light through, even the scales over the eyes. The apothecary takes it for medicine."
+      },
+      "hint": {
+        "zh": "空的，也是它。",
+        "en": "Empty, and still the snake."
+      },
+      "buy": 18,
+      "sell": 6,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 52, picked from five candidates (a whole translucent papery snake skin shed in a loose curl on dry leaves). No outside source."
+    },
+    {
+      "id": "she-dan",
+      "kind": "material",
+      "name": {
+        "zh": "蛇胆",
+        "en": "Snake gall"
+      },
+      "art": "art/items/she-dan.webp",
+      "about": {
+        "zh": "蝮蛇的胆，青绿一颗，比指甲盖大一点。明目，苦得要命。",
+        "en": "A pit viper's gall, a green bead a little bigger than a fingernail. Good for the eyes, and bitter as death."
+      },
+      "hint": {
+        "zh": "苦在后头。",
+        "en": "The bitter comes after."
+      },
+      "buy": 40,
+      "sell": 14,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a single small dark green glossy gall bladder on a white porcelain dish). No outside source."
+    },
+    {
+      "id": "ying-yu",
+      "kind": "material",
+      "name": {
+        "zh": "鹰羽",
+        "en": "Hawk feathers"
+      },
+      "art": "art/items/ying-yu.webp",
+      "about": {
+        "zh": "苍鹰翅上的硬翎，一把七八根。装在箭尾，箭飞得直。",
+        "en": "A handful of stiff flight feathers from a goshawk's wing. Fletched on an arrow, it flies straight."
+      },
+      "hint": {
+        "zh": "装在箭尾，箭就认得路。",
+        "en": "Fletch an arrow with it, and the arrow knows the way."
+      },
+      "buy": 24,
+      "sell": 8,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a small bundle of barred grey hawk flight feathers tied with a thread). No outside source."
+    },
+    {
+      "id": "chai-ya",
+      "kind": "material",
+      "name": {
+        "zh": "豺牙",
+        "en": "Dhole fang"
+      },
+      "art": "art/items/chai-ya.webp",
+      "about": {
+        "zh": "豺的犬齿，一颗，弯得像个钩。猎户拿红绳穿了挂在脖子上，说是辟邪。",
+        "en": "A dhole's canine, curved like a hook. Hunters string one on red cord and hang it at the neck against ill luck."
+      },
+      "hint": {
+        "zh": "一颗。还有一群。",
+        "en": "One. And a pack behind it."
+      },
+      "buy": 27,
+      "sell": 9,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a single curved yellowish canine fang on a red cord). No outside source."
+    },
+    {
+      "id": "zhu-ya",
+      "kind": "material",
+      "name": {
+        "zh": "野猪獠牙",
+        "en": "Boar tusk"
+      },
+      "art": "art/items/zhu-ya.webp",
+      "about": {
+        "zh": "野猪嘴边往上翻的那一对，磨得锃亮。能雕东西，也能当钱使。",
+        "en": "The upturned pair from a wild boar's jaw, worn bright. You can carve it, or spend it like money."
+      },
+      "hint": {
+        "zh": "往上翻的那一对。",
+        "en": "The pair that curl up."
+      },
+      "buy": 27,
+      "sell": 9,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a pair of curved ivory-white boar tusks lying crossed). No outside source."
+    },
+    {
+      "id": "lang-pi",
+      "kind": "material",
+      "name": {
+        "zh": "狼皮",
+        "en": "Wolf pelt"
+      },
+      "art": "art/items/lang-pi.webp",
+      "about": {
+        "zh": "灰狼的皮，背上一道深色。冬天的狼毛厚，铺在炕上一冬不冷。",
+        "en": "A grey wolf's pelt with a dark stripe down the back. A winter wolf's fur is thick — on a bed, it keeps the cold off all season."
+      },
+      "hint": {
+        "zh": "冬天的比夏天的厚。",
+        "en": "Thicker in winter than in summer."
+      },
+      "buy": 42,
+      "sell": 14,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a thick grey wolf pelt folded on a wooden bench). No outside source."
+    },
+    {
+      "id": "xiong-dan",
+      "kind": "material",
+      "name": {
+        "zh": "熊胆",
+        "en": "Bear gall"
+      },
+      "art": "art/items/xiong-dan.webp",
+      "about": {
+        "zh": "黑熊的胆，晒干了一小块。药铺论钱收：金黄的叫金胆，最贵；黑的次之。",
+        "en": "A dried bear's gall, a small lump. The apothecary pays by grade: golden is best, black next."
+      },
+      "hint": {
+        "zh": "黑的值钱，黄的更值钱。",
+        "en": "Black is dear; gold is dearer."
+      },
+      "buy": 90,
+      "sell": 30,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a small dried amber-gold bear gall bladder on a square of paper). No outside source."
+    },
+    {
+      "id": "congcong-zhua",
+      "kind": "material",
+      "name": {
+        "zh": "从从爪",
+        "en": "Congcong's claw"
+      },
+      "art": "art/items/congcong-zhua.webp",
+      "about": {
+        "zh": "从从六只脚上掉下的一只爪子。狗爪的样子，可谁家的狗多长两只脚？",
+        "en": "A claw shed from one of Congcong's six feet. A dog's claw to look at — but whose dog has two feet too many?"
+      },
+      "hint": {
+        "zh": "多出来的那一只。",
+        "en": "The one too many."
+      },
+      "buy": 36,
+      "sell": 12,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 52, picked from five candidates (a single curved dark dog's claw on a rough stone). No outside source."
+    },
+    {
+      "id": "xiegou-yu",
+      "kind": "material",
+      "name": {
+        "zh": "絜钩羽",
+        "en": "Xiegou feather"
+      },
+      "art": "art/items/xiegou-yu.webp",
+      "about": {
+        "zh": "絜钩身上的一根灰羽，羽根带着一股病气。画符的人要它——以毒攻毒。",
+        "en": "A grey feather from a Xiegou, a sickly breath about its quill. Talisman-makers want it: poison against poison."
+      },
+      "hint": {
+        "zh": "别凑近了闻。",
+        "en": "Don't sniff it."
+      },
+      "buy": 30,
+      "sell": 10,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 31, picked from two candidates (a single dull grey duck feather with a sickly yellowed quill). No outside source."
+    },
+    {
+      "id": "lingling-pi",
+      "kind": "material",
+      "name": {
+        "zh": "軨軨皮",
+        "en": "Lingling hide"
+      },
+      "art": "art/items/lingling-pi.webp",
+      "about": {
+        "zh": "軨軨的一块皮，牛皮的厚，老虎的纹。泡在水里不沉，船家拿它补船。",
+        "en": "A piece of Lingling's hide — as thick as an ox's, striped like a tiger's. It will not sink, and boatmen patch hulls with it."
+      },
+      "hint": {
+        "zh": "牛皮，虎纹。沾水不沉。",
+        "en": "Ox hide, tiger stripes. It floats."
+      },
+      "buy": 72,
+      "sell": 24,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a thick folded hide with bold dark tiger stripes on tan, beside a bowl of water). No outside source."
+    },
+    {
+      "id": "yumu",
+      "kind": "material",
+      "name": {
+        "zh": "鱼目",
+        "en": "Fish eye"
+      },
+      "art": "art/items/yumu.webp",
+      "about": {
+        "zh": "妴胡掉下的一只眼——圆，亮，像颗珠子。放在掌心里，它好像还在看你。",
+        "en": "An eye shed by a Yuanhu: round and bright as a pearl. In your palm, it seems to be looking back."
+      },
+      "hint": {
+        "zh": "像珠子，不是珠子。",
+        "en": "Like a pearl. Not a pearl."
+      },
+      "buy": 48,
+      "sell": 16,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a single round glassy fish eye like a pearl resting in an open palm). No outside source."
+    },
+    {
+      "id": "jingjing-wei",
+      "kind": "material",
+      "name": {
+        "zh": "精精尾",
+        "en": "Jingjing's tail hair"
+      },
+      "art": "art/items/jingjing-wei.webp",
+      "about": {
+        "zh": "精精那条马尾上的长毛，一束，又韧又亮。做拂尘，做弓弦，都使得。",
+        "en": "A hank of long hair from Jingjing's horse tail, tough and glossy. It makes a whisk or a bowstring."
+      },
+      "hint": {
+        "zh": "拂尘的料，马尾的毛。",
+        "en": "Whisk stuff — horsehair."
+      },
+      "buy": 45,
+      "sell": 15,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a long glossy hank of black horsehair tied at one end). No outside source."
+    },
+    {
+      "id": "bibi-ling",
+      "kind": "material",
+      "name": {
+        "zh": "獙獙翎",
+        "en": "Bibi's wing feather"
+      },
+      "art": "art/items/bibi-ling.webp",
+      "about": {
+        "zh": "獙獙翅上的一根翎，握在手里是热的，像刚从灶边拿出来。",
+        "en": "A feather from Bibi's wing. It is warm in the hand, as if taken from beside the stove."
+      },
+      "hint": {
+        "zh": "摸着是热的。",
+        "en": "Warm to the touch."
+      },
+      "buy": 54,
+      "sell": 18,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 31, picked from two candidates (a single long russet wing feather with a faint warm glow). No outside source."
+    },
+    {
+      "id": "dangkang-ya",
+      "kind": "material",
+      "name": {
+        "zh": "当康牙",
+        "en": "Dangkang's tusk"
+      },
+      "art": "art/items/dangkang-ya.webp",
+      "about": {
+        "zh": "当康嘴边的一颗小獠牙。老人说挂在粮仓门上，来年仓满。",
+        "en": "A small tusk from Dangkang's jaw. The old folk say hang it on the granary door and next year it will be full."
+      },
+      "hint": {
+        "zh": "报喜的牙。",
+        "en": "A tooth that brings good news."
+      },
+      "buy": 54,
+      "sell": 18,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a small curved white tusk hanging by a string on a wooden granary door). No outside source."
+    },
+    {
+      "id": "geju-zong",
+      "kind": "material",
+      "name": {
+        "zh": "猲狙鬃",
+        "en": "Geju's mane"
+      },
+      "art": "art/items/geju-zong.webp",
+      "about": {
+        "zh": "猲狙红脑袋上的一撮鬃毛，红得发亮，不褪色。北号山下的人说它是吃过人的颜色。",
+        "en": "A tuft from Geju's red head, glossy red that never fades. Under Mount Beihao they say it is the colour of what it ate."
+      },
+      "hint": {
+        "zh": "红的。不是染的。",
+        "en": "Red. Not dyed."
+      },
+      "buy": 60,
+      "sell": 20,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a tuft of coarse bright red animal mane hair on dark cloth). No outside source."
+    },
+    {
+      "id": "qique-zhua",
+      "kind": "material",
+      "name": {
+        "zh": "鬿雀爪",
+        "en": "Qique's talon"
+      },
+      "art": "art/items/qique-zhua.webp",
+      "about": {
+        "zh": "鬿雀的一只爪，老鼠脚上长着虎爪，在石头上一划便是一道白印。",
+        "en": "A Qique's foot — a rat's foot armed with a tiger's claws. Drawn across stone, it leaves a white groove."
+      },
+      "hint": {
+        "zh": "虎的爪，长在鸡身上。",
+        "en": "A tiger's claw on a chicken."
+      },
+      "buy": 66,
+      "sell": 22,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a scaly bird foot with long hooked tiger-like claws scratching white lines on a grey stone). No outside source."
+    },
+    {
+      "id": "huangjing",
+      "kind": "material",
+      "name": {
+        "zh": "黄精",
+        "en": "Solomon's seal root"
+      },
+      "art": "art/items/huangjing.webp",
+      "about": {
+        "zh": "山里人叫它鸡头参，根像个鸡头。九蒸九晒了，补气，饿的年月也能当饭。",
+        "en": "Hill folk call it chicken-head root for its shape. Steamed and dried nine times it strengthens the breath, and in a lean year it serves as a meal."
+      },
+      "hint": {
+        "zh": "九蒸九晒。",
+        "en": "Steam nine times, dry nine times."
+      },
+      "buy": 24,
+      "sell": 8,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a knobbly pale yellow rhizome shaped like a chicken's head, fresh soil on it). No outside source."
+    },
+    {
+      "id": "heshouwu",
+      "kind": "material",
+      "name": {
+        "zh": "何首乌",
+        "en": "Fleeceflower root"
+      },
+      "art": "art/items/heshouwu.webp",
+      "about": {
+        "zh": "一块褐色的老根。货郎说长成人形的值千金——见过的人形，多半是人拿刀刻的。",
+        "en": "An old brown root. The pedlar says one grown in a man's shape is worth a fortune — and most he has seen were shaped with a knife."
+      },
+      "hint": {
+        "zh": "人形的，多半是人刻的。",
+        "en": "The man-shaped ones are mostly carved by men."
+      },
+      "buy": 36,
+      "sell": 12,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a gnarled dark brown tuberous root vaguely like a little figure, with a thin vine). No outside source."
+    },
+    {
+      "id": "fuling",
+      "kind": "material",
+      "name": {
+        "zh": "茯苓",
+        "en": "Poria"
+      },
+      "art": "art/items/fuling.webp",
+      "about": {
+        "zh": "长在老松根底下的一团菌块，外皮黑褐，里头雪白。松树砍了三四年，底下才结得出来。",
+        "en": "A lump of fungus under an old pine's roots, dark-skinned and snow-white inside. It forms three or four years after the pine is felled."
+      },
+      "hint": {
+        "zh": "长在松根底下，不见天日。",
+        "en": "Grows under pine roots, never sees the sun."
+      },
+      "buy": 27,
+      "sell": 9,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 31, picked from two candidates (a round dark brown fungal lump cut open showing a snow-white interior, beside a pine root). No outside source."
+    },
+    {
+      "id": "cangzhu",
+      "kind": "material",
+      "name": {
+        "zh": "苍术",
+        "en": "Atractylodes"
+      },
+      "art": "art/items/cangzhu.webp",
+      "about": {
+        "zh": "一把干根，气味冲。端午前后烧一把，屋里屋外不生虫。",
+        "en": "A bundle of dried roots with a sharp smell. Burn a handful around the Duanwu festival and no vermin breed indoors or out."
+      },
+      "hint": {
+        "zh": "烧一把，屋里不生虫。",
+        "en": "Burn a handful; no vermin in the house."
+      },
+      "buy": 15,
+      "sell": 5,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a small bundle of dried knotted brown roots tied with straw, a wisp of smoke). No outside source."
+    },
+    {
+      "id": "chaihu",
+      "kind": "material",
+      "name": {
+        "zh": "柴胡",
+        "en": "Bupleurum"
+      },
+      "art": "art/items/chaihu.webp",
+      "about": {
+        "zh": "山坡上随手拔的细根草，退热的。名字里有个柴字，却不是柴。",
+        "en": "A thin-rooted herb pulled on any hillside, good against fever. It has 'firewood' in its name, and is not firewood."
+      },
+      "hint": {
+        "zh": "名字里有柴，不是柴。",
+        "en": "Firewood in the name; not firewood."
+      },
+      "buy": 15,
+      "sell": 5,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a small bunch of slender herb plants with thin yellow flowers and long thin roots). No outside source."
+    },
+    {
+      "id": "yuanzhi",
+      "kind": "material",
+      "name": {
+        "zh": "远志",
+        "en": "Polygala"
+      },
+      "art": "art/items/yuanzhi.webp",
+      "about": {
+        "zh": "细根的小草，安神益智。东晋谢安的旧笑话：在山里叫远志，出了山叫小草。",
+        "en": "A small thin-rooted herb that calms the mind. Xie An's old joke: in the hills it is called Far Ambition, out of the hills, Little Grass."
+      },
+      "hint": {
+        "zh": "在山里叫远志，出了山叫小草。",
+        "en": "In the hills, Far Ambition. Out of them, Little Grass."
+      },
+      "buy": 21,
+      "sell": 7,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a delicate small herb with narrow leaves and tiny purple flowers, its thin root showing). No outside source."
+    },
+    {
+      "id": "chonglou",
+      "kind": "material",
+      "name": {
+        "zh": "重楼",
+        "en": "Paris herb"
+      },
+      "art": "art/items/chonglou.webp",
+      "about": {
+        "zh": "一茎七叶，顶上一朵花，俗名七叶一枝花。蛇咬了，捣烂敷上。",
+        "en": "Seven leaves to a stem and one flower on top — 'seven leaves, one flower'. For a snakebite, pound it and bind it on."
+      },
+      "hint": {
+        "zh": "七叶一枝花，深山是我家。",
+        "en": "Seven leaves, one flower; the deep hills are my home."
+      },
+      "buy": 30,
+      "sell": 10,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 31, picked from two candidates (a single plant with a whorl of seven leaves and one spidery green flower on top). No outside source."
+    },
+    {
+      "id": "shihu",
+      "kind": "material",
+      "name": {
+        "zh": "石斛",
+        "en": "Dendrobium"
+      },
+      "art": "art/items/shihu.webp",
+      "about": {
+        "zh": "长在崖壁石缝里的一丛，茎一节一节的像竹子。采它的人，也得挂在崖上。",
+        "en": "A clump growing from a crack in the cliff, its stems jointed like bamboo. Whoever picks it has to hang from the cliff too."
+      },
+      "hint": {
+        "zh": "长在崖上，采的人也挂在崖上。",
+        "en": "It grows on the cliff, and so must its picker."
+      },
+      "buy": 42,
+      "sell": 14,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 31, picked from two candidates (a clump of jointed golden-green dendrobium stems growing from a crack in a cliff rock). No outside source."
+    },
+    {
+      "id": "banxia",
+      "kind": "material",
+      "name": {
+        "zh": "半夏",
+        "en": "Pinellia"
+      },
+      "art": "art/items/banxia.webp",
+      "about": {
+        "zh": "夏天过了一半才冒头的小块茎，白白圆圆。炮制过是药，生的嚼一口，嘴麻半天。",
+        "en": "A small white round tuber that sprouts at midsummer. Prepared, it is medicine; chew it raw and your mouth goes numb half the day."
+      },
+      "hint": {
+        "zh": "生的别尝。",
+        "en": "Don't taste it raw."
+      },
+      "buy": 12,
+      "sell": 4,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a few small round white tubers with one three-lobed leaf on a stalk). No outside source."
+    },
+    {
+      "id": "songmo",
+      "kind": "material",
+      "name": {
+        "zh": "松蘑",
+        "en": "Pine mushrooms"
+      },
+      "art": "art/items/songmo.webp",
+      "about": {
+        "zh": "松林里雨后冒出来的一窝蘑菇，伞面褐黄。伙房收，炖汤。",
+        "en": "A cluster of mushrooms that come up in the pine wood after rain, brown-yellow caps. The kitchen takes them for soup."
+      },
+      "hint": {
+        "zh": "下过雨再来。",
+        "en": "Come back after rain."
+      },
+      "buy": 9,
+      "sell": 3,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 31, picked from two candidates (a cluster of brown-capped mushrooms among pine needles). No outside source."
+    },
+    {
+      "id": "tie-sha",
+      "kind": "material",
+      "name": {
+        "zh": "铁砂",
+        "en": "Iron sand"
+      },
+      "art": "art/items/tie-sha.webp",
+      "about": {
+        "zh": "溪底淘出来的一捧黑砂，沉手。铁匠收，十捧炼得出一块铁。",
+        "en": "A handful of heavy black sand panned from a stream bed. The smith buys it — ten handfuls smelt one lump of iron."
+      },
+      "hint": {
+        "zh": "磁石一吸，就跟着走。",
+        "en": "Show it a lodestone and it follows."
+      },
+      "buy": 9,
+      "sell": 3,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a small heap of dark glittering iron sand on a wooden pan). No outside source."
+    },
+    {
+      "id": "yunmu",
+      "kind": "material",
+      "name": {
+        "zh": "云母",
+        "en": "Mica"
+      },
+      "art": "art/items/yunmu.webp",
+      "about": {
+        "zh": "一块薄片叠成的石头，对着光透亮。《神农本草经》说久服轻身——没人敢久服。",
+        "en": "A stone of stacked thin leaves, clear against the light. The Shennong Herbal says long use lightens the body — no one dares the long use."
+      },
+      "hint": {
+        "zh": "一层一层揭，揭不到底。",
+        "en": "Peel it layer by layer; you never reach the bottom."
+      },
+      "buy": 24,
+      "sell": 8,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a translucent silvery block of layered mica flakes catching the light). No outside source."
+    },
+    {
+      "id": "cishi",
+      "kind": "material",
+      "name": {
+        "zh": "磁石",
+        "en": "Lodestone"
+      },
+      "art": "art/items/cishi.webp",
+      "about": {
+        "zh": "一块黑石头，凑近了铁砂，铁砂便爬上来。磨成勺放在盘上，勺把指南。",
+        "en": "A black stone; bring iron sand near and it climbs on. Ground into a spoon on a plate, the handle points south."
+      },
+      "hint": {
+        "zh": "指南，也指铁。",
+        "en": "It points south — and at iron."
+      },
+      "buy": 30,
+      "sell": 10,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a black lodestone with iron filings bristling on it). No outside source."
+    },
+    {
+      "id": "xionghuang",
+      "kind": "material",
+      "name": {
+        "zh": "雄黄",
+        "en": "Realgar"
+      },
+      "art": "art/items/xionghuang.webp",
+      "about": {
+        "zh": "橘红的一块矿石。端午泡酒，抹在孩子额头上，蛇虫不近。有毒，别吃。",
+        "en": "A lump of orange-red ore. Steeped in wine at Duanwu and daubed on children's brows, it keeps snakes and insects off. Poisonous — don't eat it."
+      },
+      "hint": {
+        "zh": "端午的酒，蛇不喝。",
+        "en": "Duanwu wine. Snakes don't drink it."
+      },
+      "buy": 27,
+      "sell": 9,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a lump of bright orange-red realgar crystal beside a small wine cup). No outside source."
+    },
+    {
+      "id": "chishizhi",
+      "kind": "material",
+      "name": {
+        "zh": "赤石脂",
+        "en": "Red halloysite"
+      },
+      "art": "art/items/chishizhi.webp",
+      "about": {
+        "zh": "崖下挖的红土块，摸着滑腻，像抹了油。入药，也拿来封丹炉的缝。",
+        "en": "Lumps of red clay dug under the cliff, slick to the touch as if oiled. Used in medicine — and to seal the seams of a pill furnace."
+      },
+      "hint": {
+        "zh": "红的土，滑的手。",
+        "en": "Red earth, slick fingers."
+      },
+      "buy": 21,
+      "sell": 7,
+      "sold": [],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (smooth lumps of soft brick-red clay on a slate, one pressed with a fingerprint). No outside source."
+    },
+    {
+      "id": "lipi-kanjian",
+      "kind": "robe",
+      "once": true,
+      "name": {
+        "zh": "狸皮坎肩",
+        "en": "Leopard-cat vest"
+      },
+      "art": "art/items/lipi-kanjian.webp",
+      "about": {
+        "zh": "一张山狸皮缝的坎肩，不知是哪个猎户落在后山的。穿上身轻，夜里走路不出声。",
+        "en": "A vest sewn from a leopard cat's pelt, left on the back hill by some hunter. It is light to wear, and you walk silent in it at night."
+      },
+      "hint": {
+        "zh": "夜里穿，不出声。",
+        "en": "Wear it at night; make no sound."
+      },
+      "buy": 36,
+      "sell": 12,
+      "sold": [],
+      "effect": {
+        "def": 1
+      },
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 7, picked from two candidates (a sleeveless short vest of spotted grey-brown wildcat fur with leather ties). No outside source."
+    },
+    {
+      "id": "chaiya-zhui",
+      "kind": "pendant",
+      "once": true,
+      "name": {
+        "zh": "豺牙坠",
+        "en": "Dhole-fang pendant"
+      },
+      "art": "art/items/chaiya-zhui.webp",
+      "about": {
+        "zh": "三颗豺牙穿在一根红绳上。猎户说豺怕火也带火，挂着它，火行的法术近身先弱三分。",
+        "en": "Three dhole fangs strung on a red cord. Hunters say the dhole fears fire and carries it; wear this and a fire spell comes at you a little weaker."
+      },
+      "hint": {
+        "zh": "挂在胸口，辟火。",
+        "en": "Hang it at the breast against fire."
+      },
+      "buy": 90,
+      "sell": 30,
+      "sold": [],
+      "effect": {
+        "ward": {
+          "fire": 1
+        }
+      },
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in ink and faint colour; seed 31, picked from two candidates (three curved fangs strung on a red cord as a pendant). No outside source."
     }
   ]
 }

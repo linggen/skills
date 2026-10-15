@@ -443,7 +443,8 @@ export function spoilsHtml(spoils, ctx) {
     return c ? `<div class="bcard face el-${esc(c.element ?? 'none')}">${leafHtml(c, ctx)}</div>` : '';
   }).join('');
   // An arm of a rarity (a rerun's drop, rules/rerun.mjs) says it: 「青铜古剑 · 稀有」.
-  const things = (spoils.items ?? []).map((i) => `${i.rarity ? `<span class="rarity r-${esc(i.rarity)}">` : ''}${esc(i.name)}${i.rarity_name ? ` · ${esc(i.rarity_name)}` : ''}${i.rarity ? '</span>' : ''}${(i.got ?? i.n) > 1 ? ` ×${i.got ?? i.n}` : ''}`).join(' · ');
+  // 不拿重复的物品 (2026-10-15): the first of a thing is marked 新; a one-off had before came as its worth.
+  const things = (spoils.items ?? []).map((i) => thingHtml(i, ctx.lang === 'en')).join(' · ');
   // A 符 played is gone from the bag (result.spent), won or lost.
   const spent = (spoils.spent ?? []).map((id) => name(ctx.catalog[id], ctx.lang) || esc(id)).join(' · ');
   // What the win paid, in the card's own words — not only a float on the strip.
@@ -457,6 +458,18 @@ export function spoilsHtml(spoils, ctx) {
     ${things ? `<div class="small">${esc(w.spoilsBag)}${things}</div>` : ''}
     ${spent ? `<div class="small dim">${esc(w.spoilsSpent)}${spent}</div>` : ''}
     <div class="acts"><button class="act" data-spoils-close>${esc(w.spoilsClose)}</button></div></div>`;
+}
+
+/* One thing in the bag's line: 新 if first had, its rarity, ×n, and what a
+   one-off already had came as instead. */
+function thingHtml(i, isEn) {
+  const fresh = i.new ? `<span class="chip cnew">${isEn ? 'New' : '新'}</span> ` : '';
+  const named = `${esc(i.name)}${i.rarity_name ? ` · ${esc(i.rarity_name)}` : ''}`;
+  const body = i.rarity ? `<span class="rarity r-${esc(i.rarity)}">${named}</span>` : named;
+  const n = i.got ?? i.n;
+  const count = n > 1 ? ` ×${n}` : '';
+  const instead = i.instead_of ? ` <span class="dim">（${esc(isEn ? `for a ${i.instead_of.name} you have` : `${i.instead_of.name}已有`)}）</span>` : '';
+  return `${fresh}${body}${count}${instead}`;
 }
 
 /* A 功法 that hits: what it would take off the beast, when 五行 changes it. */
@@ -645,7 +658,7 @@ export function challengeHtml(brief, ctx) {
   const today = brief.today?.outcome;
   const done = today === 'won' ? w.wonToday : today === 'lost' ? w.lostToday : today === 'withdrew' ? w.spentToday : null;
   return `<div class="card challenge">
-    <div class="cardtitle">${esc(ctx.title ?? '')}</div>
+    <div class="cardtitle">${esc(ctx.title ?? '')}${ctx.badge ?? ''}</div>
     <div class="chead">
       ${c.art ? `<img class="cface" src="${esc(ctx.artBase ?? '')}${esc(c.art)}" alt="">` : ''}
       <div>
