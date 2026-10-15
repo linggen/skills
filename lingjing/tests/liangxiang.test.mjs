@@ -157,3 +157,36 @@ test('the rules hand the page the notes: the opening\'s first passage brings 沈
     assert.match(r.items[0].beats[lang][at[0][0]].text, lang === 'zh' ? /^这个少年，姓沈，名小满/ : /^The boy/);
   }
 });
+
+// 今线 (Hanli, 2026-10-15: 「今线的人物都没亮相」): every 今 person with a portrait comes on large
+// once, at the first 今 scene that brings them on — or before it — never after a header has shown
+// them already. The 今 scenes in play order: each interlude from the scene it leads in with
+// (`before`) along its own ways on, the interludes in the book's order.
+test('every 今线 person with a portrait has a 亮相 at their first appearance in the game, zh and en', () => {
+  const all = Object.values(content.chapters).flatMap((ch) => Object.values(ch.scenes ?? {}));
+  const order = [];
+  for (const h of JUAN1.filter((x) => x.file.startsWith('今线'))) {
+    let sc = all.find((s) => s.hui === h.id && s.before);
+    while (sc && !order.includes(sc)) {
+      order.push(sc);
+      sc = (sc.exits ?? []).map((x) => all.find((s) => s.id === x.next && s.hui === h.id)).find(Boolean);
+    }
+    assert.deepEqual(order.filter((s) => s.hui === h.id).map((s) => s.id).sort(), all.filter((s) => s.hui === h.id).map((s) => s.id).sort(), `${h.id}: its scenes in one chain`);
+  }
+  const jin = content.people.people.filter((p) => p.line === 'jin' && p.art);
+  assert.ok(jin.length >= 8, `今 people with art: ${jin.length}`);
+  for (const p of jin) {
+    const e = codex.get(p.id);
+    assert.ok(e && faces.includes(e), `${p.id} (${p.name.zh}) is a face of 卷一`);
+    const headed = order.findIndex((s) => (s.people ?? []).some((x) => (x.id ?? x) === p.id));
+    assert.ok(headed >= 0, `${p.id}: no 今 scene brings them on`);
+    for (const lang of LANGS) {
+      const marks = markedIn(e, lang, liangxiang(e, lang));
+      assert.equal(marks.length, 1, `${p.id} ${lang}: one 亮相 mark in the game`);
+      const at = order.findIndex((s) => s.id === marks[0].key.split('/')[0]);
+      assert.ok(at >= 0 && at <= headed, `${p.id} ${lang}: its 亮相 (${marks[0].key}) comes at or before ${order[headed].id}, where the header first shows them`);
+      const r = readOf(lang, marks[0].key);
+      assert.equal(shown(r, lang).filter(([, id]) => id === p.id).length, 1, `${p.id} ${lang}: comes on large once in ${marks[0].key}`);
+    }
+  }
+});
