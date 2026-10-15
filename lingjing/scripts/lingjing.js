@@ -1821,7 +1821,9 @@ function turnEnded() {
 /// user widget", 2026-09-17 — the skill declares the queue).
 function deliver(text, hidden) {
   // A scratch save (?save=) never messages Ling: the word is shown, the turn ends.
-  if (SCRATCH) { keep({ doNote: `${SCRATCH_BADGE} · ${text.split('\n')[0]}` }); turnEnded(); return; }
+  // A hidden report (`[scene] won gate-longzhi`) is Ling's alone: nothing of it on the stage — its code words
+  // read as noise there (古九's tester, 2026-10-15). A word he said shows, plain, as said.
+  if (SCRATCH) { if (!hidden && !/^\[[a-z]+\]/.test(text)) keep({ doNote: `${SCRATCH_BADGE} · 「${text.split('\n')[0]}」` }); turnEnded(); return; }
   if (hidden) chat?.sendHidden(text);
   else chat?.send(text);
 }

@@ -107,6 +107,8 @@ test('the page: every verb carries --save, and scratch mode never opens the chat
   assert.match(body('mountChat'), /if \(SCRATCH\)[^\n]*return false;/, 'no chat mounted: no opening, no recap');
   assert.match(page, /post: \(id, fact, flags, opts\) => \(SCRATCH \? Promise\.resolve\(false\)/, 'no 银月 events');
   assert.match(body('deliver'), /if \(SCRATCH\)/, 'no message to Ling');
+  // 古九's tester (2026-10-15): the scratch note read 「测试存档 · x · [scene] won gate-longzhi」 — code words on the stage.
+  assert.match(body('deliver'), /if \(!hidden && !\/\^\\\[\[a-z\]\+\\\]\/\.test\(text\)\)/, 'a hidden report never shows on the stage');
   assert.match(body('readCloud'), /if \(SCRATCH\) return/, 'no cloud sync');
   assert.match(page, /测试存档/, 'the badge');
   // The way on after a scene's fight won is the page's for every save now (watchWayOn, tests/won-way-on.test.mjs):
