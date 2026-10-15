@@ -1108,6 +1108,8 @@ function lintRiddles(riddles, bad) {
   }
 }
 
+const markSet = (content, chapter, m) => [chapter, ...Object.values(content.chapters)].some(ch => Object.values(ch.scenes).some(sc => sc.exits.some(e => e.mark === m)))
+  || content.tasks.tasks.some(t => Object.values(t.marks ?? {}).includes(m));
 const doubled = list => [...new Set(list.filter((x, i) => list.indexOf(x) !== i))];
 
 function lintTask(task, content, ids, bad) {
@@ -1116,6 +1118,7 @@ function lintTask(task, content, ids, bad) {
   // A board's grades, each with the mark it writes (tasks.mjs win).
   if (task.marks != null && !(task.kind === 'board' && task.game && Object.entries(task.marks).length && Object.entries(task.marks).every(([g, m]) => /^[a-z][a-z0-9-]*$/.test(g) && /^[a-z][a-z0-9-]*$/.test(String(m))))) bad(where, 'marks are a game board\'s grades, each to a lowercase mark id');
   if (task.gives?.bag && !ids.items.has(task.gives.bag)) bad(where, `gives unknown item ${task.gives.bag}`);
+  for (const e of task.ledger ?? []) if (!['恩', '仇', '诺'].includes(e.kind) || !pair(e.what) || !(content.people?.people ?? []).some(p => p.id === e.who)) bad(where, 'a ledger line needs a known person, 恩/仇/诺, and its what in zh and en');
 }
 
 function lintGrant(where, grant, content, ids, bad) {
@@ -1355,7 +1358,9 @@ function lintExit(where, exit, chapter, content, ids, speakers, bad) {
   if (exit.rise != null && !(riseLayer >= 1 && riseStep >= 0 && riseStep < content.ladder.tiers[0].thresholds.length)) bad(where, 'rise is a layer of the first tier');
   if (typeof exit.rise === 'object' && exit.rise && exit.rise.full != null && exit.rise.full !== true) bad(where, 'rise.full is true');
   // A step after a step (`needs.mark`): some exit of the chapter sets that mark.
-  if (exit.needs?.mark && !Object.values(chapter.scenes).some(sc => sc.exits.some(e => e.mark === exit.needs.mark))) bad(where, `needs mark ${exit.needs.mark}, which no exit sets`);
+  // A mark another chapter's step set down counts (marks are the run's, not the chapter's): 古六's
+  // 刮鞋底 reads 古三's `steps-steady`; so does one a board's grade writes (a task's `marks`).
+  for (const m of [exit.needs?.mark, exit.needs?.no_mark].filter(Boolean)) if (!markSet(content, chapter, m)) bad(where, `needs mark ${m}, which no exit sets`);
   if (exit.once != null && !(exit.once === true && exit.mark)) bad(where, 'once is true, with a mark');
   if (exit.take?.wealth != null && !(Number.isInteger(exit.take.wealth) && exit.take.wealth > 0 && exit.needs?.wealth >= exit.take.wealth)) bad(where, 'takes stones it never checks for');
   if (exit.needs?.wealth != null && !(Number.isInteger(exit.needs.wealth) && exit.needs.wealth > 0)) bad(where, 'needs a whole number of stones');

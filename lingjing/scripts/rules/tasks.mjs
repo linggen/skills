@@ -5,7 +5,7 @@ import { battle } from '../battle.js';
 import { gameOf } from '../content.mjs';
 import { addStamina, dayKey, periodKey, pick, settleStamina, seedOf } from '../state.mjs';
 import { drop } from './arms.mjs';
-import { cardCatalog, fightSetup, winCard } from './cards.mjs';
+import { cardCatalog, fightSetup, readOf, winCard } from './cards.mjs';
 import { clone, pay, refuse, replaying, spendStamina } from './core.mjs';
 import { choreCounts, choreGrant, isOnce, kaifuAfter, questDone } from './chores.mjs';
 import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from './errands.mjs';
@@ -13,6 +13,7 @@ import { duelBrief, tasksBrief } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { stow, storedLine } from './pouch.mjs';
 import { laterBoard, replayBoard, sceneBoards, skipBoard } from './skips.mjs';
+import { writeLedger } from './ledger.mjs';
 import { creatureOf, encounterOf, foeOf, huntKey, placeOf, sceneOf } from './world.mjs';
 
 /* ── Tasks and quests ── */
@@ -136,8 +137,10 @@ function taskDone(state, content, ctx, id) {
   if (!replayed && here?.story_after && sceneBoards(here)[0] === id) s.tell_owed = [...(s.tell_owed ?? []), `after/${here.id}`];
   const full = t.gives?.bag ? storedLine(s, [stow(content, s, t.gives.bag)]) : null;
   const paid = pay(content, s, ctx, t.grant);
+  // A board's own 恩仇簿 line (`ledger`, as an exit writes it — 古六's 写信: 孙二狗's letter).
+  const wrote = t.ledger ? writeLedger(content, s, t, ctx) : [];
   const handed = advance(content, s, { kind: 'board', task: id }, ctx);
-  return { state: s, result: { ok: true, done: id, paid, gives: t.gives ?? null, line: pick(t.done_line, s.lang), ...(full ? { pouch_full: full } : {}), ...(handed.length ? { handed } : {}) } };
+  return { state: s, result: { ok: true, done: id, paid, gives: t.gives ?? null, line: pick(t.done_line, s.lang), ...(wrote.length ? { ledger: wrote } : {}), ...(full ? { pouch_full: full } : {}), ...(handed.length ? { handed } : {}) } };
 }
 
 /* A real-life chore handed in: today's pick, a fixed one, or a 开府
@@ -248,14 +251,14 @@ export function duel(state, content, ctx, args) {
     s.fight = resuming ? s.fight : { game: id, creature: creature.id, at: ctx.now.toISOString() };
     // The whole setup is kept with it, so the settle replays what the page
     // is handed now (an older save's open fight takes it on resume).
-    if (!s.fight.setup) s.fight.setup = fightSetup(content, s, foeOf(content, game), ctx.now, id, game.deal);
+    if (!s.fight.setup) s.fight.setup = fightSetup(content, s, foeOf(content, game), ctx.now, id, game.deal, readOf(s, game));
     return { state: s, result: { ok: true, started: id, ...(resuming ? { resumed: true } : {}), duel: duelBrief(content, s, game, ctx.now, { door: true }) } };
   }
 
   // ── 收场: the page hands back what was played, the rules replay it ──
   if (today?.day !== day || today.outcome !== 'open' || s.fight?.game !== id) return refuse('not-started', null, { game: id });
   // The setup the page was handed at the door, not one made again now.
-  const setup = s.fight.setup ?? fightSetup(content, s, foeOf(content, game), ctx.now, id, game.deal);
+  const setup = s.fight.setup ?? fightSetup(content, s, foeOf(content, game), ctx.now, id, game.deal, readOf(s, game));
   const actions = String(args.picks).split(',').map(x => x.trim()).filter(Boolean);
   const played = battle(actions, setup, cardCatalog(content));
   if (played.refused) return refuse(played.refused.why, null, { action: played.refused.action });

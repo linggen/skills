@@ -637,6 +637,7 @@ export function challengeHtml(brief, ctx) {
         ${c.lean ? `<div class="clean">${esc(w.lean?.[c.lean] ?? c.lean)}</div>` : ''}
         ${c.about ? `<p class="cabout">${esc(c.about)}</p>` : ''}
         ${c.goal ? `<p class="cgoal">${esc(c.goal)}</p>` : ''}
+        ${(c.hints ?? []).map((h) => `<p class="cgoal chint">${esc(h)}</p>`).join('')}
       </div>
     </div>
     ${done ? `<div class="cdone">${esc(done)}</div>${ctx.feed ? `<div class="cacts">${ctx.feed}</div>` : ''}` : `<div class="cacts"><button class="bact end" data-duel-start="${esc(brief.id)}">${esc(w.begin)}</button>${ctx.feed ?? ''}</div>`}

@@ -41,6 +41,8 @@ function meets(state, needs, now = new Date(), sceneId = state.scene) {
   if (needs.seen && !seenMet(state, sceneId, needs.seen)) return false;
   // A step the story set down earlier in the same run (`mark`): 古九's seasons, one after another.
   if (needs.mark && !(state.marks ?? []).includes(needs.mark)) return false;
+  // …or one it did NOT set down (`no_mark`): the other side of the same fork (古六's 刮鞋底, 2026-10-15).
+  if (needs.no_mark && (state.marks ?? []).includes(needs.no_mark)) return false;
   return true;
 }
 

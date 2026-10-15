@@ -159,14 +159,20 @@ const openFight = (state, game) => (game && state.fight?.game === game ? state.f
    back to the live reading. Every fight begins at full 气血 (伤势 was cut,
    redesign-v2 § 四). */
 /* `deal`: a pool's fight (world.mjs encounterOf) — each of the day's fights its own shuffle. */
-export function fightSetup(content, state, creature, now, game = null, deal = null) {
+/* A scene's fight read by what the story gave him (`sight: {mark, level}` on the exit's game —
+   古六: 阿禾's 底册 page read and burnt, `diche` → 望气 on 卢方 and 秦雁): the level of 望气 a held
+   mark lends; 0 without it. `mark` may be one mark or a list (any held). */
+export const heldMark = (state, mark) => [mark].flat().some(m => (state.marks ?? []).includes(m));
+export const readOf = (state, game) => (game?.sight && heldMark(state, game.sight.mark) ? game.sight.level ?? 1 : 0);
+
+export function fightSetup(content, state, creature, now, game = null, deal = null, read = 0) {
   const open = openFight(state, game);
   if (open?.setup) return open.setup;
   // 问卦 (fortune.mjs): the day's reading — its element's 功法 ±n, and at 吉
   // and 大吉 the beast's next move read (望气), as the scroll's 上卷 reads it.
   const fortune = now ? boutFortune(content, state, now) : null;
   const boost = fortune?.card ? { element: fortune.root, n: fortune.card } : null;
-  const insight = Math.max(state.insight ?? 0, fortune?.sight ?? 0);
+  const insight = Math.max(state.insight ?? 0, fortune?.sight ?? 0, read);
   const main = state.fate?.element?.id ?? state.fate?.element ?? mainRoot(state) ?? 'wood';
   // Her card goes into a fight only while she is awake (asleep in the fox token, she fights nothing).
   const withHer = herAwake(state) && ownedCards(content, state).includes('yinyue');

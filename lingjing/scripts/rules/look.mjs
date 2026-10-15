@@ -5,7 +5,9 @@ import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
 import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, phaseName, realmName, threshold, seedOf, cultivating, layerNo } from '../state.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, THEN_BORN, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
-import { fightSetup } from './cards.mjs';
+import { fightSetup, heldMark, readOf } from './cards.mjs';
+
+const hintsOf = (state, game, lang) => { const h = (game.hints ?? []).filter(x => heldMark(state, x.mark)).map(x => pick(x.say, lang)); return h.length ? { hints: h } : {}; };
 import { callDue, companionOf, hasCompanion, herAwake, herAway, herCard, questBrief, recalledOf } from './companion.mjs';
 import { clone, paysOf, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mjs';
 import { staminaBrief } from './daily.mjs';
@@ -188,6 +190,7 @@ function sceneBrief(content, state, now = new Date()) {
     const exit = scene.exits.find(e => e.id === id), needs = exit?.needs, marks = state.marks ?? [];
     // A step the story set down first (`needs.mark`) waits for it; a step taken once (`once`, its mark held) is done.
     if (needs?.mark && !marks.includes(needs.mark)) return false;
+    if (needs?.no_mark && marks.includes(needs.no_mark)) return false;
     if (exit?.once && exit.mark && marks.includes(exit.mark)) return false;
     return (!needs?.quest || Boolean(state.quests?.[needs.quest]?.done_at)) && (!needs?.seen || seenMet(state, scene.id, needs.seen));
   };
@@ -287,6 +290,9 @@ function duelBrief(content, state, game, now, { door = false } = {}) {
       ...(creature.title ? { title: pick(creature.title, lang) } : {}),
       // A 试 says how it is passed (creatures.json `trial.goal`), on the card at the door.
       ...(creature.trial?.goal ? { goal: pick(creature.trial.goal, lang) } : {}),
+      // What the story taught him for this fight (`hints: [{mark, say}]` on the exit's game — 古六's 相克
+      // 五句 before the 大比's bouts, 阿禾's 底册): the line, once its mark is held.
+      ...hintsOf(state, game, lang),
       // A person met in a bout (the 大比's three), not a beast: the page titles it 比试.
       // Its gender, when people.json says, for the words said of the foe (他/她, battle-card.js boutWords).
       // A person with no people.json row yet (卢方, 邹青松) is one by its own `gender`.
@@ -294,7 +300,8 @@ function duelBrief(content, state, game, now, { door = false } = {}) {
     },
     // Everything the fight is given at the door, and nothing else.
     // A pool's beast with its pool's deck (world.mjs foeOf); a scene's, its own.
-    setup: fightSetup(content, state, foeOf(content, game), now, game.id, game.deal),
+    setup: fightSetup(content, state, foeOf(content, game), now, game.id, game.deal, readOf(state, game)),
+
     today: open ? { outcome: open.outcome } : null,
     stake: stakeOf(content, state, game),
     // The lines only at the door, where the page opens the fight — Look stays lean.
