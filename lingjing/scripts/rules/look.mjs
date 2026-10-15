@@ -288,7 +288,8 @@ function duelBrief(content, state, game, now, { door = false } = {}) {
       ...(creature.trial?.goal ? { goal: pick(creature.trial.goal, lang) } : {}),
       // A person met in a bout (the 大比's three), not a beast: the page titles it 比试.
       // Its gender, when people.json says, for the words said of the foe (他/她, battle-card.js boutWords).
-      ...(creature.person ? { person: true, ...(personOf(content, state, creature.person)?.gender ? { gender: personOf(content, state, creature.person).gender } : {}) } : {}),
+      // A person with no people.json row yet (卢方, 邹青松) is one by its own `gender`.
+      ...personBrief(content, state, creature),
     },
     // Everything the fight is given at the door, and nothing else.
     // A pool's beast with its pool's deck (world.mjs foeOf); a scene's, its own.
@@ -403,6 +404,14 @@ function wordsOf(content, lang) {
     tiers: content.ladder.tiers.map(t => pick(t.name, lang)),
     provinces: Object.values(content.dictionary.provinces).map(p => pick(p, lang)),
   };
+}
+
+/* A foe who is a person, not a beast: a people.json row (`person`), or its own
+   `gender` when it has no row yet — so the fight never says 它退入雾中 of 卢方. */
+function personBrief(content, state, creature) {
+  if (!creature.person && !creature.gender) return {};
+  const gender = (creature.person && personOf(content, state, creature.person)?.gender) || creature.gender;
+  return { person: true, ...(gender ? { gender } : {}) };
 }
 
 export function look(state, content, ctx) {

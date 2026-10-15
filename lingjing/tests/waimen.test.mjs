@@ -395,6 +395,17 @@ test('what is for a person is handed where that person is: 周衡 at 外门, 阿
   assert.ok(s.bag.talisman > 0, 'the 符 for the 大比');
 });
 
+test('卢方, a person with no people.json row yet, is one by his own gender: the win card says 他退了下去, never 它退入雾中', async () => {
+  const { WORDS: BW, boutWords } = await import('../scripts/battle-card.js');
+  const lu = look({ ...opened(), scene: 'wm-fushi', place: 'zhengdian' }, content, ctx()).scene.exits.find(e => e.id === 'flip').duel.creature;
+  assert.equal(lu.person, true);
+  assert.equal(lu.gender, 'male');
+  assert.equal(boutWords(BW.zh, lu, 'zh').wonSay, '他退了下去。');
+  assert.equal(boutWords(BW.en, lu, 'en').wonSay, 'He steps down.');
+  assert.ok(content.creatures.creatures.find(c => c.id === 'foe-zou').gender, '邹青松 too');
+  assert.ok(!content.creatures.creatures.find(c => c.id === 'foe-shuanglong').gender, "冰夷's dragons stay beasts");
+});
+
 test('a bout with a person speaks of him or her: 他/她 by the person, 认输, 「今日已比过」, 「他退了下去」 — never 妖, 它 or 今日已降 (his, 2026-09-29)', async () => {
   const { WORDS: BW, boutWords, sayEffect, challengeHtml } = await import('../scripts/battle-card.js');
   const l = look({ ...opened(), scene: 'wm-juesai', place: 'zhengdian' }, content, ctx());

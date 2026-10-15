@@ -1724,6 +1724,7 @@
     },
     {
       "id": "foe-lufang",
+      "gender": "male",
       "title": {
         "zh": "比试",
         "en": "Bout"
@@ -1866,6 +1867,7 @@
     },
     {
       "id": "foe-zou",
+      "gender": "male",
       "name": {
         "zh": "邹青松",
         "en": "Zou Qingsong"
