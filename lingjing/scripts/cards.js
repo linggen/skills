@@ -165,10 +165,9 @@ const goAttr = (id) => `data-go="${esc(id)}"`;
 /// The card's own buttons: every card on the stage has at least one — a
 /// word to Ling about what it is (his rule, 2026-09-16). `disabled` carries
 /// a reason as its title.
-/* 问询 is the one word that costs a model turn. It never speaks at once: it
-   opens the ask bar with its line (「说说夫诸」), the player adds a question or
-   leaves it empty, and only then is anything sent (his, 2026-09-21: what the
-   page knows it shows; the model is for telling). */
+/* 问询 is the one word that costs a model turn: a tap sends its line
+   (「说说夫诸」) to the chat as it is (his, 2026-10-15 — 问询不必用户输入了;
+   the ask bar of 2026-09-21 is kept only for 问问银月). */
 const askAttr = (line) => `data-ask="${esc(line)}"`;
 const acts = (items) => `<div class="acts">${items.filter(Boolean).map((a) => (a.do ? doBtn(a.label, a.do, a.id) :
   `<button class="act ${a.ask ? 'ask' : 'say'}" ${a.ask ? askAttr(a.say) : sayAttr(a.say)}${a.disabled ? ` disabled title="${esc(a.disabled)}"` : ''}>${esc(a.label)}</button>`)).join('')}</div>`;

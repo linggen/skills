@@ -2279,6 +2279,13 @@ function openAsk(line, toHer = false) {
   bar.hidden = false;
   $('askField').focus();
 }
+/* 问询 goes straight to the chat as its line (「说说狰」) — his, 2026-10-15:
+   问询不必用户输入了. The bar stays for 问问银月, where the words are his. */
+function askNow(line) {
+  if (!line) return;
+  show({ bookOpen: false });
+  say(line);
+}
 function closeAsk() {
   keep({ ask: null, askHer: false });
   $('askbar').hidden = true;
@@ -2474,7 +2481,7 @@ const CLICKS = [
   ['[data-duel-start]', (el) => run(`duel:${el.dataset.duelStart}`, () => { keep({ walkedOut: null }); return onDuelStart(el.dataset.duelStart); })],
   // 问询: the one word that costs a model turn opens the ask bar; nothing is
   // sent until the player says so.
-  ['[data-ask]', (el) => openAsk(el.dataset.ask)],
+  ['[data-ask]', (el) => askNow(el.dataset.ask)],
   ['[data-ask-her]', () => (!herHere() ? noOne() : view.ask && view.askHer ? closeAsk() : openAsk(words().askHer.replace('{name}', look?.companion?.name ?? words().yinyue), true))],
   ['[data-ask-send]', () => sendAsk()],
   ['[data-ask-close]', () => closeAsk()],
