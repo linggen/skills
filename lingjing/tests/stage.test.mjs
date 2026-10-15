@@ -338,7 +338,7 @@ test('nothing to tap: the footer names what waits — 「还有：夫诸 · 图�
   // the page draws it from the footer's `next`, never a bare count
   const fs = await import('node:fs');
   const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  const foot = src.slice(src.indexOf('function footRowHtml(slots)'), src.indexOf('const scratchRoads'));
+  const foot = src.slice(src.indexOf('function footRowHtml(slots)'), src.indexOf('const roadsFree'));
   assert.match(foot, /choicesInBox\(\) \? null : slots\.footer\.next/);
   assert.match(foot, /waitingLine\(/);
   assert.doesNotMatch(foot, /queueMore/);

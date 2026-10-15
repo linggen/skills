@@ -1002,13 +1002,12 @@ function toastsHtml() {
 /// 此地 — the people of the scene and the goal line; the place is its own line.
 const headHtml = (slots) => (bout ? '' : slots.header.map(drawCard).join(''));
 
-/// 行 — the roads (only while something holds: the chat is quiet then), and
-/// how many more things wait here; the tap puts the one in main off to the
-/// end of the line (his, 2026-09-24: 「用一个队列，一个完成，再从队列取出下一个显示」).
+/// 行 — the roads, while the chat asks nothing (roadsFree). How many more things wait here is
+/// on the 事 chip (moreHtml).
 function footRowHtml(slots) {
   if (bout) return '';
   // In 闭关 and inside a corridor (the prologue) the rules keep the roads off (stageSlots).
-  return (slots.footer.roads || scratchRoads()) && stands(look, 'roads') ? roadsHtml() : '<span></span>';
+  return (slots.footer.roads || roadsFree()) && stands(look, 'roads') ? roadsHtml() : '<span></span>';
 }
 
 /// 还有 N 件 ›, folded onto the 事 chip (Hanli, 2026-10-15: one chip for what is in hand and what
@@ -1026,7 +1025,7 @@ function moreHtml(slots) {
 /// 2026-10-15: after 山门's 抉择 the stage held only the goal, Ling asked nothing, and there was no
 /// way on at all). A question open in the chat keeps them there — one place to tap; a scratch save
 /// never asks, so its roads always stand. Never in 闭关 or a corridor (the rules keep them off).
-const scratchRoads = () => !view.asked?.size && !look?.seclusion && !look?.director?.corridor;
+const roadsFree = () => !view.asked?.size && !look?.seclusion && !look?.director?.corridor;
 
 /// The chips in the footer, under the stage, as stage.mjs FOOTER lists them: 木牌 · 节日 · 天气 ·
 /// 书 · 事 · 物品 (Hanli, 2026-10-15: 「too much widgets」 — one chip each, none on two lines).
@@ -1275,11 +1274,10 @@ const inkPaint = () => (atlasPlaces?.ink?.paint && look?.world?.dir ? { href: wo
 /// 银月's memory: ink blooming into colour, carried on from its age on a redraw.
 const memoryHtml = () => (view.memory ? memoryCardHtml(view.memory.play, { i: view.memory.i, age: performance.now() - view.memory.at, still: stillMotion(), artBase: artBase(), lang: lang() }) : '');
 
-/// While a card holds the stage the chat keeps its question, so the roads stand
-/// here instead — quiet must never be stuck (2026-09-18: 「起卦完成, 任务卡住了」;
-/// a market had no way out but the map). A tap is the same one Move the chat's
-/// option would have been. Drawn ONLY while something holds: the moment nothing
-/// does, the question is the chat's and this row is gone — never both.
+/// The roads stand on the page whenever no question waits in the chat (roadsFree, d35307df) —
+/// quiet must never be stuck (2026-09-18: 「起卦完成, 任务卡住了」; a market had no way out but
+/// the map). A tap is the same one Move the chat's option would have been; a question open in
+/// the chat keeps them there — never both.
 /// One chip, 「去往 ▾」, its roads in a list over the stage (Hanli, 2026-10-15: six road buttons
 /// ran off the footer). The same taps as before, one tap further in.
 /// Standing in a painted small area (沉鼎观, 观内 2026-10-15), the list opens on its painting:

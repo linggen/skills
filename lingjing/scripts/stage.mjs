@@ -371,8 +371,9 @@ export const showable = c => Boolean(c) && !PAGE_OWNS.has(c.card);
    queue, and the footer counts it (还有 N 件 ›). A `together` rank is one thing
    (the panel and the scene's own choice card under it); a `filler` rank stands
    only when nothing else does (the day's coins).
-   FOOTER (行): the roads (only while something holds — the chat is quiet
-   then), the count of what waits; the page adds the ask bar and the chips.
+   FOOTER (行): `roads` — while something holds (the chat is quiet then); the page
+   also stands them whenever the chat asks nothing (lingjing.js roadsFree) — the count
+   of what waits; the page adds the ask bar and the chips.
 
    Every kind in CARD_KINDS lives in exactly one slot (tests/stage.test.mjs). */
 export const HEADER = ['people'];
