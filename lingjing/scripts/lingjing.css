@@ -477,6 +477,14 @@ ruby.py rt { ruby-align: center; text-align: center; }
    card of the old bout went with the bout itself (2026-09-18). */
 .card.challenge .chead { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; margin-top: 6px; }
 .card.challenge .cface { width: 96px; height: 96px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
+/* A person's portrait (art/people/: a 2:3 full-length standing figure, the head in its
+   top quarter) in a square or round frame: the centre crop showed a waist. Show the
+   head and shoulders — a view box where the engine has one, else the top of the
+   figure. A beast's plate keeps its centre. Shared by the fight's plate (battle.css). */
+.card.challenge .cface[src*="art/people/"], .bplate .bface[src*="art/people/"] { object-position: 50% 4%; }
+@supports (object-view-box: inset(0)) {
+  .card.challenge .cface[src*="art/people/"], .bplate .bface[src*="art/people/"] { object-view-box: inset(1% 18% 45% 18%); object-position: 50% 0; }
+}
 .card.challenge .cname { font-size: 22px; }
 .card.challenge .clean { font-family: var(--ui); font-size: 11px; color: var(--faint); margin-top: 2px; }
 .card.challenge .cabout { font-size: 13px; line-height: 1.6; margin: 6px 0 0; color: var(--wood); }
