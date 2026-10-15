@@ -626,7 +626,7 @@ export function lastHtml(log, ctx, open = false) {
   if (!lines.length) return '';
   const shown = open ? lines : lines.slice(-4);
   const more = lines.length - shown.length;
-  return `<div class="blast">
+  return `<div class="blast${open ? ' open' : ''}">
     <span class="blab">${ctx.lang === 'en' ? 'Just now' : '上一手'}</span>
     ${shown.map(l => `<span class="bline">${esc(l)}</span>`).join('')}
     ${more > 0 ? `<button class="bmore" data-spot="more">${ctx.lang === 'en' ? `all ${lines.length}` : `展开 ${lines.length} 手`}</button>` : ''}

@@ -386,6 +386,9 @@
   .bcard:hover { transform: translateY(var(--y, 0)) rotate(var(--r, 0deg)); }
   .bcard.held { transform: translateY(calc(var(--ch) * -.42)) rotate(0deg) scale(1.22); }
   .blast .blab { display: none; }
+  /* A phone's seam holds the last two moves (live, 2026-10-15: four long lines wrapped onto the minions);
+     展开 opens the whole log. */
+  .blast:not(.open) .bline:not(:nth-last-of-type(-n+2)) { display: none; }
   .bdmg { font-size: 11px; }
   .bclose .bseal { right: -6px; }
 }

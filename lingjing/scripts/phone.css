@@ -37,7 +37,8 @@
   .chattoggle .barword { display: inline; font-weight: 500; }
   .shell.chatunread .chattoggle .unread { display: block; width: 7px; height: 7px; border-radius: 50%; background: var(--seal); box-shadow: 0 0 0 2px var(--seal-soft); }
   /* A scratch save's badge (inline-styled at the bottom corner) stands above the bar. */
-  .scratch-badge { bottom: calc(var(--chatbar-h) + 52px) !important; opacity: .5; }
+  /* …in the chat bar's empty left corner: never over the stage's 跳过 or a fight's hand (live, 2026-10-15). */
+  .scratch-badge { bottom: 7px !important; right: auto !important; left: 8px; z-index: 63 !important; font-size: 10.5px !important; opacity: .6; }
   .shell.chatsheet ~ .scratch-badge { display: none; }
   /* The chat's own frame fills the sheet; a scratch save's quiet transcript scrolls in it. */
   #chat-panel .scratch-lines { max-height: calc(var(--sheet-h) - 110px); }
@@ -82,6 +83,8 @@
   .topbar .langsw { order: 3; margin-left: auto; }
   .topbar .langsw button.on { display: none; }
   .topbar .xw { width: 96px; }
+  /* At the 回's cap the 候 seal stands by the count: the bar grows for it, never over 灵石 (live, 2026-10-15). */
+  .topbar .xw:has(.capseal) { width: auto; min-width: 96px; }
   .topbar::before { content: ''; order: 4; flex: 0 0 100%; height: 0; }
   .topbar .titlerow { order: 5; }
   .topbar .headcards { order: 6; }
