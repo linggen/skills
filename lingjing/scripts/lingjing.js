@@ -2401,7 +2401,10 @@ const CLICKS = [
   ['[data-dlg-all]', () => showAllBeats()],
   ['[data-dlg-voice]', () => { setDub(!dubOn()); render(); }],
   ['[data-dlg-speed]', (el) => setSpeed(el.dataset.dlgSpeed)],
-  ['[data-dlg-next]', () => storyTap()],
+  // …but a choice inside the box (its last beat's ways: an errand's 接下, any button there) is that choice's
+  // own tap, never the next sentence — the box's catch-all yields to the rest of this list (2026-10-15, live:
+  // 外门's 「接下差事：修屋顶」 inside the story view landed here and did nothing).
+  ['[data-dlg-next]', (el, e) => (e?.target?.closest?.('.ways button') ? false : storyTap())],
   ['.dlglog', () => true],
   ['[data-lu]', () => (view.luOpen ? show({ luOpen: false }) : openLu())],
   ['[data-lu-close]', () => show({ luOpen: false, codexOpen: null })],
