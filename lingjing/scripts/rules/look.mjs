@@ -2,7 +2,7 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { CAST, gameOf } from '../content.mjs';
 import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
-import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, phaseName, realmName, threshold, seedOf, cultivating } from '../state.mjs';
+import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, phaseName, realmName, threshold, seedOf, cultivating, layerNo } from '../state.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, THEN_BORN, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
 import { fightSetup } from './cards.mjs';
@@ -439,7 +439,8 @@ export function look(state, content, ctx) {
     world: worldBrief(content, lang),
     ...building(content),
     // `bar`: the header's 修为 bar stands once 修为 counts — from 一层, the 小周天 (零层 has none; state.mjs cultivating).
-    tier: { id: state.tier, step: state.step + 1, name: realmName(content, state, lang), phase: phaseName(content, state.tier, state.step, lang), bar: cultivating(content, state) },
+    // `step`: the 层 as the book names it (state.mjs layerNo) — 练气一层 is 1 now that 练气 counts from 零层.
+    tier: { id: state.tier, step: layerNo(content, state.tier, state.step), name: realmName(content, state, lang), phase: phaseName(content, state.tier, state.step, lang), bar: cultivating(content, state) },
     progress: state.progress, next: cultivating(content, state) ? threshold(content, state) : null, wealth: state.wealth,
     // Filled to the 回's cap (rules/cap.mjs): the full bar and the world's line under it — a wait, not a fault.
     ...(capLook(content, state, lang) ? { capped: capLook(content, state, lang) } : {}),

@@ -89,3 +89,10 @@ test('a healed save before the 小周天 plays on: the night lifts it to 一层 
   // 20 carried, 40 more: 60 toward 一层's 200 (2026-10-15: each 层 asks a 回's play).
   assert.deepEqual([realmName(content, out.state, 'zh'), out.state.step, out.state.progress], ['练气一层', 1, 60]);
 });
+
+test('Look\'s tier.step is the 层 the book names: 零层 0, 练气一层 1; above 练气, 筑基小成 1', () => {
+  const at = (tier, step) => look({ ...opened(), tier, step, progress: 0 }, content, ctx).tier;
+  assert.deepEqual([at('qi', 0).step, at('qi', 0).name], [0, '练气零层']);
+  assert.deepEqual([at('qi', 1).step, at('qi', 1).name], [1, '练气一层']);
+  assert.equal(at('foundation', 0).step, 1);
+});
