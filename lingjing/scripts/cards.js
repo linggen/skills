@@ -619,7 +619,20 @@ function duel(card, ctx) {
   if (!exit) return '';
   // 先降后收 (his, 2026-09-24): the duel card is 出手 only. Once beaten, the
   // creature's own card offers 收服 (creature, below).
-  return challengeHtml(exit.duel, { ...ctx, words: boutWords(BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, exit.duel?.creature, ctx.lang), title: duelTitle(exit.duel?.creature, ctx.words, ctx.lang), artBase: ctx.artBase ?? '', say: ctx.duelFor?.(card.id)?.text ?? null });
+  const html = challengeHtml(exit.duel, { ...ctx, words: boutWords(BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, exit.duel?.creature, ctx.lang), title: duelTitle(exit.duel?.creature, ctx.words, ctx.lang), artBase: ctx.artBase ?? '', say: ctx.duelFor?.(card.id)?.text ?? null });
+  return exit === e ? withWayBack(html, ctx) : html;
+}
+
+/* A place's own beast is never the only way on (古五, 2026-10-15: lost at the 暗河, the next beast stood
+   and nothing led back toward the story): while the story's way lies elsewhere, its card carries
+   下一步's go — fight it or walk on. */
+function withWayBack(html, ctx) {
+  const look = ctx.look ?? {}, to = sideLineOf(look) ? null : nextTo(look);
+  if (!to) return html;
+  const t = NEXT_WORDS[ctx.lang] ?? NEXT_WORDS.zh;
+  const back = `<div class="acts wayback"><button class="act go quiet" data-go="${esc(to.id)}">${esc(t.title)} · ${esc(say(t.go, { name: to.name }))}</button></div>`;
+  const end = html.lastIndexOf('</div>');
+  return end < 0 ? html + back : `${html.slice(0, end)}${back}${html.slice(end)}`;
 }
 
 /// 本命法宝 — the treasure bound at 结丹: its name and 重, what it strikes and
