@@ -196,3 +196,15 @@ test('the 回\'s 「完」 is never held off by what waits behind the new 回\'s
   assert.equal(momentsHold({ waits: true }), true);
   assert.equal(momentsHold({ pending: ['feat'] }), false, 'a seal alone waits on the 「完」 itself');
 });
+
+// Live 2026-10-15: the 事 chip read 「还有：next ›」 — the 下一步 card had no queue word and the raw kind showed.
+test('every card kind the stage can queue has a queue word in both languages, 下一步 among them', async () => {
+  const { WORDS } = await import('../scripts/cards.js');
+  for (const lang of ['zh', 'en']) {
+    assert.ok(WORDS[lang].queueKinds.next, `${lang} next`);
+    for (const k of ['handed', 'quest', 'road', 'offer', 'duel', 'tale', 'lundao', 'board', 'replay']) assert.ok(WORDS[lang].queueKinds[k], `${lang} ${k}`);
+  }
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const body = src.slice(src.indexOf('function queueLabel'), src.indexOf('function putOff'));
+  assert.ok(!/name:\s*kind \? '' : c\.card/.test(body), 'a kind with no word never shows raw');
+});

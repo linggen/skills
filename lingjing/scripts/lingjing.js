@@ -1240,7 +1240,8 @@ function queueLabel(c) {
   if (c.card === 'board') return { name: look?.tasks?.find((t) => t.id === c.id)?.title ?? '', kind };
   if (c.card === 'tale') return { name: look?.tale?.label ?? '', kind };
   if (c.id && ['creature', 'codex', 'meet'].includes(c.card)) return { name: codexNow()?.get?.(c.id)?.name ?? '', kind };
-  return { name: kind ? '' : c.card, kind };
+  // A kind with no word is never shown raw (live, 2026-10-15: 「还有：next ›」).
+  return { name: '', kind };
 }
 
 function putOff(key) {
