@@ -1,11 +1,12 @@
 {
   "version": 1,
-  "_about": "节日 — the player's real calendar in the world (design.md § 真实世界). The day is reckoned on the device (scripts/calendar.js: lunar table + 节气 by formula), never online. One entry per festival: `dressing` (the page's atmosphere layer: `frame` on the 小人书 frame, `particles` over the stage — scripts/atmos.js names the kinds), Ling's `line` to open the day with (once), one small `task` (Practice done `festival` when the player has done it in the chat), a `gift` (灵石, once per festival per year — 除夕 to 元宵 is one 春节, one gift), and `her`: what 银月 might say, handed to her as a fact to put in her own words. 圣诞 and 元旦 are a 西域胡商's feast days — a wink, never 道统 lore. Only on the real day: rare is the point.",
+  "_about": "节日 — the player's real calendar in the world (design.md § 真实世界). The day is reckoned on the device (scripts/calendar.js: lunar table + 节气 by formula), never online. One entry per festival: `dressing` (the page's atmosphere layer: `frame` on the 小人书 frame, `particles` over the stage — scripts/atmos.js names the kinds), Ling's `line` to open the day with (once), one small `task` (Practice done `festival` when the player has done it in the chat), a `gift` (灵石, once per festival per year — 除夕 to 元宵 is one 春节, one gift), and `her`: what 银月 might say, handed to her as a fact to put in her own words. 圣诞 and 元旦 are a 西域胡商's feast days — a wink, never 道统 lore. 情人节, 万圣节 and 感恩节 are the same 胡商's (感恩节 only where the player's country keeps it: Canada, the US); 清明 is quiet, no party particles. `backdrop`: the festival's own painting (tools/paint-festivals.py), the stage's picture that day unless the scene names its own sky (atmos.js stageArt). Only on the real day: rare is the point.",
   "festivals": [
     {
       "id": "chuxi",
       "name": { "zh": "除夕", "en": "New Year's Eve" },
       "dressing": { "frame": "chunlian", "particles": "sparks" },
+      "backdrop": "art/festival/chuxi.webp",
       "line": {
         "zh": "今天是除夕。九州的灶台一齐冒烟，连山里的狼都没出来——它们也回家吃饭了。",
         "en": "It's New Year's Eve. Every stove in the Nine Provinces is smoking, and not a wolf is out in the hills — they went home for dinner too."
@@ -21,6 +22,7 @@
       "id": "chunjie",
       "name": { "zh": "春节", "en": "Spring Festival" },
       "dressing": { "frame": "chunlian", "particles": "sparks" },
+      "backdrop": "art/festival/chunjie.webp",
       "line": {
         "zh": "过年了。家家门上贴了春联，「福」字倒着——贴的人说是故意的，看他的脸，不像。",
         "en": "It's the New Year. Couplets on every door, the 福 upside down — whoever pasted it says that was on purpose. His face says otherwise."
@@ -36,6 +38,7 @@
       "id": "yuanxiao",
       "name": { "zh": "元宵", "en": "Lantern Festival" },
       "dressing": { "frame": "lantern", "particles": "glow" },
+      "backdrop": "art/festival/yuanxiao.webp",
       "line": {
         "zh": "正月十五，元宵。满街的灯笼，每一盏底下都吊着一条灯谜，猜不出的人，比灯笼还多。",
         "en": "The fifteenth night: the Lantern Festival. A riddle hangs under every lantern, and the people who can't guess them outnumber the lanterns."
@@ -51,6 +54,7 @@
       "id": "duanwu",
       "name": { "zh": "端午", "en": "Dragon Boat Festival" },
       "dressing": { "frame": "aicao", "particles": null },
+      "backdrop": "art/festival/duanwu.webp",
       "line": {
         "zh": "五月初五，端午。门上挂了艾草，河上赛龙舟——划得最卖力的那条，船上没人会游泳。",
         "en": "The fifth of the fifth moon: Dragon Boat day. Mugwort over the doors, boats racing on the river — the crew rowing hardest can't swim."
@@ -66,6 +70,7 @@
       "id": "qixi",
       "name": { "zh": "七夕", "en": "Qixi" },
       "dressing": { "frame": "magpie", "particles": "stars" },
+      "backdrop": "art/festival/qixi.webp",
       "line": {
         "zh": "七月初七，七夕。喜鹊都上天搭桥去了，地上的虫子，今天过得很安心。",
         "en": "The seventh of the seventh moon: Qixi. Every magpie has flown up to build the bridge, and the bugs down here are having a very relaxed day."
@@ -81,6 +86,7 @@
       "id": "zhongqiu",
       "name": { "zh": "中秋", "en": "Mid-Autumn" },
       "dressing": { "frame": "moon", "particles": "glow" },
+      "backdrop": "art/festival/zhongqiu.webp",
       "line": {
         "zh": "八月十五，中秋。月亮圆得像一张饼——在这本书里，这不是好兆头：有人欠着一张饼。",
         "en": "The fifteenth of the eighth moon: Mid-Autumn. The moon is as round as a flatbread — which, in this story, is a bad sign: somebody owes one."
@@ -96,6 +102,7 @@
       "id": "chongyang",
       "name": { "zh": "重阳", "en": "Double Ninth" },
       "dressing": { "frame": "zhuyu", "particles": "leaves" },
+      "backdrop": "art/festival/chongyang.webp",
       "line": {
         "zh": "九月初九，重阳。插茱萸，登高——山顶上站满了登高的人，比山下还挤。",
         "en": "The ninth of the ninth moon: Double Ninth. Dogwood sprigs, and everyone climbs high — the summit is more crowded than the town below."
@@ -111,6 +118,7 @@
       "id": "laba",
       "name": { "zh": "腊八", "en": "Laba" },
       "dressing": { "frame": null, "particles": null },
+      "backdrop": "art/festival/laba.webp",
       "line": {
         "zh": "腊月初八，腊八。家家熬粥，八样米豆一锅煮——穷人家凑不齐八样，就把一样煮八遍。",
         "en": "The eighth of the twelfth moon: Laba. Everyone cooks porridge of eight grains — a poor house that can't find eight cooks one grain eight times."
@@ -151,6 +159,67 @@
       },
       "gift": { "wealth": 6, "line": { "zh": "口袋底下剩了六块灵石，胡商说：「给你的。」他的袜子挂在你门口，不知道为什么。", "en": "Six spirit stones left at the bottom of the sack. 'For you,' says the merchant. His sock is hanging on your door. Nobody knows why." } },
       "her": { "zh": "从烟囱进来？本王当年也这么干过。偷鸡。", "en": "Down the chimney? I did that once too. For chickens." }
+    },
+    {
+      "id": "qingrenjie",
+      "name": { "zh": "情人节", "en": "Valentine's Day" },
+      "dressing": { "frame": null, "particles": "petals" },
+      "line": {
+        "zh": "西域胡商说，今天是他们那儿的情人节：送人一枝花，说一句心里话。他买了一枝，送给了自己的骆驼。",
+        "en": "The Western merchant says today is his people's lovers' day: you give someone a flower and say what is in your heart. He bought one and gave it to his camel."
+      },
+      "task": {
+        "label": { "zh": "送一枝花", "en": "Give a flower" },
+        "what": { "zh": "折一枝花，送给一个你想谢的人——说不出口的话，花替你说半句。", "en": "Pick a flower and give it to someone you would like to thank — the flower says half of what you can't." }
+      },
+      "gift": { "wealth": 4, "line": { "zh": "花茎上系着一只小布袋，里面四块灵石。谁系的，胡商说他不知道。", "en": "A little cloth bag is tied to the stem: four spirit stones. Who tied it, the merchant says, he has no idea." } },
+      "her": { "zh": "花？能吃吗。……不能吃，就放这儿吧，本王看着。", "en": "A flower? Can you eat it? …If not, leave it here. I shall look at it." }
+    },
+    {
+      "id": "qingming",
+      "name": { "zh": "清明", "en": "Qingming" },
+      "dressing": { "frame": "willow", "particles": null },
+      "backdrop": "art/festival/qingming.webp",
+      "line": {
+        "zh": "清明。细雨落在山上，各家上山扫墓，添一捧新土。今天说话，都轻一点。",
+        "en": "Qingming. A fine rain on the hills; every family climbs up to sweep the graves and add a handful of fresh earth. Today everyone speaks a little softer."
+      },
+      "task": {
+        "label": { "zh": "扫墓", "en": "Sweep a grave" },
+        "what": { "zh": "给记挂的人扫一回墓，或者只是想一想他。插一枝柳，回家。", "en": "Sweep the grave of someone you remember, or simply think of them. Set a willow sprig, and go home." }
+      },
+      "gift": { "wealth": 3, "line": { "zh": "回家的路上，柳树底下放着三块灵石，像是谁留给你的。", "en": "On the way home, three spirit stones lie under a willow, as if someone left them for you." } },
+      "her": { "zh": "本王也有要记的人。……名字记不得了，人还记得。", "en": "I have people to remember too. …Their names are gone. They are not." }
+    },
+    {
+      "id": "wanshengjie",
+      "name": { "zh": "万圣节", "en": "Halloween" },
+      "dressing": { "frame": "pumpkin", "particles": "leaves" },
+      "line": {
+        "zh": "西域胡商说，今夜是他们那儿的万圣夜：小孩披着被单，挨家敲门讨糖，不给就捣蛋。石坳村的孩子学得很快，第一家敲的就是马三爷。",
+        "en": "The Western merchant says tonight is his people's All Hallows' Eve: children in bedsheets knock on every door for sweets and play a trick where there are none. The village children learn fast — the first door they knock on is Master Ma's."
+      },
+      "task": {
+        "label": { "zh": "刻南瓜灯", "en": "Carve a pumpkin lantern" },
+        "what": { "zh": "挖空一只南瓜，刻一张脸，点一盏灯。刻得吓人算你赢——刻得像{伴}，算你胆大。", "en": "Hollow out a pumpkin, carve a face, light a lamp inside. A scary one wins — one that looks like {伴} wins for nerve." }
+      },
+      "gift": { "wealth": 4, "line": { "zh": "南瓜瓤里滚出四块灵石。胡商说：「不给糖，就给这个。」", "en": "Four spirit stones roll out of the pumpkin's insides. 'No sweets,' says the merchant, 'so these.'" } },
+      "her": { "zh": "披被单装鬼？本王见过真的。它们不讨糖。", "en": "Bedsheets to play ghosts? I have met real ones. They don't ask for sweets." }
+    },
+    {
+      "id": "ganenjie",
+      "name": { "zh": "感恩节", "en": "Thanksgiving" },
+      "dressing": { "frame": null, "particles": "leaves" },
+      "line": {
+        "zh": "西域胡商说，今天是他们那儿的感恩节：收了秋，一家人坐一桌，挨个说一句谢。他谢了他的骆驼，骆驼没理他。",
+        "en": "The Western merchant says today is his people's Thanksgiving: the harvest in, the whole family at one table, each saying one thanks. He thanked his camel. The camel ignored him."
+      },
+      "task": {
+        "label": { "zh": "道一声谢", "en": "Say thank you" },
+        "what": { "zh": "对一个帮过你的人，当面道一声谢。拖了一年的那声，今天说。", "en": "Thank someone who helped you, to their face. The thanks you have owed all year — say it today." }
+      },
+      "gift": { "wealth": 5, "line": { "zh": "那人回了你五块灵石，说：「早该说了。」", "en": "They hand you five spirit stones back. 'About time,' they say." } },
+      "her": { "zh": "谢本王？……嗯。再说一遍，本王没听清。", "en": "Thanking me? …Hm. Say it again. I did not quite hear." }
     }
   ]
 }

@@ -5,14 +5,17 @@
 // the particles are a few spans CSS animates, and with reduced motion they
 // stand still (sparks, which only make sense moving, are not drawn at all).
 
+/// Whether the stage's backdrop is a room (its context's `indoor: true`); outdoor otherwise.
+export const indoorOf = (...contexts) => contexts.some((c) => c?.indoor === true);
+
 /// What a festival may hang on the frame.
-export const FRAMES = ['chunlian', 'lantern', 'aicao', 'magpie', 'moon', 'zhuyu', 'pine'];
-/// What may drift over the stage: a festival's, and the weather's.
-export const PARTICLES = ['sparks', 'glow', 'stars', 'leaves', 'snow', 'rain', 'fog'];
+export const FRAMES = ['chunlian', 'lantern', 'aicao', 'magpie', 'moon', 'zhuyu', 'pine', 'willow', 'pumpkin'];
+/// What may drift over the stage: a festival's, the weather's, the season's and the wind's.
+export const PARTICLES = ['sparks', 'glow', 'stars', 'leaves', 'snow', 'rain', 'fog', 'petals', 'fireflies', 'haze', 'frost', 'twigs', 'gusts'];
 /// The weather's kinds (the engine's sense, or 蒙山's seasons) and what each draws.
 export const WEATHER = { clear: null, cloudy: null, fog: 'fog', rain: 'rain', storm: 'rain', snow: 'snow' };
 
-const COUNT = { sparks: 14, glow: 12, stars: 18, leaves: 10, snow: 36, rain: 44, fog: 3 };
+const COUNT = { sparks: 14, glow: 12, stars: 18, leaves: 10, snow: 36, rain: 44, fog: 3, petals: 12, fireflies: 14, haze: 2, frost: 1, twigs: 1, gusts: 6 };
 
 /* A small deterministic spread, so a redraw lays the same particles. */
 function spread(seed) {
@@ -21,15 +24,58 @@ function spread(seed) {
   return () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); h ^= h >>> 16; return (h >>> 0) / 4294967296; };
 }
 
-/// The layer for a day: {frame, particles: [kinds], weather, key}. `dressing`
-/// is a festival's (festivals.json), `weather` a kind from WEATHER.
-export function atmosOf(dressing = null, weather = null) {
+/* The season's layer (Hanli, 2026-10-15: a tint and a few drawn things over the
+   painting, 水墨淡彩, never 48 paintings): what each season draws by day and by
+   night. Still pieces (frost, twigs, haze) stay whatever falls; a moving one
+   gives way to the sky's rain or snow and to a festival's own particles. */
+export const SEASON_LAYER = {
+  spring: { day: ['petals'], night: ['petals'] },
+  summer: { day: ['haze'], night: ['fireflies'] },
+  autumn: { day: ['leaves'], night: ['leaves'] },
+  winter: { day: ['frost', 'twigs'], night: ['frost', 'twigs'] },
+};
+const STILL = new Set(['frost', 'twigs', 'haze']);
+/* A wind this strong draws its gust strokes (rules/weather.mjs WINDS `force`). */
+const GUSTS_FROM = 0.6;
+
+/* The season's particles under this sky and festival. */
+function seasonParticles(season, isDay, sky, fest) {
+  const drawn = SEASON_LAYER[season]?.[isDay === false ? 'night' : 'day'] ?? [];
+  return drawn.filter((k) => STILL.has(k) || (!sky && !fest));
+}
+
+/// The layer for a day: {frame, particles: [kinds], weather, season, gusts, key}.
+/// `dressing` is a festival's (festivals.json), `weather` a kind from WEATHER;
+/// `opts` the season (SEASON_LAYER's), day or night, the wind (Look's) and
+/// `indoor` (the stage's backdrop is a room: no rain, snow or wind in it, only
+/// the season's faint tint — and a festival's dressing; outdoor when unsaid).
+export function atmosOf(dressing = null, weather = null, opts = {}) {
   const frame = FRAMES.includes(dressing?.frame) ? dressing.frame : null;
   const fest = PARTICLES.includes(dressing?.particles) ? dressing.particles : null;
-  const wx = Object.hasOwn(WEATHER, weather ?? '') ? weather : null;
+  const indoor = opts.indoor === true;
+  const wx = !indoor && Object.hasOwn(WEATHER, weather ?? '') ? weather : null;
   const sky = wx ? WEATHER[wx] : null;
-  const particles = [...new Set([sky, fest].filter(Boolean))];
-  return { frame, particles, weather: wx, key: `${frame ?? ''}|${particles.join(',')}|${wx ?? ''}` };
+  const season = Object.hasOwn(SEASON_LAYER, opts.season ?? '') ? opts.season : null;
+  const gusts = !indoor && (opts.wind?.force ?? 0) >= GUSTS_FROM;
+  const falls = sky === 'rain' || sky === 'snow' ? sky : null;
+  const drawn = indoor ? [] : seasonParticles(season, opts.isDay, falls, fest);
+  const particles = [...new Set([sky, fest, ...drawn, gusts ? 'gusts' : null].filter(Boolean))];
+  return { frame, particles, weather: wx, season, gusts, ...(indoor ? { indoor } : {}), key: `${frame ?? ''}|${particles.join(',')}|${wx ?? ''}|${season ?? ''}` };
+}
+
+/// The wind as the stage's CSS variables: which way it blows across the
+/// stage (`--wsign`, +1 to the right), how far a falling thing is carried
+/// (`--wdx`, per unit of fall), the rain's lean (`--wa`) and how much faster
+/// what drifts goes (`--wk`, a duration factor). No wind given: a light one
+/// from the right, the stage's old lean. `dir` is where it blows FROM, degrees.
+export function windVars(wind = null, { indoor = false } = {}) {
+  const given = Number(wind?.force);
+  const force = indoor ? 0 : Math.min(1, Math.max(0, Number.isFinite(given) ? given : 0.3));
+  const toward = Number.isFinite(wind?.dir) ? -Math.sin((wind.dir * Math.PI) / 180) : -1;
+  const sign = toward >= 0 ? 1 : -1;
+  const lean = 6 + 30 * force; // degrees from the vertical
+  const dx = Math.tan((lean * Math.PI) / 180);
+  return { '--wsign': String(sign), '--wdx': (sign * dx).toFixed(3), '--wa': `${(-sign * lean).toFixed(1)}deg`, '--wk': (1 - 0.5 * force).toFixed(2), '--wf': force.toFixed(2) };
 }
 
 /// The particles' markup: one group per kind, each span placed by the seed.
@@ -44,8 +90,8 @@ export function particlesHtml(particles, seed = 'lingjing') {
   }).join('');
 }
 
-/// The body's classes for a layer: `fest-<frame>` and `wx-<weather>`.
-export const atmosClasses = (a) => [a.frame ? `fest-${a.frame}` : null, a.weather ? `wx-${a.weather}` : null].filter(Boolean);
+/// The body's classes for a layer: `fest-<frame>`, `wx-<weather>` and `season-<season>`.
+export const atmosClasses = (a) => [a.frame ? `fest-${a.frame}` : null, a.weather ? `wx-${a.weather}` : null, a.season ? `season-${a.season}` : null].filter(Boolean);
 
 /// The stage's backdrop (2026-10-14): a painting per weather kind, by day and by night, from
 /// the world's declared table (worlds/<w>/backdrops.json `kinds` → { day, night }: a file
@@ -58,4 +104,14 @@ export function backdropOf(table, kind, isDay = true) {
   const row = rows[Object.hasOwn(WEATHER, kind ?? '') ? kind : 'clear'] ?? rows.clear;
   const part = isDay === false ? 'night' : 'day';
   return row?.[part] ?? row?.day ?? null;
+}
+
+/// The stage's picture (2026-10-15): the scene's own; else, under a sky the book
+/// names, that sky's painting; else on a festival day the festival's painting
+/// (festivals.json `backdrop`); else the weather's. 今线 has none.
+export function stageArt({ scene = null, weather = null, festival = null, table = null, isDay = true } = {}) {
+  if (scene?.line === 'jin') return null;
+  if (scene?.backdrop) return scene.backdrop;
+  const sky = backdropOf(table, weather?.kind ?? null, isDay);
+  return weather?.source === 'story' ? sky : festival?.backdrop ?? sky;
 }

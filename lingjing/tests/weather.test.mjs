@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { KINDS, seasonKind, senseReading, weatherBrief } from '../scripts/rules/weather.mjs';
+import { KINDS, seasonBrief, seasonKind, senseReading, weatherBrief, windBrief, windLevel } from '../scripts/rules/weather.mjs';
 import { cityNote, draft, wxChipHtml, wxPopHtml } from '../scripts/sky.js';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
@@ -149,4 +149,49 @@ test('the skill declares the sense and never goes online itself', () => {
   }
   const page = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
   assert.match(page, /fetch\('\/api\/senses\/weather'/);
+});
+
+/* 季节 · 风 (Hanli, 2026-10-15): the same rule as the sky — the book's, then
+   the real place's, then a default; wind is a dimension, never a kind. */
+const HALIFAX = { kind: 'clear', code: 0, temp_c: 9, is_day: true, city: 'Halifax', at: 1, wind_kmh: 30.4, gust_kmh: 62.6, wind_dir: 317, latitude: 44.64, country_code: 'CA' };
+
+test('the wind: the city\'s where the sky is the city\'s — 30 km/h gusting 62 is windy, clear stays clear', () => {
+  assert.equal(windLevel(30.4, 62.6), 'windy');
+  assert.equal(windLevel(5, 9), 'calm');
+  assert.equal(windLevel(70, 95), 'gale');
+  assert.equal(windLevel(undefined, undefined), null);
+  const s = { ...startAt(at('2026-10-15')), scene: '00-dawn' };
+  const lk = look(s, content, { now: at('2026-10-15'), quests: [], weather: HALIFAX });
+  assert.equal(lk.weather.kind, 'clear');
+  assert.deepEqual(lk.wind, { level: 'windy', force: 0.7, source: 'city', kmh: 30, gust_kmh: 63, dir: 317 });
+  // A story sky keeps the story's air (a breeze, unless the scene names a wind); no reading: a breeze.
+  assert.equal(look(startAt(at('2026-10-15')), content, { now: at('2026-10-15'), quests: [], weather: HALIFAX }).wind.source, 'default');
+  assert.deepEqual(windBrief({ weather: null }), { level: 'breeze', force: 0.3, source: 'default' });
+  assert.equal(windBrief({ weather: HALIFAX }, { weather: null, wind: 'gale' }).level, 'gale');
+  assert.equal(weatherBrief(s, { now: at('2026-10-15'), weather: HALIFAX }).new, undefined, 'a windy clear day is still clear: no news');
+});
+
+test('the season: the scene\'s, else its 回\'s from the book, else where the player is (hemisphere), else 蒙山\'s', () => {
+  // 古一 (h01, 「这一年秋天」) in spring by the real date: the book's autumn.
+  const s = startAt(at('2026-04-15'));
+  assert.equal(content.chapters['00-prologue'].scenes[s.scene].hui, 'h01');
+  assert.deepEqual(look(s, content, { now: at('2026-04-15'), quests: [], weather: HALIFAX }).season, { kind: 'autumn', source: 'story' });
+  // 00-halfyear's own winter wins over 古二's autumn.
+  assert.deepEqual(look({ ...s, scene: '00-halfyear' }, content, { now: at('2026-04-15'), quests: [] }).season, { kind: 'winter', source: 'story' });
+  // Off a scene: the city's hemisphere, else 蒙山's.
+  assert.deepEqual(seasonBrief({ now: at('2026-10-15'), weather: HALIFAX }), { kind: 'autumn', source: 'city' });
+  assert.deepEqual(seasonBrief({ now: at('2026-10-15'), weather: { ...HALIFAX, latitude: -33.9 } }), { kind: 'spring', source: 'city' });
+  assert.deepEqual(seasonBrief({ now: at('2026-10-15'), weather: null }), { kind: 'autumn', source: 'home' });
+  assert.deepEqual(seasonBrief({ now: at('2026-10-15'), day: '2027-02-06', weather: null }), { kind: 'spring', source: 'home' }, 'the preview day moves the season too');
+  // 古三 is 九月初九: the book dates it autumn.
+  assert.equal(content.book.volumes.flatMap(v => v.hui).find(h => h.id === 'h04').season, 'autumn');
+});
+
+test('the lint holds a scene\'s season and wind, and a 回\'s season', async () => {
+  const { lint } = await import('../scripts/content.mjs');
+  const ch = content.chapters['00-prologue'];
+  const bent = { ...content, chapters: { ...content.chapters, '00-prologue': { ...ch, scenes: { ...ch.scenes, '00-shiao': { ...ch.scenes['00-shiao'], season: 'monsoon', wind: 'hurricane' } } } } };
+  const problems = lint(bent);
+  assert.ok(problems.some(p => p.startsWith('scene 00-shiao: season monsoon')));
+  assert.ok(problems.some(p => p.startsWith('scene 00-shiao: wind hurricane')));
 });

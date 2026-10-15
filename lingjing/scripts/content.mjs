@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ART_EFFECTS, ELEMENTS, INTENTS, LEAN_IDS } from './duel.js';
-import { LOCKABLE, normalizeAnswer } from './state.mjs';
+import { LOCKABLE, normalizeAnswer, stepOfLayer } from './state.mjs';
 import { EFFECTS } from './battle.js';
 import { FRAMES, PARTICLES } from './atmos.js';
 import { lintCodex } from './codex.js';
@@ -13,7 +13,8 @@ import { bookEntries, idsOf } from './book-order.js';
 import { rankOf, storyAllows } from './rules/cap.mjs';
 import { rhythm } from './rhythm.mjs';
 import { huiOf } from './rules/hui.mjs';
-import { KINDS as WEATHER_KINDS } from './rules/weather.mjs';
+import { KINDS as WEATHER_KINDS, SEASONS, WINDS } from './rules/weather.mjs';
+import { FESTIVAL_IDS } from './calendar.js';
 
 /* The worlds ship with the skill, one folder each under `worlds/`; the
    folder's name is the world's id and the save's `world`. */
@@ -544,7 +545,7 @@ function lintJuan(content, bad) {
    other; each has its line, task, gift and her words in both languages
    (bilingual checks the pairs), dressing the page can draw, and a gift no
    bigger than a task's pay — a festival is a treat, not a farm. */
-export const FESTIVAL_IDS = ['chuxi', 'chunjie', 'yuanxiao', 'duanwu', 'qixi', 'zhongqiu', 'chongyang', 'laba', 'yuandan', 'shengdan'];
+export { FESTIVAL_IDS };
 function lintFestivals(content, bad) {
   const list = content.festivals?.festivals;
   if (!list) return;
@@ -560,6 +561,7 @@ function lintFestivals(content, bad) {
     else if (f.gift.wealth > content.rewards.tables.task.wealth) bad(where, `gift ${f.gift.wealth} is over a task's ${content.rewards.tables.task.wealth}`);
     if (f.dressing?.frame != null && !FRAMES.includes(f.dressing.frame)) bad(where, `unknown frame ${f.dressing.frame}`);
     if (f.dressing?.particles != null && !PARTICLES.includes(f.dressing.particles)) bad(where, `unknown particles ${f.dressing.particles}`);
+    if (f.backdrop != null && !fs.existsSync(path.join(content.dir, f.backdrop))) bad(where, `backdrop ${f.backdrop} is missing`);
   }
   for (const id of FESTIVAL_IDS) if (!seen.has(id)) bad('festivals', `${id} has no entry`);
 }
@@ -571,12 +573,19 @@ const peopleIds = content => [...(content.people?.people ?? []).map(p => p.id), 
    languages, a home the map knows, a portrait on disk; each slot names a
    person; each address word is a zh + en pair; the hero (fixed, 2026-09-30)
    has a name in both languages and a gender. */
-/* A scene's `weather` is the story's sky (rules/weather.mjs): one of KINDS, or absent. */
+/* A scene's `weather` is the story's sky (rules/weather.mjs): one of KINDS, or absent;
+   its `season` one of SEASONS and its `wind` a WINDS level; a 回's `season` (book.json) too. */
 function lintWeather(content, bad) {
+  const levels = WINDS.map(w => w.level);
   for (const chapter of Object.values(content.chapters)) {
     for (const [id, scene] of Object.entries(chapter.scenes ?? {})) {
       if (scene.weather != null && !WEATHER_KINDS.includes(scene.weather)) bad(`scene ${id}`, `weather ${scene.weather} is not one of ${WEATHER_KINDS.join(' · ')}`);
+      if (scene.season != null && !SEASONS.includes(scene.season)) bad(`scene ${id}`, `season ${scene.season} is not one of ${SEASONS.join(' · ')}`);
+      if (scene.wind != null && !levels.includes(scene.wind)) bad(`scene ${id}`, `wind ${scene.wind} is not one of ${levels.join(' · ')}`);
     }
+  }
+  for (const h of bookEntries(content.book ?? {}, { draft: true })) {
+    if (h.season != null && !SEASONS.includes(h.season)) bad(`回 ${h.id}`, `season ${h.season} is not one of ${SEASONS.join(' · ')}`);
   }
 }
 
@@ -919,11 +928,11 @@ function lintCaps(content, bad) {
   const caps = content.ladder.caps, where = 'ladder caps';
   if (!caps) return;
   if (!caps.say?.zh || !caps.say?.en || !caps.refuse?.zh || !caps.refuse?.en) bad(where, 'say and refuse in zh and en');
-  const layerOk = at => { const t = content.ladder.tiers.find(x => x.id === at?.tier); return t && Number.isInteger(at.layer) && at.layer >= 1 && at.layer <= t.thresholds.length; };
+  const layerOk = at => { const t = content.ladder.tiers.find(x => x.id === at?.tier); return t && Number.isInteger(at.layer) && stepOfLayer(content, t.id, at.layer) >= 0 && stepOfLayer(content, t.id, at.layer) < t.thresholds.length; };
   for (const [id, e] of Object.entries(caps.hui ?? {})) {
     if (!huiOf(content, id)) bad(where, `${id} is not a 回 of the book`);
     if (!layerOk(e) || (e.story && !layerOk(e.story))) { bad(where, `${id}: a tier the ladder has and a layer of it`); continue; }
-    if (e.story && rankOf(content, e.story.tier, e.story.layer - 1) < rankOf(content, e.tier, e.layer - 1)) bad(where, `${id}: story under the player's own reach`);
+    if (e.story && rankOf(content, e.story.tier, stepOfLayer(content, e.story.tier, e.story.layer)) < rankOf(content, e.tier, stepOfLayer(content, e.tier, e.layer))) bad(where, `${id}: story under the player's own reach`);
   }
   const first = content.ladder.tiers[0].id;
   for (const ch of Object.values(content.chapters ?? {})) for (const sc of Object.values(ch.scenes ?? {})) {
@@ -931,7 +940,7 @@ function lintCaps(content, bad) {
     const at = { chapter: ch.id, scene: sc.id, tier: first, step: 0, done_scenes: [] };
     for (const e of sc.exits ?? []) {
       const layer = typeof e.rise === 'object' && e.rise ? e.rise.layer : e.rise;
-      if (Number.isInteger(layer) && !storyAllows(content, at, first, layer - 1)) bad(`scene ${sc.id} exit ${e.id}`, `rises past the cap of ${sc.hui}`);
+      if (Number.isInteger(layer) && !storyAllows(content, at, first, stepOfLayer(content, first, layer))) bad(`scene ${sc.id} exit ${e.id}`, `rises past the cap of ${sc.hui}`);
       const into = e.breakthrough ? content.ladder.tiers.find(t => t.gate != null && t.gate === ch.gate) : null;
       if (into && !storyAllows(content, at, into.id, 0)) bad(`scene ${sc.id} exit ${e.id}`, `breaks through past the cap of ${sc.hui}`);
     }
@@ -1286,7 +1295,9 @@ function lintExit(where, exit, chapter, content, ids, speakers, bad) {
   if (exit.needs?.day_after && !Object.values(chapter.scenes).some(sc => sc.exits.some(e => e.mark === exit.needs.day_after))) bad(where, `waits a day after ${exit.needs.day_after}, which no exit marks`);
   // The story lifts the realm to a layer of the first tier (core.mjs riseTo).
   const riseLayer = typeof exit.rise === 'object' && exit.rise ? exit.rise.layer : exit.rise;
-  if (exit.rise != null && !(Number.isInteger(riseLayer) && riseLayer >= 1 && riseLayer <= content.ladder.tiers[0].thresholds.length)) bad(where, 'rise is a layer of the first tier');
+  // 零层 is never risen to: a rise lifts out of it (state.mjs stepOfLayer).
+  const riseStep = Number.isInteger(riseLayer) ? stepOfLayer(content, content.ladder.tiers[0].id, riseLayer) : -1;
+  if (exit.rise != null && !(riseLayer >= 1 && riseStep >= 0 && riseStep < content.ladder.tiers[0].thresholds.length)) bad(where, 'rise is a layer of the first tier');
   if (typeof exit.rise === 'object' && exit.rise && exit.rise.full != null && exit.rise.full !== true) bad(where, 'rise.full is true');
   // A step after a step (`needs.mark`): some exit of the chapter sets that mark.
   if (exit.needs?.mark && !Object.values(chapter.scenes).some(sc => sc.exits.some(e => e.mark === exit.needs.mark))) bad(where, `needs mark ${exit.needs.mark}, which no exit sets`);

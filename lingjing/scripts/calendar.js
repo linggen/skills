@@ -101,17 +101,50 @@ export function solarOf(year, month, day, rows = LUNAR) {
   return null;
 }
 
-/* The festivals by date: lunar (month/day) and civil. 除夕 is the last day of
-   the year; 春节's span runs 除夕 → 元宵, one festival (design: the custom). */
+/* The festivals by date: lunar (month/day), civil, by 节气, and by the nth
+   weekday of a month where the day differs by country (感恩节: Canada's
+   second Monday of October, the US's fourth Thursday of November; elsewhere
+   none). 除夕 is the last day of the year; 春节's span runs 除夕 → 元宵, one
+   festival (design: the custom). */
 const LUNAR_DAYS = { '1/1': 'chunjie', '1/15': 'yuanxiao', '5/5': 'duanwu', '7/7': 'qixi', '8/15': 'zhongqiu', '9/9': 'chongyang', '12/8': 'laba' };
-const CIVIL_DAYS = { '1/1': 'yuandan', '12/24': 'shengdan', '12/25': 'shengdan' };
+const CIVIL_DAYS = { '1/1': 'yuandan', '2/14': 'qingrenjie', '10/31': 'wanshengjie', '12/24': 'shengdan', '12/25': 'shengdan' };
+const TERM_DAYS = { qingming: 'qingming' };
+/* id → { country: [month, weekday (0 = Sunday), nth] }. */
+const NTH_WEEKDAYS = { ganenjie: { CA: [10, 1, 2], US: [11, 4, 4] } };
+
+/// Every festival id the calendar can name.
+export const FESTIVAL_IDS = ['chuxi', 'chunjie', 'yuanxiao', ...new Set([...Object.values(LUNAR_DAYS), ...Object.values(CIVIL_DAYS), ...Object.values(TERM_DAYS), ...Object.keys(NTH_WEEKDAYS)])].filter((id, i, all) => all.indexOf(id) === i);
+
+/// The day of the month of a month's nth weekday (0 = Sunday).
+export function nthWeekday(y, m, weekday, nth) {
+  const first = (jdOfDay(y, m, 1) + 1) % 7; // JDN + 1 mod 7: 0 = Sunday
+  return 1 + ((weekday - first + 7) % 7) + 7 * (nth - 1);
+}
+
+/* A festival kept by the weekday where the player is (`country`, ISO code). */
+function weekdayFestival(y, m, d, country) {
+  for (const [id, by] of Object.entries(NTH_WEEKDAYS)) {
+    const rule = by[String(country ?? '').toUpperCase()];
+    if (rule && rule[0] === m && nthWeekday(y, m, rule[1], rule[2]) === d) return id;
+  }
+  return null;
+}
 
 /// Today's festival — {id, key, gift, day?} — or null. `key` names this
 /// year's one (its task is done once); `gift` the span its gift belongs to
 /// (除夕 → 元宵 is one 春节); `day` is where in that span it stands.
-export function festivalOn(y, m, d, rows = LUNAR) {
-  const civil = CIVIL_DAYS[`${m}/${d}`];
-  if (civil) return { id: civil, key: `${civil}-${y}`, gift: `${civil}-${y}` };
+/// `where.country` (an ISO code, the weather sense's) decides a festival
+/// whose day is the country's.
+export function festivalOn(y, m, d, rows = LUNAR, where = {}) {
+  // The lunar feasts first: a western wink never takes a day of the 春节 span.
+  const lunar = lunarFestival(y, m, d, rows);
+  if (lunar) return lunar;
+  const id = CIVIL_DAYS[`${m}/${d}`] ?? weekdayFestival(y, m, d, where.country) ?? TERM_DAYS[termOf(y, m, d)?.id];
+  return id ? { id, key: `${id}-${y}`, gift: `${id}-${y}` } : null;
+}
+
+/* The lunar calendar's festival of a civil date, or null. */
+function lunarFestival(y, m, d, rows) {
   const l = lunarOf(y, m, d, rows);
   if (!l) return null;
   const n = jdOfDay(y, m, d), next = rows[l.year + 1];
@@ -135,8 +168,21 @@ export function parseDay(s) {
 }
 
 /// What the calendar says of a day: {date, festival, term, lunar}.
-export function dayOf({ y, m, d }, rows = LUNAR) {
+export function dayOf({ y, m, d }, rows = LUNAR, where = {}) {
   const pad = (x) => String(x).padStart(2, '0');
   const l = lunarOf(y, m, d, rows);
-  return { date: `${y}-${pad(m)}-${pad(d)}`, festival: festivalOn(y, m, d, rows), term: termOf(y, m, d), lunar: l && { month: l.month, day: l.day, leap: l.leap } };
+  return { date: `${y}-${pad(m)}-${pad(d)}`, festival: festivalOn(y, m, d, rows, where), term: termOf(y, m, d), lunar: l && { month: l.month, day: l.day, leap: l.leap } };
+}
+
+/* The seasons by the sun, as the 节气 reckon them: 春 from 立春 (315°), 夏
+   from 立夏 (45°), 秋 from 立秋 (135°), 冬 from 立冬 (225°) — in the south,
+   half a year round. */
+export const SEASONS = ['spring', 'summer', 'autumn', 'winter'];
+
+/// The season of a civil date where the latitude is (north when unknown).
+export function seasonOf({ y, m, d }, latitude = null) {
+  const lon = sunLongitude(jdOfDay(y, m, d) + deltaT(y));
+  const south = Number.isFinite(latitude) && latitude < 0;
+  const q = Math.floor((((lon + (south ? 180 : 0) + 45) % 360) / 90)); // 0 = 立春's quarter
+  return SEASONS[q];
 }

@@ -7,7 +7,8 @@
 // `festival_told`), its one small task and its gift. The task is done in the
 // chat; Practice `done festival` pays the gift once per festival per year
 // (除夕 → 元宵 is one 春节: one gift) and writes it on the save.
-import { dayOf, localDay, parseDay } from '../calendar.js';
+import { dayOf, localDay, LUNAR, parseDay } from '../calendar.js';
+import { senseReading } from './weather.mjs';
 import { fill, lockedOf, pick, rollDay } from '../state.mjs';
 import { clone, refuse } from './core.mjs';
 
@@ -21,12 +22,16 @@ export const festivalEntry = (content, id) => (content.festivals?.festivals ?? [
    page's preview only, `--day=YYYY-MM-DD` (never a write: see festivalDone). */
 export const dayFor = (ctx, args = {}) => parseDay(args.day) ?? localDay(ctx.now);
 
+/* Where the player is, for a festival kept by country (感恩节): the weather
+   sense's country code, or none. */
+const whereOf = ctx => ({ country: (ctx.weather === undefined ? senseReading() : ctx.weather)?.country_code ?? null });
+
 /* The marks: `<id>-<year>` for a task done, `gift:<span>` for a gift given. */
 const marksOf = state => state.festivals ?? [];
 
 /* `today` as Look tells it — for Ling (with the opening line until told) and the page. */
 export function todayBrief(content, state, ctx, args = {}) {
-  const day = dayOf(dayFor(ctx, args));
+  const day = dayOf(dayFor(ctx, args), LUNAR, whereOf(ctx));
   const lang = state.lang;
   const out = { date: day.date, ...(day.term ? { term: { id: day.term.id, name: pick(day.term.name, lang) } } : {}) };
   const f = day.festival && festivalEntry(content, day.festival.id);
@@ -43,6 +48,8 @@ export function todayBrief(content, state, ctx, args = {}) {
     // Before the gate that opens 灵石, the day is kept without a gift.
     ...(shut ? {} : { gift: { wealth: f.gift.wealth, given } }),
     dressing: f.dressing ?? {},
+    // The festival's own painting (festivals.json `backdrop`): the stage's picture today.
+    ...(f.backdrop ? { backdrop: f.backdrop } : {}),
   };
   return out;
 }
@@ -50,7 +57,7 @@ export function todayBrief(content, state, ctx, args = {}) {
 /* Practice `done festival`: the day's task, done in the chat — marked, and
    the gift paid if this festival's has not been given this year. */
 export function festivalDone(state, content, ctx) {
-  const day = dayOf(localDay(ctx.now));
+  const day = dayOf(localDay(ctx.now), LUNAR, whereOf(ctx));
   const f = day.festival && festivalEntry(content, day.festival.id);
   if (!f) return refuse('no-festival', null);
   const marks = marksOf(state);

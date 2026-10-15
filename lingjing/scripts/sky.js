@@ -8,6 +8,7 @@ import { esc } from './esc.js';
 export const SKY_WORDS = {
   zh: {
     kinds: { clear: '晴', cloudy: '阴', fog: '雾', rain: '雨', snow: '雪', storm: '雷雨' },
+    winds: { windy: '有风', gale: '大风' },
     title: '天气',
     note: '填你所在的城市，灵境的天就跟着你那儿走；不填，便是蒙山的四季。',
     placeholder: '城市，如 哈尔滨',
@@ -17,6 +18,7 @@ export const SKY_WORDS = {
   },
   en: {
     kinds: { clear: 'Clear', cloudy: 'Cloudy', fog: 'Fog', rain: 'Rain', snow: 'Snow', storm: 'Storm' },
+    winds: { windy: 'windy', gale: 'gale' },
     title: 'Weather',
     note: 'Name your city and the sky here follows yours; leave it, and it is Mengshan\'s seasons.',
     placeholder: 'A city, e.g. Harbin',
@@ -32,12 +34,14 @@ const say = (t, v) => String(t).replace(/\{(\w+)\}/g, (_, k) => v[k] ?? '');
 /// What the player has typed for a city, kept across repaints.
 export const draft = { city: '' };
 
-/// The chip: where, and the sky there.
-export function wxChipHtml(weather, { lang = 'zh', open = false, sense = null, note = null } = {}) {
+/// The chip: where, the sky there, and the wind when it is worth a word
+/// (Look's `wind`: a windy or gale level — wind is never a kind).
+export function wxChipHtml(weather, { lang = 'zh', open = false, sense = null, note = null, wind = null } = {}) {
   if (!weather) return '';
   const w = wordsOf(lang);
   const temp = Number.isFinite(weather.temp_c) ? ` ${weather.temp_c}°` : '';
-  const label = `${weather.where} · ${w.kinds[weather.kind] ?? weather.kind}${temp}`;
+  const blow = w.winds[wind?.level] ? `${lang === 'en' ? ', ' : '，'}${w.winds[wind.level]}` : '';
+  const label = `${weather.where} · ${w.kinds[weather.kind] ?? weather.kind}${blow}${temp}`;
   return `<span class="bookwrap"><button class="bookchip wxchip" data-wx aria-expanded="${open}">${esc(label)}</button>${open ? wxPopHtml({ lang, sense, note }) : ''}</span>`;
 }
 

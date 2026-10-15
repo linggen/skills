@@ -8,8 +8,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { dayOf, festivalOn, jdOfDay, dayOfJd, LUNAR, lunarOf, solarOf, termOf } from '../scripts/calendar.js';
-import { atmosClasses, atmosOf, FRAMES, PARTICLES, particlesHtml } from '../scripts/atmos.js';
+import { dayOf, festivalOn, FESTIVAL_IDS as CAL_IDS, jdOfDay, dayOfJd, LUNAR, lunarOf, nthWeekday, seasonOf, solarOf, termOf } from '../scripts/calendar.js';
+import { atmosClasses, atmosOf, FRAMES, indoorOf, PARTICLES, particlesHtml, stageArt, windVars } from '../scripts/atmos.js';
 import { FESTIVAL_IDS, lint, loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, task } from '../scripts/rules.mjs';
@@ -189,10 +189,10 @@ test('Ling\'s Look marks the line told (never logged); the page\'s Look does not
 
 test('the atmosphere: a festival\'s dressing and the weather share one layer', () => {
   const a = atmosOf({ frame: 'chunlian', particles: 'sparks' }, 'snow');
-  assert.deepEqual(a, { frame: 'chunlian', particles: ['snow', 'sparks'], weather: 'snow', key: 'chunlian|snow,sparks|snow' });
+  assert.deepEqual(a, { frame: 'chunlian', particles: ['snow', 'sparks'], weather: 'snow', season: null, gusts: false, key: 'chunlian|snow,sparks|snow|' });
   assert.deepEqual(atmosClasses(a), ['fest-chunlian', 'wx-snow']);
   assert.deepEqual(atmosOf(null, 'cloudy').particles, []);
-  assert.deepEqual(atmosOf({ frame: 'neon', particles: 'confetti' }, 'hail'), { frame: null, particles: [], weather: null, key: '||' });
+  assert.deepEqual(atmosOf({ frame: 'neon', particles: 'confetti' }, 'hail'), { frame: null, particles: [], weather: null, season: null, gusts: false, key: '|||' });
   const html = particlesHtml(['snow'], 'x');
   assert.equal(html, particlesHtml(['snow'], 'x'), 'the same layer on every redraw');
   assert.equal((html.match(/class="pt"/g) ?? []).length, 36);
@@ -201,6 +201,84 @@ test('the atmosphere: a festival\'s dressing and the weather share one layer', (
   for (const f of FRAMES) assert.match(css, new RegExp(`\\.fest-${f}\\b`), f);
   for (const p of PARTICLES) assert.match(css, new RegExp(`\\.p-${p}\\b`), p);
   assert.match(css, /prefers-reduced-motion: reduce\) \{[^}]*\.atmos/);
+});
+
+test('the four new days: 情人节 and 万圣节 by the date, 清明 by its 节气, 感恩节 by the country; never over the 春节 span', () => {
+  assert.equal(fest('2026-02-14'), 'qingrenjie');
+  assert.equal(fest('2026-10-31'), 'wanshengjie');
+  assert.equal(fest('2026-04-05'), 'qingming');
+  assert.equal(fest('2027-04-05'), 'qingming');
+  assert.equal(fest('2028-04-04'), 'qingming');
+  // 感恩节: Canada's second Monday of October, the US's fourth Thursday of November, nowhere else.
+  const where = (iso, country) => festivalOn(...iso.split('-').map(Number), LUNAR, { country })?.id ?? null;
+  assert.equal(where('2026-10-12', 'CA'), 'ganenjie');
+  assert.equal(where('2027-10-11', 'ca'), 'ganenjie');
+  assert.equal(where('2026-11-26', 'US'), 'ganenjie');
+  assert.equal(where('2027-11-25', 'US'), 'ganenjie');
+  assert.equal(where('2026-10-12', 'US'), null);
+  assert.equal(where('2026-11-26', 'CN'), null);
+  assert.equal(where('2026-10-12', null), null);
+  assert.equal(nthWeekday(2026, 10, 1, 2), 12);
+  assert.equal(nthWeekday(2026, 11, 4, 4), 26);
+  // 2029's 春节 falls on 2/13: 2/14 is 初二, still the span.
+  assert.equal(fest('2029-02-14'), 'chunjie');
+  assert.ok(['qingrenjie', 'qingming', 'wanshengjie', 'ganenjie'].every((id) => FESTIVAL_IDS.includes(id)));
+});
+
+test('the seasons by the 节气, half a year round in the south', () => {
+  const season = (iso, lat) => seasonOf(ymd(iso), lat);
+  assert.equal(season('2026-10-15'), 'autumn');
+  assert.equal(season('2026-10-15', 44.6), 'autumn');
+  assert.equal(season('2026-10-15', -33.9), 'spring');
+  assert.equal(season('2026-02-03'), 'winter'); // the day before 立春
+  assert.equal(season('2026-02-05'), 'spring');
+  assert.equal(season('2026-05-06'), 'summer');
+  assert.equal(season('2026-08-08'), 'autumn');
+  assert.equal(season('2026-11-08'), 'winter');
+  assert.equal(season('2026-07-01', -33.9), 'winter');
+});
+
+test('the season and the wind over the stage: drawn things, still pieces under falling weather, gusts when it blows hard', () => {
+  assert.deepEqual(atmosOf(null, 'clear', { season: 'spring' }).particles, ['petals']);
+  assert.deepEqual(atmosOf(null, 'rain', { season: 'spring' }).particles, ['rain'], 'petals give way to rain');
+  assert.deepEqual(atmosOf(null, 'snow', { season: 'winter' }).particles, ['snow', 'frost', 'twigs']);
+  assert.deepEqual(atmosOf(null, 'clear', { season: 'summer', isDay: false }).particles, ['fireflies']);
+  assert.deepEqual(atmosOf(null, 'clear', { season: 'summer' }).particles, ['haze']);
+  assert.deepEqual(atmosOf({ frame: 'moon', particles: 'glow' }, 'clear', { season: 'autumn' }).particles, ['glow'], 'a festival\'s own particles first');
+  assert.deepEqual(atmosClasses(atmosOf(null, 'cloudy', { season: 'autumn' })), ['wx-cloudy', 'season-autumn']);
+  // Halifax, 2026-10-15: clear, 30 km/h gusting 62 — windy: gusts drawn, rain would lean hard.
+  const windy = atmosOf(null, 'clear', { season: 'autumn', wind: { level: 'windy', force: 0.7, dir: 317 } });
+  assert.deepEqual(windy.particles, ['leaves', 'gusts']);
+  assert.equal(atmosOf(null, 'clear', { wind: { force: 0.3 } }).gusts, false);
+  const v = windVars({ force: 0.7, dir: 317 }); // from the north-west: blows to the right
+  assert.equal(v['--wsign'], '1');
+  assert.ok(Number(v['--wdx']) > 0.45, 'carried well across');
+  assert.equal(windVars({ force: 0.7, dir: 90 })['--wsign'], '-1', 'an east wind blows to the left');
+  assert.equal(windVars(null)['--wsign'], '-1', 'no wind given: the old light lean');
+  assert.ok(Number(windVars({ force: 1 })['--wk']) < Number(windVars({ force: 0.1 })['--wk']), 'a hard wind drifts faster');
+  // A room (the backdrop's `indoor: true`): no rain, snow, wind or drawn things — the season's tint and a festival's dressing stay.
+  const room = atmosOf({ frame: 'lantern', particles: 'glow' }, 'snow', { season: 'winter', wind: { force: 1 }, indoor: true });
+  assert.deepEqual([room.particles, room.weather, room.season, room.gusts], [['glow'], null, 'winter', false]);
+  assert.deepEqual(atmosClasses(room), ['fest-lantern', 'season-winter']);
+  assert.equal(windVars({ force: 1 }, { indoor: true })['--wf'], '0.00');
+  assert.equal(indoorOf({ indoor: true }, null), true);
+  assert.equal(indoorOf({}, { indoor: false }), false);
+});
+
+test('the stage\'s picture: the scene\'s own, a story sky, the festival\'s painting, the weather\'s', () => {
+  const table = { kinds: { clear: { day: 'c-d', night: 'c-n' }, rain: { day: 'r-d', night: 'r-n' } } };
+  const festival = { backdrop: 'art/festival/zhongqiu.webp' };
+  assert.equal(stageArt({ scene: { backdrop: 'own' }, weather: { kind: 'rain', source: 'story' }, festival, table }), 'own');
+  assert.equal(stageArt({ scene: {}, weather: { kind: 'rain', source: 'story' }, festival, table }), 'r-d', 'the book\'s sky beats the festival');
+  assert.equal(stageArt({ scene: {}, weather: { kind: 'rain', source: 'city' }, festival, table, isDay: false }), festival.backdrop);
+  assert.equal(stageArt({ scene: null, weather: { kind: 'rain', source: 'city' }, festival: null, table, isDay: false }), 'r-n');
+  assert.equal(stageArt({ scene: { line: 'jin' }, weather: { kind: 'rain' }, festival, table }), null);
+  // Every painting a festival declares is on disk; the lunar feasts and 清明 all have theirs.
+  for (const f of content.festivals.festivals.filter((x) => x.backdrop)) assert.ok(fs.existsSync(path.join(content.dir, f.backdrop)), f.id);
+  for (const id of ['chuxi', 'chunjie', 'yuanxiao', 'qingming', 'duanwu', 'qixi', 'zhongqiu', 'chongyang', 'laba']) assert.ok(content.festivals.festivals.find((x) => x.id === id).backdrop, id);
+  // Look's today carries it.
+  const t = look(open(at('2026-09-25')), content, { now: at('2026-09-25'), quests: [] }).today;
+  assert.equal(t.festival.backdrop, 'art/festival/zhongqiu.webp');
 });
 
 test('dayOf names the date the player lives in', () => {

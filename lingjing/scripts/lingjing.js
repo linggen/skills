@@ -32,7 +32,8 @@ import { doorsHtml } from './doors.js';
 import { HOMING_MS, freshHome, homingCardHtml, inkMapSvg, shapesOf, unrollHtml } from './inkmap.js';
 import { frameOf } from './atlas.js';
 import { fxTimes, glOK, playHoming as playHomingFx } from './fx.js';
-import { atmosClasses, atmosOf, backdropOf, particlesHtml } from './atmos.js';
+import { atmosClasses, atmosOf, indoorOf, particlesHtml, stageArt, windVars } from './atmos.js';
+import { WINDS } from './rules/weather.mjs';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
 import { advance, atLast, beatKey, choicesUp, current, huiAt, keepReading, leadsIn, loadReading, logHtml, noted, ofPlay, playing, readingFor, showAll, sightNow, sightings, storyHtml, withTold } from './dialogue.js';
@@ -47,13 +48,16 @@ const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
 
 /* A preview of the atmosphere, for testing only: `?day=2027-02-06` reads
-   Look's `today` for that date (a read — the save is never written for it),
-   `?weather=snow|rain|fog|clear` draws that sky. */
+   Look's `today` (and its season) for that date (a read — the save is never
+   written for it), `?weather=snow|rain|fog|clear` draws that sky,
+   `?season=autumn` that season, `?wind=gale&winddir=270` that wind. */
 const PREVIEW = (() => {
   try {
     const q = new URLSearchParams(location.search);
-    return { day: parseDay(q.get('day')) ? q.get('day') : null, weather: q.get('weather') || null };
-  } catch { return { day: null, weather: null }; }
+    const wind = WINDS.find((w) => w.level === q.get('wind'));
+    return { day: parseDay(q.get('day')) ? q.get('day') : null, weather: q.get('weather') || null, season: q.get('season') || null,
+      wind: wind ? { level: wind.level, force: wind.force, dir: q.get('winddir') ? Number(q.get('winddir')) : undefined } : null };
+  } catch { return { day: null, weather: null, season: null, wind: null }; }
 })();
 
 // Tools that change the state: the scene re-reads Look once they have run.
@@ -993,7 +997,7 @@ const scratchRoads = () => Boolean(SCRATCH) && !look?.seclusion && !look?.direct
 /// A scene on another line (a 今 interlude) keeps the 九鼎录 and the book; the rest is the 古's (stage.mjs FURNITURE).
 function footChipsHtml() {
   const has = (part) => !bout && stands(look, part);
-  return `${has('her') ? herTokenHtml() : ''}${has('festival') ? festChipHtml() : ''}${has('weather') ? wxChipHtml(wxHere(), { lang: lang(), open: view.wxOpen, sense: view.wxSense, note: view.wxNote }) : ''}${has('lu') ? luChipHtml(lang(), view.luOpen) : ''}${has('read') ? readChipHtml(ctx()) : ''}
+  return `${has('her') ? herTokenHtml() : ''}${has('festival') ? festChipHtml() : ''}${has('weather') ? wxChipHtml(wxHere(), { lang: lang(), open: view.wxOpen, sense: view.wxSense, note: view.wxNote, wind: PREVIEW.wind ?? look?.wind }) : ''}${has('lu') ? luChipHtml(lang(), view.luOpen) : ''}${has('read') ? readChipHtml(ctx()) : ''}
     ${stands(look, 'errands') ? bookChipHtml(ctx(), view.bookOpen, view.bookFresh) : ''}
     ${stands(look, 'bag') ? gearChipHtml(ctx(), view.gearOpen) : ''}`;
 }
@@ -1028,7 +1032,8 @@ function paintBackdrop() {
   const dir = look?.world?.made ? `worlds/${look.world.base}` : look?.world?.dir ?? 'worlds/jiuding';
   const own = look?.scene?.backdrop ?? null;
   const day = look?.weather?.is_day ?? isDayNow();
-  const art = look?.scene?.line === 'jin' ? null : own ?? backdropOf(authored?.backdrops, look?.weather?.kind ?? null, day);
+  const weather = PREVIEW.weather ? { kind: PREVIEW.weather } : look?.weather;
+  const art = stageArt({ scene: { ...look?.scene, backdrop: own }, weather, festival: look?.today?.festival, table: authored?.backdrops, isDay: day });
   const src = art ? worldPath(dir, art) : null;
   if (src === drawnBackdrop) return;
   drawnBackdrop = src;
@@ -1065,8 +1070,12 @@ let atmosKey = null;
 function paintAtmos() {
   // 今线 has no weather (Hanli, 2026-10-14: a pale modern stage) — and no festival dressing of the 古's.
   const jin = look?.scene?.line === 'jin';
-  const a = jin ? atmosOf(null, null) : atmosOf(look?.today?.festival?.dressing, PREVIEW.weather ?? look?.weather?.kind ?? null);
+  const wind = PREVIEW.wind ?? look?.wind ?? null, indoor = indoorOf(look?.scene, look?.place);
+  const sky = { season: PREVIEW.season ?? look?.season?.kind, isDay: look?.weather?.is_day ?? isDayNow(), wind, indoor };
+  const a = jin ? atmosOf(null, null) : atmosOf(look?.today?.festival?.dressing, PREVIEW.weather ?? look?.weather?.kind ?? null, sky);
   const v = $('view');
+  for (const [k, val] of Object.entries(windVars(wind, { indoor }))) v.style.setProperty(k, val);
+  for (const c of [...v.classList]) if (c.startsWith('season-')) v.classList.remove(c);
   for (const c of [...v.classList]) if (c.startsWith('fest-') || c.startsWith('wx-')) v.classList.remove(c);
   v.classList.add(...atmosClasses(a));
   // 今线 (an interlude, Look's scene `line: jin`): a pale modern stage — the scene's `scape` (track, court, stacks …) names which.

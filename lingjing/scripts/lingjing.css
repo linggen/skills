@@ -977,13 +977,16 @@ body.fighting .atmos { display: none; }
 
 /* snow · rain · fog — the weather's */
 .p-snow .pt { width: calc(6px * var(--s)); height: calc(6px * var(--s)); border-radius: 50%; background: #fff; opacity: .9;
-  box-shadow: 0 0 3px rgba(120, 140, 160, .35); animation: atFall calc(var(--k) * 11s) linear var(--d) infinite; }
+  box-shadow: 0 0 3px rgba(120, 140, 160, .35); animation: atFall calc(var(--k) * 11s * var(--wk, 1)) linear var(--d) infinite; }
 .p-rain .pt { width: 1.5px; height: calc(18px * var(--s)); border-radius: 1px; opacity: .45;
-  background: linear-gradient(180deg, transparent, #5E7182); transform: rotate(12deg); animation: atRain calc(var(--k) * 1.1s) linear var(--d) infinite; }
+  background: linear-gradient(180deg, transparent, #5E7182); transform: rotate(var(--wa, 12deg)); animation: atRain calc(var(--k) * 1.1s) linear var(--d) infinite; }
 .p-fog .pt { top: calc(var(--y) * .6 + 20%); left: -40%; width: 90%; height: 34%; border-radius: 50%; filter: blur(18px); opacity: .5;
-  background: radial-gradient(ellipse at center, rgba(255, 255, 255, .85), rgba(255, 255, 255, 0) 70%); animation: atDrift calc(var(--k) * 40s) ease-in-out var(--d) infinite alternate; }
-@keyframes atFall { 0% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(14px, 55vh, 0); } 100% { transform: translate3d(-6px, 110vh, 0); } }
-@keyframes atRain { from { transform: translate3d(0, 0, 0) rotate(12deg); } to { transform: translate3d(-24px, 110vh, 0) rotate(12deg); } }
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, .85), rgba(255, 255, 255, 0) 70%); animation: atDrift calc(var(--k) * 40s * var(--wk, 1)) ease-in-out var(--d) infinite alternate; }
+/* The wind (atmos.js windVars): what falls is carried across by --wdx per unit of fall, so it starts
+   half a carry upwind; rain leans by --wa; what drifts goes faster by --wk. */
+.p-snow .pt, .p-rain .pt, .p-leaves .pt, .p-petals .pt { margin-left: calc(var(--wdx, 0) * -55vh); }
+@keyframes atFall { 0% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(calc(14px + var(--wdx, 0) * 60vh), 55vh, 0); } 100% { transform: translate3d(calc(-6px + var(--wdx, 0) * 120vh), 110vh, 0); } }
+@keyframes atRain { from { transform: translate3d(0, 0, 0) rotate(var(--wa, 12deg)); } to { transform: translate3d(calc(var(--wdx, -0.02) * 110vh), 110vh, 0) rotate(var(--wa, 12deg)); } }
 @keyframes atDrift { from { transform: translateX(0); } to { transform: translateX(80%); } }
 
 /* sparks · glow · stars · leaves — a festival's */
@@ -999,8 +1002,8 @@ body.fighting .atmos { display: none; }
   animation: atTwinkle calc(var(--k) * 3s) ease-in-out var(--d) infinite; }
 @keyframes atTwinkle { 0%, 100% { opacity: .15; } 50% { opacity: .95; } }
 .p-leaves .pt { width: calc(10px * var(--s)); height: calc(5px * var(--s)); border-radius: 50% 0; background: #C8702C; opacity: .75;
-  animation: atLeaf calc(var(--k) * 12s) ease-in-out var(--d) infinite; }
-@keyframes atLeaf { 0% { transform: translate3d(0, 0, 0) rotate(0); } 50% { transform: translate3d(30px, 55vh, 0) rotate(200deg); } 100% { transform: translate3d(-10px, 110vh, 0) rotate(400deg); } }
+  animation: atLeaf calc(var(--k) * 12s * var(--wk, 1)) ease-in-out var(--d) infinite; }
+@keyframes atLeaf { 0% { transform: translate3d(0, 0, 0) rotate(0); } 50% { transform: translate3d(calc(30px + var(--wdx, 0) * 80vh), 55vh, 0) rotate(200deg); } 100% { transform: translate3d(calc(-10px + var(--wdx, 0) * 160vh), 110vh, 0) rotate(400deg); } }
 
 /* The frame: 春联 and 横批 beside her, lanterns, 艾草, 鹊桥, the moon, 茱萸, 松枝. */
 .atmos .frame .fl, .atmos .frame .fr { top: 8px; width: 26px; padding: 8px 0; writing-mode: vertical-rl; text-orientation: upright;
@@ -1058,10 +1061,56 @@ body.fighting .atmos { display: none; }
 .wx-snow .panelcard .panel::after { content: ""; position: absolute; left: 0; right: 0; top: 0; aspect-ratio: 3 / 2; pointer-events: none; border-radius: 6px;
   background: radial-gradient(circle, rgba(255, 255, 255, .9) 1.2px, transparent 1.8px) 0 0 / 23px 29px, radial-gradient(circle, rgba(255, 255, 255, .8) 1px, transparent 1.6px) 11px 13px / 31px 37px; }
 
+/* ── 季节 · 风 (2026-10-15; atmos.js SEASON_LAYER, windVars): over the painting, in its own ink — a
+   faint tint on the picture only (never the panels or the words), and a few drawn things. ── */
+.view[class*="season-"] .backdrop::after { content: ""; position: absolute; inset: 0; pointer-events: none; mix-blend-mode: soft-light; }
+.view.season-spring .backdrop::after { background: #A8D08C; opacity: .38; }
+.view.season-summer .backdrop::after { background: #5E9A52; opacity: .42; }
+.view.season-autumn .backdrop::after { background: #D9963E; opacity: .46; }
+.view.season-winter .backdrop::after { background: #E6EEF4; opacity: .30; mix-blend-mode: screen; }
+/* petals — 春: peach blossom, falling as leaves do */
+.p-petals .pt { width: calc(8px * var(--s)); height: calc(6px * var(--s)); border-radius: 60% 40% 60% 40%; background: radial-gradient(ellipse at 40% 40%, #FBE3E6, #E9A2B0 75%); opacity: .8;
+  animation: atLeaf calc(var(--k) * 14s * var(--wk, 1)) ease-in-out var(--d) infinite; }
+/* fireflies — 夏's night: a few slow green-gold lights in the low half */
+.p-fireflies .pt { top: calc(var(--y) * .5 + 40%); width: 3px; height: 3px; border-radius: 50%; background: #EAF5A0; box-shadow: 0 0 6px 2px rgba(214, 236, 120, .6); opacity: 0;
+  animation: atFly calc(var(--k) * 7s) ease-in-out var(--d) infinite; }
+@keyframes atFly { 0%, 100% { opacity: 0; transform: translate3d(0, 0, 0); } 30% { opacity: .9; } 50% { transform: translate3d(calc(18px + var(--wdx, 0) * 30px), -14px, 0); } 70% { opacity: .5; } }
+/* haze — 夏's day: warm air shimmering low over the land */
+.p-haze .pt { top: auto; bottom: 18%; left: -10%; width: 120%; height: 22%; background: linear-gradient(0deg, rgba(246, 230, 190, 0), rgba(246, 230, 190, .16) 50%, rgba(246, 230, 190, 0)); filter: blur(5px);
+  animation: atHaze calc(var(--k) * 9s) ease-in-out var(--d) infinite alternate; }
+.p-haze .pt + .pt { bottom: 34%; height: 14%; }
+@keyframes atHaze { from { transform: translate3d(0, 0, 0) scaleY(1); } to { transform: translate3d(calc(var(--wdx, 0) * 40px), -6px, 0) scaleY(1.12); } }
+/* frost — 冬: pale rime breathing in from the corners */
+.p-frost .pt { inset: 0; top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(ellipse 34% 30% at 0 0, rgba(238, 244, 249, .34), transparent), radial-gradient(ellipse 30% 26% at 100% 0, rgba(238, 244, 249, .28), transparent),
+    radial-gradient(ellipse 26% 20% at 0 100%, rgba(238, 244, 249, .18), transparent), radial-gradient(ellipse 26% 20% at 100% 100%, rgba(238, 244, 249, .18), transparent); }
+/* twigs — 冬: one bare ink branch reaching in at the top corner, stirring with the wind */
+.p-twigs .pt { top: 0; left: auto; right: 0; width: 34%; max-width: 320px; aspect-ratio: 3 / 2; opacity: .5; transform-origin: 100% 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200' fill='none' stroke='%23231f1a' stroke-linecap='round'%3E%3Cpath d='M300 6C250 18 214 34 170 62S96 104 52 112' stroke-width='5'/%3E%3Cpath d='M232 28c-6 22-4 40 6 58' stroke-width='2.6'/%3E%3Cpath d='M190 50c-18 4-30 0-44-12' stroke-width='2.4'/%3E%3Cpath d='M150 78c2 22 12 38 28 50' stroke-width='2.2'/%3E%3Cpath d='M106 96c-16-8-24-20-28-34' stroke-width='1.8'/%3E%3Cpath d='M86 106c-6 14-4 28 4 40' stroke-width='1.6'/%3E%3Cpath d='M238 86c10 6 18 6 28 2M170 128c6 8 14 10 22 8M78 62c-8-4-12-10-12-18' stroke-width='1.2'/%3E%3C/svg%3E") no-repeat 100% 0 / contain;
+  animation: atTwig calc(7s * var(--wk, 1)) ease-in-out infinite alternate; }
+@keyframes atTwig { from { transform: rotate(0); } to { transform: rotate(calc(var(--wf, .3) * -4deg)); } }
+/* gusts — a strong wind (windVars --wf ≥ .6): a few long dry-brush strokes sweeping across, the way it blows */
+.p-gusts { transform: scaleX(var(--wsign, 1)); }
+.p-gusts .pt { top: calc(var(--y) * .62 + 6%); left: 0; width: 42%; height: calc(1.5px + 2px * var(--s)); border-radius: 50%; opacity: 0; filter: blur(.5px);
+  background: linear-gradient(90deg, transparent, rgba(236, 230, 216, .5) 25%, rgba(236, 230, 216, .22) 70%, transparent);
+  animation: atGust calc(var(--k) * 3.6s) cubic-bezier(.3, .1, .4, 1) var(--d) infinite; }
+@keyframes atGust { 0% { opacity: 0; transform: translateX(-70%) scaleX(.5); } 18% { opacity: .9; } 75% { opacity: .5; } 100% { opacity: 0; transform: translateX(250%) scaleX(1.25); } }
+/* 清明: willow strands at the top corner · 万圣节: two ink pumpkins hung like lanterns */
+.fest-willow .atmos .frame .la { display: block; top: 0; left: 0; width: 150px; height: 170px; animation-duration: 9s;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 170' fill='none' stroke='%237E9A5E' stroke-linecap='round' stroke-opacity='.75'%3E%3Cpath d='M0 4C40 8 80 6 150 2' stroke='%234a4237' stroke-width='3'/%3E%3Cpath d='M20 6c4 50 2 100-6 150M44 7c2 40 6 80 2 124M68 6c4 34 2 70-4 104M92 5c2 30 6 60 2 90M116 4c2 24 0 46-4 66' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat 0 0 / contain; }
+.fest-pumpkin .atmos .frame .la, .fest-pumpkin .atmos .frame .lb { display: block; width: 46px; height: 74px;
+  background: linear-gradient(#5b4a32, #5b4a32) 50% 0 / 2px 30px no-repeat, linear-gradient(#4C6A30, #4C6A30) 50% 30px / 5px 8px no-repeat,
+    radial-gradient(ellipse 30% 46% at 34% 50%, #E08A36, #B8621E 80%, transparent 82%) 0 36px / 46px 36px no-repeat,
+    radial-gradient(ellipse 30% 46% at 66% 50%, #E08A36, #B8621E 80%, transparent 82%) 0 36px / 46px 36px no-repeat,
+    radial-gradient(ellipse 26% 48% at 50% 50%, #EE9A44, #C46C24 80%, transparent 82%) 0 36px / 46px 36px no-repeat;
+  filter: drop-shadow(0 0 8px rgba(240, 150, 60, .4)); }
+.fest-pumpkin .atmos .frame .la { left: calc(50% - 120px); }
+.fest-pumpkin .atmos .frame .lb { left: calc(50% + 80px); }
+
 @media (prefers-reduced-motion: reduce) {
   .atmos .pt, .atmos .frame i { animation: none !important; }
-  .atmos .p-sparks, .atmos .p-rain { display: none; }
-  .atmos .p-snow .pt, .atmos .p-leaves .pt { top: var(--y); }
+  .atmos .p-sparks, .atmos .p-rain, .atmos .p-gusts, .atmos .p-fireflies { display: none; }
+  .atmos .p-snow .pt, .atmos .p-leaves .pt, .atmos .p-petals .pt { top: var(--y); margin-left: 0; }
   .atmos .p-glow .pt { bottom: auto; top: var(--y); opacity: .6; }
   .atmos .p-fog .pt { left: calc(var(--x) - 40%); }
 }

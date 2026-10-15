@@ -2,7 +2,7 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { CAST, gameOf } from '../content.mjs';
 import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
-import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, phaseName, realmName, threshold, seedOf } from '../state.mjs';
+import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, phaseName, realmName, threshold, seedOf, cultivating } from '../state.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, THEN_BORN, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
 import { fightSetup } from './cards.mjs';
@@ -22,14 +22,14 @@ import { hashOf } from './travel.mjs';
 import { atScene, beatOf, creatureOf, encounterOf, foeOf, ofJuan, passed, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
-import { chapterLabel, sideLine } from './hui.mjs';
+import { chapterLabel, huiOf, sideLine } from './hui.mjs';
 import { capLook } from './cap.mjs';
 import { practiceHint } from './scrolls.mjs';
 import { owesTell } from './tell.mjs';
 import { mainRoot, rootName } from './roots.mjs';
 import { memoriesLook } from './memories.mjs';
 import { todayBrief } from './festival.mjs';
-import { weatherBrief } from './weather.mjs';
+import { seasonBrief, storySky, weatherBrief, windBrief } from './weather.mjs';
 import { newHere, portraitOf } from './codex.mjs';
 import { hotspotsOf, lookHint, seenLog, seenMet, SEEN_KEEP } from './examine.mjs';
 
@@ -163,6 +163,12 @@ function presentOf(content, state, now) {
 /* A made world is read by its map: its scenes stand at places, so their
    cards end with the province's map, as its places' do. */
 const withMap = (content, show) => (content.world.made && !show.some(c => c.card === 'map') ? [...show, { card: 'map' }] : show);
+
+/* The scene's own sky (its `weather`, `season`, `wind`, the 回's season), or null off a scene. */
+const skyHere = (content, state) => {
+  const scene = atScene(content, state) ? sceneOf(content, state) : null;
+  return scene ? storySky(scene, huiOf(content, scene.hui)) : null;
+};
 
 function sceneBrief(content, state, now = new Date()) {
   const scene = sceneOf(content, state);
@@ -411,8 +417,9 @@ export function look(state, content, ctx) {
     ...(practiceHint(content, state) ? { practice_hint: practiceHint(content, state) } : {}),
     world: worldBrief(content, lang),
     ...building(content),
-    tier: { id: state.tier, step: state.step + 1, name: realmName(content, state, lang), phase: phaseName(content, state.tier, state.step, lang) },
-    progress: state.progress, next: threshold(content, state), wealth: state.wealth,
+    // `bar`: the header's 修为 bar stands once 修为 counts — from 一层, the 小周天 (零层 has none; state.mjs cultivating).
+    tier: { id: state.tier, step: state.step + 1, name: realmName(content, state, lang), phase: phaseName(content, state.tier, state.step, lang), bar: cultivating(content, state) },
+    progress: state.progress, next: cultivating(content, state) ? threshold(content, state) : null, wealth: state.wealth,
     // Filled to the 回's cap (rules/cap.mjs): the full bar and the world's line under it — a wait, not a fault.
     ...(capLook(content, state, lang) ? { capped: capLook(content, state, lang) } : {}),
     traits,
@@ -469,7 +476,10 @@ export function look(state, content, ctx) {
     today: todayBrief(content, state, ctx, { day: ctx.day }),
     // 天气 (rules/weather.mjs): the scene's own sky where the book names one, else
     // the engine's weather sense at the player's city, else 蒙山's seasons.
-    weather: weatherBrief(state, ctx, atScene(content, state) ? sceneOf(content, state)?.weather : null),
+    weather: weatherBrief(state, ctx, skyHere(content, state)),
+    // 季节 · 风: the same rule — the book's, else the place's, else a default (rules/weather.mjs).
+    season: seasonBrief(ctx, skyHere(content, state)),
+    wind: windBrief(ctx, skyHere(content, state)),
     ...tasksBrief(content, state, ctx),
   };
   // Before a story gate Look carries nothing it keeps shut, and `locked` names it (rules/locks.mjs).
