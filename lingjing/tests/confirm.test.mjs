@@ -14,16 +14,17 @@ const T0 = new Date('2026-09-11T12:00:00');
 const at = (min) => new Date(T0.getTime() + min * 60_000).toISOString();
 
 function game() {
+  const lang = { tag: 'zh-Hans' }; // Linggen's language, the game's (rules/language.mjs)
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-confirm-'));
   const cli = (min, ...args) => {
-    const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: at(min), LINGGEN_SESSION_ID: 's1' };
+    const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: at(min), LINGGEN_SESSION_ID: 's1', LINGGEN_LANGUAGE: lang.tag };
     const out = spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: ROOT, env, encoding: 'utf8' });
     return JSON.parse(out.stdout);
   };
   const state = () => JSON.parse(fs.readFileSync(path.join(data, 'state.json'), 'utf8'));
   const write = (s) => fs.writeFileSync(path.join(data, 'state.json'), JSON.stringify(s));
-  cli(0, 'init', '--lang', 'zh');
-  return { data, cli, state, write };
+  cli(0, 'init');
+  return { data, cli, state, write, lang };
 }
 // A game some way in: a story kept, so a restart has something to lose
 // (the name was the marker before the hero was fixed, 2026-09-30).
@@ -140,7 +141,7 @@ test('Go: 再想想 lets it be; the asking expires after ten minutes; English as
   assert.equal(g.cli(3, 'go', '--scene=01-altar', '--for=ling').refused, 'not-confirmed');
   assert.equal(g.cli(14, 'go', '--scene=01-altar', '--for=ling').refused, 'not-confirmed', 'expired');
   assert.notEqual(g.state().scene, '01-altar');
-  g.write({ ...g.state(), lang: 'en', lang_set: true });
+  g.lang.tag = 'en';
   const en = g.cli(15, 'go', '--scene=01-deep', '--for=ling');
   assert.equal(en.ask.question, 'Go straight to The Zhang deeps? What lies on the road is passed by.');
   assert.deepEqual(en.ask.options.map(o => o.label), ['Go', 'Not yet']);

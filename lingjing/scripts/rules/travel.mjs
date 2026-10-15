@@ -1,7 +1,8 @@
 // rules/travel.mjs — Story, travel, trade, language — and Ling driving the game.
 // Part of the rules engine; rules.mjs is its one door.
 import { ARM_SLOTS } from '../content.mjs';
-import { dayKey, fill, langOf, pick } from '../state.mjs';
+import { dayKey, fill, pick } from '../state.mjs';
+import { langWas } from './language.mjs';
 import { tierRank } from './arms.mjs';
 import { companionOf, hasCompanion } from './companion.mjs';
 import { clone, offerTasks, pay, refuse, spendStamina } from './core.mjs';
@@ -260,34 +261,17 @@ export function trade(state, content, ctx, args) {
   return refuse('unknown-action', null, { actions: ['buy', 'sell', 'use', 'remove'] });
 }
 
-/* The player's words set the language. The result carries the scene in it,
-   so one call switches and re-reads; asking for the language already in
-   use changes nothing. */
+/* Lang, asked outright: Linggen's global language (rules/language.mjs
+   chooseLang writes it before this runs, so `state.lang` is already the new
+   one). Nothing is written to the save — the language is never the save's.
+   The result carries the scene in it, so one call switches and re-reads. */
 export function lang(state, content, ctx, args) {
   if (!['zh', 'en'].includes(args.lang)) return refuse('unknown-lang', null, { langs: ['zh', 'en'] });
-  // A language chosen — the page's 中/En, or the player asking Ling — is
-  // kept: words never turn it again (his, 2026-09-23: 每次刷新不要重置).
-  // A new game's guess from the machine (`auto`) is not a choice.
-  const set = args.auto ? Boolean(state.lang_set) : true;
-  const s = args.lang === state.lang && Boolean(state.lang_set) === set ? state : { ...clone(state), lang: args.lang, lang_set: set };
+  const s = args.lang === state.lang ? state : { ...state, lang: args.lang };
   // The scene only where the player stands — Lang once handed Ling chapter
   // 3's opening lines a province early (2026-09-16), and Ling recited them.
-  const result = { ok: true, lang: s.lang, changed: args.lang !== state.lang, scene: atScene(content, s) ? sceneBrief(content, s, ctx?.now) : null };
-  return { state: s === state ? null : s, result };
-}
-
-/* The player's words set the language before any verb reads the state, so
-   what Ling reads back is already in the language the player wrote. Ling's
-   tools pass them as `said`. */
-/* Words that are the engine's, not the player's: an empty reply's nudge
-   comes back to the model as a user turn and was passed on as `said`,
-   flipping a Chinese game to English mid-sitting (2026-09-16). */
-const ENGINE_WORDS = /^\s*your response was empty/i;
-
-export function heed(state, said) {
-  if (state.lang_set || ENGINE_WORDS.test(String(said ?? ''))) return state;
-  const lang = langOf(said);
-  return lang && lang !== state.lang ? { ...clone(state), lang } : state;
+  const result = { ok: true, lang: s.lang, changed: args.lang !== (langWas() ?? state.lang), scene: atScene(content, s) ? sceneBrief(content, s, ctx?.now) : null };
+  return { state: null, result };
 }
 
 /* ── Ling drives: the player's word moves the game ── */

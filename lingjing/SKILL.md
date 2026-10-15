@@ -86,8 +86,7 @@ tools:
         type: string
         required: true
         description: >-
-          The player's latest words, verbatim — typed or the tapped label. The
-          rules set the game's language from them before answering.
+          The player's latest words, verbatim — typed or the tapped label.
       at:
         type: string
         required: false
@@ -144,8 +143,7 @@ tools:
         type: string
         required: true
         description: >-
-          The player's latest words, verbatim — typed or the tapped label. The
-          rules set the game's language from them before answering.
+          The player's latest words, verbatim — typed or the tapped label.
 
   - name: Judge
     description: >-
@@ -316,7 +314,8 @@ tools:
 
   - name: Lang
     description: >-
-      Set the game's language to the player's, asked outright (guide `look`).
+      Set the language, asked outright — Linggen's own setting, so all of
+      Linggen follows (guide `look`).
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs lang --lang={{lang}} --for=ling"
     tier: edit
     timeout_ms: 8000
@@ -796,7 +795,7 @@ Each part's rules come as a result's `guide` when the game gets there, or by
 - `road` — Move by name at once; a refused Move went nowhere; arriving is an
   event; 路上 (Meet) — never reveal; the director; a market (Trade).
 - `trial` — 抉择: when the road's meet is `kind: trial`, you write it.
-- `tasks` — boards, 人间功课 (Practice), 开府, 差事 (Quest): never invent one.
+- `tasks` — boards, 每日/每周 (Practice), 一次, 差事 (Quest): never invent one.
 - `lundao` — 论道, the scholar's word games; never be generous.
 - `tale` — 今日传闻: once a day you write a small side story (Tale).
 - `her` — 月下之约: an old save finds Yinyue at 结丹 (Ring).
@@ -814,7 +813,7 @@ On `no-stamina` speak its `say` — Yinyue, not you, sends the player to rest.
 **闭关**: while Look carries `seclusion` the world holds still (`in-seclusion`)
 until the player taps 出关 — never offer it or read the hours back.
 **Before the gate** (Look's `locked`) the player is a mortal: never offer
-cultivation, chores, 开府, divination or errands; on `not-yet` speak its `say`.
+cultivation, chores, 一次 steps, divination or errands; on `not-yet` speak its `say`.
 
 ## Bounds
 
@@ -825,8 +824,8 @@ cultivation, chores, 开府, divination or errands; on `not-yet` speak its `say`
 
 ## Language
 
-Pass the player's latest words as `said` to Look and Resolve; the rules set
-the language (`lang_set`). Answer in the result's `lang`; asked outright,
-**Lang** it. In English the game's words are Look's `words` — never
-Chinese in an English sentence.
+The game speaks Linggen's language setting; the player's words never
+switch it. Answer in the result's `lang`; asked outright, **Lang** it. In
+English the game's words are Look's `words` — never Chinese in an English
+sentence.
 The story's parts: **卷 and 回**, never 章.

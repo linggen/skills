@@ -21,7 +21,7 @@ function game() {
   const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
   const file = path.join(data, 'state.json');
   const save = () => JSON.parse(fs.readFileSync(file, 'utf8'));
-  cli('init', '--lang=zh');
+  cli('init');
   // Open country in 冀州 after 卷一, where the roads lead on (卷一 is all there is, 2026-10-05).
   const s = save();
   const ji = Object.keys(content.chapters['01-ji'].scenes);

@@ -193,31 +193,6 @@ export function normalizeAnswer(answer) {
     .replace(/^(an?|the) /, '');
 }
 
-/* Words that steer the game rather than speak in it (rules/confirm.mjs
-   ASKED_FOR asks for the same Restart and Undo): a line made only of these
-   is a command, in whatever language the game is in, and never turns it
-   (2026-10-14: after a Restart, his English 「restart game」 flipped his
-   pinned Chinese game to English). */
-const COMMAND_WORDS = new Set(('restart undo redo load save saved saves ok okay k go yes yeah yep no nope nah y n sure fine next continue back '
-  + 'quit stop start reset retry again over begin new game the a my this that it last step move one turn please pls now play resume menu help hi hello hey thanks thx take').split(' '));
-const HAN_COMMAND = /^(?:重来|从头|从头来|重新开始|再来|悔棋|悔一步|撤回|收回|读档|存档|好|好的|嗯|是|不|对|行|继续|走)[。！!？?…\s]*$/u;
-const ENGLISH_WORDS = /[A-Za-z]+(?:'[A-Za-z]+)?/g;
-/* The language of what the player typed: Chinese characters → zh, a sentence
-   in English (three words or more, and not only commands) → en; anything
-   else — a bare word, a command, an emoji, a number, a page's `[scene]`
-   report — → null, which changes nothing. */
-export function langOf(said) {
-  const text = String(said ?? '').trim();
-  // A bracketed tag opens a machine's line, never the player's: the page's
-  // reports reach Ling as `[HIDDEN] [scene] won …`, and each one read as
-  // English flipped his Chinese game three times in a day (2026-09-23).
-  if (!text || text.startsWith('[')) return null;
-  if (/\p{Script=Han}/u.test(text)) return HAN_COMMAND.test(text) ? null : 'zh';
-  const words = text.match(ENGLISH_WORDS) ?? [];
-  if (words.length < 3 || words.every((w) => COMMAND_WORDS.has(w.toLowerCase()))) return null;
-  return 'en';
-}
-
 /* ── Time: local days, ISO weeks ── */
 
 const pad = n => String(n).padStart(2, '0');

@@ -8,8 +8,9 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { act, battle, begin, effectOf, foeTurn, offers, tokenOf } from '../scripts/battle.js';
 import { lint, loadContent } from '../scripts/content.mjs';
-import { dayKey, fitWorld, langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { oddsOf, rollOf, VERBS, fightSetup, hpMaxOf, greet, deck, deckFor, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win } from '../scripts/rules.mjs';
+import { dayKey, fitWorld, migrate, newState, weekKey } from '../scripts/state.mjs';
+import { chooseLang, inPlay, langNow, langOfTag, stateText, writeGlobalLang } from '../scripts/rules/language.mjs';
+import { oddsOf, rollOf, VERBS, fightSetup, hpMaxOf, greet, deck, deckFor, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, duel, enter, go, judge, lang, leave, look, make, move, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win } from '../scripts/rules.mjs';
 import { beforeChapterOne, TO_WAIMEN, TO_HALL, TO_VALLEY, V1_BIRTH, walk } from './prologue.mjs';
 import { starterFor } from '../scripts/rules/roots.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
@@ -310,12 +311,6 @@ test('Lang never hands over a scene the player has not reached', () => {
   assert.equal(look(o, content, ctx()).scene, null);
   assert.equal(must(lang, o, { lang: 'en' }).result.scene, null, 'no scene runs here, so none is told');
   assert.ok(must(lang, toFuzhu(), { lang: 'en' }).result.scene?.id, 'at a scene, the scene');
-});
-
-test('the engine\'s empty-reply nudge is not the player\'s word: it sets no language', () => {
-  const s = { ...toFuzhu(), lang: 'zh' };
-  assert.equal(heed(s, 'Your response was empty. Please respond with either a tool call or text.').lang, 'zh');
-  assert.equal(heed(s, 'hello there friend').lang, 'en');
 });
 
 test('every answer carries the question ready: the scene\'s buttons, the riddle when one waits, the choice when the world is open', () => {
@@ -1050,78 +1045,134 @@ test('the story summary has a length limit', () => {
   assert.equal(must(summarize, start(), { text: '青玄在泗水边醒来。' }).state.story, '青玄在泗水边醒来。');
 });
 
-test('switching language returns the scene in it; the same language writes nothing', () => {
+test('switching language returns the scene in it, and never writes the save', () => {
   const out = must(lang, start('zh'), { lang: 'en' });
-  assert.equal(out.state.lang, 'en');
+  assert.equal(out.state, null, 'the language is Linggen\'s, never the save\'s');
+  assert.equal(out.result.lang, 'en');
   assert.equal(out.result.changed, true);
   assert.equal(out.result.scene.place, "Foot of Mount Meng · Shi'ao village");
-  const same = must(lang, { ...start('zh'), lang_set: true }, { lang: 'zh' });
+  const same = must(lang, start('zh'), { lang: 'zh' });
   assert.equal(same.state, null);
   assert.equal(same.result.changed, false);
   assert.equal(same.result.scene.place, '蒙山脚下 · 石坳村');
 });
 
-test('the player’s words set the language; a tap, an emoji or the page’s report do not', () => {
-  assert.equal(langOf('我伸手去摸那道光'), 'zh');
-  assert.equal(langOf('call me Mobai'), 'en');
-  assert.equal(langOf('hi'), null, 'a bare word is no sentence (2026-10-14)');
-  assert.equal(langOf('ok 好'), 'zh');
-  for (const quiet of ['', '👍', '42', '[scene] won alchemy-first', null]) assert.equal(langOf(quiet), null);
-  const zh = start('zh');
-  assert.equal(heed(zh, '伸手入水'), zh, 'a tapped Chinese label leaves a Chinese game alone');
-  assert.equal(heed(zh, 'where am I?').lang, 'en');
-  assert.equal(zh.lang, 'zh', 'heed never mutates');
+// 2026-10-15 (Hanli): the game speaks Linggen's global language; typed words never switch it.
+test('language: the engine\'s LINGGEN_LANGUAGE is the game\'s — zh* is Chinese, any other tag English', () => {
+  assert.equal(langOfTag('zh-Hans'), 'zh');
+  assert.equal(langOfTag('zh-Hant'), 'zh');
+  assert.equal(langOfTag('zh'), 'zh');
+  for (const tag of ['en', 'en-US', 'ja', 'fr', '', null]) assert.equal(langOfTag(tag), 'en', String(tag));
+  assert.equal(langNow({ LINGGEN_LANGUAGE: 'zh-Hans' }), 'zh');
+  assert.equal(langNow({ LINGGEN_LANGUAGE: 'de' }), 'en');
+  assert.equal(langNow({}), 'zh', 'no engine: the game\'s first language');
 });
 
-// 2026-10-14, his play: after a Restart his English 「restart game」 turned his
-// pinned Chinese game English — the new game had dropped the pin, and a
-// command read as a sentence. Both closed.
-test('language: a bare word or a command never turns it; an English sentence (three words, not all commands) does', () => {
-  for (const said of ['restart game', 'restart the game', 'Restart', 'undo', 'undo last move', 'load my save', 'ok', 'OK!', 'go', 'yes', 'no', 'start a new game', 'hi', 'hello there', '重来', '好']) {
-    assert.equal(langOf(said), null, said);
+test('language: a save\'s own `lang` is let go on read and never written again', () => {
+  const was = process.env.LINGGEN_LANGUAGE;
+  try {
+    process.env.LINGGEN_LANGUAGE = 'en';
+    const old = { ...start('zh'), lang_set: true };
+    const played = inPlay(old);
+    assert.equal(played.lang, 'en');
+    assert.equal('lang_set' in played, false);
+    assert.equal(old.lang, 'zh', 'the save read is never changed');
+    const text = JSON.parse(stateText(played));
+    assert.equal('lang' in text, false);
+    assert.equal('lang_set' in text, false);
+  } finally {
+    if (was === undefined) delete process.env.LINGGEN_LANGUAGE; else process.env.LINGGEN_LANGUAGE = was;
   }
-  const zh = start('zh');
-  for (const said of ['restart game', 'undo', 'yes', 'ok go']) assert.equal(heed(zh, said), zh, said);
-  assert.equal(heed(zh, 'I open the door').lang, 'en', 'a sentence still leads an unpinned game');
-  const en = start('en');
-  assert.equal(heed(en, '重来'), en, 'a Chinese command is a command too');
-  assert.equal(heed(en, '我推开门').lang, 'zh');
 });
 
-test('a Restart keeps the language the player pinned (`lang_set`); each replaced play says how (`run_by`)', () => {
+/* A fake engine for Lang's write: GET /api/config hands the whole config, POST takes it back. */
+function fakeEngine(config = { models: [{ id: 'm' }], agent: { max_iters: 200 } }, { getStatus = 200, postStatus = 200 } = {}) {
+  const calls = [];
+  const fetchFn = async (url, opts = {}) => {
+    calls.push({ url, method: opts.method ?? 'GET', body: opts.body ? JSON.parse(opts.body) : null });
+    const status = (opts.method ?? 'GET') === 'GET' ? getStatus : postStatus;
+    return { ok: status < 300, status, json: async () => structuredClone(config) };
+  };
+  return { calls, fetchFn };
+}
+
+test('Lang writes Linggen\'s global language: the whole config posted back with `language` set', async () => {
+  const eng = fakeEngine();
+  const wrote = await writeGlobalLang('en', { env: { LINGGEN_PORT: '9999' }, fetchFn: eng.fetchFn });
+  assert.deepEqual(wrote, { ok: true, tag: 'en' });
+  assert.deepEqual(eng.calls.map(c => [c.method, c.url]), [['GET', 'http://127.0.0.1:9999/api/config'], ['POST', 'http://127.0.0.1:9999/api/config']]);
+  assert.deepEqual(eng.calls[1].body, { models: [{ id: 'm' }], agent: { max_iters: 200 }, language: 'en' }, 'nothing else changed');
+  const zh = fakeEngine();
+  await writeGlobalLang('zh', { env: {}, fetchFn: zh.fetchFn });
+  assert.equal(zh.calls[1].url, 'http://127.0.0.1:9527/api/config', 'the engine\'s own port by default');
+  assert.equal(zh.calls[1].body.language, 'zh-Hans');
+  assert.equal((await writeGlobalLang('en', { env: {}, fetchFn: fakeEngine({}, { postStatus: 403 }).fetchFn })).ok, false);
+});
+
+test('Lang under the engine: written first, and this process speaks the new language at once', async () => {
+  const eng = fakeEngine();
+  const env = { LINGGEN_LANGUAGE: 'zh-Hans' };
+  const r = await chooseLang('en', { env, fetchFn: eng.fetchFn });
+  assert.deepEqual(r, { ok: true, was: 'zh' });
+  assert.equal(env.LINGGEN_LANGUAGE, 'en', 'the answer is computed from the value just written, not the stale env');
+  assert.equal(langNow(env), 'en');
+  assert.equal(eng.calls.length, 2);
+  const same = fakeEngine();
+  await chooseLang('en', { env, fetchFn: same.fetchFn });
+  assert.equal(same.calls.length, 0, 'the language in use: nothing written');
+  const down = await chooseLang('zh', { env: { LINGGEN_LANGUAGE: 'en' }, fetchFn: fakeEngine({}, { getStatus: 500 }).fetchFn });
+  assert.equal(down.ok, false);
+  assert.equal(down.refused, 'lang-not-saved');
+  const sandbox = fakeEngine();
+  await chooseLang('zh', { env: { LINGGEN_LANGUAGE: 'en', LINGJING_DATA: '/tmp/x' }, fetchFn: sandbox.fetchFn });
+  assert.equal(sandbox.calls.length, 0, 'a sandboxed save (tests) never writes the real setting');
+  const bare = fakeEngine();
+  await chooseLang('en', { env: {}, fetchFn: bare.fetchFn });
+  assert.equal(bare.calls.length, 0, 'no engine: nothing to write');
+});
+
+test('the command line: the game speaks LINGGEN_LANGUAGE whatever the save says; typed words never switch it; a Restart says how (`run_by`)', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-pin-'));
   const rules = path.join(path.resolve(import.meta.dirname, '..'), 'scripts/rules.mjs');
-  const run = (...args) => {
-    const out = spawnSync(process.execPath, [rules, ...args], { env: { ...process.env, LINGJING_DATA: dir, LINGJING_NOW: NOW.toISOString() }, encoding: 'utf8' });
+  const run = (lang, ...args) => {
+    const env = { ...process.env, LINGJING_DATA: dir, LINGJING_NOW: NOW.toISOString() };
+    if (lang) env.LINGGEN_LANGUAGE = lang; else delete env.LINGGEN_LANGUAGE;
+    const out = spawnSync(process.execPath, [rules, ...args], { env, encoding: 'utf8' });
     return JSON.parse(out.stdout.trim().split('\n').pop());
   };
   const saved = () => JSON.parse(fs.readFileSync(path.join(dir, 'state.json'), 'utf8'));
   try {
-    run('init', '--lang=zh');
-    assert.equal(saved().lang_set, undefined, 'a new game guesses; nothing is pinned');
-    run('lang', '--lang=zh');
-    assert.equal(saved().lang_set, true);
-    run('init');
-    assert.deepEqual([saved().lang, saved().lang_set], ['zh', true], 'the pin survives the Restart');
-    assert.equal(run('look', '--said=restart game').lang, 'zh');
-    assert.equal(run('look', '--said=I open the door and look').lang, 'zh', 'pinned: even a sentence never turns it');
-    assert.equal(saved().lang, 'zh');
+    assert.equal(run('zh-Hans', 'init').lang, 'zh');
+    assert.equal('lang' in saved(), false, 'a new save holds no language');
+    assert.equal(run('en', 'look', '--said=我伸手去摸那道光', '--for=ling').lang, 'en', 'Chinese words leave an English game English');
+    assert.equal(run('zh-Hans', 'look', '--said=I open the door and look', '--for=ling').lang, 'zh', 'English words leave a Chinese game Chinese');
+    // An old save that still says `lang: en` (and a pin) plays in the setting's language; the field is never rewritten by a read.
+    fs.writeFileSync(path.join(dir, 'state.json'), JSON.stringify({ ...saved(), lang: 'en', lang_set: true }));
+    assert.equal(run('zh-Hans', 'look').lang, 'zh');
+    assert.equal(run('en', 'look').lang, 'en');
+    const lang = run('zh-Hans', 'lang', '--lang=en');
+    assert.equal(lang.lang, 'en', 'Lang answers in the new language at once');
+    assert.equal(lang.changed, true);
+    assert.equal(run(null, 'look').lang, 'zh', 'no engine: the game\'s first language, never the save\'s');
     // How the play was replaced (`run_by`): a Restart or a Load opens a fresh chat, an Undo keeps it (lingjing.js).
-    assert.equal(run('look').run_by, 'init');
-    const first = run('look').run;
-    run('win', '--id=rain-basins', '--grade=dry');
-    run('task', '--action=done', '--id=rain-basins');
-    run('win', '--id=village-day', '--grade=light');
-    run('task', '--action=done', '--id=village-day');
-    run('resolve', '--exit=begin');
-    assert.equal(run('look').run, first, 'a move is the same play');
-    run('undo');
-    assert.equal(run('look').run_by, 'undo');
-    assert.notEqual(run('look').run, first);
-    const kept = run('save', '--title=pin');
-    run('init');
-    run('load', `--id=${kept.saved?.id ?? kept.id}`);
-    assert.equal(run('look').run_by, 'load');
+    run(null, 'init');
+    assert.equal(run(null, 'look').run_by, 'init');
+    const first = run(null, 'look').run;
+    run(null, 'win', '--id=rain-basins', '--grade=dry');
+    run(null, 'task', '--action=done', '--id=rain-basins');
+    run(null, 'win', '--id=village-day', '--grade=light');
+    run(null, 'task', '--action=done', '--id=village-day');
+    run(null, 'resolve', '--exit=begin');
+    assert.equal('lang' in saved(), false, 'a move writes no language');
+    assert.equal(run(null, 'look').run, first, 'a move is the same play');
+    run(null, 'undo');
+    assert.equal(run(null, 'look').run_by, 'undo');
+    assert.notEqual(run(null, 'look').run, first);
+    const kept = run(null, 'save', '--title=pin');
+    assert.equal('lang' in JSON.parse(fs.readFileSync(path.join(dir, 'saves', `${kept.saved?.id ?? kept.id}.json`), 'utf8')).state, false, 'a kept save holds no language');
+    run(null, 'init');
+    run(null, 'load', `--id=${kept.saved?.id ?? kept.id}`);
+    assert.equal(run(null, 'look').run_by, 'load');
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
@@ -1743,9 +1794,9 @@ test('--key=value is read whole, and an omitted arg (empty) is dropped', () => {
 
 test('a tapped option comes to Look as words, and Look names the tool it is', () => {
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-'));
-  const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
+  const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString(), LINGGEN_LANGUAGE: 'en' };
   const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
-  cli('init', '--lang', 'en');
+  cli('init');
   // A scene whose question is the chat's (the book's scenes stand their choices under their panels): 雷泽.
   const file = path.join(data, 'state.json');
   fs.writeFileSync(file, JSON.stringify({ ...JSON.parse(fs.readFileSync(file, 'utf8')), chapter: '02-yan', scene: '02-lake', place: 'leize', ended: ['00-prologue', '01-ji'] }));
@@ -1759,7 +1810,8 @@ test('a tapped option comes to Look as words, and Look names the tool it is', ()
   // A place on the director's choice is a Move.
   const s = JSON.parse(fs.readFileSync(path.join(data, 'state.json'), 'utf8'));
   // Open country after 卷一 (the only 卷 built, 2026-10-05): 邺城, the roads of 冀 round it.
-  const open = { ...s, lang: 'zh', chapter: '01-ji', scene: null, place: 'ye', ended: ['00-prologue', '00-waimen', '00-zhuji', '01-ji'] };
+  env.LINGGEN_LANGUAGE = 'zh-Hans'; // Linggen's language, the game's (rules/language.mjs)
+  const open = { ...s, chapter: '01-ji', scene: null, place: 'ye', ended: ['00-prologue', '00-waimen', '00-zhuji', '01-ji'] };
   fs.writeFileSync(path.join(data, 'state.json'), JSON.stringify(open));
   // The chat may hold its tongue (nothing waits, but this was no arrival) and
   // the map card still shows the roads — so a tap on one is still a Move.
@@ -1785,7 +1837,7 @@ test('the command line keeps state on disk, logs it and undoes it', () => {
   const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
   const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
   assert.deepEqual(cli('init', '--world=nowhere'), { ok: false, refused: 'unknown-world', world: 'nowhere', worlds: ['jiuding'] });
-  assert.equal(cli('init', '--lang', 'en').world.id, 'jiuding');
+  assert.equal(cli('init').world.id, 'jiuding');
   assert.equal(cli('look').scene.id, '00-shiao');
   assert.equal(JSON.parse(fs.readFileSync(path.join(data, 'state.json'), 'utf8')).world, 'jiuding');
   // 接雨 first (2026-10-14): the board 那天傍晚 waits for, won and handed in as the page does.
@@ -1808,18 +1860,16 @@ test('the command line keeps state on disk, logs it and undoes it', () => {
   assert.equal(again.lang, 'zh');
   assert.equal(cli('undo').undid, 'init');
   assert.equal(cli('look').scene.id, '00-masan');
-  assert.equal(cli('undo').undid, 'look');
-  assert.equal(cli('undo').undid, 'resolve');
+  assert.equal(cli('undo').undid, 'resolve', 'words in another language wrote nothing');
   assert.equal(cli('look').scene.id, '00-shiao');
-  assert.equal(cli('look').lang, 'en');
+  assert.equal(cli('look').lang, 'zh', 'no engine: the game\'s first language');
   // What the engine renders for an omitted optional arg: an empty --key=.
   const sh = spawnSync('sh', ['-c', `"${process.execPath}" scripts/rules.mjs resolve --exit='begin' --value= --answer=`], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' });
   assert.equal(JSON.parse(sh.stdout).scene.id, '00-masan');
-  // Words in the other language switch the game before the verb reads it.
-  const heard = cli('look', '--said=我在哪里？');
+  // Words in the other language never switch it: the language is Linggen's (rules/language.mjs).
+  const heard = cli('look', '--said=Where am I now, then?');
   assert.equal(heard.lang, 'zh');
-  assert.equal(heard.lang_set, 'zh');
-  assert.equal(cli('look', '--said=伸手').lang_set, undefined);
+  assert.equal(heard.lang_set, undefined);
   fs.rmSync(data, { recursive: true, force: true });
 });
 
@@ -1829,7 +1879,7 @@ test('Look\'s `run` holds through moves and is new whenever the play is replaced
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-run-'));
   const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
   const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
-  const first = cli('init', '--lang=zh').run;
+  const first = cli('init').run;
   assert.match(first, /^[0-9a-f]{12}$/);
   cli('win', '--id=rain-basins', '--grade=dry');
   cli('task', '--action=done', '--id=rain-basins');
@@ -1866,10 +1916,10 @@ test('Look\'s `run` holds through moves and is new whenever the play is replaced
 // ── Ling drives: Go, and the library of kept games ──
 test('Go jumps to an opened scene; the rules keep each day\'s closing state, the player keeps named ones, and Load takes one up', () => {
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-saves-'));
-  const at = (iso) => ({ ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: iso });
+  const at = (iso) => ({ ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: iso, LINGGEN_LANGUAGE: 'en' });
   const cli = (env, ...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
   const d1 = at('2026-09-12T12:00:00Z'), d2 = at('2026-09-13T12:00:00Z');
-  cli(d1, 'init', '--lang=en');
+  cli(d1, 'init');
   cli(d1, 'win', '--id=rain-basins', '--grade=dry');
   cli(d1, 'task', '--action=done', '--id=rain-basins');
   cli(d1, 'win', '--id=village-day', '--grade=light');
@@ -1914,7 +1964,7 @@ test('Build takes the player to a fresh save in their world, which plays once it
   const pictures = path.join(skill, 'data/pictures'); fs.mkdirSync(pictures, { recursive: true });
   const png = path.join(pictures, 'test-lushu.png'); fs.writeFileSync(png, 'png');
   try {
-    assert.equal(run('init', '--lang=en').world.id, 'jiuding');
+    assert.equal(run('init').world.id, 'jiuding');
     const t = run('build');
     assert.equal(t.template.id, 'yunmeng');
     assert.ok(t.rules.length && t.cost === 10);
@@ -2012,7 +2062,7 @@ test('Amend adds a creature where it haunts, or a place with its roads laid back
   const png = path.join(pictures, 'test-heron.png'); fs.writeFileSync(png, 'png');
   const paintAll = () => (run('look').building?.paint ?? []).map(p => run('art', `--creature=${p.creature}`, `--file=${png}`));
   try {
-  run('init', '--lang=en');
+  run('init');
   const beast = { id: 'heron-king', name: { zh: '鹭王', en: 'The heron king' }, quote: { zh: '有鸟焉，其状如鹭而人语。', en: 'A bird like a heron that speaks as people do.' }, look: { zh: '白鹭，高过人。', en: 'A white heron taller than a man.' }, root: 'water' };
   assert.equal(run('amend', `--creature=${JSON.stringify(beast)}`).refused, 'not-a-made-world');
   run('build', `--world=${JSON.stringify(run('build').template)}`);
@@ -2929,18 +2979,6 @@ test('an errand reopens a board already done, and pays only the errand', () => {
 // His Chinese game turned English three times on 2026-09-23, each right after
 // a page report (`[HIDDEN] [scene] won …`): a machine's line is never the
 // player's language, and a language he chose stays chosen.
-test('language: machine lines never turn it, and a chosen one holds against words', () => {
-  for (const line of ['[HIDDEN] [scene] won alchemy-first', '[scene] meet taken', '[HIDDEN] [scene] opened']) assert.equal(langOf(line), null, line);
-  const s = { ...start('zh') };
-  assert.equal(heed(s, 'ok go north').lang, 'en', 'unchosen, his words still lead');
-  const chosen = must(lang, s, { lang: 'zh' }).state;
-  assert.equal(chosen.lang_set, true);
-  assert.equal(heed(chosen, 'ok go north').lang, 'zh', 'chosen, words never turn it');
-  assert.equal(must(lang, chosen, { lang: 'en' }).state.lang, 'en', 'the toggle still does');
-  const guessed = must(lang, s, { lang: 'en', auto: true }).state;
-  assert.equal(guessed.lang_set, false, 'a new game\'s guess from the machine is not a choice');
-});
-
 // He fed 蠪侄 its 人参 for 林子里的蠪侄 (a 降), and the errand stood at 0/1
 // with the fight gone: won over either way, it counts (his, 2026-09-23).
 test('a beast tamed meets an errand that asked for it subdued', () => {

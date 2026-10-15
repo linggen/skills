@@ -238,7 +238,8 @@ test('the page writes what fell down for Ling and Yinyue, and Undo takes the thr
   const ling = cli('resolve', '--exit=take', '--said=渡劫', '--for=ling');
   assert.equal(ling.refused, 'page-throws');
   const { guided, ...kept } = state(); // the guides handed to her session are remembered, never a move
-  assert.deepEqual(kept, start, 'her refusal writes nothing');
+  const { lang, ...unlangued } = start; // and the language is Linggen's, never written to the save (rules/language.mjs)
+  assert.deepEqual(kept, unlangued, 'her refusal writes nothing');
   const first = cli('resolve', '--exit=take');
   assert.equal(first.breakthrough.success, false);
   const after = state();

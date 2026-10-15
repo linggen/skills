@@ -150,7 +150,7 @@ test('the command line: Ling\'s Remember reads LINGGEN_USER_WORDS; the page\'s c
   delete base.LINGGEN_USER_WORDS;
   const cli = (env, ...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: ROOT, env: { ...base, ...env }, encoding: 'utf8' }).stdout);
   try {
-    cli({}, 'init', '--lang=zh');
+    cli({}, 'init');
     cli({}, 'win', '--id=rain-basins', '--grade=dry');
     cli({}, 'task', '--action=done', '--id=rain-basins');
     cli({}, 'win', '--id=village-day', '--grade=light');

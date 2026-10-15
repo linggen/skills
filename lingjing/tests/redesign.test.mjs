@@ -114,7 +114,7 @@ test('the command line migrates the save on disk once, on the first call, and th
     assert.equal(l.companion.journey, undefined);
     // A Look that changes nothing else may not write; the first verb that writes writes it at v7.
     cli('move', '--place=fajiu');
-    cli('lang', '--lang=zh');
+    cli('summarize', '--text=旧档一程。');
     const saved = JSON.parse(fs.readFileSync(file, 'utf8'));
     assert.equal(saved.version, 8);
     assert.equal('ladder3' in saved, false);

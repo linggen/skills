@@ -24,14 +24,13 @@ test('a scratch write never touches data/state.json or data/log.jsonl', () => {
   const { data, cli, done } = sandbox();
   try {
     cli('look'); // the player's own save, begun
-    cli('lang', '--lang=zh');
     const real = stamp(path.join(data, 'state.json')), log = stamp(path.join(data, 'log.jsonl'));
     assert.ok(real, 'the real save exists');
     const r = cli('look', '--save=test');
     assert.notEqual(r.ok, false);
-    assert.equal(cli('lang', '--lang=en', '--save=test').ok, true);
+    assert.equal(cli('init', '--save=test').restarted, true);
     const scratch = JSON.parse(fs.readFileSync(path.join(data, 'saves', 'test', 'state.json'), 'utf8'));
-    assert.equal(scratch.lang, 'en');
+    assert.equal(scratch.world, 'jiuding');
     assert.ok(fs.existsSync(path.join(data, 'saves', 'test', 'log.jsonl')), 'its own log');
     assert.deepEqual(stamp(path.join(data, 'state.json')), real, 'state.json untouched');
     assert.deepEqual(stamp(path.join(data, 'log.jsonl')), log, 'log.jsonl untouched');
@@ -46,13 +45,13 @@ test('seed: fresh, a copy of the real save (read-only), or a fixture — only in
   const { data, cli, done } = sandbox();
   try {
     cli('look');
-    cli('lang', '--lang=en');
+    cli('summarize', '--text=青玄在泗水边醒来。');
     const real = stamp(path.join(data, 'state.json'));
     assert.equal(cli('seed', '--from=real').refused, 'not-scratch', 'never over the real save');
     const seeded = cli('seed', '--from=real', '--save=t2');
     assert.equal(seeded.ok, true);
-    assert.equal(JSON.parse(fs.readFileSync(path.join(data, 'saves', 't2', 'state.json'), 'utf8')).lang, 'en');
-    cli('lang', '--lang=zh', '--save=t2');
+    assert.equal(JSON.parse(fs.readFileSync(path.join(data, 'saves', 't2', 'state.json'), 'utf8')).story, '青玄在泗水边醒来。');
+    cli('init', '--save=t2');
     assert.deepEqual(stamp(path.join(data, 'state.json')), real, 'the copy is read, never written back');
     assert.equal(cli('seed', '--from=fresh', '--save=t2').ok, true);
     assert.equal(fs.existsSync(path.join(data, 'saves', 't2', 'state.json')), false, 'fresh: begins from the start');

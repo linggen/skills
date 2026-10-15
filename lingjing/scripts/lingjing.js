@@ -111,7 +111,13 @@ function postMoment(fact, flags, { mood = null } = {}) {
     .then((res) => res.ok).catch((e) => { console.warn('[lingjing] yinyue', e); return false; });
 }
 
-const lang = () => (look?.lang === 'en' ? 'en' : 'zh');
+/* The game's language is Linggen's own (Hanli, 2026-10-15): Look carries it
+   (rules/language.mjs). Before the first Look — the sign-in gate — the
+   engine is asked, else the browser. */
+const tagLang = (tag) => (/^zh/i.test(String(tag ?? '')) ? 'zh' : 'en');
+let pageLang = tagLang(navigator.language);
+fetch('/api/user/language').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d?.language) pageLang = tagLang(d.language); }).catch(() => {});
+const lang = () => ((look?.lang ?? pageLang) === 'en' ? 'en' : 'zh');
 /// The page's own labels, with the stat names from the world's dictionary
 /// on top — the harness names nothing.
 const words = () => {
@@ -879,10 +885,10 @@ function omenChip() {
 }
 
 /// The game's language, at a tap — the rules' Lang, the same word Ling
-/// would use; the page redraws in it and Ling's next reply follows Look.
+/// would use: it sets Linggen's language (all of it, not only the game); the
+/// page redraws in it and Ling's next reply follows Look.
 async function switchLang(to) {
-  // The lit one tapped still counts: it pins the game to it (lang_set).
-  if (to === lang() && look?.lang_set) return;
+  if (to === lang()) return;
   try {
     await write('lang', { lang: to });
   } catch (e) {
@@ -2976,17 +2982,6 @@ async function mountChat() {
   return !resume;
 }
 
-/// A brand-new game starts in the language of the machine it is played on.
-async function firstLanguage() {
-  const fresh = look && !look.name && look.chapter?.id === '00-prologue' && look.chapter?.fresh && !look.story;
-  if (!fresh) return;
-  const want = (navigator.language || '').toLowerCase().startsWith('zh') ? 'zh' : 'en';
-  if (want !== look.lang) {
-    await write('lang', { lang: want, auto: true }).catch((e) => console.warn('[lingjing] lang', e));
-    await refresh();
-  }
-}
-
 /* ── 银月 on the stage: the cast, the rise, her body ── */
 
 /// 问卦 from the card: the rules cast, the card shows it, 银月 reads it.
@@ -3437,8 +3432,8 @@ function tellCompanion(shown) {
 
 /* ── The gate: sign in to play ── */
 
-/// The page's language before there is a game to take it from.
-const machineLang = () => ((navigator.language || '').toLowerCase().startsWith('zh') ? 'zh' : 'en');
+/// The page's language before there is a game to take it from: Linggen's (pageLang).
+const machineLang = () => pageLang;
 
 /// Signed out, nothing of the game is shown: the save lives with the
 /// account, and a turn would be refused anyway. One button; the daemon
@@ -3477,7 +3472,6 @@ async function enter() {
     console.warn('[lingjing] sync on open', e);
   }
   await refresh();
-  await firstLanguage();
   const fresh = await mountChat();
   // In 闭关: 出关 is the first thing on the stage, and the opening waits for
   // its tap (his, 2026-09-24) — then goes on with what grew in it.
