@@ -374,5 +374,10 @@ test('the stage: at the door the run\'s card offers the way in over the story\'s
   assert.ok(!stageCards(away).some(c => c.card === 'rerun'), 'away from the door: only 下一步\'s quiet line');
   const s = inside(now), l = look(s, content, at(now));
   assert.ok(stageCards(l).some(c => c.card === 'rerun'));
-  assert.ok((l.tasks ?? []).every(t => t.hosted), 'only what the run\'s rooms host');
+  assert.ok((l.tasks ?? []).every(t => t.id === RERUN.board), 'only the run\'s own board');
+  const { stageSlots } = await import('../scripts/stage.mjs');
+  const river = look(must(move, fresh(s, now), { place: 'mijing-anhe' }, now), content, at(now));
+  const slots = stageSlots(river, stageCards(river));
+  assert.ok(slots.main.some(c => c.card === 'rerun'), 'the run\'s card rides under what stands (a beast, the 拾遗), never queued');
+  assert.ok(!slots.queue.some(q => q.cards.some(c => c.card === 'rerun')));
 });

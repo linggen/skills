@@ -30,7 +30,7 @@ export function sealedBrief(content, state) {
   // A rerun (rules/rerun.mjs) has one goal for the whole run.
   const goal = pick(sealed.run ? sealed.goal : sealed.goals?.[state.scene], lang) ?? null;
   return {
-    id: sealed.beat, label, header: [label, when].filter(Boolean).join(' · '), ...(sealed.run ? { run: true } : {}),
+    id: sealed.beat, label, header: [label, when].filter(Boolean).join(' · '), ...(sealed.run ? { run: true, ...(sealed.board ? { board: sealed.board } : {}) } : {}),
     ...(day ? { day: { n: day.n, unit: day.unit, name: when } } : {}),
     ...(where ? { where } : {}), ...(goal ? { goal } : {}), say: pick(sealed.say, lang),
   };
@@ -48,8 +48,8 @@ export function withoutSealed(content, state, brief) {
   for (const key of OUTSIDE) delete out[key];
   if (out.today) out.today = { ...out.today, festival: null, term: null, jieqi: null };
   if (out.place) { const { pass, meet, ...place } = out.place; out.place = place; }
-  // A rerun (rules/rerun.mjs): the story outside waits — its boards too; only what the run's rooms host stands.
-  if (sealed.run && out.tasks) out.tasks = out.tasks.filter(t => t.hosted);
+  // A rerun (rules/rerun.mjs): the story outside waits — its boards and the rooms' story stalls too; only the run's own board stands.
+  if (sealed.run && out.tasks) out.tasks = out.tasks.filter(t => t.id === sealed.board);
   // A rerun's goal points nowhere outside: the story's road waits, frozen.
   if (sealed.goal) out.waypoint = sealed.run ? { text: sealed.goal, sealed: true } : { ...(brief.waypoint ?? {}), text: sealed.goal, sealed: true };
   return out;

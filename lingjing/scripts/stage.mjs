@@ -466,12 +466,14 @@ export const mainIsStep = (look, main = []) => main.some(c => STEP_KINDS.has(c.c
    choices itself, at its last beat — lingjing.js footRowHtml). */
 export function stageSlots(look, cards = [], { skip = [] } = {}) {
   const header = HEADER.flatMap(k => cards.filter(c => c.card === k));
-  const things = MAIN.flatMap((rank, r) => thingsOf(rank, r, cards, look));
+  // 刷副本's card (the door's way in, the run's rooms and way out) rides under whatever stands — never queued behind a board or a fight.
+  const rider = cards.find(c => c.card === 'rerun') ?? null;
+  const things = MAIN.flatMap((rank, r) => thingsOf(rank, r, rider ? cards.filter(c => c !== rider) : cards, look));
   const real = things.filter(t => !t.filler);
   const order = t => { const put = skip.indexOf(t.key); return put < 0 ? t.rank * 1000 + t.i : 1e6 + put; };
   const [now = null, ...queue] = (real.length ? real : things).sort((a, b) => order(a) - order(b));
   const roads = stageHolds(look, cards) && !look?.seclusion && !look?.director?.corridor;
-  const main = now?.cards ?? [];
+  const main = [...(now?.cards ?? []), ...(rider ? [rider] : [])];
   const step = mainIsStep(look, main);
   const waits = queue.map(t => ({ key: t.key, cards: t.cards }));
   return { header, main, key: now?.key ?? null, queue: waits, footer: { roads, step, waiting: step ? 0 : waits.length, next: step ? null : waits[0] ?? null } };

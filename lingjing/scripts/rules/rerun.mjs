@@ -57,7 +57,7 @@ export function runSealed(content, state) {
   const r = rerunById(content, state.rerun?.id);
   if (!r) return null;
   const x = r.rerun;
-  return { label: x.label, places: x.rooms, home: x.home ?? x.rooms[0], say: x.say, goal: x.goal, roads: x.roads ?? {}, beat: r.beat.id, first: null, run: true };
+  return { label: x.label, places: x.rooms, home: x.home ?? x.rooms[0], say: x.say, goal: x.goal, roads: x.roads ?? {}, board: x.board ?? null, beat: r.beat.id, first: null, run: true };
 }
 /* The ways between the run's rooms, where the run declares them. */
 export const runRoads = (content, state, place) => (state?.rerun ? rerunById(content, state.rerun.id)?.rerun.roads?.[place.id] ?? null : null);
