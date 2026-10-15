@@ -139,3 +139,14 @@ test('二试\'s board words are its own, not the 秘境 seal\'s; the task deals 
   assert.deepEqual(t.deal, { open: [2, 4] });
   assert.ok(t.how.zh && t.how.en && !t.how.zh.includes('封印'), t.how.zh);
 });
+
+test('a won board says its task\'s own line (done_line), not the 秘境 seal\'s 「封印已破」 — 困阵\'s eye goes down', async () => {
+  const s = newGame('kz', 1, { solved: '阵眼按下去了。<光>' });
+  const won = play(s, solve(s)).state;
+  assert.match(html(won, 'zh'), /阵眼按下去了。&lt;光&gt;/);
+  assert.doesNotMatch(html(won, 'zh'), /封印已破/);
+  assert.match(html(play(newGame('kz'), solve(newGame('kz'))).state, 'zh'), /封印已破/, 'the 秘境\'s own seal keeps its word');
+  const { loadContent } = await import('../scripts/content.mjs');
+  const kz = loadContent().tasks.tasks.find((x) => x.id === 'mijing-zhenyan');
+  assert.ok(kz.how?.zh && !kz.how.zh.includes('封印'), 'its board words are the binding\'s');
+});

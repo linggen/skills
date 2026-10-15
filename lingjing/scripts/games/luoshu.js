@@ -15,6 +15,8 @@ const T = {
   en: { solved: 'The seal gives way', row: 'Rows', col: 'Cols', diag: 'Diag', clear: 'Tap a placed number to lift it' },
 };
 
+const esc = (v) => String(v).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
+
 const GIVENS = { 1: 4, 2: 3, 3: 2 };
 const BASE = [2, 7, 6, 9, 5, 1, 4, 3, 8];
 export const LINES = [
@@ -72,7 +74,8 @@ export function newGame(seed, level = 1, opts = {}) {
   const open = new Set(opts?.open ?? []);
   const givens = order.filter((i) => !open.has(solution[i])).slice(0, GIVENS[lv]).sort((a, b) => a - b);
   const cells = solution.map((n, i) => (givens.includes(i) ? n : 0));
-  return { seed: String(seed), level: lv, givens, cells, pick: 0, won: false };
+  // `opts.solved`: the task's own line when it is won (its done_line — 困阵's eye goes down, no seal breaks).
+  return { seed: String(seed), level: lv, givens, cells, pick: 0, won: false, ...(opts?.solved ? { solved: String(opts.solved) } : {}) };
 }
 
 function place(state, i) {
@@ -138,7 +141,7 @@ export function html(state, lang = 'zh') {
   const board = `<div class="g-luoshu-board">${rows.join('')}${foot}</div>`;
   const anti = `<div class="g-luoshu-anti">${t.diag} ↙ ${sumTag(lineSum(c, LINES[7]))}</div>`;
   const bottom = state.won
-    ? `<div class="g-luoshu-solved">${t.solved}</div>`
+    ? `<div class="g-luoshu-solved">${esc(state.solved ?? t.solved)}</div>`
     : `${trayHtml(state)}<div class="g-luoshu-note">${t.clear}</div>`;
   return `<div class="g-luoshu${state.won ? ' is-won' : ''}">${board}${anti}${bottom}</div>`;
 }

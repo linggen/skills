@@ -434,6 +434,7 @@ function tasksBrief(content, state, ctx) {
         ...(task.game ? { game: task.game, level: gameLevel(content, state) } : {}),
         // The board's own words and deal where the task has them (二试's 洛书 is no 秘境 seal).
         ...(task.how ? { how: pick(task.how, lang) } : {}), ...(task.deal ? { deal: task.deal } : {}),
+        ...(task.game && task.done_line ? { done_line: pick(task.done_line, lang) } : {}),
         ...(hosted[id] ? { hosted: true } : {}),
         asks: task.kind === 'board' && !task.game ? (lang === 'zh' ? '在炉前把八味灵草两两配齐' : 'Pair the eight spirit herbs on the furnace board') : task.game ? pick(task.title, lang) : null,
         // reopened for an errand, the errand pays — not the task again
