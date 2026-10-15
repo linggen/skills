@@ -2820,7 +2820,8 @@ function herClock(g) {
   if (!g?.mod?.heard) return;
   g.state = g.mod.heard(g.state, { her: 'asked' });
   render();
-  run(`send:${g.taskId}:asked`, () => write('mishi', { action: 'asked' }).catch(failed));
+  // Read again after: the room's `hint_at` (when the torn page may be read) is the rules' answer.
+  run(`send:${g.taskId}:asked`, () => write('mishi', { action: 'asked' }).catch(failed).then(() => refresh()));
 }
 /* Her guest turn ended: the board that waited on her stops its clock — she answered in time. */
 function herAnswered() {

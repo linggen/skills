@@ -102,7 +102,8 @@ export function act(state, d) {
 /* What the rules answered (or `{her: 'spoke'}` from the page, when her line landed). */
 export function heard(state, res) {
   // Asked: her clock starts (the rules were told too — `asked`); she spoke: it stops, no torn page.
-  if (res?.her === 'asked') return { ...state, wait: (state.view?.hint_wait_s ?? 25) * 1000, live: true, spoke: false, note: null };
+  // (a second over the rules' wait: their clock starts when `asked` lands, a beat after this one)
+  if (res?.her === 'asked') return { ...state, wait: ((state.view?.hint_wait_s ?? 25) + 1) * 1000, live: true, spoke: false, note: null };
   if (res?.her === 'spoke') return state.wait > 0 || state.live ? { ...state, wait: 0, live: false, spoke: true, note: 'herSaid' } : state;
   const s = { ...state, busy: false };
   if (!res || res.ok === false) return { ...s, note: res?.refused ? `refused:${res.refused}` : null };
