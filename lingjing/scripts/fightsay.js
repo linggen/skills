@@ -26,10 +26,12 @@
 
 import { BEATS, TIERS, costOf, effectOf } from './battle.js';
 import { intentBits, sayEffect, sigWords } from './battle-card.js';
+import { BROWSER_TIMERS, cleanLine, sayer, WAIT_MS } from './hersay.js';
+
+export { cleanLine, WAIT_MS };
 
 export const ASK_LIMIT = 2;
 export const CUE_LIMIT = 3;
-export const WAIT_MS = 7000;
 /* The engine keeps 300 characters of a moment (api/yinyue.rs EVENT_TEXT_MAX);
    the page puts 「（灵境里玩家叫X。）」 in front. */
 export const FACTS_MAX = 260;
@@ -41,25 +43,46 @@ export const BIG_DRIVEN = 2;
 /* When two cues fall on one move, the one said. */
 export const CUE_ORDER = ['lost', 'won', 'low', 'charge', 'big'];
 const CLOSING = new Set(['lost', 'won']);
+/* Asleep in the 木牌 (卷一; hersay.js herMode) she is roused for one ask a
+   fight — she grumbles, then gives one tip — and the fight's closing word. */
+export const LIMITS = {
+  awake: { ask: ASK_LIMIT, cue: CUE_LIMIT, kinds: CUE_ORDER },
+  asleep: { ask: 1, cue: 1, kinds: ['lost', 'won'] },
+};
 
-/* Short lines in her voice for when the model does not answer in time — the
-   only words of hers the code holds. Two or three a moment, taken in turn. */
+/* Short lines in her voice — a proud demon king (Hanli, 2026-10-15: 「她是
+   高傲的妖王」) — for when the model does not answer in time: the only words
+   of hers the code holds. Two or three a moment, taken in turn. Asleep: the
+   木牌's voice — the same pride, drowsy and clipped (and the engine's gate
+   keeps her model away then, so these are all she says). */
 export const FALLBACK = {
   zh: {
-    ask: ['先看它下回合要做什么，再出这一手。', '挑它阵前最碍事的那个先打掉。', '灵力别一口气花光，留一手护着自己。'],
-    charge: ['小心，它在蓄杀招了。', '它憋着大招呢——下一手想好怎么接。', '它要放杀招了，护主能替你挡一下。'],
-    low: ['气血不多了，稳着点……我在呢。', '别硬拼，先顾好你自己。'],
-    big: ['漂亮！', '这一手好。', '哼，还算有点样子。'],
-    won: ['赢了！它可不好对付——我就知道你行。', '这么强的对手都拿下了，真有你的。'],
-    lost: ['没事，下回再来，我陪着你。', '输一场而已，记住它是怎么出手的。'],
+    ask: ['先看它下回合要做什么。这都要本王教？', '把它阵前最碍事的那个先打掉。', '灵力别一口气花光——本王的人，不做莽夫。'],
+    charge: ['它在蓄杀招。别傻站着。', '它憋着大招呢——下一手想好怎么接。', '杀招要来了。护主挡得住，自己想。'],
+    low: ['气血见底了。……别逞强，本王还不想换人。', '退一步。本王的人，不许死在这种东西手里。'],
+    big: ['哼，这一手还像样。', '不错——别得意。', '总算有点本王的样子。'],
+    won: ['这么强的也拿下了？……哼，本王的人，本该如此。', '赢了。本王早知道——咳，算你没丢本王的脸。'],
+    lost: ['输给这种东西？起来，本王还没说你可以趴下。', '记住它怎么出手的。下回，本王要看它趴下。'],
   },
   en: {
-    ask: ['See what it means to do next turn, then make your move.', 'Take out whatever in its rank is most in the way first.', "Don't spend all your Force at once — keep something back."],
-    charge: ["Careful — it's gathering for its big one.", "It's winding up. Think how you'll meet it.", 'It will let go soon — a Guard can take it for you.'],
-    low: ["You're low. Steady… I'm here.", "Don't trade blows now — look after yourself."],
-    big: ['Nice!', 'That was a good one.', 'Hm. Not bad at all.'],
-    won: ["You won! That one was no pushover — I knew you could.", 'Something that strong, and you beat it. Well done.'],
-    lost: ["It's all right. We'll try again — I'm with you.", 'Just one fight. Remember how it moved.'],
+    ask: ['See what it means to do next turn. Must this king teach you that?', 'Take out whatever in its rank is most in the way.', 'Do not spend all your Force at once — mine are no brutes.'],
+    charge: ['It is charging its big one. Do not just stand there.', "It's winding up. Think how you'll meet it.", 'Its strike is coming. A Guard can take it — think.'],
+    low: ['You are nearly spent. …Do not be a fool; this king will not train another.', 'Step back. One of mine does not fall to a thing like that.'],
+    big: ['Hmph. That one was worth seeing.', 'Not bad — do not gloat.', 'At last, something worthy of this king.'],
+    won: ['Even that one? …Hmph. One of mine — as it should be.', 'Won. This king knew — ahem. You did not shame this king.'],
+    lost: ['Lose to that? Up. This king has not said you may lie down.', 'Remember how it moved. Next time, this king wants it on the ground.'],
+  },
+};
+export const FALLBACK_ASLEEP = {
+  zh: {
+    ask: ['……吵什么。先打它阵前那个。', '……又叫本王。灵力省着点用。', '……困。看它下回合要干什么。'],
+    won: ['……赢了？嗯，还行。', '……没丢本王的脸。睡了。'],
+    lost: ['……别哭丧着脸。再来。', '……趴着干什么，起来。'],
+  },
+  en: {
+    ask: ['…What is the noise. Hit the front of its rank first.', '…Calling this king again. Save your Force.', '…Sleepy. See what it means to do next.'],
+    won: ['…Won? Mm. Passable.', '…You did not shame this king. Sleeping.'],
+    lost: ['…Drop the long face. Again.', '…Why lie there. Up.'],
   },
 };
 
@@ -103,14 +126,16 @@ function tailOf(kind, zh, extra) {
   // The player's own words from the ask bar, kept short: the position comes first.
   const said = [...String(extra?.words ?? '').trim()];
   const words = said.length > 30 ? `${said.slice(0, 30).join('')}…` : said.join('');
+  // Her register rides on every word (Hanli: 「她是高傲的妖王」) — short, the position is the cap's.
+  const me = zh ? '以妖王口吻（本王，嘴硬）' : 'As the proud demon king';
   const T = {
-    ask: zh ? `玩家问你这一手怎么打${words ? `：「${words}」` : ''}。用你自己的话给一个建议，一两句；只说建议，不替玩家出牌。`
-      : `Player asks how to play this turn${words ? `: “${words}”` : ''}. Suggest a move, your words, a line or two.`,
-    charge: zh ? '它刚开始蓄杀招。插一两句，你自己的话。' : 'It just began charging. A line, your words.',
-    low: zh ? '玩家气血不到三成了。插一两句，你自己的话。' : 'Player under 30% Life. A line, your words.',
-    big: zh ? `玩家刚打出漂亮的一手${extra?.what ? `（${extra.what}）` : ''}。插一句，你自己的话。` : `Player just made a big play${extra?.what ? ` (${extra.what})` : ''}. A line, your words.`,
-    won: zh ? '这一仗赢了，对手比玩家强。说一两句，你自己的话。' : 'Won, against a stronger foe. A line or two, your words.',
-    lost: zh ? '这一仗输了。说一两句，你自己的话。' : 'The fight is lost. A line or two, your words.',
+    ask: zh ? `玩家问你这一手怎么打${words ? `：「${words}」` : ''}。${me}给一个建议，一两句；只说建议，不替玩家出牌。`
+      : `Player asks how to play this turn${words ? `: “${words}”` : ''}. ${me}, suggest a move, a line or two.`,
+    charge: zh ? `它刚开始蓄杀招。${me}插一句。` : `It just began charging. ${me}, a line.`,
+    low: zh ? `玩家气血不到三成了。${me}插一句，不可怜他。` : `Player under 30% Life. ${me}, a line, no pity.`,
+    big: zh ? `玩家刚打出漂亮的一手${extra?.what ? `（${extra.what}）` : ''}。${me}插一句，夸也要反着夸。` : `Player just made a big play${extra?.what ? ` (${extra.what})` : ''}. ${me}, a backhanded line.`,
+    won: zh ? `这一仗赢了，对手比玩家强。${me}说一两句，居高临下地夸。` : `Won, against a stronger foe. ${me}, a line or two, lordly praise.`,
+    lost: zh ? `这一仗输了。${me}说一两句：靠傲气和命令安慰，不可怜。` : `The fight is lost. ${me}, a line or two: comfort by pride and command, no pity.`,
   };
   return T[kind] ?? T.ask;
 }
@@ -194,68 +219,29 @@ export function strongFoe(brief) {
   return Boolean(c.elite || c.goal || c.person || TIERS.indexOf(s.foe?.tier) > TIERS.indexOf(s.you?.tier));
 }
 
-/* Her line as it came: one or two lines, trimmed for the bubble. */
-export function cleanLine(text, max = 90) {
-  let t = String(text ?? '').replace(/^\s*(\*\*)?(银月|Yinyue)(\*\*)?\s*[:：]\s*/i, '').replace(/\s+/g, ' ').trim();
-  if (!t || /^SILENT\b/i.test(t)) return null;
-  if (len(t) <= max) return t;
-  const cut = [...t].slice(0, max).join('');
-  const at = Math.max(...['。', '！', '？', '.', '!', '?', '…'].map((p) => cut.lastIndexOf(p)));
-  return at > max / 3 ? cut.slice(0, at + 1) : `${cut}…`;
-}
-
-/* Called as methods, the browser's own would throw (Illegal invocation): wrapped. */
-const BROWSER_TIMERS = { set: (fn, ms) => setTimeout(fn, ms), clear: (h) => clearTimeout(h) };
-
 /* One fight's worth of her. `ask(kind, facts)` → { sent: Promise<boolean>,
    line: Promise<string|null> } — whether anyone will hear it, and her line.
    `onLine({kind, text, from})` — from: 'wait' (text null) · 'her' · 'fallback'. */
-export function createFightSay({ ask, onLine = () => {}, lang = () => 'zh', wait = WAIT_MS, timers = BROWSER_TIMERS } = {}) {
+export function createFightSay({ ask, onLine = () => {}, lang = () => 'zh', mode = () => 'awake', wait = WAIT_MS, timers = BROWSER_TIMERS } = {}) {
   const st = { asks: 0, askTurn: null, cues: 0, cueTurn: null, told: new Set(), seq: 0, line: null, pending: false, over: false, used: {} };
+  const asleep = () => mode() === 'asleep';
+  const limits = () => LIMITS[asleep() ? 'asleep' : 'awake'];
   const show = (line) => { st.line = line; onLine(line); };
   const fallbackOf = (kind) => {
-    const pool = (FALLBACK[lang() === 'en' ? 'en' : 'zh'][kind]) ?? FALLBACK.zh.ask;
+    const L = lang() === 'en' ? 'en' : 'zh';
+    const pool = (asleep() && FALLBACK_ASLEEP[L][kind]) || FALLBACK[L][kind] || FALLBACK.zh.ask;
     const n = st.used[kind] ?? 0;
     st.used[kind] = n + 1;
     return pool[n % pool.length];
   };
-  function speak(kind, facts) {
-    const id = ++st.seq;
-    let settled = false;
-    st.pending = true;
-    show({ kind, text: null, from: 'wait', id });
-    const fall = () => {
-      if (settled || id !== st.seq) return;
-      settled = true;
-      st.pending = false;
-      show({ kind, text: fallbackOf(kind), from: 'fallback', id });
-    };
-    const timer = timers.set(fall, wait);
-    // Never awaited by the caller: the fight goes on whatever she does.
-    Promise.resolve()
-      .then(() => ask(kind, facts))
-      .then((r) => {
-        Promise.resolve(r?.sent).then((sent) => { if (!sent) { timers.clear(timer); fall(); } }, () => { timers.clear(timer); fall(); });
-        return r?.line;
-      })
-      .then((text) => {
-        const said = cleanLine(text);
-        if (!said || id !== st.seq || st.over) return;
-        timers.clear(timer);
-        settled = true;
-        st.pending = false;
-        show({ kind, text: said, from: 'her', id });
-      })
-      .catch(() => { timers.clear(timer); fall(); });
-    return id;
-  }
+  const speak = sayer(st, { ask, show, fallbackOf, wait, timers });
   return {
     st,
     /* Whether 问银月 answers now: her turn to be asked is the player's own. */
     canAsk(v) {
-      return v.outcome === 'open' && v.whose === 'you' && !st.pending && st.asks < ASK_LIMIT && st.askTurn !== v.turn;
+      return v.outcome === 'open' && v.whose === 'you' && !st.pending && st.asks < limits().ask && st.askTurn !== v.turn;
     },
-    asksLeft() { return Math.max(0, ASK_LIMIT - st.asks); },
+    asksLeft() { return Math.max(0, limits().ask - st.asks); },
     ask(v, facts) {
       if (!this.canAsk(v)) return null;
       st.asks += 1;
@@ -264,8 +250,9 @@ export function createFightSay({ ask, onLine = () => {}, lang = () => 'zh', wait
     },
     /* The cues that fired on one move; at most one is said, if the limits allow. */
     cue(kinds, v, factsOf) {
-      const kind = CUE_ORDER.find((k) => kinds.includes(k) && !st.told.has(k));
-      if (!kind || st.cues >= CUE_LIMIT) return null;
+      const { cue: most, kinds: may } = limits();
+      const kind = CUE_ORDER.find((k) => kinds.includes(k) && may.includes(k) && !st.told.has(k));
+      if (!kind || st.cues >= most) return null;
       // The closing word may follow anything; a mid-fight one waits out a
       // pending word, an ask this turn, and a cue on this turn or the last.
       if (!CLOSING.has(kind)) {

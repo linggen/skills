@@ -77,6 +77,11 @@ export const MOMENTS = {
   fight_cue: { who: 'yinyue', priority: 'big', now: true },
   // 密室 (games/mishi.js): the room opened, a mechanism given way — his own taps, so always told; her pages are her Progress.
   mishi: { who: 'yinyue', priority: 'asked' },
+  // 伴 (hersay.js, 2026-10-15): her word at a win, an achievement, a setback — hersay keeps
+  // which moments are said and how often (a repeatable fight is weighed); woken now, so her
+  // word meets the picture.
+  cheer: { who: 'yinyue', priority: 'big', now: true },
+  comfort: { who: 'yinyue', priority: 'big', now: true },
 };
 
 /* The flags a moment is posted with (the engine's § App moments). */

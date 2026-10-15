@@ -30,6 +30,7 @@ import { HANDED_STAY_MS, TURNED_MS, handedStale } from './turned.js';
 import { thinker, stillAsked } from './think.js';
 import { createVoice, nodeMoment } from './voice.js';
 import { bigPlay, createFightSay, cuesOf, fightFacts, strongFoe } from './fightsay.js';
+import { CLOSE_AT, POOR_AT, createHerSay, herMode } from './hersay.js';
 import { raiseUnease } from './unease.js';
 import { keepTogether, LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
 import { colourOn, freshMemory, memoryCardHtml, replayOf } from './memory.js';
@@ -97,6 +98,10 @@ const IDLE_FACT = { zh: '玩家在这页上静了好一会儿，什么也没动�
 /// a line of the book she does not live on (`companion.away`: a 今 interlude,
 /// 沈芒's world — the rules drop her presence flag there too).
 const herHere = () => Boolean(look?.companion?.joined && !look?.companion?.asleep && !look?.companion?.away);
+/// Her companion moments (hersay.js) reach her asleep too: from the 木牌, in its voice.
+/// 'absent' (not met, or 今线) · 'asleep' · 'awake'.
+const herNow = () => herMode(look);
+const herNear = () => herNow() !== 'absent';
 const voice = createVoice({
   // A scratch save (?save=) tells 银月 nothing: she lives in the real game.
   post: (id, fact, flags, opts) => (SCRATCH ? Promise.resolve(false) : postMoment(fact, flags, opts)),
@@ -690,6 +695,8 @@ function riseStats() {
   if (before && before.world === now.world) {
     const joined = (look.cast ?? []).filter((b) => !before.cast.includes(b.id));
     if (joined.length) wonOver(joined);
+    // The purse near empty: a light word, once a day (hersay.js poor).
+    if (Number.isFinite(before.wealth) && before.wealth >= POOR_AT && now.wealth < POOR_AT) herSay.say('poor', lang() === 'en' ? `${now.wealth} spirit stones left.` : `只剩${now.wealth}块灵石。`);
   }
   if (before && before.world === now.world) {
     const gained = {};
@@ -834,15 +841,15 @@ function featNow(kind, name, from = '', quiet = false, gains = '', her = null) {
   // 「新的一回」 clears by itself in ~3.6 s (Hanli, 2026-10-14 choice 9: the 完 card's 合上 is the one tap); a realm's seal holds longer.
   setTimeout(gone, (kind === 'chapter' ? CHAPTER_SEAL_MS : 6000) + Math.max(0, riseAfter - performance.now()));
   if (quiet) return;
-  // Warm, not polite: a thing they lived through together, and what lies
-  // ahead — and the name the game knows them by.
-  const who = look?.name ?? '';
+  // A thing they lived through together, and the road ahead — said her way, the proud 妖王's
+  // (hersay.js): facts only here; asleep, the 木牌's word.
+  const zh = lang() !== 'en';
   // Her card grew with it — a fact for her, never a line (her card, 攻/血).
-  const grew = her ? { zh: `你的牌也跟着长了：${her.from.atk}/${her.from.hp} → ${her.to.atk}/${her.to.hp}。`, en: `Your own card grew with it: ${her.from.atk}/${her.from.hp} → ${her.to.atk}/${her.to.hp}. ` } : { zh: '', en: '' };
-  if (kind === 'rise') askHer('rise',
-    `玩家刚刚突破：${from} → ${name}，舞台上金光正亮。${grew.zh}这是你们一路一起熬出来的，你是真心为这一刻动容。说两三句带情绪的话：点一件对话里你们刚一起经历过的具体的事，再说说往后的路（或是鼎，或是你自己的心事）。别说「恭喜」「替你高兴」这类客套话。${who ? `在灵境里称呼玩家「${who}」。` : ''}`,
-    `The player has just broken through: ${from} → ${name}; the gold is on the stage right now. ${grew.en}You two earned this together and it moves you. Say two or three lines with real feeling: one concrete thing you just went through together (it is in the chat), then the road ahead — the cauldrons, or something of your own. No stock "congratulations".${who ? ` In the game, call the player ${who}.` : ''}`, 'happy');
-  else askHer('chapter', `新的一回开了：${name}。你陪玩家一路走到这里，说几句。`, `A new chapter opens: ${name}. You have walked with the player to here; say a few words.`, 'happy');
+  const grew = !her ? '' : zh ? `你的牌也跟着长了：${her.from.atk}/${her.from.hp} → ${her.to.atk}/${her.to.hp}。` : `Your card: ${her.from.atk}/${her.from.hp} → ${her.to.atk}/${her.to.hp}.`;
+  const odds = against ? (zh ? '这一劫是逆天而成，把握很低。' : 'Against the odds.') : '';
+  if (kind === 'rise') herSay.say('rise', zh ? `${from} → ${name}。${odds}${grew}点一件你们刚一起经历过的具体的事（对话里有），再说往后的路。`
+    : [`${from} → ${name}.`, odds, grew, 'Recall one thing you just lived through together.'].filter(Boolean).join(' '));
+  else herSay.say('hui', zh ? `新的一回开了：${name}。你陪玩家一路走到这里。` : `A new chapter opens: ${name}. You walked with the player to here.`);
 }
 
 function wonOver(beasts) {
@@ -855,7 +862,7 @@ function wonOver(beasts) {
     view$?.appendChild(seal);
     setTimeout(() => seal.remove(), 2600 + i * 600);
   }
-  tellYinyue('tamed', `收服了${beasts.map((b) => b.name).join('、')}，它从此随行`, `Won over ${beasts.map((b) => b.name).join(', ')} — it walks with us now`, { mood: 'happy' });
+  herSay.say('tamed', lang() === 'en' ? `Won over ${beasts.map((b) => b.name).join(', ')}.` : `收服了${beasts.map((b) => b.name).join('、')}。`);
   const chip = document.querySelector('.gearchip');
   if (!chip) return;
   const gain = document.createElement('span');
@@ -1128,7 +1135,7 @@ function herTokenHtml() {
   const dir = look.world?.made ? `worlds/${look.world.base}` : look.world?.dir ?? 'worlds/jiuding';
   const pic = e?.image ? `<img src="${esc(worldPath(dir, e.image))}" alt="">` : '';
   const label = c.asleep ? w.herAsleep : c.name;
-  return `<button class="yytoken${c.asleep ? ' sleep' : ''}" data-ask-her title="${esc(w.askHer.replace('{name}', c.name))}">${pic}<span>${esc(label)}</span></button>`;
+  return `<button class="yytoken${c.asleep ? ' sleep' : ''}${herBub ? ' saying' : ''}" data-ask-her title="${esc(w.askHer.replace('{name}', c.name))}">${pic}<span>${esc(label)}</span></button>`;
 }
 
 /* The weather chip names where the hero stands (Hanli, 2026-10-05: 「蒙山·晴」
@@ -1516,6 +1523,7 @@ function draw() {
   document.body.classList.toggle('storying', box.includes('data-dlg-on'));
   syncLines();
   companionBeat(box.includes('data-dlg-on'));
+  paintHerBub();
   // 初见: his first beat on show, he stands large on the stage (sight.js); at 快, the faces whose
   // 亮相 falls on the page on show, in the upper half over the band (pageSight).
   paintSight($('sight'), !box.includes('data-dlg-on') ? [] : readingHere()?.all?.whole ? pageFaces() : sightNow(readingHere(), firstFaces(), lang()), { src: faceSrc });
@@ -1577,7 +1585,7 @@ function boutCtx() {
     // Why this fight, and who speaks in it (the brief carries them when the story gives them).
     stake: bout.brief.stake ?? null, says: { ...(boutSays(bout.brief.says, bout.st.outcome) ?? {}), her: herSays(bout) },
     // 问银月 (fightsay.js): only while she walks with him here, and its count left.
-    herAsk: herHere() && bout.say ? { can: bout.say.canAsk(boutView(bout.st)), left: bout.say.asksLeft(), name: look.companion?.name ?? words().yinyue } : null,
+    herAsk: herNear() && bout.say ? { can: bout.say.canAsk(boutView(bout.st)), left: bout.say.asksLeft(), name: look.companion?.name ?? words().yinyue } : null,
   };
 }
 
@@ -2484,7 +2492,7 @@ async function throwTap(exitId) {
   keep({ throwNote: r.ok ? fell : refusal(r) });
   await refresh();
   if (!b) return;
-  if (!b.success) tellYinyue('tribulation', `渡劫没有过：雷把玩家打了回来（${b.chance}% 的把握）。境界还在，${clock(b.again_at)} 之后可以再试`, `The breakthrough failed: the lightning threw the player back (a ${b.chance}% chance). The realm is kept; they can try again after ${clock(b.again_at)}`, { mood: 'sad' });
+  if (!b.success) herSay.say('bt_failed', lang() === 'en' ? `A ${b.chance}% chance; stamina −${b.lost.stamina}, cultivation −${b.lost.progress}; again after ${clock(b.again_at)}.` : `把握${b.chance}%；体力−${b.lost.stamina}，修为−${b.lost.progress}；${clock(b.again_at)}之后可以再试。`);
   await report(`[scene] breakthrough ${b.success ? 'won' : 'failed'} ${b.chance}%`);
 }
 
@@ -2607,9 +2615,12 @@ async function twentyGuess() {
   if (!g) { document.getElementById('twenty-guess')?.focus(); return; }
   const r = await aiTap('twenty', { action: 'guess', guess: g });
   if (r.ok) { keep({ twentyGuess: '' }); if (!r.again && herHere()) deliver(fill(words().twentySaid, { g }), false); }
+  // The first win at it ever (hersay.js game_first: once a game) — asleep, from the 木牌; awake the chat carries it.
+  if (r.ok && r.right && !herHere()) herSay.say('game_first', lang() === 'en' ? 'Twenty Questions, guessed right.' : '二十问，猜中了。', { key: 'twenty' });
 }
 async function caseAccuse() {
   const r = await aiTap('case', { action: 'accuse', who: view.caseWho, evidence: (view.caseEv ?? []).join(',') });
+  if (r.ok && r.right) herSay.say('game_first', lang() === 'en' ? 'The case, solved — the right culprit, the right proof.' : '断案，指认对了，证据也对。', { key: 'case' });
   if (r.ok) { keep({ caseWho: null, caseEv: [] }); await report(`[scene] case ${r.right ? 'solved' : 'wrong'}`); }
 }
 
@@ -2669,6 +2680,8 @@ async function feedFantong(id) {
   const sel = r.fantong?.inputs?.some((i) => i.id === id) ? id : null;
   const at = Date.now();
   show({ fantong: r.fantong, ftResult: r, ftAt: at, ftSel: sel, ftLingshi: 0, ftNote: null });
+  // 卷一's 逆天 out of the bucket: a rare find, worth her word.
+  if (r.grade === 'best') herSay.say('rare', lang() === 'en' ? `The rice bucket gave back its best: ${r.out?.name ?? ''}.` : `饭桶里喂出了最好的一档：${r.out?.name ?? ''}。`, { key: `fantong|${at}` });
   setTimeout(() => { if (view.ftAt === at) render(); }, 750); // the splash fades
   const g = await verb('gear').catch(() => null);
   if (view.gearOpen && g?.gear) show({ gear: g.gear });
@@ -2804,6 +2817,8 @@ async function onSkip(g) {
     await refresh();
     return false;
   }
+  // Left, not won: a gentle word from her, never guilt (hersay.js skipped, once in 30 min).
+  herSay.say('skipped', '');
   if (isTale(id)) return taleDone(r);
   await refresh();
   const on = winExit(id, null, true);
@@ -2816,8 +2831,11 @@ async function onSkip(g) {
 function openStuckSlots() {
   for (const slot of document.querySelectorAll('[data-skip-slot]')) {
     const next = slotNext(boards.get(slot.dataset.skipSlot), Date.now(), Boolean(slot.firstElementChild));
-    if (next === 'fill') slot.innerHTML = skipButton(slot.dataset.skipSlot, lang());
-    else if (next === 'clear') slot.innerHTML = '';
+    if (next === 'fill') {
+      slot.innerHTML = skipButton(slot.dataset.skipSlot, lang());
+      // Stuck: she spurs him once a board, and may point to Ling (hersay.js stuck).
+      herSay.say('stuck', '', { key: slot.dataset.skipSlot });
+    } else if (next === 'clear') slot.innerHTML = '';
   }
 }
 setInterval(openStuckSlots, 1000);
@@ -2852,6 +2870,8 @@ async function boardSends(g, send) {
   render();
   if (res?.ok && res.opened) tellYinyue('mishi', MISHI_FACT.zh, MISHI_FACT.en, { mood: 'neutral' });
   else if (res?.ok && res.right && !res.out) tellYinyue('mishi', MISHI_STEP.zh, MISHI_STEP.en, { mood: 'happy' });
+  // Out of the 密室 with nothing skipped: a rare find, worth her word (hersay.js rare).
+  if (res?.ok && res.out && res.escaped) herSay.say('rare', lang() === 'en' ? `Escaped the hidden room, nothing skipped.${res.paid?.wealth ? ` +${res.paid.wealth} stones.` : ''}` : `走出了密室，一道机关都没跳过。${res.paid?.wealth ? `得灵石${res.paid.wealth}。` : ''}`, { key: `mishi|${Date.now()}` });
   await refresh();
 }
 /* 问银月 from a board: the ask bar turned to her, when she is here to hear it (a scratch save never
@@ -3155,6 +3175,9 @@ let herFactsSent = null; // the last facts, for the scratch seam's checks
 const HER_MOOD = { ask: 'neutral', charge: 'neutral', low: 'sad', big: 'happy', won: 'happy', lost: 'sad' };
 function herFightAsk(kind, facts) {
   herFactsSent = { kind, facts };
+  // Asleep in the 木牌 the engine keeps her model away (SKILL.md absent_until: companion.awake →
+  // 409): nobody will hear it, so the 木牌's own pool answers at once.
+  if (herNow() !== 'awake') return { sent: Promise.resolve(false), line: new Promise(() => {}) };
   if (HER_SEAM === 'stub' || HER_SEAM === 'slow') {
     const line = HER_SEAM === 'slow' ? new Promise(() => {}) : new Promise((done) => setTimeout(() => done(`[stub] ${kind} · ${[...facts].length}`), 1500));
     return { sent: Promise.resolve(true), line };
@@ -3172,7 +3195,7 @@ function herFactsMax() {
 const herFactsCtx = (b) => ({ ...boutCtx(), tiers: { you: b.setup?.you?.tier, foe: b.setup?.foe?.tier }, max: herFactsMax() });
 function fightSayFor(b) {
   return createFightSay({
-    ask: herFightAsk, lang,
+    ask: herFightAsk, lang, mode: herNow,
     onLine: (line) => {
       b.her = line;
       // The fallback is the page's: copied into the chat as hers (her own line lands there by itself).
@@ -3183,7 +3206,7 @@ function fightSayFor(b) {
 }
 /// Her bubble's words: '…' while she is thinking, else her line.
 function herSays(b) {
-  if (!b?.her || !herHere()) return null;
+  if (!b?.her || !herNear()) return null;
   return b.her.from === 'wait' ? '…' : b.her.text;
 }
 /* Her bubble repainted where it stands, so a blow being drawn is never redrawn
@@ -3200,7 +3223,7 @@ function paintHer(b) {
 }
 /// 问银月 — true when it was asked (the ask bar falls back to the chat otherwise).
 function askHerInFight(b, said = '') {
-  if (!b?.say || !herHere() || b.yielded) return false;
+  if (!b?.say || !herNear() || b.yielded) return false;
   const v = boutView(b.st);
   if (!b.say.canAsk(v)) return false;
   b.say.ask(v, fightFacts(v, herFactsCtx(b), 'ask', { words: said }));
@@ -3209,12 +3232,88 @@ function askHerInFight(b, said = '') {
 /* Her word at a key moment of the move just played out (fightsay.js cuesOf,
    bigPlay); the limits are fightsay's. `mine`: the move was his. */
 function herCues(b, before, mark, mine) {
-  if (!b?.say || !herHere() || b.yielded) return;
+  if (!b?.say || !herNear() || b.yielded) return;
   const after = boutView(b.st), log = since(b.st.log, mark);
   const kinds = cuesOf(before, after, log, { strong: strongFoe(b.brief) });
   const big = mine ? bigPlay(log, after, lang()) : null;
   if (big) kinds.push('big');
   if (kinds.length) b.say.cue(kinds, after, (k) => fightFacts(after, herFactsCtx(b), k, { what: big }));
+}
+
+/* ── 银月 as companion (hersay.js; Hanli, 2026-10-15) ──
+   Every won fight and every loss, a realm risen, a 回 done, a beast tamed, a
+   rare find, a first win, a failed 渡劫, a board left or stuck on: the page
+   gives the facts, she says it as the proud 妖王 — asleep, from the 木牌
+   (its pool: the engine keeps her model away then). Her line stands in a
+   bubble over the 木牌 and goes into the chat; nothing waits on her. */
+const HER_MOMENT_ID = { rise: 'rise', hui: 'chapter', tamed: 'tamed' };
+function herMomentAsk(kind, facts, { mode, mood }) {
+  herFactsSent = { kind, facts };
+  if (mode !== 'awake') return { sent: Promise.resolve(false), line: new Promise(() => {}) };
+  if (SCRATCH) {
+    if (HER_SEAM === 'stub') return { sent: Promise.resolve(true), line: new Promise((done) => setTimeout(() => done(`[stub] ${kind} · ${[...facts].length}`), 1500)) };
+    if (HER_SEAM === 'slow') return { sent: Promise.resolve(true), line: new Promise(() => {}) };
+  }
+  const line = herNextLine();
+  const id = HER_MOMENT_ID[kind] ?? (mood === 'sad' ? 'comfort' : 'cheer');
+  const r = voice.moment(id, { zh: facts, en: facts }, { mood });
+  return { sent: r.said, line };
+}
+/* The day's counts (first win today, the streak, the last short word) — this
+   browser's, per save; never the save. */
+const herKey = () => `lingjing:hersay:${look?.world?.id ?? ''}:${SCRATCH ? `${SCRATCH}:` : ''}${look?.seed ?? look?.name ?? ''}`;
+const herStore = { get: () => JSON.parse(localStorage.getItem(herKey()) ?? '{}'), set: (o) => localStorage.setItem(herKey(), JSON.stringify(o)) };
+const HER_BUB_MS = 6500;
+let herBub = null; // {text, at, asleep, wait}: her bubble over the 木牌
+const herSay = createHerSay({
+  ask: herMomentAsk, mode: herNow, lang, store: herStore, max: () => herFactsMax(),
+  onLine: (line) => {
+    if (line.from === 'wait') { if (line.mode === 'awake') showHerBub('…', line, true); return; }
+    // The pool's words are the page's: copied into the chat as hers (her own line lands there by itself).
+    if (line.from === 'fallback') quietCopy(`${look?.companion?.name ?? words().yinyue}${line.mode === 'asleep' ? (lang() === 'en' ? ' (from the tablet)' : '（木牌里）') : ''}：${line.text}`);
+    showHerBub(line.text, line);
+  },
+});
+function showHerBub(text, line, wait = false) {
+  herBub = { text, at: performance.now(), asleep: line.mode === 'asleep', wait };
+  paintHerBub();
+  const mine = herBub;
+  setTimeout(() => { if (herBub === mine) { herBub = null; paintHerBub(); } }, wait ? HER_BUB_MS * 2 : HER_BUB_MS);
+}
+function herBubHtml() {
+  if (!herBub) return '';
+  const age = Math.round(performance.now() - herBub.at);
+  return `<span class="yysay${herBub.asleep ? ' sleep' : ''}${herBub.wait ? ' wait' : ''}" style="animation-delay:-${age}ms" aria-live="polite">${esc(herBub.text)}</span>`;
+}
+/* Painted in place over the 木牌 — in the footer itself, so the chips' scroller never clips it — on
+   its own and after every render; a repaint keeps its fade where it was (animation-delay). */
+function paintHerBub() {
+  const foot = document.querySelector('.slotfoot');
+  foot?.querySelector(':scope > .yysay')?.remove();
+  const tok = foot?.querySelector('.yytoken');
+  tok?.classList.toggle('saying', Boolean(herBub));
+  if (!herBub || !tok) return;
+  foot.insertAdjacentHTML('beforeend', herBubHtml());
+  const a = tok.getBoundingClientRect(), f = foot.getBoundingClientRect();
+  foot.lastElementChild.style.left = `${Math.round(a.left + a.width / 2 - f.left)}px`;
+}
+/* A moment another part of the game raises (the 修行 stage quest's reward,
+   a 密室 escaped): `lingjing:her` with { kind, what, key } — hersay.js MOMENTS. */
+document.addEventListener('lingjing:her', (e) => { const d = e.detail ?? {}; if (d.kind) herSay.say(d.kind, d.what ?? '', { key: d.key ?? null }); });
+/* A settled fight, for her: every win and every loss, weighed (hersay.js weighWin). */
+function herFightOver(b, r) {
+  const c = b.brief?.creature ?? {}, v = boutView(b.st), zh = lang() !== 'en';
+  const repeat = Boolean(r.tally) || String(b.id).startsWith('haunt:');
+  const close = r.outcome === 'won' && v.you.hp < v.you.hpMax * CLOSE_AT;
+  const hp = zh ? `气血剩${v.you.hp}/${v.you.hpMax}` : `${v.you.hp}/${v.you.hpMax} Life left`;
+  const what = r.outcome === 'won'
+    ? (zh ? `胜了${c.name ?? ''}，${v.turn}回合，${hp}${close ? '，险胜' : ''}${r.first_win ? '，头一回赢它' : ''}。` : `Beat ${c.name ?? ''} in ${v.turn} turns, ${hp}${close ? ', a close one' : ''}${r.first_win ? ', the first win over it' : ''}.`)
+    : (zh ? `输给了${c.name ?? ''}，撑了${v.turn}回合；它还剩气血${v.foe.hp}/${v.foe.hpMax}。` : `Lost to ${c.name ?? ''} after ${v.turn} turns; it had ${v.foe.hp}/${v.foe.hpMax} Life left.`);
+  const out = herSay.fight({ outcome: r.outcome, story: Boolean(c.goal || c.person || c.elite || c.title), strong: strongFoe(b.brief), close, newBeast: Boolean(r.first_win), repeat, what, saidInFight: Boolean(b.say?.st.told.has(r.outcome)) });
+  // A 稀有 arm out of the fight: a rare find (hersay.js rare).
+  const rare = (r.dropped ?? []).find((d) => d.rarity === 'rare');
+  if (r.outcome === 'won' && rare) herSay.say('rare', zh ? `${c.name ?? ''}掉了一件稀有的${rare.name ?? ''}。` : `${c.name ?? ''} dropped a rare ${rare.name ?? ''}.`, { key: `drop|${b.id}|${Date.now()}` });
+  return out;
 }
 
 /* ── 降妖: the page plays the fight, the rules decide it ── */
@@ -3409,7 +3508,9 @@ async function settleBout(b = bout) {
   }
   const finale = (r.handed ?? []).find((h) => h.tale && h.ended);
   if (finale && r.outcome === 'won') taleEnded(finale.title, true);
-  // Her closing word was said in the fight (fightsay.js): not told a second time.
+  // Every win and every loss gets her (hersay.js) — the closing word said in the fight is not said
+  // twice; a beast that walked off is told to her quietly, as before.
+  else if (r.outcome === 'won' || r.outcome === 'lost') herFightOver(b, r);
   else if (!b.say?.st.told.has(r.outcome)) toldOutcome(brief, r.outcome);
   // 所得: the room closes, and what it left stands on the stage — the card he
   // now holds is seen, not only told.
@@ -4212,6 +4313,8 @@ if (SCRATCH) {
     skip: (id) => { const g = boardFor(id); if (!g?.mod) return false; g.shownAt = 0; return skipGame(id); },
     // 银月 in the fight (fightsay.js): her bubble, the counts, the last facts sent.
     her: () => ({ line: bout?.her ?? null, asks: bout?.say?.st.asks ?? null, cues: bout?.say?.st.cues ?? null, told: [...(bout?.say?.st.told ?? [])], facts: herFactsSent }),
+    // 银月 as companion (hersay.js): her mode, her last line and bubble, the day's counts.
+    companion: () => ({ mode: herNow(), line: herSay.st.line, bubble: herBub?.text ?? null, shown: document.querySelector('.slotfoot > .yysay')?.textContent ?? null, mem: herSay.mem, facts: herFactsSent }),
     bout: () => (bout ? { outcome: bout.st.outcome, whose: bout.st.whose, you: bout.st.you.hp, foe: bout.st.foe.hp, busy: Boolean(bout.busy), picked: bout.picked ?? null } : null),
     // The attentive move now (fightline.js), for the crawler to make with real taps.
     move: () => (bout && !bout.busy ? bestMove(bout.st) : null),
