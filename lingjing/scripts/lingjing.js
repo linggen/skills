@@ -1002,7 +1002,10 @@ function focusHtml(slots) {
   if (bout) return battleHtml(boutView(bout.st), boutOffers(bout.st), boutCtx(), bout.picked, bout.openLog, bout.note, bout.help);
   // One thing at a time: a 回's 「完」 stands alone — 所得 and the other notes wait under it.
   const toasts = slots.main.some((c) => c.card === 'closed') ? '' : toastsHtml();
-  return (toasts ? `<div class="toasts">${toasts}</div>` : '') + slots.main.map(drawCard).join('');
+  // 所得 stands before the way on (live, 2026-10-15: 下一步 stood under it and hid its 收起): the 下一步
+  // card waits until it is put away.
+  const main = spoilsUp() ? slots.main.filter((c) => c.card !== 'next') : slots.main;
+  return (toasts ? `<div class="toasts">${toasts}</div>` : '') + main.map(drawCard).join('');
 }
 
 function toastsHtml() {
@@ -1011,8 +1014,15 @@ function toastsHtml() {
   for (const k of ['spoils', 'trialTold', 'emerged']) if (view[k] && view[k].place !== here) keep({ [k]: null });
   return titleCard() + (view.doNote ? `<div class="donote">${esc(view.doNote)}</div>` : '')
     + (view.emerged ? emergedHtml({ ...view.emerged, age: performance.now() - view.emerged.at }, ctx()) : '')
-    + (view.trialTold ? trialToldHtml(view.trialTold, ctx()) : '') + (view.spoils ? spoilsHtml(view.spoils, spoilsCtx()) : '');
+    + (view.trialTold ? trialToldHtml(view.trialTold, ctx()) : '') + (spoilsShown() ? spoilsHtml(view.spoils, spoilsCtx()) : '');
 }
+
+/* After a won fight, one order, every time (live, 2026-10-15: after 蠪侄 either its death passage or the 所得
+   card was lost, by which came first): the passage, then 所得, then the way on. 所得 is kept from the fight's
+   end (pending until the rules' answer is in and the passage owed is drawn), shown once no passage is ahead,
+   and holds the way on (watchWayOn) until it is put away or he takes the way on himself. */
+const spoilsUp = () => Boolean(view.spoils && view.spoils.place === (look?.place?.id ?? null));
+const spoilsShown = () => spoilsUp() && !view.spoils.pending && !storyAhead();
 
 /// 此地 — the people of the scene and the goal line; the place is its own line.
 const headHtml = (slots) => (bout ? '' : slots.header.map(drawCard).join(''));
@@ -1482,6 +1492,8 @@ function draw() {
   restoreFocus(had);
   // Held wins go after the draw, never from inside it.
   sendHeldWins();
+  // A won fight's way on, once its passage is read and its 所得 put away (watchWayOn; tried once per exit).
+  watchWayOn();
 }
 
 /* What the fight's card draws itself from: this world's cards, this world's
@@ -1947,7 +1959,8 @@ async function watchTell() {
 const wayOnTried = new Set();
 function watchWayOn() {
   const e = wonWayOn(look);
-  if (!e || bout || look?.tell_owed || drawingTold || view.panelBusy) return;
+  // The passage first, then 所得: neither is walked past (spoilsShown). The next draw tries again.
+  if (!e || bout || storyAhead() || spoilsUp() || view.panelBusy) return;
   const key = `${look.run ?? ''}|${look.scene?.id ?? ''}|${e.id}`;
   if (wayOnTried.has(key)) return;
   wayOnTried.add(key);
@@ -2058,7 +2071,8 @@ function choicesInBox() {
   // …unless the way on is a card of its own (生辰, a name, a fight not called by words — stage.mjs
   // cardHoldsWay): then the box is put away at its end and that card stands (2026-10-15, live at
   // 00-hall: the passage held its last beat with only the 看 list, the 生辰 card hidden behind it).
-  return Boolean(playing(r) && atLast(r, lang()) && !look?.tell_owed && !drawingTold && !boxYields(true) && !gameOpen(look) && !cardHoldsWay(look) && !replayUp(look));
+  // …nor while a won fight's 所得 waits to be seen: the box is put away at its end and 所得 stands first.
+  return Boolean(playing(r) && atLast(r, lang()) && !look?.tell_owed && !drawingTold && !boxYields(true) && !gameOpen(look) && !cardHoldsWay(look) && !replayUp(look) && !spoilsUp());
 }
 /* A board left on an earlier day and chosen again (再试一回): the box is put away at its end, so the board
    stands — beside the scene card, whose ways on stay his to take (stage.mjs sceneGame). */
@@ -3217,7 +3231,7 @@ async function settleBout(b = bout) {
   const paid = r.outcome === 'won' && (r.paid?.progress || r.paid?.wealth) ? r.paid : null;
   // A 符 played is spent from the bag, won or lost: the card says so (page fact).
   const spent = r.spent ?? [];
-  if (got.length || paid || spent.length) keep({ spoils: { place: look?.place?.id ?? null, cards: got.filter((d) => d.card), items: got.filter((d) => !d.card), paid, spent } });
+  if (got.length || paid || spent.length) keep({ spoils: { place: look?.place?.id ?? null, cards: got.filter((d) => d.card), items: got.filter((d) => !d.card), paid, spent, pending: true } });
   // The strip counts up once the room has closed and the eye is back on it.
   riseAfter = performance.now() + 600;
   keep({ walkedOut: null });
@@ -3225,6 +3239,8 @@ async function settleBout(b = bout) {
   const ended = (r.handed ?? []).some((h) => h.tale && h.ended);
   await report(ended ? '[scene] tale end' : `[scene] ${r.outcome} ${id}`);
   await refresh();
+  // The rules' Look is in and any passage owed is drawn (watchTell): 所得 may stand, after it.
+  if (view.spoils?.pending) show({ spoils: { ...view.spoils, pending: false } });
 }
 
 /* ── The chat ── */

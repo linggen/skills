@@ -148,7 +148,24 @@ test('the page wires both: every read and every passage drawn looks for the won 
   const body = (name) => page.slice(page.indexOf(`function ${name}(`), page.indexOf('\n}\n', page.indexOf(`function ${name}(`)));
   assert.match(body('readOnce'), /watchTell\(\);\n\s+watchWayOn\(\);/, 'on every Look: the live win and a reload alike');
   assert.match(body('watchTell'), /watchWayOn\(\);/, 'and once an owed passage is drawn');
-  assert.match(body('watchWayOn'), /look\?\.tell_owed \|\| drawingTold/, 'never over words still to draw');
+  assert.match(body('watchWayOn'), /storyAhead\(\)/, 'never over words still to draw or still playing');
+  assert.match(page, /const storyAhead = \(\) => Boolean\(look\?\.tell_owed \|\| drawingTold \|\| playing\(readingHere\(\)\)\)/);
   assert.match(body('watchWayOn'), /wayOnTried/, 'tried once: a refusal never loops');
   assert.match(body('choicesInBox'), /!cardHoldsWay\(look\)/);
+});
+
+/* Live 2026-10-15: after 蠪侄 was beaten, either its death passage or the 所得 card was lost — the
+   way on was Resolved the moment the passage was drawn (not read), and walking on put 所得 away.
+   One order now: the passage, then 所得, then the way on. */
+test('a won fight: the passage, then 所得, then the way on — never one walked past', async () => {
+  const fs = await import('node:fs');
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const body = (name) => page.slice(page.indexOf(`function ${name}(`), page.indexOf('\n}\n', page.indexOf(`function ${name}(`)));
+  assert.match(body('watchWayOn'), /storyAhead\(\) \|\| spoilsUp\(\)/, 'the way on waits for the passage and for 所得');
+  assert.match(page, /const spoilsShown = \(\) => spoilsUp\(\) && !view\.spoils\.pending && !storyAhead\(\)/, '所得 waits for the passage');
+  assert.match(body('choicesInBox'), /!spoilsUp\(\)/, 'the box does not hold the way on while 所得 waits');
+  assert.match(body('settleBout'), /pending: true/, '所得 kept from the fight\'s end, shown once the rules\' Look is in');
+  assert.match(body('settleBout'), /await refresh\(\);\n\s+\/\/[^\n]*\n\s+if \(view\.spoils\?\.pending\)/);
+  assert.match(body('draw'), /watchWayOn\(\);/, 'each draw looks again: 所得 put away, the passage read');
+  assert.match(body('focusHtml'), /spoilsUp\(\) \? slots\.main\.filter\(\(c\) => c\.card !== 'next'\)/, '下一步 never stands over 所得');
 });
