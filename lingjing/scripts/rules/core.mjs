@@ -121,7 +121,8 @@ function pay(content, state, ctx, grant, landing = state) {
   return { progress: progress - over - (hold?.held ?? 0), wealth, ...(over ? { converted: { progress: over, wealth: lingshi } } : {}), cast: grant.cast ?? null, item: grant.item ?? null, ...(extra.length ? { more: extra } : {}), ...(full ? { stored: true, pouch_full: full } : {}), levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}) };
 }
 
-/* A riddle is answered wrong at most this many times a day. */
+/* A road riddle is answered wrong at most this many times a day. A scene's riddle — the story's only way
+   on (01-deep's 读封) — never shuts: after this many misses it may be left instead (`pass`, no reward). */
 const RIDDLE_TRIES = 2;
 
 /* An exit's riddles: `key` is one riddle or a pool of them. */
@@ -407,7 +408,7 @@ export function resolve(state, content, ctx, args) {
   // it — the page's tap, or the player's own typed; anything else is refused
   // in the exit's `refuse` line.
   if (exit.names && !heardName(exit.names, args.said)) return refuse('not-named', pick(exit.refuse, lang));
-  let breakthrough = null, odds = null;
+  let breakthrough = null, odds = null, passedRiddle = false;
   if (exit.breakthrough) {
     const tier = tierOf(content, s.tier), tiers = content.ladder.tiers, next = tiers[tiers.indexOf(tier) + 1];
     const peak = s.step === tier.thresholds.length - 1 && s.progress >= threshold(content, s);
@@ -429,23 +430,29 @@ export function resolve(state, content, ctx, args) {
     const key = riddleOf(s, scene, exit, ctx.now);
     const riddle = content.riddles[lang].riddles[key];
     const tried = triedToday(s, scene, exit, key, ctx.now);
-    if (tried.length >= RIDDLE_TRIES) return refuse('riddle-closed', null, { exit: exit.id });
+    // Never stuck (live, 2026-10-15: two misses at 01-deep shut the only way on for a real day, and
+    // 「谜题已过」 read as solved): the misses bring the hint, and once he is stuck — RIDDLE_TRIES misses —
+    // 「算了，往下走」 (`pass`) walks the way on with no reward, as a board left (rules/skips.mjs).
+    if (args.pass) {
+      if (tried.length < RIDDLE_TRIES) return refuse('not-stuck', null, { exit: exit.id, tried: tried.length, needs: RIDDLE_TRIES });
+      keepRiddle(s, scene, exit, key, ctx.now, tried);
+      passedRiddle = true;
+    }
     // Asked is seen: the question stays today's, and the play never asks it again.
-    if (args.answer == null) {
+    else if (args.answer == null) {
       keepRiddle(s, scene, exit, key, ctx.now, tried, true);
       // The riddle is `ask`'s question, never a line to speak: spoken, the
       // reply ended on it with no AskUser (2026-09-17, gpt-5.6-terra).
       return { state: s, result: { ok: false, refused: 'needs-answer', say: null, exit: exit.id, choices: riddle.choices } };
     }
-    if (!judgeAnswer(content, key, args.answer)) {
-      // A miss is kept: the first brings the hint, the second closes the
-      // riddle until tomorrow — guessing costs, and nothing blocks past a day.
-      const missed = [...tried, String(args.answer).trim()];
-      const closed = missed.length >= RIDDLE_TRIES;
-      keepRiddle(s, scene, exit, key, ctx.now, missed, !closed);
-      return { state: s, result: { ok: false, refused: closed ? 'riddle-closed' : 'wrong-answer', say: null, ...(closed ? {} : { hint: riddle.hint }), exit: exit.id } };
+    else if (!judgeAnswer(content, key, args.answer)) {
+      // A miss is kept and brings the hint; it stays on the table. From the RIDDLE_TRIES-th miss he may
+      // leave it (`stuck`: the page's 「算了，往下走」).
+      const missed = [...new Set([...tried, String(args.answer).trim()])];
+      keepRiddle(s, scene, exit, key, ctx.now, missed, true);
+      return { state: s, result: { ok: false, refused: 'wrong-answer', say: null, hint: riddle.hint, exit: exit.id, ...(missed.length >= RIDDLE_TRIES ? { stuck: true } : {}) } };
     }
-    keepRiddle(s, scene, exit, key, ctx.now, tried);
+    else keepRiddle(s, scene, exit, key, ctx.now, tried);
   }
   const game = gameOf(exit);
   if (game && !s.wins?.[game.id]) {
@@ -518,7 +525,8 @@ export function resolve(state, content, ctx, args) {
   }
   // The story lifts the realm (小周天, 息壤): to that layer of the first tier, never down.
   const rose = exit.rise ? riseTo(content, s, exit.rise, replaying(content, s, scene)) : null;
-  const grant = grantOf(s, scene, exit);
+  // A riddle left (`pass`) pays nothing (his: 「跳过没有奖励」); the story goes on as after an answer.
+  const grant = passedRiddle ? null : grantOf(s, scene, exit);
   const landing = exit.ends ? { ...s, scene: null } : exit.next && !inMade(s) ? { ...s, scene: exit.next } : s;
   const paid = grant ? pay(content, s, ctx, grant, landing) : null;
   const beat = spoken(content, s, exit.beat);
@@ -564,7 +572,7 @@ export function resolve(state, content, ctx, args) {
       ok: true, took: exit.id, ...(exit.label ? { chose: fill(pick(exit.label, lang), s, content) } : {}), ...(named ? { named } : {}),
       ...(wrote.length ? { ledger: wrote } : {}), ...(joined ? { joined } : {}), ...(rested ? { her: rested } : {}), ...(born ? { born } : {}), beat, paid, breakthrough, ...(rose ? { rose } : {}), show: exit.show ?? [], scene: atScene(content, s) ? sceneBrief(content, s, ctx.now) : null,
       waypoint: !atScene(content, s) && sceneOf(content, s) ? threadOf(content, s, ctx.now) : null, ended: exit.ends ?? null, waiting,
-      ...(walked ? { walked } : {}), ...(grew ? { treasure_grew: grew } : {}), ...(node ? { node } : {}),
+      ...(walked ? { walked } : {}), ...(grew ? { treasure_grew: grew } : {}), ...(node ? { node } : {}), ...(passedRiddle ? { passed: true } : {}),
       // Her price showing as the chapter ends: Ling opens with what she does (story.mjs uneaseAt).
       ...(node?.unease ? { unease: node.unease } : {}),
       ...(her ? { her_beat: her } : {}),

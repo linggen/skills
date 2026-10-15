@@ -76,7 +76,8 @@ export function askOf(content, state, ctx, result = {}, ungated = false) {
       // The riddle's own answers to pick from — a tap is the answer — and a
       // way back to the scene (his "options are not related to the question").
       const riddle = waiting || scene.exits.find(e => e.riddle && (!result.exit || e.id === result.exit));
-      if (riddle && !riddle.closed) {
+      // A scene's riddle never shuts (rules/core.mjs); leaving it once stuck is the page's 「算了，往下走」.
+      if (riddle) {
         asked = riddle.riddle;
         const tried = new Set(riddle.tried.map(normalizeAnswer));
         options = [

@@ -360,8 +360,9 @@ function exitBrief(content, state, exit, button, ctxNow = new Date(), scene = sc
   if (exit.key) {
     const key = riddleOf(state, scene, exit, ctxNow);
     const riddle = content.riddles[state.lang].riddles[key], tried = triedToday(state, scene, exit, key, ctxNow);
-    const closed = tried.length >= RIDDLE_TRIES;
-    Object.assign(brief, { riddle: riddle.q, choices: riddle.choices, tried, closed, ...(!closed && riddleOpen(state, scene, exit, key, ctxNow) ? { waiting: true } : {}) });
+    // A scene's riddle never shuts (core.mjs resolve): from the RIDDLE_TRIES-th miss it may be left (`stuck`).
+    const stuck = tried.length >= RIDDLE_TRIES;
+    Object.assign(brief, { riddle: riddle.q, ...(tried.length ? { hint: riddle.hint } : {}), choices: riddle.choices, tried, ...(stuck ? { stuck } : {}), ...(riddleOpen(state, scene, exit, key, ctxNow) ? { waiting: true } : {}) });
   }
   const game = gameOf(exit);
   if (game) {

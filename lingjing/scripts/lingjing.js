@@ -1918,15 +1918,16 @@ async function valueTap(exitId) {
    and the stage plays what it owes in the dialogue box — no chat turn: Ling
    reads it in Look's `page_did` (Hanli, 2026-09-29: 「对话框先做，go」).
    Refused (a need not met), the card says why and nothing moves. */
-async function panelTap(exitId, label, answer) {
+async function panelTap(exitId, label, answer, pass = false) {
   keep({ panelBusy: exitId, panelNote: null });
   render();
-  const r = await write('resolve', { exit: exitId, said: label, ...(answer != null ? { answer } : {}) }).catch(failed);
+  // `pass`: a riddle left once stuck (「算了，往下走」, cards.js riddleTapHtml) — the way on, no reward.
+  const r = await write('resolve', { exit: exitId, said: label, ...(answer != null ? { answer } : {}), ...(pass ? { pass: 1 } : {}) }).catch(failed);
   // A way on that shows the map (00-chushan's tree): the chapter's map unfolds there, the first time.
   if (r?.ok && (r.show ?? []).some((c) => c.card === 'map')) mapAsked = true;
   // A tap on a choice the story already moved past (a second tap in flight) is no refusal to show.
-  // A riddle missed: its hint stands under the card (the second miss shuts it for the day).
-  keep({ panelBusy: null, panelNote: r.ok || r.refused === 'unknown-exit' ? null : r.hint ? `${refusal(r)} · ${r.hint}` : refusal(r) });
+  // A riddle missed: its hint stands under the card (it never shuts; stuck, it may be left).
+  keep({ panelBusy: null, panelNote: r.ok || r.refused === 'unknown-exit' ? null : r.hint && r.refused !== 'wrong-answer' ? `${refusal(r)} · ${r.hint}` : refusal(r) });
   await refresh();
 }
 
@@ -2799,7 +2800,7 @@ const CLICKS = [
   // The scene's choices (on its card, or inside the box at its last beat) come before the box's own taps.
   ['[data-look-at]', (el) => { if (!el.matches(':disabled')) run(`look:${el.dataset.lookAt}`, () => lookAt(el.dataset.lookAt)); }],
   ['[data-panel-duel]', (el) => { if (!el.matches(':disabled')) callDuel(el.dataset.panelDuel); }],
-  ['[data-panel-exit]', (el) => { if (!el.matches(':disabled')) run(`panel:${el.dataset.panelExit}`, () => panelTap(el.dataset.panelExit, el.textContent.trim(), el.dataset.panelAnswer)); }],
+  ['[data-panel-exit]', (el) => { if (!el.matches(':disabled')) run(`panel:${el.dataset.panelExit}`, () => panelTap(el.dataset.panelExit, el.textContent.trim(), el.dataset.panelAnswer, el.dataset.panelPass === '1')); }],
   // The story's quiet controls — 回看, 跳过, 配音, 慢 中 快 — first; then a tap anywhere on the stage (the next sentence).
   // 回看 open, the lines wait under it (proto a: 「回看」 pauses the passage); closed, they go on.
   ['[data-game-skip]', (el) => skipGame(el.dataset.gameSkip)],

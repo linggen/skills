@@ -334,18 +334,26 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   assert.ok(aside.state, 'set aside is kept');
   assert.deepEqual(aside.result.ask.options.map(o => o.label), l.ask.options.map(o => o.label));
   assert.equal(VERBS.look({ ...asked.state, chance: DEALT }, content, ctx({ said: '你好' })).state, null, 'any other word leaves it on the table');
-  // a miss: the hint, and the answers left; a second miss shuts it for the day
+  // a miss: the hint, and the answers left; it never shuts (live 2026-10-15: two misses at 01-deep
+  // locked the only way on for a real day) — the second miss makes him stuck, and he may leave it
   const wrongs = rid.choices.filter(x => x !== rid.wrong && !content.riddles.zh.riddles[rid.key].a.includes(x));
   const miss = resolve(asked.state, content, ctx(), { exit: 'riddle', answer: rid.wrong });
-  assert.equal(miss.result.refused, 'wrong-answer'); assert.ok(miss.result.hint);
+  assert.equal(miss.result.refused, 'wrong-answer'); assert.ok(miss.result.hint); assert.equal(miss.result.stuck, undefined);
   assert.deepEqual(askOf(content, miss.state, ctx(), miss.result).options.map(o => o.label), [...rid.choices.filter(x => x !== rid.wrong), '先不答']);
+  refused(resolve, miss.state, { exit: 'riddle', pass: true }, 'not-stuck');
   const shut = resolve(miss.state, content, ctx(), { exit: 'riddle', answer: wrongs[0] });
-  assert.equal(shut.result.refused, 'riddle-closed'); assert.equal(shut.result.hint, undefined);
+  assert.equal(shut.result.refused, 'wrong-answer'); assert.ok(shut.result.hint); assert.equal(shut.result.stuck, true);
   assert.equal(look(miss.state, content, ctx()).ask.question, a.question, 'a miss leaves it on the table');
-  assert.equal(look(shut.state, content, ctx()).ask.question, '何去何从？', 'shut, it leaves the table');
-  assert.equal(refused(resolve, shut.state, { exit: 'riddle', answer: rid.right }, 'riddle-closed').exit, 'riddle');
-  assert.ok(!askOf(content, shut.state, ctx(), shut.result).options.some(o => o.exit === 'riddle'));
-  assert.equal(look(shut.state, content, ctx()).scene.exits.find(e => e.id === 'riddle').closed, true);
+  assert.equal(look(shut.state, content, ctx()).ask.question, a.question, 'stuck, it is still the question');
+  const stuck = look(shut.state, content, ctx()).scene.exits.find(e => e.id === 'riddle');
+  assert.equal(stuck.stuck, true); assert.equal(stuck.closed, undefined); assert.ok(stuck.hint, 'the hint stands on the card');
+  // the right answer still opens it the same day, and pays
+  const right = resolve(shut.state, content, ctx(), { exit: 'riddle', answer: rid.right });
+  assert.equal(right.result.ok, true, JSON.stringify(right.result));
+  // …or 「算了，往下走」: the way on, nothing paid
+  const left = resolve(shut.state, content, ctx(), { exit: 'riddle', pass: true });
+  assert.equal(left.result.ok, true, JSON.stringify(left.result)); assert.equal(left.result.passed, true); assert.equal(left.result.paid, null);
+  assert.equal(left.state.progress, shut.state.progress); assert.equal(left.state.wealth, shut.state.wealth);
   // tomorrow: the other riddle of the pool — this play never asks one twice
   const tomorrow = ctx({ now: new Date(NOW.getTime() + 864e5) });
   const next = riddleAt(shut.state, 'riddle', tomorrow);

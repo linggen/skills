@@ -210,7 +210,7 @@ field. The fields:
 | (Look's `scene.meet`) | Derived, not written: the 图鉴 entries whose `first.scene` this is, while none was met before. |
 | `offers`, `buttons` | Tasks set here; the exits shown as taps (the rest are found by typing). |
 | exit `needs` / `take` / `grant` | What must be held or done; what it uses up; what it pays (never over its table's cap). |
-| exit `key` | A riddle or a pool: the day's is one unseen, `choices` offered; a miss brings the `hint`, a second shuts it till tomorrow. |
+| exit `key` | A riddle or a pool: the day's is one unseen, `choices` offered; a miss brings the `hint` and greys that answer; it never shuts (2026-10-15) — from the second miss (`stuck`) the page offers 「算了，往下走」 (Resolve `pass`: the way on, no reward). |
 | exit `value` · `born` | A name the player gives on the page's card (none ships since the hero was fixed; a `gender` on it is refused); 生辰 → 灵根 (rules/roots.mjs, private, skippable). |
 | exit `game`, `stamina`, `mark`, `ledger`, `set` | A board or fight the page witnesses; toil that costs 体力; a remembered choice; 恩仇簿 entries; state set. |
 | exit `joins` · `sleeps` · `wakes` · `memory` | 银月 found, asleep in the token, woken; a colour memory granted (only from a 鼎). |
