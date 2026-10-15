@@ -1,5 +1,14 @@
 # tools
 
+## The game's tests, in layers (2026-10-15)
+
+| Layer | What | Run |
+| --- | --- | --- |
+| health | `scripts/rules/health.mjs` — what is wrong with a save (blank stage, every way out shut, a fight that should not be there, wrong place, 修为 out of the 回's band, owed passages), each with a safe repair where there is one. Ling's **Unstick** applies those. | `node --test lingjing/tests/health.test.mjs lingjing/tests/unstick.test.mjs` |
+| 1 · explore | `tools/explore.mjs` — 卷一's whole state space from a fresh save: every exit, every board's grades and its skip, every scene fight won and lost-then-retried; equivalent saves merged; health at every save; coverage of scenes, exits, boards, grades, fights; 卷一's end ahead of every save. ~10 s. | `node lingjing/tools/explore.mjs` (`--json`, `--fast`) — in CI: `tests/explore.test.mjs` |
+| 2 · sweeps | whole plays by policy: all-win, all-skip, lose-then-retry, random×50 — each ends 卷一 clean, the realm per 回 printed | `node lingjing/tools/explore.mjs --sweep` · `--sweep=random --seeds=50` |
+| 3 · page | `tools/page-crawl.mjs` — the live page, headless Chrome: each board module beaten by a human-like bot (~200 ms reaction, real pointer events, 3 tries), every visible control tapped and a dead one named. Needs the engine on 9527; scratch saves only. The bots alone run in node (`node lingjing/tools/board-bots.mjs [module]`, and `tests/board-bots.test.mjs` in CI). | `node lingjing/tools/page-crawl.mjs --boards [--only=<task>]` · `--controls [--scenes=<id>,…]` — findings in `--out` (default /tmp/lj-page-crawl) |
+
 ## playtest — the crawler
 
 Plays 卷一 on the real page and flags every stall. Run it after any change to the stage, the story view, a game or a scene.
