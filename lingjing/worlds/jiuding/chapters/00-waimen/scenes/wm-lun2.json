@@ -61,7 +61,30 @@
     "id": "dabi-shijie",
     "kind": "duel",
     "creature": "foe-shijie",
-    "retry": true
+    "retry": true,
+    "sight": {
+     "mark": "diche",
+     "level": 1
+    },
+    "hints": [
+     {
+      "mark": [
+       "xiangke",
+       "xiangke-rough"
+      ],
+      "say": {
+       "zh": "相克：对面的冰锥来了，立一堵土墙，全扎在土里——「水得土而绝」。",
+       "en": "What eats what: when the ice spikes come, an earth wall takes them all — \"water is stopped by earth.\""
+      }
+     },
+     {
+      "mark": "diche",
+      "say": {
+       "zh": "阿禾的底册：秦雁，剑气三尺。到了台边，往前送一寸。出手留三分。不踩人。",
+       "en": "Ahe's records: Qin Yan — sword-qi three feet. At the edge, one inch more. Holds back three parts. Never stamps."
+      }
+     }
+    ]
    },
    "withdrawn": {
     "zh": "秦雁把剑收回半寸，退后一步：「再来。」",

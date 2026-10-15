@@ -52,6 +52,9 @@ function prepare(content, s, exit, now, forced, boards = 'play') {
   const n = exit.needs ?? {};
   if (n.seen) for (const at of [n.seen].flat()) s = VERBS.look(s, content, { now, quests: [] }, { at }).state ?? s;
   if (n.mark && !(s.marks ?? []).includes(n.mark)) { forced.push(`mark ${n.mark}`); s = { ...s, marks: [...(s.marks ?? []), n.mark] }; }
+  // The other side of a fork (`no_mark`, 古六's 刮鞋底 reading 古三's steps): the walk took one side earlier; the other
+  // side is a road an earlier step opens just as well (00-gate's rush), so the mark is set aside, not forced.
+  if (n.no_mark && (s.marks ?? []).includes(n.no_mark)) s = { ...s, marks: s.marks.filter((m) => m !== n.no_mark) };
   if (n.quest && !s.quests?.[n.quest]?.done_at) { forced.push(`errand ${n.quest}`); s = { ...s, quests: { ...s.quests, [n.quest]: { took: 'x', have: {}, done_at: now.toISOString() } } }; }
   if (n.bag && !(s.bag?.[n.bag] > 0)) { forced.push(`item ${n.bag}`); s = { ...s, bag: { ...s.bag, [n.bag]: 1 } }; }
   if (n.wealth && !(s.wealth >= n.wealth)) { forced.push(`wealth ${n.wealth}`); s = { ...s, wealth: n.wealth }; }

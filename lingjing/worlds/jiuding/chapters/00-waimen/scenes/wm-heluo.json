@@ -63,7 +63,26 @@
     "en": "Xiaoman bent to look, and his hand stopped. Some of the characters on the slips he couldn't read; but what was cut on the first slip wasn't words. It was nine numbers, three to a row, with a five in the middle. This sword art was laid out by the Luo Writing. He didn't need to look at the slips. He said it straight out: \"Wear nine, tread on one; three on the left, seven on the right; two and four are the shoulders, six and eight are the feet; five sits in the middle.\"\n\nIt was very quiet on top of the cliff. A wind blew past, and the smoke of the three incense sticks in the censer leaned over all together. Elder Qu's face had never had much expression on it; this time, it did: \"...You didn't look at the slips.\" Xiaoman said: \"My ma taught me. She said her pa taught her. And her pa got it from an old book.\" Elder Qu was silent for a long, long time, so long that a length of incense ash broke off without a sound and fell on the bluestone. Then he said: \"...Your ma. Who is she?\"\n\nXiaoman opened his mouth. His mother was a hunter's wife, daughter of a down-at-heel village schoolmaster. Who else could she be? He thought for a long time and could only say: \"...My ma is my grandfather's daughter.\" The corner of Elder Qu's mouth moved. He didn't ask anything more. He rolled up the bamboo slips, and his finger paused at the edge of them, as if it had touched a very old notch.\n\nElder Qu picked up a flat bluestone from by his feet (picked up on the bank of the Si) and tapped it lightly with the broom handle. \"*Tong*—\" The sound wasn't loud, but it was long, and went far. \"You're from Xu Province,\" said Elder Qu. \"In the nine palaces, Xu Province is Xun Four. Today I'll teach you Xun Four first.\"\n\nHe turned the broom upside down in his hand and moved just once. The leaves that had gathered all winter at the cliff's edge, every last one, were swept up and set out in mid-air in a square grid, three to a row, nine squares in all, the middle one empty; then they came drifting down and fell into the shape of one character: **Xu**, as in Xu Province. That character was missing its middle stroke. Elder Qu leaned the broom back in the corner: \"I've practised forty years and only got this far. This sword art wants the five phases each to give birth to the next, turning in a ring inside the body.\" With the broom handle he drew a ring in the fallen leaves, put five dots on it, then wiped out one. \"What I lack is fire. Forty years, and there's always a gap in the ring.\"\n\nXiaoman looked at the ring with one dot missing and thought of the stove-fire ring that had started turning in his body in the stone chamber of the secret realm. So in all the world he wasn't the only one who leaked. Elder Qu shouldered the broom and walked towards the grass hut, not looking back: \"You've got all five phases. When you've filled it in, come and find me.\"\n\nAt the door he stopped again, his back to Xiaoman, and said: \"The Foundation Pill. You didn't get it.\" Xiaoman said: \"No, I didn't.\" Elder Qu said: \"Do you want it?\" Xiaoman said: \"I want it.\" Elder Qu was silent a while: \"...You'll get one, later. Before you take it, come and ask me first.\" With that, he went into the hut.\n\nXiaoman went down the mountain. Halfway down, he looked back. The door of the grass hut on the cliff top was open, and Elder Qu sat at the wooden table with the two teacups before him, one mouth up, one mouth down. He sat for a long time, then reached out and touched the cup that was mouth down, touched it once, and drew his hand back. That cup was still turned down."
    },
    "beat": [],
-   "ends": "00-waimen"
+   "ends": "00-waimen",
+   "needs": {
+    "task": "heluo-kaipian"
+   },
+   "refuse": {
+    "zh": "竹简推到你面前了——你念开篇。",
+    "en": "The slips are in front of you — recite the opening."
+   }
   }
- ]
+ ],
+ "show": [
+  {
+   "card": "board",
+   "id": "heluo-kaipian"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "heluo-kaipian"
+  ]
+ },
+ "_beats": "古六 (the per-回 plan, 2026-10-15): 念开篇 · 洛书 (heluo-kaipian) — 瞿老's 「你念开篇」 played on 洛书's nine squares, his mother's rhyme phrase by phrase; the way on (`read`) tells the rest and grants the scroll."
 }

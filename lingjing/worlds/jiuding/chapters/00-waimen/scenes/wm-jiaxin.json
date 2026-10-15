@@ -70,7 +70,26 @@
     "zh": "孙二狗走了以后，小满趴在铺上，就着窗外的月光，给家里写第一封信。他头一句写的是「娘，我当上仙人了」，擦了；第二句写「娘，我打赢了马小宝」，想了想，这话要是传到村里，马三怕是要上门，又擦了。\n\n小满在铺上一笔一笔地写：**娘：我进仙门了。一年五两，观里说腊月就送到家。屋顶修一修。盆可以收起来了，十七个都收。给我爹买一副护膝，狗皮的。给吴婆婆，再送一条鹿腿，这回是买的。我在这里很好。有人欺负我，我记着账。有几笔，已经还上了。——小满**\n\n小满把信折好，想了想，又打开来，在最底下添了一行：**娘，漏勺也能打水。**信压在枕头底下，明天一早交给周衡，跟沈家那一包五两银子一车送下山。弓就搁在枕头边上，他伸手摸了摸那十七道牛筋。他握着胸口的木牌，小声道：「你欠我的那张饼……还欠着吧？」木牌轻轻地，烫了一下。像是在说：**还欠着。**\n\n隔了一会儿，银月的声音很低，一点也不懒：「镜子裂的那一下，镜子那头，有人。」小满一下子坐了起来：「哪头？」银月道：「很远。西边。本王只听见一句。」她顿了一顿，学那个声音，学得很平，平得没有一点起伏：「叫徐州那个，十月去邺城等着。」\n\n小满在黑地里坐了很久，才道：「那面镜子，找的是你。」\n\n「是本王。」银月道。她头一回没有摆本王的架子，声音平平的，「正月初五，柴垛底下端镜子的那个人，说本王是死的。他回去，便是这么报的。今天，那面镜子到了台上，照了一照——本王没死，在你身上。」\n\n「他要你做什么？」\n\n「他主子要本王的命。」她顿了一顿，「本王在谁身上，他找谁。」\n\n「今天台下几千双眼睛，都看见了，沉鼎观，外门，四层，沈小满。」她又道，「镜子那头的人，也看见了。」\n\n小满在黑地里，半天没说话。\n\n「本王欠你一张饼。」银月又道，声音低下去，「这一笔，怕是还不上了。」\n\n小满把木牌攥紧了，攥得指节发白：「欠着。利息另算。」\n\n木牌没有烫，也没有凉，就那么贴着他的手心，温温的，像一只蜷着的小东西。徐州那个，十月去邺城等着——邺城在哪里，他不知道。他心想：这一句，记住了。",
     "en": "When Sun Ergou had gone, Xiaoman lay on his front on the bunk and, by the moonlight from the window, wrote his first letter home. The first line he wrote was \"Ma, I've become an immortal,\" and he rubbed it out. The second was \"Ma, I beat Ma Xiaobao\"; he thought about it, and if that got back to the village Ma San might come to the door, so he rubbed it out too.\n\nXiaoman wrote on the bunk, stroke by stroke: **Ma: I've got into the immortals' sect. Five taels a year; the abbey says it'll reach home in the twelfth month. Fix the roof. You can put the basins away now, all seventeen. Buy Pa a pair of knee pads, dog-skin ones. Take Granny Wu another leg of venison, and this time a bought one. I'm very well here. When people bully me, I keep an account. A few of the items are paid back already. —Xiaoman**\n\nXiaoman folded the letter, thought about it, opened it again, and added one line at the very bottom: **Ma, a leaky ladle can carry water too.** He put the letter under his pillow, to give to Zhou Heng first thing in the morning, to go down the mountain in the same cart as the Shen family's packet of five taels. The bow lay by his pillow; he reached out and felt its seventeen layers of ox sinew. He held the wooden tablet on his chest and said quietly: \"That flatbread you owe me... still owe it, right?\" The tablet went warm, gently, once. As if to say: **Still owe it.**\n\nAfter a while Yinyue's voice came, very low, not lazy at all: \"When the mirror cracked, there was someone at the other end of it.\" Xiaoman sat bolt upright: \"Which end?\" Yinyue said: \"Far away. West. This queen only heard one sentence.\" She paused, and mimicked the voice, very flat, flat without a single rise or fall: \"Tell the one in Xu to go to Ye in the tenth month and wait.\"\n\nXiaoman sat in the dark a long time before he said: \"That mirror. What it was looking for was you.\"\n\n\"It was this queen,\" said Yinyue. For the first time she didn't put on this queen's airs; her voice was flat. \"On the fifth of the first month, the one holding the mirror under the woodpile said this queen was dead. That's what he went back and reported. Today the mirror came onto the stage and shone once, and this queen isn't dead. She's on you.\"\n\n\"What does he want you for?\"\n\n\"His master wants this queen's life.\" She paused. \"Whoever this queen is on, he looks for them.\"\n\n\"Thousands of eyes below the stage today all saw it: Sunken Cauldron Abbey, outer sect, fourth layer, Shen Xiaoman,\" she went on. \"The person at the other end of the mirror saw it too.\"\n\nXiaoman said nothing in the dark for a long time.\n\n\"This queen owes you a flatbread,\" Yinyue said again, her voice dropping. \"That debt, I'm afraid, can't be paid now.\"\n\nXiaoman gripped the tablet tight, till his knuckles went white: \"Owe it. Interest extra.\"\n\nThe tablet didn't go hot, and didn't go cold. It just lay against his palm, warm, like a small curled-up thing. Tell the one in Xu to go to Ye in the tenth month and wait. Where Ye was, he didn't know. He thought: that sentence, I've got it."
    },
-   "next": "wm-baishi"
+   "next": "wm-baishi",
+   "needs": {
+    "task": "jiaxin-letter"
+   },
+   "refuse": {
+    "zh": "信还没写完——就着月光，一笔一笔地写。",
+    "en": "The letter isn't finished — by the moonlight, stroke by stroke."
+   }
   }
- ]
+ ],
+ "show": [
+  {
+   "card": "board",
+   "id": "jiaxin-letter"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "jiaxin-letter"
+  ]
+ },
+ "_beats": "古六 (the per-回 plan, 2026-10-15): 写信 · 擦了又写 (jiaxin-letter) stands before the way on — his first letter home, the two lines the book has him rub out (「娘，我当上仙人了」「娘，我打赢了马小宝」) written and rubbed out, 「娘，漏勺也能打水」 added; then 孙二狗's, asked for that night: 「娘，我倒了七回，起来了七回」 (「别写是谁把我打倒的」). Its 恩仇簿 line is 孙二狗's."
 }

@@ -1,5 +1,203 @@
 {
   "version": 1,
   "_about": "古六's boards (h08; the per-回 plan 2026-10-15, Hanli 「可以，开工，先做古六」): each the book's own action where its scene stands; every one skippable (算了，往下走), and every one pays what the plan names — 修为 for cultivation (掐诀, 藏息, 让一拳, 等风掉头, 念开篇), 灵石 / a thing / a 恩仇簿 line for the rest.",
-  "tasks": []
+  "tasks": [
+    {
+      "id": "qianye-qiajue",
+      "kind": "board",
+      "game": "qiajue",
+      "period": "once",
+      "title": {
+        "zh": "讲堂三日 · 掐、咒、扣",
+        "en": "Three days in the lecture hall · Pinch, chant, hold"
+      },
+      "grant": {
+        "table": "task",
+        "progress": 5
+      },
+      "marks": {
+        "tight": "qiajue-tight",
+        "loose": "qiajue-loose"
+      },
+      "done_line": {
+        "zh": "掐、咒、扣，三样都会了。",
+        "en": "Pinch, chant, hold — you have all three."
+      }
+    },
+    {
+      "id": "qianye-xiangke",
+      "kind": "board",
+      "game": "xiangke",
+      "period": "once",
+      "title": {
+        "zh": "相克 · 五句",
+        "en": "What eats what · Five lines"
+      },
+      "grant": {
+        "table": "task",
+        "wealth": 3
+      },
+      "marks": {
+        "clean": "xiangke",
+        "rough": "xiangke-rough"
+      },
+      "done_line": {
+        "zh": "五句，背下来了。对面出什么，你手里都有吃它的那一样。",
+        "en": "Five lines by heart. Whatever comes, you hold what eats it."
+      },
+      "_reward": "灵石 +3 (the plan: a lesson, not cultivation); its mark puts 素问's line for the foe's element at the door of the 大比's three bouts (the exits' game `hints`)."
+    },
+    {
+      "id": "zhaojing-mirror",
+      "kind": "board",
+      "game": "mirrortongpu",
+      "period": "once",
+      "title": {
+        "zh": "藏息 · 镜光扫过来",
+        "en": "Hide the breath · The mirror's light"
+      },
+      "grant": {
+        "table": "task",
+        "progress": 5
+      },
+      "marks": {
+        "still": "mirror-still",
+        "shaky": "mirror-shaky"
+      },
+      "done_line": {
+        "zh": "木牌凉了下去，凉得像一块冰。",
+        "en": "The token cools, cold as ice."
+      }
+    },
+    {
+      "id": "zhaojing-fantong",
+      "kind": "board",
+      "game": "fantongqianye",
+      "period": "once",
+      "title": {
+        "zh": "喂饭桶 · 开炉夜",
+        "en": "Feeding the Rice Bucket · The night before"
+      },
+      "grant": {
+        "table": "task"
+      },
+      "done_line": {
+        "zh": "喷嚏符、痒痒针、自拍镜，末了一张画着猪的黄纸。",
+        "en": "A sneezing charm, tickle needles, a selfie mirror, and last a yellow paper with a pig on it."
+      },
+      "_reward": "What it makes is handed over by the way on (wm-zhaojing/sleep's grant: zipai-jing, penti-fu, yangyang-zhen ×3, niuzhi-ganlu) — story things every 大比 passage spends, so a skipped board still gives them."
+    },
+    {
+      "id": "laba-diche",
+      "kind": "board",
+      "game": "diche",
+      "period": "once",
+      "title": {
+        "zh": "底册 · 看完烧了",
+        "en": "The old records · Burn it after"
+      },
+      "grant": {
+        "table": "task"
+      },
+      "marks": {
+        "kept": "diche",
+        "hasty": "diche-hasty"
+      },
+      "done_line": {
+        "zh": "纸上的字，他已经一个一个记进了肚子里。",
+        "en": "Every word on it was already in his belly."
+      },
+      "_reward": "The mark `diche` (all three lines by heart): 望气 in the 卢方 and 秦雁 bouts (the exits' game `sight`), and their lines at the door (`hints`)."
+    },
+    {
+      "id": "dabi-sneeze",
+      "kind": "board",
+      "game": "sneeze",
+      "period": "once",
+      "title": {
+        "zh": "喷嚏符 · 让一拳",
+        "en": "The sneezing charm · Let the punch go by"
+      },
+      "grant": {
+        "table": "task",
+        "progress": 5
+      },
+      "marks": {
+        "clean": "sneeze-clean",
+        "clumsy": "sneeze-clumsy"
+      },
+      "done_line": {
+        "zh": "「沈小满，胜。」",
+        "en": "\"Shen Xiaoman wins.\""
+      }
+    },
+    {
+      "id": "laoyin-zhuqingting",
+      "kind": "board",
+      "game": "zhuqingting",
+      "period": "once",
+      "title": {
+        "zh": "猪蜻蜓 · 等风掉头",
+        "en": "The pig dragonfly · Wait for the wind to turn"
+      },
+      "grant": {
+        "table": "task",
+        "progress": 5
+      },
+      "marks": {
+        "caught": "zqt-caught",
+        "late": "zqt-late"
+      },
+      "done_line": {
+        "zh": "「……祁长松，胜。」",
+        "en": "\"…Qi Changsong wins.\""
+      },
+      "_reward": "修为 +5 for the bout; the result stays the book's — the final is lost, no 筑基丹."
+    },
+    {
+      "id": "jiaxin-letter",
+      "kind": "board",
+      "game": "letter",
+      "period": "once",
+      "title": {
+        "zh": "写信 · 擦了又写",
+        "en": "The letter · Written, rubbed out, written"
+      },
+      "grant": {
+        "table": "task"
+      },
+      "done_line": {
+        "zh": "两封信压在枕头底下。",
+        "en": "Both letters under the pillow."
+      },
+      "ledger": [
+        {
+          "who": "sunergou",
+          "kind": "恩",
+          "what": {
+            "zh": "大比那天夜里，孙二狗托你替他写一封家信：「娘，我倒了七回，起来了七回。」别写是谁把他打倒的。",
+            "en": "The night of the contest Sun Ergou asked you to write a letter home for him: \"Mother, I fell down seven times and got up seven times.\" Not to write who knocked him down."
+          }
+        }
+      ]
+    },
+    {
+      "id": "heluo-kaipian",
+      "kind": "board",
+      "game": "kaipian",
+      "period": "once",
+      "title": {
+        "zh": "念开篇 · 洛书",
+        "en": "Reciting the opening · The Luo Shu"
+      },
+      "grant": {
+        "table": "task",
+        "progress": 5
+      },
+      "done_line": {
+        "zh": "「戴九履一，左三右七，二四为肩，六八为足，五居中央。」",
+        "en": "\"Nine on the head, one under the feet… five in the middle.\""
+      }
+    }
+  ]
 }

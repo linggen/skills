@@ -45,6 +45,17 @@ function step(s, exit) {
   return must(resolve, s, { exit });
 }
 
+/* 古六's boards (the per-回 plan, 2026-10-15): the board each way on waits on, played (won, counted) before it. */
+const BOARD_BEFORE = { eve: ['qianye-qiajue', 'qianye-xiangke'], sleep: ['zhaojing-mirror', 'zhaojing-fantong'], go: ['laba-diche'], up: ['dabi-sneeze'], final: ['laoyin-zhuqingting'], rest: ['jiaxin-letter'], read: ['heluo-kaipian'] };
+function before(s, exit, now = DAY1) {
+  // a save set down in a scene by hand (not walked in) has not been offered its boards yet: offer them, as arriving does
+  for (const id of BOARD_BEFORE[exit] ?? []) s = must(task, must(win, { ...s, tasks: { [id]: { status: 'offered' }, ...s.tasks } }, { id }, now), { action: 'done', id }, now);
+  return s;
+}
+const on = (s, exit, now = DAY1) => must(resolve, before(s, exit, now), { exit }, now);
+/* The 大比's eve, now three scenes (wm-qianye · wm-zhaojing · wm-laba), each by its boards. */
+const throughEve = (s, now = DAY1) => ['eve', 'sleep', 'go'].reduce((x, exit) => on(x, exit, now), s);
+
 /* The whole chapter, by its buttons and the page's own taps, with the threads done. */
 function playThrough() {
   let s = opened();
@@ -79,15 +90,15 @@ function playThrough() {
   // The chase is a trial he cannot win by force (古五, 2026-10-02: 邹青松, foe-zou); the turn is the story's.
   for (const exit of ['go', 'swallow', 'sit', 'rest']) s = must(resolve, exit === 'swallow' ? won(s, 'mijing-zou') : s, { exit });
   s = must(move, fresh(s), { place: 'waimen' });
-  s = must(resolve, fresh(s), { exit: 'sleep' });
+  s = throughEve(fresh(s));
   s = fresh(s);
-  s = must(resolve, s, { exit: 'up' }, DAY2);
+  s = on(s, 'up', DAY2);
   s = must(resolve, s, { exit: 'hold' }, DAY2);
   s = must(resolve, won(s, 'dabi-lu', DAY2), { exit: 'flip' }, DAY2);
   s = must(resolve, won(s, 'dabi-shijie', DAY2), { exit: 'dodge' }, DAY2);
   s = must(resolve, won(s, 'dabi-ma', DAY2), { exit: 'face' }, DAY2);
-  s = must(resolve, s, { exit: 'final' }, DAY2); // 掌心的烙印, then the final lost (wm-laoyin, 古六)
-  for (const exit of ['rest', 'follow', 'sign', 'read']) s = must(resolve, s, { exit }, DAY2);
+  s = on(s, 'final', DAY2); // 掌心的烙印, then the final lost (wm-laoyin, 古六)
+  for (const exit of ['rest', 'follow', 'step', 'sign', 'read']) s = on(s, exit, DAY2); // 刮鞋底 or not, before the 拜师帖 (古六, 2026-10-15)
   return s;
 }
 
@@ -143,7 +154,8 @@ test('a scene nobody can reach, or a beat naming a stranger, does not ship: ever
     for (const e of CH.scenes[id].exits) if (e.next) todo.push(e.next);
   }
   assert.deepEqual([...seen].sort(), Object.keys(CH.scenes).sort());
-  assert.equal(Object.keys(CH.scenes).length, 28); // + wm-kaikai (老蔫, 古五) and wm-laoyin (the brand, 古六); + 今 · 二's three (2026-10-05)
+  assert.equal(Object.keys(CH.scenes).length, 30); // + wm-zhaojing, wm-laba (古六's eve split, 2026-10-15)
+  // // + wm-kaikai (老蔫, 古五) and wm-laoyin (the brand, 古六); + 今 · 二's three (2026-10-05)
   for (const b of CH.beats) for (const id of b.scenes) assert.ok(CH.scenes[id], id);
   // 观内 (2026-10-15): every scene stands in the 观 — but the 秘境's, at 石门, whose road the story itself opens (world.mjs leaveOf).
   for (const sc of Object.values(CH.scenes)) assert.ok(sc.hui === 'j04' ? !sc.at : CH.map.places.includes(sc.at) || sc.at === 'shimen' || CH.beats.some(b => b.sealed?.places.includes(sc.at)), `${sc.id} at ${sc.at}`);
@@ -241,8 +253,8 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
   assert.match(back.place.returned, /回了外门/);
   s = must(move, fresh(s), { place: 'waimen' });
   assert.match(look(s, content, ctx()).scene.setup ?? JSON.stringify(look(s, content, ctx()).scene), /传/, 'the eve carries its rumour');
-  s = must(resolve, fresh(s), { exit: 'sleep' });
-  s = must(resolve, s, { exit: 'up' }, DAY1);
+  s = throughEve(fresh(s));
+  s = on(s, 'up', DAY1);
   // round one is his quick win over 何七 (the exit's passage); 孙二狗 vs 卢方 is watched — no giving a round away, no 复试
   const l = look(s, content, ctx(DAY2));
   assert.equal(s.scene, 'wm-lun1');
@@ -260,7 +272,7 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
     refused(resolve, s, { exit }, 'game-not-won', DAY2);
     s = must(resolve, won(s, game, DAY2), { exit }, DAY2);
   }
-  s = must(resolve, s, { exit: 'final' }, DAY2); // 掌心的烙印, then the final (wm-laoyin, 古六)
+  s = on(s, 'final', DAY2); // 掌心的烙印, then the final (wm-laoyin, 古六)
   assert.equal(s.scene, 'wm-jiaxin', 'the night of the contest, before the master');
   assert.equal(s.bag['foundation-pill'], undefined, 'the final is lost: no 筑基丹');
 });
@@ -274,7 +286,7 @@ test('the 大比 final is a loss told as a passage: 「……祁长松，胜。�
   for (const sc of Object.values(CH.scenes)) for (const e of sc.exits) {
     assert.notEqual(e.grant?.item, 'foundation-pill', `${sc.id}/${e.id} grants no 筑基丹`);
   }
-  const s = must(resolve, { ...opened(), scene: 'wm-laoyin', place: 'zhengdian' }, { exit: 'final' }, DAY2);
+  const s = on({ ...opened(), scene: 'wm-laoyin', place: 'zhengdian' }, 'final', DAY2);
   assert.equal(s.bag['foundation-pill'], undefined);
   assert.match(CH.scenes['wm-jiaxin'].story.zh, /四层了。过了年，搬到内门去。/);
   assert.match(CH.scenes['wm-jiaxin'].story.zh, /我押的那一文，输了。」[^]*拿炭条一笔一笔地写/); // the line itself surfaces in 古七 (Hanli 2026-10-06)

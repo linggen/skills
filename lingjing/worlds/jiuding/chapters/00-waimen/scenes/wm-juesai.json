@@ -63,7 +63,19 @@
     "id": "dabi-ma",
     "kind": "duel",
     "creature": "foe-maxiaobao",
-    "retry": true
+    "retry": true,
+    "hints": [
+     {
+      "mark": [
+       "xiangke",
+       "xiangke-rough"
+      ],
+      "say": {
+       "zh": "相克：对面使金刃，火弹迎上去，刃口便卷——「金得火而缺」。",
+       "en": "What eats what: against a metal blade, a fireball curls the edge — \"metal is notched by fire.\""
+      }
+     }
+    ]
    },
    "withdrawn": {
     "zh": "马小宝的铜镜又亮了，他笑得更开心了。——再来。",

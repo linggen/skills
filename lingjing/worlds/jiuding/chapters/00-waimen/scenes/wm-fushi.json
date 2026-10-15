@@ -59,7 +59,30 @@
     "id": "dabi-lu",
     "kind": "duel",
     "creature": "foe-lufang",
-    "retry": true
+    "retry": true,
+    "sight": {
+     "mark": "diche",
+     "level": 1
+    },
+    "hints": [
+     {
+      "mark": [
+       "xiangke",
+       "xiangke-rough"
+      ],
+      "say": {
+       "zh": "相克：对面使金刃，火弹迎上去，刃口便卷——「金得火而缺」；立土墙，木藤去钻——「土得木而达」。",
+       "en": "What eats what: against a metal blade, a fireball curls the edge — \"metal is notched by fire\"; against an earth wall, a vine bores in — \"earth is broken by wood.\""
+      }
+     },
+     {
+      "mark": "diche",
+      "say": {
+       "zh": "阿禾的底册：卢方，使完金刃，要喘一口气。",
+       "en": "Ahe's records: Lu Fang — after a metal blade, he needs a breath."
+      }
+     }
+    ]
    },
    "withdrawn": {
     "zh": "卢方抖了抖袖子，眼皮又耷拉了下来：「外门的。」——再来。",
