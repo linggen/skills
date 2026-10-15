@@ -1685,7 +1685,18 @@ async function payWin(id) {
   keep({ doNote: r.ok ? null : refusal(r) });
   // A rerun's 拾遗 (rules/rerun.mjs): what it found stands as 所得, with its line.
   if (r.ok && r.found?.length) keep({ spoils: { place: look?.place?.id ?? null, cards: [], items: r.found.filter((d) => !d.stored), paid: null, spent: [], line: r.line ?? null } });
+  // Every win shows what it paid (古五, 2026-10-15: a board won moved only the strip): 修为 · 灵石 and the
+  // thing granted stand as 所得, with the task's own line.
+  else if (r.ok && boardPaid(r)) keep({ spoils: { place: look?.place?.id ?? null, cards: [], items: boardItems(r.paid), paid: r.paid, spent: [], line: r.line ?? null } });
   return r;
+}
+
+const boardPaid = (r) => Boolean(r.paid?.progress || r.paid?.wealth || (r.paid?.item && !r.paid.stored));
+function boardItems(paid) {
+  if (!paid?.item || paid.stored) return [];
+  const it = authored?.codexFiles?.items?.items?.find((i) => i.id === paid.item);
+  const name = it?.name?.[lang()] ?? it?.name?.zh ?? it?.name;
+  return typeof name === 'string' ? [{ id: paid.item, name, n: 1 }] : [];
 }
 
 /// 刷副本 (rules/rerun.mjs): in at the door, out from any room — the page's own verb.
