@@ -58,9 +58,13 @@ export function onStage({ cards = [], ahead = false, game = (c) => c.card === 'b
    itself waits for the 「完」 to be put away. Counting them held the 「完」 off for ever — 外门's
    first scene after 回去歇下 stood blank (the crawler, 2026-10-15: 'unfold' waited on 'feat',
    'feat' on the 「完」, the 「完」 on 'unfold'). */
+/* The moments that come after the 「完」 always (古九's tester, 2026-10-15: 冀州's map unfolded, then
+   古八's 「完」 — the turn read backwards): the page waits for the 「完」 to be put away before it starts
+   them (lingjing.js watchUnfold), so queued they never hold it off. Up, they would. */
+export const AFTER_CLOSE = new Set(['unfold']);
 export function momentsHold({ up = false, pending = [], waits = false }) {
   const seal = pending.includes('feat');
-  const behind = (k) => seal && MOMENTS.indexOf(k) > MOMENTS.indexOf('feat');
+  const behind = (k) => AFTER_CLOSE.has(k) || (seal && MOMENTS.indexOf(k) > MOMENTS.indexOf('feat'));
   return Boolean(up || pending.some((k) => k !== 'feat' && !behind(k)) || (waits && !seal));
 }
 

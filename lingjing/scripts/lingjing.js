@@ -3727,7 +3727,8 @@ async function watchUnfold() {
   // Shown by a choice (the tree): after that choice's passage, before the next scene's — as a set piece.
   const byChoice = mapAsked;
   mapAsked = false;
-  await momentTurn('unfold', () => false, byChoice ? pieceAhead : null);
+  // …and after the 回's 「完」, put away (queue.js AFTER_CLOSE): the turn reads 完 → seal → map, never the map first.
+  await momentTurn('unfold', () => closeUp(), byChoice ? pieceAhead : null);
   if (look?.jiuding?.unfold?.chapter !== u.chapter) return;
   const mine = { chapter: u.chapter, title: u.title, at: performance.now(), still: stillMotion() };
   show({ unfold: mine, mapView: 'province' });

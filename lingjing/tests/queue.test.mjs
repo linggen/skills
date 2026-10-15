@@ -192,7 +192,9 @@ test('the 回\'s 「完」 is never held off by what waits behind the new 回\'s
   assert.equal(momentsHold({ up: true, pending: ['feat'] }), true);
   assert.equal(momentsHold({ pending: ['piece', 'feat'] }), true);
   assert.equal(momentsHold({ pending: ['doors', 'feat'] }), true);
-  assert.equal(momentsHold({ pending: ['unfold'] }), true);
+  // The map's unfolding queued never holds the 「完」: it waits for the 「完」 itself (古九, 2026-10-15: map, then 完).
+  assert.equal(momentsHold({ pending: ['unfold'] }), false);
+  assert.equal(momentsHold({ up: true, pending: ['unfold'] }), true, 'up, it holds');
   assert.equal(momentsHold({ waits: true }), true);
   assert.equal(momentsHold({ pending: ['feat'] }), false, 'a seal alone waits on the 「完」 itself');
 });
@@ -224,4 +226,16 @@ test('开局 from the tray is never dropped: in the box\'s choices the box goes 
   assert.match(src, /\['\[data-play\]', \(el\) => !el\.matches\(':disabled'\) && openFromTray\(el\.dataset\.play\)\]/);
   assert.match(src, /view\.opened\.scene \?\? null\) !== \(look\.scene\?\.id \?\? null\)/);
   assert.match(src, /trayQueued: view\.opened && trayAhead\(\) \? view\.opened\.id : null/);
+});
+
+// 古九's tester (2026-10-15): at a 回's turn the new chapter's map unfolded before the old 回's 「完」 — at the turn
+// the box is paused (bookAhead false), so the unfolding went first and then held the 「完」 off while it played.
+test('a 回\'s turn: the 「完」 first, then the map unfolds — watchUnfold waits for the 「完」 to be put away', async () => {
+  const fs = await import('node:fs');
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const body = page.slice(page.indexOf('async function watchUnfold('), page.indexOf('\n}\n', page.indexOf('async function watchUnfold(')));
+  assert.match(body, /momentTurn\('unfold', \(\) => closeUp\(\)/);
+  const { AFTER_CLOSE, momentsHold } = await import('../scripts/queue.js');
+  assert.ok(AFTER_CLOSE.has('unfold'));
+  assert.equal(momentsHold({ pending: ['unfold'] }), false, 'so its waiting never holds the 「完」 off (no deadlock)');
 });
