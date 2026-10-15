@@ -1,11 +1,11 @@
 // rules/arms.mjs — 本命法宝 and 功法: the bound treasure, the sword, the 符 and the learned arts.
 // Part of the rules engine; rules.mjs is its one door.
-import { dayKey, pick, tierOf, seedOf } from '../state.mjs';
+import { dayKey, lockedOf, pick, tierOf, seedOf } from '../state.mjs';
 import { clone, refuse } from './core.mjs';
 import { itemOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
 import { ofJuan, tierIndex } from './world.mjs';
-import { stow } from './pouch.mjs';
+import { hasFound, stow } from './pouch.mjs';
 
 /* ── 本命法宝: the treasure a cultivator binds at 结丹 ── */
 
@@ -14,7 +14,7 @@ import { stow } from './pouch.mjs';
    杀人必摸尸, design.md § Items), and on one win in `fight_one_in` a 符 (rewards.json
    `growth.charm` — 写符 was cut, redesign-v2 § 四). The 妖丹 it left went with
    强化. Both go into the 储物袋 — or, full, wait at the 洞府 (pouch.mjs). */
-function drop(content, state, creature, now) {
+function drop(content, state, creature, now, { loot = false } = {}) {
   const got = [];
   const one = content.rewards.growth?.charm?.fight_one_in, charm = charmOf(content);
   const lucky = one && charm && hashOf(`${dayKey(now)}|${creature.id}|${seedOf(state)}|charm`) % one === 0;
@@ -26,7 +26,38 @@ function drop(content, state, creature, now) {
     if (!itemOf(content, id) || !ofJuan(content, itemOf(content, id), now)) continue;
     got.push(stow(content, state, id, n));
   }
+  // A beast of the wild (a pool's, a haunt's) leaves one thing more off its `loot`.
+  const rolled = loot ? lootOf(content, state, creature, now) : null;
+  if (rolled) got.push(rolled.dup ? convertDup(content, state, rolled) : stow(content, state, rolled.item, rolled.n ?? 1));
   return got;
+}
+
+/* 不拿重复的物品 (Hanli, 2026-10-15) — creatures.json `loot`: the table a beast of the wild leaves
+   one thing from, `[{item, w, n?, dup?}]`. The roll weighs a thing he never had (pouch.mjs
+   hasFound) `loot.fresh` times (creatures.json `loot_rules`); a one-off (the item's `once`) he has
+   had comes as something useful instead — the row's `dup` ({item} or {wealth}), else the thing's
+   own market price (`sell`) in 灵石, as if sold where it lay. Only things of an open 卷. A hash of
+   the day, the save, the beast and how often it was beaten: the same on every device. */
+const LOOT = { fresh: 3 };
+function lootOf(content, state, creature, now) {
+  const rows = (creature.loot ?? []).filter(r => itemOf(content, r.item) && ofJuan(content, itemOf(content, r.item), now) && (r.w ?? 1) > 0);
+  if (!rows.length) return null;
+  const rules = { ...LOOT, ...(content.creatures?.loot_rules ?? {}) };
+  const w = r => (r.w ?? 1) * (hasFound(state, r.item) ? 1 : rules.fresh);
+  const h = hashOf(`${dayKey(now)}|${seedOf(state)}|${creature.id}|loot|${state.beasts?.[creature.id]?.won ?? 0}`), x = Math.imul(h ^ (h >>> 16), 0x45d9f3b);
+  let at = ((x ^ (x >>> 16)) >>> 0) % rows.reduce((t, r) => t + w(r), 0);
+  const row = rows.find(r => (at -= w(r)) < 0);
+  return itemOf(content, row.item).once && hasFound(state, row.item) ? { ...row, dup: true } : row;
+}
+/* A one-off had before, turned into what it is worth: the row's `dup`, else its price in 灵石. */
+function convertDup(content, state, row) {
+  const item = itemOf(content, row.item), lang = state.lang, name = pick(item.name, lang);
+  if (row.dup?.item && itemOf(content, row.dup.item)) return { ...stow(content, state, row.dup.item, row.dup.n ?? 1), instead_of: { id: item.id, name } };
+  // Before the 灵石 are the story's (state.mjs lockedOf), a one-off had before is simply not found again.
+  const wealth = lockedOf(content, state).includes('wealth') ? 0 : Math.max(0, Math.round(row.dup?.wealth ?? item.sell ?? 0));
+  state.wealth = (state.wealth ?? 0) + wealth;
+  if (state.day) state.day.wealth = (state.day.wealth ?? 0) + wealth;
+  return { id: 'wealth', name: pick({ zh: '灵石', en: 'spirit stones' }, lang), n: wealth, wealth, instead_of: { id: item.id, name } };
 }
 
 /* What a creature carries, as a list: `drops` is one id or several. */
@@ -143,4 +174,4 @@ const wornOf = (content, state, slot) => (state.wear?.[slot] && state.bag[state.
    fish for an easier one. */
 const duelSeed = (state, creature, now) => `${dayKey(now)}|${creature.id}|${seedOf(state)}`;
 
-export { artBrief, artOf, artsBrief, canRefine, charmOf, drop, duelSeed, giveCharm, growTreasure, learn, refineWith, tierRank, treasureBrief, wornOf };
+export { lootOf, convertDup, artBrief, artOf, artsBrief, canRefine, charmOf, drop, duelSeed, giveCharm, growTreasure, learn, refineWith, tierRank, treasureBrief, wornOf };

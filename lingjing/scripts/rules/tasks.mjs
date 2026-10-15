@@ -14,7 +14,7 @@ import { hashOf } from './travel.mjs';
 import { stow, storedLine } from './pouch.mjs';
 import { laterBoard, replayBoard, sceneBoards, skipBoard } from './skips.mjs';
 import { writeLedger } from './ledger.mjs';
-import { creatureOf, encounterOf, foeOf, huntKey, placeOf, sceneOf } from './world.mjs';
+import { creatureOf, encounterOf, foeOf, huntKey, meetBeast, placeOf, poolOf, poolTally, rememberAt, sceneOf } from './world.mjs';
 
 /* ── Tasks and quests ── */
 
@@ -245,7 +245,7 @@ export function duel(state, content, ctx, args) {
       if (empty) return empty;
     }
     const n = hunt && today?.day === day ? today.n ?? 0 : 0;
-    s.duels = { ...s.duels, [key]: { day, outcome: 'open', ...(hunt ? { n } : {}) } };
+    s.duels = { ...s.duels, [key]: { day, outcome: 'open', ...(hunt ? { n, ...(today?.last ? { last: today.last } : {}) } : {}) } };
     // While this is set, Ling advances NOTHING (SKILL.md § 斗法): she knows
     // from the save, not from a message, because a message can be lost.
     s.fight = resuming ? s.fight : { game: id, creature: creature.id, at: ctx.now.toISOString() };
@@ -265,7 +265,10 @@ export function duel(state, content, ctx, args) {
   if (played.outcome === 'open') return refuse('unfinished', null, { turn: played.turn });
   delete s.fight;
   // A loss costs nothing but the beast, gone for the day (伤势 was cut, redesign-v2 § 四).
-  s.duels[key] = { day, outcome: played.outcome, ...(hunt ? { n: (today.n ?? 0) + 1, at: ctx.now.toISOString() } : {}) };
+  // A pool remembers the beast it dealt (world.mjs poolBeast: the last few stand down), and every
+  // beast fought is the 图鉴's (state.beasts) — a first meeting, a first win, said on the result.
+  s.duels[key] = { day, outcome: played.outcome, ...(hunt ? { n: (today.n ?? 0) + 1, at: ctx.now.toISOString(), last: rememberAt(content, today, creature.id, poolOf(content, placeOf(content, game.hunt))) } : {}) };
+  const firsts = creature.person ? {} : meetBeast(s, creature.id, played.outcome === 'won', ctx.now);
   // A 符 played is a 符 spent, win or lose (cards.mjs § 装备入局).
   const spent = spentCharms(content, setup, played);
   for (const id of spent) { s.bag[id] = Math.max(0, (s.bag[id] ?? 0) - 1); if (!s.bag[id]) delete s.bag[id]; }
@@ -284,13 +287,13 @@ export function duel(state, content, ctx, args) {
   // What a subdued creature leaves, and what a haunt pays for it. A fight that
   // ended in 遁走 pays nothing: it has to be WON (design.md § 斗法 v3). An
   // elite pays as any beast: its harder deck is all it is (redesign-v2 § 四).
-  const dropped = pays ? drop(content, s, creature, ctx.now) : [];
+  const dropped = pays ? drop(content, s, creature, ctx.now, { loot: hunt || Boolean(haunt) }) : [];
   const card = pays ? winCard(content, s, creature, ctx.now) : null;
   if (card) dropped.push(card);
   const t = content.rewards.tables.haunt;
   const paid = haunt && pays ? pay(content, s, ctx, { table: 'haunt', progress: t.progress, wealth: t.wealth }) : null;
   const full = storedLine(s, dropped);
-  return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, ...(spent.length ? { spent } : {}), you: played.you, foe: played.foe, turns: played.turn, ...(dropped.length ? { dropped } : {}), ...(full ? { pouch_full: full } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
+  return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, ...(spent.length ? { spent } : {}), you: played.you, foe: played.foe, turns: played.turn, ...(dropped.length ? { dropped } : {}), ...(firsts.first_met ? { first_met: true } : {}), ...(firsts.first_win ? { first_win: true } : {}), ...(hunt ? { tally: poolTally(content, s, placeOf(content, game.hunt), ctx.now) } : {}), ...(full ? { pouch_full: full } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
 }
 
 /* The 符 the door put in his hand that the fight saw him play — each is

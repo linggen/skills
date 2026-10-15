@@ -53,6 +53,8 @@ export function seenOf(content, state, scene = null) {
   for (const id of meetsOf(content, state, scene)) seen.add(id);
   for (const id of Object.keys(state.bag ?? {})) seen.add(id);
   for (const id of Object.keys(state.duels ?? {})) seen.add(id);
+  // Every beast fought by any door (tasks.mjs duel → world.mjs meetBeast): a pool's are kept by the place.
+  for (const id of Object.keys(state.beasts ?? {})) seen.add(id);
   if (state.companion?.joined) seen.add(content.world.companion?.id);
   return folded(raw, seen).filter(id => raw.has(id));
 }

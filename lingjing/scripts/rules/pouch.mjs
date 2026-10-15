@@ -51,13 +51,20 @@ const roomFor = (content, state, id) => (state.bag?.[id] ?? 0) > 0 || freeSlot(c
 /* Into the pouch, or — full — into 待取 at the 洞府. What it did, named. */
 function stow(content, state, id, n = 1) {
   const name = pick(itemOf(content, id)?.name, state.lang) ?? id;
+  // 图鉴's things (his, 2026-10-15: first finds marked new): the first time a thing comes to him
+  // by any door it is `new`; `state.found` (id → how many ever came) keeps it, so the 收集 counts
+  // and the drop's weighting (arms.mjs lootOf) remember it after it is sold or spent.
+  const fresh = !hasFound(state, id);
+  state.found = { ...(state.found ?? {}), [id]: (state.found?.[id] ?? 0) + n };
   if (roomFor(content, state, id)) {
     state.bag[id] = (state.bag[id] ?? 0) + n;
-    return { id, name, n: state.bag[id] };
+    return { id, name, n: state.bag[id], ...(fresh ? { new: true } : {}) };
   }
   state.held = { ...(state.held ?? {}), [id]: (state.held?.[id] ?? 0) + n };
-  return { id, name, n: state.held[id], stored: true };
+  return { id, name, n: state.held[id], stored: true, ...(fresh ? { new: true } : {}) };
 }
+/* Had it ever: found by a door that stows, or in the bag or at the 洞府 now (a save from before `found`). */
+const hasFound = (state, id) => Boolean(state.found?.[id] || state.bag?.[id] > 0 || state.held?.[id] > 0);
 
 /* The rules' own line when anything went to 待取: 「储物袋已满，X 存进洞府待取。」 */
 function storedLine(state, got) {
@@ -113,4 +120,4 @@ export function bag(state, content, ctx, args) {
   return { state: s, result: { ...r, pouch: pouchBrief(content, s) } };
 }
 
-export { bagFull, freeSlot, pouchBrief, pouchCap, roomFor, slotsUsed, stow, storedLine };
+export { hasFound, bagFull, freeSlot, pouchBrief, pouchCap, roomFor, slotsUsed, stow, storedLine };

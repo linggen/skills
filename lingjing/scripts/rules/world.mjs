@@ -6,6 +6,7 @@ import { meetBrief, meetHere } from './road.mjs';
 import { duelBrief, shelfOf, shopOf, shopOpen, withMap } from './look.mjs';
 import { hashOf, provinceOf } from './travel.mjs';
 import { buyBack, visitorHere } from './visiting.mjs';
+import { huiNow, huiOrder, sceneHui } from './hui.mjs';
 
 const STORY_WORDS = 300, STORY_CHARS = 600;
 
@@ -335,15 +336,70 @@ function poolResting(content, state, place, now) {
   const rest = (poolOf(content, place)?.rest ?? POOL_REST_MIN) * 60000;
   return now.getTime() - Date.parse(rec.at) < rest;
 }
+/* 不打重复的怪 (Hanli, 2026-10-15: 「要确保有足够的怪……不要打重复的怪」) — creatures.json
+   `hunt`: a pool's entry may wait for a 回 (`from`, a 回 id: drawn once the save has reached it,
+   hui.mjs huiOrder) and keep to an hour (`when`: "night" | "day", the night by `hunt.night`
+   [from, to) in the hours of the day). The draw never deals one of the last `memory` beasts
+   fought at this place (kept on `state.duels['hunt:<place>'].last`, across days) while the pool
+   has more than those, and weighs a beast never met (state.beasts) `fresh` times. A pool may say
+   its own `memory` and `fresh`. Still a hash of the day, the save, the place and the fight's
+   number: the same on every device and every reload. */
+const HUNT = { memory: 3, fresh: 3, night: [19, 6] };
+const huntRules = (content, pool = null) => ({ ...HUNT, ...(content.creatures?.hunt ?? {}), ...(pool?.memory != null ? { memory: pool.memory } : {}), ...(pool?.fresh != null ? { fresh: pool.fresh } : {}) });
+function nightNow(content, now) {
+  const [from, to] = huntRules(content).night, h = now.getHours();
+  return from > to ? h >= from || h < to : h >= from && h < to;
+}
+/* The furthest 回 the save has reached, as a place in the book: the 回 it stands in, or any
+   scene it has passed (a 今 interlude after 古九 does not take 古九 back). A save with none: all open. */
+function reachedAt(content, state) {
+  const now = huiNow(content, state), all = [now, ...(state.done_scenes ?? []).map(id => sceneHui(content, id))].filter(Boolean);
+  return all.length ? Math.max(...all.map(h => huiOrder(content, h))) : Infinity;
+}
+const fromReached = (content, state, b) => !b.from || reachedAt(content, state) >= huiOrder(content, b.from);
+/* An entry up now: its 回 reached, its hour. */
+const entryUp = (content, state, b, now) => fromReached(content, state, b)
+  && (!b.when || (b.when === 'night') === nightNow(content, now));
+/* The beasts of a pool that may be drawn now, before the memory: of an open 卷, not walking with him, up. */
+const poolUp = (content, state, place, now) => (poolOf(content, place)?.beasts ?? [])
+  .filter(b => (b.weight ?? 1) > 0 && metNow(content, b.creature, now) && !(state.cast ?? []).includes(b.creature) && entryUp(content, state, b, now));
+const recentAt = (state, placeId) => state.duels?.[huntKey(placeId)]?.last ?? [];
 function poolBeast(content, state, place, now) {
-  const beasts = (poolOf(content, place)?.beasts ?? []).filter(b => (b.weight ?? 1) > 0 && metNow(content, b.creature, now) && !(state.cast ?? []).includes(b.creature));
-  if (!beasts.length) return null;
+  const up = poolUp(content, state, place, now);
+  if (!up.length) return null;
+  const rules = huntRules(content, poolOf(content, place));
   const day = dayKey(now), rec = state.duels?.[huntKey(place.id)];
   const n = rec?.day === day ? rec.n ?? 0 : 0;
+  // The last few fought here stand down — never all of the pool: one is always left to draw.
+  const keep = Math.max(0, Math.min(rules.memory, up.length - 1));
+  const shut = new Set(keep ? recentAt(state, place.id).slice(-keep) : []);
+  const beasts = up.filter(b => !shut.has(b.creature));
+  const from = beasts.length ? beasts : up;
+  const weight = b => (b.weight ?? 1) * (state.beasts?.[b.creature] ? 1 : rules.fresh);
   // hashOf moves by one as `n` does (its last digit): mixed first, or the draw only walks round the pool.
   const h = hashOf(`${day}|${seedOf(state)}|${place.id}|hunt|${n}`), x = Math.imul(h ^ (h >>> 16), 0x45d9f3b);
-  let at = ((x ^ (x >>> 16)) >>> 0) % beasts.reduce((t, b) => t + (b.weight ?? 1), 0);
-  return beasts.find(b => (at -= b.weight ?? 1) < 0).creature;
+  let at = ((x ^ (x >>> 16)) >>> 0) % from.reduce((t, b) => t + weight(b), 0);
+  return from.find(b => (at -= weight(b)) < 0).creature;
+}
+/* 图鉴's count for a stretch (his: a per-area completion count): of the beasts its pool holds
+   for this 卷 and 回 — any hour — how many he has fought. */
+function poolTally(content, state, place, now) {
+  const all = [...new Set((poolOf(content, place)?.beasts ?? []).filter(b => (b.weight ?? 1) > 0 && metNow(content, b.creature, now)
+    && fromReached(content, state, b)).map(b => b.creature))];
+  return { met: all.filter(id => state.beasts?.[id]).length, of: all.length };
+}
+/* At a pool's settle: the beast is remembered by the place (the draw's memory, `HUNT.memory`
+   deep and a little over, so a pool's own larger memory still reads it). */
+const rememberAt = (content, rec, cid, pool = null) => {
+  const deep = Math.max(huntRules(content, pool).memory, 1) + 2;
+  return [...(rec?.last ?? []).filter(id => id !== cid), cid].slice(-deep);
+};
+/* Every beast fought, by any door: met (each fight settled), won (each win), first (the day of
+   the first). 图鉴 reads it (codex.mjs seenOf) — a pool's fights are kept by the place. */
+function meetBeast(state, cid, won, now) {
+  const was = state.beasts?.[cid];
+  state.beasts = { ...state.beasts, [cid]: { met: (was?.met ?? 0) + 1, won: (was?.won ?? 0) + (won ? 1 : 0), first: was?.first ?? dayKey(now) } };
+  return { first_met: !was, first_win: won && !(was?.won) };
 }
 /* A pool's beast fights as its entry says: an entry's `deck` and `hp` stand
    over the creature's own (design.md § 游荡的怪). 蠪侄 and 狰 are the story's
@@ -370,7 +426,8 @@ function encounterOf(content, state, now) {
       const n = state.duels?.[huntKey(place.id)]?.day === dayKey(now) ? state.duels[huntKey(place.id)].n ?? 0 : 0;
       const game = { id: hauntId(cid), kind: 'duel', creature: cid, hunt: place.id, deal: `${hauntId(cid)}|${place.id}|${n}` };
       return {
-        creature: { id: cid, name: pick(creature.name, state.lang) }, game, pool: { id: place.has.pool, name: pick(poolOf(content, place).name, state.lang) ?? null },
+        creature: { id: cid, name: pick(creature.name, state.lang) }, game, pool: { id: place.has.pool, name: pick(poolOf(content, place).name, state.lang) ?? null, ...poolTally(content, state, place, now) },
+        ...(state.beasts?.[cid] ? {} : { new: true }),
         duel: duelBrief(content, state, game, now), won: false, withdrawn: false, tamed: false,
         beaten: Boolean(state.wins?.[game.id]), likes: null,
       };
@@ -545,4 +602,4 @@ function fittingPlace(content, state, from) {
    opens when it ends. */
 const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && carried(content, state);
 
-export { poolResting, guardOf, fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };
+export { meetBeast, poolTally, rememberAt, nightNow, poolUp, huntRules, poolResting, guardOf, fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };

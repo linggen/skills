@@ -770,7 +770,12 @@ function lintPlaces(content, ids, bad) {
         // The pool's own deck (world.mjs foeOf): a deck of real, dealt cards, standing over the creature's.
         const known = new Set((content.cards?.cards ?? []).filter(c => !c._token).map(c => c.id));
         if (b.deck != null && !(Array.isArray(b.deck) && b.deck.length === 12 && b.deck.every(c => known.has(c)))) bad(`pool ${id}`, `${b.creature}: deck is twelve known cards`);
+        // creatures.json `_hunt`: an entry waits for a 回 of the book, and keeps to night or day.
+        if (b.from != null && !huiOf(content, b.from)) bad(`pool ${id}`, `${b.creature}: from names no 回 of the book (${b.from})`);
+        if (b.when != null && !['night', 'day'].includes(b.when)) bad(`pool ${id}`, `${b.creature}: when is night or day, not ${b.when}`);
       }
+      if (pool.memory != null && !(Number.isInteger(pool.memory) && pool.memory >= 0)) bad(`pool ${id}`, 'memory is a whole number from 0');
+      if (pool.fresh != null && !(typeof pool.fresh === 'number' && pool.fresh >= 1)) bad(`pool ${id}`, 'fresh is a weight from 1');
     }
     const reached = new Set();
     const walk = id => { if (!byId[id] || reached.has(id)) return; reached.add(id); (byId[id].roads ?? []).forEach(walk); };
@@ -1048,6 +1053,16 @@ function lintCreatures(content, bad) {
     for (const i of c.pattern ?? []) if (!INTENTS.includes(i)) bad(`creature ${c.id}`, `fights an unknown way: ${i}`);
     if (c.card && !(content.cards?.cards ?? []).some(k => k.id === c.card && !k._token)) bad(`creature ${c.id}`, `deals unknown card ${c.card}`);
     for (const d of [c.drops ?? []].flat()) if (!content.items.items.some(i => i.id === d)) bad(`creature ${c.id}`, `drops unknown item ${d}`);
+    // `loot` (creatures.json `_loot`): rows of known things, whole weights, a `dup` that is a thing or 灵石.
+    if (c.loot != null && !Array.isArray(c.loot)) bad(`creature ${c.id}`, 'loot is a list of {item, w}');
+    for (const r of Array.isArray(c.loot) ? c.loot : []) {
+      const item = content.items.items.find(i => i.id === r.item);
+      if (!item) bad(`creature ${c.id}`, `loot names unknown item ${r.item}`);
+      if (r.w != null && !(Number.isInteger(r.w) && r.w >= 1)) bad(`creature ${c.id}`, `loot ${r.item}: w is a whole number from 1`);
+      if (r.n != null && !(Number.isInteger(r.n) && r.n >= 1)) bad(`creature ${c.id}`, `loot ${r.item}: n is a whole number from 1`);
+      if (r.dup?.item && !content.items.items.some(i => i.id === r.dup.item)) bad(`creature ${c.id}`, `loot ${r.item}: dup names unknown item ${r.dup.item}`);
+      if (item && (item.juan ?? 1) > (c.juan ?? 1)) bad(`creature ${c.id}`, `loot ${r.item} is of a later 卷 than the beast`);
+    }
     if (!c.made) lintPinyin(c, bad, true);
     if (c.signature) lintSignature(content, c, bad);
     // Caught, not fought (狰): the board it is caught with, and its line when struck at.

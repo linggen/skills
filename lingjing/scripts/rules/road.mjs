@@ -29,7 +29,7 @@ import { herAwake } from './companion.mjs';
 import { clone, pay, refuse, RIDDLE_TRIES, spendStamina } from './core.mjs';
 import { itemOf, offersOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
-import { bagFull, roomFor } from './pouch.mjs';
+import { bagFull, hasFound, roomFor } from './pouch.mjs';
 import { mainRoot } from './roots.mjs';
 import { visitorHere } from './visiting.mjs';
 import { allPlaces, atScene, creatureOf, huntable, inMade, sealedOf, ofJuan, placeOf, placeOpen, poolBeast, tooHard } from './world.mjs';
@@ -137,7 +137,7 @@ function meetPool(content, state, ctx) {
 /* How each drawn kind is laid down — its own hash for which one, so bits of
    the kind's roll never pick the same thing every time (夔 fifteen of fifteen). */
 const DEAL = {
-  find: (content, pickOf, pool) => { const f = pickOf(pool.find); return { find: f.book, n: f.n }; },
+  find: (content, pickOf, pool) => { const f = pickOf(pool.find, 'find'); return { find: f.book, n: f.n }; },
   riddle: (content, pickOf, pool) => ({ key: pickOf(pool.riddle), tried: [] }),
   // The dice are thrown now, one per way through, and kept: Ling writes the
   // ways without knowing them, so she cannot set a mark to fit a roll.
@@ -165,8 +165,17 @@ function dealMeet(content, state, ctx) {
   const roll = hashOf(`${dayKey(ctx.now)}|${seedOf(state)}|${state.place}|meet`);
   let at = roll % kinds.reduce((n, [, w]) => n + w, 0);
   const [kind] = kinds.find(([, w]) => (at -= w) < 0);
-  const nth = list => hashOf(`${dayKey(ctx.now)}|${state.place}|${seedOf(state)}|which`) % list.length;
-  return { kind, ...DEAL[kind](content, list => list[nth(list)], pool, `${dayKey(ctx.now)}|${state.place}|${seedOf(state)}`), veiled: true };
+  const roll2 = hashOf(`${dayKey(ctx.now)}|${state.place}|${seedOf(state)}|which`);
+  // 不拿重复的物品 (Hanli, 2026-10-15): a find of a thing he never had weighs `loot_rules.fresh`
+  // times (creatures.json, as a beast's loot does — arms.mjs lootOf); a find with no thing, once.
+  const fresh = content.creatures?.loot_rules?.fresh ?? 3;
+  const weightOf = f => { const id = content.meets.finds?.[f.book]?.[f.n]?.item; return id && !hasFound(state, id) ? fresh : 1; };
+  const pickOf = (list, what) => {
+    if (what !== 'find') return list[roll2 % list.length];
+    let at = roll2 % list.reduce((t, f) => t + weightOf(f), 0);
+    return list.find(f => (at -= weightOf(f)) < 0);
+  };
+  return { kind, ...DEAL[kind](content, pickOf, pool, `${dayKey(ctx.now)}|${state.place}|${seedOf(state)}`), veiled: true };
 }
 
 /* Lay down what this arrival meets, on the save being written: nothing when
