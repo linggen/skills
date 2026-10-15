@@ -919,7 +919,7 @@ function chanceRow(ctx) {
   if (!left) return '';
   // What it is and one tap to it (2026-09-25, "这个是什么, 不能点呢"): the
   // row said only a place and a clock. There, the stage holds its 收下.
-  const go = c.here ? '' : goBtn(say(w.go, { name: c.place.name }), c.place.id);
+  const go = c.here ? '' : bookGo(say(w.go, { name: c.place.name }), c.place.id, ctx);
   return taskRow({ id: 'chance', tag: 'chance', title: say(w.chanceTitle, { place: c.place.name }), meta: c.here ? w.chanceHere : say(w.chanceLeft, { t: hm(left, w) }),
     pays: c.here ? w.chanceLine : w.chanceWhat, act: go, cls: ` chance${left <= 30 ? ' soon' : ''}`, expand: false }, ctx);
 }
@@ -979,10 +979,10 @@ function taskGroups(ctx) {
   if (lucky) out.open.push(lucky);
   for (const o of look.offers ?? []) out.open.push(offerRow(o, ctx));
   const work = look.work;
-  if (work && !work.here) out.open.push(taskRow({ id: 'work', tag: 'errand', title: say(w.workAt, { name: work.place.name }), meta: (work.titles ?? []).join(' · '), act: goBtn(say(w.go, { name: work.place.name }), work.place.id), expand: false }, ctx));
+  if (work && !work.here) out.open.push(taskRow({ id: 'work', tag: 'errand', title: say(w.workAt, { name: work.place.name }), meta: (work.titles ?? []).join(' · '), act: bookGo(say(w.go, { name: work.place.name }), work.place.id, ctx), expand: false }, ctx));
   // A visiting shop: on its day, a row with the walk there; else when it comes, dimmed.
   for (const st of look.visitors ?? []) {
-    const go = st.today && st.place.id !== look.place?.id ? goBtn(say(w.go, { name: st.place.name }), st.place.id) : '';
+    const go = st.today && st.place.id !== look.place?.id ? bookGo(say(w.go, { name: st.place.name }), st.place.id, ctx) : '';
     out.open.push(taskRow({ id: `visitor-${st.place.id}`, tag: 'visitor', title: st.say, act: go, cls: st.today ? '' : ' waits', expand: false }, ctx));
   }
   // 已交: today's chores counted and the 一次 steps handed in.
@@ -1017,7 +1017,7 @@ function errandRow(q, ctx) {
   const w = ctx.words;
   const at = q.where && (!q.ready || q.away) ? (q.where.here ? w.needHere : say(w.needAt, { name: q.where.name })) : '';
   const act = q.away ? awayAct(q, ctx)
-    : q.ready ? doBtn(w.turnIn, 'turn', q.id) : q.where && !q.where.here ? goBtn(say(w.go, { name: q.where.name }), q.where.id) : '';
+    : q.ready ? doBtn(w.turnIn, 'turn', q.id) : q.where && !q.where.here ? bookGo(say(w.go, { name: q.where.name }), q.where.id, ctx) : '';
   return taskRow({ id: q.id, tag: q.id === 'tale' ? 'tale' : q.tag ?? 'errand', title: q.title, who: q.who, meta: [countsOf(q, w), at].filter(Boolean).join(' · '),
     pays: paysLine(q.pays, w), act, ready: q.ready && !q.away, detail: () => bookDetail(q, ctx) }, ctx);
 }
@@ -1034,6 +1034,13 @@ function awayAct(q, ctx) {
   if (!at || at.here) return '';
   if (ctx.look?.director?.corridor) return `<span class="chip giveto waits" title="${esc(t.why)}">${esc(say(t.back, { name: at.name }))}</span>`;
   return goBtn(say(ctx.words.go, { name: at.name }), at.id);
+}
+/* A walk offered in the 事 book: where he cannot leave yet (a corridor, a key beat) it is a dimmed
+   line with its reason, never a tap that only brings a refusal. */
+function bookGo(label, id, ctx) {
+  if (!ctx.look?.director?.corridor) return goBtn(label, id);
+  const t = GIVE_WORDS[ctx.lang] ?? GIVE_WORDS.zh;
+  return `<span class="chip go waits" title="${esc(t.why)}">${esc(label)}</span>`;
 }
 
 /* A 每日 / 每周 chore of his apps: where it is done, its app's page one tap away, 交差 when done. */
@@ -1157,7 +1164,7 @@ function bookDetail(q, ctx) {
     ${i.say ? `<div class="say">${esc(i.say)}</div>` : ''}
     ${pays ? `<div class="small"><span class="dim">${esc(w.paysWord)}</span> ${esc(pays)}</div>` : ''}
     ${i.next ? `<div class="small dim">${esc(w.nextWord)} · ${esc(i.next)}</div>` : ''}
-    <div class="acts">${q.where && !q.where.here ? goBtn(say(w.go, { name: q.where.name }), q.where.id) : ''}${askBtn(w.about, say(w.sayQuestAbout, { title: q.title }))}${i.kind === 'errand' || i.kind === 'tale' ? `<button class="act quiet" data-drop="${esc(q.id)}">${esc(w.drop)}</button>` : ''}</div></div>`;
+    <div class="acts">${q.where && !q.where.here ? bookGo(say(w.go, { name: q.where.name }), q.where.id, ctx) : ''}${askBtn(w.about, say(w.sayQuestAbout, { title: q.title }))}${i.kind === 'errand' || i.kind === 'tale' ? `<button class="act quiet" data-drop="${esc(q.id)}">${esc(w.drop)}</button>` : ''}</div></div>`;
 }
 
 /// The ask bar: one field for every 问询 on the page. It lives outside the

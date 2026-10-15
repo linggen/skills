@@ -22,3 +22,13 @@ test('where he cannot leave yet (the 秘境, a key beat): a dimmed line says whe
   assert.match(html, /<span class="chip giveto waits" title="先把眼前的事做完">回到沉鼎山下 · 坊市再交<\/span>/);
   assert.doesNotMatch(html, /data-go="fangshi"/);
 });
+
+test('every 去X in the 事 book is dimmed where he cannot leave — no tap that only brings a refusal', () => {
+  const far = { id: 'guan-houshan-yezhu', title: '后山的野猪', tag: 'errand', need: [{ kind: 'subdue', have: 0, n: 1 }], ready: false, where: { id: 'houshan', name: '沉鼎山 · 后山崖顶' } };
+  const html = bookPopHtml({ look: { book: [far], place: { id: 'shimen' }, director: { corridor: true }, work: { place: { id: 'waimen', name: '沉鼎观 · 外门' }, here: false, titles: ['修屋顶'] } }, words: WORDS.zh, lang: 'zh' });
+  assert.doesNotMatch(html, /data-go=/);
+  assert.match(html, /<span class="chip go waits" title="先把眼前的事做完">去沉鼎山 · 后山崖顶<\/span>/);
+  assert.match(html, /<span class="chip go waits" title="先把眼前的事做完">去沉鼎观 · 外门<\/span>/);
+  const open = bookPopHtml({ look: { book: [far], place: { id: 'shimen' }, director: { corridor: false } }, words: WORDS.zh, lang: 'zh' });
+  assert.match(open, /data-go="houshan"/);
+});
