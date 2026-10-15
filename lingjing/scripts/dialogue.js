@@ -16,7 +16,7 @@
 // reload finds its place (lingjing.js holds it; tests read these directly).
 import { esc } from './esc.js';
 import { headOf } from './jieben.mjs';
-import { linesHtml, paraHtml, screensOf } from './lines.js';
+import { joinSentences, linesHtml, paraHtml, screensOf } from './lines.js';
 
 // 跳过 (Hanli, 2026-10-14: 「2改跳过」): the skip reads 跳过 / Skip — never 继续, which is the way on.
 export const DLG_WORDS = {
@@ -314,7 +314,7 @@ const pagerHtml = (w) => `<span class="pager" hidden><button class="q" data-pg="
 /* Its last line, faint above the way on (b-choices): the beat's final screen. */
 function waysHtml(b, choices, lang) {
   if (!choices) return '';
-  const tail = screensOf(b.text, lang).at(-1)?.join('') ?? '';
+  const last = screensOf(b.text, lang).at(-1), tail = last ? joinSentences(last, b.text) : '';
   return `<div class="ways"><div class="last">${esc(tail)}</div><div class="wayacts">${choices}</div></div>`;
 }
 /* 快's column: every beat left of the passage, a paragraph each, in the band on the stage's lower

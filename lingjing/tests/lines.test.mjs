@@ -277,3 +277,15 @@ test('the beats carry her ⟪…⟫ as asides: the 00-deer passage', async () =>
   assert.equal(hers.text, '「那头鹿。」');
   assert.ok(beats.every((b) => !/[⟪⟫]/.test(b.text)), 'no mark is ever shown');
 });
+
+test('English sentences keep their space when laid side by side (快\'s column, a screen); Chinese closes up', async () => {
+  const { joinSentences } = await import('../scripts/lines.js');
+  const en = { text: 'It was Shen who found the way out of the valley. He plucked a hair from his head. "Here," she said.' };
+  const text = (html) => html.replace(/<[^>]+>/g, '').replaceAll('&quot;', '"');
+  assert.equal(text(paraHtml(en)), en.text);
+  assert.equal(text(linesHtml(en, { lang: 'en' })), en.text);
+  const zh = { text: '他转过身。「路在这儿。」银月已经站在他身后了。' };
+  assert.equal(text(paraHtml(zh)), zh.text);
+  assert.equal(joinSentences(['A.', 'B.']), 'A. B.');
+  assert.equal(joinSentences(['甲。', '乙。']), '甲。乙。');
+});

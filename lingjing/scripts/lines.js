@@ -27,6 +27,13 @@ export function sentencesOf(text) {
   return parts.map((s) => s.trim()).filter(Boolean);
 }
 
+/* Sentences back into one run of text: Chinese closes up, English keeps the space between
+   sentences that sentencesOf split on (2026-10-15 play-test: 快 read 「valley.He plucked」).
+   Every place that lays sentences side by side — the column, a screen, the last line — joins here. */
+const CJK = /[\u3400-\u9fff]/;
+export const sentenceGap = (text) => (CJK.test(String(text ?? '')) ? '' : ' ');
+export const joinSentences = (parts, text = parts.join('')) => parts.join(sentenceGap(text));
+
 /* How much one screen holds: a few lines over the picture, never a wall. */
 export const SCREEN_CHARS = { zh: 120, en: 360 };
 /* Sentences into screens of at most `max` characters (a sentence longer than that stands alone). */
@@ -34,7 +41,7 @@ export function screensOf(text, lang = 'zh') {
   const max = SCREEN_CHARS[lang] ?? SCREEN_CHARS.zh, out = [];
   for (const s of sentencesOf(text)) {
     const cur = out.at(-1);
-    if (cur && cur.join('').length + s.length <= max) cur.push(s);
+    if (cur && joinSentences(cur).length + s.length <= max) cur.push(s);
     else out.push([s]);
   }
   return out;
@@ -124,7 +131,7 @@ export function linesHtml(b, { lang = 'zh', herId = null, words = {} } = {}) {
   const screens = screensOf(b?.text, lang);
   if (!screens.length) return '';
   const { who, lead, sentence } = beatParts(b, { herId, words });
-  return screens.map((ss, k) => `<div class="screen" data-screen="${k}"${k ? ' hidden' : ''}><p class="line ${who}">${k ? '' : lead}${ss.map((s) => `<span class="s">${sentence(s)}</span>`).join('')}</p></div>`).join('');
+  return screens.map((ss, k) => `<div class="screen" data-screen="${k}"${k ? ' hidden' : ''}><p class="line ${who}">${k ? '' : lead}${joinSentences(ss.map((s) => `<span class="s">${sentence(s)}</span>`), b.text)}</p></div>`).join('');
 }
 
 /* One beat whole, as 快's column shows it (dialogue.js storyHtml): one paragraph, every
@@ -135,7 +142,7 @@ export function paraHtml(b, { herId = null, words = {}, place = null, faces = []
   const { who, lead, sentence } = beatParts(b, { herId, words });
   // `place` — where the beat stands in the reading (「i.j」), so 慢 · 中 picks up from the one in view.
   // `faces` — whose 亮相 this beat is (快's page brings them on above, lingjing.js).
-  return `<p class="line ${who}"${place ? ` data-beat="${esc(place)}"` : ''}${faces.length ? ` data-faces="${esc(faces.join(','))}"` : ''}>${lead}${ss.map((s) => `<span class="s on">${sentence(s)}</span>`).join('')}</p>`;
+  return `<p class="line ${who}"${place ? ` data-beat="${esc(place)}"` : ''}${faces.length ? ` data-faces="${esc(faces.join(','))}"` : ''}>${lead}${joinSentences(ss.map((s) => `<span class="s on">${sentence(s)}</span>`), b.text)}</p>`;
 }
 
 /* The clock for one beat on the stage: which screen, how many of its sentences
