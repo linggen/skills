@@ -782,7 +782,10 @@ button.gcard { cursor: pointer; font: inherit; }
 .feat .featbox { position: relative; display: grid; place-items: center; gap: 6px; padding: 26px 46px; border: 3px double #b8892a; border-radius: 10px;
   background: radial-gradient(circle, #fffaf0 55%, #f6e6c0); color: #7a5412; box-shadow: 0 0 60px 10px rgba(214, 170, 60, .45); }
 .feat b { font-size: 44px; letter-spacing: .4em; margin-right: -.4em; color: #9a6a12; text-shadow: 0 2px 12px rgba(214, 170, 60, .6); }
-.feat span { font-size: 20px; letter-spacing: .2em; }
+.feat span { font-size: 20px; letter-spacing: .2em; text-wrap: balance; text-align: center; }
+/* As wide as its words (古九's tester, 2026-10-15: 「古」 alone on a line, 「· 一张鹿皮抵旧债」 under it — the seal,
+   centred from the stage's middle, shrank to the half left of it); a phone's width at most. */
+.feat { width: max-content; max-width: calc(100% - 32px); }
 .feat .rays { position: absolute; inset: -120px; border-radius: 50%;
   background: repeating-conic-gradient(rgba(230, 190, 90, .28) 0 8deg, transparent 8deg 20deg);
   mask: radial-gradient(circle, #000 25%, transparent 68%); animation: featSpin 4s linear both; }
@@ -902,7 +905,7 @@ body.reading .view, body.reading .tray { display: none; }
 .titlecard.fading { animation: titleOut .6s ease-in forwards; }
 @keyframes titleOut { to { opacity: 0; transform: translateY(-6px); } }
 @media (prefers-reduced-motion: reduce) { .titlecard.fading { animation: none; opacity: 0; } }
-.titlecard b { display: block; font-size: 21px; letter-spacing: .15em; color: var(--ling); }
+.titlecard b { display: block; font-size: 21px; letter-spacing: .15em; color: var(--ling); text-wrap: balance; }
 .titlecard p { margin: 10px 0 12px; line-height: 1.8; color: var(--dim); }
 /* A board or 论道 done for the day says so, plainly — never dead tiles. */
 .boarddone { margin: 8px 0 2px; padding: 10px 12px; border-radius: 10px; text-align: center; font-family: var(--serif, serif); letter-spacing: .08em; color: var(--dim); background: color-mix(in srgb, var(--surface) 70%, transparent); border: 1px dashed var(--faint, #bbb); }

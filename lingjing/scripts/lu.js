@@ -126,11 +126,13 @@ function paipuHtml(cards, w, { artBase = '', her = null } = {}) {
 }
 
 /* The chapter's title card on the stage, once, when a chapter has just begun. */
+/* A title never breaks at its 「 · 」 (古九's tester, 2026-10-15: 「古」 on one line, 「· 一张鹿皮抵旧债」 on the next). */
+export const keepTogether = (t) => String(t ?? '').replace(/ · /g, '\u00a0·\u00a0');
 export function titleCardHtml(chapter, lang = 'zh', { fading = false } = {}) {
   if (!chapter?.fresh || !chapter.intro) return '';
   // No button (2026-10-14, his: 「且看」 was one more tap): the card fades by
   // itself after a moment, or goes on a tap anywhere or Space (lingjing.js).
-  return `<div class="titlecard${fading ? ' fading' : ''}" role="note" data-titlecard="${esc(chapter.id)}"><b>${esc(chapter.title)}</b><p>${esc(chapter.intro)}</p></div>`;
+  return `<div class="titlecard${fading ? ' fading' : ''}" role="note" data-titlecard="${esc(chapter.id)}"><b>${esc(keepTogether(chapter.title))}</b><p>${esc(chapter.intro)}</p></div>`;
 }
 
 /* A small scroll, drawn in the chip's own ink: the 录 is a record, not a book to read. */

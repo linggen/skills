@@ -31,7 +31,7 @@ import { thinker, stillAsked } from './think.js';
 import { createVoice, nodeMoment } from './voice.js';
 import { bigPlay, createFightSay, cuesOf, fightFacts, strongFoe } from './fightsay.js';
 import { raiseUnease } from './unease.js';
-import { LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
+import { keepTogether, LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
 import { colourOn, freshMemory, memoryCardHtml, replayOf } from './memory.js';
 import { doorsHtml } from './doors.js';
 import { HOMING_MS, freshHome, homingCardHtml, inkMapSvg, shapesOf, unrollHtml } from './inkmap.js';
@@ -826,7 +826,7 @@ function featNow(kind, name, from = '', quiet = false, gains = '', her = null) {
   // A throw that landed against the odds (under the rule's `low`) is marked on the seal.
   const against = kind === 'rise' && thrown?.low ? `<em class="featlow">${esc(w.bt.low)}</em>` : '';
   if (kind === 'rise') thrown = null;
-  el.innerHTML = `<i class="rays"></i><div class="featbox${against ? ' low' : ''}">${against}<b>${esc(kind === 'rise' ? w.featRise : w.featChapter)}</b><span>${esc(name)}</span>${gains ? `<small class="featgain">${esc(gains)}</small>` : ''}</div>`;
+  el.innerHTML = `<i class="rays"></i><div class="featbox${against ? ' low' : ''}">${against}<b>${esc(kind === 'rise' ? w.featRise : w.featChapter)}</b><span>${esc(keepTogether(name))}</span>${gains ? `<small class="featgain">${esc(gains)}</small>` : ''}</div>`;
   el.style.animationDelay = `${Math.max(0, riseAfter - performance.now())}ms`;
   $('view')?.appendChild(el);
   const gone = () => { if (!el.isConnected) return; el.remove(); featOn = Boolean(document.querySelector('.feat')); if (kind === 'chapter') sealOwed = false; render(); };

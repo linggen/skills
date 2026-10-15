@@ -269,3 +269,15 @@ test('a 回\'s 「完」 card speaks to 你 throughout — what he did and the t
     }
   }
 });
+
+// 古九's tester (2026-10-15): the 新的一回 card broke 「古」 from 「· 一张鹿皮抵旧债」.
+test('a 回\'s title never breaks at its 「 · 」 — on the title card and on the 新的一回 seal', async () => {
+  const { keepTogether, titleCardHtml } = await import('../scripts/lu.js');
+  assert.equal(keepTogether('古 · 一张鹿皮抵旧债'), '古 · 一张鹿皮抵旧债');
+  assert.match(titleCardHtml({ id: 'x', fresh: true, intro: '…', title: '第二回 古 · 一张鹿皮抵旧债' }), /古 · 一张鹿皮抵旧债/);
+  const fsm = await import('node:fs');
+  const page = fsm.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /<span>\$\{esc\(keepTogether\(name\)\)\}<\/span>/);
+  const css = fsm.readFileSync(new URL('../scripts/lingjing.css', import.meta.url), 'utf8');
+  assert.match(css, /\.feat \{ width: max-content; max-width: calc\(100% - 32px\); \}/);
+});
