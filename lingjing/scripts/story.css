@@ -15,7 +15,7 @@
 .topbar .xw .bar { min-width: 36px; }
 .topbar .titlerow { order: 1; flex: 1 1 auto; min-width: 3.5em; }
 .topbar .huiline { flex: 0 100 auto; }
-.topbar .place { flex: 0 1 auto; min-width: 3em; }
+.topbar .place { flex: 0 0 auto; max-width: 100%; min-width: 0; } /* the 回 goes to nothing first; then the place clips */
 .topbar .placecap { display: none; }
 .topbar .langsw { order: 3; margin-left: 0; flex: none; }
 .topbar .headcards { order: 2; flex: 0 1 auto; display: flex; align-items: center; gap: 8px; min-width: 0; margin-left: auto; overflow: hidden; }
@@ -53,6 +53,7 @@ body.reading .slotfoot .errands .more { visibility: hidden; }
 .slotfoot .bookchip.wxchip { font-variant-numeric: tabular-nums; }
 .bookchip .due { font-family: var(--mono); font-size: 10.5px; font-weight: 600; line-height: 1.5; padding: 0 5px; border-radius: 99px; background: var(--seal); color: var(--surface); }
 .bookchip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--seal); }
+.slotfoot .bookpop.roadspop { left: 12px; transform: none; }
 .roadspop .roadlist { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .roadspop .act { white-space: nowrap; }
 .slotfoot .shelfpop { width: auto; display: flex; gap: 8px; padding: 10px 12px; }
