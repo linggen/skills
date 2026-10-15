@@ -345,15 +345,16 @@ function poolBeast(content, state, place, now) {
   let at = ((x ^ (x >>> 16)) >>> 0) % beasts.reduce((t, b) => t + (b.weight ?? 1), 0);
   return beasts.find(b => (at -= b.weight ?? 1) < 0).creature;
 }
-/* A pool's beast fights as its entry says: an entry's `deck` stands over the
-   creature's own (design.md § 游荡的怪). 蠪侄 and 狰 are the story's fights too
-   (古三's wood, the 药园) — the scene keeps the creature's deck, the stretch is
-   weighed apart; a game with no `hunt` is never a pool's. */
+/* A pool's beast fights as its entry says: an entry's `deck` and `hp` stand
+   over the creature's own (design.md § 游荡的怪). 蠪侄 and 狰 are the story's
+   fights too (古三's wood, the 药园) — the scene keeps the creature's deck, the
+   stretch is weighed apart (tools/story-fights.mjs); a game with no `hunt` is
+   never a pool's. */
 const poolEntry = (content, placeId, cid) => (poolOf(content, placeOf(content, placeId))?.beasts ?? []).find(b => b.creature === cid) ?? null;
 function foeOf(content, game) {
   const creature = creatureOf(content, game.creature);
-  const deck = creature && game.hunt ? poolEntry(content, game.hunt, game.creature)?.deck : null;
-  return deck ? { ...creature, deck } : creature;
+  const entry = creature && game.hunt ? poolEntry(content, game.hunt, game.creature) : null;
+  return entry ? { ...creature, ...(entry.deck ? { deck: entry.deck } : {}), ...(entry.hp ? { hp: entry.hp } : {}) } : creature;
 }
 /* The places a beast is met at: its haunt, and every place whose pool holds it. */
 const hauntsOf = (content, id) => allPlaces(content).filter(p => p.has?.creature === id || (poolOf(content, p)?.beasts ?? []).some(b => b.creature === id));

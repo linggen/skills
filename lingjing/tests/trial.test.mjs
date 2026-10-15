@@ -1,14 +1,14 @@
 // A 试 (battle.js § trial): a story trial is passed, not won by a kill — the
 // beast yields at `trial.yield` of its 气血, and a player still standing when
 // its cards are spent has passed (not a withdrawal). 冰夷's dragons (古十)
-// must be reliably passable with the hand the road deals by then.
+// are passed by outlasting them (tests/fight-band.test.mjs weighs how often).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { act, begin, foeTurn, offers } from '../scripts/battle.js';
 import { loadContent } from '../scripts/content.mjs';
 import { fightSetup } from '../scripts/rules.mjs';
 import { creatureOf } from '../scripts/rules/world.mjs';
-import { fightOnce, roadHand } from '../tools/trial-sim.mjs';
+import { roadHand } from '../tools/trial-sim.mjs';
 import fs from 'node:fs';
 
 const content = loadContent();
@@ -55,31 +55,14 @@ test('a trial outlasted is passed: its cards spent while he stands is a win, not
   assert.equal(plain.outcome, 'withdrew', 'an ordinary beast still withdraws');
 });
 
-test('the ji-altar save holds the road\'s hand, and a careful player passes the dragons ≥ 90% with it', () => {
+test('the ji-altar save holds the road\'s hand (tools/trial-sim.mjs roadHand)', () => {
   const road = roadHand(fixture);
   assert.deepEqual([...fixture.cards].sort(), [...road.cards].sort(), 'the fixture is the road hand (tools/trial-sim.mjs roadHand)');
-  const dragons = creatureOf(content, 'foe-shuanglong');
-  let won = 0;
-  const n = 60;
-  for (let k = 0; k < n; k += 1) if (fightOnce({ ...fightSetup(content, fixture, dragons, NOW), seed: `gate|${k}` }).outcome === 'won') won += 1;
-  assert.ok(won / n >= 0.9, `passed ${won}/${n}`);
 });
 
-/* 蛫 (古七, wm-wangzuo `open`) is mandatory: its 12 cards and its 杀招 must
-   not outlast a careful player. Live 2026-10-01 it was 9.8% (four taunt walls
-   and a heal of 12 at half); weighed now like 狰 (≈77%) and 蠪侄 (≈77%). */
-test('蛫 is a fair story fight: a careful player wins it about three times in four', () => {
-  const gui = creatureOf(content, 'gui');
-  const rate = (hand) => {
-    let won = 0;
-    const n = 120;
-    for (let k = 0; k < n; k += 1) if (fightOnce({ ...fightSetup(content, hand, gui, NOW), seed: `trial|${k}` }).outcome === 'won') won += 1;
-    return won / n;
-  };
-  const full = rate(roadHand(fixture)), then = rate(roadHand(fixture, NOW, 'gui'));
-  assert.ok(full >= 0.65 && full <= 0.9, `the road hand wins ${(full * 100).toFixed(1)}%`);
-  assert.ok(then >= 0.65, `the hand held at 古七 wins ${(then * 100).toFixed(1)}%`);
-});
+/* How often each story fight is won the first time (冰夷双龙, 蛫, 秦雁 …) is
+   tests/fight-band.test.mjs's: about 60% (Hanli, 2026-10-15: 都太简单了 — the
+   ≥ 90% these tests once locked made every fight a formality). */
 
 /* 三十招 (古六, wm-lun2): 秦雁 is a 试 passed by standing through her moves,
    as the book has it — never by driving her down. */
@@ -88,8 +71,4 @@ test('秦雁 is a dodge trial: outlasted, passed; no yield', () => {
   assert.equal(qin.trial?.outlast, true);
   assert.equal(qin.trial?.yield, undefined, 'he never drives her down');
   assert.match(qin.trial.goal.zh, /三十招/);
-  let won = 0;
-  const n = 60, hand = roadHand(fixture, NOW, 'foe-shijie');
-  for (let k = 0; k < n; k += 1) if (fightOnce({ ...fightSetup(content, hand, qin, NOW), seed: `trial|${k}` }).outcome === 'won') won += 1;
-  assert.ok(won / n >= 0.9, `passed ${won}/${n}`);
 });

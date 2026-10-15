@@ -4,6 +4,7 @@
 // frozen and kept out of Look, the 事 book's goal is the scene's own, the header reads the
 // book's day or night, and the stage shows the rooms' own paintings. It all comes back on the
 // way out. Declared in chapter.json; no rule names the 沉鼎秘境.
+import { lookahead } from '../tools/trial-sim.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -52,13 +53,9 @@ function fightOut(state, id, now = DAY1) {
   const { setup } = started.result.duel, st = begin(setup, catalog), actions = [];
   for (let guard = 0; guard < 160 && st.outcome === 'open'; guard += 1) {
     if (st.whose === 'foe') { foeTurn(st); continue; }
-    const can = offers(st).filter(o => o.ok && o.action.kind !== 'end');
-    const body = side => side.board.reduce((n, m) => n + m.atk + m.hp * 0.6, 0);
-    const before = { hp: st.foe.hp, mine: body(st.you), theirs: body(st.foe) };
-    const best = can.map(o => {
-      const after = battle([...actions, tokenOf(o.action)], setup, catalog);
-      return { o, worth: (before.hp - after.foe.hp) * 2 + (body(after.you) - before.mine) * 1.2 + (before.theirs - body(after.foe)) - (o.cost ?? 0) * 0.1 };
-    }).sort((x, y) => y.worth - x.worth)[0]?.o;
+    // A player who thinks a turn ahead (tools/trial-sim.mjs lookahead): the fights are
+    // tuned to be lost often by a careless line (tests/fight-band.test.mjs).
+    const pick = lookahead(st, { deep: true }), best = pick.kind === 'end' ? null : { action: pick };
     if (!best) { act(st, { kind: 'end' }, 'you'); actions.push('end'); continue; }
     act(st, best.action, 'you');
     actions.push(tokenOf(best.action));

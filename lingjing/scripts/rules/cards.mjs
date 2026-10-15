@@ -199,7 +199,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
       ...(boost ? { boost } : {}),
     },
     // An elite is its harder deck and nothing else (redesign-v2 § 四).
-    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...(creature.signature ? { signature: creature.signature } : {}), ...(creature.trial ? { trial: creature.trial } : {}) },
+    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...(creature.hp ? { hp: creature.hp } : {}), ...(creature.signature ? { signature: creature.signature } : {}), ...(creature.trial ? { trial: creature.trial } : {}) },
   };
 }
 

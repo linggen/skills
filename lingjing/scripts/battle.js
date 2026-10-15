@@ -159,6 +159,8 @@ export function shuffle(ids, seed) {
    `stars` is { cardId: n } — a 功法 tempered in 闭关 (rules/seclusion.mjs):
    each ★ takes 1 off its 灵力 while it costs more than 1, and past that adds
    1 to its number (`costOf`, `effectOf`). Locked at the door like the rest.
+   `foe.hp` is a multiple of its mode's share of 气血 (creatures.json `hp`, a pool
+   entry's own over it — how one beast is weighed; tools/story-fights.mjs).
    `signature` is the beast's 杀招 (creatures.json): { id, name, effect }.
    `catalog` is the card rows by id. Nothing else reaches the fight. */
 function sideOf(who, cfg, catalog, mode, seed) {
@@ -201,7 +203,10 @@ export function begin(setup, catalog) {
   const you = sideOf('you', setup.you, catalog, mode, seed);
   // Every beast stands at the mode's share of its 气血; an elite is only its
   // harder deck (redesign-v2 § 四 — its full 气血 was cut with its own rules).
-  const foe = sideOf('foe', { ...setup.foe, hpScale: mode.foeHp }, catalog, mode, seed);
+  // `foe.hp` (creatures.json `hp`) scales that share for one beast: the
+  // story's fights are weighed one by one (tools/story-fights.mjs), and a
+  // beast too frail to threaten anyone stands taller by data, never by name.
+  const foe = sideOf('foe', { ...setup.foe, hpScale: mode.foeHp * (setup.foe.hp ?? 1) }, catalog, mode, seed);
   // `uid`: each body that stands gets its own number, in the order it arrives —
   // two of the same card on one rank are two bodies, and the log and the
   // screen must tell them apart (Hanli, 2026-10-15: hitting the second 夫诸 lit
@@ -649,7 +654,7 @@ export function foeStep(st) {
   }
   const playable = gathering || intent ? [] : side.hand
     .map((id, index) => ({ index, c: card(st, id) }))
-    .filter(({ c }) => c && costOf(side, c) <= side.mana)
+    .filter(({ c }) => c && costOf(side, c) <= side.mana && worthPlaying(st, side, c))
     .sort((a, b) => costOf(side, b.c) - costOf(side, a.c));
   const next = playable.find(({ index, c }) => !legal(st, { kind: 'play', index, target: aimFor(st, side, c) }, 'foe'));
   if (next) {
@@ -677,6 +682,32 @@ export function foeStep(st) {
   return { kind: 'end' };
 }
 
+/* Does this card do anything now? A beast never spends a turn on nothing
+   (his, 2026-10-15: 野猪 played 厚土 on an empty rank and never struck): a
+   body always stands; a spell is held while every verb it carries would
+   land on nothing — a 厚土/饥啸 with no rank of its own, a heal at full 气血,
+   a sweep at an empty rank, a 锁/吞 with nothing it fits, a draw from an
+   empty pile (which would send it into the mist). */
+const VERB_USE = {
+  damage: () => true,
+  drain: () => true,
+  summon: (st, side) => side.board.length < st.mode.board,
+  rally: (st, side) => side.board.length > 0,
+  buff: (st, side) => side.board.length > 0,
+  heal: (st, side) => side.hp < side.hpMax,
+  sweep: (st, side) => other(st, side).board.length > 0,
+  chain: (st, side, e) => other(st, side).board.some(m => fits(e, m)),
+  swallow: (st, side, e) => other(st, side).board.some(m => fits(e, m)),
+  draw: (st, side) => side.deck.length > 0,
+  drought: () => true,
+};
+export function worthPlaying(st, side, c) {
+  if (c.kind === 'minion') return true;
+  const e = effectOf(side, c);
+  const verbs = Object.keys(e ?? {}).filter(k => VERB_USE[k] && e[k] != null);
+  return !verbs.length || verbs.some(k => VERB_USE[k](st, side, e));
+}
+
 /* Its whole turn at once — for the rules, the gate and anything with no screen
    to draw on. The page uses `foeStep`. */
 export function foeTurn(st) {
@@ -698,9 +729,14 @@ function aimFor(st, side, c) {
     return ok.length ? { kind: 'minion', index: ok[0].index } : undefined;
   }
   if (c.effect?.damage == null) return undefined;
-  const taunt = them.board.findIndex(m => m.taunt);
-  if (taunt >= 0) return { kind: 'minion', index: taunt };
-  return them.hp <= c.effect.damage * 2 ? undefined : (them.board.length ? { kind: 'minion', index: 0 } : undefined);
+  // A blow goes where it does the most: the hero when it is close to the end;
+  // else the hardest-hitting body it drives off; else the hero (a spell
+  // never minds a 护主). A blow that only grazes a body is a blow wasted.
+  const n = effectOf(side, c).damage;
+  if (them.hp <= n * 2) return undefined;
+  const kills = them.board.map((m, index) => ({ m, index })).filter(({ m }) => dealt(st, side.who, n, c.element, m.element) >= m.hp)
+    .sort((a, b) => (b.m.atk - a.m.atk) || (b.m.hp - a.m.hp));
+  return kills.length ? { kind: 'minion', index: kills[0].index } : undefined;
 }
 
 function aimPower(st, side) {

@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { lookahead } from '../tools/trial-sim.mjs';
 import { spawnSync } from 'node:child_process';
 import { act, battle, begin, effectOf, foeTurn, offers, tokenOf } from '../scripts/battle.js';
 import { lint, loadContent } from '../scripts/content.mjs';
@@ -110,24 +111,11 @@ function fightOut(state, id, { line = null, c = ctx(), between = s => s } = {}) 
   const actions = [];
   for (let guard = 0; guard < 160 && st.outcome === 'open'; guard += 1) {
     if (st.whose === 'foe') { foeTurn(st); continue; }
-    const can = line === 'pass' ? [] : offers(st).filter(o => o.ok && o.action.kind !== 'end');
-    // The most 气血 taken off the beast for the least 灵力, bodies first when
-    // they may strike — enough to win most fixed seeds, and deterministic.
-    // Worth what it takes off the beast, what it leaves standing, and what it
-    // clears — a line that counts damage alone leaves its bodies in hand and
-    // loses fights a board would have won.
-    const body = side => side.board.reduce((n, m) => n + m.atk + m.hp * 0.6, 0);
-    const before = { hp: st.foe.hp, mine: body(st.you), theirs: body(st.foe) };
-    const best = can
-      .map(o => {
-        const after = battle([...actions, tokenOf(o.action)], setup, catalog);
-        const worth = (before.hp - after.foe.hp) * 2
-          + (body(after.you) - before.mine) * 1.2
-          + (before.theirs - body(after.foe))
-          - (o.cost ?? 0) * 0.1;
-        return { o, worth };
-      })
-      .sort((a, b) => b.worth - a.worth)[0]?.o;
+    // A player who thinks a turn ahead (tools/trial-sim.mjs lookahead): the
+    // fights are tuned to be lost often by a careless line (tests/fight-band),
+    // and these tests need the win to test what follows it.
+    const pick = line === 'pass' ? { kind: 'end' } : lookahead(st, { deep: true });
+    const best = pick.kind === 'end' ? null : { action: pick };
     if (!best) { act(st, { kind: 'end' }, 'you'); actions.push('end'); continue; }
     act(st, best.action, 'you');
     actions.push(tokenOf(best.action));
