@@ -244,13 +244,11 @@ test('the rooms hold play between the beats: the hall\'s 华容道, the 凶崖\'
   assert.ok(paid.wealth > s.wealth, 'and stones');
 });
 
-test('the two new boards: a control at open, both languages, played well and badly, and the quiet way out', () => {
+test('the two new boards: a control at open, both languages, played well and badly — and no skip of their own (the page\'s stuck gate, 2026-10-15)', () => {
   for (const [mod, control] of [[descend, /data-g="start"/], [gather, /data-g="pull"/]]) {
     const g = mod.newGame('seed');
     assert.match(mod.html(g, 'zh'), control);
-    for (const lang of ['zh', 'en']) { assert.doesNotMatch(mod.html(g, lang), /undefined|NaN/); assert.match(mod.html(g, lang), /data-g="skip"/); }
-    const sk = mod.act(g, { g: 'skip' });
-    assert.equal(sk.won, true); assert.equal(sk.state.grade, null);
+    for (const lang of ['zh', 'en']) { assert.doesNotMatch(mod.html(g, lang), /undefined|NaN/); assert.doesNotMatch(mod.html(g, lang), /data-g="skip"/); }
   }
   // 下崖: listening first, never a slip — steady; grabbing the wet side — scraped, and three stabs ask a breath.
   let d = descend.act(descend.newGame('x'), { g: 'start' }).state;

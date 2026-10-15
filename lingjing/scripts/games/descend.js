@@ -8,7 +8,7 @@
 // still and breathe before he goes on. Grade steady · scraped, written as a mark.
 // Pure module: newGame / html / act.
 import { rng } from './seeded.js';
-import { SKIP, btn, n, scene, skipBtn, skipped, splash } from './ink.js';
+import { btn, n, scene, skipped, splash } from './ink.js';
 
 export const meta = {
   id: 'descend',
@@ -99,5 +99,5 @@ export function html(state, lang = 'zh') {
   const acts = !state.started ? btn(t.start, 'data-g="start"')
     : state.stabs >= STABS ? btn(t.breathe, 'data-g="breathe"')
       : `<div class="g-pair">${btn(t.left, 'data-g="left"')}${btn(t.right, 'data-g="right"')}</div>${state.heard == null ? btn(t.listen, 'data-g="listen"', 'soft') : ''}`;
-  return `<div class="g-descend g-ink">${cliffScene(state)}${meter}<p class="g-line-say">${t[state.note] ?? ''}</p>${acts}${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
+  return `<div class="g-descend g-ink">${cliffScene(state)}${meter}<p class="g-line-say">${t[state.note] ?? ''}</p>${acts}</div>`;
 }

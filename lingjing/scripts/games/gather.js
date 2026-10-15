@@ -7,7 +7,7 @@
 // come this way. Grade rich (a high-grade herb among them) · plain, written as a mark.
 // Pure module: newGame / html / act.
 import { rng, shuffled } from './seeded.js';
-import { SKIP, btn, scene, skipBtn, skipped, splash } from './ink.js';
+import { btn, scene, skipped, splash } from './ink.js';
 
 export const meta = {
   id: 'gather',
@@ -86,5 +86,5 @@ export function html(state, lang = 'zh') {
     return `<button type="button" class="g-tag${gone ? ' is-tried' : ''}" data-g="pull" data-i="${i}"${gone ? ' disabled' : ''}>${t.crack} ${i + 1}<small>${gone ? t.pulled : t[GLOW[kind]]}</small></button>`;
   }).join('');
   const left = `<p class="g-meter small">${t.left.replace('{n}', String(PULLS - state.taken.length))}</p>`;
-  return `<div class="g-gather g-ink">${bedScene(state)}<div class="g-tags">${tags}</div>${left}<p class="g-line-say">${t[state.note] ?? ''}</p>${skipBtn(SKIP[lang] ?? SKIP.zh)}</div>`;
+  return `<div class="g-gather g-ink">${bedScene(state)}<div class="g-tags">${tags}</div>${left}<p class="g-line-say">${t[state.note] ?? ''}</p></div>`;
 }
