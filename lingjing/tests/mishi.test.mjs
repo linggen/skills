@@ -284,12 +284,12 @@ test('the board (games/mishi.js): drawn from Look alone, its tries go to the rul
   // (the board reads the real clock against `hint_at`: asked a minute before now)
   const asked = { ...s, mishi: { ...s.mishi, asked_at: new Date(Date.now() - 60_000).toISOString() } };
   w = mod.fromLook(w, look(asked, content, ctxAt(NOW)), { task: 'mishi', present: true });
-  w = mod.tick(w, data.limits.hint_wait_s * 1000 + 10);
+  w = mod.tick(w, (data.limits.hint_wait_s + 1) * 1000 + 10);
   assert.equal(w.live, false);
   assert.ok(mod.html(w, 'zh').includes('data-g="hint"'));
   // She answered within the wait: no torn page, though the rules' wait has gone by too.
   let spoke = mod.fromLook(mod.heard(mod.heard(g, { her: 'asked' }), { her: 'spoke' }), look(asked, content, ctxAt(NOW)), { task: 'mishi', present: true });
-  spoke = mod.tick(spoke, data.limits.hint_wait_s * 1000 + 10);
+  spoke = mod.tick(spoke, (data.limits.hint_wait_s + 1) * 1000 + 10);
   assert.ok(!mod.html(spoke, 'zh').includes('data-g="hint"'));
 });
 
