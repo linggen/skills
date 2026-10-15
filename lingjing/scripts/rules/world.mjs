@@ -193,7 +193,7 @@ function encounterOf(content, state, now) {
   const creature = creatureOf(content, cid);
   if (!creature) return null;
   const lang = state.lang, game = { id: hauntId(cid), kind: 'duel', creature: cid };
-  const today = state.duels?.[cid], day = dayKey(now);
+  const today = state.duels?.[cid], day = dayKey(now), tamed = state.cast.includes(cid);
   const item = creature.likes ? itemOf(content, creature.likes) : null;
   return {
     creature: { id: cid, name: pick(creature.name, lang) },
@@ -201,11 +201,13 @@ function encounterOf(content, state, now) {
     duel: duelBrief(content, state, game, now),
     won: Boolean(state.wins?.[game.id]) && today?.day === day && today.outcome === 'won',
     withdrawn: today?.day === day && today.outcome === 'lost',
-    tamed: state.cast.includes(cid),
+    tamed,
     // Beaten once, on any day: only a beast beaten can be won over. A beast
     // that is caught, never fought (creatures.json `catch`: 狰, the herb
-    // thief), yields to the board of that id won here instead.
-    beaten: Boolean(state.wins?.[game.id]) || caughtBy(state, creature),
+    // thief), yields to the board of that id won here instead. One already
+    // tamed was won over, whatever the way — 药园's scene fight (yaoyuan-zheng)
+    // left 狰 `tamed` but not `beaten`, and Ling told it 「还未被降服」 (live, 2026-10-15).
+    beaten: tamed || Boolean(state.wins?.[game.id]) || caughtBy(state, creature),
     ...(creature.catch ? { catch: creature.catch } : {}),
     // `fed`: food is fed; a thing (雷神's bell, 狪狪's silk) is offered (his, 2026-09-23: 雷神吃装备吗?)
     likes: item ? { id: item.id, name: pick(item.name, lang), held: state.bag[item.id] ?? 0, fed: item.kind === 'material' } : null,
