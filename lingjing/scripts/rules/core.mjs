@@ -17,7 +17,7 @@ import { seenMet } from './examine.mjs';
 import { companionOf } from './companion.mjs';
 import { grantMemory } from './memories.mjs';
 import { writeLedger } from './ledger.mjs';
-import { comingOf } from './hui.mjs';
+import { comingOf, sideLine } from './hui.mjs';
 import { capLook, pastCapSay, storyAllows, underCap } from './cap.mjs';
 import { atScene, inMade, placeName, placeOf, placeOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
 
@@ -334,6 +334,18 @@ function riseTo(content, s, rise, replay) {
 const landFill = (content, exit, breakthrough) =>
   (breakthrough.pill?.id ? itemOf(content, breakthrough.pill.id)?.fill : null) ?? exit.fill ?? null;
 
+/* Back from a 今 interlude (content.mjs spliceInterludes): the step from its last scene into the
+   古 scene it was spliced before puts him where that scene stands — the book turns from 沈芒's
+   world straight into its opening passage (the 「完」, the new 回's seal, the passage, then its
+   choices and games), never onto the open map at the 古 place he last stood (Hanli, 2026-10-15,
+   今 · 二 → 古五: 「太突然了……今线感觉还没结束」 — j04-dog's last tap left him at 柴房 on 孙二狗's
+   七巧 board, 第五回's 「完」, seal and passage behind a walk to 石门). Only the place moves, once,
+   on this step: the scene is a waypoint as ever, and he may walk off it. Read off the lines. */
+function backFromSide(content, left, next) {
+  const into = Object.values(content.chapters).map(ch => ch.scenes?.[next]).find(Boolean);
+  return into?.at && sideLine(content, left) && !sideLine(content, into) ? into.at : null;
+}
+
 /* After a chapter ends, the next one that has opened takes over. One still
    being written (`coming`: 「第四回 · 即将开放」, named by its first 回 — hui.mjs) is waited on, dateless. */
 function advanceChapter(content, state, now) {
@@ -500,7 +512,7 @@ export function resolve(state, content, ctx, args) {
   } else {
     oweExit(s, scene, exit, replay);
     if ((exit.next || exit.ends) && !replay) s.done_scenes.push(scene.id);
-    if (exit.next) { s.scene = exit.next; settlePlace(content, s, ctx.now); offerTasks(content, s); }
+    if (exit.next) { s.place = backFromSide(content, scene, exit.next) ?? s.place; s.scene = exit.next; settlePlace(content, s, ctx.now); offerTasks(content, s); }
     if (exit.ends) {
       // A chapter ended for the first time raises the 本命法宝 one 重 (rewards.json `growth`).
       if (!s.ended.includes(exit.ends)) {

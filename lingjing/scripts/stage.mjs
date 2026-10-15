@@ -346,9 +346,11 @@ export const PAGE_OWNS = new Set(['meet', 'panel', 'people', 'goal', 'value', 'b
    玩家不知道下面该做什么」). When nothing in main is a step or a thing to do — no scene card, no
    game, no errand, no fight, only the coins or nothing at all — the page's own 下一步 card
    stands: the story's goal line and one tap toward it (cards.js next). Not in a fight or 闭关,
-   which hold the whole stage. */
+   which hold the whole stage. Nor on a side line: 下一步 is the 古's — its road, its errands, the
+   货郎 — and the 古 place he left must not leak onto 沈芒's stage (Hanli, 2026-10-15: 「今线没完就
+   跳回了古，然后又跳回了今」 — after the 罚球 board, 「去沉鼎秘境 · 石门」 stood a moment in 今 · 二). */
 export function withNext(look, cards) {
-  if (!look || look.fight || look.seclusion || cards.some(c => c.card === 'next')) return cards;
+  if (!look || look.fight || look.seclusion || sideLineOf(look) || cards.some(c => c.card === 'next')) return cards;
   const doing = cards.some(c => sceneGame(look, c) || (!TELLS_ONLY(look, c) && MAIN.some(r => !r.filler && r.kinds.includes(c.card) && r.kinds[0] !== 'next')));
   return doing ? cards : [...cards, { card: 'next' }];
 }
