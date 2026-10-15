@@ -1137,6 +1137,9 @@ function lintTask(task, content, ids, bad) {
   // A board's grades, each with the mark it writes (tasks.mjs win).
   if (task.marks != null && !(task.kind === 'board' && task.game && Object.entries(task.marks).length && Object.entries(task.marks).every(([g, m]) => /^[a-z][a-z0-9-]*$/.test(g) && /^[a-z][a-z0-9-]*$/.test(String(m))))) bad(where, 'marks are a game board\'s grades, each to a lowercase mark id');
   if (task.gives?.bag && !ids.items.has(task.gives.bag)) bad(where, `gives unknown item ${task.gives.bag}`);
+  // A board's own words (`how`, in place of its game's) and deal (`deal`, handed to the game's newGame).
+  if (task.how != null && !(task.kind === 'board' && task.game && pair(task.how))) bad(where, 'how is a game board\'s line, in zh and en');
+  if (task.deal != null && !(task.kind === 'board' && task.game && typeof task.deal === 'object' && !Array.isArray(task.deal))) bad(where, 'deal is a game board\'s options object');
   for (const e of task.ledger ?? []) if (!['恩', '仇', '诺'].includes(e.kind) || !pair(e.what) || !(content.people?.people ?? []).some(p => p.id === e.who)) bad(where, 'a ledger line needs a known person, 恩/仇/诺, and its what in zh and en');
 }
 

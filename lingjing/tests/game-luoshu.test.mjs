@@ -123,3 +123,19 @@ test('act never mutates input', () => {
   assert.equal(won, true);
   assert.equal(JSON.stringify(s0), snap);
 });
+
+test('a task\'s deal keeps numbers open: 二试 never pre-places 二 and 四 (「二四为肩」 is his to set), still solvable', () => {
+  for (let k = 0; k < 60; k++) {
+    const s = newGame(`gate${k}`, 1, { open: [2, 4] });
+    assert.equal(s.givens.length, 4);
+    for (const i of s.givens) assert.ok(![2, 4].includes(s.cells[i]), `seed gate${k}: ${s.cells}`);
+    assert.equal(play(s, solve(s)).won, true);
+  }
+});
+
+test('二试\'s board words are its own, not the 秘境 seal\'s; the task deals 二 and 四 open', async () => {
+  const { loadContent } = await import('../scripts/content.mjs');
+  const t = loadContent().tasks.tasks.find((x) => x.id === 'gate-luoshu');
+  assert.deepEqual(t.deal, { open: [2, 4] });
+  assert.ok(t.how.zh && t.how.en && !t.how.zh.includes('封印'), t.how.zh);
+});

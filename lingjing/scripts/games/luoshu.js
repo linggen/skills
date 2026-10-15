@@ -57,7 +57,9 @@ export function isMagic(cells) {
   return LINES.every((l) => l.reduce((s, i) => s + cells[i], 0) === 15);
 }
 
-export function newGame(seed, level = 1) {
+/* `opts.open`: numbers never dealt as givens — the task's own (二试's 二 and 四, 「二四为肩」:
+   the shoulders are his to set, tasks/world.json `deal`). */
+export function newGame(seed, level = 1, opts = {}) {
   const lv = GIVENS[level] ? Number(level) : 1;
   const rnd = mulberry32(hash(`luoshu:${seed}:${lv}`));
   const squares = allSquares();
@@ -67,7 +69,8 @@ export function newGame(seed, level = 1) {
     const j = Math.floor(rnd() * (i + 1));
     [order[i], order[j]] = [order[j], order[i]];
   }
-  const givens = order.slice(0, GIVENS[lv]).sort((a, b) => a - b);
+  const open = new Set(opts?.open ?? []);
+  const givens = order.filter((i) => !open.has(solution[i])).slice(0, GIVENS[lv]).sort((a, b) => a - b);
   const cells = solution.map((n, i) => (givens.includes(i) ? n : 0));
   return { seed: String(seed), level: lv, givens, cells, pick: 0, won: false };
 }

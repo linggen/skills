@@ -172,7 +172,7 @@ function boardFor(taskId) {
     const spent = old?.day === day && old.state?.won && old.sent && !old.winning && task.status === 'offered' && !task.won;
     if (!old || old.day !== day || spent) {
       const round = spent ? (old.round ?? 0) + 1 : 0;
-      boards.set(taskId, { taskId, mod, day, round, state: mod.newGame(`${day}|${look.seed ?? ''}|${taskId}${round ? `|${round}` : ''}`, task.level ?? 1) });
+      boards.set(taskId, { taskId, mod, day, round, state: mod.newGame(`${day}|${look.seed ?? ''}|${taskId}${round ? `|${round}` : ''}`, task.level ?? 1, task.deal ?? {}) });
     }
     return boards.get(taskId);
   }

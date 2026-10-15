@@ -184,6 +184,8 @@
     {
       "id": "gate-luoshu", "kind": "board", "game": "luoshu", "period": "once",
       "title": { "zh": "二试 · 洛书九宫", "en": "Second trial · The Luo Shu square" },
+      "how": { "zh": "选一数，点空格落下；纵、横、斜，三个数都要合十五。", "en": "Pick a number, tap an empty cell; down, across and corner to corner, every three sum to 15." },
+      "deal": { "open": [2, 4] },
       "grant": { "table": "task", "progress": 10 },
       "done_line": { "zh": "纵、横、斜，都是十五。", "en": "Down, across and corner to corner — fifteen every way." }
     },
