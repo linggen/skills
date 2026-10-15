@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "_balance": "Thresholds are base progress. `pay` scales every reward in that realm (applied last, after the day cap) — design.md § Pacing. 练气 halved 2026-09-15 so the cauldron waits about a week, not two. 练气 re-derived 2026-10-15 (Hanli: 「让游戏修为和故事match」 — 修屋顶 had paid 修为 and the bar ran ahead of the book; then 「确保用户交差能看到提升」): a 层 the book holds him on asks about what a 回 of everything on offer pays there, so it fills near that 回's close — 一层 200 (古四), 二层 350 (古五, before 息壤), 四层 620 (古六) — 660 since the 秘境's rooms (2026-10-15: their fights and boards, ~80 修为 in 古五, carry into 四层 with the rise; Hanli 「别忘了相应增加修为上限」), 680 with 古六's boards (2026-10-15: 掐诀, 藏息, 让一拳, 等风掉头, 念开篇 — +25 in h08, its 层 still filling on its last scenes, 12 of 13); the layers a rise jumps over sit between. Past a full mark 修为 keeps counting (no hold); a step up carries it and the next 层 asks `overflow_stretch` of it more; the story's rise fills a 层 he is short of. The model is tools/xiuwei-model.mjs, locked by tests/xiuwei-pace.test.mjs. The per-回 cap decides only when grinding may break a 层.",
+  "_balance": "Thresholds are base progress. `pay` scales every reward in that realm (applied last, after the day cap) — design.md § Pacing. 练气 halved 2026-09-15 so the cauldron waits about a week, not two. 练气 re-derived 2026-10-15 (Hanli: 「让游戏修为和故事match」 — 修屋顶 had paid 修为 and the bar ran ahead of the book; then 「确保用户交差能看到提升」): a 层 the book holds him on asks about what a 回 of everything on offer pays there, so it fills near that 回's close — 一层 200 (古四), 二层 350 (古五, before 息壤), 四层 620 (古六) — 660 since the 秘境's rooms (2026-10-15: their fights and boards, ~80 修为 in 古五, carry into 四层 with the rise; Hanli 「别忘了相应增加修为上限」); the layers a rise jumps over sit between. Past a full mark 修为 keeps counting (no hold); a step up carries it and the next 层 asks `overflow_stretch` of it more; the story's rise fills a 层 he is short of. The model is tools/xiuwei-model.mjs, locked by tests/xiuwei-pace.test.mjs. The per-回 cap decides only when grinding may break a 层.",
   "_about": "The ladder: tiers (this world's realms) with their steps and the progress each step asks for; `pay` scales rewards in that tier; `gate` names the chapter a tier waits for. 练气 has nine 层 above 零层 (our one exception to 凡人, story DESIGN § 道统; 零层 is `zero`): `phases` names them three by three — 一至三层 小成, 四至六层 中成, 七至九层 大成. Every realm past 练气 has no 层: its three steps are 小成, 中成, 大成 themselves (Hanli, 2026-10-09; 小成/中成/大成 is the Daoist word, 《钟吕传道集》, replacing 初期/中期/后期). `full` is the word for a step filled — 练气二层圆满, 筑基中成圆满, 筑基大成圆满 — nothing more goes in until the next step; only the realm's last step filled, its 圆满 (筑基圆满, 练气圆满), is tried for a breakthrough. 巅峰 is the spoken word for the same point (外门's 「九层巅峰」); 圆满 is the formal one, and only it stands in a table. Past 练气 each realm had three steps until 2026-10-03, nine 层 from then to 2026-10-09, and three steps again since, each the sum of its three 层 (state.mjs v6 threeToNine, v7 nineToThree; the thresholds are the pre-10-03 ones, so the realm's whole never changed).",
   "tiers": [
     {
@@ -45,7 +45,7 @@
         200,
         350,
         480,
-        680,
+        660,
         720,
         820,
         920,
