@@ -19,6 +19,7 @@
 // --controls: on each scene, every visible control tapped once (real clicks); a control whose
 //   tap changes nothing — the save, the page's text, its panels, the URL — within a second is
 //   a dead control. After any tap that did something, the save is put back and the page reloaded.
+//   Never tapped: the language switch, the weather city, the account (NEVER_TAP) — they write past the scratch save.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -131,11 +132,14 @@ export async function playBoardLive(page, { id, game, tries = 3, seconds = 150, 
 }
 
 /* ── Controls ── */
+/* Never tapped: what writes beyond the scratch save — Linggen's language (中 / En wrote the global
+   setting and flipped the player's own page, 2026-10-15), the weather city, the account. */
+export const NEVER_TAP = '[data-lang],[data-wx-set],[data-wx-clear],[data-cloud],[data-signin],[data-signout],[data-account],a[href^="http"]';
 const CONTROLS = `(() => {
   const vis = (e) => { if (!e.getClientRects().length) return false; const cs = getComputedStyle(e); return cs.visibility !== 'hidden' && cs.display !== 'none' && Number(cs.opacity) > 0 && !e.closest('[hidden]'); };
   const W = innerWidth, H = innerHeight;
   return [...document.querySelectorAll('button, [role=button], [data-g], [data-tile], [data-spot], [data-dlg-next], [data-titlecard]')]
-    .filter((e) => vis(e) && !e.disabled && e.getAttribute('aria-disabled') !== 'true' && !e.closest('.scratch-badge'))
+    .filter((e) => vis(e) && !e.disabled && e.getAttribute('aria-disabled') !== 'true' && !e.closest('.scratch-badge') && !e.matches(${JSON.stringify(NEVER_TAP)}))
     .map((e, i) => { const r = e.getBoundingClientRect(); const x = Math.min(W - 1, Math.max(0, r.left + r.width / 2)), y = Math.min(H - 1, Math.max(0, r.top + r.height / 2));
       const at = document.elementFromPoint(x, y);
       return { i, x, y, text: (e.textContent || e.getAttribute('aria-label') || '').trim().replace(/\\s+/g, ' ').slice(0, 30), data: Object.fromEntries([...e.attributes].filter((a) => a.name.startsWith('data-')).map((a) => [a.name, a.value.slice(0, 30)])), on: r.bottom > 0 && r.top < H, free: Boolean(at && (at === e || e.contains(at))) }; })
