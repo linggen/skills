@@ -3321,3 +3321,54 @@ player has obtained — roots, tamed beasts, a card from each win — and picks.
 - Surfaces: Mac app page first; the phone's place.
 - Point values and realm thresholds.
 - How Yinyue's memories end.
+
+## doc/design.md § Pacing as it stood 2026-10-15 morning (verbatim)
+
+Replaced the same day by § Pacing and the economy (Hanli: ~30 min a day, one 回 a week; the 修为 stage quest; no story floor; 修为 past 圆满 pays as 灵石, never spills). The fight win gate (~76%) and the pool band (蛫 ~87%) were retired for the ~60% first-try band.
+
+### Pacing 【已建】
+
+Tables and caps are in base 修为; each tier carries a `pay` multiplier
+(`ladder.json`), applied last: `paid = min(grant, cap) × root speed × pay`.
+体力 is the only daily limit (the day caps went 2026-09-23). A fight is the
+best 修为 per 体力 (3.75); tests lock it.
+
+**修为 tracks the book** (Hanli, 2026-10-15: 「让游戏修为和故事match」, after
+修屋顶 paid 修为 +15 and the bar ran ahead of the story):
+- **Where 修为 comes from:** cultivation — the day's 功课 (the fixed real-life
+  chore, the workout: `gongke` table, 20), fights (`haunt` 30, a 降妖 or 驯
+  errand, the 榜文's 降妖), pills, 今日传闻, 闭关, the road's riddle/机缘, and
+  the story's grants and rises. **Chores pay 灵石:** every errand declares
+  `work` — `cultivation` (its core is a fight: 药园巡夜's 狰, 蠪侄, 人鱼, 榜文 ·
+  降妖) or `labor` (修屋顶, 收船, carrying, walks, mending, 配一炉, the 榜文's
+  walk and game), paid on the `labor` table (修为 0, ≤20 灵石, maybe an item);
+  the day's pick of real-life chores pays its reward as 灵石 (`life`, ≤10), a
+  开府 milestone 20 灵石 (`once`, 修为 0). tests/xiuwei-pace.test.mjs locks it.
+- **练气 thresholds** [0, 200, 350, 480, 620, 720, 820, 920, 1020, 1120]
+  (from 0, 50 … 130), from `tools/xiuwei-model.mjs`: the 修为 budget per 回 —
+  every source on offer (the story, the day's 功课, 修行 errands and 榜文,
+  haunt fights at a natural pace, the story's and the market's pills), a day
+  of play per five scenes (≈138 修为). A 层 the book holds him on asks about
+  what that 回 pays there: one who does everything fills 一层 at 古四's 6th
+  scene of 8, 二层 at 古五's 3rd of 6 (then 息壤), 四层 at 古六's last.
+- **Every hand-in shows a gain** (Hanli, 2026-10-15: 「得到奖励应该有变化……确保
+  用户交差能看到提升」, no banking, no invented stat):
+  - **past a full mark 修为 keeps counting** — nothing is held; the bar reads
+    「230/200」 with the part over the mark glowing (state.mjs addProgress);
+  - **a step up carries it, elastic**: the story's rise, the throw, or grinding
+    the cap allows carries what was over the mark into the new step whole,
+    and that step asks `overflow_stretch` (0.5) of it more — 100 over 一层
+    enters 二层 at 100/450 (state.mjs stepUp, `state.stretch` per step);
+  - **the story's floor**: a rise first fills the 层 he is short of (the rose
+    moment's `filled`), so one who skipped every task is never behind the book.
+  - tests/xiuwei-pace.test.mjs holds two players per 回: EVERYTHING stays at
+    the book's layer and fills a held 层 only in the 回's second half; NOTHING
+    is carried by the floor; a grinder (ten times the fights) is never past
+    the book's layer. 古九 (筑基小成, the 九转 lands it full) runs over its mark
+    by design until 卷二. 筑基 and above are unchanged (卷二 re-derives them).
+- **The per-回 cap** now decides only when grinding may break a 层; it never
+  drops 修为 (its line by the bar: 「……气一分不少，都在丹田里攒着」).
+- **Old saves** (state v9 `paceLayer`, `ladder.json → thresholds_were`): the
+  层 is kept and the bar stands as full as it stood (一层 40/50 → 160/200;
+  九层圆满 stays 圆满, so a save at the cliff can still throw).
+

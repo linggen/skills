@@ -16,7 +16,8 @@ between you live in its world: walk it, take errands, fight, tame, cultivate.
 Ling runs the world; 银月 is at your side.
 
 - **Genre:** AI chat game, 13+. English and Chinese.
-- **Session:** a few minutes, a few times a day, paced by 体力.
+- **Pace:** ~30 minutes a day, one 回 a week (Genshin's rhythm): a capped daily routine, the
+  story at the player's pace up to each 回's 修为 gate.
 - **Where:** the Mac (the stage beside the chat); the phone later.
 
 ## The story

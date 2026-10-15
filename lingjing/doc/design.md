@@ -8,7 +8,7 @@ guide: |
   the 定例) live ONLY in story/jiuding-lu/DESIGN.md; the plot and the 扣子簿 in
   story/jiuding-lu/OUTLINE.md. This file links there and never restates them.
   Superseded designs and this file's history are in archive.md.
-status: 2026-09-30 — integrated (Hanli: 「可以」 to the plan): game systems only, current truth, each section tagged 【已建】 built · 【在建】 partly built · 【远景】 designed, not built — read off the code (scripts/, rules/, tests), not the text. The file as it stood before, 150k characters with every dated ruling log, is archive.md § doc/design.md as it stood 2026-09-30.
+status: 2026-09-30 — integrated (Hanli: 「可以」 to the plan): game systems only, current truth, each section tagged 【已建】 built · 【在建】 partly built · 【远景】 designed, not built — read off the code (scripts/, rules/, tests), not the text. The file as it stood before, 150k characters with every dated ruling log, is archive.md § doc/design.md as it stood 2026-09-30. 2026-10-15: the day's decisions written in (pace and economy, fights, boards, 秘境 reruns, 饭桶, AI mini-games, backdrops, phone, testing); the replaced § Pacing is in archive.md.
 ---
 
 # Lingjing — design (the game)
@@ -128,7 +128,7 @@ skills/lingjing/
   story/jiuding-lu/        the book: 01–10 回, book.json, classics.json,
                            DESIGN.md (world rules), OUTLINE.md (plot, 扣子簿), notes/archive/
   data/                    this player (never in git): state.json, log.jsonl, saves/, worlds/
-  tests/                   node --test tests/*.test.mjs; tools/battle-sim.mjs = balance gate
+  tests/                   node --test tests/*.test.mjs; tools/battle-sim.mjs fight sims; tools/balance.mjs + worlds/jiuding/balance.json the economy model (§ Pacing)
 ```
 
 ## Worlds, the dictionary, made worlds 【已建】
@@ -219,51 +219,37 @@ field. The fields:
 The lint also refuses an unreachable scene, a chapter with no ending, a
 string missing a language, a creature without its picture.
 
-### Pacing 【已建】
+### Pacing and the economy 【在建】 (Hanli, 2026-10-15)
 
-Tables and caps are in base 修为; each tier carries a `pay` multiplier
-(`ladder.json`), applied last: `paid = min(grant, cap) × root speed × pay`.
-体力 is the only daily limit (the day caps went 2026-09-23). A fight is the
-best 修为 per 体力 (3.75); tests lock it.
+**Target: ~30 minutes a day, one 回 a week** (Genshin's rhythm). Why: the story is the reward;
+a 回 should last, not be binged.
 
-**修为 tracks the book** (Hanli, 2026-10-15: 「让游戏修为和故事match」, after
-修屋顶 paid 修为 +15 and the bar ran ahead of the story):
-- **Where 修为 comes from:** cultivation — the day's 功课 (the fixed real-life
-  chore, the workout: `gongke` table, 20), fights (`haunt` 30, a 降妖 or 驯
-  errand, the 榜文's 降妖), pills, 今日传闻, 闭关, the road's riddle/机缘, and
-  the story's grants and rises. **Chores pay 灵石:** every errand declares
-  `work` — `cultivation` (its core is a fight: 药园巡夜's 狰, 蠪侄, 人鱼, 榜文 ·
-  降妖) or `labor` (修屋顶, 收船, carrying, walks, mending, 配一炉, the 榜文's
-  walk and game), paid on the `labor` table (修为 0, ≤20 灵石, maybe an item);
-  the day's pick of real-life chores pays its reward as 灵石 (`life`, ≤10), a
-  开府 milestone 20 灵石 (`once`, 修为 0). tests/xiuwei-pace.test.mjs locks it.
-- **练气 thresholds** [0, 200, 350, 480, 620, 720, 820, 920, 1020, 1120]
-  (from 0, 50 … 130), from `tools/xiuwei-model.mjs`: the 修为 budget per 回 —
-  every source on offer (the story, the day's 功课, 修行 errands and 榜文,
-  haunt fights at a natural pace, the story's and the market's pills), a day
-  of play per five scenes (≈138 修为). A 层 the book holds him on asks about
-  what that 回 pays there: one who does everything fills 一层 at 古四's 6th
-  scene of 8, 二层 at 古五's 3rd of 6 (then 息壤), 四层 at 古六's last.
-- **Every hand-in shows a gain** (Hanli, 2026-10-15: 「得到奖励应该有变化……确保
-  用户交差能看到提升」, no banking, no invented stat):
-  - **past a full mark 修为 keeps counting** — nothing is held; the bar reads
-    「230/200」 with the part over the mark glowing (state.mjs addProgress);
-  - **a step up carries it, elastic**: the story's rise, the throw, or grinding
-    the cap allows carries what was over the mark into the new step whole,
-    and that step asks `overflow_stretch` (0.5) of it more — 100 over 一层
-    enters 二层 at 100/450 (state.mjs stepUp, `state.stretch` per step);
-  - **the story's floor**: a rise first fills the 层 he is short of (the rose
-    moment's `filled`), so one who skipped every task is never behind the book.
-  - tests/xiuwei-pace.test.mjs holds two players per 回: EVERYTHING stays at
-    the book's layer and fills a held 层 only in the 回's second half; NOTHING
-    is carried by the floor; a grinder (ten times the fights) is never past
-    the book's layer. 古九 (筑基小成, the 九转 lands it full) runs over its mark
-    by design until 卷二. 筑基 and above are unchanged (卷二 re-derives them).
-- **The per-回 cap** now decides only when grinding may break a 层; it never
-  drops 修为 (its line by the bar: 「……气一分不少，都在丹田里攒着」).
-- **Old saves** (state v9 `paceLayer`, `ladder.json → thresholds_were`): the
-  层 is kept and the bar stands as full as it stood (一层 40/50 → 160/200;
-  九层圆满 stays 圆满, so a save at the cliff can still throw).
+| | |
+|---|---|
+| Daily routine (~20 min, capped) | 功课 · a 秘境 rerun (3 h cooldown) · 饭桶 (1 h cooldown) · pool fights (full 修为 for the first few wins a day, then less, then 灵石) |
+| Story + its boards (~1 h a 回) | unlimited, at the player's pace, up to the 回's gate |
+| A 回 | ≈3–4 h: the routine fills its 修为 quest over ~5–7 days. Heavy players ≈4–5 days, light ≈2 weeks |
+| 古一–古三 | fast — a first sitting reaches 古三/古四 |
+
+- **修为 stage quest (阶段任务).** Each 回's next story stage waits on 圆满 of the layer he holds;
+  the 事 book shows it with progress, 下一步 and Ling point to where 修为 is earned. Why: the bar
+  and the book move together because the player earned it, not because the story paid it.
+- **The story no longer tops up 修为** — the old story floor (a rise filling the 层 he was short
+  of) is gone; with the gate there is nothing to top up. The book's jumps (`rise`) still step him.
+- **At 圆满, 修为 from fights and the 秘境 pays as 灵石** at a declared rate; it never spills
+  into the next layer. The per-回 cap (§ 境界) still holds.
+- **Where 修为 comes from:** 功课, fights (haunts, pools, 降妖/驯 errands, 榜文 · 降妖), the
+  秘境, pills, 今日传闻, 闭关, the road's riddle/机缘, the story's grants and rises. **Chores pay
+  灵石:** an errand declares `work` — `cultivation` (its core is a fight) or `labor` (the `labor`
+  table: 修为 0, ≤20 灵石, maybe an item); the day's real-life pick pays 灵石 (`life`, ≤10), a 开府
+  milestone 20 灵石.
+- **Every hand-in visibly gains 修为 or 灵石.** 零层's 功课 pays 5 灵石.
+- **One model for every number** 【在建】: `tools/balance.mjs` reads `worlds/jiuding/balance.json`
+  — bands for time, 修为, 灵石, attack/defense, prices, drops, win rates — and writes the
+  thresholds and tables; `--check` fails CI when content leaves a band. Thresholds are the
+  model's, not hand-set (replaces `tools/xiuwei-model.mjs` and the 练气 list once kept here).
+- **Balance changes are hand-played on the live page**, not only simulated.
+- **Old saves** keep their 层 and how full it stood (state v9 `paceLayer`).
 
 ### 境界 in the game 【已建】
 
@@ -301,11 +287,11 @@ need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale
   further, its `story` — 古三 一层 · 古四 二层 · 古五 二层 (story 四层) · 古六
   四层 · 古七 四层 (story 七层) · 古八 七层 (story 筑基小成) · 古九 筑基小成; a 今 interlude takes the 古
   before it; after 卷一 the save waits in 古九's chapter, so 筑基小成 holds
-  until 卷二 gets its caps. At the cap the step fills (圆满) and the 修为 counts on
-  past its mark (2026-10-15; § Pacing); Look's `capped.say` stands by the full
+  until 卷二 gets its caps. At the cap the step fills (圆满) and further
+  修为 from fights and the 秘境 pays as 灵石 (2026-10-15; § Pacing); Look's `capped.say` stands by the full
   bar in the world's words. The book's jumps are the story's (`rise`): 古四's close lifts
   to 二层 (wm-diyilu), 息壤 to 四层, the year to 九层圆满, the cliff to 筑基 —
-  a player behind the book is lifted there, never held back. A rise or
+  each reached only past the 回's stage quest, so nobody arrives behind the book. A rise or
   breakthrough past `story` is refused `past-cap` (「火候未到」), and the lint
   refuses such data. A save already past its cap is never pulled down: it
   fills its own step and waits.
@@ -384,7 +370,7 @@ still live at the door gets back the time it had left. Look's `sealed`: the head
 the book's own `days` — 「沉鼎秘境 · 第二夜」), the room, and the scene's `goal` (the 事 book's
 goal line and 下一步). The stage shows the rooms' paintings (backdrops.json `places` by room id);
 the sealed tier outranks festival and 节气 (atmos.js `stagePick`), with no weather, season, wind or
-particles. Nothing names the 秘境: the 外门大比 or a later 秘境 declares the same.
+particles. Nothing names the 秘境: the 外门大比 or a later 秘境 declares the same — sealed mode is a reusable shape, not this 秘境's code.
 **Rooms as a small dungeon** (Hanli, 2026-10-15: 「秘境太短了, 里面多加点战斗和小游戏等」): each room
 holds something between the beats, in the book's places and never against it — 岔口 华容道
 「挤出石厅」 (a stall board); 凶崖 the 犰狳 on the stair (pool `mijing-ya`, 见人则眠) and 下崖
@@ -394,8 +380,11 @@ holds something between the beats, in the book's places and never against it —
 (「九个小坑，正中那个是空的」 — 「三天。」 waits on it, `needs.task`); 石室 邹青松 (the scene's
 trial); 暗河 合窳 and 犰狳 (pool `mijing-anhe`) and 拾遗 (games/gather.js — herbs and ore in the
 cracks, 灵芝 and 灵石). Fights pay the haunt table (修为), boards their grants, gleaning stones and a
-herb. ~80 修为 more in 古五 for one who plays it all (tools/xiuwei-model.mjs roomsPay), carried into
-四层 by 息壤: 四层 asks 660 (was 620). A natural player: about 20 minutes inside.
+herb; their sums are balance.json's. A natural player: about 20 minutes inside.
+**Reruns** (Hanli, 2026-10-15) 【在建】: after the story run the **outer rooms** (岔口 · 凶崖 · 暗河)
+reopen **3 h after the last run ends** — one slot of the daily routine. Each run rolls its spawns
+(now and then an elite), its finds (鼎苔, 灵草, ore, a rare cache) and drops, gear among them. The
+inner story rooms (断崖下 · 崖壁 · 石室) never repeat. A rerun is sealed the same way.
 
 ### 剧情 × 开放世界 — tasks drive the story, key beats lock the map 【在建】
 
@@ -436,8 +425,7 @@ His: 「一片地方一个游荡怪物池，可重复打」. A province's places
 `has.pool` (a haunt or a pool, never both — linted). Where no scene runs, one
 beast of the pool is up (world.mjs `poolBeast`: drawn by the day, the save, the
 place and the fights settled there today, `state.duels['hunt:<place>'].n`); every
-settle — won, lost, run dry — draws the next, so the stretch is fought as often as
-体力 allows, each win paid by the `haunt` table with its drops and a card; each
+settle — won, lost, run dry — draws the next, each win paid by the `haunt` table with its drops and a card; each
 fight its own shuffle (`game.deal`, cards.mjs fightSetup). A pool's beast is never
 tamed there, never runs (`catch` is the story's), and a person or a boss is never
 in one — bosses stay the story's single fights (冰夷双龙, the 大比). Only beasts of
@@ -448,19 +436,22 @@ wild · 野猪; **泗水边** (泗水岸 · 北岸) 蛫 (古五); **太行山口
 later 卷 (story DESIGN/OUTLINE checked), quoted in their 图鉴 entries and
 `unpainted` (no picture claimed; the lint lets an `unpainted` creature stand
 without one). An errand for a pool's beast points to its stretch (`hauntsOf`).
-Weighed **in 蛫's band** (Hanli, 2026-10-05; `tools/battle-sim.mjs --pools`, part of
-the gate): the starter of every root set (four of five, each as the main root) with
-银月, at 练气 and 筑基, the attentive line — no pool beast more than 8 points from 蛫
-(87.5% · 87.5%). Numbers and decks only: 天马 had no 护主 and 银月 is 金 (100% →
-86 · 93, 山精 · 土偶 in front of it), 人鱼 98 → 87 · 83, 领胡 98 · 90 → 89 · 83,
-野猪 93 · 96 → 86 · 88, 熊 75 · 70 → 81 · 83 (one 石兽 for 饥啸), 狼 92 · 89 as it was.
-天马 is 金 (Hanli, 2026-10-05: 马成之山「其状如白犬而黑头」, white is metal): a deck of
-金 — 金梭 · 羬羊 · 金爪 · 九首 · 金针雨 · 碎金 — 86 · 93 → 92 · 88. 蠪侄 and 狰 are the story's
+Weighed to the fight's win band (§ 斗法: ~60% first try, from balance.json; the 2026-10-05
+蛫 band of ~87% is retired). 天马 is 金 (马成之山「其状如白犬而黑头」, white is metal). 蠪侄 and 狰 are the story's
 own fights too (古三's wood, the 药园): a pool entry may carry its own `deck`, how the
 pool deals that beast (world.mjs `foeOf`, by the game's `hunt`; linted twelve known
 cards), and the scene's game keeps the creature's — 蠪侄 99 · 98 → 87 · 88 (more 金梭,
 two 羬羊 in front), 狰 99 · 97 → 90 · 84 (领胡's fire, one 山精). tests/hunt.test.mjs
 locks the two apart.
+
+**Farming rules** (Hanli, 2026-10-15):
+- A pool beast beaten **rests 30 min** before the next comes. A beast he has **tamed is never drawn**.
+- Pay: full 修为 for the first few wins a day, then diminishing, then 灵石 (§ Pacing).
+- Draws avoid what he met lately and favour the unmet and unowned; a duplicate drop converts to
+  灵石 or materials.
+- **Enough to farm:** ~10–12 beasts and ~30 finds per grinding 回. More 卷一-fitting 山海经 beasts
+  (pictured from the classical woodcut plates, never painted; never a later 卷's creature) and
+  painted ordinary animals (狼, 野猪, 熊 …).
 
 ## Items, the 储物袋 【已建】
 
@@ -519,6 +510,14 @@ strokes). **Not yet:** `tier`/`zhuan` on every made pill with a tamed effect
 curve (the story's ×10ⁿ is never the game's number), 丹毒 (and its cure: 闭关 = 补转, the turns the furnace left out made up by the body — story DESIGN § 六·五), 炸炉 for mortal
 furnaces, the furnace making 破境丹, 仙丹 after the finale.
 
+### 饭桶 — free play 【在建】 (Hanli, 2026-10-15)
+
+Once he holds it, the 饭桶 opens from 物品: drag or tap items in; it spits **one** item, its name
+and one vague hint line (the book's rule). What goes in biases the pool — junk → junk, herbs →
+pills (the book's recipes among them), beast parts → 符, 灵石 raises the odds; roughly 70/25/5.
+A 逆天 result is utility only in 卷一. A recipe found goes to 录. 银月's 踏马的符 gag stays. One
+feed, then a **1 h cooldown** (a daily-routine slot).
+
 ## 斗法 v3 — one card game, 《炉石传说》's shape 【已建】 (PvE; PvP and the raid 【远景】)
 
 His direction (2026-09-18): *战斗系统参考炉石传说……那我们跟炉石对齐。* `battle.js`
@@ -564,11 +563,23 @@ is the pure core; the page draws it on the stage beside the chat.
   plays and settle; the page reports `[scene] won|lost|withdrew <id>`; leaving
   is conceding. Word games (灯谜, 飞花令, 论道) carry nothing in — a new player
   can beat an old one.
-- **The balance gate** (`tools/battle-sim.mjs`): a reading player wins ~76%
-  in 12½ half-turns; the right element is worth ~36 points; gear full set
-  ≤97%; each boss card −0.4…+5.3; **decision entropy** — most turns should
-  sit at a 5–15% spread among the top three moves. Any bound crossed is a
-  failing test.
+- **Win rate** (Hanli, 2026-10-15): a first try wins **~60%** (band 52–68%; tutorial fights may
+  sit easier); geared ≈70%. Difficulty comes from the foe, never from penalties. A story fight
+  retries at once; a field beast lost to is locked for the day. The band lives in balance.json;
+  `tools/battle-sim.mjs` checks it (replaces the old ~76% reading-player gate). Decision entropy
+  still holds: most turns a 5–15% spread among the top three moves.
+- **Deck 10** (3 in hand at start, 银月 extra) at every realm for now; bigger decks by realm later.
+- **Foe AI never plays a card with no effect.**
+- **The board, read plainly:** one legal target → a tap acts at once; every body has its own id
+  (twins never confused); HP shows current/max; 参悟 and the like show their 反噬 cost when the
+  deck is empty.
+- **A hit, in order:** travel → hit with its element's effect + the number → fade → reflow. Five
+  element hit effects, one each.
+- **Persons are persons:** 卢方, 邹青松 … are a 比试, and beaten 「他退了下去」. A beast's win line
+  is one of twenty, picked by the fight's seed.
+- **Portraits** crop to head and shoulders for `art/people/`.
+- **Gear** (兵器 · 法衣 · 佩) comes in 普通 · 精良 · 稀有, small bonuses only — from the 秘境 reruns'
+  drops among others.
 - **Modes** (`battle.js` knobs): PvE today. PvP (levelled, no realm
   suppression, 10 each) and the raid (a boss with aggro; pull · help · damage)
   are 【远景】 — the table (§ Playing together) comes first.
@@ -632,8 +643,7 @@ read-and-tap): six more boards in the prologue, each the book's own action where
 | `feather` | `feather-breath` | 00-halfyear | the breath out as a slow, steady stroke (`[data-g-drag]`): stop and it bursts, rush and it flies; three breaths | still · shaky (mark) |
 
 **Batch two** (Hanli, 2026-10-14: 「都可以，按你的单子做」) — each short (under half a minute), forgiving,
-and with a quiet **「算了，往下走」** (`{g:'skip'}`, ink.js `skipBtn`): skipped is won with no grade, so no
-mark, and the scene goes on. The rhythm counts a split passage's rest (`story_after`) after its board.
+and left by 「算了，往下走」 only when stuck (§ Skip below). The rhythm counts a split passage's rest (`story_after`) after its board.
 
 | game | task id | scene | the play | grade → |
 |---|---|---|---|---|
@@ -670,6 +680,39 @@ the scene declares `"show": [{ "card": "board", "id": "<task id>" }]` and
 (the book does not fail there), so the gate never shuts the story. Try one
 alone: `scripts/try-game.html?game=storm|deer|xisui|zhoutian&lang=zh|en`.
 
+**Skip, timing, art** (Hanli, 2026-10-15):
+- **「算了，往下走」 appears only when stuck** — after 75 s, or when the game reports stuck. Page-level
+  only; no module draws its own skip. Why: shown from the start it taught players to skip.
+- **A skip pays nothing** — no grant, grade or mark. What the story needs lives in the task's
+  `gives` (paid even on a skip); rewards live in `grant`. Skipping never blocks progress.
+- **A skipped board comes back by itself** on a later idle day (「再试一回 / 改日」), never from a
+  panel; a win then pays as any.
+- **Timing taps act on pointerdown**; every window ≥250 ms; 回看 opens over a board and pauses it.
+- **Board art never takes the full stage** — only the story view and fights do.
+
+### Per-回 gameplay plan 【在建】 (Hanli, 2026-10-15)
+
+Every 回 gets a gameplay pass so play keeps pace with reading: the book's own actions as boards in
+their scenes (`tasks/h<nn>.json`), fights, and enough beasts and finds to farm its stage quest.
+古六 is first (building now: its boards in tasks/h08.json); the rest follow in order.
+
+### AI mini-games 【在建 · first three】 (Hanli, 2026-10-15)
+
+**The AI talks, plays roles and judges fuzzy things against a rubric; the rules decide outcomes
+and pay (capped).** Token cost counts in the daily routine: a few rounds a day, on a cheaper model.
+
+| | Game | Shape |
+|---|---|---|
+| **Now** | 二十问 | 银月 thinks of an **ordinary animal** (猫, 狗, 牛, 喜鹊, 狐狸 …), he asks yes/no; a win records it in 录 as a known animal (not the 图鉴) |
+| **Now** | 讨价还价 | haggle with 钱掌柜 or the 货郎; the price band is the rules' |
+| **Now** | 断案 | 药园灵草案, 河伯娶妇's 账; the truth is fixed by the rules, the AI plays the suspects |
+| Later | 猜灯谜 | festivals, both ways |
+| Later | 银月的心事 | her questions → 恩仇簿; no win or loss |
+| Later | 斗嘴 | with 马小宝, judged by rubric |
+| Later | 论道 · 飞花令 · 对对子 | with the 稷下先生, 银月 joins |
+| Later | 说书接龙 | 吴婆婆讲古 |
+| Later | 下棋陪聊 | the engine moves, 银月/Ling talk |
+
 ## A day, 今日传闻, real-life chores 【已建】
 
 - **The day resets three things** (redesign-v2, 2026-09-24): **问卦** (one
@@ -700,7 +743,7 @@ alone: `scripts/try-game.html?game=storm|deer|xisui|zhoutian&lang=zh|en`.
 
 ## 体力 and 闭关 【已建】
 
-- **The only limit on a day** (`rewards.json → stamina`): 100, full in five
+- **The day is paced by the routine's caps and cooldowns** (§ Pacing); 体力 is kept as a pool (`rewards.json → stamina`): 100, full in five
   hours; empty rests until **20** (`rest_at`); shown as points, never a clock.
   Prices: a road 3 (+1 a road, ≤6), a story step 3, a fight 8, a 抉择 3, 驯 3,
   a mini-game 3 (at the count), 论道 3 (at open), make a scene 5, a world 10,
@@ -774,7 +817,8 @@ His ruling (2026-09-29): 「不用小人书的方式了，图片作为图鉴，�
   and no 「你」: a card names 沈小满. Card lines are static (no unlock by 回).
 - **Pictures:** one house style (fine ink 白描, soft grey wash, warm aged paper,
   one subject, no text), checked by eye, re-rolled until right. 山海经
-  creatures painted from their classical line, the woodcut kept as 「原图」
+  creatures painted from their classical line, the woodcut kept as 「原图」 — but the
+  山海经 beasts added for farming (2026-10-15) show the woodcut plate only, never a painting
   (`art_plate`; plates from 胡文煥, 蔣應鎬 1597, 《古今圖書集成》, Commons,
   credited in `art/CREDITS.md`). Painters: Codex's image tool (2026-09-29) and
   local FLUX since Codex's quota ran out (his 「用flux吧」).
@@ -810,6 +854,9 @@ His ruling (2026-09-29): 「不用小人书的方式了，图片作为图鉴，�
   One store for the Mac and the phone: data/reader/<book>/ (verb `changes`,
   rules/changes.mjs); the first confirmed versions come from git once
   (`node lingjing/tools/reader-base.mjs`, default 93e20ac0 = 「10-04 上午」).
+- **Phone** (Hanli, 2026-10-15): at ≤600 px wide, or ≤860×700, the chat folds into a bottom
+  sheet with an unread dot; the header is at most two rows; popovers open as bottom sheets; boards
+  are capped to the screen's height; a 亮相 portrait never covers the words.
 - **Choices are one question:** the chat owns the question; while an AskUser
   is open the stage hides every button of the same name.
 
@@ -860,6 +907,9 @@ Not borrowed: gacha.
   feast), reckoned locally on the real day only; each is one data entry —
   stage dressing, Ling's opening line, a festival task, a small gift, 银月's
   greeting.
+- **Which picture the stage takes** (Hanli, 2026-10-15): a sealed instance's backdrops outrank
+  all; then a **festival** (outdoor scenes only) > the **place's painting** (节气 tint and particles;
+  indoors, tint only) > the **节气 picture** > **weather** (atmos.js `stagePick`).
 - **天气** (rules/weather.mjs): the engine's `weather` sense (the skill never
   goes online) hands the reading for the city the player set once; drawn as a
   layer (snow · rain · fog); said once when it changes; never harder, at most
@@ -966,6 +1016,15 @@ never sold apart. Any model plays (Linggen Cloud or the player's own).
   model-free playthrough; the balance gate; **live checks use a scratch save**
   (`?save=test`, rules `--save=test`, `&seed=fresh|real|<fixture>`) — the page
   opens no chat and the player's save is never touched.
+- **Seeded saves:** `rules.mjs seed --save=<n> --at=<scene|回|秘境>` builds a realistic save by
+  playing forward (guide/testing.md); play-testers run one per 回, in parallel.
+- **Coverage, in layers** (tools/README.md): the invariant checker (`rules/health.mjs`), the
+  state-space explorer, policy sweeps (all-win · all-skip · lose-retry · random), and the page
+  crawler — a human-like bot per board and dead-control detection 【在建】.
+- **Unstick** (Ling's tool, guide/steer.md): runs the checker on the live save and applies only
+  safe repairs — skip a stuck board with no reward, move him to the scene's place, re-tell owed
+  passages, clear a stale lock, reopen a road. Never grants, never jumps ahead; asks once;
+  undoable. Ling offers it when the player says he is stuck.
 
 ## Follow-ups from the 2026-09-30 rulings
 
