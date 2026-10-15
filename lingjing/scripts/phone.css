@@ -18,9 +18,12 @@
     display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 61; height: var(--sheet-h);
     border: 1px solid var(--line); border-bottom: 0; border-radius: 14px 14px 0 0; overflow: hidden;
     box-shadow: 0 -12px 40px rgba(20, 14, 6, .28); transform: translateY(100%); visibility: hidden;
-    transition: transform .26s ease, visibility 0s linear .26s; }
+    transition: transform .26s ease, visibility 0s linear .26s;
+    /* Folded, it never takes a tap — not even in the .26s it is still visible sliding away (the stage's taps
+       landed in a scratch save's transcript, live at 390×844, 2026-10-15). */
+    pointer-events: none; }
   /* :is() lifts the open rules over the page's fold (.shell.autofold:not(.autoopen) is three classes). */
-  .shell.chatsheet:is(*, .autofold:not(.autoopen)) #chat-panel { transform: none; visibility: visible; transition: transform .26s ease; }
+  .shell.chatsheet:is(*, .autofold:not(.autoopen)) #chat-panel { transform: none; visibility: visible; transition: transform .26s ease; pointer-events: auto; }
   .chatscrim { display: block; position: fixed; inset: 0; z-index: 60; background: rgba(13, 17, 20, .38); opacity: 0; pointer-events: none; transition: opacity .2s; }
   .shell.chatsheet .chatscrim { opacity: 1; pointer-events: auto; }
   /* The bar: under the footer while the sheet is shut; on the sheet's top edge, its handle, while open. */

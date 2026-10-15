@@ -142,3 +142,11 @@ test('the phone (2026-10-15): the stage takes the screen — the chat a bottom s
   assert.ok(folded.cls.has('chatunread'));
 });
 
+
+// Live 2026-10-15 at 390×844: the folded chat sheet (a scratch save's transcript) caught the stage's taps.
+test('phone: the folded chat sheet takes no tap; the open one does', () => {
+  const phone = fs.readFileSync(new URL('../scripts/phone.css', import.meta.url), 'utf8');
+  const folded = phone.slice(phone.indexOf('.shell #chat-panel, .shell.chatfolded #chat-panel'), phone.indexOf('}', phone.indexOf('.shell #chat-panel, .shell.chatfolded #chat-panel')));
+  assert.match(folded, /pointer-events: none/);
+  assert.match(phone, /\.shell\.chatsheet:is\(\*, \.autofold:not\(\.autoopen\)\) #chat-panel \{[^}]*pointer-events: auto/);
+});
