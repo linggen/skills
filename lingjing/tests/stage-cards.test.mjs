@@ -75,7 +75,9 @@ for (const [name, [state, c]] of Object.entries(SITUATIONS)) {
     for (const card of l.stage) {
       const html = cardHtml(card, pageCtx(l));
       // The scene's ways on wait under a game it stands open (cards.js gameOpen): an empty panel, by design.
-      if (!(card.card === 'panel' && gameOpen(l))) assert.ok(html.trim(), `${card.card}${card.id ? `:${card.id}` : ''} draws nothing`);
+      // The header's faces wait for the story to name them (cards.js namedNow): none named yet, an empty row, by design.
+      const unnamed = card.card === 'people' && (l.scene?.people ?? []).every((p) => p.named === false || p.named === 'told');
+      if (!(card.card === 'panel' && gameOpen(l)) && !unnamed) assert.ok(html.trim(), `${card.card}${card.id ? `:${card.id}` : ''} draws nothing`);
       assert.doesNotMatch(html, /undefined|\{\w+\}|NaN/, `${card.card} leaks a hole: ${html.match(/.{0,30}(undefined|\{\w+\}|NaN).{0,30}/)?.[0]}`);
     }
   });
