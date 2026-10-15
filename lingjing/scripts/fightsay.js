@@ -202,10 +202,13 @@ export function cleanLine(text, max = 90) {
   return at > max / 3 ? cut.slice(0, at + 1) : `${cut}…`;
 }
 
+/* Called as methods, the browser's own would throw (Illegal invocation): wrapped. */
+const BROWSER_TIMERS = { set: (fn, ms) => setTimeout(fn, ms), clear: (h) => clearTimeout(h) };
+
 /* One fight's worth of her. `ask(kind, facts)` → { sent: Promise<boolean>,
    line: Promise<string|null> } — whether anyone will hear it, and her line.
    `onLine({kind, text, from})` — from: 'wait' (text null) · 'her' · 'fallback'. */
-export function createFightSay({ ask, onLine = () => {}, lang = () => 'zh', wait = WAIT_MS, timers = { set: setTimeout, clear: clearTimeout } } = {}) {
+export function createFightSay({ ask, onLine = () => {}, lang = () => 'zh', wait = WAIT_MS, timers = BROWSER_TIMERS } = {}) {
   const st = { asks: 0, askTurn: null, cues: 0, cueTurn: null, told: new Set(), seq: 0, line: null, pending: false, over: false, used: {} };
   const show = (line) => { st.line = line; onLine(line); };
   const fallbackOf = (kind) => {

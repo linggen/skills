@@ -175,3 +175,14 @@ test('the fight never waits on her: speak returns before the ask answers, and a 
   await new Promise((r) => setImmediate(r));
   assert.equal(asked, 1);
 });
+
+test('the default timers are called as methods without throwing (a browser’s setTimeout would: Illegal invocation)', async () => {
+  const lines = [];
+  const say = createFightSay({ ask: () => ({ sent: Promise.resolve(false), line: new Promise(() => {}) }), onLine: (l) => lines.push(l) });
+  const real = globalThis.setTimeout;
+  // A setTimeout that, like the browser's, refuses any `this` but the global.
+  globalThis.setTimeout = function (fn, ms) { if (this !== undefined && this !== globalThis) throw new TypeError('Illegal invocation'); return real(fn, ms); };
+  try { say.ask({ outcome: 'open', whose: 'you', turn: 1 }, 'f'); } finally { globalThis.setTimeout = real; }
+  await new Promise((r) => setImmediate(r));
+  assert.equal(lines.at(-1).from, 'fallback');
+});
