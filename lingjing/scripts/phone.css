@@ -36,6 +36,30 @@
   .shell.chatsheet ~ .scratch-badge { display: none; }
   /* The chat's own frame fills the sheet; a scratch save's quiet transcript scrolls in it. */
   #chat-panel .scratch-lines { max-height: calc(var(--sheet-h) - 110px); }
+  /* A fight on a phone: the footer holds nothing then — it gives its row to the board; the bar keeps one line. */
+  body.fighting .slotfoot:not(:has(.footchips > :not(:empty))):not(:has(.askbar:not([hidden]))) { display: none; }
+  body.fighting .topbar { flex-wrap: nowrap; }
+  /* The footer's popovers (去往 and 观's painting, 事, 书, the sky, 物品) open as bottom sheets: the whole width,
+     standing on the footer so its chips stay a tap away, scrolling inside. */
+  .slotfoot .bookpop, .slotfoot .bookpop.roadspop, .slotfoot .bookpop.roadspop.plated, .slotfoot .shelfpop {
+    position: fixed; top: auto; left: 0; right: 0; bottom: calc(var(--chatbar-h) + 46px); width: auto; transform: none;
+    max-height: min(72dvh, calc(100dvh - var(--chatbar-h) - 46px - 48px)); overflow-y: auto; overscroll-behavior: contain;
+    border-radius: 14px 14px 0 0; border-bottom: 0; box-shadow: 0 -10px 32px rgba(20, 14, 6, .22); }
+  .slotfoot .shelfpop { flex-wrap: wrap; }
+  /* 手边的棋局 under the footer: shorter on a phone, and away while a game, the map or a fight has the stage. */
+  .tray { max-height: 112px; }
+  .shell.autofold .tray { display: none; }
+  /* The boards fit the screen's height as well as its width: the header, footer, bar and the card's own
+     title and controls are ~320–400px of a phone, the board gets the rest — no scrolling inside a game. */
+  .g-luoshu-board, .g-luoshu-tray { max-width: min(340px, calc(100dvh - 420px)); }
+  .g-huarong-board { width: min(100%, 320px, calc((100dvh - 340px) * .8)); }
+  .g-xiangqi-board { width: min(100%, 360px, calc((100dvh - 350px) * .9)); }
+  .g-wuziqi-board { width: min(100%, 560px, calc(100dvh - 330px)); }
+  .g-qiqiao .qq-board { max-height: min(300px, calc(100dvh - 380px)); }
+}
+
+/* Portrait phones only (a landscape phone's stage is wide: the 亮相 stands on the right, the bar is one row). */
+@media (max-width: 600px) {
   /* 亮相 on a phone: the portrait stands above the words, never over them — it ends where the beat's
      words begin (sight.js wordsRoom: --words-top) and shrinks to fit; the name card beside it keeps inside. */
   .sightcard, .view.jin:not(:has(.backdrop.painted)) .sightcard { top: 3%; bottom: max(42%, calc(100% - var(--words-top, 58%) + 10px)); }
@@ -44,4 +68,26 @@
   .sightone figcaption { margin-bottom: 4%; padding: 10px 10px; max-width: 46%; }
   .sightone figcaption b { font-size: 26px; }
   .sightline { max-width: 7.5em; font-size: 12.5px; }
+  /* The top bar keeps to two rows: 中/En goes up to the first row's end as one button (the language not
+     on — a tap switches), and the 修为 bar gives a little; the 回, the place and the faces share the second. */
+  .topbar .langsw { order: 3; margin-left: auto; }
+  .topbar .langsw button.on { display: none; }
+  .topbar .xw { width: 96px; }
+  .topbar::before { content: ''; order: 4; flex: 0 0 100%; height: 0; }
+  .topbar .titlerow { order: 5; }
+  .topbar .headcards { order: 6; }
+  body.fighting .topbar::before { display: none; }
+}
+
+/* A landscape phone (wide but short): the 亮相 keeps the stage's right, the words give it that side. */
+@media (min-width: 601px) and (max-width: 860px) and (max-height: 700px) {
+  .view:has(#sight .sightcard:not(.going)) .story .lines { padding-right: 44%; }
+  /* A short stage reads a smaller line, so a long paragraph still fits under the bar. */
+  .story .lines { bottom: 56px; }
+  .story .screen { font-size: 15.5px; line-height: 1.75; }
+  .story .ctrl { padding-bottom: 10px; }
+  .sightcard:not(.two) { top: 4%; bottom: 60px; right: 3%; left: auto; max-width: 42%; }
+  .sightone figcaption { margin-bottom: 0; padding: 8px 10px; }
+  .sightone figcaption b { font-size: 22px; }
+  .sightline { font-size: 12px; max-width: 8em; }
 }

@@ -12,7 +12,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { meetsOf, newHere } from '../scripts/rules/codex.mjs';
 import { storyHtml, sightings, sightNow, advance, withTold } from '../scripts/dialogue.js';
-import { SIGHT_KINDS, setAutoFold, sightHtml } from '../scripts/sight.js';
+import { PHONE_QUERY, SIGHT_KINDS, chatHeard, chatHidden, setAutoFold, sightHtml } from '../scripts/sight.js';
 import { codexCompactHtml } from '../scripts/codex.js';
 
 const content = loadContent();
@@ -108,3 +108,37 @@ test('a thing\'s first card is big enough to read: its picture large, every line
   assert.match(css, /\.codexcompact\.big \.cpic \{ width: 176px; height: 176px; \}/);
   assert.match(css, /\.codexcompact\.big \.ccap \{ white-space: normal;/);
 });
+
+test('the phone (2026-10-15): the stage takes the screen — the chat a bottom sheet behind a slim bar, a dot for what was written unseen', () => {
+  const phone = fs.readFileSync(new URL('../scripts/phone.css', import.meta.url), 'utf8');
+  const html = fs.readFileSync(new URL('../scripts/index.html', import.meta.url), 'utf8');
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  // One query, the page's and the sheet's: narrow, or short in the stacked layout. Wide screens read none of it.
+  assert.ok(phone.includes(`@media ${PHONE_QUERY} {`), 'phone.css and sight.js PHONE_QUERY agree');
+  assert.match(html, /<link rel="stylesheet" href="games\/live\.css" \/>[\s\S]*<link rel="stylesheet" href="phone\.css" \/>\s*<\/head>/, 'loaded last, over the rest');
+  assert.match(phone, /^\.chattoggle \.barword, \.chattoggle \.unread, \.chatscrim \{ display: none; \}/m, 'off the phone, the bar\'s words and dot never show');
+  // The sheet is never display:none (the chat's frame keeps its size), and opens over every fold.
+  assert.match(phone, /transform: translateY\(100%\); visibility: hidden;/);
+  assert.match(phone, /\.shell\.chatsheet:is\(\*, \.autofold:not\(\.autoopen\)\) #chat-panel \{ transform: none; visibility: visible;/);
+  assert.match(phone, /\.shell\.chatsheet \.chatscrim \{ opacity: 1; pointer-events: auto; \}/, 'a tap outside closes it');
+  assert.match(phone, /\.shell\.chatunread \.chattoggle \.unread \{ display: block;/);
+  // Popovers as bottom sheets; 亮相 ends where the words begin; boards fit the height.
+  assert.match(phone, /\.slotfoot \.bookpop, [^{]*\{\s*position: fixed; top: auto; left: 0; right: 0; bottom: calc\(var\(--chatbar-h\) \+ 46px\);/);
+  assert.match(phone, /bottom: max\(42%, calc\(100% - var\(--words-top, 58%\) \+ 10px\)\)/);
+  assert.match(phone, /\.g-luoshu-board, \.g-luoshu-tray \{ max-width: min\(340px, calc\(100dvh - 420px\)\); \}/);
+  // Ling or 银月 wrote: the dot, only while the chat is out of sight.
+  assert.match(src, /onStreamEnd: \(_text, info\) => \{\n\s*\/\/[^\n]*\n\s*chatHeard\(document\.querySelector\('\.shell'\)\);/);
+  const shellOf = (...on) => { const cls = new Set(on); return { cls, classList: { contains: (c) => cls.has(c), add: (c) => cls.add(c), remove: (c) => cls.delete(c) } }; };
+  assert.equal(chatHidden(shellOf(), true), true, 'a phone opens with the sheet shut');
+  assert.equal(chatHidden(shellOf('chatsheet'), true), false);
+  assert.equal(chatHidden(shellOf(), false), false, 'wide: the chat stands beside the stage');
+  assert.equal(chatHidden(shellOf('autofold'), false), true);
+  assert.equal(chatHidden(shellOf('autofold', 'autoopen'), false), false);
+  const open = shellOf();
+  chatHeard(open); // no matchMedia in node: the wide page, chat in sight
+  assert.ok(!open.cls.has('chatunread'));
+  const folded = shellOf('chatfolded');
+  chatHeard(folded);
+  assert.ok(folded.cls.has('chatunread'));
+});
+

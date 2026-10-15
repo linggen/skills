@@ -115,7 +115,7 @@ function streamEnd() {
     did, streaming: true, recapSent: 'x', veil: { turns: 0 }, look: {},
     turnEnded: () => did.push('turnEnded'), recapTold: () => did.push('recapTold'),
     voice: { heard: () => did.push('heard') }, refresh: () => { did.push('refresh'); return Promise.resolve(); },
-    cheer() {}, nudgeTrial() {},
+    cheer() {}, nudgeTrial() {}, chatHeard() {}, document: { querySelector: () => null }, // the phone's unread dot (sight.js)
   };
   return { fn: inPage(`return (${src});`, scope), scope };
 }
