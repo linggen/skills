@@ -29,6 +29,7 @@ import { esc } from './esc.js';
 import { HANDED_STAY_MS, TURNED_MS, handedStale } from './turned.js';
 import { thinker, stillAsked } from './think.js';
 import { createVoice, nodeMoment } from './voice.js';
+import { bigPlay, createFightSay, cuesOf, fightFacts, strongFoe } from './fightsay.js';
 import { raiseUnease } from './unease.js';
 import { LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
 import { colourOn, freshMemory, memoryCardHtml, replayOf } from './memory.js';
@@ -1493,7 +1494,9 @@ function boutCtx() {
     // The closing card waits for the rules' word, not for the last blow (settleBout).
     ended: Boolean(bout.ended),
     // Why this fight, and who speaks in it (the brief carries them when the story gives them).
-    stake: bout.brief.stake ?? null, says: boutSays(bout.brief.says, bout.st.outcome),
+    stake: bout.brief.stake ?? null, says: { ...(boutSays(bout.brief.says, bout.st.outcome) ?? {}), her: herSays(bout) },
+    // 问银月 (fightsay.js): only while she walks with him here, and its count left.
+    herAsk: herHere() && bout.say ? { can: bout.say.canAsk(boutView(bout.st)), left: bout.say.asksLeft(), name: look.companion?.name ?? words().yinyue } : null,
   };
 }
 
@@ -2473,6 +2476,8 @@ function sendAsk() {
   // player's gentle nudge to talk.
   closeAsk();
   if (!herHere()) return noOne();
+  // In a fight, his words go with the position (fightsay.js) — while asks are left.
+  if (bout && askHerInFight(bout, q)) return;
   deliver(`@银月 ${q || words().askHerEmpty}`, false);
 }
 /// Rows that open where they lie answer the keyboard as a button does.
@@ -2782,8 +2787,8 @@ function tellYinyue(id, zh, en, { mood = null } = {}) {
   voice.moment(id, { zh, en }, { mood });
 }
 
-/* The turns of a fight worth her knowing: the beast letting its 杀招 go, and
-   the player's 气血 falling to a quarter — each once a fight. */
+/* The turn of a fight worth her knowing afterwards: the beast letting its 杀招
+   go, once a fight. 气血 running low is her word in the fight (herCues). */
 function fightMoments() {
   const st = bout?.st, foe = bout?.brief?.creature?.name ?? '';
   if (!st) return;
@@ -2791,10 +2796,6 @@ function fightMoments() {
     bout.told = { ...bout.told, unleash: true };
     const sig = st.foe.signature?.name ?? {};
     tellYinyue('unleash', `${foe}放出了杀招「${sig.zh ?? ''}」`, `${foe} let its ${sig.en ?? 'signature'} go`);
-  }
-  if (st.outcome === 'open' && st.you.hp * 4 <= st.you.hpMax && !bout.told?.low) {
-    bout.told = { ...bout.told, low: true };
-    tellYinyue('hurt', `斗${foe}，气血只剩不到三成了`, `Fighting ${foe}, down to a quarter of their Life or less`);
   }
 }
 
@@ -2809,6 +2810,92 @@ function toldOutcome(brief, outcome) {
   if (!told) return;
   const [zh, en, mood] = told.map((t) => t.replace('{foe}', c.name ?? ''));
   tellYinyue(outcome, zh, en, told[2] ? { mood } : undefined);
+}
+
+/* ── 银月 in a fight (fightsay.js; Hanli, 2026-10-15) ──
+   问银月 and her word at a key moment: the position goes to her as facts
+   (view(st) — what the page shows), her line comes back on the chat's guest
+   stream and stands in her bubble beside his plate. The fight never waits:
+   nobody to hear it → the fallback at once; slow → the fallback at WAIT_MS,
+   and her own line takes its place if it still lands while the fight is open. */
+let herWaiter = null;
+/// Her next line in this chat (a guest stream end) — the answer to a fight word.
+function herNextLine() {
+  return new Promise((done) => { herWaiter = done; });
+}
+function herLineCame(text) {
+  const w = herWaiter;
+  herWaiter = null;
+  w?.(text);
+}
+/* 测试存档 only: `&her=stub` answers each fight word after 1.5 s with a marked
+   stub line (the model path's plumbing, no model), `&her=slow` never answers
+   (the timeout's fallback). A scratch save otherwise tells her nothing. */
+const HER_SEAM = SCRATCH ? new URLSearchParams(location.search).get('her') : null;
+let herFactsSent = null; // the last facts, for the scratch seam's checks
+const HER_MOOD = { ask: 'neutral', charge: 'neutral', low: 'sad', big: 'happy', won: 'happy', lost: 'sad' };
+function herFightAsk(kind, facts) {
+  herFactsSent = { kind, facts };
+  if (HER_SEAM === 'stub' || HER_SEAM === 'slow') {
+    const line = HER_SEAM === 'slow' ? new Promise(() => {}) : new Promise((done) => setTimeout(() => done(`[stub] ${kind} · ${[...facts].length}`), 1500));
+    return { sent: Promise.resolve(true), line };
+  }
+  const line = herNextLine();
+  const r = voice.moment(kind === 'ask' ? 'fight_ask' : 'fight_cue', { zh: facts, en: facts }, { mood: HER_MOOD[kind] ?? null });
+  return { sent: r.said, line };
+}
+/* The name line postMoment puts in front, so the facts fit the engine's 300. */
+function herFactsMax() {
+  const name = look?.name ?? '';
+  const called = !name ? '' : lang() === 'en' ? `(In the game the player is ${name}.) ` : `（灵境里玩家叫${name}。）`;
+  return 296 - [...called].length;
+}
+const herFactsCtx = (b) => ({ ...boutCtx(), tiers: { you: b.setup?.you?.tier, foe: b.setup?.foe?.tier }, max: herFactsMax() });
+function fightSayFor(b) {
+  return createFightSay({
+    ask: herFightAsk, lang,
+    onLine: (line) => {
+      b.her = line;
+      // The fallback is the page's: copied into the chat as hers (her own line lands there by itself).
+      if (line.from === 'fallback') quietCopy(`${look?.companion?.name ?? words().yinyue}：${line.text}`);
+      paintHer(b);
+    },
+  });
+}
+/// Her bubble's words: '…' while she is thinking, else her line.
+function herSays(b) {
+  if (!b?.her || !herHere()) return null;
+  return b.her.from === 'wait' ? '…' : b.her.text;
+}
+/* Her bubble repainted where it stands, so a blow being drawn is never redrawn
+   under it; the closing card is drawn whole. */
+function paintHer(b) {
+  if (bout !== b) return;
+  if (b.ended || !b.busy) return drawNow();
+  const who = document.querySelector('.battle .bside.you .bwho');
+  if (!who) return;
+  who.querySelector('.bsay.her')?.remove();
+  const t = herSays(b);
+  const name = look?.companion?.name ?? '';
+  if (t) who.insertAdjacentHTML('beforeend', `<div class="bsay her">${name ? `<b>${esc(name)}</b>` : ''}${esc(t)}</div>`);
+}
+/// 问银月 — true when it was asked (the ask bar falls back to the chat otherwise).
+function askHerInFight(b, said = '') {
+  if (!b?.say || !herHere() || b.yielded) return false;
+  const v = boutView(b.st);
+  if (!b.say.canAsk(v)) return false;
+  b.say.ask(v, fightFacts(v, herFactsCtx(b), 'ask', { words: said }));
+  return true;
+}
+/* Her word at a key moment of the move just played out (fightsay.js cuesOf,
+   bigPlay); the limits are fightsay's. `mine`: the move was his. */
+function herCues(b, before, mark, mine) {
+  if (!b?.say || !herHere() || b.yielded) return;
+  const after = boutView(b.st), log = since(b.st.log, mark);
+  const kinds = cuesOf(before, after, log, { strong: strongFoe(b.brief) });
+  const big = mine ? bigPlay(log, after, lang()) : null;
+  if (big) kinds.push('big');
+  if (kinds.length) b.say.cue(kinds, after, (k) => fightFacts(after, herFactsCtx(b), k, { what: big }));
 }
 
 /* ── 降妖: the page plays the fight, the rules decide it ── */
@@ -2844,7 +2931,8 @@ async function onDuelStart(id) {
       return;
     }
     keep({ duelSay: { id: null, text: null }, walkedOut: null });
-    bout = { id, brief, setup: brief.setup, st: begin(brief.setup, cardCatalog()), actions: [], picked: null, openLog: false, help: false, note: null, busy: false };
+    bout = { id, brief, setup: brief.setup, st: begin(brief.setup, cardCatalog()), actions: [], picked: null, openLog: false, help: false, note: null, busy: false, her: null };
+    bout.say = fightSayFor(bout);
     render();
   } catch (e) {
     console.warn('[lingjing] duel', e);
@@ -2871,6 +2959,8 @@ async function onBoutTap(spot) {
   if (spot.kind === 'close') return b.release?.();
   // 认输 answers at any moment, the beast's turn included.
   if (spot.kind === 'quit') return yieldBout();
+  // 问银月: words only — nothing in the fight moves (fightsay.js).
+  if (spot.kind === 'ask') return askHerInFight(b);
   if (b.busy || b.st.outcome !== 'open') return;
   // A tap on the bare stage with nothing lifted is no move at all — not even a repaint.
   if (spot.kind === 'stage' && !b.picked) return;
@@ -2894,7 +2984,7 @@ async function boutDo(b, out) {
   if (out.clear) { b.picked = null; return drawNow(); }
   if (out.pick) { b.picked = out.pick; return drawNow(); }
   if (out.action.kind === 'end') { b.picked = null; return endBoutTurn(); }
-  const mark = b.st.log.length;
+  const mark = b.st.log.length, before = boutView(b.st);
   const res = act(b.st, out.action, 'you');
   b.picked = null;
   if (!res.ok) { b.note = res.why; return drawNow(); }
@@ -2902,6 +2992,7 @@ async function boutDo(b, out) {
   await playOut(b, mark, { who: 'you', action: out.action });
   if (gone(b)) return;
   fightMoments();
+  herCues(b, before, mark, true);
   if (b.st.outcome !== 'open') return settleBout(b);
   drawNow();
 }
@@ -2925,7 +3016,7 @@ async function playOut(b, mark, by = null) {
 async function endBoutTurn() {
   const b = bout;
   if (!b || b.busy || b.st.outcome !== 'open' || b.st.whose !== 'you') return;
-  const mark = b.st.log.length;
+  const mark = b.st.log.length, before = boutView(b.st);
   if (!act(b.st, { kind: 'end' }, 'you').ok) return;
   b.actions.push('end');
   await playOut(b, mark);
@@ -2944,6 +3035,7 @@ async function endBoutTurn() {
     }
   }
   if (gone(b)) return;
+  herCues(b, before, mark, false);
   if (b.st.outcome !== 'open') return settleBout(b);
   drawNow();
 }
@@ -2984,6 +3076,7 @@ async function settleBout(b = bout) {
     await new Promise((done) => { b.release = done; setTimeout(done, hold); });
   }
   if (bout === b) bout = null;
+  b.say?.close();
   if (!r.ok) {
     console.warn('[lingjing] the rules refused the fight', r);
     // The save may still hold it open: it waits on its card for his tap, and
@@ -2994,7 +3087,8 @@ async function settleBout(b = bout) {
   }
   const finale = (r.handed ?? []).find((h) => h.tale && h.ended);
   if (finale && r.outcome === 'won') taleEnded(finale.title, true);
-  else toldOutcome(brief, r.outcome);
+  // Her closing word was said in the fight (fightsay.js): not told a second time.
+  else if (!b.say?.st.told.has(r.outcome)) toldOutcome(brief, r.outcome);
   // 所得: the room closes, and what it left stands on the stage — the card he
   // now holds is seen, not only told.
   // What waits at the 洞府 (储物袋 full) is not 所得 in hand: the rules' line says where it went.
@@ -3152,7 +3246,7 @@ async function mountChat() {
     onStreamEnd: (_text, info) => {
       // Ling or 银月 wrote: on a phone with the sheet shut, a dot on the chat's bar (sight.js).
       chatHeard(document.querySelector('.shell'));
-      if (info?.own === false) { voice.heard(); return; }
+      if (info?.own === false) { voice.heard(); herLineCame(_text); return; }
       turnEnded();
       voice.heard();
       streaming = false;
@@ -3777,6 +3871,8 @@ if (SCRATCH) {
     // The stuck gate opened at once (stuck.js), and the board left the way the player leaves it.
     stuck: (id) => { const g = boardFor(id); if (!g) return false; g.shownAt = 0; openStuckSlots(); return true; },
     skip: (id) => { const g = boardFor(id); if (!g?.mod) return false; g.shownAt = 0; return skipGame(id); },
+    // 银月 in the fight (fightsay.js): her bubble, the counts, the last facts sent.
+    her: () => ({ line: bout?.her ?? null, asks: bout?.say?.st.asks ?? null, cues: bout?.say?.st.cues ?? null, told: [...(bout?.say?.st.told ?? [])], facts: herFactsSent }),
     bout: () => (bout ? { outcome: bout.st.outcome, whose: bout.st.whose, you: bout.st.you.hp, foe: bout.st.foe.hp, busy: Boolean(bout.busy), picked: bout.picked ?? null } : null),
     // The attentive move now (fightline.js), for the crawler to make with real taps.
     move: () => (bout && !bout.busy ? bestMove(bout.st) : null),

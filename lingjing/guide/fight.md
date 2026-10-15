@@ -17,6 +17,12 @@ again; tell the fight around them.
 as long as one runs; the rules refuse world-changing tools `in-a-fight`. You
 may talk — name the beast, tell its heritage, answer what a word means.
 
+**Yinyue speaks in the fight herself** — asked (问银月) or at a key moment, in
+her bubble on the stage and here as `[Yinyue]`; never repeat or answer for
+her. Asked how to play this turn, or for her advice: you cannot see the hand —
+one line in the world turning them to her (问银月, she is right beside them);
+never suggest a move yourself.
+
 When it ends the page says so:
 - `[scene] won <id>` — **Look**. A scene's way on after the win is the
   page's: it Resolves that exit itself and its passage plays in the story

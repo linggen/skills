@@ -114,7 +114,7 @@ function streamEnd() {
   const scope = {
     did, streaming: true, recapSent: 'x', veil: { turns: 0 }, look: {},
     turnEnded: () => did.push('turnEnded'), recapTold: () => did.push('recapTold'),
-    voice: { heard: () => did.push('heard') }, refresh: () => { did.push('refresh'); return Promise.resolve(); },
+    voice: { heard: () => did.push('heard') }, herLineCame: (t) => did.push(`her:${t}`), refresh: () => { did.push('refresh'); return Promise.resolve(); },
     cheer() {}, nudgeTrial() {}, chatHeard() {}, document: { querySelector: () => null }, // the phone's unread dot (sight.js)
   };
   return { fn: inPage(`return (${src});`, scope), scope };
@@ -123,7 +123,8 @@ function streamEnd() {
 test("onStreamEnd: only Ling's stream ends the turn; hers is only a line heard", () => {
   const her = streamEnd();
   her.fn('她的话', { agent: 'yinyue', own: false });
-  assert.deepEqual(her.scope.did, ['heard']);
+  // …and it answers a fight word waiting on her (fightsay.js, herLineCame).
+  assert.deepEqual(her.scope.did, ['heard', 'her:她的话']);
   assert.equal(her.scope.veil.turns, 0, 'the veil does not count her');
   assert.equal(her.scope.streaming, true, 'the turn is still on');
   const ling = streamEnd();

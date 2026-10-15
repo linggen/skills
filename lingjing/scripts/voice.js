@@ -70,6 +70,11 @@ export const MOMENTS = {
   trial: { who: 'yinyue', priority: 'low', cooldown: 5 * 60_000 },
   chance_late: { who: 'yinyue', priority: 'low', cooldown: 30 * 60_000 },
   idle: { who: 'yinyue', priority: 'low', cooldown: 0 },
+  // 斗法 (fightsay.js, 2026-10-15): 问银月 — he asked, answered at once; her
+  // word at a key moment of a fight — on the screen now, so she is woken now.
+  // fightsay keeps their limits (two asks, three words a fight).
+  fight_ask: { who: 'yinyue', priority: 'asked' },
+  fight_cue: { who: 'yinyue', priority: 'big', now: true },
 };
 
 /* The flags a moment is posted with (the engine's § App moments). */

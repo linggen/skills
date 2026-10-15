@@ -504,7 +504,7 @@ export function sayEffect(c, ctx) {
    The beast at half its 气血 gathers (battle.js § 杀招). The page says what
    it will do and how hard, reckoned by the same `dealt` the fight uses, so
    the player answers a fact, not a guess — and Ling says nothing. */
-function sigWords(st, ctx) {
+export function sigWords(st, ctx) {
   const e = st.foe.signature?.effect ?? {}, zh = ctx.lang !== 'en', root = st.foe.root;
   const hit = (n, target) => dealt(st, 'foe', n, root, target);
   const guard = st.you.board.find(m => m.taunt);
@@ -536,7 +536,7 @@ export function chargeHtml(st, ctx) {
    The plan is made for everyone at the start of your turn (battle.js § 意图);
    the view carries it only when 望气术 is learned. 上卷 reads the shape of it
    (攻 · 召 · 守 · 养), 下卷 reads every move with the number that lands. */
-function intentBits(st, ctx) {
+export function intentBits(st, ctx) {
   const it = st.foe.intent, zh = ctx.lang !== 'en', root = st.foe.root;
   const exact = it.sight >= 2;
   const bits = it.cards.map((id) => {
@@ -672,6 +672,16 @@ export function boutSays(says, outcome) {
 }
 
 
+/* 问银月 (fightsay.js): her name on a small button by the turn, with the asks
+   left; dim when it does not answer now (the beast's turn, asked this turn,
+   her answer still coming). Absent when she is not with him (ctx.herAsk null). */
+function askHerHtml(ctx) {
+  const a = ctx.herAsk;
+  if (!a || !a.left) return '';
+  const label = (ctx.lang === 'en' ? 'Ask {name}' : '问{name}').replace('{name}', a.name ?? '');
+  return `<button class="bask${a.can ? '' : ' dim'}" data-spot="ask"${a.can ? '' : ' aria-disabled="true"'} title="${esc(label)}">${esc(label)}<small>${a.left}</small></button>`;
+}
+
 /* `st` is `view(state)`, `offers` is `offers(state)`, `ctx` carries the
    catalog, the language and the words. `picked` is what the player is holding.
    `ctx.ended: false` keeps the closing card off while the last blow plays out. */
@@ -711,6 +721,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       <button class="bquit" data-spot="quit">${esc(w.quit)}</button>
       <button class="bhelpbtn${help ? ' on' : ''}" data-spot="help" title="${esc(w.how)}" aria-label="${esc(w.how)}">?</button>
       <span class="bturn ${st.whose}">${turn}</span>
+      ${askHerHtml(ctx)}
       <span class="bwhere">${esc(ctx.title ?? '')}${ctx.stake ? `<small class="bstake">${esc(ctx.stake)}</small>` : ''}</span>
     </div>
 
@@ -785,7 +796,8 @@ function endHtml(st, ctx) {
   const w = ctx.words, e = ENDS[ctx.lang === 'en' ? 'en' : 'zh'], end = endOf(st);
   const said = end === 'won' && w.wonSays?.length ? wonLine(st, w.wonSays) : w[`${end}Say`] ?? '';
   const title = [ctx.title, e.done].filter(Boolean).join(' · ');
-  const bubble = ctx.says?.end ? `<div class="bsay foe">${esc(ctx.says.end)}</div>` : '';
+  const bubble = (ctx.says?.end ? `<div class="bsay foe">${esc(ctx.says.end)}</div>` : '')
+    + (ctx.says?.her ? `<div class="bsay her">${ctx.herName ? `<b>${esc(ctx.herName)}</b>` : ''}${esc(ctx.says.her)}</div>` : '');
   return `<div class="bover ${esc(st.outcome)}"><div class="card closecard bclose ${esc(end)}">
       <b class="bseal">${esc(e[end] ?? w[end] ?? '')}</b>
       <div class="closetitle">${esc(title)}</div>
