@@ -2397,12 +2397,12 @@ async function dropErrand(id) {
 }
 
 /* The ask bar stands outside the stage's repaint, so a stream of tokens never
-   takes the field from under the player's hands. Empty, it sends the line as
-   it is (「说说夫诸」); with a question, the line quotes what is asked about. */
-function openAsk(line, toHer = false) {
-  keep({ ask: line, askHer: toHer });
+   takes the field from under the player's hands. It is 问问银月's alone: 问询
+   sends its line without it (askNow, f0603ead). */
+function openAsk(line) {
+  keep({ ask: line, askHer: true });
   const bar = $('askbar');
-  bar.innerHTML = askBarHtml(line, words(), toHer ? words().askHerHint : undefined);
+  bar.innerHTML = askBarHtml(line, words());
   bar.hidden = false;
   $('askField').focus();
 }
@@ -2424,16 +2424,9 @@ function sendAsk() {
   // 问问银月: the words go to her in this chat (`@银月 …`) — she answers as
   // [Yinyue], and Ling reads the exchange on her next turn. Empty, the
   // player's gentle nudge to talk.
-  if (view.askHer) {
-    closeAsk();
-    if (!herHere()) return noOne();
-    deliver(`@银月 ${q || words().askHerEmpty}`, false);
-    return;
-  }
-  const line = q ? `${view.ask}${lang() === 'zh' ? '：' : ': '}${q}` : view.ask;
   closeAsk();
-  show({ bookOpen: false });
-  say(line);
+  if (!herHere()) return noOne();
+  deliver(`@银月 ${q || words().askHerEmpty}`, false);
 }
 /// Rows that open where they lie answer the keyboard as a button does.
 const KEY_ROWS = [
@@ -2629,7 +2622,7 @@ const CLICKS = [
   // 问询: the one word that costs a model turn opens the ask bar; nothing is
   // sent until the player says so.
   ['[data-ask]', (el) => askNow(el.dataset.ask)],
-  ['[data-ask-her]', () => (!herHere() ? noOne() : view.ask && view.askHer ? closeAsk() : openAsk(words().askHer.replace('{name}', look?.companion?.name ?? words().yinyue), true))],
+  ['[data-ask-her]', () => (!herHere() ? noOne() : view.ask && view.askHer ? closeAsk() : openAsk(words().askHer.replace('{name}', look?.companion?.name ?? words().yinyue)))],
   ['[data-ask-send]', () => sendAsk()],
   ['[data-ask-close]', () => closeAsk()],
   ['[data-meet]', (el) => run(`meet:${el.dataset.meet}`, () => takeMeet(el.dataset.meet))],
