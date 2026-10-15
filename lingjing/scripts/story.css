@@ -88,6 +88,8 @@ body.fighting .slotfoot { height: 46px; }
 .backdrop.painted { background: none; opacity: 1; filter: none; -webkit-mask-image: none; mask-image: none; overflow: hidden; }
 .backdrop .bd { position: absolute; inset: 0; background: var(--art) center 40% / cover no-repeat; animation: bdIn 1.6s ease both, ken 40s ease-in-out infinite alternate; }
 .backdrop .bd.going { animation: bdOut 1.6s ease both; }
+/* A place painted only by day, at night (lingjing.js paintBackdrop): the stage darkens it. */
+.backdrop .bd.dim { filter: brightness(.42) saturate(.55) hue-rotate(-12deg); }
 @keyframes bdIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes bdOut { from { opacity: 1; } to { opacity: 0; } }
 @keyframes ken { from { transform: scale(1.02); } to { transform: scale(1.09) translate(-1%, -1%); } }

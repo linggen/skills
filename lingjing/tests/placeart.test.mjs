@@ -39,3 +39,17 @@ test('a 今线 scene goes by its scape, not its place', () => {
   assert.equal(placeArtOf(table, { at: 'chaifang', scape: 'stacks' }).id, 'jin-stacks');
   assert.equal(placeArtOf(table, { scape: 'track' }), null);
 });
+
+test('the stage: a festival over the place, the place over the 节气 and the weather; 今线 only its place', async () => {
+  const { stagePick, indoorOf } = await import('../scripts/atmos.js');
+  const tb = { kinds: { clear: { day: 'c-d', night: 'c-n' } }, terms: { lidong: 't-lidong' } };
+  const art = placeArtOf(table, { at: 'chaifang' });
+  const place = { id: 'chaifang', backdrop: art.src, indoor: art.indoor };
+  assert.deepEqual(stagePick({ place, table: tb, term: 'lidong', weather: { kind: 'clear' } }), { tier: 'place', art: 'a/chaifang.webp' });
+  assert.deepEqual(stagePick({ place, table: tb, festival: { backdrop: 'f' }, weather: { kind: 'clear' } }), { tier: 'festival', art: 'f' });
+  assert.deepEqual(stagePick({ place: { id: 'x' }, table: tb, term: 'lidong', weather: { kind: 'clear' } }), { tier: 'term', art: 't-lidong' });
+  assert.equal(indoorOf(null, place), true);
+  const jin = placeArtOf(table, { scape: 'stacks' });
+  assert.deepEqual(stagePick({ scene: { line: 'jin' }, place: { backdrop: jin.src }, table: tb }), { tier: 'place', art: 'a/stacks.webp' });
+  assert.deepEqual(stagePick({ scene: { line: 'jin' }, place: {}, table: tb }), { tier: null, art: null });
+});

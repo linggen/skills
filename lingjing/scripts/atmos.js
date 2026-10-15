@@ -111,7 +111,8 @@ export function backdropOf(table, kind, isDay = true) {
 /// day or days (Look's today.festival.backdrop) unless the book names the scene's sky; `place` the
 /// place's own painting (outdoor or a room); a sky the book names, its weather painting; the 节气 in
 /// effect (`term`, the world's backdrops.json `terms`) outdoors; the weather's painting last.
-/// 今线 has none. The season, weather and wind layers draw over whichever wins (atmosOf).
+/// 今线 has only its place's painting (the scene's `scape`, placeart.js). The season, weather and wind
+/// layers draw over whichever wins (atmosOf).
 export const STAGE_TIERS = [
   ['scene', (c) => c.scene?.backdrop],
   ['festival', (c) => (c.weather?.source === 'story' ? null : c.festival?.backdrop)],
@@ -123,7 +124,7 @@ export const STAGE_TIERS = [
 
 /// The tier and picture that win: {tier, art}, or {tier: null, art: null}.
 export function stagePick(c = {}) {
-  if (c.scene?.line === 'jin') return { tier: null, art: null };
+  if (c.scene?.line === 'jin') return c.place?.backdrop ? { tier: 'place', art: c.place.backdrop } : { tier: null, art: null };
   const ctx = { isDay: true, ...c };
   for (const [tier, pick] of STAGE_TIERS) {
     const art = pick(ctx);

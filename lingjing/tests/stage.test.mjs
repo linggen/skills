@@ -245,8 +245,10 @@ test('the footer (Hanli, 2026-10-05): the weather chip names where he stands, �
   assert.doesNotMatch(html, /<svg class="backdrop"|<circle/, 'no hill or moon drawn in code');
   assert.match(html, /<div class="backdrop" id="backdrop" aria-hidden="true"><\/div>/);
   // A picture only where the content declares one: the scene's own `backdrop`, a story sky's, the festival's, else the
-  // world's weather table — chosen by atmos.js stageArt (tests/festival.test.mjs), never by name here.
-  assert.match(src, /const art = stageArt\(\{ scene: \{ \.\.\.look\?\.scene, backdrop: own \}, place: look\?\.place, weather, festival: look\?\.today\?\.festival, term: look\?\.today\?\.jieqi, table: authored\?\.backdrops, isDay: day \}\);/);
+  // world's weather table — chosen by atmos.js stagePick (tests/festival.test.mjs), never by name here; the place's own
+  // painting comes from backdrops.json `places` (placeart.js, tests/placeart.test.mjs).
+  assert.match(src, /const \{ tier, art \} = stagePick\(\{ scene: \{ \.\.\.look\?\.scene, backdrop: own \}, place, weather, festival: look\?\.today\?\.festival, term: look\?\.today\?\.jieqi, table: authored\?\.backdrops, isDay: day \}\);/);
+  assert.match(src, /const place = placeHere\(day\);/);
   assert.match(html, /<div class="backdrop" id="backdrop" aria-hidden="true"><\/div>\s*<div class="shade" aria-hidden="true"><\/div>/);
   // 银月's 木牌 in the footer, once met; never on 今线 (FURNITURE `her`).
   assert.match(foot, /her: \(\) => herTokenHtml\(\)/);

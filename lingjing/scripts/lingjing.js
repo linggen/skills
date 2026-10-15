@@ -34,7 +34,8 @@ import { doorsHtml } from './doors.js';
 import { HOMING_MS, freshHome, homingCardHtml, inkMapSvg, shapesOf, unrollHtml } from './inkmap.js';
 import { frameOf } from './atlas.js';
 import { fxTimes, glOK, playHoming as playHomingFx } from './fx.js';
-import { atmosClasses, atmosOf, indoorOf, particlesHtml, stageArt, windVars } from './atmos.js';
+import { atmosClasses, atmosOf, indoorOf, particlesHtml, stagePick, windVars } from './atmos.js';
+import { placeArtOf } from './placeart.js';
 import { WINDS } from './rules/weather.mjs';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
@@ -1070,23 +1071,35 @@ const wxHere = () => (look?.weather ? { ...look.weather, where: look.place?.name
    declare its own picture (`backdrop`); a set piece's beat lays its painting over this one
    (beatPiece) and a beast's 出场 its own (watchAppear). 今线 keeps its pale modern stage: no
    picture and no weather. Never chosen by name here; a change cross-fades. */
+/* The place the stage stands in, with its painting (Hanli, 2026-10-15: one per location, declared
+   in backdrops.json `places`, placeart.js): Look's place, its `backdrop` and `indoor` from the spot
+   the scene stands at (its zh name; a 今线 scene by its `scape`). */
+function placeHere(isDay = look?.weather?.is_day ?? isDayNow()) {
+  const scene = look?.scene, jin = scene?.line === 'jin';
+  const art = placeArtOf(authored?.backdrops, { at: look?.place?.id ?? null, name: scene?.spot ?? '', scape: jin ? scene?.scape ?? '' : null }, isDay);
+  return art ? { ...look?.place, backdrop: art.src, indoor: art.indoor, night: art.night } : look?.place ?? null;
+}
 let drawnBackdrop = null;
 function paintBackdrop() {
   const dir = look?.world?.made ? `worlds/${look.world.base}` : look?.world?.dir ?? 'worlds/jiuding';
   const own = look?.scene?.backdrop ?? null;
   const day = look?.weather?.is_day ?? isDayNow();
   const weather = PREVIEW.weather ? { kind: PREVIEW.weather } : look?.weather;
-  const art = stageArt({ scene: { ...look?.scene, backdrop: own }, place: look?.place, weather, festival: look?.today?.festival, term: look?.today?.jieqi, table: authored?.backdrops, isDay: day });
+  const place = placeHere(day);
+  const { tier, art } = stagePick({ scene: { ...look?.scene, backdrop: own }, place, weather, festival: look?.today?.festival, term: look?.today?.jieqi, table: authored?.backdrops, isDay: day });
   const src = art ? worldPath(dir, art) : null;
-  if (src === drawnBackdrop) return;
-  drawnBackdrop = src;
+  // A place painted only by day is darkened at night by the stage, not repainted.
+  const dim = Boolean(src) && tier === 'place' && day === false && !place?.night;
+  const key = `${src}|${dim}`;
+  if (key === drawnBackdrop) return;
+  drawnBackdrop = key;
   const el = $('backdrop');
   if (!el) return;
   el.classList.toggle('painted', Boolean(src));
   for (const old of el.querySelectorAll('.bd:not(.going)')) { old.classList.add('going'); setTimeout(() => old.remove(), 1700); }
   if (!src) return;
   const bd = document.createElement('i');
-  bd.className = 'bd';
+  bd.className = dim ? 'bd dim' : 'bd';
   bd.style.setProperty('--art', `url("${src.replace(/"/g, '%22')}")`);
   el.appendChild(bd);
 }
@@ -1113,7 +1126,7 @@ let atmosKey = null;
 function paintAtmos() {
   // 今线 has no weather (Hanli, 2026-10-14: a pale modern stage) — and no festival dressing of the 古's.
   const jin = look?.scene?.line === 'jin';
-  const wind = PREVIEW.wind ?? look?.wind ?? null, indoor = indoorOf(look?.scene, look?.place);
+  const wind = PREVIEW.wind ?? look?.wind ?? null, indoor = indoorOf(look?.scene, placeHere());
   const sky = { season: PREVIEW.season ?? look?.season?.kind, isDay: look?.weather?.is_day ?? isDayNow(), wind, indoor };
   const a = jin ? atmosOf(null, null) : atmosOf(look?.today?.festival?.dressing, PREVIEW.weather ?? look?.weather?.kind ?? null, sky);
   const v = $('view');

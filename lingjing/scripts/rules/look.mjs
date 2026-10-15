@@ -199,6 +199,8 @@ function sceneBrief(content, state, now = new Date()) {
     // …and its games (`games`, the scene's own boards): the only boards its stage holds (stage.mjs).
     ...(line ? { line, ...(scene.scape ? { scape: scene.scape } : {}), ...(scene.offers?.tasks?.length ? { games: scene.offers.tasks } : {}) } : {}),
     place: say(scene.place),
+    // The stage's place painting finds its spot by the zh name, whatever the language (placeart.js).
+    ...(scene.place?.zh ? { spot: scene.place.zh } : {}),
     // The book tells this scene on the stage (its caption under the place, its
     // passage in the box): Ling never narrates its setup (rules/ask.mjs).
     ...(scene.story ? { stage_tells: true } : {}),
