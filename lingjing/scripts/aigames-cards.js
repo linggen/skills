@@ -45,7 +45,7 @@ export function twenty(card, ctx) {
     if (!t.rounds_left) return `<div class="card twenty done">${head}<div class="boarddone">${esc(w.twentyDone)}</div></div>`;
     return `<div class="card twenty">${head}<div class="small dim">${esc(w.twentyOffer)}</div><div class="acts"><button class="act" data-twenty-open>${esc(w.twentyBegin)}</button></div>${note(ctx)}</div>`;
   }
-  const asked = (t.asked ?? []).map((x, i) => `<li><span class="dim">${i + 1}.</span> ${esc(x.q)} <b>${esc(w.twentyAnswers[x.a] ?? x.a)}</b></li>`).join('');
+  const asked = (t.asked ?? []).map((x) => `<li>${esc(x.q)} <b>${esc(w.twentyAnswers[x.a] ?? x.a)}</b></li>`).join('');
   const guesses = t.guesses?.length ? `<div class="small dim">${esc(w.twentyGuesses)}：${t.guesses.map(esc).join('、')}</div>` : '';
   const list = asked ? `<ol class="twentylist">${asked}</ol>` : '';
   if (!t.open) {
