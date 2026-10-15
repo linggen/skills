@@ -419,6 +419,9 @@ export function sceneGame(look, c) {
   if (!look?.scene?.panel || (c.card !== 'duel' && c.card !== 'board')) return false;
   // …and a board the scene stands itself (`show`), though no way on waits on it: the first of two (扔石听声, batch two).
   if (c.card === 'board' && (look.scene.show ?? []).some(s => s.card === 'board' && s.id === c.id)) return true;
+  // …and a board left on an earlier day that he chose to try again (再试一回, rules/skips.mjs): it stands
+  // with the scene card, so the box steps aside for it — the scene's ways on stay his to take.
+  if (c.card === 'board' && (look.tasks ?? []).some(t => t.id === c.id && t.replay && t.status !== 'done')) return true;
   return (look.scene.exits ?? []).some(e => (c.card === 'duel' ? e.game?.kind === 'duel' && e.game.id === c.id : e.needs?.task === c.id));
 }
 

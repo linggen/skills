@@ -75,7 +75,7 @@ test('a graded board left writes no grade or mark, owes the rest of the passage,
   assert.equal(resolve(played, content, ctxAt(now), { exit: 'keep' }).result.ok, true);
 });
 
-test('a board left comes back by itself on a later day, the stage idle — won then, it pays in full: grant, grade, mark', () => {
+test('a board left comes back by itself on a later day, the stage idle — won then, it pays in full: grant, grade, mark', async () => {
   const { s, now } = at('00-prologue/00-cave');
   const left = must(task, must(task, s, now, { action: 'skip', id: 'cave-stone' }), now, { action: 'skip', id: 'bread-share' });
   // Still at 00-cave, its boards over and its passage read: the stage is idle (the next scene's own
@@ -97,6 +97,15 @@ test('a board left comes back by itself on a later day, the stage idle — won t
   assert.deepEqual(open.tasks['cave-stone'], { status: 'offered', replay: true, from: { scene: '00-cave', line: null } });
   assert.ok(look(open, content, ctxAt(tomorrow)).tasks.some((t) => t.id === 'cave-stone' && t.status === 'offered' && t.replay));
   assert.equal(look(open, content, ctxAt(tomorrow)).replay, undefined, 'one at a time');
+  // Chosen, it stands with the scene card (so the box steps aside for it), the scene's ways still his.
+  const lo = look(open, content, ctxAt(tomorrow));
+  assert.ok(stageSlots(lo, stageCards(lo)).main.some((c) => c.card === 'board' && c.id === 'cave-stone'), 'the board stands in main, beside the scene');
+  // While the box holds the scene's choices, the box carries the beat too (the stage under it is hidden).
+  const { panelActsHtml, WORDS } = await import('../scripts/cards.js');
+  const inBox = panelActsHtml({ look: lk, words: WORDS.zh }, { inBox: true });
+  assert.match(inBox, /data-replay-play="cave-stone"/);
+  assert.match(inBox, /data-replay-later="cave-stone"/);
+  assert.doesNotMatch(panelActsHtml({ look: lk, words: WORDS.zh }), /data-replay-play/, 'on the card, the replay is its own card');
   const paid = task(must(win, open, tomorrow, { id: 'cave-stone', grade: 'sure' }), content, ctxAt(tomorrow), { action: 'done', id: 'cave-stone' });
   assert.equal(paid.result.ok, true, JSON.stringify(paid.result));
   const p = paid.state;

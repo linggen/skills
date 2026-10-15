@@ -855,10 +855,9 @@ export const skipButton = (id, lang) => `<button class="act quiet" data-game-ski
 /// `replay`, rules/skips.mjs — Hanli: 「最好后面能自动触发重玩」): the world's line, and 再试一回 /
 /// 改日. Never a panel entry; played, it stands as the board it was, and its win pays in full.
 function replay(card, ctx) {
-  const r = ctx.look.replay;
-  if (!r) return '';
-  return `<div class="card replaycard"><div class="small ling">${esc(r.line)}</div><div class="acts"><button class="act" data-replay-play="${esc(r.task)}">${esc(ctx.words.replayPlay)}</button><button class="act quiet" data-replay-later="${esc(r.task)}">${esc(ctx.words.replayLater)}</button></div></div>`;
+  return ctx.look.replay ? `<div class="card replaycard">${replayHtml(ctx.look.replay, ctx.words)}</div>` : '';
 }
+const replayHtml = (r, w) => `<div class="replaybeat"><div class="small ling">${esc(r.line)}</div><div class="acts"><button class="act" data-replay-play="${esc(r.task)}">${esc(w.replayPlay)}</button><button class="act quiet" data-replay-later="${esc(r.task)}">${esc(w.replayLater)}</button></div></div>`;
 
 /// 所得 — the errands met here, each with what it paid and the next step.
 export const HANDED_MS = 2600;
@@ -1395,8 +1394,11 @@ export function panelActsHtml(ctx, { inBox = false } = {}) {
   const note = ctx.panelNote ? `<div class="donote">${esc(ctx.panelNote)}</div>` : '';
   if (!taps && !looks && !note) return '';
   const row = taps ? `<div class="acts paneltaps${quiet ? ' quiet' : ''}">${taps}</div>` : '';
+  // A board left on an earlier day, offered again (Look's replay): while the box holds the scene's
+  // choices the stage under it is hidden, so the box carries the beat too — after the way on, never before it.
+  const again = inBox && ctx.look.replay ? replayHtml(ctx.look.replay, w) : '';
   // In the box the choices come first — the way on is never the part a short stage scrolls away.
-  return inBox ? `${row}${looks}${invite}${note}` : `${looks}${row}${invite}${note}`;
+  return inBox ? `${row}${again}${looks}${invite}${note}` : `${looks}${row}${invite}${note}`;
 }
 
 /// One choice under the scene card: a button for a real decision; the one way
