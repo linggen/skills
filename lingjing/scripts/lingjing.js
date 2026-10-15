@@ -172,7 +172,7 @@ function boardFor(taskId) {
     const spent = old?.day === day && old.state?.won && old.sent && !old.winning && task.status === 'offered' && !task.won;
     if (!old || old.day !== day || spent) {
       const round = spent ? (old.round ?? 0) + 1 : 0;
-      boards.set(taskId, { taskId, mod, day, round, state: mod.newGame(`${day}|${look.seed ?? ''}|${taskId}${round ? `|${round}` : ''}`, task.level ?? 1, task.deal ?? {}) });
+      boards.set(taskId, { taskId, mod, day, round, state: mod.newGame(`${day}|${look.seed ?? ''}|${taskId}${round ? `|${round}` : ''}`, task.level ?? 1, { ...(task.deal ?? {}), ...(task.done_line ? { solved: task.done_line } : {}) }) });
     }
     // A board the rules judge (密室, games/mishi.js `fromLook`): what it is comes from Look, laid in on every draw.
     const g = boards.get(taskId);
@@ -1303,7 +1303,17 @@ function spoilsCtx() {
   };
 }
 
-const PAGE_CARDS = { unfold: () => cardHtml({ card: 'map' }, { ...ctx(), mapView: 'province', unfold: view.unfold }), memory: () => memoryHtml(), homing: () => homingHtml(), doors: () => doorsHtml(view.doors?.node, { lang: lang(), still: stillMotion(), age: performance.now() - (view.doors?.at ?? performance.now()) }) };
+/* A fight the save holds open that the page is not in (walked out of, or its settle refused, 「这一战没记上」):
+   its own card, with the way back in — never a blank stage (2026-10-15: the stage held one 'fight' card
+   and nothing drew it). The scene's or the haunt's duel card when it has one; else a card that re-opens it. */
+function fightLeftHtml() {
+  const id = look?.fight?.game;
+  if (!id) return '';
+  const own = cardHtml({ card: 'duel', id }, ctx());
+  if (own) return own;
+  return `<div class="card duel"><div class="cardtitle">${esc(look.fight.creature ?? '')}</div><div class="acts"><button class="act" data-duel-start="${esc(id)}">${esc(words().fightBack)}</button></div></div>`;
+}
+const PAGE_CARDS = { fight: () => fightLeftHtml(), unfold: () => cardHtml({ card: 'map' }, { ...ctx(), mapView: 'province', unfold: view.unfold }), memory: () => memoryHtml(), homing: () => homingHtml(), doors: () => doorsHtml(view.doors?.node, { lang: lang(), still: stillMotion(), age: performance.now() - (view.doors?.at ?? performance.now()) }) };
 const drawCard = (c) => (PAGE_CARDS[c.card] ?? (() => cardHtml(c, ctx())))();
 const inkNames = () => Object.fromEntries(Object.keys(look?.world?.atlas?.provinces ?? {}).map((id) => [id, authored?.dictionary?.provinces?.[id]?.[lang()] ?? id]));
 const homingHtml = () => (view.homing && atlasPlaces?.ink ? homingCardHtml(inkGeo, atlasPlaces.ink, { province: view.homing.province, frame: view.homing.frame, age: performance.now() - view.homing.at, still: view.homing.still || stillMotion(), lang: lang(), names: inkNames(), labels: look?.world?.atlas?.provinces, paint: inkPaint(), fx: Boolean(view.homing.fx) }) : '');

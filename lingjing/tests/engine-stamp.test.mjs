@@ -47,3 +47,13 @@ test('the page reloads into the fight when the stamp moved — at the door and o
   assert.match(src, /if \(!r\.ok && engineMoved\(r\)\) return reloadForEngine\(r\);\n\s+if \(!r\.ok\) \{/);
   assert.match(src, /sessionStorage\.setItem\(ENGINE_KEY, r\.engine\)/);
 });
+
+test('a fight the save holds open and the page is not in draws its card with the way back in — never a blank stage', async () => {
+  const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
+  assert.match(src, /const PAGE_CARDS = \{ fight: \(\) => fightLeftHtml\(\),/);
+  assert.match(src, /data-duel-start="\$\{esc\(id\)\}">\$\{esc\(words\(\)\.fightBack\)\}/);
+  const { stageCards } = await import('../scripts/stage.mjs');
+  assert.deepEqual(stageCards({}, { fight: true }), [{ card: 'fight' }], 'the stage holds only the fight card then — so the page must draw it');
+  const { WORDS } = await import('../scripts/cards.js');
+  assert.ok(WORDS.zh.fightBack && WORDS.en.fightBack);
+});
