@@ -168,6 +168,18 @@ test('一千米: out first, then in — the thousand run; panting throws up, and
   assert.equal(again.tries, 1);
 });
 
+test('一千米: 算了 waits for two falls — the page hands newGame the task level, never a run count', () => {
+  // lingjing.js lays a board with mod.newGame(seed, task.level ?? 1): level 1 is not a fallen run.
+  const fall = (s) => { for (let i = 0; i < 400 && !s.failed; i++) s = run(qianmi, s, 200); return s; };
+  let s = qianmi.act(qianmi.newGame('lv', 1), { g: 'start' }).state;
+  assert.equal(qianmi.stuck(s), false, 'not stuck before a single run');
+  s = fall(s);
+  s = qianmi.act(s, { g: 'again' }).state;
+  assert.equal(qianmi.stuck(s), false, 'one fall is not stuck yet');
+  s = qianmi.act(fall(s), { g: 'again' }).state;
+  assert.equal(qianmi.stuck(s), true, 'two falls: stuck');
+});
+
 test('罚球: in four, out six brings the heart down and three go in; holding the breath shakes it off the rim', () => {
   let s = faqiu.newGame('t');
   assert.equal(faqiu.act(s, { g: 'bieshot' }).state.note, 'shake');

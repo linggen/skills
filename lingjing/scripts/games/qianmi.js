@@ -68,9 +68,13 @@ const T = {
   },
 };
 
-export function newGame(seed = '', tries = 0) {
-  return { seed: String(seed), tries, live: true, started: false, t: 0, d: 0, air: 0.8, lungs: 0.5, mode: null, vol: 0, pants: 0, note: 'ready', failed: false, won: false };
+/* The page calls newGame(seed, level) (lingjing.js): the second argument is the task's level,
+   never a count of runs — a fresh board has run nothing yet (it took the level for `tries`, so
+   「算了，往下走」 came after one fall, not two). A rerun counts its own (`run`). */
+export function newGame(seed = '') {
+  return run(seed, 0);
 }
+const run = (seed, tries) => ({ seed: String(seed), tries, live: true, started: false, t: 0, d: 0, air: 0.8, lungs: 0.5, mode: null, vol: 0, pants: 0, note: 'ready', failed: false, won: false });
 
 /* An in-breath ends: what it was. A pant counts toward 乱; a full one clears it. */
 function endIn(s) {
@@ -88,7 +92,7 @@ const VERBS = {
     return { ...base, mode, vol: 0, note: mode === 'out' ? 'exhale' : base.note === 'exhale' || base.note === 'fresh' ? 'inhale' : base.note };
   },
   release: (s) => (s.mode === 'in' ? endIn(s) : s.mode === 'out' ? { ...s, mode: null } : null),
-  again: (s) => (s.failed ? { ...newGame(s.seed, s.tries + 1), started: true, note: 'running' } : null),
+  again: (s) => (s.failed ? { ...run(s.seed, s.tries + 1), started: true, note: 'running' } : null),
 };
 
 export function act(state, data = {}) {
