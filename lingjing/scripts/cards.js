@@ -352,7 +352,7 @@ function atlasMap(ctx) {
   const locked = ctx.look.lock ? `<div class="small dim maplock">${esc(say(ctx.words.mapLocked, { title: ctx.look.lock.title }))}</div>` : '';
   // 地图展开 (2026-10-14): the first time this chapter's map can be walked, it unfolds — mist
   // lifting off the paper, the places coming out, the region's name — once (the page's moment).
-  const unfold = ctx.unfold ? `<div class="unfoldveil" aria-hidden="true"></div><div class="unfoldtitle"><small>${esc(ctx.words.unfoldNew)}</small><b>${esc(ctx.unfold.title)}</b></div>` : '';
+  const unfold = ctx.unfold ? `<div class="unfoldveil" aria-hidden="true"></div><div class="unfoldtitle"><span class="unfoldplate"><small>${esc(ctx.words.unfoldNew)}</small><b>${esc(ctx.unfold.title)}</b></span></div>` : '';
   return `<div class="card${ctx.unfold ? ` unfolding${ctx.unfold.still ? ' still' : ''}` : ''}"${ctx.unfold ? ' data-unfold role="button" tabindex="0"' : ''}><div class="cardtitle">${esc(title)}</div>${locked}
     <div class="atlas${whole ? ' whole' : ''}" style="aspect-ratio:${(frame.w * atlas.aspect).toFixed(4)} / ${frame.h.toFixed(4)}">${img}${provinces.join('')}${dots.join('')}${unfold}</div>${pvLine}
     <div class="acts">${views}<button class="act ask" ${askAttr(ctx.words.sayMap)}>${esc(ctx.words.about)}</button></div></div>`;

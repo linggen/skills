@@ -82,7 +82,8 @@ export function tick(state, ms) {
   if (!state.live || state.won || state.phase !== 'climb' || ms <= 0) return state;
   const s = { ...state, t: state.t + ms };
   if (s.t >= LIMIT) return finish(s, 'rope');
-  if (onLedge(s) || atTop(s)) return s;
+  // Standing at the cliff foot he hangs from nothing: the grip drains from the first reach on (2026-10-15 play-test).
+  if (s.rung === 0 || onLedge(s) || atTop(s)) return s;
   s.grip = Math.max(0, s.grip - (DRAIN * ms) / 1000);
   if (s.grip > 0) return s;
   return { ...s, rung: s.rung > LEDGE ? LEDGE : 0, grip: 0.6, slips: s.slips + 1, fx: { at: s.t, ok: false }, note: 'slid' };

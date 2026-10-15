@@ -125,6 +125,11 @@
 .unfoldtitle { position: absolute; inset: 0; z-index: 3; display: grid; place-content: center; text-align: center; pointer-events: none;
   font-family: var(--serif); color: var(--ink-deep, #2a241c); text-shadow: 0 0 8px var(--ink-paper, #f4efe3), 0 0 16px var(--ink-paper, #f4efe3);
   animation: unfold-title 4s ease-in-out .5s both; }
+/* On a paper plate, so the places coming out under it never read through the name (2026-10-15
+   play-test: 「地图展开」 sat across 泗水岸's label). */
+.unfoldplate { display: grid; gap: 2px; padding: 10px 22px 12px; border-radius: 10px;
+  background: radial-gradient(closest-side, var(--ink-paper, #f4efe3) 62%, color-mix(in srgb, var(--ink-paper, #f4efe3) 88%, transparent));
+  box-shadow: 0 0 18px 10px color-mix(in srgb, var(--ink-paper, #f4efe3) 88%, transparent); }
 .unfoldtitle small { font-size: 12px; letter-spacing: .5em; opacity: .7; }
 .unfoldtitle b { font-size: clamp(26px, 8vw, 40px); font-weight: 600; letter-spacing: .35em; margin-left: .35em; }
 .unfolding.still .atlas, .unfolding.still .pt { animation: none; }
