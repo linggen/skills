@@ -38,7 +38,7 @@
   .shell.chatunread .chattoggle .unread { display: block; width: 7px; height: 7px; border-radius: 50%; background: var(--seal); box-shadow: 0 0 0 2px var(--seal-soft); }
   /* A scratch save's badge (inline-styled at the bottom corner) stands above the bar. */
   /* …small, at the top bar's empty middle: never over 跳过, the pager's ›, the footer or a fight's hand (live, 2026-10-15). */
-  .scratch-badge { top: 1px !important; right: auto !important; left: 50%; transform: translateX(-50%); font-size: 9.5px !important; opacity: .6 !important; }
+  .scratch-badge { top: 0 !important; right: auto !important; left: 50%; transform: translateX(-50%); font-size: 9.5px !important; opacity: .6 !important; }
   .shell.chatsheet ~ .scratch-badge { display: none; }
   /* The chat's own frame fills the sheet; a scratch save's quiet transcript scrolls in it. */
   #chat-panel .scratch-lines { max-height: calc(var(--sheet-h) - 110px); }
