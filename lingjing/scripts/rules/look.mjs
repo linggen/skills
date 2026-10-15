@@ -20,6 +20,7 @@ import { chapterLook, nodeLook, recapLook } from './story.mjs';
 import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
 import { choreGrant, kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
 import { catchHere, gameLevel, hostedHere, lundaoBrief, reopened, stallHere } from './tasks.mjs';
+import { caseBrief, haggleBrief, twentyBrief } from './aigames.mjs';
 import { hashOf } from './travel.mjs';
 import { visitorGoods, visitorHere, visitorsBrief } from './visiting.mjs';
 import { atScene, beatOf, creatureOf, encounterOf, foeOf, ofJuan, passed, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
@@ -487,6 +488,10 @@ export function look(state, content, ctx) {
     // 差事: what is in hand, and what may be taken where he stands.
     book: bookOf(content, state, lang, ctx),
     ...(lundaoBrief(content, state, ctx.now) ? { lundao: lundaoBrief(content, state, ctx.now) } : {}),
+    // AI mini-games (rules/aigames.mjs): facts only — never the animal, the floor or the case's truth.
+    ...(twentyBrief(content, state, ctx.now) ? { twenty: twentyBrief(content, state, ctx.now) } : {}),
+    ...(haggleBrief(content, state, ctx.now) ? { haggle: haggleBrief(content, state, ctx.now) } : {}),
+    ...(caseBrief(content, state, ctx.now) ? { case: caseBrief(content, state, ctx.now) } : {}),
     // 所得: errands that handed themselves in here, until he walks on.
     ...(handedHere(content, state).length ? { handed: handedHere(content, state) } : {}),
     // 机缘: where, and how long it lasts — the page counts it down.

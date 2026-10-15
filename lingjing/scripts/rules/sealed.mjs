@@ -34,7 +34,7 @@ export function sealedBrief(content, state) {
 }
 
 /* The fields of Look the world outside fills — frozen while sealed. */
-const OUTSIDE = ['offers', 'work', 'visitors', 'chance', 'lundao', 'tale', 'known', 'story_due', 'story_why', 'handed', 'quests', 'kaifu', 'weather', 'season', 'wind'];
+const OUTSIDE = ['offers', 'work', 'visitors', 'chance', 'lundao', 'haggle', 'case', 'tale', 'known', 'story_due', 'story_why', 'handed', 'quests', 'kaifu', 'weather', 'season', 'wind'];
 
 /* A reading with the outside taken out and `sealed` in. The goal line (the
    waypoint) is the scene's goal; the 事 book holds nothing from outside. */
@@ -51,7 +51,7 @@ export function withoutSealed(content, state, brief) {
 
 /* The verbs of the world outside: an errand taken or handed in, a rumour, the
    road's meet, a chore checked, 闭关, 论道, 御剑 away. */
-const OUTSIDE_VERBS = new Set(['quest', 'tale', 'meet', 'seclude', 'lundao', 'fly']);
+const OUTSIDE_VERBS = new Set(['quest', 'tale', 'meet', 'seclude', 'lundao', 'fly', 'haggle', 'case']);
 const outsideVerb = (verb, args) => OUTSIDE_VERBS.has(verb) || (verb === 'task' && args?.action === 'check');
 
 /* The refusal for a verb of the world outside while sealed, or null. */

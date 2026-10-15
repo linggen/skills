@@ -15,7 +15,7 @@ export const LU_WORDS = {
     none: '还没有什么可记的。', ending: '终局 · {title}', noOpen: '眼下没有悬着的谜。',
     sep: '',
     fantong: '饭桶方子', fantongNote: '喂对了东西，饭桶吐对的丹；几道纹，看它的脾气。',
-    paipu: '牌谱 · {n}', paipuNote: '你手上的每一张牌，和它从哪里来。',
+    paipu: '牌谱 · {n}', paipuNote: '你手上的每一张牌，和它从哪里来。', animals: '识得的动物 · {n}', animalsNote: '二十问里猜中的。',
     how: { starter: '测灵根时所得', companion: '{creature}随你而来', tame: '收服{creature}', win: '胜{creature}所得', chance: '机缘所得', tale: '传闻《{tale}》', story: '{chapter}', old: '旧日所得' },
     at: '于{place}', kinds: { minion: '灵兽', spell: '法术' },
   },
@@ -27,7 +27,7 @@ export const LU_WORDS = {
     none: 'Nothing to record yet.', ending: 'The end · {title}', noOpen: 'No riddle open now.',
     sep: ' ',
     fantong: 'Rice Bucket recipes', fantongNote: 'Feed it the right thing and it spits the right pill; how many rings is up to its temper.',
-    paipu: 'Cards · {n}', paipuNote: 'Every card you hold, and where it came from.',
+    paipu: 'Cards · {n}', paipuNote: 'Every card you hold, and where it came from.', animals: 'Animals known · {n}', animalsNote: 'Guessed in twenty questions.',
     how: { starter: 'From the root test', companion: '{creature} came with you', tame: 'Tamed {creature}', win: 'Won from {creature}', chance: 'A chance taken', tale: 'The rumor “{tale}”', story: '{chapter}', old: 'From earlier days' },
     at: 'at {place}', kinds: { minion: 'Beast', spell: 'Spell' },
   },
@@ -80,6 +80,7 @@ export function luHtml(book, { lang = 'zh', her = null, artBase = '', codex = nu
     ${tujian ? tujian.replace(/<\/section>$/, `${peopleList}</section>`) : ''}
     ${fantongBookHtml(book.fantong, w)}
     ${paipuHtml(book.cards, w, { artBase, her })}
+    ${book.animals?.length ? `<section class="lusec luanimals"><h3>${esc(say(w.animals, { n: book.animals.length }))}</h3><p class="small dim">${esc(w.animalsNote)}</p><p>${book.animals.map((a) => `<span class="luperson"><b>${esc(a.name)}</b></span>`).join('')}</p></section>` : ''}
     <section class="lusec"><h3>${esc(w.open)}</h3>${(book.open ?? []).length ? book.open.map((q) => `<p class="luq">${esc(q)}</p>`).join('') : `<p class="dim">${esc(w.noOpen)}</p>`}</section>
   </div>`;
 }

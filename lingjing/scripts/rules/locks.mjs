@@ -24,6 +24,8 @@ const VERB_SYSTEM = {
   meet: () => 'road',
   tale: () => 'errands',
   trade: () => 'wealth',
+  haggle: () => 'wealth', //   讨价还价 (rules/aigames.mjs): a shelf's, like Trade
+  case: () => 'errands', //    断案: an errand of the 执事堂's kind
   quest: (args, ctx) => (args.action === 'kaifu' ? 'kaifu' : choreSystem(ctx, String(args.id ?? '')) ?? 'errands'),
   task: (args, ctx) => (args.action === 'check' ? choreSystem(ctx, String(args.id ?? '')) ?? 'chores' : null),
 };
@@ -47,9 +49,9 @@ export const gated = verbs => Object.fromEntries(Object.entries(verbs).map(([ver
    look.mjs tasksBrief), so every reader of them agrees. */
 const HIDES = {
   cultivation: ['tier', 'progress', 'next', 'practice_hint'],
-  wealth: ['wealth'],
+  wealth: ['wealth', 'haggle'],
   divine: ['divination'],
-  errands: ['offers', 'work', 'handed', 'tale', 'known', 'story_due', 'story_why', 'lundao'],
+  errands: ['offers', 'work', 'handed', 'tale', 'known', 'story_due', 'story_why', 'lundao', 'case'],
   road: ['chance'],
   seclusion: ['seclusion'],
 };

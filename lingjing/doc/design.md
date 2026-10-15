@@ -696,7 +696,7 @@ Every 回 gets a gameplay pass so play keeps pace with reading: the book's own a
 their scenes (`tasks/h<nn>.json`), fights, and enough beasts and finds to farm its stage quest.
 古六 is first (building now: its boards in tasks/h08.json); the rest follow in order.
 
-### AI mini-games 【在建 · first three】 (Hanli, 2026-10-15)
+### AI mini-games 【已建 · first three】 (Hanli, 2026-10-15)
 
 **The AI talks, plays roles and judges fuzzy things against a rubric; the rules decide outcomes
 and pay (capped).** Token cost counts in the daily routine: a few rounds a day, on a cheaper model.
@@ -712,6 +712,22 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
 | Later | 论道 · 飞花令 · 对对子 | with the 稷下先生, 银月 joins |
 | Later | 说书接龙 | 吴婆婆讲古 |
 | Later | 下棋陪聊 | the engine moves, 银月/Ling talk |
+
+**Built 2026-10-15** (rules/aigames.mjs, worlds/jiuding/aigames.json, aigames-cards.js, guides
+`twenty` · `haggle` · `case`; numbers are declared defaults for balance.json):
+- **二十问** — 银月's pet tool `Twenty` (tier read; it keeps the count on the save) is the only
+  reader of the animal; 30 animals with aliases, unknown ones first; 20 questions, hints from 15,
+  2 rounds a day, a game's 体力 at open; the guess box (page) or her call is checked by name/alias
+  (longest match); a win pays `game` (5 灵石) and goes into 录 (识得的动物). Only while she is awake.
+- **讨价还价** — at a keeper aigames.json names (钱掌柜 · 坊市, the 货郎 · 石坳村, the 货郎 up the
+  mountain on his days): Ling tags each argument with the rubric (熟客 · 一次买多 · 指出瑕疵 ·
+  拿东西换 · 奉承 · 空口) and grades it 0–2; the rules step the ask, each reason once, clamp at the
+  floor (75–85% of list, never in any answer), sour on bare pushes; 6 turns, 3 haggles a day;
+  成交 / 不买了 on the card; walking away is list price for that thing today.
+- **断案 · 药园那株紫玉参** — 周衡 at the 执事堂 after `wm-diyilu`; five people (三 suspects, 阿禾 and
+  周衡 witnesses) Ling plays from declared knows/hides; clues by asking (person × topic) or the
+  card's look-around; 8 questions and 1 accusation a day; the card's 指认 is judged by ids
+  (马小宝 + 巡夜簿 + one of 数 · 食盒 · 刀口); solved pays `task` and writes 阿禾 恩 · 马小宝 仇.
 
 ## A day, 今日传闻, real-life chores 【已建】
 

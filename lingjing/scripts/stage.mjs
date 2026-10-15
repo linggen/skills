@@ -135,6 +135,8 @@ export const CARD_KINDS = {
   // A chapter over, the next one waiting: its ending card (story.mjs closeOf) — told, never asking.
   closed: { holds: false },
   lundao: { holds: false }, //     论道 at 稷下: offered, or a game under way — never holds the roads
+  // AI mini-games (rules/aigames.mjs): 二十问 with her, 讨价还价 at a keeper's shelf, 断案 where a case is — never hold the roads.
+  twenty: { holds: false }, haggle: { holds: false }, case: { holds: false },
   handed: { holds: false }, //     所得 — told, never waiting on him; the roads stay
   board: { holds: false }, //      a standing practice, offered for days — not this arrival's business
   // A board left on an earlier day, offered again (rules/skips.mjs): optional — 再试一回 or 改日, never asking.
@@ -244,6 +246,8 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   const coins = !(look.locked ?? []).includes('divine') && herAwake(look);
   const cards = shown.length ? [...shown] : line || naming || look.scene?.panel || look.offers?.length || look.place?.meet || !coins ? [] : [{ card: 'hexagram' }];
   const has = (kind, id) => cards.some(c => c.card === kind && (id === undefined || c.id === id));
+  // 二十问 offered fills an empty stage beside the coins (rules/aigames.mjs): never over a scene's business.
+  if (has('hexagram') && look.twenty && !look.twenty.open && !look.twenty.outcome && look.twenty.rounds_left) cards.push({ card: 'twenty' });
 
   if (!line) {
     // An open board is always before the player: Ling tells them it is, so it
@@ -251,6 +255,10 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
     // 论道: the scholar is here (offered), or a game is under way today.
     const word = (look.tasks ?? []).find(t => t.kind === 'word' && t.status !== 'done');
     if ((word || (look.lundao && look.lundao.outcome === 'open')) && !has('lundao')) cards.push({ card: 'lundao' });
+    // AI mini-games: a haggle or a case where he stands; 二十问 once played today (offered, it fills an empty stage below).
+    if (look.haggle && !has('haggle')) cards.push({ card: 'haggle' });
+    if (look.case && !has('case')) cards.push({ card: 'case' });
+    if (look.twenty && (look.twenty.open || look.twenty.outcome) && !has('twenty')) cards.push({ card: 'twenty' });
     // Every board open here: the story's, an errand's, and the games this place hosts.
     for (const board of (look.tasks ?? []).filter(t => t.kind === 'board' && t.status !== 'done' && !t.won)) {
       if (!has('board', board.id)) cards.push({ card: 'board', id: board.id });
@@ -401,7 +409,7 @@ export const MAIN = [
   { kinds: ['closed'] }, //                                              a chapter's ending card, until he puts it away
   { kinds: ['fight', 'seclusion', 'seclude'] }, //                      the fight, 闭关
   { kinds: ['meet', 'panel', 'value', 'born', 'breakthrough', 'replay'], together: true }, // the scene waiting on a choice, its new faces first; a board left, offered again, under it
-  { kinds: ['board', 'duel', 'lundao'] }, //                             a game to play here
+  { kinds: ['board', 'duel', 'lundao', 'twenty', 'haggle', 'case'] }, //  a game to play here
   { kinds: ['handed', 'quest', 'tale', 'road', 'offer'] }, //            the line, one at a time
   { kinds: ['building', 'empty'] }, //                                   the page's own notices
   { kinds: ['next'] }, //                                                where the story goes, when nothing else is a thing to do

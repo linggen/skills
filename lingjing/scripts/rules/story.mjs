@@ -8,6 +8,7 @@
 // in the order it was done. Nothing not yet reached leaves this file: a
 // chapter ahead is a dark cauldron with its province and nothing more.
 import { seenLog } from './examine.mjs';
+import { animalsKnown } from './aigames.mjs';
 import { CAST } from '../content.mjs';
 import { fill, pick } from '../state.mjs';
 import { cauldronsFound, companionOf, giftAt, hasCompanion, herAwake, recalledOf } from './companion.mjs';
@@ -177,6 +178,8 @@ export function story(state, content, ctx, args = {}) {
       ...(short || !content.codex ? {} : { codex: seenOf(content, state, sceneOf(content, state)) }),
       // 所见 — what was looked at along the way, scene by scene, and what was passed by (rules/examine.mjs).
       ...(short || !state.looked?.length ? {} : { seen: seenLog(content, state) }),
+      // 二十问's animals guessed (rules/aigames.mjs): known animals, not the 图鉴.
+      ...(short || !state.animals?.length ? {} : { animals: animalsKnown(content, state) }),
     },
   };
 }

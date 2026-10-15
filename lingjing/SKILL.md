@@ -257,6 +257,82 @@ tools:
         type: string
         description: For turn in 成语接龙 — the scholar's next idiom, chaining from the player's.
 
+  - name: Haggle
+    description: >-
+      讨价还价 at a keeper's shelf: open, turn, deal, walk (guide `haggle`).
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs haggle --action={{action}} --id={{id}} --reason={{reason}} --grade={{grade}} --item={{item}} --for=ling"
+    tier: edit
+    others_read: [haggle.item.name, haggle.ask, haggle.qty, deal, price]
+    timeout_ms: 8000
+    args:
+      action:
+        type: string
+        required: true
+        description: open, turn, deal or walk.
+      id:
+        type: string
+        description: For open — the shelf item's id.
+      reason:
+        type: string
+        description: For turn — the rubric id the player's argument fits.
+      grade:
+        type: string
+        description: For turn — 0 weak, 1 fair, 2 strong.
+      item:
+        type: string
+        description: For turn with barter — the bag item offered.
+
+  - name: Case
+    description: >-
+      断案 — open, ask, look, accuse; you play the people (guide `case`).
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs case --action={{action}} --who={{who}} --topic={{topic}} --at={{at}} --evidence={{evidence}} --for=ling"
+    tier: edit
+    others_read: [case.title, case.asked, found.name, right]
+    timeout_ms: 8000
+    args:
+      action:
+        type: string
+        required: true
+        description: open, ask, look or accuse.
+      who:
+        type: string
+        description: For ask — the person asked; for accuse — the suspect the player named.
+      topic:
+        type: string
+        description: For ask — the topic id the question is about.
+      at:
+        type: string
+        description: For look — a spot id.
+      evidence:
+        type: string
+        description: For accuse — clue ids the player named, comma-separated.
+
+  - name: Twenty
+    # 二十问 is 银月's to host (AppTool → this tool, `--for=yinyue`): the secret
+    # reaches only her answer. Never Ling's (page_only); counts on the save.
+    description: >-
+      二十问 — you host it: host, ask, guess. Follow `host` in the answer.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs twenty --action={{action}} --question={{question}} --answer={{answer}} --guess={{guess}} --for=yinyue"
+    tier: read
+    pet: true
+    page_only: true
+    others_read: [outcome, count, asked]
+    timeout_ms: 8000
+    args:
+      action:
+        type: string
+        required: true
+        description: host (read the game), ask (a yes/no question) or guess.
+      question:
+        type: string
+        description: For ask — the player's question, verbatim.
+      answer:
+        type: string
+        description: For ask — your truthful answer, yes, no, partly or unknown.
+      guess:
+        type: string
+        description: For guess — the animal the player named.
+
   - name: Tame
     description: >-
       Feed or offer a beaten beast what it likes, asked in words (guide
@@ -600,7 +676,7 @@ tools:
   - name: Guide
     description: >-
       Read the rules of one part of the game by name: look, fight, road, trial,
-      tasks, lundao, tale, her, divine, made, steer, story. A result's `guide`
+      tasks, lundao, haggle, case, twenty, tale, her, divine, made, steer, story. A result's `guide`
       hands a part over the first time the game gets there; read this one when
       you need a part you do not have.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs guide --topic={{topic}} --for=ling"
@@ -610,7 +686,7 @@ tools:
       topic:
         type: string
         required: true
-        description: look, fight, road, trial, tasks, lundao, tale, her, divine, made, steer or story.
+        description: look, fight, road, trial, tasks, lundao, haggle, case, twenty, tale, her, divine, made, steer or story.
 
   - name: Verb
     # The page's one door to the rules (skill-spec § Page door): any verb with
@@ -643,8 +719,8 @@ fights, and in real life through their other Linggen apps.
 in a session, whatever the first words, is **Look**; then answer from inside
 the world.
 
-The hero is **沈小满** (小满), a boy; 阿禾 (周禾) is a girl — fixed by the book
-(2026-09-30), no name card. Call the player 小满 or *you* (你); the rules fill
+The hero is **沈小满** (小满), a boy; 阿禾 (周禾) is a girl — fixed by the book, no
+name card. Call the player 小满 or *you* (你); the rules fill
 {name}, 师兄 and 阿禾.
 
 ## Laws
@@ -796,9 +872,6 @@ and `[scene] breakthrough won|failed` (story), `[scene] arrived <place>` (road):
 
 ## The parts of the game
 
-Each part's rules come as a result's `guide` when the game gets there, or by
-**Guide** with its name.
-
 - `look` — what Look, Show, Judge and Lang carry: every field and its use.
 - `tell` — the dialogue box, typed actions, the story's people, the 恩仇簿.
 - `fight` — 斗法 is a card game the player plays on the stage; **you never
@@ -808,7 +881,8 @@ Each part's rules come as a result's `guide` when the game gets there, or by
   event; 路上 (Meet) — never reveal; the director; a market (Trade).
 - `trial` — 抉择: when the road's meet is `kind: trial`, you write it.
 - `tasks` — boards, 每日/每周 (Practice), 一次, 差事 (Quest): never invent one.
-- `lundao` — 论道, the scholar's word games; never be generous.
+- `lundao` — 论道, the scholar's word games; never be generous. Talk games:
+  `haggle` 讨价还价, `case` 断案, `twenty` 二十问 (hers).
 - `tale` — 今日传闻: once a day you write a small side story (Tale).
 - `her` — 月下之约: an old save finds Yinyue at 结丹 (Ring).
 - `divine` — 问卦 and 命格: Divine on the player's word, then stop.

@@ -31,6 +31,10 @@ export const TOPICS = {
   trial: ({ said, result }) => result?.place?.meet?.kind === 'trial' || tag(said, /^\[scene\] trial\b/),
   tasks: ({ verb, result }) => ['task', 'quest'].includes(verb) || has(result?.offers) || has(result?.book) || Boolean(result?.handed),
   lundao: ({ verb, result }) => verb === 'lundao' || Boolean(result?.lundao) || (result?.tasks ?? []).some(t => t.kind === 'word' && t.status !== 'done'),
+  // AI mini-games (rules/aigames.mjs): a haggle or a case where he stands, 二十问 under way.
+  haggle: ({ verb, result }) => verb === 'haggle' || Boolean(result?.haggle),
+  case: ({ verb, said, result }) => verb === 'case' || Boolean(result?.case && result.case.outcome === 'open') || tag(said, /^\[scene\] case\b/),
+  twenty: ({ verb, result }) => verb === 'twenty' || Boolean(result?.twenty?.open),
   tale: ({ verb, said, result }) => verb === 'tale' || Boolean(result?.story_due || result?.tale) || tag(said, /^\[scene\] tale\b|今日传闻/),
   her: ({ verb, result }) => verb === 'ring' || Boolean(result?.quest),
   divine: ({ verb, said }) => verb === 'divine' || tag(said, /起一?卦|算一?卦|问卦|命格|生辰|属相|八字|\bdivine\b/i),

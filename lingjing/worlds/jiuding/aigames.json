@@ -1,0 +1,131 @@
+{
+  "_about": "AI mini-games (design.md § AI mini-games, Hanli 2026-10-15): the model talks, plays roles and judges fuzzy things against the rubric here; the rules (scripts/rules/aigames.mjs) hold every secret, count every turn and decide outcome and pay. A few rounds a day each: token cost counts in the ~30 min routine.",
+  "_pay": "Pay numbers are DECLARED DEFAULTS for the economy agent (tools/balance.mjs + balance.json own every number): each grant names its rewards.json table, which caps it. Retune here, nowhere else.",
+  "twenty": {
+    "_about": "二十问 — 银月 hosts (her pet tool Twenty, tier read). The rules pick an ordinary animal per round (seeded by day + save + round, unknown ones first), count questions, check guesses against name + alias. The secret reaches only her tool's answer (--for=yinyue): never Look, never Ling.",
+    "questions": 20,
+    "hint_after": 15,
+    "rounds": 2,
+    "pay": { "table": "game", "progress": 0, "wealth": 5 },
+    "animals": [
+      { "id": "cat", "name": { "zh": "猫", "en": "cat" }, "alias": { "zh": ["猫咪", "家猫", "狸猫", "小猫", "猫儿"], "en": ["kitten", "kitty", "housecat"] } },
+      { "id": "dog", "name": { "zh": "狗", "en": "dog" }, "alias": { "zh": ["犬", "小狗", "狗子", "家犬", "黄狗", "土狗"], "en": ["puppy", "hound"] } },
+      { "id": "ox", "name": { "zh": "牛", "en": "ox" }, "alias": { "zh": ["黄牛", "水牛", "耕牛", "老牛"], "en": ["cow", "cattle", "bull", "buffalo"] } },
+      { "id": "horse", "name": { "zh": "马", "en": "horse" }, "alias": { "zh": ["马儿", "骏马", "小马"], "en": ["pony", "mare", "stallion"] } },
+      { "id": "sheep", "name": { "zh": "羊", "en": "sheep" }, "alias": { "zh": ["山羊", "绵羊", "小羊", "羊羔"], "en": ["goat", "lamb", "ram"] } },
+      { "id": "pig", "name": { "zh": "猪", "en": "pig" }, "alias": { "zh": ["小猪", "肥猪", "家猪"], "en": ["hog", "swine", "piglet"] } },
+      { "id": "chicken", "name": { "zh": "鸡", "en": "chicken" }, "alias": { "zh": ["公鸡", "母鸡", "小鸡", "鸡仔"], "en": ["hen", "rooster", "chick"] } },
+      { "id": "duck", "name": { "zh": "鸭", "en": "duck" }, "alias": { "zh": ["鸭子", "小鸭"], "en": ["duckling"] } },
+      { "id": "goose", "name": { "zh": "鹅", "en": "goose" }, "alias": { "zh": ["大鹅", "白鹅"], "en": ["geese", "gander"] } },
+      { "id": "magpie", "name": { "zh": "喜鹊", "en": "magpie" }, "alias": { "zh": ["鹊", "鹊儿"], "en": [] } },
+      { "id": "crow", "name": { "zh": "乌鸦", "en": "crow" }, "alias": { "zh": ["老鸹", "鸦"], "en": ["raven"] } },
+      { "id": "sparrow", "name": { "zh": "麻雀", "en": "sparrow" }, "alias": { "zh": ["家雀", "雀儿", "小麻雀"], "en": [] } },
+      { "id": "swallow", "name": { "zh": "燕子", "en": "swallow" }, "alias": { "zh": ["燕", "家燕"], "en": [] } },
+      { "id": "fox", "name": { "zh": "狐狸", "en": "fox" }, "alias": { "zh": ["狐", "狐仙"], "en": ["vixen"] } },
+      { "id": "rabbit", "name": { "zh": "兔子", "en": "rabbit" }, "alias": { "zh": ["兔", "野兔", "小白兔", "兔儿"], "en": ["hare", "bunny"] } },
+      { "id": "mouse", "name": { "zh": "老鼠", "en": "mouse" }, "alias": { "zh": ["鼠", "耗子", "小老鼠"], "en": ["rat"] } },
+      { "id": "snake", "name": { "zh": "蛇", "en": "snake" }, "alias": { "zh": ["长虫", "小蛇"], "en": ["serpent", "viper"] } },
+      { "id": "frog", "name": { "zh": "青蛙", "en": "frog" }, "alias": { "zh": ["蛙", "田鸡", "蛤蟆"], "en": ["toad"] } },
+      { "id": "fish", "name": { "zh": "鱼", "en": "fish" }, "alias": { "zh": ["鱼儿", "鲤鱼", "小鱼"], "en": ["carp"] } },
+      { "id": "turtle", "name": { "zh": "乌龟", "en": "turtle" }, "alias": { "zh": ["龟", "王八", "甲鱼"], "en": ["tortoise"] } },
+      { "id": "tiger", "name": { "zh": "老虎", "en": "tiger" }, "alias": { "zh": ["虎", "大虫"], "en": [] } },
+      { "id": "bear", "name": { "zh": "熊", "en": "bear" }, "alias": { "zh": ["狗熊", "黑熊", "熊瞎子"], "en": [] } },
+      { "id": "deer", "name": { "zh": "鹿", "en": "deer" }, "alias": { "zh": ["梅花鹿", "小鹿"], "en": ["stag", "doe", "fawn"] } },
+      { "id": "monkey", "name": { "zh": "猴子", "en": "monkey" }, "alias": { "zh": ["猴", "猕猴", "猴儿"], "en": ["ape"] } },
+      { "id": "bee", "name": { "zh": "蜜蜂", "en": "bee" }, "alias": { "zh": ["蜂", "小蜜蜂"], "en": ["honeybee"] } },
+      { "id": "butterfly", "name": { "zh": "蝴蝶", "en": "butterfly" }, "alias": { "zh": ["蝶", "粉蝶"], "en": [] } },
+      { "id": "wolf", "name": { "zh": "狼", "en": "wolf" }, "alias": { "zh": ["野狼", "灰狼"], "en": [] } },
+      { "id": "donkey", "name": { "zh": "驴", "en": "donkey" }, "alias": { "zh": ["毛驴", "驴子"], "en": ["ass"] } },
+      { "id": "owl", "name": { "zh": "猫头鹰", "en": "owl" }, "alias": { "zh": ["夜猫子", "鸮"], "en": [] } },
+      { "id": "cricket", "name": { "zh": "蛐蛐", "en": "cricket" }, "alias": { "zh": ["蟋蟀", "促织"], "en": [] } }
+    ]
+  },
+  "haggle": {
+    "_about": "讨价还价 — Ling plays the keeper. The rules hold the band: list price (items.json `buy`), a floor (`floor` × list, per keeper, `floors` per item over it), the mood; every step is the rubric's, clamped — the model only tags the argument and grades it. Walking away keeps the list price for that thing today.",
+    "per_day": 3,
+    "turns": 6,
+    "mood": 3,
+    "floor": 0.75,
+    "floors": { "talisman": 0.85, "wangqi-1": 0.85, "qi-pill": 0.8 },
+    "keepers": {
+      "fangshi": { "who": { "zh": "钱掌柜", "en": "Money Qian" }, "floor": 0.75, "voice": { "zh": "坊市的老江湖，裹着棉被守摊，算盘不离手；爱讲「一分钱一分货」，嘴上吃亏，心里有数。", "en": "An old hand of the market, wrapped in a quilt at his stall, abacus always in hand; loves 'you get what you pay for', loses every argument out loud and none in his head." } },
+      "shiao": { "who": { "zh": "走南路的货郎", "en": "the pedlar of the south road" }, "floor": 0.8, "voice": { "zh": "挑担走村的货郎，嗓门亮，嘴碎，爱讲路上的见闻；小本买卖，让价让得心疼。", "en": "A village pedlar with a pole, loud and chatty, full of road news; small trade, every coin given up hurts." } },
+      "yanwu": { "who": { "zh": "上山的货郎", "en": "the pedlar up the mountain" }, "floor": 0.8, "voice": { "zh": "交了摊钱上山摆一天摊的货郎，怕得罪观里的人，又舍不得让利；说话客气，算账不客气。", "en": "A pedlar who paid the temple its stall fee for one day up the mountain; afraid to offend anyone here and loath to give ground; polite words, impolite sums." } }
+    },
+    "rubric": [
+      { "id": "regular", "name": { "zh": "熟客", "en": "a regular" }, "step": 0.05, "once": true, "needs": "deal_here", "about": "The player has dealt with this keeper before (the rules check a past deal here)." },
+      { "id": "bulk", "name": { "zh": "一次买多", "en": "buying more at once" }, "step": 0.08, "once": true, "about": "The player will take two at once — the deal then buys two, at the price each." },
+      { "id": "flaw", "name": { "zh": "指出瑕疵", "en": "pointing out a flaw" }, "step": 0.06, "once": true, "about": "A real, plausible flaw in THIS thing (a nick, old stock, a weak seam) — not an insult." },
+      { "id": "barter", "name": { "zh": "拿东西换", "en": "a thing in trade" }, "step": 0, "once": true, "needs": "item", "about": "The player offers a thing from the bag as part of the price: its market value comes off (at most 30% of the list); it is handed over at the deal." },
+      { "id": "flattery", "name": { "zh": "奉承", "en": "flattery" }, "step": 0.03, "once": true, "about": "Praise of the keeper or the stall. Works once; again, it sours him." },
+      { "id": "none", "name": { "zh": "空口压价", "en": "a bare push" }, "step": 0, "about": "Only asking for less, a threat, or a reason that does not hold." }
+    ],
+    "grades": [0, 1, 1.5],
+    "barter_cap": 0.3
+  },
+  "cases": [
+    {
+      "id": "yaoyuan-shen",
+      "_about": "断案 · 药园那株紫玉参 — 古四's case (story/jiuding-lu/04-第四回.md, 十月廿二): the truth is the book's — 茬口 is a knife's (狰 gnaws), 阿禾's count says it went between 初八酉时 (42) and 初九辰时 (41), the 巡夜簿's 初八 cell reads 「马小宝陪巡。子时至丑时。」 in his own hand, and a 食盒 on the stone steps at 初九辰时 held wet soil and a leaf that fits the stem. The book never names who carried the 食盒, so no one here does. Played after the scene (wm-diyilu done), at the 执事堂: 周衡 settled it in public with 「送回来的。账上不记。」; in private he wants his own book straight.",
+      "at": "zhishi",
+      "after": "wm-diyilu",
+      "giver": "zhouheng",
+      "title": { "zh": "断案 · 药园那株紫玉参", "en": "The case · The purple jade ginseng" },
+      "line": { "zh": "周衡把账簿推过来：「送回来的，账上不记。可我这本账，得记得明白——给我一个名字，一样凭据。」", "en": "Zhou Heng slides the ledger across: \"Returned, so not entered. But my own book has to be straight — give me one name, and the proof.\"" },
+      "questions": 8,
+      "tries": 1,
+      "pay": { "table": "task", "progress": 10, "wealth": 10 },
+      "people": [
+        { "id": "maxiaobao", "suspect": true, "role": { "zh": "嫌疑 · 告状的人", "en": "Suspect · the accuser" },
+          "knows": "He walked the garden with the night watch on 初八 (子时至丑时) — he wrote 「马小宝陪巡」 in the book himself. He wants the 巡夜令 and the 残株 for himself.",
+          "hides": "Anything about that night: he says the 狰 steals, or that the night watch cut it to feed the beast. Confronted with the 巡夜簿 he blusters 「陪巡怎么了？」 — he never confesses.",
+          "voice": "Loud, sneering, quick to point at others; his 表伯 is the steward who reads the names." },
+        { "id": "heibu", "name": { "zh": "鞋头补黑布的跟班", "en": "the crony with the black-patched shoe" }, "suspect": true, "role": { "zh": "嫌疑 · 马小宝的跟班", "en": "Suspect · Ma Xiaobao's crony" },
+          "knows": "He goes where 马小宝 goes.",
+          "hides": "He will not speak against 马小宝; he shrinks at the word 食盒 and at the 狰's sniffing. He gives no fact either way.",
+          "voice": "Mumbles, looks at his shoes, edges behind others." },
+        { "id": "zheng", "suspect": true, "role": { "zh": "嫌疑 · 柴房的小狰", "en": "Suspect · the little zheng" },
+          "knows": "It gnawed plants in 九月 and early 十月 — with its teeth.",
+          "hides": "Nothing: it only goes 「咔」 like two stones knocked together.",
+          "voice": "No words. 咔." },
+        { "id": "ahe", "role": { "zh": "证人 · 药园白天归她", "en": "Witness · the garden is hers by day" },
+          "knows": "Her notebook: 紫玉参 counted 42 at 初八酉时, 41 at 初九辰时, 41 every day since. At 初九辰时 she picked up a 食盒 dropped on the stone steps: wet soil in it and a leaf, which she pressed in the notebook.",
+          "hides": "She will not say who; 「我只认数。」 She gives the count when asked about the count or when it went; the 食盒 and the leaf when asked what she found that morning or on the steps.",
+          "voice": "Flat, brief, reads numbers like someone else's accounts." },
+        { "id": "zhouheng", "role": { "zh": "证人 · 执事堂", "en": "Witness · the stewards' hall" },
+          "knows": "The 巡夜簿: one handprint a night; the 初八 cell also has, in big black ink, 「马小宝陪巡。子时至丑时。」",
+          "hides": "He takes no side: 「只认账，不认脸。」 He shows the 巡夜簿 when asked about the night book or who walked the garden that night.",
+          "voice": "Mournful, exact, a face like a dried orange." }
+      ],
+      "topics": {
+        "_about": "What a question to a person is ABOUT, the model's call from the player's words (rubric: the nearest topic; `other` when none fits). A (person, topic) pair below finds that clue; every question counts, found or not.",
+        "count": { "about": "the plant count, when it went missing" },
+        "steps": { "about": "what was found that morning, the stone steps, a box" },
+        "book": { "about": "the night-watch book, who walked the garden on a night" },
+        "night": { "about": "where they were, what they did on the night it went" },
+        "other": { "about": "anything else" }
+      },
+      "finds": { "ahe": { "count": "count", "steps": "shihe" }, "zhouheng": { "book": "xunye" } },
+      "spots": [
+        { "id": "shen", "label": { "zh": "看那株参的茬口", "en": "Look at the ginseng's cut" }, "clue": "chakou" },
+        { "id": "xitou", "label": { "zh": "看药园西头那株给啃了的", "en": "Look at the gnawed plant at the garden's west end" }, "clue": "yaying" }
+      ],
+      "clues": [
+        { "id": "chakou", "name": { "zh": "刀口", "en": "A knife's cut" }, "fact": { "zh": "茬口是光的，斜斜的一道，平得像镜子——是刀切的。", "en": "The cut is clean, one slanting stroke, smooth as a mirror — a knife's." } },
+        { "id": "yaying", "name": { "zh": "牙印", "en": "Teeth marks" }, "fact": { "zh": "初九西头那株，茬口齐而毛，一道一道牙印——狰是拿牙啃的。", "en": "The west-end plant of the ninth: an even but ragged stub, tooth after tooth — the zheng gnaws." } },
+        { "id": "count", "name": { "zh": "阿禾的数", "en": "Ahe's count" }, "fact": { "zh": "初八酉时四十二，初九辰时四十一，此后天天四十一：少的那株，是初八夜里没的。", "en": "Forty-two at dusk on the eighth, forty-one at morning on the ninth, forty-one every day since: it went on the night of the eighth." } },
+        { "id": "xunye", "name": { "zh": "巡夜簿", "en": "The night book" }, "fact": { "zh": "初八那一格：一个手印，旁边大字「马小宝陪巡。子时至丑时。」", "en": "The eighth's cell: one handprint, and beside it in big ink, \"Ma Xiaobao walked with the watch. Midnight to the second hour.\"" } },
+        { "id": "shihe", "name": { "zh": "食盒和叶子", "en": "The food box and the leaf" }, "fact": { "zh": "初九辰时，石阶上一只食盒，盒底湿泥，一片紫得发黑、带银线的叶子——正对得上那株参茎上的缺口。", "en": "Morning of the ninth, a food box on the stone steps: wet soil, and a leaf near-black purple with a silver vein — it fits the gap on the ginseng's stem." } }
+      ],
+      "truth": { "culprit": "maxiaobao", "must": ["xunye"], "more": 1, "from": ["count", "shihe", "chakou"] },
+      "solved": {
+        "line": { "zh": "周衡看了半天，把那一页翻过去，压在账簿底下：「送回来的。账上不记。」又低声补了一句：「……我心里记着。」", "en": "Zhou Heng looks a long while, turns the page over and tucks it under the ledger: \"Returned. Not entered.\" Then, low: \"…I have it entered in here.\"" },
+        "ledger": [
+          { "who": "ahe", "kind": "恩", "what": { "zh": "药园参案：她本子上的数，替你对上了账。", "en": "The ginseng case: her notebook's count set the accounts straight for you." } },
+          { "who": "maxiaobao", "kind": "仇", "what": { "zh": "药园参案：初八那一夜的「陪巡」，周衡心里记着了。", "en": "The ginseng case: the eighth night's \"walked with the watch\" is entered in Zhou Heng's head." } }
+        ]
+      },
+      "wrong": { "zh": "周衡把账簿合上：「对不上。名字也好，凭据也好，账上要一笔一笔对得上。改日再来。」", "en": "Zhou Heng closes the ledger: \"It doesn't add up. A name, a proof — each has to tally, line by line. Come back another day.\"" }
+    }
+  ]
+}

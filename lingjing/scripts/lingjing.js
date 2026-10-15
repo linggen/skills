@@ -67,7 +67,7 @@ const PREVIEW = (() => {
 })();
 
 // Tools that change the state: the scene re-reads Look once they have run.
-const WRITERS = new Set(['Divine', 'Resolve', 'Practice', 'Tale', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art', 'Lundao', 'Meet', 'Quest', 'Refine', 'Ring', 'Remember']);
+const WRITERS = new Set(['Divine', 'Resolve', 'Practice', 'Tale', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art', 'Lundao', 'Meet', 'Quest', 'Refine', 'Ring', 'Remember', 'Haggle', 'Case', 'AppTool']);
 
 /* A 斗法 in play, held by the page: the setup the rules handed over at the
    door, the fight itself, and every action taken so far. When it ends the page
@@ -229,6 +229,7 @@ const view = {
   mapView: 'province', // the map card: 'province' (the player's, up close), 'world', or another province's id
   fateOpen: false, fateDraft: '', fateError: false, // the 命格 form: shown again, the date typed, a date refused
   refineMat: null, refineName: '', refineNote: null, // 炼化本命 on the card: the material picked, the name typed, a refusal
+  twentyGuess: '', caseWho: null, caseEv: [], aiNote: null, // AI mini-games (aigames-cards.js): the guess typed, the suspect and proof picked, a refusal
   panelBusy: null, panelNote: null, // a 连环画 panel's choice in flight, or its refusal
   reading: undefined, // the dialogue box (dialogue.js): the beats drawn in this scene and the one on show; undefined until read back
   logOpen: false, //   its 记录, over the box
@@ -314,7 +315,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, panelBusy: view.panelBusy, panelNote: view.panelNote, called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, twentyGuess: view.twentyGuess, caseWho: view.caseWho, caseEv: view.caseEv, aiNote: view.aiNote, panelBusy: view.panelBusy, panelNote: view.panelNote, called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -1863,6 +1864,7 @@ function countUp() {
   requestAnimationFrame(step);
 }
 document.addEventListener('input', (e) => { if (e.target.id === 'refine-name') keep({ refineName: e.target.value, refineNote: null }); });
+document.addEventListener('input', (e) => { if (e.target.id === 'twenty-guess') keep({ twentyGuess: e.target.value, aiNote: null }); });
 
 /* 名字 — the card's own (cards.js value): an offered name tapped, or the
    player's own written; the page Resolves the exit with it and the stage
@@ -2334,6 +2336,9 @@ const DOES = {
   buy: (id) => write('trade', { action: 'buy', id }),
   sell: (id) => write('trade', { action: 'sell', id }),
   use: (id) => write('trade', { action: 'use', id }),
+  // 讨价还价's 成交 / 不买了 (rules/aigames.mjs): the rules' price, his tap.
+  'haggle-deal': () => write('haggle', { action: 'deal' }),
+  'haggle-walk': () => write('haggle', { action: 'walk' }),
 };
 async function doTap(action, id) {
   if (!DOES[action]) return;
@@ -2368,6 +2373,31 @@ function tookOffer(id) {
   const offer = look?.offers?.find((o) => o.id === id);
   show({ offerRow: null, tookOffer: offer ?? null });
   setTimeout(() => { if (view.tookOffer?.id === id) show({ tookOffer: null }); }, TOOK_MS);
+}
+
+/* ── AI mini-games (rules/aigames.mjs) — the page's taps ──
+   二十问 opens on his tap (a game's 体力) and the chat carries a word to her;
+   the guess box is checked by the rules, then she is told, so she reacts in
+   her own words; 断案's look-around and 指认 are his taps, judged by the rules. */
+async function aiTap(name, args) {
+  const r = await write(name, args).catch(failed);
+  keep({ aiNote: r.ok ? null : refusal(r) });
+  await refresh();
+  return r;
+}
+async function twentyOpen() {
+  const r = await aiTap('twenty', { action: 'open' });
+  if (r.ok && r.opened && herHere()) deliver(words().twentyAsk, false);
+}
+async function twentyGuess() {
+  const g = (view.twentyGuess ?? '').trim();
+  if (!g) { document.getElementById('twenty-guess')?.focus(); return; }
+  const r = await aiTap('twenty', { action: 'guess', guess: g });
+  if (r.ok) { keep({ twentyGuess: '' }); if (!r.again && herHere()) deliver(fill(words().twentySaid, { g }), false); }
+}
+async function caseAccuse() {
+  const r = await aiTap('case', { action: 'accuse', who: view.caseWho, evidence: (view.caseEv ?? []).join(',') });
+  if (r.ok) { keep({ caseWho: null, caseEv: [] }); await report(`[scene] case ${r.right ? 'solved' : 'wrong'}`); }
 }
 
 /* 储物袋: putting a thing on, taking a pill, selling at a market, is his own
@@ -2735,6 +2765,14 @@ const CLICKS = [
   ['[data-throw]', (el) => { if (!el.matches(':disabled')) run(`throw:${el.dataset.throw}`, () => throwTap(el.dataset.throw)); }],
   ['[data-value-go]', (el) => { if (!el.matches(':disabled')) run(`value:${el.dataset.valueGo}`, () => valueTap(el.dataset.valueGo)); }],
   ['[data-refine]', (el) => { if (el.dataset.refine) run('refine', () => refineTap(el.dataset.refine)); }],
+  // AI mini-games (aigames-cards.js): the page's own taps — the rules count and judge.
+  ['[data-twenty-open]', () => run('twenty:open', () => twentyOpen())],
+  ['[data-twenty-guess]', () => run('twenty:guess', () => twentyGuess())],
+  ['[data-twenty-quit]', () => run('twenty:quit', () => aiTap('twenty', { action: 'quit' }))],
+  ['[data-case-look]', (el) => run(`case:look:${el.dataset.caseLook}`, () => aiTap('case', { action: 'look', at: el.dataset.caseLook }))],
+  ['[data-case-who]', (el) => show({ caseWho: view.caseWho === el.dataset.caseWho ? null : el.dataset.caseWho, aiNote: null })],
+  ['[data-case-ev]', (el) => { const id = el.dataset.caseEv, ev = view.caseEv ?? []; show({ caseEv: ev.includes(id) ? ev.filter((x) => x !== id) : [...ev, id], aiNote: null }); }],
+  ['[data-case-accuse]', (el) => { if (!el.matches(':disabled')) run('case:accuse', () => caseAccuse()); }],
   ['[data-divine]', () => run('divine', () => castByPage())],
   ['[data-trial]', (el) => run('trial', () => chooseWay(Number(el.dataset.trial)))],
   ['[data-tale-answer]', (el) => run('tale', () => taleAnswer(el.dataset.taleAnswer))],

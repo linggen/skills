@@ -61,6 +61,7 @@ export { parseArgs } from './rules/files.mjs';
 export { castThrows, divinationBrief, divine, fate, fateBrief, fateOf } from './rules/fortune.mjs';
 export { look } from './rules/look.mjs';
 export { closeStaleFight, duel, fightHold, lundao, task, win } from './rules/tasks.mjs';
+export { animalsKnown, caseBrief, caseVerb, guessed, haggle, haggleBrief, twenty, twentyBrief } from './rules/aigames.mjs';
 export { go, lang, move, summarize, trade } from './rules/travel.mjs';
 export { chooseLang, inPlay, langNow, langOfTag, stateText, writeGlobalLang } from './rules/language.mjs';
 export { chapterLook, owesRecap, recapLook, story, storyNode } from './rules/story.mjs';
@@ -76,7 +77,7 @@ const logged = ({ birth, ...rest }) => rest;
 
 /* Answers handed over as they are — no question, no stage: Progress is for
    a pet that only wants to know how the game stands; Story is a book to read. */
-const PLAIN = new Set(['progress', 'story']);
+const PLAIN = new Set(['progress', 'story', 'twenty']);
 /* The verbs that are story when they land: a scene step, something met on the road, a made scene entered. */
 const STORY_VERBS = new Set(['resolve', 'meet', 'enter']);
 /* The verbs whose answer to Ling says what the stage is playing (rules/tell.mjs `staged`). */
@@ -169,7 +170,7 @@ function runLocked(verb, args, stateFile, reader) {
   const theirs = reader === 'ling' && verb === 'resolve' ? pageNames(content, state, args) ?? pageThrows(content, state, { ...args, now }) : null;
   if (theirs) return theirs;
   // The player's typed words reach only Ling's calls: a quote from the page is never trusted (rules/ledger.mjs).
-  const out = fn(state, content, { now, quests: readQuests(), turn: userTurn(), said: args.said, words: reader === 'ling' ? userWords() : null }, args);
+  const out = fn(state, content, { now, quests: readQuests(), turn: userTurn(), said: args.said, words: reader === 'ling' ? userWords() : null, reader }, args);
   if (out.result?.load) return loadSave(out.result.load, state, { stateFile, logFile, now });
   // Forget answered: the asking is used up (Load's is, with the save it replaces).
   if (verb === 'forget' && out.result?.ok && state.confirm) writeAtomic(stateFile, stateText(unconfirmed(state)));
