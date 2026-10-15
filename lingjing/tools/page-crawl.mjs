@@ -4,7 +4,7 @@
 //
 //   node tools/page-crawl.mjs --boards [--only=<task>,…] [--tries=3]
 //   node tools/page-crawl.mjs --controls [--scenes=<scene>,…] [--max=25]
-//   flags: --base=http://localhost:9527 --out=<dir> --headed --keep (leave the scratch saves)
+//   flags: --base=http://localhost:9527 --out=<dir> --headed --keep (leave the scratch saves) --settle=<ms> (controls)
 //
 // Needs the engine on --base (9527) serving the installed skill. Each save is a scratch save
 // (data/saves/pc-*), seeded at a scene from the rules' own walk (tools/explore.mjs sweep,
@@ -80,6 +80,9 @@ const TARGET = (id, a) => `(() => {
   const ok = (el) => Object.entries(want).every(([k, v]) => k === 'g' ? (a.hold ? true : el.dataset.g === String(v)) : el.dataset[k] === String(v));
   const el = [...host.querySelectorAll(sel)].find((e) => e.getClientRects().length && !e.disabled && ok(e));
   if (!el) return null;
+  // A finger scrolls to what it means to press (a long board runs past the fold — 写信's sheet grows).
+  const r0 = el.getBoundingClientRect();
+  if (r0.top < 0 || r0.bottom > innerHeight) el.scrollIntoView({ block: 'nearest' });
   const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
 })()`;
 
@@ -138,7 +141,8 @@ const CONTROLS = `(() => {
       return { i, x, y, text: (e.textContent || e.getAttribute('aria-label') || '').trim().replace(/\\s+/g, ' ').slice(0, 30), data: Object.fromEntries([...e.attributes].filter((a) => a.name.startsWith('data-')).map((a) => [a.name, a.value.slice(0, 30)])), on: r.bottom > 0 && r.top < H, free: Boolean(at && (at === e || e.contains(at))) }; })
     .filter((c) => c.on && c.free);
 })()`;
-const PAGE_SIG = `(() => [location.href, document.body.innerText.length, document.body.innerText.slice(0, 4000), [...document.querySelectorAll('[class]')].filter((e) => e.getClientRects().length).length, document.querySelectorAll('.open,.on,[aria-expanded=true],[open]').length].join('§'))()`;
+// What a tap may change: the URL, the words, what is drawn, and which control is lit (慢 · 中 · 快 swap a class, not the words).
+const PAGE_SIG = `(() => [location.href, document.body.innerText.length, document.body.innerText.slice(0, 4000), [...document.querySelectorAll('[class]')].filter((e) => e.getClientRects().length).length, [...document.querySelectorAll('.open,.on,.is-on,.sel,[aria-pressed=true],[aria-expanded=true],[open]')].map((e) => e.className + (e.textContent || '').slice(0, 8)).join('|')].join('§'))()`;
 
 export async function crawlControls(page, { scene, seedSave, base, max = 25, settleMs = 1100 }) {
   const dead = [], tapped = [];
@@ -203,7 +207,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
       const scenes = flags.scenes ? String(flags.scenes).split(',') : [...at.keys()];
       for (const scene of scenes) {
         if (!at.has(scene)) { console.log(`${scene}: never reached by the walk`); continue; }
-        const r = await crawlControls(page, { scene, seedSave: seeder(`pc-c-${scene}`.slice(0, 31).toLowerCase().replace(/[^a-z0-9-]/g, '-'), scene), base, max: Number(flags.max ?? 25) });
+        const r = await crawlControls(page, { scene, seedSave: seeder(`pc-c-${scene}`.slice(0, 31).toLowerCase().replace(/[^a-z0-9-]/g, '-'), scene), base, max: Number(flags.max ?? 25), settleMs: Number(flags.settle ?? 2500) });
         console.log(`${scene.padEnd(16)} ${r.tapped.length} tapped, ${r.dead.length} dead${r.dead.length ? `: ${r.dead.map((d) => d.control || JSON.stringify(d.data)).join(' · ')}` : ''}`);
         for (const d of r.dead) findings.push({ kind: 'dead-control', ...d });
       }
