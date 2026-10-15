@@ -65,6 +65,9 @@ export const STOPS = {
 // up to the last cottage — 吴婆婆's (it stands right of centre, the painting's east end of the houses).
 const MAP = { src: '../worlds/jiuding/art/backdrop/village.webp', w: 320, h: 132, ratio: 1024 / 1536, top: 0.22 };
 export const AT = { hens: [47, 67], prints: [33, 59], herb: [80, 30], peddler: [23, 77], tale: [69.5, 77] };
+// On the last day the hens are home's, not 阿禾's: the painting has no coop, so the seal sits in the
+// front yard of the cottage beside hers (the nearer of the two).
+export const AT_STOP = { eve: { hens: [55.5, 62.5] } };
 // A spot's % on the painting → the map's drawing units.
 export const onMap = ([px, py]) => {
   const ih = MAP.w * MAP.ratio;
@@ -203,7 +206,7 @@ export function makeVillage(stop) {
     const ih = n(MAP.w * MAP.ratio);
     const base = `<image class="g-mapbase" href="${MAP.src}" x="0" y="${n(-MAP.top * MAP.w * MAP.ratio)}" width="${MAP.w}" height="${ih}" preserveAspectRatio="none"/>`;
     const spots = cfg.spots.map((id, k) => {
-      const [x, y] = onMap(AT[id]), done = state.done.includes(id);
+      const [x, y] = onMap(AT_STOP[stop]?.[id] ?? AT[id]), done = state.done.includes(id);
       return `<g class="g-spotmark${done ? ' is-done' : ''}"><circle class="g-spothalo" cx="${x}" cy="${y}" r="11"/><circle class="g-spot" cx="${x}" cy="${y}" r="8"/><text class="g-spotnum" x="${x}" y="${n(y + 3.6)}" text-anchor="middle">${k + 1}</text></g>`;
     }).join('');
     return scene(MAP.w, MAP.h, base + spots, 'g-villagemap');
