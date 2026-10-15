@@ -1512,6 +1512,7 @@ function draw() {
   const box = dialogBoxHtml(slots);
   paintIf('dlg', box);
   logAtEnd();
+  holdBlank(box);
   document.body.classList.toggle('storying', box.includes('data-dlg-on'));
   syncLines();
   companionBeat(box.includes('data-dlg-on'));
@@ -1578,6 +1579,21 @@ function boutCtx() {
     // 问银月 (fightsay.js): only while she walks with him here, and its count left.
     herAsk: herHere() && bout.say ? { can: bout.say.canAsk(boutView(bout.st)), left: bout.say.asksLeft(), name: look.companion?.name ?? words().yinyue } : null,
   };
+}
+
+/* Never a blank stage while the next thing is on its way (live, 2026-10-15: 6–9 s of bare picture after a
+   set piece was skipped, ~3 s after 「算了」 — the rules' answer, the passage owed, being drawn): a quiet
+   「……」 stands until it comes (it fades in after a moment, so a quick answer never flashes it). Not while
+   a fight, a seal or a set piece holds the stage — those are the thing on it. */
+const inTransit = () => Boolean(inFlight.size || view.panelBusy || look?.tell_owed || drawingTold || memoryWaits || homingPending);
+let blankSince = 0;
+function holdBlank(box) {
+  const focus = $('focus');
+  if (box || bout || riseWaits || featOn || pieceOn || !focus || focus.innerHTML.trim() || !inTransit()) { blankSince = 0; return; }
+  // Every draw lays the focus anew: the fade keeps its own clock across them (a negative delay picks it up).
+  blankSince ||= performance.now();
+  const late = Math.round(700 - (performance.now() - blankSince));
+  focus.innerHTML = `<div class="card waitcard" aria-busy="true" style="animation-delay:${late}ms"><span aria-hidden="true">……</span></div>`;
 }
 
 /* ── The page's own verbs ──

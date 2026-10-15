@@ -103,3 +103,17 @@ test('下一步 on a 今 scene: the scene\'s own way on — never the 古\'s goa
   assert.deepEqual(withNext(none, []), []);
   assert.equal(cardHtml({ card: 'next' }, { look: none, words: WORDS.zh, lang: 'zh' }), '');
 });
+
+// Live 2026-10-15: 6–9 s of bare picture after a skipped set piece, ~3 s after 「算了」 — the rules' answer and the
+// passage owed still on their way. A quiet 「……」 stands in the meantime, never over a fight, a seal or a piece.
+test('never blank while the next thing is on its way: the page lays a quiet 「……」 (holdBlank)', async () => {
+  const fs = await import('node:fs');
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const body = page.slice(page.indexOf('function holdBlank('), page.indexOf('\n}\n', page.indexOf('function holdBlank(')));
+  assert.match(page, /const inTransit = \(\) => Boolean\(inFlight\.size \|\| view\.panelBusy \|\| look\?\.tell_owed \|\| drawingTold/);
+  assert.match(body, /if \(box \|\| bout \|\| riseWaits \|\| featOn \|\| pieceOn \|\| !focus \|\| focus\.innerHTML\.trim\(\) \|\| !inTransit\(\)\)/);
+  assert.match(body, /class="card waitcard"/);
+  assert.match(page, /paintIf\('dlg', box\);\n\s+logAtEnd\(\);\n\s+holdBlank\(box\);/);
+  const css = fs.readFileSync(new URL('../scripts/story.css', import.meta.url), 'utf8');
+  assert.match(css, /\.card\.waitcard \{[^}]*opacity: 0; animation: waitin/, 'it fades in late: a quick answer never flashes it');
+});

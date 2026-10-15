@@ -445,3 +445,8 @@ body.fighting .sight { display: none; }
 .view:has(.backdrop.painted) .focus .panelcard.bare .dlgloglink { width: max-content; padding: 4px 12px; border-radius: 99px; border: 1px solid rgba(241, 236, 225, .35); background: rgba(13, 17, 20, .35); color: rgba(241, 236, 225, .8); text-decoration: none; }
 /* Under a 回's 「完」 the last picture darkens (proto f). */
 .view:has(.backdrop.painted):has(.focus .closecard) > .shade { background: rgba(13, 17, 20, .55); }
+/* The quiet 「……」 while the next thing is on its way (lingjing.js holdBlank): late, so a quick answer never flashes it. */
+.card.waitcard { align-self: center; margin: auto; padding: 8px 18px; border-radius: 99px; background: rgb(255 255 255 / 55%); border: 0; box-shadow: none; max-width: none; font-family: var(--serif); font-size: 18px; letter-spacing: .3em; color: var(--dim);
+  opacity: 0; animation: waitin .4s ease .7s forwards; }
+@keyframes waitin { to { opacity: .85; } }
+@media (prefers-reduced-motion: reduce) { .card.waitcard { animation: none; opacity: .85; } }
