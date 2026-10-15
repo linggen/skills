@@ -167,5 +167,5 @@ test('a won fight: the passage, then 所得, then the way on — never one walke
   assert.match(body('settleBout'), /pending: true/, '所得 kept from the fight\'s end, shown once the rules\' Look is in');
   assert.match(body('settleBout'), /await refresh\(\);\n\s+\/\/[^\n]*\n\s+if \(view\.spoils\?\.pending\)/);
   assert.match(body('draw'), /watchWayOn\(\);/, 'each draw looks again: 所得 put away, the passage read');
-  assert.match(body('focusHtml'), /spoilsUp\(\) \? slots\.main\.filter\(\(c\) => c\.card !== 'next'\)/, '下一步 never stands over 所得');
+  assert.match(body('focusHtml'), /if \(spoilsUp\(\)\) slots = \{ \.\.\.slots, main: slots\.main\.filter\(\(c\) => c\.card !== 'next'\) \}/, '下一步 never stands over 所得');
 });

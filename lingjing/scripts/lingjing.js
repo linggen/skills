@@ -1004,8 +1004,8 @@ function focusHtml(slots) {
   const toasts = slots.main.some((c) => c.card === 'closed') ? '' : toastsHtml();
   // 所得 stands before the way on (live, 2026-10-15: 下一步 stood under it and hid its 收起): the 下一步
   // card waits until it is put away.
-  const main = spoilsUp() ? slots.main.filter((c) => c.card !== 'next') : slots.main;
-  return (toasts ? `<div class="toasts">${toasts}</div>` : '') + main.map(drawCard).join('');
+  if (spoilsUp()) slots = { ...slots, main: slots.main.filter((c) => c.card !== 'next') };
+  return (toasts ? `<div class="toasts">${toasts}</div>` : '') + slots.main.map(drawCard).join('');
 }
 
 function toastsHtml() {
