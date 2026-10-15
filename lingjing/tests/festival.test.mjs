@@ -9,7 +9,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { dayOf, festivalOn, FESTIVAL_IDS as CAL_IDS, jdOfDay, dayOfJd, LUNAR, lunarOf, nthWeekday, seasonOf, solarOf, termOf } from '../scripts/calendar.js';
-import { atmosClasses, atmosOf, FRAMES, indoorOf, PARTICLES, particlesHtml, stageArt, windVars } from '../scripts/atmos.js';
+import { atmosClasses, atmosOf, FRAMES, indoorOf, PARTICLES, particlesHtml, stageArt, stagePick, windVars } from '../scripts/atmos.js';
 import { FESTIVAL_IDS, lint, loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, task } from '../scripts/rules.mjs';
@@ -115,7 +115,7 @@ test('festivals.json: one entry per festival, words in both languages, dressing 
 
 test('Look carries today: the date, a 节气 when one falls, the festival with its line, task and gift', () => {
   const plain = look(open(at('2026-09-29')), content, { now: at('2026-09-29'), quests: [] });
-  assert.deepEqual(plain.today, { date: '2026-09-29' });
+  assert.deepEqual(plain.today, { date: '2026-09-29', jieqi: { id: 'qiufen', name: '秋分' } }); // 秋分 (9/23) stands until 寒露
   const autumn = look(open(at('2026-09-23')), content, { now: at('2026-09-23'), quests: [] });
   assert.deepEqual(autumn.today.term, { id: 'qiufen', name: '秋分' });
   const s = open(at('2027-02-06'));
@@ -279,6 +279,41 @@ test('the stage\'s picture: the scene\'s own, a story sky, the festival\'s paint
   // Look's today carries it.
   const t = look(open(at('2026-09-25')), content, { now: at('2026-09-25'), quests: [] }).today;
   assert.equal(t.festival.backdrop, 'art/festival/zhongqiu.webp');
+});
+
+test('a 节气 stands from its day until the next', () => {
+  assert.equal(dayOf(ymd('2026-10-07')).standing.id, 'qiufen');
+  assert.equal(dayOf(ymd('2026-10-08')).standing.id, 'hanlu'); // 寒露 falls 10/8
+  assert.equal(dayOf(ymd('2026-10-15')).standing.id, 'hanlu');
+  assert.equal(dayOf(ymd('2026-10-23')).standing.id, 'shuangjiang');
+  assert.equal(dayOf(ymd('2027-01-01')).standing.id, 'dongzhi');
+  for (let n = jdOfDay(2026, 1, 1); n < jdOfDay(2027, 1, 1); n++) { const d = dayOfJd(n); assert.ok(dayOf(d).standing, `${d.y}-${d.m}-${d.d}`); }
+});
+
+test('the stage resolver, tier by tier: scene · festival · place · story sky · 节气 · weather', () => {
+  const table = { kinds: { clear: { day: 'c-d', night: 'c-n' }, storm: { day: 's-d', night: 's-n' } }, terms: { hanlu: 'art/jieqi/hanlu.webp' } };
+  const base = { table, weather: { kind: 'clear', source: 'city' }, term: { id: 'hanlu' } };
+  const fest = { backdrop: 'art/festival/chongyang.webp' };
+  const place = { backdrop: 'art/place/shiao.webp' };
+  assert.deepEqual(stagePick({ ...base, scene: { backdrop: 'own' }, festival: fest, place }), { tier: 'scene', art: 'own' });
+  assert.deepEqual(stagePick({ ...base, festival: fest, place }), { tier: 'festival', art: fest.backdrop });
+  assert.deepEqual(stagePick({ ...base, place }), { tier: 'place', art: place.backdrop });
+  assert.deepEqual(stagePick({ ...base, weather: { kind: 'storm', source: 'story' }, festival: fest }), { tier: 'story', art: 's-d' }, 'the book\'s sky beats the festival and the 节气');
+  assert.deepEqual(stagePick({ ...base, weather: { kind: 'storm', source: 'story' }, place }), { tier: 'place', art: place.backdrop }, 'a painted place keeps its picture; the storm draws on top');
+  assert.deepEqual(stagePick(base), { tier: 'term', art: 'art/jieqi/hanlu.webp' });
+  assert.deepEqual(stagePick({ ...base, scene: { indoor: true } }), { tier: 'weather', art: 'c-d' }, 'a room never shows the 节气\'s landscape');
+  assert.deepEqual(stagePick({ ...base, term: { id: 'lidong' }, isDay: false }), { tier: 'weather', art: 'c-n' }, 'no painting for that 节气 yet: the weather\'s');
+  assert.deepEqual(stagePick({ ...base, scene: { line: 'jin' }, festival: fest }), { tier: null, art: null });
+});
+
+test('春节\'s picture runs 初一 to 初七; 除夕 and 元宵 keep their own days', () => {
+  const art = (iso) => look(open(at(iso)), content, { now: at(iso), quests: [] }).today.festival?.backdrop ?? null;
+  assert.equal(art('2027-02-05'), 'art/festival/chuxi.webp');
+  assert.equal(art('2027-02-06'), 'art/festival/chunjie.webp'); // 初一
+  assert.equal(art('2027-02-12'), 'art/festival/chunjie.webp'); // 初七
+  assert.equal(art('2027-02-13'), null); // 初八: still 春节 for its task, the 节气 shows
+  assert.equal(art('2027-02-20'), 'art/festival/yuanxiao.webp'); // 十五
+  assert.equal(art('2026-09-26'), null, 'the day after 中秋');
 });
 
 test('dayOf names the date the player lives in', () => {

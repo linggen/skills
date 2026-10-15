@@ -33,7 +33,8 @@ const marksOf = state => state.festivals ?? [];
 export function todayBrief(content, state, ctx, args = {}) {
   const day = dayOf(dayFor(ctx, args), LUNAR, whereOf(ctx));
   const lang = state.lang;
-  const out = { date: day.date, ...(day.term ? { term: { id: day.term.id, name: pick(day.term.name, lang) } } : {}) };
+  // `jieqi`: the 节气 in effect (from its day to the next) — the stage's picture where nothing nearer names one.
+  const out = { date: day.date, ...(day.term ? { term: { id: day.term.id, name: pick(day.term.name, lang) } } : {}), ...(day.standing ? { jieqi: { id: day.standing.id, name: pick(day.standing.name, lang) } } : {}) };
   const f = day.festival && festivalEntry(content, day.festival.id);
   if (!f) return out;
   const say = pair => fill(pick(pair, lang), state, content);
@@ -48,8 +49,9 @@ export function todayBrief(content, state, ctx, args = {}) {
     // Before the gate that opens 灵石, the day is kept without a gift.
     ...(shut ? {} : { gift: { wealth: f.gift.wealth, given } }),
     dressing: f.dressing ?? {},
-    // The festival's own painting (festivals.json `backdrop`): the stage's picture today.
-    ...(f.backdrop ? { backdrop: f.backdrop } : {}),
+    // The festival's own painting (festivals.json `backdrop`): the stage's picture on its day, or on
+    // the first `backdrop_days` of its span (春节: 初一 to 初七).
+    ...(f.backdrop && (day.festival.day ?? 1) <= (f.backdrop_days ?? 1) ? { backdrop: f.backdrop } : {}),
   };
   return out;
 }

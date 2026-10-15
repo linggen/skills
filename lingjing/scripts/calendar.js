@@ -64,6 +64,18 @@ export const LUNAR = {
   2049: '02020101011011010', 2050: '012330101010110110', 2051: '02110100100110111',
 };
 
+/// The 节气 in effect on a date (Beijing time): the last one that fell on or
+/// before it — a 节气 stands until the next (they come every 14–16 days).
+export function termAt(y, m, d) {
+  const n = jdOfDay(y, m, d);
+  for (let back = 0; back < 17; back++) {
+    const { y: yy, m: mm, d: dd } = dayOfJd(n - back);
+    const t = termOf(yy, mm, dd);
+    if (t) return t;
+  }
+  return null;
+}
+
 /// The lunar date of a civil date — {year, month, day, leap} — or null
 /// outside the table.
 export function lunarOf(y, m, d, rows = LUNAR) {
@@ -167,11 +179,12 @@ export function parseDay(s) {
   return m ? { y: Number(m[1]), m: Number(m[2]), d: Number(m[3]) } : null;
 }
 
-/// What the calendar says of a day: {date, festival, term, lunar}.
+/// What the calendar says of a day: {date, festival, term (falls today), standing
+/// (the 节气 in effect), lunar}.
 export function dayOf({ y, m, d }, rows = LUNAR, where = {}) {
   const pad = (x) => String(x).padStart(2, '0');
   const l = lunarOf(y, m, d, rows);
-  return { date: `${y}-${pad(m)}-${pad(d)}`, festival: festivalOn(y, m, d, rows, where), term: termOf(y, m, d), lunar: l && { month: l.month, day: l.day, leap: l.leap } };
+  return { date: `${y}-${pad(m)}-${pad(d)}`, festival: festivalOn(y, m, d, rows, where), term: termOf(y, m, d), standing: termAt(y, m, d), lunar: l && { month: l.month, day: l.day, leap: l.leap } };
 }
 
 /* The seasons by the sun, as the 节气 reckon them: 春 from 立春 (315°), 夏

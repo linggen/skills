@@ -1033,7 +1033,7 @@ function paintBackdrop() {
   const own = look?.scene?.backdrop ?? null;
   const day = look?.weather?.is_day ?? isDayNow();
   const weather = PREVIEW.weather ? { kind: PREVIEW.weather } : look?.weather;
-  const art = stageArt({ scene: { ...look?.scene, backdrop: own }, weather, festival: look?.today?.festival, table: authored?.backdrops, isDay: day });
+  const art = stageArt({ scene: { ...look?.scene, backdrop: own }, place: look?.place, weather, festival: look?.today?.festival, term: look?.today?.jieqi, table: authored?.backdrops, isDay: day });
   const src = art ? worldPath(dir, art) : null;
   if (src === drawnBackdrop) return;
   drawnBackdrop = src;

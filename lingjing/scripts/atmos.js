@@ -106,12 +106,31 @@ export function backdropOf(table, kind, isDay = true) {
   return row?.[part] ?? row?.day ?? null;
 }
 
-/// The stage's picture (2026-10-15): the scene's own; else, under a sky the book
-/// names, that sky's painting; else on a festival day the festival's painting
-/// (festivals.json `backdrop`); else the weather's. 今线 has none.
-export function stageArt({ scene = null, weather = null, festival = null, table = null, isDay = true } = {}) {
-  if (scene?.line === 'jin') return null;
-  if (scene?.backdrop) return scene.backdrop;
-  const sky = backdropOf(table, weather?.kind ?? null, isDay);
-  return weather?.source === 'story' ? sky : festival?.backdrop ?? sky;
+/// The stage's picture (2026-10-15): one ordered resolver — the first tier that names a
+/// picture wins. `scene` its own picture (a set piece's, a scene's `backdrop`); `festival` on its
+/// day or days (Look's today.festival.backdrop) unless the book names the scene's sky; `place` the
+/// place's own painting (outdoor or a room); a sky the book names, its weather painting; the 节气 in
+/// effect (`term`, the world's backdrops.json `terms`) outdoors; the weather's painting last.
+/// 今线 has none. The season, weather and wind layers draw over whichever wins (atmosOf).
+export const STAGE_TIERS = [
+  ['scene', (c) => c.scene?.backdrop],
+  ['festival', (c) => (c.weather?.source === 'story' ? null : c.festival?.backdrop)],
+  ['place', (c) => c.place?.backdrop],
+  ['story', (c) => (c.weather?.source === 'story' ? backdropOf(c.table, c.weather.kind, c.isDay) : null)],
+  ['term', (c) => (indoorOf(c.scene, c.place) ? null : c.table?.terms?.[c.term?.id ?? c.term])],
+  ['weather', (c) => backdropOf(c.table, c.weather?.kind ?? null, c.isDay)],
+];
+
+/// The tier and picture that win: {tier, art}, or {tier: null, art: null}.
+export function stagePick(c = {}) {
+  if (c.scene?.line === 'jin') return { tier: null, art: null };
+  const ctx = { isDay: true, ...c };
+  for (const [tier, pick] of STAGE_TIERS) {
+    const art = pick(ctx);
+    if (art) return { tier, art };
+  }
+  return { tier: null, art: null };
 }
+
+/// The stage's picture (stagePick's art).
+export const stageArt = (c = {}) => stagePick(c).art;

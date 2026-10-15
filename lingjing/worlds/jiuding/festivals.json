@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "_about": "节日 — the player's real calendar in the world (design.md § 真实世界). The day is reckoned on the device (scripts/calendar.js: lunar table + 节气 by formula), never online. One entry per festival: `dressing` (the page's atmosphere layer: `frame` on the 小人书 frame, `particles` over the stage — scripts/atmos.js names the kinds), Ling's `line` to open the day with (once), one small `task` (Practice done `festival` when the player has done it in the chat), a `gift` (灵石, once per festival per year — 除夕 to 元宵 is one 春节, one gift), and `her`: what 银月 might say, handed to her as a fact to put in her own words. 圣诞 and 元旦 are a 西域胡商's feast days — a wink, never 道统 lore. 情人节, 万圣节 and 感恩节 are the same 胡商's (感恩节 only where the player's country keeps it: Canada, the US); 清明 is quiet, no party particles. `backdrop`: the festival's own painting (tools/paint-festivals.py), the stage's picture that day unless the scene names its own sky (atmos.js stageArt). Only on the real day: rare is the point.",
+  "_about": "节日 — the player's real calendar in the world (design.md § 真实世界). The day is reckoned on the device (scripts/calendar.js: lunar table + 节气 by formula), never online. One entry per festival: `dressing` (the page's atmosphere layer: `frame` on the 小人书 frame, `particles` over the stage — scripts/atmos.js names the kinds), Ling's `line` to open the day with (once), one small `task` (Practice done `festival` when the player has done it in the chat), a `gift` (灵石, once per festival per year — 除夕 to 元宵 is one 春节, one gift), and `her`: what 银月 might say, handed to her as a fact to put in her own words. 圣诞 and 元旦 are a 西域胡商's feast days — a wink, never 道统 lore. 情人节, 万圣节 and 感恩节 are the same 胡商's (感恩节 only where the player's country keeps it: Canada, the US); 清明 is quiet, no party particles. `backdrop`: the festival's own painting (tools/paint-festivals.py), the stage's picture and the app's faint background that day — 春节's for its first `backdrop_days` (初一 to 初七); it beats the place and the 节气 (atmos.js stageArt). Only on the real day: rare is the point.",
   "festivals": [
     {
       "id": "chuxi",
@@ -23,6 +23,7 @@
       "name": { "zh": "春节", "en": "Spring Festival" },
       "dressing": { "frame": "chunlian", "particles": "sparks" },
       "backdrop": "art/festival/chunjie.webp",
+      "backdrop_days": 7,
       "line": {
         "zh": "过年了。家家门上贴了春联，「福」字倒着——贴的人说是故意的，看他的脸，不像。",
         "en": "It's the New Year. Couplets on every door, the 福 upside down — whoever pasted it says that was on purpose. His face says otherwise."
