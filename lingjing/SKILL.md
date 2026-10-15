@@ -322,7 +322,7 @@ tools:
       action:
         type: string
         required: true
-        description: host (read the game), ask (a yes/no question) or guess.
+        description: host (read the game), open (only when the player asks to play), ask (a yes/no question) or guess.
       question:
         type: string
         description: For ask — the player's question, verbatim.

@@ -84,7 +84,7 @@ const HOST_NOTE = [
 /* Her view: the open game with its secret (only ever on `--for=yinyue`). */
 function hostView(content, state, now, extra = {}) {
   const g = twentyGame(state, now), cfg = cfgOf(content).twenty;
-  if (!g) return { ok: true, open: false, rounds_left: twentyBrief(content, state, now)?.rounds_left ?? 0, host: 'No game is open. The player starts one on the page card (二十问).' };
+  if (!g) return { ok: true, open: false, rounds_left: twentyBrief(content, state, now)?.rounds_left ?? 0, host: 'No game is open. The player starts one on the page card (二十问), or asks you to play: then call Twenty with action open.' };
   const a = animalOf(content, g.animal), lang = state.lang, outcome = g.outcome ?? 'open';
   const brief = twentyBrief(content, state, now);
   // `host` first: another member reading this call is handed its head only

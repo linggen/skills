@@ -121,7 +121,7 @@
       "solved": {
         "line": { "zh": "周衡看了半天，把那一页翻过去，压在账簿底下：「送回来的。账上不记。」又低声补了一句：「……我心里记着。」", "en": "Zhou Heng looks a long while, turns the page over and tucks it under the ledger: \"Returned. Not entered.\" Then, low: \"…I have it entered in here.\"" },
         "ledger": [
-          { "who": "ahe", "kind": "恩", "what": { "zh": "药园参案：她本子上的数，替你对上了账。", "en": "The ginseng case: her notebook's count set the accounts straight for you." } },
+          { "who": "ahe", "kind": "恩", "what": { "zh": "药园参案：账对上了。阿禾那本账，从来没差过一株。", "en": "The ginseng case: the accounts tally. Ahe's book was never one plant out." } },
           { "who": "maxiaobao", "kind": "仇", "what": { "zh": "药园参案：初八那一夜的「陪巡」，周衡心里记着了。", "en": "The ginseng case: the eighth night's \"walked with the watch\" is entered in Zhou Heng's head." } }
         ]
       },
