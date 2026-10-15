@@ -139,3 +139,20 @@ test('the story opens its own way: the 秘境\'s 石门 while its scene is ahead
   assert.equal(must(move, s, { place: 'shimen' }).place, 'shimen');
   refused(move, s, { place: 'pengcheng' }, 'road-closed');
 });
+
+test('an errand already in hand below the mountain keeps its way (阿禾\'s interest, taken at 坊市 before the wall): no whisking home mid-errand', () => {
+  const s = { ...roaming(), place: 'fangshi', quests: { 'xu-ahe-lixi': { took: '2026-10-15', have: {} } } };
+  const l = look(s, content, ctx());
+  assert.equal(l.place.id, 'fangshi', 'he stays where he stood');
+  assert.equal(l.place.returned, undefined);
+  assert.equal(l.place.pass.to.id, 'fangshi');
+  // the radishes bought, the word taken to 渡口, back to 阿禾 at 坊市
+  let t = { ...must(move, s, { place: 'dukou' }), bag: { luobo: 2 } };
+  t = fresh(must(move, t, { place: 'fangshi' }));
+  t = must(quest, t, { action: 'turn', id: 'xu-ahe-lixi' });
+  assert.ok(t.quests['xu-ahe-lixi'].done_at);
+  t = fresh(must(move, t, { place: 'waimen' }));
+  t = must(move, t, { place: 'fantang' });
+  assert.equal(t.pass, undefined, 'home again, the way shuts');
+  refused(move, t, { place: 'fangshi' }, 'road-closed');
+});

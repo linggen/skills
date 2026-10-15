@@ -807,6 +807,7 @@ function lintQuests(content, ids, bad) {
     if (q.then && !byId.has(q.then)) bad(where, `chains to unknown quest ${q.then}`);
     // A 执事堂 令 (world.mjs grantPass): the one place it opens the road to.
     if (q.pass && !places.has(q.pass.to)) bad(where, `a pass to unknown place ${q.pass?.to}`);
+    for (const id of q.pass?.also ?? []) if (!places.has(id)) bad(where, `a pass also to unknown place ${id}`);
     if (q.opens?.after && !byId.has(q.opens.after)) bad(where, `opens after unknown quest ${q.opens.after}`);
     if (q.opens?.tier && !content.ladder.tiers.some(t => t.id === q.opens.tier)) bad(where, `unknown tier ${q.opens.tier}`);
     // Story time (errands.mjs offersOf): offered once a scene is behind him (`done`), or only before it (`before`).

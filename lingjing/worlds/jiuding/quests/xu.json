@@ -351,6 +351,12 @@
         },
         "person": "ahe"
       },
+      "pass": {
+        "to": "fangshi",
+        "also": [
+          "dukou"
+        ]
+      },
       "say": {
         "zh": "（翻开小本子）九月初一，{name}，下下之资。地图，利息两块。——你没钱。那就跑腿抵：买两根萝卜，再替我去渡口，给渡叔捎句话。利息，一笔一笔地还。",
         "en": "(opening the little notebook) First of the ninth month: {name}, bottom of the class. The map: two stones' interest. — You've no money. Then work it off: buy two radishes, and run down to the ferry with a word for Du Shu. Interest gets paid one entry at a time."

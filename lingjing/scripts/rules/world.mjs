@@ -130,9 +130,11 @@ function leaveOf(content, state, now) {
    out: the road from the map to its place — and, standing off the map now
    (a chained 令 handed over below the mountain), the road home too. */
 function grantPass(content, state, quest, now = new Date()) {
+  // `also`: the other places the same errand sends him (阿禾's interest: 坊市, then a word at 渡口).
   const to = quest?.pass?.to, map = mapOf(content, state, now);
-  if (!to || !map?.places || map.places.includes(to)) return null;
-  const base = new Set(map.places), places = new Set(roadFrom(content, base, to, now));
+  const all = [to, ...(quest?.pass?.also ?? [])].filter(id => id && !map?.places?.includes(id));
+  if (!to || !map?.places || !all.length) return null;
+  const base = new Set(map.places), places = new Set(all.flatMap(id => roadFrom(content, base, id, now)));
   if (state.place && !base.has(state.place)) for (const id of [state.place, ...roadFrom(content, new Set([state.place]), map.home ?? map.places[0], now)]) if (!base.has(id)) places.add(id);
   state.pass = { quest: quest.id, to, places: [...places] };
   return state.pass;
