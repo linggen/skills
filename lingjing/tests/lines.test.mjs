@@ -202,3 +202,29 @@ test('the backdrop: the world declares a painting for every weather × day and n
   const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
   assert.doesNotMatch(src, /chendingshan|art\/setpiece\//);
 });
+
+test('her words inside a told beat (⟪…⟫ in the book) come up silver-blue, in place', async () => {
+  const { linesHtml, asideRanges, markAsides } = await import('../scripts/lines.js');
+  const text = '便在这时，银月在他耳边道：「往左偏半寸。」她的声音很轻。';
+  assert.deepEqual(asideRanges(text, ['「往左偏半寸。」']), [[13, 21]]);
+  assert.equal(markAsides('她说「好。」', 0, [[2, 6]]), '她说<span class="yy">「好。」</span>');
+  const html = linesHtml({ text, asides: ['「往左偏半寸。」'] });
+  assert.match(html, /<span class="yy">「往左偏半寸。」<\/span>/);
+  assert.doesNotMatch(linesHtml({ text }), /class="yy"/, 'no asides, no colour');
+  // a whole paragraph of hers
+  assert.match(linesHtml({ text: '「那头鹿。」', asides: ['「那头鹿。」'] }), /<span class="s"><span class="yy">「那头鹿。」<\/span><\/span>/);
+});
+
+test('the beats carry her ⟪…⟫ as asides: the 00-deer passage', async () => {
+  const { loadWorld } = await import('../scripts/content.mjs');
+  const { beatsOf, passageFor } = await import('../scripts/rules/tell.mjs');
+  const content = loadWorld('jiuding');
+  const sc = Object.values(content.chapters).map((c) => c.scenes?.['00-deer']).find(Boolean);
+  const s = { lang: 'zh', name: '小满' };
+  const item = { of: 'scene', id: '00-deer', text: passageFor(content, s, sc.story), marked: passageFor(content, s, sc.story, { notes: true }) };
+  const beats = beatsOf(content, s, item);
+  const hers = beats.find((b) => b.asides?.includes('「那头鹿。」'));
+  assert.ok(hers, 'the deer line is hers');
+  assert.equal(hers.text, '「那头鹿。」');
+  assert.ok(beats.every((b) => !/[⟪⟫]/.test(b.text)), 'no mark is ever shown');
+});

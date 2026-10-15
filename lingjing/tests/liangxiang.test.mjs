@@ -102,8 +102,10 @@ test('the marks change no word the box plays: beats are the same text with or wi
       const item = { of: eid ? (eid === 'after' ? 'after' : 'choice') : 'scene', id: eid ? key : sid };
       const plainBeats = beatsOf(content, s, { ...item, text: passageFor(content, s, pair) });
       const markedBeats = beatsOf(content, s, { ...item, text: passageFor(content, s, pair), marked: passageFor(content, s, pair, { notes: true }) });
-      assert.deepEqual(markedBeats.map(({ notes, piece, ...b }) => b), plainBeats, key); // a 景 mark is a beat's piece (setpiece-chending.test.mjs)
-      for (const b of markedBeats) assert.doesNotMatch(b.text, /\{(?:注|景)=|\]\{/, key);
+      // a 景 mark is a beat's piece (setpiece-chending.test.mjs); her ⟪…⟫ are its `asides` (lines.test.mjs)
+      assert.deepEqual(markedBeats.map(({ notes, piece, asides, ...b }) => b), plainBeats, key);
+      for (const b of markedBeats) assert.doesNotMatch(b.text, /\{(?:注|景)=|\]\{|⟪|⟫/, key);
+      for (const b of markedBeats) for (const a of b.asides ?? []) assert.ok(b.text.includes(a), `${key}: her words 「${a}」 stand in the beat`);
     }
   }
 });

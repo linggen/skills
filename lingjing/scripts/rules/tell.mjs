@@ -39,14 +39,20 @@ const NOTE = /\[([^\]\n]+)\]\{注=([^{}\n]+)\}/g;
 // after that choice's passage, before the next scene's); `{景=…}` is the picture of a paragraph.
 const PIECE = /\{景=([a-z]+)\}/g;
 const OTHER = /\[([^\]\n]+)\]\{(?:典|音)=[^{}\n]*\}/g, OTHER_BARE = /\{(?:典|音)=[^{}\n]*\}/g;
-const KEPT = (p) => ({ p: p.replace(NOTE, '$1').replace(PIECE, '').trim(), notes: [...p.matchAll(NOTE)].map(m => m[2]), piece: [...p.matchAll(PIECE)].map(m => m[1])[0] ?? null });
+// Her words in a paragraph (⟪…⟫, kept in `marked` down to here) leave the text plain and ride on
+// the beat as `asides`: the stage colours them silver-blue in place (lines.js linesHtml).
+const KEPT = (p) => ({
+  p: p.replace(SPAN, '$1').replace(NOTE, '$1').replace(PIECE, '').trim(),
+  notes: [...p.matchAll(NOTE)].map(m => m[2]), piece: [...p.matchAll(PIECE)].map(m => m[1])[0] ?? null,
+  asides: [...p.matchAll(SPAN)].map(m => plain(m[1].replace(NOTE, '$1'))).filter(Boolean),
+});
 
-/* A passage as the box plays it: her marked words told as the book's. `notes`: its 注 and 景 marks kept. */
+/* A passage as the box plays it: her marked words told as the book's. `notes`: its 注 and 景 marks
+   kept, and her ⟪…⟫ with them (beatsOf turns them into the beat's `asides`). */
 export function passageFor(content, state, pair, { notes = false } = {}) {
   const text = fill(pick(pair, state.lang), state, content);
   if (text == null) return null;
-  const said = text.replace(SPAN, '$1');
-  return notes ? said.replace(OTHER, '$1').replace(OTHER_BARE, '') : said.replace(MARK, '$1').replace(BARE, '');
+  return notes ? text.replace(OTHER, '$1').replace(OTHER_BARE, '') : text.replace(SPAN, '$1').replace(MARK, '$1').replace(BARE, '');
 }
 /* A passage owed: its words, and (when it has any) the same words with their 注 and 景 marks.
    A condensed one (jieben.mjs: `story` the game's cut, `story_full` the book's passage) carries
@@ -194,7 +200,7 @@ export function beatsOf(content, state, item) {
   const from = books ? anchorsOf(paras.map(({ p }) => p), item.full, lang) : [];
   // A paragraph the book marks as someone's 亮相 notes them (`notes`, the 注 ids in it);
   // one marked `{景=id}` carries its set piece (`piece`).
-  return paras.map(({ p, notes, piece }, k) => ({ ...(spokenOf(content, state, p, sid) ?? { text: plain(p) }), ...(notes.length ? { notes: [...new Set(notes)] } : {}), ...(piece ? { piece } : {}), ...(from[k] != null ? { at: headOf(books[from[k]], lang) } : {}) }));
+  return paras.map(({ p, notes, piece, asides }, k) => ({ ...(spokenOf(content, state, p, sid) ?? { text: plain(p) }), ...(notes.length ? { notes: [...new Set(notes)] } : {}), ...(piece ? { piece } : {}), ...(asides.length ? { asides } : {}), ...(from[k] != null ? { at: headOf(books[from[k]], lang) } : {}) }));
 }
 
 function spokenOf(content, state, para, sid) {
