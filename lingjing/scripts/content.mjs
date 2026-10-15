@@ -1361,7 +1361,9 @@ function lintExit(where, exit, chapter, content, ids, speakers, bad) {
     if (rule?.bag && !ids.items.has(rule.bag)) bad(where, `unknown item ${rule.bag}`);
     if (rule?.task && !ids.tasks.has(rule.task)) bad(where, `unknown task ${rule.task}`);
   }
-  if (exit.take && !exit.needs) bad(where, 'takes what it never checks for');
+  // `take.held`: taken if he still holds it, nothing if not (09-snow's 饭桶 and a pawned gourd).
+  if (exit.take?.held != null && !(exit.take.held === true && exit.take.bag)) bad(where, 'take.held is true, with a bag item');
+  if (exit.take && !exit.needs && !exit.take.held) bad(where, 'takes what it never checks for');
   // A board's grade (tasks.mjs win): a grade of the task it waits on, from the task's `marks`.
   if (exit.needs?.grade != null) {
     const marks = content.tasks.tasks.find(t => t.id === exit.needs.task)?.marks ?? {};

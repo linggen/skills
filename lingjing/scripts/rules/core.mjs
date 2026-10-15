@@ -471,10 +471,7 @@ export function resolve(state, content, ctx, args) {
     if (!breakthrough.success) return { state: s, result: { ok: true, took: null, breakthrough, beat: [], paid: null, show: [], scene: sceneBrief(content, s, ctx.now), summarize: false } };
   }
   if (game) delete s.wins[game.id];
-  if (exit.take?.bag) {
-    s.bag[exit.take.bag] -= 1;
-    if (s.bag[exit.take.bag] <= 0) delete s.bag[exit.take.bag];
-  }
+  if (exit.take?.bag) takeOne(s, exit.take.bag);
   // A few stones handed over (the outer court's 「公中」): a choice, never a price list.
   if (exit.take?.wealth) s.wealth = Math.max(0, s.wealth - exit.take.wealth);
   // 恩仇簿 — the debts a choice writes down, good and bad (writeLedger).
@@ -616,3 +613,17 @@ export function judge(state, content, ctx, args) {
 }
 
 export { advanceChapter, clone, paysOf, replaying, hourOf, judgeAnswer, offerTasks, pay, refuse, RIDDLE_TRIES, riddleOpen, setRiddleAside, spendStamina, triedToday };
+
+
+/* One of an item out of the bag (an exit's `take`). Never below nothing: an
+   exit with `take.held` takes only if he still holds it (09-snow's 饭桶 eats
+   the 赤铜葫芦 if it was not pawned), and a count that was never there is
+   not made NaN. The last one gone, it comes off his slot too. */
+function takeOne(s, id) {
+  const held = Number(s.bag?.[id]) || 0;
+  if (held <= 0) return false;
+  if (held > 1) { s.bag[id] = held - 1; return true; }
+  delete s.bag[id];
+  for (const [slot, worn] of Object.entries(s.wear ?? {})) if (worn === id) delete s.wear[slot];
+  return true;
+}

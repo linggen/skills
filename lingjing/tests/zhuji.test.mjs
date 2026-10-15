@@ -231,3 +231,13 @@ test('the sect\'s 筑基丹 comes from the five-year skip, not from 古六: 古�
   assert.equal(s.bag['foundation-pill'], 1);
   assert.equal(s.step, 9, '九层');
 });
+
+test('09-snow 「扔进饭桶」 eats the 赤铜葫芦 if he still holds it, and nothing if he pawned it — never a NaN count', () => {
+  const held = go(atSnow({ bag: { danlu: 1, 'chitong-hulu': 1 }, wear: { weapon: 'chitong-hulu' } }), 'feed').state;
+  assert.equal(held.bag['chitong-hulu'], undefined, 'the gourd is gone into the 饭桶');
+  assert.notEqual(held.wear?.weapon, 'chitong-hulu', 'and off his hand');
+  assert.ok(held.bag['huochai-jian'] >= 1, '火柴 out');
+  const pawned = go(atSnow(), 'feed').state;
+  assert.equal('chitong-hulu' in pawned.bag, false, 'a pawned gourd is not made a count');
+  assert.ok(Object.values(pawned.bag).every(n => Number.isFinite(n) && n > 0), JSON.stringify(pawned.bag));
+});
