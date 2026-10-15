@@ -297,7 +297,7 @@ function deckHtml(n, side, w) {
 }
 
 /* `mark` draws a line on the bar: where a 试 yields (battle.js § trial). */
-const pool = (label, now, max, cls, mark = null) => `<div class="bpool"><span>${label}</span><div class="bbar ${cls}"><i style="width:${Math.max(0, Math.round((now / Math.max(1, max)) * 100))}%"></i>${mark ? `<s class="bmark" style="left:${Math.round(mark * 100)}%"></s>` : ''}</div><b>${now}</b></div>`;
+const pool = (label, now, max, cls, mark = null) => `<div class="bpool"><span>${label}</span><div class="bbar ${cls}"><i style="width:${Math.max(0, Math.round((now / Math.max(1, max)) * 100))}%"></i>${mark ? `<s class="bmark" style="left:${Math.round(mark * 100)}%"></s>` : ''}</div><b>${now}<small class="bmax">/${max}</small></b></div>`;
 
 const crystals = (now, max, cap) => {
   const dots = [];

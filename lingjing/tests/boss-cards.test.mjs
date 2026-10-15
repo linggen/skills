@@ -154,6 +154,10 @@ test('the player aims 锁 and 吞 at its rank; a 吞 at a too-big body is refuse
   assert.match(html, /吞不下 —— 它攻太高/);
   const en = battleHtml(view(st), offers(st), { lang: 'en', words: WORDS.en, catalog, board: 4 }, null, false, out.why);
   assert.match(en, /too big to swallow/);
+  // 气血 reads now/max on both plates (Hanli: 显示一下总气血).
+  const v0 = view(st);
+  assert.ok(html.includes(`<b>${v0.foe.hp}<small class="bmax">/${v0.foe.hpMax}</small></b>`), 'foe 气血 now/max');
+  assert.ok(html.includes(`<b>${v0.you.hp}<small class="bmax">/${v0.you.hpMax}</small></b>`), 'your 气血 now/max');
   // Held, the one it may take glows with the verb, the brute does not.
   const held = battleHtml(view(st), offers(st), { lang: 'zh', words: WORDS.zh, catalog, board: 4 }, { from: 'hand', index: 0 });
   assert.match(held, /data-index="1" data-id="cub">[\s\S]*?<span class="bdmg up">吞<\/span>/);

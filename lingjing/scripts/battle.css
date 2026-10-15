@@ -101,6 +101,8 @@
 .bbar i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #8E2A20, var(--cinnabar) 70%, #C9503F); transition: width .5s cubic-bezier(.2, .8, .2, 1); }
 .bbar .bmark { position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: var(--ink); text-decoration: none; }
 .bpool b { font-family: var(--serif); font-size: 19px; font-weight: 600; color: var(--cinnabar); min-width: 1.4em; }
+/* 气血 reads now/max — the max small and muted, like 灵力's 5/5 beside it. */
+.bpool b .bmax { margin-left: 1px; font-family: var(--ui); font-size: 11.5px; font-weight: 600; color: var(--ink-3); }
 
 /* 灵力: ink-blue drops — full, spent (a ring), or not yet grown (a dot). */
 .bmana { display: flex; align-items: center; gap: 4px; }
