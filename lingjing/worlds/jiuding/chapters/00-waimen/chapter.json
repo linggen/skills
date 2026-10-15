@@ -78,6 +78,28 @@
       "say": {
         "zh": "秘境的石门在身后合上了。三天后才开。",
         "en": "The stone door has shut behind you. It opens again in three days."
+      },
+      "_sealed": "秘境 mode (Hanli, 2026-10-15: 「yes」): a beat that declares `sealed` is an instance — from the scene after its entry through its last scene he is inside (world.mjs sealedOf). Its `places` are the only map: Move, roads and 去往 offer them (the plate `mijing`, drawn in ink); a way out is refused with `say`. A room in `opens` stays hidden until that scene is behind him. The scene first stood in inside puts him at `home`; a save standing outside is put at its scene's room. Outside errands, 令, chores, the 货郎, 机缘, festival, 节气 and weather are frozen and kept out of Look (rules/sealed.mjs); a 机缘 still live at the door gets its time back on the way out. `days`: the book's own day or night per scene (header 「沉鼎秘境 · 第一夜」); `goals`: the one thing to do in each (the 事 book's goal line). Nothing here names the 秘境: the 外门大比 or a later 秘境 declares the same.",
+      "sealed": {
+        "label": { "zh": "沉鼎秘境", "en": "The Sunken Cauldron realm" },
+        "places": ["mijing-kou", "mijing-xiongya", "mijing-duanya", "mijing-yabi", "mijing-shishi", "mijing-anhe"],
+        "home": "mijing-kou",
+        "opens": { "mijing-shishi": "wm-wangzuo", "mijing-anhe": "wm-kunzhen" },
+        "say": { "zh": "秘境未开，出不去。", "en": "The realm is sealed. There is no way out." },
+        "days": {
+          "wm-wangzuo": { "n": 1, "unit": "day" },
+          "wm-kunzhen": { "n": 1, "unit": "day" },
+          "wm-xirang": { "n": 1, "unit": "night" },
+          "wm-kaikai": { "n": 2, "unit": "night" },
+          "wm-chu": { "n": 3, "unit": "day" }
+        },
+        "goals": {
+          "wm-wangzuo": { "zh": "打开那面有风的墙", "en": "Open the wall the wind comes through" },
+          "wm-kunzhen": { "zh": "活着从崖口边脱身", "en": "Get away from the drop alive" },
+          "wm-xirang": { "zh": "护住那撮息壤", "en": "Keep the pinch of living soil" },
+          "wm-kaikai": { "zh": "守在土里，等息壤长成", "en": "Stay in the soil until it has grown in" },
+          "wm-chu": { "zh": "等石门再开，走出秘境", "en": "Wait for the stone door and walk out" }
+        }
       }
     },
     {

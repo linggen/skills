@@ -355,7 +355,7 @@ export function resolve(state, content, ctx, args) {
   const exit = scene.exits.find(e => e.id === args.exit);
   if (!exit) return refuse('unknown-exit', null, { exits: scene.exits.map(e => e.id) });
   const s = clone(state), lang = s.lang;
-  settlePlace(content, s);
+  settlePlace(content, s, ctx.now);
   if (!atScene(content, s)) {
     const at = placeOf(content, scene.at);
     return refuse('not-at-scene', lang === 'zh' ? `你还没到${pick(at.name, 'zh')}。` : `You are not at ${pick(at.name, 'en')} yet.`, { place: placeName(content, s, at) });
@@ -500,7 +500,7 @@ export function resolve(state, content, ctx, args) {
   } else {
     oweExit(s, scene, exit, replay);
     if ((exit.next || exit.ends) && !replay) s.done_scenes.push(scene.id);
-    if (exit.next) { s.scene = exit.next; settlePlace(content, s); offerTasks(content, s); }
+    if (exit.next) { s.scene = exit.next; settlePlace(content, s, ctx.now); offerTasks(content, s); }
     if (exit.ends) {
       // A chapter ended for the first time raises the 本命法宝 one 重 (rewards.json `growth`).
       if (!s.ended.includes(exit.ends)) {

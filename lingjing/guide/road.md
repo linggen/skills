@@ -23,6 +23,12 @@
   after its entry to its last, the story carries the player; Move refuses
   `corridor` with the beat's own `say`. Tell the beat; offer no road until
   `lock` is gone.
+- **A sealed instance** (Look's `sealed`: `header`, `where`, `goal`, `say` —
+  a 秘境). Inside, its rooms are the whole map: offer only the roads Look
+  gives, and a way out is Move's refusal with `say`. The world outside is
+  frozen — no errand, 令, chore, 货郎, 机缘, festival or weather is in Look,
+  and never speak of one; Quest, Tale, Meet and Seclude are refused `sealed`.
+  The one thing to do is `goal`. It all comes back on the way out.
 - **Arriving is an event.** Show the cards a Move returns, and say in one
   line what is HERE before the roads. A
   Move with `met` reached what an errand sent them for: speak its `seen` as

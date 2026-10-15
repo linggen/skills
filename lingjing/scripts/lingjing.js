@@ -1081,7 +1081,9 @@ const wxHere = () => (look?.weather ? { ...look.weather, where: look.place?.name
 /* The place the stage stands in, with its painting (Hanli, 2026-10-15: one per location, declared
    in backdrops.json `places`, placeart.js): Look's place, its `backdrop` and `indoor` from the spot
    the scene stands at (its zh name; a 今线 scene by its `scape`). */
-function placeHere(isDay = look?.weather?.is_day ?? isDayNow()) {
+/* Day or night on the stage: a sealed instance keeps the book's (第二夜), else the sky's, else the clock's. */
+const dayOnStage = () => (look?.sealed?.day ? look.sealed.day.unit !== 'night' : look?.weather?.is_day ?? isDayNow());
+function placeHere(isDay = dayOnStage()) {
   const scene = look?.scene, jin = scene?.line === 'jin';
   const art = placeArtOf(authored?.backdrops, { at: look?.place?.id ?? null, name: scene?.spot ?? '', scape: jin ? scene?.scape ?? '' : null }, isDay);
   return art ? { ...look?.place, backdrop: art.src, indoor: art.indoor, night: art.night } : look?.place ?? null;
@@ -1090,13 +1092,13 @@ let drawnBackdrop = null;
 function paintBackdrop() {
   const dir = look?.world?.made ? `worlds/${look.world.base}` : look?.world?.dir ?? 'worlds/jiuding';
   const own = look?.scene?.backdrop ?? null;
-  const day = look?.weather?.is_day ?? isDayNow();
+  const day = dayOnStage();
   const weather = PREVIEW.weather ? { kind: PREVIEW.weather } : look?.weather;
   const place = placeHere(day);
-  const { tier, art } = stagePick({ scene: { ...look?.scene, backdrop: own }, place, weather, festival: look?.today?.festival, term: look?.today?.jieqi, table: authored?.backdrops, isDay: day });
+  const { tier, art } = stagePick({ scene: { ...look?.scene, backdrop: own }, place, weather, festival: look?.today?.festival, term: look?.today?.jieqi, table: authored?.backdrops, isDay: day, sealed: Boolean(look?.sealed) });
   const src = art ? worldPath(dir, art) : null;
   // A place painted only by day is darkened at night by the stage, not repainted.
-  const dim = Boolean(src) && tier === 'place' && day === false && !place?.night;
+  const dim = Boolean(src) && (tier === 'place' || tier === 'sealed') && day === false && !place?.night;
   const key = `${src}|${dim}`;
   if (key === drawnBackdrop) return;
   drawnBackdrop = key;
@@ -1135,7 +1137,8 @@ function paintAtmos() {
   const jin = look?.scene?.line === 'jin';
   const wind = PREVIEW.wind ?? look?.wind ?? null, indoor = indoorOf(look?.scene, placeHere());
   const sky = { season: PREVIEW.season ?? look?.season?.kind, isDay: look?.weather?.is_day ?? isDayNow(), wind, indoor };
-  const a = jin ? atmosOf(null, null) : atmosOf(look?.today?.festival?.dressing, PREVIEW.weather ?? look?.weather?.kind ?? null, sky);
+  // Sealed (Look's `sealed`): no festival, weather, season or wind — the rooms as they are.
+  const a = jin || look?.sealed ? atmosOf(null, null, look?.sealed ? { indoor: true } : {}) : atmosOf(look?.today?.festival?.dressing, PREVIEW.weather ?? look?.weather?.kind ?? null, sky);
   const v = $('view');
   for (const [k, val] of Object.entries(windVars(wind, { indoor }))) v.style.setProperty(k, val);
   for (const c of [...v.classList]) if (c.startsWith('season-')) v.classList.remove(c);
@@ -1281,7 +1284,7 @@ function roadsHtml() {
   const onPlate = new Set((plate?.spots ?? []).map((s) => s.id));
   const off = near.filter((p) => !onPlate.has(p.id));
   const chips = off.map((p) => `<button class="act go" data-go="${esc(p.id)}">${esc(p.name)}</button>`).join('');
-  const painted = plate && look?.world?.dir ? plateHtml(plate, { src: worldPath(look.world.dir, plate.file), here: w.needHere }) : '';
+  const painted = plate && look?.world?.dir ? plateHtml(plate, { src: plate.file ? worldPath(look.world.dir, plate.file) : null, here: w.needHere }) : '';
   const pop = open ? `<div class="bookpop roadspop${painted ? ' plated' : ''}" role="dialog"><div class="cardtitle">${esc(painted ? plate.name : w.roads)}</div>${painted}${chips ? `<div class="roadlist">${chips}</div>` : ''}</div>` : '';
   return `<span class="bookwrap roadswrap"><button class="bookchip roadschip" data-roads aria-expanded="${open ? 'true' : 'false'}" title="${esc(near.map((p) => p.name).join(' · '))}">${esc(w.roadsChip)} ▾</button>${pop}</span>`;
 }
@@ -1374,7 +1377,8 @@ function draw() {
   // Under the old 回's 「完」 at the turn, its own line holds with its header (headLook).
   const closing = closeUp() && atHuiTurn() ? ended?.id ?? null : null;
   $('huiLine').textContent = look.chapter?.hui ? huiLineOf({ hui: look.chapter.hui, title: look.chapter.title, telling: closing ?? huiAt(told), titles }) : '';
-  $('place').textContent = look.scene?.place ?? look.chapter?.close?.place ?? look.place?.name ?? look.chapter?.title ?? '';
+  // Inside a sealed instance: 「沉鼎秘境 · 第二夜 · 石室」 — the instance, the book's night, the room (rules/sealed.mjs).
+  $('place').textContent = look.sealed ? [look.sealed.header, look.sealed.where].filter(Boolean).join(' · ') : look.scene?.place ?? look.chapter?.close?.place ?? look.place?.name ?? look.chapter?.title ?? '';
   // The scene's caption, small under the place (2026-10-14: never a beat in the box — told three times).
   // The bar is thin now (2026-10-14): the caption keeps its small line where there is room, and is the place's title always.
   $('place').title = (look.scene?.panel?.caption ?? []).join(' ');

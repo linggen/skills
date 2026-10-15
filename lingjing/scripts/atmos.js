@@ -112,7 +112,8 @@ export function backdropOf(table, kind, isDay = true) {
 /// book names still draws its weather over it (atmosOf); `place` the
 /// place's own painting (outdoor or a room); a sky the book names, its weather painting; the 节气 in
 /// effect (`term`, the world's backdrops.json `terms`) outdoors; the weather's painting last.
-/// 今线 has only its place's painting (the scene's `scape`, placeart.js). The season, weather and wind
+/// 今线 has only its place's painting (the scene's `scape`, placeart.js); a sealed instance (`sealed`) only its
+/// rooms' — it outranks the festival and the 节气, and nothing draws over it. The season, weather and wind
 /// layers draw over whichever wins (atmosOf).
 export const STAGE_TIERS = [
   ['scene', (c) => c.scene?.backdrop],
@@ -126,6 +127,9 @@ export const STAGE_TIERS = [
 /// The tier and picture that win: {tier, art}, or {tier: null, art: null}.
 export function stagePick(c = {}) {
   if (c.scene?.line === 'jin') return c.place?.backdrop ? { tier: 'place', art: c.place.backdrop } : { tier: null, art: null };
+  // Inside a sealed instance (Look's `sealed`, rules/sealed.mjs) the stage is its own rooms: a scene's own
+  // picture, else the room's painting — never a festival's, the 节气's or the sky's.
+  if (c.sealed) return c.scene?.backdrop ? { tier: 'scene', art: c.scene.backdrop } : c.place?.backdrop ? { tier: 'sealed', art: c.place.backdrop } : { tier: null, art: null };
   const ctx = { isDay: true, ...c };
   for (const [tier, pick] of STAGE_TIERS) {
     const art = pick(ctx);

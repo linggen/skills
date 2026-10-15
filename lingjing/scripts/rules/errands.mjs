@@ -16,7 +16,7 @@ import { coolingUntil, oddsOf } from './breakthrough.mjs';
 import { freeSlot, pouchBrief } from './pouch.mjs';
 import { chapterLabel, comingOf } from './hui.mjs';
 import { storyAllows } from './cap.mjs';
-import { allPlaces, atScene, creatureOf, grantPass, hauntsOf, huntable, inCorridor, inMade, ofJuan, passed, pathOf, placeName, placeOf, placeOpen, sceneOf, tooHard, towardOf } from './world.mjs';
+import { hiddenRoom, sealedOf, allPlaces, atScene, creatureOf, grantPass, hauntsOf, huntable, inCorridor, inMade, ofJuan, passed, pathOf, placeName, placeOf, placeOpen, sceneOf, tooHard, towardOf } from './world.mjs';
 
 /* ── 差事 — the errands the player takes (design.md § 差事) ──
    接 · 记 · 追 · 交. The world offers, the player takes, the rules count, and
@@ -289,6 +289,8 @@ function workOf(content, state, ctx) {
    move one calls this and nothing else does — the rules are the only writer,
    and a count nobody can verify is a lie. */
 export function advance(content, state, event, ctx = null) {
+  // Inside a sealed instance the errands outside are frozen: nothing counts toward them.
+  if (sealedOf(content, state)) return [];
   for (const id of Object.keys(state.quests ?? {})) {
     if (questDoneBefore(state, id)) continue;
     const q = questOf(content, id);
@@ -486,9 +488,11 @@ function directorBrief(content, state, ctx) {
   const place = placeOf(content, state.place);
   if (!place) return null;
   const roads = place.roads.map(id => placeOf(content, id)).filter(p => placeOpen(content, state, p, ctx.now));
-  const closed = place.roads.map(id => placeOf(content, id)).filter(p => !placeOpen(content, state, p, ctx.now));
+  const closed = place.roads.map(id => placeOf(content, id)).filter(p => !placeOpen(content, state, p, ctx.now) && !hiddenRoom(content, state, p));
+  // Sealed (world.mjs sealedOf): nothing outside is offered — no hand-in, no work a walk away, no rumour.
+  const sealed = Boolean(sealedOf(content, state));
   // 今日传闻 is offered where the province's lore gathers (a place with seeds).
-  const rumor = place.has?.seeds && canMakeTale(state, ctx.now) ? pick(content.dictionary.words.tale_today, state.lang) : null;
+  const rumor = !sealed && place.has?.seeds && canMakeTale(state, ctx.now) ? pick(content.dictionary.words.tale_today, state.lang) : null;
   const here = placeName(content, state, place);
   const near = roads.filter(p => !tooHard(content, state, p)).map(p => placeName(content, state, p));
   const thread = threadOf(content, state, ctx.now);
@@ -506,7 +510,7 @@ function directorBrief(content, state, ctx) {
     corridor: inCorridor(content, state),
     thread,
     pool: poolOf(content, state),
-    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...led, place: toward } : led, rumor, ctx.said, filler(content, state, ctx.said), bookOf(content, state, state.lang, ctx).filter(q => q.ready), workOf(content, state, ctx)),
+    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...led, place: toward } : led, rumor, ctx.said, filler(content, state, ctx.said), sealed ? [] : bookOf(content, state, state.lang, ctx).filter(q => q.ready), sealed ? null : workOf(content, state, ctx)),
   };
 }
 

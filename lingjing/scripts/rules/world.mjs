@@ -72,6 +72,9 @@ function shutSay(content, state, now, { province = false } = {}) {
    that one — ended and waiting on the next too. A chapter that declares none
    opens every province that has opened, as before. */
 function mapOf(content, state, now = new Date()) {
+  // Inside a sealed instance its rooms are the whole map (sealedMap).
+  const sealed = sealedMap(content, state);
+  if (sealed) return sealed;
   const ch = content.chapters[state?.chapter], ended = state?.ended ?? [];
   if (!ch?.map) return null;
   if (!ended.includes(ch.id)) return ch.map;
@@ -120,7 +123,8 @@ function roadFrom(content, from, to, now) {
 /* The places a way past the map opens now: the story's road and the 令's. */
 function leaveOf(content, state, now) {
   const map = mapOf(content, state, now), open = new Set();
-  if (!map?.places) return open;
+  // Sealed: no way past the rooms — the story's road and the 令 wait outside, frozen.
+  if (!map?.places || map.sealed) return open;
   const base = new Set(map.places);
   const scene = !inMade(state) && state.scene ? content.chapters[state.chapter]?.scenes?.[state.scene] : null;
   if (scene?.at && !base.has(scene.at) && !(state.done_scenes ?? []).includes(scene.id)) for (const id of roadFrom(content, base, scene.at, now)) open.add(id);
@@ -145,6 +149,7 @@ const passQuest = (content, state) => Object.entries(state.quests ?? {}).find(([
    back on the map; an errand of a 令 held without one (an older save) is given
    it; and a save standing where no way runs goes home, told why once. */
 function fitLeave(content, state, now = new Date()) {
+  if (fitSealed(content, state, now)) return;
   const map = mapOf(content, state, now);
   if (state.returned && state.returned.place !== state.place) delete state.returned;
   if (!map?.places) { if (state.pass) delete state.pass; return; }
@@ -169,7 +174,7 @@ function leaveFitted(content, state, now = new Date()) {
   const s = structuredClone(state);
   settlePlace(content, s, now);
   const same = k => JSON.stringify(s[k] ?? null) === JSON.stringify(state[k] ?? null);
-  return same('place') && same('pass') && same('returned') ? state : s;
+  return same('place') && same('pass') && same('returned') && same('sealed') ? state : s;
 }
 /* The line said once on the place he was put back at (map `back`). */
 const returnedLine = (content, state, now) => {
@@ -185,7 +190,68 @@ function beatOf(content, state) {
   if (inMade(state) || !state.scene) return null;
   return (content.chapters[state.chapter]?.beats ?? []).find(b => b.scenes.indexOf(state.scene) > 0) ?? null;
 }
-const carried = (content, state) => Boolean(content.chapters[state.chapter]?.corridor) || Boolean(beatOf(content, state));
+/* A sealed beat holds him by its walls, not by the scene: its scenes stand in their rooms and he walks to them. */
+const carried = (content, state) => Boolean(content.chapters[state.chapter]?.corridor) || Boolean(beatOf(content, state) && !beatOf(content, state).sealed);
+
+/* ── 秘境 — a sealed instance (Hanli, 2026-10-15: 「yes」) ──
+   A key beat that declares `sealed` (chapter.json) is an instance from the
+   scene after its entry through its last: its rooms (`places`) are the whole
+   map while he is inside, a room in `opens` hidden until that scene is behind
+   him, and a way out refused with `say`. The save carries `sealed: {id, since}`
+   while he is in — stamped the first settle inside, let go the first settle
+   after, when a 机缘 still live at the door gets back the time it had left
+   (rules/sealed.mjs freezes the rest by keeping it out of Look). */
+function sealedOf(content, state) {
+  if (!state?.scene || inMade(state)) return null;
+  const beat = (content.chapters?.[state.chapter]?.beats ?? []).find(b => b.sealed && b.scenes.indexOf(state.scene) > 0);
+  return beat ? { ...beat.sealed, beat: beat.id, first: beat.scenes[1] } : null;
+}
+/* A room is open once the scene its `opens` names is behind him — and always where the story stands now. */
+const roomOpen = (content, state, sealed, id) => !sealed.opens?.[id] || (state.done_scenes ?? []).includes(sealed.opens[id]) || sceneOf(content, state)?.at === id;
+function sealedMap(content, state) {
+  const sealed = sealedOf(content, state);
+  return sealed ? { places: sealed.places.filter(id => roomOpen(content, state, sealed, id)), say: sealed.say, sealed: true } : null;
+}
+/* Every room of every sealed instance — a beat's `places`, and every place on a
+   `sealed` plate: a place of the world only while he is inside it. */
+const ROOMS = new WeakMap();
+const roomsOf = content => {
+  if (ROOMS.has(content)) return ROOMS.get(content);
+  const plates = new Set(Object.values(content.places ?? {}).flatMap(d => Object.entries(d.plates ?? {}).filter(([, p]) => p.sealed).map(([id]) => id)));
+  const rooms = new Set([
+    ...Object.values(content.chapters ?? {}).flatMap(c => (c.beats ?? []).flatMap(b => b.sealed?.places ?? [])),
+    ...allPlaces(content).filter(p => plates.has(p.plate?.id)).map(p => p.id),
+  ]);
+  ROOMS.set(content, rooms);
+  return rooms;
+};
+/* A room he is not inside, or has not reached: never drawn, never named. */
+const hiddenRoom = (content, state, place) => {
+  if (!roomsOf(content).has(place?.id)) return false;
+  const sealed = sealedOf(content, state);
+  return !(sealed?.places.includes(place.id) && roomOpen(content, state, sealed, place.id));
+};
+/* Stamped going in, let go coming out. The story carries him as the book
+   does: each scene inside, once reached, sets him in its room (「他走进了那道
+   墙」) — all but the first, which he walks down to from `home` (the way in).
+   Between scenes he roams the rooms open to him. True while sealed. */
+function fitSealed(content, state, now = new Date()) {
+  const sealed = sealedOf(content, state);
+  if (!sealed) { if (state.sealed) thaw(state, now); return false; }
+  const rooms = sealedMap(content, state).places, at = sceneOf(content, state)?.at;
+  const reached = state.sealed?.scene !== state.scene;
+  state.sealed = { id: sealed.beat, since: state.sealed?.since ?? now.toISOString(), scene: state.scene };
+  if (reached && state.scene !== sealed.first && rooms.includes(at)) state.place = at;
+  if (!rooms.includes(state.place)) state.place = sealed.home ?? rooms[0];
+  delete state.returned;
+  return true;
+}
+function thaw(state, now) {
+  const since = new Date(state.sealed.since), c = state.chance;
+  const left = c && !c.taken && c.day === dayKey(since) ? new Date(c.until) - since : 0;
+  if (left > 0) state.chance = { ...c, day: dayKey(now), until: new Date(now.getTime() + left).toISOString() };
+  delete state.sealed;
+}
 
 /* The spine as waypoints: outside a corridor a scene runs only where it
    stands — the player walks to it. */
@@ -337,12 +403,12 @@ function placeBrief(content, state, now = new Date()) {
       seeds: Boolean(has.seeds), shop: Boolean(has.shop || visitor), scene: has.scene ?? null,
     },
     ...(shop ? { shop: { name: pick(shop.name, lang) ?? null, keeper: pick(shop.keeper, lang) ?? null, open: shopOpen(shop, state, content), ...(!shopOpen(shop, state, content) && shop.shut ? { shut: pick(shop.shut, lang) } : {}) } } : {}),
-    roads: place.roads.map(id => placeOf(content, id)).map(p => ({
+    roads: place.roads.map(id => placeOf(content, id)).filter(p => !hiddenRoom(content, state, p)).map(p => ({
       ...placeName(content, state, p), tier: p.tier, too_hard: tooHard(content, state, p),
       province: p.province, closed: !placeOpen(content, state, p, now),
     })),
-    places: doc.places.map(p => ({
-      ...placeName(content, state, p), tier: p.tier, roads: p.roads, ...(p.map ? { map: p.map } : {}),
+    places: doc.places.filter(p => !hiddenRoom(content, state, p)).map(p => ({
+      ...placeName(content, state, p), tier: p.tier, roads: p.roads.filter(id => !hiddenRoom(content, state, placeOf(content, id))), ...(p.map ? { map: p.map } : {}),
       here: p.id === place.id, road: place.roads.includes(p.id), too_hard: tooHard(content, state, p),
       ...(onMap(content, state, p, now) ? {} : { closed: true }),
     })),
@@ -364,14 +430,14 @@ function plateBrief(content, state, place, now) {
   const id = place?.plate?.id, doc = id ? Object.values(content.places).find(d => d.plates?.[id]) : null;
   if (!doc) return null;
   const plate = doc.plates[id];
-  const spots = allPlaces(content).filter(p => p.plate?.id === id).map(p => ({
+  const spots = allPlaces(content).filter(p => p.plate?.id === id && !hiddenRoom(content, state, p)).map(p => ({
     ...placeName(content, state, p), at: p.plate.at,
     ...(p.id === place.id ? { here: true } : {}),
     ...(placeOpen(content, state, p, now) && !tooHard(content, state, p) ? {} : { closed: true }),
     // a visiting shop stands there today: the seal gets its mark.
     ...(visitorHere(content, state, p, now) ? { visitor: true } : {}),
   }));
-  return { id, name: pick(plate.name, state.lang), file: plate.file, aspect: plate.aspect, spots };
+  return { id, name: pick(plate.name, state.lang), ...(plate.file ? { file: plate.file } : {}), aspect: plate.aspect, spots };
 }
 
 /* The shortest way from one place to another, walking only places the player
@@ -429,4 +495,4 @@ function fittingPlace(content, state, from) {
    opens when it ends. */
 const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && carried(content, state);
 
-export { plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };
+export { fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };

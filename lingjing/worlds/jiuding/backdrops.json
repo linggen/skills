@@ -230,6 +230,36 @@
    "indoor": true,
    "day": "art/places/mijing-cliff.webp"
   },
+  "room-mijing-kou": {
+   "at": "mijing-kou",
+   "indoor": true,
+   "day": "art/places/mijing-shishi.webp"
+  },
+  "room-mijing-xiongya": {
+   "at": "mijing-xiongya",
+   "indoor": true,
+   "day": "art/places/mijing-cliff.webp"
+  },
+  "room-mijing-duanya": {
+   "at": "mijing-duanya",
+   "indoor": true,
+   "day": "art/places/mijing-cliff.webp"
+  },
+  "room-mijing-yabi": {
+   "at": "mijing-yabi",
+   "indoor": true,
+   "day": "art/places/mijing-cliff.webp"
+  },
+  "room-mijing-shishi": {
+   "at": "mijing-shishi",
+   "indoor": true,
+   "day": "art/places/mijing-shishi.webp"
+  },
+  "room-mijing-anhe": {
+   "at": "mijing-anhe",
+   "indoor": true,
+   "day": "art/places/mijing-cliff.webp"
+  },
   "jin-track": {
    "scape": [
     "track"

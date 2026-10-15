@@ -1,0 +1,676 @@
+{
+ "version": 9,
+ "world": "jiuding",
+ "name": "沈小满",
+ "gender": "male",
+ "traits": [
+  "metal",
+  "wood",
+  "water",
+  "fire",
+  "earth"
+ ],
+ "tier": "qi",
+ "step": 1,
+ "progress": 30,
+ "wealth": 82,
+ "bag": {
+  "fox-token": 1,
+  "tuna-jing": 1,
+  "old-bow": 1,
+  "grey-robe": 1,
+  "qi-pill-9": 1,
+  "qi-pill": 6,
+  "danlu": 1,
+  "mend-pill-9": 1,
+  "luobo": 3,
+  "xirang": 1,
+  "pouch-low": 1,
+  "chitong-hulu": 1,
+  "lianxi-fu": 2,
+  "mend-pill": 3,
+  "longxu-cao": 1,
+  "zixu-zhi": 1,
+  "zou-purse": 1,
+  "duan-dao": 1,
+  "dingtai": 3,
+  "neimen-map": 1,
+  "xizhu": 1
+ },
+ "cast": [
+  "zheng"
+ ],
+ "wear": {},
+ "duels": {
+  "longzhi": {
+   "day": "2026-10-15",
+   "outcome": "won"
+  },
+  "zheng": {
+   "day": "2026-10-15",
+   "outcome": "won"
+  },
+  "gui": {
+   "day": "2026-10-15",
+   "outcome": "won"
+  },
+  "foe-zou": {
+   "day": "2026-10-15",
+   "outcome": "won"
+  }
+ },
+ "arts": [],
+ "chapter": "00-waimen",
+ "scene": "wm-kunzhen",
+ "done_scenes": [
+  "00-shiao",
+  "00-masan",
+  "00-dawn",
+  "00-kitchen",
+  "00-chushan",
+  "00-duanbei",
+  "00-heisong",
+  "00-storm",
+  "00-fall",
+  "00-fox",
+  "00-cave",
+  "00-yinyue",
+  "00-cliff",
+  "00-deer",
+  "00-dusk",
+  "00-rent",
+  "00-xiuxian",
+  "00-sleep",
+  "00-halfyear",
+  "00-uncle",
+  "00-notice",
+  "j01-track",
+  "j01-anatomy",
+  "j01-retest",
+  "00-gate",
+  "00-luoshu",
+  "00-longzhi",
+  "00-hall",
+  "00-waimen",
+  "00-mijing",
+  "wm-ahe",
+  "wm-jiangtang",
+  "wm-zhoutian",
+  "wm-qingshi",
+  "wm-yaoyuan",
+  "wm-chaifang",
+  "wm-danlu",
+  "wm-diyilu",
+  "j04-gym",
+  "j04-line",
+  "j04-dog",
+  "wm-mijing",
+  "wm-wangzuo"
+ ],
+ "ended": [
+  "00-prologue"
+ ],
+ "place": "shimen",
+ "tasks": {
+  "fall-storm": {
+   "status": "done",
+   "period": "once",
+   "done_at": "2026-10-14T14:27:14.754Z"
+  },
+  "deer-wind": {
+   "status": "done",
+   "period": "once",
+   "done_at": "2026-10-14T14:40:25.605Z"
+  },
+  "rent-scale": {
+   "status": "done",
+   "period": "once",
+   "done_at": "2026-10-14T14:45:06.557Z"
+  },
+  "xisui-hold": {
+   "status": "done",
+   "period": "once",
+   "done_at": "2026-10-14T15:01:33.856Z"
+  },
+  "feather-breath": {
+   "status": "done",
+   "period": "once",
+   "done_at": "2026-10-14T15:11:12.443Z"
+  },
+  "jin-qianmi": {
+   "status": "done",
+   "period": "once",
+   "done_at": "2026-10-14T18:02:48.398Z"
+  },
+  "gate-luoshu": {
+   "status": "done",
+   "period": "once",
+   "done_at": "2026-10-14T19:00:40.112Z"
+  },
+  "zhoutian-sanguan": {
+   "status": "done",
+   "period": "once",
+   "done_at": "2026-10-15T13:35:08.242Z"
+  },
+  "yabao": {
+   "status": "done",
+   "period": "2026-10-15",
+   "done_at": "2026-10-15T15:06:06.645Z"
+  },
+  "jin-faqiu": {
+   "status": "done",
+   "period": "once",
+   "done_at": "2026-10-15T16:22:21.961Z"
+  }
+ },
+ "chores": {
+  "linggen-pair": {
+   "period": "once",
+   "paid_at": "2026-10-15T13:51:18.433Z"
+  },
+  "linggen-model": {
+   "period": "once",
+   "paid_at": "2026-10-15T14:17:15.022Z"
+  }
+ },
+ "quests": {
+  "xu-waimen-roof": {
+   "took": "2026-10-15",
+   "have": {
+    "0": 1
+   },
+   "done_at": "2026-10-15T13:54:22.680Z"
+  },
+  "xu-yaoyuan-shouye": {
+   "took": "2026-10-15",
+   "have": {},
+   "done_at": "2026-10-15T14:30:37.208Z"
+  },
+  "xu-yaoyuan-canzhu": {
+   "took": "2026-10-15",
+   "have": {
+    "0": 1
+   },
+   "done_at": "2026-10-15T14:31:20.848Z"
+  },
+  "xu-ahe-lixi": {
+   "took": "2026-10-15",
+   "have": {
+    "1": 1
+   }
+  },
+  "xu-sun-charm": {
+   "took": "2026-10-15",
+   "have": {
+    "0": 1
+   },
+   "done_at": "2026-10-15T16:27:18.158Z"
+  },
+  "guan-houshan-yezhu": {
+   "took": "2026-10-15",
+   "have": {}
+  }
+ },
+ "wins": {},
+ "seeds_used": [],
+ "made": {
+  "scenes": {},
+  "at": null
+ },
+ "day": {
+  "key": "2026-10-15",
+  "progress": 260,
+  "wealth": 85
+ },
+ "stamina": 100,
+ "stamina_at": "2026-10-15T16:38:24.697Z",
+ "created": "2026-10-14T13:59:09.048Z",
+ "updated": "2026-10-15T16:38:24.697Z",
+ "seed": "2026-10-14T13:59:09.048Z",
+ "guided": {
+  "session": "sess-1792071900-20976011",
+  "topics": [
+   "look",
+   "tasks",
+   "story",
+   "fight",
+   "tale",
+   "road",
+   "trial"
+  ],
+  "bout": "2026-10-15T12:44:32.548Z"
+ },
+ "tell_owed": [],
+ "told_scenes": [
+  "00-shiao",
+  "00-masan",
+  "00-dawn",
+  "00-kitchen",
+  "00-chushan",
+  "00-duanbei",
+  "00-heisong",
+  "00-storm",
+  "00-fall",
+  "00-fox",
+  "00-cave",
+  "00-yinyue",
+  "00-cliff",
+  "00-deer",
+  "00-dusk",
+  "00-rent",
+  "00-xiuxian",
+  "00-sleep",
+  "00-halfyear",
+  "00-uncle",
+  "00-notice",
+  "j01-track",
+  "j01-anatomy",
+  "j01-retest",
+  "00-gate",
+  "00-luoshu",
+  "00-longzhi",
+  "00-hall",
+  "00-waimen",
+  "00-mijing",
+  "wm-ahe",
+  "wm-jiangtang",
+  "wm-zhoutian",
+  "wm-qingshi",
+  "wm-yaoyuan",
+  "wm-chaifang",
+  "wm-danlu",
+  "wm-diyilu",
+  "j04-gym",
+  "j04-line",
+  "j04-dog",
+  "wm-mijing",
+  "wm-wangzuo",
+  "wm-kunzhen",
+  "wm-xirang",
+  "wm-kaikai",
+  "wm-chu",
+  "wm-qianye"
+ ],
+ "been": [
+  "徐"
+ ],
+ "node": {
+  "kind": "scene",
+  "at": "2026-10-15T16:38:24.697Z",
+  "chapter": {
+   "id": "00-waimen",
+   "title": "卷一 · 沉鼎 · 第五回"
+  },
+  "recap": "秘境关门前一个时辰，困阵松了，你在石台上还了马小宝二十三下；他贴着石头说：「老蔫的事——你不说，我不说。」你回头从翻板坑里找着了孙二狗，内门的秦师姐拿剑鞘把你们拉了上来。名牌进去四百一十七块，收回一百八十三块；马小宝他们出来五个，少了孟有田——周衡拿收回的名牌一块一块对名册，对到天黑。邹青松是你杀的；孟有田那一条命，该算在谁头上，你不知道。腊月初八，宗门大比：内门外门一起比，冠军赏一颗筑基丹，全观一年就这一颗。",
+  "mystery": "三百年没人进过的石室里，为什么放着一撮息壤？"
+ },
+ "page_n": 98,
+ "story_at": "2026-10-15T16:38:24.697Z",
+ "marks": [
+  "clenched",
+  "took-egg",
+  "stele-fox",
+  "three-rules",
+  "marks-cut",
+  "turned-back",
+  "fall-checked",
+  "fox-saved",
+  "shared-bread",
+  "found-father",
+  "shot-wind",
+  "wupo-bowed",
+  "played-dumb",
+  "asked-them",
+  "marrow-washed",
+  "feather-still",
+  "scroll-by-heart",
+  "resolved-to-go",
+  "steps-steady",
+  "paid-gongzhong",
+  "argued-lixi",
+  "shouted-joy",
+  "counted-23",
+  "danlu-snub-zhentian",
+  "danlu-snub-qiankun",
+  "saved-first-pill",
+  "refused-oct",
+  "mijing-pry",
+  "dabi-eve"
+ ],
+ "mark_days": {
+  "dabi-eve": "2026-10-15",
+  "refused-oct": "2026-10-15",
+  "saved-first-pill": "2026-10-15",
+  "counted-23": "2026-10-15",
+  "shouted-joy": "2026-10-15",
+  "argued-lixi": "2026-10-15",
+  "paid-gongzhong": "2026-10-15",
+  "steps-steady": "2026-10-14",
+  "resolved-to-go": "2026-10-14",
+  "scroll-by-heart": "2026-10-14",
+  "marrow-washed": "2026-10-14",
+  "asked-them": "2026-10-14",
+  "played-dumb": "2026-10-14",
+  "wupo-bowed": "2026-10-14",
+  "shot-wind": "2026-10-14",
+  "found-father": "2026-10-14",
+  "shared-bread": "2026-10-14",
+  "fox-saved": "2026-10-14",
+  "fall-checked": "2026-10-14",
+  "turned-back": "2026-10-14",
+  "marks-cut": "2026-10-14",
+  "three-rules": "2026-10-14",
+  "stele-fox": "2026-10-14",
+  "took-egg": "2026-10-14",
+  "clenched": "2026-10-14"
+ },
+ "ledger": [
+  {
+   "who": "maxiaobao",
+   "kind": "仇",
+   "what": {
+    "zh": "推你撞上灶台，摔碎了家里四只碗里的一只。",
+    "en": "Shoved you into the stove and broke one of your family's four bowls."
+   },
+   "chapter": "00-prologue",
+   "day": "2026-10-14",
+   "at": "00-masan"
+  },
+  {
+   "who": "masan",
+   "kind": "仇",
+   "what": {
+    "zh": "要拿走爷爷的弓；那一棍落在爹肩上。",
+    "en": "Means to take grandfather's bow; his club came down on your father's shoulder."
+   },
+   "chapter": "00-prologue",
+   "day": "2026-10-14",
+   "at": "00-masan"
+  },
+  {
+   "who": "ahe",
+   "kind": "恩",
+   "what": {
+    "zh": "天没亮，隔着窗塞给你一个煮鸡蛋：「记账，以后还我。」",
+    "en": "Before dawn, pushed a boiled egg through your window: \"Keep count. Pay me back.\""
+   },
+   "chapter": "00-prologue",
+   "day": "2026-10-14",
+   "at": "00-dawn"
+  },
+  {
+   "who": "laozhou",
+   "kind": "恩",
+   "what": {
+    "zh": "天没亮便顺着你刻的那四十一道记号寻进黑松岭，扛着门板来找你。",
+    "en": "Before dawn he followed the forty-one marks you cut into Black Pine Ridge, carrying a door-plank to bring you home."
+   },
+   "chapter": "00-prologue",
+   "day": "2026-10-14",
+   "at": "00-cliff"
+  },
+  {
+   "who": "maxiaobao",
+   "kind": "仇",
+   "what": {
+    "zh": "外门的「公中」：收了你一块灵石。",
+    "en": "The outer court's \"common fund\": took one of your spirit stones."
+   },
+   "chapter": "00-prologue",
+   "day": "2026-10-15",
+   "at": "00-waimen"
+  },
+  {
+   "who": "ahe",
+   "kind": "恩",
+   "what": {
+    "zh": "外门第一天，阿禾在小本子上记了你一笔：杂灵根。「哪天你不是了，好对账。」",
+    "en": "Your first day in the outer sect: Ahe wrote you into the little notebook — mixed root. \"So we can check the books the day you're not.\""
+   },
+   "chapter": "00-waimen",
+   "day": "2026-10-15",
+   "at": "wm-ahe"
+  },
+  {
+   "who": "zhouheng",
+   "kind": "恩",
+   "what": {
+    "zh": "十月初八，周衡把药园巡夜令交给了你：「巡夜没好处，没人接。」又把半根蜡烛掰下一截给你。月底盘账，药园要是还在丢，令牌归马师兄。",
+    "en": "The eighth of the tenth month, Zhou Heng handed you the herb garden's night-watch token: \"The night watch pays nothing; nobody takes it.\" He broke a piece off half a candle for you too. If the garden is still losing plants at the month-end reckoning, the token goes to senior brother Ma."
+   },
+   "chapter": "00-waimen",
+   "day": "2026-10-15",
+   "at": "wm-yaoyuan"
+  },
+  {
+   "who": "maxiaobao",
+   "kind": "仇",
+   "what": {
+    "zh": "十月十二，柴房：马小宝等六人，二十三下。利息，另算。",
+    "en": "The twelfth of the tenth month, the woodshed: Ma Xiaobao and five others, twenty-three blows. Interest to be reckoned separately."
+   },
+   "chapter": "00-waimen",
+   "day": "2026-10-15",
+   "at": "wm-chaifang"
+  },
+  {
+   "who": "maxiaobao",
+   "kind": "仇",
+   "what": {
+    "zh": "冬月初一，秘境门口：你没交公中。他笑着说，秘境里死个把人，可不稀奇。",
+    "en": "The first of the eleventh month, at the hidden realm's door: you didn't pay the common fund. He smiled: people die in the hidden realm all the time."
+   },
+   "chapter": "00-waimen",
+   "day": "2026-10-15",
+   "at": "wm-mijing"
+  }
+ ],
+ "companion": {
+  "joined": "2026-10-14",
+  "asleep": true
+ },
+ "cards": [
+  "yinyue",
+  "jiushou",
+  "xiaoyao",
+  "qingteng",
+  "leipu",
+  "luying",
+  "shuiwu",
+  "huoya",
+  "huodan",
+  "tuou",
+  "shanjing",
+  "huiqi",
+  "fenghuo",
+  "zheng",
+  "canwu",
+  "yanxin"
+ ],
+ "card_from": {
+  "xiaoyao": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-10-15"
+  },
+  "qingteng": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-10-15"
+  },
+  "leipu": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-10-15"
+  },
+  "luying": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-10-15"
+  },
+  "shuiwu": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-10-15"
+  },
+  "huoya": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-10-15"
+  },
+  "huodan": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-10-15"
+  },
+  "tuou": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-10-15"
+  },
+  "shanjing": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-10-15"
+  },
+  "huiqi": {
+   "how": "starter",
+   "place": "zhengdian",
+   "chapter": "00-prologue",
+   "day": "2026-10-15"
+  },
+  "yinyue": {
+   "how": "companion",
+   "day": "2026-10-14",
+   "place": "yingu",
+   "chapter": "00-prologue",
+   "scene": "00-yinyue"
+  },
+  "jiushou": {
+   "how": "win",
+   "creature": "longzhi",
+   "day": "2026-10-15",
+   "place": "shanmen",
+   "chapter": "00-prologue",
+   "scene": "00-longzhi"
+  },
+  "fenghuo": {
+   "how": "win",
+   "creature": "zheng",
+   "day": "2026-10-15",
+   "place": "yaoyuan",
+   "chapter": "00-waimen",
+   "scene": "wm-yaoyuan"
+  },
+  "zheng": {
+   "how": "tame",
+   "creature": "zheng",
+   "day": "2026-10-15",
+   "place": "yaoyuan",
+   "chapter": "00-waimen",
+   "scene": "wm-yaoyuan"
+  },
+  "canwu": {
+   "how": "win",
+   "creature": "gui",
+   "day": "2026-10-15",
+   "place": "shimen",
+   "chapter": "00-waimen",
+   "scene": "wm-wangzuo"
+  },
+  "yanxin": {
+   "how": "win",
+   "creature": "foe-zou",
+   "day": "2026-10-15",
+   "place": "shimen",
+   "chapter": "00-waimen",
+   "scene": "wm-xirang"
+  }
+ },
+ "weather_told": "clear",
+ "greeted": "2026-10-14",
+ "grades": {
+  "feather-breath": "still"
+ },
+ "appeared": [
+  "longzhi"
+ ],
+ "shown": [
+  {
+   "card": "creature",
+   "id": "zheng"
+  }
+ ],
+ "shown_at": "place:yaoyuan",
+ "chance": {
+  "day": "2026-10-15",
+  "place": "shanlu",
+  "until": "2026-10-15T16:19:59.415Z"
+ },
+ "unfolded": [
+  "00-waimen"
+ ],
+ "story_told": "2026-10-15T15:17:01.122Z",
+ "handed": [],
+ "meets": {
+  "day": "2026-10-15",
+  "places": {
+   "shanmen": {
+    "kind": "trial",
+    "rolls": [
+     17,
+     18,
+     19
+    ],
+    "options": [
+     {
+      "label": "搬石归位",
+      "difficulty": "fair",
+      "stake": "wound",
+      "win": "你俯身搬起石块，稳稳嵌回阶沿。瞿老侧身让开。",
+      "lose": "石块一滑，你手掌擦过粗糙的石沿。瞿老摇头，仍挡在门前。"
+     },
+     {
+      "label": "麻绳固定",
+      "difficulty": "easy",
+      "stake": "coin",
+      "win": "你用麻绳扎紧松动的石阶，石块不再晃动。瞿老点头让路。",
+      "lose": "麻绳受潮断开，石阶依旧松动。瞿老抬手拦住你。"
+     },
+     {
+      "label": "踏阶越过",
+      "difficulty": "hard",
+      "stake": "wound",
+      "win": "你踩准石缝，一跃越过松动石阶，落在门内。瞿老收回手。",
+      "lose": "脚下石块翻动，你踉跄着磕在阶边。瞿老伸手拦住你。"
+     }
+    ],
+    "companion": false,
+    "chose": 0,
+    "success": true,
+    "done": true
+   }
+  }
+ },
+ "asked_at": "place:waimen",
+ "pass": {
+  "quest": "xu-ahe-lixi",
+  "to": "fangshi",
+  "places": [
+   "fangshi",
+   "shanlu",
+   "dukou"
+  ]
+ },
+ "furnace_name": "饭桶",
+ "_fixture": "Hanli's save mid-秘境 (2026-10-15, at wm-kunzhen, standing at shimen, a 令 for xu-ahe-lixi held): scrubbed of its story text, set back to the scene it stood at that afternoon."
+}

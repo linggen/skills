@@ -8,8 +8,9 @@ import { esc } from './esc.js';
 const pct = (v) => `${Math.round(v * 1000) / 10}%`;
 
 /// The painting and its spots. `src` is the picture's URL (worldPath), `here` the word for 「此处」.
-export function plateHtml(plate, { src, here = '' } = {}) {
-  if (!plate?.spots?.length || !src) return '';
+/// A plate with no painting (沉鼎秘境's rooms) is drawn in ink: its seals on paper, at the same places.
+export function plateHtml(plate, { src = null, here = '' } = {}) {
+  if (!plate?.spots?.length) return '';
   const spots = plate.spots.map((s) => {
     const at = `left:${pct(s.at[0])};top:${pct(s.at[1])}`;
     // A visiting shop there today (rules/visiting.mjs): the seal wears a small mark.
@@ -19,5 +20,6 @@ export function plateHtml(plate, { src, here = '' } = {}) {
       ? `<span class="${cls}" style="${at}" title="${esc(s.here ? `${s.name} · ${here}` : s.name)}" aria-disabled="true">${label}</span>`
       : `<button class="${cls}" style="${at}" data-go="${esc(s.id)}" title="${esc(s.name)}">${label}</button>`;
   }).join('');
-  return `<div class="plate" style="aspect-ratio:${plate.aspect ?? 1.5};background-image:url('${esc(src)}')" role="group" aria-label="${esc(plate.name ?? '')}">${spots}</div>`;
+  const bg = src ? `;background-image:url('${esc(src)}')` : '';
+  return `<div class="plate${src ? '' : ' ink'}" style="aspect-ratio:${plate.aspect ?? 1.5}${bg}" role="group" aria-label="${esc(plate.name ?? '')}">${spots}</div>`;
 }

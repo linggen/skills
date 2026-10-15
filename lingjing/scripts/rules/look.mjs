@@ -32,6 +32,7 @@ import { memoriesLook } from './memories.mjs';
 import { todayBrief } from './festival.mjs';
 import { seasonBrief, storySky, weatherBrief, windBrief } from './weather.mjs';
 import { newHere, portraitOf } from './codex.mjs';
+import { withoutSealed } from './sealed.mjs';
 import { hotspotsOf, lookHint, seenLog, seenMet, SEEN_KEEP } from './examine.mjs';
 
 /* The market's shelf: the catalog sold in this province — and, while the
@@ -408,7 +409,7 @@ export function look(state, content, ctx) {
   const lang = state.lang;
   state = clone(state);
   settleStamina(content, state, ctx.now);
-  settlePlace(content, state);
+  settlePlace(content, state, ctx.now);
   rollDay(state, ctx.now);
   const traits = state.traits && {
     ids: state.traits,
@@ -496,7 +497,8 @@ export function look(state, content, ctx) {
     ...tasksBrief(content, state, ctx),
   };
   // Before a story gate Look carries nothing it keeps shut, and `locked` names it (rules/locks.mjs).
-  const kept = withoutLocked(content, state, brief);
+  // Inside a sealed instance the world outside is frozen and kept out (rules/sealed.mjs).
+  const kept = withoutSealed(content, state, withoutLocked(content, state, brief));
   return { ...onStage(content, state, ctx, {}, kept), ...kept };
 }
 

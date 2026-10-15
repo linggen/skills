@@ -8,6 +8,7 @@
 // nor the page can offer what the story has not reached.
 import { lockedOf, pick } from '../state.mjs';
 import { isOnce } from './chores.mjs';
+import { sealedVerb } from './sealed.mjs';
 
 /* A chore by id: the apps' menu (`ctx.quests`), 开府's milestones are its `once` rows. */
 const choreSystem = (ctx, id) => {
@@ -39,7 +40,7 @@ export function lockedVerb(content, state, verb, args = {}, ctx = {}) {
 
 /* Every verb of the table, kept to the gates. */
 export const gated = verbs => Object.fromEntries(Object.entries(verbs).map(([verb, fn]) => [verb,
-  (state, content, ctx, args) => lockedVerb(content, state, verb, args, ctx) ?? fn(state, content, ctx, args)]));
+  (state, content, ctx, args) => lockedVerb(content, state, verb, args, ctx) ?? sealedVerb(content, state, verb, args) ?? fn(state, content, ctx, args)]));
 
 /* The fields of Look (and Progress) each shut system takes out. The book, the
    chores and 开府 are filtered where they are made (errands.mjs bookOf,

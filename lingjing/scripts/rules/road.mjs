@@ -32,7 +32,7 @@ import { hashOf } from './travel.mjs';
 import { bagFull, roomFor } from './pouch.mjs';
 import { mainRoot } from './roots.mjs';
 import { visitorHere } from './visiting.mjs';
-import { allPlaces, atScene, creatureOf, huntable, inMade, ofJuan, placeOf, placeOpen, poolBeast, tooHard } from './world.mjs';
+import { allPlaces, atScene, creatureOf, huntable, inMade, sealedOf, ofJuan, placeOf, placeOpen, poolBeast, tooHard } from './world.mjs';
 
 /* ── 机缘 — the day's one chance, somewhere near, for a few real hours ──
    His pick, 2026-09-23 (觅长生's 过时不候, Lifeline's real clock): once a day,
@@ -61,7 +61,8 @@ function nearPlaces(content, s, now, reach) {
 
 function dealChance(content, s, ctx) {
   const day = dayKey(ctx.now);
-  if (s.chance?.day === day || !s.traits?.length || inMade(s) || !content.rewards.tables.chance) return null;
+  // Inside a sealed instance no 机缘 is dealt: the one held waits, frozen (world.mjs fitSealed).
+  if (s.chance?.day === day || !s.traits?.length || inMade(s) || sealedOf(content, s) || !content.rewards.tables.chance) return null;
   const near = nearPlaces(content, s, ctx.now, CHANCE.reach);
   if (!near.length) return null;
   const at = near[hashOf(`${day}|${seedOf(s)}|chance`) % near.length];
@@ -171,7 +172,8 @@ function dealMeet(content, state, ctx) {
 /* Lay down what this arrival meets, on the save being written: nothing when
    an errand met here was the arrival's event (`quiet`). Returns what was dealt. */
 function arriveOnRoad(content, s, ctx, quiet = false) {
-  const dealt = quiet ? null : dealMeet(content, s, ctx);
+  // Nothing of the road is met inside a sealed instance (world.mjs sealedOf).
+  const dealt = quiet || sealedOf(content, s) ? null : dealMeet(content, s, ctx);
   if (dealt) s.meets = { day: dayKey(ctx.now), places: { ...meetsToday(s, ctx.now), [s.place]: dealt } };
   return dealt;
 }

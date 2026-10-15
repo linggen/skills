@@ -706,7 +706,8 @@ function lintPlaces(content, ids, bad) {
   // A painted map (`plates`, 观内 2026-10-15): its picture on disk, a name, an aspect; each place on it a spot in 0–1.
   const plates = Object.fromEntries(Object.values(content.places).flatMap(doc => Object.entries(doc.plates ?? {})));
   for (const [id, pl] of Object.entries(plates)) {
-    if (!pl.file || !fs.existsSync(path.join(content.dir, pl.file))) bad(`plate ${id}`, `picture ${pl.file} is missing`);
+    // A plate may be unpainted (drawn in ink, plate.js); one that names a painting must have it.
+    if (pl.file && !fs.existsSync(path.join(content.dir, pl.file))) bad(`plate ${id}`, `picture ${pl.file} is missing`);
     if (!pair(pl.name) || !(pl.aspect > 0)) bad(`plate ${id}`, 'needs a name in zh and en and an aspect');
   }
   for (const doc of Object.values(content.places)) for (const p of doc.places) if (p.plate) {

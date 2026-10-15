@@ -52,7 +52,7 @@ function provinceOf(content, raw) {
    scene (`left`); Enter brings it back. */
 export function move(state, content, ctx, args) {
   const s = clone(state);
-  settlePlace(content, s);
+  settlePlace(content, s, ctx.now);
   const here = placeOf(content, s.place);
   const raw = args.place ?? args.province;
   const target = placeSaid(content, raw, here);

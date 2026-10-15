@@ -4,8 +4,8 @@
  "start": "sishui",
  "_about": "The places of 徐 — a map, not a chain. `roads` go both ways; `tier` is the ladder index a place asks for (0 练气 … 8 渡劫), and a place above the player's tier is refused in the mist with a fitting place to go instead. `has` says what is there: a creature with its card, the province's seed pool, the market, a chapter scene. `line` is one sentence of what is there, for the director's brief.",
  "_pools": "游荡的怪 (Hanli, 2026-10-05: 一片地方一个游荡怪物池，可重复打): a pool is a stretch of country's beasts and their weights; a place joins it by `has.pool` (world.mjs poolBeast). Only beasts of 卷一's book and a few added: 蒙山's are a hunter's trade (野猪 · 狼 · 熊), 狰 runs wild outside the herb garden, 蠪侄 in the wood outside the gate (古三), 蛫 by the Si (古五's 秘境). An entry's `deck` is how the pool deals that beast (world.mjs foeOf): 蠪侄 and 狰 are the story's fights too, and their scenes keep the creature's own deck — the pool's is weighed in 蛫's band (tools/battle-sim.mjs --pools).",
- "_plates": "A painted map of one small area (观内, 2026-10-15): the 去往 list opens on it while he stands on one of its places — each place's `plate.at`, fractions of the painting, set on the painted building (rules/plate.mjs, scripts/plate.js). 沉鼎观 is tools/paint-guan.py seed 47, picked 2026-10-15.",
- "plates": {"guan": {"name": {"zh": "沉鼎观", "en": "Chending Temple"}, "file": "art/map/guan.webp", "aspect": 1.5}},
+ "_plates": "A painted map of one small area (观内, 2026-10-15): the 去往 list opens on it while he stands on one of its places — each place's `plate.at`, fractions of the painting, set on the painted building (rules/plate.mjs, scripts/plate.js). 沉鼎观 is tools/paint-guan.py seed 47, picked 2026-10-15. A plate with no `file` is drawn in ink, its places as seals on paper (沉鼎秘境's rooms, plate.js); a `sealed` plate's places are an instance's rooms, seen only from inside it (world.mjs hiddenRoom).",
+ "plates": {"guan": {"name": {"zh": "沉鼎观", "en": "Chending Temple"}, "file": "art/map/guan.webp", "aspect": 1.5}, "mijing": {"name": {"zh": "沉鼎秘境", "en": "The Sunken Cauldron hidden realm"}, "aspect": 1.2, "sealed": true}},
  "pools": {"mengshan": {"name": {"zh": "蒙山", "en": "Mount Meng"}, "beasts": [{"creature": "yezhu", "weight": 3}, {"creature": "lang", "weight": 2}, {"creature": "xiong", "weight": 1}]}, "songlin": {"name": {"zh": "山门外的林子", "en": "The wood outside the gate"}, "beasts": [{"creature": "longzhi", "weight": 2, "deck": ["jinsuo", "jinsuo", "jinsuo", "jinsuo", "jiushou", "jiushou", "longzhi", "jinzhua", "jinzhua", "jinzhen", "qianyang", "qianyang"]}, {"creature": "lang", "weight": 1}]}, "yaoyuan-wai": {"name": {"zh": "药园外", "en": "Outside the herb garden"}, "beasts": [{"creature": "zheng", "weight": 3, "deck": ["huoya", "huoya", "tongling", "tongling", "huodan", "huodan", "yanxin", "yanxin", "xianshi", "shanjing", "zheng", "fenghuo"]}, {"creature": "yezhu", "weight": 1}]}, "sishui": {"name": {"zh": "泗水边", "en": "By the Si"}, "beasts": [{"creature": "gui", "weight": 1}]}},
  "places": [
   {
@@ -869,7 +869,8 @@
    },
    "tier": 0,
    "roads": [
-    "dukou"
+    "dukou",
+    "mijing-kou"
    ],
    "map": [
     0.8092,
@@ -880,6 +881,18 @@
     "en": "Under the Si there is a stone door. Once every ten years the river draws back and shows it. the Sunken Cauldron Abbey takes its name from it."
    }
   },
+  {"id": "mijing-kou", "plate": {"id": "mijing", "at": [0.5, 0.12]}, "name": {"zh": "沉鼎秘境 · 岔口", "en": "The hidden realm · The forking hall"}, "tier": 0, "roads": ["shimen", "mijing-xiongya"], "map": [0.8102, 0.4414],
+   "line": {"zh": "石门里头一间大石厅，七八个口子张着嘴。人都往人多的里头挤；最边上一道窄缝，石头上刻着一个「凶」字。", "en": "Inside the stone door, a great stone hall, seven or eight openings gaping. Everyone squeezes into the crowded ones; at the far edge a narrow fissure has 凶, \"danger\", cut above it."}},
+  {"id": "mijing-xiongya", "plate": {"id": "mijing", "at": [0.5, 0.34]}, "name": {"zh": "沉鼎秘境 · 凶崖", "en": "The hidden realm · The Cliff of Danger"}, "tier": 0, "roads": ["mijing-kou", "mijing-duanya"], "map": [0.8108, 0.4422],
+   "line": {"zh": "「凶」字底下的石缝一路往下，越走越窄。脚底下的石阶湿滑，崖口黑得不见底。", "en": "Below the 凶 the fissure runs down, narrower at every step. The stone steps are slick underfoot, and the drop is black to the bottom."}},
+  {"id": "mijing-duanya", "plate": {"id": "mijing", "at": [0.46, 0.58]}, "name": {"zh": "沉鼎秘境 · 断崖下", "en": "The hidden realm · Below the drop"}, "tier": 0, "roads": ["mijing-xiongya", "mijing-yabi", "mijing-shishi"], "map": [0.8114, 0.443],
+   "line": {"zh": "崖下一道窄窄的石台，一面光秃秃的石墙——墙后头，有风。墙脚一汪半干的水潭。", "en": "Below the cliff, a narrow stone ledge and a bare stone wall — behind the wall, there is wind. At its foot, a half-dry pool."}},
+  {"id": "mijing-yabi", "plate": {"id": "mijing", "at": [0.17, 0.66]}, "name": {"zh": "沉鼎秘境 · 崖壁", "en": "The hidden realm · The cliff wall"}, "tier": 0, "roads": ["mijing-duanya"], "map": [0.8106, 0.4438],
+   "line": {"zh": "石台外沿是崖壁，一根锈烂的铁橛子钉在崖沿上；再往外，就是不见底的崖口。", "en": "The ledge's outer edge is the cliff wall, a rusted iron stake driven into its lip; beyond it, the bottomless drop."}},
+  {"id": "mijing-shishi", "plate": {"id": "mijing", "at": [0.76, 0.56]}, "name": {"zh": "沉鼎秘境 · 石室", "en": "The hidden realm · The stone chamber"}, "tier": 0, "roads": ["mijing-duanya", "mijing-anhe"], "map": [0.8122, 0.4434],
+   "line": {"zh": "墙后一间石室，方方正正，四壁青石磨得照得出人影。地上四个方坑，正中一张石台。", "en": "Behind the wall, a square stone chamber, its blue-stone walls polished to a mirror. Four square pits in the floor; a stone altar in the middle."}},
+  {"id": "mijing-anhe", "plate": {"id": "mijing", "at": [0.8, 0.86]}, "name": {"zh": "沉鼎秘境 · 暗河", "en": "The hidden realm · The dry river"}, "tier": 0, "roads": ["mijing-shishi"], "map": [0.8128, 0.4446],
+   "line": {"zh": "石室西北角那个半人高的黑洞，一路往下，通到一条干了的暗河。黑里，风是暖的。", "en": "The waist-high black hole in the chamber's northwest corner runs down and down to a dry underground river. In the dark, the wind is warm."}},
   {
    "id": "fantang",
    "plate": {

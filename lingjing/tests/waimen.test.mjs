@@ -60,6 +60,9 @@ function playThrough() {
   assert.ok(s.quests['xu-yaoyuan-shouye'].done_at, 'the watch hands itself in at 周衡');
   s = must(move, fresh(s), { place: 'shimen' });
   s = must(resolve, s, { exit: 'refuse' });
+  // Through the door the 秘境 is sealed (chapter.json beat `sealed`): he stands in its forking hall and walks down to the wall.
+  assert.equal(s.place, 'mijing-kou');
+  s = must(move, fresh(s), { place: 'mijing-duanya' });
   // The wall is the 蛫 itself (古五, 2026-10-02): prying is turned down in-world, the water opens it.
   const pried = resolve(s, content, ctx(DAY1), { exit: 'pry' });
   assert.equal(pried.result.refused, 'snubbed');
@@ -139,7 +142,7 @@ test('a scene nobody can reach, or a beat naming a stranger, does not ship: ever
   assert.equal(Object.keys(CH.scenes).length, 28); // + wm-kaikai (老蔫, 古五) and wm-laoyin (the brand, 古六); + 今 · 二's three (2026-10-05)
   for (const b of CH.beats) for (const id of b.scenes) assert.ok(CH.scenes[id], id);
   // 观内 (2026-10-15): every scene stands in the 观 — but the 秘境's, at 石门, whose road the story itself opens (world.mjs leaveOf).
-  for (const sc of Object.values(CH.scenes)) assert.ok(sc.hui === 'j04' ? !sc.at : CH.map.places.includes(sc.at) || sc.at === 'shimen', `${sc.id} at ${sc.at}`);
+  for (const sc of Object.values(CH.scenes)) assert.ok(sc.hui === 'j04' ? !sc.at : CH.map.places.includes(sc.at) || sc.at === 'shimen' || CH.beats.some(b => b.sealed?.places.includes(sc.at)), `${sc.id} at ${sc.at}`);
 });
 
 test('a key beat shuts the map from the scene after its entry to its last, in its own words; between beats the area is open', () => {
@@ -219,6 +222,9 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
   s = throughJin(fresh(s), content, DAY1); // 今 · 二, between 古四 and 古五 (2026-10-05)
   s = must(move, fresh(s), { place: 'shimen' });
   s = must(resolve, s, { exit: 'refuse' });
+  // Through the door the 秘境 is sealed (chapter.json beat `sealed`): he stands in its forking hall and walks down to the wall.
+  assert.equal(s.place, 'mijing-kou');
+  s = must(move, fresh(s), { place: 'mijing-duanya' });
   refused(resolve, s, { exit: 'open' }, 'game-not-won');
   s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
   // The chase is a trial he cannot win by force (古五, 2026-10-02: 邹青松, foe-zou); the turn is the story's.
@@ -335,7 +341,7 @@ test('the 大比 is a 比试, not a 降妖: its three foes are people, and the f
 
 test('a scene waiting on a game stands with it: the round fight and the 蛫 at the wall sit under the scene card, never behind 还有 1 件 (live, 2026-09-29)', () => {
   const kinds = slots => slots.main.map(c => `${c.card}:${c.id ?? ''}`);
-  for (const [scene, place, game, before] of [['wm-lun2', 'zhengdian', 'duel:dabi-shijie', 'wm-dabi'], ['wm-fushi', 'zhengdian', 'duel:dabi-lu', 'wm-dabi'], ['wm-juesai', 'zhengdian', 'duel:dabi-ma', 'wm-dabi'], ['wm-wangzuo', 'shimen', 'duel:mijing-gui', 'wm-mijing']]) {
+  for (const [scene, place, game, before] of [['wm-lun2', 'zhengdian', 'duel:dabi-shijie', 'wm-dabi'], ['wm-fushi', 'zhengdian', 'duel:dabi-lu', 'wm-dabi'], ['wm-juesai', 'zhengdian', 'duel:dabi-ma', 'wm-dabi'], ['wm-wangzuo', 'mijing-duanya', 'duel:mijing-gui', 'wm-mijing']]) {
     const s = { ...opened(), scene, place, tasks: {} };
     s.done_scenes = [...s.done_scenes, 'wm-ahe', before]; // its 回 under way: no close of the 回 before stands over the scene
     const l = look(s, content, ctx());
@@ -504,7 +510,7 @@ test('古五\'s chase (2026-10-02): 邹青松 is a trial outlasted, 踏马的符
   assert.equal(zou.trial.outlast, true);
   assert.equal(zou.trial.yield, undefined, 'never driven down: the turn is the story\'s');
   assert.equal(zou.says.won.zh, '你这踏马的符是哪来的！？');
-  let s = { ...opened(), scene: 'wm-wangzuo', place: 'shimen' };
+  let s = { ...opened(), scene: 'wm-wangzuo', place: 'mijing-duanya' };
   s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
   assert.equal(s.bag['tama-fu'], 1, '古四\'s 饭桶 spat it out; in his belt since');
   s = must(resolve, s, { exit: 'go' });

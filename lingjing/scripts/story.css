@@ -59,6 +59,8 @@ body.reading .slotfoot .errands .more { visibility: hidden; }
 /* 沉鼎观's painting in the 去往 list (观内, 2026-10-15; plate.js): seals on the painted halls. */
 .bookpop.roadspop.plated { width: min(560px, 92vw); }
 .plate { position: relative; width: 100%; margin-top: 8px; border-radius: 6px; background-size: cover; background-position: center; box-shadow: inset 0 0 0 1px var(--line); }
+/* No painting (a sealed instance's rooms, plate.js): seals on paper, a wash of ink falling toward the deep. */
+.plate.ink { background: radial-gradient(ellipse at 50% 0%, rgb(255 255 255 / 0%) 30%, rgb(40 36 30 / 14%) 100%), linear-gradient(180deg, rgb(120 108 90 / 6%), rgb(40 36 30 / 22%)); }
 .plate .spot { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; padding: 2px 7px; border-radius: 999px;
   font: 600 12px/1.4 var(--serif); white-space: nowrap; color: #fff; background: rgb(168 40 30 / 88%); border: 1px solid rgb(255 255 255 / 70%); box-shadow: 0 1px 4px rgb(0 0 0 / 30%); cursor: pointer; }
 .plate button.spot:hover, .plate button.spot:focus-visible { background: rgb(190 50 36); outline: 2px solid #fff; }

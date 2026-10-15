@@ -15,7 +15,7 @@ import { nameOf, sceneBrief, spoken } from './look.mjs';
 import { arriveOnRoad, chanceLive, dealChance, meetHere } from './road.mjs';
 import { herBeat, joinNode, withHerBeat } from './story.mjs';
 import { hashOf } from './travel.mjs';
-import { creatureOf, encounterOf, inMade, onMap, placeName, placeOf, settlePlace, tooHard } from './world.mjs';
+import { fitSealed, creatureOf, encounterOf, inMade, onMap, placeName, placeOf, settlePlace, tooHard } from './world.mjs';
 
 /* ── Building: a made world's pictures ──
    Only building paints. A made world plays once every creature it made has
@@ -65,6 +65,10 @@ function mapPaint(content) {
 export function wake(state, content, ctx) {
   const s = clone(state);
   if (!state.scene && !inMade(state)) advanceChapter(content, s, ctx.now);
+  // In or out of a sealed instance: stamped, put in its rooms, or let go with the 机缘 thawed (world.mjs fitSealed).
+  const sealedBefore = JSON.stringify([state.sealed ?? null, state.place, state.chance ?? null]);
+  fitSealed(content, s, ctx.now);
+  const sealedMoved = JSON.stringify([s.sealed ?? null, s.place, s.chance ?? null]) !== sealedBefore;
   // The call: at the realm the world names, the search for her opens.
   const called = !s.companion && callDue(content, s);
   if (called) s.companion = {};
@@ -73,7 +77,7 @@ export function wake(state, content, ctx) {
   // Standing on the day's 机缘 with nothing met here (a scene walked him there,
   // or a save from before 路上): it is met now, as an arrival would meet it.
   const lucky = chanceLive(s, ctx.now) && s.place === s.chance.place && !meetHere(s, ctx.now) && arriveOnRoad(content, s, ctx);
-  return called || chance || lucky || (s.scene && !state.scene) ? s : null;
+  return called || chance || lucky || sealedMoved || (s.scene && !state.scene) ? s : null;
 }
 
 /* ── Made scenes: the player's own, written by Ling from the template ── */

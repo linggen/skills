@@ -99,7 +99,8 @@ export function crawlRules(content, { start = new Date('2026-09-29T09:00:00'), c
       if (!r.result.ok && !snub) { findings.push({ scene: sc.id, exit: exit.id, what: `refused ${r.result.refused}: ${r.result.say ?? ''}`, path }); continue; }
       // A scene's fight won leaves the page one way on to take for him (stage.mjs wonWayOn).
       if (exit.game?.kind === 'duel') {
-        const lk = look({ ...fresh(s0, t0), wins: { ...s0.wins, [exit.game.id]: t0.toISOString() } }, content, { now: t0, quests: [] });
+        // Looked at where the page stands once it has walked there (prepare), the fight just won.
+        const lk = look({ ...fresh(s0, t0), place: s.place, wins: { ...s0.wins, [exit.game.id]: t0.toISOString() } }, content, { now: t0, quests: [] });
         if (!lk.fight && !wonWayOn(lk) && lk.scene?.exits?.filter((e) => e.game?.kind === 'duel' && e.won).length !== 2) findings.push({ scene: sc.id, exit: exit.id, what: 'a won fight leaves no way on (wonWayOn)', path });
       }
       const next = r.state ?? s;

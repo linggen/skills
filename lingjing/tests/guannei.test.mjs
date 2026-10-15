@@ -173,7 +173,7 @@ test('去往 opens on the painted 观: every place a seal on its building, his o
   assert.equal(look({ ...s, chapter: '01-ji', scene: '01-arrive', place: 'sibei' }, content, ctx()).place.plate, undefined);
   // the page draws it in the 去往 list
   const src = (await import('node:fs')).readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(src, /plateHtml\(plate, \{ src: worldPath\(look\.world\.dir, plate\.file\)/);
+  assert.match(src, /plateHtml\(plate, \{ src: plate\.file \? worldPath\(look\.world\.dir, plate\.file\) : null/);
 });
 
 test('林子里的蠪侄 is a red tag: below 练气五层 it is not offered, nor handed over by its chain (古七: 打妖的红牌，五层以下不许揭)', () => {

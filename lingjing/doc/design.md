@@ -367,6 +367,25 @@ Not 石坳村's 走南路的货郎 (古二). No 符: a made thing is sold nowher
 **Not yet:** sparring at the 演武场 — it wants a duel with a person outside a scene (people are
 fought only in the story's scenes; a pool never holds one), so it waits for person duels.
 
+### 秘境 mode — a sealed instance 【已建】 (2026-10-15)
+
+Hanli (2026-10-15, 「yes」): inside the 沉鼎秘境 the game played like any place — 阿禾's 坊市
+errand in the 事 book, 观 places in 去往, the 寒露 chrysanthemums underground. A key beat may
+declare `sealed` (chapter.json): from the scene after its entry through its last he is inside
+(world.mjs `sealedOf`). Its `places` (rooms: real places on a `sealed` plate, drawn in ink by
+plate.js) are the whole map; a room in `opens` stays hidden until that scene is done; a way out
+is refused with `say` (「秘境未开，出不去。」). Not carried: each scene stands in its room, the
+story sets him there as it is reached (the first one he walks down to from `home`), and between
+scenes he roams the open rooms. The world outside is frozen, not lost (rules/sealed.mjs): the
+errands in hand, the 令 (`state.pass`, untouched), chores and 开府, the 货郎, the 机缘, festival,
+节气 and the sky are kept out of Look; errands count nothing; Quest, Tale, Meet, Seclude, 论道 and
+御剑 are refused `sealed`. The save carries `sealed {id, since, scene}`; on the way out a 机缘
+still live at the door gets back the time it had left. Look's `sealed`: the header (`label` and
+the book's own `days` — 「沉鼎秘境 · 第二夜」), the room, and the scene's `goal` (the 事 book's
+goal line and 下一步). The stage shows the rooms' paintings (backdrops.json `places` by room id);
+the sealed tier outranks festival and 节气 (atmos.js `stagePick`), with no weather, season, wind or
+particles. Nothing names the 秘境: the 外门大比 or a later 秘境 declares the same.
+
 ### 剧情 × 开放世界 — tasks drive the story, key beats lock the map 【在建】
 
 His rule (2026-09-28): 「通过任务，在开放世界中驱动剧情；关键剧情的时候关闭开放
