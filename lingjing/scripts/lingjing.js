@@ -3617,6 +3617,10 @@ if (SCRATCH) {
     bout: () => (bout ? { outcome: bout.st.outcome, whose: bout.st.whose, you: bout.st.you.hp, foe: bout.st.foe.hp, busy: Boolean(bout.busy), picked: bout.picked ?? null } : null),
     // The attentive move now (fightline.js), for the crawler to make with real taps.
     move: () => (bout && !bout.busy ? bestMove(bout.st) : null),
+    // Why the stage holds what it holds — the crawler writes it beside a blank-stage finding.
+    why: () => ({ storyAhead: storyAhead(), cardsAhead: cardsAhead(), choicesInBox: choicesInBox(), huiTurn: atHuiTurn(), closeUp: closeUp(),
+      stageBusy: stageBusy(), endingWaits: endingWaits(), pending: [...momentPending], memoryWaits, homingPending, riseWaits, sealOwed,
+      unfold: Boolean(view.unfold), memory: Boolean(view.memory), homing: Boolean(view.homing), doors: Boolean(view.doors), stage: look?.stage ?? null }),
   };
 }
 

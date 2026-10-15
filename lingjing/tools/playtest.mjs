@@ -69,6 +69,7 @@ const OBSERVE = `(() => {
     seal: (() => { const f = [...document.querySelectorAll('.feat, .wonseal')].find(vis); if (!f) return null; const r = f.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, text: f.textContent.trim().slice(0, 30) }; })(),
     popSig: [...document.querySelectorAll('.bookpop')].map((e) => e.textContent.trim()).join('|').slice(0, 400),
     turned: Boolean([...document.querySelectorAll('.bookrow.turned, .handed, .took')].find(vis)),
+    sighting: Boolean([...document.querySelectorAll('#sight > *, [data-appear], [data-appear-done]')].find(vis)),
     logOpen: vis(document.querySelector('.dlglog')),
     wide: document.documentElement.scrollWidth > W + 2,
     // The bars must fit (a strip crushed to a column, chips on two lines): any bar part that overflows its box.
@@ -268,7 +269,7 @@ export async function crawl(opts) {
       if (snap.wide) rec.find({ kind: 'layout', scene: sceneId, what: 'the page scrolls sideways', shot: await shot(`wide-${n}`) });
       for (const bar of snap.over ?? []) if (!ctx.overSeen.has(`${sceneId}:${bar}`)) { ctx.overSeen.add(`${sceneId}:${bar}`); rec.find({ kind: 'layout', soft: true, scene: sceneId, what: `the ${bar} overflows its box`, shot: await shot(`over-${bar}-${n}`) }); }
       // 4b. the chips open whole, once per scene, while no passage plays over them
-      if (opts.chips !== 'off' && !snap.boxOn && !snap.fighting && !snap.title && !snap.seal && !ctx.chipsDone.has(sceneId)) { ctx.chipsDone.add(sceneId); await checkChips(page, snap, { rec, sceneId, shot }); continue; }
+      if (opts.chips !== 'off' && !snap.boxOn && !snap.fighting && !snap.title && !snap.seal && !snap.sighting && !ctx.chipsDone.has(sceneId)) { ctx.chipsDone.add(sceneId); await checkChips(page, snap, { rec, sceneId, shot }); continue; }
       // 1b. never a blank stage (Hanli, 2026-10-15): something to tap in the stage itself — the box,
       // main, a face coming on, a fight, a seal — not only the footer's chips. Six seconds blank is a finding.
       const onStage = snap.fighting || snap.title || snap.seal || snap.taps.some((t) => ['box', 'focus', 'sight'].includes(t.where) && !t.disabled && !isA(t, 'codex-big'));
@@ -276,7 +277,8 @@ export async function crawl(opts) {
       else if (blankFrom == null) blankFrom = Date.now();
       else if (Date.now() - blankFrom > 6000 && !ctx.blankSeen.has(sceneId)) {
         ctx.blankSeen.add(sceneId);
-        rec.find({ kind: 'blank-stage', scene: sceneId, what: `the stage held nothing to tap for ${Math.round((Date.now() - blankFrom) / 1000)} s (footer: ${snap.taps.filter((t) => t.where === 'foot' || t.where === 'chips').map((t) => t.text).join(' · ').slice(0, 80)})`, shot: await shot(`blank-${sceneId}`) });
+        const why = await page.evaluate('globalThis.__lingjingPlay?.why?.() ?? null').catch(() => null);
+        rec.find({ kind: 'blank-stage', scene: sceneId, why, what: `the stage held nothing to tap for ${Math.round((Date.now() - blankFrom) / 1000)} s (footer: ${snap.taps.filter((t) => t.where === 'foot' || t.where === 'chips').map((t) => t.text).join(' · ').slice(0, 80)})`, shot: await shot(`blank-${sceneId}`) });
       }
       const act = choose(snap, ctx);
       // 1. something to tap
@@ -286,7 +288,8 @@ export async function crawl(opts) {
         stuck++;
         if (stuck === 2) blankAt = await shot(`blank-${n}`);
         if (stuck < 12) { await sleep(1700); continue; }
-        rec.find({ kind: 'stall', scene: sceneId, what: 'nothing to tap for 20 s', firstSeen: blankAt, taps: snap.taps.map((t) => `${t.where}:${Object.keys(t.data).join('+')}:${t.text}`).slice(0, 30), shot: await shot(`stall-${n}`) });
+        const why = await page.evaluate('globalThis.__lingjingPlay?.why?.() ?? null').catch(() => null);
+        rec.find({ kind: 'stall', scene: sceneId, why, what: 'nothing to tap for 20 s', firstSeen: blankAt, taps: snap.taps.map((t) => `${t.where}:${Object.keys(t.data).join('+')}:${t.text}`).slice(0, 30), shot: await shot(`stall-${n}`) });
         break;
       }
       if (stuck >= 2) rec.find({ kind: 'slow', soft: true, scene: sceneId, what: `nothing to tap for ${Math.round(stuck * 1.7)} s, then «${act.why}»`, shot: blankAt });
