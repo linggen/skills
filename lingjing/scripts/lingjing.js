@@ -994,9 +994,11 @@ function footRowHtml(slots) {
   return roads + more;
 }
 
-/// A scratch save has no chat to ask 何去何从, so its roads always stand —
-/// except where the rules keep them off (闭关, a corridor).
-const scratchRoads = () => Boolean(SCRATCH) && !look?.seclusion && !look?.director?.corridor;
+/// The roads stand whenever no question waits in the chat, not only while a card holds (live,
+/// 2026-10-15: after 山门's 抉择 the stage held only the goal, Ling asked nothing, and there was no
+/// way on at all). A question open in the chat keeps them there — one place to tap; a scratch save
+/// never asks, so its roads always stand. Never in 闭关 or a corridor (the rules keep them off).
+const scratchRoads = () => !view.asked?.size && !look?.seclusion && !look?.director?.corridor;
 
 /// The chips — 天气 · 九鼎录 · 原著 · 事 · 袋 — in the footer, under the stage.
 /// 恩仇簿 is written no more (2026-10-03): its chip is off the footer; the
