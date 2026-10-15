@@ -43,9 +43,12 @@ function stageHolds(s, now) {
 
 for (const policy of ['win', 'skip']) {
   test(`every 回 of 卷一 and the 秘境 reached by one forward run (boards ${policy}): the save there, the stage not blank`, () => {
-    const t0 = Date.now();
+    // The work's own CPU time, not the wall clock: with many agents testing at once (load ~200) the same
+    // run took 7–10 s of wall time and the check went red for the machine, not the code.
+    const c0 = process.cpuUsage();
     const { at } = forward(policy);
-    assert.ok(Date.now() - t0 < 5000, `fast: ${Date.now() - t0} ms`);
+    const { user, system } = process.cpuUsage(c0), ms = Math.round((user + system) / 1000);
+    assert.ok(ms < 5000, `fast: ${ms} ms of CPU`);
     for (const [label, scene] of Object.entries(TARGETS)) {
       const hit = at.get(label);
       assert.ok(hit, `${label} reached`);
