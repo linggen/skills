@@ -65,6 +65,12 @@ klein 4B), 2026-09-15 (齐盐, 齐纨 and 符 2026-09-16; the five 天材地宝,
 橘柚 (juyou), 丹砂 (dansha), 蜀锦 (shujin) and 琅玕 (langgan) were painted the same way, 2026-09-24.
 鼎苔 (dingtai) was repainted by the local picture model (FLUX.2 klein 4B), 2026-10-05, when Codex was out of credits (第五回: one square footing pit sunk in the stone chamber floor, straight walls, flat bottom, a ring of blackish-green moss on its rim, a faint glow; a corner of a second pit). The Codex picture of 2026-10-02 had drawn a round stone slab. Seed 15 of the second round of six; every picture looked at.
 
+## Cards — painted for Lingjing
+
+`cards/*.webp` (448×320, webp q86) — every 斗法 card that is not a 山海经 creature (those keep their plates) was painted by the local picture model (FLUX.2 klein 4B), 2026-09-18, with `tools/paint-cards.py`, which holds each card's prompt line. 银月's card is Codex's (below). No outside source.
+
+Fifteen were repainted 2026-10-15 to Hanli's 水墨淡彩 lock (the house STYLE of paint-cards.py, now also asking for no seal or signature), each line rewritten where the line caused the fault; the kept seeds are in its `KEPT`: 火鸦 huoya (saturated orange, a Western bird → an ink crow, dull red only at the wing tips), 火弹术 huodan (a Western suit cuff → a wide robe sleeve), 金爪 jinzhua (a trident → three gashes raked by a paw), 水雾 shuiwu (a full landscape with a fake signature and seal → sparse low mist), 雷仆 leipu (too small and faint → a winged, beaked thunder imp filling the frame), 九首 jiushou (three heads → nine), 培元 peiyuan (a glass pitcher → an earthen jug), 吞噬 tunshi (a grotesque face with signature and seal → an ink vortex), 童灵 tongling (signature and seal), 燎天 liaotian (a saturated volcano → muted fire on a ridge), 参悟 canwu (fake calligraphy on the wall), 藤须 tengmiao_token (one faint line), 金梭 jinsuo (a pen or dart → a spindle shuttle and its thread), 碎金 suijin (fake characters on a Western bell → a knobbed 编钟), 焰心 yanxin (a Western stone fireplace → a three-legged 鼎 of embers). Six seeds a round, two rounds for leipu, jinsuo, suijin and yanxin (round one drew bulldogs, boats, clapper bells, chimineas). Every picture looked at. No outside source.
+
 ## Scenes — painted for Lingjing
 
 `dongfu-gate.webp` — the closed 洞府 stone gate the running 闭关 card wears

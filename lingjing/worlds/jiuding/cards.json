@@ -220,7 +220,7 @@
         "damage": 3
       },
       "art": "art/cards/huodan.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, from the description (repainted to the 水墨淡彩 house style, seed 2) — see art/CREDITS.md."
     },
     {
       "id": "hantan",
@@ -328,7 +328,7 @@
         }
       },
       "art": "art/cards/peiyuan.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, from the description (repainted to the 水墨淡彩 house style, seed 4) — see art/CREDITS.md."
     },
     {
       "id": "huiqi",
@@ -388,7 +388,7 @@
         "damage": 5
       },
       "art": "art/cards/tunshi.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, from the description (repainted to the 水墨淡彩 house style, seed 2) — see art/CREDITS.md."
     },
     {
       "id": "jixiao",
@@ -434,7 +434,7 @@
       "atk": 2,
       "hp": 2,
       "art": "art/cards/leipu.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, from the description (repainted to the 水墨淡彩 house style, seed 2) — see art/CREDITS.md."
     },
     {
       "id": "leiming",
@@ -478,7 +478,7 @@
       "atk": 3,
       "hp": 1,
       "art": "art/cards/jiushou.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, from the description (repainted to the 水墨淡彩 house style, seed 6) — see art/CREDITS.md."
     },
     {
       "id": "jinzhua",
@@ -493,7 +493,7 @@
         "damage": 3
       },
       "art": "art/cards/jinzhua.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, from the description (repainted to the 水墨淡彩 house style, seed 3) — see art/CREDITS.md."
     },
     {
       "id": "gupi",
@@ -539,7 +539,7 @@
       "atk": 2,
       "hp": 1,
       "art": "art/cards/jinsuo.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, from the description (repainted to the 水墨淡彩 house style, seed 4) — see art/CREDITS.md."
     },
     {
       "id": "jianying",
@@ -568,7 +568,7 @@
         "damage": 5
       },
       "art": "art/cards/suijin.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, from the description (repainted to the 水墨淡彩 house style, seed 4) — see art/CREDITS.md."
     },
     {
       "id": "jingang",
@@ -623,7 +623,7 @@
       "hp": 1,
       "_token": true,
       "art": "art/cards/tengmiao_token.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, from the description (repainted to the 水墨淡彩 house style, seed 2) — see art/CREDITS.md."
     },
     {
       "id": "chunsheng",
@@ -697,7 +697,7 @@
         "damage": 2
       },
       "art": "art/cards/shuiwu.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, from the description (repainted to the 水墨淡彩 house style, seed 4) — see art/CREDITS.md."
     },
     {
       "id": "hanquan",
@@ -746,7 +746,7 @@
       "atk": 3,
       "hp": 1,
       "art": "art/cards/huoya.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, from the description (repainted to the 水墨淡彩 house style, seed 5) — see art/CREDITS.md."
     },
     {
       "id": "yanxin",
@@ -764,7 +764,7 @@
         }
       },
       "art": "art/cards/yanxin.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, from the description (repainted to the 水墨淡彩 house style, seed 1) — see art/CREDITS.md."
     },
     {
       "id": "liaotian",
@@ -779,7 +779,7 @@
         "damage": 8
       },
       "art": "art/cards/liaotian.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, from the description (repainted to the 水墨淡彩 house style, seed 4) — see art/CREDITS.md."
     },
     {
       "id": "tuou",
@@ -846,7 +846,7 @@
         "draw": 3
       },
       "art": "art/cards/canwu.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, from the description (repainted to the 水墨淡彩 house style, seed 1) — see art/CREDITS.md."
     },
     {
       "id": "tongling",
@@ -866,7 +866,7 @@
         "draw": 1
       },
       "art": "art/cards/tongling.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, from the description (repainted to the 水墨淡彩 house style, seed 4) — see art/CREDITS.md."
     },
     {
       "id": "talisman",
