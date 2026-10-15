@@ -8,6 +8,7 @@ import { choreGrant, isOnce, kaifuAfter, kaifuList, kaifuOpen } from './chores.m
 import { greet } from './daily.mjs';
 import { afterMet, awayLine, BOOK_MAX, bookOf, complete, countsOf, gearBrief, HANDED_KEEP, handedOne, itemOf, mootQuest, noticeAt, noticeOf, questDoneBefore, questOf, questReady, withGiver } from './errands.mjs';
 import { meet } from './road.mjs';
+import { grantPass } from './world.mjs';
 import { remember } from './ledger.mjs';
 import { PAGE_OWNS, showable } from '../stage.mjs';
 import { bag } from './pouch.mjs';
@@ -107,10 +108,14 @@ export function quest(state, content, ctx, args) {
     if (Object.keys(s.quests).filter(x => !questDoneBefore(s, x)).length >= BOOK_MAX) {
       return refuse('book-full', pick({ zh: `手上已有${BOOK_MAX}件事，先了一件。`, en: `Three things are already in hand — finish one first.` }, lang), { book: bookOf(content, s, lang, ctx) });
     }
+    // One 令 at a time (执事堂, 2026-10-15): the next waits until the first is spent.
+    if (q.pass && s.pass) return refuse('pass-held', pick({ zh: '腰里已挂着一块令。先把那一件了了，再来揭。', en: 'A pass already hangs at your belt. See that one through before you take another.' }, lang));
     if (q.notice && noticeAt(content, s, ctx.now)?.id !== id) return refuse('not-posted', null);
     // A notice done on an earlier day has nothing left to say: the save keeps today's only.
     for (const old of Object.keys(s.quests)) if (noticeOf(content, old) && questDoneBefore(s, old) && noticeOf(content, old).day !== q.day) delete s.quests[old];
     s.quests[id] = { took: dayKey(ctx.now), have: {} };
+    // A 执事堂 task below the mountain hangs its 令 on him: the road to that one place opens (world.mjs grantPass).
+    grantPass(content, s, q, ctx.now);
     return { state: s, result: { ok: true, took: id, title: pick(q.title, lang), book: bookOf(content, s, lang, ctx) } };
   }
 

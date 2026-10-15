@@ -138,7 +138,8 @@ test('a scene nobody can reach, or a beat naming a stranger, does not ship: ever
   assert.deepEqual([...seen].sort(), Object.keys(CH.scenes).sort());
   assert.equal(Object.keys(CH.scenes).length, 28); // + wm-kaikai (老蔫, 古五) and wm-laoyin (the brand, 古六); + 今 · 二's three (2026-10-05)
   for (const b of CH.beats) for (const id of b.scenes) assert.ok(CH.scenes[id], id);
-  for (const sc of Object.values(CH.scenes)) assert.ok(sc.hui === 'j04' ? !sc.at : CH.map.places.includes(sc.at), `${sc.id} at ${sc.at}`);
+  // 观内 (2026-10-15): every scene stands in the 观 — but the 秘境's, at 石门, whose road the story itself opens (world.mjs leaveOf).
+  for (const sc of Object.values(CH.scenes)) assert.ok(sc.hui === 'j04' ? !sc.at : CH.map.places.includes(sc.at) || sc.at === 'shimen', `${sc.id} at ${sc.at}`);
 });
 
 test('a key beat shuts the map from the scene after its entry to its last, in its own words; between beats the area is open', () => {
@@ -223,7 +224,10 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
   // The chase is a trial he cannot win by force (古五, 2026-10-02: 邹青松, foe-zou); the turn is the story's.
   for (const exit of ['go', 'swallow', 'sit', 'rest']) s = must(resolve, exit === 'swallow' ? won(s, 'mijing-zou') : s, { exit });
   assert.equal(s.scene, 'wm-qianye');
-  assert.equal(look(s, content, ctx(DAY1)).waypoint.text, '外门大比 · 明日。路通向沉鼎观 · 外门。');
+  // The 秘境 over, he walks back up with the others (观内, 2026-10-15): set down at 外门 in the story's words, where the eve stands.
+  const back = look(s, content, ctx(DAY1));
+  assert.equal(back.place.id, 'waimen');
+  assert.match(back.place.returned, /回了外门/);
   s = must(move, fresh(s), { place: 'waimen' });
   assert.match(look(s, content, ctx()).scene.setup ?? JSON.stringify(look(s, content, ctx()).scene), /传/, 'the eve carries its rumour');
   s = must(resolve, fresh(s), { exit: 'sleep' });
@@ -364,7 +368,10 @@ test('what is for a person is handed where that person is: 周衡 at 外门, 阿
   s = must(move, fresh(s), { place: 'waimen' });
   assert.ok(s.quests['xu-yaoyuan-shouye'].done_at, 'at 外门 it hands itself in');
   assert.ok(s.wealth >= wealth + 10);
-  // 阿禾's interest: a carry, handed by his tap — at 坊市 only
+  // 阿禾's interest: a carry, handed by his tap — at 坊市 only. 坊市 is below the mountain (观内, 2026-10-15):
+  // an 外门 disciple is refused it, so this half is walked as a save past the wall (01-ji's map).
+  assert.match(refused(move, s, { place: 'fangshi' }, 'road-closed').say, /无令不得下山/);
+  s = { ...s, chapter: '01-ji', scene: '01-arrive', ended: [...(s.ended ?? []), '00-waimen', '00-zhuji'] };
   s = must(move, s, { place: 'fangshi' });
   s = must(quest, s, { action: 'take', id: 'xu-ahe-lixi' });
   s = { ...s, bag: { ...s.bag, luobo: 2 } };

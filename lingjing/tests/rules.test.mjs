@@ -379,14 +379,16 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   // 泗水北岸 holds the fisherman's errand out: the offer card is the one thing to
   // tap and the chat keeps its question (2026-09-21 — 云龙山 put 接下 on the stage
   // and 何去何从 in the chat at once, because offers were on nobody's list).
-  const held = look(toOpenWorld(), content, ctx());
+  // (观内, 2026-10-15: the tags hang at the 执事堂.)
+  const atHall = { ...toOpenWorld(), place: 'zhishi' };
+  const held = look(atHall, content, ctx());
   assert.ok(held.stage.some(c => c.card === 'offer'));
   assert.equal(held.ask, null, 'an errand held out: the chat waits for it');
   // 去处在台上 (his ruling, 2026-09-25): the page holds the roads, the errands
   // and what waits, so the open world asks nothing in the chat — the 去濮阳
   // asked there was still waiting after he walked to 濮阳 from the map. Taken,
   // walked, cast: the chat stays quiet while the page shows a way on.
-  const took = quest(toOpenWorld(), content, ctx(), { action: 'take', id: held.offers[0].id });
+  const took = quest(atHall, content, ctx(), { action: 'take', id: held.offers[0].id });
   assert.equal(askOf(content, took.state, ctx({ verb: 'quest' }), took.result), null, 'the page leads on, the chat asks nothing');
   const o = took.state;
   const lo = look(o, content, ctx());
@@ -1317,13 +1319,14 @@ test('Move for real: roads, tiers, a fitting place, the names', () => {
   // leads there, else the roads as they are; a word to Yinyue keeps it at two
   assert.equal(l.director.choice.header, '泗水北岸');
   assert.equal(l.director.choice.question, '何去何从？');
-  assert.deepEqual(l.director.choice.options.slice(0, 2).map(o => o.label), ['泗水岸', '云龙山']);
-  assert.deepEqual(l.director.choice.options.slice(0, 2).map(o => o.move), ['sishui', 'yunlong']);
+  // The fisherman's tag hangs at the 执事堂 now (观内, 2026-10-15): the nearest work is up the hill, and it leads.
+  assert.deepEqual(l.director.choice.options.slice(0, 3).map(o => o.label), ['沉鼎观 · 外门 · 有差事', '泗水岸', '云龙山']);
+  assert.deepEqual(l.director.choice.options.slice(0, 3).map(o => o.move), ['waimen', 'sishui', 'yunlong']);
   assert.ok(l.director.choice.options.some(o => o.tale && o.label === '今日传闻'), 'seeds grow here: today\'s rumor is offered');
   assert.equal(look(toFuzhu(), content, ctx()).director.choice, null, 'a scene running has its own buttons');
   assert.equal(l.place.has.creature.name, '夫诸');
   assert.deepEqual(l.place.show, [{ card: 'creature', id: 'fuzhu' }]);
-  assert.equal(l.place.places.length, 32, '徐 with 大野泽, 凫丽 and 空桑 — the 禹贡\'s 徐 — 泗渊 under 彭城, 沉鼎观 up from the crossing, 蒙山 of prologue-v3 (石坳村, 前山, 断碑, 黑松岭, 银叶谷), and 第一章\'s temple grounds (讲堂, 藏经阁, 柴房, 药园, 后山, 坊市, 秘境石门)');
+  assert.equal(l.place.places.length, 35, '饭堂, 演武场 and 执事堂 (观内, 2026-10-15); 徐 with 大野泽, 凫丽 and 空桑 — the 禹贡\'s 徐 — 泗渊 under 彭城, 沉鼎观 up from the crossing, 蒙山 of prologue-v3 (石坳村, 前山, 断碑, 黑松岭, 银叶谷), and 第一章\'s temple grounds (讲堂, 藏经阁, 柴房, 药园, 后山, 坊市, 秘境石门)');
   assert.ok(l.place.places.find(p => p.id === 'sibei').here);
   // the same place is no move
   assert.equal(must(move, s, { place: 'sibei' }).result.here, true);
@@ -2462,7 +2465,8 @@ test('「我该干点啥」: the rules name the nearest place with work, and the
 test('arriving is an event: the errand met there is told with what is seen, 交差 leads the question, and a tale a week old shuts nothing out', () => {
   // 2026-09-21: he reached 吕梁洪 for the fisherman's errand; the chat said a line and asked 何去何从.
   const at = ctx({ now: new Date('2026-09-21T12:00:00') });
-  const base = { ...toOpenWorld(), place: 'sibei', tier: 'core', bag: {} };
+  // The fisherman's tag is taken at the 执事堂 (观内, 2026-10-15).
+  const base = { ...toOpenWorld(), place: 'zhishi', tier: 'core', bag: {} };
   const took = must(quest, base, { action: 'take', id: 'xu-lvliang-look' }, at).state;
   const arrived = must(move, { ...took, place: 'sishui' }, { place: '吕梁洪' }, at);
   assert.deepEqual(arrived.result.met.map(m => m.id), ['xu-lvliang-look']);
@@ -2536,7 +2540,8 @@ test('榜文: a market posts one templated 差事 a day — near, winnable, rebu
 test('差事: taken at the giver, counted by the rules, handed in where he stands', () => {
   // 接 · 记 · 追 · 交 (design.md § 差事). His ruling 2026-09-18: 交差 never
   // sends the player back across the map.
-  const base = { ...toOpenWorld(), place: 'pengcheng', tier: 'core', bag: {} };
+  // The old man's tags hang at the 执事堂 (观内, 2026-10-15).
+  const base = { ...toOpenWorld(), place: 'zhishi', tier: 'core', bag: {} };
   const at = ctx();
   // nothing may be taken that is not offered here
   assert.equal(quest(base, content, at, { action: 'take', id: 'xu-fuli-longzhi' }).result.refused, 'not-yet', 'a chained errand waits for its first');
@@ -2559,7 +2564,7 @@ test('差事: taken at the giver, counted by the rules, handed in where he stand
   assert.equal(turned.state.bag.lingzhi, undefined, 'the herb changed hands');
   assert.equal(turned.state.bag['bamboo-sword'], 1, 'and the sword came back');
   // the giver hands the next step over with it (his pick A, 2026-09-23)
-  assert.deepEqual(turned.result.then, { id: 'xu-fuli-longzhi', title: '林子里的蠪侄', took: true, at: { id: 'pengcheng', name: '彭城' } });
+  assert.deepEqual(turned.result.then, { id: 'xu-fuli-longzhi', title: '林子里的蠪侄', took: true, at: { id: 'zhishi', name: '沉鼎观 · 执事堂' } });
   assert.deepEqual(turned.result.book.map(b => b.id), ['xu-fuli-longzhi'], 'the finished one leaves, the next is in hand');
   assert.equal(quest(turned.state, content, at, { action: 'turn', id: 'xu-elder-herb' }).result.refused, 'already-done');
   assert.ok(!(look({ ...turned.state, place: 'pengcheng' }, content, at).offers ?? []).some(o => o.id === 'xu-fuli-longzhi'), 'nothing left to take at the giver');
@@ -2572,15 +2577,17 @@ test('差事: taken at the giver, counted by the rules, handed in where he stand
   assert.equal(look(hunting, content, at).book[0].ready, true);
 
   // three at a time
-  let full = { ...turned.state, place: 'sibei' };
-  full = must(quest, full, { action: 'take', id: 'xu-lvliang-look' }, at).state;
-  full = must(quest, { ...full, place: 'yunlong' }, { action: 'take', id: 'xu-yunlong-herbs' }, at).state;
+  // (观内, 2026-10-15: the east wall's chores, beside the 令 already in hand.)
+  let full = { ...turned.state, place: 'zhishi' };
+  full = must(quest, full, { action: 'take', id: 'guan-chaifang-wood' }, at).state;
+  full = must(quest, full, { action: 'take', id: 'guan-zhishi-ledger' }, at).state;
   assert.equal(look(full, content, at).offers, undefined, 'a full book is offered nothing');
   // and one put down makes room
-  const lighter = must(quest, full, { action: 'drop', id: 'xu-lvliang-look' }, at).state;
+  const lighter = must(quest, full, { action: 'drop', id: 'guan-chaifang-wood' }, at).state;
   assert.equal(look(lighter, content, at).book.length, 2);
-  // a visit ticks by walking, not by saying so
-  const walking = must(quest, { ...lighter, place: 'sibei' }, { action: 'take', id: 'xu-lvliang-look' }, at).state;
+  // a visit ticks by walking, not by saying so (the 蠪侄's 令 put down first: one 令 at a time)
+  const freed = must(quest, lighter, { action: 'drop', id: 'xu-fuli-longzhi' }, at).state;
+  const walking = must(quest, { ...freed, place: 'zhishi', pass: undefined }, { action: 'take', id: 'xu-lvliang-look' }, at).state;
   const arrived = must(move, walking, { place: 'lvliang' }, at).state;
   assert.ok(arrived.quests['xu-lvliang-look'].done_at, 'and, met, hands itself in');
 });
@@ -3394,7 +3401,7 @@ test('体力 says three hours by name: back to rest (rest_at), full (full_at), a
 test('an errand shows what it pays (`pays`), the tier and the roots counted — the number that lands', () => {
   const c = ctx();
   // 杂役 (2026-10-15): the card says stones and no 修为, at any realm, and the rules pay just that
-  const s = { ...toOpenWorld(), tier: 'nascent', step: 0, progress: 0 };
+  const s = { ...toOpenWorld(), place: 'zhishi', tier: 'nascent', step: 0, progress: 0 };
   const offer = look(s, content, c).offers.find(o => o.id === 'xu-lvliang-look');
   assert.equal(offer.grant.progress, undefined);
   const info = quest(s, content, c, { action: 'info', id: 'xu-lvliang-look' }).result;

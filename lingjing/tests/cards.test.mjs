@@ -458,7 +458,8 @@ test('可接的差事: one card, a row each; a row opens to the giver; taken, on
   const content = loadContent();
   const now = new Date('2026-09-22T12:00:00');
   // his save's morning: 彭城, the elder's errand done before, so 蠪侄 and the day's notice are up
-  const s = { ...newState(content, 'zh', now), traits: ['wood', 'water', 'fire', 'earth'], tier: 'core', chapter: '03-qing', scene: null, place: 'pengcheng',
+  // (观内, 2026-10-15: the old man's next tag hangs at the 执事堂, with its chores.)
+  const s = { ...newState(content, 'zh', now), traits: ['wood', 'water', 'fire', 'earth'], tier: 'core', chapter: '03-qing', scene: null, place: 'zhishi',
     quests: { 'xu-elder-herb': { took: '2026-09-21', have: {}, done_at: '2026-09-21T19:48:20Z' } } };
   const seen = look(s, content, { now, quests: [] });
   assert.ok(seen.offers.length >= 2, JSON.stringify(seen.offers.map((o) => o.id)));

@@ -9,26 +9,29 @@
   "first_scene": "09-snow",
   "gate": 1,
   "_id": "The book's 古七 and 古八 (story/jiuding-lu/07-第七回.md h11 — the winter and 年三–年五: 09-snow, 09-furnace, 09-year; 08-第八回.md h09 — 年六–年八 and the 筑基: 09-dabi, 09-qulao, 09-cliff; one 回 until Hanli split it 2026-10-07, so 「第七回 · 完」 stands on 09-dabi, inside the chapter): the winter and the years at 沉鼎观 and the 筑基 on the cliff (his, 2026-09-30: 照这样重做冀州 — 筑基 moves out of 冀 to the cliff, before the road north). Its own chapter because its scenes stand at 沉鼎观 (徐) and a chapter's scenes stand in its province (content.mjs lintScene); it sorts after 00-waimen and before 01-ji (chapters run in id order). `gate: 1` — the Foundation's breakthrough (09-cliff) is thrown here.",
-  "_map": "The same small area around 沉鼎观 as 外门 (his, 2026-09-29: 地图分步打开): the year is spent on the mountain.",
+  "_map": "The same 观内 as 外门 (Hanli, 2026-10-15): the years are spent on the mountain; 内门 too goes below only on a 执事堂 令 — 周衡: 「份例不跟着涨。差的，自己挣——执事堂揭牌，下山打妖。」 (07-第七回). Ways past the map and the way home as world.mjs leaveOf / fitLeave.",
   "map": {
     "places": [
       "waimen",
+      "fantang",
       "jiangtang",
       "chaifang",
+      "yanwu",
+      "zhengdian",
+      "zhishi",
+      "cangjing",
       "yaoyuan",
       "houshan",
-      "cangjing",
-      "zhengdian",
-      "shanmen",
-      "fangshi",
-      "dukou",
-      "shimen",
-      "sishui",
-      "sibei"
+      "shanmen"
     ],
+    "home": "waimen",
     "say": {
-      "zh": "这几年，你在山上修行。没有差事，没筑基，不下山。",
-      "en": "These years you cultivate on the mountain. No errand, and no going down before Foundation."
+      "zh": "份例不跟着涨。差的，自己挣——执事堂揭牌，才下得了山。",
+      "en": "The allowance does not grow. What you lack, you earn — take a tag at the stewards' hall, and only then go down the mountain."
+    },
+    "back": {
+      "zh": "没有令，下不得山。你回到了外门。",
+      "en": "Without a pass there is no going down. You are back in the outer court."
     }
   },
   "title": {

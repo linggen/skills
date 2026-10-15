@@ -46,7 +46,7 @@ export const ONE_OFFS = { ...PLAY, GONGKE: 0, FIGHTS: 0, TALE: 0, ROAD: 0 };
 /* The 修行 errands a 回 offers (the rest of 卷一's errands are 杂役: no 修为).
    药园巡夜's 狰 is 古四's (wm-yaoyuan); 彭城 and 柳湾 are on 冀's map only, so
    蠪侄 (after 彭城的药钱) and 人鱼 are 古九's. */
-export const ERRANDS_AT = { 'xu-yaoyuan-shouye': 'h05', 'xu-fuli-longzhi': 'h10', 'ji-liuwan-renyu': 'h10' };
+export const ERRANDS_AT = { 'xu-yaoyuan-shouye': 'h05', 'guan-houshan-yezhu': 'h06', 'xu-fuli-longzhi': 'h10', 'ji-liuwan-renyu': 'h10' };
 
 const tableCap = (content, grant) => Math.min(grant?.progress ?? 0, content.rewards.tables[grant?.table]?.progress ?? 0);
 

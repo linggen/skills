@@ -10,16 +10,18 @@
         "en": "Hauling the boat"
       },
       "from": {
-        "place": "dukou",
+        "place": "zhishi",
         "who": {
-          "zh": "渡叔",
-          "en": "Du Shu"
-        },
-        "person": "dushu"
+          "zh": "执事堂 · 东墙的牌子",
+          "en": "a tag on the stewards' hall's east wall"
+        }
+      },
+      "pass": {
+        "to": "dukou"
       },
       "say": {
-        "zh": "搭把手，把船拖上岸——大水还要涨。拖完了，这袋干粮和三块灵石你带上山：灵石是你爹当年存在我这儿的。",
-        "en": "Lend a hand and drag the boat up the bank — the flood is still rising. Then take this bag of rations and three spirit stones up the mountain: the stones are what your father left with me, years ago."
+        "zh": "东墙一块乌木牌，字歪歪扭扭，是渡叔托上山送菜的人挂的：「大水要涨，渡口缺人拖船。」底下周衡添了一行小字：杂役，外门可揭。揭了，凭牌下山到渡口。",
+        "en": "An ebony tag on the east wall, the writing crooked — Du Shu had the vegetable carrier hang it: \"The flood is rising, the ferry needs hands to haul the boat.\" Beneath, in Zhou Heng's small hand: a chore, outer disciples may take it. Take it, and the tag is your leave down to the ferry."
       },
       "done": {
         "zh": "船上了岸。渡叔把干粮和三块灵石塞进你手里，没再多说。",
@@ -83,15 +85,18 @@
         "en": "The elder's medicine"
       },
       "from": {
-        "place": "pengcheng",
+        "place": "zhishi",
         "who": {
-          "zh": "坊市的老丈",
-          "en": "the old man at the market"
+          "zh": "执事堂 · 东墙的牌子",
+          "en": "a tag on the stewards' hall's east wall"
         }
       },
+      "pass": {
+        "to": "pengcheng"
+      },
       "say": {
-        "zh": "小友且慢。老朽咳了半月，市上灵芝三十灵石一株，买不起。你若带一株来，这柄竹剑归你。",
-        "en": "A moment, friend. I have coughed for half a month, and lingzhi costs thirty stones here. Bring me one and this bamboo sword is yours."
+        "zh": "东墙一块乌木牌，县里书办代写的：「彭城坊市一老丈，咳了半月，市上灵芝三十灵石一株，买不起。谁捎一株去，赠竹剑一柄。」采办的牌子，揭了凭牌下山。",
+        "en": "An ebony tag on the east wall, written for him by a county clerk: \"An old man at the Pengcheng market has coughed for half a month; lingzhi costs thirty stones a stalk there and he cannot pay. Whoever brings him one gets a bamboo sword.\" A buying errand: take it, and the tag is your leave down the mountain."
       },
       "need": [
         {
@@ -115,15 +120,18 @@
         "en": "The Longzhi in the wood"
       },
       "from": {
-        "place": "pengcheng",
+        "place": "zhishi",
         "who": {
-          "zh": "坊市的老丈",
-          "en": "the old man at the market"
+          "zh": "执事堂 · 东墙的牌子",
+          "en": "a tag on the stewards' hall's east wall"
         }
       },
+      "pass": {
+        "to": "shanlu"
+      },
       "say": {
-        "zh": "药是好了。可采药的路断了——山门外的林子里又有蠪侄出没，九尾九首，见人就扑。你降了它，我再谢你。",
-        "en": "The cough is mended, but the herb road is shut: a Longzhi haunts the wood outside the temple gate again, nine tails and nine heads, and it leaps at anyone. Subdue it and I will thank you properly."
+        "zh": "彭城那位老丈又托人挂了一块牌：「药是好了。可采药的路断了——山门外的林子里又有蠪侄出没，九尾九首，见人就扑。」凭牌下山，到上山路的林子里去。",
+        "en": "The old man of Pengcheng has had another tag hung: \"The cough is mended, but the herb road is shut — a Longzhi haunts the wood outside the temple gate again, nine tails and nine heads, and it leaps at anyone.\" The tag is your leave down to the wood on the mountain path."
       },
       "need": [
         {
@@ -149,15 +157,18 @@
         "en": "The roar at Lvliang"
       },
       "from": {
-        "place": "sibei",
+        "place": "zhishi",
         "who": {
-          "zh": "泗水北岸的渔人",
-          "en": "a fisherman on the north bank"
+          "zh": "执事堂 · 东墙的牌子",
+          "en": "a tag on the stewards' hall's east wall"
         }
       },
+      "pass": {
+        "to": "lvliang"
+      },
       "say": {
-        "zh": "上游吕梁洪，水悬三十仞，流沫四十里。孔夫子在那儿见过一个泅水的老丈，说他懂道。你去看一眼，回来讲给我听。",
-        "en": "Upstream at Lvliang the water falls thirty fathoms and foams for forty li. Confucius saw an old man swim it there and said he knew the Way. Go look, and tell me."
+        "zh": "东墙一块乌木牌，泗水北岸的渔人托挂的：「上游吕梁洪，水悬三十仞，流沫四十里。孔夫子在那儿见过一个泅水的老丈，说他懂道。谁去看一眼，回来讲给我听。」凭牌下山。",
+        "en": "An ebony tag on the east wall, hung for a fisherman of the Si's north bank: \"Upstream at Lvliang the water falls thirty fathoms and foams for forty li. Confucius saw an old man swim it there and said he knew the Way. Someone go look, and tell me.\" The tag is your leave down the mountain."
       },
       "seen": {
         "zh": "洪口水悬三十仞，白沫奔出四十里。浪心里竟有个老丈，披发而泅，出没如常，上岸时还哼着歌。问他可有道，他只说：从水之道，不为私焉。",
@@ -183,21 +194,25 @@
         "en": "Eight herbs on Yunlong"
       },
       "from": {
-        "place": "yunlong",
+        "place": "zhishi",
         "who": {
-          "zh": "云龙山的采药人",
-          "en": "a herb-gatherer on Mount Yunlong"
+          "zh": "执事堂 · 东墙的牌子",
+          "en": "a tag on the stewards' hall's east wall"
         }
       },
+      "pass": {
+        "to": "yunlong"
+      },
       "say": {
-        "zh": "这山上八味灵草，配得齐才成丹。我年纪大了，眼花认不全。你替我配一炉。",
-        "en": "Eight spirit herbs grow on this hill, and only the full eight make a pill. My eyes are old. Pair a set for me."
+        "zh": "东墙一块乌木牌：「云龙山采药人，年纪大了，眼花，八味灵草认不全，求人配一炉。」揭了，凭牌下山到云龙山。",
+        "en": "An ebony tag on the east wall: \"A herb-gatherer on Mount Yunlong, old, his eyes failing, cannot tell the eight spirit herbs apart; he asks for someone to pair a set.\" Take it, and the tag is your leave down to Mount Yunlong."
       },
       "need": [
         {
           "kind": "board",
           "task": "alchemy-first",
-          "n": 1
+          "n": 1,
+          "at": "yunlong"
         }
       ],
       "work": "labor",

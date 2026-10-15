@@ -517,7 +517,9 @@
    "roads": [
     "shanmen",
     "waimen",
-    "cangjing"
+    "cangjing",
+    "zhishi",
+    "yanwu"
    ],
    "map": [
     0.8455,
@@ -541,7 +543,9 @@
     "sibei",
     "jiangtang",
     "chaifang",
-    "yaoyuan"
+    "yaoyuan",
+    "fantang",
+    "yanwu"
    ],
    "map": [
     0.8375,
@@ -700,6 +704,11 @@
     0.8492,
     0.4101
    ],
+   "has": {
+    "games": [
+     "huarong"
+    ]
+   },
    "line": {
     "zh": "藏经阁七层，外门弟子只许上三层。最顶层的门上一把铜锁，锁眼都绿了。你走近的时候，胸口的木牌烫了一下，一个很困的声音：「……九鼎……神丹……」然后就没声了。",
     "en": "Seven floors, and outer disciples may climb only three. The top floor's door has a bronze lock gone green in the keyhole. As you come near, the token on your chest flares, and a very sleepy voice: \"…Nine cauldrons… divine elixir…\" Then nothing."
@@ -721,7 +730,8 @@
    ],
    "has": {
     "games": [
-     "qiqiao"
+     "qiqiao",
+     "huarong"
     ]
    },
    "line": {
@@ -810,6 +820,74 @@
    "line": {
     "zh": "泗水底下有一道石门。每十年，泗水退一次潮，露出它来。沉鼎观的名字，就是从这里来的。",
     "en": "Under the Si there is a stone door. Once every ten years the river draws back and shows it. the Sunken Cauldron Abbey takes its name from it."
+   }
+  },
+  {
+   "id": "fantang",
+   "name": {
+    "zh": "沉鼎观 · 饭堂",
+    "en": "Chending Temple · The dining hall"
+   },
+   "tier": 0,
+   "roads": [
+    "waimen"
+   ],
+   "map": [
+    0.8405,
+    0.4125
+   ],
+   "has": {
+    "games": [
+     "qiqiao"
+    ]
+   },
+   "line": {
+    "zh": "饭堂门口摆一张榆木桌子，初一发灵石，周衡坐在后头。饭是糙米，菜是萝卜。",
+    "en": "A elm-wood table stands at the dining-hall door; on the first of the month Zhou Heng sits behind it handing out spirit stones. The rice is coarse, the vegetable is radish."
+   }
+  },
+  {
+   "id": "yanwu",
+   "name": {
+    "zh": "沉鼎观 · 演武场",
+    "en": "Chending Temple · The training ground"
+   },
+   "tier": 0,
+   "roads": [
+    "waimen",
+    "zhengdian"
+   ],
+   "map": [
+    0.842,
+    0.4245
+   ],
+   "line": {
+    "zh": "外门的演武场。五块青石板拼成一个圆，缝里长出了草，叫五行台。四角立着四棵老柏。",
+    "en": "The outer court's training ground. Five bluestone slabs make a circle with grass in the cracks — the Five Phases Stage. An old cypress stands at each corner."
+   }
+  },
+  {
+   "id": "zhishi",
+   "name": {
+    "zh": "沉鼎观 · 执事堂",
+    "en": "Chending Temple · The stewards' hall"
+   },
+   "tier": 0,
+   "roads": [
+    "zhengdian"
+   ],
+   "map": [
+    0.849,
+    0.418
+   ],
+   "has": {
+    "games": [
+     "luoshu"
+    ]
+   },
+   "line": {
+    "zh": "正殿西边一间空屋，没有神像，只有两面墙。东墙挂乌木牌，杂役，外门也揭得；揭一块，办一桩。下山的牌子，揭了才有令。",
+    "en": "An empty room west of the main hall: no statue, only two walls. Ebony tags hang on the east wall — chores an outer disciple may take too; take one, do one. A tag for work below the mountain comes with a pass."
    }
   }
  ]

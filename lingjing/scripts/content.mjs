@@ -805,6 +805,8 @@ function lintQuests(content, ids, bad) {
     if (q.grant?.item && !ids.items.has(q.grant.item)) bad(where, `gives unknown item ${q.grant.item}`);
     if (q.grant?.card && !(content.cards?.cards ?? []).some(c => c.id === q.grant.card && !c._token)) bad(where, `gives unknown card ${q.grant.card}`);
     if (q.then && !byId.has(q.then)) bad(where, `chains to unknown quest ${q.then}`);
+    // A 执事堂 令 (world.mjs grantPass): the one place it opens the road to.
+    if (q.pass && !places.has(q.pass.to)) bad(where, `a pass to unknown place ${q.pass?.to}`);
     if (q.opens?.after && !byId.has(q.opens.after)) bad(where, `opens after unknown quest ${q.opens.after}`);
     if (q.opens?.tier && !content.ladder.tiers.some(t => t.id === q.opens.tier)) bad(where, `unknown tier ${q.opens.tier}`);
     // Story time (errands.mjs offersOf): offered once a scene is behind him (`done`), or only before it (`before`).
@@ -1121,7 +1123,11 @@ function lintChapterShape(chapter, content, bad) {
     for (const id of map.places ?? []) if (!known.has(id)) bad(where, `map opens unknown place ${id}`);
     if (map.say != null && !pair(map.say)) bad(where, 'the map\'s refusal needs zh and en');
     if (map.beyond != null && !pair(map.beyond)) bad(where, 'the map\'s line for a province beyond the open 卷 needs zh and en');
-    for (const sc of Object.values(chapter.scenes)) if (sc.at && map.places && !map.places.includes(sc.at)) bad(`scene ${sc.id}`, `at ${sc.at}, beyond the map its chapter opens`);
+    if (map.back != null && !pair(map.back)) bad(where, 'the map\'s line for a save put back home needs zh and en');
+    if (map.back_story != null && !pair(map.back_story)) bad(where, 'the map\'s line for the story\'s walk home needs zh and en');
+    if (map.home != null && !(map.places ?? []).includes(map.home)) bad(where, `the map's home ${map.home} is not on it`);
+    // A walled map (`home`, 观内 2026-10-15) lets the story walk past it to its own scene (world.mjs leaveOf); else a scene stands on the map.
+    for (const sc of Object.values(chapter.scenes)) if (sc.at && map.places && !map.home && !map.places.includes(sc.at)) bad(`scene ${sc.id}`, `at ${sc.at}, beyond the map its chapter opens`);
   }
   const inBeats = new Set();
   for (const b of chapter.beats ?? []) {

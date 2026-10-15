@@ -15,7 +15,7 @@ import { coolingUntil, oddsOf } from './breakthrough.mjs';
 import { freeSlot, pouchBrief } from './pouch.mjs';
 import { chapterLabel, comingOf } from './hui.mjs';
 import { storyAllows } from './cap.mjs';
-import { allPlaces, atScene, creatureOf, hauntsOf, huntable, inCorridor, inMade, ofJuan, passed, pathOf, placeName, placeOf, placeOpen, sceneOf, tooHard, towardOf } from './world.mjs';
+import { allPlaces, atScene, creatureOf, grantPass, hauntsOf, huntable, inCorridor, inMade, ofJuan, passed, pathOf, placeName, placeOf, placeOpen, sceneOf, tooHard, towardOf } from './world.mjs';
 
 /* ── 差事 — the errands the player takes (design.md § 差事) ──
    接 · 记 · 追 · 交. The world offers, the player takes, the rules count, and
@@ -234,6 +234,8 @@ function offersOf(content, state, lang, now) {
       // Story time: after a scene (`done`), or only while it is still ahead (`before`) — 邺城 before and after the 漳水.
       && (!q.opens?.done || passed(content, state, q.opens.done))
       && (!q.opens?.before || !passed(content, state, q.opens.before))
+      // A 令 task: one 令 at a time, and never to a place beyond his realm.
+      && (!q.pass || (!state.pass && !tooHard(content, state, placeOf(content, q.pass.to) ?? { tier: Infinity })))
       && (!q.opens?.tier || TIERS_ORDER(content).indexOf(state.tier) >= TIERS_ORDER(content).indexOf(q.opens.tier)))
     .map(q => ({ id: q.id, title: pick(q.title, lang), who: q.from.who ? pick(q.from.who, lang) : null, say: fill(pick(q.say, lang), state, content), need: q.need.map(n => ({ kind: n.kind, n: n.n })), grant: q.grant, pays: paysOf(content, state, now, q.grant) }));
 }
@@ -315,6 +317,8 @@ function complete(content, s, ctx, id, q) {
   const open = Object.keys(s.quests).filter(x => !questDoneBefore(s, x)).length;
   const took = Boolean(next) && !s.quests[next.id] && open < BOOK_MAX;
   if (took) s.quests[next.id] = { took: dayKey(ctx.now), have: {} };
+  // A next step below the mountain comes with its own 令 (world.mjs grantPass).
+  if (took && next.pass) grantPass(content, s, next, ctx.now);
   return { id, place: s.place, at: ctx.now.toISOString(), paid, next: next?.id ?? null, took };
 }
 

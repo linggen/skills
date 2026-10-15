@@ -1,0 +1,183 @@
+{
+  "version": 1,
+  "province": "徐",
+  "_about": "沉鼎观里的差事 (Hanli, 2026-10-15: 外门在观内走动，下山凭执事堂的令). Chores — the 执事堂's east-wall tags (「杂役，外门也揭得」, 07-第七回) and 周衡's ledger — pay 灵石 (`work: labor`); the night watch and the beasts pay 修为 (`work: cultivation`). The numbers in `grant` are placeholders the economy owner sets (rewards.json's `labor` and `quest` tables). The tags for work below the mountain are in xu.json, each with its `pass`.",
+  "quests": [
+    {
+      "id": "guan-chaifang-wood",
+      "title": {
+        "zh": "码柴",
+        "en": "Stacking the firewood"
+      },
+      "from": {
+        "place": "zhishi",
+        "who": {
+          "zh": "执事堂 · 东墙的牌子",
+          "en": "a tag on the stewards' hall's east wall"
+        }
+      },
+      "say": {
+        "zh": "东墙一块乌木牌：「柴房的柴垛塌了半边，把门堵了。码齐，出得了人。」杂役，外门可揭，工钱照牌。",
+        "en": "An ebony tag on the east wall: \"Half the woodpile in the woodshed has come down and blocked the door. Stack it so a body can get out.\" A chore, outer disciples may take it; paid as the tag says."
+      },
+      "done": {
+        "zh": "柴码齐了，门推得开了。周衡在牌子背面画了个圈：「账平了。」",
+        "en": "The wood is stacked and the door swings again. Zhou Heng draws a circle on the back of the tag: \"The books balance.\""
+      },
+      "need": [
+        {
+          "kind": "board",
+          "task": "huarong",
+          "n": 1,
+          "at": "chaifang"
+        }
+      ],
+      "work": "labor",
+      "grant": {
+        "table": "labor",
+        "wealth": 5
+      }
+    },
+    {
+      "id": "guan-fantang-zhengti",
+      "title": {
+        "zh": "饭堂的蒸屉",
+        "en": "The steamer tray"
+      },
+      "from": {
+        "place": "zhishi",
+        "who": {
+          "zh": "执事堂 · 东墙的牌子",
+          "en": "a tag on the stewards' hall's east wall"
+        }
+      },
+      "say": {
+        "zh": "东墙一块乌木牌：「伙房的蒸屉散了架，七块板，拼回一个方屉，明早要用。」杂役，外门可揭。",
+        "en": "An ebony tag on the east wall: \"The kitchen's steamer tray has fallen apart — seven boards; fit them back into a square tray, it is wanted at dawn.\" A chore, outer disciples may take it."
+      },
+      "done": {
+        "zh": "方屉拼上了，严丝合缝。伙房的人掀开看了看，没说话，给你多舀了半勺粥。",
+        "en": "The tray fits together without a gap. The kitchen hand looks it over, says nothing, and ladles you an extra half-scoop of porridge."
+      },
+      "need": [
+        {
+          "kind": "board",
+          "task": "qiqiao",
+          "n": 1,
+          "at": "fantang"
+        }
+      ],
+      "work": "labor",
+      "grant": {
+        "table": "labor",
+        "wealth": 5
+      }
+    },
+    {
+      "id": "guan-zhishi-ledger",
+      "title": {
+        "zh": "对账",
+        "en": "Checking the ledger"
+      },
+      "from": {
+        "place": "zhishi",
+        "who": {
+          "zh": "周衡",
+          "en": "Zhou Heng"
+        }
+      },
+      "say": {
+        "zh": "周衡把账簿推过来：「九格，横竖斜，一样的数，才叫账平。我眼花了，你替我对一遍。」",
+        "en": "Zhou Heng pushes the ledger across: \"Nine squares — across, down and corner to corner the same sum; that is a balanced book. My eyes are tired. Check it for me.\""
+      },
+      "done": {
+        "zh": "你对完了。周衡拿指头一格一格点过去，点到末了：「账平了。」",
+        "en": "You finish. Zhou Heng runs a finger square by square to the last one: \"The books balance.\""
+      },
+      "need": [
+        {
+          "kind": "board",
+          "task": "luoshu",
+          "n": 1,
+          "at": "zhishi"
+        }
+      ],
+      "work": "labor",
+      "grant": {
+        "table": "labor",
+        "wealth": 5
+      }
+    },
+    {
+      "id": "guan-cangjing-shai",
+      "title": {
+        "zh": "晒经",
+        "en": "Airing the scriptures"
+      },
+      "from": {
+        "place": "zhishi",
+        "who": {
+          "zh": "执事堂 · 东墙的牌子",
+          "en": "a tag on the stewards' hall's east wall"
+        }
+      },
+      "say": {
+        "zh": "东墙一块乌木牌：「藏经阁下三层的经架受了潮，趁晴天搬到廊下晒。架子挤，得一架一架腾挪。」杂役，外门可揭。",
+        "en": "An ebony tag on the east wall: \"The shelves on the scripture hall's lower three floors have taken the damp; carry them out under the eaves while the sun holds. They are packed tight — shift them one at a time.\" A chore, outer disciples may take it."
+      },
+      "done": {
+        "zh": "经卷一行一行摊在廊下，晒着太阳，一股旧纸的味道。",
+        "en": "The scrolls lie in rows under the eaves in the sun, smelling of old paper."
+      },
+      "need": [
+        {
+          "kind": "board",
+          "task": "huarong",
+          "n": 1,
+          "at": "cangjing"
+        }
+      ],
+      "work": "labor",
+      "grant": {
+        "table": "labor",
+        "wealth": 5
+      }
+    },
+    {
+      "id": "guan-houshan-yezhu",
+      "title": {
+        "zh": "后山的野猪",
+        "en": "Boars off the cliff"
+      },
+      "from": {
+        "place": "yaoyuan",
+        "who": {
+          "zh": "周衡",
+          "en": "Zhou Heng"
+        },
+        "person": "zhouheng"
+      },
+      "say": {
+        "zh": "周衡蹲在药园墙根，看着一个新拱开的洞：「后山崖顶下来的野猪。赶走它，园里少祸害一片。巡夜的事，记你一功。」",
+        "en": "Zhou Heng crouches by the herb-garden wall, looking at a fresh hole rooted under it: \"Boars, down off the cliff top. Drive it off and the garden loses that much less. Night-watch work — it goes down to your credit.\""
+      },
+      "done": {
+        "zh": "那头野猪拖着獠牙逃回了崖顶。周衡在巡夜簿上记了一笔。",
+        "en": "The boar flees back up to the cliff top, tusks and all. Zhou Heng makes a note in the night-watch book."
+      },
+      "need": [
+        {
+          "kind": "subdue",
+          "creature": "yezhu",
+          "n": 1
+        }
+      ],
+      "work": "cultivation",
+      "grant": {
+        "table": "quest",
+        "progress": 30,
+        "wealth": 0
+      }
+    }
+  ]
+}

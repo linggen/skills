@@ -78,9 +78,101 @@ function mapOf(content, state, now = new Date()) {
   const next = Object.values(content.chapters).filter(c => c.id > ch.id && !ended.includes(c.id)).sort((a, b) => a.id.localeCompare(b.id))[0];
   return next && (next.coming || (next.opens && new Date(next.opens) > now)) ? ch.map : null;
 }
-const onMap = (content, state, place, now) => !mapOf(content, state, now)?.places || mapOf(content, state, now).places.includes(place.id);
+/* On the chapter's map — or on a way the map lets him walk past it (leaveOf):
+   the story's road to its scene, or the 令 in his belt. */
+const onMap = (content, state, place, now) => !mapOf(content, state, now)?.places || mapOf(content, state, now).places.includes(place.id) || leaveOf(content, state, now).has(place.id);
 /* A place the player may walk to: its province open and the chapter's map holding it. */
 const placeOpen = (content, state, place, now) => Boolean(place) && provinceOpen(content, place.province, now) && onMap(content, state, place, now);
+
+/* ── 观内 — 外门弟子，无令不得下山 (Hanli, 2026-10-15: 「可以，按你的建议做」) ──
+   A chapter's map (`map.places`) is where he may roam; the 外门's is the 观
+   itself. Two things open a way past it, and only the places on that way:
+   · the story — the spine's scene standing off the map (石门 for the 秘境):
+     the shortest road from the map to it, while that scene is the one ahead;
+   · a 令 — taking an errand that declares `pass: {to}` (quests: the
+     执事堂's tasks below the mountain) hangs one on his belt (`state.pass`):
+     the road from the map to that one place. One at a time; spent once the
+     errand is done or put down AND he stands on the map again — never
+     stranded halfway down.
+   A save standing off every way (from before the 观 was walled, or a 令 lost
+   some other way) is put back at the map's `home` with its `back` line. */
+const ROAD_CACHE = new WeakMap();
+/* The shortest road on the raw road graph (provinces open, the map ignored)
+   from any of `from` to `to`: the places after the start, or []. */
+function roadFrom(content, from, to, now) {
+  const key = `${[...from].sort().join(',')}>${to}`, cache = ROAD_CACHE.get(content) ?? new Map();
+  ROAD_CACHE.set(content, cache);
+  if (cache.has(key)) return cache.get(key);
+  const back = new Map([...from].map(id => [id, null])), queue = [...from];
+  let way = [];
+  while (queue.length) {
+    const id = queue.shift();
+    if (id === to) { for (let at = id; back.get(at) !== null; at = back.get(at)) way.unshift(at); if (from.has(to)) way = []; break; }
+    for (const next of placeOf(content, id)?.roads ?? []) {
+      const p = placeOf(content, next);
+      if (p && !back.has(next) && provinceOpen(content, p.province, now)) { back.set(next, id); queue.push(next); }
+    }
+  }
+  cache.set(key, way);
+  return way;
+}
+/* The places a way past the map opens now: the story's road and the 令's. */
+function leaveOf(content, state, now) {
+  const map = mapOf(content, state, now), open = new Set();
+  if (!map?.places) return open;
+  const base = new Set(map.places);
+  const scene = !inMade(state) && state.scene ? content.chapters[state.chapter]?.scenes?.[state.scene] : null;
+  if (scene?.at && !base.has(scene.at) && !(state.done_scenes ?? []).includes(scene.id)) for (const id of roadFrom(content, base, scene.at, now)) open.add(id);
+  for (const id of state.pass?.places ?? []) open.add(id);
+  return open;
+}
+/* A 令 for this errand, when it declares one and the chapter's map walls it
+   out: the road from the map to its place — and, standing off the map now
+   (a chained 令 handed over below the mountain), the road home too. */
+function grantPass(content, state, quest, now = new Date()) {
+  const to = quest?.pass?.to, map = mapOf(content, state, now);
+  if (!to || !map?.places || map.places.includes(to)) return null;
+  const base = new Set(map.places), places = new Set(roadFrom(content, base, to, now));
+  if (state.place && !base.has(state.place)) for (const id of [state.place, ...roadFrom(content, new Set([state.place]), map.home ?? map.places[0], now)]) if (!base.has(id)) places.add(id);
+  state.pass = { quest: quest.id, to, places: [...places] };
+  return state.pass;
+}
+const passQuest = (content, state) => Object.entries(state.quests ?? {}).find(([id, q]) => !q.done_at && (content.quests ?? []).find(x => x.id === id)?.pass);
+/* At every settle: a 令 spent (its errand done or dropped) is let go once he is
+   back on the map; an errand of a 令 held without one (an older save) is given
+   it; and a save standing where no way runs goes home, told why once. */
+function fitLeave(content, state, now = new Date()) {
+  const map = mapOf(content, state, now);
+  if (state.returned && state.returned.place !== state.place) delete state.returned;
+  if (!map?.places) { if (state.pass) delete state.pass; return; }
+  const onBase = map.places.includes(state.place);
+  if (state.pass) {
+    const held = state.quests?.[state.pass.quest];
+    if ((!held || held.done_at) && onBase) delete state.pass;
+  }
+  if (!state.pass) { const owed = passQuest(content, state); if (owed) grantPass(content, state, (content.quests ?? []).find(q => q.id === owed[0]), now); }
+  const here = placeOf(content, state.place);
+  if (map.home && here && !inMade(state) && !placeOpen(content, state, here, now)) {
+    // Left there by a scene behind him (石门, the 秘境 over), he went back with the others: the story's line, not the rule's.
+    const story = Object.values(content.chapters[state.chapter]?.scenes ?? {}).some(sc => sc.at === here.id && (state.done_scenes ?? []).includes(sc.id));
+    state.returned = { place: map.home, from: here.id, ...(story ? { story: true } : {}) };
+    state.place = map.home;
+  }
+}
+/* A save as it loads, settled the same way (rules.mjs): the same object when
+   nothing moved, so an unmoved save is not written for it. */
+function leaveFitted(content, state, now = new Date()) {
+  if (!state || !content.chapters?.[state.chapter]) return state;
+  const s = structuredClone(state);
+  settlePlace(content, s, now);
+  const same = k => JSON.stringify(s[k] ?? null) === JSON.stringify(state[k] ?? null);
+  return same('place') && same('pass') && same('returned') ? state : s;
+}
+/* The line said once on the place he was put back at (map `back`). */
+const returnedLine = (content, state, now) => {
+  const map = mapOf(content, state, now);
+  return state.returned?.place === state.place ? pick((state.returned.story && map?.back_story) || map?.back, state.lang) ?? null : null;
+};
 
 /* 关键剧情锁图 (his, 2026-09-28): a key beat — chapter.json `beats`, its
    entry scene first — shuts the map from the scene after its entry to its
@@ -104,13 +196,14 @@ function atScene(content, state) {
 /* Where the player stands: a corridor's scene carries them to its place;
    elsewhere the save says, and a save from before places starts where its
    province starts. */
-function settlePlace(content, state) {
+function settlePlace(content, state, now = new Date()) {
   const scene = inMade(state) ? null : sceneOf(content, state);
   if (scene?.at && carried(content, state)) state.place = scene.at;
   if (!state.place || !placeOf(content, state.place)) {
     const province = content.chapters[state.chapter]?.province;
     state.place = content.places[province]?.start ?? null;
   }
+  fitLeave(content, state, now);
 }
 
 /* A place by its id, its name or its English. */
@@ -230,6 +323,10 @@ function placeBrief(content, state, now = new Date()) {
     ...placeName(content, state, place),
     province: { id: place.province, name: pick(content.dictionary.provinces[place.province], lang), start: doc.start },
     tier: place.tier, line: pick(place.line, lang),
+    // Put back inside the 观 (fitLeave): the world's line, once, where he was set down.
+    ...(returnedLine(content, state, now) ? { returned: returnedLine(content, state, now) } : {}),
+    // A 令 in his belt: where it lets him go.
+    ...(state.pass ? { pass: { to: placeName(content, state, placeOf(content, state.pass.to)), quest: state.pass.quest } } : {}),
     has: {
       creature: has.creature && metNow(content, has.creature, now) ? { id: has.creature, name: pick(creatureOf(content, has.creature).name, lang) } : null,
       seeds: Boolean(has.seeds), shop: Boolean(has.shop), scene: has.scene ?? null,
@@ -302,4 +399,4 @@ function fittingPlace(content, state, from) {
    opens when it ends. */
 const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && carried(content, state);
 
-export { chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };
+export { fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };

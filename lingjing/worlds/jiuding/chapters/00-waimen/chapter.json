@@ -9,26 +9,21 @@
   "first_scene": "wm-ahe",
   "gate": null,
   "_id": "The book's 古四 to 古六 (story/jiuding-lu/04-第四回.md … 06-第六回.md since the 2026-10-02 rename; once 第一章 · 外门, then 第三回 until 2026-09-30), between the prologue and 冀: an id that sorts after 00-prologue and before 01-ji (chapters run in id order, core.mjs advanceChapter).",
-  "_map": "The small area around 沉鼎观 (his, 2026-09-29): 外门, 讲堂, 柴房, 药园, 后山, 藏经阁, 坊市, 渡口, the Si and its stone door, 泗水北岸. Every other place — the rest of 徐 and the eight provinces — refuses with `say` and stands greyed on the map (world.mjs mapOf).",
+  "_map": "观内 (Hanli, 2026-10-15: 「可以，按你的建议做」 — supersedes the 10-05 free-play area): while he is an 外门 disciple he roams INSIDE 沉鼎观 — 外门, 饭堂, 讲堂, 柴房, 演武场, 正殿, 执事堂, 藏经阁, 药园, 后山崖顶, 山门. Below the mountain (坊市, 渡口, 泗水, 彭城 …) is walled: refused with `say`, greyed on the map. Two things open a way past it, only the places on that way (world.mjs leaveOf): the story's scene standing off the map (石门 for the 秘境 — the road from the 观 to it, while that scene is ahead), and a 执事堂 令 (an errand declaring `pass`: the road to that one place, spent once the errand is done and he is back inside). A save standing off every way is put back at `home` with `back` (world.mjs fitLeave).",
   "map": {
-    "places": [
-      "waimen",
-      "jiangtang",
-      "chaifang",
-      "yaoyuan",
-      "houshan",
-      "cangjing",
-      "zhengdian",
-      "shanmen",
-      "fangshi",
-      "dukou",
-      "shimen",
-      "sishui",
-      "sibei"
-    ],
+    "places": ["waimen", "fantang", "jiangtang", "chaifang", "yanwu", "zhengdian", "zhishi", "cangjing", "yaoyuan", "houshan", "shanmen"],
+    "home": "waimen",
     "say": {
       "zh": "外门弟子，无令不得下山。周衡的账本上，每一步都记着。",
       "en": "Outer disciples may not leave the mountain without leave. Every step goes in Zhou Heng's ledger."
+    },
+    "back": {
+      "zh": "外门弟子，无令不得下山。你回到了外门，周衡的账本上又添了一笔。",
+      "en": "Outer disciples may not leave the mountain without leave. You are back in the outer court, and Zhou Heng's ledger has one more line."
+    },
+    "back_story": {
+      "zh": "事了了。你随着众人，一步一步走回了外门。",
+      "en": "It is over. You walk back up to the outer court with the others, step by step."
     }
   },
   "_beats": "剧情 × 开放世界 (design.md, his 2026-09-28): five key beats lock the map from the scene after their entry to their last (world.mjs beatOf); between them the area is open, with the threads in quests/xu.json. The entry of each is a waypoint the player walks to.",

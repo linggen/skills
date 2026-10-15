@@ -89,7 +89,7 @@ test('the situations cover the stage\'s own cards', () => {
 
 test('the 事 chip: how many in hand, what can be handed in — and its popover holds the goal and the rows', () => {
   const at = ctx({ quests: chores });
-  const took = quest({ ...open, place: 'sibei' }, content, at, { action: 'take', id: 'xu-lvliang-look' });
+  const took = quest({ ...open, place: 'zhishi' }, content, at, { action: 'take', id: 'xu-lvliang-look' });
   const l = look(took.state, content, at), page = pageCtx(l);
   assert.match(bookChipHtml(page, false, false), /class="bookchip ready"[^>]*title="事 3 · 可交 1">事 3<b class="due">交1<\/b><\/button>/, 'a line ready to hand in is never behind a click — a count on the chip, the line its title');
   assert.doesNotMatch(bookChipHtml(page, false, false), /bookpop/);
@@ -104,7 +104,7 @@ test('the 事 chip: how many in hand, what can be handed in — and its popover 
   assert.doesNotMatch(html, /说说|bookdetail/, 'closed rows: nothing opened, and no row asks the model for what the page knows');
   // a row opened: the page reads the line from the rules and shows it — no model turn
   const info = quest(took.state, content, at, { action: 'info', id: 'xu-lvliang-look' }).result;
-  assert.deepEqual([info.who, info.taken, info.grant.wealth, info.where.id], ['泗水北岸的渔人', true, 15, 'lvliang']);
+  assert.deepEqual([info.who, info.taken, info.grant.wealth, info.where.id], ['执事堂 · 东墙的牌子', true, 15, 'lvliang']);
   const opened = bookPopHtml({ ...page, bookRow: 'xu-lvliang-look', bookInfo: info });
   assert.match(opened, /bookdetail.*孔夫子.*酬<\/span> 灵石 \+15.*data-ask="说说吕梁洪的水声".*data-drop="xu-lvliang-look"/s);
   // a chain names its next link as `next` — `then` is the wrapper's word to Ling on every result
