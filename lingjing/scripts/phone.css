@@ -70,6 +70,10 @@
   .sightone figcaption { margin-bottom: 4%; padding: 10px 10px; max-width: 46%; }
   .sightone figcaption b { font-size: 26px; }
   .sightline { max-width: 7.5em; font-size: 12.5px; }
+  /* The name card never runs past its picture's room (a creature's long classic line, over 快's band): the line clamps. */
+  .sightone figcaption { max-height: 100%; overflow: hidden; }
+  .sightline { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5; overflow: hidden; }
+  .view:has(.story.whole) .sightline { -webkit-line-clamp: 3; }
   /* The top bar keeps to two rows: 中/En goes up to the first row's end as one button (the language not
      on — a tap switches), and the 修为 bar gives a little; the 回, the place and the faces share the second. */
   .topbar .langsw { order: 3; margin-left: auto; }
