@@ -363,7 +363,9 @@ test('the story on the page: the whole stage, the keys that go on, and what it y
   assert.match(css, /\.story \.wayacts \{[^}]*min-height: 96px; overflow-y: auto/, 'the choices scroll, the words keep their place');
   assert.match(css, /\.story \.ways \.last \{[^}]*color: rgba\(241, 236, 225, \.74\)/, 'the faint line: dimmer, still ≥ 4.5:1 on its wash');
   assert.match(css, /\.story \.wayacts \.donote \{[^}]*color: #f6d3ca; background: rgba\(13, 17, 20, \.62\)/, 'a finding: light words on ink, not pink on paper');
-  assert.match(css, /\.view\.jin \.story \.ways::before \{ display: none; \}/, '今线 keeps its pale stage');
+  assert.match(css, /\.view\.jin:not\(:has\(\.backdrop\.painted\)\) \.story \.ways::before \{ display: none; \}/, '今线 keeps its pale stage where no painting stands');
+  // A painted 今 scape (backdrops.json `places`) reads as the 古 stage: no pale-stage rule reaches it (2026-10-15, live: dark ink mid-picture).
+  for (const rule of css.match(/^\s*\.view\.jin[^{]*\{/gm) ?? []) if (!/\.atmos|> \.shade|\.s \.yy/.test(rule)) assert.match(rule, /\.view\.jin:not\(:has\(\.backdrop\.painted\)\)/, `pale only: ${rule.trim()}`);
 });
 
 test('the caption is no beat (2026-10-14: told three times) — the box plays the book alone; the caption stands under the place', () => {

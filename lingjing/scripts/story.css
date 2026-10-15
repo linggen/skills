@@ -218,7 +218,9 @@ body.storying .slots { visibility: hidden; }
 .sightone figcaption b { display: block; font-size: 30px; letter-spacing: .18em; writing-mode: vertical-rl; color: var(--on-stage); }
 .sightline { display: block; margin-top: 10px; font-size: 13.5px; color: rgba(241, 236, 225, .85); max-width: 9em; line-height: 1.6; }
 :lang(en) .sightone figcaption b { writing-mode: horizontal-tb; letter-spacing: .04em; font-size: 22px; }
-.sightcard.two { right: 4%; }
+.sightcard.two { right: 4%; left: 4%; justify-content: center; }
+/* Two at once (老蔡 and 眼镜 in 今 · 一): each picture takes what half the stage leaves beside its card — the pair never runs off the edge. */
+.sightcard.two .sightpic { height: auto; width: calc(46cqw - 172px); max-height: 100%; }
 .sightcard.going { pointer-events: none; animation: none; opacity: 0; transform: var(--to, translateY(-36px) scale(.5)); transition: transform .75s cubic-bezier(.5, 0, .3, 1), opacity .75s ease; }
 @keyframes sightIn { from { opacity: 0; transform: translateY(14px) scale(.96); } to { opacity: 1; transform: none; } }
 body.fighting .sight { display: none; }
@@ -250,43 +252,45 @@ body.fighting .sight { display: none; }
 @keyframes spTitle { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
 .view:has(.spback) .backdrop, .view:has(.spback) .atmos .pts { opacity: 0; }
 
-/* ── 今线 (proto j): a pale modern stage, dark ink in the middle; no picture, no weather ── */
-.view.jin { background: linear-gradient(180deg, #E8ECEE, #D6DDE1); }
+/* ── 今线 (proto j): a pale modern stage, dark ink in the middle; no weather. Where its scape has a
+   painting (backdrops.json `places`, 2026-10-15) the stage is the 古's: the picture, the shade, light
+   words at the foot — dark ink in the middle of a painting cannot be read — and so is its 亮相. ── */
+.view.jin:not(:has(.backdrop.painted)) { background: linear-gradient(180deg, #E8ECEE, #D6DDE1); }
 .view.jin > .shade { display: none; }
 .view.jin .atmos { display: none; }
-.view.jin .story { color: #1f2a33; }
-.view.jin .story .lines { bottom: auto; top: 38%; }
-.view.jin .story .screen { text-shadow: none; }
-.view.jin .story .who { color: #3e5566; }
-.view.jin .story .q, .view.jin .story .seg { color: #5b6a76; border-color: rgba(62, 85, 102, .28); background: rgba(255, 255, 255, .45); }
-.view.jin .story .seg button { color: #5b6a76; }
-.view.jin .story .seg button.on { background: #3e5566; color: #fff; }
-.view.jin .story .count { color: #5b6a76; }
-.view.jin .story .held { background: rgba(62, 85, 102, .7); }
-.view.jin .story .ways { top: auto; }
-.view.jin .story .ways::before { display: none; }
-.view.jin .story .wayacts .donote { color: var(--seal, #b0413e); background: var(--surface); border-color: var(--seal, #b0413e); }
-.view.jin .story .ways .last { color: #5b6a76; text-shadow: none; }
-.view.jin .story .wayacts .paneltap, .view.jin .story .wayacts .quietnext { background: #fff; border-color: #3e5566; box-shadow: 0 6px 20px rgba(30, 40, 50, .14); }
+.view.jin:not(:has(.backdrop.painted)) .story { color: #1f2a33; }
+.view.jin:not(:has(.backdrop.painted)) .story .lines { bottom: auto; top: 38%; }
+.view.jin:not(:has(.backdrop.painted)) .story .screen { text-shadow: none; }
+.view.jin:not(:has(.backdrop.painted)) .story .who { color: #3e5566; }
+.view.jin:not(:has(.backdrop.painted)) .story .q, .view.jin:not(:has(.backdrop.painted)) .story .seg { color: #5b6a76; border-color: rgba(62, 85, 102, .28); background: rgba(255, 255, 255, .45); }
+.view.jin:not(:has(.backdrop.painted)) .story .seg button { color: #5b6a76; }
+.view.jin:not(:has(.backdrop.painted)) .story .seg button.on { background: #3e5566; color: #fff; }
+.view.jin:not(:has(.backdrop.painted)) .story .count { color: #5b6a76; }
+.view.jin:not(:has(.backdrop.painted)) .story .held { background: rgba(62, 85, 102, .7); }
+.view.jin:not(:has(.backdrop.painted)) .story .ways { top: auto; }
+.view.jin:not(:has(.backdrop.painted)) .story .ways::before { display: none; }
+.view.jin:not(:has(.backdrop.painted)) .story .wayacts .donote { color: var(--seal, #b0413e); background: var(--surface); border-color: var(--seal, #b0413e); }
+.view.jin:not(:has(.backdrop.painted)) .story .ways .last { color: #5b6a76; text-shadow: none; }
+.view.jin:not(:has(.backdrop.painted)) .story .wayacts .paneltap, .view.jin:not(:has(.backdrop.painted)) .story .wayacts .quietnext { background: #fff; border-color: #3e5566; box-shadow: 0 6px 20px rgba(30, 40, 50, .14); }
 /* 亮相 on the 今 stage (Hanli, 2026-10-15: 「今线的人物都没亮相」): the pencil portrait sits on the
    pale paper (its own paper multiplied away), the name on a white card in the stage's ink — not
    the 古 night plate. The words stand mid-stage here, through the portrait: while a face is
    up they step down to the foot, as on the 古 stage, and come back with the next beat. */
-.view.jin .sightpic:not(.namecard) { mix-blend-mode: multiply; }
-.view.jin .sightpic.namecard { background: rgba(62, 85, 102, .08); border: 1px solid rgba(62, 85, 102, .2); }
-.view.jin .sightpic.namecard b, .view.jin .sightone figcaption b { color: #1f2a33; }
-.view.jin .sightone figcaption { background: rgba(255, 255, 255, .78); color: #1f2a33; text-shadow: none; border: 1px solid rgba(62, 85, 102, .18); box-shadow: 0 8px 26px rgba(30, 40, 50, .12); }
-.view.jin .sightline { color: #5b6a76; }
-.view.jin .sightcard { bottom: 34%; }
-.view.jin:has(.sightcard:not(.going)) .story .lines { top: auto; bottom: 74px; }
+.view.jin:not(:has(.backdrop.painted)) .sightpic:not(.namecard) { mix-blend-mode: multiply; }
+.view.jin:not(:has(.backdrop.painted)) .sightpic.namecard { background: rgba(62, 85, 102, .08); border: 1px solid rgba(62, 85, 102, .2); }
+.view.jin:not(:has(.backdrop.painted)) .sightpic.namecard b, .view.jin:not(:has(.backdrop.painted)) .sightone figcaption b { color: #1f2a33; }
+.view.jin:not(:has(.backdrop.painted)) .sightone figcaption { background: rgba(255, 255, 255, .78); color: #1f2a33; text-shadow: none; border: 1px solid rgba(62, 85, 102, .18); box-shadow: 0 8px 26px rgba(30, 40, 50, .12); }
+.view.jin:not(:has(.backdrop.painted)) .sightline { color: #5b6a76; }
+.view.jin:not(:has(.backdrop.painted)) .sightcard { bottom: 34%; }
+.view.jin:not(:has(.backdrop.painted)):has(.sightcard:not(.going)) .story .lines { top: auto; bottom: 74px; }
 @media (prefers-color-scheme: dark) {
-  .view.jin { background: linear-gradient(180deg, #171B1F, #0D1013); }
-  .view.jin .story { color: #dfe6ea; }
-  .view.jin .story .ways .last { color: #9aa8b3; }
-  .view.jin .sightpic:not(.namecard) { mix-blend-mode: normal; }
-  .view.jin .sightpic.namecard b, .view.jin .sightone figcaption b { color: var(--on-stage); }
-  .view.jin .sightone figcaption { background: rgba(13, 17, 20, .62); color: var(--on-stage); border-color: transparent; box-shadow: none; }
-  .view.jin .sightline { color: rgba(241, 236, 225, .85); }
+  .view.jin:not(:has(.backdrop.painted)) { background: linear-gradient(180deg, #171B1F, #0D1013); }
+  .view.jin:not(:has(.backdrop.painted)) .story { color: #dfe6ea; }
+  .view.jin:not(:has(.backdrop.painted)) .story .ways .last { color: #9aa8b3; }
+  .view.jin:not(:has(.backdrop.painted)) .sightpic:not(.namecard) { mix-blend-mode: normal; }
+  .view.jin:not(:has(.backdrop.painted)) .sightpic.namecard b, .view.jin:not(:has(.backdrop.painted)) .sightone figcaption b { color: var(--on-stage); }
+  .view.jin:not(:has(.backdrop.painted)) .sightone figcaption { background: rgba(13, 17, 20, .62); color: var(--on-stage); border-color: transparent; box-shadow: none; }
+  .view.jin:not(:has(.backdrop.painted)) .sightline { color: rgba(241, 236, 225, .85); }
 }
 
 /* ── 快: the rest of the passage at once (Hanli, 2026-10-15: 「快的速度, 不要一句一句显示, 直接都显示出来」) ──
@@ -313,12 +317,12 @@ body.fighting .sight { display: none; }
 .story .wface figcaption { display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; line-height: 1.6; color: rgba(241, 236, 225, .85); }
 .story .wface figcaption b { font-size: 16px; letter-spacing: .15em; color: var(--on-stage); }
 :lang(en) .story .wholetext { letter-spacing: 0; line-height: 1.7; }
-.view.jin .story.whole::before { background: rgba(250, 251, 252, .84); }
-.view.jin .story .wholetext { text-shadow: none; }
-.view.jin .story .wface { background: rgba(62, 85, 102, .06); border-color: rgba(62, 85, 102, .2); }
-.view.jin .story .wface figcaption, .view.jin .story .wface figcaption b { color: inherit; }
-.view.jin .story .wholecol .onward .q { color: #1f2a33; border-color: #3e5566; }
-@media (prefers-color-scheme: dark) { .view.jin .story.whole::before { background: rgba(13, 16, 19, .84); } }
+.view.jin:not(:has(.backdrop.painted)) .story.whole::before { background: rgba(250, 251, 252, .84); }
+.view.jin:not(:has(.backdrop.painted)) .story .wholetext { text-shadow: none; }
+.view.jin:not(:has(.backdrop.painted)) .story .wface { background: rgba(62, 85, 102, .06); border-color: rgba(62, 85, 102, .2); }
+.view.jin:not(:has(.backdrop.painted)) .story .wface figcaption, .view.jin:not(:has(.backdrop.painted)) .story .wface figcaption b { color: inherit; }
+.view.jin:not(:has(.backdrop.painted)) .story .wholecol .onward .q { color: #1f2a33; border-color: #3e5566; }
+@media (prefers-color-scheme: dark) { .view.jin:not(:has(.backdrop.painted)) .story.whole::before { background: rgba(13, 16, 19, .84); } }
 
 /* ── narrow: the phone ── */
 @container scene (max-width: 640px) {
@@ -348,8 +352,14 @@ body.fighting .sight { display: none; }
   .story .seg button { padding: 4px 8px; }
   .story .wayacts .paneltap, .story .wayacts .quietnext { min-width: 100%; font-size: 16px; padding: 12px 18px; }
   .story .ways { bottom: 62px; max-height: calc(100% - 62px - 5%); padding: 0 16px; }
-  .sightcard, .view.jin .sightcard { right: 4%; left: 4%; top: 4%; bottom: 42%; justify-content: center; }
-  .view.jin:has(.sightcard:not(.going)) .story .lines { bottom: 64px; }
+  .sightcard, .view.jin:not(:has(.backdrop.painted)) .sightcard { right: 4%; left: 4%; top: 4%; bottom: 42%; justify-content: center; }
+  /* A pair on the phone: each picture over its name, no line — two side by side, inside the stage. */
+  .sightcard.two .sightone { flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; }
+  .sightcard.two .sightpic { width: auto; height: calc(100% - 44px); max-width: 40cqw; min-height: 0; }
+  .sightcard.two .sightone figcaption { margin-bottom: 0; padding: 6px 12px; }
+  .sightcard.two .sightone figcaption b { writing-mode: horizontal-tb; font-size: 20px; letter-spacing: .12em; }
+  .sightcard.two .sightline { display: none; }
+  .view.jin:not(:has(.backdrop.painted)):has(.sightcard:not(.going)) .story .lines { bottom: 64px; }
   .appear .appeartext { padding: 0 20px 60px; }
   .appear .appeartext p { font-size: 16.5px; }
   .appear .appearname b { font-size: 26px; }
