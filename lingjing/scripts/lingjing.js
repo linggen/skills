@@ -2488,6 +2488,17 @@ const CLICKS = [
   ['[data-wx-set]', () => { if (skyDraft.city.trim()) run('wx:set', () => setSense({ city: skyDraft.city.trim() })); }],
   ['[data-wx-off]', (el) => run('wx:off', () => setSense({ off: el.dataset.wxOff === 'off' }))],
   ['[data-wx-clear]', () => run('wx:clear', () => setSense({ city: null }))],
+  // Any other tap puts an open popover away first, then does what it was for — the story's own
+  // controls too: 回看 opened under the 事 book left the book over the log's 合上 (the crawler, 2026-10-15).
+  ['*', (el, e) => {
+    if (view.bookOpen && !e.target.closest('.bookpop') && !e.target.closest('#askbar')) show({ bookOpen: false });
+    if (view.ledgerOpen && !e.target.closest('.ledgerpop')) show({ ledgerOpen: false });
+    if (view.wxOpen && !e.target.closest('.wxpop') && !e.target.closest('[data-wx]')) show({ wxOpen: false });
+    // A road tapped walks it, and the list closes with it.
+    if (view.roadsOpen && (!e.target.closest('.roadspop') || e.target.closest('[data-go]'))) show({ roadsOpen: false });
+    if (view.shelfOpen && !e.target.closest('.shelfpop')) show({ shelfOpen: false });
+    return false;
+  }],
   // The scene's choices (on its card, or inside the box at its last beat) come before the box's own taps.
   ['[data-look-at]', (el) => { if (!el.matches(':disabled')) run(`look:${el.dataset.lookAt}`, () => lookAt(el.dataset.lookAt)); }],
   ['[data-panel-duel]', (el) => { if (!el.matches(':disabled')) callDuel(el.dataset.panelDuel); }],
@@ -2540,15 +2551,6 @@ const CLICKS = [
   ['[data-wear],[data-use],[data-remove]', (el) => {
     const id = el.dataset.wear ?? el.dataset.use ?? el.dataset.remove, action = el.dataset.remove ? 'remove' : 'use';
     run(`item:${action}:${id}`, () => useItem(id, action));
-  }],
-  ['*', (el, e) => {
-    if (view.bookOpen && !e.target.closest('.bookpop') && !e.target.closest('#askbar')) show({ bookOpen: false });
-    if (view.ledgerOpen && !e.target.closest('.ledgerpop')) show({ ledgerOpen: false });
-    if (view.wxOpen && !e.target.closest('.wxpop') && !e.target.closest('[data-wx]')) show({ wxOpen: false });
-    // A road tapped walks it, and the list closes with it.
-    if (view.roadsOpen && (!e.target.closest('.roadspop') || e.target.closest('[data-go]'))) show({ roadsOpen: false });
-    if (view.shelfOpen && !e.target.closest('.shelfpop')) show({ shelfOpen: false });
-    return false;
   }],
   ['[data-spoils-close]', () => show({ spoils: null })],
   ['[data-seclude-open]', () => run('seclude', () => openSeclude())],

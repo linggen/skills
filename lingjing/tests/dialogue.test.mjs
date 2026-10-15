@@ -337,3 +337,12 @@ test('跳过 stands only where it would skip something — not on a 回\'s last 
   r = advance(r);
   assert.match(storyHtml(r), /data-dlg-all/, 'into the next 回: 跳过 again');
 });
+
+test('a tap on the story\'s own controls puts an open popover away first — 回看 under the 事 book left the book over the log\'s 合上 (the crawler, 2026-10-15)', async () => {
+  const fs = await import('node:fs');
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const list = src.slice(src.indexOf('const CLICKS = ['), src.indexOf('\n];', src.indexOf('const CLICKS = [')));
+  const at = (sel) => list.indexOf(`['${sel}'`);
+  assert.ok(at('*') > at('[data-book]') && at('*') > at('[data-wx-clear]'), 'the popovers\' own taps first');
+  for (const sel of ['[data-dlg-log]', '[data-dlg-all]', '[data-dlg-next]', '[data-panel-exit]']) assert.ok(at('*') < at(sel), `then the catch-all, before ${sel}`);
+});
