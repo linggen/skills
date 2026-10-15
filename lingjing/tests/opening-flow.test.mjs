@@ -46,7 +46,10 @@ test('a game inside its scene\'s passage: the rest is the scene\'s own (`story_a
     // A scene with a second board after the rest (00-cave's 喂饼, batch two) has its ways on start there by right:
     // the board stands between the scene's run and the branch the board chooses.
     const second = (sc.show ?? []).filter((c) => c.card === 'board').length > 1;
-    if (!second) for (const e of sc.exits) if (e.story) assert.notEqual(book.indexOf(firstPara(e.story)), end(lastPara(sc.story_after)), `${sc.id}/${e.id} starts mid-way through the scene's run`);
+    // A real fork after the rest (00-rent's 装傻 · 说实话, 00-storm's 掉头 · 再追, 2026-10-15): each branch carries
+    // its own passage, and the book's branch picks up where the run stops by right.
+    const fork = sc.exits.filter((e) => e.story && !e.stay).length > 1;
+    if (!second && !fork) for (const e of sc.exits) if (e.story) assert.notEqual(book.indexOf(firstPara(e.story)), end(lastPara(sc.story_after)), `${sc.id}/${e.id} starts mid-way through the scene's run`);
     assert.equal(book.indexOf(firstPara(sc.story_after)), end(lastPara(sc.story)), `${sc.id}: the rest follows the lead`);
   }
 });
