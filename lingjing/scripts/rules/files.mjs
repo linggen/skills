@@ -113,6 +113,17 @@ const LOCK = { stale_ms: 10_000, retry_ms: 25, wait_ms: 5_000 };
 const nap = ms => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 const lockAge = file => { try { return Date.now() - fs.statSync(file).mtimeMs; } catch { return 0; } };
 
+/* The holder a lock names (its pid) is gone: a call the engine's tool timeout
+   killed mid-write (8 s under load, 2026-10-15) leaves its lock behind, and
+   every call after it waited out the stale age — on a loaded machine, past its
+   own timeout too. A lock whose process no longer runs is free at once. */
+const holderGone = lock => {
+  let pid;
+  try { pid = Number(fs.readFileSync(lock, 'utf8').trim()); } catch { return false; }
+  if (!Number.isInteger(pid) || pid <= 0 || pid === process.pid) return false;
+  try { process.kill(pid, 0); return false; } catch (err) { return err.code === 'ESRCH'; }
+};
+
 function takeLock(lock) {
   const until = Date.now() + LOCK.wait_ms;
   for (;;) {
@@ -123,7 +134,7 @@ function takeLock(lock) {
     } catch (err) {
       if (err.code !== 'EEXIST') throw err;
     }
-    if (lockAge(lock) > LOCK.stale_ms) { fs.rmSync(lock, { force: true }); continue; }
+    if (lockAge(lock) > LOCK.stale_ms || holderGone(lock)) { fs.rmSync(lock, { force: true }); continue; }
     if (Date.now() >= until) return false;
     nap(LOCK.retry_ms);
   }
@@ -165,4 +176,4 @@ export function parseArgs(argv) {
   return args;
 }
 
-export { clock, dataDir, newRun, withRun, shiftDays, shiftFile, freshState, homeDir, SAVE_NAME, scratchDir, scratchName, LOCK, readQuests, savedFile, savedFor, savesDir, skillDir, userTurn, userWords, withLock, writeAtomic, writeMadeWorld };
+export { holderGone, clock, dataDir, newRun, withRun, shiftDays, shiftFile, freshState, homeDir, SAVE_NAME, scratchDir, scratchName, LOCK, readQuests, savedFile, savedFor, savesDir, skillDir, userTurn, userWords, withLock, writeAtomic, writeMadeWorld };
