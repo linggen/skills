@@ -5,7 +5,7 @@
 // sources — and never asks the model to read it out. Each holding's own move
 // lives on its stock card's chart, not here.
 
-import { markedHtml, moveHtml } from './investments.js';
+import { markedHtml, moveHtml, shownRun, skippedText } from './investments.js';
 import { t, t as tr, intlLocale } from './strings.js';
 
 const MISSION = 'cfo:weekly';
@@ -115,7 +115,13 @@ function headline() {
   if (!mission) return t('wk.unavailable');
   if (note) return note;
   if (running) return t('wk.writing');
+  return statusLine(mission, lastRun);
+}
+
+/// On or Off, then what the last run did when it wasn't a plain success.
+export function statusLine(mission, lastRun, locale = intlLocale()) {
   const on = mission.enabled ? t('wk.onSundays') : t('wk.off');
+  if (lastRun?.skipped) return `${on} · ${skippedText(lastRun, locale)}`;
   if (lastRun && lastRun.status !== 'completed') return t('wk.unfinished', { on });
   return on;
 }
@@ -174,7 +180,7 @@ function nextHtml(next) {
 const missionUrl = (tail = '') => `/api/missions/${encodeURIComponent(MISSION)}${tail}`;
 
 async function lastRun() {
-  const runs = ((await (await fetch(missionUrl('/runs'))).json()).runs || []).filter((r) => !r.skipped);
+  const runs = ((await (await fetch(missionUrl('/runs'))).json()).runs || []).filter(shownRun);
   return runs[0] || null;
 }
 

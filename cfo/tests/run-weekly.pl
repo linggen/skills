@@ -237,5 +237,27 @@ t('a page out of reach checks nothing', !defined on_page('rose 0.4%', undef));
     t('eight weeks kept, the newest latest', keys(%{ $doc->{weeks} }) == 8 && $doc->{latest} eq '2026-W40' && !$doc->{weeks}{'2026-W32'});
 }
 
+# ── run-if: --has-holdings ─────────────────────────────────────────────────
+{
+    t('a position with shares is a holding', holds_any({ NVDA => { shares => 20 }, VOO => { watch => 1 } }));
+    t('a watchlist alone is no holding', !holds_any({ VOO => { watch => 1 }, AAPL => { shares => 0 } }));
+    t('nothing listed is no holding', !holds_any({}));
+    my $run = sub {
+        my ($reg) = @_;
+        my $skill = tempdir(CLEANUP => 1);
+        mkdir "$skill/data";
+        write_json("$skill/data/edits.json", { reg => $reg }) if $reg;
+        my $out = `SKILL_DIR='$skill' perl '$SCRIPT' --has-holdings`;
+        return ($? >> 8, $out);
+    };
+    my $cell = sub { +{ v => $_[0], ts => 1, dev => 'mac' } };
+    my ($code, $out) = $run->({ 'inv:NVDA|shares' => $cell->(20) });
+    t('--has-holdings exits 0 and says nothing when something is held', $code == 0 && $out eq '', "$code '$out'");
+    ($code, $out) = $run->({ 'inv:VOO|watch' => $cell->(JSON::PP::true), 'inv:AAPL|shares' => $cell->(undef) });
+    t('--has-holdings exits 1 with its reason for a watchlist only', $code == 1 && $out eq "no holdings\n", "$code '$out'");
+    ($code, $out) = $run->(undef);
+    t('--has-holdings exits 1 with no data at all', $code == 1 && $out eq "no holdings\n", "$code '$out'");
+}
+
 print "\n$pass passed, $fail failed\n";
 exit($fail ? 1 : 0);

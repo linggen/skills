@@ -11,6 +11,10 @@
 #                                    bullet's figures checked against its quote
 #                                    and its source page
 #   perl weekly.pl last              the newest saved report
+#   perl weekly.pl --has-holdings    the Weekly and the Watch's run-if: exit 0
+#                                    when at least one position has shares;
+#                                    else print "no holdings", exit 1. One
+#                                    file read, no network
 #
 # The week is the last full Monday–Friday before today (a Sunday run reports
 # the Friday just gone). Moves are at today's share count, from daily closes
@@ -42,13 +46,31 @@ my $JSON_OUT = JSON::PP->new->utf8->canonical->pretty;
 
 sub weekly_main {
     my ($verb, @args) = @_;
-    my %commands = (scan => \&cmd_scan, save => \&cmd_save, last => \&cmd_last);
+    my %commands = (scan => \&cmd_scan, save => \&cmd_save, last => \&cmd_last, '--has-holdings' => \&cmd_has_holdings);
     my $run = $commands{ $verb // '' }
-        or do { print STDERR "usage: weekly.pl scan | save sections=JSON ties=JSON next_week=TEXT | last\n"; exit 2 };
+        or do { print STDERR "usage: weekly.pl scan | save sections=JSON ties=JSON next_week=TEXT | last | --has-holdings\n"; exit 2 };
     $run->(@args);
 }
 
 sub out_json { print $JSON_OUT->encode($_[0]) }
+
+# ── Anything to report on? ─────────────────────────────────────────────────
+
+# True when a register cell set (market.pl register_investments) holds at
+# least one position — a watched symbol has no shares.
+sub holds_any {
+    my ($cells) = @_;
+    no warnings 'numeric';
+    return scalar grep { ($_->{shares} // 0) > 0 } values %$cells;
+}
+
+# The missions' run-if: the engine skips the run, and its model call, when
+# this exits non-zero; the first line is the reason it records.
+sub cmd_has_holdings {
+    exit 0 if holds_any(register_investments());
+    print "no holdings\n";
+    exit 1;
+}
 
 # ── The week ───────────────────────────────────────────────────────────────
 

@@ -498,6 +498,21 @@ export function checkCostText(runs) {
     : t('inv.checkCostNone');
 }
 
+/// A mission run the cards speak of: one that ran, or one its run-if skipped
+/// (the reason is a fact worth showing). A busy skip is nothing to say.
+export const shownRun = (r) => !r.skipped || r.skip === 'run-if';
+
+/// The reasons the page can say in its own language; any other is shown as
+/// the check printed it.
+const SKIP_REASONS = { 'no holdings': 'mission.noHoldings' };
+
+/// "Skipped Sunday: no holdings" — a run-if skip, said as a fact.
+export function skippedText(run, locale) {
+  const day = new Date(run.triggered_at * 1000).toLocaleDateString(locale, { weekday: 'long' });
+  const key = SKIP_REASONS[run.reason];
+  return t('mission.skipped', { day, reason: key ? t(key) : run.reason || t('mission.noReason') });
+}
+
 /// What Ask CFO says in the chat, in the user's voice.
 export function askText(item) {
   return t('inv.askLine', { line: item.line, url: /^https:\/\//.test(item.url || '') ? ` (${item.url})` : '' });
@@ -700,6 +715,7 @@ function watchStatus() {
   if (running) return t('inv.checkingNow');
   if (!mission.enabled) return '';
   if (!lastRun) return t('inv.everyNight');
+  if (lastRun.skipped) return skippedText(lastRun, loc());
   const when = new Date(lastRun.triggered_at * 1000).toLocaleString(loc(), { weekday: 'short', hour: 'numeric', minute: '2-digit' });
   return t(lastRun.status === 'completed' ? 'inv.checkedAt' : 'inv.checkUnfinished', { when });
 }
@@ -1157,7 +1173,7 @@ let watchPoll = null;
 const missionUrl = (tail = '') => `/api/missions/${encodeURIComponent(WATCH_MISSION)}${tail}`;
 
 async function lastWatchRun() {
-  const runs = ((await (await fetch(missionUrl('/runs'))).json()).runs || []).filter((r) => !r.skipped);
+  const runs = ((await (await fetch(missionUrl('/runs'))).json()).runs || []).filter(shownRun);
   watch.runs = runs;
   return runs[0] || null;
 }

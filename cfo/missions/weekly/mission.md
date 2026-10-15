@@ -6,7 +6,10 @@ description: >-
 schedule: "0 19 * * 0"
 # Missed while the Mac slept: run once it's back.
 catchup_hours: 20
-enabled: false
+# On for everyone; the engine runs this check first and skips the run (no
+# session, no model call) when nothing is held.
+enabled: true
+run-if: 'perl "$SKILL_DIR/scripts/weekly.pl" --has-holdings'
 # The skill's grant covers its own folder, so the run's tools (all tier: read)
 # never stop to ask — nobody is there to answer.
 cwd: ~/.linggen/skills/cfo
