@@ -136,6 +136,8 @@ export const CARD_KINDS = {
   handed: { holds: false }, //     所得 — told, never waiting on him; the roads stay
   board: { holds: false }, //      a standing practice, offered for days — not this arrival's business
   goal: { holds: false }, building: { holds: false }, empty: { holds: false },
+  // 下一步: where the story goes and the one tap toward it, when nothing else stands (withNext).
+  next: { holds: false },
   creature: { holds: false }, map: { holds: false }, traits: { holds: false },
   gate: { holds: false }, tribulation: { holds: false }, treasure: { holds: false },
 };
@@ -273,7 +275,7 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   const closed = look.chapter?.close ? [{ card: 'closed' }] : [];
   const all = [...meet, ...panel, ...people, ...head, ...cards, ...closed].filter(c => !(c.card === 'board' && boardWaits(look, c.id)));
   const staged = sideLineOf(look) ? all.filter(onSide(look)) : all;
-  return staged.filter(c => !duplicate(look, c, staged));
+  return withNext(look, staged.filter(c => !duplicate(look, c, staged)));
 }
 
 /* Who a fight card pictures: the creature of the scene's own fight (its exit's
@@ -338,7 +340,18 @@ export function wonWayOn(look) {
    people, the goal line, the name and 生辰 cards (the scene's exits), a world
    being painted, an empty pool. Never Ling's to Show — the `show` verb drops
    them (rules/verbs.mjs) and the stage drops them from what she showed. */
-export const PAGE_OWNS = new Set(['meet', 'panel', 'people', 'goal', 'value', 'born', 'building', 'empty', 'memory', 'homing', 'doors', 'unfold', 'closed']);
+export const PAGE_OWNS = new Set(['meet', 'panel', 'people', 'goal', 'value', 'born', 'building', 'empty', 'memory', 'homing', 'doors', 'unfold', 'closed', 'next']);
+
+/* Never a blank stage (Hanli, 2026-10-15: 「没有空白webUI的情况……webUI要提示下一步的事情，不要让
+   玩家不知道下面该做什么」). When nothing in main is a step or a thing to do — no scene card, no
+   game, no errand, no fight, only the coins or nothing at all — the page's own 下一步 card
+   stands: the story's goal line and one tap toward it (cards.js next). Not in a fight or 闭关,
+   which hold the whole stage. */
+export function withNext(look, cards) {
+  if (!look || look.fight || look.seclusion || cards.some(c => c.card === 'next')) return cards;
+  const doing = cards.some(c => sceneGame(look, c) || MAIN.some(r => !r.filler && r.kinds.includes(c.card) && r.kinds[0] !== 'next'));
+  return doing ? cards : [...cards, { card: 'next' }];
+}
 export const showable = c => Boolean(c) && !PAGE_OWNS.has(c.card);
 
 /* 此地 · 此刻 · 行 — the stage in FIXED SECTIONS (Hanli, 2026-09-29: the same
@@ -371,6 +384,7 @@ export const MAIN = [
   { kinds: ['handed', 'quest', 'tale', 'road', 'offer'] }, //            the line, one at a time
   { kinds: ['building', 'empty'] }, //                                   the page's own notices
   { kinds: ['codex', 'creature', 'item', 'map', 'traits', 'gate', 'tribulation', 'treasure'] }, // what Ling showed
+  { kinds: ['next'] }, //                                                where the story goes, when nothing else stands
   { kinds: ['hexagram'], filler: true }, //                              the day's coins
 ];
 

@@ -10,8 +10,8 @@ const AWAKE = { companion: { joined: true } }; // 银月 awake: the coins are he
 const world = (over = {}) => ({ place: { id: 'ye', name: '邺城' }, scene: null, tasks: [], ...AWAKE, ...over });
 
 test('the stage is one ordered list, and Ling\'s own cards stand whatever else is true', () => {
-  // nothing shown, nothing waiting: the day's coins fill it
-  assert.deepEqual(kinds(stageCards(world())), ['hexagram']);
+  // nothing shown, nothing waiting: the day's coins fill it — and 下一步 stands, never a blank stage (withNext, 2026-10-15)
+  assert.deepEqual(kinds(stageCards(world())), ['hexagram', 'next']);
   // what she showed
   assert.deepEqual(kinds(stageCards(world(), { focus: [{ card: 'creature', id: 'fuzhu' }] })), ['creature:fuzhu']);
   // the head cards come first, in order
@@ -64,13 +64,13 @@ test('the goal is one slim line on the stage; its road is the question\'s to off
   // crowded」); the line stays, with nothing to tap, so the chat keeps the road.
   const { stageCards, stageOwns, askMinusStage } = await import('../scripts/stage.mjs');
   const look = { ...AWAKE, place: { id: 'sibei' }, tasks: [], waypoint: { scene: '03-cauldron', place: { id: 'liubo', name: '流波山' }, province: '青州', text: '路通向流波山。', toward: { id: 'liubo', name: '流波山' } } };
-  assert.deepEqual(stageCards(look).map(c => c.card), ['goal', 'hexagram']);
+  assert.deepEqual(stageCards(look).map(c => c.card), ['goal', 'hexagram', 'next']);
   const owns = stageOwns(look, stageCards(look));
   assert.ok(!owns.has('move:liubo'), 'a line with no button owns no road');
   const ask = { header: '泗水北岸', question: '何去何从？', options: [{ label: '流波山', move: 'liubo' }, { label: '云龙山', move: 'yunlong' }] };
   assert.deepEqual(askMinusStage(ask, owns).options.map(o => o.label), ['流波山', '云龙山']);
-  // no thread left: no line
-  assert.deepEqual(stageCards({ ...look, waypoint: null }).map(c => c.card), ['hexagram']);
+  // no thread left: no line (下一步 still stands: never a blank stage)
+  assert.deepEqual(stageCards({ ...look, waypoint: null }).map(c => c.card), ['hexagram', 'next']);
 });
 
 test('差事: an offer is what the stage is about — the book is behind the chip, the creature card gives way', async () => {
@@ -83,7 +83,7 @@ test('差事: an offer is what the stage is about — the book is behind the chi
   assert.deepEqual(stageCards(look, { focus: [{ card: 'item', ids: ['lingzhi'] }, ...focus] }).map(c => c.card), ['offer', 'item']);
   // 接下 is on its own card, and the question never offers it: the card owns no key
   assert.ok(![...stageOwns(look, stageCards(look))].some(k => k.startsWith('quest:')), 'no key the question cannot carry');
-  assert.deepEqual(stageCards({ ...AWAKE, place: { id: 'p' }, tasks: [] }).map(c => c.card), ['hexagram']);
+  assert.deepEqual(stageCards({ ...AWAKE, place: { id: 'p' }, tasks: [] }).map(c => c.card), ['hexagram', 'next']);
   // two errands at one place: ONE card, and both 接下 are on it (彭城, 2026-09-22)
   const two = { ...look, offers: [...look.offers, { id: 'daily-20260922-patrol-sishui', title: '榜文' }] };
   assert.deepEqual(stageCards(two).map(c => c.card), ['offer']);
@@ -181,8 +181,9 @@ test('the slots: the header is the page\'s, main holds ONE thing by fixed priori
   assert.equal(next.footer.next.key, 'panel:');
   // a fight or 闭关 is the whole of main
   assert.deepEqual(kinds(stageSlots(l, stageCards(l, { fight: true })).main), ['fight']);
-  // the coins are filler: alone they stand, beside anything else they go
-  assert.deepEqual(kinds(stageSlots(world(), stageCards(world())).main), ['hexagram']);
+  // the coins are filler: beside anything else they go — 下一步 included, which stands when nothing else does
+  assert.deepEqual(kinds(stageSlots(world(), stageCards(world())).main), ['next']);
+  assert.deepEqual(kinds(stageSlots(world(), [{ card: 'hexagram' }]).main), ['hexagram'], 'alone, the coins stand');
   const shelf = stageSlots(world(), [{ card: 'item', ids: ['a'] }, { card: 'hexagram' }]);
   assert.deepEqual(kinds(shelf.main), ['item']);
   assert.equal(shelf.queue.length, 0);
@@ -220,15 +221,15 @@ test('the page draws the slots: header, main (#focus) holding the one thing, foo
   const focus = src.slice(src.indexOf('function focusHtml(slots)'), src.indexOf('function toastsHtml()'));
   assert.match(focus, /slots\.main\.map\(drawCard\)/, 'main draws the one thing only');
   assert.doesNotMatch(src, /splitStage|queueHtml|const HEAD = /, 'no second list of where cards go');
-  assert.match(src, /stageSlots\(look, cards\.filter\(inQueue\), \{ skip: view\.qSkip \}\)/);
+  assert.match(src, /stageSlots\(look, storyAhead\(\) \|\| choicesInBox\(\) \? queued : withNext\(look, queued\.filter\(\(c\) => c\.card !== 'next'\)\), \{ skip: view\.qSkip \}\)/, 'never a blank stage: the page puts 下一步 up when what it took off left main empty');
   const strip = src.slice(src.indexOf('function statusHtml()'), src.indexOf('function statusHtml()') + 1500);
   assert.doesNotMatch(strip.slice(0, strip.indexOf('\n}')), /ChipHtml/, 'the chips are the footer\'s');
 });
 
 test('the day\'s coins wait for 银月 awake — asleep in the token, or not yet met, no 「请银月三钱六掷」 (his, 2026-09-29)', () => {
-  assert.deepEqual(kinds(stageCards(world())), ['hexagram']);
-  assert.deepEqual(kinds(stageCards(world({ companion: { joined: true, asleep: true } }))), []);
-  assert.deepEqual(kinds(stageCards(world({ companion: null }))), []);
+  assert.deepEqual(kinds(stageCards(world())), ['hexagram', 'next']);
+  assert.deepEqual(kinds(stageCards(world({ companion: { joined: true, asleep: true } }))), ['next']);
+  assert.deepEqual(kinds(stageCards(world({ companion: null }))), ['next']);
 });
 
 test('the footer (Hanli, 2026-10-05): the weather chip names where he stands, 恩仇簿 is off it; the backdrop is the weather\'s painting or the scene\'s own (2026-10-14)', async () => {
@@ -327,7 +328,8 @@ test('nothing to tap: the footer names what waits — 「还有：夫诸 · 图�
   const long = waitingLine({ name: '一个很长很长很长很长很长的功课名字', kind: zh.queueKinds.board, more: 3 }, zh);
   assert.ok([...long].length <= 20 && long.includes('…') && long.endsWith('· 功课 +3'), long);
   for (const k of Object.keys((await import('../scripts/stage.mjs')).CARD_KINDS)) {
-    if (['fight', 'memory', 'homing', 'doors', 'unfold', 'seclusion', 'seclude', 'panel', 'people', 'goal', 'value', 'born', 'closed', 'breakthrough'].includes(k)) continue;
+    // 下一步 never waits: it stands only when nothing else does (withNext).
+    if (['fight', 'memory', 'homing', 'doors', 'unfold', 'seclusion', 'seclude', 'panel', 'people', 'goal', 'value', 'born', 'closed', 'breakthrough', 'next'].includes(k)) continue;
     assert.ok(zh.queueKinds[k] && en.queueKinds[k], `a card of kind "${k}" can wait: it needs a name in the footer`);
   }
   // the page draws it from the footer's `next`, never a bare count

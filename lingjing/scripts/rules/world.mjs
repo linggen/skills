@@ -393,7 +393,11 @@ function pathOf(content, state, from, to, now) {
    walks the whole road — else nothing. It was the first road on the way while
    Move went one road at a time. */
 function towardOf(content, state, from, to, now) {
-  return pathOf(content, state, from, to, now) ? placeName(content, state, to) : null;
+  const way = pathOf(content, state, from, to, now);
+  if (!way) return null;
+  // The places walked through on the way (「经 外门」), when it is not the next road.
+  const via = way.slice(0, -1).map(p => placeName(content, state, p).name);
+  return { ...placeName(content, state, to), ...(via.length ? { via } : {}) };
 }
 
 /* A place as the player said it. Exact first — id, name, English. Else the one

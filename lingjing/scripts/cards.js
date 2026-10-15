@@ -860,6 +860,29 @@ function goalText(ctx) {
   return g.text ?? (g.chapter ? say(g.opens ? w.goalWait : w.goalOpen, { title: g.title ?? '', opens: g.opens ? new Date(g.opens).toLocaleDateString(ctx.lang === 'zh' ? 'zh-CN' : 'en') : '' }) : '');
 }
 
+/// 下一步 — the stage never blank (Hanli, 2026-10-15): where the story goes and ONE tap toward it
+/// (Move walks the whole road; the places passed are named), else the nearest work while the
+/// cauldron waits on 修为; under it, what can be handed in. stage.mjs withNext puts it up.
+const NEXT_WORDS = {
+  zh: { title: '下一步', go: '去{name} ›', via: '经 {names}', work: '去{name}找事做 ›', idle: '四处走走：差事、功课、斗法，都长修为。', ready: '可交 {n} ›' },
+  en: { title: 'Next', go: 'Go to {name} ›', via: 'by way of {names}', work: 'Find work at {name} ›', idle: 'Walk about: errands, practice and fights all raise cultivation.', ready: '{n} to hand in ›' },
+};
+function nextTo(look) {
+  const g = look?.waypoint;
+  if (g?.gate) return null;
+  const to = g?.toward ?? g?.place ?? null;
+  return to && to.id !== look?.place?.id ? to : null;
+}
+function next(card, ctx) {
+  const t = NEXT_WORDS[ctx.lang] ?? NEXT_WORDS.zh, look = ctx.look ?? {}, to = nextTo(look);
+  const work = !to && look.work?.place && !look.work.here ? look.work.place : null;
+  const go = to ? `<button class="act go primary" data-go="${esc(to.id)}">${esc(say(t.go, { name: to.name }))}</button>${to.via?.length ? `<div class="small dim">${esc(say(t.via, { names: to.via.join(' · ') }))}</div>` : ''}`
+    : work ? `<button class="act go primary" data-go="${esc(work.id)}">${esc(say(t.work, { name: work.name }))}</button>` : '';
+  const ready = (look.book ?? []).filter((q) => q.ready && !q.away).length + (look.kaifu?.ready ?? 0);
+  const book = ready ? `<button class="act quiet" data-book>${esc(say(t.ready, { n: ready }))}</button>` : '';
+  return `<div class="card next"><div class="cardtitle">${esc(t.title)}</div><div class="say">${esc(goalText(ctx) || t.idle)}</div><div class="acts">${go}${book}</div></div>`;
+}
+
 /// The goal on the stage: one slim line, nothing to tap. The rest is behind
 /// the 事 chip (`bookPopHtml`). A cauldron that waits on cultivation says
 /// what it asks and where he stands.
@@ -1458,7 +1481,7 @@ function closed(card, ctx) {
     + `<div class="acts"><button class="act closeshut" data-close-chapter="${esc(c.id)}">${esc(ctx.words.closeAway ?? '合上')}</button></div></div>`;
 }
 
-const RENDER = { closed, meet, codex, panel, value, born, people, breakthrough, handed, tale, lundao, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, road, seclude, seclusion };
+const RENDER = { closed, meet, codex, panel, value, born, people, breakthrough, handed, tale, lundao, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, road, seclude, seclusion, next };
 
 /// Only the kinds the scene knows; anything else Ling sends is dropped.
 export function cardHtml(card, ctx) {

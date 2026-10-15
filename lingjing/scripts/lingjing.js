@@ -15,7 +15,7 @@ import { holdPlaceholder } from './invite.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
-import { FOOTER, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
+import { withNext, FOOTER, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, dropOf, pickOf, spoilsHtml } from './battle-card.js';
 import { wireDrag } from './battle-drag.js';
 import { banner, ghostsOf, playLog, since } from './battle-anim.js';
@@ -962,7 +962,10 @@ function stageNow() {
   // The book first: a game waits until the passage that leads into it is told (queue.js afterBook).
   cards = afterBook(cards, cardsAhead());
   watchAppear(cards);
-  return stageSlots(look, cards.filter(inQueue), { skip: view.qSkip });
+  const queued = cards.filter(inQueue);
+  // Never a blank stage (Hanli, 2026-10-15): what the page took off above (a 完 put away, a board
+  // played) can leave main empty — then, with no passage to tell, the 下一步 card stands (withNext).
+  return stageSlots(look, storyAhead() || choicesInBox() ? queued : withNext(look, queued.filter((c) => c.card !== 'next')), { skip: view.qSkip });
 }
 
 /// 此刻 — the one thing, and over it the short notes of what just happened
