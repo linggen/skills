@@ -77,9 +77,23 @@ export const PERSON_WORDS = {
   },
 };
 
+/* A fight is one of three kinds, and its loss is said as that kind (live, 2026-10-15: 「你认了输，退下台来。」
+   closed 邹青松's chase in the 秘境 — no 台 there): a 试 (`goal`, creatures.json `trial`) is not stood
+   through; a 比试 with a person (the 大比's 台) is yielded, stepping down; a beast is given ground to. */
+export const fightKind = (creature) => (creature?.goal ? 'trial' : creature?.person ? 'bout' : 'beast');
+export const TRIAL_WORDS = {
+  zh: { lostSay: '这一试没撑过去。歇一歇，再来。' },
+  en: { lostSay: 'You did not stand the trial through. Rest, and try again.' },
+};
+
 /// The fight's words for this foe: the beast's as they are, a person's with
 /// PERSON_WORDS laid over and the pronoun filled in.
 export function boutWords(words, creature, lang = 'zh') {
+  const trial = fightKind(creature) === 'trial' ? TRIAL_WORDS[lang === 'en' ? 'en' : 'zh'] : null;
+  const said = personWords(words, creature, lang);
+  return trial ? { ...said, ...trial } : said;
+}
+function personWords(words, creature, lang) {
   if (!creature?.person) return words;
   const l = lang === 'en' ? 'en' : 'zh', g = creature.gender === 'female' || creature.gender === 'male' ? creature.gender : 'none';
   const p = l === 'zh' ? { it: PRONOUN.zh[g].ta, its: PRONOUN.zh[g].ta, itObj: PRONOUN.zh[g].ta, ta: PRONOUN.zh[g].ta } : PRONOUN.en[g];

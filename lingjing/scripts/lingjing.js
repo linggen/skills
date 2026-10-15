@@ -16,7 +16,7 @@ import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
 import { withNext, FOOTER, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
-import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, dropOf, pickOf, spoilsHtml } from './battle-card.js';
+import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, dropOf, fightKind, pickOf, spoilsHtml } from './battle-card.js';
 import { wireDrag } from './battle-drag.js';
 import { banner, ghostsOf, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
@@ -2938,9 +2938,11 @@ function fightMoments() {
 const TOLD = {
   beast: { won: ['降服了{foe}', 'Beat {foe}', 'happy'], lost: ['输给了{foe}，它今日不会再出来了', 'Lost to {foe} — it will not come out again today', 'sad'], withdrew: ['{foe}力竭遁走，这一仗不算赢', '{foe} ran out of breath and left — not a win'] },
   person: { won: ['比试赢了{foe}', 'Won the bout with {foe}', 'happy'], lost: ['比试输给了{foe}', 'Lost the bout to {foe}', 'sad'], withdrew: ['{foe}力竭认输，这一场不算赢', '{foe} yielded, spent — not a win'] },
+  // A 试 (battle-card.js fightKind): passed or not stood through — no 比试, no 降服.
+  trial: { won: ['过了{foe}这一试', 'Passed the trial of {foe}', 'happy'], lost: ['{foe}这一试没撑过去', 'Did not stand through the trial of {foe}', 'sad'], withdrew: ['{foe}收了手，这一试不算过', '{foe} held back — the trial is not passed'] },
 };
 function toldOutcome(brief, outcome) {
-  const c = brief?.creature ?? {}, told = TOLD[c.person ? 'person' : 'beast'][outcome];
+  const c = brief?.creature ?? {}, kind = fightKind(c), told = TOLD[kind === 'trial' ? 'trial' : kind === 'bout' ? 'person' : 'beast'][outcome];
   if (!told) return;
   const [zh, en, mood] = told.map((t) => t.replace('{foe}', c.name ?? ''));
   tellYinyue(outcome, zh, en, told[2] ? { mood } : undefined);
