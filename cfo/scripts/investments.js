@@ -504,7 +504,10 @@ export const shownRun = (r) => !r.skipped || r.skip === 'run-if';
 
 /// The reasons the page can say in its own language; any other is shown as
 /// the check printed it.
-const SKIP_REASONS = { 'no holdings': 'mission.noHoldings' };
+const SKIP_REASONS = {
+  'no holdings': 'mission.noHoldings',
+  'no holdings or transactions': 'mission.noHoldingsOrTxns',
+};
 
 /// "Skipped Sunday: no holdings" — a run-if skip, said as a fact.
 export function skippedText(run, locale) {

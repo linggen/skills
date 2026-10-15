@@ -9,9 +9,9 @@ schedule: "0 1 * * *"
 # Missed while the Mac slept: run once it's back.
 catchup_hours: 20
 # On for everyone; the engine runs this check first and skips the run (no
-# session, no model call) when nothing is held.
+# session, no model call) when nothing is held and no statement is imported.
 enabled: true
-run-if: 'perl "$SKILL_DIR/scripts/weekly.pl" --has-holdings'
+run-if: 'perl "$SKILL_DIR/scripts/weekly.pl" --has-holdings-or-transactions'
 # The skill's grant covers its own folder, so the run's tools (all tier: read)
 # never stop to ask — nobody is there to answer.
 cwd: ~/.linggen/skills/cfo

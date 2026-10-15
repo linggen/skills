@@ -259,5 +259,38 @@ t('a page out of reach checks nothing', !defined on_page('rose 0.4%', undef));
     t('--has-holdings exits 1 with no data at all', $code == 1 && $out eq "no holdings\n", "$code '$out'");
 }
 
+# ── run-if: --has-holdings-or-transactions (the Watch) ─────────────────────
+{
+    my $cell = sub { +{ v => $_[0], ts => 1, dev => 'mac' } };
+    my $row = '{"id":"t1","account":"a1","date":"2026-04-01","merchant":"LOBLAWS","amount":-42,"currency":"CAD"}';
+    my $run = sub {
+        my (%o) = @_;
+        my $skill = tempdir(CLEANUP => 1);
+        mkdir "$skill/data";
+        write_json("$skill/data/edits.json", { reg => $o{reg} }) if $o{reg};
+        if (defined $o{ledger}) {
+            mkdir "$skill/data/ledger";
+            open(my $f, '>', "$skill/data/ledger/2026.jsonl") or die;
+            print $f $o{ledger};
+            close $f;
+        }
+        my $out = `SKILL_DIR='$skill' perl '$SCRIPT' --has-holdings-or-transactions`;
+        return ($? >> 8, $out);
+    };
+    my $none = "no holdings or transactions\n";
+    my ($code, $out) = $run->(reg => { 'inv:NVDA|shares' => $cell->(20) });
+    t('holdings only: the Watch runs', $code == 0 && $out eq '', "$code '$out'");
+    ($code, $out) = $run->(ledger => "$row\n");
+    t('imported transactions only: the Watch runs', $code == 0 && $out eq '', "$code '$out'");
+    ($code, $out) = $run->();
+    t('neither: skipped with its reason', $code == 1 && $out eq $none, "$code '$out'");
+    ($code, $out) = $run->(reg => { 'inv:VOO|watch' => $cell->(JSON::PP::true) }, ledger => "\n");
+    t('a watchlist and an empty ledger file: skipped', $code == 1 && $out eq $none, "$code '$out'");
+    ($code, $out) = $run->(reg => { 'del:t1' => $cell->(JSON::PP::true) }, ledger => "$row\n");
+    t('every row undone (del: tombstone): skipped', $code == 1 && $out eq $none, "$code '$out'");
+    ($code, $out) = $run->(reg => { 'del:t1' => $cell->(undef) }, ledger => "$row\n");
+    t('a lifted tombstone counts the row again', $code == 0 && $out eq '', "$code '$out'");
+}
+
 print "\n$pass passed, $fail failed\n";
 exit($fail ? 1 : 0);

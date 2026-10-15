@@ -15,6 +15,12 @@
 #                                    when at least one position has shares;
 #                                    else print "no holdings", exit 1. One
 #                                    file read, no network
+#   perl weekly.pl --has-holdings-or-transactions
+#                                    the Watch's run-if (it also does a
+#                                    spending pass): exit 0 when a position has
+#                                    shares or the ledger holds a live imported
+#                                    transaction; else print "no holdings or
+#                                    transactions", exit 1. No network
 #
 # The week is the last full Monday–Friday before today (a Sunday run reports
 # the Friday just gone). Moves are at today's share count, from daily closes
@@ -46,9 +52,13 @@ my $JSON_OUT = JSON::PP->new->utf8->canonical->pretty;
 
 sub weekly_main {
     my ($verb, @args) = @_;
-    my %commands = (scan => \&cmd_scan, save => \&cmd_save, last => \&cmd_last, '--has-holdings' => \&cmd_has_holdings);
+    my %commands = (
+        scan => \&cmd_scan, save => \&cmd_save, last => \&cmd_last,
+        '--has-holdings' => \&cmd_has_holdings,
+        '--has-holdings-or-transactions' => \&cmd_has_holdings_or_transactions,
+    );
     my $run = $commands{ $verb // '' }
-        or do { print STDERR "usage: weekly.pl scan | save sections=JSON ties=JSON next_week=TEXT | last | --has-holdings\n"; exit 2 };
+        or do { print STDERR "usage: weekly.pl scan | save sections=JSON ties=JSON next_week=TEXT | last | --has-holdings | --has-holdings-or-transactions\n"; exit 2 };
     $run->(@args);
 }
 
@@ -69,6 +79,36 @@ sub holds_any {
 sub cmd_has_holdings {
     exit 0 if holds_any(register_investments());
     print "no holdings\n";
+    exit 1;
+}
+
+# True when data/ledger/*.jsonl holds a transaction not reverted out of the
+# report. Rows are grow-only; an undone import leaves them behind under a
+# `del:<id>` tombstone in edits.json (lww.js), so a row counts only without
+# one. Stops at the first live row.
+sub ledger_any {
+    my $dir = data_dir();
+    my $reg = (read_json("$dir/edits.json") || {})->{reg};
+    $reg = {} unless ref $reg eq 'HASH';
+    my $json = JSON::PP->new->utf8;
+    for my $file (glob("'$dir/ledger/'*.jsonl")) {
+        open(my $in, '<', $file) or next;
+        while (my $line = <$in>) {
+            next unless $line =~ /\S/;
+            my $row = eval { $json->decode($line) };
+            next unless ref $row eq 'HASH' && defined $row->{id};
+            my $del = $reg->{"del:$row->{id}"};
+            return 1 unless ref $del eq 'HASH' && $del->{v};
+        }
+    }
+    return 0;
+}
+
+# The Watch's run-if: it reports on holdings and on spending, so either one
+# is enough to run.
+sub cmd_has_holdings_or_transactions {
+    exit 0 if holds_any(register_investments()) || ledger_any();
+    print "no holdings or transactions\n";
     exit 1;
 }
 
