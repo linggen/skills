@@ -145,8 +145,8 @@ function droppedOf(content, before, after, lang) {
 
 const REPORT = /^\[scene\]\s+(won|lost|withdrew)\s+(\S+)/;
 
-export const THEN_BOUT = 'The fight is over: tell its finish from `bout.last` in a line or two — the blow that landed, how close it was (`bout.close`) — never a number. Name what it left (`bout.dropped`) as a find, in a line. Never Show a card `stage` already lists. ';
-export const THEN_BOUT_BARE = 'The fight is over (`bout.outcome`), and no record of it is kept: tell it in one plain line — never invent the blow or what it left. ';
+export const THEN_BOUT = 'The fight is over: tell its finish from `bout.last` in a line or two — the blow that landed, how close it was (`bout.close`) — never a number. Name what it left (`bout.dropped`) as a find, in a line. Never Show a card `stage` already lists. A scene\'s way on after a win is the page\'s: never Resolve it. ';
+export const THEN_BOUT_BARE = 'The fight is over (`bout.outcome`), and no record of it is kept: tell it in one plain line — never invent the blow or what it left. A scene\'s way on after a win is the page\'s: never Resolve it. ';
 
 function boutOf(content, state, outcome, id) {
   const creatureId = id.startsWith('haunt:') ? id.slice(6) : null;

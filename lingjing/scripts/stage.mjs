@@ -246,8 +246,11 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
     }
     // A fight the scene offers, and a creature at its haunt with no scene
     // running: both are on the stage, like a board.
+    // …but a scene's fight won, its way on untaken, is done: the scene card carries that way on
+    // (「接着 ›」, cards.js panelActsHtml — wonWayOn), never the beaten beast's 出手 again.
+    const won = look.scene?.panel ? wonWayOn(look) : null;
     for (const e of look.scene?.exits ?? []) {
-      if (e.game?.kind === 'duel' && !has('duel', e.game.id)) cards.push({ card: 'duel', id: e.game.id });
+      if (e.game?.kind === 'duel' && e.id !== won?.id && !has('duel', e.game.id)) cards.push({ card: 'duel', id: e.game.id });
     }
     const haunt = look.place?.encounter;
     // A beast caught, not fought (狰): its 出手 is offered only until the catch — then it is 收服's.
@@ -299,6 +302,31 @@ export function boardWaits(look, id) {
   if (at <= 0) return false;
   const open = bid => (look.tasks ?? []).some(t => t.id === bid && t.status !== 'done');
   return order.slice(0, at).some(open);
+}
+
+/* A scene's fight won and its way on not yet taken (2026-10-15: 蠪侄 beaten
+   at 00-longzhi, and nothing on the stage moved him on — the Resolve was left
+   to Ling, who told the finish and stopped). The way on is mechanical, so it
+   is the page's: the exit whose duel the save holds won (Look's exit brief
+   `won`), when exactly one waits — that exit, else null. A fight still open
+   (`look.fight`) holds it. */
+/* A scene's way on that is a card of its own, not a tap the story view can
+   hold at its last beat: the name (`value`), the 生辰 (`born`, roots unread),
+   a cauldron's throw (`breakthrough`), a fight not called by the scene's
+   words. While one waits, the story view never holds its last beat for the
+   scene's choices (cards.js panelActsHtml inBox) — it is put away, and the
+   card stands (2026-10-15: 00-hall's passage ended on 「…他把手放在测灵石上。」
+   with only its 看 list, the 生辰 card hidden behind it). */
+export function cardHoldsWay(look) {
+  const taps = new Set((look?.scene?.panel?.taps ?? []).map(t => t.id));
+  return (look?.scene?.exits ?? []).some(e => e.value || (e.born && !e.born.kept) || e.breakthrough?.odds
+    || (e.game?.kind === 'duel' && !e.won && !taps.has(e.id)));
+}
+
+export function wonWayOn(look) {
+  if (look?.fight) return null;
+  const ways = (look?.scene?.exits ?? []).filter(e => e.game?.kind === 'duel' && e.won);
+  return ways.length === 1 ? ways[0] : null;
 }
 
 /* The kinds the PAGE draws for itself, from Look alone: the scene's panel and

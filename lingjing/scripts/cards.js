@@ -8,7 +8,7 @@ import { WORDS as BATTLE_WORDS, boutWords, challengeHtml } from './battle-card.j
 import { layoutRoads } from './roadmap.js';
 import { frameOf, inside, within } from './atlas.js';
 import { inkLayerHtml, provinceLineHtml, pvState } from './inkmap.js';
-import { boardDoneToday, boardWaits, herAwake, onRoad, winnable } from './stage.mjs';
+import { boardDoneToday, boardWaits, herAwake, onRoad, winnable, wonWayOn } from './stage.mjs';
 import { fitValue } from './state.mjs';
 
 export const WORDS = {
@@ -1225,7 +1225,11 @@ export function panelActsHtml(ctx, { inBox = false } = {}) {
   // A game the scene stands on the stage and not yet played (射鹿, 接雨 …): the game makes the
   // choice, so the scene's ways on wait under it — never the same choice twice (his, 2026-10-14).
   const playing = gameOpen(ctx.look);
-  const shown = playing ? [] : (p.taps ?? []).filter((t) => !(t.duel && ctx.called?.has?.(t.duel)));
+  // A fight won whose way on is not yet taken stands as that way on (「接着 ›», stage.mjs wonWayOn):
+  // a save left with the win in hand is never stuck behind a card that says 今日已降 (2026-10-15).
+  const won = wonWayOn(ctx.look);
+  const shown = playing ? [] : (p.taps ?? []).map((t) => (won && t.id === won.id ? { id: t.id, label: t.label, quiet: 'on' } : t))
+    .filter((t) => !(t.duel && ctx.called?.has?.(t.duel)));
   const tapOf = (t) => (exitOf(t)?.riddle ? riddleTapHtml(t, exitOf(t), busy, w) : panelTapHtml(inBox && t.quiet ? { ...t, quiet: null, label: QUIET_TEXT[t.quiet]?.(t, w) ?? t.label } : t, busy, w));
   // The errands to take here stand among the scene's choices, one button each (Hanli, 2026-10-14:
   // one place to tap) — the card's own 接下 (data-do take), gone from them once taken.

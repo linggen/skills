@@ -18,8 +18,9 @@ as long as one runs; the rules refuse world-changing tools `in-a-fight`. You
 may talk — name the beast, tell its heritage, answer what a word means.
 
 When it ends the page says so:
-- `[scene] won <id>` — **Look**, then Resolve the exit if it has one (at a
-  haunt there is none). Look carries `bout` once: tell the finish from
+- `[scene] won <id>` — **Look**. A scene's way on after the win is the
+  page's: it Resolves that exit itself and its passage plays in the story
+  view — never Resolve it. Look carries `bout` once: tell the finish from
   `bout.last` — the blow that landed, how close it was (`close`) — never a
   number. What it left (`bout.dropped`: what it carried, sometimes a 符, one
   new card) the stage shows as spoils: say it as a find, in a line — never

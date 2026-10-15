@@ -14,7 +14,7 @@ import { holdPlaceholder } from './invite.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
-import { boardDoneToday, companionShown, petStageUrl, sceneGame, stageCards, stageSlots, stands } from './stage.mjs';
+import { boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, dropOf, pickOf, spoilsHtml } from './battle-card.js';
 import { wireDrag } from './battle-drag.js';
 import { banner, ghostsOf, playLog, since } from './battle-anim.js';
@@ -495,6 +495,7 @@ async function readOnce() {
   watchNode();
   watchMemory();
   watchTell();
+  watchWayOn();
   if (look.world?.atlas) await loadAtlas();
   watchHoming();
   festivalMoment();
@@ -1595,22 +1596,9 @@ function turnEnded() {
 /// user widget", 2026-09-17 — the skill declares the queue).
 function deliver(text, hidden) {
   // A scratch save (?save=) never messages Ling: the word is shown, the turn ends.
-  if (SCRATCH) { keep({ doNote: `${SCRATCH_BADGE} · ${text.split('\n')[0]}` }); turnEnded(); scratchTakes(text); return; }
+  if (SCRATCH) { keep({ doNote: `${SCRATCH_BADGE} · ${text.split('\n')[0]}` }); turnEnded(); return; }
   if (hidden) chat?.sendHidden(text);
   else chat?.send(text);
-}
-
-/* A scratch save has no Ling, so the one step she takes after a scene's
-   fight is won — Resolve its exit (SKILL.md: `[scene] won` → follow `then`) —
-   is taken here, or a check stood stuck on the 大比's round with the win in
-   hand. Only that: her words are not written, nothing else is decided. */
-async function scratchTakes(text) {
-  const won = /^\[scene\] won (\S+)$/.exec(text)?.[1];
-  const exit = won && (look?.scene?.exits ?? []).find((e) => e.game?.kind === 'duel' && e.game.id === won);
-  if (!exit) return;
-  const r = await write('resolve', { exit: exit.id }).catch(failed);
-  if (!r.ok) console.warn('[lingjing] scratch resolve', r);
-  await refresh();
 }
 
 /* 开府 — the setup milestones, read (no model) when the 事 chip opens. */
@@ -1821,6 +1809,27 @@ async function watchTell() {
     if (t?.ok && look) look.tell_owed = false;
     if (t?.ok && t.tell?.length) setReading(withTold(readingNow(), t.tell, look?.scene?.id ?? null, look?.run ?? null, lang()));
   } finally { drawingTold = false; }
+  watchWayOn();
+}
+
+/* A scene's fight won, its way on not yet taken (stage.mjs wonWayOn): the page
+   takes it, as it takes a board's (onWin → panelTap) — for every save, on the
+   win and on any later load (2026-10-15, live: 蠪侄 beaten at 00-longzhi, the
+   Resolve left to Ling, who told the finish and stopped; Hanli stood stuck
+   behind 今日已降). Ling hears `[scene] won <id>` and tells the finish; she
+   never Resolves it (guide/fight.md). A passage still owed is drawn first
+   (watchTell calls back here), and the exit's own story then plays on in the
+   story view. Tried once per play, scene and exit: a refusal (no 体力 for the
+   step) is said under the scene card, whose 「接着 ›」 stays his to tap. */
+const wayOnTried = new Set();
+function watchWayOn() {
+  const e = wonWayOn(look);
+  if (!e || bout || look?.tell_owed || drawingTold || view.panelBusy) return;
+  const key = `${look.run ?? ''}|${look.scene?.id ?? ''}|${e.id}`;
+  if (wayOnTried.has(key)) return;
+  wayOnTried.add(key);
+  const label = look.scene?.panel?.taps?.find((t) => t.id === e.id)?.label ?? e.id;
+  queueMicrotask(() => panelTap(e.id, label).catch((err) => console.warn('[lingjing] way on', err)));
 }
 /* The reading, read back from this browser the first time it is asked for. */
 function readingNow() {
@@ -1919,7 +1928,10 @@ const endingWaits = () => oldHuiPlaying() || riseWaits || Boolean(look?.tell_owe
    choices stand inside it (2026-10-14, his: 「那天傍晚 ›」 was a small link mid-stage). */
 function choicesInBox() {
   const r = readingHere();
-  return Boolean(playing(r) && atLast(r, lang()) && !look?.tell_owed && !drawingTold && !boxYields(true) && !gameOpen(look));
+  // …unless the way on is a card of its own (生辰, a name, a fight not called by words — stage.mjs
+  // cardHoldsWay): then the box is put away at its end and that card stands (2026-10-15, live at
+  // 00-hall: the passage held its last beat with only the 看 list, the 生辰 card hidden behind it).
+  return Boolean(playing(r) && atLast(r, lang()) && !look?.tell_owed && !drawingTold && !boxYields(true) && !gameOpen(look) && !cardHoldsWay(look));
 }
 function dialogBoxHtml(slots) {
   const r = readingHere();

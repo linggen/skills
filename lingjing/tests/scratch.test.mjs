@@ -110,11 +110,13 @@ test('the page: every verb carries --save, and scratch mode never opens the chat
   assert.match(body('deliver'), /if \(SCRATCH\)/, 'no message to Ling');
   assert.match(body('readCloud'), /if \(SCRATCH\) return/, 'no cloud sync');
   assert.match(page, /测试存档/, 'the badge');
-  assert.match(body('deliver'), /scratchTakes\(text\); return; \}/, 'no Ling: her one step after a fight is taken');
-  const takes = body('scratchTakes');
-  assert.match(takes, /\[scene\\\] won/, 'only a won fight');
-  assert.match(takes, /e\.game\?\.kind === 'duel' && e\.game\.id === won/, "only the scene's own fight exit");
-  assert.match(takes, /write\('resolve', \{ exit: exit\.id \}\)/);
+  // The way on after a scene's fight won is the page's for every save now (watchWayOn, tests/won-way-on.test.mjs):
+  // a scratch save needs no stand-in for Ling's Resolve.
+  assert.doesNotMatch(page, /scratchTakes/);
+  const way = body('watchWayOn');
+  assert.match(way, /wonWayOn\(look\)/, "only the scene's own won fight exit");
+  assert.match(way, /panelTap\(e\.id, label\)/, 'taken the way a tap takes it');
+  assert.doesNotMatch(way, /SCRATCH/, 'for every save, not only a scratch one');
   assert.match(body('footRowHtml'), /slots\.footer\.roads \|\| scratchRoads\(\)/, 'no chat to ask 何去何从: the roads always stand');
   assert.match(page, /const scratchRoads = \(\) => Boolean\(SCRATCH\) && !look\?\.seclusion && !look\?\.director\?\.corridor;/, 'but never in 闭关 or a corridor');
 });
