@@ -2051,7 +2051,8 @@ test('Build takes the player to a fresh save in their world, which plays once it
     assert.equal(again.place.id, 'shrine', 'where he stood');
   } finally {
     fs.rmSync(png, { force: true });
-    if (!fs.readdirSync(pictures).length) fs.rmdirSync(pictures);
+    // Another run of the suite (a parallel agent in the same checkout) may share data/pictures.
+    try { if (!fs.readdirSync(pictures).length) fs.rmdirSync(pictures); } catch { /* gone already */ }
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
@@ -2104,7 +2105,8 @@ test('Amend adds a creature where it haunts, or a place with its roads laid back
   assert.equal(run('move', '--place=temple').place.id, 'temple');
   } finally {
     fs.rmSync(png, { force: true });
-    if (!fs.readdirSync(pictures).length) fs.rmdirSync(pictures);
+    // Another run of the suite (a parallel agent in the same checkout) may share data/pictures.
+    try { if (!fs.readdirSync(pictures).length) fs.rmdirSync(pictures); } catch { /* gone already */ }
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
@@ -3448,7 +3450,11 @@ test('two callers at once: the save is locked from read to write, and no change 
     const ware = content.items.items.filter(i => (i.sold ?? []).includes(market.province)).sort((a, b) => a.buy - b.buy)[0];
     fs.writeFileSync(path.join(data, 'state.json'), JSON.stringify({ ...toOpenWorld(), place: market.id, wealth: 1e6, bag: {}, updated: NOW.toISOString() }));
     const N = 8;
-    const loop = `const { spawnSync } = require('node:child_process'); for (let i = 0; i < ${N}; i++) spawnSync(process.execPath, [${JSON.stringify(rules)}, 'trade', '--action=buy', '--id=${ware.id}'], { stdio: 'ignore' });`;
+    // A call that cannot have the lock in its wait answers `busy` and changes nothing — under a
+    // loaded machine (the whole suite, other agents' runs) a call can take seconds, so two waiting
+    // behind one holder may run out their wait. That is the lock working: such a buy is asked
+    // again, as Ling would. Anything else than ok or busy fails the count.
+    const loop = `const { spawnSync } = require('node:child_process'); for (let i = 0; i < ${N}; i++) for (let k = 0; k < 20; k++) { const r = spawnSync(process.execPath, [${JSON.stringify(rules)}, 'trade', '--action=buy', '--id=${ware.id}'], { encoding: 'utf8' }); let o = {}; try { o = JSON.parse(r.stdout); } catch {} if (o.refused !== 'busy') break; }`;
     const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
     await Promise.all([0, 1, 2].map(() => new Promise(done => spawn(process.execPath, ['-e', loop], { env, stdio: 'ignore' }).on('exit', done))));
     const saved = JSON.parse(fs.readFileSync(path.join(data, 'state.json'), 'utf8'));

@@ -114,6 +114,7 @@ const lockAge = file => { try { return Date.now() - fs.statSync(file).mtimeMs; }
    killed mid-write (8 s under load, 2026-10-15) leaves its lock behind, and
    every call after it waited out the stale age — on a loaded machine, past its
    own timeout too. A lock whose process no longer runs is free at once. */
+const lockPid = lock => { try { return fs.readFileSync(lock, 'utf8').trim(); } catch { return null; } };
 const holderGone = lock => {
   let pid;
   try { pid = Number(fs.readFileSync(lock, 'utf8').trim()); } catch { return false; }
@@ -131,7 +132,10 @@ function takeLock(lock) {
     } catch (err) {
       if (err.code !== 'EEXIST') throw err;
     }
-    if (lockAge(lock) > LOCK.stale_ms || holderGone(lock)) { fs.rmSync(lock, { force: true }); continue; }
+    // Taken over only if the file still names the holder judged gone: between reading its pid and
+    // the judgement, that holder may have let go and another call taken the lock afresh.
+    const seen = lockPid(lock);
+    if (lockAge(lock) > LOCK.stale_ms || holderGone(lock)) { if (lockPid(lock) === seen) fs.rmSync(lock, { force: true }); continue; }
     if (Date.now() >= until) return false;
     nap(LOCK.retry_ms);
   }
