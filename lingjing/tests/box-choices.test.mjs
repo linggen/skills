@@ -79,3 +79,14 @@ test('the footer chips\' popovers are anchored to the footer, not clipped by the
   assert.match(css, /\.slotfoot \.bookwrap \{ position: static; \}/, 'every footer chip, the 去往 list too (2026-10-15)');
   assert.match(css, /\.slotfoot \.bookpop \{[^}]*bottom: calc\(100% \+ 10px\)/);
 });
+
+test('the footer\'s popovers stand one at a time: every opener shuts the others', () => {
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const pops = /const POPOVERS = \[([^\]]+)\]/.exec(src)?.[1].match(/'(\w+)'/g).map((k) => k.slice(1, -1));
+  assert.deepEqual(pops?.sort(), ['bookOpen', 'gearOpen', 'ledgerOpen', 'roadsOpen', 'shelfOpen', 'wxOpen']);
+  for (const k of pops) {
+    const openers = [...src.matchAll(new RegExp(`${k}: (!view\\.${k}|true)`, 'g'))];
+    assert.ok(openers.length, `${k} has an opener`);
+    for (const m of openers) assert.match(src.slice(m.index, m.index + 160), new RegExp(`othersShut\\('${k}'\\)`), `${k}'s opener shuts the others`);
+  }
+});

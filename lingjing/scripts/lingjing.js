@@ -1166,8 +1166,13 @@ async function senseCall(body = null) {
     return { ok: false, status: 0, sense: null };
   }
 }
+/* The footer's popovers, one open at a time: each opener shuts the rest (2026-10-15 review — 天气 then
+   事 left both open, stacked on one anchor; the openers sit before the '*' catch-all, so it never ran). */
+const POPOVERS = ['bookOpen', 'roadsOpen', 'shelfOpen', 'wxOpen', 'ledgerOpen', 'gearOpen'];
+const othersShut = (open) => Object.fromEntries(POPOVERS.filter((k) => k !== open).map((k) => [k, false]));
+
 async function openWx() {
-  show({ wxOpen: !view.wxOpen, wxNote: null, bookOpen: false, gearOpen: false, ledgerOpen: false });
+  show({ wxOpen: !view.wxOpen, wxNote: null, ...othersShut('wxOpen') });
   if (!view.wxOpen) return;
   const r = await senseCall();
   show({ wxSense: r.sense, wxNote: r.ok ? null : cityNote(r, lang()) });
@@ -2356,7 +2361,7 @@ async function useItem(id, action = 'use') {
 }
 
 async function openGear() {
-  if (!view.gearOpen) show({ gearOpen: true, luOpen: false, bookOpen: false, gear: null, pouchToss: null });
+  if (!view.gearOpen) show({ gearOpen: true, luOpen: false, ...othersShut('gearOpen'), gear: null, pouchToss: null });
   const r = await verb('gear').catch((e) => { console.warn('[lingjing] gear', e); return null; });
   if (view.gearOpen) show({ gear: r?.gear ?? null, gearNote: null });
 }
@@ -2532,10 +2537,10 @@ function sayTap(spoken, e) {
    it was for. */
 const busy = (key, fn) => () => run(key, fn);
 const CLICKS = [
-  ['[data-book]', () => { show({ bookOpen: !view.bookOpen, gearOpen: false, ledgerOpen: false, roadsOpen: false, shelfOpen: false }); if (view.bookOpen) loadKaifu(); }],
-  ['[data-roads]', () => show({ roadsOpen: !view.roadsOpen, bookOpen: false, shelfOpen: false, wxOpen: false })],
-  ['[data-shelf]', () => show({ shelfOpen: !view.shelfOpen, bookOpen: false, roadsOpen: false, wxOpen: false })],
-  ['[data-ledger]', () => show({ ledgerOpen: !view.ledgerOpen, bookOpen: false, gearOpen: false })],
+  ['[data-book]', () => { show({ bookOpen: !view.bookOpen, ...othersShut('bookOpen') }); if (view.bookOpen) loadKaifu(); }],
+  ['[data-roads]', () => show({ roadsOpen: !view.roadsOpen, ...othersShut('roadsOpen') })],
+  ['[data-shelf]', () => show({ shelfOpen: !view.shelfOpen, ...othersShut('shelfOpen') })],
+  ['[data-ledger]', () => show({ ledgerOpen: !view.ledgerOpen, ...othersShut('ledgerOpen') })],
   ['[data-wx]', () => run('wx:open', () => openWx())],
   ['[data-wx-set]', () => { if (skyDraft.city.trim()) run('wx:set', () => setSense({ city: skyDraft.city.trim() })); }],
   ['[data-wx-off]', (el) => run('wx:off', () => setSense({ off: el.dataset.wxOff === 'off' }))],
