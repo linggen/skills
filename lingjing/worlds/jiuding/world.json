@@ -22,6 +22,21 @@
   "史记"
  ],
  "authored": true,
+ "kaifu": {
+  "_about": "The order Linggen's one-time setup milestones open in, one a day (rules/chores.mjs): a spirit first, the account, her voice and memory, then the phone ones once a phone is bound, the browser and missions, and ChatGPT — another way to a spirit — last. An id not listed comes after, in the app's own order.",
+  "order": [
+   "linggen-model",
+   "linggen-account",
+   "linggen-voice",
+   "linggen-memory",
+   "linggen-pair",
+   "linggen-phone-chat",
+   "linggen-remote",
+   "linggen-mission",
+   "linggen-browser",
+   "linggen-chatgpt"
+  ]
+ },
  "atlas": {
   "_about": "The world map: art/map/jiuzhou.svg, cleaned of every word by tools/clean_map.py. Each place's `map` and each province here are [x, y] as fractions of it; tools/pin.py starts a new place from its longitude and latitude.",
   "file": "art/map/jiuzhou.svg",

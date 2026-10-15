@@ -18,8 +18,8 @@ test('the book tops itself with the hand-in: title, 已记, the gains, and the h
 
 test('the 事 popover carries the line while it is fresh', () => {
   const html = bookPopHtml({ look: { book: [] }, words: w, lang: 'zh', turned: { id: 'k', title: '入籍', paid: { wealth: 20 }, at: Date.now() } });
-  assert.match(html, /bookrow turned/);
-  assert.match(html, /交差 · 入籍/);
+  assert.match(html, /bookrow trow turned/);
+  assert.match(html, /入籍.*已交 ✓ · 灵石 \+20/s, 'the row says what came in, in place');
 });
 
 test('所得 is stale once every row has stood its while', () => {

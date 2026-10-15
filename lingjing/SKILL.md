@@ -813,7 +813,7 @@ On `no-stamina` speak its `say` — Yinyue, not you, sends the player to rest.
 **闭关**: while Look carries `seclusion` the world holds still (`in-seclusion`)
 until the player taps 出关 — never offer it or read the hours back.
 **Before the gate** (Look's `locked`) the player is a mortal: never offer
-cultivation, chores, 一次 steps, divination or errands; on `not-yet` speak its `say`.
+cultivation, chores, 一次, divination or errands; on `not-yet` speak its `say`.
 
 ## Bounds
 

@@ -97,8 +97,9 @@ test('the 事 chip: how many in hand, what can be handed in — and its popover 
   const html = bookPopHtml(page);
   assert.match(html, /吕梁洪的水声/);
   assert.match(html, /到 0\/1 · 在吕梁洪/);
-  assert.match(html, /class="bookrow ready".*扫描.*交 差/s, 'the scan its app saw done is handed in from the row');
-  assert.match(html, /炼体.*Health · 今日待做/s);
+  assert.match(html, /class="bookrow trow ready".*扫描.*交 差/s, 'the scan its app saw done is handed in from the row');
+  assert.match(html, /可交 · 1.*已接 · 2/s, 'grouped by state: what can be handed in first');
+  assert.match(html, /t-day">每日<\/span>.*炼体.*今日.*去 Health 做/s, 'a chore wears its tag, its period and its app\'s page');
   assert.doesNotMatch(html, /undefined|\{\w+\}/);
   assert.doesNotMatch(html, /说说|bookdetail/, 'closed rows: nothing opened, and no row asks the model for what the page knows');
   // a row opened: the page reads the line from the rules and shows it — no model turn

@@ -7,7 +7,7 @@ import { addStamina, dayKey, periodKey, pick, settleStamina, seedOf } from '../s
 import { drop } from './arms.mjs';
 import { cardCatalog, fightSetup, winCard } from './cards.mjs';
 import { clone, pay, refuse, replaying, spendStamina } from './core.mjs';
-import { choreCounts, choreGrant, questDone } from './chores.mjs';
+import { choreCounts, choreGrant, isOnce, kaifuAfter, questDone } from './chores.mjs';
 import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from './errands.mjs';
 import { duelBrief, tasksBrief } from './look.mjs';
 import { hashOf } from './travel.mjs';
@@ -141,10 +141,12 @@ function questCheck(state, content, ctx, id) {
   if (!q) return refuse('unknown-quest', null);
   const period = periodKey(q.period, ctx.now);
   if (state.chores[id]?.period === period) return refuse('already-paid', null);
-  if (!choreCounts(state, quests, q, ctx.now)) return refuse('not-today', null, { app: q.app });
+  if (!choreCounts(state, quests, q, ctx.now, content)) return refuse(isOnce(q) ? 'not-open' : 'not-today', null, { app: q.app });
   if (!questDone(q, ctx.now)) return refuse('not-done', null, { app: q.app });
   const s = clone(state);
   s.chores[id] = { period, paid_at: ctx.now.toISOString() };
+  // 开府 drips: the open one handed in, the next opens tomorrow (chores.mjs).
+  if (isOnce(q)) s.kaifu = kaifuAfter(state, content, quests, ctx.now, id);
   const grant = choreGrant(content, q);
   const paid = pay(content, s, ctx, grant);
   settleStamina(content, s, ctx.now);

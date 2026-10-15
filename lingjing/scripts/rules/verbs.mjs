@@ -4,7 +4,7 @@ import { dayKey, fill, pick } from '../state.mjs';
 import { artBrief, artOf, refine } from './arms.mjs';
 import { deck } from './cards.mjs';
 import { clone, judge, paysOf, refuse, resolve, setRiddleAside } from './core.mjs';
-import { choreGrant, kaifuList } from './chores.mjs';
+import { choreGrant, isOnce, kaifuAfter, kaifuList, kaifuOpen } from './chores.mjs';
 import { greet } from './daily.mjs';
 import { afterMet, awayLine, BOOK_MAX, bookOf, complete, countsOf, gearBrief, HANDED_KEEP, handedOne, itemOf, mootQuest, noticeAt, noticeOf, questDoneBefore, questOf, questReady, withGiver } from './errands.mjs';
 import { meet } from './road.mjs';
@@ -83,7 +83,9 @@ export function quest(state, content, ctx, args) {
   // 2026-09-21: what the page knows it shows — the model is for telling).
   if (action === 'info') return { state: null, result: questInfo(state, content, ctx, id) };
   // 开府 in full, for the page's own section — a read, never on Look.
-  if (action === 'kaifu') return { state: null, result: { ok: true, kaifu: kaifuList(state, ctx.quests ?? [], ctx.now, lang) } };
+  if (action === 'kaifu') return { state: null, result: { ok: true, kaifu: kaifuList(state, ctx.quests ?? [], ctx.now, lang, content) } };
+  // 跳过 on the open 开府 milestone (Hanli, 2026-10-15: never stuck): no pay, the next opens tomorrow.
+  if (action === 'skip') return kaifuSkip(state, content, ctx, id);
   // A 功课 is handed in with the same word as any errand; its app is the witness.
   if (action === 'turn' && (ctx.quests ?? []).some(x => x.id === id)) return choreTurn(state, content, ctx, id);
   const q = questOf(content, id);
@@ -112,7 +114,7 @@ export function quest(state, content, ctx, args) {
     return { state: s, result: { ok: true, took: id, title: pick(q.title, lang), book: bookOf(content, s, lang, ctx) } };
   }
 
-  if (action !== 'turn') return refuse('unknown-action', null, { actions: ['take', 'turn', 'drop', 'info', 'kaifu'] });
+  if (action !== 'turn') return refuse('unknown-action', null, { actions: ['take', 'turn', 'drop', 'info', 'kaifu', 'skip'] });
   if (!s.quests[id]) return refuse('not-taken', null);
   if (questDoneBefore(s, id)) return refuse('already-done', null);
   if (!questReady(content, s, q)) return refuse('not-done', null, { need: countsOf(content, s, q).map(n => ({ kind: n.kind, have: n.have, n: n.n })) });
@@ -149,6 +151,17 @@ function questInfo(state, content, ctx, id) {
     ...(q.grant?.item ? { gives: pick(itemOf(content, q.grant.item)?.name, lang) } : {}),
     // `then` is the wrapper's word to Ling on every result; the next link is `next`.
     ...(next ? { next: pick(next.title, lang) } : {}) };
+}
+
+/* 跳过: the open 开府 milestone set aside — it pays nothing, comes back at the
+   end of the order, and done in real life may still be handed in any day. */
+function kaifuSkip(state, content, ctx, id) {
+  const quests = ctx.quests ?? [];
+  if (!quests.some(q => q.id === id && isOnce(q))) return refuse('unknown-quest', null);
+  if (kaifuOpen(state, content, quests, ctx.now).open?.id !== id) return refuse('not-open', null);
+  const s = clone(state);
+  s.kaifu = kaifuAfter(state, content, quests, ctx.now, id, true);
+  return { state: s, result: { ok: true, skipped: id, kaifu: kaifuList(s, quests, ctx.now, state.lang, content) } };
 }
 
 function choreTurn(state, content, ctx, id) {

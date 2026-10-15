@@ -596,8 +596,13 @@ alone: `scripts/try-game.html?game=storm|deer|xisui|zhoutian&lang=zh|en`.
   the game names no app; done is the app's own record (`done_at`), never
   self-reported; only due/done/when cross. The book shows the **fixed** chore
   (the workout) and **one pick a day** from the `pool` entries (hash of day +
-  save + id; alternating 💻/📱); others done anyway are `not-today`. **开府**
-  (`period: "once"`, the setup milestones) is its own section, paid once ever.
+  save + id; alternating 💻/📱); others done anyway are `not-today`. **一次**
+  (`period: "once"`, the setup milestones, once 开府) drip **one a day**
+  (Hanli, 2026-10-15): one open, in world.json `kaifu.order`; handed in or
+  skipped (跳过, `state.kaifu`), the next opens the next calendar day; a
+  skipped one comes back at the end and, done, may be handed in any day;
+  paid once ever. The 事 book is one list, every row tagged (差事 · 一次 ·
+  每日 · 每周 · 令), grouped 可交 → 已接 → 可接, 已交 folded.
   Apps: CFO, DJ, Shifu, Health (writers named in each app).
 
 ## 体力 and 闭关 【已建】

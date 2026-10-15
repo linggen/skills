@@ -295,9 +295,39 @@ button.pl:hover { background: var(--ling-soft); }
 /* 人间功课 — where it is done (💻/📱); 开府 — ✓ once its app saw it, dimmed once counted. */
 .bookrow .device { font-size: 12px; }
 .bookrow a.act { text-decoration: none; }
-.bookrow.kaifu .tick { display: inline-block; width: 1em; color: var(--dim, inherit); }
-.bookrow.kaifu.done .tick { color: var(--seal); }
-.bookrow.kaifu.done:not(.ready) b { opacity: .6; }
+/* The 事 book (2026-10-15): one row per task, its tag on the left, grouped 可交 → 已接 → 可接,
+   「▸ 已交 n」 folded. 可交 rows sit on a light gold ground. On a narrow book the action drops
+   under the title, the tag stays left. */
+.bookpop { container-type: inline-size; max-height: min(70vh, 640px); overflow-y: auto; }
+.bookgoal { line-height: 1.5; }
+.bookgoal .lbl { color: var(--ling); font-family: var(--serif); font-weight: 600; margin-right: 4px; }
+.tgroup { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); display: grid; gap: 4px; }
+.bookpop > .tgroup:first-child { margin-top: 0; border-top: 0; padding-top: 0; }
+.tgroup .thead { margin-bottom: 2px; }
+.tgroup.tdone summary { cursor: pointer; list-style: none; }
+.tgroup.tdone summary::-webkit-details-marker { display: none; }
+.tgroup.tdone summary::before { content: '▸ '; }
+.tgroup.tdone[open] summary::before { content: '▾ '; }
+.bookrow.trow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 4px 10px; padding: 5px 6px; margin: 0 -6px; border-radius: 6px; }
+.tgroup.groupReady .bookrow.trow { background: color-mix(in srgb, #d9b25a 16%, transparent); }
+.bookrow.trow .tmain { min-width: 0; }
+.bookrow.trow .tline { overflow-wrap: anywhere; }
+.bookrow.trow .tpay { color: var(--ling); }
+.bookrow.trow .tact { display: flex; gap: 6px; align-items: center; justify-content: flex-end; }
+.bookrow.trow .tact .act { white-space: nowrap; }
+.bookrow.trow.turned .tpay { color: var(--seal); font-weight: 600; }
+.bookrow.trow.done b, .bookrow.trow.waits b { font-weight: 400; color: var(--dim); }
+.tag { flex: none; align-self: start; margin-top: 2px; font-size: 11px; line-height: 1; padding: 3px 5px; border-radius: 4px; border: 1px solid currentColor; white-space: nowrap; color: #6b6660; }
+.tag.t-once { color: var(--seal); }
+.tag.t-day, .tag.t-week { color: #2f7f86; }
+.tag.t-ling { color: #a5712a; }
+.tag.t-tale, .tag.t-chance { color: var(--ling); }
+.act.skip { font-size: 12px; }
+@container (max-width: 420px) {
+  .bookrow.trow { grid-template-columns: auto minmax(0, 1fr); }
+  .bookrow.trow .tact { grid-column: 2; justify-content: flex-start; }
+  .bookrow.trow .tact:empty { display: none; }
+}
 /* A 差事 offered where he stands: the giver speaks, and one button takes it. */
 .card.offer .say { margin: 6px 0 8px; line-height: 1.7; }
 .card.offer { border-left: 3px solid var(--seal); }

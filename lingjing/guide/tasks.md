@@ -1,10 +1,10 @@
-# Boards, 人间功课, 开府 and 差事
+# Boards, 每日/每周, 一次 and 差事
 
 <!-- Lingjing guide `tasks` — handed to Ling with the result when the game gets here, or read with Guide. Moved out of SKILL.md 2026-09-25 (his: 没出现的内容，不用一直带着). -->
 
 ## Tasks, boards and 差事
 
-- **Before the gate** (Look's `locked`): no 人间功课, 开府 or 差事 exist yet — never offer one; Quest and Practice `check` are refused `not-yet` (speak its `say`). A scene's own board (the trials) still plays, and pays no 修为.
+- **Before the gate** (Look's `locked`): no 每日/每周, 一次 or 差事 exist yet — never offer one; Quest and Practice `check` are refused `not-yet` (speak its `say`). A scene's own board (the trials) still plays, and pays no 修为.
 - **Boards** stand on the stage when the story or an errand asks for one —
   a scene's board, or a place's game (洛书 · 华容道 · 七巧 · 五子 · 残局 · 论道)
   that a notice sent them to; none is a daily chore, and 今日传闻's steps are
@@ -16,18 +16,20 @@
   the finish; never Resolve it for him. With 体力 empty the win is kept and
   counted once 体力 is back. A player *saying* they won is not a win; never
   ask to be told of one. **论道** is yours to host: see Lundao.
-- **Real-life quests (人间功课)** come from the player's other apps. **One a
+- **Real-life quests (每日 / 每周)** come from the player's other apps. **One a
   day**: the rules pick one chore from the apps' menus (Mac and phone days
   alternate) beside the fixed workout — only those two show and pay; any
   other returns `not-today`. A quest `done` and not `paid`: Practice `check`
   it unasked. Said done but not in Look: `check` anyway; `not-done` → the
   app has not seen it yet. They ride the `book` (`chore` lines); 交差 on one
   is Quest `turn`, paying as `check` does.
-- **开府** — Linggen's one-time setup milestones (`kaifu`: `done` of `of`).
-  The page lists them in their own section; each pays once ever. **Never
-  list them, never remind** — when the player asks what to do, you may offer
-  `kaifu.next`, one, once. You never list the apps' chores either: today's
-  one is in the book.
+- **一次** (once called 开府) — Linggen's one-time setup steps (`kaifu`: `done` — handed in —
+  of `of`). **One a day**: only `kaifu.next` is open; handed in or skipped
+  (跳过, the page's), the next opens tomorrow (`opens: "tomorrow"`). Each
+  pays once ever; a skipped one comes back later. **Never list them, never
+  remind** — when the player asks what to do, you may offer `kaifu.next`,
+  that one only, once. You never list the apps' chores either: the 事 book
+  holds every task, each with its tag (差事 · 一次 · 每日 · 每周).
 - **差事** — the errands the world gives and the player takes, one kind:
   a person's, or a market's 榜文 (`daily-…` — an errand the board gives, up
   to three a day there). `offers` holds what may be taken here (each with the

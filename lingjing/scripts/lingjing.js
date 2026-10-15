@@ -2233,6 +2233,7 @@ async function chooseWay(n) {
 const DOES = {
   take: (id) => write('quest', { action: 'take', id }),
   turn: (id) => write('quest', { action: 'turn', id }),
+  skip: (id) => write('quest', { action: 'skip', id }), // 跳过 on the open 一次 step: the next opens tomorrow
   buy: (id) => write('trade', { action: 'buy', id }),
   sell: (id) => write('trade', { action: 'sell', id }),
   use: (id) => write('trade', { action: 'use', id }),
@@ -2244,7 +2245,7 @@ async function doTap(action, id) {
   keep({ doNote: r.ok ? r.paid?.pouch_full ?? r.pouch_full ?? null : refusal(r) });
   if (r.ok && action === 'take') tookOffer(id);
   await refresh();
-  if (r.ok && action === 'turn' && view.bookOpen) await loadKaifu();
+  if (r.ok && (action === 'turn' || action === 'skip') && view.bookOpen) await loadKaifu();
   if (r.ok && action === 'turn') showTurned(id, r);
   // 交差 on 传闻's line counts a kept win: the next step is the story's.
   if (r.ok && id === 'tale' && r.ended) taleEnded(r.handed?.[0]?.title ?? r.title);

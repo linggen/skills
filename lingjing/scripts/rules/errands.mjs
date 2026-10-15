@@ -111,7 +111,9 @@ function errandsOf(content, state, lang, now) {
       // 五子 at 桑间, 2026-09-24 — it looked broken).
       const kept = n => n.kind === 'board' && !n.done && Boolean(state.wins?.[n.task]);
       const ready = need.every(x => x.done), away = ready && !withGiver(state, q);
-      return { id, title: pick(q.title, lang), need: need.map(n => ({ kind: n.kind, have: n.have, n: n.n, ...(kept(n) ? { kept: true } : {}) })), ready,
+      // Who gives it and what it pays — the 事 book's row says both under the title (2026-10-15).
+      return { id, title: pick(q.title, lang), who: q.from?.who ? pick(q.from.who, lang) : null, pays: paysOf(content, state, now, q.grant),
+        need: need.map(n => ({ kind: n.kind, have: n.have, n: n.n, ...(kept(n) ? { kept: true } : {}) })), ready,
         // Done, but the person it is for is elsewhere: who, and the way there.
         ...(away ? { away: { who: pick(q.from.who, lang) } } : {}),
         where: away ? whereAt(content, state, placeOf(content, giverAt(q)), lang, now) : whereFor(content, state, q, need, lang, now) };
