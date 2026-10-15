@@ -174,6 +174,11 @@ body.storying .slots { visibility: hidden; }
 @keyframes wayIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .story .wayacts .looks { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
 .story .wayacts .lookhead, .story .wayacts .lookfound li, .story .wayacts .sceneinvite { color: var(--on-dim); }
+/* A board left on an earlier day, offered again (cards.js replayHtml): a quiet beat under the way on, its buttons small. */
+.story .wayacts .replaybeat { margin-top: 14px; text-align: center; }
+.story .wayacts .replaybeat .acts { justify-content: center; }
+.story .wayacts .replaybeat .act { background: rgba(251, 248, 242, .9); color: #1D1B17; border: 1px solid rgba(227, 192, 126, .7); }
+.story .wayacts .replaybeat .act.quiet { background: transparent; color: var(--on-dim); }
 .story .wayacts .lookfound li b { color: var(--on-stage); }
 .story .wayacts .lookchip { background: rgba(13, 17, 20, .35); color: var(--on-stage); border-color: rgba(241, 236, 225, .4); }
 /* A finding on the stage: light words on a wash of ink, not pale pink on paper (2026-10-15). */
