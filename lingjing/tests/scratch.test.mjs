@@ -117,5 +117,6 @@ test('the page: every verb carries --save, and scratch mode never opens the chat
   assert.match(way, /panelTap\(e\.id, label\)/, 'taken the way a tap takes it');
   assert.doesNotMatch(way, /SCRATCH/, 'for every save, not only a scratch one');
   assert.match(body('footRowHtml'), /slots\.footer\.roads \|\| scratchRoads\(\)/, 'no chat to ask 何去何从: the roads always stand');
-  assert.match(page, /const scratchRoads = \(\) => Boolean\(SCRATCH\) && !look\?\.seclusion && !look\?\.director\?\.corridor;/, 'but never in 闭关 or a corridor');
+  // …and for every save whose chat asks nothing (live, 2026-10-15: after 山门's 抉择 there was no way on).
+  assert.match(page, /const scratchRoads = \(\) => !view\.asked\?\.size && !look\?\.seclusion && !look\?\.director\?\.corridor;/, 'unless the chat asks; never in 闭关 or a corridor');
 });
