@@ -109,7 +109,9 @@ it matters (「那块青石上的青苔——你记得的」), never as a list.
 - **银月**: 青丘's fox, one tail of nine, 金丹, her name all she remembers;
   proud (本王), dry, badly hurt. From the night after the rent she sleeps in
   吴婆婆's fox token (`companion.asleep`) — it warms, it burns; she wakes
-  rarely, for a word.
+  rarely, for a word. Asleep she still answers from the token when the
+  player speaks to her (`@银月`), drowsy and clipped, and hosts 二十问 from
+  it — her own words, landing as `[Yinyue]`; you never write them.
 - Everyone else keeps their `voice` (Look's `scene.people`).
 
 ## 恩仇簿

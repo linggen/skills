@@ -13,8 +13,9 @@ import { loadContent } from '../scripts/content.mjs';
 import { dayKey, newState } from '../scripts/state.mjs';
 import { forLing, look, playTo, VERBS } from '../scripts/rules.mjs';
 import { guessed } from '../scripts/rules/aigames.mjs';
+import { fitPresence } from '../scripts/rules/companion.mjs';
 import { stageCards } from '../scripts/stage.mjs';
-import { cardHtml, WORDS } from '../scripts/cards.js';
+import { bookPopHtml, cardHtml, WORDS } from '../scripts/cards.js';
 import { topics, guideText } from '../scripts/rules/guide.mjs';
 
 process.env.LINGJING_STAMINA_LIMIT = '0';
@@ -50,11 +51,53 @@ const must = (verb, state, args, c) => {
 
 /* ════════ 二十问 ════════ */
 
-test('二十问 is hers: asleep in the token there is no game and no card', () => {
-  const asleep = { ...base, companion: { ...base.companion, asleep: true, awake: undefined } };
-  assert.equal(look(asleep, content, ctx()).twenty, undefined);
-  assert.equal(run('twenty', asleep, { action: 'open' }).r.refused, 'no-host');
-  assert.ok(look(base, content, ctx()).twenty, 'awake: offered');
+test('二十问 is hers — found is enough: asleep in the token she hosts it from there, one round a day, drowsy', () => {
+  const asleep = fitPresence(content, { ...base, companion: { ...base.companion, asleep: true, awake: undefined } });
+  assert.equal(asleep.companion.here, true, 'asleep, still at the table (the engine\'s gate)');
+  assert.ok(!asleep.companion.awake);
+  const offered = look(asleep, content, ctx()).twenty;
+  assert.equal(offered.rounds_left, 1, 'asleep: one round a day');
+  assert.equal(offered.fresh, true, 'none played today');
+  const { s, r } = must('twenty', asleep, { action: 'open' }, ctx({ reader: 'yinyue' }));
+  assert.match(r.host, /^You are ASLEEP/, 'her drowsy voice first, never cut');
+  assert.match(r.host, /本王/);
+  assert.match(r.host, /NEVER say/, 'the same rules of play');
+  assert.ok(![...JSON.stringify(r)].slice(0, 1200).join('').includes('"secret"'), 'the head Ling may read holds no secret');
+  const done = must('twenty', s, { action: 'quit' }).s;
+  assert.equal(run('twenty', done, { action: 'open' }).r.refused, 'rounds-done');
+  assert.ok(!look(done, content, ctx()).twenty.fresh, 'played today: the 事 list offers it no more');
+  // Awake: two, and her voice as it was.
+  assert.equal(look(base, content, ctx()).twenty.rounds_left, content.aigames.twenty.rounds);
+  assert.doesNotMatch(run('twenty', base, { action: 'host' }, ctx({ reader: 'yinyue' })).r.host, /ASLEEP/);
+});
+
+test('二十问: never before she is found, never on a 今 line', () => {
+  const { companion, ...unmet } = base;
+  assert.equal(look(unmet, content, ctx()).twenty, undefined);
+  assert.equal(run('twenty', unmet, { action: 'open' }).r.refused, 'no-host');
+  const jin = playTo(content, newState(content, 'zh', NOW), '今二', { now: NOW }).state;
+  assert.ok(jin.companion?.joined, 'she was found before 今二');
+  assert.equal(fitPresence(content, jin).companion.here, undefined, '今: not at the table');
+  assert.equal(look(jin, content, ctx()).twenty, undefined);
+  assert.equal(run('twenty', jin, { action: 'open' }).r.refused, 'no-host');
+});
+
+test('二十问 is found: an empty stage offers it while she sleeps (no coins then), the 事 list once a day — never on 今', () => {
+  const asleep = fitPresence(content, { ...base, companion: { ...base.companion, asleep: true, awake: undefined } });
+  const quiet = { ...look(asleep, content, ctx()), scene: null, offers: [], place: { ...look(asleep, content, ctx()).place, meet: null } };
+  const cards = stageCards(quiet);
+  assert.ok(!cards.some(c => c.card === 'hexagram'), 'asleep: no coins');
+  assert.ok(cards.some(c => c.card === 'twenty'), 'the empty stage offers 二十问');
+  assert.ok(!stageCards({ ...quiet, offers: [{ id: 'x', title: 'x' }] }).some(c => c.card === 'twenty'), 'never over a scene\'s business');
+  const row = l => bookPopHtml({ look: l, words: WORDS.zh, lang: 'zh' });
+  assert.match(row(quiet), /data-twenty-open/, 'the 事 list offers it');
+  assert.match(row(quiet), /二十问 · 银月/);
+  const played = must('twenty', must('twenty', asleep, { action: 'open' }).s, { action: 'quit' }).s;
+  assert.doesNotMatch(row({ ...look(played, content, ctx()), scene: null }), /data-twenty-open/, 'once a day: played, the row goes');
+  const jin = playTo(content, newState(content, 'zh', NOW), '今二', { now: NOW }).state;
+  const jl = look(jin, content, ctx());
+  assert.doesNotMatch(row(jl), /data-twenty-open/, '今: no row');
+  assert.ok(!stageCards(jl).some(c => c.card === 'twenty'), '今: no card');
 });
 
 test('二十问: the animal reaches only her tool — never Look, never the page, never Ling', () => {
@@ -264,13 +307,18 @@ test('断案: judged by ids — proof must be found; wrong spends the day; right
 
 /* ════════ The door ════════ */
 
-test('SKILL.md: her Twenty is a pet tool she may call (read tier, page_only for Ling), and no tool hands another the secret', () => {
+test('SKILL.md: her Twenty is a pet tool she calls at the table (read tier, never offered to Ling), and no tool hands another the secret', () => {
   const md = fs.readFileSync(path.join(ROOT, 'SKILL.md'), 'utf8');
   const block = name => md.slice(md.indexOf(`  - name: ${name}\n`), md.indexOf('\n  - name:', md.indexOf(`  - name: ${name}\n`) + 5));
   const twenty = block('Twenty');
   assert.match(twenty, /tier: read/);
   assert.match(twenty, /pet: true/);
-  assert.match(twenty, /page_only: true/);
+  assert.doesNotMatch(twenty, /page_only: true/, 'her own tool at the table: it runs in the session (the scratch binding holds)');
+  // At the table she calls her tools directly — never AppTool, whose door runs outside the session.
+  const tools = /\n  yinyue:\n    tools: \[(.*)\]/.exec(md)[1].split(',').map(x => x.trim());
+  assert.deepEqual(tools.sort(), ['Progress', 'Story', 'Twenty']);
+  assert.doesNotMatch(block('Progress'), /page_only: true/);
+  assert.match(md, /absent_until: \{file: data\/state.json, path: companion.here\}/);
   assert.match(twenty, /--for=yinyue/);
   const others = /others_read: \[(.*)\]/.exec(twenty)[1];
   assert.ok(!/secret|reveal/.test(others));

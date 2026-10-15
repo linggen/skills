@@ -13,7 +13,7 @@
 import { dayKey, pick, seedOf } from '../state.mjs';
 import { clone, pay, refuse, spendStamina } from './core.mjs';
 import { hashOf } from './travel.mjs';
-import { herAwake, herAway } from './companion.mjs';
+import { herHere } from './companion.mjs';
 import { forSale, shopOf } from './look.mjs';
 import { visitorHere } from './visiting.mjs';
 import { itemBrief, itemOf } from './errands.mjs';
@@ -38,12 +38,17 @@ const countOf = g => g.asked.length + g.guesses.filter(x => !x.ok).length;
 const twentyToday = (state, now) => today(state.twenty, now);
 const twentyGame = (state, now) => twentyToday(state, now)?.game ?? null;
 
-/* Her presence is the game's: no 银月, no host. */
+/* Her presence is the game's: no 银月, no host. Found is enough — asleep in
+   吴婆婆's token she hosts it from there (Hanli, 2026-10-15); on a line she
+   does not live on (今) there is no her and no game. */
 function hostHere(content, state) {
   if (!cfgOf(content)?.twenty) return pick({ zh: '这里没有人陪你玩二十问。', en: 'There is no one here to play twenty questions with.' }, state.lang);
-  if (!herAwake(state) || herAway(content, state)) return pick({ zh: '银月不在身边。', en: 'Yinyue is not at your side.' }, state.lang);
+  if (!herHere(content, state)) return pick({ zh: '银月不在身边。', en: 'Yinyue is not at your side.' }, state.lang);
   return null;
 }
+/* Asleep in the token: one round a day (`rounds_asleep`); awake, `rounds`. */
+const asleepNow = state => Boolean(state.companion?.asleep);
+const roundsOf = (cfg, state) => (asleepNow(state) ? cfg.rounds_asleep ?? 1 : cfg.rounds);
 
 /* The round's animal: one he has not named yet, seeded by day, save and round;
    every one known, any. */
@@ -60,9 +65,10 @@ export function twentyBrief(content, state, now) {
   const cfg = cfgOf(content)?.twenty;
   if (!cfg || hostHere(content, state)) return null;
   const t = twentyToday(state, now), g = t?.game ?? null;
-  const left = Math.max(0, cfg.rounds - (t?.played ?? 0));
+  const left = Math.max(0, roundsOf(cfg, state) - (t?.played ?? 0));
   const known = (state.animals ?? []).length;
-  if (!g) return { open: false, rounds_left: left, max: cfg.questions, known };
+  // `fresh`: none played today — the 事 list offers it then, once a day.
+  if (!g) return { open: false, rounds_left: left, max: cfg.questions, known, ...(left ? { fresh: true } : {}) };
   const outcome = g.outcome ?? 'open';
   const a = outcome === 'open' ? null : animalOf(content, g.animal);
   return {
@@ -73,12 +79,19 @@ export function twentyBrief(content, state, now) {
 }
 
 /* Her rules of play, handed in her tool's every answer: she reads no guide. */
-const HOST_NOTE = [
+const HOST_RULES = [
   'You host 二十问 (twenty questions). `secret` is the animal: answer each yes/no question TRUTHFULLY about that real, ordinary animal, in your own voice — short, teasing, warm.',
   'NEVER say, spell, rhyme or hint at its name or any of `secret.alias` while the game is open; never tell Ling. Before `hint` is true, give no clue beyond the answer; once `hint` is true, add one small hint to each answer.',
   'Each yes/no question: call Twenty with action ask, the player\'s question verbatim and your answer (yes, no, partly or unknown) — before you reply. When the player names an animal as a guess, call Twenty with action guess and the name they said; never decide a guess yourself — `outcome` says it.',
   'Never read the count out: the card shows it. `outcome` lost: say the animal (`reveal`) and console them. Won: praise them; the rules paid and recorded it.',
   '【二十问 · 你是出题的人】谜底在 `secret`：一种寻常动物。玩家每问一句「是不是」，你照实回答——按那种真实的动物答，用你自己的口吻，短，带点逗。谜底未破之前，绝不说出、拼出、押韵暗示它的名字或任何别名；也不告诉 Ling。`hint` 为 true 之前，除了是或不是不给线索；之后每答一句，捎一点小提示。每个问题先调 Twenty（action ask，question 照抄玩家原话，answer 填 yes / no / partly / unknown），再回话。玩家说出一种动物来猜，调 Twenty（action guess，guess 填他说的名字）——猜没猜中看 `outcome`，不由你判。问了几句，卡片上有，不必念。输了（lost），说出谜底（`reveal`），安慰一句；赢了，夸他。',
+];
+const HOST_NOTE = HOST_RULES.join(' ');
+/* Asleep in the token she hosts it from there: the same rules, her voice drowsy. First, so it is never cut. */
+const HOST_ASLEEP = [
+  'You are ASLEEP in 吴婆婆\'s carved fox token and answer from inside it: a proud 妖王 half-woken — drowsy, clipped, haughty (本王…), a few words, a yawn at most; still every answer TRUE.',
+  '【你在吴婆婆的狐狸木牌里睡着，从牌里应声】半睡半醒的妖王：懒，短，傲（本王……），一两句，至多一个哈欠；每一句照样是真话。',
+  ...HOST_RULES,
 ].join(' ');
 
 /* Her view: the open game with its secret (only ever on `--for=yinyue`). */
@@ -91,7 +104,7 @@ function hostView(content, state, now, extra = {}) {
   // (the engine's 1200 characters, chat/thread.rs) — the note fills it, so
   // the secret after it never reaches Ling (tests/aigames.test.mjs).
   return {
-    host: HOST_NOTE, ok: true, ...extra, outcome, count: brief.count, left: Math.max(0, cfg.questions - brief.count), hint: brief.hint,
+    host: asleepNow(state) ? HOST_ASLEEP : HOST_NOTE, ok: true, ...extra, outcome, count: brief.count, left: Math.max(0, cfg.questions - brief.count), hint: brief.hint,
     secret: { name: pick(a.name, lang), alias: a.alias?.[lang] ?? [] },
     asked: brief.asked, guesses: brief.guesses,
     ...(outcome === 'lost' ? { reveal: pick(a.name, lang) } : {}),
@@ -120,6 +133,8 @@ export function guessed(content, lang, raw) {
   return best?.id ?? null;
 }
 
+/* Twenty is a read-tier tool (hers), yet it writes the round's count to the
+   save — acceptable, as Progress and Move keep their own marks (2026-10-15). */
 export function twenty(state, content, ctx, args) {
   const lang = state.lang, action = text(args.action) || 'host', now = ctx.now;
   const away = hostHere(content, state);
@@ -130,7 +145,8 @@ export function twenty(state, content, ctx, args) {
   const t = twentyToday(s, now), g = t?.game ?? null;
   if (action === 'open') {
     if (g && !g.outcome) return { state: null, result: forReader(content, state, now, ctx, { again: true }) };
-    if ((t?.played ?? 0) >= cfg.rounds) return refuse('rounds-done', pick({ zh: `今天的二十问玩够了（${cfg.rounds} 局）。明日再来。`, en: `Enough twenty questions for today (${cfg.rounds} rounds). Tomorrow.` }, lang));
+    const rounds = roundsOf(cfg, s);
+    if ((t?.played ?? 0) >= rounds) return refuse('rounds-done', pick({ zh: `今天的二十问玩够了（${rounds} 局）。明日再来。`, en: `Enough twenty questions for today (${rounds} ${rounds === 1 ? 'round' : 'rounds'}). Tomorrow.` }, lang));
     const empty = spendStamina(content, s, ctx, 'game');
     if (empty) return empty;
     const day = dayKey(now), round = (t?.played ?? 0) + 1;

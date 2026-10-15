@@ -9,6 +9,7 @@
 //   `seed --save=<name> --from=fresh|real|<fixture>` begins it (never touching data/state.json);
 //   `seed --save=<name> --at=<scene|回|古五|今二|秘境>` begins it fresh and plays it there (rules/progress.mjs);
 //   `shift --save=<name> --days=N` sets its clock N days ahead (the 大比's real day, in a check).
+//   `bind --save=<name> --session=<id>` (the page's): that chat session's tool calls play the scratch save (rules/bind.mjs).
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
 // and never changes state. The save says which world it plays; `init` begins
@@ -45,6 +46,7 @@ import { owesTell, playOf, stagedOf, tellOf } from './rules/tell.mjs';
 import { BUILDING_WAITS, keepDay, keepSave, paintList, readSave } from './rules/worlds.mjs';
 import { changes } from './rules/changes.mjs';
 import { playTo, summaryOf, toldUpTo } from './rules/progress.mjs';
+import { bind, boundSave, boundSessions } from './rules/bind.mjs';
 
 export { refine, TREASURE_TOP } from './rules/arms.mjs';
 export { askOf, tapThen, thenFor } from './rules/ask.mjs';
@@ -92,6 +94,9 @@ function run(verb, args, reader = null) {
   if (verb === 'guide') return guideVerb(args);
   // 「只看改动」 (rules/changes.mjs): the book reader's own state, never the save.
   if (verb === 'changes') return changes(args);
+  // A chat session bound to a scratch save (rules/bind.mjs): the page's bind, and the list it skips.
+  if (verb === 'bind') return bind(args, reader);
+  if (verb === 'bound') return { ok: true, sessions: boundSessions() };
   const stateFile = path.join(dataDir(), 'state.json');
   if (verb === 'seed') return withLock(stateFile, () => seed(args, stateFile), () => ({ ok: false, refused: 'busy', say: null }));
   if (verb === 'shift') return withLock(stateFile, () => shift(args), () => ({ ok: false, refused: 'busy', say: null }));
@@ -468,6 +473,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       process.exit(0);
     }
     if (save != null) process.env.LINGJING_SAVE = String(save);
+    // A chat session the scratch page bound (rules/bind.mjs): its tool calls play that save, never
+    // data/state.json. Unbound — every session of the real game — the player's own save, as ever.
+    else if (boundSave(process.env.LINGGEN_SESSION_ID)) process.env.LINGJING_SAVE = boundSave(process.env.LINGGEN_SESSION_ID);
     // 体力 does not limit play while we test (his, 2026-10-01; state.mjs staminaLimited).
     process.env.LINGJING_STAMINA_LIMIT ??= '0';
     // Lang writes Linggen's language before the verb runs (rules/language.mjs),

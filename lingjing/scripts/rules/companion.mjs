@@ -20,9 +20,9 @@ const companionOf = content => content.world.companion ?? null;
 export const hasCompanion = state => Boolean(state.companion?.joined);
 /* Found, and awake: prologue-v3 has her sleep in 吴婆婆's fox token (an exit's
    `sleeps`), waking rarely (`wakes`). Asleep she walks with the player — her
-   past, her card in the bag — but she is not present: no lines of hers, no
-   moments, no fights, and the engine keeps her out of the chat
-   (SKILL.md `absent_until: companion.awake`). */
+   past, her card in the bag — and speaks only from the token (Hanli,
+   2026-10-15: drowsy, clipped, still 本王): no moments, no fights, no body on
+   the stage; at the table when spoken to, and she hosts 二十问 from it. */
 export const herAwake = state => Boolean(state.companion?.joined && !state.companion?.asleep);
 /* Away: the scene stands on a line of the book she does not live on
    (companion.json `lines` — 银月 is the 修仙 world's; a 今 interlude is
@@ -34,19 +34,22 @@ export function herAway(content, state) {
   const line = sceneLine(content, sceneOf(content, state));
   return line && !lore.lines.includes(line) ? pick(lore.away, state.lang) : null;
 }
-/* The flag the engine's presence reads (SKILL.md `absent_until:
-   companion.awake`): found, not asleep in the token, and not away — so on a
-   line she does not live on, nothing of hers runs: no turn, no moment, no
-   AppTool. Fitted as a save is read and before it is written; the same
-   object when it fits already. */
+/* The flags the engine's presence reads (SKILL.md `absent_until:
+   companion.here`): `here` — found and not away, asleep in the token or not
+   (she speaks from it, 2026-10-15); `awake` — here and not asleep. On a line
+   she does not live on, neither: no turn, no moment, no tool of hers runs.
+   Fitted as a save is read and before it is written; the same object when it
+   fits already. */
 export function fitPresence(content, state) {
   const c = state?.companion;
   if (!c?.joined) return state;
-  const want = c.asleep ? {} : herAway(content, state) ? { away: true } : { awake: true };
-  if (Boolean(c.awake) === Boolean(want.awake) && Boolean(c.away) === Boolean(want.away)) return state;
-  const { awake, away, ...rest } = c;
+  const want = herAway(content, state) ? { away: true } : c.asleep ? { here: true } : { here: true, awake: true };
+  if (['awake', 'away', 'here'].every(k => Boolean(c[k]) === Boolean(want[k]))) return state;
+  const { awake, away, here, ...rest } = c;
   return { ...state, companion: { ...rest, ...want } };
 }
+/* At the table at all: found, and not on a line she does not live on — asleep or awake. */
+export const herHere = (content, state) => hasCompanion(state) && !herAway(content, state);
 const callDue = (content, state) => {
   const c = companionOf(content);
   if (!c) return false;
@@ -168,6 +171,8 @@ export function herPast(content, state) {
   return {
     recalled: recalledOf(content, state), stance: stanceOf(content, state), fear: pick(lore.fear, state.lang),
     cauldrons: cauldronsFound(content, state),
+    // Asleep in the token: she answers from it, drowsy (SKILL.md place.yinyue).
+    ...(state.companion?.asleep ? { asleep: true } : {}),
   };
 }
 

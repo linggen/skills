@@ -1042,6 +1042,8 @@ function taskGroups(ctx) {
   for (const o of look.offers ?? []) out.open.push(offerRow(o, ctx));
   const work = look.work;
   if (work && !work.here) out.open.push(taskRow({ id: 'work', tag: 'errand', title: say(w.workAt, { name: work.place.name }), meta: (work.titles ?? []).join(' · '), act: bookGo(say(w.go, { name: work.place.name }), work.place.id, ctx), expand: false }, ctx));
+  // 二十问 with her, once a day — none played yet today (Look's `twenty.fresh`); never on 今 (no `twenty` there).
+  if (look.twenty?.fresh) out.open.push(taskRow({ id: 'twenty', tag: 'day', title: w.twentyTitle, act: `<button class="act" data-twenty-open>${esc(w.twentyRow)}</button>`, expand: false }, ctx));
   // A visiting shop: on its day, a row with the walk there; else when it comes, dimmed.
   for (const st of look.visitors ?? []) {
     const go = st.today && st.place.id !== look.place?.id ? bookGo(say(w.go, { name: st.place.name }), st.place.id, ctx) : '';

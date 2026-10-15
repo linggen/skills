@@ -39,6 +39,8 @@ export function taleHere(look) {
 
 /* 银月 walks with him and is awake — and not away on another line (a 今
    interlude, companion.mjs herAway): the coins are hers to throw. */
+/* 二十问 to be had today and none under way (Look's `twenty`, rules/aigames.mjs). */
+export const twentyOffered = look => Boolean(look?.twenty && !look.twenty.open && !look.twenty.outcome && look.twenty.rounds_left);
 export const herAwake = look => Boolean(look?.companion?.joined && !look.companion.asleep && !look.companion.away);
 
 /* Whether the app may show its companion's body (the desktop corner's 3D
@@ -244,10 +246,12 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // Before a story gate the coins are not his yet (Look's `locked`, rules/locks.mjs);
   // nor while 银月 sleeps in the token — the card asks her to throw them (his, 2026-09-29).
   const coins = !(look.locked ?? []).includes('divine') && herAwake(look);
-  const cards = shown.length ? [...shown] : line || naming || look.scene?.panel || look.offers?.length || look.place?.meet || !coins ? [] : [{ card: 'hexagram' }];
+  const empty = !shown.length && !(line || naming || look.scene?.panel || look.offers?.length || look.place?.meet);
+  const cards = shown.length ? [...shown] : empty && coins ? [{ card: 'hexagram' }] : [];
   const has = (kind, id) => cards.some(c => c.card === kind && (id === undefined || c.id === id));
-  // 二十问 offered fills an empty stage beside the coins (rules/aigames.mjs): never over a scene's business.
-  if (has('hexagram') && look.twenty && !look.twenty.open && !look.twenty.outcome && look.twenty.rounds_left) cards.push({ card: 'twenty' });
+  // 二十问 offered fills an empty stage — beside the coins, or alone while she
+  // sleeps in the token and hosts it from there (rules/aigames.mjs): never over a scene's business.
+  if (empty && twentyOffered(look)) cards.push({ card: 'twenty' });
 
   if (!line) {
     // An open board is always before the player: Ling tells them it is, so it

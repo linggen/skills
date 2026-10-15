@@ -15,7 +15,7 @@ import { holdPlaceholder } from './invite.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
-import { withNext, FOOTER, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
+import { withNext, FOOTER, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, stageCards, stageSlots, stands, twentyOffered, wonWayOn } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, dropOf, fightKind, pickOf, spoilsHtml } from './battle-card.js';
 import { wireDrag } from './battle-drag.js';
 import { banner, ghostsOf, playLog, since } from './battle-anim.js';
@@ -97,6 +97,9 @@ const IDLE_FACT = { zh: '玩家在这页上静了好一会儿，什么也没动�
 /// a line of the book she does not live on (`companion.away`: a 今 interlude,
 /// 沈芒's world — the rules drop her presence flag there too).
 const herHere = () => Boolean(look?.companion?.joined && !look?.companion?.asleep && !look?.companion?.away);
+/// At the table at all — asleep in the token too: she answers from it when spoken to
+/// (`@银月`) and hosts 二十问 there (SKILL.md `absent_until: companion.here`), but no moments.
+const herAtTable = () => Boolean(look?.companion?.joined && !look?.companion?.away);
 const voice = createVoice({
   // A scratch save (?save=) tells 银月 nothing: she lives in the real game.
   post: (id, fact, flags, opts) => (SCRATCH ? Promise.resolve(false) : postMoment(fact, flags, opts)),
@@ -1730,7 +1733,7 @@ function turnEnded() {
 /// user widget", 2026-09-17 — the skill declares the queue).
 function deliver(text, hidden) {
   // A scratch save (?save=) never messages Ling: the word is shown, the turn ends.
-  if (SCRATCH) { keep({ doNote: `${SCRATCH_BADGE} · ${text.split('\n')[0]}` }); turnEnded(); return; }
+  if (SCRATCH && !chat) { keep({ doNote: `${SCRATCH_BADGE} · ${text.split('\n')[0]}` }); turnEnded(); return; }
   if (hidden) chat?.sendHidden(text);
   else chat?.send(text);
 }
@@ -2466,13 +2469,13 @@ async function aiTap(name, args) {
 }
 async function twentyOpen() {
   const r = await aiTap('twenty', { action: 'open' });
-  if (r.ok && r.opened && herHere()) deliver(words().twentyAsk, false);
+  if (r.ok && r.opened && herAtTable()) deliver(words().twentyAsk, false);
 }
 async function twentyGuess() {
   const g = (view.twentyGuess ?? '').trim();
   if (!g) { document.getElementById('twenty-guess')?.focus(); return; }
   const r = await aiTap('twenty', { action: 'guess', guess: g });
-  if (r.ok) { keep({ twentyGuess: '' }); if (!r.again && herHere()) deliver(fill(words().twentySaid, { g }), false); }
+  if (r.ok) { keep({ twentyGuess: '' }); if (!r.again && herAtTable()) deliver(fill(words().twentySaid, { g }), false); }
 }
 async function caseAccuse() {
   const r = await aiTap('case', { action: 'accuse', who: view.caseWho, evidence: (view.caseEv ?? []).join(',') });
@@ -2585,7 +2588,7 @@ function sendAsk() {
   // [Yinyue], and Ling reads the exchange on her next turn. Empty, the
   // player's gentle nudge to talk.
   closeAsk();
-  if (!herHere()) return noOne();
+  if (!herAtTable()) return noOne();
   // In a fight, his words go with the position (fightsay.js) — while asks are left.
   if (bout && askHerInFight(bout, q)) return;
   deliver(`@银月 ${q || words().askHerEmpty}`, false);
@@ -2852,7 +2855,7 @@ const CLICKS = [
   // 问询: the one word that costs a model turn opens the ask bar; nothing is
   // sent until the player says so.
   ['[data-ask]', (el) => askNow(el.dataset.ask)],
-  ['[data-ask-her]', () => (!herHere() ? noOne() : view.ask && view.askHer ? closeAsk() : openAsk(words().askHer.replace('{name}', look?.companion?.name ?? words().yinyue)))],
+  ['[data-ask-her]', () => tapToken()],
   ['[data-ask-send]', () => sendAsk()],
   ['[data-ask-close]', () => closeAsk()],
   ['[data-meet]', (el) => run(`meet:${el.dataset.meet}`, () => takeMeet(el.dataset.meet))],
@@ -2904,6 +2907,15 @@ document.addEventListener('click', (e) => {
     if (el && handle(el, e) !== false) return;
   }
 });
+
+/// The 木牌 tapped: asleep, her 二十问 when there is one today (its card on the stage — opening it
+/// is the card's own tap, a game's 体力); else the 问问银月 bar; before she is found, no one.
+function tapToken() {
+  if (!herAtTable()) return noOne();
+  if (look?.companion?.asleep && look?.twenty && (twentyOffered(look) || look.twenty.open)) return show({ focus: [{ card: 'twenty' }], bookOpen: false });
+  if (view.ask && view.askHer) return closeAsk();
+  openAsk(words().askHer.replace('{name}', look?.companion?.name ?? words().yinyue));
+}
 
 /// Someone asked for 银月 before the player found her: one plain line in the
 /// page's own note — no chat message, no turn, nothing sent.
@@ -3251,11 +3263,33 @@ async function settleBout(b = bout) {
 /// stretch — the app session rule. An empty session is no day.
 async function recentSessionId() {
   try {
-    return pickResumable(await listSkillSessions(SKILL));
+    // A chat bound to a scratch save (rules/bind.mjs) plays that save: never the real game's chat.
+    const bound = new Set(((await verb('bound').catch(() => null))?.sessions ?? []).map((b) => b.session));
+    return pickResumable((await listSkillSessions(SKILL)).filter((s) => !bound.has(s.id)));
   } catch {
     return null;
   }
 }
+
+/// A scratch save's own chat, asked for with `&chat=1` (?save=x&chat=1): a session of its own,
+/// bound to the save (rules/bind.mjs) so Ling's and 银月's tool calls there play it — never
+/// data/state.json. Its last one is taken up again on a reload. Null when the bind fails:
+/// default deny — the scratch page then has no chat, as ever.
+const SCRATCH_CHAT = SCRATCH && new URLSearchParams(location.search).get('chat') === '1';
+async function scratchSession() {
+  try {
+    const mine = ((await verb('bound'))?.sessions ?? []).filter((b) => b.save === SCRATCH).sort((a, b) => String(b.at).localeCompare(String(a.at)));
+    const live = new Set((await listSkillSessions(SKILL)).map((s) => s.id));
+    const kept = mine.find((b) => live.has(b.session));
+    if (kept) return kept.session;
+    const { id } = await createSession(`Lingjing · ${SCRATCH_BADGE}`, SKILL);
+    return id && (await bindScratch(id)) ? id : null;
+  } catch (e) {
+    console.warn('[lingjing] scratch chat', e);
+    return null;
+  }
+}
+const bindScratch = async (sid) => Boolean((await verb('bind', { session: sid }).catch(() => null))?.ok);
 
 /// What the open question offers, by label. The chat owns the question (his
 /// law, 2026-09-17), so while one is open the stage does not offer the same
@@ -3362,18 +3396,21 @@ function greetUnanswered(text = null) {
 async function mountChat() {
   // The chat folds away on a handle at the seam; the stage then has the whole width (sight.js).
   mountChatToggle(document.querySelector('.shell'), lang);
-  // A scratch save (?save=) never starts or messages Ling's chat: no recap, no opening turn.
-  if (SCRATCH) { $('chat-panel').innerHTML = `<div class="scratch-chat" style="padding:24px 16px;color:#8a7a66;font-size:13px;line-height:1.8;text-align:center">${esc(SCRATCH_BADGE)}<br>${esc(SCRATCH_NOTE)}</div><div class="scratch-lines"></div>`; return false; }
-  const resume = await recentSessionId();
+  // A scratch save (?save=) never starts or messages Ling's chat: no recap, no opening turn —
+  // unless it asked for its own bound chat (&chat=1), which still opens with no turn.
+  const scratchSid = SCRATCH_CHAT ? await scratchSession() : null;
+  if (SCRATCH && !scratchSid) { $('chat-panel').innerHTML = `<div class="scratch-chat" style="padding:24px 16px;color:#8a7a66;font-size:13px;line-height:1.8;text-align:center">${esc(SCRATCH_BADGE)}<br>${esc(SCRATCH_NOTE)}</div><div class="scratch-lines"></div>`; return false; }
+  const resume = scratchSid ?? (await recentSessionId());
   chat = await window.LinggenUI.mount($('chat-panel'), {
     skillName: SKILL,
     agentId: 'ling',
-    title: 'Lingjing',
+    title: SCRATCH ? `Lingjing · ${SCRATCH_BADGE}` : 'Lingjing',
     // 「你想怎么做？」 — every scene can be answered in words (invite.js).
     placeholder: words().chatHint,
     sessionId: resume || undefined,
     // A new chat begun from the panel's own button, after the page is up.
-    onSessionCreated: (sid) => { if (mounted && sid !== resume) openWith(sid); },
+    // On a scratch save the new one is bound before anything is said in it.
+    onSessionCreated: (sid) => { if (SCRATCH) bindScratch(sid); else if (mounted && sid !== resume) openWith(sid); },
     // Her guest turns (`@银月 …`) stream in this chat too. Only Ling's stream
     // is the game's turn — it ends the turn, counts the veil, tells the recap
     // and reads the save again. Hers only counts as a line spoken, so the

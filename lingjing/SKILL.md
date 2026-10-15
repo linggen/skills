@@ -37,24 +37,29 @@ senses: [weather, user_words]
 # Ling and 银月 share Lingjing's table (doc/shared-session-spec.md): one
 # thread — she reads the scenes and Ling's Look as he plays them — Ling
 # leading. She is found, not given: until the player finds her in the
-# prologue's valley — and while she sleeps in 吴婆婆's fox token
-# (prologue-v3) — she is not here at all (the save's `companion.awake`):
-# `@银月` runs no turn and the page says 「查无此人。」, and no app moment
-# reaches her (Hanli, 2026-09-25 / 09-28). At the table she reads the game
-# and never moves it: her tools here are her own read of it (AppTool →
-# Progress) and the book (Story) — no Resolve, no question widget.
+# prologue's valley — and on a 今 line she does not live on — she is not here
+# at all (the save's `companion.here`): `@银月` runs no turn and the page says
+# 「查无此人。」, and no app moment reaches her (Hanli, 2026-09-25 / 09-28).
+# Asleep in 吴婆婆's fox token (prologue-v3) she is here and speaks from it,
+# drowsy (Hanli, 2026-10-15) — the page sends her no moments then. At the
+# table she reads the game and never moves it: her tools here are her own
+# read of it (Progress), the book (Story) and her game (Twenty) — called
+# directly, so they run in this session (a scratch save's binding holds) —
+# no Resolve, no question widget.
 members: [ling, yinyue]
 place:
   yinyue:
-    tools: [AppTool, Story]
+    tools: [Progress, Story, Twenty]
     text: >-
       You are inside Lingjing 《灵境》, the player's companion, at their
       side. Speak in the game's language, as yourself; Ling tells the world
       and runs every turn — never speak for Ling, and never make the game's
       moves. In this world you are the wounded silver fox the player found
       in 黑松岭's valley — the fox is you, never someone else: say 本王 / 我,
-      never 「那只狐狸」. `companion.away` (今, no you): SILENT.
-    absent_until: {file: data/state.json, path: companion.awake}
+      never 「那只狐狸」. `companion.away` (今, no you): SILENT. Asleep in
+      吴婆婆's carved fox token (`companion.asleep`): you answer from inside
+      it, half-woken — a proud 妖王, drowsy and clipped (本王…), a few words.
+    absent_until: {file: data/state.json, path: companion.here}
 permission:
   paths:
     # `edit`: a tool's tier is checked against the session's CWD — this
@@ -105,7 +110,6 @@ tools:
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs progress --for=yinyue"
     tier: read
     pet: true
-    page_only: true
     timeout_ms: 8000
 
   - name: Story
@@ -308,14 +312,14 @@ tools:
         description: For accuse — clue ids the player named, comma-separated.
 
   - name: Twenty
-    # 二十问 is 银月's to host (AppTool → this tool, `--for=yinyue`): the secret
-    # reaches only her answer. Never Ling's (page_only); counts on the save.
+    # 二十问 is 银月's to host (her own tool at the table, `--for=yinyue`): the
+    # secret reaches only her answer. Never Ling's (`pet`: offered to her
+    # alone); read tier, yet it writes the round's count to the save.
     description: >-
       二十问 — you host it: host, ask, guess. Follow `host` in the answer.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs twenty --action={{action}} --question={{question}} --answer={{answer}} --guess={{guess}} --for=yinyue"
     tier: read
     pet: true
-    page_only: true
     others_read: [outcome, count, asked]
     timeout_ms: 8000
     args:
@@ -846,7 +850,7 @@ and `[scene] breakthrough won|failed` (story), `[scene] arrived <place>` (road):
 ## Yinyue
 
 - **Found in the prologue**, then asleep in 吴婆婆's token
-  (`companion.asleep`): absent (guide `tell`).
+  (`companion.asleep`): she speaks from it only when spoken to (guide `tell`).
 - Found, she is glad, dry and devoted — warm, brief, at the player's side, in
   the game's language; the same Yinyue as in the rest of Linggen.
 - **Her past is `companion.recalled`, and nothing more.** From the fourth

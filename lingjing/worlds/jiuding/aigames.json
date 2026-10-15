@@ -2,10 +2,11 @@
   "_about": "AI mini-games (design.md § AI mini-games, Hanli 2026-10-15): the model talks, plays roles and judges fuzzy things against the rubric here; the rules (scripts/rules/aigames.mjs) hold every secret, count every turn and decide outcome and pay. A few rounds a day each: token cost counts in the ~30 min routine.",
   "_pay": "Pay numbers are DECLARED DEFAULTS for the economy agent (tools/balance.mjs + balance.json own every number): each grant names its rewards.json table, which caps it. Retune here, nowhere else.",
   "twenty": {
-    "_about": "二十问 — 银月 hosts (her pet tool Twenty, tier read). The rules pick an ordinary animal per round (seeded by day + save + round, unknown ones first), count questions, check guesses against name + alias. The secret reaches only her tool's answer (--for=yinyue): never Look, never Ling.",
+    "_about": "二十问 — 银月 hosts (her pet tool Twenty, tier read) — asleep in the token too, from it: `rounds_asleep` a day then, `rounds` awake. The rules pick an ordinary animal per round (seeded by day + save + round, unknown ones first), count questions, check guesses against name + alias. The secret reaches only her tool's answer (--for=yinyue): never Look, never Ling.",
     "questions": 20,
     "hint_after": 15,
     "rounds": 2,
+    "rounds_asleep": 1,
     "pay": { "table": "game", "progress": 0, "wealth": 5 },
     "animals": [
       { "id": "cat", "name": { "zh": "猫", "en": "cat" }, "alias": { "zh": ["猫咪", "家猫", "狸猫", "小猫", "猫儿"], "en": ["kitten", "kitty", "housecat"] } },

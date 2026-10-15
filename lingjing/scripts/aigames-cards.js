@@ -7,7 +7,7 @@ import { esc } from './esc.js';
 
 export const AI_WORDS = {
   zh: {
-    twentyTitle: '二十问 · 银月', twentyOffer: '她心里想好一种寻常动物，你只问「是不是」。二十问之内猜中它。', twentyBegin: '和银月玩二十问',
+    twentyTitle: '二十问 · 银月', twentyOffer: '她心里想好一种寻常动物，你只问「是不是」。二十问之内猜中它。', twentyBegin: '和银月玩二十问', twentyRow: '玩一局',
     twentyHow: '在对话里 @银月 问她，只问是或不是。', twentyCount: '已问 {n}/{max}', twentyHint: '过了十五问，她会给点提示。',
     twentyGuess: '猜它是……', twentyGuessGo: '猜', twentyQuit: '认输', twentyWon: '猜中了：{animal}', twentyLost: '没猜中——是{animal}', twentyDone: '今天玩够了 · 明日再来', twentyAgain: '再来一局（今日还剩 {n} 局）',
     twentyAnswers: { yes: '是', no: '不是', partly: '有点', unknown: '说不准' }, twentyGuesses: '猜过', twentyKnown: '识得 {n} 种', twentyAsk: '@银月 来玩二十问吧，你想好了吗？', twentySaid: '@银月 我猜：{g}',
@@ -18,7 +18,7 @@ export const AI_WORDS = {
     caseAccuse: '指认', caseWho: '是谁？', caseEvidence: '凭什么？（选你找着的）', caseSolved: '账对上了。', caseWrong: '对不上——改日再来。', caseBegin: '问问这案子', caseSay: '这案子，我想再问问。',
   },
   en: {
-    twentyTitle: 'Twenty questions · Yinyue', twentyOffer: 'She thinks of an ordinary animal; you ask only yes or no. Guess it within twenty.', twentyBegin: 'Play twenty questions with Yinyue',
+    twentyTitle: 'Twenty questions · Yinyue', twentyOffer: 'She thinks of an ordinary animal; you ask only yes or no. Guess it within twenty.', twentyBegin: 'Play twenty questions with Yinyue', twentyRow: 'Play',
     twentyHow: 'Ask her in the chat with @Yinyue — yes-or-no questions only.', twentyCount: 'Asked {n}/{max}', twentyHint: 'Past fifteen questions she gives small hints.',
     twentyGuess: 'It is a…', twentyGuessGo: 'Guess', twentyQuit: 'Give up', twentyWon: 'Guessed it: {animal}', twentyLost: 'Not guessed — it was a {animal}', twentyDone: 'Enough for today · Come back tomorrow', twentyAgain: 'Another round ({n} left today)',
     twentyAnswers: { yes: 'yes', no: 'no', partly: 'partly', unknown: 'can\'t say' }, twentyGuesses: 'Guessed', twentyKnown: '{n} known', twentyAsk: '@Yinyue Let\'s play twenty questions — have you thought of one?', twentySaid: '@Yinyue My guess: {g}',
