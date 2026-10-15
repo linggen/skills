@@ -61,10 +61,10 @@ export const STOPS = {
 // through a 320×132 window at the map's old size: the full width, its band from TOP down (the sky and
 // 马家 on the far hill are cropped off). Each spot is where its painted feature is, as % of the whole
 // painting (x, y): the 货郎 on the path under the 槐树 at the village mouth, 爹 on the bare ground just
-// above the well, the middle of 阿禾's cabbage patch, the open grass of 东坡, and just left of the steps
+// above the well, the near corner of 阿禾's cabbage patch (the cabbages left in view), the open grass of 东坡, and just left of the steps
 // up to the last cottage — 吴婆婆's (it stands right of centre, the painting's east end of the houses).
 const MAP = { src: '../worlds/jiuding/art/backdrop/village.webp', w: 320, h: 132, ratio: 1024 / 1536, top: 0.22 };
-export const AT = { hens: [42, 64.5], prints: [34.5, 60.5], herb: [80, 30], peddler: [23, 77], tale: [69.5, 77] };
+export const AT = { hens: [47, 67], prints: [33, 59], herb: [80, 30], peddler: [23, 77], tale: [69.5, 77] };
 // A spot's % on the painting → the map's drawing units.
 export const onMap = ([px, py]) => {
   const ih = MAP.w * MAP.ratio;
