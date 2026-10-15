@@ -2667,6 +2667,15 @@ const CLICKS = [
     if (view.shelfOpen && !e.target.closest('.shelfpop')) show({ shelfOpen: false });
     return false;
   }],
+  // AI mini-games (aigames-cards.js): the page's own taps — the rules count and judge;
+  // before the stage's own catch-all taps (the next sentence), which would take them.
+  ['[data-twenty-open]', () => run('twenty:open', () => twentyOpen())],
+  ['[data-twenty-guess]', () => run('twenty:guess', () => twentyGuess())],
+  ['[data-twenty-quit]', () => run('twenty:quit', () => aiTap('twenty', { action: 'quit' }))],
+  ['[data-case-look]', (el) => run(`case:look:${el.dataset.caseLook}`, () => aiTap('case', { action: 'look', at: el.dataset.caseLook }))],
+  ['[data-case-who]', (el) => show({ caseWho: view.caseWho === el.dataset.caseWho ? null : el.dataset.caseWho, aiNote: null })],
+  ['[data-case-ev]', (el) => { const id = el.dataset.caseEv, ev = view.caseEv ?? []; show({ caseEv: ev.includes(id) ? ev.filter((x) => x !== id) : [...ev, id], aiNote: null }); }],
+  ['[data-case-accuse]', (el) => { if (!el.matches(':disabled')) run('case:accuse', () => caseAccuse()); }],
   // The scene's choices (on its card, or inside the box at its last beat) come before the box's own taps.
   ['[data-look-at]', (el) => { if (!el.matches(':disabled')) run(`look:${el.dataset.lookAt}`, () => lookAt(el.dataset.lookAt)); }],
   ['[data-panel-duel]', (el) => { if (!el.matches(':disabled')) callDuel(el.dataset.panelDuel); }],
@@ -2765,14 +2774,6 @@ const CLICKS = [
   ['[data-throw]', (el) => { if (!el.matches(':disabled')) run(`throw:${el.dataset.throw}`, () => throwTap(el.dataset.throw)); }],
   ['[data-value-go]', (el) => { if (!el.matches(':disabled')) run(`value:${el.dataset.valueGo}`, () => valueTap(el.dataset.valueGo)); }],
   ['[data-refine]', (el) => { if (el.dataset.refine) run('refine', () => refineTap(el.dataset.refine)); }],
-  // AI mini-games (aigames-cards.js): the page's own taps — the rules count and judge.
-  ['[data-twenty-open]', () => run('twenty:open', () => twentyOpen())],
-  ['[data-twenty-guess]', () => run('twenty:guess', () => twentyGuess())],
-  ['[data-twenty-quit]', () => run('twenty:quit', () => aiTap('twenty', { action: 'quit' }))],
-  ['[data-case-look]', (el) => run(`case:look:${el.dataset.caseLook}`, () => aiTap('case', { action: 'look', at: el.dataset.caseLook }))],
-  ['[data-case-who]', (el) => show({ caseWho: view.caseWho === el.dataset.caseWho ? null : el.dataset.caseWho, aiNote: null })],
-  ['[data-case-ev]', (el) => { const id = el.dataset.caseEv, ev = view.caseEv ?? []; show({ caseEv: ev.includes(id) ? ev.filter((x) => x !== id) : [...ev, id], aiNote: null }); }],
-  ['[data-case-accuse]', (el) => { if (!el.matches(':disabled')) run('case:accuse', () => caseAccuse()); }],
   ['[data-divine]', () => run('divine', () => castByPage())],
   ['[data-trial]', (el) => run('trial', () => chooseWay(Number(el.dataset.trial)))],
   ['[data-tale-answer]', (el) => run('tale', () => taleAnswer(el.dataset.taleAnswer))],
