@@ -783,6 +783,7 @@ function feat(...args) {
     // (2026-10-15) the scene's 「扔进饭桶 ›」 stood under 「新的一回」 before 09-snow's passage.
     if (kind === 'rise') riseWaits = false;
     featNow(...args);
+    render();
   }, 0);
 }
 function featNow(kind, name, from = '', quiet = false, gains = '', her = null) {
@@ -1001,6 +1002,9 @@ function focusHtml(slots) {
   // A fight takes the stage: while one is open, nothing else is on it, and the
   // chat beside it keeps talking (design.md § 斗法在主界面里).
   if (bout) return battleHtml(boutView(bout.st), boutOffers(bout.st), boutCtx(), bout.picked, bout.openLog, bout.note, bout.help);
+  // A seal owed or up (a realm risen, a new 回) is the one moment: the next card waits for it to go — never
+  // stands first with the gold coming late over it (live, 2026-10-15, 突破).
+  if (riseWaits || featOn) return '';
   // One thing at a time: a 回's 「完」 stands alone — 所得 and the other notes wait under it.
   const toasts = slots.main.some((c) => c.card === 'closed') ? '' : toastsHtml();
   // 所得 stands before the way on (live, 2026-10-15: 下一步 stood under it and hid its 收起): the 下一步

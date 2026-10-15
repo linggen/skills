@@ -275,3 +275,12 @@ test('after a failed throw the cliff is never a dead end: the shut hours first, 
   const back = resolve({ ...failed, progress: PEAK }, content, later, { exit: 'take' });
   assert.ok(back.result.ok && back.result.breakthrough, 'the peak regained, the throw is his again');
 });
+
+// Live 2026-10-15: the 突破 seal came late, over the next card already standing. A seal owed or up holds main.
+test('a seal owed or up is the one moment: main waits for it to go', async () => {
+  const fs = await import('node:fs');
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const body = page.slice(page.indexOf('function focusHtml('), page.indexOf('\n}\n', page.indexOf('function focusHtml(')));
+  assert.match(body, /if \(riseWaits \|\| featOn\) return '';/);
+  assert.match(page, /featNow\(\.\.\.args\);\n\s+render\(\);/, 'redrawn as the seal comes up');
+});
