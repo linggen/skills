@@ -42,8 +42,10 @@ export function screensOf(text, lang = 'zh') {
 
 /* The pace (Hanli's approved numbers): a sentence holds ~165 ms a character, at
    least 2.6 s, at most 11 s; the screen's last sentence holds 1.8 s more. `f` the
-   viewer's speed. English reads by the word, so a character there counts a third. */
-export const SPEEDS = { slow: 1.45, mid: 1, fast: 0.6 };
+   viewer's speed. English reads by the word, so a character there counts a third.
+   中 is the approved pace; 慢 and 快 sit far enough either side to be felt at once
+   (2026-10-15, his: 「慢 · 中 · 快 没反应」 — 1.45 / 0.6 only showed from the next sentence). */
+export const SPEEDS = { slow: 1.6, mid: 1, fast: 0.45 };
 export const END_PAUSE_MS = 1800;
 export function paceOf(sentence, { f = 1, last = false, lang = 'zh' } = {}) {
   const n = String(sentence ?? '').length * (lang === 'en' ? 1 / 3 : 1);
@@ -65,6 +67,33 @@ export function keepSpeed(v, store = globalThis.localStorage) {
    the book. */
 export const voiceOf = (b, herId = null) => (b?.recap ? 'ling' : herId && b?.who === herId ? 'yy' : b?.name ? 'spoken' : 'told');
 
+/* Where 银月's words stand inside a beat's text (the beat's `asides`, rules/tell.mjs), as
+   [from, to) ranges, found in order — a line she says twice is marked twice. */
+export function asideRanges(text, asides = []) {
+  const out = [];
+  let from = 0;
+  for (const a of asides) {
+    const at = String(text ?? '').indexOf(a, from);
+    if (at < 0) continue;
+    out.push([at, at + a.length]);
+    from = at + a.length;
+  }
+  return out;
+}
+
+/* One sentence, escaped, her words in it wrapped silver-blue. `start` is where the
+   sentence stands in the beat's text. */
+export function markAsides(s, start, ranges) {
+  let html = '', at = 0;
+  for (const [a, b] of ranges) {
+    const lo = Math.max(a - start, 0), hi = Math.min(b - start, s.length);
+    if (hi <= lo || lo < at) continue;
+    html += esc(s.slice(at, lo)) + `<span class="yy">${esc(s.slice(lo, hi))}</span>`;
+    at = hi;
+  }
+  return html + esc(s.slice(at));
+}
+
 /* One beat's screens as the stage shows them: every sentence a span the clock
    lights (`.s.on`); the first screen up, the rest waiting (`hidden`). A spoken
    beat leads with its speaker; 银月's and Ling's carry their own colour. */
@@ -75,25 +104,58 @@ export function linesHtml(b, { lang = 'zh', herId = null, words = {} } = {}) {
   // The speaker leads a spoken line (the hero too, by his name — never a face); a 前情 is Ling's, marked so.
   const label = who === 'ling' ? `<b class="who">${esc(words.ling ?? 'Ling')}</b><span class="tag">${esc(words.recap ?? '前情')}</span>` : b?.name ? `<b class="who">${esc(b.name)}</b>` : '';
   const act = b?.act ? `<span class="act">${esc(words.act ? words.act(b.act) : `（${b.act}）`)}</span>` : '';
-  return screens.map((ss, k) => `<div class="screen" data-screen="${k}"${k ? ' hidden' : ''}><p class="line ${who}">${k ? '' : label + act}${ss.map((s) => `<span class="s">${esc(s)}</span>`).join('')}</p></div>`).join('');
+  // Her words inside a told beat (⟪…⟫ in the book) in her colour, where they stand.
+  const ranges = who === 'yy' ? [] : asideRanges(b.text, b.asides);
+  let cursor = 0;
+  const sentence = (s) => {
+    const start = String(b.text).indexOf(s, cursor);
+    if (start >= 0) cursor = start + s.length;
+    return start >= 0 && ranges.length ? markAsides(s, start, ranges) : esc(s);
+  };
+  return screens.map((ss, k) => `<div class="screen" data-screen="${k}"${k ? ' hidden' : ''}><p class="line ${who}">${k ? '' : label + act}${ss.map((s) => `<span class="s">${sentence(s)}</span>`).join('')}</p></div>`).join('');
 }
 
 /* The clock for one beat on the stage: which screen, how many of its sentences
    are lit, paused or not. `sync(host, key, opts)` after every paint — the same key
    on a new node puts the lit ones back at once; a new key starts again. `onDone(key)`
-   when the beat's last screen has been read (and again on a tap once it has). */
+   when the beat's last screen has been read (and again on a tap once it has).
+   Every wait is the speed's: a change of 慢 · 中 · 快 rescales the wait already
+   running (`respeed`, on the next sync — setSpeed repaints), and the fades follow
+   through `--pace` on the host (story.css). */
 export function createLines({ onDone = () => {}, onScreen = () => {}, timer = globalThis, f = () => SPEEDS[speedNow()] } = {}) {
   let key = null, host = null, si = 0, ki = 0, t = null, paused = false, done = false, opts = {};
+  let pend = null; // the running wait: { fn, due, f } — what a speed change rescales
+  const now = () => timer.now?.() ?? globalThis.performance?.now?.() ?? Date.now();
+  /* A wait of `ms` at speed 1, run at the speed now. */
+  function arm(fn, ms) {
+    const sp = f();
+    armAt(fn, ms * sp, sp);
+  }
+  function armAt(fn, ms, sp) {
+    const wait = Math.max(0, Math.round(ms));
+    pend = { fn, due: now() + wait, f: sp };
+    t = timer.setTimeout(() => { t = null; pend = null; fn(); }, wait);
+  }
+  /* 慢 · 中 · 快 changed: what is left of the running wait, at the new speed — and the fades. */
+  function respeed() {
+    const sp = f();
+    host?.style?.setProperty?.('--pace', String(sp));
+    if (!pend || t == null || pend.f === sp) return;
+    const { fn, due, f: was } = pend;
+    clear();
+    armAt(fn, Math.max(0, due - now()) * (sp / was), sp);
+  }
   const screens = () => [...(host?.querySelectorAll?.('.screen') ?? [])];
   const sents = (k = si) => [...(screens()[k]?.querySelectorAll('.s') ?? [])];
   function paint() {
     if (!host) return;
+    host.style?.setProperty?.('--pace', String(f()));
     screens().forEach((s, k) => { s.hidden = k !== si; s.classList.remove('out'); });
     sents().forEach((s, k) => s.classList.toggle('on', k < ki));
     host.classList.toggle('done', done);
     host.classList.toggle('held', paused && !done);
   }
-  function clear() { if (t != null) timer.clearTimeout(t); t = null; }
+  function clear() { if (t != null) timer.clearTimeout(t); t = null; pend = null; }
   function finish() {
     clear();
     const all = screens();
@@ -110,12 +172,12 @@ export function createLines({ onDone = () => {}, onScreen = () => {}, timer = gl
       paint();
       if (paused) return;
       const last = ki === ss.length;
-      t = timer.setTimeout(step, paceOf(ss[ki - 1].textContent, { f: f(), last, lang: opts.lang }));
+      arm(step, paceOf(ss[ki - 1].textContent, { last, lang: opts.lang }));
       return;
     }
     if (si + 1 < screens().length) {
       screens()[si]?.classList.add('out');
-      t = timer.setTimeout(() => { si += 1; ki = 0; paint(); onScreen(key, si); step(); }, 420);
+      arm(() => { si += 1; ki = 0; paint(); onScreen(key, si); step(); }, 420);
       return;
     }
     finish();
@@ -128,13 +190,13 @@ export function createLines({ onDone = () => {}, onScreen = () => {}, timer = gl
     sync(el, k, o = {}) {
       if (!el) { clear(); key = null; host = null; return; }
       opts = o;
-      if (k === key && el === host) return;
-      if (k === key) { host = el; paint(); return; }
+      if (k === key && el === host) { respeed(); return; }
+      if (k === key) { host = el; paint(); respeed(); return; }
       clear();
       key = k; host = el; si = 0; ki = 0; paused = false; done = false;
       if (o.instant) { finish(); return; }
       paint();
-      t = timer.setTimeout(step, o.lead ?? 500);
+      arm(step, o.lead ?? 500);
     },
     /* A tap: the next sentence now; read through, the beat's way on. */
     tap() {
@@ -149,10 +211,12 @@ export function createLines({ onDone = () => {}, onScreen = () => {}, timer = gl
       paused = on;
       paint();
       clear();
-      if (!on) t = timer.setTimeout(step, 600 * f());
+      if (!on) arm(step, 600);
     },
     /* 跳过 inside a beat: the rest of it at once. */
     finish() { if (host && !done) finish(); },
+    /* The speed changed (sync does this too): rescale the running wait now. */
+    respeed,
     stop() { clear(); key = null; host = null; },
   };
 }

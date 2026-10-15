@@ -61,16 +61,20 @@ body.storying .slots { visibility: hidden; }
 .story { position: absolute; inset: 0; color: var(--on-stage); cursor: pointer; user-select: none; -webkit-user-select: none; outline: none; }
 .story:focus-visible { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ling-glow) 60%, transparent); }
 .story .lines { position: absolute; left: 0; right: 0; bottom: 74px; display: flex; justify-content: center; padding: 0 56px; pointer-events: none; transition: opacity .45s ease; }
-.story .screen { width: min(44em, 100%); font-family: var(--serif); font-size: 19px; line-height: 1.95; letter-spacing: .03em; text-shadow: 0 1px 12px rgba(0, 0, 0, .55); transition: opacity .42s ease; }
+.story .screen { width: min(44em, 100%); font-family: var(--serif); font-size: 19px; line-height: 1.95; letter-spacing: .03em; text-shadow: 0 1px 12px rgba(0, 0, 0, .55); transition: opacity calc(.42s * var(--pace, 1)) ease; }
 .story .screen[hidden] { display: none; }
 .story .screen.out { opacity: 0; }
 .story .screen p { margin: 0; }
-.story .s { opacity: 0; filter: blur(2px); transition: opacity .9s ease, filter .9s ease; }
+/* --pace: the viewer's 慢 · 中 · 快 (lines.js sets it on .story), so the fades keep step with the waits. */
+.story .s { opacity: 0; filter: blur(2px); transition: opacity calc(.9s * var(--pace, 1)) ease, filter calc(.9s * var(--pace, 1)) ease; }
 .story .s.on { opacity: 1; filter: none; }
 .story .who { display: block; font-family: var(--serif); font-weight: 600; font-size: 13.5px; letter-spacing: .3em; color: var(--ling-glow); margin-bottom: 2px; }
 .story .act { color: var(--on-dim); }
 .story .line.yy .s { color: var(--yinyue-glow); }
 .story .line.yy .who { color: var(--yinyue-glow); }
+/* …and her words inside a told beat (⟪…⟫ in the book), in place. */
+.story .s .yy { color: var(--yinyue-glow); }
+.view.jin .story .s .yy { color: var(--yinyue); }
 .story .line.ling { font-family: var(--ui); font-size: 15px; line-height: 1.7; letter-spacing: .02em; color: var(--ling-glow); border-left: 2px solid color-mix(in srgb, var(--ling-glow) 60%, transparent); padding-left: 12px; }
 .story .line.ling .who { display: inline; margin: 0 8px 0 0; letter-spacing: .04em; }
 :lang(en) .story .screen { letter-spacing: 0; line-height: 1.75; }
