@@ -5,6 +5,7 @@
 // (stage.mjs wonWayOn): the won exit is found from Look alone and Resolved, a
 // second Resolve is refused harmlessly, and a save already left in that state
 // shows its way on (cards.js panelActsHtml) instead of a card that says 今日已降.
+import { lookahead } from '../scripts/fightline.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { act, battle, begin, foeTurn, offers, tokenOf } from '../scripts/battle.js';
@@ -17,7 +18,8 @@ import { cardHoldsWay, stageCards, wonWayOn } from '../scripts/stage.mjs';
 import { TO_HALL, walk } from './prologue.mjs';
 
 const content = loadContent();
-const NOW = new Date('2026-09-28T12:00:00');
+// A day whose 蠪侄 deal a thinking line wins (the fight is ~80%, tests/fight-band.test.mjs).
+const NOW = new Date('2026-09-29T12:00:00');
 const ctx = () => ({ now: NOW, quests: [] });
 const atLongzhi = () => walk(newState(content, 'zh', NOW), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'won')), content, NOW);
 const page = (l, extra = {}) => ({ look: l, lang: l.lang, words: WORDS[l.lang], content: {}, ...extra });
@@ -32,14 +34,9 @@ function fightOut(state, id) {
   const st = begin(setup, catalog), actions = [];
   for (let guard = 0; guard < 160 && st.outcome === 'open'; guard += 1) {
     if (st.whose === 'foe') { foeTurn(st); continue; }
-    const body = side => side.board.reduce((n, m) => n + m.atk + m.hp * 0.6, 0);
-    const before = { hp: st.foe.hp, mine: body(st.you), theirs: body(st.foe) };
-    const best = offers(st).filter(o => o.ok && o.action.kind !== 'end')
-      .map(o => {
-        const after = battle([...actions, tokenOf(o.action)], setup, catalog);
-        return { o, worth: (before.hp - after.foe.hp) * 2 + (body(after.you) - before.mine) * 1.2 + (before.theirs - body(after.foe)) - (o.cost ?? 0) * 0.1 };
-      })
-      .sort((a, b) => b.worth - a.worth)[0]?.o;
+    // A player who thinks a turn ahead (fightline.js lookahead): the fights are tuned
+    // to be lost by a careless line (tests/fight-band.test.mjs).
+    const pick = lookahead(st, { deep: true }), best = pick.kind === 'end' ? null : { action: pick };
     if (!best) { act(st, { kind: 'end' }, 'you'); actions.push('end'); continue; }
     act(st, best.action, 'you');
     actions.push(tokenOf(best.action));

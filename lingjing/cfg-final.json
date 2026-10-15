@@ -1,0 +1,188 @@
+{
+ "longzhi": {
+  "hp": 2.05
+ },
+ "zheng": {
+  "hp": 1.7
+ },
+ "gui": {
+  "hp": 2.4,
+  "deck": [
+   "paoxiao",
+   "jixiao",
+   "gui",
+   "paoxiao",
+   "kuiniu",
+   "paoxiao",
+   "jixiao",
+   "gui",
+   "jixiao",
+   "kuiniu",
+   "luoshi",
+   "zhuguang"
+  ]
+ },
+ "foe-zou": {
+  "hp": 6,
+  "deck": [
+   "huoya",
+   "qiezhi",
+   "huoya",
+   "yanxin",
+   "qiezhi",
+   "liaotian",
+   "feiyi",
+   "huoya",
+   "qiezhi",
+   "feiyi",
+   "jingwei",
+   "feiyi"
+  ]
+ },
+ "foe-lufang": {
+  "hp": 2.05
+ },
+ "foe-maxiaobao": {
+  "hp": 2.55
+ },
+ "foe-shuanglong": {
+  "hp": 4.5,
+  "deck": [
+   "changyou",
+   "changyou",
+   "luying",
+   "luying",
+   "hanquan",
+   "kui",
+   "hantan",
+   "hantan",
+   "chaoqi",
+   "tingbo",
+   "luying",
+   "huiqi"
+  ]
+ },
+ "heyu": {
+  "hp": 3.35,
+  "deck": [
+   "paoxiao",
+   "jixiao",
+   "jixiao",
+   "jixiao",
+   "paoxiao",
+   "paoxiao",
+   "luoshi",
+   "luoshi",
+   "kuiniu",
+   "kuiniu",
+   "tunshi",
+   "shishou"
+  ]
+ },
+ "qiuyu": {
+  "hp": 3.45
+ },
+ "renyu": {
+  "hp": 2.0,
+  "deck": [
+   "luying",
+   "luying",
+   "luying",
+   "luying",
+   "luying",
+   "changyou",
+   "changyou",
+   "hantan",
+   "hantan",
+   "chaoqi",
+   "hanquan",
+   "kui"
+  ]
+ },
+ "tianma": {
+  "hp": 2.25,
+  "deck": [
+   "jinsuo",
+   "jinsuo",
+   "jinsuo",
+   "jinsuo",
+   "jianying",
+   "jianying",
+   "qianyang",
+   "jinzhua",
+   "jinzhua",
+   "jiushou",
+   "jiushou",
+   "suijin"
+  ]
+ },
+ "yezhu": {
+  "hp": 1.25
+ },
+ "xiong": {
+  "hp": 1.35
+ },
+ "lang": {
+  "hp": 1.7
+ },
+ "_pools": {
+  "songlin": {
+   "longzhi": {
+    "hp": 1.45
+   },
+   "lang": {
+    "hp": 1.7
+   }
+  },
+  "yaoyuan-wai": {
+   "zheng": {
+    "hp": 1.9
+   },
+   "yezhu": {
+    "hp": 1.7
+   }
+  },
+  "sishui": {
+   "gui": {
+    "hp": 2.25
+   }
+  },
+  "mijing-ya": {
+   "qiuyu": {
+    "deck": [
+     "tengmiao",
+     "tengmiao",
+     "mafu",
+     "mafu",
+     "mafu",
+     "leipu",
+     "leipu",
+     "fengmao",
+     "fengmao",
+     "peiyuan",
+     "leiming",
+     "chunsheng"
+    ]
+   }
+  },
+  "mijing-anhe": {
+   "qiuyu": {
+    "deck": [
+     "tengmiao",
+     "tengmiao",
+     "mafu",
+     "mafu",
+     "mafu",
+     "leipu",
+     "leipu",
+     "fengmao",
+     "fengmao",
+     "peiyuan",
+     "leiming",
+     "chunsheng"
+    ],
+    "hp": 5.5
+   }
+  }
+ }
+}

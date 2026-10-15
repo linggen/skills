@@ -21,11 +21,14 @@ export function worth(st, action) {
 }
 
 /// The move to make now: the best that is worth anything, else the end of the turn.
+/// The move to make now — a turn thought ahead (lookahead, below): the fights are tuned to be
+/// lost by a careless line, and the crawl must play on past them.
 export function bestMove(st) {
   if (!st || st.outcome !== 'open' || st.whose !== 'you') return null;
-  const best = offers(st).filter((o) => o.ok && o.action.kind !== 'end').map((o) => ({ o, v: worth(st, o.action) })).sort((x, y) => y.v - x.v)[0];
-  if (!best || best.v <= 0) return { kind: 'end' };
-  return { ...best.o.action, buff: Boolean(best.o.card?.effect?.buff) };
+  const action = lookahead(st);
+  if (action.kind === 'end') return { kind: 'end' };
+  const card = action.kind === 'play' ? st.catalog?.[st.you.hand[action.index]] : null;
+  return { ...action, buff: Boolean(card?.effect?.buff) };
 }
 
 /* A player who thinks a turn ahead: every move tried on a copy and the

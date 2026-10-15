@@ -65,8 +65,8 @@ export function stateAt(stop) {
    entry deck stands over the creature's own; `reach: false` is a beast of the
    book that is not yet a game fight. `band` is what it is tuned to. */
 export const FIGHTS = [
-  { id: 'longzhi', name: '蠪侄 (三试)', at: 'h04r', band: [0.62, 0.88], note: 'tutorial' },
-  { id: 'zheng', name: '小狰 (药园)', at: 'h05', band: [0.62, 0.88], note: 'tutorial' },
+  { id: 'longzhi', name: '蠪侄 (三试)', at: 'h04r', band: [0.6, 0.92], note: 'tutorial' },
+  { id: 'zheng', name: '小狰 (药园)', at: 'h05', band: [0.6, 0.92], note: 'tutorial' },
   { id: 'gui', name: '蛫 (秘境)', at: 'h07' },
   { id: 'foe-zou', name: '邹青松 (试 · 追)', at: 'h07z', trial: true, unforced: true },
   { id: 'foe-lufang', name: '卢方 (大比)', at: 'h08' },

@@ -4,6 +4,7 @@
 // frozen and kept out of Look, the 事 book's goal is the scene's own, the header reads the
 // book's day or night, and the stage shows the rooms' own paintings. It all comes back on the
 // way out. Declared in chapter.json; no rule names the 沉鼎秘境.
+import { stateAt } from '../tools/story-fights.mjs';
 import { lookahead } from '../tools/trial-sim.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -38,6 +39,8 @@ function atDoor() {
   const until = new Date(DAY1.getTime() + 2 * 3600000).toISOString();
   return {
     ...s, chapter: '00-waimen', scene: 'wm-mijing', place: 'shimen', wealth: 10, tier: 'qi', step: 2, progress: 40, // 古五 at the book's 二层
+    // The hand the road deals by the 秘境 (tools/story-fights.mjs h07): the starter, 小狰 and a card from each win.
+    cards: stateAt('h07').cards, cast: ['zheng'],
     done_scenes: [...s.done_scenes, 'wm-ahe', 'wm-jiangtang', 'wm-zhoutian', 'wm-qingshi', 'wm-chaifang', 'wm-danlu', 'wm-diyilu'],
     quests: { ...s.quests, 'xu-ahe-lixi': { took: '2026-09-29', have: { 1: 1 } } },
     pass: { quest: 'xu-ahe-lixi', to: 'fangshi', places: ['fangshi', 'shanlu', 'dukou'] },
