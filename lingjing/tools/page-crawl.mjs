@@ -26,17 +26,26 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { launch } from './cdp.mjs';
 import { loadContent } from '../scripts/content.mjs';
-import { sweep } from './explore.mjs';
+import { JUAN_ONE, sweep } from './explore.mjs';
+import { playTo, targetOf } from '../scripts/rules/progress.mjs';
+import { newState } from '../scripts/state.mjs';
 import { REACTION, JITTER, rng } from './board-bots.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const HOME = path.join(os.homedir(), '.linggen', 'skills', 'lingjing', 'data', 'saves');
 const gauss = (r) => Math.sqrt(-2 * Math.log(r() || 1e-9)) * Math.cos(2 * Math.PI * r());
 
-/* Every 卷一 scene's save as he steps into it, from the rules' own walk (all-win, then the
-   other policies for scenes all-win never stands in). */
+/* Every 卷一 scene's save as he steps into it: the rules' progress control (rules/progress.mjs
+   playTo — fights really fought, one forward run with every scene a target), then the explorer's
+   sweeps for any scene that run never stands in (another fork). */
 export function savesAtScenes(content) {
   const at = new Map();
+  const start = new Date('2026-09-29T09:00:00');
+  const scenes = JUAN_ONE.flatMap((ch) => Object.keys(content.chapters[ch]?.scenes ?? {}));
+  try {
+    playTo(content, newState(content, 'zh', start), null, { now: start, targets: scenes.map((id) => [id, targetOf(content, id)]).filter(([, t]) => t),
+      onAt: (id, s, runner) => { if (!at.has(id)) at.set(id, { state: structuredClone(s), now: runner?.now ?? start }); } });
+  } catch { /* a scene off the run's line: the sweeps below find it */ }
   for (const p of ['all-win', 'all-skip', 'lose-retry']) sweep(content, p, { arrive: (id, s, now) => { if (!at.has(id)) at.set(id, { state: structuredClone(s), now }); } });
   for (let seed = 1; seed <= 20; seed++) sweep(content, 'random', { seed, arrive: (id, s, now) => { if (!at.has(id)) at.set(id, { state: structuredClone(s), now }); } });
   return at;
