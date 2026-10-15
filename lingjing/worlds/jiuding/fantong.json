@@ -7,9 +7,9 @@
     "cooldown_min": 60
   },
   "never": {
-    "_about": "What never goes in, whatever the bag holds: these kinds (a key, a scroll — 《吐纳经》 is hers — an artifact of hers) and these things (爷爷的弓, 爹's). Story things, a key the chapter or an errand still needs, and what he wears are refused by the rules anyway (pouch.mjs freeSlot).",
+    "_about": "What never goes in, whatever the bag holds: these kinds (a key, a scroll — 《吐纳经》 is hers — an artifact of hers) and these things (爷爷的弓, 爹's). Story things, a key the chapter or an errand still needs, and what he wears are refused by the rules anyway (pouch.mjs freeSlot). What the story still reads from the bag goes here too (2026-10-15): 鼎苔, the 筑基丹's 主药 (古五 → 古八); every realm's breakthrough pill (ladder.json breakthrough.pill.items); the five 天材地宝 a 本命法宝 is refined with (items.json effect.core). Ordinary gear (灰袍) stays feedable.",
     "kinds": ["key", "scroll", "artifact"],
-    "items": ["old-bow"]
+    "items": ["old-bow", "dingtai", "foundation-pill", "foundation-pill-9", "firm-pill", "pojing-pill", "jingjin", "leijimu", "hanyu", "huojing", "xirang"]
   },
   "around": {
     "_about": "凡物 always at hand by the woodpile (古四: 柴火棍, 石子, 枯叶): fed without leaving the bag, so the bucket is never without a meal. `after`: at hand once that errand is done (药园残株 — 周衡's monthly culls, 古七's 黄精烂根 · 黄芪虫叶).",
@@ -24,7 +24,7 @@
   "kinds": {
     "_about": "What went in decides the odds and the pools: each kind's grade weights (junk · useful · best, out of 100) and, per grade, the pool it draws from. An item not listed under any kind is `junk`. `best` is 卷一's 逆天: convenience, never a power card.",
     "junk": { "grades": { "junk": 82, "useful": 16, "best": 2 }, "useful": "plain", "best": "lucky" },
-    "herb": { "items": ["lingzhi", "ginseng", "huangjing-gen", "huangqi-canzhu", "dingtai", "luobo"], "grades": { "junk": 62, "useful": 33, "best": 5 }, "useful": "pills", "best": "pills-best" },
+    "herb": { "items": ["lingzhi", "ginseng", "huangjing-gen", "huangqi-canzhu", "luobo"], "grades": { "junk": 62, "useful": 33, "best": 5 }, "useful": "pills", "best": "pills-best" },
     "beast": { "items": ["yaodan-1", "yaodan-2", "yaodan-3", "deer-hide"], "grades": { "junk": 64, "useful": 31, "best": 5 }, "useful": "fu", "best": "lucky" }
   },
   "lingshi": {

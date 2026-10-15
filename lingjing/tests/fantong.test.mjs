@@ -98,6 +98,22 @@ test('what never goes in: the bucket itself, a key, a story thing, 《吐纳经�
   assert.equal(VERBS.fantong(saveWith({ bag: {} }), content, ctx(), { action: 'look' }).result.refused, 'no-fantong', 'no 饭桶, no board');
 });
 
+test('what the story still reads from the bag never goes in: 鼎苔 (the 筑基丹\'s 主药), every breakthrough pill, the five 天材地宝; 灰袍 still does', () => {
+  const lad = content.ladder.breakthrough.pill.items;
+  const needed = new Set(['dingtai', ...Object.values(lad).flat(), ...content.items.items.filter(i => i.effect?.core).map(i => i.id)]);
+  for (const id of needed) assert.ok(T.never.items.includes(id), `${id} is in never.items`);
+  for (const [k, v] of Object.entries(T.kinds)) if (k !== '_about') for (const id of v.items ?? []) assert.ok(!needed.has(id), `${k}/${id}: a kind never lists what never goes in`);
+  const bag = { danlu: 1, 'grey-robe': 1 };
+  for (const id of needed) bag[id] = 2;
+  const s = saveWith({ bag });
+  for (const id of needed) assert.equal(feed(s, { id }).result.refused, 'not-feedable', id);
+  const brief = VERBS.fantong(s, content, ctx(), { action: 'look' }).result.fantong;
+  assert.ok(!brief.inputs.some(i => needed.has(i.id)), 'none of them offered on the board');
+  const robe = feed(s, { id: 'grey-robe' });
+  assert.equal(robe.result.ok, true, 'ordinary gear goes in');
+  assert.equal(robe.state.bag.dingtai, 2, 'the 鼎苔 is untouched');
+});
+
 test('one feed, then the bucket is full for the hour: refused with when, in 刻; fed again after 60 minutes', () => {
   const first = feed(saveWith(), { id: 'chaihuo' });
   assert.equal(first.result.ok, true);
