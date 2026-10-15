@@ -288,7 +288,16 @@ test('the story on the page: the whole stage, the keys that go on, and what it y
   const css = fs.readFileSync(path.join(ROOT, 'scripts/story.css'), 'utf8');
   assert.match(css, /\.dlgwrap \{ position: absolute; inset: 0;/, 'the whole stage');
   assert.match(css, /body\.storying \.slots \{ visibility: hidden; \}/, 'nothing stands beside the story');
-  assert.match(css, /\.story \.ways \{ bottom: 62px; padding: 0 16px; \}/, 'narrow: 16px gutters');
+  assert.match(css, /\.story \.ways \{ bottom: 62px; max-height: calc\(100% - 62px - 5%\); padding: 0 16px; \}/, 'narrow: 16px gutters, capped to the stage');
+  // Legible wherever the words stand (2026-10-15, his 「字看不清了, 上面的」: five choices pushed the faint
+  // line into a bright sky): the block is capped to the stage (its choices scroll), carries its own ink
+  // wash behind the words, and the faint line is dimmer than a read line but never faint past reading.
+  assert.match(css, /\.story \.ways \{[^}]*max-height: calc\(100% - 70px - 7%\)[^}]*isolation: isolate/, 'the way on never climbs off the stage');
+  assert.match(css, /\.story \.ways::before \{[^}]*z-index: -1[^}]*top: -150px[^}]*rgba\(13, 17, 20, \.78\) 150px/, 'its wash fades in above the faint line, dark behind it');
+  assert.match(css, /\.story \.wayacts \{[^}]*min-height: 96px; overflow-y: auto/, 'the choices scroll, the words keep their place');
+  assert.match(css, /\.story \.ways \.last \{[^}]*color: rgba\(241, 236, 225, \.74\)/, 'the faint line: dimmer, still ≥ 4.5:1 on its wash');
+  assert.match(css, /\.story \.wayacts \.donote \{[^}]*color: #f6d3ca; background: rgba\(13, 17, 20, \.62\)/, 'a finding: light words on ink, not pink on paper');
+  assert.match(css, /\.view\.jin \.story \.ways::before \{ display: none; \}/, '今线 keeps its pale stage');
 });
 
 test('the caption is no beat (2026-10-14: told three times) — the box plays the book alone; the caption stands under the place', () => {

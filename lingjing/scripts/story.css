@@ -144,11 +144,18 @@ body.storying .slots { visibility: hidden; }
 .story.held .held { opacity: 1; }
 
 /* The way on: only once the passage is read, its last line faint above it (proto b). */
-.story .ways { position: absolute; left: 0; right: 0; bottom: 70px; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 0 24px; visibility: hidden; opacity: 0; transition: opacity .6s ease; cursor: default; }
+/* Legible wherever it stands (2026-10-15, his 「字看不清了, 上面的」: five choices, 看 and a note pushed
+   the faint line up into a bright sky, white on white). The block is capped to the stage — its choices
+   scroll, never the words up off the shade — and carries its own ink wash (::before), fading in above
+   the faint line and deepening under it, so the dark is behind the words wherever they are. */
+.story .ways { position: absolute; left: 0; right: 0; bottom: 70px; max-height: calc(100% - 70px - 7%); display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 0 24px; visibility: hidden; opacity: 0; transition: opacity .6s ease; cursor: default; isolation: isolate; }
+.story .ways::before { content: ''; position: absolute; z-index: -1; left: 0; right: 0; top: -150px; bottom: -70px; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(13, 17, 20, 0) 0, rgba(13, 17, 20, .22) 50px, rgba(13, 17, 20, .55) 100px, rgba(13, 17, 20, .78) 150px, rgba(13, 17, 20, .84) 100%); }
 .story.done .ways { visibility: visible; opacity: 1; }
 .story.choosing.done .lines { opacity: 0; }
-.story .ways .last { width: min(44em, 100%); font-family: var(--serif); font-size: 17px; line-height: 1.9; color: var(--on-dim); text-align: left; margin-bottom: 6px; text-shadow: 0 1px 10px rgba(0, 0, 0, .5); }
-.story .wayacts { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; max-height: 52vh; overflow-y: auto; }
+/* Dimmer than a line being read, never faint past reading: ≥ 4.5:1 on its wash. */
+.story .ways .last { flex: none; width: min(44em, 100%); font-family: var(--serif); font-size: 17px; line-height: 1.9; color: rgba(241, 236, 225, .74); text-align: left; margin-bottom: 6px; text-shadow: 0 1px 3px rgba(0, 0, 0, .6), 0 0 14px rgba(0, 0, 0, .55); }
+.story .wayacts { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; flex: 0 1 auto; min-height: 96px; overflow-y: auto; }
 .story .wayacts .paneltaps { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; margin: 0; }
 .story .wayacts .paneltap, .story .wayacts .quietnext { min-width: min(420px, 100%); max-width: 100%; padding: 13px 26px; border-radius: 10px; border: 1px solid rgba(227, 192, 126, .7);
   background: rgba(251, 248, 242, .94); color: #1D1B17; font-family: var(--serif); font-size: 17px; letter-spacing: .06em; text-decoration: none; box-shadow: 0 6px 24px rgba(0, 0, 0, .35);
@@ -165,7 +172,8 @@ body.storying .slots { visibility: hidden; }
 .story .wayacts .lookhead, .story .wayacts .lookfound li, .story .wayacts .sceneinvite { color: var(--on-dim); }
 .story .wayacts .lookfound li b { color: var(--on-stage); }
 .story .wayacts .lookchip { background: rgba(13, 17, 20, .35); color: var(--on-stage); border-color: rgba(241, 236, 225, .4); }
-.story .wayacts .donote { color: #f3c2b8; }
+/* A finding on the stage: light words on a wash of ink, not pale pink on paper (2026-10-15). */
+.story .wayacts .donote { flex: none; width: min(640px, 100%); margin: 0 auto; color: #f6d3ca; background: rgba(13, 17, 20, .62); border-color: rgba(243, 194, 184, .5); }
 .story .wayacts .riddle, .story .wayacts .card { color: var(--text); }
 
 /* 回看: everything shown so far, scrolled back, dark over the stage. */
@@ -254,6 +262,8 @@ body.fighting .sight { display: none; }
 .view.jin .story .count { color: #5b6a76; }
 .view.jin .story .held { background: rgba(62, 85, 102, .7); }
 .view.jin .story .ways { top: auto; }
+.view.jin .story .ways::before { display: none; }
+.view.jin .story .wayacts .donote { color: var(--seal, #b0413e); background: var(--surface); border-color: var(--seal, #b0413e); }
 .view.jin .story .ways .last { color: #5b6a76; text-shadow: none; }
 .view.jin .story .wayacts .paneltap, .view.jin .story .wayacts .quietnext { background: #fff; border-color: #3e5566; box-shadow: 0 6px 20px rgba(30, 40, 50, .14); }
 @media (prefers-color-scheme: dark) {
@@ -287,7 +297,7 @@ body.fighting .sight { display: none; }
   .story .q { padding: 4px 9px; font-size: 12px; }
   .story .seg button { padding: 4px 8px; }
   .story .wayacts .paneltap, .story .wayacts .quietnext { min-width: 100%; font-size: 16px; padding: 12px 18px; }
-  .story .ways { bottom: 62px; padding: 0 16px; }
+  .story .ways { bottom: 62px; max-height: calc(100% - 62px - 5%); padding: 0 16px; }
   .sightcard { right: 4%; left: 4%; top: 4%; bottom: 42%; justify-content: center; }
   .appear .appeartext { padding: 0 20px 60px; }
   .appear .appeartext p { font-size: 16.5px; }
