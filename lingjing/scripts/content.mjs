@@ -692,6 +692,16 @@ function lintAtlas(content, bad) {
 }
 
 function lintPlaces(content, ids, bad) {
+  // A painted map (`plates`, 观内 2026-10-15): its picture on disk, a name, an aspect; each place on it a spot in 0–1.
+  const plates = Object.fromEntries(Object.values(content.places).flatMap(doc => Object.entries(doc.plates ?? {})));
+  for (const [id, pl] of Object.entries(plates)) {
+    if (!pl.file || !fs.existsSync(path.join(content.dir, pl.file))) bad(`plate ${id}`, `picture ${pl.file} is missing`);
+    if (!pair(pl.name) || !(pl.aspect > 0)) bad(`plate ${id}`, 'needs a name in zh and en and an aspect');
+  }
+  for (const doc of Object.values(content.places)) for (const p of doc.places) if (p.plate) {
+    if (!plates[p.plate.id]) bad(`place ${p.id}`, `on unknown plate ${p.plate.id}`);
+    if (!onMap(p.plate.at)) bad(`place ${p.id}`, 'its spot on the plate needs [x, y], fractions 0–1');
+  }
   const scenes = new Set(Object.values(content.chapters).flatMap(c => Object.keys(c.scenes)));
   const byId = Object.fromEntries(Object.values(content.places).flatMap(doc => doc.places.map(p => [p.id, p])));
   const seen = new Set();
@@ -810,6 +820,7 @@ function lintQuests(content, ids, bad) {
     for (const id of q.pass?.also ?? []) if (!places.has(id)) bad(where, `a pass also to unknown place ${id}`);
     if (q.opens?.after && !byId.has(q.opens.after)) bad(where, `opens after unknown quest ${q.opens.after}`);
     if (q.opens?.tier && !content.ladder.tiers.some(t => t.id === q.opens.tier)) bad(where, `unknown tier ${q.opens.tier}`);
+    if (q.opens?.layer && !(content.ladder.tiers.find(t => t.id === q.opens.layer.tier)?.thresholds.length > q.opens.layer.step)) bad(where, `opens at an unknown layer ${JSON.stringify(q.opens.layer)}`);
     // Story time (errands.mjs offersOf): offered once a scene is behind him (`done`), or only before it (`before`).
     const sceneIds = new Set(Object.values(content.chapters).flatMap(ch => Object.keys(ch.scenes ?? {})));
     for (const k of ['done', 'before']) if (q.opens?.[k] != null && !sceneIds.has(q.opens[k])) bad(where, `opens ${k} unknown scene ${q.opens[k]}`);

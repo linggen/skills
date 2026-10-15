@@ -16,6 +16,11 @@ slope (.78,.56); 饭堂 a long hall below them (.64,.68); 柴房 a shed at the f
 药园 terraced herb beds upper right (.78,.22); 后山崖顶 the bare cliff top, top right (.92,.08).
 Same hand as paint-village.py. No text, no labels, no people. Output 1536×1024, webp q84.
 """
+# The kept pick (2026-10-15): seed 47 → worlds/jiuding/art/map/guan.webp — stair and gate bottom centre, the open
+# ground between two trees, the main hall centre, a hall and the pavilion left, the dormitory rows, herb terraces
+# and the cliff right, the dining hall lower right. Spots: places/xu.json `plate.at`.
+KEPT = {'guan': {'seed': 47}}
+
 import argparse, json, os, subprocess
 from pathlib import Path
 

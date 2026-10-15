@@ -343,11 +343,29 @@ function placeBrief(content, state, now = new Date()) {
       here: p.id === place.id, road: place.roads.includes(p.id), too_hard: tooHard(content, state, p),
       ...(onMap(content, state, p, now) ? {} : { closed: true }),
     })),
+    // The painted map of the small area here (观内, 2026-10-15): what 去往 opens on.
+    ...(plateBrief(content, state, place, now) ? { plate: plateBrief(content, state, place, now) } : {}),
     shelf: shelf.map(i => itemBrief(content, state, i)),
     show: withMap(content, show),
     encounter: encounterOf(content, state, now),
     ...(meetBrief(content, state, now) ? { meet: meetBrief(content, state, now) } : {}),
   };
+}
+
+/* A painted map of the small area he stands in (places' `plate`, the province's
+   `plates`): the painting, and every place on it — where it is painted, whether
+   he may walk there now, and where he stands. The 去往 list opens on it
+   (scripts/plate.js); a tap is the same Move as a road's. Null off a plate. */
+function plateBrief(content, state, place, now) {
+  const id = place?.plate?.id, doc = id ? Object.values(content.places).find(d => d.plates?.[id]) : null;
+  if (!doc) return null;
+  const plate = doc.plates[id];
+  const spots = allPlaces(content).filter(p => p.plate?.id === id).map(p => ({
+    ...placeName(content, state, p), at: p.plate.at,
+    ...(p.id === place.id ? { here: true } : {}),
+    ...(placeOpen(content, state, p, now) && !tooHard(content, state, p) ? {} : { closed: true }),
+  }));
+  return { id, name: pick(plate.name, state.lang), file: plate.file, aspect: plate.aspect, spots };
 }
 
 /* The shortest way from one place to another, walking only places the player
@@ -401,4 +419,4 @@ function fittingPlace(content, state, from) {
    opens when it ends. */
 const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && carried(content, state);
 
-export { fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };
+export { plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };

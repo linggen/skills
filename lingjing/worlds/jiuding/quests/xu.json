@@ -122,16 +122,16 @@
       "from": {
         "place": "zhishi",
         "who": {
-          "zh": "执事堂 · 东墙的牌子",
-          "en": "a tag on the stewards' hall's east wall"
+          "zh": "执事堂 · 西墙的红牌",
+          "en": "a red tag on the stewards' hall's west wall"
         }
       },
       "pass": {
         "to": "shanlu"
       },
       "say": {
-        "zh": "彭城那位老丈又托人挂了一块牌：「药是好了。可采药的路断了——山门外的林子里又有蠪侄出没，九尾九首，见人就扑。」凭牌下山，到上山路的林子里去。",
-        "en": "The old man of Pengcheng has had another tag hung: \"The cough is mended, but the herb road is shut — a Longzhi haunts the wood outside the temple gate again, nine tails and nine heads, and it leaps at anyone.\" The tag is your leave down to the wood on the mountain path."
+        "zh": "西墙一块红牌——打妖的牌子，五层以下不许揭。彭城那位老丈托人挂的：「药是好了。可采药的路断了——山门外的林子里又有蠪侄出没，九尾九首，见人就扑。」凭牌下山，到上山路的林子里去。",
+        "en": "A red tag on the west wall — beast work, not for anyone below the fifth layer. The old man of Pengcheng had it hung: \"The cough is mended, but the herb road is shut — a Longzhi haunts the wood outside the temple gate again, nine tails and nine heads, and it leaps at anyone.\" The tag is your leave down to the wood on the mountain path."
       },
       "need": [
         {
@@ -147,7 +147,11 @@
         "wealth": 20
       },
       "opens": {
-        "after": "xu-elder-herb"
+        "after": "xu-elder-herb",
+        "layer": {
+          "tier": "qi",
+          "step": 5
+        }
       }
     },
     {

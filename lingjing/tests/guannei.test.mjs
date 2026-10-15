@@ -156,3 +156,37 @@ test('an errand already in hand below the mountain keeps its way (阿禾\'s inte
   assert.equal(t.pass, undefined, 'home again, the way shuts');
   refused(move, t, { place: 'fangshi' }, 'road-closed');
 });
+
+test('去往 opens on the painted 观: every place a seal on its building, his own marked, a tap a Move', async () => {
+  const { plateHtml } = await import('../scripts/plate.js');
+  const s = must(move, roaming(), { place: 'waimen' });
+  const plate = look(s, content, ctx()).place.plate;
+  assert.equal(plate.id, 'guan');
+  assert.equal(plate.file, 'art/map/guan.webp');
+  assert.deepEqual(plate.spots.map((p) => p.id).sort(), [...GUAN].sort());
+  assert.deepEqual(plate.spots.filter((p) => p.here).map((p) => p.id), ['waimen']);
+  assert.ok(plate.spots.every((p) => !p.closed && p.at.every((v) => v > 0 && v < 1)));
+  const html = plateHtml(plate, { src: 'x.webp', here: '就在此处' });
+  assert.equal((html.match(/data-go="/g) ?? []).length, GUAN.length - 1, 'every other place a tap');
+  assert.match(html, /class="spot here"[^>]*title="沉鼎观 · 外门 · 就在此处"/);
+  // off the painting (泗水北岸), no plate
+  assert.equal(look({ ...s, chapter: '01-ji', scene: '01-arrive', place: 'sibei' }, content, ctx()).place.plate, undefined);
+  // the page draws it in the 去往 list
+  const src = (await import('node:fs')).readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(src, /plateHtml\(plate, \{ src: worldPath\(look\.world\.dir, plate\.file\)/);
+});
+
+test('林子里的蠪侄 is a red tag: below 练气五层 it is not offered, nor handed over by its chain (古七: 打妖的红牌，五层以下不许揭)', () => {
+  const done = { 'xu-elder-herb': { took: '2026-09-28', have: {}, done_at: '2026-09-28T10:00:00Z' } };
+  const low = must(move, { ...roaming(), quests: done }, { place: 'zhishi' });
+  assert.ok(low.step < 5);
+  assert.ok(!look(low, content, ctx()).offers.some((o) => o.id === 'xu-fuli-longzhi'));
+  assert.match(refused(quest, low, { action: 'take', id: 'xu-fuli-longzhi' }, 'not-yet').say, /五层以下/);
+  const five = { ...low, step: 5 };
+  assert.ok(look(five, content, ctx()).offers.some((o) => o.id === 'xu-fuli-longzhi'));
+  // the old man's herb handed in at 一层: the red tag does not follow it into the book
+  let s = must(quest, { ...low, quests: {} }, { action: 'take', id: 'xu-elder-herb' });
+  s = { ...fresh(must(move, s, { place: 'pengcheng' })), bag: { lingzhi: 1 } };
+  s = must(quest, s, { action: 'turn', id: 'xu-elder-herb' });
+  assert.equal(s.quests['xu-fuli-longzhi'], undefined);
+});

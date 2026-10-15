@@ -236,11 +236,20 @@ function offersOf(content, state, lang, now) {
       && (!q.opens?.before || !passed(content, state, q.opens.before))
       // A 令 task: one 令 at a time, and never to a place beyond his realm.
       && (!q.pass || (!state.pass && !tooHard(content, state, placeOf(content, q.pass.to) ?? { tier: Infinity })))
-      && (!q.opens?.tier || TIERS_ORDER(content).indexOf(state.tier) >= TIERS_ORDER(content).indexOf(q.opens.tier)))
+      && (!q.opens?.tier || TIERS_ORDER(content).indexOf(state.tier) >= TIERS_ORDER(content).indexOf(q.opens.tier))
+      && layerMet(content, state, q))
     .map(q => ({ id: q.id, title: pick(q.title, lang), who: q.from.who ? pick(q.from.who, lang) : null, say: fill(pick(q.say, lang), state, content), need: q.need.map(n => ({ kind: n.kind, n: n.n })), grant: q.grant, pays: paysOf(content, state, now, q.grant) }));
 }
 
 const TIERS_ORDER = content => content.ladder.tiers.map(t => t.id);
+/* A layer the errand asks (`opens.layer: {tier, step}`): that realm at that 层 or past it —
+   古七: 「打妖的红牌，五层以下，不许揭」 (林子里的蠪侄, 2026-10-15). */
+function layerMet(content, state, q) {
+  const want = q?.opens?.layer;
+  if (!want) return true;
+  const order = TIERS_ORDER(content), have = order.indexOf(state.tier), need = order.indexOf(want.tier);
+  return have > need || (have === need && (state.step ?? 0) >= want.step);
+}
 
 /* Where work is to be had — the nearest place, by road, that offers an errand
    he may take. The rules always knew; nothing said it, and with the spine
@@ -315,7 +324,7 @@ function complete(content, s, ctx, id, q) {
   const paid = pay(content, s, ctx, q.grant);
   const next = q.then ? questOf(content, q.then) : null;
   const open = Object.keys(s.quests).filter(x => !questDoneBefore(s, x)).length;
-  const took = Boolean(next) && !s.quests[next.id] && open < BOOK_MAX;
+  const took = Boolean(next) && !s.quests[next.id] && open < BOOK_MAX && layerMet(content, s, next);
   if (took) s.quests[next.id] = { took: dayKey(ctx.now), have: {} };
   // A next step below the mountain comes with its own 令 (world.mjs grantPass).
   if (took && next.pass) grantPass(content, s, next, ctx.now);
@@ -641,4 +650,4 @@ function gearBrief(content, state) {
   };
 }
 
-export { afterMet, awayLine, bookOf, mootQuest, breakthroughOf, complete, countsOf, directorBrief, errandFor, filler, FILLERS, GEAR_SLOTS, gearBrief, HANDED_KEEP, handedHere, handedOne, itemBrief, itemOf, noticeAt, noticeOf, offersOf, questDoneBefore, questOf, questReady, settleErrands, withGiver, taskOf, threadOf, onStoryRoad, TIERS_ORDER, wayBack, waypointOf, whereAt, withinRoads, workOf };
+export { afterMet, layerMet, awayLine, bookOf, mootQuest, breakthroughOf, complete, countsOf, directorBrief, errandFor, filler, FILLERS, GEAR_SLOTS, gearBrief, HANDED_KEEP, handedHere, handedOne, itemBrief, itemOf, noticeAt, noticeOf, offersOf, questDoneBefore, questOf, questReady, settleErrands, withGiver, taskOf, threadOf, onStoryRoad, TIERS_ORDER, wayBack, waypointOf, whereAt, withinRoads, workOf };

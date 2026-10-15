@@ -56,6 +56,15 @@ body.reading .slotfoot .errands .more { visibility: hidden; }
 .slotfoot .bookpop.roadspop { left: 12px; transform: none; }
 .roadspop .roadlist { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .roadspop .act { white-space: nowrap; }
+/* 沉鼎观's painting in the 去往 list (观内, 2026-10-15; plate.js): seals on the painted halls. */
+.bookpop.roadspop.plated { width: min(560px, 92vw); }
+.plate { position: relative; width: 100%; margin-top: 8px; border-radius: 6px; background-size: cover; background-position: center; box-shadow: inset 0 0 0 1px var(--line); }
+.plate .spot { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; padding: 2px 7px; border-radius: 999px;
+  font: 600 12px/1.4 var(--serif); white-space: nowrap; color: #fff; background: rgb(168 40 30 / 88%); border: 1px solid rgb(255 255 255 / 70%); box-shadow: 0 1px 4px rgb(0 0 0 / 30%); cursor: pointer; }
+.plate button.spot:hover, .plate button.spot:focus-visible { background: rgb(190 50 36); outline: 2px solid #fff; }
+.plate .spot.here { background: var(--ling); cursor: default; }
+.plate .spot.shut { background: rgb(90 90 90 / 70%); color: rgb(255 255 255 / 80%); cursor: default; }
+@media (max-width: 480px) { .plate .spot { font-size: 11px; padding: 1px 5px; } }
 .slotfoot .shelfpop { width: auto; display: flex; gap: 8px; padding: 10px 12px; }
 /* The chips' popovers (事 · 天气 · 恩仇簿) open from the footer, over the stage. The chips' row scrolls
    sideways (overflow-x), which clipped a popover anchored inside it to nothing (2026-10-15, live: 「事 3 ·

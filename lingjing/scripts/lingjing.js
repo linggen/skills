@@ -10,6 +10,7 @@ import { createSession, listSkillSessions, pickResumable, fetchCloud, syncCloud,
 // (`engineUiUrl`) must not fail the whole page.
 import * as sharedApi from '/shared/api.js';
 import { verb, content, SCRATCH, worldPath } from './rules.js';
+import { plateHtml } from './plate.js';
 import { holdPlaceholder } from './invite.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tap } from './board.js';
@@ -1248,12 +1249,17 @@ const memoryHtml = () => (view.memory ? memoryCardHtml(view.memory.play, { i: vi
 /// does, the question is the chat's and this row is gone — never both.
 /// One chip, 「去往 ▾」, its roads in a list over the stage (Hanli, 2026-10-15: six road buttons
 /// ran off the footer). The same taps as before, one tap further in.
+/// Standing in a painted small area (沉鼎观, 观内 2026-10-15), the list opens on its painting:
+/// every place of it a spot (plate.js), and below it only the roads that lead off the painting.
 function roadsHtml() {
-  const near = look?.director?.near ?? [];
-  if (!near.length) return '';
+  const near = look?.director?.near ?? [], plate = look?.place?.plate;
+  if (!near.length && !plate) return '';
   const w = words(), open = view.roadsOpen;
-  const chips = near.map((p) => `<button class="act go" data-go="${esc(p.id)}">${esc(p.name)}</button>`).join('');
-  const pop = open ? `<div class="bookpop roadspop" role="dialog"><div class="cardtitle">${esc(w.roads)}</div><div class="roadlist">${chips}</div></div>` : '';
+  const onPlate = new Set((plate?.spots ?? []).map((s) => s.id));
+  const off = near.filter((p) => !onPlate.has(p.id));
+  const chips = off.map((p) => `<button class="act go" data-go="${esc(p.id)}">${esc(p.name)}</button>`).join('');
+  const painted = plate && look?.world?.dir ? plateHtml(plate, { src: worldPath(look.world.dir, plate.file), here: w.needHere }) : '';
+  const pop = open ? `<div class="bookpop roadspop${painted ? ' plated' : ''}" role="dialog"><div class="cardtitle">${esc(painted ? plate.name : w.roads)}</div>${painted}${chips ? `<div class="roadlist">${chips}</div>` : ''}</div>` : '';
   return `<span class="bookwrap roadswrap"><button class="bookchip roadschip" data-roads aria-expanded="${open ? 'true' : 'false'}" title="${esc(near.map((p) => p.name).join(' · '))}">${esc(w.roadsChip)} ▾</button>${pop}</span>`;
 }
 

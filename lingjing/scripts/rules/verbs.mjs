@@ -6,7 +6,7 @@ import { deck } from './cards.mjs';
 import { clone, judge, paysOf, refuse, resolve, setRiddleAside } from './core.mjs';
 import { choreGrant, isOnce, kaifuAfter, kaifuList, kaifuOpen } from './chores.mjs';
 import { greet } from './daily.mjs';
-import { afterMet, awayLine, BOOK_MAX, bookOf, complete, countsOf, gearBrief, HANDED_KEEP, handedOne, itemOf, mootQuest, noticeAt, noticeOf, questDoneBefore, questOf, questReady, withGiver } from './errands.mjs';
+import { afterMet, layerMet, awayLine, BOOK_MAX, bookOf, complete, countsOf, gearBrief, HANDED_KEEP, handedOne, itemOf, mootQuest, noticeAt, noticeOf, questDoneBefore, questOf, questReady, withGiver } from './errands.mjs';
 import { meet } from './road.mjs';
 import { grantPass } from './world.mjs';
 import { remember } from './ledger.mjs';
@@ -105,6 +105,8 @@ export function quest(state, content, ctx, args) {
     if (q.from?.place !== s.place) return refuse('not-here', null, { at: placeName(content, s, placeOf(content, q.from.place)) });
     if (mootQuest(s, q)) return refuse('already-done', null);
     if (q.opens?.after && !afterMet(content, s, q.opens.after)) return refuse('not-yet', null);
+    // 打妖的红牌，五层以下，不许揭 (古七): a layer the tag asks.
+    if (!layerMet(content, s, q)) return refuse('not-yet', pick({ zh: '打妖的红牌，五层以下，不许揭。', en: 'A red tag for beast work: below the fifth layer, no one may take it.' }, lang));
     if (Object.keys(s.quests).filter(x => !questDoneBefore(s, x)).length >= BOOK_MAX) {
       return refuse('book-full', pick({ zh: `手上已有${BOOK_MAX}件事，先了一件。`, en: `Three things are already in hand — finish one first.` }, lang), { book: bookOf(content, s, lang, ctx) });
     }

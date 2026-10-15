@@ -4,6 +4,8 @@
  "start": "sishui",
  "_about": "The places of 徐 — a map, not a chain. `roads` go both ways; `tier` is the ladder index a place asks for (0 练气 … 8 渡劫), and a place above the player's tier is refused in the mist with a fitting place to go instead. `has` says what is there: a creature with its card, the province's seed pool, the market, a chapter scene. `line` is one sentence of what is there, for the director's brief.",
  "_pools": "游荡的怪 (Hanli, 2026-10-05: 一片地方一个游荡怪物池，可重复打): a pool is a stretch of country's beasts and their weights; a place joins it by `has.pool` (world.mjs poolBeast). Only beasts of 卷一's book and a few added: 蒙山's are a hunter's trade (野猪 · 狼 · 熊), 狰 runs wild outside the herb garden, 蠪侄 in the wood outside the gate (古三), 蛫 by the Si (古五's 秘境). An entry's `deck` is how the pool deals that beast (world.mjs foeOf): 蠪侄 and 狰 are the story's fights too, and their scenes keep the creature's own deck — the pool's is weighed in 蛫's band (tools/battle-sim.mjs --pools).",
+ "_plates": "A painted map of one small area (观内, 2026-10-15): the 去往 list opens on it while he stands on one of its places — each place's `plate.at`, fractions of the painting, set on the painted building (rules/plate.mjs, scripts/plate.js). 沉鼎观 is tools/paint-guan.py seed 47, picked 2026-10-15.",
+ "plates": {"guan": {"name": {"zh": "沉鼎观", "en": "Chending Temple"}, "file": "art/map/guan.webp", "aspect": 1.5}},
  "pools": {"mengshan": {"name": {"zh": "蒙山", "en": "Mount Meng"}, "beasts": [{"creature": "yezhu", "weight": 3}, {"creature": "lang", "weight": 2}, {"creature": "xiong", "weight": 1}]}, "songlin": {"name": {"zh": "山门外的林子", "en": "The wood outside the gate"}, "beasts": [{"creature": "longzhi", "weight": 2, "deck": ["jinsuo", "jinsuo", "jinsuo", "jinsuo", "jiushou", "jiushou", "longzhi", "jinzhua", "jinzhua", "jinzhen", "qianyang", "qianyang"]}, {"creature": "lang", "weight": 1}]}, "yaoyuan-wai": {"name": {"zh": "药园外", "en": "Outside the herb garden"}, "beasts": [{"creature": "zheng", "weight": 3, "deck": ["huoya", "huoya", "tongling", "tongling", "huodan", "huodan", "yanxin", "yanxin", "xianshi", "shanjing", "zheng", "fenghuo"]}, {"creature": "yezhu", "weight": 1}]}, "sishui": {"name": {"zh": "泗水边", "en": "By the Si"}, "beasts": [{"creature": "gui", "weight": 1}]}},
  "places": [
   {
@@ -487,6 +489,13 @@
   },
   {
    "id": "shanmen",
+   "plate": {
+    "id": "guan",
+    "at": [
+     0.49,
+     0.74
+    ]
+   },
    "name": {
     "zh": "沉鼎观 · 山门",
     "en": "Chending Temple · The gate"
@@ -509,6 +518,13 @@
   },
   {
    "id": "zhengdian",
+   "plate": {
+    "id": "guan",
+    "at": [
+     0.48,
+     0.4
+    ]
+   },
    "name": {
     "zh": "沉鼎观 · 正殿",
     "en": "Chending Temple · The main hall"
@@ -532,6 +548,13 @@
   },
   {
    "id": "waimen",
+   "plate": {
+    "id": "guan",
+    "at": [
+     0.8,
+     0.52
+    ]
+   },
    "name": {
     "zh": "沉鼎观 · 外门",
     "en": "Chending Temple · The outer court"
@@ -671,6 +694,13 @@
   },
   {
    "id": "jiangtang",
+   "plate": {
+    "id": "guan",
+    "at": [
+     0.66,
+     0.37
+    ]
+   },
    "name": {
     "zh": "沉鼎观 · 讲堂",
     "en": "Chending Temple · The lecture hall"
@@ -691,6 +721,13 @@
   },
   {
    "id": "cangjing",
+   "plate": {
+    "id": "guan",
+    "at": [
+     0.18,
+     0.26
+    ]
+   },
    "name": {
     "zh": "沉鼎观 · 藏经阁",
     "en": "Chending Temple · The scripture hall"
@@ -716,6 +753,13 @@
   },
   {
    "id": "chaifang",
+   "plate": {
+    "id": "guan",
+    "at": [
+     0.9,
+     0.6
+    ]
+   },
    "name": {
     "zh": "沉鼎观 · 柴房",
     "en": "Chending Temple · The woodshed"
@@ -741,6 +785,13 @@
   },
   {
    "id": "yaoyuan",
+   "plate": {
+    "id": "guan",
+    "at": [
+     0.76,
+     0.3
+    ]
+   },
    "name": {
     "zh": "沉鼎观 · 药园",
     "en": "Chending Temple · The herb garden"
@@ -764,6 +815,13 @@
   },
   {
    "id": "houshan",
+   "plate": {
+    "id": "guan",
+    "at": [
+     0.86,
+     0.12
+    ]
+   },
    "name": {
     "zh": "沉鼎山 · 后山崖顶",
     "en": "Mount Chending · The cliff top"
@@ -824,6 +882,13 @@
   },
   {
    "id": "fantang",
+   "plate": {
+    "id": "guan",
+    "at": [
+     0.77,
+     0.71
+    ]
+   },
    "name": {
     "zh": "沉鼎观 · 饭堂",
     "en": "Chending Temple · The dining hall"
@@ -848,6 +913,13 @@
   },
   {
    "id": "yanwu",
+   "plate": {
+    "id": "guan",
+    "at": [
+     0.47,
+     0.6
+    ]
+   },
    "name": {
     "zh": "沉鼎观 · 演武场",
     "en": "Chending Temple · The training ground"
@@ -868,6 +940,13 @@
   },
   {
    "id": "zhishi",
+   "plate": {
+    "id": "guan",
+    "at": [
+     0.24,
+     0.4
+    ]
+   },
    "name": {
     "zh": "沉鼎观 · 执事堂",
     "en": "Chending Temple · The stewards' hall"

@@ -331,6 +331,23 @@ need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale
   greyed (`closed`) and refused with `map.say`; a province of a later 卷 with
   `map.beyond`. The whole 九州 unrolls (`unroll`) only with 卷二's 下山.
 
+### 观内 — 外门弟子，无令不得下山 【已建】 (2026-10-15)
+
+Hanli (2026-10-15, 「可以，按你的建议做」; supersedes the 10-05 free-play area for 外门 and
+the 内门 years): `00-waimen`'s and `00-zhuji`'s map is 沉鼎观 itself — 外门, 饭堂, 讲堂, 柴房,
+演武场, 正殿, 执事堂, 藏经阁, 药园, 后山崖顶, 山门 — with `home` (外门). Below the mountain is
+refused with `map.say` and greyed. Two ways past it, only the places on the way (world.mjs
+`leaveOf`): **the story** — the spine's scene standing off the map (石门 for the 秘境); and **a
+令** — an errand declaring `pass: {to, also?}` (the 执事堂's tags: 收船, 彭城的药钱, 云龙山的八味,
+吕梁洪的水声, 林子里的蠪侄) hangs one in `state.pass`. One at a time; spent once the errand is
+done or dropped and he is back inside, so never stranded. A save standing off every way is set
+down at `home` with `map.back` (`back_story` when a scene left him there), said once. The 观's
+chores (quests/guan.json — 码柴, 蒸屉, 对账, 晒经) pay 灵石; the night watch and the beasts pay
+修为. 打妖的红牌五层以下不许揭 (古七): 林子里的蠪侄 asks `opens.layer` 练气五层. The 去往 list opens
+on the painted 观 (places' `plate`, art/map/guan.webp — paint-guan.py seed 47; scripts/plate.js).
+**Not yet:** sparring at the 演武场 — it wants a duel with a person outside a scene (people are
+fought only in the story's scenes; a pool never holds one), so it waits for person duels.
+
 ### 剧情 × 开放世界 — tasks drive the story, key beats lock the map 【在建】
 
 His rule (2026-09-28): 「通过任务，在开放世界中驱动剧情；关键剧情的时候关闭开放
