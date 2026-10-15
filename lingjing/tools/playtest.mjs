@@ -322,6 +322,12 @@ export async function crawl(opts) {
       if (act.kind === 'value-pick') ctx.valuePicked = true;
       if (act.kind === 'game-skip') rec.seen('games', `${act.game}:skip`);
       rec.seen('kinds', act.kind);
+      // An open popover over the target (the crawler's own 去往 or 事): put it away as a player would — a tap
+      // on the bare strip — before tapping what lies under it.
+      if (act.tap?.covered && act.tap.onScreen && (await page.evaluate(POPS)).length && !['book', 'chips'].includes(act.tap.where)) {
+        const strip = await page.evaluate("(() => { const r = document.getElementById('place')?.getBoundingClientRect(); return r ? { x: r.left + 4, y: r.top + r.height / 2 } : null; })()");
+        if (strip) { await page.clickAt(strip.x, strip.y); await sleep(500); continue; }
+      }
       if (act.tap && !act.tap.onScreen) rec.find({ kind: 'below-fold', soft: true, scene: sceneId, what: `${act.why} «${act.tap.text}» stood off screen — scrolled to it`, shot: await shot(`fold-${n}`) });
       if (act.at) await page.clickAt(act.at.x, act.at.y); else await tapEl(page, act.tap);
       // 2. the tap answered
