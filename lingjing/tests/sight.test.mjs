@@ -125,7 +125,7 @@ test('the phone (2026-10-15): the stage takes the screen — the chat a bottom s
   // Popovers as bottom sheets; 亮相 ends where the words begin; boards fit the height.
   assert.match(phone, /\.slotfoot \.bookpop, [^{]*\{\s*position: fixed; top: auto; left: 0; right: 0; bottom: calc\(var\(--chatbar-h\) \+ 46px\);/);
   assert.match(phone, /bottom: max\(42%, calc\(100% - var\(--words-top, 58%\) \+ 10px\)\)/);
-  assert.match(phone, /\.g-luoshu-board, \.g-luoshu-tray \{ max-width: min\(340px, calc\(100dvh - 420px\)\); \}/);
+  assert.match(phone, /\.g-luoshu-board \{ max-width: min\(340px, calc\(100dvh - 460px\)\); \}/);
   // Ling or 银月 wrote: the dot, only while the chat is out of sight.
   assert.match(src, /onStreamEnd: \(_text, info\) => \{\n\s*\/\/[^\n]*\n\s*chatHeard\(document\.querySelector\('\.shell'\)\);/);
   const shellOf = (...on) => { const cls = new Set(on); return { cls, classList: { contains: (c) => cls.has(c), add: (c) => cls.add(c), remove: (c) => cls.delete(c) } }; };
