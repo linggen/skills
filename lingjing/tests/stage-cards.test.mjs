@@ -91,7 +91,7 @@ test('the 事 chip: how many in hand, what can be handed in — and its popover 
   const at = ctx({ quests: chores });
   const took = quest({ ...open, place: 'sibei' }, content, at, { action: 'take', id: 'xu-lvliang-look' });
   const l = look(took.state, content, at), page = pageCtx(l);
-  assert.match(bookChipHtml(page, false, false), /class="bookchip ready"[^>]*>事 3 · 可交 1</, 'a line ready to hand in is never behind a click');
+  assert.match(bookChipHtml(page, false, false), /class="bookchip ready"[^>]*title="事 3 · 可交 1">事 3<b class="due">交1<\/b><\/button>/, 'a line ready to hand in is never behind a click — a count on the chip, the line its title');
   assert.doesNotMatch(bookChipHtml(page, false, false), /bookpop/);
   assert.match(bookChipHtml(page, true, true), /bookchip ready fresh.*bookpop/s);
   const html = bookPopHtml(page);

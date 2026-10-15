@@ -1,0 +1,36 @@
+// An errand whose beast the story already won over is moot: never offered, never taken, and what
+// waits on it opens (live, 2026-10-15: 药园's scene tamed 狰, then 「药园巡夜」 was taken and read
+// 驯 1/1 · 交差 with nothing done).
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { loadContent } from '../scripts/content.mjs';
+import { newState } from '../scripts/state.mjs';
+import { look, quest } from '../scripts/rules.mjs';
+import { TO_OPEN, walk } from './prologue.mjs';
+
+const content = loadContent();
+const NOW = new Date('2026-09-29T09:00:00');
+const ctx = { now: NOW, quests: [] };
+const base = () => ({ ...walk(newState(content, 'zh', NOW), TO_OPEN, content, NOW), place: 'waimen', stamina: 100, stamina_at: NOW.toISOString() });
+const offered = (s) => (look(s, content, ctx).offers ?? []).map((o) => o.id);
+
+test('before 狰 is tamed, 药园巡夜 is offered at 外门 and its follow-up waits', () => {
+  const ids = offered(base());
+  assert.ok(ids.includes('xu-yaoyuan-shouye'), ids.join(','));
+  assert.ok(!ids.includes('xu-yaoyuan-canzhu'), 'the follow-up waits on it');
+});
+
+test('狰 already tamed by the story: 药园巡夜 is neither offered nor taken, and the follow-up opens', () => {
+  const s = { ...base(), cast: [...base().cast, 'zheng'] };
+  const ids = offered(s);
+  assert.ok(!ids.includes('xu-yaoyuan-shouye'), ids.join(','));
+  assert.ok(ids.includes('xu-yaoyuan-canzhu'), ids.join(','));
+  assert.equal(quest(s, content, ctx, { action: 'take', id: 'xu-yaoyuan-shouye' }).result.refused, 'already-done');
+});
+
+test('taken first, the errand still counts the 狰 tamed after it (the ordinary way)', () => {
+  const taken = quest(base(), content, ctx, { action: 'take', id: 'xu-yaoyuan-shouye' }).state;
+  const book = (st) => look(st, content, ctx).book.find((b) => b.id === 'xu-yaoyuan-shouye');
+  assert.equal(book(taken).ready, false);
+  assert.equal(book({ ...taken, cast: [...taken.cast, 'zheng'] }).ready, true);
+});

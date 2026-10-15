@@ -29,6 +29,14 @@ export const BOOK_MAX = 3; // a chat game cannot show a log of twenty-five
 const questOf = (content, id) => (content.quests ?? []).find(q => q.id === id) ?? noticeOf(content, id);
 const questDoneBefore = (state, id) => Boolean(state.quests?.[id]?.done_at);
 
+/* An errand whose beast is already won over (降 or 驯 — it walks in the cast) before it was ever
+   taken: the story did it (药园's scene tames 狰, then 「药园巡夜」 offered and read 驯 1/1 at once —
+   live, 2026-10-15). It cannot be done, so it is never offered nor taken; whatever waits on it
+   (`opens.after`) opens as if it were done. */
+const beastNeed = n => n.kind === 'subdue' || n.kind === 'tame';
+const mootQuest = (state, q) => Boolean(q && !state.quests?.[q.id] && q.need.some(n => beastNeed(n) && (state.cast ?? []).includes(n.creature)));
+const afterMet = (content, state, id) => questDoneBefore(state, id) || mootQuest(state, questOf(content, id));
+
 /* The counts, as they stand. `carry` is not ticked by anything: what is in the
    bag now IS the count, so buying and using it again both show at once. */
 function countsOf(content, state, quest) {
@@ -219,8 +227,8 @@ function offersOf(content, state, lang, now) {
   if (state.quests && Object.keys(state.quests).filter(id => !questDoneBefore(state, id)).length >= BOOK_MAX) return [];
   const notice = noticeAt(content, state, now);
   return [...(content.quests ?? []), ...(notice ? [notice] : [])]
-    .filter(q => q.from?.place === state.place && !state.quests?.[q.id] && ofJuan(content, q, now)
-      && (!q.opens?.after || questDoneBefore(state, q.opens.after))
+    .filter(q => q.from?.place === state.place && !state.quests?.[q.id] && ofJuan(content, q, now) && !mootQuest(state, q)
+      && (!q.opens?.after || afterMet(content, state, q.opens.after))
       // Story time: after a scene (`done`), or only while it is still ahead (`before`) — 邺城 before and after the 漳水.
       && (!q.opens?.done || passed(content, state, q.opens.done))
       && (!q.opens?.before || !passed(content, state, q.opens.before))
@@ -627,4 +635,4 @@ function gearBrief(content, state) {
   };
 }
 
-export { awayLine, bookOf, breakthroughOf, complete, countsOf, directorBrief, errandFor, filler, FILLERS, GEAR_SLOTS, gearBrief, HANDED_KEEP, handedHere, handedOne, itemBrief, itemOf, noticeAt, noticeOf, offersOf, questDoneBefore, questOf, questReady, settleErrands, withGiver, taskOf, threadOf, onStoryRoad, TIERS_ORDER, wayBack, waypointOf, whereAt, withinRoads, workOf };
+export { afterMet, awayLine, bookOf, mootQuest, breakthroughOf, complete, countsOf, directorBrief, errandFor, filler, FILLERS, GEAR_SLOTS, gearBrief, HANDED_KEEP, handedHere, handedOne, itemBrief, itemOf, noticeAt, noticeOf, offersOf, questDoneBefore, questOf, questReady, settleErrands, withGiver, taskOf, threadOf, onStoryRoad, TIERS_ORDER, wayBack, waypointOf, whereAt, withinRoads, workOf };
