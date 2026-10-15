@@ -507,7 +507,8 @@ async function readOnce() {
   // authored with, what the place holds. The optimistic copy has served its
   // purpose; a board he opened himself stays until he walks on.
   const here = look.place?.id ?? null;
-  if (view.opened && view.opened.place !== here) keep({ opened: null });
+  // …or until the scene moves on: a board left queued must not come up after another scene's play (a tame).
+  if (view.opened && (view.opened.place !== here || (view.opened.scene ?? null) !== (look.scene?.id ?? null))) keep({ opened: null });
   queueMicrotask(payKeptWins);
   if (view.qPlace !== here) keep({ qSkip: [], qPlace: here });
   keep({ focus: [] });
@@ -1467,7 +1468,7 @@ function draw() {
   // What already stands on the stage is not listed again in the tray (Hanli, 2026-10-05: the 九宫格 twice).
   // A scene's own game is not at hand before its passage reaches it (his, 2026-10-14: 接雨 in the tray at load).
   const gamesAhead = storyAhead() ? (look.scene?.show ?? []).filter((c) => c.card === 'board').map((c) => c.id) : [];
-  $('tray').innerHTML = stands(headLook(), 'tray') ? trayHtml({ ...ctx(), onStage: [...(slots?.main ?? []).map((c) => c.id).filter(Boolean), ...gamesAhead] }) : '';
+  $('tray').innerHTML = stands(headLook(), 'tray') ? trayHtml({ ...ctx(), onStage: [...(slots?.main ?? []).map((c) => c.id).filter(Boolean), ...gamesAhead], trayQueued: view.opened && trayAhead() ? view.opened.id : null }) : '';
   $('tray').parentElement.hidden = !$('tray').innerHTML;
   // A turn with nothing left in it ends itself after a beat long enough to
   // read the board — pressing the button is always faster (his, 2026-09-18).
@@ -2097,6 +2098,16 @@ function logAtEnd() {
   if (!body) return;
   body.dataset.atEnd = '1';
   body.scrollTop = body.scrollHeight;
+}
+
+/* 开局 from the tray (live, 2026-10-15: tapped while the scene's choices stood in the box, nothing happened —
+   and the board came up later, out of nowhere, after a tame). The passage read to its last beat, its choices in
+   the box: the box is put away, the board stands now and the choices on the scene card beside it. Mid-passage:
+   it waits for the passage, and its tray button says so (cards.js trayHtml trayQueued). */
+function openFromTray(id) {
+  const inBox = choicesInBox();
+  show({ opened: { id, place: look?.place?.id ?? null, scene: look?.scene?.id ?? null }, qSkip: view.qSkip.filter((k) => k !== `board:${id}`) });
+  if (inBox) nextBeat();
 }
 
 /* ── The lines' clock (lines.js) ──
@@ -2888,7 +2899,7 @@ const CLICKS = [
   ['[data-say]', (el, e) => sayTap(el, e)],
   // A board opened from the tray stays on the stage until he walks on.
   // 开局 from the tray puts the board in the line, behind an errand not yet taken.
-  ['[data-play]', (el) => !el.matches(':disabled') && show({ opened: { id: el.dataset.play, place: look?.place?.id ?? null }, qSkip: view.qSkip.filter((k) => k !== `board:${el.dataset.play}`) })],
+  ['[data-play]', (el) => !el.matches(':disabled') && openFromTray(el.dataset.play)],
   ['[data-qnext]', (el) => putOff(el.dataset.qnext)],
   ['[data-g]', (el) => gameMove(el)],
   ['[data-tile]', (el) => tileTap(el)],

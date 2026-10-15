@@ -208,3 +208,20 @@ test('every card kind the stage can queue has a queue word in both languages, �
   const body = src.slice(src.indexOf('function queueLabel'), src.indexOf('function putOff'));
   assert.ok(!/name:\s*kind \? '' : c\.card/.test(body), 'a kind with no word never shows raw');
 });
+
+// Live 2026-10-15: 开局 in the tray, tapped while the scene's choices stood in the box, did nothing — and the
+// board (炼丹) came up later out of nowhere, after a tame.
+test('开局 from the tray is never dropped: in the box\'s choices the box goes and the board stands; mid-passage its button says it waits; a scene moved on forgets it', async () => {
+  const { WORDS, trayHtml } = await import('../scripts/cards.js');
+  const look = { tasks: [{ id: 'liandan', kind: 'board', title: '炼丹', status: 'offered', game: 'abacus' }] };
+  const tray = (q) => trayHtml({ look, words: WORDS.zh, lang: 'zh', trayQueued: q });
+  assert.match(tray(null), /data-play="liandan"/);
+  assert.match(tray('liandan'), /读完这段就开/);
+  assert.ok(!/data-play="liandan"/.test(tray('liandan')), 'no second tap to drop');
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const body = src.slice(src.indexOf('function openFromTray('), src.indexOf('\n}\n', src.indexOf('function openFromTray(')));
+  assert.match(body, /const inBox = choicesInBox\(\);[\s\S]*if \(inBox\) nextBeat\(\);/);
+  assert.match(src, /\['\[data-play\]', \(el\) => !el\.matches\(':disabled'\) && openFromTray\(el\.dataset\.play\)\]/);
+  assert.match(src, /view\.opened\.scene \?\? null\) !== \(look\.scene\?\.id \?\? null\)/);
+  assert.match(src, /trayQueued: view\.opened && trayAhead\(\) \? view\.opened\.id : null/);
+});
