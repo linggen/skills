@@ -583,7 +583,8 @@ function statusHtml() {
   // Past the full mark (Hanli, 2026-10-15: 「230/200」): the bar stands full and the 修为 over it glows on top.
   const over = spillPct(look.progress, look.next);
   // A scene on another line (a 今 interlude) keeps only the language here: the rest is the 古's (stage.mjs FURNITURE).
-  const has = (part) => stands(look, part);
+  // Read off the header that stands (headLook): under 「今 · 二 · 完」 the strip is still the 今's, never the 古's beside 沈芒.
+  const head = headLook(), has = (part) => stands(head, part);
   const name = look.name && has('name') ? `<span class="daohao">${esc(look.name)}</span>` : '';
   // Before the prologue's gate (Look's `locked`) a mortal: no realm, no 修为 bar, no 灵石, no coins — not greyed, not there.
   const realm = !has('realm') ? '' : isShut(look, 'cultivation') ? `<span class="realm">${esc(w.mortal)}</span>`
@@ -1009,7 +1010,7 @@ const headHtml = (slots) => (bout ? '' : slots.header.map(drawCard).join(''));
 function footRowHtml(slots) {
   if (bout) return '';
   // In 闭关 and inside a corridor (the prologue) the rules keep the roads off (stageSlots).
-  return (slots.footer.roads || roadsFree()) && stands(look, 'roads') ? roadsHtml() : '<span></span>';
+  return (slots.footer.roads || roadsFree()) && stands(headLook(), 'roads') ? roadsHtml() : '<span></span>';
 }
 
 /// 还有 N 件 ›, folded onto the 事 chip (Hanli, 2026-10-15: one chip for what is in hand and what
@@ -1045,7 +1046,7 @@ const FOOT_CHIPS = {
 };
 const IN_A_FIGHT = new Set(['errands', 'bag']);
 function footChipsHtml(slots) {
-  const has = (part) => (!bout || IN_A_FIGHT.has(part)) && stands(look, part);
+  const head = headLook(), has = (part) => (!bout || IN_A_FIGHT.has(part)) && stands(head, part);
   return FOOTER.filter(has).map((part) => FOOT_CHIPS[part](slots)).join('');
 }
 
@@ -1381,8 +1382,8 @@ function draw() {
   const titles = (huiTitles[lang()] ??= {}), ended = look.chapter?.close;
   if (look.chapter?.hui) titles[look.chapter.hui] = look.chapter.title;
   if (ended?.id && ended.line) titles[ended.id] = ended.line;
-  // Under the old 回's 「完」 at the turn, its own line holds with its header (headLook).
-  const closing = closeUp() && atHuiTurn() ? ended?.id ?? null : null;
+  // Under the old 回's 「完」, its own line holds with its header (headLook).
+  const closing = closeUp() ? ended?.id ?? null : null;
   $('huiLine').textContent = look.chapter?.hui ? huiLineOf({ hui: look.chapter.hui, title: look.chapter.title, telling: closing ?? huiAt(told), titles }) : '';
   // Inside a sealed instance: 「沉鼎秘境 · 第二夜 · 石室」 — the instance, the book's night, the room (rules/sealed.mjs).
   $('place').textContent = look.sealed ? [look.sealed.header, look.sealed.where].filter(Boolean).join(' · ') : look.scene?.place ?? look.chapter?.close?.place ?? look.place?.name ?? look.chapter?.title ?? '';
@@ -1442,7 +1443,7 @@ function draw() {
   // What already stands on the stage is not listed again in the tray (Hanli, 2026-10-05: the 九宫格 twice).
   // A scene's own game is not at hand before its passage reaches it (his, 2026-10-14: 接雨 in the tray at load).
   const gamesAhead = storyAhead() ? (look.scene?.show ?? []).filter((c) => c.card === 'board').map((c) => c.id) : [];
-  $('tray').innerHTML = stands(look, 'tray') ? trayHtml({ ...ctx(), onStage: [...(slots?.main ?? []).map((c) => c.id).filter(Boolean), ...gamesAhead] }) : '';
+  $('tray').innerHTML = stands(headLook(), 'tray') ? trayHtml({ ...ctx(), onStage: [...(slots?.main ?? []).map((c) => c.id).filter(Boolean), ...gamesAhead] }) : '';
   $('tray').parentElement.hidden = !$('tray').innerHTML;
   // A turn with nothing left in it ends itself after a beat long enough to
   // read the board — pressing the button is always faster (his, 2026-09-18).
@@ -1967,7 +1968,10 @@ function headLook() {
   // …and at a 回's turn, while the old 回's 「完」 stands (proto f, 2026-10-14): its last scene's header and picture
   // hold under the card; they turn with 合上, before the new 回's first words.
   // A sealed instance's header and stage (`sealed`) hold with the scene they belong to.
-  const held = leadsIn(readingHere(), look?.scene?.id, prev?.scene?.id) || Boolean(prev?.scene && prev.scene.id !== look?.scene?.id && closeUp() && atHuiTurn());
+  // From the moment the 「完」 is owed, not only once the turn is reached: at 今 · 二 → 古五 (2026-10-15)
+  // the new scene's picture stood a beat while the old 回's last beat was still the reading's, then the
+  // 今 picture came back under 「今 · 二 · 完」, then the 古 again with 合上 (Hanli: 「又跳回了今」).
+  const held = leadsIn(readingHere(), look?.scene?.id, prev?.scene?.id) || Boolean(prev?.scene && prev.scene.id !== look?.scene?.id && closeUp());
   return held ? { ...look, scene: prev.scene, place: prev.place, weather: prev.weather, stage: prev.stage, sealed: prev.sealed } : look;
 }
 /* The scene just left, kept per save in this browser beside the reading, so a reload mid-passage holds its header too. */

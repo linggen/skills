@@ -152,7 +152,7 @@ test('the 回 line keeps the old 回 while its last passage is told, and turns o
   assert.equal(huiLineOf({ ...now, telling: 'h08' }), titles.h10, 'a 回 the page never showed: the save\'s line');
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   // The 回 the reading tells — or, under the old 回's 「完」 at its turn, that 回 (2026-10-14, proto f).
-  assert.match(page, /const closing = closeUp\(\) && atHuiTurn\(\) \? ended\?\.id \?\? null : null;\n {2}\$\('huiLine'\)\.textContent = look\.chapter\?\.hui \? huiLineOf\(\{ hui: look\.chapter\.hui, title: look\.chapter\.title, telling: closing \?\? huiAt\(told\), titles \}\) : '';/);
+  assert.match(page, /const closing = closeUp\(\) \? ended\?\.id \?\? null : null;\n {2}\$\('huiLine'\)\.textContent = look\.chapter\?\.hui \? huiLineOf\(\{ hui: look\.chapter\.hui, title: look\.chapter\.title, telling: closing \?\? huiAt\(told\), titles \}\) : '';/);
   assert.match(page, /if \(ended\?\.id && ended\.line\) titles\[ended\.id\] = ended\.line;/, 'the ended 回\'s line from its close (a fresh tab has no memory of it)');
 });
 

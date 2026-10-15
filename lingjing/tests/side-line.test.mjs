@@ -61,7 +61,9 @@ test('the page reads the furniture table for the strip, the footer and the tray'
   // The footer's chips come from stage.mjs FOOTER, each one a part of the table (Hanli, 2026-10-15).
   for (const part of FOOTER) assert.ok([...FURNITURE.main, ...FURNITURE.every].includes(part), part);
   assert.match(src, /FOOTER\.filter\(has\)/);
-  for (const part of ['roads', 'tray']) assert.match(src, new RegExp(`stands\\(look, '${part}'\\)`), part);
+  // Read off the header that stands (headLook): under an interlude's 「完」 the furniture is still the 今's (2026-10-15).
+  for (const part of ['roads', 'tray']) assert.match(src, new RegExp(`stands\\(headLook\\(\\), '${part}'\\)`), part);
+  assert.match(src, /const head = headLook\(\), has = \(part\) => stands\(head, part\);/, 'the strip');
   assert.match(src, /const herHere = \(\) => Boolean\([^)]*!look\?\.companion\?\.away\)/, 'away, nothing goes to her');
 });
 
