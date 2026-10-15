@@ -28,6 +28,11 @@
 .slotfoot .footrow:has(> span:only-child:empty), .slotfoot .footrow:empty { display: none; }
 .slotfoot .footchips { flex: 1 1 auto; min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .slotfoot .footchips [data-lu] { margin-left: auto; }
+/* The chips' popovers (事 · 天气 · 恩仇簿) open from the footer, over the stage. The chips' row scrolls
+   sideways (overflow-x), which clipped a popover anchored inside it to nothing (2026-10-15, live: 「事 3 ·
+   可交 10」 tapped, the book opened invisibly). Anchored to the footer itself instead, they stand clear. */
+.slotfoot .footchips .bookwrap { position: static; }
+.slotfoot .bookpop { left: 50%; transform: translateX(-50%); bottom: calc(100% + 10px); max-height: min(70vh, 640px); overflow-y: auto; }
 body.fighting .slotfoot { height: 46px; }
 
 /* 银月's 木牌 (proto k): grey while she sleeps, warm while her words are up. */

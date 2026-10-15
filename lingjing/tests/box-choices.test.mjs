@@ -69,3 +69,13 @@ for (const [name, steps] of Object.entries(SCENES)) {
     assert.ok(!after.offers?.some(o => o.id === l.offers[0].id), 'taken: no longer offered');
   });
 }
+
+/* The footer chips' popovers (事 · 天气 · 恩仇簿) live in a row that scrolls sideways under the
+   story view (story.css .footchips overflow-x): anchored inside it they were clipped to nothing
+   (2026-10-15, live: 「事 3 · 可交 10」 tapped, the book opened unseen). Anchored to the footer. */
+test('the footer chips\' popovers are anchored to the footer, not clipped by the chips\' scrolling row', () => {
+  const css = fs.readFileSync(new URL('../scripts/story.css', import.meta.url), 'utf8');
+  assert.match(css, /\.slotfoot \.footchips \{[^}]*overflow-x: auto/, 'the row scrolls (why the anchor moved)');
+  assert.match(css, /\.slotfoot \.footchips \.bookwrap \{ position: static; \}/);
+  assert.match(css, /\.slotfoot \.bookpop \{[^}]*bottom: calc\(100% \+ 10px\)/);
+});
