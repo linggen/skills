@@ -60,7 +60,9 @@ export function placeLabels(dots, { width = 560, height = 420 } = {}) {
     const w = [...text].reduce((n, c) => n + (/[\u0000-ɏ]/.test(c) ? 6.5 : 12), 8), h = 16;
     const tries = { r: { x: x + 7, y: y - h / 2, w, h }, l: { x: x - 7 - w, y: y - h / 2, w, h }, a: { x: x - w / 2, y: y - 7 - h, w, h }, b: { x: x - w / 2, y: y + 7, w, h } };
     const order = d.flip ? ['l', 'r', 'a', 'b'] : ['r', 'l', 'a', 'b'];
-    const side = order.find((k) => fits(tries[k]) && !placed.some((p, j) => j !== i && (p.rank == null || p.rank <= rank[i]) && hit(p, tries[k])));
+    // Clear of every dot if it can be; else over lower-ranked dots only (they stand under the names, lingjing.css).
+    const clear = (k, lower) => fits(tries[k]) && !placed.some((p, j) => j !== i && (!lower || p.rank == null || p.rank <= rank[i]) && hit(p, tries[k]));
+    const side = order.find((k) => clear(k, false)) ?? order.find((k) => clear(k, true));
     if (side) placed.push({ ...tries[side], rank: null });
     out.push(side ?? null);
   });
