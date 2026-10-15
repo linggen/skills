@@ -81,6 +81,8 @@ export function oweExit(s, scene, exit, replay) {
 /* More than this many passages owed at once, and the older ones are told as
    a catch-up (their scenes' `recap` lines): a stale run skips cleanly. */
 export const CATCHUP_OVER = 2;
+/* …and a catch-up never reaches back past the 回 it leads into: with no scene of that 回 to recall, this many lines. */
+export const CATCHUP_LINES = 3;
 
 const findScene = (content, sid) => Object.values(content.chapters).map(c => c.scenes?.[sid]).find(Boolean);
 
@@ -139,12 +141,17 @@ function caughtUp(content, state, items) {
   if (items.length <= CATCHUP_OVER) return items;
   const older = items.slice(0, -CATCHUP_OVER), last = items.slice(-CATCHUP_OVER);
   const whole = new Set(last.map(i => i.of === 'scene' ? i.id : i.id.split('/')[0]));
-  const sids = [...new Set(older.map(i => (i.of === 'scene' ? i.id : i.id.split('/')[0])))].filter(sid => !whole.has(sid));
+  const all = [...new Set(older.map(i => (i.of === 'scene' ? i.id : i.id.split('/')[0])))].filter(sid => !whole.has(sid));
+  // Only the 回 it leads into (古九's tester, 2026-10-15: a new browser read ~90 lines, the whole book's 前情):
+  // the scenes of the 回 the first whole passage stands in; with none of it, the last few lines alone.
+  const into = last[0]?.hui ?? null;
+  const ofInto = into ? all.filter(sid => findScene(content, sid)?.hui === into) : [];
+  const sids = ofInto.length ? ofInto : all.slice(-CATCHUP_LINES);
   const lines = sids.map(sid => {
     const sc = findScene(content, sid);
     return fill(pick(sc?.recap, state.lang) ?? pick(sc?.setup, state.lang), state, content);
   }).filter(Boolean);
-  const hui = older.find(i => i.hui)?.hui;
+  const hui = findScene(content, sids[0])?.hui ?? older.find(i => i.hui)?.hui;
   return lines.length ? [{ of: 'catchup', id: 'catchup', ids: older.map(i => i.id), text: lines.join('\n'), ...(hui ? { hui } : {}) }, ...last] : last;
 }
 
