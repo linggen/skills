@@ -242,8 +242,8 @@ function fitSealed(content, state, now = new Date()) {
   const reached = state.sealed?.scene !== state.scene;
   state.sealed = { id: sealed.beat, since: state.sealed?.since ?? now.toISOString(), scene: state.scene };
   if (reached && state.scene !== sealed.first && rooms.includes(at)) state.place = at;
-  // A save that came in before a scene's board was declared is offered it as it stands (core.mjs offerTasks does it on entry).
-  if (reached) for (const id of sceneOf(content, state)?.offers?.tasks ?? []) { state.tasks ??= {}; state.tasks[id] ??= { status: 'offered' }; }
+  // The scene's boards stand while he is in it — a save from before a board was declared too (core.mjs offerTasks does it on entry).
+  for (const id of sceneOf(content, state)?.offers?.tasks ?? []) { state.tasks ??= {}; state.tasks[id] ??= { status: 'offered' }; }
   if (!rooms.includes(state.place)) state.place = sealed.home ?? rooms[0];
   delete state.returned;
   return true;

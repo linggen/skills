@@ -66,9 +66,9 @@ export function wake(state, content, ctx) {
   const s = clone(state);
   if (!state.scene && !inMade(state)) advanceChapter(content, s, ctx.now);
   // In or out of a sealed instance: stamped, put in its rooms, or let go with the 机缘 thawed (world.mjs fitSealed).
-  const sealedBefore = JSON.stringify([state.sealed ?? null, state.place, state.chance ?? null]);
+  const sealedBefore = JSON.stringify([state.sealed ?? null, state.place, state.chance ?? null, state.tasks ?? null]);
   fitSealed(content, s, ctx.now);
-  const sealedMoved = JSON.stringify([s.sealed ?? null, s.place, s.chance ?? null]) !== sealedBefore;
+  const sealedMoved = JSON.stringify([s.sealed ?? null, s.place, s.chance ?? null, s.tasks ?? null]) !== sealedBefore;
   // The call: at the realm the world names, the search for her opens.
   const called = !s.companion && callDue(content, s);
   if (called) s.companion = {};

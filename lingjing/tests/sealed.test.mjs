@@ -207,6 +207,12 @@ test('an old save mid-秘境 (Hanli\'s, 2026-10-15: wm-kunzhen, standing at the 
   assert.deepEqual(l.book, []);
   assert.equal(l.sealed.header, '沉鼎秘境 · 第一日');
   assert.equal(l.waypoint.text, '活着从崖口边脱身');
+  assert.ok(l.tasks.some(t => t.id === 'mijing-zhenyan'), 'the 困阵 board stands for him');
+  // Already sealed at this scene before the board was declared (in when 秘境 mode landed, before its rooms): still offered.
+  const was = migrate({ lang: 'zh', ...raw, place: 'mijing-yabi', sealed: { id: 'mijing', since: '2026-10-15T12:00:00.000Z', scene: 'wm-kunzhen' } }, content);
+  const again = VERBS.look(was, content, ctx(new Date('2026-10-15T15:00:00')), {});
+  assert.equal((again.state ?? was).tasks?.['mijing-zhenyan']?.status, 'offered', 'the board is on the save as it loads');
+  assert.ok(again.result.tasks.some(t => t.id === 'mijing-zhenyan' && t.status === 'offered'), 'and stands for him');
 });
 
 test('the rooms hold play between the beats: the hall\'s 华容道, the 凶崖\'s 犰狳 and 下崖, the 困阵\'s 洛书, the dry river\'s 合窳 and its herbs', () => {
