@@ -66,3 +66,13 @@ test('a thing a scene brings on is one line while the scene\'s game waits beside
   assert.doesNotMatch(small, /codexcompact big/);
   assert.doesNotMatch(small, /疼，别喊/, 'one line only; a tap opens it whole');
 });
+
+test('a card that only tells is no thing to do: 下一步 stands before 狰\'s 已收服 card (the crawler, 2026-10-15, 药园 after the fight)', () => {
+  const l = { place: { id: 'yaoyuan', encounter: { creature: { id: 'zheng' }, beaten: true, tamed: true } }, tasks: [], scene: null };
+  const cards = withNext(l, [{ card: 'goal' }, { card: 'creature', id: 'zheng' }]);
+  assert.deepEqual(kinds(cards), ['goal', 'creature', 'next']);
+  assert.deepEqual(kinds(stageSlots(l, cards).main), ['next'], 'the way on first; the record waits behind it');
+  // a beast beaten and not yet won over: its card carries 收服 — a thing to do
+  const winnable = { ...l, place: { id: 'yaoyuan', encounter: { creature: { id: 'zheng' }, beaten: true, tamed: false, likes: { id: 'luobo' } } } };
+  assert.deepEqual(kinds(withNext(winnable, [{ card: 'creature', id: 'zheng' }])), ['creature']);
+});

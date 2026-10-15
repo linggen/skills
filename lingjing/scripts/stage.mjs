@@ -349,9 +349,15 @@ export const PAGE_OWNS = new Set(['meet', 'panel', 'people', 'goal', 'value', 'b
    which hold the whole stage. */
 export function withNext(look, cards) {
   if (!look || look.fight || look.seclusion || cards.some(c => c.card === 'next')) return cards;
-  const doing = cards.some(c => sceneGame(look, c) || MAIN.some(r => !r.filler && r.kinds.includes(c.card) && r.kinds[0] !== 'next'));
+  const doing = cards.some(c => sceneGame(look, c) || (!TELLS_ONLY(look, c) && MAIN.some(r => !r.filler && r.kinds.includes(c.card) && r.kinds[0] !== 'next')));
   return doing ? cards : [...cards, { card: 'next' }];
 }
+/* A card that only tells — an entry, a beast already won over, the roots, a gate's or a
+   treasure's record — is no thing to do: 下一步 stands before it (the crawler, 2026-10-15: after
+   药园's fight the stage held 狰's 已收服 card and nothing said 柴房 was next). A shelf, the map's
+   roads and a beast still to win over are things to do. */
+const TELLING = new Set(['codex', 'creature', 'traits', 'gate', 'tribulation', 'treasure']);
+const TELLS_ONLY = (look, c) => TELLING.has(c.card) && !(c.card === 'creature' && winnable(look?.place?.encounter) && look.place.encounter.creature.id === c.id);
 export const showable = c => Boolean(c) && !PAGE_OWNS.has(c.card);
 
 /* 此地 · 此刻 · 行 — the stage in FIXED SECTIONS (Hanli, 2026-09-29: the same
@@ -383,8 +389,8 @@ export const MAIN = [
   { kinds: ['board', 'duel', 'lundao'] }, //                             a game to play here
   { kinds: ['handed', 'quest', 'tale', 'road', 'offer'] }, //            the line, one at a time
   { kinds: ['building', 'empty'] }, //                                   the page's own notices
+  { kinds: ['next'] }, //                                                where the story goes, when nothing else is a thing to do
   { kinds: ['codex', 'creature', 'item', 'map', 'traits', 'gate', 'tribulation', 'treasure'] }, // what Ling showed
-  { kinds: ['next'] }, //                                                where the story goes, when nothing else stands
   { kinds: ['hexagram'], filler: true }, //                              the day's coins
 ];
 

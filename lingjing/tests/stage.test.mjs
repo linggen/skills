@@ -12,8 +12,9 @@ const world = (over = {}) => ({ place: { id: 'ye', name: '邺城' }, scene: null
 test('the stage is one ordered list, and Ling\'s own cards stand whatever else is true', () => {
   // nothing shown, nothing waiting: the day's coins fill it — and 下一步 stands, never a blank stage (withNext, 2026-10-15)
   assert.deepEqual(kinds(stageCards(world())), ['hexagram', 'next']);
-  // what she showed
-  assert.deepEqual(kinds(stageCards(world(), { focus: [{ card: 'creature', id: 'fuzhu' }] })), ['creature:fuzhu']);
+  // what she showed — and, a card that only tells, 下一步 before it (withNext, 2026-10-15)
+  assert.deepEqual(kinds(stageCards(world(), { focus: [{ card: 'creature', id: 'fuzhu' }] })), ['creature:fuzhu', 'next']);
+  assert.deepEqual(kinds(stageCards(world(), { focus: [{ card: 'item', ids: ['a'] }] })), ['item'], 'a shelf is a thing to do');
   // the head cards come first, in order
   const busy = world({ building: { paint: [1] }, stamina: { empty: true }, quest: { step: 'bell' } });
   assert.deepEqual(kinds(stageCards(busy)), ['building', 'empty', 'quest', 'hexagram']);
@@ -78,7 +79,7 @@ test('差事: an offer is what the stage is about — the book is behind the chi
   const look = { place: { id: 'sibei' }, tasks: [], offers: [{ id: 'xu-lvliang-look', title: '吕梁洪的水声' }], book: [{ id: 'x', title: 'x', need: [], ready: false }] };
   const focus = [{ card: 'creature', id: 'fuzhu' }];
   assert.deepEqual(stageCards(look, { focus }).map(c => c.card), ['offer'], 'no book on the stage, no beast beside the errand, no coins either');
-  assert.deepEqual(stageCards({ ...look, offers: [] }, { focus }).map(c => c.card), ['creature'], 'taken, the place has its card back');
+  assert.deepEqual(stageCards({ ...look, offers: [] }, { focus }).map(c => c.card), ['creature', 'next'], 'taken, the place has its card back (with 下一步: it only tells)');
   // a shelf is something to DO, so it stays beside an offer
   assert.deepEqual(stageCards(look, { focus: [{ card: 'item', ids: ['lingzhi'] }, ...focus] }).map(c => c.card), ['offer', 'item']);
   // 接下 is on its own card, and the question never offers it: the card owns no key

@@ -68,7 +68,8 @@ const OBSERVE = `(() => {
     fighting: document.body.classList.contains('fighting'),
     seal: (() => { const f = [...document.querySelectorAll('.feat, .wonseal')].find(vis); if (!f) return null; const r = f.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, text: f.textContent.trim().slice(0, 30) }; })(),
     popSig: [...document.querySelectorAll('.bookpop')].map((e) => e.textContent.trim()).join('|').slice(0, 400),
-    turned: Boolean([...document.querySelectorAll('.bookrow.turned, .handed, .took')].find(vis)),
+    turned: Boolean([...document.querySelectorAll('.bookrow.turned, .handed, .tookseal, .offerrow.taken, .turneddone')].find(vis)),
+    chipsText: document.getElementById('footChips')?.textContent.trim().replace(/\\s+/g, ' ').slice(0, 200) ?? '',
     sighting: Boolean([...document.querySelectorAll('#sight > *, [data-appear], [data-appear-done]')].find(vis)),
     logOpen: vis(document.querySelector('.dlglog')),
     wide: document.documentElement.scrollWidth > W + 2,
@@ -327,7 +328,7 @@ export async function crawl(opts) {
       const { changed } = await settle(page, snap, () => verb('look'), { ms: act.kind === 'next' ? 3000 : 8000 });
       if (changed && FEEDBACK.has(act.tap?.data?.do ?? (act.kind === 'meet' ? act.tap.data.meet : ''))) {
         const after = await page.evaluate(OBSERVE);
-        if (!after.turned && after.status === snap.status && !after.note) rec.find({ kind: 'no-feedback', scene: sceneId, what: `${act.why} «${act.tap.text}»: no line, no card, no number moved`, shot: await shot(`feedback-${n}`) });
+        if (!after.turned && after.status === snap.status && after.chipsText === snap.chipsText && !after.note) rec.find({ kind: 'no-feedback', scene: sceneId, what: `${act.why} «${act.tap.text}»: no line, no card, no number moved`, shot: await shot(`feedback-${n}`) });
       }
       if (!changed && act.kind !== 'next') rec.find({ kind: 'dead-tap', scene: sceneId, what: `${act.why} «${act.tap?.text ?? ''}» changed nothing`, data: act.tap?.data, shot: await shot(`dead-${n}`) });
     }
@@ -370,7 +371,8 @@ async function fightTurn(page, outcome) {
       let m = null;
       for (let w = 0; w < 30 && !m; w++) { await waitIdle(); m = await page.evaluate('globalThis.__lingjingPlay?.move?.() ?? null'); if (!m) await sleep(300); }
       if (!m || m.kind === 'end') break;
-      const before = JSON.stringify(await bout());
+      // A summon moves no 气血: what changed is the hand and the ranks, so the spots are the measure.
+      const before = JSON.stringify([await bout(), (await spots()).map((x) => `${x.kind}${x.index ?? ''}${x.off ? '' : '+'}`)]);
       const from = m.kind === 'play' ? ['hand', m.index] : m.kind === 'attack' ? ['mine', m.index] : ['power', null];
       await tapSpot(...from);
       if ((await bout())?.picked) {
@@ -379,7 +381,7 @@ async function fightTurn(page, outcome) {
       }
       await waitIdle();
       if ((await bout())?.outcome !== 'open') return bout();
-      if (JSON.stringify(await bout()) === before) { await tapSpot('stage'); break; }
+      if (JSON.stringify([await bout(), (await spots()).map((x) => `${x.kind}${x.index ?? ''}${x.off ? '' : '+'}`)]) === before) { await tapSpot('stage'); break; }
     }
   }
   if ((await bout())?.outcome === 'open') { await tapSpot('end'); await sleep(800); }
