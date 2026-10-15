@@ -328,7 +328,8 @@ function duelBrief(content, state, game, now, { door = false } = {}) {
       // A fight that is no 降妖 names itself (冰夷's dragons: 冰夷之试).
       ...(creature.title ? { title: pick(creature.title, lang) } : {}),
       // A 试 says how it is passed (creatures.json `trial.goal`), on the card at the door.
-      ...(creature.trial?.goal ? { goal: pick(creature.trial.goal, lang) } : {}),
+      // The scene's own weighing of it speaks first (world.mjs foeOf: 秦雁 on the 崖顶).
+      ...((game.foe?.trial?.goal ?? creature.trial?.goal) ? { goal: pick(game.foe?.trial?.goal ?? creature.trial.goal, lang) } : {}),
       // What the story taught him for this fight (`hints: [{mark, say}]` on the exit's game — 古六's 相克
       // 五句 before the 大比's bouts, 阿禾's 底册): the line, once its mark is held.
       ...hintsOf(state, game, lang),

@@ -432,8 +432,13 @@ function foeOf(content, game) {
   // A rerun's elite (rules/rerun.mjs): the harder deck its instance declares.
   if (creature && game.deck) return { ...creature, deck: game.deck };
   const entry = creature && game.hunt ? poolEntry(content, game.hunt, game.creature) : null;
-  return entry ? { ...creature, ...(entry.deck ? { deck: entry.deck } : {}), ...(entry.hp ? { hp: entry.hp } : {}) } : creature;
+  const base = entry ? { ...creature, ...(entry.deck ? { deck: entry.deck } : {}), ...(entry.hp ? { hp: entry.hp } : {}) } : creature;
+  return base && game.foe ? weighed(base, game.foe) : base;
 }
+/* A scene's fight weighed for where the story meets its beast (the exit game's `foe`: `hp`, `deck`,
+   `trial` over the creature's own — 2026-10-15, 古七: the 秘境's 犰狳 met again at 灵草谷 three layers
+   on, 秦雁 on the 崖顶 where there is no 台边). The creature's row, and every other door to it, stand. */
+const weighed = (c, o) => ({ ...c, ...(o.hp ? { hp: o.hp } : {}), ...(o.deck ? { deck: o.deck } : {}), ...(o.trial ? { trial: { ...(c.trial ?? {}), ...o.trial } } : {}) });
 /* The places a beast is met at: its haunt, and every place whose pool holds it. */
 const hauntsOf = (content, id) => allPlaces(content).filter(p => p.has?.creature === id || (poolOf(content, p)?.beasts ?? []).some(b => b.creature === id));
 
