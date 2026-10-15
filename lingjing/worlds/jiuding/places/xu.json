@@ -934,10 +934,10 @@
     0.4245
    ],
    "has": {"visitor": {
-    "_about": "货郎上山 (Hanli, 2026-10-15: 「按A做, 货郎上山摆摊」): while 外门弟子 may not go down (观内), a pedlar pays the 观 its 摊钱 and sets up under the cypresses for a day, every third day — 古六's precedent (外人上不得山; 钱掌柜 pays ten 灵石 and is let up at 大比, here at the 五行台). Not 石坳村's 走南路的货郎 (古二's teller of the 岷江 baby): another pedlar, unnamed. No 押宝. No 符: a made thing is sold nowhere (content.mjs lint). rules/visiting.mjs.",
+    "_about": "货郎上山 (Hanli, 2026-10-15: 「按A做, 货郎上山摆摊」): while 外门弟子 may not go down (观内), a pedlar pays the 观 its 摊钱 and sets up under the cypresses for a day, every third day — 古六's precedent (外人上不得山; 钱掌柜 pays ten 灵石 and is let up at 大比, here at the 五行台). Not 石坳村's 走南路的货郎 (古二's teller of the 岷江 baby): another pedlar, unnamed. No 押宝. Sells 符 at 20 (Hanli 2026-10-15 「yes」: 钱掌柜's 符箓 are canon); never buys it back. rules/visiting.mjs.",
     "name": {"zh": "货郎的担子", "en": "The pedlar's pole"},
     "keeper": {"zh": "丹药 · 杂货 · 收药材皮货", "en": "pills and sundries; buys herbs and hides"},
-    "goods": ["mend-pill", "qi-pill", "ganliang", "straw-cloak"],
+    "goods": ["mend-pill", "qi-pill", "talisman", "ganliang", "straw-cloak"],
     "odd": ["jade-ring", "jade-fish", "grey-robe"],
     "buys": {"kinds": ["material"], "rate": 0.6, "say": {"zh": "「药材皮货我收。别的，担子挑不下山。」", "en": "\"Herbs and hides I take. Anything else won't fit on the pole going down.\""}},
     "visits": {"every": 3, "offset": 0, "where": {"zh": "演武场", "en": "the training ground"},

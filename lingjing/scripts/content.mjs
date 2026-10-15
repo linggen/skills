@@ -1442,12 +1442,15 @@ function lintItems(content, bad) {
     if (!ITEM_KINDS.has(item.kind)) bad(where, `unknown kind ${item.kind}`);
     if (!item.art) bad(where, 'needs art');
     else if (!fs.existsSync(path.join(content.dir, item.art))) bad(where, `art ${item.art} is missing`);
-    // A made thing (a 符 from paper) has no price and is sold nowhere.
+    // A made thing (a 符 from paper) is sold in no province's shop and never bought back;
+    // a visiting stall may carry it at its `buy` (Hanli 2026-10-15: the 货郎 sells 符 —
+    // 钱掌柜's 符箓 are canon).
     if (item.reads != null && !content.scrolls?.scrolls?.[item.reads]) bad(where, `reads unknown scroll ${item.reads}`);
     if (item.made) {
       if (!content.items.items.some(i => i.id === item.made.from)) bad(where, `made from unknown item ${item.made.from}`);
       if (item.made.anywhere_from && !content.ladder.tiers.some(t => t.id === item.made.anywhere_from)) bad(where, `made anywhere from unknown tier ${item.made.anywhere_from}`);
-      if ((item.sold ?? []).length || item.buy != null || item.sell != null) bad(where, 'a made thing is not sold');
+      if ((item.sold ?? []).length || item.sell != null) bad(where, 'a made thing is not sold');
+      if (item.buy != null && (!Number.isInteger(item.buy) || item.buy < 0)) bad(where, 'buy must be a whole number');
     } else if (!Number.isInteger(item.buy) || !Number.isInteger(item.sell) || item.buy < 0 || item.sell < 0) bad(where, 'buy and sell must be whole numbers');
     else if (item.buy < item.sell) bad(where, `buys for ${item.buy}, below its sell price ${item.sell}`);
     for (const province of item.sold ?? []) if (!content.dictionary.provinces[province]) bad(where, `sold in unknown province ${province}`);
