@@ -312,6 +312,16 @@ export function threshold(content, state) {
   return tierOf(content, state.tier).thresholds[state.step];
 }
 
+/* A tier that counts from 零层 (ladder.json `zero`; story DESIGN: 主角零层入门):
+   its step 0 holds no 修为 — no bar, nothing fills it, and only a story's
+   `rise` (古四's 小周天) leaves it. Its layer N is step N; any other tier's
+   layer N (筑基小成 = 1) is step N − 1. `rise` and a cap's `layer` are layers. */
+export const zeroAt = (content, tierId, step) => Boolean(tierOf(content, tierId)?.zero) && step === 0;
+export const layerNo = (content, tierId, step) => step + (tierOf(content, tierId)?.zero ? 0 : 1);
+export const stepOfLayer = (content, tierId, layer) => layer - (tierOf(content, tierId)?.zero ? 0 : 1);
+/* 修为 counts where the save stands: past 零层 (the header's bar stands from 一层). */
+export const cultivating = (content, state) => !zeroAt(content, state.tier, state.step);
+
 export function stepName(content, tierId, step, lang) {
   const tier = tierOf(content, tierId);
   const name = pick(tier.name, lang), s = tier.steps[lang][step];
