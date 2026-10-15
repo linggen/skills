@@ -94,7 +94,8 @@ test('the page: the sight on the stage, no first-meet card for a face it showed,
   setAutoFold(shell, false);
   assert.ok(!cls.has('autofold'));
   assert.match(story, /\.shell\.autofold:not\(\.autoopen\) #chat-panel \{ display: none; \}/);
-  assert.match(src, /class="scratch-badge"[^`]*style="position:fixed;bottom:6px;right:8px;/, 'the test badge never over the top strip');
+  // The test badge: small, under the top strip's right end, taking no tap — never over the strip, the footer, 跳过 or a pager's ›.
+  assert.match(src, /class="scratch-badge"[^`]*style="position:fixed;top:56px;right:8px;[^"]*pointer-events:none"/, 'the test badge never over the top strip or the footer');
 });
 
 test('a thing\'s first card is big enough to read: its picture large, every line whole (2026-10-14: 狐纹木牌); a face\'s stays a row', () => {

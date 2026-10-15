@@ -111,7 +111,7 @@ test('never blank while the next thing is on its way: the page lays a quiet ã€Œâ
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   const body = page.slice(page.indexOf('function holdBlank('), page.indexOf('\n}\n', page.indexOf('function holdBlank(')));
   assert.match(page, /const inTransit = \(\) => Boolean\(inFlight\.size \|\| view\.panelBusy \|\| look\?\.tell_owed \|\| drawingTold/);
-  assert.match(body, /if \(box \|\| bout \|\| riseWaits \|\| featOn \|\| pieceOn \|\| !focus \|\| focus\.innerHTML\.trim\(\) \|\| !inTransit\(\)\)/);
+  assert.match(body, /if \(box \|\| bout \|\| riseWaits \|\| featOn \|\| pieceOn \|\| view\.appearing \|\| !focus \|\| focus\.innerHTML\.trim\(\) \|\| !inTransit\(\)\)/);
   assert.match(body, /class="card waitcard"/);
   assert.match(page, /paintIf\('dlg', box\);\n\s+logAtEnd\(\);\n\s+holdBlank\(box\);/);
   const css = fs.readFileSync(new URL('../scripts/story.css', import.meta.url), 'utf8');
