@@ -1,7 +1,7 @@
 // 石坳村 · 村里走一走 — the village map (batch two, 2026-10-14: 「货郎、打猎、采药、邻里、吴婆婆讲古」).
 // Between stretches of the book, on days the book passes over in a line, the village is a map
-// in ink — seventeen roofs, the old 槐树 at the village mouth, the well, 东坡, 吴婆婆's doorstep at
-// the east end — and a few small things to do in it, each a few seconds, each optional: shoo the
+// painted in ink wash (art/backdrop/village.webp) — the old 槐树 at the village mouth, the well,
+// 阿禾's cabbage, 东坡, 吴婆婆's doorstep at the east end — with numbered seals on it, and a few small things to do in it, each a few seconds, each optional: shoo the
 // hens off 阿禾's cabbage, read the prints 爹 draws in the mud, pick 艾草 for his knee, guess the
 // 货郎's prices, hear 吴婆婆 tell an old one. Nothing here gives or takes anything the story
 // counts; 「回家」 ends it whenever he likes (grade full · light by what he did), and the quiet
@@ -57,8 +57,19 @@ export const STOPS = {
   dong: { spots: ['prints', 'herb', 'tale'], prints: ['deer', 'boar', 'fox'], tale: 'kuafu' },
   eve: { spots: ['hens', 'prints', 'herb'], prints: ['deer', 'fox', 'dog'], hens: 'coop' },
 };
-// Where each spot is on the map (x, y in the 320×150 drawing).
-const AT = { hens: [118, 70], prints: [92, 96], herb: [262, 46], peddler: [42, 104], tale: [298, 92] };
+// The map is the painting art/backdrop/village.webp (tools/paint-village.py, 1536×1024, 3:2), shown
+// through a 320×132 window at the map's old size: the full width, its band from TOP down (the sky and
+// 马家 on the far hill are cropped off). Each spot is where its painted feature is, as % of the whole
+// painting (x, y): the 货郎 on the path under the 槐树 at the village mouth, 爹 on the bare ground just
+// above the well, the middle of 阿禾's cabbage patch, the open grass of 东坡, and just left of the steps
+// up to the last cottage — 吴婆婆's (it stands right of centre, the painting's east end of the houses).
+const MAP = { src: '../worlds/jiuding/art/backdrop/village.webp', w: 320, h: 132, ratio: 1024 / 1536, top: 0.22 };
+export const AT = { hens: [42, 64.5], prints: [34.5, 60.5], herb: [80, 30], peddler: [23, 77], tale: [69.5, 77] };
+// A spot's % on the painting → the map's drawing units.
+export const onMap = ([px, py]) => {
+  const ih = MAP.w * MAP.ratio;
+  return [n((px / 100) * MAP.w), n((py / 100 - MAP.top) * ih)];
+};
 
 const T = {
   zh: {
@@ -187,18 +198,15 @@ export function makeVillage(stop) {
   }
 
   /* ── The pictures ── */
+  // The painting under, the numbered seals on: ink-red numbers in a paper halo, filled red when done.
   const mapScene = (state) => {
-    const roofs = [[30, 60], [58, 52], [70, 80], [150, 40], [176, 56], [200, 38], [214, 76], [232, 58], [150, 100], [178, 110], [206, 104], [236, 112], [120, 120], [92, 70], [140, 72], [254, 84], [284, 70]]
-      .map(([x, y]) => `<path class="g-line g-thin" d="M${x - 9} ${y} L${x} ${y - 7} L${x + 9} ${y} M${x - 7} ${y} v6 h14 v-6"/>`).join('');
-    const slope = '<path class="g-line g-faint" d="M226 30 Q262 10 318 22"/><path class="g-line g-thin g-faint" d="M240 26 l4 -6 M262 18 l4 -6 M286 16 l4 -6"/>';
-    const tree = '<path class="g-line" d="M42 96 V80"/><circle class="g-line g-thin" cx="42" cy="72" r="10" fill="none"/>';
-    const well = '<ellipse class="g-line g-thin" cx="92" cy="104" rx="8" ry="3" fill="none"/><path class="g-line g-thin" d="M84 104 v-8 h16 v8"/>';
-    const path = '<path class="g-line g-thin g-faint" d="M10 120 Q80 100 150 90 T310 96" stroke-dasharray="3 5"/>';
+    const ih = n(MAP.w * MAP.ratio);
+    const base = `<image class="g-mapbase" href="${MAP.src}" x="0" y="${n(-MAP.top * MAP.w * MAP.ratio)}" width="${MAP.w}" height="${ih}" preserveAspectRatio="none"/>`;
     const spots = cfg.spots.map((id, k) => {
-      const [x, y] = AT[id], done = state.done.includes(id);
-      return `<circle class="g-spot${done ? ' is-done' : ''}" cx="${x}" cy="${y}" r="7"/><text class="g-spotnum" x="${x}" y="${y + 3.5}" text-anchor="middle">${k + 1}</text>`;
+      const [x, y] = onMap(AT[id]), done = state.done.includes(id);
+      return `<g class="g-spotmark${done ? ' is-done' : ''}"><circle class="g-spothalo" cx="${x}" cy="${y}" r="11"/><circle class="g-spot" cx="${x}" cy="${y}" r="8"/><text class="g-spotnum" x="${x}" y="${n(y + 3.6)}" text-anchor="middle">${k + 1}</text></g>`;
     }).join('');
-    return scene(320, 132, path + slope + roofs + tree + well + spots);
+    return scene(MAP.w, MAP.h, base + spots, 'g-villagemap');
   };
   const hensScene = (state) => {
     const sub = state.sub, el = state.t - sub.t0, coop = cfg.hens === 'coop';
