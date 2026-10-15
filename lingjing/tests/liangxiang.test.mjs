@@ -27,7 +27,7 @@ const LANGS = ['zh', 'en'];
 
 // 亮相 paragraphs of 卷一's book that no game passage plays (the game tells those 回 in its own
 // cut): the book's card stands, the game has no beat for it. A scene that comes to quote one fails here.
-const NOT_IN_GAME = new Set(['heyu', 'doufu-xishi', 'wuzhu']);
+const NOT_IN_GAME = new Set(['heyu', 'wuzhu']); // 豆腐西施 plays since 2026-10-15 (01-ye names the bride)
 
 const GLOSS = /\[([^\]\n]+)\]\{注=([^{}\n]+)\}/g;
 const norm = (t) => String(t).replace(/\[([^\]]*)\]\{[^}]*\}/g, '$1').replace(/\{[^}\n]*\}/g, '').replace(/\*\*|⟪|⟫/g, '').replace(/^#.*$/gm, '').replace(/^>\s?/gm, '').replace(/---/g, '').replace(/\s+/g, '');
