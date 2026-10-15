@@ -69,6 +69,7 @@ function raiseGhosts(root, ghosts) {
     el.classList.remove('can', 'held', 'aimed');
     el.classList.add('bghost', g.side);
     el.removeAttribute('data-spot');
+    el.querySelectorAll('.bdmg').forEach(n => n.remove());
     Object.assign(el.style, { left: `${g.box.x}px`, top: `${g.box.y}px`, width: `${g.box.w}px`, height: `${g.box.h}px` });
     root.appendChild(el);
   }
