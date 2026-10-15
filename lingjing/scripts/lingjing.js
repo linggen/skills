@@ -767,8 +767,18 @@ let riseWaits = false; // a realm risen, its seal not yet up: the 回's ending c
 // A new 回's seal on its way: the 回's turn (queue.js atTurn) — the box holds the new 回's
 // first passage until the seal has played, never the seal until that passage is over.
 let sealOwed = false;
+/* A realm risen twice before its seal is up (the 秘境: 二层圆满 in the night, 四层 by noon — two Looks) is
+   one seal, with the realm he stands in now: live 2026-10-15, 「练气二层」 came up while the strip read 四层. */
+let risePending = null;
 function feat(...args) {
   const [kind] = args;
+  if (kind === 'rise' && risePending) {
+    const [, name, , quiet, gains, her] = args;
+    risePending.splice(1, 1, name);
+    risePending.splice(3, 3, risePending[3] && quiet, [risePending[4], gains].filter(Boolean).join(' · '), her ? { from: risePending[5]?.from ?? her.from, to: her.to } : risePending[5]);
+    return;
+  }
+  if (kind === 'rise') risePending = [...args];
   if (kind === 'chapter') sealOwed = true;
   // A realm risen: its seal comes after the set piece and after the ending 回's last
   // passage (the box plays it first); the 回's ending card and the new title wait behind it.
@@ -781,7 +791,7 @@ function feat(...args) {
     // Up now: the seal itself holds the box (momentUp) until it goes — and the turn with it
     // (sealOwed stays until the seal is put away, featNow's `gone`): live at 今 · 三 → 古七
     // (2026-10-15) the scene's 「扔进饭桶 ›」 stood under 「新的一回」 before 09-snow's passage.
-    if (kind === 'rise') riseWaits = false;
+    if (kind === 'rise') { riseWaits = false; const latest = risePending ?? args; risePending = null; featNow(...latest); return; }
     featNow(...args);
     render();
   }, 0);

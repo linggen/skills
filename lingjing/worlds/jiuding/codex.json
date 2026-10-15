@@ -561,16 +561,18 @@
    "tag": "丹药"
   },
   "longxu-cao": {
+   "_first": "Met in the scene after wm-xirang: it is found inside 'swallow''s passage (the 暗河, the 崖缝), never on walking into the 石室 (live, 2026-10-15: its card stood before he had it).",
    "first": {
     "book": "h07",
-    "scene": "wm-xirang"
+    "scene": "wm-kaikai"
    },
    "tag": "丹药"
   },
   "xizhu": {
+   "_first": "Met in the scene after wm-xirang: it is found inside 'swallow''s passage (the 暗河, the 崖缝), never on walking into the 石室 (live, 2026-10-15: its card stood before he had it).",
    "first": {
     "book": "h07",
-    "scene": "wm-xirang"
+    "scene": "wm-kaikai"
    },
    "tag": "法宝"
   },

@@ -1015,7 +1015,9 @@ export function bookChipHtml(ctx, open, fresh) {
 /// button for the goal — the chat's question leads with that road.
 export function bookPopHtml(ctx) {
   const g = ctx.look?.waypoint, w = ctx.words, groups = taskGroups(ctx);
-  const where = g?.place ? `${g.place.name}${g.province ? ` · ${g.province}` : ''}` : g?.province ?? '';
+  // The province only when it is not the one he stands in (live, 2026-10-15: 「→ 断崖下 · 徐州」 inside the 秘境).
+  const away = g?.province && g.province !== ctx.look?.place?.province?.name ? g.province : '';
+  const where = g?.place ? `${g.place.name}${away ? ` · ${away}` : ''}` : away;
   const head = g ? `<div class="bookgoal"><span class="lbl">${esc(w.goalTitle)}</span> <span>${esc(goalText(ctx))}</span>${where ? ` <span class="small dim">→ ${esc(where)}</span>` : ''}
     ${g.gate ? `<div class="small dim">${esc(say(w.goalNow, g.gate.now))} · ${esc(w.goalGrow)}</div>` : ''}</div>` : '';
   const group = (key, rows) => (rows.length ? `<div class="tgroup ${key}"><div class="thead small dim">${esc(say(w[key], { n: rows.length }))}</div>${rows.join('')}</div>` : '');
