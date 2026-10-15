@@ -21,7 +21,11 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import fs from 'node:fs';
 
-export const REACTION = 200, JITTER = 40, REFRACTORY = 120, STEP = 10, LIMIT_MS = 240000;
+export const REACTION = 200;
+export const JITTER = 40;
+export const REFRACTORY = 120;
+export const STEP = 10;
+export const LIMIT_MS = 240000;
 const GAMES = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../scripts/games');
 
 /* A seeded random source (mulberry32), so a failure replays. */

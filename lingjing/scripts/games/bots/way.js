@@ -1,7 +1,9 @@
 // The human-like player for 认路 · 崖壁上一段划了一道 (games/way.js; tools/board-bots.mjs).
 // Only what the fog has lifted is known: walk to the moss if it is in sight, else to the
 // nearest mark not yet stepped on, else to the nearest unseen edge.
-import { MAP, W, H } from '../way.js';
+import * as way from '../way.js';
+// (one namespace import: the install's link check reads only the first name of a `const W = 6, H = 5` export)
+const { MAP, W, H } = way;
 
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 
