@@ -174,6 +174,17 @@ test('a condensed passage lands where the book lands: its last sentence is the b
   assert.deepEqual(off, [], off.join('\n'));
 });
 
+/* A 回's last paragraph of prose, as its book file ends (zh `file`, en `file_en`): headings, rules,
+   quotes and notes aside, marks stripped. */
+function bookLast(hui, lang) {
+  const h = BOOK.volumes.flatMap((v) => v.hui).find((x) => x.id === hui);
+  const file = lang === 'zh' ? h?.file : h?.file_en;
+  if (!file || !fs.existsSync(path.join(ROOT, 'story/jiuding-lu', file))) return null;
+  const paras = fs.readFileSync(path.join(ROOT, 'story/jiuding-lu', file), 'utf8').split(/\n\s*\n/).map((p) => p.trim())
+    .filter((p) => p && !/^(#|---|>|\*\*\*)/.test(p));
+  return paras.at(-1).replace(/\[([^\]]*)\]\{[^}]*\}/g, '$1').replace(/\{[^}\n]*\}/g, '');
+}
+
 /* Where each 回 and each interlude ends, in play: the passage of the way on that crosses into
    another 回 (an exit's `next` naming a scene of another 回, or an exit that `ends` its chapter) —
    the exit's own story when it has one, else the scene's. Read off the scenes, never a list. */
@@ -202,6 +213,16 @@ test('every interlude and every 回 ends on the book\'s last sentence (今 · �
     }
   }
   assert.deepEqual(off, [], off.join('\n'));
+  // …and the game's passage reaches the 回's own end: the book file's last paragraph is its landing
+  // (古七's 「他知道里头是谁。」 and 古八's 观主 sending him to the 漳水 were missing from the game outright).
+  const short = [];
+  for (const { hui, where, story } of ends) {
+    for (const lang of ['zh', 'en']) {
+      const last = bookLast(hui, lang);
+      if (last && !landingKept(story[lang], last, lang)) short.push(`${where} ${lang}: the 回 ends 「${landingOf(last, lang).slice(0, 40)}」`);
+    }
+  }
+  assert.deepEqual(short, [], short.join('\n'));
   // 今 · 二's landing, whole: 爸's dig, the long shaky breath, the book shut, the one pay left.
   const dog = ends.find((e) => e.where === 'j04-dog');
   for (const line of ['跪着也是站着，矮一截', '只有一口很长、很抖的气，从手机里一点一点漏出来', '他盯着「长不回来」四个字看了很久，把书合上了', '家里一个月的进项，眼下只剩他妈超市那一份', '这时候，离院系杯头一轮只剩五天了。']) {
