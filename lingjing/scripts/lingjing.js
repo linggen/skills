@@ -2468,6 +2468,16 @@ function toggleOffer(id) { show({ offerRow: view.offerRow === id ? null : id });
 
 /* A game module's move: the rules of the game are the module's; the win is
    the rules' (`win`, then Ling hears `[scene] won`), as for 炼丹. */
+/* 「算了，往下走」 under a story's board: won with no grade (no mark), the story goes on. */
+function skipGame(id) {
+  const g = boardFor(id);
+  if (!g?.mod || g.state?.won || g.sent) return true;
+  g.state = { ...g.state, won: true, live: false, grade: null };
+  render();
+  g.sent = true;
+  run(`win:${g.taskId}`, () => onWin(g.taskId));
+  return true;
+}
 function gameMove(gmove) {
   const ghost = gmove.closest('[data-game]');
   if (!ghost || gmove.disabled) return false;
@@ -2541,6 +2551,7 @@ const CLICKS = [
   ['[data-panel-exit]', (el) => { if (!el.matches(':disabled')) run(`panel:${el.dataset.panelExit}`, () => panelTap(el.dataset.panelExit, el.textContent.trim(), el.dataset.panelAnswer)); }],
   // The story's quiet controls — 回看, 跳过, 配音, 慢 中 快 — first; then a tap anywhere on the stage (the next sentence).
   // 回看 open, the lines wait under it (proto a: 「回看」 pauses the passage); closed, they go on.
+  ['[data-game-skip]', (el) => skipGame(el.dataset.gameSkip)],
   ['[data-dlg-log]', () => { show({ logOpen: !view.logOpen }); lines.hold(view.logOpen); }],
   ['[data-dlg-logclose]', () => { show({ logOpen: false }); lines.hold(false); }],
   ['[data-dlg-all]', () => showAllBeats()],

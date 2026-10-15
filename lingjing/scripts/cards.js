@@ -5,6 +5,7 @@
 import { boardHtml } from './board.js';
 import { worldPath } from './rules.js';
 import { WORDS as BATTLE_WORDS, boutWords, challengeHtml } from './battle-card.js';
+import { SKIP } from './games/ink.js';
 import { layoutRoads } from './roadmap.js';
 import { frameOf, inside, within } from './atlas.js';
 import { inkLayerHtml, provinceLineHtml, pvState } from './inkmap.js';
@@ -500,7 +501,8 @@ function board(card, ctx) {
   const ask = task?.game ? say(ctx.words.sayTask, { title: task.title }) : ctx.words.sayBoard;
   // A scene's own game (the opening's beats, 射鹿 …) is played, not asked about: no 问询 in its corner.
   const own = task?.game && (ctx.look.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id);
-  return `<div class="card gamecard${own ? ' scenegame' : ''}"><div class="cardtitle">${esc(title)}</div>${body}${own ? '' : acts([{ label: ctx.words.about, ask: true, say: ask }])}</div>`;
+  const skip = own && !today && !made && !shut ? skipBoard(g, id, ctx) : '';
+  return `<div class="card gamecard${own ? ' scenegame' : ''}"><div class="cardtitle">${esc(title)}</div>${body}${skip}${own ? '' : acts([{ label: ctx.words.about, ask: true, say: ask }])}</div>`;
 }
 
 /// What an item does, in one line — a pill's dose, arms' numbers, a 符.
@@ -826,8 +828,17 @@ function taleBody(st, ctx) {
   if (TALE_BODY[st.game]) return TALE_BODY[st.game](st, ctx);
   if (st.won) return `<div class="small dim">${esc(ctx.words.taleKept)}</div>`;
   const g = st.board ? ctx.boardFor?.(st.board.id) : null;
-  return g?.mod ? `<div class="small dim">${esc(g.mod.meta.how?.[ctx.lang] ?? g.mod.meta.how?.zh ?? '')}</div><div class="game" data-game="${esc(st.board.id)}">${g.mod.html(g.state, ctx.lang)}</div>`
+  return g?.mod ? `<div class="small dim">${esc(g.mod.meta.how?.[ctx.lang] ?? g.mod.meta.how?.zh ?? '')}</div><div class="game" data-game="${esc(st.board.id)}">${g.mod.html(g.state, ctx.lang)}</div>${skipBoard(g, st.board.id, ctx)}`
     : g ? boardHtml(g, ctx.words) : `<div class="dim small">…</div>`;
+}
+
+/// A story's board can always be left (Hanli, 2026-10-15: 「用户也会有卡住的情况, 可以跳过去吗?」):
+/// 「算了，往下走」 under it — won with no grade, so no mark, and the story goes on. Outside the
+/// [data-game] host, so a live game's repaint never takes it away; a module that draws its own skip keeps it.
+export function skipBoard(g, id, ctx) {
+  if (!g?.mod || g.state?.won) return '';
+  if (g.mod.html(g.state, ctx.lang).includes('data-g="skip"')) return '';
+  return `<div class="acts gskip"><button class="act quiet" data-game-skip="${esc(id)}">${esc(SKIP[ctx.lang] ?? SKIP.zh)}</button></div>`;
 }
 
 /// 所得 — the errands met here, each with what it paid and the next step.
