@@ -12,7 +12,7 @@
 
 import { spoken } from './cards.js';
 import { esc } from './esc.js';
-import { bodyOf, boostedOf, clash, costOf, dealt, effectOf, keywordsOf, landed, starsOf } from './battle.js';
+import { POWER_COST, bodyOf, boostedOf, clash, costOf, dealt, effectOf, keywordsOf, landed, starsOf } from './battle.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
 const EN_EL = { metal: 'metal', wood: 'wood', water: 'water', fire: 'fire', earth: 'earth' };
@@ -185,35 +185,68 @@ export function wantsTarget(card, st) {
 /* 锁 and 吞 point at one of its rank, never the beast itself. */
 const aimsAtRank = card => card?.effect?.chain != null || card?.effect?.swallow != null;
 
-/* A click is a place, not an action: `{ kind: 'hand'|'mine'|'theirs'|'power'|
-   'hero'|'end'|'quit', index }`. With something already picked up, the second
-   click completes it. Returns `{ action }` to play, `{ pick }` to hold, or
-   `{ clear: true }`. */
+/* A tap is a place, not an action: `{ kind: 'hand'|'mine'|'theirs'|'power'|
+   'hero'|'end'|'quit'|'stage', index }`. The first tap lifts what it lands on
+   — or plays it at once when there is nothing to ask (a 灵兽, a 功法 with no
+   aim); with something lifted, the second tap says where it goes (SECOND).
+   The same thing tapped again puts it back, and so does a tap on no place
+   (the stage itself); a tap on another thing that lifts lifts that instead.
+   Returns `{ action }` to play, `{ pick }` to hold, or `{ clear: true }`
+   (tests/battle-input.test.mjs). */
+const LIFTS = new Set(['hand', 'mine', 'power']);
+const FROM = { hand: 'hand', mine: 'board', power: 'power' };
+const sameSpot = (picked, spot) => FROM[spot.kind] === picked.from && (spot.kind === 'power' || picked.index === spot.index);
+const minionAt = spot => (spot.kind === 'theirs' || spot.kind === 'mine' ? { kind: 'minion', index: spot.index } : undefined);
+const isLift = (picked, st, catalog) => Boolean(catalog?.[st.you.hand[picked.index]]?.effect?.buff);
+
+/* The second tap, by what is lifted and where it lands. A place missing here
+   puts the lifted thing back. Only a lift is aimed at your own rank. */
+const SECOND = {
+  hand: {
+    theirs: (p, spot) => ({ action: { kind: 'play', index: p.index, target: minionAt(spot) } }),
+    hero: p => ({ action: { kind: 'play', index: p.index, target: undefined } }),
+    mine: (p, spot, st, catalog) => (isLift(p, st, catalog) ? { action: { kind: 'play', index: p.index, target: minionAt(spot) } } : { clear: true }),
+  },
+  board: {
+    theirs: (p, spot) => ({ action: { kind: 'attack', index: p.index, target: minionAt(spot) } }),
+    hero: p => ({ action: { kind: 'attack', index: p.index, target: undefined } }),
+  },
+  power: {
+    theirs: (p, spot) => ({ action: { kind: 'power', target: minionAt(spot) } }),
+    hero: () => ({ action: { kind: 'power', target: undefined } }),
+  },
+};
+
+function firstTap(spot, st, catalog) {
+  if (spot.kind === 'hand') {
+    const card = catalog?.[st.you.hand[spot.index]];
+    return wantsTarget(card, st) ? { pick: { from: 'hand', index: spot.index } } : { action: { kind: 'play', index: spot.index } };
+  }
+  if (spot.kind === 'mine') return { pick: { from: 'board', index: spot.index } };
+  if (spot.kind === 'power') return st.foe.board.length ? { pick: { from: 'power' } } : { action: { kind: 'power' } };
+  return { clear: true };
+}
+
 export function pickOf(picked, spot, st, catalog = null) {
   if (spot.kind === 'end') return { action: { kind: 'end' } };
   if (spot.kind === 'quit') return { quit: true };
-  if (!picked) {
-    if (spot.kind === 'hand') {
-      const card = catalog?.[st.you.hand[spot.index]];
-      return wantsTarget(card, st) ? { pick: { from: 'hand', index: spot.index } } : { action: { kind: 'play', index: spot.index } };
-    }
-    if (spot.kind === 'mine') return { pick: { from: 'board', index: spot.index } };
-    if (spot.kind === 'power') return st.foe.board.length ? { pick: { from: 'power' } } : { action: { kind: 'power' } };
-    return { clear: true };
-  }
-  // Something is in hand — the second click says where it goes. Only a lift
-  // is aimed at your own rank; anything else there is put back.
-  if (picked.from === 'hand' && spot.kind === 'mine' && !catalog?.[st.you.hand[picked.index]]?.effect?.buff) return { clear: true };
-  const target = spot.kind === 'theirs' ? { kind: 'minion', index: spot.index }
-    : spot.kind === 'mine' && picked.from !== 'board' ? { kind: 'minion', index: spot.index }
-      : undefined;
-  if (picked.from === 'hand') return { action: { kind: 'play', index: picked.index, target } };
-  if (picked.from === 'power') return { action: { kind: 'power', target } };
-  if (picked.from === 'board') {
-    if (spot.kind === 'theirs' || spot.kind === 'hero') return { action: { kind: 'attack', index: picked.index, target } };
-    return { clear: true };
-  }
-  return { clear: true };
+  if (!picked) return firstTap(spot, st, catalog);
+  if (sameSpot(picked, spot)) return { clear: true };
+  const second = SECOND[picked.from]?.[spot.kind];
+  if (second) return second(picked, spot, st, catalog);
+  return LIFTS.has(spot.kind) ? firstTap(spot, st, catalog) : { clear: true };
+}
+
+/* A drag is the two taps in one gesture (the Mac's mouse; nothing depends on
+   it): from where it was picked up to where it was let go. A card that asks
+   nothing plays once it leaves the hand; let go on another thing that lifts,
+   or back on the hand, and nothing happens. */
+export function dropOf(from, to, st, catalog = null) {
+  const first = firstTap(from, st, catalog);
+  if (first.action) return to && to.kind !== 'hand' && to.kind !== 'end' && to.kind !== 'quit' ? first : { clear: true };
+  if (!first.pick || !to) return { clear: true };
+  const second = pickOf(first.pick, to, st, catalog);
+  return second.action ? second : { clear: true };
 }
 
 /* Where the held thing may land: the beast, or these of its rank. Straight
@@ -292,7 +325,7 @@ function minionHtml(m, side, index, ctx, picked) {
   // name under it, and 攻 / 血 in the two bottom corners where a card player's
   // eye already looks. A 22px strip of a painting is a smudge, not a picture
   // (his, 2026-09-18: 放到阵前, 图片看不到了).
-  return `<button class="bminion ${side} el-${esc(m.element ?? 'none')}${held ? ' held' : ''}${m.taunt ? ' taunt' : ''}${can ? ' can' : ''}${aimed ? ' aimed' : ''}" data-spot="${side === 'mine' ? 'mine' : 'theirs'}" data-index="${index}" data-id="${esc(m.id)}">
+  return `<button class="bminion ${side} el-${esc(m.element ?? 'none')}${held ? ' held' : ''}${m.taunt ? ' taunt' : ''}${can ? ' can' : ''}${aimed ? ' aimed' : ''}${side === 'mine' && why ? ' dim' : ''}${herOf(m.id, ctx)}" data-spot="${side === 'mine' ? 'mine' : 'theirs'}" data-index="${index}" data-id="${esc(m.id)}">
     <span class="bface-wrap">
       ${pic ? `<img class="bpic small" src="${esc(pic)}" alt="" loading="lazy">` : '<span class="bpic small none"></span>'}
       <span class="bglyph">${GLYPH[m.element] ?? ''}</span>
@@ -309,26 +342,48 @@ function minionHtml(m, side, index, ctx, picked) {
    a requirement. */
 const artOf = (c, ctx) => (c?.art ? `${ctx.artBase ?? ''}${c.art}` : null);
 
+/* A card as a scroll leaf (the ink fight, 2026-10-15): rice paper, the art on
+   top, the 五行 seal in its corner, cost and 攻/血 in brush figures. The art row
+   is the one that gives: it takes what the words leave (a grid row of `1fr`), so
+   a long rule never runs off a small card. `o` carries what differs between the
+   hand and the spoils: the cost now, the rule as it reads now, the ★, the why. */
+function leafHtml(c, ctx, o = {}) {
+  const pic = artOf(c, ctx);
+  const body = c.kind === 'minion' ? `<span class="batk">${o.atk ?? c.atk}</span><span class="bhp">${o.hp ?? c.hp}</span>` : '';
+  return `<span class="bleaf">
+      <span class="bcost">${o.cost ?? c.cost}</span>
+      ${c.element ? `<span class="belem">${GLYPH[c.element] ?? ''}</span>` : ''}
+      ${pic ? `<img class="bpic" src="${esc(pic)}" alt="" loading="lazy">` : '<span class="bpic none"></span>'}
+      <span class="bname">${name(c, ctx.lang)}${o.stars ? ` <span class="stars">${'★'.repeat(o.stars)}</span>` : ''}</span>
+      <small class="btext">${o.text ?? esc(sayEffect(c, ctx))}</small>
+      ${body}
+      ${o.why ? `<small class="bwhy">${esc(o.why)}</small>` : ''}
+    </span>`;
+}
+
+/* The fan: each card turned a little about the middle of the hand and dropped
+   along the arc, so the hand reads as held, not as a row of buttons. */
+const fanOf = (i, n) => {
+  const k = i - (n - 1) / 2;
+  return `--r:${(k * 3.2).toFixed(1)}deg;--y:${(k * k * 1.8).toFixed(1)}px;--z:${i + 1}`;
+};
+
+/* Whose card it is, when it is a person's: 银月's leaf is edged silver-blue —
+   the companion's id is her card's (ctx.herCard), never a name in the code. */
+const herOf = (id, ctx) => (ctx.herCard && id === ctx.herCard ? ' her' : '');
+
 function handHtml(st, ctx, picked) {
-  const w = ctx.words;
+  const w = ctx.words, n = st.you.hand.length;
   return st.you.hand.map((id, index) => {
     const c = ctx.catalog[id];
     if (!c) return '';
-    const o = ctx.reasons.get(`hand:${index}`);
-    const why = o?.why;
+    const why = ctx.reasons.get(`hand:${index}`)?.why;
     const held = picked?.from === 'hand' && picked.index === index;
     const b = bodyOf(st.you, c);
-    const body = c.kind === 'minion' ? `<span class="bstat"><b>${b.atk}</b> / <b>${b.hp}</b></span>` : '';
     // 闭关's ★: the cost it has now, and the stars by its name.
-    const stars = starsOf(st.you, c);
-    return `<button class="bcard el-${esc(c.element ?? 'none')}${held ? ' held' : ''}${why ? ' dim' : ''}${!why && !held ? ' can' : ''}" data-spot="hand" data-index="${index}" data-id="${esc(id)}">
-      <span class="bcost">${costOf(st.you, c)}</span>
-      ${artOf(c, ctx) ? `<img class="bpic" src="${esc(artOf(c, ctx))}" alt="" loading="lazy">` : ''}
-      <span class="bname">${name(c, ctx.lang)}${stars ? ` <span class="stars">${'★'.repeat(stars)}</span>` : ''}</span>
-      <span class="belem">${GLYPH[c.element] ?? ''}</span>
-      <small class="btext">${esc(sayEffect({ ...c, effect: effectOf(st.you, c), keywords: keywordsOf(st.you, c) }, ctx))}${liftOf(st.you, c, ctx)}${onBeast(st, c, ctx)}</small>
-      ${body}
-      ${why ? `<small class="bwhy">${esc(w.why[why] ?? why)}</small>` : ''}
+    const text = `${esc(sayEffect({ ...c, effect: effectOf(st.you, c), keywords: keywordsOf(st.you, c) }, ctx))}${liftOf(st.you, c, ctx)}${onBeast(st, c, ctx)}`;
+    return `<button class="bcard el-${esc(c.element ?? 'none')}${herOf(id, ctx)}${held ? ' held' : ''}${why ? ' dim' : ''}${!why && !held ? ' can' : ''}" data-spot="hand" data-index="${index}" data-id="${esc(id)}" style="${fanOf(index, n)}"${why ? ` title="${esc(w.why[why] ?? why)}"` : ''}>
+      ${leafHtml(c, ctx, { cost: costOf(st.you, c), atk: b.atk, hp: b.hp, stars: starsOf(st.you, c), text, why: why ? (w.why[why] ?? why) : null })}
     </button>`;
   }).join('');
 }
@@ -340,15 +395,7 @@ export function spoilsHtml(spoils, ctx) {
   const w = ctx.words;
   const faces = (spoils.cards ?? []).map((row) => {
     const c = ctx.catalog[row.id];
-    if (!c) return '';
-    const body = c.kind === 'minion' ? `<span class="bstat"><b>${c.atk}</b> / <b>${c.hp}</b></span>` : '';
-    return `<div class="bcard face">
-      <span class="bcost">${c.cost}</span>
-      ${artOf(c, ctx) ? `<img class="bpic" src="${esc(artOf(c, ctx))}" alt="" loading="lazy">` : ''}
-      <span class="bname">${name(c, ctx.lang)}</span>
-      <span class="belem">${GLYPH[c.element] ?? ''}</span>
-      <small class="btext">${esc(sayEffect(c, ctx))}</small>${body}
-    </div>`;
+    return c ? `<div class="bcard face el-${esc(c.element ?? 'none')}">${leafHtml(c, ctx)}</div>` : '';
   }).join('');
   const things = (spoils.items ?? []).map((i) => `${esc(i.name)}${i.n > 1 ? ` ×${i.n}` : ''}`).join(' · ');
   // A 符 played is gone from the bag (result.spent), won or lost.
@@ -577,7 +624,8 @@ export function boutSays(says, outcome) {
 
 
 /* `st` is `view(state)`, `offers` is `offers(state)`, `ctx` carries the
-   catalog, the language and the words. `picked` is what the player is holding. */
+   catalog, the language and the words. `picked` is what the player is holding.
+   `ctx.ended: false` keeps the closing card off while the last blow plays out. */
 export function battleHtml(st, offers, ctx, picked = null, openLog = false, note = null, help = false) {
   const w = ctx.words;
   ctx.reasons = reasons(st, offers);
@@ -603,27 +651,26 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
   const stuck = st.outcome === 'open' && st.whose === 'you' && !canDo.length;
   const advice = picked ? (picked.from === 'board' ? w.pickTarget : ctx.verb ? w.pickRank : w.pickCard) : stuck ? w.nothing : null;
   const over = st.outcome !== 'open';
-  const passed = st.outcome === 'won' && (st.log ?? []).some(t => t.act === 'trial-passed');
-  const said = passed ? w.passedSay : st.outcome === 'won' ? w.wonSay : st.outcome === 'lost' ? w.lostSay : st.outcome === 'withdrew' ? w.withdrewSay : '';
-  const title = passed ? w.passed : st.outcome === 'won' ? w.won : st.outcome === 'lost' ? w.lost : st.outcome === 'withdrew' ? w.withdrew : '';
-  // The arena wears the beast (2026-09-25, his 「斗法的UI有点简陋」): its
-  // painting spread behind the fight, faded into the night. `says` carries the
-  // boss's line and 银月's beside you; `stake` is why this fight is fought.
-  const arena = ctx.foeArt ? `<div class="barena" aria-hidden="true" style="background-image:url('${esc(ctx.foeArt)}')"></div>` : '';
   const bubble = (who, text, name = '') => (text ? `<div class="bsay ${who}">${name ? `<b>${esc(name)}</b>` : ''}${esc(text)}</div>` : '');
-  return `<div class="battle el-${esc(st.foe.root ?? 'none')}${over ? ' over' : ''}">${arena}
+  const turn = st.whose === 'you' ? (ctx.lang === 'en' ? 'Your turn' : '你的回合') : `${esc(ctx.foeName ?? '')}${ctx.lang === 'en' ? "'s turn" : '的回合'}`;
+  // The whole stage (Hanli, 2026-10-15: the ink fight): the beast's plate at the top, its rank and
+  // yours across the middle, you along the foot with the hand fanned under you. The weather's painting
+  // shows through the paper (lingjing.js paintBackdrop); a tap anywhere that is no place puts back
+  // what is held (`data-spot="stage"`, pickOf).
+  return `<div class="battle el-${esc(st.foe.root ?? 'none')}${over ? ' over' : ''}${st.whose === 'foe' ? ' foes' : ''}" data-spot="stage">
     <div class="btop">
       <button class="bquit" data-spot="quit">${esc(w.quit)}</button>
       <button class="bhelpbtn${help ? ' on' : ''}" data-spot="help" title="${esc(w.how)}" aria-label="${esc(w.how)}">?</button>
-      <span class="bturn ${st.whose}">${st.whose === 'you' ? (ctx.lang === 'en' ? 'Your turn' : '你的回合') : `${esc(ctx.foeName ?? '')}${ctx.lang === 'en' ? "'s turn" : '的回合'}`}</span>
+      <span class="bturn ${st.whose}">${turn}</span>
       <span class="bwhere">${esc(ctx.title ?? '')}${ctx.stake ? `<small class="bstake">${esc(ctx.stake)}</small>` : ''}</span>
     </div>
 
     <button class="bside foe${aim.hero ? ' aiming aimed' : ''}" data-spot="hero">
-      ${ctx.foeArt ? `<img class="bface" src="${esc(ctx.foeArt)}" alt="">` : ''}
-      <div class="bwho"><span>${esc(ctx.foeName ?? '')} <span class="belem">${GLYPH[st.foe.root] ?? ''}</span></span>${bubble('foe', ctx.says?.foe)}</div>
-      <div class="bnums">
+      <span class="bplate">${ctx.foeArt ? `<img class="bface" src="${esc(ctx.foeArt)}" alt="">` : `<b class="bface none">${esc([...(ctx.foeName ?? '')][0] ?? '')}</b>`}</span>
+      <div class="bwho"><span class="bfoename">${esc(ctx.foeName ?? '')} <span class="belem el-${esc(st.foe.root ?? 'none')}">${GLYPH[st.foe.root] ?? ''}</span></span>
         ${pool(w.hp, st.foe.hp, st.foe.hpMax, 'hp', st.foe.trial?.yield)}
+        ${bubble('foe', ctx.says?.foe)}</div>
+      <div class="bnums">
         ${gearHtml(st.foe, 'foe', st, ctx)}
         ${crystals(st.foe.mana, st.foe.manaMax, st.foe.manaCap)}${st.foe.drain ? `<small class="bdrain">${esc(fill(w.drainNext, { n: st.foe.drain }))}</small>` : ''}
       </div>
@@ -631,35 +678,33 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       ${aim.hero && ctx.striker ? dmgBadge(st, ctx.striker.n, ctx.striker.element, st.foe.root, ctx.lang, true) : ''}
     </button>
 
-    ${chargeHtml(st, ctx)}
-    ${intentHtml(st, ctx)}
+    <div class="bomen">${chargeHtml(st, ctx)}${intentHtml(st, ctx)}</div>
 
-    ${lastHtml(st.log, ctx, openLog)}
-
-    <div class="brank theirs"><span class="blab">${esc(w.theirs)}</span>${rank('theirs', st.foe.board, ctx.board)}</div>
-    <div class="brank mine"><span class="blab">${esc(w.yours)}</span>${rank('mine', st.you.board, ctx.board)}</div>
+    <div class="bfield">
+      <div class="brank theirs" aria-label="${esc(w.theirs)}">${rank('theirs', st.foe.board, ctx.board)}</div>
+      <div class="bseam">${lastHtml(st.log, ctx, openLog)}</div>
+      <div class="brank mine" aria-label="${esc(w.yours)}">${rank('mine', st.you.board, ctx.board)}</div>
+    </div>
 
     <div class="bside you">
-      <div class="bwho"><span>${esc(ctx.youName ?? '')} <span class="belem">${GLYPH[st.you.root] ?? ''}</span></span>${bubble('her', ctx.says?.her, ctx.herName)}</div>
-      <div class="bnums">
+      <div class="bwho"><span class="byouname">${esc(ctx.youName ?? '')} <span class="belem el-${esc(st.you.root ?? 'none')}">${GLYPH[st.you.root] ?? ''}</span></span>
         ${pool(w.hp, st.you.hp, st.you.hpMax, 'hp')}
+        ${bubble('her', ctx.says?.her, ctx.herName)}</div>
+      <div class="bnums">
         ${gearHtml(st.you, 'you', st, ctx)}
         ${crystals(st.you.mana, st.you.manaMax, st.you.manaCap)}${st.you.drain ? `<small class="bdrain">${esc(fill(w.drainNext, { n: st.you.drain }))}</small>` : ''}
       </div>
       ${deckHtml(st.you.deck, 'mine', w)}
+      <div class="bacts">
+        <button class="bact bpower el-${esc(st.you.root ?? 'none')}${powerWhy ? ' dim' : ''}${picked?.from === 'power' ? ' held' : ''}${!powerWhy && picked?.from !== 'power' ? ' can' : ''}" data-spot="power"${powerWhy ? ` title="${esc(w.why[powerWhy] ?? powerWhy)}"` : ''}>
+          <span class="bsealface"><b>${esc(w.power)}</b><span class="belem">${GLYPH[st.you.root] ?? ''}</span></span>
+          <small>${powerWhy ? esc(w.why[powerWhy] ?? powerWhy) : `${st.you.powerHit} · ${POWER_COST}${ctx.lang === 'en' ? ' ' : ''}${esc(w.mana)}`}</small>
+        </button>
+        <button class="bact end${stuck ? ' urge' : ''}" data-spot="end"><span class="bsealface"><b>${esc(w.end)}</b></span></button>
+      </div>
     </div>
 
-    <div class="bdock">
-    <div class="bhand">${handHtml(st, ctx, picked)}</div>
-
-    <div class="bacts">
-      <button class="bact${powerWhy ? ' dim' : ''}${picked?.from === 'power' ? ' held' : ''}${!powerWhy && picked?.from !== 'power' ? ' can' : ''}" data-spot="power">
-        ${esc(w.power)} <span class="belem">${GLYPH[st.you.root] ?? ''}</span>
-        <small>${powerWhy ? esc(w.why[powerWhy] ?? powerWhy) : `${st.you.powerHit} · ${2}${ctx.lang === 'en' ? ' ' : ''}${esc(w.mana)}`}</small>
-      </button>
-      <button class="bact end${stuck ? ' urge' : ''}" data-spot="end">${esc(w.end)}</button>
-    </div>
-    </div>
+    <div class="bdock"><div class="bhand">${handHtml(st, ctx, picked)}</div></div>
 
     ${note ? `<div class="bhint bno">${esc(w.why[note] ?? note)}</div>` : ''}
     ${advice ? `<div class="bhint${stuck ? ' burge' : ''}">${esc(advice)}</div>` : ''}
@@ -668,6 +713,32 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       ${w.help.map(([k, v]) => `<p><b>${esc(k)}</b>${esc(v)}</p>`).join('')}
       <button class="bact" data-spot="help">${esc(w.close)}</button>
     </div></div>` : ''}
-    ${over ? `<div class="bover ${esc(st.outcome)}"><b class="bseal">${title}</b><span>${said}</span>${bubble('foe', ctx.says?.end)}</div>` : ''}
+    ${over && ctx.ended !== false ? endHtml(st, ctx) : ''}
   </div>`;
+}
+
+/* How it ended, as the story view closes a 回 (story.css closecard): a paper card over the
+   darkened stage, the cinnabar seal stamped on it — 胜 · 败 · 遁 · 过 — the line of how it went,
+   and the beast's last word when it has one (a beast that walked away says nothing). The page
+   holds it a moment by itself (lingjing.js settleBout); 收起 puts it away sooner. */
+const ENDS = {
+  zh: { won: '胜', passed: '过', lost: '败', withdrew: '遁', close: '收起', done: '完' },
+  en: { won: 'Won', passed: 'Passed', lost: 'Lost', withdrew: 'Gone', close: 'Put away', done: 'over' },
+};
+export function endOf(st) {
+  const passed = st.outcome === 'won' && (st.log ?? []).some(t => t.act === 'trial-passed');
+  return passed ? 'passed' : st.outcome;
+}
+function endHtml(st, ctx) {
+  const w = ctx.words, e = ENDS[ctx.lang === 'en' ? 'en' : 'zh'], end = endOf(st);
+  const said = w[`${end}Say`] ?? '';
+  const title = [ctx.title, e.done].filter(Boolean).join(' · ');
+  const bubble = ctx.says?.end ? `<div class="bsay foe">${esc(ctx.says.end)}</div>` : '';
+  return `<div class="bover ${esc(st.outcome)}"><div class="card closecard bclose ${esc(end)}">
+      <b class="bseal">${esc(e[end] ?? w[end] ?? '')}</b>
+      <div class="closetitle">${esc(title)}</div>
+      ${said ? `<p class="closedid">${esc(said)}</p>` : ''}
+      ${bubble}
+      <div class="acts"><button class="act closeshut" data-spot="close">${esc(e.close)}</button></div>
+    </div></div>`;
 }

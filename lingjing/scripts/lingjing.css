@@ -454,29 +454,19 @@ ruby.py rt { ruby-align: center; text-align: center; }
 .qi .cnt { margin-left: 6px; font-family: var(--ui); font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
 
 /* ── While a fight runs, the fight IS the stage ───────────────────────────
-   The backdrop, the day's tray and Yinyue's own body step aside: she is in the
-   fight as a card, and a card game needs every inch it can get (2026-09-18).
-   Everything returns the moment the fight ends. */
-body.fighting .backdrop,
+   The day's tray, the place line and Yinyue's own body step aside: she is in
+   the fight as a card, and a card game needs every inch it can get (2026-09-18).
+   The weather's painting stays, washed to ink under the paper (battle.css, the
+   ink fight 2026-10-15). Everything returns the moment the fight ends. */
 body.fighting .place,
 body.fighting .huiline,
 body.fighting .stage,
 body.fighting .tray { display: none; }
-body.fighting .view { background: #0d0b0a; }
+body.fighting .backdrop .bd { filter: grayscale(.85) sepia(.12) contrast(.92) brightness(1.06); }
 /* The focus sits pinned inside the view; in a fight it takes the whole of it. */
 body.fighting .slots { inset: 0; grid-template-rows: minmax(0, 1fr); }
 body.fighting .focus { padding: 0; overflow: hidden; }
 body.fighting .scene { overflow: hidden; }
-body.fighting .battle { max-width: none; height: 100%; border-radius: 0; padding: 14px 18px 16px; }
-/* With the room, the fight grows into it: bigger bodies, bigger hand. */
-body.fighting .brank { min-height: 128px; }
-body.fighting .bpic.small { height: 68px; }
-body.fighting .bminion .bname { font-size: 18px; }
-body.fighting .bcard { flex: 0 0 132px; }
-body.fighting .bpic { height: 62px; }
-body.fighting .bcard .bname { font-size: 19px; }
-body.fighting .bside.foe .bface { width: 104px; height: 104px; }
-body.fighting .bside .bwho { font-size: 30px; }
 
 /* The chat owns the question. While one is open, the stage puts away its own
    copies of the same answers — one clickable place for one thing (his law

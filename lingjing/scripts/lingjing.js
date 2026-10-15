@@ -15,8 +15,9 @@ import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
 import { boardDoneToday, companionShown, petStageUrl, sceneGame, stageCards, stageSlots, stands } from './stage.mjs';
-import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, pickOf, spoilsHtml } from './battle-card.js';
-import { banner, playLog, since } from './battle-anim.js';
+import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, dropOf, pickOf, spoilsHtml } from './battle-card.js';
+import { wireDrag } from './battle-drag.js';
+import { banner, ghostsOf, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
 import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle } from './cards.js';
@@ -1383,7 +1384,9 @@ function boutCtx() {
     board: bout.st.mode.board,
     title: duelTitle(c, words(), lang()),
     foeName: c.name, foeArt: c.art ? `${artBase()}${c.art}` : null,
-    youName: look.name ?? '', herName: look.companion?.name ?? null,
+    youName: look.name ?? '', herName: look.companion?.name ?? null, herCard: look.companion?.id ?? null,
+    // The closing card waits for the rules' word, not for the last blow (settleBout).
+    ended: Boolean(bout.ended),
     // Why this fight, and who speaks in it (the brief carries them when the story gives them).
     stake: bout.brief.stake ?? null, says: boutSays(bout.brief.says, bout.st.outcome),
   };
@@ -2601,31 +2604,57 @@ async function onBoutTap(spot) {
   if (!b) return;
   if (spot.kind === 'help' || spot.kind === 'help-bg') { b.help = !b.help; return drawNow(); }
   if (spot.kind === 'more') { b.openLog = !b.openLog; return drawNow(); }
+  // 收起 on the closing card: the seal has been read.
+  if (spot.kind === 'close') return b.release?.();
   // 认输 answers at any moment, the beast's turn included.
   if (spot.kind === 'quit') return yieldBout();
   if (b.busy || b.st.outcome !== 'open') return;
+  // A tap on the bare stage with nothing lifted is no move at all — not even a repaint.
+  if (spot.kind === 'stage' && !b.picked) return;
+  return boutDo(b, pickOf(b.picked, spot, boutView(b.st), cardCatalog()));
+}
+
+/* A drag on the Mac (battle-drag.js): the same two taps in one gesture. */
+function onBoutDrop(from, to) {
+  const b = bout;
+  if (!b || b.busy || b.st.outcome !== 'open') return;
+  b.picked = null;
+  return boutDo(b, dropOf(from, to, boutView(b.st), cardCatalog()));
+}
+wireDrag({ onDrop: onBoutDrop, active: () => Boolean(bout && !bout.busy && bout.st.outcome === 'open' && bout.st.whose === 'you') });
+
+/* What a tap or a drop came to: hold it, put it back, or play it out and draw it. */
+async function boutDo(b, out) {
   b.note = null;
-  const out = pickOf(b.picked, spot, boutView(b.st), cardCatalog());
   if (out.quit) return yieldBout();
   if (out.clear) { b.picked = null; return drawNow(); }
   if (out.pick) { b.picked = out.pick; return drawNow(); }
-  if (out.action.kind === 'end') return endBoutTurn();
+  if (out.action.kind === 'end') { b.picked = null; return endBoutTurn(); }
   const mark = b.st.log.length;
   const res = act(b.st, out.action, 'you');
   b.picked = null;
   if (!res.ok) { b.note = res.why; return drawNow(); }
   b.actions.push(tokenOf(out.action));
-  b.busy = true;
-  try {
-    drawNow();
-    await playLog(document.querySelector('.battle'), since(b.st.log, mark), { words: boutCtx().words });
-  } finally {
-    b.busy = false;
-  }
+  await playOut(b, mark, { who: 'you', action: out.action });
   if (gone(b)) return;
   fightMoments();
   if (b.st.outcome !== 'open') return settleBout(b);
   drawNow();
+}
+
+/* One move drawn and played out: the bodies about to go are kept as ink ghosts
+   (ghostsOf, read off the room as it stood), the room is drawn as it is now,
+   and the log since `mark` plays over it — the stroke from `by` first. */
+async function playOut(b, mark, by = null) {
+  b.busy = true;
+  try {
+    const ghosts = ghostsOf(document.querySelector('.battle'), since(b.st.log, mark), by);
+    drawNow();
+    const sig = b.st.foe.signature?.name;
+    await playLog(document.querySelector('.battle'), since(b.st.log, mark), { words: boutCtx().words, ghosts, sigName: typeof sig === 'string' ? sig : sig?.[lang()] ?? sig?.zh });
+  } finally {
+    b.busy = false;
+  }
 }
 
 /* The creature answers a move at a time, drawn as each lands. */
@@ -2635,26 +2664,20 @@ async function endBoutTurn() {
   const mark = b.st.log.length;
   if (!act(b.st, { kind: 'end' }, 'you').ok) return;
   b.actions.push('end');
-  b.busy = true;
-  try {
-    drawNow();
-    await playLog(document.querySelector('.battle'), since(b.st.log, mark), { words: boutCtx().words });
-    if (gone(b)) return;
-    fightMoments();
-    if (b.st.whose === 'foe' && b.st.outcome === 'open') {
-      await banner(document.querySelector('.battle'), `${b.brief.creature.name}${lang() === 'en' ? "'s turn" : '的回合'}`, 'foe');
-      for (let guard = 0; guard < 40 && !gone(b) && b.st.whose === 'foe' && b.st.outcome === 'open'; guard += 1) {
-        const step = b.st.log.length;
-        const did = foeStep(b.st);
-        drawNow();
-        await playLog(document.querySelector('.battle'), since(b.st.log, step), { words: boutCtx().words });
-        if (gone(b)) return;
-        fightMoments();
-        if (!did || did.kind === 'end') break;
-      }
+  await playOut(b, mark);
+  if (gone(b)) return;
+  fightMoments();
+  if (b.st.whose === 'foe' && b.st.outcome === 'open') {
+    b.busy = true;
+    try { await banner(document.querySelector('.battle'), `${b.brief.creature.name}${lang() === 'en' ? "'s turn" : '的回合'}`, 'foe'); } finally { b.busy = false; }
+    for (let guard = 0; guard < 40 && !gone(b) && b.st.whose === 'foe' && b.st.outcome === 'open'; guard += 1) {
+      const step = b.st.log.length;
+      const did = foeStep(b.st);
+      await playOut(b, step, did ? { who: 'foe', action: did } : null);
+      if (gone(b)) return;
+      fightMoments();
+      if (!did || did.kind === 'end') break;
     }
-  } finally {
-    b.busy = false;
   }
   if (gone(b)) return;
   if (b.st.outcome !== 'open') return settleBout(b);
@@ -2680,17 +2703,21 @@ function yieldBout() {
 /* The rules settle it, and the scene reports it — the scene is still the only
    witness to a fight (design.md § 降妖). The room closes whatever the answer:
    a refusal is said on the stage, and Ling hears only what the rules decided. */
-const SEAL_HOLD_MS = 2400;
+const SEAL_HOLD_MS = 3000, SEAL_SAID_MS = 4200;
 async function settleBout(b = bout) {
   if (!b || b.settling) return;
   b.settling = true;
   clearTimeout(idleTimer);
   const { id, actions, brief } = b;
   const r = await write('duel', { id, picks: actions.join(',') }).catch(failed);
-  // The beast's last word stands in the seal long enough to be read.
-  if (r.ok && bout === b && boutSays(brief.says, b.st.outcome)?.end) {
+  // The closing card (won · lost · withdrew, battle-card.js endHtml) stands long enough to be
+  // read — longer with the beast's last word in it — or until 收起. Never a gate: the report
+  // below goes by itself.
+  if (r.ok && bout === b) {
+    b.ended = true;
     drawNow();
-    await new Promise((done) => setTimeout(done, SEAL_HOLD_MS));
+    const hold = boutSays(brief.says, b.st.outcome)?.end ? SEAL_SAID_MS : SEAL_HOLD_MS;
+    await new Promise((done) => { b.release = done; setTimeout(done, hold); });
   }
   if (bout === b) bout = null;
   if (!r.ok) {

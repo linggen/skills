@@ -608,7 +608,7 @@ test('the room dressed: the beast painted behind the fight, the boss and 银月 
   const st = begin({ mode: 'pve', seed: 'x', you: { tier: 'core', step: 0, root: 'wood', deck: ['jixiao', 'huoya', 'houtu', 'luying', 'leiming', 'jingwei', 'zhennu', 'luoshi', 'fenghuo', 'linmu'], extra: ['yinyue'] }, foe: { tier: 'core', root: 'wood', deck: foe.deck } }, catalog);
   const base = { lang: 'zh', words: WORDS.zh, catalog, board: st.mode.board, artBase: '../worlds/jiuding/', title: '降妖', foeName: '雷神', youName: '青玄', foeArt: '../worlds/jiuding/art/leishen.webp' };
   const plain = battleHtml(view(st), offers(st), base);
-  assert.match(plain, /class="barena"[^>]*leishen\.webp/, 'the beast behind the fight');
+  assert.match(plain, /class="bplate"><img class="bface" src="[^"]*leishen\.webp/, 'the beast in its plate at the top');
   assert.match(plain, /class="battle el-wood/, 'the room wears its element');
   assert.doesNotMatch(plain, /bsay|bstake/, 'no line, no bubble; no stake, no line under the title');
   assert.doesNotMatch(plain, />空</, 'an empty place is a ring, not a word');
@@ -617,6 +617,9 @@ test('the room dressed: the beast painted behind the fight, the boss and 银月 
   assert.match(said, /<div class="bsay her"><b>银月<\/b>别让它蓄满。<\/div>/);
   assert.match(said, /<small class="bstake">为取青鼎<\/small>/);
   const won = battleHtml({ ...view(st), outcome: 'won' }, offers(st), { ...base, says: { end: '雷泽归你。' } });
-  assert.match(won, /class="bover won"><b class="bseal">/);
+  assert.match(won, /class="bover won"><div class="card closecard bclose won">\s*<b class="bseal">胜<\/b>/, 'the end is the story view\'s 完 card, the seal on it');
+  assert.match(won, /降妖 · 完/);
+  assert.match(won, /data-spot="close"/, '收起 puts it away sooner');
+  assert.doesNotMatch(battleHtml({ ...view(st), outcome: 'won' }, offers(st), { ...base, ended: false }), /bover/, 'not while the last blow plays out');
   assert.match(won, /雷泽归你。/);
 });
