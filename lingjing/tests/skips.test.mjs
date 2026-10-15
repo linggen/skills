@@ -90,6 +90,8 @@ test('a board left comes back by itself on a later day, the stage idle — won t
   // On the stage: under the scene card, never alone without 下一步's way on.
   const cards = stageCards(lk);
   assert.ok(cards.some((c) => c.card === 'replay'));
+  // The scene's boards left yesterday stay over: never dealt fresh the next day (live at j07-guan).
+  assert.ok(!cards.some((c) => c.card === 'board'), 'no board of the scene dealt again');
   assert.equal(CARD_KINDS.replay.holds, false);
   assert.ok(stageSlots(lk, cards), 'it has a slot');
   // Played: the board stands offered again, as on its first day; its win pays the grant, grade and mark.

@@ -362,8 +362,11 @@ function tasksBrief(content, state, ctx) {
   if (katch && catchHere(content, state, katch)) hosted[katch] = { status: 'offered' };
   const again = new Set([...(content.tasks?.tasks ?? []).map(t => t.id).filter(id => reopened(content, state, id, ctx.now)), ...Object.keys(hosted)]);
   const held = Object.fromEntries([...again].map(id => [id, { status: 'offered' }]));
+  const hereShows = new Set((sceneOf(content, state)?.show ?? []).filter(c => c.card === 'board').map(c => c.id));
   const tasks = Object.entries({ ...state.tasks, ...held, ...hosted })
-    .filter(([, t]) => t.status !== 'done' || (t.done_at ? dayKey(new Date(t.done_at)) === today : false))
+    // …and a board the scene he stands in shows, done (won or left) on an earlier day: still the
+    // scene's, so the stage knows it is over and never deals it fresh (a skip, then a night at the scene).
+    .filter(([id, t]) => t.status !== 'done' || (t.done_at ? dayKey(new Date(t.done_at)) === today : false) || hereShows.has(id))
     .map(([id, t]) => {
       const task = taskOf(content, id);
       return {
