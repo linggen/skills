@@ -62,3 +62,35 @@ test('the map card draws the province up close as points, and all nine at a tap'
   assert.match(ji, /data-go="ye"[^>]*><i><\/i><span>邺城/);
   assert.match(ji, /data-mapview="world">九州全图<\/button><button class="act" data-mapview="province">青州</);
 });
+
+// 古九's tester (2026-10-15): 冀州's map near 邺城 — the town and its five shops, six names in one blot.
+test('the map\'s names never lie over each other: 邺城 named, its shops by their short names where there is room, else the dot alone', async () => {
+  const { frameOf: fo, within: wi, mapName, placeLabels } = await import('../scripts/atlas.js');
+  const fsm = await import('node:fs');
+  const W = new URL('../worlds/jiuding/', import.meta.url);
+  const world = JSON.parse(fsm.readFileSync(new URL('world.json', W), 'utf8'));
+  const ji = JSON.parse(fsm.readFileSync(new URL('places/ji.json', W), 'utf8'));
+  const places = (ji.places ?? ji).filter((p) => p.map);
+  const names = places.map((p) => p.name.zh);
+  assert.equal(mapName('邺城 · 香烛铺', names), '香烛铺');
+  assert.equal(mapName('邺城 · 香烛铺', ['柳湾']), '邺城 · 香烛铺', 'the town not on the map: the whole name');
+  const f = fo(places.map((p) => p.map), world.atlas.aspect);
+  const width = 560, height = 560 * f.h / (f.w * world.atlas.aspect);
+  const rank = (p) => 2 + (mapName(p.name.zh, names) !== p.name.zh ? 0.5 : 0);
+  const order = places.map((_, k) => k).sort((a, b) => rank(places[a]) - rank(places[b]) || a - b);
+  const dots = order.map((k) => ({ ...wi(f, places[k].map), name: mapName(places[k].name.zh, names), rank: rank(places[k]) }));
+  const sides = placeLabels(dots, { width, height });
+  const ye = order.findIndex((k) => places[k].id === 'ye');
+  assert.ok(sides[ye], '邺城 keeps its name');
+  // No two names laid overlap.
+  const boxes = dots.map((d, i) => {
+    if (!sides[i]) return null;
+    const x = d.left / 100 * width, y = d.top / 100 * height, w = [...d.name].length * 12 + 8, h = 16;
+    return { r: { x: x + 7, y: y - 8, w, h }, l: { x: x - 7 - w, y: y - 8, w, h }, a: { x: x - w / 2, y: y - 23, w, h }, b: { x: x - w / 2, y: y + 7, w, h } }[sides[i]];
+  });
+  const hit = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  for (let i = 0; i < boxes.length; i += 1) for (let j = i + 1; j < boxes.length; j += 1) if (boxes[i] && boxes[j]) assert.ok(!hit(boxes[i], boxes[j]), `${dots[i].name} over ${dots[j].name}`);
+  const src = fsm.readFileSync(new URL('../scripts/cards.js', import.meta.url), 'utf8');
+  assert.match(src, /placeLabels\(order\.map/);
+  assert.match(src, /' nolbl'/);
+});

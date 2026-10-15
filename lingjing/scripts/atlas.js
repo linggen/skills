@@ -32,3 +32,37 @@ export function within(frame, [x, y]) {
 
 /// Whether a position shows inside the frame.
 export const inside = (frame, p) => p[0] >= frame.x && p[0] <= frame.x + frame.w && p[1] >= frame.y && p[1] <= frame.y + frame.h;
+
+/// A place's name on the map, short where its town stands named beside it: 「邺城 · 香烛铺」 reads
+/// 「香烛铺」 when 「邺城」 is on the map too (the town's inner places sit in a ring around it).
+export function mapName(name, shown = []) {
+  const at = String(name ?? '').indexOf(' · ');
+  if (at < 0) return name;
+  return shown.includes(name.slice(0, at)) ? name.slice(at + 3) : name;
+}
+
+/// Where each label goes beside its dot, so no two names lie over each other or over a dot
+/// (古九's tester, 2026-10-15: 邺城 and its five shops, one blot of ink). Greedy, in the order given
+/// (the caller ranks here and the roads first; `rank` per dot, lower first): right, then left, above, below — inside the map —
+/// else no label (the dot stays, its name its title). Sizes in the card's pixels at `width`
+/// (12px type; a Latin letter about half a character). Returns 'r' | 'l' | 'a' | 'b' | null per dot.
+export function placeLabels(dots, { width = 560, height = 420 } = {}) {
+  // A name may lie over a dot of lower rank (later in the order), never over one of its own rank or higher:
+  // the town's name over its shops' dots, not a shop's name over the town's.
+  const rank = dots.map((d, i) => d.rank ?? i);
+  const placed = dots.map((d, i) => ({ x: (d.left / 100) * width - 5, y: (d.top / 100) * height - 5, w: 10, h: 10, rank: rank[i] }));
+  const hit = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  const fits = (r) => r.x >= 0 && r.y >= 0 && r.x + r.w <= width && r.y + r.h <= height;
+  const out = [];
+  dots.forEach((d, i) => {
+    const x = (d.left / 100) * width, y = (d.top / 100) * height;
+    const text = String(d.name ?? '');
+    const w = [...text].reduce((n, c) => n + (/[\u0000-ɏ]/.test(c) ? 6.5 : 12), 8), h = 16;
+    const tries = { r: { x: x + 7, y: y - h / 2, w, h }, l: { x: x - 7 - w, y: y - h / 2, w, h }, a: { x: x - w / 2, y: y - 7 - h, w, h }, b: { x: x - w / 2, y: y + 7, w, h } };
+    const order = d.flip ? ['l', 'r', 'a', 'b'] : ['r', 'l', 'a', 'b'];
+    const side = order.find((k) => fits(tries[k]) && !placed.some((p, j) => j !== i && (p.rank == null || p.rank <= rank[i]) && hit(p, tries[k])));
+    if (side) placed.push({ ...tries[side], rank: null });
+    out.push(side ?? null);
+  });
+  return out;
+}

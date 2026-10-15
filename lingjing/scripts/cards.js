@@ -8,7 +8,7 @@ import { WORDS as BATTLE_WORDS, boutWords, challengeHtml } from './battle-card.j
 import { SKIP } from './games/ink.js';
 import { stampShown, stuckNow } from './stuck.js';
 import { layoutRoads } from './roadmap.js';
-import { frameOf, inside, within } from './atlas.js';
+import { frameOf, inside, mapName, placeLabels, within } from './atlas.js';
 import { inkLayerHtml, provinceLineHtml, pvState } from './inkmap.js';
 import { boardDoneToday, boardWaits, herAwake, onRoad, sideLineOf, sideStep, winnable, wonWayOn } from './stage.mjs';
 import { fitValue } from './state.mjs';
@@ -328,19 +328,30 @@ function atlasMap(ctx) {
         ? `<button class="${cls}" data-mapview="${id === own ? 'province' : esc(id)}" style="${pos(at)}">${esc(provinceName(id))}</button>`
         : `<span class="${cls}" style="${pos(at)}">${esc(provinceName(id))}</span>`;
     });
+  // The names laid so none lies over another (atlas.js placeLabels): here and the roads first; a town's
+  // inner places by their own short names (mapName); a name with no room is the dot's title alone.
+  const shownNames = shown.map((p) => p.name);
+  // …a town's inner places (a short name) after the town itself: its name may lie over their dots.
+  const rank = (p) => (other ? 2 : p.here ? 0 : p.road && !p.too_hard ? 1 : p.closed ? 4 : p.too_hard ? 3 : 2) + (mapName(p.name, shownNames) !== p.name ? 0.5 : 0);
+  const order = shown.map((_, k) => k).sort((a, b) => rank(shown[a]) - rank(shown[b]) || a - b);
+  const sides = whole ? [] : placeLabels(order.map((k) => ({ ...within(frame, shown[k].map), name: mapName(shown[k].name, shownNames), flip: within(frame, shown[k].map).left > 78, rank: rank(shown[k]) })),
+    { width: 560, height: 560 * frame.h / (frame.w * atlas.aspect) });
+  const sideOf = new Map(order.map((k, i) => [k, sides[i]]));
+  const SIDE_CLS = { r: '', l: ' flip', a: ' lbl-a', b: ' lbl-b' };
   const dots = (whole ? points.filter((p) => p.here) : shown).map((p, k) => {
     // The whole map marks where the player is with the dot alone: a name
     // there would sit on the province's own.
     if (whole) return `<span class="pt here" style="${pos(p.map)}"><i></i></span>`;
     const kind = other ? '' : p.here ? 'here' : p.road ? 'road' : '';
-    const cls = `pt${kind ? ` ${kind}` : ''}${p.too_hard || p.closed ? ' far' : ''}${p.closed ? ' shut' : ''}${within(frame, p.map).left > 78 ? ' flip' : ''}`;
-    const label = `<i></i><span>${esc(p.name)}</span>`;
+    const side = sideOf.get(k);
+    const cls = `pt${kind ? ` ${kind}` : ''}${p.too_hard || p.closed ? ' far' : ''}${p.closed ? ' shut' : ''}${side ? SIDE_CLS[side] : ' nolbl'}`;
+    const label = `<i></i><span>${esc(mapName(p.name, shownNames))}</span>`;
     // 地图展开: the places come out of the mist one after another (--k).
     const at = `${pos(p.map)}${ctx.unfold ? `;--k:${k}` : ''}`;
     // Beyond the map this chapter opens: greyed, and nothing to tap.
     return (p.here && !other) || p.closed
-      ? `<span class="${cls}" style="${at}">${label}</span>`
-      : `<button class="${cls}" ${goAttr(p.id)} style="${at}">${label}</button>`;
+      ? `<span class="${cls}" style="${at}" title="${esc(p.name)}">${label}</span>`
+      : `<button class="${cls}" ${goAttr(p.id)} style="${at}" title="${esc(p.name)}" aria-label="${esc(p.name)}">${label}</button>`;
   });
   const title = whole ? ctx.words.mapTitle : other ? other.name : place.province.name;
   const toWhole = `<button class="act" data-mapview="world">${esc(ctx.words.mapWhole)}</button>`;

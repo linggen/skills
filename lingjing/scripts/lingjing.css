@@ -419,6 +419,12 @@ ruby.py rt { ruby-align: center; text-align: center; }
 .atlas.whole .pv.here { color: #46708C; }
 .atlas .pt { position: absolute; display: flex; align-items: center; gap: 3px; transform: translate(-5px, -50%); padding: 0; border: 0; background: none; font: inherit; font-size: 12px; line-height: 1.2; color: #1D1B17; white-space: nowrap; }
 .atlas .pt.flip { flex-direction: row-reverse; transform: translate(calc(-100% + 5px), -50%); }
+/* A name above or below its dot, or none (atlas.js placeLabels: no room beside it) — then it shows on hover or focus. */
+.atlas .pt.lbl-a { flex-direction: column-reverse; gap: 1px; transform: translate(-50%, calc(-100% + 5px)); }
+.atlas .pt.lbl-b { flex-direction: column; gap: 1px; transform: translate(-50%, -5px); }
+.atlas .pt.nolbl span { display: none; }
+.atlas .pt.nolbl:hover, .atlas .pt.nolbl:focus-visible { z-index: 3; }
+.atlas .pt.nolbl:hover span, .atlas .pt.nolbl:focus-visible span { display: inline; }
 .atlas .pt i { flex: none; width: 9px; height: 9px; border-radius: 50%; background: #6A6458; box-shadow: 0 0 0 1.5px #fff; }
 .atlas .pt span { padding: 0 4px; border-radius: 4px; background: rgba(251, 248, 242, 0.85); }
 .atlas .pt.road i { background: #B03A2B; }
