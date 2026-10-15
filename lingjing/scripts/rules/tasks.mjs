@@ -37,11 +37,17 @@ export function task(state, content, ctx, args) {
    done once in the story, so the furnace never came back and the errand
    could not be met (his, 2026-09-23: 我已经到这里了, 没触发差事). */
 function errandWants(content, state, id, place = null) {
-  return Object.keys(state.quests ?? {}).some(qid => {
-    if (questDoneBefore(state, qid)) return false;
+  return Boolean(errandAsking(content, state, id, place));
+}
+/* …and which errand it is: the board opened for it is titled by it (2026-10-15 play-test:
+   码柴 opened 华容道 under the task's own 「走出秘境」). */
+function errandAsking(content, state, id, place = null) {
+  for (const qid of Object.keys(state.quests ?? {})) {
+    if (questDoneBefore(state, qid)) continue;
     const q = questOf(content, qid);
-    return q ? countsOf(content, state, q).some(n => n.kind === 'board' && n.task === id && !n.done && (!place || !n.at || n.at === place)) : false;
-  });
+    if (q && countsOf(content, state, q).some(n => n.kind === 'board' && n.task === id && !n.done && (!place || !n.at || n.at === place))) return q;
+  }
+  return null;
 }
 
 /* Done before, and open now only for an errand — it pays the errand, not
@@ -440,4 +446,4 @@ export function lundao(state, content, ctx, args) {
   return { state: s, result: { ok: true, good, ...(form ? { form } : {}), ...(!form && !judged ? { judged: false } : {}), lundao: lundaoBrief(content, s, ctx.now), ...(fresh ? { say: l.prompt } : {}), ...(l.model && !l.outcome ? { judge: judgeOf(l.model) } : {}), ...(l.outcome === 'won' ? { line: pick(taskOf(content, 'lundao').done_line, lang), ...(paid ? { paid } : {}), ...(handed.length ? { handed } : {}) } : {}) } };
 }
 
-export { catchHere, doneThisPeriod, gameLevel, hostedHere, stallHere, lundaoBrief, lundaoForm, lundaoName, questCheck, questDone, reopened };
+export { catchHere, doneThisPeriod, errandAsking, gameLevel, hostedHere, stallHere, lundaoBrief, lundaoForm, lundaoName, questCheck, questDone, reopened };

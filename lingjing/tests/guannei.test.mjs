@@ -72,6 +72,9 @@ test('errands: the east wall offers the 观\'s chores and the tags below the mou
   // a chore is done in its own place, the 观's board there
   let c = must(quest, s, { action: 'take', id: 'guan-chaifang-wood' });
   c = fresh(must(move, c, { place: 'chaifang' }));
+  // the board is titled by the errand it is opened for, not the task's own 「走出秘境」 (2026-10-15 play-test)
+  const board = task(c, content, ctx(), { action: 'list' }).result.tasks.find((t) => t.id === 'huarong');
+  assert.equal(board.title, '华容道 · 码柴');
   c = must(win, c, { id: 'huarong' }); c = must(task, c, { action: 'done', id: 'huarong' });
   assert.ok(c.quests['guan-chaifang-wood'].done_at, 'stacked, it hands itself in');
 });

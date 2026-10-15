@@ -19,7 +19,7 @@ import { seclusionBrief } from './seclusion.mjs';
 import { chapterLook, nodeLook, recapLook } from './story.mjs';
 import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
 import { choreGrant, kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
-import { catchHere, gameLevel, hostedHere, lundaoBrief, reopened, stallHere } from './tasks.mjs';
+import { catchHere, errandAsking, gameLevel, hostedHere, lundaoBrief, reopened, stallHere } from './tasks.mjs';
 import { caseBrief, haggleBrief, twentyBrief } from './aigames.mjs';
 import { hashOf } from './travel.mjs';
 import { visitorGoods, visitorHere, visitorsBrief } from './visiting.mjs';
@@ -349,6 +349,15 @@ function exitBrief(content, state, exit, button, ctxNow = new Date(), scene = sc
 }
 
 
+/* A board's title: the task's own — or, opened for an errand, the game's name and the errand's
+   (「华容道 · 码柴」, not 「华容道 · 走出秘境」: the title is the errand's, 2026-10-15 play-test). */
+function boardTitle(content, state, id, task, forErrand) {
+  const own = pick(task.title, state.lang);
+  const q = forErrand ? errandAsking(content, state, id, state.place) : null;
+  if (!q?.title) return own;
+  return `${own.split(' · ')[0]} · ${pick(q.title, state.lang)}`;
+}
+
 function tasksBrief(content, state, ctx) {
   const lang = state.lang;
   // The boards before him: the story's (a scene offers them), and a game an
@@ -375,7 +384,7 @@ function tasksBrief(content, state, ctx) {
     .map(([id, t]) => {
       const task = taskOf(content, id);
       return {
-        id, title: pick(task.title, lang), kind: task.kind, status: t.status,
+        id, title: boardTitle(content, state, id, task, again.has(id)), kind: task.kind, status: t.status,
         won: Boolean(state.wins?.[id]),
         // A board left (「算了，往下走」) is over for the story and paid nothing (rules/skips.mjs).
         paid: t.status === 'done' && !t.skipped, ...(t.skipped ? { skipped: true } : {}), ...(t.replay ? { replay: true } : {}), period: t.period ?? task.period ?? null, // done = paid, once or per period
