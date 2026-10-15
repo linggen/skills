@@ -363,3 +363,16 @@ test('the 修为 model reads a run\'s worth from the data (tools/xiuwei-model.mj
   assert.equal(r.beasts, Object.values(RERUN.spawns).reduce((t, sp) => t + (sp.n[0] + sp.n[1]) / 2, 0));
   assert.equal(r.progress, r.beasts * T.haunt.progress);
 });
+
+test('the stage: at the door the run\'s card offers the way in over the story\'s boards; inside, the rooms and the way out, the story\'s boards waiting outside', async () => {
+  const { stageCards } = await import('../scripts/stage.mjs');
+  const now = openAt(), door = atDoor(now);
+  const ld = look(door, content, at(now));
+  assert.equal(ld.rerun.here, true);
+  assert.ok(stageCards(ld).some(c => c.card === 'rerun'), 'the way in stands at the door');
+  const away = look(fresh(past(), now), content, at(now));
+  assert.ok(!stageCards(away).some(c => c.card === 'rerun'), 'away from the door: only 下一步\'s quiet line');
+  const s = inside(now), l = look(s, content, at(now));
+  assert.ok(stageCards(l).some(c => c.card === 'rerun'));
+  assert.ok((l.tasks ?? []).every(t => t.hosted), 'only what the run\'s rooms host');
+});

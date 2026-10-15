@@ -46,6 +46,8 @@ export function withoutSealed(content, state, brief) {
   for (const key of OUTSIDE) delete out[key];
   if (out.today) out.today = { ...out.today, festival: null, term: null, jieqi: null };
   if (out.place) { const { pass, meet, ...place } = out.place; out.place = place; }
+  // A rerun (rules/rerun.mjs): the story outside waits — its boards too; only what the run's rooms host stands.
+  if (sealed.run && out.tasks) out.tasks = out.tasks.filter(t => t.hosted);
   // A rerun's goal points nowhere outside: the story's road waits, frozen.
   if (sealed.goal) out.waypoint = sealed.run ? { text: sealed.goal, sealed: true } : { ...(brief.waypoint ?? {}), text: sealed.goal, sealed: true };
   return out;

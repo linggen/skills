@@ -141,6 +141,8 @@ export const CARD_KINDS = {
   board: { holds: false }, //      a standing practice, offered for days — not this arrival's business
   // A board left on an earlier day, offered again (rules/skips.mjs): optional — 再试一回 or 改日, never asking.
   replay: { holds: false },
+  // 刷副本 (rules/rerun.mjs, Look's `rerun`): at the door with the rooms open, the way in; inside, the rooms and the way out — optional, never holds.
+  rerun: { holds: false },
   goal: { holds: false }, building: { holds: false }, empty: { holds: false },
   // 下一步: where the story goes and the one tap toward it, when nothing else stands (withNext).
   next: { holds: false },
@@ -259,6 +261,8 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
     if (look.haggle && !has('haggle')) cards.push({ card: 'haggle' });
     if (look.case && !has('case')) cards.push({ card: 'case' });
     if (look.twenty && (look.twenty.open || look.twenty.outcome) && !has('twenty')) cards.push({ card: 'twenty' });
+    // 刷副本: the door's way in while the rooms are open, and the run's own card inside (rules/rerun.mjs).
+    if (look.rerun && (look.rerun.inside || (look.rerun.open && look.rerun.here)) && !has('rerun')) cards.push({ card: 'rerun' });
     // Every board open here: the story's, an errand's, and the games this place hosts.
     for (const board of (look.tasks ?? []).filter(t => t.kind === 'board' && t.status !== 'done' && !t.won)) {
       if (!has('board', board.id)) cards.push({ card: 'board', id: board.id });
@@ -355,7 +359,7 @@ export function wonWayOn(look) {
    people, the goal line, the name and 生辰 cards (the scene's exits), a world
    being painted, an empty pool. Never Ling's to Show — the `show` verb drops
    them (rules/verbs.mjs) and the stage drops them from what she showed. */
-export const PAGE_OWNS = new Set(['meet', 'panel', 'people', 'goal', 'value', 'born', 'building', 'empty', 'memory', 'homing', 'doors', 'unfold', 'closed', 'next']);
+export const PAGE_OWNS = new Set(['meet', 'panel', 'people', 'goal', 'value', 'born', 'building', 'empty', 'memory', 'homing', 'doors', 'unfold', 'closed', 'next', 'rerun']);
 
 /* Never a blank stage (Hanli, 2026-10-15: 「没有空白webUI的情况……webUI要提示下一步的事情，不要让
    玩家不知道下面该做什么」). When nothing in main is a step or a thing to do — no scene card, no
@@ -409,7 +413,7 @@ export const MAIN = [
   { kinds: ['closed'] }, //                                              a chapter's ending card, until he puts it away
   { kinds: ['fight', 'seclusion', 'seclude'] }, //                      the fight, 闭关
   { kinds: ['meet', 'panel', 'value', 'born', 'breakthrough', 'replay'], together: true }, // the scene waiting on a choice, its new faces first; a board left, offered again, under it
-  { kinds: ['board', 'duel', 'lundao', 'twenty', 'haggle', 'case'] }, //  a game to play here
+  { kinds: ['board', 'duel', 'lundao', 'twenty', 'haggle', 'case', 'rerun'] }, //  a game to play here
   { kinds: ['handed', 'quest', 'tale', 'road', 'offer'] }, //            the line, one at a time
   { kinds: ['building', 'empty'] }, //                                   the page's own notices
   { kinds: ['next'] }, //                                                where the story goes, when nothing else is a thing to do
