@@ -89,17 +89,20 @@ const spoken = (content, state, lines) => (lines ?? []).flatMap(l => {
 
 /* Has the story named this person yet (live, 2026-10-15: 瞿老's face stood in 00-gate's header while the
    book still called him 「扫地的老头」)? `true` once a scene passed says the name; `'here'` when only this
-   scene does — the page shows the face once the passage has reached the name (cards.js people); `false`
+   scene's opening does, `'told'` when only a passage it tells later (an exit's) does — the page shows the face
+   once the passage on show has reached the name (cards.js people); `false`
    while no scene has. A name the book never writes in this language is no reason to hide a face: `true`. */
 const WORDS_OF = new WeakMap();
-function sceneWords(content, sc, lang) {
+// `own`: the scene's passage and lines, told as it opens; else everything it tells, its exits' passages too.
+function sceneWords(content, sc, lang, own = false) {
   let byKey = WORDS_OF.get(content);
   if (!byKey) WORDS_OF.set(content, byKey = new Map());
-  const key = `${sc.id}|${lang}`;
+  const key = `${sc.id}|${lang}|${own ? 'own' : 'all'}`;
   if (!byKey.has(key)) {
     const said = (v) => (v == null ? '' : typeof v === 'string' ? v : pick(v, lang) ?? '');
-    const lines = [...(sc.lines ?? []), ...(sc.exits ?? []).flatMap(e => e.beat ?? [])];
-    byKey.set(key, [sc.story, sc.story_full, sc.story_after, sc.story_after_full, ...lines.map(l => l.text), ...(sc.exits ?? []).map(e => e.story)].map(said).join('\n'));
+    const opening = [sc.story, sc.story_full, ...(sc.lines ?? []).map(l => l.text)];
+    const later = [sc.story_after, sc.story_after_full, ...(sc.exits ?? []).flatMap(e => [e.story, e.story_full, ...(e.beat ?? []).map(l => l.text)])];
+    byKey.set(key, (own ? opening : [...opening, ...later]).map(said).join('\n'));
   }
   return byKey.get(key);
 }
@@ -114,7 +117,10 @@ function namedYet(content, state, scene, name) {
   if (!name || !content?.chapters || !bookWords(content, state.lang).includes(name)) return true;
   const byId = (id) => Object.values(content.chapters).map(c => c.scenes?.[id]).find(Boolean);
   if ((state.done_scenes ?? []).some(id => id !== scene.id && byId(id) && sceneWords(content, byId(id), state.lang).includes(name))) return true;
-  return sceneWords(content, scene, state.lang).includes(name) ? 'here' : false;
+  // Named in this scene's opening: 'here'; only in what it tells later (an exit's passage): 'told' — the face
+  // waits for that passage (live: 瞿老 is named in 00-hall's 生辰 passage, not before).
+  if (sceneWords(content, scene, state.lang, true).includes(name)) return 'here';
+  return sceneWords(content, scene, state.lang).includes(name) ? 'told' : false;
 }
 
 /* The people a scene brings on — its lines' speakers and its exits' — each

@@ -38,3 +38,13 @@ test("'here': the face stands once the passage on show has said the name, or onc
   assert.match(page(r(1)), /瞿老/, 'at the name');
   assert.match(page(null), /瞿老/, 'no passage playing');
 });
+
+test("'told': a name said only in an exit's passage (瞿老 in 00-hall's 生辰) waits for that passage, even with the opening read", () => {
+  const s = newState(content, 'zh', NOW);
+  const hall = look({ ...s, chapter: '00-prologue', scene: '00-hall', place: content.chapters['00-prologue'].scenes['00-hall'].at ?? s.place, done_scenes: [] }, content, ctx());
+  const qu = hall.scene.people.find((p) => p.id === 'qulao');
+  assert.equal(qu?.named, 'told', JSON.stringify(qu));
+  assert.ok(!drawCard({ card: 'people' }, { look: hall, lang: 'zh', words: WORDS.zh, reading: null }).includes('瞿老'), 'the opening read: still waits');
+  const told = withTold(null, [{ of: 'choice', id: '00-hall/born', beats: [{ text: '瞿老说「腿稳，心细」。' }] }], '00-hall');
+  assert.match(drawCard({ card: 'people' }, { look: hall, lang: 'zh', words: WORDS.zh, reading: told }), /瞿老/);
+});

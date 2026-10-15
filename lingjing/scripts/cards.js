@@ -1372,9 +1372,11 @@ function born(card, ctx) {
 /// A face stands once the story has named them (Look's `named`, rules/look.mjs namedYet): named in a scene
 /// passed; or named in this one, once the passage on show has said the name (or is read through).
 function namedNow(p, ctx) {
-  if (p.named !== false && p.named !== 'here') return true;
+  if (p.named !== false && p.named !== 'here' && p.named !== 'told') return true;
   if (p.named === false) return false;
-  return !playing(ctx.reading) || toldSoFar(ctx.reading, ctx.lang ?? 'zh').some((b) => `${b.name ?? ''}${b.text ?? ''}`.includes(p.name));
+  const said = toldSoFar(ctx.reading, ctx.lang ?? 'zh').some((b) => `${b.name ?? ''}${b.text ?? ''}`.includes(p.name));
+  // 'here': the opening read through counts too (a reload, the reading gone); 'told': only the passage that says it.
+  return said || (p.named === 'here' && !playing(ctx.reading));
 }
 
 /// Who the scene brings on (people.json): each a portrait and a name, and
