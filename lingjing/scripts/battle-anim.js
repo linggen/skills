@@ -14,7 +14,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 /* How long each beat takes. Tuned so a whole exchange lands in about a second:
    this is a game you open for six minutes, not an epic. An attack — the
    stroke, the blow, the blow back — stays near 600ms. */
-export const BEATS = { card: 260, hit: 300, withdraw: 460, banner: 620, draw: 280, gap: 90, stroke: 200, splash: 1300, fx: 560 };
+export const BEATS = { card: 260, hit: 300, withdraw: 340, banner: 620, draw: 280, gap: 90, stroke: 200, splash: 1300, fx: 560, slide: 200 };
 
 const q = (root, sel) => root.querySelector(sel);
 
@@ -29,7 +29,7 @@ function spotOf(root, t) {
   if (t.act === 'hurt' || t.act === 'heal') return q(root, t.who === 'foe' ? '.bside.foe .bplate' : '.bside.you .bwho') ?? q(root, t.who === 'foe' ? '.bside.foe' : '.bside.you');
   if (t.id) {
     const side = t.who === 'foe' ? 'theirs' : 'mine', at = bodySel(t);
-    return q(root, `.brank.${side} ${at}`) ?? q(root, `.bghost.${side}${at}`) ?? q(root, `.brank.${side}`);
+    return q(root, `.brank.${side} ${at}`) ?? q(root, `.brank.${side}`);
   }
   return null;
 }
@@ -49,8 +49,8 @@ const ORIGIN = {
 };
 
 /* Read BEFORE the room is drawn again (lingjing.js playOut): each body this
-   stretch drives off, cloned where it stood — its going is drawn as ink
-   dissolving, not as a gap — and where the move began, for the stroke. */
+   stretch drives off, cloned with the slot it stood in — its going is drawn as
+   ink dissolving, not as a gap — and where the move began, for the stroke. */
 export function ghostsOf(root, entries, by = null) {
   if (!root) return { bodies: [], from: null };
   const taken = new Set();
@@ -59,36 +59,74 @@ export function ghostsOf(root, entries, by = null) {
     const el = [...root.querySelectorAll(`.brank.${side} ${bodySel(t)}`)].find(n => !taken.has(n));
     if (!el) return null;
     taken.add(el);
-    return { side, id: t.id, html: el.outerHTML, box: inRoom(root, el) };
+    return { side, id: t.id, index: Number(el.dataset.index), html: el.outerHTML, box: inRoom(root, el) };
   }).filter(Boolean);
   const at = by && ORIGIN[by.action?.kind] ? root.querySelector(ORIGIN[by.action.kind](by)) : null;
   return { bodies, from: at ? inRoom(root, at) : null };
 }
 
-/* The ghosts stood back up in the new room, still, until their beat comes. */
+/* The bodies going stood back IN THEIR SLOTS in the new room, so nothing
+   slides under a blow still on its way (Hanli, 2026-10-15: strike the first
+   card, it vanished, the second slid into its place, and THEN the blow came —
+   it read as the second being hit; 时间要管理好). Each takes back the slot it
+   stood in, an empty cell at the rank's end making room; the rank closes up
+   only after it has gone to ink (reflow). Lowest slot first, so each lands
+   where it was. */
 function raiseGhosts(root, ghosts) {
-  for (const g of ghosts?.bodies ?? []) {
+  const bodies = [...(ghosts?.bodies ?? [])].sort((a, b) => a.index - b.index);
+  for (const g of bodies) {
+    const rank = q(root, `.brank.${g.side}`);
     const box = document.createElement('div');
     box.innerHTML = g.html;
     const el = box.firstElementChild;
-    if (!el) continue;
-    el.classList.remove('can', 'held', 'aimed');
-    el.classList.add('bghost', g.side);
+    if (!rank || !el) continue;
+    el.classList.remove('can', 'held', 'aimed', 'dim');
+    el.classList.add('bleaving');
     el.removeAttribute('data-spot');
     el.querySelectorAll('.bdmg').forEach(n => n.remove());
-    Object.assign(el.style, { left: `${g.box.x}px`, top: `${g.box.y}px`, width: `${g.box.w}px`, height: `${g.box.h}px` });
-    root.appendChild(el);
+    const room = [...rank.children].reverse().find(c => c.classList.contains('empty'));
+    if (room) { el.bEmpty = room; room.remove(); }
+    rank.insertBefore(el, rank.children[g.index] ?? null);
   }
 }
 
-/* A body driven off: its ghost goes to ink and is gone (never a death —
+/* A body driven off: it goes to ink where it stands (never a death —
    nothing dies in this world; the ink only takes it off the board). */
 function dissolve(root, t) {
-  const el = q(root, `.bghost.${t.who === 'foe' ? 'theirs' : 'mine'}${bodySel(t)}:not(.going)`);
+  const el = q(root, `.brank.${t.who === 'foe' ? 'theirs' : 'mine'} .bleaving${bodySel(t)}:not(.going)`);
   if (!el) return false;
   el.classList.add('going');
-  setTimeout(() => el.remove(), BEATS.withdraw + 200);
   return true;
+}
+
+/* Then the rank closes up: what is gone is taken out, its empty cell goes
+   back to the end, and every body still standing slides from where it was to
+   where it now belongs (FLIP — one read, one write, transform only). */
+async function reflow(root) {
+  const leaving = [...root.querySelectorAll('.brank .bleaving')];
+  if (!leaving.length) return;
+  const ranks = [...new Set(leaving.map(e => e.parentElement))];
+  const cells = ranks.flatMap(r => [...r.children].filter(c => !c.classList.contains('bleaving')));
+  const first = new Map(cells.map(c => [c, c.getBoundingClientRect()]));
+  for (const e of leaving) {
+    const rank = e.parentElement;
+    e.remove();
+    if (e.bEmpty) rank.appendChild(e.bEmpty);
+  }
+  const moved = [];
+  for (const c of cells) {
+    const a = first.get(c), b = c.getBoundingClientRect();
+    const dx = a.left - b.left, dy = a.top - b.top;
+    if (!dx && !dy) continue;
+    c.style.transition = 'none';
+    c.style.transform = `translate(${dx}px, ${dy}px)`;
+    moved.push(c);
+  }
+  if (!moved.length) return;
+  void root.offsetWidth;
+  for (const c of moved) { c.style.transition = `transform ${BEATS.slide}ms cubic-bezier(.3, .7, .3, 1)`; c.style.transform = ''; }
+  await sleep(BEATS.slide);
+  for (const c of moved) c.style.transition = '';
 }
 
 /* The brush stroke of a blow: from where it began to what it hits, one tapered
@@ -115,7 +153,7 @@ async function stroke(root, from, el, element = null) {
    and stone chips. Each is a few absolutely placed marks animated on transform
    and opacity only (battle.css § 五行之击) — no layout touched, gone in ~0.6s.
    `n` is how many marks; the angles are fixed, so nothing here is random. */
-const FX = { fire: 9, water: 8, wood: 6, metal: 3, earth: 9 };
+const FX = { fire: 12, water: 10, wood: 8, metal: 3, earth: 12 };
 const VINE = '<svg viewBox="-40 -40 80 80" aria-hidden="true"><path d="M-30 22 C -14 -18, 6 28, 30 -20"/><path d="M-6 6 c 4 -8, 12 -8, 14 -2"/></svg>';
 function burst(root, el, element) {
   const n = FX[element];
@@ -126,7 +164,7 @@ function burst(root, el, element) {
   Object.assign(fx.style, { left: `${box.x + box.w / 2}px`, top: `${box.y + box.h / 2}px` });
   const marks = Array.from({ length: n }, (_, i) => {
     const a = Math.round((i * 360) / n + ((i * 47) % 29) - 14);
-    const d = 34 + ((i * 13) % 4) * 9;
+    const d = 40 + ((i * 13) % 4) * 11;
     return `<i style="--a:${a}deg;--d:${d}px;--k:${i}"></i>`;
   }).join('');
   fx.innerHTML = `<b></b>${element === 'wood' ? VINE : ''}${marks}`;
@@ -225,6 +263,22 @@ export async function banner(root, text, side) {
   b.remove();
 }
 
+/* The blow back of an exchange drawn with the blow, before either body goes
+   to ink: the log writes the struck body's 退 first (it is settled first), but
+   on the screen both blows land, then whatever is driven off goes. Drawing
+   order only — the log itself is never touched. */
+function exchanged(entries) {
+  const out = [...entries];
+  for (let i = 0; i < out.length; i += 1) {
+    if (out[i].act !== 'hurt-minion' || out[i].from !== 'return') continue;
+    const blow = out.slice(0, i).findLastIndex(t => t.act === 'hurt-minion' && t.from === 'attack');
+    if (blow < 0 || blow === i - 1) continue;
+    const [back] = out.splice(i, 1);
+    out.splice(blow + 1, 0, back);
+  }
+  return out;
+}
+
 /* Replay one stretch of the log. `root` is the battle element as it stands
    NOW — the state has already moved; this only draws what got it there. */
 export async function playLog(root, entries, ctx = {}) {
@@ -232,7 +286,8 @@ export async function playLog(root, entries, ctx = {}) {
   raiseGhosts(root, ctx.ghosts);
   // The stroke goes once, at the first blow the move itself lands (never the blow back).
   let struck = !ctx.ghosts?.from;
-  for (const t of entries) {
+  const order = exchanged(entries);
+  for (const t of order) {
     if (!struck && (t.act === 'hurt' || t.act === 'hurt-minion') && t.from !== 'return') {
       struck = true;
       await stroke(root, ctx.ghosts.from, spotOf(root, t), t.element);
@@ -273,8 +328,9 @@ export async function playLog(root, entries, ctx = {}) {
         const el = spotOf(root, t);
         float(root, el, `−${t.amount}`, 'hurt');
         struckAt(root, el, t);
-        // A sweep or a drought lands on the whole rank at once, not one by one.
-        await sleep(t.from === 'sweep' || t.from === 'drought' ? 50 : BEATS.hit - 120);
+        // A sweep or a drought lands on the whole rank at once, not one by one;
+        // the blow back of an exchange lands as the blow does.
+        await sleep(t.from === 'sweep' || t.from === 'drought' || t.from === 'return' ? 60 : BEATS.hit - 120);
         break;
       }
       case 'heal': {
@@ -292,9 +348,10 @@ export async function playLog(root, entries, ctx = {}) {
         break;
       }
       case 'withdrew': {
-        // Its ghost dissolves where it stood; without one (a redraw lost it), the rank carries the going.
+        // It goes to ink in its own slot; without one (a redraw lost it), the rank carries the going.
         if (!dissolve(root, t)) pulse(q(root, `.brank.${t.who === 'foe' ? 'theirs' : 'mine'}`), 'lost-one', BEATS.withdraw);
-        await sleep(BEATS.withdraw - 200);
+        // Two going at once (a sweep) go together: only the last waits out the ink.
+        if (order[order.indexOf(t) + 1]?.act !== 'withdrew') await sleep(BEATS.withdraw);
         break;
       }
       case 'charge':
@@ -326,6 +383,8 @@ export async function playLog(root, entries, ctx = {}) {
         break;
     }
   }
+  // Only once everything going has gone to ink does the rank close up.
+  await reflow(root);
 }
 
 /* What is new in the log since we last drew. The log only grows, so its length

@@ -418,11 +418,11 @@
    target, the target flashes and shakes, and the hit throws marks of its root: 火 embers ·
    水 a splash ring, drops and frost · 木 a vine and leaves · 金 slash streaks · 土 dust and
    chips. Transform and opacity only; every mark is gone inside ~0.6s. */
-.bfx.el-fire, .bstroke.el-fire, .bflash.el-fire { --fx: rgba(179, 55, 42, 0.62); --fx2: #D2602E; --fx3: rgba(232, 137, 58, 0.9); }
-.bfx.el-water, .bstroke.el-water, .bflash.el-water { --fx: rgba(52, 98, 130, 0.5); --fx2: #3E6E8E; --fx3: #D7E8F1; }
-.bfx.el-wood, .bstroke.el-wood, .bflash.el-wood { --fx: rgba(79, 125, 82, 0.5); --fx2: #5E8C4F; --fx3: #8DB16A; }
-.bfx.el-metal, .bstroke.el-metal, .bflash.el-metal { --fx: rgba(201, 163, 74, 0.55); --fx2: #FFF6D8; --fx3: #C9A34A; }
-.bfx.el-earth, .bstroke.el-earth, .bflash.el-earth { --fx: rgba(138, 106, 68, 0.5); --fx2: #7A5A38; --fx3: rgba(168, 136, 96, 0.55); }
+.bfx.el-fire, .bstroke.el-fire, .bflash.el-fire { --fx: rgba(179, 55, 42, 0.82); --fx2: #C9452A; --fx3: rgba(240, 150, 60, 1); }
+.bfx.el-water, .bstroke.el-water, .bflash.el-water { --fx: rgba(52, 98, 130, 0.75); --fx2: #2F6488; --fx3: #E4F1F8; }
+.bfx.el-wood, .bstroke.el-wood, .bflash.el-wood { --fx: rgba(79, 125, 82, 0.7); --fx2: #4E7F3F; --fx3: #86AE5E; }
+.bfx.el-metal, .bstroke.el-metal, .bflash.el-metal { --fx: rgba(201, 163, 74, 0.75); --fx2: #FFF8DF; --fx3: #D2A93E; }
+.bfx.el-earth, .bstroke.el-earth, .bflash.el-earth { --fx: rgba(138, 106, 68, 0.7); --fx2: #6E4E2E; --fx3: rgba(160, 126, 84, 0.75); }
 
 /* The stroke, in the blow's colour, with its blot travelling to the tip. */
 .bstroke[class*="el-"] { background: linear-gradient(90deg, rgba(31, 28, 24, 0) 0%, color-mix(in srgb, var(--fx2) 55%, rgba(31, 28, 24, 0.5)) 22%, rgba(31, 28, 24, 0.88) 72%, color-mix(in srgb, var(--fx2) 60%, transparent) 100%); }
@@ -440,47 +440,50 @@
 
 /* The burst: a wash at the centre, marks thrown out along fixed angles. */
 .bfx { position: absolute; z-index: 7; width: 0; height: 0; pointer-events: none; }
-.bfx > b { position: absolute; left: -46px; top: -46px; width: 92px; height: 92px; border-radius: 47% 53% 44% 56% / 52% 45% 55% 48%;
-  background: radial-gradient(circle, var(--fx) 0%, color-mix(in srgb, var(--fx) 45%, transparent) 42%, transparent 70%); animation: fxwash .52s ease-out forwards; }
-.bfx > i { position: absolute; left: 0; top: 0; width: 8px; height: 8px; margin: -4px 0 0 -4px; background: var(--fx2); opacity: 0;
-  animation: fxfly .52s cubic-bezier(.2, .75, .3, 1) calc(var(--k) * 14ms) forwards; }
-@keyframes fxwash { 0% { transform: scale(.25) rotate(0deg); opacity: 0; } 20% { opacity: 1; } 100% { transform: scale(1.35) rotate(18deg); opacity: 0; } }
-@keyframes fxfly { 0% { opacity: 0; transform: rotate(var(--a)) translateX(6px) scale(.5); } 18% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--a)) translateX(var(--d)) scale(1); } }
+.bfx > b { position: absolute; left: -62px; top: -62px; width: 124px; height: 124px; border-radius: 47% 53% 44% 56% / 52% 45% 55% 48%;
+  background: radial-gradient(circle, var(--fx) 0%, color-mix(in srgb, var(--fx) 45%, transparent) 42%, transparent 70%); animation: fxwash .56s ease-out forwards; }
+.bfx > i { position: absolute; left: 0; top: 0; width: 10px; height: 10px; margin: -5px 0 0 -5px; background: var(--fx2); opacity: 0;
+  animation: fxfly .56s cubic-bezier(.2, .75, .3, 1) calc(var(--k) * 10ms) forwards; }
+@keyframes fxwash { 0% { transform: scale(.3) rotate(0deg); opacity: 0; } 12% { opacity: 1; } 55% { opacity: .9; } 100% { transform: scale(1.35) rotate(18deg); opacity: 0; } }
+@keyframes fxfly { 0% { opacity: 0; transform: rotate(var(--a)) translateX(6px) scale(.6); } 12% { opacity: 1; } 65% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--a)) translateX(var(--d)) scale(1); } }
 
 /* 火 — embers that glow and fly, over an ink-red bloom. */
-.bfx.el-fire > i { width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: var(--fx3); box-shadow: 0 0 6px 2px rgba(210, 96, 46, 0.7); }
-.bfx.el-fire > i:nth-child(odd) { width: 9px; height: 13px; margin: -6px 0 0 -4px; border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%; background: var(--fx2); box-shadow: none; }
+.bfx.el-fire > i { width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: var(--fx3); box-shadow: 0 0 6px 2px rgba(210, 96, 46, 0.7); }
+.bfx.el-fire > i:nth-child(odd) { width: 11px; height: 16px; margin: -8px 0 0 -5px; border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%; background: var(--fx2); box-shadow: none; }
 
 /* 水 — a splash ring, drops thrown out, and frost shards between them. */
 .bfx.el-water > b { background: radial-gradient(circle, transparent 38%, var(--fx) 48%, color-mix(in srgb, var(--fx) 30%, transparent) 56%, transparent 66%); animation-name: fxring; }
 @keyframes fxring { 0% { transform: scale(.2); opacity: 0; } 20% { opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
-.bfx.el-water > i { width: 7px; height: 7px; border-radius: 50% 50% 50% 0; background: var(--fx2); }
-.bfx.el-water > i:nth-child(even) { width: 4px; height: 15px; margin: -7px 0 0 -2px; border-radius: 0; background: var(--fx3); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); box-shadow: 0 0 4px rgba(62, 110, 142, 0.6); }
+.bfx.el-water > i { width: 9px; height: 9px; border-radius: 50% 50% 50% 0; background: var(--fx2); }
+.bfx.el-water > i:nth-child(even) { width: 6px; height: 20px; margin: -10px 0 0 -3px; border-radius: 0; background: var(--fx3); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); box-shadow: 0 0 4px rgba(62, 110, 142, 0.6); }
 
 /* 木 — a vine drawn through the target, leaves thrown spinning. */
-.bfx > svg { position: absolute; left: -40px; top: -40px; width: 80px; height: 80px; overflow: visible; }
-.bfx > svg path { fill: none; stroke: var(--fx2); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 120; stroke-dashoffset: 120; animation: vine .52s ease-out forwards; }
+.bfx > svg { position: absolute; left: -52px; top: -52px; width: 104px; height: 104px; overflow: visible; }
+.bfx > svg path { fill: none; stroke: var(--fx2); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 120; stroke-dashoffset: 120; animation: vine .52s ease-out forwards; }
 .bfx > svg path + path { stroke-width: 2; stroke: var(--fx3); animation-delay: .08s; }
 @keyframes vine { 0% { stroke-dashoffset: 120; opacity: 1; } 60% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
-.bfx.el-wood > i { width: 13px; height: 7px; margin: -3px 0 0 -6px; border-radius: 0 100% 0 100%; background: var(--fx3); animation-name: fxleaf; }
+.bfx.el-wood > i { width: 16px; height: 9px; margin: -4px 0 0 -8px; border-radius: 0 100% 0 100%; background: var(--fx3); animation-name: fxleaf; }
 .bfx.el-wood > i:nth-child(odd) { background: var(--fx2); }
 @keyframes fxleaf { 0% { opacity: 0; transform: rotate(var(--a)) translateX(6px) rotate(0deg); } 18% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--a)) translateX(var(--d)) rotate(160deg); } }
 
 /* 金 — bright slashes across the target. */
 .bfx.el-metal > b { background: radial-gradient(circle, rgba(255, 250, 230, 0.9) 0%, var(--fx) 35%, transparent 65%); }
-.bfx.el-metal > i { width: 96px; height: 3px; margin: -1.5px 0 0 -48px; border-radius: 50%; opacity: 1;
+.bfx.el-metal > i { width: 130px; height: 4px; margin: -2px 0 0 -65px; border-radius: 50%; opacity: 1;
   background: linear-gradient(90deg, transparent, var(--fx3) 25%, var(--fx2) 50%, var(--fx3) 75%, transparent); box-shadow: 0 0 6px rgba(255, 240, 190, 0.8);
-  animation: fxslash .36s cubic-bezier(.3, .8, .3, 1) calc(var(--k) * 60ms) both; }
+  animation: fxslash .42s cubic-bezier(.3, .8, .3, 1) calc(var(--k) * 60ms) both; }
 @keyframes fxslash { 0% { opacity: 0; transform: rotate(calc(var(--a) / 3 - 30deg)) scaleX(0); } 30% { opacity: 1; } 100% { opacity: 0; transform: rotate(calc(var(--a) / 3 - 30deg)) scaleX(1.1); } }
 
 /* 土 — a dust cloud, stone chips knocked loose. */
-.bfx.el-earth > b { left: -56px; top: -50px; width: 112px; height: 100px; background: radial-gradient(circle, var(--fx3) 0%, color-mix(in srgb, var(--fx3) 50%, transparent) 45%, transparent 72%); filter: blur(3px); }
-.bfx.el-earth > i { width: 7px; height: 6px; clip-path: polygon(10% 0, 90% 15%, 100% 80%, 30% 100%, 0 55%); background: var(--fx2); }
-.bfx.el-earth > i:nth-child(3n) { width: 10px; height: 8px; background: var(--fx3); }
+.bfx.el-earth > b { left: -70px; top: -62px; width: 140px; height: 124px; background: radial-gradient(circle, var(--fx3) 0%, color-mix(in srgb, var(--fx3) 50%, transparent) 45%, transparent 72%); filter: blur(3px); }
+.bfx.el-earth > i { width: 9px; height: 8px; clip-path: polygon(10% 0, 90% 15%, 100% 80%, 30% 100%, 0 55%); background: var(--fx2); }
+.bfx.el-earth > i:nth-child(3n) { width: 13px; height: 10px; background: var(--fx3); }
 
-/* A body driven off reads as 退: it pales into the paper as well as going to ink. */
-.bghost.going { animation: inkout .46s ease-in forwards; }
+/* A body driven off keeps its slot while it goes to ink (battle-anim.js raiseGhosts); the
+   rank closes up after. It takes no taps and covers nothing. */
+.bminion.bleaving { pointer-events: none; }
+.bminion.bleaving.going { animation: inkout .34s ease-in forwards; }
 
 @media (prefers-reduced-motion: reduce) {
   .bfx, .bflash, .bstroke > b { display: none; }
+  .bminion.bleaving.going { opacity: 0; }
 }
