@@ -966,7 +966,8 @@ function taskGroups(ctx) {
   if (turned) out.ready.push(turnedRow(turned, ctx));
   for (const q of look.book ?? []) {
     if (q.id === turned?.id) continue;
-    (q.ready ? out.ready : out.held).push(q.chore ? choreRow(q, lifeOf(q.id), ctx) : errandRow(q, ctx));
+    // Done but its giver elsewhere is still in hand (已接), never 可交 — nothing to hand in from here.
+    (q.ready && !q.away ? out.ready : out.held).push(q.chore ? choreRow(q, lifeOf(q.id), ctx) : errandRow(q, ctx));
   }
   // 一次: ONE open at a time (rules/chores.mjs), and any skipped one since done.
   const k = look.kaifu, count = k ? say(w.kaifuCount, { n: k.done, of: k.of }) : '';
@@ -1015,10 +1016,24 @@ const countsOf = (q, w) => q.need.map((n) => `${w.needKinds?.[n.kind] ?? n.kind}
 function errandRow(q, ctx) {
   const w = ctx.words;
   const at = q.where && (!q.ready || q.away) ? (q.where.here ? w.needHere : say(w.needAt, { name: q.where.name })) : '';
-  const act = q.away ? `<span class="chip giveto">${esc(say(w.giveTo, { who: q.away.who }))}</span>`
+  const act = q.away ? awayAct(q, ctx)
     : q.ready ? doBtn(w.turnIn, 'turn', q.id) : q.where && !q.where.here ? goBtn(say(w.go, { name: q.where.name }), q.where.id) : '';
   return taskRow({ id: q.id, tag: q.id === 'tale' ? 'tale' : q.tag ?? 'errand', title: q.title, who: q.who, meta: [countsOf(q, w), at].filter(Boolean).join(' · '),
     pays: paysLine(q.pays, w), act, ready: q.ready && !q.away, detail: () => bookDetail(q, ctx) }, ctx);
+}
+
+/* Done, and its giver at another place (live, 2026-10-15: 「交给阿禾」 stood as a button that was
+   no button, inside the 秘境 with 阿禾 at 坊市): the one tap is the walk there; where he cannot
+   leave yet (a corridor, a key beat), the row says where it will be handed in, dimmed — no tap. */
+const GIVE_WORDS = {
+  zh: { back: '回到{name}再交', why: '先把眼前的事做完' },
+  en: { back: 'Hand it in at {name}', why: 'Finish what is before you first' },
+};
+function awayAct(q, ctx) {
+  const t = GIVE_WORDS[ctx.lang] ?? GIVE_WORDS.zh, at = q.where;
+  if (!at || at.here) return '';
+  if (ctx.look?.director?.corridor) return `<span class="chip giveto waits" title="${esc(t.why)}">${esc(say(t.back, { name: at.name }))}</span>`;
+  return goBtn(say(ctx.words.go, { name: at.name }), at.id);
 }
 
 /* A 每日 / 每周 chore of his apps: where it is done, its app's page one tap away, 交差 when done. */
