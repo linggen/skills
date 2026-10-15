@@ -155,7 +155,7 @@ test('fewer taps: a transition\'s one way on is quiet (its own words when it end
   };
   assert.deepEqual(quietOf('00-kitchen').map(t => t.quiet), ['label'], 'a lone choice keeps its words (跟爹进山)');
   assert.deepEqual(quietOf('wm-jiangtang').map(t => [t.label, t.quiet]), [['能。', 'label']], 'the book\'s answer, never 「接着」');
-  assert.deepEqual(quietOf('00-mijing').map(t => t.quiet), ['label'], '今日到此 keeps its words');
+  assert.deepEqual(quietOf('00-mijing').map(t => t.quiet), ['label'], '回去歇下 keeps its words');
   assert.ok(quietOf('00-masan').every(t => !t.quiet), 'a decision is buttons');
 });
 

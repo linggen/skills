@@ -375,7 +375,7 @@ test('储物袋 · 装备 open together: what he wears, what he carries, and the
   assert.match(pop('qi-pill'), /data-use="qi-pill"[^>]*>服用/);
   assert.doesNotMatch(pop('talisman'), /data-wear="talisman"|data-use="talisman"/, 'a 符 is for a fight');
   assert.doesNotMatch(pop(), /undefined|\{[a-z]+\}/);
-  assert.match(gearChipHtml(ctx, false), /data-gear[^>]*>储物袋</);
+  assert.match(gearChipHtml(ctx, false), /data-gear[^>]*>物品</);
   // worn: the slot shows it, the fight line says what it gives, the button is gone
   const worn = { ...s, wear: { ...s.wear, weapon: 'bamboo-sword' } };
   const armed = look(worn, content, { now: new Date('2026-09-22T12:00:00'), quests: [] });
