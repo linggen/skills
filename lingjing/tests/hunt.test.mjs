@@ -101,17 +101,15 @@ test('a pool\'s beast is up where no scene runs, fought again and again: each se
   assert.equal(l.place.encounter.duel.stake, '蒙山前山');
 });
 
-test('狰 runs wild outside the herb garden, fought there — even by one whose 小狰 walks with him', () => {
-  const s = at('houshan', { cast: ['zheng'] });
-  let found = null;
-  for (let n = 0; n < 12 && !found; n += 1) {
-    const t = { ...s, duels: { 'hunt:houshan': { day: dayKey(NOW), outcome: 'won', n } } };
-    const e = encounterOf(content, t, NOW);
-    if (e?.creature.id === 'zheng') found = t;
-  }
-  assert.ok(found, '狰 is drawn there');
-  const started = duel(found, content, ctx, { id: 'haunt:zheng' });
-  assert.equal(started.result.ok, true, JSON.stringify(started.result));
+test('狰 runs wild outside the herb garden — but once his 小狰 walks with him, it is never drawn there (Hanli, 2026-10-15: 「不是早就收服了?」)', () => {
+  const draws = (cast) => Array.from({ length: 24 }, (_, n) => encounterOf(content, { ...at('houshan', { cast }), duels: { 'hunt:houshan': { day: dayKey(NOW), outcome: 'won', n } } }, NOW)?.creature.id);
+  const wild = draws([]);
+  assert.ok(wild.includes('zheng'), '狰 is drawn there before it is tamed');
+  const found = { ...at('houshan'), duels: { 'hunt:houshan': { day: dayKey(NOW), outcome: 'won', n: wild.indexOf('zheng') } } };
+  assert.equal(duel(found, content, ctx, { id: 'haunt:zheng' }).result.ok, true);
+  const tamed = draws(['zheng']);
+  assert.ok(!tamed.includes('zheng'), 'a tamed beast is never a pool\'s');
+  assert.ok(tamed.every(id => id === 'yezhu'), 'the rest of the pool still deals');
 });
 
 /* 蠪侄 and 狰 are the story's fights too (古三's wood, the 药园): the pool deals them its own

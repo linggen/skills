@@ -304,11 +304,13 @@ const caughtBy = (state, creature) => Boolean(creature.catch) && state.tasks?.[c
    settled there today (`state.duels['hunt:<place>'].n`); every settle — won, lost
    or run dry — draws the next. Fought as often as he likes (体力 is the limit),
    paid by the haunt table each win. Never tamed from a pool; a story's boss is a
-   scene's fight, never a pool's. Only beasts of an open 卷 (metNow). */
+   scene's fight, never a pool's. Only beasts of an open 卷 (metNow). A beast he has
+   tamed walks with him and is never drawn (Hanli, 2026-10-15: 「怎么卷7又出来狰的战斗,
+   不是早就收服了?」 — 药园外's pool kept dealing the 狰 asleep at his feet). */
 const poolOf = (content, place) => (place?.has?.pool ? content.places[place.province]?.pools?.[place.has.pool] ?? null : null);
 const huntKey = id => `hunt:${id}`;
 function poolBeast(content, state, place, now) {
-  const beasts = (poolOf(content, place)?.beasts ?? []).filter(b => (b.weight ?? 1) > 0 && metNow(content, b.creature, now));
+  const beasts = (poolOf(content, place)?.beasts ?? []).filter(b => (b.weight ?? 1) > 0 && metNow(content, b.creature, now) && !(state.cast ?? []).includes(b.creature));
   if (!beasts.length) return null;
   const day = dayKey(now), rec = state.duels?.[huntKey(place.id)];
   const n = rec?.day === day ? rec.n ?? 0 : 0;
