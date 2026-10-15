@@ -157,7 +157,7 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     arts: at('arts.json'),
     hexagrams: at('hexagrams.json'),
     riddles: { zh: at('riddles/zh.json'), en: at('riddles/en.json') },
-    tasks: at('tasks/world.json'),
+    tasks: loadTasks(path.join(dir, 'tasks')),
     tale: at('tale.json'),
     seeds: loadSeeds(path.join(dir, 'seeds')),
     quests: loadQuests(path.join(dir, 'quests')),
@@ -250,6 +250,16 @@ export function spliceInterludes(chapter) {
 /* 奇遇 seeds, one file per province: { 徐: { province, seeds } }. */
 /* 差事, one file per province (design.md § 差事). They are DATA: Ling writes
    the giver's words around them and never invents the terms or the reward. */
+/* The tasks, one file per part of the book (2026-10-15, the per-回 plan: `tasks/world.json`
+   holds the world's own, `tasks/h08.json` 古六's boards, and so on): read world.json first, the
+   rest in name order, into the one list every reader knows (`content.tasks.tasks`). An id is
+   unique across the files (lint). */
+function loadTasks(root) {
+  const names = fs.readdirSync(root).filter(f => f.endsWith('.json')).sort((a, b) => (a === 'world.json' ? -1 : b === 'world.json' ? 1 : a.localeCompare(b)));
+  const docs = names.map(f => readJson(path.join(root, f)));
+  return { version: docs[0]?.version ?? 1, _about: docs[0]?._about, tasks: docs.flatMap(d => d.tasks ?? []) };
+}
+
 function loadQuests(root) {
   const out = [];
   if (!fs.existsSync(root)) return out;
@@ -507,6 +517,7 @@ export function lint(content) {
   lintBook(content, bad);
   lintFate(content, bad);
   for (const task of content.tasks.tasks) lintTask(task, content, ids, bad);
+  for (const id of doubled(content.tasks.tasks.map(t => t.id))) bad(`task ${id}`, 'is defined twice (tasks/*.json ids are one namespace)');
   lintTaleShape(content, ids, bad);
   for (const chapter of Object.values(content.chapters)) lintChapter(chapter, content, ids, bad);
   lintSeeds(content, ids, bad);
@@ -1096,6 +1107,8 @@ function lintRiddles(riddles, bad) {
     }
   }
 }
+
+const doubled = list => [...new Set(list.filter((x, i) => list.indexOf(x) !== i))];
 
 function lintTask(task, content, ids, bad) {
   const where = `task ${task.id}`;
