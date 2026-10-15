@@ -29,6 +29,8 @@ export const VMIN = 12; //      px/s: slower than this, the breath is held
 export const VMAX = 110; //     px/s: faster than this, the feather shakes
 export const FLY_MS = 450; //   shaking this long, it flies
 export const HOLD_MS = 1500; // held this long, the breath bursts out
+export const WINDOW_MS = 300; // the pace is read over this much of the stroke, not per tick
+const WINDOW_MIN = 150; //      …and never over less (a stroke's first move, a 3 ms catch-up tick)
 
 const T = {
   zh: {
@@ -64,7 +66,7 @@ const T = {
 };
 
 export function newGame(seed) {
-  return { seed: String(seed), live: false, phase: 'ready', t: 0, lung: 1, v: 0, moved: 0, still: 0, flutter: 0, count: 0, best: 0, breaths: 0, note: 'ready', won: false, grade: null };
+  return { seed: String(seed), live: false, phase: 'ready', t: 0, lung: 1, v: 0, moved: 0, still: 0, flutter: 0, win: [], count: 0, best: 0, breaths: 0, note: 'ready', won: false, grade: null };
 }
 
 export const gradeOf = (best) => (best >= STILL ? 'still' : 'shaky');
@@ -76,12 +78,12 @@ function finish(s) {
 
 function endBreath(s, why) {
   const n = Math.floor(s.count);
-  const e = { ...s, live: false, phase: 'rest', breaths: s.breaths + 1, best: Math.max(s.best, n), last: n, note: why, moved: 0, v: 0, still: 0, flutter: 0 };
+  const e = { ...s, live: false, phase: 'rest', breaths: s.breaths + 1, best: Math.max(s.best, n), last: n, note: why, moved: 0, v: 0, still: 0, flutter: 0, win: [] };
   return e.breaths >= TRIES || e.best >= TARGET ? finish(e) : e;
 }
 
 const VERBS = {
-  hold: (s) => (s.phase === 'out' ? null : { ...s, live: true, phase: 'out', lung: 1, count: 0, v: 0, moved: 0, still: 0, flutter: 0, note: 'first' }),
+  hold: (s) => (s.phase === 'out' ? null : { ...s, live: true, phase: 'out', lung: 1, count: 0, v: 0, moved: 0, still: 0, flutter: 0, win: [], note: 'first' }),
   move: (s, d) => (s.phase !== 'out' ? null : { ...s, moved: s.moved + Math.max(0, Math.min(400, Number(d.d) || 0)) }),
   release: (s) => (s.phase === 'out' ? endBreath(s, 'let') : null),
 };
@@ -93,10 +95,24 @@ export function act(state, data = {}) {
   return { state: next, won: next.won === true };
 }
 
+/* The pace over the last WINDOW_MS of the stroke (2026-10-15 play-test: it was px/ms per tick,
+   and a tick is 50 ms from the clock or 3 ms from a move's catch-up — one move in a 3 ms tick read
+   as thousands of px/s, the feather flew on a slow stroke). Samples [ms, px], newest last. */
+export function paceWindow(win = [], ms, px) {
+  const out = [...win, [ms, px]];
+  let total = out.reduce((a, [m]) => a + m, 0);
+  while (out.length > 1 && total - out[0][0] >= WINDOW_MS) total -= out.shift()[0];
+  return out;
+}
+export const paceOf = (win = []) => {
+  const ms = win.reduce((a, [m]) => a + m, 0), px = win.reduce((a, [, p]) => a + p, 0);
+  return (px * 1000) / Math.max(ms, WINDOW_MIN);
+};
+
 export function tick(state, ms) {
   if (!state.live || state.won || state.phase !== 'out' || ms <= 0) return state;
-  const inst = state.moved / (ms / 1000);
-  const s = { ...state, t: state.t + ms, v: state.v + (inst - state.v) * 0.4, lung: state.lung - state.moved / LUNG_PX, moved: 0 };
+  const s = { ...state, t: state.t + ms, lung: state.lung - state.moved / LUNG_PX, moved: 0, win: paceWindow(state.win, ms, state.moved) };
+  s.v = paceOf(s.win);
   if (s.v > VMAX) {
     s.flutter += ms;
     s.note = 'shake';
