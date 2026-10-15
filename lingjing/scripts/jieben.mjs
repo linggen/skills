@@ -94,6 +94,21 @@ export function checkJieben(game, full, lang = 'zh', { min = MIN, total = TOTAL 
   return { ok: !bad.length && cover >= total, cover, bad, rows };
 }
 
+/* The book passage's landing — its last sentence, the closing image or line (Hanli, 2026-10-15, at
+   今 · 二 → 古五: 「今线感觉还没结束」 — j04-dog's cut stopped short of 「把书合上了」). */
+export const landingOf = (full, lang = 'zh') => sentencesOf(parasOf(full).at(-1) ?? '', lang).at(-1) ?? '';
+
+/* Does the cut land where the book lands? Its last sentence ends on the book's last words and
+   keeps at least half of the book's last sentence (a trimmed landing is still the landing; one
+   cut away, or the passage stopping a beat early, is not). */
+export function landingKept(game, full, lang = 'zh') {
+  const book = unitsOf(landingOf(full, lang), lang), cut = unitsOf(sentencesOf(parasOf(game).at(-1) ?? '', lang).at(-1) ?? '', lang);
+  if (!book.length) return true;
+  const tail = Math.min(book.length, lang === 'en' ? 3 : 4);
+  const ends = cut.slice(-tail).join(' ') === book.slice(-tail).join(' ');
+  return ends && covered(book, pairsOf(cut, lang), lang, new Set(cut)) >= 0.5 * book.length;
+}
+
 /* For each paragraph of the game text, the original paragraph it opens on — 读原著 opens the book
    there. Null for a paragraph the original does not hold. */
 export function anchorsOf(game, full, lang = 'zh') {

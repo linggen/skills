@@ -14,7 +14,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { checkJieben, unitsOf } from '../scripts/jieben.mjs';
+import { checkJieben, landingKept, landingOf, unitsOf } from '../scripts/jieben.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const CHAPTERS = ['00-prologue', '00-waimen', '00-zhuji', '01-ji'];
@@ -144,4 +144,68 @@ test('the check holds the standard: Hanli\'s approved sample passes; a new line,
   assert.equal(checkJieben(paraphrase.join('\n\n'), book, 'zh').ok, false, 'the book retold in other words');
   const swapped = [sample[4], sample[0], sample[1], sample[2], sample[3]];
   assert.equal(checkJieben(swapped.join('\n\n'), book, 'zh').ok, false, 'out of the book\'s order');
+});
+
+// A cut lands where the book lands (Hanli, 2026-10-15, at 今 · 二 → 古五: 「太突然了……今线感觉还没结束」
+// — j04-dog's cut stopped at 「这时候，离院系杯头一轮只剩五天了」 with 爸's 「跪着也是站着」, the long
+// shaky breath and 「把书合上了」 cut away). The book's closing line is a landing, never a cut's to drop:
+// every condensed passage ends on the book's last sentence (trimmed at most), zh and en. A game-only
+// bridge paragraph (BRIDGES) at the end of the book's passage is the game's, not the book's landing.
+function landingFull(where, full) {
+  const out = {};
+  for (const lang of ['zh', 'en']) {
+    const zhParas = full.zh.split('\n\n'), paras = full[lang].split('\n\n');
+    // A bridge is named by its zh opening; the en paragraph at the same place goes with it.
+    const cut = zhParas.map((p, i) => (BRIDGES.some(([w, head]) => w === where && p.startsWith(head)) ? i : -1)).filter((i) => i >= 0);
+    out[lang] = paras.filter((_, i) => !cut.includes(i)).join('\n\n');
+  }
+  return out;
+}
+
+test('a condensed passage lands where the book lands: its last sentence is the book\'s last, zh and en', () => {
+  const off = [];
+  for (const scene of allScenes()) {
+    for (const [where, pair, full] of passages(scene)) {
+      if (!full) continue;
+      const book = landingFull(where, full);
+      for (const lang of ['zh', 'en']) if (!landingKept(pair[lang], book[lang], lang)) off.push(`${where} ${lang}: the book ends 「${landingOf(book[lang], lang)}」`);
+    }
+  }
+  assert.deepEqual(off, [], off.join('\n'));
+});
+
+/* Where each 回 and each interlude ends, in play: the passage of the way on that crosses into
+   another 回 (an exit's `next` naming a scene of another 回, or an exit that `ends` its chapter) —
+   the exit's own story when it has one, else the scene's. Read off the scenes, never a list. */
+function endings() {
+  const scenes = allScenes(), byId = new Map(scenes.map((s) => [s.id, s]));
+  const out = [];
+  for (const sc of scenes) for (const x of sc.exits ?? []) {
+    const crosses = x.ends || (x.next && byId.get(x.next) && byId.get(x.next).hui !== sc.hui);
+    if (!crosses) continue;
+    const own = x.story?.zh ? [`${sc.id}/${x.id}`, x.story, x.story_full] : sc.story_after?.zh ? [`${sc.id}/after`, sc.story_after, sc.story_after_full] : [sc.id, sc.story, sc.story_full];
+    out.push({ hui: sc.hui, where: own[0], story: own[1], full: own[2] });
+  }
+  return out;
+}
+
+test('every interlude and every 回 ends on the book\'s last sentence (今 · 一 … 今 · 四, 古一 … 古九)', () => {
+  const ends = endings();
+  const huis = new Set(ends.map((e) => e.hui));
+  for (const h of ['j01', 'j04', 'j07', 'j09', 'h01', 'h02', 'h04', 'h05', 'h07', 'h08', 'h11', 'h09', 'h10']) assert.ok(huis.has(h), `${h} has an ending passage`);
+  const off = [];
+  for (const { where, story, full } of ends) {
+    for (const lang of ['zh', 'en']) {
+      if (full) { const book = landingFull(where, full); if (!landingKept(story[lang], book[lang], lang)) off.push(`${where} ${lang}`); continue; }
+      // Told whole (no cut): its last paragraph is the book's own, word for word (the first test).
+      assert.ok(story[lang]?.trim(), `${where} ${lang} has words`);
+    }
+  }
+  assert.deepEqual(off, [], off.join('\n'));
+  // 今 · 二's landing, whole: 爸's dig, the long shaky breath, the book shut, the one pay left.
+  const dog = ends.find((e) => e.where === 'j04-dog');
+  for (const line of ['跪着也是站着，矮一截', '只有一口很长、很抖的气，从手机里一点一点漏出来', '他盯着「长不回来」四个字看了很久，把书合上了', '家里一个月的进项，眼下只剩他妈超市那一份', '这时候，离院系杯头一轮只剩五天了。']) {
+    assert.ok(dog.story.zh.includes(line), `j04-dog keeps 「${line}」`);
+  }
+  assert.match(dog.story.en, /Kneeling's just standing, a bit shorter[\s\S]*very shaky breath[\s\S]*shut the book[\s\S]*five days to the first round/);
 });
