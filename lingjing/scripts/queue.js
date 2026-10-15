@@ -52,6 +52,18 @@ export function onStage({ cards = [], ahead = false, game = (c) => c.card === 'b
   return { cards: shown, box: Boolean(box.playing) && !boxGivesWay({ ...box, game: gameUp }) };
 }
 
+/* Do the moments hold the 回's 「完」 (and the new 回's title) off? One up, or on its way — but
+   not one queued behind the new 回's seal ('feat' in MOMENTS: her memory, 鼎归, the map
+   unfolding), nor a memory or 鼎归 not yet queued (`waits`) while that seal is pending: the seal
+   itself waits for the 「完」 to be put away. Counting them held the 「完」 off for ever — 外门's
+   first scene after 回去歇下 stood blank (the crawler, 2026-10-15: 'unfold' waited on 'feat',
+   'feat' on the 「完」, the 「完」 on 'unfold'). */
+export function momentsHold({ up = false, pending = [], waits = false }) {
+  const seal = pending.includes('feat');
+  const behind = (k) => seal && MOMENTS.indexOf(k) > MOMENTS.indexOf('feat');
+  return Boolean(up || pending.some((k) => k !== 'feat' && !behind(k)) || (waits && !seal));
+}
+
 /* May this moment come up now? The book told, nothing else up, and no moment
    before it in MOMENTS still on its way. */
 export function momentMay(kind, { ahead = false, up = false, pending = [] }) {

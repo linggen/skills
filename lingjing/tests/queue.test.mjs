@@ -182,3 +182,17 @@ test('a game and the box are never on the stage together (Hanli, 2026-10-14: 「
   assert.match(page, /const storyAhead = \(\) => Boolean\(look\?\.tell_owed \|\| drawingTold \|\| playing\(readingHere\(\)\)\);/);
   assert.match(page, /cards = cards\.filter\(\(c\) => !\(c\.card === 'board' && played\(c\.id\) && !boards\.get\(c\.id\)\?\.winning\)\);/);
 });
+
+test('the 回\'s 「完」 is never held off by what waits behind the new 回\'s seal — 外门 after 回去歇下 stood blank (the crawler, 2026-10-15)', async () => {
+  const { momentsHold } = await import('../scripts/queue.js');
+  // The live deadlock: the map's unfolding queued behind the seal, the seal waiting on the 「完」.
+  assert.equal(momentsHold({ pending: ['unfold', 'feat'] }), false, 'the 「完」 stands; then the seal; then the map');
+  assert.equal(momentsHold({ pending: ['feat'], waits: true }), false, 'a memory or 鼎归 not yet queued waits behind the seal too');
+  // What still holds it: a moment up, one before the seal (a set piece, 息壤's doors), or anything with no seal pending.
+  assert.equal(momentsHold({ up: true, pending: ['feat'] }), true);
+  assert.equal(momentsHold({ pending: ['piece', 'feat'] }), true);
+  assert.equal(momentsHold({ pending: ['doors', 'feat'] }), true);
+  assert.equal(momentsHold({ pending: ['unfold'] }), true);
+  assert.equal(momentsHold({ waits: true }), true);
+  assert.equal(momentsHold({ pending: ['feat'] }), false, 'a seal alone waits on the 「完」 itself');
+});

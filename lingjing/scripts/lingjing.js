@@ -45,7 +45,7 @@ import { SIGHT_KINDS, mountChatToggle, paintSight, setAutoFold } from './sight.j
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
 import { playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
-import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, huiLineOf, momentMay, trayWaits } from './queue.js';
+import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, huiLineOf, momentMay, momentsHold, trayWaits } from './queue.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -3200,7 +3200,8 @@ let homingPending = false; // a 鼎 come home, its map not yet on the stage
    and while any is up or on its way, the 回's ending card, the new 回's title
    card and the dialogue box wait (one thing at a time, each put away by a tap). */
 // A seal on its way is not counted: the realm's waits through riseWaits, and a new 回's waits on the 「完」 itself.
-const stageBusy = () => Boolean(momentUp() || [...momentPending].some((k) => k !== 'feat') || memoryWaits || homingPending);
+// …nor what waits behind it (queue.js momentsHold).
+const stageBusy = () => momentsHold({ up: momentUp(), pending: [...momentPending], waits: memoryWaits || homingPending });
 const closeUp = () => Boolean(look?.chapter?.close && !closeSeen(look.chapter.close.id));
 /* `said` — the words of the paragraph a piece is tied to, as the box plays them (a 节本's cut,
    jieben.mjs): a one-beat piece speaks them in place of its own line, so the picture never
