@@ -78,7 +78,7 @@ export function makeMirror(stop) {
     const bunk = '<path class="g-line" d="M10 96 H310 M10 112 H310"/>';
     const quilts = Array.from({ length: S.places }, (_, i) => `<path class="g-line g-thin${i === S.you ? '' : ' g-faint'}" d="M${n(14 + i * w)} 96 q${n(w * 0.45)} -16 ${n(w - 8)} 0"/>`).join('');
     const x = 10 + (Math.max(0, Math.min(S.places - 0.01, state.p)) + 0.5) * w;
-    const light = state.phase === 'sweep' && state.p >= 0 ? `<path class="g-glow" d="M${n(x - 8)} 10 L${n(x - w * 0.6)} 96 L${n(x + w * 0.6)} 96 L${n(x + 8)} 10 Z" opacity="${n(still() ? 0.5 : 0.4 + 0.2 * Math.sin(state.t / 120), 2)}"/>` : '';
+    const light = state.phase === 'sweep' && state.p >= 0 ? `<path class="g-beamlight" d="M${n(x - 8)} 10 L${n(x - w * 0.6)} 96 L${n(x + w * 0.6)} 96 L${n(x + 8)} 10 Z" opacity="${n(still() ? 0.5 : 0.4 + 0.2 * Math.sin(state.t / 120), 2)}"/>` : '';
     const tx = 10 + (S.you + 0.5) * w;
     const token = `<rect class="g-line g-thin" x="${n(tx - 5)}" y="76" width="10" height="13" rx="2"/><circle class="g-flame" cx="${n(tx)}" cy="82" r="${n(3 + state.heat * 9)}" opacity="${n(Math.min(0.85, state.heat), 2)}"/>`;
     const mirror = `<circle class="g-line" cx="${n(x)}" cy="10" r="7"/>`;

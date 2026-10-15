@@ -109,7 +109,7 @@ function picture(state) {
   const stick = `<path class="g-line g-thin" d="M30 108 V${n(108 - 50 * left(state))}"/><circle class="g-ember" cx="30" cy="${n(108 - 50 * left(state))}" r="2.2"/>`;
   const light = state.phase === 'close' && footOf(state) === 'light';
   const qx = state.phase === 'flown' ? 186 : 150;
-  const qi = `<g transform="translate(${qx} ${state.phase === 'flown' ? -40 : 0})"><circle class="g-glow" cx="0" cy="74" r="34" opacity=".25"/><circle class="g-line" cx="0" cy="46" r="11"/>`
+  const qi = `<g transform="translate(${qx} ${state.phase === 'flown' ? -40 : 0})"><circle class="g-beamlight" cx="0" cy="74" r="34" opacity=".25"/><circle class="g-line" cx="0" cy="46" r="11"/>`
     + `<path class="g-line" d="M0 57 V90 M-14 64 h28"/><path class="g-line" d="M0 90 l-10 26"/><path class="g-line${light ? ' g-faint' : ''}" d="M0 90 l12 ${light ? 20 : 26}"/></g>`;
   const mx = 90 + (START_EDGE - state.edge) * 6;
   const me = state.phase === 'flown' ? '<path class="g-line g-thin" d="M250 40 q8 14 16 0"/>'

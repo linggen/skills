@@ -314,3 +314,4 @@
 .g-letter-sheet s { color: var(--faint); text-decoration-thickness: 2px; }
 .g-letter-sheet b { color: var(--seal); font-weight: 600; }
 .g-kaipian .g-faint { opacity: .55; }
+.g-scene .g-beamlight { fill: var(--ling); stroke: none; }
