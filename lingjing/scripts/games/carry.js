@@ -20,8 +20,10 @@ export const meta = {
 
 export const LOADS = 2; //      the fifth and the sixth
 export const STEPS = 5; //      steps up the slope a load
-export const PERIOD = 1400; //  ms for one swing out and back
-export const MID = 0.32; //     |sway| under this: through the middle
+// 2026-10-15: 1.4 s and 0.32 left ~145 ms a pass through the middle — not a human's tap.
+// 2.4 s and 0.4: ~315 ms, twice a swing.
+export const PERIOD = 2400; //  ms for one swing out and back
+export const MID = 0.4; //      |sway| under this: through the middle
 export const PANT = 0.26; //    breath a step on the swing costs
 export const LIMIT = 35000;
 

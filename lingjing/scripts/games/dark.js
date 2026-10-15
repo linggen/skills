@@ -23,7 +23,10 @@ export const meta = {
 
 export const STEPS = 11;
 export const FALLS = 3; //     wobbles before he goes down
-export const STEADY = 0.3; //  |sway| under this, the foot lands true
+// |sway| under this, the foot lands true — and the band drawn on the bar is this same number
+// (html: --steady). 2026-10-15, Hanli 「怎么都没法落脚」: at 0.3 over a 1.4–0.7 s swing the middle
+// lasted ~130 ms a pass; at 0.4 over 2.8–2.0 s it is ~260–360 ms, twice a swing.
+export const STEADY = 0.4;
 export const MARKS = { 4: 'shelf', 9: 'desk', 11: 'door' };
 const NUMB_DOWN = 0.25, NUMB_UP = 0.12;
 
@@ -73,10 +76,13 @@ function hash(str) {
   for (const ch of String(str)) h = Math.imul(h ^ ch.codePointAt(0), 16777619) >>> 0;
   return h;
 }
-/** The ankle's swing for each step: a period in ms, so the sway is sin(2πt/period). */
+/** How long the foot may land true in one pass through the middle, ms. */
+export const windowMs = (period) => (Math.asin(STEADY) / Math.PI) * period;
+/** The ankle's swing for each step: a period in ms, so the sway is sin(2πt/period) —
+    2.4–2.8 s at the first step, quickening by 40 ms a step to 2.0–2.4 s at the eleventh. */
 export function swings(seed) {
   let h = hash(`dark:${seed}`);
-  return Array.from({ length: STEPS }, (_, i) => { h = Math.imul(h ^ (h >>> 13), 2654435761) >>> 0; return 1400 + (h % 700) - i * 40; });
+  return Array.from({ length: STEPS }, (_, i) => { h = Math.imul(h ^ (h >>> 13), 2654435761) >>> 0; return 2400 + (h % 400) - i * 40; });
 }
 export const swayOf = (s) => Math.sin((2 * Math.PI * s.st) / s.swing[Math.min(s.step, STEPS - 1)]);
 
@@ -136,7 +142,7 @@ export function html(state, lang = 'zh') {
       + `<button type="button" class="g-jin-btn${b.phase === 'in' ? ' is-held' : ''}" data-g-hold="in">${t.in}</button></div>`;
   }
   const x = state.phase === 'walk' ? swayOf(state) : 0;
-  const sway = `<div class="g-jin-sway" aria-label="${t.sway}"><b class="g-jin-mid"></b><i style="left:${Math.round(50 + x * 45)}%"></i></div>`;
+  const sway = `<div class="g-jin-sway" style="--steady:${STEADY}" aria-label="${t.sway}"><b class="g-jin-mid"></b><i style="left:${Math.round(50 + x * 45)}%"></i></div>`;
   const btn = state.phase === 'ready' ? `<button type="button" class="g-jin-btn" data-g="start">${t.start}</button>`
     : `<button type="button" class="g-jin-btn" data-g="step">${t.step}</button>`;
   return `<div class="g-jin g-dark"><div class="g-jin-dots">${steps}</div>${state.phase === 'walk' ? sway : ''}<p class="g-jin-line">${t[state.note] ?? ''}</p>${btn}</div>`;

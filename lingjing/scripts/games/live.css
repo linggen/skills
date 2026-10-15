@@ -80,7 +80,8 @@
 .g-jin-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--dim); }
 .g-jin-dot.is-on { background: var(--water); border-color: var(--water); }
 .g-jin-sway { position: relative; width: 100%; height: 22px; border-radius: 11px; background: var(--raised); }
-.g-jin-sway .g-jin-mid { position: absolute; left: 35%; width: 30%; top: 0; bottom: 0; border-radius: 11px; background: color-mix(in srgb, var(--water) 22%, transparent); }
+/* The steady band is the rule's own number (dark.js STEADY → --steady); the dot sits at 50% + sway·45%. */
+.g-jin-sway .g-jin-mid { position: absolute; left: calc(50% - var(--steady, .3) * 45%); width: calc(var(--steady, .3) * 90%); top: 0; bottom: 0; border-radius: 11px; background: color-mix(in srgb, var(--water) 22%, transparent); }
 .g-jin-sway i { position: absolute; top: 3px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--text); }
 .g-dark { padding: 10px; border-radius: 10px; background: color-mix(in srgb, #0d0f12 70%, var(--surface)); color: #d9dde2; }
 .g-dark .g-jin-line { color: #d9dde2; }

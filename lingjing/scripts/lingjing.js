@@ -2023,11 +2023,15 @@ function choicesInBox() {
 }
 function dialogBoxHtml(slots) {
   const r = readingHere();
-  if (!r || boxYields(slots)) return '';
+  if (!r) return '';
+  const log = view.logOpen ? logHtml(r, { lang: lang() }) : '';
+  // A board on the stage puts the box away — not its 回看 (2026-10-15, his: the button above
+  // 黑地十一步 did nothing): the log still opens over the board, and the board's clock waits.
+  if (boxYields(slots)) return log;
   const voice = hasAudio(audio) ? dubOn() : null;
   const acts = choicesInBox() ? panelActsHtml(ctx(), { inBox: true }) : '';
   const story = playing(r) ? storyHtml(r, { lang: lang(), voice, acts, herId: look.companion?.id ?? null, speed: speedNow(), faces: r.all?.whole ? firstFaces() : [], src: faceSrc }) : '';
-  return story + (view.logOpen ? logHtml(r, { lang: lang() }) : '');
+  return story + log;
 }
 
 /* ── The lines' clock (lines.js) ──
@@ -2660,7 +2664,7 @@ const CLICKS = [
 ];
 // A game that runs in time (a module with `tick`: 暴雨, 射鹿, 洗髓, 小周天) is
 // stepped and held here; its win goes the way a tapped win does.
-wireLiveGames({ boardFor, lang, onWon: (g) => { g.sent = true; run(`win:${g.taskId}`, () => onWin(g.taskId)); } });
+wireLiveGames({ boardFor, lang, paused: () => view.logOpen, onWon: (g) => { g.sent = true; run(`win:${g.taskId}`, () => onWin(g.taskId)); } });
 document.addEventListener('click', (e) => {
   // The 回's title card goes on a tap anywhere, and the tap does nothing else (2026-10-14).
   if (titleAway()) return;
