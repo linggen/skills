@@ -298,3 +298,19 @@
 .g-scene .g-glow-gold { fill: rgb(214 168 60); }
 .g-scene .g-glow-green { fill: rgb(96 140 96); opacity: .5; }
 .g-scene .g-glow-copper { fill: rgb(176 104 60); opacity: .6; }
+
+/* 古六 (h08, 2026-10-15): 讲堂三日 (.g-qiajue), 相克 (.g-xiangke), 藏息 (.g-mirror), 喂饭桶 (.g-fantong),
+   底册 (.g-diche), 喷嚏符 (.g-sneeze), 猪蜻蜓 (.g-zqt), 写信 (.g-letter), 念开篇 (.g-kaipian) — the same .g-ink look. */
+.g-scene .g-spot.is-seal { fill: #A3352A; }
+.g-qiajue .g-tags, .g-letter .g-tags { grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); }
+.g-diche-page { display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--raised); }
+.g-diche-row { text-align: left; min-height: 40px; padding: 6px 8px; border: 0; border-bottom: 1px dashed var(--line); background: none; font-size: 14px; line-height: 1.5; cursor: pointer; }
+.g-diche-row b { color: var(--seal); font-weight: 600; margin-right: 4px; }
+.g-diche-row small { font-family: var(--ui); font-size: 11px; color: var(--dim); }
+.g-diche-row.is-blur { color: var(--faint); letter-spacing: -.1em; }
+.g-diche-row.is-on { background: var(--seal-soft); }
+.g-letter-sheet { width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; background: var(--raised); text-align: left; }
+.g-letter-sheet p { margin: 0; font-size: 14.5px; line-height: 1.8; }
+.g-letter-sheet s { color: var(--faint); text-decoration-thickness: 2px; }
+.g-letter-sheet b { color: var(--seal); font-weight: 600; }
+.g-kaipian .g-faint { opacity: .55; }
