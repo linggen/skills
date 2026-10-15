@@ -594,6 +594,15 @@ export const duelTitle = (creature, w, lang) => {
   return (creature?.person ? w.bout : w.subdue) ?? '降妖';
 };
 
+/// A pool's beast on its card (不打重复的怪, 2026-10-15): 「新」 the first time it is met, and the
+/// stretch's count — how many of the beasts it holds now he has fought (world.mjs poolTally).
+function huntBadge(e, lang) {
+  if (!e?.pool) return '';
+  const fresh = e.new ? ` <span class="chip cnew">${lang === 'en' ? 'New' : '新'}</span>` : '';
+  const tally = e.pool.of ? ` <span class="chip ctally">${esc(e.pool.name ?? '')} · ${lang === 'en' ? `met ${e.pool.met}/${e.pool.of}` : `见过 ${e.pool.met}/${e.pool.of}`}</span>` : '';
+  return fresh + tally;
+}
+
 /// 降妖 on the scene: the exit's duel from Look, the bout from the page.
 function duel(card, ctx) {
   const e = ctx.look.place?.encounter;
@@ -602,7 +611,7 @@ function duel(card, ctx) {
   if (!exit) return '';
   // 先降后收 (his, 2026-09-24): the duel card is 出手 only. Once beaten, the
   // creature's own card offers 收服 (creature, below).
-  return challengeHtml(exit.duel, { ...ctx, words: boutWords(BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, exit.duel?.creature, ctx.lang), title: duelTitle(exit.duel?.creature, ctx.words, ctx.lang), artBase: ctx.artBase ?? '', say: ctx.duelFor?.(card.id)?.text ?? null });
+  return challengeHtml(exit.duel, { ...ctx, words: boutWords(BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, exit.duel?.creature, ctx.lang), title: duelTitle(exit.duel?.creature, ctx.words, ctx.lang), artBase: ctx.artBase ?? '', say: ctx.duelFor?.(card.id)?.text ?? null, badge: exit === e ? huntBadge(e, ctx.lang) : '' });
 }
 
 /// 本命法宝 — the treasure bound at 结丹: its name and 重, what it strikes and

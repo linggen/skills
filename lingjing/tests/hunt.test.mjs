@@ -59,7 +59,9 @@ test('the pools are declared, of 卷一\'s beasts and a few added — none of a 
     assert.ok(pool, p.id);
     for (const b of pool.beasts) pooled.add(b.creature);
   }
-  assert.deepEqual([...pooled].sort(), ['gui', 'heyu', 'lang', 'linghu', 'longzhi', 'qiuyu', 'renyu', 'tianma', 'xiong', 'yezhu', 'zheng'].sort(), '+ 犰狳 and 合窳 in the 秘境\'s rooms (2026-10-15)');
+  assert.deepEqual([...pooled].sort(), ['gui', 'heyu', 'lang', 'linghu', 'longzhi', 'qiuyu', 'renyu', 'tianma', 'xiong', 'yezhu', 'zheng',
+    // 后山崖顶 grows with the 回 (2026-10-15, 不打重复的怪 — tests/bestiary.test.mjs)
+    'chihu', 'shanli', 'mihou', 'fushe', 'congcong', 'xiegou', 'lingling', 'cangying', 'yuanhu', 'jingjing', 'chai', 'bibi', 'dangkang', 'geju', 'qique'].sort(), '+ 犰狳 and 合窳 in the 秘境\'s rooms (2026-10-15)');
   for (const id of pooled) {
     const c = content.creatures.creatures.find(x => x.id === id);
     assert.ok((c.juan ?? 1) === 1 && !c.person && !c.trial, id);
@@ -125,7 +127,7 @@ test('狰 runs wild outside the herb garden — but once his 小狰 walks with h
   assert.equal(duel(found, content, ctx, { id: 'haunt:zheng' }).result.ok, true);
   const tamed = draws(['zheng']);
   assert.ok(!tamed.includes('zheng'), 'a tamed beast is never a pool\'s');
-  assert.ok(tamed.every(id => id === 'yezhu'), 'the rest of the pool still deals');
+  assert.ok(tamed.every(Boolean), 'the rest of the pool still deals');
 });
 
 /* 蠪侄 and 狰 are the story's fights too (古三's wood, the 药园): the pool deals them its own

@@ -1299,6 +1299,7 @@
       "drops": "jingjin",
       "hp": 1.35,
       "_hp": "Hanli 2026-10-15 (都太简单了): weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line; tests/fight-band.test.mjs holds it.",
+      "loot": [{"item": "yunmu", "w": 1}, {"item": "tie-sha", "w": 1}, {"item": "cishi", "w": 1}],
       "deck": [
         "jiushou",
         "jiushou",
@@ -1569,6 +1570,7 @@
       ],
       "hp": 1.35,
       "_hp": "Hanli 2026-10-15 (都太简单了): weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line; tests/fight-band.test.mjs holds it.",
+      "loot": [{"item": "huangjing", "w": 2}, {"item": "yuanzhi", "w": 1}, {"item": "chonglou", "w": 1}],
       "deck": [
         "huoya",
         "huoya",
@@ -2054,7 +2056,1346 @@
     {"id": "linghu", "name": {"zh": "领胡", "en": "Linghu"}, "pinyin": "lǐng hú", "source": {"zh": "《山海经 · 北次三经》", "en": "Classic of Mountains and Seas — Northern Mountains III"}, "quote": {"zh": "曰阳山，其上多玉，其下多金铜。有兽焉，其状如牛而赤尾，其颈䏿，其状如句瞿，其名曰领胡，其鸣自詨，食之已狂。", "en": "…called Mount Yang, with jade above and gold and copper below. There is a beast on it like an ox with a red tail and a hump at its neck like a bent measure; it is called Linghu, it cries its own name, and eating it cures madness."}, "look": {"zh": "牛的样子，一条红尾巴，脖子上鼓着一个大肉包。", "en": "Shaped like an ox, with a red tail and a great lump swelling at its neck."}, "says": {"open": {"zh": "领胡——领胡——", "en": "Linghu — Linghu —"}, "won": {"zh": "它甩着红尾巴，回山里去了。", "en": "Switching its red tail, it goes back into the hills."}, "lost": {"zh": "它一头把你顶翻，哞了一声。", "en": "It butts you over and bellows once."}}, "province": "冀", "root": "fire", "art": "art/linghu.webp", "art_source": "《古今圖書集成·博物彙編·禽蟲典》領胡圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic276 - 領胡圖.svg (https://commons.wikimedia.org/wiki/File:Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic276_-_領胡圖.svg). Cropped to the ox and laid on paper by tools/frame.py (art/plates/linghu.svg).", "lean": "fierce", "pattern": ["strike", "gather", "strike", "cast", "strike"], "hp": 2.3, "_hp": "Hanli 2026-10-15 (都太简单了): weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line; tests/fight-band.test.mjs holds it.", "deck": ["huoya", "huoya", "huoya", "tongling", "tongling", "huodan", "huodan", "yanxin", "yanxin", "qiezhi", "qiezhi", "fenghuo"], "signature": {"id": "chiwei", "name": {"zh": "赤尾", "en": "The Red Tail"}, "effect": {"sweep": 2, "damage": 3}}},
     {"id": "renyu", "name": {"zh": "人鱼", "en": "Renyu"}, "pinyin": "rén yú", "source": {"zh": "《山海经 · 北次三经》", "en": "Classic of Mountains and Seas — Northern Mountains III"}, "quote": {"zh": "又北二百里，曰龙侯之山，无草木，多金玉。决决之水出焉，而东流注于河。其中多人鱼，其状如鯑鱼，四足，其音如婴儿，食之无痴疾。", "en": "Two hundred li further north is Mount Longhou… The Juejue rises there and flows east into the River. In it are many renyu, like the ti fish, with four legs and a voice like a baby's; eating one keeps the wits."}, "look": {"zh": "鱼的身子，四只脚，在浅水里爬。夜里叫起来，像婴儿哭。", "en": "A fish's body on four legs, crawling in the shallows. At night it cries like a baby."}, "says": {"open": {"zh": "哇——哇——", "en": "Waah — waah —"}, "won": {"zh": "它扑通一声滑回了水里。", "en": "With a splash it slides back into the water."}, "lost": {"zh": "它在水边哭了一夜，你没能近身。", "en": "It cries by the water all night; you never get close."}}, "province": "冀", "root": "water", "art": "art/renyu.webp", "art_source": "《新刻山海經圖》人魚，胡文煥輯，明 萬曆《格致叢書》本（中國國家圖書館藏）。Public domain. Wikimedia Commons: File:NLC 新刻山海經圖二卷 明胡文煥刻格致叢書本.pdf, page 16 (https://commons.wikimedia.org/wiki/File:NLC_新刻山海經圖二卷_明胡文煥刻格致叢書本.pdf) — the plate captioned 人魚, its facing text 「龍侯山，決決之水出焉……人魚……四足，聲如小兒啼」. Cropped, levelled and laid on paper by tools/frame.py (art/plates/renyu-hu-p16.jpg).", "lean": "quick", "pattern": ["strike", "cast", "strike", "gather", "guard"], "hp": 1.85, "_hp": "Hanli 2026-10-15 (都太简单了): weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line; tests/fight-band.test.mjs holds it.", "deck": ["shuiwu", "shuiwu", "luying", "luying", "luying", "luying", "hantan", "hantan", "hantan", "chaoqi", "gupi", "hanquan"], "signature": {"id": "ti", "name": {"zh": "婴啼", "en": "The Infant's Cry"}, "effect": {"sweep": 2}}},
     {"id": "heyu", "name": {"zh": "合窳", "en": "Heyu"}, "pinyin": "hé yǔ", "source": {"zh": "《山海经 · 东次四经》", "en": "Classic of Mountains and Seas — Eastern Mountains IV"}, "quote": {"zh": "又东北二百里，曰剡山，多金玉。有兽焉，其状如彘而人面，黄身而赤尾，其名曰合窳，其音如婴儿。是兽也，食人，亦食虫蛇，见则天下大水。", "en": "Two hundred li further north-east is Mount Shan, rich in gold and jade. There is a beast on it like a pig with a human face, yellow-bodied and red-tailed, called Heyu; its voice is like a baby's. It eats men, and eats insects and snakes too; where it is seen, the land floods."}, "look": {"zh": "一头比牛还大的彘，黄毛，红尾巴拖在身后像一条火；那张脸是人的，像谁都像，像谁都不像。哭起来像娃娃。", "en": "A pig bigger than an ox, yellow-haired, a red tail dragging behind like a trail of fire; the face is a man's — like everyone, like no one. It cries like a baby."}, "says": {"open": {"zh": "哭声是饵，你是鱼。", "en": "The crying is the bait. You are the fish."}, "won": {"zh": "它拖着那张人脸，滚进坑里不动了。", "en": "It drags its human face into the pit and lies still."}, "lost": {"zh": "哭声停了。你也没了声。", "en": "The crying stops. So do you."}}, "province": "徐", "root": "earth", "art": "art/heyu.webp", "art_source": "《古今圖書集成·博物彙編·禽蟲典》合窳圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic292 - 合窳圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/heyu.svg).", "art_caption": {"zh": "《古今圖書集成·禽蟲典》，清雍正本", "en": "Gujin Tushu Jicheng, Qing, 1725"}, "lean": "fierce", "pattern": ["strike", "gather", "strike", "cast", "strike"], "hp": 1.9, "_hp": "Hanli 2026-10-15 (都太简单了): weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line; tests/fight-band.test.mjs holds it.", "deck": ["shishou", "jixiao", "jixiao", "jixiao", "paoxiao", "paoxiao", "luoshi", "luoshi", "kuiniu", "shanjing", "tunshi", "zhuguang"], "signature": {"id": "yingti-renmian", "name": {"zh": "其音如婴儿", "en": "A Voice Like a Baby's"}, "effect": {"sweep": 2, "damage": 5}}, "_book": "古八 (古七 before the 2026-10-07 split; Hanli 2026-10-06): the 黑松岭 big mission before 筑基 — the 执事堂 tag from 蒙山县 (seven people taken; 马家's dogs stop at the 断碑); it lairs in the valley pit where 银月 lay (空出来的窝，总有东西来住), its cry lures people in; its 护体 thins at the throat as it cries — 小满's 火柴 goes in on the third cry (巽，入也). Not yet a game scene (listed for later); not in any pool."},
-    {"id": "qiuyu", "name": {"zh": "犰狳", "en": "Qiuyu"}, "pinyin": "qiú yú", "source": {"zh": "《山海经 · 东次二经》", "en": "Classic of Mountains and Seas — Eastern Mountains II"}, "quote": {"zh": "又南三百八十里，曰余峨之山。有兽焉，其状如菟而鸟喙，鸱目蛇尾，见人则眠，名曰犰狳，其鸣自訆，见则螽蝗为败。", "en": "Three hundred and eighty li further south is Mount Yu'e. There is a beast on it like a hare with a bird's beak, an owl's eyes and a snake's tail; when it sees a man it sleeps. It is called Qiuyu, it calls its own name, and where it is seen, locusts ruin the crops."}, "look": {"zh": "兔子大小，鸟嘴，一双猫头鹰的圆眼，拖一条蛇尾巴；人一走近，它便倒下装死。", "en": "Rabbit-sized, with a bird's beak, round owl's eyes and a snake's tail; the moment anyone comes near, it falls over and plays dead."}, "says": {"open": {"zh": "（它闭上眼，四脚朝天。）", "en": "(It shuts its eyes and rolls belly-up.)"}, "won": {"zh": "它睁开一只鸱眼，溜了。", "en": "It opens one owl's eye and slips away."}, "lost": {"zh": "它还睡着——你的人已经倒了。", "en": "It is still asleep — and your people are down."}}, "province": "徐", "root": "wood", "art": "art/creatures/qiuyu.webp", "art_plate": "art/qiuyu.webp", "art_source": "《古今圖書集成·博物彙編·禽蟲典》犰狳圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic283 - 犰狳圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/qiuyu.svg).", "art_caption": {"zh": "《古今圖書集成·禽蟲典》，清雍正本", "en": "Gujin Tushu Jicheng, Qing, 1725"}, "lean": "hide", "pattern": ["guard", "strike", "cast", "gather", "strike"], "hp": 2.3, "_hp": "Hanli 2026-10-15 (都太简单了): weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line; tests/fight-band.test.mjs holds it.", "deck": ["qingteng", "qingteng", "tengmiao", "tengmiao", "peiyuan", "chunsheng", "linmu", "fengmao", "fengmao", "xiaoyao", "zhennu", "leipu"], "signature": {"id": "jianren-zemian", "name": {"zh": "见人则眠", "en": "It Sleeps at the Sight of Men"}, "effect": {"heal": 4, "draw": 1}}, "_book": "古七 (Hanli 2026-10-06; level fixed Hanli 2026-10-08): the first 执事堂 errand (年三秋, 灵草谷): layer six, not yet awakened (a 5-layer team of three needs a monster at least layer five, set at six; no 灵智 holds its fighting power down); it plays dead; (the locust-and-burnt-turf thread was cut 2026-10-08) wood-natured, so metal beats it — 阿禾 sees its spirit-power and binds it with vines, 小满 coats his 火柴 with a layer of metal spirit-light (sharper, cuts the beak) and kills it asleep, 小满 kills it asleep (「这一场，不算」). Not yet a game scene (listed for later); not in any pool."}
+    {"id": "qiuyu", "name": {"zh": "犰狳", "en": "Qiuyu"}, "pinyin": "qiú yú", "source": {"zh": "《山海经 · 东次二经》", "en": "Classic of Mountains and Seas — Eastern Mountains II"}, "quote": {"zh": "又南三百八十里，曰余峨之山。有兽焉，其状如菟而鸟喙，鸱目蛇尾，见人则眠，名曰犰狳，其鸣自訆，见则螽蝗为败。", "en": "Three hundred and eighty li further south is Mount Yu'e. There is a beast on it like a hare with a bird's beak, an owl's eyes and a snake's tail; when it sees a man it sleeps. It is called Qiuyu, it calls its own name, and where it is seen, locusts ruin the crops."}, "look": {"zh": "兔子大小，鸟嘴，一双猫头鹰的圆眼，拖一条蛇尾巴；人一走近，它便倒下装死。", "en": "Rabbit-sized, with a bird's beak, round owl's eyes and a snake's tail; the moment anyone comes near, it falls over and plays dead."}, "says": {"open": {"zh": "（它闭上眼，四脚朝天。）", "en": "(It shuts its eyes and rolls belly-up.)"}, "won": {"zh": "它睁开一只鸱眼，溜了。", "en": "It opens one owl's eye and slips away."}, "lost": {"zh": "它还睡着——你的人已经倒了。", "en": "It is still asleep — and your people are down."}}, "province": "徐", "root": "wood", "art": "art/creatures/qiuyu.webp", "art_plate": "art/qiuyu.webp", "art_source": "《古今圖書集成·博物彙編·禽蟲典》犰狳圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic283 - 犰狳圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/qiuyu.svg).", "art_caption": {"zh": "《古今圖書集成·禽蟲典》，清雍正本", "en": "Gujin Tushu Jicheng, Qing, 1725"}, "lean": "hide", "pattern": ["guard", "strike", "cast", "gather", "strike"], "hp": 2.3, "_hp": "Hanli 2026-10-15 (都太简单了): weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line; tests/fight-band.test.mjs holds it.", "deck": ["qingteng", "qingteng", "tengmiao", "tengmiao", "peiyuan", "chunsheng", "linmu", "fengmao", "fengmao", "xiaoyao", "zhennu", "leipu"], "signature": {"id": "jianren-zemian", "name": {"zh": "见人则眠", "en": "It Sleeps at the Sight of Men"}, "effect": {"heal": 4, "draw": 1}}, "_book": "古七 (Hanli 2026-10-06; level fixed Hanli 2026-10-08): the first 执事堂 errand (年三秋, 灵草谷): layer six, not yet awakened (a 5-layer team of three needs a monster at least layer five, set at six; no 灵智 holds its fighting power down); it plays dead; (the locust-and-burnt-turf thread was cut 2026-10-08) wood-natured, so metal beats it — 阿禾 sees its spirit-power and binds it with vines, 小满 coats his 火柴 with a layer of metal spirit-light (sharper, cuts the beak) and kills it asleep, 小满 kills it asleep (「这一场，不算」). Not yet a game scene (listed for later); not in any pool."},
+    {
+      "id": "chihu",
+      "name": {
+        "zh": "赤狐",
+        "en": "Red fox"
+      },
+      "pinyin": "chì hú",
+      "source": {
+        "zh": "蒙山猎户的本行",
+        "en": "A Mount Meng hunter's trade"
+      },
+      "quote": {
+        "zh": "爹说：狐狸走过的雪，后脚踩进前脚的窝，一行脚印像一个人走的。看见一行，别当是一只。",
+        "en": "Father says: a fox in snow sets its hind foot in its forefoot's print, so the line looks like one walker. See one line — don't count one fox."
+      },
+      "look": {
+        "zh": "一身火红，尾巴尖一点白。叼了东西就跑，跑几步还回头看你。",
+        "en": "Fire-red all over, a white tip to the tail. It snatches and runs, and a few steps on it looks back at you."
+      },
+      "says": {
+        "open": {
+          "zh": "（它叼着一株草，回头看你。）",
+          "en": "(A herb in its jaws, it looks back at you.)"
+        },
+        "won": {
+          "zh": "（它丢下草，一溜烟钻进松林。）",
+          "en": "(It drops the herb and is gone into the pines.)"
+        },
+        "lost": {
+          "zh": "（它叼着草，慢慢走远了。）",
+          "en": "(Herb in its jaws, it ambles away.)"
+        }
+      },
+      "province": "徐",
+      "root": "fire",
+      "art": "art/creatures/chihu.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in 水墨淡彩 (ink wash and faint colour on aged paper); seed 23 of 3 candidates (a red fox stepping out of the pines with one forepaw lifted, white-tipped brush; trimmed at the lower left, where the model scribbled a mark). No outside source.",
+      "lean": "fierce",
+      "pattern": [
+        "strike",
+        "cast",
+        "strike",
+        "gather",
+        "guard"
+      ],
+      "hp": 1.38,
+      "_hp": "Weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line (tests/fight-band.test.mjs) — at the 回 its pool entry opens (2026-10-15, 不打重复的怪).",
+      "loot": [
+        {
+          "item": "hu-pi",
+          "w": 3
+        },
+        {
+          "item": "chaihu",
+          "w": 1
+        },
+        {
+          "item": "huangjing",
+          "w": 1
+        }
+      ],
+      "deck": [
+        "huoya",
+        "huoya",
+        "huoya",
+        "tongling",
+        "tongling",
+        "tongling",
+        "huodan",
+        "huodan",
+        "huodan",
+        "yanxin",
+        "yanxin",
+        "liaotian"
+      ],
+      "signature": {
+        "id": "diao",
+        "name": {
+          "zh": "叼了就跑",
+          "en": "Snatch and Run"
+        },
+        "effect": {
+          "draw": 1,
+          "damage": 7
+        }
+      }
+    },
+    {
+      "id": "shanli",
+      "name": {
+        "zh": "山狸",
+        "en": "Leopard cat"
+      },
+      "pinyin": "shān lí",
+      "source": {
+        "zh": "蒙山猎户的本行",
+        "en": "A Mount Meng hunter's trade"
+      },
+      "quote": {
+        "zh": "爹说：山狸子夜里下山，偷鸡不叫鸡出声。鸡窝里一声也没有，才是它来过。",
+        "en": "Father says: the leopard cat comes down at night and takes a hen without a squawk. A coop gone quiet is the sign it called."
+      },
+      "look": {
+        "zh": "比家猫大一圈，灰褐的毛上一身铜钱斑，眼上两道白。夜里只看得见两点绿光。",
+        "en": "A size bigger than a house cat, grey-brown, spotted like strings of coins, two white streaks over the eyes. At night you see only two points of green."
+      },
+      "says": {
+        "open": {
+          "zh": "（黑里两点绿光，一眨不眨。）",
+          "en": "(Two points of green in the dark, unblinking.)"
+        },
+        "won": {
+          "zh": "（绿光一灭，草叶也没响。）",
+          "en": "(The green goes out; not a blade of grass stirs.)"
+        },
+        "lost": {
+          "zh": "（它从你肩上跃过，没了。）",
+          "en": "(It springs over your shoulder and is gone.)"
+        }
+      },
+      "province": "徐",
+      "root": "water",
+      "art": "art/creatures/shanli.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in 水墨淡彩 (ink wash and faint colour on aged paper); seed 11 of 3 candidates (a spotted leopard cat stalking along a mossy rock under a pine, one ringed tail; trimmed at the lower right, where the model painted a seal (seed 23 painted it a second tail)). No outside source.",
+      "lean": "quick",
+      "pattern": [
+        "guard",
+        "strike",
+        "strike",
+        "cast",
+        "gather"
+      ],
+      "hp": 0.87,
+      "_hp": "Weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line (tests/fight-band.test.mjs) — at the 回 its pool entry opens (2026-10-15, 不打重复的怪).",
+      "deck": [
+        "luying",
+        "luying",
+        "luying",
+        "shuiwu",
+        "shuiwu",
+        "shuiwu",
+        "hantan",
+        "hantan",
+        "gupi",
+        "chaoqi",
+        "hanquan",
+        "luying"
+      ],
+      "signature": {
+        "id": "wusheng",
+        "name": {
+          "zh": "无声一扑",
+          "en": "The Silent Pounce"
+        },
+        "effect": {
+          "damage": 7
+        }
+      },
+      "loot": [
+        {
+          "item": "li-pi",
+          "w": 3
+        },
+        {
+          "item": "fuling",
+          "w": 1
+        },
+        {
+          "item": "lipi-kanjian",
+          "w": 1
+        }
+      ]
+    },
+    {
+      "id": "mihou",
+      "name": {
+        "zh": "猕猴",
+        "en": "Macaque"
+      },
+      "pinyin": "mí hóu",
+      "source": {
+        "zh": "蒙山猎户的本行",
+        "en": "A Mount Meng hunter's trade"
+      },
+      "quote": {
+        "zh": "爹说：猴子学人。你蹲下，它也蹲下。别跟它比耐性，它比你闲。",
+        "en": "Father says: a monkey copies a man. You squat, it squats. Don't try to out-wait it; it has less to do than you."
+      },
+      "look": {
+        "zh": "红脸，黄毛，一只手攥着从药园顺来的草，一只手挠头。后头树上还蹲着一群。",
+        "en": "Red face, tawny fur, one hand clutching a herb filched from the garden, the other scratching its head. More of them squat in the tree behind."
+      },
+      "says": {
+        "open": {
+          "zh": "吱——吱吱！",
+          "en": "Ee — ee-ee!"
+        },
+        "won": {
+          "zh": "（一树猴子哄地散了。）",
+          "en": "(The whole tree of monkeys scatters at once.)"
+        },
+        "lost": {
+          "zh": "（它朝你龇牙，捡起你掉的东西跑了。）",
+          "en": "(It bares its teeth at you, picks up what you dropped, and runs.)"
+        }
+      },
+      "province": "徐",
+      "root": "wood",
+      "art": "art/creatures/mihou.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in 水墨淡彩 (ink wash and faint colour on aged paper); seed 23 of 3 candidates (a red-faced macaque squatting on a cliff ledge with a filched bundle of herbs, a dead pine branch beside it). No outside source.",
+      "lean": "quick",
+      "pattern": [
+        "cast",
+        "strike",
+        "gather",
+        "strike",
+        "strike"
+      ],
+      "hp": 2.42,
+      "_hp": "Weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line (tests/fight-band.test.mjs) — at the 回 its pool entry opens (2026-10-15, 不打重复的怪).",
+      "deck": [
+        "tengmiao",
+        "tengmiao",
+        "tengmiao",
+        "xiaoyao",
+        "xiaoyao",
+        "xiaoyao",
+        "chunsheng",
+        "qingteng",
+        "qingteng",
+        "leipu",
+        "leipu",
+        "fengmao"
+      ],
+      "signature": {
+        "id": "huqun",
+        "name": {
+          "zh": "呼群",
+          "en": "The Troop Called"
+        },
+        "effect": {
+          "summon": {
+            "id": "xiaoyao",
+            "n": 2
+          },
+          "damage": 3
+        }
+      },
+      "loot": [
+        {
+          "item": "houer-jiu",
+          "w": 2
+        },
+        {
+          "item": "shihu",
+          "w": 1
+        },
+        {
+          "item": "heshouwu",
+          "w": 1
+        }
+      ]
+    },
+    {
+      "id": "fushe",
+      "name": {
+        "zh": "蝮蛇",
+        "en": "Pit viper"
+      },
+      "pinyin": "fù shé",
+      "source": {
+        "zh": "蒙山猎户的本行",
+        "en": "A Mount Meng hunter's trade"
+      },
+      "quote": {
+        "zh": "爹说：进草窠先拿棍子打一打。蝮蛇不让路，它等你一脚踩上去。",
+        "en": "Father says: beat the grass with a stick before you walk in. A pit viper won't give way — it waits for your foot."
+      },
+      "look": {
+        "zh": "短，粗，褐底黑斑，三角脑袋。盘在石头上像一截烂绳，一动不动。",
+        "en": "Short and thick, dark bands on brown, a triangular head. Coiled on the stone like a length of rotten rope, perfectly still."
+      },
+      "says": {
+        "open": {
+          "zh": "嘶——",
+          "en": "Ssss —"
+        },
+        "won": {
+          "zh": "（它松开盘，钻进石缝去了。）",
+          "en": "(It uncoils and slides into a crack in the rock.)"
+        },
+        "lost": {
+          "zh": "（它一口咬过，又盘回石头上。）",
+          "en": "(One bite, and it coils back on its stone.)"
+        }
+      },
+      "province": "徐",
+      "root": "earth",
+      "art": "art/creatures/fushe.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in 水墨淡彩 (ink wash and faint colour on aged paper); seed 5 of 6 candidates (a banded pit viper coiled on a flat stone among ferns, head raised; the first three candidates each painted a seal, seed 5 of the second three is trimmed at the right edge, where it painted one too). No outside source.",
+      "lean": "hide",
+      "pattern": [
+        "guard",
+        "guard",
+        "strike",
+        "gather",
+        "strike"
+      ],
+      "hp": 1.1,
+      "_hp": "Weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line (tests/fight-band.test.mjs) — at the 回 its pool entry opens (2026-10-15, 不打重复的怪).",
+      "deck": [
+        "tuou",
+        "paoxiao",
+        "shanjing",
+        "shanjing",
+        "jixiao",
+        "jixiao",
+        "tunshi",
+        "tunshi",
+        "tunshi",
+        "luoshi",
+        "paoxiao",
+        "gui"
+      ],
+      "signature": {
+        "id": "yikou",
+        "name": {
+          "zh": "一口",
+          "en": "One Bite"
+        },
+        "effect": {
+          "damage": 9
+        }
+      },
+      "loot": [
+        {
+          "item": "she-tui",
+          "w": 2
+        },
+        {
+          "item": "she-dan",
+          "w": 1
+        },
+        {
+          "item": "chonglou",
+          "w": 1
+        },
+        {
+          "item": "xionghuang",
+          "w": 1
+        }
+      ]
+    },
+    {
+      "id": "congcong",
+      "name": {
+        "zh": "从从",
+        "en": "Congcong"
+      },
+      "pinyin": "cóng cóng",
+      "source": {
+        "zh": "《山海经 · 东山经》",
+        "en": "Classic of Mountains and Seas — Eastern Mountains"
+      },
+      "quote": {
+        "zh": "又南三百里，曰栒状之山，其上多金玉，其下多青碧石。有兽焉，其状如犬，六足，其名曰从从，其鸣自詨。",
+        "en": "Three hundred li further south is Mount Xunzhuang, rich in gold and jade above and blue-green stone below. There is a beast on it like a dog with six feet. It is called Congcong, and it calls its own name."
+      },
+      "look": {
+        "zh": "一条狗，六只脚。跑起来脚多得数不过来，叫起来叫的是自己的名字。",
+        "en": "A dog with six feet. Running, it has more legs than you can count; barking, it barks its own name."
+      },
+      "says": {
+        "open": {
+          "zh": "从从！从从！",
+          "en": "Congcong! Congcong!"
+        },
+        "won": {
+          "zh": "它叫着自己的名字，六只脚一齐跑远了。",
+          "en": "Calling its own name, it runs off on all six feet."
+        },
+        "lost": {
+          "zh": "从从！——它绕着你跑了三圈。",
+          "en": "Congcong! — it runs three rings round you."
+        }
+      },
+      "province": "徐",
+      "root": "earth",
+      "art": "art/congcong.webp",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》從從圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic280 - 從從圖.svg (https://commons.wikimedia.org/wiki/File:Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic280_-_從從圖.svg). Cropped and laid on paper by tools/frame.py (art/plates/congcong.svg).",
+      "art_caption": {
+        "zh": "《古今圖書集成·禽蟲典》，清",
+        "en": "The Imperial Encyclopaedia, Animal Kingdom, Qing"
+      },
+      "lean": "quick",
+      "pattern": [
+        "strike",
+        "strike",
+        "gather",
+        "strike",
+        "guard"
+      ],
+      "hp": 1.42,
+      "_hp": "Weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line (tests/fight-band.test.mjs) — at the 回 its pool entry opens (2026-10-15, 不打重复的怪).",
+      "deck": [
+        "xianshi",
+        "xianshi",
+        "tuou",
+        "shanjing",
+        "paoxiao",
+        "paoxiao",
+        "jixiao",
+        "jixiao",
+        "jixiao",
+        "luoshi",
+        "tunshi",
+        "zhuguang"
+      ],
+      "signature": {
+        "id": "liuzu",
+        "name": {
+          "zh": "六足",
+          "en": "Six Feet"
+        },
+        "effect": {
+          "summon": {
+            "id": "xianshi",
+            "n": 2
+          },
+          "damage": 4
+        }
+      },
+      "loot": [
+        {
+          "item": "congcong-zhua",
+          "w": 2
+        },
+        {
+          "item": "chishizhi",
+          "w": 1
+        },
+        {
+          "item": "cishi",
+          "w": 1
+        }
+      ]
+    },
+    {
+      "id": "xiegou",
+      "name": {
+        "zh": "絜钩",
+        "en": "Xiegou"
+      },
+      "pinyin": "xié gōu",
+      "source": {
+        "zh": "《山海经 · 东次二经》",
+        "en": "Classic of Mountains and Seas — Eastern Mountains II"
+      },
+      "quote": {
+        "zh": "又南三百八十里，曰䃌山，南临䃌水，东望湖泽……有鸟焉，其状如凫而鼠尾，善登木，其名曰絜钩，见则其国多疫。",
+        "en": "Three hundred and eighty li further south is Mount Gao, over the Gao river, looking east to the lakes… There is a bird like a wild duck with a rat's tail; it climbs trees well. It is called Xiegou. Where it is seen, the land has much sickness."
+      },
+      "look": {
+        "zh": "野鸭的身子，拖一条老鼠尾巴，却会爬树。蹲在枝头，底下的草一片一片发黄。",
+        "en": "A wild duck's body trailing a rat's tail — and it climbs trees. Where it perches, the grass below goes yellow patch by patch."
+      },
+      "says": {
+        "open": {
+          "zh": "（树上一声，像咳嗽。）",
+          "en": "(A sound in the tree, like a cough.)"
+        },
+        "won": {
+          "zh": "（它拖着鼠尾，爬上树梢不见了。）",
+          "en": "(Trailing its rat's tail, it climbs out of sight.)"
+        },
+        "lost": {
+          "zh": "（你咳了一声。它在树上看着。）",
+          "en": "(You cough once. It watches from the tree.)"
+        }
+      },
+      "province": "徐",
+      "root": "water",
+      "art": "art/xiegou.webp",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》絜鉤圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic132 - 絜鉤圖.svg (https://commons.wikimedia.org/wiki/File:Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic132_-_絜鉤圖.svg). Cropped and laid on paper by tools/frame.py (art/plates/xiegou.svg).",
+      "art_caption": {
+        "zh": "《古今圖書集成·禽蟲典》，清",
+        "en": "The Imperial Encyclopaedia, Animal Kingdom, Qing"
+      },
+      "lean": "ward",
+      "pattern": [
+        "cast",
+        "guard",
+        "cast",
+        "strike",
+        "gather"
+      ],
+      "hp": 1.36,
+      "_hp": "Weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line (tests/fight-band.test.mjs) — at the 回 its pool entry opens (2026-10-15, 不打重复的怪).",
+      "deck": [
+        "shuiwu",
+        "shuiwu",
+        "luying",
+        "luying",
+        "luying",
+        "hantan",
+        "hantan",
+        "hantan",
+        "chaoqi",
+        "chaoqi",
+        "changyou",
+        "tingbo"
+      ],
+      "signature": {
+        "id": "duoyi",
+        "name": {
+          "zh": "其国多疫",
+          "en": "Sickness on the Land"
+        },
+        "effect": {
+          "sweep": 3,
+          "damage": 3
+        }
+      },
+      "loot": [
+        {
+          "item": "xiegou-yu",
+          "w": 2
+        },
+        {
+          "item": "banxia",
+          "w": 1
+        },
+        {
+          "item": "cangzhu",
+          "w": 1
+        }
+      ]
+    },
+    {
+      "id": "lingling",
+      "name": {
+        "zh": "軨軨",
+        "en": "Lingling"
+      },
+      "pinyin": "líng líng",
+      "source": {
+        "zh": "《山海经 · 东次二经》",
+        "en": "Classic of Mountains and Seas — Eastern Mountains II"
+      },
+      "quote": {
+        "zh": "又南四百里，曰空桑之山，北临食水，东望沮吴，南望沙陵，西望湣泽。有兽焉，其状如牛而虎文，其音如钦，其名曰軨軨，其鸣自叫，见则天下大水。",
+        "en": "Four hundred li further south is Mount Kongsang, over the Shi river… There is a beast on it like an ox with a tiger's stripes; its voice is a groan. It is called Lingling and calls its own name. Where it is seen, the world floods."
+      },
+      "look": {
+        "zh": "一头牛，身上却是老虎的纹。叫声闷闷的，像有人在水底下叹气。",
+        "en": "An ox, striped like a tiger. Its cry is muffled, like someone sighing under water."
+      },
+      "says": {
+        "open": {
+          "zh": "軨軨——軨軨——",
+          "en": "Lingling — lingling —"
+        },
+        "won": {
+          "zh": "它叫着自己的名字，往空桑那边去了。",
+          "en": "Calling its own name, it goes off toward Kongsang."
+        },
+        "lost": {
+          "zh": "軨軨——脚底下的地，渗出水来。",
+          "en": "Lingling — water seeps up from the ground at your feet."
+        }
+      },
+      "province": "徐",
+      "root": "water",
+      "art": "art/lingling.webp",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》軨軨圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic282 - 軨軨圖.svg (https://commons.wikimedia.org/wiki/File:Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic282_-_軨軨圖.svg). Cropped and laid on paper by tools/frame.py (art/plates/lingling.svg).",
+      "art_caption": {
+        "zh": "《古今圖書集成·禽蟲典》，清",
+        "en": "The Imperial Encyclopaedia, Animal Kingdom, Qing"
+      },
+      "lean": "hide",
+      "pattern": [
+        "guard",
+        "strike",
+        "cast",
+        "armor",
+        "strike"
+      ],
+      "hp": 0.95,
+      "_hp": "Weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line (tests/fight-band.test.mjs) — at the 回 its pool entry opens (2026-10-15, 不打重复的怪).",
+      "deck": [
+        "gupi",
+        "gupi",
+        "changyou",
+        "changyou",
+        "hanquan",
+        "chaoqi",
+        "chaoqi",
+        "tingbo",
+        "hantan",
+        "hantan",
+        "luying",
+        "luying"
+      ],
+      "signature": {
+        "id": "dashui",
+        "name": {
+          "zh": "天下大水",
+          "en": "The World Floods"
+        },
+        "effect": {
+          "sweep": 4,
+          "damage": 4
+        }
+      },
+      "loot": [
+        {
+          "item": "lingling-pi",
+          "w": 2
+        },
+        {
+          "item": "yunmu",
+          "w": 1
+        },
+        {
+          "item": "shihu",
+          "w": 1
+        }
+      ]
+    },
+    {
+      "id": "cangying",
+      "name": {
+        "zh": "苍鹰",
+        "en": "Goshawk"
+      },
+      "pinyin": "cāng yīng",
+      "source": {
+        "zh": "蒙山猎户的本行",
+        "en": "A Mount Meng hunter's trade"
+      },
+      "quote": {
+        "zh": "爹说：天上一个黑点不动，那就是鹰。兔子没看见它，你也没看见它，它两个都看见了。",
+        "en": "Father says: a black dot in the sky that doesn't move — that's the hawk. The hare hasn't seen it, you haven't seen it, and it has seen you both."
+      },
+      "look": {
+        "zh": "青灰的背，胸前一道道横纹，眼睛黄得发亮。收了翅膀往下扎，像一块石头。",
+        "en": "Slate-grey back, barred breast, eyes a bright hard yellow. Wings folded, it drops like a stone."
+      },
+      "says": {
+        "open": {
+          "zh": "（崖顶上一声长唳。）",
+          "en": "(A long scream from the cliff top.)"
+        },
+        "won": {
+          "zh": "（它一振翅，斜斜地滑下崖去。）",
+          "en": "(One beat of its wings, and it slants away down the cliff.)"
+        },
+        "lost": {
+          "zh": "（爪子擦过你的头皮，它又上了天。）",
+          "en": "(Its talons graze your scalp, and it is back in the sky.)"
+        }
+      },
+      "province": "徐",
+      "root": "metal",
+      "art": "art/creatures/cangying.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in 水墨淡彩 (ink wash and faint colour on aged paper); seed 23 of 3 candidates (a goshawk launching off a cliff face, wings raised, barred breast, yellow eye). No outside source.",
+      "lean": "quick",
+      "pattern": [
+        "gather",
+        "strike",
+        "strike",
+        "cast",
+        "strike"
+      ],
+      "hp": 1.18,
+      "_hp": "Weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line (tests/fight-band.test.mjs) — at the 回 its pool entry opens (2026-10-15, 不打重复的怪).",
+      "deck": [
+        "jinsuo",
+        "jinsuo",
+        "jinzhua",
+        "jinzhua",
+        "jinzhua",
+        "jinzhua",
+        "jiushou",
+        "jiushou",
+        "suijin",
+        "jinzhen",
+        "jianying",
+        "qianyang"
+      ],
+      "signature": {
+        "id": "fuji",
+        "name": {
+          "zh": "俯击",
+          "en": "The Stoop"
+        },
+        "effect": {
+          "damage": 8
+        }
+      },
+      "loot": [
+        {
+          "item": "ying-yu",
+          "w": 3
+        },
+        {
+          "item": "she-tui",
+          "w": 1
+        }
+      ]
+    },
+    {
+      "id": "yuanhu",
+      "name": {
+        "zh": "妴胡",
+        "en": "Yuanhu"
+      },
+      "pinyin": "yuàn hú",
+      "source": {
+        "zh": "《山海经 · 东次三经》",
+        "en": "Classic of Mountains and Seas — Eastern Mountains III"
+      },
+      "quote": {
+        "zh": "又南水行七百里，曰尸胡之山，北望𡺳山，其上多金玉，其下多棘。有兽焉，其状如麋而鱼目，名曰妴胡，其鸣自訆。",
+        "en": "Seven hundred li further south by water is Mount Shihu… rich in gold and jade above and thorn below. There is a beast on it like an elk with a fish's eyes. It is called Yuanhu, and it calls its own name."
+      },
+      "look": {
+        "zh": "一头麋鹿，眼睛却是鱼的——圆，鼓，不会眨。你走到哪边，它那只眼就跟到哪边。",
+        "en": "An elk — with a fish's eyes: round, bulging, lidless. Wherever you step, that eye follows."
+      },
+      "says": {
+        "open": {
+          "zh": "妴胡——妴胡——",
+          "en": "Yuanhu — yuanhu —"
+        },
+        "won": {
+          "zh": "它叫着自己的名字，跃进荆棘丛里。",
+          "en": "Calling its own name, it leaps into the thorns."
+        },
+        "lost": {
+          "zh": "妴胡——鱼眼还盯着你。",
+          "en": "Yuanhu — the fish eye is still on you."
+        }
+      },
+      "province": "徐",
+      "root": "wood",
+      "art": "art/yuanhu.webp",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》妴胡圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic288 - 妴胡圖.svg (https://commons.wikimedia.org/wiki/File:Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic288_-_妴胡圖.svg). Cropped and laid on paper by tools/frame.py (art/plates/yuanhu.svg).",
+      "art_caption": {
+        "zh": "《古今圖書集成·禽蟲典》，清",
+        "en": "The Imperial Encyclopaedia, Animal Kingdom, Qing"
+      },
+      "lean": "ward",
+      "pattern": [
+        "guard",
+        "cast",
+        "strike",
+        "gather",
+        "strike"
+      ],
+      "hp": 2.06,
+      "_hp": "Weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line (tests/fight-band.test.mjs) — at the 回 its pool entry opens (2026-10-15, 不打重复的怪).",
+      "deck": [
+        "tengmiao",
+        "tengmiao",
+        "qingteng",
+        "qingteng",
+        "peiyuan",
+        "fengmao",
+        "fengmao",
+        "linmu",
+        "leiming",
+        "leiming",
+        "leipu",
+        "chunsheng"
+      ],
+      "signature": {
+        "id": "yumu",
+        "name": {
+          "zh": "鱼目不瞬",
+          "en": "The Lidless Eye"
+        },
+        "effect": {
+          "heal": 4,
+          "rally": {
+            "atk": 1,
+            "hp": 1
+          }
+        }
+      },
+      "loot": [
+        {
+          "item": "yumu",
+          "w": 2
+        },
+        {
+          "item": "yuanzhi",
+          "w": 1
+        },
+        {
+          "item": "chaihu",
+          "w": 1
+        }
+      ]
+    },
+    {
+      "id": "jingjing",
+      "name": {
+        "zh": "精精",
+        "en": "Jingjing"
+      },
+      "pinyin": "jīng jīng",
+      "source": {
+        "zh": "《山海经 · 东次三经》",
+        "en": "Classic of Mountains and Seas — Eastern Mountains III"
+      },
+      "quote": {
+        "zh": "又南水行九百里，曰踇隅之山，其上多草木，多金玉，多赭。有兽焉，其状如牛而马尾，名曰精精，其鸣自訆。",
+        "en": "Nine hundred li further south by water is Mount Muyu, thick with grass and trees, rich in gold, jade and ochre. There is a beast on it like an ox with a horse's tail. It is called Jingjing, and it calls its own name."
+      },
+      "look": {
+        "zh": "牛的身子，后头甩着一条马尾巴。低下头的时候，两只角正对着你。",
+        "en": "An ox's body swinging a horse's tail. When it lowers its head, both horns point straight at you."
+      },
+      "says": {
+        "open": {
+          "zh": "精精！精精！",
+          "en": "Jingjing! Jingjing!"
+        },
+        "won": {
+          "zh": "它甩着马尾，叫着自己的名字走了。",
+          "en": "Swishing its horse's tail, it walks off calling its own name."
+        },
+        "lost": {
+          "zh": "精精！——它把你顶进了草里。",
+          "en": "Jingjing! — it butts you into the grass."
+        }
+      },
+      "province": "徐",
+      "root": "earth",
+      "art": "art/jingjing.webp",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》精精圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic289 - 精精圖.svg (https://commons.wikimedia.org/wiki/File:Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic289_-_精精圖.svg). Cropped and laid on paper by tools/frame.py (art/plates/jingjing.svg).",
+      "art_caption": {
+        "zh": "《古今圖書集成·禽蟲典》，清",
+        "en": "The Imperial Encyclopaedia, Animal Kingdom, Qing"
+      },
+      "lean": "hide",
+      "pattern": [
+        "armor",
+        "strike",
+        "guard",
+        "strike",
+        "gather"
+      ],
+      "hp": 1.27,
+      "_hp": "Weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line (tests/fight-band.test.mjs) — at the 回 its pool entry opens (2026-10-15, 不打重复的怪).",
+      "deck": [
+        "shishou",
+        "shishou",
+        "shanjing",
+        "paoxiao",
+        "paoxiao",
+        "jixiao",
+        "jixiao",
+        "luoshi",
+        "luoshi",
+        "tunshi",
+        "tunshi",
+        "gui"
+      ],
+      "signature": {
+        "id": "dingjiao",
+        "name": {
+          "zh": "低头一顶",
+          "en": "Horns Down"
+        },
+        "effect": {
+          "damage": 9
+        }
+      },
+      "loot": [
+        {
+          "item": "jingjing-wei",
+          "w": 2
+        },
+        {
+          "item": "chishizhi",
+          "w": 1
+        },
+        {
+          "item": "tie-sha",
+          "w": 1
+        }
+      ]
+    },
+    {
+      "id": "chai",
+      "name": {
+        "zh": "豺",
+        "en": "Dhole"
+      },
+      "pinyin": "chái",
+      "source": {
+        "zh": "蒙山猎户的本行",
+        "en": "A Mount Meng hunter's trade"
+      },
+      "quote": {
+        "zh": "爹说：豺狗子不单走。一只在前头逗你，几只绕到后头掏你。听见前头有动静，先看后头。",
+        "en": "Father says: dholes never hunt alone. One teases you from the front while the rest circle behind to rip at you. Hear something ahead — look behind."
+      },
+      "look": {
+        "zh": "比狼小，一身锈红，尾巴黑而蓬。前头那只蹲着不动，草里还有几双眼睛。",
+        "en": "Smaller than a wolf, rust-red, a black brush of a tail. The one in front sits still; there are more eyes in the grass."
+      },
+      "says": {
+        "open": {
+          "zh": "（前头一只，草里还有。）",
+          "en": "(One in front — and more in the grass.)"
+        },
+        "won": {
+          "zh": "（一声短吠，红影子四下散了。）",
+          "en": "(A short yap, and the red shapes scatter.)"
+        },
+        "lost": {
+          "zh": "（它们没追，只是看着你走。）",
+          "en": "(They don't follow; they just watch you go.)"
+        }
+      },
+      "province": "徐",
+      "root": "fire",
+      "art": "art/creatures/chai.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in 水墨淡彩 (ink wash and faint colour on aged paper); seed 23 of 3 candidates (a rust-red dhole with a black brush of a tail, head low on a rocky slope). No outside source.",
+      "lean": "fierce",
+      "pattern": [
+        "strike",
+        "gather",
+        "strike",
+        "strike",
+        "cast"
+      ],
+      "hp": 2.03,
+      "_hp": "Weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line (tests/fight-band.test.mjs) — at the 回 its pool entry opens (2026-10-15, 不打重复的怪).",
+      "deck": [
+        "huoya",
+        "huoya",
+        "huoya",
+        "huoya",
+        "tongling",
+        "tongling",
+        "qiezhi",
+        "huodan",
+        "huodan",
+        "yanxin",
+        "yanxin",
+        "fenghuo"
+      ],
+      "signature": {
+        "id": "qunchai",
+        "name": {
+          "zh": "前逗后掏",
+          "en": "Front and Behind"
+        },
+        "effect": {
+          "summon": {
+            "id": "huoya",
+            "n": 2
+          },
+          "damage": 3
+        }
+      },
+      "loot": [
+        {
+          "item": "chai-ya",
+          "w": 3
+        },
+        {
+          "item": "chaiya-zhui",
+          "w": 1
+        }
+      ]
+    },
+    {
+      "id": "bibi",
+      "name": {
+        "zh": "獙獙",
+        "en": "Bibi"
+      },
+      "pinyin": "bì bì",
+      "source": {
+        "zh": "《山海经 · 东次二经》",
+        "en": "Classic of Mountains and Seas — Eastern Mountains II"
+      },
+      "quote": {
+        "zh": "又南五百里，曰姑逢之山，无草木，多金玉。有兽焉，其状如狐而有翼，其音如鸿雁，其名曰獙獙，见则天下大旱。",
+        "en": "Five hundred li further south is Mount Gufeng, bare of grass and trees, rich in gold and jade. There is a beast on it like a fox with wings; its cry is a wild goose's. It is called Bibi. Where it is seen, the world goes dry."
+      },
+      "look": {
+        "zh": "狐狸的身子，背上一对翅膀。叫起来像过冬的雁。它落过的地方，草根都焦了。",
+        "en": "A fox's body, a pair of wings on its back. Its cry is a goose going south for the winter. Where it has landed, the grass roots are scorched."
+      },
+      "says": {
+        "open": {
+          "zh": "（头顶一声雁叫，可天上没有雁。）",
+          "en": "(A goose cries overhead — but there are no geese.)"
+        },
+        "won": {
+          "zh": "（它展翅往南去了，风里带着焦味。）",
+          "en": "(It spreads its wings and goes south; the wind smells scorched.)"
+        },
+        "lost": {
+          "zh": "（雁声远了。你嘴唇干得裂开。）",
+          "en": "(The goose-cry fades. Your lips have cracked with dryness.)"
+        }
+      },
+      "province": "徐",
+      "root": "fire",
+      "art": "art/bibi.webp",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》獙獙圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic285 - 獙獙圖.svg (https://commons.wikimedia.org/wiki/File:Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic285_-_獙獙圖.svg). Cropped and laid on paper by tools/frame.py (art/plates/bibi.svg).",
+      "art_caption": {
+        "zh": "《古今圖書集成·禽蟲典》，清",
+        "en": "The Imperial Encyclopaedia, Animal Kingdom, Qing"
+      },
+      "lean": "quick",
+      "pattern": [
+        "cast",
+        "strike",
+        "gather",
+        "cast",
+        "strike"
+      ],
+      "hp": 1.82,
+      "_hp": "Weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line (tests/fight-band.test.mjs) — at the 回 its pool entry opens (2026-10-15, 不打重复的怪).",
+      "deck": [
+        "huoya",
+        "huoya",
+        "qiezhi",
+        "qiezhi",
+        "huodan",
+        "huodan",
+        "yanxin",
+        "tongling",
+        "tongling",
+        "jingwei",
+        "liaotian",
+        "fenghuo"
+      ],
+      "signature": {
+        "id": "dahan",
+        "name": {
+          "zh": "天下大旱",
+          "en": "The World Goes Dry"
+        },
+        "effect": {
+          "sweep": 2,
+          "damage": 5
+        }
+      },
+      "loot": [
+        {
+          "item": "bibi-ling",
+          "w": 2
+        },
+        {
+          "item": "xionghuang",
+          "w": 1
+        },
+        {
+          "item": "chishizhi",
+          "w": 1
+        }
+      ]
+    },
+    {
+      "id": "dangkang",
+      "name": {
+        "zh": "当康",
+        "en": "Dangkang"
+      },
+      "pinyin": "dāng kāng",
+      "source": {
+        "zh": "《山海经 · 东次四经》",
+        "en": "Classic of Mountains and Seas — Eastern Mountains IV"
+      },
+      "quote": {
+        "zh": "又东南二百里，曰钦山，多金玉而无石……有兽焉，其状如豚而有牙，其名曰当康，其鸣自叫，见则天下大穰。",
+        "en": "Two hundred li further south-east is Mount Qin, rich in gold and jade but without stone… There is a beast on it like a pig with tusks. It is called Dangkang and calls its own name. Where it is seen, the world has a great harvest."
+      },
+      "look": {
+        "zh": "一头小猪，嘴边两颗獠牙。叫的是自己的名字，听着却像在报喜。",
+        "en": "A young pig with two tusks at its lips. It cries its own name, and it sounds like good news."
+      },
+      "says": {
+        "open": {
+          "zh": "当康！当康！",
+          "en": "Dangkang! Dangkang!"
+        },
+        "won": {
+          "zh": "它拱开一片土，叫着自己的名字跑了。",
+          "en": "It roots up a patch of earth and runs off calling its own name."
+        },
+        "lost": {
+          "zh": "当康！——它在你身边转了一圈，像在道喜。",
+          "en": "Dangkang! — it trots a ring round you, as if wishing you joy."
+        }
+      },
+      "province": "徐",
+      "root": "earth",
+      "art": "art/dangkang.webp",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》當康圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic291 - 當康圖.svg (https://commons.wikimedia.org/wiki/File:Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic291_-_當康圖.svg). Cropped and laid on paper by tools/frame.py (art/plates/dangkang.svg).",
+      "art_caption": {
+        "zh": "《古今圖書集成·禽蟲典》，清",
+        "en": "The Imperial Encyclopaedia, Animal Kingdom, Qing"
+      },
+      "lean": "fierce",
+      "pattern": [
+        "strike",
+        "gather",
+        "strike",
+        "guard",
+        "strike"
+      ],
+      "hp": 2.21,
+      "_hp": "Weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line (tests/fight-band.test.mjs) — at the 回 its pool entry opens (2026-10-15, 不打重复的怪).",
+      "deck": [
+        "paoxiao",
+        "paoxiao",
+        "jixiao",
+        "jixiao",
+        "jixiao",
+        "shishou",
+        "shanjing",
+        "tunshi",
+        "tunshi",
+        "luoshi",
+        "zhuguang",
+        "kuiniu"
+      ],
+      "signature": {
+        "id": "darang",
+        "name": {
+          "zh": "天下大穰",
+          "en": "A Great Harvest"
+        },
+        "effect": {
+          "heal": 5,
+          "rally": {
+            "atk": 1,
+            "hp": 1
+          }
+        }
+      },
+      "loot": [
+        {
+          "item": "dangkang-ya",
+          "w": 2
+        },
+        {
+          "item": "huangjing",
+          "w": 1
+        },
+        {
+          "item": "fuling",
+          "w": 1
+        }
+      ]
+    },
+    {
+      "id": "geju",
+      "name": {
+        "zh": "猲狙",
+        "en": "Geju"
+      },
+      "pinyin": "gé jū",
+      "source": {
+        "zh": "《山海经 · 东次四经》",
+        "en": "Classic of Mountains and Seas — Eastern Mountains IV"
+      },
+      "quote": {
+        "zh": "东次四山之首，曰北号之山，临于北海……有兽焉，其状如狼，赤首鼠目，其音如豚，名曰猲狙，是食人。",
+        "en": "The first of the fourth range of the Eastern Mountains is Mount Beihao, over the northern sea… There is a beast on it like a wolf with a red head and a rat's eyes; its voice is a piglet's. It is called Geju, and it eats men."
+      },
+      "look": {
+        "zh": "狼的身子，一颗红脑袋，一对老鼠的小眼睛。张嘴却是小猪的哼哼声，越哼越近。",
+        "en": "A wolf's body, a red head, a rat's small eyes. It opens its mouth and out comes a piglet's grunting — closer with every grunt."
+      },
+      "says": {
+        "open": {
+          "zh": "哼哼……哼哼……",
+          "en": "Hnn… hnn…"
+        },
+        "won": {
+          "zh": "（红脑袋缩回黑里，哼声远了。）",
+          "en": "(The red head draws back into the dark; the grunting fades.)"
+        },
+        "lost": {
+          "zh": "哼哼……它舔了舔嘴。",
+          "en": "Hnn… it licks its lips."
+        }
+      },
+      "province": "徐",
+      "root": "metal",
+      "art": "art/geju.webp",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》猲狙圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic290 - 猲狙圖.svg (https://commons.wikimedia.org/wiki/File:Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic290_-_猲狙圖.svg). Cropped and laid on paper by tools/frame.py (art/plates/geju.svg).",
+      "art_caption": {
+        "zh": "《古今圖書集成·禽蟲典》，清",
+        "en": "The Imperial Encyclopaedia, Animal Kingdom, Qing"
+      },
+      "lean": "fierce",
+      "pattern": [
+        "strike",
+        "strike",
+        "gather",
+        "strike",
+        "cast"
+      ],
+      "hp": 1.38,
+      "_hp": "Weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line (tests/fight-band.test.mjs) — at the 回 its pool entry opens (2026-10-15, 不打重复的怪).",
+      "deck": [
+        "jinsuo",
+        "jinsuo",
+        "jiushou",
+        "jiushou",
+        "jinzhua",
+        "jinzhua",
+        "jinzhua",
+        "jianying",
+        "jianying",
+        "suijin",
+        "longzhi",
+        "jinzhen"
+      ],
+      "signature": {
+        "id": "shiren",
+        "name": {
+          "zh": "是食人",
+          "en": "It Eats Men"
+        },
+        "effect": {
+          "damage": 10
+        }
+      },
+      "loot": [
+        {
+          "item": "geju-zong",
+          "w": 2
+        },
+        {
+          "item": "cishi",
+          "w": 1
+        }
+      ]
+    },
+    {
+      "id": "qique",
+      "name": {
+        "zh": "鬿雀",
+        "en": "Qique"
+      },
+      "pinyin": "qí què",
+      "source": {
+        "zh": "《山海经 · 东次四经》",
+        "en": "Classic of Mountains and Seas — Eastern Mountains IV"
+      },
+      "quote": {
+        "zh": "东次四山之首，曰北号之山……有鸟焉，其状如鸡而白首，鼠足而虎爪，其名曰鬿雀，亦食人。",
+        "en": "The first of the fourth range of the Eastern Mountains is Mount Beihao… There is a bird on it like a chicken with a white head, rat's feet and tiger's claws. It is called Qique, and it too eats men."
+      },
+      "look": {
+        "zh": "一只白头的鸡，脚是老鼠的，爪子却是老虎的。在地上刨一下，石头上便是三道白印。",
+        "en": "A white-headed fowl on rat's feet, with tiger's claws. One scratch at the ground leaves three white grooves in the stone."
+      },
+      "says": {
+        "open": {
+          "zh": "咯——咯咯——",
+          "en": "Kuk — kuk-kuk —"
+        },
+        "won": {
+          "zh": "（它扑着短翅，跳下崖去了。）",
+          "en": "(Flapping its stubby wings, it hops down the cliff.)"
+        },
+        "lost": {
+          "zh": "（它在石头上磨了磨爪子。）",
+          "en": "(It whets its claws on the stone.)"
+        }
+      },
+      "province": "徐",
+      "root": "fire",
+      "art": "art/qique.webp",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》鬿雀圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic133 - 鬿雀圖.svg (https://commons.wikimedia.org/wiki/File:Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic133_-_鬿雀圖.svg). Cropped and laid on paper by tools/frame.py (art/plates/qique.svg).",
+      "art_caption": {
+        "zh": "《古今圖書集成·禽蟲典》，清",
+        "en": "The Imperial Encyclopaedia, Animal Kingdom, Qing"
+      },
+      "lean": "fierce",
+      "pattern": [
+        "strike",
+        "cast",
+        "strike",
+        "gather",
+        "strike"
+      ],
+      "hp": 2.44,
+      "_hp": "Weighed at the first meeting by tools/story-fights.mjs — about 60% won by the careful line (tests/fight-band.test.mjs) — at the 回 its pool entry opens (2026-10-15, 不打重复的怪).",
+      "deck": [
+        "huoya",
+        "huoya",
+        "huoya",
+        "huoya",
+        "qiezhi",
+        "qiezhi",
+        "huodan",
+        "huodan",
+        "huodan",
+        "yanxin",
+        "yanxin",
+        "fenghuo"
+      ],
+      "signature": {
+        "id": "huzhua",
+        "name": {
+          "zh": "虎爪",
+          "en": "Tiger's Claws"
+        },
+        "effect": {
+          "damage": 7,
+          "sweep": 1
+        }
+      },
+      "loot": [
+        {
+          "item": "qique-zhua",
+          "w": 2
+        },
+        {
+          "item": "yunmu",
+          "w": 1
+        }
+      ]
+    }
   ],
   "_likes": "What a creature will take from the bag to walk with the player: 人参 for the man-eaters (形如人), 玉鱼 for the bird that fills the sea, a bell for the drum god, 齐盐 for the sea beast, 齐纨 for the pearl pig, 灵芝 for 夫诸 as the prologue has it.",
   "_lean": "How it fights, at the player's own realm and step: `lean` moves its numbers about a quarter — hide (厚皮), ward (避法), quick (迅), fierce (猛) — and `pattern` is what it does, turn after turn, cycled from a start the day draws: strike 击 · cast 法术 · gather 蓄 · guard 护体 · armor 甲. A made world writes neither: its id draws them.",

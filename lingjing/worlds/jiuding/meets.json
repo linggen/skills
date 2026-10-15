@@ -99,6 +99,96 @@
      "zh": "崖壁上一道铜矿，绿莹莹的；你抠下一块来，指甲劈了一个。",
      "en": "A copper vein in the cliff wall, glowing green; you prise out a lump and split a fingernail doing it."
     }
+   },
+   {
+    "item": "yunmu",
+    "at": [
+     "cangjing"
+    ],
+    "line": {
+     "zh": "藏经阁一本旧书里夹着一片云母，透亮，像有人拿它当了书签。",
+     "en": "In an old book in the library, a flake of mica, clear as glass — someone's bookmark."
+    }
+   },
+   {
+    "item": "songmo",
+    "at": [
+     "chaifang"
+    ],
+    "line": {
+     "zh": "柴堆底下，雨后冒出一窝松蘑。",
+     "en": "Under the woodpile, a cluster of pine mushrooms has come up after the rain."
+    }
+   },
+   {
+    "item": "huangjing",
+    "at": [
+     "fantang"
+    ],
+    "line": {
+     "zh": "饭堂后墙根的石缝里，钻出一株野黄精。",
+     "en": "From a crack at the foot of the refectory's back wall, a wild Solomon's seal has pushed up."
+    }
+   },
+   {
+    "item": "cangzhu",
+    "at": [
+     "jiangtang"
+    ],
+    "line": {
+     "zh": "讲堂窗下一丛苍术，开着白花。",
+     "en": "Under the lecture-hall window, a clump of atractylodes in white flower."
+    }
+   },
+   {
+    "item": "yuanzhi",
+    "at": [
+     "shanmen"
+    ],
+    "line": {
+     "zh": "山门石阶的缝里，一丛远志开着小紫花。",
+     "en": "In a crack of the gate's stone steps, a clump of polygala in small purple flower."
+    }
+   },
+   {
+    "item": "chishizhi",
+    "at": [
+     "yanwu"
+    ],
+    "line": {
+     "zh": "演武场边被踩松的土里，露出一块滑腻的红土。",
+     "en": "In the trodden earth at the edge of the training ground, a lump of slick red clay shows."
+    }
+   },
+   {
+    "item": "tie-sha",
+    "at": [
+     "zhengdian"
+    ],
+    "line": {
+     "zh": "正殿檐下的水沟里淤着一层黑砂，捧起来沉手。",
+     "en": "In the gutter under the main hall's eaves, a silt of black sand, heavy in the hand."
+    }
+   },
+   {
+    "item": "chaihu",
+    "at": [
+     "waimen"
+    ],
+    "line": {
+     "zh": "外门墙角一片柴胡，开着细碎的黄花。",
+     "en": "In a corner of the outer court's wall, a patch of bupleurum in tiny yellow flowers."
+    }
+   },
+   {
+    "item": "banxia",
+    "at": [
+     "zhishi"
+    ],
+    "line": {
+     "zh": "执事堂后院的菜畦边，长着几棵半夏。",
+     "en": "At the edge of the vegetable bed behind the stewards' hall, a few pinellia plants."
+    }
    }
   ],
   "冀": [
