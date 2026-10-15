@@ -232,6 +232,7 @@ const view = {
   refineMat: null, refineName: '', refineNote: null, // 炼化本命 on the card: the material picked, the name typed, a refusal
   twentyGuess: '', caseWho: null, caseEv: [], aiNote: null, // AI mini-games (aigames-cards.js): the guess typed, the suspect and proof picked, a refusal
   panelBusy: null, panelNote: null, // a 连环画 panel's choice in flight, or its refusal
+  panelSaid: null, //   what a choice that stays in the scene said: { scene, run, lines }
   reading: undefined, // the dialogue box (dialogue.js): the beats drawn in this scene and the one on show; undefined until read back
   logOpen: false, //   its 记录, over the box
   lookBusy: null, // a 看 chip's look in flight (rules/examine.mjs)
@@ -316,7 +317,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, twentyGuess: view.twentyGuess, caseWho: view.caseWho, caseEv: view.caseEv, aiNote: view.aiNote, panelBusy: view.panelBusy, panelNote: view.panelNote, called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, twentyGuess: view.twentyGuess, caseWho: view.caseWho, caseEv: view.caseEv, aiNote: view.aiNote, panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -1947,8 +1948,10 @@ async function valueTap(exitId) {
    and the stage plays what it owes in the dialogue box — no chat turn: Ling
    reads it in Look's `page_did` (Hanli, 2026-09-29: 「对话框先做，go」).
    Refused (a need not met), the card says why and nothing moves. */
+/* What the last choice that stayed in this scene said — never one from another scene or play. */
+const saidHere = () => (view.panelSaid && view.panelSaid.scene === (look?.scene?.id ?? null) && view.panelSaid.run === (look?.run ?? null) ? view.panelSaid.lines : null);
 async function panelTap(exitId, label, answer, pass = false) {
-  keep({ panelBusy: exitId, panelNote: null });
+  keep({ panelBusy: exitId, panelNote: null, panelSaid: null });
   render();
   // `pass`: a riddle left once stuck (「算了，往下走」, cards.js riddleTapHtml) — the way on, no reward.
   const r = await write('resolve', { exit: exitId, said: label, ...(answer != null ? { answer } : {}), ...(pass ? { pass: 1 } : {}) }).catch(failed);
@@ -1957,6 +1960,8 @@ async function panelTap(exitId, label, answer, pass = false) {
   // A tap on a choice the story already moved past (a second tap in flight) is no refusal to show.
   // A riddle missed: its hint stands under the card (it never shuts; stuck, it may be left).
   keep({ panelBusy: null, panelNote: r.ok || r.refused === 'unknown-exit' ? null : r.hint && r.refused !== 'wrong-answer' ? `${refusal(r)} · ${r.hint}` : refusal(r) });
+  // A choice that stays in the scene (`stay`: 下水看看, 先逛坊市): its beat stands under the scene card.
+  if (r?.ok && !r.summarize && r.beat?.length) keep({ panelSaid: { scene: look?.scene?.id ?? null, run: look?.run ?? null, lines: r.beat.filter((b) => b.text).map((b) => ({ name: b.name ?? null, text: b.text })) } });
   await refresh();
 }
 

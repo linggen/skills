@@ -624,3 +624,29 @@ test('the room dressed: the beast painted behind the fight, the boss and 银月 
   assert.doesNotMatch(battleHtml({ ...view(st), outcome: 'won' }, offers(st), { ...base, ended: false }), /bover/, 'not while the last blow plays out');
   assert.match(won, /雷泽归你。/);
 });
+
+// Live 2026-10-15 (古九): a choice that stays in the scene (01-arrive 下水看看, 06-town 先逛坊市, 05-deep
+// force) showed nothing — the rules return its beat, the passage owes none, and panelTap dropped it.
+test('a choice that stays in the scene: its beat stands under the scene card, until the next tap or scene', async () => {
+  const { WORDS, panelActsHtml } = await import('../scripts/cards.js');
+  const { loadContent } = await import('../scripts/content.mjs');
+  const { newState } = await import('../scripts/state.mjs');
+  const { resolve, look } = await import('../scripts/rules.mjs');
+  const { tellOf } = await import('../scripts/rules/tell.mjs');
+  const content = loadContent(), now = new Date('2026-09-28T12:00:00'), c = { now, quests: [] };
+  const s = newState(content, 'zh', now);
+  Object.assign(s, { chapter: '01-ji', scene: '01-arrive', place: content.chapters['01-ji'].scenes['01-arrive'].at, traits: ['wood'] });
+  const r = resolve(s, content, c, { exit: 'water' });
+  assert.equal(r.result.ok, true); assert.equal(r.state.scene, '01-arrive'); assert.equal(r.result.summarize, false);
+  const text = r.result.beat[0].text;
+  assert.ok(text.includes('膝盖'));
+  assert.ok(!JSON.stringify(tellOf(content, r.state)).includes('膝盖'), 'no passage carries it: the page shows it');
+  const l = look(r.state, content, c);
+  const html = panelActsHtml({ look: l, lang: 'zh', words: WORDS.zh, content: {}, panelSaid: [{ name: null, text }] });
+  assert.match(html, /class="staysaid"[^>]*>[^<]*膝盖/);
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const tap = src.slice(src.indexOf('async function panelTap('), src.indexOf('\n}\n', src.indexOf('async function panelTap(')));
+  assert.match(tap, /panelSaid: null/, 'the next tap clears it');
+  assert.match(tap, /r\?\.ok && !r\.summarize && r\.beat\?\.length\) keep\(\{ panelSaid:/, 'kept from the rules\' beat');
+  assert.match(src, /const saidHere = \(\) => \(view\.panelSaid && view\.panelSaid\.scene === /, 'never another scene\'s');
+});

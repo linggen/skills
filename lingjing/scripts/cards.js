@@ -1393,7 +1393,7 @@ function panel(card, ctx) {
   const up = !ctx.tellPending && choicesUp(ctx.reading, ctx.lang);
   // The choices are proper buttons wherever they stand (his, 2026-10-14: never the bare 「那天傍晚 ›」 link):
   // with the box put away, the scene card shows them as the box does.
-  const acts = up ? panelActsHtml(ctx, { inBox: true }) : ctx.panelNote ? `<div class="donote">${esc(ctx.panelNote)}</div>` : '';
+  const acts = up ? panelActsHtml(ctx, { inBox: true }) : saidHtml(ctx) + (ctx.panelNote ? `<div class="donote">${esc(ctx.panelNote)}</div>` : '');
   const log = logLinkHtml(ctx.reading, ctx.lang);
   if (!acts && !log) return '';
   return `<div class="card panelcard bare${up ? '' : ' reading'}">${acts}${log}</div>`;
@@ -1428,7 +1428,7 @@ export function panelActsHtml(ctx, { inBox = false } = {}) {
   // 「也可以直接说你想怎么做」 — now and then, where the scene waits on a real choice (rules: `invite`).
   const invite = p.invite ? `<div class="sceneinvite">${esc(w.invite)}</div>` : '';
   const looks = lookHtml(ctx.look.scene, ctx.lookBusy ?? null, w);
-  const note = ctx.panelNote ? `<div class="donote">${esc(ctx.panelNote)}</div>` : '';
+  const note = saidHtml(ctx) + (ctx.panelNote ? `<div class="donote">${esc(ctx.panelNote)}</div>` : '');
   if (!taps && !looks && !note) return '';
   const row = taps ? `<div class="acts paneltaps${quiet ? ' quiet' : ''}">${taps}</div>` : '';
   // A board left on an earlier day, offered again (Look's replay): while the box holds the scene's
@@ -1437,6 +1437,11 @@ export function panelActsHtml(ctx, { inBox = false } = {}) {
   // In the box the choices come first — the way on is never the part a short stage scrolls away.
   return inBox ? `${row}${again}${looks}${invite}${note}` : `${looks}${row}${invite}${note}`;
 }
+
+/// What a choice that stays in the scene said (`stay` exits, 01-arrive 下水看看, 06-town 先逛坊市): its
+/// beat, under the choices, until the next tap or the scene changes (lingjing.js panelTap; live
+/// 2026-10-15: the tap showed nothing at all).
+const saidHtml = (ctx) => (ctx.panelSaid ?? []).map((l) => `<div class="staysaid">${l.name ? `<b>${esc(l.name)}</b>` : ''}${esc(l.text)}</div>`).join('');
 
 /// One choice under the scene card: a button for a real decision; the one way
 /// on of a transition is a small quiet link — 「接着」, or its own words when
