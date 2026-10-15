@@ -12,7 +12,7 @@
 
 import { spoken } from './cards.js';
 import { esc } from './esc.js';
-import { POWER_COST, bodyOf, boostedOf, clash, costOf, dealt, effectOf, keywordsOf, landed, starsOf } from './battle.js';
+import { POWER_COST, bodyOf, boostedOf, clash, costOf, dealt, effectOf, hashOf, keywordsOf, landed, starsOf } from './battle.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
 const EN_EL = { metal: 'metal', wood: 'wood', water: 'water', fire: 'fire', earth: 'earth' };
@@ -87,7 +87,7 @@ export function boutWords(words, creature, lang = 'zh') {
   const put = (t) => t.replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m);
   const over = PERSON_WORDS[l];
   const flat = Object.fromEntries(Object.entries(over).filter(([k]) => k !== 'why').map(([k, v]) => [k, put(v)]));
-  return { ...words, ...flat, it: p.it, its: p.its, itObj: p.itObj, why: { ...words.why, ...Object.fromEntries(Object.entries(over.why).map(([k, v]) => [k, put(v)])) } };
+  return { ...words, ...flat, wonSays: null, it: p.it, its: p.its, itObj: p.itObj, why: { ...words.why, ...Object.fromEntries(Object.entries(over.why).map(([k, v]) => [k, put(v)])) } };
 }
 
 export const WORDS = {
@@ -96,6 +96,10 @@ export const WORDS = {
     it: '它', its: '它', itObj: '它',
     yours: '你的阵前', theirs: '它的阵前', empty: '空', taunt: '护主', arriving: '刚到',
     struck: '已出手', spoils: '所得', spoilsCard: '新得一张牌，往后可带进斗法：', spoilsBag: '收进储物袋：', spoilsClose: '收起', spoilsSpent: '用去：', spentTitle: '用去', xw: '修为', ls: '灵石', quit: '认输', won: '胜', passed: '试过了', lost: '败', withdrew: '它力竭遁走',
+    wonSays: ['它伏低了身子，退进草里去了。', '它垂下头，慢慢走开了。', '它喘了几口粗气，掉头走了。', '它服了，退开三步，不再上前。', '它看了你一眼，钻进林子去了。',
+      '它低低叫了一声，转身走了。', '它趴在地上，不动了。', '它夹起尾巴，溜了。', '它收了凶相，退到一边去了。', '它一瘸一拐地走远了。',
+      '它不再看你，自顾自走了。', '风一过，它已经不见了。', '它往后一缩，没进山影里。', '它甩甩头，退回它来的地方。', '它伏在原地，喘着气，认了。',
+      '它让开了路。', '它退了，一步一回头。', '它没力气了，蹲在那儿看你走过去。', '地上只剩几个爪印。', '它服了软，走了。'],
     wonSay: '它退入雾中。', passedSay: '它们收了回去，不再动了。', lostSay: '你退了半里地，它没有追。', withdrewSay: '它一口气用尽，转身走了 —— 这一场不算你赢。',
     why: {
       'no-mana': '灵力不够', 'board-full': '阵前满了', 'not-your-turn': '还没轮到你',
@@ -133,6 +137,10 @@ export const WORDS = {
     hp: 'Life', mana: 'Force', deck: 'Deck', hand: 'Hand', power: 'Root Strike', end: 'End turn',
     yours: 'Your rank', theirs: 'Its rank', empty: 'empty', taunt: 'Guard', arriving: 'just arrived',
     struck: 'has struck', spoils: 'Spoils', spoilsCard: 'A new card, yours to take into a fight:', spoilsBag: 'Into the pouch: ', spoilsClose: 'Put away', spoilsSpent: 'Used up: ', spentTitle: 'Used up', xw: 'Cultivation', ls: 'Stones', quit: 'Yield', won: 'Won', passed: 'Passed', lost: 'Lost', withdrew: 'It withdrew',
+    wonSays: ['It drops low and backs into the grass.', 'It lowers its head and walks slowly off.', 'It blows a few hard breaths and turns away.', 'It gives in, backs three steps, and comes no closer.', 'It gives you one look and slips into the trees.',
+      'It makes a low sound and turns away.', 'It lies down on the ground and stays there.', 'Tail tucked, it slinks off.', 'Its fury gone, it moves aside.', 'It limps away into the distance.',
+      'It stops looking at you and goes its own way.', 'A gust passes, and it is gone.', 'It shrinks back and melts into the mountain\'s shadow.', 'It shakes its head and goes back where it came from.', 'It crouches where it is, panting, and yields.',
+      'It steps out of your way.', 'It retreats, looking back at every step.', 'Spent, it sits and watches you walk past.', 'Only a few pawprints are left on the ground.', 'It softens, and goes.'],
     wonSay: 'It backs into the mist.', passedSay: 'They draw back and are still.', lostSay: 'You give ground; it does not follow.', withdrewSay: 'Its breath runs out and it turns away — this one does not count as a win.',
     why: {
       'no-mana': 'not enough Force', 'board-full': 'the rank is full', 'not-your-turn': 'not your turn',
@@ -769,9 +777,12 @@ export function endOf(st) {
   const passed = st.outcome === 'won' && (st.log ?? []).some(t => t.act === 'trial-passed');
   return passed ? 'passed' : st.outcome;
 }
+/* A beast beaten goes its own way — one of twenty lines, by the fight's seed (Hanli, 2026-10-15:
+   「战胜后的“它退入雾中”能换一换吗?」 → 「从这20个里每次挑一个」), so a redraw keeps the same one. */
+const wonLine = (st, lines) => lines[hashOf(`won|${st.seed ?? ''}|${st.turn ?? 0}`) % lines.length];
 function endHtml(st, ctx) {
   const w = ctx.words, e = ENDS[ctx.lang === 'en' ? 'en' : 'zh'], end = endOf(st);
-  const said = w[`${end}Say`] ?? '';
+  const said = end === 'won' && w.wonSays?.length ? wonLine(st, w.wonSays) : w[`${end}Say`] ?? '';
   const title = [ctx.title, e.done].filter(Boolean).join(' · ');
   const bubble = ctx.says?.end ? `<div class="bsay foe">${esc(ctx.says.end)}</div>` : '';
   return `<div class="bover ${esc(st.outcome)}"><div class="card closecard bclose ${esc(end)}">
