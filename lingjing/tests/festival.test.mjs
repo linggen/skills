@@ -269,7 +269,8 @@ test('the stage\'s picture: the scene\'s own, a story sky, the festival\'s paint
   const table = { kinds: { clear: { day: 'c-d', night: 'c-n' }, rain: { day: 'r-d', night: 'r-n' } } };
   const festival = { backdrop: 'art/festival/zhongqiu.webp' };
   assert.equal(stageArt({ scene: { backdrop: 'own' }, weather: { kind: 'rain', source: 'story' }, festival, table }), 'own');
-  assert.equal(stageArt({ scene: {}, weather: { kind: 'rain', source: 'story' }, festival, table }), 'r-d', 'the book\'s sky beats the festival');
+  assert.equal(stageArt({ scene: {}, weather: { kind: 'rain', source: 'story' }, festival, table }), festival.backdrop, 'the festival beats the book\'s sky (its rain still draws on top)');
+  assert.equal(stageArt({ scene: {}, weather: { kind: 'rain', source: 'story' }, festival: null, table }), 'r-d');
   assert.equal(stageArt({ scene: {}, weather: { kind: 'rain', source: 'city' }, festival, table, isDay: false }), festival.backdrop);
   assert.equal(stageArt({ scene: null, weather: { kind: 'rain', source: 'city' }, festival: null, table, isDay: false }), 'r-n');
   assert.equal(stageArt({ scene: { line: 'jin' }, weather: { kind: 'rain' }, festival, table }), null);
@@ -298,7 +299,9 @@ test('the stage resolver, tier by tier: scene · festival · place · story sky 
   assert.deepEqual(stagePick({ ...base, scene: { backdrop: 'own' }, festival: fest, place }), { tier: 'scene', art: 'own' });
   assert.deepEqual(stagePick({ ...base, festival: fest, place }), { tier: 'festival', art: fest.backdrop });
   assert.deepEqual(stagePick({ ...base, place }), { tier: 'place', art: place.backdrop });
-  assert.deepEqual(stagePick({ ...base, weather: { kind: 'storm', source: 'story' }, festival: fest }), { tier: 'story', art: 's-d' }, 'the book\'s sky beats the festival and the 节气');
+  assert.deepEqual(stagePick({ ...base, weather: { kind: 'storm', source: 'story' }, festival: fest }), { tier: 'festival', art: fest.backdrop }, 'a festival beats the book\'s sky; the storm still draws over it');
+  assert.deepEqual(stagePick({ ...base, weather: { kind: 'storm', source: 'story' } }), { tier: 'story', art: 's-d' }, 'the book\'s sky beats the 节气');
+  assert.deepEqual(atmosOf(null, 'storm', { season: 'autumn' }).particles, ['rain'], 'the story\'s storm draws its rain whatever the picture');
   assert.deepEqual(stagePick({ ...base, weather: { kind: 'storm', source: 'story' }, place }), { tier: 'place', art: place.backdrop }, 'a painted place keeps its picture; the storm draws on top');
   assert.deepEqual(stagePick(base), { tier: 'term', art: 'art/jieqi/hanlu.webp' });
   assert.deepEqual(stagePick({ ...base, scene: { indoor: true } }), { tier: 'weather', art: 'c-d' }, 'a room never shows the 节气\'s landscape');

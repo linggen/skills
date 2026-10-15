@@ -108,14 +108,15 @@ export function backdropOf(table, kind, isDay = true) {
 
 /// The stage's picture (2026-10-15): one ordered resolver — the first tier that names a
 /// picture wins. `scene` its own picture (a set piece's, a scene's `backdrop`); `festival` on its
-/// day or days (Look's today.festival.backdrop) unless the book names the scene's sky; `place` the
+/// day or days (Look's today.festival.backdrop) — Hanli: 「festival > 地点 > 节气 > 天气」; a sky the
+/// book names still draws its weather over it (atmosOf); `place` the
 /// place's own painting (outdoor or a room); a sky the book names, its weather painting; the 节气 in
 /// effect (`term`, the world's backdrops.json `terms`) outdoors; the weather's painting last.
 /// 今线 has only its place's painting (the scene's `scape`, placeart.js). The season, weather and wind
 /// layers draw over whichever wins (atmosOf).
 export const STAGE_TIERS = [
   ['scene', (c) => c.scene?.backdrop],
-  ['festival', (c) => (c.weather?.source === 'story' ? null : c.festival?.backdrop)],
+  ['festival', (c) => c.festival?.backdrop],
   ['place', (c) => c.place?.backdrop],
   ['story', (c) => (c.weather?.source === 'story' ? backdropOf(c.table, c.weather.kind, c.isDay) : null)],
   ['term', (c) => (indoorOf(c.scene, c.place) ? null : c.table?.terms?.[c.term?.id ?? c.term])],
