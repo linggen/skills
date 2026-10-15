@@ -188,7 +188,8 @@ body.storying .slots { visibility: hidden; }
 .story .wayacts .replaybeat .acts { justify-content: center; }
 .story .wayacts .replaybeat .act { background: rgba(251, 248, 242, .9); color: #1D1B17; border: 1px solid rgba(227, 192, 126, .7); }
 .story .wayacts .replaybeat .act.quiet { background: transparent; color: var(--on-dim); }
-.story .wayacts .lookfound li b { color: var(--on-stage); }
+.story .wayacts .lookfound li b { color: var(--on-stage); margin-right: .6em; }
+.story .wayacts .lookfound { list-style: none; margin: 0; padding: 0; width: min(44em, 100%); font-family: var(--serif); line-height: 1.7; }
 .story .wayacts .lookchip { background: rgba(13, 17, 20, .35); color: var(--on-stage); border-color: rgba(241, 236, 225, .4); }
 /* A finding on the stage: light words on a wash of ink, not pale pink on paper (2026-10-15). */
 .story .wayacts .donote { flex: none; width: min(640px, 100%); margin: 0 auto; color: #f6d3ca; background: rgba(13, 17, 20, .62); border-color: rgba(243, 194, 184, .5); }

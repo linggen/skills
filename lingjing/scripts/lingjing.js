@@ -1333,7 +1333,22 @@ function paintIf(id, html) {
   const key = `${html}\u0000${[...(view.asked ?? [])].join('|')}`;
   if (painted[id] === key) return;
   painted[id] = key;
+  const kept = keptScroll($(id));
   $(id).innerHTML = html;
+  kept();
+}
+
+/* A repaint of the same beat keeps where its scrolled parts stood (live, 2026-10-15: a 看 chip tapped
+   in the box threw its choices back to the top, the finding out of sight). A new beat starts at the top;
+   the 回看 log keeps its own rule (logAtEnd). */
+const KEEP_SCROLL = ['.story .wayacts', '.story .wholecol'];
+function keptScroll(el) {
+  const beat = el?.querySelector?.('.story')?.dataset.story;
+  const at = beat == null ? [] : KEEP_SCROLL.map((sel) => el.querySelector(sel)?.scrollTop ?? 0);
+  return () => {
+    if (!at.some(Boolean) || el.querySelector('.story')?.dataset.story !== beat) return;
+    KEEP_SCROLL.forEach((sel, i) => { const box = el.querySelector(sel); if (box && at[i]) box.scrollTop = at[i]; });
+  };
 }
 
 /* Every writer calls `render()`; the drawing happens once, on the next frame.
