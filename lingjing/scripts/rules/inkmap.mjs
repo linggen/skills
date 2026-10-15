@@ -14,6 +14,7 @@ import { pick, fill } from '../state.mjs';
 import { clone, refuse, spendStamina } from './core.mjs';
 import { advance, settleErrands } from './errands.mjs';
 import * as world from './world.mjs';
+import { sideLine } from './hui.mjs';
 
 const { placeBrief, placeName, placeOf, provinceOpen, settlePlace, inMade, inCorridor } = world;
 /* The chapter's map (world.mjs placeOpen), with the older rule — the
@@ -114,11 +115,15 @@ export function jiudingBrief(content, state) {
    (chapter.json `map.places`) not yet unfolded in this save. `walk`: it can
    be walked now — outside a corridor and a key beat (world.mjs inCorridor) —
    and the page unfolds it at once; else the page unfolds it the first time
-   its map card comes on the stage (00-chushan's tree, 蒙山 from the top). */
+   its map card comes on the stage (00-chushan's tree, 蒙山 from the top).
+   Never on a side line: a 今 interlude that opens a chapter (今 · 三 before
+   古七, 今 · 四 before 古九) walks no 古 map — it unfolds once the 古 scene is
+   reached (live 2026-10-15: 徐州's map came up over 沈芒's hospital bed). */
 function unfoldOf(content, state) {
   const ch = content.chapters[state.chapter];
   if (!ch?.map?.places?.length || world.inMade(state) || (state.unfolded ?? []).includes(ch.id) || (state.ended ?? []).includes(ch.id)) return null;
-  return { chapter: ch.id, title: pick(ch.title, state.lang) ?? ch.id, walk: !world.inCorridor(content, state) };
+  const side = Boolean(sideLine(content, ch.scenes?.[state.scene]));
+  return { chapter: ch.id, title: pick(ch.title, state.lang) ?? ch.id, walk: !side && !world.inCorridor(content, state) };
 }
 
 /* Unfolded — the page played a chapter's map unfolding: never again in this save. */

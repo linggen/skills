@@ -19,6 +19,7 @@ import fs from 'node:fs';
 import { loadContent } from '../scripts/content.mjs';
 import { look, move, resolve } from '../scripts/rules.mjs';
 import { huiOf, sceneHui } from '../scripts/rules/hui.mjs';
+import { jiudingBrief } from '../scripts/rules/inkmap.mjs';
 import { stageCards, stageSlots, withNext } from '../scripts/stage.mjs';
 import { afterBook, atTurn, atTurnCards } from '../scripts/queue.js';
 import { WORDS, cardHtml } from '../scripts/cards.js';
@@ -136,4 +137,16 @@ test('古 → 今 keeps him where he stood: a 今 scene stands nowhere on the ma
   const l = look(s, content, ctx);
   assert.equal(l.chapter.close?.id, 'h05', '第四回 · 完 first');
   assert.deepEqual(kinds(hosted(l.stage)), [], kinds(l.stage).join());
+});
+
+test('a chapter opened by a 今 interlude unfolds its 古 map only once the 古 scene is reached (徐州 over 沈芒\'s hospital bed, live 2026-10-15)', () => {
+  const base = fixture('zhuji-cliff');
+  const inJin = fresh({ ...base, chapter: '00-zhuji', scene: 'j07-guan', place: 'houshan', unfolded: [], tell_owed: [], node: null,
+    done_scenes: base.done_scenes.filter((x) => !Object.keys(content.chapters['00-zhuji'].scenes).includes(x)).concat(['j07-ankle', 'j07-dark']),
+    ended: (base.ended ?? []).filter((x) => x !== '00-zhuji'), tasks: { ...base.tasks, 'jin-pulse': { status: 'done', period: 'once', done_at: NOW.toISOString() } } });
+  assert.equal(look(inJin, content, ctx).scene.line, 'jin');
+  assert.equal(jiudingBrief(content, inJin).unfold?.walk, false, 'no 古 map unfolds on 沈芒\'s stage');
+  const back = resolve(inJin, content, ctx, { exit: 'out' }).state;
+  assert.deepEqual([back.scene, back.place], ['09-snow', 'chaifang']);
+  assert.deepEqual(jiudingBrief(content, back).unfold, { chapter: '00-zhuji', title: jiudingBrief(content, back).unfold.title, walk: true }, 'back on the 古, the chapter\'s map unfolds');
 });
