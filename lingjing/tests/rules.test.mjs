@@ -2843,13 +2843,18 @@ test('降妖: a fight open on another creature lends nothing to this one', () =>
 });
 
 /* What the page tells her of a fight says what the page measured: the low
-   moment fires at a quarter of 气血, so it cannot say 一成多. */
-test('降妖: the low-气血 word to 银月 matches the quarter it fires at', () => {
+   word (fightsay.js, 2026-10-15) fires under 30% of 气血, and says 不到三成. */
+test('降妖: the low-气血 word to 银月 matches the 30% it fires at', async () => {
+  const { LOW_AT, cuesOf, fightFacts } = await import('../scripts/fightsay.js');
+  assert.equal(LOW_AT, 0.3);
+  const v = (hp) => ({ outcome: 'open', whose: 'you', turn: 3, you: { hp, hpMax: 20, mana: 1, manaMax: 3, board: [], hand: [], root: 'water' }, foe: { hp: 10, hpMax: 14, board: [], root: 'fire', hand: 2, deck: 5 } });
+  assert.deepEqual(cuesOf(v(7), v(5), []), ['low'], '5/20 is under 30%');
+  assert.deepEqual(cuesOf(v(7), v(6), []), [], '6/20 is 30%, not under');
+  assert.match(fightFacts(v(5), { lang: 'zh', foeName: '狰', catalog: {} }, 'low'), /不到三成/);
+  assert.match(fightFacts(v(5), { lang: 'en', foeName: 'Zheng', catalog: {} }, 'low'), /under 30%/);
+  // The old held 'hurt' tell at a quarter is gone: the word is said in the fight.
   const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  const low = src.match(/st\.you\.hp \* 4 <= st\.you\.hpMax[\s\S]{0,200}?tellYinyue\('hurt', `([^`]*)`, `([^`]*)`\)/);
-  assert.ok(low, 'the low moment is a quarter');
-  assert.match(low[1], /不到三成/);
-  assert.match(low[2], /quarter/);
+  assert.doesNotMatch(src, /tellYinyue\('hurt'/);
 });
 
 /* 机缘 is one kind of 路上 (rules/road.mjs): set once a day, near, for a few
