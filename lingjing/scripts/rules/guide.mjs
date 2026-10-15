@@ -36,8 +36,8 @@ export const TOPICS = {
   divine: ({ verb, said }) => verb === 'divine' || tag(said, /起一?卦|算一?卦|问卦|命格|生辰|属相|八字|\bdivine\b/i),
   made: ({ verb, said, result }) => ['make', 'build', 'amend', 'art', 'enter', 'leave'].includes(verb) || Boolean(result?.building || result?.made?.at)
     || result?.refused === 'still-building' || tag(said, /造一|自己的(场景|世界)|make (a|my) (scene|world)/i),
-  steer: ({ verb, said }) => ['init', 'go', 'undo', 'saves', 'save', 'load', 'forget', 'worlds', 'travel'].includes(verb)
-    || tag(said, /重来|从头|存档|读档|悔棋|回到昨|别的世界|restart|begin again|\bsave\b|\bload\b|\bundo\b|another world/i),
+  steer: ({ verb, said }) => ['init', 'go', 'undo', 'saves', 'save', 'load', 'forget', 'worlds', 'travel', 'unstick'].includes(verb)
+    || tag(said, /重来|从头|存档|读档|悔棋|回到昨|别的世界|卡住|过不去|玩不了|没反应|restart|begin again|\bsave\b|\bload\b|\bundo\b|\bstuck\b|another world/i),
   story: ({ verb, said, result }) => verb === 'story' || Boolean(result?.recap_due || result?.chapter?.fresh || result?.ending) || result?.ended === true
     || tag(said, /^\[scene\] (recap|breakthrough)\b|前面的故事|九鼎是|上回/),
 };

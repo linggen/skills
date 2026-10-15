@@ -19,6 +19,7 @@ import { look, stageAt } from './look.mjs';
 import { examine } from './examine.mjs';
 import { duel, lundao, questCheck, task, win } from './tasks.mjs';
 import { seclude } from './seclusion.mjs';
+import { unstick } from './unstick.mjs';
 import { story } from './story.mjs';
 import { tale, taleInfo } from './tale.mjs';
 import { go, lang, move, summarize, trade } from './travel.mjs';
@@ -51,7 +52,7 @@ export const VERBS = gated({
   resolve, judge, task, win, duel, tame, refine, tale, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
   go, saves, save, load, forget, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, story, seclude, bag,
   gear: (s, c, x) => ({ state: null, result: { ok: true, gear: gearBrief(c, s, x?.now) } }),
-  appear, remember,
+  appear, remember, unstick,
   // The page's map: each province's places, and the 九州 in ink as the save stands (rules/inkmap.mjs).
   atlas: (s, c, x, args) => {
     const out = atlas(s, c, x, args), ink = inkMapOf(c, s, x.now);

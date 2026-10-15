@@ -18,18 +18,21 @@
 import { fill, pick } from '../state.mjs';
 import { sceneBrief } from './look.mjs';
 import { saveBrief, saveOf } from './worlds.mjs';
+import { unstickAsk } from './unstick.mjs';
 import { atScene, chapterOpen, placeBrief } from './world.mjs';
 
 export const CONFIRM_TTL_MS = 10 * 60 * 1000;
 /* The verb Ling calls → what it lets go. */
-export const GUARDED = { init: 'restart', undo: 'undo', load: 'load', forget: 'forget', go: 'go' };
-const TOOL = { restart: 'Restart', undo: 'Undo', load: 'Load', forget: 'Forget', go: 'Go' };
+export const GUARDED = { init: 'restart', undo: 'undo', load: 'load', forget: 'forget', go: 'go', unstick: 'unstick' };
+const TOOL = { restart: 'Restart', undo: 'Undo', load: 'Load', forget: 'Forget', go: 'Go', unstick: 'Unstick' };
 /* The verbs whose call names what they act on, and the arg that names it. */
 const NAMED_BY = { load: 'id', forget: 'id', go: 'scene' };
 /* The player's words asking for one — Look carries the question for these. */
 const ASKED_FOR = {
   restart: /重来|从头|重新开始|\brestart\b|begin again|start over/i,
   undo: /悔棋|悔一步|收回上一步|撤回上一步|\bundo\b|take (it|that) back/i,
+  // Stuck (rules/unstick.mjs): asked only when the health check finds something to mend.
+  unstick: /卡住|卡关|卡死|过不去|玩不了|没反应|动不了|走不下去|\bstuck\b|can'?t get past|won'?t (work|move)|doesn'?t work|nothing happens/i,
 };
 const NOT_YET = { zh: '再想想', en: 'Not yet' };
 
@@ -63,6 +66,10 @@ function sceneName(scene, state, lang) {
 /* The one question, worded in the world. */
 export function confirmAsk(what, content, state, now, id = null) {
   const lang = state.lang === 'zh' ? 'zh' : 'en', zh = lang === 'zh';
+  if (what === 'unstick') {
+    const u = unstickAsk(content, state, now);
+    return u && { header: headerOf(content, state, now), question: u.question, options: [{ label: u.yes, unstick: true }, { label: NOT_YET[lang], look: true }] };
+  }
   const name = !id ? null : what === 'go' ? sceneName(sceneTo(content, state, id, now), state, lang) : saveName(saveOf(id), lang);
   const words = {
     restart: [zh ? '从头再来？此番修行尽数散去。' : 'Begin again? Everything of this journey is let go.', zh ? '从头再来' : 'Begin again', { restart: true }],
@@ -110,6 +117,12 @@ export function guard(verb, args, state, content, now) {
     if (what === 'go') delete state.confirm;
     return null;
   }
+  // Unstick asks on its first call, naming what it would mend; nothing to mend: it runs and says so.
+  if (what === 'unstick') {
+    const ask = confirmAsk(what, content, state, now);
+    if (!ask) return null;
+    return { keep: { ...state, confirm: { what, at: now.toISOString(), ask } }, result: { ok: false, refused: 'not-confirmed', say: null, ask, then: confirmThen(what, ask) } };
+  }
   if (id != null) {
     if (what === 'go') {
       if (!sceneTo(content, state, id, now)) return null; // the verb refuses an unknown or unopened scene itself
@@ -138,5 +151,6 @@ export function onLook(said, state, content, now) {
   const what = Object.keys(ASKED_FOR).find(k => ASKED_FOR[k].test(words));
   if (!what) return null;
   const ask = confirmAsk(what, content, state, now);
+  if (!ask) return null;
   return { keep: { ...state, confirm: { what, at: now.toISOString(), ask } }, ask, then: confirmThen(what, ask) };
 }

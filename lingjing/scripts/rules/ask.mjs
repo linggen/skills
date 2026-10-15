@@ -205,6 +205,7 @@ const TAPS = {
   // The one question before what lets the journey go (rules/confirm.mjs).
   restart: () => 'Restart',
   undo: () => 'Undo',
+  unstick: () => 'Unstick',
   load: o => `Load {id: ${o.load}}`,
   forget: o => `Forget {id: ${o.forget}}`,
   go: o => `Go {scene: ${o.go}}`,

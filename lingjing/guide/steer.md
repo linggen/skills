@@ -26,6 +26,15 @@ Carried out in the world's words — never a tool, a file or an id:
   on its first option.
 - **Take it back** (悔棋): Look {said: their words} carries the one question
   (*悔棋：收回上一步？*); on 收回, **Undo**, then Look.
+- **Stuck** (卡住了, 过不去, 玩不了, 没反应; 怎么办 about the game, not the story):
+  Look {said: their words} carries the one question when the rules find
+  something to mend (*这一关先放下，往下走？不得好处，也不失什么。* — 就这么办 ·
+  再想想); else call **Unstick**, whose first call asks the same way. AskUser
+  exactly it; call Unstick again only on its first option. Back: `fixed` —
+  say in one line, in the world, what changed (*这一关先放下了*, *你回到了外门*),
+  never a board, a bug or a tool; `fixed: []` with nothing asked: nothing is
+  broken — give the nearest concrete thing from Look. It never pays and never
+  skips a scene; 悔棋 takes it back.
 
 Never restart, go, load, undo or forget unasked — the rules hold it too. A refusal (`not-open`,
 `unknown-save`, `not-named`) is told in the world.
@@ -35,6 +44,8 @@ Never restart, go, load, undo or forget unasked — the rules hold it too. A ref
 **Restart** — Begin this world again from its first scene — name, realm, bag and story all gone; the other worlds' saves untouched. Only after the player has said so and answered one AskUser confirming it. Answers with the fresh Look.
 
 **Go** — Straight to a scene by id, when the player asks for it — any scene of a chapter that has opened (Look's chapter and scene ids, e.g. 01-cauldron), or one of the player's made scenes. The road is not walked. Refuses `not-open` (with when) and `unknown-scene` (with the scenes there are).
+
+**Unstick** — Run the game's health check on the save and mend only what is safe: a story board he cannot win ends with no grade and no reward (the stage's 「算了，往下走」), a fight left open, against a beast he has tamed, or not offered here is closed (nobody won, nothing paid), he is put at the place his scene is played at, a passage never told is owed again. Answers `fixed` (each `kind` and what it names) and `left` (what it cannot mend — the builder's). Nothing to mend: it changes nothing.
 
 **Undo** — Take back the last change of the game — a move, an exit, a load, a restart — on the player's word, after one AskUser confirming it. Answers with what was undone; Look after it.
 

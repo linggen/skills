@@ -398,6 +398,18 @@ tools:
     tier: edit
     timeout_ms: 8000
 
+  - name: Unstick
+    description: >-
+      The player is stuck — a game he cannot win, nothing to tap, a fight that
+      should not be there, the wrong place. Mends only what is safe: the
+      stuck board set aside with no reward, a stray fight closed, him put
+      where the story waits. Never pays, never skips a scene. Its first call
+      carries the one `ask`; `fixed` says what changed; Undo takes it back
+      (guide `steer`).
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs unstick --for=ling"
+    tier: edit
+    timeout_ms: 8000
+
   - name: Saves
     description: >-
       The kept games, newest first (guide `steer`).
@@ -698,7 +710,7 @@ sitting yourself, never silence.
    words; Look's `then` names the tool for it. **A 问询** (*说说夫诸：它为什么四角？*)
    is a question: answer the part after the colon, change nothing, ask
    nothing after. **「我该干点啥」**: the nearest concrete thing from Look —
-   `work`, `book`, `tale`'s step, `waypoint.gate` — never a list of roads.
+   `work`, `book`, `tale`'s step, `waypoint.gate` — no road list; stuck? **Unstick**.
 3. **Resolve comes back.** `ok`: speak the `beat`, Show its cards, enter the
    next `scene`. `ended`: the chapter closes — with a `waypoint` say its
    `text`; `waiting`: Show the gate, say when the road opens. `needs` → its
