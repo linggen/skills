@@ -202,4 +202,5 @@ test('one rule for every board: no game draws a skip of its own; the page lays i
   assert.doesNotMatch(page.slice(page.indexOf('function skipGame'), page.indexOf('async function onSkip')), /won: true|onWin/, 'never sent as a win');
   // A board chosen again puts the box away, so it stands (live at j07-guan: the box held 数晨脉 › over it).
   assert.match(page.slice(page.indexOf('function choicesInBox'), page.indexOf('function dialogBoxHtml')), /!replayUp\(look\)/);
+  assert.match(page.slice(page.indexOf('function inQueue'), page.indexOf('function inQueue') + 900), /task\.replay/, 'and it queues on the stage');
 });

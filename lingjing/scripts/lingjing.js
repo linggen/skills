@@ -1217,7 +1217,8 @@ function inQueue(c) {
   // A scene that stands its board on the stage (the prologue's 二试, the first practice).
   if ((look?.scene?.show ?? []).some((f) => f.card === 'board' && f.id === c.id)) return true;
   const task = look?.tasks?.find((t) => t.id === c.id);
-  return !task || Boolean(task.hosted || task.for_errand);
+  // …and a board left on an earlier day that he chose to try again (再试一回, rules/skips.mjs).
+  return !task || Boolean(task.hosted || task.for_errand || task.replay);
 }
 
 /// What waits, by its own name and its kind (「蠪侄 · 图鉴」): a face or a thing from the 图鉴,
