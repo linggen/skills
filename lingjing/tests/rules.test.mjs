@@ -2464,6 +2464,28 @@ test('「我该干点啥」: the rules name the nearest place with work, and the
   assert.equal(look(full, content, at).work, undefined);
 });
 
+test('a cauldron waiting on 修为: the work pointed at raises it — an errand of 修行, else a beast; never a 杂役 that pays 灵石 only', () => {
+  // Review, 2026-10-15: under the gate 下一步 and the goal line named the nearest errand of any kind — 执事堂's 杂役.
+  const at = ctx({ now: new Date('2026-09-21T12:00:00') });
+  const base = { ...toOpenWorld(), chapter: '04-xu', place: 'zhishi', tier: 'qi', step: 3, progress: 0, bag: {}, quests: {} };
+  const free = look({ ...base, scene: null }, content, at);
+  assert.equal(free.work.here, true, 'no gate: the 执事堂\'s own errands are the nearest work');
+  const gated = { ...base, scene: '04-cauldron' };
+  const l = look(gated, content, at);
+  assert.ok(l.waypoint.gate, 'the cauldron waits on 修为');
+  assert.ok(l.offers.some(o => o.work === 'labor'), '杂役 are on offer where he stands');
+  assert.equal(l.work.kind, 'errand');
+  assert.equal(l.work.here, false, 'the 杂役 here are passed over');
+  const named = l.work.titles;
+  const cultivation = [...content.quests, ...content.notices].filter(q => q.work === 'cultivation').map(q => q.title.zh);
+  assert.ok(named.length && named.every(t => cultivation.includes(t)), `only 修行 errands: ${named}`);
+  // No 修行 errand to be had (the book full): a beast to fight — where, with no gate, nothing is named.
+  const full = { 'xu-elder-herb': { took: '2026-09-21', have: {} }, 'xu-yunlong-herbs': { took: '2026-09-21', have: {} }, 'xu-lvliang-look': { took: '2026-09-21', have: {} } };
+  assert.equal(look({ ...base, scene: null, quests: full }, content, at).work, undefined);
+  const busy = look({ ...gated, quests: full }, content, at);
+  assert.equal(busy.work?.kind, 'beast', JSON.stringify(busy.work));
+});
+
 test('arriving is an event: the errand met there is told with what is seen, 交差 leads the question, and a tale a week old shuts nothing out', () => {
   // 2026-09-21: he reached 吕梁洪 for the fisherman's errand; the chat said a line and asked 何去何从.
   const at = ctx({ now: new Date('2026-09-21T12:00:00') });

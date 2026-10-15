@@ -239,7 +239,7 @@ function offersOf(content, state, lang, now) {
       && (!q.pass || (!state.pass && !tooHard(content, state, placeOf(content, q.pass.to) ?? { tier: Infinity })))
       && (!q.opens?.tier || TIERS_ORDER(content).indexOf(state.tier) >= TIERS_ORDER(content).indexOf(q.opens.tier))
       && layerMet(content, state, q))
-    .map(q => ({ id: q.id, title: pick(q.title, lang), who: q.from.who ? pick(q.from.who, lang) : null, say: fill(pick(q.say, lang), state, content), need: q.need.map(n => ({ kind: n.kind, n: n.n })), grant: q.grant, pays: paysOf(content, state, now, q.grant) }));
+    .map(q => ({ id: q.id, title: pick(q.title, lang), work: q.work ?? null, who: q.from.who ? pick(q.from.who, lang) : null, say: fill(pick(q.say, lang), state, content), need: q.need.map(n => ({ kind: n.kind, n: n.n })), grant: q.grant, pays: paysOf(content, state, now, q.grant) }));
 }
 
 const TIERS_ORDER = content => content.ladder.tiers.map(t => t.id);
@@ -255,8 +255,8 @@ function layerMet(content, state, q) {
 /* Where work is to be had — the nearest place, by road, that offers an errand
    he may take. The rules always knew; nothing said it, and with the spine
    gated and the book empty he stood at 吕梁洪 asking 「我该干点啥？」 (2026-
-   09-21). Null while the book is full, or when nothing is on offer anywhere he
-   can walk. */
+   09-21). Null when nothing is on offer anywhere he can walk, or while the
+   book is full (under a 修为 gate, a beast then — below). */
 /* No errand anywhere in reach: the nearest beast not yet met today is work
    too (his, 2026-09-23: 剧情卡这里了, 没人给提示, 也没有下一个差事 — 484 修为
    short of a cauldron with an empty book and a goal line that named nothing). */
@@ -271,12 +271,18 @@ function beastWork(content, state, ctx, here) {
   return { kind: 'beast', place: placeName(content, state, at.p), here: at.p.id === here.id, roads: at.way.length, titles: [pick(creatureOf(content, at.p.has.creature)?.name, state.lang)] };
 }
 
+/* Under a cauldron that waits on 修为 (waitsOnPeak) the work pointed at is
+   work that raises it: an errand of 修行 (`work: 'cultivation'`), else a beast
+   to fight — never a 杂役 that pays 灵石 only (review, 2026-10-15). */
 function workOf(content, state, ctx) {
   if (inMade(state) || atScene(content, state)) return null;
   const here = placeOf(content, state.place);
-  if (!here || errandsOf(content, state, state.lang, ctx.now).length >= BOOK_MAX) return null;
+  if (!here) return null;
+  const peak = waitsOnPeak(content, state, ctx.now);
+  if (errandsOf(content, state, state.lang, ctx.now).length >= BOOK_MAX) return peak ? beastWork(content, state, ctx, here) : null;
+  const raises = o => !peak || o.work === 'cultivation';
   const at = allPlaces(content)
-    .map(p => ({ p, offers: offersOf(content, { ...state, place: p.id }, state.lang, ctx.now) }))
+    .map(p => ({ p, offers: offersOf(content, { ...state, place: p.id }, state.lang, ctx.now).filter(raises) }))
     .filter(x => x.offers.length)
     .map(x => ({ ...x, way: x.p.id === here.id ? [] : pathOf(content, state, here, x.p, ctx.now) }))
     .filter(x => x.way)
