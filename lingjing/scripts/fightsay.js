@@ -78,9 +78,11 @@ function handWords(v, id, ctx, full) {
   if (!c) return null;
   const nm = nameOf(c, ctx.lang), cost = costOf(v.you, c);
   if (!full) return zh ? `${nm}${cost}` : `${nm} ${cost}`;
+  // A 灵兽's body (its 入阵 too, as the card prints it: 银月's heal); a 功法's effect as it stands now.
+  const said = (c.kind !== 'minion' || c.effect) ? plain(sayEffect({ ...c, effect: effectOf(v.you, c) }, ctx)).replace(/\s+/g, zh ? '' : ' ') : '';
   const does = c.kind === 'minion'
-    ? `${c.atk ?? 0}/${c.hp ?? 0}${c.keywords?.includes('taunt') ? (zh ? '护主' : ' Guard') : ''}`
-    : plain(sayEffect({ ...c, effect: effectOf(v.you, c) }, ctx)).replace(/\s+/g, zh ? '' : ' ');
+    ? `${c.atk ?? 0}/${c.hp ?? 0}${said ? `${zh ? ',' : ', '}${said}` : c.keywords?.includes('taunt') ? (zh ? '护主' : ' Guard') : ''}`
+    : said;
   return zh ? `${nm}(${cost}灵力,${does})` : `${nm} (${cost}, ${does})`;
 }
 function clashWords(you, foe, zh) {
