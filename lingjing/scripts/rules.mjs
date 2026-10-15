@@ -46,6 +46,7 @@ import { BUILDING_WAITS, keepDay, keepSave, paintList, readSave } from './rules/
 import { changes } from './rules/changes.mjs';
 import { playTo, summaryOf, toldUpTo } from './rules/progress.mjs';
 import { herMishi } from './rules/mishi.mjs';
+import { fightStamp } from './rules/engine.mjs';
 
 export { refine, TREASURE_TOP } from './rules/arms.mjs';
 export { askOf, tapThen, thenFor } from './rules/ask.mjs';
@@ -178,6 +179,8 @@ function runLocked(verb, args, stateFile, reader) {
   if (theirs) return theirs;
   // The player's typed words reach only Ling's calls: a quote from the page is never trusted (rules/ledger.mjs).
   const out = fn(state, content, { now, quests: readQuests(), turn: userTurn(), said: args.said, words: reader === 'ling' ? userWords() : null, reader }, args);
+  // The page's Look and duel answers carry the fight engine's stamp (rules/engine.mjs): a page older than the rules reloads.
+  if (!reader && STAMPED.has(verb) && out.result) out.result.engine = fightStamp(content);
   if (out.result?.load) return loadSave(out.result.load, state, { stateFile, logFile, now });
   // Forget answered: the asking is used up (Load's is, with the save it replaces).
   if (verb === 'forget' && out.result?.ok && state.confirm) writeAtomic(stateFile, stateText(unconfirmed(state)));
@@ -265,6 +268,8 @@ function runLocked(verb, args, stateFile, reader) {
   const tap = verb === 'look' && tapThen(answer.ask ?? askOf(content, next ?? state, tapCtx, {}, true), args.said);
   return tellFirst(tap ? { ...answer, then: tap } : answer);
 }
+
+const STAMPED = new Set(['look', 'duel']);
 
 /* Seed — a scratch save only (`--save=<name>`): begin it again from the
    start (`--from=fresh`, the default), from a copy of the player's own save

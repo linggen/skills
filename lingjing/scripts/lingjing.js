@@ -499,6 +499,7 @@ async function readOnce() {
     // The scene just left, kept for its header while its choice's passage is still told.
     if (look?.scene && seen?.scene?.id !== look.scene.id) leftLook(look);
     look = seen;
+    if (look?.engine && !engineAt) engineAt = look.engine;
     watchRun();
     if (look.divination) keep({ casting: false });
     await loadContent(look.world, contentStale);
@@ -539,6 +540,23 @@ async function readOnce() {
 /// A creature just painted, or a fight dealt cards the page cannot name: the
 /// next read takes the world's content again (and draws the old until then).
 let contentStale = false;
+/* The fight engine the page was loaded with (rules/engine.mjs): the stamp its first Look carried. A
+   duel answer with another one means an install landed while the page stood open — its battle.js is
+   older than the rules', and a fight played on it would be refused 「这一战没记上」 over a blank stage
+   (2026-10-15). The page reloads once into the same fight (the save holds it open, its deal kept). */
+let engineAt = null;
+const ENGINE_KEY = `lingjing.engine-reload.${SCRATCH || 'main'}`;
+function engineMoved(r) {
+  if (!r?.engine || !engineAt || r.engine === engineAt) return false;
+  let tried = null;
+  try { tried = sessionStorage.getItem(ENGINE_KEY); } catch { /* no storage */ }
+  return tried !== r.engine;
+}
+function reloadForEngine(r) {
+  try { sessionStorage.setItem(ENGINE_KEY, r.engine); } catch { /* no storage: reload anyway */ }
+  keep({ walkedOut: null });
+  location.reload();
+}
 
 /* ── Drawing ── */
 
@@ -3187,6 +3205,8 @@ async function onDuelStart(id) {
       show({ duelSay: { id, text: r.say ?? null } });
       return;
     }
+    // Rules newer than the page: reload into this fight before a turn is played on the old engine.
+    if (engineMoved(r)) return reloadForEngine(r);
     const brief = r.duel;
     // The page has to be able to NAME every card the door locked in. If it
     // cannot, its content is older than the fight — read the world again, and if
@@ -3349,6 +3369,7 @@ async function settleBout(b = bout) {
   }
   if (bout === b) bout = null;
   b.say?.close();
+  if (!r.ok && engineMoved(r)) return reloadForEngine(r);
   if (!r.ok) {
     console.warn('[lingjing] the rules refused the fight', r);
     // The save may still hold it open: it waits on its card for his tap, and
