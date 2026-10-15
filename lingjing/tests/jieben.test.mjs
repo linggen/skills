@@ -56,9 +56,12 @@ test('every beat of a cut names a paragraph the book holds — the one read.js o
       }
     }
   }
-  // An uncondensed passage's beats are the book's paragraphs themselves: no `at`.
+  // An uncondensed passage's beats are the book's paragraphs themselves: no `at`. (卷一's opening
+  // scene is condensed too since 2026-10-15, so a short passage the game plays whole stands in.)
   const s = newState(content, 'zh', NOW);
-  assert.ok(playOf(content, s, tellOf(content, s).tell).every((t) => t.beats.zh.every((b) => !('at' in b))));
+  const whole = scenes.find((sc) => sc.id === '00-dawn');
+  assert.ok(!whole.story_full, '00-dawn plays its short passage whole');
+  assert.ok(beatsOf(content, s, { of: 'scene', id: whole.id, text: passageFor(content, s, whole.story) }).every((b) => !('at' in b)));
 });
 
 test('the cut is what the box plays: 00-gate opens on 第三回\'s words, the book\'s ride along only as anchors', () => {
