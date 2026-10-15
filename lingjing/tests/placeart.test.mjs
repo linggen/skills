@@ -40,13 +40,15 @@ test('a 今线 scene goes by its scape, not its place', () => {
   assert.equal(placeArtOf(table, { scape: 'track' }), null);
 });
 
-test('the stage: a festival over the place, the place over the 节气 and the weather; 今线 only its place', async () => {
+test('the stage: a festival over the place outdoors, the place over the 节气 and the weather; 今线 only its place', async () => {
   const { stagePick, indoorOf } = await import('../scripts/atmos.js');
   const tb = { kinds: { clear: { day: 'c-d', night: 'c-n' } }, terms: { lidong: 't-lidong' } };
   const art = placeArtOf(table, { at: 'chaifang' });
   const place = { id: 'chaifang', backdrop: art.src, indoor: art.indoor };
   assert.deepEqual(stagePick({ place, table: tb, term: 'lidong', weather: { kind: 'clear' } }), { tier: 'place', art: 'a/chaifang.webp' });
-  assert.deepEqual(stagePick({ place, table: tb, festival: { backdrop: 'f' }, weather: { kind: 'clear' } }), { tier: 'festival', art: 'f' });
+  // 柴房 is a room: on a festival day it keeps its own painting (Hanli, 2026-10-15: 「节日画只在户外显示」); outdoors the festival wins.
+  assert.deepEqual(stagePick({ place, table: tb, festival: { backdrop: 'f' }, weather: { kind: 'clear' } }), { tier: 'place', art: 'a/chaifang.webp' });
+  assert.deepEqual(stagePick({ place: { ...place, indoor: false }, table: tb, festival: { backdrop: 'f' }, weather: { kind: 'clear' } }), { tier: 'festival', art: 'f' });
   assert.deepEqual(stagePick({ place: { id: 'x' }, table: tb, term: 'lidong', weather: { kind: 'clear' } }), { tier: 'term', art: 't-lidong' });
   assert.equal(indoorOf(null, place), true);
   const jin = placeArtOf(table, { scape: 'stacks' });

@@ -282,6 +282,18 @@ test('the stage\'s picture: the scene\'s own, a story sky, the festival\'s paint
   assert.equal(t.festival.backdrop, 'art/festival/zhongqiu.webp');
 });
 
+test('a festival\'s painting is outdoors only: a room keeps its own painting on the day (Hanli, 2026-10-15)', () => {
+  const table = { kinds: { clear: { day: 'c-d', night: 'c-n' } }, terms: { hanlu: 'art/jieqi/hanlu.webp' } };
+  const base = { table, weather: { kind: 'clear', source: 'city' }, term: { id: 'hanlu' }, festival: { backdrop: 'art/festival/chongyang.webp' } };
+  const room = { backdrop: 'art/place/danfang.webp', indoor: true };
+  assert.deepEqual(stagePick({ ...base, place: room }), { tier: 'place', art: room.backdrop }, 'the room\'s own painting, never the festival\'s');
+  assert.deepEqual(stagePick({ ...base, scene: { indoor: true }, place: { backdrop: 'art/place/x.webp' } }), { tier: 'place', art: 'art/place/x.webp' }, 'a scene that says indoor');
+  assert.deepEqual(stagePick({ ...base, place: { backdrop: 'art/place/shiao.webp' } }), { tier: 'festival', art: 'art/festival/chongyang.webp' }, 'outdoors the festival still wins');
+  assert.deepEqual(stagePick({ ...base, place: { indoor: true } }), { tier: 'weather', art: 'c-d' }, 'a room without a painting: neither festival nor 节气');
+  // The festival's dressing still hangs in a room (atmosOf: a frame, no rain).
+  assert.equal(atmosOf({ frame: 'lantern' }, 'rain', { indoor: true }).frame, 'lantern');
+});
+
 test('a 节气 stands from its day until the next', () => {
   assert.equal(dayOf(ymd('2026-10-07')).standing.id, 'qiufen');
   assert.equal(dayOf(ymd('2026-10-08')).standing.id, 'hanlu'); // 寒露 falls 10/8
