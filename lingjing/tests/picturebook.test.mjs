@@ -258,11 +258,12 @@ test('恩仇簿: the choices write who and what, once each; Look names them; the
 test('《吐纳经》: the pouch reads the passage for the layer, the classic\'s words exact; Look hands Ling the day\'s 功课', () => {
   const s = walk(start(), TO_WAIMEN, content, NOW);
   const r = readingOf(content, s, 'tuna');
-  assert.equal(r.layer, 1);
+  assert.equal(r.layer, 1, '零层 reads the first layer');
+  assert.equal(readingOf(content, { ...s, step: 1 }, 'tuna').layer, 1, '一层 too');
   assert.equal(r.name, '引气');
   assert.equal(r.gongke, '心数至一百二十，吐气时鸿毛不动');
   assert.equal(r.passage.quotes[0].text, '得胎息者，能不以鼻口嘘吸，如在胞胎之中，则道成矣。');
-  const seventh = readingOf(content, { ...s, step: 6 }, 'tuna');
+  const seventh = readingOf(content, { ...s, step: 7 }, 'tuna');
   assert.equal(seventh.passage.quotes[1].text, '真人之息以踵，众人之息以喉。');
   assert.equal(readingOf(content, { ...s, tier: 'foundation', step: 0 }, 'tuna').layer, 9, 'past 练气: the last layer');
   const en = readingOf(content, { ...s, lang: 'en' }, 'tuna');

@@ -1,7 +1,7 @@
 // The player's state and the arithmetic over it. Pure: no files, no clock —
 // the caller passes `now`.
 
-export const STATE_VERSION = 7;
+export const STATE_VERSION = 8;
 export const FIRST_WORLD = 'jiuding'; // the world every save before worlds was playing
 
 export function firstChapter(content) {
@@ -334,8 +334,11 @@ export function stepName(content, tierId, step, lang) {
 export function phaseName(content, tierId, step, lang) {
   const tier = tierOf(content, tierId), phases = content.ladder.phases;
   if (!tier || !phases) return null;
-  const per = Math.ceil(tier.thresholds.length / pick(phases, lang).length);
-  const name = pick(tier.name, lang), p = pick(phases, lang)[Math.floor(step / per)];
+  // 零层 is before the phases (一至三层 小成): it reads as itself.
+  if (zeroAt(content, tierId, step)) return stepName(content, tierId, step, lang);
+  const from = tier.zero ? 1 : 0;
+  const per = Math.ceil((tier.thresholds.length - from) / pick(phases, lang).length);
+  const name = pick(tier.name, lang), p = pick(phases, lang)[Math.floor((step - from) / per)];
   return lang === 'zh' ? `${name}${p}` : `${name} · ${p}`;
 }
 
@@ -362,7 +365,7 @@ export function peakName(content, tierId, lang) {
    is filled (held at a cap or the realm's top). */
 export function realmName(content, state, lang) {
   const tier = tierOf(content, state.tier);
-  const filled = tier && (state.progress ?? 0) >= tier.thresholds[state.step];
+  const filled = tier && !zeroAt(content, state.tier, state.step) && (state.progress ?? 0) >= tier.thresholds[state.step];
   return filled ? fullName(content, state.tier, state.step, lang) : stepName(content, state.tier, state.step, lang);
 }
 
@@ -382,6 +385,8 @@ export function payOf(content, state) {
 export function addProgress(content, state, amount, mayStep = null) {
   const levels = [];
   let hold = null;
+  // 零层 takes no 修为: what came is held, and only the 小周天 (a `rise`) leaves it.
+  if (zeroAt(content, state.tier, state.step)) return { levels, hold: amount > 0 ? { zero: true, held: amount } : null };
   state.progress += amount;
   for (;;) {
     const need = threshold(content, state);
@@ -454,6 +459,10 @@ const MIGRATIONS = [
   // fitWorld (nineToThree). A save older than v6 is already on three steps
   // (the thresholds are the pre-v6 ones again): only its v6 mark is let go.
   [7, m => { if (!m.ladder3) m.ladder9 = true; }],
+  // v8 (2026-10-15, Hanli: 零层入门, the 小周天 → 一层): 练气 gained 零层 as its
+  // step 0, so every old step k reads one 层 lower. Marked, carried by fitWorld
+  // (zeroLayer) — which scenes the save has passed decides it.
+  [8, m => { m.ladder_zero = true; }],
 ];
 
 export function migrate(state, content = null) {
@@ -502,12 +511,42 @@ export function nineToThree(content, saved) {
   return { ...s, step, progress: Math.min(passed + (s.progress ?? 0), th[step]) };
 }
 
+/* A save from before 零层 (marked by v8, 2026-10-15): on the old ladder 练气's
+   step k was named (k+1)层, so a save admitted then stood at 一层 from the
+   gate and the 小周天's 修为 lifted it to 二层 — one 层 over the book. On the
+   new ladder the same k is named k层: the save keeps its step and reads one
+   层 lower, except
+   - a save that has passed a story rise to 二层 or higher (古四's close, 息壤,
+     the years, 腊八): that rise set the 层 by its name and the book agrees, so
+     the step moves up one and keeps the name and the 修为 (old thresholds[k]
+     is new thresholds[k+1]);
+   - a save at step 0 that has passed the 小周天 (the scene that rises to 一层)
+     is 一层; one that has not stands at 零层, its 修为 kept unseen for the rise.
+   The 修为 held never passes the new step's threshold. A tier without 零层 is
+   left as it was. */
+const zeroRises = (content, layer) => Object.values(content.chapters).flatMap(ch => Object.values(ch.scenes)
+  .filter(sc => (sc.exits ?? []).some(e => { const l = typeof e.rise === 'object' && e.rise ? e.rise.layer : e.rise; return layer(l); }))
+  .map(sc => ({ chapter: ch.id, scene: sc.id })));
+const passedScene = (s, at) => (s.done_scenes ?? []).includes(at.scene) || (s.ended ?? []).includes(at.chapter) || (s.chapter != null && s.chapter > at.chapter);
+export function zeroLayer(content, saved) {
+  const { ladder_zero, ...s } = saved;
+  const tier = tierOf(content, s.tier), th = tier?.thresholds;
+  if (!tier?.zero || !(s.step >= 0 && s.step < th.length)) return s;
+  const anchored = zeroRises(content, l => Number.isInteger(l) && l >= 2).some(at => (s.done_scenes ?? []).includes(at.scene));
+  const step = anchored ? Math.min(s.step + 1, th.length - 1)
+    : s.step > 0 ? s.step
+      : zeroRises(content, l => l === 1).some(at => passedScene(s, at)) ? 1 : 0;
+  // At 零层 what it held is kept, unseen: the 小周天's rise carries it into 一层 (core.mjs riseTo).
+  return { ...s, step, progress: step === 0 ? (s.progress ?? 0) : Math.min(s.progress ?? 0, th[step]) };
+}
+
 export function fitWorld(saved, content) {
   // 奇遇 (Branch) went 2026-09-24 for 今日传闻: an open one is closed quietly, unpaid.
   const { branch, ...rest } = saved;
   let state = 'branch' in saved ? rest : saved;
   if ('ladder3' in state) state = threeToNine(content, state);
   if ('ladder9' in state) state = nineToThree(content, state);
+  if ('ladder_zero' in state) state = zeroLayer(content, state);
   const tier = tierOf(content, state.tier);
   const chapter = content.chapters[state.chapter];
   // A scene renamed since — the prologue rewrite of 2026-09-28 — goes to the

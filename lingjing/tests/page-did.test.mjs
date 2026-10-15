@@ -25,7 +25,7 @@ function game() {
   // Open country in 冀州 after 卷一, where the roads lead on (卷一 is all there is, 2026-10-05).
   const s = save();
   const ji = Object.keys(content.chapters['01-ji'].scenes);
-  fs.writeFileSync(file, JSON.stringify({ ...s, name: 'Alex', chapter: '01-ji', scene: null, place: 'ye', ended: ['00-prologue', '00-waimen', '00-zhuji', '01-ji'], done_scenes: [...s.done_scenes, ...ji] }));
+  fs.writeFileSync(file, JSON.stringify({ ...s, name: 'Alex', step: 1, chapter: '01-ji', scene: null, place: 'ye', ended: ['00-prologue', '00-waimen', '00-zhuji', '01-ji'], done_scenes: [...s.done_scenes, ...ji] }));
   return { cli, save, done: () => fs.rmSync(data, { recursive: true, force: true }) };
 }
 

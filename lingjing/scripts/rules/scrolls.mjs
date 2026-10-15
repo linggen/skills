@@ -6,7 +6,7 @@
 // of 练气, each with its 功课 (worlds/<id>/scrolls.json). An item's `reads`
 // names the scroll; opened in the pouch it shows the passage for the layer the
 // player stands on, and Look hands Ling that layer's 功课 as the practice hint.
-import { pick } from '../state.mjs';
+import { layerNo, pick } from '../state.mjs';
 
 const scrollOf = (content, id) => content.scrolls?.scrolls?.[id] ?? null;
 
@@ -14,7 +14,7 @@ const scrollOf = (content, id) => content.scrolls?.scrolls?.[id] ?? null;
    first before it, the last past it. */
 function layerOf(content, state, scroll) {
   const tiers = content.ladder.tiers.map(t => t.id), at = tiers.indexOf(state.tier), home = tiers.indexOf(scroll.tier);
-  const n = at < home ? 1 : at > home ? scroll.layers.length : Math.min((state.step ?? 0) + 1, scroll.layers.length);
+  const n = at < home ? 1 : at > home ? scroll.layers.length : Math.max(1, Math.min(layerNo(content, state.tier, state.step ?? 0), scroll.layers.length));
   return scroll.layers[n - 1];
 }
 

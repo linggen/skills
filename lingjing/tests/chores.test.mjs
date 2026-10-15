@@ -14,7 +14,7 @@ const content = loadContent();
 const NOW = new Date('2026-09-24T10:00:00'); // a Thursday
 const day = (n, h = 10) => new Date(2026, 8, 24 + n, h);
 // Joined (the outer court): before the prologue's story gate there are no 功课 and no 开府 (chapter.json `locks`).
-const start = () => ({ ...newState(content, 'zh', NOW), scene: '00-waimen', place: 'waimen' });
+const start = () => ({ ...newState(content, 'zh', NOW), scene: '00-waimen', place: 'waimen', step: 1 }); // 一层: 零层 takes no 修为
 const T = id => ({ zh: `做${id}`, en: `Do ${id}` });
 
 const entry = (id, extra = {}) => ({ id, app: id.split('-')[0], period: 'week', due: true, reward: 20, stamina: 10, device: 'mac', pool: true, done_at: null, title: T(id), ...extra });

@@ -21,34 +21,44 @@ const NOW = new Date('2026-10-03T12:00:00');
 const THREE = { foundation: [400, 500, 600], core: [800, 1000, 1200], nascent: [1600, 2000, 2400], deity: [3000, 3600, 4200], void: [5000, 6000, 7000], body: [8000, 9500, 11000], maha: [12500, 14500, 16500], tribulation: [19000, 22000, 25000] };
 const pos = ({ step, progress }) => ({ step, progress });
 
-test('练气 has nine 层 in three phases; every realm above it three steps, 小成 中成 大成; a step filled is 圆满', () => {
+test('练气 has 零层 and nine 层 above it in three phases; every realm above it three steps, 小成 中成 大成; a step filled is 圆满', () => {
   const { tiers, phases, full, layers_were } = content.ladder;
   assert.deepEqual(phases, { zh: ['小成', '中成', '大成'], en: ['Lesser Attainment', 'Middle Attainment', 'Greater Attainment'] });
   assert.deepEqual(full, { zh: '圆满', en: 'Consummation' });
   const [qi, ...above] = tiers;
-  assert.equal(qi.thresholds.length, 9);
-  assert.deepEqual(qi.steps.zh, ['一层', '二层', '三层', '四层', '五层', '六层', '七层', '八层', '九层']);
-  for (let i = 1; i < 9; i += 1) assert.ok(qi.thresholds[i] > qi.thresholds[i - 1], `练气 层 ${i + 1} asks more than 层 ${i}`);
+  // 零层 (Hanli, 2026-10-15): step 0, threshold 0 — no 修为 until the 小周天 lifts him to 一层.
+  assert.equal(qi.zero, true);
+  assert.equal(qi.thresholds.length, 10);
+  assert.equal(qi.thresholds[0], 0);
+  assert.deepEqual(qi.steps.zh, ['零层', '一层', '二层', '三层', '四层', '五层', '六层', '七层', '八层', '九层']);
+  assert.deepEqual(qi.steps.en.slice(0, 2), ['Layer 0', 'Layer 1']);
+  for (let i = 2; i < 10; i += 1) assert.ok(qi.thresholds[i] > qi.thresholds[i - 1], `练气 层 ${i} asks more than 层 ${i - 1}`);
   for (const t of above) {
     assert.deepEqual(t.steps, content.ladder.phases, `${t.id}: its steps are the phases`);
     assert.deepEqual(t.thresholds, THREE[t.id], `${t.id}: the three steps`);
     // The nine 层 it had 10-03 → 10-09 sum, three by three, to its steps: a realm's whole never changed.
     for (let p = 0; p < 3; p += 1) assert.equal(layers_were[t.id].slice(p * 3, p * 3 + 3).reduce((a, b) => a + b), t.thresholds[p], `${t.id} step ${p}`);
   }
-  assert.equal(phaseName(content, 'qi', 3, 'zh'), '练气中成', '四层 is 练气中成');
-  assert.equal(phaseName(content, 'qi', 8, 'zh'), '练气大成');
+  assert.equal(phaseName(content, 'qi', 4, 'zh'), '练气中成', '四层 is 练气中成');
+  assert.equal(phaseName(content, 'qi', 3, 'zh'), '练气小成', '三层 is 练气小成');
+  assert.equal(phaseName(content, 'qi', 7, 'zh'), '练气大成', '七层 is 练气大成');
+  assert.equal(phaseName(content, 'qi', 9, 'zh'), '练气大成');
+  assert.equal(phaseName(content, 'qi', 0, 'zh'), '练气零层', '零层 is before the phases');
+  assert.equal(stepName(content, 'qi', 0, 'en'), 'Qi Condensation · Layer 0');
   assert.equal(phaseName(content, 'foundation', 0, 'zh'), '筑基小成');
   assert.equal(phaseName(content, 'core', 2, 'en'), 'Core Formation · Greater Attainment');
   assert.equal(stepName(content, 'foundation', 1, 'zh'), '筑基中成');
-  assert.equal(stepName(content, 'qi', 3, 'zh'), '练气四层');
+  assert.equal(stepName(content, 'qi', 4, 'zh'), '练气四层');
   // 圆满 is the full point of any step; the realm's last, short, is the breakthrough's `from`.
-  assert.equal(fullName(content, 'qi', 1, 'zh'), '练气二层圆满');
+  assert.equal(fullName(content, 'qi', 2, 'zh'), '练气二层圆满');
   assert.equal(fullName(content, 'foundation', 1, 'zh'), '筑基中成圆满');
   assert.equal(fullName(content, 'foundation', 2, 'en'), 'Foundation Establishment · Greater Attainment, Consummation');
   assert.equal(peakName(content, 'foundation', 'zh'), '筑基圆满');
   assert.equal(peakName(content, 'qi', 'zh'), '练气圆满');
-  assert.equal(realmName(content, { tier: 'qi', step: 1, progress: 59 }, 'zh'), '练气二层');
-  assert.equal(realmName(content, { tier: 'qi', step: 1, progress: 60 }, 'zh'), '练气二层圆满');
+  assert.equal(realmName(content, { tier: 'qi', step: 2, progress: 59 }, 'zh'), '练气二层');
+  assert.equal(realmName(content, { tier: 'qi', step: 2, progress: 60 }, 'zh'), '练气二层圆满');
+  assert.equal(realmName(content, { tier: 'qi', step: 0, progress: 0 }, 'zh'), '练气零层', '零层 is never 圆满');
+  assert.equal(realmName(content, { tier: 'qi', step: 0, progress: 0 }, 'en'), 'Qi Condensation · Layer 0');
   assert.equal(realmName(content, { tier: 'foundation', step: 2, progress: 600 }, 'zh'), '筑基大成圆满');
   assert.doesNotMatch(JSON.stringify(content.ladder.tiers), /巅峰|大圆满/, '巅峰 is the spoken word for 圆满, never in a formal table');
   assert.doesNotMatch(JSON.stringify({ tiers, phases, full }), /初期|中期|后期/);

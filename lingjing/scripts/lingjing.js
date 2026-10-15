@@ -567,6 +567,8 @@ function statusHtml() {
   const name = look.name && has('name') ? `<span class="daohao">${esc(look.name)}</span>` : '';
   // Before the prologue's gate (Look's `locked`) a mortal: no realm, no 修为 bar, no 灵石, no coins — not greyed, not there.
   const realm = !has('realm') ? '' : isShut(look, 'cultivation') ? `<span class="realm">${esc(w.mortal)}</span>`
+    // 零层 (Look's `tier.bar` false): the realm's name only — the 修为 bar stands from the 小周天 on.
+    : look.tier?.bar === false ? `<span class="realm">${esc(look.tier.name)}</span>`
     : `<span class="realm">${esc(look.tier.name)}</span>
     <div class="xw"><span class="lbl">${esc(w.xw)}</span><div class="bar"><i style="width:${pct || 0}%"></i></div>
       <span class="num"><span data-count="progress">${esc(look.progress)}</span>/${esc(look.next)}</span></div>${capSay()}`;

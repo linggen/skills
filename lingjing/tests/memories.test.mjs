@@ -31,7 +31,7 @@ const ctx = { now: NOW, quests: [] };
 /* At 冀鼎 (the first 鼎), the peak of 练气, 银月 with the player. */
 const atJi = (extra = {}) => ({
   ...newState(content, 'zh', NOW), chapter: '01-ji', scene: '01-cauldron', place: 'zhangyuan', ended: ['00-prologue'],
-  tier: 'qi', step: 8, progress: 130, name: '清玄', traits: ['wood', 'water', 'fire', 'earth'], stamina: 100, stamina_at: NOW.toISOString(),
+  tier: 'qi', step: 9, progress: 130, name: '清玄', traits: ['wood', 'water', 'fire', 'earth'], stamina: 100, stamina_at: NOW.toISOString(),
   wealth: 300, bag: { 'foundation-pill': 1 }, companion: { joined: '2026-09-20', awake: true }, ...extra,
 });
 /* The try whose die lands (or not) under the chance (breakthrough.test.mjs). */

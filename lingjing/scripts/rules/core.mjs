@@ -1,7 +1,7 @@
 // rules/core.mjs — Changing it: refusals, pay, riddles, stamina, resolve and judge.
 // Part of the rules engine; rules.mjs is its one door.
 import { gameOf, MADE_GRANT } from '../content.mjs';
-import { addProgress, dayKey, fill, fitValue, fullName, lockedOf, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaLimited, staminaReturnsAt, stepName, peakName, phaseName, threshold, tierOf, seedOf } from '../state.mjs';
+import { addProgress, dayKey, fill, fitValue, fullName, lockedOf, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaLimited, staminaReturnsAt, stepName, peakName, phaseName, threshold, tierOf, seedOf, stepOfLayer } from '../state.mjs';
 import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
 import { gainCard, starterOf } from './cards.mjs';
@@ -300,7 +300,7 @@ function offerTasks(content, state) {
 }
 
 /* The story lifts the realm to a layer of the first tier (an exit's `rise`,
-   1-based: 小周天 is 一层, 息壤 五层) — never down, never past its tier, once:
+   the 层 as the book names it — state.mjs stepOfLayer: 小周天 is 一层 out of 零层, 息壤 四层) — never down, never past its tier, once:
    a scene played again lifts nothing, and before a story gate nothing moves.
    The 修为 he had toward the next layer goes with him (his, 2026-09-29: the jump
    reset it to 0) — short of the new layer's own threshold, so it never jumps twice. */
@@ -309,7 +309,7 @@ function riseTo(content, s, rise, replay) {
   // `{layer, full}`: to that layer and filled — 古八's 入秋 (古七's before the 2026-10-07 split), 练气九层圆满 (his, 2026-09-30:
   // the year is the book's four seasons, not days of chores).
   const layer = typeof rise === 'object' ? rise.layer : rise, full = typeof rise === 'object' && rise.full === true;
-  const top = Math.min(layer, tier.thresholds.length) - 1;
+  const top = Math.min(stepOfLayer(content, tier.id, layer), tier.thresholds.length - 1);
   if (replay || s.tier !== tier.id || lockedOf(content, s).includes('cultivation')) return null;
   if (s.step > top || (s.step === top && (!full || (s.progress ?? 0) >= threshold(content, s)))) return null;
   // Never past where the 回's story stands (rules/cap.mjs) — the data would be wrong; the lint holds it too.

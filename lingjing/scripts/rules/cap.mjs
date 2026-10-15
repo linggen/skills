@@ -16,12 +16,12 @@
 // A save already past the cap (one played before 2026-10-05) is never pulled
 // down: it keeps its layer and fills it, and goes no higher until the story
 // catches up.
-import { pick, threshold, tierOf } from '../state.mjs';
+import { pick, stepOfLayer, threshold, tierOf, zeroAt } from '../state.mjs';
 import { huiNow, huiOrder } from './hui.mjs';
 
 /* A realm and layer as one number, low to high: tier index, then layer. */
 export const rankOf = (content, tier, step) => content.ladder.tiers.findIndex(t => t.id === tier) * 100 + step;
-const rankAt = (content, at) => rankOf(content, at.tier, at.layer - 1);
+const rankAt = (content, at) => rankOf(content, at.tier, stepOfLayer(content, at.tier, at.layer));
 
 /* The 回's entry: its own, else the nearest earlier one's. */
 function entryOf(content, state) {
@@ -63,7 +63,7 @@ export const storyAllows = (content, state, tier, step) => {
    line so the full bar reads as a wait, not a fault. Null otherwise. */
 export function capLook(content, state, lang) {
   const tier = tierOf(content, state.tier);
-  if (!content.ladder.caps || !tier || state.step >= tier.thresholds.length - 1) return null;
+  if (!content.ladder.caps || !tier || state.step >= tier.thresholds.length - 1 || zeroAt(content, state.tier, state.step)) return null;
   if ((state.progress ?? 0) < threshold(content, state) || underCap(content, state, state.tier, state.step + 1)) return null;
   return { say: pick(content.ladder.caps.say, lang) };
 }

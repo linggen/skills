@@ -30,7 +30,7 @@ const HOUR = 3600_000;
    the peak of 练气, full 体力, the four roots — nothing prepared. */
 const atJi = (extra = {}) => ({
   ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: '09-cliff', place: 'houshan', ended: ['00-prologue', '00-waimen'],
-  tier: 'qi', step: 8, progress: 130, name: '清玄', traits: ['wood', 'water', 'fire', 'earth'], stamina: 100, stamina_at: NOW.toISOString(),
+  tier: 'qi', step: 9, progress: 130, name: '清玄', traits: ['wood', 'water', 'fire', 'earth'], stamina: 100, stamina_at: NOW.toISOString(),
   wealth: 300, bag: { lingzhi: 2 }, ...extra,
 });
 /* At 青鼎, the peak of 结丹, 银月 found — the third cauldron's gift is hers. */
@@ -150,7 +150,7 @@ test('the throw fails: hurt, a share of the peak step\'s 修为, the cauldron sh
   assert.equal(r.state.stamina, 100 - step - b.lost.stamina);
   assert.equal(r.state.progress, 130 - b.lost.progress);
   assert.equal(r.state.tier, 'qi', 'the realm is never lost');
-  assert.equal(r.state.step, 8, 'nor the step');
+  assert.equal(r.state.step, 9, 'nor the step');
   assert.equal(r.state.scene, '09-cliff', 'the scene stays');
   assert.equal(r.state.wealth, 300);
   assert.deepEqual(r.state.bag, { 'foundation-pill': 1, lingzhi: 2 }, 'nothing held is lost — the pill carried is kept for the next try');

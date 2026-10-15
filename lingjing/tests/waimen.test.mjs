@@ -118,7 +118,7 @@ test('every scene is reached, and the chapter ends straight into 古九 (筑基,
     const passed = new Set(s.done_scenes);
     for (const id of Object.keys(CH.scenes)) assert.ok(passed.has(id), `${gender}: ${id}`);
     assert.equal(look(s, content, ctx(DAY2)).chapter.hui, 'j07', 'standing in 今 · 三, before 古七');
-    assert.deepEqual([s.tier, s.step], ['qi', 3], '息壤: 练气四层');
+    assert.deepEqual([s.tier, s.step], ['qi', 4], '息壤: 练气四层');
     for (const item of ['danlu', 'huangting', 'heluo']) assert.ok(s.bag[item] > 0, item);
     assert.equal(s.bag['foundation-pill'], undefined, 'the final was lost: the 筑基丹 is 祁长松\'s (古六, 2026-10-03)');
     assert.ok(s.cast.includes('zheng') && s.cards.includes('zheng'), '小狰 walks with the player, its card in the deck');
@@ -271,9 +271,9 @@ test('息壤 lifts the realm to 练气四层 — once, never down, and a scene p
   assert.equal(sc.exits[0].rise, 4);
   let s = { ...opened(), scene: 'wm-xirang', place: 'shimen', done_scenes: ['wm-ahe'] };
   s = must(resolve, won(s, 'mijing-zou'), { exit: 'swallow' });
-  assert.deepEqual([s.tier, s.step, s.progress], ['qi', 3, 0]);
-  const high = must(resolve, won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 6, progress: 30 }, 'mijing-zou'), { exit: 'swallow' });
-  assert.deepEqual([high.step, high.progress], [6, 30], 'never down');
+  assert.deepEqual([s.tier, s.step, s.progress], ['qi', 4, 0]);
+  const high = must(resolve, won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 7, progress: 30 }, 'mijing-zou'), { exit: 'swallow' });
+  assert.deepEqual([high.step, high.progress], [7, 30], 'never down');
 });
 
 test('the woodshed is his (the boy\'s: 抱住了头, 血腥味) — the words around the hero are fixed; an old save named a girl reads the same', () => {
@@ -406,10 +406,10 @@ test('a bout with a person speaks of him or her: 他/她 by the person, 认输, 
 test('息壤 keeps his 修为 through the jump, and its moment is the five doors opening one by one, in ink (his, 2026-09-29)', async () => {
   const { doorsHtml } = await import('../scripts/doors.js');
   const { MAIN, CARD_KINDS, PAGE_OWNS } = await import('../scripts/stage.mjs');
-  const out = resolve(won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 1, progress: 33 }, 'mijing-zou'), content, ctx(), { exit: 'swallow' });
-  assert.deepEqual([out.state.step, out.state.progress], [3, 33], 'the 修为 goes with him');
-  const capped = resolve(won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 2, progress: 79 }, 'mijing-zou'), content, ctx(), { exit: 'swallow' }).state;
-  assert.ok(capped.progress < content.ladder.tiers[0].thresholds[3], 'short of the new layer: it never jumps twice');
+  const out = resolve(won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 2, progress: 33 }, 'mijing-zou'), content, ctx(), { exit: 'swallow' });
+  assert.deepEqual([out.state.step, out.state.progress], [4, 33], 'the 修为 goes with him');
+  const capped = resolve(won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 3, progress: 79 }, 'mijing-zou'), content, ctx(), { exit: 'swallow' }).state;
+  assert.ok(capped.progress < content.ladder.tiers[0].thresholds[4], 'short of the new layer: it never jumps twice');
   const node = out.result.node;
   assert.deepEqual(node.doors.map(d => d.el), ['metal', 'wood', 'water', 'fire', 'earth']);
   assert.ok(node.doors.every(d => d.line.startsWith('第')));

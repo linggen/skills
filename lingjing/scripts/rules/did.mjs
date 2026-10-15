@@ -9,7 +9,7 @@
 // Progress hand over only what came after her place, and Yinyue's Progress
 // only what came after hers. Reading never clears it for the other (his,
 // 2026-09-24: both of them look it up when they want to).
-import { pick, stepName, threshold } from '../state.mjs';
+import { cultivating, pick, stepName, threshold } from '../state.mjs';
 import { withoutLocked } from './locks.mjs';
 import { herAway, herPast } from './companion.mjs';
 import { staminaBrief } from './daily.mjs';
@@ -170,7 +170,7 @@ export function progress(state, content, ctx) {
     state: null,
     result: withoutLocked(content, state, {
       ok: true, name: state.name ?? null,
-      tier: stepName(content, state.tier, state.step, lang), progress: state.progress, next: threshold(content, state),
+      tier: stepName(content, state.tier, state.step, lang), ...(cultivating(content, state) ? { progress: state.progress, next: threshold(content, state) } : {}),
       stamina: { now: st.now, max: st.max, ...(st.empty ? { empty: true, rest_at: st.rest_at } : {}) },
       place: here ? { id: here.id, name: pick(here.name, lang) } : null,
       book: bookOf(content, state, lang, ctx).map(b => ({ title: b.title, ready: b.ready })),

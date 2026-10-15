@@ -76,11 +76,20 @@ function loadMadeScenes(root) {
    story. Its one chapter is a stub with no spine scenes — the story is the
    opening scene and whatever Ling makes next — so the province opens at
    once and nothing waits. */
+/* 零层 (ladder.json `zero`) is left only by a story's rise — the book's 小周天.
+   A made world has none of the book's scenes, so its first tier starts at 一层,
+   as the base's did before 零层 (2026-10-15). */
+const withoutZero = ladder => ({
+  ...ladder,
+  tiers: ladder.tiers.map(({ zero, _zero, ...t }) => (!zero ? t : { ...t, steps: { zh: t.steps.zh.slice(1), en: t.steps.en.slice(1) }, thresholds: t.thresholds.slice(1) })),
+});
+
 export function overlayWorld(base, card, overlay) {
   const pid = card.province.id;
   return {
     ...base,
     world: { ...card, made: true },
+    ladder: withoutZero(base.ladder),
     dictionary: {
       ...base.dictionary,
       words: { ...base.dictionary.words, ...(overlay.dictionary.words ?? {}) },

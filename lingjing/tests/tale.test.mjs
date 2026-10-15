@@ -21,7 +21,7 @@ const ID = dayKey(NOW).replaceAll('-', '');
 /* Out of the prologue, at 泗水岸, with the roots set and nothing walking with him. */
 function open() {
   const s = newState(content, 'zh', NOW);
-  return { ...s, name: '青玄', traits: ['water', 'wood'], scene: null, ended: ['00-prologue'], place: 'sishui', cast: [] };
+  return { ...s, name: '青玄', step: 1, traits: ['water', 'wood'], scene: null, ended: ['00-prologue'], place: 'sishui', cast: [] };
 }
 function must(state, args, c = ctx()) {
   const out = tale(state, content, c, args);

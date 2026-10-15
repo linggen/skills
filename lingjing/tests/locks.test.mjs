@@ -137,15 +137,16 @@ test('before the gate nothing pays 修为 or 灵石: the trial board pays none; 
   assert.equal(done.result.ok, true);
   assert.deepEqual([done.result.paid.progress, done.state.progress], [0, 0]);
   const s = waimen();
-  assert.deepEqual([s.scene, s.tier, s.step, s.progress, s.wealth], ['00-waimen', 'qi', 0, 0, 3], 'the gate opens on 练气一层 at 0, the hall\'s three stones in hand');
+  assert.deepEqual([s.scene, s.tier, s.step, s.progress, s.wealth], ['00-waimen', 'qi', 0, 0, 3], 'the gate opens on 练气零层 (the 小周天 is 古四\'s), the hall\'s three stones in hand');
 });
 
 test('after the gate every system is there: realm, 灵石, chores, 开府, the 事 chip, the coins', () => {
   const s = waimen();
   const l = look(s, content, ctx());
   assert.equal(l.locked, undefined);
-  assert.equal(l.tier.name, '练气一层');
-  assert.deepEqual([l.progress, l.wealth], [0, 3]);
+  assert.equal(l.tier.name, '练气零层', 'admitted at 零层 (story DESIGN: 主角零层入门)');
+  assert.equal(l.tier.bar, false, 'no 修为 bar until the 小周天');
+  assert.deepEqual([l.progress, l.next, l.wealth], [0, null, 3]);
   assert.ok(l.quests.some(q => q.id === 'health-workout'), 'the workout');
   assert.ok(l.book.some(b => b.chore), 'chores ride the book');
   assert.equal(l.kaifu.of, 2);
@@ -161,7 +162,7 @@ test('Yinyue\'s greeting before the gate says nothing of a realm', () => {
   const facts = greet(asleep, content, ctx()).result.facts.join(' ');
   assert.doesNotMatch(facts, /练气|玩家如今是/);
   const joined = { ...waimen(), companion: { joined: '2026-09-27', awake: true }, greeted: '2026-09-27' };
-  assert.match(greet(joined, content, ctx()).result.facts.join(' '), /玩家如今是练气一层/);
+  assert.match(greet(joined, content, ctx()).result.facts.join(' '), /玩家如今是练气零层/);
 });
 
 test('his save, restarted at 石坳村 with 修为 40 and 灵石 20: both go, the bag and the book stay; the gate opens clean', () => {

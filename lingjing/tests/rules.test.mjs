@@ -8,7 +8,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { act, battle, begin, effectOf, foeTurn, offers, tokenOf } from '../scripts/battle.js';
 import { lint, loadContent } from '../scripts/content.mjs';
-import { dayKey, langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
+import { dayKey, fitWorld, langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
 import { oddsOf, rollOf, VERBS, fightSetup, hpMaxOf, greet, deck, deckFor, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win } from '../scripts/rules.mjs';
 import { beforeChapterOne, TO_WAIMEN, TO_HALL, TO_VALLEY, V1_BIRTH, walk } from './prologue.mjs';
 import { starterFor } from '../scripts/rules/roots.mjs';
@@ -52,8 +52,9 @@ const ctx = (extra = {}) => ({ now: NOW, quests: [], ...extra });
 const DEALT = { day: dayKey(NOW), place: 'none', until: NOW.toISOString(), taken: NOW.toISOString() };
 const start = (lang = 'zh') => newState(content, lang, NOW);
 /* A save past the prologue's story gate (chapter.json `locks`): the outer
-   court's first night, where 修为, 灵石, 功课 and the coins open. */
-const joined = (lang = 'zh') => ({ ...start(lang), scene: '00-waimen', place: 'waimen' });
+   court's first night, where 灵石, 功课 and the coins open — at 练气一层, as
+   if past 古四's 小周天, so 修为 counts too (零层 takes none: state.mjs zeroAt). */
+const joined = (lang = 'zh') => ({ ...start(lang), scene: '00-waimen', place: 'waimen', step: 1 });
 
 /* Apply a verb and insist it was allowed. */
 function must(fn, state, args, c = ctx()) {
@@ -890,19 +891,19 @@ test('answers are judged in either language, punctuation and articles aside', ()
 });
 
 test('a layer fills and the next begins, the rest carried over', () => {
-  // In 古四, where the book's cap is 二层 (rules/cap.mjs): 古三's is the first layer.
-  const s = { ...joined(), chapter: '00-waimen', scene: 'wm-ahe', ended: ['00-prologue'] };
+  // In 古五, where the book's cap is 二层 (rules/cap.mjs): 古四's own work stops at 一层.
+  const s = { ...joined(), chapter: '00-waimen', scene: 'wm-mijing', place: 'shimen', ended: ['00-prologue'] };
   s.progress = 40;
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
-  assert.equal(out.state.step, 1);
+  assert.equal(out.state.step, 2);
   assert.equal(out.state.progress, 10);
   assert.deepEqual(out.result.paid.levels, [{ from: '练气一层', to: '练气二层' }]);
 });
 
 test('at the realm peak the player holds until the chapter opens', () => {
   const s = joined();
-  s.step = 8; s.progress = 120;
+  s.step = 9; s.progress = 120;
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
   assert.equal(out.state.progress, 130);
@@ -971,7 +972,7 @@ test('a checked quest refills 灵气 — the app\'s own amount, capped', () => {
 });
 
 test('Make with nothing is the template; a scene in its shape is kept and played; a bad one is refused with its problems', () => {
-  let s = start('en');
+  let s = { ...start('en'), step: 1 }; // past 零层, where 修为 counts
   const t = make(s, content, ctx(), {}).result;
   assert.equal(t.ok, true);
   assert.equal(t.template.id, 'made-ferry');
@@ -1139,13 +1140,14 @@ test('a save from before the dictionary migrates to the ids', () => {
   const old = { version: 1, lang: 'zh', daohao: '青玄', root: ['wood'], realm: 'qi', stage: 2, xw: 30, ls: 5, beasts: ['fuzhu'], qi: 40, qi_at: NOW.toISOString(),
     bag: {}, chapter: '00-prologue', scene: '00-practice', done_scenes: [], ended: [], tasks: {}, quests: {}, wins: {}, branch: null, story: '', day: { key: '2026-09-11', xw: 30, ls: 5, branches: 0 } };
   const m = migrate(old);
-  assert.equal(m.version, 7);
+  assert.equal(m.version, 8);
   assert.equal(m.world, 'jiuding', 'a save from before worlds was playing 《九鼎》');
   assert.equal(m.name, '青玄'); assert.deepEqual(m.traits, ['wood']); assert.equal(m.tier, 'qi'); assert.equal(m.step, 2);
   assert.equal(m.progress, 30); assert.equal(m.wealth, 5); assert.deepEqual(m.cast, ['fuzhu']); assert.equal(m.stamina, 40);
   assert.deepEqual(m.day, { key: '2026-09-11', progress: 30, wealth: 5 });
   assert.equal(m.xw, undefined);
-  assert.equal(look({ ...m, scene: '00-waimen' }, content, ctx()).tier.name, '练气三层');
+  // Step 2 was 练气三层 until 零层 came (v8, 2026-10-15): a save that never reached the 小周天 reads one 层 lower.
+  assert.equal(look(fitWorld({ ...m, scene: '00-waimen' }, content), content, ctx()).tier.name, '练气二层');
 });
 
 test('a new save says its world, and Look carries the world card', () => {
@@ -1194,7 +1196,8 @@ function toOpenWorld() {
   // the bell and the riddle still run for such saves. prologue-v3's companion
   // (found in the valley, asleep in the token) is tested with the prologue.
   const { companion, ...rest } = s;
-  return { ...rest, cards: rest.cards.filter(id => id !== 'yinyue') };
+  // At 练气一层, as a save past 古四's 小周天 stands (this content skips 外门; 零层 takes no 修为).
+  return { ...rest, step: 1, cards: rest.cards.filter(id => id !== 'yinyue') };
 }
 /* 雷泽 (02-lake): a scene whose question is the chat's — a riddle among its buttons. (冀's
    altar was this scene until 2026-09-30; 古十's scenes now play the book on the stage.) */

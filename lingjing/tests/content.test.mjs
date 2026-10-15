@@ -359,7 +359,12 @@ test('a made world lays its story over the base: its province, its creatures mar
   assert.ok(merged.creatures.creatures.some(c => c.id === 'fuzhu') && merged.creatures.creatures.find(c => c.id === 'lushu').made);
   assert.deepEqual(Object.keys(merged.chapters), ['story']);
   assert.equal(merged.chapters.story.first_scene, null);
-  assert.equal(merged.ladder, base.ladder);
+  // The base's ladder, less 零层: a made world has no 小周天 to leave it by (content.mjs withoutZero).
+  assert.deepEqual(merged.ladder.tiers.slice(1), base.ladder.tiers.slice(1));
+  assert.deepEqual(merged.ladder.tiers[0].steps.zh, base.ladder.tiers[0].steps.zh.slice(1));
+  assert.deepEqual(merged.ladder.tiers[0].thresholds, base.ladder.tiers[0].thresholds.slice(1));
+  assert.equal(merged.ladder.tiers[0].zero, undefined);
+  assert.equal(merged.ladder.caps, base.ladder.caps);
   assert.ok(madeWorldsDir().endsWith('/data/worlds'));
 });
 

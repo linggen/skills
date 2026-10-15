@@ -22,7 +22,7 @@ const CH = content.chapters['00-zhuji'];
 /* Standing at 古九's first scene: 外门 behind him, 练气五层, full 体力. */
 const atSnow = (extra = {}) => ({
   ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: '09-snow', place: 'chaifang',
-  ended: ['00-prologue', '00-waimen'], tier: 'qi', step: 4, progress: 0, traits: ['wood', 'water', 'fire', 'earth', 'metal'],
+  ended: ['00-prologue', '00-waimen'], tier: 'qi', step: 5, progress: 0, traits: ['wood', 'water', 'fire', 'earth', 'metal'],
   stamina: 100, stamina_at: NOW.toISOString(), bag: { danlu: 1 }, ...extra,
 });
 const go = (s, exit, extra = {}) => {
@@ -87,7 +87,7 @@ test('the winter and the year: 火柴 at the move, the furnace\'s culls, and the
     assert.equal(r.state.scene, at, `${exit} → ${at}`);
     assert.equal(r.state.stamina, step ? 100 - content.rewards.stamina.cost.step : 0, step ? '伏天: one story step' : `${exit}: a season costs no 体力`);
     assert.ok(!buttons(r.state).includes(exit), `${exit} is not offered again`);
-    s = step ? { ...r.state, stamina: 0, resting: true } : r.state; layers.push(s.step + 1);
+    s = step ? { ...r.state, stamina: 0, resting: true } : r.state; layers.push(s.step);
     if (exit !== 'dabi') assert.equal(s.bag['foundation-pill'], undefined, 'not yet: the 官丹 waits for the year-five 大比');
     if (exit === 'futian') {
       assert.deepEqual(buttons(s), ['dabi'], '古八 opens on its own years; 入秋 waits on them');
@@ -101,13 +101,13 @@ test('the winter and the year: 火柴 at the move, the furnace\'s culls, and the
   assert.equal(resolve(s, content, ctx, { exit: 'ruqiu' }).result.refused, 'no-stamina', 'a spent pool still waits on the step');
   const autumn = go(full(s), 'ruqiu').state;
   assert.equal(100 - autumn.stamina, content.rewards.stamina.cost.step, '入秋: one story step');
-  assert.equal(autumn.step, 8, '九层');
+  assert.equal(autumn.step, 9, '九层');
   assert.equal(autumn.progress, threshold(content, autumn), '圆满: the lake full');
   assert.equal(autumn.scene, '09-qulao');
 });
 
 test('the cliff: 瞿老\'s last disciple, then the throw — the 九转 reached for before the 一转, and 古十 opens at once', () => {
-  let s = { ...atSnow(), scene: '09-qulao', place: 'houshan', step: 8, progress: 130, bag: { 'foundation-pill': 1 } };
+  let s = { ...atSnow(), scene: '09-qulao', place: 'houshan', step: 9, progress: 130, bag: { 'foundation-pill': 1 } };
   s = go(s, 'listen').state;
   assert.equal(s.scene, '09-cliff');
   assert.equal(s.bag['foundation-pill-9'], 1, 'the 九转 comes out on the eve of 筑基');
@@ -148,7 +148,7 @@ test('the fill is the pill\'s, declared: only the 九转 lands 小成圆满; the
     for (let k = 0; rollOf(t, 'foundation') >= chance; k += 1) t = { ...s, breakthrough: { tries: { foundation: k + 1 } } };
     return go(t, 'take');
   };
-  const cliff = bag => ({ ...atSnow(), scene: '09-cliff', place: 'houshan', step: 8, progress: 130, bag });
+  const cliff = bag => ({ ...atSnow(), scene: '09-cliff', place: 'houshan', step: 9, progress: 130, bag });
   // The 一转 alone (no 九转 in the bag): plain 筑基小成, 修为 0 — the cliff's own grant is all that goes in.
   const plain = win(cliff({ 'foundation-pill': 1 }));
   assert.equal(plain.result.breakthrough.pill.id, 'foundation-pill');
@@ -181,7 +181,7 @@ test('the set pieces ride their exits: 筑基天象 on the cliff\'s throw, 漳�
   assert.deepEqual(exitOf('01-deep', 'seal').setpiece, { id: 'zhang', beats: ['seal', 'ding'] });
   const played = ['01-altar/send', '01-rise/stand', '01-deep/seal'].flatMap((k) => exitOf(...k.split('/')).setpiece.beats);
   assert.ok(!played.includes('trial'), 'the trial beat is not replayed as a picture');
-  const cliff = { ...atSnow(), scene: '09-cliff', place: 'houshan', step: 8, progress: 130 };
+  const cliff = { ...atSnow(), scene: '09-cliff', place: 'houshan', step: 9, progress: 130 };
   let t = cliff;
   const chance = oddsOf(content, cliff, NOW, 'foundation').chance;
   for (let k = 0; rollOf(t, 'foundation') >= chance; k += 1) t = { ...cliff, breakthrough: { tries: { foundation: k + 1 } } };
@@ -224,8 +224,8 @@ test('the sect\'s 筑基丹 comes from the five-year skip, not from 古六: 古�
   assert.equal(s.bag['foundation-pill'], undefined);
   s = go(s, 'futian').state;
   assert.equal(s.bag['foundation-pill'], undefined, 'not in 古七');
-  assert.equal(s.step, 6, '七层');
+  assert.equal(s.step, 7, '七层');
   s = go(full(s), 'dabi').state;
   assert.equal(s.bag['foundation-pill'], 1);
-  assert.equal(s.step, 8, '九层');
+  assert.equal(s.step, 9, '九层');
 });
