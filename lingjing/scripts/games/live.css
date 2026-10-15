@@ -280,6 +280,7 @@
 .g-villagemap { background: #EFE9DC; overflow: hidden; }
 .g-scene .g-spothalo { fill: #FBF8F2; opacity: .62; }
 .g-scene .g-spot { fill: #FBF8F2; stroke: #A3352A; stroke-width: 1.6; }
+.g-scene .g-spotmark[data-g] { cursor: pointer; }
 .g-scene .g-spotmark.is-done .g-spot { fill: #A3352A; }
 .g-scene .g-spotnum { font-size: 11px; font-weight: 700; fill: #A3352A; font-family: var(--serif); }
 .g-scene .g-spotmark.is-done .g-spotnum { fill: #FBF8F2; }

@@ -25,8 +25,8 @@ const PRINT = {
 // Plants on 东坡: 艾草 among its look-alikes (the grey-backed, deep-cut leaf is the one).
 const PLANT = {
   ai: { zh: '艾草', en: 'Mugwort', d: 'M0 12 V-10 M0 2 C-8 0 -12 -4 -10 -8 C-6 -6 -4 -6 -2 -2 M0 -2 C8 -4 12 -8 10 -12 C6 -10 4 -10 2 -6 M-10 -8 l-3 -2 M10 -12 l3 -1', grey: true },
-  hao: { zh: '青蒿', en: 'Sweet wormwood', d: 'M0 12 V-12 M0 4 l-8 -3 M0 4 l8 -3 M0 -2 l-7 -4 M0 -2 l7 -4 M0 -8 l-5 -3 M0 -8 l5 -3' },
-  ju: { zh: '野菊', en: 'Wild chrysanthemum', d: 'M0 12 V-4 M-4 -8 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0 M0 4 C-6 2 -8 0 -8 -2 M0 6 C6 4 8 2 8 0' },
+  hao: { zh: '青蒿', en: 'Sweet wormwood', d: 'M0 12 V-12 M0 4 l-8 -3 M0 4 l8 -3 M0 -2 l-7 -4 M0 -2 l7 -4 M0 -8 l-5 -3 M0 -8 l5 -3', line: true },
+  ju: { zh: '野菊', en: 'Wild chrysanthemum', d: 'M0 12 V-4 M-4 -8 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0 M0 4 C-6 2 -8 0 -8 -2 M0 6 C6 4 8 2 8 0', line: true },
   qian: { zh: '车前草', en: 'Plantain', d: 'M0 12 C-10 4 -10 -8 0 -12 C10 -8 10 4 0 12Z M0 12 V-10' },
 };
 const TALE = {
@@ -107,6 +107,7 @@ export function makeVillage(stop) {
     id: `village${stop}`,
     name: { zh: '石坳村 · 村里走一走', en: "Shi'ao Village · A walk round" },
     how: { zh: '点地图上的地方，做点小事；想走了，就回家。', en: 'Tap a place on the map to do a small thing there; go home whenever you like.' },
+    stuckClock: false, // optional, with 「回家」 always there: no 「算了，往下走」 after a while (stuck.js)
   };
 
   function newGame(seed) {
@@ -207,7 +208,7 @@ export function makeVillage(stop) {
     const base = `<image class="g-mapbase" href="${MAP.src}" x="0" y="${n(-MAP.top * MAP.w * MAP.ratio)}" width="${MAP.w}" height="${ih}" preserveAspectRatio="none"/>`;
     const spots = cfg.spots.map((id, k) => {
       const [x, y] = onMap(AT_STOP[stop]?.[id] ?? AT[id]), done = state.done.includes(id);
-      return `<g class="g-spotmark${done ? ' is-done' : ''}"><circle class="g-spothalo" cx="${x}" cy="${y}" r="11"/><circle class="g-spot" cx="${x}" cy="${y}" r="8"/><text class="g-spotnum" x="${x}" y="${n(y + 3.6)}" text-anchor="middle">${k + 1}</text></g>`;
+      return `<g class="g-spotmark${done ? ' is-done' : ''}"${done ? '' : ` data-g="spot" data-id="${id}"`}><circle class="g-spothalo" cx="${x}" cy="${y}" r="11"/><circle class="g-spot" cx="${x}" cy="${y}" r="8"/><text class="g-spotnum" x="${x}" y="${n(y + 3.6)}" text-anchor="middle">${k + 1}</text></g>`;
     }).join('');
     return scene(MAP.w, MAP.h, base + spots, 'g-villagemap');
   };
