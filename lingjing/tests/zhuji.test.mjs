@@ -93,7 +93,12 @@ test('the winter and the year: 火柴 at the move, the furnace\'s culls, and the
     if (exit !== 'dabi') assert.equal(s.bag['foundation-pill'], undefined, 'not yet: the 官丹 waits for the year-five 大比');
     if (exit === 'futian') {
       assert.deepEqual(buttons(s), ['dabi'], '古八 opens on its own years; 入秋 waits on them');
-      assert.equal(look(s, content, ctx).chapter.close?.title, `${bookNo(content, 'h11')} · 完`, '「第七回 · 完」 stands on 古八\'s first scene');
+      const seven = look(s, content, ctx).chapter.close;
+      assert.equal(seven?.title, `${bookNo(content, 'h11')} · 完`, '「第七回 · 完」 stands on 古八\'s first scene');
+      // 古七's own words (close.hui.h11, 2026-10-15): its 饭桶 and 禹步, the book's 除夕 for the teaser — not 古八's 筑基.
+      assert.match(seven.did, /饭桶[\s\S]*禹步/);
+      assert.doesNotMatch(seven.did, /筑了基|腊八/);
+      assert.match(seven.teaser, /除夕[\s\S]*筑了基的/);
       assert.equal(resolve(s, content, ctx, { exit: 'ruqiu' }).result.refused, 'needs');
     }
   }
@@ -137,6 +142,7 @@ test('the cliff: 瞿老\'s last disciple, then the throw — the 九转 reached 
   const close = look({ ...r.state, place: 'zhangnan' }, content, ctx).chapter.close;
   assert.equal(close.title, `${bookNo(content, 'h09')} · 完`);
   assert.match(close.did, /崖顶筑了基/);
+  assert.doesNotMatch(close.did, /饭桶|火柴/, '「第八回 · 完」 opens on 古八\'s own years, not 古七\'s 饭桶 (2026-10-15)');
   assert.match(close.teaser, /邺城[\s\S]*豆腐/);
 });
 

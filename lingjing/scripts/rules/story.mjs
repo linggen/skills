@@ -271,10 +271,13 @@ export function closeOf(content, state) {
     // onto the first scene of the next, where the 回's close stands.
     const done = Object.values(content.chapters).find(x => x.close && (state.ended ?? []).includes(x.id) && x.id !== ch.id
       && Object.values(x.scenes ?? {}).some(sc => sc.hui === turned));
+    // A 回 that ends inside its chapter has its own words (`close.hui.<id>`: 古七's, at 古八's first scene).
+    const own = Object.values(content.chapters).map(x => x.close?.hui?.[turned]).find(Boolean);
+    const words = own ?? (done ? done.close : null);
     // The game's 卷 ends on its last 古 回 (古九): 今 · 四 is played before it, so its close never says 「卷一 · 完」.
     const juan = huiOf(content, turned)?.line !== 'gu' ? null : juanEndOf(content, turned, lang);
     // `line`: the ended 回's own heading, which the header keeps while its last passage is told (queue.js huiLineOf).
-    return { id: turned, title: endLabel(content, turned, lang), ...(juan ? { juan } : {}), huimu: pick(huiOf(content, turned).huimu, lang), line: huiLabel(content, turned, lang, 'head'), next: huiLabel(content, huiNow(content, state), lang, 'head'), ...(done ? closeWords(content, state, done.close) : {}) };
+    return { id: turned, title: endLabel(content, turned, lang), ...(juan ? { juan } : {}), huimu: pick(huiOf(content, turned).huimu, lang), line: huiLabel(content, turned, lang, 'head'), next: huiLabel(content, huiNow(content, state), lang, 'head'), ...(words ? closeWords(content, state, words) : {}) };
   }
   if (!c || state.scene || !(state.ended ?? []).includes(ch.id)) return null;
   const hui = huiNow(content, state);
@@ -283,7 +286,7 @@ export function closeOf(content, state) {
   const place = last?.place ? fill(pick(last.place, lang), state, content) : null;
   // The 卷's last 古 回 closes the 卷 for the game as well (hui.mjs juanEndOf): 「卷一 · 沉鼎 · 完」 over 古十's 「完」.
   const juan = hui ? juanEndOf(content, hui, lang) : null;
-  return { id: hui ?? ch.id, title: endLabel(content, hui, lang) ?? pick(c.title, lang) ?? pick(ch.title, lang), ...(place ? { place } : {}), ...(juan ? { juan } : {}), ...(hui ? { huimu: pick(huiOf(content, hui)?.huimu, lang) } : {}), ...closeWords(content, state, c) };
+  return { id: hui ?? ch.id, title: endLabel(content, hui, lang) ?? pick(c.title, lang) ?? pick(ch.title, lang), ...(place ? { place } : {}), ...(juan ? { juan } : {}), ...(hui ? { huimu: pick(huiOf(content, hui)?.huimu, lang) } : {}), ...closeWords(content, state, c.hui?.[hui] ?? c) };
 }
 
 /* A chapter close's words: what THIS player did (each `did` part whose `if` holds), and the teaser. */

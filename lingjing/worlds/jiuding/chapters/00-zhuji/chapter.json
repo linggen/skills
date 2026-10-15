@@ -50,16 +50,12 @@
     "zh": "瞿老四十多年没收过徒弟——他上一个徒弟，后来怎样了？",
     "en": "Elder Qu took no disciple for more than forty years — what became of the last one?"
   },
-  "_close": "The ending card (story.mjs closeOf): 古九 (h10, 漳水) follows at once, after 今 · 四, so it stands on the next 回's first scene with 古八's (h09) 「完」 — what he did and the teaser, both to 你 (2026-10-01: a card says 你, the dialogue box plays the book in the third person; one card mixed 你 and 沈小满).",
+  "_close": "The ending card (story.mjs closeOf): 古九 (h10, 漳水) follows at once, after 今 · 四, so it stands on the next 回's first scene with 古八's (h09) 「完」 — what he did and the teaser, both to 你 (2026-10-01: a card says 你, the dialogue box plays the book in the third person; one card mixed 你 and 沈小满). A 回 that ends inside the chapter has its own (close.hui.<id>, 2026-10-15: 「第八回 · 完」 once opened on 古七's 饭桶): 古七's did and teaser at 09-dabi, from the book's own lines (07-第七回's 除夕); the chapter's did and teaser are 古八's.",
   "close": {
     "did": [
       {
-        "zh": "大比第二天搬屋，你把赤铜葫芦和盾片扔进饭桶图个干净，它吐出一口剑「火柴」",
-        "en": "Moving house the day after the contest, tossed the red-copper gourd and the shield shards into the Rice Bucket to be rid of them, and it spat out a sword, Matchstick"
-      },
-      {
-        "zh": "五年里揭了执事堂的差事牌，腊八赢下了观里那颗一转的官丹，粘好封条收进了储物袋",
-        "en": "took down the Stewards' Hall's errand tags through five years, won the abbey's one-turn pill at Laba and glued its seal back into the storage pouch"
+        "zh": "腊八赢下了大比，观里那颗一转的官丹，粘好封条收进了储物袋",
+        "en": "won the contest at Laba, and glued the abbey's one-turn pill's seal back and put it in the storage pouch"
       },
       {
         "zh": "九月初三，你在崖顶筑了基——师父问几道纹，你说一道",
@@ -69,6 +65,32 @@
     "teaser": {
       "zh": "却说北边漳水之滨，有一座邺城，城里年年要给河伯娶一回媳妇。今年巫祝挑中的新娘子，是城西卖豆腐的哑女——那时你还不知道，这门亲事，是要你去搅上一搅的。",
       "en": "Up north on the Zhang stands the city of Ye, which marries a bride to the River Lord every year. This year the shaman chose the mute girl who sells tofu on the west side — and you did not yet know that this wedding was yours to spoil."
+    },
+    "hui": {
+      "h11": {
+        "did": [
+          {
+            "zh": "大比第二天搬屋，你把赤铜葫芦和盾片扔进饭桶图个干净，它吐出一口剑「火柴」",
+            "en": "Moving house the day after the contest, tossed the red-copper gourd and the shield shards into the Rice Bucket to be rid of them, and it spat out a sword, Matchstick"
+          },
+          {
+            "zh": "腊月十五，瞿老在崖顶画了九格，教你走禹步：「这一步，叫入。」",
+            "en": "on the fifteenth of the twelfth month Elder Qu drew nine squares on the clifftop and taught you the Step of Yu: \"This step is called entering\""
+          },
+          {
+            "zh": "闵丹师闻了三回你那颗丹：「没有火气。」叫你守他的炉",
+            "en": "Pill-master Min smelled your pill three times — \"There's no fire in it\" — and set you to watch his burner"
+          },
+          {
+            "zh": "五年里揭了执事堂的差事牌，一层一式，练到了七层",
+            "en": "and through five years you took down the Stewards' Hall's errand tags, a form a layer, up to the seventh"
+          }
+        ],
+        "teaser": {
+          "zh": "那年除夕，周衡照旧去正殿求观主，放他去邺城，把漳水上「河伯娶妇」那桩事给断了。观主照旧是那一句：「要去，也得是个筑了基的。」只是这一回，说完了，他往后殿静室那边看了一眼。",
+          "en": "That New Year's Eve Zhou Heng went to the main hall to plead with the Abbot as usual: to let him go to Ye and put an end to the \"River Lord takes a bride\" business on the Zhang. The Abbot said the same thing as always: \"Whoever goes has to have Foundation Establishment.\" Only this time, when he'd said it, he glanced towards the quiet room in the back hall."
+        }
+      }
     }
   }
 }
