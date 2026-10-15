@@ -222,7 +222,7 @@ test('the page draws the slots: header, main (#focus) holding the one thing, foo
   const focus = src.slice(src.indexOf('function focusHtml(slots)'), src.indexOf('function toastsHtml()'));
   assert.match(focus, /slots\.main\.map\(drawCard\)/, 'main draws the one thing only');
   assert.doesNotMatch(src, /splitStage|queueHtml|const HEAD = /, 'no second list of where cards go');
-  assert.match(src, /stageSlots\(look, storyAhead\(\) \|\| choicesInBox\(\) \? queued : withNext\(look, queued\.filter\(\(c\) => c\.card !== 'next'\)\), \{ skip: view\.qSkip \}\)/, 'never a blank stage: the page puts 下一步 up when what it took off left main empty');
+  assert.match(src, /stageSlots\(look, storyAhead\(\) \|\| choicesInBox\(\) \? queued : closeHeld\(\) \? queued\.filter\(\(c\) => c\.card !== 'next'\) : withNext\(look, queued\.filter\(\(c\) => c\.card !== 'next'\)\), \{ skip: view\.qSkip \}\)/, 'never a blank stage: the page puts 下一步 up when what it took off left main empty — but not under a held 「完」');
   const strip = src.slice(src.indexOf('function statusHtml()'), src.indexOf('function statusHtml()') + 1500);
   assert.doesNotMatch(strip.slice(0, strip.indexOf('\n}')), /ChipHtml/, 'the chips are the footer\'s');
 });

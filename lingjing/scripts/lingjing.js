@@ -973,7 +973,9 @@ function stageNow() {
   const queued = cards.filter(inQueue);
   // Never a blank stage (Hanli, 2026-10-15): what the page took off above (a 完 put away, a board
   // played) can leave main empty — then, with no passage to tell, the 下一步 card stands (withNext).
-  return stageSlots(look, storyAhead() || choicesInBox() ? queued : withNext(look, queued.filter((c) => c.card !== 'next')), { skip: view.qSkip });
+  // A 回's 「完」 only held back while a seal or a set piece plays is not put away: 下一步 waits
+  // with it, or it would flash in under the stamp and give way to the 「完」 (queue.js atTurnCards).
+  return stageSlots(look, storyAhead() || choicesInBox() ? queued : closeHeld() ? queued.filter((c) => c.card !== 'next') : withNext(look, queued.filter((c) => c.card !== 'next')), { skip: view.qSkip });
 }
 
 /// 此刻 — the one thing, and over it the short notes of what just happened
@@ -3259,6 +3261,8 @@ let homingPending = false; // a 鼎 come home, its map not yet on the stage
 // …nor what waits behind it (queue.js momentsHold).
 const stageBusy = () => momentsHold({ up: momentUp(), pending: [...momentPending], waits: memoryWaits || homingPending });
 const closeUp = () => Boolean(look?.chapter?.close && !closeSeen(look.chapter.close.id));
+/* The 回's 「完」 is due but held back a moment — a seal, a set piece or the ending's passages first. */
+const closeHeld = () => closeUp() && (stageBusy() || endingWaits());
 /* `said` — the words of the paragraph a piece is tied to, as the box plays them (a 节本's cut,
    jieben.mjs): a one-beat piece speaks them in place of its own line, so the picture never
    brings back the book's longer paragraph the game has cut. */

@@ -76,3 +76,11 @@ test('a card that only tells is no thing to do: 下一步 stands before 狰\'s �
   const winnable = { ...l, place: { id: 'yaoyuan', encounter: { creature: { id: 'zheng' }, beaten: true, tamed: false, likes: { id: 'luobo' } } } };
   assert.deepEqual(kinds(withNext(winnable, [{ card: 'creature', id: 'zheng' }])), ['creature']);
 });
+
+test('a 回\'s 「完」 held back by a seal or a set piece is not a blank stage: 下一步 waits with it', async () => {
+  const fs = await import('node:fs');
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  // The 完 is taken off while a moment plays (stageBusy) or the ending waits — and while it is, no 下一步.
+  assert.match(src, /const closeHeld = \(\) => closeUp\(\) && \(stageBusy\(\) \|\| endingWaits\(\)\);/);
+  assert.match(src, /closeHeld\(\) \? queued\.filter\(\(c\) => c\.card !== 'next'\) : withNext\(look,/);
+});
