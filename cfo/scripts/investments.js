@@ -550,7 +550,9 @@ function summaryHtml(rows) {
     <span class="inv-total"><b>${money(tot.value, cur, 0)}</b>
       ${t('inv.today', { move: moveHtml(tot.day, cur, null, 0) })}${tot.cost ? ` · ${t('inv.overall', { move: moveHtml(tot.gain, cur, (tot.gain / tot.cost) * 100, 0) })}` : ''}${tot.left_out.length
         ? `<span class="hint inline">${deps.esc(t('inv.leavesOut', { who: tot.left_out.join(', ') }))}</span>` : ''}</span>`);
-  const stamp = rows.map((r) => r.price_time).find(Boolean);
+  // The source's own wording ("Oct 15, 2026, 10:25 AM EDT"), said in the page's language when it parses.
+  const rawStamp = rows.map((r) => r.price_time).find(Boolean);
+  const stamp = rawStamp && language() !== 'en' ? dayOf(rawStamp, true) || rawStamp : rawStamp;
   const state = checking ? t('inv.checkingReports') : checkNote || (loading ? t('inv.updating') : failure || (stamp ? t('inv.prices', { stamp }) : ''));
   return `<div class="inv-summary">${totals.join('')}<span class="spacer"></span>
     <span class="hint inline">${deps.esc(state)}</span>
@@ -577,7 +579,7 @@ function startPortfolioReview() {
 function subline(r) {
   const parts = r.kind === 'etf'
     ? ['ETF', r.pe && t('inv.subPe', { v: r.pe }), r.expense_ratio && t('inv.subExpense', { v: r.expense_ratio })]
-    : [r.pe && t('inv.subPe', { v: r.pe }), r.forward_pe && t('inv.subFwdPe', { v: r.forward_pe }), r.earnings_date && t('inv.subEarnings', { v: r.earnings_date })];
+    : [r.pe && t('inv.subPe', { v: r.pe }), r.forward_pe && t('inv.subFwdPe', { v: r.forward_pe }), r.earnings_date && t('inv.subEarnings', { v: (r.earnings_on && dayOf(r.earnings_on)) || r.earnings_date })];
   return parts.filter(Boolean).join(' · ');
 }
 
