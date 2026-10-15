@@ -358,7 +358,9 @@ test('what is for a person is handed where that person is: 周衡 at 外门, 阿
   assert.equal(row.away.who, '周衡');
   assert.match(row.where.name, /外门/);
   const pop = bookPopHtml({ look: look(s, content, ctx()), lang: 'zh', words: WORDS.zh });
-  assert.match(pop, /交给周衡/, 'the row names who it is for');
+  assert.match(pop, /周衡/, 'the row names who it is for');
+  // …and its one tap is the walk to him (2026-10-15: the 「交给周衡」 chip was no button).
+  assert.match(pop, /data-go="waimen">去沉鼎观 · 外门</);
   assert.match(pop, /在沉鼎观 · 外门/, 'and where');
   assert.doesNotMatch(pop, /data-do="turn"[^>]*xu-yaoyuan-shouye/, 'no 交差 away from him');
   const no = refused(quest, s, { action: 'turn', id: 'xu-yaoyuan-shouye' }, 'not-with-giver');
