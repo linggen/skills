@@ -66,6 +66,11 @@ function dealChance(content, s, ctx) {
   const at = near[hashOf(`${day}|${seedOf(s)}|chance`) % near.length];
   return { day, place: at.id, until: new Date(ctx.now.getTime() + CHANCE.hours * 3600000).toISOString() };
 }
+/* The day's 机缘 lies where he may walk now: open on this chapter's map, within his realm. */
+const chanceReachable = (content, state, now) => {
+  const at = placeOf(content, state.chance?.place);
+  return Boolean(at) && placeOpen(content, state, at, now) && !tooHard(content, state, at);
+};
 const chanceLive = (state, now) => Boolean(state.chance && !state.chance.taken && dayKey(now) === state.chance.day && now < new Date(state.chance.until));
 
 /* Where today's 机缘 lies and how long it lasts — the rumor Ling may speak and
@@ -73,6 +78,9 @@ const chanceLive = (state, now) => Boolean(state.chance && !state.chance.taken &
 function chanceBrief(content, state, now) {
   const c = state.chance;
   if (!c || c.day !== dayKey(now)) return null;
+  // Dealt where he could walk, it is offered only while he still can: a chapter turned since
+  // (序章's 上山路, then 外门's 无令不得下山) shuts it, and no book row sends him to a refusal.
+  if (!c.taken && !chanceReachable(content, state, now)) return null;
   const place = { id: c.place, name: pick(placeOf(content, c.place)?.name, state.lang) };
   if (c.taken) return { place, taken: true };
   if (now >= new Date(c.until)) return { place, missed: true };
