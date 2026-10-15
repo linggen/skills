@@ -86,7 +86,7 @@ function picture(state) {
   const stove = '<path class="g-line" d="M230 110 V62 H300 V110"/><path class="g-mouth" d="M246 110 V92 Q265 76 284 92 V110 Z"/>';
   const fire = '<path class="g-flame" d="M258 110 q-6 -10 0 -18 q6 8 0 18z"/><path class="g-flame" d="M272 110 q-6 -12 0 -20 q6 10 0 20z"/>';
   const curl = state.phase === 'burnt' ? splash(265, 86, 300, { r: 10 }) : '';
-  return scene(320, 120, bowl + page + stove + fire + curl);
+  return scene(320, 120, bowl + page + stove + fire + curl, 'g-diche-pic');
 }
 
 export function html(state, lang = 'zh') {
@@ -94,7 +94,7 @@ export function html(state, lang = 'zh') {
   if (state.won) return `<div class="g-diche g-ink is-won">${picture(state)}<p class="g-line-say">${t[state.grade ?? 'skipped']}</p></div>`;
   if (state.phase === 'ready') return `<div class="g-diche g-ink">${picture(state)}<p class="g-line-say">${t.ready}</p>${btn(t.start, 'data-g="start"')}</div>`;
   const rows = ROWS.map((r) => {
-    if (!r.reads) return `<button type="button" class="g-diche-row is-blur" data-g="read" data-r="${r.id}">${'▪'.repeat(7 + (r.id.length % 4))} <small>${t.blur}</small></button>`;
+    if (!r.reads) return `<button type="button" class="g-diche-row is-blur" data-g="read" data-r="${r.id}" aria-label="${t.blur}"><i class="g-ant" style="width:${40 + (Number(r.id.slice(-1)) * 13) % 45}%"></i></button>`;
     const [name, line] = t[r.id], k = state.reads[r.id] ?? 0, got = byHeart(state, r);
     return `<button type="button" class="g-diche-row${got ? ' is-on' : ''}" data-g="read" data-r="${r.id}"><b>${name}</b> ${k ? line : '……'}${got ? ` <small>· ${t.read}</small>` : ''}</button>`;
   }).join('');

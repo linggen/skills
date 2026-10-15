@@ -304,10 +304,12 @@
 .g-scene .g-spot.is-seal { fill: #A3352A; }
 .g-qiajue .g-tags, .g-letter .g-tags { grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); }
 .g-diche-page { display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--raised); }
-.g-diche-row { text-align: left; min-height: 40px; padding: 6px 8px; border: 0; border-bottom: 1px dashed var(--line); background: none; font-size: 14px; line-height: 1.5; cursor: pointer; }
+.g-diche-row { text-align: left; min-height: 34px; padding: 6px 8px; border: 0; border-bottom: 1px dashed var(--line); background: none; font-size: 14px; line-height: 1.5; cursor: pointer; }
 .g-diche-row b { color: var(--seal); font-weight: 600; margin-right: 4px; }
 .g-diche-row small { font-family: var(--ui); font-size: 11px; color: var(--dim); }
-.g-diche-row.is-blur { color: var(--faint); letter-spacing: -.1em; }
+.g-diche-row.is-blur { display: flex; align-items: center; }
+.g-ant { display: block; height: 4px; border-radius: 2px; background: repeating-linear-gradient(90deg, var(--faint) 0 3px, transparent 3px 5px); opacity: .7; }
+.g-diche .g-diche-pic { max-height: 90px; }
 .g-diche-row.is-on { background: var(--seal-soft); }
 .g-letter-sheet { width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; background: var(--raised); text-align: left; }
 .g-letter-sheet p { margin: 0; font-size: 14.5px; line-height: 1.8; }
