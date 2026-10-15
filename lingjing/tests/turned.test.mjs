@@ -7,8 +7,11 @@ import { WORDS, bookPopHtml } from '../scripts/cards.js';
 
 const w = { ...WORDS.zh, xw: '修为', ls: '灵石' };
 
-test('a hand-in\'s pay as a line: the gains, and the held 修为 said', () => {
-  assert.deepEqual(turnedPays({ progress: 0, wealth: 20, hold: { held: 15, cap: true } }, w, 'zh'), ['灵石 +20', '修为已满，未入']);
+test('a hand-in\'s pay as a line: the gains, and 零层\'s 修为 said as not taken — never as 「已满」', () => {
+  // At 零层 the daily 功课's 20 修为 is not taken (state.mjs addProgress `hold.zero`): said so, not 「修为已满」.
+  assert.deepEqual(turnedPays({ progress: 0, wealth: 0, hold: { zero: true, held: 20 } }, w, 'zh'), ['零层 · 修为未入']);
+  // A full mark holds nothing back any more (`held` 0): nothing about a cap is said.
+  assert.deepEqual(turnedPays({ progress: 15, wealth: 20, hold: { cap: true, held: 0, over: 5 } }, w, 'zh'), ['修为 +15', '灵石 +20']);
   assert.deepEqual(turnedPays({ progress: 12 }, w, 'zh'), ['修为 +12']);
   assert.deepEqual(turnedPays(null, w, 'zh'), []);
 });

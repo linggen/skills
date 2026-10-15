@@ -8,15 +8,17 @@ export const TURNED_MS = 4500;
 /// 「交差 · 修屋顶」 card stood on through several taps).
 export const HANDED_STAY_MS = 7000;
 
+/* Since 8f112416 a full mark holds nothing back (state.mjs addProgress: `held` 0, the bar counts
+   on past it); the one 修为 still not taken is 零层's, before the 小周天 (`hold.zero`). */
 const WORDS = {
-  zh: { held: '修为已满，未入' },
-  en: { held: 'cultivation full — not added' },
+  zh: { zero: '零层 · 修为未入' },
+  en: { zero: 'Stage zero · cultivation not taken' },
 };
 
-/// The pay of one hand-in, as a line: what came in, and the 修为 the cap held back.
+/// The pay of one hand-in, as a line: what came in, and the 修为 零层 does not take.
 export function turnedPays(paid, w, lang) {
   const t = WORDS[lang] ?? WORDS.zh, p = paid ?? {};
-  return [p.progress ? `${w.xw} +${p.progress}` : '', p.wealth ? `${w.ls} +${p.wealth}` : '', p.hold?.held ? t.held : ''].filter(Boolean);
+  return [p.progress ? `${w.xw} +${p.progress}` : '', p.wealth ? `${w.ls} +${p.wealth}` : '', p.hold?.zero && p.hold.held ? t.zero : ''].filter(Boolean);
 }
 
 /// The 所得 card has stood long enough: every row on it older than HANDED_STAY_MS.
