@@ -26,5 +26,32 @@
    "day": "art/backdrop/storm-day.webp",
    "night": "art/backdrop/storm-night.webp"
   }
- }
+ },
+ "terms": {
+  "lichun": "art/jieqi/lichun.webp",
+  "yushui": "art/jieqi/yushui.webp",
+  "jingzhe": "art/jieqi/jingzhe.webp",
+  "chunfen": "art/jieqi/chunfen.webp",
+  "qingming": "art/jieqi/qingming.webp",
+  "guyu": "art/jieqi/guyu.webp",
+  "lixia": "art/jieqi/lixia.webp",
+  "xiaoman": "art/jieqi/xiaoman.webp",
+  "mangzhong": "art/jieqi/mangzhong.webp",
+  "xiazhi": "art/jieqi/xiazhi.webp",
+  "xiaoshu": "art/jieqi/xiaoshu.webp",
+  "dashu": "art/jieqi/dashu.webp",
+  "liqiu": "art/jieqi/liqiu.webp",
+  "chushu": "art/jieqi/chushu.webp",
+  "bailu": "art/jieqi/bailu.webp",
+  "qiufen": "art/jieqi/qiufen.webp",
+  "hanlu": "art/jieqi/hanlu.webp",
+  "shuangjiang": "art/jieqi/shuangjiang.webp",
+  "lidong": "art/jieqi/lidong.webp",
+  "xiaoxue": "art/jieqi/xiaoxue.webp",
+  "daxue": "art/jieqi/daxue.webp",
+  "dongzhi": "art/jieqi/dongzhi.webp",
+  "xiaohan": "art/jieqi/xiaohan.webp",
+  "dahan": "art/jieqi/dahan.webp"
+ },
+ "_terms": "The 节气's pictures (atmos.js stageArt, tier `term`): from a 节气's day until the next, the stage's picture for an outdoor scene at a place with no painting of its own. Painted 2026-10-15 by tools/paint-jieqi.py (its KEPT table holds each slot's seed)."
 }

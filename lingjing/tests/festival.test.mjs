@@ -306,6 +306,15 @@ test('the stage resolver, tier by tier: scene · festival · place · story sky 
   assert.deepEqual(stagePick({ ...base, scene: { line: 'jin' }, festival: fest }), { tier: null, art: null });
 });
 
+test('every 节气 has its painting in the world\'s table, on disk; the resolver shows 寒露\'s on 2026-10-15', async () => {
+  const { TERMS } = await import('../scripts/calendar.js');
+  const table = JSON.parse(fs.readFileSync(path.join(ROOT, 'worlds/jiuding/backdrops.json'), 'utf8'));
+  assert.deepEqual(Object.keys(table.terms).sort(), TERMS.map((t) => t.id).sort());
+  for (const f of Object.values(table.terms)) assert.ok(fs.existsSync(path.join(ROOT, 'worlds/jiuding', f)), f);
+  const today = look(open(at('2026-10-15')), content, { now: at('2026-10-15'), quests: [] }).today;
+  assert.deepEqual(stagePick({ table, weather: { kind: 'clear', source: 'city' }, term: today.jieqi }), { tier: 'term', art: 'art/jieqi/hanlu.webp' });
+});
+
 test('春节\'s picture runs 初一 to 初七; 除夕 and 元宵 keep their own days', () => {
   const art = (iso) => look(open(at(iso)), content, { now: at(iso), quests: [] }).today.festival?.backdrop ?? null;
   assert.equal(art('2027-02-05'), 'art/festival/chuxi.webp');

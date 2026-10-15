@@ -14,6 +14,30 @@ small seal is fine (Hanli preferred the richer paintings that had one). Output 1
 """
 # The kept picks, each worlds/jiuding/art/jieqi/<id>.webp.
 KEPT = {
+    'lichun': {'seed': 11},  # the first willow buds over a thawing stream
+    'yushui': {'seed': 23},  # drizzle over greening hills
+    'jingzhe': {'seed': 23},  # far thunder over blooming peach
+    'chunfen': {'seed': 11},  # peach blossom on both banks, swallows
+    'qingming': {'seed': 11},  # willows in misty rain
+    'guyu': {'seed': 11},  # peony by the rock, tea hills
+    'lixia': {'seed': 11},  # young paddies, banana leaves
+    'xiaoman': {'seed': 23},  # wheat swelling green-gold, a stone bridge
+    'mangzhong': {'seed': 11},  # gold wheat beside new seedlings
+    'xiazhi': {'seed': 11},  # tall summer trees, the high sun
+    'xiaoshu': {'seed': 11},  # the lotus pond in bloom
+    'dashu': {'seed': 11},  # a summer storm breaking over the valley
+    'liqiu': {'seed': 11},  # the first leaves turning over the river
+    'chushu': {'seed': 23},  # lotus pods and pale reeds, geese far off
+    'bailu': {'seed': 11},  # dew on the autumn reeds
+    'qiufen': {'seed': 11},  # the harvest moon over gold fields
+    'hanlu': {'seed': 11},  # chrysanthemums on the rock, geese south
+    'shuangjiang': {'seed': 23},  # red maples, the first frost
+    'lidong': {'seed': 11},  # persimmons on a bare branch
+    'xiaoxue': {'seed': 23},  # first snow on pines and thatch
+    'daxue': {'seed': 11},  # mountains buried in snow
+    'dongzhi': {'seed': 11},  # low winter sun, a lit window
+    'xiaohan': {'seed': 23},  # red plum in snow, a bird
+    'dahan': {'seed': 11},  # the frozen lake, rimed willows
 }
 
 import argparse, json
