@@ -5,6 +5,8 @@
 // `stuck(state)`: fallen again and again in the dark, the deer missed and missed …),
 // whichever first. Modules draw no skip of their own (games/ink.js skipBtn is retired);
 // a new game gets the gate for free, and adds `stuck` only when it has a clear fail.
+// A board with its own way out and nothing to fail (the village maps' 「回家」) opts out of
+// the clock with `meta.stuckClock: false` — its own `stuck` still counts.
 // Pure: the board object and the clock in, a yes or no out.
 
 /** How long a board stands unwon before it may be left. */
@@ -18,7 +20,7 @@ export function stampShown(g, now) {
 /** May this board be left now? Never a won or already-left one; never before it was laid. */
 export function stuckNow(g, now) {
   if (!g?.mod || g.state?.won || g.skipped || g.shownAt == null) return false;
-  if (now - g.shownAt >= STUCK_MS) return true;
+  if (g.mod.meta?.stuckClock !== false && now - g.shownAt >= STUCK_MS) return true;
   try {
     return Boolean(g.mod.stuck?.(g.state));
   } catch {
