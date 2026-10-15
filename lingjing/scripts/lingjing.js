@@ -42,7 +42,7 @@ import { placeArtOf } from './placeart.js';
 import { WINDS } from './rules/weather.mjs';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
-import { advance, atLast, beatKey, choicesUp, current, huiAt, keepReading, leadsIn, loadReading, logHtml, noted, ofPlay, pacedAt, playing, readingFor, showAll, sightNow, sightings, storyHtml, wholeBeats, wholeOf, withTold } from './dialogue.js';
+import { advance, atLast, beatKey, choicesUp, current, huiAt, keepReading, leadsIn, loadReading, sceneOfItem, logHtml, noted, ofPlay, pacedAt, playing, readingFor, showAll, sightNow, sightings, storyHtml, wholeBeats, wholeOf, withTold } from './dialogue.js';
 import { createLines, keepSpeed, speedNow, voiceOf, wholeNow } from './lines.js';
 import { SIGHT_KINDS, artRoom, chatHeard, fitBox, mountChatToggle, paintSight, setAutoFold } from './sight.js';
 import { createPager } from './pager.js';
@@ -2012,13 +2012,32 @@ function headLook() {
   // From the moment the 「完」 is owed, not only once the turn is reached: at 今 · 二 → 古五 (2026-10-15)
   // the new scene's picture stood a beat while the old 回's last beat was still the reading's, then the
   // 今 picture came back under 「今 · 二 · 完」, then the 古 again with 合上 (Hanli: 「又跳回了今」).
-  const held = leadsIn(readingHere(), look?.scene?.id, prev?.scene?.id) || Boolean(prev?.scene && prev.scene.id !== look?.scene?.id && closeUp());
+  const r = readingHere(), left = Boolean(prev?.scene && prev.scene.id !== look?.scene?.id);
+  const held = leadsIn(readingHere(), look?.scene?.id, prev?.scene?.id) || Boolean(left && closeUp())
+    // The header follows the passage actually shown (live, 2026-10-15: it ran ahead of the box after a choice, and
+    // lagged when tapping fast). A move just made, its passage not yet drawn — Look already at the new scene, the
+    // box still empty: the scene left holds (only one left in this sitting, never a stale one read back).
+    || Boolean(left && prevFresh && (look?.tell_owed || drawingTold) && !playing(r));
+  // The beat on show is another scene's — two moves inside one passage: that scene's header, when it was read here.
+  const shown = playing(r) ? sceneOfItem(r.items[Math.min(r.i, r.items.length - 1)]) : null;
+  const was = shown && shown !== look?.scene?.id ? leftLooks.get(shown) : null;
+  if (was) return { ...look, ...was };
+  // …and this scene's own passage on show is under this scene's header, whatever else is owed (live, 2026-10-15:
+  // 09-qulao's passage, 后山, told under 09-dabi's header and backdrop while a 「完」 was still owed).
+  // Not at a 回's turn: there the box waits behind the old 回's 「完」, under the old header, until 合上.
+  if (shown && shown === look?.scene?.id && !atHuiTurn()) return look;
   return held ? { ...look, scene: prev.scene, place: prev.place, weather: prev.weather, stage: prev.stage, sealed: prev.sealed } : look;
 }
+/* Every scene left in this sitting, by id (the last few), for the header of the beat on show (headLook). */
+const leftLooks = new Map();
+let prevFresh = false;
 /* The scene just left, kept per save in this browser beside the reading, so a reload mid-passage holds its header too. */
 const HELD_KEY = `lingjing.held.${SCRATCH || 'main'}`;
 function leftLook(lk) {
   prevLook = { scene: lk.scene, place: lk.place, weather: lk.weather, stage: lk.stage, sealed: lk.sealed };
+  prevFresh = true;
+  if (lk.scene?.id) { leftLooks.delete(lk.scene.id); leftLooks.set(lk.scene.id, prevLook); }
+  while (leftLooks.size > 8) leftLooks.delete(leftLooks.keys().next().value);
   try { localStorage.setItem(HELD_KEY, JSON.stringify(prevLook)); } catch { /* no storage: this load only */ }
 }
 function lastLook() {

@@ -95,7 +95,15 @@ test('the header changes only when the story gets there: the last scene\'s holds
   assert.match(page, /if \(look\?\.scene && seen\?\.scene\?\.id !== look\.scene\.id\) leftLook\(look\);/);
   assert.match(page, /const held = leadsIn\(readingHere\(\), look\?\.scene\?\.id, prev\?\.scene\?\.id\) \|\| /, 'held through all that leads in (dialogue.js leadsIn, tests/stage-hold.test.mjs)');
   // …and under the old 回's 「完」 at its turn (proto f, 2026-10-14): it turns with 合上.
-  assert.match(page, /\|\| Boolean\(prev\?\.scene && prev\.scene\.id !== look\?\.scene\?\.id && closeUp\(\)\);\n {2}return held \? \{ \.\.\.look, scene: prev\.scene,/);
+  assert.match(page, /\|\| Boolean\(left && closeUp\(\)\)/);
+  assert.match(page, /const r = readingHere\(\), left = Boolean\(prev\?\.scene && prev\.scene\.id !== look\?\.scene\?\.id\);/);
+  assert.match(page, /\n {2}return held \? \{ \.\.\.look, scene: prev\.scene,/);
+  // Live 2026-10-15: the header ran ahead of the box after a choice and lagged when tapping fast; 09-qulao told
+  // under 09-dabi's header. It follows the passage actually shown: the move's passage not yet drawn holds the
+  // scene left; a beat of a scene left earlier stands under that scene's header; this scene's own under its own.
+  assert.match(page, /\|\| Boolean\(left && prevFresh && \(look\?\.tell_owed \|\| drawingTold\) && !playing\(r\)\)/);
+  assert.match(page, /const was = shown && shown !== look\?\.scene\?\.id \? leftLooks\.get\(shown\) : null;/);
+  assert.match(page, /if \(shown && shown === look\?\.scene\?\.id && !atHuiTurn\(\)\) return look;/);
   assert.match(page, /look = headLook\(\);\s*try \{\s*paintAtmos\(\);\s*paintBackdrop\(\);/, 'the sky switches with the header');
   assert.match(page, /\$\('placeCap'\)\.textContent = [^\n]*\n\s*\} finally \{ look = realLook; \}/);
   assert.match(page, /paintIf\('headCards', headHtml\(slots && look !== realLook \? \{ \.\.\.slots, header: headOf\(look\) \} : slots\)\)/, 'the cast strip too');
