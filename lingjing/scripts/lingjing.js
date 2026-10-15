@@ -3710,6 +3710,8 @@ if (SCRATCH) {
   const { bestMove } = await import('./fightline.js');
   globalThis.__lingjingPlay = {
     board: (id) => { const g = boards.get(id); return g ? { won: Boolean(g.state?.won ?? g.cleared), sent: Boolean(g.sent), grade: g.state?.grade ?? null } : null; },
+    // The board's state as the screen draws it, and its module's id — for the human-like bots (tools/page-crawl.mjs).
+    state: (id) => { const g = boards.get(id); return g ? { state: g.state ?? null, game: g.mod?.meta?.id ?? null } : null; },
     win: (id, grade = null) => {
       const g = boardFor(id);
       if (!g || g.sent) return false;

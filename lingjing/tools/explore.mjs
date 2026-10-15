@@ -273,7 +273,7 @@ export const POLICIES = {
   },
 };
 
-export function sweep(content, policyName, { seed = 1, lang = 'zh', start = new Date('2026-09-29T09:00:00'), chapters = JUAN_ONE, steps = 600 } = {}) {
+export function sweep(content, policyName, { seed = 1, lang = 'zh', start = new Date('2026-09-29T09:00:00'), chapters = JUAN_ONE, steps = 600, arrive = null } = {}) {
   const policy = POLICIES[policyName](seed);
   let s = newState(content, lang, start), now = start;
   const problems = [], ranks = [], path = [];
@@ -282,6 +282,8 @@ export function sweep(content, policyName, { seed = 1, lang = 'zh', start = new 
   for (let n = 0; n < steps; n++) {
     if (!s.scene || !chapters.includes(s.chapter)) return { ended: true, problems, ranks: [...ranks, { hui, tier: s.tier, layer: s.step }], path, now };
     const sc = sceneOf(content, s);
+    // `arrive`: the save as he steps into each scene (passages still owed) — tools/page-crawl.mjs seeds its saves from it.
+    arrive?.(sc.id, s, now);
     if (sc.hui !== hui) { if (hui) ranks.push({ hui, tier: s.tier, layer: s.step }); hui = sc.hui; }
     s = rested(told(content, s), now);
     const walked = walkTo(content, s, now);
