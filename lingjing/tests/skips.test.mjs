@@ -200,4 +200,6 @@ test('one rule for every board: no game draws a skip of its own; the page lays i
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(page, /write\('task', \{ action: 'skip', id \}\)/, 'a skip is the rules\' skip, never a win');
   assert.doesNotMatch(page.slice(page.indexOf('function skipGame'), page.indexOf('async function onSkip')), /won: true|onWin/, 'never sent as a win');
+  // A board chosen again puts the box away, so it stands (live at j07-guan: the box held 数晨脉 › over it).
+  assert.match(page.slice(page.indexOf('function choicesInBox'), page.indexOf('function dialogBoxHtml')), /!replayUp\(look\)/);
 });

@@ -2031,8 +2031,11 @@ function choicesInBox() {
   // …unless the way on is a card of its own (生辰, a name, a fight not called by words — stage.mjs
   // cardHoldsWay): then the box is put away at its end and that card stands (2026-10-15, live at
   // 00-hall: the passage held its last beat with only the 看 list, the 生辰 card hidden behind it).
-  return Boolean(playing(r) && atLast(r, lang()) && !look?.tell_owed && !drawingTold && !boxYields(true) && !gameOpen(look) && !cardHoldsWay(look));
+  return Boolean(playing(r) && atLast(r, lang()) && !look?.tell_owed && !drawingTold && !boxYields(true) && !gameOpen(look) && !cardHoldsWay(look) && !replayUp(look));
 }
+/* A board left on an earlier day and chosen again (再试一回): the box is put away at its end, so the board
+   stands — beside the scene card, whose ways on stay his to take (stage.mjs sceneGame). */
+const replayUp = (l) => (l?.tasks ?? []).some((t) => t.replay && t.status !== 'done');
 function dialogBoxHtml(slots) {
   const r = readingHere();
   if (!r) return '';
