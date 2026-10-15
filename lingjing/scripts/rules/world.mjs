@@ -309,6 +309,16 @@ const caughtBy = (state, creature) => Boolean(creature.catch) && state.tasks?.[c
    不是早就收服了?」 — 药园外's pool kept dealing the 狰 asleep at his feet). */
 const poolOf = (content, place) => (place?.has?.pool ? content.places[place.province]?.pools?.[place.has.pool] ?? null : null);
 const huntKey = id => `hunt:${id}`;
+/* A beast beaten here does not stand up again at once (Hanli, 2026-10-15: 「野猪这个也是, 击败了
+   出来还在」): the stretch is quiet for the pool's `rest` minutes (30 unsaid) after a win, then the
+   next one comes. A loss or a beast run dry draws the next at once, as before. */
+const POOL_REST_MIN = 30;
+function poolResting(content, state, place, now) {
+  const rec = state.duels?.[huntKey(place.id)];
+  if (!rec?.at || rec.outcome !== 'won' || rec.day !== dayKey(now)) return false;
+  const rest = (poolOf(content, place)?.rest ?? POOL_REST_MIN) * 60000;
+  return now.getTime() - Date.parse(rec.at) < rest;
+}
 function poolBeast(content, state, place, now) {
   const beasts = (poolOf(content, place)?.beasts ?? []).filter(b => (b.weight ?? 1) > 0 && metNow(content, b.creature, now) && !(state.cast ?? []).includes(b.creature));
   if (!beasts.length) return null;
@@ -335,6 +345,7 @@ const hauntsOf = (content, id) => allPlaces(content).filter(p => p.has?.creature
 function encounterOf(content, state, now) {
   const place = placeOf(content, state.place);
   if (place && !place.has?.creature && poolOf(content, place) && !atScene(content, state)) {
+    if (poolResting(content, state, place, now)) return null;
     const cid = poolBeast(content, state, place, now);
     const creature = cid ? creatureOf(content, cid) : null;
     if (creature) {
@@ -517,4 +528,4 @@ function fittingPlace(content, state, from) {
    opens when it ends. */
 const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && carried(content, state);
 
-export { guardOf, fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };
+export { poolResting, guardOf, fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };

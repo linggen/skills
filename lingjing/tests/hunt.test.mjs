@@ -88,6 +88,11 @@ test('a pool\'s beast is up where no scene runs, fought again and again: each se
     if (out.result.outcome === 'won') { wins += 1; assert.ok(out.result.paid, 'a win pays the haunt table'); }
     s = out.state;
     assert.equal(s.duels['hunt:mengshan'].n, k + 1, 'the next beast is drawn');
+    // A win leaves the stretch quiet for its rest (30 min): the beaten beast does not stand up again at once.
+    if (out.result.outcome === 'won') {
+      assert.equal(encounterOf(content, s, NOW), null, 'quiet right after a win');
+      s = { ...s, duels: { ...s.duels, 'hunt:mengshan': { ...s.duels['hunt:mengshan'], at: new Date(NOW.getTime() - 31 * 60000).toISOString() } } };
+    }
   }
   assert.ok(wins >= 1, `won ${wins} of 10`);
   assert.ok(new Set(met).size >= 2, `more than one beast of the pool met: ${met}`);

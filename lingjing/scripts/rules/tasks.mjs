@@ -262,7 +262,7 @@ export function duel(state, content, ctx, args) {
   if (played.outcome === 'open') return refuse('unfinished', null, { turn: played.turn });
   delete s.fight;
   // A loss costs nothing but the beast, gone for the day (伤势 was cut, redesign-v2 § 四).
-  s.duels[key] = { day, outcome: played.outcome, ...(hunt ? { n: (today.n ?? 0) + 1 } : {}) };
+  s.duels[key] = { day, outcome: played.outcome, ...(hunt ? { n: (today.n ?? 0) + 1, at: ctx.now.toISOString() } : {}) };
   // A 符 played is a 符 spent, win or lose (cards.mjs § 装备入局).
   const spent = spentCharms(content, setup, played);
   for (const id of spent) { s.bag[id] = Math.max(0, (s.bag[id] ?? 0) - 1); if (!s.bag[id]) delete s.bag[id]; }
