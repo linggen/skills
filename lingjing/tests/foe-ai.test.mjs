@@ -53,3 +53,14 @@ test('a blow goes at a body it drives off, else at the hero — never a graze', 
   assert.equal(st.you.board[0]?.hp, 4, 'the 山精 it cannot drive off is left whole');
   assert.ok(st.you.hp < youHp, 'the 火弹术 went at the hero');
 });
+
+test('a planned card whose mark is gone by its turn is let go, not played on nothing', () => {
+  const st = begin(setupOf(['houtu', 'houtu', 'houtu', 'houtu', 'houtu', 'houtu']), catalog);
+  st.foe.board.push({ id: 'xiaoyao', element: 'wood', atk: 1, hp: 2, hpMax: 2, taunt: false, sick: false, struck: false });
+  st.foe.mana = 2; st.foe.manaMax = 2;
+  st.foe.intent = { cards: ['houtu'], power: false, gathering: false };
+  st.foe.board = []; // its rank driven off on his turn
+  st.whose = 'foe';
+  foeTurn(st);
+  assert.deepEqual(st.log.filter(l => l.act === 'played' && l.who === 'foe').map(l => l.id), []);
+});

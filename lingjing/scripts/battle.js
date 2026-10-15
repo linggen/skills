@@ -647,7 +647,8 @@ export function foeStep(st) {
       const c = card(st, id);
       if (index < 0 || !c) continue;
       const action = { kind: 'play', index, target: aimFor(st, side, c) };
-      if (legal(st, action, 'foe')) continue;
+      // A planned card whose mark is gone since (its rank driven off, its wound healed) is let go too.
+      if (legal(st, action, 'foe') || !worthPlaying(st, side, c)) continue;
       act(st, action, 'foe');
       return action;
     }
