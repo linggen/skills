@@ -10,9 +10,10 @@
 // A chapter with no 回 yet (the old spine) has none — its realm gate rules it,
 // as before; a world without `caps` has none.
 //
-// What it does: 修为 fills the layer at the cap and stops there — what would
-// spill over is held back (state.mjs addProgress, as at a realm's peak); a
-// story's rise or breakthrough past `story` is refused in the world's words.
+// What it does: grinding fills the layer at the cap and steps no further — the
+// 修为 counts on past its mark (Hanli, 2026-10-15; state.mjs addProgress) and
+// the story's rise carries it; a story's rise or breakthrough past `story` is
+// refused in the world's words.
 // A save already past the cap (one played before 2026-10-05) is never pulled
 // down: it keeps its layer and fills it, and goes no higher until the story
 // catches up.

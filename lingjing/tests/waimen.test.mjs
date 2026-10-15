@@ -414,7 +414,11 @@ test('息壤 keeps his 修为 through the jump, and its moment is the five doors
   const { doorsHtml } = await import('../scripts/doors.js');
   const { MAIN, CARD_KINDS, PAGE_OWNS } = await import('../scripts/stage.mjs');
   const out = resolve(won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 2, progress: 33 }, 'mijing-zou'), content, ctx(), { exit: 'swallow' });
-  assert.deepEqual([out.state.step, out.state.progress], [4, 33], 'the 修为 goes with him');
+  // The story's floor (Hanli, 2026-10-15): short of 二层, the passage fills it first — his 33 and the rest —
+  // and he breaks through on a full bar; what was over the mark would go with him (none here).
+  assert.deepEqual([out.state.step, out.state.progress, out.result.rose.filled], [4, 0, content.ladder.tiers[0].thresholds[2] - 33], 'the 修为 counted in the fill');
+  const over = resolve(won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 2, progress: content.ladder.tiers[0].thresholds[2] + 40 }, 'mijing-zou'), content, ctx(), { exit: 'swallow' });
+  assert.deepEqual([over.state.step, over.state.progress, over.result.rose.carried], [4, 40, 40], 'what was over the mark goes with him');
   const capped = resolve(won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 3, progress: 79 }, 'mijing-zou'), content, ctx(), { exit: 'swallow' }).state;
   assert.ok(capped.progress < content.ladder.tiers[0].thresholds[4], 'short of the new layer: it never jumps twice');
   const node = out.result.node;

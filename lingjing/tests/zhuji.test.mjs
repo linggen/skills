@@ -128,7 +128,7 @@ test('the cliff: 瞿老\'s last disciple, then the throw — the 九转 reached 
   assert.equal(r.state.tier, 'foundation');
   // 「因为9转筑基丹, 小成得以圆满」 (Hanli, 2026-10-14): the 九转 declares `fill: "full"` — 筑基小成, filled.
   assert.equal(r.state.step, 0);
-  assert.equal(r.state.progress, threshold(content, r.state), '小成圆满: the step filled in one night');
+  assert.ok(r.state.progress >= threshold(content, r.state), '小成圆满: the step filled in one night (what he held over 九层\'s mark goes with him, 2026-10-15)');
   assert.equal(r.result.breakthrough.full, true);
   assert.equal(r.result.breakthrough.to, '筑基小成圆满', 'Ling hears it as it stands');
   assert.equal(look(r.state, content, ctx).tier.name, '筑基小成圆满');
@@ -164,9 +164,9 @@ test('the fill is the pill\'s, declared: only the 九转 lands 小成圆满; the
   for (const s of [filled, { ...filled, chapter: '01-ji', scene: null, place: 'zhangyuan', ended: [...filled.ended, '01-ji'], done_scenes: Object.keys(content.chapters['01-ji'].scenes) }]) {
     let got = 0, last = null;
     for (let i = 0; i < 50; i += 1) { last = pay(content, s, ctx, { table: 'seclusion', progress: 90 }); got += last.progress; }
-    assert.equal(got, 0, 'nothing more goes in');
-    assert.ok(last.hold?.held > 0, 'what came is held');
-    assert.deepEqual([s.tier, s.step, s.progress], ['foundation', 0, threshold(content, s)]);
+    assert.ok(got > 0 && s.step === 0 && s.tier === 'foundation', 'it counts on past the mark (2026-10-15), and still no 中成');
+    assert.equal(last.hold?.cap, true, 'the cap keeps 中成 shut');
+    assert.ok(s.progress > threshold(content, s), 'the bar shows it past the mark');
     assert.equal(look(s, content, ctx).tier.name, '筑基小成圆满');
   }
 });

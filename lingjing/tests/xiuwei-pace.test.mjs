@@ -13,10 +13,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { fitWorld, migrate, newState, realmName } from '../scripts/state.mjs';
-import { quest } from '../scripts/rules.mjs';
+import { look, quest, resolve } from '../scripts/rules.mjs';
 import { pay, paysOf } from '../scripts/rules/core.mjs';
 import { choreGrant } from '../scripts/rules/chores.mjs';
-import { ERRANDS_AT, ONE_OFFS, PLAY, dayIncome, runJuan1 } from '../tools/xiuwei-model.mjs';
+import { ERRANDS_AT, EVERYTHING, NOTHING, ONE_OFFS, budgetTable, dayIncome, errandPays, runJuan1 } from '../tools/xiuwei-model.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-10-15T12:00:00');
@@ -40,9 +40,9 @@ test('every errand and 榜文 says what work it is: 修行 pays 修为 for a fig
       assert.ok(Math.min(q.grant.progress, T[q.grant.table].progress) > 0, `${q.id}: and pays 修为`);
     }
   }
-  // The model places every 修行 errand in a 回 and nothing else.
-  const cult = content.quests.filter(q => q.work === 'cultivation').map(q => q.id).sort();
-  assert.deepEqual(Object.keys(ERRANDS_AT).sort(), cult);
+  // The model places every errand that pays 修为 or a pill in a 回 (or null: on no 卷一 map) — a new one must say where.
+  const paying = content.quests.filter(q => errandPays(content, q) > 0).map(q => q.id).sort();
+  assert.deepEqual(Object.keys(ERRANDS_AT).sort(), paying, 'tools/xiuwei-model.mjs ERRANDS_AT names every errand that pays 修为 or a pill');
 });
 
 test('修屋顶 is handed in for 灵石, nothing for 修为; a haunt fight still pays 修为', () => {
@@ -72,42 +72,71 @@ test('real life: the workout is the day\'s 功课 (修为); the day\'s pick and 
 
 /* The 回s where the book holds him on a 练气 layer: the cap is a layer, and he leaves it by the story. */
 const HELD = ['h05', 'h07', 'h08'];
+const rank = (tier, step) => content.ladder.tiers.findIndex(t => t.id === tier) * 100 + step;
 
-test('natural play fills each held layer near its 回\'s close — never in the first half', () => {
-  const rows = runJuan1(content);
+test('the budget per 回 (Hanli, 2026-10-15: 「确保用户交差能看到提升」): one who does everything stays at the book\'s layer, filling it near the 回\'s close', () => {
+  const table = budgetTable(content);
+  const rows = runJuan1(content, { play: EVERYTHING });
   const day = dayIncome(content);
-  assert.ok(day > 100 && day < 170, `a natural day ${day} — under the old 170 of 体力-bound play`);
+  assert.ok(day > 100 && day < 170, `a natural day ${day}`);
+  for (const r of rows) {
+    // Never behind the book, never ahead of it: the floor and the cap.
+    assert.equal(rank(r.end.tier, r.end.step), rank(r.book.tier, r.book.step), `${r.hui}: at the book's layer\n${table}`);
+  }
   for (const id of HELD) {
     const r = rows.find(x => x.hui === id);
-    assert.ok(r.full_at != null, `${id}: the layer the book stands on is reached`);
-    assert.ok(r.full_at + 1 >= r.scenes / 2, `${id}: full at scene ${r.full_at + 1} of ${r.scenes} — not early`);
+    // The layer the 回 holds him on fills — late, not in its first half — and he is not far past it.
+    assert.ok(r.full_at == null || r.full_at + 1 >= r.scenes / 2, `${id}: full at scene ${r.full_at + 1} of ${r.scenes} — not early\n${table}`);
   }
-  // The close of 卷一: 筑基小成, as the book (the 九转 lands it full).
-  const last = rows.at(-1);
-  assert.deepEqual([last.end.tier, last.end.step], ['foundation', 0]);
+  // 古四 and 古六 (the 回s that end on their held layer or rise from it) reach it by their own play.
+  for (const id of ['h05', 'h07', 'h08']) assert.notEqual(rows.find(x => x.hui === id).full_at, null, `${id}: everything on offer fills the layer\n${table}`);
   // Before 2026-10-15 every held layer filled in the 回's first scene or two.
   const old = structuredClone(content.ladder);
   old.tiers[0].thresholds = [0, 50, 60, 70, 80, 90, 100, 110, 120, 130];
   for (const id of HELD) assert.ok(runJuan1(content, { ladder: old }).find(x => x.hui === id).full_at <= 2, `${id} ran ahead on the old ladder`);
 });
 
-test('the story and errands alone never fill a held layer: the climb is cultivation, and the cap layer is the book\'s', () => {
+test('one who does nothing is carried by the story\'s floor: never behind the book', () => {
+  const table = budgetTable(content);
+  for (const r of runJuan1(content, { play: NOTHING })) assert.equal(rank(r.end.tier, r.end.step), rank(r.book.tier, r.book.step), `${r.hui}\n${table}`);
+  // The story and errands alone never fill a held layer: the climb is cultivation.
   const rows = runJuan1(content, { play: ONE_OFFS });
-  for (const id of HELD) assert.equal(rows.find(x => x.hui === id).full_at, null, `${id}: one-offs alone stay under the layer`);
-  // And a grinder (ten times the natural day) is held at each 回's cap, never past it.
-  const grind = runJuan1(content, { play: { ...PLAY, FIGHTS: 20, TALE: 1, ROAD: 5 } });
-  for (const r of grind.filter(x => HELD.includes(x.hui))) {
-    const cap = r.cap.story ?? r.cap;
-    assert.ok(r.end.step <= cap.layer, `${r.hui}: ${r.end.step} ≤ the 回's story layer ${cap.layer}`);
-  }
+  for (const id of ['h07', 'h08']) assert.equal(rows.find(x => x.hui === id).full_at, null, `${id}: one-offs alone stay under the layer\n${table}`);
 });
 
-test('the 练气 ladder: each 层 asks more than the one below, and the layers the book holds him on are the model\'s', () => {
+test('a grinder (ten times the fights) stays only somewhat ahead: never past the book\'s layer, the stretch on each rise', () => {
+  const grind = runJuan1(content, { play: { ...EVERYTHING, FIGHTS: 20, TALE: 1, ROAD: 5 } });
+  for (const r of grind) assert.ok(rank(r.end.tier, r.end.step) <= rank(r.book.tier, r.book.step), r.hui);
+  const h07 = grind.find(x => x.hui === 'h07');
+  assert.ok(h07.end.need > content.ladder.tiers[0].thresholds[h07.end.step], 'the layer he rose to asks more: the stretch');
+});
+
+test('the 练气 ladder: each 层 asks more than the one below', () => {
   const th = content.ladder.tiers[0].thresholds;
   for (let i = 2; i < th.length; i += 1) assert.ok(th[i] > th[i - 1]);
-  const { left } = runJuan1(content);
-  // A held layer asks about what natural play carried into it plus its 回's own (±15%).
-  for (const step of [1, 2, 4]) assert.ok(Math.abs(left[step] - th[step]) / th[step] < 0.15, `${step}层: held ${Math.round(left[step])} of ${th[step]}`);
+  assert.equal(content.ladder.overflow_stretch, 0.5);
+});
+
+test('past the full mark 修为 keeps counting; a rise carries it and the next 层 asks half of it more; the story fills a 层 he is short of', () => {
+  const th = content.ladder.tiers[0].thresholds;
+  const at = (scene, extra) => ({ ...newState(content, 'zh', NOW), chapter: '00-waimen', scene, place: 'chaifang', ended: ['00-prologue'], done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian'],
+    tier: 'qi', traits: ROOTS, stamina: 100, stamina_at: NOW.toISOString(), ...extra });
+  // At 古四's cap, full: a fight still adds, past the mark.
+  const s = at(null, { place: 'waimen', step: 1, progress: th[1] });
+  const won = pay(content, s, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth });
+  assert.equal(won.progress, T.haunt.progress, 'the whole fight counted');
+  assert.deepEqual([s.step, s.progress], [1, th[1] + T.haunt.progress], '230/200: the bar shows it');
+  // 第一路 (wm-diyilu): the rise to 二层 carries the 30 over the mark; 二层 asks 15 more.
+  const r = resolve({ ...s, scene: 'wm-diyilu', place: 'chaifang' }, content, ctx, { exit: 'save' });
+  assert.equal(r.result.ok, true, JSON.stringify(r.result));
+  assert.equal(r.state.step, 2);
+  assert.equal(r.result.rose.carried, T.haunt.progress);
+  assert.equal(r.state.stretch['qi:2'], T.haunt.progress / 2);
+  assert.equal(look(r.state, content, ctx).next, th[2] + T.haunt.progress / 2);
+  // A save that did nothing: the story fills 一层 for it, then lifts it.
+  const bare = resolve(at('wm-diyilu', { step: 1, progress: 0 }), content, ctx, { exit: 'save' });
+  assert.equal(bare.result.rose.filled, th[1]);
+  assert.equal(bare.state.step, 2);
 });
 
 test('a save from before keeps its 层 and its bar as full as it was — 圆满 stays 圆满, so the cliff still throws', () => {

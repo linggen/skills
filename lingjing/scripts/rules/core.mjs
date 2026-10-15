@@ -1,7 +1,7 @@
 // rules/core.mjs — Changing it: refusals, pay, riddles, stamina, resolve and judge.
 // Part of the rules engine; rules.mjs is its one door.
 import { gameOf, MADE_GRANT } from '../content.mjs';
-import { addProgress, dayKey, fill, fitValue, fullName, lockedOf, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaLimited, staminaReturnsAt, stepName, peakName, phaseName, threshold, tierOf, seedOf, stepOfLayer } from '../state.mjs';
+import { addProgress, dayKey, fill, fitValue, fullName, lockedOf, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaLimited, staminaReturnsAt, stepName, peakName, phaseName, threshold, tierOf, seedOf, stepOfLayer, stepUp, zeroAt } from '../state.mjs';
 import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
 import { gainCard, starterOf } from './cards.mjs';
@@ -302,8 +302,11 @@ function offerTasks(content, state) {
 /* The story lifts the realm to a layer of the first tier (an exit's `rise`,
    the 层 as the book names it — state.mjs stepOfLayer: 小周天 is 一层 out of 零层, 息壤 四层) — never down, never past its tier, once:
    a scene played again lifts nothing, and before a story gate nothing moves.
-   The 修为 he had toward the next layer goes with him (his, 2026-09-29: the jump
-   reset it to 0) — short of the new layer's own threshold, so it never jumps twice. */
+   The story's floor (Hanli, 2026-10-15): a player short of the layer he stands
+   on is filled to it first — the passage carries the bar there (`filled`) — so
+   one who skipped every task is never behind the book. What he had over its
+   mark goes with him whole (`carried`), and the new layer asks
+   `overflow_stretch` of it more (state.mjs stepUp). */
 function riseTo(content, s, rise, replay) {
   const tier = content.ladder.tiers[0];
   // `{layer, full}`: to that layer and filled — 古八's 入秋 (古七's before the 2026-10-07 split), 练气九层圆满 (his, 2026-09-30:
@@ -314,10 +317,12 @@ function riseTo(content, s, rise, replay) {
   if (s.step > top || (s.step === top && (!full || (s.progress ?? 0) >= threshold(content, s)))) return null;
   // Never past where the 回's story stands (rules/cap.mjs) — the data would be wrong; the lint holds it too.
   if (!storyAllows(content, s, tier.id, top)) return null;
-  const from = stepName(content, s.tier, s.step, s.lang);
-  s.step = top;
-  s.progress = full ? threshold(content, s) : Math.max(0, Math.min(s.progress ?? 0, threshold(content, s) - 1));
-  return { from, to: stepName(content, s.tier, s.step, s.lang), ...(full ? { full: true } : {}) };
+  const from = stepName(content, s.tier, s.step, s.lang), had = s.progress ?? 0, need = threshold(content, s);
+  const filled = zeroAt(content, s.tier, s.step) ? 0 : Math.max(0, need - had);
+  if (s.step < top) stepUp(content, s, tier.id, top, had - need, !zeroAt(content, s.tier, s.step));
+  if (full) s.progress = Math.max(s.progress ?? 0, threshold(content, s));
+  const carried = s.step === top && had > need ? had - need : 0;
+  return { from, to: stepName(content, s.tier, s.step, s.lang), ...(full ? { full: true } : {}), ...(filled ? { filled } : {}), ...(carried ? { carried } : {}) };
 }
 
 /* How far a breakthrough that lands fills the step it lands on: the pill it
@@ -471,9 +476,12 @@ export function resolve(state, content, ctx, args) {
     s.card_from = { ...Object.fromEntries(starterOf(content, s.traits).map(id => [id, { how: 'starter', place: s.place ?? null, chapter: s.chapter ?? null, day: dayKey(ctx.now) }])), ...(s.card_from ?? {}) };
   }
   if (breakthrough) {
-    s.tier = breakthrough.tier; s.step = 0;
+    // What he held over the peak's mark goes with him whole (state.mjs stepUp); a pill that
+    // lands the step full fills it under that.
+    const over = Math.max(0, (s.progress ?? 0) - threshold(content, s));
+    stepUp(content, s, breakthrough.tier, 0, over);
     const filled = landFill(content, exit, breakthrough) === 'full';
-    s.progress = filled ? threshold(content, s) : 0;
+    if (filled) s.progress = threshold(content, s) + over - (s.stretch?.[`${s.tier}:0`] ?? 0);
     if (filled) breakthrough = { ...breakthrough, to: fullName(content, s.tier, 0, lang), full: true };
   }
   // The story lifts the realm (小周天, 息壤): to that layer of the first tier, never down.

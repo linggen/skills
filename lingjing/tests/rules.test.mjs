@@ -899,15 +899,15 @@ test('a layer fills and the next begins, the rest carried over', () => {
   assert.deepEqual(out.result.paid.levels, [{ from: '练气一层', to: '练气二层' }]);
 });
 
-test('at the realm peak the player holds until the chapter opens', () => {
+test('at the realm peak the player stays until the chapter opens — the 修为 counting on past the mark (2026-10-15)', () => {
   const s = joined();
   const peak = content.ladder.tiers[0].thresholds[9];
   s.step = 9; s.progress = peak - 10;
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
-  assert.equal(out.state.progress, peak);
-  assert.deepEqual(out.result.paid.hold, { gate: 1, held: 10 });
-  assert.equal(out.result.paid.progress, 10, 'only what the peak took is paid');
+  assert.deepEqual([out.state.step, out.state.progress], [9, peak + 10]);
+  assert.deepEqual(out.result.paid.hold, { gate: 1, held: 0, over: 10 });
+  assert.equal(out.result.paid.progress, 20, 'the whole grant counted');
 });
 
 test('no day cap: a day full of play pays every time — 灵气 is the only limit', () => {

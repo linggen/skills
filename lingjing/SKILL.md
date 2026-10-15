@@ -705,8 +705,8 @@ sitting yourself, never silence.
    `say`. `needs-answer` → the riddle is `ask`: one line, then AskUser, never
    the riddle in your words; `wrong-answer` → the `hint`, never an answer.
    **`paid`** from a tool you called on typed words: once, in the world's
-   words — *修为 +25 · 灵石 +10* (`words`); `levels` each a moment; `hold`
-   means only the cauldron goes up. After a `[scene] won` never read gains.
+   words — *修为 +25 · 灵石 +10* (`words`); `levels` each a moment; `hold`: the 层
+   is full, the 修为 counts on past it. After a `[scene] won` never read gains.
 
 ## The choice — AskUser
 

@@ -79,16 +79,16 @@ test('under an hour nothing grows; 8 h or more fills 体力 whatever the focus',
   assert.equal(long.state.resting, undefined);
 });
 
-test('修为: per hour counted, through the tables like any grant, held at the realm\'s peak', () => {
+test('修为: per hour counted, through the tables like any grant; at the realm\'s peak it counts on past the mark', () => {
   const r = inAndOut(player(), 10, { focus: 'progress' });
   assert.equal(r.result.emerged.progress.paid, 50);
   assert.equal(r.state.progress, 150);
   // At the peak of 结丹 the rest waits for the breakthrough.
   const top = content.ladder.tiers.find(t => t.id === 'core').thresholds;
   const peak = inAndOut(player({ step: top.length - 1, progress: top.at(-1) - 10 }), 12, { focus: 'progress' });
-  assert.equal(peak.result.emerged.progress.paid, 10);
-  assert.ok(peak.result.emerged.progress.hold);
-  assert.equal(peak.state.progress, top.at(-1));
+  assert.equal(peak.result.emerged.progress.paid, 60);
+  assert.ok(peak.result.emerged.progress.hold, 'the realm\'s top: the rest waits for the breakthrough');
+  assert.equal(peak.state.progress, top.at(-1) + 50);
   assert.equal(peak.state.step, top.length - 1);
 });
 

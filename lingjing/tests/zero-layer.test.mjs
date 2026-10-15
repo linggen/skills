@@ -71,9 +71,9 @@ test('an old save heals on load: before the 小周天 零层, past it 一层, pa
   // Past it but still at the old 一层 (it filled less than 50): 一层, never 零层.
   const low = heal(v7({ scene: 'wm-qingshi', done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian'], step: 0, progress: 45 }));
   assert.deepEqual([name(low), low.progress], ['练气一层', 180]);
-  // Past 古四's close (wm-diyilu's rise to 二层): the 层 the story named, the bar as full (30 of 60 is 200 of 400).
+  // Past 古四's close (wm-diyilu's rise to 二层): the 层 the story named, the bar as full (30 of 60 is 175 of 350).
   const diyilu = heal(v7({ scene: 'wm-yaoyuan', done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian', 'wm-qingshi', 'wm-chaifang', 'wm-danlu', 'wm-diyilu'], step: 1, progress: 30 }));
-  assert.deepEqual([name(diyilu), diyilu.progress], ['练气二层', 200]);
+  assert.deepEqual([name(diyilu), diyilu.progress], ['练气二层', 175]);
   // 古八's 腊八: 练气九层圆满 stays 九层圆满, ready for the cliff.
   const dabi = heal(v7({ chapter: '00-zhuji', scene: '09-cliff', ended: ['00-prologue', '00-waimen'], done_scenes: ['wm-xirang', '09-year', '09-dabi'], step: 8, progress: 130 }));
   assert.deepEqual([name(dabi), dabi.step, dabi.progress], ['练气九层圆满', 9, threshold(content, dabi)]);

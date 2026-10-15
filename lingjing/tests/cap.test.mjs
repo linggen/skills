@@ -42,7 +42,7 @@ test('every 古 回 declares its cap, as the book\'s realm line stands', () => {
   assert.deepEqual(lint(content).filter(p => /cap/.test(p)), []);
 });
 
-test('古四: 零层 grinds nothing; past the 小周天 grinding fills 一层 and holds there, the rest held back, the bar full with the world\'s line', () => {
+test('古四: 零层 grinds nothing; past the 小周天 grinding fills 一层 and stays on it — the 修为 counting on past the mark (2026-10-15), the world\'s line by the bar', () => {
   const zero = gusi();
   assert.equal(grind(zero).got, 0, '零层 takes no 修为');
   assert.equal(named(zero), '练气零层');
@@ -50,14 +50,14 @@ test('古四: 零层 grinds nothing; past the 小周天 grinding fills 一层 an
   const s = gusi({ step: 1 });
   const { got, last } = grind(s);
   assert.equal(named(s), '练气一层', '九月\'s roll call: 小满 一层');
-  assert.equal(s.progress, threshold(content, s), 'the layer is full');
-  assert.equal(got, content.ladder.tiers[0].thresholds[1], 'only what 一层 holds was added');
+  assert.ok(s.progress > threshold(content, s), 'the layer is full, and the 修为 goes on past its mark');
+  assert.equal(got, s.progress, 'every grant counted — nothing held back');
   assert.equal(last.hold.cap, true);
-  assert.ok(last.hold.held > 0 && last.progress === 0, 'at the cap nothing more is added; what came is held');
+  assert.deepEqual([last.hold.held, last.progress], [0, 90], 'at the cap a grant still lands whole');
   assert.equal(last.hold.say, content.ladder.caps.say.zh);
   const l = look(s, content, ctx);
-  assert.equal(l.capped.say, content.ladder.caps.say.zh, 'Look carries the line under the full bar');
-  assert.equal(l.progress, l.next);
+  assert.equal(l.capped.say, content.ladder.caps.say.zh, 'Look carries the line by the full bar');
+  assert.ok(l.progress > l.next, 'the bar shows it: 9000/200');
   assert.equal(look({ ...s, progress: 10 }, content, ctx).capped, undefined, 'below the top, no line');
   assert.equal(look(at('00-waimen', 'wm-ahe', 'waimen', ['00-prologue'], { lang: 'en', step: 1, progress: content.ladder.tiers[0].thresholds[1] }), content, ctx).capped.say, content.ladder.caps.say.en);
 });
@@ -84,7 +84,7 @@ test('古四\'s close lifts him to 二层 (十月廿五, by the story); 古五 g
   assert.equal(named(s), '练气四层', '息壤: the story\'s jump');
   grind(s);
   assert.equal(named(s), '练气四层', 'and 四层 it stays, through 古六');
-  assert.equal(s.progress, threshold(content, s));
+  assert.ok(s.progress > threshold(content, s), 'full, and counting on');
 });
 
 test('古七: 四层 until the year — the seasons lift him to 七层, 古八\'s to 九层圆满, the cliff is the story\'s breakthrough', () => {
@@ -121,7 +121,7 @@ test('卷一\'s end: 古八 over, 卷二 waiting — 筑基小成 filled, and no
   const s = at('01-ji', null, 'zhangyuan', ['00-prologue', '00-waimen', '00-zhuji', '01-ji'], { tier: 'foundation', done_scenes: Object.keys(ch.scenes) });
   const { got } = grind(s, 300);
   assert.equal(named(s), '筑基小成');
-  assert.equal(got, threshold(content, s));
+  assert.equal(got, s.progress, 'every grant counted, past the mark');
   assert.equal(look(s, content, ctx).capped.say, content.ladder.caps.say.zh);
   assert.equal(look(s, content, ctx).tier.name, '筑基小成圆满', 'a step filled reads 圆满');
   // In 古八 itself, the same.
@@ -136,8 +136,7 @@ test('an old save already past its cap is never pulled down: it fills its own st
   assert.equal(l.tier.name, '练气六层', 'Look reads it as it is');
   const { got } = grind(s);
   assert.equal(named(s), '练气六层', 'not one layer down, not one up');
-  assert.equal(s.progress, threshold(content, s));
-  assert.equal(got, threshold(content, s) - 40);
+  assert.equal(got, s.progress - 40, 'every grant counted, past the mark');
   // 筑基中成 in 古八: kept, filled, held.
   const f = at('01-ji', '01-arrive', 'yecheng', ['00-prologue', '00-waimen', '00-zhuji'], { tier: 'foundation', step: 1, progress: 0 });
   grind(f, 300);

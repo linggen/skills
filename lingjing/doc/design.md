@@ -237,18 +237,30 @@ best 修为 per 体力 (3.75); tests lock it.
   walk and game), paid on the `labor` table (修为 0, ≤20 灵石, maybe an item);
   the day's pick of real-life chores pays its reward as 灵石 (`life`, ≤10), a
   开府 milestone 20 灵石 (`once`, 修为 0). tests/xiuwei-pace.test.mjs locks it.
-- **练气 thresholds** [0, 200, 400, 650, 900, 1000, 1100, 1200, 1300, 1400]
-  (from 0, 50 … 130): re-derived by `tools/xiuwei-model.mjs` from a model of
-  卷一 played naturally — the book's scenes in order, a day of play per five
-  scenes (功课 20, two pool fights 60, half a rumor ~38, a road-meet 20 ≈
-  138), the 修行 errands on offer. A rise carries what a layer held, so a layer
-  the book holds him on asks what came in plus that 回's own: 一层 fills at
-  古四's 7th scene of 8, 二层 at 古五's 3rd of 6 (then 息壤), 四层 at 古六's
-  10th of 11; the layers a rise jumps over sit between. Story and errands
-  alone never fill a held layer. 筑基 and above are unchanged (卷二 re-derives
-  them; the 九转 lands 筑基小成圆满, so 古九 holds there either way).
-- **The cap is the hard ceiling** for anyone who plays past natural (体力 is
-  off while we test): the cap layer fills and the rest is held.
+- **练气 thresholds** [0, 200, 350, 480, 620, 720, 820, 920, 1020, 1120]
+  (from 0, 50 … 130), from `tools/xiuwei-model.mjs`: the 修为 budget per 回 —
+  every source on offer (the story, the day's 功课, 修行 errands and 榜文,
+  haunt fights at a natural pace, the story's and the market's pills), a day
+  of play per five scenes (≈138 修为). A 层 the book holds him on asks about
+  what that 回 pays there: one who does everything fills 一层 at 古四's 6th
+  scene of 8, 二层 at 古五's 3rd of 6 (then 息壤), 四层 at 古六's last.
+- **Every hand-in shows a gain** (Hanli, 2026-10-15: 「得到奖励应该有变化……确保
+  用户交差能看到提升」, no banking, no invented stat):
+  - **past a full mark 修为 keeps counting** — nothing is held; the bar reads
+    「230/200」 with the part over the mark glowing (state.mjs addProgress);
+  - **a step up carries it, elastic**: the story's rise, the throw, or grinding
+    the cap allows carries what was over the mark into the new step whole,
+    and that step asks `overflow_stretch` (0.5) of it more — 100 over 一层
+    enters 二层 at 100/450 (state.mjs stepUp, `state.stretch` per step);
+  - **the story's floor**: a rise first fills the 层 he is short of (the rose
+    moment's `filled`), so one who skipped every task is never behind the book.
+  - tests/xiuwei-pace.test.mjs holds two players per 回: EVERYTHING stays at
+    the book's layer and fills a held 层 only in the 回's second half; NOTHING
+    is carried by the floor; a grinder (ten times the fights) is never past
+    the book's layer. 古九 (筑基小成, the 九转 lands it full) runs over its mark
+    by design until 卷二. 筑基 and above are unchanged (卷二 re-derives them).
+- **The per-回 cap** now decides only when grinding may break a 层; it never
+  drops 修为 (its line by the bar: 「……气一分不少，都在丹田里攒着」).
 - **Old saves** (state v9 `paceLayer`, `ladder.json → thresholds_were`): the
   层 is kept and the bar stands as full as it stood (一层 40/50 → 160/200;
   九层圆满 stays 圆满, so a save at the cliff can still throw).
@@ -289,9 +301,9 @@ need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale
   further, its `story` — 古三 一层 · 古四 二层 · 古五 二层 (story 四层) · 古六
   四层 · 古七 四层 (story 七层) · 古八 七层 (story 筑基小成) · 古九 筑基小成; a 今 interlude takes the 古
   before it; after 卷一 the save waits in 古九's chapter, so 筑基小成 holds
-  until 卷二 gets its caps. At the cap the step fills (圆满) and the rest is held
-  (as at a peak); Look's `capped.say` stands under the full bar in the
-  world's words. The book's jumps are the story's (`rise`): 古四's close lifts
+  until 卷二 gets its caps. At the cap the step fills (圆满) and the 修为 counts on
+  past its mark (2026-10-15; § Pacing); Look's `capped.say` stands by the full
+  bar in the world's words. The book's jumps are the story's (`rise`): 古四's close lifts
   to 二层 (wm-diyilu), 息壤 to 四层, the year to 九层圆满, the cliff to 筑基 —
   a player behind the book is lifted there, never held back. A rise or
   breakthrough past `story` is refused `past-cap` (「火候未到」), and the lint

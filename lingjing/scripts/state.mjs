@@ -283,8 +283,25 @@ export function addStamina(content, state, n, now) {
 
 export const tierOf = (content, id) => content.ladder.tiers.find(t => t.id === id);
 
+/* What the step asks: the ladder's threshold, plus its stretch — the share of the
+   修为 carried in over the last step's full mark (ladder.json `overflow_stretch`,
+   Hanli 2026-10-15: a grinder stays only somewhat ahead). `state.stretch` keeps
+   it per step ({"qi:2": 50}); a step with none asks the ladder's number. */
+export const stretchKey = (tier, step) => `${tier}:${step}`;
 export function threshold(content, state) {
-  return tierOf(content, state.tier).thresholds[state.step];
+  return tierOf(content, state.tier).thresholds[state.step] + (state.stretch?.[stretchKey(state.tier, state.step)] ?? 0);
+}
+
+/* Up to (tier, step), the 修为 over the last mark carried in whole; the new step
+   asks `overflow_stretch` of it more. From 零层 nothing stretches (it held
+   nothing to show). Mutates `state`. */
+export function stepUp(content, state, tier, step, carry, stretch = true) {
+  const over = Math.max(0, Math.round(carry ?? 0));
+  const extra = stretch ? Math.round(over * (content.ladder.overflow_stretch ?? 0)) : 0;
+  state.tier = tier; state.step = step; state.progress = over;
+  const key = stretchKey(tier, step), kept = { ...(state.stretch ?? {}) };
+  if (extra) kept[key] = extra; else delete kept[key];
+  if (Object.keys(kept).length) state.stretch = kept; else delete state.stretch;
 }
 
 /* A tier that counts from 零层 (ladder.json `zero`; story DESIGN: 主角零层入门):
@@ -340,7 +357,7 @@ export function peakName(content, tierId, lang) {
    is filled (held at a cap or the realm's top). */
 export function realmName(content, state, lang) {
   const tier = tierOf(content, state.tier);
-  const filled = tier && !zeroAt(content, state.tier, state.step) && (state.progress ?? 0) >= tier.thresholds[state.step];
+  const filled = tier && !zeroAt(content, state.tier, state.step) && (state.progress ?? 0) >= threshold(content, state);
   return filled ? fullName(content, state.tier, state.step, lang) : stepName(content, state.tier, state.step, lang);
 }
 
@@ -354,9 +371,13 @@ export function payOf(content, state) {
   return tierOf(content, state.tier).pay ?? 1;
 }
 
-/* Add progress; rise through the tier's steps; hold at its peak, where only
-   the next tier's chapter can take the player on — or, with `mayStep` (the
-   回's cap, rules/cap.mjs), at the last layer it allows. */
+/* Add progress; rise through the tier's steps, the 修为 over each mark carried
+   in (stepUp). Where the next step is shut — the 回's cap (`mayStep`,
+   rules/cap.mjs) or the realm's top, which only the next tier's chapter opens —
+   the step is full and the 修为 keeps coming past its mark (Hanli, 2026-10-15:
+   「230/200」, every hand-in visibly adds; nothing is held back any more). The
+   story's rise or the throw carries it on. `hold` says which door is shut and
+   how far past the mark he stands (`over`); `held` is 0 — kept for callers. */
 export function addProgress(content, state, amount, mayStep = null) {
   const levels = [];
   let hold = null;
@@ -367,26 +388,14 @@ export function addProgress(content, state, amount, mayStep = null) {
     const need = threshold(content, state);
     if (state.progress < need) break;
     const tier = tierOf(content, state.tier);
-    // The 回's cap (rules/cap.mjs): the layer filled, the next one past where
-    // the book stands — held like the peak, the rest not added.
-    if (state.step < tier.thresholds.length - 1 && mayStep && !mayStep(state.tier, state.step + 1)) {
-      hold = { cap: true, held: state.progress - need };
-      state.progress = need;
-      break;
-    }
-    if (state.step < tier.thresholds.length - 1) {
-      state.progress -= need;
+    const top = state.step >= tier.thresholds.length - 1;
+    if (!top && (!mayStep || mayStep(state.tier, state.step + 1))) {
       levels.push({ from: { tier: state.tier, step: state.step }, to: { tier: state.tier, step: state.step + 1 } });
-      state.step += 1;
+      stepUp(content, state, state.tier, state.step + 1, state.progress - need);
       continue;
     }
-    // The peak takes no more: what would overflow is `held` back, so the
-    // caller can report only what was really added.
-    const held = state.progress - need;
-    state.progress = need;
-    const tiers = content.ladder.tiers;
-    const next = tiers[tiers.indexOf(tier) + 1];
-    hold = { gate: next?.gate ?? null, held };
+    const tiers = content.ladder.tiers, next = tiers[tiers.indexOf(tier) + 1];
+    hold = top ? { gate: next?.gate ?? null, held: 0, over: state.progress - need } : { cap: true, held: 0, over: state.progress - need };
     break;
   }
   return { levels, hold };

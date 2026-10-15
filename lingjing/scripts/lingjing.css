@@ -83,6 +83,12 @@ button:disabled { cursor: default; }
 .omenchip.ill, .omenchip.dire { color: var(--seal); border-color: var(--seal); background: var(--seal-soft); }
 .xw .bar { flex: 1; height: 5px; border-radius: 3px; background: var(--raised); overflow: hidden; }
 .xw .bar i { display: block; height: 100%; background: var(--ling); transition: width .6s ease; }
+/* 修为 past the full mark (2026-10-15): it keeps counting — a glowing gold run over the full bar. */
+.xw .bar { position: relative; }
+.xw .bar .spill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(90deg, #f3d27a, #ffe9a8); box-shadow: 0 0 6px #f3d27acc; transition: width .6s ease; }
+.xw .bar.over { overflow: visible; box-shadow: 0 0 5px #f3d27a88; }
+@media (prefers-reduced-motion: no-preference) { .xw .bar.over .spill { animation: spillglow 2.4s ease-in-out infinite; } }
+@keyframes spillglow { 50% { box-shadow: 0 0 10px #ffe9a8; } }
 .xw .num, .ls b { font-family: var(--mono); font-size: 11.5px; font-variant-numeric: tabular-nums; }
 .xw .num { color: var(--dim); }
 .ls b { color: var(--ling); font-weight: 500; }

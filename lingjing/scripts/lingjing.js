@@ -570,11 +570,16 @@ function qiHtml() {
 /// bar (Hanli, 2026-10-15: the line took the strip's room and crushed the name to a column).
 const capSay = () => (look.capped?.say ? `<span class="capseal" role="note" title="${esc(look.capped.say)}" aria-label="${esc(look.capped.say)}">${esc(words().capSeal)}</span>` : '');
 
+/// How far past the full mark the 修为 stands, as a share of the bar (0 when it is not; at most the whole bar).
+const spillPct = (progress, next) => (next && progress > next ? Math.min(100, Math.round(((progress - next) / next) * 100)) : 0);
+
 /// One line in the world while the window is spent — and the boards stay:
 /// they use no model.
 function statusHtml() {
   const w = words();
   const pct = look.next ? Math.min(100, Math.round((look.progress / look.next) * 100)) : 0;
+  // Past the full mark (Hanli, 2026-10-15: 「230/200」): the bar stands full and the 修为 over it glows on top.
+  const over = spillPct(look.progress, look.next);
   // A scene on another line (a 今 interlude) keeps only the language here: the rest is the 古's (stage.mjs FURNITURE).
   const has = (part) => stands(look, part);
   const name = look.name && has('name') ? `<span class="daohao">${esc(look.name)}</span>` : '';
@@ -583,7 +588,7 @@ function statusHtml() {
     // 零层 (Look's `tier.bar` false): the realm's name only — the 修为 bar stands from the 小周天 on.
     : look.tier?.bar === false ? `<span class="realm">${esc(look.tier.name)}</span>`
     : `<span class="realm">${esc(look.tier.name)}</span>
-    <div class="xw"><span class="lbl">${esc(w.xw)}</span><div class="bar"><i style="width:${pct || 0}%"></i></div>
+    <div class="xw"><span class="lbl">${esc(w.xw)}</span><div class="bar${over ? ' over' : ''}"><i style="width:${pct || 0}%"></i><em class="spill" style="width:${over}%"></em></div>
       <span class="num"><span data-count="progress">${esc(look.progress)}</span>/${esc(look.next)}</span>${capSay()}</div>`;
   const stones = !has('wealth') || isShut(look, 'wealth') ? '' : `<span class="ls"><span class="lbl">${esc(w.ls)}</span> <b data-count="wealth">${esc(look.wealth)}</b></span>`;
   return `${name}${realm}
@@ -832,6 +837,8 @@ function paintRise() {
     // The bar fills with the number, not ahead of it.
     const bar = key === 'progress' && r.next ? document.querySelector('.status .xw .bar i') : null;
     if (bar) bar.style.width = `${Math.min(100, (value / r.next) * 100)}%`;
+    const spill = key === 'progress' && r.next ? document.querySelector('.status .xw .bar .spill') : null;
+    if (spill) { spill.style.width = `${spillPct(value, r.next)}%`; spill.parentElement.classList.toggle('over', value > r.next); }
     if (age > GAIN_MS) { rising.delete(key); continue; }
     // The gain floats off the number; redrawn, it picks up where it was.
     if (!el.parentElement.querySelector(`.gain[data-for="${key}"]`)) {
