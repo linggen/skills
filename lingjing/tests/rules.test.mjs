@@ -888,7 +888,8 @@ test('answers are judged in either language, punctuation and articles aside', ()
 test('a layer fills and the next begins, the rest carried over', () => {
   // In 古五, where the book's cap is 二层 (rules/cap.mjs): 古四's own work stops at 一层.
   const s = { ...joined(), chapter: '00-waimen', scene: 'wm-mijing', place: 'shimen', ended: ['00-prologue'] };
-  s.progress = 40;
+  const one = content.ladder.tiers[0].thresholds[1];
+  s.progress = one - 10;
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
   assert.equal(out.state.step, 2);
@@ -898,10 +899,11 @@ test('a layer fills and the next begins, the rest carried over', () => {
 
 test('at the realm peak the player holds until the chapter opens', () => {
   const s = joined();
-  s.step = 9; s.progress = 120;
+  const peak = content.ladder.tiers[0].thresholds[9];
+  s.step = 9; s.progress = peak - 10;
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
-  assert.equal(out.state.progress, 130);
+  assert.equal(out.state.progress, peak);
   assert.deepEqual(out.result.paid.hold, { gate: 1, held: 10 });
   assert.equal(out.result.paid.progress, 10, 'only what the peak took is paid');
 });
@@ -1014,7 +1016,7 @@ test('a quest pays when its app says it was done this period, once', () => {
   const seen = look(s, content, done).quests[0];
   assert.deepEqual([seen.done, seen.paid], [true, false], 'Look shows the app\'s record before anyone asks');
   const paid = must(task, s, { action: 'check', id: 'shifu-scan' }, done);
-  assert.equal(paid.result.paid.progress, 30);
+  assert.equal(paid.result.paid.progress, content.rewards.tables.gongke.progress, 'a fixed one is the day\'s 功课: 修为, capped by its table (2026-10-15)');
   assert.equal(paid.state.chores['shifu-scan'].period, weekKey(NOW), 'the apps\' 功课 are the chores book; `quests` is 差事 now');
   assert.equal(look(paid.state, content, done).quests[0].paid, true);
   refused(task, paid.state, { action: 'check', id: 'shifu-scan' }, 'already-paid', done);
@@ -1035,7 +1037,7 @@ test('a quest pays when its app says it was done this period, once', () => {
   assert.equal(look(s, content, nobody).book.find(b => b.id === 'shifu-scan').chore.open, null, 'no entry, no link');
   refused(quest, s, { action: 'turn', id: 'shifu-scan' }, 'not-done', lastWeek);
   const turned = must(quest, s, { action: 'turn', id: 'shifu-scan' }, done);
-  assert.equal(turned.result.paid.progress, 30);
+  assert.equal(turned.result.paid.progress, content.rewards.tables.gongke.progress);
   assert.deepEqual(turned.result.book, [], 'paid for its period, it leaves the book');
   refused(quest, turned.state, { action: 'turn', id: 'shifu-scan' }, 'already-paid', done);
 });
@@ -1191,7 +1193,7 @@ test('a save from before the dictionary migrates to the ids', () => {
   const old = { version: 1, lang: 'zh', daohao: '青玄', root: ['wood'], realm: 'qi', stage: 2, xw: 30, ls: 5, beasts: ['fuzhu'], qi: 40, qi_at: NOW.toISOString(),
     bag: {}, chapter: '00-prologue', scene: '00-practice', done_scenes: [], ended: [], tasks: {}, quests: {}, wins: {}, branch: null, story: '', day: { key: '2026-09-11', xw: 30, ls: 5, branches: 0 } };
   const m = migrate(old);
-  assert.equal(m.version, 8);
+  assert.equal(m.version, 9);
   assert.equal(m.world, 'jiuding', 'a save from before worlds was playing 《九鼎》');
   assert.equal(m.name, '青玄'); assert.deepEqual(m.traits, ['wood']); assert.equal(m.tier, 'qi'); assert.equal(m.step, 2);
   assert.equal(m.progress, 30); assert.equal(m.wealth, 5); assert.deepEqual(m.cast, ['fuzhu']); assert.equal(m.stamina, 40);
@@ -2468,7 +2470,8 @@ test('arriving is an event: the errand met there is told with what is seen, 交�
   // met, it hands itself in (his pick, 2026-09-23): no 交差 is asked, the roads are
   assert.deepEqual(arrived.result.handed.map(h => h.id), ['xu-lvliang-look']);
   assert.ok(arrived.state.quests['xu-lvliang-look'].done_at);
-  assert.ok(arrived.result.handed[0].paid.progress > 0);
+  // A walk for someone is 杂役 (Hanli, 2026-10-15): stones, no 修为.
+  assert.deepEqual([arrived.result.handed[0].paid.progress, arrived.result.handed[0].paid.wealth > 0], [0, true]);
   assert.ok(!askOf(content, arrived.state, at, arrived.result)?.options.some(o => o.turn));
   assert.deepEqual(look(arrived.state, content, at).handed.map(h => h.id), ['xu-lvliang-look'], 'the stage shows what it paid');
   // walking on puts the 所得 away, and coming back meets nothing new
@@ -2505,7 +2508,8 @@ test('榜文: a market posts one templated 差事 a day — near, winnable, rebu
   assert.ok(second && second.id !== today.id, 'the board posts the next');
   advance(content, took.state, today.need[0].kind === 'visit' ? { kind: 'visit', place: target } : { kind: 'subdue', creature: target });
   const turned = must(quest, { ...took.state, place: 'sishui' }, { action: 'turn', id: today.id }, days[0]);
-  assert.ok(turned.result.paid.progress > 0);
+  // A 降妖 notice pays 修为; a walk or a game for the board is 杂役 and pays stones (2026-10-15).
+  assert.ok(today.need[0].kind === 'subdue' ? turned.result.paid.progress > 0 : turned.result.paid.progress === 0 && turned.result.paid.wealth > 0);
   let board = { ...turned.state, place: 'pengcheng' };
   for (let i = 0; i < 2; i += 1) {
     const o = (look(board, content, days[0]).offers ?? []).find(x => x.id.startsWith('daily-'));
@@ -2525,7 +2529,8 @@ test('榜文: a market posts one templated 差事 a day — near, winnable, rebu
   assert.ok(overnight.offers.some(o => o.id.startsWith('daily-') && o.id !== today.id), 'and today\'s is posted');
   const late = structuredClone(took.state);
   advance(content, late, today.need[0].kind === 'visit' ? { kind: 'visit', place: target } : { kind: 'subdue', creature: target });
-  assert.ok(must(quest, late, { action: 'turn', id: today.id }, days[1]).result.paid.progress > 0, 'and paid a day late');
+  const lateOut = must(quest, late, { action: 'turn', id: today.id }, days[1]).result.paid;
+  assert.ok(lateOut.progress + lateOut.wealth > 0, 'and paid a day late');
 });
 
 test('差事: taken at the giver, counted by the rules, handed in where he stands', () => {
@@ -2550,7 +2555,7 @@ test('差事: taken at the giver, counted by the rules, handed in where he stand
   assert.equal(look(withHerb, content, at).book[0].ready, true);
   // …and it is handed in far from 彭城, which is the whole point
   const turned = must(quest, { ...withHerb, place: 'weishan' }, { action: 'turn', id: 'xu-elder-herb' }, at);
-  assert.ok(turned.result.paid.progress > 0);
+  assert.ok(turned.result.paid.wealth > 0 && turned.result.paid.progress === 0, '杂役: stones, no 修为');
   assert.equal(turned.state.bag.lingzhi, undefined, 'the herb changed hands');
   assert.equal(turned.state.bag['bamboo-sword'], 1, 'and the sword came back');
   // the giver hands the next step over with it (his pick A, 2026-09-23)
@@ -3039,7 +3044,7 @@ test('a place\'s game is no daily chore: it opens there only for an errand that 
   const done = must(task, won.state, { action: 'done', id: 'luoshu' }, at);
   assert.equal(done.result.paid, null, 'the game pays nothing of its own');
   assert.deepEqual(done.result.handed.map(h => h.id), ['daily-20260911-trial-yunlong']);
-  assert.ok(done.result.handed[0].paid.progress > 0, 'the notice pays');
+  assert.ok(done.result.handed[0].paid.wealth > 0, 'the notice pays — stones: a game for the board is 杂役');
   assert.equal(done.state.stamina, 100 - content.rewards.stamina.cost.game, 'a game\'s 体力');
   assert.equal(look(done.state, content, at).tasks.find(t => t.id === 'luoshu'), undefined, 'met, it is gone');
   const tomorrow = ctx({ now: new Date(NOW.getTime() + 86400000) });
@@ -3091,7 +3096,7 @@ test('论道: dealt at 稷下 when a notice asks for it, the form checked by the
     st = r.state;
     if (i === 2) {
       assert.equal(r.result.lundao.outcome, 'won');
-      assert.ok(r.result.paid.progress > 0, 'the notice\'s pay');
+      assert.ok(r.result.paid.wealth > 0, 'the notice\'s pay');
       assert.deepEqual(r.result.handed.map(h => h.id), ['daily-20260911-trial-jixia']);
     }
   }
@@ -3190,7 +3195,7 @@ test('a hosted game won is counted even if he has walked on before it is handed 
   const s = { ...toOpenWorld(), place: 'sangjian', tier: 'core', quests: { 'daily-20260911-trial-sangjian': { took: '2026-09-11', have: {} } } };
   const won = must(win, s, { id: 'wuziqi' }, at);
   const paid = must(task, { ...won.state, place: 'pengcheng' }, { action: 'done', id: 'wuziqi' }, at);
-  assert.ok(paid.result.handed[0].paid.progress > 0);
+  assert.ok(paid.result.handed[0].paid.wealth > 0);
   refused(task, { ...paid.state }, { action: 'done', id: 'wuziqi' }, 'not-offered', at);
 });
 
@@ -3388,10 +3393,10 @@ test('体力 says three hours by name: back to rest (rest_at), full (full_at), a
 
 test('an errand shows what it pays (`pays`), the tier and the roots counted — the number that lands', () => {
   const c = ctx();
-  // 元婴 pays twice what 练气 does: the card said +20, the rules paid 40
+  // 杂役 (2026-10-15): the card says stones and no 修为, at any realm, and the rules pay just that
   const s = { ...toOpenWorld(), tier: 'nascent', step: 0, progress: 0 };
   const offer = look(s, content, c).offers.find(o => o.id === 'xu-lvliang-look');
-  assert.equal(offer.grant.progress, 20);
+  assert.equal(offer.grant.progress, undefined);
   const info = quest(s, content, c, { action: 'info', id: 'xu-lvliang-look' }).result;
   assert.deepEqual(info.pays, offer.pays);
   const taken = must(quest, s, { action: 'take', id: 'xu-lvliang-look' }).state;
@@ -3399,7 +3404,7 @@ test('an errand shows what it pays (`pays`), the tier and the roots counted — 
   const turned = must(quest, taken, { action: 'turn', id: 'xu-lvliang-look' });
   assert.equal(offer.pays.progress, turned.result.paid.progress + (turned.result.paid.hold?.held ?? 0));
   assert.equal(offer.pays.wealth, turned.result.paid.wealth);
-  assert.equal(offer.pays.progress, 40);
+  assert.deepEqual([offer.pays.progress, offer.pays.wealth], [0, offer.grant.wealth]);
 });
 
 test('a save the world no longer fits comes back fitted, and a bad 体力 clock never becomes NaN', async () => {
@@ -3518,7 +3523,7 @@ test('a hosted game costs a step\'s 体力 when it is counted; with the pool emp
   assert.equal(won.state.stamina, 100, 'the win itself is only witnessed');
   const paid = must(task, won.state, { action: 'done', id: 'wuziqi' }, at);
   assert.equal(paid.state.stamina, 100 - cost);
-  assert.ok(paid.result.handed[0].paid.progress > 0);
+  assert.ok(paid.result.handed[0].paid.wealth > 0);
   // Empty: refused, the win kept — still refused while the pool refills
   // (rest = max: the player is away until it is whole, 5 h); then counted.
   const empty = { ...won.state, stamina: 0, resting: true, stamina_at: NOW.toISOString() };
@@ -3526,7 +3531,7 @@ test('a hosted game costs a step\'s 体力 when it is counted; with the pool emp
   assert.ok(r.say);
   refused(task, empty, { action: 'done', id: 'wuziqi' }, 'no-stamina', ctx({ now: new Date(NOW.getTime() + 90 * 60_000) }));
   const later = ctx({ now: new Date(NOW.getTime() + content.rewards.stamina.refill_hours * 3600_000) });
-  assert.ok(must(task, empty, { action: 'done', id: 'wuziqi' }, later).result.handed[0].paid.progress > 0);
+  assert.ok(must(task, empty, { action: 'done', id: 'wuziqi' }, later).result.handed[0].paid.wealth > 0);
   // A task that is not a hosted game (the story's 二试) stays free.
   const story = { ...walk(start(), TO_HALL.slice(0, TO_HALL.findIndex(([v, a]) => v === 'win' && a.id === 'gate-luoshu')), content, NOW), stamina: 100, stamina_at: NOW.toISOString() };
   const first = must(task, must(win, story, { id: 'gate-luoshu' }).state, { action: 'done', id: 'gate-luoshu' });

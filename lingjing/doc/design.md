@@ -223,10 +223,35 @@ string missing a language, a creature without its picture.
 
 Tables and caps are in base 修为; each tier carries a `pay` multiplier
 (`ladder.json`), applied last: `paid = min(grant, cap) × root speed × pay`.
-Thresholds: 练气 810 · 筑基 1,500 · 结丹 3,000 · 元婴 6,000 … 渡劫 66,000
-(first pass; ~305 diligent days end to end). 体力 is the only daily limit
-(the day caps went 2026-09-23). The economy is `rewards.json → _economy`: a
-练气 day ≈170 修为; a fight is the best 修为 per 体力 (3.75); tests lock it.
+体力 is the only daily limit (the day caps went 2026-09-23). A fight is the
+best 修为 per 体力 (3.75); tests lock it.
+
+**修为 tracks the book** (Hanli, 2026-10-15: 「让游戏修为和故事match」, after
+修屋顶 paid 修为 +15 and the bar ran ahead of the story):
+- **Where 修为 comes from:** cultivation — the day's 功课 (the fixed real-life
+  chore, the workout: `gongke` table, 20), fights (`haunt` 30, a 降妖 or 驯
+  errand, the 榜文's 降妖), pills, 今日传闻, 闭关, the road's riddle/机缘, and
+  the story's grants and rises. **Chores pay 灵石:** every errand declares
+  `work` — `cultivation` (its core is a fight: 药园巡夜's 狰, 蠪侄, 人鱼, 榜文 ·
+  降妖) or `labor` (修屋顶, 收船, carrying, walks, mending, 配一炉, the 榜文's
+  walk and game), paid on the `labor` table (修为 0, ≤20 灵石, maybe an item);
+  the day's pick of real-life chores pays its reward as 灵石 (`life`, ≤10), a
+  开府 milestone 20 灵石 (`once`, 修为 0). tests/xiuwei-pace.test.mjs locks it.
+- **练气 thresholds** [0, 200, 400, 650, 900, 1000, 1100, 1200, 1300, 1400]
+  (from 0, 50 … 130): re-derived by `tools/xiuwei-model.mjs` from a model of
+  卷一 played naturally — the book's scenes in order, a day of play per five
+  scenes (功课 20, two pool fights 60, half a rumor ~38, a road-meet 20 ≈
+  138), the 修行 errands on offer. A rise carries what a layer held, so a layer
+  the book holds him on asks what came in plus that 回's own: 一层 fills at
+  古四's 7th scene of 8, 二层 at 古五's 3rd of 6 (then 息壤), 四层 at 古六's
+  10th of 11; the layers a rise jumps over sit between. Story and errands
+  alone never fill a held layer. 筑基 and above are unchanged (卷二 re-derives
+  them; the 九转 lands 筑基小成圆满, so 古九 holds there either way).
+- **The cap is the hard ceiling** for anyone who plays past natural (体力 is
+  off while we test): the cap layer fills and the rest is held.
+- **Old saves** (state v9 `paceLayer`, `ladder.json → thresholds_were`): the
+  层 is kept and the bar stands as full as it stood (一层 40/50 → 160/200;
+  九层圆满 stays 圆满, so a save at the cliff can still throw).
 
 ### 境界 in the game 【已建】
 
@@ -489,7 +514,9 @@ is the pure core; the page draws it on the stage beside the chat.
 **接 · 记 · 追 · 交** — accept, log, track, turn in (his ask, 2026-09-18).
 
 - **Data, never invention:** `quests/<province>.json` (`from`, `say`, `need`,
-  `grant`, `opens`, `then`); Ling voices the giver, never writes the terms.
+  `work`, `grant`, `opens`, `then`); Ling voices the giver, never writes the
+  terms. `work` is `cultivation` (a fight; pays 修为) or `labor` (杂役; the
+  `labor` table, 灵石 only) — § Pacing.
   `need.kind` only what the rules see: `subdue` · `tame` · `carry` · `visit` ·
   `board` · `answer` · `chore`.
 - **The loop:** 接下 where the giver stands (the page's tap) → `state.quests` →

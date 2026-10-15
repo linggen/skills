@@ -9,6 +9,7 @@
    "title": { "zh": "榜文 · 降{target}", "en": "Notice · Subdue the {target}" },
    "who": { "zh": "坊市的榜文", "en": "the notice at the market" },
    "say": { "zh": "{place}的{target}又出来伤人。降了它的，凭此榜领赏。", "en": "The {target} of {place} is hurting travellers again. Whoever subdues it is paid on this notice." },
+   "work": "cultivation",
    "grant": { "table": "quest", "progress": 40, "wealth": 15 }
   },
   {
@@ -18,7 +19,8 @@
    "title": { "zh": "榜文 · 走一趟{target}", "en": "Notice · A walk to {target}" },
    "who": { "zh": "坊市的榜文", "en": "the notice at the market" },
    "say": { "zh": "{target}多日没有消息。谁去看一眼，凭此榜领赏。", "en": "No word from {target} in days. Whoever goes to look is paid on this notice." },
-   "grant": { "table": "quest", "progress": 30, "wealth": 10 }
+   "work": "labor",
+   "grant": { "table": "labor", "wealth": 15 }
   },
   {
    "id": "trial",
@@ -27,7 +29,8 @@
    "title": { "zh": "榜文 · 去{target}：{game}", "en": "Notice · At {target}: {game}" },
    "who": { "zh": "坊市的榜文", "en": "the notice at the market" },
    "say": { "zh": "{target}那边摆着一局，等人去解。解得开的，凭此榜领赏。", "en": "There is a game laid out at {target}, waiting for someone to solve it. Whoever does is paid on this notice." },
-   "grant": { "table": "quest", "progress": 40, "wealth": 15 }
+   "work": "labor",
+   "grant": { "table": "labor", "wealth": 20 }
   }
  ]
 }

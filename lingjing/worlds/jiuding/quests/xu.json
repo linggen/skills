@@ -33,9 +33,9 @@
           "at": "dukou"
         }
       ],
+      "work": "labor",
       "grant": {
-        "table": "quest",
-        "progress": 10,
+        "table": "labor",
         "wealth": 3,
         "item": "ganliang"
       }
@@ -70,9 +70,9 @@
           "at": "waimen"
         }
       ],
+      "work": "labor",
       "grant": {
-        "table": "quest",
-        "progress": 15,
+        "table": "labor",
         "wealth": 5
       }
     },
@@ -100,10 +100,10 @@
           "n": 1
         }
       ],
+      "work": "labor",
       "grant": {
-        "table": "quest",
-        "progress": 30,
-        "wealth": 10,
+        "table": "labor",
+        "wealth": 15,
         "item": "bamboo-sword"
       },
       "then": "xu-fuli-longzhi"
@@ -132,6 +132,7 @@
           "n": 1
         }
       ],
+      "work": "cultivation",
       "grant": {
         "table": "quest",
         "progress": 60,
@@ -169,10 +170,10 @@
           "n": 1
         }
       ],
+      "work": "labor",
       "grant": {
-        "table": "quest",
-        "progress": 20,
-        "wealth": 10
+        "table": "labor",
+        "wealth": 15
       }
     },
     {
@@ -199,10 +200,10 @@
           "n": 1
         }
       ],
+      "work": "labor",
       "grant": {
-        "table": "quest",
-        "progress": 40,
-        "wealth": 15,
+        "table": "labor",
+        "wealth": 20,
         "item": "qi-pill"
       }
     },
@@ -239,6 +240,7 @@
           "n": 1
         }
       ],
+      "work": "cultivation",
       "grant": {
         "table": "quest",
         "progress": 30,
@@ -274,9 +276,9 @@
           "n": 1
         }
       ],
+      "work": "labor",
       "grant": {
-        "table": "quest",
-        "progress": 30,
+        "table": "labor",
         "wealth": 5,
         "item": "qi-pill-9"
       },
@@ -314,9 +316,9 @@
           "at": "chaifang"
         }
       ],
+      "work": "labor",
       "grant": {
-        "table": "quest",
-        "progress": 15,
+        "table": "labor",
         "wealth": 3
       }
     },
@@ -354,9 +356,9 @@
           "n": 1
         }
       ],
+      "work": "labor",
       "grant": {
-        "table": "quest",
-        "progress": 15,
+        "table": "labor",
         "wealth": 0,
         "item": "talisman"
       }

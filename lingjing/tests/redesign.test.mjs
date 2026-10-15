@@ -44,7 +44,7 @@ test('a save from before the cut migrates: what is held stays, what only the cut
   const old = oldSave();
   const m = migrate(old, content);
   assert.equal(m.version, STATE_VERSION);
-  assert.equal(STATE_VERSION, 8);
+  assert.equal(STATE_VERSION, 9);
   // Kept: the bag (an old 回春丹 and 妖丹 are goods now), the cards, the cast,
   // the treasure and its 重, her joining, the realm.
   assert.deepEqual(m.bag, old.bag);
@@ -116,7 +116,7 @@ test('the command line migrates the save on disk once, on the first call, and th
     cli('move', '--place=fajiu');
     cli('summarize', '--text=旧档一程。');
     const saved = JSON.parse(fs.readFileSync(file, 'utf8'));
-    assert.equal(saved.version, 8);
+    assert.equal(saved.version, 9);
     assert.equal('ladder3' in saved, false);
     assert.deepEqual([saved.tier, saved.step], ['foundation', 1], 'the old 中期 is 中成');
     for (const k of ['wounds', 'bond', 'tended', 'journey']) assert.equal(saved[k], undefined, k);

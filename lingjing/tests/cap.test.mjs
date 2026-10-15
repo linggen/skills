@@ -51,7 +51,7 @@ test('古四: 零层 grinds nothing; past the 小周天 grinding fills 一层 an
   const { got, last } = grind(s);
   assert.equal(named(s), '练气一层', '九月\'s roll call: 小满 一层');
   assert.equal(s.progress, threshold(content, s), 'the layer is full');
-  assert.equal(got, 50, 'only what 一层 holds was added');
+  assert.equal(got, content.ladder.tiers[0].thresholds[1], 'only what 一层 holds was added');
   assert.equal(last.hold.cap, true);
   assert.ok(last.hold.held > 0 && last.progress === 0, 'at the cap nothing more is added; what came is held');
   assert.equal(last.hold.say, content.ladder.caps.say.zh);
@@ -59,7 +59,7 @@ test('古四: 零层 grinds nothing; past the 小周天 grinding fills 一层 an
   assert.equal(l.capped.say, content.ladder.caps.say.zh, 'Look carries the line under the full bar');
   assert.equal(l.progress, l.next);
   assert.equal(look({ ...s, progress: 10 }, content, ctx).capped, undefined, 'below the top, no line');
-  assert.equal(look(at('00-waimen', 'wm-ahe', 'waimen', ['00-prologue'], { lang: 'en', step: 1, progress: 50 }), content, ctx).capped.say, content.ladder.caps.say.en);
+  assert.equal(look(at('00-waimen', 'wm-ahe', 'waimen', ['00-prologue'], { lang: 'en', step: 1, progress: content.ladder.tiers[0].thresholds[1] }), content, ctx).capped.say, content.ladder.caps.say.en);
 });
 
 test('古三\'s gate scene: 零层 only — 一层 is 古四\'s 小周天', () => {
@@ -104,7 +104,7 @@ test('古七: 四层 until the year — the seasons lift him to 七层, 古八\'
 test('a breakthrough past where the 回\'s story reaches is refused in the world\'s words', () => {
   // The same cliff in a world whose 古七 stops at 练气: the throw is refused, nothing moves.
   const tight = { ...content, ladder: { ...content.ladder, caps: { ...content.ladder.caps, hui: { ...content.ladder.caps.hui, h09: { tier: 'qi', layer: 9 } } } } };
-  const s = at('00-zhuji', '09-cliff', 'houshan', ['00-prologue', '00-waimen'], { step: 9, progress: 130, bag: { 'foundation-pill-9': 1 } });
+  const s = at('00-zhuji', '09-cliff', 'houshan', ['00-prologue', '00-waimen'], { step: 9, progress: content.ladder.tiers[0].thresholds[9], bag: { 'foundation-pill-9': 1 } });
   const r = resolve(s, tight, ctx, { exit: 'take' });
   assert.equal(r.result.ok, false);
   assert.equal(r.result.refused, 'past-cap');

@@ -117,7 +117,7 @@ test('开府: done_at null is not done; a done one pays once ever — capped, on
   const out = quest(s, content, ctx(done), { action: 'turn', id: m.id });
   assert.equal(out.result.ok, true);
   const cap = content.rewards.tables.once;
-  assert.ok(out.result.paid.progress <= cap.progress * 1 && out.result.paid.progress > 0, 'capped by the once table');
+  assert.equal(out.result.paid.progress, 0, '开府 pays stones, no 修为 (Hanli, 2026-10-15: 修为 comes from cultivation)');
   assert.equal(out.result.paid.wealth, cap.wealth);
   assert.deepEqual(out.state.chores[m.id].period, 'once');
   // the synced save, a month on: still paid

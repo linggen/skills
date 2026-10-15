@@ -1,6 +1,7 @@
 {
   "version": 1,
   "_caps": "A grant never exceeds its table's cap (no day cap since 2026-09-23 — 体力 alone limits a day).",
+  "_economy_2026_10_15": "Hanli, 2026-10-15 (「让游戏修为和故事match」): 修为 comes from cultivation; chores pay 灵石. `labor` pays an errand of 杂役 (修为 0, design.md § Pacing), `gongke` the day's 功课 (the fixed real-life chore, 修为 20), `life` the day's pick (灵石 only), `once` 开府 (灵石 only). A natural day of 卷一 play is now ~138 修为 (功课 20, two pool fights 60, half a rumor ~38, a road-meet 20) and the 练气 thresholds ask a 回 of it per held layer (tools/xiuwei-model.mjs). The 2026-09-24 note below is history.",
   "_economy": "2026-09-24, redesign-v2 (the daily boards, 历练, 伤势 and the elite's own pay cut; 问卦 no longer multiplies 修为). A normal 练气 day in 徐 BEFORE: three fights (~2.5 won, one an elite at 38) ≈ 64, the six hosted games 30, story and errands ≈ 20, today's rumor (4 steps at 10 + a finale at 25) 65 — ≈ 179. With the cuts and the old numbers it would be 62 + 0 + 20 + 65 ≈ 147 (−18%). AFTER, with a fight at 30 and the rumor at 15 a step, 30 its finale, 90 its cap: fights 2.5 × 30 = 75, story and errands ≈ 20, the rumor 3 × 15 + 30 = 75 — ≈ 170 (−5%), so 练气's 810 still takes about five days of play. 修为 per 体力 at 练气: a fight 30/8 = 3.75 (3.2 at the gate's ~85% win) — still the best; a rumor's step 15 for a game's 3 and the walk (~6) ≈ 2.5. A hosted game pays only the errand that asked for it (a notice's 40), for 3 体力. 开府 (a setup milestone, paid once ever, table `once`) 40 修为 + 20 灵石.",
   "tables": {
     "scene": {
@@ -24,7 +25,7 @@
       "wealth": 3
     },
     "once": {
-      "progress": 40,
+      "progress": 0,
       "wealth": 20
     },
     "tale_end": {
@@ -58,6 +59,18 @@
     "seclusion": {
       "progress": 90,
       "wealth": 0
+    },
+    "labor": {
+      "progress": 0,
+      "wealth": 20
+    },
+    "gongke": {
+      "progress": 20,
+      "wealth": 0
+    },
+    "life": {
+      "progress": 0,
+      "wealth": 10
     }
   },
   "_tale": "今日传闻 (design.md § 今日传闻): Ling writes no number. Each step pays the `tale` table and the finale the `tale_end` table, both capped; the whole tale never pays more than `cap` (a fifth step eats into the finale), and pay() scales it by the roots and the realm like any grant. One finale `drop`: the highest-tier entry at or below the player's realm (an item, or a card not held and of a root the player has), picked by the tale's id — and the finale also leaves a 符 and raises the 本命法宝 one 重 (`growth`). Raised 2026-09-24 (redesign-v2: the rumor is the day's main dish, the daily boards are gone): 15 a step, 30 the finale, 90 the cap — see `_economy`.",

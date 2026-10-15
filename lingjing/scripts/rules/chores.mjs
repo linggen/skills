@@ -87,14 +87,18 @@ export function choreCounts(state, quests, q, now, content) {
   return isFixed(q) || dailyPick(state, quests, now).pick?.id === q.id;
 }
 
-/* What it pays: a daily on the task table, a milestone on the `once` table
-   (rewards.json caps both); 体力 is the app's own, else the quest refill. */
+/* What it pays (Hanli, 2026-10-15: 修为 comes from cultivation, chores pay
+   灵石): the fixed one — the workout, the day's 功课 — on the `gongke` table,
+   修为; the day's pick (a scan, the books, a backup) on the `life` table,
+   灵石 — its `reward` read as stones; a 开府 milestone on the `once` table,
+   灵石. rewards.json caps each; 体力 is the app's own, else the quest refill. */
+const choreTable = q => (isOnce(q) ? 'once' : isFixed(q) ? 'gongke' : 'life');
 export function choreGrant(content, q) {
-  const once = isOnce(q);
+  const table = choreTable(q), cap = content.rewards.tables[table] ?? {};
   return {
-    table: once ? 'once' : 'task',
+    table,
     progress: q.reward ?? 0,
-    ...(once ? { wealth: content.rewards.tables.once?.wealth ?? 0 } : {}),
+    wealth: table === 'once' ? cap.wealth ?? 0 : q.reward ?? 0,
     stamina: q.stamina ?? content.rewards.stamina.refill.quest,
   };
 }

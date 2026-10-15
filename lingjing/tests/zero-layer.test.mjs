@@ -52,7 +52,7 @@ test('古四\'s 小周天 lifts him to 练气一层 — the layer-gained moment,
   const l = look(out.state, content, ctx);
   assert.equal(l.tier.name, '练气一层');
   assert.equal(l.tier.bar, true);
-  assert.deepEqual([l.progress, l.next], [40, 50]);
+  assert.deepEqual([l.progress, l.next], [40, content.ladder.tiers[0].thresholds[1]]);
   const en = must(resolve, toZhoutian('en'), { exit: 'breathe' });
   assert.deepEqual(en.result.rose, { from: 'Qi Condensation · Layer 0', to: 'Qi Condensation · Layer 1' });
 });
@@ -63,16 +63,17 @@ test('an old save heals on load: before the 小周天 零层, past it 一层, pa
   // Before the 小周天, at the gate's step 0: 零层, the 修为 it held kept unseen for the rise.
   const before = heal(v7({ scene: 'wm-zhoutian', done_scenes: ['wm-ahe', 'wm-jiangtang'], step: 0, progress: 20 }));
   assert.deepEqual([name(before), before.progress, 'ladder_zero' in before], ['练气零层', 20, false]);
-  // Past it at the old 二层 (the off-by-one the 小周天's 40 made): 一层, 修为 kept.
+  // Past it at the old 二层 (the off-by-one the 小周天's 40 made): 一层, its bar as full as it was
+  // (v9 paceLayer, 2026-10-15: 10 of the old 50 is 40 of 200).
   const past = heal(v7({ scene: 'wm-qingshi', done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian'], step: 1, progress: 10 }));
-  assert.deepEqual([name(past), past.step, past.progress], ['练气一层', 1, 10]);
+  assert.deepEqual([name(past), past.step, past.progress], ['练气一层', 1, 40]);
   assert.equal(look(past, content, ctx).tier.bar, true);
   // Past it but still at the old 一层 (it filled less than 50): 一层, never 零层.
   const low = heal(v7({ scene: 'wm-qingshi', done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian'], step: 0, progress: 45 }));
-  assert.deepEqual([name(low), low.progress], ['练气一层', 45]);
-  // Past 古四's close (wm-diyilu's rise to 二层): the 层 the story named, the 修为 as it was.
+  assert.deepEqual([name(low), low.progress], ['练气一层', 180]);
+  // Past 古四's close (wm-diyilu's rise to 二层): the 层 the story named, the bar as full (30 of 60 is 200 of 400).
   const diyilu = heal(v7({ scene: 'wm-yaoyuan', done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian', 'wm-qingshi', 'wm-chaifang', 'wm-danlu', 'wm-diyilu'], step: 1, progress: 30 }));
-  assert.deepEqual([name(diyilu), diyilu.progress], ['练气二层', 30]);
+  assert.deepEqual([name(diyilu), diyilu.progress], ['练气二层', 200]);
   // 古八's 腊八: 练气九层圆满 stays 九层圆满, ready for the cliff.
   const dabi = heal(v7({ chapter: '00-zhuji', scene: '09-cliff', ended: ['00-prologue', '00-waimen'], done_scenes: ['wm-xirang', '09-year', '09-dabi'], step: 8, progress: 130 }));
   assert.deepEqual([name(dabi), dabi.step, dabi.progress], ['练气九层圆满', 9, threshold(content, dabi)]);
@@ -85,6 +86,6 @@ test('a healed save before the 小周天 plays on: the night lifts it to 一层 
   let s = toZhoutian('zh');
   s = migrate({ ...s, version: 7, step: 0, progress: 20 }, content);
   const out = must(resolve, s, { exit: 'breathe' });
-  assert.equal(realmName(content, out.state, 'zh'), '练气一层圆满', '20 carried, 40 more: 一层 filled, held by 古四\'s cap');
-  assert.equal(out.state.step, 1);
+  // 20 carried, 40 more: 60 toward 一层's 200 (2026-10-15: each 层 asks a 回's play).
+  assert.deepEqual([realmName(content, out.state, 'zh'), out.state.step, out.state.progress], ['练气一层', 1, 60]);
 });

@@ -375,7 +375,9 @@ function tasksBrief(content, state, ctx) {
     id: q.id, app: q.app, title: pick(q.title, lang), device: q.device ?? null,
     done: questDone(q, ctx.now), paid: state.chores[q.id]?.period === periodKey(q.period, ctx.now),
     done_at: questDone(q, ctx.now) ? q.done_at : null, // when its app saw it done — the scene says so
-    period: q.period, reward: q.reward ?? null, stamina: q.stamina ?? null, // what it pays, so Ling can tell the practice
+    period: q.period, reward: q.reward ?? null, stamina: q.stamina ?? null,
+    // What lands (2026-10-15: the workout 修为, the pick and 开府 灵石), so Ling tells the practice right.
+    pays: paysOf(content, state, ctx.now, choreGrant(content, q)),
   }));
   const kaifu = shut.includes('kaifu') ? null : kaifuBrief(state, menu, ctx.now, lang, content);
   // The open 一次 step's pay, so the book's row says it before it is done.
