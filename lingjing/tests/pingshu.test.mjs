@@ -28,8 +28,10 @@ const manifest = JSON.parse(fs.readFileSync(path.join(BOOK, 'audio.json'), 'utf8
 function pyKeys(texts) {
   const code = `import importlib.util,json,sys
 spec=importlib.util.spec_from_file_location('pub',sys.argv[1]); m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
-print(json.dumps([m.para_key(t) for t in json.load(sys.stdin)]))`;
-  return JSON.parse(execFileSync('python3', ['-c', code, path.join(ROOT, 'tools/pingshu-publish.py')], { input: JSON.stringify(texts), encoding: 'utf8' }));
+print(json.dumps([m.para_key(t) for t in json.loads(sys.argv[2])]))`;
+  // The texts go as an argument, not stdin: under a loaded machine the stdin pipe once left
+  // python waiting on read for 30 minutes and stalled the whole suite (review, 2026-10-15).
+  return JSON.parse(execFileSync('python3', ['-c', code, path.join(ROOT, 'tools/pingshu-publish.py'), JSON.stringify(texts)], { encoding: 'utf8', timeout: 120_000 }));
 }
 
 test('the page and the publisher make the same key from the same text — every paragraph of the book, every beat of the scenes', () => {
