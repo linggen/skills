@@ -378,8 +378,9 @@ he turns it on): the market week in four sections — 加拿大 / 美国 /
   leaves its currency's total null, named. `reported` = held companies'
   saved summaries filed that week (the Watch's reads, not a second one).
   `next_week` = the release calendar (FOMC, BoC, CPI, jobs) and held
-  companies' earnings dates. `language` = config.json `language`, else the
-  Mac's first preferred language. Kept in `data/weekly-candidates.json`.
+  companies' earnings dates. `language` = the engine's setting (env
+  `LINGGEN_LANGUAGE`), else legacy config.json `language`, else the Mac's
+  first preferred language. Kept in `data/weekly-candidates.json`.
 - **Write** — Ling: WebSearch + WebFetch for the week; each bullet `{text,
   source, quote}`. Ties: one line per macro point that touches a holding.
 - **Check** — `weekly.pl save` (`SaveWeekly`): every figure in a bullet is

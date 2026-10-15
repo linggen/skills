@@ -123,9 +123,20 @@ t('rows in any order', close_on_or_before([reverse @rows], '2026-10-02')->{close
     t('next week: releases inside it and held companies\' earnings, by date',
       join(',', map { $_->{symbol} // $_->{kind} } @$events) eq 'boc,TSLA', $J->encode($events));
 }
-t('language: the config\'s, else the Mac\'s, else English',
-  report_language({ language => 'zh-Hans' }, 'en-CA') eq 'zh-Hans' && report_language({}, 'en-CA') eq 'en-CA'
-  && report_language({ language => '{{x}}' }, undef) eq 'en');
+{
+    local $ENV{LINGGEN_LANGUAGE};
+    t('language: the config\'s (legacy), else the Mac\'s, else English',
+      report_language({ language => 'zh-Hans' }, 'en-CA') eq 'zh-Hans' && report_language({}, 'en-CA') eq 'en-CA'
+      && report_language({ language => '{{x}}' }, undef) eq 'en');
+    t('language: any zh tag is Simplified Chinese',
+      report_language({}, 'zh-CN') eq 'zh-Hans' && report_language({ language => 'zh' }, undef) eq 'zh-Hans');
+    $ENV{LINGGEN_LANGUAGE} = 'en';
+    t('language: the engine\'s setting wins over config.json and the Mac',
+      report_language({ language => 'zh-Hans' }, 'zh-Hans-CA') eq 'en');
+    $ENV{LINGGEN_LANGUAGE} = '';
+    t('language: an empty engine value falls through',
+      report_language({ language => 'zh-Hans' }, 'en-CA') eq 'zh-Hans');
+}
 
 # ── Figures and directions ─────────────────────────────────────────────────
 t('figures normalize commas and trailing zeros', join(',', figures_in('payrolls 150,000; rate 4.20%')) eq '150000,4.2');

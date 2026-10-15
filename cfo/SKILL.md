@@ -133,7 +133,7 @@ tools:
       or watched company and not summarized yet. US from SEC EDGAR (10-Q,
       10-K, and the 8-K earnings release that usually comes first); TSX when
       a company's earnings date has passed. ETFs are skipped. Returns
-      {new: [{symbol, name, form, period, filed, url}], failed: [{symbol,
+      {new: [{symbol, name, form, period, filed, url}], language, failed: [{symbol,
       error}], checked, last_checked}. Empty `new` means nothing to read.
     cmd: "perl $SKILL_DIR/scripts/market.pl reports-check"
     tier: read
@@ -213,7 +213,7 @@ tools:
       today or tomorrow, analyst changes, SEC filings, big insider trades,
       headlines. For everyone (scope "economy"): Fed and Bank of Canada rate
       changes, FOMC statements and meetings, CPI and jobs, big USD/CAD days,
-      US policy from the Federal Register. Returns {since, scanned_at, home,
+      US policy from the Federal Register. Returns {since, scanned_at, home, language,
       positions{SYM: {name, currency, shares, value, weight_pct}}, events[{id,
       symbol or scope, kind, at, …}], failed}. Events the Watch already judged
       are left out.

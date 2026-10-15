@@ -18,6 +18,9 @@ import { reportChips, spendChips, txnChips, commitChips } from './chips.js';
 import { initWeekly, renderWeekly } from './weekly.js';
 import { importStatus, importNote, pageDidLine, paymentState, PAY_STATES } from './page-did.js';
 import { compose, layoutOf, FOCUS_IDS } from './compose.js';
+import { t, has, catLabel, intlLocale, loadLanguage, applyI18n } from './strings.js';
+// An account type in the page's language; one the code doesn't know stays as stored.
+const acctTypeLabel = (type) => (has(`ui.acctType.${type}`) ? t(`ui.acctType.${type}`) : type);
 
 // In-page confirm — window.confirm is a silent no-op inside the app shell
 // (its WKWebView implements no confirm panel: returns false, no dialog),
@@ -41,8 +44,8 @@ function confirmDialog(message) {
       return b;
     };
     row.append(
-      mk('Cancel', false, 'padding:6px 12px;border-radius:8px;border:0;background:transparent;color:inherit;font-weight:600;cursor:pointer;'),
-      mk('OK', true, 'padding:6px 12px;border-radius:8px;border:0;background:#2563eb;color:#fff;font-weight:700;cursor:pointer;'),
+      mk(t('common.cancel'), false, 'padding:6px 12px;border-radius:8px;border:0;background:transparent;color:inherit;font-weight:600;cursor:pointer;'),
+      mk(t('common.ok'), true, 'padding:6px 12px;border-radius:8px;border:0;background:#2563eb;color:#fff;font-weight:700;cursor:pointer;'),
     );
     card.append(msg, row);
     ov.append(card);
@@ -75,10 +78,10 @@ function promptDialog(message, initial = '') {
       b.textContent = label; b.style.cssText = style; b.onclick = () => done(val);
       return b;
     };
-    const okBtn = mk('OK', undefined, 'padding:6px 12px;border-radius:8px;border:0;background:#2563eb;color:#fff;font-weight:700;cursor:pointer;');
+    const okBtn = mk(t('common.ok'), undefined, 'padding:6px 12px;border-radius:8px;border:0;background:#2563eb;color:#fff;font-weight:700;cursor:pointer;');
     okBtn.onclick = () => done(input.value.trim() || null);
     row.append(
-      mk('Cancel', null, 'padding:6px 12px;border-radius:8px;border:0;background:transparent;color:inherit;font-weight:600;cursor:pointer;'),
+      mk(t('common.cancel'), null, 'padding:6px 12px;border-radius:8px;border:0;background:transparent;color:inherit;font-weight:600;cursor:pointer;'),
       okBtn,
     );
     input.addEventListener('keydown', (e) => {
@@ -187,10 +190,10 @@ const currencySymbol = (code) => ({
 let VIEW_CUR = null;
 let MULTI_CUR = false;
 const curPrefix = (code) => (MULTI_CUR ? `${code || VIEW_CUR || CURRENCY_CODE} ` : (code ? currencySymbol(code) : CURRENCY));
-const money = (n, code) => `${curPrefix(code)}${Math.round(Number(n) || 0).toLocaleString()}`;
+const money = (n, code) => `${curPrefix(code)}${Math.round(Number(n) || 0).toLocaleString(intlLocale())}`;
 // Subscription amounts are small and cents-meaningful ($16.49 → $18.99 is the
 // whole story of a price hike) — exact for those, whole dollars elsewhere.
-const moneyExact = (n, code) => `${curPrefix(code)}${(Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const moneyExact = (n, code) => `${curPrefix(code)}${(Number(n) || 0).toLocaleString(intlLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 // "CAD 3,200 · USD 450" — per-currency figures side by side, never summed.
 const perCurrency = (v, pick, fmt = money) => (v.currencies || []).map((c) => fmt(pick(v.by_currency?.[c] || {}) || 0, c)).join(' · ');
 const setViewCurrency = (v) => {
@@ -547,7 +550,7 @@ function stageImport(ctx) {
   // A review is already open — never clobber its STAGING (that strands the
   // first import's resolve, hanging it forever). Ask the user to finish first.
   if (STAGING) {
-    setStatus(`Finish the current import review first, then re-drop ${ctx.filename}.`);
+    setStatus(t('ui.stage.busy', { file: ctx.filename }));
     return Promise.resolve(null);
   }
   return new Promise((resolve) => {
@@ -585,35 +588,35 @@ function renderStaging() {
   const cats = knownCategories();
   const { oriented, rows, dup, onFile } = stagingPreview();
   const fresh = rows.length - dup;
-  const fileTag = s.fileCount > 1 ? ` <span class="hint inline">(file ${s.fileIdx + 1} of ${s.fileCount})</span>` : '';
+  const fileTag = s.fileCount > 1 ? ` <span class="hint inline">${t('ui.stage.fileOf', { i: s.fileIdx + 1, n: s.fileCount })}</span>` : '';
   el.innerHTML = `
-    <h2>Import review — ${esc(s.filename)}${fileTag}</h2>
-    <p class="hint">${s.fingerprint ? 'New account detected — label it once and future imports auto-match.' : 'This file has no account number — pick the account it belongs to.'}</p>
-    ${(s.notes || []).filter((n) => /check/i.test(n)).map((n) => `<p class="hint warn">${esc(n)}</p>`).join('')}
+    <h2>${t('ui.stage.title', { file: esc(s.filename) })}${fileTag}</h2>
+    <p class="hint">${s.fingerprint ? t('ui.stage.newAcct') : t('ui.stage.noNumber')}</p>
+    ${(s.notes || []).filter((n) => ['imp.datesDmy', 'imp.datesMdy', 'imp.oneSign'].some((k) => n === t(k))).map((n) => `<p class="hint warn">${esc(n)}</p>`).join('')}
     <div class="stage-accts">
       ${Object.entries(ACCOUNTS).filter(([, a]) => a?.label).map(([id, a]) => `
-        <label class="acct-opt"><input type="radio" name="st-acct" value="${esc(id)}" ${s.accountId === id ? 'checked' : ''}> <span>${esc(a.label)}</span> <span class="acct-type">${esc(a.type)}</span></label>`).join('')}
-      <label class="acct-opt"><input type="radio" name="st-acct" value="__new__" ${s.accountId === '__new__' ? 'checked' : ''}> New account…
+        <label class="acct-opt"><input type="radio" name="st-acct" value="${esc(id)}" ${s.accountId === id ? 'checked' : ''}> <span>${esc(a.label)}</span> <span class="acct-type">${esc(acctTypeLabel(a.type))}</span></label>`).join('')}
+      <label class="acct-opt"><input type="radio" name="st-acct" value="__new__" ${s.accountId === '__new__' ? 'checked' : ''}> ${t('ui.stage.newAccount')}
         <input id="st-label" type="text" value="${esc(s.newLabel)}" ${s.accountId === '__new__' ? '' : 'disabled'}>
         <select id="st-type" ${s.accountId === '__new__' ? '' : 'disabled'}>
-          ${[['credit', 'Credit card'], ['checking', 'Checking'], ['savings', 'Savings']].map(([v, l]) => `<option value="${v}" ${v === (s.newType) ? 'selected' : ''}>${l}</option>`).join('')}
+          ${['credit', 'checking', 'savings'].map((v) => `<option value="${v}" ${v === (s.newType) ? 'selected' : ''}>${t(`ui.acctTypeLong.${v}`)}</option>`).join('')}
         </select>
       </label>
     </div>
-    ${s.accountId ? `<p class="stage-count">${rows.length} transactions — <b>${fresh} new</b>${dup ? ` · ${dup} already on file (will skip)` : ''}</p>` : '<p class="stage-count hint">Pick an account to preview.</p>'}
+    ${s.accountId ? `<p class="stage-count">${t('ui.stage.count', { n: rows.length })} — <b>${t('ui.stage.fresh', { n: fresh })}</b>${dup ? ` · ${t('ui.stage.dup', { n: dup })}` : ''}</p>` : `<p class="stage-count hint">${t('ui.stage.pick')}</p>`}
     <div id="stage-table">${s.accountId ? `
-      <table><thead><tr><th>Date</th><th>Merchant</th><th class="num">Amount</th><th>Category</th></tr></thead><tbody>
-      ${oriented.map((t, i) => {
+      <table><thead><tr><th>${t('ui.th.date')}</th><th>${t('ui.th.merchant')}</th><th class="num">${t('ui.th.amount')}</th><th>${t('ui.th.category')}</th></tr></thead><tbody>
+      ${oriented.map((tx, i) => {
         const isDup = onFile.has(rows[i]?.id);
-        const cat = s.catEdits[i] || t.category || (t.amount < 0 ? categorize(t.merchant, CATEGORY_OVERRIDES) : 'income');
-        const catCell = isDup ? '<span class="tag">duplicate</span>'
-          : (t.amount >= 0 ? '<span class="tag">income</span>'
-            : `<select class="cat-sel st" data-i="${i}">${cats.map((c) => `<option ${c === cat ? 'selected' : ''}>${esc(c)}</option>`).join('')}<option value="__new__">✚ New category…</option></select>`);
-        return `<tr class="${isDup ? 'dup' : ''}"><td>${esc(t.date || '—')}</td><td class="m" title="${esc(t.merchant)}">${esc(cleanMerchant(t.merchant))}</td><td class="num ${t.amount < 0 ? 'neg' : 'pos'}">${t.amount < 0 ? '−' : '+'}${moneyExact(Math.abs(t.amount))}</td><td>${catCell}</td></tr>`;
+        const cat = s.catEdits[i] || tx.category || (tx.amount < 0 ? categorize(tx.merchant, CATEGORY_OVERRIDES) : 'income');
+        const catCell = isDup ? `<span class="tag">${t('ui.tag.duplicate')}</span>`
+          : (tx.amount >= 0 ? `<span class="tag">${catLabel('income')}</span>`
+            : `<select class="cat-sel st" data-i="${i}">${cats.map((c) => `<option value="${esc(c)}" ${c === cat ? 'selected' : ''}>${esc(catLabel(c))}</option>`).join('')}<option value="__new__">${t('ui.cat.newOpt')}</option></select>`);
+        return `<tr class="${isDup ? 'dup' : ''}"><td>${esc(tx.date || '—')}</td><td class="m" title="${esc(tx.merchant)}">${esc(cleanMerchant(tx.merchant))}</td><td class="num ${tx.amount < 0 ? 'neg' : 'pos'}">${tx.amount < 0 ? '−' : '+'}${moneyExact(Math.abs(tx.amount))}</td><td>${catCell}</td></tr>`;
       }).join('')}</tbody></table>` : ''}</div>
     <div class="stage-actions">
-      <button class="btn ghost" id="st-cancel">Cancel</button>
-      <button class="btn" id="st-import" ${s.accountId ? '' : 'disabled'}>Import ${fresh} transaction${fresh === 1 ? '' : 's'} →</button>
+      <button class="btn ghost" id="st-cancel">${t('common.cancel')}</button>
+      <button class="btn" id="st-import" ${s.accountId ? '' : 'disabled'}>${t('ui.stage.importN', { n: fresh })}</button>
     </div>`;
 
   el.querySelectorAll('input[name=st-acct]').forEach((rb) => rb.addEventListener('change', () => {
@@ -626,7 +629,7 @@ function renderStaging() {
   el.querySelectorAll('.cat-sel.st').forEach((sel) => sel.addEventListener('change', async () => {
     let v = sel.value;
     if (v === '__new__') {
-      v = ((await promptDialog('New category name:')) || '').trim().toLowerCase();
+      v = ((await promptDialog(t('ui.cat.newPrompt'))) || '').trim().toLowerCase();
       if (!v) { renderStaging(); return; }
     }
     s.catEdits[+sel.dataset.i] = v;
@@ -692,11 +695,11 @@ function renderTxnView() {
   const shown = rows.slice(0, MAX);
 
   document.getElementById('txn-filters').innerHTML = `
-    <select id="tf-month"><option value="">All months</option>${months.map((m) => `<option value="${m}" ${f.month === m ? 'selected' : ''}>${monthName(m)} ${m.slice(0, 4)}</option>`).join('')}</select>
-    <select id="tf-acct"><option value="">All accounts</option>${Object.entries(ACCOUNTS).map(([id, a]) => `<option value="${esc(id)}" ${f.account === id ? 'selected' : ''}>${esc(a.label)}</option>`).join('')}</select>
-    <select id="tf-cat"><option value="">All categories</option>${['income', 'transfer', 'saved', ...cats].map((c) => `<option ${f.category === c ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>
-    <input id="tf-q" type="search" placeholder="Search merchant…" value="${esc(f.q)}">
-    <span class="hint">${rows.length} record${rows.length === 1 ? '' : 's'}${rows.length > MAX ? ` — showing ${MAX}` : ''}</span>`;
+    <select id="tf-month"><option value="">${t('ui.tf.allMonths')}</option>${months.map((m) => `<option value="${m}" ${f.month === m ? 'selected' : ''}>${monthYear(m)}</option>`).join('')}</select>
+    <select id="tf-acct"><option value="">${t('ui.tf.allAccounts')}</option>${Object.entries(ACCOUNTS).map(([id, a]) => `<option value="${esc(id)}" ${f.account === id ? 'selected' : ''}>${esc(a.label)}</option>`).join('')}</select>
+    <select id="tf-cat"><option value="">${t('ui.tf.allCats')}</option>${['income', 'transfer', 'saved', ...cats].map((c) => `<option value="${esc(c)}" ${f.category === c ? 'selected' : ''}>${esc(catLabel(c))}</option>`).join('')}</select>
+    <input id="tf-q" type="search" placeholder="${t('ui.tf.search')}" value="${esc(f.q)}">
+    <span class="hint">${t('ui.tf.records', { n: rows.length })}${rows.length > MAX ? t('ui.tf.showing', { n: MAX }) : ''}</span>`;
   const re = () => renderTxnView();
   document.getElementById('tf-month').addEventListener('change', (e) => { f.month = e.target.value; re(); });
   document.getElementById('tf-acct').addEventListener('change', (e) => { f.account = e.target.value; re(); });
@@ -709,14 +712,14 @@ function renderTxnView() {
   tfq.addEventListener('input', (e) => { if (e.target.value === '' && f.q !== '') { f.q = ''; re(); } });
 
   document.getElementById('txn-table').innerHTML = rows.length ? `
-    <table><thead><tr><th>Date</th><th>Merchant</th><th>Account</th><th class="num">Amount</th><th>Category</th></tr></thead><tbody>
+    <table><thead><tr><th>${t('ui.th.date')}</th><th>${t('ui.th.merchant')}</th><th>${t('ui.th.account')}</th><th class="num">${t('ui.th.amount')}</th><th>${t('ui.th.category')}</th></tr></thead><tbody>
     ${shown.map((r) => {
-    const lbl = r.saved ? '⤓ saved' : r.transfer ? '⇄ transfer' : effCategory(r);
+    const lbl = r.saved ? `⤓ ${t('ui.cat.saved')}` : r.transfer ? `⇄ ${catLabel('transfer')}` : catLabel(effCategory(r));
     // Every row is editable: a transfer can be reclassified back to real spend,
     // any row can be marked a transfer/payment. Click opens the picker combobox.
     const catCell = `<button class="cat-pick${r.transfer ? ' is-transfer' : ''}" data-id="${esc(r.id)}">${esc(lbl)}<span class="caret">▾</span></button>`;
     return `<tr><td>${esc(r.date || '—')}</td><td class="m" title="${esc(r.merchant)}">${esc(cleanMerchant(r.merchant))}</td><td>${esc(ACCOUNTS[r.account]?.label || r.account)}</td><td class="num ${r.amount < 0 ? 'neg' : 'pos'}">${r.amount < 0 ? '−' : '+'}${moneyExact(Math.abs(r.amount), r.currency)}</td><td>${catCell}</td></tr>`;
-  }).join('')}</tbody></table>` : '<p class="hint">No matching transactions.</p>';
+  }).join('')}</tbody></table>` : `<p class="hint">${t('ui.tf.none')}</p>`;
 
   document.querySelectorAll('#txn-table .cat-pick').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -731,16 +734,16 @@ function renderTxnView() {
 // category, mark the row a Transfer/Payment (excluded from spend/income), or add
 // a brand-new category. Every pick writes a rule that applies to past + future
 // matching rows — this is how CFO learns the user's vocabulary over time.
-const TRANSFER_OPT = { value: 'transfer', label: '⇄ Transfer / Payment', special: true };
-const INCOME_OPT = { value: 'income', label: 'income', special: true };
-const SAVINGS_OPT = { value: 'savings', label: '⤓ Saved / invested', special: true };
+const TRANSFER_OPT = () => ({ value: 'transfer', label: t('ui.cat.transferOpt'), special: true });
+const INCOME_OPT = () => ({ value: 'income', label: catLabel('income'), special: true });
+const SAVINGS_OPT = () => ({ value: 'savings', label: t('ui.cat.savingsOpt'), special: true });
 // Values that are a class of money, not a spend category: always a rule.
 const RULE_CLASSES = new Set(['transfer', 'income', 'savings']);
 
 function catOptions(row) {
-  if (row.amount >= 0) return [INCOME_OPT, TRANSFER_OPT];
+  if (row.amount >= 0) return [INCOME_OPT(), TRANSFER_OPT()];
   const cats = knownCategories().filter((c) => !RULE_CLASSES.has(c));
-  return [...cats.map((c) => ({ value: c, label: c })), TRANSFER_OPT, SAVINGS_OPT];
+  return [...cats.map((c) => ({ value: c, label: catLabel(c) })), TRANSFER_OPT(), SAVINGS_OPT()];
 }
 
 let CAT_POP = null;
@@ -754,15 +757,15 @@ function openCatPicker(anchor, row) {
   pop.style.left = `${Math.max(8, rect.left + window.scrollX)}px`;
   pop.style.top = `${rect.bottom + window.scrollY + 4}px`;
   pop.hidden = false;
-  pop.innerHTML = '<input class="cat-q" type="text" placeholder="Search or add…" autocomplete="off"><ul class="cat-list"></ul>';
+  pop.innerHTML = `<input class="cat-q" type="text" placeholder="${t('ui.cat.searchAdd')}" autocomplete="off"><ul class="cat-list"></ul>`;
   const q = pop.querySelector('.cat-q');
   const list = pop.querySelector('.cat-list');
 
   const render = () => {
     const term = q.value.trim().toLowerCase();
-    items = opts.filter((o) => o.label.toLowerCase().includes(term));
+    items = opts.filter((o) => o.label.toLowerCase().includes(term) || o.value.toLowerCase().includes(term));
     const exact = opts.some((o) => o.value.toLowerCase() === term);
-    if (term && !exact && row.amount < 0) items = [...items, { value: term, label: `✚ Add “${term}”`, isNew: true }];
+    if (term && !exact && row.amount < 0) items = [...items, { value: term, label: t('ui.cat.addNew', { term }), isNew: true }];
     active = Math.max(0, Math.min(active, items.length - 1));
     list.innerHTML = items.map((o, i) =>
       `<li class="${o.special ? 'special' : ''}${o.isNew ? ' newcat' : ''}${i === active ? ' active' : ''}${o.value === cur ? ' current' : ''}" data-i="${i}">${esc(o.label)}</li>`).join('');
@@ -829,22 +832,22 @@ function renderAccounts() {
   if (!ids.length) { el.innerHTML = ''; return; }
   const codes = [...new Set([CURRENCY_CODE, ...ALL_CURRENCY_CODES])];
   el.innerHTML = `
-    <h2>Accounts</h2>
+    <h2>${t('ui.accts.title')}</h2>
     <div class="imports">
       ${ids.map((id) => {
     const a = ACCOUNTS[id] || {};
     const c = accountCurrency(a, CURRENCY_CODE);
     const unsure = currencyUnconfirmed(c.source);
     const n = LEDGER.filter((r) => r.account === id).length;
-    const why = c.source === 'ambiguous' ? 'unclear from the statement' : c.source === 'assumed' ? 'assumed — your home currency' : c.source === 'user' ? 'set by you' : 'from the statement';
+    const why = t(`ui.accts.src.${['ambiguous', 'assumed', 'user'].includes(c.source) ? c.source : 'statement'}`);
     return `<div class="import-row acct-row">
         <span class="imp-file">${esc(a.label || id)}</span>
-        <span class="imp-meta">${esc(a.type || '—')} · ${n} transaction${n === 1 ? '' : 's'} · ${esc(why)}</span>
+        <span class="imp-meta">${esc(a.type ? acctTypeLabel(a.type) : '—')} · ${t('ui.stage.count', { n })} · ${esc(why)}</span>
         <span class="acct-cur-wrap">
-          <select class="acct-cur${unsure ? ' unsure' : ''}" data-id="${esc(id)}" aria-label="Currency of ${esc(a.label || id)}">
+          <select class="acct-cur${unsure ? ' unsure' : ''}" data-id="${esc(id)}" aria-label="${esc(t('ui.accts.curOf', { acct: a.label || id }))}">
             ${codes.map((k) => `<option ${k === c.currency ? 'selected' : ''}>${k}</option>`).join('')}
           </select>
-          ${unsure ? `<button class="chip acct-ok" data-id="${esc(id)}" data-cur="${esc(c.currency || '')}">Confirm</button>` : ''}
+          ${unsure ? `<button class="chip acct-ok" data-id="${esc(id)}" data-cur="${esc(c.currency || '')}">${t('ui.accts.confirm')}</button>` : ''}
         </span>
       </div>`;
   }).join('')}
@@ -858,24 +861,24 @@ async function renderImportHistory() {
   const log = (await readJson(`${DATA}/imports.json`, [])).slice().reverse();
   if (!log.length) { el.innerHTML = ''; return; }
   el.innerHTML = `
-    <h2>Import history</h2>
+    <h2>${t('ui.imports.title')}</h2>
     <div class="imports">
       ${log.map((e) => {
     const when = (e.at || '').slice(0, 10);
     const acct = ACCOUNTS[e.account]?.label || e.account || '—';
     const revertible = !e.reverted && Array.isArray(e.added_ids) && e.added_ids.length;
-    const tail = e.reverted ? '<span class="tag">reverted</span>'
-      : revertible ? `<button class="chip undo" data-id="${esc(e.id)}">Undo</button>`
+    const tail = e.reverted ? `<span class="tag">${t('ui.imports.reverted')}</span>`
+      : revertible ? `<button class="chip undo" data-id="${esc(e.id)}">${t('ui.imports.undo')}</button>`
         : '<span class="hint">—</span>';
     return `<div class="import-row${e.reverted ? ' reverted' : ''}">
         <span class="imp-file">${esc(e.file || 'import')}</span>
-        <span class="imp-meta">${esc(acct)} · ${e.added ?? '?'} added · ${esc(when)}</span>
+        <span class="imp-meta">${esc(acct)} · ${t('ui.imports.added', { n: e.added ?? '?' })} · ${esc(when)}</span>
         ${tail}
       </div>`;
   }).join('')}
     </div>`;
   el.querySelectorAll('.undo').forEach((b) => b.addEventListener('click', async () => {
-    if (!(await confirmDialog('Undo this import? The transactions it added will be removed from your report.'))) return;
+    if (!(await confirmDialog(t('ui.imports.undoConfirm')))) return;
     b.disabled = true;
     await undoImport(b.dataset.id);
   }));
@@ -890,10 +893,10 @@ function askScope(anchor, row, cat) {
   pop.style.top = `${r.bottom + window.scrollY + 6}px`;
   pop.hidden = false;
   pop.innerHTML = `
-    <b>Apply “${esc(cat)}” to:</b>
-    <label><input type="radio" name="scope" value="rule" checked> always for “${esc(row.merchant.slice(0, 36))}”</label>
-    <label><input type="radio" name="scope" value="row"> just this transaction</label>
-    <div class="modal-actions"><button class="btn ghost" id="scope-cancel">Cancel</button><button class="btn" id="scope-apply">Apply</button></div>`;
+    <b>${t('ui.scope.head', { cat: esc(catLabel(cat)) })}</b>
+    <label><input type="radio" name="scope" value="rule" checked> ${t('ui.scope.rule', { merchant: esc(row.merchant.slice(0, 36)) })}</label>
+    <label><input type="radio" name="scope" value="row"> ${t('ui.scope.row')}</label>
+    <div class="modal-actions"><button class="btn ghost" id="scope-cancel">${t('common.cancel')}</button><button class="btn" id="scope-apply">${t('ui.scope.apply')}</button></div>`;
   const close = () => { pop.hidden = true; pop.innerHTML = ''; };
   pop.querySelector('#scope-cancel').onclick = () => { close(); renderTxnView(); };
   pop.querySelector('#scope-apply').onclick = async () => {
@@ -949,7 +952,7 @@ async function importFile(file, fileIdx = 0, fileCount = 1, opts = {}) {
     kind = r.kind || null; // card or bank, when the columns say (analyze.js csvKind)
   }
   if (!transactions || !transactions.length) {
-    throw new Error([...(notes.length ? notes : ['No transactions found in this file.'])].join(' '));
+    throw new Error([...(notes.length ? notes : [t('ui.imp.noTxns')])].join(' '));
   }
 
   let accountId = fingerprint && ACCOUNTS[fingerprint] ? fingerprint : null; // known → fast path
@@ -958,13 +961,13 @@ async function importFile(file, fileIdx = 0, fileCount = 1, opts = {}) {
     // never pops the account modal unprompted (a stray CSV stays untouched).
     if (opts.autoOnly) return { file: file.name, skipped: 'unknown-account' };
     accountId = await stageImport({ transactions, fingerprint, kind, notes, filename: file.name, fileIdx, fileCount });
-    if (!accountId) { setStatus(`Skipped ${file.name} — no account chosen.`); return { file: file.name, skipped: true }; }
+    if (!accountId) { setStatus(t('ui.imp.skipped', { file: file.name })); return { file: file.name, skipped: true }; }
   }
 
   // Some cards export charges as positive (Amex style) — orient now that the
   // user has told us the account type, so spend/income don't land swapped.
   const oriented = orientTransactions(transactions, ACCOUNTS[accountId]?.type);
-  if (oriented.flipped) notes.push('This statement lists charges as positive amounts — signs were flipped so spend reads correctly.');
+  if (oriented.flipped) notes.push(t('ui.imp.flipped'));
 
   // The account's currency: what this statement says, unless the person set
   // it; a statement that says nothing leaves the home currency, assumed.
@@ -975,7 +978,7 @@ async function importFile(file, fileIdx = 0, fileCount = 1, opts = {}) {
     await saveEdits();
   }
   const acctCur = accountCurrency(ACCOUNTS[accountId], CURRENCY_CODE);
-  if (acctCur.source === 'ambiguous') notes.push(`Currency unclear (${detected.ambiguous.join(' or ')}) — set it under Transactions › Accounts.`);
+  if (acctCur.source === 'ambiguous') notes.push(t('ui.imp.curUnclear', { codes: detected.ambiguous.join(' / ') }));
   const incoming = toLedgerRows(oriented.transactions, accountId, acctCur.currency);
   // The read→merge→append runs under the import lock: the next importer re-reads
   // `existing` only after this append lands, so overlapping rows dedup instead of
@@ -1003,7 +1006,7 @@ async function importFile(file, fileIdx = 0, fileCount = 1, opts = {}) {
   await rebuildReport(); // agent's full-history copy
   refreshView();
   const dup = incoming.length - added.length;
-  const head = dup ? `Imported — ${added.length} new, ${dup} already on file.` : `Imported — ${added.length} transactions.`;
+  const head = dup ? t('ui.imp.doneDup', { n: added.length, dup }) : t('ui.imp.done', { n: added.length });
   setStatus([head, ...notes].join(' '));
   return { file: file.name, label: ACCOUNTS[accountId]?.label || accountId, added: added.length, dup, importId };
 }
@@ -1032,7 +1035,7 @@ async function undoImport(importId) {
   refreshView();
   if (VIEW_MODE === 'txn') renderTxnView();
   const kept = entry.added_ids.length - ids.length;
-  setStatus(`Reverted ${entry.file} — ${ids.length} removed${kept > 0 ? `, ${kept} kept by another import` : ''}.`);
+  setStatus(kept > 0 ? t('ui.imp.revertedKept', { file: entry.file, n: ids.length, kept }) : t('ui.imp.reverted', { file: entry.file, n: ids.length }));
   tellLing('undo', `reverted the import of ${entry.file}: ${ids.length} transactions removed${kept > 0 ? `, ${kept} kept because another import holds them` : ''}`);
   return true;
 }
@@ -1129,7 +1132,10 @@ function monthSpan(from, to) {
   for (let m = from; m <= to && out.length < 240; m = monthShift(m, 1)) out.push(m);
   return out;
 }
-const monthName = (m) => new Date(m + '-15').toLocaleString(undefined, { month: 'short' });
+const monthName = (m) => new Date(m + '-15').toLocaleString(intlLocale(), { month: 'short' });
+const monthDay = (iso) => new Date(`${iso.slice(0, 10)}T12:00:00`).toLocaleDateString(intlLocale(), { month: 'short', day: 'numeric' });
+const monthNarrow = (m) => (intlLocale() === 'zh-CN' ? String(+m.slice(5, 7)) : monthName(m).slice(0, 1));
+const monthYear = (m) => new Date(m + '-15').toLocaleString(intlLocale(), { month: 'short', year: 'numeric' });
 
 function currentRange(months) {
   if (!months.length) return null;
@@ -1154,7 +1160,7 @@ function renderRangeBar(view) {
   const rr = view.range;
   document.getElementById('range-bar').dataset.range = rr ? `${rr.from}..${rr.to}` : 'all';
   chips.innerHTML = PRESETS.map(([p]) =>
-    `<button class="chip${RANGE.preset === p ? ' on' : ''}" data-preset="${p}">${p === 'ALL' ? 'All' : p}</button>`).join('');
+    `<button class="chip${RANGE.preset === p ? ' on' : ''}" data-preset="${p}">${t(`ui.range.${p}`)}</button>`).join('');
   chips.querySelectorAll('button').forEach((b) => { b.onclick = () => setRange({ preset: b.dataset.preset }); });
   document.getElementById('range-custom').classList.toggle('on', RANGE.preset === 'custom');
 
@@ -1166,7 +1172,7 @@ function renderRangeBar(view) {
     const first = months[0], last = months[months.length - 1];
     lblEl.innerHTML = `
       <button class="chip step" id="rg-prev" ${r.from <= first ? 'disabled' : ''}>‹</button>
-      <b class="rg-month">${monthName(r.from)} ${r.from.slice(0, 4)}</b>
+      <b class="rg-month">${monthYear(r.from)}</b>
       <button class="chip step" id="rg-next" ${r.to >= last ? 'disabled' : ''}>›</button>`;
     const step = (d) => {
       const m = monthShift(r.from, d);
@@ -1175,19 +1181,19 @@ function renderRangeBar(view) {
     lblEl.querySelector('#rg-prev')?.addEventListener('click', () => step(-1));
     lblEl.querySelector('#rg-next')?.addEventListener('click', () => step(1));
   } else {
-    lblEl.textContent = r ? `${monthName(r.from)} ${r.from.slice(0, 4)} – ${monthName(r.to)} ${r.to.slice(0, 4)}`
-      : (months.length ? `${monthName(months[0])} ${months[0].slice(0, 4)} – ${monthName(months[months.length - 1])} ${months[months.length - 1].slice(0, 4)} (all)` : '');
+    lblEl.textContent = r ? `${monthYear(r.from)} – ${monthYear(r.to)}`
+      : (months.length ? `${monthYear(months[0])} – ${monthYear(months[months.length - 1])} ${t('ui.range.allTag')}` : '');
   }
 
   const pop = document.getElementById('range-pop');
   document.getElementById('range-custom').onclick = () => {
     if (!pop.hidden) { pop.hidden = true; return; }
-    const opts = (sel) => months.map((m) => `<option value="${m}" ${m === sel ? 'selected' : ''}>${monthName(m)} ${m.slice(0, 4)}</option>`).join('');
+    const opts = (sel) => months.map((m) => `<option value="${m}" ${m === sel ? 'selected' : ''}>${monthYear(m)}</option>`).join('');
     const cur = r || { from: months[0], to: months[months.length - 1] };
     pop.innerHTML = `
-      <label>From <select id="rp-from">${opts(cur.from)}</select></label>
-      <label>To <select id="rp-to">${opts(cur.to)}</select></label>
-      <button class="btn" id="rp-apply">Apply</button>`;
+      <label>${t('ui.range.from')} <select id="rp-from">${opts(cur.from)}</select></label>
+      <label>${t('ui.range.to')} <select id="rp-to">${opts(cur.to)}</select></label>
+      <button class="btn" id="rp-apply">${t('ui.scope.apply')}</button>`;
     pop.hidden = false;
     pop.querySelector('#rp-apply').onclick = () => {
       let from = pop.querySelector('#rp-from').value, to = pop.querySelector('#rp-to').value;
@@ -1313,8 +1319,8 @@ function refreshView() {
   showTabSuggestions();
   const cats = view.by_category || [];
   setSecSum('breakdown', [
-    cats.length ? `${cats[0].category} leads ${money(cats[0].spend)}` : '',
-    MULTI_CUR ? `subs ${perCurrency(view, (b) => b.subscription_monthly_total, moneyExact)}/mo` : `subs ${moneyExact(view.subscription_monthly_total)}/mo`,
+    cats.length ? t('ui.sum.leads', { cat: catLabel(cats[0].category), amt: money(cats[0].spend) }) : '',
+    t('ui.sum.subs', { amt: MULTI_CUR ? perCurrency(view, (b) => b.subscription_monthly_total, moneyExact) : moneyExact(view.subscription_monthly_total) }),
   ].filter(Boolean).join(' · '));
   if (VIEW_MODE === 'commit') renderCommitView();
 }
@@ -1337,7 +1343,7 @@ function renderBillCal() {
   const byDay = {};
   for (const e of events) if (e.date.startsWith(CAL_MONTH)) (byDay[+e.date.slice(8)] ||= []).push(e);
 
-  const tipFor = (e) => `${e.label}\n${moneyExact(Math.abs(e.amount), e.currency)} — ${e.status === 'paid' ? 'paid' : 'expected ~'}${e.date}`;
+  const tipFor = (e) => `${bcLabel(e)}\n${moneyExact(Math.abs(e.amount), e.currency)} — ${e.status === 'paid' ? t('ui.bc.paid', { date: e.date }) : t('ui.bc.expected', { date: e.date })}`;
   const chip = (e) => `<span class="bc-chip ${esc(e.kind)} ${esc(e.status)}" data-tip="${esc(tipFor(e))}">${e.status === 'paid' ? '✓' : ''}${e.amount > 0 ? '+' : ''}${money(Math.abs(e.amount), e.currency)}</span>`;
   const cells = [];
   for (let i = 0; i < firstDow; i++) cells.push('<div class="bc-cell empty"></div>');
@@ -1353,20 +1359,26 @@ function renderBillCal() {
   el.innerHTML = `
     <div class="bc-head">
       <button class="chip step" id="bc-prev" ${mi <= 0 ? 'disabled' : ''}>‹</button>
-      <b>${monthName(CAL_MONTH)} ${CAL_MONTH.slice(0, 4)}</b>
+      <b>${monthYear(CAL_MONTH)}</b>
       <button class="chip step" id="bc-next" ${mi >= months.length - 1 ? 'disabled' : ''}>›</button>
-      <span class="bc-legend"><i class="sw income"></i>income <i class="sw bill"></i>bills <i class="sw card"></i>card payments</span>
+      <span class="bc-legend"><i class="sw income"></i>${t('ui.bc.income')} <i class="sw bill"></i>${t('ui.bc.bills')} <i class="sw card"></i>${t('ui.bc.cards')}</span>
     </div>
     <div class="bc-grid">
-      ${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => `<div class="bc-dow">${d}</div>`).join('')}
+      ${weekdayNames().map((d) => `<div class="bc-dow">${d}</div>`).join('')}
       ${cells.join('')}
     </div>`;
   document.getElementById('bc-prev')?.addEventListener('click', () => { CAL_MONTH = months[mi - 1]; renderBillCal(); });
   document.getElementById('bc-next')?.addEventListener('click', () => { CAL_MONTH = months[mi + 1]; renderBillCal(); });
   const asOf = (FULL_VIEW.forecast && FULL_VIEW.forecast.as_of) || '';
   const nextEv = events.find((e) => e.status === 'expected' && e.date > asOf);
-  setSecSum('billcal', nextEv ? `next: ${nextEv.label.slice(0, 24)} ~${nextEv.date.slice(5)}` : '');
+  setSecSum('billcal', nextEv ? t('ui.bc.next', { what: bcLabel(nextEv).slice(0, 24), date: monthDay(nextEv.date) }) : '');
 }
+
+// A card payment's label is built in ledger.js as "<card> payment" (it rides
+// the report the agent reads too) — the page says it in the page's language.
+const bcLabel = (e) => (e.kind === 'card' && / payment$/.test(e.label || '') ? t('ui.bc.cardPay', { card: e.label.slice(0, -8) }) : e.label);
+// Sun..Sat, short, in the page's language (2023-01-01 was a Sunday).
+const weekdayNames = () => [...Array(7)].map((_, i) => new Date(Date.UTC(2023, 0, 1 + i, 12)).toLocaleDateString(intlLocale(), { weekday: 'short', timeZone: 'UTC' }));
 
 // ── Safe-to-spend: flow-based month forecast, anchored on the data's last day.
 function renderForecast(f) {
@@ -1374,24 +1386,24 @@ function renderForecast(f) {
   if (!f) { el.innerHTML = ''; return; }
   const fm = (n) => money(n, f.currency);
   // Several currencies: this card is the lead currency's own month.
-  const only = MULTI_CUR && f.currency ? ` · ${f.currency} accounts` : '';
-  const mn = `${monthName(f.month)} ${f.month.slice(0, 4)}`;
-  const dom = (iso) => `~${monthName(iso.slice(0, 7))} ${+iso.slice(8)}`;
+  const only = MULTI_CUR && f.currency ? ` · ${t('ui.fc.accounts', { cur: f.currency })}` : '';
+  const mn = `${monthYear(f.month)}`;
+  const dom = (iso) => `~${monthDay(iso)}`;
   const fixedBits = f.upcoming_fixed.slice(0, 3).map((u) => `${esc(u.merchant.slice(0, 22))} ${dom(u.expected)}`).join(' · ');
-  const more = f.upcoming_fixed.length > 3 ? ` +${f.upcoming_fixed.length - 3} more` : '';
+  const more = f.upcoming_fixed.length > 3 ? ` ${t('ui.more', { n: f.upcoming_fixed.length - 3 })}` : '';
   const staleDays = Math.round((new Date() - new Date(f.as_of)) / 86400000);
   const pos = f.safe_to_spend >= 0;
   el.innerHTML = `
   <div class="fc-card">
     <div class="fc-head">
-      <span class="fc-title">Safe to spend — rest of ${mn}${esc(only)}</span>
-      <span class="hint">as of ${esc(f.as_of)}</span>
+      <span class="fc-title">${t('ui.fc.title', { month: mn })}${esc(only)}</span>
+      <span class="hint">${t('ui.asOf', { date: esc(f.as_of) })}</span>
     </div>
     <div class="fc-hero ${pos ? 'pos' : 'neg'}">${pos ? '' : '−'}${fm(Math.abs(f.safe_to_spend))}</div>
     <div class="fc-lines">
-      <div>So far: <b>+${fm(f.income_so_far)}</b> in · <b>−${fm(f.spend_so_far)}</b> out${f.expected_income_total ? ` · still expecting <b class="pos-t">+${fm(f.expected_income_total)}</b> income` : ''}${f.upcoming_fixed_total ? ` · <b>−${fm(f.upcoming_fixed_total)}</b> fixed still due${fixedBits ? ` (${fixedBits}${more})` : ''}` : ''}</div>
-      ${f.variable.daily_avg > 0 ? `<div>Day-to-day pace <b>${fm(f.variable.daily_avg)}/day</b> → on track to land at <b class="${f.on_track_net >= 0 ? 'pos-t' : 'neg-t'}">${f.on_track_net >= 0 ? '+' : '−'}${fm(Math.abs(f.on_track_net))}</b> by month end</div>` : ''}
-      ${staleDays > 7 ? `<div class="hint">📥 Data ends ${esc(f.as_of)} — import fresher statements for a live number.</div>` : ''}
+      <div>${t('ui.fc.soFar', { inn: `<b>+${fm(f.income_so_far)}</b>`, out: `<b>−${fm(f.spend_so_far)}</b>` })}${f.expected_income_total ? ` · ${t('ui.fc.expecting', { amt: `<b class="pos-t">+${fm(f.expected_income_total)}</b>` })}` : ''}${f.upcoming_fixed_total ? ` · ${t('ui.fc.fixedDue', { amt: `<b>−${fm(f.upcoming_fixed_total)}</b>` })}${fixedBits ? ` (${fixedBits}${more})` : ''}` : ''}</div>
+      ${f.variable.daily_avg > 0 ? `<div>${t('ui.fc.pace', { pace: `<b>${fm(f.variable.daily_avg)}${t('ui.perDay')}</b>`, land: `<b class="${f.on_track_net >= 0 ? 'pos-t' : 'neg-t'}">${f.on_track_net >= 0 ? '+' : '−'}${fm(Math.abs(f.on_track_net))}</b>` })}</div>` : ''}
+      ${staleDays > 7 ? `<div class="hint">${t('ui.fc.stale', { date: esc(f.as_of) })}</div>` : ''}
     </div>
   </div>`;
 }
@@ -1413,16 +1425,16 @@ function renderBudgets(b) {
   const stateCls = { over: 'neg', pacing: 'warn', ok: 'ok' };
   const nPace = rows.filter((r) => r.state === 'pacing').length;
   const nOver = rows.filter((r) => r.state === 'over').length;
-  const monthLabel = b ? `${monthName(b.month)} ${b.month.slice(0, 4)} · as of ${monthName(b.month)} ${+b.as_of.slice(8)}` : '';
-  const approxLabel = b && b.approx ? `≈ ${b.currency}, with ${b.converted_from.join(', ')} spending converted at the ${b.fx_date || ''} rate` : '';
-  const gapLabel = b && (b.fx_missing || []).length ? `${b.fx_missing.join(', ')} spending not counted — no exchange rate` : '';
+  const monthLabel = b ? `${monthYear(b.month)} · ${t('ui.asOf', { date: monthDay(b.as_of) })}` : '';
+  const approxLabel = b && b.approx ? t('ui.bg.approx', { cur: b.currency, from: b.converted_from.join(', '), date: b.fx_date || '' }) : '';
+  const gapLabel = b && (b.fx_missing || []).length ? t('ui.bg.fxMissing', { codes: b.fx_missing.join(', ') }) : '';
 
   const editRow = (cat, val) => `
     <div class="bg-row edit" data-cat="${esc(cat)}">
-      <span class="bg-label">${esc(cat)}</span>
+      <span class="bg-label">${esc(catLabel(cat))}</span>
       <span class="bg-track"></span>
-      <span class="bg-edit"><input id="bg-input" type="number" min="1" step="1" value="${val || ''}" aria-label="Monthly budget for ${esc(cat)}">
-        <span class="hint-key">↵ save · esc cancel</span></span>
+      <span class="bg-edit"><input id="bg-input" type="number" min="1" step="1" value="${val || ''}" aria-label="${esc(t('ui.bg.inputAria', { cat: catLabel(cat) }))}">
+        <span class="hint-key">${t('ui.bg.keys')}</span></span>
       <span class="bg-x"></span>
     </div>`;
   const row = (r) => {
@@ -1430,32 +1442,32 @@ function renderBudgets(b) {
     const pct = Math.min(100, Math.round((100 * r.mtd) / r.budget));
     const pacePct = Math.round((100 * r.projected) / r.budget);
     const clip = pacePct > 100;
-    const proj = r.state === 'over' ? `<span class="bg-proj neg">${bm(r.mtd - r.budget)} over</span>`
+    const proj = r.state === 'over' ? `<span class="bg-proj neg">${t('ui.bg.overBy', { amt: bm(r.mtd - r.budget) })}</span>`
       : !b.projection_ready ? ''
-        : `<span class="bg-proj${r.state === 'pacing' ? ' warn' : ''}">→ ~${bm(r.projected)} by month end</span>`;
+        : `<span class="bg-proj${r.state === 'pacing' ? ' warn' : ''}">${t('ui.bg.proj', { amt: bm(r.projected) })}</span>`;
     return `
     <div class="bg-row" data-cat="${esc(r.category)}">
-      <span class="bg-label">${esc(r.category)}</span>
+      <span class="bg-label">${esc(catLabel(r.category))}</span>
       <span class="bg-track">
         <span class="bg-fill ${stateCls[r.state]}" style="width:${pct}%"></span>
         ${b.projection_ready ? `<span class="bg-pace${clip ? ' clip' : r.state === 'pacing' ? ' warn' : ''}"${clip ? '' : ` style="left:${Math.max(2, Math.min(98, pacePct))}%"`}></span>` : ''}
       </span>
-      <span class="bg-nums"><b class="bg-amt" title="Click to edit this budget">${bm(r.mtd)}</b> <span class="of">of ${bm(r.budget)}</span>${proj}</span>
-      <button class="bg-x" title="Remove this budget">×</button>
+      <span class="bg-nums"><b class="bg-amt" title="${t('ui.bg.editTitle')}">${bm(r.mtd)}</b> <span class="of">${t('ui.bg.of', { amt: bm(r.budget) })}</span>${proj}</span>
+      <button class="bg-x" title="${t('ui.bg.removeTitle')}">×</button>
     </div>`;
   };
 
   el.innerHTML = `
   <div class="bg-card">
     <div class="bg-head">
-      <span class="bg-title">Budgets</span>
+      <span class="bg-title">${t('ui.bg.title')}</span>
       ${monthLabel ? `<span class="hint">${esc(monthLabel)}</span>` : ''}
       ${approxLabel || gapLabel ? `<span class="approx-note">${esc([approxLabel, gapLabel].filter(Boolean).join(' · '))}</span>` : ''}
-      <span class="bg-sum">${nPace ? `<span class="pill warn">${nPace} pacing over</span>` : ''}${nOver ? `<span class="pill neg">${nOver} over</span>` : ''}</span>
+      <span class="bg-sum">${nPace ? `<span class="pill warn">${t('ui.bg.nPacing', { n: nPace })}</span>` : ''}${nOver ? `<span class="pill neg">${t('ui.bg.nOver', { n: nOver })}</span>` : ''}</span>
     </div>
     ${rows.map(row).join('')}
     ${BUDGET_EDIT && !budgeted.has(BUDGET_EDIT) ? editRow(BUDGET_EDIT, BUDGETS[BUDGET_EDIT]) : ''}
-    ${unset.length ? `<div class="bg-unset"><span class="lead">${rows.length ? 'Set a budget:' : 'Set a monthly budget per category — the report flags when you’re trending over:'}</span>${unset.map((c) => `<button class="bg-add" data-cat="${esc(c)}">${esc(c)}</button>`).join('')}</div>` : ''}
+    ${unset.length ? `<div class="bg-unset"><span class="lead">${rows.length ? t('ui.bg.set') : t('ui.bg.setFirst')}</span>${unset.map((c) => `<button class="bg-add" data-cat="${esc(c)}">${esc(catLabel(c))}</button>`).join('')}</div>` : ''}
   </div>`;
 
   const rerender = () => renderBudgets((FULL_VIEW && FULL_VIEW.budgets) || null);
@@ -1490,8 +1502,8 @@ function syncBudgetInsights(b) {
   const bm = (n) => money(n, b && b.currency);
   const key = (c) => `${c.tone}|${c.title}|${c.body}`;
   const mk = (r) => (r.state === 'over'
-    ? { src: 'budget', tone: 'alert', title: `Budget: ${r.category} over`, body: `**${r.category}** is ${bm(r.mtd - r.budget)} over its ${bm(r.budget)} ${monthName(b.month)} budget (${bm(r.mtd)} spent).`, at: new Date().toISOString() }
-    : { src: 'budget', tone: 'warn', title: `Budget: ${r.category} pacing over`, body: `**${r.category}** is pacing to ~${bm(r.projected)} against its ${bm(r.budget)} ${monthName(b.month)} budget.`, at: new Date().toISOString() });
+    ? { src: 'budget', tone: 'alert', title: t('ui.bgi.overTitle', { cat: catLabel(r.category) }), body: t('ui.bgi.overBody', { cat: catLabel(r.category), over: bm(r.mtd - r.budget), budget: bm(r.budget), month: monthName(b.month), spent: bm(r.mtd) }), at: new Date().toISOString() }
+    : { src: 'budget', tone: 'warn', title: t('ui.bgi.paceTitle', { cat: catLabel(r.category) }), body: t('ui.bgi.paceBody', { cat: catLabel(r.category), proj: bm(r.projected), budget: bm(r.budget), month: monthName(b.month) }), at: new Date().toISOString() });
   let cards = ((b && b.categories) || []).filter((r) => r.state !== 'ok').map(mk);
   let dismissed = [];
   try { dismissed = JSON.parse(localStorage.getItem('cfo:budget-dismissed') || '[]'); } catch { /* ignore */ }
@@ -1507,7 +1519,7 @@ function syncBudgetInsights(b) {
 }
 
 function renderCards(v, full) {
-  const t = v.totals || {};
+  const tot = v.totals || {};
   // Subscriptions and commitments are monthly rates, not period sums, and a
   // cadence can't be read through a short window — so they always come from the
   // full history no matter what the range says.
@@ -1519,18 +1531,18 @@ function renderCards(v, full) {
   const f = src.forecast || null;
   const r = v.range;
   const current = f && r && r.from === r.to && r.from === f.month;
-  const period = current ? `${monthName(f.month)} ${f.month.slice(0, 4)}` : rangeWords(v);
-  const sub = current ? `as of ${monthName(f.month)} ${+f.as_of.slice(8)}` : `${t.months || 0} mo`;
-  const net = t.net || 0;
+  const period = current ? `${monthYear(f.month)}` : rangeWords(v);
+  const sub = current ? t('ui.asOf', { date: monthDay(f.as_of) }) : t('ui.nMo', { n: tot.months || 0 });
+  const net = tot.net || 0;
   if (MULTI_CUR) { renderCardsMulti(v, src, period, current, sub); return; }
   const headCards = `
-    <div class="card"><div class="k">Income</div><div class="v">${money(t.income)}</div><div class="sub">${esc(period)}</div></div>
-    <div class="card"><div class="k">Spend</div><div class="v">${money(t.spend)}</div><div class="sub">${current ? 'month to date' : esc(period)}</div>${oneOffSub(v)}</div>
-    <div class="card ${net >= 0 ? 'pos' : 'neg'}"><div class="k">Net</div><div class="v">${money(net)}</div><div class="sub">${esc(sub)}</div></div>
+    <div class="card"><div class="k">${t('ui.card.income')}</div><div class="v">${money(tot.income)}</div><div class="sub">${esc(period)}</div></div>
+    <div class="card"><div class="k">${t('ui.card.spend')}</div><div class="v">${money(tot.spend)}</div><div class="sub">${current ? t('ui.card.mtd') : esc(period)}</div>${oneOffSub(v)}</div>
+    <div class="card ${net >= 0 ? 'pos' : 'neg'}"><div class="k">${t('ui.card.net')}</div><div class="v">${money(net)}</div><div class="sub">${esc(sub)}</div></div>
     ${savedCard(v, period)}`;
   document.getElementById('cards').innerHTML = `${headCards}
-    <div class="card"><div class="k">Subscriptions</div><div class="v">${moneyExact(src.subscription_monthly_total)}<span class="per">/mo</span></div><div class="sub">${src.active_subscription_count || 0} active${src.stopped_subscription_count ? ` · ${src.stopped_subscription_count} stopped` : ''}</div></div>
-    <div class="card link" id="card-commit" title="Loans, insurance, bills, subscriptions — open the Commitments tab"><div class="k">Commitments</div><div class="v">${money(c.monthly_total)}<span class="per">/mo</span></div><div class="sub">${c.pct_of_income != null ? `${Math.round(c.pct_of_income)}% of income` : 'fixed monthly'}</div></div>`;
+    <div class="card"><div class="k">${t('ui.card.subs')}</div><div class="v">${moneyExact(src.subscription_monthly_total)}<span class="per">${t('ui.perMo')}</span></div><div class="sub">${t('ui.card.active', { n: src.active_subscription_count || 0 })}${src.stopped_subscription_count ? ` · ${t('ui.card.stopped', { n: src.stopped_subscription_count })}` : ''}</div></div>
+    <div class="card link" id="card-commit" title="${t('ui.card.commitTitle')}"><div class="k">${t('ui.card.commit')}</div><div class="v">${money(c.monthly_total)}<span class="per">${t('ui.perMo')}</span></div><div class="sub">${c.pct_of_income != null ? t('ui.card.pctIncome', { pct: Math.round(c.pct_of_income) }) : t('ui.card.fixedMonthly')}</div></div>`;
   document.getElementById('card-commit')?.addEventListener('click', () => switchView('commit'));
   renderMoneyLines(v);
 }
@@ -1539,8 +1551,8 @@ function renderCards(v, full) {
 // total keeps it; the typical month is the period without it.
 function oneOffSub(v, code) {
   if (!(v.one_off_total > 0)) return '';
-  const typical = v.typical_month_spend != null && (v.totals?.months || 0) > 1 ? ` · typical month ${money(v.typical_month_spend, code)}` : '';
-  return `<div class="sub one-off" title="${esc((v.one_offs || []).map((o) => `${o.merchant} ${o.date}`).join(', '))}">incl. ${money(v.one_off_total, code)} one-off${typical}</div>`;
+  const typical = v.typical_month_spend != null && (v.totals?.months || 0) > 1 ? ` · ${t('ui.card.typical', { amt: money(v.typical_month_spend, code) })}` : '';
+  return `<div class="sub one-off" title="${esc((v.one_offs || []).map((o) => `${o.merchant} ${o.date}`).join(', '))}">${t('ui.card.oneOff', { amt: money(v.one_off_total, code) })}${typical}</div>`;
 }
 
 // Saved: rows under a savings rule — put away, not spent. Shown once there is any.
@@ -1548,7 +1560,7 @@ function savedCard(v, period, code) {
   const s = v.saved;
   if (!s || !s.total) return '';
   const names = s.lines.slice(0, 2).map((l) => l.label).join(', ');
-  return `<div class="card"><div class="k">Saved</div><div class="v">${money(s.total, code)}</div><div class="sub" title="${esc(names)}">${esc(period)}</div></div>`;
+  return `<div class="card"><div class="k">${t('ui.card.saved')}</div><div class="v">${money(s.total, code)}</div><div class="sub" title="${esc(names)}">${esc(period)}</div></div>`;
 }
 
 // ── Money the headline leaves out, said as lines: card bills to cards not
@@ -1563,24 +1575,23 @@ function renderMoneyLines(v) {
   const moved = v.moved_not_imported || { lines: [] };
   const rows = [];
   if (cards.total) {
-    rows.push(`<div class="ml-row"><span class="ml-k">Paid to cards not imported</span><span class="ml-v">${money(cards.total, code)}</span>
-      <span class="ml-note">${esc(cards.lines.map((l) => l.label).join(' · '))} — import these cards to see what the bills bought.</span></div>`);
+    rows.push(`<div class="ml-row"><span class="ml-k">${t('ui.ml.cards')}</span><span class="ml-v">${money(cards.total, code)}</span>
+      <span class="ml-note">${t('ui.ml.cardsNote', { cards: esc(cards.lines.map((l) => l.label).join(' · ')) })}</span></div>`);
   }
   if (moved.lines.length) {
-    rows.push(`<div class="ml-row"><span class="ml-k">Accounts not imported</span><span class="ml-v">${moved.in ? `+${money(moved.in, code)} in` : ''}${moved.in && moved.out ? ' · ' : ''}${moved.out ? `−${money(moved.out, code)} out` : ''}</span></div>`);
+    rows.push(`<div class="ml-row"><span class="ml-k">${t('ui.ml.accts')}</span><span class="ml-v">${moved.in ? t('ui.ml.in', { amt: `+${money(moved.in, code)}` }) : ''}${moved.in && moved.out ? ' · ' : ''}${moved.out ? t('ui.ml.out', { amt: `−${money(moved.out, code)}` }) : ''}</span></div>`);
     for (const l of moved.lines) rows.push(movedLine(l, code));
   }
   el.innerHTML = rows.length ? `<div class="ml-card">${rows.join('')}</div>` : '';
   el.querySelectorAll('[data-ext]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); answerExternal(b.dataset.ext, b.dataset.answer || null); }));
 }
 
-const EXT_WORDS = { mine: 'yours — savings or credit line', household: 'household income' };
 function movedLine(l, code) {
   const amt = l.amount >= 0 ? `+${money(l.amount, code)}` : `−${money(-l.amount, code)}`;
   const k = esc(l.key);
   const tail = l.ask
-    ? `<span class="ml-ask">Whose is this? <button class="chip" data-ext="${k}" data-answer="mine">Mine — savings / credit line</button><button class="chip" data-ext="${k}" data-answer="household">Household income</button></span>`
-    : l.answer ? `<span class="ml-note">${esc(EXT_WORDS[l.answer] || l.answer)} <a href="#" class="hint" data-ext="${k}">change</a></span>` : '';
+    ? `<span class="ml-ask">${t('ui.ml.whose')} <button class="chip" data-ext="${k}" data-answer="mine">${t('ui.ml.mine')}</button><button class="chip" data-ext="${k}" data-answer="household">${t('ui.ml.household')}</button></span>`
+    : l.answer ? `<span class="ml-note">${esc(['mine', 'household'].includes(l.answer) ? t(`ui.ml.ext.${l.answer}`) : l.answer)} <a href="#" class="hint" data-ext="${k}">${t('ui.ml.change')}</a></span>` : '';
   return `<div class="ml-row sub-line"><span class="ml-k">${esc(l.label)}</span><span class="ml-v">${amt}</span>${tail}</div>`;
 }
 
@@ -1598,20 +1609,20 @@ function combinedLine(v, key) {
   return cb ? `≈ ${money(cb.totals[key], cb.currency)}` : perCurrency(v, (b) => b.totals?.[key]);
 }
 function fxNote(v) {
-  if (v.combined) return `≈ at ${v.combined.fx_source || 'the'} rate of ${v.combined.fx_date || 'today'}`;
-  return (v.fx_missing || []).length ? `No exchange rate for ${v.fx_missing.join(', ')} — shown per currency` : '';
+  if (v.combined) return t('ui.fx.at', { src: v.combined.fx_source || '', date: v.combined.fx_date || t('ui.today') });
+  return (v.fx_missing || []).length ? t('ui.fx.missing', { codes: v.fx_missing.join(', ') }) : '';
 }
 function renderCardsMulti(v, src, period, current, sub) {
   const net = v.combined ? v.combined.totals.net : null;
   const split = (key) => (v.combined ? `<div class="cur-split">${esc(perCurrency(v, (b) => b.totals?.[key]))}</div>` : '');
   const head = (k, key, subText, cls = '') => `<div class="card ${cls}"><div class="k">${k}</div><div class="v">${esc(combinedLine(v, key))}</div>${split(key)}<div class="sub">${esc(subText)}</div></div>`;
   document.getElementById('cards').innerHTML = `
-    ${head('Income', 'income', period)}
-    ${head('Spend', 'spend', current ? 'month to date' : period)}
-    ${head('Net', 'net', sub, net == null ? '' : net >= 0 ? 'pos' : 'neg')}
+    ${head(t('ui.card.income'), 'income', period)}
+    ${head(t('ui.card.spend'), 'spend', current ? t('ui.card.mtd') : period)}
+    ${head(t('ui.card.net'), 'net', sub, net == null ? '' : net >= 0 ? 'pos' : 'neg')}
     ${savedCard(v, `${period} · ${v.currency}`, v.currency)}
-    <div class="card"><div class="k">Subscriptions</div><div class="v">${esc(perCurrency(src, (b) => b.subscription_monthly_total, moneyExact))}<span class="per">/mo</span></div><div class="sub">${src.active_subscription_count || 0} active</div></div>
-    <div class="card link" id="card-commit" title="Loans, insurance, bills, subscriptions — open the Commitments tab"><div class="k">Commitments</div><div class="v">${esc(perCurrency(src, (b) => b.commitments?.monthly_total))}<span class="per">/mo</span></div><div class="sub">fixed monthly</div></div>
+    <div class="card"><div class="k">${t('ui.card.subs')}</div><div class="v">${esc(perCurrency(src, (b) => b.subscription_monthly_total, moneyExact))}<span class="per">${t('ui.perMo')}</span></div><div class="sub">${t('ui.card.active', { n: src.active_subscription_count || 0 })}</div></div>
+    <div class="card link" id="card-commit" title="${t('ui.card.commitTitle')}"><div class="k">${t('ui.card.commit')}</div><div class="v">${esc(perCurrency(src, (b) => b.commitments?.monthly_total))}<span class="per">${t('ui.perMo')}</span></div><div class="sub">${t('ui.card.fixedMonthly')}</div></div>
     ${fxNote(v) ? `<p class="approx-note">${esc(fxNote(v))}</p>` : ''}`;
   document.getElementById('card-commit')?.addEventListener('click', () => switchView('commit'));
   renderMoneyLines(v);
@@ -1623,25 +1634,25 @@ function rangeWords(v) {
   const months = v.months_available || [];
   const r = v.range || (months.length ? { from: months[0], to: months[months.length - 1] } : null);
   if (!r) return '';
-  const say = (m) => `${monthName(m)} ${m.slice(0, 4)}`;
+  const say = (m) => `${monthYear(m)}`;
   return r.from === r.to ? say(r.from) : `${say(r.from)} – ${say(r.to)}`;
 }
 
 // Trends leads with the numbers its charts are made of. The shape of a trend is
 // the point of the tab, but the figures behind it were only on Report.
 function renderTrendCards(v) {
-  const t = v.totals || {};
-  const net = t.net || 0;
+  const tot = v.totals || {};
+  const net = tot.net || 0;
   const period = rangeWords(v);
   if (MULTI_CUR) {
     const card = (k, key, subText) => `<div class="card"><div class="k">${k}</div><div class="v">${esc(combinedLine(v, key))}</div>${v.combined ? `<div class="cur-split">${esc(perCurrency(v, (b) => b.totals?.[key]))}</div>` : ''}<div class="sub">${esc(subText)}</div></div>`;
-    document.getElementById('trend-cards').innerHTML = `${card('Spend', 'spend', period)}${card('Income', 'income', `${t.months || 0} mo`)}${card('Net', 'net', fxNote(v))}`;
+    document.getElementById('trend-cards').innerHTML = `${card(t('ui.card.spend'), 'spend', period)}${card(t('ui.card.income'), 'income', t('ui.nMo', { n: tot.months || 0 }))}${card(t('ui.card.net'), 'net', fxNote(v))}`;
     return;
   }
   document.getElementById('trend-cards').innerHTML = `
-    <div class="card"><div class="k">Spend</div><div class="v">${money(t.spend)}</div><div class="sub">${esc(period)}</div>${oneOffSub(v)}</div>
-    <div class="card"><div class="k">Income</div><div class="v">${money(t.income)}</div><div class="sub">${t.months || 0} mo</div></div>
-    <div class="card ${net >= 0 ? 'pos' : 'neg'}"><div class="k">Net</div><div class="v">${money(net)}</div><div class="sub">${net >= 0 ? 'kept' : 'short'}</div></div>
+    <div class="card"><div class="k">${t('ui.card.spend')}</div><div class="v">${money(tot.spend)}</div><div class="sub">${esc(period)}</div>${oneOffSub(v)}</div>
+    <div class="card"><div class="k">${t('ui.card.income')}</div><div class="v">${money(tot.income)}</div><div class="sub">${t('ui.nMo', { n: tot.months || 0 })}</div></div>
+    <div class="card ${net >= 0 ? 'pos' : 'neg'}"><div class="k">${t('ui.card.net')}</div><div class="v">${money(net)}</div><div class="sub">${net >= 0 ? t('ui.card.kept') : t('ui.card.short')}</div></div>
     ${savedCard(v, period)}`;
 }
 
@@ -1651,10 +1662,10 @@ function renderTrend(v) {
   // Several currencies: the chart draws the combined ≈ figures when there is
   // a rate for every currency, else the lead currency's own — and says which.
   const byM = (MULTI_CUR && v.combined ? v.combined.by_month : v.by_month) || {};
-  const caption = MULTI_CUR ? `<p class="approx-note">${v.combined ? `≈ ${esc(v.combined.currency)}, all accounts converted at the ${esc(v.combined.fx_date || '')} rate` : `${esc(v.currency)} accounts only — ${esc(fxNote(v))}`}</p>` : '';
+  const caption = MULTI_CUR ? `<p class="approx-note">${v.combined ? esc(t('ui.trend.combined', { cur: v.combined.currency, date: v.combined.fx_date || '' })) : esc(t('ui.trend.only', { cur: v.currency, note: fxNote(v) }))}</p>` : '';
   const r = v.range || (v.months_available?.length
     ? { from: v.months_available[0], to: v.months_available[v.months_available.length - 1] } : null);
-  if (!r) { el.innerHTML = '<p class="hint">No dated transactions yet.</p>'; return; }
+  if (!r) { el.innerHTML = `<p class="hint">${t('ui.trend.none')}</p>`; return; }
   const months = monthSpan(r.from, r.to);
   const data = months.map((m) => ({ m, spend: 0, income: 0, net: 0, ...(byM[m] || {}) }));
   const W = 660, H = 230, L = 46, R = 10, T = 12, B = 28;
@@ -1673,7 +1684,7 @@ function renderTrend(v) {
 
   const bars = data.map((d, i) => {
     const cx = L + groupW * (i + 0.5);
-    const tip = `${monthName(d.m)} ${d.m.slice(0, 4)} — spend ${moneyExact(d.spend)}, income ${moneyExact(d.income)}, net ${moneyExact(d.net)}`;
+    const tip = t('ui.trend.tip', { month: monthYear(d.m), spend: moneyExact(d.spend), income: moneyExact(d.income), net: moneyExact(d.net) });
     const yearTag = (i === 0 || d.m.endsWith('-01')) ? `<text x="${cx}" y="${H - 2}" class="ax yr" text-anchor="middle">${d.m.slice(0, 4)}</text>` : '';
     return `<g class="mgroup" data-month="${d.m}">
       <title>${esc(tip)}</title>
@@ -1737,34 +1748,34 @@ function renderFacets(v) {
     const bars = months.map((m) => {
       const val = ms[m] || 0;
       const isCur = m === curMonth;
-      return `<span class="fbar${isCur ? ` cur ${stCls}${partial ? ' mtd' : ''}` : ''}" style="height:${Math.max(2, Math.round((100 * val) / max))}%" data-tip="${esc(`${monthName(m)} ${m.slice(0, 4)} — ${moneyExact(val)}${isCur && partial ? ' (month to date)' : ''}`)}"></span>`;
+      return `<span class="fbar${isCur ? ` cur ${stCls}${partial ? ' mtd' : ''}` : ''}" style="height:${Math.max(2, Math.round((100 * val) / max))}%" data-tip="${esc(`${monthYear(m)} — ${moneyExact(val)}${isCur && partial ? ` (${t('ui.card.mtd')})` : ''}`)}"></span>`;
     }).join('');
-    const badge = !st ? '<span class="bdg">no budget</span>'
-      : st.state === 'over' ? `<span class="bdg neg">${money(st.mtd)} over ${money(st.budget)}</span>`
-        : fb.projection_ready ? `<span class="bdg${st.state === 'pacing' ? ' warn' : ''}">~${money(st.projected)} vs ${money(st.budget)}</span>`
-          : `<span class="bdg">${money(st.mtd)} of ${money(st.budget)}</span>`;
+    const badge = !st ? `<span class="bdg">${t('ui.facet.noBudget')}</span>`
+      : st.state === 'over' ? `<span class="bdg neg">${t('ui.facet.over', { mtd: money(st.mtd), budget: money(st.budget) })}</span>`
+        : fb.projection_ready ? `<span class="bdg${st.state === 'pacing' ? ' warn' : ''}">${t('ui.facet.vs', { proj: money(st.projected), budget: money(st.budget) })}</span>`
+          : `<span class="bdg">${t('ui.facet.of', { mtd: money(st.mtd), budget: money(st.budget) })}</span>`;
     const capLine = cap ? `<span class="fcap" style="bottom:${Math.min(96, Math.round((100 * cap) / max))}%"><i>${money(cap)}</i></span>` : '';
     return `<div class="facet">
-      <div class="f-h"><b>${esc(cat)}</b>${badge}</div>
+      <div class="f-h"><b>${esc(catLabel(cat))}</b>${badge}</div>
       <div class="fplot">${capLine}${bars}</div>
-      <div class="fmonths">${months.map((m) => `<span>${monthName(m).slice(0, 1)}</span>`).join('')}</div>
+      <div class="fmonths">${months.map((m) => `<span>${monthNarrow(m)}</span>`).join('')}</div>
     </div>`;
   }).join('');
 
   const nOver = cats.filter((c) => bState[c]?.state === 'over').length;
   const nPace = cats.filter((c) => bState[c]?.state === 'pacing').length;
   setSecSum('bycat', [
-    nOver ? `${nOver} over budget` : '', nPace ? `${nPace} pacing over` : '',
-    clipped ? 'last 12 months' : '',
-  ].filter(Boolean).join(' · ') || `${cats.length} categories`, !!nOver);
+    nOver ? t('ui.facet.nOver', { n: nOver }) : '', nPace ? t('ui.bg.nPacing', { n: nPace }) : '',
+    clipped ? t('ui.facet.last12') : '',
+  ].filter(Boolean).join(' · ') || t('ui.facet.nCats', { n: cats.length }), !!nOver);
 }
 
 function renderCategories(v) {
   const bars = (cats, code) => {
     const maxCat = cats.length ? cats[0].spend : 1;
     return cats.map((c) => `
-    <div class="bar-row" data-cat="${esc(c.category)}" title="Show these transactions">
-      <span class="bar-label">${esc(c.category)}</span>
+    <div class="bar-row" data-cat="${esc(c.category)}" title="${t('ui.cats.showTitle')}">
+      <span class="bar-label">${esc(catLabel(c.category))}</span>
       <span class="bar-track"><span class="bar-fill${c.category === 'fees' ? ' fee' : ''}" style="width:${Math.round((100 * c.spend) / maxCat)}%"></span></span>
       <span class="bar-val">${money(c.spend, code)} <em>${c.pct}%</em></span>
     </div>`).join('');
@@ -1776,7 +1787,7 @@ function renderCategories(v) {
     : [[null, v.by_category || []]].filter(([, cats]) => cats.length);
   document.getElementById('cats').innerHTML = groups.length
     ? groups.map(([code, cats]) => `${code ? `<p class="hint bills-head">${esc(code)}</p>` : ''}${bars(cats, code)}`).join('')
-    : '<p class="hint">No spending in this range.</p>';
+    : `<p class="hint">${t('ui.cats.none')}</p>`;
   document.querySelectorAll('#cats .bar-row').forEach((el) => el.addEventListener('click', () => {
     TXN_FILTERS = { month: '', account: '', category: el.dataset.cat, q: '' };
     switchView('txn'); // drill into the records behind this bar
@@ -1790,16 +1801,16 @@ function renderSubs(v) {
   document.getElementById('subs').innerHTML = subs.length ? subs.map((s) => `
     <div class="sub-row${s.stopped ? ' stopped' : ''}">
       <span class="sub-name">${esc(s.merchant)}</span>
-      <span class="sub-amt">${moneyExact(s.monthly, s.currency)}/mo</span>
-      <span class="sub-flags">${s.increased ? '<span class="flag up">↑ price up</span>' : ''}${s.stopped ? '<span class="flag stopped">⏸ stopped</span>' : ''}</span>
+      <span class="sub-amt">${moneyExact(s.monthly, s.currency)}${t('ui.perMo')}</span>
+      <span class="sub-flags">${s.increased ? `<span class="flag up">${t('ui.flag.up')}</span>` : ''}${s.stopped ? `<span class="flag stopped">${t('ui.flag.stopped')}</span>` : ''}</span>
     </div>`).join('')
-    : '<p class="hint">No recurring charges detected yet — import a few months for better detection.</p>';
+    : `<p class="hint">${t('ui.subs.none')}</p>`;
   document.getElementById('bills').innerHTML = bills.length
-    ? `<p class="hint bills-head">Recurring bills (not counted above)</p>` + bills.map((s) => `
-      <div class="sub-row bill"><span class="sub-name">${esc(s.merchant)}</span><span class="sub-amt">${moneyExact(s.monthly, s.currency)}/mo</span></div>`).join('')
+    ? `<p class="hint bills-head">${t('ui.subs.billsHead')}</p>` + bills.map((s) => `
+      <div class="sub-row bill"><span class="sub-name">${esc(s.merchant)}</span><span class="sub-amt">${moneyExact(s.monthly, s.currency)}${t('ui.perMo')}</span></div>`).join('')
     : '';
   const nudge = active.length
-    ? `<p class="hint nudge">You're paying <b>${MULTI_CUR ? esc(perCurrency(v, (b) => b.subscription_monthly_total, moneyExact)) : moneyExact(v.subscription_monthly_total)}/mo</b> across ${active.length} active subscription${active.length === 1 ? '' : 's'} — cancel any you don't use.</p>` : '';
+    ? `<p class="hint nudge">${t('ui.subs.nudge', { amt: `<b>${MULTI_CUR ? esc(perCurrency(v, (b) => b.subscription_monthly_total, moneyExact)) : moneyExact(v.subscription_monthly_total)}${t('ui.perMo')}</b>`, n: active.length })}</p>` : '';
   document.getElementById('bills').insertAdjacentHTML('beforeend', nudge);
 }
 
@@ -1816,11 +1827,11 @@ function wireTooltip() {
   tip.hidden = true;
   document.body.appendChild(tip);
   document.addEventListener('mouseover', (e) => {
-    const t = e.target.closest ? e.target.closest('[data-tip]') : null;
-    if (!t) { tip.hidden = true; return; }
-    tip.innerHTML = esc(t.dataset.tip).replace(/\n/g, '<br>');
+    const el = e.target.closest ? e.target.closest('[data-tip]') : null;
+    if (!el) { tip.hidden = true; return; }
+    tip.innerHTML = esc(el.dataset.tip).replace(/\n/g, '<br>');
     tip.hidden = false;
-    const r = t.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
     tip.style.left = `${Math.min(Math.max(8, r.left + window.scrollX), window.scrollX + window.innerWidth - 280)}px`;
     tip.style.top = `${r.bottom + window.scrollY + 6}px`;
   });
@@ -1838,24 +1849,21 @@ function renderPayments(v) {
     const badge = st.badge(p), cls = st.cls;
     return `<div class="pay-row ${cls}">
       <span class="pay-name">${esc(p.label)}</span>
-      <span class="pay-last">✓ paid ${p.last_paid.date} (${moneyExact(p.last_paid.amount, p.currency)})</span>
+      <span class="pay-last">${t('ui.pay.last', { date: p.last_paid.date, amt: moneyExact(p.last_paid.amount, p.currency) })}</span>
       <span class="pay-badge">${esc(badge)}</span>
     </div>`;
   }).join('');
   wrap.innerHTML = `<div class="pays">${rows}</div>`;
   const missed = sched.find((p) => p.missed_in_data);
-  setSecSum('payments', missed ? `⚠ ${missed.label}: payment not seen` : `${sched.length} card${sched.length === 1 ? '' : 's'} on pattern`, !!missed);
+  setSecSum('payments', missed ? t('ui.pay.missed', { card: missed.label }) : t('ui.pay.onPattern', { n: sched.length }), !!missed);
 }
 
 // ── Commitments view: detected obligations + user-entered terms + loan math ──
 // Inputs persist to data/commitments.json (same path as category corrections);
 // saveReport folds them into the agent's report. All math is page-side.
-const KIND_OPTIONS = [
-  ['loan:home', 'Home loan'], ['loan:auto', 'Car loan'], ['loan:student', 'Student loan'], ['loan', 'Other loan'],
-  ['insurance:auto', 'Auto insurance'], ['insurance:home', 'Home insurance'], ['insurance:life', 'Life insurance'], ['insurance', 'Other insurance'],
-  ['bill', 'Recurring bill'], ['sub', 'Subscription'],
-];
-const GROUP_META = [['debt', 'Debt'], ['insurance', 'Insurance'], ['bills', 'Recurring bills'], ['subs', 'Subscriptions']];
+// Labels are looked up at render time (ui.kind.* / ui.group.*).
+const KIND_OPTIONS = ['loan:home', 'loan:auto', 'loan:student', 'loan', 'insurance:auto', 'insurance:home', 'insurance:life', 'insurance', 'bill', 'sub'];
+const GROUP_META = ['debt', 'insurance', 'bills', 'subs'];
 const hasTerms = (kind) => kind.startsWith('loan') || kind.startsWith('insurance');
 const COMMIT_OPEN = new Map(); // key -> bool; rows with saved terms default open
 const isOpen = (it) => (COMMIT_OPEN.has(it.key) ? COMMIT_OPEN.get(it.key) : !!COMMITMENTS[it.key]);
@@ -1881,18 +1889,18 @@ function exactMonthsLeft(balance, ratePct, payment) {
 // The derived lines under a commitment, one small builder per concern —
 // each returns its lines (or none) for the item.
 function payoffLines(it) {
-  if (it.payment_below_interest) return [`<span class="cm-bad">⚠ ${moneyExact(it.monthly)}/mo doesn't cover the interest on ${money(it.balance)} at ${it.rate_pct}% — the balance grows.</span>`];
-  if (it.months_left != null) return [`Paid off ~<b>${addMonthsIso(it.last_date, it.months_left)}</b> (${it.months_left} payments, ${(it.months_left / 12).toFixed(1)} yr) · remaining interest <b>${money(it.interest_remaining)}</b>`];
-  if (it.kind.startsWith('loan')) return ['<span class="hint">Add the balance (and rate) to see payoff date, remaining interest, and prepayment savings.</span>'];
+  if (it.payment_below_interest) return [`<span class="cm-bad">${t('ui.cm.belowInterest', { pay: moneyExact(it.monthly), bal: money(it.balance), rate: it.rate_pct })}</span>`];
+  if (it.months_left != null) return [t('ui.cm.payoff', { date: `<b>${addMonthsIso(it.last_date, it.months_left)}</b>`, n: it.months_left, yr: (it.months_left / 12).toFixed(1), interest: `<b>${money(it.interest_remaining)}</b>` })];
+  if (it.kind.startsWith('loan')) return [`<span class="hint">${t('ui.cm.addBalance')}</span>`];
   return [];
 }
 function renewalLines(it) {
   if (!it.renewal_date) {
-    return it.kind.startsWith('insurance') ? ['<span class="hint">Add the renewal date to get a shop-around reminder before it auto-renews.</span>'] : [];
+    return it.kind.startsWith('insurance') ? [`<span class="hint">${t('ui.cm.addRenewal')}</span>`] : [];
   }
   const days = Math.round((new Date(it.renewal_date) - new Date()) / 86400000);
-  if (days < 0) return [`Renewal date <b>${esc(it.renewal_date)}</b> has passed — update it`];
-  return [`Renews <b>${esc(it.renewal_date)}</b> — in ${days} day${days === 1 ? '' : 's'}${days <= 90 ? ' · <span class="cm-warn">time to shop around — ask the assistant for a draft</span>' : ''}`];
+  if (days < 0) return [t('ui.cm.renewPassed', { date: `<b>${esc(it.renewal_date)}</b>` })];
+  return [`${t('ui.cm.renews', { date: `<b>${esc(it.renewal_date)}</b>`, n: days })}${days <= 90 ? ` · <span class="cm-warn">${t('ui.cm.shop')}</span>` : ''}`];
 }
 function homeRateLines(it) {
   if (it.kind !== 'loan:home' || it.rate_pct == null || !(it.balance > 0)) return [];
@@ -1901,26 +1909,26 @@ function homeRateLines(it) {
   if (n != null) {
     const i = (it.rate_pct + 1) / 100 / 12;
     const p1 = (it.balance * i) / (1 - Math.pow(1 + i, -n));
-    if (p1 > it.monthly) lines.push(`If your rate renews +1%: ~<b>${moneyExact(p1)}</b>/mo (+${moneyExact(p1 - it.monthly)})`);
+    if (p1 > it.monthly) lines.push(t('ui.cm.plus1', { pay: `<b>${moneyExact(p1)}</b>`, diff: moneyExact(p1 - it.monthly) }));
   }
   if (MARKET) {
     const above = it.rate_pct > MARKET.rate;
-    lines.push(`Market: <b>${MARKET.rate}%</b> ${esc(MARKET.label)} (${esc(MARKET.source)}, ${esc(MARKET.date)}) — your ${it.rate_pct}% is ${above ? '<span class="cm-warn">above the posted average — strong case to rate-shop</span>' : 'below the posted average (posted runs higher than negotiated)'}`);
+    lines.push(t('ui.cm.market', { rate: `<b>${MARKET.rate}%</b>`, label: esc(has(`ui.cm.mkt.${MARKET.currency}`) ? t(`ui.cm.mkt.${MARKET.currency}`) : MARKET.label), src: esc(MARKET.source), date: esc(MARKET.date), yours: it.rate_pct, verdict: above ? `<span class="cm-warn">${t('ui.cm.above')}</span>` : t('ui.cm.below') }));
   }
   return lines;
 }
-const creepLines = (it) => (it.increased ? [`<span class="cm-warn">↑ Price creep: ${moneyExact(it.prior_amount)} → ${moneyExact(it.last_amount)} (+${moneyExact(it.increase_amount)}/mo)</span>`] : []);
+const creepLines = (it) => (it.increased ? [`<span class="cm-warn">${t('ui.cm.creep', { from: moneyExact(it.prior_amount), to: moneyExact(it.last_amount), up: moneyExact(it.increase_amount) })}</span>`] : []);
 const DERIVED_LINES = [payoffLines, renewalLines, homeRateLines, creepLines];
 const commitDerived = (it) => DERIVED_LINES.flatMap((f) => f(it));
 
-const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTH_NAMES = () => [...Array(12)].map((_, i) => new Date(Date.UTC(2023, i, 15)).toLocaleDateString(intlLocale(), { month: 'short', timeZone: 'UTC' }));
 
 function termFields(it) {
   const u = COMMITMENTS[it.key] || {};
   const f = [];
   if (it.kind.startsWith('loan')) {
-    f.push(`<label>Balance <input type="text" inputmode="numeric" class="cm-in" data-key="${esc(it.key)}" data-f="balance" value="${u.balance != null ? esc(money(u.balance)) : ''}" placeholder="e.g. ${esc(CURRENCY)}320,000"></label>`);
-    f.push(`<label>Rate % <input type="number" class="cm-in" data-key="${esc(it.key)}" data-f="rate_pct" step="0.01" min="0" max="30" value="${u.rate_pct ?? ''}" placeholder="e.g. 4.79"></label>`);
+    f.push(`<label>${t('ui.cm.balance')} <input type="text" inputmode="numeric" class="cm-in" data-key="${esc(it.key)}" data-f="balance" value="${u.balance != null ? esc(money(u.balance)) : ''}" placeholder="${t('ui.cm.eg', { v: `${esc(CURRENCY)}320,000` })}"></label>`);
+    f.push(`<label>${t('ui.cm.rate')} <input type="number" class="cm-in" data-key="${esc(it.key)}" data-f="rate_pct" step="0.01" min="0" max="30" value="${u.rate_pct ?? ''}" placeholder="${t('ui.cm.eg', { v: '4.79' })}"></label>`);
   }
   if (it.kind.startsWith('insurance') || it.kind === 'loan:home') {
     // Month + year dropdowns — renewal day doesn't matter, and a native date
@@ -1930,9 +1938,9 @@ function termFields(it) {
     const y0 = new Date().getFullYear();
     const years = Array.from({ length: 9 }, (_, k) => String(y0 - 1 + k));
     if (cy && !years.includes(cy)) years.push(cy), years.sort();
-    f.push(`<label>${it.kind === 'loan:home' ? 'Term renewal' : 'Renewal'}
-      <select class="cm-ren" data-key="${esc(it.key)}" data-f="renewal_month"><option value="">month</option>${MONTH_NAMES.map((nm, i) => { const v = String(i + 1).padStart(2, '0'); return `<option value="${v}" ${v === cm ? 'selected' : ''}>${nm}</option>`; }).join('')}</select>
-      <select class="cm-ren" data-key="${esc(it.key)}" data-f="renewal_year"><option value="">year</option>${years.map((y) => `<option ${y === cy ? 'selected' : ''}>${y}</option>`).join('')}</select>
+    f.push(`<label>${it.kind === 'loan:home' ? t('ui.cm.termRenewal') : t('ui.cm.renewal')}
+      <select class="cm-ren" data-key="${esc(it.key)}" data-f="renewal_month"><option value="">${t('ui.cm.month')}</option>${MONTH_NAMES().map((nm, i) => { const v = String(i + 1).padStart(2, '0'); return `<option value="${v}" ${v === cm ? 'selected' : ''}>${nm}</option>`; }).join('')}</select>
+      <select class="cm-ren" data-key="${esc(it.key)}" data-f="renewal_year"><option value="">${t('ui.cm.year')}</option>${years.map((y) => `<option ${y === cy ? 'selected' : ''}>${y}</option>`).join('')}</select>
     </label>`);
   }
   return f.length ? `<div class="cm-fields">${f.join('')}</div>` : '';
@@ -1941,23 +1949,23 @@ function termFields(it) {
 function sliderHtml(it) {
   if (it.months_left == null) return '';
   return `<div class="cm-slider">
-    <label>Extra <b class="cm-extra">${CURRENCY}0</b>/mo</label>
+    <label>${t('ui.cm.extra', { amt: `<b class="cm-extra">${CURRENCY}0</b>` })}</label>
     <input type="range" min="0" max="500" step="25" value="0" data-key="${esc(it.key)}">
-    <span class="cm-slider-out hint">drag to see prepayment savings</span>
+    <span class="cm-slider-out hint">${t('ui.cm.drag')}</span>
   </div>`;
 }
 
 function commitRow(it) {
   const open = isOpen(it) && hasTerms(it.kind);
-  const flags = `${it.increased ? '<span class="flag up">↑ price up</span>' : ''}${!it.active ? '<span class="flag stopped">⏸ stopped</span>' : ''}`;
-  const kindSel = `<select class="cat-sel cm-kind" data-key="${esc(it.key)}" title="Reclassify — your choice is remembered">${KIND_OPTIONS.map(([v, l]) => `<option value="${v}" ${v === it.kind ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
-  const toggle = hasTerms(it.kind) ? `<button class="chip cm-toggle" data-key="${esc(it.key)}">${open ? 'Hide ▴' : 'Terms ▾'}</button>` : '';
+  const flags = `${it.increased ? `<span class="flag up">${t('ui.flag.up')}</span>` : ''}${!it.active ? `<span class="flag stopped">${t('ui.flag.stopped')}</span>` : ''}`;
+  const kindSel = `<select class="cat-sel cm-kind" data-key="${esc(it.key)}" title="${t('ui.cm.reclassify')}">${KIND_OPTIONS.map((v) => `<option value="${v}" ${v === it.kind ? 'selected' : ''}>${t(`ui.kind.${v}`)}</option>`).join('')}</select>`;
+  const toggle = hasTerms(it.kind) ? `<button class="chip cm-toggle" data-key="${esc(it.key)}">${open ? t('ui.cm.hide') : t('ui.cm.terms')}</button>` : '';
   const derived = open ? commitDerived(it) : [];
   return `
   <div class="cm-row${it.active ? '' : ' stopped'}">
     <div class="cm-main">
       <span class="cm-name">${esc(it.merchant)}</span>
-      <span class="cm-amt">${moneyExact(it.monthly, it.currency)}/mo</span>
+      <span class="cm-amt">${moneyExact(it.monthly, it.currency)}${t('ui.perMo')}</span>
       <span class="cm-flags">${flags}</span>
       <span class="spacer"></span>
       ${kindSel}${toggle}
@@ -1974,7 +1982,7 @@ function renderCommitView() {
   const head = document.getElementById('commit-head');
   const groupsEl = document.getElementById('commit-groups');
   if (!LEDGER.length) {
-    head.innerHTML = '<p class="hint">Import a statement first — commitments are detected from your recurring charges.</p>';
+    head.innerHTML = `<p class="hint">${t('ui.cm.empty')}</p>`;
     groupsEl.innerHTML = '';
     return;
   }
@@ -1982,11 +1990,11 @@ function renderCommitView() {
   const items = c.items || [];
   head.innerHTML = `
     <div class="cm-summary">
-      <span class="cm-total"><b>${MULTI_CUR && FULL_VIEW ? esc(perCurrency(FULL_VIEW, (b) => b.commitments?.monthly_total, moneyExact)) : moneyExact(c.monthly_total)}</b>/mo fixed</span>
-      ${c.pct_of_income != null ? `<span class="cm-pct">${Math.round(c.pct_of_income)}% of income</span>` : ''}
-      ${GROUP_META.filter(([g]) => c.split && c.split[g] > 0).map(([g, label]) => `<span class="chip cm-chip">${label} ${money(c.split[g], c.currency)}/mo</span>`).join('')}
+      <span class="cm-total">${t('ui.cm.total', { amt: `<b>${MULTI_CUR && FULL_VIEW ? esc(perCurrency(FULL_VIEW, (b) => b.commitments?.monthly_total, moneyExact)) : moneyExact(c.monthly_total)}</b>` })}</span>
+      ${c.pct_of_income != null ? `<span class="cm-pct">${t('ui.card.pctIncome', { pct: Math.round(c.pct_of_income) })}</span>` : ''}
+      ${GROUP_META.filter((g) => c.split && c.split[g] > 0).map((g) => `<span class="chip cm-chip">${t(`ui.group.${g}`)} ${money(c.split[g], c.currency)}${t('ui.perMo')}</span>`).join('')}
     </div>
-    <p class="hint">Fixed monthly obligations from your statements. Add balance, rate or renewal for payoff math, computed on this Mac.</p>`;
+    <p class="hint">${t('ui.cm.hint')}</p>`;
   // Loans with full terms power the cross-loan strategy panel (≥2 — a single
   // loan already has its own prepayment slider on the row).
   // One currency's loans only — a shared extra payment can't pool two currencies.
@@ -1994,13 +2002,13 @@ function renderCommitView() {
     && (!it.currency || it.currency === c.currency))
     .map((it) => ({ key: it.key, merchant: it.merchant, balance: it.balance, rate_pct: it.rate_pct || 0, payment: it.monthly }));
   groupsEl.innerHTML = items.length
-    ? GROUP_META.map(([g, label]) => {
+    ? GROUP_META.map((g) => {
       const rows = items.filter((it) => it.group === g);
       if (!rows.length) return '';
       const strategy = g === 'debt' && loans.length >= 2 ? debtStrategyHtml() : '';
-      return `<h2>${label}</h2>` + rows.map(commitRow).join('') + strategy;
+      return `<h2>${t(`ui.group.${g}`)}</h2>` + rows.map(commitRow).join('') + strategy;
     }).join('')
-    : '<p class="hint">No recurring obligations detected yet — import a few months of statements so the monthly cadence shows.</p>';
+    : `<p class="hint">${t('ui.cm.none')}</p>`;
   wireCommitEvents(Object.fromEntries(items.map((it) => [it.key, it])));
   if (loans.length >= 2) {
     const range = document.getElementById('ds-range');
@@ -2014,12 +2022,12 @@ function renderCommitView() {
     document.getElementById('ds-explain')?.addEventListener('click', () => {
       const d = DS_LAST;
       const msg = !d
-        ? 'Explain my debt strategy.'
+        ? t('ui.ds.ask')
         : (() => {
-          const ord = d.order.map((l) => `${l.merchant} (${l.rate_pct}%)`).join(', then ');
+          const ord = d.order.map((l) => `${l.merchant} (${l.rate_pct}%)`).join(t('ui.ds.then'));
           return d.extra > 0
-            ? `Explain my debt strategy with an extra ${CURRENCY}${d.extra}/mo: the page computed debt-free in ${(d.plan.months / 12).toFixed(1)} years with total interest ${money(d.plan.total_interest)} — saving ${money(d.saved)} vs each loan on its own — paying ${ord}. Why does this order win?`
-            : `Explain my debt strategy: the page computed I'd save ${money(d.saved)} and be debt-free ${d.sooner} months sooner just by rolling freed payments forward, paying ${ord}. Walk me through why.`;
+            ? t('ui.ds.askExtra', { extra: `${CURRENCY}${d.extra}`, yr: (d.plan.months / 12).toFixed(1), interest: money(d.plan.total_interest), saved: money(d.saved), ord })
+            : t('ui.ds.askRoll', { saved: money(d.saved), n: d.sooner, ord });
         })();
       try { chat?.send?.(msg); } catch { /* chat not mounted */ }
     });
@@ -2032,13 +2040,13 @@ function renderCommitView() {
 function anomalyText(a) {
   switch (a.type) {
     case 'double_charge':
-      return `<b>${esc(a.merchant)}</b> charged ${moneyExact(a.amount, a.currency)} twice within days (${esc(a.prior_date)} and ${esc(a.date)}) — banks do make this error; worth a glance.`;
+      return t('ui.an.double', { m: `<b>${esc(a.merchant)}</b>`, amt: moneyExact(a.amount, a.currency), d1: esc(a.prior_date), d2: esc(a.date) });
     case 'new_recurring':
-      return `New recurring charge: <b>${esc(a.merchant)}</b> ${moneyExact(a.amount, a.currency)}/mo since ${esc(a.date)} — intentional?`;
+      return t('ui.an.newRec', { m: `<b>${esc(a.merchant)}</b>`, amt: moneyExact(a.amount, a.currency), date: esc(a.date) });
     case 'trial_charge':
-      return `First charge from <b>${esc(a.merchant)}</b> (${moneyExact(a.amount, a.currency)} on ${esc(a.date)}) — a free trial converting?`;
+      return t('ui.an.trial', { m: `<b>${esc(a.merchant)}</b>`, amt: moneyExact(a.amount, a.currency), date: esc(a.date) });
     case 'bill_spike':
-      return `<b>${esc(a.merchant)}</b> hit ${moneyExact(a.amount, a.currency)} on ${esc(a.date)} — usually ~${moneyExact(a.usual, a.currency)}.`;
+      return t('ui.an.spike', { m: `<b>${esc(a.merchant)}</b>`, amt: moneyExact(a.amount, a.currency), date: esc(a.date), usual: moneyExact(a.usual, a.currency) });
     default:
       return esc(a.merchant || '');
   }
@@ -2050,12 +2058,12 @@ function renderAnomalies(list) {
   const items = (list || []).filter((a) => !ANOM_DISMISSED.has(a.id));
   if (!items.length) { el.innerHTML = ''; return; }
   el.innerHTML = `
-    <h2>⚠ Worth checking <span class="hint inline">found by local checks — dismiss what's fine, or ask for a dispute draft</span></h2>
+    <h2>${t('ui.an.title')} <span class="hint inline">${t('ui.an.hint')}</span></h2>
     <div class="anoms">${items.map((a) => `
       <div class="anom-row ${esc(a.type)}">
         <span class="anom-ic">${ANOM_ICON[a.type] || '•'}</span>
         <span class="anom-text">${anomalyText(a)}</span>
-        <button class="anom-x" data-id="${esc(a.id)}" title="Dismiss — this one's fine">×</button>
+        <button class="anom-x" data-id="${esc(a.id)}" title="${t('ui.an.dismiss')}">×</button>
       </div>`).join('')}</div>`;
   el.querySelectorAll('.anom-x').forEach((b) => b.addEventListener('click', async () => {
     ANOM_DISMISSED.add(b.dataset.id);
@@ -2070,11 +2078,11 @@ function renderAnomalies(list) {
 // ── The first view: Brief · Focus · Attention (compose.js) ──
 // The same rules the phone's Overview runs, over the same full-history
 // report. The page shows facts; why it is in this order is said in chat.
-const FOCUS_LABEL = { budgets: 'Budgets', subscriptions: 'Subscriptions', trends: 'Trends', commitments: 'Commitments' };
+const FOCUS_LABEL = (id) => t(`ui.focus.${id}`);
 const ATTN_TEXT = {
   anomaly: (i) => anomalyText(i),
-  budget_over: (i) => `<b>${esc(i.category)}</b> ${moneyExact(i.mtd)} of its ${moneyExact(i.budget)} budget`,
-  missed_payment: (i) => `<b>${esc(i.card)}</b>: no payment seen around ${esc(i.expected || '')}${i.last_paid != null ? ` — last ${moneyExact(i.last_paid)}` : ''}`,
+  budget_over: (i) => t('ui.attn.budget', { cat: `<b>${esc(catLabel(i.category))}</b>`, mtd: moneyExact(i.mtd), budget: moneyExact(i.budget) }),
+  missed_payment: (i) => `${t('ui.attn.missed', { card: `<b>${esc(i.card)}</b>`, date: esc(i.expected || '') })}${i.last_paid != null ? t('ui.attn.last', { amt: moneyExact(i.last_paid) }) : ''}`,
   price_hike: (i) => `<b>${esc(i.merchant)}</b> ${moneyExact(i.from)} → ${moneyExact(i.to)}`,
 };
 const ATTN_ICON = { anomaly: '⚠', budget_over: '●', missed_payment: '⚠', price_hike: '↑' };
@@ -2083,7 +2091,7 @@ const ATTN_CLS = { anomaly: 'double_charge', budget_over: 'bill_spike', missed_p
 const focusSummary = {
   subscriptions: (r) => {
     const subs = (r.subscriptions || []).filter((s) => s.active && !s.essential).sort((a, b) => b.monthly - a.monthly);
-    return `<p><b>${moneyExact(r.subscription_monthly_total)}</b>/mo across ${subs.length} · ${subs.slice(0, 3).map((s) => `${esc(cleanMerchant(s.merchant))} ${moneyExact(s.monthly)}`).join(' · ')}</p>`;
+    return `<p>${t('ui.fs.subs', { amt: `<b>${moneyExact(r.subscription_monthly_total)}</b>`, n: subs.length })} · ${subs.slice(0, 3).map((s) => `${esc(cleanMerchant(s.merchant))} ${moneyExact(s.monthly)}`).join(' · ')}</p>`;
   },
   trends: (r) => {
     const months = Object.keys(r.by_month || {}).sort().slice(-3);
@@ -2091,7 +2099,7 @@ const focusSummary = {
   },
   commitments: (r) => {
     const c = r.commitments || {};
-    return `<p><b>${moneyExact(c.monthly_total)}</b>/mo fixed${c.pct_of_income != null ? ` · ${c.pct_of_income}% of income` : ''}</p>`;
+    return `<p>${t('ui.cm.total', { amt: `<b>${moneyExact(c.monthly_total)}</b>` })}${c.pct_of_income != null ? ` · ${t('ui.card.pctIncome', { pct: c.pct_of_income })}` : ''}</p>`;
   },
 };
 const FOCUS_TAB = { subscriptions: 'trends', trends: 'trends', commitments: 'commit' };
@@ -2110,13 +2118,13 @@ function renderFirstView() {
   document.getElementById('budgets-home').appendChild(budgets);
   const el = document.getElementById('focus');
   const f = fv.focus;
-  const lead = `<select id="focus-pin" title="Lead with — your pick beats Ling's">
-      <option value="">Lead: auto</option>
-      ${FOCUS_IDS.map((id) => `<option value="${id}"${layout.pin === id ? ' selected' : ''}>${FOCUS_LABEL[id]}</option>`).join('')}
-    </select>${layout.hides.length ? ` <a href="#" id="focus-unhide" class="hint">${layout.hides.length} hidden · show</a>` : ''}`;
+  const lead = `<select id="focus-pin" title="${t('ui.focus.pinTitle')}">
+      <option value="">${t('ui.focus.auto')}</option>
+      ${FOCUS_IDS.map((id) => `<option value="${id}"${layout.pin === id ? ' selected' : ''}>${FOCUS_LABEL(id)}</option>`).join('')}
+    </select>${layout.hides.length ? ` <a href="#" id="focus-unhide" class="hint">${t('ui.focus.hidden', { n: layout.hides.length })}</a>` : ''}`;
   el.innerHTML = f
-    ? `<h2 class="focus-h">${FOCUS_LABEL[f.id]} <span class="spacer"></span>${lead}</h2><div class="focus-body">${
-      focusSummary[f.id] ? `${focusSummary[f.id](full)}<button class="chip" data-tab="${FOCUS_TAB[f.id]}">Open ${FOCUS_TAB[f.id] === 'commit' ? 'Commitments' : 'Trends'}</button>` : ''}</div>`
+    ? `<h2 class="focus-h">${FOCUS_LABEL(f.id)} <span class="spacer"></span>${lead}</h2><div class="focus-body">${
+      focusSummary[f.id] ? `${focusSummary[f.id](full)}<button class="chip" data-tab="${FOCUS_TAB[f.id]}">${t('ui.focus.open', { tab: t(FOCUS_TAB[f.id] === 'commit' ? 'ui.tab.commit' : 'ui.tab.trends') })}</button>` : ''}</div>`
     : `<h2 class="focus-h"><span class="spacer"></span>${lead}</h2>`;
   if (f && f.id === 'budgets') el.querySelector('.focus-body').appendChild(budgets);
   el.querySelector('[data-tab]')?.addEventListener('click', (e) => switchView(e.target.dataset.tab));
@@ -2134,12 +2142,12 @@ function renderFirstView() {
 function renderAttention(fv) {
   const el = document.getElementById('attention');
   if (!fv.attention.length) { el.innerHTML = ''; return; }
-  el.innerHTML = `<h2>Needs you${fv.more ? ` <a href="#" class="hint inline" data-tab="trends">${fv.more} more on Trends</a>` : ''}</h2>
+  el.innerHTML = `<h2>${t('ui.attn.title')}${fv.more ? ` <a href="#" class="hint inline" data-tab="trends">${t('ui.attn.more', { n: fv.more })}</a>` : ''}</h2>
     <div class="anoms">${fv.attention.map((i) => `
       <div class="anom-row ${ATTN_CLS[i.kind]}">
         <span class="anom-ic">${ATTN_ICON[i.kind]}</span>
         <span class="anom-text">${ATTN_TEXT[i.kind](i)}</span>
-        <button class="anom-x" data-id="${esc(i.id)}" title="Hide from the first view">×</button>
+        <button class="anom-x" data-id="${esc(i.id)}" title="${t('ui.attn.hide')}">×</button>
       </div>`).join('')}</div>`;
   el.querySelector('[data-tab]')?.addEventListener('click', (e) => { e.preventDefault(); switchView('trends'); });
   el.querySelectorAll('.anom-x').forEach((b) => b.addEventListener('click', async () => {
@@ -2155,14 +2163,14 @@ function debtStrategyHtml() {
   return `
   <div class="cm-row cm-strategy">
     <div class="cm-main">
-      <span class="cm-name">⚖ Debt strategy</span>
-      <span class="hint inline">all loans together — freed payments roll into the next loan</span>
+      <span class="cm-name">${t('ui.ds.title')}</span>
+      <span class="hint inline">${t('ui.ds.hint')}</span>
       <span class="spacer"></span>
-      <button class="chip" id="ds-explain" title="Ask the assistant to walk through this plan">✦ Explain</button>
+      <button class="chip" id="ds-explain" title="${t('ui.ds.explainTitle')}">${t('ui.ds.explain')}</button>
     </div>
     <div class="cm-terms">
       <div class="cm-slider">
-        <label>Extra <b id="ds-extra">${CURRENCY}0</b>/mo across all debt</label>
+        <label>${t('ui.ds.extra', { amt: `<b id="ds-extra">${CURRENCY}0</b>` })}</label>
         <input type="range" id="ds-range" min="0" max="1000" step="25" value="0">
       </div>
       <div class="cm-derived" id="ds-out"></div>
@@ -2182,7 +2190,7 @@ function renderDebtStrategy(loans, extra) {
   const plan = debtPlan(loans, extra, 'avalanche');
   if (!plan || plan.diverges) {
     DS_LAST = null;
-    out.innerHTML = '<span class="cm-bad">⚠ Payments don\'t cover the interest — this plan never closes.</span>';
+    out.innerHTML = `<span class="cm-bad">${t('ui.ds.diverges')}</span>`;
     return;
   }
   DS_LAST = {
@@ -2192,18 +2200,18 @@ function renderDebtStrategy(loans, extra) {
     order: [...loans].sort((a, b) => b.rate_pct - a.rate_pct),
   };
   const lines = [];
-  lines.push(`Debt-free ~<b>${addMonthsIso(today, plan.months)}</b> (${(plan.months / 12).toFixed(1)} yr) · total interest <b>${money(plan.total_interest)}</b>`);
+  lines.push(t('ui.ds.free', { date: `<b>${addMonthsIso(today, plan.months)}</b>`, yr: (plan.months / 12).toFixed(1), interest: `<b>${money(plan.total_interest)}</b>` }));
   const saved = asIsInterest - plan.total_interest;
   const sooner = asIsMonths - plan.months;
   if (saved > 0.5 || sooner > 0) {
-    lines.push(`vs each loan on its own: save <b class="cm-good">${money(saved)}</b> interest, debt-free <b>${sooner}</b> mo sooner${extra > 0 ? '' : ' — just from rolling freed payments forward'}`);
+    lines.push(`${t('ui.ds.vs', { saved: `<b class="cm-good">${money(saved)}</b>`, n: `<b>${sooner}</b>` })}${extra > 0 ? '' : t('ui.ds.justRoll')}`);
   }
-  lines.push(`Order: ${[...loans].sort((a, b) => b.rate_pct - a.rate_pct).map((l) => `<b>${esc(l.merchant)}</b> (${l.rate_pct}%)`).join(' → ')} — highest rate first`);
+  lines.push(t('ui.ds.order', { ord: [...loans].sort((a, b) => b.rate_pct - a.rate_pct).map((l) => `<b>${esc(l.merchant)}</b> (${l.rate_pct}%)`).join(' → ') }));
   if (extra > 0 && new Set(loans.map((l) => l.rate_pct)).size > 1) {
     const wrong = debtPlan(loans, extra, 'lowest');
     if (wrong && !wrong.diverges) {
       const d = wrong.total_interest - plan.total_interest;
-      if (d > 0.5) lines.push(`<span class="cm-warn">Putting the extra on the lowest rate instead would cost ${money(d)} more</span>`);
+      if (d > 0.5) lines.push(`<span class="cm-warn">${t('ui.ds.wrong', { amt: money(d) })}</span>`);
     }
   }
   out.innerHTML = lines.map((l) => `<div>${l}</div>`).join('');
@@ -2229,12 +2237,12 @@ function wireCommitEvents(byKey) {
     const extra = +r.value;
     wrap.querySelector('.cm-extra').textContent = `${CURRENCY}${extra}`;
     const out = wrap.querySelector('.cm-slider-out');
-    if (!extra) { out.textContent = 'drag to see prepayment savings'; return; }
+    if (!extra) { out.textContent = t('ui.cm.drag'); return; }
     const am = amortize(it.balance, it.rate_pct || 0, it.monthly + extra);
     if (!am || am.months == null) { out.textContent = '—'; return; }
     const saved = (it.interest_remaining || 0) - (am.total_interest || 0);
     const sooner = (it.months_left || 0) - am.months;
-    out.innerHTML = `save <b>${money(saved)}</b> interest · paid off <b>${sooner}</b> mo sooner`;
+    out.innerHTML = t('ui.cm.saves', { saved: `<b>${money(saved)}</b>`, n: `<b>${sooner}</b>` });
   }));
 }
 
@@ -2282,7 +2290,7 @@ function normalizeTone(t) {
 // a "running" placeholder, scroll the panel into view, then ask the agent — so
 // it's unmistakable which cards are the NEW review (they don't pile onto stale ones).
 function startReview() {
-  if (!LEDGER.length) { setStatus('Import a statement first — the review needs data.'); return; }
+  if (!LEDGER.length) { setStatus(t('ui.review.needData')); return; }
   if (VIEW_MODE !== 'report') switchView('report'); // insights live on the dashboard
   // Budget cards are page-truth, not review output — they survive the clear.
   INSIGHTS = INSIGHTS.filter((c) => c.src === 'budget');
@@ -2295,7 +2303,7 @@ function startReview() {
   // arrive later, applyPageUpdate clears this state and renders them.
   clearTimeout(REVIEW_TIMER);
   REVIEW_TIMER = setTimeout(() => { if (REVIEW_PENDING) { REVIEW_PENDING = false; REVIEW_NOCARDS = true; renderInsights(); } }, 90000);
-  try { chat?.send?.('Run my financial review.'); } catch { /* ignore */ }
+  try { chat?.send?.(t('ui.review.ask')); } catch { /* ignore */ }
 }
 function scrollToInsights() {
   try { document.getElementById('insights-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch { /* ignore */ }
@@ -2309,17 +2317,17 @@ function renderInsights() {
   el.innerHTML = INSIGHTS.length ? ordered.map(({ c, i }) => `
     <div class="insight ${esc(c.tone || 'info')}">
       <div class="insight-head">
-        <span class="lvl ${esc(c.tone || 'info')}">${esc((c.tone || 'info').toUpperCase())}</span>
+        <span class="lvl ${esc(c.tone || 'info')}">${esc(t(`ui.tone.${TONE_RANK[c.tone] != null ? c.tone : 'info'}`))}</span>
         <span class="insight-title">${esc(c.title || '')}</span>
-        <button class="insight-x" data-i="${i}" title="Dismiss this card">×</button>
+        <button class="insight-x" data-i="${i}" title="${t('ui.ins.dismiss')}">×</button>
       </div>
       <div class="insight-body">${mdLite(c.body || '')}</div>
     </div>`).join('')
     : (REVIEW_PENDING
-      ? '<p class="hint">✦ Running your review… your cards land here in a few seconds.</p>'
+      ? `<p class="hint">${t('ui.ins.running')}</p>`
       : REVIEW_NOCARDS
-        ? '<p class="hint">Your review came back in the chat this time — no cards were posted. Hit <b>✦ Run review</b> to try again.</p>'
-        : '<p class="hint">Nothing yet — hit <b>✦ Run review</b> or ask the assistant a question, and its findings land here.</p>');
+        ? `<p class="hint">${t('ui.ins.noCards', { btn: `<b>${t('ui.runReview')}</b>` })}</p>`
+        : `<p class="hint">${t('ui.ins.empty', { btn: `<b>${t('ui.runReview')}</b>` })}</p>`);
   el.querySelectorAll('.insight-x').forEach((b) => b.addEventListener('click', () => {
     const [c] = INSIGHTS.splice(+b.dataset.i, 1);
     // A dismissed budget card stays gone until its message changes — the sync
@@ -2490,20 +2498,20 @@ function renderSuggestions() {
   // totals) and a note for the categories CFO already auto-applied (they
   // didn't move totals).
   const autoNote = LAST_AUTO_APPLIED
-    ? `<span class="hint">✓ auto-sorted ${LAST_AUTO_APPLIED} into categories — change any in Transactions</span>` : '';
+    ? `<span class="hint">${t('ui.sugg.autoNote', { n: LAST_AUTO_APPLIED })}</span>` : '';
   const title = n
-    ? `✦ ${n} to confirm <span class="sugg-sub">— affects spend/income</span>`
-    : `✓ Auto-sorted ${LAST_AUTO_APPLIED} transaction${LAST_AUTO_APPLIED === 1 ? '' : 's'}`;
+    ? `${t('ui.sugg.toConfirm', { n })} <span class="sugg-sub">${t('ui.sugg.affects')}</span>`
+    : t('ui.sugg.autoSorted', { n: LAST_AUTO_APPLIED });
   const bulk = n
-    ? `<button class="chip" id="sugg-apply-all">Apply all</button><button class="chip ghost" id="sugg-dismiss-all">Dismiss all</button>`
-    : `<button class="chip ghost" id="sugg-dismiss-all">Dismiss</button>`;
+    ? `<button class="chip" id="sugg-apply-all">${t('ui.sugg.applyAll')}</button><button class="chip ghost" id="sugg-dismiss-all">${t('ui.sugg.dismissAll')}</button>`
+    : `<button class="chip ghost" id="sugg-dismiss-all">${t('ui.sugg.dismiss')}</button>`;
   const item = (merchant, type, reason, attrs) => `
         <li>
           <span class="sugg-merch" title="${esc(merchant)}">${esc(merchant)}</span>
           <span class="sugg-arrow">→</span>
-          <span class="tag sugg-type special">${esc(type)}</span>
+          <span class="tag sugg-type special">${esc(type === 'saved' ? t('ui.cat.saved') : catLabel(type))}</span>
           ${reason ? `<span class="sugg-reason" title="${esc(reason)}">${esc(reason)}</span>` : ''}
-          <span class="sugg-row-actions"><button class="chip apply" ${attrs}>Apply</button><button class="chip ghost dismiss" ${attrs} title="Dismiss">✕</button></span>
+          <span class="sugg-row-actions"><button class="chip apply" ${attrs}>${t('ui.scope.apply')}</button><button class="chip ghost dismiss" ${attrs} title="${t('ui.sugg.dismiss')}">✕</button></span>
         </li>`;
   el.innerHTML = `
     <div class="sugg-card">
@@ -2513,7 +2521,7 @@ function renderSuggestions() {
         <span class="sugg-bulk">${bulk}</span>
       </div>
       ${n ? `<ul class="sugg-list">${SUGGESTIONS.map((s, i) => item(s.merchant, s.type, s.reason, `data-i="${i}"`)).join('')}${
-    saves.map((s) => item(s.label, 'saved', `${money(s.total)} · reads as investing`, `data-save="${esc(s.merchant)}"`)).join('')}</ul>` : ''}
+    saves.map((s) => item(s.label, 'saved', t('ui.sugg.investing', { amt: money(s.total) }), `data-save="${esc(s.merchant)}"`)).join('')}</ul>` : ''}
     </div>`;
   const dismissNote = async () => {
     SUGGESTIONS = []; LAST_AUTO_APPLIED = 0; saveSuggestions().catch(() => {});
@@ -2580,12 +2588,12 @@ async function handleImport(files) {
   if (!list.length) return;
   const results = [];
   for (let i = 0; i < list.length; i++) {
-    setStatus(list.length > 1 ? `Importing ${i + 1}/${list.length}: ${list[i].name}…` : 'Analyzing… (stays on your Mac)');
+    setStatus(list.length > 1 ? t('ui.imp.progress', { i: i + 1, n: list.length, file: list[i].name }) : t('ui.imp.analyzing'));
     try {
       results.push(await importFile(list[i], i, list.length));
     } catch (e) {
       results.push({ file: list[i].name, error: e.message });
-      setStatus(`Error in ${list[i].name}: ${e.message}`, true);
+      setStatus(t('ui.imp.error', { file: list[i].name, msg: e.message }), true);
       console.error('[cfo] import failed', list[i].name, e);
     }
   }
@@ -2630,8 +2638,8 @@ function runImportReview(residualCount) {
 function offerReview(residualCount) {
   const el = document.getElementById('status');
   const b = document.createElement('button');
-  b.className = 'chip review-link'; b.textContent = 'Review';
-  b.title = residualCount ? 'Sort the uncategorized merchants (uses the AI)' : 'Run the financial review (uses the AI)';
+  b.className = 'chip review-link'; b.textContent = t('ui.review.btn');
+  b.title = residualCount ? t('ui.review.sortTitle') : t('ui.review.runTitle');
   b.onclick = () => { b.remove(); runImportReview(computeResidual().length); };
   el.appendChild(b);
 }
@@ -2643,7 +2651,7 @@ function offerUndo(ok) {
   if (!ids.length) return;
   const el = document.getElementById('status');
   const a = document.createElement('a');
-  a.href = '#'; a.className = 'undo-link'; a.textContent = ids.length > 1 ? '  Undo all' : '  Undo';
+  a.href = '#'; a.className = 'undo-link'; a.textContent = `  ${ids.length > 1 ? t('ui.imports.undoAll') : t('ui.imports.undo')}`;
   a.onclick = async (e) => {
     e.preventDefault();
     a.remove();
@@ -2674,17 +2682,17 @@ function openReminders() {
   for (const p of LAST_VIEW.payment_schedule || []) {
     if (!p.next_expected) continue;
     if (p.missed_in_data) {
-      if (once(`cfo:rem3:miss:${p.account}:${p.next_expected}`)) lines.push(`⚠ ${p.label}: no payment seen around ${p.next_expected}`);
+      if (once(`cfo:rem3:miss:${p.account}:${p.next_expected}`)) lines.push(t('ui.rem.missed', { card: p.label, date: p.next_expected }));
     } else {
       const d = daysUntil(p.next_expected);
       if (d >= 0 && d <= 3 && once(`cfo:rem3:due:${p.account}:${p.next_expected}`)) {
-        lines.push(`${p.label}: usually paid ~${p.next_expected} (${d === 0 ? 'today' : `in ${d} day${d === 1 ? '' : 's'}`})`);
+        lines.push(t('ui.rem.due', { card: p.label, date: p.next_expected, when: d === 0 ? t('ui.today') : t('ui.inDays', { n: d }) }));
       }
     }
   }
   const newest = LEDGER.reduce((m, r) => (r.date && r.date > m ? r.date : m), '');
   if (newest && daysUntil(newest) <= -35 && once(`cfo:rem3:stale:${newest}`)) {
-    lines.push(`Newest data ${newest} — drop a fresh statement`);
+    lines.push(t('ui.rem.stale', { date: newest }));
   }
   // Facts on the status line, not a chat message: the page shows what it
   // holds; she tells.
@@ -2758,14 +2766,14 @@ function showHelp() {
   root.hidden = false;
   root.innerHTML = `
     <div class="modal-card">
-      <h3>Personal CFO</h3>
+      <h3>${t('ui.title')}</h3>
       <ol class="help-steps">
-        <li><b>Export</b> a statement from your bank's website (CSV or PDF).</li>
-        <li><b>Import</b> it here — drag &amp; drop anywhere on the page, or click <b>Import statement</b>.</li>
-        <li><b>View &amp; ask</b> — the report builds itself; ask the assistant <i>"why was spend higher last month?"</i> or <i>"run my financial review"</i>.</li>
+        <li>${t('ui.helpm.s1')}</li>
+        <li>${t('ui.helpm.s2', { btn: `<b>${t('ui.import')}</b>` })}</li>
+        <li>${t('ui.helpm.s3')}</li>
       </ol>
-      <p class="hint">🔒 Statements never leave this Mac. Account numbers are stripped; the AI sees only redacted totals.</p>
-      <div class="modal-actions"><button id="intro-ok" class="btn">Got it</button></div>
+      <p class="hint">${t('ui.helpm.privacy')}</p>
+      <div class="modal-actions"><button id="intro-ok" class="btn">${t('ui.helpm.ok')}</button></div>
     </div>`;
   root.querySelector('#intro-ok').onclick = () => { root.hidden = true; root.innerHTML = ''; };
 }
@@ -2835,12 +2843,15 @@ async function pollWatchFolder() {
     }
     if (changed) await saveWatchSeen().catch(() => {});
     if (results.length) announceImport(results);      // ack + auto-review/classify, same as a drag
-    else if (unknown) setStatus(`${unknown} statement${unknown === 1 ? '' : 's'} in the watch folder from a new account — drag one in once.`);
+    else if (unknown) setStatus(t('ui.watch.unknown', { n: unknown }));
   } catch (e) { console.warn('[cfo] watch poll', e); }
   finally { WATCH_BUSY = false; }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  await loadLanguage(); // the person's language, before a word renders
+  document.title = t('ui.docTitle');
+  applyI18n();
   await loadConfig(); // currency + category overrides, before the first import
 
   // App mode: per-skill override (localStorage 'cfo:model') if set. Otherwise
@@ -2928,7 +2939,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     saveInsights().catch(() => {});
   });
   document.getElementById('run-review')?.addEventListener('click', () => {
-    if (!LEDGER.length) { setStatus('Import a statement first — the review needs data.'); return; }
+    if (!LEDGER.length) { setStatus(t('ui.review.needData')); return; }
     startReview();
   });
 

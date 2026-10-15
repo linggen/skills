@@ -9,6 +9,8 @@
 // `t` is the exchange's wall clock written as UTC seconds — stockanalysis.com
 // stamps the 9:30 New York open as 09:30Z — so it is read in UTC.
 
+import { t, intlLocale } from './strings.js';
+
 export const RANGES = ['1D', '1W', '1M', '3M', 'YTD', '1Y', '5Y'];
 /// Ranges that offer candles: daily ones; 5Y draws weekly candles.
 export const CANDLE_RANGES = new Set(['1M', '3M', 'YTD', '1Y', '5Y']);
@@ -93,10 +95,10 @@ export function positionChange(shares, base, last) {
 /// edited inside the range — that the earlier days use today's count.
 /// `sharesAt` = the register's shares cell time (ms; ≤ 1 = a seed, no edit).
 export function changeNote(shares, startDay, sharesAt, dayLabel) {
-  if (!(shares > 0)) return `Price change since ${dayLabel(startDay)}`;
-  const base = `${shares} sh × price change since ${dayLabel(startDay)}`;
+  if (!(shares > 0)) return t('chart.priceSince', { day: dayLabel(startDay) });
+  const base = t('chart.sharesSince', { shares, day: dayLabel(startDay) });
   const edited = sharesAt > 1 && sharesAt > Date.parse(`${startDay}T00:00:00Z`);
-  return edited ? `${base}. Shares changed ${dayLabel(new Date(sharesAt).toISOString().slice(0, 10))} — today's count used throughout` : base;
+  return edited ? t('chart.sharesEdited', { base, day: dayLabel(new Date(sharesAt).toISOString().slice(0, 10)) }) : base;
 }
 
 const round2 = (n) => Math.round(n * 100) / 100;
@@ -161,14 +163,16 @@ export function tickDecimals(step) {
 
 // One Intl formatter per format — building one per point is what's slow.
 const utcDate = (day) => new Date(`${day}T12:00:00Z`);
-const dailyFmt = (opts) => {
-  const f = new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', ...opts });
-  return (p) => f.format(utcDate(p.t));
+// Cached per locale: the language is read once at page start, after this
+// module loads, so a formatter can't be built at import.
+const FMTS = new Map();
+const fmtFor = (opts) => {
+  const key = `${intlLocale()}|${JSON.stringify(opts)}`;
+  if (!FMTS.has(key)) FMTS.set(key, new Intl.DateTimeFormat(intlLocale(), { timeZone: 'UTC', ...opts }));
+  return FMTS.get(key);
 };
-const nyFmt = (opts) => {
-  const f = new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', ...opts });
-  return (p) => f.format(new Date(p.t * 1000));
-};
+const dailyFmt = (opts) => (p) => fmtFor(opts).format(utcDate(p.t));
+const nyFmt = (opts) => (p) => fmtFor(opts).format(new Date(p.t * 1000));
 const NY_DAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC' });
 
 // Per range: what makes a new x label (`key`), how it reads (`label`), and
@@ -281,7 +285,7 @@ function candlesSvg(candles, xs, y) {
   }).join('');
 }
 
-const ohlcText = (c, price) => `O ${price(c.o)} H ${price(c.h)} L ${price(c.l)} C ${price(c.c)}`;
+const ohlcText = (c, price) => t('chart.ohlc', { o: price(c.o), h: price(c.h), l: price(c.l), c: price(c.c) });
 
 /// The nearest drawn point to a fraction across the plot.
 export function nearestIndex(xs, frac) {

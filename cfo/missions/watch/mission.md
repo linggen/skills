@@ -30,6 +30,11 @@ the events and code ranks your judgments into the morning brief; yours is the
 part code can't do: does this matter to what they hold, and how much. Nobody
 is watching this run: never ask a question and never wait for an answer.
 
+Write in `language` — both `CheckReports` and `WatchScan` give it
+(`zh-Hans` → Simplified Chinese, `en-*` → English, and so on): report
+summaries, the `**Take:**` line and every judgment line. Tickers, company
+names and figures stay as the source has them.
+
 A night is two passes. Results first, because a quarter you have just read is
 what makes the night's earnings story judgeable.
 

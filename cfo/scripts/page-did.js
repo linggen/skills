@@ -3,15 +3,17 @@
 // once by latest.sh as `page_did`). Code never words a chat message; these
 // are facts, and she writes the words. Pure — tests/page-did.test.mjs.
 
+import { t } from './strings.js';
+
 const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 
 /// The status line after an import batch: counts only.
 export function importStatus({ files, added, dup, skipped = [], failed = [] }) {
-  const parts = [`Imported ${files > 1 ? `${files} statements` : ''}`.trim() + ` — ${added} new`];
-  if (dup) parts[0] += `, ${dup} already on file`;
-  if (skipped.length) parts.push(`skipped ${skipped.join(', ')} (no account)`);
-  if (failed.length) parts.push(`couldn't read ${failed.join(', ')}`);
-  return parts.join(' · ') + '.';
+  const parts = [t(files > 1 ? 'did.importedMany' : 'did.imported', { files, added })];
+  if (dup) parts[0] += t('did.dupTail', { dup });
+  if (skipped.length) parts.push(t('did.skipped', { list: skipped.join(', ') }));
+  if (failed.length) parts.push(t('did.failed', { list: failed.join(', ') }));
+  return parts.join(' · ') + t('did.end');
 }
 
 /// The note for Ling: which files, which accounts, how many rows.
@@ -31,10 +33,10 @@ export const pageDidLine = (verb, what, at) => JSON.stringify({ at, verb, what }
 /// renderer. `missed` wins; then "expected but the data stops before it";
 /// then "next"; else on track.
 export const PAY_STATES = {
-  missed: { cls: 'warn', badge: (p) => `⚠ no payment seen around ${p.next_expected}` },
-  unknown: { cls: 'unknown', badge: (p) => `◌ expected ~${p.next_expected} — import your latest statement to check` },
-  next: { cls: 'ok', badge: (p) => `⏳ next ~${p.next_expected}` },
-  ok: { cls: 'ok', badge: () => '✓ on track' },
+  missed: { cls: 'warn', badge: (p) => t('did.pay.missed', { day: p.next_expected }) },
+  unknown: { cls: 'unknown', badge: (p) => t('did.pay.unknown', { day: p.next_expected }) },
+  next: { cls: 'ok', badge: (p) => t('did.pay.next', { day: p.next_expected }) },
+  ok: { cls: 'ok', badge: () => t('did.pay.ok') },
 };
 const PAY_RULES = [
   ['missed', (p) => !!p.missed_in_data],

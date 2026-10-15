@@ -7,6 +7,7 @@
 import {
   RANGES, seriesOf, isIntraday, rangeView, positionChange, changeNote, candlesOffered, chartView, nearestIndex, nyDay,
 } from './chart.js';
+import { t, intlLocale } from './strings.js';
 
 const MARKET = '"$HOME/.linggen/skills/cfo/scripts/market.pl"';
 const FRESH_MS = 5 * 60 * 1000;
@@ -87,9 +88,9 @@ export function stockChartHtml(r) {
   const today = new Date().toLocaleDateString('en-CA');
   const loaded = seriesFor(sym);
   const { base, points } = rangeView(range, loaded, today);
-  const chips = RANGES.map((g) => `<button class="ch-chip${g === range ? ' on' : ''}" data-act="chart-range" data-sym="${esc(sym)}" data-range="${g}">${g}</button>`).join('');
+  const chips = RANGES.map((g) => `<button class="ch-chip${g === range ? ' on' : ''}" data-act="chart-range" data-sym="${esc(sym)}" data-range="${g}">${t(`chart.range.${g}`)}</button>`).join('');
   const candle = candlesOffered(range, points)
-    ? `<button class="ch-chip${kind === 'candle' ? ' on' : ''}" data-act="chart-kind" data-sym="${esc(sym)}" title="Candles: open, high, low, close${range === '5Y' ? ' — one a week' : ' — one a day'}">Candles</button>`
+    ? `<button class="ch-chip${kind === 'candle' ? ' on' : ''}" data-act="chart-kind" data-sym="${esc(sym)}" title="${esc(t(range === '5Y' ? 'chart.candlesTipWeek' : 'chart.candlesTipDay'))}">${t('chart.candles')}</button>`
     : '';
   const ready = base && points.length > 1;
   const view = ready ? chartView({ points, base, range, kind, id: `ch-${sym.replace(/\W/g, '-')}`, price: (n) => deps.money(n, r.currency) }) : null;
@@ -109,13 +110,13 @@ function changeHtml(r, base, points) {
   return `<span class="ch-change" title="${deps.esc(note)}">${deps.moveHtml(move.change, r.currency, move.pct)}</span>`;
 }
 
-const dayLabel = (day) => new Date(`${day}T12:00:00Z`).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric' });
+const dayLabel = (day) => new Date(`${day}T12:00:00Z`).toLocaleDateString(intlLocale(), { timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric' });
 
 function emptyNote(sym) {
   const s = seriesFor(sym);
   const need = isIntraday(range) ? [s['5Y'], s[range]] : [s['5Y']];
-  if (need.some((x) => !x || x.busy)) return 'Loading chart…';
-  return 'No chart for this range — stockanalysis.com sent no prices';
+  if (need.some((x) => !x || x.busy)) return t('chart.loading');
+  return t('chart.noData');
 }
 
 // ── Actions ────────────────────────────────────────────────────────────────

@@ -6,6 +6,7 @@
 // lives on its stock card's chart, not here.
 
 import { markedHtml, moveHtml } from './investments.js';
+import { t, t as tr, intlLocale } from './strings.js';
 
 const MISSION = 'cfo:weekly';
 const POLL_MS = 5000;
@@ -53,7 +54,7 @@ export function latestWeek(doc) {
 export function weekSpan(from, to) {
   const d = (s) => new Date(`${s}T12:00:00`);
   const short = { month: 'short', day: 'numeric' };
-  return `${d(from).toLocaleDateString('en-US', short)} – ${d(to).toLocaleDateString('en-US', { ...short, year: 'numeric' })}`;
+  return `${d(from).toLocaleDateString(intlLocale(), short)} – ${d(to).toLocaleDateString(intlLocale(), { ...short, year: 'numeric' })}`;
 }
 
 /// A source link's label: the site, without "www.".
@@ -66,13 +67,13 @@ export function hostOf(url) {
 /// total that would read as a real move. Older reports' holdings are ignored.
 export function totalsHtml(portfolio, esc) {
   const parts = (portfolio?.totals || []).map((t) => (t.value_change === null || t.value_change === undefined
-    ? `${esc(t.currency)} <span class="hint inline">no total — ${esc((t.missing || []).join(', '))} had no closes</span>`
+    ? `${esc(t.currency)} <span class="hint inline">${esc(tr('wk.noTotal', { who: (t.missing || []).join(', ') }))}</span>`
     : `${esc(t.currency)} ${moveHtml(t.value_change, t.currency, t.change_pct)}`));
-  return parts.length ? `<p class="wk-totals">${parts.join(' · ')}</p>` : '<p class="hint">No holdings this week.</p>';
+  return parts.length ? `<p class="wk-totals">${parts.join(' · ')}</p>` : `<p class="hint">${tr('wk.noHoldings')}</p>`;
 }
 
 /// "Oct 14" for a YYYY-MM-DD day.
-const dayShort = (s) => new Date(`${s}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+const dayShort = (s) => new Date(`${s}T12:00:00`).toLocaleDateString(intlLocale(), { month: 'short', day: 'numeric' });
 
 // ── Drawing ────────────────────────────────────────────────────────────────
 
@@ -85,16 +86,16 @@ function cardHtml() {
   const { esc } = deps;
   const week = latestWeek(state.doc);
   const ask = state.confirming && !state.running
-    ? `<div class="inv-prop"><span>Run it now? It reads the week’s news with the model.</span><span class="spacer"></span>
-        <button class="btn" data-act="weekly-run-go">Run</button>
-        <button class="chip ghost" data-act="weekly-run-cancel">Cancel</button></div>`
+    ? `<div class="inv-prop"><span>${t('wk.runAsk')}</span><span class="spacer"></span>
+        <button class="btn" data-act="weekly-run-go">${t('wk.run')}</button>
+        <button class="chip ghost" data-act="weekly-run-cancel">${t('common.cancel')}</button></div>`
     : '';
   const intro = !week && !state.running
-    ? `<p class="hint">${state.mission?.enabled ? 'The first report comes Sunday evening.' : 'Sunday evenings: the market week and what it did to your holdings, with sources.'}</p>`
+    ? `<p class="hint">${state.mission?.enabled ? t('wk.firstSunday') : t('wk.introOff')}</p>`
     : '';
   const body = week ? weekHtml(week) : '';
   return `<div class="inv-watch inv-weekly">
-    <div class="inv-watch-h"><b>✦ Weekly</b><span class="hint inline">· ${esc(headline())}</span><span class="spacer"></span>${controlsHtml()}</div>
+    <div class="inv-watch-h"><b>✦ ${t('wk.title')}</b><span class="hint inline">· ${esc(headline())}</span><span class="spacer"></span>${controlsHtml()}</div>
     ${ask}${intro}${body}
   </div>`;
 }
@@ -103,19 +104,19 @@ function controlsHtml() {
   const { mission, running, confirming } = state;
   if (!mission) return '';
   return mission.enabled
-    ? `<button class="chip" data-act="weekly-run" ${running || confirming ? 'disabled' : ''}>Run now</button>
-       <button class="chip ghost" data-act="weekly-off">Turn off</button>`
-    : `<button class="chip" data-act="weekly-run" ${running || confirming ? 'disabled' : ''}>Run now</button>
-       <button class="btn" data-act="weekly-on">Turn on</button>`;
+    ? `<button class="chip" data-act="weekly-run" ${running || confirming ? 'disabled' : ''}>${t('wk.runNow')}</button>
+       <button class="chip ghost" data-act="weekly-off">${t('wk.turnOff')}</button>`
+    : `<button class="chip" data-act="weekly-run" ${running || confirming ? 'disabled' : ''}>${t('wk.runNow')}</button>
+       <button class="btn" data-act="weekly-on">${t('wk.turnOn')}</button>`;
 }
 
 function headline() {
   const { mission, running, lastRun, note } = state;
-  if (!mission) return 'Unavailable — restart Linggen';
+  if (!mission) return t('wk.unavailable');
   if (note) return note;
-  if (running) return 'Writing this week’s report…';
-  const on = mission.enabled ? 'On · Sundays at 19:00' : 'Off';
-  if (lastRun && lastRun.status !== 'completed') return `${on} · the last run didn’t finish`;
+  if (running) return t('wk.writing');
+  const on = mission.enabled ? t('wk.onSundays') : t('wk.off');
+  if (lastRun && lastRun.status !== 'completed') return t('wk.unfinished', { on });
   return on;
 }
 
@@ -124,10 +125,10 @@ function weekHtml(week) {
   const open = !state.folded;
   const sections = (week.sections || []).map(sectionHtml).join('');
   const rest = `${tiesHtml(week.ties)}${reportedHtml(week.reported)}${nextHtml(week.next_week)}`;
-  return `<div class="inv-watch-day">Week of ${esc(weekSpan(week.from, week.to))}</div>
+  return `<div class="inv-watch-day">${esc(t('wk.weekOf', { span: weekSpan(week.from, week.to) }))}</div>
     ${totalsHtml(week.portfolio, esc)}
     ${open ? sections + rest : ''}
-    <button class="link inv-watch-more" data-act="weekly-fold">${open ? 'Fold the market week' : 'The market week'}</button>`;
+    <button class="link inv-watch-more" data-act="weekly-fold">${open ? t('wk.fold') : t('wk.unfold')}</button>`;
 }
 
 function sectionHtml(s) {
@@ -146,7 +147,7 @@ function sourceHtml(url) {
 function tiesHtml(ties) {
   const { esc } = deps;
   if (!ties?.length) return '';
-  return `<div class="inv-watch-day">Your holdings</div>${ties.map((t) => `<div class="inv-watch-line">
+  return `<div class="inv-watch-day">${t('wk.yourHoldings')}</div>${ties.map((t) => `<div class="inv-watch-line">
       <span class="inv-watch-who">${esc((t.holdings || []).join(', '))}</span><span>${esc(t.text)}</span></div>`).join('')}`;
 }
 
@@ -154,18 +155,18 @@ function tiesHtml(ties) {
 function reportedHtml(list) {
   const { esc } = deps;
   if (!list?.length) return '';
-  return `<div class="inv-watch-day">Reported</div>${list.map((r) => `<div class="inv-watch-line">
+  return `<div class="inv-watch-day">${t('wk.reported')}</div>${list.map((r) => `<div class="inv-watch-line">
       <span class="inv-watch-who">${esc(r.symbol)}</span>
       <div class="inv-report-body">${markedHtml(r.summary, esc)}</div>
-      <span class="inv-watch-meta"><span>Filed ${esc(dayShort(r.filed))}</span>${sourceHtml(r.url)}</span></div>`).join('')}`;
+      <span class="inv-watch-meta"><span>${esc(t('wk.filed', { day: dayShort(r.filed) }))}</span>${sourceHtml(r.url)}</span></div>`).join('')}`;
 }
 
 function nextHtml(next) {
   const { esc } = deps;
   if (!next) return '';
-  const events = (next.events || []).map((e) => `<li>${esc(dayShort(e.on))} · ${esc(e.symbol ? `${e.symbol} earnings` : e.label)}</li>`).join('');
+  const events = (next.events || []).map((e) => `<li>${esc(dayShort(e.on))} · ${esc(e.symbol ? t('wk.earnings', { symbol: e.symbol }) : e.label)}</li>`).join('');
   if (!next.line && !events) return '';
-  return `<div class="inv-watch-day">Next week</div>${next.line ? `<p class="wk-next">${esc(next.line)}</p>` : ''}${events ? `<ul class="wk-points">${events}</ul>` : ''}`;
+  return `<div class="inv-watch-day">${t('wk.nextWeek')}</div>${next.line ? `<p class="wk-next">${esc(next.line)}</p>` : ''}${events ? `<ul class="wk-points">${events}</ul>` : ''}`;
 }
 
 // ── Actions ────────────────────────────────────────────────────────────────
@@ -196,7 +197,7 @@ async function setEnabled(on) {
     if (!res.ok) throw new Error(`update ${res.status}`);
   } catch (err) {
     console.warn('[cfo] weekly switch', err);
-    note("Couldn't reach Linggen");
+    note(t('wk.noReach'));
   }
   await renderWeekly();
 }
@@ -211,7 +212,7 @@ async function runNow() {
     follow(Date.now());
   } catch (err) {
     console.warn('[cfo] weekly run', err);
-    note("Couldn't start the run");
+    note(t('wk.noStart'));
   }
 }
 

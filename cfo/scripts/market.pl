@@ -447,6 +447,7 @@ sub cmd_reports_check {
     });
     say_json({
         new          => [ sort { $b->{filed} cmp $a->{filed} } @new ],
+        language     => cfo_language(),
         failed       => \@failed,
         checked      => \@symbols,
         last_checked => $before->{last_checked},
@@ -794,6 +795,7 @@ sub cmd_watch_scan {
         since      => iso_time($since),
         scanned_at => iso_time($now),
         home       => home_currency(),
+        language   => cfo_language(),
         positions  => weigh_positions(\%positions),
         events     => fresh_events(\@events, $watch->{seen} || {}, $cells),
         failed     => \@failed,
@@ -863,6 +865,33 @@ sub quote_day {
     my ($e) = @_;
     my ($at) = sort { $a <=> $b } grep { $_ } time_of($e->{price_time} // ''), $e->{quote_at};
     return $at ? strftime('%Y-%m-%d', gmtime($at)) : undef;
+}
+
+# The language CFO writes in. The engine holds the setting (Settings →
+# Language) and hands its effective value to every tool as LINGGEN_LANGUAGE;
+# config.json `language` is the legacy place, read only when the engine says
+# nothing; then the Mac's first preferred language; then English. zh, zh-CN,
+# zh-Hans-CN… all mean Simplified Chinese: zh-Hans.
+sub report_language {
+    my ($cfg, $mac) = @_;
+    for my $lang ($ENV{LINGGEN_LANGUAGE}, $cfg->{language}, $mac) {
+        next unless defined $lang && $lang =~ /^[A-Za-z]{2,3}(?:[-_][A-Za-z0-9]+)*$/;
+        return $lang =~ /^zh(?:[-_]|$)/i ? 'zh-Hans' : $lang;
+    }
+    return 'en';
+}
+
+sub mac_language {
+    open(my $fh, '-|', 'defaults', 'read', '-g', 'AppleLanguages') or return undef;
+    local $/;
+    my $out = <$fh> // '';
+    close $fh;
+    return $out =~ /"?([A-Za-z]{2,3}(?:-[A-Za-z0-9]+)*)"?/ ? $1 : undef;
+}
+
+# The full chain, for a tool's output (WatchScan, CheckReports, WeeklyScan).
+sub cfo_language {
+    return report_language(read_json(dirname(data_dir()) . '/config.json') || {}, mac_language());
 }
 
 # The currency CFO reports in (config.json), for weighing a currency move.

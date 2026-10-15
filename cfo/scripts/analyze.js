@@ -9,6 +9,7 @@
 
 import { accountFingerprint } from './hash.js';
 import { csvCurrency } from './currency.js';
+import { t } from './strings.js';
 
 // Column words, in the languages banks export in (EN, FR, DE, NL, ES). Order
 // is priority: a header equal to a key wins, then the first key a header
@@ -374,7 +375,7 @@ function mapByHeader(headers, headersL, body, notes) {
   }
   if (di < 0) di = 0;
   if (pi < 0) pi = Math.min(1, headers.length - 1);
-  if (ai < 0 && dbi < 0 && cri < 0) { ai = guessAmountColumn(headersL, body); notes.push('no amount column recognized; guessed one'); }
+  if (ai < 0 && dbi < 0 && cri < 0) { ai = guessAmountColumn(headersL, body); notes.push(t('imp.guessedAmount')); }
   const redacted = headers.filter((h, i) => namesAny(REDACT_KEYS)(headersL[i]));
 
   // Fingerprint the account from its number column (hashed; the raw number is
@@ -410,7 +411,7 @@ function dropOddLeadingRows(body, notes) {
   const usual = [...count.entries()].reduce((a, b) => (b[1] > a[1] ? b : a))[0];
   let k = 0;
   while (k < 3 && body.length - k > 2 && body[k].length !== usual) k++;
-  if (k) notes.push(`skipped ${k} summary line(s) shaped unlike the rows`);
+  if (k) notes.push(t('imp.skippedOdd', { n: k }));
   return body.slice(k);
 }
 
@@ -424,7 +425,7 @@ function inferColumns(bodyIn, notes) {
     && !r.some((c) => parseDate(String(c).trim()) != null || parseAmount(String(c).trim()) != null);
   if (body.length >= 2 && isLabelRow(body[0]) && !isLabelRow(body[1])) {
     body = body.slice(1);
-    notes.push('skipped an unrecognized header line');
+    notes.push(t('imp.skippedHeader'));
   }
   const width = Math.max(...body.map((r) => r.length));
   const stats = [];
@@ -526,18 +527,18 @@ function creditsOnlyMarked(body, ai) {
 function ingest(textIn) {
   const text = String(textIn || '').replace(/^﻿/, ''); // a UTF-8 byte-order mark
   const rows = parseCsv(text, sniffDelimiter(text));
-  if (!rows.length) return { transactions: [], errors: ['empty CSV'] };
+  if (!rows.length) return { transactions: [], errors: [t('imp.emptyCsv')] };
   const notes = [];
   const hi = findHeaderRow(rows);
   let map, body, headersL = null;
   if (hi >= 0) {
     const headers = rows[hi];
     body = rows.slice(hi + 1);
-    if (hi > 0) notes.push(`skipped ${hi} summary line(s) above the header`);
+    if (hi > 0) notes.push(t('imp.skippedAbove', { n: hi }));
     headersL = headers.map((h) => h.trim().toLowerCase());
     map = mapByHeader(headers, headersL, body, notes);
   } else {
-    notes.push('no header row; columns inferred from content');
+    notes.push(t('imp.noHeader'));
     map = inferColumns(rows, notes);
     body = map.body;
   }
@@ -546,7 +547,7 @@ function ingest(textIn) {
   // settles how "03/06" reads when no date in the file does.
   const cur = csvCurrency(headersL, body, map.ai, text);
   const order = dateOrder(body.map((r) => cellAt(r, map.di)), cur.currency);
-  if (order.guessed) notes.push(`Dates like 03/06 could be day or month first — read as ${order.order === 'dmy' ? 'day/month' : 'month/day'}; check them.`);
+  if (order.guessed) notes.push(t(order.order === 'dmy' ? 'imp.datesDmy' : 'imp.datesMdy'));
   const unmarkedDebit = creditsOnlyMarked(body, map.ai);
   const txns = [], dates = [];
   for (const r of body) {
@@ -561,7 +562,7 @@ function ingest(textIn) {
   // convention is self-evident, so no need to alarm the user.
   const hasPos = txns.some((t) => t.amount > 0), hasNeg = txns.some((t) => t.amount < 0);
   if (map.ai >= 0 && map.sgi < 0 && !(hasPos && hasNeg)) {
-    notes.push('All amounts share one sign — double-check that spend vs. income looks right.');
+    notes.push(t('imp.oneSign'));
   }
   dates.sort();
   return {
@@ -1134,7 +1135,7 @@ function oneOffLines(txns, overrides) {
 // ── Public: roll up an already-parsed, redacted transactions array.
 // Shared by the CSV and PDF import paths. `meta` carries source/currency/notes.
 export function analyzeTransactions(txns, meta = {}, opts = {}) {
-  if (!txns.length) return { ...meta, transactions: [], errors: ['no transactions found'] };
+  if (!txns.length) return { ...meta, transactions: [], errors: [t('imp.noTxns')] };
   const overrides = opts.categoryOverrides || null;
   // Normalize merchant names once, here — so top-merchants, subscription keys,
   // categories, and the transactions the agent sees are all clean. The ledger

@@ -11,6 +11,7 @@
 
 import { parseDate, parseAmount, cleanMerchant, CARD_WORDS_RE, PAYMENT_IN_RE, CARD_BILL_PAID_RE, PAYMENT_UNDONE_RE } from './analyze.js';
 import { detectCurrency } from './currency.js';
+import { t } from './strings.js';
 
 const MONTH_RE = '(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)';
 const DATE_RE = new RegExp(
@@ -239,9 +240,9 @@ export function parseStatementText(input) {
 export async function pdfToTransactions(arrayBuffer) {
   const lines = await extractPdfText(arrayBuffer);
   const txns = parseStatementText(lines);
-  const notes = ['PDF import is best-effort — verify the figures, and prefer CSV when your bank offers it.'];
+  const notes = [t('imp.pdfBestEffort')];
   if (!txns.length) {
-    notes.push('No transaction rows found. The PDF may be scanned or unusual — try the CSV export.');
+    notes.push(t('imp.pdfNoRows'));
   }
   // The account's currency, when the statement names it (currency.js).
   const cur = detectCurrency(lines.map((l) => (typeof l === 'string' ? l : l.text)).join('\n'));

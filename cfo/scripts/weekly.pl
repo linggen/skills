@@ -189,24 +189,6 @@ sub next_week_events {
     return [ sort { $a->{on} cmp $b->{on} || ($a->{symbol} // '') cmp ($b->{symbol} // '') } @events ];
 }
 
-# The language the report is written in: CFO's config.json `language`, else
-# the Mac's first preferred language, else English.
-sub report_language {
-    my ($cfg, $mac) = @_;
-    for my $lang ($cfg->{language}, $mac) {
-        return $lang if defined $lang && $lang =~ /^[A-Za-z]{2,3}(?:[-_][A-Za-z0-9]+)*$/;
-    }
-    return 'en';
-}
-
-sub mac_language {
-    open(my $fh, '-|', 'defaults', 'read', '-g', 'AppleLanguages') or return undef;
-    local $/;
-    my $out = <$fh> // '';
-    close $fh;
-    return $out =~ /"?([A-Za-z]{2,3}(?:-[A-Za-z0-9]+)*)"?/ ? $1 : undef;
-}
-
 # Today's quote and the daily stats (earnings dates) for the held symbols,
 # merged into quotes.json like the tab's refresh. A source that doesn't
 # answer leaves the cached numbers.
@@ -228,7 +210,7 @@ sub cmd_scan {
         from      => $week->{from},
         to        => $week->{to},
         scanned_at => iso_time(time),
-        language  => report_language(read_json(dirname($dir) . '/config.json') || {}, mac_language()),
+        language  => cfo_language(), # LINGGEN_LANGUAGE from the engine; see market.pl
         portfolio => portfolio_week($cells, $quotes, $week, \&history_of),
         reported  => reported_in(read_json("$dir/reports.json") || {}, \%held, $week->{from}, shift_date($week->{to}, 2)),
         next_week => { from => $week->{next_from}, to => $week->{next_to},

@@ -5,10 +5,21 @@
 //
 // Pure: callers hand in the numbers, tests run it without a page.
 
+import { t, intlLocale, catLabel } from './strings.js';
+
 export const MAX_CHIPS = 4;
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const monthWord = (ym) => MONTHS[+ym.slice(5, 7) - 1] || ym;
+// The month in the active language ("Sep", "9月"), worked out when asked.
+const monthWord = (ym) => {
+  const m = +String(ym).slice(5, 7);
+  if (!(m >= 1 && m <= 12)) return ym;
+  return new Intl.DateTimeFormat(intlLocale(), { month: 'short', timeZone: 'UTC' }).format(new Date(Date.UTC(2000, m - 1, 15)));
+};
+// "Sep 14" / "9月14日"
+const dayWord = (ymd) => {
+  const m = +String(ymd).slice(5, 7), d = +String(ymd).slice(8, 10);
+  return new Intl.DateTimeFormat(intlLocale(), { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(2000, m - 1, d)));
+};
 const pct = (n) => `${Math.abs(n) < 10 ? Math.abs(n).toFixed(1).replace(/\.0$/, '') : Math.round(Math.abs(n))}%`;
 
 /// "NETFLIX.COM" → "Netflix", "ADOBE *CREATIVECLOUD" → "Adobe",
@@ -37,20 +48,20 @@ function pick(candidates, fallback) {
 
 /// A Watch line as the question it raises, by what kind of event it is.
 const BRIEF_ASKS = {
-  move: (i, who) => `Why did ${who} move so much?`,
-  high_52w: (i, who) => `${who} hit a 52-week high — trim or hold?`,
-  low_52w: (i, who) => `${who} hit a 52-week low — what now?`,
-  earnings: (i, who) => `What should I watch in ${who}'s results?`,
-  analyst: (i, who) => `What does the ${who} analyst call mean?`,
-  filing: (i, who) => `What's in ${who}'s new filing?`,
-  insider: (i, who) => `Should ${who} insider ${i.side === 'bought' ? 'buying' : 'selling'} worry me?`,
-  news: (i, who) => `What does the ${who} news mean for me?`,
-  rate: (i) => `What does the ${i.bank === 'Fed' ? 'Fed' : 'Bank of Canada'} rate move mean for me?`,
-  fed: () => 'What does the Fed statement mean for me?',
-  fomc: () => 'How could the Fed decision hit my holdings?',
-  data: () => 'What do the new economic numbers mean for me?',
-  fx: () => 'How does the USD/CAD move hit me?',
-  policy: () => 'Does the new US policy touch my holdings?',
+  move: (i, who) => t('chips.brief.move', { who }),
+  high_52w: (i, who) => t('chips.brief.high52', { who }),
+  low_52w: (i, who) => t('chips.brief.low52', { who }),
+  earnings: (i, who) => t('chips.brief.earnings', { who }),
+  analyst: (i, who) => t('chips.brief.analyst', { who }),
+  filing: (i, who) => t('chips.brief.filing', { who }),
+  insider: (i, who) => t(i.side === 'bought' ? 'chips.brief.insiderBuy' : 'chips.brief.insiderSell', { who }),
+  news: (i, who) => t('chips.brief.news', { who }),
+  rate: (i) => t(i.bank === 'Fed' ? 'chips.brief.rateFed' : 'chips.brief.rateBoc'),
+  fed: () => t('chips.brief.fed'),
+  fomc: () => t('chips.brief.fomc'),
+  data: () => t('chips.brief.data'),
+  fx: () => t('chips.brief.fx'),
+  policy: () => t('chips.brief.policy'),
 };
 
 /// The top line of a fresh brief (today's or yesterday's), as a question.
@@ -73,7 +84,7 @@ export function moverAsk(rows) {
   const [top] = held(rows)
     .filter((r) => Math.abs(r.change_pct ?? 0) >= 2)
     .sort((a, b) => Math.abs(b.change_pct) - Math.abs(a.change_pct));
-  return top ? `Why is ${top.symbol} ${top.change_pct > 0 ? 'up' : 'down'} ${pct(top.change_pct)} today?` : null;
+  return top ? t(top.change_pct > 0 ? 'chips.moverUp' : 'chips.moverDown', { sym: top.symbol, pct: pct(top.change_pct) }) : null;
 }
 
 /// Results within a week, for something held or watched.
@@ -82,8 +93,7 @@ export function resultsAsk(rows, today) {
     .filter((r) => r.earnings_on && isRecent(today, r.earnings_on, 7))
     .sort((a, b) => a.earnings_on.localeCompare(b.earnings_on));
   if (!next) return null;
-  const day = `${monthWord(next.earnings_on)} ${+next.earnings_on.slice(8, 10)}`;
-  return `What should I watch in ${next.symbol}'s ${day} results?`;
+  return t('chips.results', { sym: next.symbol, day: dayWord(next.earnings_on) });
 }
 
 /// The biggest holding when it is over 20% of its currency's total and
@@ -100,7 +110,7 @@ export function weightAsk(rows) {
     })
     .filter((h) => h.share > 0.2)
     .sort((a, b) => b.share - a.share)[0];
-  return heavy ? `Is ${heavy.symbol} too big a share of my money?` : null;
+  return heavy ? t('chips.weight', { sym: heavy.symbol }) : null;
 }
 
 /// A watched ticker, not held, that had a big day (4% or more).
@@ -108,19 +118,19 @@ export function watchedAsk(rows) {
   const [top] = rows
     .filter((r) => !(r.shares > 0) && !r.stale && Math.abs(r.change_pct ?? 0) >= 4)
     .sort((a, b) => Math.abs(b.change_pct) - Math.abs(a.change_pct));
-  return top ? `${top.symbol} is ${top.change_pct > 0 ? 'up' : 'down'} ${pct(top.change_pct)} — worth buying?` : null;
+  return top ? t(top.change_pct > 0 ? 'chips.watchedUp' : 'chips.watchedDown', { sym: top.symbol, pct: pct(top.change_pct) }) : null;
 }
 
 /// A holding up 25% or more on what was paid.
 export function profitAsk(rows) {
   const [top] = held(rows).filter((r) => (r.gain_pct ?? 0) >= 25).sort((a, b) => b.gain_pct - a.gain_pct);
-  return top ? `Should I take some profit on ${top.symbol}?` : null;
+  return top ? t('chips.profit', { sym: top.symbol }) : null;
 }
 
 /// The Investments chips. `rows` are positionsOf rows; `brief` is
 /// latestBrief(watch.json); `today` is the local YYYY-MM-DD.
 export function investChips({ rows = [], brief = null, today }) {
-  if (!rows.length) return ['Which stocks should I start watching?'];
+  if (!rows.length) return [t('chips.investEmpty')];
   return pick([
     briefAsk(brief, today),
     moverAsk(rows),
@@ -128,7 +138,7 @@ export function investChips({ rows = [], brief = null, today }) {
     weightAsk(rows),
     watchedAsk(rows),
     profitAsk(rows),
-  ], ['What would you change in my portfolio?']);
+  ], [t('chips.investFallback')]);
 }
 
 // ── Spending (Report and Trends) ───────────────────────────────────────────
@@ -145,9 +155,7 @@ export function fullMonths(view) {
 export function budgetAsk(view, money) {
   const b = (view?.budgets?.categories || []).find((c) => c.state === 'over' || c.state === 'pacing');
   if (!b) return null;
-  return b.state === 'over'
-    ? `How do I get ${b.category} back under ${money(b.budget)}?`
-    : `How do I keep ${b.category} under ${money(b.budget)}?`;
+  return t(b.state === 'over' ? 'chips.budgetOver' : 'chips.budgetPacing', { cat: catLabel(b.category), amt: money(b.budget) });
 }
 
 /// The category that rose most from one full month to the next — at least
@@ -160,20 +168,20 @@ export function riseAsk(view, money) {
     .map(([cat, m]) => ({ cat, was: m[prev] || 0, now: m[last] || 0 }))
     .filter((c) => c.now - c.was >= 50 && c.now >= c.was * 1.2)
     .sort((a, b) => (b.now - b.was) - (a.now - a.was));
-  return top ? `Why did ${top.cat} go up ${money(top.now - top.was)} in ${monthWord(last)}?` : null;
+  return top ? t('chips.rise', { cat: catLabel(top.cat), amt: money(top.now - top.was), month: monthWord(last) }) : null;
 }
 
 /// The last full month spent more than came in.
 export function netAsk(view) {
   const [last] = fullMonths(view).slice(-1);
-  return last && view.by_month[last].net < 0 ? `Why did I spend more than I earned in ${monthWord(last)}?` : null;
+  return last && view.by_month[last].net < 0 ? t('chips.net', { month: monthWord(last) }) : null;
 }
 
 /// The biggest day-to-day category (not rent or bills) as a place to save.
 export function cutAsk(view) {
   const skip = new Set(['housing', 'utilities', 'transfer', 'income']);
   const top = (view?.by_category || []).find((c) => !skip.has(c.category) && c.spend > 0);
-  return top ? `How could I spend less on ${top.category}?` : null;
+  return top ? t('chips.cut', { cat: catLabel(top.category) }) : null;
 }
 
 const spendAsks = (view, money) => [budgetAsk(view, money), riseAsk(view, money), netAsk(view), cutAsk(view)];
@@ -181,23 +189,23 @@ const spendAsks = (view, money) => [budgetAsk(view, money), riseAsk(view, money)
 /// Trends: `view` is the full-history report (budgets are this month's,
 /// month-over-month needs every month); `money` formats an amount.
 export function spendChips({ view, money }) {
-  if (!view) return ['What should I import first?'];
-  return pick(spendAsks(view, money), ['Where can I cut back?']);
+  if (!view) return [t('chips.importFirst')];
+  return pick(spendAsks(view, money), [t('chips.cutBack')]);
 }
 
 /// Report: the first charge its "Worth checking" panel flags, then spending.
 export function reportChips({ view, anomalies, money }) {
-  if (!view) return ['What should I import first?'];
-  return pick([anomalyAsks(anomalies, money)[0], ...spendAsks(view, money)], ['Where can I cut back?']);
+  if (!view) return [t('chips.importFirst')];
+  return pick([anomalyAsks(anomalies, money)[0], ...spendAsks(view, money)], [t('chips.cutBack')]);
 }
 
 // ── Transactions ───────────────────────────────────────────────────────────
 
 const ANOMALY_ASKS = {
-  double_charge: (a, name) => `Did ${name} charge me twice?`,
-  new_recurring: (a, name) => `What is the new ${name} charge?`,
-  trial_charge: (a, name) => `Is ${name} a free trial turning paid?`,
-  bill_spike: (a, name, money) => `Why was ${name} ${money(a.amount)} this time?`,
+  double_charge: (a, name) => t('chips.anom.double', { name }),
+  new_recurring: (a, name) => t('chips.anom.newRecurring', { name }),
+  trial_charge: (a, name) => t('chips.anom.trial', { name }),
+  bill_spike: (a, name, money) => t('chips.anom.spike', { name, amt: money(a.amount) }),
 };
 
 /// The flagged charges the page shows (dismissed ones already left out),
@@ -226,14 +234,14 @@ export function bigChargeAsk(rows, known, money) {
   const [top] = spend
     .filter((r) => r.date >= cutoff && !skip.has(r.merchant) && -r.amount >= usual * 3)
     .sort((a, b) => a.amount - b.amount);
-  return top ? `What was the ${money(-top.amount)} at ${shortName(top.merchant)}?` : null;
+  return top ? t('chips.bigCharge', { amt: money(-top.amount), name: shortName(top.merchant) }) : null;
 }
 
 export function txnChips({ anomalies, rows, recurring, money }) {
-  if (!rows?.length) return ['What should I import first?'];
+  if (!rows?.length) return [t('chips.importFirst')];
   // A merchant already flagged is asked about once, by its flag.
   const known = [...(recurring || []), ...(anomalies || [])];
-  return pick([...anomalyAsks(anomalies, money), bigChargeAsk(rows, known, money)], ['Find anything unusual']);
+  return pick([...anomalyAsks(anomalies, money), bigChargeAsk(rows, known, money)], [t('chips.txnFallback')]);
 }
 
 // ── Commitments ────────────────────────────────────────────────────────────
@@ -243,24 +251,24 @@ export function hikeAsks(subs, money) {
   return (subs || [])
     .filter((s) => s.increased && s.active !== false)
     .sort((a, b) => b.increase_amount - a.increase_amount)
-    .map((s) => `${shortName(s.merchant)} went up ${money(s.increase_amount)} — worth keeping?`);
+    .map((s) => t('chips.hike', { name: shortName(s.merchant), amt: money(s.increase_amount) }));
 }
 
 /// The priciest subscription that isn't an essential bill.
 export function priciestAsk(subs, money) {
   const [top] = (subs || []).filter((s) => !s.essential && s.active !== false).sort((a, b) => b.monthly - a.monthly);
-  return top ? `Do I still need ${shortName(top.merchant)} at ${money(top.monthly)}/mo?` : null;
+  return top ? t('chips.priciest', { name: shortName(top.merchant), amt: money(top.monthly) }) : null;
 }
 
 /// Fixed costs taking 40% or more of income, and debt when there is some.
 export function loadAsks(commitments) {
   const c = commitments || {};
   return [
-    c.pct_of_income >= 40 ? `Are my fixed costs too high at ${Math.round(c.pct_of_income)}% of income?` : null,
-    c.split?.debt > 0 ? 'What is the fastest way to pay off my debt?' : null,
+    c.pct_of_income >= 40 ? t('chips.fixedHigh', { pct: Math.round(c.pct_of_income) }) : null,
+    c.split?.debt > 0 ? t('chips.debt') : null,
   ];
 }
 
 export function commitChips({ subs, commitments, money }) {
-  return pick([...hikeAsks(subs, money), priciestAsk(subs, money), ...loadAsks(commitments)], ['Which subscriptions can I cancel?']);
+  return pick([...hikeAsks(subs, money), priciestAsk(subs, money), ...loadAsks(commitments)], [t('chips.commitFallback')]);
 }

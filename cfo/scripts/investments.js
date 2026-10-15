@@ -13,6 +13,11 @@
 
 import { investmentsOf } from './lww.js';
 import { investChips } from './chips.js';
+import { t, intlLocale, language } from './strings.js';
+
+// English keeps the browser's own locale (en-CA writes US$ beside CA$ — the
+// difference matters when both are held); another language uses its own.
+const loc = () => (language() === 'en' ? undefined : intlLocale());
 import { initStockChart, stockChartHtml, loadChart, onChartAct, onChartHover, onChartLeave } from './stock-chart.js';
 
 const MARKET = '"$HOME/.linggen/skills/cfo/scripts/market.pl"';
@@ -188,7 +193,7 @@ export function rankMoves(order, from, to) {
 /// Add's answer when search doesn't list the typed ticker and the price check
 /// says it doesn't exist.
 export const missingNote = (sym, results) =>
-  results?.length ? `No listing for ${sym} — pick one below.` : `No listing for ${sym}.`;
+  t(results?.length ? 'inv.noListingPick' : 'inv.noListing', { sym });
 
 /// "US", "US · ETF", "TSX", "TSX · ETF" under a search suggestion.
 export const listingTag = (r) => (r.kind === 'etf' ? `${r.exchange} · ETF` : r.exchange);
@@ -236,8 +241,8 @@ export function staleNote(q) {
   const own = String(q.price_time || '').match(/^([A-Z][a-z]{2}) (\d{1,2}),/);
   const at = num(q.quote_at);
   const day = own ? `${own[1]} ${own[2]}`
-    : at ? new Date(at * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '';
-  return day ? `Last price ${day} — no quote since` : 'No quote lately';
+    : at ? new Date(at * 1000).toLocaleDateString(loc(), { month: 'short', day: 'numeric' }) : '';
+  return day ? t('inv.lastPrice', { day }) : t('inv.noQuote');
 }
 
 /// Holdings summed per currency — US and Canadian dollars never add up. A
@@ -363,18 +368,20 @@ export function proposalPlans(list, inv) {
 /// $150.00 → $160.00", "Sold all 10 sh".
 export function changeOf(plan, currency) {
   const { before: b, after: a } = plan;
-  const cost = (n) => (n === null ? 'unknown' : money(n, currency));
+  const cost = (n) => (n === null ? t('inv.unknown') : money(n, currency));
   if (!a.shares) {
-    if (b.shares) return `Sold all ${b.shares} sh`;
-    return plan.watched ? '' : 'Watch';
+    if (b.shares) return t('inv.soldAll', { n: b.shares });
+    return plan.watched ? '' : t('inv.watch');
   }
   const parts = [];
-  if (!b.shares) parts.push(`${plan.watched ? '' : 'New · '}${a.shares} sh${a.avg_cost !== null ? ` at ${cost(a.avg_cost)}` : ''}`);
-  else {
-    parts.push(b.shares === a.shares ? `${a.shares} sh` : `${b.shares} → ${a.shares} sh`);
-    if (b.avg_cost !== a.avg_cost) parts.push(b.avg_cost === null ? `at ${cost(a.avg_cost)}` : `avg ${cost(b.avg_cost)} → ${cost(a.avg_cost)}`);
+  if (!b.shares) {
+    const sh = a.avg_cost !== null ? t('inv.sharesAt', { n: a.shares, cost: cost(a.avg_cost) }) : t('inv.shares', { n: a.shares });
+    parts.push(plan.watched ? sh : t('inv.newShares', { what: sh }));
+  } else {
+    parts.push(b.shares === a.shares ? t('inv.shares', { n: a.shares }) : t('inv.sharesFromTo', { from: b.shares, to: a.shares }));
+    if (b.avg_cost !== a.avg_cost) parts.push(b.avg_cost === null ? t('inv.atCost', { cost: cost(a.avg_cost) }) : t('inv.avgFromTo', { from: cost(b.avg_cost), to: cost(a.avg_cost) }));
   }
-  if (a.account !== b.account) parts.push(b.account && b.shares ? `${b.account} → ${a.account || 'no account'}` : a.account);
+  if (a.account !== b.account) parts.push(b.account && b.shares ? `${b.account} → ${a.account || t('inv.noAccount')}` : a.account);
   else if (a.account && !b.shares) parts.push(a.account);
   return parts.filter(Boolean).join(' · ');
 }
@@ -387,16 +394,16 @@ export function dayOf(iso, withTime = false) {
   const d = new Date(/^\d{4}-\d\d-\d\d$/.test(iso) ? `${iso}T12:00:00` : iso);
   if (Number.isNaN(d.getTime())) return '';
   const opts = { month: 'short', day: 'numeric', year: 'numeric' };
-  return withTime ? d.toLocaleString(undefined, { ...opts, hour: 'numeric', minute: '2-digit' }) : d.toLocaleDateString(undefined, opts);
+  return withTime ? d.toLocaleString(loc(), { ...opts, hour: 'numeric', minute: '2-digit' }) : d.toLocaleDateString(loc(), opts);
 }
 
 const ANNUAL = new Set(['10-K', '20-F', '40-F']);
 
 /// A saved report's heading: "Quarter ended Jun 27, 2026 · Earnings release".
 export function reportHeading(r) {
-  if (r.form === 'earnings') return `Results out ${dayOf(r.period)}`;
-  const span = `${ANNUAL.has(r.form) ? 'Year' : 'Quarter'} ended ${dayOf(r.period)}`;
-  const form = r.form === '8-K' ? 'Earnings release' : r.form;
+  if (r.form === 'earnings') return t('inv.resultsOut', { day: dayOf(r.period) });
+  const span = t(ANNUAL.has(r.form) ? 'inv.yearEnded' : 'inv.quarterEnded', { day: dayOf(r.period) });
+  const form = r.form === '8-K' ? t('inv.earningsRelease') : r.form;
   return [span, form].filter(Boolean).join(' · ');
 }
 
@@ -426,10 +433,10 @@ export function checkNoteOf(result) {
   const n = result.new.length;
   const failed = result.failed.map((f) => f.symbol);
   const parts = [];
-  if (n) parts.push(`${n} new report${n === 1 ? '' : 's'} — reading now`);
-  if (failed.length) parts.push(`couldn't check ${failed.join(', ')}`);
+  if (n) parts.push(t('inv.newReports', { n }));
+  if (failed.length) parts.push(t('inv.couldntCheck', { who: failed.join(', ') }));
   if (parts.length) return parts.join(' · ').replace(/^./, (c) => c.toUpperCase());
-  return result.last_checked ? `Nothing new since ${dayOf(result.last_checked, true)}` : 'Nothing new yet — reports from today on will show here';
+  return result.last_checked ? t('inv.nothingSince', { when: dayOf(result.last_checked, true) }) : t('inv.nothingYet');
 }
 
 /// The hidden message that hands reports to the agent. Its runbook lives in
@@ -462,23 +469,23 @@ export function weekItems(doc, brief) {
 
 /// "This morning" / "Yesterday" / "Sep 14, 2026" for a brief's day.
 export function briefDayLabel(day, today) {
-  if (day === today) return 'This morning';
+  if (day === today) return t('inv.thisMorning');
   const d = new Date(`${today}T12:00:00`);
   d.setDate(d.getDate() - 1);
-  return day === d.toLocaleDateString('en-CA') ? 'Yesterday' : dayOf(day);
+  return day === d.toLocaleDateString('en-CA') ? t('inv.yesterday') : dayOf(day);
 }
 
 /// Whose event it is: its ticker (and any other holding it names), the
 /// holdings an economy event touches, or "Economy".
 export function whoOf(item) {
   const syms = item.symbol ? [item.symbol, ...(item.also || [])] : item.holdings || [];
-  return syms.length ? [...new Set(syms)].join(', ') : 'Economy';
+  return syms.length ? [...new Set(syms)].join(', ') : t('inv.economy');
 }
 
 /// "$428 at stake" for a holding, "Watching" for a watched-only ticker.
 export function stakeText(item) {
-  if (!item.held) return item.symbol ? 'Watching' : '';
-  return item.stake > 0 && item.currency ? `${money(item.stake, item.currency, 0)} at stake` : '';
+  if (!item.held) return item.symbol ? t('inv.watching') : '';
+  return item.stake > 0 && item.currency ? t('inv.atStake', { amount: money(item.stake, item.currency, 0) }) : '';
 }
 
 /// The line Check now asks before it starts a run: the rough cost, from the
@@ -487,14 +494,17 @@ export function checkCostText(runs) {
   const used = (runs || []).find((r) => r.status === 'completed' && r.usage);
   const n = used ? (num(used.usage.prompt) || 0) + (num(used.usage.output) || 0) : 0;
   return n > 0
-    ? `Check now? The last check used about ${Math.max(1, Math.round(n / 1000))}k tokens.`
-    : 'Check now? It runs the full nightly check with the model.';
+    ? t('inv.checkCost', { k: Math.max(1, Math.round(n / 1000)) })
+    : t('inv.checkCostNone');
 }
 
 /// What Ask CFO says in the chat, in the user's voice.
 export function askText(item) {
-  return `What does this mean for my holdings? "${item.line}"${/^https:\/\//.test(item.url || '') ? ` (${item.url})` : ''}`;
+  return t('inv.askLine', { line: item.line, url: /^https:\/\//.test(item.url || '') ? ` (${item.url})` : '' });
 }
+
+/// "high" → "High" (CSS capitalizes) / "高"; an unknown level stays as saved.
+const materialityLabel = (m) => (['high', 'medium', 'low'].includes(m) ? t(`inv.mat.${m}`) : m || '');
 
 // ── Drawing ────────────────────────────────────────────────────────────────
 
@@ -515,12 +525,12 @@ function draw() {
   if (editing) return; // never wipe a form mid-typing
   document.getElementById('inv-list').innerHTML = rows.length
     ? rows.map(rowHtml).join('')
-    : '<p class="hint">Add a ticker to watch it. Add shares and your average cost to track value and gain.</p>';
+    : `<p class="hint">${t('inv.empty')}</p>`;
 }
 
 export function money(n, currency, digits = 2) {
   if (n === null) return '—';
-  return new Intl.NumberFormat(undefined, {
+  return new Intl.NumberFormat(loc(), {
     style: 'currency', currency, minimumFractionDigits: digits, maximumFractionDigits: digits,
   }).format(n);
 }
@@ -536,38 +546,38 @@ export function moveHtml(n, currency, pct, digits = 2) {
 }
 
 function summaryHtml(rows) {
-  const totals = Object.entries(totalsByCurrency(rows)).map(([cur, t]) => `
-    <span class="inv-total"><b>${money(t.value, cur, 0)}</b>
-      ${moveHtml(t.day, cur, null, 0)} today${t.cost ? ` · ${moveHtml(t.gain, cur, (t.gain / t.cost) * 100, 0)} overall` : ''}${t.left_out.length
-        ? `<span class="hint inline">Leaves out ${deps.esc(t.left_out.join(', '))} — no recent price</span>` : ''}</span>`);
+  const totals = Object.entries(totalsByCurrency(rows)).map(([cur, tot]) => `
+    <span class="inv-total"><b>${money(tot.value, cur, 0)}</b>
+      ${t('inv.today', { move: moveHtml(tot.day, cur, null, 0) })}${tot.cost ? ` · ${t('inv.overall', { move: moveHtml(tot.gain, cur, (tot.gain / tot.cost) * 100, 0) })}` : ''}${tot.left_out.length
+        ? `<span class="hint inline">${deps.esc(t('inv.leavesOut', { who: tot.left_out.join(', ') }))}</span>` : ''}</span>`);
   const stamp = rows.map((r) => r.price_time).find(Boolean);
-  const state = checking ? 'Checking reports…' : checkNote || (loading ? 'Updating…' : failure || (stamp ? `Prices ${stamp}` : ''));
+  const state = checking ? t('inv.checkingReports') : checkNote || (loading ? t('inv.updating') : failure || (stamp ? t('inv.prices', { stamp }) : ''));
   return `<div class="inv-summary">${totals.join('')}<span class="spacer"></span>
     <span class="hint inline">${deps.esc(state)}</span>
-    ${rows.length ? `<button class="chip" data-act="refresh" ${loading ? 'disabled' : ''}>Refresh</button>
-      <button class="chip" data-act="check" ${checking ? 'disabled' : ''}>Check reports</button>
-      <button class="chip" data-act="review" ${reviewAsk ? 'disabled' : ''}>Review</button>` : ''}</div>`;
+    ${rows.length ? `<button class="chip" data-act="refresh" ${loading ? 'disabled' : ''}>${t('inv.refresh')}</button>
+      <button class="chip" data-act="check" ${checking ? 'disabled' : ''}>${t('inv.checkReports')}</button>
+      <button class="chip" data-act="review" ${reviewAsk ? 'disabled' : ''}>${t('inv.review')}</button>` : ''}</div>`;
 }
 
 /// Review is a chat turn with the model, so it says so and waits for a yes.
 function reviewAskHtml() {
   return reviewAsk
-    ? `<div class="inv-prop"><span>Review your portfolio? CFO answers in the chat — one turn with the model.</span><span class="spacer"></span>
-        <button class="btn" data-act="review-go">Review</button>
-        <button class="chip ghost" data-act="review-cancel">Cancel</button></div>`
+    ? `<div class="inv-prop"><span>${t('inv.reviewAsk')}</span><span class="spacer"></span>
+        <button class="btn" data-act="review-go">${t('inv.review')}</button>
+        <button class="chip ghost" data-act="review-cancel">${t('common.cancel')}</button></div>`
     : '';
 }
 
 function startPortfolioReview() {
   reviewAsk = false;
-  if (!deps.say('Review my portfolio')) checkNote = 'The chat isn’t ready yet — try again in a moment';
+  if (!deps.say(t('inv.reviewSay'))) checkNote = t('inv.chatNotReady');
   draw();
 }
 
 function subline(r) {
   const parts = r.kind === 'etf'
-    ? ['ETF', r.pe && `P/E ${r.pe}`, r.expense_ratio && `Expense ${r.expense_ratio}`]
-    : [r.pe && `P/E ${r.pe}`, r.forward_pe && `Fwd P/E ${r.forward_pe}`, r.earnings_date && `Earnings ${r.earnings_date}`];
+    ? ['ETF', r.pe && t('inv.subPe', { v: r.pe }), r.expense_ratio && t('inv.subExpense', { v: r.expense_ratio })]
+    : [r.pe && t('inv.subPe', { v: r.pe }), r.forward_pe && t('inv.subFwdPe', { v: r.forward_pe }), r.earnings_date && t('inv.subEarnings', { v: r.earnings_date })];
   return parts.filter(Boolean).join(' · ');
 }
 
@@ -580,9 +590,9 @@ function rowHtml(r) {
       ? `${money(r.price, r.currency)} <span class="hint inline">${esc(r.stale)}</span>`
       : `${money(r.price, r.currency)} ${moveHtml(r.change, r.currency, r.change_pct)}`;
   const hold = r.shares > 0
-    ? `<div>${r.shares} sh${r.account ? ` · ${esc(r.account)}` : ''}</div>
+    ? `<div>${t('inv.shares', { n: r.shares })}${r.account ? ` · ${esc(r.account)}` : ''}</div>
        <div>${money(r.value, r.currency, 0)} ${moveHtml(r.gain, r.currency, r.gain_pct, 0)}</div>`
-    : `<button class="chip" data-act="edit" data-sym="${sym}">Add shares</button>`;
+    : `<button class="chip" data-act="edit" data-sym="${sym}">${t('inv.addShares')}</button>`;
   return `<div class="inv-row${open === r.symbol ? ' open' : ''}" data-sym="${sym}">
     <span class="inv-grip" aria-hidden="true">⠿</span>
     <div class="inv-main" tabindex="0" aria-expanded="${open === r.symbol}">
@@ -590,7 +600,7 @@ function rowHtml(r) {
         <div class="inv-sub">${esc(subline(r))}</div></div>
       <div class="inv-price">${price}</div>
       <div class="inv-hold">${hold}</div>
-      <button class="chip inv-more" data-act="menu" data-sym="${sym}" aria-label="More for ${sym}">⋯</button>
+      <button class="chip inv-more" data-act="menu" data-sym="${sym}" aria-label="${esc(t('inv.moreFor', { sym: r.symbol }))}">⋯</button>
     </div>
     ${menuFor === r.symbol ? menuHtml(r) : ''}
     ${editing === r.symbol ? formHtml(r) : ''}
@@ -607,18 +617,18 @@ function cardHtml(r) {
   const range = q.low_52w != null && q.high_52w != null ? `${money(num(q.low_52w), r.currency)} – ${money(num(q.high_52w), r.currency)}` : null;
   const today = new Date().toLocaleDateString('en-CA'); // local YYYY-MM-DD
   const earnings = q.earnings_on
-    ? [q.earnings_on >= today ? 'Next earnings' : 'Last earnings', dayOf(q.earnings_on)]
+    ? [t(q.earnings_on >= today ? 'inv.st.nextEarnings' : 'inv.st.lastEarnings'), dayOf(q.earnings_on)]
     : null;
   const stats = (etf
-    ? [['Assets', q.aum], ['Expense ratio', q.expense_ratio], ['P/E', q.pe], ['Yield', q.dividend_yield], ['Beta', q.beta], ['52-week', range]]
-    : [['Market cap', q.market_cap], ['P/E', q.pe], ['Fwd P/E', q.forward_pe], ['EPS', q.eps], ['Dividend', q.dividend],
-      ['Beta', q.beta], ['52-week', range], ['Analysts', q.analysts], ['Target', q.target], earnings])
+    ? [[t('inv.st.assets'), q.aum], [t('inv.st.expense'), q.expense_ratio], [t('inv.st.pe'), q.pe], [t('inv.st.yield'), q.dividend_yield], [t('inv.st.beta'), q.beta], [t('inv.st.52w'), range]]
+    : [[t('inv.st.marketCap'), q.market_cap], [t('inv.st.pe'), q.pe], [t('inv.st.fwdPe'), q.forward_pe], [t('inv.st.eps'), q.eps], [t('inv.st.dividend'), q.dividend],
+      [t('inv.st.beta'), q.beta], [t('inv.st.52w'), range], [t('inv.st.analysts'), q.analysts], [t('inv.st.target'), q.target], earnings])
     .filter((s) => s && s[1] != null && s[1] !== '');
   const held = r.shares > 0 && r.avg_cost !== null
-    ? `<p class="hint">${r.shares} sh at ${money(r.avg_cost, r.currency)} · cost ${money(r.cost, r.currency, 0)}</p>` : '';
+    ? `<p class="hint">${t('inv.heldLine', { n: r.shares, avg: money(r.avg_cost, r.currency), cost: money(r.cost, r.currency, 0) })}</p>` : '';
   const statsHtml = stats.length
     ? `<div class="inv-stats">${stats.map(([k, v]) => `<div><span>${esc(k)}</span><b>${esc(String(v))}</b></div>`).join('')}</div>`
-    : '<p class="hint">Numbers load with the next refresh.</p>';
+    : `<p class="hint">${t('inv.statsLater')}</p>`;
   return `<div class="inv-card">${stockChartHtml(r)}${statsHtml}${held}${etf ? '' : reportsHtml(r.symbol)}</div>`;
 }
 
@@ -629,14 +639,14 @@ function reportsHtml(symbol) {
   const list = reports[symbol]?.reports || [];
   const items = list.map((rep) => `<div class="inv-report">
       <div class="inv-report-h">${esc(reportHeading(rep))}
-        ${/^https:\/\//.test(rep.url || '') ? `<button class="link" data-act="link" data-url="${esc(rep.url)}">Source ↗</button>` : ''}</div>
+        ${/^https:\/\//.test(rep.url || '') ? `<button class="link" data-act="link" data-url="${esc(rep.url)}">${t('inv.source')} ↗</button>` : ''}</div>
       <div class="inv-report-body">${markedHtml(rep.summary, esc)}</div>
     </div>`).join('');
   return `<div class="inv-reports">
-    <div class="inv-reports-h"><span>Reports</span>
+    <div class="inv-reports-h"><span>${t('inv.reports')}</span>
       <span class="hint inline">${esc(line?.note || '')}</span><span class="spacer"></span>
-      <button class="chip" data-act="latest" data-sym="${sym}" ${line?.busy ? 'disabled' : ''}>Latest report</button></div>
-    ${items || '<p class="hint">No summaries yet. Latest report has CFO read the newest one.</p>'}
+      <button class="chip" data-act="latest" data-sym="${sym}" ${line?.busy ? 'disabled' : ''}>${t('inv.latestReport')}</button></div>
+    ${items || `<p class="hint">${t('inv.noSummaries')}</p>`}
   </div>`;
 }
 
@@ -652,25 +662,25 @@ function watchHtml() {
   const controls = !mission
     ? ''
     : on
-      ? `<select data-act="watch-level" aria-label="How much the Watch tells you">${[['quiet', 'Quiet'], ['normal', 'Normal'], ['everything', 'Everything']]
+      ? `<select data-act="watch-level" aria-label="${esc(t('inv.levelAria'))}">${[['quiet', t('inv.lv.quiet')], ['normal', t('inv.lv.normal')], ['everything', t('inv.lv.everything')]]
         .map(([v, label]) => `<option value="${v}"${v === level ? ' selected' : ''}>${label}</option>`).join('')}</select>
-        <button class="chip" data-act="watch-run" ${running || confirming ? 'disabled' : ''}>Check now</button>
-        <button class="chip ghost" data-act="watch-off">Turn off</button>`
-      : `<button class="btn" data-act="watch-on">Turn on</button>`;
+        <button class="chip" data-act="watch-run" ${running || confirming ? 'disabled' : ''}>${t('inv.checkNow')}</button>
+        <button class="chip ghost" data-act="watch-off">${t('inv.turnOff')}</button>`
+      : `<button class="btn" data-act="watch-on">${t('inv.turnOn')}</button>`;
   const intro = !brief && !running
-    ? `<p class="hint">${on ? 'Your first brief comes after tonight’s check.' : 'Every night: new results from what you hold, and whatever else moved your money — or nothing.'}</p>`
+    ? `<p class="hint">${on ? t('inv.firstBrief') : t('inv.watchIntro')}</p>`
     : '';
-  const day = brief ? `<div class="inv-watch-day">${esc(briefDayLabel(brief.day, today))}${brief.quiet ? ' · a quiet night' : ''}</div>${brief.items.map(watchLineHtml).join('')}` : '';
+  const day = brief ? `<div class="inv-watch-day">${esc(briefDayLabel(brief.day, today))}${brief.quiet ? ` · ${t('inv.quietNight')}` : ''}</div>${brief.items.map(watchLineHtml).join('')}` : '';
   const rest = week.length
-    ? `<button class="link inv-watch-more" data-act="watch-more">${more ? 'Hide the week' : `${week.length} more this week`}</button>${more ? week.map(watchLineHtml).join('') : ''}`
+    ? `<button class="link inv-watch-more" data-act="watch-more">${more ? t('inv.hideWeek') : t('inv.moreThisWeek', { n: week.length })}</button>${more ? week.map(watchLineHtml).join('') : ''}`
     : '';
   const ask = confirming && !running
     ? `<div class="inv-prop"><span>${esc(checkCostText(watch.runs))}</span><span class="spacer"></span>
-        <button class="btn" data-act="watch-run-go">Check</button>
-        <button class="chip ghost" data-act="watch-run-cancel">Cancel</button></div>`
+        <button class="btn" data-act="watch-run-go">${t('inv.check')}</button>
+        <button class="chip ghost" data-act="watch-run-cancel">${t('common.cancel')}</button></div>`
     : '';
   return `<div class="inv-watch">
-    <div class="inv-watch-h"><b>✦ Watch</b><span class="hint inline">· ${esc(headline(note))}</span><span class="spacer"></span>${controls}</div>
+    <div class="inv-watch-h"><b>✦ ${t('inv.watchTitle')}</b><span class="hint inline">· ${esc(headline(note))}</span><span class="spacer"></span>${controls}</div>
     ${ask}${intro}${day}${rest}
   </div>`;
 }
@@ -679,28 +689,28 @@ function watchHtml() {
 /// the buttons are the action and never the only clue.
 function headline(note) {
   const { mission } = watch;
-  if (!mission) return 'Unavailable — restart Linggen';
-  return [mission.enabled ? 'On' : 'Off', note || watchStatus()].filter(Boolean).join(' · ');
+  if (!mission) return t('inv.unavailable');
+  return [mission.enabled ? t('inv.on') : t('inv.off'), note || watchStatus()].filter(Boolean).join(' · ');
 }
 
 function watchStatus() {
   const { mission, running, lastRun } = watch;
-  if (running) return 'Checking now…';
+  if (running) return t('inv.checkingNow');
   if (!mission.enabled) return '';
-  if (!lastRun) return 'Every night at 1:00';
-  const when = new Date(lastRun.triggered_at * 1000).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' });
-  return lastRun.status === 'completed' ? `Checked ${when}` : `The check ${when} didn’t finish`;
+  if (!lastRun) return t('inv.everyNight');
+  const when = new Date(lastRun.triggered_at * 1000).toLocaleString(loc(), { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+  return t(lastRun.status === 'completed' ? 'inv.checkedAt' : 'inv.checkUnfinished', { when });
 }
 
 function watchLineHtml(item) {
   const { esc } = deps;
   const stake = stakeText(item);
-  const source = /^https:\/\//.test(item.url || '') ? `<button class="link" data-act="link" data-url="${esc(item.url)}">Source ↗</button>` : '';
+  const source = /^https:\/\//.test(item.url || '') ? `<button class="link" data-act="link" data-url="${esc(item.url)}">${t('inv.source')} ↗</button>` : '';
   return `<div class="inv-watch-line">
     <span class="inv-watch-who">${esc(whoOf(item))}</span>
     <span>${esc(item.line)}</span>
-    <span class="inv-watch-meta">${stake ? `<span>${esc(stake)}</span>` : ''}<span class="inv-watch-level">${esc(item.materiality)}</span>${source}
-      <button class="link" data-act="watch-ask" data-id="${esc(item.id)}">Ask CFO</button></span>
+    <span class="inv-watch-meta">${stake ? `<span>${esc(stake)}</span>` : ''}<span class="inv-watch-level">${esc(materialityLabel(item.materiality))}</span>${source}
+      <button class="link" data-act="watch-ask" data-id="${esc(item.id)}">${t('inv.askCfo')}</button></span>
   </div>`;
 }
 
@@ -721,18 +731,18 @@ function proposalsHtml() {
   const rows = plans.map((p) => {
     const sym = esc(p.symbol);
     const missing = notFound(p.symbol);
-    const what = missing ? 'Not found — check the ticker' : changeOf(p, currencyOf(p.symbol, quotes[p.symbol]));
+    const what = missing ? t('inv.notFound') : changeOf(p, currencyOf(p.symbol, quotes[p.symbol]));
     return `<div class="inv-prop">
       <b>${sym}</b> <span class="inv-name">${esc(quotes[p.symbol]?.name || '')}</span>
       <span class="inv-prop-what">${esc(what)}</span><span class="spacer"></span>
-      <button class="chip" data-act="prop-apply" data-sym="${sym}" ${missing ? 'disabled' : ''}>Apply</button>
-      <button class="chip ghost" data-act="prop-drop" data-sym="${sym}" aria-label="Dismiss ${sym}">✕</button>
+      <button class="chip" data-act="prop-apply" data-sym="${sym}" ${missing ? 'disabled' : ''}>${t('inv.apply')}</button>
+      <button class="chip ghost" data-act="prop-drop" data-sym="${sym}" aria-label="${esc(t('inv.dismissSym', { sym: p.symbol }))}">✕</button>
     </div>`;
   }).join('');
-  const all = plans.length > 1 ? '<button class="chip" data-act="prop-apply-all">Apply all</button>' : '';
+  const all = plans.length > 1 ? `<button class="chip" data-act="prop-apply-all">${t('inv.applyAll')}</button>` : '';
   return `<div class="inv-props">
-    <div class="inv-props-h"><b>✦ From chat</b><span class="hint inline">Saved only when you apply</span><span class="spacer"></span>
-      ${all}<button class="chip ghost" data-act="prop-drop-all">Dismiss${plans.length > 1 ? ' all' : ''}</button></div>
+    <div class="inv-props-h"><b>✦ ${t('inv.fromChat')}</b><span class="hint inline">${t('inv.savedOnApply')}</span><span class="spacer"></span>
+      ${all}<button class="chip ghost" data-act="prop-drop-all">${t(plans.length > 1 ? 'inv.dismissAll' : 'inv.dismiss')}</button></div>
     ${rows}
   </div>`;
 }
@@ -740,8 +750,8 @@ function proposalsHtml() {
 function menuHtml(r) {
   const sym = deps.esc(r.symbol);
   return `<div class="inv-menu">
-    <button class="chip" data-act="edit" data-sym="${sym}">${r.shares > 0 ? 'Edit holding' : 'Add shares'}</button>
-    <button class="chip" data-act="remove" data-sym="${sym}">Remove</button>
+    <button class="chip" data-act="edit" data-sym="${sym}">${r.shares > 0 ? t('inv.editHolding') : t('inv.addShares')}</button>
+    <button class="chip" data-act="remove" data-sym="${sym}">${t('inv.remove')}</button>
   </div>`;
 }
 
@@ -750,11 +760,11 @@ function formHtml(r) {
   const sym = esc(r.symbol);
   const val = (v) => (v === null || v === 0 ? '' : esc(String(v)));
   return `<div class="inv-form" data-sym="${sym}">
-    <label>Shares <input data-f="shares" inputmode="decimal" value="${val(r.shares)}"></label>
-    <label>Avg cost <input data-f="avg_cost" inputmode="decimal" value="${val(r.avg_cost)}"></label>
-    <label>Account <input data-f="account" placeholder="TFSA, RRSP…" value="${esc(r.account)}"></label>
-    <button class="btn" data-act="save" data-sym="${sym}">Save</button>
-    <button class="chip" data-act="cancel">Cancel</button>
+    <label>${t('inv.f.shares')} <input data-f="shares" inputmode="decimal" value="${val(r.shares)}"></label>
+    <label>${t('inv.f.avgCost')} <input data-f="avg_cost" inputmode="decimal" value="${val(r.avg_cost)}"></label>
+    <label>${t('inv.f.account')} <input data-f="account" placeholder="TFSA, RRSP…" value="${esc(r.account)}"></label>
+    <button class="btn" data-act="save" data-sym="${sym}">${t('inv.save')}</button>
+    <button class="chip" data-act="cancel">${t('common.cancel')}</button>
   </div>`;
 }
 
@@ -926,10 +936,10 @@ async function onAdd(e) {
   const msg = document.getElementById('inv-add-msg');
   const typed = input.value;
   const sym = canonicalSymbol(typed);
-  if (!sym) { msg.textContent = 'Use a ticker like AAPL, or RY.TO for the TSX.'; return; }
+  if (!sym) { msg.textContent = t('inv.badTicker'); return; }
   clearTimeout(suggestTimer);
   const seq = ++suggestSeq;
-  msg.textContent = `Checking ${sym}…`;
+  msg.textContent = t('inv.checkingSym', { sym });
   const found = await search(typed);
   if (!found?.some((r) => r.symbol === sym) && (await quoteMissing(sym))) {
     if (seq !== suggestSeq) return; // typing moved on
@@ -1072,7 +1082,7 @@ function writeHolding(sym, next) {
 
 async function removeSymbol(sym) {
   menuFor = null;
-  if (!(await deps.confirm(`Remove ${sym} from Investments?`))) { draw(); return; }
+  if (!(await deps.confirm(t('inv.confirmRemove', { sym })))) { draw(); return; }
   const reg = deps.edits();
   for (const field of FIELDS) if (reg.get(`inv:${sym}|${field}`) != null) reg.remove(`inv:${sym}|${field}`);
   await persist();
@@ -1102,7 +1112,7 @@ async function refresh(only) {
     await writeSnapshot();
   } catch (err) {
     console.warn('[cfo] market refresh failed', err);
-    failure = 'Prices unavailable — check the connection';
+    failure = t('inv.pricesDown');
   } finally {
     loading = false;
     draw();
@@ -1174,7 +1184,7 @@ async function switchWatch(on) {
     if (!res.ok) throw new Error(`update ${res.status}`);
   } catch (err) {
     console.warn('[cfo] watch switch', err);
-    noteWatch("Couldn't reach Linggen");
+    noteWatch(t('inv.noReach'));
   }
   await loadWatch();
   watch.confirming = on && !!watch.mission?.enabled && !watch.running && !latestBrief(watch.doc);
@@ -1191,7 +1201,7 @@ async function runWatch() {
     followRun(Date.now());
   } catch (err) {
     console.warn('[cfo] watch run', err);
-    noteWatch("Couldn't start the check");
+    noteWatch(t('inv.noStartCheck'));
   }
 }
 
@@ -1212,14 +1222,14 @@ async function setWatchLevel(level) {
     await deps.runBash(`perl ${MARKET} watch-level ${level}`);
   } catch (err) {
     console.warn('[cfo] watch level', err);
-    noteWatch("Couldn't change it — try again");
+    noteWatch(t('inv.noChange'));
   }
   await loadWatch();
 }
 
 function askAbout(id) {
   const item = (watch.doc.items || []).find((i) => i.id === id);
-  if (item && !deps.say(askText(item))) noteWatch('Chat is still starting — try again in a moment');
+  if (item && !deps.say(askText(item))) noteWatch(t('inv.chatStarting'));
 }
 
 function noteWatch(note) {
@@ -1241,7 +1251,7 @@ async function checkReports() {
   try {
     const result = JSON.parse(await deps.runBash(`perl ${MARKET} reports-check ${symbols.join(' ')}`));
     if (result.new.length && !deps.ask(readPrompt(result.new, 'check'))) {
-      checkNote = 'Chat is still starting — try again in a moment';
+      checkNote = t('inv.chatStarting');
     } else {
       checkNote = checkNoteOf(result);
       for (const item of result.new) startReading(item.symbol);
@@ -1249,7 +1259,7 @@ async function checkReports() {
     await loadReports();
   } catch (err) {
     console.warn('[cfo] reports check failed', err);
-    checkNote = "Couldn't check reports — check the connection";
+    checkNote = t('inv.noCheckReports');
   } finally {
     checking = false;
     draw();
@@ -1261,29 +1271,29 @@ async function checkReports() {
 /// The newest report for one company. Already summarized → nothing to do;
 /// otherwise the agent reads it.
 async function latestReport(sym) {
-  setLine(sym, { note: 'Looking…', busy: true });
+  setLine(sym, { note: t('inv.looking'), busy: true });
   try {
     const item = JSON.parse(await deps.runBash(`perl ${MARKET} reports-latest ${sym}`));
     if (item.saved) {
-      setLine(sym, { note: 'Already read — it’s the top one' });
+      setLine(sym, { note: t('inv.alreadyRead') });
     } else if (!deps.ask(readPrompt([item], 'latest'))) {
-      setLine(sym, { note: 'Chat is still starting — try again in a moment' });
+      setLine(sym, { note: t('inv.chatStarting') });
     } else {
       startReading(sym);
       return;
     }
   } catch (err) {
-    setLine(sym, { note: String(err.message || err).trim().split('\n')[0] || "Couldn't reach the report source" });
+    setLine(sym, { note: String(err.message || err).trim().split('\n')[0] || t('inv.noSource') });
   }
   forgetLater(sym);
 }
 
 function startReading(sym) {
   const at = Date.now();
-  setLine(sym, { note: 'Reading…', busy: true, at });
+  setLine(sym, { note: t('inv.reading'), busy: true, at });
   setTimeout(() => {
     if (reading.get(sym)?.at !== at) return;
-    setLine(sym, { note: 'Nothing saved — ask CFO about it in chat' });
+    setLine(sym, { note: t('inv.nothingSaved') });
     forgetLater(sym);
   }, READ_WAIT_MS);
 }

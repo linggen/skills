@@ -12,20 +12,20 @@
     <main id="report-pane">
       <!-- FIXED section: page-owned, deterministic. The agent never updates this. -->
       <header id="report-header">
-        <h1>Personal CFO</h1>
+        <h1 data-i18n="ui.title">Personal CFO</h1>
         <nav id="tabs">
-          <button class="tab on" data-view="report">Report</button>
-          <button class="tab" data-view="trends">Trends</button>
-          <button class="tab" data-view="txn">Transactions</button>
-          <button class="tab" data-view="commit">Commitments</button>
-          <button class="tab" data-view="invest">Investments</button>
+          <button class="tab on" data-view="report" data-i18n="ui.tab.report">Report</button>
+          <button class="tab" data-view="trends" data-i18n="ui.tab.trends">Trends</button>
+          <button class="tab" data-view="txn" data-i18n="ui.tab.txn">Transactions</button>
+          <button class="tab" data-view="commit" data-i18n="ui.tab.commit">Commitments</button>
+          <button class="tab" data-view="invest" data-i18n="ui.tab.invest">Investments</button>
         </nav>
-        <button id="help-btn" class="chip" title="How to use Personal CFO">Help</button>
-        <select id="currency-sel" class="chip" title="Home currency — budgets and the combined total"></select>
+        <button id="help-btn" class="chip" title="How to use Personal CFO" data-i18n="ui.help" data-i18n-title="ui.help.title">Help</button>
+        <select id="currency-sel" class="chip" title="Home currency — budgets and the combined total" data-i18n-title="ui.currency.title"></select>
         <span class="spacer"></span>
-        <button id="run-review" class="btn ghost" title="Ask the AI for a full financial review">✦ Run review</button>
+        <button id="run-review" class="btn ghost" title="Ask the AI for a full financial review" data-i18n="ui.runReview" data-i18n-title="ui.runReview.title">✦ Run review</button>
         <label id="import-btn" class="btn">
-          Import statement
+          <span data-i18n="ui.import">Import statement</span>
           <input id="file-input" type="file" accept=".csv,text/csv,.pdf,application/pdf" multiple hidden>
         </label>
       </header>
@@ -41,12 +41,12 @@
       </div>
 
       <section id="empty-state">
-        <p class="lead">Drop a bank or credit-card export (CSV or PDF) to see where your money goes.</p>
-        <p class="hint">Statements stay on this Mac; the AI sees only redacted totals. CSV is most accurate; PDF is best-effort.</p>
+        <p class="lead" data-i18n="ui.empty.lead">Drop a bank or credit-card export (CSV or PDF) to see where your money goes.</p>
+        <p class="hint" data-i18n="ui.empty.hint">Statements stay on this Mac; the AI sees only redacted totals. CSV is most accurate; PDF is best-effort.</p>
       </section>
 
       <section id="report" hidden>
-        <p class="hint" id="drop-hint">📥 Drag &amp; drop statement files (CSV or PDF) anywhere on this page to import — several at once is fine.</p>
+        <p class="hint" id="drop-hint" data-i18n="ui.dropHint">📥 Drag &amp; drop statement files (CSV or PDF) anywhere on this page to import — several at once is fine.</p>
         <!-- Agent-teacher: merchant→category/transfer rule proposals to review. -->
         <div id="suggestions-wrap" hidden></div>
         <div id="cards" class="cards"></div>
@@ -62,11 +62,11 @@
         <!-- DYNAMIC section: the only region the agent updates (PageUpdate).
              Sits under the deterministic state summary — numbers first, voice second. -->
         <section id="insights-wrap" hidden>
-          <h2>✦ Insights <button id="insights-clear" class="chip" title="Remove all insight cards">clear</button>
-            <label class="auto-chip" title="Off: imports offer a Review button. On: the AI reviews every import, including the watch folder"><input type="checkbox" id="auto-review-toggle"> auto-review on import</label></h2>
+          <h2><span data-i18n="ui.insights">✦ Insights</span> <button id="insights-clear" class="chip" title="Remove all insight cards" data-i18n="ui.insights.clear" data-i18n-title="ui.insights.clear.title">clear</button>
+            <label class="auto-chip" title="Off: imports offer a Review button. On: the AI reviews every import, including the watch folder" data-i18n-title="ui.autoReview.title"><input type="checkbox" id="auto-review-toggle"> <span data-i18n="ui.autoReview">auto-review on import</span></label></h2>
           <div id="insights"></div>
         </section>
-        <p class="hint" id="privacy-foot">🔒 All data stays on this Mac. The AI sees only redacted totals — no account numbers, balances or raw files.</p>
+        <p class="hint" id="privacy-foot" data-i18n="ui.privacy">🔒 All data stays on this Mac. The AI sees only redacted totals — no account numbers, balances or raw files.</p>
       </section>
 
       <!-- Trends: all historical charts, range-scoped. Page-owned, deterministic;
@@ -77,33 +77,33 @@
         <div id="anomalies"></div>
         <div id="budgets-home"><div id="budgets-wrap"></div></div>
         <section data-sec="trend">
-          <h2 class="sec-h">Monthly trend <span class="legend"><i class="sw spend"></i>spend <i class="sw income"></i>income <i class="sw net"></i>net</span></h2>
+          <h2 class="sec-h"><span data-i18n="ui.sec.trend">Monthly trend</span> <span class="legend"><i class="sw spend"></i><span data-i18n="ui.legend.spend">spend</span> <i class="sw income"></i><span data-i18n="ui.legend.income">income</span> <i class="sw net"></i><span data-i18n="ui.legend.net">net</span></span></h2>
           <div class="sec-body"><div id="trend"></div></div>
         </section>
         <section data-sec="bycat">
-          <h2 class="sec-h">By category <span class="legend">bars = monthly spend · dashed = budget cap</span><span class="sec-sum"></span></h2>
+          <h2 class="sec-h"><span data-i18n="ui.sec.bycat">By category</span> <span class="legend" data-i18n="ui.legend.bycat">bars = monthly spend · dashed = budget cap</span><span class="sec-sum"></span></h2>
           <div class="sec-body"><div id="bycat" class="facets"></div></div>
         </section>
         <section data-sec="breakdown">
-          <h2 class="sec-h">Spending &amp; subscriptions <span class="sec-sum"></span></h2>
+          <h2 class="sec-h"><span data-i18n="ui.sec.breakdown">Spending &amp; subscriptions</span> <span class="sec-sum"></span></h2>
           <div class="sec-body two-col">
             <div>
-              <h2>Where it goes</h2>
+              <h2 data-i18n="ui.sec.where">Where it goes</h2>
               <div id="cats" class="bars"></div>
             </div>
             <div>
-              <h2>Subscriptions</h2>
+              <h2 data-i18n="ui.sec.subs">Subscriptions</h2>
               <div id="subs" class="subs"></div>
               <div id="bills"></div>
             </div>
           </div>
         </section>
         <section data-sec="payments" hidden>
-          <h2 class="sec-h">Card payments <span class="hint inline">pattern-based — statements carry no due dates</span><span class="sec-sum"></span></h2>
+          <h2 class="sec-h"><span data-i18n="ui.sec.payments">Card payments</span> <span class="hint inline" data-i18n="ui.sec.payments.hint">pattern-based — statements carry no due dates</span><span class="sec-sum"></span></h2>
           <div class="sec-body" id="payments-wrap"></div>
         </section>
         <section data-sec="billcal" hidden>
-          <h2 class="sec-h">Bill calendar <span class="hint inline">✓ paid · hollow = expected</span><span class="sec-sum"></span></h2>
+          <h2 class="sec-h"><span data-i18n="ui.sec.billcal">Bill calendar</span> <span class="hint inline" data-i18n="ui.sec.billcal.hint">✓ paid · hollow = expected</span><span class="sec-sum"></span></h2>
           <div class="sec-body" id="bill-cal"></div>
         </section>
       </section>
@@ -129,10 +129,10 @@
            #inv-proposals for Apply. -->
       <section id="invest" hidden>
         <form id="inv-add" autocomplete="off">
-          <input id="inv-symbol" placeholder="Ticker or company — AAPL, RY.TO" spellcheck="false"
+          <input id="inv-symbol" placeholder="Ticker or company — AAPL, RY.TO" data-i18n-placeholder="ui.inv.placeholder" spellcheck="false"
             role="combobox" aria-autocomplete="list" aria-controls="inv-suggest">
           <div id="inv-suggest" class="inv-suggest" role="listbox" hidden></div>
-          <button class="btn" type="submit">Add</button>
+          <button class="btn" type="submit" data-i18n="ui.inv.add">Add</button>
           <span id="inv-add-msg" class="hint inline"></span>
         </form>
         <div id="inv-watch"></div>
@@ -144,7 +144,7 @@
       <div id="scope-pop" hidden></div>
     </main>
 
-    <div id="pane-resizer" title="Drag to resize the chat panel — double-click to reset"></div>
+    <div id="pane-resizer" title="Drag to resize the chat panel — double-click to reset" data-i18n-title="ui.resizer.title"></div>
     <aside id="chat-pane">
       <div id="chat-panel"></div>
     </aside>

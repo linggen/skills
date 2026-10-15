@@ -127,18 +127,18 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>CFO Settings</h1>
-      <p class="lead">Account, model and report preferences. Statements stay on this Mac; the model sees only redacted aggregates.</p>
+      <h1 data-i18n="set.h1">CFO Settings</h1>
+      <p class="lead" data-i18n="set.lead">Account, model and report preferences. Statements stay on this Mac; the model sees only redacted aggregates.</p>
     </header>
 
     <!-- Account -->
     <div class="section">
-      <h2 class="section-title">Account</h2>
-      <p class="section-desc">CFO's AI features run through your linggen.dev account (free trial included). Deterministic reports work without it.</p>
+      <h2 class="section-title" data-i18n="set.account.title">Account</h2>
+      <p class="section-desc" data-i18n="set.account.desc">CFO's AI features run through your linggen.dev account (free trial included). Deterministic reports work without it.</p>
       <div class="field-card">
         <div class="field-row">
           <div class="grow" id="acct-body">
-            <div class="acct-name">Checking sign-in…</div>
+            <div class="acct-name" data-i18n="set.account.checking">Checking sign-in…</div>
           </div>
           <button id="acct-btn" class="btn" type="button" hidden></button>
         </div>
@@ -147,74 +147,74 @@
 
     <!-- Model -->
     <div class="section">
-      <h2 class="section-title">Model</h2>
-      <p class="section-desc">Sets <strong>CFO's model only</strong>. Default: Linggen Cloud (<code>deepseek-flash</code>), no key needed. Providers live in Linggen.</p>
+      <h2 class="section-title" data-i18n="set.model.title">Model</h2>
+      <p class="section-desc" data-i18n-html="set.model.desc">Sets <strong>CFO's model only</strong>. Default: Linggen Cloud (<code>deepseek-flash</code>), no key needed. Providers live in Linggen.</p>
       <div class="field-card">
-        <div class="field-label">CFO runs on</div>
+        <div class="field-label" data-i18n="set.model.runsOn">CFO runs on</div>
         <div class="field-row">
           <select id="model-select"></select>
-          <span id="model-status" class="save-status">Saved</span>
+          <span id="model-status" class="save-status" data-i18n="set.model.saved">Saved</span>
         </div>
       </div>
     </div>
 
     <div class="section">
-      <h2 class="section-title">Memory</h2>
-      <p class="section-desc">Goals and notes CFO remembers, scoped to CFO alone and recalled as you chat. Forget any anytime.</p>
+      <h2 class="section-title" data-i18n="set.mem.title">Memory</h2>
+      <p class="section-desc" data-i18n="set.mem.desc">Goals and notes CFO remembers, scoped to CFO alone and recalled as you chat. Forget any anytime.</p>
       <div class="field-card">
-        <div id="mem-list" class="acct-meta">Loading…</div>
+        <div id="mem-list" class="acct-meta" data-i18n="set.loading">Loading…</div>
       </div>
     </div>
 
     <!-- Rules CFO learned -->
     <div class="section">
-      <h2 class="section-title">Rules CFO learned</h2>
-      <p class="section-desc">Merchant keyword → category, <strong>Transfer</strong> (not spend or income) or <strong>Income</strong>. Whole-word match; applies on the next recompute.</p>
+      <h2 class="section-title" data-i18n="set.rules.title">Rules CFO learned</h2>
+      <p class="section-desc" data-i18n-html="set.rules.desc">Merchant keyword → category, <strong>Transfer</strong> (not spend or income) or <strong>Income</strong>. Whole-word match; applies on the next recompute.</p>
       <div class="field-card">
         <div class="rule-add">
-          <input id="rule-kw" type="text" placeholder="merchant keyword (e.g. amex cards, or a word like virement)" />
+          <input id="rule-kw" type="text" data-i18n-placeholder="set.rules.kwPh" placeholder="merchant keyword (e.g. amex cards, or a word like virement)" />
           <select id="rule-type"></select>
-          <button id="rule-add-btn" class="btn" type="button">Add</button>
+          <button id="rule-add-btn" class="btn" type="button" data-i18n="set.rules.add">Add</button>
         </div>
-        <div id="rule-list" class="acct-meta" style="margin-top:14px">Loading…</div>
+        <div id="rule-list" class="acct-meta" style="margin-top:14px" data-i18n="set.loading">Loading…</div>
       </div>
     </div>
 
     <!-- Auto-import folder (folder-watch) -->
     <div class="section">
-      <h2 class="section-title">Auto-import folder</h2>
-      <p class="section-desc">Imports new statements from known accounts, on this Mac. A new account: drag it in once. Applies on reopen.</p>
+      <h2 class="section-title" data-i18n="set.watch.title">Auto-import folder</h2>
+      <p class="section-desc" data-i18n="set.watch.desc">Imports new statements from known accounts, on this Mac. A new account: drag it in once. Applies on reopen.</p>
       <div class="field-card">
         <div class="pet-row" id="watch-enabled-row" onclick="watchToggle()">
           <span class="pet-check"></span>
           <div class="grow">
-            <div class="acct-name">Watch a folder for new statements</div>
-            <div class="acct-meta" id="watch-status">Off</div>
+            <div class="acct-name" data-i18n="set.watch.row">Watch a folder for new statements</div>
+            <div class="acct-meta" id="watch-status" data-i18n="set.watch.off">Off</div>
           </div>
         </div>
         <div class="rule-add" style="margin-top:12px">
           <input id="watch-folder" type="text" placeholder="~/Downloads">
-          <button id="watch-save" class="btn" type="button">Save folder</button>
+          <button id="watch-save" class="btn" type="button" data-i18n="set.watch.save">Save folder</button>
         </div>
       </div>
     </div>
 
     <div class="section">
-      <h2 class="section-title">Desktop pet</h2>
-      <p class="section-desc">Yinyue, your companion on screen. Drag her body to move her anywhere.</p>
+      <h2 class="section-title" data-i18n="set.pet.title">Desktop pet</h2>
+      <p class="section-desc" data-i18n="set.pet.desc">Yinyue, your companion on screen. Drag her body to move her anywhere.</p>
       <div class="field-card">
         <div class="pet-row" id="pet-enabled-row" onclick="petToggleEnabled()">
           <span class="pet-check"></span>
           <div class="grow">
-            <div class="acct-name">Show Yinyue</div>
-            <div class="acct-meta">Your desktop companion. Turn off to hide her entirely.</div>
+            <div class="acct-name" data-i18n="set.pet.show">Show Yinyue</div>
+            <div class="acct-meta" data-i18n="set.pet.showDesc">Your desktop companion. Turn off to hide her entirely.</div>
           </div>
         </div>
         <div class="pet-row" id="pet-alwayson-row" onclick="petToggleAlways()">
           <span class="pet-check"></span>
           <div class="grow">
-            <div class="acct-name">Always on top</div>
-            <div class="acct-meta">Stay visible even when you switch to another app.</div>
+            <div class="acct-name" data-i18n="set.pet.top">Always on top</div>
+            <div class="acct-meta" data-i18n="set.pet.topDesc">Stay visible even when you switch to another app.</div>
           </div>
         </div>
       </div>
@@ -223,6 +223,9 @@
 
   <script>
     const SKILL = "cfo";
+    // The page's words (strings.js), handed over by the module block below
+    // once the language is loaded; nothing renders before that.
+    const L = (k, p) => (window.cfoT ? window.cfoT(k, p) : k);
     const CONFIG = `$HOME/.linggen/skills/${SKILL}/config.json`;
 
     async function runBash(command) {
@@ -242,39 +245,39 @@
     const acctBtn = document.getElementById("acct-btn");
     let polling = false;
 
-    const num = (n) => Number(n || 0).toLocaleString();
+    const num = (n) => Number(n || 0).toLocaleString(window.cfoLocale ? window.cfoLocale() : undefined);
 
     function entitlementLine(data) {
       const sub = data?.entitlement?.apps?.cfo;
       if (sub && sub.status === "active") {
-        return `<span class="pill pill-active">Subscribed</span>`;
+        return `<span class="pill pill-active">${L("set.acct.subscribed")}</span>`;
       }
       const trial = data?.entitlement?.trial?.cfo;
       if (trial && trial.active) {
-        return `<span class="pill pill-trial">Free trial</span>` +
-          `<div class="acct-meta">${num(trial.tokens)} / ${num(trial.budget)} trial tokens used</div>`;
+        return `<span class="pill pill-trial">${L("set.acct.trial")}</span>` +
+          `<div class="acct-meta">${L("set.acct.trialUsed", { used: num(trial.tokens), budget: num(trial.budget) })}</div>`;
       }
-      return `<span class="pill pill-off">No active plan</span>` +
-        `<div class="acct-meta">Subscribe to keep AI features after the trial.</div>`;
+      return `<span class="pill pill-off">${L("set.acct.noPlan")}</span>` +
+        `<div class="acct-meta">${L("set.acct.subscribeHint")}</div>`;
     }
 
     function renderSignedOut() {
-      acctBody.innerHTML = `<div class="acct-name">Not signed in</div>
-        <div class="acct-meta">Sign in to start your free trial and use CFO's AI features.</div>`;
+      acctBody.innerHTML = `<div class="acct-name">${L("set.acct.signedOut")}</div>
+        <div class="acct-meta">${L("set.acct.signInHint")}</div>`;
       acctBtn.hidden = false;
       acctBtn.className = "btn";
-      acctBtn.textContent = "Sign in";
+      acctBtn.textContent = L("set.acct.signIn");
       acctBtn.onclick = signIn;
     }
 
     function renderSignedIn(data) {
-      const offline = data.offline ? ` · <span title="Could not reach linggen.dev; showing cached entitlement">offline</span>` : "";
-      acctBody.innerHTML = `<div class="acct-name">Signed in as ${data.user_name || "your account"}</div>
+      const offline = data.offline ? ` · <span title="${L("set.acct.offlineTip")}">${L("set.acct.offline")}</span>` : "";
+      acctBody.innerHTML = `<div class="acct-name">${L("set.acct.signedInAs", { name: data.user_name || L("set.acct.yourAccount") })}</div>
         <div class="acct-meta">${entitlementLine(data)}</div>
-        <div class="acct-meta">Linggen account${offline}</div>`;
+        <div class="acct-meta">${L("set.acct.linggen")}${offline}</div>`;
       acctBtn.hidden = false;
       acctBtn.className = "btn btn-ghost";
-      acctBtn.textContent = "Sign out";
+      acctBtn.textContent = L("set.acct.signOut");
       acctBtn.onclick = signOut;
     }
 
@@ -286,8 +289,8 @@
         else renderSignedOut();
         return data.signed_in;
       } catch {
-        acctBody.innerHTML = `<div class="acct-name">Account unavailable</div>
-          <div class="acct-meta">Could not reach the local daemon.</div>`;
+        acctBody.innerHTML = `<div class="acct-name">${L("set.acct.unavailable")}</div>
+          <div class="acct-meta">${L("set.acct.noDaemon")}</div>`;
         acctBtn.hidden = true;
         return false;
       }
@@ -295,13 +298,13 @@
 
     async function signIn() {
       acctBtn.disabled = true;
-      acctBtn.textContent = "Opening browser…";
+      acctBtn.textContent = L("set.acct.opening");
       try {
         const r = await fetch("/api/account/login", { method: "POST" });
         const out = await r.json();
         if (!out.opened && out.url) window.open(out.url, "_blank", "noopener");
       } catch {}
-      acctBtn.textContent = "Waiting for sign-in…";
+      acctBtn.textContent = L("set.acct.waiting");
       pollUntilSignedIn();
     }
 
@@ -323,7 +326,7 @@
 
     async function signOut() {
       acctBtn.disabled = true;
-      acctBtn.textContent = "Signing out…";
+      acctBtn.textContent = L("set.acct.signingOut");
       try {
         await fetch("/api/account/logout", { method: "POST" });
         await loadAccount();
@@ -350,7 +353,7 @@
       const current = readModelPref();
       modelSelect.innerHTML = "";
       const def = document.createElement("option");
-      def.value = ""; def.textContent = `App default (${APP_DEFAULT_MODEL})`;
+      def.value = ""; def.textContent = L("set.model.appDefault", { model: APP_DEFAULT_MODEL });
       modelSelect.appendChild(def);
       for (const m of models) {
         const id = m.id || m.model || m;
@@ -374,7 +377,7 @@
         if (modelSelect.value) localStorage.setItem("cfo:model", modelSelect.value);
         else localStorage.removeItem("cfo:model");
       } catch { /* ignore */ }
-      modelStatus.textContent = "Saved — applies to your next session";
+      modelStatus.textContent = L("set.model.savedNext");
       modelStatus.classList.add("visible");
       setTimeout(() => modelStatus.classList.remove("visible"), 2600);
     });
@@ -398,7 +401,7 @@
       try { rows = parseRows(await runBash(`${LM} list --context ${SKILL} --format json --limit 30 2>/dev/null || true`)); }
       catch { rows = []; }
       if (!rows.length) {
-        memList.innerHTML = "No CFO memories yet — goals and notes you set in chat will show here.";
+        memList.textContent = L("set.mem.empty");
         return;
       }
       memList.innerHTML = rows.map((r) => `
@@ -407,7 +410,7 @@
             <div style="color:var(--ink,inherit)">${memEsc(r.content)}</div>
             <div style="font-size:11px;opacity:0.6;margin-top:2px">${memEsc((r.created_at || "").slice(0, 10))}${r.type ? " · " + memEsc(r.type) : ""}</div>
           </div>
-          <button class="btn btn-ghost mem-forget" data-id="${memEsc(r.id)}" type="button">Forget</button>
+          <button class="btn btn-ghost mem-forget" data-id="${memEsc(r.id)}" type="button">${L("set.mem.forget")}</button>
         </div>`).join("");
       memList.querySelectorAll(".mem-forget").forEach((b) => b.addEventListener("click", async () => {
         if (!b.dataset.id) return;
@@ -442,7 +445,7 @@
       const on = !!cfg.watch_enabled;
       document.getElementById('watch-enabled-row').classList.toggle('on', on);
       watchFolder.value = cfg.watch_folder || '~/Downloads';
-      watchStatus.textContent = on ? `Watching ${watchFolder.value} — reopen the report to apply` : 'Off';
+      watchStatus.textContent = on ? L('set.watch.on', { folder: watchFolder.value }) : L('set.watch.off');
     }
     async function watchToggle() {
       const folder = (watchFolder.value || '~/Downloads').trim();
@@ -456,10 +459,14 @@
     });
 
 
-    loadAccount();
-    loadModel();
-    loadMemory();
-    loadWatch();
+    // Started by the module block once the language is in (first render
+    // in the right words).
+    window.cfoSettingsStart = () => {
+      loadAccount();
+      loadModel();
+      loadMemory();
+      loadWatch();
+    };
 
     // ── Desktop pet ───────────────────────────────────────────────────────
     // Two flag files the Tauri shell watches (it applies changes within ~2s);
@@ -509,6 +516,15 @@
     // paired device, and one removed here stays removed (a tombstone competes in
     // the merge; deleting a key would just let the phone's copy win).
     import { Register, overridesOf, saveRegisterFile } from './lww.js';
+    import { loadLanguage, t, applyI18n, catLabel, intlLocale } from './strings.js';
+
+    // One language for the whole page, read before anything renders.
+    await loadLanguage();
+    window.cfoT = t;
+    window.cfoLocale = intlLocale;
+    applyI18n();
+    document.title = t('set.title');
+    window.cfoSettingsStart();
 
     const RULES_DATA = `$HOME/.linggen/skills/cfo/data`;
     const rEsc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -538,11 +554,11 @@
 
     function fillRuleTypes(extra) {
       const cats = [...BUILTIN_CATS];
-      (extra || []).forEach((t) => { if (t && t !== 'transfer' && t !== 'income' && !cats.includes(t)) cats.push(t); });
+      (extra || []).forEach((c) => { if (c && c !== 'transfer' && c !== 'income' && !cats.includes(c)) cats.push(c); });
       cats.sort();
       ruleType.innerHTML =
-        '<optgroup label="Category">' + cats.map((t) => `<option value="${rEsc(t)}">${rEsc(t)}</option>`).join('') + '</optgroup>' +
-        '<optgroup label="Special"><option value="transfer">⇄ Transfer / Payment</option><option value="income">Income</option></optgroup>';
+        `<optgroup label="${rEsc(t('set.rules.groupCat'))}">` + cats.map((c) => `<option value="${rEsc(c)}">${rEsc(catLabel(c))}</option>`).join('') + '</optgroup>' +
+        `<optgroup label="${rEsc(t('set.rules.groupSpecial'))}"><option value="transfer">${rEsc(t('set.rules.optTransfer'))}</option><option value="income">${rEsc(t('set.rules.optIncome'))}</option></optgroup>`;
     }
 
     async function loadRules() {
@@ -551,7 +567,7 @@
       const keys = Object.keys(ov).sort();
       fillRuleTypes(Object.values(ov));
       if (!keys.length) {
-        ruleList.innerHTML = 'No rules yet — CFO writes them as you classify rows and approve suggestions.';
+        ruleList.textContent = t('set.rules.empty');
         return;
       }
       ruleList.innerHTML = keys.map((k) => {
@@ -559,8 +575,8 @@
         const special = v === 'transfer' || v === 'income';
         return `<div class="rule-row">
           <span class="rule-kw" title="${rEsc(k)}">${rEsc(k)}</span>
-          <span class="rule-type${special ? ' special' : ''}">${v === 'transfer' ? '⇄ transfer' : rEsc(v)}</span>
-          <button class="btn btn-ghost rule-del" data-kw="${rEsc(k)}" type="button">Remove</button>
+          <span class="rule-type${special ? ' special' : ''}">${v === 'transfer' ? rEsc(t('set.rules.tagTransfer')) : rEsc(catLabel(v))}</span>
+          <button class="btn btn-ghost rule-del" data-kw="${rEsc(k)}" type="button">${rEsc(t('set.rules.remove'))}</button>
         </div>`;
       }).join('');
       ruleList.querySelectorAll('.rule-del').forEach((b) => b.addEventListener('click', async () => {
@@ -592,10 +608,12 @@
     // sections (Account, Model, Yinyue/Desktop pet) — they appear once at the
     // top of the Linggen settings. Standalone (no embed) shows everything.
     if (new URLSearchParams(location.search).get('embed') === '1') {
-      var SHARED = ['account', 'model', 'desktop pet', 'yinyue'];
+      // Matched by the title's string key, not its words — the words follow
+      // the language setting.
+      var SHARED = ['set.account.title', 'set.model.title', 'set.pet.title'];
       document.querySelectorAll('.section').forEach(function (sec) {
-        var t = (sec.querySelector('.section-title, h2') || {}).textContent || '';
-        if (SHARED.indexOf(t.trim().toLowerCase()) !== -1) sec.style.display = 'none';
+        var h = sec.querySelector('.section-title, h2');
+        if (h && SHARED.indexOf(h.getAttribute('data-i18n')) !== -1) sec.style.display = 'none';
       });
     }
   </script>
