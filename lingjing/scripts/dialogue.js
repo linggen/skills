@@ -264,8 +264,10 @@ export function storyHtml(r, { lang = 'zh', voice = null, acts = '', herId = nul
   const choices = last && acts ? acts : '';
   const count = before ? `<span class="count before">${esc(w.before)} · ${k + 1} / ${n}</span>` : `<span class="count">${k + 1} / ${n}</span>`;
   const seg = `<span class="seg" role="group" aria-label="${esc(w.speed)}">${['slow', 'mid', 'fast'].map((v, x) => `<button data-dlg-speed="${v}"${v === speed ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}>${esc(w.speeds[x])}</button>`).join('')}</span>`;
-  // 跳过 skips (never past the 回's turn, dialogue.js showAll); at the last beat there is nothing left to skip.
-  const skip = last ? '' : `<button class="q skip" data-dlg-all>${esc(w.skip)} <span aria-hidden="true">»</span></button>`;
+  // 跳过 skips (never past the 回's turn, dialogue.js showAll); at the last beat — or the 回's last,
+  // where showAll stops — there is nothing left to skip, and no button that would do nothing
+  // (the crawler, 2026-10-15: 跳过 at 「9 / 9」 under 古三's header changed nothing).
+  const skip = last || showAll(r, lang) === r ? '' : `<button class="q skip" data-dlg-all>${esc(w.skip)} <span aria-hidden="true">»</span></button>`;
   // Its last line, faint above the way on (b-choices): the beat's final screen.
   const tail = screensOf(b.text, lang).at(-1)?.join('') ?? '';
   const ways = choices ? `<div class="ways"><div class="last">${esc(tail)}</div><div class="wayacts">${choices}</div></div>` : '';

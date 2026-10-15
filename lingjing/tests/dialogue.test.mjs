@@ -325,3 +325,15 @@ test('the box says the book\'s words, not its reader marks: [词]{注=…}, [句
   assert.ok(n > 0, 'some passage carries a mark');
   assert.equal(passageFor(content, s, { zh: '「太一宫，[赵昂]{注=zhaoang}。」《抱朴子》{典=baopu-jishan}里说' }), '「太一宫，赵昂。」《抱朴子》里说');
 });
+
+test('跳过 stands only where it would skip something — not on a 回\'s last beat, where showAll stops (the crawler, 2026-10-15: 「9 / 9」 under 古三\'s header, a dead 跳过)', () => {
+  // 今 · 一's last passage, then 古三's: the box at 今 · 一's last beat.
+  const items = [{ of: 'choice', id: 'a/go', hui: 'j01', beats: { zh: [{ text: '1' }, { text: '2' }] } }, { of: 'scene', id: 'b', hui: 'h03', beats: { zh: [{ text: '3' }, { text: '4' }] } }];
+  let r = withTold(null, items, 'b');
+  assert.match(storyHtml(r), /data-dlg-all/, 'mid-回: something to skip');
+  r = advance(r);
+  assert.equal(showAll(r), r, 'the 回\'s last beat: nothing more to skip before its turn');
+  assert.doesNotMatch(storyHtml(r), /data-dlg-all/, 'so no 跳过 there — the box\'s tap goes on');
+  r = advance(r);
+  assert.match(storyHtml(r), /data-dlg-all/, 'into the next 回: 跳过 again');
+});
