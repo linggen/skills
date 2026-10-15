@@ -271,3 +271,13 @@ test('the two new boards: a control at open, both languages, played well and bad
   assert.equal(p.grade, 'plain');
   assert.equal(gather.act(gather.newGame('y'), { g: 'pull', i: 99 }).won, false);
 });
+
+// 古五 (2026-10-15): wm-chu is told outside the stone door, and the header read 「崖壁」, its room. The header
+// takes where the scene says it is told; a scene saying its room is the room.
+test('the header inside: the scene\'s own place where it says one, else the room', () => {
+  const s = inside();
+  const at = (scene, place) => look({ ...s, scene, place }, content, ctx()).sealed?.where;
+  assert.equal(at('wm-chu', 'mijing-yabi'), '秘境石门外');
+  assert.equal(at('wm-kunzhen', 'mijing-yabi'), '崖壁');
+  assert.equal(at('wm-xirang', 'mijing-shishi'), '石室');
+});

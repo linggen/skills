@@ -9,7 +9,7 @@
 // book's day or night, the room — and the goal line is the scene's own goal.
 // Nothing here names an instance: the data declares it.
 import { pick } from '../state.mjs';
-import { placeOf, sealedOf } from './world.mjs';
+import { placeOf, sceneOf, sealedOf } from './world.mjs';
 
 const ZH_N = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
 /* The book's own marker for the scene: 第一夜 · 第三日 / Night 1 · Day 3. */
@@ -23,8 +23,10 @@ export function sealedBrief(content, state) {
   if (!sealed) return null;
   const lang = state.lang, label = pick(sealed.label, lang), day = sealed.run ? null : sealed.days?.[state.scene] ?? null;
   const when = day ? dayName(day, lang) : null;
-  // The room's own short name: 「沉鼎秘境 · 石室」 → 石室.
-  const where = pick(placeOf(content, state.place)?.name, lang)?.split(' · ').pop() ?? null;
+  // The room's own short name: 「沉鼎秘境 · 石室」 → 石室 — or, standing at a scene that says where it is
+  // told, the scene's (live, 2026-10-15: wm-chu, told outside the stone door, read 「崖壁」, its room).
+  const scene = sealed.run ? null : sceneOf(content, state), atIt = scene && (!scene.at || scene.at === state.place);
+  const where = pick((atIt && scene.place) || placeOf(content, state.place)?.name, lang)?.split(' · ').pop() ?? null;
   // A rerun (rules/rerun.mjs) has one goal for the whole run.
   const goal = pick(sealed.run ? sealed.goal : sealed.goals?.[state.scene], lang) ?? null;
   return {
