@@ -86,6 +86,36 @@ const spoken = (content, state, lines) => (lines ?? []).flatMap(l => {
   return [{ who: person?.id ?? l.who, name: nameOf(content, l.who, state.lang, state), text: fill(pick(l.text, state.lang), state, content) }];
 });
 
+/* Has the story named this person yet (live, 2026-10-15: 瞿老's face stood in 00-gate's header while the
+   book still called him 「扫地的老头」)? `true` once a scene passed says the name; `'here'` when only this
+   scene does — the page shows the face once the passage has reached the name (cards.js people); `false`
+   while no scene has. A name the book never writes in this language is no reason to hide a face: `true`. */
+const WORDS_OF = new WeakMap();
+function sceneWords(content, sc, lang) {
+  let byKey = WORDS_OF.get(content);
+  if (!byKey) WORDS_OF.set(content, byKey = new Map());
+  const key = `${sc.id}|${lang}`;
+  if (!byKey.has(key)) {
+    const said = (v) => (v == null ? '' : typeof v === 'string' ? v : pick(v, lang) ?? '');
+    const lines = [...(sc.lines ?? []), ...(sc.exits ?? []).flatMap(e => e.beat ?? [])];
+    byKey.set(key, [sc.story, sc.story_full, sc.story_after, sc.story_after_full, ...lines.map(l => l.text), ...(sc.exits ?? []).map(e => e.story)].map(said).join('\n'));
+  }
+  return byKey.get(key);
+}
+function bookWords(content, lang) {
+  let byKey = WORDS_OF.get(content);
+  if (!byKey) WORDS_OF.set(content, byKey = new Map());
+  const key = `*|${lang}`;
+  if (!byKey.has(key)) byKey.set(key, Object.values(content.chapters ?? {}).flatMap(ch => Object.values(ch.scenes ?? {})).map(sc => sceneWords(content, sc, lang)).join('\n'));
+  return byKey.get(key);
+}
+function namedYet(content, state, scene, name) {
+  if (!name || !content?.chapters || !bookWords(content, state.lang).includes(name)) return true;
+  const byId = (id) => Object.values(content.chapters).map(c => c.scenes?.[id]).find(Boolean);
+  if ((state.done_scenes ?? []).some(id => id !== scene.id && byId(id) && sceneWords(content, byId(id), state.lang).includes(name))) return true;
+  return sceneWords(content, scene, state.lang).includes(name) ? 'here' : false;
+}
+
 /* The people a scene brings on — its lines' speakers and its exits' — each
    with the voice Ling writes them in, and the portrait the page draws. */
 function peopleIn(content, state, scene) {
@@ -95,7 +125,7 @@ function peopleIn(content, state, scene) {
   const seen = new Map();
   for (const who of whos) {
     const p = personOf(content, state, who);
-    if (p && !seen.has(p.id)) seen.set(p.id, { id: p.id, name: pick(p.name, state.lang), role: fill(pick(p.role, state.lang), state, content), voice: pick(p.voice, state.lang), art: portraitOf(content, state, p.id, p.art) });
+    if (p && !seen.has(p.id)) seen.set(p.id, { id: p.id, name: pick(p.name, state.lang), role: fill(pick(p.role, state.lang), state, content), voice: pick(p.voice, state.lang), art: portraitOf(content, state, p.id, p.art), named: namedYet(content, state, scene, pick(p.name, state.lang)) });
   }
   // Before she walks with the player she is the story's (the little fox, the
   // girl at dawn): her face in the form the scene names. After, she stands on

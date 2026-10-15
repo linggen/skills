@@ -141,7 +141,7 @@ Object.assign(WORDS.en.queueKinds, { twenty: 'Twenty questions', haggle: 'Haggli
 export { esc } from './esc.js';
 import { esc } from './esc.js';
 import { codexCompactHtml, codexHtml } from './codex.js';
-import { bookPlace, choicesUp, logLinkHtml } from './dialogue.js';
+import { bookPlace, choicesUp, logLinkHtml, playing, toldSoFar } from './dialogue.js';
 import { TURNED_MS, turnedPays } from './turned.js';
 import { AI_WORDS, caseCard, haggle, twenty } from './aigames-cards.js';
 
@@ -1349,10 +1349,18 @@ function born(card, ctx) {
     ${ctx.bornError ? `<div class="small seal">${esc(w.bornBad)}</div>` : ''}</div>`;
 }
 
+/// A face stands once the story has named them (Look's `named`, rules/look.mjs namedYet): named in a scene
+/// passed; or named in this one, once the passage on show has said the name (or is read through).
+function namedNow(p, ctx) {
+  if (p.named !== false && p.named !== 'here') return true;
+  if (p.named === false) return false;
+  return !playing(ctx.reading) || toldSoFar(ctx.reading, ctx.lang ?? 'zh').some((b) => `${b.name ?? ''}${b.text ?? ''}`.includes(p.name));
+}
+
 /// Who the scene brings on (people.json): each a portrait and a name, and
 /// what they are. The words are Ling's to speak; the faces are the page's.
 function people(card, ctx) {
-  const ps = ctx.look?.scene?.people ?? [];
+  const ps = (ctx.look?.scene?.people ?? []).filter((p) => namedNow(p, ctx));
   if (!ps.length) return '';
   // A portrait where the 图鉴 has a good one; else a clean name card.
   const face = (p) => (p.art ? `<img src="${esc(worldPath(ctx.look.world?.dir ?? 'worlds/jiuding', p.art))}" alt="${esc(p.name)}">` : `<span class="namecard" aria-hidden="true"><b>${esc(p.name)}</b></span>`);
