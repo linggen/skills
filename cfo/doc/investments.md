@@ -218,7 +218,7 @@ mission, one switch, one budget.
 
 Deferred: brokerage statement import, APNs doorbell, exchanges beyond US/TSX.
 
-## The Watch — the morning brief (paid)
+## The Watch — the morning brief
 
 The killer feature (Hanli, 2026-09-16). Every night CFO checks everything that
 touches the user's money and ranks it by the dollars at stake for them. In
