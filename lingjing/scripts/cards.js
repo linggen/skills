@@ -10,7 +10,7 @@ import { stampShown, stuckNow } from './stuck.js';
 import { layoutRoads } from './roadmap.js';
 import { frameOf, inside, within } from './atlas.js';
 import { inkLayerHtml, provinceLineHtml, pvState } from './inkmap.js';
-import { boardDoneToday, boardWaits, herAwake, onRoad, winnable, wonWayOn } from './stage.mjs';
+import { boardDoneToday, boardWaits, herAwake, onRoad, sideLineOf, sideStep, winnable, wonWayOn } from './stage.mjs';
 import { fitValue } from './state.mjs';
 
 export const WORDS = {
@@ -904,7 +904,10 @@ function nextTo(look) {
   return to && to.id !== look?.place?.id ? to : null;
 }
 function next(card, ctx) {
-  const t = NEXT_WORDS[ctx.lang] ?? NEXT_WORDS.zh, look = ctx.look ?? {}, to = nextTo(look);
+  const t = NEXT_WORDS[ctx.lang] ?? NEXT_WORDS.zh, look = ctx.look ?? {};
+  // A 今 scene: its own way on — never the 古's goal, road, errands, book or 货郎 (stage.mjs withNext).
+  if (sideLineOf(look)) return sideNext(t, look, ctx);
+  const to = nextTo(look);
   const work = !to && look.work?.place && !look.work.here ? look.work.place : null;
   const go = to ? `<button class="act go primary" data-go="${esc(to.id)}">${esc(say(t.go, { name: to.name }))}</button>${to.via?.length ? `<div class="small dim">${esc(say(t.via, { names: to.via.join(' · ') }))}</div>` : ''}`
     : work ? `<button class="act go primary" data-go="${esc(work.id)}">${esc(say(t.work, { name: work.name }))}</button>` : '';
@@ -913,6 +916,14 @@ function next(card, ctx) {
   // A room that holds the way on (Look's place.guard): what it still asks, under the goal.
   const guard = look.place?.guard ? `<div class="small dim guardnote">${esc(look.place.guard)}</div>` : '';
   return `<div class="card next"><div class="cardtitle">${esc(t.title)}</div><div class="say">${esc(goalText(ctx) || t.idle)}</div>${guard}${visitorsLine(look)}<div class="acts">${go}${book}${visitorGo(look)}</div></div>`;
+}
+
+/// 下一步 on a side line: where the 今 scene stands and its ways on, each tapped as the scene card's.
+function sideNext(t, look, ctx) {
+  const steps = sideStep(look);
+  if (!steps.length) return '';
+  const acts = steps.map((st) => panelTapHtml(st.quiet ? { ...st, quiet: null } : st, ctx.panelBusy ?? null, ctx.words)).join('');
+  return `<div class="card next"><div class="cardtitle">${esc(t.title)}</div><div class="say">${esc(look.scene.spot ?? look.scene.place ?? '')}</div><div class="acts">${acts}</div></div>`;
 }
 
 /// A visiting shop in season (rules/visiting.mjs): its own line — 「货郎今日上山 · 演武场」 or

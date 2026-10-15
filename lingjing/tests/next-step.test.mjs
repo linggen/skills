@@ -84,3 +84,22 @@ test('a 回\'s 「完」 held back by a seal or a set piece is not a blank stage
   assert.match(src, /const closeHeld = \(\) => closeUp\(\) && \(stageBusy\(\) \|\| endingWaits\(\)\);/);
   assert.match(src, /closeHeld\(\) \? queued\.filter\(\(c\) => c\.card !== 'next'\) : withNext\(look,/);
 });
+
+test('下一步 on a 今 scene: the scene\'s own way on — never the 古\'s goal, road, work, book or 货郎', () => {
+  // Review, 2026-10-15: next() had no 今线 guard; a 古 waypoint on the look would have stood on 沈芒's stage.
+  const gu = { waypoint: { text: '去沉鼎秘境 · 石门', place: { id: 'shimen', name: '石门' }, toward: { id: 'shimen', name: '石门', via: [] } },
+    work: { kind: 'errand', place: { id: 'waimen', name: '外门' }, here: false, titles: ['药园巡夜'] },
+    book: [{ id: 'q', ready: true }], visitors: [{ say: '货郎今日上山', today: true, place: { id: 'yanwu', name: '演武场' } }] };
+  const scene = { id: 'j04-gym', line: 'jin', spot: '沂中医 · 学生健身房', panel: { taps: [{ id: 'on', label: '十月三十一日，对抗赛', quiet: 'label' }] }, exits: [{ id: 'on' }] };
+  const l = { place: { id: 'chaifang' }, tasks: [], scene, ...gu };
+  assert.deepEqual(kinds(withNext(l, [])), ['next']);
+  const html = cardHtml({ card: 'next' }, { look: l, words: WORDS.zh, lang: 'zh' });
+  assert.match(html, /data-panel-exit="on"/);
+  assert.match(html, /十月三十一日，对抗赛/);
+  assert.match(html, /沂中医 · 学生健身房/);
+  assert.doesNotMatch(html, /石门|外门|药园|货郎|data-go|data-book/);
+  // A 今 scene with no way on to name: no 下一步 at all, and never the 古's.
+  const none = { ...l, scene: { ...scene, panel: { taps: [{ id: 'on', label: 'x', spent: true }] } } };
+  assert.deepEqual(withNext(none, []), []);
+  assert.equal(cardHtml({ card: 'next' }, { look: none, words: WORDS.zh, lang: 'zh' }), '');
+});

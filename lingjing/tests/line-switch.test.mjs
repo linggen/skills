@@ -12,7 +12,7 @@
 //   before stands (core.mjs backFromSide). There the turn plays in order: the old 回's 「完」, the
 //   new 回's seal, the scene's opening passage, and only then its choices and games.
 // - 古 → 今: while a 今 scene is on, nothing of the 古 place shows — its hosted boards, its
-//   errands, its beasts, its 下一步 (stage.mjs onSide, withNext).
+//   errands, its beasts, its 下一步 (stage.mjs onSide, withNext) — there 下一步 is the 今 scene's own.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -21,6 +21,7 @@ import { look, move, resolve } from '../scripts/rules.mjs';
 import { huiOf, sceneHui } from '../scripts/rules/hui.mjs';
 import { stageCards, stageSlots, withNext } from '../scripts/stage.mjs';
 import { afterBook, atTurn, atTurnCards } from '../scripts/queue.js';
+import { WORDS, cardHtml } from '../scripts/cards.js';
 import { boardsFor, walk } from './prologue.mjs';
 
 const content = loadContent();
@@ -42,6 +43,15 @@ function atChaifang(scene, passed = []) {
 const kinds = (cards) => cards.map((c) => `${c.card}${c.id ? `:${c.id}` : ''}`);
 const hosted = (cards) => cards.filter((c) => c.card === 'board' && c.id === 'qiqiao' || ['next', 'offer', 'duel', 'creature', 'hexagram', 'goal', 'handed', 'road'].includes(c.card));
 
+/* 下一步 on a 今 scene: the scene's own ways on — no 古 goal, road, errand, book or 货郎. */
+function assertJinNext(l, scene) {
+  const html = cardHtml({ card: 'next' }, { look: l, words: WORDS.zh, lang: 'zh' });
+  for (const t of l.scene.panel.taps) assert.ok(html.includes(`data-panel-exit="${t.id}"`), `${scene}: its way on ${t.id}`);
+  assert.ok(!/data-go|data-book/.test(html), `${scene}: no 古 road or book — ${html}`);
+  if (l.waypoint?.text) assert.ok(!html.includes(l.waypoint.text), `${scene}: no 古 goal`);
+  assert.ok(!/石门|秘境|找事做|货郎/.test(html), `${scene}: ${html}`);
+}
+
 test('the 柴房 holds a game of its own: 孙二狗\'s 七巧, open there on the open map', () => {
   const l = look(atChaifang(null, ['j04-gym', 'j04-line', 'j04-dog']), content, ctx);
   assert.ok(kinds(l.stage).includes('board:qiqiao'), kinds(l.stage).join());
@@ -55,14 +65,18 @@ test('a 今 interlude played with the 古 place holding a game: that game, its e
     assert.equal(l.place.id, 'chaifang', 'the 古 place stays under the save while the 今 runs (it moves nothing)');
     assert.deepEqual(kinds(hosted(l.stage)), [], `${s.scene}: ${kinds(l.stage).join()}`);
     // The page's own 下一步 (lingjing.js stageNow → withNext) never adds the 古's either — not even
-    // with the scene's game played and its way on not yet taken (the moment after the 罚球).
-    assert.deepEqual(kinds(withNext(l, [])), [], `${s.scene}: 下一步 on a side line`);
+    // with the scene's game played and its way on not yet taken (the moment after the 罚球): on an
+    // empty 今 stage it is the 今 scene's own way on, tapped as the scene card's, and nothing of the 古.
+    assert.deepEqual(kinds(withNext(l, [])), ['next'], `${s.scene}: 下一步 on a side line`);
+    assertJinNext(l, s.scene);
     seen.push(s.scene);
     const exit = sceneOf(s.scene).buttons[0];
     s = walk(s, [...boardsFor(s, content, exit), ['resolve', { exit }]], content, NOW);
     if (jin(s.scene) && s.tasks) {
       const won = look(s, content, ctx);
-      assert.deepEqual(kinds(withNext(won, won.stage.filter((c) => c.card !== 'panel'))), kinds(won.stage.filter((c) => c.card !== 'panel')), `${s.scene}: nothing of the 古 added`);
+      const rest = won.stage.filter((c) => c.card !== 'panel'), added = withNext(won, rest);
+      assert.deepEqual(kinds(added.filter((c) => c.card !== 'next')), kinds(rest), `${s.scene}: nothing of the 古 added`);
+      if (added.some((c) => c.card === 'next')) assertJinNext(won, s.scene);
     }
   }
   assert.deepEqual(seen, ['j04-gym', 'j04-line', 'j04-dog']);

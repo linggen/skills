@@ -353,12 +353,17 @@ export const PAGE_OWNS = new Set(['meet', 'panel', 'people', 'goal', 'value', 'b
    stands: the story's goal line and one tap toward it (cards.js next). Not in a fight or 闭关,
    which hold the whole stage. Nor on a side line: 下一步 is the 古's — its road, its errands, the
    货郎 — and the 古 place he left must not leak onto 沈芒's stage (Hanli, 2026-10-15: 「今线没完就
-   跳回了古，然后又跳回了今」 — after the 罚球 board, 「去沉鼎秘境 · 石门」 stood a moment in 今 · 二). */
+   跳回了古，然后又跳回了今」 — after the 罚球 board, 「去沉鼎秘境 · 石门」 stood a moment in 今 · 二).
+   There 下一步 is the 今 scene's own (sideStep): its ways on, never the 古's goal — and with none
+   to name, nothing. */
 export function withNext(look, cards) {
-  if (!look || look.fight || look.seclusion || sideLineOf(look) || cards.some(c => c.card === 'next')) return cards;
+  if (!look || look.fight || look.seclusion || cards.some(c => c.card === 'next')) return cards;
+  if (sideLineOf(look) && !sideStep(look).length) return cards;
   const doing = cards.some(c => sceneGame(look, c) || (!TELLS_ONLY(look, c) && MAIN.some(r => !r.filler && r.kinds.includes(c.card) && r.kinds[0] !== 'next')));
   return doing ? cards : [...cards, { card: 'next' }];
 }
+/* A side-line scene's own next step: its ways on (the scene card's taps), none turned down. */
+export const sideStep = look => (sideLineOf(look) ? (look.scene.panel?.taps ?? []).filter(t => !t.spent) : []);
 /* A card that only tells — an entry, a beast already won over, the roots, a gate's or a
    treasure's record — is no thing to do: 下一步 stands before it (the crawler, 2026-10-15: after
    药园's fight the stage held 狰's 已收服 card and nothing said 柴房 was next). A shelf, the map's
