@@ -77,7 +77,8 @@ test('a scene that names its sky shows the story\'s, not the real one: 00-shiao 
   const wx = look(s, content, { now: at('2026-10-14'), quests: [], weather: RAIN }).weather;
   assert.deepEqual(wx, { kind: 'cloudy', where: '蒙山', source: 'story' }); // 「那天一直阴着」 — no temp (that is the city's), never `new`
   // The page: the chip reads the story's sky, no degrees; the layer draws no rain.
-  assert.equal(wxChipHtml({ ...wx, where: '石坳村' }).includes('石坳村 · 阴<'), true);
+  assert.equal(wxChipHtml({ ...wx, where: '石坳村' }).includes('title="石坳村 · 阴"'), true);
+  assert.match(wxChipHtml({ ...wx, where: '石坳村' }), />\u2601\uFE0E 阴<\/button>/, 'no degrees: the sky\'s mark and its word');
   // A fog-tagged scene draws fog under a real rain (the path the data takes, whatever the kind).
   const foggy = { ...content, chapters: { ...content.chapters, '00-prologue': { ...content.chapters['00-prologue'], scenes: { ...content.chapters['00-prologue'].scenes, '00-shiao': { ...content.chapters['00-prologue'].scenes['00-shiao'], weather: 'fog' } } } } };
   assert.deepEqual(look(s, foggy, { now: at('2026-10-14'), quests: [], weather: RAIN }).weather, { kind: 'fog', where: '蒙山', source: 'story' });
@@ -125,8 +126,10 @@ test('the page: a chip with the sky, a popover to set or change the city, the �
   assert.equal(wxChipHtml(null), '');
   const chip = wxChipHtml({ kind: 'snow', where: '哈尔滨', temp_c: -18 });
   assert.match(chip, /data-wx[^-]/);
-  assert.match(chip, /哈尔滨 · 雪 -18°/);
-  assert.match(wxChipHtml({ kind: 'rain', where: 'Mengshan' }, { lang: 'en' }), /Mengshan · Rain/);
+  assert.match(chip, /title="哈尔滨 · 雪 -18°"/);
+  assert.match(chip, />\u2744\uFE0E -18°<\/button>/, 'on the footer: the mark and the degrees (Hanli, 2026-10-15)');
+  assert.match(wxChipHtml({ kind: 'rain', where: 'Mengshan' }, { lang: 'en' }), /title="Mengshan · Rain"/);
+  assert.match(wxChipHtml({ kind: 'clear', is_day: false, where: 'x', temp_c: 3 }), />\u263E 3°</, 'a clear night is the moon');
   const pop = wxPopHtml({ sense: { city: { name: '哈尔滨' }, off: false } });
   assert.match(pop, /跟着：哈尔滨/);
   assert.match(pop, /data-wx-off="off"/);
