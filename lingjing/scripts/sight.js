@@ -21,7 +21,7 @@ export const SIGHT_KINDS = new Set(['人物', '生物']);
 export function sightHtml(entries, { src = (p) => p } = {}) {
   const one = (e) => {
     const pic = e.image
-      ? `<img class="sightpic" src="${esc(src(e.image))}" alt="${esc(e.name)}">`
+      ? `<img class="sightpic${e.kind === '生物' ? ' plate' : ''}" src="${esc(src(e.image))}" alt="${esc(e.name)}">`
       : `<span class="sightpic namecard" aria-hidden="true"><b>${esc(e.name)}</b></span>`;
     const line = e.lines?.[0] ? `<span class="sightline">${esc(e.lines[0])}</span>` : '';
     return `<figure class="sightone" data-sight-id="${esc(e.id)}">${pic}<figcaption><b>${esc(e.name)}</b>${line}</figcaption></figure>`;
@@ -42,6 +42,60 @@ export function paintSight(host, entries, opts = {}) {
   shownKey = key;
   for (const old of host.querySelectorAll('.sightcard:not(.going)')) leave(old);
   if (key) host.insertAdjacentHTML('beforeend', sightHtml(entries, opts));
+  const card = host.querySelector('.sightcard:not(.going)');
+  if (card) fitCard(card);
+}
+
+/* The whole picture, never a crop (Hanli, 2026-10-15, live at 古七: the 犰狳's woodcut, landscape,
+   cut to a portrait frame — legs and belly, no head): the largest box of the picture's own shape
+   that fits the room (`region` {w, h}) — contain, never cover. People's portraits are 2:3, so a
+   person stands whole as before; a creature's plate (mostly 3:2, some upright) shows the beast
+   whole. Null while there is nothing to fit. */
+export function fitBox(region, aspect) {
+  const w0 = Number(region?.w), h0 = Number(region?.h);
+  if (!(w0 > 0 && h0 > 0 && aspect > 0)) return null;
+  const w = Math.min(w0, h0 * aspect);
+  return { w: Math.floor(w), h: Math.floor(w / aspect) };
+}
+
+/* A 出场's picture (creatures.json `appear`, lingjing.js fitAppear): the room on the stage its words
+   leave — `stage` {w, h}, `text` the words' box in the stage's coordinates. A wide stage keeps the
+   right of the words (the words stand at the lower left); a tall one (the phone) the space above
+   them. Margins keep the ink's fade inside the stage and clear of 跳过 in the corner. */
+export function artRoom(stage, text) {
+  const W = Number(stage?.w), H = Number(stage?.h);
+  if (!(W > 0 && H > 0)) return null;
+  const top = H * 0.05, foot = H * 0.08 + 36;
+  const beside = { x: (text?.right ?? 0) + 24, y: top, w: W * 0.97 - (text?.right ?? 0) - 24, h: H - top - foot };
+  if (W > H && beside.w >= W * 0.3) return beside;
+  return { x: W * 0.04, y: top, w: W * 0.92, h: Math.max(0, (text?.top ?? H) - top - 12) };
+}
+
+/* Each picture of the card sized by fitBox to the room its card leaves it: the card's height, its
+   width shared between the faces less each one's name card beside it (or under it, where the
+   phone stacks a pair). Again whenever the card's own box changes (the stage, the words' top). */
+const GAP = 14;
+function fitCard(card) {
+  const fit = () => {
+    if (!card.isConnected || card.classList.contains('going')) return;
+    const figs = [...card.querySelectorAll('.sightone')];
+    const share = (card.clientWidth - GAP * (figs.length - 1)) / Math.max(1, figs.length);
+    for (const fig of figs) {
+      const img = fig.querySelector('img.sightpic');
+      if (!img?.naturalWidth) continue;
+      const cap = fig.querySelector('figcaption');
+      const stacked = getComputedStyle(fig).flexDirection === 'column';
+      const region = stacked ? { w: share, h: card.clientHeight - (cap?.offsetHeight ?? 0) - 6 } : { w: share - (cap?.offsetWidth ?? 0) - GAP, h: card.clientHeight };
+      const box = fitBox(region, img.naturalWidth / img.naturalHeight);
+      if (!box) continue;
+      img.style.width = `${box.w}px`;
+      img.style.height = `${box.h}px`;
+      img.classList.add('fit');
+    }
+  };
+  for (const img of card.querySelectorAll('img.sightpic')) if (!img.complete) img.addEventListener('load', fit, { once: true });
+  if (typeof ResizeObserver === 'function') new ResizeObserver(fit).observe(card);
+  fit();
 }
 
 /* Where the words begin on the stage (the beat's whole paragraph is laid out, its unread sentences

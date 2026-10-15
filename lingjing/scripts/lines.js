@@ -129,12 +129,13 @@ export function linesHtml(b, { lang = 'zh', herId = null, words = {} } = {}) {
 
 /* One beat whole, as 快's column shows it (dialogue.js storyHtml): one paragraph, every
    sentence lit, the speaker and her colour kept. */
-export function paraHtml(b, { herId = null, words = {}, place = null } = {}) {
+export function paraHtml(b, { herId = null, words = {}, place = null, faces = [] } = {}) {
   const ss = sentencesOf(b?.text);
   if (!ss.length) return '';
   const { who, lead, sentence } = beatParts(b, { herId, words });
   // `place` — where the beat stands in the reading (「i.j」), so 慢 · 中 picks up from the one in view.
-  return `<p class="line ${who}"${place ? ` data-beat="${esc(place)}"` : ''}>${lead}${ss.map((s) => `<span class="s on">${sentence(s)}</span>`).join('')}</p>`;
+  // `faces` — whose 亮相 this beat is (快's page brings them on above, lingjing.js).
+  return `<p class="line ${who}"${place ? ` data-beat="${esc(place)}"` : ''}${faces.length ? ` data-faces="${esc(faces.join(','))}"` : ''}>${lead}${ss.map((s) => `<span class="s on">${sentence(s)}</span>`).join('')}</p>`;
 }
 
 /* The clock for one beat on the stage: which screen, how many of its sentences

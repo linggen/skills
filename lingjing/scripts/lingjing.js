@@ -44,7 +44,8 @@ import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
 import { advance, atLast, beatKey, choicesUp, current, huiAt, keepReading, leadsIn, loadReading, logHtml, noted, ofPlay, pacedAt, playing, readingFor, showAll, sightNow, sightings, storyHtml, wholeBeats, wholeOf, withTold } from './dialogue.js';
 import { createLines, keepSpeed, speedNow, voiceOf, wholeNow } from './lines.js';
-import { SIGHT_KINDS, chatHeard, mountChatToggle, paintSight, setAutoFold } from './sight.js';
+import { SIGHT_KINDS, artRoom, chatHeard, fitBox, mountChatToggle, paintSight, setAutoFold } from './sight.js';
+import { createPager } from './pager.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
 import { playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
@@ -1438,10 +1439,9 @@ function draw() {
   document.body.classList.toggle('storying', box.includes('data-dlg-on'));
   syncLines();
   companionBeat(box.includes('data-dlg-on'));
-  // 初见: his first beat on show, he stands large on the stage (sight.js).
-  // 快's column carries its 亮相 inline (dialogue.js wholeHtml): nothing comes on large over it.
-  const sightOn = box.includes('data-dlg-on') && !readingHere()?.all?.whole;
-  paintSight($('sight'), sightOn ? sightNow(readingHere(), firstFaces(), lang()) : [], { src: faceSrc });
+  // 初见: his first beat on show, he stands large on the stage (sight.js); at 快, the faces whose
+  // 亮相 falls on the page on show, in the upper half over the band (pageSight).
+  paintSight($('sight'), !box.includes('data-dlg-on') ? [] : readingHere()?.all?.whole ? pageFaces() : sightNow(readingHere(), firstFaces(), lang()), { src: faceSrc });
   voiceBeat(box.includes('data-dlg-on'));
   // Games, the map and a fight fold the chat away (they want the width); the story keeps it open.
   foldFor(slots);
@@ -2060,7 +2060,7 @@ function dialogBoxHtml(slots) {
   if (boxYields(slots)) return log;
   const voice = hasAudio(audio) ? dubOn() : null;
   const acts = choicesInBox() ? panelActsHtml(ctx(), { inBox: true }) : '';
-  const story = playing(r) ? storyHtml(r, { lang: lang(), voice, acts, herId: look.companion?.id ?? null, speed: speedNow(), faces: r.all?.whole ? firstFaces() : [], src: faceSrc }) : '';
+  const story = playing(r) ? storyHtml(r, { lang: lang(), voice, acts, herId: look.companion?.id ?? null, speed: speedNow(), faces: r.all?.whole ? firstFaces() : [] }) : '';
   return story + log;
 }
 
@@ -2072,10 +2072,43 @@ function dialogBoxHtml(slots) {
 const lines = createLines({ onDone: (key, tapped) => storyDone(key, tapped) });
 function syncLines() {
   const el = $('dlg')?.querySelector('.story'), r = readingHere();
-  if (!el || !playing(r)) { lines.sync(null); return; }
+  if (!el || !playing(r)) { lines.sync(null); pager.sync(null); return; }
   // 跳过 stands on the 回's last beat shown whole, read at once; 快's column is read at once too.
   lines.sync(el, el.dataset.story, { lang: lang(), instant: Boolean(r.all && (r.all.whole || atLast(r, lang()))) });
+  pager.sync(el);
 }
+/* 快's pages (pager.js; Hanli, 2026-10-15: 「可以用下面半屏显示吗? 可以让用户翻页.」): the band on the
+   stage's lower half, paged from its real height; a page's 亮相 comes on above it. */
+const pager = createPager({ onPage: () => pageSight() });
+const pageFaces = () => { const ids = new Set(pager.faces()); return firstFaces().filter((e) => ids.has(e.id)); };
+function pageSight() { if (readingHere()?.all?.whole) paintSight($('sight'), pageFaces(), { src: faceSrc }); }
+/* A page on or back: the last page's 下一页 is 「接着往下」 where the reading goes on (storyTap). */
+function pageTurn(d) {
+  if (pager.turn(d)) return true;
+  if (d > 0 && pager.last && $('dlg')?.querySelector('.wholecol [data-dlg-onward]')) { storyTap(); return true; }
+  return false;
+}
+/* A tap on the band's words: the next page — not the end of a selection or of a swipe. */
+function wordsTap() {
+  if (swiped || String(globalThis.getSelection?.() ?? '').trim()) return true;
+  if (!pager.last) pageTurn(1);
+  return true;
+}
+/* A swipe across the band turns a page: leftward on, rightward back. */
+let swipeFrom = null, swiped = false;
+document.addEventListener('pointerdown', (e) => {
+  swiped = false;
+  swipeFrom = e.target.closest?.('#dlg .wholecol') ? { x: e.clientX, y: e.clientY } : null;
+});
+document.addEventListener('pointerup', (e) => {
+  if (!swipeFrom) return;
+  const dx = e.clientX - swipeFrom.x, dy = e.clientY - swipeFrom.y;
+  swipeFrom = null;
+  if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+  swiped = true;
+  setTimeout(() => { swiped = false; }, 400);
+  pageTurn(dx < 0 ? 1 : -1);
+});
 /* The pace is read live at every paint: 快 opens whatever passage comes on the stage whole
    (dialogue.js wholeOf) — a new one, one tapped to mid-passage, one found on a reload — and 慢 or
    中 over a column puts it back to its sentences from the beat in view (pacedAt). Before the
@@ -2087,15 +2120,8 @@ function matchPace() {
   keepReading(SCRATCH, next);
   keep({ reading: next });
 }
-/* The column's paragraph at the top of its view — the beat he is reading. */
-function beatInView() {
-  const col = $('dlg')?.querySelector('.wholecol');
-  if (!col) return null;
-  const top = col.getBoundingClientRect().top + 8;
-  const p = [...col.querySelectorAll('[data-beat]')].find((el) => el.getBoundingClientRect().bottom > top);
-  const [i, j] = String(p?.dataset.beat ?? '').split('.').map(Number);
-  return Number.isInteger(i) && Number.isInteger(j) ? { i, j } : null;
-}
+/* The beat at the top of the page on show — the one he is reading (pager.js). */
+const beatInView = () => pager.beat();
 /* A beat read (or tapped once read): the next — unless the way on is up (the choices: his
    tap), or something holds the page: 回看 or the book open, a hold, more passages still to
    draw behind the last beat, the 说书人 still telling this one. Then it looks again soon. */
@@ -2239,9 +2265,27 @@ function watchAppear(cards) {
   $('view').insertAdjacentHTML('beforeend', appearHtml(c, ctx()));
   const lines = (c.appear[lang()] ?? c.appear.zh).length;
   const el = $('view').querySelector('.appear');
+  fitAppear(el);
   // The last line strikes: the whole frame shakes with it.
   if (!stillMotion()) setTimeout(() => el?.classList.add('shaking'), 1200 + (lines - 1) * 2200);
   setTimeout(() => endAppear(c.id), stillMotion() ? 60000 : 1600 + lines * 2200 + 4200);
+}
+/* The 出场's picture whole (Hanli, 2026-10-15: a plate cut by the stage showed legs, no head): its
+   own shape, fitted (sight.js fitBox) into the room the words leave it (artRoom); again on a resize. */
+function fitAppear(el) {
+  const img = el?.querySelector('.appearart');
+  if (!img) return;
+  const fit = () => {
+    const text = el.querySelector('.appeartext'), sb = el.getBoundingClientRect(), tb = text?.getBoundingClientRect();
+    const room = artRoom({ w: sb.width, h: sb.height }, tb && { right: tb.right - sb.left, top: tb.top - sb.top });
+    const box = img.naturalWidth && room ? fitBox(room, img.naturalWidth / img.naturalHeight) : null;
+    if (!box) return;
+    Object.assign(img.style, { left: `${Math.round(room.x + (room.w - box.w) / 2)}px`, top: `${Math.round(room.y + (room.h - box.h) / 2)}px`, width: `${box.w}px`, height: `${box.h}px` });
+    img.classList.add('fit');
+  };
+  if (!img.complete) img.addEventListener('load', fit, { once: true });
+  if (typeof ResizeObserver === 'function') new ResizeObserver(fit).observe(el);
+  fit();
 }
 /* 跳过 on a beast's 出场 (proto d): the rest at once, the name and the classic's line with it;
    then it goes by itself (or at a second tap). */
@@ -2520,12 +2564,23 @@ const KEY_ROWS = [
    player's own: a field, a button, the chat beside the stage. */
 const boxKey = (e) => (e.key === ' ' || e.key === 'Enter') && !e.isComposing && !e.repeat && Boolean($('dlg')?.querySelector('[data-dlg-next]'))
   && !view.logOpen && !e.target.closest?.('input, textarea, select, button, [contenteditable], #chat-panel, [data-bookrow], [data-offerrow]');
+/* 快's pages by key: → PageDown Space Enter on, ← PageUp back; on the last page Space and Enter
+   go on as before (boxKey). */
+const PAGE_KEYS = { ArrowRight: 1, PageDown: 1, ' ': 1, Enter: 1, ArrowLeft: -1, PageUp: -1 };
+function pageKey(e) {
+  const d = PAGE_KEYS[e.key];
+  if (!d || !pager.on || e.isComposing || view.logOpen || e.target.closest?.('input, textarea, select, button, [contenteditable], #chat-panel')) return false;
+  if ((e.key === ' ' || e.key === 'Enter') && pager.last) return false;
+  if (!e.repeat) pageTurn(d);
+  return true;
+}
 document.addEventListener('keydown', (e) => {
   if (e.target.id === 'askField' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); sendAsk(); }
   if (e.target.id === 'wx-city' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); document.querySelector('[data-wx-set]')?.click(); }
   if (e.target.id === 'value-text' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.closest('.valuecard')?.querySelector('[data-value-go]:not(:disabled)')?.click(); }
   if (e.key === 'Escape' && view.logOpen) { show({ logOpen: false }); lines.hold(false); return; }
   if ((e.key === ' ' || e.key === 'Enter') && !e.isComposing && !e.target.closest?.('input, textarea, select, [contenteditable], #chat-panel') && titleAway()) { e.preventDefault(); return; }
+  if (pageKey(e)) { e.preventDefault(); return; }
   if (boxKey(e)) { e.preventDefault(); storyTap(); return; }
   if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.luOpen) show({ luOpen: false }); else if (view.pouchToss) show({ pouchToss: null }); else if (view.bookOpen || view.gearOpen || view.ledgerOpen || view.roadsOpen || view.shelfOpen || view.wxOpen) show({ bookOpen: false, gearOpen: false, ledgerOpen: false, roadsOpen: false, shelfOpen: false, wxOpen: false }); }
   if (e.key !== 'Enter' && e.key !== ' ') return;
@@ -2695,7 +2750,10 @@ const CLICKS = [
   // 外门's 「接下差事：修屋顶」 inside the story view landed here and did nothing).
   // 快's column: 「接着往下」 is its way on; a tap on its words is reading (scrolling, a pause), never the next.
   ['[data-dlg-onward]', () => storyTap()],
-  ['[data-dlg-next]', (el, e) => (e?.target?.closest?.('.ways button, .wayacts button') ? false : e?.target?.closest?.('.wholecol') ? true : storyTap())],
+  // 快's pages: 上一页 · 下一页, and a tap on the stage turns on (never a selection, never a swipe's end) —
+  // the passage goes on only by the last page's 「接着往下」 or a key.
+  ['[data-pg]', (el) => { if (!el.disabled) pageTurn(Number(el.dataset.pg)); }],
+  ['[data-dlg-next]', (el, e) => (e?.target?.closest?.('.ways button, .wayacts button') ? false : readingHere()?.all?.whole ? wordsTap() : storyTap())],
   ['.dlglog', () => true],
   ['[data-lu]', () => (view.luOpen ? show({ luOpen: false }) : openLu())],
   ['[data-lu-close]', () => show({ luOpen: false, codexOpen: null })],

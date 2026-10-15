@@ -75,14 +75,14 @@ test('the page: the sight on the stage, no first-meet card for a face it showed,
   const css = fs.readFileSync(new URL('../scripts/lingjing.css', import.meta.url), 'utf8');
   const story = fs.readFileSync(new URL('../scripts/story.css', import.meta.url), 'utf8');
   assert.match(src, /const sighted = sightings\(readingHere\(\), firstFaces\(\), lang\(\)\);\n {2}cards = cards\.filter\(\(c\) => c\.card !== 'meet' \|\| !sighted\.has\(c\.id\)\);/);
-  assert.match(src, /const sightOn = box\.includes\('data-dlg-on'\) && !readingHere\(\)\?\.all\?\.whole;\n {2}paintSight\(\$\('sight'\), sightOn \? sightNow\(readingHere\(\), firstFaces\(\), lang\(\)\) : \[\]/, '快\'s column carries its 亮相 inline: nothing large over it');
+  assert.match(src, /paintSight\(\$\('sight'\), !box\.includes\('data-dlg-on'\) \? \[\] : readingHere\(\)\?\.all\?\.whole \? pageFaces\(\) : sightNow\(readingHere\(\), firstFaces\(\), lang\(\)\)/, '快: the 亮相 of a face whose entrance is on the page on show, large above the band (pager.js)');
   assert.match(src, /const firstFaces = \(\) => noted\(readingHere\(\), lang\(\)\)/, 'only the faces the book marks in the reading — no name in code');
   assert.match(html, /<div class="sight" id="sight"><\/div>\s*(<!--[\s\S]*?-->\s*)?<div class="dlgwrap" id="dlg"><\/div>/);
   assert.match(html, /<header class="topbar"><div class="status" id="status"><\/div><div class="titlerow">/);
   assert.match(src, /mountChatToggle\(document\.querySelector\('\.shell'\), lang\);/);
   assert.match(css, /\.shell\.chatfolded \{ grid-template-columns: minmax\(0, 1fr\) 0; \}/);
   // 亮相 (proto c): on the stage's right, his name upright; at the next beat into his face in the header bar.
-  assert.match(story, /\.sightcard \{ position: absolute; right: 9%; top: 6%; bottom: 30%;/);
+  assert.match(story, /\.sightcard \{ position: absolute; right: 9%; left: 4%; top: 6%; bottom: 30%;/);
   assert.match(story, /\.sightone figcaption b \{ display: block; font-size: 30px; letter-spacing: \.18em; writing-mode: vertical-rl;/);
   assert.match(html, /<div class="headcards" id="headCards"><\/div><\/header>/, 'the faces he flies to are the top bar\'s');
   // Games, the map and a fight fold the chat; the page's fold keeps nothing of the viewer's.

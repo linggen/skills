@@ -194,7 +194,10 @@ test('快 (2026-10-15, his: 「快的速度, 不要一句一句显示, 直接都
   assert.doesNotMatch(html, /甲。/, 'what was read already is not shown again');
   assert.match(html, /<p class="line spoken" data-beat="0\.1"><b class="who">马三<\/b><span class="s on">走吧。<\/span><\/p>/, 'paragraphs apart, the speaker kept');
   assert.match(html, /<span class="yy">她说别回头。<\/span>/, '⟪银月⟫ stays silver-blue');
-  assert.match(html, /她说别回头。<\/span><\/span><\/p><figure class="wface" data-sight-id="masan"><img src="\/w\/p\/masan.webp" alt=""><figcaption><b>马三<\/b><span>卖饼的<\/span>/, 'his 亮相 card inline, after the paragraph that brings him on');
+  assert.match(html, /<p class="line [a-z]+" data-beat="0\.2" data-faces="masan">/, 'his 亮相 named on the paragraph that brings him on: the page holding it brings him on large above the band');
+  assert.doesNotMatch(html, /class="wface"/, 'no small card inline: the band is for words');
+  assert.match(html, /<span class="count">2–4 \/ 4<\/span><span class="pager" hidden><button class="q" data-pg="-1">[\s\S]*上一页[\s\S]*<span class="pgn"><\/span><button class="q" data-pg="1">[\s\S]*下一页/, 'the pages\' 上一页 · 2/5 · 下一页 beside the count (pager.js fills and shows it)');
+  assert.doesNotMatch(storyHtml(advance(one(beats, 's1'))), /class="pager"/, '慢 · 中 have no pages');
   assert.match(html, /丁。<\/span><\/p><\/div><div class="wayacts"><button data-panel-exit="go">走<\/button><\/div><\/div>/, 'the choices after the text, at the column\'s end');
   assert.doesNotMatch(html, /class="ways"|data-dlg-all|data-dlg-onward/, 'no faint last line, nothing to skip, no 接着 where the choices stand');
   assert.match(html, /<span class="count">2–4 \/ 4<\/span>/, 'the count names the beats the column holds');

@@ -215,10 +215,19 @@ body.storying .slots { visibility: hidden; }
    one line; at the next beat it flies into his face in the header (sight.js). ── */
 .sight { position: absolute; inset: 0; top: calc(var(--head-h) + 0px); z-index: 3; pointer-events: none; }
 .sight:empty { display: none; }
-.sightcard { position: absolute; right: 9%; top: 6%; bottom: 30%; display: flex; align-items: flex-end; gap: 14px; pointer-events: auto; cursor: pointer; animation: sightIn 1.1s cubic-bezier(.2, .8, .2, 1) both; }
+.sightcard { position: absolute; right: 9%; left: 4%; top: 6%; bottom: 30%; display: flex; align-items: flex-end; justify-content: flex-end; gap: 14px; pointer-events: auto; cursor: pointer; animation: sightIn 1.1s cubic-bezier(.2, .8, .2, 1) both; }
 .sightone { margin: 0; height: 100%; display: flex; flex-direction: row; align-items: flex-end; gap: 14px; }
 .sightpic { height: 100%; aspect-ratio: 2 / 3; width: auto; object-fit: cover; object-position: 50% 18%; border: 0; border-radius: 10px; background: none; box-shadow: none;
   -webkit-mask-image: radial-gradient(ellipse 58% 62% at 50% 46%, #000 42%, transparent 76%); mask-image: radial-gradient(ellipse 58% 62% at 50% 46%, #000 42%, transparent 76%); }
+/* Fitted (sight.js fitBox): the picture's own shape, whole, in the room the card leaves it — never cropped. */
+img.sightpic { transition: opacity .3s ease; }
+img.sightpic:not(.fit) { opacity: 0; }
+.sightcard img.sightpic.fit, .sightcard.two img.sightpic.fit { flex: none; aspect-ratio: auto; max-width: none; max-height: none; min-height: 0; object-fit: contain; object-position: 50% 50%; }
+/* A creature's plate (a woodcut on paper, 3:2 or upright): the ink fades out at its four edges, so
+   the beast stands whole and the paper melts into the stage — the portrait's oval would eat its head or tail. */
+.sightpic.plate { border-radius: 4px; filter: sepia(.15) brightness(.94);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent), linear-gradient(to bottom, transparent, #000 10%, #000 88%, transparent);
+  -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent), linear-gradient(to bottom, transparent, #000 10%, #000 88%, transparent); mask-composite: intersect; }
 .sightpic.namecard { display: flex; align-items: center; justify-content: center; height: 70%; aspect-ratio: 2 / 3; background: rgba(241, 236, 225, .1); -webkit-mask-image: none; mask-image: none; }
 .sightpic.namecard b { font-family: var(--serif); font-size: 30px; letter-spacing: .2em; color: var(--on-stage); writing-mode: vertical-rl; }
 .sightone figcaption { flex: none; margin-bottom: 12%; padding: 16px 12px; border-radius: 10px; background: rgba(13, 17, 20, .62); color: var(--on-stage); font-family: var(--serif); text-shadow: 0 1px 8px rgba(0, 0, 0, .5); display: flex; flex-direction: column; align-items: center; }
@@ -236,7 +245,7 @@ body.fighting .sight { display: none; }
 .appear .appearart { left: 24%; width: 76%; object-position: 50% 45%; filter: grayscale(.25) sepia(.2) brightness(.7);
   -webkit-mask-image: linear-gradient(to right, transparent 0, #000 30%); mask-image: linear-gradient(to right, transparent 0, #000 30%); }
 .appear .appearshade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to right, rgba(13, 18, 22, .92) 0%, rgba(13, 18, 22, .78) 34%, rgba(13, 18, 22, .2) 62%, rgba(13, 18, 22, 0) 80%), linear-gradient(to bottom, rgba(13, 18, 22, .3), rgba(13, 18, 22, 0) 30%, rgba(13, 18, 22, 0) 70%, rgba(13, 18, 22, .6)); }
-.appear .appeartext { position: relative; z-index: 2; padding: 0 64px 70px; max-width: 52em; background: none; }
+.appear .appeartext { position: relative; z-index: 2; padding: 0 64px 70px; max-width: min(52em, 50%); background: none; }
 .appear .appeartext p { font-family: var(--serif); font-size: 19px; line-height: 1.85; letter-spacing: .04em; margin: 0 0 6px; text-shadow: 0 1px 12px rgba(0, 0, 0, .6); }
 .appear .appeartext q { margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(243, 231, 196, .25); font-family: var(--serif); font-size: 17px; letter-spacing: .1em; color: #f3e7c4; quotes: none; }
 .appear .appeartext q small { display: block; font-family: var(--ui); font-size: 12px; letter-spacing: .06em; color: rgba(243, 231, 196, .6); margin-top: 4px; }
@@ -244,6 +253,13 @@ body.fighting .sight { display: none; }
 .appear .appearname b { font-size: 34px; letter-spacing: .3em; color: #f6eedb; font-weight: 600; margin-right: 12px; }
 .appear .appearskip { position: absolute; right: 18px; bottom: 16px; z-index: 3; }
 .appear.all .appearart { animation: none; opacity: .92; transform: scale(1.08); }
+/* Fitted (lingjing.js fitAppear): the whole plate in the room beside (or above) the words, its four
+   edges fading into the dark; the push only a breath, so it never leaves its room. */
+.appear .appearart.fit { inset: auto; right: auto; bottom: auto; object-fit: contain; object-position: 50% 50%; animation-name: appearPushFit;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent), linear-gradient(to bottom, transparent, #000 10%, #000 88%, transparent);
+  -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent), linear-gradient(to bottom, transparent, #000 10%, #000 88%, transparent); mask-composite: intersect; }
+.appear.all .appearart.fit { transform: scale(1.02); }
+@keyframes appearPushFit { from { opacity: 0; transform: scale(.98); } 20% { opacity: .92; } to { opacity: .92; transform: scale(1.03); } }
 .appear.all .appeartext p, .appear.all .appeartext q { animation: none; opacity: 1; transform: none; }
 
 /* ── 大场面 in the stage (the header and the footer stay) ── */
@@ -300,36 +316,39 @@ body.fighting .sight { display: none; }
   .view.jin:not(:has(.backdrop.painted)) .sightline { color: rgba(241, 236, 225, .85); }
 }
 
-/* ── 快: the rest of the passage at once (Hanli, 2026-10-15: 「快的速度, 不要一句一句显示, 直接都显示出来」) ──
-   One column over the whole stage, on a dark ink wash deep enough that the paper-white words read
-   at ≥ 7:1 over the brightest painting (.8 ink over white leaves ~#424547); it scrolls, and the
-   choices — or 「接着往下」 — stand at its end. 亮相 cards sit inline after their paragraph. */
-.story.whole { cursor: default; user-select: text; -webkit-user-select: text; }
+/* ── 快: the rest of the passage at once (Hanli, 2026-10-15: 「快的速度, 不要一句一句显示, 直接都显示出来」),
+   in the stage's lower half, page by page (his, the same day: 「可以用下面半屏显示吗? 可以让用户翻页.」 —
+   pager.js). The upper half keeps the picture, a 亮相, a 出场; the band (`--band-top` down to the quiet
+   controls) lies on a dark ink wash deep enough that the paper-white words read at ≥ 7:1 over the
+   brightest painting. A page holds what the band holds; the choices — or 「接着往下」 — end the last. */
+.view { --band-top: 50%; }
+.story.whole { cursor: pointer; user-select: text; -webkit-user-select: text; }
 .story.whole::before, .story.whole:has(.line.yy)::before { content: ""; position: absolute; inset: 0; pointer-events: none; animation: bdIn .5s ease both;
-  background: linear-gradient(to bottom, rgba(13, 17, 20, .74), rgba(13, 17, 20, .82) 30%, rgba(13, 17, 20, .86)); }
-.story .wholecol { position: absolute; left: 0; right: 0; top: 0; bottom: 58px; overflow-y: auto; overscroll-behavior: contain; padding: 28px 56px 20px;
-  display: flex; flex-direction: column; align-items: center; gap: 18px; scrollbar-width: thin; scrollbar-color: rgba(241, 236, 225, .3) transparent; }
+  background: linear-gradient(to bottom, rgba(13, 17, 20, 0) 0, rgba(13, 17, 20, 0) calc(var(--band-top) - 12%), rgba(13, 17, 20, .8) calc(var(--band-top) - 1%), rgba(13, 17, 20, .86)); }
+.story .wholecol { position: absolute; left: 0; right: 0; top: var(--band-top); bottom: 58px; overflow: hidden; overscroll-behavior: contain; padding: 14px 56px 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 14px; }
+/* One sentence taller than the band is a page of its own: that page scrolls (pager.js). */
+.story .wholecol.pg-tall { overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(241, 236, 225, .3) transparent; }
+.story .wholecol .pg-off, .story .wholecol > .pg-off { display: none; }
+.story .wholetext .line.pg-cont > .who, .story .wholetext .line.pg-cont > .tag, .story .wholetext .line.pg-cont > .act { display: none; }
+.story .pager { display: inline-flex; align-items: center; gap: 6px; }
+.story .pager[hidden] { display: none; }
+.story .pager .pgn { min-width: 3em; text-align: center; font-variant-numeric: tabular-nums; font-size: 12.5px; color: var(--on-stage); }
+.story .pager .q:disabled { opacity: .35; cursor: default; }
+/* A page's 亮相 stands in the upper half, over the band (lingjing.js pageSight). */
+.view:has(.story.whole) .sightcard { top: 4%; bottom: calc(100% - var(--band-top) + 4px); }
 .story .wholetext { width: min(44em, 100%); font-family: var(--serif); font-size: 18px; line-height: 1.9; letter-spacing: .03em; text-shadow: 0 1px 3px rgba(0, 0, 0, .5); }
 .story .wholetext .line { margin: 0 0 1.05em; }
 .story .wholetext .line.ling { font-size: 15px; }
 .story .wholetext .s { transition: none; filter: none; }
-.story .wholecol .wayacts { flex: none; min-height: 0; overflow: visible; padding-bottom: 8px; }
-.story .wholecol .onward { flex: none; padding-bottom: 8px; }
+.story .wholecol .wayacts { flex: none; min-height: 0; overflow: visible; padding-bottom: 4px; }
+.story .wholecol .onward { flex: none; padding-bottom: 4px; }
 .story .wholecol .onward .q { padding: 8px 22px; font-size: 14px; color: var(--on-stage); border-color: rgba(227, 192, 126, .6); }
-.story .wface { display: flex; align-items: center; gap: 12px; margin: -.3em 0 1.2em; padding: 8px 14px 8px 8px; width: max-content; max-width: 100%; border-radius: 10px;
-  background: rgba(241, 236, 225, .07); border: 1px solid rgba(241, 236, 225, .16); }
-.story .wface img, .story .wface .namecard { flex: none; width: 54px; height: 76px; border-radius: 7px; object-fit: cover; object-position: 50% 18%; }
-.story .wface .namecard { display: flex; align-items: center; justify-content: center; background: rgba(241, 236, 225, .1); }
-.story .wface .namecard b { font-size: 15px; writing-mode: vertical-rl; letter-spacing: .15em; }
-.story .wface figcaption { display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; line-height: 1.6; color: rgba(241, 236, 225, .85); }
-.story .wface figcaption b { font-size: 16px; letter-spacing: .15em; color: var(--on-stage); }
 :lang(en) .story .wholetext { letter-spacing: 0; line-height: 1.7; }
-.view.jin:not(:has(.backdrop.painted)) .story.whole::before { background: rgba(250, 251, 252, .84); }
+.view.jin:not(:has(.backdrop.painted)) .story.whole::before { background: linear-gradient(to bottom, rgba(250, 251, 252, 0) calc(var(--band-top) - 12%), rgba(250, 251, 252, .9) calc(var(--band-top) - 1%)); }
 .view.jin:not(:has(.backdrop.painted)) .story .wholetext { text-shadow: none; }
-.view.jin:not(:has(.backdrop.painted)) .story .wface { background: rgba(62, 85, 102, .06); border-color: rgba(62, 85, 102, .2); }
-.view.jin:not(:has(.backdrop.painted)) .story .wface figcaption, .view.jin:not(:has(.backdrop.painted)) .story .wface figcaption b { color: inherit; }
 .view.jin:not(:has(.backdrop.painted)) .story .wholecol .onward .q { color: #1f2a33; border-color: #3e5566; }
-@media (prefers-color-scheme: dark) { .view.jin:not(:has(.backdrop.painted)) .story.whole::before { background: rgba(13, 16, 19, .84); } }
+@media (prefers-color-scheme: dark) { .view.jin:not(:has(.backdrop.painted)) .story.whole::before { background: linear-gradient(to bottom, rgba(13, 16, 19, 0) calc(var(--band-top) - 12%), rgba(13, 16, 19, .88) calc(var(--band-top) - 1%)); } }
 
 /* ── narrow: the phone ── */
 @container scene (max-width: 640px) {
@@ -350,7 +369,8 @@ body.fighting .sight { display: none; }
   .topbar .headcards { order: 5; margin-left: 0; }
   .topbar .langsw { order: 6; }
   .story .lines { padding: 0 20px; bottom: 64px; }
-  .story .wholecol { padding: 18px 16px 14px; bottom: 52px; }
+  .story .wholecol { padding: 12px 16px 4px; bottom: 52px; }
+  .story .pager .pgw { display: none; }
   .story .wholetext { font-size: 16.5px; line-height: 1.85; }
   .story .screen { font-size: 17px; line-height: 1.9; }
   .story .ctrl { padding: 0 12px 12px; gap: 6px; }
@@ -367,7 +387,7 @@ body.fighting .sight { display: none; }
   .sightcard.two .sightone figcaption b { writing-mode: horizontal-tb; font-size: 20px; letter-spacing: .12em; }
   .sightcard.two .sightline { display: none; }
   .view.jin:not(:has(.backdrop.painted)):has(.sightcard:not(.going)) .story .lines { bottom: 64px; }
-  .appear .appeartext { padding: 0 20px 60px; }
+  .appear .appeartext { padding: 0 20px 60px; max-width: none; }
   .appear .appeartext p { font-size: 16.5px; }
   .appear .appearname b { font-size: 26px; }
 }

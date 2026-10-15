@@ -161,7 +161,7 @@ test('快\'s column on the clock: shown at once, storyDone fires once by itself,
   assert.deepEqual(done.at(-1), ['b|whole', true], '「接着往下」 or a key: the tap goes on');
 });
 
-test('快 on the page: opened before the paint, held for his tap, the voice stopped, the 亮相 inline', () => {
+test('快 on the page: opened before the paint, held for his tap, the voice stopped, a page\'s 亮相 above the band', () => {
   const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
   assert.match(src, /matchPace\(\);\n {2}beatPiece\(slots\);/, 'the passage matches the pace before anything of the beat plays');
   // read live at every paint, both ways (2026-10-15, his: 「由快切回中时, 仍然是全屏」)
@@ -172,8 +172,10 @@ test('快 on the page: opened before the paint, held for his tap, the voice stop
   assert.match(src, /if \(!shown \|\| !playing\(r\) \|\| r\.all \|\| !dubOn\(\)\) return narrator\.sync\(null\);/, '配音 stops for a column (as for 跳过)');
   assert.match(src, /r\.all\?\.whole \? wholeBeats\(r, lang\(\)\) : \[current\(r, lang\(\)\)\.beat\]/, 'her lines in a column are copied to the chat as if played');
   const css = fs.readFileSync(path.join(ROOT, 'scripts/story.css'), 'utf8');
-  assert.match(css, /\.story \.wholecol \{[^}]*overflow-y: auto/, 'the column scrolls');
-  assert.match(css, /\.story\.whole::before[^{]*\{[^}]*rgba\(13, 17, 20, \.74\)/, 'the ink wash behind it');
+  assert.match(css, /\.story \.wholecol \{[^}]*top: var\(--band-top\)[^}]*overflow: hidden/, 'the column is the lower half\'s band, paged (pager.js), not a scroll');
+  assert.match(css, /\.view \{ --band-top: 50%; \}/, 'the band starts halfway down the stage');
+  assert.match(fs.readFileSync(path.join(ROOT, 'scripts/phone.css'), 'utf8'), /\.view \{ --band-top: 42%; \}/, 'a little taller on a phone, the picture still above');
+  assert.match(css, /\.story\.whole::before[^{]*\{[^}]*rgba\(13, 17, 20, 0\) calc\(var\(--band-top\) - 12%\)[^}]*rgba\(13, 17, 20, \.8\)/, 'the ink wash behind the band only: the upper half keeps its picture');
 });
 
 test('慢 · 中 · 快 is felt at once: the running wait rescales on the tap, both ways; every wait and the fades follow', () => {

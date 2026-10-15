@@ -20,8 +20,8 @@ import { linesHtml, paraHtml, screensOf } from './lines.js';
 
 // 跳过 (Hanli, 2026-10-14: 「2改跳过」): the skip reads 跳过 / Skip — never 继续, which is the way on.
 export const DLG_WORDS = {
-  zh: { skip: '跳过', log: '回看', close: '回到这里', logTitle: '回看', logNow: '此景', recap: '前情', before: '上一景', on: '点一下，下一句', held: '停', speed: '读的快慢', speeds: ['慢', '中', '快'], ling: 'Ling', act: (a) => `（${a}）`, voice: ['无声', '有声'], voiceTitle: '评书配音', onward: '接着往下', whole: '全文' },
-  en: { skip: 'Skip', log: 'Look back', close: 'Back to it', logTitle: 'Look back', logNow: 'This scene', recap: 'Before this', before: 'Before this', on: 'Tap for the next line', held: 'Paused', speed: 'Reading pace', speeds: ['Slow', 'Mid', 'Fast'], ling: 'Ling', act: (a) => `(${a}) `, voice: ['Voice off', 'Voice on'], voiceTitle: 'The pingshu voice (Chinese)', onward: 'Read on', whole: 'The whole passage' },
+  zh: { skip: '跳过', log: '回看', close: '回到这里', logTitle: '回看', logNow: '此景', recap: '前情', before: '上一景', on: '点一下，下一句', held: '停', speed: '读的快慢', speeds: ['慢', '中', '快'], ling: 'Ling', act: (a) => `（${a}）`, voice: ['无声', '有声'], voiceTitle: '评书配音', onward: '接着往下', whole: '全文', pages: ['上一页', '下一页'] },
+  en: { skip: 'Skip', log: 'Look back', close: 'Back to it', logTitle: 'Look back', logNow: 'This scene', recap: 'Before this', before: 'Before this', on: 'Tap for the next line', held: 'Paused', speed: 'Reading pace', speeds: ['Slow', 'Mid', 'Fast'], ling: 'Ling', act: (a) => `(${a}) `, voice: ['Voice off', 'Voice on'], voiceTitle: 'The pingshu voice (Chinese)', onward: 'Read on', whole: 'The whole passage', pages: ['Back', 'Next'] },
 };
 
 /* The reading as it stands: the play and scene it belongs to, the passages
@@ -284,7 +284,7 @@ export const beatKey = (r, lang = 'zh') => (playing(r) ? `${r.run ?? ''}|${r.sce
    The whole stage is a tap: the next sentence now. `speed` the viewer's
    (lines.js speedNow); at 快 the rest of the passage stands as one column (wholeOf,
    `wholeHtml`). Nothing here reaches Ling. */
-export function storyHtml(r, { lang = 'zh', voice = null, acts = '', herId = null, speed = 'mid', faces = [], src } = {}) {
+export function storyHtml(r, { lang = 'zh', voice = null, acts = '', herId = null, speed = 'mid', faces = [] } = {}) {
   if (!playing(r)) return '';
   const w = DLG_WORDS[lang] ?? DLG_WORDS.zh, { beat: b } = current(r, lang);
   const last = atLast(r, lang), key = beatKey(r, lang), whole = Boolean(r.all?.whole);
@@ -293,13 +293,13 @@ export function storyHtml(r, { lang = 'zh', voice = null, acts = '', herId = nul
   // where showAll stops — there is nothing left to skip, and no button that would do nothing
   // (the crawler, 2026-10-15: 跳过 at 「9 / 9」 under 古三's header changed nothing).
   const skip = last || showAll(r, lang) === r ? '' : `<button class="q skip" data-dlg-all>${esc(w.skip)} <span aria-hidden="true">»</span></button>`;
-  const body = whole ? wholeHtml(r, { lang, herId, w, choices, faces, src })
+  const body = whole ? wholeHtml(r, { lang, herId, w, choices, faces })
     : `<div class="lines" aria-live="polite">${linesHtml(b, { lang, herId, words: w })}</div>${waysHtml(b, choices, lang)}`;
   const cls = `story${choices ? ' choosing' : ''}${whole ? ' whole' : r.all && last ? ' shown' : ''}`;
   return `<div class="${cls}" data-dlg-on data-dlg-next data-story="${esc(key)}" role="button" tabindex="0" aria-label="${esc(w.on)}">
     ${body}
     <div class="held" aria-hidden="true">${esc(w.held)}</div>
-    <div class="ctrl"><button class="q" data-dlg-log>${esc(w.log)}</button>${speedSeg(speed, w)}${countHtml(r, lang, w)}${voiceBtn(voice, w)}<span class="sp"></span>${skip}</div></div>`;
+    <div class="ctrl"><button class="q" data-dlg-log>${esc(w.log)}</button>${speedSeg(speed, w)}${countHtml(r, lang, w)}${whole ? pagerHtml(w) : ''}${voiceBtn(voice, w)}<span class="sp"></span>${skip}</div></div>`;
 }
 const speedSeg = (speed, w) => `<span class="seg" role="group" aria-label="${esc(w.speed)}">${['slow', 'mid', 'fast'].map((v, x) => `<button data-dlg-speed="${v}"${v === speed ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}>${esc(w.speeds[x])}</button>`).join('')}</span>`;
 /* This 回's count: the beat on show — for a column, the beats it holds (「4–21 / 21」). */
@@ -309,26 +309,24 @@ function countHtml(r, lang, w) {
   const span = from < k ? `${from + 1}–${k + 1}` : `${k + 1}`;
   return before ? `<span class="count before">${esc(w.before)} · ${span} / ${n}</span>` : `<span class="count">${span} / ${n}</span>`;
 }
+/* 快's pages (pager.js fills the count and hides what is not on the page): beside this 回's count. */
+const pagerHtml = (w) => `<span class="pager" hidden><button class="q" data-pg="-1"><span aria-hidden="true">‹</span> <span class="pgw">${esc(w.pages[0])}</span></button><span class="pgn"></span><button class="q" data-pg="1"><span class="pgw">${esc(w.pages[1])}</span> <span aria-hidden="true">›</span></button></span>`;
 /* Its last line, faint above the way on (b-choices): the beat's final screen. */
 function waysHtml(b, choices, lang) {
   if (!choices) return '';
   const tail = screensOf(b.text, lang).at(-1)?.join('') ?? '';
   return `<div class="ways"><div class="last">${esc(tail)}</div><div class="wayacts">${choices}</div></div>`;
 }
-/* 快's column: every beat left of the passage, a paragraph each, one scroll over the stage's
-   wash; a face's 亮相 (sightings — the beat the book marks his entrance) as a small card inline
-   after its paragraph, where the stage would have brought him on large; at the end the choices,
-   or 「接着往下」 when the reading goes on past this column. */
-function wholeHtml(r, { lang, herId, w, choices, faces, src = (p) => p }) {
+/* 快's column: every beat left of the passage, a paragraph each, in the band on the stage's lower
+   half, page by page (pager.js); a face's 亮相 (sightings — the beat the book marks his entrance)
+   named on its paragraph (`data-faces`), so the page that holds it brings him on large in the
+   upper half; at the end the choices, or 「接着往下」 when the reading goes on past this column. */
+function wholeHtml(r, { lang, herId, w, choices, faces }) {
   const seen = sightings(r, faces, lang), beats = wholeBeats(r, lang);
-  const paras = beats.map((b) => paraHtml(b, { herId, words: w, place: `${b.i}.${b.j}` }) + faceCards((faces ?? []).filter((e) => seen.get(e.id) === b.at), src)).join('');
+  const paras = beats.map((b) => paraHtml(b, { herId, words: w, place: `${b.i}.${b.j}`, faces: (faces ?? []).filter((e) => seen.get(e.id) === b.at).map((e) => e.id) })).join('');
   const end = choices ? `<div class="wayacts">${choices}</div>` : `<div class="onward"><button class="q" data-dlg-onward>${esc(w.onward)} <span aria-hidden="true">›</span></button></div>`;
   return `<div class="wholecol" aria-label="${esc(w.whole)}"><div class="wholetext">${paras}</div>${end}</div>`;
 }
-const faceCards = (entries, src) => entries.map((e) => {
-  const pic = e.image ? `<img src="${esc(src(e.image))}" alt="">` : `<span class="namecard" aria-hidden="true"><b>${esc(e.name)}</b></span>`;
-  return `<figure class="wface" data-sight-id="${esc(e.id)}">${pic}<figcaption><b>${esc(e.name)}</b>${e.lines?.[0] ? `<span>${esc(e.lines[0])}</span>` : ''}</figcaption></figure>`;
-}).join('');
 
 /* 回看: what was told so far — the scenes before (`past`), then this one up
    to the beat on show — a panel of its own with a plain close. */

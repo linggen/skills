@@ -8,6 +8,8 @@
 
 @media (max-width: 600px), (max-width: 860px) and (max-height: 700px) {
   :root { --chatbar-h: 34px; --sheet-h: min(74dvh, 620px); }
+  /* 快's band (story.css --band-top) takes a little more of a small stage; the picture still stands above it. */
+  .view { --band-top: 42%; }
   /* One row for the stage, one for the bar: every fold the wide page keeps (the viewer's, the page's) is moot here. */
   .shell, .shell.chatfolded, .shell.autofold:not(.autoopen), .shell.autofold.autoopen {
     grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) var(--chatbar-h); }
@@ -86,7 +88,7 @@
   .story .lines { bottom: 56px; }
   .story .screen { font-size: 15.5px; line-height: 1.75; }
   .story .ctrl { padding-bottom: 10px; }
-  .sightcard:not(.two) { top: 4%; bottom: 60px; right: 3%; left: auto; max-width: 42%; }
+  .sightcard:not(.two) { top: 4%; bottom: 60px; right: 3%; left: 55%; } /* a box of its own: the picture fits it (sight.js fitBox) */
   .sightone figcaption { margin-bottom: 0; padding: 8px 10px; }
   .sightone figcaption b { font-size: 22px; }
   .sightline { font-size: 12px; max-width: 8em; }
