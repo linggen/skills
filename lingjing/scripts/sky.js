@@ -52,11 +52,22 @@ export function wxChipHtml(weather, { lang = 'zh', open = false, sense = null, n
 const MARKS = { clear: '\u2600\uFE0E', cloudy: '\u2601\uFE0E', fog: '\u224B', rain: '\u2602\uFE0E', snow: '\u2744\uFE0E', storm: '\u26A1\uFE0E' };
 export const skyMark = (weather) => (weather.kind === 'clear' && weather.is_day === false ? '\u263E' : MARKS[weather.kind] ?? '\u2601\uFE0E');
 
+/// The city as the page's language says it (live, 2026-10-15: 「跟着：Halifax」 on a Chinese page). The
+/// geocoder gives a name only in its own spelling, so the country — named by the browser in the page's
+/// language from its code — goes with it: 「Halifax · 加拿大」, 「Harbin · China」.
+export function cityLabel(city, lang = 'zh') {
+  const name = city?.name ?? '';
+  let country = '';
+  try { country = city?.country_code ? new Intl.DisplayNames([lang === 'en' ? 'en' : 'zh-CN'], { type: 'region' }).of(String(city.country_code).toUpperCase()) ?? '' : ''; } catch { country = ''; }
+  if (!country || country === city?.country_code) country = lang === 'en' ? '' : city?.country ?? '';
+  return [name, country].filter(Boolean).join(' · ');
+}
+
 /// The popover: the city followed, a field to change it, off · on · forget.
 export function wxPopHtml({ lang = 'zh', sense = null, note = null } = {}) {
   const w = wordsOf(lang);
   const city = sense?.city?.name ?? null;
-  const state = sense?.off ? w.isOff : city ? say(w.yours, { city }) : w.note;
+  const state = sense?.off ? w.isOff : city ? say(w.yours, { city: cityLabel(sense.city, lang) }) : w.note;
   const toggles = city ? `<div class="acts"><button class="act quiet" data-wx-off="${sense?.off ? 'on' : 'off'}">${esc(sense?.off ? w.on : w.off)}</button><button class="act quiet" data-wx-clear>${esc(w.clear)}</button></div>` : '';
   return `<div class="bookpop wxpop" role="dialog"><div class="cardtitle">${esc(w.title)}</div><div class="small dim">${esc(state)}</div>
     <div class="fateform"><input type="text" id="wx-city" maxlength="40" autocomplete="off" placeholder="${esc(w.placeholder)}" value="${esc(draft.city)}"><button class="act" data-wx-set>${esc(w.set)}</button></div>

@@ -198,3 +198,12 @@ test('the lint holds a scene\'s season and wind, and a 回\'s season', async () 
   assert.ok(problems.some(p => p.startsWith('scene 00-shiao: season monsoon')));
   assert.ok(problems.some(p => p.startsWith('scene 00-shiao: wind hurricane')));
 });
+
+// Live 2026-10-15: the sky popover read 「跟着：Halifax」 on a Chinese page — the geocoder's own spelling alone.
+test('the city followed is named with its country in the page\'s language', async () => {
+  const { cityLabel, wxPopHtml } = await import('../scripts/sky.js');
+  const city = { name: 'Halifax', country: '加拿大', country_code: 'CA' };
+  assert.equal(cityLabel(city, 'zh'), 'Halifax · 加拿大');
+  assert.equal(cityLabel(city, 'en'), 'Halifax · Canada');
+  assert.match(wxPopHtml({ lang: 'zh', sense: { city } }), /跟着：Halifax · 加拿大/);
+});
