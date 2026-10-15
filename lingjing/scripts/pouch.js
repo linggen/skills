@@ -15,7 +15,7 @@ export const POUCH_WORDS = {
     deck: '牌组', empty: '储物袋是空的。', tabEmpty: '这里还没有东西。', pick: '点一样东西看看。',
     take: '服用', wear: '佩戴', study: '参悟', carry: '换上', sell: '卖 {n}', toss: '丢',
     tossAsk: '丢掉{name} ×{n}？丢了就找不回了。', tossYes: '丢掉', tossNo: '留着',
-    free: '剧情所需，不占格', grown: '已换上：{names}',
+    free: '剧情所需，不占格', grown: '已换上：{names}', fantong: '饭桶',
   },
   en: {
     title: 'Storage Pouch', close: 'Close', used: '{used}/{cap} slots', over: '{n} over: new things wait at the abode first.',
@@ -24,7 +24,7 @@ export const POUCH_WORDS = {
     deck: 'Deck', empty: 'The pouch is empty.', tabEmpty: 'Nothing here yet.', pick: 'Tap a thing to look at it.',
     take: 'Take', wear: 'Wear', study: 'Study', carry: 'Carry it', sell: 'Sell {n}', toss: 'Drop',
     tossAsk: 'Throw away {name} ×{n}? It is gone for good.', tossYes: 'Throw away', tossNo: 'Keep it',
-    free: 'the story needs it — takes no slot', grown: 'Carried: {names}',
+    free: 'the story needs it — takes no slot', grown: 'Carried: {names}', fantong: 'Rice Bucket',
   },
 };
 const say = (t, vars) => String(t).replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
@@ -114,15 +114,18 @@ export function pouchHtml(ctx, ui = {}) {
   if (!g) return `<div class="lu pouch"><header class="luhead"><b>${esc(pw.title)}</b>${close}</header><div class="loading">…</div></div>`;
   const p = g.pouch ?? { used: g.bag.length, cap: null, held: [] };
   const heldN = p.held.reduce((n, h) => n + h.n, 0);
-  const pane = ui.pane === 'held' && heldN ? 'held' : ui.pane === 'deck' && g.cards?.length ? 'deck' : null;
+  // 饭桶 (fantong-free.js): its board in the grid's place, drawn by the page and handed in as `ctx.fantongPane`.
+  const pane = ui.pane === 'held' && heldN ? 'held' : ui.pane === 'deck' && g.cards?.length ? 'deck' : ui.pane === 'fantong' && g.fantong ? 'fantong' : null;
   const head = `<header class="luhead phead"><b>${esc(pw.title)}</b>
     ${p.cap != null ? `<span class="pused${p.used > p.cap ? ' over' : p.used >= p.cap ? ' full' : ''}">${esc(say(pw.used, p))}</span>` : ''}
     ${heldN ? `<button class="pchip${pane === 'held' ? ' on' : ''}" data-pouch-pane="held">${esc(say(pw.held, { n: heldN }))}</button>` : ''}
-    ${g.cards?.length ? `<button class="pchip${pane === 'deck' ? ' on' : ''}" data-pouch-pane="deck">${esc(pw.deck)}</button>` : ''}${close}</header>`;
+    ${g.cards?.length ? `<button class="pchip${pane === 'deck' ? ' on' : ''}" data-pouch-pane="deck">${esc(pw.deck)}</button>` : ''}
+    ${g.fantong ? `<button class="pchip${pane === 'fantong' ? ' on' : ''}" data-pouch-pane="fantong">${esc(pw.fantong)}</button>` : ''}${close}</header>`;
   const note = ctx.gearNote ? `<div class="donote">${esc(ctx.gearNote)}</div>` : '';
   const over = p.cap != null && p.used > p.cap ? `<p class="small pover">${esc(say(pw.over, { n: p.used - p.cap }))}</p>` : '';
   const grown = p.grown?.length ? `<p class="small dim">${esc(say(pw.grown, { names: p.grown.join(ctx.lang === 'en' ? ', ' : '、') }))}</p>` : '';
   const worn = `<section class="psec">${wornHtml(g, ctx)}</section>`;
+  if (pane === 'fantong') return `<div class="lu pouch" role="dialog" aria-label="${esc(pw.title)}">${head}${note}${ctx.fantongPane ?? ''}</div>`;
   if (pane) {
     const body = pane === 'held' ? heldHtml(p, ctx, pw) : `<section class="psec">${deckHtml(g, ctx)}</section>`;
     return `<div class="lu pouch" role="dialog" aria-label="${esc(pw.title)}">${head}${note}${worn}

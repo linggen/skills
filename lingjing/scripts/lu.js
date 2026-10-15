@@ -14,6 +14,7 @@ export const LU_WORDS = {
     kinds: { story: '途中所遇', tamed: '随行', fought: '交过手', known: '相识' },
     none: '还没有什么可记的。', ending: '终局 · {title}', noOpen: '眼下没有悬着的谜。',
     sep: '',
+    fantong: '饭桶方子', fantongNote: '喂对了东西，饭桶吐对的丹；几道纹，看它的脾气。',
     paipu: '牌谱 · {n}', paipuNote: '你手上的每一张牌，和它从哪里来。',
     how: { starter: '测灵根时所得', companion: '{creature}随你而来', tame: '收服{creature}', win: '胜{creature}所得', chance: '机缘所得', tale: '传闻《{tale}》', story: '{chapter}', old: '旧日所得' },
     at: '于{place}', kinds: { minion: '灵兽', spell: '法术' },
@@ -25,6 +26,7 @@ export const LU_WORDS = {
     kinds: { story: 'met on the way', tamed: 'walks with you', fought: 'fought', known: 'acquainted' },
     none: 'Nothing to record yet.', ending: 'The end · {title}', noOpen: 'No riddle open now.',
     sep: ' ',
+    fantong: 'Rice Bucket recipes', fantongNote: 'Feed it the right thing and it spits the right pill; how many rings is up to its temper.',
     paipu: 'Cards · {n}', paipuNote: 'Every card you hold, and where it came from.',
     how: { starter: 'From the root test', companion: '{creature} came with you', tame: 'Tamed {creature}', win: 'Won from {creature}', chance: 'A chance taken', tale: 'The rumor “{tale}”', story: '{chapter}', old: 'From earlier days' },
     at: 'at {place}', kinds: { minion: 'Beast', spell: 'Spell' },
@@ -76,6 +78,7 @@ export function luHtml(book, { lang = 'zh', her = null, artBase = '', codex = nu
     ${seenHtml(book.seen, w)}
     ${albumHtml(book.album, { artBase, lang })}
     ${tujian ? tujian.replace(/<\/section>$/, `${peopleList}</section>`) : ''}
+    ${fantongBookHtml(book.fantong, w)}
     ${paipuHtml(book.cards, w, { artBase, her })}
     <section class="lusec"><h3>${esc(w.open)}</h3>${(book.open ?? []).length ? book.open.map((q) => `<p class="luq">${esc(q)}</p>`).join('') : `<p class="dim">${esc(w.noOpen)}</p>`}</section>
   </div>`;
@@ -98,6 +101,12 @@ function tujianHtml(book, { lang, artBase, codex, codexKinds, codexOpen }) {
   const src = (f) => artBase + f;
   const open = codexOpen && book.codex.includes(codexOpen) ? codexHtml(codex.get(codexOpen), { src, lang }) : '';
   return codexBookHtml(codex, new Set(book.codex), { src, lang, kinds: codexKinds }).replace('</h3>', `</h3>${open}`);
+}
+
+/* 饭桶方子 — the 方子 found feeding the 饭桶 (rules/fantong.mjs), so he knows what to feed next. */
+function fantongBookHtml(recipes, w) {
+  if (!recipes?.length) return '';
+  return `<section class="lusec lufantong"><h3>${esc(w.fantong)}</h3><p class="small dim">${esc(w.fantongNote)}</p>${recipes.map((r) => `<p class="lurecipe"><b>${esc(r.in)}</b>${r.lingshi ? ` + ${esc(r.lingshi)} 灵石` : ''} → <b>${esc(r.out)}</b></p>`).join('')}</section>`;
 }
 
 /* 牌谱 — the deck as the road's memory (redesign-v2 § 五): each card, its

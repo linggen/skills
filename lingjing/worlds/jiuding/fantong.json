@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "_about": "喂饭桶 — free play (Hanli, 2026-10-15): once he holds the 饭桶 (`needs`, the 小铜炉 古四 grants at wm-danlu), he feeds it one thing at a time from the 物品 panel and it spits one thing out. The rules roll it (rules/fantong.mjs, seeded by the day, the save's feed count and what went in); the page only shows. A thing that goes in is gone; what comes out goes into the pouch (待取 when full). Every output is an items.json row with a name and a `hint` — the one line of small print on it or its wrapper, never its effect (Hanli, 2026-10-06). The book's 饭桶 (古四, 古七): 喂凡物，多半出凡物; 灵石 is 「一口正经饭」; the 方子 say which pill, never how many 纹.",
+  "needs": { "item": "danlu" },
+  "limit": {
+    "_about": "`cooldown_min`: after a feed, the bucket is full that long (Hanli, 2026-10-15: one feed, then an hour). `per_day`: at most that many feeds a local day. Either, both, or neither; the refusal says when the next feed is possible.",
+    "cooldown_min": 60
+  },
+  "never": {
+    "_about": "What never goes in, whatever the bag holds: these kinds (a key, a scroll — 《吐纳经》 is hers — an artifact of hers) and these things (爷爷的弓, 爹's). Story things, a key the chapter or an errand still needs, and what he wears are refused by the rules anyway (pouch.mjs freeSlot).",
+    "kinds": ["key", "scroll", "artifact"],
+    "items": ["old-bow"]
+  },
+  "around": {
+    "_about": "凡物 always at hand by the woodpile (古四: 柴火棍, 石子, 枯叶): fed without leaving the bag, so the bucket is never without a meal. `after`: at hand once that errand is done (药园残株 — 周衡's monthly culls, 古七's 黄精烂根 · 黄芪虫叶).",
+    "items": [
+      { "id": "chaihuo" },
+      { "id": "shizi" },
+      { "id": "kuye" },
+      { "id": "huangjing-gen", "after": "xu-yaoyuan-canzhu" },
+      { "id": "huangqi-canzhu", "after": "xu-yaoyuan-canzhu" }
+    ]
+  },
+  "kinds": {
+    "_about": "What went in decides the odds and the pools: each kind's grade weights (junk · useful · best, out of 100) and, per grade, the pool it draws from. An item not listed under any kind is `junk`. `best` is 卷一's 逆天: convenience, never a power card.",
+    "junk": { "grades": { "junk": 82, "useful": 16, "best": 2 }, "useful": "plain", "best": "lucky" },
+    "herb": { "items": ["lingzhi", "ginseng", "huangjing-gen", "huangqi-canzhu", "dingtai", "luobo"], "grades": { "junk": 62, "useful": 33, "best": 5 }, "useful": "pills", "best": "pills-best" },
+    "beast": { "items": ["yaodan-1", "yaodan-2", "yaodan-3", "deer-hide"], "grades": { "junk": 64, "useful": 31, "best": 5 }, "useful": "fu", "best": "lucky" }
+  },
+  "lingshi": {
+    "_about": "灵石 fed with it (0 to `max`), each moving `shift` points of weight from junk to useful and best — 「这才是一口正经饭」.",
+    "max": 3,
+    "shift": { "junk": -12, "useful": 8, "best": 4 }
+  },
+  "pools": {
+    "junk": [
+      { "item": "yaqian", "w": 3 },
+      { "item": "guoba", "w": 3 },
+      { "item": "xiao-shizi", "w": 2 },
+      { "item": "yicuo-hui", "w": 4 },
+      { "item": "hanxiao-bandian", "w": 1, "with": "zhixiao-wan" }
+    ],
+    "plain": [
+      { "item": "ganliang", "w": 3 },
+      { "item": "talisman", "w": 2 },
+      { "item": "qi-pill", "w": 2 }
+    ],
+    "pills": [
+      { "item": "qi-pill", "w": 3 },
+      { "item": "mend-pill", "w": 3 }
+    ],
+    "pills-best": [
+      { "item": "qi-pill-3", "w": 1 },
+      { "item": "mend-pill-3", "w": 1 }
+    ],
+    "fu": [
+      { "item": "talisman", "w": 3 },
+      { "item": "lianxi-fu", "w": 2 }
+    ],
+    "lucky": [
+      { "item": "baina-dai", "w": 1 },
+      { "item": "qi-pill-3", "w": 1 }
+    ]
+  },
+  "recipes": {
+    "_about": "古七's 方子 (认出三张方子): the right thing with the right 灵石 says which pill — useful draws `out`, best draws `best`; the 纹 stay the roll's. Recorded on the save the first time one lands, and shown in 录. 回气丹 has no item yet, so its 方子 waits.",
+    "list": [
+      { "id": "huangjing", "in": "huangjing-gen", "lingshi": 1, "out": "qi-pill", "best": "qi-pill-3", "grades": { "junk": 40, "useful": 55, "best": 5 } },
+      { "id": "huangqi", "in": "huangqi-canzhu", "lingshi": 0, "out": "mend-pill", "best": "mend-pill-3", "grades": { "junk": 40, "useful": 55, "best": 5 } }
+    ]
+  },
+  "events": [
+    {
+      "id": "yinyue",
+      "_about": "古四: 银月 drops one of her hairs in; the little beast on the lid turns its rump to her and out floats a horse drawn like chopsticks in a bun — 「还不如本王给你画」. Now and then she reaches for it first (only while she walks with him).",
+      "chance": 6,
+      "out": "tama-defu",
+      "say": {
+        "zh": "银月伸爪子在铜肚子上拍了一下。盖上那只小兽睁开一只眼睛，把屁股扭过来对着她。「咔哒」，飘出一张黄纸，朱砂画的一匹马，四条腿像四根筷子插在馒头上。银月脸上的毛竖了起来：「画成这个样子——还不如我给你画。」",
+        "en": "Yinyue slaps the copper belly with a paw. The little beast on the lid opens one eye and turns its rump to her. *Click*: out floats a yellow slip, a horse in cinnabar, four legs like chopsticks stuck in a bun. The fur on her face stands up: \"Drawn like that — I'd do better drawing you one myself.\""
+      }
+    }
+  ],
+  "words": {
+    "zh": {
+      "spit": "「咯嘣」，「咔哒」——吐出来：{name}。",
+      "burp": "饭桶「嗝」了一声，才吐出来：{name}。",
+      "with": "一锅还出了一样：{name}。",
+      "full": "饭桶还撑着，{when}后再喂。",
+      "no_bucket": "手里没有饭桶。",
+      "not_feedable": "这个不能喂。",
+      "no_lingshi": "灵石不够。"
+    },
+    "en": {
+      "spit": "*Crunch*, *click* — out comes: {name}.",
+      "burp": "The Rice Bucket goes *burp* before it spits out: {name}.",
+      "with": "Out of the same pot: {name}.",
+      "full": "The Rice Bucket is still full — feed it again {when}.",
+      "no_bucket": "You have no Rice Bucket.",
+      "not_feedable": "That won't go in.",
+      "no_lingshi": "Not enough spirit stones."
+    }
+  }
+}

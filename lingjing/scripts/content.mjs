@@ -174,6 +174,8 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     scrolls: fs.existsSync(path.join(dir, 'scrolls.json')) ? readJson(path.join(dir, 'scrolls.json')) : null,
     // 节日 (design.md § 真实世界): the real calendar's festivals, one entry each (rules/festival.mjs).
     festivals: fs.existsSync(path.join(dir, 'festivals.json')) ? readJson(path.join(dir, 'festivals.json')) : null,
+    // 喂饭桶's free play (rules/fantong.mjs): inputs → pools → outputs, the limit, the 方子.
+    fantong: fs.existsSync(path.join(dir, 'fantong.json')) ? readJson(path.join(dir, 'fantong.json')) : null,
     places: loadPlaces(path.join(dir, 'places')),
     templates: { made: at('templates/made-scene.json'), world: at('templates/made-world.json') },
     dictionary: at('dictionary.json'),

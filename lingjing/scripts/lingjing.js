@@ -24,6 +24,7 @@ import { drainAt, drainOf, trialNudge } from './beats.js';
 import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, skipButton } from './cards.js';
 import { stuckNow } from './stuck.js';
 import { pouchHtml } from './pouch.js';
+import { fantongHtml, wireFantongDrag } from './fantong-free.js';
 import { esc } from './esc.js';
 import { HANDED_STAY_MS, TURNED_MS, handedStale } from './turned.js';
 import { thinker, stillAsked } from './think.js';
@@ -249,7 +250,13 @@ const view = {
   pouchTab: 'all', //    the panel's tab (pouch.js TABS)
   pouchSel: null, //     the thing tapped, in the detail pane
   pouchToss: null, //    the thing asking 丢? on the pane, until answered
-  pouchPane: null, //    'held' (洞府 · 待取) or 'deck' (牌组) in the grid's place
+  pouchPane: null, //    'held' (洞府 · 待取), 'deck' (牌组) or 'fantong' (饭桶) in the grid's place
+  fantong: null, //      the rules' 饭桶 brief (rules/fantong.mjs), read when its board opens
+  ftSel: null, //        the thing tapped on the 饭桶 board
+  ftLingshi: 0, //       灵石 to feed with it
+  ftResult: null, //     the last feed's answer: what came out, its name and small print
+  ftAt: 0, //            when it spat (the bucket shakes, the splash fades)
+  ftNote: null, //       a refusal on the board, in the rules' words
   spoils: null, //       what a won fight left: { place, cards, items }, until put away or walked on
   bookSeen: null, //     how many lines the book held when last drawn: one more and the chip says so
   bookFresh: false,
@@ -2374,6 +2381,7 @@ async function openGear() {
   if (!view.gearOpen) show({ gearOpen: true, luOpen: false, ...othersShut('gearOpen'), gear: null, pouchToss: null });
   const r = await verb('gear').catch((e) => { console.warn('[lingjing] gear', e); return null; });
   if (view.gearOpen) show({ gear: r?.gear ?? null, gearNote: null });
+  if (view.gearOpen && view.pouchPane === 'fantong') await loadFantong();
 }
 
 /* 待取 taken in, or a slot thrown away — the panel's own verb (rules/pouch.mjs). */
@@ -2394,10 +2402,39 @@ function drawPouch() {
   if (open) document.body.classList.add('reading');
   el.hidden = !open;
   if (!open) { drawnPouch = null; return; }
-  const html = pouchHtml({ ...ctx(), gear: view.gear, gearNote: view.gearNote, artBase: artBase() },
+  const fantongPane = view.pouchPane === 'fantong'
+    ? fantongHtml(view.fantong, { lang: lang(), artBase: artBase(), ui: { sel: view.ftSel, lingshi: view.ftLingshi, result: view.ftResult, note: view.ftNote, at: view.ftAt } }) : null;
+  const html = pouchHtml({ ...ctx(), gear: view.gear, gearNote: view.gearNote, artBase: artBase(), fantongPane },
     { tab: view.pouchTab, sel: view.pouchSel, toss: view.pouchToss, pane: view.pouchPane });
   if (html !== drawnPouch) { el.innerHTML = html; drawnPouch = html; }
 }
+
+/* 喂饭桶 (rules/fantong.mjs): the board's brief, read when it opens and again
+   when the bucket may eat; a feed is the page's own verb — no model turn. */
+async function loadFantong() {
+  const r = await verb('fantong', { action: 'look' }).catch(failed);
+  if (view.gearOpen) show({ fantong: r?.fantong ?? null, ...(r?.ok ? {} : { ftNote: refusal(r) }) });
+}
+async function feedFantong(id) {
+  if (!id) return;
+  const r = await write('fantong', { action: 'feed', id, lingshi: view.ftLingshi || 0 }).catch(failed);
+  if (!r.ok) { show({ ftNote: refusal(r) }); return loadFantong(); }
+  const sel = r.fantong?.inputs?.some((i) => i.id === id) ? id : null;
+  const at = Date.now();
+  show({ fantong: r.fantong, ftResult: r, ftAt: at, ftSel: sel, ftLingshi: 0, ftNote: null });
+  setTimeout(() => { if (view.ftAt === at) render(); }, 750); // the splash fades
+  const g = await verb('gear').catch(() => null);
+  if (view.gearOpen && g?.gear) show({ gear: g.gear });
+  await refresh();
+}
+/* The bowl fills back while the board is open; the moment it may eat, the brief is read again. */
+setInterval(() => {
+  const fb = view.fantong;
+  if (!view.gearOpen || view.pouchPane !== 'fantong' || !fb || fb.ready) return;
+  if (fb.next_at && Date.now() >= new Date(fb.next_at).getTime()) run('fantong:look', loadFantong);
+  else render();
+}, 15_000);
+wireFantongDrag({ onDrop: (id) => run(`fantong:feed:${id}`, () => feedFantong(id)), active: () => view.gearOpen && view.pouchPane === 'fantong' });
 
 /* 撂下 is the rules' to do; Ling reads the book in her next Look. */
 async function dropErrand(id) {
@@ -2641,7 +2678,15 @@ const CLICKS = [
   ['[data-deck-auto]', busy('deck:auto', () => deckTap({ action: 'auto' }))],
   ['[data-pouch-close]', () => show({ gearOpen: false, pouchToss: null })],
   ['[data-pouch-tab]', (el) => show({ pouchTab: el.dataset.pouchTab, pouchToss: null, pouchPane: null })],
-  ['[data-pouch-pane]', (el) => show({ pouchPane: el.dataset.pouchPane || null, pouchToss: null })],
+  ['[data-pouch-pane]', (el) => {
+    show({ pouchPane: el.dataset.pouchPane || null, pouchToss: null, ...(el.dataset.pouchPane === 'fantong' ? { ftResult: null, ftNote: null } : {}) });
+    if (el.dataset.pouchPane === 'fantong') run('fantong:look', loadFantong);
+  }],
+  // 喂饭桶's board (fantong-free.js): tap a thing, then 喂 — or the bucket's mouth; a drag drops it in.
+  ['[data-fantong-pick]', (el) => show({ ftSel: el.dataset.fantongPick, ftNote: null })],
+  ['[data-fantong-lingshi]', (el) => show({ ftLingshi: Number(el.dataset.fantongLingshi) || 0 })],
+  ['[data-fantong-feed]', (el) => { if (!el.matches(':disabled')) run('fantong:feed', () => feedFantong(view.ftSel)); }],
+  ['[data-fantong-mouth]', () => { if (view.ftSel && view.fantong?.ready) run('fantong:feed', () => feedFantong(view.ftSel)); }],
   ['[data-pouch-item]', (el) => show({ pouchSel: el.dataset.pouchItem, pouchToss: null, pouchPane: null })],
   ['[data-sell]', (el) => run(`item:sell:${el.dataset.sell}`, () => useItem(el.dataset.sell, 'sell'))],
   ['[data-toss]', (el) => show({ pouchToss: el.dataset.toss })],

@@ -43,6 +43,22 @@ export const STOPS = {
   },
 };
 
+/* ── The picture: the copper furnace under the woodpile, three-legged, the little beast on its
+   lid with its rump turned; the lid lifts a crack once it gives; what came out lies in a row on
+   the floor, a seal for each (`seals`); the 丹田 a bowl drawn beside it, `left` of it full; `spit`
+   the splash of a thing coming out (`seal`: with its seal). Exported for 喂饭桶's free play
+   (fantong-free.js), so the story's stops and the free bucket are one drawing. */
+export function drawBucket({ open = false, seals = 0, left = 1, spit = false, seal = true } = {}) {
+  const lid = open ? -6 : 0;
+  const pile = '<path class="g-line g-thin g-faint" d="M14 40 h90 M10 52 h100 M16 28 h80"/>';
+  const pot = `<path class="g-line" d="M120 60 q0 44 40 44 q40 0 40 -44 Z"/><path class="g-line" d="M130 104 l-6 12 M190 104 l6 12 M160 104 v12"/>`
+    + `<path class="g-line" d="M118 ${56 + lid} h84"/><path class="g-line g-thin" d="M150 ${50 + lid} q10 -10 20 0"/>`;
+  const row = Array.from({ length: seals }, (_, i) => `<circle class="g-dot is-seal" cx="${n(222 + (i % 3) * 30)}" cy="${n(100 + Math.floor(i / 3) * 14)}" r="5"/>`).join('');
+  const bowl = `<path class="g-line g-thin" d="M228 40 q24 30 48 0"/><path class="g-water" d="M${n(252 - 22 * left)} ${n(40 + 14 * (1 - left))} h${n(44 * left)}"/>`;
+  const fx = spit ? splash(160, 52, 260, { r: 12, seal }) : '';
+  return scene(320, 124, pile + pot + row + bowl + fx);
+}
+
 export function makeFantong(stop) {
   const S = STOPS[stop];
   const meta = { id: `fantong${stop}`, name: S.name, how: S.how };
@@ -71,20 +87,9 @@ export function makeFantong(stop) {
     return { state: next, won: next.won === true };
   };
 
-  /* ── The picture: the copper furnace under the woodpile, three-legged, the little beast on its
-     lid with its rump turned; the lid lifts a crack once it gives; what came out lies in a row on
-     the floor, a seal for each; the 丹田 a bowl drawn beside it, emptying. */
-  function picture(state) {
-    const open = state.phase !== 'ready' ? -6 : 0;
-    const pile = '<path class="g-line g-thin g-faint" d="M14 40 h90 M10 52 h100 M16 28 h80"/>';
-    const pot = `<path class="g-line" d="M120 60 q0 44 40 44 q40 0 40 -44 Z"/><path class="g-line" d="M130 104 l-6 12 M190 104 l6 12 M160 104 v12"/>`
-      + `<path class="g-line" d="M118 ${56 + open} h84"/><path class="g-line g-thin" d="M150 ${50 + open} q10 -10 20 0"/>`;
-    const row = state.fed.map((id, i) => `<circle class="g-dot is-seal" cx="${n(222 + (i % 3) * 30)}" cy="${n(100 + Math.floor(i / 3) * 14)}" r="5"/>`).join('');
-    const left = 1 - state.fed.length / S.feeds.length;
-    const bowl = `<path class="g-line g-thin" d="M228 40 q24 30 48 0"/><path class="g-water" d="M${n(252 - 22 * left)} ${n(40 + 14 * (1 - left))} h${n(44 * left)}"/>`;
-    const fx = String(state.note).startsWith('out') ? splash(160, 52, 260, { r: 12, seal: state.note !== 'out|sandal' }) : '';
-    return scene(320, 124, pile + pot + row + bowl + fx);
-  }
+  /* ── The picture: the copper furnace under the woodpile (drawBucket, shared with free play). */
+  const picture = (state) => drawBucket({ open: state.phase !== 'ready', seals: state.fed.length, left: 1 - state.fed.length / S.feeds.length,
+    spit: String(state.note).startsWith('out'), seal: state.note !== 'out|sandal' });
 
   function html(state, lang = 'zh') {
     const t = S[lang] || S.zh;

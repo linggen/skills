@@ -36,6 +36,10 @@
         "zh": "一粒抵半日打坐。",
         "en": "One pill is worth half a day's sitting."
       },
+      "hint": {
+        "zh": "一粒半日。",
+        "en": "One pill, half a day."
+      },
       "buy": 80,
       "sell": 20,
       "sold": [
@@ -136,6 +140,10 @@
       "about": {
         "zh": "一袋干饼，硬得能砸核桃。货郎担子上、客栈柜上论袋卖，渡叔那样的人也爱往你手里塞一袋。",
         "en": "A bag of flat cakes, hard enough to crack walnuts. Pedlars and inns sell them by the bag, and people like Du Shu will press one on you."
+      },
+      "hint": {
+        "zh": "慢慢嚼。",
+        "en": "Chew slowly."
       },
       "buy": 6,
       "sell": 2
@@ -330,6 +338,10 @@
         "zh": "旧时疗伤的丹，如今只剩市价。",
         "en": "A healing pill of older days; now worth only its price."
       },
+      "hint": {
+        "zh": "回春。",
+        "en": "Spring returns."
+      },
       "buy": 30,
       "sell": 8,
       "sold": []
@@ -510,6 +522,10 @@
         "zh": "桑皮纸上朱砂一道。降妖时在手，掷出打三点，不论五行；一符一用。",
         "en": "One stroke of cinnabar on mulberry paper. In hand when you fight: cast, it strikes for 3 whatever the root; one use each."
       },
+      "hint": {
+        "zh": "一掷了事。",
+        "en": "One throw, and done."
+      },
       "buy": 20,
       "sold": [],
       "made": {
@@ -534,6 +550,10 @@
         "zh": "银月从尾巴尖上拔下一根银毛，丢进饭桶，「本王给你开个张」——飘出来一张黄纸：朱砂画的一匹马，脑袋大，身子小，四条腿像四根筷子插在一个馒头上。你骂了一句「这踏马的，是什么符？」，符角一行米粒大的朱字答你：踏马符。底下一行更小：足下一踏，马上便走。叠成小方块，塞在腰带夹层里。只灵一回。",
         "en": "Yinyue plucked one silver hair from the tip of her tail and dropped it into the Rice Bucket — \"Let this queen open shop for you\" — and out floated a slip of yellow paper: a horse in cinnabar, big head, small body, four legs like four chopsticks stuck in a steamed bun. You swore at it — \"What the hoof is this charm?\" — and a line of rice-grain cinnabar in the corner answered: Hell-for-Leather Charm. Under it, smaller still: One stamp underfoot, and off at once. Folded small, tucked into your belt fold. Good once."
       },
+      "hint": {
+        "zh": "足下一踏，马上便走。",
+        "en": "One stamp underfoot, and off at once."
+      },
       "sold": [],
       "effect": {
         "charm": true
@@ -557,6 +577,10 @@
         "zh": "小狰换下来的一撮红毛，喂进饭桶，吸你一口灵气，飘出一张黄纸：朱砂画一只鼻子，鼻孔朝天，两个鼻孔比鼻子还大。符脚一行小字：一缕清气，通窍。一张，一回。",
         "en": "A pinch of the zheng's moulted red fur, fed to the Rice Bucket for a mouthful of your qi: out floats a yellow slip with a nose drawn on it in cinnabar, nostrils to the sky, the nostrils bigger than the nose. Small print at its foot: A wisp of clear air, to open the passages. One slip, one go."
       },
+      "hint": {
+        "zh": "一缕清气，通窍。",
+        "en": "A wisp of clear air, to open the passages."
+      },
       "buy": 0,
       "sell": 0,
       "sold": [],
@@ -575,6 +599,10 @@
       "about": {
         "zh": "小狰的一根胡子换来的三根针，细得像牛毛，针尖一点绿，并排插在一张小红纸片上。纸片上印着：痒痒针；底下一行小字：一针见笑。凡铁的东西，打不进比你高得多的人的护体灵光。",
         "en": "Three needles for one of the zheng's whiskers, fine as ox-hair, a dot of green at each tip, stuck side by side in a little red card. Printed on the card: Tickle Needles; and a line of small print: One prick, one laugh. Common iron: it won't get through the guarding light of someone far above you."
+      },
+      "hint": {
+        "zh": "一针见笑。",
+        "en": "One prick, one laugh."
       },
       "buy": 0,
       "sell": 0,
@@ -595,6 +623,10 @@
         "zh": "伙房大娘扔掉的一面裂手镜，喂进饭桶，吐出来一面巴掌大的铜镜，缺一个角。谁拿起来照，照出来的都是你的脸；烛光打上去，原样弹回来。背面刻着三个字：自拍镜；底下一行小字：照人，先照己。",
         "en": "A cracked hand-mirror the kitchen auntie threw out, fed to the Rice Bucket: out came a palm-sized bronze mirror with a corner chipped off. Whoever looks into it sees your face; candlelight bounces straight off it. Carved on the back: Selfie Mirror; and a line of small print: Before it shows another, it shows you."
       },
+      "hint": {
+        "zh": "照人，先照己。",
+        "en": "Before it shows another, it shows you."
+      },
       "buy": 0,
       "sell": 0,
       "sold": [],
@@ -613,6 +645,10 @@
       "about": {
         "zh": "一只小陶罐，牛油花椒味，罐上歪歪扭扭四个字：牛脂甘露；底下一行小字：麻辣鲜香。十月里喂一根伙房熬汤剩下的牛骨头换来的；银月说是火锅底料，说了两个月。",
         "en": "A little clay jar that smells of beef tallow and Sichuan pepper, four crooked characters on it — Beef-Tallow Nectar — and under them a line of small ones: Hot, numbing, fragrant. Traded in the tenth month for a beef bone left over from the kitchen's soup; Yinyue has been calling it hotpot base for two months."
+      },
+      "hint": {
+        "zh": "麻辣鲜香。",
+        "en": "Numbing, hot, fresh, fragrant."
       },
       "buy": 0,
       "sell": 0,
@@ -996,6 +1032,10 @@
         "zh": "赤铜葫芦连七八瓣盾片，你扔进饭桶图个干净，它吸了你五口气，吐出这一口：三尺来长，剑身暗红，火纹一道也没有了，剑脊上一溜锤印，像铁匠铺学徒打坏的。最寻常的法器。剑脊近柄刻着两个字：火柴；底下一行小字：剑起火升，攻守兼备。",
         "en": "The red-copper gourd and seven or eight shield shards, tossed into the Rice Bucket just to be rid of them; it took five mouthfuls of your qi and out came this: three feet or so, the blade a dull red with not one line of the fire pattern left, a row of hammer marks down the spine like an apprentice's botched piece. The commonest kind of artifact. Cut into the spine near the hilt: Matchstick; and a line of small ones: The sword rises, the fire climbs; attack and guard in one."
       },
+      "hint": {
+        "zh": "剑起火升，攻守兼备。",
+        "en": "The sword rises, the fire climbs; attack and guard in one."
+      },
       "buy": 0,
       "sell": 0,
       "sold": [],
@@ -1018,6 +1058,10 @@
         "zh": "一双丑鞋：灰褐色的矮靿靴子，鱼鳞的纹路一片一片还在皮面上，两只脚后跟上各开一道缝，像鱼鳃。鞋底上烙着三个字：顺风溜；底下一行米粒大的小字：「背后有风，脚下有路。」",
         "en": "An ugly pair: grey-brown low boots, the fish-scale grain still on the leather, a slit on each heel like a gill. Burned into the sole: Tailwind; and beneath, in letters the size of rice grains: \"Wind at your back, a road at your feet.\""
       },
+      "hint": {
+        "zh": "背后有风，脚下有路。",
+        "en": "Wind at your back, a road at your feet."
+      },
       "buy": 0,
       "sell": 0,
       "sold": [],
@@ -1038,6 +1082,10 @@
       "about": {
         "zh": "贴身藏着，一身的气敛进去，旁人看你，看低一两层。一道一回。",
         "en": "Kept against the skin, it draws your aura in; whoever looks you over reads you a layer or two lower. One use each."
+      },
+      "hint": {
+        "zh": "低头做人。",
+        "en": "Keep your head down."
       },
       "buy": 0,
       "sell": 0,
@@ -1338,6 +1386,349 @@
       },
       "buy": 0,
       "sell": 0
+    },
+    {
+      "id": "chaihuo",
+      "kind": "material",
+      "name": {
+        "zh": "柴火棍",
+        "en": "Firewood stick"
+      },
+      "art": "art/items/leijimu.webp",
+      "about": {
+        "zh": "柴垛上抽下来的一根柴火棍，一头焦黑。饭桶头一口吃的就是它。",
+        "en": "A stick pulled from the woodpile, one end charred. The very first thing the Rice Bucket ever ate."
+      },
+      "hint": {
+        "zh": "烧了可惜。",
+        "en": "A pity to burn."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古四: the first thing he fed it (头一样，扔了根柴火棍). Always at hand by the woodpile (fantong.json `around`); never shelved.",
+      "art_source": "The 雷击木's picture until its own is painted."
+    },
+    {
+      "id": "shizi",
+      "kind": "material",
+      "name": {
+        "zh": "石子",
+        "en": "Pebble"
+      },
+      "art": "art/items/tongkuang.webp",
+      "about": {
+        "zh": "柴房门口的一颗石子，圆不圆，方不方。",
+        "en": "A pebble from the woodshed door, neither round nor square."
+      },
+      "hint": {
+        "zh": "捡来的。",
+        "en": "Picked up."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古四: one of the things he fed it (石子). Always at hand (fantong.json `around`).",
+      "art_source": "The 铜矿石's picture until its own is painted."
+    },
+    {
+      "id": "kuye",
+      "kind": "material",
+      "name": {
+        "zh": "枯叶",
+        "en": "Dry leaf"
+      },
+      "art": "art/items/longxu-cao.webp",
+      "about": {
+        "zh": "一片枯叶，脆得一捏就碎。",
+        "en": "A dry leaf, so brittle a pinch crumbles it."
+      },
+      "hint": {
+        "zh": "落了就落了。",
+        "en": "What falls, falls."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古四: one of the things he fed it (一片枯叶). Always at hand (fantong.json `around`).",
+      "art_source": "The 龙须草's picture until its own is painted."
+    },
+    {
+      "id": "huangjing-gen",
+      "kind": "material",
+      "name": {
+        "zh": "黄精烂根",
+        "en": "Rotten Solomon's-seal root"
+      },
+      "art": "art/items/ginseng.webp",
+      "about": {
+        "zh": "药园拔下来的黄精烂根，一捆，带着泥。周衡账上记了一笔，推给你的。",
+        "en": "A bundle of rotten Solomon's-seal roots pulled from the herb garden, soil still on. Zhou Heng put it in his book and pushed it across to you."
+      },
+      "hint": {
+        "zh": "垃圾，也是账。",
+        "en": "Rubbish is accounts too."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古七: the culls 周衡 pays the night watch with (黄精的烂根); its 方子 — with one 灵石 — gives 聚气丹. At hand once 药园残株 is done (fantong.json `around.after`). The hint is 周衡's own line (xu-yaoyuan-canzhu).",
+      "art_source": "The ginseng's picture until its own is painted."
+    },
+    {
+      "id": "huangqi-canzhu",
+      "kind": "material",
+      "name": {
+        "zh": "黄芪残株",
+        "en": "Milkvetch cull"
+      },
+      "art": "art/items/ginseng.webp",
+      "about": {
+        "zh": "药园拔下来的黄芪残株，叶子叫虫咬得一个洞一个洞。",
+        "en": "A milkvetch cull from the herb garden, its leaves eaten through by worms."
+      },
+      "hint": {
+        "zh": "虫咬过的，也算一株。",
+        "en": "Worm-bitten still counts as one."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古四 (一根黄芪的残株 → the nine-ring 回春丹) and 古七 (黄芪的虫叶; its 方子 — with a mouthful of his own qi — gives 回春丹). At hand once 药园残株 is done (fantong.json `around.after`).",
+      "art_source": "The ginseng's picture until its own is painted."
+    },
+    {
+      "id": "yaqian",
+      "kind": "material",
+      "name": {
+        "zh": "牙签",
+        "en": "Toothpick"
+      },
+      "art": "art/items/bamboo-sword.webp",
+      "about": {
+        "zh": "一根竹牙签，签尾刻着两个米粒大的字：牙签；底下一行更小的。",
+        "en": "A bamboo toothpick, two rice-grain characters cut into its end: Toothpick; and a smaller line under them."
+      },
+      "hint": {
+        "zh": "剔得干净，想得明白。",
+        "en": "Picked clean, thought through."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古四: the first thing it spat out (「咔哒」，吐出一根牙签). Junk.",
+      "art_source": "The 竹剑's picture until its own is painted."
+    },
+    {
+      "id": "guoba",
+      "kind": "material",
+      "name": {
+        "zh": "锅巴",
+        "en": "Rice crust"
+      },
+      "art": "art/items/ganliang.webp",
+      "about": {
+        "zh": "一块锅巴，硬得能砸核桃，背面烙着两个字：锅巴；底下一行小字。",
+        "en": "A slab of rice crust hard enough to crack walnuts, two characters burned into its back: Rice Crust; and a line of small print."
+      },
+      "hint": {
+        "zh": "越嚼越香，小心门牙。",
+        "en": "Better the longer you chew; mind your front teeth."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古四: 一块能砸核桃的锅巴 in the row on the floor. Junk.",
+      "art_source": "The 干粮's picture until its own is painted."
+    },
+    {
+      "id": "xiao-shizi",
+      "kind": "material",
+      "name": {
+        "zh": "更小的石子",
+        "en": "A smaller pebble"
+      },
+      "art": "art/items/tongkuang.webp",
+      "about": {
+        "zh": "一粒石子，比喂进去的那颗小一圈，上头刻着：石子；底下一行小字。",
+        "en": "A pebble a size smaller than the one that went in, carved: Pebble; and a line of small print."
+      },
+      "hint": {
+        "zh": "比原来的小一点。",
+        "en": "A little smaller than before."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古四: 一粒更小的石子 in the row on the floor. Junk.",
+      "art_source": "The 铜矿石's picture until its own is painted."
+    },
+    {
+      "id": "yicuo-hui",
+      "kind": "material",
+      "name": {
+        "zh": "一撮灰",
+        "en": "A pinch of ash"
+      },
+      "art": "art/items/sang-paper.webp",
+      "about": {
+        "zh": "一个草纸包，包着一撮灰，纸上写着一个字：灰；底下一行小字。",
+        "en": "A twist of straw paper holding a pinch of ash, one character on the paper: Ash; and a line of small print."
+      },
+      "hint": {
+        "zh": "来处来，去处去。",
+        "en": "From where it came, to where it goes."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古七: 开出来的大半是灰和烟 — and 乱搭的，仍旧是灰. The commonest junk.",
+      "art_source": "The 桑皮纸's picture until its own is painted."
+    },
+    {
+      "id": "hanxiao-bandian",
+      "kind": "material",
+      "name": {
+        "zh": "含笑半步颠",
+        "en": "Smile-and-Stumble"
+      },
+      "art": "art/items/qi-pill.webp",
+      "about": {
+        "zh": "一颗丹，桂圆大小，通体莹白，托在一方小红纸上，红纸上几个字：含笑半步颠；底下一行小字。",
+        "en": "A pill the size of a longan, pearly white all through, on a square of red paper; on the paper: Smile-and-Stumble; and a line of small print."
+      },
+      "hint": {
+        "zh": "服之开颜，步步生花。",
+        "en": "Take it and smile; flowers bloom at every step."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古四: the pretty one is the poison (好看的是毒，难看的是解) — it comes out with its cure 止笑丸 (fantong.json pools.junk `with`). No effect in the game: junk with a story.",
+      "art_source": "The 聚气丹's picture until its own is painted."
+    },
+    {
+      "id": "zhixiao-wan",
+      "kind": "material",
+      "name": {
+        "zh": "止笑丸",
+        "en": "Stop-Laughing Pill"
+      },
+      "art": "art/items/mend-pill.webp",
+      "about": {
+        "zh": "一颗灰里透红的丹，没有纹，皱巴巴的，裹着一角焦黄的草纸，纸上三个字：止笑丸；底下一行小字。",
+        "en": "A grey-red pill, no rings, wrinkled, wrapped in a corner of scorched straw paper; on it: Stop-Laughing Pill; and a line of small print."
+      },
+      "hint": {
+        "zh": "苦海回头。",
+        "en": "Turn back from the sea of bitterness."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古四: 含笑半步颠's cure, out of the same pot (一毒一解，一锅出的). Junk.",
+      "art_source": "The 回春丹's picture until its own is painted."
+    },
+    {
+      "id": "tama-defu",
+      "kind": "material",
+      "name": {
+        "zh": "踏马的符",
+        "en": "That Damned Horse Charm"
+      },
+      "art": "art/items/talisman.webp",
+      "about": {
+        "zh": "一张黄纸，朱砂画的一匹马，四条腿像四根筷子插在一个馒头上。符角一行米粒大的朱字：踏马的符；底下一行更小的。",
+        "en": "A yellow slip, a horse in cinnabar, four legs like four chopsticks stuck in a steamed bun. In the corner, rice-grain red letters: That Damned Horse Charm; and a smaller line under them."
+      },
+      "hint": {
+        "zh": "踏了再说。",
+        "en": "Stamp first, ask later."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 银月's running gag (fantong.json events.yinyue): when she touches the bucket, out comes this — 「还不如我给你画」. Not 古四's 踏马符 (tama-fu, a fight card): this one does nothing.",
+      "art_source": "The talisman's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16) until its own is painted."
+    },
+    {
+      "id": "qi-pill-3",
+      "kind": "pill",
+      "zhuan": 3,
+      "name": {
+        "zh": "三转聚气丹",
+        "en": "Three-turn qi-gathering pill"
+      },
+      "art": "art/items/qi-pill.webp",
+      "about": {
+        "zh": "饭桶吐出来的聚气丹，青白透亮，三道纹。纹缝里刻着两个米粒大的字：聚气；底下一行更小的。",
+        "en": "A qi-gathering pill out of the Rice Bucket, clear and pale, three rings. Two rice-grain characters in the grooves: Gather Qi; and a smaller line."
+      },
+      "hint": {
+        "zh": "三道，不多不少。",
+        "en": "Three rings, no more, no less."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "effect": {
+        "progress": 30,
+        "table": "task"
+      },
+      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古七: 隔上好几个月，才蹦出一颗三道四道的 — the rare draw of the 聚气丹 方子. 30 修为 from the task table, between the market one (20) and the nine-turn (60); never sold.",
+      "art_source": "The 聚气丹's picture."
+    },
+    {
+      "id": "mend-pill-3",
+      "kind": "pill",
+      "zhuan": 3,
+      "name": {
+        "zh": "三转回春丹",
+        "en": "Three-turn mending pill"
+      },
+      "art": "art/items/mend-pill.webp",
+      "about": {
+        "zh": "饭桶吐出来的回春丹，三道纹，一股豆腥气，回口一点甜。纹缝里刻着两个字：回春；底下一行小字。",
+        "en": "A mending pill out of the Rice Bucket, three rings, a smell of beans and a sweet aftertaste. In the grooves: Spring Returns; and a line of small print."
+      },
+      "hint": {
+        "zh": "骨头比嘴硬。",
+        "en": "Bones are harder than mouths."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "effect": {
+        "progress": 30,
+        "table": "task"
+      },
+      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古七's 回春丹 方子, its rare draw. 30 修为 from the task table; never sold.",
+      "art_source": "The 回春丹's picture."
+    },
+    {
+      "id": "baina-dai",
+      "kind": "pouch",
+      "name": {
+        "zh": "百纳袋",
+        "en": "Patchwork pouch"
+      },
+      "art": "art/items/pouch-mid.webp",
+      "about": {
+        "zh": "一只百家布拼的口袋，针脚歪歪扭扭，袋口绣着三个字：百纳袋；底下一行小字。",
+        "en": "A pouch patched together from a hundred scraps, crooked stitches, three characters sewn at its mouth: Patchwork Pouch; and a line of small print."
+      },
+      "hint": {
+        "zh": "装得下，就是你的。",
+        "en": "If it fits, it is yours."
+      },
+      "buy": 0,
+      "sell": 0,
+      "sold": [],
+      "effect": {
+        "pouch": 6
+      },
+      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 卷一's 逆天 from the bucket: convenience, not power — carried, six more slots for good (like 下品储物袋; once per kind, rewards.json pouch).",
+      "art_source": "The 中品储物袋's picture until its own is painted."
     }
   ]
 }

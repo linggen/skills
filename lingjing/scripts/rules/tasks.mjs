@@ -312,7 +312,7 @@ const FIGHT_HOLDS = {
   resolve: true, move: true, go: true, enter: true, leave: true, trade: true, tale: a => !['info', 'seed'].includes(a.action),
   meet: true, tame: true, refine: true, task: a => a.action !== 'list',
   win: true, travel: true, build: true, load: true, make: true, amend: true, lundao: true,
-  divine: true, fate: true, ring: true, greet: true, deck: true, bag: true, quest: a => !['info', 'kaifu'].includes(a.action),
+  divine: true, fate: true, ring: true, greet: true, deck: true, bag: true, fantong: a => a.action === 'feed', quest: a => !['info', 'kaifu'].includes(a.action),
   seclude: a => a.action === 'enter',
 };
 export function fightHold(state, verb, args = {}) {

@@ -17,6 +17,7 @@ import { divine, fate } from './fortune.mjs';
 import { gated } from './locks.mjs';
 import { look, stageAt } from './look.mjs';
 import { examine } from './examine.mjs';
+import { fantong, fantongOpen, fantongRecipes } from './fantong.mjs';
 import { duel, lundao, questCheck, task, win } from './tasks.mjs';
 import { seclude } from './seclusion.mjs';
 import { unstick } from './unstick.mjs';
@@ -50,8 +51,14 @@ export const VERBS = gated({
     return { state: next, result };
   },
   resolve, judge, task, win, duel, tame, refine, tale, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, story, seclude, bag,
-  gear: (s, c, x) => ({ state: null, result: { ok: true, gear: gearBrief(c, s, x?.now) } }),
+  go, saves, save, load, forget, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, seclude, bag, fantong,
+  // 录 shows the 饭桶's 方子 found so far (rules/fantong.mjs).
+  story: (s, c, x, args) => {
+    const out = story(s, c, x, args), found = out.result?.ok ? fantongRecipes(c, s) : [];
+    return found.length ? { ...out, result: { ...out.result, fantong: found } } : out;
+  },
+  // `fantong`: the 物品 panel's 饭桶 chip shows once he holds it.
+  gear: (s, c, x) => ({ state: null, result: { ok: true, gear: { ...gearBrief(c, s, x?.now), ...(fantongOpen(c, s) ? { fantong: true } : {}) } } }),
   appear, remember, unstick,
   // The page's map: each province's places, and the 九州 in ink as the save stands (rules/inkmap.mjs).
   atlas: (s, c, x, args) => {
