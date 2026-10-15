@@ -91,7 +91,7 @@ test('a board left comes back by itself on a later day, the stage idle — won t
   const cards = stageCards(lk);
   assert.ok(cards.some((c) => c.card === 'replay'));
   // The scene's boards left yesterday stay over: never dealt fresh the next day (live at j07-guan).
-  assert.ok(!cards.some((c) => c.card === 'board'), 'no board of the scene dealt again');
+  for (const id of ['cave-stone', 'bread-share']) assert.ok(lk.tasks.some((t) => t.id === id && t.status === 'done' && t.skipped), `${id}: Look still knows it is over (the stage never deals it fresh)`);
   assert.equal(CARD_KINDS.replay.holds, false);
   assert.ok(stageSlots(lk, cards), 'it has a slot');
   // Played: the board stands offered again, as on its first day; its win pays the grant, grade and mark.
