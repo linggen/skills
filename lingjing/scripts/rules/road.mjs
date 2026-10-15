@@ -31,6 +31,7 @@ import { itemOf, offersOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
 import { bagFull, roomFor } from './pouch.mjs';
 import { mainRoot } from './roots.mjs';
+import { visitorHere } from './visiting.mjs';
 import { allPlaces, atScene, creatureOf, huntable, inMade, ofJuan, placeOf, placeOpen, poolBeast, tooHard } from './world.mjs';
 
 /* ── 机缘 — the day's one chance, somewhere near, for a few real hours ──
@@ -102,7 +103,7 @@ const meetHere = (state, now) => meetsToday(state, now)[state.place] ?? null;
    the empty arrival he complained of (吕梁洪, 2026-09-21). */
 function ownHere(content, state, ctx) {
   const place = placeOf(content, state.place), has = place?.has ?? {};
-  if (atScene(content, state) || has.shop) return true;
+  if (atScene(content, state) || has.shop || visitorHere(content, state, place, ctx.now)) return true;
   // A stretch with its own beasts (a pool, world.mjs poolBeast): the beast up is the arrival.
   if (has.pool && poolBeast(content, state, place, ctx.now)) return true;
   if (offersOf(content, state, state.lang, ctx.now).length) return true;

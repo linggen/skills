@@ -19,6 +19,7 @@ import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
 import { choreGrant, kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
 import { catchHere, gameLevel, hostedHere, lundaoBrief, reopened, stallHere } from './tasks.mjs';
 import { hashOf } from './travel.mjs';
+import { visitorGoods, visitorHere, visitorsBrief } from './visiting.mjs';
 import { atScene, beatOf, creatureOf, encounterOf, foeOf, ofJuan, passed, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
@@ -47,14 +48,17 @@ const shopOpen = (shop, state, content = null) => !shop?.opens?.done || (content
 const shelfOf = (content, where, state = null, now = new Date()) => {
   const place = typeof where === 'string' ? null : where, shop = shopOf(place);
   const province = place ? place.province : where;
-  const sold = shop
-    ? (shopOpen(shop, state, content) ? (shop.goods ?? []).map(id => itemOf(content, id)).filter(i => i && ofJuan(content, i, now)) : [])
-    : content.items.items.filter(i => (i.sold ?? []).includes(province) && ofJuan(content, i, now));
+  // A visiting shop (rules/visiting.mjs) on its day: its goods and the visit's odd one.
+  const visitor = !shop && place && state ? visitorHere(content, state, place, now) : null;
+  const goods = ids => ids.map(id => itemOf(content, id)).filter(i => i && ofJuan(content, i, now));
+  const sold = visitor ? goods(visitorGoods(visitor, now))
+    : shop ? (shopOpen(shop, state, content) ? goods(shop.goods ?? []) : [])
+      : content.items.items.filter(i => (i.sold ?? []).includes(province) && ofJuan(content, i, now));
   const c = companionOf(content);
   const searching = c && state && !state.companion?.joined && (state.companion || callDue(content, state)) && !(state.bag[c.bell] > 0);
   return searching && !sold.some(i => i.id === c.bell) ? [...sold, itemOf(content, c.bell)] : sold;
 };
-const forSale = (content, state, item, where) => shelfOf(content, where, state).some(i => i.id === item.id);
+const forSale = (content, state, item, where, now = new Date()) => shelfOf(content, where, state, now).some(i => i.id === item.id);
 
 /* A speaker's name in the player's language; Ling narrates, unnamed. A
    person (people.json) or a slot (`ban`, the companion by gender) is named
@@ -466,6 +470,8 @@ export function look(state, content, ctx) {
     ...(chanceBrief(content, state, ctx.now) ? { chance: chanceBrief(content, state, ctx.now) } : {}),
     // Where an errand may be taken, when the book has room — so 「what now」 has an answer.
     ...(workOf(content, state, ctx) ? { work: workOf(content, state, ctx) } : {}),
+    // A visiting shop in season (rules/visiting.mjs): where, today or in n days, in its own line.
+    ...(visitorsBrief(content, state, ctx.now).length ? { visitors: visitorsBrief(content, state, ctx.now) } : {}),
     ...(offersOf(content, state, lang, ctx.now).length ? { offers: offersOf(content, state, lang, ctx.now) } : {}),
     // 今日传闻 (tale.mjs): the step open now and its people; `story_due` when nothing story-like happened for a while.
     ...taleLook(content, state, ctx),

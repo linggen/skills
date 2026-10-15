@@ -50,7 +50,7 @@ export const VERBS = gated({
   },
   resolve, judge, task, win, duel, tame, refine, tale, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
   go, saves, save, load, forget, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, story, seclude, bag,
-  gear: (s, c) => ({ state: null, result: { ok: true, gear: gearBrief(c, s) } }),
+  gear: (s, c, x) => ({ state: null, result: { ok: true, gear: gearBrief(c, s, x?.now) } }),
   appear, remember,
   // The page's map: each province's places, and the 九州 in ink as the save stands (rules/inkmap.mjs).
   atlas: (s, c, x, args) => {

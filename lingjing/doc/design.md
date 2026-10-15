@@ -357,6 +357,13 @@ down at `home` with `map.back` (`back_story` when a scene left him there), said 
 chores (quests/guan.json — 码柴, 蒸屉, 对账, 晒经) pay 灵石; the night watch and the beasts pay
 修为. 打妖的红牌五层以下不许揭 (古七): 林子里的蠪侄 asks `opens.layer` 练气五层. The 去往 list opens
 on the painted 观 (places' `plate`, art/map/guan.webp — paint-guan.py seed 47; scripts/plate.js).
+**货郎上山** (Hanli, 2026-10-15: 「按A做, 货郎上山摆摊」): the 坊市 being shut, a pedlar pays the
+观 its 摊钱 (古六's precedent: 外人上不得山, 钱掌柜 let up at 大比) and sets up at the 演武场 for a
+day, every third local day (places' `has.visitor`: `visits {every, offset}`, rules/visiting.mjs),
+only while a walled map (`home`) holds the place. A shop's shape (`name · keeper`, `goods`, one
+`odd` turning by visit), catalog prices; `buys {kinds, rate}` takes herbs and hides at 0.6 of
+钱掌柜's. No 押宝. Look `visitors` feeds the 事 row, the 下一步 line and the plate seal's mark.
+Not 石坳村's 走南路的货郎 (古二). No 符: a made thing is sold nowhere.
 **Not yet:** sparring at the 演武场 — it wants a duel with a person outside a scene (people are
 fought only in the story's scenes; a pool never holds one), so it waits for person duels.
 

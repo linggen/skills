@@ -43,7 +43,7 @@ const pickedCards = (content, state) => (Array.isArray(state.deck) && canPick(co
 export function deck(state, content, ctx, args) {
   const lang = state.lang, action = String(args.action ?? 'toggle');
   const s = clone(state);
-  if (action === 'auto') { delete s.deck; delete s.deck_out; return { state: s, result: { ok: true, gear: gearBrief(content, s) } }; }
+  if (action === 'auto') { delete s.deck; delete s.deck_out; return { state: s, result: { ok: true, gear: gearBrief(content, s, ctx?.now) } }; }
   if (action !== 'toggle') return refuse('unknown-action', null, { actions: ['toggle', 'auto'] });
   if (!canPick(content, state)) return refuse('needs-tier', pick({ zh: '结丹之后，方能自己组牌。', en: 'You pick your own ten from the Core on.' }, lang), { tier: PICK_FROM });
   const id = String(args.id ?? ''), c = cardCatalog(content)[id];
@@ -63,7 +63,7 @@ export function deck(state, content, ctx, args) {
     s.deck = [...now, id];
     s.deck_out = (s.deck_out ?? []).filter(x => x !== id);
   }
-  return { state: s, result: { ok: true, gear: gearBrief(content, s) } };
+  return { state: s, result: { ok: true, gear: gearBrief(content, s, ctx?.now) } };
 }
 
 function autoDeck(content, state) {

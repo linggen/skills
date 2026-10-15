@@ -933,6 +933,18 @@
     0.842,
     0.4245
    ],
+   "has": {"visitor": {
+    "_about": "货郎上山 (Hanli, 2026-10-15: 「按A做, 货郎上山摆摊」): while 外门弟子 may not go down (观内), a pedlar pays the 观 its 摊钱 and sets up under the cypresses for a day, every third day — 古六's precedent (外人上不得山; 钱掌柜 pays ten 灵石 and is let up at 大比, here at the 五行台). Not 石坳村's 走南路的货郎 (古二's teller of the 岷江 baby): another pedlar, unnamed. No 押宝. No 符: a made thing is sold nowhere (content.mjs lint). rules/visiting.mjs.",
+    "name": {"zh": "货郎的担子", "en": "The pedlar's pole"},
+    "keeper": {"zh": "丹药 · 杂货 · 收药材皮货", "en": "pills and sundries; buys herbs and hides"},
+    "goods": ["mend-pill", "qi-pill", "ganliang", "straw-cloak"],
+    "odd": ["jade-ring", "jade-fish", "grey-robe"],
+    "buys": {"kinds": ["material"], "rate": 0.6, "say": {"zh": "「药材皮货我收。别的，担子挑不下山。」", "en": "\"Herbs and hides I take. Anything else won't fit on the pole going down.\""}},
+    "visits": {"every": 3, "offset": 0, "where": {"zh": "演武场", "en": "the training ground"},
+     "today": {"zh": "货郎今日上山 · {place}", "en": "The pedlar is up today · {place}"},
+     "later": {"zh": "货郎 · {n} 日后上山", "en": "The pedlar · up in {n} days"}},
+    "line": {"zh": "老柏底下歇着一副货郎担子。货郎交过周衡的摊钱，汗还没干：「三百级台阶，一级一文都不止。丹药、针线，看看。」", "en": "Under the old cypresses rests a pedlar's pole. He has paid Zhou Heng the stall fee and is still sweating: \"Three hundred steps, and every one worth more than a coin. Pills, needle and thread — have a look.\""}
+   }},
    "line": {
     "zh": "外门的演武场。五块青石板拼成一个圆，缝里长出了草，叫五行台。四角立着四棵老柏。",
     "en": "The outer court's training ground. Five bluestone slabs make a circle with grass in the cracks — the Five Phases Stage. An old cypress stands at each corner."

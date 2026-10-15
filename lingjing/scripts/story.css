@@ -64,6 +64,8 @@ body.reading .slotfoot .errands .more { visibility: hidden; }
 .plate button.spot:hover, .plate button.spot:focus-visible { background: rgb(190 50 36); outline: 2px solid #fff; }
 .plate .spot.here { background: var(--ling); cursor: default; }
 .plate .spot.shut { background: rgb(90 90 90 / 70%); color: rgb(255 255 255 / 80%); cursor: default; }
+/* A visiting shop there today: a small gold dot on the seal. */
+.plate .spot.visitor::after { content: ''; position: absolute; top: -3px; right: -3px; width: 8px; height: 8px; border-radius: 50%; background: rgb(232 184 72); border: 1px solid #fff; }
 @media (max-width: 480px) { .plate .spot { font-size: 11px; padding: 1px 5px; } }
 .slotfoot .shelfpop { width: auto; display: flex; gap: 8px; padding: 10px 12px; }
 /* The chips' popovers (事 · 天气 · 恩仇簿) open from the footer, over the stage. The chips' row scrolls

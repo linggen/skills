@@ -12,7 +12,8 @@ export function plateHtml(plate, { src, here = '' } = {}) {
   if (!plate?.spots?.length || !src) return '';
   const spots = plate.spots.map((s) => {
     const at = `left:${pct(s.at[0])};top:${pct(s.at[1])}`;
-    const cls = `spot${s.here ? ' here' : ''}${s.closed ? ' shut' : ''}`;
+    // A visiting shop there today (rules/visiting.mjs): the seal wears a small mark.
+    const cls = `spot${s.here ? ' here' : ''}${s.closed ? ' shut' : ''}${s.visitor ? ' visitor' : ''}`;
     const label = `<span class="spotname">${esc(s.name)}</span>`;
     return s.here || s.closed
       ? `<span class="${cls}" style="${at}" title="${esc(s.here ? `${s.name} · ${here}` : s.name)}" aria-disabled="true">${label}</span>`

@@ -691,6 +691,17 @@ function lintAtlas(content, bad) {
   }
 }
 
+function lintVisitor(p, itemIds, bad) {
+  const st = p.has.visitor, v = st.visits ?? {}, where = `place ${p.id} visitor`;
+  if (p.has.shop || p.has.games?.length) bad(where, 'a visiting shop stands alone: no shop, no game beside it');
+  if (!pair(st.name) || !pair(st.keeper) || !pair(st.line)) bad(where, 'needs a name, a keeper and a line in zh and en');
+  for (const id of [...(st.goods ?? []), ...(st.odd ?? [])]) if (!itemIds.has(id)) bad(where, `unknown item ${id}`);
+  if (!(st.goods ?? []).length) bad(where, 'sells nothing');
+  if (!(Number.isInteger(v.every) && v.every > 0) || !(Number.isInteger(v.offset ?? 0) && (v.offset ?? 0) >= 0 && (v.offset ?? 0) < v.every)) bad(where, 'visits need every > 0 and 0 <= offset < every');
+  if (!pair(v.today) || !pair(v.later)) bad(where, 'visits need today and later lines in zh and en');
+  if (st.buys && !(st.buys.rate > 0 && st.buys.rate <= 1)) bad(where, 'buys at a rate in (0, 1]');
+}
+
 function lintPlaces(content, ids, bad) {
   // A painted map (`plates`, 观内 2026-10-15): its picture on disk, a name, an aspect; each place on it a spot in 0–1.
   const plates = Object.fromEntries(Object.values(content.places).flatMap(doc => Object.entries(doc.plates ?? {})));
@@ -702,6 +713,9 @@ function lintPlaces(content, ids, bad) {
     if (!plates[p.plate.id]) bad(`place ${p.id}`, `on unknown plate ${p.plate.id}`);
     if (!onMap(p.plate.at)) bad(`place ${p.id}`, 'its spot on the plate needs [x, y], fractions 0–1');
   }
+  // A visiting shop (rules/visiting.mjs): a shop's shape, its days, its words; never beside a shop or a game.
+  const itemIds = new Set(content.items.items.map(i => i.id));
+  for (const doc of Object.values(content.places)) for (const p of doc.places) if (p.has?.visitor) lintVisitor(p, itemIds, bad);
   const scenes = new Set(Object.values(content.chapters).flatMap(c => Object.keys(c.scenes)));
   const byId = Object.fromEntries(Object.values(content.places).flatMap(doc => doc.places.map(p => [p.id, p])));
   const seen = new Set();

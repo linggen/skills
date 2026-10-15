@@ -5,6 +5,7 @@ import { itemBrief, itemOf } from './errands.mjs';
 import { meetBrief, meetHere } from './road.mjs';
 import { duelBrief, shelfOf, shopOf, shopOpen, withMap } from './look.mjs';
 import { hashOf, provinceOf } from './travel.mjs';
+import { buyBack, visitorHere } from './visiting.mjs';
 
 const STORY_WORDS = 300, STORY_CHARS = 600;
 
@@ -314,9 +315,11 @@ function placeBrief(content, state, now = new Date()) {
   if (!place) return null;
   const lang = state.lang, doc = content.places[place.province];
   const has = place.has ?? {};
-  const shelf = has.shop ? shelfOf(content, place, state, now) : [];
+  // a visiting shop on its day (rules/visiting.mjs) is the place's shop for the day.
+  const visitor = visitorHere(content, state, place, now);
+  const shelf = has.shop || visitor ? shelfOf(content, place, state, now) : [];
   // The shop by its own name and keeper (按店进货, look.mjs shopOf): the shelf card's title.
-  const shop = shopOf(place);
+  const shop = shopOf(place) ?? visitor;
   const show = [
     ...(has.creature && metNow(content, has.creature, now) ? [{ card: 'creature', id: has.creature }] : []),
     ...(shelf.length ? [{ card: 'item', ids: shelf.map(i => i.id) }] : []),
@@ -324,14 +327,14 @@ function placeBrief(content, state, now = new Date()) {
   return {
     ...placeName(content, state, place),
     province: { id: place.province, name: pick(content.dictionary.provinces[place.province], lang), start: doc.start },
-    tier: place.tier, line: pick(place.line, lang),
+    tier: place.tier, line: pick(visitor?.line ?? place.line, lang),
     // Put back inside the 观 (fitLeave): the world's line, once, where he was set down.
     ...(returnedLine(content, state, now) ? { returned: returnedLine(content, state, now) } : {}),
     // A 令 in his belt: where it lets him go.
     ...(state.pass ? { pass: { to: placeName(content, state, placeOf(content, state.pass.to)), quest: state.pass.quest } } : {}),
     has: {
       creature: has.creature && metNow(content, has.creature, now) ? { id: has.creature, name: pick(creatureOf(content, has.creature).name, lang) } : null,
-      seeds: Boolean(has.seeds), shop: Boolean(has.shop), scene: has.scene ?? null,
+      seeds: Boolean(has.seeds), shop: Boolean(has.shop || visitor), scene: has.scene ?? null,
     },
     ...(shop ? { shop: { name: pick(shop.name, lang) ?? null, keeper: pick(shop.keeper, lang) ?? null, open: shopOpen(shop, state, content), ...(!shopOpen(shop, state, content) && shop.shut ? { shut: pick(shop.shut, lang) } : {}) } } : {}),
     roads: place.roads.map(id => placeOf(content, id)).map(p => ({
@@ -345,7 +348,8 @@ function placeBrief(content, state, now = new Date()) {
     })),
     // The painted map of the small area here (观内, 2026-10-15): what 去往 opens on.
     ...(plateBrief(content, state, place, now) ? { plate: plateBrief(content, state, place, now) } : {}),
-    shelf: shelf.map(i => itemBrief(content, state, i)),
+    // A shop that buys back at its own rate (`buys`) quotes its own price to sell.
+    shelf: shelf.map(i => ({ ...itemBrief(content, state, i), ...(shop?.buys ? { sell: buyBack(shop, i) } : {}) })),
     show: withMap(content, show),
     encounter: encounterOf(content, state, now),
     ...(meetBrief(content, state, now) ? { meet: meetBrief(content, state, now) } : {}),
@@ -364,6 +368,8 @@ function plateBrief(content, state, place, now) {
     ...placeName(content, state, p), at: p.plate.at,
     ...(p.id === place.id ? { here: true } : {}),
     ...(placeOpen(content, state, p, now) && !tooHard(content, state, p) ? {} : { closed: true }),
+    // a visiting shop stands there today: the seal gets its mark.
+    ...(visitorHere(content, state, p, now) ? { visitor: true } : {}),
   }));
   return { id, name: pick(plate.name, state.lang), file: plate.file, aspect: plate.aspect, spots };
 }

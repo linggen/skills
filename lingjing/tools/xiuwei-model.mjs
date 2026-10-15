@@ -31,7 +31,9 @@ import { loadContent } from '../scripts/content.mjs';
 
 /* A natural day's play in 卷一 (rewards.json `_economy_2026_10_15`): a sitting
    reads about five scenes; each day the workout, two pool fights, half a
-   rumor and one road-meet that pays; one market pill a 回 where one is sold. */
+   rumor and one road-meet that pays; one market pill a 回 where one is sold (by the
+   province's `sold` — inside the walled 观 the 货郎 at the 演武场 sells the 聚气丹 every
+   third day, places xu.json yanwu `has.visitor`, so the count holds for 外门 too). */
 export const EVERYTHING = { SCENES_PER_SESSION: 5, GONGKE: 1, FIGHTS: 2, TALE: 0.5, ROAD: 1, ERRANDS: true, PILLS: true, PILLS_BOUGHT: 1, SPEED: 1 };
 /* Only the story: its scenes' grants, no task, no pill, no day's play. */
 export const NOTHING = { ...EVERYTHING, GONGKE: 0, FIGHTS: 0, TALE: 0, ROAD: 0, ERRANDS: false, PILLS: false, PILLS_BOUGHT: 0, BOARDS: false };

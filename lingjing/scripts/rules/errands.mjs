@@ -7,7 +7,8 @@ import { canPick, cardCatalog, deckFor, gearFight, ownedCards, pickedCards, root
 import { companionOf, hasCompanion, herCard, nearestPlace } from './companion.mjs';
 import { readingOf } from './scrolls.mjs';
 import { pay, paysOf } from './core.mjs';
-import { nameOf } from './look.mjs';
+import { nameOf, shopOf } from './look.mjs';
+import { buyBack, visitorHere } from './visiting.mjs';
 import { choreOpen, isPool, questDone, todayChores } from './chores.mjs';
 import { canMakeTale, taleEvent, taleHanded, taleRow } from './tale.mjs';
 import { hashOf } from './travel.mjs';
@@ -605,8 +606,10 @@ const tamesOf = (content, state, item) => content.creatures.creatures
    page asks for when the chip opens — never in Look: 1.5k characters a turn
    is what Ling would pay for a panel only the player looks at. */
 const GEAR_SLOTS = ['weapon', 'robe', 'pendant'];
-function gearBrief(content, state) {
+function gearBrief(content, state, now = new Date()) {
   const her = hasCompanion(state) ? companionOf(content) : null;
+  // The shop where he stands — a market's, or a visiting shop's on its day — and what it pays (rules/visiting.mjs).
+  const here = placeOf(content, state.place), shop = here?.has?.shop ? shopOf(here) ?? {} : visitorHere(content, state, here, now);
   const worn = id => (id && state.bag[id] ? itemBrief(content, state, itemOf(content, id)) : null);
   const bag = Object.entries(state.bag).map(([id, n]) => {
     const item = itemOf(content, id);
@@ -614,7 +617,7 @@ function gearBrief(content, state) {
     const e = item.effect ?? {};
     const slot = e.wear ? (e.wear === her?.id ? e.wear : null) : ARM_SLOTS.get(item.kind) ?? null;
     // `free`: a thing the story still needs, which takes no slot of the 储物袋.
-    return { ...itemBrief(content, state, item), n, ...(slot ? { slot } : {}), ...(e.progress || e.learn || e.pouch ? { usable: true } : {}),
+    return { ...itemBrief(content, state, item), n, ...(shop?.buys ? { sell: buyBack(shop, item) } : {}), ...(slot ? { slot } : {}), ...(e.progress || e.learn || e.pouch ? { usable: true } : {}),
       ...(freeSlot(content, state, id) ? { free: true } : {}) };
   });
   return {
@@ -633,7 +636,7 @@ function gearBrief(content, state) {
     bag,
     // 储物袋: used / cap and what waits at the 洞府 (pouch.mjs); a 卖 is drawn only at a 坊市.
     pouch: pouchBrief(content, state),
-    ...(placeOf(content, state.place)?.has?.shop ? { market: true } : {}),
+    ...(shop ? { market: true } : {}),
     // 牌 — every card he holds, cheapest first, and which ten a fight deals
     // today (deckFor), 银月 always in hand. Roots he lacks are marked, not hid.
     cards: (() => {

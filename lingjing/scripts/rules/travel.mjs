@@ -8,7 +8,8 @@ import { companionOf, hasCompanion } from './companion.mjs';
 import { clone, offerTasks, pay, refuse, spendStamina } from './core.mjs';
 import { advance, bookOf, directorBrief, GEAR_SLOTS, itemBrief, itemOf, onStoryRoad, questOf, settleErrands } from './errands.mjs';
 import { arriveOnRoad } from './road.mjs';
-import { forSale, sceneBrief, shelfOf, wordsOf } from './look.mjs';
+import { forSale, sceneBrief, shelfOf, shopOf, wordsOf } from './look.mjs';
+import { buyBack, visitorAway, visitorHere } from './visiting.mjs';
 import { atScene, beatOf, chapterOpen, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeSaid, provinceOpen, sceneOf, settlePlace, shutSay, STORY_CHARS, STORY_WORDS, tierIndex, tooHard } from './world.mjs';
 import { enteredBeat, refusalBeat } from './story.mjs';
 import { comingOf } from './hui.mjs';
@@ -172,15 +173,18 @@ export function trade(state, content, ctx, args) {
   const s = clone(state);
   settlePlace(content, s);
   const here = placeOf(content, s.place);
-  const lang = s.lang, w = wordsOf(content, lang);
-  if (!item) return refuse('unknown-item', null, { shelf: here?.has?.shop ? shelfOf(content, here, s).map(i => i.id) : [] });
+  const lang = s.lang, w = wordsOf(content, lang), now = ctx.now ?? new Date();
+  // The shop here: a market's, or a visiting shop's on its day (rules/visiting.mjs).
+  const visitor = visitorHere(content, s, here, now), shop = here?.has?.shop ? shopOf(here) ?? {} : visitor;
+  if (!item) return refuse('unknown-item', null, { shelf: shop ? shelfOf(content, here, s, now).map(i => i.id) : [] });
   const held = s.bag[item.id] ?? 0;
   if (args.action === 'buy' || args.action === 'sell') {
-    if (!here?.has?.shop) {
-      return refuse('no-market', pick({ zh: `这里没有${w.shop}。`, en: `There is no ${w.shop} here.` }, lang));
+    if (!shop) {
+      // A visiting shop away today says when it comes; anywhere else, there is no shop.
+      return refuse('no-market', visitorAway(content, s, here, now) ?? pick({ zh: `这里没有${w.shop}。`, en: `There is no ${w.shop} here.` }, lang));
     }
     if (args.action === 'buy') {
-      if (!forSale(content, s, item, here)) return refuse('not-for-sale-here', null, { shelf: shelfOf(content, here, s).map(i => i.id) });
+      if (!forSale(content, s, item, here, now)) return refuse('not-for-sale-here', null, { shelf: shelfOf(content, here, s, now).map(i => i.id) });
       if (s.wealth < item.buy) {
         return refuse('no-stones', pick({ zh: `${w.wealth}不够。`, en: `Not enough ${w.wealth}.` }, lang), { price: item.buy, wealth: s.wealth });
       }
@@ -196,6 +200,9 @@ export function trade(state, content, ctx, args) {
     }
     if (held < 1) return refuse('not-in-bag', null);
     if (item.sell == null) return refuse('not-for-sale', pick({ zh: '这东西没有市价。', en: 'That has no market price.' }, lang));
+    // A shop that buys only some kinds (`buys`, a visiting shop) turns the rest away in its own words.
+    const price = buyBack(shop, item);
+    if (price == null) return refuse('not-bought-here', pick(shop.buys?.say, lang) ?? null);
     if (item.effect?.key && keyInUse(content, s, item.id)) {
       return refuse('key-in-use', pick({ zh: '这东西还有用处，先留着。', en: 'You will need that yet — keep it.' }, lang));
     }
@@ -204,8 +211,8 @@ export function trade(state, content, ctx, args) {
     s.bag[item.id] = held - 1;
     if (s.bag[item.id] <= 0) delete s.bag[item.id];
     if (s.wear) for (const [slot, id] of Object.entries(s.wear)) if (id === item.id && !s.bag[item.id]) delete s.wear[slot];
-    s.wealth += item.sell;
-    return { state: s, result: { ok: true, sold: item.id, item: itemBrief(content, s, item), paid: { wealth: item.sell }, wealth: s.wealth } };
+    s.wealth += price;
+    return { state: s, result: { ok: true, sold: item.id, item: itemBrief(content, s, item), paid: { wealth: price }, wealth: s.wealth } };
   }
   if (args.action === 'use') {
     if (held < 1) return refuse('not-in-bag', null);
