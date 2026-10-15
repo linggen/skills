@@ -5,6 +5,8 @@ The book's 古七 and 古八 (one 回 until Hanli split it, 2026-10-07: 「可�
 `story` is the book's own passage (verbatim zh, en beside it); setup, recap, captions and buttons
 speak to the player as 你 (story/jiuding-lu/DESIGN.md § 四·五 人称分工).
 
+**古七 played (2026-10-15, the per-回 plan's Wave 2 D; Hanli: 「4层突然到7层了」).** h11 is nine scenes now: 09-snow (喂饭桶 → 火柴) · 09-jiuge (腊月十五: 随叶, 禹步) · 09-furnace (认方, 定风 → 五层) · 09-year (闻焦; 清明; 伏天 is only the wall) · 09-lingcao (年三: the 犰狳, a card fight) · 09-yishui (年三腊月 → 年四: 芦苇里那一等 → 六层) · 09-xie (年五开春: 顺风溜) · 09-futian (年五: 秦雁's monthly bout, a card fight → 七层, 入隙, 阿禾's Foundation, 周衡 at the door) → 09-dabi. Each rise waits on the 阶段任务 (圆满 of the layer held). Boards: tasks/h11.json. Items 1–3 below describe the scenes before the split; the passages they name now stand in the scenes listed here.
+
 1. **The sword** (`09-snow` — id kept, 柴房, 腊月初九). The day after the 大比 he moves into the 内门西廊; sorting the
    bag, the 赤铜葫芦 and the shield shards are rubbish (the 名帖 line cut, Hanli 2026-10-07) — tossed into the 饭桶 wanting nothing (Hanli 2026-10-06:
    no asking — 「要什么，不出什么」) → 火柴 (`huochai-jian`), the label its name and 「剑起火升，攻守兼备」; nothing demonstrated (the fire snakes and the shield wait for later fights, Hanli 2026-10-06). The `feed` passage plays on into 腊月十五, the 回目's 「九格崖头学禹步」: 瞿老's nine chestnuts and nine squares on the bluestone, 巽 first (「这一步，叫入」), the Step of Yu in his footprints, 「猎户的脚」, and the daily task — stand on 巽 at dawn till the leaves stop turning (the 定风 of scene 2). The snow night over the 九转 was cut (Hanli 2026-10-06:

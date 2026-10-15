@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "_about": "古七's boards (h11; the per-回 plan 2026-10-15, Wave 2 D): each the book's own action where its scene stands, every one skippable once stuck (the page's 算了，往下走), and each pays what the plan names — 修为 for cultivation (随叶, 禹步, 定风, 顺风溜), 灵石 / a thing for the rest (认方 a 聚气丹, 闻焦 and 芦苇 灵石). The two fights (灵草谷's 犰狳, 崖顶's 秦雁) are scene duels on their exits, paid there.",
+  "_economy": "Pay declared here for the economy model (tools/balance.mjs reads tasks/*.json): the 修为 is +20 over 古七 from boards (jiuge-sui 5, jiuge-yubu 5, furnace-ding 5, xie-wind 5), +30 the 犰狳 (09-lingcao/fight, scene table) and +30 the 秦雁 bout (09-futian/spar, trial table, paid after the 七层 rise); 灵石 +3 (year-smell), +2 (yishui-reed), +20 (犰狳), +20 (秦雁); items: qi-pill (furnace-recipe), huochai-jian and shunfeng-liu (on the ways on). The three rises — 五层 (09-furnace/fire, and 09-year/futian as a catch-up), 六层 (09-yishui/night), 七层 (09-futian/spar, the 秦雁 bout's way on) — each wait on the 阶段任务: 圆满 of the layer held (caps.hui.h11.gates: [{layer 4, 09-furnace, [fire]}, {layer 4, 09-year, [futian]}, {layer 5, 09-yishui, [night]}, {layer 6, 09-futian, [spar]}]).",
+  "tasks": [
+    {
+      "id": "snow-fantong",
+      "kind": "board",
+      "game": "fantonghuochai",
+      "period": "once",
+      "title": { "zh": "喂饭桶 · 扔了干净", "en": "Feeding the Rice Bucket · Good riddance" },
+      "grant": { "table": "task" },
+      "done_line": { "zh": "一道红光窜出来，钉在了门板上，剑柄还在嗡嗡地颤。", "en": "A red light shot out and stuck fast in the door, the hilt still humming." },
+      "_reward": "What it makes (火柴, huochai-jian) is handed over by the way on (09-snow/feed's grant) — a story thing every later fight wears, so a skipped board still gives it."
+    },
+    {
+      "id": "jiuge-sui",
+      "kind": "board",
+      "game": "leafsui",
+      "period": "once",
+      "title": { "zh": "随叶 · 跟着它走", "en": "Follow the leaf · Go with it" },
+      "grant": { "table": "task", "progress": 5 },
+      "marks": { "follow": "sui-follow", "chase": "sui-chase" },
+      "done_line": { "zh": "叶子正落在扫帚把尖上。「你得随它，跟着它走。」", "en": "The leaf lands right on the tip of the broom. \"You have to go with it. Follow it.\"" }
+    },
+    {
+      "id": "jiuge-yubu",
+      "kind": "board",
+      "game": "yubujiuge",
+      "period": "once",
+      "title": { "zh": "禹步 · 九格", "en": "The Step of Yu · Nine squares" },
+      "grant": { "table": "task", "progress": 5 },
+      "marks": { "quiet": "yubu", "loud": "yubu" },
+      "done_line": { "zh": "「猎户的脚。」", "en": "\"A hunter's feet.\"" },
+      "_reward": "修为 5, and the mark `yubu` either way (he walked it) — 古九's 量河滩 board reads it."
+    },
+    {
+      "id": "furnace-recipe",
+      "kind": "board",
+      "game": "recipe",
+      "period": "once",
+      "title": { "zh": "认方 · 三张方子", "en": "Reading the recipes · Three of them" },
+      "grant": { "table": "task", "item": "qi-pill" },
+      "marks": { "clean": "recipe-clean", "rough": "recipe-rough" },
+      "done_line": { "zh": "三张方子，记在肚里。", "en": "Three recipes, kept in his belly." },
+      "_reward": "A 聚气丹 (qi-pill) — the plan's: a lesson, not cultivation."
+    },
+    {
+      "id": "furnace-ding",
+      "kind": "board",
+      "game": "leafding",
+      "period": "once",
+      "title": { "zh": "定风 · 看见它起来", "en": "Settle the wind · See it rise" },
+      "grant": { "table": "task", "progress": 5 },
+      "marks": { "still": "ding-still", "shaky": "ding-shaky" },
+      "done_line": { "zh": "他看见了它起来的那一下。", "en": "He has seen the moment it rose." }
+    },
+    {
+      "id": "year-smell",
+      "kind": "board",
+      "game": "huohousmell",
+      "period": "once",
+      "title": { "zh": "闻焦 · 半口气", "en": "The scorch · Half a breath" },
+      "grant": { "table": "task", "wealth": 3 },
+      "marks": { "nose": "smell-nose", "late": "smell-late" },
+      "done_line": { "zh": "「丹师，这个……是不是就是丹焦的味儿？」", "en": "\"Pill-master, this... is this the smell of a pill scorching?\"" },
+      "_reward": "灵石 +3 — the 「丹房 · 看丹炉」 tablet's work (周衡: 看炉，记功)."
+    },
+    {
+      "id": "yishui-reed",
+      "kind": "board",
+      "game": "reed",
+      "period": "once",
+      "title": { "zh": "芦苇里那一等", "en": "The wait in the reeds" },
+      "grant": { "table": "task", "wealth": 2 },
+      "marks": { "still": "reed-still", "hasty": "reed-hasty" },
+      "done_line": { "zh": "它叫了一声，翅膀张了一半，塌了下去。", "en": "It bellowed; the wings half opened and collapsed." },
+      "_reward": "灵石 +2 — the book's split of the 四块 (「阿禾一块，孙二狗一块，他两块」); the hide and membrane are told (no item rows)."
+    },
+    {
+      "id": "xie-wind",
+      "kind": "board",
+      "game": "wind",
+      "period": "once",
+      "title": { "zh": "顺风溜 · 背后有风", "en": "Tailwind · Wind at your back" },
+      "grant": { "table": "task", "progress": 5 },
+      "marks": { "read": "wind-read", "puff": "wind-puff" },
+      "done_line": { "zh": "这双鞋，不是打架的，是跑的。", "en": "These shoes weren't for fighting. They were for running." },
+      "_reward": "修为 5; the boots (shunfeng-liu) come with the way on (09-xie/go)."
+    }
+  ]
+}

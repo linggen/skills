@@ -19,14 +19,15 @@
 //        (wm-wangzuo), then 邹青松 (wm-xirang) and the 暗河 past the 石室, with
 //        蛫's card and its 踏马符 in the bag.
 //   h08  练气四层 · + 邹青松's card, the 短刀 worn (wm-xirang grant); the 大比 in order.
-//   h11  练气五层 · + 马小宝's card (祁长松 is lost), 火柴 worn (09-snow).
+//   h11  练气五层 · + 马小宝's card (祁长松 is lost), 火柴 worn (09-snow) — 灵草谷's 犰狳 (09-lingcao);
+//   h11b 练气六层 · + the 犰狳's card — 秦雁 on the 崖顶 (09-futian).
 //   h10  筑基一层 · the same hand at 筑基 — 冰夷双龙, the 冀 pools, 泗水's 蛫.
 // Gear worn as soon as it is had (a sensible player puts on what he is given).
 import fs from 'node:fs';
 import { loadContent } from '../scripts/content.mjs';
 import { fightSetup } from '../scripts/rules.mjs';
 import { winCard } from '../scripts/rules/cards.mjs';
-import { creatureOf } from '../scripts/rules/world.mjs';
+import { creatureOf, foeOf as sceneFoe } from '../scripts/rules/world.mjs';
 import { act, begin, foeTurn } from '../scripts/battle.js';
 import { fightOnce, lookahead } from './trial-sim.mjs';
 
@@ -46,6 +47,8 @@ const STOPS = {
   h08: { tier: 'qi', step: 4, won: ['longzhi', 'zheng', 'gui', 'foe-zou'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'duan-dao' } },
   h08b: { tier: 'qi', step: 4, won: ['longzhi', 'zheng', 'gui', 'foe-zou', 'foe-lufang'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'duan-dao' } },
   h08c: { tier: 'qi', step: 4, won: ['longzhi', 'zheng', 'gui', 'foe-zou', 'foe-lufang', 'foe-shijie'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'duan-dao' } },
+  h11: { tier: 'qi', step: 5, won: ['longzhi', 'zheng', 'gui', 'foe-zou', 'foe-lufang', 'foe-shijie', 'foe-maxiaobao'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' } },
+  h11b: { tier: 'qi', step: 6, won: ['longzhi', 'zheng', 'gui', 'foe-zou', 'foe-lufang', 'foe-shijie', 'foe-maxiaobao', 'qiuyu'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' } },
   h10: { tier: 'foundation', step: 1, won: ['longzhi', 'zheng', 'gui', 'foe-zou', 'foe-lufang', 'foe-shijie', 'foe-maxiaobao'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' } },
 };
 
@@ -72,6 +75,8 @@ export const FIGHTS = [
   { id: 'foe-lufang', name: '卢方 (大比)', at: 'h08' },
   { id: 'foe-shijie', name: '秦雁 (试 · 三十招)', at: 'h08b', trial: true, unforced: true },
   { id: 'foe-maxiaobao', name: '马小宝 (大比)', at: 'h08c' },
+  { id: 'qiuyu', name: '犰狳 (灵草谷)', at: 'h11', scene: '09-lingcao/fight' },
+  { id: 'foe-shijie', name: '秦雁 (崖顶 · 试)', at: 'h11b', scene: '09-futian/spar', trial: true, unforced: true },
   { id: 'foe-shuanglong', name: '冰夷双龙 (试)', at: 'h10', trial: true },
   { id: 'qiuyu', name: '犰狳 (秘境 凶崖, guards the way)', at: 'h07', pool: 'mijing-ya' },
   { id: 'heyu', name: '合窳 (秘境 暗河)', at: 'h07z', pool: 'mijing-anhe' },
@@ -88,9 +93,15 @@ export const FIGHTS = [
   { id: 'linghu', name: '领胡 (太行)', at: 'h10', pool: 'taihang' },
   { id: 'renyu', name: '人鱼 (柳湾)', at: 'h10', pool: 'liuwan' },
 ];
-export const keyOf = f => (f.pool ? `${f.id}@${f.pool}` : f.id);
+export const keyOf = f => (f.pool ? `${f.id}@${f.pool}` : f.scene ? `${f.id}@${f.scene}` : f.id);
 
 function foeOf(f) {
+  // A scene's fight as its exit weighs it (`scene: 'scene/exit'` — the game's `foe`, rules/world.mjs foeOf).
+  if (f.scene) {
+    const [sid, eid] = f.scene.split('/');
+    const game = Object.values(content.chapters).map(ch => ch.scenes?.[sid]).find(Boolean)?.exits.find(e => e.id === eid)?.game;
+    return sceneFoe(content, game);
+  }
   const c = creatureOf(content, f.id);
   if (!f.pool) return c;
   const entry = Object.values(content.places).map(p => p.pools?.[f.pool]).find(Boolean)?.beasts.find(b => b.creature === f.id);
