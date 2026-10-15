@@ -273,9 +273,9 @@ test('the stage\'s picture: the scene\'s own, a story sky, the festival\'s paint
   assert.equal(stageArt({ scene: {}, weather: { kind: 'rain', source: 'city' }, festival, table, isDay: false }), festival.backdrop);
   assert.equal(stageArt({ scene: null, weather: { kind: 'rain', source: 'city' }, festival: null, table, isDay: false }), 'r-n');
   assert.equal(stageArt({ scene: { line: 'jin' }, weather: { kind: 'rain' }, festival, table }), null);
-  // Every painting a festival declares is on disk; the lunar feasts and 清明 all have theirs.
+  // Every festival has its painting, on disk.
   for (const f of content.festivals.festivals.filter((x) => x.backdrop)) assert.ok(fs.existsSync(path.join(content.dir, f.backdrop)), f.id);
-  for (const id of ['chuxi', 'chunjie', 'yuanxiao', 'qingming', 'duanwu', 'qixi', 'zhongqiu', 'chongyang', 'laba']) assert.ok(content.festivals.festivals.find((x) => x.id === id).backdrop, id);
+  for (const id of ['chuxi', 'chunjie', 'yuanxiao', 'qingrenjie', 'qingming', 'duanwu', 'qixi', 'zhongqiu', 'chongyang', 'wanshengjie', 'ganenjie', 'laba', 'yuandan', 'shengdan']) assert.ok(content.festivals.festivals.find((x) => x.id === id).backdrop, id);
   // Look's today carries it.
   const t = look(open(at('2026-09-25')), content, { now: at('2026-09-25'), quests: [] }).today;
   assert.equal(t.festival.backdrop, 'art/festival/zhongqiu.webp');

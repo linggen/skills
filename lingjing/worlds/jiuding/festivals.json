@@ -135,6 +135,7 @@
       "id": "yuandan",
       "name": { "zh": "元旦", "en": "New Year's Day" },
       "dressing": { "frame": "lantern", "particles": "sparks" },
+      "backdrop": "art/festival/yuandan.webp",
       "line": {
         "zh": "西域来的胡商说，今天是他们那儿的新年。他放了一挂自己带来的炮仗，很响，很短，他很满意。",
         "en": "A merchant from the Western Regions says today is New Year where he comes from. He sets off a string of firecrackers he carried all that way. Loud, short, and he is very pleased."
@@ -150,6 +151,7 @@
       "id": "shengdan",
       "name": { "zh": "圣诞", "en": "Christmas" },
       "dressing": { "frame": "pine", "particles": "snow" },
+      "backdrop": "art/festival/shengdan.webp",
       "line": {
         "zh": "那个西域胡商又来了：红袍，白胡子，背一只大口袋。他说今天是他们那儿的节，挨家挨户送东西——走的是烟囱，因为门他推不开。",
         "en": "That Western merchant is back: red robe, white beard, a big sack on his back. He says it's a feast day where he comes from, and he goes house to house leaving gifts — down the chimneys, because he can't work the doors."
@@ -165,6 +167,7 @@
       "id": "qingrenjie",
       "name": { "zh": "情人节", "en": "Valentine's Day" },
       "dressing": { "frame": null, "particles": "petals" },
+      "backdrop": "art/festival/qingrenjie.webp",
       "line": {
         "zh": "西域胡商说，今天是他们那儿的情人节：送人一枝花，说一句心里话。他买了一枝，送给了自己的骆驼。",
         "en": "The Western merchant says today is his people's lovers' day: you give someone a flower and say what is in your heart. He bought one and gave it to his camel."
@@ -196,6 +199,7 @@
       "id": "wanshengjie",
       "name": { "zh": "万圣节", "en": "Halloween" },
       "dressing": { "frame": "pumpkin", "particles": "leaves" },
+      "backdrop": "art/festival/wanshengjie.webp",
       "line": {
         "zh": "西域胡商说，今夜是他们那儿的万圣夜：小孩披着被单，挨家敲门讨糖，不给就捣蛋。石坳村的孩子学得很快，第一家敲的就是马三爷。",
         "en": "The Western merchant says tonight is his people's All Hallows' Eve: children in bedsheets knock on every door for sweets and play a trick where there are none. The village children learn fast — the first door they knock on is Master Ma's."
@@ -211,6 +215,7 @@
       "id": "ganenjie",
       "name": { "zh": "感恩节", "en": "Thanksgiving" },
       "dressing": { "frame": null, "particles": "leaves" },
+      "backdrop": "art/festival/ganenjie.webp",
       "line": {
         "zh": "西域胡商说，今天是他们那儿的感恩节：收了秋，一家人坐一桌，挨个说一句谢。他谢了他的骆驼，骆驼没理他。",
         "en": "The Western merchant says today is his people's Thanksgiving: the harvest in, the whole family at one table, each saying one thanks. He thanked his camel. The camel ignored him."

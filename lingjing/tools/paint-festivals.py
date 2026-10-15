@@ -31,6 +31,12 @@ KEPT = {
     'zhongqiu': {'seed': 11},  # the full moon and osmanthus over the river
     'chongyang': {'seed': 11},  # chrysanthemums on the high terrace, geese in a line
     'laba': {'seed': 11},  # the snowed temple, smoke from its kitchen
+    # Round two (seeds 11, 23, 47), the western five on Western subjects — provisional picks, Hanli to choose.
+    'qingrenjie': {'seed': 23, 'round': 'west'},  # red roses and a letter sealed with a heart (s47's letter grew marks)
+    'wanshengjie': {'seed': 47, 'round': 'west'},  # two glowing jack-o'-lanterns under a bare tree, bats, the crescent
+    'ganenjie': {'seed': 11, 'round': 'west'},  # the turkey on the harvest table, maples at the window
+    'yuandan': {'seed': 11, 'round': 'west'},  # fireworks over the town and its clock tower
+    'shengdan': {'seed': 47, 'round': 'west'},  # the tree and the stockings at the hearth, snow at the window
 }
 
 import argparse, json, os, subprocess
