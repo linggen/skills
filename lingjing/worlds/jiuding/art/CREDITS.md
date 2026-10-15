@@ -37,9 +37,23 @@ paper, a warm paper ground with grain, the red seal).
 | heyu | 合窳 | 《古今圖書集成·禽蟲典》合窳圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic292 - 合窳圖.svg* (彘身人面，立于水上之山 — as the 東次四經 says: 其狀如彘而人面……見則天下大水; the crying thing of 古八's 黑松岭). Laid on paper by `tools/frame.py`, seal 窳 |
 | lu | 鯥 | 《古今圖書集成·禽蟲典》鯥魚圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic404 - 鯥魚圖.svg* (牛形、蛇尾有翼、鱗身 — as the 南山經 says; the 牛首之怪 of 古七's 沂水). A 图鉴 entry only (`codex.json` `lu`), no creatures.json row; the framed picture is `art/lu.webp` (no `art/creatures/` copy — like 肥遺 the woodcut is the card). The seal font's Black face lacks 鯥, so the seal is set in Songti SC Bold (`frame.py --font-index 1`). |
 | yuan | 黿 | 《古今圖書集成·禽蟲典》黿圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic443 - 鱉圖.svg*: filed there as 鱉圖, but the plate's own caption reads 「禽蟲典第一百五十五卷 · 黿部彙考 · 黿圖」 (the file titled *pic445 - 黿圖* is a copy of 貝圖). A softshell in the waves under a moon and stars — 观主玄沉子's mount in 古三. A 图鉴 entry only (`codex.json` `yuan`), no creatures.json row; the framed picture is `art/yuan.webp`, cropped below the caption, seal in Songti SC Bold (`frame.py --font-index 1`). |
+| tianma | 天馬 | 《古今圖書集成·禽蟲典》天馬圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic275 - 天馬圖.svg* (https://commons.wikimedia.org/wiki/File:Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic275_-_天馬圖.svg) — the winged white dog of the 北次三經 (見人則飛). Seal 馬 in Songti SC Bold (`frame.py --font-index 1`; the Black face lacks it) |
+| linghu | 領胡 | 《古今圖書集成·禽蟲典》領胡圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic276 - 領胡圖.svg* (https://commons.wikimedia.org/wiki/File:Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic276_-_領胡圖.svg) — the ox with the hump at its neck (其頸䏿); cropped below the tree to the ox, seal 胡 |
+| renyu | 人魚 | 《新刻山海經圖》人魚, 胡文煥 輯, Ming 萬曆 《格致叢書》 print (National Library of China) — Wikimedia Commons, *NLC 新刻山海經圖二卷 明胡文煥刻格致叢書本.pdf*, page 16 (https://commons.wikimedia.org/wiki/File:NLC_新刻山海經圖二卷_明胡文煥刻格致叢書本.pdf): the plate captioned 人魚, a fish on four feet, its facing text 「龍侯山，決決之水出焉……人魚……四足，聲如小兒啼」. Kept as `plates/renyu-hu-p16.jpg`, cropped, levelled, seal 魚 in Songti SC Bold. (The 1597 蔣應鎬 print draws it too — 卷三 北山經 第二十三圖, the four-footed fish in the river — but unlabelled.) |
 
 The FLUX paintings of 2026-09-15 (夫諸, 狍鴞, 精衛, 雷神, 蠪侄) were replaced
 on 2026-09-16; the seal font lacks 蠪 and 狪, so those seals read 侄 and 珠.
+
+## 蒙山's beasts — painted for Lingjing (2026-10-15)
+
+野猪, 狼 and 熊 — the 蒙山 hunter's trade, ordinary animals, not 山海经 creatures — are painted by
+the local picture model (FLUX.2 klein 4B, the `tools/paint-cards.py` recipe) in 水墨淡彩: fine ink line,
+grey wash and faint mineral colour on aged paper, the whole animal, 960×640 like the rest of
+`creatures/`. Every prompt written by hand, every picture looked at. `creatures/yezhu.webp` — seed 11 of
+three (head low through autumn grass, black bristled ridge, tusks curling up, mud on its flanks);
+`creatures/lang.webp` — seed 12 of three (a grey wolf on a ridge rock at dusk; seed 44 painted a seal and
+fake characters); `creatures/xiong.webp` — seed 61 of five (a black bear 人立 by a pine, claws raised; seed 45
+painted a seal, seed 13 two crescent marks on its chest). No outside source.
 
 ## The world map
 

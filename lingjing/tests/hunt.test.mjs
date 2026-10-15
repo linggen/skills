@@ -10,9 +10,13 @@ import { act, battle, begin, foeTurn, offers, tokenOf } from '../scripts/battle.
 import { duel, look } from '../scripts/rules.mjs';
 import { allPlaces, encounterOf, foeOf, poolOf } from '../scripts/rules/world.mjs';
 import { fightSetup } from '../scripts/rules/cards.mjs';
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 process.env.LINGJING_STAMINA_LIMIT ??= '1';
 const content = loadContent();
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const NOW = new Date('2026-10-05T10:00:00+08:00');
 const ctx = { now: NOW, quests: [] };
 const jiScenes = Object.keys(content.chapters['01-ji'].scenes);
@@ -60,13 +64,20 @@ test('the pools are declared, of 卷一\'s beasts and a few added — none of a 
     const c = content.creatures.creatures.find(x => x.id === id);
     assert.ok((c.juan ?? 1) === 1 && !c.person && !c.trial, id);
   }
-  // The added beasts of 冀 are 《山海经》's, their lines quoted; not yet painted, and they claim no picture.
+  // The added beasts of 冀 are 《山海经》's, their lines quoted; found, not drawn — each wears a classical plate (2026-10-15).
   for (const id of ['tianma', 'linghu', 'renyu']) {
     const c = content.creatures.creatures.find(x => x.id === id);
     assert.match(c.source.zh, /北次三经/);
     assert.ok(c.quote.zh.includes(c.name.zh), `${id}'s quote names it`);
-    assert.equal(c.unpainted, true);
-    assert.equal(c.art, undefined);
+    assert.equal(c.unpainted, undefined);
+    assert.ok(c.art && /Public domain/.test(c.art_source), `${id} wears its plate`);
+    assert.ok(existsSync(join(ROOT, 'worlds/jiuding', c.art)), `${id}'s picture ships`);
+  }
+  // The 蒙山 hunter's beasts are ordinary animals, painted for the game.
+  for (const id of ['yezhu', 'lang', 'xiong']) {
+    const c = content.creatures.creatures.find(x => x.id === id);
+    assert.ok(c.art && /FLUX/.test(c.art_source), `${id} is painted`);
+    assert.ok(existsSync(join(ROOT, 'worlds/jiuding', c.art)), `${id}'s picture ships`);
   }
   // 天马 「其状如白犬而黑头」: white is 金 (Hanli 2026-10-05) — its root and its deck.
   const tianma = content.creatures.creatures.find(x => x.id === 'tianma'), catalogOf = id => content.cards.cards.find(x => x.id === id);
