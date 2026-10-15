@@ -89,6 +89,13 @@
   .topbar .titlerow { order: 5; }
   .topbar .headcards { order: 6; }
   body.fighting .topbar::before { display: none; }
+  /* The footer's chips fit 390px in English too (live, 2026-10-15: 「Tasks 3 · 1 due」 pushed 「Items」 off the
+     edge): tighter chips, the sky's word and 还有's name clipped short — each still one tap, its title whole. */
+  .slotfoot { padding: 0 8px; gap: 6px; }
+  .slotfoot .footchips { gap: 5px; }
+  .slotfoot .bookchip, .slotfoot .luchip, .slotfoot .act { padding-left: 9px; padding-right: 9px; }
+  .slotfoot .wxchip { max-width: 4.6em; overflow: hidden; text-overflow: ellipsis; }
+  .slotfoot .more { max-width: 6.5em; overflow: hidden; text-overflow: ellipsis; }
 }
 
 /* A landscape phone (wide but short): the 亮相 keeps the stage's right, the words give it that side. */
