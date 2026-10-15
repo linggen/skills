@@ -69,7 +69,9 @@ body.reading .slotfoot .errands .more { visibility: hidden; }
 /* A visiting shop there today: a small gold dot on the seal. */
 .plate .spot.visitor::after { content: ''; position: absolute; top: -3px; right: -3px; width: 8px; height: 8px; border-radius: 50%; background: rgb(232 184 72); border: 1px solid #fff; }
 @media (max-width: 480px) { .plate .spot { font-size: 11px; padding: 1px 5px; } }
-.slotfoot .shelfpop { width: auto; display: flex; gap: 8px; padding: 10px 12px; }
+/* The 书 popover sizes to its two chips: .bookpop's inline-size container sized it as if empty — 28px wide
+   (live, 2026-10-15) — so this one is no container. */
+.slotfoot .shelfpop { width: max-content; container-type: normal; display: flex; gap: 8px; padding: 10px 12px; }
 /* The chips' popovers (事 · 天气 · 恩仇簿) open from the footer, over the stage. The chips' row scrolls
    sideways (overflow-x), which clipped a popover anchored inside it to nothing (2026-10-15, live: 「事 3 ·
    可交 10」 tapped, the book opened invisibly). Anchored to the footer itself instead, they stand clear. */
