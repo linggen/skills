@@ -3602,6 +3602,7 @@ async function scratchBoot() {
    checks every hand-off after a game without playing forty games by hand — the games' own play
    is tests/game-*.test.mjs's. Never on the player's own save. */
 if (SCRATCH) {
+  const { bestMove } = await import('./fightline.js');
   globalThis.__lingjingPlay = {
     board: (id) => { const g = boards.get(id); return g ? { won: Boolean(g.state?.won ?? g.cleared), sent: Boolean(g.sent), grade: g.state?.grade ?? null } : null; },
     win: (id, grade = null) => {
@@ -3614,6 +3615,8 @@ if (SCRATCH) {
       return true;
     },
     bout: () => (bout ? { outcome: bout.st.outcome, whose: bout.st.whose, you: bout.st.you.hp, foe: bout.st.foe.hp, busy: Boolean(bout.busy), picked: bout.picked ?? null } : null),
+    // The attentive move now (fightline.js), for the crawler to make with real taps.
+    move: () => (bout && !bout.busy ? bestMove(bout.st) : null),
   };
 }
 

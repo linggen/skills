@@ -361,22 +361,20 @@ async function fightTurn(page, outcome) {
   let b = await waitIdle();
   if (!b || b.outcome !== 'open') return b;
   if (outcome === 'win') {
-    for (let guard = 0; guard < 10; guard++) {
-      const hand = (await spots()).filter((x) => x.kind === 'hand' && !x.off);
-      if (!hand.length) break;
+    // The attentive move (fightline.js, read through the seam), made with real taps: lift, then aim.
+    for (let guard = 0; guard < 16; guard++) {
+      const m = await page.evaluate('globalThis.__lingjingPlay?.move?.() ?? null');
+      if (!m || m.kind === 'end') break;
       const before = JSON.stringify(await bout());
-      await tapSpot('hand', hand[hand.length - 1].index);
-      await aim();
+      const from = m.kind === 'play' ? ['hand', m.index] : m.kind === 'attack' ? ['mine', m.index] : ['power', null];
+      await tapSpot(...from);
+      if ((await bout())?.picked) {
+        const to = m.target?.kind === 'minion' ? [m.buff ? 'mine' : 'theirs', m.target.index] : ['hero', null];
+        await tapSpot(...to);
+      }
+      await waitIdle();
+      if ((await bout())?.outcome !== 'open') return bout();
       if (JSON.stringify(await bout()) === before) { await tapSpot('stage'); break; }
-      if ((await bout())?.outcome !== 'open') return bout();
-    }
-    if ((await spots()).some((x) => x.kind === 'power' && !x.off)) { await tapSpot('power'); await aim(); }
-    for (let i = 0; i < 6; i++) {
-      const mine = (await spots()).filter((x) => x.kind === 'mine' && !x.off);
-      if (i >= mine.length) break;
-      await tapSpot('mine', mine[i].index);
-      await aim();
-      if ((await bout())?.outcome !== 'open') return bout();
     }
   }
   if ((await bout())?.outcome === 'open') { await tapSpot('end'); await sleep(800); }
@@ -414,10 +412,13 @@ async function playFight(page, snap, { rec, sceneId, shot, outcome, reload = nul
 /* A tap on the very element observed: scrolled into view as a player would, re-measured, then
    clicked with the mouse at its centre (hit-tested — a card over it takes the click). */
 async function tapEl(page, t) {
-  if (t.onScreen) return page.clickAt(t.x, t.y);
+  // On screen and on top: tap it where it is. Else scroll it into its own scroller first (a card
+  // cut off by the stage's foot on a phone is scrolled to, as a thumb would) and measure again.
+  if (t.onScreen && !t.covered) return page.clickAt(t.x, t.y);
   const sel = `${t.tag}${Object.entries(t.data).map(([k, v]) => `[data-${k}="${String(v).replace(/"/g, '\\"')}"]`).join('')}`;
   const at = await page.evaluate(`(() => { const el = [...document.querySelectorAll(${JSON.stringify(sel)})].find((e) => (e.textContent || '').trim().replace(/\\s+/g, ' ').startsWith(${JSON.stringify(t.text.slice(0, 20))}));
-    if (!el) return null; el.scrollIntoView({ block: 'center', inline: 'nearest' }); const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
+    if (!el) return null; el.scrollIntoView({ block: 'center', inline: 'nearest' }); let r = el.getBoundingClientRect(); const at = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    if (at && at !== el && !el.contains(at)) { el.scrollIntoView({ block: 'start', inline: 'nearest' }); r = el.getBoundingClientRect(); } return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
   if (!at) return false;
   await sleep(300);
   return page.clickAt(at.x, at.y);
