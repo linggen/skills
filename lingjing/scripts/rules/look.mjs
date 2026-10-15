@@ -37,6 +37,7 @@ import { todayBrief } from './festival.mjs';
 import { seasonBrief, storySky, weatherBrief, windBrief } from './weather.mjs';
 import { newHere, portraitOf } from './codex.mjs';
 import { withoutSealed } from './sealed.mjs';
+import { rerunBoardId, rerunBrief, runBoardHere } from './rerun.mjs';
 import { hotspotsOf, lookHint, seenLog, seenMet, SEEN_KEEP } from './examine.mjs';
 
 /* The market's shelf: the catalog sold in this province — and, while the
@@ -358,6 +359,9 @@ function tasksBrief(content, state, ctx) {
   // A board an errand wants stands offered, whatever it was: the errand pays.
   const hosted = Object.fromEntries((placeOf(content, state.place)?.has?.games ?? [])
     .filter(id => hostedHere(content, state, id) || stallHere(content, state, id, ctx.now)).map(id => [id, { status: 'offered' }]));
+  // A rerun's 拾遗, in a room whose find is not yet taken (rules/rerun.mjs).
+  const runBoard = rerunBoardId(content, state);
+  if (runBoard && runBoardHere(content, state, runBoard)) hosted[runBoard] = { status: 'offered' };
   // The board a beast here is caught with (狰's 守夜), until it is caught.
   const cid = placeOf(content, state.place)?.has?.creature, katch = cid ? creatureOf(content, cid)?.catch : null;
   if (katch && catchHere(content, state, katch)) hosted[katch] = { status: 'offered' };
@@ -507,6 +511,8 @@ export function look(state, content, ctx) {
     ...taleLook(content, state, ctx),
     // A board left on an earlier day, offered again now the stage is idle (rules/skips.mjs): the page's optional beat.
     ...(replayBrief(content, state, ctx.now) ? { replay: replayBrief(content, state, ctx.now) } : {}),
+    // 刷副本 (rules/rerun.mjs): inside a run its rooms; outside, the rooms open again (the door) or how long until.
+    ...(rerunBrief(content, state, ctx.now) ? { rerun: rerunBrief(content, state, ctx.now) } : {}),
     ended: state.ended, story: state.story,
     // 前情提要 while owed, and the last story node while fresh (story.mjs).
     ...recapLook(content, state), ...nodeLook(state, ctx.now),

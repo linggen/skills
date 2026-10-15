@@ -15,6 +15,7 @@ import { stow, storedLine } from './pouch.mjs';
 import { laterBoard, replayBoard, sceneBoards, skipBoard } from './skips.mjs';
 import { writeLedger } from './ledger.mjs';
 import { creatureOf, encounterOf, foeOf, huntKey, meetBeast, placeOf, poolOf, poolTally, rememberAt, sceneOf } from './world.mjs';
+import { runBoardHere, runFindDone, runSpoils } from './rerun.mjs';
 
 /* ── Tasks and quests ── */
 
@@ -94,7 +95,7 @@ function catchHere(content, state, id) {
 function taskOpen(content, state, id, now) {
   const t = taskOf(content, id), held = state.tasks[id];
   if (!t) return false;
-  if (reopened(content, state, id, now) || hostedHere(content, state, id) || catchHere(content, state, id) || stallHere(content, state, id, now)) return true;
+  if (reopened(content, state, id, now) || hostedHere(content, state, id) || catchHere(content, state, id) || stallHere(content, state, id, now) || runBoardHere(content, state, id)) return true;
   if (!held) return false;
   return !(held.status === 'done' && (t.period === 'once' || held.period === periodKey(t.period, now)));
 }
@@ -102,6 +103,8 @@ function taskOpen(content, state, id, now) {
 function taskDone(state, content, ctx, id) {
   const t = taskOf(content, id);
   if (!t) return refuse('unknown-task', null);
+  // A rerun's 拾遗 (rules/rerun.mjs): paid by the room's find, not the task's grant.
+  if (runBoardHere(content, state, id)) return runFindDone(state, content, ctx, id);
   const again = reopened(content, state, id, ctx.now);
   // A hosted game won today is counted wherever he stands when it is handed
   // in: the win was at the place (his 五子棋, 2026-09-23: a queued "go to 彭城"
@@ -288,6 +291,8 @@ export function duel(state, content, ctx, args) {
   // ended in 遁走 pays nothing: it has to be WON (design.md § 斗法 v3). An
   // elite pays as any beast: its harder deck is all it is (redesign-v2 § 四).
   const dropped = pays ? drop(content, s, creature, ctx.now, { loot: hunt || Boolean(haunt) }) : [];
+  // A rerun's beast (rules/rerun.mjs): the room moves on, and its drop table rolls.
+  if (pays && game.run) dropped.push(...runSpoils(content, s, game));
   const card = pays ? winCard(content, s, creature, ctx.now) : null;
   if (card) dropped.push(card);
   const t = content.rewards.tables.haunt;
@@ -315,7 +320,7 @@ const FIGHT_HOLDS = {
   resolve: true, move: true, go: true, enter: true, leave: true, trade: true, tale: a => !['info', 'seed'].includes(a.action),
   meet: true, tame: true, refine: true, task: a => a.action !== 'list',
   win: true, travel: true, build: true, load: true, make: true, amend: true, lundao: true, twenty: a => a.action === 'open', haggle: true, case: true,
-  divine: true, fate: true, ring: true, greet: true, deck: true, bag: true, fantong: a => a.action === 'feed', quest: a => !['info', 'kaifu'].includes(a.action),
+  divine: true, fate: true, ring: true, greet: true, deck: true, bag: true, fantong: a => a.action === 'feed', quest: a => !['info', 'kaifu'].includes(a.action), rerun: a => a.action !== 'info',
   seclude: a => a.action === 'enter',
 };
 export function fightHold(state, verb, args = {}) {

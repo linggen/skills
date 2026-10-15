@@ -428,15 +428,17 @@ export function spoilsHtml(spoils, ctx) {
     const c = ctx.catalog[row.id];
     return c ? `<div class="bcard face el-${esc(c.element ?? 'none')}">${leafHtml(c, ctx)}</div>` : '';
   }).join('');
-  const things = (spoils.items ?? []).map((i) => `${esc(i.name)}${i.n > 1 ? ` ×${i.n}` : ''}`).join(' · ');
+  // An arm of a rarity (a rerun's drop, rules/rerun.mjs) says it: 「青铜古剑 · 稀有」.
+  const things = (spoils.items ?? []).map((i) => `${i.rarity ? `<span class="rarity r-${esc(i.rarity)}">` : ''}${esc(i.name)}${i.rarity_name ? ` · ${esc(i.rarity_name)}` : ''}${i.rarity ? '</span>' : ''}${(i.got ?? i.n) > 1 ? ` ×${i.got ?? i.n}` : ''}`).join(' · ');
   // A 符 played is gone from the bag (result.spent), won or lost.
   const spent = (spoils.spent ?? []).map((id) => name(ctx.catalog[id], ctx.lang) || esc(id)).join(' · ');
   // What the win paid, in the card's own words — not only a float on the strip.
   const p = spoils.paid ?? {};
   const pays = [p.progress ? `${w.xw} +${p.progress}` : '', p.wealth ? `${w.ls} +${p.wealth}` : ''].filter(Boolean).join(' · ');
-  const gained = faces || things || pays;
+  const gained = faces || things || pays || spoils.line;
   return `<div class="card spoils"><div class="cardtitle">${esc(gained ? w.spoils : w.spentTitle)}</div>
     ${pays ? `<div class="spoilpays">${esc(pays)}</div>` : ''}
+    ${spoils.line ? `<div class="small">${esc(spoils.line)}</div>` : ''}
     ${faces ? `<div class="small dim">${esc(w.spoilsCard)}</div><div class="spoilfaces">${faces}</div>` : ''}
     ${things ? `<div class="small">${esc(w.spoilsBag)}${things}</div>` : ''}
     ${spent ? `<div class="small dim">${esc(w.spoilsSpent)}${spent}</div>` : ''}

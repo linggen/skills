@@ -2,6 +2,12 @@
   "version": 1,
   "_about": "The catalog: every thing the player can own, with its picture, its price and at most one effect. `key` is needed by an exit; a pill pays `progress` on use from a capped table; `wear` puts it on Yinyue (with a `lift`: her card's atk or hp by 1, or her 疗伤 by 0.1) or the abode; `charm` is a 符 — one in the bag is its card (cards.json, the same id) in hand at a fight's door, spent when it is played. Arms are the fight's own: a weapon's `atk` (器攻) with the `root` it lends, a 法衣's `def` (防), a 佩's `ward` (抗, by element) — each worn in its own slot, and each turned into the fight's numbers at the door by the rates in cards.json `gear` (器攻 → 主灵根一击, 防 → 护体, 抗 → that element lands lighter; the root lent lets its 功法 into the deck). `temper` feeds a 本命法宝 that many points of growth, and `core` on such a material names the element it would lend if the treasure were bound with it. `sold` names the provinces whose market shelves it; an item sold nowhere is a gift or a drop only. `pouch` on a 储物袋 adds that many slots to the bag's room for good, once for each kind (rewards.json `pouch`).",
   "_juan": "The 卷 a thing belongs to (Hanli, 2026-10-05: 不要有后面各卷的物品): `juan`, 1 unsaid. One of a 卷 not open is never shelved, found, dropped or paid by a 传闻 (world.mjs ofJuan): 固基丹, 破境丹, 望气术·下卷 and four of the 五天材 are 结丹's (卷二; 息壤 is 卷一's, from the 秘境), the provinces' goods wait for their 卷.",
+  "_rarities": "刷副本 (2026-10-15): a dropped arm's `rarity` (rewards.json drop_tables pick a rarity, then an arm of it) and the word the page and Ling say for it. The bonus stays small: 普通 器攻 1 / 防 1 / 抗 1, 精良 2 / 2 / 2, 稀有 3 / 3 / 2+2, through the same rates as any arm (cards.json gear).",
+  "rarities": {
+    "common": { "zh": "普通", "en": "Common" },
+    "fine": { "zh": "精良", "en": "Fine" },
+    "rare": { "zh": "稀有", "en": "Rare" }
+  },
   "items": [
     {
       "id": "lingzhi",
@@ -1729,6 +1735,214 @@
       },
       "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 卷一's 逆天 from the bucket: convenience, not power — carried, six more slots for good (like 下品储物袋; once per kind, rewards.json pouch).",
       "art_source": "The 中品储物袋's picture until its own is painted."
+    },
+    {
+      "id": "qiuyu-ci",
+      "kind": "weapon",
+      "rarity": "common",
+      "name": {
+        "zh": "犰狳喙刺",
+        "en": "Qiuyu beak spike"
+      },
+      "art": "art/items/iron-sword.webp",
+      "about": {
+        "zh": "犰狳那张鸟嘴，磨尖了，缠上布条当刺使。佩之借木。",
+        "en": "The qiuyu's bird beak, ground to a point and wrapped in cloth for a grip. Worn, it lends 木."
+      },
+      "buy": 12,
+      "sell": 4,
+      "sold": [],
+      "effect": {
+        "root": "wood",
+        "atk": 1
+      },
+      "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
+      "art_source": "The iron sword's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
+    },
+    {
+      "id": "heyu-dao",
+      "kind": "weapon",
+      "rarity": "fine",
+      "name": {
+        "zh": "合窳牙刀",
+        "en": "Heyu tusk knife"
+      },
+      "art": "art/items/iron-sword.webp",
+      "about": {
+        "zh": "合窳的一颗獠牙，比人的小臂还长，刃口天生就快。佩之借土。",
+        "en": "One of the heyu's tusks, longer than a forearm, its edge sharp from birth. Worn, it lends 土."
+      },
+      "buy": 36,
+      "sell": 12,
+      "sold": [],
+      "effect": {
+        "root": "earth",
+        "atk": 2
+      },
+      "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
+      "art_source": "The iron sword's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
+    },
+    {
+      "id": "qingtong-jian",
+      "kind": "weapon",
+      "rarity": "rare",
+      "name": {
+        "zh": "青铜古剑",
+        "en": "Old bronze sword"
+      },
+      "art": "art/items/iron-sword.webp",
+      "about": {
+        "zh": "外圈石缝里埋着的一把青铜剑，不知是哪一回开秘境时留下的。绿锈底下，刃还亮。佩之借金。",
+        "en": "A bronze sword buried in a crack of the outer ring, left from some earlier opening of the realm. Under the green rust the edge still shines. Worn, it lends 金."
+      },
+      "buy": 100,
+      "sell": 35,
+      "sold": [],
+      "effect": {
+        "root": "metal",
+        "atk": 3
+      },
+      "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
+      "art_source": "The iron sword's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
+    },
+    {
+      "id": "pi-kanjian",
+      "kind": "robe",
+      "rarity": "common",
+      "name": {
+        "zh": "旧皮坎肩",
+        "en": "Old hide vest"
+      },
+      "art": "art/items/grey-robe.webp",
+      "about": {
+        "zh": "一件旧皮坎肩，前人丢在外圈的，皮子还韧。",
+        "en": "An old hide vest someone left in the outer ring. The leather is still tough."
+      },
+      "buy": 12,
+      "sell": 4,
+      "sold": [],
+      "effect": {
+        "def": 1
+      },
+      "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
+      "art_source": "The grey robe's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
+    },
+    {
+      "id": "heyu-ao",
+      "kind": "robe",
+      "rarity": "fine",
+      "name": {
+        "zh": "合窳皮袄",
+        "en": "Heyu-hide coat"
+      },
+      "art": "art/items/grey-robe.webp",
+      "about": {
+        "zh": "合窳的黄皮硝过，缝成一件短袄，刀砍上去打滑。",
+        "en": "The heyu's yellow hide, cured and sewn into a short coat. A blade slides off it."
+      },
+      "buy": 36,
+      "sell": 12,
+      "sold": [],
+      "effect": {
+        "def": 2
+      },
+      "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
+      "art_source": "The grey robe's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
+    },
+    {
+      "id": "gu-daopao",
+      "kind": "robe",
+      "rarity": "rare",
+      "name": {
+        "zh": "前人道袍",
+        "en": "An old Daoist robe"
+      },
+      "art": "art/items/grey-robe.webp",
+      "about": {
+        "zh": "石缝深处一只朽了的箱子里，一件道袍竟没烂，袖口绣着看不懂的纹。",
+        "en": "In a rotted chest deep in a crack, a Daoist robe that has not rotted at all, its cuffs stitched with a pattern no one can read."
+      },
+      "buy": 100,
+      "sell": 35,
+      "sold": [],
+      "effect": {
+        "def": 3
+      },
+      "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
+      "art_source": "The grey robe's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
+    },
+    {
+      "id": "shi-zhui",
+      "kind": "pendant",
+      "rarity": "common",
+      "name": {
+        "zh": "河卵石坠",
+        "en": "River-stone pendant"
+      },
+      "art": "art/items/jade-ring.webp",
+      "about": {
+        "zh": "暗河床上捡的一颗卵石，穿了孔挂在颈上。土气沉，挡得住一点土行法术。",
+        "en": "A pebble from the dry riverbed, bored and hung at the neck. Its earth is heavy enough to turn a little of an earth spell."
+      },
+      "buy": 12,
+      "sell": 4,
+      "sold": [],
+      "effect": {
+        "ward": {
+          "earth": 1
+        }
+      },
+      "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
+      "art_source": "The jade ring's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
+    },
+    {
+      "id": "teng-jie",
+      "kind": "pendant",
+      "rarity": "fine",
+      "name": {
+        "zh": "青藤结",
+        "en": "Green-vine knot"
+      },
+      "art": "art/items/jade-ring.webp",
+      "about": {
+        "zh": "凶崖石阶上的老藤，打成一个结，挂着不枯。挡得住木行法术。",
+        "en": "Old vine from the stair of the Cliff of Danger, tied in a knot; hung up, it never withers. It turns a wood spell."
+      },
+      "buy": 36,
+      "sell": 12,
+      "sold": [],
+      "effect": {
+        "ward": {
+          "wood": 2
+        }
+      },
+      "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
+      "art_source": "The jade ring's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
+    },
+    {
+      "id": "anhe-yu",
+      "kind": "pendant",
+      "rarity": "rare",
+      "name": {
+        "zh": "暗河玉",
+        "en": "Dry-river jade"
+      },
+      "art": "art/items/jade-ring.webp",
+      "about": {
+        "zh": "暗河底下一块青玉，摸着是暖的。土行木行的法术打到身上，都轻了。",
+        "en": "A piece of green jade from the bottom of the dry river, warm to the touch. Earth and wood spells land lighter."
+      },
+      "buy": 100,
+      "sell": 35,
+      "sold": [],
+      "effect": {
+        "ward": {
+          "earth": 2,
+          "wood": 2
+        }
+      },
+      "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
+      "art_source": "The jade ring's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     }
   ]
 }

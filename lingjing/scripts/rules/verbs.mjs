@@ -21,6 +21,7 @@ import { fantong, fantongOpen, fantongRecipes } from './fantong.mjs';
 import { duel, lundao, questCheck, task, win } from './tasks.mjs';
 import { seclude } from './seclusion.mjs';
 import { caseVerb, haggle, twenty } from './aigames.mjs';
+import { rerun } from './rerun.mjs';
 import { unstick } from './unstick.mjs';
 import { story } from './story.mjs';
 import { tale, taleInfo } from './tale.mjs';
@@ -52,7 +53,7 @@ export const VERBS = gated({
     return { state: next, result };
   },
   resolve, judge, task, win, duel, tame, refine, tale, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, seclude, bag, fantong,
+  go, saves, save, load, forget, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, seclude, bag, fantong, rerun,
   // AI mini-games (rules/aigames.mjs): 二十问 (银月's), 讨价还价 and 断案 (Ling's).
   twenty, haggle, case: caseVerb,
   // 录 shows the 饭桶's 方子 found so far (rules/fantong.mjs).

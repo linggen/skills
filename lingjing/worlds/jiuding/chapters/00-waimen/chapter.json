@@ -99,6 +99,54 @@
           "wm-xirang": { "zh": "护住那撮息壤", "en": "Keep the pinch of living soil" },
           "wm-kaikai": { "zh": "守在土里，等息壤长成", "en": "Stay in the soil until it has grown in" },
           "wm-chu": { "zh": "等石门再开，走出秘境", "en": "Wait for the stone door and walk out" }
+        },
+        "_rerun": "刷副本 (Hanli, 2026-10-15: the 秘境 again, its outer rooms only): once the beat is behind him, and while his chapter is still this one, `rooms` (never the story's inner rooms) open again `every_h` hours after the last run ended (the story's run starts the clock; a save with no record finds them open). Entered from `door` (rules/rerun.mjs, the verb `rerun enter`) — the road to it opens while they do; inside it is this same sealed mode (errands, 令, 机缘 frozen; refused with `say`), `roads` the ways between the rooms, `goal` the 事 book's line. Each run is rolled from its own seed: `spawns` per room (`n` beasts from `pool`, one in `elite.one_in` an elite with `elite.decks`' harder deck), `finds` (the 拾遗 board `board` played in that room pays one find drawn by weight; one run in `cache.one_in` hides a cache there, found on a `cache.grade` play), and every beast won drops from `drops` (rewards.json drop_tables). Fights pay the haunt table (under the 回's cap; at 圆满 as 灵石, rewards.json xiuwei_to_lingshi). Leaving (`rerun leave`), or `lasts_min` gone by with no fight open, ends the run: he is set back at the chapter map's home with `back`. Nothing in rules names the 秘境; a later 秘境 or the 大比 declares the same.",
+        "rerun": {
+          "label": { "zh": "沉鼎秘境 · 外圈", "en": "The Sunken Cauldron realm · Outer ring" },
+          "rooms": ["mijing-kou", "mijing-xiongya", "mijing-anhe"],
+          "home": "mijing-kou",
+          "door": "shimen",
+          "roads": { "mijing-kou": ["mijing-xiongya"], "mijing-xiongya": ["mijing-kou", "mijing-anhe"], "mijing-anhe": ["mijing-xiongya"] },
+          "every_h": 3,
+          "lasts_min": 60,
+          "open": { "zh": "秘境外圈的裂缝又松了。", "en": "The cracks in the realm's outer ring have loosened again." },
+          "shut": { "zh": "秘境外圈的裂缝合着，过些时辰才松。", "en": "The cracks in the outer ring are shut. They loosen again in a while." },
+          "say": { "zh": "人在秘境外圈，外头的事出去再说。", "en": "You are in the realm's outer ring. What waits outside waits." },
+          "goal": { "zh": "外圈走一遭：打退游荡的妖兽，石缝里拾遗，随时可出", "en": "Walk the outer ring: drive off the beasts, glean the cracks, leave when you like" },
+          "back": { "zh": "裂缝在身后合上了。你沿着泗水岸，走回了外门。", "en": "The crack closes behind you. You walk back up the Si to the outer court." },
+          "spawns": {
+            "mijing-kou": { "pool": "mijing-ya", "n": [0, 1] },
+            "mijing-xiongya": { "pool": "mijing-ya", "n": [1, 2] },
+            "mijing-anhe": { "pool": "mijing-anhe", "n": [1, 2] }
+          },
+          "elite": {
+            "one_in": 6,
+            "decks": {
+              "qiuyu": ["tengmiao", "leipu", "leipu", "qingteng", "qingteng", "shanjing", "shanjing", "linmu", "linmu", "zhennu", "fengmao", "chunsheng"],
+              "heyu": ["shishou", "shishou", "jixiao", "tuou", "tuou", "shanjing", "luoshi", "luoshi", "houtu", "shanjing", "tunshi", "zhuguang"]
+            }
+          },
+          "board": "mijing-rerun-gather",
+          "finds": {
+            "mijing-anhe": [
+              { "item": "dingtai", "weight": 3, "n": [1, 2], "line": { "zh": "石缝里刮下一层鼎苔，青里透亮。", "en": "You scrape a skin of cauldron moss from a crack, green with a glow in it." } },
+              { "item": "lingzhi", "weight": 2, "n": [1, 1], "line": { "zh": "一株灵芝，长在河床的石缝里。", "en": "A lingzhi, grown in a crack of the riverbed." } },
+              { "item": "ginseng", "weight": 2, "n": [1, 1], "line": { "zh": "一根细人参，须子还全。", "en": "A thin ginseng root, its whiskers whole." } },
+              { "item": "tongkuang", "weight": 3, "n": [1, 3], "line": { "zh": "壁上敲下几块铜矿石。", "en": "You knock a few lumps of copper ore from the wall." } }
+            ]
+          },
+          "cache": {
+            "one_in": 5,
+            "grade": "rich",
+            "line": { "zh": "那株上品底下压着一块石板，掀开，是前人藏下的一个小包。", "en": "Under the high-grade herb lies a flat stone; beneath it, a small bundle someone hid long ago." },
+            "picks": [
+              { "item": "dingtai", "weight": 2, "n": [3, 3] },
+              { "item": "lingzhi", "weight": 2, "n": [2, 2] },
+              { "gear": "fine", "weight": 2 },
+              { "gear": "rare", "weight": 1 }
+            ]
+          },
+          "drops": "mijing-outer"
         }
       }
     },

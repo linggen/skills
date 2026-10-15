@@ -30,8 +30,14 @@
 //     story's; its other boards (one-offs) and one fight at each other pool room (EVERYTHING),
 //     landing as the instance is entered;
 //   - 杂役 errands, 开府 and the day's pick pay 灵石 only: nothing here.
+// A rerun lane (刷副本, rules/rerun.mjs runsPay, 2026-10-15): what one run of an instance's outer
+// rooms pays on average, read from the data (beasts per run × the haunt table) — printed beside the
+// table, for the economy (tools/balance.mjs) to size the layers it holds against. Below 圆满 a run's
+// fights pay 修为; at 圆满 the rest is 灵石 (rewards.json xiuwei_to_lingshi), never carried on.
 import { fileURLToPath } from 'node:url';
 import { loadContent } from '../scripts/content.mjs';
+import { runsPay } from '../scripts/rules/rerun.mjs';
+export { runsPay };
 
 /* A natural day's play in 卷一 (rewards.json `_economy_2026_10_15`): a sitting
    reads about five scenes; each day the workout, two pool fights, half a
@@ -219,6 +225,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const tried = process.argv.find(a => a.startsWith('--try='));
   if (tried) content.ladder.tiers[0].thresholds = tried.slice(6).split(',').map(Number);
   console.log(budgetTable(content));
+  for (const r of runsPay(content)) console.log(`刷副本 ${r.beat} (${r.chapter}, every ${r.every_h} h): ${r.beasts} beasts a run → 修为 ${r.progress} below 圆满 (else 灵石 ${Math.round(r.progress * (content.rewards.xiuwei_to_lingshi?.rate ?? 0))}) + 灵石 ${r.wealth}, ${r.finds} 拾遗`);
   // `--skips`: the same 回s with every story board left (a skip pays nothing).
   if (process.argv.includes('--skips')) {
     const rows = runJuan1(content, { play: ALL_SKIPS });

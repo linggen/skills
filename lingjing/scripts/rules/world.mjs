@@ -7,6 +7,7 @@ import { duelBrief, shelfOf, shopOf, shopOpen, withMap } from './look.mjs';
 import { hashOf, provinceOf } from './travel.mjs';
 import { buyBack, visitorHere } from './visiting.mjs';
 import { huiNow, huiOrder, sceneHui } from './hui.mjs';
+import { rerunBack, rerunOpen, runEncounter, runRoads, runSealed, staleRun, stampStoryEnd } from './rerun.mjs';
 
 const STORY_WORDS = 300, STORY_CHARS = 600;
 
@@ -146,6 +147,9 @@ function leaveOf(content, state, now) {
   const scene = !inMade(state) && state.scene ? content.chapters[state.chapter]?.scenes?.[state.scene] : null;
   if (scene?.at && !base.has(scene.at) && !(state.done_scenes ?? []).includes(scene.id)) for (const id of roadFrom(content, base, scene.at, now)) open.add(id);
   for (const id of state.pass?.places ?? []) open.add(id);
+  // 刷副本 (rules/rerun.mjs): while the rooms are open again, the road to their door.
+  const rerun = rerunOpen(content, state, now);
+  if (rerun && !base.has(rerun.rerun.door)) for (const id of roadFrom(content, base, rerun.rerun.door, now)) open.add(id);
   return open;
 }
 /* A 令 for this errand, when it declares one and the chapter's map walls it
@@ -191,12 +195,15 @@ function leaveFitted(content, state, now = new Date()) {
   const s = structuredClone(state);
   settlePlace(content, s, now);
   const same = k => JSON.stringify(s[k] ?? null) === JSON.stringify(state[k] ?? null);
-  return same('place') && same('pass') && same('returned') && same('sealed') ? state : s;
+  return same('place') && same('pass') && same('returned') && same('sealed') && same('rerun') && same('reruns') ? state : s;
 }
 /* The line said once on the place he was put back at (map `back`). */
 const returnedLine = (content, state, now) => {
   const map = mapOf(content, state, now);
-  return state.returned?.place === state.place ? pick((state.returned.story && map?.back_story) || map?.back, state.lang) ?? null : null;
+  if (state.returned?.place !== state.place) return null;
+  // Out of a rerun (rules/rerun.mjs): the run's own line.
+  const line = (state.returned.rerun && rerunBack(content, state.returned.rerun)) || (state.returned.story && map?.back_story) || map?.back;
+  return pick(line, state.lang) ?? null;
 };
 
 /* 关键剧情锁图 (his, 2026-09-28): a key beat — chapter.json `beats`, its
@@ -219,6 +226,8 @@ const carried = (content, state) => Boolean(content.chapters[state.chapter]?.cor
    after, when a 机缘 still live at the door gets back the time it had left
    (rules/sealed.mjs freezes the rest by keeping it out of Look). */
 function sealedOf(content, state) {
+  // A rerun of an instance's outer rooms (rules/rerun.mjs): the same sealed mode, its rooms the run's.
+  if (state?.rerun) return runSealed(content, state);
   if (!state?.scene || inMade(state)) return null;
   const beat = (content.chapters?.[state.chapter]?.beats ?? []).find(b => b.sealed && b.scenes.indexOf(state.scene) > 0);
   return beat ? { ...beat.sealed, beat: beat.id, first: beat.scenes[1] } : null;
@@ -253,8 +262,17 @@ const hiddenRoom = (content, state, place) => {
    墙」) — all but the first, which he walks down to from `home` (the way in).
    Between scenes he roams the rooms open to him. True while sealed. */
 function fitSealed(content, state, now = new Date()) {
+  // A rerun left standing past its time ends here (rules/rerun.mjs), never mid-fight.
+  staleRun(content, state, now);
   const sealed = sealedOf(content, state);
-  if (!sealed) { if (state.sealed) thaw(state, now); return false; }
+  if (!sealed) { if (state.sealed) { stampStoryEnd(content, state, now); thaw(state, now); } return false; }
+  // A rerun: stamped, kept in its rooms — the story outside stays where it is.
+  if (sealed.run) {
+    state.sealed = { id: sealed.beat, since: state.sealed?.since ?? now.toISOString(), scene: state.scene, run: true };
+    if (!sealed.places.includes(state.place)) state.place = sealed.home;
+    delete state.returned;
+    return true;
+  }
   const rooms = sealedMap(content, state).places, at = sceneOf(content, state)?.at;
   const reached = state.sealed?.scene !== state.scene;
   state.sealed = { id: sealed.beat, since: state.sealed?.since ?? now.toISOString(), scene: state.scene };
@@ -302,6 +320,8 @@ function findPlace(content, raw) {
 }
 
 const tooHard = (content, state, place) => place.tier > tierIndex(content, state);
+/* A place's roads — inside a rerun, the ways its instance declares between the run's rooms. */
+const roadsOf = (content, state, place) => runRoads(content, state, place) ?? place.roads;
 const placeName = (content, state, place) => ({ id: place.id, name: pick(place.name, state.lang) });
 
 /* The place as Look tells it: what is there, the roads out, and the whole
@@ -409,6 +429,8 @@ function meetBeast(state, cid, won, now) {
 const poolEntry = (content, placeId, cid) => (poolOf(content, placeOf(content, placeId))?.beasts ?? []).find(b => b.creature === cid) ?? null;
 function foeOf(content, game) {
   const creature = creatureOf(content, game.creature);
+  // A rerun's elite (rules/rerun.mjs): the harder deck its instance declares.
+  if (creature && game.deck) return { ...creature, deck: game.deck };
   const entry = creature && game.hunt ? poolEntry(content, game.hunt, game.creature) : null;
   return entry ? { ...creature, ...(entry.deck ? { deck: entry.deck } : {}), ...(entry.hp ? { hp: entry.hp } : {}) } : creature;
 }
@@ -417,6 +439,9 @@ const hauntsOf = (content, id) => allPlaces(content).filter(p => p.has?.creature
 
 function encounterOf(content, state, now) {
   const place = placeOf(content, state.place);
+  // Inside a rerun the run's own beasts, room by room (rules/rerun.mjs) — never the place's pool.
+  const run = runEncounter(content, state, place, now);
+  if (run !== undefined) return run;
   if (place && !place.has?.creature && poolOf(content, place) && !atScene(content, state)) {
     if (poolResting(content, state, place, now)) return null;
     const cid = poolBeast(content, state, place, now);
@@ -494,13 +519,13 @@ function placeBrief(content, state, now = new Date()) {
       seeds: Boolean(has.seeds), shop: Boolean(has.shop || visitor), scene: has.scene ?? null,
     },
     ...(shop ? { shop: { name: pick(shop.name, lang) ?? null, keeper: pick(shop.keeper, lang) ?? null, open: shopOpen(shop, state, content), ...(!shopOpen(shop, state, content) && shop.shut ? { shut: pick(shop.shut, lang) } : {}) } } : {}),
-    roads: place.roads.map(id => placeOf(content, id)).filter(p => !hiddenRoom(content, state, p)).map(p => ({
+    roads: roadsOf(content, state, place).map(id => placeOf(content, id)).filter(p => !hiddenRoom(content, state, p)).map(p => ({
       ...placeName(content, state, p), tier: p.tier, too_hard: tooHard(content, state, p),
       province: p.province, closed: !placeOpen(content, state, p, now),
     })),
     places: doc.places.filter(p => !hiddenRoom(content, state, p)).map(p => ({
-      ...placeName(content, state, p), tier: p.tier, roads: p.roads.filter(id => !hiddenRoom(content, state, placeOf(content, id))), ...(p.map ? { map: p.map } : {}),
-      here: p.id === place.id, road: place.roads.includes(p.id), too_hard: tooHard(content, state, p),
+      ...placeName(content, state, p), tier: p.tier, roads: roadsOf(content, state, p).filter(id => !hiddenRoom(content, state, placeOf(content, id))), ...(p.map ? { map: p.map } : {}),
+      here: p.id === place.id, road: roadsOf(content, state, place).includes(p.id), too_hard: tooHard(content, state, p),
       ...(onMap(content, state, p, now) ? {} : { closed: true }),
     })),
     // The painted map of the small area here (观内, 2026-10-15): what 去往 opens on.
@@ -560,7 +585,7 @@ function pathOf(content, state, from, to, now) {
       for (let at = p; at.id !== from.id; at = back.get(at.id)) way.unshift(at);
       return way;
     }
-    for (const id of p.roads) {
+    for (const id of roadsOf(content, state, p)) {
       const next = placeOf(content, id);
       if (!back.has(id) && walkable(next)) { back.set(id, p); queue.push(next); }
     }
@@ -602,4 +627,4 @@ function fittingPlace(content, state, from) {
    opens when it ends. */
 const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && carried(content, state);
 
-export { meetBeast, poolTally, rememberAt, nightNow, poolUp, huntRules, poolResting, guardOf, fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };
+export { roadsOf, meetBeast, poolTally, rememberAt, nightNow, poolUp, huntRules, poolResting, guardOf, fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };

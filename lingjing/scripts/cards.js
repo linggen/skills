@@ -899,9 +899,22 @@ function goalText(ctx) {
 /// (Move walks the whole road; the places passed are named), else the nearest work while the
 /// cauldron waits on 修为; under it, what can be handed in. stage.mjs withNext puts it up.
 const NEXT_WORDS = {
-  zh: { title: '下一步', go: '去{name} ›', via: '经 {names}', work: '去{name}找事做 ›', idle: '四处走走：功课、传闻、斗法，都长修为。', ready: '可交 {n} ›' },
-  en: { title: 'Next', go: 'Go to {name} ›', via: 'by way of {names}', work: 'Find work at {name} ›', idle: 'Walk about: practice, rumors and fights all raise cultivation.', ready: '{n} to hand in ›' },
+  zh: { title: '下一步', go: '去{name} ›', via: '经 {names}', work: '去{name}找事做 ›', idle: '四处走走：功课、传闻、斗法，都长修为。', ready: '可交 {n} ›', rerunGo: '{name} ›', rerunEnter: '进外圈 ›', rerunLeave: '出秘境', rerunBeasts: '妖兽 {n}', rerunFind: '可拾遗', rerunClear: '已清' },
+  en: { title: 'Next', go: 'Go to {name} ›', via: 'by way of {names}', work: 'Find work at {name} ›', idle: 'Walk about: practice, rumors and fights all raise cultivation.', ready: '{n} to hand in ›', rerunGo: '{name} ›', rerunEnter: 'Into the outer ring ›', rerunLeave: 'Leave the realm', rerunBeasts: '{n} beasts', rerunFind: 'gleaning', rerunClear: 'clear' },
 };
+/// 刷副本 (rules/rerun.mjs, Look's `rerun`): never in the story's way — open, one dim line and a
+/// quiet tap (to the door, or in at it); inside, what each room still holds and the way out.
+function rerunNext(t, look) {
+  const r = look?.rerun;
+  if (!r) return { note: '', acts: '' };
+  if (r.inside) {
+    const rooms = (r.rooms ?? []).map((x) => [x.name.split(' · ').pop(), x.beasts ? say(t.rerunBeasts, { n: x.beasts }) : '', x.find ? t.rerunFind : '', !x.beasts && !x.find ? t.rerunClear : ''].filter(Boolean).join(' '));
+    return { note: `<div class="small dim rerunnote">${esc(rooms.join(' · '))}</div>`, acts: `<button class="act quiet" data-rerun="leave">${esc(t.rerunLeave)}</button>` };
+  }
+  if (!r.open) return { note: '', acts: '' };
+  const act = r.here ? `<button class="act quiet" data-rerun="enter">${esc(t.rerunEnter)}</button>` : `<button class="act go quiet" data-go="${esc(r.door.id)}">${esc(say(t.rerunGo, { name: r.door.name }))}</button>`;
+  return { note: `<div class="small dim rerunnote">${esc(r.say ?? '')}</div>`, acts: act };
+}
 function nextTo(look) {
   const g = look?.waypoint;
   if (g?.gate) return null;
@@ -920,7 +933,8 @@ function next(card, ctx) {
   const book = ready ? `<button class="act quiet" data-book>${esc(say(t.ready, { n: ready }))}</button>` : '';
   // A room that holds the way on (Look's place.guard): what it still asks, under the goal.
   const guard = look.place?.guard ? `<div class="small dim guardnote">${esc(look.place.guard)}</div>` : '';
-  return `<div class="card next"><div class="cardtitle">${esc(t.title)}</div><div class="say">${esc(goalText(ctx) || t.idle)}</div>${guard}${visitorsLine(look)}<div class="acts">${go}${book}${visitorGo(look)}</div></div>`;
+  const rerun = rerunNext(t, look);
+  return `<div class="card next"><div class="cardtitle">${esc(t.title)}</div><div class="say">${esc(goalText(ctx) || t.idle)}</div>${guard}${rerun.note}${visitorsLine(look)}<div class="acts">${go}${book}${visitorGo(look)}${rerun.acts}</div></div>`;
 }
 
 /// 下一步 on a side line: where the 今 scene stands and its ways on, each tapped as the scene card's.

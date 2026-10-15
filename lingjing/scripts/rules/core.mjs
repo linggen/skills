@@ -72,17 +72,37 @@ const paysOf = (content, state, now, grant) => {
   return { progress: shut.includes('cultivation') ? 0 : progress, wealth: shut.includes('wealth') ? 0 : wealth };
 };
 
+/* 圆满之后走剧情到下一个阶段; 刷副本或者打怪奖励的修为改为灵石 (Hanli, 2026-10-15): a grant on
+   a table rewards.json `xiuwei_to_lingshi` lists (the fights' — never a scene, a board or the
+   功课) pays 修为 only up to the full mark of the layer he may not step past (the 回's cap, a
+   realm's peak); the rest is 灵石 at its `rate`, and never carries into the next layer. */
+const converting = (content, grant) => {
+  const c = content.rewards.xiuwei_to_lingshi;
+  return c && (c.tables ?? []).includes(grant?.table) ? c : null;
+};
+/* How much of `progress` would land past a mark he may not leave — tried on a copy. */
+function pastMark(content, state, progress) {
+  if (progress <= 0 || zeroAt(content, state.tier, state.step)) return 0;
+  const trial = structuredClone(state);
+  const { hold } = addProgress(content, trial, progress, (tier, step) => underCap(content, state, tier, step));
+  return hold ? Math.min(progress, Math.max(0, hold.over ?? 0)) : 0;
+}
+
 function pay(content, state, ctx, grant, landing = state) {
   rollDay(state, ctx.now);
   // Before a story gate nothing it keeps is paid (state.mjs lockedOf): read
   // where the move lands — the hall's three stones land in the outer court.
   const shut = lockedOf(content, landing);
   const due = amountsOf(content, state, ctx.now, grant);
-  const base = shut.includes('cultivation') ? 0 : due.base, progress = shut.includes('cultivation') ? 0 : due.progress, wealth = shut.includes('wealth') ? 0 : due.wealth;
+  const base = shut.includes('cultivation') ? 0 : due.base, progress = shut.includes('cultivation') ? 0 : due.progress;
+  // A fight's 修为 past the held mark is paid as 灵石 (converting, above).
+  const conv = converting(content, grant), over = conv ? pastMark(content, state, progress) : 0;
+  const lingshi = over && !shut.includes('wealth') ? Math.round(over * conv.rate) : 0;
+  const wealth = (shut.includes('wealth') ? 0 : due.wealth) + lingshi;
   state.day.progress += base; state.day.wealth += wealth; state.wealth += wealth;
-  const { levels, hold: kept } = addProgress(content, state, progress, (tier, step) => underCap(content, state, tier, step));
-  // At the 回's cap the held part is told in the world's words (rules/cap.mjs).
-  const hold = kept?.cap ? { ...kept, say: capLook(content, state, state.lang)?.say ?? null } : kept;
+  const { levels, hold: kept } = addProgress(content, state, progress - over, (tier, step) => underCap(content, state, tier, step));
+  // At the 回's cap the held part is told in the world's words (rules/cap.mjs) — not when the rest went to 灵石.
+  const hold = over ? null : kept?.cap ? { ...kept, say: capLook(content, state, state.lang)?.say ?? null } : kept;
   if (grant.cast && !state.cast.includes(grant.cast)) state.cast.push(grant.cast);
   // A beast that joins brings its card; a grant may name one outright.
   const day = dayKey(ctx.now);
@@ -98,7 +118,7 @@ function pay(content, state, ctx, grant, landing = state) {
   const learned = grant.art ? learn(content, state, grant.art) : null;
   const named = levels.map(l => ({ from: stepName(content, l.from.tier, l.from.step, state.lang), to: stepName(content, l.to.tier, l.to.step, state.lang) }));
   // `progress` is what the realm really took; at the peak the rest is held.
-  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, ...(extra.length ? { more: extra } : {}), ...(full ? { stored: true, pouch_full: full } : {}), levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}) };
+  return { progress: progress - over - (hold?.held ?? 0), wealth, ...(over ? { converted: { progress: over, wealth: lingshi } } : {}), cast: grant.cast ?? null, item: grant.item ?? null, ...(extra.length ? { more: extra } : {}), ...(full ? { stored: true, pouch_full: full } : {}), levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}) };
 }
 
 /* A riddle is answered wrong at most this many times a day. */

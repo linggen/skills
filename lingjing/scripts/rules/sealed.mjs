@@ -21,13 +21,14 @@ const dayName = (day, lang) => (lang === 'zh'
 export function sealedBrief(content, state) {
   const sealed = sealedOf(content, state);
   if (!sealed) return null;
-  const lang = state.lang, label = pick(sealed.label, lang), day = sealed.days?.[state.scene] ?? null;
+  const lang = state.lang, label = pick(sealed.label, lang), day = sealed.run ? null : sealed.days?.[state.scene] ?? null;
   const when = day ? dayName(day, lang) : null;
   // The room's own short name: 「沉鼎秘境 · 石室」 → 石室.
   const where = pick(placeOf(content, state.place)?.name, lang)?.split(' · ').pop() ?? null;
-  const goal = pick(sealed.goals?.[state.scene], lang) ?? null;
+  // A rerun (rules/rerun.mjs) has one goal for the whole run.
+  const goal = pick(sealed.run ? sealed.goal : sealed.goals?.[state.scene], lang) ?? null;
   return {
-    id: sealed.beat, label, header: [label, when].filter(Boolean).join(' · '),
+    id: sealed.beat, label, header: [label, when].filter(Boolean).join(' · '), ...(sealed.run ? { run: true } : {}),
     ...(day ? { day: { n: day.n, unit: day.unit, name: when } } : {}),
     ...(where ? { where } : {}), ...(goal ? { goal } : {}), say: pick(sealed.say, lang),
   };
@@ -45,7 +46,8 @@ export function withoutSealed(content, state, brief) {
   for (const key of OUTSIDE) delete out[key];
   if (out.today) out.today = { ...out.today, festival: null, term: null, jieqi: null };
   if (out.place) { const { pass, meet, ...place } = out.place; out.place = place; }
-  if (sealed.goal) out.waypoint = { ...(brief.waypoint ?? {}), text: sealed.goal, sealed: true };
+  // A rerun's goal points nowhere outside: the story's road waits, frozen.
+  if (sealed.goal) out.waypoint = sealed.run ? { text: sealed.goal, sealed: true } : { ...(brief.waypoint ?? {}), text: sealed.goal, sealed: true };
   return out;
 }
 

@@ -146,18 +146,25 @@ test('past the full mark 修为 keeps counting; a rise carries it and the next �
   const th = content.ladder.tiers[0].thresholds;
   const at = (scene, extra) => ({ ...newState(content, 'zh', NOW), chapter: '00-waimen', scene, place: 'chaifang', ended: ['00-prologue'], done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian'],
     tier: 'qi', traits: ROOTS, stamina: 100, stamina_at: NOW.toISOString(), ...extra });
-  // At 古四's cap, full: a fight still adds, past the mark.
+  // At 古四's cap, full: the day's 功课 still adds, past the mark.
   const s = at(null, { place: 'waimen', step: 1, progress: th[1] });
-  const won = pay(content, s, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth });
-  assert.equal(won.progress, T.haunt.progress, 'the whole fight counted');
-  assert.deepEqual([s.step, s.progress], [1, th[1] + T.haunt.progress], '230/200: the bar shows it');
-  // 第一路 (wm-diyilu): the rise to 二层 carries the 30 over the mark; 二层 asks 15 more.
+  const g = T.gongke.progress;
+  const done = pay(content, s, ctx, { table: 'gongke', progress: g });
+  assert.equal(done.progress, g, 'the whole 功课 counted');
+  assert.deepEqual([s.step, s.progress], [1, th[1] + g], '220/200: the bar shows it');
+  // A fight there pays 灵石 instead (Hanli, 2026-10-15: 「圆满之后走剧情到下一个阶段. 刷副本或者打怪奖励的修为改为灵石」; rewards.json xiuwei_to_lingshi).
+  const f = structuredClone(s);
+  const won = pay(content, f, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth });
+  assert.equal(won.progress, 0, 'no 修为 past the mark from a fight');
+  assert.equal(won.wealth, T.haunt.wealth + Math.round(T.haunt.progress * content.rewards.xiuwei_to_lingshi.rate));
+  assert.equal(f.progress, s.progress, 'nothing to carry into the next 层');
+  // 第一路 (wm-diyilu): the rise to 二层 carries the 20 over the mark; 二层 asks 10 more.
   const r = resolve({ ...s, scene: 'wm-diyilu', place: 'chaifang' }, content, ctx, { exit: 'save' });
   assert.equal(r.result.ok, true, JSON.stringify(r.result));
   assert.equal(r.state.step, 2);
-  assert.equal(r.result.rose.carried, T.haunt.progress);
-  assert.equal(r.state.stretch['qi:2'], T.haunt.progress / 2);
-  assert.equal(look(r.state, content, ctx).next, th[2] + T.haunt.progress / 2);
+  assert.equal(r.result.rose.carried, g);
+  assert.equal(r.state.stretch['qi:2'], g / 2);
+  assert.equal(look(r.state, content, ctx).next, th[2] + g / 2);
   // A save that did nothing: the story fills 一层 for it, then lifts it.
   const bare = resolve(at('wm-diyilu', { step: 1, progress: 0 }), content, ctx, { exit: 'save' });
   assert.equal(bare.result.rose.filled, th[1]);

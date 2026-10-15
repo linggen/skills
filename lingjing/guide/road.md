@@ -32,6 +32,12 @@
   hold play between the beats (a pool's beast, a board); a room that holds the
   way on (Look's place `guard`) stops the walk there — Move's `guarded` line —
   until its fight is won and its board played.
+- **A rerun of its outer rooms** (Look's `rerun`; `sealed.run` inside). Once
+  the story's run is behind him the outer rooms loosen again every few hours:
+  `rerun.open` with its `say` and `door` — mention it only when he asks what
+  to do, never over the story. The page enters (`rerun enter` at the door) and
+  leaves (`rerun leave`); inside it is the same sealed mode, `rerun.rooms`
+  saying what each room still holds. Leaving or the run's time ends it.
 - **Arriving is an event.** Show the cards a Move returns, and say in one
   line what is HERE before the roads. A
   Move with `met` reached what an errand sent them for: speak its `seen` as

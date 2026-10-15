@@ -77,6 +77,81 @@
       "wealth": 10
     }
   },
+  "_xiuwei_to_lingshi": "圆满之后走剧情到下一个阶段; 刷副本或者打怪奖励的修为改为灵石 (Hanli, 2026-10-15). A grant on one of `tables` (a pool's or a haunt's fight, a 秘境 rerun's beast — never a scene, a board, the 功课, a rumor or a road-meet) pays 修为 only up to the full mark of the layer he may not step past (the 回's cap, or a realm's peak waiting on its cauldron); the rest is paid as 灵石 at `rate` per 修为 (rules/core.mjs pay), and never carries into the next layer. Default 1/3: a converted fight (30 修为 → 10, with its own 10 灵石) pays about one 杂役 errand (labor 20). The economy (tools/balance.mjs) owns the number.",
+  "xiuwei_to_lingshi": {
+    "rate": 0.333,
+    "tables": [
+      "haunt"
+    ]
+  },
+  "_drop_tables": "刷副本 (2026-10-15): what a beast won in a rerun leaves (rules/rerun.mjs), by the table its instance names (chapter.json sealed.rerun.drops). Each roll in `rolls` lands with its `chance` (an elite's `elite_chance` when it has one) and gives one thing: an `item` by weight (`n` its count, [lo, hi]), or an arm (`gear`): a rarity drawn by `rarity` (an elite by `elite_rarity`), then one of `gear`'s arms of that rarity (items.json `rarity`). Drawn from the run's seed, the room and the beast's place in it: the same run drops the same. Only 卷一 things.",
+  "drop_tables": {
+    "mijing-outer": {
+      "rolls": [
+        {
+          "chance": 0.6,
+          "items": [
+            {
+              "item": "tongkuang",
+              "weight": 3,
+              "n": [
+                1,
+                2
+              ]
+            },
+            {
+              "item": "yaodan-1",
+              "weight": 1,
+              "n": [
+                1,
+                1
+              ]
+            }
+          ]
+        },
+        {
+          "chance": 0.2,
+          "elite_chance": 0.5,
+          "items": [
+            {
+              "item": "talisman",
+              "weight": 1,
+              "n": [
+                1,
+                1
+              ]
+            }
+          ]
+        },
+        {
+          "chance": 0.3,
+          "elite_chance": 0.9,
+          "gear": true
+        }
+      ],
+      "rarity": {
+        "common": 70,
+        "fine": 25,
+        "rare": 5
+      },
+      "elite_rarity": {
+        "common": 30,
+        "fine": 50,
+        "rare": 20
+      },
+      "gear": [
+        "qiuyu-ci",
+        "heyu-dao",
+        "qingtong-jian",
+        "pi-kanjian",
+        "heyu-ao",
+        "gu-daopao",
+        "shi-zhui",
+        "teng-jie",
+        "anhe-yu"
+      ]
+    }
+  },
   "_gongke_zero": "The day's 功课 handed in at 练气零层 (Hanli, 2026-10-15: every hand-in visibly raises 修为 or 灵石): 零层 takes no 修为 (state.mjs addProgress), so it pays this table instead — a few 灵石, what a 外门 杂役 errand pays (修屋顶 5). From 一层 on, `gongke`.",
   "_tale": "今日传闻 (design.md § 今日传闻): Ling writes no number. Each step pays the `tale` table and the finale the `tale_end` table, both capped; the whole tale never pays more than `cap` (a fifth step eats into the finale), and pay() scales it by the roots and the realm like any grant. One finale `drop`: the highest-tier entry at or below the player's realm (an item, or a card not held and of a root the player has), picked by the tale's id — and the finale also leaves a 符 and raises the 本命法宝 one 重 (`growth`). Raised 2026-09-24 (redesign-v2: the rumor is the day's main dish, the daily boards are gone): 15 a step, 30 the finale, 90 the cap — see `_economy`.",
   "tale": {

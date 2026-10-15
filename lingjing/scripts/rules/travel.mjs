@@ -10,7 +10,7 @@ import { advance, bookOf, directorBrief, GEAR_SLOTS, itemBrief, itemOf, onStoryR
 import { arriveOnRoad } from './road.mjs';
 import { forSale, sceneBrief, shelfOf, shopOf, wordsOf } from './look.mjs';
 import { buyBack, visitorAway, visitorHere } from './visiting.mjs';
-import { guardOf, atScene, beatOf, chapterOpen, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeSaid, provinceOpen, sceneOf, settlePlace, shutSay, STORY_CHARS, STORY_WORDS, tierIndex, tooHard } from './world.mjs';
+import { roadsOf, guardOf, atScene, beatOf, chapterOpen, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeSaid, provinceOpen, sceneOf, settlePlace, shutSay, STORY_CHARS, STORY_WORDS, tierIndex, tooHard } from './world.mjs';
 import { enteredBeat, refusalBeat } from './story.mjs';
 import { comingOf } from './hui.mjs';
 import { enter } from './worlds.mjs';
@@ -58,7 +58,7 @@ export function move(state, content, ctx, args) {
   const target = placeSaid(content, raw, here);
   const lang = s.lang;
   const stay = (code, say, extra = {}) => refuse(code, say, { here: here ? placeName(content, s, here) : null, ...extra });
-  const near = () => here.roads.map(id => placeName(content, s, placeOf(content, id)));
+  const near = () => roadsOf(content, s, here).map(id => placeName(content, s, placeOf(content, id)));
   if (!target) {
     const p = provinceOf(content, raw);
     if (p && here?.province === p) return { state: null, result: { ok: true, here: true, place: placeBrief(content, s) } };
