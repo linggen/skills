@@ -44,6 +44,7 @@ const STYLE = `.g-dg{gap:8px}.g-dg-head{display:flex;align-items:baseline;gap:10
 .g-dg-say::after{content:'';position:absolute;left:22px;bottom:-6px;width:10px;height:10px;background:inherit;border-right:1px solid var(--line);border-bottom:1px solid var(--line);transform:rotate(45deg)}
 .g-dg-say b{font-family:var(--serif);color:var(--ling);margin-right:6px}.g-dg-say .g-dg-other{display:block;font-size:12px;color:var(--faint);margin-top:2px}
 .g-dg-say.is-wait{color:var(--faint)}
+.g-dg[data-phase=blind] .g-dg-say,.g-dg[data-phase=far] .g-dg-say{visibility:hidden}
 .g-dg-paper{position:relative;width:100%;aspect-ratio:1;border-radius:6px;overflow:hidden;background:radial-gradient(130% 100% at 40% 30%,#ecdabb,${PAPER} 60%,#d8bf98);box-shadow:0 6px 22px rgba(0,0,0,.16)}
 .g-dg-paper canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
 .g-dg-paper.is-off canvas{cursor:default}
