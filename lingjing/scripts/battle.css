@@ -99,6 +99,23 @@
 .bside.foe.aimed .bplate { box-shadow: 0 0 0 2px var(--cinnabar), 0 0 0 6px rgba(179, 55, 42, 0.18), 0 0 22px rgba(179, 55, 42, 0.35); animation: aimed .9s ease-in-out infinite; }
 .bside.foe.gathering .bplate { animation: gather 1.2s ease-out; }
 @keyframes gather { 0% { box-shadow: 0 0 0 1.5px var(--ink-2); } 50% { box-shadow: 0 0 0 1.5px var(--ink-2), 0 0 0 16px rgba(31, 28, 24, 0.12), 0 0 40px rgba(31, 28, 24, 0.3); } }
+/* 杀招 — the wind-up held on the plate the whole time it lasts: an ink vortex drawn round it while it
+   gathers, turning cinnabar and quicker on the turn before it lets go; then a surge, then the splash. */
+.bside.foe.charge-gathering .bplate::after, .bside.foe.charge-ready .bplate::after {
+  content: ''; position: absolute; inset: -11px; border-radius: 50%; pointer-events: none;
+  background: conic-gradient(from 0deg, transparent 0 8%, var(--vortex) 18%, transparent 34% 50%, var(--vortex) 64%, transparent 82%);
+  -webkit-mask: radial-gradient(circle, transparent 60%, #000 63%, #000 70%, transparent 74%); mask: radial-gradient(circle, transparent 60%, #000 63%, #000 70%, transparent 74%);
+  animation: vortex 2.6s linear infinite; }
+.bside.foe.charge-gathering .bplate { --vortex: rgba(31, 28, 24, 0.55); }
+.bside.foe.charge-ready .bplate { --vortex: rgba(179, 55, 42, 0.8); box-shadow: 0 0 0 2px var(--cinnabar), 0 0 0 5px rgba(243, 238, 226, 0.9), 0 0 26px rgba(179, 55, 42, 0.4); }
+.bside.foe.charge-ready .bplate::after { animation-duration: 1.2s; }
+@keyframes vortex { to { transform: rotate(360deg); } }
+.bplate.loosing { animation: loosing .32s cubic-bezier(.3, 1.6, .4, 1); }
+@keyframes loosing { 0% { transform: scale(1); } 45% { transform: scale(1.14); box-shadow: 0 0 0 3px var(--cinnabar), 0 0 50px rgba(179, 55, 42, 0.6); } 100% { transform: scale(1); } }
+
+/* The end, before the 完 card: a beast beaten goes to ink on its plate; a fight lost greys your side. */
+.battle.over.won .bside.foe .bplate { animation: inkout 1s ease-in .45s forwards; }
+.battle.over.lost .bside.you .bwho { filter: grayscale(1); opacity: .55; transition: filter .6s, opacity .6s; }
 
 /* 气血: a cinnabar figure over a thin brushed bar. */
 .bpool { display: grid; grid-template-columns: auto minmax(90px, 160px) auto; align-items: center; gap: 7px; font-family: var(--ui); font-size: 10.5px; color: var(--ink-3); }
@@ -356,7 +373,19 @@
 .bflier { position: absolute; z-index: 6; width: 28px; height: 38px; border-radius: 4px; border: 1px solid var(--ink-line); background: var(--paper-2); box-shadow: 0 6px 14px rgba(31, 28, 24, 0.25); pointer-events: none; animation: fly .28s cubic-bezier(.3, .7, .3, 1) forwards; }
 @keyframes fly { from { transform: translate(0, 0) rotate(-6deg) scale(.9); opacity: .2; } 60% { opacity: 1; } to { transform: translate(var(--dx), var(--dy)) rotate(4deg) scale(1.05); opacity: 0; } }
 /* A drag on the Mac: the ink line from what is held to the pointer. */
-.bdragline { position: absolute; z-index: 9; height: 3px; margin-top: -1.5px; transform-origin: 0 50%; pointer-events: none; border-radius: 2px; background: linear-gradient(90deg, rgba(31, 28, 24, 0.15), rgba(31, 28, 24, 0.8)); }
+/* …drawn as a brush stroke: thin where it leaves, full and wet at the tip. */
+.bdragline { position: absolute; z-index: 9; height: 7px; margin-top: -3.5px; transform-origin: 0 50%; pointer-events: none; border-radius: 50% 100% 100% 50% / 50%;
+  background: linear-gradient(90deg, rgba(31, 28, 24, 0.05), rgba(31, 28, 24, 0.45) 30%, rgba(31, 28, 24, 0.9) 92%, rgba(31, 28, 24, 0.55));
+  clip-path: polygon(0 42%, 100% 0, 100% 100%, 0 58%); }
+
+/* A card played (battle-anim.js flyPlayed · showFoeCard): the leaf in flight, the beast's shown. */
+.bflight, .bshown { position: absolute; z-index: 9; pointer-events: none; transform-origin: 50% 50%; }
+.bflight > .bleaf, .bshown > .bleaf { position: absolute; inset: 0; width: 100%; height: 100%; box-shadow: 0 0 0 2px var(--ink), 0 18px 34px rgba(31, 28, 24, 0.35); }
+.bshown { animation: shownin .24s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes shownin { from { opacity: 0; transform: scale(.82); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+.bflight.going, .bshown.going { animation: inkout .4s ease-in forwards; }
+.bminion.landed { animation: landed .26s cubic-bezier(.3, 1.4, .4, 1); }
+@keyframes landed { 0% { transform: translateY(-6px) scale(1.06); box-shadow: 0 14px 26px rgba(31, 28, 24, 0.3); } 100% { transform: none; } }
 .dropover:not(.bcard) { outline: 2px dashed var(--ink-2); outline-offset: 3px; }
 
 /* ── The end: the story view's 完 card, the cinnabar seal stamped on it ── */
@@ -428,7 +457,8 @@
 /* Motion is decoration, and some people do not want it. */
 @media (prefers-reduced-motion: reduce) {
   .battle *, .battle *::before, .battle *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
-  .bstroke, .bbloom, .bsplash, .bghost.going { display: none; }
+  .bstroke, .bbloom, .bsplash, .bghost.going, .bflight, .bshown { display: none; }
+  .bside.foe .bplate::after { animation: none !important; }
 }
 
 /* ── 所得 — what a won fight left, on the stage after the room closes ── */

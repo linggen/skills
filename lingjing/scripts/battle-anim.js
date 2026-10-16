@@ -14,7 +14,10 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 /* How long each beat takes. Tuned so a whole exchange lands in about a second:
    this is a game you open for six minutes, not an epic. An attack — the
    stroke, the blow, the blow back — stays near 600ms. */
-export const BEATS = { card: 260, hit: 300, withdraw: 340, banner: 620, draw: 280, gap: 90, stroke: 200, splash: 1300, fx: 560, slide: 200 };
+export const BEATS = { card: 260, hit: 300, withdraw: 340, banner: 620, draw: 280, gap: 90, stroke: 200, splash: 1300, fx: 560, slide: 200, fly: 280, shown: 700 };
+
+/* Motion a person asked not to see is not drawn (prefers-reduced-motion): the room is already right. */
+const still = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const q = (root, sel) => root.querySelector(sel);
 
@@ -62,7 +65,37 @@ export function ghostsOf(root, entries, by = null) {
     return { side, id: t.id, index: Number(el.dataset.index), html: el.outerHTML, box: inRoom(root, el) };
   }).filter(Boolean);
   const at = by && ORIGIN[by.action?.kind] ? root.querySelector(ORIGIN[by.action.kind](by)) : null;
-  return { bodies, from: at ? inRoom(root, at) : null };
+  return { bodies, from: at ? inRoom(root, at) : null, card: handLeaf(root, by), hp: { foe: poolNow(root, 'foe'), you: poolNow(root, 'you') } };
+}
+
+/* ── 气血 falls when the blow lands ──
+   The room is drawn at the state AFTER the move, so a hero's bar and figure would drop before the
+   stroke reached it (live, 2026-10-16: 0/20 under the 杀招's splash). The animator holds each hero's
+   气血 at what it was, takes each hurt off as it lands, and lets go at the end. */
+const poolEl = (root, who) => q(root, `.bside.${who} .bpool`);
+const poolNow = (root, who) => { const n = Number(poolEl(root, who)?.dataset.now); return Number.isFinite(n) ? n : null; };
+function setPool(el, n) {
+  if (!el) return;
+  const max = Math.max(1, Number(el.dataset.max) || 1), shown = Math.max(0, Math.min(max, n));
+  const fig = el.querySelector('b')?.firstChild, bar = el.querySelector('.bbar i');
+  if (fig?.nodeType === 3) fig.nodeValue = String(shown);
+  if (bar) bar.style.width = `${Math.round((shown / max) * 100)}%`;
+}
+function holdPools(root, was) {
+  const now = { foe: was?.foe, you: was?.you };
+  for (const who of ['foe', 'you']) if (now[who] != null) setPool(poolEl(root, who), now[who]);
+  return {
+    take(who, d) { if (now[who] == null) return; now[who] += d; setPool(poolEl(root, who), now[who]); },
+    release() { for (const who of ['foe', 'you']) { const el = poolEl(root, who); if (el) setPool(el, Number(el.dataset.now)); } },
+  };
+}
+
+/* The card a move of yours plays, as it stood in the hand: its face and where it was, so it can be
+   drawn leaving the hand for where it lands (flyPlayed). */
+function handLeaf(root, by) {
+  if (by?.who !== 'you' || by.action?.kind !== 'play') return null;
+  const leaf = root.querySelector(`[data-spot="hand"][data-index="${by.action.index}"] .bleaf`);
+  return leaf ? { html: leaf.outerHTML, box: inRoom(root, leaf) } : null;
 }
 
 /* The bodies going stood back IN THEIR SLOTS in the new room, so nothing
@@ -191,6 +224,66 @@ function struckAt(root, el, t) {
   pulse(el, 'shaken', BEATS.hit);
 }
 
+/* ── A card played has weight (《炉石传说》's, in ink) ──
+   Yours lifts out of the hand and flies to where it lands: a body to its own slot, which it then takes;
+   a 功法 to the middle of the table, where it goes to ink as it takes effect. The beast's 功法 is shown
+   by its plate for a beat — without it the player saw only a number leap off his own side. */
+const paper = (root, html, box, cls) => {
+  const el = document.createElement('div');
+  el.className = cls;
+  el.innerHTML = html;
+  Object.assign(el.style, { left: `${box.x}px`, top: `${box.y}px`, width: `${box.w}px`, height: `${box.h}px` });
+  root.appendChild(el);
+  return el;
+};
+const centreOf = b => ({ x: b.x + b.w / 2, y: b.y + b.h / 2 });
+
+async function flyPlayed(root, card, t) {
+  if (!card || still()) return;
+  const body = t.kind === 'minion' ? spotOf(root, t) : null;
+  const land = body?.classList.contains('bminion') ? body : q(root, '.bseam');
+  if (!land) return;
+  const to = inRoom(root, land), from = card.box;
+  const a = centreOf(from), b = centreOf(to);
+  const k = body ? Math.min(1, to.h / from.h) : 0.9;
+  const leaf = paper(root, card.html, from, 'bflight');
+  if (body) body.style.visibility = 'hidden';
+  const flight = leaf.animate([{ transform: 'translate(0, -12px) scale(1.06)' }, { transform: `translate(${b.x - a.x}px, ${b.y - a.y}px) scale(${k})` }],
+    { duration: BEATS.fly, easing: 'cubic-bezier(.3, .7, .2, 1)', fill: 'forwards' });
+  await flight.finished.catch(() => {});
+  if (body) { body.style.visibility = ''; leaf.remove(); pulse(body, 'landed', BEATS.card); return; }
+  leaf.classList.add('going');
+  setTimeout(() => leaf.remove(), 420);
+  await sleep(BEATS.gap);
+}
+
+/* The beast's 功法, face up beside its plate a moment, then gone to ink. */
+async function showFoeCard(root, html) {
+  const plate = q(root, '.bside.foe .bplate');
+  const field = q(root, '.bfield');
+  if (!html || !plate || !field || still()) return;
+  const p = inRoom(root, plate), f = inRoom(root, field), r = root.getBoundingClientRect();
+  const h = Math.min(f.h * 0.9, 190), w = h * 0.71;
+  // Beside the plate where there is room, else over the field's left half.
+  const x = p.x - w - 28 > 8 ? p.x - w - 28 : Math.max(8, Math.min(r.width - w - 8, f.x + f.w * 0.25 - w / 2));
+  const y = p.x - w - 28 > 8 ? p.y : f.y + (f.h - h) / 2;
+  const shown = paper(root, html, { x, y, w, h }, 'bshown');
+  await sleep(BEATS.shown);
+  shown.classList.add('going');
+  setTimeout(() => shown.remove(), 420);
+}
+
+/* 出 — a card played: yours flies; the beast's 功法 is shown; a body arriving any other way blooms in. */
+async function played(root, t, ctx, flown) {
+  if (t.who === 'you' && ctx.ghosts?.card && !flown.done) {
+    flown.done = true;
+    return flyPlayed(root, ctx.ghosts.card, t);
+  }
+  if (t.who === 'foe' && t.kind === 'spell') return showFoeCard(root, ctx.faceOf?.(t.id));
+  pulse(spotOf(root, t), 'arriving', BEATS.card);
+  await sleep(BEATS.gap);
+}
+
 /* The 杀招 let go: ink thrown across the whole stage, its name in it. */
 async function splash(root, name) {
   const s = document.createElement('div');
@@ -284,8 +377,17 @@ function exchanged(entries) {
 export async function playLog(root, entries, ctx = {}) {
   if (ctx.skip || !root) return;
   raiseGhosts(root, ctx.ghosts);
+  const held = holdPools(root, ctx.ghosts?.hp);
+  try { await replay(root, entries, { ...ctx, held }); } finally { held.release(); }
+  // Only once everything going has gone to ink does the rank close up.
+  await reflow(root);
+}
+
+async function replay(root, entries, ctx) {
+  const hp = ctx.held;
   // The stroke goes once, at the first blow the move itself lands (never the blow back).
   let struck = !ctx.ghosts?.from;
+  const flown = { done: false };
   const order = exchanged(entries);
   for (const t of order) {
     if (!struck && (t.act === 'hurt' || t.act === 'hurt-minion') && t.from !== 'return') {
@@ -298,6 +400,8 @@ export async function playLog(root, entries, ctx = {}) {
         break;
       }
       case 'played':
+        await played(root, t, ctx, flown);
+        break;
       case 'summoned': {
         const el = spotOf(root, t);
         pulse(el, 'arriving', BEATS.card);
@@ -320,6 +424,7 @@ export async function playLog(root, entries, ctx = {}) {
           if (t.amount) await sleep(BEATS.gap);
         }
         if (t.amount || !t.absorbed) float(root, el, `−${t.amount}`, 'hurt');
+        if (t.amount) hp.take(t.who, -t.amount);
         struckAt(root, el, t);
         await sleep(BEATS.hit);
         break;
@@ -336,6 +441,7 @@ export async function playLog(root, entries, ctx = {}) {
       case 'heal': {
         const el = spotOf(root, t);
         float(root, el, `+${t.amount}`, 'heal');
+        if (t.amount) hp.take(t.who, t.amount);
         pulse(el, 'blessed', BEATS.hit);
         await sleep(BEATS.gap);
         break;
@@ -359,6 +465,9 @@ export async function playLog(root, entries, ctx = {}) {
         await sleep(BEATS.gap);
         break;
       case 'unleash':
+        // The wind-up let go: the plate surges, then the ink is thrown.
+        pulse(q(root, '.bside.foe .bplate'), 'loosing', 320);
+        if (!still()) await sleep(260);
         await splash(root, ctx.sigName);
         break;
       case 'chained':
@@ -383,8 +492,6 @@ export async function playLog(root, entries, ctx = {}) {
         break;
     }
   }
-  // Only once everything going has gone to ink does the rank close up.
-  await reflow(root);
 }
 
 /* What is new in the log since we last drew. The log only grows, so its length

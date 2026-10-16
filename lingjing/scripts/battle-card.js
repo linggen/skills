@@ -347,7 +347,7 @@ function deckHtml(n, side, w) {
 }
 
 /* `mark` draws a line on the bar: where a 试 yields (battle.js § trial). */
-const pool = (label, now, max, cls, mark = null) => `<div class="bpool"><span>${label}</span><div class="bbar ${cls}"><i style="width:${Math.max(0, Math.round((now / Math.max(1, max)) * 100))}%"></i>${mark ? `<s class="bmark" style="left:${Math.round(mark * 100)}%"></s>` : ''}</div><b>${now}<small class="bmax">/${max}</small></b></div>`;
+const pool = (label, now, max, cls, mark = null) => `<div class="bpool" data-now="${now}" data-max="${max}"><span>${label}</span><div class="bbar ${cls}"><i style="width:${Math.max(0, Math.round((now / Math.max(1, max)) * 100))}%"></i>${mark ? `<s class="bmark" style="left:${Math.round(mark * 100)}%"></s>` : ''}</div><b>${now}<small class="bmax">/${max}</small></b></div>`;
 
 const crystals = (now, max, cap) => {
   const dots = [];
@@ -413,6 +413,12 @@ function leafHtml(c, ctx, o = {}) {
       ${body}
       ${o.why ? `<small class="bwhy">${esc(o.why)}</small>` : ''}
     </span>`;
+}
+
+/// One card's face by its id, as the hand draws it — for a card shown in passing (the beast's 功法).
+export function cardFaceHtml(id, ctx) {
+  const c = ctx.catalog?.[id];
+  return c ? leafHtml(c, ctx) : '';
 }
 
 /* The fan: each card turned a little about the middle of the hand and dropped
@@ -560,6 +566,13 @@ export function sigWords(st, ctx) {
   if (e.rally) out.push(zh ? `${pro(ctx).its}阵前全体 +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}` : `${pro(ctx).its} rank +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}`);
   return out.join(zh ? ' · ' : ' · ');
 }
+
+/* The 杀招's wind-up held on the beast's own plate for as long as it lasts: ink drawn round it while it
+   gathers, cinnabar when it lets go next turn (battle.css .charge-gathering · .charge-ready). */
+const windUp = (st) => {
+  const phase = st.foe.charge;
+  return st.outcome === 'open' && st.foe.signature && (phase === 'gathering' || phase === 'ready') ? ` charge-${phase}` : '';
+};
 
 export function chargeHtml(st, ctx) {
   const phase = st.foe.charge;
@@ -794,7 +807,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
   // yours across the middle, you along the foot with the hand fanned under you. The weather's painting
   // shows through the paper (lingjing.js paintBackdrop); a tap anywhere that is no place puts back
   // what is held (`data-spot="stage"`, pickOf).
-  return `<div class="battle el-${esc(st.foe.root ?? 'none')}${over ? ' over' : ''}${st.whose === 'foe' ? ' foes' : ''}" data-spot="stage">
+  return `<div class="battle el-${esc(st.foe.root ?? 'none')}${over ? ` over ${esc(st.outcome)}` : ''}${st.whose === 'foe' ? ' foes' : ''}" data-spot="stage">
     <div class="btop">
       <button class="bquit" data-spot="quit">${esc(w.quit)}</button>
       <button class="bhelpbtn${help ? ' on' : ''}" data-spot="help" title="${esc(w.how)}" aria-label="${esc(w.how)}">?</button>
@@ -803,7 +816,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       <span class="bwhere">${esc(ctx.title ?? '')}${ctx.stake ? `<small class="bstake">${esc(ctx.stake)}</small>` : ''}</span>
     </div>
 
-    <button class="bside foe${aim.hero ? ' aiming aimed' : ''}" data-spot="hero">
+    <button class="bside foe${aim.hero ? ' aiming aimed' : ''}${windUp(st)}" data-spot="hero">
       <span class="bplate">${ctx.foeArt ? `<img class="bface" src="${esc(ctx.foeArt)}" alt="">` : `<b class="bface none">${esc([...(ctx.foeName ?? '')][0] ?? '')}</b>`}</span>
       <div class="bwho"><span class="bfoename">${esc(ctx.foeName ?? '')} <span class="belem el-${esc(st.foe.root ?? 'none')}">${GLYPH[st.foe.root] ?? ''}</span></span>
         ${pool(w.hp, st.foe.hp, st.foe.hpMax, 'hp', st.foe.trial?.yield)}

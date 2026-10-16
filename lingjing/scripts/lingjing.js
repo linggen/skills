@@ -16,7 +16,7 @@ import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
 import { withNext, FOOTER, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
-import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, dropOf, fightKind, pickOf, spoilsHtml } from './battle-card.js';
+import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, cardFaceHtml, dropOf, fightKind, pickOf, spoilsHtml } from './battle-card.js';
 import { wireDrag } from './battle-drag.js';
 import { banner, ghostsOf, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
@@ -3426,7 +3426,8 @@ async function playOut(b, mark, by = null) {
     const ghosts = ghostsOf(document.querySelector('.battle'), since(b.st.log, mark), by);
     drawNow();
     const sig = b.st.foe.signature?.name;
-    await playLog(document.querySelector('.battle'), since(b.st.log, mark), { words: boutCtx().words, ghosts, sigName: typeof sig === 'string' ? sig : sig?.[lang()] ?? sig?.zh });
+    const cx = boutCtx();
+    await playLog(document.querySelector('.battle'), since(b.st.log, mark), { words: cx.words, ghosts, faceOf: (id) => cardFaceHtml(id, cx), sigName: typeof sig === 'string' ? sig : sig?.[lang()] ?? sig?.zh });
   } finally {
     b.busy = false;
   }
