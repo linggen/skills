@@ -474,8 +474,7 @@ function bankPicture(s) {
     + '<stop offset="0" stop-color="#f4ecdc" stop-opacity=".55"/><stop offset=".7" stop-color="#f4ecdc" stop-opacity=".25"/><stop offset="1" stop-color="#f4ecdc" stop-opacity="0"/></linearGradient></defs>'
     + cropped(a.backdrop, 0, 0, W, H, 'g-da-backdrop') + `<rect class="g-da-wash" width="${W}" height="${H}" style="fill:url(#${id}-wash)"/>`
     + (a.bank ? `<g clip-path="url(#${id}-bank)">${cropped(a.bank, 0, BANK - 30, W, H - BANK + 30, 'g-da-bankart')}</g>` : '')
-    + (a.water ? `<g clip-path="url(#${id}-water)">${cropped(a.water, 0, WATER[0][1] - 10, 330, H - WATER[0][1] + 10, 'g-da-waterart')}</g>` : '')
-    + `<path class="g-da-edge" d="M${groundPts().join(' L')}"/>`;
+    + (a.water ? `<g clip-path="url(#${id}-water)">${cropped(a.water, 0, WATER[0][1] - 10, 330, H - WATER[0][1] + 10, 'g-da-waterart')}</g>` : '');
 }
 
 function inkBank() {
