@@ -70,8 +70,8 @@
     ]
    },
    "refuse": {
-    "zh": "饼得一块一块地掰——给它多少，看你的手。",
-    "en": "The bread is broken piece by piece — how much it gets is up to your hands."
+    "zh": "饼还挂在藤上——先让它落到它嘴边。",
+    "en": "The bread still hangs on its vines — get it down to the fox first."
    }
   },
   {
@@ -96,12 +96,12 @@
     ]
    },
    "refuse": {
-    "zh": "饼得一块一块地掰——给它多少，看你的手。",
-    "en": "The bread is broken piece by piece — how much it gets is up to your hands."
+    "zh": "饼还挂在藤上——先让它落到它嘴边。",
+    "en": "The bread still hangs on its vines — get it down to the fox first."
    }
   }
  ],
- "_beats": "喂饼 (bread-share, 2026-10-14): the board is the breaking of the flatbread; its grade (how much the fox had) takes 分它一半 (half · most) or 自己吃 (none · little), and the task's marks keep the amount (bread-none … bread-most) for the 恩仇簿 and 「本王欠你一张饼」. The corner is always kept: the dawn needs it. · 扔石听声 (cave-stone, batch two 2026-10-14): the scene's first board — the passage split after its first paragraph (the two stones, 「还是进去了」); three hollows under the cliff, a stone thrown into each comes back as a sound (deep hum, a scurry, one dry knock); then the rest (the fire, the egg and the bread) is `story_after`, and 喂饼 (bread-share) follows it — a scene's boards play in `show` order (stage.mjs boardWaits, tasks.mjs win); grade sure · lucky → `stone-sure` · `stone-lucky`; no way on waits on it but 喂饼's",
+ "_beats": "喂饼 (bread-share): since 2026-10-16 a 割绳子-style puzzle (games/bread.js, levels in games.json) — cut the vines so the 饼 reaches the fox; corners caught are stars. Its win always feeds the fox, so its grade is half (a corner saved) or most (all to it) and takes 分它一半; 自己吃 (none · little, from the 10-14 piece-by-piece board) opens only when the board is left (「算了，往下走」 opens every way). The task's marks keep the grade (bread-half · bread-most) for the 恩仇簿 and 「本王欠你一张饼」. The corner is always kept: the dawn needs it. · 扔石听声 (cave-stone, batch two 2026-10-14): the scene's first board — the passage split after its first paragraph (the two stones, 「还是进去了」); three hollows under the cliff, a stone thrown into each comes back as a sound (deep hum, a scurry, one dry knock); then the rest (the fire, the egg and the bread) is `story_after`, and 喂饼 (bread-share) follows it — a scene's boards play in `show` order (stage.mjs boardWaits, tasks.mjs win); grade sure · lucky → `stone-sure` · `stone-lucky`; no way on waits on it but 喂饼's",
  "show": [
   {
    "card": "board",

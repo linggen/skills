@@ -13,7 +13,6 @@ import { storyChars, stretchesOf } from '../scripts/rhythm.mjs';
 import { TO_HALL, TO_VALLEY, walk } from './prologue.mjs';
 import * as rain from '../scripts/games/rain.js';
 import * as track from '../scripts/games/track.js';
-import * as bread from '../scripts/games/bread.js';
 import * as scale from '../scripts/games/scale.js';
 import * as feather from '../scripts/games/feather.js';
 
@@ -28,7 +27,8 @@ const play = (mod, s, moves) => moves.reduce((st, m) => (typeof m === 'number' ?
 const bothLangs = (mod, s) => { for (const lang of ['zh', 'en']) assert.ok(mod.html(s, lang).length > 40, lang); };
 
 test('every game: meta in both languages, opens with a control to touch, draws in both languages', () => {
-  for (const [mod, control] of [[rain, /data-g="start"/], [track, /data-g="sign"/], [bread, /data-g="give"/], [scale, /data-g="hide"/], [feather, /data-g-drag="breath"/]]) {
+  // 喂饼 is dealt its levels (games.json, since 2026-10-16); its own tests are bread.test.mjs.
+  for (const [mod, control] of [[rain, /data-g="start"/], [track, /data-g="sign"/], [scale, /data-g="hide"/], [feather, /data-g-drag="breath"/]]) {
     assert.ok(mod.meta.name.zh && mod.meta.name.en && mod.meta.how.zh && mod.meta.how.en, mod.meta.id);
     const s = mod.newGame('seed');
     assert.match(mod.html(s, 'zh'), control, mod.meta.id);
@@ -95,16 +95,6 @@ test('追踪: read the deer\'s sign, carve at a hundred steps — true, or misre
   assert.equal(b.grade, 'rough');
   assert.ok(b.misreads > 1 && b.cuts.every(c => c === 'late'));
   assert.match(track.html(b, 'en'), /make a line all the same/);
-});
-
-test('喂饼: the fox has none, a little, half or most — the corner always kept', () => {
-  const give = (n) => play(bread, bread.newGame('x'), [...Array(n).fill({ g: 'give' }), { g: 'rest' }]);
-  assert.deepEqual([0, 2, 4, 6].map(n => (n ? give(n) : play(bread, bread.newGame('x'), [{ g: 'eat' }, { g: 'rest' }])).grade), ['none', 'little', 'half', 'most']);
-  const most = play(bread, bread.newGame('x'), Array(7).fill({ g: 'give' }));
-  assert.equal(most.won, true, 'all seven given: done, the corner wrapped');
-  assert.equal(most.grade, 'most');
-  assert.match(bread.html(most, 'zh'), /一个小角包好了/);
-  assert.match(bread.html(give(4), 'en'), /4 pieces to it/);
 });
 
 test('算账: the hide, then twenty catties on the pan — exact keeps the most at home, over gives the Mas the rest; light is never taken', () => {

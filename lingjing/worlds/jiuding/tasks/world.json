@@ -40,7 +40,9 @@
     },
     {
       "id": "bread-share", "kind": "board", "game": "bread", "period": "once",
-      "title": { "zh": "喂饼 · 那张厚饼", "en": "The flatbread · Breaking it" },
+      "title": { "zh": "喂饼 · 那张厚饼", "en": "The flatbread · Down to the fox" },
+      "how": { "zh": "划断藤，让饼荡下去，落到它嘴边。路上的饼角接住了，留作明天的早饭。", "en": "Cut the vines so the bread swings down to its mouth. Catch the corners on the way: tomorrow's breakfast." },
+      "stars": 3,
       "grant": { "table": "task", "progress": 5 },
       "marks": { "none": "bread-none", "little": "bread-little", "half": "bread-half", "most": "bread-most" },
       "done_line": { "zh": "一个小角包好了，留作明天的早饭。", "en": "A corner wrapped for tomorrow's breakfast." }

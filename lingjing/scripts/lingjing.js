@@ -1709,7 +1709,8 @@ async function onWin(taskId) {
   // A board the scene stands on its stage is a story beat (the opening's 接雨, 射鹿 …), not a day's practice.
   const story = (look?.scene?.show ?? []).some((c) => c.card === 'board' && c.id === taskId);
   if (isTale(taskId)) return taleWon(taskId);
-  const r = await write('win', { id: taskId, ...(grade ? { grade } : {}) }).catch(failed);
+  const stars = won?.state?.stars; // a small game's stars (喂饼's corners), kept on the save
+  const r = await write('win', { id: taskId, ...(grade ? { grade } : {}), ...(Number.isFinite(stars) ? { stars } : {}) }).catch(failed);
   // Refused (not here, not open), the win is kept on the board and sent again
   // when it can count — never told to Ling as a win he cannot pay (2026-09-23:
   // 洛书 solved at 邺城 showed solved at 碣石 and was never paid). Said once;
@@ -4410,7 +4411,7 @@ async function scratchBoot() {
 if (SCRATCH) {
   const { bestMove } = await import('./fightline.js');
   globalThis.__lingjingPlay = {
-    board: (id) => { const g = boards.get(id); return g ? { won: Boolean(g.state?.won ?? g.cleared), sent: Boolean(g.sent), grade: g.state?.grade ?? null } : null; },
+    board: (id) => { const g = boards.get(id); return g ? { won: Boolean(g.state?.won ?? g.cleared), sent: Boolean(g.sent), grade: g.state?.grade ?? null, stars: g.state?.stars ?? null } : null; },
     // The board's state as the screen draws it, and its module's id — for the human-like bots (tools/page-crawl.mjs).
     state: (id) => { const g = boards.get(id); return g ? { state: g.state ?? null, game: g.mod?.meta?.id ?? null } : null; },
     win: (id, grade = null) => {

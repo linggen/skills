@@ -164,6 +164,8 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     notices: loadNotices(path.join(dir, 'quests', 'templates.json')),
     meets: fs.existsSync(path.join(dir, 'meets.json')) ? readJson(path.join(dir, 'meets.json')) : null,
     lundao: fs.existsSync(path.join(dir, 'lundao.json')) ? readJson(path.join(dir, 'lundao.json')) : null,
+    // The small games' registry (games.json, 2026-10-16): each standalone module and its levels.
+    games: fs.existsSync(path.join(dir, 'games.json')) ? readJson(path.join(dir, 'games.json')) : null,
     // AI mini-games (rules/aigames.mjs): 二十问's animals, 讨价还价's band and rubric, 断案's cases.
     aigames: fs.existsSync(path.join(dir, 'aigames.json')) ? readJson(path.join(dir, 'aigames.json')) : null,
     // 对对子's 平仄 (新韵, tools/tone-table.py): P · Z · B as strings of characters (scripts/couplet.js).

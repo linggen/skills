@@ -429,6 +429,8 @@ function tasksBrief(content, state, ctx) {
       return {
         id, title: boardTitle(content, state, id, task, again.has(id)), kind: task.kind, status: t.status,
         won: Boolean(state.wins?.[id]),
+        // The most stars he has had on it (喂饼's corners), out of the task's `stars`.
+        ...(task.stars ? { stars: state.stars?.[id] ?? 0, stars_of: task.stars } : {}),
         // A board left (「算了，往下走」) is over for the story and paid nothing (rules/skips.mjs).
         paid: t.status === 'done' && !t.skipped, ...(t.skipped ? { skipped: true } : {}), ...(t.replay ? { replay: true } : {}), period: t.period ?? task.period ?? null, // done = paid, once or per period
         ...(again.has(id) ? { for_errand: true } : {}),
@@ -436,7 +438,7 @@ function tasksBrief(content, state, ctx) {
         // what it asks and what it pays, so Ling can tell the practice
         ...(task.game ? { game: task.game, level: gameLevel(content, state) } : {}),
         // The board's own words and deal where the task has them (二试's 洛书 is no 秘境 seal).
-        ...(task.how ? { how: pick(task.how, lang) } : {}), ...(task.deal ? { deal: task.deal } : {}),
+        ...(task.how ? { how: pick(task.how, lang) } : {}), ...dealOf(content, task),
         ...(task.game && task.done_line ? { done_line: pick(task.done_line, lang) } : {}),
         ...(hosted[id] ? { hosted: true } : {}),
         asks: task.kind === 'board' && !task.game ? (lang === 'zh' ? '在炉前把八味灵草两两配齐' : 'Pair the eight spirit herbs on the furnace board') : task.game ? pick(task.title, lang) : null,
@@ -484,6 +486,14 @@ function personBrief(content, state, creature) {
   if (!creature.person && !creature.gender) return {};
   const gender = (creature.person && personOf(content, state, creature.person)?.gender) || creature.gender;
   return { person: true, ...(gender ? { gender } : {}) };
+}
+
+/* What a board is dealt: the task's own `deal`, and a small game's levels from the registry
+   (games.json, 2026-10-16 — 喂饼's 割绳子 levels live there once, for the beat and the 游戏厅). */
+function dealOf(content, task) {
+  const levels = task.game ? content.games?.games?.find(g => g.id === task.game)?.levels : null;
+  if (!task.deal && !levels) return {};
+  return { deal: { ...(task.deal ?? {}), ...(levels ? { levels } : {}) } };
 }
 
 export function look(state, content, ctx) {

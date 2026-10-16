@@ -17,9 +17,9 @@ test('every module 卷一\'s boards are played on has a bot', async () => {
 
 for (const id of [...modules.keys()].sort()) {
   test(`${id}: a human-like bot wins it within three tries`, async () => {
-    const { mod, bot } = await loadPair(id);
+    const { mod, bot, deal } = await loadPair(id);
     if (!bot) return;
-    const r = playModule(mod, bot, { tries: 3 });
+    const r = playModule(mod, bot, { tries: 3, deal });
     assert.ok(r.won, `${id} (${modules.get(id).join(', ')}) was not won in 3 tries: ${JSON.stringify(r.runs)}`);
   });
 }

@@ -1,0 +1,1 @@
+{ "type": "commonjs", "private": true, "_about": "The vendored UMD bundles are classic scripts: node requires them as CommonJS (games/physics.js), the page loads them by a script tag." }

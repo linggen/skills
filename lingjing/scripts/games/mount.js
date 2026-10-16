@@ -84,6 +84,20 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
       if (gate.click('m') && e.detail !== 0) return; // already acted on as the finger went down
       apply({ ...el.dataset });
     });
+    // A pressed pointer drawn across a [data-g-swipe] control acts on it, once per control per
+    // stroke (喂饼's vines, 2026-10-16: 割绳子's cut); the press itself went the tap's way.
+    let swipe = null;
+    on(host, 'pointerdown', (e) => { swipe = e.button === 0 ? new Set() : null; }, true);
+    on(doc, 'pointermove', (e) => {
+      if (!swipe || !(e.buttons & 1) || !live(mod, g.state)) return;
+      const el = doc.elementFromPoint(e.clientX, e.clientY)?.closest?.('[data-g-swipe]');
+      if (!el || !host.contains(el)) return;
+      const key = JSON.stringify(el.dataset);
+      if (swipe.has(key)) return;
+      swipe.add(key);
+      apply({ ...el.dataset });
+    });
+    on(doc, 'pointerup', () => { swipe = null; });
     on(doc, 'pointermove', (e) => {
       if (!g.held?.drag) return;
       const d = Math.hypot(e.clientX - g.held.x, e.clientY - g.held.y);

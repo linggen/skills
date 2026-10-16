@@ -20,6 +20,8 @@
 // A repaint lays the new html INTO the old nodes (morph), so a button keeps its identity and
 // focus, and a CSS transition on a moving part runs between ticks.
 // `paused()` (the 回看 log open over the board): the clock stops and the board takes no input.
+// A control marked [data-g-swipe] is also taken when a pressed pointer is drawn across it (a
+// swipe through 喂饼's vines, 2026-10-16), once per stroke.
 // Nothing here knows a game; the win goes back through `onWon`.
 
 /** A game that runs in time right now: its taps are taken on pointerdown. */
@@ -200,6 +202,28 @@ export function wireLiveGames({ boardFor, lang, onWon, paused = () => false, ste
   };
   document.addEventListener('pointerup', up);
   document.addEventListener('pointercancel', up);
+  // A swipe (喂饼's vines, 2026-10-16: 割绳子's cut): a finger or mouse pressed and drawn across a
+  // control marked [data-g-swipe] acts on it as a tap, once per control per stroke. The press
+  // itself goes the tap's way above. The board's own CSS sets touch-action so the stroke is not
+  // taken for a scroll.
+  let swipe = null;
+  document.addEventListener('pointerdown', (e) => {
+    swipe = e.button === 0 && e.target.closest?.('[data-game]') ? new Set() : null;
+  });
+  document.addEventListener('pointermove', (e) => {
+    if (!swipe || paused() || !(e.buttons & 1)) return;
+    const el = document.elementFromPoint(e.clientX, e.clientY)?.closest?.('[data-g-swipe]');
+    const host = el?.closest('[data-game]');
+    if (!host || el.disabled) return;
+    const key = `${host.dataset.game}|${JSON.stringify(el.dataset)}`;
+    const g = boardFor(host.dataset.game);
+    if (swipe.has(key) || !runsLive(g)) return;
+    swipe.add(key);
+    apply({ g, host }, { ...el.dataset });
+  });
+  const endSwipe = () => { swipe = null; };
+  document.addEventListener('pointerup', endSwipe);
+  document.addEventListener('pointercancel', endSwipe);
   // A long press must not open the phone's menu over the game.
   document.addEventListener('contextmenu', (e) => {
     if (e.target.closest?.('[data-g-hold],[data-g-drag]')) e.preventDefault();

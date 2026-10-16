@@ -40,9 +40,9 @@ const gauss = r => Math.sqrt(-2 * Math.log(r() || 1e-9)) * Math.cos(2 * Math.PI 
 const dataOf = a => (a.hold ? { ...a.hold, g: 'hold' } : a.release ? { g: 'release' } : a.move != null ? { g: 'move', d: a.move } : a);
 
 /* One try: the module played by the bot until won or LIMIT_MS of game time. */
-export function playOnce(mod, bot, { seed = 'bot-1', level = 1, reaction = REACTION, jitter = JITTER, limit = LIMIT_MS } = {}) {
+export function playOnce(mod, bot, { seed = 'bot-1', level = 1, deal, reaction = REACTION, jitter = JITTER, limit = LIMIT_MS } = {}) {
   const r = rng(seed);
-  let state = mod.newGame(seed, level), t = 0, pending = null, nextLook = 0, acts = 0;
+  let state = mod.newGame(seed, level, deal), t = 0, pending = null, nextLook = 0, acts = 0;
   const tick = ms => { if (mod.tick && state.live && !state.won) state = mod.tick(state, ms); };
   const apply = a => { state = mod.act(state, dataOf(a)).state ?? state; acts++; };
   while (t < limit) {
@@ -75,7 +75,16 @@ export async function loadPair(id) {
   const mod = await import(path.join(GAMES, `${id}.js`));
   const file = path.join(GAMES, 'bots', `${id}.js`);
   const bot = fs.existsSync(file) ? (await import(file)).bot : null;
-  return { mod, bot };
+  return { mod, bot, deal: await dealOf(id) };
+}
+
+/* The deal the world gives the module (a task's `deal`, as the page hands it to newGame): a
+   small game's levels are the registry's (worlds/jiuding/games.json, 喂饼's). */
+async function dealOf(id) {
+  const { loadContent } = await import('../scripts/content.mjs');
+  const content = loadContent(), levels = content.games?.games?.find(g => g.id === id)?.levels;
+  const deal = content.tasks.tasks.find(t => t.game === id && t.deal)?.deal;
+  return levels ? { ...(deal ?? {}), levels } : deal;
 }
 
 /* The modules 卷一's story boards are played on (tasks.json `game`), from the content. */
@@ -104,9 +113,9 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const ids = named.length ? named : [...(await juanOneModules()).keys()].sort();
   let failed = 0;
   for (const id of ids) {
-    const { mod, bot } = await loadPair(id);
+    const { mod, bot, deal } = await loadPair(id);
     if (!bot) { console.log(`${id.padEnd(12)} NO BOT`); failed++; continue; }
-    const r = playModule(mod, bot, { tries: Number(flags.tries ?? 3) });
+    const r = playModule(mod, bot, { tries: Number(flags.tries ?? 3), deal });
     const last = r.runs.at(-1);
     console.log(`${id.padEnd(12)} ${r.won ? `won on try ${r.tries} in ${(last.ms / 1000).toFixed(1)} s (${last.acts} presses${last.grade ? `, ${last.grade}` : ''})` : `LOST all ${r.tries}${last.stuck ? ' (the module says stuck)' : ''}`}`);
     if (!r.won) failed++;

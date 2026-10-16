@@ -89,7 +89,7 @@ test('a board won: its last line is read first, then the scene\'s way on that wa
   assert.match(page, /&& !old\.winning &&/);
   assert.match(page, /const on = winExit\(taskId, grade\);[\s\S]{0,300}if \(on && !look\?\.tell_owed\) await panelTap\(on\.id/);
   // The grade goes with the win, and one way on is taken for him only when it is the only one (算账's two are his).
-  assert.match(page, /write\('win', \{ id: taskId, \.\.\.\(grade \? \{ grade \} : \{\}\) \}\)/);
+  assert.match(page, /write\('win', \{ id: taskId, \.\.\.\(grade \? \{ grade \} : \{\}\), \.\.\.\(Number\.isFinite\(stars\) \? \{ stars \} : \{\}\) \}\)/);
   assert.match(page, /return ways\.length === 1 \? ways\[0\] : null;/);
   const { trayHtml, WORDS } = await import('../scripts/cards.js');
   const look = { tasks: [{ id: 'deer-wind', title: '射鹿', kind: 'board', status: 'done' }, { id: 'xisui-hold', title: '洗髓', kind: 'board', status: 'offered' }] };

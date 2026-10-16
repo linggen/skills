@@ -194,7 +194,18 @@ export function win(state, content, ctx, args) {
     s.grades = { ...s.grades, [id]: graded.grade };
     if (graded.mark) s.marks = [...new Set([...(s.marks ?? []), graded.mark])];
   }
-  return { state: s, result: { ok: true, won: id, ...(graded ? { grade: graded.grade } : {}) } };
+  // Stars (the new small games, 2026-10-16: 喂饼's corners caught): kept by the task that declares
+  // how many it has, his best ever — a knob pay can scale on later (balance.json), paid on nothing yet.
+  const stars = starsOf(content, id, args.stars);
+  if (stars != null) s.stars = { ...s.stars, [id]: Math.max(stars, s.stars?.[id] ?? 0) };
+  return { state: s, result: { ok: true, won: id, ...(graded ? { grade: graded.grade } : {}), ...(stars != null ? { stars } : {}) } };
+}
+
+/* A board's stars, clamped to the most its task declares (`stars`); none for a task without. */
+function starsOf(content, id, stars) {
+  const most = content.tasks.tasks.find(t => t.id === id)?.stars;
+  const got = Math.trunc(Number(stars));
+  return most > 0 && Number.isFinite(got) ? Math.max(0, Math.min(most, got)) : null;
 }
 
 

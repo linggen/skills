@@ -57,7 +57,16 @@
    "group": "prologue",
    "scene": "00-cave",
    "hui": "第一回",
-   "task": "bread-share"
+   "task": "bread-share",
+   "mechanic": "割绳子",
+   "stars": 3,
+   "_levels": "喂饼's levels, here once (2026-10-16): the beat gets them through Look (the task's deal, look.mjs), mount() alone reads them here. World 360×440: the 饼 at `bread` hung from `vines` (anchor `at`, optional `slack`), the fox's mouth at `mouth` (`fox_flip`: facing left), `stones` (x, y, w, h, a degrees), a `gust` puff at `at` blowing `to`, an optional `piece` (a 饼角, a star), `say` the hint. Each is solved by order alone; games/bots/bread.js holds the answers.",
+   "levels": [
+     {"id": "one", "bread": [150, 160], "vines": [{"at": [150, 34]}], "mouth": [150, 378], "say": {"zh": "饼挂在藤上。划断它。", "en": "The bread hangs from a vine. Cut it."}},
+     {"id": "two", "bread": [180, 150], "vines": [{"at": [50, 34]}, {"at": [300, 34]}], "mouth": [298, 378], "fox_flip": true, "piece": [232, 186], "say": {"zh": "两根藤。先断哪一根？", "en": "Two vines. Which one first?"}},
+     {"id": "stone", "bread": [110, 140], "vines": [{"at": [40, 34]}, {"at": [200, 34]}], "stones": [{"x": 140, "y": 272, "w": 236, "h": 14, "a": 20}], "mouth": [276, 378], "piece": [74, 222], "say": {"zh": "石板斜着。饼角在高的那头。", "en": "The slab slopes. The corner is at its high end."}},
+     {"id": "gust", "bread": [110, 140], "vines": [{"at": [110, 34]}], "stones": [{"x": 105, "y": 262, "w": 120, "h": 14, "a": 0}], "gust": {"at": [24, 196], "to": [1, 0]}, "mouth": [280, 378], "fox_flip": true, "piece": [176, 122], "say": {"zh": "洞口有风。点一下那团风。", "en": "Wind at the cave mouth. Tap the puff."}}
+   ]
   },
   {
    "id": "scale",
