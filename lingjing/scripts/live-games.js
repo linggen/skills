@@ -208,10 +208,13 @@ export function wireLiveGames({ boardFor, lang, onWon, paused = () => false, ste
   // taken for a scroll.
   let swipe = null;
   document.addEventListener('pointerdown', (e) => {
-    swipe = e.button === 0 && e.target.closest?.('[data-game]') ? new Set() : null;
+    swipe = e.button === 0 && e.target.closest?.('[data-game]') ? Object.assign(new Set(), { x: e.clientX, y: e.clientY }) : null;
   });
   document.addEventListener('pointermove', (e) => {
     if (!swipe || paused() || !(e.buttons & 1)) return;
+    // Only a finger that moves cuts: a vine swinging under a finger held still is no swipe.
+    if (Math.hypot(e.clientX - swipe.x, e.clientY - swipe.y) < 4) return;
+    swipe.x = e.clientX; swipe.y = e.clientY;
     const el = document.elementFromPoint(e.clientX, e.clientY)?.closest?.('[data-g-swipe]');
     const host = el?.closest('[data-game]');
     if (!host || el.disabled) return;

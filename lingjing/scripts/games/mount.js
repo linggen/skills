@@ -97,10 +97,14 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
     });
     // A pressed pointer drawn across a [data-g-swipe] control acts on it, once per control per
     // stroke (喂饼's vines, 2026-10-16: 割绳子's cut); the press itself went the tap's way.
+    // Only a finger that MOVES cuts: a vine swinging under a finger held still is not a swipe (live,
+    // 2026-10-16 — a held tap cut the second vine as it swung through).
     let swipe = null;
-    on(host, 'pointerdown', (e) => { swipe = e.button === 0 ? new Set() : null; }, true);
+    on(host, 'pointerdown', (e) => { swipe = e.button === 0 ? Object.assign(new Set(), { x: e.clientX, y: e.clientY }) : null; }, true);
     on(doc, 'pointermove', (e) => {
       if (!swipe || !(e.buttons & 1) || !live(mod, g.state)) return;
+      if (Math.hypot(e.clientX - swipe.x, e.clientY - swipe.y) < 4) return;
+      swipe.x = e.clientX; swipe.y = e.clientY;
       const el = doc.elementFromPoint(e.clientX, e.clientY)?.closest?.('[data-g-swipe]');
       if (!el || !host.contains(el)) return;
       const key = JSON.stringify(el.dataset);
