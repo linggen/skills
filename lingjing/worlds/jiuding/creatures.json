@@ -2095,7 +2095,7 @@
       "province": "徐",
       "root": "fire",
       "art": "art/creatures/chihu.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in 水墨淡彩 (ink wash and faint colour on aged paper); seed 23 of 3 candidates (a red fox stepping out of the pines with one forepaw lifted, white-tipped brush; trimmed at the lower left, where the model scribbled a mark). No outside source.",
+      "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/creatures/qiuyu.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source.",
       "lean": "fierce",
       "pattern": [
         "strike",
@@ -2182,7 +2182,7 @@
       "province": "徐",
       "root": "water",
       "art": "art/creatures/shanli.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in 水墨淡彩 (ink wash and faint colour on aged paper); seed 11 of 3 candidates (a spotted leopard cat stalking along a mossy rock under a pine, one ringed tail; trimmed at the lower right, where the model painted a seal (seed 23 painted it a second tail)). No outside source.",
+      "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/creatures/qiuyu.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source.",
       "lean": "quick",
       "pattern": [
         "guard",
@@ -2268,7 +2268,7 @@
       "province": "徐",
       "root": "wood",
       "art": "art/creatures/mihou.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in 水墨淡彩 (ink wash and faint colour on aged paper); seed 23 of 3 candidates (a red-faced macaque squatting on a cliff ledge with a filched bundle of herbs, a dead pine branch beside it). No outside source.",
+      "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/creatures/qiuyu.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source.",
       "lean": "quick",
       "pattern": [
         "cast",
@@ -2358,7 +2358,7 @@
       "province": "徐",
       "root": "earth",
       "art": "art/creatures/fushe.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in 水墨淡彩 (ink wash and faint colour on aged paper); seed 5 of 6 candidates (a banded pit viper coiled on a flat stone among ferns, head raised; the first three candidates each painted a seal, seed 5 of the second three is trimmed at the right edge, where it painted one too). No outside source.",
+      "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/creatures/qiuyu.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source.",
       "lean": "hide",
       "pattern": [
         "guard",
@@ -2724,7 +2724,7 @@
       "province": "徐",
       "root": "metal",
       "art": "art/creatures/cangying.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in 水墨淡彩 (ink wash and faint colour on aged paper); seed 23 of 3 candidates (a goshawk launching off a cliff face, wings raised, barred breast, yellow eye). No outside source.",
+      "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/creatures/qiuyu.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source.",
       "lean": "quick",
       "pattern": [
         "gather",
@@ -2990,7 +2990,7 @@
       "province": "徐",
       "root": "fire",
       "art": "art/creatures/chai.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in 水墨淡彩 (ink wash and faint colour on aged paper); seed 23 of 3 candidates (a rust-red dhole with a black brush of a tail, head low on a rocky slope). No outside source.",
+      "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/creatures/qiuyu.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source.",
       "lean": "fierce",
       "pattern": [
         "strike",
