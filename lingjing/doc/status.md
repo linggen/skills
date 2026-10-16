@@ -14,6 +14,7 @@ Updated 2026-10-16.
 
 ## Done lately
 
+- 10-16 — 犰狳 见人则眠 is 假睡 (`e6f8fe16`): `feint` in battle.js (装睡 turns, plain blows glance, metal goes in), 鸱目一睁 scales per glance, 蛇尾抽/鸟喙啄 deck; 灵草谷 lookahead 65/30/6 won/lost/timed out, careless loses ~60%; 暗河 pool 犰狳 hp 5.5→4.
 - 10-16 — 后山崖顶 roster (`72680b96`, from tag `wip/2026-10-15-bestiary`): 15 beasts (9 东山经 woodcuts, 6 painted), 36 items, loot, 观 finds, 新 on cards; the 15 re-weighed on the lookahead player (fight-band-pools); 野猪 · 狼 · 熊 given loot (獠牙 · 狼皮 · 熊胆 had no source).
 - 10-16 — fights calibrated on the lookahead player (`81c72985`); lookahead win rates ~57–70%, tutorials ~80%.
 - 10-16 — 9527 on linggen `171d18e` (Settings reorg), verified live.
@@ -46,7 +47,6 @@ Updated 2026-10-16.
 
 - 后山崖顶 roster art: the six painted beasts (赤狐 山狸 猕猴 蝮蛇 苍鹰 豺) and the 36 item paintings, by his eye; and the loot picked for 野猪 · 狼 · 熊 (with 茯苓 · 苍术 · 黄精).
 - Play the latest build 古一 → 古四 before the per-回 expansions and 卷二 (launch waits for his full playthrough).
-- 灵草谷 犰狳: won ~62% but lost only 1% (37% time out on 见人则眠's heals) — re-weigh so a careless player can lose?
 - 10-14 asks: 拽/忍 redraws; village-map lines; skip on the first six beats; 闵丹师 mark 07:179; 古三 box merge.
 - Weather density, by his eye.
 
