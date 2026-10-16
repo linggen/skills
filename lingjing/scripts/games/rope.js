@@ -21,9 +21,12 @@ export const H = 440;
 export const FLOOR = 422;
 export const ROOF = 22;
 export const STEP_MS = 1000 / 60;
-export const BREAD_R = 19, BUBBLE_R = 26;
+export const BREAD_R = 19;
+export const BUBBLE_R = 26;
 const LINK = 18, GUST_MS = 700, GUST_ACC = 0.0009, GUST_BAND = 70, SETTLE_STEPS = 240;
-export const AIR_HUNG = 0.03, AIR_FREE = 0.01, AIR_BUBBLE = 0.06;
+export const AIR_HUNG = 0.03;
+export const AIR_FREE = 0.01;
+export const AIR_BUBBLE = 0.06;
 const LIFT = 1.25, BUBBLE_GUST = 2;
 export { GUST_MS, GUST_BAND };
 

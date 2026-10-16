@@ -12,12 +12,12 @@ export const FANTONG_WORDS = {
   zh: {
     chip: '饭桶', title: '喂饭桶', open: '饭桶张着嘴，等你喂。', pick: '把一样东西拖进饭桶的嘴里，或点一下再点「喂」。',
     feed: '喂{name}', lingshi: '搭灵石', around: '柴垛边', recipes: '方子', found: '新认出一张方子：', back: '回储物袋', none: '没有能喂的东西。',
-    stored: '存进洞府待取',
+    stored: '存进洞府待取', cancel: '换一样',
   },
   en: {
     chip: 'Rice Bucket', title: 'Feed the Rice Bucket', open: 'The Rice Bucket gapes, waiting.', pick: 'Drag a thing into its mouth, or tap it and then Feed.',
     feed: 'Feed {name}', lingshi: 'Add spirit stones', around: 'by the woodpile', recipes: 'Recipes', found: 'A recipe worked out: ', back: 'Back to the pouch', none: 'Nothing here will go in.',
-    stored: 'waits at the abode',
+    stored: 'waits at the abode', cancel: 'Choose another',
   },
 };
 const say = (t, vars) => String(t).replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
@@ -48,11 +48,18 @@ function tileHtml(i, sel, base) {
 
 /// The board. `fb` is the rules' brief (rules/fantong.mjs fantongBrief); `ui`
 /// the page's own: `sel` (the thing tapped), `lingshi`, `result` (the last
-/// feed's answer), `note` (a refusal in the rules' words), `at` (when it spat).
+/// feed's answer), `note` (a refusal in the rules' words), `at` (when it spat),
+/// `puzzle` (the thing hung for the feed's 割绳子 puzzle, 2026-10-16: the game is
+/// mounted into the empty host by fantong-puzzle.js, never drawn here).
 export function fantongHtml(fb, { lang = 'zh', artBase = '', ui = {}, nowMs = Date.now() } = {}) {
   const w = wordsOf(lang);
   const back = `<button class="act quiet pback" data-pouch-pane="">${esc(w.back)}</button>`;
   if (!fb) return `${back}<section class="psec ftong"><div class="loading">…</div></section>`;
+  if (ui.puzzle) {
+    return `${back}<section class="psec ftong puzzle" aria-label="${esc(w.title)}"><h3>${esc(w.title)}</h3>
+      <div class="game g-mounthost ftpuzzle" data-ft-puzzle></div>
+      <div class="ftacts"><button class="act quiet" data-fantong-cancel>${esc(w.cancel)}</button></div></section>`;
+  }
   const spat = ui.result?.out && nowMs - (ui.at ?? 0) < 700;
   const bucket = drawBucket({ open: fb.ready, left: bowlOf(fb, nowMs), spit: spat, seal: ui.result?.grade !== 'junk', seals: 0 });
   const status = ui.note || (fb.ready ? w.open : fb.wait);

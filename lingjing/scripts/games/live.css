@@ -180,6 +180,27 @@
   .g-bread-cave .g-flourish { animation: none; stroke-dashoffset: 0; }
 }
 .g-bread-row { display: flex; justify-content: center; min-height: 44px; width: 100%; }
+/* 喂饭桶 · 割藤 (2026-10-16, games/fantongcut.js): the same cave ink; the 饭桶 is its own art, the
+   灵气泡 and 荆棘 painted (art/games/), the 灵光 stars in cinnabar, the new element ringed once. */
+.g-ft-cave .g-ft-ring { fill: var(--surface); stroke: currentColor; stroke-width: 1.4; }
+.g-ft-cave .g-ft-glyph { fill: currentColor; font-family: var(--serif); font-size: 18px; }
+.g-ft-cave .g-ft-item image { mix-blend-mode: multiply; }
+.g-ft-cave .g-ft-mouth { fill: none; stroke: var(--seal); stroke-width: 1.3; stroke-dasharray: 3 5; opacity: .55; }
+.g-ft-cave .g-ft-star circle { fill: var(--seal); opacity: .85; }
+.g-ft-cave .g-ft-star .g-ft-glow { fill: var(--seal); opacity: .14; }
+.g-ft-cave .g-ft-star.is-pop circle { fill: none; stroke: var(--seal); stroke-width: 2; opacity: 1; }
+.g-ft-cave .g-ft-bubble { cursor: pointer; }
+.g-ft-cave .g-ft-bubble .g-ft-hit { fill: transparent; pointer-events: all; }
+.g-ft-cave .g-ft-burp { fill: var(--seal); font-family: var(--serif); font-size: 20px; }
+.g-ft-cave .g-regrow { fill: none; stroke: var(--wood); stroke-width: 2; opacity: .8; }
+.g-ft-cave .g-vine-knot.is-regrow { fill: var(--wood); }
+.g-ft-cave .is-regrow .g-vine-wash { stroke: var(--wood); opacity: .5; }
+.g-ft-cave .g-teach-ring { fill: none; stroke: var(--seal); stroke-width: 2; stroke-dasharray: 4 5; animation: g-teach 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.g-ft-cave .g-puff.g-teach .g-puff-cloud { stroke: var(--seal); stroke-width: 2; }
+.g-ft .g-teach-say { color: var(--seal); }
+@keyframes g-teach { 50% { opacity: .35; transform: scale(1.12); } }
+@media (prefers-reduced-motion: reduce) { .g-ft-cave .g-teach-ring { animation: none; } }
+.ftong.puzzle .ftpuzzle { width: 100%; }
 .g-pair { display: flex; gap: 10px; width: 100%; }
 .g-pair .g-btn { flex: 1; min-width: 0; }
 /* 算账 */

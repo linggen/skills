@@ -30,7 +30,8 @@ export const meta = {
 };
 
 export { W, H, FLOOR, STEP_MS, BREAD_R };
-export const PIECE_R = 14, MOUTH_R = 26;
+export const PIECE_R = 14;
+export const MOUTH_R = 26;
 const EAT_MS = 900, MISS_MS = 700, CLEAR_MS = 1500, REST_MS = 700;
 export const STUCK_MISSES = 4;
 

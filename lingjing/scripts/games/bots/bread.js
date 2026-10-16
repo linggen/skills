@@ -20,7 +20,7 @@ function move(s, [g, v]) {
 
 export function bot(s, see = {}) {
   const t = see.t ?? 0;
-  if (t < lastT) { calm = 0; again = 0; } // a fresh game
+  if (t < lastT) { calm = 0; again = 0; lastT = -1; } // a fresh game
   const dt = lastT < 0 ? 0 : t - lastT;
   lastT = t;
   if (s.won || !s.live) return null;

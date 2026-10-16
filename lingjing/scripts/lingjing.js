@@ -25,6 +25,7 @@ import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, ask
 import { slotNext } from './stuck.js';
 import { pouchHtml } from './pouch.js';
 import { fantongHtml, wireFantongDrag } from './fantong-free.js';
+import { fantongPuzzle } from './fantong-puzzle.js';
 import { esc } from './esc.js';
 import { revealCards } from './card-reveal.js';
 import { HANDED_STAY_MS, TURNED_MS, handedStale } from './turned.js';
@@ -56,6 +57,8 @@ import { beatHost } from './beat-host.js';
 import { devArcade } from './dev-arcade.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
 import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, huiLineOf, momentMay, momentsHold, trayWaits } from './queue.js';
+// The 饭桶's feed puzzle (fantong-puzzle.js), made here so every draw may lay it into its host.
+const ftPuzzle = fantongPuzzle({ onDone: (id, r) => { if (r?.won) run(`fantong:feed:${id}`, () => feedFantong(id, r.stars ?? 0)); } });
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -2772,12 +2775,14 @@ function drawPouch() {
   const open = view.gearOpen && !bout;
   if (open) document.body.classList.add('reading');
   el.hidden = !open;
-  if (!open) { drawnPouch = null; return; }
+  if (!open) { drawnPouch = null; ftPuzzle.stop(); return; }
   const fantongPane = view.pouchPane === 'fantong'
-    ? fantongHtml(view.fantong, { lang: lang(), artBase: artBase(), ui: { sel: view.ftSel, lingshi: view.ftLingshi, result: view.ftResult, note: view.ftNote, at: view.ftAt } }) : null;
+    ? fantongHtml(view.fantong, { lang: lang(), artBase: artBase(), ui: { sel: view.ftSel, lingshi: view.ftLingshi, result: view.ftResult, note: view.ftNote, at: view.ftAt, puzzle: ftPuzzle.id } }) : null;
   const html = pouchHtml({ ...ctx(), gear: view.gear, gearNote: view.gearNote, artBase: artBase(), fantongPane },
     { tab: view.pouchTab, sel: view.pouchSel, toss: view.pouchToss, pane: view.pouchPane });
   if (html !== drawnPouch) { el.innerHTML = html; drawnPouch = html; }
+  if (view.pouchPane === 'fantong') ftPuzzle.attach();
+  else ftPuzzle.stop();
 }
 
 /* 喂饭桶 (rules/fantong.mjs): the board's brief, read when it opens and again
@@ -2785,10 +2790,22 @@ function drawPouch() {
 async function loadFantong() {
   const r = await verb('fantong', { action: 'look' }).catch(failed);
   if (view.gearOpen) show({ fantong: r?.fantong ?? null, ...(r?.ok ? {} : { ftNote: refusal(r) }) });
+  ftPuzzle.prepare(r?.fantong);
 }
-async function feedFantong(id) {
+/* A feed is a 割绳子 puzzle first when the world has one (fantong.json `puzzle`; fantong-puzzle.js):
+   the thing hangs over the 饭桶, and only once it is in (or fed by hand after the misses) is it fed. */
+function startFeed(id) {
+  const fb = view.fantong, item = fb?.inputs?.find((i) => i.id === id);
+  if (!id || !fb?.ready || !item) return;
+  if (!fb.puzzle) { run(`fantong:feed:${id}`, () => feedFantong(id)); return; }
+  show({ ftResult: null, ftNote: null });
+  ftPuzzle.start(fb, { id, name: item.name, art: item.art ? artBase() + item.art : null }, { lang: lang(), reducedMotion: stillMotion() })
+    .catch((e) => console.warn('[lingjing] fantong puzzle', e));
+  render();
+}
+async function feedFantong(id, stars = 0) {
   if (!id) return;
-  const r = await write('fantong', { action: 'feed', id, lingshi: view.ftLingshi || 0 }).catch(failed);
+  const r = await write('fantong', { action: 'feed', id, lingshi: view.ftLingshi || 0, ...(stars ? { stars } : {}) }).catch(failed);
   if (!r.ok) { show({ ftNote: refusal(r) }); return loadFantong(); }
   const sel = r.fantong?.inputs?.some((i) => i.id === id) ? id : null;
   const at = Date.now();
@@ -2807,7 +2824,7 @@ setInterval(() => {
   if (fb.next_at && Date.now() >= new Date(fb.next_at).getTime()) run('fantong:look', loadFantong);
   else render();
 }, 15_000);
-wireFantongDrag({ onDrop: (id) => run(`fantong:feed:${id}`, () => feedFantong(id)), active: () => view.gearOpen && view.pouchPane === 'fantong' });
+wireFantongDrag({ onDrop: (id) => startFeed(id), active: () => view.gearOpen && view.pouchPane === 'fantong' && !ftPuzzle.id });
 
 /* 撂下 is the rules' to do; Ling reads the book in her next Look. */
 async function dropErrand(id) {
@@ -3147,8 +3164,9 @@ const CLICKS = [
   // 喂饭桶's board (fantong-free.js): tap a thing, then 喂 — or the bucket's mouth; a drag drops it in.
   ['[data-fantong-pick]', (el) => show({ ftSel: el.dataset.fantongPick, ftNote: null })],
   ['[data-fantong-lingshi]', (el) => show({ ftLingshi: Number(el.dataset.fantongLingshi) || 0 })],
-  ['[data-fantong-feed]', (el) => { if (!el.matches(':disabled')) run('fantong:feed', () => feedFantong(view.ftSel)); }],
-  ['[data-fantong-mouth]', () => { if (view.ftSel && view.fantong?.ready) run('fantong:feed', () => feedFantong(view.ftSel)); }],
+  ['[data-fantong-feed]', (el) => { if (!el.matches(':disabled')) startFeed(view.ftSel); }],
+  ['[data-fantong-mouth]', () => { if (view.ftSel && view.fantong?.ready) startFeed(view.ftSel); }],
+  ['[data-fantong-cancel]', () => { ftPuzzle.stop(); render(); }],
   ['[data-pouch-item]', (el) => show({ pouchSel: el.dataset.pouchItem, pouchToss: null, pouchPane: null })],
   ['[data-sell]', (el) => run(`item:sell:${el.dataset.sell}`, () => useItem(el.dataset.sell, 'sell'))],
   ['[data-toss]', (el) => show({ pouchToss: el.dataset.toss })],

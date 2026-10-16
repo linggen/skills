@@ -322,6 +322,13 @@
    "task": "jin-lastshot"
   },
   {
+   "id": "fantongcut",
+   "group": "daily",
+   "mechanic": "割绳子",
+   "stars": 3,
+   "_how": "喂饭桶's feed (古四 on, the 物品 panel's 饭桶): the thing he chose hung on vines over the 饭桶, a level made each feed from the day's seed (rope-gen.js) and proved solvable before it is shown; alone it plays a sample day (`level` 1–5: tier 0–4 with the elements of that many days)."
+  },
+  {
    "id": "yabao",
    "group": "daily",
    "task": "yabao"

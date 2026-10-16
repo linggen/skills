@@ -122,6 +122,26 @@ export function fantongRecipes(content, state) {
   }));
 }
 
+/* ── The puzzle before a feed (fantong.json `puzzle`; games/fantongcut.js plays it) ──
+   Which day of feeding the next feed falls on (distinct days, 1 on the first), and what that day's
+   puzzle may hold: the seed the level is made from (day, save, feed count — the page and the rules
+   agree on it), the tier (harder every `tier_every` feeds), the elements unlocked so far, and the one
+   unlocked today when the day's first feed is still to come (`must`: that puzzle features it). */
+const dayNoOf = (f, today) => (f.days ?? (f.n ? 1 : 0)) + (f.day === today ? 0 : 1);
+export function puzzleOf(t, state, now) {
+  const P = t.puzzle;
+  if (!P) return null;
+  const f = state.fantong ?? {}, today = dayKey(now), n = f.n ?? 0, day = dayNoOf(f, today);
+  const unlocked = (P.unlock ?? []).filter(x => x.day <= day);
+  const fresh = f.day !== today ? unlocked.find(x => x.day === day)?.el ?? null : null;
+  const lang = state.lang;
+  return {
+    seed: `${state.world}|${state.name ?? ''}|${today}|${n}`, day, tier: Math.min(4, Math.floor(n / Math.max(1, P.tier_every ?? 3))),
+    els: unlocked.map(x => x.el), must: fresh, ...(fresh && P.teach?.[fresh] ? { teach: pick(P.teach[fresh], lang) } : {}),
+    max_misses: P.max_misses ?? 4,
+  };
+}
+
 /* The board's reading: may it eat now, when next, what he can feed. */
 export function fantongBrief(content, state, now) {
   const t = tableOf(content), lang = state.lang;
@@ -139,6 +159,7 @@ export function fantongBrief(content, state, now) {
     limit: { ...(t.limit?.cooldown_min ? { cooldown_min: t.limit.cooldown_min } : {}), ...(t.limit?.per_day ? { per_day: t.limit.per_day, today: state.fantong?.day === dayKey(now) ? state.fantong.today ?? 0 : 0 } : {}) },
     inputs, lingshi: locked ? null : { max: t.lingshi?.max ?? 0, have: state.wealth ?? 0 },
     recipes: fantongRecipes(content, state), fed: state.fantong?.n ?? 0,
+    ...(t.puzzle ? { puzzle: puzzleOf(t, state, now), stars: state.fantong?.stars ?? 0 } : {}),
   };
 }
 
@@ -147,7 +168,7 @@ const ACTIONS = {
   feed: feed,
 };
 
-/* Fantong — `look`, or `feed --id=<item> [--lingshi=n]`. */
+/* Fantong — `look`, or `feed --id=<item> [--lingshi=n] [--stars=n]` (the puzzle's stars, kept, unpaid). */
 export function fantong(state, content, ctx, args = {}) {
   const t = tableOf(content);
   if (!t) return refuse('no-fantong', null);
@@ -179,8 +200,10 @@ function feed(state, content, ctx, args, t) {
   const found = new Set(f.recipes ?? []);
   const discovered = roll.recipe && !found.has(roll.recipe) ? roll.recipe : null;
   if (discovered) found.add(discovered);
+  const stars = Math.max(0, Math.min(3, Math.trunc(Number(args.stars ?? 0)) || 0));
   s.fantong = { n: n + 1, at: now.toISOString(), day: today, today: (f.day === today ? f.today ?? 0 : 0) + 1, recipes: [...found],
-    last: { in: id, out: roll.out, lingshi, grade: roll.grade } };
+    days: dayNoOf(f, today), stars: (f.stars ?? 0) + stars,
+    last: { in: id, out: roll.out, lingshi, grade: roll.grade, stars } };
 
   const out = outBrief(content, s, got[0]), extra = got[1] ? outBrief(content, s, got[1]) : null;
   const ev = roll.event ? (t.events ?? []).find(e => e.id === roll.event) : null;

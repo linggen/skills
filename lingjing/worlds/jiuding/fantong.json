@@ -80,6 +80,23 @@
       }
     }
   ],
+  "puzzle": {
+    "_about": "Feeding is a 割绳子 puzzle (Hanli, 2026-10-16: 「割绳子挺好玩，可以反复出现，不同的割法」): the thing he chose hangs on vines over the 饭桶 and he cuts and steers it into its mouth (games/fantongcut.js; the level made from the seed by games/rope-gen.js and proved solvable before it is shown). What comes out, the cooldown and the pay are as before — the puzzle only stands between the choice and the feed. A miss retries at once; after `max_misses` on one level 「直接喂」 feeds it as before (stars 0). `tier_every`: one step harder every that many feeds (0 … 4). `unlock`: on his n-th day of feeding (distinct days), that element joins the mix — one a day, never all at once; the day's first puzzle features it and says `teach`. Stars (0–3, 灵光 caught on the way) are kept on the save, unpaid.",
+    "max_misses": 4,
+    "tier_every": 3,
+    "unlock": [
+      { "day": 2, "el": "gust" },
+      { "day": 3, "el": "bubble" },
+      { "day": 4, "el": "thorns" },
+      { "day": 5, "el": "regrow" }
+    ],
+    "teach": {
+      "gust": { "zh": "灶口有风：东西落上石台，点一下那团风。", "en": "A draught at the stove mouth: once it rests on the ledge, tap the puff." },
+      "bubble": { "zh": "灵气泡：东西碰到它就飘起来，点一下泡就破。", "en": "A qi bubble: what touches it floats up. Tap it to pop." },
+      "thorns": { "zh": "荆棘：一碰就碎，换个先后，绕开它。", "en": "Thorns: one touch and it breaks. Cut in another order, around them." },
+      "regrow": { "zh": "这根藤断了还会再长，够得着就又缠上。", "en": "This vine grows back, and takes hold again if it can reach." }
+    }
+  },
   "words": {
     "zh": {
       "spit": "「咯嘣」，「咔哒」——吐出来：{name}。",
