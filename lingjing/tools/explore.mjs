@@ -27,6 +27,7 @@ import { look, move, resolve, task, win, VERBS } from '../scripts/rules.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
 import { health } from '../scripts/rules/health.mjs';
 import { atScene } from '../scripts/rules/world.mjs';
+import { earned, stageGate } from '../scripts/rules/gates.mjs';
 
 const DAY = 86400000;
 export const JUAN_ONE = ['00-prologue', '00-waimen', '00-zhuji'];
@@ -169,6 +170,9 @@ function take(content, s0, now0, exit, plan, fight) {
     // A scene's own board game (not a duel) won as the page records it.
     s = { ...s, wins: { ...s.wins, [game.id]: now.toISOString() } };
   }
+  // 阶段任务 (rules/gates.mjs): the routine that fills the layer is the economy's (tools/balance.mjs) — earned here.
+  const gate = stageGate(content, s, sceneOf(content, s)?.id, exit.id);
+  if (gate) { s = earned(content, s, gate); tags.push(`stage:${gate.hui}:${gate.layer}`); }
   let r = resolve(s, content, ctxOf(now), argsFor(s, exit));
   for (let d = 0; d < 3 && r.result.refused === 'needs' && exit.needs?.day_after; d++) {
     now = new Date(now.getTime() + DAY);

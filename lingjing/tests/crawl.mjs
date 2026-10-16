@@ -9,6 +9,7 @@ import { look, move, resolve, VERBS } from '../scripts/rules.mjs';
 import { newState } from '../scripts/state.mjs';
 import { stageCards, stageSlots, wonWayOn } from '../scripts/stage.mjs';
 import { boardsFor, V1_BIRTH, walk } from './prologue.mjs';
+import { earnedFor } from './earn.mjs';
 
 const DAY = 86400000;
 export const JUAN_ONE = ['00-prologue', '00-waimen', '00-zhuji'];
@@ -109,7 +110,8 @@ export function crawlRules(content, { start = new Date('2026-09-29T09:00:00'), c
     for (const exit of sc.exits) {
       let now = t0;
       const forced = [];
-      let s = prepare(content, fresh(s0, now), exit, now, forced, boards);
+      // A 回's stage quest (rules/gates.mjs): the routine's days are the economy's — earned here.
+      let s = earnedFor(content, prepare(content, fresh(s0, now), exit, now, forced, boards), exit.id);
       let r = resolve(s, content, { now, quests: [] }, argsFor(content, s, exit));
       // A day that must pass (the 大比 is tomorrow): the page's clock moves on.
       for (let d = 0; d < 3 && r.result.refused === 'needs' && exit.needs?.day_after; d++) {

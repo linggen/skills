@@ -1,7 +1,7 @@
 // The player's state and the arithmetic over it. Pure: no files, no clock —
 // the caller passes `now`.
 
-export const STATE_VERSION = 9;
+export const STATE_VERSION = 10;
 export const FIRST_WORLD = 'jiuding'; // the world every save before worlds was playing
 
 export function firstChapter(content) {
@@ -451,7 +451,10 @@ const MIGRATIONS = [
   [8, m => { m.ladder_zero = true; }],
   // v9 (2026-10-15, Hanli: 「让游戏修为和故事match」): 练气's 层 ask several times
   // more. Marked, carried by fitWorld (paceLayer): the 层 kept, the bar as full as it was.
-  [9, m => { m.ladder_pace = true; }],
+  [9, m => { m.ladder_pace = 9; }],
+  // v10 (2026-10-16, balance.json, the 阶段任务): 练气's 层 re-derived again. A save marked by v9
+  // keeps that older mark (its bar is read against the oldest ladder it was played on).
+  [10, m => { m.ladder_pace ??= 10; }],
 ];
 
 export function migrate(state, content = null) {
@@ -529,14 +532,16 @@ export function zeroLayer(content, saved) {
   return { ...s, step, progress: step === 0 ? (s.progress ?? 0) : Math.min(s.progress ?? 0, th[step]) };
 }
 
-/* A save from before 练气 was re-derived (marked by v9, 2026-10-15; ladder.json
-   `thresholds_were`): its 层 is never pulled down, and its bar stands as full
+/* A save from before 练气 was re-derived (marked by v9, 2026-10-15, and v10, 2026-10-16: the mark
+   is the version it was older than; ladder.json `thresholds_were` by that version): its 层 is never pulled down, and its bar stands as full
    as it stood — 一层 40/50 is 一层 160/200, 九层圆满 is 九层圆满 still, so a save
    waiting at the cliff can still throw. A tier with no `thresholds_were`, or
    a step that held nothing (零层), is left as it was. */
 export function paceLayer(content, saved) {
   const { ladder_pace, ...s } = saved;
-  const tier = tierOf(content, s.tier), was = tier?.thresholds_were?.[s.step], now = tier?.thresholds?.[s.step];
+  // `thresholds_were` by the version a save was older than (a mark of `true` is v9's, as first written).
+  const from = ladder_pace === true ? 9 : ladder_pace, tier = tierOf(content, s.tier);
+  const was = tier?.thresholds_were?.[from]?.[s.step], now = tier?.thresholds?.[s.step];
   if (!(was > 0) || !(now > 0)) return s;
   return { ...s, progress: Math.min(now, Math.round((s.progress ?? 0) * now / was)) };
 }

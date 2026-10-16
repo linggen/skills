@@ -329,7 +329,7 @@ button.pl:hover { background: var(--ling-soft); }
 .tag.t-once { color: var(--seal); }
 .tag.t-day, .tag.t-week { color: #2f7f86; }
 .tag.t-ling { color: #a5712a; }
-.tag.t-tale, .tag.t-chance { color: var(--ling); }
+.tag.t-tale, .tag.t-chance, .tag.t-stage { color: var(--ling); }
 .tag.t-visitor { color: rgb(176 128 32); }
 .act.skip { font-size: 12px; }
 @container (max-width: 420px) {

@@ -6,7 +6,7 @@
 //      one a day; won then it pays in full; put off, it comes back another day;
 //   4. 「对游戏进展要确保没有影响」 — every 卷一 scene and exit is reached skipping every board
 //      (tests/playtest.test.mjs), a grade-gated way on opens for a skipped board, 修为 keeps the
-//      book's pace (tests/xiuwei-pace.test.mjs).
+//      book's pace (tests/balance.test.mjs).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';

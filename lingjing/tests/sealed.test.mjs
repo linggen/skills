@@ -19,6 +19,7 @@ import { plateHtml } from '../scripts/plate.js';
 import { walk, TO_OPEN } from './prologue.mjs';
 import * as descend from '../scripts/games/descend.js';
 import * as gather from '../scripts/games/gather.js';
+import { earnedFor } from './earn.mjs';
 
 const content = loadContent();
 const CH = content.chapters['00-waimen'];
@@ -29,7 +30,7 @@ const fresh = (s, now = DAY1) => ({ ...s, stamina: 100, stamina_at: now.toISOStr
 const opened = () => fresh(walk(newState(content, 'zh', DAY1), TO_OPEN, content, DAY1));
 const won = (s, id) => ({ ...s, wins: { ...s.wins, [id]: DAY1.toISOString() } });
 function must(fn, s, args, now = DAY1) {
-  const out = fn(s, content, ctx(now), args);
+  const out = fn(fn === resolve ? earnedFor(content, s, args?.exit) : s, content, ctx(now), args);
   assert.equal(out.result.ok, true, `${fn.name} ${JSON.stringify(args)} at ${s.scene}@${s.place}: ${JSON.stringify(out.result).slice(0, 300)}`);
   return out.state ?? s;
 }
@@ -116,7 +117,8 @@ test('the gate: only the rooms open to him; a way out is refused in the instance
   for (let k = 0; k < 6 && !(s.hunted?.['mijing-xiongya'] >= 1); k += 1) {
     const out = fightOut(fresh(s), look(fresh(s), content, ctx()).place.encounter.game.id);
     s = out.state;
-    if (out.result.outcome === 'won') assert.ok(out.result.paid?.progress > 0, 'a won fight shows its 修为');
+    // At 二层圆满 (the 秘境's door waits on it, rules/gates.mjs) a fight's 修为 is paid as 灵石: a gain either way.
+    if (out.result.outcome === 'won') assert.ok(out.result.paid?.progress > 0 || out.result.paid?.converted?.wealth > 0, 'a won fight shows its gain');
   }
   assert.equal(s.hunted['mijing-xiongya'], 1);
   assert.match(move(fresh(s), content, ctx(), { place: 'mijing-duanya' }).result.say, /爬下去/, 'the board still asks');

@@ -111,7 +111,7 @@ export const WORDS = {
     hp: '气血', mana: '灵力', deck: '牌库', hand: '手牌', power: '主灵根一击', end: '结束回合',
     it: '它', its: '它', itObj: '它',
     yours: '你的阵前', theirs: '它的阵前', empty: '空', taunt: '护主', arriving: '刚到',
-    struck: '已出手', spoils: '所得', spoilsCard: '新得一张牌，往后可带进斗法：', spoilsBag: '收进储物袋：', spoilsClose: '收起', spoilsSpent: '用去：', spentTitle: '用去', xw: '修为', ls: '灵石', quit: '认输', won: '胜', passed: '试过了', lost: '败', withdrew: '它力竭遁走',
+    struck: '已出手', spoils: '所得', spoilsTired: '今日斗得多了，修为渐薄，多的折作灵石。', spoilsCard: '新得一张牌，往后可带进斗法：', spoilsBag: '收进储物袋：', spoilsClose: '收起', spoilsSpent: '用去：', spentTitle: '用去', xw: '修为', ls: '灵石', quit: '认输', won: '胜', passed: '试过了', lost: '败', withdrew: '它力竭遁走',
     wonSays: ['它伏低了身子，退进草里去了。', '它垂下头，慢慢走开了。', '它喘了几口粗气，掉头走了。', '它服了，退开三步，不再上前。', '它看了你一眼，钻进林子去了。',
       '它低低叫了一声，转身走了。', '它趴在地上，不动了。', '它夹起尾巴，溜了。', '它收了凶相，退到一边去了。', '它一瘸一拐地走远了。',
       '它不再看你，自顾自走了。', '风一过，它已经不见了。', '它往后一缩，没进山影里。', '它甩甩头，退回它来的地方。', '它伏在原地，喘着气，认了。',
@@ -154,7 +154,7 @@ export const WORDS = {
     it: 'it', its: 'its', itObj: 'it',
     hp: 'Life', mana: 'Force', deck: 'Deck', hand: 'Hand', power: 'Root Strike', end: 'End turn',
     yours: 'Your rank', theirs: 'Its rank', empty: 'empty', taunt: 'Guard', arriving: 'just arrived',
-    struck: 'has struck', spoils: 'Spoils', spoilsCard: 'A new card, yours to take into a fight:', spoilsBag: 'Into the pouch: ', spoilsClose: 'Put away', spoilsSpent: 'Used up: ', spentTitle: 'Used up', xw: 'Cultivation', ls: 'Stones', quit: 'Yield', won: 'Won', passed: 'Passed', lost: 'Lost', withdrew: 'It withdrew',
+    struck: 'has struck', spoils: 'Spoils', spoilsTired: 'Many fights today: less cultivation from each, the rest paid as spirit stones.', spoilsCard: 'A new card, yours to take into a fight:', spoilsBag: 'Into the pouch: ', spoilsClose: 'Put away', spoilsSpent: 'Used up: ', spentTitle: 'Used up', xw: 'Cultivation', ls: 'Stones', quit: 'Yield', won: 'Won', passed: 'Passed', lost: 'Lost', withdrew: 'It withdrew',
     wonSays: ['It drops low and backs into the grass.', 'It lowers its head and walks slowly off.', 'It blows a few hard breaths and turns away.', 'It gives in, backs three steps, and comes no closer.', 'It gives you one look and slips into the trees.',
       'It makes a low sound and turns away.', 'It lies down on the ground and stays there.', 'Tail tucked, it slinks off.', 'Its fury gone, it moves aside.', 'It limps away into the distance.',
       'It stops looking at you and goes its own way.', 'A gust passes, and it is gone.', 'It shrinks back and melts into the mountain\'s shadow.', 'It shakes its head and goes back where it came from.', 'It crouches where it is, panting, and yields.',
@@ -471,6 +471,7 @@ export function spoilsHtml(spoils, ctx) {
   return `<div class="card spoils"><div class="cardtitle">${esc(gained ? w.spoils : w.spentTitle)}</div>
     ${pays ? `<div class="spoilpays">${esc(pays)}</div>` : ''}
     ${spoils.line ? `<div class="small">${esc(spoils.line)}</div>` : ''}
+    ${p.farm && p.farm.share < 1 ? `<div class="small dim">${esc(w.spoilsTired)}</div>` : ''}
     ${faces ? `<div class="small dim">${esc(w.spoilsCard)}</div><div class="spoilfaces">${faces}</div>` : ''}
     ${things ? `<div class="small">${esc(w.spoilsBag)}${things}</div>` : ''}
     ${spent ? `<div class="small dim">${esc(w.spoilsSpent)}${spent}</div>` : ''}

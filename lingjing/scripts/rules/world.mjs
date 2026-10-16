@@ -347,13 +347,14 @@ const caughtBy = (state, creature) => Boolean(creature.catch) && state.tasks?.[c
 const poolOf = (content, place) => (place?.has?.pool ? content.places[place.province]?.pools?.[place.has.pool] ?? null : null);
 const huntKey = id => `hunt:${id}`;
 /* A beast beaten here does not stand up again at once (Hanli, 2026-10-15: 「野猪这个也是, 击败了
-   出来还在」): the stretch is quiet for the pool's `rest` minutes (30 unsaid) after a win, then the
-   next one comes. A loss or a beast run dry draws the next at once, as before. */
+   出来还在」): the stretch is quiet for the pool's `rest` minutes (else balance.json
+   `cooldowns.pool_rest_min`) after a win, then the next one comes. A loss or a beast run dry draws
+   the next at once, as before. */
 const POOL_REST_MIN = 30;
 function poolResting(content, state, place, now) {
   const rec = state.duels?.[huntKey(place.id)];
   if (!rec?.at || rec.outcome !== 'won' || rec.day !== dayKey(now)) return false;
-  const rest = (poolOf(content, place)?.rest ?? POOL_REST_MIN) * 60000;
+  const rest = (poolOf(content, place)?.rest ?? content.balance?.cooldowns?.pool_rest_min ?? POOL_REST_MIN) * 60000;
   return now.getTime() - Date.parse(rec.at) < rest;
 }
 /* 不打重复的怪 (Hanli, 2026-10-15: 「要确保有足够的怪……不要打重复的怪」) — creatures.json

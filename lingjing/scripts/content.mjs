@@ -143,7 +143,7 @@ export const codexFiles = content => ({ codex: content.codex, people: content.pe
 
 export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
   const at = file => readJson(path.join(dir, file));
-  return {
+  return withBalance({
     dir,
     world: at('world.json'),
     names: at('names.json'),
@@ -186,7 +186,26 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     chapters: playedChapters(loadChapters(path.join(dir, 'chapters')), loadBook(path.basename(dir))),
     // The book the world is read from (story/<id>/book.json): its 卷 and 回 name the game's parts (rules/hui.mjs).
     book: loadBook(path.basename(dir)),
-  };
+    // One model for every number (design.md § Pacing and the economy): folded in by withBalance.
+    balance: fs.existsSync(path.join(dir, 'balance.json')) ? readJson(path.join(dir, 'balance.json')) : null,
+  });
+}
+
+/* One model for every number (Hanli, 2026-10-15): balance.json declares the 层 thresholds, the pay
+   tables, the fight-to-灵石 rate and the routine's cooldowns, and they land where the rules read
+   them — each tier's `thresholds`, rewards `tables` and `xiuwei_to_lingshi`, the ladder's
+   `overflow_stretch`, every rerun's `every_h`, the 饭桶's `limit.cooldown_min`. A world with no
+   balance.json keeps its own files' numbers. tools/balance.mjs simulates the players on it. */
+export function withBalance(content) {
+  const b = content.balance;
+  if (!b) return content;
+  const c = b.cooldowns ?? {};
+  const ladder = { ...content.ladder, ...(b.overflow_stretch != null ? { overflow_stretch: b.overflow_stretch } : {}),
+    tiers: content.ladder.tiers.map(t => (b.layers?.[t.id] ? { ...t, thresholds: [...b.layers[t.id]] } : t)) };
+  const rewards = { ...content.rewards, ...(b.pay ? { tables: structuredClone(b.pay) } : {}), ...(b.convert ? { xiuwei_to_lingshi: structuredClone(b.convert) } : {}) };
+  if (c.rerun_h != null) for (const ch of Object.values(content.chapters ?? {})) for (const beat of ch.beats ?? []) if (beat.sealed?.rerun) beat.sealed.rerun.every_h = c.rerun_h;
+  const fantong = content.fantong && c.fantong_min != null ? { ...content.fantong, limit: { ...content.fantong.limit, cooldown_min: c.fantong_min } } : content.fantong;
+  return { ...content, ladder, rewards, fantong };
 }
 
 /* The chapters as played: each 今 interlude spliced in where it stands
@@ -992,7 +1011,7 @@ function lintCaps(content, bad) {
   for (const [id, e] of Object.entries(caps.hui ?? {})) {
     if (!huiOf(content, id)) bad(where, `${id} is not a 回 of the book`);
     if (!layerOk(e) || (e.story && !layerOk(e.story))) { bad(where, `${id}: a tier the ladder has and a layer of it`); continue; }
-    if (e.story && rankOf(content, e.story.tier, stepOfLayer(content, e.story.tier, e.story.layer)) < rankOf(content, e.tier, stepOfLayer(content, e.tier, e.layer))) bad(where, `${id}: story under the player's own reach`);
+    if (e.story && rankOf(content, e.story.tier, stepOfLayer(content, e.story.tier, e.story.layer)) < rankOf(content, e.tier, stepOfLayer(content, e.tier, e.layer))) bad(where, `${id}: story under the player's own reach`);    for (const g of e.gates ?? []) lintGate(content, id, e, g, bad);
   }
   const first = content.ladder.tiers[0].id;
   for (const ch of Object.values(content.chapters ?? {})) for (const sc of Object.values(ch.scenes ?? {})) {
@@ -1005,6 +1024,28 @@ function lintCaps(content, bad) {
       if (into && !storyAllows(content, at, into.id, 0)) bad(`scene ${sc.id} exit ${e.id}`, `breaks through past the cap of ${sc.hui}`);
     }
   }
+}
+
+/* A 阶段任务 (rules/gates.mjs): a scene of that 回 and ways it has, a layer the tier has, no higher
+   than the 回's story reaches, and below any rise it holds back; `stage.refuse` says it in both. */
+function lintGate(content, hui, cap, g, bad) {
+  const where = `ladder caps ${hui} gate ${g.scene}`, tier = g.tier ?? content.ladder.tiers[0].id;
+  const sc = Object.values(content.chapters ?? {}).map(ch => ch.scenes?.[g.scene]).find(Boolean);
+  if (!sc || sc.hui !== hui) return bad(where, `no scene ${g.scene} in ${hui}`);
+  // Never where he cannot walk away to earn it: inside a key beat's lock (after its entry) or a corridor chapter.
+  const ch = Object.values(content.chapters ?? {}).find(c => c.scenes?.[g.scene]);
+  if (ch.corridor || (ch.beats ?? []).some(b => b.scenes.indexOf(g.scene) > 0)) bad(where, 'inside a locked beat: he could not leave to earn it');
+  for (const x of g.exits ?? []) if (!sc.exits.some(e => e.id === x)) bad(where, `no exit ${x}`);
+  if (!(g.exits ?? []).length) bad(where, 'no exits');
+  const t = content.ladder.tiers.find(x => x.id === tier), step = stepOfLayer(content, tier, g.layer);
+  if (!t || !(step >= 0 && step < t.thresholds.length)) return bad(where, `layer ${g.layer} of ${tier}`);
+  const story = cap.story ?? cap;
+  if (rankOf(content, tier, step) > rankOf(content, story.tier, stepOfLayer(content, story.tier, story.layer))) bad(where, 'past the 回\'s story reach');
+  for (const e of sc.exits.filter(x => (g.exits ?? []).includes(x.id) && x.rise != null)) {
+    const layer = typeof e.rise === 'object' ? e.rise.layer : e.rise;
+    if (tier === content.ladder.tiers[0].id && layer <= g.layer) bad(where, `exit ${e.id} rises to ${layer}, not past the gate's ${g.layer}`);
+  }
+  if (!content.ladder.caps?.stage?.refuse?.zh || !content.ladder.caps?.stage?.refuse?.en) bad('ladder caps', 'stage.refuse in zh and en');
 }
 
 /* 渡劫's odds (rules/breakthrough.mjs): a base for every realm a cauldron

@@ -15,6 +15,7 @@ import { stageSlots } from '../scripts/stage.mjs';
 import { throughJin, TO_OPEN, walk } from './prologue.mjs';
 import { huiLabel, huiOf } from '../scripts/rules/hui.mjs';
 import { bookNo } from './book-num.mjs';
+import { earnedFor } from './earn.mjs';
 
 const content = loadContent();
 const CH = content.chapters['00-waimen'];
@@ -22,7 +23,7 @@ const DAY1 = new Date('2026-09-29T09:00:00'), DAY2 = new Date('2026-09-30T10:00:
 const ctx = (now = DAY1) => ({ now, quests: [] });
 
 function must(fn, s, args, now = DAY1) {
-  const out = fn(s, content, ctx(now), args);
+  const out = fn(fn === resolve ? earnedFor(content, s, args?.exit) : s, content, ctx(now), args);
   assert.equal(out.result.ok, true, `${fn.name} ${JSON.stringify(args)} at ${s.scene}@${s.place}: ${JSON.stringify(out.result).slice(0, 300)}`);
   return out.state ?? s;
 }
@@ -450,9 +451,9 @@ test('息壤 keeps his 修为 through the jump, and its moment is the five doors
   const { doorsHtml } = await import('../scripts/doors.js');
   const { MAIN, CARD_KINDS, PAGE_OWNS } = await import('../scripts/stage.mjs');
   const out = resolve(won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 2, progress: 33 }, 'mijing-zou'), content, ctx(), { exit: 'swallow' });
-  // The story's floor (Hanli, 2026-10-15): short of 二层, the passage fills it first — his 33 and the rest —
-  // and he breaks through on a full bar; what was over the mark would go with him (none here).
-  assert.deepEqual([out.state.step, out.state.progress, out.result.rose.filled], [4, 0, content.ladder.tiers[0].thresholds[2] - 33], 'the 修为 counted in the fill');
+  // No story floor (Hanli, 2026-10-15, design.md § Pacing): the book's jump steps him and tops nothing up — in play he
+  // stands here full, the 秘境's door waits on 二层圆满 (rules/gates.mjs); only what was over the mark goes with him.
+  assert.deepEqual([out.state.step, out.state.progress, 'filled' in out.result.rose], [4, 0, false], 'nothing filled by the story');
   const over = resolve(won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 2, progress: content.ladder.tiers[0].thresholds[2] + 40 }, 'mijing-zou'), content, ctx(), { exit: 'swallow' });
   assert.deepEqual([over.state.step, over.state.progress, over.result.rose.carried], [4, 40, 40], 'what was over the mark goes with him');
   const capped = resolve(won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 3, progress: 79 }, 'mijing-zou'), content, ctx(), { exit: 'swallow' }).state;

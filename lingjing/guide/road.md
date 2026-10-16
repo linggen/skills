@@ -67,6 +67,11 @@
   stand at their tier's peak — send them back to real life and the
   province's days. Taken: Show the tribulation, speak the beat, say the new
   tier by its word.
+- **The stage quest (阶段任务).** A way on refuses `stage` until the realm
+  stands at the layer it names full (`stage.step`, `stage.now`): say its
+  `say` once, in the world, and point to where 修为 is earned — the day's
+  功课, the 秘境 rerun, the pool's beasts (Look's `work`). Never fill it, never
+  promise the story will; the 事 book shows its progress.
 - **Real life belongs to Yinyue, outside the game** — the weather, reminders,
   files, the body. Say so in one line and turn back to the scene.
 

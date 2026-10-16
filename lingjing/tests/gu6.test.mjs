@@ -18,13 +18,14 @@ import * as sneeze from '../scripts/games/sneeze.js';
 import * as zqt from '../scripts/games/zhuqingting.js';
 import * as letter from '../scripts/games/letter.js';
 import * as kaipian from '../scripts/games/kaipian.js';
+import { earnedFor } from './earn.mjs';
 
 const content = loadContent();
 const CH = content.chapters['00-waimen'];
 const NOW = new Date('2026-10-15T10:00:00');
 const ctx = () => ({ now: NOW, quests: [] });
 const must = (fn, s, args) => {
-  const out = fn(s, content, ctx(), args);
+  const out = fn(fn === resolve ? earnedFor(content, s, args?.exit) : s, content, ctx(), args);
   assert.equal(out.result.ok, true, `${fn.name} ${JSON.stringify(args)} at ${s.scene}: ${JSON.stringify(out.result).slice(0, 300)}`);
   return out.state ?? s;
 };

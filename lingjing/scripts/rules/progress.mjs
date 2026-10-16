@@ -11,7 +11,8 @@
 // scene is taken and the rest tried again). Nothing is forced: a way that
 // cannot be met by play is not taken, and when no way on can be, it stops and
 // says where and why. The save it ends with is the save a player would hold —
-// bag, cards, marks, 修为, 灵石 gained on the way.
+// bag, cards, marks, 修为, 灵石 gained on the way — and, at a 回's stage quest, the layer filled as
+// its routine would fill it (rules/gates.mjs earned; the days are tools/balance.mjs's).
 //
 // Targets: a scene id (wm-mijing); a 回 (h07, j04, an absorbed h03; 古五, 今二,
 // 第五回 — its first scene as played); a sealed instance's name or beat (秘境 —
@@ -24,6 +25,7 @@ import { VERBS } from './verbs.mjs';
 import { allPlaces, encounterOf, placeOf } from './world.mjs';
 import { riddleOf } from './core.mjs';
 import { tellOf } from './tell.mjs';
+import { earned, stageGate } from './gates.mjs';
 
 const DAY = 86_400_000;
 /* The birthday a way on that reads the roots is taken with (tests/prologue.mjs V1_BIRTH). */
@@ -227,6 +229,10 @@ function take(content, r, s, exit, policy) {
   for (const at of [exit.needs?.seen ?? []].flat()) s = r.call('look', s, { at }).state ?? s;
   const game = exit.game ?? null;
   if (game?.kind === 'duel' && !s.wins?.[game.id]) s = r.fight(s, game);
+  // 阶段任务 (rules/gates.mjs): the way on waits on the layer full — the days of the routine that
+  // fill it are the economy's (tools/balance.mjs), not played here: the realm stands there, earned.
+  const gate = stageGate(content, s, sc?.id, exit.id);
+  if (gate) { s = earned(content, s, gate); r.log.push(`earned ${gate.hui} ${gate.tier}:${gate.layer}`); }
   let out = r.call('resolve', s, argsFor(content, s, exit, r.now));
   // A day that must pass (the 大比 is tomorrow): the clock moves on, as `shift` does.
   for (let d = 0; d < 3 && out.result.refused === 'needs' && exit.needs?.day_after; d += 1) {

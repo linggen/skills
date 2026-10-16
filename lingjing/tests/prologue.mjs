@@ -4,6 +4,7 @@
 // scene rewritten is one edit here, not one in every test file.
 import assert from 'node:assert/strict';
 import { resolve, task, VERBS, win } from '../scripts/rules.mjs';
+import { earnedFor } from './earn.mjs';
 
 /* The walk's birthday (named for v1, whose 木 水 火 土 it read under the retired
    rule): now 五行杂灵根 like every birthday, 木 and 水 tied to lead. */
@@ -173,6 +174,8 @@ export function walk(state, steps, content, now) {
     if (verb === 'won') { s = { ...s, wins: { ...s.wins, [args.id]: now.toISOString() } }; continue; }
     if (verb === 'played') { s = playScene(s, content, now); continue; }
     if (verb === 'resolve') for (const [v, a] of boardsFor(s, content, args.exit)) s = FNS[v](s, content, { now, quests: [] }, a).state ?? s;
+    // A 回's stage quest (rules/gates.mjs): earned, as its routine would (tests/earn.mjs).
+    if (verb === 'resolve') s = earnedFor(content, s, args.exit);
     const out = FNS[verb](s, content, { now, quests: [] }, args);
     assert.equal(out.result.ok, true, `${verb} ${JSON.stringify(args)} at ${s.scene}: ${JSON.stringify(out.result)}`);
     s = out.state ?? s;

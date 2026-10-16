@@ -32,10 +32,13 @@ export function rerunsOf(content) {
 }
 const rerunById = (content, id) => rerunsOf(content).find(r => r.beat.id === id) ?? null;
 
-/* The rerun this save may take: its beat behind him, his chapter still that one. */
+/* The rerun this save may take: its beat behind him, his chapter still that one — or one its `also`
+   names (Hanli, 2026-10-15: a 秘境 rerun is a slot of every day's routine; 古七/古八 are still the
+   观's, next door to the same 秘境 — design.md § Pacing). */
+const openIn = (r, chapter) => r.chapter === chapter || (r.rerun.also ?? []).includes(chapter);
 export function rerunHere(content, state) {
   if (!state?.chapter || (state.ended ?? []).includes(state.chapter)) return null;
-  return rerunsOf(content).find(r => r.chapter === state.chapter && passed(content, state, r.beat.scenes.at(-1))) ?? null;
+  return rerunsOf(content).find(r => openIn(r, state.chapter) && (r.chapter !== state.chapter || passed(content, state, r.beat.scenes.at(-1)))) ?? null;
 }
 
 /* Milliseconds until the rooms loosen again: counted from the last run's end (the story's too). */
@@ -285,15 +288,15 @@ export function rerunBrief(content, state, now) {
   return { open: true, id: r.beat.id, say: pick(r.rerun.open, lang) ?? null, door, here: state.place === r.rerun.door, runs: state.reruns?.[r.beat.id]?.n ?? 0 };
 }
 
-/* What one run is worth on average, read from the data, for the 修为 model (tools/xiuwei-model.mjs)
-   and the economy: beasts per run, the 修为 they pay below 圆满 (haunt table), the finds. */
+/* What one run is worth on average, read from the data,
+   for the economy (tools/balance.mjs): beasts per run, the 修为 they pay below 圆满 (haunt table), the finds. */
 export function runsPay(content) {
   const haunt = content.rewards.tables.haunt;
   return rerunsOf(content).map(r => {
     const mean = ([lo, hi] = [0, 0]) => (lo + hi) / 2;
     const beasts = Object.values(r.rerun.spawns ?? {}).reduce((t, sp) => t + mean(sp.n), 0);
     const finds = Object.keys(r.rerun.finds ?? {}).length;
-    return { beat: r.beat.id, chapter: r.chapter, every_h: r.rerun.every_h, beasts, progress: beasts * haunt.progress, wealth: beasts * haunt.wealth, finds };
+    return { beat: r.beat.id, chapter: r.chapter, also: r.rerun.also ?? [], last: r.beat.scenes.at(-1), every_h: r.rerun.every_h, beasts, progress: beasts * haunt.progress, wealth: beasts * haunt.wealth, finds };
   });
 }
 

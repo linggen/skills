@@ -100,15 +100,16 @@
           "wm-kaikai": { "zh": "守在土里，等息壤长成", "en": "Stay in the soil until it has grown in" },
           "wm-chu": { "zh": "等石门再开，走出秘境", "en": "Wait for the stone door and walk out" }
         },
-        "_rerun": "刷副本 (Hanli, 2026-10-15: the 秘境 again, its outer rooms only): once the beat is behind him, and while his chapter is still this one, `rooms` (never the story's inner rooms) open again `every_h` hours after the last run ended (the story's run starts the clock; a save with no record finds them open). Entered from `door` (rules/rerun.mjs, the verb `rerun enter`) — the road to it opens while they do; inside it is this same sealed mode (errands, 令, 机缘 frozen; refused with `say`), `roads` the ways between the rooms, `goal` the 事 book's line. Each run is rolled from its own seed: `spawns` per room (`n` beasts from `pool`, one in `elite.one_in` an elite with `elite.decks`' harder deck), `finds` (the 拾遗 board `board` played in that room pays one find drawn by weight; one run in `cache.one_in` hides a cache there, found on a `cache.grade` play), and every beast won drops from `drops` (rewards.json drop_tables). Fights pay the haunt table (under the 回's cap; at 圆满 as 灵石, rewards.json xiuwei_to_lingshi). Leaving (`rerun leave`), or `lasts_min` gone by with no fight open, ends the run: he is set back at the chapter map's home with `back`. Nothing in rules names the 秘境; a later 秘境 or the 大比 declares the same.",
+        "_rerun": "刷副本 (Hanli, 2026-10-15: the 秘境 again, its outer rooms only): once the beat is behind him, and while his chapter is still this one (or one `also` names), `rooms` (never the story's inner rooms) open again `every_h` hours after the last run ended (the story's run starts the clock; a save with no record finds them open). Entered from `door` (rules/rerun.mjs, the verb `rerun enter`) — the road to it opens while they do; inside it is this same sealed mode (errands, 令, 机缘 frozen; refused with `say`), `roads` the ways between the rooms, `goal` the 事 book's line. Each run is rolled from its own seed: `spawns` per room (`n` beasts from `pool`, one in `elite.one_in` an elite with `elite.decks`' harder deck), `finds` (the 拾遗 board `board` played in that room pays one find drawn by weight; one run in `cache.one_in` hides a cache there, found on a `cache.grade` play), and every beast won drops from `drops` (rewards.json drop_tables). Fights pay the haunt table (under the 回's cap; at 圆满 as 灵石, rewards.json xiuwei_to_lingshi). Leaving (`rerun leave`), or `lasts_min` gone by with no fight open, ends the run: he is set back at the chapter map's home with `back`. Nothing in rules names the 秘境; a later 秘境 or the 大比 declares the same.",
         "rerun": {
           "label": { "zh": "沉鼎秘境 · 外圈", "en": "The Sunken Cauldron realm · Outer ring" },
           "rooms": ["mijing-kou", "mijing-xiongya", "mijing-anhe"],
           "home": "mijing-kou",
           "door": "shimen",
           "roads": { "mijing-kou": ["mijing-xiongya"], "mijing-xiongya": ["mijing-kou", "mijing-anhe"], "mijing-anhe": ["mijing-xiongya"] },
-          "every_h": 3,
           "lasts_min": 60,
+          "_also": "Open on in these chapters too (Hanli, 2026-10-15: the rerun is a daily routine slot; 古七/古八 are the same 观, the 秘境 next door). The cooldown is balance.json's (`cooldowns.rerun_h`).",
+          "also": ["00-zhuji"],
           "open": { "zh": "秘境外圈的裂缝又松了。", "en": "The cracks in the realm's outer ring have loosened again." },
           "shut": { "zh": "秘境外圈的裂缝合着，过些时辰才松。", "en": "The cracks in the outer ring are shut. They loosen again in a while." },
           "say": { "zh": "人在秘境外圈，外头的事出去再说。", "en": "You are in the realm's outer ring. What waits outside waits." },

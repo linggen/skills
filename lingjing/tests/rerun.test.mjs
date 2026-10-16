@@ -356,7 +356,7 @@ test('修为 at 圆满 is 灵石 (Hanli: 「圆满之后走剧情到下一个阶
   assert.equal(out.state.progress, threshold(content, out.state));
 });
 
-test('the 修为 model reads a run\'s worth from the data (tools/xiuwei-model.mjs runsPay)', () => {
+test('the economy reads a run\'s worth from the data (rules/rerun.mjs runsPay, tools/balance.mjs)', () => {
   const [r] = runsPay(content);
   assert.equal(r.beat, BEAT.id);
   assert.equal(r.every_h, 3);

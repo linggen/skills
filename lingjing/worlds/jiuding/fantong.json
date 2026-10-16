@@ -3,8 +3,7 @@
   "_about": "喂饭桶 — free play (Hanli, 2026-10-15): once he holds the 饭桶 (`needs`, the 小铜炉 古四 grants at wm-danlu), he feeds it one thing at a time from the 物品 panel and it spits one thing out. The rules roll it (rules/fantong.mjs, seeded by the day, the save's feed count and what went in); the page only shows. A thing that goes in is gone; what comes out goes into the pouch (待取 when full). Every output is an items.json row with a name and a `hint` — the one line of small print on it or its wrapper, never its effect (Hanli, 2026-10-06). The book's 饭桶 (古四, 古七): 喂凡物，多半出凡物; 灵石 is 「一口正经饭」; the 方子 say which pill, never how many 纹.",
   "needs": { "item": "danlu" },
   "limit": {
-    "_about": "`cooldown_min`: after a feed, the bucket is full that long (Hanli, 2026-10-15: one feed, then an hour). `per_day`: at most that many feeds a local day. Either, both, or neither; the refusal says when the next feed is possible.",
-    "cooldown_min": 60
+    "_about": "`cooldown_min`: after a feed, the bucket is full that long (Hanli, 2026-10-15: one feed, then an hour). `per_day`: at most that many feeds a local day. Either, both, or neither; the refusal says when the next feed is possible. The cooldown is balance.json's (`cooldowns.fantong_min`)."
   },
   "never": {
     "_about": "What never goes in, whatever the bag holds: these kinds (a key, a scroll — 《吐纳经》 is hers — an artifact of hers) and these things (爷爷的弓, 爹's). Story things, a key the chapter or an errand still needs, and what he wears are refused by the rules anyway (pouch.mjs freeSlot). What the story still reads from the bag goes here too (2026-10-15): 鼎苔, the 筑基丹's 主药 (古五 → 古八); every realm's breakthrough pill (ladder.json breakthrough.pill.items); the five 天材地宝 a 本命法宝 is refined with (items.json effect.core). Ordinary gear (灰袍) stays feedable.",

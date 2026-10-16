@@ -11,6 +11,7 @@ import { newState, stepName, threshold } from '../scripts/state.mjs';
 import { look, resolve } from '../scripts/rules.mjs';
 import { pay } from '../scripts/rules/core.mjs';
 import { capOf } from '../scripts/rules/cap.mjs';
+import { earnedFor } from './earn.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-10-05T12:00:00');
@@ -35,7 +36,7 @@ test('every 古 回 declares its cap, as the book\'s realm line stands', () => {
     h05: ['qi1', 'qi2'], // 古四: the 小周天 → 一层, held through 九月; 十月廿五 二层 by the story (wm-diyilu)
     h07: ['qi2', 'qi4'], // 古五: 二层, 息壤 → 四层
     h08: ['qi4', null], // 古六: 四层, 大比 on 四层
-    h11: ['qi4', 'qi7'], // 古七 (its first half since 2026-10-07): 四层, 年三–年五 → 七层
+    h11: ['qi6', 'qi7'], // 古七 (its first half since 2026-10-07): 五层 and 六层 ground behind its stage quests (2026-10-16), 年五's autumn → 七层
     h09: ['qi7', 'foundation1'], // 古八: 七层, the years after → 九层圆满, the cliff → 筑基
     h10: ['foundation1', null], // 古九: 筑基小成
   });
@@ -70,7 +71,7 @@ test('古三\'s gate scene: 零层 only — 一层 is 古四\'s 小周天', () =
 
 test('古四\'s close lifts him to 二层 (十月廿五, by the story); 古五 grinds no higher until 息壤 carries him to 四层', () => {
   const s0 = at('00-waimen', 'wm-diyilu', 'chaifang', ['00-prologue']);
-  const r = resolve(s0, content, ctx, { exit: 'save' });
+  const r = resolve(earnedFor(content, s0, 'save'), content, ctx, { exit: 'save' });
   assert.equal(r.result.ok, true, JSON.stringify(r.result));
   let s = r.state;
   assert.equal(named(s), '练气二层', 'lifted, not ground');
@@ -90,7 +91,8 @@ test('古四\'s close lifts him to 二层 (十月廿五, by the story); 古五 g
 test('古七: 四层 until the year — the seasons lift him to 七层, 古八\'s to 九层圆满, the cliff is the story\'s breakthrough', () => {
   const s = at('00-zhuji', '09-year', 'yaoyuan', ['00-prologue', '00-waimen'], { step: 4 });
   grind(s);
-  assert.equal(named(s), '练气四层', 'the five years are the story\'s, not a grind');
+  // Since 2026-10-16 古七 grinds 五层 and 六层 (rules/gates.mjs: each rise waits on the layer below it full); 七层 stays the story's.
+  assert.equal(named(s).replace('圆满', ''), '练气六层', 'ground to 六层, never to 七层');
   const cap = capOf(content, s);
   assert.ok(cap.story > cap.grind, 'the 回\'s story reaches past what grinding may');
   // 古八 (09-dabi, the second half since 2026-10-07): 七层 by the story, and grinding holds there.

@@ -302,7 +302,8 @@ export function duel(state, content, ctx, args) {
   const card = pays ? winCard(content, s, creature, ctx.now) : null;
   if (card) dropped.push(card);
   const t = content.rewards.tables.haunt;
-  const paid = haunt && pays ? pay(content, s, ctx, { table: 'haunt', progress: t.progress, wealth: t.wealth }) : null;
+  // A pool's or a rerun's beast (`hunt`) is farmed: the day's first wins pay full 修为, then less (core.mjs farmShare).
+  const paid = haunt && pays ? pay(content, s, ctx, { table: 'haunt', progress: t.progress, wealth: t.wealth, ...(hunt ? { farm: true } : {}) }) : null;
   const full = storedLine(s, dropped);
   return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, ...(spent.length ? { spent } : {}), you: played.you, foe: played.foe, turns: played.turn, ...(dropped.length ? { dropped } : {}), ...(firsts.first_met ? { first_met: true } : {}), ...(firsts.first_win ? { first_win: true } : {}), ...(hunt ? { tally: poolTally(content, s, placeOf(content, game.hunt), ctx.now) } : {}), ...(full ? { pouch_full: full } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
 }

@@ -22,13 +22,14 @@ import { GRID } from '../scripts/games/yubu.js';
 import { leafX, SUI } from '../scripts/games/leaf.js';
 import { HEAVE, PINK } from '../scripts/games/reed.js';
 import { windOf } from '../scripts/games/wind.js';
+import { earnedFor } from './earn.mjs';
 
 const content = loadContent();
 const CH = content.chapters['00-zhuji'];
 const NOW = new Date('2026-10-15T10:00:00');
 const ctx = () => ({ now: NOW, quests: [] });
 const must = (fn, s, args) => {
-  const out = fn(s, content, ctx(), args);
+  const out = fn(fn === resolve ? earnedFor(content, s, args?.exit) : s, content, ctx(), args);
   assert.equal(out.result.ok, true, `${fn.name} ${JSON.stringify(args)} at ${s.scene}: ${JSON.stringify(out.result).slice(0, 300)}`);
   return out.state ?? s;
 };

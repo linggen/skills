@@ -505,6 +505,7 @@ async function readOnce() {
     const [seen, ,] = await Promise.all([verb('look', PREVIEW.day ? { day: PREVIEW.day } : {}), readCloud()]);
     // The scene just left, kept for its header while its choice's passage is still told.
     if (look?.scene && seen?.scene?.id !== look.scene.id) leftLook(look);
+    stageQuestDone(look, seen);
     look = seen;
     if (look?.engine && !engineAt) engineAt = look.engine;
     watchRun();
@@ -3371,6 +3372,15 @@ function paintHerBub() {
 /* A moment another part of the game raises (the 修行 stage quest's reward,
    a 密室 escaped): `lingjing:her` with { kind, what, key } — hersay.js MOMENTS. */
 document.addEventListener('lingjing:her', (e) => { const d = e.detail ?? {}; if (d.kind) herSay.say(d.kind, d.what ?? '', { key: d.key ?? null }); });
+/* 阶段任务 (rules/gates.mjs, Look's `stage_quest`): the layer filled while the page watched — her
+   word, once for that gate (hersay.js MOMENTS.quest, `once: 'key'`). Read across two Looks, so a
+   save opened already full says nothing. */
+function stageQuestDone(was, now) {
+  const a = was?.stage_quest, b = now?.stage_quest;
+  if (!a || !b || a.met || !b.met || a.scene !== b.scene) return;
+  const what = lang() === 'en' ? `Sat to ${b.step}: the stage quest is done, the story goes on.` : `坐到了${b.step}，阶段任务成了，故事往下走。`;
+  document.dispatchEvent(new CustomEvent('lingjing:her', { detail: { kind: 'quest', what, key: `stage|${b.hui}|${b.scene}` } }));
+}
 /* A settled fight, for her: every win and every loss, weighed (hersay.js weighWin). */
 function herFightOver(b, r) {
   const c = b.brief?.creature ?? {}, v = boutView(b.st), zh = lang() !== 'en';

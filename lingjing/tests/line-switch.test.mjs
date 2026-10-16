@@ -24,6 +24,7 @@ import { stageCards, stageSlots, withNext } from '../scripts/stage.mjs';
 import { afterBook, atTurn, atTurnCards } from '../scripts/queue.js';
 import { WORDS, cardHtml } from '../scripts/cards.js';
 import { boardsFor, walk } from './prologue.mjs';
+import { earnedFor } from './earn.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-10-15T16:00:00Z');
@@ -123,7 +124,7 @@ test('every interlude hands into its 古 scene\'s place — the turn ahead of Ha
     // The scene's game already played (its way on waits on it).
     const played = e.needs?.task ? { [e.needs.task]: { status: 'done', period: 'once', done_at: NOW.toISOString() } } : {};
     const s = fresh({ ...base, chapter: ch.id, scene: sc.id, place: elsewhere, tell_owed: [], node: null, tasks: { ...base.tasks, ...played } });
-    const r = resolve(s, content, ctx, { exit: e.id });
+    const r = resolve(earnedFor(content, s, e.id), content, ctx, { exit: e.id });
     assert.equal(r.result.ok, true, `${sc.id}/${e.id}: ${JSON.stringify(r.result).slice(0, 200)}`);
     assert.deepEqual([r.state.scene, r.state.place], [into.id, into.at], `${sc.id}/${e.id} → ${into.id}`);
   }

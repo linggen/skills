@@ -6,7 +6,7 @@ import { dayKey, fill, itemName, lockedOf, periodKey, pick, peakName, stepName, 
 import { canPick, cardCatalog, deckFor, gearFight, ownedCards, pickedCards, rootsOf, usable } from './cards.mjs';
 import { companionOf, hasCompanion, herCard, nearestPlace } from './companion.mjs';
 import { readingOf } from './scrolls.mjs';
-import { pay, paysOf } from './core.mjs';
+import { meets, pay, paysOf } from './core.mjs';
 import { nameOf, shopOf } from './look.mjs';
 import { buyBack, visitorHere } from './visiting.mjs';
 import { choreOpen, isPool, questDone, todayChores } from './chores.mjs';
@@ -16,6 +16,7 @@ import { coolingUntil, oddsOf } from './breakthrough.mjs';
 import { freeSlot, pouchBrief } from './pouch.mjs';
 import { chapterLabel, comingOf } from './hui.mjs';
 import { storyAllows } from './cap.mjs';
+import { stageBrief, stageGate } from './gates.mjs';
 import { hiddenRoom, sealedOf, allPlaces, atScene, creatureOf, grantPass, hauntsOf, huntable, inCorridor, inMade, ofJuan, passed, pathOf, placeName, placeOf, placeOpen, sceneOf, tooHard, towardOf } from './world.mjs';
 
 /* ── 差事 — the errands the player takes (design.md § 差事) ──
@@ -271,7 +272,7 @@ function beastWork(content, state, ctx, here) {
   return { kind: 'beast', place: placeName(content, state, at.p), here: at.p.id === here.id, roads: at.way.length, titles: [pick(creatureOf(content, at.p.has.creature)?.name, state.lang)] };
 }
 
-/* Under a cauldron that waits on 修为 (waitsOnPeak) the work pointed at is
+/* Under a cauldron or a stage quest that waits on 修为 (waitsOnPeak) the work pointed at is
    work that raises it: an errand of 修行 (`work: 'cultivation'`), else a beast
    to fight — never a 杂役 that pays 灵石 only (review, 2026-10-15). */
 function workOf(content, state, ctx) {
@@ -426,8 +427,11 @@ function breakthroughOf(content, state, now = new Date()) {
   };
 }
 
-/* What a waiting cauldron asks, beside where the player stands now. */
+/* What a waiting cauldron asks, beside where the player stands now — or, where the scene's way on
+   waits on its 阶段任务 (rules/gates.mjs), the layer it asks full (`kind: 'stage'`). */
 function gateOf(content, state, now) {
+  const staged = stagedWay(content, state, now);
+  if (staged) { const b = stageBrief(content, state, staged); return { kind: 'stage', step: b.step, now: b.now }; }
   const bt = breakthroughOf(content, state, now), need = bt.need;
   return need && { ...need, now: { step: stepName(content, state.tier, state.step, state.lang), progress: state.progress, of: threshold(content, state) }, ...(bt.cooling ? { again_at: bt.cooling } : {}) };
 }
@@ -437,7 +441,17 @@ function gateOf(content, state, now) {
 function waitsOnPeak(content, state, now) {
   const scene = inMade(state) ? null : sceneOf(content, state);
   const exits = (scene?.buttons ?? []).map(id => scene.exits.find(e => e.id === id));
-  return exits.length > 0 && exits.every(e => e?.breakthrough) && !breakthroughOf(content, state, now).ready;
+  if (exits.length > 0 && exits.every(e => e?.breakthrough) && !breakthroughOf(content, state, now).ready) return true;
+  return Boolean(stagedWay(content, state, now));
+}
+
+/* The 阶段任务 the scene's ways on wait on, when every one of them (its buttons that lead on) is
+   ready but for it — a board still to play is the scene's, not the routine's. */
+function stagedWay(content, state, now) {
+  const scene = inMade(state) ? null : sceneOf(content, state);
+  const ways = (scene?.buttons ?? []).map(id => scene.exits.find(e => e.id === id)).filter(e => e && (e.next || e.ends));
+  const gates = ways.map(e => (!e.needs || meets(state, e.needs, now, scene.id) ? stageGate(content, state, scene.id, e.id) : null));
+  return ways.length && gates.every(Boolean) ? gates[0] : null;
 }
 
 /* The nearest open road out of a scene's place the player can walk. */

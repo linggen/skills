@@ -19,6 +19,7 @@ import { grantMemory } from './memories.mjs';
 import { writeLedger } from './ledger.mjs';
 import { comingOf, sideLine } from './hui.mjs';
 import { capLook, pastCapSay, storyAllows, underCap } from './cap.mjs';
+import { stageBrief, stageGate, stageSay } from './gates.mjs';
 import { atScene, inMade, placeName, placeOf, placeOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
 
 /* ── Changing it ── */
@@ -26,7 +27,7 @@ import { atScene, inMade, placeName, placeOf, placeOpen, sceneOf, settlePlace, t
 const refuse = (refused, say, extra = {}) => ({ state: null, result: { ok: false, refused, say: say ?? null, ...extra } });
 const clone = state => structuredClone(state);
 
-function meets(state, needs, now = new Date(), sceneId = state.scene) {
+export function meets(state, needs, now = new Date(), sceneId = state.scene) {
   if (needs.bag && !(state.bag[needs.bag] > 0)) return false;
   if (needs.task && state.tasks[needs.task]?.status !== 'done') return false;
   // A board's grade (tasks.mjs win): the exit a won board's `grade` takes.
@@ -88,16 +89,35 @@ function pastMark(content, state, progress) {
   return hold ? Math.min(progress, Math.max(0, hold.over ?? 0)) : 0;
 }
 
+/* 刷怪 a day (Hanli, 2026-10-15, design.md § Pacing): a pool's or a rerun's fights pay full 修为 for
+   the first few wins a day, then less, then none — balance.json `pool.daily`, a list of
+   `{wins, share}` walked in order, `share` 0 past its end. What a win no longer pays as 修为 is
+   paid as 灵石 at the fights' rate (rewards `xiuwei_to_lingshi`), as at 圆满. The day's wins are
+   counted on `state.day.hunts` (rollDay starts each day afresh). */
+export function farmShare(content, won) {
+  let k = won;
+  for (const band of content.balance?.pool?.daily ?? [{ wins: Infinity, share: 1 }]) {
+    if (k < band.wins) return band.share;
+    k -= band.wins;
+  }
+  return 0;
+}
+
 function pay(content, state, ctx, grant, landing = state) {
   rollDay(state, ctx.now);
   // Before a story gate nothing it keeps is paid (state.mjs lockedOf): read
   // where the move lands — the hall's three stones land in the outer court.
   const shut = lockedOf(content, landing);
   const due = amountsOf(content, state, ctx.now, grant);
-  const base = shut.includes('cultivation') ? 0 : due.base, progress = shut.includes('cultivation') ? 0 : due.progress;
+  const base = shut.includes('cultivation') ? 0 : due.base, gross = shut.includes('cultivation') ? 0 : due.progress;
+  // A farmed fight past the day's full wins (farmShare): its share of 修为, the rest as 灵石.
+  const won = grant.farm ? state.day.hunts ?? 0 : 0, share = grant.farm ? farmShare(content, won) : 1;
+  if (grant.farm) state.day.hunts = won + 1;
+  const tired = gross - Math.round(gross * share), progress = gross - tired;
   // A fight's 修为 past the held mark is paid as 灵石 (converting, above).
   const conv = converting(content, grant), over = conv ? pastMark(content, state, progress) : 0;
-  const lingshi = over && !shut.includes('wealth') ? Math.round(over * conv.rate) : 0;
+  const rate = content.rewards.xiuwei_to_lingshi?.rate ?? 0;
+  const lingshi = !shut.includes('wealth') ? Math.round((over ? over * conv.rate : 0) + tired * rate) : 0;
   const wealth = (shut.includes('wealth') ? 0 : due.wealth) + lingshi;
   state.day.progress += base; state.day.wealth += wealth; state.wealth += wealth;
   const { levels, hold: kept } = addProgress(content, state, progress - over, (tier, step) => underCap(content, state, tier, step));
@@ -118,7 +138,7 @@ function pay(content, state, ctx, grant, landing = state) {
   const learned = grant.art ? learn(content, state, grant.art) : null;
   const named = levels.map(l => ({ from: stepName(content, l.from.tier, l.from.step, state.lang), to: stepName(content, l.to.tier, l.to.step, state.lang) }));
   // `progress` is what the realm really took; at the peak the rest is held.
-  return { progress: progress - over - (hold?.held ?? 0), wealth, ...(over ? { converted: { progress: over, wealth: lingshi } } : {}), cast: grant.cast ?? null, item: grant.item ?? null, ...(extra.length ? { more: extra } : {}), ...(full ? { stored: true, pouch_full: full } : {}), levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}) };
+  return { progress: progress - over - (hold?.held ?? 0), wealth, ...(over || tired ? { converted: { progress: over + tired, wealth: lingshi } } : {}), ...(grant.farm ? { farm: { win: won + 1, share } } : {}), cast: grant.cast ?? null, item: grant.item ?? null, ...(extra.length ? { more: extra } : {}), ...(full ? { stored: true, pouch_full: full } : {}), levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}) };
 }
 
 /* A road riddle is answered wrong at most this many times a day. A scene's riddle — the story's only way
@@ -326,9 +346,9 @@ function offerTasks(content, state) {
 /* The story lifts the realm to a layer of the first tier (an exit's `rise`,
    the 层 as the book names it — state.mjs stepOfLayer: 小周天 is 一层 out of 零层, 息壤 四层) — never down, never past its tier, once:
    a scene played again lifts nothing, and before a story gate nothing moves.
-   The story's floor (Hanli, 2026-10-15): a player short of the layer he stands
-   on is filled to it first — the passage carries the bar there (`filled`) — so
-   one who skipped every task is never behind the book. What he had over its
+   No story floor (Hanli, 2026-10-15, design.md § Pacing): the book's jumps step
+   him, but nothing tops up a 层 he is short of — every rise past 零层 waits on the
+   回's stage quest (rules/gates.mjs), so he arrives full. What he had over its
    mark goes with him whole (`carried`), and the new layer asks
    `overflow_stretch` of it more (state.mjs stepUp). */
 function riseTo(content, s, rise, replay) {
@@ -342,11 +362,10 @@ function riseTo(content, s, rise, replay) {
   // Never past where the 回's story stands (rules/cap.mjs) — the data would be wrong; the lint holds it too.
   if (!storyAllows(content, s, tier.id, top)) return null;
   const from = stepName(content, s.tier, s.step, s.lang), had = s.progress ?? 0, need = threshold(content, s);
-  const filled = zeroAt(content, s.tier, s.step) ? 0 : Math.max(0, need - had);
   if (s.step < top) stepUp(content, s, tier.id, top, had - need, !zeroAt(content, s.tier, s.step));
   if (full) s.progress = Math.max(s.progress ?? 0, threshold(content, s));
   const carried = s.step === top && had > need ? had - need : 0;
-  return { from, to: stepName(content, s.tier, s.step, s.lang), ...(full ? { full: true } : {}), ...(filled ? { filled } : {}), ...(carried ? { carried } : {}) };
+  return { from, to: stepName(content, s.tier, s.step, s.lang), ...(full ? { full: true } : {}), ...(carried ? { carried } : {}) };
 }
 
 /* How far a breakthrough that lands fills the step it lands on: the pill it
@@ -461,6 +480,9 @@ export function resolve(state, content, ctx, args) {
     if (today?.day === dayKey(ctx.now) && today.outcome === 'lost') return refuse('withdrawn', pick(exit.withdrawn, lang), { game: game.id });
     return refuse('game-not-won', null, { game: game.id });
   }
+  // 阶段任务 — after the scene's own board or fight, which may be played before the bar is full (rules/gates.mjs): the next stage waits on 圆满 of the layer he holds — earned, never paid by the story.
+  const staged = stageGate(content, s, scene.id, exit.id);
+  if (staged) return refuse('stage', stageSay(content, s, staged, lang), { exit: exit.id, stage: stageBrief(content, s, staged, lang) });
   let named = null;
   if (exit.value) {
     const value = cleanValue(args.value, exit.value);

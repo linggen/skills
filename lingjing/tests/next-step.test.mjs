@@ -27,7 +27,8 @@ test('下一步 stands only when nothing else is a thing to do — never in a fi
 test('at 外门 with the story at 柴房: the stage holds 下一步, and its one button walks to 柴房', () => {
   const opened = walk(newState(content, 'zh', NOW), TO_OPEN, content, NOW);
   // 修屋顶 already in hand (no offer card), as he stood (live, 2026-10-15).
-  const s = { ...opened, scene: 'wm-chaifang', place: 'waimen', quests: { ...opened.quests, 'xu-waimen-roof': { took: '2026-09-29', have: {} } }, stamina: 100, stamina_at: NOW.toISOString() };
+  const s = { ...opened, scene: 'wm-chaifang', place: 'waimen', step: 1, progress: content.ladder.tiers[0].thresholds[1], // 一层圆满: its 阶段任务 met (rules/gates.mjs)
+    quests: { ...opened.quests, 'xu-waimen-roof': { took: '2026-09-29', have: {} } }, stamina: 100, stamina_at: NOW.toISOString() };
   const l = look(s, content, { now: NOW, quests: [] });
   // As he stood: every errand here taken or done (no offer, no board), the 序章's 「完」 put away (the page's 合上).
   const bare = { ...l, offers: [], tasks: [], chapter: { ...l.chapter, close: null } };

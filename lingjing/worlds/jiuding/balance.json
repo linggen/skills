@@ -1,0 +1,255 @@
+{
+  "version": 1,
+  "_about": "One model for every number (Hanli, 2026-10-15; design.md § Pacing and the economy). The rules read these through content.mjs (withBalance) — the 层 thresholds onto the ladder, the pay tables onto rewards, the cooldowns onto the rerun and the 饭桶 — and tools/balance.mjs simulates a light, a typical and a heavy player on them, day by day, printing days per 回; tests/balance.test.mjs holds the bands. Change a number here, run `node tools/balance.mjs`, and hand-play it on the live page.",
+  "_layers": "The progress each step asks, by tier (ladder.json names the steps). 练气 counts from 零层 (0). Fitted by `node tools/balance.mjs --fit` to `model.target_days` for the typical player (the 层 a 回's stage quest holds him on); the 层 a rise jumps over sit between. 筑基 and above wait for 卷二.",
+  "layers": {
+    "qi": [
+      0,
+      210,
+      390,
+      410,
+      430,
+      480,
+      500,
+      740,
+      760,
+      780
+    ],
+    "foundation": [
+      400,
+      500,
+      600
+    ],
+    "core": [
+      800,
+      1000,
+      1200
+    ],
+    "nascent": [
+      1600,
+      2000,
+      2400
+    ],
+    "deity": [
+      3000,
+      3600,
+      4200
+    ],
+    "void": [
+      5000,
+      6000,
+      7000
+    ],
+    "body": [
+      8000,
+      9500,
+      11000
+    ],
+    "maha": [
+      12500,
+      14500,
+      16500
+    ],
+    "tribulation": [
+      19000,
+      22000,
+      25000
+    ]
+  },
+  "_overflow_stretch": "Hanli, 2026-10-15 (approved): a step up — the story's rise, a throw, or grinding the 回's cap allows — carries the 修为 over the last mark in whole, and the new step asks this share of it more (state.mjs stepUp, `state.stretch`): 100 over 一层's mark enters 二层 at 100/450, not 0/400. Grinders stay only somewhat ahead; nothing is held or lost.",
+  "overflow_stretch": 0.5,
+  "_pay": "What each kind of thing pays at most (修为 `progress`, 灵石 `wealth`); a grant is capped by its table (rules/core.mjs pay). Was rewards.json `tables`. Hanli, 2026-10-15 (「让游戏修为和故事match」): 修为 comes from cultivation; chores pay 灵石. `labor` pays an errand of 杂役 (修为 0, design.md § Pacing), `gongke` the day's 功课 (the fixed real-life chore, 修为 20), `life` the day's pick (灵石 only), `once` 开府 (灵石 only). A natural day of 卷一 play is now ~138 修为 (功课 20, two pool fights 60, half a rumor ~38, a road-meet 20) and the 练气 thresholds ask a 回 of it per held layer (tools/xiuwei-model.mjs). The 2026-09-24 note below is history.",
+  "pay": {
+    "scene": {
+      "progress": 60,
+      "wealth": 20
+    },
+    "task": {
+      "progress": 40,
+      "wealth": 10
+    },
+    "puzzle": {
+      "progress": 20,
+      "wealth": 0
+    },
+    "branch": {
+      "progress": 20,
+      "wealth": 5
+    },
+    "tale": {
+      "progress": 15,
+      "wealth": 3
+    },
+    "once": {
+      "progress": 0,
+      "wealth": 20
+    },
+    "tale_end": {
+      "progress": 30,
+      "wealth": 10
+    },
+    "haunt": {
+      "progress": 30,
+      "wealth": 10
+    },
+    "game": {
+      "progress": 6,
+      "wealth": 10
+    },
+    "quest": {
+      "progress": 60,
+      "wealth": 20
+    },
+    "meet": {
+      "progress": 20,
+      "wealth": 10
+    },
+    "trial": {
+      "progress": 30,
+      "wealth": 20
+    },
+    "chance": {
+      "progress": 20,
+      "wealth": 20
+    },
+    "seclusion": {
+      "progress": 90,
+      "wealth": 0
+    },
+    "labor": {
+      "progress": 0,
+      "wealth": 20
+    },
+    "gongke": {
+      "progress": 20,
+      "wealth": 0
+    },
+    "gongke_zero": {
+      "progress": 0,
+      "wealth": 5
+    },
+    "life": {
+      "progress": 0,
+      "wealth": 10
+    }
+  },
+  "_convert": "圆满之后走剧情到下一个阶段; 刷副本或者打怪奖励的修为改为灵石 (Hanli, 2026-10-15). A grant on one of `tables` (a pool's or a haunt's fight, a 秘境 rerun's beast — never a scene, a board, the 功课, a rumor or a road-meet) pays 修为 only up to the full mark of the layer he may not step past (the 回's cap, or a realm's peak waiting on its cauldron); the rest is paid as 灵石 at `rate` per 修为 (rules/core.mjs pay), and never carries into the next layer. Default 1/3: a converted fight (30 修为 → 10, with its own 10 灵石) pays about one 杂役 errand (labor 20). The economy (tools/balance.mjs) owns the number.",
+  "convert": {
+    "rate": 0.333,
+    "tables": [
+      "haunt"
+    ]
+  },
+  "_pool": "刷怪 a day (Hanli, 2026-10-15): a pool's or a 秘境 rerun's beast won pays full 修为 for the day's first wins, then less, then none — `daily` is walked in order, each band `wins` long at `share` of the haunt table's 修为, and past the last band 0. What a win no longer pays as 修为 is paid as 灵石 at `convert.rate` (rules/core.mjs farmShare). The count starts afresh each local day.",
+  "pool": {
+    "daily": [
+      {
+        "wins": 3,
+        "share": 1
+      },
+      {
+        "wins": 3,
+        "share": 0.5
+      }
+    ]
+  },
+  "_cooldowns": "`pool_rest_min`: a pool beast beaten rests that long before the next stands (world.mjs poolResting; a pool may say its own `rest`). `rerun_h`: a 秘境's outer rooms open again that many hours after the last run ended (rules/rerun.mjs). `fantong_min`: after a feed the 饭桶 is full that long (rules/fantong.mjs).",
+  "cooldowns": {
+    "pool_rest_min": 30,
+    "rerun_h": 3,
+    "fantong_min": 60
+  },
+  "_model": "The players tools/balance.mjs plays, day by day (design.md § Pacing: ~30 minutes a day, one 回 a week; 古一–古三 fast). `minutes`: what each thing takes (a scene's passages read at `chars_per_min`). `players`: minutes a day (the first day longer), sittings, and what each does daily — `gongke` the share of days the 功课 is handed in, `reruns` 秘境 runs, `fights` pool fights, `fantong` feeds, `tale` 今日传闻s, `gate_fights` more pool fights while a stage quest waits. `fight_win_rate`: a fight won (the 斗法 band, played again when lost). `fantong_progress`: a feed's 修为 on average (a pill now and then). `errands_at`: the 回 each errand that pays 修为 or a pill is done in (null: on no 卷一 map; tests/balance.test.mjs makes a new one name its 回). `fit`: the player and the days --fit aims the stage quests at (the heavy player: the one they hold back); `bands`: what the test holds, for the 回s from `later` on. Guesses to be hand-played on the live page (Hanli).",
+  "model": {
+    "chars_per_min": 450,
+    "minutes": {
+      "scene": 1,
+      "board": 2,
+      "fight": 4,
+      "rerun": 12,
+      "fantong": 1,
+      "tale": 15
+    },
+    "fight_win_rate": 0.8,
+    "fantong_progress": 3,
+    "fantong_from": "wm-danlu",
+    "errands_at": {
+      "xu-yaoyuan-shouye": "h05",
+      "xu-yaoyuan-canzhu": "h07",
+      "guan-houshan-yezhu": "h07",
+      "xu-fuli-longzhi": "h10",
+      "ji-liuwan-renyu": "h10",
+      "xu-yunlong-herbs": null
+    },
+    "players": {
+      "light": {
+        "minutes": 20,
+        "first_minutes": 60,
+        "sittings": 1,
+        "gongke": 0.7,
+        "reruns": 0.5,
+        "fights": 1,
+        "fantong": 1,
+        "tale": 0,
+        "gate_fights": 1
+      },
+      "typical": {
+        "minutes": 30,
+        "first_minutes": 120,
+        "sittings": 1,
+        "gongke": 1,
+        "reruns": 1,
+        "fights": 0,
+        "fantong": 1,
+        "tale": 0,
+        "gate_fights": 2
+      },
+      "heavy": {
+        "minutes": 75,
+        "first_minutes": 180,
+        "sittings": 3,
+        "gongke": 1,
+        "reruns": 2,
+        "fights": 3,
+        "fantong": 3,
+        "tale": 1,
+        "gate_fights": 3
+      }
+    },
+    "step_min": 20,
+    "max_days": 400,
+    "later": "h07",
+    "bands": {
+      "typical": [
+        5,
+        7.5
+      ],
+      "heavy": [
+        3,
+        5.5
+      ],
+      "light": [
+        8,
+        15
+      ],
+      "_except": "古六 (h08) is the longest 回 — thirteen scenes and 今·三, about 90 minutes of story behind a stage quest at its start (the 大比 on 四层圆满): a typical player takes about 8 days there.",
+      "except": {
+        "h08": {
+          "typical": [
+            5,
+            8.5
+          ]
+        }
+      }
+    },
+    "fit": {
+      "player": "heavy",
+      "days": {
+        "default": 5,
+        "h05": 1.5,
+        "h07": 3.5,
+        "h08": 3.5
+      }
+    }
+  }
+}

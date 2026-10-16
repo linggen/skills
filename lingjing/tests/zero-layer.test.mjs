@@ -60,20 +60,22 @@ test('古四\'s 小周天 lifts him to 练气一层 — the layer-gained moment,
 test('an old save heals on load: before the 小周天 零层, past it 一层, past a story rise its own 层', () => {
   const heal = s => migrate(s, content);
   const name = s => realmName(content, s, 'zh');
+  // The bar as full as it stood on the ladder it was played on (ladder.json thresholds_were, state.mjs paceLayer).
+  const was = (step, p) => Math.round(p * content.ladder.tiers[0].thresholds[step] / content.ladder.tiers[0].thresholds_were['9'][step]);
   // Before the 小周天, at the gate's step 0: 零层, the 修为 it held kept unseen for the rise.
   const before = heal(v7({ scene: 'wm-zhoutian', done_scenes: ['wm-ahe', 'wm-jiangtang'], step: 0, progress: 20 }));
   assert.deepEqual([name(before), before.progress, 'ladder_zero' in before], ['练气零层', 20, false]);
   // Past it at the old 二层 (the off-by-one the 小周天's 40 made): 一层, its bar as full as it was
   // (v9 paceLayer, 2026-10-15: 10 of the old 50 is 40 of 200).
   const past = heal(v7({ scene: 'wm-qingshi', done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian'], step: 1, progress: 10 }));
-  assert.deepEqual([name(past), past.step, past.progress], ['练气一层', 1, 40]);
+  assert.deepEqual([name(past), past.step, past.progress], ['练气一层', 1, was(1, 10)]);
   assert.equal(look(past, content, ctx).tier.bar, true);
   // Past it but still at the old 一层 (it filled less than 50): 一层, never 零层.
   const low = heal(v7({ scene: 'wm-qingshi', done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian'], step: 0, progress: 45 }));
-  assert.deepEqual([name(low), low.progress], ['练气一层', 180]);
+  assert.deepEqual([name(low), low.progress], ['练气一层', was(1, 45)]);
   // Past 古四's close (wm-diyilu's rise to 二层): the 层 the story named, the bar as full (30 of 60 is 175 of 350).
   const diyilu = heal(v7({ scene: 'wm-yaoyuan', done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian', 'wm-qingshi', 'wm-chaifang', 'wm-danlu', 'wm-diyilu'], step: 1, progress: 30 }));
-  assert.deepEqual([name(diyilu), diyilu.progress], ['练气二层', 175]);
+  assert.deepEqual([name(diyilu), diyilu.progress], ['练气二层', was(2, 30)]);
   // 古八's 腊八: 练气九层圆满 stays 九层圆满, ready for the cliff.
   const dabi = heal(v7({ chapter: '00-zhuji', scene: '09-cliff', ended: ['00-prologue', '00-waimen'], done_scenes: ['wm-xirang', '09-year', '09-dabi'], step: 8, progress: 130 }));
   assert.deepEqual([name(dabi), dabi.step, dabi.progress], ['练气九层圆满', 9, threshold(content, dabi)]);

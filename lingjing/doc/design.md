@@ -219,37 +219,45 @@ field. The fields:
 The lint also refuses an unreachable scene, a chapter with no ending, a
 string missing a language, a creature without its picture.
 
-### Pacing and the economy 【在建】 (Hanli, 2026-10-15)
+### Pacing and the economy 【已建】 (Hanli, 2026-10-15)
 
 **Target: ~30 minutes a day, one 回 a week** (Genshin's rhythm). Why: the story is the reward;
 a 回 should last, not be binged.
 
 | | |
 |---|---|
-| Daily routine (~20 min, capped) | 功课 · a 秘境 rerun (3 h cooldown) · 饭桶 (1 h cooldown) · pool fights (full 修为 for the first few wins a day, then less, then 灵石) |
-| Story + its boards (~1 h a 回) | unlimited, at the player's pace, up to the 回's gate |
-| A 回 | ≈3–4 h: the routine fills its 修为 quest over ~5–7 days. Heavy players ≈4–5 days, light ≈2 weeks |
-| 古一–古三 | fast — a first sitting reaches 古三/古四 |
+| Daily routine (~15–20 min) | 功课 · a 秘境 rerun (3 h cooldown; open through 古七/古八 too, the same 观) · 饭桶 (1 h cooldown) · pool fights (30 min rest; the day's first 3 wins full 修为, the next 3 half, then 灵石) |
+| Story + its boards (~1 h a 回) | unlimited, at the player's pace, up to the 回's stage quest |
+| A 回 | typical ≈5–7 days (古六 ≈8: thirteen scenes behind its quest), heavy ≈3–5, light ≈8–15 |
+| 古一–古三 | fast — no quest; a first sitting or two |
 
-- **修为 stage quest (阶段任务).** Each 回's next story stage waits on 圆满 of the layer he holds;
-  the 事 book shows it with progress, 下一步 and Ling point to where 修为 is earned. Why: the bar
-  and the book move together because the player earned it, not because the story paid it.
-- **The story no longer tops up 修为** — the old story floor (a rise filling the 层 he was short
-  of) is gone; with the gate there is nothing to top up. The book's jumps (`rise`) still step him.
-- **At 圆满, 修为 from fights and the 秘境 pays as 灵石** at a declared rate; it never spills
-  into the next layer. The per-回 cap (§ 境界) still holds.
+- **One model for every number.** `worlds/jiuding/balance.json` holds the 层 thresholds, the pay
+  tables, the fight-to-灵石 rate, the day's fight bands and the cooldowns; content.mjs
+  (`withBalance`) lands them where the rules read them. `node tools/balance.mjs` plays a light, a
+  typical and a heavy player (`model.players`: minutes, sittings, what each does daily) through 卷一
+  day by day and prints days per 回; `--fit` re-derives the 练气 thresholds the quests hold
+  (练气 [0, 210, 390, 410, 430, 480, 500, 740, 760, 780]); tests/balance.test.mjs holds the bands.
+  The model's minutes, reading speed and players are guesses — **balance changes are hand-played
+  on the live page**.
+- **修为 stage quest (阶段任务)** (rules/gates.mjs; ladder.json `caps.hui.<回>.gates`): the 回's next
+  stage waits on 圆满 of the layer he holds — refused `stage` in the world's words; the 事 book
+  shows it with progress, 下一步 and Ling point to the work that raises 修为; 银月 says her word
+  when it fills. Only where he can walk away to earn it (never inside a beat's lock or the 秘境):
+  古四 the 柴房 night @一层 · 古五 the 秘境's door @二层 · 古六 the 大比's eve @四层 · 古七 定风 @四层,
+  the 沂水 night @五层, the autumn @六层 (its cap is 六层) · 古八 the years @七层. 古九 has none (the
+  九转 lands 筑基小成圆满). A scene passed is never gated again.
+- **No story floor.** A rise steps him and carries what was over the mark; nothing tops up a 层 he
+  is short of.
+- **At 圆满, 修为 from fights and the 秘境 pays as 灵石** at `convert.rate`; it never spills into the
+  next layer. The per-回 cap (§ 境界) still holds.
 - **Where 修为 comes from:** 功课, fights (haunts, pools, 降妖/驯 errands, 榜文 · 降妖), the
   秘境, pills, 今日传闻, 闭关, the road's riddle/机缘, the story's grants and rises. **Chores pay
   灵石:** an errand declares `work` — `cultivation` (its core is a fight) or `labor` (the `labor`
   table: 修为 0, ≤20 灵石, maybe an item); the day's real-life pick pays 灵石 (`life`, ≤10), a 开府
-  milestone 20 灵石.
+  milestone 20 灵石. 闭关 is outside the model (a nightly one adds ~40–60 修为).
 - **Every hand-in visibly gains 修为 or 灵石.** 零层's 功课 pays 5 灵石.
-- **One model for every number** 【在建】: `tools/balance.mjs` reads `worlds/jiuding/balance.json`
-  — bands for time, 修为, 灵石, attack/defense, prices, drops, win rates — and writes the
-  thresholds and tables; `--check` fails CI when content leaves a band. Thresholds are the
-  model's, not hand-set (replaces `tools/xiuwei-model.mjs` and the 练气 list once kept here).
-- **Balance changes are hand-played on the live page**, not only simulated.
-- **Old saves** keep their 层 and how full it stood (state v9 `paceLayer`).
+- **Old saves** keep their 层 and how full it stood (state v10 `paceLayer`, `thresholds_were` by
+  version: a v8 save is read against the oldest ladder it was played on).
 
 ### 境界 in the game 【已建】
 
@@ -285,7 +293,7 @@ need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale
   rules/cap.mjs, `ladder.json → caps`): each 古 回 declares how far the
   player's own work reaches (`tier` + `layer`, a 层 of 练气 or a step above it) and, where its scenes carry him
   further, its `story` — 古三 一层 · 古四 二层 · 古五 二层 (story 四层) · 古六
-  四层 · 古七 四层 (story 七层) · 古八 七层 (story 筑基小成) · 古九 筑基小成; a 今 interlude takes the 古
+  四层 · 古七 六层 (story 七层) · 古八 七层 (story 筑基小成) · 古九 筑基小成; a 今 interlude takes the 古
   before it; after 卷一 the save waits in 古九's chapter, so 筑基小成 holds
   until 卷二 gets its caps. At the cap the step fills (圆满) and further
   修为 from fights and the 秘境 pays as 灵石 (2026-10-15; § Pacing); Look's `capped.say` stands by the full
@@ -382,7 +390,8 @@ trial); 暗河 合窳 and 犰狳 (pool `mijing-anhe`) and 拾遗 (games/gather.j
 cracks, 灵芝 and 灵石). Fights pay the haunt table (修为), boards their grants, gleaning stones and a
 herb; their sums are balance.json's. A natural player: about 20 minutes inside.
 **Reruns** (Hanli, 2026-10-15) 【在建】: after the story run the **outer rooms** (岔口 · 凶崖 · 暗河)
-reopen **3 h after the last run ends** — one slot of the daily routine. Each run rolls its spawns
+reopen **3 h after the last run ends** — one slot of the daily routine, through 古七/古八 too (the
+rerun's `also`: the same 观). Each run rolls its spawns
 (now and then an elite), its finds (鼎苔, 灵草, ore, a rare cache) and drops, gear among them. The
 inner story rooms (断崖下 · 崖壁 · 石室) never repeat. A rerun is sealed the same way.
 
@@ -446,7 +455,8 @@ locks the two apart.
 
 **Farming rules** (Hanli, 2026-10-15):
 - A pool beast beaten **rests 30 min** before the next comes. A beast he has **tamed is never drawn**.
-- Pay: full 修为 for the first few wins a day, then diminishing, then 灵石 (§ Pacing).
+- Pay: full 修为 for the first few wins a day, then diminishing, then 灵石 (§ Pacing; balance.json
+  `pool.daily`, over pool and 秘境-rerun wins; the 所得 card says when it thins).
 - Draws avoid what he met lately and favour the unmet and unowned; a duplicate drop converts to
   灵石 or materials.
 - **Enough to farm:** ~10–12 beasts and ~30 finds per grinding 回. More 卷一-fitting 山海经 beasts

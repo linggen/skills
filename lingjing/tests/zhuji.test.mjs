@@ -14,6 +14,7 @@ import { newState, threshold } from '../scripts/state.mjs';
 import { look, oddsOf, resolve, rollOf } from '../scripts/rules.mjs';
 import { pay } from '../scripts/rules/core.mjs';
 import { bookNo } from './book-num.mjs';
+import { earnedFor } from './earn.mjs';
 
 const content = loadContent();
 // 练气九层圆满: the peak a throw is tried from (the threshold, re-derived 2026-10-15).
@@ -29,7 +30,7 @@ const atSnow = (extra = {}) => ({
   stamina: 100, stamina_at: NOW.toISOString(), bag: { danlu: 1 }, tasks: { 'snow-fantong': { status: 'done' } }, ...extra, // 喂饭桶 played (tests/gu7.test.mjs)
 });
 const go = (s, exit, extra = {}) => {
-  const r = resolve(s, content, ctx, { exit, ...extra });
+  const r = resolve(earnedFor(content, s, exit), content, ctx, { exit, ...extra });
   assert.equal(r.result.ok, true, `${exit} at ${s.scene}: ${JSON.stringify(r.result)}`);
   return r;
 };
