@@ -91,8 +91,11 @@ const TARGET = (id, a) => `(() => {
   const el = [...host.querySelectorAll(sel)].find((e) => e.getClientRects().length && !e.disabled && ok(e));
   if (!el) return null;
   // A finger scrolls to what it means to press (a long board runs past the fold — 写信's sheet grows).
+  // Past the fold of the page OR of the stage's own scroller (.focus): a tile half under the stage's
+  // edge is on the screen but not under the finger (10-16: 写信 and 认方 at 390 pressed the stage's rim).
   const r0 = el.getBoundingClientRect();
-  if (r0.top < 0 || r0.bottom > innerHeight) el.scrollIntoView({ block: 'nearest' });
+  const hit = document.elementFromPoint(r0.left + r0.width / 2, r0.top + r0.height / 2);
+  if (r0.top < 0 || r0.bottom > innerHeight || !(hit && (hit === el || el.contains(hit)))) el.scrollIntoView({ block: 'center' });
   const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
 })()`;
 
