@@ -699,17 +699,7 @@
       },
       "art": "art/cards/wudao.webp",
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
-      "from": [
-        {
-          "kind": "beat",
-          "task": "feather-breath",
-          "line": {
-            "zh": "爹：「它听见的不是你喘，是你心慌。」",
-            "en": "Father: \"It hears your fear, not your breath.\""
-          },
-          "src": "书"
-        }
-      ],
+      "from": [{"kind": "story", "scene": "00-halfyear", "who": {"zh": "爹", "en": "Father"}, "line": {"zh": "爹：「它听见的不是你喘，是你心慌。」", "en": "Father: \"It hears your fear, not your breath.\""}, "src": "书"}],
       "mortal": true
     },
     {

@@ -295,6 +295,8 @@
     "feijian-duan": {"buy": 60, "sell": 0},
     "canwu-jian": {"buy": 80, "sell": 0}
   },
+  "_boards": "Hanli 2026-10-16: a small game after 入门 pays 灵石 on its first clear only — plain 5, good 10, best (or all three 灵光) 15; a replay pays nothing. Before 入门 nothing is paid (state.mjs lockedOf shuts wealth). The rank: a task's `ranks` names it outright; else three stars is best, and of the listed marks the first (the clean clear) is best, the last plain, one between good; a board with no marks (洛书门, 小周天, the 今 boards) pays plain — a reading, not Hanli's word, to change here. On top of the task's own grant (rules/tasks.mjs boardPay).",
+  "boards": { "plain": 5, "good": 10, "best": 15 },
   "_cooldowns": "`pool_rest_min`: a pool beast beaten rests that long before the next stands (world.mjs poolResting; a pool may say its own `rest`). `rerun_h`: a 秘境's outer rooms open again that many hours after the last run ended (rules/rerun.mjs). `fantong_min`: after a feed the 饭桶 is full that long (rules/fantong.mjs).",
   "cooldowns": {
     "pool_rest_min": 30,
@@ -380,11 +382,11 @@
         8,
         21
       ],
-      "_except": "Since 2026-10-16 the story raises no layer: every 层 is ground. With `layer_pay` (修为 by the layer) every 回 from 古四 sits in the one typical band, 5–7.5 days — save 古五 (h07), allowed down to 4.5: the smooth curve keeps 二层 cheap so 古六's two layers fit (see `_layer_pay`).",
+      "_except": "Since 2026-10-16 the story raises no layer: every 层 is ground. With `layer_pay` (修为 by the layer) every 回 from 古四 sits in the one typical band, 5–7.5 days — save 古五 (h07), allowed down to 4.5: the smooth curve keeps 二层 cheap so 古六's two layers fit (see `_layer_pay`). Lowered to 4 on 2026-10-16: the boards cut before 入门 (Hanli 「减少数量, 推动剧情」) shorten the opening, and 古五 lands 4.3 typical days.",
       "except": {
         "h07": {
           "typical": [
-            4.5,
+            4,
             7.5
           ]
         }

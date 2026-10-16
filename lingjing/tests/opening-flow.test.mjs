@@ -28,7 +28,7 @@ const lastPara = (pair) => norm(pair.zh.split('\n\n').at(-1));
 const firstPara = (pair) => norm(pair.zh.split('\n\n')[0]);
 
 test('a game inside its scene\'s passage: the rest is the scene\'s own (`story_after`), never its way on\'s', () => {
-  for (const id of ['00-shiao', '00-halfyear']) {
+  for (const id of ['00-shiao']) { // 00-halfyear's boards were cut 10-16: its passage reads whole
     const sc = scenes[id];
     assert.ok(sc.story_after?.zh && sc.story_after?.en, `${id}: the rest of the passage stays on the scene`);
     for (const e of sc.exits.filter((x) => !x.stay)) assert.equal(e.story, undefined, `${id}/${e.id}: no scene text on the way on`);
@@ -113,7 +113,6 @@ test('the header changes only when the story gets there: the last scene\'s holds
   s = task(win(s, content, ctx(), { id: 'village-day', grade: 'light' }).state, content, ctx(), { action: 'done', id: 'village-day' }).state;
   s = resolve(tellOf(content, s).keep, content, ctx(), { exit: 'begin' }).state;
   s = tellOf(content, s).keep;
-  s = task(win(s, content, ctx(), { id: 'masan-taunt', grade: 'word' }).state, content, ctx(), { action: 'done', id: 'masan-taunt' }).state;
   const out = resolve(s, content, ctx(), { exit: 'endure' });
   const { tell } = tellOf(content, out.state);
   assert.equal(tell[0].of, 'choice');

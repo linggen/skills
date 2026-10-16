@@ -83,7 +83,8 @@ test('walking 古六 by its boards: 修为 rises at each cultivation board, the 
   assert.equal(s.tell_owed.at(-1), 'after/wm-qianye', 'the rest of the lesson is told right after the first board');
   const stones = s.wealth;
   s = play(s, 'qianye-xiangke', 'clean');
-  assert.equal(s.wealth, stones + 3);
+  // Its grant's 3, and a first clean clear's 灵石 (balance.json `boards`, Hanli 2026-10-16).
+  assert.equal(s.wealth, stones + 3 + content.balance.boards.best);
   assert.ok(s.marks.includes('xiangke'));
   s = must(resolve, s, { exit: 'eve' });
   assert.equal(s.scene, 'wm-zhaojing');

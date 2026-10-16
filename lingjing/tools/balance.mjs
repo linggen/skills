@@ -37,6 +37,7 @@ import { fileURLToPath } from 'node:url';
 import { loadContent } from '../scripts/content.mjs';
 import { runsPay } from '../scripts/rules/rerun.mjs';
 import { gatesOf } from '../scripts/rules/gates.mjs';
+import { lockedOf } from '../scripts/state.mjs';
 import { huiOf } from '../scripts/rules/hui.mjs';
 
 const sideHui = (content, id) => { const h = huiOf(content, id); return Boolean(h?.line && h.line !== 'gu'); };
@@ -84,6 +85,15 @@ function wayOn(content, sc) {
   return exits.sort((a, b) => { const x = score(a), y = score(b); for (let i = 0; i < x.length; i++) if (x[i] !== y[i]) return Number(y[i]) - Number(x[i]); return 0; })[0] ?? null;
 }
 
+/* A small game's first clear after 入门 (balance.json `boards`, Hanli 2026-10-16): modelled at its
+   good pay, the expectation between a rough clear (plain) and a clean one (best). Nothing where
+   wealth is still shut. */
+function boardFirst(content, ch, sc, boards) {
+  const pay = content.balance.boards?.good ?? 0;
+  if (!pay || lockedOf(content, { chapter: ch.id, scene: sc.id }).includes('wealth')) return 0;
+  return boards.filter(t => t.game).length * pay;
+}
+
 /* 卷一 as a reader meets it, every 回 of it (the prologue's too): each scene with its minutes, what
    it pays, its rise or breakthrough and its stage quest. */
 export function bookWalk(content, model = content.balance.model) {
@@ -102,7 +112,7 @@ export function bookWalk(content, model = content.balance.model) {
         chapter: ch.id, id: sc.id, hui: sc.hui ?? null,
         minutes: text / model.chars_per_min + m.scene + boards.length * m.board + fight * m.fight / model.fight_win_rate,
         boards: boards.reduce((n, t) => n + tableCap(content, t.grant), 0), nboards: boards.length,
-        wealth: wealthCap(content, e?.grant) + boards.reduce((n, t) => n + wealthCap(content, t.grant), 0),
+        wealth: wealthCap(content, e?.grant) + boards.reduce((n, t) => n + wealthCap(content, t.grant), 0) + boardFirst(content, ch, sc, boards),
         grant: tableCap(content, e?.grant), pill: pillOf(content, e?.grant?.item), pill9: itemOf(content, e?.grant?.item)?.fill === 'full',
         rise, breakthrough: Boolean(e?.breakthrough), fight,
         gate: e ? gates.find(g => g.scene === sc.id && g.exits.includes(e.id)) ?? null : null,

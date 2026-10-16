@@ -215,7 +215,7 @@ test('her lines in the book are the book\'s: played in place, awake or asleep (h
   assert.equal(look(s, content, ctx()).companion.asleep, true);
   s = walk(s, [['resolve', { exit: 'visit' }], ['resolve', { exit: 'dumb' }]], content, NOW);
   assert.equal(s.companion.awake, true);
-  s = walk(s, [['resolve', { exit: 'on' }], ['win', { id: 'xisui-hold' }], ['task', { action: 'done', id: 'xisui-hold' }], ['resolve', { exit: 'bath' }]], content, NOW);
+  s = walk(s, [['resolve', { exit: 'on' }], ['resolve', { exit: 'bath' }]], content, NOW);
   assert.deepEqual(s.companion, { joined: '2026-09-28', asleep: true });
   // asleep: the token's one word at the 蠪侄 is the story's, told by Ling; no beat for her; no card of hers in the fight
   const trial = walk(start(), upTo(TO_HALL, 'subdue'), content, NOW);

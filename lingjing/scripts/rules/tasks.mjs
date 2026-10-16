@@ -3,7 +3,7 @@
 import { festivalDone } from './festival.mjs';
 import { battle } from '../battle.js';
 import { gameOf } from '../content.mjs';
-import { addStamina, dayKey, periodKey, pick, settleStamina, seedOf } from '../state.mjs';
+import { addStamina, dayKey, lockedOf, periodKey, pick, settleStamina, seedOf } from '../state.mjs';
 import { drop } from './arms.mjs';
 import { cardCatalog, fightPill, fightSetup, grantFrom, readOf, winCard } from './cards.mjs';
 import { POUCH_MAX } from '../battle.js';
@@ -147,6 +147,7 @@ function taskDone(state, content, ctx, id) {
   if (!replayed && here?.story_after && sceneBoards(here)[0] === id) s.tell_owed = [...(s.tell_owed ?? []), `after/${here.id}`];
   const full = t.gives?.bag ? storedLine(s, [stow(content, s, t.gives.bag)]) : null;
   const paid = pay(content, s, ctx, t.grant);
+  boardPay(content, s, t, id, paid);
   // A board's own 恩仇簿 line (`ledger`, as an exit writes it — 古六's 写信: 孙二狗's letter).
   const wrote = t.ledger ? writeLedger(content, s, t, ctx) : [];
   const handed = advance(content, s, { kind: 'board', task: id }, ctx);
@@ -173,6 +174,31 @@ function questCheck(state, content, ctx, id) {
   settleStamina(content, s, ctx.now);
   const stamina = addStamina(content, s, grant.stamina, ctx.now);
   return { state: s, result: { ok: true, quest: id, app: q.app, paid, stamina } };
+}
+
+/* A small game's 灵石 (Hanli 2026-10-16; balance.json `boards`): its first clear only, by how it went.
+   The task's `ranks` names a grade's rank outright; else all three stars is best, and of its listed
+   marks the first (the clean clear) is best, the last plain, one between good; a board with no marks
+   (a puzzle solved or not) pays plain. Never before 入门 (lockedOf shuts wealth: nothing paid,
+   nothing marked paid). Added to what the task's grant paid, so the win line shows it. */
+export function boardRank(t, grade, stars) {
+  if (t.ranks?.[grade]) return t.ranks[grade];
+  if ((stars ?? 0) >= 3) return 'best';
+  const marks = Object.keys(t.marks ?? {}), at = marks.indexOf(grade);
+  if (at < 0 || marks.length < 2) return 'plain';
+  return at === 0 ? 'best' : at === marks.length - 1 ? 'plain' : 'good';
+}
+function boardPay(content, s, t, id, paid) {
+  const table = content.balance?.boards;
+  if (!table || t.kind !== 'board' || !t.game || (s.boards_paid ?? []).includes(id)) return;
+  if (lockedOf(content, s).includes('wealth')) return;
+  const rank = boardRank(t, s.grades?.[id] ?? null, s.stars?.[id]);
+  const amount = table[rank] ?? 0;
+  s.boards_paid = [...(s.boards_paid ?? []), id];
+  if (!amount) return;
+  s.wealth += amount; s.day.wealth += amount;
+  paid.wealth = (paid.wealth ?? 0) + amount;
+  paid.board = { rank, wealth: amount };
 }
 
 /* The page is the only witness to a board or a duel: it records the win here,
