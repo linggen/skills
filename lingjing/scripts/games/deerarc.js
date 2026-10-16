@@ -15,10 +15,10 @@
 // The world steps only in `tick` at a fixed 1/60 s, and nothing moves until an arrow touches it,
 // so a shot flies the same whatever the clock's step: `flight` (the same code) is what the bot
 // searches. Pure module: newGame / html / act / tick, and mount().
-// The stag is painted (games.json `art`, art/games/deer); the bow, the arrow, the reeds and the
-// branch are PLACEHOLDER ink strokes until theirs land (the ink deer stays as the fallback).
+// Every part is painted from games.json `art` (art/games/deer, and the creek of the 00-deer scene
+// for the backdrop, the bank and the water); a part whose painting is missing is drawn in ink.
 import { Matter } from './physics.js';
-import { btn, n, reeds, scene, splash, still } from './ink.js';
+import { btn, n, scene, splash, still } from './ink.js';
 import { mountPure } from './mount.js';
 
 const { Engine, Bodies, Body, Composite } = Matter;
@@ -34,7 +34,7 @@ export const meta = {
 
 export const W = 480, H = 300;
 export const STEP_MS = 1000 / 60;
-export const BOW = [426, 192];
+export const BOW = [424, 178]; // his hand on the near bank: the bow is held up, half-kneeling
 export const MAX_PULL = 120, MIN_POWER = 0.12, MIN_V = 3, MAX_V = 7.2;
 export const QUIVER = 4, STUCK_MISSES = 3;
 const GRAVITY = 0.36, WIND_ACC = 0.02, ARROW_HALF = 13, TRAIL_EVERY = 3;
@@ -459,28 +459,68 @@ function slowness(s) {
 
 /* ── The picture (PLACEHOLDER strokes for the deer, the bow and the arrow) ─────────────────── */
 
+const groundPts = () => { const pts = []; for (let x = 0; x <= W; x += 20) pts.push(`${x} ${n(groundAt(x))}`); return pts; };
+const WATER_D = `M0 ${WATER[0][1] - 4} Q 80 ${WATER[0][1] - 9} 160 ${WATER[0][1] - 4} T 320 ${WATER[0][1] - 4} L330 ${GROUND + 6} V${H} H0Z`;
+const bankD = () => `M${groundPts().join(' L')} V${H} H0Z`;
+
+/** The stream and the banks: painted (games.json `art`: `backdrop` the 黑松岭 creek behind,
+    `bank` and `water` cut from it into the ground and the stream), else drawn in ink. */
 function bankPicture(s) {
-  const pts = [];
-  for (let x = 0; x <= W; x += 20) pts.push(`${x} ${n(groundAt(x))}`);
-  const water = `<path class="g-da-water" d="M0 ${WATER[0][1] - 4} Q 80 ${WATER[0][1] - 9} 160 ${WATER[0][1] - 4} T 320 ${WATER[0][1] - 4} V${H} H0Z"/>`;
-  const ripples = [40, 120, 210].map((x, i) => `<path class="g-da-ripple" d="M${x} ${WATER[0][1] + 10 + i * 6} q12 -3 24 0"/>`).join('');
-  return `<path class="g-da-hill" d="M0 160 C90 130 170 150 260 120 C330 100 400 128 ${W} 112 V${H} H0Z"/>`
-    + `<path class="g-da-ground" d="M${pts.join(' L')} V${H} H0Z"/><path class="g-line g-thin g-faint" d="M${pts.join(' L')}"/>`
-    + water + ripples;
+  const a = s.art, id = clipId(s);
+  if (!a?.backdrop) return inkBank();
+  const clip = (name, d) => `<clipPath id="${id}-${name}"><path d="${d}"/></clipPath>`;
+  // The whole board is the painting; a paper wash over its far half quiets it behind the deer.
+  return `<defs>${clip('bank', bankD())}${clip('water', WATER_D)}<linearGradient id="${id}-wash" x1="0" y1="0" x2="0" y2="1">`
+    + '<stop offset="0" stop-color="#f4ecdc" stop-opacity=".55"/><stop offset=".7" stop-color="#f4ecdc" stop-opacity=".25"/><stop offset="1" stop-color="#f4ecdc" stop-opacity="0"/></linearGradient></defs>'
+    + cropped(a.backdrop, 0, 0, W, H, 'g-da-backdrop') + `<rect class="g-da-wash" width="${W}" height="${H}" style="fill:url(#${id}-wash)"/>`
+    + (a.bank ? `<g clip-path="url(#${id}-bank)">${cropped(a.bank, 0, BANK - 30, W, H - BANK + 30, 'g-da-bankart')}</g>` : '')
+    + (a.water ? `<g clip-path="url(#${id}-water)">${cropped(a.water, 0, WATER[0][1] - 10, 330, H - WATER[0][1] + 10, 'g-da-waterart')}</g>` : '')
+    + `<path class="g-da-edge" d="M${groundPts().join(' L')}"/>`;
 }
 
-/** The wind, read: a streamer on a pole by the bow and leaves drifting the way it blows. */
+function inkBank() {
+  const ripples = [40, 120, 210].map((x, i) => `<path class="g-da-ripple" d="M${x} ${WATER[0][1] + 10 + i * 6} q12 -3 24 0"/>`).join('');
+  return `<path class="g-da-hill" d="M0 160 C90 130 170 150 260 120 C330 100 400 128 ${W} 112 V${H} H0Z"/>`
+    + `<path class="g-da-ground" d="${bankD()}"/><path class="g-line g-thin g-faint" d="M${groundPts().join(' L')}"/>`
+    + `<path class="g-da-water" d="${WATER_D}"/>${ripples}`;
+}
+
+/** A part of a painting (`crop` [x, y, w, h] in its pixels, of `size` [w, h]) filling a box. */
+function cropped(a, x, y, w, h, cls) {
+  const [cx, cy, cw, ch] = a.crop, [iw, ih] = a.size;
+  return `<svg class="${cls}" x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" viewBox="${cx} ${cy} ${cw} ${ch}" preserveAspectRatio="xMidYMid slice"${a.opacity != null ? ` opacity="${a.opacity}"` : ''}>`
+    + `<image href="${artUrl(a.file)}" width="${iw}" height="${ih}"/></svg>`;
+}
+const clipId = (s) => `g-da-${String(s.seed).replace(/[^a-z0-9]/gi, '').slice(-12) || 'x'}`;
+
+// The tuft on his bank, where the red rag is tied: its reeds' bases and heights.
+const TUFT = [[452, BANK + 2, 46], [460, BANK + 2, 58], [469, BANK + 2, 40]];
+const FAR_TUFTS = [[16, GROUND + 3, 30], [26, GROUND + 3, 38], [300, GROUND + 4, 28], [309, GROUND + 4, 34]];
+
+/** The wind, read: a red rag tied to the tallest reed of the tuft on his bank, the reeds leaning,
+    and leaves drifting the way it blows now. No post: the reed is the post. */
 function windPicture(level, s) {
   const t = calm(s) ? 0 : s.clock, w = windAt(level, s.clock), flutter = calm(s) ? 0 : Math.sin(t / 140) * (1 + 3 * Math.abs(w));
-  const px = 462, top = 140, len = 34, lean = Math.max(-1, Math.min(1, w)) * 0.95;
-  const hang = 1 - Math.abs(lean), ex = px + lean * len, ey = top + 4 + hang * len * 0.9;
-  const streamer = `<path class="g-da-pole" d="M${px} ${BANK} L${px} ${top}"/>`
-    + `<path class="g-da-streamer" d="M${px} ${top + 2} Q${n((px + ex) / 2)} ${n(top + 2 + flutter + hang * 10)} ${n(ex)} ${n(ey + flutter)} L${n(ex)} ${n(ey + 7 + flutter)} Q${n((px + ex) / 2)} ${n(top + 10 + flutter + hang * 10)} ${px} ${top + 10}Z"/>`;
+  const lean = Math.max(-1, Math.min(1, w)), sway = calm(s) ? 0 : Math.sin(t / 380) * (0.3 + Math.abs(w));
+  const tuft = (list) => list.map(([x, y, h], i) => tuftReed(s.art?.reed, x, y, h, lean * 16 + sway * (1 + i * 0.3))).join('');
+  const [rx, ry, rh] = TUFT[1], tip = tipOf2(rx, ry, rh, lean * 16 + sway * 1.3);
   const moving = level.wind || level.gust;
   const leaves = moving ? [0, 1, 2, 3].map((i) => leafAt(i, windCarried(level, t), t)).join('') : '';
-  // A tuft at his feet and one by the water, leaning the way it blows now (+x: in his face).
-  const tufts = reeds([392, 398, 405, 411], BANK + 2, 22, w, t) + reeds([18, 24, 31, 300, 307], GROUND + 2, 18, w, t);
-  return streamer + tufts + leaves;
+  return tuft(FAR_TUFTS) + tuft(TUFT) + ragPicture(tip, lean, flutter) + leaves;
+}
+
+/** One reed standing at (x, y), `h` tall, leaning `deg` (+: the way the wind blows, +x). */
+function tuftReed(art, x, y, h, deg) {
+  if (!art) return `<path class="g-reed" d="M${x} ${y} Q${n(x + deg * 0.3)} ${n(y - h * 0.55)} ${n(x + deg)} ${n(y - h)}"/>`;
+  return `<g transform="translate(${x} ${y}) rotate(${n(deg - 90)})">${lengthSprite(art, 0, h, false)}</g>`;
+}
+const tipOf2 = (x, y, h, deg) => { const r = (deg * Math.PI) / 180; return [x + Math.sin(r) * h, y - Math.cos(r) * h]; };
+
+/** The red rag on the reed's tip: hanging when still, streaming out the way the wind blows. */
+function ragPicture([px, top], lean, flutter) {
+  const len = 30, hang = 1 - Math.abs(lean) * 0.95, ex = px + lean * 0.95 * len, ey = top + 4 + hang * len * 0.9;
+  const wx = 5 * hang; // hanging, the rag still has its width
+  return `<path class="g-da-streamer" d="M${n(px)} ${n(top + 2)} Q${n((px + ex) / 2)} ${n(top + 2 + flutter + hang * 10)} ${n(ex)} ${n(ey + flutter)} L${n(ex + wx)} ${n(ey + 6 + flutter)} Q${n((px + ex) / 2 + wx)} ${n(top + 9 + flutter + hang * 10)} ${n(px + wx)} ${n(top + 8)}Z"/>`;
 }
 
 function leafAt(i, carried, t) {
@@ -573,16 +613,26 @@ function bowPicture(s) {
   // The tension: the limbs bend in and the tips come back as the string stretches; full, it trembles.
   const back = 4 + p * 30, bend = 14 + p * 12, tipX = 4 - p * 7, tipY = 28 - p * 4;
   const shake = p >= 0.98 && !calm(s) ? n(Math.sin(s.clock / 23) * 0.8) : 0;
-  const nocked = s.phase === 'aim' ? arrowShape(s.art, -back + 16) : '';
+  const nocked = s.phase !== 'aim' ? '' : s.art?.bow_drawn ? `<g opacity="${n(Math.max(0, 1 - p * 2.5), 2)}">${arrowShape(s.art, 16)}</g>` : arrowShape(s.art, -back + 16);
   // Painted (bow_rest → bow_drawn, cross-faded by the pull; each painted pointing right, the grip
   // at its `at`), else drawn: the limbs bend in and the string comes back with the pull.
   const bow = s.art?.bow_rest || s.art?.bow_drawn
-    ? sprite(s.art.bow_rest ?? s.art.bow_drawn, s.art.bow_drawn ? 1 - p : 1) + sprite(s.art.bow_drawn, p)
+    ? paintedBow(s.art, p)
     : `<path class="g-da-limb" d="M${n(tipX)} ${n(-tipY)} Q${n(bend)} 0 ${n(tipX)} ${n(tipY)}"/>`
       + `<path class="g-da-string${p > 0 ? ' is-taut' : ''}" d="M${n(tipX)} ${n(-tipY)} L${n(4 - back)} 0 L${n(tipX)} ${n(tipY)}"/>`;
   // Mirrored (it points left), so the screen's clockwise rotate takes −a: local +x then runs along
   // (−cos a, −sin a), the launch vector (velocityOf) — up for a > 0. Hanli 10-16: it pointed down.
   return `<g class="g-da-bow${p >= 0.98 ? ' is-full' : ''}" transform="translate(${BOW[0]} ${n(BOW[1] + shake)}) scale(-1 1) rotate(${n(-a)})">${bow}${nocked}</g>`;
+}
+
+/** The painted bow in his hand: at rest until he pulls, then drawn — the drawn painting widening
+    from its grip as the pull grows (the string comes back, the limbs bend), never two ghosts. A
+    soft light behind it, so it reads over the painted grass. */
+function paintedBow(art, p) {
+  const drawn = art.bow_drawn && p >= 0.12 ? art.bow_drawn : null, a = drawn ?? art.bow_rest ?? art.bow_drawn;
+  const stretch = drawn ? 0.62 + 0.38 * Math.min(1, p) : 1;
+  const halo = `<ellipse class="g-da-halo" cx="${n(-a.w * 0.2)}" cy="0" rx="${n(Math.max(26, a.w * 0.75))}" ry="${n(a.h * 0.55)}"/>`;
+  return `${halo}<g transform="scale(${n(stretch, 3)} 1)">${sprite(a, 1)}</g>`;
 }
 
 /** An arrow along local +x, its middle at `cx`: the `arrow` painting (pointing right), or ink. */

@@ -473,8 +473,9 @@
 .g-da-scene .g-da-shaft { stroke-width: 1.6; }
 .g-da-scene .g-da-fletch { stroke-width: 1.1; stroke: var(--seal); opacity: .8; }
 .g-da-scene .g-da-spent { opacity: .55; }
-.g-da-scene .g-da-guide { fill: var(--ling); opacity: .55; }
-.g-da-scene .g-da-trail { opacity: .3; }
+/* Dots that read over the painting: ink with a paper rim. */
+.g-da-scene .g-da-guide { fill: #4a3a26; stroke: #f6efe0; stroke-width: .9; opacity: .85; }
+.g-da-scene .g-da-trail { fill: #4a3a26; stroke: #f6efe0; stroke-width: .7; opacity: .6; }
 .g-da-scene .g-da-hint { stroke: var(--seal); stroke-width: 1.4; opacity: .8; }
 .g-da-scene .g-da-burst { opacity: .55; }
 .g-deerarc .g-line-say { min-height: 3.4em; text-align: center; margin: 0; }
@@ -485,7 +486,11 @@
 .g-da-stars { font-size: 34px; letter-spacing: .2em; margin: 18px 0 0; }
 .g-da-stars .g-da-star { animation: g-da-pop .5s cubic-bezier(.2, 1.6, .4, 1) both; animation-delay: calc(var(--i) * .25s); }
 @media (prefers-reduced-motion: reduce) { .g-da-pop, .g-da-stars .g-da-star { animation: none; } }
-.g-da-scene .g-da-sprite { mix-blend-mode: multiply; }
+.g-da-scene .g-da-sprite { mix-blend-mode: normal; } /* the paintings carry their own alpha */
+.g-da-scene .g-da-wash { pointer-events: none; }
+.g-da-scene .g-da-halo { fill: #f6efe0; opacity: .55; filter: blur(7px); }
+.g-da-scene .g-da-edge { fill: none; stroke: #6b5a3e; stroke-width: 1; opacity: .35; }
+.g-da-scene .g-da-waterart { opacity: .95; }
 @media (prefers-color-scheme: dark) { .g-da-scene .g-da-sprite { mix-blend-mode: normal; } }
 .g-da-scene .g-da-ring { fill: none; stroke: currentColor; stroke-width: 1.4; }
 .g-da-scene .g-da-hitstar { fill: var(--faint); font-size: 17px; font-family: var(--serif); }

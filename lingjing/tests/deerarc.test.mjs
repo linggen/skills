@@ -65,12 +65,12 @@ test('the walking deer: a pull found for a moment still hits when the hand is 50
   assert.ok(ok >= 2, `steady leads: ${ok} of 4`);
 });
 
-test('the wind is real: the still level\'s answer falls short into the wind, and the wind\'s answer flies longer', () => {
-  const calm = solve(byId('still'));
-  const windy = { ...byId('still'), wind: byId('wind').wind };
-  const r = da.flight(windy, calm);
-  assert.notEqual(r.hit, 'clean');
-  assert.ok(r.tip[0] > da.flight(byId('still'), calm).tip[0], 'blown back toward him');
+test('the wind is real: the headwind blows a calm answer well back toward him; the wind level wants it longer', () => {
+  const open = { ...byId('still'), deer: { x: -999 } }, calm = solve(byId('still'));
+  const still = da.flight(open, calm).tip[0], blown = da.flight({ ...open, wind: byId('wind').wind }, calm).tip[0];
+  assert.ok(blown - still > 15, `blown back toward him: ${still.toFixed(0)} → ${blown.toFixed(0)}`);
+  const wind = solve(byId('wind'));
+  assert.notEqual(da.flight(byId('wind'), { ...wind, p: wind.p - 0.08 }).hit, 'clean', 'a pull short of the answer is not enough');
 });
 
 /** The first pull on a coarse grid whose flight in a fresh world matches `want`. */
@@ -258,7 +258,9 @@ test('the paintings: only the entries whose files are there are used (the stag n
   let r = da.newGame('t', 1, { levels: [byId('reeds')], art: all });
   r = da.act(r, { g: 'draw', a: 30, p: 0.5 }).state;
   const aiming = da.html(r, 'zh');
-  for (const f of ['bow-rest', 'bow-drawn', 'arrow', 'reed', 'branch']) assert.match(aiming, new RegExp(`${f}\\.webp`), f);
+  for (const f of ['bow-drawn', 'arrow', 'reed', 'branch', 'heisong-creek']) assert.match(aiming, new RegExp(`${f}\\.webp`), f);
+  assert.doesNotMatch(aiming, /bow-rest\.webp/, 'drawn, the bow at rest is gone — never two ghosts');
+  assert.match(da.html(da.newGame('t', 1, { levels: [byId('reeds')], art: all }), 'zh'), /bow-rest\.webp/, 'at rest before he pulls');
   assert.doesNotMatch(aiming, /g-da-limb|g-da-branch"/, 'no ink where a painting is');
   r = da.act(r, { g: 'draw', a: 18, p: 0.97 }).state;
   r = da.act(r, { g: 'loose' }).state;
