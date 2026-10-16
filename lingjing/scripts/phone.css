@@ -37,8 +37,11 @@
   .chattoggle .barword { display: inline; font-weight: 500; }
   .shell.chatunread .chattoggle .unread { display: block; width: 7px; height: 7px; border-radius: 50%; background: var(--seal); box-shadow: 0 0 0 2px var(--seal-soft); }
   /* A scratch save's badge (inline-styled at the bottom corner) stands above the bar. */
-  /* …small, at the top bar's empty middle: never over 跳过, the pager's ›, the footer or a fight's hand (live, 2026-10-15). */
-  .scratch-badge { top: 0 !important; right: auto !important; left: 50%; transform: translateX(-50%); font-size: 9.5px !important; opacity: .6 !important; }
+  /* …small, in the bottom-left corner of the chat's 「和灵说话」 bar, where nothing lives (2026-10-16: at the top bar's
+     middle it covered the header's 修为 strip); never over 跳过, the pager's ›, the footer or a fight's hand
+     (live, 2026-10-15). The 游戏厅（测试） chip takes the bar's other corner (dev-arcade.js). */
+  .scratch-badge { top: auto !important; bottom: 8px; right: auto !important; left: 8px; max-width: 34vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    border-top: 1px solid #b33a2b !important; border-radius: 3px !important; font-size: 9.5px !important; opacity: .6 !important; }
   .shell.chatsheet ~ .scratch-badge { display: none; }
   /* The chat's own frame fills the sheet; a scratch save's quiet transcript scrolls in it. */
   #chat-panel .scratch-lines { max-height: calc(var(--sheet-h) - 110px); }
