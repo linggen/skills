@@ -5,7 +5,7 @@
 // `stuck(state)`: fallen again and again in the dark, the deer missed and missed …),
 // whichever first. Modules draw no skip of their own (games/ink.js skipBtn is retired);
 // a new game gets the gate for free, and adds `stuck` only when it has a clear fail.
-// A board with its own way out and nothing to fail (the village maps' 「回家」) opts out of
+// A board with its own way out and nothing to fail (a 「回家」 of its own; none since 石坳村's map was cut, 10-16) opts out of
 // the clock with `meta.stuckClock: false` — its own `stuck` still counts.
 // Pure: the board object and the clock in, a yes or no out.
 

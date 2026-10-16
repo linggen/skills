@@ -20,8 +20,6 @@ import { fitPresence, herAway } from '../scripts/rules/companion.mjs';
 import { firstSentence, taskLine } from '../scripts/rules/recap.mjs';
 import { FOOTER, FURNITURE, herAwake, sideLineOf, stageCards, stands } from '../scripts/stage.mjs';
 
-// 00-notice's village map played (batch two, 2026-10-14): its way on waits on it.
-const eveDone = (s) => ({ ...s, tasks: { ...s.tasks, 'village-eve': { status: 'done', period: 'once', done_at: '2026-10-01T00:00:00Z' } } });
 
 const content = loadContent();
 const NOW = new Date('2026-10-05T10:00:00');
@@ -32,7 +30,7 @@ const gameTitle = (id, lang) => pick(content.tasks.tasks.find(t => t.id === id).
 
 /* 古二's last scene, 银月 found and awake (not in the token): the next step is 今 · 一. */
 const beforeJin = () => ({ ...newState(content, 'zh', NOW), chapter: '00-prologue', scene: '00-notice', place: 'shiao', done_scenes: ['00-uncle'], companion: { joined: '2026-10-01', awake: true } });
-const inJin = () => resolve(eveDone(beforeJin()), content, ctx, { exit: 'go' }).state;
+const inJin = () => resolve(beforeJin(), content, ctx, { exit: 'go' }).state;
 
 test('the 今 stage keeps none of the 古\'s furniture; the 古 stage keeps all of it', () => {
   const s = inJin();
@@ -94,7 +92,7 @@ test('the command line: the move into the 今 writes her absent, the move out wr
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-side-'));
   try {
     const file = path.join(data, 'state.json');
-    fs.writeFileSync(file, JSON.stringify(eveDone(beforeJin())));
+    fs.writeFileSync(file, JSON.stringify(beforeJin()));
     const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], {
       cwd: ROOT, encoding: 'utf8',
       env: { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() },

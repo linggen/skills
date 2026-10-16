@@ -28,14 +28,13 @@ const NOW = new Date('2026-10-05T10:00:00');
 const ctx = { now: NOW, quests: [] };
 const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
 const piece = fs.readFileSync(path.join(ROOT, 'scripts/setpieces/chending.js'), 'utf8');
-const eveDone = (s) => ({ ...s, tasks: { ...s.tasks, 'village-eve': { status: 'done', period: 'once', done_at: '2026-10-01T00:00:00Z' } } });
 const scenes = Object.values(content.chapters).flatMap((ch) => Object.values(ch.scenes ?? {}));
 const PIECE = /\{景=([a-z]+)\}/g;
 
 /* 古二's last choice → 今 · 一 → its game won → 古三's gate, as a save walks it. */
 function atGate(lang) {
   let s = { ...newState(content, lang, NOW), chapter: '00-prologue', scene: '00-notice', place: 'shiao', done_scenes: ['00-uncle'] };
-  s = resolve(eveDone(s), content, ctx, { exit: 'go' }).state;
+  s = resolve(s, content, ctx, { exit: 'go' }).state;
   s = resolve(s, content, ctx, { exit: 'on' }).state;
   s = resolve(s, content, ctx, { exit: 'on' }).state;
   s = win(s, content, ctx, { id: 'jin-qianmi' }).state;

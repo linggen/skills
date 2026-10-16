@@ -91,8 +91,6 @@ test('the command line: Ling is never handed the prose — only what the stage p
     assert.deepEqual(cli('tell').tell.map(t => t.id), ['00-shiao']);
     cli('win', '--id=rain-basins', '--grade=dry');
     cli('task', '--action=done', '--id=rain-basins');
-    cli('win', '--id=village-day', '--grade=light');
-    cli('task', '--action=done', '--id=village-day');
     cli('resolve', '--exit=begin');
     cli('tell');
     cli('win', '--id=masan-taunt', '--grade=word');
@@ -123,8 +121,6 @@ test('the page draws the passages owed with their beats (Tell) and marks them to
     cli('tell');
     cli('win', '--id=rain-basins', '--grade=dry');
     cli('task', '--action=done', '--id=rain-basins');
-    cli('win', '--id=village-day', '--grade=light');
-    cli('task', '--action=done', '--id=village-day');
     cli('resolve', '--exit=begin');
     cli('tell');
     cli('win', '--id=masan-taunt', '--grade=word');

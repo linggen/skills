@@ -19,8 +19,6 @@ import { huiLineOf } from '../scripts/queue.js';
 import { advance, current, huiAt, leadsIn, sceneOfItem, withTold } from '../scripts/dialogue.js';
 import { TO_HALL, walk } from './prologue.mjs';
 
-// 00-notice's village map played (batch two, 2026-10-14): its way on waits on it.
-const eveDone = (s) => ({ ...s, tasks: { ...s.tasks, 'village-eve': { status: 'done', period: 'once', done_at: '2026-10-01T00:00:00Z' } } });
 
 const content = loadContent();
 const NOW = new Date('2026-10-05T10:00:00');
@@ -30,7 +28,7 @@ const css = fs.readFileSync(new URL('../scripts/lingjing.css', import.meta.url),
 
 /* 古二's last choice taken: the save on j01-track, the reading the page draws there. */
 function turned({ catchup = true } = {}) {
-  const s = resolve(eveDone(save('jin-notice')), content, ctx, { exit: 'go' }).state;
+  const s = resolve(save('jin-notice'), content, ctx, { exit: 'go' }).state;
   const tell = playOf(content, s, tellOf(content, s).tell).filter((t) => catchup || t.of !== 'catchup');
   return { s, l: look(s, content, ctx), r: withTold(null, tell, s.scene) };
 }

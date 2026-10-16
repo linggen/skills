@@ -153,8 +153,6 @@ test('the command line: Ling\'s Remember reads LINGGEN_USER_WORDS; the page\'s c
     cli({}, 'init');
     cli({}, 'win', '--id=rain-basins', '--grade=dry');
     cli({}, 'task', '--action=done', '--id=rain-basins');
-    cli({}, 'win', '--id=village-day', '--grade=light');
-    cli({}, 'task', '--action=done', '--id=village-day');
     cli({}, 'resolve', '--exit=begin');
     const args = ['remember', '--who=马三', '--kind=仇', '--what=逼租', '--quote=这账我记着'];
     assert.equal(cli({}, ...args, '--for=ling').refused, 'unheard', 'no env: refused');

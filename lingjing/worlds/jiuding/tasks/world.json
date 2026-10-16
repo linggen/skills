@@ -96,27 +96,6 @@
       "done_line": {"zh": "六担水，缸满了。", "en": "Six loads of water; the vat is full."}
     },
     {
-      "id": "village-day", "kind": "board", "game": "villageday", "period": "once",
-      "title": {"zh": "石坳村 · 村里走一走", "en": "Shi'ao Village · A walk round"},
-      "grant": { "table": "task", "progress": 5 },
-      "marks": {"full": "village-day-full", "light": "village-day-light"},
-      "done_line": {"zh": "村里转了一圈，回家了。", "en": "A turn round the village, and home."}
-    },
-    {
-      "id": "village-dong", "kind": "board", "game": "villagedong", "period": "once",
-      "title": {"zh": "石坳村 · 村里走一走", "en": "Shi'ao Village · A walk round"},
-      "grant": { "table": "task", "progress": 5 },
-      "marks": {"full": "village-dong-full", "light": "village-dong-light"},
-      "done_line": {"zh": "村里转了一圈，回家了。", "en": "A turn round the village, and home."}
-    },
-    {
-      "id": "village-eve", "kind": "board", "game": "villageeve", "period": "once",
-      "title": {"zh": "石坳村 · 村里走一走", "en": "Shi'ao Village · A walk round"},
-      "grant": { "table": "task", "progress": 5 },
-      "marks": {"full": "village-eve-full", "light": "village-eve-light"},
-      "done_line": {"zh": "村里转了一圈，回家了。", "en": "A turn round the village, and home."}
-    },
-    {
       "id": "xisui-hold", "kind": "board", "game": "xisui", "period": "once",
       "title": { "zh": "洗髓 · 疼，别喊", "en": "Marrow washing · Don't cry out" },
       "grant": { "table": "task", "progress": 5 },

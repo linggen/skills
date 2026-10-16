@@ -63,10 +63,8 @@ test('the rest is told right after the game is counted, before the choices — a
   const { tell } = tellOf(content, s);
   assert.deepEqual(tell.map((t) => [t.of, t.id]), [['after', '00-shiao/after']]);
   assert.match(tell[0].text, /他娘已经在挨个儿倒盆了/);
-  // the village map after the morning (batch two): played, then 那天傍晚
-  const told = tellOf(content, s).keep;
-  const walked = task(win(told, content, ctx(), { id: 'village-day', grade: 'light' }).state, content, ctx(), { action: 'done', id: 'village-day' }).state;
-  const on = resolve(walked, content, ctx(), { exit: 'begin' });
+  // then 那天傍晚 (the village map after the morning was cut, 2026-10-16)
+  const on = resolve(tellOf(content, s).keep, content, ctx(), { exit: 'begin' });
   assert.equal(on.state.scene, '00-masan');
   assert.match(page, /if \(on && !look\?\.tell_owed\) await panelTap\(on\.id/);
 });
@@ -74,7 +72,6 @@ test('the rest is told right after the game is counted, before the choices — a
 test('the choices are proper buttons with the box put away — never the bare 「那天傍晚 ›」 link', () => {
   let s = newState(content, 'zh', NOW);
   s = task(win(s, content, ctx(), { id: 'rain-basins', grade: 'wet' }).state, content, ctx(), { action: 'done', id: 'rain-basins' }).state;
-  s = task(win(s, content, ctx(), { id: 'village-day', grade: 'light' }).state, content, ctx(), { action: 'done', id: 'village-day' }).state;
   const html = cardHtml({ card: 'panel' }, { look: look(s, content, ctx()), words: WORDS.zh, lang: 'zh' });
   assert.match(html, /class="act paneltap"[^>]*data-panel-exit="begin"[^>]*>那天傍晚 ›</);
   assert.doesNotMatch(html, /quietnext/);
@@ -110,7 +107,6 @@ test('the header changes only when the story gets there: the last scene\'s holds
   // The reading a move begins: the choice's passage first (of: 'choice', the old scene's id), then the new scene's.
   let s = newState(content, 'zh', NOW);
   s = task(win(s, content, ctx(), { id: 'rain-basins', grade: 'dry' }).state, content, ctx(), { action: 'done', id: 'rain-basins' }).state;
-  s = task(win(s, content, ctx(), { id: 'village-day', grade: 'light' }).state, content, ctx(), { action: 'done', id: 'village-day' }).state;
   s = resolve(tellOf(content, s).keep, content, ctx(), { exit: 'begin' }).state;
   s = tellOf(content, s).keep;
   s = task(win(s, content, ctx(), { id: 'masan-taunt', grade: 'word' }).state, content, ctx(), { action: 'done', id: 'masan-taunt' }).state;

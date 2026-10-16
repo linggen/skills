@@ -309,7 +309,7 @@
 .gamecard.scenegame .cardtitle { font-family: var(--serif); letter-spacing: .12em; }
 
 /* Batch two (2026-10-14): 忍字 (.g-taunt), 烙饼 (.g-griddle), 认路 (.g-way),
-   练功 (.g-carry), 石坳村 (.g-village) — the same
+   练功 (.g-carry) — the same
    .g-ink look; every one keeps a quiet 「算了，往下走」 (ink.js skipBtn). */
 .g-scene .g-bigchar { font-family: var(--serif); font-size: 104px; fill: currentColor; opacity: .07; }
 .g-scene .g-dot { fill: currentColor; opacity: .25; }
@@ -349,25 +349,13 @@
 .g-scene .g-seal { stroke: var(--seal); }
 .g-scene .g-ember { fill: var(--seal); }
 /* 练功 */
-/* 石坳村 */
-/* The map is a painting on light rice paper in either theme, so its seals keep paper and cinnabar colours. */
-.g-villagemap { background: #EFE9DC; overflow: hidden; }
+/* Numbered seals on a painting (相克 xiangke, 掐诀 qiajue): paper and cinnabar in either theme. */
 .g-scene .g-spothalo { fill: #FBF8F2; opacity: .62; }
 .g-scene .g-spot { fill: #FBF8F2; stroke: #A3352A; stroke-width: 1.6; }
 .g-scene .g-spotmark[data-g] { cursor: pointer; }
 .g-scene .g-spotmark.is-done .g-spot { fill: #A3352A; }
 .g-scene .g-spotnum { font-size: 11px; font-weight: 700; fill: #A3352A; font-family: var(--serif); }
 .g-scene .g-spotmark.is-done .g-spotnum { fill: #FBF8F2; }
-.g-scene .g-cabbage { fill: var(--wood); opacity: .6; }
-.g-scene .g-henbody { fill: var(--surface); stroke: currentColor; stroke-width: 1.1; }
-.g-scene .g-hen.is-pecked .g-henbody { fill: var(--seal-soft); }
-.g-scene .g-print2 { fill: currentColor; opacity: .7; }
-.g-scene .g-print2.is-grey, .g-scene .is-grey { fill: none; stroke: currentColor; stroke-width: 1.4; opacity: .85; }
-.g-pic { width: 64px; border: 0; background: none; }
-.g-printbox { display: flex; justify-content: center; }
-.g-printbox .g-pic { width: 110px; border: 1px solid var(--line); background: var(--raised); }
-.g-plant .g-pic { width: 52px; }
-.g-tale { text-align: left; font-size: 14.5px; }
 /* 拾遗 (gather.js): what a crack holds, by its light — gold, a dim green, a copper glint. */
 .g-scene .g-glow { stroke: none; opacity: .75; }
 .g-scene .g-glow-gold { fill: rgb(214 168 60); }

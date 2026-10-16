@@ -1268,27 +1268,6 @@
    "task": "halfyear-carry"
   },
   {
-   "id": "villageday",
-   "group": "prologue",
-   "scene": "00-shiao",
-   "hui": "第一回",
-   "task": "village-day"
-  },
-  {
-   "id": "villagedong",
-   "group": "prologue",
-   "scene": "00-xiuxian",
-   "hui": "第二回",
-   "task": "village-dong"
-  },
-  {
-   "id": "villageeve",
-   "group": "prologue",
-   "scene": "00-notice",
-   "hui": "第二回",
-   "task": "village-eve"
-  },
-  {
    "id": "xisui",
    "group": "prologue",
    "scene": "00-sleep",
