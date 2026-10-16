@@ -2432,6 +2432,13 @@ function matchPace() {
   if (next === r) return;
   keepReading(SCRATCH, next);
   keep({ reading: next });
+  // The header was painted this frame from the reading before the fit; a choice's passage and the
+  // next scene's are one reading, and the fit (全文's column) moves it on to the scene's — so paint
+  // again, or the left scene's header stands over the new one's choices (live 2026-10-16 at 1440:
+  // 「傍晚」 and 马三 over 00-dawn's 收下鸡蛋, 「第二十七道记号」 over 00-fox, until some later tap).
+  // Only when the passage on show is another scene's; the fit is a fixed point after.
+  const on = (x) => (playing(x) ? sceneOfItem(x.items[Math.min(x.i, x.items.length - 1)]) : null);
+  if (on(next) !== on(r)) render();
 }
 /* The beat at the top of the page on show — the one he is reading (pager.js). */
 const beatInView = () => pager.beat();
