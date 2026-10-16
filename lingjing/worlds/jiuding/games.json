@@ -34,9 +34,8 @@
   {
    "id": "deer",
    "group": "prologue",
-   "scene": "00-deer",
-   "hui": "第二回",
-   "task": "deer-wind"
+   "hui": "第二回 · 旧版",
+   "_retired": "The old 射鹿 board (hold to draw, aim ‹ ›), kept for the 游戏厅 only; the beat plays deerarc since 2026-10-16."
   },
   {
    "id": "rain",
@@ -66,6 +65,7 @@
    "group": "prologue",
    "scene": "00-deer",
    "hui": "第二回",
+   "task": "deer-wind",
    "mechanic": "愤怒小鸟",
    "stars": 3,
    "art": {

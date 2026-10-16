@@ -493,9 +493,9 @@ function personBrief(content, state, creature) {
 /* What a board is dealt: the task's own `deal`, and a small game's levels from the registry
    (games.json, 2026-10-16 — 喂饼's 割绳子 levels live there once, for the beat and the 游戏厅). */
 function dealOf(content, task) {
-  const levels = task.game ? content.games?.games?.find(g => g.id === task.game)?.levels : null;
+  const row = task.game ? content.games?.games?.find(g => g.id === task.game) : null, levels = row?.levels, art = row?.art;
   if (!task.deal && !levels) return {};
-  return { deal: { ...(task.deal ?? {}), ...(levels ? { levels } : {}) } };
+  return { deal: { ...(task.deal ?? {}), ...(levels ? { levels } : {}), ...(art ? { art } : {}) } };
 }
 
 export function look(state, content, ctx) {

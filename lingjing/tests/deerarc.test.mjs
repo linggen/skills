@@ -10,6 +10,9 @@ import * as da from '../scripts/games/deerarc.js';
 import { bot, solve } from '../scripts/games/bots/deerarc.js';
 import { playOnce } from '../tools/board-bots.mjs';
 import { loadContent } from '../scripts/content.mjs';
+import { look, resolve, task, win } from '../scripts/rules.mjs';
+import { newState } from '../scripts/state.mjs';
+import { TO_HALL, walk } from './prologue.mjs';
 
 const content = loadContent();
 const GAME = content.games.games.find((g) => g.id === 'deerarc');
@@ -30,8 +33,12 @@ function shot(level, aim, { step = 10, at = 0, limit = 8000 } = {}) {
 
 test('the levels are the registry\'s: four, still · wind · walking · reeds and a branch; separate from the story\'s 射鹿', () => {
   assert.deepEqual(LEVELS.map((l) => l.id), ['still', 'wind', 'walk', 'reeds']);
-  assert.equal(GAME.task, undefined, 'a prototype: no task, the beat is still games/deer.js');
-  assert.equal(content.tasks.tasks.find((t) => t.id === 'deer-wind').game, 'deer');
+  // The story's 射鹿 plays this board since 2026-10-16 (Hanli: 「好像还不错」 — go).
+  assert.equal(GAME.task, 'deer-wind');
+  const task = content.tasks.tasks.find((t) => t.id === 'deer-wind');
+  assert.equal(task.game, 'deerarc');
+  assert.equal(task.stars, 3);
+  assert.equal(content.games.games.find((g) => g.id === 'deer').task, undefined, 'the old board is the 游戏厅\'s only');
   for (const l of LEVELS) assert.ok(l.say?.zh && l.say?.en, `${l.id} says what to do in both languages`);
   assert.ok(byId('wind').wind > 0 && byId('wind').hint, 'the wind level hints 「往左偏半寸」');
   assert.ok(byId('walk').deer.walk);
@@ -367,5 +374,44 @@ test('the deer eases between poses: its head and its feet never jump from one fr
       assert.ok(Math.abs(d.x - last.x) < 1.5, `${level.id}: the feet at ${ms}`);
       last = d;
     }
+  }
+});
+
+/* ── The story's 射鹿 (00-deer) plays this board (2026-10-16) ── */
+
+const NOW = new Date('2026-10-16T10:00:00');
+const ctx = () => ({ now: NOW, quests: [] });
+function atDeer() {
+  let s = newState(content, 'zh', NOW);
+  for (const step of TO_HALL) { if (s.scene === '00-deer') break; s = walk(s, [step], content, NOW); }
+  assert.equal(s.scene, '00-deer');
+  return s;
+}
+
+test('the story: Look deals 射鹿 its levels and paintings; a win keeps its stars, gives 一箭 · 偏左半寸, and 往左偏半寸 goes on to 00-dusk', () => {
+  const s = atDeer();
+  const t = look(s, content, ctx()).tasks.find((x) => x.id === 'deer-wind');
+  assert.equal(t.game, 'deerarc');
+  assert.equal(t.deal.levels.length, LEVELS.length, 'the levels reach the page');
+  assert.ok(t.deal.art?.drink && t.deal.art?.backdrop, 'and the paintings');
+  // The bot wins the board as the page would deal it, and the rules take its grade and stars.
+  const r = playOnce(da, bot, { seed: 'story', deal: t.deal });
+  assert.equal(r.won, true);
+  const w = win(s, content, ctx(), { id: 'deer-wind', grade: r.grade, stars: 3 });
+  assert.equal(w.result.ok, true, JSON.stringify(w.result));
+  assert.equal(w.state.stars['deer-wind'], 3);
+  const done = task(w.state, content, ctx(), { action: 'done', id: 'deer-wind' }).state;
+  assert.ok(done.cards.includes('yijian'), 'the card the book names for this beat');
+  assert.equal(resolve(done, content, ctx(), { exit: 'left' }).state.scene, '00-dusk');
+});
+
+test('an old save on the old board: a win sent with the old grades and no stars still takes the beat and its card', () => {
+  const s = atDeer();
+  for (const grade of ['clean', 'steady', 'rough']) {
+    const w = win(s, content, ctx(), { id: 'deer-wind', grade });
+    assert.equal(w.result.ok, true, grade);
+    const done = task(w.state, content, ctx(), { action: 'done', id: 'deer-wind' }).state;
+    assert.ok(done.cards.includes('yijian'));
+    assert.equal(resolve(done, content, ctx(), { exit: 'left' }).state.scene, '00-dusk');
   }
 });

@@ -18,8 +18,10 @@
       "done_line": { "zh": "爹扒住了崖壁。", "en": "Father clings to the cliff face." }
     },
     {
-      "id": "deer-wind", "kind": "board", "game": "deer", "period": "once",
+      "id": "deer-wind", "kind": "board", "game": "deerarc", "period": "once",
       "title": { "zh": "射鹿 · 先看风，后看鹿", "en": "The stag · Wind first, then the deer" },
+      "how": { "zh": "往后拉，拉得越长越有劲，松手放箭。先看风，后看鹿；走着的鹿，箭要等它。", "en": "Pull back — longer is stronger — and let go. Wind first, then the deer; a walking deer, lead it." },
+      "stars": 3,
       "grant": { "table": "task", "progress": 5 },
       "done_line": { "zh": "溪边那头鹿，倒下了。", "en": "The stag by the stream is down." }
     },

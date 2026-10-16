@@ -88,6 +88,17 @@ export function tapInk(doc, x, y) {
   setTimeout(() => i.remove(), 500);
 }
 
+/** Where a pointer stands in the scene's own units (the first svg.g-scene's viewBox), so a game
+    that aims by a drag (射鹿's bow, 2026-10-16) reads the same pull at 390 and at 1440. A hold and
+    each move of a drag carry it as `x`, `y`; a game that wants only the stroke's length (`d`)
+    ignores them. Nothing when there is no scene. */
+export function sceneAt(host, e) {
+  const svg = host.querySelector?.('svg.g-scene'), m = svg?.getScreenCTM?.();
+  if (!m) return {};
+  const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse());
+  return { x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10 };
+}
+
 export function wireLiveGames({ boardFor, lang, onWon, paused = () => false, step = 50 }) {
   let last = performance.now();
   let held = null;
@@ -183,7 +194,7 @@ export function wireLiveGames({ boardFor, lang, onWon, paused = () => false, ste
     held = { g, host, drag: el.hasAttribute('data-g-drag'), x: e.clientX, y: e.clientY };
     // A stroke is captured by the host, which outlives the repaints of what is in it.
     if (held.drag) try { host.setPointerCapture(e.pointerId); } catch { /* an old browser: the document still hears it */ }
-    apply(held, { ...el.dataset, g: 'hold' });
+    apply(held, { ...el.dataset, g: 'hold', ...sceneAt(host, e) });
   });
   document.addEventListener('pointermove', (e) => {
     if (!held?.drag) return;
@@ -192,7 +203,7 @@ export function wireLiveGames({ boardFor, lang, onWon, paused = () => false, ste
     held.y = e.clientY;
     if (!d) return;
     held.host = document.querySelector(`[data-game="${CSS.escape(held.g.taskId)}"]`) ?? held.host;
-    apply(held, { g: 'move', d });
+    apply(held, { g: 'move', d, ...sceneAt(held.host, e) });
   });
   const up = () => {
     if (!held) return;

@@ -16,7 +16,7 @@ pop or number on each action, a seal stamped on the win, the main control under 
 UI, it ships without waiting; (2) **fewer and better**: keep six, cut the rest (below);
 (3) new core loops only where marked, after his read.
 
-**Keep in 卷一 (six):** 喂饼 → 割绳子 (built 10-16) · 射鹿 → 愤怒小鸟 (after launch) · 接雨 ·
+**Keep in 卷一 (six):** 喂饼 → 割绳子 (built 10-16) · 射鹿 → 愤怒小鸟 (the beat since 10-16, `deerarc`) · 接雨 ·
 吹鹅毛 (new loop) · 喷嚏符 (already the most fight-like) · 顺风溜 → 几何冲刺 (after launch). Plus
 **最后一罚** as 今线's one. **Second tier** (good timing reads; keep only if he likes them on
 replay): 烙饼 · 拽 · 小周天 · 禹步. **Cut the rest** — each is a passage he can read in the time it

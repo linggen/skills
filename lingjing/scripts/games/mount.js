@@ -13,7 +13,7 @@
 // while it runs in time, as live-games.js does), its holds and its strokes — all scoped to the
 // container, so a game on the 游戏厅 page and the same game on the story's stage play alike.
 // Nothing here knows a game.
-import { morph, tapGate, tapInk } from '../live-games.js';
+import { morph, sceneAt, tapGate, tapInk } from '../live-games.js';
 import { crosses, stroke } from './swipe.js';
 
 const STEP = 50;
@@ -22,16 +22,6 @@ const WIN_HOLD = 1600; // the won frame (its seal) stands this long before the g
 const live = (mod, s) => Boolean(mod.tick && s?.live && !s.won && !s.wait);
 const settled = (s, left = false) => (left ? { won: false, left: true } : { won: true, ...(s.grade != null ? { grade: s.grade } : {}), ...(s.stars != null ? { stars: s.stars } : {}) });
 
-/** Where a pointer stands in the scene's own units (the first svg.g-scene's viewBox), so a game
-    that aims by a drag (射鹿's bow, 2026-10-16) reads the same pull at 390 and at 1440. A hold and
-    each move of a drag carry it as `x`, `y`; a game that wants only the stroke's length (`d`)
-    ignores them. Nothing when there is no scene. */
-export function sceneAt(host, e) {
-  const svg = host.querySelector?.('svg.g-scene'), m = svg?.getScreenCTM?.();
-  if (!m) return {};
-  const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse());
-  return { x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10 };
-}
 
 /** The contract for a pure module: answers `mount(container, opts)`. */
 export function mountPure(mod) {
