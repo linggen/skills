@@ -44,7 +44,7 @@ const T = {
     empty: '一口气吐尽了，鹅毛没动。数到 {n}。',
     let: '手一松，这口气断了。数到 {n}。',
     pad: '按住，慢慢画圈', again: '再来一口气',
-    lung: '这口气', best: '最多', breaths: '口气',
+    lung: '这口气', slow: '憋', fast: '急', best: '最多', breaths: '口气',
     still: '数到 {n}。鹅毛在鼻子底下轻轻地抖，没飞。',
     shaky: '最多数到 {n}。鹅毛飞了几回，鸡窝乱了几回。',
   },
@@ -59,7 +59,7 @@ const T = {
     empty: 'The breath is all out, and the feather never moved. You reached {n}.',
     let: 'You let go, and the breath breaks. You reached {n}.',
     pad: 'Press and circle slowly', again: 'Another breath',
-    lung: 'Breath', best: 'Best', breaths: 'breaths',
+    lung: 'Breath', slow: 'held', fast: 'rushed', best: 'Best', breaths: 'breaths',
     still: 'You reached {n}. The feather trembles under your nose, and stays.',
     shaky: 'Your best was {n}. The feather flew a few times, and so did the hens.',
   },
@@ -149,6 +149,14 @@ function featherScene(state) {
   return scene(320, 130, face + strip + mist + `<g transform="${at}" class="${flown ? 'is-flown' : ''}">${FEATHER}</g>` + num + fx);
 }
 
+/* The pace, read where the eye is (2026-10-16): 憋 · 匀 · 急, a mark at the stroke's speed now — the
+   same numbers the breath is judged by (VMIN, VMAX), so "too slow" and "too fast" are seen, not guessed. */
+function paceGauge(s, t) {
+  const top = VMAX * 1.6, at = Math.max(0, Math.min(1, s.v / top));
+  const lo = VMIN / top, hi = VMAX / top, zone = s.v < VMIN ? 'slow' : s.v > VMAX ? 'fast' : 'even';
+  return `<div class="g-pace is-${zone}" aria-hidden="true"><span>${t.slow}</span><span class="g-pacebar"><b style="left:${Math.round(lo * 100)}%;width:${Math.round((hi - lo) * 100)}%"></b><i style="left:${Math.round(at * 100)}%"></i></span><span>${t.fast}</span></div>`;
+}
+
 export function html(state, lang = 'zh') {
   const t = T[lang] || T.zh;
   const say = (k, n) => (t[k] ?? '').replace('{n}', String(n));
@@ -158,7 +166,8 @@ export function html(state, lang = 'zh') {
   const count = state.phase === 'out' ? Math.floor(state.count) : state.phase === 'rest' ? state.last : 0;
   const line = state.phase === 'rest' ? say(state.note, state.last) : say(state.note, count);
   const lung = state.phase === 'out' ? `<div class="g-meter"><span>${t.lung}</span><span class="g-bar"><i style="width:${Math.round(Math.max(0, state.lung) * 100)}%"></i></span></div>` : '';
+  const pace = state.phase === 'out' ? paceGauge(state, t) : '';
   return `<div class="g-feather g-ink">${featherScene(state)}${head}${lung}`
-    + `<p class="g-line-say">${line}</p>`
+    + pace + `<p class="g-line-say">${line}</p>`
     + `<div class="g-feather-pad${state.phase === 'out' ? ' is-held' : ''}" data-g-drag="breath" role="button" tabindex="0">${scene(120, 120, '<circle class="g-guide" cx="60" cy="60" r="40"/><path class="g-guide-arrow" d="M96 46 l4 10 l-10 -2"/>', 'g-padring')}<span>${state.phase === 'rest' ? t.again : t.pad}</span></div></div>`;
 }
