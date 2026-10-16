@@ -18,13 +18,16 @@
 //     `cooldowns.pool_rest_min` of a sitting); the 饭桶 (once he holds it: `fantong_progress` a
 //     feed, one an hour); 今日传闻 where the map is not walled (a heavy player's: the `tale` cap);
 //     闭关 overnight (`seclude` hours, focus 修为, the rules' rate and its table's cap);
-//   - every fight win counted on the day (`pool.daily`: full, then half, then 灵石) and, at the
-//     full mark of a layer he may not grind past (the 回's cap), paid as 灵石 instead;
+//   - every fight win pays the haunt table's 修为 — at the full mark of a layer he may not grind
+//     past (the 回's cap, a stage quest ahead), 灵石 instead; the day's limit is 体力 alone;
 //   - then the story, minute by minute: a scene's passages at `chars_per_min`, its boards, its
 //     fight; its boards' and its way on's grants, its pills, its rises (no story floor), the
 //     sealed rooms' play, the 回's errands (`errands_at`); a way on behind a stage quest
 //     (ladder.json caps.hui gates) waits until the layer is full;
-//   - minutes left while it waits go to more pool fights, as the pool's rest allows.
+//   - minutes left while it waits go to more pool fights, as the pool's rest allows;
+//   - 体力 ON, as players will have it: full after the night, refilled between sittings
+//     (`waking_h` spread over the sittings), a fight, a story step and a board its rewards.json
+//     price — out of it, the sitting stops. (While we test the switch is off: rules.mjs.)
 // Days per 回: from the day its first scene is reached to the day its last is done (fractional,
 // by the minutes used). The routine's 灵石, items and finds are not modelled — 修为 is the clock.
 // Grinding stops where the 回's cap says — and, while a stage quest is ahead, at its layer.
@@ -96,7 +99,7 @@ export function bookWalk(content, model = content.balance.model) {
       out.push({
         chapter: ch.id, id: sc.id, hui: sc.hui ?? null,
         minutes: text / model.chars_per_min + m.scene + boards.length * m.board + fight * m.fight / model.fight_win_rate,
-        boards: boards.reduce((n, t) => n + tableCap(content, t.grant), 0),
+        boards: boards.reduce((n, t) => n + tableCap(content, t.grant), 0), nboards: boards.length,
         grant: tableCap(content, e?.grant), pill: pillOf(content, e?.grant?.item), pill9: itemOf(content, e?.grant?.item)?.fill === 'full',
         rise, breakthrough: Boolean(e?.breakthrough),
         gate: e ? gates.find(g => g.scene === sc.id && g.exits.includes(e.id)) ?? null : null,
@@ -110,7 +113,7 @@ export function bookWalk(content, model = content.balance.model) {
 /* ── one player through 卷一 ── */
 export function play(content, player, { model = content.balance.model, ladder = content.ladder } = {}) {
   const tiers = ladder.tiers, caps = ladder.caps.hui, ratio = ladder.overflow_stretch ?? 0;
-  const pay = content.rewards.tables, daily = content.balance.pool?.daily ?? [];
+  const pay = content.rewards.tables;
   const tierAt = id => tiers.find(t => t.id === id), rank = (tier, step) => tiers.findIndex(t => t.id === tier) * 100 + step;
   const stepOf = (tier, layer) => layer - (tierAt(tier).zero ? 0 : 1);
   const walk = bookWalk(content, model), rooms = roomsPay(content), runs = runsPay(content);
@@ -138,9 +141,8 @@ export function play(content, player, { model = content.balance.model, ladder = 
     }
   };
   const gateMet = g => { const a = rank(s.tier, s.step), b = rank(g.tier, g.step); return a > b || (a === b && s.progress >= need()); };
-  const shareAt = k => { for (const band of daily) { if (k < band.wins) return band.share; k -= band.wins; } return 0; };
   let wins = 0;
-  const win = n => { for (let k = 0; k < n; k++) { const whole = Math.min(1, n - k); gain(pay.haunt.progress * shareAt(wins) * whole, true); wins += whole; } };
+  const win = n => { for (let k = 0; k < n; k++) { const whole = Math.min(1, n - k); gain(pay.haunt.progress * whole, true); wins += whole; } };
   const chapterOf = () => walk[Math.min(i, walk.length - 1)].chapter;
   const walled = () => Boolean(content.chapters[chapterOf()]?.map?.home);
   const pools = () => {
@@ -151,7 +153,9 @@ export function play(content, player, { model = content.balance.model, ladder = 
   const rerunOpen = () => runs.find(r => (r.chapter === chapterOf() || r.also.includes(chapterOf())) && done.has(r.last)) ?? null;
   const holdsFantong = () => walk.slice(0, i).some(w => w.id === model.fantong_from);
   const rows = new Map(), row = id => { if (!rows.has(id)) rows.set(id, { hui: id, start: null, end: null }); return rows.get(id); };
-  const T = model.minutes;
+  const T = model.minutes, Q = content.rewards.stamina;
+  let qi = Q.max;
+  const spend = c => (qi >= c ? ((qi -= c), true) : false);
   let day = 0;
   /* The day's routine split over its sittings (`k` of `n`): 功课 at the first, a rerun a sitting,
      the fights and feeds spread; the rest of the sitting is the story's. */
@@ -162,6 +166,9 @@ export function play(content, player, { model = content.balance.model, ladder = 
     wins = 0;
     for (let k = 0; k < n && i < walk.length; k++) {
       let left = sit, fought = 0;
+      // 体力 ON, as players will have it (rewards.json stamina; the switch stays off while testing):
+      // full after the night, refilled between sittings spread over the waking day.
+      qi = k === 0 ? Q.max : Math.min(Q.max, qi + Q.max * (model.waking_h / n) / Q.refill_hours);
       const at = () => day + (k * sit + (sit - left)) / total;
       if (!zero()) {
         if (k === 0) gain(pay.gongke.progress * player.gongke);
@@ -170,8 +177,8 @@ export function play(content, player, { model = content.balance.model, ladder = 
         const run = rerunOpen();
         // A share under one (`reruns` 0.5: every other day) is its expected worth.
         const runs = run ? Math.min(1, player.reruns - k) : 0;
-        if (runs > 0 && left >= T.rerun * runs) { left -= T.rerun * runs; win(run.beasts * model.fight_win_rate * runs); }
-        for (let f = 0; f < Math.min(share(player.fights, k, n), poolCap) && left >= T.fight; f++) { left -= T.fight; fought += 1; win(model.fight_win_rate); }
+        if (runs > 0 && left >= T.rerun * runs && spend(run.beasts * runs * Q.cost.duel)) { left -= T.rerun * runs; win(run.beasts * model.fight_win_rate * runs); }
+        for (let f = 0; f < Math.min(share(player.fights, k, n), poolCap) && left >= T.fight && spend(Q.cost.duel); f++) { left -= T.fight; fought += 1; win(model.fight_win_rate); }
         if (holdsFantong()) for (let f = 0; f < share(player.fantong, k, n) && left >= T.fantong; f++) { left -= T.fantong; gain(model.fantong_progress); }
         if (k === 0 && !walled() && player.tale && left >= T.tale) { left -= T.tale; gain(content.rewards.tale.cap.progress * player.tale); }
       }
@@ -186,6 +193,9 @@ export function play(content, player, { model = content.balance.model, ladder = 
           if (r.start == null) r.start = at();
           if (w.gate && !gateMet(w.gate)) { gated = true; break; }
           if (left < w.minutes * (1 - (w.read ?? 0))) { w.read = (w.read ?? 0) + left / w.minutes; left = 0; break; }
+          // A story step and its boards cost 体力 (a step toward the story's place is free, not counted here).
+          if (!w.paid && !spend((content.chapters[w.chapter]?.free ? 0 : Q.cost.step) + w.nboards * Q.cost.game)) { left = 0; break; }
+          w.paid = true;
           left -= w.minutes * (1 - (w.read ?? 0));
           // The sealed rooms, entered here: what holds the way, the boards, the fights.
           const room = rooms[w.hui]?.first === w.id ? rooms[w.hui] : null;
@@ -214,7 +224,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
         }
         // Waiting on a stage quest: the minutes left go to the pool, as its rest allows — one fight
         // at a time, and the story goes on the moment the layer is full.
-        if (!gated || extra >= player.gate_fights || fought + extra >= poolCap || left < T.fight) break;
+        if (!gated || extra >= player.gate_fights || fought + extra >= poolCap || left < T.fight || !spend(Q.cost.duel)) break;
         left -= T.fight; extra += 1; win(model.fight_win_rate);
       }
     }

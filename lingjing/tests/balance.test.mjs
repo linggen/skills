@@ -1,9 +1,8 @@
 // One model for every number (Hanli, 2026-10-15; design.md § Pacing and the economy): about 30
 // minutes a day and one 回 a week, the story the reward, 古一–古三 fast. worlds/jiuding/balance.json
-// declares the 层 thresholds, the pay tables, the fight-to-灵石 rate, the day's fight bands and the
-// routine's cooldowns; the rules read them (content.mjs withBalance); tools/balance.mjs plays a
+// declares the 层 thresholds, the pay tables, the fight-to-灵石 rate and the routine's cooldowns; the rules read them (content.mjs withBalance); tools/balance.mjs plays a
 // light, a typical and a heavy player through 卷一 day by day. This holds the bands it prints, the
-// numbers' home, the day's diminishing fights, the stage quests and old saves.
+// numbers' home, the stage quests and old saves.
 //
 // Kept from tests/xiuwei-pace.test.mjs (2026-10-15, 「让游戏修为和故事match」): 修行 pays 修为, 杂役
 // pays 灵石; the 功课 is 修为 (a few 灵石 at 零层); past a full mark the 功课 counts on, a fight pays 灵石.
@@ -14,7 +13,7 @@ import path from 'node:path';
 import { loadContent } from '../scripts/content.mjs';
 import { fitWorld, migrate, newState, realmName } from '../scripts/state.mjs';
 import { look, quest, resolve } from '../scripts/rules.mjs';
-import { farmShare, pay, paysOf } from '../scripts/rules/core.mjs';
+import { pay, paysOf } from '../scripts/rules/core.mjs';
 import { choreGrant } from '../scripts/rules/chores.mjs';
 import { turnedPays } from '../scripts/turned.js';
 import { BALANCE_FILE, bookWalk, errandPays, fit, play, table } from '../tools/balance.mjs';
@@ -132,25 +131,11 @@ test('real life: the workout is the day\'s 功课 (修为; a few 灵石 at 零�
   assert.deepEqual(turnedPays(turned.result.paid, { xw: '修为', ls: '灵石' }, 'zh'), [`灵石 +${T.gongke_zero.wealth}`]);
 });
 
-test('a day\'s fights (balance.json pool.daily): the first wins pay full 修为, then half, then 灵石 — counted afresh each day', () => {
-  const bands = B.pool.daily, full = bands[0].wins, half = bands[1].wins;
-  assert.equal(farmShare(content, 0), 1);
-  assert.equal(farmShare(content, full - 1), 1);
-  assert.equal(farmShare(content, full), bands[1].share);
-  assert.equal(farmShare(content, full + half), 0);
-  // Far below any mark (古七, 四层 empty, the 回 grinding to 六层), the pool's wins, one after another.
+test('no daily thinning (Hanli, 2026-10-16): every pool win pays the haunt table\'s 修为 until the layer is full — then 灵石; 体力 is the day\'s limit', () => {
+  assert.equal('pool' in B, false, 'balance.json declares no day\'s fight bands');
   const s = { ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: null, place: 'houshan', ended: ['00-prologue', '00-waimen'], done_scenes: ['09-snow'], tier: 'qi', step: 4, progress: 0, wealth: 0, traits: ROOTS };
-  const rate = content.rewards.xiuwei_to_lingshi.rate, paid = [];
-  for (let k = 0; k < full + half + 1; k += 1) paid.push(pay(content, s, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth, farm: true }));
-  assert.deepEqual(paid.map(p => p.progress), [...Array(full).fill(T.haunt.progress), ...Array(half).fill(Math.round(T.haunt.progress * bands[1].share)), 0]);
-  assert.equal(paid.at(-1).wealth, T.haunt.wealth + Math.round(T.haunt.progress * rate), 'the last one\'s 修为 as 灵石');
-  assert.deepEqual(paid.at(-1).farm, { win: full + half + 1, share: 0 });
-  assert.equal(s.day.hunts, full + half + 1);
-  // The next day, full again.
-  const next = pay(content, s, { now: new Date(NOW.getTime() + 86_400_000), quests: [] }, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth, farm: true });
-  assert.equal(next.progress, T.haunt.progress);
-  // A scene's fight or a board is never farmed.
-  assert.equal(pay(content, s, ctx, { table: 'haunt', progress: T.haunt.progress }).progress, T.haunt.progress);
+  const paid = Array.from({ length: 8 }, () => pay(content, s, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }).progress);
+  assert.deepEqual(paid, Array(8).fill(T.haunt.progress));
 });
 
 test('no story floor: the book\'s jump steps him and carries what was over the mark; past the mark the 功课 counts on and a fight pays 灵石', () => {

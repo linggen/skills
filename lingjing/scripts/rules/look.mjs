@@ -560,7 +560,8 @@ export function look(state, content, ctx) {
     // Where an errand may be taken, when the book has room — so 「what now」 has an answer.
     ...(workOf(content, state, ctx) ? { work: workOf(content, state, ctx) } : {}),
     // 阶段任务 (rules/gates.mjs): the layer the 回's next stage waits on, and his 修为 toward it — the 事 book's row.
-    ...((q => (q ? { stage_quest: q } : {}))(stageNow(content, state))),
+    // Short of it, where 修为 is earned — even standing at the scene that waits (the 事 row's go).
+    ...((q => (q ? { stage_quest: q.met ? q : { ...q, work: workOf(content, state, ctx, { anywhere: true, cultivate: true }) } } : {}))(stageNow(content, state))),
     // A visiting shop in season (rules/visiting.mjs): where, today or in n days, in its own line.
     ...(visitorsBrief(content, state, ctx.now).length ? { visitors: visitorsBrief(content, state, ctx.now) } : {}),
     ...(offersOf(content, state, lang, ctx.now).length ? { offers: offersOf(content, state, lang, ctx.now) } : {}),

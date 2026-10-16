@@ -275,11 +275,11 @@ function beastWork(content, state, ctx, here) {
 /* Under a cauldron or a stage quest that waits on 修为 (waitsOnPeak) the work pointed at is
    work that raises it: an errand of 修行 (`work: 'cultivation'`), else a beast
    to fight — never a 杂役 that pays 灵石 only (review, 2026-10-15). */
-function workOf(content, state, ctx) {
-  if (inMade(state) || atScene(content, state)) return null;
+function workOf(content, state, ctx, { anywhere = false, cultivate = false } = {}) {
+  if (inMade(state) || (!anywhere && atScene(content, state))) return null;
   const here = placeOf(content, state.place);
   if (!here) return null;
-  const peak = waitsOnPeak(content, state, ctx.now);
+  const peak = cultivate || waitsOnPeak(content, state, ctx.now);
   if (errandsOf(content, state, state.lang, ctx.now).length >= BOOK_MAX) return peak ? beastWork(content, state, ctx, here) : null;
   const raises = o => !peak || o.work === 'cultivation';
   const at = allPlaces(content)

@@ -1116,7 +1116,7 @@ function taskGroups(ctx) {
 function stageRow(look, ctx) {
   const st = look.stage_quest, w = ctx.words;
   if (!st) return '';
-  const work = !st.met && look.work && !look.work.here ? look.work : null;
+  const w0 = st.work ?? look.work, work = !st.met && w0 && !w0.here ? w0 : null;
   const meta = st.met ? w.stageMet : `${say(w.goalNow, st.now)}${work ? ` · ${say(w.stageWork, { name: work.place.name })}` : ''}`;
   return taskRow({ id: 'stage', tag: 'stage', title: say(w.stageTitle, { step: st.step }), meta, act: work ? bookGo(say(w.go, { name: work.place.name }), work.place.id, ctx) : '', ready: st.met, expand: false }, ctx);
 }

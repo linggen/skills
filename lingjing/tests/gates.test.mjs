@@ -39,6 +39,9 @@ test('every 回 past 古三 holds one (古九 aside: the 九转 lands it full); 
 
 test('the 柴房 night waits on 一层圆满: refused in the world\'s words with where he stands, then open once the bar is full', () => {
   const short = resolve(atChaifang(th[1] - 30), content, ctx, { exit: 'count' });
+  // Standing at the scene that waits, the 事 row still points to where 修为 is earned.
+  const here = look(atChaifang(th[1] - 30), content, ctx).stage_quest;
+  assert.ok(here.work?.place?.id && !here.work.here, JSON.stringify(here.work));
   assert.equal(short.result.refused, 'stage');
   assert.match(short.result.say, /阶段任务.*练气一层圆满/);
   assert.deepEqual(short.result.stage.now, { step: '练气一层', progress: th[1] - 30, of: th[1] });
@@ -142,7 +145,7 @@ test('古七\'s cap follows its rises (2026-10-16): grinding stops at the layer 
   const T = content.rewards.tables;
   const at = (done, step, progress) => ({ ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: null, place: 'houshan', ended: ['00-prologue', '00-waimen'],
     done_scenes: ['09-snow', '09-jiuge', ...done], tier: 'qi', step, progress, traits: ROOTS });
-  const grind = s => { for (let k = 0; k < 60; k += 1) pay(content, s, { now: new Date(NOW.getTime() + k * 86_400_000), quests: [] }, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth, farm: true }); return s; };
+  const grind = s => { for (let k = 0; k < 60; k += 1) pay(content, s, { now: new Date(NOW.getTime() + k * 86_400_000), quests: [] }, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }); return s; };
   // Before 定风: 四层, full, and no further — the furnace's rise still carries him to 五层.
   const snow = grind(at([], 4, 0));
   assert.deepEqual([snow.step, snow.progress], [4, th[4]]);

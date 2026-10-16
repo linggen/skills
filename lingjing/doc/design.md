@@ -226,17 +226,18 @@ a 回 should last, not be binged.
 
 | | |
 |---|---|
-| Daily routine (~15–20 min) | 功课 · a 秘境 rerun (3 h cooldown; open through 古七/古八 too, the same 观) · 饭桶 (1 h cooldown) · pool fights (30 min rest; the day's first 3 wins full 修为, the next 3 half, then 灵石) |
+| Daily routine (~15–20 min) | 功课 · a 秘境 rerun (3 h cooldown; open through 古七/古八 too, the same 观) · 饭桶 (1 h cooldown) · pool fights (30 min rest; 体力 is the day's only limit) |
 | Story + its boards (~1 h a 回) | unlimited, at the player's pace, up to the 回's stage quest |
-| A 回 | typical ≈4–7 days (古六 ≈8: thirteen scenes behind its quest), heavy ≈3–6, light ≈10–16 |
+| A 回 | typical ≈4–7 days (古六 ≈7.4: thirteen scenes behind its quest), heavy ≈3–5, light ≈10–16 (体力 on) |
 | 古一–古三 | fast — no quest; a first sitting or two |
 
 - **One model for every number.** `worlds/jiuding/balance.json` holds the 层 thresholds, the pay
-  tables, the fight-to-灵石 rate, the day's fight bands and the cooldowns; content.mjs
+  tables, the fight-to-灵石 rate and the cooldowns; content.mjs
   (`withBalance`) lands them where the rules read them. `node tools/balance.mjs` plays a light, a
   typical and a heavy player (`model.players`: minutes, sittings, what each does daily) through 卷一
   day by day and prints days per 回; `--fit` re-derives the 练气 thresholds the quests hold
-  (练气 [0, 250, 480, 500, 520, 540, 560, 910, 930, 950]); tests/balance.test.mjs holds the bands.
+  (练气 [0, 250, 480, 500, 520, 540, 560, 1150, 1170, 1190]); tests/balance.test.mjs holds the bands.
+  The model plays 体力 on, as players will have it (the switch stays off while we test).
   The model's minutes, reading speed and players are guesses — **balance changes are hand-played
   on the live page**.
 - **修为 stage quest (阶段任务)** (rules/gates.mjs; ladder.json `caps.hui.<回>.gates`): the 回's next
@@ -456,8 +457,8 @@ locks the two apart.
 
 **Farming rules** (Hanli, 2026-10-15):
 - A pool beast beaten **rests 30 min** before the next comes. A beast he has **tamed is never drawn**.
-- Pay: full 修为 for the first few wins a day, then diminishing, then 灵石 (§ Pacing; balance.json
-  `pool.daily`, over pool and 秘境-rerun wins; the 所得 card says when it thins).
+- Pay: the haunt table's 修为 every win; once the layer is 圆满, 灵石 instead (§ Pacing). No daily
+  thinning (Hanli, 2026-10-16: the 10-15 note meant only the 圆满 rule) — 体力 is the day's limit.
 - Draws avoid what he met lately and favour the unmet and unowned; a duplicate drop converts to
   灵石 or materials.
 - **Enough to farm:** ~10–12 beasts and ~30 finds per grinding 回. More 卷一-fitting 山海经 beasts
