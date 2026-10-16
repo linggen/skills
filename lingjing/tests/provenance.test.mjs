@@ -105,6 +105,22 @@ test('the party by the 回: 阿禾 and 孙二狗 in 古七, 阿禾 in 古八; a 
   assert.deepEqual(partyFor(content, { chapter: '00-waimen', scene: 'wm-xirang' }, { party: ['ahe', 'yinyue'] }).map(m => m.id), ['ahe']);
 });
 
+test('a roaming beast (Hanli: 「小队是人数跟剧情走」): the 回\'s party stands with him at a pool too, and the beast grows with it', () => {
+  const s = { tier: 'qi', step: 5, chapter: '00-zhuji', scene: '09-lingcao', traits: ['wood'], cards: [], deck: [] };
+  const chai = creatureOf(content, 'chai');
+  assert.deepEqual(partyFor(content, s, chai, 'haunt:chai').map(m => m.id), ['ahe', 'sun']);
+  const r = content.party.roaming, foe = fightSetup(content, s, { ...chai, hp: 2 }, NOW, 'haunt:chai').foe;
+  assert.equal(foe.hp, Math.round(2 * (1 + r.hp * 2) * 100) / 100);
+  assert.equal(foe.power, r.power * 2);
+  assert.equal(foe.deck.length, chai.deck.length + r.cards * 2);
+  // a pool entry's own `roaming` stands over party.json's
+  assert.equal(fightSetup(content, s, { ...chai, hp: 2, roaming: { hp: 0.5 } }, NOW, 'haunt:chai').foe.hp, 4);
+  // alone, or a story fight (its exit weighs the foe with its party already): the beast as written
+  const alone = fightSetup(content, { ...s, chapter: '00-waimen', scene: 'wm-fushi' }, { ...chai, hp: 2 }, NOW, 'haunt:chai').foe;
+  assert.deepEqual([alone.hp, alone.power, alone.deck.length], [2, undefined, chai.deck.length]);
+  assert.equal(fightSetup(content, s, { ...chai, hp: 2 }, NOW, 'scene:09-lingcao').foe.hp, 2);
+});
+
 test('an old save keeps every card it held: the twelve of the root test written down, the renamed mapped to the book', () => {
   const old = { tier: 'qi', step: 3, traits: ['metal', 'wood', 'water', 'fire', 'earth'], chapter: '00-waimen', scene: 'wm-ahe', cast: ['zheng'], companion: { joined: '2026-09-29', asleep: true }, card_from: { jinzhua: { how: 'starter' } }, deck: ['jinzhua'] };
   const s = fitWorld(old, content);

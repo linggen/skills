@@ -124,7 +124,7 @@ function foeOf(f) {
   const c = creatureOf(content, f.id);
   if (!f.pool) return c;
   const entry = Object.values(content.places).map(p => p.pools?.[f.pool]).find(Boolean)?.beasts.find(b => b.creature === f.id);
-  return entry ? { ...c, ...(entry.deck ? { deck: entry.deck } : {}), ...(entry.hp ? { hp: entry.hp } : {}) } : c;
+  return entry ? { ...c, ...(entry.deck ? { deck: entry.deck } : {}), ...(entry.hp ? { hp: entry.hp } : {}), ...(entry.roaming ? { roaming: entry.roaming } : {}) } : c;
 }
 
 const catalog = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
@@ -145,10 +145,11 @@ function thoughtOut(setup) {
 /* `pills`: the 丹囊 carried in (battle.js § pills) — the pills-allowed player, who uses them as the
    lookahead line finds them worth it. Without, none (Hanli 2026-10-16: never a money wall). */
 export const TWO_PILLS = ['mend-pill', 'huiqi-pill'];
-export function rateOf(f, seeds = 200, from = 0, line = 'careful', { pills = null } = {}) {
-  const st = stateAt(f.at), foe = foeOf(f);
+export function rateOf(f, seeds = 200, from = 0, line = 'careful', { pills = null, party = null } = {}) {
+  // `party`: who stands with him, over the 回's (party.json by_hui) — a pool met alone, or with two.
+  const st = stateAt(f.at), foe = party ? { ...foeOf(f), party } : foeOf(f);
   if (pills) { st.bag = { ...st.bag }; for (const id of pills) st.bag[id] = (st.bag[id] ?? 0) + 1; st.pill_pick = [...pills]; } else delete st.pill_pick;
-  // A pool's beast is met roaming: its door is a haunt's (party.json roams_alone).
+  // A pool's beast is met roaming: its door is a haunt's, and it grows with the party (party.json roaming).
   const setup = fightSetup(content, st, foe, NOW, f.pool ? `haunt:${f.id}` : null);
   let won = 0, lost = 0, turns = 0, left = 0, forced = 0;
   for (let k = from; k < from + seeds; k += 1) {

@@ -423,7 +423,7 @@ function meetBeast(state, cid, won, now) {
   return { first_met: !was, first_win: won && !(was?.won) };
 }
 /* A pool's beast fights as its entry says: an entry's `deck` and `hp` stand
-   over the creature's own (design.md § 游荡的怪). 蠪侄 and 狰 are the story's
+   over the creature's own, and its `roaming` over party.json's (how it grows with his party) (design.md § 游荡的怪). 蠪侄 and 狰 are the story's
    fights too (古三's wood, the 药园) — the scene keeps the creature's deck, the
    stretch is weighed apart (tools/story-fights.mjs); a game with no `hunt` is
    never a pool's. */
@@ -433,7 +433,7 @@ function foeOf(content, game) {
   // A rerun's elite (rules/rerun.mjs): the harder deck its instance declares.
   if (creature && game.deck) return { ...creature, deck: game.deck };
   const entry = creature && game.hunt ? poolEntry(content, game.hunt, game.creature) : null;
-  const base = entry ? { ...creature, ...(entry.deck ? { deck: entry.deck } : {}), ...(entry.hp ? { hp: entry.hp } : {}) } : creature;
+  const base = entry ? { ...creature, ...(entry.deck ? { deck: entry.deck } : {}), ...(entry.hp ? { hp: entry.hp } : {}), ...(entry.roaming ? { roaming: entry.roaming } : {}) } : creature;
   return base && game.foe ? weighed(base, game.foe) : base;
 }
 /* A scene's fight weighed for where the story meets its beast (the exit game's `foe`: `hp`, `deck`,

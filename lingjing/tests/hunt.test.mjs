@@ -146,8 +146,12 @@ test('蠪侄 and 狰 of a pool fight with the pool\'s deck; their story fights k
     assert.ok(up, `${id} is drawn at ${place}`);
     const started = duel(up, content, ctx, { id: `haunt:${id}` });
     assert.equal(started.result.ok, true, JSON.stringify(started.result));
-    assert.deepEqual(started.result.duel.setup.foe.deck, entry.deck, `${id}: the pool's door`);
-    assert.deepEqual(started.state.fight.setup.foe.deck, entry.deck, `${id}: kept on the save`);
+    // …and grows with the party beside him (party.json `roaming`: its own cards again, per member).
+    const more = (content.party.roaming?.cards ?? 0) * (started.result.duel.setup.you.party?.length ?? 0);
+    const dealt = started.result.duel.setup.foe.deck;
+    assert.deepEqual(dealt.slice(0, entry.deck.length), entry.deck, `${id}: the pool's door`);
+    assert.equal(dealt.length, entry.deck.length + more, `${id}: the pool's deck, and ${more} more for the party`);
+    assert.deepEqual(started.state.fight.setup.foe.deck, dealt, `${id}: kept on the save`);
     // The story's fight — the scene's own game, no \`hunt\` — deals its own deck (the scene's `foe.deck`, else
     // the creature's). 狰 is won at the 药园 with a 萝卜, not fought (cards.md § 1): its scene has no fight.
     const [ch, sc] = story[id];

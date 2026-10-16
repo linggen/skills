@@ -2898,7 +2898,8 @@ test('降妖: a fight open on another creature lends nothing to this one', () =>
   assert.equal(mine.you.wounds, undefined, 'not the other fight\'s door');
   assert.ok(mine.foe, 'nor its setup');
   const unnamed = fightSetup(content, other, jingwei, c.now);
-  assert.deepEqual([unnamed.you.deck, unnamed.you.wounds, unnamed.foe], [mine.you.deck, mine.you.wounds, mine.foe], 'no game named, no door read');
+  // (the beast met at a door grows with his party — party.json `roaming`; unnamed it is as written)
+  assert.deepEqual([unnamed.you.deck, unnamed.you.wounds, unnamed.foe.deck], [mine.you.deck, mine.you.wounds, jingwei.deck], 'no game named, no door read');
 });
 
 /* What the page tells her of a fight says what the page measured: the low

@@ -212,7 +212,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
       ...(boost ? { boost } : {}),
     },
     // An elite is its harder deck and nothing else (redesign-v2 § 四).
-    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...(creature.hp ? { hp: creature.hp } : {}), ...(creature.signature ? { signature: creature.signature } : {}), ...(creature.feint ? { feint: creature.feint } : {}), ...(creature.trial ? { trial: creature.trial } : {}) },
+    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...beastToParty(content, creature, party, game), ...(creature.signature ? { signature: creature.signature } : {}), ...(creature.feint ? { feint: creature.feint } : {}), ...(creature.trial ? { trial: creature.trial } : {}) },
   };
 }
 
@@ -223,14 +223,26 @@ export function partyFor(content, state, creature, game = null) {
   const p = content.party;
   if (!p) return [];
   const open = juanOf(content, state);
-  // A beast met roaming (a haunt's or a pool's, `haunt:`) he fights alone (party.json `roams_alone`): the
-  // 回's companions stand with him in the story's fights — 灵草谷, the 河伯祠 — not on every hill.
-  const roaming = p.roams_alone && String(game ?? '').startsWith('haunt:');
+  // Hanli 2026-10-16: 「小队是人数跟剧情走, 剧情是一个人就一个人」 — every fight, a roaming one too
+  // (a haunt's, a pool's, the 秘境's), has whoever stands with him at that point of the book.
   // A member who `walks` with him (银月, once her 卷 is open) stands beside him in every fight she is awake for.
   const walking = Object.entries(p.members ?? {}).filter(([, m]) => m.walks && herAwake(state)).map(([id]) => id);
-  const ids = [...new Set([...(creature?.party ?? (roaming ? [] : p.by_hui?.[huiNow(content, state)]) ?? []), ...walking])];
+  const ids = [...new Set([...(creature?.party ?? p.by_hui?.[huiNow(content, state)] ?? []), ...walking])];
   return ids.map(id => [id, p.members?.[id]]).filter(([, m]) => m && (m.juan ?? 1) <= open)
     .map(([id, m]) => ({ id, name: m.name, root: m.root, hp: m.hp, ...(m.taunt ? { taunt: true } : {}), ...(m.art ? { art: m.art } : {}), deck: [...m.deck] }));
+}
+/* A beast met roaming (a haunt's or a pool's door, `haunt:`) grows with the party beside him
+   (party.json `roaming`): its 气血 times 1 + `hp` a member, its blows + `power` a member — so a
+   pool stays losable with 孙二狗's guard and 阿禾's heals; a pool entry's own `roaming` stands over it
+   (a beast the party finds easier). A story fight's foe is weighed with its
+   party already (the exit's `foe`), so it never grows. Returns the foe's { hp, power } fields. */
+export function beastToParty(content, creature, party, game = null) {
+  const r = content.party?.roaming ? { ...content.party.roaming, ...(creature.roaming ?? {}) } : null, n = party.length;
+  const hp = creature.hp ?? null, deck = creature.deck ?? [];
+  if (!r || !n || !String(game ?? '').startsWith('haunt:')) return hp ? { hp } : {};
+  const grown = Math.round((hp ?? 1) * (1 + (r.hp ?? 0) * n) * 100) / 100;
+  const power = (r.power ?? 0) * n, more = deck.length ? (r.cards ?? 0) * n : 0;
+  return { hp: grown, ...(power ? { power } : {}), ...(more ? { deck: [...deck, ...Array.from({ length: more }, (_, i) => deck[i % deck.length])] } : {}) };
 }
 /* The 卷 he stands in: his chapter's (chapter.json `juan`), 1 when it says none. */
 const juanOf = (content, state) => content.chapters?.[state.chapter]?.juan ?? 1;
