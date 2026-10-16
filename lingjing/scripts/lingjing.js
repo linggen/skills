@@ -2462,7 +2462,15 @@ function storyTap() {
 }
 /* 自动 · 全文 · 跳过 — this viewer's, kept in this browser (lines.js keepSpeed) for every passage;
    the paint fits the passage to it (matchPace, dialogue.js fitMode). */
-function setSpeed(v) { keepSpeed(v); render(); }
+function setSpeed(v) { if (v === 'skip') return skipPassage(); keepSpeed(v); render(); }
+/* 跳过 — once (Hanli, 2026-10-16: 「点一次, 只能跳过一次」): this passage to its end and its choices; the next reads as he reads. */
+function skipPassage() {
+  const r = readingHere();
+  if (!playing(r)) return;
+  const next = fitMode(r, 'skip', { lang: lang(), at: beatInView() });
+  if (next !== r) { keepReading(SCRATCH, next); keep({ reading: next }); }
+  render();
+}
 /* Holding the stage down pauses the lines; letting go goes on (and the release is no tap). */
 let holdTimer = null, holding = false;
 document.addEventListener('pointerdown', (e) => {

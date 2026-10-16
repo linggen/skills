@@ -60,7 +60,9 @@ export function screensOf(text, lang = 'zh') {
    choices, dialogue.js fitMode — 「如果读者先读了小说的话, 直接跳过更合理」). 慢 is offered no
    more: a viewer who kept it reads 自动. */
 export const SPEEDS = { slow: 1, mid: 0.45, fast: 0.3, skip: 0.45 };
-export const READ_MODES = ['mid', 'fast', 'skip'];
+/* 跳过 is no mode (Hanli, 2026-10-16: 「跳过不能是一个模式」 · 「点一次, 只能跳过一次」): one tap skips the
+   passage on show and nothing after it, so it is never kept — a browser that kept it reads 自动. */
+export const READ_MODES = ['mid', 'fast'];
 export const WHOLE = 'fast';
 export const END_PAUSE_MS = 1800;
 export function paceOf(sentence, { f = 1, last = false, lang = 'zh' } = {}) {
