@@ -207,6 +207,7 @@
 /* 喂饭桶 · 割藤 (2026-10-16, games/fantongcut.js): the same cave ink; the 饭桶 is its own art, the
    灵气泡 and 荆棘 painted (art/games/), the 灵光 stars in cinnabar, the new element ringed once. */
 .g-ft-cave .g-ft-ring { fill: var(--surface); stroke: currentColor; stroke-width: 1.4; }
+.g-ft-cave .g-ft-item { pointer-events: none; }
 .g-ft-cave .g-ft-glyph { fill: currentColor; font-family: var(--serif); font-size: 18px; }
 .g-ft-cave .g-ft-item image { mix-blend-mode: multiply; }
 .g-ft-cave .g-ft-mouth { fill: none; stroke: var(--seal); stroke-width: 1.3; stroke-dasharray: 3 5; opacity: .55; }

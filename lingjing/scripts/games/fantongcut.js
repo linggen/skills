@@ -261,7 +261,9 @@ function playScene(s) {
 
 /* The teaching beat: a slow ink ring around the element met for the first time today. */
 function teachMark(s) {
-  const L = s.level, at = s.must === 'bubble' ? L.bubbles?.[0]?.at : s.must === 'thorns' ? [L.thorns?.[0]?.x, L.thorns?.[0]?.y]
+  // The ring follows the bubble once it holds the thing (the tap that pops it is the lesson's second half).
+  const L = s.level, bub = s.swing.bubbles[0];
+  const at = s.must === 'bubble' ? (bub?.state === 'popped' ? null : bub?.state === 'held' ? [s.swing.bread.position.x, s.swing.bread.position.y] : bub?.at) : s.must === 'thorns' ? [L.thorns?.[0]?.x, L.thorns?.[0]?.y]
     : s.must === 'regrow' ? s.swing.vines.find((v) => v.regrow)?.at : null;
   if (!at || at[0] == null || s.phase !== 'play' || s.moves > 1) return '';
   return `<circle class="g-teach-ring" cx="${at[0]}" cy="${at[1] + (s.must === 'regrow' ? 30 : 0)}" r="${s.must === 'thorns' ? 46 : 36}"/>`;
