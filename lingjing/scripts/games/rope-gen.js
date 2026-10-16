@@ -16,7 +16,7 @@ import { blowGust, buildWorld, calm, cutVine, dist, outOf, popBubble, stepWorld,
 export const MOUTH_Y = FLOOR - 64;
 export const MOUTH_R = 30;
 export const STAR_R = 13;
-const CALM_MS = 400, LATE_MS = 320, END_MS = 900, LIMIT_MS = 14000, STEP = 1000 / 60;
+const CALM_MS = 400, LATE_MS = 320, SLOW_MS = 1500, END_MS = 900, LIMIT_MS = 14000, STEP = 1000 / 60;
 export const TRIES = 24;
 export const SEEK = 1;
 
@@ -220,10 +220,13 @@ export function attempt(u, opts) {
     if (touches(main.path, level.thorns[0], 0, fedMain + 1)) return { why: 'thorn-on-plan' };
   }
   level.mouth = mouth;
-  // The human hand: every move late, and it still feeds.
-  const lateRun = playPlan(level, main.plan, { late: LATE_MS });
-  const lateFed = fedAt(lateRun.path, mouth);
-  if (lateFed < 0 || lateRun.broke || (level.thorns && touches(lateRun.path, level.thorns[0], 0, lateFed + 1))) return { why: 'late-misses' };
+  // The human hand: every move a little late, and every move slow (a long think while a vine regrows),
+  // and it still feeds.
+  for (const late of [LATE_MS, SLOW_MS]) {
+    const lateRun = playPlan(level, main.plan, { late });
+    const lateFed = fedAt(lateRun.path, mouth);
+    if (lateFed < 0 || lateRun.broke || (level.thorns && touches(lateRun.path, level.thorns[0], 0, lateFed + 1))) return { why: 'late-misses' };
+  }
   // Stars: two on the way every win takes, the third where only a second winning way goes (a better
   // way to find, never luck); with no second way, all three on the plan's own path.
   const clear = (r) => !(level.thorns && touches(r.path, level.thorns[0], 0, fedAt(r.path, mouth) + 1));
