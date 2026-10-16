@@ -216,7 +216,12 @@
 .g-ft-cave .g-ft-star.is-pop circle { fill: none; stroke: var(--seal); stroke-width: 2; opacity: 1; }
 .g-ft-cave .g-ft-bubble { cursor: pointer; }
 .g-ft-cave .g-ft-bubble .g-ft-hit { fill: transparent; pointer-events: all; }
-.g-ft-cave .g-ft-burp { fill: var(--seal); font-family: var(--serif); font-size: 20px; }
+.g-ft-cave .g-ft-steam { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+.g-ft-cave .g-ft-burpseal rect { fill: color-mix(in srgb, var(--seal-soft) 70%, transparent); stroke: var(--seal); stroke-width: 2.5; }
+.g-ft-cave .g-ft-burpseal text { fill: var(--seal); font-family: var(--serif); font-size: 21px; font-weight: 700; }
+.g-ft-cave .g-ft-burpseal-in { transform-box: fill-box; transform-origin: center; transform: rotate(-8deg); animation: g-ft-burp .42s cubic-bezier(.2, 1.6, .4, 1) .25s both; }
+@keyframes g-ft-burp { 0% { transform: rotate(-8deg) scale(2.2); opacity: 0; } 100% { transform: rotate(-8deg) scale(1); opacity: .92; } }
+@media (prefers-reduced-motion: reduce) { .g-ft-cave .g-ft-burpseal-in { animation: none; opacity: .92; } }
 .g-ft-cave .g-regrow { fill: none; stroke: var(--wood); stroke-width: 2; opacity: .8; }
 .g-ft-cave .g-vine-knot.is-regrow { fill: var(--wood); }
 .g-ft-cave .is-regrow .g-vine-wash { stroke: var(--wood); opacity: .5; }

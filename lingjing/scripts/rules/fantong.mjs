@@ -127,6 +127,8 @@ export function fantongRecipes(content, state) {
    puzzle may hold: the seed the level is made from (day, save, feed count — the page and the rules
    agree on it), the tier (harder every `tier_every` feeds), the elements unlocked so far, and the one
    unlocked today when the day's first feed is still to come (`must`: that puzzle features it). */
+/* Tier 0 (a one-tap tutorial) is the very first feed only; after it, never below 1. */
+const tierOf = (P, n) => (n === 0 ? 0 : Math.max(1, Math.min(4, Math.floor(n / Math.max(1, P.tier_every ?? 3)))));
 const dayNoOf = (f, today) => (f.days ?? (f.n ? 1 : 0)) + (f.day === today ? 0 : 1);
 export function puzzleOf(t, state, now) {
   const P = t.puzzle;
@@ -136,7 +138,7 @@ export function puzzleOf(t, state, now) {
   const fresh = f.day !== today ? unlocked.find(x => x.day === day)?.el ?? null : null;
   const lang = state.lang;
   return {
-    seed: `${state.world}|${state.name ?? ''}|${today}|${n}`, day, tier: Math.min(4, Math.floor(n / Math.max(1, P.tier_every ?? 3))),
+    seed: `${state.world}|${state.name ?? ''}|${today}|${n}`, day, tier: tierOf(P, n),
     els: unlocked.map(x => x.el), must: fresh, ...(fresh && P.teach?.[fresh] ? { teach: pick(P.teach[fresh], lang) } : {}),
     max_misses: P.max_misses ?? 4,
   };

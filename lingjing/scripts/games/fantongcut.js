@@ -25,7 +25,7 @@ export const meta = {
   },
 };
 
-const EAT_MS = 1100, MISS_MS = 650, REST_MS = 700, FLECK_MS = 420, POP_MS = 520;
+const EAT_MS = 1400, MISS_MS = 650, REST_MS = 700, FLECK_MS = 420, POP_MS = 520;
 export const MAX_MISSES = 4;
 const ART = new URL('../../worlds/jiuding/art/', import.meta.url).href;
 const POT = `${ART}games/fantong-pot.webp`, BUBBLE = `${ART}games/bubble.webp`, THORNS = `${ART}games/thorns.webp`;
@@ -78,9 +78,9 @@ export const stuck = (s) => !s.won && s.misses >= s.maxMisses;
 const starsNow = (s) => s.caught.filter(Boolean).length;
 
 const VERBS = {
-  cut: (s, d) => (s.phase === 'play' && cutAt(s, Number(d.v), Number(d.k)) ? { ...s, note: 'cut', moves: s.moves + 1 } : null),
-  gust: (s) => (s.phase === 'play' && blowGust(s.swing, s.level) ? { ...s, note: 'gust', gustAt: s.clock, moves: s.moves + 1 } : null),
-  pop: (s, d) => (s.phase === 'play' && popBubble(s.swing, Number(d.i ?? 0)) ? { ...s, note: 'pop', popAt: s.clock, moves: s.moves + 1 } : null),
+  cut: (s, d) => (s.phase === 'play' && cutAt(s, Number(d.v), Number(d.k)) ? { ...s, note: 'cut', moves: s.moves + 1, movedAt: s.clock } : null),
+  gust: (s) => (s.phase === 'play' && blowGust(s.swing, s.level) ? { ...s, note: 'gust', gustAt: s.clock, moves: s.moves + 1, movedAt: s.clock } : null),
+  pop: (s, d) => (s.phase === 'play' && popBubble(s.swing, Number(d.i ?? 0)) ? { ...s, note: 'pop', popAt: s.clock, moves: s.moves + 1, movedAt: s.clock } : null),
   retry: (s) => (['play', 'miss'].includes(s.phase) ? lay({ ...s, note: 'lay' }) : null),
   skip: (s) => (stuck(s) ? { ...s, phase: 'end', live: false, won: true, stars: 0, grade: 'skipped', note: 'skipped' } : null),
 };
@@ -137,10 +137,24 @@ const PHASES = {
   miss: (s) => (s.t < MISS_MS ? s : lay({ ...s, note: 'lay' })),
 };
 
+/* No waiting (Hanli via the coordinator, 2026-10-16: 「不要等」): after a move the swing plays at its
+   own pace for a moment — the weight is felt — then, while it only settles (hung on a vine or lifted
+   in a bubble, no puff blowing), time runs FAST× until it hangs still. A fall, a roll and a puff
+   always play at their own pace. The world's steps are the same either way: only the clock is quicker. */
+export const FAST = 6;
+export const FAST_AFTER = 350;
+export function paceOf(s) {
+  if (s.phase !== 'play' || !s.moves || s.clock - (s.movedAt ?? 0) < FAST_AFTER) return 1;
+  const w = s.swing;
+  if (w.gust > 0 || hangsStill(w)) return 1;
+  const hung = w.vines.some((v) => v.cut == null) || anyHeld(w);
+  return hung ? FAST : 1;
+}
+
 export function tick(state, ms) {
   if (!state?.live || state.won || !state.swing) return state;
   let s = state;
-  s.swing.acc += ms;
+  s.swing.acc += ms * paceOf(s);
   while (s.swing.acc >= STEP_MS && s.live && !s.won) {
     s.swing.acc -= STEP_MS;
     s = { ...s, t: s.t + STEP_MS, clock: s.clock + STEP_MS };
@@ -186,12 +200,32 @@ function itemPicture(s, x, y, angle, scale = 1) {
   return `<g class="g-bing g-ft-item" transform="translate(${n(x)} ${n(y)}) rotate(${n((angle * 180) / Math.PI)}) scale(${n(scale, 2)})"><circle class="g-ft-ring" r="${r}"/>${face}</g>`;
 }
 
+/* The 饭桶 eats: a gulp (it squats, then hops), a shake that dies away, a puff of steam from the lid,
+   and a 「嗝」 seal pressed beside it. Reduced motion: the seal only. */
 function potPicture(s) {
-  const [mx, my] = s.level.mouth, x = mx - POT_W / 2, y = my - RIM * POT_H;
-  const k = s.phase === 'eat' && !calm(s) ? Math.sin(Math.min(1, s.t / 420) * Math.PI) : 0;
-  return `<g class="g-ft-pot${s.phase === 'eat' ? ' is-eating' : ''}" transform="translate(${n(x)} ${n(y - k * 12)}) scale(1 ${n(1 - k * 0.06, 3)})">`
+  const [mx, my] = s.level.mouth, x = mx - POT_W / 2, y = my - RIM * POT_H, eating = s.phase === 'eat' && !calm(s);
+  const t = s.t ?? 0;
+  const gulp = eating ? (t < 260 ? -Math.sin((t / 260) * Math.PI) * 0.5 : Math.sin(Math.min(1, (t - 260) / 360) * Math.PI)) : 0;
+  const shake = eating && t > 300 ? Math.sin(t / 38) * 6 * Math.max(0, 1 - (t - 300) / 700) : 0;
+  const cx = POT_W / 2, base = POT_H;
+  const pot = `<g class="g-ft-pot${s.phase === 'eat' ? ' is-eating' : ''}" transform="translate(${n(x)} ${n(y - gulp * 12)}) rotate(${n(shake)} ${n(cx)} ${n(base)}) scale(1 ${n(1 - gulp * 0.07, 3)})">`
     + `<image href="${POT}" width="${POT_W}" height="${n(POT_H)}"/></g><ellipse class="g-ft-mouth" cx="${mx}" cy="${my}" rx="${MOUTH_R + 6}" ry="7"/>`;
+  return pot + (s.phase === 'eat' ? steam(s, mx, my, eating) + burpSeal(mx, my) : '');
 }
+
+function steam(s, mx, my, moving) {
+  if (!moving || s.t < 380) return '';
+  const k = Math.min(1, (s.t - 380) / 900);
+  return [-14, 0, 14].map((dx, i) => {
+    const rise = 18 + k * 46 + i * 4, sway = Math.sin(k * 5 + i) * 6;
+    return `<path class="g-ft-steam" d="M${n(mx + dx)} ${n(my - 14)} q${n(sway)} ${n(-rise / 2)} ${n(-sway / 2)} ${n(-rise)}" opacity="${n(0.55 * (1 - k), 2)}"/>`;
+  }).join('');
+}
+
+const burpSeal = (mx, my) => {
+  const x = mx + (mx > W / 2 ? -78 : 46), y = my - 74;
+  return `<g class="g-ft-burpseal" transform="translate(${n(x)} ${n(y)})"><g class="g-ft-burpseal-in"><rect x="-17" y="-17" width="34" height="34" rx="5"/><text y="8" text-anchor="middle">嗝</text></g></g>`;
+};
 
 function bubblePicture(w, i) {
   const b = w.bubbles[i];
@@ -251,7 +285,7 @@ function playScene(s) {
     item = k < 1 ? itemPicture(s, f.x + (mx - f.x) * k, f.y + (my + 8 - f.y) * k, b.angle, 1 - 0.7 * k) : '';
   } else if (s.phase !== 'end') item = itemPicture(s, b.position.x, b.position.y, b.angle);
   const fx = s.phase === 'miss' && !calm(s) ? splash(b.position.x, Math.min(b.position.y, FLOOR - 4), s.t, { r: 11 }) : '';
-  const burp = s.phase === 'eat' ? `<text class="g-ft-burp" x="${L.mouth[0] + 30}" y="${n(L.mouth[1] - 30 - Math.min(1, s.t / 500) * 18)}" opacity="${n(Math.max(0, 1 - s.t / EAT_MS), 2)}">嗝</text>` : '';
+  const burp = '';
   const teachRing = s.must && s.must !== 'gust' ? teachMark(s) : '';
   return scene(W, H, ground() + gustPicture(s) + (L.stones ?? []).map(stonePicture).join('') + (L.thorns ?? []).map(thornPicture).join('')
     + potPicture(s) + starsPicture(s) + w.vines.map((v, i) => vinePicture(v, i, w, live, s.phase)).join('')

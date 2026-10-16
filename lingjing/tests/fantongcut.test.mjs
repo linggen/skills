@@ -136,3 +136,50 @@ test('the elements come one a day: the day\'s first puzzle features the new one 
   assert.equal(s.fantong.days, 6);
   assert.equal(feed(save(), NOW, { stars: 9 }).state.fantong.stars, 3, 'clamped to three');
 });
+
+/* ── round two (2026-10-16): no waiting, earned stars, the bubble swung into, the swipe ── */
+
+test('no waiting: after a move the swing is felt a moment, then settles at FAST× — well under two seconds of clock', () => {
+  const level = { bread: [180, 150], vines: [{ at: [50, 34] }, { at: [300, 34] }], mouth: [300, 358], stars: [[300, 200], [300, 250], [300, 300]] };
+  let s = cut.newGame('w', 1, { level });
+  assert.equal(cut.paceOf(s), 1, 'untouched: its own pace');
+  s = cut.act(s, { g: 'cut', v: '0', k: '3' }).state;
+  let wall = 0, still = 0;
+  while (wall < 6000 && still < 400) { const pace = cut.paceOf(s); s = cut.tick(s, 50); wall += 50; still = s.swing.bread.speed < 0.12 ? still + 50 * pace : 0; }
+  assert.ok(wall < 1250, `hangs still ${wall} ms of the clock after the cut`);
+  assert.equal(cut.paceOf(s), 1, 'still: its own pace again');
+});
+
+test('earned stars: past the first day, at least 2 levels in 5 hide a 灵光 off the plain path', () => {
+  const later = made.filter((m) => optsOf(m.k).els.includes('gust') && !m.fallback);
+  const better = later.filter((m) => m.better).length;
+  assert.ok(better / later.length >= 0.4, `${better}/${later.length}`);
+});
+
+test('the bubble hangs off the thing\'s own line: it must be swung in', () => {
+  for (const m of made.filter((x) => x.level.bubbles?.length && !x.fallback && !x.eased)) {
+    const [bx, by] = m.level.bubbles[0].at, [x0, y0] = m.level.bread;
+    assert.ok(Math.hypot(bx - x0, by - y0) >= 60, `t${m.k}`);
+    assert.ok(m.level.vines.length >= 2, `t${m.k}: two vines to swing from`);
+  }
+});
+
+test('tier 0 is the very first feed only', () => {
+  let s = save();
+  assert.equal(puzzleOf(T, s, NOW).tier, 0);
+  s = feed(s, NOW).state;
+  assert.equal(puzzleOf(T, s, day(0, 11)).tier, 1);
+});
+
+test('a quick swipe cuts the first vine it crosses; a long deliberate one may cut the next; a still finger none', async () => {
+  const { stroke, crosses, SECOND_PX, SECOND_MS } = await import('../scripts/games/swipe.js');
+  const vine = (v) => ({ dataset: { g: 'cut', v: String(v), k: '3' } });
+  let st = stroke(0, 0, null, 0);
+  assert.equal(crosses(st, 10, 0, vine(0), 10), true, 'first vine');
+  assert.equal(crosses(st, 24, 0, vine(1), 40), false, 'a flick: not the second');
+  st = stroke(0, 0, null, 0);
+  crosses(st, 10, 0, vine(0), 10);
+  assert.equal(crosses(st, 10 + SECOND_PX + 2, 0, vine(1), 10 + SECOND_MS + 20), true, 'a long stroke goes on');
+  st = stroke(5, 5, vine(0), 0);
+  assert.equal(crosses(st, 6, 6, vine(1), 500), false, 'held still: nothing');
+});

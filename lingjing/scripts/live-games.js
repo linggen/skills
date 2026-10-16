@@ -25,6 +25,8 @@
 // Nothing here knows a game; the win goes back through `onWon`.
 
 /** A game that runs in time right now: its taps are taken on pointerdown. */
+import { crosses, stroke } from './games/swipe.js';
+
 export const runsLive = (g) => Boolean(g?.mod?.tick && g.state?.live && !g.state.won && !g.state.wait);
 
 /** The swallow, pure: `down(id)` notes a tap acted on at pointerdown on the board `id`;
@@ -206,23 +208,17 @@ export function wireLiveGames({ boardFor, lang, onWon, paused = () => false, ste
   // control marked [data-g-swipe] acts on it as a tap, once per control per stroke. The press
   // itself goes the tap's way above. The board's own CSS sets touch-action so the stroke is not
   // taken for a scroll.
+  // What a stroke cuts is games/swipe.js's: a finger that moves, the first vine a quick flick crosses.
   let swipe = null;
   document.addEventListener('pointerdown', (e) => {
-    swipe = e.button === 0 && e.target.closest?.('[data-game]') ? Object.assign(new Set(), { x: e.clientX, y: e.clientY }) : null;
+    swipe = e.button === 0 && e.target.closest?.('[data-game]') ? stroke(e.clientX, e.clientY, e.target.closest?.('[data-g-swipe]') ?? null) : null;
   });
   document.addEventListener('pointermove', (e) => {
     if (!swipe || paused() || !(e.buttons & 1)) return;
-    // Only a finger that moves cuts: a vine swinging under a finger held still is no swipe.
-    if (Math.hypot(e.clientX - swipe.x, e.clientY - swipe.y) < 4) return;
-    swipe.x = e.clientX; swipe.y = e.clientY;
     const el = document.elementFromPoint(e.clientX, e.clientY)?.closest?.('[data-g-swipe]');
     const host = el?.closest('[data-game]');
-    if (!host || el.disabled) return;
-    const key = `${host.dataset.game}|${JSON.stringify(el.dataset)}`;
-    const g = boardFor(host.dataset.game);
-    if (swipe.has(key) || !runsLive(g)) return;
-    swipe.add(key);
-    apply({ g, host }, { ...el.dataset });
+    const g = host && !el.disabled ? boardFor(host.dataset.game) : null;
+    if (crosses(swipe, e.clientX, e.clientY, g && runsLive(g) ? el : null)) apply({ g, host }, { ...el.dataset });
   });
   const endSwipe = () => { swipe = null; };
   document.addEventListener('pointerup', endSwipe);

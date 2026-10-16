@@ -14,6 +14,7 @@
 // container, so a game on the 游戏厅 page and the same game on the story's stage play alike.
 // Nothing here knows a game.
 import { morph, tapGate, tapInk } from '../live-games.js';
+import { crosses, stroke } from './swipe.js';
 
 const STEP = 50;
 const WIN_HOLD = 1600; // the won frame (its seal) stands this long before the game settles
@@ -97,20 +98,15 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
     });
     // A pressed pointer drawn across a [data-g-swipe] control acts on it, once per control per
     // stroke (喂饼's vines, 2026-10-16: 割绳子's cut); the press itself went the tap's way.
-    // Only a finger that MOVES cuts: a vine swinging under a finger held still is not a swipe (live,
-    // 2026-10-16 — a held tap cut the second vine as it swung through).
+    // What a stroke cuts is swipe.js's: a finger that moves, the first vine a quick flick crosses.
     let swipe = null;
-    on(host, 'pointerdown', (e) => { swipe = e.button === 0 ? Object.assign(new Set(), { x: e.clientX, y: e.clientY }) : null; }, true);
+    on(host, 'pointerdown', (e) => {
+      swipe = e.button === 0 ? stroke(e.clientX, e.clientY, e.target.closest?.('[data-g-swipe]') ?? null) : null;
+    }, true);
     on(doc, 'pointermove', (e) => {
       if (!swipe || !(e.buttons & 1) || !live(mod, g.state)) return;
-      if (Math.hypot(e.clientX - swipe.x, e.clientY - swipe.y) < 4) return;
-      swipe.x = e.clientX; swipe.y = e.clientY;
       const el = doc.elementFromPoint(e.clientX, e.clientY)?.closest?.('[data-g-swipe]');
-      if (!el || !host.contains(el)) return;
-      const key = JSON.stringify(el.dataset);
-      if (swipe.has(key)) return;
-      swipe.add(key);
-      apply({ ...el.dataset });
+      if (crosses(swipe, e.clientX, e.clientY, el && host.contains(el) ? el : null)) apply({ ...el.dataset });
     });
     on(doc, 'pointerup', () => { swipe = null; });
     on(doc, 'pointermove', (e) => {

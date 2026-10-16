@@ -23,7 +23,7 @@ const MAX_PLANS = 8;
    any machine). Past it, the best level proved so far, else the fallback. */
 export const STEP_BUDGET = 36000;
 let spent = 0;
-export const SEEK = 1;
+export const SEEK = 6;
 
 /* ── The seed ── */
 function hash(text) {
@@ -120,12 +120,19 @@ function anchors(u, n, x0) {
 /** A layout for the day: `els` unlocked, `must` (the new one) always in it, `tier` 0 … 4. */
 export function compose(u, { tier = 0, els = [], must = null } = {}) {
   const has = (e) => e === must || (els.includes(e) && chance(u, must ? 0.35 : 0.55));
-  const bubble = has('bubble'), gust = !bubble && has('gust'), regrow = has('regrow'), thorns = has('thorns');
+  // Once the puff is known it is in most layouts: a puff while the thing hangs is the usual extra
+  // move a 灵光 off the plain path asks for (earn the stars, 2026-10-16).
+  const bubble = has('bubble'), gust = !bubble && (must === 'gust' || (els.includes('gust') && must !== 'thorns' && must !== 'regrow' ? chance(u, 0.8) : has('gust'))), regrow = has('regrow'), thorns = has('thorns');
   const x0 = round(between(u, 90, W - 90)), y0 = round(between(u, 118, 176));
-  const n = must ? (regrow || thorns ? 2 : 1) : Math.min(3, 1 + (tier >= 1 ? 1 : 0) + (tier >= 2 && chance(u, 0.6) ? 1 : 0) + (regrow && tier < 1 ? 1 : 0));
+  // A bubble wants two vines: it hangs off to the side, and one cut swings the thing into it.
+  const n = must ? (regrow || thorns || bubble ? 2 : 1) : Math.max(bubble ? 2 : 1, Math.min(3, 1 + (tier >= 1 ? 1 : 0) + (tier >= 2 && chance(u, 0.6) ? 1 : 0) + (regrow && tier < 1 ? 1 : 0)));
   const level = { bread: [x0, y0], vines: anchors(u, Math.max(n, regrow ? 2 : 1), x0) };
   if (regrow) level.vines[Math.floor(u() * level.vines.length)].regrow = round(between(u, 1800, 2600));
-  if (gust) {
+  if (gust && must !== 'gust' && chance(u, 0.5)) {
+    // A puff across where the thing hangs: it swings it, no ledge (an extra move, for a star).
+    const right = chance(u, 0.5);
+    level.gust = { at: [right ? 24 : W - 24, y0 + 6], to: [right ? 1 : -1, 0], band: 50 };
+  } else if (gust) {
     // The ledge under the vine cut last in one of the orders: there the thing comes to rest for the puff.
     const under = level.vines[Math.floor(u() * level.vines.length)].at[0];
     const lw = round(between(u, 90, 130)), ly = round(between(u, y0 + 70, y0 + 120)), lx = Math.max(lw / 2 + 10, Math.min(W - lw / 2 - 10, under + round(between(u, -15, 15))));
@@ -137,8 +144,15 @@ export function compose(u, { tier = 0, els = [], must = null } = {}) {
     level.stones = [{ x: round(between(u, 110, W - 110)), y: round(between(u, 250, 300)), w: sw, h: 14, a }];
   }
   if (bubble) {
-    level.bubbles = [{ at: [x0 + round(between(u, -4, 4)), round(between(u, y0 + 70, y0 + 120))] }];
-    if (els.includes('gust') && !must && chance(u, 0.5)) {
+    // Off the thing's own line: on the arc it swings through once the other vines are cut and it
+    // hangs from `keep` — so the player must swing it in, never just drop it.
+    const keep = level.vines[Math.floor(u() * level.vines.length)].at;
+    const r = Math.hypot(x0 - keep[0], y0 - keep[1]), a0 = Math.atan2(x0 - keep[0], y0 - keep[1]);
+    const a = -a0 * between(u, 0.35, 0.7);
+    const bx = keep[0] + r * Math.sin(a), by = keep[1] + r * Math.cos(a);
+    if (Math.abs(a0) < 0.35 || bx < 40 || bx > W - 40 || Math.hypot(bx - x0, by - y0) < 60) return { level, thorns, unfit: true };
+    level.bubbles = [{ at: [round(bx), round(by)] }];
+    if (els.includes('gust') && (!must || must === 'bubble') && chance(u, 0.6)) {
       const right = chance(u, 0.5);
       level.gust = { at: [right ? 24 : W - 24, 60], to: [right ? 1 : -1, 0], band: 60 };
     }
@@ -157,8 +171,12 @@ function plansOf(level) {
     if (level.bubbles) {
       out.push([...cuts(o), { g: 'pop', i: 0 }]);
       if (level.gust) out.push([...cuts(o), { g: 'gust' }, { g: 'pop', i: 0 }]);
-    } else if (level.gust) {
+    } else if (level.gust && level.stones?.length) {
       out.push([...cuts(o), { g: 'gust' }], [{ g: 'gust' }, ...cuts(o), { g: 'gust' }]);
+    } else if (level.gust) {
+      // The puff where it swings widest: once it hangs from a single vine (after the first cut).
+      const c = cuts(o);
+      out.push(c, c.length > 1 ? [...c.slice(0, c.length - 1), { g: 'gust' }, c.at(-1)] : [{ g: 'gust' }, ...c]);
     } else out.push(cuts(o));
   }
   return out.slice(0, MAX_PLANS);
@@ -211,11 +229,15 @@ function starsApart(path, end, main, mainEnd) {
 
 /** One try: a layout, its plans played, the mouth set, the level kept or not (and why). */
 export function attempt(u, opts) {
-  const { level, thorns } = compose(u, opts);
+  const { level, thorns, unfit } = compose(u, opts);
+  if (unfit) return { why: 'unfit-layout' };
   const runs = plansOf(level).map((plan) => ({ plan, ...playPlan(level, plan) }));
   const good = runs.filter((r) => r.done && !r.broke && crossing(r.path) != null); // the whole plan played: every move made
   // The plan to teach: the one that uses the most of what the layout holds, the longest first.
-  good.sort((a, b) => b.plan.length - a.plan.length);
+  // …but the extra puff before the first cut is for the stars, not the plan to teach: plans that
+  // open on a cut come first.
+  const extra = (r) => !r.plan.at(-1) || (r.plan.some((m) => m.g === 'gust') && r.plan.at(-1).g === 'cut');
+  good.sort((a, b) => extra(a) - extra(b) || b.plan.length - a.plan.length);
   const inside = good.filter((r) => { const x = crossing(r.path); return x > 56 && x < W - 56; });
   if (!inside.length) return { why: 'no-plan' };
   // Two ways down through the same mouth, when the layout has them, are tried first: the mouth between
@@ -282,7 +304,7 @@ export const FALLBACK = { bread: [180, 150], vines: [{ at: [180, 34] }], mouth: 
 export function generate(seed, opts = {}) {
   const t0 = globalThis.performance?.now() ?? Date.now(), u = rng(seed), why = {};
   // From the third tier on, a level with a better way to find is worth a few more tries.
-  const seek = (opts.tier ?? 0) >= 2 ? SEEK : 0;
+  const seek = (opts.tier ?? 0) >= 1 ? SEEK : 0;
   let kept = null;
   spent = 0;
   for (let k = 1; k <= TRIES && spent < STEP_BUDGET; k++) {
