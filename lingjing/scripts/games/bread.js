@@ -16,8 +16,9 @@
 import { Matter } from './physics.js';
 import { btn, n, scene, splash, still } from './ink.js';
 import { mountPure } from './mount.js';
+import { blowGust, buildWorld, cutVine, dist, outOf, stepWorld, BREAD_R, FLOOR, GUST_BAND, GUST_MS, H, STEP_MS, W } from './rope.js';
 
-const { Engine, Bodies, Body, Composite, Constraint } = Matter;
+const { Body } = Matter;
 
 export const meta = {
   id: 'bread',
@@ -28,11 +29,9 @@ export const meta = {
   },
 };
 
-export const W = 360, H = 440, FLOOR = 422;
-export const STEP_MS = 1000 / 60;
-export const BREAD_R = 19, PIECE_R = 14, MOUTH_R = 26;
-const LINK = 18, EAT_MS = 900, MISS_MS = 700, CLEAR_MS = 1500, GUST_MS = 700, REST_MS = 700;
-const GUST_ACC = 0.0009, GUST_BAND = 70, SETTLE_STEPS = 240, AIR_HUNG = 0.03, AIR_FREE = 0.01;
+export { W, H, FLOOR, STEP_MS, BREAD_R };
+export const PIECE_R = 14, MOUTH_R = 26;
+const EAT_MS = 900, MISS_MS = 700, CLEAR_MS = 1500, REST_MS = 700;
 export const STUCK_MISSES = 4;
 
 const T = {
@@ -60,40 +59,9 @@ const T = {
   },
 };
 
-/* ── The world: the 饼, its vines, the stones, the floor ───────────────────────────────── */
+/* ── The world (rope.js, shared with the 饭桶's puzzle): the 饼, its vines, the stones, the floor ── */
 
-const NO_HIT = { group: -1, category: 0x0002, mask: 0 };
-
-function vineOf(v, bread) {
-  const [ax, ay] = v.at, { x: bx, y: by } = bread.position;
-  const len = Math.hypot(bx - ax, by - ay) * (1 + (v.slack ?? 0));
-  const count = Math.max(4, Math.round(len / LINK)), seg = len / count;
-  const links = Array.from({ length: count - 1 }, (_, k) => {
-    const f = (k + 1) / count;
-    return Bodies.circle(ax + (bx - ax) * f, ay + (by - ay) * f, 2.5, { collisionFilter: NO_HIT, density: 0.0008, frictionAir: 0.03 });
-  });
-  const joint = (a, b, opts) => Constraint.create({ length: seg, stiffness: 1, damping: 0.1, ...opts });
-  const joints = [joint(null, null, { pointA: { x: ax, y: ay }, bodyB: links[0] })];
-  for (let k = 0; k < links.length - 1; k++) joints.push(joint(null, null, { bodyA: links[k], bodyB: links[k + 1] }));
-  joints.push(joint(null, null, { bodyA: links.at(-1), bodyB: bread }));
-  return { at: [ax, ay], links, joints, cut: null };
-}
-
-const stoneOf = (s) => Bodies.rectangle(s.x, s.y, s.w, s.h, { isStatic: true, angle: ((s.a ?? 0) * Math.PI) / 180, restitution: s.bounce ?? 0.3, friction: 0.02, label: 'stone' });
-
-function build(level) {
-  const engine = Engine.create({ positionIterations: 10, velocityIterations: 8, constraintIterations: 12 });
-  const [bx, by] = level.bread;
-  const bread = Bodies.circle(bx, by, BREAD_R, { restitution: 0.3, friction: 0.04, frictionAir: AIR_HUNG, density: 0.002, label: 'bread' });
-  const vines = (level.vines ?? []).map((v) => vineOf(v, bread));
-  const stones = (level.stones ?? []).map(stoneOf);
-  const floor = Bodies.rectangle(W / 2, FLOOR + 40, W * 3, 80, { isStatic: true, label: 'floor' });
-  Composite.add(engine.world, [bread, floor, ...stones, ...vines.flatMap((v) => [...v.links, ...v.joints])]);
-  // Hung before he looks: the vines take the weight off-stage, so the 饼 is shown at rest.
-  for (let i = 0; i < SETTLE_STEPS; i++) Engine.update(engine, STEP_MS);
-  Body.setVelocity(bread, { x: 0, y: 0 });
-  return { engine, bread, vines, acc: 0, rest: 0, gust: 0 };
-}
+const build = buildWorld;
 
 /* ── The game ───────────────────────────────────────────────────────────────────────────── */
 
@@ -124,18 +92,12 @@ export const gradeOf = (stars) => (stars > 0 ? 'half' : 'most');
 export const stuck = (s) => !s.won && (s.misses?.[s.li] ?? 0) >= STUCK_MISSES;
 
 function cut(s, data) {
-  const v = s.swing.vines[Number(data.v)], k = Number(data.k);
-  if (!v || v.cut != null || !(k >= 0 && k < v.joints.length)) return null;
-  Composite.remove(s.swing.engine.world, v.joints[k]);
-  v.cut = k;
-  // A 饼 on its vines settles soon (a swing is to be watched, not chased); a free one flies true.
-  if (s.swing.vines.every((x) => x.cut != null)) s.swing.bread.frictionAir = AIR_FREE;
+  if (!cutVine(s.swing, Number(data.v), Number(data.k))) return null;
   return { ...s, note: 'cut', moves: s.moves + 1 };
 }
 
 function gust(s) {
-  if (!levelOf(s).gust || s.swing.gust > 0) return null;
-  s.swing.gust = GUST_MS;
+  if (!blowGust(s.swing, levelOf(s))) return null;
   return { ...s, note: 'gust', gustAt: s.clock, moves: s.moves + 1 };
 }
 
@@ -155,24 +117,12 @@ export function act(state, data = {}) {
 
 /* ── Time ────────────────────────────────────────────────────────────────────────────────── */
 
-const dist = (p, [x, y]) => Math.hypot(p.x - x, p.y - y);
-
-function blow(s) {
-  const g = levelOf(s).gust, w = s.swing;
-  if (!g || w.gust <= 0) return;
-  w.gust -= STEP_MS;
-  const b = w.bread;
-  if (Math.abs(b.position.y - g.at[1]) > (g.band ?? GUST_BAND)) return;
-  const [dx, dy] = g.to ?? [1, 0];
-  Body.applyForce(b, b.position, { x: dx * b.mass * GUST_ACC * (g.power ?? 1), y: dy * b.mass * GUST_ACC * (g.power ?? 1) });
-}
-
 /** Where the 饼 stands after one step of play: eaten, missed, or still going. */
 function judge(s) {
   const level = levelOf(s), w = s.swing, b = w.bread, p = b.position;
   if (level.piece && !s.piece && dist(p, level.piece) < PIECE_R + BREAD_R) s = { ...s, piece: true, got: s.got.map((g, i) => g || i === s.li), note: 'piece', pieceAt: s.clock };
   if (dist(p, level.mouth) < MOUTH_R + BREAD_R * 0.4) return eat(s);
-  const out = p.x < -40 || p.x > W + 40 || p.y > H + 40 || p.y + BREAD_R >= FLOOR - 1;
+  const out = outOf(w);
   const free = w.vines.every((v) => v.cut != null);
   w.rest = free && b.speed < 0.08 && Math.abs(b.angularSpeed) < 0.01 ? w.rest + STEP_MS : 0;
   if (out || (w.rest >= REST_MS && !level.gust)) return miss(s);
@@ -198,9 +148,7 @@ function advance(s) {
 
 const PHASES = {
   play(s) {
-    Engine.update(s.swing.engine, STEP_MS);
-    s.swing.wall = globalThis.performance?.now() ?? 0;
-    blow(s);
+    stepWorld(s.swing, levelOf(s));
     return judge(s);
   },
   eat(s) {
