@@ -254,7 +254,9 @@ function prove(level, thorns, runs, main, mate, u, opts) {
   level.mouth = mouth;
   // The human hand: every move a little late, and every move slow (a long think while a vine regrows),
   // and it still feeds.
-  for (const late of [LATE_MS, SLOW_MS]) {
+  // With a vine that grows back, a think longer than its regrowth too: the answer may never be a race.
+  const regrowMs = Math.max(0, ...level.vines.map((v) => v.regrow ?? 0));
+  for (const late of [LATE_MS, SLOW_MS, ...(regrowMs ? [regrowMs + 600] : [])]) {
     const lateRun = playPlan(level, main.plan, { late });
     const lateFed = fedAt(lateRun.path, mouth);
     if (lateFed < 0 || lateRun.broke || (level.thorns && touches(lateRun.path, level.thorns[0], 0, lateFed + 1))) return { why: 'late-misses' };
