@@ -179,7 +179,7 @@ function vineStrokes(pts, cutAt, tail = true) {
   return parts.filter((p) => p.length > 1).map((p) => { const d = curve(p); return `<path class="g-vine-wash" d="${d}"/><path class="g-vine" d="${d}"/>`; }).join('');
 }
 
-function vinePicture(v, i, w, live, phase) {
+function vinePicture(v, i, w, live, phase, part = 'all') {
   const pts = vinePoints(v, w.bread);
   const grow = v.regrow && v.cut != null ? Math.min(1, (w.clock - v.cutAt) / v.regrow) : null;
   const sprout = grow != null ? `<circle class="g-regrow" cx="${v.at[0]}" cy="${v.at[1] + 6}" r="${n(4 + grow * 6)}"/>` : '';
@@ -188,7 +188,8 @@ function vinePicture(v, i, w, live, phase) {
     const b = pts[k + 1];
     return `<line class="g-vine-hit" x1="${n(a.x)}" y1="${n(a.y)}" x2="${n(b.x)}" y2="${n(b.y)}" data-g="cut" data-g-swipe="" data-v="${i}" data-k="${k}"/>`;
   }).join('');
-  return strokes + sprout + `<circle class="g-vine-knot${v.regrow ? ' is-regrow' : ''}" cx="${v.at[0]}" cy="${v.at[1]}" r="4"/>` + hits;
+  if (part === 'hits') return hits;
+  return strokes + sprout + `<circle class="g-vine-knot${v.regrow ? ' is-regrow' : ''}" cx="${v.at[0]}" cy="${v.at[1]}" r="4"/>`;
 }
 
 /* The thing he chose: its own picture in a round, else its name's first character in an ink ring. */
@@ -232,7 +233,7 @@ function bubblePicture(w, i) {
   if (b.state === 'popped') return '';
   const r = b.r + (b.state === 'held' ? 6 : 0), [x, y] = b.state === 'held' ? [w.bread.position.x, w.bread.position.y] : b.at;
   return `<g class="g-ft-bubble${b.state === 'held' ? ' is-held' : ''}" data-g="pop" data-i="${i}" transform="translate(${n(x)} ${n(y)})">`
-    + `<circle class="g-ft-hit" r="${r + 10}"/><image href="${BUBBLE}" x="${-r}" y="${-r}" width="${r * 2}" height="${r * 2}"/></g>`;
+    + `<circle class="g-ft-hit" r="${r + 4}"/><image href="${BUBBLE}" x="${-r}" y="${-r}" width="${r * 2}" height="${r * 2}"/></g>`;
 }
 
 const thornPicture = (t) => `<g class="g-ft-thorns" transform="translate(${t.x} ${t.y}) rotate(${t.a ?? 0})"><image href="${THORNS}" x="${-t.w / 2 - 8}" y="${-t.h / 2 - 10}" width="${t.w + 16}" height="${t.h + 20}" preserveAspectRatio="none"/></g>`;
@@ -289,7 +290,9 @@ function playScene(s) {
   const teachRing = s.must && s.must !== 'gust' ? teachMark(s) : '';
   return scene(W, H, ground() + gustPicture(s) + (L.stones ?? []).map(stonePicture).join('') + (L.thorns ?? []).map(thornPicture).join('')
     + potPicture(s) + starsPicture(s) + w.vines.map((v, i) => vinePicture(v, i, w, live, s.phase)).join('')
-    + w.bubbles.map((_, i) => bubblePicture(w, i)).join('') + item + flecks(s) + fx + burp + teachRing, 'g-bread-cave g-ft-cave')
+    + w.bubbles.map((_, i) => bubblePicture(w, i)).join('') + item + flecks(s) + fx + burp + teachRing
+    // The vines' cut lines lie over everything: a tap on a vine above a bubble cuts the vine, never pops it.
+    + w.vines.map((v, i) => vinePicture(v, i, w, live, s.phase, 'hits')).join(''), 'g-bread-cave g-ft-cave')
     .replace('<svg ', `<svg data-swing="${esc(s.key)}" `);
 }
 
