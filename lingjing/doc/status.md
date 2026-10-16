@@ -16,6 +16,7 @@ Updated 2026-10-16.
 
 ## Done lately
 
+- 10-16 — 开仓 counts any stock added, watched or held, 0 shares OK (`0c81e4cb`); a phone add sends the `cfo-first-stock` fact so the Mac stamps at once (linggen-mobile `09f1035`, phone install waits).
 - 10-16 — 对对子 (`cb375ca3`): 褚先生 at the 讲堂 after 古六, 一字 → 五言 from 《声律启蒙》; form checked by the rules as he types (新韵 tones.json), Ling grades the rubric (Duizi), marks pay and open rungs; reverse unpaid; 银月's hint and 下联 only awake (Couplet); no door in English. Live on a scratch save: the card, two rounds and a reverse played; the grades came from the model (agent_run), fed in as Ling's Duizi call (a scratch save never messages Ling).
 - 10-16 — 开府 gains CFO's 开仓 · 在 CFO 的投资里添一支股票 (`7dd1b884`, `cfo-first-stock`): stamped when a holding is saved or when CFO loads with one held, only the fact; opens after 开天眼, before 借天火. Live: stamped on load, seen in a scratch save's 开府 list.
 - 10-16 — Pacing + economy (`9c42af47`, `9fbba840`): `worlds/jiuding/balance.json` holds every number (layers, pay, conversion, the day's fight bands, cooldowns); `tools/balance.mjs` plays light/typical/heavy day by day (typical ≈5–7 days a 回, 古六 ≈8; heavy ≈3–5; light ≈8–15); `--fit` sets 练气 [0,210,390,410,430,480,500,740,760,780]; 阶段任务 in every 回 past 古三 (rules/gates.mjs); story floor gone; pool + rerun wins 3 full / 3 half / then 灵石; rerun open through 00-zhuji; state v10.
