@@ -52,7 +52,8 @@
     "en": "No more hiding"
    },
    "means": "stops hiding: the bow (first read the wind, then the deer), the chase down the wind shaft to the dry underground river — Ahe waiting in the dark under the warm-wind hole, two whispered lines (he kills only with the gourd; the plug's pull-and-push is his slowest moment), his arrow takes the plug, two voices from two places set four greedy men on Zou, her vine holds the shield arm one breath — and back to the ledge alone; the Hell-for-Leather Charm from 古四, slapped on blind — its leap behind the gui; Yinyue's two hairs break the shield; he finishes Zou Qingsong himself, then, at Yinyue's word, sits in the living soil where the cauldron stood and lets it grow into him",
-   "rise": 4,
+   "_was_rise": "No story rise since 2026-10-16 (Hanli: 「要让玩家去刷经验/修为等. 不要直接跳层」): `was_rise` keeps the layer the book once lifted him to (state.mjs zeroLayer reads it); he earns it himself, behind the 阶段任务.",
+   "was_rise": 4,
    "_doors": "The page's moment after this exit (story.mjs node `doors`): the five doors open one by one, a seal and a line each, in ink — colour is for 银月's memories alone.",
    "doors": [
     {

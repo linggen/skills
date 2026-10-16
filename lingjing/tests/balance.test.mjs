@@ -138,7 +138,7 @@ test('no daily thinning (Hanli, 2026-10-16): every pool win pays the haunt table
   assert.deepEqual(paid, Array(8).fill(T.haunt.progress));
 });
 
-test('no story floor: the book\'s jump steps him and carries what was over the mark; past the mark the 功课 counts on and a fight pays 灵石', () => {
+test('no story jump (2026-10-16): past the mark the 功课 counts on and a fight pays 灵石; 第一路 moves no layer — 二层 is ground', () => {
   const th = content.ladder.tiers[0].thresholds;
   const s = { ...newState(content, 'zh', NOW), chapter: '00-waimen', scene: null, place: 'waimen', ended: ['00-prologue'], done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian'],
     tier: 'qi', step: 1, progress: th[1], traits: ROOTS, stamina: 100, stamina_at: NOW.toISOString() };
@@ -149,20 +149,22 @@ test('no story floor: the book\'s jump steps him and carries what was over the m
   const won = pay(content, f, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth });
   assert.equal(won.progress, 0, 'no 修为 past the mark from a fight');
   assert.equal(won.wealth, T.haunt.wealth + Math.round(T.haunt.progress * content.rewards.xiuwei_to_lingshi.rate));
-  // 第一路 (wm-diyilu): 一层圆满 met, the rise carries the 功课 over the mark; 二层 asks half of it more.
+  // 第一路 (wm-diyilu): once a rise to 二层; now the story moves nothing — 古五's grinding steps him.
   const r = resolve({ ...s, scene: 'wm-diyilu', place: 'chaifang' }, content, ctx, { exit: 'save' });
   assert.equal(r.result.ok, true, JSON.stringify(r.result));
-  assert.deepEqual([r.state.step, r.result.rose.carried, r.state.stretch['qi:2']], [2, g, g / 2]);
-  assert.equal(look(r.state, content, ctx).next, th[2] + g / 2);
-  assert.equal('filled' in r.result.rose, false, 'nothing filled by the story');
+  assert.deepEqual([r.state.step, r.state.progress], [s.step, s.progress], 'the story moved nothing');
+  assert.equal(r.result.rose, undefined);
 });
 
-test('a save from before keeps its 层 and its bar as full as it stood — a v8 save through both re-derivations, a v9 save through the last; 圆满 stays 圆满', () => {
+test('a save from before keeps its 层 and its bar as full as it stood — a v8 save through every re-derivation, a v9 and a v10 save through theirs; 圆满 stays 圆满', () => {
   const th = content.ladder.tiers[0].thresholds, was = content.ladder.tiers[0].thresholds_were;
   const save = (version, extra) => ({ ...newState(content, 'zh', NOW), version, chapter: '00-waimen', scene: 'wm-chaifang', place: 'chaifang', ended: ['00-prologue'],
     done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian'], tier: 'qi', traits: ROOTS, ...extra });
   const v9half = migrate(save(9, { step: 4, progress: was['10'][4] / 2 }), content);
-  assert.deepEqual([v9half.step, v9half.progress, v9half.version], [4, Math.round(th[4] / 2), 10]);
+  assert.deepEqual([v9half.step, v9half.progress, v9half.version], [4, Math.round(th[4] / 2), 11]);
+  // v10 (the stage quests' ladder, before the story stopped raising 层): his 九层 · 0 stays 九层 · 0; half a bar stays half.
+  assert.deepEqual([migrate(save(10, { step: 9, progress: 0 }), content).step, migrate(save(10, { step: 9, progress: 0 }), content).progress], [9, 0]);
+  assert.equal(migrate(save(10, { step: 7, progress: was['11'][7] / 2 }), content).progress, Math.round(th[7] / 2));
   const v9full = migrate(save(9, { step: 1, progress: was['10'][1] }), content);
   assert.deepEqual([v9full.step, v9full.progress, realmName(content, v9full, 'zh')], [1, th[1], '练气一层圆满']);
   const v8 = fitWorld(migrate(save(8, { step: 1, progress: 25 }), content), content);

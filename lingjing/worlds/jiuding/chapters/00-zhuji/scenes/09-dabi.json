@@ -60,7 +60,8 @@
    "means": "year six 闵丹师's lesson in the 丹房 (choosing stock by winters, the 君), the 九节聚气 recipe and a ten-year 黄精; the 饭桶 fed by it gives three-line pills; 八层 that winter; year seven 飘风不终朝 (定风 = waiting it out), 进退 (「初六：进退，利武人之贞」; the pine bough), 九层, the 火柴's line of sparks; a furnace of his own, a true 一纹 pill on the fifth batch — 「有火气。」「能吃。」; at the Laba of year seven (the book's 第五年腊八) he goes up again after four years away, Shopkeeper Qian lists him at one-pays-fifty, Ahe's single cash is the only stake; the final against a 九层圆满 won by an instant with 随风, waiting out his gasp between blades, a cut under the ribs; Qian counts out fifty-one cash to her; the sect's one-turn pill resealed with rice water into the storage pouch; 闵丹师's sniff after five years at one furnace; five brides on the Zhang",
    "mark": "y-dabi",
    "once": true,
-   "rise": 9,
+   "_was_rise": "No story rise since 2026-10-16 (Hanli: 「要让玩家去刷经验/修为等. 不要直接跳层」): `was_rise` keeps the layer the book once lifted him to (state.mjs zeroLayer reads it); he earns it himself, behind the 阶段任务.",
+   "was_rise": 9,
    "stay": true,
    "story": {
     "zh": "那年冬天，他过了八层。每年十月十八，周衡一整天不翻账簿。瞿老只给他定过一条规矩：「差事，你尽管去。蒙山的牌子，不许揭——太一宫那个人，他知道你家在哪个村、哪一扇门里。你一个人回去，便是自己送上门。」\n\n年七，他八层。瞿老道：「再凶的东西，凶也凶不长。它把一身的劲都使在一声吼、一下撞上，使完了，总得喘一口——你等的，就是那一口。」他念了一句书：「《道德经》{典=laozi-piaofeng}里说：『飘风不终朝，骤雨不终日。』」瞿老道：「定风，不是站着不动。是等它吹完。」\n\n八层到九层，瞿老教的是进退。「《周易》{典=zhouyi-xun}里，巽卦头一爻，开口两个字：『进退。』」他指着崖边一根碗口粗的松枝：「你砍它。」小满砍了。一剑下去，剑卡在松枝里，拔不出来。瞿老道：「你给自己留了一口。」\n\n小满拔出剑，又砍，这一回他把丹田里的灵力整个压进剑里，什么也没留，松枝「咔嚓」一声落了地。瞿老道：「这才是进退。进了一半想退，那一剑，自己先散了。」顿了一顿，「……剑是这样，别的，也是这样。」\n\n那年秋天，闵丹师在丹房角上那口小炉跟前，给他搁了一只矮凳。闵丹师只说了一句：「料你自己碾，火你自己看。炼糊了，碾了做药引。」第五炉，出了一颗，青白，一道纹，歪歪扭扭的。闵丹师捏起来，闻了闻，道：「有火气。」又道：「能吃。」从此他往阿禾、孙二狗手里塞丹，再不用找由头。\n\n闵丹师在正炉那头闻了闻，道：「火小了。」小满道：「怕糊。」闵丹师道：「怕糊，就一辈子一道纹。首尾武，中间文。」他一只手按在炉壁上，灌进去一口灵力，那灯芯大的火「呼」地蹿起半尺，又落了回去。「就这么大。记住这一下。」那一炉，小满头一回炼出了两道纹。\n\n那一年腊月，钱掌柜照旧把板子扛上了山。最底下一行，写的是：**沈小满　一赔五十。**阿禾挤到秤盘跟前，放下一文钱。钱掌柜抬起眼皮：「姑娘，五年前你押过他一回。」阿禾道：「输了。」那一年押沈小满的，统共一文钱。\n\n第五年腊八，刮的是北风。头一场，小满抽着的是内门一个火行的八层。他往北边那块青石板上一站，便不挪了。那师兄的火弹一颗接一颗打过来，他拿土墙接，接一颗，碎一面，满台是烟；烟顺着北风，全往南倒，倒进那师兄自己的眼睛里。小满这才走过去，伸手一推，把他推下了台。\n\n决赛的对手，是内门一个九层圆满。那师兄的金刃是一口气一口气发的，发一道，喘一口。他等的是那一口喘。等到第十一道，小满的火柴进去了——剑尖抵在那师兄胸口的衣襟上，停住了。那师兄道：「我认输。」\n\n周衡把那本蓝布面的名录翻到新的一页，提起笔来，写了「沈小满」三个字，笔停了一停——三百年的名录上，头一回写一个杂灵根的名字。观主把玉盒子放在他手里。\n\n钱掌柜一文一文往秤盘上数。数到五十，又摸出一文，搁在最上头：「本钱。」阿禾摸出小本子，翻到五年前那一页。那一页上只一行：**一文。利息另算。**她在底下添了一笔。\n\n钱掌柜回过头来，冲小满背上那张弓一抬下巴：「那木头，打听出名字没有？」小满道：「没有。」钱掌柜道：「不急。」\n\n当夜小满在柴房里揭了封条：一道纹，一转，下品；饭桶闻了一口，「噗」地喷出一小股黑烟。他讨了半碗米汤，把封条粘了回去，连玉盒子收进储物袋里——全天下唯一一颗他拿出来说得清来历的[筑基丹]{注=foundation-pill}。\n\n闵丹师的鼻子动了一动，目光在他腰上那只储物袋上停了一停。他什么也没说，走了。\n\n这五年，漳水边上，每年十月十八，推下去一只船，船上坐一个穿嫁衣的姑娘。五年，五只船。周衡知道是哪一天。",
@@ -78,8 +79,8 @@
   {
    "id": "ruqiu",
    "label": {
-    "zh": "入秋 · 九层圆满",
-    "en": "Autumn · Ninth layer, perfected"
+    "zh": "入秋",
+    "en": "Autumn"
    },
    "means": "the autumn of year eight: 宁师伯's one 筑基 lecture (the brick and the loose earth; one 筑基 pill a year; 「不是赏，是赌」); the jar brims over, ninth layer perfected; his master calls him up the cliff",
    "needs": {
@@ -89,7 +90,7 @@
     "zh": "一季一季来：先过了前头那一季。",
     "en": "One season at a time: finish the one before first."
    },
-   "rise": {
+   "was_rise": {
     "layer": 9,
     "full": true
    },

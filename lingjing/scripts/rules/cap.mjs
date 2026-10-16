@@ -52,9 +52,19 @@ export function capOf(content, state) {
    of them asks full — so no rise of the book ever lands on a layer already ground past (古七's
    定风: 「可缸涨了，层不动」). Past every gate, the 回's own cap. */
 function heldBy(content, state, e) {
-  const done = new Set(state.done_scenes ?? []), first = content.ladder.tiers[0].id;
-  const ahead = (e.gates ?? []).filter(g => !done.has(g.scene)).map(g => rankAt(content, { tier: g.tier ?? first, layer: g.layer }));
+  const first = content.ladder.tiers[0].id;
+  const ahead = (e.gates ?? []).filter(g => !gatePassed(content, state, g)).map(g => rankAt(content, { tier: g.tier ?? first, layer: g.layer }));
   return ahead.length ? Math.min(...ahead) : Infinity;
+}
+
+/* A gate (ladder.json caps.hui.<回>.gates) walked through: its scene passed, or one of its ways
+   taken that stays in the scene and marks it (古八's 腊八 · 再上五行台, `mark: y-dabi`, before 入秋
+   in the same scene — 2026-10-16: two gates, one scene). */
+export function gatePassed(content, state, g) {
+  if ((state.done_scenes ?? []).includes(g.scene)) return true;
+  const sc = Object.values(content.chapters ?? {}).map(ch => ch.scenes?.[g.scene]).find(Boolean);
+  const marks = new Set(state.marks ?? []);
+  return (sc?.exits ?? []).some(x => g.exits.includes(x.id) && x.mark && !x.next && !x.ends && marks.has(x.mark));
 }
 
 /* May the realm step from where it is to (tier, step)? A gain that would cross the cap is held. */

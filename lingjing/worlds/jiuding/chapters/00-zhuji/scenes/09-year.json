@@ -87,9 +87,9 @@
    },
    "mark": "y-futian",
    "once": true,
-   "rise": 5,
+   "was_rise": 5,
    "_rise": "A catch-up, not a jump (2026-10-15 split): 五层 is 09-furnace's; a save that passed the furnace before it rose (the old cap held 四层) is lifted here, behind the same 四层圆满 gate — for everyone else it moves nothing.",
-   "_stage": "阶段任务 (Hanli 2026-10-15): this way waits on 练气四层圆满 — the realm full at the layer he holds — before the book's rise (ladder.json caps.hui.h11.gates: {layer: 4, scene, exits}); the catch-up for a save that passed 09-furnace before its rise existed; already 五层, the gate stands open.",
+   "_stage": "No story rise since 2026-10-16 (Hanli: 「要让玩家去刷经验/修为等. 不要直接跳层」): `was_rise` keeps the layer the book once lifted him to (state.mjs zeroLayer reads it); he earns it himself, behind the 阶段任务. Before: 阶段任务 (Hanli 2026-10-15): this way waits on 练气四层圆满 — the realm full at the layer he holds — before the book's rise (ladder.json caps.hui.h11.gates: {layer: 4, scene, exits}); the catch-up for a save that passed 09-furnace before its rise existed; already 五层, the gate stands open.",
    "story": {
     "zh": "伏天里最热的那几夜，药园巡完了，三个人常坐在药园的矮墙上乘凉：小满，阿禾，孙二狗。孙二狗讲他娘说，二狗这个名字贱，贱名好养活，等他出息了，再给他起个好名字。小满问：「你想叫什么？」孙二狗想了半天，道：「……还叫二狗吧。我娘叫惯了。」小满没笑。阿禾也没笑。墙底下的小狰翻了个身，打了个响鼻。",
     "en": "On the hottest nights of the dog days, when the herb-garden rounds were done, the three of them often sat on the low wall of the herb garden to cool off: Xiaoman, Ahe, Sun Ergou. Sun Ergou told them his mother said Ergou, Second Dog, was a lowly name, and lowly names are easy to raise; when he made something of himself she'd give him a good one. Xiaoman asked, \"What do you want to be called?\" Sun Ergou thought a long while, and said, \"...Ergou, still. Ma's used to it.\" Xiaoman didn't laugh. Ahe didn't laugh either. Under the wall the little zheng rolled over and snorted."

@@ -245,11 +245,19 @@ a 回 should last, not be binged.
   shows it with progress, 下一步 and Ling point to the work that raises 修为; 银月 says her word
   when it fills. Only where he can walk away to earn it (never inside a beat's lock or the 秘境):
   古四 the 柴房 night @一层 · 古五 the 秘境's door @二层 · 古六 the 大比's eve @四层 · 古七 定风 @四层,
-  the 沂水 night @五层, the autumn @六层 · 古八 the years @七层. While a quest is ahead, grinding stops at
-  the layer it asks (rules/cap.mjs heldBy): no rise of the book lands on a layer already ground past. 古九 has none (the
-  九转 lands 筑基小成圆满). A scene passed is never gated again.
-- **No story floor.** A rise steps him and carries what was over the mark; nothing tops up a 层 he
-  is short of.
+  the 沂水 night @五层, the autumn @六层 · 古八 腊八 @八层, 入秋 @九层. While a quest is ahead, grinding stops at
+  the layer it asks (rules/cap.mjs heldBy; a gate is passed with its scene, or by a stay that marks it — 腊八). 古九
+  has none. A scene passed is never gated again.
+  **Handed in** (2026-10-16, Hanli: 「七层圆满的任务大成了应该可以交任务拿奖励」): met, the row is 可交 with 交差 and
+  pays balance.json `pay.stage` (60 灵石 — at 圆满 修为 cannot rise), once; then 已交. A quest behind him never
+  handed in (crossed before stage quests paid, or walked through) is paid once on the next load, with a
+  补发 row in the 事 book (rules/gates.mjs settleStages). The open row is never a layer he has passed.
+- **The story never raises 修为 or 层** (Hanli, 2026-10-16: 「要让玩家去刷经验/修为等. 不要直接跳层」). No `rise`
+  but 入门 (the 小周天, 零层 → 一层: 零层 holds no 修为, so nothing is skipped), no 修为 in a choice's grant, no
+  `fill` to 圆满 (the 九转 lands 筑基小成, not its 圆满) — content.mjs lintEarned refuses them. Every rise the book
+  had is a stage quest at that choice, or, inside a locked beat (第一路's 二层, 息壤's 四层), the next gate on asks
+  that layer or more; `was_rise` keeps the old layer for the v8 migration. A choice's label names the beat,
+  never a layer (「入秋」, not 「入秋 · 九层圆满」).
 - **At 圆满, 修为 from fights and the 秘境 pays as 灵石** at `convert.rate`; it never spills into the
   next layer. The per-回 cap (§ 境界) still holds.
 - **Where 修为 comes from:** 功课, fights (haunts, pools, 降妖/驯 errands, 榜文 · 降妖), the
@@ -294,14 +302,13 @@ need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale
 - **修为 caps per 回** (Hanli, 2026-10-05: 「游戏里修炼有个上限吧? 和故事对齐」;
   rules/cap.mjs, `ladder.json → caps`): each 古 回 declares how far the
   player's own work reaches (`tier` + `layer`, a 层 of 练气 or a step above it) and, where its scenes carry him
-  further, its `story` — 古三 一层 · 古四 二层 · 古五 二层 (story 四层) · 古六
-  四层 · 古七 六层 (story 七层) · 古八 七层 (story 筑基小成) · 古九 筑基小成; a 今 interlude takes the 古
+  further, its `story` — 古三 一层 · 古四 一层 · 古五 二层 · 古六
+  四层 · 古七 六层 · 古八 九层 (story 筑基小成, the breakthrough) · 古九 筑基小成; a 今 interlude takes the 古
   before it; after 卷一 the save waits in 古九's chapter, so 筑基小成 holds
   until 卷二 gets its caps. At the cap the step fills (圆满) and further
   修为 from fights and the 秘境 pays as 灵石 (2026-10-15; § Pacing); Look's `capped.say` stands by the full
-  bar in the world's words. The book's jumps are the story's (`rise`): 古四's close lifts
-  to 二层 (wm-diyilu), 息壤 to 四层, the year to 九层圆满, the cliff to 筑基 —
-  each reached only past the 回's stage quest, so nobody arrives behind the book. A rise or
+  bar in the world's words. The book makes no jumps since 2026-10-16 (§ Pacing): every layer is
+  ground, each 回's stage quests hold the way on, and the cliff's 筑基 is his own throw. A
   breakthrough past `story` is refused `past-cap` (「火候未到」), and the lint
   refuses such data. A save already past its cap is never pulled down: it
   fills its own step and waits.

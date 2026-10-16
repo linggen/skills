@@ -1,7 +1,7 @@
 // The player's state and the arithmetic over it. Pure: no files, no clock —
 // the caller passes `now`.
 
-export const STATE_VERSION = 10;
+export const STATE_VERSION = 11;
 export const FIRST_WORLD = 'jiuding'; // the world every save before worlds was playing
 
 export function firstChapter(content) {
@@ -455,6 +455,9 @@ const MIGRATIONS = [
   // v10 (2026-10-16, balance.json, the 阶段任务): 练气's 层 re-derived again. A save marked by v9
   // keeps that older mark (its bar is read against the oldest ladder it was played on).
   [10, m => { m.ladder_pace ??= 10; }],
+  // v11 (2026-10-16, Hanli: 「要让玩家去刷经验/修为等. 不要直接跳层」): no story rise, so 练气 re-fit
+  // again (balance.json). Its 层 kept, its bar as full as it stood, as v10 (paceLayer).
+  [11, m => { m.ladder_pace ??= 11; }],
 ];
 
 export function migrate(state, content = null) {
@@ -517,7 +520,8 @@ export function nineToThree(content, saved) {
    The 修为 held never passes the new step's threshold. A tier without 零层 is
    left as it was. */
 const zeroRises = (content, layer) => Object.values(content.chapters).flatMap(ch => Object.values(ch.scenes)
-  .filter(sc => (sc.exits ?? []).some(e => { const l = typeof e.rise === 'object' && e.rise ? e.rise.layer : e.rise; return layer(l); }))
+  // `was_rise`: a rise the book had until 2026-10-16 (no story rise since — rules/gates.mjs), kept for this reading.
+  .filter(sc => (sc.exits ?? []).some(e => { const r = e.rise ?? e.was_rise; const l = typeof r === 'object' && r ? r.layer : r; return layer(l); }))
   .map(sc => ({ chapter: ch.id, scene: sc.id })));
 const passedScene = (s, at) => (s.done_scenes ?? []).includes(at.scene) || (s.ended ?? []).includes(at.chapter) || (s.chapter != null && s.chapter > at.chapter);
 export function zeroLayer(content, saved) {

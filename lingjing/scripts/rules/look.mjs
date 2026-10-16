@@ -30,7 +30,7 @@ import { building } from './worlds.mjs';
 import { chapterLabel, huiOf, sideLine } from './hui.mjs';
 import { replayBrief } from './skips.mjs';
 import { capLook } from './cap.mjs';
-import { stageNow } from './gates.mjs';
+import { stageBack, stageNow, stagesPaid } from './gates.mjs';
 import { practiceHint } from './scrolls.mjs';
 import { owesTell } from './tell.mjs';
 import { mainRoot, rootName } from './roots.mjs';
@@ -576,6 +576,9 @@ export function look(state, content, ctx) {
     // 阶段任务 (rules/gates.mjs): the layer the 回's next stage waits on, and his 修为 toward it — the 事 book's row.
     // Short of it, where 修为 is earned — even standing at the scene that waits (the 事 row's go).
     ...((q => (q ? { stage_quest: q.met ? q : { ...q, work: workOf(content, state, ctx, { anywhere: true, cultivate: true }) } } : {}))(stageNow(content, state))),
+    // Handed in, this 回 (the book's 已交); and those settled by themselves on a load, a day long (gates.mjs settleStages).
+    ...(stagesPaid(content, state).length ? { stages_paid: stagesPaid(content, state) } : {}),
+    ...(stageBack(state, ctx.now) ? { stage_back: stageBack(state, ctx.now) } : {}),
     // A visiting shop in season (rules/visiting.mjs): where, today or in n days, in its own line.
     ...(visitorsBrief(content, state, ctx.now).length ? { visitors: visitorsBrief(content, state, ctx.now) } : {}),
     ...(offersOf(content, state, lang, ctx.now).length ? { offers: offersOf(content, state, lang, ctx.now) } : {}),

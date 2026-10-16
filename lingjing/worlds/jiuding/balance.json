@@ -5,15 +5,15 @@
   "layers": {
     "qi": [
       0,
-      270,
-      480,
-      500,
-      520,
-      540,
-      560,
-      1150,
-      1170,
-      1190
+      310,
+      330,
+      350,
+      370,
+      410,
+      430,
+      450,
+      470,
+      490
     ],
     "foundation": [
       400,
@@ -131,8 +131,13 @@
     "life": {
       "progress": 0,
       "wealth": 10
+    },
+    "stage": {
+      "progress": 0,
+      "wealth": 60
     }
   },
+  "_pay_stage": "`stage` pays a 阶段任务 handed in (rules/gates.mjs stageTurn, Hanli 2026-10-16: 「七层圆满的任务大成了应该可以交任务拿奖励」). At 圆满 the 修为 cannot rise, so it pays 灵石: 60, three scenes' pay (`scene` 20) — about three days of the 回's 杂役 and 开府 — once per gate, never again; a gate crossed before stage quests paid is settled once on the next load (settleStages).",
   "_convert": "圆满之后走剧情到下一个阶段; 刷副本或者打怪奖励的修为改为灵石 (Hanli, 2026-10-15). A grant on one of `tables` (a pool's or a haunt's fight, a 秘境 rerun's beast — never a scene, a board, the 功课, a rumor or a road-meet) pays 修为 only up to the full mark of the layer he may not step past (the 回's cap, or a realm's peak waiting on its cauldron); the rest is paid as 灵石 at `rate` per 修为 (rules/core.mjs pay), and never carries into the next layer. Default 1/3: a converted fight (30 修为 → 10, with its own 10 灵石) pays about one 杂役 errand (labor 20). The economy (tools/balance.mjs) owns the number.",
   "convert": {
     "rate": 0.333,
@@ -344,23 +349,29 @@
     "later": "h07",
     "bands": {
       "typical": [
-        4,
+        3.5,
         7.5
       ],
       "heavy": [
-        2.5,
+        1.5,
         6
       ],
       "light": [
         8,
-        16.5
+        21
       ],
-      "_except": "古六 (h08) is the longest 回 — thirteen scenes and 今·三, about 90 minutes of story behind a stage quest at its start (the 大比 on 四层圆满): a typical player takes about 8 days there. 古七 holds two layers ground one after the other (its cap follows its rises), 古五 one with a short story — a rising ladder trades one against the other.",
+      "_except": "Since 2026-10-16 the story raises no layer (Hanli: 「要让玩家去刷经验/修为等. 不要直接跳层」): every 层 is ground, so the later 回 hold more of it. 古六 (h08) is the longest — thirteen scenes and 今·三 behind the 大比's 四层圆满, and 三层 and 四层 both ground there (息壤 no longer lifts him): a typical player takes about 9 days. 古八 (h09) grinds 七层 to 九层圆满 (腊八 on 八层, 入秋 on 九层), about 8.7. Both sit at the thresholds' floor (each 层 at least `step_min` over the one below): what is left is the day's earning, not the ladder.",
       "except": {
         "h08": {
           "typical": [
             5,
-            8.5
+            9.5
+          ]
+        },
+        "h09": {
+          "typical": [
+            5,
+            9
           ]
         }
       }
@@ -369,7 +380,7 @@
       "player": "heavy",
       "days": {
         "default": 4.5,
-        "h05": 1.5,
+        "h05": 2,
         "h07": 3,
         "h08": 3
       }
@@ -379,6 +390,7 @@
     "pills_bought": [
       "mend-pill",
       "huiqi-pill"
-    ]
+    ],
+    "_fit_days": "2026-10-16 (no story rise): 古四 (h05) 2 heavy days, 古五 (h07) 3, 古六 3, the rest 4.5 — 古四/古五 a little longer than before so the typical player is not through them in three days."
   }
 }

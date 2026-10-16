@@ -40,6 +40,7 @@ import { owesRecap, withHerBeat } from './rules/story.mjs';
 import { recapFacts } from './rules/recap.mjs';
 import { guideVerb, withGuides } from './rules/guide.mjs';
 import { atScene } from './rules/world.mjs';
+import { settleStages } from './rules/gates.mjs';
 import { markBeen } from './rules/inkmap.mjs';
 import { owesTell, playOf, stagedOf, tellOf } from './rules/tell.mjs';
 import { BUILDING_WAITS, keepDay, keepSave, paintList, readSave } from './rules/worlds.mjs';
@@ -140,7 +141,8 @@ function runLocked(verb, args, stateFile, reader) {
   // Fitted to its world (ids renamed since), and a fight left open on an
   // earlier day closed — both written with whatever this call writes.
   // Her presence fitted to the scene (companion.mjs fitPresence) — the flag the engine reads.
-  const saved = raw && raw.world === worldId ? fitPresence(content, closeStaleFight(migrate(raw, content), now)) : raw;
+  // A stage quest behind him never handed in is paid once, here (rules/gates.mjs settleStages).
+  const saved = raw && raw.world === worldId ? settleStages(content, fitPresence(content, closeStaleFight(migrate(raw, content), now)), now) : raw;
   const state = verb === 'init' || !saved ? freshState(content, langNow(), now, saved) : saved;
   // 前情提要 owed as a sitting opens (story.mjs): a chat session of Ling's seen
   // first on her Look, or a while away. Marked in place, and kept below

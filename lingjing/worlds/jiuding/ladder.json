@@ -6,10 +6,11 @@
     {
       "id": "qi",
       "pay": 1,
-      "_thresholds_were": "练气's thresholds a save older than each state version was played on (with 零层, by step): \"9\" before 2026-10-15's first re-derivation, \"10\" before the stage quests (2026-10-16, balance.json). A save from then keeps its 层 and its bar's fill (state.mjs paceLayer).",
+      "_thresholds_were": "练气's thresholds a save older than each state version was played on (with 零层, by step): \"9\" before 2026-10-15's first re-derivation, \"10\" before the stage quests (2026-10-16, balance.json), \"11\" before the story stopped raising 层 (2026-10-16, the re-fit after). A save from then keeps its 层 and its bar's fill (state.mjs paceLayer).",
       "thresholds_were": {
         "9": [0, 50, 60, 70, 80, 90, 100, 110, 120, 130],
-        "10": [0, 200, 350, 480, 660, 720, 820, 920, 1020, 1120]
+        "10": [0, 200, 350, 480, 660, 720, 820, 920, 1020, 1120],
+        "11": [0, 270, 480, 500, 520, 540, 560, 1150, 1170, 1190]
       },
       "_zero": "`zero`: this tier counts from 零层 (story DESIGN: 主角零层入门; 古四's one night of 小周天 → 一层, Hanli 2026-10-15). steps[0] is 零层, its threshold 0: entered with no 修为 and no bar, nothing fills it, and only a story's `rise` (wm-zhoutian's 小周天) leaves it. Its layer N is step N (state.mjs layerNo/stepOfLayer), so a `rise` or a cap's `layer` names the 层 as the book does. Before 2026-10-15 step 0 was 一层 (state.mjs v8 zeroLayer carries the save).",
       "zero": true,
@@ -331,8 +332,12 @@
       "zh": "鼎气不肯近身。火候未到——时候到了，它自己会来。",
       "en": "The cauldron's breath will not come near. The fire is not ready — when its time comes, it will come to you."
     },
-    "_stage": "阶段任务 (Hanli, 2026-10-15; rules/gates.mjs): `gates` in a 回 are the ways on that wait on 圆满 of a layer — `{layer, scene, exits}`, the 层 as the book names it (`tier` the first unless said). Refused with `stage.refuse` until the realm stands there full or past it; the 事 book shows it, 下一步 and Ling point to the work that raises 修为. A gate stands only where he can walk away to earn it — never inside a key beat's lock or a sealed instance (the lint holds it): 古四: the 柴房 night (the beat that ends in 第一路's rise to 二层) on 一层圆满. 古五: the 秘境's door on 二层圆满 (息壤 is inside it). 古六: the 大比's eve on 四层圆满. 古七: each rise on the layer below it full (09-year's catch-up as 09-furnace). 古八: the years' 九层圆满 on 七层圆满. 古九 has none — the 九转 lands 筑基小成圆满.",
+    "_stage": "阶段任务 (Hanli, 2026-10-15; rules/gates.mjs): `gates` in a 回 are the ways on that wait on 圆满 of a layer — `{layer, scene, exits}`, the 层 as the book names it (`tier` the first unless said). Refused with `stage.refuse` until the realm stands there full or past it; the 事 book shows it, 下一步 and Ling point to the work that raises 修为. A gate stands only where he can walk away to earn it — never inside a key beat's lock or a sealed instance (the lint holds it): 古四: the 柴房 night (the beat that ends in 第一路's rise to 二层) on 一层圆满. 古五: the 秘境's door on 二层圆满 (息壤 is inside it). 古六: the 大比's eve on 四层圆满. 古七: each rise on the layer below it full (09-year's catch-up as 09-furnace). 古八: 腊八 on 八层圆满, 入秋 on 九层圆满 (the cliff's breakthrough then the player's own throw). 古九 has none. No story rise (Hanli, 2026-10-16: 「要让玩家去刷经验/修为等. 不要直接跳层」): every rise the book had is a gate here — or, where it stood inside a locked beat (第一路's 二层, 息壤's 四层), the next gate asks that layer and more; the one rise left is 入门 (零层 → 一层, the 小周天: 零层 holds no 修为, so nothing is skipped). A stage quest met is handed in (交差) and pays balance.json `pay.stage`, once (rules/gates.mjs).",
     "stage": {
+      "title": {
+        "zh": "阶段任务 · {step}",
+        "en": "Stage quest · {step}"
+      },
       "refuse": {
         "zh": "阶段任务：先坐到{step}。功课、秘境、斗法，都长修为。",
         "en": "Stage quest: first sit to {step}. Practice, the secret realm and fights all raise cultivation."
@@ -340,21 +345,21 @@
     },
     "hui": {
       "h04": { "tier": "qi", "layer": 0 },
-      "h05": { "tier": "qi", "layer": 1, "story": { "tier": "qi", "layer": 2 },
+      "h05": { "tier": "qi", "layer": 1,
         "gates": [{ "layer": 1, "scene": "wm-chaifang", "exits": ["count", "fist"] }] },
-      "h07": { "tier": "qi", "layer": 2, "story": { "tier": "qi", "layer": 4 },
+      "h07": { "tier": "qi", "layer": 2,
         "gates": [{ "layer": 2, "scene": "wm-mijing", "exits": ["pay", "refuse"] }] },
       "h08": { "tier": "qi", "layer": 4,
         "gates": [{ "layer": 4, "scene": "wm-qianye", "exits": ["eve"] }] },
-      "h11": { "tier": "qi", "layer": 6, "story": { "tier": "qi", "layer": 7 },
+      "h11": { "tier": "qi", "layer": 6,
         "gates": [
           { "layer": 4, "scene": "09-furnace", "exits": ["fire"] },
           { "layer": 4, "scene": "09-year", "exits": ["futian"] },
           { "layer": 5, "scene": "09-yishui", "exits": ["night"] },
           { "layer": 6, "scene": "09-futian", "exits": ["spar"] }
         ] },
-      "h09": { "tier": "qi", "layer": 7, "story": { "tier": "foundation", "layer": 1 },
-        "gates": [{ "layer": 7, "scene": "09-dabi", "exits": ["dabi", "ruqiu"] }] },
+      "h09": { "tier": "qi", "layer": 9, "story": { "tier": "foundation", "layer": 1 },
+        "gates": [{ "layer": 8, "scene": "09-dabi", "exits": ["dabi"] }, { "layer": 9, "scene": "09-dabi", "exits": ["ruqiu"] }] },
       "h10": { "tier": "foundation", "layer": 1 }
     }
   },

@@ -24,12 +24,12 @@ const th = content.ladder.tiers[0].thresholds;
 const atChaifang = (progress, extra = {}) => ({ ...newState(content, 'zh', NOW), chapter: '00-waimen', scene: 'wm-chaifang', place: 'chaifang', ended: ['00-prologue'],
   done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian', 'wm-qingshi', 'wm-yaoyuan'], tier: 'qi', step: 1, progress, traits: ROOTS, stamina: 100, stamina_at: NOW.toISOString(), ...extra });
 
-test('every 回 past 古三 holds one (古九 aside: the 九转 lands it full); 古七\'s four as the book\'s layers come — the data, linted', () => {
+test('every 回 past 古三 holds one (古九 aside); 古七\'s four as the book\'s layers come, 古八\'s two (腊八 八层, 入秋 九层) — the data, linted', () => {
   const by = {};
   for (const g of gatesOf(content)) (by[g.hui] ??= []).push(`${g.scene}@${g.layer}`);
   assert.deepEqual(by, {
     h05: ['wm-chaifang@1'], h07: ['wm-mijing@2'], h08: ['wm-qianye@4'],
-    h11: ['09-furnace@4', '09-year@4', '09-yishui@5', '09-futian@6'], h09: ['09-dabi@7'],
+    h11: ['09-furnace@4', '09-year@4', '09-yishui@5', '09-futian@6'], h09: ['09-dabi@8', '09-dabi@9'],
   });
   assert.equal(content.ladder.caps.hui.h11.layer, 6, '古七 grinds to 六层 (its rises come behind its gates)');
   // Nothing in the rules names a 回 or a scene of them.
@@ -72,7 +72,7 @@ test('the 事 book holds it: 阶段任务 · 练气一层圆满, where he stands
   const full = look({ ...away, progress: th[1] }, content, ctx);
   assert.equal(full.stage_quest.met, true);
   assert.equal(full.waypoint.gate, undefined, 'full: the road to the story again');
-  assert.match(bookPopHtml({ look: full, lang: 'zh', words: { ...WORDS.zh, xw: '修为', ls: '灵石', qi: '体力' } }), /已圆满 · 往下走/);
+  assert.match(bookPopHtml({ look: full, lang: 'zh', words: { ...WORDS.zh, xw: '修为', ls: '灵石', qi: '体力' } }), /已圆满 · 交差领赏[\s\S]*灵石 \+60[\s\S]*data-do="turn" data-id="stage"/);
   // Past its scene, the 回 has no stage quest left.
   assert.equal(stageNow(content, { ...away, done_scenes: [...away.done_scenes, 'wm-chaifang'] }), null);
 });
@@ -141,7 +141,7 @@ test('the rerun from 古七: through the door, into the outer ring, and back to 
   assert.equal(out.state.scene, '09-yishui', 'the story where he left it');
 });
 
-test('古七\'s cap follows its rises (2026-10-16): grinding stops at the layer the next stage quest asks, so no rise lands on a layer ground past — 「层不动」 stays true', () => {
+test('古七\'s cap follows its stage quests (2026-10-16): grinding stops at the layer the next one asks, and the way on lifts nothing — the next layer is ground', () => {
   const T = content.rewards.tables;
   const at = (done, step, progress) => ({ ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: null, place: 'houshan', ended: ['00-prologue', '00-waimen'],
     done_scenes: ['09-snow', '09-jiuge', ...done], tier: 'qi', step, progress, traits: ROOTS });
@@ -155,10 +155,11 @@ test('古七\'s cap follows its rises (2026-10-16): grinding stops at the layer 
   // Past 沂水: 六层 — the autumn's 七层 is the story's.
   const xie = grind(at(['09-furnace', '09-year', '09-lingcao', '09-yishui', '09-xie'], 6, 0));
   assert.deepEqual([xie.step, xie.progress], [6, th[6]]);
-  // And each rise steps him: 定风 from 四层圆满 to 五层.
+  // 定风 lifts nothing (no story rise since 2026-10-16): 四层圆满 still, and 五层 comes of his own work after.
   const fire = resolve({ ...snow, scene: '09-furnace', place: content.chapters['00-zhuji'].scenes['09-furnace'].at, tasks: { 'furnace-ding': { status: 'done' } }, stamina: 100, stamina_at: NOW.toISOString() }, content, ctx, { exit: 'fire' });
   assert.equal(fire.result.ok, true, JSON.stringify(fire.result).slice(0, 200));
-  assert.equal(fire.state.step, 5, 'the rise lands');
+  assert.equal(fire.state.step, 4, 'the story moved no layer');
+  assert.equal(grind({ ...fire.state, scene: null, place: 'houshan', done_scenes: [...fire.state.done_scenes, '09-year'] }).step, 5, 'ground to 五层 once the year is walked');
 });
 
 test('a refusal stands where the eye is: over the choices it answers, in the box and on the scene card (2026-10-16: under them it fell below a phone\'s fold)', () => {

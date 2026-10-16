@@ -1617,7 +1617,7 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
   assert.equal(altar.id, '01-altar');
   assert.ok(!altar.exits.some(e => e.game), 'no 狍鸮 at the altar: the shaman is sent to take word');
   r = answer(resolve, s, { exit: 'send' });
-  assert.equal(r.state.scene, '01-rise'); assert.equal(r.result.paid.progress, 40);
+  assert.equal(r.state.scene, '01-rise'); assert.equal(r.result.paid.progress, 0); // no story 修为 (2026-10-16)
   s = r.state; assert.equal(s.place, 'hebo', 'the river stands up where the wedding was');
   // the chapter's fight: 冰夷's two dragons test the one who would not kneel — a trial, fought again at once
   const rise = look(s, content, octx()).scene;
@@ -1628,7 +1628,7 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
   refused(resolve, s, { exit: 'stand' }, 'game-not-won', octx());
   s = { ...s, wins: { ...s.wins, 'shuanglong-trial': OCT.toISOString() } };
   r = answer(resolve, s, { exit: 'stand' });
-  assert.equal(r.state.scene, '01-tower'); assert.equal(r.result.paid.progress, 60);
+  assert.equal(r.state.scene, '01-tower'); assert.equal(r.result.paid.progress, 0); // no story 修为 (2026-10-16)
   // 老胡 under the fallen tower (古九): 阿禾's 青光 holds him a cup of tea's time — no pill (the book, 2026-10-13: 九纹 is not for mortals)
   assert.deepEqual(look(r.state, content, octx()).scene.exits.map(e => e.id).filter(id => id !== 'run'), ['hold']);
   r = answer(resolve, r.state, { exit: 'hold' });
@@ -1731,7 +1731,7 @@ test('chapter 1: the shaman sent first, then the dragons\' trial — fought out 
   for (let k = 0; k < 6 && won?.result.outcome !== 'won'; k += 1) won = fightOut({ ...s, seed: `trial-${k}`, cards: [...new Set([...(s.cards ?? []), ...ROAD_HAND])] }, 'shuanglong-trial', { c: octx() });
   assert.equal(won.result.outcome, 'won', JSON.stringify(won.result.log?.slice(-3)));
   const r = answer(resolve, won.state, { exit: 'stand' });
-  assert.equal(r.state.scene, '01-tower'); assert.equal(r.result.paid.progress, 60);
+  assert.equal(r.state.scene, '01-tower'); assert.equal(r.result.paid.progress, 0); // no story 修为 (2026-10-16)
 });
 
 test('a province is known by its character, its name or its English', () => {

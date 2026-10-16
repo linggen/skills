@@ -75,7 +75,7 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
   s = go(placed(s), 'fire').state;
   assert.equal(s.bag['foundation-pill-9'], undefined, 'the furnace gives qi pills, not a 九转');
   assert.equal(s.scene, '09-year');
-  assert.equal(s.step, 5, '三月里一个早上，定风: 五层');
+  assert.equal(s.step, 4, '定风 lifts no layer (2026-10-16): 五层 is ground behind the next gate');
   s = placed(s);
   // Only the season due is offered; one out of order is refused.
   assert.deepEqual(buttons(s), ['qingming']);
@@ -95,7 +95,9 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
     s = r.state; layers.push(s.step);
     assert.equal(s.bag['foundation-pill'], undefined, 'not yet: the 官丹 waits for the year-five 大比');
   }
-  assert.deepEqual(layers, [5, 5, 6, 6, 7], '伏天 still 五层 · 灵草谷 五层 · 沂水 that night 六层 · the boots · 秦雁, 那年秋天 七层');
+  // No story rise (2026-10-16): each layer is his own, earned behind its gate (earnedFor stands in for the routine) —
+  // 伏天 四层 · 灵草谷 五层 (what he banked steps him once 伏天 is behind) · 沂水 五层 · the boots 六层 · 秦雁 六层.
+  assert.deepEqual(layers, [4, 5, 5, 6, 6]);
   assert.equal(s.bag['shunfeng-liu'], 1, 'the boots, from the 鯥\'s hide');
   assert.deepEqual(buttons(placed(s)), ['dabi'], '古八 opens on its own years; 入秋 waits on them');
   const seven = look(placed(s), content, ctx).chapter.close;
@@ -106,11 +108,12 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
   assert.match(seven.teaser, /除夕[\s\S]*筑了基的/);
   assert.equal(resolve(placed(s), content, ctx, { exit: 'ruqiu' }).result.refused, 'needs');
   s = go(placed(s), 'dabi').state;
-  assert.equal(s.step, 9, '腊八前，九层');
+  assert.equal(s.step, 9, '腊八 waited on 八层圆满, earned; what he banked past it steps him to 九层 once 腊八 is behind him');
   s = { ...s, stamina: 0, resting: true };
   assert.equal(s.bag['foundation-pill'], 1, 'the year-five 大比: the sect\'s 一转 is his, resealed into 饭桶');
   // 入秋 moves the story on (`next`): a story step's 3, like every scene's step.
-  assert.equal(resolve(s, content, ctx, { exit: 'ruqiu' }).result.refused, 'no-stamina', 'a spent pool still waits on the step');
+  assert.equal(resolve(s, content, ctx, { exit: 'ruqiu' }).result.refused, 'stage', '入秋 waits on 九层圆满, earned');
+  assert.equal(resolve(earnedFor(content, s, 'ruqiu'), content, ctx, { exit: 'ruqiu' }).result.refused, 'no-stamina', 'a spent pool still waits on the step');
   const autumn = go(full(s), 'ruqiu').state;
   assert.equal(100 - autumn.stamina, content.rewards.stamina.cost.step, '入秋: one story step');
   assert.equal(autumn.step, 9, '九层');
@@ -136,12 +139,13 @@ test('the cliff: 瞿老\'s last disciple, then the throw — the 九转 reached 
   assert.equal(r.state.bag['foundation-pill'], 1, 'the 官丹 stays sealed in 饭桶');
   assert.equal(r.state.bag['foundation-pill-9'], undefined, 'the 九转 is eaten');
   assert.equal(r.state.tier, 'foundation');
-  // 「因为9转筑基丹, 小成得以圆满」 (Hanli, 2026-10-14): the 九转 declares `fill: "full"` — 筑基小成, filled.
+  // The 九转 filled 小成 in one night until 2026-10-16 (Hanli 10-14); since 「不要直接跳层」 no story-given thing fills a step:
+  // 筑基小成, and he sits it full himself.
   assert.equal(r.state.step, 0);
-  assert.ok(r.state.progress >= threshold(content, r.state), '小成圆满: the step filled in one night (what he held over 九层\'s mark goes with him, 2026-10-15)');
-  assert.equal(r.result.breakthrough.full, true);
-  assert.equal(r.result.breakthrough.to, '筑基小成圆满', 'Ling hears it as it stands');
-  assert.equal(look(r.state, content, ctx).tier.name, '筑基小成圆满');
+  assert.ok(r.state.progress < threshold(content, r.state), '小成, not filled by the pill');
+  assert.equal(r.result.breakthrough.full, undefined);
+  assert.equal(r.result.breakthrough.to, '筑基小成', 'Ling hears it as it stands');
+  assert.equal(look(r.state, content, ctx).tier.name, '筑基小成');
   assert.deepEqual([r.state.chapter, r.state.scene], ['01-ji', 'j09-noise'], '今 · 四 first (2026-10-05)');
   // 古九's 「完」 (the book's number) stands on the next 回's first scene — 今 · 四's — with what he did and the teaser.
   const close = look({ ...r.state, place: 'zhangnan' }, content, ctx).chapter.close;
@@ -151,8 +155,8 @@ test('the cliff: 瞿老\'s last disciple, then the throw — the 九转 reached 
   assert.match(close.teaser, /邺城[\s\S]*豆腐/);
 });
 
-test('the fill is the pill\'s, declared: only the 九转 lands 小成圆满; the sect\'s 一转 lands 筑基小成 at 0; and 中成 stays shut by the 回\'s cap', () => {
-  assert.equal(content.items.items.find(i => i.id === 'foundation-pill-9').fill, 'full');
+test('no pill fills a step (2026-10-16): the 九转 and the sect\'s 一转 both land 筑基小成; he grinds it full, and 中成 stays shut by the 回\'s cap', () => {
+  assert.equal(content.items.items.find(i => i.id === 'foundation-pill-9').fill, undefined);
   assert.equal(content.items.items.find(i => i.id === 'foundation-pill').fill, undefined);
   assert.equal(CH.scenes['09-cliff'].exits.find(e => e.id === 'take').fill, undefined, 'the exit declares nothing: the pill eaten decides');
   const win = s => {
@@ -170,8 +174,10 @@ test('the fill is the pill\'s, declared: only the 九转 lands 小成圆满; the
   assert.equal(plain.state.step, 0);
   assert.ok(plain.state.progress < threshold(content, plain.state), '小成, not filled');
   assert.equal(look(plain.state, content, ctx).tier.name, '筑基小成');
-  // The 九转: filled, and no work carries it on to 中成 — 古九 (卷一's end) stops at 筑基小成.
-  const filled = win(cliff({ 'foundation-pill-9': 1, 'foundation-pill': 1 })).state;
+  // The 九转: 小成 too, ground full — and no work carries it on to 中成; 古九 (卷一's end) stops at 筑基小成.
+  const nine = win(cliff({ 'foundation-pill-9': 1, 'foundation-pill': 1 }));
+  assert.deepEqual([nine.result.breakthrough.pill.id, nine.result.breakthrough.to], ['foundation-pill-9', '筑基小成']);
+  const filled = nine.state;
   for (const s of [filled, { ...filled, chapter: '01-ji', scene: null, place: 'zhangyuan', ended: [...filled.ended, '01-ji'], done_scenes: Object.keys(content.chapters['01-ji'].scenes) }]) {
     let got = 0, last = null;
     for (let i = 0; i < 50; i += 1) { last = pay(content, s, ctx, { table: 'seclusion', progress: 90 }); got += last.progress; }
@@ -238,7 +244,7 @@ test('the sect\'s 筑基丹 comes from the five-year skip, not from 古六: 古�
   assert.equal(s.bag['foundation-pill'], undefined);
   s = go(s, 'spar').state;
   assert.equal(s.bag['foundation-pill'], undefined, 'not in 古七');
-  assert.equal(s.step, 7, '七层');
+  assert.equal(s.step, 6, '六层: 七层 is ground in 古八, not given by the autumn');
   s = go(full(s), 'dabi').state;
   assert.equal(s.bag['foundation-pill'], 1);
   assert.equal(s.step, 9, '九层');

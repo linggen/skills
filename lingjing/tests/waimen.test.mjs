@@ -293,12 +293,13 @@ test('the 大比 final is a loss told as a passage: 「……祁长松，胜。�
   assert.doesNotMatch(JSON.stringify(CH.scenes), /复试|第十七条|当票|往后一倒/);
 });
 
-test('息壤 lifts the realm to 练气四层 — once, never down, and a scene played again lifts nothing', () => {
+test('息壤 lifts no layer since 2026-10-16 (「不要直接跳层」): 三层 and 四层 are ground in 古六, behind the 大比\'s eve; never down', () => {
   const sc = CH.scenes['wm-xirang'];
-  assert.equal(sc.exits[0].rise, 4);
-  let s = { ...opened(), scene: 'wm-xirang', place: 'shimen', done_scenes: ['wm-ahe'] };
+  assert.equal(sc.exits[0].rise, undefined);
+  assert.equal(sc.exits[0].was_rise, 4, 'the layer the book once lifted him to, kept');
+  let s = { ...opened(), scene: 'wm-xirang', place: 'shimen', done_scenes: ['wm-ahe'], step: 2, progress: 33 };
   s = must(resolve, won(s, 'mijing-zou'), { exit: 'swallow' });
-  assert.deepEqual([s.tier, s.step, s.progress], ['qi', 4, 0]);
+  assert.deepEqual([s.tier, s.step, s.progress], ['qi', 2, 33]);
   const high = must(resolve, won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 7, progress: 30 }, 'mijing-zou'), { exit: 'swallow' });
   assert.deepEqual([high.step, high.progress], [7, 30], 'never down');
 });
@@ -446,24 +447,20 @@ test('a bout with a person speaks of him or her: 他/她 by the person, 认输, 
   assert.equal(shijie.gender, 'female');
 });
 
-test('息壤 keeps his 修为 through the jump, and its moment is the five doors opening one by one, in ink (his, 2026-09-29)', async () => {
+test('息壤 keeps his 修为 and lifts nothing; its moment is the five doors opening one by one, in ink (his, 2026-09-29)', async () => {
   const { doorsHtml } = await import('../scripts/doors.js');
   const { MAIN, CARD_KINDS, PAGE_OWNS } = await import('../scripts/stage.mjs');
   const out = resolve(won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 2, progress: 33 }, 'mijing-zou'), content, ctx(), { exit: 'swallow' });
-  // No story floor (Hanli, 2026-10-15, design.md § Pacing): the book's jump steps him and tops nothing up — in play he
-  // stands here full, the 秘境's door waits on 二层圆满 (rules/gates.mjs); only what was over the mark goes with him.
-  assert.deepEqual([out.state.step, out.state.progress, 'filled' in out.result.rose], [4, 0, false], 'nothing filled by the story');
-  const over = resolve(won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 2, progress: content.ladder.tiers[0].thresholds[2] + 40 }, 'mijing-zou'), content, ctx(), { exit: 'swallow' });
-  assert.deepEqual([over.state.step, over.state.progress, over.result.rose.carried], [4, 40, 40], 'what was over the mark goes with him');
-  const capped = resolve(won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 3, progress: 79 }, 'mijing-zou'), content, ctx(), { exit: 'swallow' }).state;
-  assert.ok(capped.progress < content.ladder.tiers[0].thresholds[4], 'short of the new layer: it never jumps twice');
+  // No story rise (Hanli, 2026-10-16: 「要让玩家去刷经验/修为等. 不要直接跳层」): the realm stands as he earned it.
+  assert.deepEqual([out.state.step, out.state.progress, out.result.rose], [2, 33, undefined], 'the story moved nothing');
   const node = out.result.node;
   assert.deepEqual(node.doors.map(d => d.el), ['metal', 'wood', 'water', 'fire', 'earth']);
   assert.ok(node.doors.every(d => d.line.startsWith('第')));
-  assert.equal(node.rose.to, '练气四层');
+  assert.equal(node.rose, undefined, 'no layer named: none was given');
   const html = doorsHtml(node, { lang: 'zh' });
   assert.equal((html.match(/class="seal"/g) ?? []).length, 5);
-  assert.match(html, /五门俱开[\s\S]*金[\s\S]*木[\s\S]*水[\s\S]*火[\s\S]*土[\s\S]*练气四层/);
+  assert.match(html, /五门俱开[\s\S]*金[\s\S]*木[\s\S]*水[\s\S]*火[\s\S]*土/);
+  assert.doesNotMatch(html, /doorsto/);
   assert.match(html, /style="--i:4"/, 'each door its turn');
   assert.match(doorsHtml(node, { still: true }), /class="card doors still"/, 'reduced motion: the last frame');
   assert.doesNotMatch(html, /#[0-9a-f]{3,6}|color:/i, 'ink only: no colour in the moment');
@@ -543,7 +540,7 @@ test('古五\'s chase (2026-10-02): 邹青松 is a trial outlasted, 踏马的符
   assert.equal(s.bag['tama-fu'], 1, '古四\'s 饭桶 spat it out; in his belt since');
   s = must(resolve, s, { exit: 'go' });
   const e = CH.scenes['wm-xirang'].exits.find(x => x.id === 'swallow');
-  assert.deepEqual([e.game.creature, e.game.retry, e.rise], ['foe-zou', true, 4]);
+  assert.deepEqual([e.game.creature, e.game.retry, e.rise, e.was_rise], ['foe-zou', true, undefined, 4]);
   refused(resolve, s, { exit: 'swallow' }, 'game-not-won');
   const setup = fightSetup(content, s, zou, DAY1);
   assert.ok(setup.you.extra.includes('tama-fu'), 'in hand at the door');

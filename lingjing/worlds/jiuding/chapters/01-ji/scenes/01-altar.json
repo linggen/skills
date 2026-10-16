@@ -53,7 +53,6 @@
    "means": "calls the shaman's bluff: the bride is not pretty enough, so the shaman must go into the river herself and tell the River Lord",
    "grant": {
     "table": "scene",
-    "progress": 40,
     "wealth": 10
    },
    "story": {

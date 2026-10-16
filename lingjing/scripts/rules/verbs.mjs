@@ -17,6 +17,7 @@ import { divine, fate } from './fortune.mjs';
 import { gated } from './locks.mjs';
 import { look, stageAt } from './look.mjs';
 import { examine } from './examine.mjs';
+import { stageTurn } from './gates.mjs';
 import { fantong, fantongOpen, fantongRecipes } from './fantong.mjs';
 import { mishi } from './mishi.mjs';
 import { duel, lundao, questCheck, task, win } from './tasks.mjs';
@@ -97,6 +98,8 @@ export function quest(state, content, ctx, args) {
   const action = String(args.action ?? 'take');
   // The day's 传闻 rides the book as one line (tale.mjs): its row opens, is put down, or a kept win is counted.
   if (id === 'tale') return taleQuest(state, content, ctx, action);
+  // 阶段任务 (rules/gates.mjs): 交差 once the layer is full — it pays 灵石, once.
+  if (id === 'stage') return action === 'turn' ? stageTurn(content, state, ctx) : refuse('unknown-action', null, { actions: ['turn'] });
   // The page's own reading of one line: everything a row expands to. It is
   // asked for on a tap and never rides Look, so it costs Ling nothing (his,
   // 2026-09-21: what the page knows it shows — the model is for telling).

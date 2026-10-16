@@ -1,7 +1,7 @@
 // 修为 caps per 回 (Hanli, 2026-10-05: 「游戏里修炼有个上限吧? 和故事对齐」; rules/cap.mjs):
 // a player's own work never carries him ahead of the book's realm line (OUTLINE 境界线,
-// DESIGN § 六·八) — the story's jumps (古四's close, 息壤, the year, the cliff) are the
-// story's; at the cap the layer fills and the rest is held; a breakthrough past where the
+// DESIGN § 六·八) — and since 2026-10-16 the story jumps no layer (「不要直接跳层」): every 层 is
+// ground, each 回's stage quests hold the way on, the cliff is his own throw; at the cap the layer fills and the rest is held; a breakthrough past where the
 // 回's story reaches is refused in the world's words; after 卷一 it stays 筑基小成; a save
 // already past its cap is never pulled down.
 import test from 'node:test';
@@ -33,11 +33,11 @@ test('every 古 回 declares its cap, as the book\'s realm line stands', () => {
   const row = id => { const e = caps[id]; return [`${e.tier}${e.layer}`, e.story ? `${e.story.tier}${e.story.layer}` : null]; };
   assert.deepEqual(Object.fromEntries(Object.keys(caps).map(id => [id, row(id)])), {
     h04: ['qi0', null], // 古三: 入门 at 零层 (the book; the game's too since 2026-10-15)
-    h05: ['qi1', 'qi2'], // 古四: the 小周天 → 一层, held through 九月; 十月廿五 二层 by the story (wm-diyilu)
-    h07: ['qi2', 'qi4'], // 古五: 二层, 息壤 → 四层
-    h08: ['qi4', null], // 古六: 四层, 大比 on 四层
-    h11: ['qi6', 'qi7'], // 古七 (its first half since 2026-10-07): 五层 and 六层 ground behind its stage quests (2026-10-16), 年五's autumn → 七层
-    h09: ['qi7', 'foundation1'], // 古八: 七层, the years after → 九层圆满, the cliff → 筑基
+    h05: ['qi1', null], // 古四: the 小周天 → 一层 (入门, the one rise), ground full; 第一路 lifts nothing since 2026-10-16
+    h07: ['qi2', null], // 古五: 二层 ground; 息壤 lifts nothing
+    h08: ['qi4', null], // 古六: 三层 and 四层 ground, 大比 on 四层
+    h11: ['qi6', null], // 古七 (its first half since 2026-10-07): 五层 and 六层 ground behind its stage quests
+    h09: ['qi9', 'foundation1'], // 古八: 七层 to 九层圆满 ground (腊八 on 八层, 入秋 on 九层), the cliff → 筑基 by his throw
     h10: ['foundation1', null], // 古九: 筑基小成
   });
   assert.deepEqual(lint(content).filter(p => /cap/.test(p)), []);
@@ -69,39 +69,44 @@ test('古三\'s gate scene: 零层 only — 一层 is 古四\'s 小周天', () =
   assert.equal(named(s), '练气零层');
 });
 
-test('古四\'s close lifts him to 二层 (十月廿五, by the story); 古五 grinds no higher until 息壤 carries him to 四层', () => {
-  const s0 = at('00-waimen', 'wm-diyilu', 'chaifang', ['00-prologue']);
-  const r = resolve(earnedFor(content, s0, 'save'), content, ctx, { exit: 'save' });
+test('古四\'s close lifts no layer (2026-10-16); 古五 grinds to 二层 and no further, 息壤 lifts nothing, 古六 grinds 三层 and 四层', () => {
+  const th = content.ladder.tiers[0].thresholds;
+  const s0 = at('00-waimen', 'wm-diyilu', 'chaifang', ['00-prologue'], { step: 1, progress: th[1] });
+  const r = resolve(s0, content, ctx, { exit: 'save' });
   assert.equal(r.result.ok, true, JSON.stringify(r.result));
   let s = r.state;
-  assert.equal(named(s), '练气二层', 'lifted, not ground');
+  assert.equal(named(s), '练气一层', 'no jump: 二层 is ground in 古五');
   s = { ...s, scene: 'wm-mijing', place: 'shimen' }; // past 今 · 二, at 古五's 秘境 gate
   grind(s);
-  assert.equal(named(s), '练气二层', '古五 before the 秘境\'s 息壤: still 二层');
+  assert.equal(named(s), '练气二层', '古五 grinds to 二层, no further');
   s = { ...s, scene: 'wm-xirang', place: 'shimen', wins: { ...s.wins, 'mijing-zou': NOW.toISOString() } }; // the fight on the stage, won
   const x = resolve(s, content, ctx, { exit: 'swallow' });
   assert.equal(x.result.ok, true, JSON.stringify(x.result));
-  s = x.state;
-  assert.equal(named(s), '练气四层', '息壤: the story\'s jump');
+  assert.deepEqual([x.state.step, x.state.progress], [s.step, s.progress], '息壤 lifts nothing');
+  s = { ...x.state, scene: 'wm-qianye', place: 'waimen', done_scenes: [...x.state.done_scenes, 'wm-kaikai', 'wm-chu'] };
   grind(s);
-  assert.equal(named(s), '练气四层', 'and 四层 it stays, through 古六');
+  assert.equal(named(s), '练气四层', '古六: 三层 and 四层 ground');
   assert.ok(s.progress > threshold(content, s), 'full, and counting on');
 });
 
-test('古七: 四层 until the year — the seasons lift him to 七层, 古八\'s to 九层圆满, the cliff is the story\'s breakthrough', () => {
+test('古七: 四层 until 定风 is walked — each layer ground behind its gate; 古八 grinds 八层 for 腊八, then 九层 for 入秋', () => {
   const s = at('00-zhuji', '09-year', 'yaoyuan', ['00-prologue', '00-waimen'], { step: 4 });
   grind(s);
-  // The cap follows the book's rises inside the 回 (2026-10-16): before 定风 he grinds no further than 四层 — the
-  // years' layers come one rise at a time, each behind its 阶段任务 (rules/gates.mjs).
-  assert.equal(named(s).replace('圆满', ''), '练气四层', 'the five years are the story\'s, not a grind');
-  const cap = capOf(content, s);
-  assert.ok(cap.story > cap.grind, 'the 回\'s story reaches past what grinding may');
-  // 古八 (09-dabi, the second half since 2026-10-07): 七层 by the story, and grinding holds there.
+  // The cap follows the 回's stage quests (rules/cap.mjs heldBy): before 定风 he grinds no further than 四层.
+  assert.equal(named(s).replace('圆满', ''), '练气四层');
+  // 古八 (09-dabi): 七层 → 八层圆满 for 腊八 (a stay that marks y-dabi), then 九层圆满 for 入秋.
   const t = at('00-zhuji', '09-dabi', 'yaoyuan', ['00-prologue', '00-waimen'], { step: 7 });
   grind(t);
-  assert.equal(named(t), '练气七层', '古八\'s years are the story\'s too');
-  const later = capOf(content, t);
-  assert.ok(later.story > later.grind, '古八\'s story reaches on to 筑基');
+  assert.equal(named(t), '练气八层', 'held at 腊八\'s 八层');
+  const laba = resolve(t, content, ctx, { exit: 'dabi' });
+  assert.equal(laba.result.ok, true, JSON.stringify(laba.result).slice(0, 200));
+  assert.equal(laba.result.paid?.progress ?? 0, 0, '腊八 grants no 修为 (what he had banked past 八层 is his own, and steps him once the gate is behind)');
+  const u = laba.state;
+  grind(u);
+  assert.equal(named(u), '练气九层', 'then 九层, ground');
+  assert.ok(u.progress >= threshold(content, u), '圆满, ground — 入秋 opens');
+  const later = capOf(content, u);
+  assert.ok(later.story > later.grind, '古八\'s story reaches on to 筑基 (the breakthrough)');
 });
 
 test('a breakthrough past where the 回\'s story reaches is refused in the world\'s words', () => {

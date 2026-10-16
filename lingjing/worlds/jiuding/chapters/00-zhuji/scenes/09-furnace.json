@@ -57,8 +57,7 @@
    },
    "means": "the third month: on 巽 at dawn a leaf rises from the cliff edge and drifts at his face; he steps half aside — 「他看见了它起来的那一下」 — and the jar sinks: 五层 (瞿老: 「定风」; 缸是饭桶替他涨的，层是他自己过的); 灵石 run out before 黄精; the two-line pill to 孙二狗, the nine to 阿禾 (she counts the lines and keeps it); 孙二狗 eats his that night, 零层 to 一层, and his tears carry the news into the 内门",
    "grant": {
-    "table": "scene",
-    "progress": 40
+    "table": "scene"
    },
    "story": {
     "zh": "到了三月里一个早上，一片叶子从崖边起来，往他脸上飘，他没躲，也没砍，只往旁边挪了半步。那天早上，丹田里那口缸「咚」地一沉，他过了五层。瞿老道：「定风。」\n\n只有一样不省事：黄精月月有，灵石月月见底。他站在执事堂西墙底下，看那些写着「灵石」的牌子，头一回觉得那不是牌子，是丹。\n\n过了两日，讲堂上阿禾和孙二狗的书案底下，各多了一个油纸包，包里一颗聚气丹。孙二狗那一颗，两道纹；阿禾那一颗，他没说——是那颗九道的。数到第九道，她的嘴唇停住了。她什么也没问，原样包好，揣进怀里，没有吃。\n\n孙二狗却当夜就吃了。天亮的时候，孙二狗从练气零层，冲到了一层。他站在大通铺门口，瞧着掌心里那一缕细细的黄气，瞧得眼泪鼻涕一齐流了下来。两道纹的丹，是往那点潮上浇了一瓢水。瓢是小满的，井是他自己一夜一夜挖的。\n\n这一哭，哭坏了事。一个零层的杂灵根，一夜引了气，不到晌午便传遍了外门，天黑前传进了内门。",
@@ -76,8 +75,8 @@
     "zh": "叶子还在转——先在巽位上站定，看见它起来的那一下。",
     "en": "The leaves are still spinning — stand firm on Xun first and see the moment one rises."
    },
-   "rise": 5,
-   "_stage": "阶段任务 (Hanli 2026-10-15): this way waits on 练气四层圆满 — the realm full at the layer he holds — before the book's rise (ladder.json caps.hui.h11.gates: {layer: 4, scene, exits}); 「可缸涨了，层不动」 — the pills and the work fill 四层; the 定风 morning carries him to 五层."
+   "was_rise": 5,
+   "_stage": "No story rise since 2026-10-16 (Hanli: 「要让玩家去刷经验/修为等. 不要直接跳层」): `was_rise` keeps the layer the book once lifted him to (state.mjs zeroLayer reads it); he earns it himself, behind the 阶段任务. Before: 阶段任务 (Hanli 2026-10-15): this way waits on 练气四层圆满 — the realm full at the layer he holds — before the book's rise (ladder.json caps.hui.h11.gates: {layer: 4, scene, exits}); 「可缸涨了，层不动」 — the pills and the work fill 四层; the 定风 morning carries him to 五层."
   }
  ],
  "story_after": {

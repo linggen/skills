@@ -129,7 +129,9 @@ export function play(content, player, { model = content.balance.model, ladder = 
   let hui = walk[0].hui, capHui = hui, i = 0, done = new Set(), errandsPaid = new Set();
   // The cap where he stands: the 古 回's, a 今 interlude taking the one before it (rules/cap.mjs).
   // …and, while a stage quest of the 回 is ahead, no further than the lowest layer one asks (rules/cap.mjs heldBy).
-  const heldBy = c => Math.min(Infinity, ...(c.gates ?? []).filter(g => !done.has(g.scene)).map(g => rank(g.tier ?? tiers[0].id, stepOf(g.tier ?? tiers[0].id, g.layer))));
+  // A gate on a way the walk does not take (腊八, a stay before 入秋 in the same scene) is passed with the one it does.
+  const walked = new Set(walk.filter(w => w.gate).map(w => `${w.gate.scene}/${w.gate.exits[0]}`));
+  const heldBy = c => Math.min(Infinity, ...(c.gates ?? []).filter(g => !done.has(g.scene) && walked.has(`${g.scene}/${g.exits[0]}`)).map(g => rank(g.tier ?? tiers[0].id, stepOf(g.tier ?? tiers[0].id, g.layer))));
   const capAt = () => { const c = caps[capHui]; if (!c) return null; const st = c.story ?? c; return { grind: Math.max(Math.min(rank(c.tier, stepOf(c.tier, c.layer)), heldBy(c)), rank(s.tier, s.step)), story: rank(st.tier, stepOf(st.tier, st.layer)) }; };
   /* 修为 in; a fight's past a mark he may not leave is 灵石 (nothing here). */
   const gain = (n, fight = false) => {

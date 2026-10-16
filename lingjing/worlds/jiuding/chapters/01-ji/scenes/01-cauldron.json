@@ -58,7 +58,6 @@
    "memory": 1,
    "grant": {
     "table": "scene",
-    "progress": 60,
     "wealth": 20
    },
    "story": {

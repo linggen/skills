@@ -16,8 +16,8 @@ import { coolingUntil, oddsOf } from './breakthrough.mjs';
 import { freeSlot, pouchBrief } from './pouch.mjs';
 import { chapterLabel, comingOf } from './hui.mjs';
 import { storyAllows } from './cap.mjs';
-import { stageBrief, stageGate } from './gates.mjs';
-import { hiddenRoom, sealedOf, allPlaces, atScene, creatureOf, grantPass, hauntsOf, huntable, inCorridor, inMade, ofJuan, passed, pathOf, placeName, placeOf, placeOpen, sceneOf, tooHard, towardOf } from './world.mjs';
+import { gatesOf, stageBrief, stageGate } from './gates.mjs';
+import { hiddenRoom, sealedOf, allPlaces, poolBeast, poolResting, atScene, creatureOf, grantPass, hauntsOf, huntable, inCorridor, inMade, ofJuan, passed, pathOf, placeName, placeOf, placeOpen, sceneOf, tooHard, towardOf } from './world.mjs';
 
 /* ── 差事 — the errands the player takes (design.md § 差事) ──
    接 · 记 · 追 · 交. The world offers, the player takes, the rules count, and
@@ -268,8 +268,20 @@ function beastWork(content, state, ctx, here) {
     .map(p => ({ p, way: p.id === here.id ? [] : pathOf(content, state, here, p, ctx.now) }))
     .filter(x => x.way)
     .sort((a, b) => a.way.length - b.way.length)[0];
-  if (!at) return null;
+  if (!at) return poolWork(content, state, ctx, here);
   return { kind: 'beast', place: placeName(content, state, at.p), here: at.p.id === here.id, roads: at.way.length, titles: [pick(creatureOf(content, at.p.has.creature)?.name, state.lang)] };
+}
+
+/* Every lone beast fought or walking with him: the nearest 游荡 pool with a beast up — fought as
+   often as he likes, so a stage quest late in a 回 (古八's 九层圆满) still points somewhere. */
+function poolWork(content, state, ctx, here) {
+  const at = allPlaces(content)
+    .filter(p => p.has?.pool && !p.has.guard && !sealedOf(content, { ...state, place: p.id }) && !tooHard(content, state, p) && !poolResting(content, state, p, ctx.now) && poolBeast(content, state, p, ctx.now))
+    .map(p => ({ p, way: p.id === here.id ? [] : pathOf(content, state, here, p, ctx.now) }))
+    .filter(x => x.way)
+    .sort((a, b) => a.way.length - b.way.length)[0];
+  if (!at) return null;
+  return { kind: 'beast', place: placeName(content, state, at.p), here: at.p.id === here.id, roads: at.way.length, titles: [pick(creatureOf(content, poolBeast(content, state, at.p, ctx.now))?.name, state.lang)] };
 }
 
 /* Under a cauldron or a stage quest that waits on 修为 (waitsOnPeak) the work pointed at is
@@ -445,12 +457,12 @@ function waitsOnPeak(content, state, now) {
   return Boolean(stagedWay(content, state, now));
 }
 
-/* The 阶段任务 the scene's ways on wait on: one of its buttons that lead on (or rise) is ready but
+/* The 阶段任务 the scene's ways on wait on: one of its buttons that lead on (or rise, or stay behind a gate — 腊八) is ready but
    for it, and none is open — a way still waiting on a board or a mark is the scene's, not the
    routine's, and counts neither way. */
 function stagedWay(content, state, now) {
   const scene = inMade(state) ? null : sceneOf(content, state);
-  const ways = (scene?.buttons ?? []).map(id => scene.exits.find(e => e.id === id)).filter(e => e && (e.next || e.ends || e.rise != null));
+  const ways = (scene?.buttons ?? []).map(id => scene.exits.find(e => e.id === id)).filter(e => e && (e.next || e.ends || e.rise != null || gatesOf(content).some(g => g.scene === scene.id && g.exits.includes(e.id))));
   const ready = ways.filter(e => !e.needs || meets(state, e.needs, now, scene.id));
   const gates = ready.map(e => stageGate(content, state, scene.id, e.id));
   return gates.length && gates.every(Boolean) ? gates[0] : null;

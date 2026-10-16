@@ -1358,6 +1358,7 @@ function lintScene(scene, chapter, content, ids, bad) {
     else if (!exit.label) bad(`${where} exit ${b}`, 'a button needs a label');
   }
   for (const exit of scene.exits) lintExit(`${where} exit ${exit.id}`, exit, chapter, content, ids, speakers, bad);
+  if (scene.hui) for (const exit of scene.exits) lintEarned(`${where} exit ${exit.id}`, exit, content, bad);
   // A 连环画 beat (rules/tell.mjs): the passage told in the chat, the panel on the stage.
   lintStory(where, scene.story, bad);
   lintFull(where, scene.story, scene.story_full, bad);
@@ -1382,6 +1383,20 @@ function lintScene(scene, chapter, content, ids, bad) {
 }
 
 /* A passage (zh + en), with the companion's words marked ⟪…⟫ alike in both. */
+/* The story never raises 修为 or 层 (Hanli, 2026-10-16: 「要让玩家去刷经验/修为等. 不要直接跳层」):
+   in a 回 a choice grants no 修为, fills no step (`fill`), and lifts no layer — the book's rises are
+   stage quests (ladder.json caps.hui.<回>.gates). One rise stands: 入门, 零层 to 一层 (the 小周天) —
+   零层 holds no 修为 (state.mjs addProgress), so it skips nothing. A breakthrough is the player's throw. */
+function lintEarned(where, exit, content, bad) {
+  const first = content.ladder.tiers[0], r = exit.rise;
+  const entry = first.zero && r === 1;
+  if (r != null && !entry) bad(where, 'the story raises a layer: make it a stage quest (caps.hui.<回>.gates)');
+  if (exit.grant?.progress) bad(where, 'the story grants 修为: it is earned (功课, fights, 秘境, 闭关)');
+  if (exit.fill != null) bad(where, 'the story fills a step to 圆满');
+  const item = exit.grant?.item ? content.items?.items?.find?.(i => i.id === exit.grant.item) : null;
+  if (item?.fill != null) bad(where, `grants ${item.id}, which fills a step to 圆满`);
+}
+
 function lintStory(where, story, bad) {
   if (story == null) return;
   if (!pair(story)) { bad(where, 'a story needs zh and en'); return; }

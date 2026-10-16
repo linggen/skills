@@ -42,17 +42,17 @@ test('the gate admits him at 练气零层: the name in both languages, no 修为
   assert.equal(cultivating(content, s), false);
 });
 
-test('古四\'s 小周天 lifts him to 练气一层 — the layer-gained moment, then the 40 fills it and the bar stands', () => {
+test('古四\'s 小周天 lifts him to 练气一层 (入门, the one rise) — the layer-gained moment; the bar stands empty, to be earned (2026-10-16)', () => {
   const s = toZhoutian('zh');
   assert.equal(s.step, 0, 'the 三关 board alone lifts nothing: 修为 waits for the night');
   const out = must(resolve, s, { exit: 'breathe' });
-  assert.deepEqual([out.state.step, out.state.progress], [1, 40]);
+  assert.deepEqual([out.state.step, out.state.progress], [1, 0]);
   assert.deepEqual(out.result.rose, { from: '练气零层', to: '练气一层' });
   assert.equal(out.result.node?.rose?.to, '练气一层', 'the stage\'s moment carries the new layer');
   const l = look(out.state, content, ctx);
   assert.equal(l.tier.name, '练气一层');
   assert.equal(l.tier.bar, true);
-  assert.deepEqual([l.progress, l.next], [40, content.ladder.tiers[0].thresholds[1]]);
+  assert.deepEqual([l.progress, l.next], [0, content.ladder.tiers[0].thresholds[1]]);
   const en = must(resolve, toZhoutian('en'), { exit: 'breathe' });
   assert.deepEqual(en.result.rose, { from: 'Qi Condensation · Layer 0', to: 'Qi Condensation · Layer 1' });
 });
@@ -88,8 +88,8 @@ test('a healed save before the 小周天 plays on: the night lifts it to 一层 
   let s = toZhoutian('zh');
   s = migrate({ ...s, version: 7, step: 0, progress: 20 }, content);
   const out = must(resolve, s, { exit: 'breathe' });
-  // 20 carried, 40 more: 60 toward 一层's 200 (2026-10-15: each 层 asks a 回's play).
-  assert.deepEqual([realmName(content, out.state, 'zh'), out.state.step, out.state.progress], ['练气一层', 1, 60]);
+  // 20 carried, nothing more (no story 修为 since 2026-10-16).
+  assert.deepEqual([realmName(content, out.state, 'zh'), out.state.step, out.state.progress], ['练气一层', 1, 20]);
 });
 
 test('Look\'s tier.step is the 层 the book names: 零层 0, 练气一层 1; above 练气, 筑基小成 1', () => {

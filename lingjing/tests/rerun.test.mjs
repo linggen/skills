@@ -321,7 +321,7 @@ test('拾遗 in the dry river: the run\'s find in the bag, once a run; a cache u
 test('修为 at 圆满 is 灵石 (Hanli: 「圆满之后走剧情到下一个阶段. 刷副本或者打怪奖励的修为改为灵石」): below the mark up to full, the rest converted; other sources unchanged', () => {
   const conv = content.rewards.xiuwei_to_lingshi;
   assert.ok(conv.rate > 0 && conv.tables.includes('haunt'));
-  const s0 = past();
+  const s0 = { ...past(), step: 4, progress: 0 }; // at 古六's cap, 四层 — ground since 2026-10-16 (息壤 no longer lifts him there)
   const need = threshold(content, s0);
   // Full at the 回's cap (古六: 四层): a fight pays 灵石, no 修为, no held line.
   const full = { ...structuredClone(s0), progress: need };
@@ -349,7 +349,7 @@ test('修为 at 圆满 is 灵石 (Hanli: 「圆满之后走剧情到下一个阶
   // A run's fight at full: the win card's pay is 灵石.
   const now = openAt();
   let s = must(move, fresh(inside(now), now), { place: 'mijing-xiongya' }, now);
-  s.progress = threshold(content, s);
+  s.step = 4; s.progress = threshold(content, s); // at 古六's cap (四层, ground)
   const out = winHere(s, now);
   assert.equal(out.result.paid.progress, 0);
   assert.ok(out.result.paid.wealth > T.haunt.wealth, '灵石 + the converted 修为');

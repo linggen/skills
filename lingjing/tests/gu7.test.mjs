@@ -72,10 +72,13 @@ test('each scene\'s boards are its own (two at most), the ways on wait on the la
   }
 });
 
-test('the layers come one at a time: 五层 at the 定风 morning, 六层 the night after 沂水, 七层 that autumn — no h11 exit jumps', () => {
+test('the layers are ground one at a time (2026-10-16: no story rise): 定风 waits on 四层圆满, 沂水 on 五层圆满, the autumn on 六层圆满 — no h11 exit lifts him', () => {
   const rises = {};
-  for (const id of H11) for (const e of CH.scenes[id].exits) if (e.rise != null) rises[`${id}/${e.id}`] = e.rise;
-  assert.deepEqual(rises, RISES);
+  for (const id of H11) for (const e of CH.scenes[id].exits) {
+    assert.equal(e.rise, undefined, `${id}/${e.id} lifts no layer`);
+    if (e.was_rise != null) rises[`${id}/${e.id}`] = e.was_rise;
+  }
+  assert.deepEqual(rises, RISES, 'the layers the book once lifted him to, kept (`was_rise`)');
   // Each rise waits on the 阶段任务 — the realm full at the layer below it. Declared on the exit (`_stage`) until the
   // ladder carries the gate (caps.hui.h11.gates); once it does, every rise is one of its gates.
   const gates = content.ladder.caps?.hui?.h11?.gates;
@@ -96,11 +99,11 @@ test('every board pays what the plan names: 修为 for cultivation, a pill or �
   assert.equal(CH.scenes['09-snow'].exits[0].grant.item, 'huochai-jian');
   assert.equal(CH.scenes['09-xie'].exits[0].grant.item, 'shunfeng-liu');
   const lc = CH.scenes['09-lingcao'].exits[0].grant, sp = CH.scenes['09-futian'].exits[0].grant;
-  assert.deepEqual([lc.progress, lc.wealth], [30, 20], '犰狳: a fight\'s 修为, the book\'s 「每人二十块灵石」');
-  assert.deepEqual([sp.table, sp.progress, sp.wealth], ['trial', 30, 20]);
+  assert.deepEqual([lc.progress, lc.wealth], [undefined, 20], '犰狳: the book\'s 「每人二十块灵石」 — no story 修为 (2026-10-16)');
+  assert.deepEqual([sp.table, sp.progress, sp.wealth], ['trial', undefined, 20]);
 });
 
-test('walking 古七 by its boards and fights: 修为 rises at each cultivation board, the realm steps 四 → 五 → 六 → 七 one layer at a time', () => {
+test('walking 古七 by its boards and fights: 修为 rises at each cultivation board, the realm 四 → 五 → 六 by his own work behind each gate, never by a choice', () => {
   let s = at('09-snow');
   s = go(play(s, 'snow-fantong'), 'feed');
   assert.equal(s.bag['huochai-jian'], 1);
@@ -115,16 +118,16 @@ test('walking 古七 by its boards and fights: 修为 rises at each cultivation 
   s = play(play(s, 'furnace-recipe', 'clean'), 'furnace-ding', 'still');
   assert.ok(s.bag['qi-pill'] > 0, '认方: a 聚气丹');
   s = go(s, 'fire');
-  assert.deepEqual([s.scene, s.step], ['09-year', 5]);
+  assert.deepEqual([s.scene, s.step], ['09-year', 4], '定风 lifts nothing: 五层 is ground');
   s = go(play(s, 'year-smell', 'nose'), 'qingming');
   s = go(s, 'futian');
-  assert.deepEqual([s.scene, s.step], ['09-lingcao', 5], '伏天 moves nothing now');
+  assert.deepEqual([s.scene, s.step], ['09-lingcao', 4], '伏天 moves nothing');
   const lc = look(s, content, ctx()).scene.exits.find((e) => e.id === 'fight');
   assert.equal(lc.duel.creature.id, 'qiuyu');
   s = go({ ...s, wins: { ...s.wins, 'lingcao-qiuyu': NOW.toISOString() } }, 'fight');
-  assert.deepEqual([s.scene, s.step], ['09-yishui', 5]);
+  assert.deepEqual([s.scene, s.step], ['09-yishui', 5], 'the boards\' 修为 banked past 四层 steps him once 伏天 is behind him — his own');
   s = go(play(s, 'yishui-reed', 'still'), 'night');
-  assert.deepEqual([s.scene, s.step], ['09-xie', 6], '沂水 that night: 六层');
+  assert.deepEqual([s.scene, s.step], ['09-xie', 5], '沂水 waited on 五层圆满, earned; it lifts nothing');
   s = go(play(s, 'xie-wind', 'read'), 'go');
   assert.equal(s.bag['shunfeng-liu'], 1);
   const door = look(s, content, ctx()).scene.exits.find((e) => e.id === 'spar').duel;
@@ -132,8 +135,8 @@ test('walking 古七 by its boards and fights: 修为 rises at each cultivation 
   assert.equal(resolve(s, content, ctx(), { exit: 'spar' }).result.refused, 'game-not-won', 'the autumn waits on her bout');
   const before = s.progress;
   s = go({ ...s, wins: { ...s.wins, 'futian-qinyan': NOW.toISOString() } }, 'spar');
-  assert.deepEqual([s.scene, s.step], ['09-dabi', 7], '那年秋天，七层 — and 古八 opens');
-  assert.ok(s.progress > 0 && before >= 0, 'the bout\'s 修为 lands in 七层');
+  assert.deepEqual([s.scene, s.step], ['09-dabi', 6], '那年秋天 — 古八 opens on 六层圆满, earned; 七层 is ground in 古八');
+  assert.ok(s.progress >= before, 'the bout takes nothing');
 });
 
 test('a way on waits on its board: refused in the world\'s words until the board is counted', () => {
@@ -144,7 +147,7 @@ test('a way on waits on its board: refused in the world\'s words until the board
   }
 });
 
-test('saves from before the split: one past 09-year stays put; one in 09-year moves on to 灵草谷 and is caught up to 五层; one in a scene given boards is offered them', () => {
+test('saves from before the split: one past 09-year stays put; one in 09-year moves on to 灵草谷 (no catch-up rise since 2026-10-16); one in a scene given boards is offered them', () => {
   // The shape of a save that played the old 伏天 (四层 → 七层 in one passage) and stands on 古八's first scene.
   const past = at('09-dabi', { step: 7, progress: 0, marks: ['y-qingming', 'y-futian'], done_scenes: ['wm-heluo', '09-snow', '09-furnace', '09-year'], tasks: {} });
   const fitted = fitWorld(past, content);
@@ -156,7 +159,7 @@ test('saves from before the split: one past 09-year stays put; one in 09-year mo
   const mid = fitWorld(at('09-year', { marks: ['y-qingming'], done_scenes: ['wm-heluo', '09-snow', '09-furnace'] }), content);
   assert.equal(mid.tasks['year-smell']?.status, 'offered', 'the board 09-year was given is offered to a save standing there');
   const on = go(play(mid, 'year-smell'), 'futian');
-  assert.deepEqual([on.scene, on.step], ['09-lingcao', 5]);
+  assert.deepEqual([on.scene, on.step], ['09-lingcao', 4]);
   // Standing in 09-furnace from before: its boards are offered, the way on is the 定风 morning.
   const fur = fitWorld(at('09-furnace', { tasks: {} }), content);
   assert.deepEqual(['furnace-recipe', 'furnace-ding'].map((id) => fur.tasks[id]?.status), ['offered', 'offered']);

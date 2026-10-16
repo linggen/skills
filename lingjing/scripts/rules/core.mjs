@@ -323,7 +323,8 @@ function offerTasks(content, state) {
   for (const id of scene?.offers?.tasks ?? []) state.tasks[id] ??= { status: 'offered' };
 }
 
-/* The story lifts the realm to a layer of the first tier (an exit's `rise`,
+/* Since 2026-10-16 the one rise is 入门 — 零层 to 一层, the 小周天 (content.mjs lintEarned refuses any
+   other: 「不要直接跳层」); the rest of this reads as it did. The story lifts the realm to a layer of the first tier (an exit's `rise`,
    the 层 as the book names it — state.mjs stepOfLayer: 小周天 is 一层 out of 零层, 息壤 四层) — never down, never past its tier, once:
    a scene played again lifts nothing, and before a story gate nothing moves.
    No story floor (Hanli, 2026-10-15, design.md § Pacing): the book's jumps step

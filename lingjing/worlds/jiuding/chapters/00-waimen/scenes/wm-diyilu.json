@@ -52,10 +52,10 @@
     "en": "Save it for Dad"
    },
    "means": "keeps the pill in a chilli-oil bottle for his father's knee, and keeps the night watch half a month on a broken rib; on the eve of the hidden realm the Rice Bucket drinks him down a layer for a wooden mud-horse, and Yinyue's last stolen pill comes back a common qi pill",
-   "rise": 2,
+   "_was_rise": "No story rise since 2026-10-16 (Hanli: 「要让玩家去刷经验/修为等. 不要直接跳层」): `was_rise` keeps the layer the book once lifted him to (state.mjs zeroLayer reads it); he earns it himself, behind the 阶段任务.",
+   "was_rise": 2,
    "grant": {
     "table": "scene",
-    "progress": 30,
     "item": "mend-pill-9"
    },
    "mark": "saved-first-pill",

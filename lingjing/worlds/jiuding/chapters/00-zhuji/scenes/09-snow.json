@@ -54,7 +54,6 @@
    "means": "tosses the red-copper gourd and the shield shards into the Rice Bucket to be rid of them, wanting nothing (the 喂饭桶 board plays it); it spits out a plain sword, Matchstick — 剑起火升，攻守兼备",
    "grant": {
     "table": "scene",
-    "progress": 20,
     "item": "huochai-jian"
    },
    "take": {
