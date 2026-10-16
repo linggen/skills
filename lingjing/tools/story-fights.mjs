@@ -3,13 +3,14 @@
 // 2026-10-15: 都太简单了 — a first meeting should be won about 60% of the time;
 // a careful player wins reliably, a careless one loses).
 //
-//   node tools/story-fights.mjs [--seeds N] [--only id,id] [--line careful|lookahead] [--json]
+//   node tools/story-fights.mjs [--seeds N] [--only id,id] [--line lookahead|careful] [--json]
 //
-// The player is tools/trial-sim.mjs `fightOnce`: a one-ply greedy line that
-// weighs every legal move by what it leaves on the board (foe 气血 ×2, own
-// 气血, both ranks) and takes the best while it is worth anything. It does not
-// read the beast's intent or plan around its 杀招 — a sensible player, not a
-// perfect one. tests/fight-band.test.mjs locks the band with fixed seeds.
+// The band's player is `--line lookahead` (scripts/fightline.js): every move
+// tried on a copy and the fight played out from there — it plays as a careful
+// person did by hand. `careful` (tools/trial-sim.mjs `fightOnce`, one-ply
+// greedy, blind to the beast's intent) is kept for comparison; it underrates a
+// player. tests/fight-band.test.mjs and fight-band-pools.test.mjs lock the
+// band with fixed seeds.
 //
 // Where the road stands at each 回 (ladder.json caps.hui; the scenes' grants):
 //   h04  练气零层 · before the root test 蠪侄 is fought with the rootless starter;
@@ -68,8 +69,8 @@ export function stateAt(stop) {
    entry deck stands over the creature's own; `reach: false` is a beast of the
    book that is not yet a game fight. `band` is what it is tuned to. */
 export const FIGHTS = [
-  { id: 'longzhi', name: '蠪侄 (三试)', at: 'h04r', band: [0.62, 0.88], note: 'tutorial' },
-  { id: 'zheng', name: '小狰 (药园)', at: 'h05', band: [0.62, 0.88], note: 'tutorial' },
+  { id: 'longzhi', name: '蠪侄 (三试)', at: 'h04r', band: [0.6, 0.92], note: 'tutorial' },
+  { id: 'zheng', name: '小狰 (药园)', at: 'h05', band: [0.6, 0.92], note: 'tutorial' },
   { id: 'gui', name: '蛫 (秘境)', at: 'h07' },
   { id: 'foe-zou', name: '邹青松 (试 · 追)', at: 'h07z', trial: true, unforced: true },
   { id: 'foe-lufang', name: '卢方 (大比)', at: 'h08' },
@@ -140,7 +141,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   const seeds = Number(args[args.indexOf('--seeds') + 1]) || 300;
   const only = args.includes('--only') ? args[args.indexOf('--only') + 1].split(',') : null;
-  const line = args.includes('--line') ? args[args.indexOf('--line') + 1] : 'careful';
+  const line = args.includes('--line') ? args[args.indexOf('--line') + 1] : 'lookahead';
   const rows = FIGHTS.filter(f => !only || only.includes(keyOf(f)) || only.includes(f.id)).map(f => ({ fight: f.name, key: keyOf(f), at: f.at, ...rateOf(f, seeds, 0, line) }));
   if (args.includes('--json')) console.log(JSON.stringify(rows, null, 1));
   else for (const r of rows) console.log(`${r.fight.padEnd(28)} ${r.at.padEnd(5)} win ${(r.win * 100).toFixed(1).padStart(5)}%  lost ${(r.lost * 100).toFixed(1).padStart(5)}%  dry ${(r.withdrew * 100).toFixed(1).padStart(5)}%  turns ${r.turns.toFixed(1)}  hp left ${(r.left * 100).toFixed(0)}%`);

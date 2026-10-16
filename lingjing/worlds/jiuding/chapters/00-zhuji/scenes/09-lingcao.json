@@ -63,7 +63,8 @@
     "kind": "duel",
     "creature": "qiuyu",
     "retry": true,
-    "_weighed": "The 秘境's 犰狳 as its row stands: met at 灵草谷 at 五层 with 火柴 worn it is won about 55% the first time (tools/story-fights.mjs `qiuyu@09-lingcao/fight`, tests/fight-band.test.mjs) — in the band, so no `foe` weighing."
+    "foe": {"hp": 2.65},
+    "_weighed": "The 秘境's 犰狳 met again at 灵草谷 at 五层 with 火柴 worn. Its row (hp 3.45, weighed for the 秘境 at 二层) is won 13% the first time by a player who thinks a turn ahead (fightline.js lookahead), mostly run dry against its 见人则眠 heals; weighed here to 2.65, about 62% (tools/story-fights.mjs `qiuyu@09-lingcao/fight`, tests/fight-band.test.mjs)."
    },
    "withdrawn": {
     "zh": "「小满，撑住！」阿禾喊。",

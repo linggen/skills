@@ -64,13 +64,15 @@
      "deck": [
       "luying",
       "luying",
+      "luying",
       "hantan",
       "changyou",
       "hantan",
       "luying",
       "changyou",
       "hanquan",
-      "hantan"
+      "hantan",
+      "shuiwu"
      ],
      "trial": {
       "goal": {
@@ -79,7 +81,7 @@
       }
      }
     },
-    "_foe": "秦雁's outlast trial (creatures.json `foe-shijie`) as the 崖顶 has it — 「这回的台子是整座崖，没有台边」 (her own words on her first climb, 09-yishui) — weighed at 六层: her full twelve are outlasted 0% of the time by the 六层 hand the road deals (tools/story-fights.mjs `foe-shijie@09-futian/spar`), so the monthly bout is nine of them (one 鹿影, the 水雾 and the 回气丹 out), about 57% the first time."
+    "_foe": "秦雁's outlast trial (creatures.json `foe-shijie`) as the 崖顶 has it — 「这回的台子是整座崖，没有台边」 (her own words on her first climb, 09-yishui) — weighed at 六层: by a player who thinks a turn ahead (fightline.js lookahead) her full twelve are outlasted 20% of the time with the 六层 hand the road deals, nine of them 100% (tools/story-fights.mjs `foe-shijie@09-futian/spar`), so the monthly bout is eleven of them (the 回气丹 out), about 52% the first time."
    },
    "withdrawn": {
     "zh": "秦雁把剑收回鞘里：「下个月，我再来。」",

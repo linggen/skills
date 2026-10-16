@@ -2,6 +2,7 @@
 // one pool of beasts (places/<p>.json `pools`, a place's `has.pool`); one is up at a time,
 // fought as often as he likes — each settle draws the next — and paid by the haunt table.
 // Bosses stay the story's one fight. 卷一's beasts, and a few added from 《山海经 · 北次三经》.
+import { lookahead } from '../scripts/fightline.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
@@ -36,13 +37,9 @@ function fightOut(state, id, { line = null } = {}) {
   const actions = [];
   for (let guard = 0; guard < 160 && st.outcome === 'open'; guard += 1) {
     if (st.whose === 'foe') { foeTurn(st); continue; }
-    const can = line === 'pass' ? [] : offers(st).filter(o => o.ok && o.action.kind !== 'end');
-    const body = side => side.board.reduce((n, m) => n + m.atk + m.hp * 0.6, 0);
-    const before = { hp: st.foe.hp, mine: body(st.you), theirs: body(st.foe) };
-    const best = can.map(o => {
-      const after = battle([...actions, tokenOf(o.action)], setup, catalog);
-      return { o, worth: (before.hp - after.foe.hp) * 2 + (body(after.you) - before.mine) * 1.2 + (before.theirs - body(after.foe)) - (o.cost ?? 0) * 0.1 };
-    }).sort((a, b) => b.worth - a.worth)[0]?.o;
+    // A player who thinks a turn ahead (fightline.js lookahead): the fights are tuned
+    // to be lost by a careless line (tests/fight-band.test.mjs).
+    const pick = line === 'pass' ? { kind: 'end' } : lookahead(st, { deep: true }), best = pick.kind === 'end' ? null : { action: pick };
     if (!best) { act(st, { kind: 'end' }, 'you'); actions.push('end'); continue; }
     act(st, best.action, 'you');
     actions.push(tokenOf(best.action));
