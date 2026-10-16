@@ -357,7 +357,8 @@ function loose(s) {
 const VERBS = {
   hold, move, draw,
   release: loose, loose,
-  retry: (s) => (['aim', 'fly', 'clear', 'gone', 'spook'].includes(s.phase) ? lay({ ...s, trail: null }, s.li) : null),
+  // 重来 keeps the last arrow's trail (as 愤怒小鸟 does): the try before is what the next one learns from.
+  retry: (s) => (['aim', 'fly', 'clear', 'gone', 'spook'].includes(s.phase) ? lay({ ...s, trail: s.world.arrow?.path ?? s.trail }, s.li) : null),
   next: (s) => (s.phase === 'clear' ? advance(s) : null),
 };
 
@@ -418,7 +419,7 @@ function advance(s) {
 }
 
 /** The deer bolts and, a while later, is back at the stream where its schedule starts again. */
-const backAgain = (s) => clearArrow({ ...s, phase: s.used >= QUIVER ? 'gone' : 'aim', t: 0, clock: 0, said: s.used >= QUIVER ? 'gone' : s.said });
+const backAgain = (s) => clearArrow({ ...s, phase: s.used >= QUIVER ? 'gone' : 'aim', t: 0, clock: 0, alertAt: null, said: s.used >= QUIVER ? 'gone' : s.said });
 
 const PHASES = {
   aim: (s) => (stepWorld(s.world, levelOf(s), s.clock), s),
@@ -662,7 +663,7 @@ function lineOf(s, t, lang) {
   if (s.phase === 'aim' && s.pull) return s.pull.p >= 0.98 ? t.full : t.pull;
   // A miss where she hints it: her 「往左偏半寸」 right after; else the deer's look-up if it was near.
   if (s.phase === 'aim' && !s.pull && s.hint && level.hint && ['short', 'long'].includes(s.said)) return `${said[s.said]}${t.hint}`;
-  if (s.phase === 'aim' && !s.pull && s.alertAt != null && s.clock - s.alertAt < ALERT_MS && said[s.said]) return `${said[s.said]}${t.alert}`;
+  if (s.phase === 'aim' && !s.pull && s.alertAt != null && s.clock >= s.alertAt && s.clock - s.alertAt < ALERT_MS && ['short', 'long'].includes(s.said)) return `${said[s.said]}${t.alert}`;
   if (s.said && said[s.said]) return said[s.said];
   if (s.hint && level.hint) return t.hint;
   return level.say?.[lang] ?? level.say?.zh ?? '';
