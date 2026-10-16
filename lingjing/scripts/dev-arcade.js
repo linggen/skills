@@ -36,20 +36,25 @@ function openArcade(e) {
   if (!window.open(url, '_blank', 'noopener')) location.href = url;
 }
 
-/// The chip, top right; beside the 测试存档 badge when there is one.
+/* Where the 测试存档 badge sits (top right; top centre on a phone, phone.css), and just under it
+   when both show; hidden with the badge under the phone's chat sheet. */
+const STYLE = `.dev-arcade{position:fixed;top:0;right:8px;z-index:99;padding:0 6px;border:1px solid #8a7a66;border-top:0;
+border-radius:0 0 3px 3px;background:#fff8ef;color:#6b5d4d;font:500 10px/1.4 var(--ui,sans-serif);letter-spacing:.04em;opacity:.6;text-decoration:none}
+.dev-arcade:hover{opacity:1}
+.scratch-badge~.dev-arcade{top:15px}
+@media (max-width:600px),(max-width:860px) and (max-height:700px){.dev-arcade{right:auto;left:50%;transform:translateX(-50%);font-size:9.5px}
+.scratch-badge~.dev-arcade{top:14px}.shell.chatsheet~.dev-arcade{display:none}}`;
+
+/// The chip, beside the 测试存档 badge's spot.
 export async function devArcade({ scratch, read = readAccount } = {}) {
   if (!(await arcadeAllowed({ scratch, readAccount: read }))) return;
-  const badge = document.querySelector('.scratch-badge');
-  const right = badge ? 8 + badge.offsetWidth + 6 : 8;
+  if (!document.getElementById('dev-arcade-style')) document.head.insertAdjacentHTML('beforeend', `<style id="dev-arcade-style">${STYLE}</style>`);
   const a = document.createElement('a');
   a.className = 'dev-arcade';
   a.href = arcadeUrl(scratch);
   a.target = '_blank';
   a.rel = 'noopener';
   a.textContent = label();
-  a.style.cssText = `position:fixed;top:0;right:${right}px;z-index:99;padding:0 6px;border:1px solid #8a7a66;border-top:0;`
-    + 'border-radius:0 0 3px 3px;background:#fff8ef;color:#6b5d4d;font:500 10px/1.4 var(--ui, sans-serif);'
-    + 'letter-spacing:.04em;opacity:.6;text-decoration:none';
   a.addEventListener('click', openArcade);
   document.body.append(a);
   new MutationObserver(() => { a.textContent = label(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
