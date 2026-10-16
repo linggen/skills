@@ -7,11 +7,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { loadContent } from '../scripts/content.mjs';
 import { newState, threshold } from '../scripts/state.mjs';
-import { look, move, resolve } from '../scripts/rules.mjs';
+import { look, move, playTo, rerun, resolve, targetOf } from '../scripts/rules.mjs';
+import { health } from '../scripts/rules/health.mjs';
 import { gatesOf, stageGate, stageNow } from '../scripts/rules/gates.mjs';
 import { rerunHere } from '../scripts/rules/rerun.mjs';
 import { WORDS, bookPopHtml } from '../scripts/cards.js';
 
+process.env.LINGJING_STAMINA_LIMIT = '0'; // as the game plays (体力 off while we test), and tests/seed-at.test.mjs
 const content = loadContent();
 const NOW = new Date('2026-10-16T12:00:00');
 const ctx = { now: NOW, quests: [] };
@@ -86,4 +88,51 @@ test('the 秘境 rerun stays a slot of the routine through 古七 and 古八 (th
   const s = (chapter, ended) => ({ ...newState(content, 'zh', NOW), chapter, scene: null, ended, done_scenes: [] });
   assert.ok(rerunHere(content, s('00-zhuji', ['00-prologue', '00-waimen'])));
   assert.equal(rerunHere(content, s('01-ji', ['00-prologue', '00-waimen', '00-zhuji'])), null);
+});
+
+/* Every gate's scene reached by a forward run (rules/progress.mjs, boards won), set below its mark. */
+const GATED = [...new Set(gatesOf(content).map(g => g.scene))];
+const reached = new Map();
+playTo(content, newState(content, 'zh', NOW), null, { now: NOW, policy: 'win', targets: GATED.map(id => [id, targetOf(content, id)]), onAt: (label, st, r) => reached.set(label, { s: st, now: r.now }) });
+const below = (id) => {
+  const { s: st, now } = reached.get(id), g = gatesOf(content).find(x => x.scene === id);
+  return { s: { ...st, place: content.chapters[st.chapter].scenes[id].at, tier: g.tier, step: g.step, progress: 0, stretch: undefined, stamina: 100, stamina_at: now.toISOString() }, now, g };
+};
+
+test('every gate stands where he can walk away to earn it, and come back: refused `stage`, healthy, the walk to the pool open, 下一步 on the stage quest', () => {
+  assert.equal(reached.size, GATED.length, `reached ${[...reached.keys()]}`);
+  for (const id of GATED) {
+    const { s: s0, now } = below(id), c = { now, quests: [] };
+    const way = gatesOf(content).find(x => x.scene === id).exits[0];
+    // 09-year's is the catch-up for a save that passed the furnace before its rise: one walked here is past it.
+    if (reached.get(id).s.step > s0.step) { assert.equal(stageGate(content, reached.get(id).s, id, way), null, id); continue; }
+    // The scene's own board played, its fight won: only the stage quest stands.
+    const ex = content.chapters[s0.chapter].scenes[id].exits.find(e => e.id === way);
+    const st = { ...s0, tasks: { ...s0.tasks, ...(ex.needs?.task ? { [ex.needs.task]: { status: 'done' } } : {}) }, marks: [...(s0.marks ?? []), ...(ex.needs?.mark ? [ex.needs.mark] : [])], wins: { ...s0.wins, ...(ex.game ? { [ex.game.id]: now.toISOString() } : {}) } };
+    assert.equal(resolve(st, content, c, { exit: way }).result.refused, 'stage', id);
+    assert.deepEqual(health(content, st, now).filter(p => p.level === 'error'), [], `${id}: healthy while it waits`);
+    // To the pool (后山崖顶), or — the scene standing there — to 外门 and the work it points at.
+    const away = content.chapters[st.chapter].scenes[id].at === 'houshan' ? 'waimen' : 'houshan';
+    const out = move(st, content, c, { place: away });
+    assert.equal(out.result.ok, true, `${id}: ${JSON.stringify(out.result).slice(0, 200)}`);
+    const l = look(out.state, content, c);
+    assert.equal(l.waypoint?.gate?.kind, 'stage', `${id}: 下一步 reads the stage quest`);
+    assert.equal(l.stage_quest.scene, id);
+    const back = move(out.state, content, c, { place: content.chapters[st.chapter].scenes[id].at });
+    assert.equal(back.result.ok, true, `${id}: back to it`);
+    assert.equal(back.state.scene, id, `${id}: the scene still stands`);
+  }
+});
+
+test('the rerun from 古七: through the door, into the outer ring, and back to the 观', () => {
+  const { s: st } = below('09-yishui'), later = new Date(NOW.getTime() + 30 * 86_400_000), c = { now: later, quests: [] };
+  const door = move(st, content, c, { place: 'shimen' });
+  assert.equal(door.result.ok, true, JSON.stringify(door.result).slice(0, 200));
+  const inn = rerun(door.state, content, c, { action: 'enter' });
+  assert.equal(inn.result.ok, true, JSON.stringify(inn.result).slice(0, 200));
+  const out = rerun(inn.state, content, c, { action: 'leave' });
+  assert.equal(out.result.ok, true, JSON.stringify(out.result).slice(0, 200));
+  assert.equal(out.state.chapter, '00-zhuji');
+  assert.ok(content.chapters['00-zhuji'].map.places.includes(out.state.place), `back in the 观: ${out.state.place}`);
+  assert.equal(out.state.scene, '09-yishui', 'the story where he left it');
 });

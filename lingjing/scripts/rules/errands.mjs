@@ -445,13 +445,15 @@ function waitsOnPeak(content, state, now) {
   return Boolean(stagedWay(content, state, now));
 }
 
-/* The 阶段任务 the scene's ways on wait on, when every one of them (its buttons that lead on) is
-   ready but for it — a board still to play is the scene's, not the routine's. */
+/* The 阶段任务 the scene's ways on wait on: one of its buttons that lead on (or rise) is ready but
+   for it, and none is open — a way still waiting on a board or a mark is the scene's, not the
+   routine's, and counts neither way. */
 function stagedWay(content, state, now) {
   const scene = inMade(state) ? null : sceneOf(content, state);
-  const ways = (scene?.buttons ?? []).map(id => scene.exits.find(e => e.id === id)).filter(e => e && (e.next || e.ends));
-  const gates = ways.map(e => (!e.needs || meets(state, e.needs, now, scene.id) ? stageGate(content, state, scene.id, e.id) : null));
-  return ways.length && gates.every(Boolean) ? gates[0] : null;
+  const ways = (scene?.buttons ?? []).map(id => scene.exits.find(e => e.id === id)).filter(e => e && (e.next || e.ends || e.rise != null));
+  const ready = ways.filter(e => !e.needs || meets(state, e.needs, now, scene.id));
+  const gates = ready.map(e => stageGate(content, state, scene.id, e.id));
+  return gates.length && gates.every(Boolean) ? gates[0] : null;
 }
 
 /* The nearest open road out of a scene's place the player can walk. */
