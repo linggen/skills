@@ -15,6 +15,8 @@ import { pay } from '../scripts/rules/core.mjs';
 import { bookNo } from './book-num.mjs';
 
 const content = loadContent();
+// 练气九层圆满: the peak a throw is tried from (the threshold, re-derived 2026-10-15).
+const PEAK = content.ladder.tiers[0].thresholds.at(-1);
 const NOW = new Date('2026-09-30T12:00:00');
 const ctx = { now: NOW, quests: [] };
 const CH = content.chapters['00-zhuji'];
@@ -107,7 +109,7 @@ test('the winter and the year: 火柴 at the move, the furnace\'s culls, and the
 });
 
 test('the cliff: 瞿老\'s last disciple, then the throw — the 九转 reached for before the 一转, and 古十 opens at once', () => {
-  let s = { ...atSnow(), scene: '09-qulao', place: 'houshan', step: 9, progress: 130, bag: { 'foundation-pill': 1 } };
+  let s = { ...atSnow(), scene: '09-qulao', place: 'houshan', step: 9, progress: PEAK, bag: { 'foundation-pill': 1 } };
   s = go(s, 'listen').state;
   assert.equal(s.scene, '09-cliff');
   assert.equal(s.bag['foundation-pill-9'], 1, 'the 九转 comes out on the eve of 筑基');
@@ -148,7 +150,7 @@ test('the fill is the pill\'s, declared: only the 九转 lands 小成圆满; the
     for (let k = 0; rollOf(t, 'foundation') >= chance; k += 1) t = { ...s, breakthrough: { tries: { foundation: k + 1 } } };
     return go(t, 'take');
   };
-  const cliff = bag => ({ ...atSnow(), scene: '09-cliff', place: 'houshan', step: 9, progress: 130, bag });
+  const cliff = bag => ({ ...atSnow(), scene: '09-cliff', place: 'houshan', step: 9, progress: PEAK, bag });
   // The 一转 alone (no 九转 in the bag): plain 筑基小成, 修为 0 — the cliff's own grant is all that goes in.
   const plain = win(cliff({ 'foundation-pill': 1 }));
   assert.equal(plain.result.breakthrough.pill.id, 'foundation-pill');
@@ -181,7 +183,7 @@ test('the set pieces ride their exits: 筑基天象 on the cliff\'s throw, 漳�
   assert.deepEqual(exitOf('01-deep', 'seal').setpiece, { id: 'zhang', beats: ['seal', 'ding'] });
   const played = ['01-altar/send', '01-rise/stand', '01-deep/seal'].flatMap((k) => exitOf(...k.split('/')).setpiece.beats);
   assert.ok(!played.includes('trial'), 'the trial beat is not replayed as a picture');
-  const cliff = { ...atSnow(), scene: '09-cliff', place: 'houshan', step: 9, progress: 130 };
+  const cliff = { ...atSnow(), scene: '09-cliff', place: 'houshan', step: 9, progress: PEAK };
   let t = cliff;
   const chance = oddsOf(content, cliff, NOW, 'foundation').chance;
   for (let k = 0; rollOf(t, 'foundation') >= chance; k += 1) t = { ...cliff, breakthrough: { tries: { foundation: k + 1 } } };

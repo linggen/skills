@@ -10,6 +10,7 @@ import { callDue, companionOf, companionRiddle } from './companion.mjs';
 import { advanceChapter, clone, judgeAnswer, pay, refuse, RIDDLE_TRIES, spendStamina } from './core.mjs';
 import { advance, itemOf } from './errands.mjs';
 import { savedFile, savedFor, savesDir, skillDir, writeAtomic, writeMadeWorld } from './files.mjs';
+import { inPlay } from './language.mjs';
 import { nameOf, sceneBrief, spoken } from './look.mjs';
 import { arriveOnRoad, chanceLive, dealChance, meetHere } from './road.mjs';
 import { herBeat, joinNode, withHerBeat } from './story.mjs';
@@ -156,15 +157,17 @@ const DAY_SAVES_KEPT = 14;
 
 function readSave(file) {
   const doc = JSON.parse(fs.readFileSync(file, 'utf8'));
-  if (doc.state) return { ...doc, state: migrate(doc.state) };
-  const state = migrate(doc);
+  // The language is Linggen's (rules/language.mjs): a kept save's own is let go.
+  if (doc.state) return { ...doc, state: inPlay(migrate(doc.state)) };
+  const state = inPlay(migrate(doc));
   return { id: state.world, kind: 'world', title: null, at: state.updated, state };
 }
 const saveFiles = () => (fs.existsSync(savesDir()) ? fs.readdirSync(savesDir()).filter(f => f.endsWith('.json')).map(f => path.join(savesDir(), f)) : []);
 const allSaves = () => saveFiles().map(readSave).sort((a, b) => String(b.at).localeCompare(String(a.at)));
 const saveOf = id => (savedFor(id) ? readSave(savedFile(id)) : null);
 function keepSave(kind, id, state, at, title = null) {
-  writeAtomic(savedFile(id), JSON.stringify({ id, kind, title, at, state }));
+  const { lang, lang_set, ...kept } = state;
+  writeAtomic(savedFile(id), JSON.stringify({ id, kind, title, at, state: kept }));
 }
 
 /* A new day's first move: yesterday's closing state is kept as that day's

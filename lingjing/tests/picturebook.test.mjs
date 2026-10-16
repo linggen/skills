@@ -77,7 +77,7 @@ test('the command line: Ling is never handed the prose — only what the stage p
   const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
   const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: ROOT, env, encoding: 'utf8' }).stdout);
   try {
-    cli('init', '--lang=zh');
+    cli('init');
     const first = cli('look', '--said=[scene] opened', '--for=ling');
     assert.equal(first.tell, undefined);
     assert.deepEqual(first.staged, [{ scene: '00-shiao', recap: first.staged[0].recap }]);
@@ -119,7 +119,7 @@ test('the page draws the passages owed with their beats (Tell) and marks them to
   const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
   const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: ROOT, env, encoding: 'utf8' }).stdout);
   try {
-    cli('init', '--lang=zh');
+    cli('init');
     cli('tell');
     cli('win', '--id=rain-basins', '--grade=dry');
     cli('task', '--action=done', '--id=rain-basins');

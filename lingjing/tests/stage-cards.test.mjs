@@ -91,21 +91,22 @@ test('the 事 chip: how many in hand, what can be handed in — and its popover 
   const at = ctx({ quests: chores });
   const took = quest({ ...open, place: 'sibei' }, content, at, { action: 'take', id: 'xu-lvliang-look' });
   const l = look(took.state, content, at), page = pageCtx(l);
-  assert.match(bookChipHtml(page, false, false), /class="bookchip ready"[^>]*>事 3 · 可交 1</, 'a line ready to hand in is never behind a click');
+  assert.match(bookChipHtml(page, false, false), /class="bookchip ready"[^>]*title="事 3 · 可交 1">事 3<b class="due">交1<\/b><\/button>/, 'a line ready to hand in is never behind a click — a count on the chip, the line its title');
   assert.doesNotMatch(bookChipHtml(page, false, false), /bookpop/);
   assert.match(bookChipHtml(page, true, true), /bookchip ready fresh.*bookpop/s);
   const html = bookPopHtml(page);
   assert.match(html, /吕梁洪的水声/);
   assert.match(html, /到 0\/1 · 在吕梁洪/);
-  assert.match(html, /class="bookrow ready".*扫描.*交 差/s, 'the scan its app saw done is handed in from the row');
-  assert.match(html, /炼体.*Health · 今日待做/s);
+  assert.match(html, /class="bookrow trow ready".*扫描.*交 差/s, 'the scan its app saw done is handed in from the row');
+  assert.match(html, /可交 · 1.*已接 · 2/s, 'grouped by state: what can be handed in first');
+  assert.match(html, /t-day">每日<\/span>.*炼体.*今日.*去 Health 做/s, 'a chore wears its tag, its period and its app\'s page');
   assert.doesNotMatch(html, /undefined|\{\w+\}/);
   assert.doesNotMatch(html, /说说|bookdetail/, 'closed rows: nothing opened, and no row asks the model for what the page knows');
   // a row opened: the page reads the line from the rules and shows it — no model turn
   const info = quest(took.state, content, at, { action: 'info', id: 'xu-lvliang-look' }).result;
-  assert.deepEqual([info.who, info.taken, info.grant.progress, info.where.id], ['泗水北岸的渔人', true, 20, 'lvliang']);
+  assert.deepEqual([info.who, info.taken, info.grant.wealth, info.where.id], ['泗水北岸的渔人', true, 15, 'lvliang']);
   const opened = bookPopHtml({ ...page, bookRow: 'xu-lvliang-look', bookInfo: info });
-  assert.match(opened, /bookdetail.*孔夫子.*酬<\/span> 修为 \+20 · 灵石 \+10.*data-ask="说说吕梁洪的水声".*data-drop="xu-lvliang-look"/s);
+  assert.match(opened, /bookdetail.*孔夫子.*酬<\/span> 灵石 \+15.*data-ask="说说吕梁洪的水声".*data-drop="xu-lvliang-look"/s);
   // a chain names its next link as `next` — `then` is the wrapper's word to Ling on every result
   const chained = quest({ ...open, place: 'pengcheng' }, content, at, { action: 'info', id: 'xu-elder-herb' }).result;
   assert.deepEqual([chained.next, chained.then, chained.taken, chained.gives], ['林子里的蠪侄', undefined, false, '竹剑']);

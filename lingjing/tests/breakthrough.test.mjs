@@ -21,6 +21,8 @@ import { notePage } from '../scripts/rules/did.mjs';
 process.env.LINGJING_STAMINA_LIMIT ??= '1';
 
 const content = loadContent();
+// 练气九层圆满: the peak a throw is tried from (the threshold, re-derived 2026-10-15).
+const PEAK = content.ladder.tiers[0].thresholds.at(-1);
 const rule = content.ladder.breakthrough;
 const NOW = new Date('2026-09-28T12:00:00');
 const ctx = { now: NOW, quests: [] };
@@ -30,7 +32,7 @@ const HOUR = 3600_000;
    the peak of 练气, full 体力, the four roots — nothing prepared. */
 const atJi = (extra = {}) => ({
   ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: '09-cliff', place: 'houshan', ended: ['00-prologue', '00-waimen'],
-  tier: 'qi', step: 9, progress: 130, name: '清玄', traits: ['wood', 'water', 'fire', 'earth'], stamina: 100, stamina_at: NOW.toISOString(),
+  tier: 'qi', step: 9, progress: PEAK, name: '清玄', traits: ['wood', 'water', 'fire', 'earth'], stamina: 100, stamina_at: NOW.toISOString(),
   wealth: 300, bag: { lingzhi: 2 }, ...extra,
 });
 /* At 青鼎, the peak of 结丹, 银月 found — the third cauldron's gift is hers. */
@@ -58,7 +60,7 @@ test('the chance is the realm\'s base and what feeds it, held between floor and 
   assert.equal(part(o, 'element').how, 'match', 'an earth root for 筑基');
   assert.equal(part(o, 'her'), undefined, 'before she is found she is not even a row');
   assert.equal(o.chance, rule.base.foundation + rule.body.whole + rule.element.match);
-  assert.deepEqual(o.risk, { stamina: Math.ceil(content.rewards.stamina.max * rule.fail.wound), progress: Math.round(130 * rule.fail.progress), hours: rule.fail.cooldown_hours });
+  assert.deepEqual(o.risk, { stamina: Math.ceil(content.rewards.stamina.max * rule.fail.wound), progress: Math.round(PEAK * rule.fail.progress), hours: rule.fail.cooldown_hours });
 
   const pill = oddsAt(atJi({ bag: { 'foundation-pill': 1 } })).odds;
   assert.equal(pill.chance, Math.min(rule.cap, o.chance + rule.pill.by_zhuan[1]), 'a pill carried: the sect\'s 一转, by its 转');
@@ -146,9 +148,9 @@ test('the throw fails: hurt, a share of the peak step\'s 修为, the cauldron sh
   assert.equal(b.success, false);
   assert.equal(r.result.took, null);
   const step = content.rewards.stamina.cost.step;
-  assert.deepEqual(b.lost, { stamina: Math.ceil(100 * rule.fail.wound), progress: Math.round(130 * rule.fail.progress) });
+  assert.deepEqual(b.lost, { stamina: Math.ceil(100 * rule.fail.wound), progress: Math.round(PEAK * rule.fail.progress) });
   assert.equal(r.state.stamina, 100 - step - b.lost.stamina);
-  assert.equal(r.state.progress, 130 - b.lost.progress);
+  assert.equal(r.state.progress, PEAK - b.lost.progress);
   assert.equal(r.state.tier, 'qi', 'the realm is never lost');
   assert.equal(r.state.step, 9, 'nor the step');
   assert.equal(r.state.scene, '09-cliff', 'the scene stays');
@@ -159,7 +161,7 @@ test('the throw fails: hurt, a share of the peak step\'s 修为, the cauldron sh
   assert.equal(r.result.summarize, false);
 
   // Shut: the card waits with the hour, the chat offers the way back, a Resolve hears why.
-  const back = { ...r.state, progress: 130 };
+  const back = { ...r.state, progress: PEAK };
   const shut = resolve(back, content, { ...ctx, now: new Date(NOW.getTime() + HOUR) }, { exit: 'take' });
   assert.equal(shut.result.refused, 'breakthrough-cooling');
   assert.match(shut.result.say, /雷劫的余威/);
@@ -238,13 +240,14 @@ test('the page writes what fell down for Ling and Yinyue, and Undo takes the thr
   const ling = cli('resolve', '--exit=take', '--said=渡劫', '--for=ling');
   assert.equal(ling.refused, 'page-throws');
   const { guided, ...kept } = state(); // the guides handed to her session are remembered, never a move
-  assert.deepEqual(kept, start, 'her refusal writes nothing');
+  const { lang, ...unlangued } = start; // and the language is Linggen's, never written to the save (rules/language.mjs)
+  assert.deepEqual(kept, unlangued, 'her refusal writes nothing');
   const first = cli('resolve', '--exit=take');
   assert.equal(first.breakthrough.success, false);
   const after = state();
-  assert.match(after.page_did.at(-1).what, /tried the breakthrough to 筑基小成 on the page's card \(\d+% chance\) and the tribulation threw them back: 体力 −30, −39 修为; the cauldron is shut until .*The realm is kept/);
+  assert.match(after.page_did.at(-1).what, new RegExp(`tried the breakthrough to 筑基小成 on the page's card \\(\\d+% chance\\) and the tribulation threw them back: 体力 −30, −${Math.round(PEAK * content.ladder.breakthrough.fail.progress)} 修为; the cauldron is shut until .*The realm is kept`));
   assert.equal(cli('undo').ok, true);
-  assert.equal(state().progress, 130, 'taken back');
+  assert.equal(state().progress, PEAK, 'taken back');
   const again = cli('resolve', '--exit=take');
   assert.deepEqual(again.breakthrough, first.breakthrough, 'the same die');
   // A fresh chat hears the report first: the story guide comes with it.
@@ -269,6 +272,6 @@ test('after a failed throw the cliff is never a dead end: the shut hours first, 
   assert.equal(under.refused, 'not-at-peak');
   assert.match(under.say, /闭关/);
   assert.ok(!look(failed, content, later).locked?.includes('seclusion'), '闭关 is open on the cliff');
-  const back = resolve({ ...failed, progress: 130 }, content, later, { exit: 'take' });
+  const back = resolve({ ...failed, progress: PEAK }, content, later, { exit: 'take' });
   assert.ok(back.result.ok && back.result.breakthrough, 'the peak regained, the throw is his again');
 });

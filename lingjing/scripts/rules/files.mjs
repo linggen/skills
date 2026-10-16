@@ -53,14 +53,11 @@ function writeMadeWorld(outline, now) {
    chat with Ling) from an Undo (the talk still holds; 2026-10-14). */
 const newRun = () => crypto.randomBytes(6).toString('hex');
 const withRun = (state, by = null) => (state ? { ...state, run: newRun(), ...(by ? { run_by: by } : {}) } : state);
-/* `was` — the game it replaces: a language the player pinned (`lang_set`, the
-   page's 中/EN tapped) stays pinned through a Restart (2026-10-14: after one,
-   his English 「restart game」 flipped his pinned Chinese game to English). */
+/* `was` — the game it replaces. */
 function freshState(content, lang, now, was = null, by = 'init') {
   const s = newState(content, lang, now);
   s.run = newRun();
   s.run_by = by;
-  if (was?.lang_set && s.lang === was.lang) s.lang_set = true;
   if (content.opening && content.world.opening) {
     s.made = { scenes: { ...content.opening }, at: content.world.opening };
   }

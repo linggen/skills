@@ -14,7 +14,7 @@ import { holdPlaceholder } from './invite.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
-import { boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
+import { FOOTER, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, dropOf, pickOf, spoilsHtml } from './battle-card.js';
 import { wireDrag } from './battle-drag.js';
 import { banner, ghostsOf, playLog, since } from './battle-anim.js';
@@ -111,7 +111,13 @@ function postMoment(fact, flags, { mood = null } = {}) {
     .then((res) => res.ok).catch((e) => { console.warn('[lingjing] yinyue', e); return false; });
 }
 
-const lang = () => (look?.lang === 'en' ? 'en' : 'zh');
+/* The game's language is Linggen's own (Hanli, 2026-10-15): Look carries it
+   (rules/language.mjs). Before the first Look — the sign-in gate — the
+   engine is asked, else the browser. */
+const tagLang = (tag) => (/^zh/i.test(String(tag ?? '')) ? 'zh' : 'en');
+let pageLang = tagLang(navigator.language);
+fetch('/api/user/language').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d?.language) pageLang = tagLang(d.language); }).catch(() => {});
+const lang = () => ((look?.lang ?? pageLang) === 'en' ? 'en' : 'zh');
 /// The page's own labels, with the stat names from the world's dictionary
 /// on top — the harness names nothing.
 const words = () => {
@@ -232,6 +238,8 @@ const view = {
   /// Everything else about a fight is in the save.
   duelSay: { id: null, text: null },
   bookOpen: false, //    the 事 chip's popover
+  roadsOpen: false, //   the 去往 chip's list of roads
+  shelfOpen: false, //   the 书 chip's popover: 九鼎录 · 读原著
   gearOpen: false, //    the 储物袋 chip's panel over the stage: what he wears and his pouch, together
   gear: null, //         the rules' `gear` read behind it, fetched when it opens
   pouchTab: 'all', //    the panel's tab (pouch.js TABS)
@@ -555,9 +563,10 @@ function qiHtml() {
     <i class="ring" style="--p:${resting ? 0 : Number(d.p) || 0}"></i><span class="st">${esc(qiWord(d.st, w))}</span>${cnt}</span>`;
 }
 
-/// Filled to the 回's cap (Look's `capped`, rules/cap.mjs): the bar stands full
-/// and the world's line sits under the strip, so a full bar reads as a wait.
-const capSay = () => (look.capped?.say ? `<span class="capsay" role="note">${esc(look.capped.say)}</span>` : '');
+/// Filled to the 回's cap (Look's `capped`, rules/cap.mjs): the bar stands full and a small
+/// seal by its count says it waits — the world's line is the seal's title, never a row on the
+/// bar (Hanli, 2026-10-15: the line took the strip's room and crushed the name to a column).
+const capSay = () => (look.capped?.say ? `<span class="capseal" role="note" title="${esc(look.capped.say)}" aria-label="${esc(look.capped.say)}">${esc(words().capSeal)}</span>` : '');
 
 /// One line in the world while the window is spent — and the boards stay:
 /// they use no model.
@@ -573,7 +582,7 @@ function statusHtml() {
     : look.tier?.bar === false ? `<span class="realm">${esc(look.tier.name)}</span>`
     : `<span class="realm">${esc(look.tier.name)}</span>
     <div class="xw"><span class="lbl">${esc(w.xw)}</span><div class="bar"><i style="width:${pct || 0}%"></i></div>
-      <span class="num"><span data-count="progress">${esc(look.progress)}</span>/${esc(look.next)}</span></div>${capSay()}`;
+      <span class="num"><span data-count="progress">${esc(look.progress)}</span>/${esc(look.next)}</span>${capSay()}</div>`;
   const stones = !has('wealth') || isShut(look, 'wealth') ? '' : `<span class="ls"><span class="lbl">${esc(w.ls)}</span> <b data-count="wealth">${esc(look.wealth)}</b></span>`;
   return `${name}${realm}
     ${has('pool') ? qiHtml() : ''}
@@ -879,10 +888,10 @@ function omenChip() {
 }
 
 /// The game's language, at a tap — the rules' Lang, the same word Ling
-/// would use; the page redraws in it and Ling's next reply follows Look.
+/// would use: it sets Linggen's language (all of it, not only the game); the
+/// page redraws in it and Ling's next reply follows Look.
 async function switchLang(to) {
-  // The lit one tapped still counts: it pins the game to it (lang_set).
-  if (to === lang() && look?.lang_set) return;
+  if (to === lang()) return;
   try {
     await write('lang', { lang: to });
   } catch (e) {
@@ -984,29 +993,50 @@ const headHtml = (slots) => (bout ? '' : slots.header.map(drawCard).join(''));
 /// end of the line (his, 2026-09-24: 「用一个队列，一个完成，再从队列取出下一个显示」).
 function footRowHtml(slots) {
   if (bout) return '';
-  // ONE thing to tap (Hanli, 2026-10-14): while main is the way on — or the box holds the
-  // scene's choices itself — nothing is counted; else the line names what waits (stage.mjs footer.next).
-  const w = words(), next = choicesInBox() ? null : slots.footer.next;
   // In 闭关 and inside a corridor (the prologue) the rules keep the roads off (stageSlots).
-  const roads = (slots.footer.roads || scratchRoads()) && stands(look, 'roads') ? roadsHtml() : '<span></span>';
-  const what = next ? queueLabel(next.cards[0]) : null;
-  const more = next ? `<button class="act quiet more" data-qnext="${esc(slots.key)}" title="${esc(fill(w.queueNext, { what: [what.name, what.kind].filter(Boolean).join(' · ') }))}">${esc(waitingLine({ ...what, more: slots.footer.waiting - 1 }, w))} ›</button>` : '';
-  return roads + more;
+  return (slots.footer.roads || scratchRoads()) && stands(look, 'roads') ? roadsHtml() : '<span></span>';
+}
+
+/// 还有 N 件 ›, folded onto the 事 chip (Hanli, 2026-10-15: one chip for what is in hand and what
+/// waits) — its own button still, one tap. ONE thing to tap (Hanli, 2026-10-14): while main is the
+/// way on — or the box holds the scene's choices itself — nothing is counted; else it names what
+/// waits (stage.mjs footer.next).
+function moreHtml(slots) {
+  const w = words(), next = !slots || choicesInBox() ? null : slots.footer.next;
+  if (!next) return '';
+  const what = queueLabel(next.cards[0]);
+  return `<button class="act quiet more" data-qnext="${esc(slots.key)}" title="${esc(fill(w.queueNext, { what: [what.name, what.kind].filter(Boolean).join(' · ') }))}">${esc(waitingLine({ ...what, more: slots.footer.waiting - 1 }, w))} ›</button>`;
 }
 
 /// A scratch save has no chat to ask 何去何从, so its roads always stand —
 /// except where the rules keep them off (闭关, a corridor).
 const scratchRoads = () => Boolean(SCRATCH) && !look?.seclusion && !look?.director?.corridor;
 
-/// The chips — 天气 · 九鼎录 · 原著 · 事 · 袋 — in the footer, under the stage.
+/// The chips in the footer, under the stage, as stage.mjs FOOTER lists them: 木牌 · 节日 · 天气 ·
+/// 书 · 事 · 物品 (Hanli, 2026-10-15: 「too much widgets」 — one chip each, none on two lines).
 /// 恩仇簿 is written no more (2026-10-03): its chip is off the footer; the
 /// ledger itself stays in the save and in Look (ledgerChipHtml, cards.js).
-/// A scene on another line (a 今 interlude) keeps the 九鼎录 and the book; the rest is the 古's (stage.mjs FURNITURE).
-function footChipsHtml() {
-  const has = (part) => !bout && stands(look, part);
-  return `${has('her') ? herTokenHtml() : ''}${has('festival') ? festChipHtml() : ''}${has('weather') ? wxChipHtml(wxHere(), { lang: lang(), open: view.wxOpen, sense: view.wxSense, note: view.wxNote, wind: PREVIEW.wind ?? look?.wind }) : ''}${has('lu') ? luChipHtml(lang(), view.luOpen) : ''}${has('read') ? readChipHtml(ctx()) : ''}
-    ${stands(look, 'errands') ? bookChipHtml(ctx(), view.bookOpen, view.bookFresh) : ''}
-    ${stands(look, 'bag') ? gearChipHtml(ctx(), view.gearOpen) : ''}`;
+/// A scene on another line (a 今 interlude) keeps the 书; the rest is the 古's (stage.mjs FURNITURE).
+/// In a fight only 事 and 物品 stand.
+const FOOT_CHIPS = {
+  her: () => herTokenHtml(),
+  festival: () => festChipHtml(),
+  weather: () => wxChipHtml(wxHere(), { lang: lang(), open: view.wxOpen, sense: view.wxSense, note: view.wxNote, wind: PREVIEW.wind ?? look?.wind }),
+  books: () => shelfChipHtml(),
+  errands: (slots) => `<span class="errands">${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}${moreHtml(slots)}</span>`,
+  bag: () => gearChipHtml(ctx(), view.gearOpen),
+};
+const IN_A_FIGHT = new Set(['errands', 'bag']);
+function footChipsHtml(slots) {
+  const has = (part) => (!bout || IN_A_FIGHT.has(part)) && stands(look, part);
+  return FOOTER.filter(has).map((part) => FOOT_CHIPS[part](slots)).join('');
+}
+
+/* 书: the 九鼎录 and the novel behind one chip (Hanli, 2026-10-15) — a tap opens both. */
+function shelfChipHtml() {
+  const w = words(), open = view.shelfOpen;
+  const pop = open ? `<div class="bookpop shelfpop" role="dialog">${luChipHtml(lang(), view.luOpen)}${readChipHtml(ctx())}</div>` : '';
+  return `<span class="bookwrap"><button class="bookchip shelfchip" data-shelf aria-expanded="${open ? 'true' : 'false'}">${esc(w.shelfChip)}</button>${pop}</span>`;
 }
 
 /* 银月 in the footer (proto k, 2026-10-14 choice 13): the 木牌 she sleeps in, once she has been
@@ -1214,12 +1244,15 @@ const memoryHtml = () => (view.memory ? memoryCardHtml(view.memory.play, { i: vi
 /// a market had no way out but the map). A tap is the same one Move the chat's
 /// option would have been. Drawn ONLY while something holds: the moment nothing
 /// does, the question is the chat's and this row is gone — never both.
+/// One chip, 「去往 ▾」, its roads in a list over the stage (Hanli, 2026-10-15: six road buttons
+/// ran off the footer). The same taps as before, one tap further in.
 function roadsHtml() {
   const near = look?.director?.near ?? [];
   if (!near.length) return '';
-  const w = words();
+  const w = words(), open = view.roadsOpen;
   const chips = near.map((p) => `<button class="act go" data-go="${esc(p.id)}">${esc(p.name)}</button>`).join('');
-  return `<div class="roadsrow"><span class="lbl">${esc(w.roads)}</span>${chips}</div>`;
+  const pop = open ? `<div class="bookpop roadspop" role="dialog"><div class="cardtitle">${esc(w.roads)}</div><div class="roadlist">${chips}</div></div>` : '';
+  return `<span class="bookwrap roadswrap"><button class="bookchip roadschip" data-roads aria-expanded="${open ? 'true' : 'false'}" title="${esc(near.map((p) => p.name).join(' · '))}">${esc(w.roadsChip)} ▾</button>${pop}</span>`;
 }
 
 /* A slot redrawn only when what it holds changed — or what the chat asks,
@@ -1339,7 +1372,7 @@ function draw() {
   const slots = bout ? null : stageNow();
   { const realLook = look; look = headLook(); try { paintIf('headCards', headHtml(slots && look !== realLook ? { ...slots, header: headOf(look) } : slots)); } finally { look = realLook; } }
   paintIf('footRow', footRowHtml(slots));
-  paintIf('footChips', footChipsHtml());
+  paintIf('footChips', footChipsHtml(slots));
   $('focus').innerHTML = focusHtml(slots);
   // The story on the full stage (lines.js): the beat's words over the picture, a sentence at a time.
   // 景: a beat marked with its set piece lays the piece's picture under its words (beatPiece).
@@ -2198,6 +2231,7 @@ async function chooseWay(n) {
 const DOES = {
   take: (id) => write('quest', { action: 'take', id }),
   turn: (id) => write('quest', { action: 'turn', id }),
+  skip: (id) => write('quest', { action: 'skip', id }), // 跳过 on the open 一次 step: the next opens tomorrow
   buy: (id) => write('trade', { action: 'buy', id }),
   sell: (id) => write('trade', { action: 'sell', id }),
   use: (id) => write('trade', { action: 'use', id }),
@@ -2209,7 +2243,7 @@ async function doTap(action, id) {
   keep({ doNote: r.ok ? r.paid?.pouch_full ?? r.pouch_full ?? null : refusal(r) });
   if (r.ok && action === 'take') tookOffer(id);
   await refresh();
-  if (r.ok && action === 'turn' && view.bookOpen) await loadKaifu();
+  if (r.ok && (action === 'turn' || action === 'skip') && view.bookOpen) await loadKaifu();
   if (r.ok && action === 'turn') showTurned(id, r);
   // 交差 on 传闻's line counts a kept win: the next step is the story's.
   if (r.ok && id === 'tale' && r.ended) taleEnded(r.handed?.[0]?.title ?? r.title);
@@ -2339,7 +2373,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && view.logOpen) { show({ logOpen: false }); lines.hold(false); return; }
   if ((e.key === ' ' || e.key === 'Enter') && !e.isComposing && !e.target.closest?.('input, textarea, select, [contenteditable], #chat-panel') && titleAway()) { e.preventDefault(); return; }
   if (boxKey(e)) { e.preventDefault(); storyTap(); return; }
-  if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.luOpen) show({ luOpen: false }); else if (view.pouchToss) show({ pouchToss: null }); else if (view.bookOpen || view.gearOpen || view.ledgerOpen) show({ bookOpen: false, gearOpen: false, ledgerOpen: false }); }
+  if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.luOpen) show({ luOpen: false }); else if (view.pouchToss) show({ pouchToss: null }); else if (view.bookOpen || view.gearOpen || view.ledgerOpen || view.roadsOpen || view.shelfOpen || view.wxOpen) show({ bookOpen: false, gearOpen: false, ledgerOpen: false, roadsOpen: false, shelfOpen: false, wxOpen: false }); }
   if (e.key !== 'Enter' && e.key !== ' ') return;
   for (const [sel, open] of KEY_ROWS) {
     const row = e.target.closest?.(sel);
@@ -2415,7 +2449,9 @@ function sayTap(spoken, e) {
    it was for. */
 const busy = (key, fn) => () => run(key, fn);
 const CLICKS = [
-  ['[data-book]', () => { show({ bookOpen: !view.bookOpen, gearOpen: false, ledgerOpen: false }); if (view.bookOpen) loadKaifu(); }],
+  ['[data-book]', () => { show({ bookOpen: !view.bookOpen, gearOpen: false, ledgerOpen: false, roadsOpen: false, shelfOpen: false }); if (view.bookOpen) loadKaifu(); }],
+  ['[data-roads]', () => show({ roadsOpen: !view.roadsOpen, bookOpen: false, shelfOpen: false, wxOpen: false })],
+  ['[data-shelf]', () => show({ shelfOpen: !view.shelfOpen, bookOpen: false, roadsOpen: false, wxOpen: false })],
   ['[data-ledger]', () => show({ ledgerOpen: !view.ledgerOpen, bookOpen: false, gearOpen: false })],
   ['[data-wx]', () => run('wx:open', () => openWx())],
   ['[data-wx-set]', () => { if (skyDraft.city.trim()) run('wx:set', () => setSense({ city: skyDraft.city.trim() })); }],
@@ -2478,6 +2514,9 @@ const CLICKS = [
     if (view.bookOpen && !e.target.closest('.bookpop') && !e.target.closest('#askbar')) show({ bookOpen: false });
     if (view.ledgerOpen && !e.target.closest('.ledgerpop')) show({ ledgerOpen: false });
     if (view.wxOpen && !e.target.closest('.wxpop') && !e.target.closest('[data-wx]')) show({ wxOpen: false });
+    // A road tapped walks it, and the list closes with it.
+    if (view.roadsOpen && (!e.target.closest('.roadspop') || e.target.closest('[data-go]'))) show({ roadsOpen: false });
+    if (view.shelfOpen && !e.target.closest('.shelfpop')) show({ shelfOpen: false });
     return false;
   }],
   ['[data-spoils-close]', () => show({ spoils: null })],
@@ -2974,17 +3013,6 @@ async function mountChat() {
   return !resume;
 }
 
-/// A brand-new game starts in the language of the machine it is played on.
-async function firstLanguage() {
-  const fresh = look && !look.name && look.chapter?.id === '00-prologue' && look.chapter?.fresh && !look.story;
-  if (!fresh) return;
-  const want = (navigator.language || '').toLowerCase().startsWith('zh') ? 'zh' : 'en';
-  if (want !== look.lang) {
-    await write('lang', { lang: want, auto: true }).catch((e) => console.warn('[lingjing] lang', e));
-    await refresh();
-  }
-}
-
 /* ── 银月 on the stage: the cast, the rise, her body ── */
 
 /// 问卦 from the card: the rules cast, the card shows it, 银月 reads it.
@@ -3036,7 +3064,7 @@ function cheer(before) {
    The 录 chip opens it over the stage: the rules' `story` read (45 ms, no
    model), drawn by lu.js. Read-only: nothing in it writes or asks Ling. */
 async function openLu() {
-  show({ luOpen: true, bookOpen: false, gearOpen: false });
+  show({ luOpen: true, bookOpen: false, gearOpen: false, shelfOpen: false });
   const r = await verb('story').catch((e) => { console.warn('[lingjing] story', e); return null; });
   if (view.luOpen) show({ lu: r });
 }
@@ -3435,8 +3463,8 @@ function tellCompanion(shown) {
 
 /* ── The gate: sign in to play ── */
 
-/// The page's language before there is a game to take it from.
-const machineLang = () => ((navigator.language || '').toLowerCase().startsWith('zh') ? 'zh' : 'en');
+/// The page's language before there is a game to take it from: Linggen's (pageLang).
+const machineLang = () => pageLang;
 
 /// Signed out, nothing of the game is shown: the save lives with the
 /// account, and a turn would be refused anyway. One button; the daemon
@@ -3475,7 +3503,6 @@ async function enter() {
     console.warn('[lingjing] sync on open', e);
   }
   await refresh();
-  await firstLanguage();
   const fresh = await mountChat();
   // In 闭关: 出关 is the first thing on the stage, and the opening waits for
   // its tap (his, 2026-09-24) — then goes on with what grew in it.

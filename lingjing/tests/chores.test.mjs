@@ -80,12 +80,14 @@ test('a flood of menu entries: the book holds the workout and the one pick — t
   assert.deepEqual(lines.map(b => b.chore.kind).sort(), ['fixed', 'pick']);
   assert.equal(lines.find(b => b.chore.kind === 'fixed').id, 'health-workout');
   assert.ok(lines.every(b => ['mac', 'phone', 'both'].includes(b.chore.device)), 'each line says where it is done');
-  // Look for Ling: today's two and the milestones done-unpaid — never the menu
+  // Look for Ling: today's two and the ONE open milestone (kaifu-drip.test.mjs) — never the menu
   assert.equal(l.quests.filter(q => q.period !== 'once').length, 2);
-  assert.deepEqual(l.kaifu, { done: 4, of: 13, ready: 4, next: { id: 'linggen-m4', title: '做linggen-m4', device: 'mac' } });
+  const { pays, ...next } = l.kaifu.next;
+  assert.deepEqual({ ...l.kaifu, next }, { done: 0, of: 13, ready: 1, next: { id: 'linggen-pair', title: '做linggen-m0', device: 'phone', done: true, open: '/settings?tab=models' } });
+  assert.ok(pays.wealth > 0, 'the open step says what it pays');
   // Yinyue's Progress carries the same, compactly
   const p = progress(s, content, ctx(quests)).result;
-  assert.equal(p.chores.kaifu, '4/13');
+  assert.equal(p.chores.kaifu, '0/13');
   assert.ok(p.chores.today.length <= 2 + 4);
 });
 
@@ -115,7 +117,7 @@ test('开府: done_at null is not done; a done one pays once ever — capped, on
   const out = quest(s, content, ctx(done), { action: 'turn', id: m.id });
   assert.equal(out.result.ok, true);
   const cap = content.rewards.tables.once;
-  assert.ok(out.result.paid.progress <= cap.progress * 1 && out.result.paid.progress > 0, 'capped by the once table');
+  assert.equal(out.result.paid.progress, 0, '开府 pays stones, no 修为 (Hanli, 2026-10-15: 修为 comes from cultivation)');
   assert.equal(out.result.paid.wealth, cap.wealth);
   assert.deepEqual(out.state.chores[m.id].period, 'once');
   // the synced save, a month on: still paid

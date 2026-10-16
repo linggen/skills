@@ -55,8 +55,8 @@ test('练气 has 零层 and nine 层 above it in three phases; every realm above
   assert.equal(fullName(content, 'foundation', 2, 'en'), 'Foundation Establishment · Greater Attainment, Consummation');
   assert.equal(peakName(content, 'foundation', 'zh'), '筑基圆满');
   assert.equal(peakName(content, 'qi', 'zh'), '练气圆满');
-  assert.equal(realmName(content, { tier: 'qi', step: 2, progress: 59 }, 'zh'), '练气二层');
-  assert.equal(realmName(content, { tier: 'qi', step: 2, progress: 60 }, 'zh'), '练气二层圆满');
+  assert.equal(realmName(content, { tier: 'qi', step: 2, progress: qi.thresholds[2] - 1 }, 'zh'), '练气二层');
+  assert.equal(realmName(content, { tier: 'qi', step: 2, progress: qi.thresholds[2] }, 'zh'), '练气二层圆满');
   assert.equal(realmName(content, { tier: 'qi', step: 0, progress: 0 }, 'zh'), '练气零层', '零层 is never 圆满');
   assert.equal(realmName(content, { tier: 'qi', step: 0, progress: 0 }, 'en'), 'Qi Condensation · Layer 0');
   assert.equal(realmName(content, { tier: 'foundation', step: 2, progress: 600 }, 'zh'), '筑基大成圆满');

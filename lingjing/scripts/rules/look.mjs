@@ -7,7 +7,7 @@ import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, THEN_BORN, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
 import { fightSetup } from './cards.mjs';
 import { callDue, companionOf, hasCompanion, herAwake, herAway, herCard, questBrief, recalledOf } from './companion.mjs';
-import { clone, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mjs';
+import { clone, paysOf, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mjs';
 import { staminaBrief } from './daily.mjs';
 import { bookOf, breakthroughOf, directorBrief, errandFor, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
 import { divinationBrief, fateBrief, prng } from './fortune.mjs';
@@ -16,7 +16,7 @@ import { chanceBrief } from './road.mjs';
 import { seclusionBrief } from './seclusion.mjs';
 import { chapterLook, nodeLook, recapLook } from './story.mjs';
 import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
-import { kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
+import { choreGrant, kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
 import { catchHere, gameLevel, hostedHere, lundaoBrief, reopened, stallHere } from './tasks.mjs';
 import { hashOf } from './travel.mjs';
 import { atScene, beatOf, creatureOf, encounterOf, foeOf, ofJuan, passed, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
@@ -370,14 +370,19 @@ function tasksBrief(content, state, ctx) {
   // Before a story gate: no chores, no 开府, and a board pays no 修为 (state.mjs lockedOf).
   const shut = lockedOf(content, state);
   const menu = ctx.quests ?? [];
-  const chores = shut.includes('chores') ? [] : todayChores(state, menu, ctx.now), ready = shut.includes('kaifu') ? [] : kaifuReady(state, menu, ctx.now);
+  const chores = shut.includes('chores') ? [] : todayChores(state, menu, ctx.now), ready = shut.includes('kaifu') ? [] : kaifuReady(state, menu, ctx.now, content);
   const quests = [...chores, ...ready].map(q => ({
     id: q.id, app: q.app, title: pick(q.title, lang), device: q.device ?? null,
     done: questDone(q, ctx.now), paid: state.chores[q.id]?.period === periodKey(q.period, ctx.now),
     done_at: questDone(q, ctx.now) ? q.done_at : null, // when its app saw it done — the scene says so
-    period: q.period, reward: q.reward ?? null, stamina: q.stamina ?? null, // what it pays, so Ling can tell the practice
+    period: q.period, reward: q.reward ?? null, stamina: q.stamina ?? null,
+    // What lands (2026-10-15: the workout 修为, the pick and 开府 灵石), so Ling tells the practice right.
+    pays: paysOf(content, state, ctx.now, choreGrant(content, q)),
   }));
-  const kaifu = shut.includes('kaifu') ? null : kaifuBrief(state, menu, ctx.now, lang);
+  const kaifu = shut.includes('kaifu') ? null : kaifuBrief(state, menu, ctx.now, lang, content);
+  // The open 一次 step's pay, so the book's row says it before it is done.
+  const open = kaifu?.next && menu.find(q => q.id === kaifu.next.id);
+  if (open) kaifu.next.pays = paysOf(content, state, ctx.now, choreGrant(content, open));
   if (shut.includes('cultivation')) for (const t of tasks) t.pays = null;
   return { tasks, quests, ...(kaifu ? { kaifu } : {}) };
 }
@@ -407,7 +412,7 @@ export function look(state, content, ctx) {
     speed: speedOf(content, state),
   };
   const brief = {
-    ok: true, lang, name: state.name, gender: genderOf(state), seed: seedOf(state), ...(state.run ? { run: state.run, ...(state.run_by ? { run_by: state.run_by } : {}) } : {}), ...(state.lang_set ? { lang_set: true } : {}),
+    ok: true, lang, name: state.name, gender: genderOf(state), seed: seedOf(state), ...(state.run ? { run: state.run, ...(state.run_by ? { run_by: state.run_by } : {}) } : {}),
     // What the story has marked (a choice it will remember), and the beasts whose first sight has played.
     ...(state.marks?.length ? { marks: state.marks } : {}),
     ...(state.appeared?.length ? { appeared: state.appeared } : {}),

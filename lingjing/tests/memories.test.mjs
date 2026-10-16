@@ -24,6 +24,8 @@ import { renderMarkdown } from '../scripts/read-md.js';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const content = loadContent();
+// 练气九层圆满: the peak a throw is tried from (the threshold, re-derived 2026-10-15).
+const PEAK = content.ladder.tiers[0].thresholds.at(-1);
 const doc = memoriesOf(content);
 const NOW = new Date('2026-09-29T12:00:00');
 const ctx = { now: NOW, quests: [] };
@@ -31,7 +33,7 @@ const ctx = { now: NOW, quests: [] };
 /* At 冀鼎 (the first 鼎), the peak of 练气, 银月 with the player. */
 const atJi = (extra = {}) => ({
   ...newState(content, 'zh', NOW), chapter: '01-ji', scene: '01-cauldron', place: 'zhangyuan', ended: ['00-prologue'],
-  tier: 'qi', step: 9, progress: 130, name: '清玄', traits: ['wood', 'water', 'fire', 'earth'], stamina: 100, stamina_at: NOW.toISOString(),
+  tier: 'qi', step: 9, progress: PEAK, name: '清玄', traits: ['wood', 'water', 'fire', 'earth'], stamina: 100, stamina_at: NOW.toISOString(),
   wealth: 300, bag: { 'foundation-pill': 1 }, companion: { joined: '2026-09-20', awake: true }, ...extra,
 });
 /* The try whose die lands (or not) under the chance (breakthrough.test.mjs). */

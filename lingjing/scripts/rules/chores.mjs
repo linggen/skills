@@ -11,7 +11,11 @@
 //   done that is not today's pick is shown nowhere and pays nothing.
 // - **开府** — `period: "once"`: the one-time setup milestones. Their own
 //   section, never a book line; each pays once ever (`state.chores[id].period
-//   === 'once'`, in the synced save). An undone one never nags.
+//   === 'once'`, in the synced save). An undone one never nags. They drip
+//   (Hanli, 2026-10-15): ONE is open at a time, in the world's order
+//   (world.json `kaifu.order`); handed in or skipped, the next opens on the
+//   next calendar day. A skipped one pays nothing and comes back at the end;
+//   done in real life, it may be handed in any day (`state.kaifu`).
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -76,19 +80,25 @@ export function todayChores(state, quests, now) {
   return [...quests.filter(isFixed), ...(one ? [one] : [])].filter(q => q.due || questDone(q, now));
 }
 
-/* May it be handed in today: a fixed one, the pick, or a milestone. */
-export function choreCounts(state, quests, q, now) {
-  return isOnce(q) || isFixed(q) || dailyPick(state, quests, now).pick?.id === q.id;
+/* May it be handed in today: a fixed one, the pick, or a milestone that is
+   open or was skipped (the drip, below). */
+export function choreCounts(state, quests, q, now, content) {
+  if (isOnce(q)) return kaifuMay(state, content, quests, q, now);
+  return isFixed(q) || dailyPick(state, quests, now).pick?.id === q.id;
 }
 
-/* What it pays: a daily on the task table, a milestone on the `once` table
-   (rewards.json caps both); 体力 is the app's own, else the quest refill. */
+/* What it pays (Hanli, 2026-10-15: 修为 comes from cultivation, chores pay
+   灵石): the fixed one — the workout, the day's 功课 — on the `gongke` table,
+   修为; the day's pick (a scan, the books, a backup) on the `life` table,
+   灵石 — its `reward` read as stones; a 开府 milestone on the `once` table,
+   灵石. rewards.json caps each; 体力 is the app's own, else the quest refill. */
+const choreTable = q => (isOnce(q) ? 'once' : isFixed(q) ? 'gongke' : 'life');
 export function choreGrant(content, q) {
-  const once = isOnce(q);
+  const table = choreTable(q), cap = content.rewards.tables[table] ?? {};
   return {
-    table: once ? 'once' : 'task',
+    table,
     progress: q.reward ?? 0,
-    ...(once ? { wealth: content.rewards.tables.once?.wealth ?? 0 } : {}),
+    wealth: table === 'once' ? cap.wealth ?? 0 : q.reward ?? 0,
     stamina: q.stamina ?? content.rewards.stamina.refill.quest,
   };
 }
@@ -109,25 +119,78 @@ function appEntry(app) {
 const onHost = open => typeof open === 'string' && /^\/(?!\/)[^\s\\:]*$/.test(open) && !open.includes('..');
 export const choreOpen = q => (onHost(q.open) ? q.open : appEntry(q.app));
 
-/* 开府 in full, for the page's section (Quest `kaifu`, a read). */
-export function kaifuList(state, quests, now, lang) {
-  return quests.filter(isOnce).map(q => ({
+/* ── 开府 drips: one open at a time, the next on the next day ──
+   The order is the world's (world.json `kaifu.order`), then an app's own
+   numeric `order`, then the menu's; the rules name no milestone. */
+function kaifuOrder(content, quests) {
+  const listed = content?.world?.kaifu?.order ?? [];
+  const rank = q => (listed.includes(q.id) ? listed.indexOf(q.id) : Infinity);
+  const own = q => (Number.isFinite(q.order) ? q.order : Infinity);
+  return quests.filter(isOnce).map((q, i) => ({ q, i }))
+    .sort((a, b) => rank(a.q) - rank(b.q) || own(a.q) - own(b.q) || a.i - b.i).map(x => x.q);
+}
+const skippedOf = state => (Array.isArray(state.kaifu?.skipped) ? state.kaifu.skipped : []);
+
+/* The day the open one was last handed in or skipped. A save from before the
+   drip has no record: its latest milestone paid stands for it. */
+function kaifuClosed(state, quests) {
+  if (state.kaifu?.closed !== undefined) return state.kaifu.closed;
+  const paid = quests.filter(isOnce).map(q => state.chores?.[q.id]).filter(c => c?.period === 'once' && c.paid_at);
+  return paid.map(c => dayKey(new Date(c.paid_at))).sort().pop() ?? null;
+}
+
+/* The next unpaid in order, skipped ones last in the order they were skipped
+   (so skipping again moves one to the back, never stuck); it is open unless
+   the open one closed today. */
+export function kaifuOpen(state, content, quests, now) {
+  const unpaid = kaifuOrder(content, quests).filter(q => !paidNow(state, q, now));
+  const skipped = skippedOf(state).map(id => unpaid.find(q => q.id === id)).filter(Boolean);
+  const next = unpaid.find(q => !skipped.includes(q)) ?? skipped[0] ?? null;
+  return { open: kaifuClosed(state, quests) === dayKey(now) ? null : next, next, skipped };
+}
+
+/* Handed in: the open one, or one skipped before — the drip limits what
+   opens, never whether a thing done counts. */
+function kaifuMay(state, content, quests, q, now) {
+  const { open, skipped } = kaifuOpen(state, content, quests, now);
+  return open?.id === q.id || skipped.some(x => x.id === q.id);
+}
+
+/* `state.kaifu` after a milestone leaves the open slot — paid, or skipped
+   (`skip`): the day closes for the open one only; a skipped one handed in
+   later leaves the open one standing. */
+export function kaifuAfter(state, content, quests, now, id, skip = false) {
+  const { open } = kaifuOpen(state, content, quests, now);
+  const skipped = skippedOf(state).filter(x => x !== id);
+  return { closed: open?.id === id ? dayKey(now) : kaifuClosed(state, quests), skipped: skip ? [...skipped, id] : skipped };
+}
+
+/* 开府 for the page (Quest `kaifu`, a read): each milestone with its `step` —
+   `open`, `skipped`, `waits` (not yet open) or `paid`. The page shows the open
+   one, the skipped ones done, and folds the paid. */
+export function kaifuList(state, quests, now, lang, content) {
+  const { open, skipped } = kaifuOpen(state, content, quests, now);
+  const stepOf = q => (paidNow(state, q, now) ? 'paid' : open?.id === q.id ? 'open' : skipped.includes(q) ? 'skipped' : 'waits');
+  return kaifuOrder(content, quests).map(q => ({
     id: q.id, app: q.app, title: pick(q.title, lang), device: deviceOf(q), open: choreOpen(q),
-    done: questDone(q, now), paid: paidNow(state, q, now), reward: q.reward ?? null,
+    done: questDone(q, now), paid: paidNow(state, q, now), step: stepOf(q), reward: q.reward ?? null,
   }));
 }
 
-/* 开府 in one line, for Look and Progress: n of all, how many wait to be
-   handed in, and one undone to offer when the player asks what to do. */
-export function kaifuBrief(state, quests, now, lang) {
-  const list = kaifuList(state, quests, now, lang);
+/* 开府 in one line, for Look and Progress: `done` (handed in) of all, how
+   many wait to be handed in, the ONE open (`next`) — or `opens: 'tomorrow'`
+   when today's is settled — and how many were skipped. */
+export function kaifuBrief(state, quests, now, lang, content) {
+  const list = kaifuList(state, quests, now, lang, content);
   if (!list.length) return null;
-  const next = list.find(k => !k.done);
-  return { done: list.filter(k => k.done).length, of: list.length, ready: list.filter(k => k.done && !k.paid).length,
-    ...(next ? { next: { id: next.id, title: next.title, device: next.device } } : {}) };
+  const next = list.find(k => k.step === 'open'), left = list.some(k => !k.paid), skipped = list.filter(k => k.step === 'skipped').length;
+  return { done: list.filter(k => k.paid).length, of: list.length, ready: list.filter(k => k.done && ['open', 'skipped'].includes(k.step)).length,
+    ...(next ? { next: { id: next.id, title: next.title, device: next.device, done: next.done, open: next.open } } : left ? { opens: 'tomorrow' } : {}),
+    ...(skipped ? { skipped } : {}) };
 }
 
-/* The milestones done and not yet paid: handed in like any chore. */
-export const kaifuReady = (state, quests, now) => quests.filter(q => isOnce(q) && questDone(q, now) && !paidNow(state, q, now));
+/* The milestones done, unpaid and open (or skipped before): handed in like any chore. */
+export const kaifuReady = (state, quests, now, content) =>
+  quests.filter(q => isOnce(q) && questDone(q, now) && !paidNow(state, q, now) && kaifuMay(state, content, quests, q, now));
 
 export { isFixed, isOnce, isPool };
