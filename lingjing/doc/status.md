@@ -14,6 +14,7 @@ Updated 2026-10-16.
 
 ## Done lately
 
+- 10-16 — the other 22 后山崖顶 finds redrawn the same way (`be45ae26`), 猴儿酒 re-rolled; all 36 finds and the six beasts now in the house 水墨淡彩.
 - 10-16 — 后山崖顶 art redrawn in the house 水墨淡彩 (`55386811`): the six beasts (赤狐 slim, 豺 low and heavy) and 14 of the 36 finds, by Codex 0.163 (gpt-6.1-sol) with a house picture as the style (tools/paint-wash-codex.py); the 野猪 · 狼 · 熊 loot picks accepted.
 - 10-16 — binds get through 装睡 (`d8a4d41b`): `feint.pierce_binds` + card `binds` (青藤缚, 无支祁) — a bind at the sleeping beast holds it, that turn every blow goes in; 凶崖 pool 犰狳 hp 2.9 (lookahead 52/30/18 → 69/23/8; careless still loses ~83%).
 - 10-16 — 犰狳 见人则眠 is 假睡 (`e6f8fe16`): `feint` in battle.js (装睡 turns, plain blows glance, metal goes in), 鸱目一睁 scales per glance, 蛇尾抽/鸟喙啄 deck; 灵草谷 lookahead 65/30/6 won/lost/timed out, careless loses ~60%; 暗河 pool 犰狳 hp 5.5→4.
