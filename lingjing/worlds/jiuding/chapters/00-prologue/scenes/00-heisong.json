@@ -105,24 +105,12 @@
    "needs": {
     "seen": [
      "stone"
-    ],
-    "task": "track-marks"
+    ]
    },
    "refuse": {
     "zh": "蹄印到涧边就断了。先看清楚，再一路追、一路刻。",
     "en": "The prints stop at the stream. Look first — then follow them, cutting as you go."
    }
   }
- ],
- "show": [
-  {
-   "card": "board",
-   "id": "track-marks"
-  }
- ],
- "offers": {
-  "tasks": [
-   "track-marks"
-  ]
- }
+ ]
 }

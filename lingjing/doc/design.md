@@ -654,7 +654,7 @@ read-and-tap): six more boards in the prologue, each the book's own action where
 | game | task id | scene | the play | grade → |
 |---|---|---|---|---|
 | `rain` | `rain-basins` | 00-shiao (h01) | the night's drips move; set and lift basins until seventeen are full; the fifth watch ends it anyway | dry · wet (mark) |
-| `track` | `track-marks` | 00-heisong | four rounds: the deer's sign among the forest's, then carve at a hundred steps | true · rough (mark) |
+| ~~`track`~~ | ~~`track-marks`~~ | 00-heisong | cut 10-16 (doc/games.md); the stone clue alone gates `carve` | — |
 | `bread` | `bread-share` | 00-cave | seven pieces of the flatbread, to the fox or to himself; the corner always kept | none · little → 自己吃, half · most → 分它一半 (`needs.grade`) + mark |
 | `deer` | `deer-wind` | 00-deer (h02) | as above, and the aim: dead on skims the antlers, 偏左半寸 hits | clean · steady · rough |
 | `scale` | `rent-scale` | 00-rent | the hide, then cuts on the steelyard to twenty 斤; light is never taken | exact · over (mark); 装傻 / 照实说 both wait, his choice |
@@ -667,17 +667,17 @@ and left by 「算了，往下走」 only when stuck (§ Skip below). The rhythm
 |---|---|---|---|---|
 | `taunt` | `masan-taunt` | 00-masan | 忍字: 马小宝's taunt heard once, then said back piece by piece from near misses (猫叫, 咬一口, 「汪！」); a wrong piece and every second close the fist | word · fist (mark); 原样说回去 / 攥紧拳头 both wait, his choice |
 | `griddle` | `kitchen-griddle` | 00-kitchen | 烙饼: the passage split after 「一张厚，一张薄」; he minds the fire and calls 「翻！」 when a side goes golden — early she waits, late it scorches, silent she turns it; thin then thick | golden · scorched (mark) |
-| `listen` | `storm-listen` | 00-storm | 听: the pines' birds call, then stop all at once — 「不对」 then (early is only 爹's word; silent, 爹 sees it), then the sign: the cloud on the ridge, not the treetops or the prints | sharp · late (mark); 掉头 / 再追半里 both wait |
+| ~~`listen`~~ | ~~`storm-listen`~~ | 00-storm | 听: cut 10-16 (doc/games.md); the passage whole again | — |
 | `storm` | `fall-storm` | 00-fall | 拽: the 2026-09-30 暴雨, redrawn in ink (the slope, the drop, 爹 hauled toward the rock pull by pull, rain slanting with the wind), its limit cut to 30 s, a skip | clean · steady · rough |
-| `stone` | `cave-stone` | 00-cave (first of two) | 扔石听声: three hollows under the cliff; a stone thrown in comes back as its sound (a long hum, a scurry, one dry knock); go into the shallow, empty one — a wrong one only sends him back out; the passage split after its first paragraph | sure · lucky (mark); then 喂饼 |
+| ~~`stone`~~ | ~~`cave-stone`~~ | 00-cave | 扔石听声: cut 10-16 (doc/games.md); the passage whole again, 喂饼 the scene's one board | — |
 | `way` | `yinyue-way` | 00-yinyue | 认路: the valley a small grid seen a step around him, the grass glowing where he walked; his marks on the cells by the cliff are the only way from the cave to the moss; a rock only stops him; after 30 steps she points | straight · wandered (mark) |
-| `climb` | `cliff-climb` | 00-cliff (h02) | 攀: right hand only, reach by reach up the crack — the branch in leaf holds, the bare one snaps and drops him a reach; the grip drains while he hangs, the jutting stone halfway gives it back; 爹's hand at the top; 40 s and 老周's rope | steady · scraped (mark) |
+| ~~`climb`~~ | ~~`cliff-climb`~~ | 00-cliff (h02) | 攀: cut 10-16 (doc/games.md) | — |
 | `carry` | `halfyear-carry` | 00-halfyear (second of two) | 练功: the fifth and sixth loads up the slope — step as the buckets swing through the middle; on the swing it slops and the breath climbs; out of breath he stops a beat; after the winter's passage, before 开春 | even · panting (mark) |
-| `abacus` | `uncle-abacus` | 00-uncle | 算盘: three sums the scene has just told, set on 舅舅's abacus (a five-bead above the beam, four ones below) and checked — the 130 steps he was short, 150 文 for three heads, 83 days to spare; a wrong one gets his cough, a second and he sets the beads | clean · fumbled (mark); 再等等 stays free |
+| ~~`abacus`~~ | ~~`uncle-abacus`~~ | 00-uncle | 算盘: cut 10-16 (doc/games.md) | — |
 | `villageday` · `villagedong` · `villageeve` | `village-day` · `village-dong` · `village-eve` | 00-shiao (second of two) · 00-xiuxian · 00-notice | 石坳村, the village map (village.js `makeVillage(stop)`): seventeen roofs, the 槐树, the well, 东坡, 吴婆婆's doorstep — and a few optional things, a few seconds each: shoo the hens off 阿禾's cabbage (or into the coop), read 爹's prints in the mud, pick 艾草 for his knee among its look-alikes, guess the 货郎's prices, hear 吴婆婆 tell 精卫 / 夸父 and guess; 「回家」 ends it whenever | full (most done) · light (mark) |
 | `xisui` | `xisui-hold` | 00-sleep | 忍: the 2026-09-30 洗髓, redrawn in ink (the washtub going green to black, the pain as rings, the three sticks in their pot, the token on its branch); at 75 s the moon has gone over and the sticks are burned; a skip | — |
 
-**Two boards in one scene** (00-cave, 00-halfyear): they play in `show` order — `story`, the first board, `story_after` (owed when the first is counted, tasks.mjs), the second board, the ways on. A later board waits while one before it is open, on the stage and in the tray (stage.mjs `boardWaits`), and the rules refuse its win until then (`board-waits`); an exit waits on the last.
+**Two boards in one scene** (00-halfyear; 00-cave until 扔石听声 was cut 10-16): they play in `show` order — `story`, the first board, `story_after` (owed when the first is counted, tasks.mjs), the second board, the ways on. A later board waits while one before it is open, on the stage and in the tray (stage.mjs `boardWaits`), and the rules refuse its win until then (`board-waits`); an exit waits on the last.
 
 A game ends `won` always, with its `grade`; the page sends it with the win (`win --grade`), the
 task's **`marks`** (grade → mark) write it, and an exit's **`needs.grade`** takes only that grade —

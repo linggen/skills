@@ -322,7 +322,7 @@ function duplicate(look, c, cards) {
 }
 
 /* A scene's boards are played one after another, in `show` order (batch two, 2026-10-14:
-   00-cave's 扔石听声 before 喂饼, 00-halfyear's 吹鹅毛 before 练功): a board waits while one
+   00-halfyear's 吹鹅毛 before 练功): a board waits while one
    before it in the scene's `show` is still open — on the stage and in the tray. */
 export function boardWaits(look, id) {
   const order = (look?.scene?.show ?? []).filter(c => c.card === 'board').map(c => c.id);
@@ -433,7 +433,7 @@ export const slotKey = c => `${c.card}:${c.id ?? ''}`;
    caption and no way to fight). */
 export function sceneGame(look, c) {
   if (!look?.scene?.panel || (c.card !== 'duel' && c.card !== 'board')) return false;
-  // …and a board the scene stands itself (`show`), though no way on waits on it: the first of two (扔石听声, batch two).
+  // …and a board the scene stands itself (`show`), though no way on waits on it: the first of two (吹鹅毛, batch two).
   if (c.card === 'board' && (look.scene.show ?? []).some(s => s.card === 'board' && s.id === c.id)) return true;
   // …and a board left on an earlier day that he chose to try again (再试一回, rules/skips.mjs): it stands
   // with the scene card, so the box steps aside for it — the scene's ways on stay his to take.

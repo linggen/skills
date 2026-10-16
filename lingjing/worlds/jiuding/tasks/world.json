@@ -32,13 +32,6 @@
       "done_line": { "zh": "十七个盆，一个不少。", "en": "Seventeen basins, not one missing." }
     },
     {
-      "id": "track-marks", "kind": "board", "game": "track", "period": "once",
-      "title": { "zh": "追踪 · 一百步刻一道", "en": "Tracking · A mark every hundred steps" },
-      "grant": { "table": "task", "progress": 5 },
-      "marks": { "true": "marks-true", "rough": "marks-rough" },
-      "done_line": { "zh": "一路的记号，认得回去。", "en": "A line of marks to find the way back." }
-    },
-    {
       "id": "bread-share", "kind": "board", "game": "bread", "period": "once",
       "title": { "zh": "喂饼 · 那张厚饼", "en": "The flatbread · Down to the fox" },
       "how": { "zh": "划断藤，让饼荡下去，落到它嘴边。路上的饼角接住了，留作明天的早饭。", "en": "Cut the vines so the bread swings down to its mouth. Catch the corners on the way: tomorrow's breakfast." },
@@ -77,20 +70,6 @@
       "done_line": {"zh": "厚的那张饼，包好了，揣在你怀里。", "en": "The thick flatbread, wrapped, is inside your jacket."}
     },
     {
-      "id": "storm-listen", "kind": "board", "game": "listen", "period": "once",
-      "title": {"zh": "听 · 鸟忽然全停了", "en": "Listening · The birds stop all at once"},
-      "grant": { "table": "task", "progress": 5 },
-      "marks": {"sharp": "listen-sharp", "late": "listen-late"},
-      "done_line": {"zh": "山梁上的云，正往下压。", "en": "The cloud on the ridge is pressing down."}
-    },
-    {
-      "id": "cave-stone", "kind": "board", "game": "stone", "period": "once",
-      "title": {"zh": "扔石听声 · 先往里扔一块石头", "en": "A stone and an ear · Throw one in first"},
-      "grant": { "table": "task", "progress": 5 },
-      "marks": {"sure": "stone-sure", "lucky": "stone-lucky"},
-      "done_line": {"zh": "一个浅浅的石洞，空的。", "en": "A shallow cave, and empty."}
-    },
-    {
       "id": "yinyue-way", "kind": "board", "game": "way", "period": "once",
       "title": {"zh": "认路 · 崖壁上一段划了一道", "en": "Finding the way · A line on the cliff every so often"},
       "grant": { "table": "task", "progress": 5 },
@@ -98,25 +77,11 @@
       "done_line": {"zh": "崖壁上的道道，一道都还在。", "en": "The lines on the cliff are all still there."}
     },
     {
-      "id": "cliff-climb", "kind": "board", "game": "climb", "period": "once",
-      "title": {"zh": "攀 · 右手抓一根荆条", "en": "The climb · One branch at a time, right hand only"},
-      "grant": { "table": "task", "progress": 5 },
-      "marks": {"steady": "climb-steady", "scraped": "climb-scraped"},
-      "done_line": {"zh": "爹的手，这一回抓住了。", "en": "Father's hand — this time it held."}
-    },
-    {
       "id": "halfyear-carry", "kind": "board", "game": "carry", "period": "once",
       "title": {"zh": "练功 · 挑水上坡不喘", "en": "Practice · Water up the slope without a pant"},
       "grant": { "table": "task", "progress": 5 },
       "marks": {"even": "carry-even", "panting": "carry-panting"},
       "done_line": {"zh": "六担水，缸满了。", "en": "Six loads of water; the vat is full."}
-    },
-    {
-      "id": "uncle-abacus", "kind": "board", "game": "abacus", "period": "once",
-      "title": {"zh": "算盘 · 一笔一笔地算账", "en": "The abacus · Sum by sum"},
-      "grant": { "table": "task", "progress": 5 },
-      "marks": {"clean": "abacus-clean", "fumbled": "abacus-fumbled"},
-      "done_line": {"zh": "三笔账，算清了。", "en": "Three sums, settled."}
     },
     {
       "id": "village-day", "kind": "board", "game": "villageday", "period": "once",

@@ -76,26 +76,8 @@
     "en": "Out of the crack in the rock, Xiaoman worked his way back along the foot of the cliff and found a slanting fissure that split the cliff from the bottom to halfway up, with clumps of wild thorn growing in it. Above that halfway point was the slope where his father's knee had walked off the job yesterday.\n\nHe climbed. His left wrist was swollen and had no strength in it, so he could only grab a thorn stem with his right hand, push himself up half a foot, let go, and reach for the next one up. Every time he let go, for that one blink, the ball of fur on his shoulder tightened its claws a little.\n\nHalfway up there was a rock jutting out of the fissure, just big enough for half a backside. Xiaoman sat on it to catch his breath and cleared his throat at the ball of fur on his shoulder. She'd opened the vine wall for him and coughed up blood — some things ought to be said at a moment like this.\n\nVery formally, he said, \"Yinyue.\" \"Mm. Go on.\"\n\n\"I wanted to tell you—\"\n\n\"Your father is coming down.\" Xiaoman stopped short.\n\n\"One belt, two leg wrappings, tied together, not even twenty feet,\" its voice was very low. \"He's tied it to a pine root on the slope, and he's already hanging halfway down. …Answer him first.\"\n\nXiaoman jerked his head up. Above him a sprinkle of dirt came pattering down. Twenty feet up, a man was hanging against the cliff, both hands clutching a cloth rope tied in several knots. One foot was kicking at the rock; the other — the left — hung straight down, with no strength in it at all. The man was still shouting, his voice so hoarse it hardly sounded human, over and over, and what he was shouting was Xiaoman's name.\n\nHe filled his lungs and yelled at the top of his voice: \"Pa—!\" The shouting above stopped dead.\n\nJust then there was an uproar at the top of the slope. First a big rough voice shouted, \"—Here! Someone on the rope! Someone below too!\" It was Ahe's father, [Old Zhou]{注=laozhou}, a big-handed, big-footed farmer with a dark red face, who could be heard over half the hillside when he opened his mouth. The cloth rope snapped taut and was pulled up two feet — then at the top of the slope there was a *crack*: the pine root had half broken, and his father dropped, a foot, two feet. He didn't make a sound. Several hands lunged down at once and clamped hold of the end of the rope. His father pressed himself to the cliff face — but instead of going up, he reached one hand down.\n\nXiaoman climbed with hands and feet, all in one breath, his left wrist hurting so much that things went black in front of his eyes, again and again; he paid it no mind.\n\nThat hand, its five fingers spread, mud packed under the nails, was reaching down, reaching so far it hardly looked like a human hand. Xiaoman knew that hand. Yesterday, on this slope, it had brushed his wrist and not caught it.\n\nHe reached up his right hand and took hold of it.\n\nThis time it held.\n\nThe men above gave a shout all together, and father and son were hauled up an inch at a time. Before Xiaoman had his feet under him he was pulled into someone's arms and held so tight he couldn't breathe. His father was shaking all over, shaking worse than the fox on his shoulder. Old Zhou lay flat at the edge of the slope, both hands still clamped on the waist of his father's trousers — the belt had long since been taken off to make the rope — at the very place Xiaoman had grabbed the day before.\n\nHis father just held his son like that, his mouth open, and couldn't get a single word out.\n\nXiaoman said, \"Pa, I'm all right. Your knee—\"\n\nHis father said only, \"Shut up.\"\n\nIt was the first time in his life Xiaoman had heard his father be fierce with him.\n\nSqueezed in that hug, the ball of fur on his shoulder didn't make a sound, but the tail wrapped round his neck loosened, little by little.\n\nOld Zhou and the others had brought two hemp ropes and a door — the door was for carrying someone. They'd come in before dawn, following the forty-one marks Xiaoman had cut. Seeing Xiaoman standing there in one piece, Old Zhou looked at the door, then at him, and seemed a little sorry for it. \"Well. Lugged that up here for nothing.\"\n\nXiaoman looked at the door and thought: Old Zhou, a whole night without sleep, two hemp ropes, one door. This debt wasn't an egg; you couldn't pay it back two for one. He didn't yet know what he'd pay it back with, so for now he wrote it down in his head.\n\n"
    },
    "beat": [],
-   "next": "00-deer",
-   "needs": {
-    "task": "cliff-climb"
-   },
-   "refuse": {
-    "zh": "石缝还在头顶上——右手抓荆条，一根一根往上爬。",
-    "en": "The crack still runs above you — right hand on the thorn branches, one at a time."
-   }
+   "next": "00-deer"
   }
  ],
- "show": [
-  {
-   "card": "board",
-   "id": "cliff-climb"
-  }
- ],
- "offers": {
-  "tasks": [
-   "cliff-climb"
-  ]
- },
- "_beats": "攀 (cliff-climb, batch two 2026-10-14): played at the end of the passage (the fox on his shoulder, 「这是我这辈子，穿过最贵的衣裳」), before 抓住爹的手 tells the climb — as 射鹿 is played before 往左偏半寸's passage; each reach two thorn branches, the living one in leaf holds, the dead one snaps; the grip drains while he hangs, the jutting stone halfway gives it back; 爹's hand at the top; grade steady · scraped → `climb-steady` · `climb-scraped`"
+ "_beats": "攀 (cliff-climb) cut 10-16 (doc/games.md: a two-way pick, always readable): 抓住爹的手 goes on as the book tells it."
 }

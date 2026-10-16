@@ -46,13 +46,6 @@
    "task": "rain-basins"
   },
   {
-   "id": "track",
-   "group": "prologue",
-   "scene": "00-heisong",
-   "hui": "第一回",
-   "task": "track-marks"
-  },
-  {
    "id": "bread",
    "group": "prologue",
    "scene": "00-cave",
@@ -97,20 +90,6 @@
    "task": "kitchen-griddle"
   },
   {
-   "id": "listen",
-   "group": "prologue",
-   "scene": "00-storm",
-   "hui": "第一回",
-   "task": "storm-listen"
-  },
-  {
-   "id": "stone",
-   "group": "prologue",
-   "scene": "00-cave",
-   "hui": "第一回",
-   "task": "cave-stone"
-  },
-  {
    "id": "way",
    "group": "prologue",
    "scene": "00-yinyue",
@@ -118,25 +97,11 @@
    "task": "yinyue-way"
   },
   {
-   "id": "climb",
-   "group": "prologue",
-   "scene": "00-cliff",
-   "hui": "第二回",
-   "task": "cliff-climb"
-  },
-  {
    "id": "carry",
    "group": "prologue",
    "scene": "00-halfyear",
    "hui": "第二回",
    "task": "halfyear-carry"
-  },
-  {
-   "id": "abacus",
-   "group": "prologue",
-   "scene": "00-uncle",
-   "hui": "第二回",
-   "task": "uncle-abacus"
   },
   {
    "id": "villageday",

@@ -1,10 +1,9 @@
 // The 古一/古二 play-test's game fixes (2026-10-15 backlog, items 25 26 27 29 30 31):
 // the herb tiles drawn, the carry's header at the end, the village pins tappable, the feather's
-// pace read over a window, the village maps out of the stuck clock, the climb's grip held at the foot.
+// pace read over a window, the village maps out of the stuck clock (the climb's grip went with 攀, cut 10-16).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as carry from '../scripts/games/carry.js';
-import * as climb from '../scripts/games/climb.js';
 import * as feather from '../scripts/games/feather.js';
 import * as vday from '../scripts/games/villageday.js';
 import * as dark from '../scripts/games/dark.js';
@@ -55,13 +54,4 @@ test('stuck: the village maps opt out of the clock; other boards keep it', () =>
   assert.equal(stuckNow(v, STUCK_MS * 3), false, 'no 「算了」 on an optional map');
   const d = { mod: dark, state: dark.newGame('d'), shownAt: 0 };
   assert.equal(stuckNow(d, STUCK_MS), true);
-});
-
-test('climb: standing at the cliff foot the grip holds; it drains from the first reach on', () => {
-  let s = climb.act(climb.newGame('c'), { g: 'start' }).state;
-  s = climb.tick(s, 5000);
-  assert.equal(s.grip, 1, 'at the foot');
-  s = climb.act(s, { g: 'grab', side: s.live_side[0] }).state;
-  s = climb.tick(s, 1000);
-  assert.ok(s.grip < 1, 'hanging');
 });

@@ -67,9 +67,9 @@ function sync(old, next) {
 }
 
 const calm = () => Boolean(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
-/* A count in a board's head that changed (满盆 3 → 4, 记号, 担 …) bumps once — the number on every
+/* A count in a board's head that changed (满盆 3 → 4, 担 …) bumps once — the number on every
    hit (2026-10-16). Web Animations, so the next repaint's attribute sync never cuts it short. */
-const BUMPS = '.g-head b, .g-count, .g-track-count b';
+const BUMPS = '.g-head b, .g-count';
 function bump(el) {
   if (calm() || !el?.matches?.(BUMPS) || !el.animate) return;
   el.animate([{ transform: 'scale(1.45)', color: 'var(--seal)' }, { transform: 'scale(1)' }], { duration: 320, easing: 'ease-out' });

@@ -1,5 +1,5 @@
 // The opening's playable beats (Hanli, 2026-10-14: 「每看一会儿剧情就要有游戏可以玩」):
-// 接雨 · 追踪 · 喂饼 · 射鹿 · 算账 · 吹鹅毛. Each board opens, can be finished well and
+// 接雨 · 喂饼 · 射鹿 · 算账 · 吹鹅毛 (追踪 cut 10-16, doc/games.md). Each board opens, can be finished well and
 // badly, and its scene goes on either way; the grade writes its mark and, where the
 // exits wait on it, picks the way on. The lint accepts them; the rhythm warns; the
 // map unfolds once.
@@ -12,7 +12,6 @@ import { jiudingBrief, unfolded } from '../scripts/rules/inkmap.mjs';
 import { storyChars, stretchesOf } from '../scripts/rhythm.mjs';
 import { TO_HALL, TO_VALLEY, walk } from './prologue.mjs';
 import * as rain from '../scripts/games/rain.js';
-import * as track from '../scripts/games/track.js';
 import * as scale from '../scripts/games/scale.js';
 import * as feather from '../scripts/games/feather.js';
 
@@ -28,7 +27,7 @@ const bothLangs = (mod, s) => { for (const lang of ['zh', 'en']) assert.ok(mod.h
 
 test('every game: meta in both languages, opens with a control to touch, draws in both languages', () => {
   // 喂饼 is dealt its levels (games.json, since 2026-10-16); its own tests are bread.test.mjs.
-  for (const [mod, control] of [[rain, /data-g="start"/], [track, /data-g="sign"/], [scale, /data-g="hide"/], [feather, /data-g-drag="breath"/]]) {
+  for (const [mod, control] of [[rain, /data-g="start"/], [scale, /data-g="hide"/], [feather, /data-g-drag="breath"/]]) {
     assert.ok(mod.meta.name.zh && mod.meta.name.en && mod.meta.how.zh && mod.meta.how.en, mod.meta.id);
     const s = mod.newGame('seed');
     assert.match(mod.html(s, 'zh'), control, mod.meta.id);
@@ -73,28 +72,6 @@ test('接雨: seventeen basins under the drips — quick hands keep the floor dr
   assert.deepEqual(s.hand, [3]);
   s = rain.act(s, { g: 'spot', i: 1 }).state;
   assert.equal(s.basins[1], 3);
-});
-
-test('追踪: read the deer\'s sign, carve at a hundred steps — true, or misread and late; four marks either way', () => {
-  let s = track.newGame('z');
-  for (let r = 0; r < track.NEED; r += 1) {
-    const i = s.rounds[s.r].findIndex(k => ['hoof', 'twig', 'hair'].includes(k));
-    s = track.act(s, { g: 'sign', i }).state;
-    assert.equal(s.phase, 'walk');
-    while (s.steps < 98) s = track.tick(s, 100);
-    s = track.act(s, { g: 'carve' }).state;
-  }
-  assert.equal(s.won, true);
-  assert.equal(s.grade, 'true');
-  assert.match(track.html(s, 'zh'), /一道不差/);
-  let b = track.newGame('z');
-  while (!b.won) {
-    if (b.phase === 'read') b = track.act(b, { g: 'sign', i: b.rounds[b.r].findIndex(k => !b.tried.includes(k)) }).state;
-    else b = track.tick(b, 500);
-  }
-  assert.equal(b.grade, 'rough');
-  assert.ok(b.misreads > 1 && b.cuts.every(c => c === 'late'));
-  assert.match(track.html(b, 'en'), /make a line all the same/);
 });
 
 test('算账: the hide, then twenty catties on the pan — exact keeps the most at home, over gives the Mas the rest; light is never taken', () => {
@@ -165,16 +142,12 @@ const BEATS = [
   ['00-shiao', 'village-day', 'begin', ['full', 'light'], { full: 'village-day-full', light: 'village-day-light' }],
   ['00-xiuxian', 'village-dong', 'on', ['full', 'light'], { full: 'village-dong-full', light: 'village-dong-light' }],
   ['00-notice', 'village-eve', 'go', ['full', 'light'], { full: 'village-eve-full', light: 'village-eve-light' }],
-  ['00-heisong', 'track-marks', 'carve', ['true', 'rough'], { true: 'marks-true', rough: 'marks-rough' }],
   ['00-rent', 'rent-scale', 'dumb', ['exact', 'over'], { exact: 'rent-exact', over: 'rent-over' }],
   // 00-halfyear: 吹鹅毛 first, then 练功 (batch two) — the way on waits on the second.
   ['00-halfyear', 'halfyear-carry', 'on', ['even', 'panting'], { even: 'carry-even', panting: 'carry-panting' }],
   // Batch two (2026-10-14): tests/beats-two.test.mjs plays the games themselves.
   ['00-masan', 'masan-taunt', 'endure', ['word', 'fist'], { word: 'taunt-word', fist: 'taunt-fist' }],
   ['00-yinyue', 'yinyue-way', 'follow', ['straight', 'wandered'], { straight: 'way-straight', wandered: 'way-wandered' }],
-  ['00-cliff', 'cliff-climb', 'climb', ['steady', 'scraped'], { steady: 'climb-steady', scraped: 'climb-scraped' }],
-  ['00-uncle', 'uncle-abacus', 'go', ['clean', 'fumbled'], { clean: 'abacus-clean', fumbled: 'abacus-fumbled' }],
-  ['00-storm', 'storm-listen', 'turn', ['sharp', 'late'], { sharp: 'listen-sharp', late: 'listen-late' }],
   ['00-kitchen', 'kitchen-griddle', 'go', ['golden', 'scorched'], { golden: 'griddle-golden', scorched: 'griddle-scorched' }],
 ];
 
@@ -217,8 +190,7 @@ test('算账\'s choice stays the player\'s: both ways on wait for the scale, eit
 });
 
 test('喂饼: the grade takes 分它一半 or 自己吃 — the amount a mark for the 恩仇簿 and the story', () => {
-  // 扔石听声 first: the cave's boards play in `show` order.
-  const cave = won(atScene('00-cave'), 'cave-stone', 'sure');
+  const cave = atScene('00-cave');
   for (const [grade, exit, other] of [['most', 'share', 'keep'], ['half', 'share', 'keep'], ['little', 'keep', 'share'], ['none', 'keep', 'share']]) {
     const s = won(cave, 'bread-share', grade);
     assert.ok(s.marks.includes(`bread-${grade}`));
@@ -240,10 +212,21 @@ test('射鹿 keeps its two ways: the board won takes 往左偏半寸; 照直射 
 });
 
 test('a save already standing in a scene that has since been given a board is offered it on load — never shut out', () => {
-  const s = atScene('00-heisong');
+  const s = atScene('00-rent');
   const old = { ...s, tasks: {} };
-  assert.equal(fitWorld(old, content).tasks['track-marks'].status, 'offered');
+  assert.equal(fitWorld(old, content).tasks['rent-scale'].status, 'offered');
   assert.equal(newState(content, 'zh', NOW).tasks['rain-basins'].status, 'offered', 'the first scene\'s board, from the start');
+});
+
+test('a save from before the cut (10-16): a cut board offered is let go, one done stays, a passage owed after it is not owed', () => {
+  const s = atScene('00-storm');
+  const old = { ...s, tasks: { ...s.tasks, 'storm-listen': { status: 'offered' }, 'cave-stone': { status: 'done', done_at: NOW.toISOString() } }, tell_owed: ['after/00-storm', 'after/00-halfyear'] };
+  const fit = fitWorld(old, content);
+  assert.equal(fit.tasks['storm-listen'], undefined, 'never winnable now: let go');
+  assert.equal(fit.tasks['cave-stone'].status, 'done', 'what was done stays');
+  assert.deepEqual(fit.tell_owed, ['after/00-halfyear'], 'a merged passage is owed nowhere; a split one still is');
+  const on = resolve(fit, content, ctx(), { exit: 'turn' });
+  assert.equal(on.result.ok, true, JSON.stringify(on.result));
 });
 
 /* ── the lint, the rhythm, the map ── */
@@ -267,7 +250,7 @@ test('the rhythm: the main line read between two beats, a board resetting it whe
   assert.equal(parts[0].chars, storyChars(ch.scenes['00-shiao'].story), 'a board waits for the passage that leads into it');
   assert.equal(parts[1].from, '00-shiao');
   assert.ok(parts[1].chars >= storyChars(ch.scenes['00-shiao'].story_after), 'the rest of a split passage is read after its board');
-  for (const at of ['00-heisong', '00-cave', '00-deer', '00-rent', '00-halfyear']) assert.ok(parts.some(p => p.to === at), `a beat at ${at}`);
+  for (const at of ['00-heisong/carve', '00-cave', '00-deer', '00-rent', '00-halfyear']) assert.ok(parts.some(p => p.to === at), `a beat at ${at}`);
   const warn = warnings(content, { chapters: ['00-prologue'] });
   assert.ok(warn.every(w => w.startsWith('00-prologue: ') && w.includes('(cap 1500)')));
   console.log(`rhythm warnings (00-prologue, cap ${RHYTHM_CAP}):\n${warn.join('\n')}`);

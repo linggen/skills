@@ -23,7 +23,7 @@ test('every registered game is a module on the contract: a mount of its own, or 
 });
 
 test('the beats polished on 10-16 export mount() themselves', async () => {
-  for (const id of ['rain', 'deer', 'feather', 'track', 'scale', 'taunt', 'griddle', 'listen', 'storm', 'stone', 'way', 'climb', 'carry', 'abacus', 'xisui', 'zhoutian', 'sneeze', 'wind', 'lastshot']) {
+  for (const id of ['rain', 'deer', 'feather', 'scale', 'taunt', 'griddle', 'storm', 'way', 'carry', 'xisui', 'zhoutian', 'sneeze', 'wind', 'lastshot']) {
     const mod = await import(`../scripts/games/${id}.js`);
     assert.equal(typeof mod.mount, 'function', id);
     assert.equal(mountOnly(mod), false, `${id} keeps its html: the story page draws it as ever`);

@@ -35,7 +35,7 @@ test('a board left with no grade leaves every graded exit to him: 00-cave\'s 喂
   // The bug the explorer found (2026-10-15): skip 喂饼 and both exits, each waiting on a grade, were shut.
   let at = walk(newState(content, 'zh', NOW), TO_VALLEY.slice(0, TO_VALLEY.findIndex(([, a]) => a?.exit === 'share')), content, NOW);
   assert.equal(at.scene, '00-cave');
-  for (const id of ['cave-stone', 'bread-share']) at = playBoard(content, at, id, 'skip', NOW);
+  for (const id of ['bread-share']) at = playBoard(content, at, id, 'skip', NOW);
   assert.equal(at.grades?.['bread-share'], undefined);
   for (const exit of ['share', 'keep']) assert.equal(resolve(at, content, { now: NOW, quests: [] }, { exit }).result.ok, true, exit);
 });

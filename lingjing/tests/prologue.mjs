@@ -140,7 +140,7 @@ export function boardsFor(state, content, exitId) {
   const scene = content.chapters[state.chapter]?.scenes?.[state.scene];
   const need = scene?.exits?.find(e => e.id === exitId)?.needs;
   if (!need?.task || state.tasks?.[need.task]?.status === 'done') return [];
-  // A scene's boards are played in `show` order (batch two, 2026-10-14: 扔石听声 before 喂饼):
+  // A scene's boards are played in `show` order (batch two, 2026-10-14: 吹鹅毛 before 练功):
   // every one before the board this exit waits on is played first.
   const order = (scene.show ?? []).filter(c => c.card === 'board').map(c => c.id);
   const before = order.slice(0, Math.max(0, order.indexOf(need.task))).filter(id => state.tasks?.[id]?.status !== 'done');

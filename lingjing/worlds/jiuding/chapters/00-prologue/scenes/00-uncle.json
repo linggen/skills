@@ -67,14 +67,7 @@
     "en": "That night Xiaoman lay on the bed doing his sums, item by item. Five taels of silver, a year. His father would never again have to drag that leg into the deep mountains. Ma San's club would never again knock on the Shens' doorframe. The mirror in Ma San's jacket could never shine into the home of an immortal sect's disciple. Then there was the other sum. He took the tablet out of his collar and held it to his ear to listen. \"…This queen is looking for a place… a name… when you hear it, this queen will know…\" He'd heard it. He said quietly to the dark, \"All right. I'll go.\"\n\nThat night his mother turned the bamboo slips to the very last one, came to the words \"Foundation Establishment\", and her finger stopped, and stayed stopped a long time. \"Foundation Establishment,\" she said, \"is like building a house: you lay the foundations first. It says here, a hundred days.\" She rolled up the slips and said, \"Your grandfather said a person has to go upward in this life. I said there are plenty of people going upward; somebody at the foot of the mountain has to keep the stove lit.\" She blew out the lamp. In the dark Xiaoman counted on his fingers: a hundred days. A hundred and eighty-three days till the ninth of the ninth month. Enough to build one foundation, with eighty-three days to spare. He'd got this sum wrong.\n\nAfter spring came, that thread of warmth went down with the breath, sinking past his chest, and when it got to just below his heart it stopped. Further down, however he pushed it, it wouldn't go, like a bucket stuck halfway down a well rope. It stayed stuck all spring and all summer. On the last page of his mother's account book, \"Down\" stayed empty.\n\nXiaoman knew perfectly well why it was stuck. The Ma men didn't dare come behind the Shens' house any more, so Ma San came himself — it was an errand from the Immortal, and he didn't dare not do it. Every few days, once it got dark, a lantern would swing past outside the yard wall, going very fast, swinging as if it had the shakes, and what it was carrying was that mirror. The mirror had never once lit up in Ma San's jacket. Pointed at him it was grey; pointed at the wall it was grey too. But the Immortal had said keep it, so he kept it. And yet, whenever the lantern came, Xiaoman held his breath, and the more he held it, the tighter the bucket stuck."
    },
    "beat": [],
-   "next": "00-notice",
-   "needs": {
-    "task": "uncle-abacus"
-   },
-   "refuse": {
-    "zh": "账还没算完——遇事先算账。",
-    "en": "The sums aren't done — first, do the sums."
-   }
+   "next": "00-notice"
   },
   {
    "id": "wait",
@@ -91,16 +84,5 @@
    "stay": true
   }
  ],
- "show": [
-  {
-   "card": "board",
-   "id": "uncle-abacus"
-  }
- ],
- "offers": {
-  "tasks": [
-   "uncle-abacus"
-  ]
- },
- "_beats": "算盘 (uncle-abacus, batch two 2026-10-14): played at the end of the passage (舅舅's 「进去了——」), before 算完这笔账：去 tells the night's sums — three sums from the scene set on 舅舅's abacus (the 130 steps he was short, 150 文 of 山风钱 for three heads, 83 spare days before 九月初九); a wrong one gets his cough, a second and he sets the beads; grade clean · fumbled → `abacus-clean` · `abacus-fumbled`; 再等等 stays free (a stay)"
+ "_beats": "算盘 (uncle-abacus) cut 10-16 (doc/games.md: arithmetic, not play): 去 goes on as the book tells it; 再等等 stays a stay."
 }

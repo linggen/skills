@@ -1,4 +1,4 @@
-// seeded.js — the dice the 2026-10-14 opening beats share (接雨, 追踪, 算账): a
+// seeded.js — the dice the 2026-10-14 opening beats share (接雨, 算账): a
 // string seed hashed to a small fast generator, so a board deals the same way
 // for the same day and save. Not a game: a pure helper the modules import.
 

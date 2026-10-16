@@ -14,8 +14,8 @@
 // over the box as the scene's passage begins (queue.js EARLY), so it comes
 // before that passage; a board waits for the passage that leads into it
 // (2026-10-14, ae7fa2ff) — after the scene's `story`, and the rest of a split
-// passage (`story_after`) is read after it; a scene's second board (00-cave,
-// 00-halfyear: the boards play in `show` order) comes after `story_after`. On
+// passage (`story_after`) is read after it; a scene's second board
+// (00-halfyear: the boards play in `show` order) comes after `story_after`. On
 // the exit taken, a fight or board (`game`), a riddle (`key`), a look that must
 // find something first (`needs.seen`), or the 突破 card — before the exit's
 // passage; and a set piece (`setpiece`), which plays after it.

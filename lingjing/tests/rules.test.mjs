@@ -931,11 +931,9 @@ test('the prologue is free: its steps and bouts cost no 灵气, with the 丹田 
   assert.equal(s.scene, '00-heisong');
   assert.equal(s.stamina, 0, 'looking (看) is free');
   // …but an exit that is toil by itself (the marks, the storm, the steps) spends its own 体力
-  s = walk(s, [['win', { id: 'track-marks', grade: 'true' }], ['task', { action: 'done', id: 'track-marks' }]], content, NOW);
-  assert.equal(s.stamina, 0, 'the tracking board costs nothing in the free prologue');
   refused(resolve, s, { exit: 'carve' }, 'no-stamina');
   const full = walk(must(resolve, { ...s, stamina: 100 }, { exit: 'carve' }).state, [['played']], content, NOW);
-  assert.equal(full.stamina, 97, 'and 听 at the storm costs nothing either');
+  assert.equal(full.stamina, 97, 'the marks cost their 体力');
   assert.equal(must(resolve, full, { exit: 'chase' }).state.stamina, 87);
   assert.equal(must(resolve, full, { exit: 'turn' }).state.stamina, 93, 'turning back by the third rule costs less');
   // making a scene inside it still costs
@@ -1751,8 +1749,8 @@ test('look carries today\'s cast (none yet) and the offered tasks', () => {
   // The opening's play beats grow (batch two, 2026-10-14): every board on the way here done, the first six among them.
   assert.ok(seen.tasks.every(t => t.status === 'done'), JSON.stringify(seen.tasks.map(t => [t.id, t.status])));
   const ids = seen.tasks.map(t => t.id);
-  for (const id of ['rain-basins', 'track-marks', 'fall-storm', 'bread-share', 'deer-wind', 'rent-scale', 'xisui-hold', 'feather-breath', 'gate-luoshu']) assert.ok(ids.includes(id), id);
-  assert.deepEqual(ids.filter(id => ['rain-basins', 'track-marks', 'bread-share', 'gate-luoshu'].includes(id)), ['rain-basins', 'track-marks', 'bread-share', 'gate-luoshu'], 'in the order they were played');
+  for (const id of ['rain-basins', 'fall-storm', 'bread-share', 'deer-wind', 'rent-scale', 'xisui-hold', 'feather-breath', 'gate-luoshu']) assert.ok(ids.includes(id), id);
+  assert.deepEqual(ids.filter(id => ['rain-basins', 'bread-share', 'deer-wind', 'gate-luoshu'].includes(id)), ['rain-basins', 'bread-share', 'deer-wind', 'gate-luoshu'], 'in the order they were played');
 });
 
 test('问卦: once a day by three coins — nothing asked first, the same throws all day, and what the grade does to the day\'s fights', () => {

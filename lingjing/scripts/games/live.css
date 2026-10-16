@@ -93,7 +93,7 @@
 @media (prefers-reduced-motion: reduce) { .g-lastshot .g-jin-hr b { animation: none; } }
 
 /* 2026-10-14 — the opening's playable beats, in ink (his: 「小游戏的UI太粗糙了，美化一下」):
-   接雨 (.g-rain), 追踪 (.g-track), 喂饼 (.g-bread), 射鹿 (.g-deer), 算账 (.g-scale), 吹鹅毛
+   接雨 (.g-rain), 喂饼 (.g-bread), 射鹿 (.g-deer), 算账 (.g-scale), 吹鹅毛
    (.g-feather) share .g-ink — a scene drawn in currentColor on the stage's paper (games/ink.js),
    the page's own buttons, no browser default control anywhere. Phone first: every control at
    least 44px; light and dark from the page's tokens; reduced motion keeps the still frames. */
@@ -143,27 +143,6 @@
 .g-rain-spot.is-drip { border-color: var(--water); }
 .g-rain-name { font-size: 12px; color: var(--dim); white-space: nowrap; text-align: center; }
 .g-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-/* 追踪 */
-.g-track-marks { display: inline-flex; gap: 5px; vertical-align: middle; margin-left: 4px; }
-.g-track-marks i { width: 4px; height: 15px; border-radius: 1px; background: var(--line); }
-.g-track-marks i.is-true { background: var(--seal); }
-.g-track-marks i.is-crooked, .g-track-marks i.is-late { background: var(--dim); transform: rotate(18deg); }
-.g-track-ground { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; width: 100%; }
-.g-track-sign { min-height: 76px; padding: 4px 6px 8px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); cursor: pointer;
-  display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 13.5px; touch-action: manipulation; }
-.g-track-sign .g-scene { border: 0; background: none; width: 72px; }
-.g-track-sign:hover:not(:disabled) { border-color: var(--ling); }
-.g-track-sign.is-tried { opacity: .38; cursor: default; }
-.g-track-sign.is-tried span { text-decoration: line-through; }
-.g-scene .g-trunk rect { opacity: .78; }
-.g-scene .g-bark { stroke: var(--surface); opacity: .5; }
-.g-scene .g-trunkface { opacity: .8; }
-.g-scene .g-print { opacity: .55; }
-.g-scene .g-cut { fill: var(--surface); stroke: var(--dim); stroke-width: 1; }
-.g-scene .g-cut.is-true { stroke: var(--seal); }
-.g-track-count { font-size: 13px; color: var(--dim); font-variant-numeric: tabular-nums; }
-.g-track-count b { font-size: 34px; font-weight: 600; color: var(--text); }
-.g-track-count.is-near b { color: var(--seal); }
 /* 喂饼 */
 .g-scene .g-bread { fill: #d7b36b; stroke: #8a6224; stroke-width: 1.2; }
 .g-scene .g-bread.is-corner { fill: #c49a52; }
@@ -254,8 +233,8 @@
 .g-hold { touch-action: none; }
 .gamecard.scenegame .cardtitle { font-family: var(--serif); letter-spacing: .12em; }
 
-/* Batch two (2026-10-14): 忍字 (.g-taunt), 烙饼 (.g-griddle), 听 (.g-listen), 扔石听声 (.g-stone),
-   认路 (.g-way), 攀 (.g-climb), 练功 (.g-carry), 算盘 (.g-abacus), 石坳村 (.g-village) — the same
+/* Batch two (2026-10-14): 忍字 (.g-taunt), 烙饼 (.g-griddle), 认路 (.g-way),
+   练功 (.g-carry), 石坳村 (.g-village) — the same
    .g-ink look; every one keeps a quiet 「算了，往下走」 (ink.js skipBtn). */
 .g-scene .g-bigchar { font-family: var(--serif); font-size: 104px; fill: currentColor; opacity: .07; }
 .g-scene .g-dot { fill: currentColor; opacity: .25; }
@@ -273,9 +252,6 @@
 .g-griddle-pips i.is-on { background: #d6a048; border-color: #8a6224; }
 .g-griddle-pips i.is-burnt { background: #604222; border-color: #604222; }
 .g-scene .g-mouth { fill: currentColor; opacity: .12; }
-/* 听 */
-.g-scene .g-pine { fill: var(--wood); opacity: .55; }
-.g-scene .g-cloud { fill: currentColor; }
 .g-scene .g-rock { fill: currentColor; opacity: .16; }
 .g-scene .g-mouthdark { fill: currentColor; opacity: .7; }
 /* 认路 */
@@ -298,15 +274,6 @@
 .g-scene .g-seal { stroke: var(--seal); }
 .g-scene .g-ember { fill: var(--seal); }
 /* 练功 */
-/* 算盘 */
-.g-scene .g-bead { fill: var(--surface); stroke: currentColor; stroke-width: 1.2; }
-.g-scene .g-bead.is-on { fill: var(--wood); opacity: .85; }
-.g-abacus-pad { display: flex; justify-content: center; gap: 14px; }
-.g-abacus-rod { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.g-abacus-name { font-size: 12px; color: var(--dim); }
-.g-abacus-bead { width: 52px; height: 30px; border-radius: 15px; border: 1px solid var(--line); background: var(--surface); font-size: 12px; color: var(--dim); cursor: pointer; touch-action: manipulation; }
-.g-abacus-bead.is-five { margin-bottom: 6px; }
-.g-abacus-bead.is-on { background: var(--wood); border-color: var(--wood); color: var(--surface); }
 /* 石坳村 */
 /* The map is a painting on light rice paper in either theme, so its seals keep paper and cinnabar colours. */
 .g-villagemap { background: #EFE9DC; overflow: hidden; }

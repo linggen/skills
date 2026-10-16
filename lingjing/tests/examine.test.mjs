@@ -70,10 +70,10 @@ test('the key clue opens the chase — as a quiet link in its own words, not a b
   const sc = look(found.state, content, ctx()).scene;
   assert.deepEqual(sc.panel.taps.map(t => [t.id, t.quiet]), [['carve', 'label']]);
   assert.equal(sc.look.find(h => h.id === 'stone').clue, true);
-  // The clue found, the tracking is still to play (追踪, 2026-10-14): the way on waits for the board too.
-  assert.equal(resolve({ ...found.state, stamina: 100 }, content, ctx(), { exit: 'carve' }).result.refused, 'needs');
-  const on = walk({ ...found.state, stamina: 100 }, [['resolve', { exit: 'carve' }]], content, NOW);
-  assert.equal(on.scene, '00-storm');
+  // The clue found, the way on opens at once (追踪's board cut 10-16).
+  const on = resolve({ ...found.state, stamina: 100 }, content, ctx(), { exit: 'carve' });
+  assert.equal(on.result.ok, true, JSON.stringify(on.result));
+  assert.equal(on.state.scene, '00-storm');
 });
 
 test(`stuck: ${STALL_LOOKS} looks without the key bring the scene's hint, in the result and on the card`, () => {
@@ -133,7 +133,7 @@ test('the hotspots written: the prologue and 第一章\'s key scenes, two to fou
   for (const id of ['00-masan', '00-chushan', '00-duanbei', '00-heisong', '00-fox', '00-hall', 'wm-jiangtang', 'wm-chaifang', 'wm-danlu', 'wm-wangzuo', 'wm-caowu']) {
     assert.ok(have[id] >= 2 && have[id] <= 4, `${id}: ${have[id]}`);
   }
-  assert.deepEqual(content.chapters['00-prologue'].scenes['00-heisong'].exits[0].needs, { seen: ['stone'], task: 'track-marks' });
+  assert.deepEqual(content.chapters['00-prologue'].scenes['00-heisong'].exits[0].needs, { seen: ['stone'] }, 'the clue is the gate (追踪 cut 10-16)');
 });
 
 test('nothing seen reveals what the hero does not know yet: before 银月 names herself no finding names her or where she is from', () => {
@@ -178,10 +178,9 @@ test('the page: 看 chips, the finding under the card, the hint; the quiet link;
   assert.match(html, /<li><b>蹄印<\/b>印子边上的泥还湿着/);
   assert.doesNotMatch(html, /青苔刮掉/, 'the clue unfound is not on the page');
   assert.match(html, /class="lookhint"/);
-  // While 追踪 is still to play its board makes the choice: the way on waits under it (cards.js gameOpen).
-  const found = examine(s, 'stone').state;
-  assert.doesNotMatch(cardHtml({ card: 'panel' }, { look: look(found, content, ctx()), words: WORDS.zh, lang: 'zh' }), /data-panel-exit="carve"/);
-  const on = look(walk(found, [['win', { id: 'track-marks', grade: 'true' }], ['task', { action: 'done', id: 'track-marks' }]], content, NOW), content, ctx());
+  // Before the clue the way on is shut; found, it stands (追踪's board cut 10-16).
+  assert.doesNotMatch(cardHtml({ card: 'panel' }, { look: lk, words: WORDS.zh, lang: 'zh' }), /class="act paneltap"[^>]*data-panel-exit="carve"/);
+  const on = look(examine(s, 'stone').state, content, ctx());
   const card = cardHtml({ card: 'panel' }, { look: on, words: WORDS.zh, lang: 'zh' });
   // A proper button, never the bare link (2026-10-14): the box's own way of showing it.
   assert.match(card, /class="act paneltap"[^>]*data-panel-exit="carve"[^>]*>追蹄印，一百步刻一道 ›</);

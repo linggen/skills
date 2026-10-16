@@ -595,9 +595,19 @@ export function fitWorld(saved, content) {
   // A scene given a board after the save walked into it (the opening's beats, 2026-10-14):
   // its tasks are offered now, as entering it would have — a save standing there is never shut out.
   const here = chapter?.scenes?.[fix.scene ?? state.scene];
-  const held = fix.tasks ?? state.tasks ?? {};
+  // A board cut since (the small games cut 10-16): offered and never done, it can never be won —
+  // let go. What was done stays, for the record.
+  const known = content.tasks?.tasks ? new Set(content.tasks.tasks.map(t => t.id)) : null;
+  const raw = fix.tasks ?? state.tasks ?? {};
+  const held = Object.fromEntries(Object.entries(raw).filter(([id, t]) => !known || t?.status === 'done' || known.has(id)));
   const unoffered = (here?.offers?.tasks ?? []).filter(id => !held[id]);
-  if (unoffered.length) fix.tasks = { ...held, ...Object.fromEntries(unoffered.map(id => [id, { status: 'offered' }])) };
+  if (unoffered.length || Object.keys(held).length !== Object.keys(raw).length) fix.tasks = { ...held, ...Object.fromEntries(unoffered.map(id => [id, { status: 'offered' }])) };
+  // The rest of a passage owed after a board the scene no longer has (`after/<scene>`, its
+  // `story_after` merged back into its `story`): nothing is owed.
+  const sceneById = sid => Object.values(content.chapters).find(ch => ch.scenes?.[sid])?.scenes[sid];
+  const owed = state.tell_owed ?? [];
+  const owing = owed.filter(k => !k.startsWith('after/') || sceneById(k.slice(6))?.story_after);
+  if (owing.length !== owed.length) fix.tell_owed = owing;
   // Before a story gate, nothing the gate keeps (lockReset): read where the save now stands.
   Object.assign(fix, lockReset(content, { ...state, ...fix }));
   if ('seclusion' in fix) { const { seclusion, ...kept } = { ...state, ...fix }; return kept; }

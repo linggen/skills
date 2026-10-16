@@ -35,8 +35,8 @@
   }
  },
  "story": {
-  "zh": "他在崖壁底下找到了一个浅浅的石洞，先往里扔了一块石头，听了听，是空的；又扔了一块，又听了听，还是空的；待要再捡第三块，想想算了，还是进去了。",
-  "en": "At the foot of the cliff he found a shallow cave. First he threw a stone in and listened: empty. He threw another and listened again: still empty. He was about to pick up a third, then thought better of it and went in."
+  "zh": "他在崖壁底下找到了一个浅浅的石洞，先往里扔了一块石头，听了听，是空的；又扔了一块，又听了听，还是空的；待要再捡第三块，想想算了，还是进去了。\n\n他用他爹教的法子，拿那把火镰敲着火石，引着了干苔和松脂，生了一小堆火，火堆挡在洞口，野兽便不敢进来。\n\n然后他从怀里摸出了两样东西：阿禾给的煮鸡蛋，和他娘给的那张厚饼——沈家最后的一点白面。",
+  "en": "At the foot of the cliff he found a shallow cave. First he threw a stone in and listened: empty. He threw another and listened again: still empty. He was about to pick up a third, then thought better of it and went in.\n\nUsing the way his father had taught him, he struck the flint with the fire steel, lit some dry moss and pine resin, and got a little fire going. With a fire across the mouth of the cave, animals wouldn't dare come in.\n\nThen he took two things out of his jacket: the boiled egg Ahe had given him, and the thick flatbread from his mother — the last of the Shens' white flour."
  },
  "lines": [],
  "buttons": [
@@ -101,12 +101,8 @@
    }
   }
  ],
- "_beats": "喂饼 (bread-share): since 2026-10-16 a 割绳子-style puzzle (games/bread.js, levels in games.json) — cut the vines so the 饼 reaches the fox; corners caught are stars. Its win always feeds the fox, so its grade is half (a corner saved) or most (all to it) and takes 分它一半; 自己吃 (none · little, from the 10-14 piece-by-piece board) opens only when the board is left (「算了，往下走」 opens every way). The task's marks keep the grade (bread-half · bread-most) for the 恩仇簿 and 「本王欠你一张饼」. The corner is always kept: the dawn needs it. · 扔石听声 (cave-stone, batch two 2026-10-14): the scene's first board — the passage split after its first paragraph (the two stones, 「还是进去了」); three hollows under the cliff, a stone thrown into each comes back as a sound (deep hum, a scurry, one dry knock); then the rest (the fire, the egg and the bread) is `story_after`, and 喂饼 (bread-share) follows it — a scene's boards play in `show` order (stage.mjs boardWaits, tasks.mjs win); grade sure · lucky → `stone-sure` · `stone-lucky`; no way on waits on it but 喂饼's",
+ "_beats": "喂饼 (bread-share): since 2026-10-16 a 割绳子-style puzzle (games/bread.js, levels in games.json) — cut the vines so the 饼 reaches the fox; corners caught are stars. Its win always feeds the fox, so its grade is half (a corner saved) or most (all to it) and takes 分它一半; 自己吃 (none · little, from the 10-14 piece-by-piece board) opens only when the board is left (「算了，往下走」 opens every way). The task's marks keep the grade (bread-half · bread-most) for the 恩仇簿 and 「本王欠你一张饼」. The corner is always kept: the dawn needs it. · 扔石听声 (cave-stone) cut 10-16 (doc/games.md: one decision, the how-line named the sound): the passage is whole again and 喂饼 is the scene's one board.",
  "show": [
-  {
-   "card": "board",
-   "id": "cave-stone"
-  },
   {
    "card": "board",
    "id": "bread-share"
@@ -114,12 +110,7 @@
  ],
  "offers": {
   "tasks": [
-   "cave-stone",
    "bread-share"
   ]
- },
- "story_after": {
-  "zh": "他用他爹教的法子，拿那把火镰敲着火石，引着了干苔和松脂，生了一小堆火，火堆挡在洞口，野兽便不敢进来。\n\n然后他从怀里摸出了两样东西：阿禾给的煮鸡蛋，和他娘给的那张厚饼——沈家最后的一点白面。",
-  "en": "Using the way his father had taught him, he struck the flint with the fire steel, lit some dry moss and pine resin, and got a little fire going. With a fire across the mouth of the cave, animals wouldn't dare come in.\n\nThen he took two things out of his jacket: the boiled egg Ahe had given him, and the thick flatbread from his mother — the last of the Shens' white flour."
  }
 }
