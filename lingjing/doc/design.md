@@ -226,9 +226,12 @@ a 回 should last, not be binged.
 
 **修为 grows with the layer** (Hanli 2026-10-16, option A — higher beasts and practice give more):
 balance.json `layer_pay` scales the routine tables (功课, a haunt's or pool's fight, 闭关) by the step he
-stands on — 练气 `1 1 1.2 3.1 3.2 3.2 3.3 3.4 3.5 3.6`; the story's grants are never scaled. The 古六
-layers sit near 3× because a typical half hour a day also reads 古六's thirteen scenes. Fitted (`--fit`)
-so every 回 from 古四 is 5–7.5 typical days (古四 5.5 · 古五 5.3 · 古六 7.3 · 古七 6.0 · 古八 5.7). A fight's
+stands on — 练气 `1 1 1.2 2.4 3 3.2 3.35 3.45 3.55 3.6`, a smooth climb (a near-tripling between two
+layers reads as a glitch); the story's grants are never scaled. It is front-loaded: 古六 holds him on
+三层–四层 right after 古五's 二层 and a layer never costs less than the one below, so 三层 must pay
+about twice 二层 for 古六 (thirteen scenes to read too) to fit a week. Fitted (`--fit`) so every 回 from
+古四 is 5–7.5 typical days (古四 5.5 · 古五 4.5 · 古六 7.2 · 古七 6.0 · 古八 5.7) — 古五 a little fast,
+its band's low end 4.5 (`bands.except`). A fight's
 修为 past the 回's mark still turns to 灵石 at `convert.rate` — the scaled amount, so a higher layer's
 overflow pays more.
 

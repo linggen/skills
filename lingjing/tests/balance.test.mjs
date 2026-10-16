@@ -135,8 +135,9 @@ test('no daily thinning (Hanli, 2026-10-16): every pool win pays the haunt table
   assert.equal('pool' in B, false, 'balance.json declares no day\'s fight bands');
   const s = { ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: null, place: 'houshan', ended: ['00-prologue', '00-waimen'], done_scenes: ['09-snow'], tier: 'qi', step: 4, progress: 0, wealth: 0, traits: ROOTS };
   // Each win the haunt table's 修为 times the layer he stands on (balance.json layer_pay).
-  const want = [], paid = [];
-  for (let k = 0; k < 6; k += 1) { want.push(Math.round(T.haunt.progress * layerPayOf(content, s, 'haunt'))); paid.push(pay(content, s, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }).progress); }
+  const want = [], paid = [], wins = Math.min(6, Math.floor(content.ladder.tiers[0].thresholds[4] / Math.round(T.haunt.progress * layerPayOf(content, s, 'haunt'))));
+  assert.ok(wins >= 3, 'the layer holds a few wins');
+  for (let k = 0; k < wins; k += 1) { want.push(Math.round(T.haunt.progress * layerPayOf(content, s, 'haunt'))); paid.push(pay(content, s, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }).progress); }
   assert.deepEqual(paid, want);
   assert.ok(want[0] > T.haunt.progress, '四层 pays more than the table: the layer scales it');
   // …until the layer is full: the scaled 修为 past the mark is 灵石 at the convert rate (圆满 → 灵石).
