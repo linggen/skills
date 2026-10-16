@@ -140,7 +140,7 @@ const byRoot = new Map(CREATURES.filter(c => c.deck).map(c => [c.root, c]));
 // where one piece of gear is weighed against every beast of a root, by its id.
 function foeOf(key) {
   const c = CREATURES.find(x => x.id === key && x.deck) ?? byRoot.get(key) ?? CREATURES.find(x => x.deck);
-  return { id: c.id, name: c.name.zh, root: c.root, deck: c.deck, signature: c.signature };
+  return { id: c.id, name: c.name.zh, root: c.root, deck: c.deck, signature: c.signature, feint: c.feint };
 }
 
 function setupOf({ tier = 'qi', foeTier = tier, root = 'fire', foeRoot: key = 'wood', deck, seed = 'd1', mode = 'pve', you = {} }) {
@@ -148,7 +148,7 @@ function setupOf({ tier = 'qi', foeTier = tier, root = 'fire', foeRoot: key = 'w
   return {
     mode, seed,
     you: { tier, root, deck, extra: ['yinyue'], ...(typeof you === 'function' ? you(root) : you) },
-    foe: { tier: foeTier, root: foeRoot, deck: foe.deck, ...(process.env.NO_SIG ? {} : { signature: foe.signature }) },
+    foe: { tier: foeTier, root: foeRoot, deck: foe.deck, ...(foe.feint ? { feint: foe.feint } : {}), ...(process.env.NO_SIG ? {} : { signature: foe.signature }) },
   };
 }
 

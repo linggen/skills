@@ -89,22 +89,22 @@ function playLine(setup, catalog, wobble) {
   return { outcome: st.outcome, picks };
 }
 /* A player who thinks a turn ahead (fightline.js lookahead) — the fights are
-   tuned to be lost by a careless line, so the seed tries this one first. */
-function thinkLine(setup, catalog, deep) {
+   tuned to be lost by a careless line, so the seed tries this one first. Its
+   plain play-out only: the deep one cost the forward run ~3 s of CPU a pass
+   (tests/seed-at.test.mjs) and a deal it loses is dealt again tomorrow. */
+function thinkLine(setup, catalog) {
   const st = begin(setup, catalog), picks = [];
   for (let g = 0; g < 400 && st.outcome === 'open'; g += 1) {
     if (st.whose === 'foe') { foeTurn(st); continue; }
-    const action = lookahead(st, { deep });
+    const action = lookahead(st);
     act(st, action, 'you');
     picks.push(tokenOf(action));
   }
   return { outcome: st.outcome, picks };
 }
 export function winningPicks(setup, catalog, tries = 24) {
-  for (const deep of [false, true]) {
-    const line = thinkLine(setup, catalog, deep);
-    if (line.outcome === 'won') return line.picks;
-  }
+  const thought = thinkLine(setup, catalog);
+  if (thought.outcome === 'won') return thought.picks;
   for (let w = 0; w < tries; w += 1) {
     const line = playLine(setup, catalog, w);
     if (line.outcome === 'won') return line.picks;

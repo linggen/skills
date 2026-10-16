@@ -24,7 +24,7 @@
 //
 // Pure of the DOM: the page hands in `ask`, the clock and the timers.
 
-import { BEATS, TIERS, costOf, effectOf } from './battle.js';
+import { BEATS, TIERS, asleep, costOf, effectOf } from './battle.js';
 import { intentBits, sayEffect, sigWords } from './battle-card.js';
 import { BROWSER_TIMERS, cleanLine, sayer, WAIT_MS } from './hersay.js';
 
@@ -152,6 +152,12 @@ export function fightFacts(v, ctx, kind = 'ask', extra = {}) {
   const charging = v.outcome === 'open' && sig && (phase === 'gathering' || phase === 'ready');
   const sigName = sig ? nameOf(sig, ctx.lang) : '';
   const parts = [];
+  // 装睡 (battle.js § asleep): the trap, as facts — plain blows glance, how many have, when it wakes.
+  if (v.outcome === 'open' && asleep(v.foe)) {
+    const f = v.foe.feint, goes = (f.pierce ?? []).map((el) => (zh ? GLYPH[el] : el)).join(zh ? '、' : '/');
+    parts.push(zh ? `它在装睡（${nameOf(f, ctx.lang)}）：寻常一击只擦过${goes ? `，${goes}打得进去` : ''}；已擦过${f.glanced}下，${f.left}回合后睁眼放「${sigName}」。`
+      : `It plays dead: plain blows glance${goes ? `, ${goes} goes in` : ''}; ${f.glanced} glanced so far, wakes in ${f.left} with ${sigName}.`);
+  }
   if (charging) {
     const what = plain(sigWords(v, sc));
     parts.push(zh ? `它在蓄杀招「${sigName}」，${phase === 'ready' ? '下回合放出' : '再下回合放出'}${what ? `：${what}` : ''}。` : `Charging ${sigName}, ${phase === 'ready' ? 'next turn' : 'in 2 turns'}${what ? `: ${what}` : ''}.`);

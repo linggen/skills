@@ -19,6 +19,10 @@ for (const f of FIGHTS.filter(f => !f.pool)) {
     const r = rateOf(f, SEEDS, 0, 'lookahead');
     const [lo, hi] = f.band ?? BAND;
     assert.ok(r.win >= lo && r.win <= hi, `${keyOf(f)} wins ${(r.win * 100).toFixed(1)}% (band ${lo * 100}–${hi * 100}; lost ${(r.lost * 100).toFixed(1)}%, ran dry ${(r.withdrew * 100).toFixed(1)}%)`);
+    // A fight not won must sometimes be LOST, not only waited out (its twelve cards spent): the beast
+    // threatens (Hanli 2026-10-16, 灵草谷's 犰狳: 让他能真的输). The pools' beasts are not held to it
+    // yet (2026-10-16: 领胡 0%, 野猪 on the 后山崖顶 5% — mostly outlasted).
+    assert.ok(r.lost >= 0.08, `${keyOf(f)} is lost only ${(r.lost * 100).toFixed(1)}% — it never threatens`);
     // A 试 passed by outlasting it is not driven down by force (邹青松's shield, 秦雁's footwork).
     if (f.unforced) assert.ok(r.forced <= 0.15, `${keyOf(f)} driven to 0 in ${(r.forced * 100).toFixed(1)}% — a 试 is outlasted, not beaten`);
   });

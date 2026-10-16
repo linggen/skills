@@ -63,8 +63,8 @@
     "kind": "duel",
     "creature": "qiuyu",
     "retry": true,
-    "foe": {"hp": 2.65},
-    "_weighed": "The 秘境's 犰狳 met again at 灵草谷 at 五层 with 火柴 worn. Its row (hp 3.45, weighed for the 秘境 at 二层) is won 13% the first time by a player who thinks a turn ahead (fightline.js lookahead), mostly run dry against its 见人则眠 heals; weighed here to 2.65, about 62% (tools/story-fights.mjs `qiuyu@09-lingcao/fight`, tests/fight-band.test.mjs)."
+    "foe": {"hp": 2.05},
+    "_weighed": "The 秘境's 犰狳 met again at 灵草谷 at 五层 with 火柴 worn: two turns of 装睡 (plain blows glance, metal goes in), then 鸱目一睁, 3 harder per glance (creatures.json `feint`). Its row's hp (3.45) is for the 秘境 at 二层; weighed here to 2.05 — a player who thinks a turn ahead wins about 60% and loses about 30% (time-outs ~5%); the careless one-ply line loses about 60% (2026-10-16, 200 seeds; tools/story-fights.mjs `qiuyu@09-lingcao/fight`, tests/fight-band.test.mjs)."
    },
    "withdrawn": {
     "zh": "「小满，撑住！」阿禾喊。",

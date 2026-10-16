@@ -12,7 +12,7 @@
 
 import { spoken } from './cards.js';
 import { esc } from './esc.js';
-import { POWER_COST, bodyOf, boostedOf, clash, costOf, dealt, effectOf, hashOf, keywordsOf, landed, starsOf } from './battle.js';
+import { POWER_COST, asleep, bodyOf, boostedOf, clash, costOf, dealt, effectOf, hashOf, keywordsOf, landed, pierces, sigEffect, starsOf } from './battle.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
 const EN_EL = { metal: 'metal', wood: 'wood', water: 'water', fire: 'fire', earth: 'earth' };
@@ -30,8 +30,10 @@ function clashWord(element, target, lang) {
 /* What the held thing would take off a target, as a badge on it. */
 function dmgBadge(st, n, element, target, lang, hero = false) {
   if (n == null) return '';
-  const word = clashWord(element, target, lang);
-  const down = clash(element, target) < 1;
+  // A blow at a sleeper that glances (battle.js § asleep) says so on its badge.
+  const glance = hero && asleep(st.foe) && !pierces(st.foe, element);
+  const word = glance ? (lang === 'en' ? 'glances' : '擦过') : clashWord(element, target, lang);
+  const down = glance || clash(element, target) < 1;
   const hits = hero ? landed(st, 'you', n, element) : dealt(st, 'you', n, element, target);
   return `<span class="bdmg${down ? ' down' : word ? ' up' : ''}">−${hits}${word ? ` · ${word}` : ''}</span>`;
 }
@@ -534,7 +536,7 @@ export function sayEffect(c, ctx) {
    it will do and how hard, reckoned by the same `dealt` the fight uses, so
    the player answers a fact, not a guess — and Ling says nothing. */
 export function sigWords(st, ctx) {
-  const e = st.foe.signature?.effect ?? {}, zh = ctx.lang !== 'en', root = st.foe.root;
+  const e = sigEffect(st.foe), zh = ctx.lang !== 'en', root = st.foe.root;
   const hit = (n, target) => dealt(st, 'foe', n, root, target);
   const guard = st.you.board.find(m => m.taunt);
   const out = [];
@@ -559,6 +561,24 @@ export function chargeHtml(st, ctx) {
     ? (zh ? `${pro(ctx).it}在蓄力 —— 下一回合不出牌，再下一回合放出` : `${cap(pro(ctx).it)} gathers — nothing played next turn, let go the turn after`)
     : (zh ? `${pro(ctx).it}下一回合放出 —— 这一回合是你的` : `${cap(pro(ctx).it)} lets go next turn — this turn is yours`);
   return `<div class="bcharge ${phase}"><b>${zh ? '杀招' : 'Signature'} · ${sig}</b><span>${sigWords(st, ctx)}</span><small>${when}</small></div>`;
+}
+
+/* ── 装睡 — a beast playing dead (battle.js § asleep) ──
+   The trap is shown, never hidden: what it is doing, that a plain blow
+   glances and what goes in, and how hard it wakes — the number grows with
+   every blow that glanced, so the player can read what feeding it costs. */
+export function feintHtml(st, ctx) {
+  const f = st.foe.feint;
+  if (st.outcome !== 'open' || !asleep(st.foe)) return '';
+  const zh = ctx.lang !== 'en';
+  const goes = (f.pierce ?? []).map(el => (zh ? GLYPH[el] : EN_EL[el])).join(zh ? '、' : ', ');
+  const what = zh ? `装睡 —— 寻常一击只擦过 −${f.lands ?? 1}${goes ? `，${goes}能打进去` : ''}` : `Playing dead — a plain blow glances (−${f.lands ?? 1})${goes ? `; ${goes} goes in` : ''}`;
+  const sig = st.foe.signature ? name(st.foe.signature, ctx.lang) : '';
+  const wake = f.left > 1
+    ? (zh ? `再 ${f.left} 回合睁眼` : `wakes in ${f.left} turns`)
+    : (zh ? '下回合睁眼' : 'wakes next turn');
+  const after = sig ? (zh ? `：${sig}，${sigWords(st, ctx)}${f.per_glance ? `（每擦过一下 +${f.per_glance}）` : ''}` : `: ${sig}, ${sigWords(st, ctx)}${f.per_glance ? ` (+${f.per_glance} per glance)` : ''}`) : '';
+  return `<div class="bcharge feint"><b>${name(f, ctx.lang)}</b><span>${what}</span><small>${wake}${after}</small></div>`;
 }
 
 /* ── 望气 — the beast's plan, as far as the player can read it ──
@@ -593,7 +613,8 @@ export function intentHtml(st, ctx) {
   const it = st.foe.intent;
   if (!it || st.outcome !== 'open' || st.whose !== 'you') return '';
   const zh = ctx.lang !== 'en', bits = intentBits(st, ctx);
-  const what = it.gathering ? (zh ? '蓄力，不出手' : 'gathers — nothing else') : bits.length ? bits.join(' · ') : (zh ? '只让阵前的出手' : 'only its rank strikes');
+  const what = asleep(st.foe) && st.foe.feint.left > 1 ? (zh ? '装睡，不出手' : 'plays dead — nothing')
+    : it.gathering ? (zh ? '蓄力，不出手' : 'gathers — nothing else') : bits.length ? bits.join(' · ') : (zh ? '只让阵前的出手' : 'only its rank strikes');
   return `<div class="bintent${it.sight >= 2 ? ' exact' : ''}"><b>${zh ? '望气' : 'Its qi'}</b><span>${zh ? `${pro(ctx).it}下回合：` : 'Next turn: '}${esc(what)}</span></div>`;
 }
 
@@ -629,6 +650,9 @@ function sayTurn(t, ctx) {
     case 'trial-passed': return w.passed;
     case 'charge': return `${who} ${zh ? '开始蓄力' : 'gathers'}：${name(ctx.st?.foe?.signature, ctx.lang)}`;
     case 'unleash': return `${who} ${zh ? '放出' : 'lets go'} ${name(ctx.st?.foe?.signature, ctx.lang)}`;
+    case 'feint': return `${who} ${zh ? '还在装睡' : 'still plays dead'}`;
+    case 'glanced': return `${who} ${zh ? `装睡，这一下擦过（已 ${t.glanced} 下）` : `plays dead — that one glanced (${t.glanced} so far)`}`;
+    case 'woke': return `${who} ${zh ? '睁眼了' : 'opens its eyes'}`;
     default: return '';
   }
 }
@@ -767,7 +791,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       ${aim.hero && ctx.striker ? dmgBadge(st, ctx.striker.n, ctx.striker.element, st.foe.root, ctx.lang, true) : ''}
     </button>
 
-    <div class="bomen">${chargeHtml(st, ctx)}${intentHtml(st, ctx)}</div>
+    <div class="bomen">${feintHtml(st, ctx)}${chargeHtml(st, ctx)}${intentHtml(st, ctx)}</div>
 
     <div class="bfield">
       <div class="brank theirs" aria-label="${esc(w.theirs)}">${rank('theirs', st.foe.board, ctx.board)}</div>

@@ -869,6 +869,40 @@
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
+      "id": "shewei",
+      "kind": "spell",
+      "name": {
+        "zh": "蛇尾抽",
+        "en": "Snake-Tail Lash"
+      },
+      "cost": 2,
+      "element": "wood",
+      "_token": true,
+      "effect": {
+        "damage": 3
+      },
+      "_about": "犰狳的蛇尾（《山海经》「鸱目蛇尾」）：贴着地抽过来，小满小腿上三道。兽的牌，永不入牌库、不作赏。",
+      "art": "art/creatures/qiuyu.webp",
+      "art_source": "The beast's own plate (creatures.json qiuyu art)."
+    },
+    {
+      "id": "niaohui",
+      "kind": "spell",
+      "name": {
+        "zh": "鸟喙啄",
+        "en": "Beak Strike"
+      },
+      "cost": 3,
+      "element": "wood",
+      "_token": true,
+      "effect": {
+        "damage": 4
+      },
+      "_about": "犰狳的鸟喙（「其状如菟而鸟喙」）：锄把上一个印子，小腿上又一个。兽的牌，永不入牌库、不作赏。",
+      "art": "art/creatures/qiuyu.webp",
+      "art_source": "The beast's own plate (creatures.json qiuyu art)."
+    },
+    {
       "id": "talisman",
       "kind": "spell",
       "name": {

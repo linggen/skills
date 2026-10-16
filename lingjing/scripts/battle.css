@@ -153,6 +153,8 @@
 .bcharge b { color: var(--cinnabar); }
 .bcharge small { font-size: 11px; color: var(--ink-3); }
 .bcharge.ready { animation: bgather 1.6s ease-in-out infinite; }
+.bcharge.feint { border-color: rgba(64, 92, 70, 0.45); background: rgba(64, 92, 70, 0.07); }
+.bcharge.feint b { color: var(--ink); }
 @keyframes bgather { 50% { box-shadow: 0 0 22px rgba(179, 55, 42, 0.3); } }
 
 /* ── 阵前: the two ranks, an ink seam between ── */

@@ -112,6 +112,26 @@ export const EFFECTS = {
   drought: { at: 'none' }, //   大旱 (肥遗): a STANDING verb — at the end of its side's every turn, N to each of the other rank
 };
 
+/* One standing beast state beside the card verbs, 2026-10-16 — 装睡 (犰狳,
+   见人则眠: it falls down playing dead when people near). Declared on the
+   beast (creatures.json `feint`), never named here:
+     { name, turns, lands, pierce: [element…], per_glance }
+   For its first `turns` turns it lies still — it plays nothing and strikes
+   with nothing, and it never gathers. A blow at it of an element not in
+   `pierce` glances: it lands `lands` (the page prints the same, `landed`)
+   and is counted. When the sleep runs out it wakes with its 杀招, `per_glance`
+   harder for every blow that glanced — a careless player feeds the trap. A
+   shell-hider or any beast that plays dead declares the same. */
+export const asleep = side => Boolean(side?.feint && side.feint.left > 0);
+export const pierces = (side, element) => Boolean(element) && (side?.feint?.pierce ?? []).includes(element);
+const glances = (side, element) => asleep(side) && !pierces(side, element);
+/* Its 杀招 as it will land: on waking, `per_glance` more per blow that glanced. */
+export function sigEffect(side) {
+  const e = side?.signature?.effect ?? {}, f = side?.feint;
+  if (!f?.per_glance || e.damage == null || !f.glanced) return e;
+  return { ...e, damage: e.damage + f.per_glance * f.glanced };
+}
+
 /* Does this body fit the aimed verb? 吞 takes only what is small enough to
    swallow; 锁 takes anything. */
 export const fits = (e, m) => Boolean(m) && (e?.swallow == null || m.atk <= e.swallow);
@@ -141,7 +161,7 @@ export function shuffle(ids, seed) {
 /* ── Setup ── */
 
 /* `setup` is the configuration locked at the door (design.md § 副本契约):
-   { mode, seed, you: { tier, step, root, deck, extra, power?, armor?, ward?, boost?, wounds?, lifts?, insight? }, foe: { tier, root, deck, hp?, signature? } }
+   { mode, seed, you: { tier, step, root, deck, extra, power?, armor?, ward?, boost?, wounds?, lifts?, insight? }, foe: { tier, root, deck, hp?, signature?, feint? } }
    `lifts` is { cardId: { atk, hp, heal, damage, taunt } } — a card that stands
    taller for this side (银月 by the realm and the cauldrons found,
    rules/companion.mjs herLifts): its body (`bodyOf`), a number added to what
@@ -181,6 +201,8 @@ function sideOf(who, cfg, catalog, mode, seed) {
     // off, it is PASSED — it yields at `yield` of its 气血, and a player
     // still standing when its cards run out has passed too (not withdrawn).
     trial: cfg.trial ?? null,
+    // 装睡 (§ asleep): the turns it lies still, and the blows that glanced off it.
+    feint: cfg.feint ? { ...cfg.feint, left: Math.max(0, cfg.feint.turns ?? 1), glanced: 0 } : null,
   };
 }
 
@@ -235,6 +257,7 @@ function startTurn(st) {
   // 锁: a body chained on the other side's turn sits out this one, exactly this one.
   for (const m of side.board) { m.held = Boolean(m.chain); m.chain = 0; }
   if (side.charge?.phase === 'ready') unleash(st, side);
+  if (asleep(side)) stir(st, side);
   if (st.outcome !== 'open') return;
   if (st.turn > 0 || st.whose === 'foe') draw(st, side);
   st.turn += 1;
@@ -277,7 +300,7 @@ function plan(st) {
    first, stand a 护主 (the blow takes the guard first), heal, or hold your
    bodies back from a sweep. Then it lets go, once a fight. */
 function gather(st, side) {
-  if (!side.signature || side.charge || side.hp <= 0 || side.hp > side.hpMax * (st.mode.sigAt ?? 0)) return;
+  if (!side.signature || asleep(side) || side.charge || side.hp <= 0 || side.hp > side.hpMax * (st.mode.sigAt ?? 0)) return;
   side.charge = { phase: 'gathering' };
   st.log.push({ act: 'charge', who: side.who, id: side.signature.id });
 }
@@ -287,7 +310,19 @@ function unleash(st, side) {
   st.log.push({ act: 'unleash', who: side.who, id: side.signature.id });
   const them = other(st, side);
   const guard = them.board.findIndex(m => m.taunt);
-  resolve(st, side, { ...side.signature.effect, element: side.root }, guard >= 0 ? { kind: 'minion', index: guard } : undefined);
+  resolve(st, side, { ...sigEffect(side), element: side.root }, guard >= 0 ? { kind: 'minion', index: guard } : undefined);
+}
+
+/* 装睡, one of its turns gone (§ asleep): the last one, it wakes — with its 杀招
+   if it has one (once a fight, as ever: the half-气血 gather does not come again). */
+function stir(st, side) {
+  side.feint.left -= 1;
+  if (side.feint.left > 0) {
+    st.log.push({ act: 'feint', who: side.who, left: side.feint.left });
+    return;
+  }
+  st.log.push({ act: 'woke', who: side.who, glanced: side.feint.glanced });
+  if (side.signature && !side.charge) unleash(st, side);
 }
 
 /* 反噬 — a deck run dry costs 1, then 2, then 3. The creature does not bleed
@@ -350,11 +385,17 @@ function parch(st, side) {
 export const wardOf = (side, element) => (element && side?.ward?.[element]) || 0;
 export const landed = (st, who, n, element) => {
   const them = who === 'you' ? st.foe : st.you;
+  if (glances(them, element)) return Math.max(0, them.feint.lands ?? 1);
   const d = dealt(st, who, n, element, them.root);
   return Math.max(1, d - wardOf(them, element));
 };
 
 function hurt(st, side, amount, why = {}) {
+  // A blow that glanced off a sleeper (§ asleep) is counted: it feeds the waking.
+  if (why.from && glances(side, why.element)) {
+    side.feint.glanced += 1;
+    st.log.push({ act: 'glanced', who: side.who, glanced: side.feint.glanced });
+  }
   // 护体 takes it first (the 法衣): what it holds never reaches 气血.
   const absorbed = Math.min(side.armor ?? 0, amount);
   if (absorbed) side.armor -= absorbed;
@@ -635,6 +676,12 @@ export function act(st, action, who = 'you') {
 export function foeStep(st) {
   if (st.outcome !== 'open' || st.whose !== 'foe') return null;
   const side = st.foe;
+  // 装睡: it lies still — nothing played, nothing struck (§ asleep).
+  if (asleep(side)) {
+    side.intent = null;
+    act(st, { kind: 'end' }, 'foe');
+    return { kind: 'end' };
+  }
   const gathering = side.charge?.phase === 'gathering';
   // A plan made at the start of your turn is kept (§ 意图); with none (the
   // plan being drawn up, or a fight begun before plans) it chooses as it goes.
@@ -808,6 +855,7 @@ export function view(st) {
     powerUsed: s.powerUsed, powerHit: s.powerHit, boost: s.boost, armor: s.armor ?? 0, ward: s.ward ?? null,
     signature: s.signature, charge: s.charge?.phase ?? null, lifts: s.lifts, stars: s.stars ?? null, drain: s.drain ?? 0,
     ...(s.trial ? { trial: s.trial } : {}),
+    ...(s.feint ? { feint: { ...s.feint } } : {}),
     board: s.board.map(m => ({ id: m.id, uid: m.uid ?? null, name: m.name, element: m.element, atk: m.atk, hp: m.hp, hpMax: m.hpMax, taunt: m.taunt, ready: !m.sick && !m.struck && !m.held, chained: Boolean(m.chain || m.held), drought: m.drought ?? 0 })),
   });
   // 望气术: the plan is shown only to a player who can read it (setup.you.insight).
