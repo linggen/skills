@@ -452,7 +452,7 @@
 .g-da-scene .g-da-ripple { stroke-width: 1; opacity: .35; }
 .g-da-scene .g-da-pole { stroke-width: 1.6; opacity: .6; }
 .g-da-scene .g-da-streamer { fill: var(--seal); opacity: .75; }
-.g-da-scene .g-da-leaf { fill: var(--earth); opacity: .5; }
+.g-da-scene .g-da-leaf { fill: #7a5a2e; stroke: #f6efe0; stroke-width: .6; opacity: .85; }
 .g-da-scene .g-da-reed { stroke-width: 2; opacity: .75; }
 .g-da-scene .g-da-plume { opacity: .55; }
 .g-da-scene .g-da-branch { stroke-width: 5; opacity: .7; }

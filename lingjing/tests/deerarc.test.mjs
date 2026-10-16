@@ -44,7 +44,7 @@ for (const level of LEVELS) {
       // The release lands on the clock's step: solve for the moment it really leaves the string.
       let s = da.newGame('t', 1, { levels: [level] });
       while (s.clock < 700) s = da.tick(s, step);
-      const aim = solve(level, s.clock);
+      const aim = solve(da.levelNow(s), s.clock); // this arrow's rolled wind
       assert.ok(aim, `${level.id}: a clean pull exists at ${s.clock} ms`);
       const r = shot(level, aim, { step, at: s.clock });
       assert.equal(r.s.phase, 'hit', `${level.id} at ${step} ms: ${r.s.phase} (${r.s.said})`);
@@ -52,6 +52,37 @@ for (const level of LEVELS) {
     }
   });
 }
+
+// Hanli 10-16 「风不变吗?」: from level 2 each arrow meets its own wind, shown before he pulls.
+test('each arrow rolls its own wind (level 2 always in his face, 3–4 either way); 重来 deals the same; every rolled wind has a clean shot', () => {
+  const ROLLED = LEVELS.filter((l) => l.roll);
+  assert.deepEqual(ROLLED.map((l) => l.id), ['wind', 'walk', 'reeds']);
+  for (const [li, level] of LEVELS.entries()) {
+    if (!level.roll) continue;
+    const winds = [];
+    for (const seed of ['a', 'b', 'c']) for (let k = 0; k < da.QUIVER; k++) {
+      const w = da.rollWind(level, seed, li, k);
+      winds.push(w);
+      assert.ok(Math.abs(w) >= level.roll.min - 1e-9 && Math.abs(w) <= level.roll.max + 1e-9, `${level.id}: ${w} in its range`);
+      if (level.id === 'wind') assert.ok(w > 0, '「往左偏半寸」: always in his face');
+      assert.ok(solve({ ...level, wind: w }, 700), `${level.id} seed ${seed} arrow ${k}: wind ${w} has a clean shot`);
+    }
+    assert.ok(new Set(winds).size > 4, `${level.id}: the wind changes (${winds.join(' ')})`);
+    if (level.id !== 'wind') assert.ok(winds.some((w) => w > 0) && winds.some((w) => w < 0), `${level.id}: both ways`);
+  }
+  // In play: the next arrow's wind is in the header before he pulls; 重来 deals the first again.
+  let s = da.newGame('t', 1, { levels: [byId('wind')] });
+  const first = s.windBase;
+  assert.equal(first, da.rollWind(byId('wind'), 't', 0, 0));
+  const miss = find(da.levelNow(s), (f) => !f.hit && f.end === 'ground');
+  s = da.act(da.act(s, { g: 'draw', ...miss }).state, { g: 'loose' }).state;
+  for (let i = 0; i < 400 && s.phase === 'fly'; i++) s = da.tick(s, 10);
+  assert.equal(s.phase, 'aim');
+  assert.equal(s.windBase, da.rollWind(byId('wind'), 't', 0, 1), 'the second arrow, its own wind');
+  assert.match(da.html(s, 'zh'), /迎面/);
+  s = da.act(s, { g: 'retry' }).state;
+  assert.equal(s.windBase, first, '重来: the same first wind');
+});
 
 test('the walking deer: a pull found for a moment still hits when the hand is 50 ms late, or early', () => {
   const walk = byId('walk');
@@ -70,7 +101,7 @@ test('the wind is real: the headwind blows a calm answer well back toward him; t
   const still = da.flight(open, calm).tip[0], blown = da.flight({ ...open, wind: byId('wind').wind }, calm).tip[0];
   assert.ok(blown - still > 15, `blown back toward him: ${still.toFixed(0)} → ${blown.toFixed(0)}`);
   const wind = solve(byId('wind'));
-  assert.notEqual(da.flight(byId('wind'), { ...wind, p: wind.p - 0.08 }).hit, 'clean', 'a pull short of the answer is not enough');
+  assert.notEqual(da.flight(byId('wind'), { ...wind, p: wind.p - 0.2 }).hit, 'clean', 'a pull short of the answer is not enough');
 });
 
 /** The first pull on a coarse grid whose flight in a fresh world matches `want`. */

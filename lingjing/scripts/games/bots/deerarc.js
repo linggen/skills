@@ -4,7 +4,7 @@
 // closely around each clean one and takes the pull with the most clean neighbours — the steadiest,
 // since a hand is never exact. Then it draws to it and lets go. A level under three stars is
 // played once more. Small grids on purpose (a few hundred flights a solve): the host is shared.
-import { flight, STEP_MS } from '../deerarc.js';
+import { flight, levelNow, STEP_MS } from '../deerarc.js';
 
 export const LEAD = 520; // draw → the hand lands → a glance → let go → the hand lands (board-bots)
 const round2 = (v) => Math.round(v * 100) / 100;
@@ -55,7 +55,7 @@ export function bot(s, see = {}) {
     return { g: 'next' };
   }
   if (s.phase !== 'aim') { plan = null; return null; }
-  const level = s.levels[s.li];
+  const level = levelNow(s); // this arrow's rolled wind
   if (!plan || plan.li !== s.li || plan.used !== s.used) plan = { ...planFor(level, s.clock), li: s.li, used: s.used };
   if (plan.a == null) return null;
   if (!s.pull || s.pull.a !== plan.a || s.pull.p !== plan.p) return { g: 'draw', a: plan.a, p: plan.p };

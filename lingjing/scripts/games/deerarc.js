@@ -34,7 +34,7 @@ export const meta = {
 
 export const W = 480, H = 300;
 export const STEP_MS = 1000 / 60;
-export const BOW = [424, 164]; // his hand on the near bank, held up out of the grass
+export const BOW = [378, 164]; // his hand on the near bank, held up out of the grass, clear of the edge
 export const MAX_PULL = 120, MIN_POWER = 0.12, MIN_V = 3, MAX_V = 7.2;
 export const QUIVER = 4, STUCK_MISSES = 3;
 const GRAVITY = 0.36, WIND_ACC = 0.02, ARROW_HALF = 13, TRAIL_EVERY = 3;
@@ -89,11 +89,27 @@ export function windAt(level, ms) {
   const g = level.gust;
   return (level.wind ?? 0) + (g ? g.amp * Math.sin((TAU * ms) / g.period + (g.phase ?? 0)) : 0);
 }
-/** How far the wind has carried a leaf by `ms` (its integral), so a leaf never jumps as it changes. */
-function windCarried(level, ms) {
-  const g = level.gust, ph = g?.phase ?? 0;
-  return (level.wind ?? 0) * ms - (g ? ((g.amp * g.period) / TAU) * (Math.cos((TAU * ms) / g.period + ph) - Math.cos(ph)) : 0);
+
+/* Each arrow's wind (Hanli 10-16: 「风不变吗?」): a level's `roll` {min, max, dirs?} draws a strength
+   (and on some levels a direction: +1 in his face, −1 at his back) for each arrow, seeded by the
+   try and the arrow's number — so 重来 deals the same winds again, fair to learn. The level's
+   `gust` breathes on top of it. No `roll`: the level's own steady `wind`. */
+function rng(key) {
+  let a = 2166136261;
+  for (const ch of key) a = Math.imul(a ^ ch.codePointAt(0), 16777619) >>> 0;
+  return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
+/** The base wind for arrow number `k` (0…) of level `li` in the try seeded `seed`. */
+export function rollWind(level, seed, li, k) {
+  const r = level.roll;
+  if (!r) return level.wind ?? 0;
+  const next = rng(`${seed}|${li}|${k}`), dirs = r.dirs ?? [1];
+  const strength = r.min + (r.max - r.min) * next();
+  return Math.round(strength * dirs[Math.floor(next() * dirs.length) % dirs.length] * 100) / 100;
+}
+/** The level as this arrow meets it: its wind the arrow's rolled base. */
+export const levelNow = (s) => (s.windBase == null ? s.levels[s.li] : { ...s.levels[s.li], wind: s.windBase });
+const withWind = (s) => ({ ...s, windBase: s.levels[s.li]?.roll ? rollWind(s.levels[s.li], s.seed, s.li, s.used) : null });
 
 /* ── The deer: a declared schedule (where, facing, head down or up) ──────────────────────────── */
 
@@ -303,12 +319,12 @@ export function flight(level, aim, at = 0, limit = 600) {
 
 /* ── The game ──────────────────────────────────────────────────────────────────────────────── */
 
-const levelOf = (s) => s.levels[s.li];
+const levelOf = levelNow;
 
 function lay(s, li) {
   const world = build(s.levels[li]);
   watch(s.seed, world);
-  return { ...s, li, phase: 'aim', t: 0, clock: 0, used: 0, pull: null, world, stuck: [], trail: s.li === li ? s.trail : null, said: null, slowAt: null, alertAt: null, hint: s.li === li ? s.hint : false };
+  return withWind({ ...s, li, phase: 'aim', t: 0, clock: 0, used: 0, pull: null, world, stuck: [], trail: s.li === li ? s.trail : null, said: null, slowAt: null, alertAt: null, hint: s.li === li ? s.hint : false });
 }
 
 export function newGame(seed, _level = 1, deal = {}) {
@@ -411,7 +427,7 @@ function land(s, ev) {
 }
 
 /** After a shot that did not end the level: aim again, or (the quiver empty) the deer is gone. */
-const reload = (s) => (s.used >= QUIVER ? { ...s, phase: 'gone', t: 0, said: 'gone', misses: s.misses.map((m, i) => (i === s.li ? m + 1 : m)) } : clearArrow({ ...s, phase: 'aim', t: 0 }));
+const reload = (s) => (s.used >= QUIVER ? { ...s, phase: 'gone', t: 0, said: 'gone', misses: s.misses.map((m, i) => (i === s.li ? m + 1 : m)) } : withWind(clearArrow({ ...s, phase: 'aim', t: 0 })));
 
 function clearArrow(s) {
   if (s.world.arrow) Composite.remove(s.world.engine.world, s.world.arrow.body);
@@ -426,7 +442,7 @@ function advance(s) {
 }
 
 /** The deer bolts and, a while later, is back at the stream where its schedule starts again. */
-const backAgain = (s) => clearArrow({ ...s, phase: s.used >= QUIVER ? 'gone' : 'aim', t: 0, clock: 0, alertAt: null, said: s.used >= QUIVER ? 'gone' : s.said });
+const backAgain = (s) => withWind(clearArrow({ ...s, phase: s.used >= QUIVER ? 'gone' : 'aim', t: 0, clock: 0, alertAt: null, said: s.used >= QUIVER ? 'gone' : s.said }));
 
 const PHASES = {
   aim: (s) => (stepWorld(s.world, levelOf(s), s.clock), s),
@@ -446,6 +462,7 @@ export function tick(state, ms) {
     s.world.acc -= STEP_MS * slowness(s);
     s = { ...s, t: s.t + STEP_MS, clock: s.clock + STEP_MS };
     s = PHASES[s.phase]?.(s) ?? s;
+    if (s.world) s.world.drift = (s.world.drift ?? 0) + windAt(levelOf(s), s.clock) * STEP_MS;
   }
   s.world.wall = globalThis.performance?.now() ?? 0;
   s.world.clock = s.clock;
@@ -515,17 +532,20 @@ const clipId = (s) => `g-da-${String(s.seed).replace(/[^a-z0-9]/gi, '').slice(-1
 
 // The tuft on his bank, where the red rag is tied: its reeds' bases and heights.
 const TUFT = [[452, BANK + 2, 46], [460, BANK + 2, 58], [469, BANK + 2, 40]];
-const FAR_TUFTS = [[16, GROUND + 3, 30], [26, GROUND + 3, 38], [300, GROUND + 4, 28], [309, GROUND + 4, 34]];
+const FAR_TUFTS = [[16, GROUND + 3, 30], [26, GROUND + 3, 38], [296, GROUND + 4, 30], [305, GROUND + 4, 56], [313, GROUND + 4, 34]];
+const RAG_REED = FAR_TUFTS[3]; // the red rag: on the far bank, mid-board, never behind the bow
 
-/** The wind, read: a red rag tied to the tallest reed of the tuft on his bank, the reeds leaning,
+/** The wind, read: a red rag tied to the tallest reed by the stream, the reeds leaning,
     and leaves drifting the way it blows now. No post: the reed is the post. */
 function windPicture(level, s) {
   const t = calm(s) ? 0 : s.clock, w = windAt(level, s.clock), flutter = calm(s) ? 0 : Math.sin(t / 140) * (1 + 3 * Math.abs(w));
   const lean = Math.max(-1, Math.min(1, w)), sway = calm(s) ? 0 : Math.sin(t / 380) * (0.3 + Math.abs(w));
   const tuft = (list) => list.map(([x, y, h], i) => tuftReed(s.art?.reed, x, y, h, lean * 16 + sway * (1 + i * 0.3))).join('');
-  const [rx, ry, rh] = TUFT[1], tip = tipOf2(rx, ry, rh, lean * 16 + sway * 1.3);
-  const moving = level.wind || level.gust;
-  const leaves = moving ? [0, 1, 2, 3].map((i) => leafAt(i, windCarried(level, t), t)).join('') : '';
+  const [rx, ry, rh] = RAG_REED, tip = tipOf2(rx, ry, rh, lean * 16 + sway * 1.3);
+  // Leaves stream across with the wind: more of them, and faster, the stronger it blows; none in a calm.
+  const count = Math.abs(w) < 0.06 ? 0 : Math.min(9, 2 + Math.round(Math.abs(w) * 9));
+  const drift = calm(s) ? 0 : s.world?.drift ?? 0;
+  const leaves = Array.from({ length: count }, (_, i) => leafAt(i, drift, t)).join('');
   return tuft(FAR_TUFTS) + tuft(TUFT) + ragPicture(tip, lean, flutter) + leaves;
 }
 
@@ -544,9 +564,9 @@ function ragPicture([px, top], lean, flutter) {
 }
 
 function leafAt(i, carried, t) {
-  const span = W + 60, x = ((i * 137 + carried * 0.06 * (1 + i * 0.2)) % span + span) % span - 30;
-  const y = 60 + i * 38 + Math.sin(t / 500 + i) * 8;
-  return `<path class="g-da-leaf" d="M0 0 q4 -4 9 0 q-4 4 -9 0Z" transform="translate(${n(x)} ${n(y)}) rotate(${n(t / 9 + i * 50)})"/>`;
+  const span = W + 60, x = ((i * 113 + carried * 0.11 * (1 + (i % 3) * 0.25)) % span + span) % span - 30;
+  const y = 40 + ((i * 47) % 190) + Math.sin(t / 500 + i) * 8;
+  return `<path class="g-da-leaf" d="M0 0 q5 -5 12 0 q-5 5 -12 0Z" transform="translate(${n(x)} ${n(y)}) rotate(${n(t / 9 + i * 50)})"/>`;
 }
 
 function thingPicture(t, s) {
