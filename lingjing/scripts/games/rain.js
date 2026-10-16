@@ -35,9 +35,9 @@ export const LEAD = 900; //       the stain shows this long before a leak's firs
 export const MISS_MS = 500; //    a tap on a dry spot: the hand is busy this long
 /* Puddles that lose the night — picked by play (2026-10-16, 60 seeds, one night's puddles; doc/games.md):
    a person's pace (the bot) 0; a casual hand, 0.6 s to see and tap, max 3; 1 s max 18; 1.3 s max 28;
-   looking away 3 s of every 8, max 29 — none reach 35. Idle floods at ~28 s; away 5 s of every 10,
-   tapping every spot in turn, or missing 1 leak in 3 lose most nights. */
-export const FLOOD = 35;
+   looking away 3 s of every 8, max 29 (29 live too) — 40 leaves that one room. Idle floods at ~31 s;
+   away 5 s of every 10 (42 of 60), tapping every spot in turn (53), missing 1 leak in 3 (25) flood. */
+export const FLOOD = 40;
 const CALM = 1500; //             after a flood: the line stands, no drip, then the rain again
 const AT = 1500; //               the first leak
 const GAP = [3000, 1500]; //      leak to leak, dusk → the fifth watch
