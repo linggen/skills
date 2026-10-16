@@ -250,6 +250,10 @@
 /* The 割绳子 module's newer tools (rope-art.js): 弹竹, 双印 and the thread between, 乌鸦. */
 .g-scene .g-rope-thread { fill: none; stroke: var(--seal); stroke-width: 1.2; stroke-dasharray: 2 6; opacity: .45; }
 .g-scene .g-rope-crow, .g-scene .g-rope-seal { pointer-events: none; }
+/* The story's 割绳子 beats (ropebeats.js): the book's line over the board, the steelyard's cord. */
+.g-rope-quote { margin: 0; font-family: var(--serif); font-size: 15px; color: var(--seal); text-align: center; letter-spacing: .04em; }
+.g-scene .g-rope-cord { fill: none; stroke: currentColor; stroke-width: 1.4; opacity: .6; }
+.g-scene .g-rope-target { pointer-events: none; }
 .g-pair { display: flex; gap: 10px; width: 100%; }
 .g-pair .g-btn { flex: 1; min-width: 0; }
 /* 算账 */
