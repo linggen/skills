@@ -180,7 +180,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
   const main = state.fate?.element?.id ?? state.fate?.element ?? mainRoot(state) ?? 'wood';
   // 小队 (party.json, cards.md § 5): who stands beside him in this fight. 银月 is a member, never
   // a card in hand: asleep in the 木牌 through 卷一, she stands in the row from the 卷 she wakes in.
-  const party = partyFor(content, state, creature);
+  const party = partyFor(content, state, creature, game);
   const withHer = party.some(m => m.id === 'yinyue');
   const gear = gearFight(content, state), lifts = withHer ? herLifts(content, state) : null;
   // Before the root test (the 三试 comes first) he fights with what no root claims:
@@ -216,13 +216,16 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
 /* Who stands beside him (party.json): the fight's own word (an exit game's `foe.party`, carried
    on the foe), else the 回 he stands in (`by_hui`); a member of a 卷 not yet open (银月, asleep in
    卷一) never. Each member as the fight takes it: id, name, root, share of 气血, 嘲讽, deck. */
-export function partyFor(content, state, creature) {
+export function partyFor(content, state, creature, game = null) {
   const p = content.party;
   if (!p) return [];
   const open = juanOf(content, state);
+  // A beast met roaming (a haunt's or a pool's, `haunt:`) he fights alone (party.json `roams_alone`): the
+  // 回's companions stand with him in the story's fights — 灵草谷, the 河伯祠 — not on every hill.
+  const roaming = p.roams_alone && String(game ?? '').startsWith('haunt:');
   // A member who `walks` with him (银月, once her 卷 is open) stands beside him in every fight she is awake for.
   const walking = Object.entries(p.members ?? {}).filter(([, m]) => m.walks && herAwake(state)).map(([id]) => id);
-  const ids = [...new Set([...(creature?.party ?? p.by_hui?.[huiNow(content, state)] ?? []), ...walking])];
+  const ids = [...new Set([...(creature?.party ?? (roaming ? [] : p.by_hui?.[huiNow(content, state)]) ?? []), ...walking])];
   return ids.map(id => [id, p.members?.[id]]).filter(([, m]) => m && (m.juan ?? 1) <= open)
     .map(([id, m]) => ({ id, name: m.name, root: m.root, hp: m.hp, ...(m.taunt ? { taunt: true } : {}), ...(m.art ? { art: m.art } : {}), deck: [...m.deck] }));
 }

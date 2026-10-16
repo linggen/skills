@@ -237,7 +237,8 @@ test('an unknown exit and an unfought duel are refused', () => {
 
 test('a creature at its haunt: the bout on the stage pays once a day, and what it likes tames it', async () => {
   // 精卫 at 发鸠山 in 冀, no scene there: the world open, chapter 1 in play
-  const base = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0 };
+  const open = toOpenWorld();
+  const base = { ...open, chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0, cards: [...new Set([...(open.cards ?? []), ...ROAD_HAND])] };
   const october = () => ctx({ now: new Date('2026-10-05T10:00:00') });
   const l = look(base, content, october());
   assert.equal(l.scene, null);
@@ -2896,7 +2897,8 @@ test('降妖: a fight open on another creature lends nothing to this one', () =>
   const mine = fightSetup(content, other, jingwei, c.now, 'haunt:jingwei');
   assert.equal(mine.you.wounds, undefined, 'not the other fight\'s door');
   assert.ok(mine.foe, 'nor its setup');
-  assert.deepEqual(fightSetup(content, other, jingwei, c.now), mine, 'no game named, no door read');
+  const unnamed = fightSetup(content, other, jingwei, c.now);
+  assert.deepEqual([unnamed.you.deck, unnamed.you.wounds, unnamed.foe], [mine.you.deck, mine.you.wounds, mine.foe], 'no game named, no door read');
 });
 
 /* What the page tells her of a fight says what the page measured: the low

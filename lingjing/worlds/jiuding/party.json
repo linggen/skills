@@ -4,38 +4,87 @@
   "lead": "xiaoman",
   "members": {
     "ahe": {
-      "name": { "zh": "阿禾", "en": "A-He" },
+      "name": {
+        "zh": "阿禾",
+        "en": "A-He"
+      },
       "root": "wood",
-      "hp": 0.6,
-      "role": { "zh": "木天灵根 · 治 · 缚", "en": "wood · heals · binds" },
+      "hp": 0.4,
+      "role": {
+        "zh": "木天灵根 · 治 · 缚",
+        "en": "wood · heals · binds"
+      },
       "art": "art/people/ahe-girl.webp",
-      "deck": ["qingteng", "qingteng", "qingguang", "peiyuan", "tengmiao", "bingzhuifu", "chunsheng", "zhenyuefu"]
+      "deck": [
+        "qingteng",
+        "qingteng",
+        "qingguang",
+        "peiyuan",
+        "tengmiao",
+        "bingzhuifu",
+        "chunsheng",
+        "zhenyuefu"
+      ]
     },
     "sun": {
-      "name": { "zh": "孙二狗", "en": "Sun Ergou" },
+      "name": {
+        "zh": "孙二狗",
+        "en": "Sun Ergou"
+      },
       "root": "earth",
-      "hp": 0.8,
+      "hp": 0.4,
       "taunt": true,
-      "role": { "zh": "山根桩 · 嘲讽", "en": "Mountain-Root Stance · draws the blows" },
+      "role": {
+        "zh": "山根桩 · 嘲讽",
+        "en": "Mountain-Root Stance · draws the blows"
+      },
       "art": "art/people/sunergou.webp",
-      "deck": ["tiegu", "shangen", "tiegu", "shangen"]
+      "deck": [
+        "tiegu",
+        "shangen",
+        "tiegu",
+        "shangen"
+      ]
     },
     "yinyue": {
-      "name": { "zh": "银月", "en": "Yinyue" },
+      "name": {
+        "zh": "银月",
+        "en": "Yinyue"
+      },
       "root": "metal",
       "hp": 0.7,
       "juan": 2,
       "walks": true,
-      "role": { "zh": "补锅匠", "en": "the pot-mender" },
-      "deck": ["yinyue"]
+      "role": {
+        "zh": "补锅匠",
+        "en": "the pot-mender"
+      },
+      "deck": [
+        "yinyue"
+      ]
     }
   },
   "by_hui": {
-    "h11": ["ahe", "sun"],
-    "h09": ["ahe"],
-    "h10": ["ahe"],
-    "j07": ["ahe", "sun"],
-    "j09": ["ahe"]
+    "h11": [
+      "ahe",
+      "sun"
+    ],
+    "h09": [
+      "ahe"
+    ],
+    "h10": [
+      "ahe"
+    ],
+    "j07": [
+      "ahe",
+      "sun"
+    ],
+    "j09": [
+      "ahe"
+    ]
   },
-  "_by_hui": "A 今 interlude's 回 (j07, j09) stands for the 古 回 its chapter plays when the save is between scenes there (rules/hui.mjs huiNow reads the chapter's first): 00-zhuji opens on 今·三 before 古七, 01-ji on 今·四 before 古九."
+  "_by_hui": "A 今 interlude's 回 (j07, j09) stands for the 古 回 its chapter plays when the save is between scenes there (rules/hui.mjs huiNow reads the chapter's first): 00-zhuji opens on 今·三 before 古七, 01-ji on 今·四 before 古九.",
+  "roams_alone": true,
+  "_roams_alone": "A beast met roaming — a haunt's or a pool's (后山崖顶, the 冀 pools) — he fights alone; the 回's companions stand with him in the story's fights (灵草谷 in 古七, the 河伯祠 in 古九). With 孙二狗's guard and 阿禾's heals a pool beast was never lost, only outlasted (2026-10-16).",
+  "_hp": "A member's 气血 is a share of his. 0.4 (2026-10-16): at 0.6 · 0.8 灵草谷 was won 78% and lost 18% — the beast could not get past 孙二狗 to him."
 }

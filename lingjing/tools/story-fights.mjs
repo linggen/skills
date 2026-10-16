@@ -144,7 +144,8 @@ function thoughtOut(setup) {
    a turn ahead). Callable from elsewhere (tools/balance.mjs). */
 export function rateOf(f, seeds = 200, from = 0, line = 'careful') {
   const st = stateAt(f.at), foe = foeOf(f);
-  const setup = fightSetup(content, st, foe, NOW);
+  // A pool's beast is met roaming: its door is a haunt's (party.json roams_alone).
+  const setup = fightSetup(content, st, foe, NOW, f.pool ? `haunt:${f.id}` : null);
   let won = 0, lost = 0, turns = 0, left = 0, forced = 0;
   for (let k = from; k < from + seeds; k += 1) {
     const end = (line === 'lookahead' ? thoughtOut : fightOnce)({ ...setup, seed: `band|${k}` });

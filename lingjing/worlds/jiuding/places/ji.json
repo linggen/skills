@@ -4,7 +4,7 @@
  "start": "zhangnan",
  "_about": "The places of 冀 — the 漳水 and 邺 in the south, 太行 to the west, 发鸠 and 涿鹿 north, 碣石 at the sea. The road in comes from 徐's 泗水北岸; it opens with chapter 1.",
  "_pools": "冀's pools: the 太行's beasts of 《山海经 · 北次三经》 (天马 of 马成之山, 领胡 of 阳山) and the 漳水's 人鱼 (决决之水) — added for 卷一, used by no later 卷 (DESIGN.md, OUTLINE.md checked 2026-10-05).",
- "pools": {"taihang": {"name": {"zh": "太行山口", "en": "The Taihang pass"}, "beasts": [{"creature": "tianma", "hp": 2.55, "weight": 2}, {"creature": "linghu", "hp": 2.55, "weight": 2}]}, "liuwan": {"name": {"zh": "漳水下游", "en": "Down the Zhang"}, "beasts": [{"creature": "renyu", "hp": 2.35, "weight": 1}]}},
+ "pools": {"taihang": {"name": {"zh": "太行山口", "en": "The Taihang pass"}, "beasts": [{"creature": "tianma", "hp": 2.55, "weight": 2}, {"creature": "linghu", "hp": 2.9, "weight": 2}]}, "liuwan": {"name": {"zh": "漳水下游", "en": "Down the Zhang"}, "beasts": [{"creature": "renyu", "hp": 2.2, "weight": 1}]}},
  "places": [
   {
    "id": "zhangnan",

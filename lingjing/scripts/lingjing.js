@@ -110,6 +110,9 @@ const herHere = () => Boolean(look?.companion?.joined && !look?.companion?.aslee
 /// 'absent' (not met, or 今线) · 'asleep' · 'awake'.
 const herNow = () => herMode(look);
 const herNear = () => herNow() !== 'absent';
+/* In a fight she speaks only when she stands in its row (party.json: a member from 卷二; asleep in the
+   木牌 through 卷一, no 问银月 and no bubble — as her chip reads 「木牌 · 睡着」). */
+const herFights = (b) => herNear() && (b?.brief?.setup?.you?.party ?? []).some((m) => m.id === look?.companion?.id);
 const voice = createVoice({
   // A scratch save (?save=) tells 银月 nothing: she lives in the real game.
   post: (id, fact, flags, opts) => (SCRATCH ? Promise.resolve(false) : postMoment(fact, flags, opts)),
@@ -1636,7 +1639,7 @@ function boutCtx() {
     // Why this fight, and who speaks in it (the brief carries them when the story gives them).
     stake: bout.brief.stake ?? null, says: { ...(boutSays(bout.brief.says, bout.st.outcome) ?? {}), her: herSays(bout) },
     // 问银月 (fightsay.js): only while she walks with him here, and its count left.
-    herAsk: herNear() && bout.say ? { can: bout.say.canAsk(boutView(bout.st)), left: bout.say.asksLeft(), name: look.companion?.name ?? words().yinyue } : null,
+    herAsk: herFights(bout) && bout.say ? { can: bout.say.canAsk(boutView(bout.st)), left: bout.say.asksLeft(), name: look.companion?.name ?? words().yinyue } : null,
   };
 }
 
@@ -3400,7 +3403,7 @@ function fightSayFor(b) {
 }
 /// Her bubble's words: '…' while she is thinking, else her line.
 function herSays(b) {
-  if (!b?.her || !herNear()) return null;
+  if (!b?.her || !herFights(b)) return null;
   return b.her.from === 'wait' ? '…' : b.her.text;
 }
 /* Her bubble repainted where it stands, so a blow being drawn is never redrawn
@@ -3417,7 +3420,7 @@ function paintHer(b) {
 }
 /// 问银月 — true when it was asked (the ask bar falls back to the chat otherwise).
 function askHerInFight(b, said = '') {
-  if (!b?.say || !herNear() || b.yielded) return false;
+  if (!b?.say || !herFights(b) || b.yielded) return false;
   const v = boutView(b.st);
   if (!b.say.canAsk(v)) return false;
   b.say.ask(v, fightFacts(v, herFactsCtx(b), 'ask', { words: said }));
@@ -3426,7 +3429,7 @@ function askHerInFight(b, said = '') {
 /* Her word at a key moment of the move just played out (fightsay.js cuesOf,
    bigPlay); the limits are fightsay's. `mine`: the move was his. */
 function herCues(b, before, mark, mine) {
-  if (!b?.say || !herNear() || b.yielded) return;
+  if (!b?.say || !herFights(b) || b.yielded) return;
   const after = boutView(b.st), log = since(b.st.log, mark);
   const kinds = cuesOf(before, after, log, { strong: strongFoe(b.brief) });
   const big = mine ? bigPlay(log, after, lang()) : null;
