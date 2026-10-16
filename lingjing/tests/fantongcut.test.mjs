@@ -139,14 +139,14 @@ test('the elements come one a day: the day\'s first puzzle features the new one 
 
 /* ── round two (2026-10-16): no waiting, earned stars, the bubble swung into, the swipe ── */
 
-test('no waiting: after a move the swing is felt a moment, then settles at FAST× — well under two seconds of clock', () => {
+test('no waiting: after a move the swing is felt a moment, then eases up to FAST× and back — under two seconds of clock', () => {
   const level = { bread: [180, 150], vines: [{ at: [50, 34] }, { at: [300, 34] }], mouth: [300, 358], stars: [[300, 200], [300, 250], [300, 300]] };
   let s = cut.newGame('w', 1, { level });
   assert.equal(cut.paceOf(s), 1, 'untouched: its own pace');
   s = cut.act(s, { g: 'cut', v: '0', k: '3' }).state;
   let wall = 0, still = 0;
   while (wall < 6000 && still < 400) { const pace = cut.paceOf(s); s = cut.tick(s, 50); wall += 50; still = s.swing.bread.speed < 0.12 ? still + 50 * pace : 0; }
-  assert.ok(wall < 1250, `hangs still ${wall} ms of the clock after the cut`);
+  assert.ok(wall < 1900, `hangs still ${wall} ms of the clock after the cut`);
   assert.equal(cut.paceOf(s), 1, 'still: its own pace again');
 });
 

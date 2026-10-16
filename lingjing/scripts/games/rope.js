@@ -27,7 +27,7 @@ const LINK = 18, GUST_MS = 700, GUST_ACC = 0.0009, GUST_BAND = 70, SETTLE_STEPS 
 export const AIR_HUNG = 0.03;
 export const AIR_FREE = 0.01;
 export const AIR_BUBBLE = 0.06;
-const LIFT = 1.25, BUBBLE_GUST = 2;
+const LIFT = 1.25, BUBBLE_GUST = 0.6; // a bubble at the roof drifts along it, never off the board
 export { GUST_MS, GUST_BAND };
 
 const NO_HIT = { group: -1, category: 0x0002, mask: 0 };

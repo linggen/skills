@@ -30,7 +30,8 @@ export const MAX_MISSES = 4;
 const ART = new URL('../../worlds/jiuding/art/', import.meta.url).href;
 const POT = `${ART}games/fantong-pot.webp`, BUBBLE = `${ART}games/bubble.webp`, THORNS = `${ART}games/thorns.webp`;
 // The pot's art: its rim sits on the mouth, its feet on the floor.
-const POT_W = 92, POT_H = POT_W * 490 / 440, RIM = 0.306;
+// The star of the scene (2026-10-16): about a third of the board wide, its rim on the mouth (rope-gen's MOUTH_Y).
+const POT_W = 132, POT_H = POT_W * 490 / 440, RIM = 0.306;
 
 const T = {
   zh: {
@@ -139,16 +140,25 @@ const PHASES = {
 
 /* No waiting (Hanli via the coordinator, 2026-10-16: 「不要等」): after a move the swing plays at its
    own pace for a moment — the weight is felt — then, while it only settles (hung on a vine or lifted
-   in a bubble, no puff blowing), time runs FAST× until it hangs still. A fall, a roll and a puff
-   always play at their own pace. The world's steps are the same either way: only the clock is quicker. */
-export const FAST = 6;
-export const FAST_AFTER = 350;
+   in a bubble, no puff blowing), time quickens — eased in over RAMP_MS and eased out as the swing
+   dies, up to FAST× — until it hangs still, so a big swing never reads as fast-forward. A fall, a
+   roll and a puff always play at their own pace. The world's steps are the same either way: only
+   the clock is quicker. */
+export const FAST = 4;
+export const FAST_AFTER = 300;
+export const RAMP_MS = 500;
+const ease = (x) => x * x * (3 - 2 * x);
 export function paceOf(s) {
-  if (s.phase !== 'play' || !s.moves || s.clock - (s.movedAt ?? 0) < FAST_AFTER) return 1;
+  if (s.phase !== 'play' || !s.moves) return 1;
+  const since = s.clock - (s.movedAt ?? 0) - FAST_AFTER;
+  if (since <= 0) return 1;
   const w = s.swing;
   if (w.gust > 0 || hangsStill(w)) return 1;
-  const hung = w.vines.some((v) => v.cut == null) || anyHeld(w);
-  return hung ? FAST : 1;
+  if (!(w.vines.some((v) => v.cut == null) || anyHeld(w))) return 1;
+  const up = ease(Math.min(1, since / RAMP_MS));
+  // Out: a big, fast swing a little gentler; the slow tail (where the waiting was) at full speed.
+  const down = 1 - 0.45 * ease(Math.min(1, Math.max(0, (w.bread.speed - 2) / 6)));
+  return 1 + (FAST - 1) * up * down;
 }
 
 export function tick(state, ms) {

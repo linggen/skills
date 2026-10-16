@@ -13,8 +13,10 @@
 // Bounded tries, then a hand-made level that always works. Pure: the same seed, the same level.
 import { blowGust, buildWorld, calm, cutVine, dist, outOf, popBubble, stepWorld, BREAD_R, FLOOR, W } from './rope.js';
 
-export const MOUTH_Y = FLOOR - 64;
-export const MOUTH_R = 30;
+export const MOUTH_Y = FLOOR - 92;
+export const MOUTH_R = 34;
+// Two ways down this far apart still both fall into one mouth set between them (its reach ≈ 42 px).
+const PAIR_PX = 64;
 export const STAR_R = 13;
 const CALM_MS = 400, LATE_MS = 320, SLOW_MS = 1500, END_MS = 900, LIMIT_MS = 11000, STEP = 1000 / 60;
 export const TRIES = 24;
@@ -79,7 +81,7 @@ export function playPlan(level, plan, { late = 0, limit = LIMIT_MS } = {}) {
 
 /** Where a path first comes down through the mouth's height after its LAST move — every move of
     the plan matters (a puff or a pop after the thing is already in would be decoration). */
-function crossing(path) {
+export function crossing(path) {
   for (let k = Math.max(1, path.last ?? path.first ?? 1); k < path.length; k++) {
     const [x0, y0] = path[k - 1], [x1, y1] = path[k];
     if (y0 < MOUTH_Y && y1 >= MOUTH_Y && y1 > y0) return x0 + ((x1 - x0) * (MOUTH_Y - y0)) / (y1 - y0);
@@ -123,14 +125,17 @@ export function compose(u, { tier = 0, els = [], must = null } = {}) {
   // Once the puff is known it is in most layouts: a puff while the thing hangs is the usual extra
   // move a 灵光 off the plain path asks for (earn the stars, 2026-10-16).
   const bubble = has('bubble'), gust = !bubble && (must === 'gust' || (els.includes('gust') && must !== 'thorns' && must !== 'regrow' ? chance(u, 0.8) : has('gust'))), regrow = has('regrow'), thorns = has('thorns');
-  const x0 = round(between(u, 90, W - 90)), y0 = round(between(u, 118, 176));
+  // The first feed's one vine hangs it high: room for three 灵光 on the way down to the 饭桶.
+  const x0 = round(between(u, 90, W - 90)), y0 = round(tier === 0 && !must ? between(u, 84, 112) : between(u, 118, 176));
   // A bubble wants two vines: it hangs off to the side, and one cut swings the thing into it.
-  const n = must ? (regrow || thorns || bubble ? 2 : 1) : Math.max(bubble ? 2 : 1, Math.min(3, 1 + (tier >= 1 ? 1 : 0) + (tier >= 2 && chance(u, 0.6) ? 1 : 0) + (regrow && tier < 1 ? 1 : 0)));
+  // With no puff yet known, a third vine is what makes a second way (an order change) for a 灵光.
+  const third = tier >= 2 ? chance(u, 0.6) : tier === 1 && !els.length ? chance(u, 0.7) : false;
+  const n = must ? (regrow || thorns || bubble ? 2 : 1) : Math.max(bubble ? 2 : 1, Math.min(3, 1 + (tier >= 1 ? 1 : 0) + (third ? 1 : 0) + (regrow && tier < 1 ? 1 : 0)));
   const level = { bread: [x0, y0], vines: anchors(u, Math.max(n, regrow ? 2 : 1), x0) };
   if (regrow) level.vines[Math.floor(u() * level.vines.length)].regrow = round(between(u, 1800, 2600));
   if (gust && must !== 'gust' && chance(u, 0.5)) {
     // A puff across where the thing hangs: it swings it, no ledge (an extra move, for a star).
-    const right = chance(u, 0.5);
+    const right = x0 < W / 2; // toward the middle: a swing there stays on the board
     level.gust = { at: [right ? 24 : W - 24, y0 + 6], to: [right ? 1 : -1, 0], band: 50 };
   } else if (gust) {
     // The ledge under the vine cut last in one of the orders: there the thing comes to rest for the puff.
@@ -153,15 +158,17 @@ export function compose(u, { tier = 0, els = [], must = null } = {}) {
     if (Math.abs(a0) < 0.35 || bx < 40 || bx > W - 40 || Math.hypot(bx - x0, by - y0) < 60) return { level, thorns, unfit: true };
     level.bubbles = [{ at: [round(bx), round(by)] }];
     if (els.includes('gust') && (!must || must === 'bubble') && chance(u, 0.6)) {
-      const right = chance(u, 0.5);
-      level.gust = { at: [right ? 24 : W - 24, 60], to: [right ? 1 : -1, 0], band: 60 };
+      const right = bx < W / 2; // toward the middle: the bubble drifts along the roof, not off it
+      // Tall enough to reach the thing where it hangs (a puff there changes its swing into the bubble)
+      // and the bubble at the roof (a puff there carries it along).
+      level.gust = { at: [right ? 24 : W - 24, 100], to: [right ? 1 : -1, 0], band: 84 };
     }
   }
   return { level, thorns };
 }
 
 /* The plans worth trying for a layout: the orders of the cuts, the puff and the pop where they fit. */
-function plansOf(level) {
+export function plansOf(level) {
   const n = level.vines.length, orders = [];
   const perm = (left, done) => (left.length ? left.forEach((v, k) => perm([...left.slice(0, k), ...left.slice(k + 1)], [...done, v])) : orders.push(done));
   perm([...Array(n).keys()], []);
@@ -170,7 +177,13 @@ function plansOf(level) {
   for (const o of orders) {
     if (level.bubbles) {
       out.push([...cuts(o), { g: 'pop', i: 0 }]);
-      if (level.gust) out.push([...cuts(o), { g: 'gust' }, { g: 'pop', i: 0 }]);
+      if (level.gust) {
+        const c = cuts(o);
+        // The puff at the roof, or the puff while it hangs from one vine (its swing into the bubble
+        // changed — a second way, for a 灵光).
+        out.push([...c, { g: 'gust' }, { g: 'pop', i: 0 }]);
+        if (c.length > 1) out.push([...c.slice(0, -1), { g: 'gust' }, c.at(-1), { g: 'pop', i: 0 }]);
+      }
     } else if (level.gust && level.stones?.length) {
       out.push([...cuts(o), { g: 'gust' }], [{ g: 'gust' }, ...cuts(o), { g: 'gust' }]);
     } else if (level.gust) {
@@ -218,7 +231,8 @@ function starsOn(path, end) {
 
 /* Three stars on `path`: two where `main` also goes, one where it never does — or null. */
 function starsApart(path, end, main, mainEnd) {
-  const from = path.first ?? 0, gap = STAR_R + BREAD_R + 16;
+  // "Far": out of the plain way's catch (a 灵光 is caught within STAR_R + BREAD_R), with a margin.
+  const from = path.first ?? 0, gap = STAR_R + BREAD_R + 7;
   const far = [], shared = [];
   for (const p of dense(path.slice(from + 10, end - 1), 6)) (near(main, p, gap, 0, mainEnd) ? shared : far).push(p);
   const f = far.filter(fromHang(path)), sh = shared.filter(fromHang(path));
@@ -242,19 +256,23 @@ export function attempt(u, opts) {
   if (!inside.length) return { why: 'no-plan' };
   // Two ways down through the same mouth, when the layout has them, are tried first: the mouth between
   // them, so the second (with a star on it) is a better way to find, not luck. Then each plan alone.
-  const pairs = inside.flatMap((a) => inside.filter((b) => b !== a && Math.abs(crossing(a.path) - crossing(b.path)) < 40).map((b) => [a, b]));
-  const tries = [...pairs.slice(0, 1), ...inside.slice(0, 3).map((a) => [a, null])];
+  const pairs = inside.flatMap((a) => inside.filter((b) => b !== a && Math.abs(crossing(a.path) - crossing(b.path)) < PAIR_PX).map((b) => [a, b]));
+  // Pairs whose ways part most first; a pair is kept only if it gives a better-way star.
+  const apart = (a, b) => a.path.reduce((m, p) => Math.max(m, near(b.path, p, BREAD_R + STAR_R + 16) ? 0 : 1), 0);
+  const plain = (r) => (r.plan.some((m) => m.g === 'gust') && !r.plan.every((m) => m.g !== 'gust') ? 1 : 0);
+  pairs.sort((x, y) => plain(x[0]) - plain(y[0]) || apart(y[0], y[1]) - apart(x[0], x[1]));
+  const tries = [...pairs.slice(0, 4), ...inside.slice(0, 3).map((a) => [a, null])];
   let why = 'no-plan';
   for (const [main, mate] of tries) {
     const r = prove(structuredClone(level), thorns, runs, main, mate, u, opts);
-    if (r.level) return r;
+    if (r.level && (r.better || !mate)) return r;
     why = r.why;
   }
   return { why };
 }
 
 /* One plan proved on a layout: the mouth set, the thorns laid, the late hands, the stars. */
-function prove(level, thorns, runs, main, mate, u, opts) {
+export function prove(level, thorns, runs, main, mate, u, opts) {
   const mouth = [round(mate ? (crossing(main.path) + crossing(mate.path)) / 2 : crossing(main.path)), MOUTH_Y];
   const fedMain = fedAt(main.path, mouth);
   if (fedMain < 0) return { why: 'no-feed' };
