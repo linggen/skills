@@ -285,6 +285,7 @@
 .g-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; font-size: 13px; color: var(--faint); }
 .g-head b { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
 .g-head .is-wet b { color: var(--seal); }
+.g-head .is-near { color: var(--seal); font-weight: 600; } /* 接雨: the last ten puddles before the night is lost */
 .g-line-say { font-size: 15px; line-height: 1.75; margin: 0; text-align: center; min-height: 3.5em; }
 .g-hint { margin: 0; color: var(--yinyue); font-size: 15px; }
 .g-chip { font-family: var(--ui); font-size: 12px; border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; color: var(--dim); background: var(--surface); white-space: nowrap; }

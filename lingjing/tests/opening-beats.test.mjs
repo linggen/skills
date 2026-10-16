@@ -36,42 +36,34 @@ test('every game: meta in both languages, opens with a control to touch, draws i
   }
 });
 
-/* 接雨: a quick hand keeps the floor dry; an idle one lets the fifth watch end it, wet. */
+/* 接雨 (打地鼠 since 2026-10-16): a quick hand keeps the floor dry; a slow one leaves puddles; idle floods (rain.test.mjs). */
 function rainBot(seed, react) {
   let s = rain.act(rain.newGame(seed), { g: 'start' }).state, since = 0;
   while (!s.won) {
     s = rain.tick(s, 100); since += 100;
     if (s.won || since < react) continue;
     since = 0;
-    for (let i = 0; i < rain.SPOTS.length && !s.won; i += 1) {
-      const b = s.basins[i], drip = rain.leakingAt(s.sched, i, s.t);
-      if (b != null && (b >= rain.CAP || (!drip && s.spare + s.hand.length === 0))) s = rain.act(s, { g: 'spot', i }).state;
-      if (!s.won && drip && s.basins[i] == null) s = rain.act(s, { g: 'spot', i }).state;
-    }
+    for (let i = 0; i < rain.SPOTS.length; i += 1) if (s.basins[i] == null && rain.leakingAt(s.sched, i, s.t)) s = rain.act(s, { g: 'spot', i }).state;
   }
   return s;
 }
-test('接雨: seventeen basins under the drips — quick hands keep the floor dry, slow ones leave puddles; the rain always stops', () => {
+test('接雨: seventeen leaks caught — quick hands keep the floor dry, slow ones leave puddles; the fifth watch stops the rain', () => {
   const well = rainBot('a', 300);
   assert.equal(well.grade, 'dry');
   assert.equal(rain.fullCount(well), rain.NEED);
   assert.ok(well.t < 90000, 'about a minute');
-  const slow = rainBot('a', 2500);
+  const slow = rainBot('a', 1500);
   assert.equal(slow.won, true);
   assert.equal(slow.grade, 'wet');
-  const idle = play(rain, rain.act(rain.newGame('a'), { g: 'start' }).state, [rain.LIMIT]);
-  assert.equal(idle.won, true, 'the fifth watch ends it');
-  assert.equal(idle.grade, 'wet');
+  assert.equal(slow.floods, 0, 'slow but trying: never flooded');
+  // Under the flood line to the end: the fifth watch ends it, short.
+  const late = rain.act(rain.newGame('a'), { g: 'start' }).state, at = rain.LIMIT - 200;
+  const k = late.sched.drips.filter((d) => d.at <= at).length, e = late.sched.leaks.filter((l) => l.to <= at).length;
+  const watch = play(rain, { ...late, t: at, k, e }, [400]);
+  assert.equal(watch.won, true, 'the fifth watch ends it');
+  assert.equal(watch.grade, 'wet');
   assert.match(rain.html(well, 'zh'), /十七个盆，一个不少/);
-  assert.match(rain.html(idle, 'en'), /fifth watch/);
-  // A basin lifted before it is full goes back to hand, water and all, and down again first.
-  let s = rain.act(rain.newGame('b'), { g: 'start' }).state;
-  s = rain.act(s, { g: 'spot', i: 0 }).state;
-  s = { ...s, basins: [3, ...s.basins.slice(1)] };
-  s = rain.act(s, { g: 'spot', i: 0 }).state;
-  assert.deepEqual(s.hand, [3]);
-  s = rain.act(s, { g: 'spot', i: 1 }).state;
-  assert.equal(s.basins[1], 3);
+  assert.match(rain.html(watch, 'en'), /fifth watch/);
 });
 
 test('算账: the hide, then twenty catties on the pan — exact keeps the most at home, over gives the Mas the rest; light is never taken', () => {
