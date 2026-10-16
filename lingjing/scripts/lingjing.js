@@ -51,7 +51,7 @@ import { SIGHT_KINDS, artRoom, chatHeard, fitBox, mountChatToggle, paintSight, s
 import { createPager } from './pager.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
-import { beatWon } from './beat-won.js';
+import { beatWon, onBeatWon } from './beat-won.js';
 import { beatHost } from './beat-host.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
 import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, huiLineOf, momentMay, momentsHold, trayWaits } from './queue.js';
@@ -500,6 +500,8 @@ function nudgeTrial() {
    until played. Waits while a fight holds the stage; the first read of a page plays nothing. */
 const revealQueue = [];
 let revealing = false;
+// A won beat (beat-won.js) may have given its card (射鹿 → 一箭, 吹鹅毛 → 吐纳): read, then the reveal plays.
+onBeatWon(() => refresh().then(() => playReveals()));
 function gainedCards(was, now) {
   if (!was) return;
   const before = new Set(was.cards_new ?? []);
