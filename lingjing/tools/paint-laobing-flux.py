@@ -49,7 +49,9 @@ SUBJECTS = {
 }
 
 # id: (kept seed, crop box in the 512 picture or None (to the subject), output size, paper threshold)
-KEPT = {}
+# Looked at 2026-10-16 (3 seeds each): griddle 3 (cleanest disc, no spout), stove 1 (low brick front,
+# dark arched mouth), fire 2 (small fire, sticks). blaze, raw, gold, burnt, plate, wood: not painted yet.
+KEPT = {'griddle': (3, None, 512, 26), 'stove': (1, None, 440, 30), 'fire': (2, None, 256, 30)}
 
 
 def busy():
