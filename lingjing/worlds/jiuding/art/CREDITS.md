@@ -248,8 +248,12 @@ stag pose keeps its whole canvas, so the poses share one scale and ground line. 
 rolled and looked at beside the house sheet on paper and on a dark ground; the kept seed is in the script. No outside source.
 
 - `games/deer/` — the stag drinking (seed 2), lifting its head (2), walking (1), bolting (1): 640×480 on one canvas,
-  facing right; the bow at rest (2), the arrow (2), a reed (3), a snapped reed (3), a dead branch (2).
+  facing right; the bow at rest (2) and fully drawn (4, a re-roll: the first prompt's seeds bent the bow the wrong way),
+  the arrow (2), a reed (3), a snapped reed (3), a dead branch (2), the ink burst (3, re-rolled solid — the first drew rings).
 - `games/bread/` — 喂饼's cave (a vignette, 720×880, seed 2, laid on the house paper), the 饼 (2), its torn corner (1),
-  the stone slab (3), the vine's sprig (2).
+  the stone slab (3), the vine's sprig (2), the puff of wind at the cave mouth (2).
 - `games/rain/` — 接雨's wooden basin (1) and the wet thatch beam (1).
+- `games/sneeze/` — 喷嚏符's 何七 squared up (2) and punching (2), 小满 with the charm (1), the stone stage's edge (3);
+  the first round drew 何七 in a karate gi and belt, so the prompt spells out a Chinese short jacket and a knotted sash.
+- `games/feather/` — 吹鹅毛's goose feather (1), 小满's face in profile breathing out (1), the bamboo strip (3).
 

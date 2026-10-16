@@ -184,6 +184,11 @@ const calm = (s) => Boolean(s?.still) || still();
 
 // Resolved from this file, so the beat, the try page and the 游戏厅 all find it.
 const FOX = new URL('../../worlds/jiuding/art/people/yinyue-fox.webp', import.meta.url).href;
+// The cave and what swings in it, painted in the house 水墨淡彩 (tools/paint-games.py, 2026-10-16 — Hanli:
+// the code-drawn disc and strokes read as another, cheaper game): the cave is the ground, edge to edge;
+// the 饼, its torn corner, the stone and the vine's leaves are keyed pieces that move over it.
+const ART = (f) => new URL(`../../worlds/jiuding/art/games/bread/${f}.webp`, import.meta.url).href;
+const PAINT = { cave: ART('cave'), bing: ART('bing'), piece: ART('bing-piece'), stone: ART('stone'), leaf: ART('leaf'), puff: ART('puff') };
 // The fox's art: 960×800, its nose at about (440, 480). Laid so the nose is the level's mouth.
 const FOX_W = 196, FOX_H = FOX_W * 800 / 960, NOSE = [440 / 960, 480 / 800];
 
@@ -216,15 +221,15 @@ function vinePicture(v, i, bread, live, phase) {
     const b = pts[k + 1];
     return `<line class="g-vine-hit" x1="${n(a.x)}" y1="${n(a.y)}" x2="${n(b.x)}" y2="${n(b.y)}" data-g="cut" data-g-swipe="" data-v="${i}" data-k="${k}"/>`;
   }).join('');
-  const knot = `<circle class="g-vine-knot" cx="${v.at[0]}" cy="${v.at[1]}" r="4"/>`;
+  // Where the vine roots in the roof: a painted sprig (still — only the vine below it swings).
+  const knot = `<image class="g-vine-leaf" href="${PAINT.leaf}" x="${v.at[0] - 13}" y="${v.at[1] - 8}" width="26" height="26" transform="rotate(${(i % 2 ? 1 : -1) * 18} ${v.at[0]} ${v.at[1]})"/>`;
   return strokes + knot + hits;
 }
 
 function breadPicture(x, y, angle, scale = 1) {
   const r = BREAD_R;
   return `<g class="g-bing" transform="translate(${n(x)} ${n(y)}) rotate(${n((angle * 180) / Math.PI)}) scale(${n(scale, 2)})">`
-    + `<circle class="g-bread" r="${r}"/><path class="g-bread-fold" d="M${-r * 0.55} ${-r * 0.2} q${r * 0.5} ${-r * 0.35} ${r * 1.05} ${r * 0.05}"/>`
-    + `<circle class="g-scorch" cx="${n(-r * 0.3)}" cy="${n(r * 0.35)}" r="1.8"/><circle class="g-scorch" cx="${n(r * 0.4)}" cy="${n(r * 0.1)}" r="1.5"/><circle class="g-scorch" cx="${n(r * 0.05)}" cy="${n(-r * 0.45)}" r="1.4"/></g>`;
+    + `<image class="g-bing-art" href="${PAINT.bing}" x="${n(-r * 1.1)}" y="${n(-r * 1.1)}" width="${n(r * 2.2)}" height="${n(r * 2.2)}"/></g>`;
 }
 
 function piecePicture(level, s) {
@@ -234,14 +239,14 @@ function piecePicture(level, s) {
   if (taken && age > 600) return '';
   const k = taken ? 1 - age / 600 : 1;
   return `<g class="g-corner${s.got[s.li] && !taken ? ' is-had' : ''}" transform="translate(${x} ${y}) scale(${n(0.4 + 0.6 * k, 2)})" opacity="${n(k, 2)}">`
-    + `<path class="g-bread is-corner" d="M0 ${-PIECE_R} A${PIECE_R} ${PIECE_R} 0 0 1 ${n(PIECE_R * 0.87)} ${n(PIECE_R * 0.5)} L0 0Z" transform="rotate(-30)"/>`
+    + `<image class="g-piece-art" href="${PAINT.piece}" x="${n(-PIECE_R * 1.1)}" y="${n(-PIECE_R * 1.1)}" width="${n(PIECE_R * 2.2)}" height="${n(PIECE_R * 2.2)}"/>`
     + `<circle class="g-corner-ring" r="${PIECE_R + 3}"/></g>`;
 }
 
 function stonePicture(st) {
   const a = st.a ?? 0, w = st.w, h = st.h;
-  return `<g transform="translate(${st.x} ${st.y}) rotate(${a})"><rect class="g-b-stone" x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="${n(h / 2.4)}"/>`
-    + `<path class="g-b-stone-line" d="M${-w / 2 + 6} ${-h / 2 + 2} q${w / 3} ${-3} ${w - 14} 1"/></g>`;
+  // The painted slab: its top face where the body's top is (the 饼 rolls there), its thickness hanging below.
+  return `<g transform="translate(${st.x} ${st.y}) rotate(${a})"><image class="g-b-stone-art" href="${PAINT.stone}" x="${n(-w * 0.54)}" y="${n(-h / 2 - 5)}" width="${n(w * 1.08)}" height="${n(h * 2.3)}" preserveAspectRatio="none"/></g>`;
 }
 
 function gustPicture(level, s) {
@@ -254,7 +259,7 @@ function gustPicture(level, s) {
     return `<path class="g-gust-streak" d="M${n(x0)} ${n(yy)} q${n(dir * len * 0.5)} ${n(-6 + i * 3)} ${n(dir * len)} 0"/>`;
   }).join('') : '';
   const puff = `<g class="g-puff${on ? ' is-on' : ''}" transform="translate(${x} ${y})" data-g="gust">`
-    + `<circle class="g-puff-hit" r="30"/><path class="g-puff-cloud" d="M-16 6 q-6 -12 6 -14 q4 -10 14 -4 q10 -4 12 6 q8 2 4 10 q-6 6 -36 2Z" transform="scale(${dir} 1)"/>`
+    + `<circle class="g-puff-hit" r="30"/><image class="g-puff-art" href="${PAINT.puff}" x="-26" y="-16" width="52" height="32" transform="scale(${dir} 1)"/>`
     + `<path class="g-gust-streak" d="M${dir * 10} 0 q${dir * 6} -3 ${dir * 14} 0"/></g>`;
   return `<rect class="g-gust-band" x="0" y="${y - band}" width="${W}" height="${band * 2}"/>${streaks}${puff}`;
 }
@@ -271,11 +276,8 @@ const DEFS = `<defs><radialGradient id="g-bread-fadegrad" cx="0.5" cy="0.55" r="
   + `<mask id="g-bread-fade" maskContentUnits="objectBoundingBox"><rect width="1" height="1" style="fill:url(#g-bread-fadegrad)"/></mask></defs>`;
 
 function cave() {
-  // The roof's rock, the floor, and the fire at the mouth: a few strokes and a wash.
-  return `<path class="g-cave-roof" d="M0 0 H${W} V26 C${W - 40} 38 ${W - 90} 22 ${W - 140} 30 C${W - 200} 40 120 20 70 32 C40 38 18 30 0 36Z"/>`
-    + `<path class="g-cave-line" d="M0 36 C18 30 40 38 70 32 C120 20 ${W - 200} 40 ${W - 140} 30 C${W - 90} 22 ${W - 40} 38 ${W} 26"/>`
-    + `<path class="g-cave-floor" d="M0 ${FLOOR} C80 ${FLOOR - 4} 160 ${FLOOR + 3} ${W} ${FLOOR - 2} V${H} H0Z"/>`
-    + `<path class="g-cave-line" d="M0 ${FLOOR} C80 ${FLOOR - 4} 160 ${FLOOR + 3} ${W} ${FLOOR - 2}"/>`;
+  // The painted cave runs to every edge (the paper's own colour shows while it loads).
+  return `<image class="g-cave-art" href="${PAINT.cave}" x="0" y="0" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice"/>`;
 }
 
 function playScene(s) {
@@ -291,7 +293,7 @@ function playScene(s) {
   const caught = s.piece && !calm(s) ? splash(level.piece[0], level.piece[1], s.clock - (s.pieceAt ?? 0), { r: 9, seal: true }) : '';
   return scene(W, H, DEFS + cave() + gustPicture(level, s) + (level.stones ?? []).map(stonePicture).join('')
     + foxPicture(level, s) + piecePicture(level, s) + caught
-    + w.vines.map((v, i) => vinePicture(v, i, b, live, s.phase)).join('') + bread + fx, 'g-bread-cave')
+    + w.vines.map((v, i) => vinePicture(v, i, b, live, s.phase)).join('') + bread + fx, 'g-bread-cave g-painted is-painted')
     .replace('<svg ', `<svg data-swing="${esc(s.seed)}" `);
 }
 
@@ -324,7 +326,7 @@ function endScene(s) {
   const level = s.levels.at(-1), [mx, my] = level.mouth, d = mx > W / 2 ? -1 : 1; // the swirl opens toward the room
   const fx = (dx) => n(mx + d * dx);
   const flourish = `<path class="g-flourish" pathLength="1" d="M${fx(-90)} ${my - 70} C${fx(-40)} ${my - 120} ${fx(40)} ${my - 110} ${fx(70)} ${my - 64} S${fx(40)} ${my - 20} ${fx(4)} ${my - 30}"/>`;
-  return scene(W, H, DEFS + cave() + foxPicture(level, { ...s, phase: 'end' }) + breadPicture(mx + 6, my + 2, 0.4, 0.55) + flourish, 'g-bread-cave is-end');
+  return scene(W, H, DEFS + cave() + foxPicture(level, { ...s, phase: 'end' }) + breadPicture(mx + 6, my + 2, 0.4, 0.55) + flourish, 'g-bread-cave g-painted is-painted is-end');
 }
 
 export function html(state, lang = 'zh') {

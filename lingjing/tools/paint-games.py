@@ -77,7 +77,7 @@ SUBJECTS = {
     'An old Chinese hunting bow standing upright, seen from the side: ONE recurved wooden bow, its limbs wrapped round and '
     'round with dark sinew, a leather-wrapped grip in the middle, and ONE thin straight bowstring from tip to tip, at rest '
     '(not drawn). The wood a muted brown wash, the sinew in dark ink. No arrow, no hands, no person.'),
-  'deer/bow-drawn': ('sprite', (400, 640), (640, 1024), 1,
+  'deer/bow-drawn': ('sprite', (400, 640), (640, 1024), 4,
     'An old Chinese hunting bow drawn to full, upright, seen exactly from the side: the curved wooden BACK of the bow bulges '
     'out to the RIGHT like a deep letter D, its two tips pulled toward the left, limbs wrapped round with dark sinew, a '
     'leather-wrapped grip in the middle. The thin bowstring is pulled far back to the LEFT into a sharp V whose point is '
@@ -96,7 +96,7 @@ SUBJECTS = {
   'deer/branch': ('sprite', (640, 300), (1024, 512), 2,
     'ONE dead fallen branch lying horizontal: a bare grey weathered tree branch with no leaves, its thick broken-off base '
     'at the LEFT end, thinning and forking into a few broken twigs toward the RIGHT, gnarled, the bark cracked. Dry grey and dark ink brushstrokes, a faint muted brown.'),
-  'deer/ink-hit': ('sprite', (400, 400), (768, 768), 1,
+  'deer/ink-hit': ('sprite', (400, 400), (768, 768), 3,
     'A single bold SOLID splash of black Chinese ink burst on paper: one round blot filled solid black all the way through '
     '(no hole, no ring, not hollow), a few flung drops and short flicks around it, the edges bleeding softly into the paper. '
     'Black ink only, nothing else.'),
@@ -116,7 +116,7 @@ SUBJECTS = {
   'bread/stone': ('sprite', (480, 160), (1024, 384), 3,
     'ONE long flat grey stone slab lying horizontal, rough edges, moss in a few cracks, seen from the side. Grey ink wash and '
     'dark ink outline.'),
-  'bread/puff': ('sprite', (220, 160), (768, 576), 1,
+  'bread/puff': ('sprite', (220, 160), (768, 576), 2,
     'ONE small puff of wind drawn the old Chinese way: a soft curling swirl of cloud like a breath blown out to the RIGHT, '
     'two or three spiral curls and trailing wisps, in pale grey ink wash with a fine dark ink line. Nothing else.'),
   'bread/leaf': ('sprite', (160, 160), (512, 512), 2,
@@ -140,17 +140,17 @@ SUBJECTS = {
     'The head of a thin Chinese boy of thirteen in exact side profile, facing RIGHT, eyes half closed in calm concentration, '
     'lips softly parted breathing out, hair tied in a small topknot, a little of the neck and the collar of a patched hemp '
     'jacket. Only the head and neck. Ink lines and soft grey wash.'),
-  'feather/bamboo': ('sprite', (900, 90), (1536, 256), 1,
+  'feather/bamboo': ('sprite', (900, 90), (1536, 256), 3,
     'ONE thin flat strip of split bamboo lying perfectly horizontal across the picture, pale muted yellow-green with two '
     'dark ink nodes. Ink and soft wash.'),
   # ── 喷嚏符 (wm-dabi): 何七 swings, 小满 yields.
-  'sneeze/heqi-guard': ('sprite', (400, 600), (768, 1152), 1,
+  'sneeze/heqi-guard': ('sprite', (400, 600), (768, 1152), 2,
     'A big burly young Chinese martial disciple of about twenty, whole body seen from the side, facing LEFT, standing in a '
     'fighting stance on his feet, knees bent, his right fist drawn back at his hip and his left hand open in front of him, '
     'glaring. A plain grey Chinese cotton short jacket with a crossed collar, a WIDE soft cloth sash knotted at the side with its '
     'ends hanging (NOT a karate belt, NOT a gi), loose Chinese trousers bound at the shins with cloth strips, black cloth shoes, '
     'hair in a topknot with a cloth band. Old Chinese storybook figure. Ink lines and soft grey wash.'),
-  'sneeze/heqi-punch': ('sprite', (520, 600), (1024, 1152), 1,
+  'sneeze/heqi-punch': ('sprite', (520, 600), (1024, 1152), 2,
     'A big burly young Chinese martial disciple of about twenty, whole body seen from the side, facing LEFT, lunging forward '
     'and throwing a heavy straight punch to the LEFT with his right arm fully stretched out, front knee bent, back leg '
     'straight. A plain grey Chinese cotton short jacket with a crossed collar, a WIDE soft cloth sash knotted at the side with its '
@@ -161,7 +161,7 @@ SUBJECTS = {
     'little away, his right hand raised in front of his chest holding a small paper talisman between two fingers. A patched '
     'hemp jacket crossed at the front, rope belt, loose trousers, straw sandals, hair in a small topknot. Old Chinese '
     'storybook figure. Ink lines and soft grey wash.'),
-  'sneeze/stage': ('sprite', (960, 160), (1536, 256), 1,
+  'sneeze/stage': ('sprite', (960, 160), (1536, 256), 3,
     'The front edge of a low stone fighting platform seen from the side, a long horizontal strip of big grey dressed stone '
     'blocks running across the whole width, its top edge flat, a few cracks and moss. Grey ink wash and dark ink.'),
 }

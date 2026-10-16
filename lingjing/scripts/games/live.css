@@ -192,6 +192,7 @@
   background: radial-gradient(130% 100% at 40% 30%, #e3cdab, var(--g-paper) 60%, #d2b792); box-shadow: 0 6px 22px rgba(0, 0, 0, .18); }
 .g-scene .g-fig, .g-scene .g-stage { pointer-events: none; }
 .g-scene .g-heqi { transition: opacity .6s; }
+.g-scene .g-feather-art { filter: contrast(1.35) brightness(.9); }
 .g-scene .g-heqi.is-off { opacity: .55; }
 /* 喂饼 painted (2026-10-16, tools/paint-games.py): the cave is a painting on paper, so the board is paper in
    either theme — ink-dark strokes on it, the fox laid on with multiply, no frame line around it. */
@@ -199,7 +200,9 @@
   box-shadow: 0 6px 22px rgba(0, 0, 0, .22); }
 .g-bread-cave.is-painted .g-vine { stroke: #2f3a26; stroke-width: 2.6; opacity: .9; }
 .g-bread-cave.is-painted .g-vine-wash { stroke: #5d6b43; stroke-width: 7; opacity: .3; }
-.g-bread-cave.is-painted .g-puff-art { transition: opacity .2s; opacity: .85; }
+.g-bread-cave.is-painted .g-puff-art { transition: opacity .2s; opacity: .9; }
+/* the puff sits on the dark cave wall: a soft glow of paper behind it, so it reads (and is the tap target) */
+.g-bread-cave.is-painted .g-puff-hit { fill: rgba(244, 232, 208, .7); filter: blur(5px); }
 .g-bread-cave.is-painted .g-puff.is-on .g-puff-art { opacity: 1; }
 .g-bread-cave.is-painted .g-gust-band { opacity: .07; filter: blur(7px); }
 @media (prefers-color-scheme: dark) { .g-bread-cave.is-painted .g-fox-art image { mix-blend-mode: multiply; opacity: 1; } }
