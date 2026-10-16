@@ -235,3 +235,20 @@ picture looked at (the dress against the text, the age, no ancient dress, no tex
 The book shows them: each has a codex.json entry, `book_only` with `first.book: "j01"` — a card after the paragraph
 of their first appearance in 今 · 一; in play they keep their portrait on the stage's people row, but never get a
 first-appearance card, are never met, and have no slot in 录's 图鉴.
+
+## The small games' pieces — painted for Lingjing (2026-10-16)
+
+`games/<game>/<piece>.webp` — the things a small game moves, painted so the game sits in its scene (Hanli 10-16:
+「射鹿的画风比较粗糙啊」 — the stag was a code-drawn silhouette in front of a painted backdrop). Painted by the local
+picture model (FLUX.2 klein 4B through mflux, `ar9av/FLUX.2-klein-4B-mflux-4bit`) with `tools/paint-games.py`, which
+holds every prompt and each piece's kept seed; ink and light wash on warm aged paper, the house look of the creature
+sheet. A sprite is painted alone on paper, then keyed: alpha from how far a pixel is from the paper, the paper
+un-mixed from its colour, a washed body filled solid (so it holds over a dark ground too), trimmed to its ink. A
+stag pose keeps its whole canvas, so the poses share one scale and ground line. Three or four seeds a piece were
+rolled and looked at beside the house sheet on paper and on a dark ground; the kept seed is in the script. No outside source.
+
+- `games/deer/` — the stag drinking (seed 2), lifting its head (2), walking (1): 640×480 on one canvas, facing right.
+- `games/bread/` — 喂饼's cave (a vignette, 720×880, seed 2, laid on the house paper), the 饼 (2), its torn corner (1),
+  the stone slab (3), the vine's sprig (2).
+- `games/rain/` — 接雨's wooden basin (1) and the wet thatch beam (1).
+
