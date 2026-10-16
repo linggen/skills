@@ -61,12 +61,12 @@
      "target": {
       "kind": "zone",
       "deep": [
-       22,
-       96
+       98,
+       170
       ],
       "mid": [
-       96,
-       196
+       170,
+       262
       ],
       "floor": 252
      },
@@ -74,24 +74,24 @@
       {
        "kind": "wall",
        "from": [
-        336,
-        118
+        478,
+        70
        ],
        "to": [
-        10,
-        92
+        100,
+        108
        ],
        "bounce": 0.45
       },
       {
        "kind": "wall",
        "from": [
-        12,
+        96,
         252
        ],
        "to": [
-        12,
-        90
+        96,
+        108
        ],
        "bounce": 0.5
       }
@@ -129,12 +129,12 @@
      "target": {
       "kind": "zone",
       "deep": [
-       22,
-       90
+       98,
+       136
       ],
       "mid": [
-       90,
-       180
+       136,
+       240
       ],
       "floor": 252
      },
@@ -142,43 +142,31 @@
       {
        "kind": "wall",
        "from": [
-        336,
-        146
+        478,
+        70
        ],
        "to": [
-        10,
-        122
+        100,
+        108
        ],
        "bounce": 0.45
       },
       {
        "kind": "wall",
        "from": [
-        12,
+        96,
         252
        ],
        "to": [
-        12,
-        120
+        96,
+        108
        ],
        "bounce": 0.5
-      },
-      {
-       "kind": "wall",
-       "from": [
-        150,
-        252
-       ],
-       "to": [
-        168,
-        226
-       ],
-       "bounce": 0.4
       }
      ],
      "say": {
-      "zh": "又扔一块。洞顶低，扔平些，让它在地上跳进去。",
-      "en": "Another. The roof is low: throw it flat and let it skip in."
+      "zh": "又扔一块。这回要更深——贴着最里头的石壁落下去。",
+      "en": "Another. Deeper this time: down against the far wall."
      },
      "words": {
       "clean": {
@@ -200,7 +188,36 @@
      },
      "indoor": true
     }
-   ]
+   ],
+   "art": {
+    "_about": "The cave of 扔石听声, painted for the throwing board (tools/paint-games.py stone/cave, seed 2): the overhang along the top, the back wall at the left, the floor along the bottom; the walls and the deep in the levels follow it.",
+    "backdrop": {
+     "file": "games/stone/cave.webp",
+     "size": [
+      960,
+      600
+     ],
+     "crop": [
+      10,
+      10,
+      940,
+      588
+     ],
+     "wash": {
+      "archer": {
+       "at": [
+        372,
+        168
+       ],
+       "r": [
+        90,
+        96
+       ],
+       "o": 0.45
+      }
+     }
+    }
+   }
   },
   {
    "id": "luwing",
@@ -272,7 +289,66 @@
       }
      }
     }
-   ]
+   ],
+   "art": {
+    "_about": "The 鯥 and the 沂水 shoal at night, painted for the throwing board (tools/paint-games.py lu/lu, lu/shoal, seed 1); the 鯥 faces left, its zones (targets.js LU) fitted to the painting; the reeds at the right are where he waits.",
+    "lu": {
+     "file": "games/lu/lu.webp",
+     "w": 124,
+     "h": 93,
+     "at": [
+      0.453,
+      0.729
+     ]
+    },
+    "backdrop": {
+     "file": "games/lu/shoal.webp",
+     "size": [
+      960,
+      600
+     ],
+     "crop": [
+      25,
+      25,
+      905,
+      566
+     ],
+     "wash": {
+      "archer": {
+       "at": [
+        372,
+        168
+       ],
+       "r": [
+        86,
+        96
+       ],
+       "o": 0.4
+      },
+      "path": {
+       "y": [
+        60,
+        220
+       ],
+       "o": 0.15
+      }
+     }
+    },
+    "reed": {
+     "file": "games/deer/reed.webp",
+     "w": 33,
+     "h": 100,
+     "at": [
+      0.5,
+      1
+     ],
+     "axis": "up"
+    },
+    "marks": {
+     "dot": 4.6,
+     "trail": 2.4
+    }
+   }
   },
   {
    "id": "throwkit",

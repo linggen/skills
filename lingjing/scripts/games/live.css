@@ -508,7 +508,7 @@
 .g-da-scene .g-tk-bolt { fill: none; stroke: #f2c94c; stroke-width: 2.2; stroke-linejoin: round; filter: drop-shadow(0 0 2px #2e2416); }
 .g-da-scene .g-tk-core { fill: #fff6d0; }
 /* The other targets (games/targets.js): the cave's deep and its echo; the 鯥 in ink until painted. */
-.g-da-scene .g-tg-deep { fill: none; stroke: #2e2416; stroke-width: 1.2; stroke-dasharray: 4 4; opacity: .55; }
+.g-da-scene .g-tg-deep { fill: rgba(246, 239, 224, .25); stroke: #f6efe0; stroke-width: 1.4; stroke-dasharray: 5 4; opacity: .8; }
 .g-da-scene .g-tg-echo { fill: none; stroke: #2e2416; stroke-width: 1.4; }
 .g-da-scene .g-tg-wall { fill: none; stroke: #2e2416; stroke-width: 3; stroke-linecap: round; opacity: .55; }
 .g-da-scene .g-tg-body { fill: #6f7564; opacity: .9; }

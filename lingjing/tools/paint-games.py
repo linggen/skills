@@ -163,12 +163,12 @@ SUBJECTS = {
     'storybook figure. Ink lines and soft grey wash.'),
   # ── 扔石听声 (00-cave, the throwing board, row caveecho): 「先往里扔了一块石头，听了听」. Side-on: the cave at the
   # LEFT (its deep end at the far left), the hillside and the mouth at the right where he throws from.
-  'stone/cave': ('vignette', (960, 600), (1536, 960), 1,
-    'A shallow mountain cave seen from the SIDE as a cut-away cross-section, a wide picture. LEFT two thirds: inside the cave — '
-    'a low heavy rock ceiling in dark ink and grey wash along the top, sloping slightly down toward the far left where a rock '
-    'back wall closes the cave; a flat dim earth and pebble floor along the bottom; the inside an even dusky grey wash, EMPTY. '
-    'RIGHT third: the cave mouth open to a dusk hillside, a little grass and a few stones on the slope outside. '
-    'No animals, no people, no fire.'),
+  'stone/cave': ('vignette', (960, 600), (1536, 960), 2,
+    'ONE single continuous picture, not panels, not a diptych, no dividing line: a long low shallow cave in a cliff, cut away '
+    'and seen from the side like a stage. A heavy overhang of rock runs along the whole top edge in dark ink and grey wash and '
+    'comes down into a rock wall at the far LEFT edge; a flat dim earth floor with a few pebbles runs along the whole bottom; '
+    'the hollow between is a dusky grey wash, deeper and darker toward the left. At the far RIGHT the overhang ends and the open '
+    'dusk hillside with a little grass shows. No animals, no people, no fire.'),
   # ── 芦苇里那一等 (09-yishui, row luwing): the 鯥 pinned on the shoal, 「翅膀根上那块皮翻开来……露出底下粉红的肉」.
   'lu/lu': ('pose', (640, 480), (1024, 768), 1,
     'A mythical river beast of the Shanhaijing, the Lu: the body of an ox, crouched low and side-on, facing LEFT, an ox head with '

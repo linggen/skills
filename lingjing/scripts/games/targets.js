@@ -64,8 +64,9 @@ const zone = {
 
 /* ── lu · 鯥: pinned on the shoal; the wing root opens as it breathes in ────────────────────── */
 
-// In its own frame (facing −x: its ox head toward 孙二狗's board on the left; feet at 0), × `size`.
-const LU = { body: [0, -30, 34, 15], root: [6, -44], rootR: 9, head: [-44, -36] };
+// In its own frame (facing −x: its ox head toward 孙二狗's board on the left; feet at 0), × `size` —
+// fitted to the painted 鯥 (art/games/lu/lu.webp): the barrel, the wing root where the pink shows, the head.
+const LU = { body: [0, -21, 34, 16], root: [3, -30], rootR: 9, head: [-28, -11] };
 
 /** Where the 鯥 is at `ms`: its `open` (0 shut … 1 the wing root showing), eased in and out. */
 export function luAt(level, ms) {
