@@ -201,6 +201,7 @@
       },
       "cost": 1,
       "element": "wood",
+      "binds": true,
       "effect": {
         "damage": 2
       },
@@ -949,6 +950,7 @@
       },
       "cost": 5,
       "element": "metal",
+      "binds": true,
       "atk": 5,
       "hp": 5,
       "keywords": [

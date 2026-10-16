@@ -78,3 +78,21 @@ test('the page reads the trap: 装睡, the glance, what goes in, and how hard it
   assert.match(html, /8/, 'its 杀招 at 5 + 3 for the one glance');
   assert.equal(feintHtml(view(begin(setup({ feint: undefined }), CARDS)), { lang: 'zh', words: {} }), '');
 });
+
+test('pierce_binds: a bind played at the beast holds it — that turn every blow goes in, its own first; not at a body, not the next turn', () => {
+  const cards = { ...CARDS, vine: { id: 'vine', kind: 'spell', name: '青藤缚', cost: 1, element: 'wood', binds: true, effect: { damage: 2 } } };
+  const open = (feint) => { const st = begin(setup({ feint: { ...FEINT, ...feint } }), cards); st.you.hand = ['vine', 'bolt', 'bolt']; st.you.mana = 10; return st; };
+  const st = open({ pierce_binds: true });
+  const hp = st.foe.hp;
+  act(st, { kind: 'play', index: 0 });
+  assert.ok(st.log.some(t => t.act === 'bound'));
+  act(st, { kind: 'play', index: 0 });
+  assert.equal(st.foe.feint.glanced, 0, 'nothing glanced while bound');
+  assert.ok(hp - st.foe.hp > 2, 'both went in');
+  act(st, { kind: 'end' });
+  foeTurn(st);
+  assert.equal(st.foe.feint.bound, false, 'the bind held one turn');
+  const plain = open({});
+  act(plain, { kind: 'play', index: 0 });
+  assert.equal(plain.foe.feint.glanced, 1, 'a beast that does not declare it: the bind glances too');
+});

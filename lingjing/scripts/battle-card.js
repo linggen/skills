@@ -571,7 +571,7 @@ export function feintHtml(st, ctx) {
   const f = st.foe.feint;
   if (st.outcome !== 'open' || !asleep(st.foe)) return '';
   const zh = ctx.lang !== 'en';
-  const goes = (f.pierce ?? []).map(el => (zh ? GLYPH[el] : EN_EL[el])).join(zh ? '、' : ', ');
+  const goes = [...(f.pierce ?? []).map(el => (zh ? GLYPH[el] : EN_EL[el])), ...(f.pierce_binds ? [zh ? '缚住了的那一回合' : 'a bound turn'] : [])].join(zh ? '、' : ', ');
   const what = zh ? `装睡 —— 寻常一击只擦过 −${f.lands ?? 1}${goes ? `，${goes}能打进去` : ''}` : `Playing dead — a plain blow glances (−${f.lands ?? 1})${goes ? `; ${goes} goes in` : ''}`;
   const sig = st.foe.signature ? name(st.foe.signature, ctx.lang) : '';
   const wake = f.left > 1
@@ -652,6 +652,7 @@ function sayTurn(t, ctx) {
     case 'unleash': return `${who} ${zh ? '放出' : 'lets go'} ${name(ctx.st?.foe?.signature, ctx.lang)}`;
     case 'feint': return `${who} ${zh ? '还在装睡' : 'still plays dead'}`;
     case 'glanced': return `${who} ${zh ? `装睡，这一下擦过（已 ${t.glanced} 下）` : `plays dead — that one glanced (${t.glanced} so far)`}`;
+    case 'bound': return `${who} ${zh ? `被${card(t.id)}缚住 —— 这一回合打得进去` : `is bound by ${card(t.id)} — this turn goes in`}`;
     case 'woke': return `${who} ${zh ? '睁眼了' : 'opens its eyes'}`;
     default: return '';
   }

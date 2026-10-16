@@ -115,15 +115,24 @@ export const EFFECTS = {
 /* One standing beast state beside the card verbs, 2026-10-16 — 装睡 (犰狳,
    见人则眠: it falls down playing dead when people near). Declared on the
    beast (creatures.json `feint`), never named here:
-     { name, turns, lands, pierce: [element…], per_glance }
+     { name, turns, lands, pierce: [element…], per_glance, pierce_binds? }
    For its first `turns` turns it lies still — it plays nothing and strikes
    with nothing, and it never gathers. A blow at it of an element not in
    `pierce` glances: it lands `lands` (the page prints the same, `landed`)
    and is counted. When the sleep runs out it wakes with its 杀招, `per_glance`
    harder for every blow that glanced — a careless player feeds the trap. A
-   shell-hider or any beast that plays dead declares the same. */
+   shell-hider or any beast that plays dead declares the same.
+   `pierce_binds` (2026-10-16): a card that binds (cards.json `binds` — 青藤缚,
+   无支祁's 锁) played at the beast itself, not at its rank, holds it: every
+   blow of that turn goes in whole, the bind's own first (阿禾 binds it, 小满 strikes). */
 export const asleep = side => Boolean(side?.feint && side.feint.left > 0);
-export const pierces = (side, element) => Boolean(element) && (side?.feint?.pierce ?? []).includes(element);
+export const pierces = (side, element) => Boolean(side?.feint?.bound) || (Boolean(element) && (side?.feint?.pierce ?? []).includes(element));
+/* A bind played at a sleeper that lets binds through (§ asleep): held for the rest of this turn. */
+function bindAt(st, them, c, target) {
+  if (!c?.binds || target?.kind === 'minion' || !asleep(them) || !them.feint.pierce_binds) return;
+  them.feint.bound = true;
+  st.log.push({ act: 'bound', who: them.who, id: c.id });
+}
 const glances = (side, element) => asleep(side) && !pierces(side, element);
 /* Its 杀招 as it will land: on waking, `per_glance` more per blow that glanced. */
 export function sigEffect(side) {
@@ -316,6 +325,7 @@ function unleash(st, side) {
 /* 装睡, one of its turns gone (§ asleep): the last one, it wakes — with its 杀招
    if it has one (once a fight, as ever: the half-气血 gather does not come again). */
 function stir(st, side) {
+  side.feint.bound = false; // a bind holds for the turn it was played in
   side.feint.left -= 1;
   if (side.feint.left > 0) {
     st.log.push({ act: 'feint', who: side.who, left: side.feint.left });
@@ -638,6 +648,7 @@ export function act(st, action, who = 'you') {
     side.hand.splice(action.index, 1);
     side.mana -= costOf(side, c);
     side.played.push(id);
+    bindAt(st, them, c, action.target);
     if (c.kind === 'minion') {
       const { atk, hp } = bodyOf(side, c), keys = keywordsOf(side, c);
       const drought = effectOf(side, c)?.drought;

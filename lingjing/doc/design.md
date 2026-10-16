@@ -549,7 +549,8 @@ is the pure core; the page draws it on the stage beside the chat.
   上卷 at 筑基, 下卷 at 结丹, or a 吉 reading).
 - **装睡** (2026-10-16, a beast's `feint`, battle.js § asleep): for its first `turns` turns it
   lies still — plays nothing, strikes nothing, never gathers. A blow not of a `pierce` element
-  glances (lands `lands`, counted); it wakes with its 杀招, `per_glance` harder per glance. The
+  glances (lands `lands`, counted); with `pierce_binds`, a card that `binds` (青藤缚, 无支祁) played
+  at the beast holds it — that turn every blow goes in. It wakes with its 杀招, `per_glance` harder per glance. The
   stage says 装睡 and 擦过. 犰狳's 见人则眠 is one (a trap, never a heal: 金克木 goes in); any
   shell-hider or dead-player declares the same.
 - **装备入局** (2026-09-24, `cards.json → gear`): each worn thing is one number
