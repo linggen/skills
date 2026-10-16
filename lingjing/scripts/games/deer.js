@@ -182,9 +182,10 @@ function deerScene(state, w, rest) {
 function bowScene(state) {
   const draw = state.drawing ? drawAt(state.held) : 0, shake = state.drawing && state.held > SHAKE_MS ? Math.sin(state.t / 30) * 1.6 : 0;
   const sx = n(46 + draw * 30 + shake), y = n(30 + shake * 0.5);
-  const limb = `<path class="g-bow" d="M46 4 C22 14 22 46 46 56"/><path class="g-line g-thin" d="M44 26 h5 M44 34 h5"/>`;
+  // The painted bow (its own string at rest is hidden under the drawn one) and the painted arrow.
+  const limb = `<image class="g-bow-art" href="${STAG_ART('bow-rest')}" x="22" y="1" width="30" height="58" preserveAspectRatio="xMaxYMid meet"/>`;
   const string = `<path class="g-line g-thin" d="M46 4 L${sx} ${y} L46 56"/>`;
-  const arrow = `<path class="g-line" d="M${sx} ${y} H${n(sx + 170)}"/><path d="M${n(sx + 170)} ${y - 4} l9 4 l-9 4z"/><path class="g-line g-thin" d="M${sx} ${y} l6 -4 M${sx} ${y} l6 4"/>`;
+  const arrow = `<image class="g-arrow-art" href="${STAG_ART('arrow')}" x="${n(sx - 4)}" y="${n(y - 4)}" width="182" height="8" preserveAspectRatio="none"/>`;
   const full = draw >= 0.9 ? `<text class="g-scene-note is-calm" x="312" y="34" text-anchor="end">满</text>` : '';
   return scene(320, 60, limb + string + arrow + full, `g-bowscene${draw >= 0.9 ? ' is-full' : ''}`);
 }
