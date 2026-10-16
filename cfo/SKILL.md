@@ -46,7 +46,7 @@ permission:
     sent to the model. The grant lets it save its (redacted) analysis to its own
     data dir and record your goals. CFO's memory is scoped to CFO alone — it
     never reads or writes your other apps' memory. An import, a read of the
-    report, a sorted row or a first holding leaves one note in
+    report, a sorted row or a first stock added leaves one note in
     ~/.linggen/quests — when you did it, never an amount, a merchant or a ticker.
 tools:
   - name: LatestAnalysis

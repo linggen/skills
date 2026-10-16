@@ -1089,7 +1089,7 @@ async function resumeState() {
     RAW_LEDGER = await loadLedger();
     EDITS = await loadEdits(RAW_LEDGER);
     applyEdits(); // ACCOUNTS / COMMITMENTS / BUDGETS / overrides / LEDGER
-    noteFirstStock(runBash, investmentsOf(EDITS)); // a stock already held is the 开府 fact (quest.js)
+    noteFirstStock(runBash, investmentsOf(EDITS)); // a stock already listed is the 开府 fact (quest.js)
     await migrateCurrencies();
     INSIGHTS = await loadInsights();
     SUGGESTIONS = await loadSuggestions();

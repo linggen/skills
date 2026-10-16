@@ -36,21 +36,21 @@ export const MENU = [
     id: 'cfo-invest', period: 'week', reward: 25, stamina: 15, device: 'phone', pool: true, open: `${OPEN}?tab=invest`,
     title: { zh: '观宝库 · 在手机上看一遍投资', en: 'Survey the vault · look over your investments on the phone' },
   },
-  // 开府 — one time: Investments holds a stock (the linggen.json `once` shape).
+  // 开府 — one time: Investments lists a stock (the linggen.json `once` shape).
   {
     id: 'cfo-first-stock', period: 'once', reward: 50, stamina: 20, device: 'both', open: `${OPEN}?tab=invest`,
     title: { zh: '开仓 · 在 CFO 的投资里添一支股票', en: 'Open a position · add a stock to Investments in CFO' },
   },
 ];
 
-/// Investments holds a stock: some symbol with shares (`investmentsOf` cells;
-/// a watched-only ticker is not a holding).
-export const holdsStock = (inv) => Object.values(inv || {}).some((cell) => Number(cell?.shares) > 0);
+/// Investments lists a stock: any ticker in `investmentsOf`, watched or held —
+/// 0 shares counts too.
+export const listsStock = (inv) => Object.keys(inv || {}).length > 0;
 
-/// The 开府 fact: stamp `cfo-first-stock` when Investments holds a stock —
+/// The 开府 fact: stamp `cfo-first-stock` when Investments lists a stock —
 /// only that it does, never which or how many. Resolves to whether it stamped.
 export async function noteFirstStock(runBash, inv, opts) {
-  return holdsStock(inv) ? stampQuest(runBash, 'cfo-first-stock', opts) : false;
+  return listsStock(inv) ? stampQuest(runBash, 'cfo-first-stock', opts) : false;
 }
 
 export const QUEST_FILE = '$HOME/.linggen/quests/cfo.json';
