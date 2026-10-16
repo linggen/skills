@@ -88,7 +88,11 @@
     "foe": {
      "hp": 6,
      "trial": {
-      "survive": 7
+      "survive": 7,
+      "goal": {
+       "zh": "三十招：看她的脚，在台上撑过七个回合，便算过了。",
+       "en": "Thirty moves: watch her feet and stand seven turns on the stage, and you have passed."
+      }
      },
      "deck": [
       "shuiwu",

@@ -966,7 +966,7 @@ export function view(st) {
     root: s.root, deck: s.deck.length, hand: s.hand.length, fatigue: s.fatigue,
     powerUsed: s.powerUsed, powerHit: s.powerHit, boost: s.boost, armor: s.armor ?? 0, ward: s.ward ?? null,
     signature: s.signature, charge: s.charge?.phase ?? null, lifts: s.lifts, stars: s.stars ?? null, drain: s.drain ?? 0,
-    ...(s.trial ? { trial: s.trial } : {}),
+    ...(s.trial ? { trial: s.trial, ...(s.trial.survive ? { endured: s.endured ?? 0 } : {}) } : {}),
     ...(s.feint ? { feint: { ...s.feint } } : {}),
     ...(s.allies?.length ? { allies: s.allies.map(a => ({ id: a.id, name: a.name, root: a.root, hp: a.hp, hpMax: a.hpMax, taunt: a.taunt, gone: a.gone, deck: a.deck.length })) } : {}),
     ...(s.dodge ? { dodge: s.dodge } : {}),

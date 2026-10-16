@@ -69,7 +69,11 @@
     "retry": true,
     "foe": {
      "trial": {
-      "survive": 4
+      "survive": 4,
+      "goal": {
+       "zh": "三试是胆子：在它面前站住四个回合，便算过了。",
+       "en": "The third trial is nerve: stand four of its turns, and you have passed."
+      }
      },
      "extra": [
       "yigun",

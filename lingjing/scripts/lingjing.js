@@ -900,13 +900,7 @@ function wonOver(beasts) {
     setTimeout(() => seal.remove(), 2600 + i * 600);
   }
   herSay.say('tamed', lang() === 'en' ? `Won over ${beasts.map((b) => b.name).join(', ')}.` : `收服了${beasts.map((b) => b.name).join('、')}。`);
-  const chip = document.querySelector('.gearchip');
-  if (!chip) return;
-  const gain = document.createElement('span');
-  gain.className = 'gain cardgain';
-  gain.textContent = `+${beasts.length}`;
-  chip.parentElement.appendChild(gain);
-  setTimeout(() => gain.remove(), 2400);
+  // Its card flies into the 物品 chip by the 得牌 reveal (card-reveal.js): no second +N on the chip.
 }
 /// Where a gain's count stands `age` ms in: eased from → to over RISE_MS, and
 /// the landed number once its time is up. The last frame always writes it: a

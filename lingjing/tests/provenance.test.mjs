@@ -67,6 +67,25 @@ test('钱掌柜 sells the cards that name his stall; each costs what the card sa
   }
 });
 
+test('bought at 钱掌柜\'s: 短飞剑 and 参悟 are cards in hand (nothing in the bag), 五雷符 a 符 in the bag; a card held is not bought twice', async () => {
+  const { trade } = await import('../scripts/rules.mjs');
+  const { newState } = await import('../scripts/state.mjs');
+  const c = { now: NOW, quests: [] };
+  let s = { ...fitWorld({ ...newState(content, 'zh', NOW), traits: ['metal', 'wood', 'water', 'fire', 'earth'], chapter: '01-ji', scene: null, place: 'fangshi', wealth: 300, cards: [], ended: ['00-prologue', '00-waimen', '00-zhuji'] }, content), stamina: 100 };
+  for (const [item, card] of [['feijian-duan', 'feijian'], ['canwu-jian', 'canwu']]) {
+    const out = trade(s, content, c, { action: 'buy', id: item });
+    assert.equal(out.result.ok, true, `${item}: ${JSON.stringify(out.result)}`);
+    assert.ok(out.state.cards.includes(card) && out.state.cards_new.includes(card), `${card} in hand, 新`);
+    assert.equal(out.state.bag[item], undefined, 'nothing in the bag');
+    assert.equal(out.state.wealth, s.wealth - content.items.items.find(i => i.id === item).buy);
+    s = out.state;
+    assert.equal(trade(s, content, c, { action: 'buy', id: item }).result.refused, 'card-held');
+  }
+  const fu = trade(s, content, c, { action: 'buy', id: 'wulei-fu' });
+  assert.equal(fu.result.ok, true, JSON.stringify(fu.result));
+  assert.equal(fu.state.bag['wulei-fu'], 1, 'a 符 in the bag, spent when played');
+});
+
 test('no starter at the root test: a new save holds what the road gave, and fights the 三试 with it', () => {
   assert.equal(content.cards.starter, undefined);
   const s = { tier: 'qi', step: 0, traits: [], cards: ['niangbing', 'yijian', 'tuna'], chapter: '00-prologue', scene: '00-longzhi' };

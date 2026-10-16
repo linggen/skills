@@ -821,6 +821,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       <span class="bplate">${ctx.foeArt ? `<img class="bface" src="${esc(ctx.foeArt)}" alt="">` : `<b class="bface none">${esc([...(ctx.foeName ?? '')][0] ?? '')}</b>`}</span>
       <div class="bwho"><span class="bfoename">${esc(ctx.foeName ?? '')} <span class="belem el-${esc(st.foe.root ?? 'none')}">${GLYPH[st.foe.root] ?? ''}</span></span>
         ${pool(w.hp, st.foe.hp, st.foe.hpMax, 'hp', st.foe.trial?.yield)}
+        ${st.foe.trial?.survive ? `<small class="bstake bsurvive">${esc(ctx.lang === 'en' ? `Stood ${st.foe.endured ?? 0} of ${st.foe.trial.survive} turns` : `已站住 ${st.foe.endured ?? 0}/${st.foe.trial.survive} 回合`)}</small>` : ''}
         ${bubble('foe', ctx.says?.foe)}</div>
       <div class="bnums">
         ${gearHtml(st.foe, 'foe', st, ctx)}

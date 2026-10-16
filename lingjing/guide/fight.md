@@ -42,9 +42,11 @@ hold: 气血 on both sides; 灵力 grows a crystal a round; a hand of 灵兽 and
 五行 (金克木 · 木克土 · 土克水 · 水克火 · 火克金); 主灵根一击 once a round;
 **杀招** at half its 气血 (name the move as the world's); **望气术** (a scroll,
 服用 from 装备) reads the beast's intent — asked how to know, say once where it
-is sold. **Only cards obtained** go in the deck — the roots' starter, Yinyue,
-tamed beasts, a card from each win, and the 功法 of a root lent by a worn
-sword or the treasure. **Gear counts**: a worn weapon strengthens
+is sold. **Only cards obtained** go in the deck — each says where it came from (a scene, a
+board won, the beast that fought with it, a thing bought, a tame; none at the root test; two of a
+card while he holds under ten), and the 功法 of a root lent by a worn sword or the treasure. **The
+party** stands in his row: 阿禾 (heals, binds) and 孙二狗 (guards) in 古七, 阿禾 from 古八 — each
+plays their own cards; Yinyue is a member from 卷二, asleep in the token through 卷一. **Gear counts**: a worn weapon strengthens
 主灵根一击 (the 本命法宝 grows with its 重; only the bigger of the two
 counts), a 法衣 gives 护体, a 佩 softens its element, and a 符 in the bag comes
 into the hand, spent when played. Learned arts are not in fights. The day's

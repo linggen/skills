@@ -47,7 +47,7 @@ export function deck(state, content, ctx, args) {
   if (!canPick(content, state)) return refuse('needs-tier', pick({ zh: '结丹之后，方能自己组牌。', en: 'You pick your own ten from the Core on.' }, lang), { tier: PICK_FROM });
   const id = String(args.id ?? ''), c = cardCatalog(content)[id];
   if (!c || !ownedCards(content, state).includes(id)) return refuse('not-held', null);
-  if (id === 'yinyue') return refuse('always-in-hand', pick({ zh: '银月开局就在手上，不占这十张。', en: 'Yinyue starts in hand; she is not one of the ten.' }, lang));
+  if (c.owner) return refuse('always-in-hand', pick({ zh: '这是小队里别人的牌，由他们自己出，不占这十张。', en: "A party member's card is theirs to play; it is not one of the ten." }, lang));
   if (!usable(c, rootsOf(content, state))) return refuse('off-root', pick({ zh: '灵根不合，修不得这门功法。', en: 'A spell of a root you lack.' }, lang));
   // The first pick starts from the ten he has been dealt, not from nothing.
   const now = Array.isArray(s.deck) ? pickedCards(content, s) : deckFor(content, s);

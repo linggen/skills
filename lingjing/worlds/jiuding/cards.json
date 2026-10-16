@@ -347,7 +347,7 @@
       "effect": {
         "heal": 2
       },
-      "_about": "开局就在手上，不占牌库的十张。被打到 0 是退到一边，下一局照来 —— 这个世界没有死。",
+      "_about": "银月是斗法小队里的人 (party.json)，不是他手里的牌：从卷二起站在他身边，出她自己的这一张。卷一她睡在木牌里，不上阵。被打到 0 是退到一边，下一局照来 —— 这个世界没有死。",
       "art": "art/cards/yinyue.webp",
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-5.5), 2026-10-01, after the 图鉴 portrait art/people/yinyue.webp (a girl of fourteen or fifteen, as 第一回 has her), in the deck's ink-wash style; replaces the FLUX card of 2026-09-18, which showed a grown woman. See art/CREDITS.md.",
       "owner": "yinyue",
