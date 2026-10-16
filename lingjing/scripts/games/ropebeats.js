@@ -72,6 +72,7 @@ export const way = beat({
     return `<g class="g-rope-target" transform="rotate(${n(sway)} ${n(mx)} ${n(my + 40)})">${img('games/moss.webp', x, y, MOSS_W, MOSS_H)}</g><ellipse class="g-ft-mouth" cx="${mx}" cy="${my}" rx="34" ry="7"/>`;
   },
   grade: (s) => (s.best >= 3 ? 'straight' : 'wandered'),
+  rests: true,
   cls: 'g-rope-way',
 });
 
@@ -95,5 +96,6 @@ export const rent = beat({
       + `<ellipse class="g-ft-mouth" cx="${mx}" cy="${my}" rx="30" ry="7"/>`;
   },
   grade: (s) => (s.best >= 3 ? 'exact' : 'over'),
+  rests: true,
   cls: 'g-rope-rent',
 });

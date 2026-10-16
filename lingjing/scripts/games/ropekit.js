@@ -268,7 +268,9 @@ export function makeRopeGame(spec) {
     const quote = spec.quote ? `<p class="g-rope-quote">${esc(spec.quote[lang] ?? spec.quote.zh)}</p>` : '';
     const head = `${quote}<div class="g-head g-bread-head"><span>${esc(s.item?.name ?? t.name)}</span><span>${t.stars} <b>${s.won ? s.stars : starsNow(s)}</b> / 3</span></div>`;
     if (s.won) {
-      return `<div class="g-bread g-ft g-ink is-won ${spec.cls ?? ''}">${head}${scene(W, H, (spec.backdrop?.({ ...s, phase: 'end' }) ?? ground()) + spec.target({ ...s, phase: 'end' }, true), `g-bread-cave g-ft-cave is-end ${spec.cls ?? ''}`)}<p class="g-line-say">${esc(s.skipped ? t.skipped : t.done)}</p></div>`;
+      // A thing that stays where it landed (the meat in the pan, the fox on the moss) is drawn there at the end.
+      const rests = spec.rests && !s.skipped ? thingAt(s, s.level.mouth[0], s.level.mouth[1] - 6, 0, 0.9) : '';
+      return `<div class="g-bread g-ft g-ink is-won ${spec.cls ?? ''}">${head}${scene(W, H, (spec.backdrop?.({ ...s, phase: 'end' }) ?? ground()) + spec.target({ ...s, phase: 'end' }, true) + rests, `g-bread-cave g-ft-cave is-end ${spec.cls ?? ''}`)}<p class="g-line-say">${esc(s.skipped ? t.skipped : t.done)}</p></div>`;
     }
     const row = stuck(s) && t.skip ? `<div class="g-pair">${btn(t.skip, 'data-g="skip"', 'main')}${btn(t.retry, 'data-g="retry"', 'soft')}</div>`
       : `<div class="g-bread-row">${btn(t.retry, 'data-g="retry"', 'quiet')}</div>`;

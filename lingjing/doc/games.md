@@ -60,14 +60,30 @@ Each slot: the scene, what the book drops or steers, the element it brings.
 
 | slot | scene (task id to give it) | the book's reason | what falls / is steered → goal | element | priority |
 |---|---|---|---|---|---|
-| 算账 | 00-rent (`rent-scale`, kept till then) | 「肉二十斤抵租」 — the meat onto 马三's steelyard | the cut of meat, hung by vines → the steelyard's pan (the beam must settle level) | slab (the pan tips; land it flat) | 1 — cap |
-| 忍字 | 00-masan (`masan-taunt`, kept till then) | 马小宝 dangles the 桂花糕: 「学声狗叫，给你舔一口」 — 小满 won't beg | the cake on its string → the yard dog's mouth, never his hands | swing (one long vine, timing the cut) | 1 — cap |
-| 认路 | 00-yinyue (`yinyue-way`, kept till then) | 「先带本王出去」 — out of the valley by his marks on the cliff | the little fox, carried in a 灵气泡 → the moss at the valley mouth, past the marks | 灵气泡 (float up; pop to drop) | 1 — cap |
+| 算账 | 00-rent (`rent-scale` → `rentrope`) | 「肉二十斤，抵今年的。」 — the meat onto 马三's steelyard | the venison, hung by vines → the steelyard's pan (the beam tips as it lands) | 乌鸦 (cut its vine first), a puff | **built 10-16** |
+| 忍字 | 00-masan (`masan-taunt` → `tauntrope`) | 「学声狗叫，给你舔一口。」 — 小满 won't beg | the 桂花糕 on its string → the yard dog's mouth, never 马小宝's hand | 弹竹 (bounce it over), a puff | **built 10-16** |
+| 认路 | 00-yinyue (`yinyue-way` → `wayrope`) | 「先带本王出去。」 — out of the valley | the little fox, swung into a 灵气泡 → the moss at the valley mouth | 灵气泡 (swing in, pop), a puff along the roof | **built 10-16** |
 | 扔石听声 | 00-cave (cut; empty) | 「先往里扔一块石头，听了听」 | a stone → the shallow hollow (it must knock on rock, not fall in the deep one) | slab (the knock: hit the ledge) | 2 |
 | 攀 | 00-cliff (cut; empty) | 右手抓一根荆条; 爹's hand at the top, 老周's rope | 老周's rope-end lowered → 小满's right hand | 荆棘 (thorns cut a vine they touch), regrowing vine | 2 |
 | 追踪 | 00-heisong (cut; empty — the stone clue is the beat) | the prints break at the grey stone; the deer crossed the stream | a carved bark chip → the moss-scraped grey stone across the stream | wind (the stream's push, sideways) | 3 |
 | 听 | 00-storm (cut; empty — 拽 follows at once) | the birds stop; the cloud presses down; back by the marks | — (leave empty: 拽 is the next scene's board) | — | — |
 | 算盘 | 00-uncle (cut; empty) | the night's sums; 「五两银子，一年」 | five taels → 舅舅's purse (only if Hanli wants a beat here) | regrowing vine | 3 |
+
+**The module's tools** (rope.js `ELEMENTS`, each data-declared, taught the first time with a ring and a line):
+风 (puff) · 灵气泡 · 荆棘 · 会再长的藤 · 弹竹 · 双印 (twin seals) · 乌鸦 (crow). The 饭桶 brings them one a day
+(days 2–8); the three story beats teach 弹竹 (忍字), 灵气泡 (认路) and 乌鸦 (算账). Not built yet, proposed:
+浮空符 (flip the thing's gravity a moment — a 符 he owns, so the card law gates it), 磁石 (pulls metal: 火柴, 铜钱),
+旋风 (spins and lifts it).
+
+**Level-data proposals for the other slots** (each a 割绳子 level frozen from rope-gen.js with its tool, its book line
+quoted, the page's skip and the task's pay — Hanli picks which to build):
+- 攀 (00-cliff): 老周's rope-end lowered by vines to 小满's right hand; 荆棘 on the wrong swing, a regrowing vine
+  that catches it again if he waits — 「右手抓一根荆条」.
+- 追踪 (00-heisong): a carved bark chip carried by the stream's wind (a long puff band) to the grey stone across.
+- 算盘 (00-uncle): five taels dropped through twin seals into 舅舅's purse — 「五两银子，一年」 (only if he wants a beat here).
+- 扔石听声 (00-cave): going to the throw module (射鹿's), not this one.
+- Second tier, if he finds them not fun: 烙饼 (the flatbread flipped onto a springy bamboo into the pan), 拽
+  (爹's rope: cut his pack free so he swings to the ledge), 禹步 (a 灵气泡 carried square to square past 荆棘).
 
 Also **replace with 割绳子 or another proven mechanic if it isn't fun** — Hanli plays and decides:
 烙饼, 拽, 小周天, 禹步 (the second tier) and 吹鹅毛.
