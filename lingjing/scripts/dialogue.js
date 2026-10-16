@@ -313,7 +313,7 @@ export function storyHtml(r, { lang = 'zh', voice = null, acts = '', herId = nul
   return `<div class="${cls}" data-dlg-on data-dlg-next data-story="${esc(key)}" role="button" tabindex="0" aria-label="${esc(w.on)}">
     ${body}
     <div class="held" aria-hidden="true">${esc(w.held)}</div>
-    <div class="ctrl"><button class="q" data-dlg-log>${esc(w.log)}</button>${speedSeg(speed, w)}${countHtml(r, lang, w)}${whole ? pagerHtml(w) : ''}${voiceBtn(voice, w)}<span class="sp"></span></div></div>`;
+    <div class="ctrl"><button class="q" data-dlg-log>${esc(w.log)}</button>${speedSeg(speed, w)}${whole ? pagerHtml(w) : countHtml(r, lang, w)}${voiceBtn(voice, w)}<span class="sp"></span></div></div>`;
 }
 /* 自动 · 全文 · 跳过 (Hanli, 2026-10-16, over 慢 · 中 · 快): one small control, kept for every passage (lines.js). */
 const speedSeg = (speed, w) => `<span class="seg" role="group" aria-label="${esc(w.speed)}">${['mid', 'fast', 'skip'].map((v, x) => `<button data-dlg-speed="${v}"${v === speed ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}>${esc(w.speeds[x])}</button>`).join('')}</span>`;

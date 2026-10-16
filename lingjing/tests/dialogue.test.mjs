@@ -196,11 +196,11 @@ test('快 (2026-10-15, his: 「快的速度, 不要一句一句显示, 直接都
   assert.match(html, /<span class="yy">她说别回头。<\/span>/, '⟪银月⟫ stays silver-blue');
   assert.match(html, /<p class="line [a-z]+" data-beat="0\.2" data-faces="masan">/, 'his 亮相 named on the paragraph that brings him on: the page holding it brings him on large above the band');
   assert.doesNotMatch(html, /class="wface"/, 'no small card inline: the band is for words');
-  assert.match(html, /<span class="count">2–4 \/ 4<\/span><span class="pager" hidden><button class="q" data-pg="-1">[\s\S]*上一页[\s\S]*<span class="pgn"><\/span><button class="q" data-pg="1">[\s\S]*下一页/, 'the pages\' 上一页 · 2/5 · 下一页 beside the count (pager.js fills and shows it)');
+  assert.match(html, /<\/span><span class="pager" hidden><button class="q" data-pg="-1">[\s\S]*上一页[\s\S]*<span class="pgn"><\/span><button class="q" data-pg="1">[\s\S]*下一页/, 'the pages\' 上一页 · 2/5 · 下一页 beside the count (pager.js fills and shows it)');
   assert.doesNotMatch(storyHtml(advance(one(beats, 's1'))), /class="pager"/, '慢 · 中 have no pages');
   assert.match(html, /丁。<\/span><\/p><\/div><div class="wayacts"><button data-panel-exit="go">走<\/button><\/div><\/div>/, 'the choices after the text, at the column\'s end');
   assert.doesNotMatch(html, /class="ways"|data-dlg-all|data-dlg-onward/, 'no faint last line, nothing to skip, no 接着 where the choices stand');
-  assert.match(html, /<span class="count">2–4 \/ 4<\/span>/, 'the count names the beats the column holds');
+  assert.doesNotMatch(html, /<span class="count">/, "全文 shows only the page count (Hanli 2026-10-16: 「这里有两个页号」)");
   assert.match(html, /data-dlg-speed="fast" class="on"/);
   assert.match(logHtml(w), /甲。[\s\S]*走吧。[\s\S]*丁。/, '回看 holds them all');
   // no choices to offer: 「接着往下」, his own tap, is the way on; then the reading is put away
@@ -440,4 +440,8 @@ test('a tap on the story\'s own controls puts an open popover away first — 回
   const at = (sel) => list.indexOf(`['${sel}'`);
   assert.ok(at('*') > at('[data-book]') && at('*') > at('[data-wx-clear]'), 'the popovers\' own taps first');
   for (const sel of ['[data-dlg-log]', '[data-dlg-speed]', '[data-dlg-next]', '[data-panel-exit]']) assert.ok(at('*') < at(sel), `then the catch-all, before ${sel}`);
+});
+test('one counter on the bar (Hanli 2026-10-16: 「这里有两个页号」): 全文 the pages, 自动 the beats', () => {
+  const src = fs.readFileSync(new URL('../scripts/dialogue.js', import.meta.url), 'utf8');
+  assert.match(src, /\$\{whole \? pagerHtml\(w\) : countHtml\(r, lang, w\)\}/);
 });
