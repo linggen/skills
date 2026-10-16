@@ -71,7 +71,7 @@ painted a seal, seed 13 two crescent marks on its chest). No outside source.
 
 ## 后山崖顶's finds and drops — painted for Lingjing (2026-10-15)
 
-The 36 things the new beasts leave and the 观 hides (hides, galls, feathers, the 山海经 beasts' parts, herbs, ores, two pieces of gear) are painted by the same model, 640×480 like the rest of `items/`, two candidates each (five for 蛇蜕 and 从从爪, whose first two missed): each item's `art_source` names its seed and the picture asked for. No outside source. Fourteen of them that read off-style (猲狙鬃, 狐皮, 雄黄, 赤石脂, 軨軨皮, 獙獙翎, 豺牙, 熊胆, 鱼目, 当康牙, 鬿雀爪, 蛇胆, 茯苓, 猴儿酒) are redrawn 2026-10-16 by Codex the same way, `items/lingzhi.webp` and `items/jade-ring.webp` attached as the style (`tools/paint-wash-codex.py`).
+The 36 things the new beasts leave and the 观 hides (hides, galls, feathers, the 山海经 beasts' parts, herbs, ores, two pieces of gear) were first painted by the same FLUX, 640×480 like the rest of `items/`, two candidates each (five for 蛇蜕 and 从从爪, whose first two missed). No outside source. All 36 read off-style beside the house items (white paper, pen and watercolour) and are redrawn 2026-10-16 by Codex the same way (fourteen first, the other 22 and a second 猴儿酒 after; 黄精 took two rolls — the first read as a grub), `items/lingzhi.webp` and `items/jade-ring.webp` attached as the style (`tools/paint-wash-codex.py`).
 
 ## The world map
 
