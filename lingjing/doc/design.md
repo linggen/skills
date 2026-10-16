@@ -548,11 +548,18 @@ is the pure core; the page draws it on the stage beside the chat.
 - **The deck** (`deckFor`): ten along the realm's cost curve (练气 `1 1 1 2 2 2
   3 3 4 4` … 元婴 `1 2 2 3 3 4 4 5 5 6`), the same ten for the same save;
   from 结丹 the player picks (组牌, `state.deck`, `deck_out`).
-- **得牌 — only cards obtained** (his, 2026-09-22): the starter of the roots at
-  the root test, 银月 when she joins, a tamed beast's card, one card per win
-  (a 功法 must fit the roots; beasts any element), `grant.card`. **灵根 binds
-  功法, not 灵兽.** Every card has an element except pills. Old saves read the
-  cards they should have.
+- **得牌 — only cards obtained, every one from somewhere** (his, 2026-09-22; 2026-10-16: 每张牌都在剧情里收集或者购买):
+  each card's `from` (cards.json, 书 or 游戏) — a scene left, a board won (射鹿 → 一箭, 吹鹅毛 → 吐纳), the beast that
+  fought with it beaten, a thing bought at 钱掌柜's, a beast tamed. Nothing at random, no starter at the root test (娘的饼 ·
+  一箭 · 吐纳 come on the road, 褚先生's five at wm-qianye); under ten held, two of a card. A card gained shows big over the
+  stage with its line of 出处 and flies into the 物品 chip (card-reveal.js), then wears 新 in the hand until played. The
+  full table and the as-built notes: **doc/cards.md**. **灵根 binds 功法, not 灵兽.** Every card has an element except
+  pills, 符 and a mortal's own skill (before the stone). Old saves keep every card they held, renamed ones mapped.
+- **小队** (cards.md § 5, 2026-10-16): each side is a row of members with their own decks drawn in turn into one shared
+  hand, one 灵力; a card is played by its owner (its seal in the hand); a member at 0 is 退 and their cards leave the
+  hand; 孙二狗 guards (嘲讽), 阿禾 heals the most wounded and binds; the lead's 退 is the side's. Who stands with him is
+  party.json (`by_hui`: 古七 阿禾 + 孙二狗, 古八 on 阿禾; a scene says its own), 银月 from 卷二. A lone beast is a party
+  of one; the model keeps each member apart so a seat can later be another person's.
 - **Bosses: the legend is the verb** (2026-09-25): each tamed boss card carries
   its own 入阵 (夫诸 flood, 狍鸮 bite, 雷神 thunder, 无支祁 **chain**, 巴蛇
   **swallow**, 肥遗 **drought** …; battle.js EFFECTS).

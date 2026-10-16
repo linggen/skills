@@ -1,6 +1,16 @@
 # 斗法小队与卡牌出处 (卷一)
 
-For Hanli's read (2026-10-16). Nothing in the game has changed yet; the build waits on this doc.
+For Hanli's read (2026-10-16). **Built the same day** (「按文档全部照做」) — see § 0 for where the build differs from the plan below.
+
+## 0. As built (2026-10-16)
+
+- **Data.** Every card's 出处 is `from` in `worlds/jiuding/cards.json` (each source marked 书 or 游戏, with its one line); `owner` says which member plays it; the party is `worlds/jiuding/party.json`. The content lint refuses a card with no 出处 or a source that does not exist.
+- **The book's names are new ids**, not renamed rows: 冰锥 `bingzhui`, 金刃 `jinren`, 土墙 `tuqiang`, 入隙 `ruxi`, 吐纳 `tuna`, 木草泥马 `mucao`, 痒痒针 `yangzhen`, 短飞剑 `feijian`, 火柴 `huochai` (火), 一箭 · 偏左半寸 `yijian`, 冰锥符 `bingzhuifu`, 镇岳符 `zhenyuefu`, 青光 `qingguang`, 山根桩 `shangen`, 铁箍板 `tiegu`. The old rows (水雾, 金爪, 土偶 …) stay as the beasts' own, so no beast's twelve cards changed; an old save's cards map to the new ids (`_renamed`, state.mjs).
+- **Granting:** a scene left gives its `story` cards; a board won its `beat` card (射鹿 → 一箭, 吹鹅毛 → 吐纳); a beast beaten its own card, never one at random (a 机缘 gives none); 钱掌柜 sells 短飞剑 (60), 五雷符 (60, a 符 spent when played) and 参悟玉简 (80).
+- **No starter at the 灵根 test.** The 三试 is a 试 of nerve: stand four of 蠪侄's turns, with a free 一滚 (dodge) and 石子; 蠪侄 holds one 碎金 (lookahead 90/10). Under ten held, a card goes in twice.
+- **Pools gated:** the 蒙山 and 林子 beasts come from 第四回 (h05): with three cards, the 古三 pools were all-or-nothing. 狰 at the 药园 is won with the 萝卜 (no fight). 秦雁's two 试 are passed by standing (seven and eight turns). Every fight re-weighed by 气血 (`tools/reweigh.mjs`).
+- **Party:** 银月 is a member who walks with him from 卷二; in 卷一 she sleeps in the 木牌 and is in no fight. The lead's 退 ends the fight (a member's only takes their cards out).
+- **Not built:** the § 3 gap cards beyond 木藤 (短刀, 随风, 禹步, 喷嚏符, 猪蜻蜓, 自拍镜, 牛脂甘露, 遁符; 阿禾's 荆棘, 金疮膏; 分饼).
 
 **In short.** In 卷一, 小满 fights alone in most of 第一回 to 第六回. The exception is 第五回: against 邹青松, 阿禾 helps from a crack in the wall. 孙二狗 joins for the 第七回 errands, and from 第八回 it is only 小满 and 阿禾. 银月 sleeps in the 木牌 and strikes once, in 第五回.
 
