@@ -1,0 +1,381 @@
+{
+ "version": 1,
+ "_about": "The small games, one row each, for the 游戏厅 (scripts/arcade.html?dev=1 — Hanli's test page, never linked in the game) and the try page (scripts/try-game.html?dev=1&game=<id>). `id` is the module, scripts/games/<id>.js, which keeps the small-game contract (games/mount.js: `mount(container, { data, lang, reducedMotion }) → Promise<{ won, grade?, stars? }>`; a pure board module gets it from `mountPure`). `group` places it on the page; `scene` · `hui` · `task` say where the story embeds it. A new game registers here with its module; the page reads its name and how-line from the module's `meta`.",
+ "groups": [
+  {
+   "id": "prologue",
+   "zh": "古一 · 古二",
+   "en": "Chapters 1–2"
+  },
+  {
+   "id": "later",
+   "zh": "古四 → 古七",
+   "en": "Chapters 4–7"
+  },
+  {
+   "id": "jin",
+   "zh": "今线",
+   "en": "The present line"
+  },
+  {
+   "id": "daily",
+   "zh": "日常 · 秘境",
+   "en": "Daily · the secret realm"
+  }
+ ],
+ "games": [
+  {
+   "id": "storm",
+   "group": "prologue",
+   "scene": "00-fall",
+   "hui": "第一回",
+   "task": "fall-storm"
+  },
+  {
+   "id": "deer",
+   "group": "prologue",
+   "scene": "00-deer",
+   "hui": "第二回",
+   "task": "deer-wind"
+  },
+  {
+   "id": "rain",
+   "group": "prologue",
+   "scene": "00-shiao",
+   "hui": "第一回",
+   "task": "rain-basins"
+  },
+  {
+   "id": "track",
+   "group": "prologue",
+   "scene": "00-heisong",
+   "hui": "第一回",
+   "task": "track-marks"
+  },
+  {
+   "id": "bread",
+   "group": "prologue",
+   "scene": "00-cave",
+   "hui": "第一回",
+   "task": "bread-share"
+  },
+  {
+   "id": "scale",
+   "group": "prologue",
+   "scene": "00-rent",
+   "hui": "第二回",
+   "task": "rent-scale"
+  },
+  {
+   "id": "feather",
+   "group": "prologue",
+   "scene": "00-halfyear",
+   "hui": "第二回",
+   "task": "feather-breath"
+  },
+  {
+   "id": "taunt",
+   "group": "prologue",
+   "scene": "00-masan",
+   "hui": "第一回",
+   "task": "masan-taunt"
+  },
+  {
+   "id": "griddle",
+   "group": "prologue",
+   "scene": "00-kitchen",
+   "hui": "第一回",
+   "task": "kitchen-griddle"
+  },
+  {
+   "id": "listen",
+   "group": "prologue",
+   "scene": "00-storm",
+   "hui": "第一回",
+   "task": "storm-listen"
+  },
+  {
+   "id": "stone",
+   "group": "prologue",
+   "scene": "00-cave",
+   "hui": "第一回",
+   "task": "cave-stone"
+  },
+  {
+   "id": "way",
+   "group": "prologue",
+   "scene": "00-yinyue",
+   "hui": "第一回",
+   "task": "yinyue-way"
+  },
+  {
+   "id": "climb",
+   "group": "prologue",
+   "scene": "00-cliff",
+   "hui": "第二回",
+   "task": "cliff-climb"
+  },
+  {
+   "id": "carry",
+   "group": "prologue",
+   "scene": "00-halfyear",
+   "hui": "第二回",
+   "task": "halfyear-carry"
+  },
+  {
+   "id": "abacus",
+   "group": "prologue",
+   "scene": "00-uncle",
+   "hui": "第二回",
+   "task": "uncle-abacus"
+  },
+  {
+   "id": "villageday",
+   "group": "prologue",
+   "scene": "00-shiao",
+   "hui": "第一回",
+   "task": "village-day"
+  },
+  {
+   "id": "villagedong",
+   "group": "prologue",
+   "scene": "00-xiuxian",
+   "hui": "第二回",
+   "task": "village-dong"
+  },
+  {
+   "id": "villageeve",
+   "group": "prologue",
+   "scene": "00-notice",
+   "hui": "第二回",
+   "task": "village-eve"
+  },
+  {
+   "id": "xisui",
+   "group": "prologue",
+   "scene": "00-sleep",
+   "hui": "第二回",
+   "task": "xisui-hold"
+  },
+  {
+   "id": "luoshu",
+   "group": "prologue",
+   "scene": "00-luoshu",
+   "hui": "第三回",
+   "task": "gate-luoshu"
+  },
+  {
+   "id": "zhoutian",
+   "group": "later",
+   "scene": "wm-zhoutian",
+   "hui": "第四回",
+   "task": "zhoutian-sanguan"
+  },
+  {
+   "id": "luoshu",
+   "group": "later",
+   "scene": "wm-kunzhen",
+   "hui": "第五回",
+   "task": "mijing-zhenyan"
+  },
+  {
+   "id": "qiajue",
+   "group": "later",
+   "scene": "wm-qianye",
+   "hui": "第六回",
+   "task": "qianye-qiajue"
+  },
+  {
+   "id": "xiangke",
+   "group": "later",
+   "scene": "wm-qianye",
+   "hui": "第六回",
+   "task": "qianye-xiangke"
+  },
+  {
+   "id": "mirrortongpu",
+   "group": "later",
+   "scene": "wm-zhaojing",
+   "hui": "第六回",
+   "task": "zhaojing-mirror"
+  },
+  {
+   "id": "fantongqianye",
+   "group": "later",
+   "scene": "wm-zhaojing",
+   "hui": "第六回",
+   "task": "zhaojing-fantong"
+  },
+  {
+   "id": "diche",
+   "group": "later",
+   "scene": "wm-laba",
+   "hui": "第六回",
+   "task": "laba-diche"
+  },
+  {
+   "id": "sneeze",
+   "group": "later",
+   "scene": "wm-dabi",
+   "hui": "第六回",
+   "task": "dabi-sneeze"
+  },
+  {
+   "id": "zhuqingting",
+   "group": "later",
+   "scene": "wm-laoyin",
+   "hui": "第六回",
+   "task": "laoyin-zhuqingting"
+  },
+  {
+   "id": "letter",
+   "group": "later",
+   "scene": "wm-jiaxin",
+   "hui": "第六回",
+   "task": "jiaxin-letter"
+  },
+  {
+   "id": "kaipian",
+   "group": "later",
+   "scene": "wm-heluo",
+   "hui": "第六回",
+   "task": "heluo-kaipian"
+  },
+  {
+   "id": "fantonghuochai",
+   "group": "later",
+   "scene": "09-snow",
+   "hui": "第七回",
+   "task": "snow-fantong"
+  },
+  {
+   "id": "leafsui",
+   "group": "later",
+   "scene": "09-jiuge",
+   "hui": "第七回",
+   "task": "jiuge-sui"
+  },
+  {
+   "id": "yubujiuge",
+   "group": "later",
+   "scene": "09-jiuge",
+   "hui": "第七回",
+   "task": "jiuge-yubu"
+  },
+  {
+   "id": "recipe",
+   "group": "later",
+   "scene": "09-furnace",
+   "hui": "第七回",
+   "task": "furnace-recipe"
+  },
+  {
+   "id": "leafding",
+   "group": "later",
+   "scene": "09-furnace",
+   "hui": "第七回",
+   "task": "furnace-ding"
+  },
+  {
+   "id": "huohousmell",
+   "group": "later",
+   "scene": "09-year",
+   "hui": "第七回",
+   "task": "year-smell"
+  },
+  {
+   "id": "reed",
+   "group": "later",
+   "scene": "09-yishui",
+   "hui": "第七回",
+   "task": "yishui-reed"
+  },
+  {
+   "id": "wind",
+   "group": "later",
+   "scene": "09-xie",
+   "hui": "第七回",
+   "task": "xie-wind"
+  },
+  {
+   "id": "qianmi",
+   "group": "jin",
+   "scene": "j01-retest",
+   "hui": "今 · 一",
+   "task": "jin-qianmi"
+  },
+  {
+   "id": "faqiu",
+   "group": "jin",
+   "scene": "j04-line",
+   "hui": "今 · 二",
+   "task": "jin-faqiu"
+  },
+  {
+   "id": "dark",
+   "group": "jin",
+   "scene": "j07-dark",
+   "hui": "今 · 三",
+   "task": "jin-dark"
+  },
+  {
+   "id": "pulse",
+   "group": "jin",
+   "scene": "j07-guan",
+   "hui": "今 · 三",
+   "task": "jin-pulse"
+  },
+  {
+   "id": "lastshot",
+   "group": "jin",
+   "scene": "j09-final",
+   "hui": "今 · 四",
+   "task": "jin-lastshot"
+  },
+  {
+   "id": "yabao",
+   "group": "daily",
+   "task": "yabao"
+  },
+  {
+   "id": "luoshu",
+   "group": "daily",
+   "task": "luoshu"
+  },
+  {
+   "id": "huarong",
+   "group": "daily",
+   "task": "huarong"
+  },
+  {
+   "id": "qiqiao",
+   "group": "daily",
+   "task": "qiqiao"
+  },
+  {
+   "id": "wuziqi",
+   "group": "daily",
+   "task": "wuziqi"
+  },
+  {
+   "id": "xiangqi",
+   "group": "daily",
+   "task": "xiangqi"
+  },
+  {
+   "id": "shouye",
+   "group": "daily",
+   "task": "shouye"
+  },
+  {
+   "id": "descend",
+   "group": "daily",
+   "task": "mijing-descend"
+  },
+  {
+   "id": "gather",
+   "group": "daily",
+   "task": "mijing-gather"
+  }
+ ]
+}

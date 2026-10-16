@@ -7,6 +7,8 @@
 // half-way through. Never a fail. Grade clean · clumsy, written as a mark.
 // Pure module: newGame / html / act / tick (live through the bout; live-games.js).
 import { btn, n, scene, skipped, splash } from './ink.js';
+import { mountPure } from './mount.js';
+import * as self from './sneeze.js';
 
 export const meta = {
   id: 'sneeze',
@@ -129,3 +131,6 @@ export function html(state, lang = 'zh') {
   const say = state.note === 'choo' ? `${t.ah}${t.choo}` : t[state.note] ?? '';
   return `<div class="g-sneeze g-ink">${picture(state)}${head}<p class="g-line-say">${say}</p>${control}</div>`;
 }
+
+/** The small-game contract (mount.js): this board alone in a container — the 游戏厅, a try page, or a beat's host. */
+export const mount = (container, opts) => mountPure(self)(container, opts);

@@ -8,6 +8,8 @@
 // Pure module: newGame / html / act / tick (live while he answers; live-games.js).
 import { rng, shuffled } from './seeded.js';
 import { btn, n, scene, skipped, splash } from './ink.js';
+import { mountPure } from './mount.js';
+import * as self from './taunt.js';
 
 export const meta = {
   id: 'taunt',
@@ -122,3 +124,6 @@ export function html(state, lang = 'zh') {
   return `<div class="g-taunt g-ink">${tauntScene(state)}${head}${meter}<p class="g-quote">${q(saidLine || '…')}</p>`
     + `<div class="g-tags">${tiles}</div><p class="g-line-say">${t[state.note] ?? ''}</p></div>`;
 }
+
+/** The small-game contract (mount.js): this board alone in a container — the 游戏厅, a try page, or a beat's host. */
+export const mount = (container, opts) => mountPure(self)(container, opts);

@@ -1,3 +1,5 @@
+import { mountPure } from './mount.js';
+import * as self from './zhoutian.js';
 // 小周天 · 冲三关 — 古五, 九月十七, the night the small circuit opens
 // (wm-zhoutian; his 2026-09-30: 「先并行做1到4」). The qi climbs the 督脉 through
 // three passes: 尾闾, 夹脊, 玉枕. 银月 dug two and a half of them for a year of
@@ -136,3 +138,6 @@ export function html(state, lang = 'zh') {
       : `<button type="button" class="g-zt-btn" data-g="start">${t.start}</button>`;
   return `<div class="g-zt${state.won ? ' is-won' : ''}">${figure(state, lang)}${breath}${pips}<p class="g-zt-line">${t[state.note] ?? ''}</p>${btn}</div>`;
 }
+
+/** The small-game contract (mount.js): this board alone in a container — the 游戏厅, a try page, or a beat's host. */
+export const mount = (container, opts) => mountPure(self)(container, opts);

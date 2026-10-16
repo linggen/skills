@@ -3,57 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
   <title>灵境 · 试玩</title>
   <link rel="stylesheet" href="lingjing.css" />
   <link rel="stylesheet" href="games/luoshu.css" />
   <link rel="stylesheet" href="games/huarong.css" />
   <link rel="stylesheet" href="games/qiqiao.css" />
+  <link rel="stylesheet" href="games/wuziqi.css" />
+  <link rel="stylesheet" href="games/xiangqi.css" />
   <link rel="stylesheet" href="games/shouye.css" />
   <link rel="stylesheet" href="games/live.css" />
   <style>
     body { overflow: auto; padding: 16px; }
-    .try { max-width: 420px; margin: 0 auto; }
+    .try { max-width: 440px; margin: 0 auto; }
     .try h1 { font-family: var(--serif); font-size: 18px; margin: 0 0 4px; }
     .try nav { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 14px; font-size: 13px; }
     .try nav a { color: var(--ling); }
-    .try .won { margin-top: 12px; color: var(--ling); font-size: 13px; text-align: center; }
+    .try .won { margin-top: 12px; color: var(--seal); font-size: 14px; text-align: center; min-height: 1.5em; }
   </style>
 </head>
 <body>
-  <!-- One game module, alone, for trying it by hand: ?game=rain|track|bread|deer|scale|feather|taunt|storm|xisui|zhoutian|luoshu…&lang=zh|en&seed=…
-       Nothing is saved and nothing is paid; the page only draws the module and runs it. -->
-  <div class="try">
-    <h1 id="title">…</h1>
-    <div class="small dim" id="how"></div>
-    <nav id="nav"></nav>
-    <div class="game" id="host"></div>
-    <div class="won" id="won"></div>
-  </div>
+  <!-- One small game, alone, through its mount() contract (games/mount.js) — for trying it by hand.
+       A test page, never linked in the game: it opens only with ?dev=1.
+       ?dev=1&game=rain|deer|…&lang=zh|en&seed=… — nothing is saved and nothing is paid. The 游戏厅
+       (arcade.html?dev=1) lists them all. -->
+  <div class="try" id="try"></div>
   <script type="module">
-    import { wireLiveGames } from './live-games.js';
+    import { mountPure } from './games/mount.js';
     const q = new URLSearchParams(location.search);
-    const id = (q.get('game') || 'storm').replace(/[^a-z]/g, '');
-    const lang = () => (q.get('lang') === 'en' ? 'en' : 'zh');
-    const seed = q.get('seed') || String(Date.now());
-    const mod = await import(`./games/${id}.js`);
-    const host = document.getElementById('host');
-    host.dataset.game = `try:${id}`;
-    const g = { taskId: `try:${id}`, mod, state: mod.newGame(seed, Number(q.get('level') || 1)), sent: false };
-    const paint = () => { host.innerHTML = mod.html(g.state, lang()); };
-    const onWon = () => { g.sent = true; document.getElementById('won').textContent = lang() === 'en' ? '— won (the page would now send the win) —' : '——胜（游戏里此刻会把胜局交给规则）——'; };
-    document.getElementById('title').textContent = mod.meta.name[lang()];
-    document.getElementById('how').textContent = mod.meta.how[lang()];
-    document.getElementById('nav').innerHTML = ['rain', 'track', 'bread', 'deer', 'scale', 'feather', 'taunt', 'griddle', 'listen', 'stone', 'way', 'climb', 'carry', 'abacus', 'villageday', 'villagedong', 'villageeve', 'storm', 'xisui', 'zhoutian', 'qiajue', 'xiangke', 'mirrortongpu', 'fantongqianye', 'diche', 'sneeze', 'zhuqingting', 'letter', 'kaipian', 'fantonghuochai', 'leafsui', 'yubujiuge', 'recipe', 'leafding', 'huohousmell', 'reed', 'wind'].map((k) => `<a href="?game=${k}&lang=${lang()}">${k}</a>`).join('')
-      + `<a href="?game=${id}&lang=${lang() === 'en' ? 'zh' : 'en'}">${lang() === 'en' ? '中' : 'En'}</a><a href="?game=${id}&lang=${lang()}">↺</a>`;
-    host.addEventListener('click', (e) => {
-      const el = e.target.closest('[data-g]');
-      if (!el || el.disabled) return;
-      const r = mod.act(g.state, { ...el.dataset });
-      g.state = r.state; paint();
-      if (r.won && !g.sent) onWon();
-    });
-    wireLiveGames({ boardFor: () => g, lang, onWon: () => onWon() });
-    paint();
+    const root = document.getElementById('try');
+    if (q.get('dev') !== '1') root.textContent = '—';
+    else {
+      const id = (q.get('game') || 'rain').replace(/[^a-z]/g, '');
+      const lang = q.get('lang') === 'en' ? 'en' : 'zh';
+      const mod = await import(`./games/${id}.js`);
+      const mount = mod.mount ?? mountPure(mod);
+      root.innerHTML = `<h1></h1><div class="small dim" id="how"></div><nav><a href="arcade.html?dev=1${lang === 'en' ? '&lang=en' : ''}">游戏厅</a>`
+        + `<a href="?dev=1&game=${id}&lang=${lang === 'en' ? 'zh' : 'en'}">${lang === 'en' ? '中' : 'En'}</a><a href="?dev=1&game=${id}&lang=${lang}">↺</a></nav><div id="slot"></div><div class="won" id="won"></div>`;
+      root.querySelector('h1').textContent = mod.meta?.name?.[lang] ?? id;
+      document.getElementById('how').textContent = mod.meta?.how?.[lang] ?? '';
+      const r = await mount(document.getElementById('slot'), { lang, seed: q.get('seed') || String(Date.now()), level: Number(q.get('level') || 1) });
+      document.getElementById('won').textContent = `${r.won ? (lang === 'en' ? 'Won' : '成') : '—'}${r.grade ? ` · ${r.grade}` : ''}`;
+    }
   </script>
 </body>
 </html>

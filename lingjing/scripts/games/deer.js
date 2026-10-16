@@ -11,6 +11,8 @@
 // — the stag always falls. How it went is the `grade` (clean · steady · rough).
 // Pure module: newGame / html / act / tick. Hold is [data-g-hold] (live-games.js).
 import { btn, n, reeds, scene, splash, still } from './ink.js';
+import { mountPure } from './mount.js';
+import * as self from './deer.js';
 
 export const meta = {
   id: 'deer',
@@ -206,3 +208,6 @@ export function html(state, lang = 'zh') {
 
 /** Stuck (scripts/stuck.js): three arrows gone wide — the page may offer 「算了，往下走」 now. */
 export const stuck = (s) => (s.misses ?? 0) >= 3;
+
+/** The small-game contract (mount.js): this board alone in a container — the 游戏厅, a try page, or a beat's host. */
+export const mount = (container, opts) => mountPure(self)(container, opts);

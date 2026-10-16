@@ -8,6 +8,8 @@
 // Grade clean · fumbled, written as a mark.
 // Pure module: newGame / html / act.
 import { btn, scene, skipped, splash } from './ink.js';
+import { mountPure } from './mount.js';
+import * as self from './abacus.js';
 
 export const meta = {
   id: 'abacus',
@@ -116,3 +118,6 @@ export function html(state, lang = 'zh') {
 
 /** Stuck (scripts/stuck.js): four sums wrong — the page may offer 「算了，往下走」 now. */
 export const stuck = (s) => (s.wrongs ?? 0) >= 4;
+
+/** The small-game contract (mount.js): this board alone in a container — the 游戏厅, a try page, or a beat's host. */
+export const mount = (container, opts) => mountPure(self)(container, opts);

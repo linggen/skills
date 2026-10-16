@@ -51,6 +51,7 @@ import { createPager } from './pager.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
 import { beatWon } from './beat-won.js';
+import { beatHost } from './beat-host.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
 import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, huiLineOf, momentMay, momentsHold, trayWaits } from './queue.js';
 
@@ -141,6 +142,8 @@ const words = () => {
 /* The mini-games, one module each (scripts/games/<id>.js — meta, newGame,
    html, act), loaded the first time a place shows one. */
 const GAMES = {};
+/* The beats on the mount() contract, laid into their hosts after every draw (beat-host.js). */
+const beats = beatHost({ boardFor: (id) => boardFor(id), lang: () => lang(), onSettled: (g, r) => beatSettled(g, r) });
 function gameMod(id) {
   if (GAMES[id] !== undefined) return GAMES[id];
   GAMES[id] = null;
@@ -179,7 +182,9 @@ function boardFor(taskId) {
     const spent = old?.day === day && old.state?.won && old.sent && !old.winning && task.status === 'offered' && !task.won;
     if (!old || old.day !== day || spent) {
       const round = spent ? (old.round ?? 0) + 1 : 0;
-      boards.set(taskId, { taskId, mod, day, round, state: mod.newGame(`${day}|${look.seed ?? ''}|${taskId}${round ? `|${round}` : ''}`, task.level ?? 1, { ...(task.deal ?? {}), ...(task.done_line ? { solved: task.done_line } : {}) }) });
+      // A game that keeps only the mount() contract (beat-host.js) is dealt by its own mount, not here.
+      if (!mod.newGame) boards.set(taskId, { taskId, mod, day, round, state: { won: false } });
+      else boards.set(taskId, { taskId, mod, day, round, state: mod.newGame(`${day}|${look.seed ?? ''}|${taskId}${round ? `|${round}` : ''}`, task.level ?? 1, { ...(task.deal ?? {}), ...(task.done_line ? { solved: task.done_line } : {}) }) });
     }
     // A board the rules judge (密室, games/mishi.js `fromLook`): what it is comes from Look, laid in on every draw.
     const g = boards.get(taskId);
@@ -1413,7 +1418,7 @@ function keptScroll(el) {
 let frame = null;
 function render() {
   if (frame) return;
-  frame = requestAnimationFrame(() => { frame = null; draw(); });
+  frame = requestAnimationFrame(() => { frame = null; draw(); beats.attach(); });
 }
 
 /* Drawn this instant. The fight hands the freshly drawn room to the animator
@@ -1422,6 +1427,7 @@ function render() {
 function drawNow() {
   if (frame) { cancelAnimationFrame(frame); frame = null; }
   draw();
+  beats.attach();
 }
 
 /* What had the keyboard's focus is found again after a repaint by what it IS
@@ -3189,6 +3195,14 @@ const CLICKS = [
 // A game that runs in time (a module with `tick`: 暴雨, 射鹿, 洗髓, 小周天) is
 // stepped and held here; its win goes the way a tapped win does.
 wireLiveGames({ boardFor, lang, paused: () => view.logOpen, onWon: (g) => { g.sent = true; openStuckSlots(); run(`win:${g.taskId}`, () => onWin(g.taskId)); } });
+/* A game on the mount() contract settles with its result: the board takes it, and a win goes the way every board's does. */
+function beatSettled(g, result) {
+  if (!result?.won || g.sent || g.skipped) return;
+  g.state = { ...g.state, won: true, grade: result.grade ?? null, stars: result.stars ?? null };
+  g.sent = true;
+  openStuckSlots();
+  run(`win:${g.taskId}`, () => onWin(g.taskId));
+}
 document.addEventListener('click', (e) => {
   // The 回's title card goes on a tap anywhere, and the tap does nothing else (2026-10-14).
   if (titleAway()) return;

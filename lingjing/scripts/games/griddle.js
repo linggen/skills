@@ -8,6 +8,8 @@
 // as a mark. Never a fail.
 // Pure module: newGame / html / act / tick (live while the fire burns; live-games.js).
 import { btn, n, scene, skipped, splash, still } from './ink.js';
+import { mountPure } from './mount.js';
+import * as self from './griddle.js';
 
 export const meta = {
   id: 'griddle',
@@ -119,3 +121,6 @@ export function html(state, lang = 'zh') {
   return `<div class="g-griddle g-ink">${griddleScene(state)}${head}<p class="g-line-say">${t[state.note] ?? ''}</p>`
     + `${btn(t.flip, 'data-g="flip"')}</div>`;
 }
+
+/** The small-game contract (mount.js): this board alone in a container — the 游戏厅, a try page, or a beat's host. */
+export const mount = (container, opts) => mountPure(self)(container, opts);

@@ -9,6 +9,8 @@
 // the ball back and he goes again. No pay to the 古 line.
 // Pure module: newGame / html / act / tick; the hold is [data-g-hold] (live-games.js).
 import { bar, beatOf, BEAT, calm, flow, holdIn, isBrake, letOut } from './breath.js';
+import { mountPure } from './mount.js';
+import * as self from './lastshot.js';
 
 export const meta = {
   id: 'lastshot',
@@ -112,3 +114,6 @@ export function html(state, lang = 'zh') {
 
 /** Stuck (scripts/stuck.js): three chants broken — the page may offer 「算了，往下走」 now. */
 export const stuck = (s) => (s.misses ?? 0) >= 3;
+
+/** The small-game contract (mount.js): this board alone in a container — the 游戏厅, a try page, or a beat's host. */
+export const mount = (container, opts) => mountPure(self)(container, opts);

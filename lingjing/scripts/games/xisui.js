@@ -12,6 +12,8 @@
 // their pot, the token on its branch; at most 75 s (the moon goes over the woodpile and the
 // sticks are burned), and the quiet 「算了，往下走」 every beat keeps.
 import { btn, n, scene, skipped, still } from './ink.js';
+import { mountPure } from './mount.js';
+import * as self from './xisui.js';
 
 export const meta = {
   id: 'xisui',
@@ -179,3 +181,6 @@ export function html(state, lang = 'zh') {
     + (done ? '' : bar(t.pain, pain, pain > WAVE ? 'is-seal' : '') + bar(t.breath, state.breath, state.breath < 0.25 ? 'is-seal' : ''))
     + `<p class="g-line-say">${t[state.note] ?? ''}</p>${act}</div>`;
 }
+
+/** The small-game contract (mount.js): this board alone in a container — the 游戏厅, a try page, or a beat's host. */
+export const mount = (container, opts) => mountPure(self)(container, opts);

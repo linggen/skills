@@ -9,6 +9,8 @@
 // Pure module: newGame / html / act / tick (live while he listens; live-games.js).
 import { rng } from './seeded.js';
 import { btn, n, scene, skipped, splash } from './ink.js';
+import { mountPure } from './mount.js';
+import * as self from './listen.js';
 
 export const meta = {
   id: 'listen',
@@ -119,3 +121,6 @@ export function html(state, lang = 'zh') {
   const line = quiet(state) ? t.quiet : state.note === 'early' ? t.early : t.listening;
   return `<div class="g-listen g-ink">${listenScene(state)}<p class="g-line-say">${line}</p>${btn(t.wrong, 'data-g="wrong"')}</div>`;
 }
+
+/** The small-game contract (mount.js): this board alone in a container — the 游戏厅, a try page, or a beat's host. */
+export const mount = (container, opts) => mountPure(self)(container, opts);

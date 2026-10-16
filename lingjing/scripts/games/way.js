@@ -8,6 +8,8 @@
 // Grade straight · wandered, written as a mark.
 // Pure module: newGame / html / act.
 import { n, scene, skipped, splash } from './ink.js';
+import { mountPure } from './mount.js';
+import * as self from './way.js';
 
 export const meta = {
   id: 'way',
@@ -117,3 +119,6 @@ export function html(state, lang = 'zh') {
   const pad = ['up', 'left', 'right', 'down'].map((d) => `<button type="button" class="g-nudgebtn g-way-${d}" data-g="go" data-d="${d}" aria-label="${t[d]}">${{ up: '↑', down: '↓', left: '←', right: '→' }[d]}</button>`).join('');
   return `<div class="g-way g-ink">${wayScene(state)}${head}<p class="g-line-say">${t[state.note] ?? ''}</p><div class="g-way-pad">${pad}</div></div>`;
 }
+
+/** The small-game contract (mount.js): this board alone in a container — the 游戏厅, a try page, or a beat's host. */
+export const mount = (container, opts) => mountPure(self)(container, opts);

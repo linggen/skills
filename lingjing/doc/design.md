@@ -696,7 +696,17 @@ the scene declares `"show": [{ "card": "board", "id": "<task id>" }]` and
 `"needs": { "task": "<task id>" }` with a `refuse` line. The win goes through
 `win` → `payWin` like any board. Every one of the four only ever ends in a win
 (the book does not fail there), so the gate never shuts the story. Try one
-alone: `scripts/try-game.html?game=storm|deer|xisui|zhoutian&lang=zh|en`.
+alone: `scripts/try-game.html?dev=1&game=storm|deer|xisui|zhoutian&lang=zh|en`.
+
+**Standalone, then embedded** (Hanli, 2026-10-16). One contract for every small game
+(`games/mount.js`): `mount(container, { data, lang, reducedMotion }) → Promise<{ won, grade?, stars? }>`
+— it knows nothing of the story, the save or the pay. A pure board module (html · act · tick) gets it
+from `mountPure`, and the story page keeps drawing those itself; a game that keeps only `mount` (the
+new 割绳子 喂饼) is laid into its board card by `beat-host.js`, mounted once, and its result goes the
+way every board's win does (`onWin` → the rules' `win` → the pay → `beat-won.js` `beatWon(id, {grade})`,
+the one hook the 得牌 reveal listens on). Every game is listed in `worlds/jiuding/games.json`. Test
+pages, never linked in the game and blank without `?dev=1`: the 游戏厅 `scripts/arcade.html?dev=1`
+(all of them, tap to play, phone and Mac) and the try page above.
 
 **Skip, timing, art** (Hanli, 2026-10-15):
 - **「算了，往下走」 appears only when stuck** — after 75 s, or when the game reports stuck. Page-level

@@ -1,0 +1,22 @@
+/* 游戏厅 (arcade.html, ?dev=1 only) — the small games on one page, in the house look: rice paper,
+   ink, a cinnabar seal; phone first (one column, 16px gutters), two or three columns on a Mac. */
+body { overflow: auto; }
+.arcade { max-width: 980px; margin: 0 auto; padding: 16px 16px 48px; }
+.arcade-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 4px 0 14px; }
+.arcade-head h1 { font-family: var(--serif); font-size: 22px; letter-spacing: .2em; margin: 0; }
+.arcade-head a { color: var(--ling); text-decoration: none; font-size: 14px; }
+.arcade-lang { margin-left: auto; border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; }
+.arcade section h2 { font-family: var(--serif); font-size: 15px; color: var(--dim); font-weight: 600; letter-spacing: .12em; margin: 18px 0 8px;
+  padding-left: 10px; border-left: 3px solid var(--seal); }
+.arcade-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.arcade-tile { display: flex; flex-direction: column; gap: 2px; min-height: 56px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--surface); color: var(--text); text-decoration: none; }
+.arcade-tile b { font-family: var(--serif); font-weight: 600; font-size: 15px; }
+.arcade-tile small { color: var(--faint); font-size: 12px; }
+.arcade-tile:hover { border-color: var(--ling); }
+.arcade-tile.is-missing { opacity: .4; }
+.arcade-play { max-width: 440px; margin: 0 auto; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.arcade-play .cardtitle { font-family: var(--serif); font-size: 16px; font-weight: 600; letter-spacing: .12em; margin-bottom: 4px; }
+.arcade-result { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 52px; margin-top: 10px; }
+.arcade-won { font-family: var(--serif); font-size: 20px; color: var(--seal); font-weight: 700; }
+@media (max-width: 480px) { .arcade-grid { grid-template-columns: 1fr 1fr; } .arcade-play { padding: 10px; } }

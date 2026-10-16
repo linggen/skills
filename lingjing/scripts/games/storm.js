@@ -10,6 +10,8 @@
 // Drawn in ink since batch two (2026-10-14): the slope and the drop, 爹 hauled up it pull by
 // pull, the rain slanting with the wind — and the quiet 「算了，往下走」 every beat keeps.
 import { btn, n, scene, skipped, splash, still } from './ink.js';
+import { mountPure } from './mount.js';
+import * as self from './storm.js';
 
 export const meta = {
   id: 'storm',
@@ -180,3 +182,6 @@ export function html(state, lang = 'zh') {
   const act = state.live ? btn(t.pull, 'data-g="pull"') : btn(t.start, 'data-g="start"');
   return `<div class="g-storm2 g-ink">${stormScene(state, w)}${state.live ? head + meter : ''}<p class="g-line-say">${t[state.note] ?? ''}</p>${act}</div>`;
 }
+
+/** The small-game contract (mount.js): this board alone in a container — the 游戏厅, a try page, or a beat's host. */
+export const mount = (container, opts) => mountPure(self)(container, opts);

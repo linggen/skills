@@ -9,6 +9,8 @@
 // Pure module: newGame / html / act / tick (the clock runs only while walking).
 import { rng, shuffled } from './seeded.js';
 import { btn, n, scene, splash } from './ink.js';
+import { mountPure } from './mount.js';
+import * as self from './track.js';
 
 export const meta = {
   id: 'track',
@@ -167,3 +169,6 @@ export function html(state, lang = 'zh') {
   const cut = state.cuts.length && !state.tried.length ? cutScene(state) : '';
   return `<div class="g-track g-ink">${head}${cut}<p class="g-line-say">${said ? `${said}<br>` : ''}${t.read}</p><div class="g-track-ground">${tiles}</div></div>`;
 }
+
+/** The small-game contract (mount.js): this board alone in a container — the 游戏厅, a try page, or a beat's host. */
+export const mount = (container, opts) => mountPure(self)(container, opts);

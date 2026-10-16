@@ -9,6 +9,8 @@
 // Pure module: newGame / html / act.
 import { rng, shuffled } from './seeded.js';
 import { btn, n, scene, skipped, splash } from './ink.js';
+import { mountPure } from './mount.js';
+import * as self from './stone.js';
 
 export const meta = {
   id: 'stone',
@@ -104,3 +106,6 @@ export function html(state, lang = 'zh') {
 
 /** Stuck (scripts/stuck.js): two wrong holes — the page may offer 「算了，往下走」 now. */
 export const stuck = (s) => (s.wrong ?? 0) >= 2;
+
+/** The small-game contract (mount.js): this board alone in a container — the 游戏厅, a try page, or a beat's host. */
+export const mount = (container, opts) => mountPure(self)(container, opts);

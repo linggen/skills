@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>灵境 · 游戏厅</title>
+  <link rel="stylesheet" href="lingjing.css" />
+  <link rel="stylesheet" href="games/luoshu.css" />
+  <link rel="stylesheet" href="games/huarong.css" />
+  <link rel="stylesheet" href="games/qiqiao.css" />
+  <link rel="stylesheet" href="games/wuziqi.css" />
+  <link rel="stylesheet" href="games/xiangqi.css" />
+  <link rel="stylesheet" href="games/shouye.css" />
+  <link rel="stylesheet" href="games/live.css" />
+  <link rel="stylesheet" href="arcade.css" />
+</head>
+<body>
+  <!-- 游戏厅 — every registered small game (worlds/jiuding/games.json) on one page, tap to play.
+       Hanli's test page only (10-16: 「只给我测试用就好了, 不要上线」): it opens only with ?dev=1, and
+       nothing in the game links here. ?dev=1&game=<id> plays one directly (the try page does the
+       same). No save, no seeding, no pay: each game runs alone through its mount() contract. -->
+  <main class="arcade" id="arcade"></main>
+  <script type="module" src="arcade.js"></script>
+</body>
+</html>

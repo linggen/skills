@@ -144,6 +144,7 @@ import { codexCompactHtml, codexHtml } from './codex.js';
 import { bookPlace, choicesUp, logLinkHtml, playing, toldSoFar } from './dialogue.js';
 import { TURNED_MS, turnedPays } from './turned.js';
 import { AI_WORDS, caseCard, duizi, haggle, twenty } from './aigames-cards.js';
+import { mountHostHtml, mountOnly } from './beat-host.js';
 
 /// A system the story has not reached yet (Look's `locked`, rules/locks.mjs): its chip, bar and buttons are not drawn at all.
 export const isShut = (look, system) => (look?.locked ?? []).includes(system);
@@ -517,7 +518,7 @@ function board(card, ctx) {
     : kept ? `<div class="small kept">${esc(ctx.words.keptWin)}</div>`
     : shut ? `<div class="small dim">${esc(ctx.words.emptyNoPlay)}</div>${isShut(ctx.look, 'seclusion') ? '' : `<div class="acts"><button class="act" data-seclude-open>${esc(ctx.words.secludeOpen)}</button></div>`}`
     : made ? `<div class="dim small">${esc(ctx.words.boardDone)}</div>`
-    : g?.mod ? `<div class="small dim g-goal">${esc(task?.how ?? g.mod.meta.how?.[ctx.lang] ?? g.mod.meta.how?.zh ?? '')}</div><div class="game" data-game="${esc(id)}">${g.mod.html(g.state, ctx.lang)}</div>`
+    : g?.mod ? `<div class="small dim g-goal">${esc(task?.how ?? g.mod.meta?.how?.[ctx.lang] ?? g.mod.meta?.how?.zh ?? '')}</div>${mountOnly(g.mod) ? mountHostHtml(id, esc) : `<div class="game" data-game="${esc(id)}">${g.mod.html(g.state, ctx.lang)}</div>`}`
       : g ? boardHtml(g, ctx.words) : `<div class="dim small">…</div>`;
   const title = task?.game ? task.title : ctx.words.play;
   const ask = task?.game ? say(ctx.words.sayTask, { title: task.title }) : ctx.words.sayBoard;

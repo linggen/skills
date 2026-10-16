@@ -10,6 +10,8 @@
 // Pure module: newGame / html / act / tick (live while he climbs; live-games.js).
 import { rng } from './seeded.js';
 import { btn, n, scene, skipped, splash } from './ink.js';
+import { mountPure } from './mount.js';
+import * as self from './climb.js';
 
 export const meta = {
   id: 'climb',
@@ -125,3 +127,6 @@ export function html(state, lang = 'zh') {
 
 /** Stuck (scripts/stuck.js): slid back twice — the page may offer 「算了，往下走」 now. */
 export const stuck = (s) => (s.slips ?? 0) >= 2;
+
+/** The small-game contract (mount.js): this board alone in a container — the 游戏厅, a try page, or a beat's host. */
+export const mount = (container, opts) => mountPure(self)(container, opts);

@@ -9,6 +9,8 @@
 // Grade read · puff. Pure module: newGame / act / tick / html.
 import { btn, n, scene, skipped, splash, still } from './ink.js';
 import { rng } from './seeded.js';
+import { mountPure } from './mount.js';
+import * as self from './wind.js';
 
 export const DIRS = ['n', 'e', 's', 'w'];
 export const GLIDES = 3, SIP = 1 / 6; // a step back costs this much 丹田: three glides, half of it
@@ -96,3 +98,6 @@ export function html(state, lang = 'zh') {
   const faces = `<div class="g-tags">${DIRS.map((d) => `<button type="button" class="g-tag${state.facing === d ? ' is-held' : ''}" data-g="face" data-d="${d}">${t.face}${t[d]}</button>`).join('')}</div>`;
   return `<div class="g-wind g-ink">${picture(state)}${head}<p class="g-line-say">${t[state.note] ?? ''}</p>${faces}${btn(t.back, 'data-g="back"')}</div>`;
 }
+
+/** The small-game contract (mount.js): this board alone in a container — the 游戏厅, a try page, or a beat's host. */
+export const mount = (container, opts) => mountPure(self)(container, opts);

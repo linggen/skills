@@ -8,6 +8,8 @@
 // is written as a mark. Past the limit the loads are carried anyway. Never a fail.
 // Pure module: newGame / html / act / tick (live while he carries; live-games.js).
 import { btn, n, scene, skipped, splash, still } from './ink.js';
+import { mountPure } from './mount.js';
+import * as self from './carry.js';
 
 export const meta = {
   id: 'carry',
@@ -111,3 +113,6 @@ export function html(state, lang = 'zh') {
   const meter = `<div class="g-meter"><span>${t.breath}</span><span class="g-bar${state.breath > 0.6 ? ' is-seal' : ''}"><i style="width:${Math.round(state.breath * 100)}%"></i></span></div>`;
   return `<div class="g-carry g-ink">${carryScene(state)}${head}${meter}<p class="g-line-say">${t[state.note] ?? ''}</p>${btn(t.step, 'data-g="step"')}</div>`;
 }
+
+/** The small-game contract (mount.js): this board alone in a container — the 游戏厅, a try page, or a beat's host. */
+export const mount = (container, opts) => mountPure(self)(container, opts);

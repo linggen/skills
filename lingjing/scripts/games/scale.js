@@ -9,6 +9,8 @@
 // Pure module: newGame / html / act.
 import { rng, shuffled } from './seeded.js';
 import { btn, n, scene, splash } from './ink.js';
+import { mountPure } from './mount.js';
+import * as self from './scale.js';
 
 export const meta = {
   id: 'scale',
@@ -126,3 +128,6 @@ export function html(state, lang = 'zh') {
     + `<p class="g-line-say">${lineOf(state, t, lang)}</p>`
     + btn(t.weigh, `data-g="weigh"${state.pan.length ? '' : ' disabled'}`) + `</div>`;
 }
+
+/** The small-game contract (mount.js): this board alone in a container — the 游戏厅, a try page, or a beat's host. */
+export const mount = (container, opts) => mountPure(self)(container, opts);
