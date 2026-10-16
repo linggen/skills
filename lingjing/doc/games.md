@@ -165,9 +165,10 @@ Fine as they are; 洛书 is the same square three times (二试, 困阵, daily).
   `images`; she answers a line zh + en and a 猜 line; the page checks the 猜 word against the word's
   spellings (games.json `data.words`) — never the model's say. One look out at a time, four a round.
   A blind model: the engine's vision gate refuses the first look (a blank sheet, her opening line), and
-  the game says so and doesn't start. Live 10-16 on gpt-6-luna, scripted strokes, 15 rounds at 1440
-  (mouse) and 390 (touch): 10 won (弓 · 灯 ×2 · 鹿 · 月亮 ×2 · 山 · 盆 · 鸡 · 剑), lost 饼 ×2 (a circle with
-  dots read as a smiling face), 白菜 ×2 (a leaf), 葫芦 (a snowman); a look 2.0–8.6 s, median 3.5 s.
+  the game says so and doesn't start (live: deepseek-flash, refused in 0.4 s, no tokens). Live 10-16 on
+  gpt-6-luna, scripted strokes, 17 rounds at 1440 (mouse, zh and en) and 390 (touch): 11 won (弓 · 灯 ×3 ·
+  鹿 · 月亮 ×2 · 山 · 盆 · 鸡 · 剑; 5 at the first look), lost 饼 ×2 (a circle with dots read as a smiling
+  face), 白菜 ×2 (a leaf), 葫芦 (a snowman), 狐狸 (a table); 29 looks, 2.0–8.6 s, median 3.5 s.
   **Cost:** ~8.7k prompt tokens a look (Ling's lingjing prompt and 40 tools; the picture ~250), ~20–80
   out, none cached on this path; her opening look once a page; a typical round of two looks ~17.5k,
   at most four ~35k. A trimmed agent for small AI games would cut most of it (an engine question).
