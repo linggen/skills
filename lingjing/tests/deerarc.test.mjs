@@ -240,17 +240,34 @@ test('gusts: the wind rises and falls on a gusty level, a tailwind carries the a
   assert.ok(lull - gust < -12, `a lull flies further: ${lull.toFixed(0)} vs ${gust.toFixed(0)}`);
 });
 
-test('the painted stag: the row\'s art files exist; with art the deer is drawn from them (drink, or walk on the move), else in ink', async () => {
+test('the paintings: only the entries whose files are there are used (the stag now); each part falls back to ink alone; every part takes its painting when it lands', async () => {
   const fs = await import('node:fs');
-  for (const [pose, a] of Object.entries(GAME.art).filter(([k]) => !k.startsWith('_'))) {
-    assert.ok(fs.existsSync(new URL(`../worlds/jiuding/art/${a.file}`, import.meta.url)), `${pose}: ${a.file}`);
-  }
-  const drinking = da.html(da.newGame('t', 1, { levels: [byId('still')], art: GAME.art }), 'zh');
+  const has = async (file) => fs.existsSync(new URL(`../worlds/jiuding/art/${file}`, import.meta.url));
+  const art = await da.presentArt(GAME.art, has);
+  for (const pose of ['drink', 'look', 'walk']) assert.ok(art[pose], `${pose} is painted`);
+  assert.ok(Object.values(art).every((a) => fs.existsSync(new URL(`../worlds/jiuding/art/${a.file}`, import.meta.url))), 'nothing missing is kept');
+  const drinking = da.html(da.newGame('t', 1, { levels: [byId('still')], art }), 'zh');
   assert.match(drinking, /stag-drink\.webp/);
-  let s = da.newGame('t', 1, { levels: [byId('walk')], art: GAME.art });
+  if (!art.bow_rest) assert.match(drinking, /g-da-limb/, 'the bow in ink until its painting lands');
+  let s = da.newGame('t', 1, { levels: [byId('walk')], art });
   for (let i = 0; i < 30; i++) s = da.tick(s, 50);
   assert.match(da.html(s, 'zh'), /stag-walk\.webp/);
-  assert.doesNotMatch(da.html(da.newGame('t', 1, { levels: [byId('still')] }), 'zh'), /\.webp/, 'no art: the ink deer');
+  assert.doesNotMatch(da.html(da.newGame('t', 1, { levels: [byId('still')] }), 'zh'), /\.webp/, 'no art: all ink');
+  // Every entry as if landed: each part is drawn from its file.
+  const all = await da.presentArt(GAME.art, async () => true);
+  let r = da.newGame('t', 1, { levels: [byId('reeds')], art: all });
+  r = da.act(r, { g: 'draw', a: 30, p: 0.5 }).state;
+  const aiming = da.html(r, 'zh');
+  for (const f of ['bow-rest', 'bow-drawn', 'arrow', 'reed', 'branch']) assert.match(aiming, new RegExp(`${f}\\.webp`), f);
+  assert.doesNotMatch(aiming, /g-da-limb|g-da-branch"/, 'no ink where a painting is');
+  r = da.act(r, { g: 'draw', a: 18, p: 0.97 }).state;
+  r = da.act(r, { g: 'loose' }).state;
+  for (let i = 0; i < 400 && r.phase === 'fly'; i++) r = da.tick(r, 10);
+  const after = da.html(r, 'zh');
+  assert.match(after, /reed-stub\.webp/, 'a snapped reed\'s stub');
+  if (r.phase === 'hit') { r = da.tick(r, 200); assert.match(da.html(r, 'zh'), /ink-hit\.webp/); }
+  const bolting = { ...r, phase: 'spook', t: 600, deerGone: da.deerAt(byId('reeds'), 0), at: [100, 200] };
+  assert.match(da.html(bolting, 'zh'), /stag-bolt\.webp/);
 });
 
 test('the deer eases between poses: its head and its feet never jump from one frame to the next', () => {

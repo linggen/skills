@@ -120,7 +120,7 @@ function walkAt(d, ms) {
 const liftAt = (d, ms) => (d.lift ? swell((ms % d.lift.every) - (d.lift.every - d.lift.for), d.lift.for) : 0);
 
 /* The deer's shape in its own frame (facing +x, feet at 0): the zones an arrow is judged by. */
-export const DEER_S = 1.3; // the deer's size on the bank (its zones scale with it)
+export const DEER_S = 1.8; // the deer's size on the bank, ~155 of 480 (its zones scale with it)
 // Fitted to the painted stag (art/games/deer, 2026-10-16; one canvas unit = 0.18 deer units): the
 // heart low behind the foreleg, the barrel, the head down at the water or up, and the antlers —
 // a great crown above the head (a graze, like the barrel and the neck).
@@ -491,14 +491,29 @@ function leafAt(i, carried, t) {
 
 function thingPicture(t, s) {
   const { x, y } = t.body.position, len = Math.hypot(t.b[0] - t.a[0], t.b[1] - t.a[1]);
-  const stub = t.stub ? `<path class="g-da-reed" d="M${n(t.stub[0][0])} ${n(t.stub[0][1])} L${n(t.stub[1][0])} ${n(t.stub[1][1])} l2 -3"/>` : '';
   const sway = t.kind === 'reed' && !t.broken && !calm(s) ? Math.sin(s.clock / 420 + x) * 1.2 : 0;
   const shiver = t.shake && !calm(s) ? Math.sin(s.clock / 30) * 2 * Math.max(0, 1 - (s.t / 600)) : 0;
+  const from = t.stub ? -len / 2 + len * 0.3 : -len / 2; // snapped: the top flies, the stub stands
+  const deg = (t.body.angle * 180) / Math.PI + sway, art = s.art?.[t.kind];
+  const body = art ? lengthSprite(art, from, len / 2, Math.cos(t.body.angle) < 0) : inkThing(t, from, len);
+  return `${stubPicture(t, s)}<g transform="translate(${n(x)} ${n(y + shiver)}) rotate(${n(deg)})">${body}</g>`;
+}
+
+/** The code-drawn reed or branch (the fallback until its painting lands), from `from` to len/2. */
+function inkThing(t, from, len) {
   const cls = t.kind === 'reed' ? 'g-da-reed' : 'g-da-branch';
   const twig = t.kind === 'branch' ? `<path class="g-da-twig" d="M${n(-len * 0.1)} 0 l-8 -12 M${n(len * 0.2)} 0 l6 -10 M${n(len * 0.32)} 0 l10 8"/>` : '';
   const head = t.kind === 'reed' ? `<path class="g-da-plume" d="M${n(len / 2)} 0 q8 -3 14 -1 q-8 3 -14 1Z"/>` : '';
-  const from = t.stub ? -len / 2 + len * 0.3 : -len / 2; // snapped: the top flies, the stub stands
-  return `${stub}<g transform="translate(${n(x)} ${n(y + shiver)}) rotate(${n((t.body.angle * 180) / Math.PI + sway)})"><path class="${cls}" d="M${n(from)} 0 L${n(len / 2)} 0"/>${twig}${head}</g>`;
+  return `<path class="${cls}" d="M${n(from)} 0 L${n(len / 2)} 0"/>${twig}${head}`;
+}
+
+/** What a snapped reed leaves standing: `reed_stub` art, or a short stroke. */
+function stubPicture(t, s) {
+  if (!t.stub) return '';
+  const [[ax, ay], [bx, by]] = t.stub, len = Math.hypot(bx - ax, by - ay), deg = (Math.atan2(by - ay, bx - ax) * 180) / Math.PI;
+  const art = s.art?.reed_stub;
+  if (!art) return `<path class="g-da-reed" d="M${n(ax)} ${n(ay)} L${n(bx)} ${n(by)} l2 -3"/>`;
+  return `<g transform="translate(${n(ax)} ${n(ay)}) rotate(${n(deg)})">${lengthSprite(art, 0, len, false)}</g>`;
 }
 
 /** The deer: the painted stag when the row has its `art`, else ink; head down drinking or up
@@ -521,8 +536,19 @@ function sprite(a, opacity) {
   const flip = a.flip ? -1 : 1, x = -a.at[0] * a.w, y = -a.at[1] * a.h;
   return `<image class="g-da-sprite" href="${artUrl(a.file)}" x="${n(x)}" y="${n(y)}" width="${a.w}" height="${a.h}" opacity="${n(opacity, 2)}"${flip < 0 ? ` transform="scale(-1 1)"` : ''} preserveAspectRatio="none"/>`;
 }
+/** A painting laid along a length in its frame (local +x, from `from` to `to`): its long axis
+    (`axis`: "up" — painted standing, like a reed; else "right", like a branch) from its `at`.
+    `w` × `h` give only its shape; the length sets its size. `mirror` keeps it right way up when
+    the thing runs leftward. */
+function lengthSprite(a, from, to, mirror) {
+  const L = Math.max(1, to - from), up = a.axis === 'up';
+  const [w, h] = up ? [(L * a.w) / a.h, L] : [L, (L * a.h) / a.w];
+  const turn = up ? ' rotate(90)' : mirror ? ' scale(1 -1)' : '';
+  return `<g transform="translate(${n(from)} 0)${turn}">${sprite({ ...a, w: n(w), h: n(h) }, 1)}</g>`;
+}
+
 function spriteDeer(art, d, lift, gone) {
-  const moving = (gone || d.walking) && art.walk ? art.walk : art.look ?? art.walk;
+  const moving = gone && art.bolt ? art.bolt : (gone || d.walking) && art.walk ? art.walk : art.look ?? art.walk;
   const bob = d.walking && !gone ? n(Math.abs(Math.sin(d.phase / 160)) * -1.2) : 0; // a step's rise
   return `<g transform="translate(0 ${bob})">${sprite(art.drink, 1 - lift) + sprite(moving, lift)}</g>`;
 }
@@ -547,13 +573,24 @@ function bowPicture(s) {
   // The tension: the limbs bend in and the tips come back as the string stretches; full, it trembles.
   const back = 4 + p * 30, bend = 14 + p * 12, tipX = 4 - p * 7, tipY = 28 - p * 4;
   const shake = p >= 0.98 && !calm(s) ? n(Math.sin(s.clock / 23) * 0.8) : 0;
-  const nocked = s.phase === 'aim' ? `<path class="g-da-shaft" d="M${n(-back)} 0 L${n(-back + 32)} 0"/><path class="g-da-head-tip" d="M${n(-back + 32)} 0 l-6 -3 l0 6Z"/>`
-    + `<path class="g-da-fletch" d="M${n(-back)} 0 l-4 -3 M${n(-back + 3)} 0 l-4 -3 M${n(-back)} 0 l-4 3 M${n(-back + 3)} 0 l-4 3"/>` : '';
+  const nocked = s.phase === 'aim' ? arrowShape(s.art, -back + 16) : '';
+  // Painted (bow_rest → bow_drawn, cross-faded by the pull; each painted pointing right, the grip
+  // at its `at`), else drawn: the limbs bend in and the string comes back with the pull.
+  const bow = s.art?.bow_rest || s.art?.bow_drawn
+    ? sprite(s.art.bow_rest ?? s.art.bow_drawn, s.art.bow_drawn ? 1 - p : 1) + sprite(s.art.bow_drawn, p)
+    : `<path class="g-da-limb" d="M${n(tipX)} ${n(-tipY)} Q${n(bend)} 0 ${n(tipX)} ${n(tipY)}"/>`
+      + `<path class="g-da-string${p > 0 ? ' is-taut' : ''}" d="M${n(tipX)} ${n(-tipY)} L${n(4 - back)} 0 L${n(tipX)} ${n(tipY)}"/>`;
   // Mirrored (it points left), so the screen's clockwise rotate takes −a: local +x then runs along
   // (−cos a, −sin a), the launch vector (velocityOf) — up for a > 0. Hanli 10-16: it pointed down.
-  return `<g class="g-da-bow${p >= 0.98 ? ' is-full' : ''}" transform="translate(${BOW[0]} ${n(BOW[1] + shake)}) scale(-1 1) rotate(${n(-a)})">`
-    + `<path class="g-da-limb" d="M${n(tipX)} ${n(-tipY)} Q${n(bend)} 0 ${n(tipX)} ${n(tipY)}"/>`
-    + `<path class="g-da-string${p > 0 ? ' is-taut' : ''}" d="M${n(tipX)} ${n(-tipY)} L${n(4 - back)} 0 L${n(tipX)} ${n(tipY)}"/>${nocked}</g>`;
+  return `<g class="g-da-bow${p >= 0.98 ? ' is-full' : ''}" transform="translate(${BOW[0]} ${n(BOW[1] + shake)}) scale(-1 1) rotate(${n(-a)})">${bow}${nocked}</g>`;
+}
+
+/** An arrow along local +x, its middle at `cx`: the `arrow` painting (pointing right), or ink. */
+function arrowShape(art, cx = 0, spent = false) {
+  if (art?.arrow) return `<g transform="translate(${n(cx)} 0)">${sprite(art.arrow, 1)}</g>`;
+  const t = cx - ARROW_HALF, h = cx + ARROW_HALF;
+  return `<path class="g-da-shaft" d="M${n(t)} 0 L${n(spent ? h - 4 : h)} 0"/>${spent ? '' : `<path class="g-da-head-tip" d="M${n(h)} 0 l-6 -3 l0 6Z"/>`}`
+    + `<path class="g-da-fletch" d="M${n(t)} 0 l-4 -3 M${n(t + 3)} 0 l-4 -3 M${n(t)} 0 l-4 3 M${n(t + 3)} 0 l-4 3"/>`;
 }
 
 /** While drawing the level's first arrow only: the first stretch of the arc, as if there were no
@@ -567,8 +604,7 @@ function guidePicture(s) {
 
 /** The spent arrows stuck in the grass this try, and the chaff a snapped reed threw. */
 function spentPicture(s) {
-  const stuck = (s.stuck ?? []).map(([x, y, a]) => `<g class="g-da-spent" transform="translate(${x} ${y}) rotate(${a})"><path class="g-da-shaft" d="M${-ARROW_HALF} 0 L${ARROW_HALF - 4} 0"/>`
-    + `<path class="g-da-fletch" d="M${-ARROW_HALF} 0 l-4 -3 M${-ARROW_HALF} 0 l-4 3"/></g>`).join('');
+  const stuck = (s.stuck ?? []).map(([x, y, a]) => `<g class="g-da-spent" transform="translate(${x} ${y}) rotate(${a})">${arrowShape(s.art, 0, true)}</g>`).join('');
   const bits = (s.world.bits ?? []).map((b) => `<path class="g-da-bit" d="M-3 0 L3 0" transform="translate(${n(b.position.x)} ${n(b.position.y)}) rotate(${n((b.angle * 180) / Math.PI)})"/>`).join('');
   return stuck + bits;
 }
@@ -581,8 +617,7 @@ function arrowPicture(s) {
   const ar = s.world.arrow;
   if (!ar || ['hit', 'spook', 'clear'].includes(s.phase)) return '';
   const { x, y } = ar.body.position, deg = (ar.body.angle * 180) / Math.PI;
-  return `<g class="g-da-arrow" data-arrow="" transform="translate(${n(x)} ${n(y)}) rotate(${n(deg)})"><path class="g-da-shaft" d="M${-ARROW_HALF} 0 L${ARROW_HALF} 0"/>`
-    + `<path class="g-da-head-tip" d="M${ARROW_HALF} 0 l-6 -3 l0 6Z"/><path class="g-da-fletch" d="M${-ARROW_HALF} 0 l-4 -3 M${-ARROW_HALF + 3} 0 l-4 -3 M${-ARROW_HALF} 0 l-4 3 M${-ARROW_HALF + 3} 0 l-4 3"/></g>`;
+  return `<g class="g-da-arrow" data-arrow="" transform="translate(${n(x)} ${n(y)}) rotate(${n(deg)})">${arrowShape(s.art)}</g>`;
 }
 
 /** 「往左偏半寸」: after a miss on a level that hints it, a small tick half an inch left of the deer. */
@@ -613,7 +648,15 @@ function burstPicture(s) {
   if (calm(s)) return `<circle class="g-da-burst" cx="${n(x)}" cy="${n(y)}" r="14"/>${stars}`;
   // A big bloom of ink, a second one a beat behind, a ring going out — and the stars.
   const ring = s.t < 600 ? `<circle class="g-da-ring" cx="${n(x)}" cy="${n(y)}" r="${n(10 + s.t / 12)}" opacity="${n(1 - s.t / 600, 2)}"/>` : '';
-  return splash(x, y, s.t, { r: 30 }) + splash(x - 8, y + 4, s.t - 90, { r: 16 }) + ring + stars;
+  return inkHit(s.art?.ink_hit, x, y, s.t) + ring + stars;
+}
+
+/** The bloom: the `ink_hit` painting opening and fading, or two ink splashes a beat apart. */
+function inkHit(a, x, y, t) {
+  if (!a) return splash(x, y, t, { r: 30 }) + splash(x - 8, y + 4, t - 90, { r: 16 });
+  if (t > 1100) return '';
+  const k = 0.55 + 0.65 * ease(t / 450), o = t < 650 ? 1 : 1 - (t - 650) / 450;
+  return `<g transform="translate(${n(x)} ${n(y)}) scale(${n(k, 2)})">${sprite(a, o)}</g>`;
 }
 
 /** The level's stars, stamped one after another over the strike (each pops in, eased with a kick). */
@@ -723,6 +766,18 @@ function paintFrame() {
 }
 
 /* ── Standalone: the mount() contract (games/mount.js); alone it reads its row of games.json. */
+/** The `art` entries whose files are there (`has(file)` → Promise<boolean>); a missing one is left
+    out, so its part is drawn in ink until the painting lands — no code change, nothing broken. */
+export async function presentArt(art, has) {
+  if (!art) return null;
+  const keys = Object.keys(art).filter((k) => !k.startsWith('_') && art[k]?.file);
+  const ok = await Promise.all(keys.map((k) => has(art[k].file)));
+  return Object.fromEntries(keys.filter((_, i) => ok[i]).map((k) => [k, art[k]]));
+}
+const onServer = async (file) => {
+  try { return (await fetch(artUrl(file), { method: 'HEAD' })).ok; } catch { return false; }
+};
+
 /** Its own row of games.json: the levels, and the painted sprites (`art`) once they land. */
 async function ownRow() {
   const res = await fetch(new URL('../../worlds/jiuding/games.json', import.meta.url));
@@ -730,7 +785,7 @@ async function ownRow() {
 }
 export async function mount(container, opts = {}) {
   const row = opts.data?.levels ? {} : await ownRow();
-  const levels = opts.data?.levels ?? row.levels ?? [], art = opts.data?.art ?? row.art ?? null;
+  const levels = opts.data?.levels ?? row.levels ?? [], art = await presentArt(opts.data?.art ?? row.art, onServer);
   const quiet = opts.reducedMotion ? { still: true } : {};
   return mountPure({ newGame, act, tick, html })(container, { ...opts, data: { ...(opts.data ?? {}), levels, art, ...quiet } });
 }

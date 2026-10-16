@@ -69,10 +69,18 @@
    "mechanic": "愤怒小鸟",
    "stars": 3,
    "art": {
-     "_about": "The painted stag (one 640×480 canvas, facing right, one ground line): each pose's `at` is the point of the picture on the deer's origin (the barrel's middle over the ground), `w` × `h` its size in deer units (0.18 a pixel). The hit zones in deerarc.js are fitted to these. Still to come at the same path: stag-bolt, bow-rest, bow-drawn, arrow, reed, reed-stub, branch, ink-hit.",
+     "_about": "Every painted part of 射鹿, one entry each; an entry whose file is not there yet is left out at mount (presentArt) and that part is drawn in ink, so a file landing at its path drops in with no code change. `at` is the picture's anchor (fractions), `w` × `h` its size. Stag poses (drink · look · walk · bolt; one 640×480 canvas facing right, one ground line): `at` over the deer's origin (the barrel's middle on the ground), in deer units (0.18 a pixel); the hit zones in deerarc.js are fitted to these. bow_rest · bow_drawn (cross-faded by the pull) and arrow: painted pointing right, `at` the grip / the arrow's middle, in scene units. reed · reed_stub (`axis` up: painted standing, `at` the base) and branch (`axis` right, `at` the end it grows from): `w` × `h` only their shape, the length in the level sets their size. ink_hit: `at` its centre. The geometry of the parts still coming is a first guess: fix it here when the file lands.",
      "drink": {"file": "games/deer/stag-drink.webp", "w": 115, "h": 86, "at": [0.398, 0.875]},
      "look": {"file": "games/deer/stag-look.webp", "w": 115, "h": 86, "at": [0.445, 0.9]},
-     "walk": {"file": "games/deer/stag-walk.webp", "w": 115, "h": 86, "at": [0.453, 0.844]}
+     "walk": {"file": "games/deer/stag-walk.webp", "w": 115, "h": 86, "at": [0.453, 0.844]},
+     "bolt": {"file": "games/deer/stag-bolt.webp", "w": 115, "h": 86, "at": [0.45, 0.86]},
+     "bow_rest": {"file": "games/deer/bow-rest.webp", "w": 64, "h": 64, "at": [0.5, 0.5]},
+     "bow_drawn": {"file": "games/deer/bow-drawn.webp", "w": 64, "h": 64, "at": [0.5, 0.5]},
+     "arrow": {"file": "games/deer/arrow.webp", "w": 34, "h": 8, "at": [0.5, 0.5]},
+     "reed": {"file": "games/deer/reed.webp", "w": 20, "h": 100, "at": [0.5, 1], "axis": "up"},
+     "reed_stub": {"file": "games/deer/reed-stub.webp", "w": 12, "h": 30, "at": [0.5, 1], "axis": "up"},
+     "branch": {"file": "games/deer/branch.webp", "w": 160, "h": 40, "at": [0, 0.5], "axis": "right"},
+     "ink_hit": {"file": "games/deer/ink-hit.webp", "w": 70, "h": 70, "at": [0.5, 0.5]}
    },
    "_levels": "射鹿 · 拉弓, a 愤怒小鸟-style prototype (2026-10-16) — in the 游戏厅 only; the story's 射鹿 is still `deer`. World 480×300: he stands on the near bank at the right (the bow at 426,192), the deer drinks to the left. `deer`: `x`, `face` (-1 looks left), `lift` {every, for} ms its head comes up, `walk` {to, ms, rest} back and forth. `wind`: + blows in his face (pushes the arrow right), − at his back; `gust` {amp, period, phase?} makes it rise and fall (a sine on top, the streamer, tufts and leaves show it as it is). `things`: a `reed` {at, h, lean?, breaks? (speed, default 5)} snaps when the arrow is fast enough, else turns it; a `branch` {from, to} turns it always. `hint`: after a miss, 银月's 「往左偏半寸」 and a tick left of the deer. games/bots/deerarc.js searches each level's aim.",
    "levels": [
