@@ -7,7 +7,8 @@ This is the Linggen skills repository — the standalone source of truth for the
 Edit HERE first, commit and push, then bring the other two surfaces up to that commit:
 
 1. `skills/<name>/…` — this repo (standalone source of truth)
-2. `~/.linggen/skills/<name>/…` — what the running daemon serves. Install ONLY with `scripts/install-skill.sh <name>` after pushing — never copy files by name. It installs the whole skill from `origin/main` (`--ref HEAD` for a local commit), refuses if any JS fails `node --check` or imports a name its neighbour doesn't export, never deletes or touches user state, and reloads skills when SKILL.md changed (then a NEW chat to bind). Page changes: reload the app iframe. `--check` shows drift; `--dry-run` what would change.
+2. `~/.linggen/skills/<name>/…` — what the running daemon serves. Install ONLY with `scripts/install-skill.sh <name>` after pushing — never copy files by name. It installs the whole skill from `origin/main` (`--ref HEAD` for a local commit), refuses if any JS fails `node --check` or imports a name its neighbour doesn't export, never touches user state, and reloads skills when SKILL.md changed (then a NEW chat to bind). Page changes: reload the app iframe. `--check` shows drift (prunable vs untracked extras); `--dry-run` what would change.
+   Prune (default; `--no-prune` skips): removes an install file only if it's gone from the ref, was once tracked under `<skill>/`, is byte-identical to a blob git held, and isn't user state — never-tracked or edited files stay.
 3. `linggen/linggen-app/vendor/skills` — git submodule of this repo. After pushing here: `git pull origin main` inside the submodule, then commit the pointer bump in linggen-app.
 
 Never edit `~/.linggen` or `vendor/skills` directly.

@@ -5,9 +5,14 @@
 // neighbour (the page goes blank), and let in-flight edits from the working
 // tree ship. Here the source is always a git ref, the staged tree must pass a
 // syntax + import/export link check against what the install WILL be, each
-// file lands by tmp-write + rename, nothing in the install is ever deleted,
-// and user state (data/, state/, config.json, sessions/, cloud.save/skip) is
-// never touched.
+// file lands by tmp-write + rename, and user state (data/, state/,
+// config.json, sessions/, cloud.save/skip, *.local.*) is never touched.
+//
+// Prune: the one delete. An install file goes only when it is not in the ref,
+// its path was once tracked under <skill>/ in git history, it is not user
+// state, AND its bytes equal a blob that path once held — so every pruned
+// file is recoverable from git, and a locally edited copy stays. Files git
+// never tracked are never touched. Then emptied dirs go (never the root).
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -21,13 +26,15 @@ const isDevOnly = problem => DEV_ONLY.some(d => problem.startsWith(`${d}/`));
 
 // ── args ────────────────────────────────────────────────────────────────────
 function parseArgs(argv) {
-  const o = { skill: null, ref: 'origin/main', check: false, dryRun: false, refGiven: false };
+  const o = { skill: null, ref: 'origin/main', check: false, dryRun: false, prune: true, refGiven: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--ref') { o.ref = argv[++i]; o.refGiven = true; }
     else if (a.startsWith('--ref=')) { o.ref = a.slice(6); o.refGiven = true; }
     else if (a === '--check') o.check = true;
     else if (a === '--dry-run') o.dryRun = true;
+    else if (a === '--prune') o.prune = true;
+    else if (a === '--no-prune') o.prune = false;
     else if (a === '-h' || a === '--help') usage(0);
     else if (a.startsWith('-')) { console.error(`unknown option: ${a}`); usage(2); }
     else if (!o.skill) o.skill = a.replace(/\/+$/, '');
@@ -39,10 +46,13 @@ function parseArgs(argv) {
 
 function usage(code) {
   (code ? console.error : console.log)(
-    'usage: scripts/install-skill.sh <skill> [--ref <git-ref>] [--check] [--dry-run]\n' +
-    '  --ref      committed source (default origin/main, fetched first; HEAD for a local commit)\n' +
-    '  --check    install nothing; report drift between the install and the ref\n' +
-    '  --dry-run  run the pre-flight and print what would change');
+    'usage: scripts/install-skill.sh <skill> [--ref <git-ref>] [--check] [--dry-run] [--prune | --no-prune]\n' +
+    '  --ref       committed source (default origin/main, fetched first; HEAD for a local commit)\n' +
+    '  --check     install nothing; report drift between the install and the ref\n' +
+    '  --dry-run   run the pre-flight and print what would change (prunes included)\n' +
+    '  --prune     remove install files the repo deleted (the default): once tracked,\n' +
+    '              byte-identical to a blob git held, not user state\n' +
+    '  --no-prune  leave every extra file in place');
   process.exit(code);
 }
 
@@ -81,6 +91,56 @@ function cloudPaths(skillMd) {
 }
 
 const underAny = (rel, roots) => roots.some(r => rel === r || rel.startsWith(r + '/'));
+const isLocal = rel => /\.local\./.test(path.posix.basename(rel));
+
+// ── prune: sort the install's extras by what git knows of them ──────────────
+// Every blob each path under <skill>/ ever held, from one -z log (no quoting
+// of non-ASCII names; --no-renames so a renamed-away file shows its old path).
+function trackedBlobs(repo, skill) {
+  const out = git(repo, ['log', '--all', '--no-renames', '--raw', '--no-abbrev', '-z', '--format=', '--', `${skill}/`]).stdout;
+  const blobs = new Map();
+  const parts = out.split('\0');
+  for (let i = 0; i < parts.length - 1; i++) {
+    const m = /^:\d+ \d+ ([0-9a-f]+) ([0-9a-f]+) [A-Z]\d*$/.exec(parts[i].trim());
+    if (!m) continue;
+    const rel = parts[++i].slice(skill.length + 1);
+    if (!blobs.has(rel)) blobs.set(rel, new Set());
+    for (const sha of [m[1], m[2]]) if (!/^0+$/.test(sha)) blobs.get(rel).add(sha);
+  }
+  return blobs;
+}
+
+function hashFiles(repo, files) {
+  if (!files.length) return [];
+  const r = git(repo, ['hash-object', '--no-filters', '--stdin-paths'], { input: files.join('\n') + '\n' });
+  return r.stdout.trim().split('\n');
+}
+
+// extras → prunable (byte-identical to a blob its path once held), modified
+// (once tracked, changed since), untracked (never tracked, or *.local.*).
+function sortExtras(repo, skill, installDir, extras) {
+  const blobs = trackedBlobs(repo, skill);
+  const once = extras.filter(r => blobs.has(r));
+  const untracked = extras.filter(r => !blobs.has(r));
+  const plain = once.filter(r => { try { return fs.lstatSync(path.join(installDir, r)).isFile(); } catch { return false; } });
+  const shas = hashFiles(repo, plain.map(r => path.join(installDir, r)));
+  const prunable = plain.filter((r, i) => blobs.get(r).has(shas[i]));
+  const modified = once.filter(r => !prunable.includes(r));
+  return { prunable, modified, untracked };
+}
+
+// Unlink each file, then rmdir its emptied parents up to (never including) the root.
+function prune(installDir, files) {
+  const root = path.resolve(installDir);
+  for (const rel of files) {
+    const p = path.resolve(root, rel);
+    if (!p.startsWith(root + path.sep)) continue;
+    fs.unlinkSync(p);
+    for (let d = path.dirname(p); d !== root && d.startsWith(root + path.sep); d = path.dirname(d)) {
+      try { fs.rmdirSync(d); } catch { break; } // not empty: stop climbing
+    }
+  }
+}
 
 // ── file walking ────────────────────────────────────────────────────────────
 function walk(root, rel = '', out = []) {
@@ -157,9 +217,10 @@ function parseModule(src) {
 }
 
 // A tree view: the staged files first, then what the install already holds.
-function treeView(layers) {
+function treeView(layers, gone = new Set()) {
   const cache = new Map();
   const locate = rel => {
+    if (gone.has(rel)) return null; // about to be pruned
     for (const root of layers) {
       const p = path.join(root, rel);
       try { if (fs.statSync(p).isFile()) return p; } catch {}
@@ -293,6 +354,10 @@ async function main() {
     const files = walk(staged).filter(r => !underAny(r, keep)).sort();
     const installed = new Set(walk(installDir));
     const extras = [...installed].filter(r => !underAny(r, keep) && !files.includes(r) && !/\.tmp\.\d+$/.test(r)).sort();
+    const { prunable: once, modified, untracked: never } = sortExtras(repo, o.skill, installDir, extras);
+    const prunable = once.filter(r => !isLocal(r));
+    const untracked = [...never, ...once.filter(isLocal)];
+    const pruning = o.prune ? prunable : [];
     const changed = files.filter(r => installed.has(r) && !sameFile(path.join(staged, r), path.join(installDir, r)));
     const missing = files.filter(r => !installed.has(r));
     const head = `${o.skill} @ ${o.ref} (${commit.slice(0, 9)}) → ${installDir}`;
@@ -306,11 +371,14 @@ async function main() {
       for (const p of allLinks.filter(isDevOnly)) console.log(`  warning  ${p} (dev-only, not served)`);
       for (const r of changed) console.log(`  differs  ${r}`);
       for (const r of missing) console.log(`  missing  ${r}`);
-      for (const r of extras) console.log(`  extra    ${r} (in the install, not in the ref — left alone)`);
+      for (const r of prunable) console.log(`  prunable ${r} (deleted from the repo; an install prunes it)`);
+      for (const r of modified) console.log(`  extra    ${r} (once tracked, changed since — left alone)`);
+      for (const r of untracked) console.log(`  extra    ${r} (never tracked — left alone)`);
       for (const p of links) console.log(`  LINK     ${p}`);
       const bad = changed.length + missing.length + links.length;
-      console.log(bad ? `${changed.length} differ, ${missing.length} missing, ${links.length} link problem(s), ${extras.length} extra`
-        : `in sync (${files.length} files${extras.length ? `, ${extras.length} extra` : ''})`);
+      const extraNote = `${prunable.length} prunable, ${untracked.length} untracked extra${modified.length ? `, ${modified.length} changed since tracked` : ''}`;
+      console.log(bad ? `${changed.length} differ, ${missing.length} missing, ${links.length} link problem(s); ${extraNote}`
+        : `in sync (${files.length} files${extras.length ? `; ${extraNote}` : ''})`);
       return bad ? 1 : 0;
     }
 
@@ -320,7 +388,7 @@ async function main() {
       const p = syntaxProblem(path.join(staged, r));
       if (p) problems.push(`${r}: ${p}`);
     }
-    problems.push(...linkCheck(treeView([staged, installDir]), files));
+    problems.push(...linkCheck(treeView([staged, installDir], new Set(pruning)), files));
     for (const p of problems.filter(isDevOnly)) console.error(`warning (dev-only, not served): ${p}`);
     problems.splice(0, problems.length, ...problems.filter(p => !isDevOnly(p)));
     if (problems.length) {
@@ -333,13 +401,15 @@ async function main() {
     const todo = [...missing.map(r => ['new', r]), ...changed.map(r => ['changed', r])].sort((a, b) => a[1].localeCompare(b[1]));
     console.log(`${o.dryRun ? 'dry-run ' : 'install '}${head}`);
     for (const [k, r] of todo) console.log(`  ${k.padEnd(8)} ${r}`);
-    for (const r of extras) console.log(`  warning: ${r} is in the install but not in the ref (left alone)`);
+    for (const r of pruning) console.log(`  prune    ${r}`);
+    for (const r of extras.filter(r => !pruning.includes(r))) console.log(`  warning: ${r} is in the install but not in the ref (left alone)`);
     if (o.dryRun) {
-      console.log(`${todo.length} file(s) would change${skillMdChanged ? '; SKILL.md changed — would reload skills' : ''}`);
+      console.log(`${todo.length} file(s) would change, ${pruning.length} would be pruned${skillMdChanged ? '; SKILL.md changed — would reload skills' : ''}`);
       return 0;
     }
 
     for (const [, r] of todo) placeFile(path.join(staged, r), path.join(installDir, r));
+    prune(installDir, pruning);
 
     const after = linkCheck(treeView([installDir]), files).filter(p => !isDevOnly(p));
     if (after.length) {
@@ -349,7 +419,7 @@ async function main() {
     }
     fs.writeFileSync(path.join(installDir, '.installed'),
       JSON.stringify({ ref: o.ref, commit, at: new Date().toISOString() }, null, 2) + '\n');
-    console.log(`installed ${todo.length} file(s); ${files.length} in sync`);
+    console.log(`installed ${todo.length} file(s), pruned ${pruning.length}; ${files.length} in sync`);
     if (skillMdChanged) await reload(port);
     return 0;
   } finally {

@@ -1,7 +1,8 @@
 // scripts/install-skill.sh, run against a throwaway git repo and a fake HOME:
 // only committed files land, a broken import refuses the whole install,
-// user state is never touched, --check reports drift, and a SKILL.md change
-// asks the engine to reload.
+// user state is never touched, --check reports drift, a file the repo deleted
+// is pruned (only that: never-tracked, edited and user-state files stay), and
+// a SKILL.md change asks the engine to reload.
 //
 //   node --test tests/install-skill.test.mjs
 import { test, after } from 'node:test';
@@ -104,7 +105,7 @@ test('a broken import in the ref aborts with nothing installed', () => {
   assert.match(m.stderr, /gone\.js/);
 });
 
-test('user state (data/, config.json, cloud.save) is never touched; nothing is deleted', () => {
+test('user state (data/, config.json, cloud.save) is never touched; never-tracked files stay', () => {
   const t = setup();
   fs.mkdirSync(t.installed('data'), { recursive: true });
   fs.mkdirSync(t.installed('saves'), { recursive: true });
@@ -120,6 +121,70 @@ test('user state (data/, config.json, cloud.save) is never touched; nothing is d
   assert.equal(t.read('config.json'), '{"key":"secret"}\n');
   assert.ok(fs.existsSync(t.installed('scripts/old.js')));
   assert.match(r.stdout, /scripts\/old\.js is in the install but not in the ref/);
+});
+
+test('prune: a file the repo deleted goes; untracked, edited, data/ and config.json stay', () => {
+  const t = setup();
+  t.write('demo/scripts/old/gone.js', 'export const gone = 1;\n');
+  t.write('demo/scripts/edited.js', 'export const e = 1;\n');
+  t.write('demo/doc/notes.local.md', 'tracked once, but *.local.*\n');
+  t.write('demo/scripts/main.mjs', "import { gone } from './old/gone.js';\nconsole.log(gone);\n");
+  t.commit('v2: gone.js, edited.js');
+  assert.equal(t.run('demo', '--ref', 'HEAD').status, 0);
+  fs.writeFileSync(t.installed('scripts/edited.js'), 'export const e = 2; // edited in the install\n');
+  fs.writeFileSync(t.installed('scripts/mine.js'), '// never tracked\n');
+  fs.writeFileSync(t.installed('config.json'), '{"key":"secret"}\n');
+  fs.mkdirSync(t.installed('data'), { recursive: true });
+  fs.writeFileSync(t.installed('data/seed.json'), '{"from":"repo"}\n'); // tracked, identical — still data/
+  fs.writeFileSync(t.installed('data/user.json'), '{"from":"user"}\n');
+  t.write('demo/scripts/main.mjs', "import { hello } from './lib.mjs';\nconsole.log(hello);\n");
+  t.git('rm', '-q', 'demo/scripts/old/gone.js', 'demo/scripts/edited.js', 'demo/doc/notes.local.md', 'demo/data/seed.json');
+  t.commit('v3: delete them');
+
+  const check = t.run('demo', '--ref', 'HEAD', '--check');
+  assert.match(check.stdout, /prunable scripts\/old\/gone\.js/);
+  assert.match(check.stdout, /extra +scripts\/edited\.js \(once tracked, changed since/);
+  assert.match(check.stdout, /extra +scripts\/mine\.js \(never tracked/);
+  assert.match(check.stdout, /1 prunable, 2 untracked extra, 1 changed since tracked/);
+
+  const dry = t.run('demo', '--ref', 'HEAD', '--dry-run', '--prune');
+  assert.equal(dry.status, 0, dry.stdout + dry.stderr);
+  assert.deepEqual(dry.stdout.split('\n').filter(l => /^\s+prune /.test(l)).map(l => l.trim()), ['prune    scripts/old/gone.js']);
+  assert.ok(fs.existsSync(t.installed('scripts/old/gone.js')));
+
+  const none = t.run('demo', '--ref', 'HEAD', '--no-prune');
+  assert.equal(none.status, 0, none.stdout + none.stderr);
+  assert.ok(fs.existsSync(t.installed('scripts/old/gone.js')));
+
+  const r = t.run('demo', '--ref', 'HEAD');
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /pruned 1/);
+  assert.ok(!fs.existsSync(t.installed('scripts/old/gone.js')));
+  assert.ok(!fs.existsSync(t.installed('scripts/old')), 'the emptied dir goes');
+  assert.ok(fs.existsSync(t.installed('scripts')));
+  assert.match(t.read('scripts/edited.js'), /edited in the install/);
+  assert.equal(t.read('scripts/mine.js'), '// never tracked\n');
+  assert.ok(fs.existsSync(t.installed('doc/notes.local.md')));
+  assert.equal(t.read('config.json'), '{"key":"secret"}\n');
+  assert.equal(t.read('data/seed.json'), '{"from":"repo"}\n');
+  assert.equal(t.read('data/user.json'), '{"from":"user"}\n');
+});
+
+test('prune never takes a file the ref still imports from the install', () => {
+  const t = setup();
+  t.write('demo/scripts/old.js', 'export const old = 1;\n');
+  t.commit('add old.js');
+  assert.equal(t.run('demo', '--ref', 'HEAD').status, 0);
+  // The ref deletes old.js but main.mjs (still in the ref) imports it.
+  t.git('rm', '-q', 'demo/scripts/old.js');
+  t.write('demo/scripts/main.mjs', "import { old } from './old.js';\nconsole.log(old);\n");
+  t.commit('dangling import');
+  const r = t.run('demo', '--ref', 'HEAD');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /old\.js does not exist/);
+  assert.ok(fs.existsSync(t.installed('scripts/old.js')));
+  const kept = t.run('demo', '--ref', 'HEAD', '--no-prune');
+  assert.equal(kept.status, 0, kept.stdout + kept.stderr);
 });
 
 test('--check reports drift and installs nothing; --dry-run changes nothing', () => {
