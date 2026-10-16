@@ -2316,7 +2316,7 @@ function openFromTray(id) {
 const lines = createLines({ onDone: (key, tapped) => storyDone(key, tapped) });
 function syncLines() {
   const el = $('dlg')?.querySelector('.story'), r = readingHere();
-  if (!el || !playing(r)) { lines.sync(null); pager.sync(null); return; }
+  if (!el || !playing(r)) { lines.sync(null); pager.sync(null); syncLock(); return; }
   // 跳过 stands on the 回's last beat shown whole, read at once; 快's column is read at once too.
   lines.sync(el, el.dataset.story, { lang: lang(), instant: Boolean(r.all && (r.all.whole || atLast(r, lang()))) });
   pager.sync(el);
@@ -2331,6 +2331,7 @@ function syncLines() {
 const STORY_LOCKED = '#footRow, #footChips, #headCards, .tray';
 function syncLock() {
   const on = storyHolds(readingHere(), { shown: Boolean($('dlg')?.querySelector('.story')), lang: lang(), lastPage: pager.last });
+  holdLing(on);
   if (on === document.body.classList.contains('storylock')) return;
   document.body.classList.toggle('storylock', on);
   // A popover left open when the passage came on is put away with it.
@@ -2338,6 +2339,19 @@ function syncLock() {
     queueMicrotask(() => show({ bookOpen: false, gearOpen: false, roadsOpen: false, shelfOpen: false, wxOpen: false, ledgerOpen: false }));
   }
 }
+/* …and Ling's hands with it (rules/reading.mjs): the rules hear when a passage holds and when it ends,
+   so a line typed in the chat meanwhile is answered in words and nothing moves; renewed while it stands
+   (the rules let a hold lapse that nobody ended). Ended with her held meanwhile, she hears 「[scene] read」
+   and does what he asked. */
+let lingHeld = null, lingHeldAt = 0;
+const HOLD_RENEW_MS = 4 * 60 * 1000;
+function holdLing(on) {
+  if (on === lingHeld && (!on || Date.now() - lingHeldAt < HOLD_RENEW_MS)) return;
+  lingHeld = on;
+  lingHeldAt = Date.now();
+  verb('reading', { hold: on ? 1 : 0 }).then((r) => { if (!on && r?.held) report('[scene] read'); }).catch(() => {});
+}
+setInterval(() => { if (lingHeld) holdLing(true); }, HOLD_RENEW_MS);
 let lockHintTimer = null;
 document.addEventListener('click', (e) => {
   if (!document.body.classList.contains('storylock') || !e.target.closest?.(STORY_LOCKED)) return;

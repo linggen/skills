@@ -47,6 +47,7 @@ import { changes } from './rules/changes.mjs';
 import { playTo, summaryOf, toldUpTo } from './rules/progress.mjs';
 import { herMishi } from './rules/mishi.mjs';
 import { fightStamp } from './rules/engine.mjs';
+import { pageReading, readingHold, readingNow, THEN_READING } from './rules/reading.mjs';
 
 export { refine, TREASURE_TOP } from './rules/arms.mjs';
 export { askOf, tapThen, thenFor } from './rules/ask.mjs';
@@ -155,6 +156,13 @@ function runLocked(verb, args, stateFile, reader) {
   // The passages owed, drawn by the page to play on the stage (rules/tell.mjs)
   // and marked told — the page's alone: Ling never retells them.
   if (verb === 'tell' && !reader) return pageTell(content, state, stateFile);
+  // A passage on the stage holds Ling's world-changing calls until it ends (rules/reading.mjs) — the
+  // page's verb says when; never logged: Undo takes back moves, not what was read.
+  if (verb === 'reading' && !reader) {
+    const r = pageReading(state, args, now);
+    if (r.keep) writeAtomic(stateFile, stateText(r.keep));
+    return r.result;
+  }
   // 密室: her old pages are read by her own tool alone (SKILL.md Mishi, `--for=yinyue`) — never
   // Ling's, never the page's door, never in Look (rules/mishi.mjs herMishi).
   if (verb === 'mishi' && String(args.action ?? '') === 'read') return reader === 'yinyue' ? { ...(herMishi(content, state, now) ?? MISHI_SHUT), ok: true } : { ok: false, refused: 'hers', say: null };
@@ -168,6 +176,11 @@ function runLocked(verb, args, stateFile, reader) {
   // While in 闭关, likewise: 出关 first (rules/seclusion.mjs seclusionHold).
   const held = fightHold(state, verb, args) ?? seclusionHold(state, verb, args);
   if (held) return held.result;
+  const reads = reader === 'ling' ? readingHold(state, verb, args, now) : null;
+  if (reads) {
+    if (reads.keep) writeAtomic(stateFile, stateText(reads.keep));
+    return reads.result;
+  }
   if (raw) keepDay(raw, now);
   const asked = reader === 'ling' ? guard(verb, args, state, content, now) : null;
   if (asked) {
@@ -241,7 +254,9 @@ function runLocked(verb, args, stateFile, reader) {
     asking.recap = { told: now.toISOString(), scenes: (asking.done_scenes ?? []).length, ...(session ? { session } : {}) };
     writeAtomic(stateFile, stateText(asking));
   } else if (owed && !next) writeAtomic(stateFile, stateText(asking));
-  const paged = told ? { ...recapped, page_did: told } : recapped;
+  const withDid = told ? { ...recapped, page_did: told } : recapped;
+  // A passage still playing on the stage: her Look says so, and words only (rules/reading.mjs).
+  const paged = reader === 'ling' && verb === 'look' && readingNow(asking, now) ? { ...withDid, reading: 'playing', then: THEN_READING + (withDid.then ?? '') } : withDid;
   // The stage plays the book's passages itself (rules/tell.mjs); Ling is told
   // only what it is playing — the beats by label and recap, never the prose —
   // so she knows the story and never retells it. Nothing is marked told here.

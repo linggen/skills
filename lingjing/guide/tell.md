@@ -37,6 +37,10 @@ and its `recap`): it is there so you know the story, never to say.
   page's own — never Show them.
 - **Her lines in the book are the book's**: the box plays them with her face.
   Anything she says beyond the page is hers alone (`her_beat`, `[Yinyue]`).
+- **While a passage plays** (Look's `reading: "playing"`; Hanli, 2026-10-16: the page locks
+  everything else until it is read or skipped): answer what they typed in words only, a line
+  or two in the world, and change nothing — Resolve, Move and the rest are refused `reading`.
+  When it ends the page sends `[scene] read`: Look, then do what they asked.
 - **Off the script** — the player does or says what no choice covers: answer
   in the same voice, briefly, in the world, and let the stage's choices stand.
 
