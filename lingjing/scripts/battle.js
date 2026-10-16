@@ -110,6 +110,9 @@ export const EFFECTS = {
   swallow: { at: 'minion' }, // 吞 {swallow: N} (巴蛇): one of its rank with 攻 ≤ N is gone
   drain: { at: 'none' }, //     灵力 −N (夔's drum): the other side has N less on its next turn only
   drought: { at: 'none' }, //   大旱 (肥遗): a STANDING verb — at the end of its side's every turn, N to each of the other rank
+  // Two more, 2026-10-16 (cards.md § 4) — a mortal's first hand and the book's 回气丹:
+  dodge: { at: 'none' }, //     一滚 (三试): the next N blows at the lead are turned aside
+  mana: { at: 'none' }, //      回气丹 (「丹田空了吞一颗」): N 灵力 back this turn, never past the cap
 };
 
 /* One standing beast state beside the card verbs, 2026-10-16 — 装睡 (犰狳,
@@ -192,6 +195,21 @@ export function shuffle(ids, seed) {
    entry's own over it — how one beast is weighed; tools/story-fights.mjs).
    `signature` is the beast's 杀招 (creatures.json): { id, name, effect }.
    `catalog` is the card rows by id. Nothing else reaches the fight. */
+/* 小队 (cards.md § 5, Hanli 2026-10-16): a side is a ROW of members. The lead's
+   own numbers stay on the side itself (every reader — the page, the sims, the
+   rules' settle — reads `side.hp`), and the members beside it are `allies`,
+   from `cfg.party`: [{ id, name, root, hp (a share of the lead's 气血), taunt?,
+   deck }]. A lone beast is a party of one (no allies). Each member keeps its
+   own deck, drawn in turn into the side's one hand; a card is its owner's by
+   data (cards.json `owner`), so the hand stays a list of ids and the seal is
+   read off the card. A member at 0 is 退: its cards leave the hand and its
+   deck stops. The lead's 退 is the side's: the fight is his (小满's), the
+   others stand with him. One 灵力 for the side. Kept per member so a later
+   seat can be another person's (co-op · PvP). */
+const allyOf = (a, hp, seed, who) => {
+  const max = Math.max(1, Math.round(hp * (a.hp ?? 0.5)));
+  return { id: a.id, name: a.name ?? null, root: a.root ?? null, hp: max, hpMax: max, taunt: Boolean(a.taunt), gone: false, deck: shuffle(a.deck ?? [], `${seed}|${who}|${a.id}`) };
+};
 function sideOf(who, cfg, catalog, mode, seed) {
   const realm = REALMS[cfg.tier] ?? REALMS.qi;
   const hp = Math.max(1, Math.round((realm.hp + (cfg.step ?? 0) * 0.5) * (cfg.hpScale ?? 1)));
@@ -212,6 +230,7 @@ function sideOf(who, cfg, catalog, mode, seed) {
     trial: cfg.trial ?? null,
     // 装睡 (§ asleep): the turns it lies still, and the blows that glanced off it.
     feint: cfg.feint ? { ...cfg.feint, left: Math.max(0, cfg.feint.turns ?? 1), glanced: 0 } : null,
+    allies: (cfg.party ?? []).map(a => allyOf(a, hp, seed, who)), next: 0, dodge: 0,
   };
 }
 
@@ -223,7 +242,7 @@ function sideOf(who, cfg, catalog, mode, seed) {
    was built before it read cards.json. It cost a fight, a day's 体力 and the
    day's encounter, and nothing anywhere said a word. So it is loud here. */
 export const missingCards = (setup, catalog) =>
-  [...(setup?.you?.deck ?? []), ...(setup?.you?.extra ?? []), ...(setup?.foe?.deck ?? []), ...(setup?.foe?.signature?.effect?.summon ? [setup.foe.signature.effect.summon.id] : [])]
+  [...(setup?.you?.deck ?? []), ...(setup?.you?.extra ?? []), ...(setup?.you?.party ?? []).flatMap(a => a.deck ?? []), ...(setup?.foe?.deck ?? []), ...(setup?.foe?.signature?.effect?.summon ? [setup.foe.signature.effect.summon.id] : [])]
     .filter((id, i, all) => all.indexOf(id) === i && !catalog?.[id]);
 
 export function begin(setup, catalog) {
@@ -243,7 +262,8 @@ export function begin(setup, catalog) {
   // screen must tell them apart (Hanli, 2026-10-15: hitting the second 夫诸 lit
   // the first). Counted, never random, so a replay numbers them the same.
   const st = { mode, catalog, seed, you, foe, turn: 0, whose: mode.youFirst ? 'you' : 'foe', outcome: 'open', log: [], uid: 0 };
-  for (let i = 0; i < mode.hand; i += 1) draw(st, you);
+  for (let i = 0; i < mode.hand; i += 1) drawFrom(st, you, null);
+  for (const a of you.allies) drawFrom(st, you, a);
   for (let i = 0; i < mode.foeHand; i += 1) draw(st, foe);
   for (let i = 0; i < (mode.headStart ?? 0); i += 1) draw(st, you);
   const [mine, theirs] = mode.suppress ? suppression(setup.you.tier, setup.foe.tier) : [1, 1];
@@ -317,9 +337,7 @@ function gather(st, side) {
 function unleash(st, side) {
   side.charge = { phase: 'spent' };
   st.log.push({ act: 'unleash', who: side.who, id: side.signature.id });
-  const them = other(st, side);
-  const guard = them.board.findIndex(m => m.taunt);
-  resolve(st, side, { ...sigEffect(side), element: side.root }, guard >= 0 ? { kind: 'minion', index: guard } : undefined);
+  resolve(st, side, { ...sigEffect(side), element: side.root }, guardOf(other(st, side)));
 }
 
 /* 装睡, one of its turns gone (§ asleep): the last one, it wakes — with its 杀招
@@ -338,13 +356,23 @@ function stir(st, side) {
 /* 反噬 — a deck run dry costs 1, then 2, then 3. The creature does not bleed
    that way in PvE: its twelve cards spent, it withdraws into the mist, and the
    fight is over with nothing paid (see MODES.pve). */
+/* One card off one member's pile (null: the lead's) into the side's hand. */
+function drawFrom(st, side, ally) {
+  const pile = ally ? ally.deck : side.deck;
+  if (!pile.length) return false;
+  side.hand.push(pile.shift());
+  // Written down so the screen can fly a card off the pile: the animator
+  // only ever replays what the rules recorded.
+  st.log.push({ act: 'drew', who: side.who, left: side.deck.length, ...(ally ? { member: ally.id } : {}) });
+  return true;
+}
+/* The members draw in turn (the lead, then each one standing beside him),
+   skipping a member whose pile is spent; only when every pile is spent does
+   反噬 (or the beast's withdrawal) come. A lone side draws as it always did. */
 function draw(st, side) {
-  if (side.deck.length) {
-    side.hand.push(side.deck.shift());
-    // Written down so the screen can fly a card off the pile: the animator
-    // only ever replays what the rules recorded.
-    st.log.push({ act: 'drew', who: side.who, left: side.deck.length });
-    return;
+  const row = [null, ...side.allies.filter(a => !a.gone)];
+  for (let k = 0; k < row.length; k += 1) {
+    if (drawFrom(st, side, row[(side.next + k) % row.length])) { side.next = (side.next + k + 1) % row.length; return; }
   }
   side.fatigue += 1;
   // A trial outlasted is a trial passed: he stood through every move it had.
@@ -370,9 +398,20 @@ export function endTurn(st) {
   if (done.charge?.phase === 'gathering') done.charge = { phase: 'ready' };
   parch(st, done);
   if (st.outcome !== 'open') return;
+  outlived(st, done);
+  if (st.outcome !== 'open') return;
   for (const m of done.board) m.held = false; // its chained turn is over
   st.whose = st.whose === 'you' ? 'foe' : 'you';
   startTurn(st);
+}
+
+/* A 试 of nerve (`trial.survive`, 三试 · 蠪侄): stood through N of its turns, he has passed. */
+function outlived(st, side) {
+  if (side.who !== 'foe' || !side.trial?.survive) return;
+  side.endured = (side.endured ?? 0) + 1;
+  if (side.endured < side.trial.survive) return;
+  st.outcome = 'won';
+  st.log.push({ act: 'trial-passed', how: 'survive' });
 }
 
 /* 大旱 — 肥遗, where it is seen the land parches: at the end of its side's
@@ -401,6 +440,12 @@ export const landed = (st, who, n, element) => {
 };
 
 function hurt(st, side, amount, why = {}) {
+  // 一滚: a blow at the lead turned aside while a dodge is held (never 反噬).
+  if (side.dodge > 0 && why.from) {
+    side.dodge -= 1;
+    st.log.push({ act: 'dodged', who: side.who, amount, ...why });
+    return;
+  }
   // A blow that glanced off a sleeper (§ asleep) is counted: it feeds the waking.
   if (why.from && glances(side, why.element)) {
     side.feint.glanced += 1;
@@ -419,6 +464,17 @@ function hurtMinion(st, side, minion, amount, why = {}) {
   minion.hp -= amount;
   st.log.push({ act: 'hurt-minion', who: side.who, id: minion.id, uid: minion.uid, amount, hp: minion.hp, ...why });
   if (minion.hp <= 0) withdraw(st, side, minion);
+}
+
+/* A member beside the lead, struck (§ sideOf): at 0 it is 退, and its cards leave the hand. */
+function hurtAlly(st, side, ally, amount, why = {}) {
+  if (!ally || ally.gone) return;
+  ally.hp = Math.max(0, ally.hp - amount);
+  st.log.push({ act: 'hurt-ally', who: side.who, id: ally.id, amount, hp: ally.hp, ...why });
+  if (ally.hp > 0) return;
+  ally.gone = true;
+  side.hand = side.hand.filter(id => st.catalog[id]?.owner !== ally.id);
+  st.log.push({ act: 'ally-withdrew', who: side.who, id: ally.id });
 }
 
 /* A minion at 0 is 退 — driven off, never killed. */
@@ -459,6 +515,9 @@ function resolve(st, side, effect, target) {
     if (target?.kind === 'minion') {
       const m = them.board[target.index];
       if (m) hurtMinion(st, them, m, hit(effect.damage, effect.element, m.element), { from: 'spell', element: effect.element ?? null });
+    } else if (target?.kind === 'ally') {
+      const a = them.allies[target.index];
+      if (a) hurtAlly(st, them, a, hit(effect.damage, effect.element, a.root), { from: 'spell', element: effect.element ?? null });
     } else {
       hurt(st, them, landed(st, side.who, effect.damage, effect.element), { from: 'spell', element: effect.element ?? null });
     }
@@ -482,8 +541,23 @@ function resolve(st, side, effect, target) {
     st.log.push({ act: 'drained', who: them.who, amount: effect.drain });
   }
   if (effect.heal != null) {
-    side.hp = Math.min(side.hpMax, side.hp + effect.heal);
-    st.log.push({ act: 'heal', who: side.who, amount: effect.heal, hp: side.hp });
+    // The most wounded of the row (阿禾 heals whoever needs it); the lead on a tie.
+    const a = woundedAlly(side);
+    if (a) {
+      a.hp = Math.min(a.hpMax, a.hp + effect.heal);
+      st.log.push({ act: 'heal', who: side.who, member: a.id, amount: effect.heal, hp: a.hp });
+    } else {
+      side.hp = Math.min(side.hpMax, side.hp + effect.heal);
+      st.log.push({ act: 'heal', who: side.who, amount: effect.heal, hp: side.hp });
+    }
+  }
+  if (effect.dodge) {
+    side.dodge = (side.dodge ?? 0) + effect.dodge;
+    st.log.push({ act: 'dodge', who: side.who, n: effect.dodge });
+  }
+  if (effect.mana) {
+    side.mana = Math.min(side.manaCap, side.mana + effect.mana);
+    st.log.push({ act: 'mana', who: side.who, amount: effect.mana, mana: side.mana });
   }
   if (effect.draw != null) for (let i = 0; i < effect.draw; i += 1) draw(st, side);
   if (effect.summon) {
@@ -516,8 +590,29 @@ function resolve(st, side, effect, target) {
 
 /* ── What may come next ── */
 
+/* The member a heal goes to: one beside the lead wounded more than he is, else none (the lead). */
+function woundedAlly(side) {
+  const lack = m => m.hpMax - m.hp;
+  const a = (side.allies ?? []).filter(x => !x.gone && lack(x) > 0).sort((x, y) => lack(y) - lack(x))[0];
+  return a && lack(a) > side.hpMax - side.hp ? a : null;
+}
+
 const card = (st, id) => st.catalog[id];
-const hasTaunt = side => side.board.some(m => m.taunt);
+/* 护主 · 嘲讽: a body on the rank, or a member standing in the row (孙二狗's 山根桩). */
+const tauntAlly = side => (side.allies ?? []).findIndex(a => a.taunt && !a.gone);
+const hasTaunt = side => side.board.some(m => m.taunt) || tauntAlly(side) >= 0;
+/* Where a blow must go while 护主 stands: a guarding body first, else a guarding member. */
+export function guardOf(side) {
+  const m = side.board.findIndex(x => x.taunt);
+  if (m >= 0) return { kind: 'minion', index: m };
+  const a = tauntAlly(side);
+  return a >= 0 ? { kind: 'ally', index: a } : undefined;
+}
+const guards = (side, target) => (target?.kind === 'minion' ? Boolean(side.board[target.index]?.taunt)
+  : target?.kind === 'ally' ? Boolean(side.allies?.[target.index]?.taunt && !side.allies[target.index].gone) : false);
+const allyGone = (side, target) => target?.kind === 'ally' && (!side.allies?.[target.index] || side.allies[target.index].gone);
+/* A card of a member who has 退 is not played (its cards leave the hand anyway). */
+const ownerGone = (side, c) => Boolean(c?.owner && (side.allies ?? []).find(x => x.id === c.owner)?.gone);
 
 export function legal(st, action, who = 'you') {
   if (st.outcome !== 'open') return 'fight-over';
@@ -529,13 +624,15 @@ export function legal(st, action, who = 'you') {
     if (side.powerUsed) return 'power-used';
     if (side.mana < POWER_COST) return 'no-mana';
     if (action.target?.kind === 'minion' && !them.board[action.target.index]) return 'no-target';
-    if (action.target?.kind !== 'minion' && hasTaunt(them)) return 'taunt';
+    if (allyGone(them, action.target)) return 'no-target';
+    if (action.target?.kind !== 'minion' && hasTaunt(them) && !guards(them, action.target)) return 'taunt';
     return null;
   }
   if (action.kind === 'play') {
     const id = side.hand[action.index];
     const c = id && card(st, id);
     if (!c) return 'not-in-hand';
+    if (ownerGone(side, c)) return 'member-gone';
     if (side.mana < costOf(side, c)) return 'no-mana';
     if (c.kind === 'minion' && side.board.length >= st.mode.board) return 'board-full';
     const at = EFFECTS[Object.keys(EFFECTS).find(k => c.effect?.[k] != null)]?.at;
@@ -559,11 +656,12 @@ export function legal(st, action, who = 'you') {
     if (m.held) return 'chained';
     if (m.struck) return 'already-struck';
     if (m.atk <= 0) return 'no-attack';
-    if (action.target?.kind === 'minion') {
-      if (!them.board[action.target.index]) return 'no-target';
-      return null;
-    }
-    return hasTaunt(them) ? 'taunt' : null;
+    if (action.target?.kind === 'minion' && !them.board[action.target.index]) return 'no-target';
+    if (allyGone(them, action.target)) return 'no-target';
+    // A body on the rank may always be struck (as before the row); the lead or a
+    // member only while no 护主 stands, or the member is the guard.
+    if (action.target?.kind === 'minion') return null;
+    return hasTaunt(them) && !guards(them, action.target) ? 'taunt' : null;
   }
   return 'bad-action';
 }
@@ -669,6 +767,9 @@ export function act(st, action, who = 'you') {
     const t = them.board[action.target.index];
     hurtMinion(st, them, t, dealt(st, side.who, m.atk, m.element, t.element), { from: 'attack', element: m.element ?? null });
     if (t.atk > 0) hurtMinion(st, side, m, Math.max(1, Math.round(t.atk * clash(t.element, m.element))), { from: 'return', element: t.element ?? null });
+  } else if (action.target?.kind === 'ally') {
+    const a = them.allies[action.target.index];
+    hurtAlly(st, them, a, dealt(st, side.who, m.atk, m.element, a.root), { from: 'attack', element: m.element ?? null });
   } else {
     hurt(st, them, landed(st, side.who, m.atk, m.element), { from: 'attack', element: m.element ?? null });
   }
@@ -729,7 +830,7 @@ export function foeStep(st) {
     return action;
   }
   for (let i = 0; i < side.board.length; i += 1) {
-    const target = hasTaunt(st.you) ? { kind: 'minion', index: st.you.board.findIndex(m => m.taunt) } : bestAttack(st, side, i);
+    const target = hasTaunt(st.you) ? guardOf(st.you) : bestAttack(st, side, i);
     const action = { kind: 'attack', index: i, target };
     if (!legal(st, action, 'foe')) {
       act(st, action, 'foe');
@@ -759,6 +860,8 @@ const VERB_USE = {
   swallow: (st, side, e) => other(st, side).board.some(m => fits(e, m)),
   draw: (st, side) => side.deck.length > 0,
   drought: () => true,
+  dodge: () => true,
+  mana: (st, side) => side.mana < side.manaCap,
 };
 export function worthPlaying(st, side, c) {
   if (c.kind === 'minion') return true;
@@ -799,9 +902,7 @@ function aimFor(st, side, c) {
 }
 
 function aimPower(st, side) {
-  const them = other(st, side);
-  const taunt = them.board.findIndex(m => m.taunt);
-  return taunt >= 0 ? { kind: 'minion', index: taunt } : undefined;
+  return guardOf(other(st, side));
 }
 
 /* Trade where the trade is good — a minion it can drive off and survive —
@@ -867,6 +968,8 @@ export function view(st) {
     signature: s.signature, charge: s.charge?.phase ?? null, lifts: s.lifts, stars: s.stars ?? null, drain: s.drain ?? 0,
     ...(s.trial ? { trial: s.trial } : {}),
     ...(s.feint ? { feint: { ...s.feint } } : {}),
+    ...(s.allies?.length ? { allies: s.allies.map(a => ({ id: a.id, name: a.name, root: a.root, hp: a.hp, hpMax: a.hpMax, taunt: a.taunt, gone: a.gone, deck: a.deck.length })) } : {}),
+    ...(s.dodge ? { dodge: s.dodge } : {}),
     board: s.board.map(m => ({ id: m.id, uid: m.uid ?? null, name: m.name, element: m.element, atk: m.atk, hp: m.hp, hpMax: m.hpMax, taunt: m.taunt, ready: !m.sick && !m.struck && !m.held, chained: Boolean(m.chain || m.held), drought: m.drought ?? 0 })),
   });
   // 望气术: the plan is shown only to a player who can read it (setup.you.insight).
