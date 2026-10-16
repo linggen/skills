@@ -162,6 +162,8 @@ export function paintedStage({ PIXI, app, root, W, H, art }) {
 
   return {
     layer,
+    /// The paintings' textures by key (a piece that places cut-outs itself lays these, never its own).
+    tex,
     /// A light texture in another colour (the token's silver, a door's tint).
     glowTex(rgb) { const g = PIXI.Texture.from(glowCanvas(256, rgb)); made.push(g); return g; },
     /// Rice-paper grain over all of it, very faint — call once, after the layers.
