@@ -28,6 +28,7 @@ import { fantongHtml, wireFantongDrag } from './fantong-free.js';
 import { esc } from './esc.js';
 import { HANDED_STAY_MS, TURNED_MS, handedStale } from './turned.js';
 import { thinker, stillAsked } from './think.js';
+import { DUIZI_WORDS, duiziChecksHtml, duiziFormOf } from './aigames-cards.js';
 import { createVoice, nodeMoment } from './voice.js';
 import { bigPlay, createFightSay, cuesOf, fightFacts, strongFoe } from './fightsay.js';
 import { CLOSE_AT, POOR_AT, createHerSay, herMode } from './hersay.js';
@@ -69,7 +70,7 @@ const PREVIEW = (() => {
 })();
 
 // Tools that change the state: the scene re-reads Look once they have run.
-const WRITERS = new Set(['Divine', 'Resolve', 'Practice', 'Tale', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art', 'Lundao', 'Meet', 'Quest', 'Refine', 'Ring', 'Remember', 'Haggle', 'Case', 'AppTool']);
+const WRITERS = new Set(['Divine', 'Resolve', 'Practice', 'Tale', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art', 'Lundao', 'Meet', 'Quest', 'Refine', 'Ring', 'Remember', 'Haggle', 'Case', 'Duizi', 'AppTool']);
 
 /* A 斗法 in play, held by the page: the setup the rules handed over at the
    door, the fight itself, and every action taken so far. When it ends the page
@@ -239,6 +240,7 @@ const view = {
   fateOpen: false, fateDraft: '', fateError: false, // the 命格 form: shown again, the date typed, a date refused
   refineMat: null, refineName: '', refineNote: null, // 炼化本命 on the card: the material picked, the name typed, a refusal
   twentyGuess: '', caseWho: null, caseEv: [], aiNote: null, // AI mini-games (aigames-cards.js): the guess typed, the suspect and proof picked, a refusal
+  duiziDraft: '', duiziUp: '', duiziRung: null, duiziRevOpen: false, // 对对子: the 下联 typed, his own 上联 typed, the rung picked, the reverse unfolded
   panelBusy: null, panelNote: null, // a 连环画 panel's choice in flight, or its refusal
   panelSaid: null, //   what a choice that stays in the scene said: { scene, run, lines }
   reading: undefined, // the dialogue box (dialogue.js): the beats drawn in this scene and the one on show; undefined until read back
@@ -326,7 +328,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, twentyGuess: view.twentyGuess, caseWho: view.caseWho, caseEv: view.caseEv, aiNote: view.aiNote, panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, twentyGuess: view.twentyGuess, caseWho: view.caseWho, caseEv: view.caseEv, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -1995,6 +1997,19 @@ function countUp() {
 }
 document.addEventListener('input', (e) => { if (e.target.id === 'refine-name') keep({ refineName: e.target.value, refineNote: null }); });
 document.addEventListener('input', (e) => { if (e.target.id === 'twenty-guess') keep({ twentyGuess: e.target.value, aiNote: null }); });
+// 对对子: the form checked as he types (couplet.js) — redrawn in place, so the field keeps its focus.
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'duizi-up') { keep({ duiziUp: e.target.value, aiNote: null }); return; }
+  if (e.target.id !== 'duizi-down') return;
+  keep({ duiziDraft: e.target.value, aiNote: null });
+  const d = look?.duizi, r = d?.round;
+  if (!r) return;
+  const form = duiziFormOf(d, r.up, e.target.value, tonesNow());
+  const box = document.getElementById('duizi-checks');
+  if (box) box.innerHTML = duiziChecksHtml(form, duiziWords());
+  const go = document.querySelector('[data-duizi-submit]');
+  if (go) go.disabled = !form.ready;
+});
 
 /* 名字 — the card's own (cards.js value): an offered name tapped, or the
    player's own written; the page Resolves the exit with it and the stage
@@ -2624,6 +2639,53 @@ async function caseAccuse() {
   if (r.ok) { keep({ caseWho: null, caseEv: [] }); await report(`[scene] case ${r.right ? 'solved' : 'wrong'}`); }
 }
 
+/* ── 对对子 (rules/duizi.mjs) — the page's taps ──
+   请先生出上联 deals the round (a game's 体力); 对上 sends his 下联 to the rules,
+   which check the form, then his line goes to the chat as his own and Ling grades
+   it (the card waits, quietly, meanwhile). The reverse: his 上联, Ling answers.
+   银月's hint and her own 下联 are asked of her in the chat — only while she is awake. */
+const duiziWords = () => DUIZI_WORDS[lang() === 'en' ? 'en' : 'zh'];
+let duiziTones; // the 平仄 table (worlds/<id>/tones.json): undefined not asked, null on its way or missing
+function tonesNow() {
+  if (duiziTones !== undefined || !look?.duizi) return duiziTones ?? null;
+  duiziTones = null;
+  content(authored?.dir ?? look.world.dir, 'tones.json').then((t) => { duiziTones = t; render(); }).catch((e) => console.warn('[lingjing] tones', e));
+  return null;
+}
+const DUIZI_LATE_MS = 60000;
+function duiziLate() {
+  const r = look?.duizi?.round;
+  return Boolean(r?.pending && Date.now() - Date.parse(r.sent_at ?? 0) > DUIZI_LATE_MS);
+}
+async function duiziOpen() {
+  const r = await aiTap('duizi', { action: 'open', ...(view.duiziRung ? { rung: view.duiziRung } : {}) });
+  if (r.ok) keep({ duiziDraft: '' });
+}
+async function duiziSubmit() {
+  const down = (view.duiziDraft ?? '').trim();
+  if (!down) { document.getElementById('duizi-down')?.focus(); return; }
+  const r = await aiTap('duizi', { action: 'submit', down });
+  if (!r.ok || !r.submitted) return;
+  show({ duiziDraft: '' });
+  deliver(fill(duiziWords().say, { down: r.duizi?.round?.down ?? down }), false);
+  // Still waiting a minute on: the card offers to ask again.
+  setTimeout(() => { if (look?.duizi?.round?.pending) render(); }, DUIZI_LATE_MS + 500);
+}
+async function duiziReverse() {
+  const up = (view.duiziUp ?? '').trim();
+  if (!up) { document.getElementById('duizi-up')?.focus(); return; }
+  const r = await aiTap('duizi', { action: 'reverse', up });
+  if (r.ok && r.reversed) { show({ duiziUp: '', duiziRevOpen: true }); deliver(fill(duiziWords().revSay, { up: r.duizi?.rev?.up ?? up }), false); }
+}
+/* A line he sent went unanswered: one more word to Ling, hidden. */
+const duiziResend = () => report(`[scene] duizi waiting: 「${look?.duizi?.round?.down ?? ''}」 to 「${look?.duizi?.round?.up ?? ''}」 waits for your grade (Duizi grade)`);
+/* 银月 asked, in his words — her tool keeps the count; asleep, the buttons are not there. */
+function duiziHer(kind) {
+  const up = look?.duizi?.round?.up;
+  if (!up || !herHere()) return;
+  deliver(fill(duiziWords()[kind === 'hint' ? 'hintSay' : 'offerSay'], { up }), false);
+}
+
 /* 储物袋: putting a thing on, taking a pill, selling at a market, is his own
    tap — the page calls Trade itself and redraws from the rules; no model turn. */
 async function useItem(id, action = 'use') {
@@ -2761,6 +2823,7 @@ function pageKey(e) {
 document.addEventListener('keydown', (e) => {
   if (e.target.id === 'askField' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); sendAsk(); }
   if (e.target.id === 'wx-city' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); document.querySelector('[data-wx-set]')?.click(); }
+  if (['duizi-down', 'duizi-up'].includes(e.target.id) && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.closest('.card')?.querySelector(e.target.id === 'duizi-down' ? '[data-duizi-submit]:not(:disabled)' : '[data-duizi-reverse]')?.click(); }
   if (e.target.id === 'value-text' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.closest('.valuecard')?.querySelector('[data-value-go]:not(:disabled)')?.click(); }
   if (e.key === 'Escape' && view.logOpen) { show({ logOpen: false }); lines.hold(false); return; }
   if ((e.key === ' ' || e.key === 'Enter') && !e.isComposing && !e.target.closest?.('input, textarea, select, [contenteditable], #chat-panel') && titleAway()) { e.preventDefault(); return; }
@@ -2968,6 +3031,14 @@ const CLICKS = [
   ['[data-case-who]', (el) => show({ caseWho: view.caseWho === el.dataset.caseWho ? null : el.dataset.caseWho, aiNote: null })],
   ['[data-case-ev]', (el) => { const id = el.dataset.caseEv, ev = view.caseEv ?? []; show({ caseEv: ev.includes(id) ? ev.filter((x) => x !== id) : [...ev, id], aiNote: null }); }],
   ['[data-case-accuse]', (el) => { if (!el.matches(':disabled')) run('case:accuse', () => caseAccuse()); }],
+  ['[data-duizi-open]', () => run('duizi:open', () => duiziOpen())],
+  ['[data-duizi-rung]', (el) => show({ duiziRung: el.dataset.duiziRung, aiNote: null })],
+  ['[data-duizi-submit]', (el) => { if (!el.matches(':disabled')) run('duizi:submit', () => duiziSubmit()); }],
+  ['[data-duizi-skip]', () => run('duizi:skip', () => aiTap('duizi', { action: 'skip' }))],
+  ['[data-duizi-reverse]', () => run('duizi:reverse', () => duiziReverse())],
+  ['[data-duizi-resend]', () => run('duizi:resend', () => duiziResend())],
+  ['[data-duizi-her]', (el) => duiziHer(el.dataset.duiziHer)],
+  ['.dzrev > summary', () => { keep({ duiziRevOpen: !view.duiziRevOpen }); }], // the native toggle; kept so a redraw leaves it as he set it
   // The scene's choices (on its card, or inside the box at its last beat) come before the box's own taps.
   ['[data-look-at]', (el) => { if (!el.matches(':disabled')) run(`look:${el.dataset.lookAt}`, () => lookAt(el.dataset.lookAt)); }],
   ['[data-panel-duel]', (el) => { if (!el.matches(':disabled')) callDuel(el.dataset.panelDuel); }],

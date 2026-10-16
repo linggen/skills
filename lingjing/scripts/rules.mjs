@@ -64,6 +64,7 @@ export { castThrows, divinationBrief, divine, fate, fateBrief, fateOf } from './
 export { look } from './rules/look.mjs';
 export { closeStaleFight, duel, fightHold, lundao, task, win } from './rules/tasks.mjs';
 export { animalsKnown, caseBrief, caseVerb, guessed, haggle, haggleBrief, twenty, twentyBrief } from './rules/aigames.mjs';
+export { duizi, duiziBrief, markFor } from './rules/duizi.mjs';
 export { go, lang, move, summarize, trade } from './rules/travel.mjs';
 export { chooseLang, inPlay, langNow, langOfTag, stateText, writeGlobalLang } from './rules/language.mjs';
 export { chapterLook, owesRecap, recapLook, story, storyNode } from './rules/story.mjs';
@@ -246,7 +247,8 @@ function runLocked(verb, args, stateFile, reader) {
   // so she knows the story and never retells it. Nothing is marked told here.
   const staged = reader === 'ling' && TELLS.has(verb) && out.result?.ok !== false ? stagedOf(content, asking) : null;
   const result = staged ? { ...paged, staged } : paged;
-  if (PLAIN.has(verb)) return result;
+  // 对对子's her half (rules/duizi.mjs, `--for=yinyue`) is handed over as it is, like 二十问.
+  if (PLAIN.has(verb) || (verb === 'duizi' && reader === 'yinyue')) return result;
   const answer = withAsk(result, content, asking, { now, quests: readQuests(), said: args.said, verb });
   // Written down, so the next bare Look does not ask it again. Cleared by
   // walking somewhere, because `asked_at` is the place it was asked at.

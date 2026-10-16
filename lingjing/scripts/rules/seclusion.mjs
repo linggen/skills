@@ -209,7 +209,7 @@ const SAY_IN = { zh: '正在闭关。先出关，再做别的。', en: 'You are 
 const SECLUSION_HOLDS = {
   resolve: true, move: true, go: true, enter: true, leave: true, trade: true, tale: a => !['info', 'seed'].includes(a.action),
   meet: true, tame: true, refine: true, task: a => a.action !== 'list', win: true, duel: true, travel: true, build: true,
-  load: true, make: true, amend: true, lundao: true, divine: true, ring: true, deck: true, fantong: a => a.action === 'feed', twenty: a => a.action === 'open', haggle: true, case: true,
+  load: true, make: true, amend: true, lundao: true, divine: true, ring: true, deck: true, fantong: a => a.action === 'feed', twenty: a => a.action === 'open', haggle: true, case: true, duizi: a => ['open', 'reverse'].includes(a.action),
   quest: a => !['info', 'kaifu'].includes(a.action),
 };
 export function seclusionHold(state, verb, args = {}) {

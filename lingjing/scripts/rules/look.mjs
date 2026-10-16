@@ -21,6 +21,7 @@ import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
 import { choreGrant, kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
 import { catchHere, errandAsking, gameLevel, hostedHere, lundaoBrief, reopened, stallHere } from './tasks.mjs';
 import { caseBrief, haggleBrief, twentyBrief } from './aigames.mjs';
+import { duiziBrief } from './duizi.mjs';
 import { hashOf } from './travel.mjs';
 import { visitorGoods, visitorHere, visitorsBrief } from './visiting.mjs';
 import { atScene, beatOf, creatureOf, encounterOf, foeOf, ofJuan, passed, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
@@ -549,6 +550,8 @@ export function look(state, content, ctx) {
     ...(twentyBrief(content, state, ctx.now) ? { twenty: twentyBrief(content, state, ctx.now) } : {}),
     ...(haggleBrief(content, state, ctx.now) ? { haggle: haggleBrief(content, state, ctx.now) } : {}),
     ...(caseBrief(content, state, ctx.now) ? { case: caseBrief(content, state, ctx.now) } : {}),
+    // 对对子 (rules/duizi.mjs): the teacher here, the rungs, today's round — never the classic 下联 before it is graded.
+    ...(duiziBrief(content, state, ctx.now) ? { duizi: duiziBrief(content, state, ctx.now) } : {}),
     // 所得: errands that handed themselves in here, until he walks on.
     ...(handedHere(content, state).length ? { handed: handedHere(content, state) } : {}),
     // 机缘: where, and how long it lasts — the page counts it down.

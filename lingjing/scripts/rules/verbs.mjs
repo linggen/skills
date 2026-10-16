@@ -22,6 +22,7 @@ import { mishi } from './mishi.mjs';
 import { duel, lundao, questCheck, task, win } from './tasks.mjs';
 import { seclude } from './seclusion.mjs';
 import { caseVerb, haggle, twenty } from './aigames.mjs';
+import { duizi } from './duizi.mjs';
 import { rerun } from './rerun.mjs';
 import { unstick } from './unstick.mjs';
 import { story } from './story.mjs';
@@ -57,6 +58,8 @@ export const VERBS = gated({
   go, saves, save, load, forget, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, seclude, bag, fantong, rerun,
   // AI mini-games (rules/aigames.mjs): 二十问 (银月's), 讨价还价 and 断案 (Ling's).
   twenty, haggle, case: caseVerb,
+  // 对对子 (rules/duizi.mjs): the page opens and submits, Ling grades, 银月 hints and offers.
+  duizi,
   // 录 shows the 饭桶's 方子 found so far (rules/fantong.mjs).
   story: (s, c, x, args) => {
     const out = story(s, c, x, args), found = out.result?.ok ? fantongRecipes(c, s) : [];

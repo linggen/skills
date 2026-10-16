@@ -307,6 +307,32 @@ tools:
         type: string
         description: For accuse — clue ids the player named, comma-separated.
 
+  - name: Duizi
+    description: >-
+      对对子 — grade the player's 下联, answer his 上联, or submit what he typed
+      (guide `duizi`).
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs duizi --action={{action}} --down={{down}} --pos={{pos}} --sense={{sense}} --art={{art}} --for=ling"
+    tier: edit
+    others_read: [duizi.round.up, duizi.round.down, graded, mark.name]
+    timeout_ms: 8000
+    args:
+      action:
+        type: string
+        required: true
+        description: read, grade (a 下联 waits), answer (his 上联 waits) or submit (his typed 下联).
+      down:
+        type: string
+        description: For answer — your 下联; for submit — the player's 下联, verbatim.
+      pos:
+        type: string
+        description: For grade — 词性对仗, 0, 1 or 2.
+      sense:
+        type: string
+        description: For grade — 意思工整, 0, 1 or 2.
+      art:
+        type: string
+        description: For grade — 意境 · 巧, 0, 1 or 2.
+
   - name: Twenty
     # 二十问 is 银月's to host (AppTool → this tool, `--for=yinyue`): the secret
     # reaches only her answer. Never Ling's (page_only); counts on the save.
@@ -344,6 +370,27 @@ tools:
     page_only: true
     others_read: [open, room, step, of]
     timeout_ms: 8000
+
+  - name: Couplet
+    # 对对子's 银月 half (AppTool → this tool, `--for=yinyue`): one hint a round,
+    # one 下联 of her own; asleep in the token it refuses. Never Ling's (page_only).
+    description: >-
+      对对子 — read the couplet set, give one hint, or offer your own 下联.
+      Follow `how`.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs duizi --action={{action}} --down={{down}} --for=yinyue"
+    tier: read
+    pet: true
+    page_only: true
+    others_read: [round.up, offered]
+    timeout_ms: 8000
+    args:
+      action:
+        type: string
+        required: true
+        description: read, hint (once a round, before your pointer) or offer (your own 下联).
+      down:
+        type: string
+        description: For offer — your 下联, as many characters as the 上联.
 
   - name: Tame
     description: >-
@@ -688,7 +735,7 @@ tools:
   - name: Guide
     description: >-
       Read the rules of one part of the game by name: look, fight, road, trial,
-      tasks, lundao, haggle, case, twenty, tale, her, divine, made, steer, story. A result's `guide`
+      tasks, lundao, haggle, case, twenty, duizi, tale, her, divine, made, steer, story. A result's `guide`
       hands a part over the first time the game gets there; read this one when
       you need a part you do not have.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs guide --topic={{topic}} --for=ling"
@@ -698,7 +745,7 @@ tools:
       topic:
         type: string
         required: true
-        description: look, fight, road, trial, tasks, lundao, haggle, case, twenty, tale, her, divine, made, steer or story.
+        description: look, fight, road, trial, tasks, lundao, haggle, case, twenty, duizi, tale, her, divine, made, steer or story.
 
   - name: Verb
     # The page's one door to the rules (skill-spec § Page door): any verb with
@@ -894,7 +941,7 @@ and `[scene] breakthrough won|failed` (story), `[scene] arrived <place>` (road):
 - `trial` — 抉择: when the road's meet is `kind: trial`, you write it.
 - `tasks` — boards, 每日/每周 (Practice), 一次, 差事 (Quest): never invent one.
 - `lundao` — 论道, the scholar's word games; never be generous. Talk games:
-  `haggle` 讨价还价, `case` 断案, `twenty` 二十问 (hers).
+  `haggle` 讨价还价, `case` 断案, `twenty` 二十问 (hers), `duizi` 对对子 (you grade).
 - `tale` — 今日传闻: once a day you write a small side story (Tale).
 - `her` — 月下之约: an old save finds Yinyue at 结丹 (Ring).
 - `divine` — 问卦 and 命格: Divine on the player's word, then stop.

@@ -166,6 +166,8 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     lundao: fs.existsSync(path.join(dir, 'lundao.json')) ? readJson(path.join(dir, 'lundao.json')) : null,
     // AI mini-games (rules/aigames.mjs): 二十问's animals, 讨价还价's band and rubric, 断案's cases.
     aigames: fs.existsSync(path.join(dir, 'aigames.json')) ? readJson(path.join(dir, 'aigames.json')) : null,
+    // 对对子's 平仄 (新韵, tools/tone-table.py): P · Z · B as strings of characters (scripts/couplet.js).
+    tones: fs.existsSync(path.join(dir, 'tones.json')) ? readJson(path.join(dir, 'tones.json')) : null,
     // The companion's past, given back chapter by chapter (companion.mjs § 她的来处).
     lore: fs.existsSync(path.join(dir, 'companion.json')) ? readJson(path.join(dir, 'companion.json')) : null,
     // The standing people (people.json): a scene line's `who` may be one of them, or a slot.

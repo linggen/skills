@@ -35,6 +35,8 @@ export const TOPICS = {
   haggle: ({ verb, result }) => verb === 'haggle' || Boolean(result?.haggle),
   case: ({ verb, said, result }) => verb === 'case' || Boolean(result?.case && result.case.outcome === 'open') || tag(said, /^\[scene\] case\b/),
   twenty: ({ verb, result }) => verb === 'twenty' || Boolean(result?.twenty?.open),
+  // 对对子 (rules/duizi.mjs): a round or a reverse under way, or the page's word that one was sent.
+  duizi: ({ verb, said, result }) => verb === 'duizi' || Boolean(result?.duizi?.round || result?.duizi?.rev) || tag(said, /^\[scene\] duizi\b|对对子|上联|下联/),
   tale: ({ verb, said, result }) => verb === 'tale' || Boolean(result?.story_due || result?.tale) || tag(said, /^\[scene\] tale\b|今日传闻/),
   her: ({ verb, result }) => verb === 'ring' || Boolean(result?.quest),
   // 密室 (rules/mishi.mjs): a door where he stands, or a room open.

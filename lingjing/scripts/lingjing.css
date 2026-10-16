@@ -810,6 +810,36 @@ button.gcard { cursor: pointer; font: inherit; }
 .card .twentylist, .card .caseclues, .card .casepeople { margin: 4px 0 6px; padding-left: 1.4em; font-size: 13px; line-height: 1.6; max-height: 9.6em; overflow-y: auto; }
 .card .twentylist b { color: var(--ling); margin-left: 4px; }
 .card.case .casepeople { list-style: none; padding-left: 0; max-height: none; }
+/* 对对子 (aigames-cards.js): the pair hung right to left, each read top to bottom on its strip of
+   paper; the form's checks as chips beside the input; the teacher's mark and dots once graded. */
+.card.duizi .dzpair { display: flex; justify-content: center; gap: 28px; margin: 10px 0 8px; }
+.card.duizi .dzcol { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.card.duizi .dzcap { font-size: 11px; color: var(--faint); letter-spacing: .2em; }
+.card.duizi .dzline { display: flex; flex-direction: column; align-items: center; min-width: 52px; padding: 10px 8px; border: 1px solid var(--line); border-radius: 3px;
+  background: color-mix(in srgb, var(--seal-soft) 55%, var(--surface)); font-family: var(--serif); font-size: 30px; line-height: 1.3; color: var(--text); }
+.card.duizi .dzline.down { color: var(--ling); }
+.card.duizi .dzform input[type=text] { font-family: var(--serif); font-size: 17px; letter-spacing: .15em; }
+.card.duizi .dzchecks { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin: 6px 0 2px; }
+.card.duizi .dzchk { font-size: 11.5px; padding: 1px 8px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); color: var(--dim); }
+.card.duizi .dzchk.ok { color: var(--jade); border-color: var(--jade-soft); background: var(--jade-soft); }
+.card.duizi .dzchk.bad { color: var(--seal); border-color: var(--seal-soft); background: var(--seal-soft); }
+.card.duizi .dznote { flex-basis: 100%; text-align: center; }
+.card.duizi .dzmark { text-align: center; font-family: var(--serif); font-size: 22px; letter-spacing: .3em; color: var(--dim); margin: 2px 0; }
+.card.duizi .dzmark.good { color: var(--seal); }
+.card.duizi .dzgrades { display: flex; flex-wrap: wrap; gap: 4px 14px; justify-content: center; font-size: 12px; color: var(--dim); }
+.card.duizi .dzgrade b i { display: inline-block; width: 8px; height: 8px; margin-left: 3px; border-radius: 50%; border: 1.2px solid var(--ling); }
+.card.duizi .dzgrade b i.on { background: var(--ling); }
+.card.duizi .dzref, .card.duizi .dzopen { text-align: center; margin: 4px 0; }
+.card.duizi .dzher { text-align: center; font-family: var(--serif); color: var(--yinyue); margin: 6px 0 2px; }
+.card.duizi .dzrungs { justify-content: center; }
+.card.duizi .dzwait { display: flex; align-items: center; justify-content: center; gap: 4px; margin: 8px 0; font-family: var(--serif); font-size: 13px; color: var(--dim); }
+.card.duizi .dzwait i { width: 4px; height: 4px; border-radius: 50%; background: var(--dim); animation: dzbreath 1.4s ease-in-out infinite; }
+.card.duizi .dzwait i:nth-of-type(2) { animation-delay: .2s; }
+.card.duizi .dzwait i:nth-of-type(3) { animation-delay: .4s; }
+@keyframes dzbreath { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .card.duizi .dzwait i { animation: none; opacity: .6; } }
+.card.duizi .dzrev { margin-top: 10px; padding-top: 6px; border-top: 1px dashed var(--line); }
+.card.duizi .dzrev summary { cursor: pointer; color: var(--dim); }
 .card.lundao .lundaodots i.on { background: var(--ling); }
 .card.lundao .lundaodots span { margin-left: 6px; }
 /* 传闻 — today's rumor: its step, with the 论道 look where it is words */

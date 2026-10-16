@@ -135,15 +135,15 @@ export const WORDS = {
 // The AI mini-games' words (aigames-cards.js), in both languages.
 Object.assign(WORDS.zh, AI_WORDS.zh);
 Object.assign(WORDS.en, AI_WORDS.en);
-Object.assign(WORDS.zh.queueKinds, { twenty: '二十问', haggle: '讲价', case: '断案' });
-Object.assign(WORDS.en.queueKinds, { twenty: 'Twenty questions', haggle: 'Haggling', case: 'A case' });
+Object.assign(WORDS.zh.queueKinds, { twenty: '二十问', haggle: '讲价', case: '断案', duizi: '对对子' });
+Object.assign(WORDS.en.queueKinds, { twenty: 'Twenty questions', haggle: 'Haggling', case: 'A case', duizi: 'Couplets' });
 
 export { esc } from './esc.js';
 import { esc } from './esc.js';
 import { codexCompactHtml, codexHtml } from './codex.js';
 import { bookPlace, choicesUp, logLinkHtml, playing, toldSoFar } from './dialogue.js';
 import { TURNED_MS, turnedPays } from './turned.js';
-import { AI_WORDS, caseCard, haggle, twenty } from './aigames-cards.js';
+import { AI_WORDS, caseCard, duizi, haggle, twenty } from './aigames-cards.js';
 
 /// A system the story has not reached yet (Look's `locked`, rules/locks.mjs): its chip, bar and buttons are not drawn at all.
 export const isShut = (look, system) => (look?.locked ?? []).includes(system);
@@ -1657,7 +1657,7 @@ function closed(card, ctx) {
     + `<div class="acts"><button class="act closeshut" data-close-chapter="${esc(c.id)}">${esc(ctx.words.closeAway ?? '合上')}</button></div></div>`;
 }
 
-const RENDER = { rerun, replay, closed, meet, codex, panel, value, born, people, breakthrough, handed, tale, lundao, twenty, haggle, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, road, seclude, seclusion, next };
+const RENDER = { rerun, replay, closed, meet, codex, panel, value, born, people, breakthrough, handed, tale, lundao, twenty, haggle, duizi, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, road, seclude, seclusion, next };
 // 断案's card: its function cannot be named for its kind (`case` is a word of the language).
 RENDER.case = caseCard;
 

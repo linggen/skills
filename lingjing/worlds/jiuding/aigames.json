@@ -127,5 +127,69 @@
       },
       "wrong": { "zh": "周衡把账簿合上：「对不上。名字也好，凭据也好，账上要一笔一笔对得上。改日再来。」", "en": "Zhou Heng closes the ledger: \"It doesn't add up. A name, a proof — each has to tally, line by line. Come back another day.\"" }
     }
-  ]
+  ],
+  "duizi": {
+    "_about": "对对子 (Hanli, 2026-10-16) — 先生出上联, the player writes the 下联. The RULES check the form at once, on the page as he types and again on submit (scripts/couplet.js): as many characters; the 下联 ends 平 (新韵 by worlds/jiuding/tones.json — a polyphone or an unknown character is never failed); no character at the same place as the 上联's; no more of the 上联's characters than the rung's `allow` (`free` never count). Ling grades only the fuzzy parts, 0–2 each, on the rubric; the rules combine both by `marks` (the first that fits) and pay. Reverse: he gives a 上联, the teacher answers — no score, no pay, `reverse` a day. Only in Chinese: in English there is no door (an open question, design.md).",
+    "_ladder": "From 《声律启蒙》 (车万育, Qing, public domain), 《笠翁对韵》 (李渔, Qing) and a few Tang lines, each as [上联, the classic 下联, source] — oriented so the 上联 ends 仄 under 新韵 (云对雨 is dealt 雨 → 云); a pair whose 上联 ends 平 today (入声 lost: 直 竹 白 实) is left out. The classic 下联 is Ling's to judge by and the card's to show once graded — never before. A rung says its teacher's 卷 through the teacher: a later teacher (the 稷下先生, 七言 and 绝对) is a row in `teachers` with `juan`, and rungs of its own — data only.",
+    "_pay": "Declared defaults for balance.json: a good answer pays by its mark (the `game` table caps it); `rounds` paid rounds a day, each a game's 体力 at open. Reverse pays nothing.",
+    "rounds": 3,
+    "reverse": 2,
+    "need": 3,
+    "free": "之乎者也而以于其兮",
+    "marks": [
+      { "id": "gong", "name": { "zh": "工整", "en": "well matched" }, "min": 5, "form": true, "good": true, "pay": { "table": "game", "progress": 6, "wealth": 8 } },
+      { "id": "dui", "name": { "zh": "对上了", "en": "it matches" }, "min": 3, "form": true, "good": true, "pay": { "table": "game", "progress": 3, "wealth": 5 } },
+      { "id": "jin", "name": { "zh": "差一点", "en": "nearly" }, "min": 2 },
+      { "id": "bu", "name": { "zh": "没对上", "en": "not a match" }, "min": 0 }
+    ],
+    "rubric": [
+      { "id": "pos", "name": { "zh": "词性对仗", "en": "parts of speech" }, "about": "Word for word, the 下联 answers each word of the 上联 with the same kind: noun to noun (天 · 地), verb to verb, number to number, colour to colour, an empty word to an empty word. 2: every word; 1: most; 0: few or none." },
+      { "id": "sense", "name": { "zh": "意思工整", "en": "sense" }, "about": "The 下联 reads as real, sensible Chinese and answers the 上联 as a pair — a matching or a contrasting picture in the same frame (time · place · thing). 2: a true pair; 1: grammatical but loosely paired; 0: nonsense, or unrelated." },
+      { "id": "art", "name": { "zh": "意境 · 巧", "en": "craft" }, "about": "Above the form: an image, a turn, wit, a classical echo. 2: it would stand in a book; 1: plain but sound; 0: none. The classic 下联 itself, recited, is sound but not his: at most 1 here." }
+    ],
+    "teachers": [
+      {
+        "id": "chu", "who": "chuxiansheng", "at": "jiangtang", "after": "wm-qianye", "juan": 1, "rungs": ["one", "two", "three", "five"],
+        "voice": { "zh": "褚先生：先念上联，戒尺在桌上一敲；对得好，山羊胡子翘一翘，只说「嗯，尚可」；对得差，一句刻薄话，再点一句该往哪儿想。", "en": "Master Chu: reads the upper line out and taps the desk with his ruler; a good answer gets a twitch of the goat beard and 'hm, passable'; a poor one a sharp remark, then one pointer on where to look." }
+      }
+    ],
+    "rungs": [
+      {
+        "id": "one", "n": 1, "allow": 0, "name": { "zh": "一字对", "en": "one character" },
+        "ladder": [
+          ["雨", "云", "《声律启蒙》一东"], ["雪", "风", "《声律启蒙》一东"], ["地", "天", "《笠翁对韵》一东"], ["夏", "春", "《声律启蒙》二冬"], ["暗", "明", "《声律启蒙》二冬"],
+          ["淡", "浓", "《声律启蒙》二冬"], ["户", "窗", "《声律启蒙》三江"], ["酒", "茶", "《声律启蒙》四支"], ["赋", "诗", "《声律启蒙》四支"], ["往", "来", "《声律启蒙》五微"],
+          ["密", "稀", "《声律启蒙》五微"], ["有", "无", "《声律启蒙》六鱼"], ["玉", "金", "《声律启蒙》七虞"], ["宝", "珠", "《声律启蒙》七虞"], ["岫", "岩", "《声律启蒙》八齐"],
+          ["涧", "溪", "《声律启蒙》八齐"], ["富", "贫", "《声律启蒙》一东"], ["异", "同", "《声律启蒙》一东"]
+        ]
+      },
+      {
+        "id": "two", "n": 2, "allow": 0, "name": { "zh": "二字对", "en": "two characters" },
+        "ladder": [
+          ["晚照", "晴空", "《声律启蒙》一东"], ["宿鸟", "鸣虫", "《声律启蒙》一东"], ["去燕", "来鸿", "《声律启蒙》一东"], ["岭北", "江东", "《声律启蒙》一东"], ["海雾", "江风", "《声律启蒙》一东"],
+          ["牧子", "渔翁", "《声律启蒙》一东"], ["齿皓", "唇红", "《声律启蒙》一东"], ["暮鼓", "晨钟", "《声律启蒙》二冬"], ["玩水", "观山", "《声律启蒙》二冬"], ["巨海", "长江", "《声律启蒙》三江"],
+          ["蕙帐", "蓉裳", "《声律启蒙》三江"], ["燕子", "莺儿", "《声律启蒙》四支"], ["落絮", "游丝", "《声律启蒙》四支"], ["燕舞", "莺飞", "《声律启蒙》五微"], ["月朗", "风清", "《声律启蒙》五微"],
+          ["露重", "烟微", "《声律启蒙》五微"], ["作赋", "观书", "《声律启蒙》六鱼"], ["宝马", "香车", "《声律启蒙》六鱼"], ["玉兔", "金乌", "《声律启蒙》七虞"], ["短棹", "孤舟", "《声律启蒙》七虞"],
+          ["远岸", "危堤", "《声律启蒙》八齐"], ["水雁", "山鸡", "《声律启蒙》八齐"]
+        ]
+      },
+      {
+        "id": "three", "n": 3, "allow": 1, "name": { "zh": "三字对", "en": "three characters" },
+        "ladder": [
+          ["三尺剑", "六钧弓", "《声律启蒙》一东"], ["冯妇虎", "叶公龙", "《声律启蒙》二冬"], ["霜菊瘦", "雨梅肥", "《声律启蒙》五微"], ["伯乐马", "浩然驴", "《声律启蒙》六鱼"],
+          ["横醉眼", "捻吟须", "《声律启蒙》七虞"], ["星拱北", "月流西", "《声律启蒙》八齐"], ["颜巷陋", "阮途穷", "《声律启蒙》一东"], ["天浩浩", "日融融", "《声律启蒙》一东"]
+        ]
+      },
+      {
+        "id": "five", "n": 5, "allow": 1, "name": { "zh": "五言对", "en": "five characters" },
+        "ladder": [
+          ["人间清暑殿", "天上广寒宫", "《声律启蒙》一东"], ["池中濯足水", "门外打头风", "《声律启蒙》一东"], ["半溪流水绿", "千树落花红", "《声律启蒙》一东"],
+          ["衔泥双紫燕", "课蜜几黄蜂", "《声律启蒙》二冬"], ["台高名戏马", "斋小号蟠龙", "《声律启蒙》二冬"], ["忠心安社稷", "利口覆家邦", "《声律启蒙》三江"],
+          ["半池红菡萏", "一架白荼蘼", "《声律启蒙》四支"], ["晚霞舒锦绣", "朝露缀珠玑", "《声律启蒙》五微"], ["秋霜多过雁", "夜月有啼乌", "《声律启蒙》七虞"],
+          ["桃林牛已放", "虞坂马长嘶", "《声律启蒙》八齐"], ["白日依山尽", "黄河入海流", "王之涣《登鹳雀楼》"], ["明月松间照", "清泉石上流", "王维《山居秋暝》"],
+          ["野火烧不尽", "春风吹又生", "白居易《赋得古原草送别》"]
+        ]
+      }
+    ]
+  }
 }

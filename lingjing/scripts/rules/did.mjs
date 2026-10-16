@@ -111,8 +111,18 @@ const PAGE_DID = {
       : a.action === 'quit' ? `gave up 二十问: it was ${r.twenty?.animal}` : null),
   haggle: (r, a) => (a.action === 'deal' && r.deal ? `struck the haggled deal on the page card: ${r.item?.name ?? r.bought}${r.qty > 1 ? ` ×${r.qty}` : ''} at ${r.price} each (saved ${r.saved})`
     : a.action === 'walk' && r.walked ? 'walked away from the haggle on the page card (list price only for it today)' : null),
+  // 对对子 (rules/duizi.mjs): the round dealt, his 下联 sent (Ling grades it), a round let go, his 上联 for the teacher.
+  duizi: (r, a) => DUIZI_DID[a.action]?.(r) ?? null,
   case: (r, a) => (a.action === 'look' && r.found ? `looked around for the case: found 「${r.found.name}」 — ${r.found.fact}`
     : a.action === 'accuse' && r.right != null ? `named someone on the case card: ${r.right ? 'the accounts tally — solved' : 'it does not tally'}` : null),
+};
+
+const formSaid = f => Object.entries(f?.checks ?? {}).filter(([, v]) => v === 'bad').map(([k]) => k).join(', ') || 'holds';
+const DUIZI_DID = {
+  open: r => (r.opened ? `began 对对子 at ${r.duizi?.teacher}: 上联「${r.duizi?.round?.up}」 (${r.duizi?.round?.rung_name})` : null),
+  submit: r => (r.submitted ? `wrote the 下联「${r.duizi?.round?.down}」 to 「${r.duizi?.round?.up}」 on the page card — form: ${formSaid(r.form)}; it waits for your grade (Duizi grade)` : null),
+  skip: r => (r.skipped ? 'let today\'s 上联 go unanswered' : null),
+  reverse: r => (r.reversed ? `gave ${r.duizi?.teacher} a 上联 to answer:「${r.duizi?.rev?.up}」 (Duizi answer)` : null),
 };
 
 /* The page's change, written down on the state it wrote: a fresh copy with
