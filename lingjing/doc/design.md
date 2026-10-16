@@ -702,6 +702,21 @@ Every 回 gets a gameplay pass so play keeps pace with reading: the book's own a
 their scenes (`tasks/h<nn>.json`), fights, and enough beasts and finds to farm its stage quest.
 古六 is first (building now: its boards in tasks/h08.json); the rest follow in order.
 
+### 新小游戏 — proven mechanics, the book's actions (Hanli, 2026-10-16)
+
+Small games stay between passages, or the player only reads; the weak ones go. New ones borrow
+mechanics millions already love (the mechanic only; names and art are ours), each from a book action:
+
+| Mechanic | Where | Status |
+|---|---|---|
+| 割绳子 physics puzzle | 喂饼 (第一回 00-fox): cut vines, use wind and stones so the 饼 reaches the hurt fox (银月's first meeting) | building first |
+| 愤怒小鸟 drag-and-arc | 射鹿 (第二回 00-deer): pull the bow, read the wind, lead the deer; 「往左偏半寸」 is the answer | after the first launch |
+| 几何冲刺 one-tap runner | 顺风溜 (古七): the shoes' run down the mountain, forgiving (checkpoints, skippable) | after the first launch |
+
+Rules: 60–90 s, one thumb, instant retry; three stars (stars set the reward, a balance.json knob);
+fewer and better (keep five or six great ones in 卷一, cut the rest); local only, no LLM in the loop;
+physics from a small vendored MIT library (matter.js), no network.
+
 ### AI mini-games 【已建 · first three】 (Hanli, 2026-10-15)
 
 **The AI talks, plays roles and judges fuzzy things against a rubric; the rules decide outcomes

@@ -11,6 +11,7 @@ Updated 2026-10-16.
 | What | Where | Started |
 |---|---|---|
 | Pacing + economy: `tools/balance.mjs` + `balance.json`, 修为 stage quest every 回, story floor removed (`8f112416`), pool-fight daily diminishing | fresh build (the 10-15 one was lost unpushed) | 10-16 |
+| 喂饼 rebuilt as a 割绳子-style physics puzzle (00-fox: cut vines so the 饼 reaches the hurt fox; 3 stars) | first of the new small games (Hanli 10-16 「先做你说的」) | 10-16 |
 
 ## Done lately
 
@@ -43,7 +44,7 @@ Updated 2026-10-16.
 ## Not started
 
 - AI games, next batch: 猜灯谜, 银月的心事, 斗嘴, 论道 · 飞花令, 说书接龙, 下棋陪聊 (对对子 is being built 10-16).
-- After the first launch (Hanli 10-16, 「先把第一版上线, 后面再说」): 守鼎 tower defense (护山大阵 on the mountain path, towers from his deck, 五行 counters; prototype ≈ 2–4 h of agent time); a walkable top-down map (≈ a week+). Not doing: a Battle City clone; a 说书人 narrating live fights (no LLM inside a fight's loop).
+- After the first launch (Hanli 10-16, 「先把第一版上线, 后面再说」): 守鼎 tower defense (护山大阵 on the mountain path, towers from his deck, 五行 counters; prototype ≈ 2–4 h of agent time); a walkable top-down map (≈ a week+). New small games on proven mechanics (design.md § 新小游戏): 射鹿 as an 愤怒小鸟-style drag-and-arc shot (wind, lead), 顺风溜 as a forgiving 几何冲刺-style one-tap runner (古七). Not doing: a Battle City clone; a 说书人 narrating live fights (no LLM inside a fight's loop).
 - 卷二 opening re-plan.
 - Rebuild the bug list: the 10-15 list (items 1–55) was lost in the 10-16 reboot; a fresh playthrough finds them again.
 - 【远景】: 你自己的小人书, 斗法 PvP and raid, the table, server authority.
