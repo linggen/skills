@@ -91,6 +91,19 @@
 .g-lastshot .g-jin-hr b { display: inline-block; animation: g-jin-shake .12s infinite alternate; }
 @keyframes g-jin-shake { from { transform: translateX(calc(var(--shake, .3) * -2px)); } to { transform: translateX(calc(var(--shake, .3) * 2px)); } }
 @media (prefers-reduced-motion: reduce) { .g-lastshot .g-jin-hr b { animation: none; } }
+/* 最后一罚 on the house palette (2026-10-16): modern, not ink — but the page's own tokens, not a blue button and a
+   red counter. The breath button is the main button's 灵 brown (filled while held), 出手 a quiet one; the heart
+   rate in ink, the shake in a muted earth, the breaths counted in 灵. */
+.g-lastshot .g-jin-btn { border-color: var(--ling); background: var(--ling-soft); color: var(--ling); letter-spacing: .2em; }
+.g-lastshot .g-jin-btn.is-held, .g-lastshot .g-jin-btn:active { background: var(--ling); color: var(--surface); }
+.g-lastshot .g-jin-btn.is-small { border-color: var(--line); background: var(--surface); color: var(--dim); letter-spacing: .1em; }
+.g-lastshot .g-jin-hr.is-fast b { color: var(--text); }
+.g-lastshot .g-jin-hr span { color: var(--dim); }
+.g-lastshot .g-jin-bar { background: var(--raised); border: 1px solid var(--line); }
+.g-lastshot .g-jin-bar i, .g-lastshot .g-jin-bar.is-low i { background: var(--earth); opacity: .8; }
+.g-lastshot .g-jin-dot { border-color: var(--line); }
+.g-lastshot .g-jin-dot.is-on { background: var(--ling); border-color: var(--ling); }
+.g-lastshot .g-jin-beat { color: var(--ling); }
 
 /* 2026-10-14 — the opening's playable beats, in ink (his: 「小游戏的UI太粗糙了，美化一下」):
    接雨 (.g-rain), 喂饼 (.g-bread), 射鹿 (.g-deer), 算账 (.g-scale), 吹鹅毛
