@@ -44,6 +44,32 @@ test('the 游戏厅 and the try page are test pages: they draw nothing without ?
   }
 });
 
+test('the one door to the 游戏厅 is dev-arcade.js, and it opens only for the developer account or a scratch save', async () => {
+  // Every other script stays linking-free (the test above names the player-facing pages; this one sweeps them all).
+  const dir = new URL('../scripts/', import.meta.url);
+  const linking = fs.readdirSync(dir).filter((f) => /\.(js|mjs|html)$/.test(f) && !/^(arcade|try-)/.test(f))
+    .filter((f) => /arcade\.html|try-game\.html/.test(fs.readFileSync(new URL(f, dir), 'utf8')));
+  assert.deepEqual(linking, ['dev-arcade.js']);
+  // lingjing.js reaches it through the import alone, passing the scratch save in.
+  assert.match(read('../scripts/lingjing.js'), /import \{ devArcade \} from '\.\/dev-arcade\.js';/);
+  assert.match(read('../scripts/lingjing.js'), /devArcade\(\{ scratch: SCRATCH \}\)/);
+  const { arcadeAllowed, arcadeUrl } = await import('../scripts/dev-arcade.js');
+  const acct = (developer) => async () => ({ signed_in: true, gate: { app: 'lingjing', developer } });
+  assert.equal(await arcadeAllowed({ scratch: null, readAccount: acct(true) }), true, 'the developer account');
+  assert.equal(await arcadeAllowed({ scratch: null, readAccount: acct(false) }), false, 'a player');
+  assert.equal(await arcadeAllowed({ scratch: null, readAccount: async () => ({ signed_in: false }) }), false, 'signed out');
+  assert.equal(await arcadeAllowed({ scratch: null, readAccount: async () => null }), false, 'an engine without the route');
+  assert.equal(await arcadeAllowed({ scratch: null, readAccount: async () => { throw new Error('down'); } }), false, 'unreachable');
+  let asked = false;
+  assert.equal(await arcadeAllowed({ scratch: 'test', readAccount: async () => { asked = true; return null; } }), true, 'a scratch save');
+  assert.equal(asked, false, 'a scratch save never reads the account');
+  assert.equal(arcadeUrl(null), 'arcade.html?dev=1&from=game');
+  assert.equal(arcadeUrl('test'), 'arcade.html?dev=1&from=game&save=test');
+  // The arcade, opened from the game, shows the way back.
+  assert.match(read('../scripts/arcade.js'), /from'\) === 'game'/);
+  assert.match(read('../scripts/arcade.js'), /返回游戏/);
+});
+
 test('beat-won: every listener hears a won beat with its grade; a listener that throws stops nothing; one can stop listening', () => {
   const heard = [];
   const off = onBeatWon((id, o) => heard.push([id, o.grade]));

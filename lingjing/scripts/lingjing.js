@@ -53,6 +53,7 @@ import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, li
 import { wireLiveGames } from './live-games.js';
 import { beatWon, onBeatWon } from './beat-won.js';
 import { beatHost } from './beat-host.js';
+import { devArcade } from './dev-arcade.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
 import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, huiLineOf, momentMay, momentsHold, trayWaits } from './queue.js';
 
@@ -4467,6 +4468,7 @@ if (SCRATCH) {
 
 async function boot() {
   if (SCRATCH) await scratchBoot();
+  devArcade({ scratch: SCRATCH }); // the builder's test-arcade chip: developer or scratch only
   $('focus').innerHTML = `<div class="loading">${esc(WORDS.zh.loading)} · ${esc(WORDS.en.loading)}</div>`;
   await readCloud();
   // A cloud declared and no account behind it: the gate. No cloud at all

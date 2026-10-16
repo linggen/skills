@@ -10,8 +10,8 @@ export const devOnly = (params) => params.get('dev') === '1';
 const lang = () => (q.get('lang') === 'en' ? 'en' : 'zh');
 const root = document.getElementById('arcade');
 const W = {
-  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到' },
-  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game' },
+  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到', home: '返回游戏' },
+  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game', home: 'Back to game' },
 };
 const w = () => W[lang()];
 
@@ -24,7 +24,13 @@ async function modOf(id) {
 const mountOf = (mod) => mod?.mount ?? (mod?.html ? mountPure(mod) : null);
 const nameOf = (mod, id) => mod?.meta?.name?.[lang()] ?? mod?.meta?.name?.zh ?? id;
 const howOf = (mod) => mod?.meta?.how?.[lang()] ?? mod?.meta?.how?.zh ?? '';
-const href = (extra = {}) => `?${new URLSearchParams({ dev: '1', ...(lang() === 'en' ? { lang: 'en' } : {}), ...extra })}`;
+// Opened from the game (dev-arcade.js, the builder's chip): every page keeps `from=game` and shows the way back.
+// A scratch save (`save=`) rides along so the way back lands on that save, not the player's own.
+const fromGame = q.get('from') === 'game';
+const save = /^[\w-]+$/.test(q.get('save') ?? '') ? q.get('save') : null;
+const kept = (en = lang() === 'en') => ({ dev: '1', ...(en ? { lang: 'en' } : {}), ...(fromGame ? { from: 'game' } : {}), ...(save ? { save } : {}) });
+const href = (extra = {}) => `?${new URLSearchParams({ ...kept(), ...extra })}`;
+const home = () => (fromGame ? `<a class="arcade-home" href="index.html${save ? `?save=${save}` : ''}">${esc(w().home)}</a>` : '');
 
 async function registry() {
   const r = await fetch('../worlds/jiuding/games.json').catch(() => null);
@@ -47,7 +53,7 @@ async function listPage() {
     return `<section><h2>${esc(gr[lang()] ?? gr.zh)}</h2><div class="arcade-grid">${tiles.join('')}</div></section>`;
   }));
   root.innerHTML = `<header class="arcade-head"><h1>${esc(w().title)}</h1><span class="dim small">${esc(w().note)}</span>`
-    + `<a class="arcade-lang" href="${lang() === 'en' ? '?dev=1' : '?dev=1&lang=en'}">${esc(w().lang)}</a></header>${groups.join('')}`;
+    + `<a class="arcade-lang" href="?${new URLSearchParams(kept(lang() !== 'en'))}">${esc(w().lang)}</a>${home()}</header>${groups.join('')}`;
 }
 
 let stop = null;
@@ -55,7 +61,7 @@ async function playPage(id, n) {
   const reg = await registry();
   const row = reg.games[Number(n)]?.id === id ? reg.games[Number(n)] : reg.games.find((g) => g.id === id) ?? { id };
   const mod = await modOf(id), mount = mountOf(mod);
-  root.innerHTML = `<header class="arcade-head"><a href="${href()}">${esc(w().back)}</a></header>`
+  root.innerHTML = `<header class="arcade-head"><a href="${href()}">${esc(w().back)}</a>${home()}</header>`
     + `<article class="card gamecard scenegame arcade-play"><div class="cardtitle">${esc(nameOf(mod, id))}</div>`
     + `<div class="small dim g-goal">${esc(howOf(mod))}</div><div class="arcade-slot" id="slot"></div>`
     + `<div class="arcade-result" id="result"></div></article>`;
