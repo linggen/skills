@@ -159,8 +159,9 @@ Fine as they are; 洛书 is the same square three times (二试, 困阵, daily).
 - **讨价还价** — haggle with a keeper in the chat; the rules hold the floor and the mood.
 - **断案** — ask the people, find the proof, name who did it.
 - **对对子** — being built 10-16 by another agent.
-- **画猜 · 你画，灵猜** — prototype 10-16, 游戏厅 only (`drawguess`, group AI · 试作; Hanli: 「玩家画AI猜, 试一下吧」).
-  A word from 卷一 (弓 鹿 狐狸 饼 盆 白菜 鸡 葫芦 剑 山 月亮 灯), 60 s, an ink brush on rice paper, 撤一笔 · 清空.
+- **画猜 · 你画我猜** — prototype 10-16, 游戏厅 only (`drawguess`, group AI · 试作; Hanli: 「玩家画AI猜, 试一下吧」).
+  A word from 卷一 (弓 鹿 狐狸 饼 盆 白菜 鸡 葫芦 剑 山 月亮 灯), 60 s, an ink brush on rice paper; 笔 / 擦 (an eraser, its ring
+  the size it rubs; Hanli: 「给个橡皮擦工具吧, 撤一笔没啥用」) · 清空. A rub is a paper change: the next look sends it.
   When the hand rests 2.5 s, or on 画好了, the paper (448 px PNG) goes to Ling through the engine's chat
   `images`; she answers a line zh + en and a 猜 line; the page checks the 猜 word against the word's
   spellings (games.json `data.words`) — never the model's say. One look out at a time, four a round.
@@ -172,5 +173,14 @@ Fine as they are; 洛书 is the same square three times (二试, 困阵, daily).
   **Cost:** ~8.7k prompt tokens a look (Ling's lingjing prompt and 40 tools; the picture ~250), ~20–80
   out, none cached on this path; her opening look once a page; a typical round of two looks ~17.5k,
   at most four ~35k. A trimmed agent for small AI games would cut most of it (an engine question).
+  - **猜者 灵 / 银月** (Hanli: 「游戏里可以让yinyue猜」): a switch over the paper. 银月 guesses as her guest turn at
+    Lingjing's table (`place.yinyue`: Voice · AppTool · Story — no memory tools, no capture nudge in a skill
+    session), her proud 妖王 voice, her lines on the paper only, in the same throwaway round session (deleted at
+    round end; its folder is gone from disk, so no scan or dream sees it). Gated as in the world: until the save
+    has met her the engine answers `absent` and runs no turn — 「还没遇见银月。」 (`unavailable`, pet off:
+    「银月不在。」). Her prompt here is lighter than Ling's (~7.9k chars + 3 tools vs 18.4k + 40 tools).
+    **Unverified:** her guesses, tokens and latency — the live save has not met her (10-16); measure once a save
+    reaches 00-yinyue. Her lines in the right-hand chat as hers wait on an engine change (chat-bridge
+    `addMessage` takes no agent; the embed shows it as the assistant) — Hanli's call.
   - **画符 (idea, not built):** draw a talisman the book teaches (五雷符 …) stroke by stroke in its order;
     the page checks order and shape from the strokes themselves (no model), Ling only says how it looks.
