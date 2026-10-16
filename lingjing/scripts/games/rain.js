@@ -44,6 +44,7 @@ const T = {
     brim: '这一盆满了——端到墙根，再摆一个空的。',
     lifted: '这一盆端起来，搁回手边。',
     banked: '满盆端到墙根，排好。',
+    swapped: '满盆端走，空盆放下——「叮」。',
     spill: '「嗒。」地上又汪了一片。',
     none: '手边没有空盆了——把不滴的那几个挪过来。',
     shift: '那边不漏了，这边又漏了——这屋顶知道雨往哪去。',
@@ -60,6 +61,7 @@ const T = {
     brim: 'This one is full — carry it to the wall and put down an empty one.',
     lifted: 'You lift this one and keep it to hand.',
     banked: 'A full basin carried to the wall, in its row.',
+    swapped: 'The full one off, an empty one down — *ting*.',
     spill: '*Drip.* Another puddle on the floor.',
     none: 'No empty basin to hand — move the ones where it has stopped.',
     shift: 'It stopped there and started here — this roof knows where the rain goes.',
@@ -115,6 +117,16 @@ function finish(s, forced) {
 }
 const settle = (s) => (fullCount(s) >= NEED ? finish(s, false) : s);
 
+/* A full basin carried off where it still drips: one tap sets the next one down in its place (live,
+   2026-10-16: it took two — lift, then tap the empty floor again — while the drip fell on the floor). */
+function swapFull(s, i) {
+  if (!leakingAt(s.sched, i, s.t)) return settle(s);
+  const hand = [...s.hand].sort((x, y) => y - x), basins = [...s.basins];
+  if (hand.length) { basins[i] = hand.shift(); return settle({ ...s, basins, hand, note: 'swapped' }); }
+  if (s.spare > 0) { basins[i] = 0; return settle({ ...s, basins, spare: s.spare - 1, note: 'swapped' }); }
+  return settle(s);
+}
+
 function tapSpot(s, i) {
   if (!s.live || !Number.isInteger(i) || i < 0 || i >= SPOTS.length) return null;
   const basins = [...s.basins], b = basins[i];
@@ -126,7 +138,7 @@ function tapSpot(s, i) {
     return { ...s, note: 'none' };
   }
   basins[i] = null;
-  if (b >= CAP) return { ...s, basins, banked: s.banked + 1, note: 'banked' };
+  if (b >= CAP) return swapFull({ ...s, basins, banked: s.banked + 1, note: 'banked' }, i);
   return { ...s, basins, hand: [...s.hand, b], note: 'lifted' };
 }
 
@@ -177,13 +189,13 @@ function spotScene(s, i) {
   const lvl = b == null ? 0 : b / CAP;
   const basin = b == null ? '' : `<g class="g-rain-basin${b >= CAP ? ' is-full' : ''}"><clipPath id="bw${i}"><path d="M20 46 Q45 66 70 46Z"/></clipPath>`
     + `<rect class="g-waterfill" x="18" y="${n(62 - lvl * 18)}" width="56" height="20" clip-path="url(#bw${i})"/>`
-    + `<path class="g-line" d="M17 46 H73 M20 46 Q45 66 70 46"/></g>`;
+    + `<path class="g-line" d="M17 46 H73 M20 46 Q45 66 70 46"/>${b >= CAP ? '<text class="g-fullmark" x="45" y="40" text-anchor="middle">满</text>' : ''}</g>`;
   const stain = b == null && drip ? `<ellipse class="g-stain" cx="45" cy="63" rx="13" ry="3"/>` : '';
   return scene(90, 70, thatch + stain + basin + drop + land);
 }
 function spotHtml(s, i, t, lang) {
   const b = s.basins[i], drip = s.live && leakingAt(s.sched, i, s.t);
-  return `<button type="button" class="g-rain-spot${drip ? ' is-drip' : ''}${b == null ? '' : ' has-basin'}" data-g="spot" data-i="${i}">`
+  return `<button type="button" class="g-rain-spot${drip ? ' is-drip' : ''}${b == null ? '' : ' has-basin'}${b != null && b >= CAP ? ' is-full' : ''}" data-g="spot" data-i="${i}">`
     + `${spotScene(s, i)}<span class="g-rain-name">${SPOTS[i][lang] ?? SPOTS[i].zh}</span>`
     + `${drip ? `<span class="g-sr">${t.drip}</span>` : ''}</button>`;
 }
