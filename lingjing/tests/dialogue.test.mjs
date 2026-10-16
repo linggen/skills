@@ -12,7 +12,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { resolve } from '../scripts/rules.mjs';
 import { beatsOf, passageFor, playOf, tellOf } from '../scripts/rules/tell.mjs';
-import { advance, atLast, beatKey, choicesUp, current, keepReading, loadReading, logHtml, logLinkHtml, ofPlay, playing, readingFor, showAll, storyHtml, toldSoFar, pacedAt, wholeBeats, wholeOf, withTold } from '../scripts/dialogue.js';
+import { advance, atLast, beatKey, choicesUp, current, fitMode, keepReading, loadReading, logHtml, logLinkHtml, ofPlay, playing, readingFor, showAll, storyHolds, storyHtml, toldSoFar, pacedAt, wholeBeats, wholeOf, withTold } from '../scripts/dialogue.js';
 import { walk } from './prologue.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -99,12 +99,12 @@ test('the last beat brings the choices up — on the stage, its last line faint 
   const beats = [{ text: 'a' }, { name: '马三', text: 'b' }, { text: 'c' }];
   let r = one(beats, 's1');
   assert.equal(choicesUp(r), false);
-  // The quiet controls: 回看 · 慢 中 快 · the count · 「跳过」 (Hanli, 2026-10-14: 「2改跳过」) — never 继续.
-  assert.match(storyHtml(r), /<button class="q skip" data-dlg-all>跳过 <span aria-hidden="true">»<\/span><\/button>/);
-  assert.match(storyHtml(r, { lang: 'en' }), /data-dlg-all>Skip </);
-  assert.doesNotMatch(storyHtml(r), /继续|显示全文/);
+  // The quiet controls: 回看 · 自动 全文 跳过 (Hanli, 2026-10-16, over 慢 中 快 and a 跳过 of its own) · the count — never 继续.
+  assert.match(storyHtml(r), /<span class="seg" role="group" aria-label="读法"><button data-dlg-speed="mid" class="on" aria-pressed="true">自动<\/button><button data-dlg-speed="fast" aria-pressed="false">全文<\/button><button data-dlg-speed="skip" aria-pressed="false">跳过<\/button><\/span>/);
+  assert.match(storyHtml(r, { lang: 'en' }), />Auto<\/button>.*>Whole<\/button>.*>Skip<\/button>/);
+  assert.doesNotMatch(storyHtml(r), /继续|显示全文|data-dlg-all|>慢<|>中<|>快</);
   assert.match(storyHtml(r), /data-dlg-log>回看</);
-  assert.match(storyHtml(r, { speed: 'fast' }), /<button data-dlg-speed="slow" aria-pressed="false">慢<\/button><button data-dlg-speed="mid" aria-pressed="false">中<\/button><button data-dlg-speed="fast" class="on" aria-pressed="true">快<\/button>/);
+  assert.match(storyHtml(r, { speed: 'skip' }), /data-dlg-speed="skip" class="on" aria-pressed="true">跳过</);
   assert.match(storyHtml(r), /class="story" data-dlg-on data-dlg-next data-story="\|s1\|0\|0\|zh"/, 'the whole stage is a tap, keyed by its beat');
   assert.doesNotMatch(storyHtml(r, { acts: '<button data-panel-exit="go">走</button>' }), /data-panel-exit/, 'no choices before the last beat');
   r = advance(advance(r));
@@ -397,16 +397,40 @@ test('the box says the book\'s words, not its reader marks: [词]{注=…}, [句
   assert.equal(passageFor(content, s, { zh: '「太一宫，[赵昂]{注=zhaoang}。」《抱朴子》{典=baopu-jishan}里说' }), '「太一宫，赵昂。」《抱朴子》里说');
 });
 
-test('跳过 stands only where it would skip something — not on a 回\'s last beat, where showAll stops (the crawler, 2026-10-15: 「9 / 9」 under 古三\'s header, a dead 跳过)', () => {
+test('跳过 is always in the control (2026-10-16) — mid-回, on a 回\'s last beat, into the next — and picked, it goes to the end of the passage, on through a 回\'s turn', () => {
   // 今 · 一's last passage, then 古三's: the box at 今 · 一's last beat.
   const items = [{ of: 'choice', id: 'a/go', hui: 'j01', beats: { zh: [{ text: '1' }, { text: '2' }] } }, { of: 'scene', id: 'b', hui: 'h03', beats: { zh: [{ text: '3' }, { text: '4' }] } }];
   let r = withTold(null, items, 'b');
-  assert.match(storyHtml(r), /data-dlg-all/, 'mid-回: something to skip');
-  r = advance(r);
-  assert.equal(showAll(r), r, 'the 回\'s last beat: nothing more to skip before its turn');
-  assert.doesNotMatch(storyHtml(r), /data-dlg-all/, 'so no 跳过 there — the box\'s tap goes on');
-  r = advance(r);
-  assert.match(storyHtml(r), /data-dlg-all/, 'into the next 回: 跳过 again');
+  for (let k = 0; k < 3; k += 1, r = advance(r)) assert.match(storyHtml(r), /data-dlg-speed="skip"/, `beat ${k}: 跳过 there`);
+  r = withTold(null, items, 'b');
+  const s1 = fitMode(r, 'skip');
+  assert.deepEqual([s1.i, s1.j], [0, 1], 'to the 回\'s end first (showAll): its turn comes between, as for a reader');
+  const s2 = fitMode(s1, 'skip');
+  assert.deepEqual([s2.i, s2.j, s2.all], [1, 0, null], 'then on into the next 回');
+  const s3 = fitMode(s2, 'skip');
+  assert.ok(atLast(s3) && playing(s3) && choicesUp(s3), 'its end, the choices up');
+  assert.equal(fitMode(s3, 'skip'), s3, 'at the end it stays');
+  assert.match(logHtml(s3), /1[\s\S]*2[\s\S]*3[\s\S]*4/, 'every passage still told: 回看 holds them');
+  // 自动 leaves the reading where it is; 全文 opens it whole, and 自动 again paces it from the beat in view
+  assert.equal(fitMode(r, 'mid'), r);
+  const w = fitMode(r, 'fast');
+  assert.ok(w.all?.whole);
+  assert.equal(fitMode(w, 'fast'), w);
+  assert.equal(fitMode(w, 'mid').all, null);
+});
+
+test('the passage holds the page until its end (Hanli, 2026-10-16: 「把其他都lock, 玩家读完或跳过才能继续」)', () => {
+  const beats = [{ text: 'a' }, { text: 'b' }, { text: 'c' }];
+  const r = one(beats, 's1');
+  assert.equal(storyHolds(r), true, 'mid-passage: locked');
+  assert.equal(storyHolds(r, { shown: false }), false, 'not on the stage (a board over it, a fight): nothing held');
+  assert.equal(storyHolds(advance(advance(r))), false, 'read to its last beat: live again');
+  assert.equal(storyHolds(fitMode(r, 'skip')), false, 'skipped: live again');
+  assert.equal(storyHolds(advance(advance(advance(r)))), false, 'put away');
+  const w = fitMode(r, 'fast');
+  assert.equal(storyHolds(w, { lastPage: false }), true, '全文 before its last page: still held');
+  assert.equal(storyHolds(w, { lastPage: true }), false, '全文 on its last page: live');
+  assert.equal(storyHolds(null), false);
 });
 
 test('a tap on the story\'s own controls puts an open popover away first — 回看 under the 事 book left the book over the log\'s 合上 (the crawler, 2026-10-15)', async () => {
@@ -415,5 +439,5 @@ test('a tap on the story\'s own controls puts an open popover away first — 回
   const list = src.slice(src.indexOf('const CLICKS = ['), src.indexOf('\n];', src.indexOf('const CLICKS = [')));
   const at = (sel) => list.indexOf(`['${sel}'`);
   assert.ok(at('*') > at('[data-book]') && at('*') > at('[data-wx-clear]'), 'the popovers\' own taps first');
-  for (const sel of ['[data-dlg-log]', '[data-dlg-all]', '[data-dlg-next]', '[data-panel-exit]']) assert.ok(at('*') < at(sel), `then the catch-all, before ${sel}`);
+  for (const sel of ['[data-dlg-log]', '[data-dlg-speed]', '[data-dlg-next]', '[data-panel-exit]']) assert.ok(at('*') < at(sel), `then the catch-all, before ${sel}`);
 });

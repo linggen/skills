@@ -20,8 +20,8 @@ import { joinSentences, linesHtml, paraHtml, screensOf } from './lines.js';
 
 // 跳过 (Hanli, 2026-10-14: 「2改跳过」): the skip reads 跳过 / Skip — never 继续, which is the way on.
 export const DLG_WORDS = {
-  zh: { skip: '跳过', log: '回看', close: '回到这里', logTitle: '回看', logNow: '此景', recap: '前情', before: '上一景', on: '点一下，下一句', held: '停', speed: '读的快慢', speeds: ['慢', '中', '快'], ling: 'Ling', act: (a) => `（${a}）`, voice: ['无声', '有声'], voiceTitle: '评书配音', onward: '接着往下', whole: '全文', pages: ['上一页', '下一页'] },
-  en: { skip: 'Skip', log: 'Look back', close: 'Back to it', logTitle: 'Look back', logNow: 'This scene', recap: 'Before this', before: 'Before this', on: 'Tap for the next line', held: 'Paused', speed: 'Reading pace', speeds: ['Slow', 'Mid', 'Fast'], ling: 'Ling', act: (a) => `(${a}) `, voice: ['Voice off', 'Voice on'], voiceTitle: 'The pingshu voice (Chinese)', onward: 'Read on', whole: 'The whole passage', pages: ['Back', 'Next'] },
+  zh: { skip: '跳过', log: '回看', close: '回到这里', logTitle: '回看', logNow: '此景', recap: '前情', before: '上一景', on: '点一下，下一句', held: '停', speed: '读法', speeds: ['自动', '全文', '跳过'], locked: '读完或跳过', ling: 'Ling', act: (a) => `（${a}）`, voice: ['无声', '有声'], voiceTitle: '评书配音', onward: '接着往下', whole: '全文', pages: ['上一页', '下一页'] },
+  en: { skip: 'Skip', log: 'Look back', close: 'Back to it', logTitle: 'Look back', logNow: 'This scene', recap: 'Before this', before: 'Before this', on: 'Tap for the next line', held: 'Paused', speed: 'How to read', speeds: ['Auto', 'Whole', 'Skip'], locked: 'Read on or skip', ling: 'Ling', act: (a) => `(${a}) `, voice: ['Voice off', 'Voice on'], voiceTitle: 'The pingshu voice (Chinese)', onward: 'Read on', whole: 'The whole passage', pages: ['Back', 'Next'] },
 };
 
 /* The reading as it stands: the play and scene it belongs to, the passages
@@ -170,6 +170,24 @@ export function pacedAt(r, at = null, lang = 'zh') {
   const from = hit ?? beats[0] ?? r.all;
   return { ...r, i: from.i, j: from.j, all: null };
 }
+/* The reading fitted to the way he reads (lines.js speedNow), at every paint before the stage is
+   drawn: 全文 — the rest of the passage as one column (wholeOf); 自动 — by sentence again from the
+   beat in view (`at`, pacedAt); 跳过 — straight to the passage's end and its choices: showAll, and
+   at a 回's last beat with another 回 told after it, on into that one (its 「完」 comes between, as
+   for a reader). Every passage stays drawn and told, in 回看 and 读原著 (2026-10-16). */
+export function fitMode(r, mode, { lang = 'zh', at = null } = {}) {
+  if (!playing(r)) return r;
+  if (mode === 'fast') return r.all?.whole ? r : wholeOf(r, lang);
+  const p = r.all?.whole ? pacedAt(r, at, lang) : r;
+  if (mode !== 'skip' || atLast(p, lang)) return p;
+  const s = showAll(p, lang);
+  return s !== p ? s : advance(p, lang);
+}
+/* Does the passage on the stage hold the rest of the page (Hanli, 2026-10-16: 「读剧情, 可以简单点,
+   把其他都lock, 玩家读完或跳过才能继续」)? While it is shown and not yet at its end — its last beat,
+   and in 全文 its last page (`lastPage`, pager.js). Its own controls and its choices never lock. */
+export const storyHolds = (r, { shown = true, lang = 'zh', lastPage = true } = {}) =>
+  Boolean(shown && playing(r) && !(atLast(r, lang) && (!r.all?.whole || lastPage)));
 /* The column's beats, from where it opened to the beat on show — each with its place among them all (`at`). */
 export function wholeBeats(r, lang = 'zh') {
   if (!playing(r) || !r.all?.whole) return [];
@@ -277,8 +295,8 @@ export const beatKey = (r, lang = 'zh') => (playing(r) ? `${r.run ?? ''}|${r.sce
 
 /* The full stage (Hanli, 2026-10-14, the approved prototypes a–k): the beat's words
    over the picture, coming up a sentence at a time by themselves (lines.js), and
-   the quiet controls under them — 回看 · 慢 中 快 · this 回's count (「上一景」 on the last
-   scene's unplayed beats) · 配音 — and 「跳过」, which is never the way on. At the
+   the quiet controls under them — 回看 · 自动 全文 跳过 (2026-10-16: how to read, kept) · this 回's
+   count (「上一景」 on the last scene's unplayed beats) · 配音. At the
    last beat the scene's choices (`acts`, cards.js panelActsHtml) stand on the stage
    once its words are read, its last line faint above them (`.story.done .ways`).
    The whole stage is a tap: the next sentence now. `speed` the viewer's
@@ -289,19 +307,16 @@ export function storyHtml(r, { lang = 'zh', voice = null, acts = '', herId = nul
   const w = DLG_WORDS[lang] ?? DLG_WORDS.zh, { beat: b } = current(r, lang);
   const last = atLast(r, lang), key = beatKey(r, lang), whole = Boolean(r.all?.whole);
   const choices = last && acts ? acts : '';
-  // 跳过 skips (never past the 回's turn, dialogue.js showAll); at the last beat — or the 回's last,
-  // where showAll stops — there is nothing left to skip, and no button that would do nothing
-  // (the crawler, 2026-10-15: 跳过 at 「9 / 9」 under 古三's header changed nothing).
-  const skip = last || showAll(r, lang) === r ? '' : `<button class="q skip" data-dlg-all>${esc(w.skip)} <span aria-hidden="true">»</span></button>`;
   const body = whole ? wholeHtml(r, { lang, herId, w, choices, faces })
     : `<div class="lines" aria-live="polite">${linesHtml(b, { lang, herId, words: w })}</div>${waysHtml(b, choices, lang)}`;
   const cls = `story${choices ? ' choosing' : ''}${whole ? ' whole' : r.all && last ? ' shown' : ''}`;
   return `<div class="${cls}" data-dlg-on data-dlg-next data-story="${esc(key)}" role="button" tabindex="0" aria-label="${esc(w.on)}">
     ${body}
     <div class="held" aria-hidden="true">${esc(w.held)}</div>
-    <div class="ctrl"><button class="q" data-dlg-log>${esc(w.log)}</button>${speedSeg(speed, w)}${countHtml(r, lang, w)}${whole ? pagerHtml(w) : ''}${voiceBtn(voice, w)}<span class="sp"></span>${skip}</div></div>`;
+    <div class="ctrl"><button class="q" data-dlg-log>${esc(w.log)}</button>${speedSeg(speed, w)}${countHtml(r, lang, w)}${whole ? pagerHtml(w) : ''}${voiceBtn(voice, w)}<span class="sp"></span></div></div>`;
 }
-const speedSeg = (speed, w) => `<span class="seg" role="group" aria-label="${esc(w.speed)}">${['slow', 'mid', 'fast'].map((v, x) => `<button data-dlg-speed="${v}"${v === speed ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}>${esc(w.speeds[x])}</button>`).join('')}</span>`;
+/* 自动 · 全文 · 跳过 (Hanli, 2026-10-16, over 慢 · 中 · 快): one small control, kept for every passage (lines.js). */
+const speedSeg = (speed, w) => `<span class="seg" role="group" aria-label="${esc(w.speed)}">${['mid', 'fast', 'skip'].map((v, x) => `<button data-dlg-speed="${v}"${v === speed ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}>${esc(w.speeds[x])}</button>`).join('')}</span>`;
 /* This 回's count: the beat on show — for a column, the beats it holds (「4–21 / 21」). */
 function countHtml(r, lang, w) {
   const { k, n, before, at } = current(r, lang);

@@ -46,8 +46,8 @@ import { placeArtOf } from './placeart.js';
 import { WINDS } from './rules/weather.mjs';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
-import { advance, atLast, beatKey, choicesUp, current, huiAt, keepReading, leadsIn, loadReading, sceneOfItem, logHtml, noted, ofPlay, pacedAt, playing, readingFor, showAll, sightNow, sightings, storyHtml, wholeBeats, wholeOf, withTold } from './dialogue.js';
-import { createLines, keepSpeed, paceOf, SPEEDS, speedNow, voiceOf, wholeNow } from './lines.js';
+import { advance, atLast, beatKey, choicesUp, current, DLG_WORDS, fitMode, huiAt, keepReading, leadsIn, loadReading, sceneOfItem, logHtml, noted, ofPlay, playing, readingFor, sightNow, sightings, storyHolds, storyHtml, wholeBeats, withTold } from './dialogue.js';
+import { createLines, keepSpeed, paceOf, SPEEDS, speedNow, voiceOf } from './lines.js';
 import { SIGHT_KINDS, artRoom, chatHeard, fitBox, mountChatToggle, paintSight, setAutoFold } from './sight.js';
 import { createPager } from './pager.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
@@ -2320,10 +2320,46 @@ function syncLines() {
   // 跳过 stands on the 回's last beat shown whole, read at once; 快's column is read at once too.
   lines.sync(el, el.dataset.story, { lang: lang(), instant: Boolean(r.all && (r.all.whole || atLast(r, lang()))) });
   pager.sync(el);
+  syncLock();
 }
+/* ── The passage holds the page (Hanli, 2026-10-16: 「读剧情, 可以简单点, 把其他都lock, 玩家读完或跳过才能继续」) ──
+   While a passage is on the stage and not yet at its end (dialogue.js storyHolds), every other way
+   out — the footer's chips and roads, the header's cards, the tray — is dimmed and does nothing but
+   say 「读完或跳过」 under the tap; the story's own controls (回看, 自动 · 全文 · 跳过, the pages) and its
+   choices stay his. Ended or skipped, all of it is live again. Never a dialog, never a gate on the
+   story itself: 跳过 is always in its control. */
+const STORY_LOCKED = '#footRow, #footChips, #headCards, .tray';
+function syncLock() {
+  const on = storyHolds(readingHere(), { shown: Boolean($('dlg')?.querySelector('.story')), lang: lang(), lastPage: pager.last });
+  if (on === document.body.classList.contains('storylock')) return;
+  document.body.classList.toggle('storylock', on);
+  // A popover left open when the passage came on is put away with it.
+  if (on && (view.bookOpen || view.gearOpen || view.roadsOpen || view.shelfOpen || view.wxOpen || view.ledgerOpen)) {
+    queueMicrotask(() => show({ bookOpen: false, gearOpen: false, roadsOpen: false, shelfOpen: false, wxOpen: false, ledgerOpen: false }));
+  }
+}
+let lockHintTimer = null;
+document.addEventListener('click', (e) => {
+  if (!document.body.classList.contains('storylock') || !e.target.closest?.(STORY_LOCKED)) return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  const foot = $('slotFoot');
+  let hint = foot?.querySelector('.lockhint');
+  if (foot && !hint) { hint = document.createElement('div'); hint.className = 'lockhint'; hint.setAttribute('role', 'status'); foot.appendChild(hint); }
+  if (!hint) return;
+  hint.textContent = (DLG_WORDS[lang()] ?? DLG_WORDS.zh).locked;
+  clearTimeout(lockHintTimer);
+  lockHintTimer = setTimeout(() => hint.remove(), 1600);
+}, { capture: true });
 /* 快's pages (pager.js; Hanli, 2026-10-15: 「可以用下面半屏显示吗? 可以让用户翻页.」): the band on the
    stage's lower half, paged from its real height; a page's 亮相 comes on above it. */
-const pager = createPager({ onPage: () => pageSight() });
+// The page he is on is kept beside the reading (per save, this browser), so a reload opens on it (2026-10-16).
+const PAGE_KEY = `lingjing.page.${SCRATCH || 'main'}`;
+const pageStore = {
+  load(key) { try { const p = JSON.parse(localStorage.getItem(PAGE_KEY) ?? 'null'); return p?.key === key ? p.page : null; } catch { return null; } },
+  save(key, page) { try { localStorage.setItem(PAGE_KEY, JSON.stringify({ key, page })); } catch { /* this load only */ } },
+};
+const pager = createPager({ onPage: () => { pageSight(); syncLock(); }, keep: pageStore });
 const pageFaces = () => { const ids = new Set(pager.faces()); return firstFaces().filter((e) => ids.has(e.id)); };
 function pageSight() { if (readingHere()?.all?.whole) paintSight($('sight'), pageFaces(), { src: faceSrc }); }
 /* A page on or back: the last page's 下一页 is 「接着往下」 where the reading goes on (storyTap). */
@@ -2353,14 +2389,16 @@ document.addEventListener('pointerup', (e) => {
   setTimeout(() => { swiped = false; }, 400);
   pageTurn(dx < 0 ? 1 : -1);
 });
-/* The pace is read live at every paint: 快 opens whatever passage comes on the stage whole
-   (dialogue.js wholeOf) — a new one, one tapped to mid-passage, one found on a reload — and 慢 or
-   中 over a column puts it back to its sentences from the beat in view (pacedAt). Before the
-   paint (render), so no beat of it plays, speaks or brings a face on first. */
+/* The way he reads is read live at every paint (dialogue.js fitMode): 全文 opens whatever passage
+   comes on the stage whole — a new one, one tapped to mid-passage, one found on a reload — 自动 over
+   a column puts it back to its sentences from the beat in view, and 跳过 stands it at its end, its
+   choices up. Before the paint (render), so no beat of it plays, speaks or brings a face on first.
+   跳过 moves only the passage on the stage, never one left at another scene. */
 function matchPace() {
-  const r = readingOfPlay();
-  if (!playing(r) || wholeNow() === Boolean(r.all?.whole)) return;
-  const next = wholeNow() ? wholeOf(r, lang()) : pacedAt(r, beatInView(), lang());
+  const r = readingOfPlay(), mode = speedNow();
+  if (!playing(r) || (mode === 'skip' && r !== readingHere())) return;
+  const next = fitMode(r, mode, { lang: lang(), at: beatInView() });
+  if (next === r) return;
   keepReading(SCRATCH, next);
   keep({ reading: next });
 }
@@ -2391,8 +2429,8 @@ function storyTap() {
   if (lines.key && $('dlg')?.querySelector('.story')) lines.tap();
   else nextBeat();
 }
-/* 慢 · 中 · 快 — this viewer's, kept in this browser (lines.js keepSpeed); the paint matches the
-   passage to it (matchPace): 快 whole, 慢 or 中 by sentence from the beat in view. */
+/* 自动 · 全文 · 跳过 — this viewer's, kept in this browser (lines.js keepSpeed) for every passage;
+   the paint fits the passage to it (matchPace, dialogue.js fitMode). */
 function setSpeed(v) { keepSpeed(v); render(); }
 /* Holding the stage down pauses the lines; letting go goes on (and the release is no tap). */
 let holdTimer = null, holding = false;
@@ -2460,11 +2498,6 @@ function voiceBeat(shown) {
 const firstFaces = () => noted(readingHere(), lang()).map((id) => codexNow()?.get?.(id)).filter((e) => e && SIGHT_KINDS.has(e.kind));
 const faceSrc = (f) => worldPath(look.world?.made ? `worlds/${look.world.base}` : look.world?.dir ?? 'worlds/jiuding', f);
 const nextBeat = () => { const r = readingOfPlay(); if (playing(r)) setReading(advance(r, lang())); };
-/* 跳过: the rest of this 回's passage at once — its last beat whole, the choices at its end. */
-function showAllBeats() {
-  const r = readingOfPlay();
-  if (playing(r)) setReading(showAll(r, lang()));
-}
 
 /* 看 — a hotspot on the scene card (cards.js lookHtml): the rules look
    (`look --at`), free, and the finding stands under the card. No chat turn:
@@ -3118,7 +3151,6 @@ const CLICKS = [
   ['[data-replay-later]', (el) => { run(`replay:${el.dataset.replayLater}`, () => replayTap(el.dataset.replayLater, false)); return true; }],
   ['[data-dlg-log]', () => { show({ logOpen: !view.logOpen }); lines.hold(view.logOpen); }],
   ['[data-dlg-logclose]', () => { show({ logOpen: false }); lines.hold(false); }],
-  ['[data-dlg-all]', () => showAllBeats()],
   ['[data-dlg-voice]', () => { setDub(!dubOn()); render(); }],
   ['[data-dlg-speed]', (el) => setSpeed(el.dataset.dlgSpeed)],
   // …but a choice inside the box (its last beat's ways: an errand's 接下, any button there) is that choice's

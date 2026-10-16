@@ -49,8 +49,10 @@ export const pageOf = (starts, u) => {
 
 /* The DOM part: `sync(storyEl)` after every paint — it measures (once per column, per band
    size), keeps the page across a repaint of the same passage, and hides what is not on it.
-   `onPage` hears every change of page (lingjing.js brings that page's 亮相 on above). */
-export function createPager({ onPage = () => {} } = {}) {
+   `onPage` hears every change of page (lingjing.js brings that page's 亮相 on above). `keep` holds
+   the page across a reload (2026-10-16: leaving mid-passage and coming back must open on the page he
+   was on): `load(key)` the page kept for this column's key, else null; `save(key, page)`. */
+export function createPager({ onPage = () => {}, keep = null } = {}) {
   let col = null, key = null, size = '', starts = [], units = [], page = 0, ro = null;
 
   const measure = () => {
@@ -99,6 +101,7 @@ export function createPager({ onPage = () => {} } = {}) {
       p.classList.toggle('pg-cont', on.has(p) && Boolean(firstOn?.el.classList.contains('pg-off')));
     }
     col.scrollTop = 0;
+    if (key) keep?.save?.(key, page);
     // One sentence taller than the band: this page scrolls.
     col.classList.toggle('pg-tall', col.scrollHeight > col.clientHeight + 2);
     const story = col.closest('.story');
@@ -138,7 +141,7 @@ export function createPager({ onPage = () => {} } = {}) {
       if (!c) { if (col) { ro?.disconnect(); col = null; key = null; onPage([]); } return; }
       const k = story.dataset.story ?? '';
       if (c === col && k === key) return;
-      if (k !== key) page = 0;
+      if (k !== key) page = Number.isInteger(keep?.load?.(k)) ? keep.load(k) : 0;
       ro?.disconnect();
       col = c; key = k; size = '';
       ro = typeof ResizeObserver === 'function' ? new ResizeObserver(() => repage()) : null;

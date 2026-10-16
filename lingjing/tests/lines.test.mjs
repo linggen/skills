@@ -8,7 +8,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { END_PAUSE_MS, SPEEDS, WHOLE, createLines, keepSpeed, linesHtml, paceOf, paraHtml, screensOf, sentencesOf, speedNow, voiceOf, wholeNow } from '../scripts/lines.js';
+import { END_PAUSE_MS, READ_MODES, SPEEDS, WHOLE, createLines, keepSpeed, linesHtml, paceOf, paraHtml, screensOf, sentencesOf, speedNow, voiceOf, wholeNow } from '../scripts/lines.js';
 import { DAYPARTS, WEATHER, backdropOf } from '../scripts/atmos.js';
 import { KINDS } from '../scripts/rules/weather.mjs';
 
@@ -39,13 +39,17 @@ test('the pace: ~165 ms a character, never under 2.6 s nor over 11 s, the screen
   assert.equal(WHOLE, 'fast');
   assert.equal(paceOf('短。', { f: SPEEDS.mid }), Math.round(2600 * 0.45), 'the floor scales with the speed: a short sentence 1.2 s at 中');
   assert.ok(paceOf('a'.repeat(60), { lang: 'en' }) < paceOf('一'.repeat(60)), 'English reads by the word');
-  // 慢 中 快 is kept in this browser; storage off, it is 中
+  // 自动 全文 跳过 (2026-10-16, over 慢 中 快) is kept in this browser; storage off, it is 自动 (`mid`)
   const mem = new Map(), store = { getItem: (k) => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, v) };
+  assert.deepEqual(READ_MODES, ['mid', 'fast', 'skip']);
   assert.equal(speedNow(store), 'mid');
-  keepSpeed('slow', store);
-  assert.equal(speedNow(store), 'slow');
+  keepSpeed('skip', store);
+  assert.equal(speedNow(store), 'skip');
   keepSpeed('nonsense', store);
-  assert.equal(speedNow(store), 'slow');
+  keepSpeed('slow', store);
+  assert.equal(speedNow(store), 'skip', '慢 is offered no more');
+  mem.set('lingjing.pace', 'slow');
+  assert.equal(speedNow(store), 'mid', 'a viewer who kept 慢 reads 自动');
   assert.equal(speedNow({ getItem: () => { throw new Error('denied'); } }), 'mid');
   // 快 is kept like the others: every later passage opens whole until a speed is picked again
   assert.equal(wholeNow(store), false);
@@ -165,7 +169,7 @@ test('快 on the page: opened before the paint, held for his tap, the voice stop
   const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
   assert.match(src, /matchPace\(\);\n {2}beatPiece\(slots\);/, 'the passage matches the pace before anything of the beat plays');
   // read live at every paint, both ways (2026-10-15, his: 「由快切回中时, 仍然是全屏」)
-  assert.match(src, /if \(!playing\(r\) \|\| wholeNow\(\) === Boolean\(r\.all\?\.whole\)\) return;\n {2}const next = wholeNow\(\) \? wholeOf\(r, lang\(\)\) : pacedAt\(r, beatInView\(\), lang\(\)\);/);
+  assert.match(src, /const next = fitMode\(r, mode, \{ lang: lang\(\), at: beatInView\(\) \}\);/, 'fitted to the way he reads (dialogue.js fitMode), 自动 from the beat in view');
   assert.match(src, /function setSpeed\(v\) \{ keepSpeed\(v\); render\(\); \}/, 'a speed tap only keeps the choice; the paint does the rest');
   assert.match(src, /if \(r\.all\?\.whole && \(!tapped \|\|/, 'a column never goes on by itself');
   assert.match(src, /\['\[data-dlg-onward\]', \(\) => storyTap\(\)\]/);

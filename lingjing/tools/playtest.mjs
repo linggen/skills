@@ -95,7 +95,8 @@ export function choose(snap, ctx) {
   if (snap.boxOn) {
     const inBox = exits.filter((t) => t.where === 'box');
     if (inBox.length) return { kind: 'way', tap: ctx.pick(inBox, snap), why: 'a way inside the box' };
-    const skip = first((t) => isA(t, 'dlg-all'));
+    // 跳过 is a way to read now (2026-10-16, 自动 · 全文 · 跳过): picked once, every passage after goes to its end.
+    const skip = first((t) => t.data['dlg-speed'] === 'skip' && !/\bon\b/.test(t.cls));
     if (skip) return { kind: 'skip', tap: skip, why: '跳过' };
     const next = first((t) => isA(t, 'dlg-next'));
     if (next) return { kind: 'next', tap: next, why: 'the next sentence' };

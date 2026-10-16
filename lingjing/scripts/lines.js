@@ -54,8 +54,13 @@ export function screensOf(text, lang = 'zh') {
    2026-10-15, his: 「中可以用现在快的速度」 · 「快的速度, 不要一句一句显示, 直接都显示出来」 —
    慢 is the old 中 (×1), 中 the old 快 (×0.45: a short sentence 1.2 s), and 快 is no pace
    at all: the rest of the passage at once, one column to read (`WHOLE`, dialogue.js
-   wholeOf). Its factor only times a beat caught before the column opens. */
-export const SPEEDS = { slow: 1, mid: 0.45, fast: 0.3 };
+   wholeOf). Its factor only times a beat caught before the column opens.
+   2026-10-16, his: 慢 · 中 · 快 give way to three ways to read — 自动 (`mid`, today's 中),
+   全文 (`fast`, the column) and 跳过 (`skip`: every passage straight to its end and its
+   choices, dialogue.js fitMode — 「如果读者先读了小说的话, 直接跳过更合理」). 慢 is offered no
+   more: a viewer who kept it reads 自动. */
+export const SPEEDS = { slow: 1, mid: 0.45, fast: 0.3, skip: 0.45 };
+export const READ_MODES = ['mid', 'fast', 'skip'];
 export const WHOLE = 'fast';
 export const END_PAUSE_MS = 1800;
 export function paceOf(sentence, { f = 1, last = false, lang = 'zh' } = {}) {
@@ -63,13 +68,14 @@ export function paceOf(sentence, { f = 1, last = false, lang = 'zh' } = {}) {
   return Math.round((Math.min(11000, Math.max(2600, 900 + n * 165)) + (last ? END_PAUSE_MS : 0)) * f);
 }
 
-/* 慢 · 中 · 快, this viewer's own, kept in this browser (it may refuse); 中 for a new viewer. */
+/* 自动 · 全文 · 跳过, this viewer's own, kept in this browser (it may refuse) for every passage
+   until changed; 自动 for a new viewer, and for one who kept 慢. */
 const SPEED_KEY = 'lingjing.pace';
 export function speedNow(store = globalThis.localStorage) {
-  try { const v = store?.getItem(SPEED_KEY); return Object.hasOwn(SPEEDS, v) ? v : 'mid'; } catch { return 'mid'; }
+  try { const v = store?.getItem(SPEED_KEY); return READ_MODES.includes(v) ? v : 'mid'; } catch { return 'mid'; }
 }
 export function keepSpeed(v, store = globalThis.localStorage) {
-  if (!Object.hasOwn(SPEEDS, v)) return;
+  if (!READ_MODES.includes(v)) return;
   try { store?.setItem(SPEED_KEY, v); } catch { /* this load only */ }
 }
 /* 快: every passage opens whole. */
