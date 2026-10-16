@@ -16,6 +16,7 @@ Updated 2026-10-16.
 
 ## Done lately
 
+- 10-16 — 开府 gains CFO's 开仓 · 在 CFO 的投资里添一支股票 (`7dd1b884`, `cfo-first-stock`): stamped when a holding is saved or when CFO loads with one held, only the fact; opens after 开天眼, before 借天火. Live: stamped on load, seen in a scratch save's 开府 list.
 - 10-16 — Pacing + economy (`9c42af47`, `9fbba840`): `worlds/jiuding/balance.json` holds every number (layers, pay, conversion, the day's fight bands, cooldowns); `tools/balance.mjs` plays light/typical/heavy day by day (typical ≈5–7 days a 回, 古六 ≈8; heavy ≈3–5; light ≈8–15); `--fit` sets 练气 [0,210,390,410,430,480,500,740,760,780]; 阶段任务 in every 回 past 古三 (rules/gates.mjs); story floor gone; pool + rerun wins 3 full / 3 half / then 灵石; rerun open through 00-zhuji; state v10.
 - 10-16 — 斗法 polish (`73222e12`, `2598747d`): ranks fit the field, hints on the seam, phone head one line, 攻/血 seals, end seal shows whose turn; a played card flies, the beast's 功法 shown, 气血 falls on the hit, 杀招 wind-up on the plate, the beaten plate goes to ink. Live at 1440 and 390.
 - 10-16 — the other 22 后山崖顶 finds redrawn the same way (`be45ae26`), 猴儿酒 re-rolled; all 36 finds and the six beasts now in the house 水墨淡彩.
