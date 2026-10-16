@@ -10,6 +10,7 @@ Updated 2026-10-16.
 
 | What | Where | Started |
 |---|---|---|
+| 第一回 set pieces 青丘之主 + 腾云 (00-yinyue) — WIP tag `wip/2026-10-16-yaowang-setpiece` (`35f33337`), NOT on main. Done: `{景=yaowang}`/`{景=tengyun}` marks, setpieces/yaowang.js (vision: moon, 9 tails from one painted tail, 万妖, peak cracks, flowers → ink-run cut to the cave girl) and tengyun.js (cloud lifts, pops, rings of lit grass), runner per-beat `hold` + `lang`, 12 FLUX paintings cut (tools/paint-yaowang.py, kept seeds recorded), tests/setpiece-yaowang green (beat, 跳过, 全文, reduced-motion still). Left: look at it live with the paintings (setpiece.html?name=yaowang, then 9527 scratch save at 00-yinyue, 1440 + 390, each mode), tune layout/timing, CREDITS.md entry, full suite + check.sh, rebase onto main, push, install. Next: open setpiece.html?name=yaowang&raf=timeout from the tag and seek frames | `scripts/setpieces/yaowang.js` | 10-16 |
 | Small games — doc/games.md for Hanli's design check; mechanic changes wait on it (UI polish and stuck fixes go on) | `doc/games.md` | 10-16 |
 
 ## Done lately
