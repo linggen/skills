@@ -118,6 +118,9 @@ test('a roaming beast (Hanli: 「小队是人数跟剧情走」): the 回\'s par
   // alone, or a story fight (its exit weighs the foe with its party already): the beast as written
   const alone = fightSetup(content, { ...s, chapter: '00-waimen', scene: 'wm-fushi' }, { ...chai, hp: 2 }, NOW, 'haunt:chai').foe;
   assert.deepEqual([alone.hp, alone.power, alone.deck.length], [2, undefined, chai.deck.length]);
+  // `roaming.extra`: that many of its own cards again, alone too (领胡, 鬿雀 — fought to the end, not outlasted)
+  const slow = fightSetup(content, { ...s, chapter: '00-waimen', scene: 'wm-fushi' }, { ...chai, hp: 2, roaming: { extra: 4 } }, NOW, 'haunt:chai').foe;
+  assert.deepEqual([slow.hp, slow.deck.length, slow.deck.slice(-4)], [2, chai.deck.length + 4, chai.deck.slice(0, 4)]);
   assert.equal(fightSetup(content, s, { ...chai, hp: 2 }, NOW, 'scene:09-lingcao').foe.hp, 2);
 });
 

@@ -235,13 +235,15 @@ export function partyFor(content, state, creature, game = null) {
    (party.json `roaming`): its 气血 times 1 + `hp` a member, its blows + `power` a member — so a
    pool stays losable with 孙二狗's guard and 阿禾's heals; a pool entry's own `roaming` stands over it
    (a beast the party finds easier). A story fight's foe is weighed with its
-   party already (the exit's `foe`), so it never grows. Returns the foe's { hp, power } fields. */
+   party already (the exit's `foe`), so it never grows. A pool entry's `roaming.extra` deals that
+   many of its own cards again even when he is alone: a slow, hard beast (领胡, 鬿雀) fights to the
+   end instead of running dry. Returns the foe's { hp, power, deck } fields. */
 export function beastToParty(content, creature, party, game = null) {
   const r = content.party?.roaming ? { ...content.party.roaming, ...(creature.roaming ?? {}) } : null, n = party.length;
   const hp = creature.hp ?? null, deck = creature.deck ?? [];
-  if (!r || !n || !String(game ?? '').startsWith('haunt:')) return hp ? { hp } : {};
+  if (!r || !(n || r.extra) || !String(game ?? '').startsWith('haunt:')) return hp ? { hp } : {};
   const grown = Math.round((hp ?? 1) * (1 + (r.hp ?? 0) * n) * 100) / 100;
-  const power = (r.power ?? 0) * n, more = deck.length ? (r.cards ?? 0) * n : 0;
+  const power = (r.power ?? 0) * n, more = deck.length ? (r.extra ?? 0) + (r.cards ?? 0) * n : 0;
   return { hp: grown, ...(power ? { power } : {}), ...(more ? { deck: [...deck, ...Array.from({ length: more }, (_, i) => deck[i % deck.length])] } : {}) };
 }
 /* The 卷 he stands in: his chapter's (chapter.json `juan`), 1 when it says none. */
