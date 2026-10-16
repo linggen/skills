@@ -247,6 +247,9 @@
 @keyframes g-teach { 50% { opacity: .35; transform: scale(1.12); } }
 @media (prefers-reduced-motion: reduce) { .g-ft-cave .g-teach-ring { animation: none; } }
 .ftong.puzzle .ftpuzzle { width: 100%; }
+/* The 割绳子 module's newer tools (rope-art.js): 弹竹, 双印 and the thread between, 乌鸦. */
+.g-scene .g-rope-thread { fill: none; stroke: var(--seal); stroke-width: 1.2; stroke-dasharray: 2 6; opacity: .45; }
+.g-scene .g-rope-crow, .g-scene .g-rope-seal { pointer-events: none; }
 .g-pair { display: flex; gap: 10px; width: 100%; }
 .g-pair .g-btn { flex: 1; min-width: 0; }
 /* 算账 */

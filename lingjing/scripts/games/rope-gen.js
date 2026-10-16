@@ -69,6 +69,8 @@ export function playPlan(level, plan, { late = 0, limit = LIMIT_MS } = {}) {
     const p = w.bread.position;
     path.push([p.x, p.y]);
     if (ev.broke && i > 0) broke = true;
+    if (ev.stolen) return { path, end: 'stolen', broke: true, done: i >= plan.length };
+    if (ev.through) path.through = (path.through ?? 0) + 1;
     still = calm(w) ? still + STEP : 0;
     if (outOf(w)) return { path, end: 'out', broke, done: i >= plan.length };
     if (i >= plan.length) {
@@ -84,7 +86,7 @@ export function playPlan(level, plan, { late = 0, limit = LIMIT_MS } = {}) {
 export function crossing(path) {
   for (let k = Math.max(1, path.last ?? path.first ?? 1); k < path.length; k++) {
     const [x0, y0] = path[k - 1], [x1, y1] = path[k];
-    if (y0 < MOUTH_Y && y1 >= MOUTH_Y && y1 > y0) return x0 + ((x1 - x0) * (MOUTH_Y - y0)) / (y1 - y0);
+    if (y0 < MOUTH_Y && y1 >= MOUTH_Y && y1 > y0 && Math.hypot(x1 - x0, y1 - y0) < 40) return x0 + ((x1 - x0) * (MOUTH_Y - y0)) / (y1 - y0);
   }
   return null;
 }
@@ -121,16 +123,16 @@ function anchors(u, n, x0) {
 
 /** A layout for the day: `els` unlocked, `must` (the new one) always in it, `tier` 0 … 4. */
 export function compose(u, { tier = 0, els = [], must = null } = {}) {
-  const has = (e) => e === must || (els.includes(e) && chance(u, must ? 0.35 : 0.55));
+  const has = (e) => e === must || (els.includes(e) && chance(u, must ? 0.35 : 0.5));
   // Once the puff is known it is in most layouts: a puff while the thing hangs is the usual extra
   // move a 灵光 off the plain path asks for (earn the stars, 2026-10-16).
-  const bubble = has('bubble'), gust = !bubble && (must === 'gust' || (els.includes('gust') && must !== 'thorns' && must !== 'regrow' ? chance(u, 0.8) : has('gust'))), regrow = has('regrow'), thorns = has('thorns');
+  const bubble = has('bubble'), gust = !bubble && (must === 'gust' || (els.includes('gust') && !must ? chance(u, 0.8) : has('gust'))), regrow = has('regrow'), thorns = has('thorns');
   // The first feed's one vine hangs it high: room for three 灵光 on the way down to the 饭桶.
   const x0 = round(between(u, 90, W - 90)), y0 = round(tier === 0 && !must ? between(u, 84, 112) : between(u, 118, 176));
   // A bubble wants two vines: it hangs off to the side, and one cut swings the thing into it.
   // With no puff yet known, a third vine is what makes a second way (an order change) for a 灵光.
   const third = tier >= 2 ? chance(u, 0.6) : tier === 1 && !els.length ? chance(u, 0.7) : false;
-  const n = must ? (regrow || thorns || bubble ? 2 : 1) : Math.max(bubble ? 2 : 1, Math.min(3, 1 + (tier >= 1 ? 1 : 0) + (third ? 1 : 0) + (regrow && tier < 1 ? 1 : 0)));
+  const n = must ? (regrow || thorns || bubble || must === 'crow' ? 2 : 1) : Math.max(bubble ? 2 : 1, Math.min(3, 1 + (tier >= 1 ? 1 : 0) + (third ? 1 : 0) + (regrow && tier < 1 ? 1 : 0)));
   const level = { bread: [x0, y0], vines: anchors(u, Math.max(n, regrow ? 2 : 1), x0) };
   if (regrow) level.vines[Math.floor(u() * level.vines.length)].regrow = round(between(u, 1800, 2600));
   if (gust && must !== 'gust' && chance(u, 0.5)) {
@@ -164,7 +166,24 @@ export function compose(u, { tier = 0, els = [], must = null } = {}) {
       level.gust = { at: [right ? 24 : W - 24, 100], to: [right ? 1 : -1, 0], band: 84 };
     }
   }
+  addTools(u, level, { must, has, x0, y0 });
   return { level, thorns };
+}
+
+/* The module's newer tools (2026-10-16: 弹竹 · 双印 · 乌鸦), each laid where the thing will meet it. */
+function addTools(u, level, { must, has, x0, y0 }) {
+  const under = () => level.vines[Math.floor(u() * level.vines.length)].at[0];
+  if (has('spring') && (must === 'spring' || !level.stones?.length)) {
+    const a = round(between(u, 14, 30)) * (chance(u, 0.5) ? 1 : -1);
+    level.springs = [{ x: Math.max(70, Math.min(W - 70, under() + round(between(u, -12, 12)))), y: round(between(u, 250, 300)), w: round(between(u, 96, 128)), a }];
+  }
+  if (has('seals') && !level.bubbles) {
+    const ax = Math.max(50, Math.min(W - 50, under() + round(between(u, -6, 6)))), ay = round(between(u, y0 + 70, y0 + 120));
+    let bx = round(between(u, 50, W - 50));
+    for (let k = 0; k < 8 && Math.abs(bx - ax) < 110; k++) bx = round(between(u, 50, W - 50));
+    if (Math.abs(bx - ax) >= 110) level.seals = [{ a: [ax, Math.min(ay, 300)], b: [bx, round(between(u, 90, 170))] }];
+  }
+  if (has('crow') && level.vines.length > 1) level.crows = [{ v: Math.floor(u() * level.vines.length), ms: round(between(u, 4200, 6200)) }];
 }
 
 /* The plans worth trying for a layout: the orders of the cuts, the puff and the pop where they fit. */
@@ -218,6 +237,7 @@ function dense(pts, gap = 4) {
     out.push(p);
     if (!q) break;
     const d = Math.hypot(q[0] - p[0], q[1] - p[1]);
+    if (d > 40) continue; // a jump through the twin seals: nothing between
     for (let j = 1; j < d / gap; j++) out.push([p[0] + ((q[0] - p[0]) * j * gap) / d, p[1] + ((q[1] - p[1]) * j * gap) / d]);
   }
   return out;
@@ -277,6 +297,11 @@ export function prove(level, thorns, runs, main, mate, u, opts) {
   const fedMain = fedAt(main.path, mouth);
   if (fedMain < 0) return { why: 'no-feed' };
   if (fedMain < (main.path.last ?? 0)) return { why: 'in-before-the-last-move' };
+  // The day's new tool is met on the way, not set dressing: the bamboo is bounced off, the seals are
+  // gone through, the crow would take the thing if its vine were left.
+  if (opts.must === 'spring' && !touches(main.path, { ...level.springs[0], h: 16 }, 0, fedMain + 1)) return { why: 'spring-unused' };
+  if (opts.must === 'seals' && !main.path.through) return { why: 'seals-unused' };
+  if (opts.must === 'crow' && !runs.some((r) => r.end === 'stolen')) return { why: 'crow-idle' };
   const others = runs.filter((r) => r !== main);
   const wins = (r) => !r.broke && fedAt(r.path, mouth) >= 0;
   const missing = others.filter((r) => !wins(r));

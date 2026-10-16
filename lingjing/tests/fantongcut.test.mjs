@@ -130,7 +130,7 @@ test('the elements come one a day: the day\'s first puzzle features the new one 
       s = r.state;
     }
   }
-  assert.deepEqual(seen, [[1, null, 0], [1, null, 0], [2, 'gust', 1], [2, null, 1], [3, 'bubble', 2], [3, null, 2], [4, 'thorns', 3], [4, null, 3], [5, 'regrow', 4], [5, null, 4], [6, null, 4], [6, null, 4]]);
+  assert.deepEqual(seen, [[1, null, 0], [1, null, 0], [2, 'gust', 1], [2, null, 1], [3, 'bubble', 2], [3, null, 2], [4, 'thorns', 3], [4, null, 3], [5, 'regrow', 4], [5, null, 4], [6, 'spring', 5], [6, null, 5]]);
   assert.equal(s.fantong.stars, 24);
   assert.equal(s.fantong.last.stars, 2);
   assert.equal(s.fantong.days, 6);
@@ -182,4 +182,19 @@ test('a quick swipe cuts the first vine it crosses; a long deliberate one may cu
   assert.equal(crosses(st, 10 + SECOND_PX + 2, 0, vine(1), 10 + SECOND_MS + 20), true, 'a long stroke goes on');
   st = stroke(5, 5, vine(0), 0);
   assert.equal(crosses(st, 6, 6, vine(1), 500), false, 'held still: nothing');
+});
+
+/* ── the module's newer tools (2026-10-16): 弹竹 · 双印 · 乌鸦 ── */
+
+test('the new tools: each one\'s first day features it, met on the way (bounced off, gone through, a crow that would take it), and the bot wins', () => {
+  const ALL = ['gust', 'bubble', 'thorns', 'regrow', 'spring', 'seals', 'crow'];
+  for (const must of ['spring', 'seals', 'crow']) {
+    for (let k = 0; k < 4; k++) {
+      const m = generate(`tool${k}|${must}`, { tier: 2, els: ALL.slice(0, ALL.indexOf(must) + 1), must });
+      assert.ok(!m.fallback, `${must} ${k}`);
+      assert.ok({ spring: m.level.springs, seals: m.level.seals, crow: m.level.crows }[must]?.length, `${must} ${k}: in the level`);
+      const r = playOnce(cut, bot, { seed: `tool${k}`, deal: { level: m.level, plan: m.plan }, limit: 60000 });
+      assert.ok(r.won, `${must} ${k}: won`);
+    }
+  }
 });

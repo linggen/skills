@@ -10,6 +10,13 @@
 //   gust    {at, to, band?, power?}  a puff from `at` blowing `to` across a band of ±band px
 //   bubbles [{at, r?}]      灵气泡: the thing that touches one is held in it and lifted; a tap pops it
 //   thorns  [{x, y, w, h, a}]        荆棘: the thing touching them breaks
+//   springs [{x, y, w, a}]  弹竹: a springy bamboo the thing bounces off, harder than it came
+//   seals   [{a: [x, y], b: [x, y], r?}]  双印: a pair of 掐诀 seals — the thing (free of its vines)
+//                           that enters one comes out of the other, moving as it was
+//   crows   [{v, ms}]       乌鸦: walks down vine `v` from its anchor and reaches the thing after `ms`
+//                           — it takes the thing, unless that vine is cut first (the crow flies off)
+// Each element is the same three things for every game: its data here, its physics here, and a
+// game's own picture and teaching line (the ELEMENTS table below names them once).
 // The world keeps the field names the games' frame painters read: `bread` (the thing), `vines`,
 // `wall`, `done`, `acc`.
 import { Matter } from './physics.js';
@@ -29,6 +36,18 @@ export const AIR_FREE = 0.01;
 export const AIR_BUBBLE = 0.06;
 const LIFT = 1.25, BUBBLE_GUST = 0.6; // a bubble at the roof drifts along it, never off the board
 export { GUST_MS, GUST_BAND };
+
+/** The elements a level may declare, and what a player is taught the first time each appears. */
+export const ELEMENTS = {
+  gust: { zh: '风', en: 'Draught' },
+  bubble: { zh: '灵气泡', en: 'Qi bubble' },
+  thorns: { zh: '荆棘', en: 'Thorns' },
+  regrow: { zh: '会再长的藤', en: 'Regrowing vine' },
+  spring: { zh: '弹竹', en: 'Springy bamboo' },
+  seals: { zh: '双印', en: 'Twin seals' },
+  crow: { zh: '乌鸦', en: 'Crow' },
+};
+const SPRING_BOUNCE = 1.15, SEAL_R = 22, SEAL_COOL = 500;
 
 const NO_HIT = { group: -1, category: 0x0002, mask: 0 };
 export const dist = (p, [x, y]) => Math.hypot(p.x - x, p.y - y);
@@ -57,6 +76,7 @@ function vineOf(v, bread) {
 
 const slab = (s, opts) => Bodies.rectangle(s.x, s.y, s.w, s.h, { isStatic: true, angle: ((s.a ?? 0) * Math.PI) / 180, ...opts });
 const stoneOf = (s) => slab(s, { restitution: s.bounce ?? 0.3, friction: 0.02, label: 'stone' });
+const springOf = (s) => slab({ ...s, h: s.h ?? 12 }, { restitution: SPRING_BOUNCE, friction: 0, label: 'spring' });
 
 /** A level's world, hung and settled off-stage (the thing is shown at rest). */
 export function buildWorld(level) {
@@ -64,7 +84,7 @@ export function buildWorld(level) {
   const [bx, by] = level.bread;
   const bread = Bodies.circle(bx, by, level.r ?? BREAD_R, { restitution: 0.3, friction: 0.04, frictionAir: AIR_HUNG, density: 0.002, label: 'bread' });
   const vines = (level.vines ?? []).map((v) => vineOf(v, bread));
-  const stones = (level.stones ?? []).map(stoneOf);
+  const stones = [...(level.stones ?? []).map(stoneOf), ...(level.springs ?? []).map(springOf)];
   const floor = Bodies.rectangle(W / 2, FLOOR + 40, W * 3, 80, { isStatic: true, label: 'floor' });
   // A roof only where a bubble may lift the thing to it (喂饼's own levels never had one).
   const roof = level.bubbles?.length ? [Bodies.rectangle(W / 2, ROOF - 40, W * 3, 80, { isStatic: true, label: 'roof' })] : [];
@@ -75,6 +95,8 @@ export function buildWorld(level) {
     engine, bread, vines, acc: 0, rest: 0, gust: 0, clock: 0,
     bubbles: (level.bubbles ?? []).map((b) => ({ at: [...b.at], r: b.r ?? BUBBLE_R, state: 'free' })),
     thorns: (level.thorns ?? []).map((t) => slab(t, { isSensor: true, label: 'thorns' })),
+    seals: (level.seals ?? []).map((p) => ({ a: [...p.a], b: [...p.b], r: p.r ?? SEAL_R, until: 0 })),
+    crows: (level.crows ?? []).map((c) => ({ v: c.v, ms: c.ms, at: 0, state: 'walking' })),
   };
 }
 
@@ -153,6 +175,40 @@ function regrow(w) {
   }
 }
 
+/* 双印: a free thing entering one seal of a pair comes out of the other, moving as it was. */
+function seals(w) {
+  const b = w.bread;
+  if (w.vines.some((v) => v.cut == null)) return null;
+  for (const pair of w.seals) {
+    if (w.clock < pair.until) continue;
+    for (const [from, to] of [[pair.a, pair.b], [pair.b, pair.a]]) {
+      if (dist(b.position, from) > pair.r) continue;
+      Body.setPosition(b, { x: to[0], y: to[1] });
+      pair.until = w.clock + SEAL_COOL;
+      return { from, to };
+    }
+  }
+  return null;
+}
+
+/* 乌鸦: each step a crow walks on down its vine; a cut vine sends it off; reaching the thing, it takes it. */
+function crows(w) {
+  let stolen = false;
+  for (const c of w.crows) {
+    if (c.state !== 'walking') continue;
+    if (w.vines[c.v]?.cut != null) { c.state = 'flown'; continue; }
+    c.at = Math.min(1, c.at + STEP_MS / c.ms);
+    if (c.at >= 1) { c.state = 'took'; stolen = true; }
+  }
+  return stolen;
+}
+/** Where a crow stands: the point `at` (0 anchor … 1 the thing) along its vine. */
+export function crowAt(w, c) {
+  const v = w.vines[c.v], pts = [{ x: v.at[0], y: v.at[1] }, ...v.links.map((l) => l.position), w.bread.position];
+  const f = c.at * (pts.length - 1), i = Math.min(pts.length - 2, Math.floor(f)), k = f - i;
+  return { x: pts[i].x + (pts[i + 1].x - pts[i].x) * k, y: pts[i].y + (pts[i + 1].y - pts[i].y) * k };
+}
+
 /** One fixed step. Answers what happened: { broke } when the thing touched thorns, { caught } bubbles. */
 export function stepWorld(w, level) {
   Engine.update(w.engine, STEP_MS);
@@ -162,7 +218,9 @@ export function stepWorld(w, level) {
   const caught = w.bubbles.length ? bubbles(w) : [];
   if (w.vines.some((v) => v.regrow)) regrow(w);
   const broke = w.thorns.length > 0 && Query.collides(w.bread, w.thorns).length > 0;
-  return { broke, caught };
+  const through = w.seals.length ? seals(w) : null;
+  const stolen = w.crows.length ? crows(w) : false;
+  return { broke, caught, through, stolen };
 }
 
 /** Still enough to think: slow, and not turning. */

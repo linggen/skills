@@ -88,13 +88,19 @@
       { "day": 2, "el": "gust" },
       { "day": 3, "el": "bubble" },
       { "day": 4, "el": "thorns" },
-      { "day": 5, "el": "regrow" }
+      { "day": 5, "el": "regrow" },
+      { "day": 6, "el": "spring" },
+      { "day": 7, "el": "seals" },
+      { "day": 8, "el": "crow" }
     ],
     "teach": {
       "gust": { "zh": "灶口有风：东西落上石台，点一下那团风。", "en": "A draught at the stove mouth: once it rests on the ledge, tap the puff." },
       "bubble": { "zh": "灵气泡：东西碰到它就飘起来，点一下泡就破。", "en": "A qi bubble: what touches it floats up. Tap it to pop." },
       "thorns": { "zh": "荆棘：一碰就碎，换个先后，绕开它。", "en": "Thorns: one touch and it breaks. Cut in another order, around them." },
-      "regrow": { "zh": "这根藤断了还会再长，够得着就又缠上。", "en": "This vine grows back, and takes hold again if it can reach." }
+      "regrow": { "zh": "这根藤断了还会再长，够得着就又缠上。", "en": "This vine grows back, and takes hold again if it can reach." },
+      "spring": { "zh": "弹竹：落上去，弹得比来时还高。", "en": "Springy bamboo: whatever lands on it bounces higher than it came." },
+      "seals": { "zh": "双印：从这个印进去，从那个印出来。", "en": "Twin seals: in at one, out at the other." },
+      "crow": { "zh": "乌鸦顺着藤往下爬——先断它那根。", "en": "A crow is walking down a vine — cut that one first." }
     }
   },
   "words": {

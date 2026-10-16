@@ -13,6 +13,7 @@ import { btn, n, scene, splash, still } from './ink.js';
 import { mountPure } from './mount.js';
 import { blowGust, buildWorld, cutVine, dist, outOf, popBubble, stepWorld, calm as hangsStill, BREAD_R, FLOOR, GUST_BAND, GUST_MS, H, STEP_MS, W } from './rope.js';
 import { generate, MOUTH_R, STAR_R } from './rope-gen.js';
+import { crowsPicture, sealsPicture, springPicture, toolMark } from './rope-art.js';
 
 const { Body } = Matter;
 
@@ -37,7 +38,7 @@ const T = {
   zh: {
     stars: '灵光', retry: '重来', skip: '直接喂', sample: '柴火棍',
     say: '划断藤，把{name}送进饭桶嘴里。',
-    miss: ['掉地上了。再来。', '没进嘴。再来。', '差一点。再来。'], broke: '碰上荆棘，碎了。再来。',
+    miss: ['掉地上了。再来。', '没进嘴。再来。', '差一点。再来。'], broke: '碰上荆棘，碎了。再来。', stolen: '乌鸦叼走了。再来——先断它那根藤。',
     eat: ['「咕咚」——饭桶一口吞了。', '饭桶「嗝」了一声。', '盖子一跳：吃进去了。'],
     stuck: '实在送不进去，就直接喂吧。',
     done: '吃进去了。', skipped: '直接喂了进去。',
@@ -45,7 +46,7 @@ const T = {
   en: {
     stars: 'Sparks', retry: 'Again', skip: 'Just feed it', sample: 'firewood',
     say: 'Cut the vines and bring the {name} down into the Rice Bucket\'s mouth.',
-    miss: ['On the floor. Again.', 'Missed the mouth. Again.', 'So close. Again.'], broke: 'It touched the thorns and broke. Again.',
+    miss: ['On the floor. Again.', 'Missed the mouth. Again.', 'So close. Again.'], broke: 'It touched the thorns and broke. Again.', stolen: 'The crow took it. Again — cut its vine first.',
     eat: ['*Gulp* — the Rice Bucket swallows it whole.', 'The Rice Bucket goes *burp*.', 'The lid jumps: in it goes.'],
     stuck: 'If it will not go in, feed it by hand.',
     done: 'In it went.', skipped: 'Fed by hand.',
@@ -114,6 +115,7 @@ function judge(s, ev) {
     if (!s.caught[i] && dist(p, st) < STAR_R + BREAD_R) { s = { ...s, caught: s.caught.map((c, j) => c || j === i), note: 'star', starAt: s.clock, starI: i }; }
   });
   if (ev.broke) return miss(s, 'broke');
+  if (ev.stolen) return miss(s, 'stolen');
   if (s.moves > 0 && dist(p, L.mouth) < MOUTH_R + BREAD_R * 0.4) return eat(s);
   const free = w.vines.every((v) => v.cut != null) && !anyHeld(w);
   w.rest = free && hangsStill(w) ? w.rest + STEP_MS : 0;
@@ -298,8 +300,9 @@ function playScene(s) {
   const fx = s.phase === 'miss' && !calm(s) ? splash(b.position.x, Math.min(b.position.y, FLOOR - 4), s.t, { r: 11 }) : '';
   const burp = '';
   const teachRing = s.must && s.must !== 'gust' ? teachMark(s) : '';
-  return scene(W, H, ground() + gustPicture(s) + (L.stones ?? []).map(stonePicture).join('') + (L.thorns ?? []).map(thornPicture).join('')
-    + potPicture(s) + starsPicture(s) + w.vines.map((v, i) => vinePicture(v, i, w, live, s.phase)).join('')
+  return scene(W, H, ground() + gustPicture(s) + (L.stones ?? []).map(stonePicture).join('') + (L.springs ?? []).map((sp) => springPicture(sp)).join('')
+    + (L.thorns ?? []).map(thornPicture).join('') + sealsPicture(w, L)
+    + potPicture(s) + starsPicture(s) + w.vines.map((v, i) => vinePicture(v, i, w, live, s.phase)).join('') + crowsPicture(w)
     + w.bubbles.map((_, i) => bubblePicture(w, i)).join('') + item + flecks(s) + fx + burp + teachRing
     // The vines' cut lines lie over everything: a tap on a vine above a bubble cuts the vine, never pops it.
     + w.vines.map((v, i) => vinePicture(v, i, w, live, s.phase, 'hits')).join(''), 'g-bread-cave g-ft-cave')
@@ -312,12 +315,14 @@ function teachMark(s) {
   const L = s.level, bub = s.swing.bubbles[0];
   const at = s.must === 'bubble' ? (bub?.state === 'popped' ? null : bub?.state === 'held' ? [s.swing.bread.position.x, s.swing.bread.position.y] : bub?.at) : s.must === 'thorns' ? [L.thorns?.[0]?.x, L.thorns?.[0]?.y]
     : s.must === 'regrow' ? s.swing.vines.find((v) => v.regrow)?.at : null;
+  const tool = at ? null : toolMark(s.swing, L, s.must);
+  if (tool && s.phase === 'play' && s.moves <= 1) return `<circle class="g-teach-ring" cx="${n(tool[0])}" cy="${n(tool[1])}" r="${tool[2]}"/>`;
   if (!at || at[0] == null || s.phase !== 'play' || s.moves > 1) return '';
   return `<circle class="g-teach-ring" cx="${at[0]}" cy="${at[1] + (s.must === 'regrow' ? 30 : 0)}" r="${s.must === 'thorns' ? 46 : 36}"/>`;
 }
 
 function lineOf(s, t, lang) {
-  if (s.phase === 'miss') return s.note === 'broke' ? t.broke : t.miss[(s.misses - 1) % t.miss.length];
+  if (s.phase === 'miss') return s.note === 'broke' ? t.broke : s.note === 'stolen' ? t.stolen : t.miss[(s.misses - 1) % t.miss.length];
   if (s.phase === 'eat') return t.eat[s.misses % t.eat.length];
   if (stuck(s)) return t.stuck;
   return s.teach ?? fill(t.say, { name: s.item?.name ?? t.sample });
