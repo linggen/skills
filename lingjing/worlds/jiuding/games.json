@@ -26,6 +26,11 @@
    "id": "daily",
    "zh": "日常 · 秘境",
    "en": "Daily · the secret realm"
+  },
+  {
+   "id": "ai",
+   "zh": "AI · 试作",
+   "en": "AI · prototypes"
   }
  ],
  "_projectiles": "What 小满 throws on the 射鹿 board and the boards built on it (games/throws.js; Hanli 2026-10-16: 「投掷类都可以换. 可以多设计一些工具, 特效, 让它更好玩」). `from`: the card that makes it his (cards.json; the card law: only his own things) — none, always his; a level's first `ammo` is the scene's own tool, always his. `mass` (the wind's push is over it), `speed` (× the pull's), `drag` (the air), `half` (where it strikes: a tip that far ahead, 0 its middle), `pierce` (snaps a reed no thicker than that — its `breaks` — at any speed, barely slowed; 99 is a wall), `knock` (snaps them, slowed), `bounce` (skips once off the ground), `ability` one tap in flight: dash (straight on along the line it was loosed on, × `dash`) or burst (lightning, reach `radius`). `tip`: the line while it flies.",
@@ -1515,6 +1520,28 @@
    "id": "gather",
    "group": "daily",
    "task": "mijing-gather"
+  },
+  {
+   "id": "drawguess",
+   "group": "ai",
+   "mechanic": "你画我猜",
+   "_data": "画猜 (games/drawguess.js; Hanli 2026-10-16: 「玩家画AI猜, 试一下吧」) — a prototype, no story beat. `words`: things from 卷一 to draw; `also` · `en` · `enAlso` are the spellings a guess is right under, checked page-side (drawguess-rules.js matches: exact after normalize, never a substring). Ling only guesses.",
+   "data": {
+    "words": [
+     {"zh": "弓", "also": ["弓箭", "长弓", "猎弓", "弯弓"], "en": "bow", "enAlso": ["bow and arrow", "longbow"]},
+     {"zh": "鹿", "also": ["梅花鹿", "小鹿", "公鹿", "母鹿", "鹿子", "雄鹿"], "en": "deer", "enAlso": ["stag", "doe", "fawn"]},
+     {"zh": "狐狸", "also": ["狐", "白狐", "狐仙", "小狐狸", "红狐", "狐狸精"], "en": "fox", "enAlso": []},
+     {"zh": "饼", "also": ["烙饼", "大饼", "煎饼", "烧饼", "面饼", "薄饼", "馍"], "en": "flatbread", "enAlso": ["pancake", "bread", "cake"]},
+     {"zh": "盆", "also": ["木盆", "脸盆", "瓦盆", "盆子", "水盆", "洗脸盆", "陶盆"], "en": "basin", "enAlso": ["tub", "washbasin"]},
+     {"zh": "白菜", "also": ["大白菜", "小白菜", "青菜", "菜", "卷心菜"], "en": "cabbage", "enAlso": ["bok choy", "napa cabbage"]},
+     {"zh": "鸡", "also": ["公鸡", "母鸡", "小鸡", "鸡仔", "大公鸡", "雄鸡"], "en": "chicken", "enAlso": ["rooster", "hen", "chick"]},
+     {"zh": "葫芦", "also": ["酒葫芦", "宝葫芦", "葫芦瓢"], "en": "gourd", "enAlso": ["calabash", "bottle gourd"]},
+     {"zh": "剑", "also": ["宝剑", "长剑", "飞剑", "短剑", "铁剑", "木剑"], "en": "sword", "enAlso": ["blade"]},
+     {"zh": "山", "also": ["大山", "高山", "山峰", "群山", "山头", "山岭", "远山", "山脉"], "en": "mountain", "enAlso": ["mountains", "hill", "peak"]},
+     {"zh": "月亮", "also": ["月", "弯月", "月牙", "明月", "新月", "满月", "月牙儿", "残月"], "en": "moon", "enAlso": ["crescent moon", "crescent"]},
+     {"zh": "灯", "also": ["油灯", "灯笼", "灯盏", "灯火", "烛灯", "煤油灯"], "en": "lamp", "enAlso": ["lantern", "oil lamp"]}
+    ]
+   }
   }
  ]
 }
