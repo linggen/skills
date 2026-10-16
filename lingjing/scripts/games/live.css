@@ -140,6 +140,12 @@
 .g-rain-spot { position: relative; padding: 0 0 6px; border-radius: 10px; border: 1px solid var(--line); background: transparent; cursor: pointer;
   display: flex; flex-direction: column; align-items: stretch; gap: 2px; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
 .g-rain-spot .g-scene { border: 0; border-radius: 9px 9px 0 0; }
+/* Painted (2026-10-16): each spot a leaf of the same paper as its beam and basin; the name sits on it. */
+.g-rain-spot:has(.g-painted) { background: var(--g-paper); border-color: rgba(110, 84, 46, .3); }
+.g-rain-spot .g-scene.g-painted { box-shadow: none; background: none; }
+.g-rain-spot:has(.g-painted) .g-rain-name { color: #5b4c38; }
+.g-rain-spot.is-drip:not(.has-basin):has(.g-painted) { background: color-mix(in srgb, var(--water) 14%, var(--g-paper)); }
+.g-scene .g-waterfill.is-brim { opacity: .75; }
 .g-rain-spot.is-drip { border-color: var(--water); }
 .g-rain-name { font-size: 12px; color: var(--dim); white-space: nowrap; text-align: center; }
 .g-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
@@ -179,6 +185,24 @@
 @media (prefers-reduced-motion: reduce) {
   .g-bread-cave .g-flourish { animation: none; stroke-dashoffset: 0; }
 }
+/* A painted scene (2026-10-16, tools/paint-games.py — Hanli: the code-drawn pieces read as another, cheaper
+   game): the house paper the paintings are keyed on, in either theme, with ink-dark strokes on it and no frame line. */
+.g-ink { --g-paper: #dcc3a0; --g-ink: #2a251e; }
+.g-scene.g-painted { --text: var(--g-ink); --dim: #5b4c38; --faint: #7d6c54; border: 0; border-radius: 6px; color: var(--g-ink);
+  background: radial-gradient(130% 100% at 40% 30%, #e3cdab, var(--g-paper) 60%, #d2b792); box-shadow: 0 6px 22px rgba(0, 0, 0, .18); }
+.g-scene .g-fig, .g-scene .g-stage { pointer-events: none; }
+.g-scene .g-heqi { transition: opacity .6s; }
+.g-scene .g-heqi.is-off { opacity: .55; }
+/* 喂饼 painted (2026-10-16, tools/paint-games.py): the cave is a painting on paper, so the board is paper in
+   either theme — ink-dark strokes on it, the fox laid on with multiply, no frame line around it. */
+.g-bread .g-scene.g-bread-cave.is-painted { border: 0; border-radius: 6px; background: var(--g-paper); color: var(--g-ink);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, .22); }
+.g-bread-cave.is-painted .g-vine { stroke: #2f3a26; stroke-width: 2.6; opacity: .9; }
+.g-bread-cave.is-painted .g-vine-wash { stroke: #5d6b43; stroke-width: 7; opacity: .3; }
+.g-bread-cave.is-painted .g-puff-art { transition: opacity .2s; opacity: .85; }
+.g-bread-cave.is-painted .g-puff.is-on .g-puff-art { opacity: 1; }
+.g-bread-cave.is-painted .g-gust-band { opacity: .07; filter: blur(7px); }
+@media (prefers-color-scheme: dark) { .g-bread-cave.is-painted .g-fox-art image { mix-blend-mode: multiply; opacity: 1; } }
 .g-bread-row { display: flex; justify-content: center; min-height: 44px; width: 100%; }
 /* 喂饭桶 · 割藤 (2026-10-16, games/fantongcut.js): the same cave ink; the 饭桶 is its own art, the
    灵气泡 and 荆棘 painted (art/games/), the 灵光 stars in cinnabar, the new element ringed once. */
@@ -439,3 +463,16 @@
 .g-da-stars { font-size: 34px; letter-spacing: .2em; margin: 18px 0 0; }
 .g-da-stars .g-da-star { animation: g-da-pop .5s cubic-bezier(.2, 1.6, .4, 1) both; animation-delay: calc(var(--i) * .25s); }
 @media (prefers-reduced-motion: reduce) { .g-da-pop, .g-da-stars .g-da-star { animation: none; } }
+
+/* A scene's game on the painted stage (2026-10-16, Hanli: 「射鹿的画风比较粗糙啊」 — the game sat in a plain
+   white box in front of the painting): the card is a leaf of the same warm paper the game pieces are
+   painted on, mounted with a thin silk edge, not a flat UI panel. Light theme only — at night the card
+   stays dark and the painted scene inside it is the lit page. */
+@media (prefers-color-scheme: light) {
+  .view:has(.backdrop.painted) .focus .card.scenegame {
+    --surface: #f4ebd9; --raised: #eadfc7; --line: #d6c6a6;
+    border: 0; border-radius: 4px;
+    background: radial-gradient(140% 90% at 35% 20%, #f6eedd, #ecdfc4 70%, #e4d3b3);
+    box-shadow: 0 0 0 1px rgba(110, 84, 46, .32), 0 0 0 5px rgba(205, 184, 145, .55), 0 0 0 6px rgba(110, 84, 46, .25), 0 18px 48px rgba(0, 0, 0, .38);
+  }
+}

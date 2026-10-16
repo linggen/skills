@@ -182,18 +182,30 @@ export function tick(state, ms) {
    lands on the floor. A basin brimming rings; a full one carried to the wall is a dot more
    in the row; a drop on the floor is a small ink splash. */
 const DROP_MS = 800;
+// Painted (2026-10-16, tools/paint-games.py): the wet beam under the thatch and the wooden basin are
+// house 水墨淡彩 pieces on the game's paper; the drops, the water and the ink stay the brush's.
+const ART = (f) => new URL(`../../worlds/jiuding/art/games/rain/${f}.webp`, import.meta.url).href;
+const PAINT = { basin: ART('basin'), beam: ART('beam') };
+const beam = (x, w, h = 16) => `<image class="g-rain-beam" href="${PAINT.beam}" x="${n(x)}" y="-3" width="${n(w)}" height="${h}" preserveAspectRatio="none"/>`;
+/* A basin standing at (cx, foot), `w` wide; `lvl` 0…1 of water shows in its mouth. */
+function basinArt(cx, foot, w, lvl, full) {
+  // The painting is 273×200; its mouth is the top half. Water rises to the rim: the surface widens.
+  const h = w * 0.73, k = Math.min(1, lvl);
+  const water = lvl > 0 ? `<ellipse class="g-waterfill${full ? ' is-brim' : ''}" cx="${n(cx)}" cy="${n(foot - h * (0.6 + 0.1 * k))}" rx="${n(w * (0.3 + 0.12 * k))}" ry="${n(h * (0.09 + 0.07 * k))}"/>` : '';
+  return `<image class="g-rain-basin-art" href="${PAINT.basin}" x="${n(cx - w / 2)}" y="${n(foot - h)}" width="${n(w)}" height="${n(h)}"/>${water}`;
+}
+
 function spotScene(s, i) {
   const b = s.basins[i], drip = s.live && leakingAt(s.sched, i, s.t);
   const k = still() ? 0.4 : ((s.t + i * 137) % DROP_MS) / DROP_MS;
-  const thatch = `<path class="g-line g-thin g-faint" d="M4 7 Q24 3 45 7 T86 7"/><path class="g-line g-thin g-faint" d="M10 7 l-3 5 M30 6 l-2 5 M52 7 l-2 5 M74 6 l-3 5"/>`;
-  const drop = drip ? `<path class="g-drop" transform="translate(45 ${n(10 + k * (b == null ? 52 : 34))})" d="M0 -5 C2 -1 3 1 3 2.5 A3 3 0 0 1 -3 2.5 C-3 1 -2 -1 0 -5Z"/>` : '';
-  const land = drip && k > 0.82 ? (b == null || b >= CAP ? splash(45, 62, (k - 0.82) * 2400, { r: 6 }) : `<ellipse class="g-ripple" cx="45" cy="47" rx="${n(6 + (k - 0.82) * 60)}" ry="2"/>`) : '';
+  const thatch = beam(-((i * 53) % 150), 260);
+  const drop = drip ? `<path class="g-drop" transform="translate(45 ${n(10 + k * (b == null ? 52 : 30))})" d="M0 -5 C2 -1 3 1 3 2.5 A3 3 0 0 1 -3 2.5 C-3 1 -2 -1 0 -5Z"/>` : '';
+  const land = drip && k > 0.82 ? (b == null || b >= CAP ? splash(45, 62, (k - 0.82) * 2400, { r: 6 }) : `<ellipse class="g-ripple" cx="45" cy="42" rx="${n(6 + (k - 0.82) * 60)}" ry="2"/>`) : '';
   const lvl = b == null ? 0 : b / CAP;
-  const basin = b == null ? '' : `<g class="g-rain-basin${b >= CAP ? ' is-full' : ''}"><clipPath id="bw${i}"><path d="M20 46 Q45 66 70 46Z"/></clipPath>`
-    + `<rect class="g-waterfill" x="18" y="${n(62 - lvl * 18)}" width="56" height="20" clip-path="url(#bw${i})"/>`
-    + `<path class="g-line" d="M17 46 H73 M20 46 Q45 66 70 46"/>${b >= CAP ? '<text class="g-fullmark" x="45" y="40" text-anchor="middle">满</text>' : ''}</g>`;
+  const basin = b == null ? '' : `<g class="g-rain-basin${b >= CAP ? ' is-full' : ''}">${basinArt(45, 68, 52, lvl, b >= CAP)}`
+    + `${b >= CAP ? '<text class="g-fullmark" x="84" y="30" text-anchor="end">满</text>' : ''}</g>`;
   const stain = b == null && drip ? `<ellipse class="g-stain" cx="45" cy="63" rx="13" ry="3"/>` : '';
-  return scene(90, 70, thatch + stain + basin + drop + land);
+  return scene(90, 70, thatch + stain + basin + drop + land, 'g-painted');
 }
 function spotHtml(s, i, t, lang) {
   const b = s.basins[i], drip = s.live && leakingAt(s.sched, i, s.t);
@@ -209,11 +221,11 @@ export function html(state, lang = 'zh') {
   const full = fullCount(state);
   if (state.won) {
     // The seventeen in a row by the wall, full or not, and the floor as it was left.
-    const row = Array.from({ length: NEED }, (_, i) => { const x = 14 + i * 17.4, on = i < full; return `<g transform="translate(${n(x)} 30)">${on ? '<path class="g-waterfill" d="M-7 -1 Q0 6 7 -1Z"/>' : ''}<path class="g-line g-thin" d="M-8 -2 H8 M-7 -2 Q0 8 7 -2"/></g>`; }).join('');
+    const row = Array.from({ length: NEED }, (_, i) => basinArt(14 + i * 17.4, 44, 15, i < full ? 1 : 0, i < full)).join('');
     const stains = state.grade === 'wet' ? [40, 120, 210, 280].map((x, i) => `<ellipse class="g-stain" cx="${x}" cy="${48 + (i % 2) * 3}" rx="${16 + i * 3}" ry="3.5"/>`).join('') : stroke(110, 50, 100, 400);
-    return `<div class="g-rain g-ink is-won">${scene(320, 58, row + stains)}<p class="g-line-say">${t[state.note] ?? t[state.grade]}</p></div>`;
+    return `<div class="g-rain g-ink is-won">${scene(320, 58, row + stains, 'g-painted')}<p class="g-line-say">${t[state.note] ?? t[state.grade]}</p></div>`;
   }
-  if (!state.live) return `<div class="g-rain g-ink">${scene(320, 90, `<path class="g-line g-faint" d="M10 24 Q80 8 160 22 T310 20"/>` + [40, 95, 160, 220, 280].map((x, i) => `<path class="g-drop" transform="translate(${x} ${40 + (i % 3) * 12})" d="M0 -5 C2 -1 3 1 3 2.5 A3 3 0 0 1 -3 2.5 C-3 1 -2 -1 0 -5Z"/>`).join('') + `<path class="g-line" d="M60 78 Q95 92 130 78 M190 78 Q225 92 260 78"/>`)}<p class="g-line-say">${t.ready}</p>${btn(t.start, 'data-g="start"')}</div>`;
+  if (!state.live) return `<div class="g-rain g-ink">${scene(320, 90, beam(-10, 340, 26) + [40, 95, 160, 220, 280].map((x, i) => `<path class="g-drop" transform="translate(${x} ${40 + (i % 3) * 12})" d="M0 -5 C2 -1 3 1 3 2.5 A3 3 0 0 1 -3 2.5 C-3 1 -2 -1 0 -5Z"/>`).join('') + basinArt(95, 88, 56, 0, false) + basinArt(225, 88, 56, 0.3, false), 'g-painted')}<p class="g-line-say">${t.ready}</p>${btn(t.start, 'data-g="start"')}</div>`;
   const spots = SPOTS.map((_, i) => spotHtml(state, i, t, lang)).join('');
   const hand = state.spare + state.hand.length;
   return `<div class="g-rain g-ink">`
