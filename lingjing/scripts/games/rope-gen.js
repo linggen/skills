@@ -152,12 +152,26 @@ function plansOf(level) {
   return out.slice(0, 10);
 }
 
-/* Three stars spaced along a path, from just after the first move to just before the mouth. */
+/* Stars stand apart (each its own catch, never a clump) and never where the thing hung at the start
+   (a star there is caught for nothing). `spread` picks, in path order, points at least SPACE apart. */
+const SPACE = STAR_R * 2 + 12;
+const away = (p, others) => others.every((o) => Math.hypot(p[0] - o[0], p[1] - o[1]) >= SPACE);
+function spread(pts, n, taken = []) {
+  const got = [];
+  for (const f of [0.15, 0.5, 0.85, 0.3, 0.7, 0.05, 0.95, 0.4, 0.6]) {
+    const p = pts[Math.floor((pts.length - 1) * f)];
+    if (p && away(p, [...taken, ...got])) got.push(p);
+    if (got.length === n) break;
+  }
+  if (got.length < n) for (const p of pts) { if (got.length === n) break; if (away(p, [...taken, ...got])) got.push(p); }
+  return got.length === n ? got.map((p) => p.map(round)) : null;
+}
+const fromHang = (path) => (p) => Math.hypot(p[0] - path[0][0], p[1] - path[0][1]) > 44;
+
+/* Three stars along a path, from just after the first move to just before the mouth. */
 function starsOn(path, end) {
-  const from = path.first ?? 0, span = end - from;
-  if (span < 30) return null;
-  const pts = [0.3, 0.55, 0.78].map((f) => path[from + Math.floor(span * f)]);
-  return pts.map(([x, y]) => [round(x), round(y)]);
+  const pts = path.slice((path.first ?? 0) + 4, end - 2).filter(fromHang(path));
+  return pts.length < 4 ? null : spread(pts, 3);
 }
 
 /* Three stars on `path`: two where `main` also goes, one where it never does — or null. */
@@ -165,11 +179,10 @@ function starsApart(path, end, main, mainEnd) {
   const from = path.first ?? 0, gap = STAR_R + BREAD_R + 16;
   const far = [], shared = [];
   for (let k = from + 10; k < end - 6; k += 3) (near(main, path[k], gap, 0, mainEnd) ? shared : far).push(path[k]);
-  const awayFromHang = (p) => Math.hypot(p[0] - path[0][0], p[1] - path[0][1]) > 40;
-  const f = far.filter(awayFromHang), sh = shared.filter(awayFromHang);
-  if (!f.length || sh.length < 2) return null;
-  const pickAt = (pts, x) => pts[Math.min(pts.length - 1, Math.floor(pts.length * x))].map(round);
-  return [pickAt(sh, 0.35), pickAt(f, 0.5), pickAt(sh, 0.8)];
+  const f = far.filter(fromHang(path)), sh = shared.filter(fromHang(path));
+  const one = spread(f, 1);
+  const two = one && spread(sh, 2, one);
+  return two ? [two[0], one[0], two[1]] : null;
 }
 
 /** One try: a layout, its plans played, the mouth set, the level kept or not (and why). */
