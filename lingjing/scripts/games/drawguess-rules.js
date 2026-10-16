@@ -52,6 +52,12 @@ export const isBlindReply = (text) => /cannot read images/i.test(String(text ?? 
     has not met her yet (`place.yinyue.absent_until`) — or 'unavailable' (the pet is off); else null. */
 export const refusalOf = (reply) => (['absent', 'unavailable'].includes(reply?.status) ? reply.status : null);
 
+/** The eraser's width, in paper widths (the ring the page shows is the same size). */
+export const ERASER = 0.07;
+
+/** How a stroke lands on the ink layer: ink over, or (an eraser stroke) ink cut out. */
+export const strokeOp = (stroke) => (stroke?.erase ? 'destination-out' : 'source-over');
+
 /** The word for a round: a seeded pick, never the one just drawn. */
 export function pickWord(words, rnd = Math.random, last = null) {
   const left = words.filter((w) => w.zh !== last);

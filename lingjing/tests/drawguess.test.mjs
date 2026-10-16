@@ -6,7 +6,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { guessLoop, isBlindReply, matches, normalize, parseReply, pickWord, refusalOf, starsFor } from '../scripts/games/drawguess-rules.js';
+import { guessLoop, isBlindReply, matches, normalize, parseReply, pickWord, refusalOf, starsFor, ERASER, strokeOp } from '../scripts/games/drawguess-rules.js';
 
 const reg = JSON.parse(fs.readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url), 'utf8'));
 const ROW = reg.games.find((g) => g.id === 'drawguess');
@@ -188,6 +188,28 @@ test('猜者: Ling or 银月; she is asked in her own voice, and the engine\'s r
   assert.equal(refusalOf(null), null);
   const ling = fs.readFileSync(new URL('../scripts/games/drawguess-ling.js', import.meta.url), 'utf8');
   assert.match(ling, /agent_id: agent/, 'the guesser is the turn\'s agent');
+});
+
+test('the eraser: its strokes cut the ink (never the paper), and a rub counts as a change the next look sends', async () => {
+  assert.equal(strokeOp(Object.assign([[0.5, 0.5, 0]], { erase: true })), 'destination-out');
+  assert.equal(strokeOp([[0.5, 0.5, 0]]), 'source-over');
+  assert.ok(ERASER > 0.02 && ERASER < 0.2);
+  const t = rig();
+  t.loop.stroke(); t.loop.now(); //   a stroke, a look
+  await t.answer();
+  t.loop.now();
+  await t.flush();
+  assert.equal(t.out.length, 0, 'nothing new: no look');
+  t.loop.stroke(); t.loop.rest(); //  the eraser drawn across it (the page calls stroke() for a rub as for ink)
+  t.advance(2600);
+  await t.flush();
+  assert.equal(t.out.length, 1, 'the rubbed paper is new paper');
+  const src = fs.readFileSync(new URL('../scripts/games/drawguess.js', import.meta.url), 'utf8');
+  assert.match(src, /if \(g\.tool === 'eraser'\) g\.cur\.erase = true;\s*g\.loop\.stroke\(\);/, 'a rub starts as a change, like ink');
+  assert.doesNotMatch(src, /data-k="undo"/, '撤一笔 is gone');
+  assert.match(src, /data-k="pen"/);
+  assert.match(src, /data-k="eraser"/);
+  assert.match(src, /data-k="clear"/);
 });
 
 test('the module keeps the contract and the registry places it in the 游戏厅 only', async () => {

@@ -12,7 +12,7 @@
 // 妖王 voice, her lines on the paper only. She is gated as in the world: until the save has met her
 // (`absent_until`) the engine runs no turn and answers `absent` — the game says so and won't start.
 // The paper and the player's own strokes are the only things drawn here; nothing is painted in code.
-import { guessLoop, isBlindReply, matches, parseReply, pickWord, starsFor } from './drawguess-rules.js';
+import { ERASER, guessLoop, isBlindReply, matches, parseReply, pickWord, starsFor, strokeOp } from './drawguess-rules.js';
 import { askLing, askOnce, closeRound, declaredBlind, dropOpen, openRound, reachable } from './drawguess-ling.js';
 
 export const meta = {
@@ -26,14 +26,14 @@ const PAPER = '#e4cfab', INK = '#1d1813';
 
 const T = {
   zh: {
-    draw: '画', start: '开始', undo: '撤一笔', clear: '清空', done: '画好了', who: '猜者', names: { ling: '灵', yinyue: '银月' },
+    draw: '画', start: '开始', pen: '笔', eraser: '擦', clear: '清空', done: '画好了', who: '猜者', names: { ling: '灵', yinyue: '银月' },
     checking: '{who}在看纸……', looking: '{who}在看……', looks: '还能看 {n} 眼',
     blind: '这个模型看不见图，画猜开不了。', far: '连不上灵。', err: '{who}没看清，再画画。',
     absent: '还没遇见银月。', unavailable: '银月不在。',
     won: '对了，是「{w}」。', time: '时间到。是「{w}」。',
   },
   en: {
-    draw: 'Draw', start: 'Start', undo: 'Undo', clear: 'Clear', done: 'Done', who: 'Guesser', names: { ling: 'Ling', yinyue: 'Yinyue' },
+    draw: 'Draw', start: 'Start', pen: 'Brush', eraser: 'Eraser', clear: 'Clear', done: 'Done', who: 'Guesser', names: { ling: 'Ling', yinyue: 'Yinyue' },
     checking: '{who} is looking at the paper…', looking: '{who} is looking…', looks: '{n} looks left',
     blind: 'This model can\'t see pictures, so this game can\'t start.', far: 'Ling can\'t be reached.', err: '{who} couldn\'t make it out. Keep drawing.',
     absent: 'You haven\'t met Yinyue yet.', unavailable: 'Yinyue isn\'t here.',
@@ -61,6 +61,10 @@ const STYLE = `.g-dg{gap:8px}.g-dg-head{display:flex;align-items:baseline;gap:10
 .g-dg-veil{position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;font-family:var(--serif);color:#4a3d2c;font-size:15px;line-height:1.7;pointer-events:none}
 .g-dg-bar{display:flex;gap:8px;width:100%}.g-dg-bar .g-btn-soft{flex:0 0 auto}.g-dg-bar .g-btn-main{flex:1;min-width:0}
 .g-dg .g-btn:disabled{opacity:.45;cursor:default}
+.g-dg-bar .g-dg-tool{padding:8px 12px;font-family:var(--serif);font-size:17px;background:transparent;border-color:var(--line);color:var(--dim)}
+.g-dg-bar .g-dg-tool.is-on{border-color:var(--ling);background:var(--ling-soft);color:var(--ling);font-weight:600}
+.g-dg-eraser{position:absolute;left:0;top:0;border:1.5px solid rgba(29,24,19,.7);border-radius:50%;background:rgba(244,232,210,.35);box-shadow:0 0 0 1px rgba(244,232,210,.6);pointer-events:none;transform:translate(-50%,-50%);display:none}
+.g-dg-paper.is-erasing canvas{cursor:none}
 .g-dg-foot{font-size:11px;color:var(--faint);font-family:var(--ui);min-height:1em}`;
 
 function styleOnce(doc) {
@@ -79,12 +83,29 @@ async function wordsOf(data) {
   return wordsP;
 }
 
-// ── the brush ──────────────────────────────────────────────────────────────────────────────
+// ── the brush and the eraser ───────────────────────────────────────────────────────────────
 // A stroke is points in paper units (0..1) with their time; the width follows the speed (slow is
-// wet and thick, fast is dry and thin) and a faint wider pass under it is the ink's bleed.
+// wet and thick, fast is dry and thin) and a faint wider pass under it is the ink's bleed. An
+// eraser stroke (`erase` set) rubs the ink out along its path, ERASER wide (drawguess-rules.js),
+// on the ink layer only: the paper under it stays.
+
+function eraseStroke(ctx, pts, size) {
+  ctx.save();
+  ctx.globalCompositeOperation = strokeOp(pts);
+  ctx.fillStyle = ctx.strokeStyle = '#000';
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = ERASER * size;
+  ctx.beginPath();
+  if (pts.length === 1) ctx.arc(pts[0][0] * size, pts[0][1] * size, (ERASER * size) / 2, 0, Math.PI * 2);
+  else pts.forEach(([x, y], i) => (i ? ctx.lineTo(x * size, y * size) : ctx.moveTo(x * size, y * size)));
+  if (pts.length === 1) ctx.fill(); else ctx.stroke();
+  ctx.restore();
+}
 
 function drawStroke(ctx, pts, size) {
   if (!pts.length) return;
+  if (pts.erase) return eraseStroke(ctx, pts, size);
   const base = size * 0.016;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
@@ -119,10 +140,14 @@ function drawStroke(ctx, pts, size) {
 export function paperPng(doc, strokes, px = EXPORT_PX) {
   const c = doc.createElement('canvas');
   c.width = c.height = px;
+  const ink = doc.createElement('canvas');
+  ink.width = ink.height = px;
+  const ictx = ink.getContext('2d');
+  for (const s of strokes) drawStroke(ictx, s, px); // the eraser cuts the ink, never the paper
   const ctx = c.getContext('2d');
   ctx.fillStyle = PAPER;
   ctx.fillRect(0, 0, px, px);
-  for (const s of strokes) drawStroke(ctx, s, px);
+  ctx.drawImage(ink, 0, 0);
   return c.toDataURL('image/png').split(',')[1];
 }
 
@@ -188,16 +213,17 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   root.innerHTML = `<div class="g-dg-who"><span>${w.who}</span>${whoBtns}</div><div class="g-dg-head"><span class="g-dg-word">${w.draw}<b></b></span><span class="g-dg-left"></span><span class="g-dg-sec"></span></div>`
     + '<div class="g-dg-time"><i></i></div>'
     + `<div class="g-dg-say is-wait"><b></b><span class="g-dg-line"></span><span class="g-dg-other"></span></div>`
-    + '<div class="g-dg-paper is-off"><canvas></canvas><div class="g-dg-veil"></div></div>'
-    + `<div class="g-dg-bar"><button type="button" class="g-btn g-btn-soft" data-k="undo">${w.undo}</button>`
+    + '<div class="g-dg-paper is-off"><canvas></canvas><div class="g-dg-eraser"></div><div class="g-dg-veil"></div></div>'
+    + `<div class="g-dg-bar"><button type="button" class="g-btn g-btn-soft g-dg-tool is-on" data-k="pen">${w.pen}</button>`
+    + `<button type="button" class="g-btn g-btn-soft g-dg-tool" data-k="eraser">${w.eraser}</button>`
     + `<button type="button" class="g-btn g-btn-soft" data-k="clear">${w.clear}</button>`
     + `<button type="button" class="g-btn g-btn-main" data-k="go">${w.start}</button></div>`
     + '<div class="g-dg-foot"></div>';
   container.replaceChildren(root);
   const $ = (sel) => root.querySelector(sel);
-  const canvas = $('canvas'), paper = $('.g-dg-paper'), veil = $('.g-dg-veil'), goBtn = $('[data-k="go"]');
+  const canvas = $('canvas'), paper = $('.g-dg-paper'), veil = $('.g-dg-veil'), goBtn = $('[data-k="go"]'), rub = $('.g-dg-eraser');
 
-  const g = { phase: 'check', who: whoKept(data), word: null, strokes: [], cur: null, guesses: [], t0: 0, timer: null, loop: null };
+  const g = { phase: 'check', who: whoKept(data), tool: 'pen', word: null, strokes: [], cur: null, guesses: [], t0: 0, timer: null, loop: null };
   let finish = () => {};
   root.dataset.phase = g.phase;
   const CHOOSE = new Set(['ready', 'blind', 'far', 'absent']); // the guesser may change only before a round
@@ -238,20 +264,36 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     const r = canvas.getBoundingClientRect();
     return [Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)), e.timeStamp || performance.now()];
   };
+  // The eraser's ring follows the hand over the paper (a mouse hovering, a finger pressing), its
+  // size the eraser's own: what is inside the ring is what rubs out.
+  const ring = (e, show) => {
+    const on = show && g.tool === 'eraser' && g.phase === 'draw';
+    rub.style.display = on ? 'block' : 'none';
+    if (!on) return;
+    const r = canvas.getBoundingClientRect(), d = ERASER * r.width;
+    rub.style.width = rub.style.height = `${d}px`;
+    rub.style.left = `${e.clientX - r.left}px`;
+    rub.style.top = `${e.clientY - r.top}px`;
+  };
   canvas.addEventListener('pointerdown', (e) => {
     if (g.phase !== 'draw' || (e.button ?? 0) !== 0) return;
     e.preventDefault();
     try { canvas.setPointerCapture(e.pointerId); } catch { /* the canvas still hears it */ }
     g.cur = [at(e)];
+    if (g.tool === 'eraser') g.cur.erase = true;
     g.loop.stroke();
+    ring(e, true);
     redraw();
   });
   canvas.addEventListener('pointermove', (e) => {
+    ring(e, Boolean(g.cur) || e.pointerType === 'mouse');
     if (!g.cur) return;
     for (const ev of e.getCoalescedEvents?.() ?? [e]) g.cur.push(at(ev));
     redraw();
   });
-  const lift = () => {
+  canvas.addEventListener('pointerleave', (e) => ring(e, false));
+  const lift = (e) => {
+    if (e?.pointerType !== 'mouse') ring(e, false);
     if (!g.cur) return;
     g.strokes.push(g.cur);
     g.cur = null;
@@ -268,7 +310,12 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     const k = e.target.closest?.('[data-k]')?.dataset.k;
     if (k === 'go' && g.phase === 'ready') return begin();
     if (g.phase !== 'draw') return;
-    if (k === 'undo' && g.strokes.length) { g.strokes.pop(); redraw(); g.loop.stroke(); g.loop.rest(); }
+    if (k === 'pen' || k === 'eraser') {
+      g.tool = k;
+      root.querySelectorAll('.g-dg-tool').forEach((b) => b.classList.toggle('is-on', b.dataset.k === k));
+      paper.classList.toggle('is-erasing', k === 'eraser');
+      return;
+    }
     if (k === 'clear' && g.strokes.length) { g.strokes = []; redraw(); g.loop.stroke(); }
     if (k === 'go') g.loop.now();
   });
