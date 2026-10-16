@@ -1493,8 +1493,9 @@ export function panelActsHtml(ctx, { inBox = false } = {}) {
   // A board left on an earlier day, offered again (Look's replay): while the box holds the scene's
   // choices the stage under it is hidden, so the box carries the beat too — after the way on, never before it.
   const again = inBox && ctx.look.replay ? replayHtml(ctx.look.replay, w) : '';
-  // In the box the choices come first — the way on is never the part a short stage scrolls away.
-  return inBox ? `${row}${again}${looks}${invite}${note}` : `${looks}${row}${invite}${note}`;
+  // In the box the choices come first — the way on is never the part a short stage scrolls away — but a
+  // refusal stands right over them, where the tap was (2026-10-16: under them it fell below the fold).
+  return inBox ? `${note}${row}${again}${looks}${invite}` : `${looks}${note}${row}${invite}`;
 }
 
 /// What a choice that stays in the scene said (`stay` exits, 01-arrive 下水看看, 06-town 先逛坊市): its

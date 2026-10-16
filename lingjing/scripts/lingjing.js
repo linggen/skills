@@ -1570,6 +1570,19 @@ function draw() {
   sendHeldWins();
   // A won fight's way on, once its passage is read and its 所得 put away (watchWayOn; tried once per exit).
   watchWayOn();
+  noteInView();
+}
+
+/* A refusal is said where the eye is (2026-10-16: at 390 the 阶段任务 line stood under the choices,
+   below the box's fold — a tap that seemed to do nothing). Every refusal note (`.donote`: a scene's
+   choice, a tap on the stage, the pouch, the cauldron) is brought into view the draw it first
+   appears — `nearest`, so one already in sight never moves the page. */
+let noteSeen = '';
+function noteInView() {
+  const el = [...document.querySelectorAll('.donote')].find((n) => n.offsetParent);
+  const text = el?.textContent ?? '';
+  if (text && text !== noteSeen) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  noteSeen = text;
 }
 
 /* What the fight's card draws itself from: this world's cards, this world's

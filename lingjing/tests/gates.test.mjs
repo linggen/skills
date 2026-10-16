@@ -12,7 +12,7 @@ import { health } from '../scripts/rules/health.mjs';
 import { gatesOf, stageGate, stageNow } from '../scripts/rules/gates.mjs';
 import { pay } from '../scripts/rules/core.mjs';
 import { rerunHere } from '../scripts/rules/rerun.mjs';
-import { WORDS, bookPopHtml } from '../scripts/cards.js';
+import { WORDS, bookPopHtml, panelActsHtml } from '../scripts/cards.js';
 
 process.env.LINGJING_STAMINA_LIMIT = '0'; // as the game plays (体力 off while we test), and tests/seed-at.test.mjs
 const content = loadContent();
@@ -159,4 +159,15 @@ test('古七\'s cap follows its rises (2026-10-16): grinding stops at the layer 
   const fire = resolve({ ...snow, scene: '09-furnace', place: content.chapters['00-zhuji'].scenes['09-furnace'].at, tasks: { 'furnace-ding': { status: 'done' } }, stamina: 100, stamina_at: NOW.toISOString() }, content, ctx, { exit: 'fire' });
   assert.equal(fire.result.ok, true, JSON.stringify(fire.result).slice(0, 200));
   assert.equal(fire.state.step, 5, 'the rise lands');
+});
+
+test('a refusal stands where the eye is: over the choices it answers, in the box and on the scene card (2026-10-16: under them it fell below a phone\'s fold)', () => {
+  const st = atChaifang(40), l = look(st, content, ctx);
+  const say = resolve(st, content, ctx, { exit: 'count' }).result.say;
+  for (const inBox of [true, false]) {
+    const html = panelActsHtml({ look: l, lang: 'zh', words: { ...WORDS.zh, xw: '修为', ls: '灵石' }, panelNote: say }, { inBox });
+    assert.ok(html.indexOf('donote') >= 0 && html.indexOf('donote') < html.indexOf('paneltaps'), `${inBox ? 'box' : 'card'}: the note before the choices`);
+  }
+  // The page brings any new refusal note into view (lingjing.js noteInView, after every draw).
+  assert.match(fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8'), /noteInView\(\);\n\}/);
 });
