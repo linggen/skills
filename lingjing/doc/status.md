@@ -61,6 +61,10 @@ Updated 2026-10-16.
 - 10-14 asks: 拽/忍 redraws; village-map lines; skip on the first six beats; 闵丹师 mark 07:179; 古三 box merge.
 - Weather density, by his eye.
 
+## Slow / stuck (for the bug hunt after the batch lands)
+
+- The page re-reads 20–60 s after a tap on this machine (seen by the 对对子 agent, 10-16): likely a big part of 「不流畅, 会卡住」. Profile the tap → rules → re-read path first.
+
 ## Known red
 
 - `mishi.test.mjs` "a real 秘境 rerun … 暗室" — red on main since 10-15.
