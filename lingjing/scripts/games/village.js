@@ -31,7 +31,7 @@ const PLANT = {
 };
 const TALE = {
   jingwei: {
-    zh: { tell: '吴婆婆脸朝着太阳，讲了一个很老的：「东海边上有一只鸟，花脑袋，白嘴，红脚。原先是个闺女，在海里淹死了，变成了鸟，天天飞到西山去衔东西，往海里扔，要把海填平。」她停了一停：「你猜，她衔的什么？」', ask: '衔的什么？', right: '「对喽。西山的树枝、石子儿。」她咂了咂嘴：「海填平了没有？没有。可她还在衔。」', wrong: '「不是。」吴婆婆笑了，露出三颗牙：「是西山的树枝、石子儿。」' },
+    zh: { tell: '吴婆婆脸朝着太阳，讲了一个很老的故事：「东海边上有一只鸟，花脑袋，白嘴，红脚。原先是个闺女，在海里淹死了，变成了鸟，天天飞到西山去衔东西，往海里扔，要把海填平。」她停了一停：「你猜，她衔的什么？」', ask: '衔的什么？', right: '「对喽。西山的树枝、石子儿。」她咂了咂嘴：「海填平了没有？没有。可她还在衔。」', wrong: '「不是。」吴婆婆笑了，露出三颗牙：「是西山的树枝、石子儿。」' },
     en: { tell: 'Granny Wu, her face to the sun, tells a very old one: "By the Eastern Sea there\'s a bird — speckled head, white beak, red feet. She was a girl once, drowned in that sea, and she turned into a bird. Every day she flies to the Western Hills to fetch something and drops it in the sea, to fill it up." She stops. "Guess what she carries."', ask: 'What does she carry?', right: '"That\'s it. Twigs and pebbles from the Western Hills." She smacks her lips. "Is the sea filled? No. But she\'s still carrying."', wrong: '"No." Granny Wu grins, showing her three teeth. "Twigs and pebbles from the Western Hills."' },
     options: ['stones', 'fish', 'shells'], answer: 'stones',
     opt: { stones: { zh: '树枝和石子', en: 'Twigs and pebbles' }, fish: { zh: '小鱼', en: 'Little fish' }, shells: { zh: '贝壳', en: 'Shells' } },

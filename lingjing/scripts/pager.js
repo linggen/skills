@@ -37,7 +37,23 @@ export function pageBreaks(units, cap, { fill = 0.5 } = {}) {
     }
     start = cut + 1;
   }
-  return starts;
+  return withWords(units, cap, starts);
+}
+
+/* The last page is never the way on alone (2026-10-16, 00-masan at 390: page 4/4 held only
+   「接着往下」 — a page turned for nothing): the page before gives up its last paragraph — or, when
+   none fits beside the block, its last sentences — so the choices stand under words. */
+function withWords(units, cap, starts) {
+  const n = units.length, k = starts.length;
+  if (k < 2 || starts[k - 1] !== n - 1 || !units[n - 1].block) return starts;
+  const prev = starts[k - 2], bottom = units[n - 1].bottom;
+  let pick = -1;
+  for (let j = n - 2; j > prev; j -= 1) {
+    if (bottom - units[j].top > cap) break;
+    if (pick < 0 || units[j - 1].end) pick = j;
+    if (units[j - 1].end) break;
+  }
+  return pick < 0 ? starts : [...starts.slice(0, -1), pick];
 }
 
 /* Which page holds unit `u`. */

@@ -78,6 +78,23 @@ test('the choices are a block of their own: never split, on the last page', () =
   assert.ok(last.at(-1).block, 'the last page holds the choices');
 });
 
+test('the last page is never the way on alone: the page before gives up its last paragraph', () => {
+  // 00-masan at 390 (2026-10-16): three full pages of words, then a page of 「接着往下」 only
+  const u = layout([[1, 1], [1, 1], [1, 1]]); // 60 · 18 · 60 · 18 · 60 = 216
+  const top = u.at(-1).bottom + 14;
+  u.push({ block: true, top, bottom: top + 50, end: true });
+  const starts = pageBreaks(u, 220);
+  const ps = pages(u, starts);
+  assert.ok(ps.at(-1).length > 1 && ps.at(-1).at(-1).block, 'the block stands under words');
+  assert.equal(ps.at(-1)[0].k, 0, 'the moved words begin a paragraph');
+  for (const pg of ps) assert.ok(pg.at(-1).bottom - pg[0].top <= 220, 'each page still fits the band');
+  assert.deepEqual(ps.flat(), u, 'every unit once, in order');
+  // nothing fits beside the block: left as it was
+  const big = layout([[7]]);
+  big.push({ block: true, top: 214, bottom: 264, end: true });
+  assert.deepEqual(pageBreaks(big, 220), [0, 1]);
+});
+
 test('the whole picture: contain, never cover — a 3:2 woodcut in a portrait room, an upright one in a wide room', () => {
   const qiuyu = 960 / 640, fuzhu = 960 / 1152, face = 2 / 3;
   // the 亮相's room on a desktop stage: wide; a 3:2 plate fills the width, the whole beast in it
