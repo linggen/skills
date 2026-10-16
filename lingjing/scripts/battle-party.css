@@ -1,0 +1,43 @@
+/* battle-party.css — 小队 in the player's row (battle-party.js): each member a small ink plate with
+   their own 气血; 嘲讽 seal-edged while they guard; gone to ink at 退. And two marks on a card in
+   the hand: its owner's seal (a member plays it) and 新. Reduced motion: no pulse. */
+.bparty { display: flex; gap: 8px; align-items: center; flex: 0 1 auto; min-width: 0; }
+.bally {
+  display: grid; grid-template-columns: 30px auto; grid-template-rows: auto auto; column-gap: 6px; row-gap: 2px; align-items: center;
+  padding: 3px 7px 3px 3px; border: 1px solid var(--ink-line); border-radius: 6px; background: var(--paper, #F3EEE2);
+  font-family: var(--ui); font-size: 11px; color: var(--ink-2, #4A453D); transition: filter .5s, opacity .5s;
+}
+.bally.guard { border-color: var(--seal, #B03A2B); box-shadow: inset 0 0 0 1px rgba(176, 58, 43, .25); }
+.bally.gone { filter: grayscale(1); opacity: .45; }
+.ballyface { grid-row: 1 / span 2; width: 30px; height: 30px; border-radius: 50%; overflow: hidden; background: var(--paper-2, #E9E2D2); display: flex; align-items: center; justify-content: center; }
+.ballyface img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+.ballyface b { font-family: var(--serif); font-size: 15px; color: var(--ink, #1F1C18); }
+.ballyname { font-family: var(--serif); font-size: 12.5px; color: var(--ink, #1F1C18); white-space: nowrap; display: flex; gap: 4px; align-items: center; }
+.ballyguard, .ballygone { font-style: normal; font-family: var(--ui); font-size: 9.5px; padding: 0 3px; border-radius: 3px; letter-spacing: .08em; }
+.ballyguard { color: var(--seal, #B03A2B); border: 1px solid var(--seal, #B03A2B); }
+.ballygone { color: var(--ink-3, #7C766B); border: 1px solid var(--ink-line); }
+.ballyhp { position: relative; display: block; width: 64px; height: 6px; border-radius: 3px; background: var(--ink-wash, rgba(31, 28, 24, .07)); }
+.ballyhp i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: var(--seal, #B03A2B); opacity: .75; transition: width .4s; }
+.ballyhp b { position: absolute; left: calc(100% + 4px); top: -5px; font-size: 10px; font-weight: 600; color: var(--ink-2, #4A453D); white-space: nowrap; }
+.ballyhp small { font-weight: 400; color: var(--ink-3, #7C766B); }
+.bally.struck { animation: bally-struck .3s ease-in-out; }
+@keyframes bally-struck { 0%, 100% { transform: none; } 30% { transform: translateX(-3px); } 60% { transform: translateX(3px); } }
+
+/* A card in the shared hand: its owner's seal, top right; 新 until first played, top left. */
+.bseal-owner, .bfresh { position: absolute; z-index: 3; font-style: normal; pointer-events: none; font-family: var(--serif); line-height: 1; }
+.bseal-owner {
+  right: -4px; top: 22%; padding: 2px 3px; border: 1.5px solid #B03A2B; border-radius: 3px; color: #B03A2B;
+  background: rgba(251, 246, 234, .88); font-size: 12px; transform: rotate(8deg);
+}
+.bfresh {
+  left: -4px; top: -6px; padding: 2px 5px; border-radius: 9px; background: #B03A2B; color: #FBF6EA; font-size: 11px; font-weight: 700;
+  box-shadow: 0 1px 4px rgba(31, 28, 24, .3);
+}
+
+@media (max-width: 560px) {
+  .bparty { order: 5; flex-basis: 100%; gap: 6px; }
+  .bally { grid-template-columns: 24px auto; padding: 2px 6px 2px 2px; }
+  .ballyface { width: 24px; height: 24px; }
+  .ballyhp { width: 52px; }
+}
+@media (prefers-reduced-motion: reduce) { .bally.struck { animation: none; } .bally { transition: none; } }

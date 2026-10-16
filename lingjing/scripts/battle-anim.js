@@ -29,6 +29,9 @@ const bodySel = t => (t.uid != null ? `[data-uid="${CSS.escape(String(t.uid))}"]
 /* Where a thing lives on screen, so a number can leap off it. A body driven
    off in this stretch is gone from the room already; its ink ghost stands in. */
 function spotOf(root, t) {
+  // A member beside the lead (battle-party.js): their own plate in his row.
+  const member = t.act === 'hurt-ally' || t.act === 'ally-withdrew' ? t.id : t.member;
+  if (member) return q(root, `.bally[data-ally="${CSS.escape(member)}"]`) ?? q(root, '.bside.you');
   if (t.act === 'hurt' || t.act === 'heal') return q(root, t.who === 'foe' ? '.bside.foe .bplate' : '.bside.you .bwho') ?? q(root, t.who === 'foe' ? '.bside.foe' : '.bside.you');
   if (t.id) {
     const side = t.who === 'foe' ? 'theirs' : 'mine', at = bodySel(t);
@@ -441,7 +444,7 @@ async function replay(root, entries, ctx) {
       case 'heal': {
         const el = spotOf(root, t);
         float(root, el, `+${t.amount}`, 'heal');
-        if (t.amount) hp.take(t.who, t.amount);
+        if (t.amount && !t.member) hp.take(t.who, t.amount);
         pulse(el, 'blessed', BEATS.hit);
         await sleep(BEATS.gap);
         break;
@@ -479,6 +482,29 @@ async function replay(root, entries, ctx) {
       case 'drained': {
         const el = q(root, t.who === 'foe' ? '.bside.foe .bmana' : '.bside.you .bmana');
         float(root, el, `−${t.amount}`, 'hurt');
+        await sleep(BEATS.gap);
+        break;
+      }
+      case 'hurt-ally': {
+        const el = spotOf(root, t);
+        float(root, el, `−${t.amount}`, 'hurt');
+        pulse(el, 'struck', BEATS.hit);
+        await sleep(BEATS.hit);
+        break;
+      }
+      case 'ally-withdrew': {
+        pulse(spotOf(root, t), 'lost-one', BEATS.withdraw);
+        await sleep(BEATS.withdraw);
+        break;
+      }
+      case 'dodged': {
+        const el = q(root, '.bside.you .bwho');
+        float(root, el, ctx.lang === 'en' ? 'dodged' : '躲开', 'heal');
+        await sleep(BEATS.gap);
+        break;
+      }
+      case 'mana': {
+        float(root, q(root, '.bside.you .bmana'), `+${t.amount}`, 'heal');
         await sleep(BEATS.gap);
         break;
       }

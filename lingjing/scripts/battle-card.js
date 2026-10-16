@@ -12,6 +12,7 @@
 
 import { spoken } from './cards.js';
 import { esc } from './esc.js';
+import { freshHtml, partyHtml, sealHtml } from './battle-party.js';
 import { POWER_COST, asleep, bodyOf, boostedOf, clash, costOf, dealt, effectOf, hashOf, keywordsOf, landed, pierces, sigEffect, starsOf } from './battle.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
@@ -445,7 +446,7 @@ function handHtml(st, ctx, picked) {
     const shownWhy = why && why !== 'not-your-turn' ? (w.why[why] ?? why) : null;
     const text = `${esc(sayEffect({ ...c, effect: effectOf(st.you, c), keywords: keywordsOf(st.you, c) }, ctx))}${liftOf(st.you, c, ctx)}${onBeast(st, c, ctx)}${backlash(st, c, ctx)}`;
     return `<button class="bcard el-${esc(c.element ?? 'none')}${herOf(id, ctx)}${held ? ' held' : ''}${why ? ' dim' : ''}${!why && !held ? ' can' : ''}" data-spot="hand" data-index="${index}" data-id="${esc(id)}" style="${fanOf(index, n)}"${why ? ` title="${esc(w.why[why] ?? why)}"` : ''}>
-      ${leafHtml(c, ctx, { cost: costOf(st.you, c), atk: b.atk, hp: b.hp, stars: starsOf(st.you, c), text, why: shownWhy })}
+      ${leafHtml(c, ctx, { cost: costOf(st.you, c), atk: b.atk, hp: b.hp, stars: starsOf(st.you, c), text, why: shownWhy })}${sealHtml(c, st, ctx)}${freshHtml(id, ctx)}
     </button>`;
   }).join('');
 }
@@ -846,6 +847,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
         ${crystals(st.you.mana, st.you.manaMax, st.you.manaCap)}${st.you.drain ? `<small class="bdrain">${esc(fill(w.drainNext, { n: st.you.drain }))}</small>` : ''}
       </div>
       ${deckHtml(st.you.deck, 'mine', w)}
+      ${partyHtml(st, ctx)}
       <div class="bacts">
         <button class="bact bpower el-${esc(st.you.root ?? 'none')}${powerWhy ? ' dim' : ''}${picked?.from === 'power' ? ' held' : ''}${!powerWhy && picked?.from !== 'power' ? ' can' : ''}" data-spot="power"${powerWhy ? ` title="${esc(w.why[powerWhy] ?? powerWhy)}"` : ''}>
           <span class="bsealface"><b>${esc(w.power)}</b><span class="belem">${GLYPH[st.you.root] ?? ''}</span></span>

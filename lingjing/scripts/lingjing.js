@@ -26,6 +26,7 @@ import { slotNext } from './stuck.js';
 import { pouchHtml } from './pouch.js';
 import { fantongHtml, wireFantongDrag } from './fantong-free.js';
 import { esc } from './esc.js';
+import { revealCards } from './card-reveal.js';
 import { HANDED_STAY_MS, TURNED_MS, handedStale } from './turned.js';
 import { thinker, stillAsked } from './think.js';
 import { DUIZI_WORDS, duiziChecksHtml, duiziFormOf } from './aigames-cards.js';
@@ -493,6 +494,30 @@ function nudgeTrial() {
   report('[scene] trial waiting');
 }
 
+/* 得牌 (card-reveal.js, Hanli 2026-10-16: 同一张牌放大展示, 缩小进背包, 然后下一场战斗出现): a card
+   new on this read (in `cards_new`, not in the last one) is shown big over the stage with its one line of
+   where it came from (cards.json `from`), then flies into the 物品 chip; in the next fight it wears 新
+   until played. Waits while a fight holds the stage; the first read of a page plays nothing. */
+const revealQueue = [];
+let revealing = false;
+function gainedCards(was, now) {
+  if (!was) return;
+  const before = new Set(was.cards_new ?? []);
+  for (const id of now?.cards_new ?? []) if (!before.has(id) && !revealQueue.includes(id)) revealQueue.push(id);
+  queueMicrotask(playReveals);
+}
+async function playReveals() {
+  if (revealing || bout || !revealQueue.length || !authored) return;
+  revealing = true;
+  try {
+    const catalog = cardCatalog(), l = lang();
+    const cards = revealQueue.splice(0).map(id => catalog[id]).filter(Boolean)
+      .map(c => ({ ...c, line: c.from?.[0]?.line?.[l] ?? c.from?.[0]?.line?.zh ?? '' }));
+    await revealCards(cards, { host: $('view') ?? document.body, target: document.querySelector('.gearchip'), lang: l, artBase: artBase() });
+  } finally { revealing = false; }
+  if (revealQueue.length) playReveals();
+}
+
 /// Re-read the game. What it answers was read after the call: a read already
 /// in flight began before whatever write asked for this one, so a second read
 /// is chained behind it and that is the one returned. Never rejects.
@@ -512,6 +537,7 @@ async function readOnce() {
     // The scene just left, kept for its header while its choice's passage is still told.
     if (look?.scene && seen?.scene?.id !== look.scene.id) leftLook(look);
     stageQuestDone(look, seen);
+    gainedCards(look, seen);
     look = seen;
     if (look?.engine && !engineAt) engineAt = look.engine;
     watchRun();
@@ -1603,6 +1629,8 @@ function boutCtx() {
     title: duelTitle(c, words(), lang()),
     foeName: c.name, foeArt: c.art ? `${artBase()}${c.art}` : null,
     youName: look.name ?? '', herName: look.companion?.name ?? null, herCard: look.companion?.id ?? null,
+    // 小队 (battle-party.js): who stands beside him, and the cards new since the last fight (新).
+    party: bout.brief.setup?.you?.party ?? [], fresh: bout.brief.setup?.you?.fresh ?? [],
     // The closing card waits for the rules' word, not for the last blow (settleBout).
     ended: Boolean(bout.ended),
     // Why this fight, and who speaks in it (the brief carries them when the story gives them).
@@ -3612,6 +3640,7 @@ async function settleBout(b = bout) {
   }
   if (bout === b) bout = null;
   b.say?.close();
+  queueMicrotask(playReveals); // a card won waits for the room to close, then lands in the bag
   if (!r.ok && engineMoved(r)) return reloadForEngine(r);
   if (!r.ok) {
     console.warn('[lingjing] the rules refused the fight', r);
