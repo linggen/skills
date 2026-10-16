@@ -48,7 +48,8 @@ export function paceOf(s) {
   const since = s.clock - (s.movedAt ?? 0) - FAST_AFTER;
   if (since <= 0) return 1;
   const w = s.swing;
-  if (w.gust > 0 || hangsStill(w)) return 1;
+  // A crow walking is a clock the player races: its time is never quickened.
+  if (w.gust > 0 || hangsStill(w) || w.crows?.some((c) => c.state === 'walking')) return 1;
   if (!(w.vines.some((v) => v.cut == null) || anyHeld(w))) return 1;
   const up = ease(Math.min(1, since / RAMP_MS));
   const down = 1 - 0.45 * ease(Math.min(1, Math.max(0, (w.bread.speed - 2) / 6)));

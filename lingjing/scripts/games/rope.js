@@ -111,6 +111,7 @@ export function cutVine(w, v, k) {
   if (!vine || vine.cut != null || !(k >= 0 && k < vine.joints.length)) return false;
   Composite.remove(w.engine.world, vine.joints[k]);
   vine.cut = k;
+  w.started = true;
   if (vine.regrow) vine.cutAt = w.clock;
   // On its vines the thing settles soon (a swing is to be watched, not chased); a free one flies true.
   w.bread.frictionAir = airOf(w);
@@ -121,6 +122,7 @@ export function cutVine(w, v, k) {
 export function blowGust(w, level) {
   if (!level.gust || w.gust > 0) return false;
   w.gust = GUST_MS;
+  w.started = true;
   return true;
 }
 
@@ -129,6 +131,7 @@ export function popBubble(w, i) {
   const b = w.bubbles[i];
   if (!b || b.state === 'popped') return false;
   b.state = 'popped';
+  w.started = true;
   w.bread.frictionAir = airOf(w);
   return true;
 }
@@ -195,7 +198,7 @@ function seals(w) {
 function crows(w) {
   let stolen = false;
   for (const c of w.crows) {
-    if (c.state !== 'walking') continue;
+    if (c.state !== 'walking' || !w.started) continue; // it sets off at the first move, not while he reads
     if (w.vines[c.v]?.cut != null) { c.state = 'flown'; continue; }
     c.at = Math.min(1, c.at + STEP_MS / c.ms);
     if (c.at >= 1) { c.state = 'took'; stolen = true; }
