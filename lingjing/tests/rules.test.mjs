@@ -1459,9 +1459,9 @@ test('the market: the shelf on the place, buying, selling, the visit\'s stamina'
   const s = toMarket();
   const l = look(s, content, ctx());
   assert.equal(l.place.has.shop, true);
-  assert.deepEqual(l.place.shelf.map(i => i.id), ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'wangqi-1', 'jade-ring', 'luobo']);
+  assert.deepEqual(l.place.shelf.map(i => i.id), ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'mend-pill', 'huiqi-pill', 'wangqi-1', 'jade-ring', 'luobo']);
   assert.equal(l.place.shelf[1].buy, 80);
-  assert.deepEqual(l.place.show, [{ card: 'item', ids: ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'wangqi-1', 'jade-ring', 'luobo'] }]);
+  assert.deepEqual(l.place.show, [{ card: 'item', ids: ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'mend-pill', 'huiqi-pill', 'wangqi-1', 'jade-ring', 'luobo'] }]);
   const bought = must(trade, s, { action: 'buy', id: 'qi-pill' });
   assert.equal(bought.state.wealth, 20);
   assert.deepEqual(bought.state.bag, { 'fox-token': 1, 'tuna-jing': 1, 'old-bow': 1, 'grey-robe': 1, 'qi-pill': 1 }); // the token from 吴婆婆, the scroll from her, the bow from 爹, the robe from the 入门仪式
@@ -1475,7 +1475,7 @@ test('the market: the shelf on the place, buying, selling, the visit\'s stamina'
   const poor = refused(trade, { ...s, wealth: 10 }, { action: 'buy', id: 'qi-pill' }, 'no-stones');
   assert.equal(poor.say, '灵石不够。');
   assert.equal(poor.price, 80);
-  assert.deepEqual(refused(trade, s, { action: 'buy', id: 'moon-bell' }, 'not-for-sale-here').shelf.length, 10, 'the old 回春丹 is sold nowhere now (萝卜 came with 第一章)');
+  assert.deepEqual(refused(trade, s, { action: 'buy', id: 'moon-bell' }, 'not-for-sale-here').shelf.length, 12, 'the shelf: its ten, and the 丹囊\'s 回春丹 and 回气丹 (2026-10-16)');
   refused(trade, s, { action: 'buy', id: 'nothing' }, 'unknown-item');
   assert.equal(must(trade, { ...s, stamina: 0 }, { action: 'buy', id: 'straw-cloak' }).result.ok, true, 'spent 体力 still shops');
 });
@@ -1601,7 +1601,7 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
   s = r.state;
   const ye = look(s, content, octx());
   assert.equal(ye.scene.id, '01-ye');
-  assert.deepEqual(ye.place.shelf.map(i => i.id), ['moon-bell', 'iron-sword', 'wangqi-1', 'huojing', 'pouch-mid'], 'no shelf sells 筑基丹 (全观一年一颗)');
+  assert.deepEqual(ye.place.shelf.map(i => i.id), ['moon-bell', 'iron-sword', 'mend-pill', 'huiqi-pill', 'wangqi-1', 'huojing', 'pouch-mid'], 'no shelf sells 筑基丹 (全观一年一颗)');
   s = answer(trade, s, { action: 'buy', id: 'iron-sword' }).state;
   assert.equal(s.wealth, 180);
   s = answer(resolve, s, { exit: 'market' }).state; // stays
@@ -2185,7 +2185,7 @@ test('chapter 2 opens in November: the road from Ye, the Pu, Puyang\'s market, t
   s = r.state;
   const town = look(s, content, nctx());
   assert.equal(town.scene.id, '02-town');
-  assert.deepEqual(town.place.shelf.map(i => i.id), ['firm-pill', 'wangqi-2', 'sang-paper', 'leijimu', 'xirang', 'pouch-mid']);
+  assert.deepEqual(town.place.shelf.map(i => i.id), ['firm-pill', 'mend-pill', 'huiqi-pill', 'wangqi-2', 'sang-paper', 'leijimu', 'xirang', 'pouch-mid']);
   s = answerN(trade, s, { action: 'buy', id: 'sang-paper' }).state;
   assert.equal(s.wealth, 370);
   s = answerN(resolve, s, { exit: 'lake' }).state;
@@ -2267,7 +2267,7 @@ test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market,
   const town = look(s, content, dctx());
   assert.equal(town.scene.id, '03-town');
   // at 结丹 with her still to find and no bell in hand, the market sells one
-  assert.deepEqual(town.place.shelf.map(i => i.id), ['pojing-pill', 'wangqi-2', 'qi-salt', 'qi-silk', 'jingjin', 'hanyu', 'pouch-high', 'moon-bell']);
+  assert.deepEqual(town.place.shelf.map(i => i.id), ['pojing-pill', 'mend-pill', 'huiqi-pill', 'wangqi-2', 'qi-salt', 'qi-silk', 'jingjin', 'hanyu', 'pouch-high', 'moon-bell']);
   s = answerD(trade, s, { action: 'buy', id: 'qi-salt' }).state;
   assert.equal(s.wealth, 380);
   s = answerD(resolve, s, { exit: 'shore' }).state;

@@ -3,7 +3,7 @@
 // 2026-10-15: 都太简单了 — a first meeting should be won about 60% of the time;
 // a careful player wins reliably, a careless one loses).
 //
-//   node tools/story-fights.mjs [--seeds N] [--only id,id] [--line lookahead|careful] [--json]
+//   node tools/story-fights.mjs [--seeds N] [--only id,id] [--line lookahead|careful] [--pills] [--json]
 //
 // The band's player is `--line lookahead` (scripts/fightline.js): every move
 // tried on a copy and the fight played out from there — it plays as a careful
@@ -72,15 +72,15 @@ export function stateAt(stop) {
    entry deck stands over the creature's own; `reach: false` is a beast of the
    book that is not yet a game fight. `band` is what it is tuned to. */
 export const FIGHTS = [
-  { id: 'longzhi', name: '蠪侄 (三试)', at: 'h04r', scene: '00-longzhi/subdue', band: [0.6, 0.92], note: 'tutorial' },
+  { id: 'longzhi', name: '蠪侄 (三试)', at: 'h04r', scene: '00-longzhi/subdue', band: [0.6, 0.92], nopills: true, note: 'tutorial; before the 灵根 test he holds no 灵石 and no pill' },
   { id: 'gui', name: '蛫 (秘境)', at: 'h07', scene: 'wm-wangzuo/open' },
   { id: 'foe-zou', name: '邹青松 (试 · 追)', at: 'h07z', scene: 'wm-xirang/swallow', trial: true, unforced: true },
   { id: 'foe-lufang', name: '卢方 (大比)', at: 'h08', scene: 'wm-fushi/flip' },
-  { id: 'foe-shijie', name: '秦雁 (试 · 三十招)', at: 'h08b', scene: 'wm-lun2/dodge', trial: true, unforced: true },
+  { id: 'foe-shijie', name: '秦雁 (试 · 三十招)', at: 'h08b', scene: 'wm-lun2/dodge', trial: true, unforced: true, pilled: [0.38, 0.85], note: 'a 试 stood through: a pill buys a turn, not the seventh' },
   { id: 'foe-maxiaobao', name: '马小宝 (大比)', at: 'h08c', scene: 'wm-juesai/face' },
-  { id: 'qiuyu', name: '犰狳 (灵草谷)', at: 'h11', scene: '09-lingcao/fight' },
-  { id: 'foe-shijie', name: '秦雁 (崖顶 · 试)', at: 'h11b', scene: '09-futian/spar', trial: true, unforced: true },
-  { id: 'foe-shuanglong', name: '冰夷双龙 (试)', at: 'h10', scene: '01-rise/stand', trial: true },
+  { id: 'qiuyu', name: '犰狳 (灵草谷)', at: 'h11', scene: '09-lingcao/fight', band: [0.5, 0.72], note: 'Hanli 10-16: 55–65 won, really lost ≥20%' },
+  { id: 'foe-shijie', name: '秦雁 (崖顶 · 试)', at: 'h11b', scene: '09-futian/spar', trial: true, unforced: true, pilled: [0.38, 0.85], note: 'a 试 stood through: a pill buys a turn, not the eighth' },
+  { id: 'foe-shuanglong', name: '冰夷双龙 (试)', at: 'h10', scene: '01-rise/stand', trial: true, band: [0.35, 0.7], note: 'a 试 outlasted: its 气血 does not weigh it' },
   { id: 'qiuyu', name: '犰狳 (秘境 凶崖, guards the way)', at: 'h07', pool: 'mijing-ya' },
   { id: 'heyu', name: '合窳 (秘境 暗河)', at: 'h07z', pool: 'mijing-anhe' },
   { id: 'qiuyu', name: '犰狳 (秘境 暗河)', at: 'h07z', pool: 'mijing-anhe' },
@@ -142,8 +142,12 @@ function thoughtOut(setup) {
    (its twelve cards spent), turns, 气血 left on a win, and wins by force.
    `line`: 'careful' (the band's measure) or 'lookahead' (a player who thinks
    a turn ahead). Callable from elsewhere (tools/balance.mjs). */
-export function rateOf(f, seeds = 200, from = 0, line = 'careful') {
+/* `pills`: the 丹囊 carried in (battle.js § pills) — the pills-allowed player, who uses them as the
+   lookahead line finds them worth it. Without, none (Hanli 2026-10-16: never a money wall). */
+export const TWO_PILLS = ['mend-pill', 'huiqi-pill'];
+export function rateOf(f, seeds = 200, from = 0, line = 'careful', { pills = null } = {}) {
   const st = stateAt(f.at), foe = foeOf(f);
+  if (pills) { st.bag = { ...st.bag }; for (const id of pills) st.bag[id] = (st.bag[id] ?? 0) + 1; st.pill_pick = [...pills]; } else delete st.pill_pick;
   // A pool's beast is met roaming: its door is a haunt's (party.json roams_alone).
   const setup = fightSetup(content, st, foe, NOW, f.pool ? `haunt:${f.id}` : null);
   let won = 0, lost = 0, turns = 0, left = 0, forced = 0;
@@ -161,7 +165,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const seeds = Number(args[args.indexOf('--seeds') + 1]) || 300;
   const only = args.includes('--only') ? args[args.indexOf('--only') + 1].split(',') : null;
   const line = args.includes('--line') ? args[args.indexOf('--line') + 1] : 'lookahead';
-  const rows = FIGHTS.filter(f => !only || only.includes(keyOf(f)) || only.includes(f.id)).map(f => ({ fight: f.name, key: keyOf(f), at: f.at, ...rateOf(f, seeds, 0, line) }));
+  const pills = args.includes('--pills') ? TWO_PILLS : null;
+  const rows = FIGHTS.filter(f => !only || only.includes(keyOf(f)) || only.includes(f.id)).map(f => ({ fight: f.name, key: keyOf(f), at: f.at, ...rateOf(f, seeds, 0, line, { pills }) }));
   if (args.includes('--json')) console.log(JSON.stringify(rows, null, 1));
   else for (const r of rows) console.log(`${r.fight.padEnd(28)} ${r.at.padEnd(5)} win ${(r.win * 100).toFixed(1).padStart(5)}%  lost ${(r.lost * 100).toFixed(1).padStart(5)}%  dry ${(r.withdrew * 100).toFixed(1).padStart(5)}%  turns ${r.turns.toFixed(1)}  hp left ${(r.left * 100).toFixed(0)}%`);
 }

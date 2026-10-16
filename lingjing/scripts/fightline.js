@@ -37,7 +37,12 @@ export function bestMove(st) {
    made. Deterministic and much stronger than `careful`; the tests that need a
    fight WON to test what follows (a win the exit takes, a guard passed) play
    with it, so a fight tuned to 60% for `careful` does not make them flaky. */
-const plain = st => offers(st).find(o => o.ok && o.action.kind === 'play') ?? offers(st).find(o => o.ok && o.action.kind === 'attack') ?? offers(st).find(o => o.ok && o.action.kind === 'power');
+/* 丹囊 (battle.js § pills) in the plain line: a 回春丹 when he is down to half, a 回气丹 when it lets a
+   card in hand be played that the 灵力 now cannot pay. */
+const pillNow = (st, os) => os.find(o => o.ok && o.action.kind === 'pill' && !o.action.target && (
+  (o.pill.heal && st.you.hp <= st.you.hpMax / 2)
+  || (o.pill.mana && st.you.hand.some(id => { const c = st.catalog?.[id]; return c && c.cost > st.you.mana && c.cost <= st.you.mana + o.pill.mana; }))));
+const plain = st => { const os = offers(st); return pillNow(st, os) ?? os.find(o => o.ok && o.action.kind === 'play') ?? os.find(o => o.ok && o.action.kind === 'attack') ?? os.find(o => o.ok && o.action.kind === 'power'); };
 const copyOf = st => { const c = structuredClone({ ...st, catalog: undefined }); c.catalog = st.catalog; return c; };
 function playOut(st, line) {
   for (let g = 0; g < 300 && st.outcome === 'open'; g += 1) {

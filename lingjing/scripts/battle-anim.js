@@ -503,6 +503,15 @@ async function replay(root, entries, ctx) {
         await sleep(BEATS.gap);
         break;
       }
+      case 'pill': {
+        // 丹囊: a 回春丹 lifts the one it was given to, a 回气丹 the 灵力.
+        const el = t.mana ? q(root, '.bside.you .bmana') : t.member ? spotOf(root, t) : q(root, '.bside.you .bwho');
+        float(root, el, `+${t.heal ?? t.mana}`, 'heal');
+        if (t.heal && !t.member) hp.take(t.who, t.heal);
+        pulse(el, 'blessed', BEATS.hit);
+        await sleep(BEATS.gap);
+        break;
+      }
       case 'mana': {
         float(root, q(root, '.bside.you .bmana'), `+${t.amount}`, 'heal');
         await sleep(BEATS.gap);

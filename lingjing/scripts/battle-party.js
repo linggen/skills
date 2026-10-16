@@ -21,7 +21,7 @@ export function partyHtml(st, ctx) {
   const plate = a => {
     const m = byId[a.id] ?? {}, name = nameOf(m.name ?? a.name, ctx.lang) || a.id;
     const pct = Math.max(0, Math.round((a.hp / Math.max(1, a.hpMax)) * 100));
-    return `<div class="bally${a.gone ? ' gone' : ''}${a.taunt && !a.gone ? ' guard' : ''}" data-ally="${esc(a.id)}" title="${esc(name)}">
+    return `<div class="bally${a.gone ? ' gone' : ''}${a.taunt && !a.gone ? ' guard' : ''}" data-ally="${esc(a.id)}" data-spot="ally" data-index="${allies.indexOf(a)}" title="${esc(name)}">
       <span class="ballyface">${m.art ? `<img src="${esc(ctx.artBase ?? '')}${esc(m.art)}" alt="">` : `<b>${esc(first(name))}</b>`}</span>
       <span class="ballyname">${esc(name)}${a.taunt && !a.gone ? `<i class="ballyguard">${esc(w.guard)}</i>` : ''}${a.gone ? `<i class="ballygone">${esc(w.gone)}</i>` : ''}</span>
       <span class="ballyhp" data-now="${a.hp}" data-max="${a.hpMax}"><i style="width:${pct}%"></i><b>${a.hp}<small>/${a.hpMax}</small></b></span>

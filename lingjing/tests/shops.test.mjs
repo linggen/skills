@@ -24,7 +24,7 @@ const ids = s => look(s, content, ctx).place.shelf.map(i => i.id);
 test('each shop sells its own goods, under its own name', () => {
   assert.deepEqual(ids(at('fangshi')), content.places['徐'].places.find(p => p.id === 'fangshi').has.shop.goods);
   assert.ok(ids(at('fangshi')).includes('qi-pill'), '钱掌柜: 聚气丹, one ring');
-  assert.deepEqual(ids(at('pengcheng')).sort(), ['ginseng', 'lingzhi', 'mend-pill'], '彭城\'s apothecary');
+  assert.deepEqual(ids(at('pengcheng')).sort(), ['ginseng', 'huiqi-pill', 'lingzhi', 'mend-pill'], '彭城\'s apothecary: 回气丹 beside 回春丹 (2026-10-16)');
   assert.notDeepEqual(ids(at('fangshi')), ids(at('pengcheng')), 'two shops of 徐, two shelves');
   const l = look(at('pengcheng'), content, ctx);
   assert.equal(l.place.shop.name, '南门药铺');

@@ -1,6 +1,6 @@
 // rules/cards.mjs — 斗法 v3 and 得牌: the deck a player takes in, and the cards they have obtained.
 // Part of the rules engine; rules.mjs is its one door.
-import { MODES, REALMS as CARD_REALMS, shuffle } from '../battle.js';
+import { MODES, POUCH_MAX, REALMS as CARD_REALMS, shuffle } from '../battle.js';
 import { dayKey, pick, seedOf } from '../state.mjs';
 import { boundOf, duelSeed, wornOf } from './arms.mjs';
 import { herAwake, herLifts } from './companion.mjs';
@@ -188,6 +188,8 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
   const deck = deckFor(content, state), stars = starsIn(state, deck);
   // 新: a card gained and not yet played (cards_new), marked in the hand until it is.
   const fresh = (state.cards_new ?? []).filter(id => deck.includes(id));
+  // 丹囊: the pills he carries in (his last pick, as the bag still holds them).
+  const pouch = pouchFor(content, state);
   return {
     mode: 'pve',
     seed: deal ? `${duelSeed(state, creature, now)}|${deal}` : duelSeed(state, creature, now),
@@ -195,6 +197,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
       tier: state.tier, step: state.step ?? 0, root: main, deck, extra: [...(creature.extra ?? []), ...gear.charms],
       ...(party.length ? { party } : {}),
       ...(fresh.length ? { fresh } : {}),
+      ...(pouch.length ? { pouch } : {}),
       ...(lifts ? { lifts } : {}),
       // 望气: how much of the beast's plan he can read — the scroll (items
       // `learn`), or the day's reading at 吉/大吉.
@@ -231,6 +234,29 @@ export function partyFor(content, state, creature, game = null) {
 }
 /* The 卷 he stands in: his chapter's (chapter.json `juan`), 1 when it says none. */
 const juanOf = (content, state) => content.chapters?.[state.chapter]?.juan ?? 1;
+
+/* ── 丹囊: pills into a fight (Hanli 2026-10-16: 灵石 buys pills) ──
+   Up to three pills from the bag, picked at the door (`state.pill_pick`, his last pick
+   remembered); each in the fight is a free action, one a turn (battle.js § pills): 回春丹
+   (`effect.fight.heal`) to the member he chooses, 回气丹 (`mana`) 灵力 now. A pill taken is gone
+   from the bag at the settle (tasks.mjs). The beast has none. */
+export const fightPill = (content, id) => content.items.items.find(i => i.id === id)?.effect?.fight ?? null;
+export function pouchFor(content, state, pick = state.pill_pick) {
+  const left = { ...(state.bag ?? {}) }, out = [];
+  for (const id of pick ?? []) {
+    const e = fightPill(content, id);
+    if (!e || !(left[id] > 0) || out.length >= POUCH_MAX) continue;
+    left[id] -= 1;
+    out.push({ id, ...e });
+  }
+  return out;
+}
+/* What the door offers to carry: every pill in the bag with its number, and the pick as it stands. */
+export function pouchBrief(content, state) {
+  const pills = content.items.items.filter(i => i.effect?.fight && (state.bag?.[i.id] ?? 0) > 0)
+    .map(i => ({ id: i.id, name: pick(i.name, state.lang), n: state.bag[i.id], ...i.effect.fight, ...(i.art ? { art: i.art } : {}) }));
+  return pills.length ? { max: POUCH_MAX, pick: pouchFor(content, state).map(p => p.id), pills } : null;
+}
 
 /* The ★ 闭关 gave the cards in this deck — null when none has any. */
 function starsIn(state, deck) {

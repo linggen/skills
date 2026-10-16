@@ -209,7 +209,9 @@ export function withBalance(content) {
   const rewards = { ...content.rewards, ...(b.pay ? { tables: structuredClone(b.pay) } : {}), ...(b.convert ? { xiuwei_to_lingshi: structuredClone(b.convert) } : {}) };
   if (c.rerun_h != null) for (const ch of Object.values(content.chapters ?? {})) for (const beat of ch.beats ?? []) if (beat.sealed?.rerun) beat.sealed.rerun.every_h = c.rerun_h;
   const fantong = content.fantong && c.fantong_min != null ? { ...content.fantong, limit: { ...content.fantong.limit, cooldown_min: c.fantong_min } } : content.fantong;
-  return { ...content, ladder, rewards, fantong };
+  // Shop prices (`prices`): every `buy` and `sell` lives here, folded onto its item.
+  const items = b.prices && content.items ? { ...content.items, items: content.items.items.map(i => (b.prices[i.id] ? { ...i, ...b.prices[i.id] } : i)) } : content.items;
+  return { ...content, ladder, rewards, fantong, items };
 }
 
 /* The chapters as played: each 今 interlude spliced in where it stands
@@ -1552,6 +1554,8 @@ function lintFrom(content, bad) {
 
 function lintItems(content, bad) {
   const seen = new Set();
+  // balance.json `prices` is every shop price: each names a thing that exists.
+  for (const id of Object.keys(content.balance?.prices ?? {})) if (!content.items.items.some(i => i.id === id)) bad(`price ${id}`, 'prices an unknown item');
   for (const item of content.items.items) {
     const where = `item ${item.id}`;
     if (seen.has(item.id)) bad(where, 'duplicate id');
@@ -1577,8 +1581,10 @@ function lintItems(content, bad) {
     // lends), 防 on a 法衣, 抗 on a 佩. Everything else is one plain effect.
     const arms = ['atk', 'def', 'ward'].filter(k => e[k] != null);
     // 伤势 and 强化 were cut (redesign-v2 § 四): no `mend`, no `temper`.
-    const kinds = ['key', 'progress', 'wear', 'charm', 'core', 'learn', 'pouch', 'card'].filter(k => e[k] != null);
-    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, progress, wear, charm, core, learn, pouch, card, or arms (atk, def, ward)');
+    const kinds = ['key', 'progress', 'wear', 'charm', 'core', 'learn', 'pouch', 'card', 'fight'].filter(k => e[k] != null);
+    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, progress, wear, charm, core, learn, pouch, card, fight, or arms (atk, def, ward)');
+    // A pill for the 丹囊 (battle.js § pills): one whole number, 气血 (`heal`) or 灵力 (`mana`), on a pill.
+    if (e.fight != null && (item.kind !== 'pill' || Object.keys(e.fight).length !== 1 || !['heal', 'mana'].some(k => Number.isInteger(e.fight[k]) && e.fight[k] > 0))) bad(where, 'a fight effect is a pill\'s heal or mana, a whole number above zero');
     // A thing bought for the card it carries (2026-10-16, cards.md: 每张牌都在剧情里收集或者购买): the card names this item as its shop.
     if (e.card != null) {
       const c = (content.cards?.cards ?? []).find(x => x.id === e.card);

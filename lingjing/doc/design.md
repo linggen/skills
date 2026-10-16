@@ -522,6 +522,17 @@ strokes). **Not yet:** `tier`/`zhuan` on every made pill with a tamed effect
 curve (the story's ×10ⁿ is never the game's number), 丹毒 (and its cure: 闭关 = 补转, the turns the furnace left out made up by the body — story DESIGN § 六·五), 炸炉 for mortal
 furnaces, the furnace making 破境丹, 仙丹 after the finale.
 
+**丹囊 — 灵石 buys pills for fights** (Hanli 2026-10-16, 「灵石要有用」): at a fight's door he packs up to
+three pills from the bag (his last pick remembered); in the fight each is a free action, one a turn
+(battle.js § pills): **回春丹** +6 气血 to the member he chooses (himself, 阿禾, 孙二狗), **回气丹** +2 灵力
+now (the book's 「丹田空了吞一颗」). A pill taken leaves the bag at the settle, win or lose; the beast
+never has one; the pouch is kept per member for a later seat. Sold at 南门药铺, 钱掌柜's, 冀's 东街市 and
+every province shelf: **回春丹 15 · 回气丹 10**. **Every shop price lives in balance.json `prices`** (folded
+onto the items; items.json carries none). The fights are weighed so the lookahead player wins about
+**45% with no pill and about 65% with two** — never a money wall (tests/fight-band*.test.mjs, both ways).
+`tools/balance.mjs --wealth` prints the 灵石 flow per player (pills a fight: light ½, typical 1, heavy 1½).
+**伤势 does not carry:** every fight begins at full 气血 (cut 2026-09-24), so a 回春丹 matters only inside one.
+
 ### 饭桶 — free play 【在建】 (Hanli, 2026-10-15)
 
 Once he holds it, the 饭桶 opens from 物品: drag or tap items in; it spits **one** item, its name

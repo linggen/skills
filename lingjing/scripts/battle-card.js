@@ -13,6 +13,7 @@
 import { spoken } from './cards.js';
 import { esc } from './esc.js';
 import { freshHtml, partyHtml, sealHtml } from './battle-party.js';
+import { pillTrayHtml, pouchPickHtml } from './danang.js';
 import { POWER_COST, asleep, bodyOf, boostedOf, clash, costOf, dealt, effectOf, hashOf, keywordsOf, landed, pierces, sigEffect, starsOf } from './battle.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
@@ -221,15 +222,21 @@ const aimsAtRank = card => card?.effect?.chain != null || card?.effect?.swallow 
    (the stage itself); a tap on another thing that lifts lifts that instead.
    Returns `{ action }` to play, `{ pick }` to hold, or `{ clear: true }`
    (tests/battle-input.test.mjs). */
-const LIFTS = new Set(['hand', 'mine', 'power']);
-const FROM = { hand: 'hand', mine: 'board', power: 'power' };
+const LIFTS = new Set(['hand', 'mine', 'power', 'pill']);
+const FROM = { hand: 'hand', mine: 'board', power: 'power', pill: 'pill' };
 const sameSpot = (picked, spot) => FROM[spot.kind] === picked.from && (spot.kind === 'power' || picked.index === spot.index);
+/* A 回春丹 asks whom when a member stands beside him (丹囊, battle.js § pills); anything else is taken at once. */
+const pillAsks = (st, index) => Boolean(st.you.pouch?.[index]?.heal) && (st.you.allies ?? []).some(a => !a.gone);
 const minionAt = spot => (spot.kind === 'theirs' || spot.kind === 'mine' ? { kind: 'minion', index: spot.index } : undefined);
 const isLift = (picked, st, catalog) => Boolean(catalog?.[st.you.hand[picked.index]]?.effect?.buff);
 
 /* The second tap, by what is lifted and where it lands. A place missing here
    puts the lifted thing back. Only a lift is aimed at your own rank. */
 const SECOND = {
+  pill: {
+    self: p => ({ action: { kind: 'pill', index: p.index } }),
+    ally: (p, spot) => ({ action: { kind: 'pill', index: p.index, target: { kind: 'ally', index: spot.index } } }),
+  },
   hand: {
     theirs: (p, spot) => ({ action: { kind: 'play', index: p.index, target: minionAt(spot) } }),
     hero: p => ({ action: { kind: 'play', index: p.index, target: undefined } }),
@@ -272,6 +279,7 @@ function firstTap(spot, st, catalog, offers = null) {
   }
   if (spot.kind === 'mine') return { pick: { from: 'board', index: spot.index } };
   if (spot.kind === 'power') return st.foe.board.length ? { pick: { from: 'power' } } : { action: { kind: 'power' } };
+  if (spot.kind === 'pill') return pillAsks(st, spot.index) ? { pick: { from: 'pill', index: spot.index } } : { action: { kind: 'pill', index: spot.index } };
   return { clear: true };
 }
 
@@ -717,6 +725,7 @@ export function challengeHtml(brief, ctx) {
         ${(c.hints ?? []).map((h) => `<p class="cgoal chint">${esc(h)}</p>`).join('')}
       </div>
     </div>
+    ${done ? '' : pouchPickHtml(brief, ctx)}
     ${done ? `<div class="cdone">${esc(done)}</div>${ctx.feed ? `<div class="cacts">${ctx.feed}</div>` : ''}` : `<div class="cacts"><button class="bact end" data-duel-start="${esc(brief.id)}">${esc(w.begin)}</button>${ctx.feed ?? ''}</div>`}
     ${!done && ctx.say ? `<div class="cdone">${esc(ctx.say)}</div>` : ''}
   </div>`;
@@ -840,7 +849,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
     </div>
 
     <div class="bside you">
-      <div class="bwho"><span class="byouname">${esc(ctx.youName ?? '')} <span class="belem el-${esc(st.you.root ?? 'none')}">${GLYPH[st.you.root] ?? ''}</span></span>
+      <div class="bwho" data-spot="self"><span class="byouname">${esc(ctx.youName ?? '')} <span class="belem el-${esc(st.you.root ?? 'none')}">${GLYPH[st.you.root] ?? ''}</span></span>
         ${pool(w.hp, st.you.hp, st.you.hpMax, 'hp')}
         ${bubble('her', ctx.says?.her, ctx.herName)}</div>
       <div class="bnums">
@@ -858,7 +867,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       </div>
     </div>
 
-    <div class="bdock"><div class="bhand">${handHtml(st, ctx, picked)}</div></div>
+    <div class="bdock">${pillTrayHtml(st, ctx, picked)}<div class="bhand">${handHtml(st, ctx, picked)}</div></div>
 
     ${help ? `<div class="bhelp" data-spot="help-bg"><div class="bsheet">
       <h3>${esc(w.how)}</h3>

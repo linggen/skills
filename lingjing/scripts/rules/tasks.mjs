@@ -5,7 +5,8 @@ import { battle } from '../battle.js';
 import { gameOf } from '../content.mjs';
 import { addStamina, dayKey, periodKey, pick, settleStamina, seedOf } from '../state.mjs';
 import { drop } from './arms.mjs';
-import { cardCatalog, fightSetup, grantFrom, readOf, winCard } from './cards.mjs';
+import { cardCatalog, fightPill, fightSetup, grantFrom, readOf, winCard } from './cards.mjs';
+import { POUCH_MAX } from '../battle.js';
 import { clone, pay, refuse, replaying, spendStamina } from './core.mjs';
 import { choreCounts, choreGrant, isOnce, kaifuAfter, questDone } from './chores.mjs';
 import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from './errands.mjs';
@@ -268,6 +269,9 @@ export function duel(state, content, ctx, args) {
       if (empty) return empty;
     }
     const n = hunt && today?.day === day ? today.n ?? 0 : 0;
+    // 丹囊: the pills he picked at the door (`pills`, ids comma-separated; '' carries none) — kept as his
+    // pick for the next door, as many as the bag holds (cards.mjs pouchFor).
+    if (args.pills != null && !resuming) s.pill_pick = String(args.pills).split(',').map(x => x.trim()).filter(id => fightPill(content, id)).slice(0, POUCH_MAX);
     s.duels = { ...s.duels, [key]: { day, outcome: 'open', ...(hunt ? { n, ...(today?.last ? { last: today.last } : {}) } : {}) } };
     // While this is set, Ling advances NOTHING (SKILL.md § 斗法): she knows
     // from the save, not from a message, because a message can be lost.
@@ -294,6 +298,9 @@ export function duel(state, content, ctx, args) {
   const firsts = creature.person ? {} : meetBeast(s, creature.id, played.outcome === 'won', ctx.now);
   // 新 is gone once a card is played, win or lose (cards.mjs gainCard).
   unmark(s, played.log);
+  // A pill taken is gone from the bag, win or lose (battle.js § pills).
+  const ate = played.log.filter(e => e.act === 'pill' && e.who === 'you').map(e => e.id);
+  for (const id of ate) { s.bag[id] = Math.max(0, (s.bag[id] ?? 0) - 1); if (!s.bag[id]) delete s.bag[id]; }
   // A 符 played is a 符 spent, win or lose (cards.mjs § 装备入局).
   const spent = spentCharms(content, setup, played);
   for (const id of spent) { s.bag[id] = Math.max(0, (s.bag[id] ?? 0) - 1); if (!s.bag[id]) delete s.bag[id]; }

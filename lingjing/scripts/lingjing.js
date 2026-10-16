@@ -28,6 +28,7 @@ import { fantongHtml, wireFantongDrag } from './fantong-free.js';
 import { fantongPuzzle } from './fantong-puzzle.js';
 import { esc } from './esc.js';
 import { revealCards } from './card-reveal.js';
+import { pickAfter, pickNow } from './danang.js';
 import { HANDED_STAY_MS, TURNED_MS, handedStale } from './turned.js';
 import { thinker, stillAsked } from './think.js';
 import { DUIZI_WORDS, duiziChecksHtml, duiziFormOf } from './aigames-cards.js';
@@ -270,6 +271,7 @@ const view = {
   /// own words (no 体力, the beast already spent, the page's cards out of date).
   /// Everything else about a fight is in the save.
   duelSay: { id: null, text: null },
+  pillPick: {}, //       丹囊 at a door: the pick he is making, by duel id (danang.js); his last is the rules'
   bookOpen: false, //    the 事 chip's popover
   roadsOpen: false, //   the 去往 chip's list of roads
   shelfOpen: false, //   the 书 chip's popover: 九鼎录 · 读原著
@@ -342,7 +344,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, twentyGuess: view.twentyGuess, caseWho: view.caseWho, caseEv: view.caseEv, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, twentyGuess: view.twentyGuess, caseWho: view.caseWho, caseEv: view.caseEv, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -1621,6 +1623,12 @@ function noteInView() {
   noteSeen = text;
 }
 
+/* The pills' names and paintings for the fight's 丹囊 tray. */
+function pillWords() {
+  const items = (authored?.codexFiles?.items?.items ?? []).filter((i) => i.effect?.fight);
+  return { pillNames: Object.fromEntries(items.map((i) => [i.id, i.name?.[lang()] ?? i.name?.zh ?? i.id])), pillArt: Object.fromEntries(items.filter((i) => i.art).map((i) => [i.id, i.art])) };
+}
+
 /* What the fight's card draws itself from: this world's cards, this world's
    pictures, and the words of the language in play. */
 function boutCtx() {
@@ -1634,6 +1642,8 @@ function boutCtx() {
     youName: look.name ?? '', herName: look.companion?.name ?? null, herCard: look.companion?.id ?? null,
     // 小队 (battle-party.js): who stands beside him, and the cards new since the last fight (新).
     party: bout.brief.setup?.you?.party ?? [], fresh: bout.brief.setup?.you?.fresh ?? [],
+    // 丹囊 (danang.js): each pill's name and painting, from the world's items.
+    ...pillWords(),
     // The closing card waits for the rules' word, not for the last blow (settleBout).
     ended: Boolean(bout.ended),
     // Why this fight, and who speaks in it (the brief carries them when the story gives them).
@@ -3241,6 +3251,9 @@ const CLICKS = [
     onBoutTap({ kind: el.dataset.spot, index: Number(el.dataset.index ?? -1) });
   }],
   ['[data-duel-start]', (el) => run(`duel:${el.dataset.duelStart}`, () => { keep({ walkedOut: null }); return onDuelStart(el.dataset.duelStart); })],
+  // 丹囊 at the door (danang.js): one more pill packed, or the pouch emptied — the page's own until 出手.
+  ['[data-pill-add]', (el) => { const [id, pill] = el.dataset.pillAdd.split('|'); const b = doorBrief(id); if (b) show({ pillPick: { ...view.pillPick, [id]: pickAfter(b, ctx(), pill) } }); }],
+  ['[data-pill-clear]', (el) => show({ pillPick: { ...view.pillPick, [el.dataset.pillClear]: [] } })],
   // 问询: the one word that costs a model turn opens the ask bar; nothing is
   // sent until the player says so.
   ['[data-ask]', (el) => askNow(el.dataset.ask)],
@@ -3527,11 +3540,15 @@ function herFightOver(b, r) {
 /// The fight's door: the rules charge it and hand over the setup. One at a
 /// time — a Look and a tap both asking opened two rooms on one fight.
 let starting = false;
+/* The door's brief for a duel id: the scene's exit, or the beast up here. */
+const doorBrief = (id) => (look?.scene?.exits ?? []).find((x) => x.game?.id === id)?.duel ?? (look?.place?.encounter?.game?.id === id ? look.place.encounter.duel : null);
 async function onDuelStart(id) {
   if (bout || starting) return;
   starting = true;
   try {
-    const r = await write('duel', { id });
+    // 丹囊: the pick made at this door, else his last (the rules remember it).
+    const b = doorBrief(id), pills = b?.pouch ? pickNow(b, ctx()) : null;
+    const r = await write('duel', { id, ...(pills ? { pills: pills.join(',') } : {}) });
     if (!r.ok) {
       // Its own words, never the refusal's id: 「no-qi」 on the stage is the page
       // talking to itself. The states without words (won today, tamed) are

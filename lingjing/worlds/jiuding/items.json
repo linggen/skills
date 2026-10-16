@@ -30,8 +30,6 @@
         "zh": "山中所生，灵兽所喜。",
         "en": "Grows in the hills; spirit beasts love it."
       },
-      "buy": 30,
-      "sell": 10,
       "sold": [
         "徐"
       ],
@@ -55,8 +53,6 @@
         "zh": "一粒半日。",
         "en": "One pill, half a day."
       },
-      "buy": 80,
-      "sell": 20,
       "sold": [
         "徐"
       ],
@@ -77,8 +73,6 @@
         "zh": "形如人，年久者有灵。",
         "en": "Shaped like a person; an old one has a spirit of its own."
       },
-      "buy": 24,
-      "sell": 8,
       "sold": [
         "徐"
       ]
@@ -95,8 +89,6 @@
         "zh": "练气者的第一把剑，斩不了妖，斩得了心。佩之借木。",
         "en": "A first sword: it cuts no demon, only doubt. Worn, it lends 木."
       },
-      "buy": 60,
-      "sell": 15,
       "sold": [
         "徐"
       ],
@@ -117,8 +109,6 @@
         "zh": "泗水多雨。编得厚实，挡得住一拳。",
         "en": "It rains often on the Si. Woven thick, it turns a blow."
       },
-      "buy": 20,
-      "sell": 5,
       "sold": [
         "徐"
       ],
@@ -138,8 +128,6 @@
         "zh": "沉鼎观弟子的粗布袍，入门那天发的。",
         "en": "The coarse robe of a Sunken Cauldron Abbey disciple, given on the day of entry."
       },
-      "buy": 30,
-      "sell": 8,
       "effect": {
         "def": 1
       }
@@ -159,9 +147,7 @@
       "hint": {
         "zh": "慢慢嚼。",
         "en": "Chew slowly."
-      },
-      "buy": 6,
-      "sell": 2
+      }
     },
     {
       "id": "jade-fish",
@@ -175,8 +161,6 @@
         "zh": "汉墓里出来的东西，握着微温。",
         "en": "Something from a Han tomb; faintly warm in the hand."
       },
-      "buy": 150,
-      "sell": 50,
       "sold": [
         "徐"
       ]
@@ -193,8 +177,6 @@
         "zh": "船家只认牌，不认人。",
         "en": "The boatman knows the token, not the face."
       },
-      "buy": 10,
-      "sell": 3,
       "sold": [
         "徐"
       ],
@@ -215,8 +197,6 @@
         "zh": "系在银月颈上，走路便有声。",
         "en": "Tied at Yinyue's neck, it rings as she walks."
       },
-      "buy": 200,
-      "sell": 60,
       "sold": [
         "冀"
       ],
@@ -236,8 +216,6 @@
         "zh": "邺城铁匠打的，燕赵的样式。佩之借金。",
         "en": "Forged in Ye, in the style of Yan and Zhao. Worn, it lends 金."
       },
-      "buy": 120,
-      "sell": 40,
       "sold": [
         "冀"
       ],
@@ -260,8 +238,6 @@
         "zh": "练气九层圆满者冲关时服之，多几分把握。一转下品，一道纹，几点黑斑——全观一年只这一颗。",
         "en": "Taken at the Consummation of Qi Condensation, it steadies the breakthrough a little. One-turn, low grade: one ring, a few dark flecks — the whole temple gets one a year."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "effect": {
         "progress": 40,
@@ -284,8 +260,6 @@
         "zh": "饭桶一炉出的筑基丹，透亮得像一滴凝住的露水，九道金纹，一丝黑斑也没有，一个字也没有。沉鼎观三百年最好的一炉是三转。",
         "en": "A foundation pill from the rice-tub furnace: clear as a drop of frozen dew, nine gold rings, not one dark fleck, not one word on it. The best batch the temple made in three hundred years was three-turn."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "effect": {
         "progress": 40,
@@ -305,8 +279,6 @@
         "zh": "筑基者服之，根基愈固，结丹之路愈近。",
         "en": "For one who has laid the Foundation: the base grows firmer, the Core comes nearer."
       },
-      "buy": 260,
-      "sell": 65,
       "sold": [
         "兖"
       ],
@@ -329,8 +301,6 @@
         "zh": "结丹以后破境时带在身上，雷落下来多一分把握。破境时化去。",
         "en": "Carried into a breakthrough from the Core on, it steadies you under the lightning. It is spent in the attempt."
       },
-      "buy": 400,
-      "sell": 100,
       "sold": [
         "青",
         "扬",
@@ -350,16 +320,62 @@
       },
       "art": "art/items/mend-pill.webp",
       "about": {
-        "zh": "旧时疗伤的丹，如今只剩市价。",
-        "en": "A healing pill of older days; now worth only its price."
+        "zh": "一粒，伤口上的血便止住了，气血回来六分。斗法时装进丹囊，一回合吞一颗。",
+        "en": "One, and the bleeding stops; six of your strength comes back. Carried into a fight in the pill pouch — one a turn."
       },
       "hint": {
         "zh": "回春。",
         "en": "Spring returns."
       },
-      "buy": 30,
-      "sell": 8,
-      "sold": []
+      "sold": [
+        "徐",
+        "冀",
+        "兖",
+        "青",
+        "扬",
+        "荆",
+        "梁",
+        "雍",
+        "豫"
+      ],
+      "effect": {
+        "fight": {
+          "heal": 6
+        }
+      }
+    },
+    {
+      "id": "huiqi-pill",
+      "kind": "pill",
+      "name": {
+        "zh": "回气丹",
+        "en": "Qi-return pill"
+      },
+      "art": "art/cards/huiqi.webp",
+      "about": {
+        "zh": "紫玉参的断须搭一口灵力炼的：「丹田空了吞一颗，一口灵力灌回来大半缸。」斗法时装进丹囊，一回合吞一颗。",
+        "en": "Purple jade ginseng whiskers and a breath of 灵力: \"one when the dantian runs dry, and most of the vat comes back.\" Carried into a fight in the pill pouch — one a turn."
+      },
+      "hint": {
+        "zh": "丹田空了吞一颗。",
+        "en": "One when the dantian runs dry."
+      },
+      "sold": [
+        "徐",
+        "冀",
+        "兖",
+        "青",
+        "扬",
+        "荆",
+        "梁",
+        "雍",
+        "豫"
+      ],
+      "effect": {
+        "fight": {
+          "mana": 2
+        }
+      }
     },
     {
       "id": "mend-pill-9",
@@ -375,8 +391,6 @@
         "zh": "小铜炉里出来的回春丹。药铺柜台上的是一转，一道纹；它九道，金的。骨伤也治得好，修为也跟着涨一截。拿出去卖，没人认得——认得的，更坏。",
         "en": "A mending pill out of the little furnace. The one on the shop counter is one-turn, one ring; this has nine, in gold. It mends even broken bone, and your cultivation climbs with it. Nobody would know it at a counter — and whoever did would be worse."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "effect": {
         "progress": 60,
@@ -397,8 +411,6 @@
         "zh": "残株炼的聚气丹，出炉九道金纹。坊市的聚气丹抵半日打坐；它抵三日。",
         "en": "A qi-gathering pill from the garden's culls, nine gold rings on it. The market's is worth half a day's sitting; this, three days."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "effect": {
         "progress": 60,
@@ -417,8 +429,6 @@
         "zh": "观妖之气，知其将攻将守。筑基可习。",
         "en": "Read a beast's qi: whether it means to strike or to hold. From the Foundation."
       },
-      "buy": 120,
-      "sell": 30,
       "sold": [
         "徐",
         "冀"
@@ -442,8 +452,6 @@
         "zh": "气之所向，一招一式皆可见。结丹可习，须先通上卷。",
         "en": "Where its qi goes, every move is seen. From the Core, after Part One."
       },
-      "buy": 300,
-      "sell": 75,
       "sold": [
         "兖",
         "青",
@@ -472,8 +480,6 @@
         "zh": "濮阳桑门的纸，写符最好。",
         "en": "Paper from Puyang's Mulberry Gate; the best for writing talismans."
       },
-      "buy": 30,
-      "sell": 8,
       "sold": [
         "兖"
       ],
@@ -492,8 +498,6 @@
         "zh": "齐有渔盐之利。海边晒出来的盐，雪一样白。",
         "en": "Qi's wealth is fish and salt: sea salt dried on the shore, white as snow."
       },
-      "buy": 20,
-      "sell": 6,
       "sold": [
         "青"
       ],
@@ -512,8 +516,6 @@
         "zh": "齐纨鲁缟，天下第一。披在银月肩上。",
         "en": "The silk of Qi, the finest under heaven; laid over Yinyue's shoulders."
       },
-      "buy": 240,
-      "sell": 70,
       "sold": [
         "青"
       ],
@@ -541,7 +543,6 @@
         "zh": "一掷了事。",
         "en": "One throw, and done."
       },
-      "buy": 20,
       "sold": [],
       "made": {
         "from": "sang-paper",
@@ -596,8 +597,6 @@
         "zh": "一缕清气，通窍。",
         "en": "A wisp of clear air, to open the passages."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "story": true,
       "_about": "古六 (Hanli 2026-10-06): the 开炉夜 of 腊月初七 — broke, he feeds the 饭桶 凡物 and each feeding sucks a mouthful of his 灵气; granted at wm-qianye/sleep. A story thing: no slot, never sold. Used in bout one (Hanli 2026-10-06): woken, its black smoke shoots into 何七's nose and mouth; mid-sneeze he is pushed off; the slip goes to ash.",
@@ -619,8 +618,6 @@
         "zh": "一针见笑。",
         "en": "One prick, one laugh."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "story": true,
       "_about": "古六 (Hanli 2026-10-06): the 开炉夜 of 腊月初七 — broke, he feeds the 饭桶 凡物 and each feeding sucks a mouthful of his 灵气; granted at wm-qianye/sleep. A story thing: no slot, never sold. Touched and let go against 秦雁; thrown in the final, they glance off 祁长松's 护体灵光 and one finds an inner-court senior in the crowd.",
@@ -642,8 +639,6 @@
         "zh": "照人，先照己。",
         "en": "Before it shows another, it shows you."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "story": true,
       "_about": "古六 (Hanli 2026-10-06): the 开炉夜 of 腊月初七 — broke, he feeds the 饭桶 凡物 and each feeding sucks a mouthful of his 灵气; granted at wm-qianye/sleep. A story thing: no slot, never sold. In the semifinal it throws 马小宝's beam back into his own face — it brands his blotches white (Hanli 2026-10-06) — and shatters; he keeps the shards, and in 古九 the biggest one throws 老井's beam back.",
@@ -665,8 +660,6 @@
         "zh": "麻辣鲜香。",
         "en": "Numbing, hot, fresh, fragrant."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "story": true,
       "_about": "古四 (the 饭桶's first feeding: 一根牛骨头 → 牛脂甘露); 古六 (Hanli 2026-10-06): in the 卢方 bout (Hanli 2026-10-06), hanging off the rim, he flings out whatever his hand finds in the 储物袋 — this jar; it breaks on the stone and 卢方's stamp skates off the stage on the tallow; that night two soup bones give a 鸳鸯 base. Granted at wm-qianye/sleep, where he takes it out from under the woodpile. A story thing: no slot, never sold.",
@@ -685,8 +678,6 @@
         "zh": "山骨之精，千年始凝。",
         "en": "The mountain's own bone, a thousand years in the setting."
       },
-      "buy": 320,
-      "sell": 90,
       "sold": [
         "青",
         "梁",
@@ -709,8 +700,6 @@
         "zh": "为雷所击而不死之木，纹里带火。",
         "en": "Wood the lightning struck and did not kill; the grain still carries fire."
       },
-      "buy": 300,
-      "sell": 85,
       "sold": [
         "兖",
         "扬"
@@ -732,8 +721,6 @@
         "zh": "触之如冰，暑月不温。",
         "en": "Cold to the hand, and no summer warms it."
       },
-      "buy": 340,
-      "sell": 95,
       "sold": [
         "青"
       ],
@@ -754,8 +741,6 @@
         "zh": "地火烧尽余下的一点，落水不熄。",
         "en": "What is left when the earth-fire burns out; water does not put it out."
       },
-      "buy": 320,
-      "sell": 90,
       "sold": [
         "冀",
         "荆"
@@ -776,8 +761,6 @@
         "zh": "鲧窃帝之息壤以堙洪水——取之一掬，自生不已。",
         "en": "The soil Gun stole from the Emperor to dam the flood: a handful of it grows and does not stop."
       },
-      "buy": 380,
-      "sell": 110,
       "sold": [
         "兖",
         "豫"
@@ -798,8 +781,6 @@
         "zh": "寻常妖兽腹中所结，暖如活物。",
         "en": "Formed in an ordinary beast's belly; it is warm, like something living."
       },
-      "buy": 60,
-      "sell": 40,
       "sold": []
     },
     {
@@ -815,8 +796,6 @@
         "zh": "气已凝而不散，握之微微跳。",
         "en": "The breath in it holds together now; it beats faintly in the hand."
       },
-      "buy": 150,
-      "sell": 100,
       "sold": []
     },
     {
@@ -832,8 +811,6 @@
         "zh": "内有一线光行走不停。",
         "en": "A thread of light walks inside it and never stops."
       },
-      "buy": 360,
-      "sell": 240,
       "sold": []
     },
     {
@@ -848,8 +825,6 @@
         "zh": "缺口的环，古人佩以决事。土气厚，挡得住土行法术。",
         "en": "A ring with a gap, worn by the ancients when a thing had to be decided. Its earth is thick enough to turn an earth spell."
       },
-      "buy": 180,
-      "sell": 55,
       "sold": [
         "徐"
       ],
@@ -872,8 +847,6 @@
         "zh": "扬州厥包橘柚。淮南的橘，过了淮就成了枳。",
         "en": "Yang sent oranges and pomelos in baskets as tribute. An orange of the south turns bitter north of the Huai."
       },
-      "buy": 24,
-      "sell": 7,
       "sold": [
         "扬",
         "豫"
@@ -893,8 +866,6 @@
         "zh": "荆州贡丹。红得像火，炼丹的人离不开它。",
         "en": "Jing sent cinnabar as tribute. Red as fire; no alchemist can do without it."
       },
-      "buy": 36,
-      "sell": 10,
       "sold": [
         "荆",
         "豫"
@@ -914,8 +885,6 @@
         "zh": "蜀地的锦，要在锦江里洗，颜色才鲜。",
         "en": "The brocade of Shu; washed in the Brocade River its colours come up bright, and in any other river they dull."
       },
-      "buy": 90,
-      "sell": 25,
       "sold": [
         "梁",
         "豫"
@@ -935,8 +904,6 @@
         "zh": "雍州厥贡球、琳、琅玕。琅玕是青绿色的美石，圆得像珠子。",
         "en": "Yong's tribute was qiu and lin jade and langgan — a blue-green stone, round as pearls."
       },
-      "buy": 120,
-      "sell": 35,
       "sold": [
         "雍",
         "豫"
@@ -955,8 +922,6 @@
         "zh": "靛青绸面，绣着云纹。换上它，储物袋多出十二格。",
         "en": "Indigo silk worked with clouds. Carry it and your pouch holds twelve more kinds."
       },
-      "buy": 280,
-      "sell": 70,
       "sold": [
         "冀",
         "兖"
@@ -979,8 +944,6 @@
         "zh": "绛红织锦，玉扣系口，袋里自成一方天地。换上它，储物袋多出二十四格。",
         "en": "Crimson brocade with a jade toggle; a small world inside. Carry it and your pouch holds twenty-four more kinds."
       },
-      "buy": 800,
-      "sell": 200,
       "sold": [
         "青",
         "扬",
@@ -1004,8 +967,6 @@
         "zh": "灰布袋子，口上一道绳。主人死了，袋上的印记散了，到你手里便开。换上它，储物袋多出六格。",
         "en": "A grey cloth bag with a drawstring. Its owner is dead and the mark on it has faded, so it opens to your hand. Carry it and your pouch holds six more kinds."
       },
-      "buy": 80,
-      "sell": 20,
       "sold": [],
       "effect": {
         "pouch": 6
@@ -1025,8 +986,6 @@
         "zh": "赤松观的火葫芦，葫芦口放得出火蛇。塞子是你一箭射下来的，从干了的暗河里捡回来塞上。空了。是赤松观的东西：山上，有赤松观的人在的地方，不能亮。",
         "en": "Red Pine Abbey's fire gourd; fire snakes pour from its mouth. The cork is the one your arrow shot off, picked up from the dry underground river and pushed back in. Empty now. It is Red Pine Abbey's: on the mountain, or anywhere their people are, it cannot be shown."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "effect": {
         "root": "fire",
@@ -1051,8 +1010,6 @@
         "zh": "剑起火升，攻守兼备。",
         "en": "The sword rises, the fire climbs; attack and guard in one."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "effect": {
         "root": "fire",
@@ -1077,8 +1034,6 @@
         "zh": "背后有风，脚下有路。",
         "en": "Wind at your back, a road at your feet."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "effect": {
         "def": 1
@@ -1102,8 +1057,6 @@
         "zh": "低头做人。",
         "en": "Keep your head down."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "_about": "古五: two off 邹青松. A story charm: no fight card, no effect in play yet (the 藏 arc uses them in the book: one at the 秘境 exit / before a probe, one kept — OUTLINE 扣子簿).",
       "art_source": "The talisman's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16) until its own is painted."
@@ -1120,8 +1073,6 @@
         "zh": "灵草园里拔的，根上缠着阿禾那根红线，土还是园里的土。不是你的，带回去还她。",
         "en": "Pulled from the spirit-herb garden; Ahe's red thread is still round its root, the soil still the garden's. It isn't yours: you carry it back to her."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "story": true,
       "_about": "古五: 邹青松 took it off 阿禾 at the dry underground river; 小满 finds it in his pouch and returns it in 古六. A story thing (`story`): no slot, never sold.",
@@ -1139,8 +1090,6 @@
         "zh": "邹青松自己攒的，袋口红绳扎了三道死结。二十三块灵石，一颗中品，碧透，里头一缕光自己在转。你数回袋里，扎好。",
         "en": "Zou Qingsong's own savings, the mouth tied with red cord in three dead knots. Twenty-three spirit stones and one of middle grade, clear green, a wisp of light turning inside it. You counted them back in and tied it up."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "story": true,
       "_about": "古五 (Hanli 2026-10-05「丰厚一点」— a layer nine carries more): in the book (Hanli 2026-10-06) the whole purse, 中品 too, goes into the 饭桶 at 古五's end (「想出仙品，得喂仙品」) and nothing comes out. A story thing: no slot, never sold, adds no wealth.",
@@ -1158,8 +1107,6 @@
         "zh": "潭里那个九层身上的，石坎底下那一层画得明明白白——阿禾那张亲传的图上，那一层是空白。内门的东西，藏好。",
         "en": "Off the ninth-layer man in the pool: the level under the stone sill drawn plain — on Ahe's map, the Abbot's disciple's map, that level is blank. An inner-court thing; keep it hidden."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "story": true,
       "_about": "古五 (2026-10-03, 穷人家的孩子，见了宝，都拿走): he searched the dead 九层 in the 蛫 pool — 聚气丹 ×5 and this map; the 名牌 and the cloud-pattern pouch went into the dark. A 扣子 for the next time the 秘境 opens (OUTLINE 扣子簿). A story thing: no slot, never sold.",
@@ -1177,8 +1124,6 @@
         "zh": "吴婆婆塞给你的小木牌，磨得发亮；刻着一只蜷着的狐狸，尾巴绕着身子——九条。银月睡在里头：一条尾巴亮着，银的，一明，一暗。",
         "en": "The little wooden token Granny Wu pressed into your hand, worn bright; carved with a curled fox, its tails wrapped round it — nine. Yinyue sleeps inside: one tail is lit, silver, bright then dim."
       },
-      "buy": 0,
-      "sell": 0,
       "effect": {
         "key": true
       }
@@ -1194,9 +1139,7 @@
       "about": {
         "zh": "黑松岭那头雄鹿的皮，完整，油光水滑——够交马家的租。",
         "en": "The hide of the stag from Black Pine Ridge, whole and glossy — enough for the Mas' rent."
-      },
-      "buy": 40,
-      "sell": 20
+      }
     },
     {
       "id": "old-bow",
@@ -1210,8 +1153,6 @@
         "zh": "弓背裂过两回，拿牛筋缠着。爹摘下来放在你面前：「你拿着。」佩之借木。",
         "en": "Its back cracked twice and bound with ox sinew. Father took it off the wall and laid it before you: \"Take it.\" Worn, it lends 木."
       },
-      "buy": 50,
-      "sell": 10,
       "effect": {
         "root": "wood",
         "atk": 2
@@ -1229,8 +1170,6 @@
         "zh": "凡铁，刀口缺了两个牙，后来又缺了一个。秘境那道干了的暗河里，从一个死人手里一根一根掰开指头拿下来的。猎户放血，就使这么一把。",
         "en": "Common iron, two nicks in the edge, and later a third. Taken in the hidden realm's dry underground river from a dead man's hand, one stiff finger at a time. A hunter bleeds a deer with a knife like this."
       },
-      "buy": 8,
-      "sell": 5,
       "sold": [],
       "effect": {
         "root": "metal",
@@ -1251,8 +1190,6 @@
         "zh": "只长在站过鼎的地方：鼎在那里站了上千年，地面泡透了鼎气，长出一层青得发黑的苔。筑基丹的主药；生吃，筑基多一分把握。天下只有鼎址才有。",
         "en": "It grows only where a cauldron once stood: a thousand years of standing soaks the ground with the cauldron's breath, and a moss comes up so green it is nearly black. The chief herb of the Foundation pill; eaten raw, it steadies a Foundation breakthrough a little. Only a cauldron's old footing grows it."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "_about": "古五 (the author, 2026-10-02): the 秘境's own — round the four 七拃 pits in the stone chamber, and in the cracks of the dry underground river below the wind shaft, where the cauldron's breath seeped down. Every one of the nine cauldrons' old footings will have it (OUTLINE 扣子簿). No effect of its own: carried into the Foundation breakthrough it is the last thing reached for (ladder.json breakthrough.pill), a small bonus.",
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-05: one square footing pit in the stone chamber floor, its rim ringed with blackish-green moss."
@@ -1269,8 +1206,6 @@
         "zh": "秦始皇派人在泗水捞鼎，水里钻出一条龙，咬断了绳子，崩掉几根龙须，落在河底扎了根。须子又长又硬，泛一点金。只长在泗水底下。吃下去，冲得开经脉。",
         "en": "When the First Emperor's men fished the Si for the cauldron, a dragon rose and bit the rope through, and a few whiskers snapped off, sank, and took root in the riverbed. Long, stiff blades with a gleam of gold. It grows only under the Si. Eaten, it forces the meridians open."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "effect": {
         "progress": 40,
@@ -1291,8 +1226,6 @@
         "zh": "秘境十年翻一回身，吸一口气；那口气在最深处凝成珠子，指甲盖大，攥在手心里一跳一跳，像攥着一颗心。跟息壤同出一源。吞一颗，修为涨一截。",
         "en": "Once in ten years the hidden realm turns over and draws one breath; in its deepest place that breath sets into a bead the size of a fingernail, which beats in the palm like a held heart. Of one source with the living soil. Swallow one, and your cultivation climbs a stretch."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "effect": {
         "progress": 60,
@@ -1313,8 +1246,6 @@
         "zh": "秘境暗河崖壁上的一道铜矿，往年淹在水底下。九鼎是收九州之铜铸的。",
         "en": "From a copper vein in the wall of the hidden realm's underground river, under water in other years. The nine cauldrons were cast from the copper of the nine provinces."
       },
-      "buy": 12,
-      "sell": 4,
       "sold": [],
       "_about": "古五 (the author, 2026-10-02): the year's low water bared a copper vein; 孙二狗 dug half a lump with his fingernails. A find at shimen (meets.json).",
       "art_source": "The true gold's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
@@ -1331,8 +1262,6 @@
         "zh": "银月留下的一卷残简，绳子都快烂了。「看不懂，也要背。背熟了，总有一天会懂。」",
         "en": "The scroll Yinyue left, its cords nearly rotted through. \"Learn it by heart even if you can't understand it. One day you will.\""
       },
-      "buy": 0,
-      "sell": 0,
       "reads": "tuna"
     },
     {
@@ -1347,8 +1276,6 @@
         "zh": "伙房的萝卜，白的，带着泥。银月说：带根萝卜去。",
         "en": "A radish from the kitchen, white, with the soil still on. Yinyue said: take a radish."
       },
-      "buy": 1,
-      "sell": 0,
       "sold": [
         "徐"
       ]
@@ -1366,8 +1293,6 @@
         "zh": "银月从仙界带下来的丹炉，巴掌大，三足两耳，炉盖上蹲着一只小兽。它炼丹不炸。它嘴刁。",
         "en": "The furnace Yinyue brought down from the heavens: palm-sized, three legs, two ears, a little beast crouched on the lid. It never blows up a batch. It is a picky eater."
       },
-      "buy": 0,
-      "sell": 0,
       "effect": {
         "key": true
       }
@@ -1383,9 +1308,7 @@
       "about": {
         "zh": "瞿老扔给你的一卷薄书。「上有黄庭下关元，后有幽阙前命门」——三丹田，这回自己练。",
         "en": "A thin book Elder Qu tossed you. \"Above is the Yellow Court, below the Origin Pass; behind the Hidden Gate, before the Gate of Life\" — the three elixir fields, yours to train now."
-      },
-      "buy": 0,
-      "sell": 0
+      }
     },
     {
       "id": "heluo",
@@ -1398,9 +1321,7 @@
       "about": {
         "zh": "沉鼎观祖师留下的半卷竹简。三百年，没有一个人练成过第一宫——它要五行俱全。开篇是：戴九履一，左三右七。",
         "en": "Half a bamboo scroll left by the temple's founder. In three hundred years no one has mastered its first palace — it needs all five elements. It opens: nine on the head, one on the feet, three on the left, seven on the right."
-      },
-      "buy": 0,
-      "sell": 0
+      }
     },
     {
       "id": "chaihuo",
@@ -1418,8 +1339,6 @@
         "zh": "烧了可惜。",
         "en": "A pity to burn."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古四: the first thing he fed it (头一样，扔了根柴火棍). Always at hand by the woodpile (fantong.json `around`); never shelved.",
       "art_source": "The 雷击木's picture until its own is painted."
@@ -1440,8 +1359,6 @@
         "zh": "捡来的。",
         "en": "Picked up."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古四: one of the things he fed it (石子). Always at hand (fantong.json `around`).",
       "art_source": "The 铜矿石's picture until its own is painted."
@@ -1462,8 +1379,6 @@
         "zh": "落了就落了。",
         "en": "What falls, falls."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古四: one of the things he fed it (一片枯叶). Always at hand (fantong.json `around`).",
       "art_source": "The 龙须草's picture until its own is painted."
@@ -1484,8 +1399,6 @@
         "zh": "垃圾，也是账。",
         "en": "Rubbish is accounts too."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古七: the culls 周衡 pays the night watch with (黄精的烂根); its 方子 — with one 灵石 — gives 聚气丹. At hand once 药园残株 is done (fantong.json `around.after`). The hint is 周衡's own line (xu-yaoyuan-canzhu).",
       "art_source": "The ginseng's picture until its own is painted."
@@ -1506,8 +1419,6 @@
         "zh": "虫咬过的，也算一株。",
         "en": "Worm-bitten still counts as one."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古四 (一根黄芪的残株 → the nine-ring 回春丹) and 古七 (黄芪的虫叶; its 方子 — with a mouthful of his own qi — gives 回春丹). At hand once 药园残株 is done (fantong.json `around.after`).",
       "art_source": "The ginseng's picture until its own is painted."
@@ -1528,8 +1439,6 @@
         "zh": "剔得干净，想得明白。",
         "en": "Picked clean, thought through."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古四: the first thing it spat out (「咔哒」，吐出一根牙签). Junk.",
       "art_source": "The 竹剑's picture until its own is painted."
@@ -1550,8 +1459,6 @@
         "zh": "越嚼越香，小心门牙。",
         "en": "Better the longer you chew; mind your front teeth."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古四: 一块能砸核桃的锅巴 in the row on the floor. Junk.",
       "art_source": "The 干粮's picture until its own is painted."
@@ -1572,8 +1479,6 @@
         "zh": "比原来的小一点。",
         "en": "A little smaller than before."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古四: 一粒更小的石子 in the row on the floor. Junk.",
       "art_source": "The 铜矿石's picture until its own is painted."
@@ -1594,8 +1499,6 @@
         "zh": "来处来，去处去。",
         "en": "From where it came, to where it goes."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古七: 开出来的大半是灰和烟 — and 乱搭的，仍旧是灰. The commonest junk.",
       "art_source": "The 桑皮纸's picture until its own is painted."
@@ -1616,8 +1519,6 @@
         "zh": "服之开颜，步步生花。",
         "en": "Take it and smile; flowers bloom at every step."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古四: the pretty one is the poison (好看的是毒，难看的是解) — it comes out with its cure 止笑丸 (fantong.json pools.junk `with`). No effect in the game: junk with a story.",
       "art_source": "The 聚气丹's picture until its own is painted."
@@ -1638,8 +1539,6 @@
         "zh": "苦海回头。",
         "en": "Turn back from the sea of bitterness."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古四: 含笑半步颠's cure, out of the same pot (一毒一解，一锅出的). Junk.",
       "art_source": "The 回春丹's picture until its own is painted."
@@ -1660,8 +1559,6 @@
         "zh": "踏了再说。",
         "en": "Stamp first, ask later."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 银月's running gag (fantong.json events.yinyue): when she touches the bucket, out comes this — 「还不如我给你画」. Not 古四's 踏马符 (tama-fu, a fight card): this one does nothing.",
       "art_source": "The talisman's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16) until its own is painted."
@@ -1683,8 +1580,6 @@
         "zh": "三道，不多不少。",
         "en": "Three rings, no more, no less."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "effect": {
         "progress": 30,
@@ -1710,8 +1605,6 @@
         "zh": "骨头比嘴硬。",
         "en": "Bones are harder than mouths."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "effect": {
         "progress": 30,
@@ -1736,8 +1629,6 @@
         "zh": "装得下，就是你的。",
         "en": "If it fits, it is yours."
       },
-      "buy": 0,
-      "sell": 0,
       "sold": [],
       "effect": {
         "pouch": 6
@@ -1758,8 +1649,6 @@
         "zh": "犰狳那张鸟嘴，磨尖了，缠上布条当刺使。佩之借木。",
         "en": "The qiuyu's bird beak, ground to a point and wrapped in cloth for a grip. Worn, it lends 木."
       },
-      "buy": 12,
-      "sell": 4,
       "sold": [],
       "effect": {
         "root": "wood",
@@ -1781,8 +1670,6 @@
         "zh": "合窳的一颗獠牙，比人的小臂还长，刃口天生就快。佩之借土。",
         "en": "One of the heyu's tusks, longer than a forearm, its edge sharp from birth. Worn, it lends 土."
       },
-      "buy": 36,
-      "sell": 12,
       "sold": [],
       "effect": {
         "root": "earth",
@@ -1804,8 +1691,6 @@
         "zh": "外圈石缝里埋着的一把青铜剑，不知是哪一回开秘境时留下的。绿锈底下，刃还亮。佩之借金。",
         "en": "A bronze sword buried in a crack of the outer ring, left from some earlier opening of the realm. Under the green rust the edge still shines. Worn, it lends 金."
       },
-      "buy": 100,
-      "sell": 35,
       "sold": [],
       "effect": {
         "root": "metal",
@@ -1827,8 +1712,6 @@
         "zh": "一件旧皮坎肩，前人丢在外圈的，皮子还韧。",
         "en": "An old hide vest someone left in the outer ring. The leather is still tough."
       },
-      "buy": 12,
-      "sell": 4,
       "sold": [],
       "effect": {
         "def": 1
@@ -1849,8 +1732,6 @@
         "zh": "合窳的黄皮硝过，缝成一件短袄，刀砍上去打滑。",
         "en": "The heyu's yellow hide, cured and sewn into a short coat. A blade slides off it."
       },
-      "buy": 36,
-      "sell": 12,
       "sold": [],
       "effect": {
         "def": 2
@@ -1871,8 +1752,6 @@
         "zh": "暗河床上捡的一颗卵石，穿了孔挂在颈上。土气沉，挡得住一点土行法术。",
         "en": "A pebble from the dry riverbed, bored and hung at the neck. Its earth is heavy enough to turn a little of an earth spell."
       },
-      "buy": 12,
-      "sell": 4,
       "sold": [],
       "effect": {
         "ward": {
@@ -1895,8 +1774,6 @@
         "zh": "凶崖石缝里渗出来的石髓，凝成一颗，穿绳挂着。土气厚，挡得住土行法术。",
         "en": "Stone marrow seeped from a crack of the Cliff of Danger and set into a bead, hung on a cord. Its earth is thick enough to turn an earth spell."
       },
-      "buy": 36,
-      "sell": 12,
       "sold": [],
       "effect": {
         "ward": {
@@ -1919,8 +1796,6 @@
         "zh": "暗河底下一块青玉，摸着是暖的。土行水行的法术打到身上，都轻了。",
         "en": "A piece of green jade from the bottom of the dry river, warm to the touch. Earth and water spells land lighter."
       },
-      "buy": 100,
-      "sell": 35,
       "sold": [],
       "effect": {
         "ward": {
@@ -1947,8 +1822,6 @@
         "zh": "毛顺着摸。",
         "en": "Stroke it with the fur."
       },
-      "buy": 36,
-      "sell": 12,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -1968,8 +1841,6 @@
         "zh": "铜钱斑，不是铜钱。",
         "en": "Coin spots, not coins."
       },
-      "buy": 30,
-      "sell": 10,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -1989,8 +1860,6 @@
         "zh": "猴子攒的，人喝的。",
         "en": "Saved by monkeys, drunk by men."
       },
-      "buy": 24,
-      "sell": 8,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2010,8 +1879,6 @@
         "zh": "空的，也是它。",
         "en": "Empty, and still the snake."
       },
-      "buy": 18,
-      "sell": 6,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2031,8 +1898,6 @@
         "zh": "苦在后头。",
         "en": "The bitter comes after."
       },
-      "buy": 40,
-      "sell": 14,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2052,8 +1917,6 @@
         "zh": "装在箭尾，箭就认得路。",
         "en": "Fletch an arrow with it, and the arrow knows the way."
       },
-      "buy": 24,
-      "sell": 8,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2073,8 +1936,6 @@
         "zh": "一颗。还有一群。",
         "en": "One. And a pack behind it."
       },
-      "buy": 27,
-      "sell": 9,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2094,8 +1955,6 @@
         "zh": "往上翻的那一对。",
         "en": "The pair that curl up."
       },
-      "buy": 27,
-      "sell": 9,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2115,8 +1974,6 @@
         "zh": "冬天的比夏天的厚。",
         "en": "Thicker in winter than in summer."
       },
-      "buy": 42,
-      "sell": 14,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2136,8 +1993,6 @@
         "zh": "黑的值钱，黄的更值钱。",
         "en": "Black is dear; gold is dearer."
       },
-      "buy": 90,
-      "sell": 30,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2157,8 +2012,6 @@
         "zh": "多出来的那一只。",
         "en": "The one too many."
       },
-      "buy": 36,
-      "sell": 12,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2178,8 +2031,6 @@
         "zh": "别凑近了闻。",
         "en": "Don't sniff it."
       },
-      "buy": 30,
-      "sell": 10,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2199,8 +2050,6 @@
         "zh": "牛皮，虎纹。沾水不沉。",
         "en": "Ox hide, tiger stripes. It floats."
       },
-      "buy": 72,
-      "sell": 24,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2220,8 +2069,6 @@
         "zh": "像珠子，不是珠子。",
         "en": "Like a pearl. Not a pearl."
       },
-      "buy": 48,
-      "sell": 16,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2241,8 +2088,6 @@
         "zh": "拂尘的料，马尾的毛。",
         "en": "Whisk stuff — horsehair."
       },
-      "buy": 45,
-      "sell": 15,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2262,8 +2107,6 @@
         "zh": "摸着是热的。",
         "en": "Warm to the touch."
       },
-      "buy": 54,
-      "sell": 18,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2283,8 +2126,6 @@
         "zh": "报喜的牙。",
         "en": "A tooth that brings good news."
       },
-      "buy": 54,
-      "sell": 18,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2304,8 +2145,6 @@
         "zh": "红的。不是染的。",
         "en": "Red. Not dyed."
       },
-      "buy": 60,
-      "sell": 20,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2325,8 +2164,6 @@
         "zh": "虎的爪，长在鸡身上。",
         "en": "A tiger's claw on a chicken."
       },
-      "buy": 66,
-      "sell": 22,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2346,8 +2183,6 @@
         "zh": "九蒸九晒。",
         "en": "Steam nine times, dry nine times."
       },
-      "buy": 24,
-      "sell": 8,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2367,8 +2202,6 @@
         "zh": "人形的，多半是人刻的。",
         "en": "The man-shaped ones are mostly carved by men."
       },
-      "buy": 36,
-      "sell": 12,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2388,8 +2221,6 @@
         "zh": "长在松根底下，不见天日。",
         "en": "Grows under pine roots, never sees the sun."
       },
-      "buy": 27,
-      "sell": 9,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2409,8 +2240,6 @@
         "zh": "烧一把，屋里不生虫。",
         "en": "Burn a handful; no vermin in the house."
       },
-      "buy": 15,
-      "sell": 5,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2430,8 +2259,6 @@
         "zh": "名字里有柴，不是柴。",
         "en": "Firewood in the name; not firewood."
       },
-      "buy": 15,
-      "sell": 5,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2451,8 +2278,6 @@
         "zh": "在山里叫远志，出了山叫小草。",
         "en": "In the hills, Far Ambition. Out of them, Little Grass."
       },
-      "buy": 21,
-      "sell": 7,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2472,8 +2297,6 @@
         "zh": "七叶一枝花，深山是我家。",
         "en": "Seven leaves, one flower; the deep hills are my home."
       },
-      "buy": 30,
-      "sell": 10,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2493,8 +2316,6 @@
         "zh": "长在崖上，采的人也挂在崖上。",
         "en": "It grows on the cliff, and so must its picker."
       },
-      "buy": 42,
-      "sell": 14,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2514,8 +2335,6 @@
         "zh": "生的别尝。",
         "en": "Don't taste it raw."
       },
-      "buy": 12,
-      "sell": 4,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2535,8 +2354,6 @@
         "zh": "下过雨再来。",
         "en": "Come back after rain."
       },
-      "buy": 9,
-      "sell": 3,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2556,8 +2373,6 @@
         "zh": "磁石一吸，就跟着走。",
         "en": "Show it a lodestone and it follows."
       },
-      "buy": 9,
-      "sell": 3,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2577,8 +2392,6 @@
         "zh": "一层一层揭，揭不到底。",
         "en": "Peel it layer by layer; you never reach the bottom."
       },
-      "buy": 24,
-      "sell": 8,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2598,8 +2411,6 @@
         "zh": "指南，也指铁。",
         "en": "It points south — and at iron."
       },
-      "buy": 30,
-      "sell": 10,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2619,8 +2430,6 @@
         "zh": "端午的酒，蛇不喝。",
         "en": "Duanwu wine. Snakes don't drink it."
       },
-      "buy": 27,
-      "sell": 9,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2640,8 +2449,6 @@
         "zh": "红的土，滑的手。",
         "en": "Red earth, slick fingers."
       },
-      "buy": 21,
-      "sell": 7,
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
@@ -2662,8 +2469,6 @@
         "zh": "夜里穿，不出声。",
         "en": "Wear it at night; make no sound."
       },
-      "buy": 36,
-      "sell": 12,
       "sold": [],
       "effect": {
         "def": 1
@@ -2687,8 +2492,6 @@
         "zh": "挂在胸口，辟火。",
         "en": "Hang it at the breast against fire."
       },
-      "buy": 90,
-      "sell": 30,
       "sold": [],
       "effect": {
         "ward": {
@@ -2713,7 +2516,6 @@
         "zh": "雷，一掷。",
         "en": "Thunder, once."
       },
-      "buy": 60,
       "sold": [],
       "made": {
         "from": "sang-paper",
@@ -2739,8 +2541,6 @@
         "zh": "一张牌：短飞剑。",
         "en": "A card: the short flying sword."
       },
-      "buy": 60,
-      "sell": 0,
       "sold": [],
       "effect": {
         "card": "feijian"
@@ -2762,8 +2562,6 @@
         "zh": "一张牌：参悟。",
         "en": "A card: Contemplation."
       },
-      "buy": 80,
-      "sell": 0,
       "sold": [],
       "effect": {
         "card": "canwu"

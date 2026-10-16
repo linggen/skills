@@ -46,6 +46,8 @@ export const BALANCE_FILE = path.join(HERE, '../worlds/jiuding/balance.json');
 
 const chars = x => (typeof x === 'string' ? x.length : x?.zh?.length ?? 0);
 const tableCap = (content, grant) => Math.min(grant?.progress ?? 0, content.rewards.tables[grant?.table]?.progress ?? 0);
+/* What a grant pays in 灵石, capped by its table as the rules cap it. */
+const wealthCap = (content, grant) => Math.min(grant?.wealth ?? 0, content.rewards.tables[grant?.table]?.wealth ?? 0);
 const itemOf = (content, id) => content.items.items.find(i => i.id === id);
 const breakPills = content => new Set(Object.values(content.ladder.breakthrough?.pill?.items ?? {}).flat());
 /* What a thing pays eaten: a pill's capped `progress`; a breakthrough pill is kept for the throw. */
@@ -100,8 +102,9 @@ export function bookWalk(content, model = content.balance.model) {
         chapter: ch.id, id: sc.id, hui: sc.hui ?? null,
         minutes: text / model.chars_per_min + m.scene + boards.length * m.board + fight * m.fight / model.fight_win_rate,
         boards: boards.reduce((n, t) => n + tableCap(content, t.grant), 0), nboards: boards.length,
+        wealth: wealthCap(content, e?.grant) + boards.reduce((n, t) => n + wealthCap(content, t.grant), 0),
         grant: tableCap(content, e?.grant), pill: pillOf(content, e?.grant?.item), pill9: itemOf(content, e?.grant?.item)?.fill === 'full',
-        rise, breakthrough: Boolean(e?.breakthrough),
+        rise, breakthrough: Boolean(e?.breakthrough), fight,
         gate: e ? gates.find(g => g.scene === sc.id && g.exits.includes(e.id)) ?? null : null,
       });
       id = e?.next ?? null;
@@ -142,7 +145,18 @@ export function play(content, player, { model = content.balance.model, ladder = 
   };
   const gateMet = g => { const a = rank(s.tier, s.step), b = rank(g.tier, g.step); return a > b || (a === b && s.progress >= need()); };
   let wins = 0;
-  const win = n => { for (let k = 0; k < n; k++) { const whole = Math.min(1, n - k); gain(pay.haunt.progress * whole, true); wins += whole; } };
+  /* 灵石 (2026-10-16, Hanli: 灵石 buys pills): what comes in (a story step's and a board's grants, a
+     fight won at a haunt, the day's 功课, an errand) and the pills a fight takes out — `pills` a fight
+     at the shelf's mean price, bought only with what he has, so nobody goes broke. */
+  const W = { now: 0, earned: 0, spent: 0, low: 0, pills: 0 };
+  const priceOf = id => content.items.items.find(x => x.id === id)?.buy ?? 0;
+  const pillPrice = ((model.pills_bought ?? []).reduce((n, id) => n + priceOf(id), 0) / Math.max(1, (model.pills_bought ?? []).length)) || 0;
+  const earn = n => { if (n > 0) { W.now += n; W.earned += n; } };
+  const takePills = fights => {
+    const want = (player.pills ?? 0) * fights, can = pillPrice ? Math.min(want, W.now / pillPrice) : 0;
+    W.now -= can * pillPrice; W.spent += can * pillPrice; W.pills += can; W.low = Math.min(W.low, W.now);
+  };
+  const win = n => { for (let k = 0; k < n; k++) { const whole = Math.min(1, n - k); gain(pay.haunt.progress * whole, true); wins += whole; } earn((pay.haunt.wealth ?? 0) * n); takePills(n / model.fight_win_rate); };
   const chapterOf = () => walk[Math.min(i, walk.length - 1)].chapter;
   const walled = () => Boolean(content.chapters[chapterOf()]?.map?.home);
   const pools = () => {
@@ -172,6 +186,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
       const at = () => day + (k * sit + (sit - left)) / total;
       if (!zero()) {
         if (k === 0) gain(pay.gongke.progress * player.gongke);
+        if (k === 0) earn((pay.gongke.wealth ?? 0) * player.gongke);
         // 闭关 overnight (rules/seclusion.mjs, focus 修为): `seclude` hours a night, the rules' rate and cap.
         if (k === 0 && day > 0 && player.seclude) gain(Math.min(content.rewards.seclusion.progress_per_hour * Math.min(player.seclude, content.rewards.seclusion.cap_hours), pay.seclusion.progress));
         const run = rerunOpen();
@@ -201,7 +216,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
           const room = rooms[w.hui]?.first === w.id ? rooms[w.hui] : null;
           if (room) { gain(room.story + room.boards); win(room.fights * model.fight_win_rate); }
           // The 回's errands, once past 零层: handed in where the 回 is under way.
-          for (const [id, h] of Object.entries(model.errands_at)) if (h === w.hui && !errandsPaid.has(id) && quests.has(id) && !zero()) { errandsPaid.add(id); gain(errandPays(content, quests.get(id))); }
+          for (const [id, h] of Object.entries(model.errands_at)) if (h === w.hui && !errandsPaid.has(id) && quests.has(id) && !zero()) { errandsPaid.add(id); gain(errandPays(content, quests.get(id))); earn(wealthCap(content, quests.get(id).grant)); }
           gain(w.boards);
           if (w.pill9) s.pill9 = true;
           if (w.breakthrough) {
@@ -218,6 +233,9 @@ export function play(content, player, { model = content.balance.model, ladder = 
             }
           }
           gain(w.grant + w.pill);
+          earn(w.wealth);
+          // A story fight on the way takes its pills too.
+          if (w.fight) takePills(1 / model.fight_win_rate);
           done.add(w.id);
           r.end = at();
           i += 1;
@@ -237,7 +255,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
   }
   // A 回's days run from the last one's end to its own (time spent waiting on it counts).
   out.forEach((r, k) => { const prev = k ? out[k - 1].end : 0; r.days = r.end == null ? null : r.end - prev; });
-  return { rows: out, end: { tier: s.tier, step: s.step, progress: Math.round(s.progress) }, days: day };
+  return { rows: out, end: { tier: s.tier, step: s.step, progress: Math.round(s.progress) }, days: day, wealth: { ...W, perDay: day ? W.earned / day : 0, spentPerDay: day ? W.spent / day : 0 } };
 }
 
 /* The three players' days per 回. */
@@ -285,13 +303,29 @@ export function fit(content) {
   return th;
 }
 
+/* balance.json as written: two-space JSON, the price table one line a thing. */
+export function balanceText(raw) {
+  const t = JSON.stringify(raw, null, 2);
+  if (!raw.prices) return t + '\n';
+  const one = '"prices": {\n' + Object.entries(raw.prices).map(([k, v]) => `    ${JSON.stringify(k)}: ${JSON.stringify(v).replace(/,/g, ', ').replace(/:/g, ': ')}`).join(',\n') + '\n  }';
+  return t.replace(/"prices": \{[\s\S]*?\n  \}/, one) + '\n';
+}
+
+/* 灵石 by player: in and out per day over 卷一, the pills bought, the lowest he stood at. */
+export function wealthTable(content) {
+  return Object.entries(content.balance.model.players).map(([who, p]) => {
+    const r = play(content, p).wealth;
+    return { who, days: play(content, p).days, in: Math.round(r.perDay), out: Math.round(r.spentPerDay), pills: Math.round(r.pills), end: Math.round(r.now), low: Math.round(r.low) };
+  });
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const content = loadContent();
   if (process.argv.includes('--fit')) {
     const th = fit(content);
     const raw = JSON.parse(fs.readFileSync(BALANCE_FILE, 'utf8'));
     raw.layers.qi = th;
-    fs.writeFileSync(BALANCE_FILE, JSON.stringify(raw, null, 2) + '\n');
+    fs.writeFileSync(BALANCE_FILE, balanceText(raw));
     content.ladder.tiers[0].thresholds = th;
     console.log(`练气 ${JSON.stringify(th)} → balance.json`);
   }
@@ -302,5 +336,6 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.log('回     轻   中   重   (days)');
     for (const r of rows) console.log(`${r.hui.padEnd(5)} ${[r.light, r.typical, r.heavy].map(x => String(x ?? '—').padStart(4)).join(' ')}`);
     for (const r of runsPay(content)) console.log(`刷副本 ${r.beat} (${[r.chapter, ...r.also].join(' · ')}, every ${r.every_h} h): ${r.beasts} beasts a run`);
+    if (process.argv.includes('--wealth')) for (const w of wealthTable(content)) console.log(`灵石 ${w.who.padEnd(8)} ${w.days} days: in ${w.in}/day · pills out ${w.out}/day (${w.pills} pills) · end ${w.end} · lowest ${w.low}`);
   }
 }

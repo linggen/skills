@@ -1,0 +1,32 @@
+/* danang.css — 丹囊 (danang.js): at the door a row of the pills he may pack (aged paper chips, a
+   cinnabar count), in the fight a small tray by the hand with a 丹 seal. Phone: the tray sits above
+   the hand. Reduced motion: no lift. */
+.dn-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0 2px; padding: 6px 8px; border: 1px dashed var(--line, #DCD3C1); border-radius: 8px; background: color-mix(in srgb, var(--surface, #FBF8F2) 70%, transparent); }
+.dn-title { font-family: var(--serif); font-size: 13px; color: var(--dim, #6A6458); letter-spacing: .08em; margin-right: 2px; }
+.dn-title b { color: var(--seal, #B03A2B); font-family: var(--ui); font-size: 12px; }
+.dn-chip, .dn-clear { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px 3px 3px; border: 1px solid var(--line, #DCD3C1); border-radius: 999px; background: var(--surface, #FBF8F2); font: 12px var(--ui); color: var(--text, #1D1B17); cursor: pointer; }
+.dn-chip img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
+.dn-chip b { font-family: var(--serif); font-weight: 600; }
+.dn-chip small { color: var(--dim, #6A6458); }
+.dn-chip.on { border-color: var(--seal, #B03A2B); box-shadow: inset 0 0 0 1px rgba(176, 58, 43, .25); }
+.dn-chip.on small { color: var(--seal, #B03A2B); font-weight: 600; }
+.dn-chip[aria-disabled="true"]:not(.on) { opacity: .5; }
+.dn-clear { padding: 3px 8px; color: var(--dim, #6A6458); }
+.dn-none { color: var(--faint, #9A9284); font-size: 12px; }
+
+.bdock { position: relative; }
+.dn-tray { position: absolute; left: 8px; bottom: 6px; z-index: 30; display: flex; align-items: flex-end; gap: 6px; padding: 4px 6px; border: 1px solid var(--ink-line, rgba(31, 28, 24, .22)); border-radius: 8px; background: rgba(251, 246, 234, .9); }
+.dn-seal { align-self: center; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid #B03A2B; border-radius: 3px; color: #B03A2B; font: 700 12px var(--serif); transform: rotate(-6deg); }
+.dn-pill { display: flex; flex-direction: column; align-items: center; gap: 1px; width: 44px; padding: 3px 2px; border: 1px solid var(--ink-line, rgba(31, 28, 24, .22)); border-radius: 6px; background: var(--paper, #F3EEE2); cursor: pointer; transition: transform .15s; }
+.dn-pill img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
+.dn-pill i { font-style: normal; font: 700 16px var(--serif); color: #B03A2B; }
+.dn-pill small { font: 10px var(--ui); color: var(--ink-2, #4A453D); white-space: nowrap; }
+.dn-pill:not(.dim):hover, .dn-pill.held { transform: translateY(-4px); border-color: #B03A2B; box-shadow: 0 4px 10px rgba(31, 28, 24, .2); }
+.dn-pill.dim { opacity: .45; filter: grayscale(.7); }
+.dn-whom { align-self: center; max-width: 120px; font: 11px var(--ui); color: #B03A2B; }
+@media (max-width: 560px) {
+  .dn-tray { position: static; margin: 0 auto 2px; width: max-content; }
+  .dn-pill { width: 40px; }
+  .dn-pill img { width: 26px; height: 26px; }
+}
+@media (prefers-reduced-motion: reduce) { .dn-pill { transition: none; } .dn-pill.held, .dn-pill:hover { transform: none; } }

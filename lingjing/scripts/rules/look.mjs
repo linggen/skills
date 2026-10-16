@@ -5,7 +5,7 @@ import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
 import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, phaseName, realmName, threshold, seedOf, cultivating, layerNo } from '../state.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, THEN_BORN, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
-import { fightSetup, heldMark, readOf } from './cards.mjs';
+import { fightSetup, heldMark, pouchBrief, readOf } from './cards.mjs';
 
 const hintsOf = (state, game, lang) => { const h = (game.hints ?? []).filter(x => heldMark(state, x.mark)).map(x => pick(x.say, lang)); return h.length ? { hints: h } : {}; };
 import { callDue, companionOf, hasCompanion, herAwake, herAway, herCard, questBrief, recalledOf } from './companion.mjs';
@@ -346,6 +346,8 @@ function duelBrief(content, state, game, now, { door = false } = {}) {
 
     today: open ? { outcome: open.outcome } : null,
     stake: stakeOf(content, state, game),
+    // 丹囊 at the door: the pills he may carry in, and his last pick.
+    ...(pouchBrief(content, state) ? { pouch: pouchBrief(content, state) } : {}),
     // The lines only at the door, where the page opens the fight — Look stays lean.
     ...(door ? { says: saysOf(content, state, game) } : {}),
   };

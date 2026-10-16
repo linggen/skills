@@ -177,7 +177,7 @@ test('讨价还价: the deal buys at the ask; a regular then counts; three a day
   assert.equal(deal.r.price, ask);
   assert.equal(deal.s.wealth, wealth - ask);
   assert.equal(deal.s.bag['mend-pill'], held + 1);
-  assert.equal(deal.r.saved, 30 - ask);
+  assert.equal(deal.r.saved, s.haggle.open.list - ask, 'off the shelf price (balance.json prices)');
   ({ s } = hmust('haggle', deal.s, { action: 'open', id: 'qi-pill' }));
   assert.notEqual(hrun('haggle', s, { action: 'turn', reason: 'regular', grade: 1 }).r.refused_reason, 'not-a-regular', 'a past deal here: a regular');
   ({ s } = hmust('haggle', s, { action: 'walk' }));

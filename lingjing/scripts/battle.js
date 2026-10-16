@@ -206,9 +206,15 @@ export function shuffle(ids, seed) {
    deck stops. The lead's 退 is the side's: the fight is his (小满's), the
    others stand with him. One 灵力 for the side. Kept per member so a later
    seat can be another person's (co-op · PvP). */
+/* 丹囊 — the pills a member carries into a fight (Hanli 2026-10-16: 灵石 buys them): up to three,
+   each { id, heal } (回春丹: 气血 to the member chosen) or { id, mana } (回气丹, 「丹田空了吞一颗」: 灵力
+   this turn). One a turn, free of 灵力; a pill taken is gone (the rules take it from the bag at the
+   settle). Kept per member (a seat may be another person's later); a beast never has one. */
+export const POUCH_MAX = 3;
+const pouchOf = list => (list ?? []).slice(0, POUCH_MAX).map(p => ({ id: p.id, ...(p.heal ? { heal: p.heal } : {}), ...(p.mana ? { mana: p.mana } : {}) }));
 const allyOf = (a, hp, seed, who) => {
   const max = Math.max(1, Math.round(hp * (a.hp ?? 0.5)));
-  return { id: a.id, name: a.name ?? null, root: a.root ?? null, hp: max, hpMax: max, taunt: Boolean(a.taunt), gone: false, deck: shuffle(a.deck ?? [], `${seed}|${who}|${a.id}`) };
+  return { id: a.id, name: a.name ?? null, root: a.root ?? null, hp: max, hpMax: max, taunt: Boolean(a.taunt), gone: false, deck: shuffle(a.deck ?? [], `${seed}|${who}|${a.id}`), pouch: pouchOf(a.pouch) };
 };
 function sideOf(who, cfg, catalog, mode, seed) {
   const realm = REALMS[cfg.tier] ?? REALMS.qi;
@@ -231,6 +237,8 @@ function sideOf(who, cfg, catalog, mode, seed) {
     // 装睡 (§ asleep): the turns it lies still, and the blows that glanced off it.
     feint: cfg.feint ? { ...cfg.feint, left: Math.max(0, cfg.feint.turns ?? 1), glanced: 0 } : null,
     allies: (cfg.party ?? []).map(a => allyOf(a, hp, seed, who)), next: 0, dodge: 0,
+    // 丹囊 (§ pills): the pills carried in, each its number locked at the door; one a turn, no 灵力.
+    pouch: pouchOf(cfg.pouch), pillUsed: false,
   };
 }
 
@@ -281,6 +289,7 @@ function startTurn(st) {
   side.mana = Math.max(0, side.manaMax - (side.drain ?? 0));
   side.drain = 0;
   side.powerUsed = false;
+  side.pillUsed = false;
   for (const m of side.board) m.sick = false;
   for (const m of side.board) m.struck = false;
   // 锁: a body chained on the other side's turn sits out this one, exactly this one.
@@ -620,6 +629,15 @@ export function legal(st, action, who = 'you') {
   const side = st[who];
   const them = other(st, side);
   if (action.kind === 'end') return null;
+  if (action.kind === 'pill') {
+    const pill = side.pouch?.[action.index];
+    if (!pill) return 'no-pill';
+    if (side.pillUsed) return 'pill-used';
+    if (action.target && !pill.heal) return 'no-target';
+    if (action.target?.kind === 'ally' && (!side.allies[action.target.index] || side.allies[action.target.index].gone)) return 'no-target';
+    if (action.target && action.target.kind !== 'ally') return 'no-target';
+    return null;
+  }
   if (action.kind === 'power') {
     if (side.powerUsed) return 'power-used';
     if (side.mana < POWER_COST) return 'no-mana';
@@ -733,6 +751,7 @@ export function act(st, action, who = 'you') {
   const side = st[who];
   const them = other(st, side);
   if (action.kind === 'end') { endTurn(st); return { ok: true }; }
+  if (action.kind === 'pill') { takePill(st, side, action); return { ok: true }; }
   if (action.kind === 'power') {
     side.mana -= POWER_COST;
     side.powerUsed = true;
@@ -774,6 +793,22 @@ export function act(st, action, who = 'you') {
     hurt(st, them, landed(st, side.who, m.atk, m.element), { from: 'attack', element: m.element ?? null });
   }
   return { ok: true };
+}
+
+/* A pill from the pouch: 回春丹 to the member chosen (the lead when none), 回气丹 灵力 now, never past the cap. */
+function takePill(st, side, action) {
+  const [pill] = side.pouch.splice(action.index, 1);
+  side.pillUsed = true;
+  const ally = action.target?.kind === 'ally' ? side.allies[action.target.index] : null;
+  if (pill.heal) {
+    const m = ally ?? side;
+    m.hp = Math.min(m.hpMax, m.hp + pill.heal);
+    st.log.push({ act: 'pill', who: side.who, id: pill.id, heal: pill.heal, hp: m.hp, ...(ally ? { member: ally.id } : {}) });
+  }
+  if (pill.mana) {
+    side.mana = Math.min(side.manaCap, side.mana + pill.mana);
+    st.log.push({ act: 'pill', who: side.who, id: pill.id, mana: pill.mana, now: side.mana });
+  }
 }
 
 /* ── The creature's side: a policy, never a die ── */
@@ -929,13 +964,15 @@ export function tokenOf(a) {
   if (a.kind === 'play') return `play:${a.index}${at}`;
   if (a.kind === 'attack') return `attack:${a.index}${at}`;
   if (a.kind === 'power') return `power${at}`;
+  if (a.kind === 'pill') return `pill:${a.index}${a.target?.kind === 'ally' ? `@a${a.target.index}` : ''}`;
   return 'end';
 }
 
 export function actionOf(token) {
   const [head, aim] = String(token).split('@');
   const [kind, index] = head.split(':');
-  const target = aim ? { kind: 'minion', index: Number(aim.slice(1)), side: aim[0] === 'm' ? 'mine' : 'theirs' } : undefined;
+  const target = !aim ? undefined : aim[0] === 'a' ? { kind: 'ally', index: Number(aim.slice(1)) } : { kind: 'minion', index: Number(aim.slice(1)), side: aim[0] === 'm' ? 'mine' : 'theirs' };
+  if (kind === 'pill') return { kind: 'pill', index: Number(index), ...(target ? { target } : {}) };
   if (kind === 'play' || kind === 'attack') return { kind, index: Number(index), target };
   if (kind === 'power') return { kind: 'power', target };
   return { kind: 'end' };
@@ -970,6 +1007,7 @@ export function view(st) {
     ...(s.feint ? { feint: { ...s.feint } } : {}),
     ...(s.allies?.length ? { allies: s.allies.map(a => ({ id: a.id, name: a.name, root: a.root, hp: a.hp, hpMax: a.hpMax, taunt: a.taunt, gone: a.gone, deck: a.deck.length })) } : {}),
     ...(s.dodge ? { dodge: s.dodge } : {}),
+    ...(s.pouch?.length || s.pillUsed ? { pouch: s.pouch.map(p => ({ ...p })), pillUsed: s.pillUsed } : {}),
     board: s.board.map(m => ({ id: m.id, uid: m.uid ?? null, name: m.name, element: m.element, atk: m.atk, hp: m.hp, hpMax: m.hpMax, taunt: m.taunt, ready: !m.sick && !m.struck && !m.held, chained: Boolean(m.chain || m.held), drought: m.drought ?? 0 })),
   });
   // 望气术: the plan is shown only to a player who can read it (setup.you.insight).
@@ -1019,6 +1057,15 @@ export function offers(st) {
       const action = { kind: 'attack', index, target };
       const why = legal(st, action, 'you');
       out.push({ action, minion: m, cost: 0, why, ok: why === null });
+    }
+  });
+  // 丹囊: each pill, at the lead and (a heal) at each member standing beside him.
+  (st.you.pouch ?? []).forEach((p, index) => {
+    const at = p.heal ? [undefined, ...st.you.allies.map((a, i) => (a.gone ? null : { kind: 'ally', index: i })).filter(Boolean)] : [undefined];
+    for (const target of at) {
+      const action = { kind: 'pill', index, ...(target ? { target } : {}) };
+      const why = legal(st, action, 'you');
+      out.push({ action, pill: p, cost: 0, why, ok: why === null });
     }
   });
   out.push({ action: { kind: 'end' }, cost: 0, why: null, ok: true });

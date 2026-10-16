@@ -99,7 +99,8 @@
     "foe": {
      "party": [
       "ahe"
-     ]
+     ],
+     "hp": 6
     }
    },
    "withdrawn": {
