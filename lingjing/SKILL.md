@@ -7,6 +7,10 @@ description: >-
   other Linggen apps counts as 修炼.
 allowed-tools: [AskUser, GenerateImage]
 user-invocable: true
+# Ling and 银月 here know the person (core) and Lingjing's own memory, nothing else (Hanli 2026-10-16).
+memory-context: lingjing
+memory-recall-min-score: 0.7
+memory-recall-count: 3
 cwd: ~/.linggen/skills/lingjing
 app:
   title: Lingjing
