@@ -16,7 +16,10 @@ import { Matter } from './physics.js';
 
 const { Engine, Bodies, Body, Composite, Constraint, Query } = Matter;
 
-export const W = 360, H = 440, FLOOR = 422, ROOF = 22;
+export const W = 360;
+export const H = 440;
+export const FLOOR = 422;
+export const ROOF = 22;
 export const STEP_MS = 1000 / 60;
 export const BREAD_R = 19, BUBBLE_R = 26;
 const LINK = 18, GUST_MS = 700, GUST_ACC = 0.0009, GUST_BAND = 70, SETTLE_STEPS = 240;
