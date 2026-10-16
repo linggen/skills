@@ -11,12 +11,12 @@ Updated 2026-10-16.
 | What | Where | Started |
 |---|---|---|
 | Fight party + card provenance — doc/cards.md for Hanli's read; build waits on it | `doc/cards.md` (the 得牌 reveal kept local, unpushed) | 10-16 |
-| Pacing + economy: `tools/balance.mjs` + `balance.json`, 修为 stage quest every 回, story floor removed (`8f112416`), pool-fight daily diminishing | fresh build (the 10-15 one was lost unpushed) | 10-16 |
 | Small games — doc/games.md for Hanli's design check; mechanic changes wait on it (UI polish and stuck fixes go on) | `doc/games.md` | 10-16 |
 | 喂饼 rebuilt as a 割绳子-style physics puzzle (00-fox: cut vines so the 饼 reaches the hurt fox; 3 stars) | first of the new small games (Hanli 10-16 「先做你说的」) | 10-16 |
 
 ## Done lately
 
+- 10-16 — Pacing + economy (`9c42af47`, `9fbba840`): `worlds/jiuding/balance.json` holds every number (layers, pay, conversion, the day's fight bands, cooldowns); `tools/balance.mjs` plays light/typical/heavy day by day (typical ≈5–7 days a 回, 古六 ≈8; heavy ≈3–5; light ≈8–15); `--fit` sets 练气 [0,210,390,410,430,480,500,740,760,780]; 阶段任务 in every 回 past 古三 (rules/gates.mjs); story floor gone; pool + rerun wins 3 full / 3 half / then 灵石; rerun open through 00-zhuji; state v10.
 - 10-16 — 斗法 polish (`73222e12`, `2598747d`): ranks fit the field, hints on the seam, phone head one line, 攻/血 seals, end seal shows whose turn; a played card flies, the beast's 功法 shown, 气血 falls on the hit, 杀招 wind-up on the plate, the beaten plate goes to ink. Live at 1440 and 390.
 - 10-16 — the other 22 后山崖顶 finds redrawn the same way (`be45ae26`), 猴儿酒 re-rolled; all 36 finds and the six beasts now in the house 水墨淡彩.
 - 10-16 — 后山崖顶 art redrawn in the house 水墨淡彩 (`55386811`): the six beasts (赤狐 slim, 豺 low and heavy) and 14 of the 36 finds, by Codex 0.163 (gpt-6.1-sol) with a house picture as the style (tools/paint-wash-codex.py); the 野猪 · 狼 · 熊 loot picks accepted.
@@ -32,7 +32,7 @@ Updated 2026-10-16.
 - Per-回 gameplay pass: 古六 and 古七 done; 古四, 古八, 今线, 古九 to do.
 - 剧情 × 开放世界 (tasks drive the story, key beats lock the map).
 - 丹药 in the game.
-- 秘境 reruns: rooms built; retune once balance.json lands.
+- 秘境 reruns: rooms built; cooldown in balance.json; drops and finds not in the 修为 model yet.
 - 哇时刻; 画面效果 (PixiJS + GSAP).
 - Playtest crawler: a human-like bot per board, dead-control detection.
 
@@ -53,6 +53,7 @@ Updated 2026-10-16.
 
 ## Waiting on Hanli
 
+- Economy feel calls (10-16, `9c42af47`): the stage-quest gates sit at beat entries so he can walk away to earn them — 古四 the 柴房 night (not 第一路), 古五 the 秘境's door (not 息壤), 古六 the 大比's eve (wm-qianye), which makes 古六 ≈8 typical days. 古七's cap 六层 lets a grinder pass 定风/沂水 before the book (those rises become no-ops; 09-furnace's 「层不动」). The rerun kept open in 00-zhuji. Rerun beasts count in the day's fight bands. 闭关 not modelled (~40–60 修为 a night). Minutes, reading speed (450 字/min) and the three players are guesses — hand-play them. A rising ladder with 古七 holding two layers is why heavy 古五/古六 come in at ≈3–4.5 days. 古九 has no quest (九转 lands full).
 - Play the latest build 古一 → 古四 before the per-回 expansions and 卷二 (launch waits for his full playthrough).
 - 10-14 asks: 拽/忍 redraws; village-map lines; skip on the first six beats; 闵丹师 mark 07:179; 古三 box merge.
 - Weather density, by his eye.
