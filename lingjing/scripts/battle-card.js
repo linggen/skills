@@ -125,6 +125,8 @@ export const WORDS = {
       'too-big': '吞不下 —— 它攻太高', 'aim-one': '点它阵前一个', chained: '被锁着，这一回合不能动',
     },
     chained: '锁', drought: '大旱', drainNext: '下回合灵力 −{n}',
+    // A body's why in a word (its pill is narrow): '' says nothing — the turn itself says it.
+    mark: { 'just-arrived': '刚到', 'already-struck': '已出手', 'no-attack': '不出手', 'not-your-turn': '', chained: '' },
     pickCard: '点一个目标 —— 妖，或它阵前的一个', pickRank: '点它阵前的一个', pickTarget: '再点它要打谁 —— 妖，或它阵前的一个',
     begin: '出 手', wonToday: '今日已降', lostToday: '它退入雾中，明日再来', spentToday: '它今日力竭遁走了',
     stale: '牌面没读全 —— 刷新页面再出手。',
@@ -166,6 +168,7 @@ export const WORDS = {
       'too-big': 'too big to swallow — its attack is too high', 'aim-one': 'choose one of its rank', chained: 'chained — cannot strike this turn',
     },
     chained: 'Chained', drought: 'Drought', drainNext: 'Force −{n} next turn',
+    mark: { 'just-arrived': 'new', 'already-struck': 'struck', 'no-attack': 'no attack', 'not-your-turn': '', chained: '' },
     pickCard: 'choose a target — the beast, or one of its rank', pickRank: 'choose one of its rank', pickTarget: 'now choose what it strikes',
     begin: 'Begin', wonToday: 'subdued today', lostToday: 'it withdrew — come back tomorrow', spentToday: 'it walked away spent today',
     stale: 'The cards did not load — refresh, then begin.',
@@ -352,6 +355,10 @@ const crystals = (now, max, cap) => {
   return `<div class="bmana">${dots.join('')}<b>${now}/${max}</b></div>`;
 };
 
+/* A body's why on its pill, in a word (WORDS.mark) — the whole sentence is the hand's and the help's;
+   on a 98px body 「刚到，这一回合不能动」 read 「刚到，这…」 (live, 2026-10-16). */
+const markOf = (w, why) => w.mark?.[why] ?? w.why[why] ?? why;
+
 function minionHtml(m, side, index, ctx, picked) {
   const w = ctx.words;
   const why = side === 'mine' ? ctx.reasons.get(`mine:${index}`)?.why : null;
@@ -360,7 +367,7 @@ function minionHtml(m, side, index, ctx, picked) {
     m.taunt ? w.taunt : null,
     m.chained ? w.chained : null,
     m.drought ? w.drought : null,
-    side === 'mine' && why ? (w.why[why] ?? why) : null,
+    side === 'mine' && why ? markOf(w, why) : null,
     side === 'mine' && !why && m.ready ? w.ready : null,
   ].filter(Boolean);
   const can = side === 'mine' && !why && m.ready;
@@ -428,9 +435,11 @@ function handHtml(st, ctx, picked) {
     const held = picked?.from === 'hand' && picked.index === index;
     const b = bodyOf(st.you, c);
     // 闭关's ★: the cost it has now, and the stars by its name.
+    // On the beast's turn every card waits alike: the seal and the turn say why once, not each card.
+    const shownWhy = why && why !== 'not-your-turn' ? (w.why[why] ?? why) : null;
     const text = `${esc(sayEffect({ ...c, effect: effectOf(st.you, c), keywords: keywordsOf(st.you, c) }, ctx))}${liftOf(st.you, c, ctx)}${onBeast(st, c, ctx)}${backlash(st, c, ctx)}`;
     return `<button class="bcard el-${esc(c.element ?? 'none')}${herOf(id, ctx)}${held ? ' held' : ''}${why ? ' dim' : ''}${!why && !held ? ' can' : ''}" data-spot="hand" data-index="${index}" data-id="${esc(id)}" style="${fanOf(index, n)}"${why ? ` title="${esc(w.why[why] ?? why)}"` : ''}>
-      ${leafHtml(c, ctx, { cost: costOf(st.you, c), atk: b.atk, hp: b.hp, stars: starsOf(st.you, c), text, why: why ? (w.why[why] ?? why) : null })}
+      ${leafHtml(c, ctx, { cost: costOf(st.you, c), atk: b.atk, hp: b.hp, stars: starsOf(st.you, c), text, why: shownWhy })}
     </button>`;
   }).join('');
 }
@@ -736,6 +745,21 @@ function askHerHtml(ctx) {
   return `<button class="bask${a.can ? '' : ' dim'}" data-spot="ask"${a.can ? '' : ' aria-disabled="true"'} title="${esc(label)}">${esc(label)}<small>${a.left}</small></button>`;
 }
 
+/* 结束回合 is the turn's own seal (《炉石传说》's end-turn button): cinnabar and yours to press on your
+   turn, burning when nothing else is left; on the beast's turn it goes to ink and names whose turn it
+   is — the one place the eye checks (the pill by 认输 was too small to read it from). */
+function endSealHtml(st, w, stuck, turn) {
+  if (st.whose === 'foe' && st.outcome === 'open') return `<button class="bact end wait" data-spot="end" aria-disabled="true"><span class="bsealface"><b>${turn}</b></span></button>`;
+  return `<button class="bact end${stuck ? ' urge' : ''}" data-spot="end"><span class="bsealface"><b>${esc(w.end)}</b></span></button>`;
+}
+
+/* What the room says back — a refused move, what to tap next, or that only 结束回合 is left — on the
+   seam between the ranks (battle.css .bhints). */
+function hintsHtml(w, note, advice, stuck) {
+  const said = [note ? `<div class="bhint bno">${esc(w.why[note] ?? note)}</div>` : '', advice ? `<div class="bhint${stuck ? ' burge' : ''}">${esc(advice)}</div>` : ''].join('');
+  return said ? `<div class="bhints">${said}</div>` : '';
+}
+
 /* `st` is `view(state)`, `offers` is `offers(state)`, `ctx` carries the
    catalog, the language and the words. `picked` is what the player is holding.
    `ctx.ended: false` keeps the closing card off while the last blow plays out. */
@@ -796,7 +820,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
 
     <div class="bfield">
       <div class="brank theirs" aria-label="${esc(w.theirs)}">${rank('theirs', st.foe.board, ctx.board)}</div>
-      <div class="bseam">${lastHtml(st.log, ctx, openLog)}</div>
+      <div class="bseam">${lastHtml(st.log, ctx, openLog)}${hintsHtml(w, note, advice, stuck)}</div>
       <div class="brank mine" aria-label="${esc(w.yours)}">${rank('mine', st.you.board, ctx.board)}</div>
     </div>
 
@@ -814,14 +838,12 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
           <span class="bsealface"><b>${esc(w.power)}</b><span class="belem">${GLYPH[st.you.root] ?? ''}</span></span>
           <small>${powerWhy ? esc(w.why[powerWhy] ?? powerWhy) : `${st.you.powerHit} · ${POWER_COST}${ctx.lang === 'en' ? ' ' : ''}${esc(w.mana)}`}</small>
         </button>
-        <button class="bact end${stuck ? ' urge' : ''}" data-spot="end"><span class="bsealface"><b>${esc(w.end)}</b></span></button>
+        ${endSealHtml(st, w, stuck, turn)}
       </div>
     </div>
 
     <div class="bdock"><div class="bhand">${handHtml(st, ctx, picked)}</div></div>
 
-    ${note ? `<div class="bhint bno">${esc(w.why[note] ?? note)}</div>` : ''}
-    ${advice ? `<div class="bhint${stuck ? ' burge' : ''}">${esc(advice)}</div>` : ''}
     ${help ? `<div class="bhelp" data-spot="help-bg"><div class="bsheet">
       <h3>${esc(w.how)}</h3>
       ${w.help.map(([k, v]) => `<p><b>${esc(k)}</b>${esc(v)}</p>`).join('')}

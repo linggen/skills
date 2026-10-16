@@ -158,8 +158,15 @@
 @keyframes bgather { 50% { box-shadow: 0 0 22px rgba(179, 55, 42, 0.3); } }
 
 /* ── 阵前: the two ranks, an ink seam between ── */
-.bfield { display: grid; grid-template-rows: 1fr auto 1fr; align-content: center; gap: 4px; min-height: 0; }
-.brank { display: flex; justify-content: center; align-items: center; gap: 10px; min-height: 0; padding: 2px 0; }
+/* The two ranks share what the field has, never more (live, 2026-10-16: both ranks full under a 杀招
+   line, the bodies' feet ran over 上一手 and their heads under the 杀招): a body is as tall as its
+   row allows, up to --mh, and each rank leans toward the seam — the table's middle. */
+.bfield { display: grid; grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr); gap: 4px; min-height: 0; }
+.brank { display: flex; justify-content: center; align-items: center; gap: 10px; height: 100%; min-height: 0; padding: 2px 0; box-sizing: border-box; }
+.brank.theirs { align-items: flex-end; }
+.brank.mine { align-items: flex-start; }
+.brank > .bminion { height: 100%; max-height: var(--mh); }
+.brank > .bminion.empty { align-self: center; }
 .brank.lost-one { animation: dust .5s ease-out; }
 @keyframes dust { 0% { background: rgba(31, 28, 24, 0.08); } 100% { background: transparent; } }
 .bseam { position: relative; display: flex; justify-content: center; min-height: 18px; }
@@ -187,11 +194,11 @@
 .bminion .bpic.small[src*="art/people/"], .bleaf .bpic[src*="art/people/"] { object-position: 50% 8%; }
 .bminion .bpic.small.none { background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--el) 22%, var(--paper)), var(--paper-2)); }
 .bminion .bglyph { position: absolute; top: 4px; right: 4px; width: 17px; height: 17px; display: grid; place-items: center; border-radius: 3px; background: var(--el); color: var(--paper); font-size: 11px; line-height: 1; }
-.bminion .bname { padding: 3px 4px 16px; font-size: 14px; line-height: 1.2; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-top: 1px solid var(--ink-line); }
+.bminion .bname { padding: 3px 4px 19px; font-size: 14px; line-height: 1.2; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-top: 1px solid var(--ink-line); }
 .bminion small { position: absolute; left: 0; right: 0; top: 4px; margin: 0 auto; width: max-content; max-width: calc(100% - 28px); padding: 0 6px; border-radius: 99px; background: rgba(243, 238, 226, 0.92); font-family: var(--ui); font-size: 10px; line-height: 1.6; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bminion .batk, .bminion .bhp { position: absolute; bottom: 2px; z-index: 2; min-width: 20px; height: 20px; display: grid; place-items: center; font-family: var(--serif); font-size: 16px; font-weight: 700; line-height: 1; }
-.bminion .batk { left: 3px; color: var(--ink); }
-.bminion .bhp { right: 3px; color: var(--cinnabar); }
+.bminion .batk, .bminion .bhp { position: absolute; bottom: 2px; z-index: 2; }
+.bminion .batk { left: 3px; }
+.bminion .bhp { right: 3px; }
 /* 护主: a double ink frame, a shield's weight. */
 .bminion.taunt { border: 3px double var(--ink-2); box-shadow: 0 0 0 2px rgba(243, 238, 226, 0.9), 0 4px 12px rgba(31, 28, 24, 0.2); }
 .bminion.her { border-color: var(--silver); box-shadow: 0 0 0 1px rgba(120, 150, 176, 0.5), 0 3px 12px rgba(120, 150, 176, 0.35); }
@@ -232,6 +239,12 @@
 .bact.end:hover .bsealface { transform: rotate(-2deg) translateY(-2px); }
 .bact.end.urge .bsealface { animation: urge 1.4s ease-in-out infinite; }
 .bact.dim { opacity: .5; cursor: default; }
+/* The beast's turn: the seal in ink, level, its name on it — not pressable. */
+.bact.end.wait { cursor: default; }
+.bact.end.wait .bsealface { background: rgba(31, 28, 24, 0.82); border-color: rgba(31, 28, 24, 0.9); color: #F2C9BF; transform: none; max-width: 120px; }
+.bact.end.wait .bsealface b { font-size: 12.5px; letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.bact.end.wait:hover .bsealface { transform: none; }
+.battle.foes .bhand { filter: saturate(.7); }
 .bact.dim:hover .bsealface { transform: none; }
 @keyframes sealbreathe { 50% { box-shadow: inset 0 0 0 2px rgba(243, 238, 226, 0.9), inset 0 0 0 3px var(--ink-line), 0 0 16px color-mix(in srgb, var(--el) 40%, transparent); } }
 @keyframes urge { 0%, 100% { box-shadow: inset 0 0 0 2px rgba(251, 245, 234, 0.65); } 50% { box-shadow: inset 0 0 0 2px rgba(251, 245, 234, 0.65), 0 0 24px rgba(179, 55, 42, 0.6); transform: rotate(-2deg) translateY(-2px); } }
@@ -256,7 +269,7 @@
 /* The leaf itself — the hand's and the spoils'. The art row gives; the words never do. */
 .bleaf {
   position: relative; box-sizing: border-box; display: grid; grid-template-rows: minmax(16px, 1fr) auto auto; align-content: stretch;
-  padding: 6px 6px 20px; border-radius: 7px; text-align: center; color: #1F1C18;
+  padding: 6px 6px 14px; border-radius: 7px; text-align: center; color: #1F1C18;
   background: linear-gradient(180deg, #F8F4EA, #EFE8D8); border: 1px solid rgba(31, 28, 24, 0.28);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 6px 16px rgba(31, 28, 24, 0.2);
 }
@@ -270,9 +283,17 @@
 .bleaf .bcost { position: absolute; top: -7px; left: -7px; z-index: 2; width: 26px; height: 28px; display: grid; place-items: center; border-radius: 50% 50% 50% 50% / 64% 64% 36% 36%;
   background: radial-gradient(circle at 60% 40%, #5F82A3, #2D4C6C 70%); color: #F8F4EA; font-family: var(--serif); font-size: 15px; font-weight: 700; box-shadow: 0 2px 6px rgba(31, 28, 24, 0.3); }
 .bleaf .belem { position: absolute; top: 9px; right: 9px; z-index: 2; }
-.bleaf .batk, .bleaf .bhp { position: absolute; bottom: 2px; z-index: 2; min-width: 22px; font-family: var(--serif); font-size: 18px; font-weight: 700; line-height: 1.1; }
-.bleaf .batk { left: 6px; color: #1F1C18; }
-.bleaf .bhp { right: 6px; color: #B3372A; }
+.bleaf .batk, .bleaf .bhp { position: absolute; bottom: -6px; z-index: 2; }
+.bleaf .batk { left: 3px; }
+.bleaf .bhp { right: 3px; }
+/* 攻 and 血 as seals on the frame, where a card player's eye already looks (《炉石传说》's gems, in
+   ink): 攻 an ink roundel, 血 a cinnabar one — read at a glance, never a bare figure on the paper. */
+.batk, .bhp { --gem: 24px; min-width: var(--gem); height: var(--gem); padding: 0 3px; box-sizing: border-box; display: grid; place-items: center;
+  border-radius: 48% 52% 50% 50% / 52% 48% 52% 48%; font-family: var(--serif); font-size: calc(var(--gem) * .66); font-weight: 700; line-height: 1; color: #FBF5EA;
+  box-shadow: inset 0 0 0 1.5px rgba(251, 245, 234, 0.55), 0 2px 5px rgba(31, 28, 24, 0.28); }
+.batk { background: radial-gradient(circle at 38% 34%, #5A544B, #24211D 72%); }
+.bhp { background: radial-gradient(circle at 38% 34%, #CF5A49, #9A2C21 72%); }
+.bminion .batk, .bminion .bhp { --gem: 21px; }
 .bleaf .bwhy { position: absolute; left: 6px; right: 6px; top: 34%; padding: 1px 4px; border-radius: 3px; background: rgba(243, 238, 226, 0.95); font-family: var(--ui); font-size: 10px; color: #B3372A; }
 .bleaf .stars { color: #A9822B; font-size: .8em; }
 .bcard.her .bleaf { border-color: #7896B0; box-shadow: 0 0 0 1px rgba(120, 150, 176, 0.55), 0 6px 16px rgba(120, 150, 176, 0.35); }
@@ -291,10 +312,12 @@
 .bside.foe .bdmg { top: auto; bottom: -6px; left: calc(50% - var(--plate) / 2 - 8px); transform: none; }
 
 /* ── What the room says back ── */
-.bhint { position: absolute; left: 50%; bottom: calc(var(--ch) + 74px); transform: translateX(-50%); z-index: 5; max-width: 90%; padding: 3px 14px; border-radius: 99px; background: rgba(31, 28, 24, 0.78); color: #F3EEE2; font-family: var(--ui); font-size: 12px; letter-spacing: .04em; text-align: center; pointer-events: none; }
+/* The room's word sits on the seam, the table's middle — where the eye is while aiming — never over
+   气血 or the hand (live, 2026-10-16: on a phone 「点一个目标」 lay on your 气血 bar). */
+.bhints { position: absolute; left: 50%; top: 50%; z-index: 5; transform: translate(-50%, -50%); width: max-content; max-width: 92%; display: grid; justify-items: center; gap: 4px; pointer-events: none; }
+.bhint { max-width: 100%; padding: 3px 14px; border-radius: 99px; background: rgba(31, 28, 24, 0.82); color: #F3EEE2; font-family: var(--ui); font-size: 12px; letter-spacing: .04em; text-align: center; box-shadow: 0 4px 14px rgba(31, 28, 24, 0.2); }
 .bhint.bno { background: var(--cinnabar); animation: shake .3s ease-in-out; }
-.bhint.burge { background: rgba(31, 28, 24, 0.85); }
-.bhint + .bhint { bottom: calc(var(--ch) + 102px); }
+.bhint.burge { background: rgba(31, 28, 24, 0.88); }
 
 /* ── Motion: a stroke, a bloom, a number, a splash, a dissolve ── */
 .bstroke { position: absolute; z-index: 6; height: 7px; margin-top: -3.5px; transform-origin: 0 50%; pointer-events: none; border-radius: 50% 100% 100% 50% / 50%;
@@ -361,7 +384,13 @@
 /* ── The phone: the same room, smaller leaves; the hand overlaps itself ── */
 @container scene (max-width: 640px) {
   .battle { padding: 6px 8px 4px; gap: 4px; --cw: 86px; --ch: 124px; --mw: 80px; --mh: 98px; --plate: 60px; }
-  .bwhere { font-size: 13px; letter-spacing: .1em; }
+  /* The head on one line (live, 2026-10-16: 认/输, 你的回/合, 问银/月 broke in two at 390px). */
+  .btop { gap: 6px; }
+  .bquit, .bhelpbtn, .bturn, .bask { flex: none; white-space: nowrap; }
+  .bquit, .bask { padding: 3px 9px; }
+  .bturn { padding: 3px 6px; letter-spacing: .06em; }
+  .bwhere { flex: 1 1 0; min-width: 0; font-size: 13px; letter-spacing: .1em; white-space: nowrap; }
+  .bstake { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
   .bside { gap: 10px; }
   .bside.foe { justify-content: flex-start; }
   .bfoename { font-size: 19px; }
@@ -377,14 +406,15 @@
   .bact small { font-size: 9.5px; }
   .bact.end .bsealface { min-width: 56px; }
   .brank { gap: 6px; }
-  .bminion .bname { font-size: 12px; padding-bottom: 14px; }
-  .bminion .batk, .bminion .bhp { font-size: 14px; }
-  .bleaf { padding: 5px 4px 17px; }
+  .bminion .bname { font-size: 12px; padding-bottom: 16px; }
+  .bminion .batk, .bminion .bhp { --gem: 18px; }
+  .bleaf { padding: 5px 4px 12px; }
   .bleaf .bname { font-size: 12.5px; }
   .bleaf .btext { font-size: 9.5px; line-height: 1.25; }
   .bleaf .bcost { width: 22px; height: 24px; font-size: 13px; top: -6px; left: -6px; }
   .bleaf .belem { top: 7px; right: 7px; font-size: 10px; }
-  .bleaf .batk, .bleaf .bhp { font-size: 15px; }
+  .bleaf .batk, .bleaf .bhp { --gem: 20px; bottom: -5px; }
+  .bleaf .batk { left: 2px; } .bleaf .bhp { right: 2px; }
   .bcard:hover { transform: translateY(var(--y, 0)) rotate(var(--r, 0deg)); }
   .bcard.held { transform: translateY(calc(var(--ch) * -.42)) rotate(0deg) scale(1.22); }
   .blast .blab { display: none; }
