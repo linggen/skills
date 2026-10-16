@@ -224,6 +224,14 @@ string missing a language, a creature without its picture.
 **Target: ~30 minutes a day, one 回 a week** (Genshin's rhythm). Why: the story is the reward;
 a 回 should last, not be binged.
 
+**修为 grows with the layer** (Hanli 2026-10-16, option A — higher beasts and practice give more):
+balance.json `layer_pay` scales the routine tables (功课, a haunt's or pool's fight, 闭关) by the step he
+stands on — 练气 `1 1 1.2 3.1 3.2 3.2 3.3 3.4 3.5 3.6`; the story's grants are never scaled. The 古六
+layers sit near 3× because a typical half hour a day also reads 古六's thirteen scenes. Fitted (`--fit`)
+so every 回 from 古四 is 5–7.5 typical days (古四 5.5 · 古五 5.3 · 古六 7.3 · 古七 6.0 · 古八 5.7). A fight's
+修为 past the 回's mark still turns to 灵石 at `convert.rate` — the scaled amount, so a higher layer's
+overflow pays more.
+
 | | |
 |---|---|
 | Daily routine (~15–20 min) | 功课 · a 秘境 rerun (3 h cooldown; open through 古七/古八 too, the same 观) · 饭桶 (1 h cooldown) · pool fights (30 min rest; 体力 is the day's only limit) |

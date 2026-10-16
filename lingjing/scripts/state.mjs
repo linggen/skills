@@ -373,6 +373,15 @@ export function payOf(content, state) {
   return tierOf(content, state.tier).pay ?? 1;
 }
 
+/* 修为 that grows with the layer (Hanli 2026-10-16, option A: higher monsters and practice give
+   more): balance.json `layer_pay` — the routine tables it scales (功课, a haunt's or a pool's fight,
+   闭关) and, by tier, one multiplier per step. The story's grants are never scaled. 1 elsewhere. */
+export function layerPayOf(content, state, table) {
+  const lp = content.balance?.layer_pay;
+  if (!lp || !(lp.tables ?? []).includes(table)) return 1;
+  return lp[state.tier]?.[state.step ?? 0] ?? 1;
+}
+
 /* Add progress; rise through the tier's steps, the 修为 over each mark carried
    in (stepUp). Where the next step is shut — the 回's cap (`mayStep`,
    rules/cap.mjs) or the realm's top, which only the next tier's chapter opens —

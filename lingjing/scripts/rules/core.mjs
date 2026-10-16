@@ -1,7 +1,7 @@
 // rules/core.mjs — Changing it: refusals, pay, riddles, stamina, resolve and judge.
 // Part of the rules engine; rules.mjs is its one door.
 import { gameOf, MADE_GRANT } from '../content.mjs';
-import { addProgress, dayKey, fill, fitValue, fullName, lockedOf, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaLimited, staminaReturnsAt, stepName, peakName, phaseName, threshold, tierOf, seedOf, stepOfLayer, stepUp, zeroAt } from '../state.mjs';
+import { addProgress, layerPayOf, dayKey, fill, fitValue, fullName, lockedOf, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaLimited, staminaReturnsAt, stepName, peakName, phaseName, threshold, tierOf, seedOf, stepOfLayer, stepUp, zeroAt } from '../state.mjs';
 import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
 import { gainCard, grantFrom } from './cards.mjs';
@@ -60,7 +60,7 @@ function amountsOf(content, state, now, grant) {
   const want = Math.round(Math.min(grant.progress ?? 0, table.progress) * speedOf(content, state));
   const base = Math.max(0, want);
   const wealth = Math.max(0, Math.round(Math.min(grant.wealth ?? 0, table.wealth)));
-  return { base, progress: base * payOf(content, state), wealth };
+  return { base, progress: Math.round(base * payOf(content, state) * layerPayOf(content, state, grant.table)), wealth };
 }
 
 /* What a grant would pay him now — the table's cap, his roots, the day's

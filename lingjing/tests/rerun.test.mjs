@@ -8,7 +8,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { loadContent } from '../scripts/content.mjs';
-import { dayKey, newState, threshold } from '../scripts/state.mjs';
+import { dayKey, layerPayOf, newState, threshold } from '../scripts/state.mjs';
 import { duel, look, move, playTo, rerun, rollRun, runsPay, task, win, VERBS } from '../scripts/rules.mjs';
 import { winningPicks } from '../scripts/rules/progress.mjs';
 import { pay } from '../scripts/rules/core.mjs';
@@ -323,13 +323,15 @@ test('修为 at 圆满 is 灵石 (Hanli: 「圆满之后走剧情到下一个阶
   assert.ok(conv.rate > 0 && conv.tables.includes('haunt'));
   const s0 = { ...past(), step: 4, progress: 0 }; // at 古六's cap, 四层 — ground since 2026-10-16 (息壤 no longer lifts him there)
   const need = threshold(content, s0);
+  // 修为 by the layer (balance.json layer_pay): what a fight and the 功课 are worth on 四层 — converted as it is paid.
+  const H = Math.round(T.haunt.progress * layerPayOf(content, s0, 'haunt')), G = Math.round(T.gongke.progress * layerPayOf(content, s0, 'gongke'));
   // Full at the 回's cap (古六: 四层): a fight pays 灵石, no 修为, no held line.
   const full = { ...structuredClone(s0), progress: need };
   const w0 = full.wealth;
   const paid = pay(content, full, at(openAt()), { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth });
   assert.equal(paid.progress, 0);
-  assert.equal(paid.converted.progress, T.haunt.progress);
-  assert.equal(paid.wealth, T.haunt.wealth + Math.round(T.haunt.progress * conv.rate));
+  assert.equal(paid.converted.progress, H);
+  assert.equal(paid.wealth, T.haunt.wealth + Math.round(H * conv.rate));
   assert.equal(full.progress, need, 'nothing past the mark: no carry into the next layer');
   assert.equal(full.wealth, w0 + paid.wealth);
   assert.equal(paid.hold, null, 'never a held-back 修为 line');
@@ -338,14 +340,14 @@ test('修为 at 圆满 is 灵石 (Hanli: 「圆满之后走剧情到下一个阶
   const p2 = pay(content, near, at(openAt()), { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth });
   assert.equal(p2.progress, 10);
   assert.equal(near.progress, need);
-  assert.equal(p2.wealth, T.haunt.wealth + Math.round((T.haunt.progress - 10) * conv.rate));
+  assert.equal(p2.wealth, T.haunt.wealth + Math.round((H - 10) * conv.rate));
   // Well below: all 修为.
   const low = { ...structuredClone(s0), progress: 0 };
-  assert.equal(pay(content, low, at(openAt()), { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }).progress, T.haunt.progress);
+  assert.equal(pay(content, low, at(openAt()), { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }).progress, H);
   // The day's 功课 (not a fight) at full still counts on past the mark, as before.
   const g = { ...structuredClone(s0), progress: need };
-  assert.equal(pay(content, g, at(openAt()), { table: 'gongke', progress: T.gongke.progress }).progress, T.gongke.progress);
-  assert.equal(g.progress, need + T.gongke.progress);
+  assert.equal(pay(content, g, at(openAt()), { table: 'gongke', progress: T.gongke.progress }).progress, G);
+  assert.equal(g.progress, need + G);
   // A run's fight at full: the win card's pay is 灵石.
   const now = openAt();
   let s = must(move, fresh(inside(now), now), { place: 'mijing-xiongya' }, now);

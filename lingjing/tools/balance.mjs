@@ -134,9 +134,12 @@ export function play(content, player, { model = content.balance.model, ladder = 
   const heldBy = c => Math.min(Infinity, ...(c.gates ?? []).filter(g => !done.has(g.scene) && walked.has(`${g.scene}/${g.exits[0]}`)).map(g => rank(g.tier ?? tiers[0].id, stepOf(g.tier ?? tiers[0].id, g.layer))));
   const capAt = () => { const c = caps[capHui]; if (!c) return null; const st = c.story ?? c; return { grind: Math.max(Math.min(rank(c.tier, stepOf(c.tier, c.layer)), heldBy(c)), rank(s.tier, s.step)), story: rank(st.tier, stepOf(st.tier, st.layer)) }; };
   /* 修为 in; a fight's past a mark he may not leave is 灵石 (nothing here). */
-  const gain = (n, fight = false) => {
+  /* `table`: a routine table balance.json `layer_pay` scales by the layer he stands on. */
+  const lp = content.balance.layer_pay;
+  const layerPay = table => (lp && (lp.tables ?? []).includes(table) ? lp[s.tier]?.[s.step] ?? 1 : 1);
+  const gain = (n, fight = false, table = null) => {
     if (n <= 0 || zero()) return;
-    s.progress += n * (tierAt(s.tier).pay ?? 1);
+    s.progress += n * (tierAt(s.tier).pay ?? 1) * layerPay(table);
     for (;;) {
       if (s.progress < need()) return;
       const top = s.step >= tierAt(s.tier).thresholds.length - 1, cap = capAt();
@@ -158,7 +161,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
     const want = (player.pills ?? 0) * fights, can = pillPrice ? Math.min(want, W.now / pillPrice) : 0;
     W.now -= can * pillPrice; W.spent += can * pillPrice; W.pills += can; W.low = Math.min(W.low, W.now);
   };
-  const win = n => { for (let k = 0; k < n; k++) { const whole = Math.min(1, n - k); gain(pay.haunt.progress * whole, true); wins += whole; } earn((pay.haunt.wealth ?? 0) * n); takePills(n / model.fight_win_rate); };
+  const win = n => { for (let k = 0; k < n; k++) { const whole = Math.min(1, n - k); gain(pay.haunt.progress * whole, true, 'haunt'); wins += whole; } earn((pay.haunt.wealth ?? 0) * n); takePills(n / model.fight_win_rate); };
   const chapterOf = () => walk[Math.min(i, walk.length - 1)].chapter;
   const walled = () => Boolean(content.chapters[chapterOf()]?.map?.home);
   const pools = () => {
@@ -187,10 +190,10 @@ export function play(content, player, { model = content.balance.model, ladder = 
       qi = k === 0 ? Q.max : Math.min(Q.max, qi + Q.max * (model.waking_h / n) / Q.refill_hours);
       const at = () => day + (k * sit + (sit - left)) / total;
       if (!zero()) {
-        if (k === 0) gain(pay.gongke.progress * player.gongke);
+        if (k === 0) gain(pay.gongke.progress * player.gongke, false, 'gongke');
         if (k === 0) earn((pay.gongke.wealth ?? 0) * player.gongke);
         // 闭关 overnight (rules/seclusion.mjs, focus 修为): `seclude` hours a night, the rules' rate and cap.
-        if (k === 0 && day > 0 && player.seclude) gain(Math.min(content.rewards.seclusion.progress_per_hour * Math.min(player.seclude, content.rewards.seclusion.cap_hours), pay.seclusion.progress));
+        if (k === 0 && day > 0 && player.seclude) gain(Math.min(content.rewards.seclusion.progress_per_hour * Math.min(player.seclude, content.rewards.seclusion.cap_hours), pay.seclusion.progress), false, 'seclusion');
         const run = rerunOpen();
         // A share under one (`reruns` 0.5: every other day) is its expected worth.
         const runs = run ? Math.min(1, player.reruns - k) : 0;

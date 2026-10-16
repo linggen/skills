@@ -123,7 +123,21 @@
     "creature": "gui",
     "retry": true,
     "foe": {
-     "hp": 1.8
+     "hp": 1.4,
+     "deck": [
+      "paoxiao",
+      "paoxiao",
+      "jixiao",
+      "jixiao",
+      "gui",
+      "gui",
+      "kuiniu",
+      "shishou",
+      "shishou",
+      "tunshi",
+      "zhuguang",
+      "jixiao"
+     ]
     }
    },
    "withdrawn": {

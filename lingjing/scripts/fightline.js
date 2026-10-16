@@ -40,7 +40,7 @@ export function bestMove(st) {
 /* 丹囊 (battle.js § pills) in the plain line: a 回春丹 when he is down to half, a 回气丹 when it lets a
    card in hand be played that the 灵力 now cannot pay. */
 const pillNow = (st, os) => os.find(o => o.ok && o.action.kind === 'pill' && !o.action.target && (
-  (o.pill.heal && st.you.hp <= st.you.hpMax / 2)
+  (o.pill.heal && st.you.hp <= st.you.hpMax - o.pill.heal)
   || (o.pill.mana && st.you.hand.some(id => { const c = st.catalog?.[id]; return c && c.cost > st.you.mana && c.cost <= st.you.mana + o.pill.mana; }))));
 const plain = st => { const os = offers(st); return pillNow(st, os) ?? os.find(o => o.ok && o.action.kind === 'play') ?? os.find(o => o.ok && o.action.kind === 'attack') ?? os.find(o => o.ok && o.action.kind === 'power'); };
 const copyOf = st => { const c = structuredClone({ ...st, catalog: undefined }); c.catalog = st.catalog; return c; };

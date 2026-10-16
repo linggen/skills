@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadContent } from '../scripts/content.mjs';
-import { fitWorld, migrate, newState, realmName } from '../scripts/state.mjs';
+import { fitWorld, layerPayOf, migrate, newState, realmName } from '../scripts/state.mjs';
 import { look, quest, resolve } from '../scripts/rules.mjs';
 import { pay, paysOf } from '../scripts/rules/core.mjs';
 import { choreGrant } from '../scripts/rules/chores.mjs';
@@ -134,8 +134,16 @@ test('real life: the workout is the day\'s 功课 (修为; a few 灵石 at 零�
 test('no daily thinning (Hanli, 2026-10-16): every pool win pays the haunt table\'s 修为 until the layer is full — then 灵石; 体力 is the day\'s limit', () => {
   assert.equal('pool' in B, false, 'balance.json declares no day\'s fight bands');
   const s = { ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: null, place: 'houshan', ended: ['00-prologue', '00-waimen'], done_scenes: ['09-snow'], tier: 'qi', step: 4, progress: 0, wealth: 0, traits: ROOTS };
-  const paid = Array.from({ length: 8 }, () => pay(content, s, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }).progress);
-  assert.deepEqual(paid, Array(8).fill(T.haunt.progress));
+  // Each win the haunt table's 修为 times the layer he stands on (balance.json layer_pay).
+  const want = [], paid = [];
+  for (let k = 0; k < 6; k += 1) { want.push(Math.round(T.haunt.progress * layerPayOf(content, s, 'haunt'))); paid.push(pay(content, s, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }).progress); }
+  assert.deepEqual(paid, want);
+  assert.ok(want[0] > T.haunt.progress, '四层 pays more than the table: the layer scales it');
+  // …until the layer is full: the scaled 修为 past the mark is 灵石 at the convert rate (圆满 → 灵石).
+  const room = content.ladder.tiers[0].thresholds[4] - s.progress, full = want[0];
+  const last = pay(content, s, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth });
+  assert.equal(last.progress, Math.min(full, room));
+  if (full > room) assert.deepEqual(last.converted, { progress: full - room, wealth: Math.round((full - room) * B.convert.rate) });
 });
 
 test('no story jump (2026-10-16): past the mark the 功课 counts on and a fight pays 灵石; 第一路 moves no layer — 二层 is ground', () => {

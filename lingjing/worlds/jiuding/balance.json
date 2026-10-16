@@ -5,15 +5,15 @@
   "layers": {
     "qi": [
       0,
-      310,
-      330,
-      350,
-      370,
-      410,
-      430,
-      450,
       470,
-      490
+      590,
+      610,
+      630,
+      980,
+      1000,
+      1020,
+      1040,
+      1060
     ],
     "foundation": [
       400,
@@ -58,6 +58,26 @@
   },
   "_overflow_stretch": "Hanli, 2026-10-15 (approved): a step up — the story's rise, a throw, or grinding the 回's cap allows — carries the 修为 over the last mark in whole, and the new step asks this share of it more (state.mjs stepUp, `state.stretch`): 100 over 一层's mark enters 二层 at 100/450, not 0/400. Grinders stay only somewhat ahead; nothing is held or lost.",
   "overflow_stretch": 0.5,
+  "_layer_pay": "Hanli 2026-10-16 (option A): 修为 grows with the layer — a higher layer's beasts and practice give more. The routine tables named here (功课, a haunt's or pool's fight, 闭关) pay their 修为 times the step's multiplier, by tier (state.mjs layerPayOf; tools/balance.mjs plays the same). The story's grants are never scaled. Fitted with `--fit` so every 回 from 古四 is about 5–7.5 typical days: the 古六 layers sit near 3× because a typical player's half hour a day also reads 古六's long story (thirteen scenes) — what is left of the day grinds two layers.",
+  "layer_pay": {
+    "tables": [
+      "gongke",
+      "haunt",
+      "seclusion"
+    ],
+    "qi": [
+      1,
+      1,
+      1.2,
+      3.1,
+      3.2,
+      3.2,
+      3.3,
+      3.4,
+      3.5,
+      3.6
+    ]
+  },
   "_pay": "What each kind of thing pays at most (修为 `progress`, 灵石 `wealth`); a grant is capped by its table (rules/core.mjs pay). Was rewards.json `tables`. Hanli, 2026-10-15 (「让游戏修为和故事match」): 修为 comes from cultivation; chores pay 灵石. `labor` pays an errand of 杂役 (修为 0, design.md § Pacing), `gongke` the day's 功课 (the fixed real-life chore, 修为 20), `life` the day's pick (灵石 only), `once` 开府 (灵石 only). A natural day of 卷一 play is now ~138 修为 (功课 20, two pool fights 60, half a rumor ~38, a road-meet 20) and the 练气 thresholds ask a 回 of it per held layer (tools/xiuwei-model.mjs). The 2026-09-24 note below is history. 2026-10-16 (灵石 buys pills, and cards and gear after): a fight won at a haunt pays 15 灵石 (was 10); 功课 stays 修为 — a typical day ~49 in, ~36 to pills, a few hundred left at 卷一's end (tools/balance.mjs --wealth).",
   "pay": {
     "scene": {
@@ -90,7 +110,7 @@
     },
     "haunt": {
       "progress": 30,
-      "wealth": 15
+      "wealth": 16
     },
     "game": {
       "progress": 6,
@@ -349,7 +369,7 @@
     "later": "h07",
     "bands": {
       "typical": [
-        3.5,
+        5,
         7.5
       ],
       "heavy": [
@@ -360,29 +380,17 @@
         8,
         21
       ],
-      "_except": "Since 2026-10-16 the story raises no layer (Hanli: 「要让玩家去刷经验/修为等. 不要直接跳层」): every 层 is ground, so the later 回 hold more of it. 古六 (h08) is the longest — thirteen scenes and 今·三 behind the 大比's 四层圆满, and 三层 and 四层 both ground there (息壤 no longer lifts him): a typical player takes about 9 days. 古八 (h09) grinds 七层 to 九层圆满 (腊八 on 八层, 入秋 on 九层), about 8.7. Both sit at the thresholds' floor (each 层 at least `step_min` over the one below): what is left is the day's earning, not the ladder.",
-      "except": {
-        "h08": {
-          "typical": [
-            5,
-            9.5
-          ]
-        },
-        "h09": {
-          "typical": [
-            5,
-            9
-          ]
-        }
-      }
+      "_except": "Since 2026-10-16 the story raises no layer: every 层 is ground. With `layer_pay` (修为 by the layer) every 回 from 古四 sits in the one typical band, 5–7.5 days; 古六 and 古八 need no exception any more."
     },
     "fit": {
       "player": "heavy",
       "days": {
         "default": 4.5,
-        "h05": 2,
-        "h07": 3,
-        "h08": 3
+        "h05": 3.4,
+        "h07": 4.1,
+        "h08": 3,
+        "h11": 3.7,
+        "h09": 3.7
       }
     },
     "waking_h": 16,
