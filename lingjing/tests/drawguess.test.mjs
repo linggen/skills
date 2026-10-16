@@ -6,7 +6,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { guessLoop, isBlindReply, matches, normalize, parseReply, pickWord, starsFor } from '../scripts/games/drawguess-rules.js';
+import { guessLoop, isBlindReply, matches, normalize, parseReply, pickWord, refusalOf, starsFor } from '../scripts/games/drawguess-rules.js';
 
 const reg = JSON.parse(fs.readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url), 'utf8'));
 const ROW = reg.games.find((g) => g.id === 'drawguess');
@@ -171,6 +171,23 @@ test('throttle on the real clock (the default timers, called unbound as a page c
   await new Promise((r) => setTimeout(r, 60));
   assert.deepEqual(sent, [1]);
   loop.stop();
+});
+
+test('猜者: Ling or 银月; she is asked in her own voice, and the engine\'s refusal (not met yet, pet off) is read as such', async () => {
+  const { GUESSERS, askOpen, askGuess } = await import('../scripts/games/drawguess.js');
+  assert.deepEqual(GUESSERS, ['ling', 'yinyue']);
+  assert.match(askGuess('yinyue', []), /银月.*妖王.*本王/);
+  assert.match(askOpen('yinyue'), /本王/);
+  assert.doesNotMatch(askGuess('ling', []), /银月/);
+  for (const who of GUESSERS) {
+    assert.match(askGuess(who, ['桥']), /不调用任何工具.*不超过二十字.*猜：.*你先前猜过：桥/s, who);
+  }
+  assert.equal(refusalOf({ status: 'absent', agent_id: 'yinyue' }), 'absent');
+  assert.equal(refusalOf({ status: 'unavailable' }), 'unavailable');
+  assert.equal(refusalOf({ status: 'started' }), null);
+  assert.equal(refusalOf(null), null);
+  const ling = fs.readFileSync(new URL('../scripts/games/drawguess-ling.js', import.meta.url), 'utf8');
+  assert.match(ling, /agent_id: agent/, 'the guesser is the turn\'s agent');
 });
 
 test('the module keeps the contract and the registry places it in the 游戏厅 only', async () => {

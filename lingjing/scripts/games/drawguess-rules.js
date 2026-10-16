@@ -48,6 +48,10 @@ const clip = (s, n) => (s && [...s].length > n ? `${[...s].slice(0, n).join('')}
 /** The engine's own words when the bound model cannot see (chat/structured.rs's vision gate). */
 export const isBlindReply = (text) => /cannot read images/i.test(String(text ?? ''));
 
+/** The engine ran no turn for the guesser (chat/handler.rs `refused_reply`): 'absent' — the save
+    has not met her yet (`place.yinyue.absent_until`) — or 'unavailable' (the pet is off); else null. */
+export const refusalOf = (reply) => (['absent', 'unavailable'].includes(reply?.status) ? reply.status : null);
+
 /** The word for a round: a seeded pick, never the one just drawn. */
 export function pickWord(words, rnd = Math.random, last = null) {
   const left = words.filter((w) => w.zh !== last);

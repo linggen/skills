@@ -10,6 +10,8 @@
 // own or shared the round's.)
 // The model only ever guesses: what counts as right is drawguess-rules.js's.
 
+import { refusalOf } from './drawguess-rules.js';
+
 const SKILL = 'lingjing';
 const TITLE = 'Lingjing 画猜';
 const POLL_MS = 400;
@@ -52,14 +54,14 @@ export async function closeRound(sid, { keepalive = false } = {}) {
   await removeSkillSession(SKILL, sid, { keepalive }).catch(() => {});
 }
 
-/** Ling's reply in a session: her first line to the user after ours. */
-async function replyIn(sid, deadline, signal) {
+/** The guesser's reply in a session: their first line to the user after ours. */
+async function replyIn(sid, agent, deadline, signal) {
   const { fetchSessionMessages } = await api();
   while (performance.now() < deadline) {
     if (signal?.aborted) throw new Error('left');
     await new Promise((r) => setTimeout(r, POLL_MS));
     const rows = await fetchSessionMessages(SKILL, sid).catch(() => []);
-    const hers = rows.filter(([m]) => m?.from === 'ling');
+    const hers = rows.filter(([m]) => m?.from === agent);
     const said = hers.find(([m]) => m.to === 'user');
     if (said) return { text: said[1], tools: hers.length - 1 };
   }
@@ -67,17 +69,22 @@ async function replyIn(sid, deadline, signal) {
 }
 
 /**
- * One look in the round's session: the PNG (bare base64) and the words, to Ling. Answers
- * { text, ms, model, tools } — `tools` > 0 means she reached for a tool (she is asked not to).
+ * One look in the round's session: the PNG (bare base64) and the words, to the guesser — `agent`
+ * 'ling', or 'yinyue' (her guest turn at Lingjing's table: SKILL.md `place.yinyue`, her tools there
+ * Voice · AppTool · Story, no memory). Answers { text, ms, model, tools } — `tools` > 0 means a tool
+ * was reached for (they are asked not to) — or { refused: 'absent' | 'unavailable' } when the
+ * engine runs no turn for her (not met yet in the save, `absent_until`; or the pet is off).
  * `model`: a model id for the session instead of the default (a test's `data.model`).
  */
-export async function askLing({ sid, png, prompt, model = null, signal, timeoutMs = TIMEOUT_MS }) {
+export async function askLing({ sid, agent = 'ling', png, prompt, model = null, signal, timeoutMs = TIMEOUT_MS }) {
   const t0 = performance.now();
   await post('/api/chat/clear', { session_id: sid });
-  const body = { project_root: '', agent_id: 'ling', message: prompt, session_id: sid, skill_name: SKILL, images: [png], ...(model ? { model_id: model } : {}) };
+  const body = { project_root: '', agent_id: agent, message: prompt, session_id: sid, skill_name: SKILL, images: [png], ...(model ? { model_id: model } : {}) };
   const res = await post('/api/chat', body);
   if (!res.ok) throw new Error(`chat ${res.status}`);
-  const got = await replyIn(sid, t0 + timeoutMs, signal);
+  const refused = refusalOf(await res.json().catch(() => null));
+  if (refused) return { refused };
+  const got = await replyIn(sid, agent, t0 + timeoutMs, signal);
   const bound = await boundModel(sid).catch(() => null);
   return { ...got, ms: Math.round(performance.now() - t0), model: bound };
 }

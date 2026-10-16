@@ -7,14 +7,18 @@
 // One look at a time, at most four a round. If the bound model cannot see, the engine's vision
 // gate says so on the first look (a blank sheet, her opening line): the game says it plainly and
 // does not start. A 画符 mode (draw a talisman's strokes in order) is a note in doc/games.md only.
+// 猜者 (Hanli 10-16: 「游戏里可以让yinyue猜」): Ling, or 银月 — her guest turn at Lingjing's table
+// (SKILL.md `place.yinyue`: her tools there are Voice · AppTool · Story, no memory), in her proud
+// 妖王 voice, her lines on the paper only. She is gated as in the world: until the save has met her
+// (`absent_until`) the engine runs no turn and answers `absent` — the game says so and won't start.
 // The paper and the player's own strokes are the only things drawn here; nothing is painted in code.
 import { guessLoop, isBlindReply, matches, parseReply, pickWord, starsFor } from './drawguess-rules.js';
 import { askLing, askOnce, closeRound, declaredBlind, dropOpen, openRound, reachable } from './drawguess-ling.js';
 
 export const meta = {
   id: 'drawguess',
-  name: { zh: '画猜 · 你画，灵猜', en: 'Draw · Ling guesses' },
-  how: { zh: '照字画。手一停，灵就看一眼。', en: 'Draw the word. Rest your hand and Ling looks.' },
+  name: { zh: '画猜 · 你画我猜', en: 'Draw · they guess' },
+  how: { zh: '照字画。手一停，猜的人就看一眼。', en: 'Draw the word. Rest your hand and they look.' },
 };
 
 export const ROUND_MS = 60000, IDLE_MS = 2500, MAX_LOOKS = 4, EXPORT_PX = 448;
@@ -22,15 +26,17 @@ const PAPER = '#e4cfab', INK = '#1d1813';
 
 const T = {
   zh: {
-    draw: '画', start: '开始', undo: '撤一笔', clear: '清空', done: '画好了', ling: '灵',
-    checking: '灵在看纸……', looking: '灵在看……', looks: '还能看 {n} 眼',
-    blind: '这个模型看不见图，画猜开不了。', far: '连不上灵。', err: '灵没看清，再画画。',
+    draw: '画', start: '开始', undo: '撤一笔', clear: '清空', done: '画好了', who: '猜者', names: { ling: '灵', yinyue: '银月' },
+    checking: '{who}在看纸……', looking: '{who}在看……', looks: '还能看 {n} 眼',
+    blind: '这个模型看不见图，画猜开不了。', far: '连不上灵。', err: '{who}没看清，再画画。',
+    absent: '还没遇见银月。', unavailable: '银月不在。',
     won: '对了，是「{w}」。', time: '时间到。是「{w}」。',
   },
   en: {
-    draw: 'Draw', start: 'Start', undo: 'Undo', clear: 'Clear', done: 'Done', ling: 'Ling',
-    checking: 'Ling is looking at the paper…', looking: 'Ling is looking…', looks: '{n} looks left',
-    blind: 'This model can\'t see pictures, so this game can\'t start.', far: 'Ling can\'t be reached.', err: 'Ling couldn\'t make it out. Keep drawing.',
+    draw: 'Draw', start: 'Start', undo: 'Undo', clear: 'Clear', done: 'Done', who: 'Guesser', names: { ling: 'Ling', yinyue: 'Yinyue' },
+    checking: '{who} is looking at the paper…', looking: '{who} is looking…', looks: '{n} looks left',
+    blind: 'This model can\'t see pictures, so this game can\'t start.', far: 'Ling can\'t be reached.', err: '{who} couldn\'t make it out. Keep drawing.',
+    absent: 'You haven\'t met Yinyue yet.', unavailable: 'Yinyue isn\'t here.',
     won: 'Right — {w}.', time: 'Time. It was {w}.',
   },
 };
@@ -44,7 +50,11 @@ const STYLE = `.g-dg{gap:8px}.g-dg-head{display:flex;align-items:baseline;gap:10
 .g-dg-say::after{content:'';position:absolute;left:22px;bottom:-6px;width:10px;height:10px;background:inherit;border-right:1px solid var(--line);border-bottom:1px solid var(--line);transform:rotate(45deg)}
 .g-dg-say b{font-family:var(--serif);color:var(--ling);margin-right:6px}.g-dg-say .g-dg-other{display:block;font-size:12px;color:var(--faint);margin-top:2px}
 .g-dg-say.is-wait{color:var(--faint)}
-.g-dg[data-phase=blind] .g-dg-say,.g-dg[data-phase=far] .g-dg-say{visibility:hidden}
+.g-dg[data-phase=blind] .g-dg-say,.g-dg[data-phase=far] .g-dg-say,.g-dg[data-phase=absent] .g-dg-say{visibility:hidden}
+.g-dg-who{display:flex;align-items:center;gap:6px;width:100%;font-size:13px;color:var(--dim);font-family:var(--serif)}
+.g-dg-who button{min-height:32px;padding:2px 14px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--dim);font:inherit;cursor:pointer}
+.g-dg-who button.is-on{border-color:var(--ling);background:var(--ling-soft);color:var(--ling);font-weight:600}
+.g-dg-who button:disabled{opacity:.5;cursor:default}
 .g-dg-paper{position:relative;width:100%;aspect-ratio:1;border-radius:6px;overflow:hidden;background:radial-gradient(130% 100% at 40% 30%,#ecdabb,${PAPER} 60%,#d8bf98);box-shadow:0 6px 22px rgba(0,0,0,.16)}
 .g-dg-paper canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
 .g-dg-paper.is-off canvas{cursor:default}
@@ -116,26 +126,43 @@ export function paperPng(doc, strokes, px = EXPORT_PX) {
   return c.toDataURL('image/png').split(',')[1];
 }
 
-// ── what she is asked ──────────────────────────────────────────────────────────────────────
+// ── what the guesser is asked ──────────────────────────────────────────────────────────────
 
-const ASK_OPEN = '[画猜] 小游戏试玩，与故事无关；不调用任何工具，不提游戏或模型。纸还空着，小满要画一样东西给你猜。'
-  + '只回两行：第一行一句中文开场，不超过十二字，照你平常说话的样子；第二行同一句的英文。';
-const askGuess = (prev) => '[画猜] 小游戏试玩，与故事无关；不调用任何工具，不提游戏或模型。图上是小满用毛笔画的一样寻常东西，也许还没画完。'
-  + '照你平常说话的样子猜它是什么。只回三行：第一行一句中文，不超过二十字；第二行同一句的英文；第三行「猜：」加一个中文名词。'
+export const GUESSERS = ['ling', 'yinyue'];
+const HEAD = '[画猜] 小游戏试玩，与故事无关；不调用任何工具，不提游戏或模型。';
+const VOICE = {
+  ling: '照你平常说话的样子',
+  yinyue: '你是银月，骄傲的妖王，自称本王：画得糟就毒舌一句，猜中了才勉强满意，话要短',
+};
+export const askOpen = (who) => `${HEAD}纸还空着，小满要画一样东西给你猜。${VOICE[who]}。`
+  + '只回两行：第一行一句中文开场，不超过十二字；第二行同一句的英文。';
+export const askGuess = (who, prev) => `${HEAD}图上是小满用毛笔画的一样寻常东西，也许还没画完。${VOICE[who]}，猜它是什么。`
+  + '只回三行：第一行一句中文，不超过二十字；第二行同一句的英文；第三行「猜：」加一个中文名词。'
   + (prev.length ? `你先前猜过：${prev.join('、')}。画添了笔，可以改口。` : '');
 
-// The engine's verdict on sight, once a page per model asked: { blind, line, model }.
+// The engine's verdict on sight, once a page per guesser and model: { blind, line, model }. A
+// refusal (`absent`, `unavailable`) is not kept: the save may meet her while the page is open.
 const sight = new Map();
 let lastWord = null; // the word just drawn on this page: never twice running
 
-async function lookFirst(doc, model) {
-  const key = model ?? '';
+// Who guesses: `data.who`, else the viewer's last pick (a per-viewer convenience), else Ling.
+const WHO_KEY = 'lingjing.drawguess.who';
+function whoKept(data) {
+  if (GUESSERS.includes(data?.who)) return data.who;
+  try { const k = globalThis.localStorage?.getItem(WHO_KEY); if (GUESSERS.includes(k)) return k; } catch { /* no storage */ }
+  return 'ling';
+}
+function keepWho(who) { try { globalThis.localStorage?.setItem(WHO_KEY, who); } catch { /* no storage */ } }
+
+async function lookFirst(doc, who, model) {
+  const key = `${who}|${model ?? ''}`;
   if (sight.has(key)) return sight.get(key);
   if (!(await reachable())) return { far: true };
   const named = model ? null : await declaredBlind().catch(() => null);
   if (named) return { blind: true, model: { id: named } };
-  const r = await askOnce({ png: paperPng(doc, [], 32), prompt: ASK_OPEN, model });
-  log({ kind: 'open', ms: r.ms, model: r.model?.id, tools: r.tools, text: r.text });
+  const r = await askOnce({ agent: who, png: paperPng(doc, [], 32), prompt: askOpen(who), model });
+  log({ kind: 'open', who, ms: r.ms, model: r.model?.id, tools: r.tools, text: r.text, refused: r.refused });
+  if (r.refused) return { refused: r.refused };
   const seen = isBlindReply(r.text) ? { blind: true, model: r.model, said: r.text } : { blind: false, model: r.model, line: parseReply(r.text) };
   sight.set(key, seen);
   return seen;
@@ -156,9 +183,11 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   styleOnce(doc);
   const root = doc.createElement('div');
   root.className = 'g-ink g-dg';
-  root.innerHTML = `<div class="g-dg-head"><span class="g-dg-word">${w.draw}<b></b></span><span class="g-dg-left"></span><span class="g-dg-sec"></span></div>`
+  const names = w.names;
+  const whoBtns = GUESSERS.map((k) => `<button type="button" data-who="${k}">${names[k]}</button>`).join('');
+  root.innerHTML = `<div class="g-dg-who"><span>${w.who}</span>${whoBtns}</div><div class="g-dg-head"><span class="g-dg-word">${w.draw}<b></b></span><span class="g-dg-left"></span><span class="g-dg-sec"></span></div>`
     + '<div class="g-dg-time"><i></i></div>'
-    + `<div class="g-dg-say is-wait"><b>${w.ling}</b><span class="g-dg-line"></span><span class="g-dg-other"></span></div>`
+    + `<div class="g-dg-say is-wait"><b></b><span class="g-dg-line"></span><span class="g-dg-other"></span></div>`
     + '<div class="g-dg-paper is-off"><canvas></canvas><div class="g-dg-veil"></div></div>'
     + `<div class="g-dg-bar"><button type="button" class="g-btn g-btn-soft" data-k="undo">${w.undo}</button>`
     + `<button type="button" class="g-btn g-btn-soft" data-k="clear">${w.clear}</button>`
@@ -168,10 +197,17 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   const $ = (sel) => root.querySelector(sel);
   const canvas = $('canvas'), paper = $('.g-dg-paper'), veil = $('.g-dg-veil'), goBtn = $('[data-k="go"]');
 
-  const g = { phase: 'check', word: null, strokes: [], cur: null, guesses: [], t0: 0, timer: null, loop: null };
+  const g = { phase: 'check', who: whoKept(data), word: null, strokes: [], cur: null, guesses: [], t0: 0, timer: null, loop: null };
   let finish = () => {};
   root.dataset.phase = g.phase;
-  const setPhase = (p) => { g.phase = p; root.dataset.phase = p; paper.classList.toggle('is-off', p !== 'draw'); };
+  const CHOOSE = new Set(['ready', 'blind', 'far', 'absent']); // the guesser may change only before a round
+  const setPhase = (p) => {
+    g.phase = p;
+    root.dataset.phase = p;
+    paper.classList.toggle('is-off', p !== 'draw');
+    root.querySelectorAll('[data-who]').forEach((b) => { b.disabled = !CHOOSE.has(p); b.classList.toggle('is-on', b.dataset.who === g.who); });
+  };
+  const sub = (s) => fill(s, { who: names[g.who] });
 
   const say = (line, other = '', wait = false) => {
     $('.g-dg-line').textContent = line ?? '';
@@ -227,6 +263,8 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   canvas.addEventListener('pointercancel', lift);
 
   root.addEventListener('click', (e) => {
+    const who = e.target.closest?.('[data-who]')?.dataset.who;
+    if (who && CHOOSE.has(g.phase) && who !== g.who) { g.who = who; keepWho(who); start(); return; }
     const k = e.target.closest?.('[data-k]')?.dataset.k;
     if (k === 'go' && g.phase === 'ready') return begin();
     if (g.phase !== 'draw') return;
@@ -238,7 +276,8 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   const onReply = (r) => {
     const p = parseReply(r.text);
     const ok = p.guess != null && matches(p.guess, g.word);
-    log({ kind: 'guess', word: g.word.zh, n: g.loop.calls, ms: r.ms, model: r.model?.id, guess: p.guess, ok, tools: r.tools, zh: p.zh, en: p.en });
+    if (r.refused) return onError(new Error(r.refused));
+    log({ kind: 'guess', who: g.who, word: g.word.zh, n: g.loop.calls, ms: r.ms, model: r.model?.id, guess: p.guess, ok, tools: r.tools, zh: p.zh, en: p.en });
     g.note = '';
     if (p.guess) g.guesses.push(p.guess);
     sayParsed(p.zh || p.en ? p : { zh: p.guess, en: null });
@@ -246,7 +285,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   };
   const onError = (e) => {
     log({ kind: 'error', message: String(e?.message ?? e) });
-    g.note = w.err;
+    g.note = sub(w.err);
   };
 
   const tick = () => {
@@ -254,7 +293,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     $('.g-dg-sec').textContent = String(Math.ceil(left / 1000));
     $('.g-dg-time i').style.transform = `scaleX(${left / ROUND_MS})`;
     lefts();
-    foot(g.loop?.busy ? w.looking : g.note || (g.model ? `Ling · ${g.model}` : ''));
+    foot(g.loop?.busy ? sub(w.looking) : g.note || modelLine());
     if (left <= 0 && g.phase === 'draw') closing();
   };
   const closing = () => {
@@ -277,9 +316,9 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
       max: MAX_LOOKS,
       idleMs: IDLE_MS,
       send: async () => {
-        foot(w.looking);
-        const png = paperPng(doc, g.strokes), prompt = askGuess(g.guesses);
-        return askLing({ sid: await g.sid, png, prompt, model: data.model ?? null, signal });
+        foot(sub(w.looking));
+        const png = paperPng(doc, g.strokes), prompt = askGuess(g.who, g.guesses);
+        return askLing({ sid: await g.sid, agent: g.who, png, prompt, model: data.model ?? null, signal });
       },
       onReply,
       onError,
@@ -323,17 +362,25 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     start();
   });
 
+  function modelLine() { return g.model ? `${names[g.who]} · ${g.model}` : ''; }
+
   async function start() {
+    const who = g.who;
+    setPhase('check');
+    $('.g-dg-say b').textContent = names[who];
     say('……', '', true);
-    foot(w.checking);
+    foot(sub(w.checking));
     veil.textContent = '';
+    root.querySelectorAll('[data-k]').forEach((b) => { b.disabled = false; });
     goBtn.disabled = true;
     g.words = await wordsOf(data);
     let s;
-    try { s = await lookFirst(doc, data.model ?? null); } catch (e) { s = { far: true, err: e }; }
+    try { s = await lookFirst(doc, who, data.model ?? null); } catch (e) { s = { far: true, err: e }; }
+    if (who !== g.who) return; // the guesser changed while this one was asked
     g.model = s.model?.id ?? null;
-    foot(g.model ? `Ling · ${g.model}` : '');
+    foot(modelLine());
     if (s.far) { setPhase('far'); veil.textContent = w.far; return; }
+    if (s.refused) { setPhase('absent'); veil.textContent = w[s.refused]; foot(''); return; }
     if (s.blind) {
       setPhase('blind');
       veil.textContent = w.blind;

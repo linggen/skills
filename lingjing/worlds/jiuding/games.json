@@ -1504,7 +1504,7 @@
    "id": "drawguess",
    "group": "ai",
    "mechanic": "你画我猜",
-   "_data": "画猜 (games/drawguess.js; Hanli 2026-10-16: 「玩家画AI猜, 试一下吧」) — a prototype, no story beat. `words`: things from 卷一 to draw; `also` · `en` · `enAlso` are the spellings a guess is right under, checked page-side (drawguess-rules.js matches: exact after normalize, never a substring). Ling only guesses.",
+   "_data": "画猜 (games/drawguess.js; Hanli 2026-10-16: 「玩家画AI猜, 试一下吧」) — a prototype, no story beat. `words`: things from 卷一 to draw; `also` · `en` · `enAlso` are the spellings a guess is right under, checked page-side (drawguess-rules.js matches: exact after normalize, never a substring). The guesser (Ling, or 银月 once the save has met her) only guesses.",
    "data": {
     "words": [
      {"zh": "弓", "also": ["弓箭", "长弓", "猎弓", "弯弓"], "en": "bow", "enAlso": ["bow and arrow", "longbow"]},
