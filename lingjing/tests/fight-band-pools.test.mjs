@@ -3,7 +3,7 @@
 // a wall) — fewer seeds, a wider band. A pool's beast is met with whoever stands with him in that 回
 // (party.json by_hui — Hanli: 「小队是人数跟剧情走」) and grows with them (party.json `roaming`): with a
 // party it is still lost now and then (≥ 10%) and seldom outlasted (≤ 20% ran dry). Met alone it holds
-// its band too.
+// its band too, and is seldom outlasted alone either (≤ 20%).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { content, FIGHTS, keyOf, rateOf, stateAt, TWO_PILLS } from '../tools/story-fights.mjs';
@@ -29,6 +29,8 @@ for (const f of FIGHTS.filter(f => f.pool)) {
     if (!party.length) return;
     assert.ok(bare.lost >= 0.1, `${keyOf(f)} with the party is lost ${pct(bare.lost)} — the beast must still win now and then`);
     assert.ok(bare.withdrew <= 0.2, `${keyOf(f)} with the party runs dry ${pct(bare.withdrew)} — outlasted, not fought`);
-    holds(f, { party: [] }, 'alone');
+    const alone = holds(f, { party: [] }, 'alone');
+    // …and met alone it is fought to the end, not outlasted (a pool entry's `roaming.extra`).
+    assert.ok(alone.withdrew <= 0.2, `${keyOf(f)} alone runs dry ${pct(alone.withdrew)} — give its pool entry roaming.extra`);
   });
 }
