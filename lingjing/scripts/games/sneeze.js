@@ -104,20 +104,27 @@ export function tick(state, ms) {
   return s;
 }
 
-/* ── The picture: the stone stage edge, 何七 a few brush strokes — his shoulder dropping on the
-   tell, rocking back and forward on the sneezes; the charm's thread of black smoke. */
+/* ── The picture (painted 2026-10-16, tools/paint-games.py — the stick men read as another game): the
+   stone stage's edge, 何七 squared up on the right, 小满 on the left with the charm. 何七's shoulder
+   drops into the punch on the tell; the sneezes rock him back and forward on his heels; won, he
+   walks off the stage's end. The charm's thread of black smoke and the ink are the brush's. */
+const ART = (f) => new URL(`../../worlds/jiuding/art/games/sneeze/${f}.webp`, import.meta.url).href;
+const PAINT = { guard: ART('heqi-guard'), punch: ART('heqi-punch'), me: ART('xiaoman'), stage: ART('stage') };
+const FEET = 118;
+/* A painted figure standing on the stage: its feet at (x, FEET), `h` tall; `anchor` is the side the box hangs from. */
+const figure = (src, x, h, w, anchor = 'xMid', cls = '') => `<image class="g-fig${cls}" href="${src}" x="${n(anchor === 'xMax' ? x - w : anchor === 'xMin' ? x : x - w / 2)}" y="${FEET - h}" width="${w}" height="${h}" preserveAspectRatio="${anchor}YMax meet"/>`;
 function picture(state) {
-  const stage = '<path class="g-line" d="M10 118 H250"/><path class="g-line g-thin g-faint" d="M250 118 v10 M10 118 v10"/>';
-  const tell = state.phase === 'face' && state.note === 'tell';
+  const stage = `<image class="g-stage" href="${PAINT.stage}" x="-6" y="${FEET - 9}" width="332" height="40" preserveAspectRatio="none"/>`;
+  const tell = state.phase === 'face' && (state.note === 'tell' || state.note === 'hit');
   const lean = state.phase === 'sneeze' ? (state.k === 0 ? -8 : state.k === 1 ? 8 : state.part === 'choo' ? 6 : -4) : 0;
-  const x = state.won ? 286 : 170;
-  const he = `<g transform="translate(${x} 0) rotate(${lean} 0 118)"><circle class="g-line" cx="0" cy="44" r="10"/><path class="g-line" d="M0 54 V92 M0 92 l-12 26 M0 92 l12 26"/>`
-    + `<path class="g-line" d="M0 ${tell ? 66 : 60} l-22 ${tell ? 10 : 2} M0 60 l18 10"/></g>`;
-  const me = '<g transform="translate(96 0)"><circle class="g-line g-thin" cx="0" cy="48" r="9"/><path class="g-line g-thin" d="M0 57 V94 M0 94 l-10 24 M0 94 l10 24 M0 64 l16 6"/></g>';
-  const smoke = ['sneeze'].includes(state.phase) || state.note === 'smoke' ? `<path class="g-mist" d="M112 70 q20 -14 ${n(x - 132)} -26" opacity=".7"/>` : '';
+  const x = state.won ? 300 : 186;
+  const he = `<g class="g-heqi${state.won ? ' is-off' : ''}" transform="rotate(${lean} ${x} ${FEET})">`
+    + (tell ? figure(PAINT.punch, x + 22, 98, 92, 'xMax') : figure(PAINT.guard, x, 98, 60)) + '</g>';
+  const me = `<g class="g-me">${figure(PAINT.me, 92, 88, 36)}</g>`;
+  const smoke = ['sneeze'].includes(state.phase) || state.note === 'smoke' ? `<path class="g-mist" d="M108 64 q20 -14 ${n(x - 128)} -22" opacity=".7"/>` : '';
   const fx = state.fx ? splash(state.fx.ok ? 130 : 100, 66, state.t - state.fx.at, { r: 10, seal: state.fx.ok }) : '';
   const done = state.won && state.grade ? splash(286, 60, 300, { r: 12, seal: true }) : '';
-  return scene(320, 130, stage + me + he + smoke + fx + done);
+  return scene(320, 130, stage + me + he + smoke + fx + done, 'g-painted');
 }
 
 export function html(state, lang = 'zh') {
