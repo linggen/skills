@@ -326,3 +326,50 @@
 .g-recipe-tracks p { margin: 0; font-size: 13.5px; line-height: 1.6; text-align: left; }
 .g-recipe-tracks small { font-family: var(--ui); font-size: 11px; color: var(--dim); }
 .g-recipe-tracks b { color: var(--seal); font-weight: 600; }
+
+/* 2026-10-16 — the shared kit every beat gets (Hanli: 「不太好玩, 不像游戏」; the fight is what
+   feels like a game: a mark on every hit, a stamp at the end). Pure looks; no game's rules move.
+   ① The win is stamped: a cinnabar seal presses onto the won board (the card stands ~2.8 s). The
+   won frame is never repainted by the clock, so the CSS runs once. ② Every press on a game's
+   control leaves an ink ring where the finger went (live-games.js tapInk, a node of its own on
+   the body, outside any repaint). ③ A number in a board's head that changes bumps (live-games.js
+   morph, Web Animations — never an attribute a repaint would wipe). ④ The goal line over a scene's
+   board reads as the one thing to do, not small print. Reduced motion: none of it moves. */
+.g-ink.is-won, .g-jin.is-won { position: relative; }
+.g-ink.is-won::after, .g-jin.is-won::after {
+  content: '成'; position: absolute; top: 10px; right: 10px; width: 54px; height: 54px; box-sizing: border-box;
+  display: grid; place-items: center; border: 3px solid var(--seal); border-radius: 6px; color: var(--seal);
+  font-family: var(--serif); font-size: 32px; line-height: 1; font-weight: 700; background: color-mix(in srgb, var(--seal-soft) 70%, transparent);
+  transform: rotate(-8deg); opacity: .92; pointer-events: none; animation: g-stamp .42s cubic-bezier(.2, 1.6, .4, 1) both;
+}
+@keyframes g-stamp { 0% { transform: rotate(-8deg) scale(2.4); opacity: 0; } 60% { opacity: .95; } 100% { transform: rotate(-8deg) scale(1); opacity: .92; } }
+.g-ink.is-won .g-scene { animation: g-wonglow 1.2s ease-out both; }
+@keyframes g-wonglow { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--seal) 45%, transparent); } 100% { box-shadow: 0 0 0 14px transparent; } }
+.g-tapink { position: fixed; z-index: 60; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; pointer-events: none;
+  border: 2px solid var(--ling); opacity: .7; animation: g-tapink .45s ease-out forwards; }
+@keyframes g-tapink { to { transform: scale(4.2); opacity: 0; border-width: .5px; } }
+.g-scene .g-count { transform-box: fill-box; transform-origin: center; }
+/* 接雨: a brimming basin asks to be carried off — its spot glows and 满 stands over the water. */
+.g-rain-spot.is-full { border-color: var(--seal); box-shadow: 0 0 0 2px color-mix(in srgb, var(--seal) 30%, transparent); animation: g-brim 1s ease-in-out infinite alternate; }
+@keyframes g-brim { to { box-shadow: 0 0 0 5px color-mix(in srgb, var(--seal) 12%, transparent); } }
+.g-scene .g-fullmark { font-family: var(--serif); font-size: 13px; font-weight: 700; fill: var(--seal) !important; }
+/* 吹鹅毛: the stroke's pace on a strip — 憋 on the left, 急 on the right, the even band between. */
+.g-pace { display: flex; align-items: center; gap: 8px; width: 100%; font-size: 12px; color: var(--faint); }
+.g-pacebar { position: relative; flex: 1; height: 12px; border-radius: 6px; background: var(--raised); border: 1px solid var(--line); }
+.g-pacebar b { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--ling) 28%, transparent); border-radius: 6px; }
+.g-pacebar i { position: absolute; top: -3px; width: 4px; height: 16px; margin-left: -2px; border-radius: 2px; background: var(--text); transition: left .12s linear; }
+.g-pace.is-fast .g-pacebar i, .g-pace.is-slow .g-pacebar i { background: var(--seal); }
+/* 射鹿: the aim as two named choices; the bow's button turns cinnabar when the draw is full. */
+.g-aimpair { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.g-aimbtn { min-height: 44px; padding: 6px 14px; border: 0; background: var(--surface); color: var(--dim); font-size: 14px; cursor: pointer; touch-action: manipulation; }
+.g-aimbtn + .g-aimbtn { border-left: 1px solid var(--line); }
+.g-aimbtn[aria-pressed="true"] { background: var(--seal-soft); color: var(--seal); font-weight: 600; }
+.g-aimbtn.is-hinted { box-shadow: inset 0 0 0 2px var(--yinyue); color: var(--yinyue); }
+.g-btn-main.g-hold.is-full { background: var(--seal); border-color: var(--seal); letter-spacing: .1em; }
+.g-rain-spot.is-drip:not(.has-basin) { background: color-mix(in srgb, var(--water) 10%, transparent); }
+.gamecard.scenegame .g-goal { font-family: var(--serif); font-size: 14.5px; line-height: 1.6; color: var(--text); margin: 2px 0 6px;
+  padding-left: 10px; border-left: 3px solid var(--seal); }
+@media (prefers-reduced-motion: reduce) {
+  .g-ink.is-won::after, .g-jin.is-won::after, .g-ink.is-won .g-scene, .g-rain-spot.is-full { animation: none; }
+  .g-tapink { display: none; }
+}

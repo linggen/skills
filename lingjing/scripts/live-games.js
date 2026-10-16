@@ -56,12 +56,32 @@ function sync(old, next) {
     const oa = a[i];
     if (!oa) { old.appendChild(nb); return; }
     if (oa.nodeType !== nb.nodeType || oa.nodeName !== nb.nodeName) { old.replaceChild(nb, oa); return; }
-    if (nb.nodeType !== 1) { if (oa.nodeValue !== nb.nodeValue) oa.nodeValue = nb.nodeValue; return; }
+    if (nb.nodeType !== 1) { if (oa.nodeValue !== nb.nodeValue) { oa.nodeValue = nb.nodeValue; bump(old); } return; }
     for (const { name } of [...oa.attributes]) if (!nb.hasAttribute(name)) oa.removeAttribute(name);
     for (const { name, value } of [...nb.attributes]) if (oa.getAttribute(name) !== value) oa.setAttribute(name, value);
     sync(oa, nb);
   });
   for (let i = a.length - 1; i >= b.length; i--) a[i].remove();
+}
+
+const calm = () => Boolean(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+/* A count in a board's head that changed (满盆 3 → 4, 记号, 担 …) bumps once — the number on every
+   hit (2026-10-16). Web Animations, so the next repaint's attribute sync never cuts it short. */
+const BUMPS = '.g-head b, .g-count, .g-track-count b';
+function bump(el) {
+  if (calm() || !el?.matches?.(BUMPS) || !el.animate) return;
+  el.animate([{ transform: 'scale(1.45)', color: 'var(--seal)' }, { transform: 'scale(1)' }], { duration: 320, easing: 'ease-out' });
+}
+/* An ink ring where the finger went down on a game's control: every press answers at once, before
+   the game's own picture moves. A node of its own on the body, gone when its ring has spread. */
+export function tapInk(doc, x, y) {
+  if (calm() || !doc?.body) return;
+  const i = doc.createElement('i');
+  i.className = 'g-tapink';
+  i.style.left = `${x}px`;
+  i.style.top = `${y}px`;
+  doc.body.appendChild(i);
+  setTimeout(() => i.remove(), 500);
 }
 
 export function wireLiveGames({ boardFor, lang, onWon, paused = () => false, step = 50 }) {
@@ -120,6 +140,13 @@ export function wireLiveGames({ boardFor, lang, onWon, paused = () => false, ste
       settle(g);
     }
   }, step);
+
+  // Every press on any board's control (in time or not) leaves its ink ring.
+  document.addEventListener('pointerdown', (e) => {
+    if (paused() || e.button !== 0) return;
+    const el = e.target.closest?.('[data-g],[data-g-hold],[data-g-drag]');
+    if (el && !el.disabled && el.closest('[data-game]')) tapInk(document, e.clientX, e.clientY);
+  });
 
   // A tap on a game running in time: acted on as the finger goes down.
   const gate = tapGate();

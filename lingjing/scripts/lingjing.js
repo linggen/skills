@@ -50,6 +50,7 @@ import { SIGHT_KINDS, artRoom, chatHeard, fitBox, mountChatToggle, paintSight, s
 import { createPager } from './pager.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { wireLiveGames } from './live-games.js';
+import { beatWon } from './beat-won.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
 import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, huiLineOf, momentMay, momentsHold, trayWaits } from './queue.js';
 
@@ -1699,6 +1700,8 @@ async function onWin(taskId) {
   const won = boards.get(taskId), grade = won?.state?.grade ?? null;
   if (won) won.winning = true;
   try { await pause(stillMotion() ? 1200 : WIN_LINE_MS); } finally { if (won) won.winning = false; }
+  // A board the scene stands on its stage is a story beat (the opening's 接雨, 射鹿 …), not a day's practice.
+  const story = (look?.scene?.show ?? []).some((c) => c.card === 'board' && c.id === taskId);
   if (isTale(taskId)) return taleWon(taskId);
   const r = await write('win', { id: taskId, ...(grade ? { grade } : {}) }).catch(failed);
   // Refused (not here, not open), the win is kept on the board and sent again
@@ -1720,6 +1723,8 @@ async function onWin(taskId) {
   if (isTask(taskId)) await payWin(taskId);
   else await report(`[scene] won ${taskId}`);
   await refresh();
+  // The one hook for what follows a won beat (beat-won.js: the 得牌 reveal listens here).
+  if (story) beatWon(taskId, { grade });
   const on = winExit(taskId, grade);
   // A passage owed after the game (the rest of the scene's, `story_after`): the box tells it first,
   // and the way on stays his to take — never tapped over the words still to come.
