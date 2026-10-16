@@ -15,7 +15,8 @@
 // The world steps only in `tick` at a fixed 1/60 s, and nothing moves until an arrow touches it,
 // so a shot flies the same whatever the clock's step: `flight` (the same code) is what the bot
 // searches. Pure module: newGame / html / act / tick, and mount().
-// The deer, the bow and the arrow are PLACEHOLDER ink strokes until the painted sprites land.
+// The stag is painted (games.json `art`, art/games/deer); the bow, the arrow, the reeds and the
+// branch are PLACEHOLDER ink strokes until theirs land (the ink deer stays as the fallback).
 import { Matter } from './physics.js';
 import { btn, n, reeds, scene, splash, still } from './ink.js';
 import { mountPure } from './mount.js';
@@ -42,7 +43,7 @@ const HIT_MS = 1400, SPOOK_MS = 1300, GONE_MS = 700, CLEAR_MS = 1800, ALERT_MS =
 
 const T = {
   zh: {
-    level: '第 {i} / {n} 处', arrows: '箭', wind: ['无风', '微风', '有风', '大风'],
+    level: '第 {i} / {n} 处', arrows: '箭', wind: ['无风', '微风', '有风', '大风'], face: ' · 迎面', back: ' · 顺风',
     clean: '中了。一团墨花绽开——鹿一跃而起，没进了芦苇深处。',
     graze: ['擦着了。鹿一惊，一溜烟跑了——过了好一会儿，才又回到溪边。', '没中要害。鹿受了惊，蹦开去，又慢慢回来了。'],
     short: '箭扎进了草里。', long: '箭飞过了头，落进了溪里。', turned: '箭碰着了，打着转掉下来。',
@@ -56,7 +57,7 @@ const T = {
     empty: '溪边没有鹿。',
   },
   en: {
-    level: 'Spot {i} of {n}', arrows: 'Arrows', wind: ['No wind', 'A breath', 'Wind', 'Strong wind'],
+    level: 'Spot {i} of {n}', arrows: 'Arrows', wind: ['No wind', 'A breath', 'Wind', 'Strong wind'], face: ' · in your face', back: ' · at your back',
     clean: 'A hit. A bloom of ink — the deer leaps and is gone deep into the reeds.',
     graze: ['A graze. The deer startles and bolts — and only after a long while comes back to the stream.', 'Not the heart. The deer shies away, then creeps back.'],
     short: 'The arrow sticks in the grass.', long: 'Over its back — the arrow drops into the stream.', turned: 'It strikes something and tumbles down.',
@@ -78,39 +79,67 @@ export const GROUND = 252, BANK = 222;
 export const groundAt = (x) => (x >= 380 ? BANK : x <= 330 ? GROUND : GROUND + ((BANK - GROUND) * (x - 330)) / 50);
 const WATER = [[0, 262], [300, 262]];
 
+/* ── The wind: a level's `wind` (+ in his face), and its `gust` rising and falling ─────────── */
+
+const TAU = Math.PI * 2;
+/** The wind at `ms`: steady, or breathing — `gust` {amp, period, phase?} on top. */
+export function windAt(level, ms) {
+  const g = level.gust;
+  return (level.wind ?? 0) + (g ? g.amp * Math.sin((TAU * ms) / g.period + (g.phase ?? 0)) : 0);
+}
+/** How far the wind has carried a leaf by `ms` (its integral), so a leaf never jumps as it changes. */
+function windCarried(level, ms) {
+  const g = level.gust, ph = g?.phase ?? 0;
+  return (level.wind ?? 0) * ms - (g ? ((g.amp * g.period) / TAU) * (Math.cos((TAU * ms) / g.period + ph) - Math.cos(ph)) : 0);
+}
+
 /* ── The deer: a declared schedule (where, facing, head down or up) ──────────────────────────── */
 
-/** Where the deer is at `ms` since the level was laid: { x, face, walking, up, phase }. */
+const RAMP = 320; // a head comes up (or goes down to the water) over this long, eased
+const ease = (k) => { const x = Math.max(0, Math.min(1, k)); return x * x * (3 - 2 * x); };
+/** Eased 0 → 1 → 0 across a window [0, len): up over RAMP at its start, down over RAMP at its end. */
+const swell = (v, len) => (v < 0 || v >= len ? 0 : ease(Math.min(v, len - v) / RAMP));
+
+/** Where the deer is at `ms` since the level was laid: { x, face, walking, lift (0 drinking … 1
+    head up), up, phase }. Every pose eases into the next; the zones follow the same `lift`. */
 export function deerAt(level, ms) {
   const d = level.deer, at = Math.max(0, ms);
-  const pos = d.walk ? walkAt(d, at) : { x: d.x, face: d.face ?? 1, walking: false };
-  const up = pos.walking || liftAt(d, at);
-  return { ...pos, up, phase: at };
+  const pos = d.walk ? walkAt(d, at) : { x: d.x, face: d.face ?? 1, walking: false, lift: 0 };
+  const lift = Math.max(pos.lift, liftAt(d, at));
+  return { ...pos, lift, up: lift > 0.5, phase: at };
 }
 
+/** Back and forth along the bank: it starts and stops easily (eased), head up while it walks. */
 function walkAt(d, ms) {
   const { to, ms: go, rest = 0 } = d.walk, span = go + rest, u = ms % (2 * span);
-  const out = u < span, v = out ? u : u - span, k = Math.min(1, v / go);
+  const out = u < span, v = out ? u : u - span, k = ease(v / go);
   const [a, b] = out ? [d.x, to] : [to, d.x];
-  return { x: a + (b - a) * k, face: Math.sign(b - a) || 1, walking: v < go };
+  return { x: a + (b - a) * k, face: Math.sign(b - a) || 1, walking: v < go, lift: swell(v, go) };
 }
 
-const liftAt = (d, ms) => Boolean(d.lift) && ms % d.lift.every >= d.lift.every - d.lift.for;
+const liftAt = (d, ms) => (d.lift ? swell((ms % d.lift.every) - (d.lift.every - d.lift.for), d.lift.for) : 0);
 
 /* The deer's shape in its own frame (facing +x, feet at 0): the zones an arrow is judged by. */
 export const DEER_S = 1.3; // the deer's size on the bank (its zones scale with it)
-const HEART = [12, -33], HEART_R = 10, PIERCE = 18, BODY = [0, -34, 27, 13];
-const headOf = (up) => (up ? [31, -66] : [41, -9]);
-const ANTLER_R = 15;
+// Fitted to the painted stag (art/games/deer, 2026-10-16; one canvas unit = 0.18 deer units): the
+// heart low behind the foreleg, the barrel, the head down at the water or up, and the antlers —
+// a great crown above the head (a graze, like the barrel and the neck).
+const HEART = [13, -28], HEART_R = 12, PIERCE = 18, BODY = [0, -34, 25, 12];
+const DOWN = [44, -12], UP = [33, -47];
+const ANTLER_DOWN = [-4, -36], ANTLER_UP = [-15, -16];
+/** The head between drinking (0) and up (1). */
+const headOf = (lift) => [DOWN[0] + (UP[0] - DOWN[0]) * lift, DOWN[1] + (UP[1] - DOWN[1]) * lift];
+const ANTLER_R = 18;
 
 /** What the arrow's point, from `a` to `b` (world), touched on the deer: 'clean', 'graze' or null. */
 export function deerHit(level, ms, a, b) {
   const d = deerAt(level, ms), gy = groundAt(d.x);
   const local = ([x, y]) => [((x - d.x) * d.face) / DEER_S, (y - gy) / DEER_S];
   const [p, q] = [local(a), local(b)];
-  const head = headOf(d.up), antler = [head[0] - 6, head[1] - (d.up ? 16 : 13)];
+  const head = headOf(d.lift), lerp = (a, b) => a + (b - a) * d.lift;
+  const antler = [head[0] + lerp(ANTLER_DOWN[0], ANTLER_UP[0]), head[1] + lerp(ANTLER_DOWN[1], ANTLER_UP[1])];
   if (segEllipse(p, q, BODY)) return pierces(p, q) ? 'clean' : 'graze';
-  const grazed = segCircle(p, q, head, 8) || segCircle(p, q, antler, ANTLER_R) || segSeg(p, q, [18, -40], head, 5);
+  const grazed = segCircle(p, q, head, 8) || segCircle(p, q, antler, ANTLER_R) || segSeg(p, q, [20, -38], head, 6);
   return grazed ? 'graze' : null;
 }
 
@@ -193,9 +222,9 @@ function tipOf(body) {
 
 /** One step of the world (1/60 s): wind on the arrow, matter moves it, then what it struck.
     Returns the arrow's event: null (flying), 'snap', 'turned', 'ground', 'water', 'out'. */
-export function stepWorld(world, level) {
+export function stepWorld(world, level, ms = 0) {
   const ar = world.arrow;
-  if (ar && ar.true) Body.setVelocity(ar.body, { x: ar.body.velocity.x + WIND_ACC * (level.wind ?? 0), y: ar.body.velocity.y });
+  if (ar && ar.true) Body.setVelocity(ar.body, { x: ar.body.velocity.x + WIND_ACC * windAt(level, ms), y: ar.body.velocity.y });
   Engine.update(world.engine, STEP_MS);
   if (!ar || ar.done) return null;
   if (ar.true) Body.setAngle(ar.body, Math.atan2(ar.body.velocity.y, ar.body.velocity.x));
@@ -260,7 +289,7 @@ export function flight(level, aim, at = 0, limit = 600) {
   const world = shoot(build(level), aim);
   let snapped = 0;
   for (let k = 1; k <= limit; k++) {
-    const ev = stepWorld(world, level);
+    const ev = stepWorld(world, level, at + k * STEP_MS);
     if (ev === 'snap') snapped++;
     const hit = world.arrow.true ? deerHit(level, at + k * STEP_MS, world.arrow.prev, world.arrow.tip) : null;
     if (hit) return { hit, steps: k, tip: world.arrow.tip, snapped };
@@ -282,7 +311,7 @@ function lay(s, li) {
 export function newGame(seed, _level = 1, deal = {}) {
   const levels = Array.isArray(deal?.levels) ? deal.levels : [];
   const s = { seed: String(seed), live: levels.length > 0, levels, li: 0, phase: 'aim', t: 0, clock: 0, wall: 0,
-    misses: levels.map(() => 0), best: levels.map(() => 0), used: 0, won: false, stars: 0, grade: null, still: Boolean(deal?.still) };
+    misses: levels.map(() => 0), best: levels.map(() => 0), used: 0, won: false, stars: 0, grade: null, still: Boolean(deal?.still), art: deal?.art ?? null };
   return levels.length ? lay(s, 0) : { ...s, phase: 'empty' };
 }
 
@@ -342,7 +371,7 @@ export function act(state, data = {}) {
 /* ── Time ──────────────────────────────────────────────────────────────────────────────────── */
 
 function flying(s) {
-  const level = levelOf(s), ev = stepWorld(s.world, level), ar = s.world.arrow;
+  const level = levelOf(s), ev = stepWorld(s.world, level, s.clock), ar = s.world.arrow;
   const hit = ar.true ? deerHit(level, s.clock, ar.prev, ar.tip) : null;
   if (hit) return hit === 'clean' ? clean(s) : graze(s);
   if (ev === 'snap') return { ...s, said: 'snap', saidAt: s.clock };
@@ -392,9 +421,9 @@ function advance(s) {
 const backAgain = (s) => clearArrow({ ...s, phase: s.used >= QUIVER ? 'gone' : 'aim', t: 0, clock: 0, said: s.used >= QUIVER ? 'gone' : s.said });
 
 const PHASES = {
-  aim: (s) => (stepWorld(s.world, levelOf(s)), s),
+  aim: (s) => (stepWorld(s.world, levelOf(s), s.clock), s),
   fly: flying,
-  spook: (s) => (stepWorld(s.world, levelOf(s)), s.t < SPOOK_MS ? s : backAgain(s)),
+  spook: (s) => (stepWorld(s.world, levelOf(s), s.clock), s.t < SPOOK_MS ? s : backAgain(s)),
   hit: (s) => (s.t < HIT_MS ? s : { ...s, phase: 'clear', t: 0 }),
   // Three stars go on by themselves; fewer wait for 往下 or 再来.
   clear: (s) => (s.t < CLEAR_MS || s.best[s.li] < 3 ? s : advance(s)),
@@ -441,19 +470,20 @@ function bankPicture(s) {
 
 /** The wind, read: a streamer on a pole by the bow and leaves drifting the way it blows. */
 function windPicture(level, s) {
-  const w = level.wind ?? 0, t = calm(s) ? 0 : s.clock, flutter = calm(s) ? 0 : Math.sin(t / 140) * 3;
+  const t = calm(s) ? 0 : s.clock, w = windAt(level, s.clock), flutter = calm(s) ? 0 : Math.sin(t / 140) * (1 + 3 * Math.abs(w));
   const px = 462, top = 140, len = 34, lean = Math.max(-1, Math.min(1, w)) * 0.95;
   const hang = 1 - Math.abs(lean), ex = px + lean * len, ey = top + 4 + hang * len * 0.9;
   const streamer = `<path class="g-da-pole" d="M${px} ${BANK} L${px} ${top}"/>`
     + `<path class="g-da-streamer" d="M${px} ${top + 2} Q${n((px + ex) / 2)} ${n(top + 2 + flutter + hang * 10)} ${n(ex)} ${n(ey + flutter)} L${n(ex)} ${n(ey + 7 + flutter)} Q${n((px + ex) / 2)} ${n(top + 10 + flutter + hang * 10)} ${px} ${top + 10}Z"/>`;
-  const leaves = w ? [0, 1, 2, 3].map((i) => leafAt(i, w, t)).join('') : '';
-  // A tuft at his feet and one by the water, leaning the way it blows (the wind is +x here).
-  const tufts = reeds([392, 398, 405, 411], BANK + 2, 22, Math.max(0, w), t) + reeds([18, 24, 31, 300, 307], GROUND + 2, 18, Math.max(0, w), t);
+  const moving = level.wind || level.gust;
+  const leaves = moving ? [0, 1, 2, 3].map((i) => leafAt(i, windCarried(level, t), t)).join('') : '';
+  // A tuft at his feet and one by the water, leaning the way it blows now (+x: in his face).
+  const tufts = reeds([392, 398, 405, 411], BANK + 2, 22, w, t) + reeds([18, 24, 31, 300, 307], GROUND + 2, 18, w, t);
   return streamer + tufts + leaves;
 }
 
-function leafAt(i, w, t) {
-  const span = W + 60, x = ((i * 137 + t * 0.05 * w * (1 + i * 0.2)) % span + span) % span - 30;
+function leafAt(i, carried, t) {
+  const span = W + 60, x = ((i * 137 + carried * 0.06 * (1 + i * 0.2)) % span + span) % span - 30;
   const y = 60 + i * 38 + Math.sin(t / 500 + i) * 8;
   return `<path class="g-da-leaf" d="M0 0 q4 -4 9 0 q-4 4 -9 0Z" transform="translate(${n(x)} ${n(y)}) rotate(${n(t / 9 + i * 50)})"/>`;
 }
@@ -470,20 +500,44 @@ function thingPicture(t, s) {
   return `${stub}<g transform="translate(${n(x)} ${n(y + shiver)}) rotate(${n((t.body.angle * 180) / Math.PI + sway)})"><path class="${cls}" d="M${n(from)} 0 L${n(len / 2)} 0"/>${twig}${head}</g>`;
 }
 
-/** The deer in ink (PLACEHOLDER until the painted one): head down drinking or up listening; legs
-    stepping when it walks. Antlers 「像一丛冬天的枯树枝」. */
-export function deerPicture(d, { alert = false, gone = 0 } = {}) {
-  const up = d.up || alert, [hx, hy] = headOf(up), stride = d.walking ? Math.sin(d.phase / 120) * 4 : 0;
-  const leg = (x, s) => `<path class="g-da-leg" d="M${x} -26 Q${x + s * 0.5} -12 ${x + s} 0"/>`;
-  const legs = leg(-17, -2 + stride) + leg(-10, 1 - stride) + leg(13, -1 - stride) + leg(19, 2 + stride);
-  const neck = `<path class="g-da-neck" d="M14 -40 Q${n((14 + hx) / 2 + (up ? -2 : 6))} ${n((-40 + hy) / 2 - (up ? 4 : 10))} ${hx} ${hy}"/>`;
-  const tilt = up ? -15 : 55;
-  const antlers = `<g transform="translate(${hx} ${hy}) rotate(${tilt})"><path class="g-da-antler" d="M-2 -5 L-8 -16 L-15 -22 M-8 -16 L-6 -25 M-11 -19 L-19 -18 M1 -6 L4 -17 L1 -26 M4 -17 L11 -22 M3 -13 L9 -13"/>`
-    + '<ellipse class="g-da-head" cx="4" cy="0" rx="8" ry="4.6"/><path class="g-da-ear" d="M-3 -3 l-7 -3 l5 4Z"/></g>';
-  const body = `<ellipse class="g-da-body" cx="0" cy="-34" rx="25" ry="11.5"/><path class="g-da-back" d="M-24 -38 Q0 -50 22 -40"/><path class="g-da-tail" d="M-24 -39 l-5 4"/>`;
+/** The deer: the painted stag when the row has its `art`, else ink; head down drinking or up
+    listening, eased between; stepping when it walks. Antlers 「像一丛冬天的枯树枝」. */
+export function deerPicture(d, { alert = 0, gone = 0, art = null } = {}) {
+  const lift = Math.max(d.lift ?? 0, alert), up = lift > 0.5;
   // Bolting: away from the bank, left, in long bounds — never toward him.
   const face = gone ? -1 : d.face, leap = gone ? ` translate(${n(-gone * gone * 160)} ${n(-Math.abs(Math.sin(gone * Math.PI * 1.6)) * 22)}) rotate(${n(Math.sin(gone * Math.PI * 3.2) * 8)})` : '';
-  return `<g class="g-da-deer${up ? ' is-up' : ''}${gone ? ' is-gone' : ''}" data-deer="" transform="translate(${n(d.x)} ${n(groundAt(d.x))})${leap} scale(${n(face * DEER_S, 2)} ${DEER_S})">${legs}${body}${neck}${antlers}</g>`;
+  const inner = art?.drink ? spriteDeer(art, d, lift, gone) : inkDeer(d, lift);
+  return `<g class="g-da-deer${up ? ' is-up' : ''}${gone ? ' is-gone' : ''}" data-deer="" transform="translate(${n(d.x)} ${n(groundAt(d.x))})${leap} scale(${n(face * DEER_S, 2)} ${DEER_S})">${inner}</g>`;
+}
+
+/* The painted deer (games.json `art`, when the sprites land): each pose an image in the deer's own
+   frame (facing +x, feet at 0) — `file` under worlds/jiuding/art, `w` × `h` in deer units, `at` the
+   point in the picture (fractions) that stands on the deer's origin, `flip` if it faces left.
+   The poses cross-fade by `lift`: drinking → looking (or walking, on the move; or bolting). */
+const artUrl = (file) => new URL(`../../worlds/jiuding/art/${file}`, import.meta.url).href;
+function sprite(a, opacity) {
+  if (!a || opacity < 0.02) return '';
+  const flip = a.flip ? -1 : 1, x = -a.at[0] * a.w, y = -a.at[1] * a.h;
+  return `<image class="g-da-sprite" href="${artUrl(a.file)}" x="${n(x)}" y="${n(y)}" width="${a.w}" height="${a.h}" opacity="${n(opacity, 2)}"${flip < 0 ? ` transform="scale(-1 1)"` : ''} preserveAspectRatio="none"/>`;
+}
+function spriteDeer(art, d, lift, gone) {
+  const moving = (gone || d.walking) && art.walk ? art.walk : art.look ?? art.walk;
+  const bob = d.walking && !gone ? n(Math.abs(Math.sin(d.phase / 160)) * -1.2) : 0; // a step's rise
+  return `<g transform="translate(0 ${bob})">${sprite(art.drink, 1 - lift) + sprite(moving, lift)}</g>`;
+}
+
+/** The PLACEHOLDER ink deer, posed by `lift` (0 drinking … 1 head up). */
+function inkDeer(d, lift) {
+  const [hx, hy] = headOf(lift);
+  const stride = d.walking ? Math.sin(d.phase / 120) * 4 * Math.min(1, (d.lift ?? 1) * 1.5) : 0;
+  const leg = (x, s) => `<path class="g-da-leg" d="M${x} -26 Q${x + s * 0.5} -12 ${x + s} 0"/>`;
+  const legs = leg(-17, -2 + stride) + leg(-10, 1 - stride) + leg(13, -1 - stride) + leg(19, 2 + stride);
+  const neck = `<path class="g-da-neck" d="M14 -40 Q${n((14 + hx) / 2 + 6 - 8 * lift)} ${n((-40 + hy) / 2 - 10 + 6 * lift)} ${n(hx)} ${n(hy)}"/>`;
+  const tilt = 55 - 70 * lift;
+  const antlers = `<g transform="translate(${n(hx)} ${n(hy)}) rotate(${n(tilt)})"><path class="g-da-antler" d="M-2 -5 L-8 -16 L-15 -22 M-8 -16 L-6 -25 M-11 -19 L-19 -18 M1 -6 L4 -17 L1 -26 M4 -17 L11 -22 M3 -13 L9 -13"/>`
+    + '<ellipse class="g-da-head" cx="4" cy="0" rx="8" ry="4.6"/><path class="g-da-ear" d="M-3 -3 l-7 -3 l5 4Z"/></g>';
+  const body = `<ellipse class="g-da-body" cx="0" cy="-34" rx="25" ry="11.5"/><path class="g-da-back" d="M-24 -38 Q0 -50 22 -40"/><path class="g-da-tail" d="M-24 -39 l-5 4"/>`;
+  return legs + body + neck + antlers;
 }
 
 /** The bow by his bank, drawn back along the pull, the arrow nocked toward the deer. */
@@ -494,7 +548,9 @@ function bowPicture(s) {
   const shake = p >= 0.98 && !calm(s) ? n(Math.sin(s.clock / 23) * 0.8) : 0;
   const nocked = s.phase === 'aim' ? `<path class="g-da-shaft" d="M${n(-back)} 0 L${n(-back + 32)} 0"/><path class="g-da-head-tip" d="M${n(-back + 32)} 0 l-6 -3 l0 6Z"/>`
     + `<path class="g-da-fletch" d="M${n(-back)} 0 l-4 -3 M${n(-back + 3)} 0 l-4 -3 M${n(-back)} 0 l-4 3 M${n(-back + 3)} 0 l-4 3"/>` : '';
-  return `<g class="g-da-bow${p >= 0.98 ? ' is-full' : ''}" transform="translate(${BOW[0]} ${n(BOW[1] + shake)}) scale(-1 1) rotate(${n(a)})">`
+  // Mirrored (it points left), so the screen's clockwise rotate takes −a: local +x then runs along
+  // (−cos a, −sin a), the launch vector (velocityOf) — up for a > 0. Hanli 10-16: it pointed down.
+  return `<g class="g-da-bow${p >= 0.98 ? ' is-full' : ''}" transform="translate(${BOW[0]} ${n(BOW[1] + shake)}) scale(-1 1) rotate(${n(-a)})">`
     + `<path class="g-da-limb" d="M${n(tipX)} ${n(-tipY)} Q${n(bend)} 0 ${n(tipX)} ${n(tipY)}"/>`
     + `<path class="g-da-string${p > 0 ? ' is-taut' : ''}" d="M${n(tipX)} ${n(-tipY)} L${n(4 - back)} 0 L${n(tipX)} ${n(tipY)}"/>${nocked}</g>`;
 }
@@ -535,33 +591,60 @@ function hintPicture(level, s) {
   return `<path class="g-da-hint" d="M${n(x)} ${n(y - 7)} L${n(x)} ${n(y + 7)} M${n(x - 4)} ${n(y)} L${n(x + 4)} ${n(y)}"/>`;
 }
 
-const alerted = (s) => s.alertAt != null && s.clock >= s.alertAt && s.clock - s.alertAt < ALERT_MS;
+/** The look-up after an arrow lands near: eased up and back down, 0 … 1. */
+const alerted = (s) => (s.alertAt == null ? 0 : swell(s.clock - s.alertAt, ALERT_MS));
 
 function deerNow(level, s) {
   if (['hit', 'spook'].includes(s.phase)) {
     // A beat of stillness (the burst), then the bound away; reduced motion: simply gone.
     const gone = Math.max(0, Math.min(1.4, (s.t - 250) / 700));
-    return calm(s) && gone > 0 ? '' : deerPicture(s.deerGone, { gone, alert: true }).replace(' data-deer=""', '');
+    return calm(s) && gone > 0 ? '' : deerPicture(s.deerGone, { gone, alert: ease(s.t / 200), art: s.art }).replace(' data-deer=""', '');
   }
   if (s.phase === 'gone' || s.phase === 'clear') return ''; // off into the reeds
-  return deerPicture(deerAt(level, s.clock), { alert: alerted(s) });
+  return deerPicture(deerAt(level, s.clock), { alert: alerted(s), art: s.art });
 }
 
 function burstPicture(s) {
   if (!['hit', 'spook'].includes(s.phase) || !s.at) return '';
-  if (calm(s)) return s.phase === 'hit' ? `<circle class="g-da-burst" cx="${n(s.at[0])}" cy="${n(s.at[1])}" r="9"/>` : '';
-  return splash(s.at[0], s.at[1], s.t, { r: s.phase === 'hit' ? 18 : 8 });
+  const [x, y] = s.at;
+  if (s.phase === 'spook') return calm(s) ? '' : splash(x, y, s.t, { r: 8 });
+  const stars = starsPicture(x, y - 34, starsFor(s.used), calm(s) ? 1 : s.t);
+  if (calm(s)) return `<circle class="g-da-burst" cx="${n(x)}" cy="${n(y)}" r="14"/>${stars}`;
+  // A big bloom of ink, a second one a beat behind, a ring going out — and the stars.
+  const ring = s.t < 600 ? `<circle class="g-da-ring" cx="${n(x)}" cy="${n(y)}" r="${n(10 + s.t / 12)}" opacity="${n(1 - s.t / 600, 2)}"/>` : '';
+  return splash(x, y, s.t, { r: 30 }) + splash(x - 8, y + 4, s.t - 90, { r: 16 }) + ring + stars;
+}
+
+/** The level's stars, stamped one after another over the strike (each pops in, eased with a kick). */
+function starsPicture(x, y, k, t) {
+  return [0, 1, 2].map((i) => {
+    const age = typeof t === 'number' ? t - 120 - i * 110 : 999, f = age <= 0 ? 0 : Math.min(1, age / 180);
+    if (!f) return '';
+    const pop = f < 1 ? 0.3 + 1.1 * Math.sin((f * Math.PI) / 1.2) : 1;
+    return `<text class="g-da-hitstar${i < k ? ' is-on' : ''}" x="${n(x + (i - 1) * 17)}" y="${n(y)}" text-anchor="middle" transform="translate(${n(x + (i - 1) * 17)} ${n(y)}) scale(${n(pop, 2)}) translate(${n(-(x + (i - 1) * 17))} ${n(-y)})">${i < k ? '★' : '☆'}</text>`;
+  }).join('');
+}
+
+/** A clean hit settles the scene: a short, damped shake (nothing under reduced motion). */
+function settle(s) {
+  if (s.phase !== 'hit' || calm(s) || s.t > 220) return '';
+  const k = 1 - s.t / 220;
+  return ` style="transform: translate(${n(Math.sin(s.t / 14) * 3 * k)}px, ${n(Math.cos(s.t / 11) * 2 * k)}px)"`;
 }
 
 function playScene(s) {
   const level = levelOf(s);
   const drag = `<rect class="g-da-pad" x="0" y="0" width="${W}" height="${H}" data-g-drag="bow"/>`;
-  return scene(W, H, bankPicture(s) + windPicture(level, s) + trailPicture(s) + hintPicture(level, s) + spentPicture(s)
+  return scene(W, H, `<g class="g-da-world"${settle(s)}>${bankPicture(s) + windPicture(level, s) + trailPicture(s) + hintPicture(level, s) + spentPicture(s)
     + deerNow(level, s) + s.world.things.map((x) => thingPicture(x, s)).join('') + burstPicture(s) + bowPicture(s) + guidePicture(s)
-    + arrowPicture(s) + drag, 'g-da-scene').replace('<svg ', `<svg data-arc="${esc(s.seed)}" `);
+    + arrowPicture(s)}</g>${drag}`, 'g-da-scene').replace('<svg ', `<svg data-arc="${esc(s.seed)}" `);
 }
 
-const windWord = (w, t) => t.wind[Math.min(3, Math.ceil(Math.abs(w ?? 0) / 0.34))];
+/** The wind as it blows now, in a word: how strong, and whether in his face or at his back. */
+function windWord(w, t) {
+  const k = Math.min(3, Math.ceil(Math.abs(w) / 0.3 - 0.15));
+  return k ? `${t.wind[k]}${w > 0 ? t.face : t.back}` : t.wind[0];
+}
 /** Stars; `pop` stamps each in turn (CSS: .g-da-pop, staggered, still under reduced motion). */
 const starRow = (k, pop = false) => [0, 1, 2].map((i) => `<i class="g-da-star${i < k ? ' is-on' : ''}${pop ? ' g-da-pop' : ''}" style="--i:${i}">${i < k ? '★' : '☆'}</i>`).join('');
 
@@ -569,7 +652,7 @@ function head(s, t) {
   const level = levelOf(s), left = Math.max(0, QUIVER - s.used);
   const quiver = `<span>${t.arrows} <b>${'│'.repeat(left)}</b>${'·'.repeat(QUIVER - left)}</span>`;
   return `<div class="g-head g-da-top"><span>${t.level.replace('{i}', String(s.li + 1)).replace('{n}', String(s.levels.length))}</span>`
-    + `<span>${windWord(level.wind, t)}</span>${quiver}</div>`;
+    + `<span class="g-da-windword">${windWord(windAt(level, s.clock), t)}</span>${quiver}</div>`;
 }
 
 function lineOf(s, t, lang) {
@@ -579,7 +662,7 @@ function lineOf(s, t, lang) {
   if (s.phase === 'aim' && s.pull) return s.pull.p >= 0.98 ? t.full : t.pull;
   // A miss where she hints it: her 「往左偏半寸」 right after; else the deer's look-up if it was near.
   if (s.phase === 'aim' && !s.pull && s.hint && level.hint && ['short', 'long'].includes(s.said)) return `${said[s.said]}${t.hint}`;
-  if (s.phase === 'aim' && !s.pull && alerted(s) && said[s.said]) return `${said[s.said]}${t.alert}`;
+  if (s.phase === 'aim' && !s.pull && s.alertAt != null && s.clock - s.alertAt < ALERT_MS && said[s.said]) return `${said[s.said]}${t.alert}`;
   if (s.said && said[s.said]) return said[s.said];
   if (s.hint && level.hint) return t.hint;
   return level.say?.[lang] ?? level.say?.zh ?? '';
@@ -639,12 +722,14 @@ function paintFrame() {
 }
 
 /* ── Standalone: the mount() contract (games/mount.js); alone it reads its row of games.json. */
-async function ownLevels() {
+/** Its own row of games.json: the levels, and the painted sprites (`art`) once they land. */
+async function ownRow() {
   const res = await fetch(new URL('../../worlds/jiuding/games.json', import.meta.url));
-  return (await res.json()).games.find((g) => g.id === meta.id)?.levels ?? [];
+  return (await res.json()).games.find((g) => g.id === meta.id) ?? {};
 }
 export async function mount(container, opts = {}) {
-  const levels = opts.data?.levels ?? await ownLevels();
+  const row = opts.data?.levels ? {} : await ownRow();
+  const levels = opts.data?.levels ?? row.levels ?? [], art = opts.data?.art ?? row.art ?? null;
   const quiet = opts.reducedMotion ? { still: true } : {};
-  return mountPure({ newGame, act, tick, html })(container, { ...opts, data: { ...(opts.data ?? {}), levels, ...quiet } });
+  return mountPure({ newGame, act, tick, html })(container, { ...opts, data: { ...(opts.data ?? {}), levels, art, ...quiet } });
 }

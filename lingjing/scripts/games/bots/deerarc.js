@@ -1,46 +1,43 @@
 // The human-like player for 射鹿 · 拉弓 (games/deerarc.js; tools/board-bots.mjs). An aim search,
-// not answers: for the moment the arrow will leave the string, it flies every pull on a grid
-// (`flight`, the game's own steps) against the deer as it will be, and takes the clean one with the
-// most clean neighbours — the steadiest, since a hand is never exact. Then it draws to it and lets
-// go. A level won under three stars is played once more.
+// not answers: for the moment the arrow will leave the string, it flies pulls on a coarse grid
+// (`flight`, the game's own steps — the deer as it will be, the wind as it will blow), then looks
+// closely around each clean one and takes the pull with the most clean neighbours — the steadiest,
+// since a hand is never exact. Then it draws to it and lets go. A level under three stars is
+// played once more. Small grids on purpose (a few hundred flights a solve): the host is shared.
 import { flight, STEP_MS } from '../deerarc.js';
 
 export const LEAD = 520; // draw → the hand lands → a glance → let go → the hand lands (board-bots)
-const ANGLES = [], POWERS = [];
-for (let a = 2; a <= 70; a += 2) ANGLES.push(a);
-for (let p = 0.12; p <= 1.0001; p += 0.01) POWERS.push(Math.round(p * 100) / 100);
+const round2 = (v) => Math.round(v * 100) / 100;
+const range = (from, to, step) => { const out = []; for (let v = from; v <= to + 1e-9; v += step) out.push(round2(v)); return out; };
+const COARSE_A = range(4, 68, 4), COARSE_P = range(0.14, 1, 0.03);
 
-/** Every pull on the grid, released at `at` ms: a map of 'a|p' → 'clean' · 'graze' · null. */
-function chart(level, at) {
-  const grid = new Map();
-  for (const a of ANGLES) for (const p of POWERS) grid.set(`${a}|${p}`, flight(level, { a, p }, at).hit);
-  return grid;
-}
-
-const steadiness = (grid, a, p) => {
+/** The cells around (a, p), a degree and a hundredth apart: how many of them fly clean. */
+function steadiness(level, at, a, p) {
   let k = 0;
-  for (const da of [-2, 0, 2]) for (const dp of [-0.02, -0.01, 0, 0.01, 0.02]) if (grid.get(`${a + da}|${Math.round((p + dp) * 100) / 100}`) === 'clean') k++;
+  for (const da of [-2, -1, 0, 1, 2]) for (const dp of [-0.02, -0.01, 0, 0.01, 0.02]) {
+    if (flight(level, { a: a + da, p: round2(p + dp) }, at).hit === 'clean') k++;
+  }
   return k;
-};
+}
 
 /** The steadiest clean pull for a release at `at` ms, or null when none flies clean then. */
 export function solve(level, at = 0) {
-  const grid = chart(level, at);
+  const clean = [];
+  for (const a of COARSE_A) for (const p of COARSE_P) if (flight(level, { a, p }, at).hit === 'clean') clean.push({ a, p });
   let best = null;
-  for (const [key, hit] of grid) {
-    if (hit !== 'clean') continue;
-    const [a, p] = key.split('|').map(Number), k = steadiness(grid, a, p);
-    if (!best || k > best.k) best = { a, p, k };
+  for (const c of clean.slice(0, 8)) {
+    const k = steadiness(level, at, c.a, c.p);
+    if (!best || k > best.k) best = { ...c, k };
   }
-  return best && { a: best.a, p: best.p, k: best.k };
+  return best;
 }
 
 let plan = null, lastT = -1, again = 0;
 
 /** A release time ahead, on the world's step, at which some pull flies clean (a walking deer may
-    be behind a turn): the first of a few tries a step of 100 ms apart. */
+    be behind a turn, a gust may be up): the first of a few tries 200 ms apart. */
 function planFor(level, clock) {
-  for (let d = 0; d < 3000; d += 100) {
+  for (let d = 0; d < 3000; d += 200) {
     const at = Math.round((clock + LEAD + d) / STEP_MS) * STEP_MS, aim = solve(level, at);
     if (aim) return { ...aim, at };
   }

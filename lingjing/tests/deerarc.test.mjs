@@ -193,3 +193,74 @@ test('drawn in both languages: the scene takes the drag, 重来, stars that pop;
   assert.match(da.html(da.newGame('t', 1, {}), 'zh'), /溪边没有鹿/);
   assert.equal(typeof da.mount, 'function');
 });
+
+/** Where a mirrored, rotated group's local +x points on the screen: scale(-1 1) rotate(r). */
+const bowDir = (h) => {
+  const m = h.match(/class="g-da-bow[^"]*" transform="translate\([^)]*\) scale\(-1 1\) rotate\(([-\d.]+)\)"/);
+  const r = (Number(m[1]) * Math.PI) / 180;
+  return [-Math.cos(r), Math.sin(r)];
+};
+const angleOf = ([x, y]) => Math.atan2(y, x);
+const near = (a, b, tol = 0.03) => Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b))) < tol;
+
+test('the bow, the nocked arrow and the hint point along the launch; the flying arrow along its flight (Hanli 10-16: the bow pointed down)', () => {
+  const still = byId('still');
+  // Pulled down-right (shoots up), flat, up-right (shoots down), and steep.
+  for (const [x, y] of [[60, 50], [70, 0], [70, -25], [40, 90]]) {
+    let s = da.newGame('t', 1, { levels: [still] });
+    s = da.act(s, { g: 'hold', x: 300, y: 150 }).state;
+    s = da.act(s, { g: 'move', x: 300 + x, y: 150 + y }).state;
+    const v = da.velocityOf(s.pull), launch = angleOf([v.x, v.y]);
+    assert.ok(near(launch, angleOf([-x, -y])), 'the launch is opposite the pull');
+    const h = da.html(s, 'zh');
+    assert.ok(near(angleOf(bowDir(h)), launch), `bow along the launch for a pull (${x}, ${y})`);
+    const dot = h.match(/class="g-da-guide" cx="([-\d.]+)" cy="([-\d.]+)"/);
+    assert.ok(near(angleOf([dot[1] - da.BOW[0], dot[2] - da.BOW[1]]), launch, 0.15), 'the hint\'s first dot');
+    s = da.act(s, { g: 'release' }).state;
+    for (let i = 0; i < 40 && s.phase === 'fly'; i++) {
+      s = da.tick(s, 50);
+      const ar = s.world.arrow;
+      if (s.phase !== 'fly' || !ar?.true) break;
+      const m = da.html(s, 'zh').match(/data-arrow="" transform="translate\([^)]*\) rotate\(([-\d.]+)\)"/);
+      assert.ok(near((Number(m[1]) * Math.PI) / 180, angleOf([ar.body.velocity.x, ar.body.velocity.y]), 0.02), 'the arrow flies along its tangent');
+    }
+  }
+});
+
+test('gusts: the wind rises and falls on a gusty level, a tailwind carries the arrow further, a lull and a gust land apart', () => {
+  const reeds = byId('reeds'), walk = byId('walk');
+  const winds = [0, 700, 1400, 2100].map((ms) => da.windAt(reeds, ms));
+  assert.ok(Math.max(...winds) - Math.min(...winds) > 0.5, `it breathes: ${winds.map((w) => w.toFixed(2))}`);
+  assert.ok(da.windAt(walk, 0) < 0, 'at his back');
+  const aim = { a: 40, p: 0.5 }, open = { ...walk, deer: { x: -999 }, wind: 0, gust: null, things: [] };
+  assert.ok(da.flight({ ...open, wind: -0.4 }, aim).tip[0] < da.flight(open, aim).tip[0], 'carried further toward the deer');
+  const gusty = { ...reeds, deer: { x: -999 }, things: [] }, g = reeds.gust;
+  const at = (k) => ((k - g.phase / (2 * Math.PI)) * g.period + g.period) % g.period; // the sine's quarter k
+  const lull = da.flight(gusty, aim, at(0.75)).tip[0], gust = da.flight(gusty, aim, at(0.25)).tip[0];
+  assert.ok(lull - gust < -12, `a lull flies further: ${lull.toFixed(0)} vs ${gust.toFixed(0)}`);
+});
+
+test('the painted stag: the row\'s art files exist; with art the deer is drawn from them (drink, or walk on the move), else in ink', async () => {
+  const fs = await import('node:fs');
+  for (const [pose, a] of Object.entries(GAME.art).filter(([k]) => !k.startsWith('_'))) {
+    assert.ok(fs.existsSync(new URL(`../worlds/jiuding/art/${a.file}`, import.meta.url)), `${pose}: ${a.file}`);
+  }
+  const drinking = da.html(da.newGame('t', 1, { levels: [byId('still')], art: GAME.art }), 'zh');
+  assert.match(drinking, /stag-drink\.webp/);
+  let s = da.newGame('t', 1, { levels: [byId('walk')], art: GAME.art });
+  for (let i = 0; i < 30; i++) s = da.tick(s, 50);
+  assert.match(da.html(s, 'zh'), /stag-walk\.webp/);
+  assert.doesNotMatch(da.html(da.newGame('t', 1, { levels: [byId('still')] }), 'zh'), /\.webp/, 'no art: the ink deer');
+});
+
+test('the deer eases between poses: its head and its feet never jump from one frame to the next', () => {
+  for (const level of LEVELS) {
+    let last = da.deerAt(level, 0);
+    for (let ms = 17; ms < 12000; ms += 17) {
+      const d = da.deerAt(level, ms);
+      assert.ok(Math.abs(d.lift - last.lift) < 0.1, `${level.id}: the head at ${ms}`);
+      assert.ok(Math.abs(d.x - last.x) < 1.5, `${level.id}: the feet at ${ms}`);
+      last = d;
+    }
+  }
+});

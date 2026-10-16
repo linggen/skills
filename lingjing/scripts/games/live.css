@@ -464,6 +464,11 @@
 .g-da-stars { font-size: 34px; letter-spacing: .2em; margin: 18px 0 0; }
 .g-da-stars .g-da-star { animation: g-da-pop .5s cubic-bezier(.2, 1.6, .4, 1) both; animation-delay: calc(var(--i) * .25s); }
 @media (prefers-reduced-motion: reduce) { .g-da-pop, .g-da-stars .g-da-star { animation: none; } }
+.g-da-scene .g-da-sprite { mix-blend-mode: multiply; }
+@media (prefers-color-scheme: dark) { .g-da-scene .g-da-sprite { mix-blend-mode: normal; } }
+.g-da-scene .g-da-ring { fill: none; stroke: currentColor; stroke-width: 1.4; }
+.g-da-scene .g-da-hitstar { fill: var(--faint); font-size: 17px; font-family: var(--serif); }
+.g-da-scene .g-da-hitstar.is-on { fill: var(--seal); }
 
 /* A scene's game on the painted stage (2026-10-16, Hanli: 「射鹿的画风比较粗糙啊」 — the game sat in a plain
    white box in front of the painting): the card is a leaf of the same warm paper the game pieces are
