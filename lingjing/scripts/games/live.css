@@ -409,6 +409,10 @@
 .g-tapink { position: fixed; z-index: 60; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; pointer-events: none;
   border: 2px solid var(--ling); opacity: .7; animation: g-tapink .45s ease-out forwards; }
 @keyframes g-tapink { to { transform: scale(4.2); opacity: 0; border-width: .5px; } }
+/* A tap the board did not answer (live-games.js tapNope): a seal-red ring that shakes — never silent. */
+.g-tapink.is-no { width: 30px; height: 30px; margin: -15px 0 0 -15px; border: 2.5px solid var(--seal); opacity: .85; animation: g-tapnope .5s ease-out forwards; }
+@keyframes g-tapnope-calm { to { opacity: 0; } }
+@keyframes g-tapnope { 0%, 40%, 80% { transform: translateX(-4px); } 20%, 60% { transform: translateX(4px); } 100% { transform: none; opacity: 0; } }
 .g-scene .g-count { transform-box: fill-box; transform-origin: center; }
 /* 接雨: a brimming basin asks to be carried off — its spot glows and 满 stands over the water. */
 .g-rain-spot.is-full { border-color: var(--seal); box-shadow: 0 0 0 2px color-mix(in srgb, var(--seal) 30%, transparent); animation: g-brim 1s ease-in-out infinite alternate; }
@@ -432,7 +436,8 @@
   padding-left: 10px; border-left: 3px solid var(--seal); }
 @media (prefers-reduced-motion: reduce) {
   .g-ink.is-won::after, .g-jin.is-won::after, .g-ink.is-won .g-scene, .g-rain-spot.is-full { animation: none; }
-  .g-tapink { display: none; }
+  .g-tapink:not(.is-no) { display: none; }
+  .g-tapink.is-no { animation: g-tapnope-calm .5s step-end forwards; }
 }
 
 /* 射鹿 · 拉弓 (games/deerarc.js, 2026-10-16) — a 愤怒小鸟-style prototype in the 游戏厅: the far bank

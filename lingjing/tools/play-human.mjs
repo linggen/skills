@@ -73,6 +73,7 @@ const DIGEST = (host) => `(() => {
     const own = [...e.childNodes].filter((c) => c.nodeType === 3).map((c) => c.textContent.trim()).join('');
     out.push(e.tagName + '.' + (e.getAttribute('class') || '') + '[' + data + ']' + own);
   }
+  out.push(...[...document.querySelectorAll('.g-tapink.is-no')].map(() => 'nope')); // the page's refusal ring (live-games.js tapNope)
   return out;
 })()`;
 
@@ -390,6 +391,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
       const r = await playOnce(browser, job.t, { width: job.width, policy: job.policy, seed: job.seed, seconds: job.policy === 'idle' ? Math.min(seconds, 60) : seconds, out, base });
       busy.delete(job.t.name);
       results.push(r); next++;
+      fs.appendFileSync(path.join(out, 'runs.jsonl'), JSON.stringify(r) + '\n'); // as it goes, for a long sweep
       console.log(`${String(next).padStart(3)}/${runs.length} ${r.tag.padEnd(42)} ${r.won ? `won ${(r.ms / 1000).toFixed(0)}s${r.stars != null ? ` ★${r.stars}` : ''}${r.grade ? ` ${r.grade}` : ''}` : 'not won'}${r.lost ? ` lost×${r.lost}` : ''}  ${r.findings.map((f) => f.kind).join(' ')}`);
     }
   };

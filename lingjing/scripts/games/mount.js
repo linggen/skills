@@ -13,7 +13,7 @@
 // while it runs in time, as live-games.js does), its holds and its strokes — all scoped to the
 // container, so a game on the 游戏厅 page and the same game on the story's stage play alike.
 // Nothing here knows a game.
-import { morph, sceneAt, tapGate, tapInk } from '../live-games.js';
+import { answered, morph, sceneAt, tapGate, tapInk, tapNope } from '../live-games.js';
 import { crosses, stroke } from './swipe.js';
 
 const STEP = 50;
@@ -48,9 +48,11 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
       resolve(result);
     };
     const check = () => { if (g.state?.won && !done) { done = true; clearInterval(clock); off.forEach((f) => f()); setTimeout(() => resolve(settled(g.state)), winHold); } };
-    const apply = (d) => {
+    const apply = (d, el = null) => {
+      const before = el ? mod.html(g.state, lang) : null;
       const r = mod.act(g.state, d);
       g.state = r.state ?? g.state;
+      if (el && !answered(before, mod.html(g.state, lang), r)) tapNope(doc, el); // never a silent tap
       paint();
       check();
     };
@@ -78,13 +80,13 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
       }
       if (!live(mod, g.state)) return; // a board not in time acts on its click, below
       gate.down('m');
-      apply({ ...tap.dataset });
+      apply({ ...tap.dataset }, tap);
     });
     on(host, 'click', (e) => {
       const el = e.target.closest?.('[data-g]');
       if (!el || el.disabled || !host.contains(el)) return;
       if (gate.click('m') && e.detail !== 0) return; // already acted on as the finger went down
-      apply({ ...el.dataset });
+      apply({ ...el.dataset }, el);
     });
     // A pressed pointer drawn across a [data-g-swipe] control acts on it, once per control per
     // stroke (喂饼's vines, 2026-10-16: 割绳子's cut); the press itself went the tap's way.

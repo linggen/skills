@@ -53,7 +53,7 @@ import { createLines, keepSpeed, paceOf, SPEEDS, speedNow, voiceOf } from './lin
 import { SIGHT_KINDS, artRoom, chatHeard, fitBox, mountChatToggle, paintSight, setAutoFold } from './sight.js';
 import { createPager } from './pager.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
-import { wireLiveGames } from './live-games.js';
+import { answered, tapNope, wireLiveGames } from './live-games.js';
 import { beatWon, onBeatWon } from './beat-won.js';
 import { beatHost } from './beat-host.js';
 import { devArcade } from './dev-arcade.js';
@@ -3072,8 +3072,10 @@ function gameMove(gmove) {
   const g = boardFor(ghost.dataset.game);
   if (!g) return true;
   if (g.state.wait) return true; // the rival's turn: taps wait for the reply
+  const before = g.mod.html ? g.mod.html(g.state, lang()) : null;
   const r = g.mod.act(g.state, { ...gmove.dataset });
   g.state = r.state;
+  if (before != null && !answered(before, g.mod.html(g.state, lang()), r)) tapNope(document, gmove); // never a silent tap
   render();
   // A board the rules judge hands back a verb to run (`send`) and a turn to 银月 (`her`) — never a win of its own.
   if (r.her) boardAsksHer(g);

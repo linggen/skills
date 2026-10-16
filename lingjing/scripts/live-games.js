@@ -88,6 +88,23 @@ export function tapInk(doc, x, y) {
   setTimeout(() => i.remove(), 500);
 }
 
+/** A tap the board left unanswered — the act refused it, or changed nothing on the screen: a seal-red
+    ring shakes on the control, so no tap is ever silent (10-16, tools/play-human.mjs: 洛书's empty cell,
+    接雨 while the hand was busy, a wrong word said twice did nothing at all). Shown under reduced
+    motion too, without the shake. */
+export function tapNope(doc, el) {
+  if (!doc?.body || !el?.getBoundingClientRect) return;
+  const r = el.getBoundingClientRect();
+  const i = doc.createElement('i');
+  i.className = 'g-tapink is-no';
+  i.style.left = `${r.left + r.width / 2}px`;
+  i.style.top = `${r.top + r.height / 2}px`;
+  doc.body.appendChild(i);
+  setTimeout(() => i.remove(), 520);
+}
+/** Did an act answer on the screen? `before` and `after` are the board's html around it. */
+export const answered = (before, after, r) => before !== after || Boolean(r?.send || r?.her || r?.state?.wait);
+
 /** Where a pointer stands in the scene's own units (the first svg.g-scene's viewBox), so a game
     that aims by a drag (射鹿's bow, 2026-10-16) reads the same pull at 390 and at 1440. A hold and
     each move of a drag carry it as `x`, `y`; a game that wants only the stroke's length (`d`)
@@ -130,11 +147,13 @@ export function wireLiveGames({ boardFor, lang, onWon, paused = () => false, ste
     g.state = g.mod.tick(g.state, lead);
     ahead.set(g, (ahead.get(g) ?? 0) + lead);
   };
-  const apply = (h, data) => {
+  const apply = (h, data, el = null) => {
     seen(h.host, h.g);
     catchUp(h.g);
+    const before = el ? h.g.mod.html(h.g.state, lang()) : null;
     const r = h.g.mod.act(h.g.state, data);
     h.g.state = r.state;
+    if (el && !answered(before, h.g.mod.html(h.g.state, lang()), r)) tapNope(document, el);
     paint(h.host, h.g);
     settle(h.g);
   };
@@ -174,7 +193,7 @@ export function wireLiveGames({ boardFor, lang, onWon, paused = () => false, ste
     const g = boardFor(host.dataset.game);
     if (!runsLive(g)) return;
     gate.down(host.dataset.game);
-    apply({ g, host }, { ...el.dataset });
+    apply({ g, host }, { ...el.dataset }, el);
   });
   document.addEventListener('click', (e) => {
     // A keyboard click (detail 0) never follows a pointerdown: the page's route takes it.
