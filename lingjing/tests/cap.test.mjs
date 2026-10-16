@@ -91,8 +91,9 @@ test('古四\'s close lifts him to 二层 (十月廿五, by the story); 古五 g
 test('古七: 四层 until the year — the seasons lift him to 七层, 古八\'s to 九层圆满, the cliff is the story\'s breakthrough', () => {
   const s = at('00-zhuji', '09-year', 'yaoyuan', ['00-prologue', '00-waimen'], { step: 4 });
   grind(s);
-  // Since 2026-10-16 古七 grinds 五层 and 六层 (rules/gates.mjs: each rise waits on the layer below it full); 七层 stays the story's.
-  assert.equal(named(s).replace('圆满', ''), '练气六层', 'ground to 六层, never to 七层');
+  // The cap follows the book's rises inside the 回 (2026-10-16): before 定风 he grinds no further than 四层 — the
+  // years' layers come one rise at a time, each behind its 阶段任务 (rules/gates.mjs).
+  assert.equal(named(s).replace('圆满', ''), '练气四层', 'the five years are the story\'s, not a grind');
   const cap = capOf(content, s);
   assert.ok(cap.story > cap.grind, 'the 回\'s story reaches past what grinding may');
   // 古八 (09-dabi, the second half since 2026-10-07): 七层 by the story, and grinding holds there.

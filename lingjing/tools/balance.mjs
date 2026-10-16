@@ -17,6 +17,7 @@
 //     beasts × the fight win rate); pool fights (a pool on the map: one win per pool per
 //     `cooldowns.pool_rest_min` of a sitting); the 饭桶 (once he holds it: `fantong_progress` a
 //     feed, one an hour); 今日传闻 where the map is not walled (a heavy player's: the `tale` cap);
+//     闭关 overnight (`seclude` hours, focus 修为, the rules' rate and its table's cap);
 //   - every fight win counted on the day (`pool.daily`: full, then half, then 灵石) and, at the
 //     full mark of a layer he may not grind past (the 回's cap), paid as 灵石 instead;
 //   - then the story, minute by minute: a scene's passages at `chars_per_min`, its boards, its
@@ -26,6 +27,7 @@
 //   - minutes left while it waits go to more pool fights, as the pool's rest allows.
 // Days per 回: from the day its first scene is reached to the day its last is done (fractional,
 // by the minutes used). The routine's 灵石, items and finds are not modelled — 修为 is the clock.
+// Grinding stops where the 回's cap says — and, while a stage quest is ahead, at its layer.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -120,7 +122,9 @@ export function play(content, player, { model = content.balance.model, ladder = 
   const up = (tier, step, carry, stretch = true) => { const c = Math.max(0, carry); s.tier = tier; s.step = step; s.progress = c; s.stretch = stretch ? Math.round(c * ratio) : 0; };
   let hui = walk[0].hui, capHui = hui, i = 0, done = new Set(), errandsPaid = new Set();
   // The cap where he stands: the 古 回's, a 今 interlude taking the one before it (rules/cap.mjs).
-  const capAt = () => { const c = caps[capHui]; if (!c) return null; const st = c.story ?? c; return { grind: Math.max(rank(c.tier, stepOf(c.tier, c.layer)), rank(s.tier, s.step)), story: rank(st.tier, stepOf(st.tier, st.layer)) }; };
+  // …and, while a stage quest of the 回 is ahead, no further than the lowest layer one asks (rules/cap.mjs heldBy).
+  const heldBy = c => Math.min(Infinity, ...(c.gates ?? []).filter(g => !done.has(g.scene)).map(g => rank(g.tier ?? tiers[0].id, stepOf(g.tier ?? tiers[0].id, g.layer))));
+  const capAt = () => { const c = caps[capHui]; if (!c) return null; const st = c.story ?? c; return { grind: Math.max(Math.min(rank(c.tier, stepOf(c.tier, c.layer)), heldBy(c)), rank(s.tier, s.step)), story: rank(st.tier, stepOf(st.tier, st.layer)) }; };
   /* 修为 in; a fight's past a mark he may not leave is 灵石 (nothing here). */
   const gain = (n, fight = false) => {
     if (n <= 0 || zero()) return;
@@ -161,6 +165,8 @@ export function play(content, player, { model = content.balance.model, ladder = 
       const at = () => day + (k * sit + (sit - left)) / total;
       if (!zero()) {
         if (k === 0) gain(pay.gongke.progress * player.gongke);
+        // 闭关 overnight (rules/seclusion.mjs, focus 修为): `seclude` hours a night, the rules' rate and cap.
+        if (k === 0 && day > 0 && player.seclude) gain(Math.min(content.rewards.seclusion.progress_per_hour * Math.min(player.seclude, content.rewards.seclusion.cap_hours), pay.seclusion.progress));
         const run = rerunOpen();
         // A share under one (`reruns` 0.5: every other day) is its expected worth.
         const runs = run ? Math.min(1, player.reruns - k) : 0;

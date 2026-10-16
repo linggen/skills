@@ -10,6 +10,7 @@ import { newState, threshold } from '../scripts/state.mjs';
 import { look, move, playTo, rerun, resolve, targetOf } from '../scripts/rules.mjs';
 import { health } from '../scripts/rules/health.mjs';
 import { gatesOf, stageGate, stageNow } from '../scripts/rules/gates.mjs';
+import { pay } from '../scripts/rules/core.mjs';
 import { rerunHere } from '../scripts/rules/rerun.mjs';
 import { WORDS, bookPopHtml } from '../scripts/cards.js';
 
@@ -135,4 +136,24 @@ test('the rerun from 古七: through the door, into the outer ring, and back to 
   assert.equal(out.state.chapter, '00-zhuji');
   assert.ok(content.chapters['00-zhuji'].map.places.includes(out.state.place), `back in the 观: ${out.state.place}`);
   assert.equal(out.state.scene, '09-yishui', 'the story where he left it');
+});
+
+test('古七\'s cap follows its rises (2026-10-16): grinding stops at the layer the next stage quest asks, so no rise lands on a layer ground past — 「层不动」 stays true', () => {
+  const T = content.rewards.tables;
+  const at = (done, step, progress) => ({ ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: null, place: 'houshan', ended: ['00-prologue', '00-waimen'],
+    done_scenes: ['09-snow', '09-jiuge', ...done], tier: 'qi', step, progress, traits: ROOTS });
+  const grind = s => { for (let k = 0; k < 60; k += 1) pay(content, s, { now: new Date(NOW.getTime() + k * 86_400_000), quests: [] }, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth, farm: true }); return s; };
+  // Before 定风: 四层, full, and no further — the furnace's rise still carries him to 五层.
+  const snow = grind(at([], 4, 0));
+  assert.deepEqual([snow.step, snow.progress], [4, th[4]]);
+  // Past 定风 (and 09-year's catch-up), before 沂水: 五层 full, never 六层.
+  const year = grind(at(['09-furnace', '09-year', '09-lingcao'], 5, 0));
+  assert.deepEqual([year.step, year.progress], [5, th[5]]);
+  // Past 沂水: 六层 — the autumn's 七层 is the story's.
+  const xie = grind(at(['09-furnace', '09-year', '09-lingcao', '09-yishui', '09-xie'], 6, 0));
+  assert.deepEqual([xie.step, xie.progress], [6, th[6]]);
+  // And each rise steps him: 定风 from 四层圆满 to 五层.
+  const fire = resolve({ ...snow, scene: '09-furnace', place: content.chapters['00-zhuji'].scenes['09-furnace'].at, tasks: { 'furnace-ding': { status: 'done' } }, stamina: 100, stamina_at: NOW.toISOString() }, content, ctx, { exit: 'fire' });
+  assert.equal(fire.result.ok, true, JSON.stringify(fire.result).slice(0, 200));
+  assert.equal(fire.state.step, 5, 'the rise lands');
 });

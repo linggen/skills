@@ -5,15 +5,15 @@
   "layers": {
     "qi": [
       0,
-      210,
-      390,
-      410,
-      430,
+      250,
       480,
       500,
-      740,
-      760,
-      780
+      520,
+      540,
+      560,
+      910,
+      930,
+      950
     ],
     "foundation": [
       400,
@@ -159,7 +159,7 @@
     "rerun_h": 3,
     "fantong_min": 60
   },
-  "_model": "The players tools/balance.mjs plays, day by day (design.md § Pacing: ~30 minutes a day, one 回 a week; 古一–古三 fast). `minutes`: what each thing takes (a scene's passages read at `chars_per_min`). `players`: minutes a day (the first day longer), sittings, and what each does daily — `gongke` the share of days the 功课 is handed in, `reruns` 秘境 runs, `fights` pool fights, `fantong` feeds, `tale` 今日传闻s, `gate_fights` more pool fights while a stage quest waits. `fight_win_rate`: a fight won (the 斗法 band, played again when lost). `fantong_progress`: a feed's 修为 on average (a pill now and then). `errands_at`: the 回 each errand that pays 修为 or a pill is done in (null: on no 卷一 map; tests/balance.test.mjs makes a new one name its 回). `fit`: the player and the days --fit aims the stage quests at (the heavy player: the one they hold back); `bands`: what the test holds, for the 回s from `later` on. Guesses to be hand-played on the live page (Hanli).",
+  "_model": "The players tools/balance.mjs plays, day by day (design.md § Pacing: ~30 minutes a day, one 回 a week; 古一–古三 fast). `minutes`: what each thing takes (a scene's passages read at `chars_per_min`). `players`: minutes a day (the first day longer), sittings, and what each does daily — `gongke` the share of days the 功课 is handed in, `reruns` 秘境 runs, `fights` pool fights, `fantong` feeds, `tale` 今日传闻s, `gate_fights` more pool fights while a stage quest waits, `seclude` hours of 闭关 a night (focus 修为: rewards.json seclusion's rate, the seclusion table's cap). `fight_win_rate`: a fight won (the 斗法 band, played again when lost). `fantong_progress`: a feed's 修为 on average (a pill now and then). `errands_at`: the 回 each errand that pays 修为 or a pill is done in (null: on no 卷一 map; tests/balance.test.mjs makes a new one name its 回). `fit`: the player and the days --fit aims the stage quests at (the heavy player: the one they hold back); `bands`: what the test holds, for the 回s from `later` on. Guesses to be hand-played on the live page (Hanli).",
   "model": {
     "chars_per_min": 450,
     "minutes": {
@@ -191,7 +191,8 @@
         "fights": 1,
         "fantong": 1,
         "tale": 0,
-        "gate_fights": 1
+        "gate_fights": 1,
+        "seclude": 0
       },
       "typical": {
         "minutes": 30,
@@ -202,7 +203,8 @@
         "fights": 0,
         "fantong": 1,
         "tale": 0,
-        "gate_fights": 2
+        "gate_fights": 2,
+        "seclude": 8
       },
       "heavy": {
         "minutes": 75,
@@ -213,7 +215,8 @@
         "fights": 3,
         "fantong": 3,
         "tale": 1,
-        "gate_fights": 3
+        "gate_fights": 3,
+        "seclude": 8
       }
     },
     "step_min": 20,
@@ -221,18 +224,18 @@
     "later": "h07",
     "bands": {
       "typical": [
-        5,
+        4,
         7.5
       ],
       "heavy": [
-        3,
-        5.5
+        2.5,
+        6
       ],
       "light": [
         8,
-        15
+        16.5
       ],
-      "_except": "古六 (h08) is the longest 回 — thirteen scenes and 今·三, about 90 minutes of story behind a stage quest at its start (the 大比 on 四层圆满): a typical player takes about 8 days there.",
+      "_except": "古六 (h08) is the longest 回 — thirteen scenes and 今·三, about 90 minutes of story behind a stage quest at its start (the 大比 on 四层圆满): a typical player takes about 8 days there. 古七 holds two layers ground one after the other (its cap follows its rises), 古五 one with a short story — a rising ladder trades one against the other.",
       "except": {
         "h08": {
           "typical": [
@@ -247,8 +250,8 @@
       "days": {
         "default": 5,
         "h05": 1.5,
-        "h07": 3.5,
-        "h08": 3.5
+        "h07": 3,
+        "h08": 3
       }
     }
   }

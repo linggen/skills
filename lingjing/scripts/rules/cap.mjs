@@ -44,7 +44,17 @@ export function capOf(content, state) {
   const e = entryOf(content, state);
   if (!e) return null;
   const now = rankOf(content, state.tier, state.step);
-  return { grind: Math.max(rankAt(content, e), now), story: rankAt(content, e.story ?? e), at: { tier: e.tier, layer: e.layer } };
+  return { grind: Math.max(Math.min(rankAt(content, e), heldBy(content, state, e)), now), story: rankAt(content, e.story ?? e), at: { tier: e.tier, layer: e.layer } };
+}
+
+/* The cap follows the book's own rises inside the 回 (2026-10-16): while a stage quest of the 回
+   (`gates`, rules/gates.mjs) is still ahead, grinding reaches no further than the lowest layer one
+   of them asks full — so no rise of the book ever lands on a layer already ground past (古七's
+   定风: 「可缸涨了，层不动」). Past every gate, the 回's own cap. */
+function heldBy(content, state, e) {
+  const done = new Set(state.done_scenes ?? []), first = content.ladder.tiers[0].id;
+  const ahead = (e.gates ?? []).filter(g => !done.has(g.scene)).map(g => rankAt(content, { tier: g.tier ?? first, layer: g.layer }));
+  return ahead.length ? Math.min(...ahead) : Infinity;
 }
 
 /* May the realm step from where it is to (tier, step)? A gain that would cross the cap is held. */

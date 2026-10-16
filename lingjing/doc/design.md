@@ -228,7 +228,7 @@ a 回 should last, not be binged.
 |---|---|
 | Daily routine (~15–20 min) | 功课 · a 秘境 rerun (3 h cooldown; open through 古七/古八 too, the same 观) · 饭桶 (1 h cooldown) · pool fights (30 min rest; the day's first 3 wins full 修为, the next 3 half, then 灵石) |
 | Story + its boards (~1 h a 回) | unlimited, at the player's pace, up to the 回's stage quest |
-| A 回 | typical ≈5–7 days (古六 ≈8: thirteen scenes behind its quest), heavy ≈3–5, light ≈8–15 |
+| A 回 | typical ≈4–7 days (古六 ≈8: thirteen scenes behind its quest), heavy ≈3–6, light ≈10–16 |
 | 古一–古三 | fast — no quest; a first sitting or two |
 
 - **One model for every number.** `worlds/jiuding/balance.json` holds the 层 thresholds, the pay
@@ -236,7 +236,7 @@ a 回 should last, not be binged.
   (`withBalance`) lands them where the rules read them. `node tools/balance.mjs` plays a light, a
   typical and a heavy player (`model.players`: minutes, sittings, what each does daily) through 卷一
   day by day and prints days per 回; `--fit` re-derives the 练气 thresholds the quests hold
-  (练气 [0, 210, 390, 410, 430, 480, 500, 740, 760, 780]); tests/balance.test.mjs holds the bands.
+  (练气 [0, 250, 480, 500, 520, 540, 560, 910, 930, 950]); tests/balance.test.mjs holds the bands.
   The model's minutes, reading speed and players are guesses — **balance changes are hand-played
   on the live page**.
 - **修为 stage quest (阶段任务)** (rules/gates.mjs; ladder.json `caps.hui.<回>.gates`): the 回's next
@@ -244,7 +244,8 @@ a 回 should last, not be binged.
   shows it with progress, 下一步 and Ling point to the work that raises 修为; 银月 says her word
   when it fills. Only where he can walk away to earn it (never inside a beat's lock or the 秘境):
   古四 the 柴房 night @一层 · 古五 the 秘境's door @二层 · 古六 the 大比's eve @四层 · 古七 定风 @四层,
-  the 沂水 night @五层, the autumn @六层 (its cap is 六层) · 古八 the years @七层. 古九 has none (the
+  the 沂水 night @五层, the autumn @六层 · 古八 the years @七层. While a quest is ahead, grinding stops at
+  the layer it asks (rules/cap.mjs heldBy): no rise of the book lands on a layer already ground past. 古九 has none (the
   九转 lands 筑基小成圆满). A scene passed is never gated again.
 - **No story floor.** A rise steps him and carries what was over the mark; nothing tops up a 层 he
   is short of.
@@ -254,7 +255,7 @@ a 回 should last, not be binged.
   秘境, pills, 今日传闻, 闭关, the road's riddle/机缘, the story's grants and rises. **Chores pay
   灵石:** an errand declares `work` — `cultivation` (its core is a fight) or `labor` (the `labor`
   table: 修为 0, ≤20 灵石, maybe an item); the day's real-life pick pays 灵石 (`life`, ≤10), a 开府
-  milestone 20 灵石. 闭关 is outside the model (a nightly one adds ~40–60 修为).
+  milestone 20 灵石. 闭关 is in the model: the typical and heavy players seclude 8 h a night (40 修为).
 - **Every hand-in visibly gains 修为 or 灵石.** 零层's 功课 pays 5 灵石.
 - **Old saves** keep their 层 and how full it stood (state v10 `paceLayer`, `thresholds_were` by
   version: a v8 save is read against the oldest ladder it was played on).
