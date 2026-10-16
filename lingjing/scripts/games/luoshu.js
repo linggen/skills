@@ -11,8 +11,8 @@ export const meta = {
 };
 
 const T = {
-  zh: { solved: '封印已破', row: '行', col: '列', diag: '斜', clear: '点已落之数可收回' },
-  en: { solved: 'The seal gives way', row: 'Rows', col: 'Cols', diag: 'Diag', clear: 'Tap a placed number to lift it' },
+  zh: { solved: '封印已破', row: '行', col: '列', diag: '斜', clear: '点已落之数可收回', ask: '先在下面选一个数，再点空格' },
+  en: { solved: 'The seal gives way', row: 'Rows', col: 'Cols', diag: 'Diag', clear: 'Tap a placed number to lift it', ask: 'Pick a number below first, then a cell' },
 };
 
 const esc = (v) => String(v).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
@@ -82,14 +82,16 @@ function place(state, i) {
   if (state.givens.includes(i)) return null;
   const cells = state.cells.slice();
   if (cells[i]) { cells[i] = 0; return { ...state, cells }; }
-  if (!state.pick || cells.includes(state.pick)) return null;
+  // An empty cell tapped with no number in hand is answered, never dead (10-16 play-human: a first
+  // tap goes to the square): the tray asks for a number (`ask` counts, so each tap nudges again).
+  if (!state.pick || cells.includes(state.pick)) return { ...state, ask: (state.ask ?? 0) + 1 };
   cells[i] = state.pick;
-  return { ...state, cells, pick: 0, won: isMagic(cells) };
+  return { ...state, cells, pick: 0, ask: 0, won: isMagic(cells) };
 }
 
 function pick(state, n) {
   if (!(n >= 1 && n <= 9) || state.cells.includes(n)) return null;
-  return { ...state, pick: state.pick === n ? 0 : n };
+  return { ...state, pick: state.pick === n ? 0 : n, ask: 0 };
 }
 
 const VERBS = {
@@ -128,7 +130,8 @@ function trayHtml(state) {
     const cls = n === state.pick ? ' is-picked' : '';
     return `<button type="button" class="g-luoshu-num${cls}" data-g="pick" data-n="${n}"${used ? ' disabled' : ''}>${n}</button>`;
   });
-  return `<div class="g-luoshu-tray">${btns.join('')}</div>`;
+  const ask = state.ask ? ` is-ask is-ask-${state.ask % 2}` : '';
+  return `<div class="g-luoshu-tray${ask}">${btns.join('')}</div>`;
 }
 
 export function html(state, lang = 'zh') {
@@ -142,6 +145,6 @@ export function html(state, lang = 'zh') {
   const anti = `<div class="g-luoshu-anti">${t.diag} ↙ ${sumTag(lineSum(c, LINES[7]))}</div>`;
   const bottom = state.won
     ? `<div class="g-luoshu-solved">${esc(state.solved ?? t.solved)}</div>`
-    : `${trayHtml(state)}<div class="g-luoshu-note">${t.clear}</div>`;
+    : `${trayHtml(state)}<div class="g-luoshu-note${state.ask ? ' is-ask' : ''}">${state.ask ? t.ask : t.clear}</div>`;
   return `<div class="g-luoshu${state.won ? ' is-won' : ''}">${board}${anti}${bottom}</div>`;
 }

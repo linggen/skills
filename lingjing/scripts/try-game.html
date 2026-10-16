@@ -42,7 +42,10 @@
         + `<a href="?dev=1&game=${id}&lang=${lang === 'en' ? 'zh' : 'en'}">${lang === 'en' ? '中' : 'En'}</a><a href="?dev=1&game=${id}&lang=${lang}">↺</a></nav><div id="slot"></div><div class="won" id="won"></div>`;
       root.querySelector('h1').textContent = mod.meta?.name?.[lang] ?? id;
       document.getElementById('how').textContent = mod.meta?.how?.[lang] ?? '';
-      const r = await mount(document.getElementById('slot'), { lang, seed: q.get('seed') || String(Date.now()), level: Number(q.get('level') || 1) });
+      // &data=<json>: the deal a story or daily board would hand it (a 饭桶 tool day: {"els":[…],"must":"spring"}) — tools/play-human.mjs.
+      let data;
+      try { data = q.get('data') ? JSON.parse(q.get('data')) : undefined; } catch { data = undefined; }
+      const r = await mount(document.getElementById('slot'), { lang, data, seed: q.get('seed') || String(Date.now()), level: Number(q.get('level') || 1) });
       document.getElementById('won').textContent = `${r.won ? (lang === 'en' ? 'Won' : '成') : '—'}${r.grade ? ` · ${r.grade}` : ''}`;
     }
   </script>

@@ -32,7 +32,7 @@ import { newState } from '../scripts/state.mjs';
 import { REACTION, JITTER, rng } from './board-bots.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const HOME = path.join(os.homedir(), '.linggen', 'skills', 'lingjing', 'data', 'saves');
+export const HOME = path.join(os.homedir(), '.linggen', 'skills', 'lingjing', 'data', 'saves');
 const gauss = (r) => Math.sqrt(-2 * Math.log(r() || 1e-9)) * Math.cos(2 * Math.PI * r());
 
 /* Every 卷一 scene's save as he steps into it: the rules' progress control (rules/progress.mjs
@@ -52,8 +52,8 @@ export function savesAtScenes(content) {
 }
 
 /* A scratch save written as the rules write one (data/saves/<name>/state.json) — never the player's. */
-function writeSave(name, state, dir = HOME) {
-  if (!/^pc-[a-z0-9-]{1,28}$/.test(name)) throw new Error(`not a page-crawl scratch name: ${name}`);
+export function writeSave(name, state, dir = HOME) {
+  if (!/^(pc|ph)-[a-z0-9-]{1,28}$/.test(name)) throw new Error(`not a page-crawl / play-human scratch name: ${name}`);
   const d = path.join(dir, name);
   fs.rmSync(d, { recursive: true, force: true });
   fs.mkdirSync(d, { recursive: true });
@@ -63,7 +63,7 @@ function writeSave(name, state, dir = HOME) {
 const readSave = (name, dir = HOME) => { try { return fs.readFileSync(path.join(dir, name, 'state.json'), 'utf8'); } catch { return ''; } };
 
 /* Clear what stands before the stage: the 回's title card, a seal, the story box (跳过, else the next line), 开局. */
-const CLEAR = `(() => {
+export const CLEAR = `(() => {
   const vis = (e) => e && e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden' && !e.closest('[hidden]');
   for (const sel of ['[data-reveal]', '[data-titlecard]', '.feat', '.wonseal', '[data-dlg-speed="skip"]:not(.on)', '[data-dlg-next]', '[data-spoils-close]', '[data-emerged-close]', '[data-close-chapter]', '[data-appear-done]', '[data-play]']) {
     const el = [...document.querySelectorAll(sel)].find(vis);
@@ -143,6 +143,20 @@ export async function playBoardLive(page, { id, game, tries = 3, seconds = 150, 
   return { won: false, tries, runs };
 }
 
+/** A board's scratch save, as he steps into its scene with the boards before it in the scene's
+    order left (the page lays one at a time): answers a writer, `.save` its name. Shared with play-human.mjs. */
+export function boardSeeder(at, sc, id, name, scene) {
+  const order = (sc.show ?? []).filter((c) => c.card === 'board').map((c) => c.id);
+  const before = order.slice(0, Math.max(0, order.indexOf(id)));
+  const f = () => {
+    const s = structuredClone(at.get(scene).state);
+    for (const b of before) s.tasks[b] = { status: 'done', skipped: true };
+    writeSave(name, { ...s, stamina: 100 });
+  };
+  f.save = name;
+  return f;
+}
+
 /* ── Controls ── */
 /* Never tapped: what writes beyond the scratch save — Linggen's language (中 / En wrote the global
    setting and flipped the player's own page, 2026-10-15), the weather city, the account. */
@@ -207,12 +221,8 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
           const game = content.tasks.tasks.find((t) => t.id === id)?.game;
           if (!game || !fs.existsSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../scripts/games/bots', `${game}.js`))) { findings.push({ kind: 'no-bot', board: id, game }); console.log(`${id.padEnd(18)} NO BOT (${game})`); continue; }
           // Boards before it in the scene's order are left first (the page lays one at a time).
-          const order = (sc.show ?? []).filter((c) => c.card === 'board').map((c) => c.id);
-          const seed = seeder(`pc-b-${id}`.slice(0, 31).toLowerCase().replace(/[^a-z0-9-]/g, '-'), scene);
-          const plain = seed;
-          const before = order.slice(0, Math.max(0, order.indexOf(id)));
-          const seedSave = () => { plain(); if (before.length) { const f = path.join(HOME, plain.save, 'state.json'); const s = JSON.parse(fs.readFileSync(f, 'utf8')); for (const b of before) s.tasks[b] = { status: 'done', skipped: true }; fs.writeFileSync(f, JSON.stringify(s)); } };
-          seedSave.save = plain.save;
+          const seedSave = boardSeeder(at, sc, id, `pc-b-${id}`.slice(0, 31).toLowerCase().replace(/[^a-z0-9-]/g, '-'), scene);
+          made.add(seedSave.save);
           const r = await playBoardLive(page, { id, game, tries: Number(flags.tries ?? 3), seconds: Number(flags.seconds ?? 150), seedSave, base });
           console.log(`${id.padEnd(18)} ${game.padEnd(12)} ${r.won ? `won on try ${r.tries}` : `NOT WON in ${r.tries} tries — ${r.runs.map((x) => x.why ?? `${x.presses} presses`).join('; ')}`}`);
           if (!r.won) findings.push({ kind: 'board-not-won', board: id, game, runs: r.runs });

@@ -53,3 +53,11 @@
 .g-luoshu-note { font-family: var(--ui); font-size: 12px; color: var(--faint); }
 .g-luoshu-solved { font-family: var(--serif); font-size: 18px; color: var(--ling); letter-spacing: 0.2em; padding: 6px 0; }
 .g-luoshu.is-won .g-luoshu-cell { border-color: var(--ling); }
+/* An empty cell tapped with no number picked: the tray nudges (two names so each tap replays it). */
+.g-luoshu-tray.is-ask-0 { animation: g-luoshu-ask0 .36s ease-out; }
+.g-luoshu-tray.is-ask-1 { animation: g-luoshu-ask1 .36s ease-out; }
+@keyframes g-luoshu-ask0 { 30% { transform: translateY(-4px); } }
+@keyframes g-luoshu-ask1 { 30% { transform: translateY(-4px); } }
+.g-luoshu-tray.is-ask .g-luoshu-num:not(:disabled) { border-color: var(--ling); }
+.g-luoshu-note.is-ask { color: var(--ling); }
+@media (prefers-reduced-motion: reduce) { .g-luoshu-tray.is-ask-0, .g-luoshu-tray.is-ask-1 { animation: none; } }

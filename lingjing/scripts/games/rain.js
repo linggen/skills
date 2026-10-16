@@ -33,6 +33,7 @@ export const LIMIT = 110000; //   the fifth watch: the rain stops
 export const DRY = 10; //         puddles at most for a dry floor
 export const LEAD = 900; //       the stain shows this long before a leak's first drop
 export const MISS_MS = 500; //    a tap on a dry spot: the hand is busy this long
+export const NOPE_MS = 350; //    a refused tap shakes its spot this long
 /* Puddles that lose the night — picked by play (2026-10-16, 60 seeds, one night's puddles; doc/games.md):
    a person's pace (the bot) 0; a casual hand, 0.6 s to see and tap, max 3; 1 s max 18; 1.3 s max 28;
    looking away 3 s of every 8, max 29 (29 live too) — 40 leaves that one room. Idle floods at ~31 s;
@@ -139,9 +140,12 @@ function finish(s, forced) {
 
 function tapSpot(s, i) {
   if (!s.live || !Number.isInteger(i) || i < 0 || i >= SPOTS.length) return null;
-  if (s.busy != null && s.t < s.busy) return null; // still on the wasted trip
-  if (s.basins[i] != null) return null; // a basin stands there already
-  if (!leakingAt(s.sched, i, s.t)) return { ...s, busy: s.t + MISS_MS, note: 'wasted' };
+  // A tap never goes unanswered (10-16 play-human: a tap while the hand was busy, or on a spot that
+  // has its basin, did nothing at all): a refused tap shakes its spot (`nope`, NOPE_MS).
+  const nope = { i, at: s.t };
+  if (s.busy != null && s.t < s.busy) return { ...s, nope }; // still on the wasted trip
+  if (s.basins[i] != null) return { ...s, nope }; // a basin stands there already
+  if (!leakingAt(s.sched, i, s.t)) return { ...s, busy: s.t + MISS_MS, note: 'wasted', nope };
   const basins = [...s.basins];
   basins[i] = 0;
   return { ...s, basins, note: 'placed' };
@@ -234,7 +238,8 @@ function spotScene(s, i) {
 }
 function spotHtml(s, i, t, lang) {
   const b = s.basins[i], drip = s.live && leakingAt(s.sched, i, s.t);
-  return `<button type="button" class="g-rain-spot${drip ? ' is-drip' : ''}${b == null ? '' : ' has-basin'}${b != null && b >= CAP ? ' is-full' : ''}" data-g="spot" data-i="${i}">`
+  const nope = s.nope?.i === i && s.t >= s.nope.at && s.t - s.nope.at < NOPE_MS;
+  return `<button type="button" class="g-rain-spot${drip ? ' is-drip' : ''}${b == null ? '' : ' has-basin'}${b != null && b >= CAP ? ' is-full' : ''}${nope ? ' is-nope' : ''}" data-g="spot" data-i="${i}">`
     + `${spotScene(s, i)}<span class="g-rain-name">${SPOTS[i][lang] ?? SPOTS[i].zh}</span>`
     + `${drip ? `<span class="g-sr">${t.drip}</span>` : ''}</button>`;
 }

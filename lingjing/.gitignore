@@ -1,2 +1,5 @@
 # A player's state and log — never in the repo.
 data/
+
+# play-human (tools/package.json devDependency) — never committed
+tools/node_modules/

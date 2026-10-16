@@ -138,3 +138,26 @@ test('a board saved before the 打地鼠 rain starts fresh on the new one', () =
   assert.equal(s.live, true);
   assert.ok(rain.html(old, 'zh').includes('g-rain-house'));
 });
+
+test('no dead tap: every tap on a spot changes what the board shows — a refused one shakes its spot (play-human 10-16)', () => {
+  let s = started('a');
+  const l = s.sched.leaks[0], dry = rain.SPOTS.findIndex((_, i) => i !== l.spot);
+  s = rain.tick(s, l.from - s.t + 100);
+  const tapShows = (st, i) => { const after = rain.act(st, { g: 'spot', i }).state; return { after, changed: rain.html(after, 'zh') !== rain.html(st, 'zh') }; };
+  // a dry spot: the wasted trip
+  let r = tapShows(s, dry);
+  assert.ok(r.changed, 'a dry tap shows');
+  assert.match(rain.html(r.after, 'zh'), /is-nope/);
+  // again while the hand is busy, at the leak: it shakes, nothing set
+  const busy = rain.tick(r.after, rain.NOPE_MS);
+  r = tapShows(busy, l.spot);
+  assert.ok(r.changed, 'a busy tap shows');
+  assert.equal(r.after.basins[l.spot], null);
+  // a basin already there
+  const set = rain.act(rain.tick(busy, rain.MISS_MS), { g: 'spot', i: l.spot }).state;
+  assert.equal(set.basins[l.spot], 0);
+  r = tapShows(rain.tick(set, rain.NOPE_MS), l.spot);
+  assert.ok(r.changed, 'a tap on its basin shows');
+  // the shake passes
+  assert.doesNotMatch(rain.html(rain.tick(r.after, rain.NOPE_MS), 'zh'), /is-nope/);
+});

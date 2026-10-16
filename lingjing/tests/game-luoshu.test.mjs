@@ -85,7 +85,21 @@ test('given cells cannot be changed; illegal acts return same state', () => {
   assert.equal(picked.state, s0, 'cannot pick a used number');
   assert.equal(act(s0, { g: 'nope' }).state, s0);
   const empty = s0.cells.indexOf(0);
-  assert.equal(act(s0, { g: 'cell', i: String(empty) }).state, s0, 'no pick → no place');
+  const asked = act(s0, { g: 'cell', i: String(empty) }).state;
+  assert.equal(asked.cells[empty], 0, 'no pick → no place');
+});
+
+test('no dead tap: an empty cell tapped with no number picked asks for one, every time (play-human 10-16)', () => {
+  const s0 = newGame('ask', 1);
+  const empty = s0.cells.indexOf(0);
+  const once = act(s0, { g: 'cell', i: String(empty) }).state;
+  assert.notEqual(html(once, 'zh'), html(s0, 'zh'), 'the first tap shows');
+  assert.match(html(once, 'zh'), /先在下面选一个数/);
+  const twice = act(once, { g: 'cell', i: String(empty) }).state;
+  assert.notEqual(html(twice, 'zh'), html(once, 'zh'), 'and the second');
+  const n = [1, 2, 3, 4, 5, 6, 7, 8, 9].find((x) => !s0.cells.includes(x));
+  const picked = act(twice, { g: 'pick', n: String(n) }).state;
+  assert.doesNotMatch(html(picked, 'zh'), /is-ask/, 'a pick ends the ask');
 });
 
 test('placed cell clears on tap', () => {
