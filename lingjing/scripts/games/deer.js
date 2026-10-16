@@ -31,7 +31,7 @@ export const GUIDED = 4; //    misses before her voice moves his hands
 const T = {
   zh: {
     stag: '溪边，那头雄鹿低着头在喝水，头上的角像一丛冬天的枯树枝。',
-    hold: '按住 · 拉弓',
+    hold: '按住 · 拉弓', pulling: '拉……', loose: '满了 · 松手放箭',
     drawing: '弓慢慢张开……',
     shake: '手腕肿着，胳膊开始打颤——弓，要撑不住了。',
     short: '没拉满，箭软软地扎进了草里。鹿抬起头，竖着耳朵听了一会儿——又低下头去。',
@@ -48,7 +48,7 @@ const T = {
   },
   en: {
     stag: 'By the stream the stag drinks, head down, its antlers like a thicket of winter branches.',
-    hold: 'Hold · draw',
+    hold: 'Hold · draw', pulling: 'Drawing…', loose: 'Full · let go',
     drawing: 'The bow opens, slowly…',
     shake: 'Your wrist is swollen and your arm begins to shake — the bow will not hold much longer.',
     short: 'Not drawn full: the arrow drops soft into the grass. The stag lifts its head, listens — and drinks again.',
@@ -186,18 +186,21 @@ function bowScene(state) {
   return scene(320, 60, limb + string + arrow + full, `g-bowscene${draw >= 0.9 ? ' is-full' : ''}`);
 }
 
+/** The one button says what the hand does now: draw; drawing; full — let go. */
+const holdWord = (s, t) => (!s.drawing ? t.hold : drawAt(s.held) >= 0.9 ? t.loose : t.pulling);
+
 export function html(state, lang = 'zh') {
   const t = T[lang] || T.zh;
   const w = windAt(state.sched, state.t), rest = w <= (state.hint ? TOL_HINT : TOL);
   if (state.won) return `<div class="g-deer g-ink is-won">${deerScene(state, 0, true)}<p class="g-line-say">${t.hit}</p></div>`;
   const hint = state.hint ? `<p class="g-hint">${lang === 'en' ? 'Yinyue: ' : '银月：'}「${t.hint}」</p>` : '';
   const wind = `<span class="g-chip${rest ? ' is-calm' : ''}">${t.wind} · ${rest ? t.rest : t.blow}</span>`;
-  const nudge = `<div class="g-nudge"><button type="button" class="g-nudgebtn${state.hint && state.aim !== 'left' ? ' is-hinted' : ''}" data-g="aim" data-to="left" aria-pressed="${state.aim === 'left'}" aria-label="${t.left}">‹</button>`
-    + `<span class="g-nudgesay">${t.aim} · <b>${t[state.aim]}</b></span>`
-    + `<button type="button" class="g-nudgebtn" data-g="aim" data-to="straight" aria-pressed="${state.aim === 'straight'}" aria-label="${t.straight}">›</button>${wind}</div>`;
+  // The aim as two named choices, not ‹ › arrows (live, 2026-10-16: which arrow was 「偏左」 was a guess).
+  const pick = (to) => `<button type="button" class="g-aimbtn${state.hint && to === 'left' && state.aim !== 'left' ? ' is-hinted' : ''}" data-g="aim" data-to="${to}" aria-pressed="${state.aim === to}">${t[to]}</button>`;
+  const nudge = `<div class="g-nudge"><span class="g-nudgesay">${t.aim}</span><span class="g-aimpair">${pick('straight')}${pick('left')}</span>${wind}</div>`;
   return `<div class="g-deer g-ink">${deerScene(state, w, rest)}${nudge}${bowScene(state)}`
     + `<p class="g-line-say">${t[state.note] ?? t.stag}</p>${hint}`
-    + btn(t.hold, 'data-g-hold="draw"', 'main', `g-hold${state.drawing ? ' is-held' : ''}`)
+    + btn(holdWord(state, t), 'data-g-hold="draw"', 'main', `g-hold${state.drawing ? ' is-held' : ''}${state.drawing && drawAt(state.held) >= 0.9 ? ' is-full' : ''}`)
     + `</div>`;
 }
 
