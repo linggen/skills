@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>灵境 · 得牌</title>
+  <link rel="stylesheet" href="lingjing.css" />
+  <link rel="stylesheet" href="card-reveal.css" />
+  <style>
+    body { overflow: hidden; }
+    .tstage { position: relative; height: 100vh; background: var(--sky-a); }
+    .bar { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: flex-end; gap: 8px; padding: 10px 16px; border-top: 1px solid var(--line); background: var(--surface); }
+    .bar button { font: 13px var(--ui); padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--raised); color: var(--text); }
+  </style>
+</head>
+<body>
+  <!-- The 得牌 reveal alone, for trying it by hand: ?card=luying,qingteng&lang=zh|en&line=… — nothing is saved. -->
+  <div class="tstage" id="stage">
+    <div class="bar"><button id="again">再来</button><button class="gearchip" id="bag">储物袋</button></div>
+  </div>
+  <script type="module">
+    import { revealCards } from './card-reveal.js';
+    const q = new URLSearchParams(location.search), lang = q.get('lang') ?? 'zh';
+    const ids = (q.get('card') ?? 'luying').split(',');
+    const { cards } = await (await fetch('../worlds/jiuding/cards.json')).json();
+    const line = q.get('line') ?? (lang === 'en' ? '"Read the wind first, then the deer."' : '爹说：「先看风，后看鹿。」');
+    const play = () => revealCards(ids.map(id => ({ ...cards.find(c => c.id === id), line })).filter(c => c.id),
+      { host: document.getElementById('stage'), target: document.getElementById('bag'), lang, artBase: '../worlds/jiuding/' });
+    document.getElementById('again').onclick = play;
+    play();
+  </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+/* card-reveal.css — 得牌 (card-reveal.js): the card big at the centre in
+   水墨淡彩 (aged paper, an ink rim, a seal), then shrunk into the bag chip.
+   Reduced motion: a still card that fades. */
+.rv-veil {
+  position: absolute; inset: 0; z-index: 90; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  padding: 16px; background: radial-gradient(ellipse at center, rgba(241, 236, 225, .78) 0%, rgba(40, 32, 20, .55) 100%);
+  animation: rv-dusk 380ms ease-out both; cursor: pointer; outline: none;
+}
+.rv-card {
+  --cw: min(62vw, 240px); position: relative; width: var(--cw); aspect-ratio: 5 / 7;
+  animation: rv-rise 520ms cubic-bezier(.2, .9, .25, 1.15) both;
+  transform-origin: center; will-change: transform;
+}
+.rv-paper {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; overflow: hidden;
+  border-radius: 10px; border: 2px solid #2b2620;
+  background: radial-gradient(circle at 30% 20%, #fbf6ea 0%, #efe4cc 70%, #e2d3b2 100%);
+  box-shadow: 0 0 0 5px rgba(251, 246, 234, .9), 0 0 0 6px rgba(43, 38, 32, .5), 0 22px 48px rgba(31, 24, 14, .45);
+}
+.rv-card[data-el="metal"] .rv-paper { background-color: #efe6c8; }
+.rv-card[data-el="wood"]  .rv-art { box-shadow: inset 0 0 0 1px rgba(76, 138, 74, .5); }
+.rv-card[data-el="water"] .rv-art { box-shadow: inset 0 0 0 1px rgba(58, 108, 163, .5); }
+.rv-card[data-el="fire"]  .rv-art { box-shadow: inset 0 0 0 1px rgba(192, 74, 48, .5); }
+.rv-card[data-el="earth"] .rv-art { box-shadow: inset 0 0 0 1px rgba(156, 118, 65, .5); }
+.rv-art { width: 86%; margin-top: 9%; aspect-ratio: 1; overflow: hidden; border-radius: 4px; background: #e9dfc7; }
+.rv-art img { width: 100%; height: 100%; object-fit: cover; display: block; filter: sepia(.12) contrast(1.02); }
+.rv-name { margin-top: 6%; font-family: var(--serif); font-size: calc(var(--cw) * .12); font-weight: 700; color: #1d1b17; letter-spacing: .12em; }
+.rv-kind { font-size: calc(var(--cw) * .056); color: #6a6458; letter-spacing: .2em; }
+.rv-cost, .rv-atk, .rv-hp {
+  position: absolute; width: calc(var(--cw) * .15); height: calc(var(--cw) * .15); display: flex; align-items: center; justify-content: center;
+  z-index: 2; border-radius: 50%; font: 700 calc(var(--cw) * .085) / 1 var(--serif); color: #fbf6ea; border: 1.5px solid #fbf6ea;
+}
+.rv-cost { left: 4%; top: 3%; background: #46708c; }
+.rv-atk { left: 4%; bottom: 3%; background: #8a6224; }
+.rv-hp { right: 4%; bottom: 3%; background: #b03a2b; }
+.rv-seal {
+  position: absolute; right: -6%; top: 30%; width: calc(var(--cw) * .2); height: calc(var(--cw) * .2); display: flex; align-items: center; justify-content: center;
+  border: 2px solid #b03a2b; border-radius: 4px; color: #b03a2b; background: rgba(251, 246, 234, .75);
+  font: 700 calc(var(--cw) * .11) / 1 var(--serif); transform: rotate(12deg) scale(1); opacity: 0;
+  animation: rv-stamp 300ms 560ms cubic-bezier(.3, 1.6, .5, 1) both;
+}
+.rv-line { margin: 0; max-width: min(86vw, 360px); text-align: center; font-family: var(--serif); font-size: 15px; color: #1d1b17;
+  background: rgba(251, 246, 234, .88); padding: 6px 12px; border-radius: 6px; animation: rv-fade 400ms 420ms both; }
+.rv-tap { margin: 0; font-size: 12px; color: rgba(251, 246, 234, .85); animation: rv-fade 400ms 900ms both; }
+.rv-veil.fly { background: transparent; transition: background 300ms; }
+.rv-veil.fly .rv-line, .rv-veil.fly .rv-tap { opacity: 0; transition: opacity 160ms; animation: none; }
+.rv-veil.fly .rv-card { animation: rv-fly 620ms cubic-bezier(.55, 0, .7, .4) both; }
+.rv-veil.fly .rv-seal { animation: none; opacity: .92; }
+.rv-landed { animation: rv-bump 460ms ease-out; }
+@keyframes rv-dusk { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rv-rise { 0% { transform: scale(.35) rotate(-8deg); opacity: 0; filter: blur(3px); } 70% { opacity: 1; filter: none; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+@keyframes rv-stamp { from { opacity: 0; transform: rotate(12deg) scale(2.2); } to { opacity: .92; transform: rotate(12deg) scale(1); } }
+@keyframes rv-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes rv-fly { from { transform: none; opacity: 1; } to { transform: var(--fly); opacity: .25; } }
+@keyframes rv-bump { 0% { transform: scale(1); } 40% { transform: scale(1.25); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .rv-veil, .rv-card, .rv-seal, .rv-line, .rv-tap, .rv-landed { animation: none !important; }
+  .rv-seal { opacity: .92; }
+}
+.rv-veil.still.out { opacity: 0; transition: opacity 200ms; }
+@media (prefers-color-scheme: dark) { .rv-veil { background: radial-gradient(ellipse at center, rgba(26, 24, 21, .7) 0%, rgba(0, 0, 0, .7) 100%); } }
