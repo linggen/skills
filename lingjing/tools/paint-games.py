@@ -73,31 +73,33 @@ SUBJECTS = {
     'A wild sika stag lying fallen on its side on the ground, seen from the side, legs folded, head and big branching antlers '
     'like bare winter branches resting low on the ground, still. A single arrow stands in its neck. Body in soft grey-brown ink '
     'wash with a faint muted ochre on the back, dark ink strokes.'),
-  'deer/bow-rest': ('sprite', (320, 640), (512, 1024), 1,
+  'deer/bow-rest': ('sprite', (320, 640), (512, 1024), 2,
     'An old Chinese hunting bow standing upright, seen from the side: ONE recurved wooden bow, its limbs wrapped round and '
     'round with dark sinew, a leather-wrapped grip in the middle, and ONE thin straight bowstring from tip to tip, at rest '
     '(not drawn). The wood a muted brown wash, the sinew in dark ink. No arrow, no hands, no person.'),
   'deer/bow-drawn': ('sprite', (400, 640), (640, 1024), 1,
-    'An old Chinese hunting bow drawn to full, seen from the side, upright: ONE recurved wooden bow bent deep into a strong '
-    'curve, its limbs wrapped round with dark sinew, a leather-wrapped grip, the thin bowstring pulled far back to the LEFT '
-    'into a sharp V, and ONE arrow nocked on the string pointing RIGHT across the grip. The wood a muted brown wash, the sinew '
-    'in dark ink. No hands, no person.'),
-  'deer/arrow': ('sprite', (640, 80), (1024, 256), 1,
+    'An old Chinese hunting bow drawn to full, upright, seen exactly from the side: the curved wooden BACK of the bow bulges '
+    'out to the RIGHT like a deep letter D, its two tips pulled toward the left, limbs wrapped round with dark sinew, a '
+    'leather-wrapped grip in the middle. The thin bowstring is pulled far back to the LEFT into a sharp V whose point is '
+    'well left of the grip. ONE arrow lies across the grip, its iron head pointing RIGHT past the bow, its feathered end '
+    'held at the point of the V on the left. The wood a muted brown wash, the sinew in dark ink. No hands, no person.'),
+  'deer/arrow': ('sprite', (640, 80), (1024, 256), 2,
     'ONE long wooden arrow lying perfectly horizontal, pointing RIGHT: a thin straight shaft, a small dark iron arrowhead at the '
     'right end, three grey feather fletchings at the left end. Ink strokes with a pale muted brown on the shaft.'),
-  'deer/reed': ('sprite', (200, 560), (512, 1280), 1,
+  'deer/reed': ('sprite', (200, 560), (512, 1280), 3,
     'ONE single tall river reed growing straight up from the bottom edge of the picture: one thin stem with three or four '
     'long narrow leaves curving off it, one feathery seed plume at the top bending gently to the right. Loose xieyi '
     'brushstrokes in grey and dark ink, a faint muted ochre on the seed plume.'),
-  'deer/reed-stub': ('sprite', (200, 200), (768, 768), 1,
+  'deer/reed-stub': ('sprite', (200, 200), (768, 768), 3,
     'ONE broken river reed: a short snapped-off stub of reed stem standing up from the bottom edge of the picture, its top '
     'split and frayed, one torn leaf hanging from it, a short tuft of grass at its foot. Grey and dark ink brushstrokes.'),
-  'deer/branch': ('sprite', (640, 300), (1024, 512), 1,
-    'ONE dead fallen branch lying horizontal: a bare grey weathered tree branch with no leaves, gnarled, forking into a few '
-    'broken twigs, the bark cracked. Dry grey and dark ink brushstrokes, a faint muted brown.'),
+  'deer/branch': ('sprite', (640, 300), (1024, 512), 2,
+    'ONE dead fallen branch lying horizontal: a bare grey weathered tree branch with no leaves, its thick broken-off base '
+    'at the LEFT end, thinning and forking into a few broken twigs toward the RIGHT, gnarled, the bark cracked. Dry grey and dark ink brushstrokes, a faint muted brown.'),
   'deer/ink-hit': ('sprite', (400, 400), (768, 768), 1,
-    'A single bold splash of black Chinese ink burst on paper, a round blot in the centre with a few flung drops and short '
-    'flicks around it, the edges bleeding softly into the paper. Black ink only, nothing else.'),
+    'A single bold SOLID splash of black Chinese ink burst on paper: one round blot filled solid black all the way through '
+    '(no hole, no ring, not hollow), a few flung drops and short flicks around it, the edges bleeding softly into the paper. '
+    'Black ink only, nothing else.'),
 
   # ── 喂饼 (00-cave/00-fox, the 割绳子 puzzle): the 饼 swings on vines in the cave to the fox.
   'bread/cave': ('vignette', (720, 880), (720, 880), 2,

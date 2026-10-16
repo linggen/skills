@@ -155,13 +155,13 @@ export function tick(state, ms) {
    it is held. Everything is drawn at the state's own clock (live-games repaints each step). */
 const NECK = [212, 108], NUDGE = 8;
 const LEAVES = [[0, 52], [120, 38], [230, 64]];
-const STAG = `<g class="g-stag">`
-  + `<ellipse cx="244" cy="104" rx="33" ry="14"/>`
-  + `<path d="M216 100 C208 104 200 116 196 128 L203 131 C207 120 214 112 222 108Z"/>`
-  + `<ellipse cx="195" cy="132" rx="8" ry="4.2" transform="rotate(25 195 132)"/>`
-  + `<path class="g-line" d="M226 115 L223 142 M234 117 L236 143 M258 116 L255 143 M268 112 L272 142"/>`
-  + `<path class="g-line g-thin" d="M201 126 L188 112 L180 104 M188 112 L184 98 M194 120 L196 104 L190 92 M196 104 L204 94 M180 104 L172 100"/>`
-  + `<path d="M276 98 l8 -4 l-3 7z"/></g>`;
+// The stag is painted (tools/paint-games.py, 2026-10-16 — Hanli: 「射鹿的画风比较粗糙啊」): drinking, or with its
+// head up a moment after a miss; it faces right on its canvas and is mirrored here to face the hunter's left.
+const STAG_ART = (f) => new URL(`../../worlds/jiuding/art/games/deer/${f}.webp`, import.meta.url).href;
+const STAG_POSE = { drink: STAG_ART('stag-drink'), look: STAG_ART('stag-look') };
+const STAG_W = 150, STAG_H = 112.5; // its 640×480 canvas; the neck at (0.42, 0.55) once mirrored
+const stagArt = (pose) => `<g class="g-stag-art" transform="translate(${n(NECK[0] + 0.58 * STAG_W)} ${n(NECK[1] - 0.55 * STAG_H)}) scale(-1 1)">`
+  + `<image href="${STAG_POSE[pose]}" width="${STAG_W}" height="${STAG_H}"/></g>`;
 function deerScene(state, w, rest) {
   const t = state.t, age = state.t - (state.lastAt ?? -1e9);
   const hills = `<path class="g-wash" d="M0 82 Q60 58 120 74 T240 64 T320 70 V170 H0Z"/>`;
@@ -176,7 +176,8 @@ function deerScene(state, w, rest) {
   const miss = { drift: [262, 70], wide: [238, 76], short: [150, 150], guided: [238, 76] }[state.note];
   const fx = state.won ? splash(NECK[0], NECK[1], 240, { r: 16, seal: true }) : miss ? splash(miss[0], miss[1], age, { r: 9 }) : '';
   const breeze = `<text class="g-scene-note${rest ? ' is-calm' : ''}" x="314" y="16" text-anchor="end">${rest ? '·' : '~'}</text>`;
-  return scene(320, 170, hills + water + leaves + `<g class="${state.won ? 'g-fallen' : ''}">${STAG}</g>` + reedsAt + aim + fx + breeze);
+  const pose = !state.won && miss && age < 2600 ? 'look' : 'drink';
+  return scene(320, 170, hills + water + leaves + `<g class="${state.won ? 'g-fallen' : ''}">${stagArt(pose)}</g>` + reedsAt + aim + fx + breeze);
 }
 function bowScene(state) {
   const draw = state.drawing ? drawAt(state.held) : 0, shake = state.drawing && state.held > SHAKE_MS ? Math.sin(state.t / 30) * 1.6 : 0;
