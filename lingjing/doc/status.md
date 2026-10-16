@@ -15,6 +15,7 @@ Updated 2026-10-16.
 ## Done lately
 
 - 10-16 — 后山崖顶 art redrawn in the house 水墨淡彩 (`55386811`): the six beasts (赤狐 slim, 豺 low and heavy) and 14 of the 36 finds, by Codex 0.163 (gpt-6.1-sol) with a house picture as the style (tools/paint-wash-codex.py); the 野猪 · 狼 · 熊 loot picks accepted.
+- 10-16 — binds get through 装睡 (`d8a4d41b`): `feint.pierce_binds` + card `binds` (青藤缚, 无支祁) — a bind at the sleeping beast holds it, that turn every blow goes in; 凶崖 pool 犰狳 hp 2.9 (lookahead 52/30/18 → 69/23/8; careless still loses ~83%).
 - 10-16 — 犰狳 见人则眠 is 假睡 (`e6f8fe16`): `feint` in battle.js (装睡 turns, plain blows glance, metal goes in), 鸱目一睁 scales per glance, 蛇尾抽/鸟喙啄 deck; 灵草谷 lookahead 65/30/6 won/lost/timed out, careless loses ~60%; 暗河 pool 犰狳 hp 5.5→4.
 - 10-16 — 后山崖顶 roster (`72680b96`, from tag `wip/2026-10-15-bestiary`): 15 beasts (9 东山经 woodcuts, 6 painted), 36 items, loot, 观 finds, 新 on cards; the 15 re-weighed on the lookahead player (fight-band-pools); 野猪 · 狼 · 熊 given loot (獠牙 · 狼皮 · 熊胆 had no source).
 - 10-16 — fights calibrated on the lookahead player (`81c72985`); lookahead win rates ~57–70%, tutorials ~80%.
@@ -54,3 +55,7 @@ Updated 2026-10-16.
 ## Known red
 
 - `mishi.test.mjs` "a real 秘境 rerun … 暗室" — red on main since 10-15.
+
+## Known
+
+- Pools outlasted, not lost (lookahead, 10-16): 领胡 (太行) lost 0%, timed out 27%; 野猪 on the 后山崖顶 lost 5%, timed out 37%. Left as they are; fight-band.test holds only the story fights to lost ≥ 8%.
