@@ -25,13 +25,13 @@ const T = {
     draw: '画', start: '开始', undo: '撤一笔', clear: '清空', done: '画好了', ling: '灵',
     checking: '灵在看纸……', looking: '灵在看……', looks: '还能看 {n} 眼',
     blind: '这个模型看不见图，画猜开不了。', far: '连不上灵。', err: '灵没看清，再画画。',
-    won: '对了，是「{w}」。', time: '时间到。是「{w}」。', again: '再来',
+    won: '对了，是「{w}」。', time: '时间到。是「{w}」。',
   },
   en: {
     draw: 'Draw', start: 'Start', undo: 'Undo', clear: 'Clear', done: 'Done', ling: 'Ling',
     checking: 'Ling is looking at the paper…', looking: 'Ling is looking…', looks: '{n} looks left',
     blind: 'This model can\'t see pictures, so this game can\'t start.', far: 'Ling can\'t be reached.', err: 'Ling couldn\'t make it out. Keep drawing.',
-    won: 'Right — {w}.', time: 'Time. It was {w}.', again: 'Again',
+    won: 'Right — {w}.', time: 'Time. It was {w}.',
   },
 };
 const fill = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => o[k] ?? '');
@@ -123,19 +123,21 @@ const askGuess = (prev) => '[画猜] 小游戏试玩，与故事无关；不调�
   + '照你平常说话的样子猜它是什么。只回三行：第一行一句中文，不超过二十字；第二行同一句的英文；第三行「猜：」加一个中文名词。'
   + (prev.length ? `你先前猜过：${prev.join('、')}。画添了笔，可以改口。` : '');
 
-// The engine's verdict on sight, once a page: null (not asked yet) · { blind, line, model }.
-let sight = null;
+// The engine's verdict on sight, once a page per model asked: { blind, line, model }.
+const sight = new Map();
 let lastWord = null; // the word just drawn on this page: never twice running
 
-async function lookFirst(doc) {
-  if (sight) return sight;
+async function lookFirst(doc, model) {
+  const key = model ?? '';
+  if (sight.has(key)) return sight.get(key);
   if (!(await reachable())) return { far: true };
-  const named = await declaredBlind().catch(() => null);
-  if (named) return (sight = { blind: true, model: { id: named } });
-  const r = await askOnce({ png: paperPng(doc, [], 32), prompt: ASK_OPEN });
+  const named = model ? null : await declaredBlind().catch(() => null);
+  if (named) return { blind: true, model: { id: named } };
+  const r = await askOnce({ png: paperPng(doc, [], 32), prompt: ASK_OPEN, model });
   log({ kind: 'open', ms: r.ms, model: r.model?.id, tools: r.tools, text: r.text });
-  if (isBlindReply(r.text)) return (sight = { blind: true, model: r.model, said: r.text });
-  return (sight = { blind: false, model: r.model, line: parseReply(r.text) });
+  const seen = isBlindReply(r.text) ? { blind: true, model: r.model, said: r.text } : { blind: false, model: r.model, line: parseReply(r.text) };
+  sight.set(key, seen);
+  return seen;
 }
 
 /** What each look cost and said, for the test page's console (and a live check's script). */
@@ -236,13 +238,14 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     const p = parseReply(r.text);
     const ok = p.guess != null && matches(p.guess, g.word);
     log({ kind: 'guess', word: g.word.zh, n: g.loop.calls, ms: r.ms, model: r.model?.id, guess: p.guess, ok, tools: r.tools, zh: p.zh, en: p.en });
+    g.note = '';
     if (p.guess) g.guesses.push(p.guess);
     sayParsed(p.zh || p.en ? p : { zh: p.guess, en: null });
     if (ok) end(true);
   };
   const onError = (e) => {
     log({ kind: 'error', message: String(e?.message ?? e) });
-    say(w.err, '', true);
+    g.note = w.err;
   };
 
   const tick = () => {
@@ -250,8 +253,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     $('.g-dg-sec').textContent = String(Math.ceil(left / 1000));
     $('.g-dg-time i').style.transform = `scaleX(${left / ROUND_MS})`;
     lefts();
-    if (g.loop?.busy) foot(w.looking);
-    else foot(g.model ? `Ling · ${g.model}` : '');
+    foot(g.loop?.busy ? w.looking : g.note || (g.model ? `Ling · ${g.model}` : ''));
     if (left <= 0 && g.phase === 'draw') closing();
   };
   const closing = () => {
@@ -276,7 +278,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
       send: async () => {
         foot(w.looking);
         const png = paperPng(doc, g.strokes), prompt = askGuess(g.guesses);
-        return askLing({ sid: await g.sid, png, prompt, signal });
+        return askLing({ sid: await g.sid, png, prompt, model: data.model ?? null, signal });
       },
       onReply,
       onError,
@@ -300,8 +302,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     root.querySelectorAll('[data-k]').forEach((b) => { b.disabled = true; });
     const word = lang === 'en' ? g.word.en : g.word.zh;
     if (won) root.classList.add('is-won');
-    else say(fill(w.time, { w: word }), lang === 'en' ? fill(T.zh.time, { w: g.word.zh }) : fill(T.en.time, { w: g.word.en }));
-    foot(won ? fill(w.won, { w: word }) : '');
+    foot(fill(won ? w.won : w.time, { w: word }));
     const calls = g.loop?.calls ?? 0;
     setTimeout(() => finish(won ? { won: true, stars: starsFor(calls), grade: `${calls}` } : { won: false, grade: `${word}` }), won ? 1800 : 600);
   };
@@ -322,23 +323,24 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   });
 
   async function start() {
-    say(w.checking, '', true);
+    say('……', '', true);
+    foot(w.checking);
     veil.textContent = '';
     goBtn.disabled = true;
     g.words = await wordsOf(data);
     let s;
-    try { s = await lookFirst(doc); } catch (e) { s = { far: true, err: e }; }
+    try { s = await lookFirst(doc, data.model ?? null); } catch (e) { s = { far: true, err: e }; }
     g.model = s.model?.id ?? null;
     foot(g.model ? `Ling · ${g.model}` : '');
-    if (s.far) { setPhase('far'); say(w.far, '', true); return; }
+    if (s.far) { setPhase('far'); veil.textContent = w.far; return; }
     if (s.blind) {
       setPhase('blind');
-      say(w.blind, s.said ?? '', false);
       veil.textContent = w.blind;
+      foot(s.said ?? '');
       root.querySelectorAll('[data-k]').forEach((b) => { b.disabled = true; });
       return;
     }
-    if (s.line?.zh || s.line?.en) sayParsed(s.line); else say('', '', true);
+    if (s.line?.zh || s.line?.en) sayParsed(s.line); else say('……', '', true);
     setPhase('ready');
     goBtn.disabled = false;
   }

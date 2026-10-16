@@ -159,3 +159,17 @@ Fine as they are; 洛书 is the same square three times (二试, 困阵, daily).
 - **讨价还价** — haggle with a keeper in the chat; the rules hold the floor and the mood.
 - **断案** — ask the people, find the proof, name who did it.
 - **对对子** — being built 10-16 by another agent.
+- **画猜 · 你画，灵猜** — prototype 10-16, 游戏厅 only (`drawguess`, group AI · 试作; Hanli: 「玩家画AI猜, 试一下吧」).
+  A word from 卷一 (弓 鹿 狐狸 饼 盆 白菜 鸡 葫芦 剑 山 月亮 灯), 60 s, an ink brush on rice paper, 撤一笔 · 清空.
+  When the hand rests 2.5 s, or on 画好了, the paper (448 px PNG) goes to Ling through the engine's chat
+  `images`; she answers a line zh + en and a 猜 line; the page checks the 猜 word against the word's
+  spellings (games.json `data.words`) — never the model's say. One look out at a time, four a round.
+  A blind model: the engine's vision gate refuses the first look (a blank sheet, her opening line), and
+  the game says so and doesn't start. Live 10-16 on gpt-6-luna, scripted strokes, 15 rounds at 1440
+  (mouse) and 390 (touch): 10 won (弓 · 灯 ×2 · 鹿 · 月亮 ×2 · 山 · 盆 · 鸡 · 剑), lost 饼 ×2 (a circle with
+  dots read as a smiling face), 白菜 ×2 (a leaf), 葫芦 (a snowman); a look 2.0–8.6 s, median 3.5 s.
+  **Cost:** ~8.7k prompt tokens a look (Ling's lingjing prompt and 40 tools; the picture ~250), ~20–80
+  out, none cached on this path; her opening look once a page; a typical round of two looks ~17.5k,
+  at most four ~35k. A trimmed agent for small AI games would cut most of it (an engine question).
+  - **画符 (idea, not built):** draw a talisman the book teaches (五雷符 …) stroke by stroke in its order;
+    the page checks order and shape from the strokes themselves (no model), Ling only says how it looks.

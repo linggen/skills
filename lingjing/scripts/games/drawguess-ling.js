@@ -5,8 +5,9 @@
 // A round has a skill session of its own (`openRound`), emptied before every look so no earlier
 // picture rides along a second time, and removed when the round ends (`closeRound`) — so nothing
 // it said is ever the player's day chat (pickResumable takes the newest spoken lingjing session).
-// One session a round, not one a look: the provider's prompt cache holds for the session's prompt
-// (live 10-16: a fresh session each look cached 0 of ~8.7k prompt tokens).
+// (Live 10-16 on gpt-6-luna: ~8.7k prompt tokens a look — Ling's lingjing prompt and tools, the
+// picture ~250 — none of it served from the provider's cache, whether a look had a session of its
+// own or shared the round's.)
 // The model only ever guesses: what counts as right is drawguess-rules.js's.
 
 const SKILL = 'lingjing';
@@ -68,15 +69,17 @@ async function replyIn(sid, deadline, signal) {
 /**
  * One look in the round's session: the PNG (bare base64) and the words, to Ling. Answers
  * { text, ms, model, tools } — `tools` > 0 means she reached for a tool (she is asked not to).
+ * `model`: a model id for the session instead of the default (a test's `data.model`).
  */
-export async function askLing({ sid, png, prompt, signal, timeoutMs = TIMEOUT_MS }) {
+export async function askLing({ sid, png, prompt, model = null, signal, timeoutMs = TIMEOUT_MS }) {
   const t0 = performance.now();
   await post('/api/chat/clear', { session_id: sid });
-  const res = await post('/api/chat', { project_root: '', agent_id: 'ling', message: prompt, session_id: sid, skill_name: SKILL, images: [png] });
+  const body = { project_root: '', agent_id: 'ling', message: prompt, session_id: sid, skill_name: SKILL, images: [png], ...(model ? { model_id: model } : {}) };
+  const res = await post('/api/chat', body);
   if (!res.ok) throw new Error(`chat ${res.status}`);
   const got = await replyIn(sid, t0 + timeoutMs, signal);
-  const model = await boundModel(sid).catch(() => null);
-  return { ...got, ms: Math.round(performance.now() - t0), model };
+  const bound = await boundModel(sid).catch(() => null);
+  return { ...got, ms: Math.round(performance.now() - t0), model: bound };
 }
 
 /** One look in a session made and removed for it (the opening look, once a page). */
