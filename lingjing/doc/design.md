@@ -738,7 +738,7 @@ mechanics millions already love (the mechanic only; names and art are ours), eac
 | Mechanic | Where | Status |
 |---|---|---|
 | 割绳子 physics puzzle | 喂饼 (第一回 00-cave, after 扔石听声): cut vines, use wind and stones so the 饼 reaches the hurt fox (银月's first meeting) | **built** 2026-10-16 (`games/bread.js`, levels in `games.json`; 饼角 = stars on the save, `stars` in Look) |
-| 愤怒小鸟 drag-and-arc | 射鹿 (第二回 00-deer): pull the bow, read the wind, lead the deer; 「往左偏半寸」 is the answer | after the first launch |
+| 愤怒小鸟 drag-and-arc | 射鹿 (第二回 00-deer): pull the bow, read the wind, lead the deer; 「往左偏半寸」 is the answer | **prototype** 2026-10-16 (`games/deerarc.js`, 游戏厅 only; levels in `games.json`; the beat is still `deer`) |
 | 几何冲刺 one-tap runner | 顺风溜 (古七): the shoes' run down the mountain, forgiving (checkpoints, skippable) | after the first launch |
 
 Rules: 60–90 s, one thumb, instant retry; three stars (stars set the reward, a balance.json knob);

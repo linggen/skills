@@ -369,3 +369,52 @@
   .g-ink.is-won::after, .g-jin.is-won::after, .g-ink.is-won .g-scene, .g-rain-spot.is-full { animation: none; }
   .g-tapink { display: none; }
 }
+
+/* 射鹿 · 拉弓 (games/deerarc.js, 2026-10-16) — a 愤怒小鸟-style prototype in the 游戏厅: the far bank
+   and the stream in wash, the deer · bow · arrow as PLACEHOLDER ink strokes until the painted
+   sprites land. The whole scene takes the drag (touch-action), so the page scrolls from outside it. */
+.g-deerarc .g-scene.g-da-scene { width: 100%; touch-action: none; user-select: none; -webkit-user-select: none; cursor: crosshair; }
+.g-da-scene .g-da-pad { fill: transparent; pointer-events: all; }
+.g-da-scene .g-da-hill { opacity: .06; }
+.g-da-scene .g-da-ground { opacity: .1; }
+.g-da-scene .g-da-water { fill: var(--water); opacity: .14; }
+.g-da-scene .g-da-ripple, .g-da-scene .g-da-pole, .g-da-scene .g-da-reed, .g-da-scene .g-da-branch, .g-da-scene .g-da-twig, .g-da-scene .g-da-leg,
+.g-da-scene .g-da-neck, .g-da-scene .g-da-antler, .g-da-scene .g-da-back, .g-da-scene .g-da-tail, .g-da-scene .g-da-limb, .g-da-scene .g-da-string,
+.g-da-scene .g-da-shaft, .g-da-scene .g-da-fletch, .g-da-scene .g-da-hint, .g-da-scene .g-da-bit {
+  fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+.g-da-scene .g-da-ripple { stroke-width: 1; opacity: .35; }
+.g-da-scene .g-da-pole { stroke-width: 1.6; opacity: .6; }
+.g-da-scene .g-da-streamer { fill: var(--seal); opacity: .75; }
+.g-da-scene .g-da-leaf { fill: var(--earth); opacity: .5; }
+.g-da-scene .g-da-reed { stroke-width: 2; opacity: .75; }
+.g-da-scene .g-da-plume { opacity: .55; }
+.g-da-scene .g-da-branch { stroke-width: 5; opacity: .7; }
+.g-da-scene .g-da-twig { stroke-width: 1.6; opacity: .6; }
+.g-da-scene .g-da-bit { stroke-width: 1.4; opacity: .6; }
+.g-da-scene .g-da-body { opacity: .78; }
+.g-da-scene .g-da-back { stroke-width: 1.2; opacity: .5; }
+.g-da-scene .g-da-leg { stroke-width: 2.2; opacity: .8; }
+.g-da-scene .g-da-neck { stroke-width: 6; opacity: .78; }
+.g-da-scene .g-da-head { opacity: .85; }
+.g-da-scene .g-da-ear { opacity: .8; }
+.g-da-scene .g-da-tail { stroke-width: 2; opacity: .7; }
+.g-da-scene .g-da-antler { stroke-width: 1.5; opacity: .85; }
+.g-da-scene .g-da-limb { stroke-width: 3.2; stroke: var(--earth); }
+.g-da-scene .g-da-string { stroke-width: .8; opacity: .7; }
+.g-da-scene .g-da-string.is-taut { stroke-width: 1; opacity: .95; }
+.g-da-scene .g-da-bow.is-full .g-da-string { stroke: var(--seal); }
+.g-da-scene .g-da-shaft { stroke-width: 1.6; }
+.g-da-scene .g-da-fletch { stroke-width: 1.1; stroke: var(--seal); opacity: .8; }
+.g-da-scene .g-da-spent { opacity: .55; }
+.g-da-scene .g-da-guide { fill: var(--ling); opacity: .55; }
+.g-da-scene .g-da-trail { opacity: .3; }
+.g-da-scene .g-da-hint { stroke: var(--seal); stroke-width: 1.4; opacity: .8; }
+.g-da-scene .g-da-burst { opacity: .55; }
+.g-deerarc .g-line-say { min-height: 3.4em; text-align: center; margin: 0; }
+.g-da-star { font-style: normal; display: inline-block; color: var(--faint); }
+.g-da-star.is-on { color: var(--seal); }
+.g-da-pop { animation: g-da-pop .42s cubic-bezier(.2, 1.6, .4, 1) both; animation-delay: calc(var(--i) * .22s); }
+@keyframes g-da-pop { from { transform: scale(.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.g-da-stars { font-size: 34px; letter-spacing: .2em; margin: 18px 0 0; }
+.g-da-stars .g-da-star { animation: g-da-pop .5s cubic-bezier(.2, 1.6, .4, 1) both; animation-delay: calc(var(--i) * .25s); }
+@media (prefers-reduced-motion: reduce) { .g-da-pop, .g-da-stars .g-da-star { animation: none; } }

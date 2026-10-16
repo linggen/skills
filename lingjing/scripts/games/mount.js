@@ -21,6 +21,17 @@ const WIN_HOLD = 1600; // the won frame (its seal) stands this long before the g
 const live = (mod, s) => Boolean(mod.tick && s?.live && !s.won && !s.wait);
 const settled = (s, left = false) => (left ? { won: false, left: true } : { won: true, ...(s.grade != null ? { grade: s.grade } : {}), ...(s.stars != null ? { stars: s.stars } : {}) });
 
+/** Where a pointer stands in the scene's own units (the first svg.g-scene's viewBox), so a game
+    that aims by a drag (射鹿's bow, 2026-10-16) reads the same pull at 390 and at 1440. A hold and
+    each move of a drag carry it as `x`, `y`; a game that wants only the stroke's length (`d`)
+    ignores them. Nothing when there is no scene. */
+export function sceneAt(host, e) {
+  const svg = host.querySelector?.('svg.g-scene'), m = svg?.getScreenCTM?.();
+  if (!m) return {};
+  const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse());
+  return { x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10 };
+}
+
 /** The contract for a pure module: answers `mount(container, opts)`. */
 export function mountPure(mod) {
   return (container, opts = {}) => run(mod, container, opts);
@@ -71,7 +82,7 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
         e.preventDefault();
         g.held = { drag: hold.hasAttribute('data-g-drag'), x: e.clientX, y: e.clientY };
         if (g.held.drag) try { host.setPointerCapture(e.pointerId); } catch { /* the document still hears it */ }
-        apply({ ...hold.dataset, g: 'hold' });
+        apply({ ...hold.dataset, g: 'hold', ...sceneAt(host, e) });
         return;
       }
       if (!live(mod, g.state)) return; // a board not in time acts on its click, below
@@ -103,7 +114,7 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
       const d = Math.hypot(e.clientX - g.held.x, e.clientY - g.held.y);
       g.held.x = e.clientX;
       g.held.y = e.clientY;
-      if (d) apply({ g: 'move', d });
+      if (d) apply({ g: 'move', d, ...sceneAt(host, e) });
     });
     const up = () => { if (!g.held) return; g.held = null; apply({ g: 'release' }); };
     on(doc, 'pointerup', up);

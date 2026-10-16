@@ -62,6 +62,21 @@
    ]
   },
   {
+   "id": "deerarc",
+   "group": "prologue",
+   "scene": "00-deer",
+   "hui": "第二回",
+   "mechanic": "愤怒小鸟",
+   "stars": 3,
+   "_levels": "射鹿 · 拉弓, a 愤怒小鸟-style prototype (2026-10-16) — in the 游戏厅 only; the story's 射鹿 is still `deer`. World 480×300: he stands on the near bank at the right (the bow at 426,192), the deer drinks to the left. `deer`: `x`, `face` (-1 looks left), `lift` {every, for} ms its head comes up, `walk` {to, ms, rest} back and forth. `wind`: + blows in his face (pushes the arrow right). `things`: a `reed` {at, h, lean?, breaks? (speed, default 5)} snaps when the arrow is fast enough, else turns it; a `branch` {from, to} turns it always. `hint`: after a miss, 银月's 「往左偏半寸」 and a tick left of the deer. games/bots/deerarc.js searches each level's aim.",
+   "levels": [
+     {"id": "still", "deer": {"x": 160, "face": -1}, "wind": 0, "say": {"zh": "溪边，那头鹿低着头在喝水。往后拉弓，松手放箭。", "en": "By the stream the deer drinks, head down. Pull back, let go."}},
+     {"id": "wind", "deer": {"x": 110, "face": -1, "lift": {"every": 3200, "for": 900}}, "wind": 0.75, "hint": true, "say": {"zh": "风从溪上迎面吹来。先看风，后看鹿。", "en": "The wind blows off the stream, into your face. Wind first, then the deer."}},
+     {"id": "walk", "deer": {"x": 200, "face": -1, "walk": {"to": 90, "ms": 4200, "rest": 1600}}, "wind": 0.3, "say": {"zh": "它边走边喝，走走停停。箭要等它。", "en": "It drinks as it walks, stopping and going. Lead it."}},
+     {"id": "reeds", "deer": {"x": 120, "face": 1, "lift": {"every": 2800, "for": 800}}, "wind": 0.35, "things": [{"kind": "reed", "at": [254, 252], "h": 66, "lean": -6}, {"kind": "reed", "at": [262, 252], "h": 84, "lean": -4}, {"kind": "reed", "at": [272, 252], "h": 96, "lean": 3}, {"kind": "reed", "at": [283, 252], "h": 78, "lean": -2}, {"kind": "reed", "at": [292, 252], "h": 60, "lean": 5}, {"kind": "branch", "from": [340, 26], "to": [210, 96]}], "say": {"zh": "芦苇挡在中间，头上还横着一根枯枝。", "en": "Reeds in the way, and a dead branch overhead."}}
+   ]
+  },
+  {
    "id": "scale",
    "group": "prologue",
    "scene": "00-rent",
