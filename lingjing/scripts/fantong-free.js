@@ -57,7 +57,7 @@ export function fantongHtml(fb, { lang = 'zh', artBase = '', ui = {}, nowMs = Da
   if (!fb) return `${back}<section class="psec ftong"><div class="loading">…</div></section>`;
   if (ui.puzzle) {
     return `${back}<section class="psec ftong puzzle" aria-label="${esc(w.title)}"><h3>${esc(w.title)}</h3>
-      <div class="game g-mounthost ftpuzzle" data-ft-puzzle></div>
+      <div class="game g-mounthost ftpuzzle" data-ft-puzzle><p class="small dim">…</p></div>
       <div class="ftacts"><button class="act quiet" data-fantong-cancel>${esc(w.cancel)}</button></div></section>`;
   }
   const spat = ui.result?.out && nowMs - (ui.at ?? 0) < 700;

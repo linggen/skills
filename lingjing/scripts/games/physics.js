@@ -21,8 +21,18 @@ async function fromNode() {
   return createRequire(import.meta.url)(BUNDLE);
 }
 
+/* A module worker (rope-worker.js, a level made off the page's thread) has no script tag and no
+   require: the bundle's text is wrapped as a module, its CommonJS branch taking it. */
+async function fromWorker() {
+  const src = await (await fetch(new URL(BUNDLE, import.meta.url))).text();
+  const wrapped = `const module = { exports: {} }; const exports = module.exports;\n${src}\nexport default module.exports;`;
+  const url = URL.createObjectURL(new Blob([wrapped], { type: 'text/javascript' }));
+  try { return (await import(url)).default; } finally { URL.revokeObjectURL(url); }
+}
+
 async function load() {
   if (globalThis.Matter) return globalThis.Matter;
+  if (typeof WorkerGlobalScope !== 'undefined' && globalThis instanceof WorkerGlobalScope) return fromWorker();
   return typeof document === 'undefined' ? fromNode() : fromPage();
 }
 

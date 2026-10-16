@@ -7,7 +7,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as cut from '../scripts/games/fantongcut.js';
 import { bot } from '../scripts/games/bots/fantongcut.js';
-import { generate, FALLBACK } from '../scripts/games/rope-gen.js';
+import { generate, FALLBACK, STEP_BUDGET } from '../scripts/games/rope-gen.js';
 import { playOnce } from '../tools/board-bots.mjs';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
@@ -43,9 +43,11 @@ function playAt(level, plan, step) {
 test(`the generator proves a level for nearly every seed (${SEEDS} seeds, every tier and mix), quickly`, () => {
   const proved = made.filter((m) => !m.fallback).length;
   assert.ok(proved / SEEDS >= 0.95, `proved ${proved}/${SEEDS}`);
-  const ms = made.map((m) => m.ms).sort((a, b) => a - b);
-  assert.ok(ms[SEEDS >> 1] < 1500, `median ${ms[SEEDS >> 1]} ms`);
-  assert.ok(ms.at(-1) < 8000, `slowest ${ms.at(-1)} ms`);
+  // The work is bounded in physics steps (the same on any machine; ~0.06 ms a step unloaded), and
+  // the page makes it off its thread (rope-worker.js).
+  const steps = made.map((m) => m.steps).sort((a, b) => a - b);
+  assert.ok(steps.at(-1) <= STEP_BUDGET * 2 + 4000, `most steps ${steps.at(-1)}`);
+  assert.ok(steps[SEEDS >> 1] < STEP_BUDGET / 2, `median steps ${steps[SEEDS >> 1]}`);
   for (const m of made.filter((x) => optsOf(x.k).must && !x.fallback)) {
     const L = m.level, must = optsOf(m.k).must;
     const has = { gust: Boolean(L.gust), bubble: Boolean(L.bubbles?.length), thorns: Boolean(L.thorns?.length), regrow: L.vines.some((v) => v.regrow) }[must];

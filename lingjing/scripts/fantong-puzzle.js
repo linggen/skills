@@ -10,10 +10,27 @@ export function fantongPuzzle({ onDone, doc = globalThis.document }) {
   const made = new Map(); // seed → the generated level (rope-gen.js)
   let cur = null; //        { id, node, ctrl }
 
-  async function levelFor(p) {
+  // Made off the page's thread (games/rope-worker.js) — the hardest days take a second or two on a
+  // phone; if the worker cannot (an old browser), made here.
+  let worker = null, asked = 0;
+  const waiting = new Map();
+  function offThread(seed, opts) {
+    try {
+      worker ??= new Worker(new URL('./games/rope-worker.js', import.meta.url), { type: 'module' });
+      worker.onmessage = ({ data }) => { const w = waiting.get(data.id); waiting.delete(data.id); data.made ? w?.ok(data.made) : w?.no(new Error(data.error)); };
+      worker.onerror = () => { for (const w of waiting.values()) w.no(new Error('worker failed')); waiting.clear(); worker = null; };
+    } catch (e) { return Promise.reject(e); }
+    const id = ++asked;
+    return new Promise((ok, no) => { waiting.set(id, { ok, no }); worker.postMessage({ id, seed, opts }); setTimeout(() => { if (waiting.delete(id)) no(new Error('worker slow')); }, 15000); });
+  }
+  async function onThread(seed, opts) {
+    const { generate } = await import('./games/rope-gen.js');
+    return generate(seed, opts);
+  }
+  function levelFor(p) {
     if (!made.has(p.seed)) {
-      const { generate } = await import('./games/rope-gen.js');
-      if (!made.has(p.seed)) made.set(p.seed, generate(p.seed, { tier: p.tier, els: p.els, must: p.must }));
+      const opts = { tier: p.tier, els: p.els, must: p.must };
+      made.set(p.seed, offThread(p.seed, opts).catch(() => onThread(p.seed, opts)));
     }
     return made.get(p.seed);
   }

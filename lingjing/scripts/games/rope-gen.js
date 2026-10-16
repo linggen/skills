@@ -18,7 +18,11 @@ export const MOUTH_R = 30;
 export const STAR_R = 13;
 const CALM_MS = 400, LATE_MS = 320, SLOW_MS = 1500, END_MS = 900, LIMIT_MS = 11000, STEP = 1000 / 60;
 export const TRIES = 24;
-const MAX_PLANS = 10;
+const MAX_PLANS = 8;
+/* The work a day's level may take, in physics steps (not time: the same seed makes the same level on
+   any machine). Past it, the best level proved so far, else the fallback. */
+export const STEP_BUDGET = 36000;
+let spent = 0;
 export const SEEK = 1;
 
 /* ── The seed ── */
@@ -58,6 +62,7 @@ export function playPlan(level, plan, { late = 0, limit = LIMIT_MS } = {}) {
       path.last = path.length;
     }
     const ev = stepWorld(w, level);
+    spent++;
     t += STEP;
     const p = w.bread.position;
     path.push([p.x, p.y]);
@@ -277,15 +282,22 @@ export function generate(seed, opts = {}) {
   // From the third tier on, a level with a better way to find is worth a few more tries.
   const seek = (opts.tier ?? 0) >= 2 ? SEEK : 0;
   let kept = null;
-  for (let k = 1; k <= TRIES; k++) {
+  spent = 0;
+  for (let k = 1; k <= TRIES && spent < STEP_BUDGET; k++) {
     const r = attempt(u, opts);
     if (r.level) {
       kept ??= { ...r, tries: k };
-      if (r.better || k >= kept.tries + seek) return { ...(r.better ? { ...r, tries: k } : kept), ms: round((globalThis.performance?.now() ?? Date.now()) - t0), why };
+      if (r.better || k >= kept.tries + seek) return { ...(r.better ? { ...r, tries: k } : kept), ms: round((globalThis.performance?.now() ?? Date.now()) - t0), steps: spent, why };
       continue;
     }
     why[r.why] = (why[r.why] ?? 0) + 1;
   }
-  if (kept) return { ...kept, ms: round((globalThis.performance?.now() ?? Date.now()) - t0), why };
-  return { level: structuredClone(FALLBACK), plan: [{ g: 'cut', v: 0 }], starPlan: [{ g: 'cut', v: 0 }], tries: TRIES, fallback: true, ms: round((globalThis.performance?.now() ?? Date.now()) - t0), why };
+  if (kept) return { ...kept, ms: round((globalThis.performance?.now() ?? Date.now()) - t0), steps: spent, why };
+  // Out of work for this day's mix: an easier day of the same seed — the first tier, only the new
+  // element if there is one — before the one level that always works.
+  if (!opts.eased) {
+    const used = spent, easy = generate(`${seed}|easy`, { tier: 0, els: opts.must ? [opts.must] : [], must: opts.must ?? null, eased: true });
+    if (!easy.fallback) return { ...easy, eased: true, ms: round((globalThis.performance?.now() ?? Date.now()) - t0), steps: used + easy.steps, why };
+  }
+  return { level: structuredClone(FALLBACK), plan: [{ g: 'cut', v: 0 }], starPlan: [{ g: 'cut', v: 0 }], tries: TRIES, fallback: true, ms: round((globalThis.performance?.now() ?? Date.now()) - t0), steps: spent, why };
 }
