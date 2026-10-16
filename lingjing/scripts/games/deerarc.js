@@ -21,6 +21,7 @@ import { Matter } from './physics.js';
 import { btn, n, scene, splash, still } from './ink.js';
 import { mountPure } from './mount.js';
 import { ARROW, fxPicture, projectileOf, shapeOf, tapNow, trayOf, turnsWithFlight } from './throws.js';
+import { segCircle, segEllipse, segSeg, targetOf } from './targets.js';
 
 const { Engine, Bodies, Body, Composite } = Matter;
 
@@ -52,6 +53,7 @@ const T = {
     alert: '鹿抬起头，竖着耳朵听了一会儿——又低下头去。',
     snap: '芦苇应声折断。',
     dash: '一点——它直冲出去。', tray: '扔什么',
+    glance: '叫它的皮弹开了。等它吸气——翅膀根翻开那一霎。',
     hint: '……风。往左偏半寸。',
     gone: '箭筒空了。鹿走远了。再来。',
     pull: '往后拉……', full: '拉满了 · 松手',
@@ -68,6 +70,7 @@ const T = {
     alert: 'The deer lifts its head, listens — and drinks again.',
     snap: 'A reed snaps.',
     dash: 'A tap — and it shoots straight on.', tray: 'Throw',
+    glance: 'The hide turns it. Wait for the breath — the instant the wing root opens.',
     hint: '…The wind. Half an inch left.',
     gone: 'The quiver is empty. The deer has wandered off. Again.',
     pull: 'Pull back…', full: 'Full — let go',
@@ -152,6 +155,12 @@ const ANTLER_DOWN = [-4, -36], ANTLER_UP = [-15, -16];
 const headOf = (lift) => [DOWN[0] + (UP[0] - DOWN[0]) * lift, DOWN[1] + (UP[1] - DOWN[1]) * lift];
 const ANTLER_R = 18;
 
+/** What a throw's point, from `a` to `b`, struck: the stag (below), or the level's `target`. */
+export function targetHit(level, ms, a, b) {
+  if (level.deer) return deerHit(level, ms, a, b);
+  return targetOf(level)?.hit(level, ms, a, b, groundAt) ?? null;
+}
+
 /** What the arrow's point, from `a` to `b` (world), touched on the deer: 'clean' (the heart),
     'body' (the barrel or the neck: a hit, off the heart), 'graze' (head, antlers) or null. */
 export function deerHit(level, ms, a, b) {
@@ -171,29 +180,7 @@ function pierces(p, q) {
   return segCircle(p, [q[0] + (dx / l) * PIERCE, q[1] + (dy / l) * PIERCE], HEART, HEART_R);
 }
 
-/* ── Geometry ─────────────────────────────────────────────────────────────────────────────── */
-
-function closest(p, q, c) {
-  const dx = q[0] - p[0], dy = q[1] - p[1], l2 = dx * dx + dy * dy;
-  const t = l2 ? Math.max(0, Math.min(1, ((c[0] - p[0]) * dx + (c[1] - p[1]) * dy) / l2)) : 0;
-  return [p[0] + dx * t, p[1] + dy * t];
-}
-const segCircle = (p, q, c, r) => { const k = closest(p, q, c); return Math.hypot(k[0] - c[0], k[1] - c[1]) <= r; };
-function segEllipse(p, q, [cx, cy, rx, ry]) {
-  for (let i = 0; i <= 4; i++) {
-    const x = p[0] + ((q[0] - p[0]) * i) / 4, y = p[1] + ((q[1] - p[1]) * i) / 4;
-    if (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1) return true;
-  }
-  return false;
-}
-/** Segments p–q and a–b come within `r` of each other (sampled along p–q: an arrow step is short). */
-function segSeg(p, q, a, b, r) {
-  for (let i = 0; i <= 4; i++) {
-    const x = p[0] + ((q[0] - p[0]) * i) / 4, y = p[1] + ((q[1] - p[1]) * i) / 4;
-    if (segCircle(a, b, [x, y], r)) return true;
-  }
-  return false;
-}
+/* Geometry (segCircle · segEllipse · segSeg) lives in targets.js, shared with the other targets. */
 
 /* ── The world: the arrow and what stands in its way ─────────────────────────────────────────── */
 
@@ -204,6 +191,7 @@ const GROUNDED = { category: 0x0008, mask: 0x0004 }; // debris falls to the grou
 /** A reed or a branch: a static stroke until an arrow snaps it (then it falls, a body). */
 function obstacleOf(o) {
   const [a, b] = o.kind === 'reed' ? [o.at, [o.at[0] + (o.lean ?? 0), o.at[1] - o.h]] : [o.from, o.to];
+  if (o.kind === 'wall') return { kind: 'wall', a, b, breaks: null, bounce: o.bounce, body: null, broken: false };
   const len = Math.hypot(b[0] - a[0], b[1] - a[1]), angle = Math.atan2(b[1] - a[1], b[0] - a[0]);
   const body = Bodies.rectangle((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, len, o.kind === 'reed' ? 3 : 6,
     { angle, collisionFilter: GROUNDED, frictionAir: 0.02, density: 0.002, label: o.kind });
@@ -216,7 +204,7 @@ export function build(level) {
   const engine = Engine.create({ gravity: { x: 0, y: GRAVITY } });
   const ground = Bodies.rectangle(W / 2, GROUND + 30, W * 2, 60, { isStatic: true, collisionFilter: GROUND_HIT });
   const things = (level.things ?? []).map(obstacleOf);
-  Composite.add(engine.world, [ground, ...things.map((t) => t.body)]);
+  Composite.add(engine.world, [ground, ...things.filter((t) => t.body).map((t) => t.body)]);
   return { engine, things, arrow: null, acc: 0 };
 }
 
@@ -265,6 +253,7 @@ function struck(world, from, to) {
   const t = world.things.find((x) => !x.broken && segSeg(from, to, x.a, x.b, x.kind === 'reed' ? 2.5 : 4));
   if (!t) return null;
   const ar = world.arrow, v = ar.body.velocity, speed = Math.hypot(v.x, v.y), proj = ar.proj ?? ARROW;
+  if (t.kind === 'wall') return offWall(ar, t, v);
   // An arrow pierces reeds (up to its `pierce`) at any speed; a heavy stone knocks over what a
   // throw half as fast would snap; else only a fast throw. A reed wall (`breaks` 99) stops them all.
   const pierces = proj.pierce && t.breaks <= proj.pierce; // a reed no thicker than its `pierce`
@@ -293,6 +282,18 @@ function scatter(world, [x, y], v) {
   });
   Composite.add(world.engine.world, bits);
   world.bits = [...(world.bits ?? []), ...bits];
+}
+
+/** Off a wall of rock (the cave's roof, its back): it bounces, slowed by the rock's `bounce`, and
+    flies on — a stone in a cave still comes down somewhere and is heard. */
+function offWall(ar, t, v) {
+  const ux = t.b[0] - t.a[0], uy = t.b[1] - t.a[1], l = Math.hypot(ux, uy) || 1, nx = -uy / l, ny = ux / l;
+  const dot = v.x * nx + v.y * ny, k = t.bounce ?? 0.5;
+  Body.setVelocity(ar.body, { x: (v.x - 2 * dot * nx) * k, y: (v.y - 2 * dot * ny) * k });
+  const [px, py] = ar.tip;
+  Body.setPosition(ar.body, { x: ar.body.position.x + nx * Math.sign(-dot || 1) * 2, y: ar.body.position.y + ny * Math.sign(-dot || 1) * 2 });
+  ar.fx = [...(ar.fx ?? []), { kind: 'bounce', at: [px, py] }];
+  return 'wall';
 }
 
 /** Turned: off the thing's face, slowed; the arrow tumbles and is spent. */
@@ -345,6 +346,7 @@ export function tapWorld(world, level, ms) {
 /** What a burst at `at` with reach `r` (world units) catches of the deer: 'clean' (the heart in
     reach), 'body', or null. */
 export function burstHit(level, ms, [x, y], r) {
+  if (!level.deer) return null; // only the stag is judged by a burst's reach yet
   const d = deerAt(level, ms), gy = groundAt(d.x);
   const lx = ((x - d.x) * d.face) / DEER_S, ly = (y - gy) / DEER_S, lr = r / DEER_S;
   if (Math.hypot(lx - HEART[0], ly - HEART[1]) <= HEART_R + lr * 0.9) return 'clean';
@@ -364,9 +366,12 @@ export function flight(level, aim, at = 0, limit = 600, { proj = ARROW, tapAt = 
     }
     const ev = stepWorld(world, level, at + k * STEP_MS);
     if (ev === 'snap') snapped++;
-    const hit = world.arrow.true ? deerHit(level, at + k * STEP_MS, world.arrow.prev, world.arrow.tip) : null;
+    const hit = world.arrow.true ? targetHit(level, at + k * STEP_MS, world.arrow.prev, world.arrow.tip) : null;
+    if (hit === 'glance') return { hit: null, end: 'glance', steps: k, tip: world.arrow.tip, snapped };
     if (hit) return { hit, steps: k, tip: world.arrow.tip, snapped };
-    if (ev && ev !== 'snap' && ev !== 'bounce') return { hit: null, end: ev, steps: k, tip: world.arrow.tip, snapped };
+    const landedHit = ev === 'ground' ? targetOf(level)?.land?.(level, world.arrow.tip) : null; // a stone in the cave
+    if (landedHit) return { hit: landedHit, steps: k, tip: world.arrow.tip, snapped };
+    if (ev && ev !== 'snap' && ev !== 'bounce' && ev !== 'wall') return { hit: null, end: ev, steps: k, tip: world.arrow.tip, snapped };
   }
   return { hit: null, end: 'out', steps: limit, tip: world.arrow.tip, snapped };
 }
@@ -386,7 +391,7 @@ export function newGame(seed, _level = 1, deal = {}) {
   const levels = Array.isArray(deal?.levels) ? deal.levels : [];
   const s = { seed: String(seed), live: levels.length > 0, levels, li: 0, phase: 'aim', t: 0, clock: 0, wall: 0,
     misses: levels.map(() => 0), best: levels.map(() => 0), used: 0, won: false, stars: 0, grade: null, still: Boolean(deal?.still), art: deal?.art ?? null,
-    kit: deal?.projectiles ?? null, owned: Array.isArray(deal?.owned) ? deal.owned : null };
+    kit: deal?.projectiles ?? null, owned: Array.isArray(deal?.owned) ? deal.owned : null, grades: deal?.grades ?? null };
   return levels.length ? lay(s, 0) : { ...s, phase: 'empty' };
 }
 
@@ -463,11 +468,14 @@ export function act(state, data = {}) {
 
 function flying(s) {
   const level = levelOf(s), ev = stepWorld(s.world, level, s.clock), ar = s.world.arrow;
-  const hit = ar.true ? deerHit(level, s.clock, ar.prev, ar.tip) : null;
+  const hit = ar.true ? targetHit(level, s.clock, ar.prev, ar.tip) : null;
+  if (hit === 'glance') return glance(s);
   if (hit) return hit === 'graze' ? graze(s) : clean(s, hit === 'body');
   if (ev === 'snap') return { ...s, said: 'snap', saidAt: s.clock };
   if (ev === 'turned') return { ...s, said: 'turned', saidAt: s.clock };
-  return ev ? land(s, ev) : s;
+  const landedHit = ev === 'ground' ? targetOf(level)?.land?.(level, ar.tip) : null;
+  if (landedHit) return clean(s, landedHit === 'body');
+  return ev && ev !== 'wall' && ev !== 'bounce' ? land(s, ev) : s;
 }
 
 /** Stars for the level's hit: by arrows used (one 3, two 2, more 1), a star fewer off the heart. */
@@ -478,7 +486,14 @@ function clean(s, offHeart = false) {
   const ar = s.world.arrow;
   ar.done = true;
   const best = s.best.map((b, i) => (i === s.li ? Math.max(b, starsForHit(s.used, offHeart)) : b));
-  return { ...s, phase: 'hit', t: 0, best, at: ar.tip, deerGone: deerAt(levelOf(s), s.clock), trail: ar.path, said: offHeart ? 'body' : 'clean', offHeart };
+  return { ...s, phase: 'hit', t: 0, best, at: ar.tip, deerGone: levelOf(s).deer ? deerAt(levelOf(s), s.clock) : null, trail: ar.path, said: offHeart ? 'body' : 'clean', offHeart };
+}
+
+/** The hide turns the blade (the 鯥): spent, the next at once — wait for the breath. */
+function glance(s) {
+  const ar = s.world.arrow;
+  ar.true = false;
+  return land({ ...s, said: 'glance' }, 'glance');
 }
 
 function graze(s) {
@@ -490,12 +505,14 @@ function graze(s) {
 /** Landed in the grass (or the stream): no pause — the next arrow is on the string at once; the
     spent one stays where it stuck, and a near one makes the deer look up. */
 function land(s, ev) {
-  const level = levelOf(s), ar = s.world.arrow, d = deerAt(level, s.clock);
-  const near = Math.abs(ar.tip[0] - d.x) < 80;
-  const said = s.said === 'turned' ? 'turned' : ar.tip[0] < d.x ? 'long' : 'short';
+  const level = levelOf(s), ar = s.world.arrow, tx = level.deer ? deerAt(level, s.clock).x : level.target?.x ?? midOf(level.target?.deep);
+  const near = level.deer && Math.abs(ar.tip[0] - tx) < 80;
+  const said = ['turned', 'glance'].includes(s.said) ? s.said : ar.tip[0] < tx ? 'long' : 'short';
   const stuck = ev === 'out' || ev === 'burst' ? s.stuck : [...s.stuck, [n(ar.body.position.x), n(ar.body.position.y), n((ar.body.angle * 180) / Math.PI), ar.proj?.id ?? 'arrow']];
   return reload({ ...s, trail: ar.path, said, stuck, alertAt: near ? s.clock : s.alertAt, hint: s.hint || Boolean(level.hint) });
 }
+
+const midOf = (r) => (r ? (r[0] + r[1]) / 2 : W / 2);
 
 /** After a shot that did not end the level: aim again, or (the quiver empty) the deer is gone. */
 const reload = (s) => (s.used >= QUIVER ? { ...s, phase: 'gone', t: 0, said: 'gone', misses: s.misses.map((m, i) => (i === s.li ? m + 1 : m)) } : withWind(clearArrow({ ...s, phase: 'aim', t: 0 })));
@@ -509,7 +526,8 @@ function clearArrow(s) {
 function advance(s) {
   if (s.li + 1 < s.levels.length) return lay({ ...s, trail: null, hint: false }, s.li + 1);
   const stars = starsOf(s);
-  return { ...s, phase: 'end', live: false, won: true, stars, grade: gradeOf(stars) };
+  // A row may name its grades by stars (the task's marks: 扔石听声 sure · lucky, 鯥 still · hasty).
+  return { ...s, phase: 'end', live: false, won: true, stars, grade: s.grades?.[stars] ?? gradeOf(stars) };
 }
 
 /** The deer bolts and, a while later, is back at the stream where its schedule starts again. */
@@ -609,6 +627,7 @@ const RAG_REED = FAR_TUFTS[3]; // the red rag: on the far bank, mid-board, never
 /** The wind, read: a red rag tied to the tallest reed by the stream, the reeds leaning,
     and leaves drifting the way it blows now. No post: the reed is the post. */
 function windPicture(level, s) {
+  if (level.indoor) return ''; // in a cave: no rag, no reeds, no leaves
   const t = calm(s) ? 0 : s.clock, w = windAt(level, s.clock), flutter = calm(s) ? 0 : Math.sin(t / 140) * (1 + 3 * Math.abs(w));
   const lean = Math.max(-1, Math.min(1, w)), sway = calm(s) ? 0 : Math.sin(t / 380) * (0.3 + Math.abs(w));
   const tuft = (list) => list.map(([x, y, h], i) => tuftReed(s.art?.reed, x, y, h, lean * 16 + sway * (1 + i * 0.3))).join('');
@@ -641,6 +660,8 @@ function leafAt(i, carried, t) {
 }
 
 function thingPicture(t, s) {
+  // A wall of rock is the painting's own (the cave); in ink, a faint line where it stands.
+  if (t.kind === 'wall') return s.art?.backdrop ? '' : `<path class="g-tg-wall" d="M${n(t.a[0])} ${n(t.a[1])} L${n(t.b[0])} ${n(t.b[1])}"/>`;
   const { x, y } = t.body.position, len = Math.hypot(t.b[0] - t.a[0], t.b[1] - t.a[1]);
   const sway = t.kind === 'reed' && !t.broken && !calm(s) ? Math.sin(s.clock / 420 + x) * 1.2 : 0;
   const shiver = t.shake && !calm(s) ? Math.sin(s.clock / 30) * 2 * Math.max(0, 1 - (s.t / 600)) : 0;
@@ -811,7 +832,7 @@ function thrownShape(s, id = 'arrow', spent = false) {
 
 /** 「往左偏半寸」: after a miss on a level that hints it, a small tick half an inch left of the deer. */
 function hintPicture(level, s) {
-  if (!s.hint || !level.hint || s.phase === 'hit') return '';
+  if (!s.hint || !level.hint || !level.deer || s.phase === 'hit') return '';
   const d = deerAt(level, s.clock), x = d.x + d.face * HEART[0] * DEER_S - 14, y = groundAt(d.x) + HEART[1] * DEER_S;
   return `<path class="g-da-hint" d="M${n(x)} ${n(y - 7)} L${n(x)} ${n(y + 7)} M${n(x - 4)} ${n(y)} L${n(x + 4)} ${n(y)}"/>`;
 }
@@ -824,7 +845,7 @@ const alerted = (s) => (s.alertAt == null ? 0 : swell(s.clock - s.alertAt, ALERT
     and antlers (a graze) green. */
 const showZones = () => /[?&]dev=1\b/.test(globalThis.location?.search ?? '') && /[?&]zones=1\b/.test(globalThis.location?.search ?? '');
 export function zonesPicture(level, s, force = false) {
-  if (!(force || showZones()) || !['aim', 'fly'].includes(s.phase)) return '';
+  if (!(force || showZones()) || !level.deer || !['aim', 'fly'].includes(s.phase)) return '';
   const d = deerAt(level, s.clock), head = headOf(d.lift), lerp = (a, b) => a + (b - a) * d.lift;
   const antler = [head[0] + lerp(ANTLER_DOWN[0], ANTLER_UP[0]), head[1] + lerp(ANTLER_DOWN[1], ANTLER_UP[1])];
   return `<g class="g-da-zones" transform="translate(${n(d.x)} ${n(groundAt(d.x))}) scale(${n(d.face * DEER_S, 2)} ${DEER_S})">`
@@ -834,6 +855,7 @@ export function zonesPicture(level, s, force = false) {
 }
 
 function deerNow(level, s) {
+  if (!level.deer) return targetOf(level)?.picture(level, s, groundAt, sprite) ?? '';
   if (['hit', 'spook'].includes(s.phase)) {
     // A beat of stillness (the burst), then the bound away; reduced motion: simply gone.
     const gone = Math.max(0, Math.min(1.4, (s.t - 250) / 700));
@@ -848,6 +870,8 @@ function burstPicture(s) {
   const [x, y] = s.at;
   if (s.phase === 'spook') return calm(s) ? '' : splash(x, y, s.t, { r: 8 });
   const stars = starsPicture(x, y - 34, starsForHit(s.used, s.offHeart), calm(s) ? 1 : s.t);
+  const own = targetOf(levelOf(s))?.burst; // the cave answers with an echo, not ink
+  if (own) return own(s, calm(s)) + stars;
   if (calm(s)) return `<circle class="g-da-burst" cx="${n(x)}" cy="${n(y)}" r="14"/>${stars}`;
   // A big bloom of ink, a second one a beat behind, a ring going out — and the stars.
   const ring = s.t < 600 ? `<circle class="g-da-ring" cx="${n(x)}" cy="${n(y)}" r="${n(10 + s.t / 12)}" opacity="${n(1 - s.t / 600, 2)}"/>` : '';
@@ -907,7 +931,7 @@ function head(s, t) {
 
 function lineOf(s, t, lang) {
   const level = levelOf(s);
-  const said = { dash: t.dash, clean: t.clean, body: t.body, graze: t.graze[(s.grazes ?? 1) % t.graze.length], short: t.short, long: t.long, turned: t.turned, snap: t.snap, gone: t.gone };
+  const said = { glance: t.glance, dash: t.dash, clean: t.clean, body: t.body, graze: t.graze[(s.grazes ?? 1) % t.graze.length], short: t.short, long: t.long, turned: t.turned, snap: t.snap, gone: t.gone };
   if (s.phase === 'clear') return `${t.clear}${starRow(s.best[s.li], true)}`;
   if (s.phase === 'aim' && s.pull) return s.pull.p >= 0.98 ? t.full : t.pull;
   const proj = projectileOf(s.kit, s.pick);
@@ -916,6 +940,8 @@ function lineOf(s, t, lang) {
   // A miss where she hints it: her 「往左偏半寸」 right after; else the deer's look-up if it was near.
   if (s.phase === 'aim' && !s.pull && s.hint && level.hint && ['short', 'long'].includes(s.said)) return `${said[s.said]}${t.hint}`;
   if (s.phase === 'aim' && !s.pull && s.alertAt != null && s.clock >= s.alertAt && s.clock - s.alertAt < ALERT_MS && ['short', 'long'].includes(s.said)) return `${said[s.said]}${t.alert}`;
+  const own = level.words?.[s.said]?.[lang] ?? level.words?.[s.said]?.zh;
+  if (own) return own;
   if (s.said && said[s.said]) return said[s.said];
   if (s.hint && level.hint) return t.hint;
   return level.say?.[lang] ?? level.say?.zh ?? '';
@@ -1014,16 +1040,21 @@ async function rowOf(id) {
 /** The mount() contract for a row: alone (the 游戏厅, no save) it reads the row and holds every
     projectile declared; the beat passes its own `data` (Look's deal: levels, art, owned). */
 async function mountRow(id, container, opts = {}) {
+  return mountRowWith(id, { newGame, act, tick, html }, container, opts);
+}
+async function mountRowWith(id, view, container, opts = {}) {
   const row = opts.data?.levels ? {} : await rowOf(id);
   const levels = opts.data?.levels ?? row.levels ?? [], art = await presentArt(opts.data?.art ?? row.art, onServer);
   const projectiles = opts.data?.projectiles ?? row.projectiles ?? null;
   const quiet = opts.reducedMotion ? { still: true } : {};
-  return mountPure({ newGame, act, tick, html })(container, { ...opts, data: { ...(opts.data ?? {}), levels, art, projectiles, ...quiet } });
+  return mountPure(view)(container, { ...opts, data: { ...(opts.data ?? {}), levels, art, projectiles, ...quiet } });
 }
 export const mount = (container, opts) => mountRow(meta.id, container, opts);
 
 /** The same board for another row of games.json (投掷 · the kit, 扔石听声, …): its own meta, the
     rest shared. A small wrapper module (games/<id>.js) exports what this answers. */
-export function forRow(id, rowMeta) {
-  return { meta: { ...rowMeta, id }, newGame, act, tick, html, stuck, mount: (container, opts) => mountRow(id, container, opts) };
+export function forRow(id, rowMeta, { grades = null } = {}) {
+  const fresh = (seed, level, deal = {}) => newGame(seed, level, { ...(deal ?? {}), ...(grades ? { grades } : {}) });
+  const view = { newGame: fresh, act, tick, html };
+  return { meta: { ...rowMeta, id }, newGame: fresh, act, tick, html, stuck, mount: (container, opts) => mountRowWith(id, view, container, opts) };
 }

@@ -161,6 +161,25 @@ SUBJECTS = {
     'little away, his right hand raised in front of his chest holding a small paper talisman between two fingers. A patched '
     'hemp jacket crossed at the front, rope belt, loose trousers, straw sandals, hair in a small topknot. Old Chinese '
     'storybook figure. Ink lines and soft grey wash.'),
+  # ── 扔石听声 (00-cave, the throwing board, row caveecho): 「先往里扔了一块石头，听了听」. Side-on: the cave at the
+  # LEFT (its deep end at the far left), the hillside and the mouth at the right where he throws from.
+  'stone/cave': ('vignette', (960, 600), (1536, 960), 1,
+    'A shallow mountain cave seen from the SIDE as a cut-away cross-section, a wide picture. LEFT two thirds: inside the cave — '
+    'a low heavy rock ceiling in dark ink and grey wash along the top, sloping slightly down toward the far left where a rock '
+    'back wall closes the cave; a flat dim earth and pebble floor along the bottom; the inside an even dusky grey wash, EMPTY. '
+    'RIGHT third: the cave mouth open to a dusk hillside, a little grass and a few stones on the slope outside. '
+    'No animals, no people, no fire.'),
+  # ── 芦苇里那一等 (09-yishui, row luwing): the 鯥 pinned on the shoal, 「翅膀根上那块皮翻开来……露出底下粉红的肉」.
+  'lu/lu': ('pose', (640, 480), (1024, 768), 1,
+    'A mythical river beast of the Shanhaijing, the Lu: the body of an ox, crouched low and side-on, facing LEFT, an ox head with '
+    'short curved horns lowered at the left, a long scaly snake tail curling behind it at the right, and on its flank a pair of '
+    'bat-like wings half raised, thin dark membranes. Grey-green and muddy ink wash, a touch of dull pink only where the wing '
+    'meets the body. Brambles twined round its hind legs.'),
+  'lu/shoal': ('vignette', (960, 600), (1536, 960), 1,
+    'A river shoal at night, a wide picture: dark slow water of a broad river across the left and the back, a flat grey mud shoal '
+    'across the bottom middle, a tall dense stand of reeds at the RIGHT edge in dark ink, a thin mist over the water and a pale '
+    'moon behind cloud high at the top. Quiet, dim, no animals, no people.'),
+
   'sneeze/stage': ('sprite', (960, 160), (1536, 256), 3,
     'The front edge of a low stone fighting platform seen from the side, a long horizontal strip of big grey dressed stone '
     'blocks running across the whole width, its top edge flat, a few cracks and moss. Grey ink wash and dark ink.'),

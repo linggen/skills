@@ -35,7 +35,240 @@
   "sword": {"name": {"zh": "短飞剑", "en": "Short flying sword"}, "from": "feijian", "shape": "sword", "mass": 0.8, "speed": 1, "drag": 0, "half": 9, "pierce": 40, "ability": "dash", "dash": 1.7, "tip": {"zh": "飞行中点一下：剑直冲出去。", "en": "Tap in flight: the sword shoots straight on."}},
   "talisman": {"name": {"zh": "五雷符", "en": "Thunder talisman"}, "from": "wulei-fu", "shape": "talisman", "mass": 0.6, "speed": 0.9, "drag": 0.006, "half": 0, "ability": "burst", "radius": 70, "tip": {"zh": "飞行中点一下：五雷炸开。", "en": "Tap in flight: the thunder bursts."}}
  },
+ "_throws": "Every throw in 卷一, from the book (Hanli 2026-10-16: 「投掷类都可以换」), each a level set on the 射鹿 board (deerarc.js; the target by `target.kind`, targets.js): 1 第一回 00-cave 扔石听声 「先往里扔了一块石头，听了听，是空的；又扔了一块，又听了听，还是空的」 — BUILT, row caveecho, task cave-stone (石子; the echo deep is the clean); 2 第二回 00-deer 射鹿 「往左偏半寸」 — BUILT, row deerarc, task deer-wind (箭); 3 古七 09-yishui 芦苇里那一等 「他扣在指间的那口短飞剑，诀一掐，放了出去，一道白光贴着滩上的泥飞过去，从那块粉红的肉里钻了进去」 — BUILT, row luwing, task yishui-reed (短飞剑, the wing root as it breathes in); 4 第五回 暗河 邹青松 「左手在地上摸了一块石子，往左边黑里一丢。……就这一亮……他一箭奔那团红光去了」 — PROPOSED: two throws, a stone into the dark to draw the gourd's light, then the arrow at the light (a dark level; the target shows only after the stone lands); 5 第五回 凶崖 「一箭奔面门。邹青松左臂一抬，箭头撞在……赤铜小盾上」 — PROPOSED as the first throw of 4 (a shield that turns the arrow: a branch-kind thing that moves); 6 第八回 黑松岭 合窳 「飞剑头一下奔它的眼睛，它一偏头，剑擦着那张人脸过去」 — PROPOSED: a 短飞剑 at a beast on a cliff path whose head turns away (a graze teaches: wait for the 灵力 to show); 7 第三回 三试 「一颗石子从人堆里飞进来……打在蠪侄的后腿上」 — the 家丁's throw, not 小满's: no level (the book's own); 8 第四回/第五回 饭桶 「石子、半个窝头……一样一样往里扔」「抬手往饭桶里一扔：『吃！你吃！』」 — already a game (喂饭桶, fantong); 9 第一回 爹 射山鸡 「先看风，后看鹿」 — his father's shot: told, the lesson 射鹿 plays.",
  "games": [
+  {
+   "id": "caveecho",
+   "group": "prologue",
+   "scene": "00-cave",
+   "hui": "第一回",
+   "task": "cave-stone",
+   "mechanic": "愤怒小鸟",
+   "stars": 3,
+   "_levels": "扔石听声 (00-cave, restored 2026-10-16 on the throwing board): 「先往里扔了一块石头，听了听，是空的；又扔了一块，又听了听，还是空的」. Two stones, as the book's two. The target is a `zone`: where the stone comes down — deep (`deep`) the echo he listens for, `mid` a dull knock (a hit, a star fewer); `wall`s of rock (the roof, the back) it bounces off. Grades for the task's marks: sure (★★–★★★) · lucky (★).",
+   "levels": [
+    {
+     "id": "first",
+     "ammo": [
+      "stone"
+     ],
+     "wind": 0,
+     "target": {
+      "kind": "zone",
+      "deep": [
+       22,
+       96
+      ],
+      "mid": [
+       96,
+       196
+      ],
+      "floor": 252
+     },
+     "things": [
+      {
+       "kind": "wall",
+       "from": [
+        336,
+        118
+       ],
+       "to": [
+        10,
+        92
+       ],
+       "bounce": 0.45
+      },
+      {
+       "kind": "wall",
+       "from": [
+        12,
+        252
+       ],
+       "to": [
+        12,
+        90
+       ],
+       "bounce": 0.5
+      }
+     ],
+     "say": {
+      "zh": "先往里扔一块石头，听一听。落得越深，听得越真。",
+      "en": "Throw a stone in first, and listen. The deeper it lands, the truer the sound."
+     },
+     "words": {
+      "clean": {
+       "zh": "咚……咚……回声从深处慢慢荡回来——是空的。",
+       "en": "Tock… tock… the echo comes back slowly from deep inside — empty."
+      },
+      "body": {
+       "zh": "笃的一声，落得浅了，听不真。",
+       "en": "A dull knock: too shallow to tell."
+      },
+      "short": {
+       "zh": "石子落在洞口外头，什么也没听出来。",
+       "en": "The stone falls outside the mouth. Nothing to hear."
+      },
+      "long": {
+       "zh": "石子撞在石壁上，滚回来了。",
+       "en": "It hits the rock and rolls back."
+      }
+     },
+     "indoor": true
+    },
+    {
+     "id": "second",
+     "ammo": [
+      "stone"
+     ],
+     "wind": 0,
+     "target": {
+      "kind": "zone",
+      "deep": [
+       22,
+       90
+      ],
+      "mid": [
+       90,
+       180
+      ],
+      "floor": 252
+     },
+     "things": [
+      {
+       "kind": "wall",
+       "from": [
+        336,
+        146
+       ],
+       "to": [
+        10,
+        122
+       ],
+       "bounce": 0.45
+      },
+      {
+       "kind": "wall",
+       "from": [
+        12,
+        252
+       ],
+       "to": [
+        12,
+        120
+       ],
+       "bounce": 0.5
+      },
+      {
+       "kind": "wall",
+       "from": [
+        150,
+        252
+       ],
+       "to": [
+        168,
+        226
+       ],
+       "bounce": 0.4
+      }
+     ],
+     "say": {
+      "zh": "又扔一块。洞顶低，扔平些，让它在地上跳进去。",
+      "en": "Another. The roof is low: throw it flat and let it skip in."
+     },
+     "words": {
+      "clean": {
+       "zh": "又是咚的一声，又是空的。",
+       "en": "Tock again — empty again."
+      },
+      "body": {
+       "zh": "笃。浅了。",
+       "en": "A knock. Shallow."
+      },
+      "short": {
+       "zh": "没进去。",
+       "en": "It didn't go in."
+      },
+      "long": {
+       "zh": "撞回来了。",
+       "en": "It came back off the rock."
+      }
+     },
+     "indoor": true
+    }
+   ]
+  },
+  {
+   "id": "luwing",
+   "group": "later",
+   "scene": "09-yishui",
+   "hui": "古七",
+   "task": "yishui-reed",
+   "mechanic": "愤怒小鸟",
+   "stars": 3,
+   "_levels": "芦苇里那一等 (09-yishui, 2026-10-16 on the throwing board): 「翅膀张开之前，它得吸一口气，吸气的时候，翅膀根上那块皮翻开来，翻开一霎，露出底下粉红的肉……小满在芦苇里等的就是这一霎。他扣在指间的那口短飞剑，诀一掐，放了出去」. The target is `lu`: the 鯥 pinned on the shoal; its wing root opens for `open.for` ms every `open.every`; only then the blade goes in, anywhere else the hide turns it. 短飞剑: tap in flight and it flies straight. Grades for the task's marks: still (★★–★★★) · hasty (★).",
+   "levels": [
+    {
+     "id": "breath",
+     "ammo": [
+      "sword"
+     ],
+     "wind": 0.15,
+     "target": {
+      "kind": "lu",
+      "x": 150,
+      "size": 1.6,
+      "open": {
+       "every": 2400,
+       "for": 700
+      }
+     },
+     "say": {
+      "zh": "它叫荆棘钉在滩上。等它吸气——翅膀根翻开的那一霎。",
+      "en": "The brambles pin it to the shoal. Wait for the breath — the instant the wing root opens."
+     },
+     "words": {
+      "clean": {
+       "zh": "剑从那块粉红的肉里钻了进去。它叫了一声，翅膀张了一半，塌了下去。",
+       "en": "The blade goes into the pink flesh. It bellows; the wings half open and collapse."
+      }
+     }
+    },
+    {
+     "id": "struggle",
+     "ammo": [
+      "sword"
+     ],
+     "wind": 0.3,
+     "roll": {
+      "min": 0.1,
+      "max": 0.4,
+      "dirs": [
+       1,
+       -1
+      ]
+     },
+     "target": {
+      "kind": "lu",
+      "x": 120,
+      "size": 1.6,
+      "open": {
+       "every": 2000,
+       "for": 520
+      }
+     },
+     "say": {
+      "zh": "它在挣。翻开得更快，合得也更快。",
+      "en": "It struggles. The wing root opens quicker, and shuts quicker."
+     },
+     "words": {
+      "clean": {
+       "zh": "一道白光贴着滩上的泥飞过去——进去了。",
+       "en": "A streak of white along the mud — and in."
+      }
+     }
+    }
+   ]
+  },
   {
    "id": "throwkit",
    "group": "kit",
@@ -1186,9 +1419,8 @@
   {
    "id": "reed",
    "group": "later",
-   "scene": "09-yishui",
-   "hui": "第七回",
-   "task": "yishui-reed"
+   "hui": "第七回 · 旧版",
+   "_retired": "The old 芦苇里那一等 board (hold still in the reeds), kept for the 游戏厅 only; the beat plays luwing since 2026-10-16."
   },
   {
    "id": "wind",

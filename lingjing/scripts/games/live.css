@@ -517,6 +517,17 @@
 .g-da-scene .g-tk-burst-ring { fill: rgba(233, 199, 90, .18); stroke: #b8860b; stroke-width: 1.4; }
 .g-da-scene .g-tk-bolt { fill: none; stroke: #f2c94c; stroke-width: 2.2; stroke-linejoin: round; filter: drop-shadow(0 0 2px #2e2416); }
 .g-da-scene .g-tk-core { fill: #fff6d0; }
+/* The other targets (games/targets.js): the cave's deep and its echo; the 鯥 in ink until painted. */
+.g-da-scene .g-tg-deep { fill: none; stroke: #2e2416; stroke-width: 1.2; stroke-dasharray: 4 4; opacity: .55; }
+.g-da-scene .g-tg-echo { fill: none; stroke: #2e2416; stroke-width: 1.4; }
+.g-da-scene .g-tg-wall { fill: none; stroke: #2e2416; stroke-width: 3; stroke-linecap: round; opacity: .55; }
+.g-da-scene .g-tg-body { fill: #6f7564; opacity: .9; }
+.g-da-scene .g-tg-head { fill: #5d6253; }
+.g-da-scene .g-tg-horn, .g-da-scene .g-tg-leg, .g-da-scene .g-tg-tail { fill: none; stroke: #2e2416; stroke-width: 2.2; stroke-linecap: round; }
+.g-da-scene .g-tg-tail { stroke-width: 3.2; stroke: #4a503f; }
+.g-da-scene .g-tg-wing { fill: #3d4236; opacity: .75; stroke: #2e2416; stroke-width: .8; }
+.g-da-scene .g-tg-root { fill: #e88f9a; stroke: #b4485a; stroke-width: .8; }
+.g-da-scene .g-tg-thorn { fill: none; stroke: #3d6b3a; stroke-width: 1.6; stroke-linecap: round; }
 .g-tk-tray { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; width: 100%; }
 .g-tk-pick { display: flex; align-items: center; gap: 4px; min-height: 44px; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--line);
   background: var(--surface); color: var(--text); font-family: var(--serif); font-size: 14px; cursor: pointer; touch-action: manipulation; }

@@ -34,6 +34,16 @@
       "done_line": { "zh": "十七个盆，一个不少。", "en": "Seventeen basins, not one missing." }
     },
     {
+      "_restored": "扔石听声, cut 2026-10-16 morning (903a00c0) as a weak board, back the same day on the throwing board (Hanli: 「投掷类都可以换」): two stones into the cave, the echo deep is the clean (games.json caveecho).",
+      "id": "cave-stone", "kind": "board", "game": "caveecho", "period": "once",
+      "title": {"zh": "扔石听声 · 先往里扔一块石头", "en": "A stone and an ear · Throw one in first"},
+      "how": {"zh": "往后拉，松手，把石子扔进洞里。落得越深，回声越真。", "en": "Pull back and let go: throw the stone into the cave. The deeper it lands, the truer the echo."},
+      "stars": 3,
+      "grant": { "table": "task", "progress": 5 },
+      "marks": {"sure": "stone-sure", "lucky": "stone-lucky"},
+      "done_line": {"zh": "一个浅浅的石洞，空的。", "en": "A shallow cave, and empty."}
+    },
+    {
       "id": "bread-share", "kind": "board", "game": "bread", "period": "once",
       "title": { "zh": "喂饼 · 那张厚饼", "en": "The flatbread · Down to the fox" },
       "how": { "zh": "划断藤，让饼荡下去，落到它嘴边。路上的饼角接住了，留作明天的早饭。", "en": "Cut the vines so the bread swings down to its mouth. Catch the corners on the way: tomorrow's breakfast." },

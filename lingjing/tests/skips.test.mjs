@@ -66,7 +66,8 @@ test('a graded board left writes no grade or mark, owes the rest of the passage,
   assert.ok((first.tell_owed ?? []).includes('after/00-halfyear'), 'the passage after the first board is owed, as after a win');
   assert.ok(!(first.marks ?? []).some((m) => m.startsWith('feather-')), 'no mark');
   const { s, now } = at('00-prologue/00-cave');
-  const one = s;
+  // 扔石听声 (back 2026-10-16) plays before 喂饼: left too, so 喂饼 is next.
+  const one = must(task, s, now, { action: 'skip', id: 'cave-stone' });
   const two = must(task, one, now, { action: 'skip', id: 'bread-share' });
   assert.equal(two.grades?.['bread-share'], undefined);
   assert.ok(!(two.marks ?? []).some((m) => m.startsWith('bread-')), 'no mark');

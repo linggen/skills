@@ -192,7 +192,8 @@ test('喂饼: the grade takes 分它一半 or 自己吃 — the amount a mark fo
     assert.equal(on.state.scene, '00-yinyue', 'the dawn either way: she eats the corner');
     assert.ok(on.state.marks.includes(exit === 'share' ? 'shared-bread' : 'kept-bread'));
   }
-  assert.equal(win(cave, content, ctx(), { id: 'bread-share', grade: 'all' }).state.grades['bread-share'], undefined, 'a grade the task does not name is not kept');
+  const stoned = won(cave, 'cave-stone', 'sure'); // 扔石听声 first (back 2026-10-16)
+  assert.equal(win(stoned, content, ctx(), { id: 'bread-share', grade: 'all' }).state.grades?.['bread-share'], undefined, 'a grade the task does not name is not kept');
 });
 
 test('射鹿 keeps its two ways: the board won takes 往左偏半寸; 照直射 stays, as before', () => {

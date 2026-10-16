@@ -69,7 +69,9 @@
     {
       "id": "yishui-reed",
       "kind": "board",
-      "game": "reed",
+      "game": "luwing",
+      "how": { "zh": "往后拉，松手放剑，飞行中点一下，剑直冲出去。等它吸气，翅膀根翻开的那一霎。", "en": "Pull back and let go; tap in flight and the sword flies straight. Wait for its breath: the instant the wing root opens." },
+      "stars": 3,
       "period": "once",
       "title": { "zh": "芦苇里那一等", "en": "The wait in the reeds" },
       "grant": { "table": "task", "wealth": 2 },
