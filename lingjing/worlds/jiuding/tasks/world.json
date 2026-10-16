@@ -44,7 +44,7 @@
     },
     {
       "id": "rent-scale", "kind": "board", "game": "rentrope", "stars": 3, "period": "once",
-      "title": { "zh": "算账 · 皮抵欠，肉抵租", "en": "Settling up · Hide and meat" },
+      "title": { "zh": "算账 · 肉上秤", "en": "Settling up · The meat on the steelyard" },
       "grant": { "table": "task", "progress": 5 },
       "marks": { "exact": "rent-exact", "over": "rent-over" },
       "done_line": { "zh": "皮抵了去年的欠，肉抵了今年的租。", "en": "The hide for last year, the meat for this." }
@@ -59,7 +59,7 @@
     {
       "_beats": "Batch two (2026-10-14, Hanli 「都可以，按你的单子做」): each beat ends won always — a `skip` (算了，往下走) ends it with no grade, so no mark — and never picks the way on unless an exit says `needs.grade`.",
       "id": "masan-taunt", "kind": "board", "game": "tauntrope", "stars": 3, "period": "once",
-      "title": {"zh": "忍字 · 原样说回去", "en": "Holding it in · Say it back, word for word"},
+      "title": {"zh": "忍字 · 桂花糕喂狗", "en": "Holding it in · The cake to the dog"},
       "grant": { "table": "task", "progress": 5 },
       "marks": {"word": "taunt-word", "fist": "taunt-fist"},
       "done_line": {"zh": "那块桂花糕，还在马小宝手里。", "en": "The osmanthus cake is still in Ma Xiaobao's hand."}
@@ -73,7 +73,7 @@
     },
     {
       "id": "yinyue-way", "kind": "board", "game": "wayrope", "stars": 3, "period": "once",
-      "title": {"zh": "认路 · 崖壁上一段划了一道", "en": "Finding the way · A line on the cliff every so often"},
+      "title": {"zh": "认路 · 灵气泡送它出谷", "en": "Finding the way · Out in a qi bubble"},
       "grant": { "table": "task", "progress": 5 },
       "marks": {"straight": "way-straight", "wandered": "way-wandered"},
       "done_line": {"zh": "崖壁上的道道，一道都还在。", "en": "The lines on the cliff are all still there."}

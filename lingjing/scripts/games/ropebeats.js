@@ -76,7 +76,7 @@ export const way = beat({
 });
 
 /* ── 算账 · the meat onto 马三's steelyard ── */
-const YARD_W = 210, YARD_H = YARD_W * 302 / 320, PAN = [0.14, 0.9], HOOK = 0.47;
+const YARD_W = 210, YARD_H = YARD_W * 302 / 320, PAN = [0.2, 0.76], HOOK = 0.47;
 export const rent = beat({
   meta: { id: 'rentrope', name: { zh: '算账 · 肉上秤', en: 'Settling up · The meat on the steelyard' }, how: { zh: '划断藤，让鹿肉落进秤盘——乌鸦顺着藤往下爬，先断它那根。', en: 'Cut the vines so the venison drops into the pan — a crow is walking down one: cut that first.' } },
   quote: { zh: '「肉二十斤，抵今年的。」', en: '"Twenty catties of meat, for this year\'s."' },
