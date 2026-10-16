@@ -16,7 +16,7 @@ pop or number on each action, a seal stamped on the win, the main control under 
 UI, it ships without waiting; (2) **fewer and better**: keep six, cut the rest (below);
 (3) new core loops only where marked, after his read.
 
-**Keep in 卷一 (six):** 喂饼 → 割绳子 (building now) · 射鹿 → 愤怒小鸟 (after launch) · 接雨 ·
+**Keep in 卷一 (six):** 喂饼 → 割绳子 (built 10-16) · 射鹿 → 愤怒小鸟 (after launch) · 接雨 ·
 吹鹅毛 (new loop) · 喷嚏符 (already the most fight-like) · 顺风溜 → 几何冲刺 (after launch). Plus
 **最后一罚** as 今线's one. **Second tier** (good timing reads; keep only if he likes them on
 replay): 烙饼 · 拽 · 小周天 · 禹步. **Cut the rest** — each is a passage he can read in the time it
@@ -44,7 +44,7 @@ stuck — 75 s unwon, or the game's own `stuck` rule where noted; a skip pays no
 | 一 · 00-fall | 拽 `storm` | 拽爹上崖 | three pulls in the lulls between gusts | fine | second tier; kit only | 12 s | 75 s | no |
 | 一 · 00-yinyue | 认路 `way` | 「崖壁上一段划了一道」 | a small grid seen a step around him; follow his marks | the marks lead straight | **cut** | 7 s | 75 s | no |
 | 一 · 00-cave | 扔石听声 `stone` | 「先往里扔一块石头」 | a stone into each of three hollows; go into the one that knocks | the how-line names the right sound; one decision | **cut** | 4 s | 2 wrong | no |
-| 一 · 00-cave / 00-fox | 喂饼 `bread` ★ | 那张厚饼，分它一半 | seven pieces: to the fox or to himself | two buttons, nothing moves | **keep** → 割绳子 physics puzzle (another agent, building now) | 5 s | 75 s | no (银月 is already a card) |
+| 一 · 00-cave / 00-fox | 喂饼 `bread` ★ | 那张厚饼，分它一半 | seven pieces: to the fox or to himself | two buttons, nothing moves | **built 10-16** → 割绳子 physics puzzle: the 饼 on vines in the cave, cut them (tap or swipe) so it swings to the fox's mouth; four levels (一根藤 · 两根藤 · 石板 · 洞口风), a 饼角 a star (3), the order of cuts is the answer, never the timing; instant retry | 5 s | 75 s | no (银月 is already a card) |
 | 二 · 00-deer | 射鹿 `deer` ★ | 「风。往左偏半寸。」 | set the aim (‹ = left), hold to draw, let go in a lull | the skill is pressing ‹ once; a static target | **keep** → 愤怒小鸟 drag-and-arc, after launch; now UI/stuck fixes only | 5 s | 3 misses | yes — 先看风，后看鹿 (爹's lesson to him) |
 | 二 · 00-cliff | 攀 `climb` | 「右手抓一根荆条」 | each reach, pick the branch in leaf; rest on the stone | a two-way pick, always readable | **cut** | 7 s | 2 slips | no |
 | 二 · 00-sleep | 忍 `xisui` | 「疼，别喊」 | hold to grit while three sticks burn | holding a button for half a minute | **cut** (the 洗髓 passage is stronger read) | 27 s | 75 s | no |

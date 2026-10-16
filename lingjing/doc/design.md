@@ -701,8 +701,7 @@ alone: `scripts/try-game.html?dev=1&game=storm|deer|xisui|zhoutian&lang=zh|en`.
 **Standalone, then embedded** (Hanli, 2026-10-16). One contract for every small game
 (`games/mount.js`): `mount(container, { data, lang, reducedMotion }) → Promise<{ won, grade?, stars? }>`
 — it knows nothing of the story, the save or the pay. A pure board module (html · act · tick) gets it
-from `mountPure`, and the story page keeps drawing those itself; a game that keeps only `mount` (the
-new 割绳子 喂饼) is laid into its board card by `beat-host.js`, mounted once, and its result goes the
+from `mountPure`, and the story page keeps drawing those itself; a game that keeps only `mount` is laid into its board card by `beat-host.js`, mounted once, and its result goes the
 way every board's win does (`onWin` → the rules' `win` → the pay → `beat-won.js` `beatWon(id, {grade})`,
 the one hook the 得牌 reveal listens on). Every game is listed in `worlds/jiuding/games.json`. Test
 pages, never linked in the game and blank without `?dev=1`: the 游戏厅 `scripts/arcade.html?dev=1`
@@ -731,7 +730,7 @@ mechanics millions already love (the mechanic only; names and art are ours), eac
 
 | Mechanic | Where | Status |
 |---|---|---|
-| 割绳子 physics puzzle | 喂饼 (第一回 00-fox): cut vines, use wind and stones so the 饼 reaches the hurt fox (银月's first meeting) | building first |
+| 割绳子 physics puzzle | 喂饼 (第一回 00-cave, after 扔石听声): cut vines, use wind and stones so the 饼 reaches the hurt fox (银月's first meeting) | **built** 2026-10-16 (`games/bread.js`, levels in `games.json`; 饼角 = stars on the save, `stars` in Look) |
 | 愤怒小鸟 drag-and-arc | 射鹿 (第二回 00-deer): pull the bow, read the wind, lead the deer; 「往左偏半寸」 is the answer | after the first launch |
 | 几何冲刺 one-tap runner | 顺风溜 (古七): the shoes' run down the mountain, forgiving (checkpoints, skippable) | after the first launch |
 

@@ -12,10 +12,10 @@ Updated 2026-10-16.
 |---|---|---|
 | Fight party + card provenance — doc/cards.md for Hanli's read; build waits on it | `doc/cards.md` (the 得牌 reveal kept local, unpushed) | 10-16 |
 | Small games — doc/games.md for Hanli's design check; mechanic changes wait on it (UI polish and stuck fixes go on) | `doc/games.md` | 10-16 |
-| 喂饼 rebuilt as a 割绳子-style physics puzzle (00-fox: cut vines so the 饼 reaches the hurt fox; 3 stars) | first of the new small games (Hanli 10-16 「先做你说的」) | 10-16 |
 
 ## Done lately
 
+- 10-16 — 喂饼 rebuilt as a 割绳子-style physics puzzle (`02183923`), the first new small game: matter.js 0.20.0 vendored (MIT, no network); four levels in `games.json` (一根藤 · 两根藤 · 石板 · 洞口风), each solved by the order of cuts with the 饼 hanging still; tap or swipe a vine, a puff of wind to tap, 饼角 = stars (3), instant retry, 重来, stuck after 4 misses; the ending is the book's 「连个谢字也没有」. Stars on the save (`stars['bread-share']`, best kept, Look shows them) for pay to scale on later; pay unchanged. The win always feeds the fox, so it opens 分它一半 (grade half · most); 自己吃 now only on a skip — Hanli's 10-14 piece-by-piece choice is gone with the old board. Bot answers per level. Played by hand live on 9527, scratch `breadtry`: try page and story at 1440 (a wrong order missed and came back, a missed corner offered 再来), the story at 390 (touch swipe, all four, 3 stars, save `00-yinyue`).
 - 10-16 — 小游戏 UI pass + standalone games: `doc/games.md` for his check (`6eba1b54`); the shared kit — 成 stamped on every won board, an ink ring at every press, counts that bump, the goal line set off (`2536b369`); 接雨 one-tap swap and 满 (`87a0841a`); 射鹿 正中 · 偏左半寸 and a bow button that says 拉 / 满了松手 (`df492629`); 吹鹅毛 pace strip 憋 · 匀 · 急 (`d2dc07f1`); page-crawl hit-tests a press (写信 · 认方 at 390, `3f79e8c6`); the mount() contract, `beat-host.js`, `beat-won.js` (the 得牌 hook), `games.json` (53), the 游戏厅 `arcade.html?dev=1` and try page, never linked (`c5c69f09`). Live at 390 and 1440 on scratch saves. Mechanic redesigns wait on his read of games.md.
 
 - 10-16 — 开仓 counts any stock added, watched or held, 0 shares OK (`0c81e4cb`); a phone add sends the `cfo-first-stock` fact so the Mac stamps at once (linggen-mobile `09f1035`, phone install waits).
