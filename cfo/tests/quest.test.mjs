@@ -6,7 +6,8 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { MENU, cli, merged, stampQuest } from '../scripts/quest.js';
+import { MENU, cli, merged, stampQuest, holdsStock, noteFirstStock } from '../scripts/quest.js';
+import { Register, investmentsOf } from '../scripts/lww.js';
 
 const NOW = new Date('2026-09-24T15:00:00Z');
 
@@ -21,9 +22,10 @@ const scratch = () => {
 test('every entry carries the protocol fields, and each pool chore is modest', () => {
   for (const m of MENU) {
     assert.match(m.id, /^cfo-/);
-    assert.ok(['day', 'week'].includes(m.period), m.id);
+    assert.ok(['day', 'week', 'once'].includes(m.period), m.id);
     assert.ok(['mac', 'phone', 'both'].includes(m.device), m.id);
-    assert.ok(m.reward >= 20 && m.reward <= 30 && m.stamina >= 10 && m.stamina <= 20, m.id);
+    if (m.period === 'once') assert.ok(m.reward === 50 && m.stamina === 20 && !('pool' in m), m.id); // linggen.json's 开府 shape
+    else assert.ok(m.reward >= 20 && m.reward <= 30 && m.stamina >= 10 && m.stamina <= 20, m.id);
     assert.ok(m.title.zh && m.title.en && m.open.startsWith('/apps/cfo/'), m.id);
   }
   const doc = merged(null, {});
@@ -97,5 +99,47 @@ test('the engine door: stamp <id> <at> exits 0 once held, 1 for a bad call', asy
   assert.equal(run(['stamp', 'cfo-import', '2026-09-24T10:00:00Z']).status, 0);
   assert.equal(run(['stamp', 'cfo-import', 'soon']).status, 1);
   assert.equal(s.read().quests.find((q) => q.id === 'cfo-import').done_at, '2026-09-24T10:00:00.000Z');
+  fs.rmSync(s.home, { recursive: true, force: true });
+});
+
+// 开府 — Investments holds a stock. The same note runs after a holding is
+// saved on the tab and when CFO loads with one already held.
+const inv = (cells) => {
+  const reg = new Register('mac');
+  for (const [k, v] of Object.entries(cells)) reg.set(k, v);
+  return investmentsOf(reg);
+};
+
+test('a holding is a stock with shares — a watched ticker or cleared shares is not', () => {
+  assert.equal(holdsStock(inv({ 'inv:VFV.TO|shares': 12, 'inv:VFV.TO|watch': true })), true);
+  assert.equal(holdsStock(inv({ 'inv:AAPL|watch': true })), false);
+  assert.equal(holdsStock(inv({ 'inv:AAPL|watch': true, 'inv:AAPL|shares': null })), false);
+  assert.equal(holdsStock(inv({ 'inv:AAPL|rank': 0 })), false);
+  assert.equal(holdsStock({}), false);
+});
+
+test('adding a holding stamps cfo-first-stock; a watch-only add writes nothing', async () => {
+  const s = scratch();
+  assert.equal(await noteFirstStock(s.runBash, inv({ 'inv:AAPL|watch': true }), { file: s.file, now: NOW }), false);
+  assert.ok(!fs.existsSync(s.file));
+  assert.equal(await noteFirstStock(s.runBash, inv({ 'inv:AAPL|watch': true, 'inv:AAPL|shares': 5 }), { file: s.file, now: NOW }), true);
+  const q = s.read().quests.find((x) => x.id === 'cfo-first-stock');
+  assert.equal(q.done_at, NOW.toISOString());
+  assert.equal(q.period, 'once');
+  const text = fs.readFileSync(s.file, 'utf8');
+  for (const leak of ['AAPL', '"shares"', 'avg_cost']) assert.ok(!text.includes(leak), `${leak} must not cross`);
+  fs.rmSync(s.home, { recursive: true, force: true });
+});
+
+test('a stock already held when CFO loads counts — and the first time stands', async () => {
+  const s = scratch();
+  fs.mkdirSync(path.dirname(s.file), { recursive: true });
+  fs.writeFileSync(s.file, JSON.stringify({ app: 'cfo', quests: [{ id: 'cfo-review', done_at: '2026-09-23T10:00:00.000Z' }] }));
+  const held = inv({ 'inv:XEQT.TO|shares': 40, 'inv:XEQT.TO|watch': true });
+  await noteFirstStock(s.runBash, held, { file: s.file, now: NOW });
+  await noteFirstStock(s.runBash, held, { file: s.file, now: new Date('2026-10-16T09:00:00Z') }); // the next load
+  const byId = Object.fromEntries(s.read().quests.map((q) => [q.id, q]));
+  assert.equal(byId['cfo-first-stock'].done_at, NOW.toISOString(), 'a one-time milestone keeps its first time');
+  assert.equal(byId['cfo-review'].done_at, '2026-09-23T10:00:00.000Z');
   fs.rmSync(s.home, { recursive: true, force: true });
 });

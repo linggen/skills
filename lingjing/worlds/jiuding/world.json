@@ -23,7 +23,7 @@
  ],
  "authored": true,
  "kaifu": {
-  "_about": "The order Linggen's one-time setup milestones open in, one a day (rules/chores.mjs): a spirit first, the account, her voice and memory, then the phone ones once a phone is bound, the browser and missions, and ChatGPT — another way to a spirit — last. An id not listed comes after, in the app's own order.",
+  "_about": "The order the one-time setup milestones (Linggen's and its apps') open in, one a day (rules/chores.mjs): a spirit first, the account, her voice and memory, then the phone ones once a phone is bound, the browser and missions, a first stock in CFO, and ChatGPT — another way to a spirit — last. An id not listed comes after, in the app's own order.",
   "order": [
    "linggen-model",
    "linggen-account",
@@ -34,6 +34,7 @@
    "linggen-remote",
    "linggen-mission",
    "linggen-browser",
+   "cfo-first-stock",
    "linggen-chatgpt"
   ]
  },

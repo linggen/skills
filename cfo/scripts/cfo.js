@@ -7,12 +7,12 @@
 import '/shared/chat-bridge.js'; // sets window.LinggenUI
 import { listSkillSessions } from '/shared/api.js';
 import { analyzeCsv, orientTransactions, categorize, cleanMerchant, amortize, debtPlan } from './analyze.js';
-import { stampQuest } from './quest.js';
+import { stampQuest, noteFirstStock } from './quest.js';
 import { guessType, labelFromFilename, bestAccountMatch } from './accounts.js';
 import { toLedgerRows, mergeImport, onFileIds, idsToRevert, reportFromLedger, viewFromLedger, detectTransfers, stampCurrencies, ruleKey, isStatementArtifact } from './ledger.js';
 import { hashId } from './hash.js';
 import { CURRENCY_CODES as ALL_CURRENCY_CODES, currencyForLocale, accountCurrency, currencyUnconfirmed, importCurrencyCells, seedAccountCurrencies, accountHints, migrateLedgerText, parseEcbXml, parseBocValet, ECB_URL, BOC_URL } from './currency.js';
-import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, externalOf, activeRows, seedFromLegacy, saveRegisterFile, updateJsonFile, lockedUpdate } from './lww.js';
+import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, externalOf, activeRows, investmentsOf, seedFromLegacy, saveRegisterFile, updateJsonFile, lockedUpdate } from './lww.js';
 import { initInvestments, renderInvestView, leaveInvestView, reportSaved, holdingsIn, proposeHoldings, chipsNow as investChipsNow } from './investments.js';
 import { reportChips, spendChips, txnChips, commitChips } from './chips.js';
 import { initWeekly, renderWeekly } from './weekly.js';
@@ -1089,6 +1089,7 @@ async function resumeState() {
     RAW_LEDGER = await loadLedger();
     EDITS = await loadEdits(RAW_LEDGER);
     applyEdits(); // ACCOUNTS / COMMITMENTS / BUDGETS / overrides / LEDGER
+    noteFirstStock(runBash, investmentsOf(EDITS)); // a stock already held is the 开府 fact (quest.js)
     await migrateCurrencies();
     INSIGHTS = await loadInsights();
     SUGGESTIONS = await loadSuggestions();

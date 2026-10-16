@@ -123,7 +123,7 @@ test('the 事 book: the open 一次 step is one row with its tag, the count and 
   const s = start();
   const html = page(look(s, content, ctx(NOW, quests)));
   assert.match(html, /已接 · 1/);
-  assert.match(html, /t-once">一次<\/span>.*linggen-model.*0\/10.*灵石 \+\d+.*data-do="skip" data-id="linggen-model">跳过/s);
+  assert.match(html, new RegExp(`t-once">一次</span>.*linggen-model.*0/${ORDER.length}.*灵石 \\+\\d+.*data-do="skip" data-id="linggen-model">跳过`, 's'));
   assert.equal((html.match(/t-once/g) ?? []).length, 1, 'one 一次 row, never the ten');
   // done: 可交, 交差 and no 跳过
   const done = page(look(s, content, ctx(NOW)));
@@ -136,7 +136,7 @@ test('the 事 book: the open 一次 step is one row with its tag, the count and 
   const turned = page(l, { kaifu: rows, turned: { id: ORDER[0], title: ORDER[0], paid: paid.result.paid, at: Date.now() } });
   assert.match(turned, /role="status" class="bookrow trow turned".*已交 ✓/s);
   const after = page(l, { kaifu: rows });
-  assert.match(after, /下一件明日开.*1\/10/s);
+  assert.match(after, new RegExp(`下一件明日开.*1/${ORDER.length}`, 's'));
   assert.match(after, /<details class="tgroup tdone"><summary[^>]*>已交 1<\/summary>.*linggen-model/s);
   assert.doesNotMatch(after, /undefined|\{\w+\}/);
 });

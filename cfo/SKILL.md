@@ -36,6 +36,7 @@ quests:
     cfo-import: cfo-import
     cfo-trends: cfo-review
     cfo-invest: cfo-invest
+    cfo-first-stock: cfo-first-stock
 permission:
   paths:
     - { path: ~/.linggen/skills/cfo, mode: edit }
@@ -45,8 +46,8 @@ permission:
     sent to the model. The grant lets it save its (redacted) analysis to its own
     data dir and record your goals. CFO's memory is scoped to CFO alone — it
     never reads or writes your other apps' memory. An import, a read of the
-    report or a sorted row leaves one note in ~/.linggen/quests — when you did
-    it, never an amount or a merchant.
+    report, a sorted row or a first holding leaves one note in
+    ~/.linggen/quests — when you did it, never an amount, a merchant or a ticker.
 tools:
   - name: LatestAnalysis
     description: >-

@@ -36,7 +36,22 @@ export const MENU = [
     id: 'cfo-invest', period: 'week', reward: 25, stamina: 15, device: 'phone', pool: true, open: `${OPEN}?tab=invest`,
     title: { zh: '观宝库 · 在手机上看一遍投资', en: 'Survey the vault · look over your investments on the phone' },
   },
+  // 开府 — one time: Investments holds a stock (the linggen.json `once` shape).
+  {
+    id: 'cfo-first-stock', period: 'once', reward: 50, stamina: 20, device: 'both', open: `${OPEN}?tab=invest`,
+    title: { zh: '开仓 · 在 CFO 的投资里添一支股票', en: 'Open a position · add a stock to Investments in CFO' },
+  },
 ];
+
+/// Investments holds a stock: some symbol with shares (`investmentsOf` cells;
+/// a watched-only ticker is not a holding).
+export const holdsStock = (inv) => Object.values(inv || {}).some((cell) => Number(cell?.shares) > 0);
+
+/// The 开府 fact: stamp `cfo-first-stock` when Investments holds a stock —
+/// only that it does, never which or how many. Resolves to whether it stamped.
+export async function noteFirstStock(runBash, inv, opts) {
+  return holdsStock(inv) ? stampQuest(runBash, 'cfo-first-stock', opts) : false;
+}
 
 export const QUEST_FILE = '$HOME/.linggen/quests/cfo.json';
 
@@ -48,8 +63,13 @@ export function later(a, b) {
   return t(b) > t(a) ? b : a;
 }
 
+/// A stamp's effect on one entry: a one-time milestone keeps its first time;
+/// any other keeps the later.
+const stamped = (m, had, at) => (m.period === 'once' ? had ?? at : later(had, at));
+
 /// The file's next body: the menu, each entry's `done_at` the later of what
-/// the file held and `stamps` — a stamp never moves an entry back.
+/// the file held and `stamps` — a stamp never moves an entry back (and never
+/// moves a one-time milestone at all).
 export function merged(doc, stamps, menu = MENU) {
   const held = Array.isArray(doc?.quests) ? doc.quests.filter((q) => q && typeof q === 'object') : [];
   const was = new Map(held.map((q) => [q.id, q]));
@@ -59,7 +79,7 @@ export function merged(doc, stamps, menu = MENU) {
     quests: [
       ...menu.map((m) => {
         const had = was.get(m.id)?.done_at ?? null;
-        return { ...m, due: true, done_at: m.id in stamps ? later(had, stamps[m.id]) : had };
+        return { ...m, due: true, done_at: m.id in stamps ? stamped(m, had, stamps[m.id]) : had };
       }),
       ...held.filter((q) => !mine.has(q.id)),
     ],
