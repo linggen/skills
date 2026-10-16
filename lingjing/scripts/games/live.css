@@ -565,3 +565,19 @@
     box-shadow: 0 0 0 1px rgba(110, 84, 46, .32), 0 0 0 5px rgba(205, 184, 145, .55), 0 0 0 6px rgba(110, 84, 46, .25), 0 18px 48px rgba(0, 0, 0, .38);
   }
 }
+/* 烙饼 · 一鏊子 (games/laobing.js, 2026-10-16): the painted 鏊子 on its paper; each bread a tap target
+   (its ring fills as the down side cooks, the golden stretch marked), the stove mouth takes wood. */
+.g-lb { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
+.g-lb .g-scene.g-lb-scene { width: min(100%, calc(min(60vh, 520px) * 360 / 340)); margin: 0 auto; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+.g-lb-head { width: 100%; display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; }
+.g-lb-marks b, .g-lb-clock b { font-size: 1.15em; margin: 0 2px; }
+.g-lb-marks i { font-style: normal; color: var(--dim); }
+.g-lb-clock.is-late b { color: var(--seal); }
+.g-lb-scene .g-lb-hit, .g-lb-scene .g-lb-mouth { fill: transparent; stroke: none; cursor: pointer; }
+.g-lb-scene .g-lb-zone { fill: none; stroke: #c98a2a; stroke-width: 5; opacity: .35; }
+.g-lb-scene .g-lb-ring { fill: none; stroke: #5b4c38; stroke-width: 2.4; stroke-linecap: round; opacity: .7; }
+.g-lb-scene .g-lb-ring.is-gold { stroke: #b8741a; stroke-width: 3.4; opacity: 1; }
+.g-lb-scene .g-lb-ring.is-burn { stroke: var(--seal); stroke-width: 3.4; opacity: 1; }
+.g-lb-scene .g-lb-steam { fill: none; stroke: #fff8e8; stroke-width: 2.2; stroke-linecap: round; }
+.g-lb-scene .g-lb-smoke { fill: none; stroke: #3a3128; stroke-width: 3; stroke-linecap: round; }
+.g-lb.is-hot .g-lb-clock { color: var(--seal); }

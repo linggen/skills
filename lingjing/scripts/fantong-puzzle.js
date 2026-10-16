@@ -1,10 +1,17 @@
-// fantong-puzzle.js — the 饭桶's feed as a 割绳子 puzzle, on the page (2026-10-16). The pouch pane
+// fantong-puzzle.js — the 饭桶's feed as a small game, on the page (2026-10-16): the 割绳子 puzzle, or on
+// its turn 烙饼 (the rules say which). The pouch pane
 // redraws its HTML whenever it changes, so a game living in it would die on every redraw: the puzzle
 // is mounted ONCE into a node of its own (games/fantongcut.js through the small-game contract) and
 // that node is laid into whatever host `[data-ft-puzzle]` the redraw made (beat-host.js's
 // way). The level is made from the rules' seed (the brief's `puzzle`) — ahead of time, while he is
 // still choosing — so the puzzle opens at once. The result goes back to the page: fed (with its
 // stars) or left. Nothing here knows the rules.
+
+// Which game the rules hand this feed (rules/fantong.mjs puzzleOf `game`): the 割绳子 puzzle needs its
+// level made ahead; another (烙饼, games/laobing.js) only its module.
+const GAMES = new Set(['fantongcut', 'laobing']);
+const gameOf = (p) => (GAMES.has(p?.game) ? p.game : 'fantongcut');
+const isRope = (p) => gameOf(p) === 'fantongcut';
 
 export function fantongPuzzle({ onDone, doc = globalThis.document }) {
   const made = new Map(); // seed → the generated level (rope-gen.js)
@@ -39,7 +46,7 @@ export function fantongPuzzle({ onDone, doc = globalThis.document }) {
     /** Make the next puzzle's level while he chooses (an idle moment after the brief is read). */
     prepare(fb) {
       const p = fb?.puzzle;
-      if (p && !made.has(p.seed)) setTimeout(() => { levelFor(p).catch(() => {}); }, 120);
+      if (p && isRope(p) && !made.has(p.seed)) setTimeout(() => { levelFor(p).catch(() => {}); }, 120);
     },
     /** Hang `item` ({ id, name, art }) for the brief's puzzle; settles through onDone(id, result). */
     async start(fb, item, { lang, reducedMotion }) {
@@ -47,10 +54,12 @@ export function fantongPuzzle({ onDone, doc = globalThis.document }) {
       const p = fb.puzzle, node = doc.createElement('div'), ctrl = new AbortController();
       node.className = 'g-mountnode';
       cur = { id: item.id, node, ctrl };
-      const [{ mount }, lv] = await Promise.all([import('./games/fantongcut.js'), levelFor(p)]);
+      const rope = isRope(p);
+      const [{ mount }, lv] = await Promise.all([import(`./games/${gameOf(p)}.js`), rope ? levelFor(p) : null]);
       if (cur?.node !== node) return;
-      const data = { level: structuredClone(lv.level), plan: lv.plan, item: { name: item.name, art: item.art }, must: p.must,
-        teach: p.teach ?? null, max_misses: p.max_misses };
+      const thing = { name: item.name, art: item.art };
+      const data = rope ? { level: structuredClone(lv.level), plan: lv.plan, item: thing, must: p.must, teach: p.teach ?? null, max_misses: p.max_misses }
+        : { item: thing };
       this.attach();
       const result = await mount(node, { data, lang, reducedMotion, seed: p.seed, signal: ctrl.signal, winHold: 500 });
       if (cur?.node === node) cur = null;
