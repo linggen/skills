@@ -167,7 +167,7 @@ function gradedHtml(d, r, w, ctx) {
   const offer = d.her && !r.her ? `<div class="acts"><button class="act quiet" data-duizi-her="offer">${esc(w.herOffer)}</button></div>` : '';
   return `${pairHtml(r.up, r.down, w)}<div class="dzmark${r.mark?.good ? ' good' : ''}">${esc(r.mark?.name ?? '')}</div>
     <div class="dzgrades">${grades}</div><div class="dzchecks">${duiziChecksHtml(r.form, w)}</div>
-    ${r.ref ? `<div class="small dim dzref">${esc(say(w.ref, { down: r.ref, src: r.src ?? '' }))}</div>` : ''}${r.paid ? `<div class="small">${esc(say(w.paid, { what: paidSay(r.paid) }))}</div>` : ''}
+    ${r.ref ? `<div class="small dim dzref">${esc(say(w.ref, { down: r.ref, src: r.src ?? '' }))}</div>` : ''}${r.paid ? `<div class="small dzpaid">${esc(say(w.paid, { what: paidSay(r.paid) }))}</div>` : ''}
     ${r.unlocked ? `<div class="small dzopen">${esc(say(w.unlocked, { name: r.unlocked }))}</div>` : ''}${her}${offer}`;
 }
 

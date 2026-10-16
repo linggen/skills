@@ -728,7 +728,7 @@ Rules: 60–90 s, one thumb, instant retry; three stars (stars set the reward, a
 fewer and better (keep five or six great ones in 卷一, cut the rest); local only, no LLM in the loop;
 physics from a small vendored MIT library (matter.js), no network.
 
-### AI mini-games 【已建 · first three】 (Hanli, 2026-10-15)
+### AI mini-games 【已建 · 二十问 · 讨价还价 · 断案 · 密室 · 对对子】 (Hanli, 2026-10-15/16)
 
 **The AI talks, plays roles and judges fuzzy things against a rubric; the rules decide outcomes
 and pay (capped).** Token cost counts in the daily routine: a few rounds a day, on a cheaper model.
@@ -742,7 +742,8 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
 | Later | 猜灯谜 | festivals, both ways |
 | Later | 银月的心事 | her questions → 恩仇簿; no win or loss |
 | Later | 斗嘴 | with 马小宝, judged by rubric |
-| Later | 论道 · 飞花令 · 对对子 | with the 稷下先生, 银月 joins |
+| **Built** | 对对子 | 卷一: 褚先生 at the 讲堂 after 古六, 一字 → 五言 (2026-10-16, below); 七言 and the 绝对 are the 稷下先生's, a later 卷 — a row of data |
+| Later | 论道 · 飞花令 | with the 稷下先生, 银月 joins |
 | Later | 说书接龙 | 吴婆婆讲古 |
 | Later | 下棋陪聊 | the engine moves, 银月/Ling talk |
 
@@ -761,6 +762,15 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
   周衡 witnesses) Ling plays from declared knows/hides; clues by asking (person × topic) or the
   card's look-around; 8 questions and 1 accusation a day; the card's 指认 is judged by ids
   (马小宝 + 巡夜簿 + one of 数 · 食盒 · 刀口); solved pays `task` and writes 阿禾 恩 · 马小宝 仇.
+
+**对对子, built 2026-10-16** (rules/duizi.mjs, scripts/couplet.js, aigames.json `duizi`, tones.json, guide `duizi`):
+- **Main:** 先生出上联 (《声律启蒙》, 《笠翁对韵》, a few Tang lines — each oriented so the 上联 ends 仄), he writes the 下联 on the card. A ladder 一字对 → 二字对 → 三字对 → 五言对; 3 good answers open the next rung. 3 paid rounds a day (a game's 体力 each).
+- **The rules check the form**, live as he types and again on submit: 字数; the 下联 ends 平 (新韵, tones 1–2 平; tones.json from pypinyin's dictionary by tools/tone-table.py — a polyphone or an unknown character is never failed); 不重位; 不抄字 (a rung's `allow`, particles free).
+- **Ling grades only the rubric** (tool Duizi, 0–2 each): 词性对仗 · 意思工整 · 意境/巧, the classic 下联 to judge by (never said before the grade; the card shows it after). The marks combine both: 工整 (≥5, form holds) · 对上了 (≥3, form holds) pay and count; 差一点 · 没对上 do not. A broken form never pays.
+- **Reverse:** he sets a 上联 (1–5), the teacher answers through Duizi `answer` (the rules check its form); 2 a day, no pay.
+- **银月**, awake only: one hint a round, her own 下联 (pet tool Couplet), checked, never scored. Asleep in the token, absent.
+- **Teachers and rungs are data** (`teachers` with `at` · `after` · `juan`): the 稷下先生 (七言, 绝对) is a row when his 卷 opens.
+- **Open question: English.** Couplets do not translate; in English there is no door (`zh-only`). An English counterpart (e.g. matching proverbs), or none, is Hanli's call.
 
 ## A day, 今日传闻, real-life chores 【已建】
 

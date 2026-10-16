@@ -16,6 +16,7 @@ Updated 2026-10-16.
 
 ## Done lately
 
+- 10-16 — 对对子 (`cb375ca3`): 褚先生 at the 讲堂 after 古六, 一字 → 五言 from 《声律启蒙》; form checked by the rules as he types (新韵 tones.json), Ling grades the rubric (Duizi), marks pay and open rungs; reverse unpaid; 银月's hint and 下联 only awake (Couplet); no door in English. Live on a scratch save: the card, two rounds and a reverse played; the grades came from the model (agent_run), fed in as Ling's Duizi call (a scratch save never messages Ling).
 - 10-16 — 开府 gains CFO's 开仓 · 在 CFO 的投资里添一支股票 (`7dd1b884`, `cfo-first-stock`): stamped when a holding is saved or when CFO loads with one held, only the fact; opens after 开天眼, before 借天火. Live: stamped on load, seen in a scratch save's 开府 list.
 - 10-16 — Pacing + economy (`9c42af47`, `9fbba840`): `worlds/jiuding/balance.json` holds every number (layers, pay, conversion, the day's fight bands, cooldowns); `tools/balance.mjs` plays light/typical/heavy day by day (typical ≈5–7 days a 回, 古六 ≈8; heavy ≈3–5; light ≈8–15); `--fit` sets 练气 [0,210,390,410,430,480,500,740,760,780]; 阶段任务 in every 回 past 古三 (rules/gates.mjs); story floor gone; pool + rerun wins 3 full / 3 half / then 灵石; rerun open through 00-zhuji; state v10.
 - 10-16 — 斗法 polish (`73222e12`, `2598747d`): ranks fit the field, hints on the seam, phone head one line, 攻/血 seals, end seal shows whose turn; a played card flies, the beast's 功法 shown, 气血 falls on the hit, 杀招 wind-up on the plate, the beaten plate goes to ink. Live at 1440 and 390.
@@ -46,7 +47,7 @@ Updated 2026-10-16.
 
 ## Not started
 
-- AI games, next batch: 猜灯谜, 银月的心事, 斗嘴, 论道 · 飞花令, 说书接龙, 下棋陪聊 (对对子 is being built 10-16).
+- AI games, next batch: 猜灯谜, 银月的心事, 斗嘴, 论道 · 飞花令, 说书接龙, 下棋陪聊.
 - After the first launch (Hanli 10-16, 「先把第一版上线, 后面再说」): 守鼎 tower defense (护山大阵 on the mountain path, towers from his deck, 五行 counters; prototype ≈ 2–4 h of agent time); a walkable top-down map (≈ a week+). New small games on proven mechanics (design.md § 新小游戏): 射鹿 as an 愤怒小鸟-style drag-and-arc shot (wind, lead), 顺风溜 as a forgiving 几何冲刺-style one-tap runner (古七). Not doing: a Battle City clone; a 说书人 narrating live fights (no LLM inside a fight's loop).
 - 卷二 opening re-plan.
 - Rebuild the bug list: the 10-15 list (items 1–55) was lost in the 10-16 reboot; a fresh playthrough finds them again.
@@ -54,6 +55,7 @@ Updated 2026-10-16.
 
 ## Waiting on Hanli
 
+- 对对子 (10-16): 对对子 in English (none now — an English counterpart or none?); 银月's own 下联 is a button (「银月也对一句」), not automatic after each grade — keep, or let her offer unasked (a turn each round); lundao's old 对对联 at 稷下 vs the future 稷下 rung of 对对子 — unify when 齐 is built.
 - Economy feel calls (10-16, `9c42af47`): the stage-quest gates sit at beat entries so he can walk away to earn them — 古四 the 柴房 night (not 第一路), 古五 the 秘境's door (not 息壤), 古六 the 大比's eve (wm-qianye), which makes 古六 ≈8 typical days. 古七's cap 六层 lets a grinder pass 定风/沂水 before the book (those rises become no-ops; 09-furnace's 「层不动」). The rerun kept open in 00-zhuji. Rerun beasts count in the day's fight bands. 闭关 not modelled (~40–60 修为 a night). Minutes, reading speed (450 字/min) and the three players are guesses — hand-play them. A rising ladder with 古七 holding two layers is why heavy 古五/古六 come in at ≈3–4.5 days. 古九 has no quest (九转 lands full).
 - Play the latest build 古一 → 古四 before the per-回 expansions and 卷二 (launch waits for his full playthrough).
 - 10-14 asks: 拽/忍 redraws; village-map lines; skip on the first six beats; 闵丹师 mark 07:179; 古三 box merge.
