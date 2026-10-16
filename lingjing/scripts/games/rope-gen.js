@@ -48,11 +48,13 @@ export function playPlan(level, plan, { late = 0, limit = LIMIT_MS } = {}) {
   while (t < limit) {
     if (i < plan.length && still >= CALM_MS + wait) {
       const m = plan[i++];
+      // A pop only of the bubble that holds the thing: a bubble never reached is no move at all.
       const ok = m.g === 'cut' ? cutVine(w, m.v, Math.floor(w.vines[m.v].joints.length / 2))
-        : m.g === 'gust' ? blowGust(w, level) : popBubble(w, m.i ?? 0);
+        : m.g === 'gust' ? blowGust(w, level) : w.bubbles[m.i ?? 0]?.state === 'held' && popBubble(w, m.i ?? 0);
       if (!ok) return { path, end: 'bad-move', moveAt: path.length };
       still = 0;
       if (i === 1) path.first = path.length;
+      path.last = path.length;
     }
     const ev = stepWorld(w, level);
     t += STEP;
@@ -69,9 +71,10 @@ export function playPlan(level, plan, { late = 0, limit = LIMIT_MS } = {}) {
   return { path, end: 'timeout', broke };
 }
 
-/** Where a path first comes down through the mouth's height, after the first move. */
+/** Where a path first comes down through the mouth's height after its LAST move — every move of
+    the plan matters (a puff or a pop after the thing is already in would be decoration). */
 function crossing(path) {
-  for (let k = Math.max(1, path.first ?? 1); k < path.length; k++) {
+  for (let k = Math.max(1, path.last ?? path.first ?? 1); k < path.length; k++) {
     const [x0, y0] = path[k - 1], [x1, y1] = path[k];
     if (y0 < MOUTH_Y && y1 >= MOUTH_Y && y1 > y0) return x0 + ((x1 - x0) * (MOUTH_Y - y0)) / (y1 - y0);
   }
@@ -201,6 +204,7 @@ export function attempt(u, opts) {
   const mouth = [round(pair ? (crossing(pair[0].path) + crossing(pair[1].path)) / 2 : crossing(main.path)), MOUTH_Y];
   const fedMain = fedAt(main.path, mouth);
   if (fedMain < 0) return { why: 'no-feed' };
+  if (fedMain < (main.path.last ?? 0)) return { why: 'in-before-the-last-move' };
   const others = runs.filter((r) => r !== main);
   const wins = (r) => !r.broke && fedAt(r.path, mouth) >= 0;
   const missing = others.filter((r) => !wins(r));
