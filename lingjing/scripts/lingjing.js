@@ -26,6 +26,7 @@ import { slotNext } from './stuck.js';
 import { pouchHtml } from './pouch.js';
 import { fantongHtml, wireFantongDrag } from './fantong-free.js';
 import { fantongPuzzle } from './fantong-puzzle.js';
+import { spentBoard } from './board-deal.js';
 import { esc } from './esc.js';
 import { revealCards } from './card-reveal.js';
 import { pickAfter, pickNow } from './danang.js';
@@ -184,11 +185,9 @@ function boardFor(taskId) {
     const mod = gameMod(task.game);
     if (!mod) return null;
     const day = new Date().toDateString(), old = boards.get(taskId);
-    // A board won and counted, asked for again by another errand the same
-    // day, is a new game — not the old one standing there 「你胜了」, never
-    // sent again (his 五子 at 桑间, 2026-09-24, after 漳南's was paid).
-    // Not while its own win is on its way (onWin's pause for the last line): that is not a new game.
-    const spent = old?.day === day && old.state?.won && old.sent && !old.winning && task.status === 'offered' && !task.won;
+    // A board won and counted, asked for again the same day, is a new game (board-deal.js) — never
+    // while its own win is on its way: onWin holds `winning` until Look has caught up.
+    const spent = spentBoard(old, task, day);
     if (!old || old.day !== day || spent) {
       const round = spent ? (old.round ?? 0) + 1 : 0;
       // A game that keeps only the mount() contract (beat-host.js) is dealt by its own mount, not here.
@@ -1742,11 +1741,16 @@ const winExit = (taskId, grade = null, left = false) => {
   const ways = (look?.scene?.exits ?? []).filter((e) => e.needs?.task === taskId && !e.stay && gradeFits(e, grade, left));
   return ways.length === 1 ? ways[0] : null;
 };
+/* `winning` holds until Look has caught up with the win (settleWin's refresh), not only through the
+   pause: in between Look still says the task is offered and unwon, and a draw would deal the won
+   board fresh for a moment (board-deal.js; live 2026-10-16, 算账's beat). */
 async function onWin(taskId) {
   // How it went, read off the board that was won — before the pause, while it is still that board.
   const won = boards.get(taskId), grade = won?.state?.grade ?? null;
   if (won) won.winning = true;
-  try { await pause(stillMotion() ? 1200 : WIN_LINE_MS); } finally { if (won) won.winning = false; }
+  try { await pause(stillMotion() ? 1200 : WIN_LINE_MS); return await settleWin(taskId, won, grade); } finally { if (won) won.winning = false; }
+}
+async function settleWin(taskId, won, grade) {
   // A board the scene stands on its stage is a story beat (the opening's 接雨, 射鹿 …), not a day's practice.
   const story = (look?.scene?.show ?? []).some((c) => c.card === 'board' && c.id === taskId);
   if (isTale(taskId)) return taleWon(taskId);

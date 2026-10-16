@@ -86,7 +86,7 @@ test('a board won: its last line is read first, then the scene\'s way on that wa
   assert.match(page, /async function onWin\(taskId\) \{[\s\S]{0,300}await pause\(stillMotion\(\) \? 1200 : WIN_LINE_MS\);/);
   // The grade is read off the won board before that pause: the board is not dealt again under it.
   assert.match(page, /const won = boards\.get\(taskId\), grade = won\?\.state\?\.grade \?\? null;\s*if \(won\) won\.winning = true;/);
-  assert.match(page, /&& !old\.winning &&/);
+  assert.match(fs.readFileSync(new URL('../scripts/board-deal.js', import.meta.url), 'utf8'), /&& !old\.winning &&/); // the deal rule (board-deal.js; its own test)
   assert.match(page, /const on = winExit\(taskId, grade\);[\s\S]{0,300}if \(on && !look\?\.tell_owed\) await panelTap\(on\.id/);
   // The grade goes with the win, and one way on is taken for him only when it is the only one (算账's two are his).
   assert.match(page, /write\('win', \{ id: taskId, \.\.\.\(grade \? \{ grade \} : \{\}\), \.\.\.\(Number\.isFinite\(stars\) \? \{ stars \} : \{\}\) \}\)/);
