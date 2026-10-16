@@ -705,7 +705,8 @@ function burstPicture(s) {
 function inkHit(a, x, y, t) {
   if (!a) return splash(x, y, t, { r: 30 }) + splash(x - 8, y + 4, t - 90, { r: 16 });
   if (t > 1100) return '';
-  const k = 0.55 + 0.65 * ease(t / 450), o = t < 650 ? 1 : 1 - (t - 650) / 450;
+  // Wash-strength, not a solid blot: it opens wide and soft over the painted coat, then fades.
+  const k = 0.7 + 0.9 * ease(t / 450), o = 0.72 * (t < 650 ? ease(t / 120) : 1 - (t - 650) / 450);
   return `<g transform="translate(${n(x)} ${n(y)}) scale(${n(k, 2)})">${sprite(a, o)}</g>`;
 }
 
