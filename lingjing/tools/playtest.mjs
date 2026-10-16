@@ -53,7 +53,7 @@ const OBSERVE = `(() => {
     const at = document.elementFromPoint(x, y); return { x, y, w: r.width, h: r.height, onScreen: r.bottom > 0 && r.top < H && r.right > 0 && r.left < W, covered: !(at && (at === e || e.contains(at) || at.contains(e))), by: at && at !== e && !e.contains(at) ? (at.className && String(at.className).slice(0, 40)) || at.tagName : null }; };
   const data = (e) => Object.fromEntries([...e.attributes].filter((a) => a.name.startsWith('data-')).map((a) => [a.name.slice(5), a.value]));
   const where = (e) => e.closest('#dlg') ? 'box' : e.closest('#focus') ? 'focus' : e.closest('#footRow') ? 'foot' : e.closest('#footChips') ? 'chips' : e.closest('#status, .topbar') ? 'head' : e.closest('#sight') ? 'sight' : e.closest('.lubook') ? 'book' : e.closest('#askbar') ? 'ask' : e.closest('#tray, .tray') ? 'tray' : 'page';
-  const taps = [...document.querySelectorAll('button, [role=button], [data-dlg-next], [data-titlecard], [data-g], [data-tile], [data-spot], a[href]')]
+  const taps = [...document.querySelectorAll('button, [role=button], [data-reveal], [data-dlg-next], [data-titlecard], [data-g], [data-tile], [data-spot], a[href]')]
     .filter(vis).map((e) => ({ tag: e.tagName.toLowerCase(), cls: String(e.className || '').slice(0, 60), text: (e.textContent || '').trim().replace(/\\s+/g, ' ').slice(0, 40), data: data(e), disabled: e.matches(':disabled') || e.getAttribute('aria-disabled') === 'true', where: where(e), game: e.closest('[data-game]')?.dataset.game ?? e.closest('[data-board]')?.dataset.board ?? null, ...hit(e) }));
   const box = document.querySelector('#dlg [data-dlg-next]');
   const status = document.getElementById('status')?.textContent.trim().replace(/\\s+/g, ' ') ?? '';
@@ -87,6 +87,8 @@ export function choose(snap, ctx) {
   const live = snap.taps.filter((t) => !t.disabled);
   const first = (pred) => live.find(pred) ?? null;
   // A seal on the stage (新的一回, a realm risen, 收服): it clears itself; a tap clears it sooner.
+  // 得牌's card holds over everything until a tap (card-reveal.js).
+  { const rv = first((t) => 'reveal' in t.data); if (rv) return { kind: 'reveal', tap: rv, why: '得牌' }; }
   if (snap.seal) return { kind: 'seal', at: { x: Math.round(snap.seal.x), y: Math.round(snap.seal.y) }, why: `the seal «${snap.seal.text}»` };
   if (snap.title) return { kind: 'title', at: { x: Math.round(snap.taps[0]?.x ?? 400), y: 300 }, why: 'the 回 title card' };
   // The story box's own choices at its last beat, then the stage's scene card: the scene's ways.
@@ -102,7 +104,7 @@ export function choose(snap, ctx) {
     if (next) return { kind: 'next', tap: next, why: 'the next sentence' };
   }
   // Moments the page plays: a tap puts them on.
-  for (const key of ['spoils-close', 'emerged-close', 'mem-next', 'mem-close', 'doors', 'homing', 'unfold', 'unroll', 'close-chapter', 'appear-done', 'appear'])
+  for (const key of ['reveal', 'spoils-close', 'emerged-close', 'mem-next', 'mem-close', 'doors', 'homing', 'unfold', 'unroll', 'close-chapter', 'appear-done', 'appear'])
     { const t = first((x) => isA(x, key)); if (t) return { kind: key, tap: t, why: key }; }
   // A game on the stage: the page's 「算了，往下走」 under it, or (games=play) its own buttons. The skip
   // stands only once the player is stuck (scripts/stuck.js, 2026-10-15) — the crawler opens that gate

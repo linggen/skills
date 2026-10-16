@@ -95,7 +95,11 @@ test('the page: the sight on the stage, no first-meet card for a face it showed,
   assert.ok(!cls.has('autofold'));
   assert.match(story, /\.shell\.autofold:not\(\.autoopen\) #chat-panel \{ display: none; \}/);
   // The test badge: small, a tab hanging from the top edge, taking no tap — never over the strip's controls, the footer, 跳过 or a pager's ›.
-  assert.match(src, /class="scratch-badge"[^`]*style="position:fixed;top:0;right:8px;[^"]*pointer-events:none"/, 'the test badge never over the top strip or the footer');
+  assert.match(src, /class="scratch-badge"[^`]*style="position:fixed;top:0;left:8px;[^"]*pointer-events:none"/, 'the test badge never over the top strip or the footer');
+  // 2026-10-16: at the top right the badge and the 游戏厅 chip under it covered 中/En at 1440 — both on the top-left row now
+  const arcade = fs.readFileSync(new URL('../scripts/dev-arcade.js', import.meta.url), 'utf8');
+  assert.match(arcade, /\.dev-arcade\{position:fixed;top:0;left:8px;/);
+  assert.match(arcade, /\.scratch-badge~\.dev-arcade\{top:0;left:var\(--after-badge,8px\)\}/, 'beside the badge, never under it');
 });
 
 test('a thing\'s first card is big enough to read: its picture large, every line whole (2026-10-14: 狐纹木牌); a face\'s stays a row', () => {

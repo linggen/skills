@@ -65,7 +65,7 @@ const readSave = (name, dir = HOME) => { try { return fs.readFileSync(path.join(
 /* Clear what stands before the stage: the 回's title card, a seal, the story box (跳过, else the next line), 开局. */
 const CLEAR = `(() => {
   const vis = (e) => e && e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden' && !e.closest('[hidden]');
-  for (const sel of ['[data-titlecard]', '.feat', '.wonseal', '[data-dlg-speed="skip"]:not(.on)', '[data-dlg-next]', '[data-spoils-close]', '[data-emerged-close]', '[data-close-chapter]', '[data-appear-done]', '[data-play]']) {
+  for (const sel of ['[data-reveal]', '[data-titlecard]', '.feat', '.wonseal', '[data-dlg-speed="skip"]:not(.on)', '[data-dlg-next]', '[data-spoils-close]', '[data-emerged-close]', '[data-close-chapter]', '[data-appear-done]', '[data-play]']) {
     const el = [...document.querySelectorAll(sel)].find(vis);
     if (el) { const r = el.getBoundingClientRect(); return { sel, x: r.left + r.width / 2, y: r.top + r.height / 2 }; }
   }

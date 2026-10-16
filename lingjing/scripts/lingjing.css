@@ -1039,6 +1039,9 @@ body .card.codexwrap .codexcard[data-kind="人物"] .cpic img { height: min(40vh
 body .card.codexwrap .codexcard:not([data-kind="人物"]) .cpic img { max-height: min(36vh, 300px); }
 .panelcard .paneltaps { margin-top: 10px; flex-wrap: wrap; }
 .panelcard .paneltap.busy { opacity: .6; }
+/* A choice in flight: the others go quiet at once and the tapped one stays pressed — nothing looks live that is not (2026-10-16). */
+.paneltap:disabled:not(.busy), .quietnext:disabled:not(.busy) { opacity: .4; cursor: default; transition: opacity .12s; }
+.paneltap.busy, .quietnext.busy { opacity: .75; transform: translateY(1px); cursor: progress; }
 /* 看 — a scene's hotspots: small chips; what was found, one line each under the card. */
 .panelcard .looks { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 10px 4px 0; }
 .panelcard .lookhead { font-family: var(--serif); font-size: 13px; color: var(--dim); margin-right: 2px; }
@@ -1322,3 +1325,9 @@ body.fighting .atmos { display: none; }
   opacity: .6; -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 70%); mask-image: linear-gradient(180deg, transparent 0, #000 70%); }
 .view.jin-ward .backdrop { background: linear-gradient(180deg, transparent 70%, var(--jin-line) 70.3%, transparent 70.8%, transparent 78%, var(--jin-line) 78.3%, transparent 78.8%); }
 .view.jin-night .backdrop { background: radial-gradient(30% 22% at 76% 86%, color-mix(in srgb, #E8C46A 16%, transparent), transparent 70%); }
+
+/* A scene with no way on yet but what is to be looked at (黑松岭 waits on 石上的痕迹): the chips not yet
+   looked at breathe, a while after the stage settles (cards.js lookHtml `beckon`, 2026-10-16). */
+.lookchip.beckon { animation: lookBeckon 2.6s ease-in-out 1.5s infinite; }
+@keyframes lookBeckon { 0%, 100% { box-shadow: 0 0 0 0 rgba(227, 192, 126, 0); } 50% { box-shadow: 0 0 0 3px rgba(227, 192, 126, .45); } }
+@media (prefers-reduced-motion: reduce) { .lookchip.beckon { animation: none; box-shadow: 0 0 0 2px rgba(227, 192, 126, .45); } }

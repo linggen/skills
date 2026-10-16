@@ -1500,7 +1500,7 @@ export function panelActsHtml(ctx, { inBox = false } = {}) {
   const quiet = !errands && !inBox && (p.taps ?? []).length === 1 && p.taps[0].quiet;
   // 「也可以直接说你想怎么做」 — now and then, where the scene waits on a real choice (rules: `invite`).
   const invite = p.invite ? `<div class="sceneinvite">${esc(w.invite)}</div>` : '';
-  const looks = lookHtml(ctx.look.scene, ctx.lookBusy ?? null, w);
+  const looks = lookHtml(ctx.look.scene, ctx.lookBusy ?? null, w, { beckon: !taps && !playing });
   const note = saidHtml(ctx) + (ctx.panelNote ? `<div class="donote">${esc(ctx.panelNote)}</div>` : '');
   if (!taps && !looks && !note) return '';
   const row = taps ? `<div class="acts paneltaps${quiet ? ' quiet' : ''}">${taps}</div>` : '';
@@ -1548,10 +1548,12 @@ function riddleTapHtml(t, ex, busy, w, lang = 'zh') {
 /// 看 — the scene's hotspots (rules/examine.mjs): small chips; a tap looks, free,
 /// and what was found stands under the card, one line each.
 /// The hint comes when the player looked twice without the key (`look_hint`).
-export function lookHtml(scene, busy, w) {
+/// `beckon`: the scene shows no way on yet (it waits on a clue, 黑松岭's 石上的痕迹): the chips not yet
+/// looked at breathe, quietly, so a stage with only them on it never reads as stuck (2026-10-16).
+export function lookHtml(scene, busy, w, { beckon = false } = {}) {
   const spots = scene?.look ?? [];
   if (!spots.length) return '';
-  const chips = spots.map((h) => `<button class="lookchip${h.found ? ' found' : ''}${busy === h.id ? ' busy' : ''}" data-look-at="${esc(h.id)}" aria-label="${esc(say(w.lookAt, { label: h.label }))}"${h.found || busy ? ' disabled' : ''}>${esc(h.label)}</button>`).join('');
+  const chips = spots.map((h) => `<button class="lookchip${h.found ? ' found' : ''}${beckon && !h.found ? ' beckon' : ''}${busy === h.id ? ' busy' : ''}" data-look-at="${esc(h.id)}" aria-label="${esc(say(w.lookAt, { label: h.label }))}"${h.found || busy ? ' disabled' : ''}>${esc(h.label)}</button>`).join('');
   const found = spots.filter((h) => h.found).map((h) => `<li${h.clue ? ' class="clue"' : ''}><b>${esc(h.label)}</b>${esc(h.text)}</li>`).join('');
   return `<div class="looks"><span class="lookhead" aria-hidden="true">${esc(w.lookHead)}</span>${chips}</div>`
     + (found ? `<ul class="lookfound">${found}</ul>` : '')

@@ -423,6 +423,8 @@ body.fighting .sight { display: none; }
   font-family: var(--serif); font-size: 16px; letter-spacing: .3em; box-shadow: 0 6px 24px rgba(0, 0, 0, .18); }
 .closecard .closeshut:hover { border-color: var(--ling); transform: translateY(-1px); }
 @container scene (max-width: 640px) { .focus .card.closecard { padding: 26px 18px 22px; } }
+/* The next 回's line on one line at a phone's width (2026-10-16, 390: 「…抵旧」 / 「债」): narrower spacing, a size the stage's width sets. */
+@container scene (max-width: 640px) { .focus .card.closecard .closecoming { white-space: nowrap; max-width: 100%; padding: 3px 10px; letter-spacing: .04em; font-size: min(13px, 3.1cqi); } }
 
 /* The page's own fold (sight.js setAutoFold): games, the map and a fight take the width;
    the handle opens the chat for that game alone (`autoopen`). Story pages keep it open. */

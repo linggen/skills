@@ -7,25 +7,22 @@
 
 import { esc } from './esc.js';
 
-/* The beats of one card, in ms: rise in, hold, fly to the bag. A tap during
-   the rise or the hold cuts to the fly; reduced motion is a still hold. */
-export const REVEAL_MS = { rise: 520, hold: 1900, fly: 620, gap: 140 };
-export const STILL_MS = 1400;
+/* The beats of one card, in ms: rise in, then hold — until he taps, as its 「轻点继续」 says (2026-10-16:
+   it flew off by itself after 2.4 s, under a hint that said to tap) — then fly to the bag. A tap during
+   the rise cuts straight to the flight; reduced motion is a still hold that fades out on the tap. */
+export const REVEAL_MS = { rise: 520, fly: 620, gap: 140, fade: 200 };
 
-/// The timeline of one card from its start: when each beat begins and when it
-/// is over. `still` (reduced motion) has no rise and no fly.
+/// The timeline of one card from its start: when each beat begins. It holds until the tap (`tapped`).
 export function revealPlan({ still = false, ms = REVEAL_MS } = {}) {
-  if (still) return { rise: 0, hold: 0, fly: STILL_MS, end: STILL_MS, still: true };
-  const hold = ms.rise, fly = hold + ms.hold, end = fly + ms.fly;
-  return { rise: 0, hold, fly, end, still: false };
+  if (still) return { rise: 0, hold: 0, flight: ms.fade, still: true };
+  return { rise: 0, hold: ms.rise, flight: ms.fly, still: false };
 }
 
-/// Where a card stands at `t` ms (or after a tap at `tapped`): the beat it is in.
+/// Where a card stands at `t` ms, tapped at `tapped` (null: not yet): the beat it is in.
 export function revealBeat(plan, t, tapped = null) {
-  const flyAt = tapped != null && tapped < plan.fly ? tapped : plan.fly;
-  if (t >= flyAt + (plan.end - plan.fly)) return 'done';
-  if (t >= flyAt) return plan.still ? 'hold' : 'fly';
-  return t >= plan.hold ? 'hold' : 'rise';
+  if (tapped == null || t < tapped) return plan.still || t >= plan.hold ? 'hold' : 'rise';
+  if (t >= tapped + plan.flight) return 'done';
+  return plan.still ? 'hold' : 'fly';
 }
 
 const ELEMENT_WORD = {
@@ -76,6 +73,7 @@ function playOne(host, card, opts) {
   const veil = document.createElement('div');
   veil.className = `rv-veil${still ? ' still' : ''}`;
   veil.setAttribute('role', 'dialog');
+  veil.dataset.reveal = card.id ?? '';
   veil.setAttribute('aria-label', `${(WORDS[opts.lang] ?? WORDS.zh).got} ${nameOf(card.name, opts.lang)}`);
   veil.innerHTML = revealHtml(card, { ...opts, line: card.line ?? opts.line ?? '' });
   host.appendChild(veil);
@@ -90,15 +88,13 @@ function playOne(host, card, opts) {
     const fly = () => {
       if (flown) return;
       flown = true;
-      clearTimeout(timer);
-      if (still) { veil.classList.add('out'); setTimeout(land, 200); return; }
+      if (still) { veil.classList.add('out'); setTimeout(land, REVEAL_MS.fade); return; }
       const cardEl = veil.querySelector('.rv-card');
       cardEl.style.setProperty('--fly', flyTo(cardEl, opts.target));
       veil.classList.add('fly');
       setTimeout(land, REVEAL_MS.fly);
     };
-    const timer = setTimeout(fly, plan.fly);
-    // A tap hurries it on: during the rise or the hold, straight to the flight.
+    // It waits for his tap (its hint says so): during the rise or the hold, straight to the flight.
     veil.addEventListener('pointerdown', fly);
     veil.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') fly(); });
     veil.tabIndex = 0;
