@@ -34,7 +34,7 @@ export const meta = {
 
 export const W = 480, H = 300;
 export const STEP_MS = 1000 / 60;
-export const BOW = [424, 178]; // his hand on the near bank: the bow is held up, half-kneeling
+export const BOW = [424, 164]; // his hand on the near bank, held up out of the grass
 export const MAX_PULL = 120, MIN_POWER = 0.12, MIN_V = 3, MAX_V = 7.2;
 export const QUIVER = 4, STUCK_MISSES = 3;
 const GRAVITY = 0.36, WIND_ACC = 0.02, ARROW_HALF = 13, TRAIL_EVERY = 3;
@@ -45,7 +45,8 @@ const T = {
   zh: {
     level: '第 {i} / {n} 处', arrows: '箭', wind: ['无风', '微风', '有风', '大风'], face: ' · 迎面', back: ' · 顺风',
     clean: '中了。一团墨花绽开——鹿一跃而起，没进了芦苇深处。',
-    graze: ['擦着了。鹿一惊，一溜烟跑了——过了好一会儿，才又回到溪边。', '没中要害。鹿受了惊，蹦开去，又慢慢回来了。'],
+    body: '中了，偏了些，没中要害。鹿一惊，一跃没进了芦苇。',
+    graze: ['擦着鹿角飞过去了。鹿一惊，一溜烟跑了——过了好一会儿，才又回到溪边。', '箭擦过它的头。鹿受了惊，蹦开去，又慢慢回来了。'],
     short: '箭扎进了草里。', long: '箭飞过了头，落进了溪里。', turned: '箭碰着了，打着转掉下来。',
     alert: '鹿抬起头，竖着耳朵听了一会儿——又低下头去。',
     snap: '芦苇应声折断。',
@@ -59,7 +60,8 @@ const T = {
   en: {
     level: 'Spot {i} of {n}', arrows: 'Arrows', wind: ['No wind', 'A breath', 'Wind', 'Strong wind'], face: ' · in your face', back: ' · at your back',
     clean: 'A hit. A bloom of ink — the deer leaps and is gone deep into the reeds.',
-    graze: ['A graze. The deer startles and bolts — and only after a long while comes back to the stream.', 'Not the heart. The deer shies away, then creeps back.'],
+    body: 'A hit, but off the heart. The deer starts and is gone into the reeds.',
+    graze: ['It skims the antlers. The deer startles and bolts — and only after a long while comes back to the stream.', 'It brushes past its head. The deer shies away, then creeps back.'],
     short: 'The arrow sticks in the grass.', long: 'Over its back — the arrow drops into the stream.', turned: 'It strikes something and tumbles down.',
     alert: 'The deer lifts its head, listens — and drinks again.',
     snap: 'A reed snaps.',
@@ -124,23 +126,24 @@ export const DEER_S = 1.8; // the deer's size on the bank, ~155 of 480 (its zone
 // Fitted to the painted stag (art/games/deer, 2026-10-16; one canvas unit = 0.18 deer units): the
 // heart low behind the foreleg, the barrel, the head down at the water or up, and the antlers —
 // a great crown above the head (a graze, like the barrel and the neck).
-const HEART = [13, -28], HEART_R = 12, PIERCE = 18, BODY = [0, -34, 25, 12];
+const HEART = [13, -28], HEART_R = 15, PIERCE = 18, BODY = [0, -34, 25, 12];
 const DOWN = [44, -12], UP = [33, -47];
 const ANTLER_DOWN = [-4, -36], ANTLER_UP = [-15, -16];
 /** The head between drinking (0) and up (1). */
 const headOf = (lift) => [DOWN[0] + (UP[0] - DOWN[0]) * lift, DOWN[1] + (UP[1] - DOWN[1]) * lift];
 const ANTLER_R = 18;
 
-/** What the arrow's point, from `a` to `b` (world), touched on the deer: 'clean', 'graze' or null. */
+/** What the arrow's point, from `a` to `b` (world), touched on the deer: 'clean' (the heart),
+    'body' (the barrel or the neck: a hit, off the heart), 'graze' (head, antlers) or null. */
 export function deerHit(level, ms, a, b) {
   const d = deerAt(level, ms), gy = groundAt(d.x);
   const local = ([x, y]) => [((x - d.x) * d.face) / DEER_S, (y - gy) / DEER_S];
   const [p, q] = [local(a), local(b)];
   const head = headOf(d.lift), lerp = (a, b) => a + (b - a) * d.lift;
   const antler = [head[0] + lerp(ANTLER_DOWN[0], ANTLER_UP[0]), head[1] + lerp(ANTLER_DOWN[1], ANTLER_UP[1])];
-  if (segEllipse(p, q, BODY)) return pierces(p, q) ? 'clean' : 'graze';
-  const grazed = segCircle(p, q, head, 8) || segCircle(p, q, antler, ANTLER_R) || segSeg(p, q, [20, -38], head, 6);
-  return grazed ? 'graze' : null;
+  if (segEllipse(p, q, BODY)) return pierces(p, q) ? 'clean' : 'body';
+  if (segSeg(p, q, [20, -38], head, 6)) return 'body'; // the neck: a hit, off the heart
+  return segCircle(p, q, head, 8) || segCircle(p, q, antler, ANTLER_R) ? 'graze' : null;
 }
 
 /** Into the body: the arrow's point carried on PIERCE along its way — does it reach the heart? */
@@ -374,17 +377,21 @@ export function act(state, data = {}) {
 function flying(s) {
   const level = levelOf(s), ev = stepWorld(s.world, level, s.clock), ar = s.world.arrow;
   const hit = ar.true ? deerHit(level, s.clock, ar.prev, ar.tip) : null;
-  if (hit) return hit === 'clean' ? clean(s) : graze(s);
+  if (hit) return hit === 'graze' ? graze(s) : clean(s, hit === 'body');
   if (ev === 'snap') return { ...s, said: 'snap', saidAt: s.clock };
   if (ev === 'turned') return { ...s, said: 'turned', saidAt: s.clock };
   return ev ? land(s, ev) : s;
 }
 
-function clean(s) {
+/** Stars for the level's hit: by arrows used (one 3, two 2, more 1), a star fewer off the heart. */
+export const starsForHit = (used, offHeart = false) => Math.max(1, starsFor(used) - (offHeart ? 1 : 0));
+
+/** A hit: the heart (`offHeart` false) or the body — either way the deer is off and the level done. */
+function clean(s, offHeart = false) {
   const ar = s.world.arrow;
   ar.done = true;
-  const best = s.best.map((b, i) => (i === s.li ? Math.max(b, starsFor(s.used)) : b));
-  return { ...s, phase: 'hit', t: 0, best, at: ar.tip, deerGone: deerAt(levelOf(s), s.clock), trail: ar.path, said: 'clean' };
+  const best = s.best.map((b, i) => (i === s.li ? Math.max(b, starsForHit(s.used, offHeart)) : b));
+  return { ...s, phase: 'hit', t: 0, best, at: ar.tip, deerGone: deerAt(levelOf(s), s.clock), trail: ar.path, said: offHeart ? 'body' : 'clean', offHeart };
 }
 
 function graze(s) {
@@ -473,6 +480,7 @@ function bankPicture(s) {
   return `<defs>${clip('bank', bankD())}${clip('water', WATER_D)}<linearGradient id="${id}-wash" x1="0" y1="0" x2="0" y2="1">`
     + '<stop offset="0" stop-color="#f4ecdc" stop-opacity=".55"/><stop offset=".7" stop-color="#f4ecdc" stop-opacity=".25"/><stop offset="1" stop-color="#f4ecdc" stop-opacity="0"/></linearGradient></defs>'
     + cropped(a.backdrop, 0, 0, W, H, 'g-da-backdrop') + `<rect class="g-da-wash" width="${W}" height="${H}" style="fill:url(#${id}-wash)"/>`
+    + localWash(a.backdrop.wash, id)
     + (a.bank ? `<g clip-path="url(#${id}-bank)">${cropped(a.bank, 0, BANK - 30, W, H - BANK + 30, 'g-da-bankart')}</g>` : '')
     + (a.water ? `<g clip-path="url(#${id}-water)">${cropped(a.water, 0, WATER[0][1] - 10, 330, H - WATER[0][1] + 10, 'g-da-waterart')}</g>` : '');
 }
@@ -482,6 +490,19 @@ function inkBank() {
   return `<path class="g-da-hill" d="M0 160 C90 130 170 150 260 120 C330 100 400 128 ${W} 112 V${H} H0Z"/>`
     + `<path class="g-da-ground" d="${bankD()}"/><path class="g-line g-thin g-faint" d="M${groundPts().join(' L')}"/>`
     + `<path class="g-da-water" d="${WATER_D}"/>${ripples}`;
+}
+
+/** Paper laid lightly where the play must read (Hanli 10-16: 「背景导致看不清弓和轨迹」 — 「但是更好看了」,
+    so only there): `archer` {at, r: [rx, ry], o} a feathered round of paper behind the bow, `path`
+    {y: [top, bottom], o} a feathered band where the arrows fly. Both from games.json. */
+function localWash(w, id) {
+  if (!w) return '';
+  const fade = (gid, o, radial) => `<${radial ? 'radialGradient' : 'linearGradient x1="0" y1="0" x2="0" y2="1"'} id="${id}-${gid}">`
+    + (radial ? `<stop offset="0" stop-color="#f6efe0" stop-opacity="${o}"/><stop offset=".55" stop-color="#f6efe0" stop-opacity="${n(o * 0.7, 2)}"/><stop offset="1" stop-color="#f6efe0" stop-opacity="0"/></radialGradient>`
+      : `<stop offset="0" stop-color="#f6efe0" stop-opacity="0"/><stop offset=".5" stop-color="#f6efe0" stop-opacity="${o}"/><stop offset="1" stop-color="#f6efe0" stop-opacity="0"/></linearGradient>`);
+  const band = w.path ? `<rect class="g-da-wash" x="0" y="${w.path.y[0]}" width="${W}" height="${w.path.y[1] - w.path.y[0]}" style="fill:url(#${id}-path)"/>` : '';
+  const round = w.archer ? `<ellipse class="g-da-wash" cx="${w.archer.at[0]}" cy="${w.archer.at[1]}" rx="${w.archer.r[0]}" ry="${w.archer.r[1]}" style="fill:url(#${id}-archer)"/>` : '';
+  return `<defs>${w.path ? fade('path', w.path.o, false) : ''}${w.archer ? fade('archer', w.archer.o, true) : ''}</defs>${band}${round}`;
 }
 
 /** A part of a painting (`crop` [x, y, w, h] in its pixels, of `size` [w, h]) filling a box. */
@@ -630,7 +651,7 @@ function bowPicture(s) {
 function paintedBow(art, p) {
   const drawn = art.bow_drawn && p >= 0.12 ? art.bow_drawn : null, a = drawn ?? art.bow_rest ?? art.bow_drawn;
   const stretch = drawn ? 0.62 + 0.38 * Math.min(1, p) : 1;
-  const halo = `<ellipse class="g-da-halo" cx="${n(-a.w * 0.2)}" cy="0" rx="${n(Math.max(26, a.w * 0.75))}" ry="${n(a.h * 0.55)}"/>`;
+  const halo = `<ellipse class="g-da-halo" cx="${n(-a.w * 0.2)}" cy="0" rx="${n(Math.max(30, a.w * 0.8))}" ry="${n(a.h * 0.6)}"/>`;
   return `${halo}<g transform="scale(${n(stretch, 3)} 1)">${sprite(a, 1)}</g>`;
 }
 
@@ -647,7 +668,8 @@ function arrowShape(art, cx = 0, spent = false) {
 function guidePicture(s) {
   if (s.phase !== 'aim' || !s.pull || s.pull.p < MIN_POWER || s.used > 0 || s.trail) return '';
   const v = velocityOf(s.pull), g = GRAVITY * 0.001 * STEP_MS * STEP_MS, dots = [];
-  for (let k = 4; k <= 40; k += 4) dots.push(`<circle class="g-da-guide" cx="${n(BOW[0] + v.x * k)}" cy="${n(BOW[1] + v.y * k + 0.5 * g * k * k)}" r="${n(2.4 - k / 22)}"/>`);
+  const r0 = s.art?.marks?.dot ?? 2.4;
+  for (let k = 4; k <= 40; k += 4) dots.push(`<circle class="g-da-guide" cx="${n(BOW[0] + v.x * k)}" cy="${n(BOW[1] + v.y * k + 0.5 * g * k * k)}" r="${n(r0 * (1 - k / 80))}"/>`);
   return dots.join('');
 }
 
@@ -658,8 +680,13 @@ function spentPicture(s) {
   return stuck + bits;
 }
 
+/** The last arrow's path: a bold ink stroke on a paper rim (`marks.trail` its width), or ink dots. */
 function trailPicture(s) {
-  return (s.trail ?? []).map(([x, y], i) => (i % 2 ? '' : `<circle class="g-da-trail" cx="${x}" cy="${y}" r="1.6"/>`)).join('');
+  const t = s.trail ?? [], w = s.art?.marks?.trail;
+  if (!w) return t.map(([x, y], i) => (i % 2 ? '' : `<circle class="g-da-trail" cx="${x}" cy="${y}" r="1.6"/>`)).join('');
+  if (t.length < 2) return '';
+  const d = `M${t.map(([x, y]) => `${x} ${y}`).join(' L')}`;
+  return `<path class="g-da-trail-rim" d="${d}" style="stroke-width:${n(w + 2.4)}"/><path class="g-da-trail-ink" d="${d}" style="stroke-width:${w}"/>`;
 }
 
 function arrowPicture(s) {
@@ -679,6 +706,20 @@ function hintPicture(level, s) {
 /** The look-up after an arrow lands near: eased up and back down, 0 … 1. */
 const alerted = (s) => (s.alertAt == null ? 0 : swell(s.clock - s.alertAt, ALERT_MS));
 
+/** The hit zones over the deer, for checking them against the painting — only on a test page
+    with ?dev=1&zones=1 (the 游戏厅, the try page): the heart red, the body (a hit) blue, the head
+    and antlers (a graze) green. */
+const showZones = () => /[?&]dev=1\b/.test(globalThis.location?.search ?? '') && /[?&]zones=1\b/.test(globalThis.location?.search ?? '');
+export function zonesPicture(level, s, force = false) {
+  if (!(force || showZones()) || !['aim', 'fly'].includes(s.phase)) return '';
+  const d = deerAt(level, s.clock), head = headOf(d.lift), lerp = (a, b) => a + (b - a) * d.lift;
+  const antler = [head[0] + lerp(ANTLER_DOWN[0], ANTLER_UP[0]), head[1] + lerp(ANTLER_DOWN[1], ANTLER_UP[1])];
+  return `<g class="g-da-zones" transform="translate(${n(d.x)} ${n(groundAt(d.x))}) scale(${n(d.face * DEER_S, 2)} ${DEER_S})">`
+    + `<ellipse class="is-body" cx="${BODY[0]}" cy="${BODY[1]}" rx="${BODY[2]}" ry="${BODY[3]}"/><path class="is-body" d="M20 -38 L${n(head[0])} ${n(head[1])}"/>`
+    + `<circle class="is-heart" cx="${HEART[0]}" cy="${HEART[1]}" r="${HEART_R}"/>`
+    + `<circle class="is-graze" cx="${n(head[0])}" cy="${n(head[1])}" r="8"/><circle class="is-graze" cx="${n(antler[0])}" cy="${n(antler[1])}" r="${ANTLER_R}"/></g>`;
+}
+
 function deerNow(level, s) {
   if (['hit', 'spook'].includes(s.phase)) {
     // A beat of stillness (the burst), then the bound away; reduced motion: simply gone.
@@ -693,7 +734,7 @@ function burstPicture(s) {
   if (!['hit', 'spook'].includes(s.phase) || !s.at) return '';
   const [x, y] = s.at;
   if (s.phase === 'spook') return calm(s) ? '' : splash(x, y, s.t, { r: 8 });
-  const stars = starsPicture(x, y - 34, starsFor(s.used), calm(s) ? 1 : s.t);
+  const stars = starsPicture(x, y - 34, starsForHit(s.used, s.offHeart), calm(s) ? 1 : s.t);
   if (calm(s)) return `<circle class="g-da-burst" cx="${n(x)}" cy="${n(y)}" r="14"/>${stars}`;
   // A big bloom of ink, a second one a beat behind, a ring going out — and the stars.
   const ring = s.t < 600 ? `<circle class="g-da-ring" cx="${n(x)}" cy="${n(y)}" r="${n(10 + s.t / 12)}" opacity="${n(1 - s.t / 600, 2)}"/>` : '';
@@ -730,7 +771,7 @@ function playScene(s) {
   const level = levelOf(s);
   const drag = `<rect class="g-da-pad" x="0" y="0" width="${W}" height="${H}" data-g-drag="bow"/>`;
   return scene(W, H, `<g class="g-da-world"${settle(s)}>${bankPicture(s) + windPicture(level, s) + trailPicture(s) + hintPicture(level, s) + spentPicture(s)
-    + deerNow(level, s) + s.world.things.map((x) => thingPicture(x, s)).join('') + burstPicture(s) + bowPicture(s) + guidePicture(s)
+    + deerNow(level, s) + zonesPicture(level, s) + s.world.things.map((x) => thingPicture(x, s)).join('') + burstPicture(s) + bowPicture(s) + guidePicture(s)
     + arrowPicture(s)}</g>${drag}`, 'g-da-scene').replace('<svg ', `<svg data-arc="${esc(s.seed)}" `);
 }
 
@@ -751,7 +792,7 @@ function head(s, t) {
 
 function lineOf(s, t, lang) {
   const level = levelOf(s);
-  const said = { clean: t.clean, graze: t.graze[(s.grazes ?? 1) % t.graze.length], short: t.short, long: t.long, turned: t.turned, snap: t.snap, gone: t.gone };
+  const said = { clean: t.clean, body: t.body, graze: t.graze[(s.grazes ?? 1) % t.graze.length], short: t.short, long: t.long, turned: t.turned, snap: t.snap, gone: t.gone };
   if (s.phase === 'clear') return `${t.clear}${starRow(s.best[s.li], true)}`;
   if (s.phase === 'aim' && s.pull) return s.pull.p >= 0.98 ? t.full : t.pull;
   // A miss where she hints it: her 「往左偏半寸」 right after; else the deer's look-up if it was near.
@@ -822,7 +863,9 @@ export async function presentArt(art, has) {
   if (!art) return null;
   const keys = Object.keys(art).filter((k) => !k.startsWith('_') && art[k]?.file);
   const ok = await Promise.all(keys.map((k) => has(art[k].file)));
-  return Object.fromEntries(keys.filter((_, i) => ok[i]).map((k) => [k, art[k]]));
+  // Settings without a file (`marks`) always stay.
+  const settings = Object.keys(art).filter((k) => !k.startsWith('_') && art[k] && !art[k].file);
+  return Object.fromEntries([...keys.filter((_, i) => ok[i]), ...settings].map((k) => [k, art[k]]));
 }
 const onServer = async (file) => {
   try { return (await fetch(artUrl(file), { method: 'HEAD' })).ok; } catch { return false; }

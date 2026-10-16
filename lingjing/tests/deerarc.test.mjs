@@ -87,10 +87,56 @@ test('a graze spooks the deer: it bolts and comes back, the arrow is spent, the 
   assert.ok(aim);
   let { s } = shot(still, aim);
   assert.equal(s.phase, 'spook');
-  assert.match(da.html(s, 'zh'), /擦着了|没中要害/);
+  assert.match(da.html(s, 'zh'), /鹿角|头/);
   for (let i = 0; i < 60; i++) s = da.tick(s, 50);
   assert.equal(s.phase, 'aim', 'back at the stream');
   assert.equal(s.used, 1, 'the graze cost its arrow');
+});
+
+// Hanli 10-16 「射中了也没完成游戏」: he hit the deer's body, it counted as a graze, he never left 静.
+test('a hit on the body clears the level too (a star fewer); 往下 goes on to 风, and the header shows the wind', () => {
+  const still = byId('still'), aim = find(still, (f) => f.hit === 'body');
+  assert.ok(aim, 'a body hit exists');
+  let s = da.newGame('t', 1, { levels: LEVELS });
+  s = da.act(da.act(s, { g: 'draw', ...aim }).state, { g: 'loose' }).state;
+  for (let i = 0; i < 400 && s.phase === 'fly'; i++) s = da.tick(s, 10);
+  assert.equal(s.phase, 'hit');
+  assert.match(da.html(s, 'zh'), /中了，偏了些/);
+  for (let i = 0; i < 100 && s.phase === 'hit'; i++) s = da.tick(s, 50);
+  assert.equal(s.phase, 'clear');
+  assert.equal(s.best[0], 2, 'one arrow off the heart: two stars');
+  s = da.act(s, { g: 'next' }).state;
+  assert.equal(s.li, 1);
+  assert.match(da.html(s, 'zh'), /迎面/, 'the wind is in the header');
+});
+
+/* The painted stag (stag-drink, the canvas the art agent drew): its barrel in canvas pixels. */
+const BARREL_PX = [130, 175, 380, 280];
+function paintedBox(level, art) {
+  const a = art.drink, d = da.deerAt(level, 0), k = da.DEER_S, gy = da.groundAt(d.x);
+  const toScene = ([px, py]) => [d.x + d.face * k * ((px / 640 - a.at[0]) * a.w), gy + k * ((py / 480 - a.at[1]) * a.h)];
+  const [p, q] = [toScene([BARREL_PX[0], BARREL_PX[1]]), toScene([BARREL_PX[2], BARREL_PX[3]])];
+  return [Math.min(p[0], q[0]), Math.min(p[1], q[1]), Math.max(p[0], q[0]), Math.max(p[1], q[1])];
+}
+
+test('the real sprite: every arrow whose point enters the painted barrel is a hit (heart or body), never a graze or a miss', () => {
+  const still = byId('still'), [x0, y0, x1, y1] = paintedBox(still, GAME.art);
+  let entered = 0;
+  for (let a = 4; a <= 68; a += 4) for (let p = 0.2; p <= 1; p += 0.04) {
+    const w = da.shoot(da.build(still), { a, p });
+    let inside = false;
+    for (let k = 0; k < 400 && !w.arrow.done; k++) {
+      da.stepWorld(w, still, k * da.STEP_MS);
+      const [x, y] = w.arrow.tip;
+      // well inside the barrel (a margin of 4), before anything else could stop it
+      if (x > x0 + 4 && x < x1 - 4 && y > y0 + 4 && y < y1 - 4) { inside = true; break; }
+    }
+    if (!inside) continue;
+    entered++;
+    const hit = da.flight(still, { a, p }).hit;
+    assert.ok(hit === 'clean' || hit === 'body', `a ${a}° p ${p.toFixed(2)}: into the painted barrel, judged ${hit}`);
+  }
+  assert.ok(entered > 10, `${entered} pulls reach the barrel`);
 });
 
 test('a miss: the next arrow is on the string at once, the spent one stays stuck, a near one makes the deer look up', () => {
@@ -245,7 +291,16 @@ test('the paintings: only the entries whose files are there are used (the stag n
   const has = async (file) => fs.existsSync(new URL(`../worlds/jiuding/art/${file}`, import.meta.url));
   const art = await da.presentArt(GAME.art, has);
   for (const pose of ['drink', 'look', 'walk']) assert.ok(art[pose], `${pose} is painted`);
-  assert.ok(Object.values(art).every((a) => fs.existsSync(new URL(`../worlds/jiuding/art/${a.file}`, import.meta.url))), 'nothing missing is kept');
+  assert.ok(Object.values(art).filter((a) => a.file).every((a) => fs.existsSync(new URL(`../worlds/jiuding/art/${a.file}`, import.meta.url))), 'nothing missing is kept');
+  assert.deepEqual(art.marks, GAME.art.marks, 'settings without a file stay');
+  // Hanli 10-16 「背景导致看不清弓和轨迹」: bigger inked aim dots, the trail a bold stroke, paper behind the bow.
+  let m = da.act(da.newGame('t', 1, { levels: [byId('still')], art }), { g: 'draw', a: 30, p: 0.6 }).state;
+  const firstDot = Number(da.html(m, 'zh').match(/class="g-da-guide" cx="[-\d.]+" cy="[-\d.]+" r="([\d.]+)"/)[1]);
+  assert.ok(firstDot >= 4, `dot r ${firstDot}`);
+  assert.match(da.html(m, 'zh'), /id="[^"]+-archer"/, 'a feathered wash behind the bow');
+  m = da.act(m, { g: 'loose' }).state;
+  for (let i = 0; i < 400 && m.phase === 'fly'; i++) m = da.tick(m, 10);
+  if (m.trail) assert.match(da.html({ ...m, phase: 'aim' }, 'zh'), /g-da-trail-ink/);
   const drinking = da.html(da.newGame('t', 1, { levels: [byId('still')], art }), 'zh');
   assert.match(drinking, /stag-drink\.webp/);
   if (!art.bow_rest) assert.match(drinking, /g-da-limb/, 'the bow in ink until its painting lands');
@@ -262,7 +317,7 @@ test('the paintings: only the entries whose files are there are used (the stag n
   assert.doesNotMatch(aiming, /bow-rest\.webp/, 'drawn, the bow at rest is gone — never two ghosts');
   assert.match(da.html(da.newGame('t', 1, { levels: [byId('reeds')], art: all }), 'zh'), /bow-rest\.webp/, 'at rest before he pulls');
   assert.doesNotMatch(aiming, /g-da-limb|g-da-branch"/, 'no ink where a painting is');
-  r = da.act(r, { g: 'draw', a: 18, p: 0.97 }).state;
+  r = da.act(r, { g: 'draw', ...find(byId('reeds'), (f) => f.snapped > 0) }).state;
   r = da.act(r, { g: 'loose' }).state;
   for (let i = 0; i < 400 && r.phase === 'fly'; i++) r = da.tick(r, 10);
   const after = da.html(r, 'zh');
