@@ -147,21 +147,23 @@ function segSeg(p, q, a, b, r) {
 /* ── The world: the arrow and what stands in its way ─────────────────────────────────────────── */
 
 const NONE = { group: -1, category: 0x0002, mask: 0 };
-const GROUNDED = { category: 0x0004, mask: 0x0004 };
+const GROUND_HIT = { category: 0x0004, mask: 0x0008 };
+const GROUNDED = { category: 0x0008, mask: 0x0004 }; // debris falls to the ground, never props on itself
 
 /** A reed or a branch: a static stroke until an arrow snaps it (then it falls, a body). */
 function obstacleOf(o) {
   const [a, b] = o.kind === 'reed' ? [o.at, [o.at[0] + (o.lean ?? 0), o.at[1] - o.h]] : [o.from, o.to];
   const len = Math.hypot(b[0] - a[0], b[1] - a[1]), angle = Math.atan2(b[1] - a[1], b[0] - a[0]);
   const body = Bodies.rectangle((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, len, o.kind === 'reed' ? 3 : 6,
-    { isStatic: true, angle, collisionFilter: GROUNDED, frictionAir: 0.02, label: o.kind });
+    { angle, collisionFilter: GROUNDED, frictionAir: 0.02, density: 0.002, label: o.kind });
+  Body.setStatic(body, true); // made static after, so a snap (setStatic false) gets its real mass back
   return { kind: o.kind, a, b, breaks: o.kind === 'reed' ? (o.breaks ?? BREAK_V) : (o.breaks ?? null), body, broken: false };
 }
 
 /** A level's world, as it stands before any arrow: the ground and the things in the way. */
 export function build(level) {
   const engine = Engine.create({ gravity: { x: 0, y: GRAVITY } });
-  const ground = Bodies.rectangle(W / 2, GROUND + 30, W * 2, 60, { isStatic: true, collisionFilter: GROUNDED });
+  const ground = Bodies.rectangle(W / 2, GROUND + 30, W * 2, 60, { isStatic: true, collisionFilter: GROUND_HIT });
   const things = (level.things ?? []).map(obstacleOf);
   Composite.add(engine.world, [ground, ...things.map((t) => t.body)]);
   return { engine, things, arrow: null, acc: 0 };
@@ -218,7 +220,7 @@ function snap(world, t, v) {
   scatter(world, world.arrow.tip, v);
   Body.setStatic(t.body, false);
   Body.setVelocity(t.body, { x: v.x * 0.25, y: v.y * 0.25 - 0.6 });
-  Body.setAngularVelocity(t.body, Math.sign(v.x || 1) * 0.08);
+  Body.setAngularVelocity(t.body, Math.sign(v.x || 1) * 0.14);
   Body.setVelocity(world.arrow.body, { x: v.x * AFTER_BREAK, y: v.y * AFTER_BREAK });
   return 'snap';
 }
@@ -575,6 +577,8 @@ function lineOf(s, t, lang) {
   const said = { clean: t.clean, graze: t.graze[(s.grazes ?? 1) % t.graze.length], short: t.short, long: t.long, turned: t.turned, snap: t.snap, gone: t.gone };
   if (s.phase === 'clear') return `${t.clear}${starRow(s.best[s.li], true)}`;
   if (s.phase === 'aim' && s.pull) return s.pull.p >= 0.98 ? t.full : t.pull;
+  // A miss where she hints it: her 「往左偏半寸」 right after; else the deer's look-up if it was near.
+  if (s.phase === 'aim' && !s.pull && s.hint && level.hint && ['short', 'long'].includes(s.said)) return `${said[s.said]}${t.hint}`;
   if (s.phase === 'aim' && !s.pull && alerted(s) && said[s.said]) return `${said[s.said]}${t.alert}`;
   if (s.said && said[s.said]) return said[s.said];
   if (s.hint && level.hint) return t.hint;
