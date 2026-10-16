@@ -9,7 +9,7 @@ Carried out in the world's words — never a tool, a file or an id:
 - **Begin again** (重来 / restart): Look {said: their words} — its `ask` is
   the one question, *从头再来？此番修行尽数散去。* / *Begin again? Everything of
   this journey is let go.* — 从头再来 · 再想想 (*Begin again* · *Not yet*).
-  AskUser exactly it. Yes → **Restart**, then play it as a new game; 再想想 →
+  AskUser exactly it. Yes → **Restart**, then say nothing more this turn: the page opens a fresh chat for the new game and asks you for its opening there (anything said now lands in the old chat and is cleared from view); 再想想 →
   Look {said: 再想想}, nothing changes. Unasked, Restart is refused
   `not-confirmed`; the question holds ten minutes.
 - **To a scene** ("back to the river"): **Go** with the scene id from Look's
@@ -23,7 +23,8 @@ Carried out in the world's words — never a tool, a file or an id:
   one by its title). **Save** on their word with a title in their words.
   **Load** and **Forget**: the first call is refused `not-confirmed` with
   the `ask` (*回到9月24日的邺城？*) — AskUser exactly it, and call again only
-  on its first option.
+  on its first option. After a Load, as after a Restart, say nothing more:
+  the fresh chat asks for the scene.
 - **Take it back** (悔棋): Look {said: their words} carries the one question
   (*悔棋：收回上一步？*); on 收回, **Undo**, then Look.
 - **Stuck** (卡住了, 过不去, 玩不了, 没反应; 怎么办 about the game, not the story):

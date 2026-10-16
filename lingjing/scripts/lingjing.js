@@ -2472,6 +2472,8 @@ function storyTap() {
 function setSpeed(v) { if (v === 'skip') return skipPassage(); keepSpeed(v); render(); }
 /* 跳过 — once (Hanli, 2026-10-16: 「点一次, 只能跳过一次」): this passage to its end and its choices; the next reads as he reads. */
 function skipPassage() {
+  // 全文: the passage already stands whole as a column; 跳过 turns to its last page (its choices).
+  if (pager.on) { while (pager.turn(1)); return; }
   const r = readingHere();
   if (!playing(r)) return;
   const next = fitMode(r, 'skip', { lang: lang(), at: beatInView() });

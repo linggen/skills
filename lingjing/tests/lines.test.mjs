@@ -297,3 +297,12 @@ test('English sentences keep their space when laid side by side (快\'s column, 
   assert.equal(joinSentences(['A.', 'B.']), 'A. B.');
   assert.equal(joinSentences(['甲。', '乙。']), '甲。乙。');
 });
+test('跳过 in 全文 turns the column to its last page (Hanli 2026-10-16: 「点跳过没有反应」)', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
+  assert.match(src, /function skipPassage\(\) \{\n[^\n]*\n  if \(pager\.on\) \{ while \(pager\.turn\(1\)\); return; \}/);
+});
+test('after Restart or Load Ling says nothing more: the fresh chat asks for the opening (Hanli 2026-10-16)', () => {
+  const steer = fs.readFileSync(path.join(ROOT, 'guide/steer.md'), 'utf8');
+  assert.match(steer, /Yes → \*\*Restart\*\*, then say nothing more this turn/);
+  assert.doesNotMatch(steer, /then play it as a new game/);
+});
