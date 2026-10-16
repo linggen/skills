@@ -10,11 +10,11 @@ Updated 2026-10-16.
 
 | What | Where | Started |
 |---|---|---|
-| 后山崖顶 roster: 15 beasts (9 东山经 woodcuts, 6 painted), 36 items, loot, 观 finds | merging tag `wip/2026-10-15-bestiary` | 10-16 |
 | Pacing + economy: `tools/balance.mjs` + `balance.json`, 修为 stage quest every 回, story floor removed (`8f112416`), pool-fight daily diminishing | fresh build (the 10-15 one was lost unpushed) | 10-16 |
 
 ## Done lately
 
+- 10-16 — 后山崖顶 roster (`72680b96`, from tag `wip/2026-10-15-bestiary`): 15 beasts (9 东山经 woodcuts, 6 painted), 36 items, loot, 观 finds, 新 on cards; the 15 re-weighed on the lookahead player (fight-band-pools); 野猪 · 狼 · 熊 given loot (獠牙 · 狼皮 · 熊胆 had no source).
 - 10-16 — fights calibrated on the lookahead player (`81c72985`); lookahead win rates ~57–70%, tutorials ~80%.
 - 10-16 — 9527 on linggen `171d18e` (Settings reorg), verified live.
 - 10-15 — 古七 five years played (`14578b8d`), 秘境 reruns (3 h), 饭桶 (1 h), 圆满 pays 灵石, 零层, 密室, AI games 二十问 · 讨价还价 · 断案, 银月 companion lines.
@@ -44,6 +44,7 @@ Updated 2026-10-16.
 
 ## Waiting on Hanli
 
+- 后山崖顶 roster art: the six painted beasts (赤狐 山狸 猕猴 蝮蛇 苍鹰 豺) and the 36 item paintings, by his eye; and the loot picked for 野猪 · 狼 · 熊 (with 茯苓 · 苍术 · 黄精).
 - Play the latest build 古一 → 古四 before the per-回 expansions and 卷二 (launch waits for his full playthrough).
 - 灵草谷 犰狳: won ~62% but lost only 1% (37% time out on 见人则眠's heals) — re-weigh so a careless player can lose?
 - 10-14 asks: 拽/忍 redraws; village-map lines; skip on the first six beats; 闵丹师 mark 07:179; 古三 box merge.
