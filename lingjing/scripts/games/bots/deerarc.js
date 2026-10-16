@@ -1,32 +1,41 @@
-// The human-like player for 射鹿 · 拉弓 (games/deerarc.js; tools/board-bots.mjs). An aim search,
-// not answers: for the moment the arrow will leave the string, it flies pulls on a coarse grid
-// (`flight`, the game's own steps — the deer as it will be, the wind as it will blow), then looks
-// closely around each clean one and takes the pull with the most clean neighbours — the steadiest,
-// since a hand is never exact. Then it draws to it and lets go. A level under three stars is
-// played once more. Small grids on purpose (a few hundred flights a solve): the host is shared.
+// The human-like player for 射鹿 · 拉弓 (games/deerarc.js; tools/board-bots.mjs) and the boards built
+// on it (the 投掷 kit). An aim search, not answers: for the moment the throw will leave the hand, it
+// flies pulls on a coarse grid (`flight`, the game's own steps — the deer as it will be, the wind
+// as it will blow, the thing it throws, and for a thing with a tap, when it taps), then looks
+// closely around each clean one and takes the one with the most clean neighbours — the steadiest,
+// since a hand is never exact (nor a tap's moment). Then it picks, draws, lets go, and taps.
+// A level under three stars is played once more. Small grids on purpose: the host is shared.
 import { flight, levelNow, STEP_MS } from '../deerarc.js';
+import { projectileOf } from '../throws.js';
 
 export const LEAD = 520; // draw → the hand lands → a glance → let go → the hand lands (board-bots)
+const TAP_LEAD = 12; //     steps a tap lands after the eye says now (200 ms)
 const round2 = (v) => Math.round(v * 100) / 100;
 const range = (from, to, step) => { const out = []; for (let v = from; v <= to + 1e-9; v += step) out.push(round2(v)); return out; };
 const COARSE_A = range(4, 68, 4), COARSE_P = range(0.14, 1, 0.03);
+const TAPS = [30, 40, 50, 60, 70, 85];
 
-/** The cells around (a, p), a degree and a hundredth apart: how many of them fly clean. */
-function steadiness(level, at, a, p) {
+const hits = (level, at, aim, opts) => flight(level, aim, at, 600, opts).hit === 'clean';
+
+/** The cells around (a, p[, tapAt]): how many fly clean — a degree, a hundredth, three steps apart. */
+function steadiness(level, at, { a, p, tapAt }, proj) {
   let k = 0;
-  for (const da of [-2, -1, 0, 1, 2]) for (const dp of [-0.02, -0.01, 0, 0.01, 0.02]) {
-    if (flight(level, { a: a + da, p: round2(p + dp) }, at).hit === 'clean') k++;
+  const taps = tapAt == null ? [null] : [tapAt - 3, tapAt, tapAt + 3];
+  for (const da of [-2, 0, 2]) for (const dp of [-0.02, 0, 0.02]) for (const t of taps) {
+    if (hits(level, at, { a: a + da, p: round2(p + dp) }, { proj, tapAt: t })) k++;
   }
   return k;
 }
 
-/** The steadiest clean pull for a release at `at` ms, or null when none flies clean then. */
-export function solve(level, at = 0) {
-  const clean = [];
-  for (const a of COARSE_A) for (const p of COARSE_P) if (flight(level, { a, p }, at).hit === 'clean') clean.push({ a, p });
+/** The steadiest clean throw for a release at `at` ms — { a, p, tapAt?, k } — or null. */
+export function solve(level, at = 0, proj = undefined) {
+  const taps = proj?.ability ? TAPS : [null], clean = [];
+  for (const tapAt of taps) for (const a of COARSE_A) for (const p of COARSE_P) {
+    if (hits(level, at, { a, p }, { proj, tapAt })) clean.push({ a, p, tapAt });
+  }
   let best = null;
-  for (const c of clean.slice(0, 8)) {
-    const k = steadiness(level, at, c.a, c.p);
+  for (const c of clean.filter((_, i) => i % Math.max(1, Math.floor(clean.length / 8)) === 0).slice(0, 8)) {
+    const k = steadiness(level, at, c, proj);
     if (!best || k > best.k) best = { ...c, k };
   }
   return best;
@@ -34,14 +43,23 @@ export function solve(level, at = 0) {
 
 let plan = null, lastT = -1, again = 0;
 
-/** A release time ahead, on the world's step, at which some pull flies clean (a walking deer may
-    be behind a turn, a gust may be up): the first of a few tries 200 ms apart. */
-function planFor(level, clock) {
+/** A release time ahead, on the world's step, and a thing from the tray, with which some throw
+    flies clean (a walking deer may be behind a turn, a gust may be up): 200 ms tries apart. */
+function planFor(s, level, clock) {
   for (let d = 0; d < 3000; d += 200) {
-    const at = Math.round((clock + LEAD + d) / STEP_MS) * STEP_MS, aim = solve(level, at);
-    if (aim) return { ...aim, at };
+    const at = Math.round((clock + LEAD + d) / STEP_MS) * STEP_MS;
+    for (const id of s.ammo ?? ['arrow']) {
+      const aim = solve(level, at, projectileOf(s.kit, id));
+      if (aim) return { ...aim, at, pick: id };
+    }
   }
   return null;
+}
+
+function inFlight(s) {
+  const ar = s.world?.arrow;
+  if (plan?.tapAt == null || !ar || ar.tapped || ar.done) return null;
+  return ar.steps + TAP_LEAD >= plan.tapAt ? { g: 'tap' } : null;
 }
 
 export function bot(s, see = {}) {
@@ -54,10 +72,12 @@ export function bot(s, see = {}) {
     if (again < 1 && s.best[s.li] < 3) { again++; return { g: 'retry' }; }
     return { g: 'next' };
   }
+  if (s.phase === 'fly') return inFlight(s);
   if (s.phase !== 'aim') { plan = null; return null; }
-  const level = levelNow(s); // this arrow's rolled wind
-  if (!plan || plan.li !== s.li || plan.used !== s.used) plan = { ...planFor(level, s.clock), li: s.li, used: s.used };
+  const level = levelNow(s); // this throw's rolled wind
+  if (!plan || plan.li !== s.li || plan.used !== s.used) plan = { ...planFor(s, level, s.clock), li: s.li, used: s.used };
   if (plan.a == null) return null;
+  if (plan.pick && s.pick !== plan.pick) return { g: 'pick', p: plan.pick };
   if (!s.pull || s.pull.a !== plan.a || s.pull.p !== plan.p) return { g: 'draw', a: plan.a, p: plan.p };
   // Drawn: let go when the moment comes (the hand takes ~200 ms to land).
   return s.clock + (see.lead ?? 200) >= plan.at ? { g: 'loose' } : null;

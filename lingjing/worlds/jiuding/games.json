@@ -13,6 +13,11 @@
    "en": "Chapters 4–7"
   },
   {
+   "id": "kit",
+   "zh": "投掷 · 试作",
+   "en": "Throwing · prototypes"
+  },
+  {
    "id": "jin",
    "zh": "今线",
    "en": "The present line"
@@ -23,7 +28,272 @@
    "en": "Daily · the secret realm"
   }
  ],
+ "_projectiles": "What 小满 throws on the 射鹿 board and the boards built on it (games/throws.js; Hanli 2026-10-16: 「投掷类都可以换. 可以多设计一些工具, 特效, 让它更好玩」). `from`: the card that makes it his (cards.json; the card law: only his own things) — none, always his; a level's first `ammo` is the scene's own tool, always his. `mass` (the wind's push is over it), `speed` (× the pull's), `drag` (the air), `half` (where it strikes: a tip that far ahead, 0 its middle), `pierce` (snaps a reed no thicker than that — its `breaks` — at any speed, barely slowed; 99 is a wall), `knock` (snaps them, slowed), `bounce` (skips once off the ground), `ability` one tap in flight: dash (straight on along the line it was loosed on, × `dash`) or burst (lightning, reach `radius`). `tip`: the line while it flies.",
+ "projectiles": {
+  "arrow": {"name": {"zh": "箭", "en": "Arrow"}, "shape": "arrow", "mass": 1, "speed": 1, "drag": 0, "half": 13, "pierce": 40},
+  "stone": {"name": {"zh": "石子", "en": "Stone"}, "from": "shizi", "shape": "stone", "mass": 2.2, "speed": 0.94, "drag": 0.003, "half": 0, "knock": true, "bounce": 0.42},
+  "sword": {"name": {"zh": "短飞剑", "en": "Short flying sword"}, "from": "feijian", "shape": "sword", "mass": 0.8, "speed": 1, "drag": 0, "half": 9, "pierce": 40, "ability": "dash", "dash": 1.7, "tip": {"zh": "飞行中点一下：剑直冲出去。", "en": "Tap in flight: the sword shoots straight on."}},
+  "talisman": {"name": {"zh": "五雷符", "en": "Thunder talisman"}, "from": "wulei-fu", "shape": "talisman", "mass": 0.6, "speed": 0.9, "drag": 0.006, "half": 0, "ability": "burst", "radius": 70, "tip": {"zh": "飞行中点一下：五雷炸开。", "en": "Tap in flight: the thunder bursts."}}
+ },
  "games": [
+  {
+   "id": "throwkit",
+   "group": "kit",
+   "mechanic": "愤怒小鸟",
+   "stars": 3,
+   "_levels": "The 射鹿 board with the kit: one level for each thing he throws, then all of them (games/throwkit.js). Not a beat yet: each throw moment in 卷一 takes its own row (see `_throws`).",
+   "levels": [
+    {
+     "id": "stone",
+     "ammo": [
+      "stone"
+     ],
+     "deer": {
+      "x": 150,
+      "face": -1,
+      "lift": {
+       "every": 3000,
+       "for": 900
+      }
+     },
+     "wind": 0,
+     "things": [
+      {
+       "kind": "reed",
+       "at": [
+        236,
+        252
+       ],
+       "h": 46,
+       "lean": -3
+      },
+      {
+       "kind": "reed",
+       "at": [
+        246,
+        252
+       ],
+       "h": 52,
+       "lean": 2
+      }
+     ],
+     "say": {
+      "zh": "一颗石子。扔得低些，它会在地上跳一下。",
+      "en": "A stone. Throw it low: it skips once off the ground."
+     }
+    },
+    {
+     "id": "pierce",
+     "ammo": [
+      "arrow"
+     ],
+     "deer": {
+      "x": 110,
+      "face": -1
+     },
+     "wind": 0.2,
+     "things": [
+      {
+       "kind": "reed",
+       "at": [
+        212,
+        252
+       ],
+       "h": 92,
+       "lean": -4,
+       "breaks": 30
+      },
+      {
+       "kind": "reed",
+       "at": [
+        222,
+        252
+       ],
+       "h": 104,
+       "lean": 2,
+       "breaks": 30
+      },
+      {
+       "kind": "reed",
+       "at": [
+        233,
+        252
+       ],
+       "h": 96,
+       "lean": -2,
+       "breaks": 30
+      },
+      {
+       "kind": "reed",
+       "at": [
+        244,
+        252
+       ],
+       "h": 88,
+       "lean": 4,
+       "breaks": 30
+      }
+     ],
+     "say": {
+      "zh": "芦苇密得像一堵墙。箭能穿过去。",
+      "en": "The reeds stand like a wall. An arrow goes through."
+     }
+    },
+    {
+     "id": "dash",
+     "ammo": [
+      "sword"
+     ],
+     "deer": {
+      "x": 70,
+      "face": -1
+     },
+     "wind": 0.3,
+     "things": [
+      {
+       "kind": "branch",
+       "from": [
+        340,
+        118
+       ],
+       "to": [
+        90,
+        168
+       ]
+      }
+     ],
+     "say": {
+      "zh": "鹿在枯枝底下，远。短飞剑扔出去，点一下，它就直冲。",
+      "en": "The deer is far, under the dead branch. Throw the short sword, then tap: it flies straight."
+     }
+    },
+    {
+     "id": "burst",
+     "ammo": [
+      "talisman"
+     ],
+     "deer": {
+      "x": 140,
+      "face": -1,
+      "lift": {
+       "every": 2600,
+       "for": 800
+      }
+     },
+     "wind": 0.2,
+     "things": [
+      {
+       "kind": "reed",
+       "at": [
+        172,
+        252
+       ],
+       "h": 150,
+       "lean": -2,
+       "breaks": 99
+      },
+      {
+       "kind": "reed",
+       "at": [
+        181,
+        252
+       ],
+       "h": 158,
+       "lean": 3,
+       "breaks": 99
+      },
+      {
+       "kind": "reed",
+       "at": [
+        190,
+        252
+       ],
+       "h": 150,
+       "lean": -3,
+       "breaks": 99
+      },
+      {
+       "kind": "branch",
+       "from": [
+        300,
+        60
+       ],
+       "to": [
+        110,
+        92
+       ]
+      }
+     ],
+     "say": {
+      "zh": "鹿躲在芦苇后头。五雷符扔过去，点一下，雷就炸开。",
+      "en": "The deer hides behind the reeds. Throw the talisman, then tap: the thunder bursts."
+     }
+    },
+    {
+     "id": "all",
+     "ammo": [
+      "arrow",
+      "stone",
+      "sword",
+      "talisman"
+     ],
+     "deer": {
+      "x": 180,
+      "face": -1,
+      "walk": {
+       "to": 90,
+       "ms": 4000,
+       "rest": 1500
+      }
+     },
+     "wind": 0.3,
+     "roll": {
+      "min": 0.1,
+      "max": 0.5,
+      "dirs": [
+       1,
+       -1
+      ]
+     },
+     "things": [
+      {
+       "kind": "reed",
+       "at": [
+        262,
+        252
+       ],
+       "h": 84,
+       "lean": -4
+      },
+      {
+       "kind": "reed",
+       "at": [
+        272,
+        252
+       ],
+       "h": 96,
+       "lean": 3
+      },
+      {
+       "kind": "branch",
+       "from": [
+        340,
+        26
+       ],
+       "to": [
+        210,
+        96
+       ]
+      }
+     ],
+     "say": {
+      "zh": "全拿出来了。挑一样。",
+      "en": "Everything out. Choose one."
+     }
+    }
+   ],
+   "art": "deerarc"
+  },
   {
    "id": "storm",
    "group": "prologue",

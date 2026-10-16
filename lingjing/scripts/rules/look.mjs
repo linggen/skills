@@ -5,7 +5,7 @@ import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
 import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, phaseName, realmName, threshold, seedOf, cultivating, layerNo } from '../state.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, THEN_BORN, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
-import { fightSetup, heldMark, pouchBrief, readOf } from './cards.mjs';
+import { fightSetup, heldMark, ownedCards, pouchBrief, readOf } from './cards.mjs';
 
 const hintsOf = (state, game, lang) => { const h = (game.hints ?? []).filter(x => heldMark(state, x.mark)).map(x => pick(x.say, lang)); return h.length ? { hints: h } : {}; };
 import { callDue, companionOf, hasCompanion, herAwake, herAway, herCard, questBrief, recalledOf } from './companion.mjs';
@@ -440,7 +440,7 @@ function tasksBrief(content, state, ctx) {
         // what it asks and what it pays, so Ling can tell the practice
         ...(task.game ? { game: task.game, level: gameLevel(content, state) } : {}),
         // The board's own words and deal where the task has them (二试's 洛书 is no 秘境 seal).
-        ...(task.how ? { how: pick(task.how, lang) } : {}), ...dealOf(content, task),
+        ...(task.how ? { how: pick(task.how, lang) } : {}), ...dealOf(content, task, state),
         ...(task.game && task.done_line ? { done_line: pick(task.done_line, lang) } : {}),
         ...(hosted[id] ? { hosted: true } : {}),
         asks: task.kind === 'board' && !task.game ? (lang === 'zh' ? '在炉前把八味灵草两两配齐' : 'Pair the eight spirit herbs on the furnace board') : task.game ? pick(task.title, lang) : null,
@@ -491,11 +491,15 @@ function personBrief(content, state, creature) {
 }
 
 /* What a board is dealt: the task's own `deal`, and a small game's levels from the registry
-   (games.json, 2026-10-16 — 喂饼's 割绳子 levels live there once, for the beat and the 游戏厅). */
-function dealOf(content, task) {
-  const row = task.game ? content.games?.games?.find(g => g.id === task.game) : null, levels = row?.levels, art = row?.art;
+   (games.json, 2026-10-16 — 喂饼's 割绳子 levels live there once, for the beat and the 游戏厅), its
+   paintings (`art`, or the row it names), and for a throwing board the registry's `projectiles`
+   with the cards he holds (`owned`: the tray shows only his own things — the card law). */
+function dealOf(content, task, state) {
+  const games = content.games?.games ?? [], row = task.game ? games.find(g => g.id === task.game) : null, levels = row?.levels;
   if (!task.deal && !levels) return {};
-  return { deal: { ...(task.deal ?? {}), ...(levels ? { levels } : {}), ...(art ? { art } : {}) } };
+  const art = typeof row?.art === 'string' ? games.find(g => g.id === row.art)?.art : row?.art;
+  const throws = levels?.some(l => l.ammo) ? { projectiles: content.games.projectiles ?? {}, owned: ownedCards(content, state) } : {};
+  return { deal: { ...(task.deal ?? {}), ...(levels ? { levels } : {}), ...(art ? { art } : {}), ...throws } };
 }
 
 export function look(state, content, ctx) {

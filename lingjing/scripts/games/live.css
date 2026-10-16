@@ -500,6 +500,34 @@
 .g-da-stars .g-da-star { animation: g-da-pop .5s cubic-bezier(.2, 1.6, .4, 1) both; animation-delay: calc(var(--i) * .25s); }
 @media (prefers-reduced-motion: reduce) { .g-da-pop, .g-da-stars .g-da-star { animation: none; } }
 .g-da-scene .g-da-sprite { mix-blend-mode: normal; } /* the paintings carry their own alpha */
+/* 投掷 · the kit (games/throws.js): the things he throws in ink until painted, their one tap's
+   effect, and the tray — only his own things, each at least 44px. */
+.g-da-scene .g-tk-stone { fill: #5d5448; stroke: #f6efe0; stroke-width: .8; }
+.g-da-scene .g-tk-stone-lit { fill: none; stroke: #f6efe0; stroke-width: .9; opacity: .8; }
+.g-da-scene .g-tk-blade { fill: #c9ced6; stroke: #2e2416; stroke-width: .7; }
+.g-da-scene .g-tk-guard, .g-da-scene .g-tk-hilt { fill: none; stroke: #2e2416; stroke-width: 1.6; stroke-linecap: round; }
+.g-da-scene .g-tk-paper { fill: #e9c75a; stroke: #7a5a2e; stroke-width: .6; }
+.g-da-scene .g-tk-glyph { fill: none; stroke: var(--seal); stroke-width: 1; stroke-linecap: round; }
+.g-da-scene .g-tk-proj { filter: drop-shadow(0 0 1px #f6efe0) drop-shadow(0 0 1px #f6efe0); }
+.g-da-scene .g-tk-arm { fill: none; stroke: #2e2416; stroke-width: 1.4; stroke-dasharray: 3 3; opacity: .6; }
+.g-da-scene .g-tk-dash circle { fill: none; stroke: #2e2416; stroke-width: 1.2; }
+.g-da-scene .g-tk-dash path { fill: none; stroke: #2e2416; stroke-width: 2; stroke-linecap: round; }
+.g-da-scene .g-tk-dust circle { fill: #8a7a62; }
+.g-da-scene .g-tk-burst-ring { fill: rgba(233, 199, 90, .18); stroke: #b8860b; stroke-width: 1.4; }
+.g-da-scene .g-tk-bolt { fill: none; stroke: #f2c94c; stroke-width: 2.2; stroke-linejoin: round; filter: drop-shadow(0 0 2px #2e2416); }
+.g-da-scene .g-tk-core { fill: #fff6d0; }
+.g-tk-tray { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; width: 100%; }
+.g-tk-pick { display: flex; align-items: center; gap: 4px; min-height: 44px; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--text); font-family: var(--serif); font-size: 14px; cursor: pointer; touch-action: manipulation; }
+.g-tk-pick.is-on { border-color: var(--seal); background: var(--seal-soft); color: var(--seal); }
+.g-tk-pick:disabled { opacity: .55; }
+.g-tk-icon { width: 30px; height: 20px; overflow: visible; }
+.g-tk-icon * { stroke-linecap: round; }
+.g-tk-icon .g-da-shaft { fill: none; stroke: currentColor; stroke-width: 1.6; }
+.g-tk-icon .g-da-head-tip { fill: currentColor; }
+.g-tk-icon .g-tk-stone { fill: #5d5448; } .g-tk-icon .g-tk-stone-lit { fill: none; stroke: #f6efe0; }
+.g-tk-icon .g-tk-blade { fill: #c9ced6; stroke: currentColor; stroke-width: .7; } .g-tk-icon .g-tk-guard, .g-tk-icon .g-tk-hilt { fill: none; stroke: currentColor; stroke-width: 1.6; }
+.g-tk-icon .g-tk-paper { fill: #e9c75a; stroke: #7a5a2e; stroke-width: .6; } .g-tk-icon .g-tk-glyph { fill: none; stroke: var(--seal); }
 .g-da-scene .g-da-wash { pointer-events: none; }
 .g-da-scene .g-da-zones * { fill: none; stroke-width: 1; vector-effect: non-scaling-stroke; pointer-events: none; }
 .g-da-scene .g-da-zones .is-heart { stroke: #d01c1c; fill: rgba(208, 28, 28, .18); }
