@@ -18,7 +18,7 @@ import { newState, pick } from '../scripts/state.mjs';
 import { look, progress, resolve } from '../scripts/rules.mjs';
 import { fitPresence, herAway } from '../scripts/rules/companion.mjs';
 import { firstSentence, taskLine } from '../scripts/rules/recap.mjs';
-import { FURNITURE, herAwake, sideLineOf, stageCards, stands } from '../scripts/stage.mjs';
+import { FOOTER, FURNITURE, herAwake, sideLineOf, stageCards, stands } from '../scripts/stage.mjs';
 
 // 00-notice's village map played (batch two, 2026-10-14): its way on waits on it.
 const eveDone = (s) => ({ ...s, tasks: { ...s.tasks, 'village-eve': { status: 'done', period: 'once', done_at: '2026-10-01T00:00:00Z' } } });
@@ -57,8 +57,11 @@ test('the 今 stage keeps none of the 古\'s furniture; the 古 stage keeps all 
 
 test('the page reads the furniture table for the strip, the footer and the tray', () => {
   const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
-  for (const part of ['name', 'realm', 'pool', 'wealth', 'omen', 'festival', 'weather', 'lu', 'read']) assert.match(src, new RegExp(`has\\('${part}'\\)`), part);
-  for (const part of ['roads', 'errands', 'bag', 'tray']) assert.match(src, new RegExp(`stands\\(look, '${part}'\\)`), part);
+  for (const part of ['name', 'realm', 'pool', 'wealth', 'omen']) assert.match(src, new RegExp(`has\\('${part}'\\)`), part);
+  // The footer's chips come from stage.mjs FOOTER, each one a part of the table (Hanli, 2026-10-15).
+  for (const part of FOOTER) assert.ok([...FURNITURE.main, ...FURNITURE.every].includes(part), part);
+  assert.match(src, /FOOTER\.filter\(has\)/);
+  for (const part of ['roads', 'tray']) assert.match(src, new RegExp(`stands\\(look, '${part}'\\)`), part);
   assert.match(src, /const herHere = \(\) => Boolean\([^)]*!look\?\.companion\?\.away\)/, 'away, nothing goes to her');
 });
 

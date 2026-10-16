@@ -42,8 +42,15 @@ export function wxChipHtml(weather, { lang = 'zh', open = false, sense = null, n
   const temp = Number.isFinite(weather.temp_c) ? ` ${weather.temp_c}°` : '';
   const blow = w.winds[wind?.level] ? `${lang === 'en' ? ', ' : '，'}${w.winds[wind.level]}` : '';
   const label = `${weather.where} · ${w.kinds[weather.kind] ?? weather.kind}${blow}${temp}`;
-  return `<span class="bookwrap"><button class="bookchip wxchip" data-wx aria-expanded="${open}">${esc(label)}</button>${open ? wxPopHtml({ lang, sense, note }) : ''}</span>`;
+  // On the footer, the sky's mark and the degrees (Hanli, 2026-10-15: the bar held too much — the
+  // place is the header's); a story's sky has no degrees, so its word stands. The whole line is the title.
+  const short = `${skyMark(weather)}${temp || ` ${w.kinds[weather.kind] ?? weather.kind}`}`;
+  return `<span class="bookwrap"><button class="bookchip wxchip" data-wx aria-expanded="${open}" title="${esc(label)}" aria-label="${esc(label)}">${esc(short)}</button>${open ? wxPopHtml({ lang, sense, note }) : ''}</span>`;
 }
+
+/* The sky as one text mark (U+FE0E: drawn as text, never an emoji); a clear night is the moon. */
+const MARKS = { clear: '\u2600\uFE0E', cloudy: '\u2601\uFE0E', fog: '\u224B', rain: '\u2602\uFE0E', snow: '\u2744\uFE0E', storm: '\u26A1\uFE0E' };
+export const skyMark = (weather) => (weather.kind === 'clear' && weather.is_day === false ? '\u263E' : MARKS[weather.kind] ?? '\u2601\uFE0E');
 
 /// The popover: the city followed, a field to change it, off · on · forget.
 export function wxPopHtml({ lang = 'zh', sense = null, note = null } = {}) {

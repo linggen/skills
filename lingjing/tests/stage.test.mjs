@@ -164,7 +164,7 @@ test('the slots: the header is the page\'s, main holds ONE thing by fixed priori
   // the panel and the scene's own choice card are one thing
   const l = at({ offers: [{ id: 'x' }], tasks: [{ kind: 'board', id: 'b', status: 'open' }] });
   const slots = stageSlots(l, stageCards(l, { focus: [{ card: 'creature', id: 'fuzhu' }] }));
-  assert.deepEqual(kinds(slots.header), ['people', 'goal']);
+  assert.deepEqual(kinds(slots.header), ['people'], 'the goal reads in the 事 book, not on the bar (Hanli, 2026-10-15)');
   assert.deepEqual(kinds(slots.main), ['panel', 'value:name']);
   // the errand is one of the scene card's own choices (cards.js panelActsHtml), never a card behind it; Ling's creature still gives way to it
   assert.deepEqual(slots.queue.map(t => kinds(t.cards).join(' ')), ['board:b']);
@@ -193,9 +193,9 @@ test('the slots: the header is the page\'s, main holds ONE thing by fixed priori
 });
 
 test('every card kind lives in exactly one slot, and the page\'s own kinds are never Ling\'s', async () => {
-  const { CARD_KINDS, HEADER, MAIN, PAGE_OWNS, showable } = await import('../scripts/stage.mjs');
+  const { BOOK, CARD_KINDS, HEADER, MAIN, PAGE_OWNS, showable } = await import('../scripts/stage.mjs');
   for (const kind of Object.keys(CARD_KINDS)) {
-    const homes = (HEADER.includes(kind) ? 1 : 0) + MAIN.filter(r => r.kinds.includes(kind)).length;
+    const homes = (HEADER.includes(kind) ? 1 : 0) + (BOOK.includes(kind) ? 1 : 0) + MAIN.filter(r => r.kinds.includes(kind)).length;
     assert.equal(homes, 1, `card kind "${kind}" lives in ${homes} slots`);
   }
   for (const kind of ['panel', 'people', 'goal', 'value', 'born', 'building', 'empty']) {
@@ -235,7 +235,9 @@ test('the footer (Hanli, 2026-10-05): the weather chip names where he stands, �
   const fs = await import('node:fs');
   const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   const html = fs.readFileSync(new URL('../scripts/index.html', import.meta.url), 'utf8');
-  const foot = src.slice(src.indexOf('function footChipsHtml()'), src.indexOf('function festChipHtml()'));
+  const foot = src.slice(src.indexOf('const FOOT_CHIPS = {'), src.indexOf('function festChipHtml()'));
+  assert.ok(foot.length > 200, 'the footer\'s chips are drawn from one table');
+  assert.match(foot, /FOOTER\.filter\(has\)\.map\(\(part\) => FOOT_CHIPS\[part\]\(slots\)\)/, 'in stage.mjs FOOTER\'s order');
   assert.doesNotMatch(foot, /ledgerChipHtml/, 'the ledger is written no more: no chip');
   assert.match(foot, /wxChipHtml\(wxHere\(\)/);
   assert.match(src, /const wxHere = \(\) => \(look\?\.weather \? \{ \.\.\.look\.weather, where: look\.place\?\.name \?\? look\.weather\.where \} : null\);/);
@@ -246,7 +248,7 @@ test('the footer (Hanli, 2026-10-05): the weather chip names where he stands, �
   assert.match(src, /const art = stageArt\(\{ scene: \{ \.\.\.look\?\.scene, backdrop: own \}, place: look\?\.place, weather, festival: look\?\.today\?\.festival, term: look\?\.today\?\.jieqi, table: authored\?\.backdrops, isDay: day \}\);/);
   assert.match(html, /<div class="backdrop" id="backdrop" aria-hidden="true"><\/div>\s*<div class="shade" aria-hidden="true"><\/div>/);
   // 银月's 木牌 in the footer, once met; never on 今线 (FURNITURE `her`).
-  assert.match(foot, /\$\{has\('her'\) \? herTokenHtml\(\) : ''\}/);
+  assert.match(foot, /her: \(\) => herTokenHtml\(\)/);
 });
 
 test('a face met in the header is not met again mid-stage: its first-meet card goes, a tap on the header opens its 图鉴', async () => {

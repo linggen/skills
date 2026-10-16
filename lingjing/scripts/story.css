@@ -6,11 +6,22 @@
 .view { --ink-night: #0d1114; --on-stage: #F1ECE1; --on-dim: rgba(241, 236, 225, .62); --yinyue-glow: #B9D3E6; --ling-glow: #E3C07E; --head-h: 0px; }
 
 /* ── the thin bars ── */
+/* The top bar (Hanli, 2026-10-15: 「layout改一下」 — the name ran down one character a line): the
+   name, the realm, the 修为 bar with its count and 灵石 never wrap and never shrink; the 回 gives way
+   first, then the place, both to an ellipsis. The scene's caption is the place's title, not a row. */
 .topbar { flex-wrap: nowrap; min-height: 52px; padding: 6px 18px; gap: 6px 14px; overflow: hidden; }
-.topbar .titlerow { order: 1; flex: 0 1 auto; min-width: 0; }
-.topbar .placecap { order: 1; flex: 1 1 0; min-width: 0; margin: 0; display: block; -webkit-line-clamp: unset; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; color: var(--faint); }
-.topbar .langsw { order: 3; margin-left: 0; }
-.topbar .headcards { order: 2; flex: 0 0 auto; display: flex; align-items: center; gap: 8px; min-width: 0; margin-left: auto; }
+.topbar .daohao, .topbar .realm, .topbar .ls, .topbar .qi, .topbar .omenchip { flex: none; white-space: nowrap; }
+.topbar .xw { flex: none; width: 196px; min-width: 0; max-width: none; white-space: nowrap; }
+.topbar .xw .bar { min-width: 36px; }
+.topbar .titlerow { order: 1; flex: 1 1 auto; min-width: 3.5em; }
+.topbar .huiline { flex: 0 100 auto; }
+.topbar .place { flex: 0 1 auto; min-width: 3em; }
+.topbar .placecap { display: none; }
+.topbar .langsw { order: 3; margin-left: 0; flex: none; }
+.topbar .headcards { order: 2; flex: 0 1 auto; display: flex; align-items: center; gap: 8px; min-width: 0; margin-left: auto; overflow: hidden; }
+/* At the 回's cap the bar waits: a small seal by the count, the world's line its title (lingjing.js capSay). */
+.capseal { flex: none; display: inline-block; margin-left: 2px; padding: 0 4px; border: 1px solid color-mix(in srgb, var(--ling) 55%, transparent); border-radius: 3px;
+  font-family: var(--serif); font-size: 10.5px; line-height: 1.45; color: var(--ling); background: var(--ling-soft); cursor: help; }
 .topbar .headcards:empty { display: none; }
 .topbar .card.peoplecard { padding: 0; border: 0; background: none; box-shadow: none; max-width: none; margin: 0; }
 .topbar .peoplecard .people { display: flex; flex-wrap: nowrap; gap: 8px; }
@@ -24,14 +35,31 @@
 .topbar .goalline { max-width: 26em; margin: 0; font-size: 12px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .topbar .goalline .goalnext { display: inline; margin: 0 0 0 8px; }
 .slotfoot { height: 46px; display: flex; align-items: center; gap: 8px; padding: 0 16px; grid-template-rows: none; }
-.slotfoot .footrow { flex: 0 1 auto; min-width: 0; }
+/* The footer (Hanli, 2026-10-15: 「too much widgets」): 去往 ▾ and what waits on the left; 木牌 · the sky ·
+   书 · 事 · 物品 on the right. No chip's words ever break onto a second line. */
+.slotfoot .footrow { flex: 0 1 auto; min-width: 0; gap: 8px; }
 .slotfoot .footrow:has(> span:only-child:empty), .slotfoot .footrow:empty { display: none; }
-.slotfoot .footchips { flex: 1 1 auto; min-width: 0; overflow-x: auto; scrollbar-width: none; }
-.slotfoot .footchips [data-lu] { margin-left: auto; }
+/* 事 and what waits, one joined chip: 「事 3 | 还有：差事 ›」. */
+.slotfoot .errands { flex: none; display: inline-flex; align-items: center; }
+.slotfoot .errands:empty { display: none; }
+.slotfoot .errands .more { flex: none; max-width: 12em; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-radius: 0 99px 99px 0; border-color: var(--ling); padding: 3px 10px 3px 8px; font-size: 12.5px; line-height: inherit; }
+.slotfoot .errands .bookwrap:has(+ .more) .bookchip { border-radius: 99px 0 0 99px; border-right-style: dashed; }
+.slotfoot .errands .bookwrap + .more { border-left: 0; }
+body.reading .slotfoot .errands .more { visibility: hidden; }
+.slotfoot .footchips { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+.slotfoot .footchips > :first-child { margin-left: auto; }
+.slotfoot .bookchip, .slotfoot .luchip, .slotfoot .act, .slotfoot .yytoken { flex: none; white-space: nowrap; }
+.slotfoot .bookchip { display: inline-flex; align-items: center; gap: 5px; }
+.slotfoot .bookchip.wxchip { font-variant-numeric: tabular-nums; }
+.bookchip .due { font-family: var(--mono); font-size: 10.5px; font-weight: 600; line-height: 1.5; padding: 0 5px; border-radius: 99px; background: var(--seal); color: var(--surface); }
+.bookchip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--seal); }
+.roadspop .roadlist { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.roadspop .act { white-space: nowrap; }
+.slotfoot .shelfpop { width: auto; display: flex; gap: 8px; padding: 10px 12px; }
 /* The chips' popovers (事 · 天气 · 恩仇簿) open from the footer, over the stage. The chips' row scrolls
    sideways (overflow-x), which clipped a popover anchored inside it to nothing (2026-10-15, live: 「事 3 ·
    可交 10」 tapped, the book opened invisibly). Anchored to the footer itself instead, they stand clear. */
-.slotfoot .footchips .bookwrap { position: static; }
+.slotfoot .bookwrap { position: static; }
 .slotfoot .bookpop { left: 50%; transform: translateX(-50%); bottom: calc(100% + 10px); max-height: min(70vh, 640px); overflow-y: auto; }
 body.fighting .slotfoot { height: 46px; }
 
@@ -230,7 +258,16 @@ body.fighting .sight { display: none; }
   .topbar .peoplecard .person { padding: 1px; border-radius: 8px; }
   .topbar .peoplecard .person img, .topbar .peoplecard .person .namecard { width: 26px; height: 34px; }
   .slotfoot { padding: 0 10px; gap: 6px; }
-  .slotfoot .wxchip { display: none; }
+  .slotfoot .footchips { gap: 6px; }
+  .slotfoot .errands .more { max-width: 6.5em; }
+  .yytoken:has(img) { padding: 2px; }
+  .yytoken:has(img) span { display: none; }
+  /* Two tidy rows: the name, the realm, the bar and 灵石 above; the 回 and the place, the people and 中/En below. */
+  .topbar .xw { width: 118px; }
+  .topbar .xw .lbl { display: none; }
+  .topbar .titlerow { order: 4; flex: 1 1 55%; min-width: 0; }
+  .topbar .headcards { order: 5; margin-left: 0; }
+  .topbar .langsw { order: 6; }
   .story .lines { padding: 0 20px; bottom: 64px; }
   .story .screen { font-size: 17px; line-height: 1.9; }
   .story .ctrl { padding: 0 12px 12px; gap: 6px; }
