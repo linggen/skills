@@ -546,6 +546,27 @@ export function paceLayer(content, saved) {
   return { ...s, progress: Math.min(now, Math.round((s.progress ?? 0) * now / was)) };
 }
 
+/* What a save rooted before 2026-10-16 held without writing it down: the `_legacy_starter` of
+   its roots, 银月 once she walked with it, and its tamed beasts that are cards. */
+function legacyCards(content, state) {
+  const catalog = Object.fromEntries((content.cards?.cards ?? []).map(c => [c.id, c])), roots = new Set(state.traits);
+  return [...new Set([
+    ...(content.cards?._legacy_starter ?? []).filter(id => catalog[id] && (!catalog[id].element || roots.has(catalog[id].element))),
+    ...(state.companion?.joined && catalog.yinyue ? ['yinyue'] : []),
+    ...(state.cast ?? []).filter(id => catalog[id]),
+  ])];
+}
+
+/* The card ids a save keeps, mapped through cards.json `_renamed` (金爪 → 金刃 …): his cards, his
+   picked ten and what he took out, the 新, where each came from, the ★ of 闭关. Empty when nothing maps. */
+function renamedCards(content, state) {
+  const map = content.cards?._renamed ?? {}, to = id => map[id] ?? id;
+  const list = k => (Array.isArray(state[k]) && state[k].some(id => map[id]) ? { [k]: [...new Set(state[k].map(to))] } : {});
+  const keyed = k => (state[k] && Object.keys(state[k]).some(id => map[id]) ? { [k]: Object.fromEntries(Object.entries(state[k]).map(([id, v]) => [to(id), v])) } : {});
+  const cards = Array.isArray(state.cards) ? state.cards : state.traits?.length ? legacyCards(content, state) : null;
+  return { ...(cards?.some(id => map[id]) ? { cards: [...new Set(cards.map(to))] } : {}), ...list('deck'), ...list('deck_out'), ...list('cards_new'), ...keyed('card_from'), ...keyed('card_stars') };
+}
+
 export function fitWorld(saved, content) {
   // 奇遇 (Branch) went 2026-09-24 for 今日传闻: an open one is closed quietly, unpaid.
   const { branch, ...rest } = saved;
@@ -589,6 +610,12 @@ export function fitWorld(saved, content) {
     // The hero is fixed (2026-09-30): a save named on the old name card, or
     // never named, takes the world's — 沈小满, a boy.
     ...(hero && (state.name !== hero.name || state.gender !== hero.gender) ? { name: hero.name, gender: hero.gender } : {}),
+    // 得牌 (cards.md § 4, 2026-10-16): no starter at the root test any more. A save rooted
+    // before the rule holds the twelve it was handed then, written down now, so it keeps
+    // every card it had (a party member's among them — in the 牌谱, never in his ten).
+    ...(state.traits?.length && !Array.isArray(state.cards) ? { cards: legacyCards(content, state) } : {}),
+    // A card renamed to the book's word is a new id (cards.json `_renamed`): what he held maps over.
+    ...renamedCards(content, state),
     // Its own seed (seedOf), fixed once: the name it was given, else its creation time.
     ...(state.seed == null ? { seed: state.name && state.name !== hero?.name ? state.name : (state.created ?? '') } : {}),
   };

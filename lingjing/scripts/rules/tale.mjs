@@ -279,7 +279,7 @@ function grantsOf(content, steps) {
    (a card only if he lacks it and has its root), picked by the tale's id. */
 function dropOf(content, state, t) {
   const rank = tierIndex(content, state), catalog = cardCatalog(content), owned = new Set(ownedCards(content, state)), roots = new Set(state.traits ?? []);
-  const fits = d => tierRank(content, d.tier) <= rank && ofJuan(content, d) && (d.item ? itemOf(content, d.item) && ofJuan(content, itemOf(content, d.item)) : catalog[d.card] && !owned.has(d.card) && usable(catalog[d.card], roots));
+  const fits = d => tierRank(content, d.tier) <= rank && ofJuan(content, d) && (d.item ? itemOf(content, d.item) && ofJuan(content, itemOf(content, d.item)) : catalog[d.card] && !catalog[d.card].owner && !owned.has(d.card) && usable(catalog[d.card], roots));
   const open = (content.rewards.tale?.drops ?? []).filter(fits);
   if (!open.length) return null;
   const top = Math.max(...open.map(d => tierRank(content, d.tier)));

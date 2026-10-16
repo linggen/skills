@@ -121,7 +121,10 @@
     "id": "mijing-gui",
     "kind": "duel",
     "creature": "gui",
-    "retry": true
+    "retry": true,
+    "foe": {
+     "hp": 1.65
+    }
    },
    "withdrawn": {
     "zh": "蛫缩回了潭里，把赤红的头又探了出来，一眨不眨地盯着你。——再来。",

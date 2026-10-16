@@ -84,7 +84,28 @@
        "en": "Ahe's records: Qin Yan — sword-qi three feet. At the edge, one inch more. Holds back three parts. Never stamps."
       }
      }
-    ]
+    ],
+    "foe": {
+     "hp": 6,
+     "trial": {
+      "survive": 7
+     },
+     "deck": [
+      "shuiwu",
+      "luying",
+      "luying",
+      "shuiwu",
+      "changyou",
+      "shuiwu",
+      "luying",
+      "changyou",
+      "hanquan",
+      "hantan",
+      "shuiwu",
+      "huiqi"
+     ]
+    },
+    "_foe": "三十招 (第六回): 撑过她七个回合便算过 —— 打不穿她 (hp 6)。2026-10-16 起得牌都在剧情里、银月不上台，牌少了：她的寒潭两张换成水雾、一只鹿影换成水雾 (lookahead 57%)。"
    },
    "withdrawn": {
     "zh": "秦雁把剑收回半寸，退后一步：「再来。」",

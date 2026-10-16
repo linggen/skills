@@ -12,25 +12,28 @@
 // player. tests/fight-band.test.mjs and fight-band-pools.test.mjs lock the
 // band with fixed seeds.
 //
-// Where the road stands at each 回 (ladder.json caps.hui; the scenes' grants):
-//   h04  练气零层 · before the root test 蠪侄 is fought with the rootless starter;
-//        once rooted (00-hall) the starter of all five roots, and the 灰袍 (grey-robe).
-//   h05  练气一层 · + the card from 蠪侄.          (+ 狰 once tamed at the 药园)
-//   h07  练气二层 · + 狰, the card from 狰; the 凶崖's 犰狳 on the stair down, 蛫
-//        (wm-wangzuo), then 邹青松 (wm-xirang) and the 暗河 past the 石室, with
-//        蛫's card and its 踏马符 in the bag.
-//   h08  练气四层 · + 邹青松's card, the 短刀 worn (wm-xirang grant); the 大比 in order.
-//   h11  练气五层 · + 马小宝's card (祁长松 is lost), 火柴 worn (09-snow) — 灵草谷's 犰狳 (09-lingcao);
-//   h11b 练气六层 · + the 犰狳's card — 秦雁 on the 崖顶 (09-futian).
-//   h10  筑基一层 · the same hand at 筑基 — 冰夷双龙, the 冀 pools, 泗水's 蛫.
+// Where the road stands at each 回 (ladder.json caps.hui; cards.json `from` — 2026-10-16, cards.md:
+// every card is gained in the story or bought, none at the root test):
+//   h04r 练气零层 · the 三试 (a 试 of nerve, survive 4): 娘的饼 (00-kitchen), 一箭 (射鹿), 吐纳 (吹鹅毛),
+//        each twice (under ten, two copies), and the 试's own 一滚 · 石子.
+//   h04  the same, rooted (00-hall), the 灰袍 (grey-robe) — the 蒙山 and 林子 pools.
+//   h05  练气一层 · + 木草泥马 (wm-diyilu), 狰 tamed with a 萝卜 (wm-yaoyuan) — the 后山崖顶's first beasts.
+//   h07  练气二层 · the 秘境: the 凶崖's 犰狳 on the stair down, 蛫 (wm-wangzuo).
+//   h07z 练气三层 · + the 踏马符 in the bag — 邹青松 (wm-xirang, 阿禾 behind the wall), the 暗河.
+//   h08  练气四层 · + 回气丹 (wm-xirang), 火鸦 (邹青松's gourd), 褚先生's five (wm-qianye), 痒痒针
+//        (wm-zhaojing), the 短刀 worn — the 大比 in order (卢方's 厚土 after his bout).
+//   h11  练气五层 · + 火柴 (09-snow) worn — 灵草谷's 犰狳 with 阿禾 and 孙二狗 (party.json by_hui).
+//   h11b 练气六层 · + 震怒 (the 犰狳's) — 秦雁 on the 崖顶, alone.
+//   h09  练气七层 · + 入隙 (09-futian) — 古八's pools with 阿禾.
+//   h10  筑基一层 · the same hand at 筑基 — 冰夷双龙 alone, the 冀 pools with 阿禾.
 // Gear worn as soon as it is had (a sensible player puts on what he is given).
 import fs from 'node:fs';
 import { loadContent } from '../scripts/content.mjs';
 import { fightSetup } from '../scripts/rules.mjs';
-import { winCard } from '../scripts/rules/cards.mjs';
 import { creatureOf, foeOf as sceneFoe } from '../scripts/rules/world.mjs';
 import { act, begin, foeTurn } from '../scripts/battle.js';
 import { fightOnce, lookahead } from './trial-sim.mjs';
+import { EARLY, H05, H08, H11 } from './road-hand.mjs';
 
 export const content = loadContent();
 const NOW = new Date('2026-09-29T11:00:00Z');
@@ -40,32 +43,28 @@ const ALL = ['metal', 'wood', 'water', 'fire', 'earth'];
 /* The road, step by step: each stop names its realm, what has been won before
    it (each win deals one card, rules/cards.mjs winCard), and what is worn or held. */
 const STOPS = {
-  h04r: { tier: 'qi', step: 0, rootless: true, won: [] },
-  h04: { tier: 'qi', step: 0, won: [], wear: { robe: 'grey-robe' } },
-  h05: { tier: 'qi', step: 1, won: ['longzhi'], wear: { robe: 'grey-robe' } },
-  h07: { tier: 'qi', step: 2, won: ['longzhi', 'zheng'], cast: ['zheng'], wear: { robe: 'grey-robe' } },
-  h07z: { tier: 'qi', step: 3, won: ['longzhi', 'zheng', 'gui'], cast: ['zheng'], wear: { robe: 'grey-robe' }, bag: { 'tama-fu': 1 } },
-  h08: { tier: 'qi', step: 4, won: ['longzhi', 'zheng', 'gui', 'foe-zou'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'duan-dao' } },
-  h08b: { tier: 'qi', step: 4, won: ['longzhi', 'zheng', 'gui', 'foe-zou', 'foe-lufang'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'duan-dao' } },
-  h08c: { tier: 'qi', step: 4, won: ['longzhi', 'zheng', 'gui', 'foe-zou', 'foe-lufang', 'foe-shijie'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'duan-dao' } },
-  // 古七 and 古八 (the pools' new beasts meet him there — tests/bestiary.test.mjs): the 大比 behind
-  // him, 马小宝's card, 火柴 worn from 09-snow; 古七 opens at 练气五层 (the comment above), 古八 at
-  // 七层 (ladder.json caps.hui h09).
-  h11: { tier: 'qi', step: 5, won: ['longzhi', 'zheng', 'gui', 'foe-zou', 'foe-lufang', 'foe-shijie', 'foe-maxiaobao'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' } },
-  h11b: { tier: 'qi', step: 6, won: ['longzhi', 'zheng', 'gui', 'foe-zou', 'foe-lufang', 'foe-shijie', 'foe-maxiaobao', 'qiuyu'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' } },
-  h09: { tier: 'qi', step: 7, won: ['longzhi', 'zheng', 'gui', 'foe-zou', 'foe-lufang', 'foe-shijie', 'foe-maxiaobao'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' } },
-  h10: { tier: 'foundation', step: 1, won: ['longzhi', 'zheng', 'gui', 'foe-zou', 'foe-lufang', 'foe-shijie', 'foe-maxiaobao'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' } },
+  h04r: { tier: 'qi', step: 0, rootless: true, cards: EARLY, at: ['00-prologue', '00-longzhi'] },
+  h04: { tier: 'qi', step: 0, cards: EARLY, wear: { robe: 'grey-robe' }, at: ['00-prologue', '00-waimen'] },
+  h05: { tier: 'qi', step: 1, cards: H05, cast: ['zheng'], wear: { robe: 'grey-robe' }, at: ['00-waimen', 'wm-diyilu'] },
+  h07: { tier: 'qi', step: 2, cards: H05, cast: ['zheng'], wear: { robe: 'grey-robe' }, at: ['00-waimen', 'wm-wangzuo'] },
+  h07z: { tier: 'qi', step: 3, cards: H05, cast: ['zheng'], wear: { robe: 'grey-robe' }, bag: { 'tama-fu': 1 }, at: ['00-waimen', 'wm-xirang'] },
+  h08: { tier: 'qi', step: 4, cards: H08, cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'duan-dao' }, at: ['00-waimen', 'wm-fushi'] },
+  h08b: { tier: 'qi', step: 4, cards: [...H08, 'houtu'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'duan-dao' }, at: ['00-waimen', 'wm-lun2'] },
+  h08c: { tier: 'qi', step: 4, cards: [...H08, 'houtu', 'luying'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'duan-dao' }, at: ['00-waimen', 'wm-juesai'] },
+  h11: { tier: 'qi', step: 5, cards: H11, cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' }, at: ['00-zhuji', '09-lingcao'] },
+  h11b: { tier: 'qi', step: 6, cards: [...H11, 'zhennu'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' }, at: ['00-zhuji', '09-futian'] },
+  h09: { tier: 'qi', step: 7, cards: [...H11, 'zhennu', 'ruxi'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' }, at: ['00-zhuji', '09-dabi'] },
+  h10: { tier: 'foundation', step: 1, cards: [...H11, 'zhennu', 'ruxi'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' }, at: ['01-ji', '01-ye'] },
 };
 
 export function stateAt(stop) {
   const at = STOPS[stop];
   const s = structuredClone(base);
   Object.assign(s, { tier: at.tier, step: at.step, traits: at.rootless ? [] : ALL, cast: [...(at.cast ?? [])], wear: { ...(at.wear ?? {}) }, bag: { ...(s.bag ?? {}), ...(at.bag ?? {}), ...Object.fromEntries(Object.values(at.wear ?? {}).map(id => [id, 1])) } });
-  delete s.cards;
-  if (!at.rootless) {
-    s.cards = [...content.cards.starter, ...(at.cast ?? [])];
-    at.won.forEach((c, i) => winCard(content, s, creatureOf(content, c), new Date(NOW.getTime() - (at.won.length - i) * 86400000)));
-  }
+  // Where he stands decides who stands with him (party.json by_hui).
+  [s.chapter, s.scene] = at.at;
+  s.cards = [...at.cards];
+  delete s.cards_new;
   return s;
 }
 
@@ -73,26 +72,25 @@ export function stateAt(stop) {
    entry deck stands over the creature's own; `reach: false` is a beast of the
    book that is not yet a game fight. `band` is what it is tuned to. */
 export const FIGHTS = [
-  { id: 'longzhi', name: '蠪侄 (三试)', at: 'h04r', band: [0.6, 0.92], note: 'tutorial' },
-  { id: 'zheng', name: '小狰 (药园)', at: 'h05', band: [0.6, 0.92], note: 'tutorial' },
-  { id: 'gui', name: '蛫 (秘境)', at: 'h07' },
-  { id: 'foe-zou', name: '邹青松 (试 · 追)', at: 'h07z', trial: true, unforced: true },
-  { id: 'foe-lufang', name: '卢方 (大比)', at: 'h08' },
-  { id: 'foe-shijie', name: '秦雁 (试 · 三十招)', at: 'h08b', trial: true, unforced: true },
-  { id: 'foe-maxiaobao', name: '马小宝 (大比)', at: 'h08c' },
+  { id: 'longzhi', name: '蠪侄 (三试)', at: 'h04r', scene: '00-longzhi/subdue', band: [0.6, 0.92], note: 'tutorial' },
+  { id: 'gui', name: '蛫 (秘境)', at: 'h07', scene: 'wm-wangzuo/open' },
+  { id: 'foe-zou', name: '邹青松 (试 · 追)', at: 'h07z', scene: 'wm-xirang/swallow', trial: true, unforced: true },
+  { id: 'foe-lufang', name: '卢方 (大比)', at: 'h08', scene: 'wm-fushi/flip' },
+  { id: 'foe-shijie', name: '秦雁 (试 · 三十招)', at: 'h08b', scene: 'wm-lun2/dodge', trial: true, unforced: true },
+  { id: 'foe-maxiaobao', name: '马小宝 (大比)', at: 'h08c', scene: 'wm-juesai/face' },
   { id: 'qiuyu', name: '犰狳 (灵草谷)', at: 'h11', scene: '09-lingcao/fight' },
   { id: 'foe-shijie', name: '秦雁 (崖顶 · 试)', at: 'h11b', scene: '09-futian/spar', trial: true, unforced: true },
-  { id: 'foe-shuanglong', name: '冰夷双龙 (试)', at: 'h10', trial: true },
+  { id: 'foe-shuanglong', name: '冰夷双龙 (试)', at: 'h10', scene: '01-rise/stand', trial: true },
   { id: 'qiuyu', name: '犰狳 (秘境 凶崖, guards the way)', at: 'h07', pool: 'mijing-ya' },
   { id: 'heyu', name: '合窳 (秘境 暗河)', at: 'h07z', pool: 'mijing-anhe' },
   { id: 'qiuyu', name: '犰狳 (秘境 暗河)', at: 'h07z', pool: 'mijing-anhe' },
-  { id: 'yezhu', name: '野猪 (蒙山)', at: 'h04', pool: 'mengshan' },
-  { id: 'lang', name: '狼 (蒙山)', at: 'h04', pool: 'mengshan' },
-  { id: 'xiong', name: '熊 (蒙山)', at: 'h04', pool: 'mengshan' },
-  { id: 'longzhi', name: '蠪侄 (林子 pool)', at: 'h04', pool: 'songlin' },
+  { id: 'yezhu', name: '野猪 (蒙山)', at: 'h05', pool: 'mengshan' },
+  { id: 'lang', name: '狼 (蒙山)', at: 'h05', pool: 'mengshan' },
+  { id: 'xiong', name: '熊 (蒙山)', at: 'h05', pool: 'mengshan' },
+  { id: 'longzhi', name: '蠪侄 (林子 pool)', at: 'h05', pool: 'songlin' },
   { id: 'zheng', name: '狰 (药园外 pool)', at: 'h05', pool: 'yaoyuan-wai' },
   { id: 'yezhu', name: '野猪 (后山崖顶 pool)', at: 'h05', pool: 'yaoyuan-wai' },
-  { id: 'lang', name: '狼 (林子 pool)', at: 'h04', pool: 'songlin' },
+  { id: 'lang', name: '狼 (林子 pool)', at: 'h05', pool: 'songlin' },
   { id: 'gui', name: '蛫 (泗水 pool)', at: 'h10', pool: 'sishui' },
   { id: 'tianma', name: '天马 (太行)', at: 'h10', pool: 'taihang' },
   { id: 'linghu', name: '领胡 (太行)', at: 'h10', pool: 'taihang' },

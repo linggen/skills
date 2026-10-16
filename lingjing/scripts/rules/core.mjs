@@ -4,14 +4,14 @@ import { gameOf, MADE_GRANT } from '../content.mjs';
 import { addProgress, dayKey, fill, fitValue, fullName, lockedOf, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaLimited, staminaReturnsAt, stepName, peakName, phaseName, threshold, tierOf, seedOf, stepOfLayer, stepUp, zeroAt } from '../state.mjs';
 import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
-import { gainCard, starterOf } from './cards.mjs';
+import { gainCard, grantFrom } from './cards.mjs';
 import { breakthroughOf, itemOf, threadOf } from './errands.mjs';
 import { coolingUntil, oddsOf, throwOn } from './breakthrough.mjs';
 import { sceneBrief, spoken, wordsOf } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { herBeat, storyNode, withHerBeat } from './story.mjs';
 import { stow, storedLine } from './pouch.mjs';
-import { bornRoots, rootName, starterFor, stoneRoots } from './roots.mjs';
+import { bornRoots, rootName, stoneRoots } from './roots.mjs';
 import { oweExit } from './tell.mjs';
 import { seenMet } from './examine.mjs';
 import { companionOf } from './companion.mjs';
@@ -275,10 +275,9 @@ function readRoots(content, s, ctx, args) {
   const roots = read.roots;
   s.traits = roots;
   if (read.main) s.root_main = read.main;
-  // The root test hands over the starter — the first cards he holds.
-  const starter = starterFor(content, roots);
-  s.cards = [...new Set([...(s.cards ?? []), ...starter])];
-  s.card_from = { ...Object.fromEntries(starter.map(id => [id, { how: 'starter', place: s.place ?? null, chapter: s.chapter ?? null, day: dayKey(ctx.now) }])), ...(s.card_from ?? {}) };
+  // No starter at the root test any more (cards.md § 4): what he holds he has
+  // gained along the road; written down so the old starter is never read in.
+  s.cards = [...(s.cards ?? [])];
   return { read: birth ? 'birth' : 'stone' };
 }
 
@@ -513,10 +512,11 @@ export function resolve(state, content, ctx, args) {
   const remembered = inMade(s) ? null : grantMemory(content, s, exit, ctx.now);
   if (exit.set?.traits === 'v1') {
     s.traits = [...content.traits.v1];
-    // The root test hands over the starter — the first cards he holds.
-    s.cards = [...new Set([...(s.cards ?? []), ...starterOf(content, s.traits)])];
-    s.card_from = { ...Object.fromEntries(starterOf(content, s.traits).map(id => [id, { how: 'starter', place: s.place ?? null, chapter: s.chapter ?? null, day: dayKey(ctx.now) }])), ...(s.card_from ?? {}) };
+    s.cards = [...(s.cards ?? [])]; // no starter (cards.md § 4)
   }
+  // 出处: leaving a scene, every card it gives (cards.json `from: {kind: 'story', scene}` —
+  // 娘's 饼 from 00-kitchen, 褚先生's five at wm-qianye). A scene played again gives nothing new.
+  const told = inMade(s) ? [] : grantFrom(content, s, 'story', scene.id, { how: 'story', day: dayKey(ctx.now) });
   if (breakthrough) {
     // What he held over the peak's mark goes with him whole (state.mjs stepUp); a pill that
     // lands the step full fills it under that.
@@ -580,6 +580,7 @@ export function resolve(state, content, ctx, args) {
       ...(node?.unease ? { unease: node.unease } : {}),
       ...(her ? { her_beat: her } : {}),
       ...(remembered ? { memory: remembered } : {}),
+      ...(told.length ? { cards: told } : {}),
       summarize: Boolean(exit.next || exit.ends),
     },
   };
@@ -591,8 +592,8 @@ export function resolve(state, content, ctx, args) {
 function joinHer(content, s, ctx) {
   const c = companionOf(content);
   if (!c || s.companion?.joined) return null;
+  // A member of the 小队 (party.json), never a card in his hand (cards.md § 5).
   s.companion = { joined: dayKey(ctx.now), awake: true };
-  gainCard(content, s, c.id, { how: 'companion', day: dayKey(ctx.now) });
   return { id: c.id };
 }
 

@@ -127,8 +127,11 @@ function fightOut(state, id, { line = null, c = ctx(), between = s => s } = {}) 
 const toHall = (s = start()) => walk(s, TO_HALL, content, NOW);
 const toFuzhu = (s = start()) => {
   const at = walk(s, TO_WAIMEN, content, NOW);
-  return { ...at, scene: '00-fuzhu', place: 'sibei', bag: { ...at.bag, lingzhi: 1 } };
+  // The hand the road gives by the 大比 (tools/story-fights.mjs STOPS.h08) — the walk to the outer court
+  // gains only the first three (cards.md § 4), and these tests fight a 卷 boss with what a player holds later.
+  return { ...at, scene: '00-fuzhu', place: 'sibei', bag: { ...at.bag, lingzhi: 1 }, cards: [...new Set([...(at.cards ?? []), ...ROAD_HAND])] };
 };
+const ROAD_HAND = ['mucao', 'huiqi', 'huoya', 'huodan', 'bingzhui', 'jinren', 'tuqiang', 'mutang', 'yangzhen', 'houtu', 'luying', 'huochai', 'zhennu', 'ruxi'];
 /* A save read under the retired root rule, born without 金 (v1 — his own
    save's 木 水 火 土): what a root it lacks, lent by the arms, does. */
 const toFuzhuV1 = () => ({ ...toFuzhu(), traits: [...content.traits.v1] });
@@ -453,28 +456,30 @@ test('the ten cards are the player\'s own roots (and the ones their arms lend), 
   const s = { ...toFuzhuV1(), bag: { 'iron-sword': 1, 'straw-cloak': 1 }, wear: { weapon: 'iron-sword', robe: 'straw-cloak' } };
   const brief = look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel;
   const byId = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
-  const roots = new Set(s.traits);
+  const roots = new Set([...s.traits, 'metal']); // his own, and the 金 the worn 铁剑 lends (§ 装备入局)
   // Every 功法 in the deck is of a root they have — born without 金, you cast
   // no 金 spell. A 灵兽 of any element may follow (韩立's 噬金虫, 2026-09-22).
   for (const id of brief.setup.you.deck) {
     const { element: el, kind } = byId[id];
     assert.ok(kind !== 'spell' || !el || roots.has(el), `${id} is a ${el} spell, which is not theirs`);
   }
-  const metal = { ...s, wear: { robe: 'straw-cloak' }, cards: [...s.cards, 'jianying', 'suijin'] }; // a 金 beast and a 金 spell
+  const metal = { ...s, wear: { robe: 'straw-cloak' }, cards: ['niangbing', 'tuna', 'jianying', 'suijin'] }; // a 金 beast and a 金 spell, in a small hand (every card dealt)
   const metalDeck = look(metal, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.deck;
   assert.ok(metalDeck.includes('jianying'), 'the 金 beast comes in');
   assert.ok(!metalDeck.includes('suijin'), 'the 金 spell does not');
   // …until the 铁剑 is worn: 佩之借金, and a 金 功法 may be cast (§ 装备入局).
   const lent = look({ ...metal, wear: { weapon: 'iron-sword', robe: 'straw-cloak' } }, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.deck;
   assert.ok(lent.includes('suijin'), 'the sword lends its root');
-  assert.equal(brief.setup.you.deck.length, new Set(brief.setup.you.deck).size, 'ten different cards');
-  assert.deepEqual(brief.setup.you.extra, [], '银月 rides along only once she walks with the player');
-  // …and once she does, she is in the hand at the door. The fight read a
-  // `companion.found` nothing ever wrote, so from 2026-09-18 she never came
-  // (his save: companion { joined } — the one mark hasCompanion reads).
-  // (a save from before 得牌 holds no `cards`: it is read as what it would hold)
+  // Under ten held, a card goes in twice (cards.md § 4); ten or more, ten different ones.
+  const held = new Set(brief.setup.you.deck);
+  assert.ok(brief.setup.you.deck.every(id => brief.setup.you.deck.filter(x => x === id).length <= 2), 'two of a card at most');
+  if (held.size >= 10) assert.equal(brief.setup.you.deck.length, held.size, 'ten different cards');
+  assert.deepEqual(brief.setup.you.extra, [], 'no 银月 in the hand: she is a member of the 小队, never a card (cards.md § 5)');
+  // …and once she walks with him she stands in the row beside him (a member), her card never in his hand.
   const withHer = { ...s, companion: { joined: '2026-09-18' }, cards: undefined };
-  assert.deepEqual(look(withHer, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.extra, ['yinyue']);
+  const herDoor = look(withHer, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you;
+  assert.ok(!herDoor.extra.includes('yinyue'));
+  assert.ok((herDoor.party ?? []).some(m => m.id === 'yinyue'), 'every 卷 open (this world): she walks with him');
   // The same player takes the same deck into the same fight, every time
   assert.deepEqual(look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.deck, brief.setup.you.deck);
   // 法器 stay gear: the 铁剑 (器攻 3) gives 主灵根一击 +2, the 蓑衣 (防 1) 4 护体
@@ -533,7 +538,7 @@ test('a fight must be started, a turn must be one the player has, and the same d
   refused(duel, a.state, { id: 'subdue-fuzhu', picks: 'play:9' }, 'not-in-hand');
   // A turn that never finished the fight is no answer at all, and a word the
   // rules do not know reads as ending the turn — it settles nothing either.
-  refused(duel, a.state, { id: 'subdue-fuzhu', picks: 'play:0' }, 'unfinished');
+  refused(duel, a.state, { id: 'subdue-fuzhu', picks: 'end' }, 'unfinished');
   refused(duel, a.state, { id: 'subdue-fuzhu', picks: 'dance' }, 'unfinished');
 });
 
@@ -792,23 +797,21 @@ test('a bound treasure is the weapon from then on: it strikes, it lends its elem
   assert.equal(fight(['art:yujian'], wood, { ...rider, treasure: null, weapon: null }).refused.why, 'art-no-sword');
 });
 
-test('得牌: he fights only with the cards he has obtained — the starter at the root test, then what the world gives', () => {
-  // His rule, 2026-09-22: 用户只能使用已经获得的牌, 包括银月, 法术, 武器等.
-  const byId = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
+test('得牌: he fights only with the cards he has obtained — gained along the road, none at the root test', () => {
+  // His rule, 2026-09-22: 用户只能使用已经获得的牌, 包括银月, 法术, 武器等. 2026-10-16 (cards.md): every card is
+  // gained in the story or bought — no starter at the root test; 银月 is a member, never a card.
   const beasts = new Set(content.creatures.creatures.map(c => c.id));
   const s = toFuzhu();
-  // the root test hands over the starter of his roots, and nothing else
-  const starter = starterFor(content, s.traits);
-  assert.ok(s.cards.includes('yinyue'), 'her card, held since the valley');
-  assert.deepEqual([...s.cards].filter(id => id !== 'yinyue').sort(), [...starter].sort());
-  assert.equal(starter.length, 10, 'five roots, the old ten cards');
+  assert.ok(!s.cards.includes('yinyue'), 'her card is not handed to him when she joins');
+  assert.equal(starterFor(content, s.traits).length, 0, 'nothing at the root test');
+  for (const id of s.cards) assert.ok(content.cards.cards.find(c => c.id === id).from?.length, `${id} says where it came from`);
   const deck = look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.deck;
   assert.ok(deck.every(id => s.cards.includes(id)), 'the ten are all his');
   assert.ok(!deck.some(id => beasts.has(id)), 'no 山海经 beast he has not tamed');
-  // a save from before 得牌 is read as what it would hold: starter, 银月, its cast
+  // a save from before 得牌 is read as what it held: the old starter, 银月's card (kept, never in his hand), its cast
   const old = { ...s, cards: undefined, cast: ['fuzhu', 'paoxiao'], companion: { joined: '2026-09-18' } };
   const setup = look(old, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you;
-  assert.deepEqual(setup.extra, ['yinyue']);
+  assert.deepEqual(setup.extra, []);
   assert.ok(setup.deck.includes('fuzhu') && setup.deck.includes('paoxiao'), 'the beasts that walk with him come in');
   assert.ok(!setup.deck.includes('jingwei'));
   // content may only grant a card that exists
@@ -817,26 +820,22 @@ test('得牌: he fights only with the cards he has obtained — the starter at t
   assert.ok(!lint(content).some(p => /unknown card/.test(p)));
 });
 
-test('a subdued creature leaves what it carries, one new card, and on one win in three a 符 — never a 妖丹', () => {
-  // a 结丹 player holds more than the starter by then
-  const s = { ...toFuzhu(), tier: 'core', step: 0, cards: [...toFuzhu().cards, 'leiming', 'hantan', 'tunshi', 'luoshi', 'chaoqi'] };
+test('a subdued creature leaves what it carries, its own card if it names one, and on one win in three a 符 — never a 妖丹', () => {
+  // a 结丹 player holds more than the road's first cards by then
+  const s = { ...toFuzhu(), tier: 'core', step: 0, cards: [...toFuzhu().cards, 'leiming', 'hantan', 'tunshi', 'luoshi', 'chaoqi', 'huodan', 'jinren', 'bingzhui', 'tuqiang'] };
   const won = fightOut(s, 'subdue-fuzhu');
   assert.equal(won.result.outcome, 'won');
-  const things = r => r.result.dropped.filter(d => !d.card).map(d => d.id);
+  const things = r => (r.result.dropped ?? []).filter(d => !d.card).map(d => d.id);
   // 夫诸 carries nothing of its own; the 妖丹 went with 强化 (redesign-v2 § 四).
   assert.ok(things(won).every(id => id === 'talisman'), things(won).join());
   assert.equal(won.state.bag['yaodan-2'], undefined);
-  // and a card he did not hold, of his roots, never a 山海经 beast (得牌)
-  const [card] = won.result.dropped.filter(d => d.card);
-  assert.ok(card && !s.cards.includes(card.id) && won.state.cards.includes(card.id));
-  assert.ok(!content.creatures.creatures.some(c => c.id === card.id));
-  const won_ = content.cards.cards.find(c => c.id === card.id);
-  assert.ok(won_.kind !== 'spell' || s.traits.includes(won_.element), 'a spell he can cast, or a beast of any element');
+  // 夫诸 names no card of its own (cards.json from: beast) — a beast is tamed, never won as a card: nothing at random (得牌)
+  assert.equal((won.result.dropped ?? []).filter(d => d.card).length, 0);
   // A 符 falls on one win in `fight_one_in`, by the day, the beast and the 名字:
   // over many days, about a third — never every time, never none.
   const one = content.rewards.growth.charm.fight_one_in;
   const days = Array.from({ length: 30 }, (_, i) => fightOut(toFuzhu(), 'subdue-fuzhu', { c: ctx({ now: new Date(NOW.getTime() + i * 864e5) }) }));
-  const charms = days.filter(d => d.result.outcome === 'won' && d.result.dropped.some(x => x.id === 'talisman')).length;
+  const charms = days.filter(d => d.result.outcome === 'won' && (d.result.dropped ?? []).some(x => x.id === 'talisman')).length;
   const wins = days.filter(d => d.result.outcome === 'won').length;
   assert.ok(charms > 0 && charms < wins, `${charms} of ${wins}`);
   assert.ok(Math.abs(charms / wins - 1 / one) < 0.25, `${charms} of ${wins}, about one in ${one}`);
@@ -1622,7 +1621,8 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
   // the chapter's fight: 冰夷's two dragons test the one who would not kneel — a trial, fought again at once
   const rise = look(s, content, octx()).scene;
   const trial = rise.exits.find(e => e.id === 'stand');
-  assert.deepEqual(trial.game, { id: 'shuanglong-trial', kind: 'duel', creature: 'foe-shuanglong', retry: true });
+  // alone on the bank (第九回: he only dodges the dragons) — the scene says its 小队: none
+  assert.deepEqual(trial.game, { id: 'shuanglong-trial', kind: 'duel', creature: 'foe-shuanglong', retry: true, foe: { party: [] } });
   assert.equal(trial.duel.creature.root, 'water');
   refused(resolve, s, { exit: 'stand' }, 'game-not-won', octx());
   s = { ...s, wins: { ...s.wins, 'shuanglong-trial': OCT.toISOString() } };
@@ -1726,7 +1726,8 @@ test('chapter 1: the shaman sent first, then the dragons\' trial — fought out 
   assert.equal(must(duel, lost.state, { id: 'shuanglong-trial' }, octx()).result.ok, true, 'again, at once');
   // won on some day's hand: then 站着，不跪 walks on to the fallen tower (古九's 老胡), then the deep
   let won = null;
-  for (let k = 0; k < 3 && won?.result.outcome !== 'won'; k += 1) won = fightOut({ ...s, seed: `trial-${k}` }, 'shuanglong-trial', { c: octx() });
+  // (the hand the road gives by 古九 — the walk here gains only the first cards; cards.md § 4)
+  for (let k = 0; k < 6 && won?.result.outcome !== 'won'; k += 1) won = fightOut({ ...s, seed: `trial-${k}`, cards: [...new Set([...(s.cards ?? []), ...ROAD_HAND])] }, 'shuanglong-trial', { c: octx() });
   assert.equal(won.result.outcome, 'won', JSON.stringify(won.result.log?.slice(-3)));
   const r = answer(resolve, won.state, { exit: 'stand' });
   assert.equal(r.state.scene, '01-tower'); assert.equal(r.result.paid.progress, 60);
@@ -2706,7 +2707,8 @@ test('精英 is its harder deck and nothing more: the same share of 气血, the 
   assert.equal(won.result.outcome, 'won', JSON.stringify({ o: won.result.outcome, you: won.result.you?.hp, foe: won.result.foe?.hp, turns: won.result.turns }));
   assert.equal(won.result.elite, undefined);
   assert.equal(won.result.paid.wealth, content.rewards.tables.haunt.wealth, 'a haunt\'s pay');
-  assert.equal(won.result.dropped.filter(d => d.card).length, 1, JSON.stringify(won.result.dropped));
+  // its own card if it names one (cards.json from: beast) — never one at random (cards.md, 2026-10-16)
+  assert.ok((won.result.dropped ?? []).filter(d => d.card).length <= 1, JSON.stringify(won.result.dropped));
 });
 
 test('银月 beside him: no score, no 谈心 or 疗伤 — her card grows with his realm and by the cauldrons', () => {
@@ -2723,7 +2725,8 @@ test('银月 beside him: no score, no 谈心 or 疗伤 — her card grows with h
   assert.equal(gifted.result.bond, undefined);
   // her card WITH his realm (rewards.json her_card.realm), locked at the door
   const jingwei = content.creatures.creatures.find(x => x.id === 'jingwei');
-  const lifts = st => fightSetup(content, st, jingwei, c.now).you.lifts;
+  // (in a 卷 she is awake in — party.json: she sleeps in the 木牌 through 卷一 and walks with him from 卷二)
+  const lifts = st => fightSetup(content, { ...st, chapter: '02-yan' }, jingwei, c.now).you.lifts;
   const realm = content.rewards.her_card.realm;
   assert.equal(lifts({ ...her, tier: 'qi' }), undefined, '练气: as printed');
   assert.deepEqual(lifts(her), { yinyue: realm.foundation });
@@ -2938,7 +2941,7 @@ test('路上 · 机缘: dealt once a day within two roads; arriving in time it i
   assert.equal(told.result.revealed, 'chance');
   const took = must(meet, told.state, { action: 'take' }, at(1));
   assert.ok(took.result.paid.wealth > 0);
-  assert.ok(took.result.card?.card, 'a card he did not hold');
+  assert.ok(!took.result.card, 'a chance deals no card: every card has its 出处 (cards.md, 2026-10-16)');
   assert.equal(took.result.chance, true);
   assert.equal(look(took.state, content, at(1)).chance.taken, true);
   assert.equal(look(took.state, content, at(1)).place.meet, undefined);
@@ -3433,7 +3436,7 @@ test('a traveller\'s riddle is missed at most RIDDLE_TRIES times; a beast passed
   // a beast on the road: passed, it is gone; beaten, the same
   // a beast tamed by then (the v1 prologue gave 夫诸) to fight it with
   const road = { ...toOpenWorld(), cast: ['fuzhu'], place: 'sishui', meets: { day: dayKey(c.now), places: { sishui: { kind: 'beast', creature: 'paoxiao' } } } };
-  road.cards = [...road.cards, 'fuzhu'];
+  road.cards = [...road.cards, ...ROAD_HAND, 'fuzhu'];
   assert.equal(look(road, content, c).place.encounter?.game.id, 'haunt:paoxiao');
   const passed = must(meet, road, { action: 'pass' }).state;
   assert.equal(look(passed, content, c).place.encounter, null);

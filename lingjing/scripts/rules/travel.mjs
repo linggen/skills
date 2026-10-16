@@ -4,6 +4,7 @@ import { ARM_SLOTS } from '../content.mjs';
 import { dayKey, fill, pick } from '../state.mjs';
 import { langWas } from './language.mjs';
 import { tierRank } from './arms.mjs';
+import { gainCard, ownedCards } from './cards.mjs';
 import { companionOf, hasCompanion } from './companion.mjs';
 import { clone, offerTasks, pay, refuse, spendStamina } from './core.mjs';
 import { advance, bookOf, directorBrief, GEAR_SLOTS, itemBrief, itemOf, onStoryRoad, questOf, settleErrands } from './errands.mjs';
@@ -173,6 +174,16 @@ export function keyInUse(content, state, id) {
    weapon in hand (and a fight may borrow its root), a 法衣, a 佩. A 天材地宝
    waits for the 炼化; a 妖丹 or an old 回春丹 is only goods now (强化 and
    伤势 were cut, redesign-v2 § 四). */
+/* 买一张牌: the thing carries its card (cards.json `from: {kind: 'shop', item}`); paid, it is his. */
+function buyCard(content, s, ctx, item) {
+  if (ownedCards(content, s).includes(item.effect.card)) return refuse('card-held', pick({ zh: '这张牌你已经有了。', en: 'You hold that card already.' }, s.lang));
+  const empty = spendStamina(content, s, ctx, 'shop');
+  if (empty) return empty;
+  s.wealth -= item.buy;
+  const card = gainCard(content, s, item.effect.card, { how: 'shop', item: item.id, day: dayKey(ctx.now ?? new Date()) });
+  return { state: s, result: { ok: true, bought: item.id, ...(card ? { cards: [card] } : {}), paid: { wealth: -item.buy }, wealth: s.wealth } };
+}
+
 export function trade(state, content, ctx, args) {
   const item = itemOf(content, String(args.id ?? ''));
   const s = clone(state);
@@ -195,6 +206,9 @@ export function trade(state, content, ctx, args) {
       }
       // A bigger 储物袋 already put to use is not bought twice.
       if (item.effect?.pouch && (s.pouch ?? []).includes(item.id)) return refuse('pouch-used', pick({ zh: '这样的储物袋你已经换上了。', en: 'You already carry a pouch like that.' }, lang));
+      // A thing bought for its card (items `effect.card`: 短飞剑, 参悟玉简) is a card in hand, not a
+      // thing in the bag — and a card he holds is not bought twice.
+      if (item.effect?.card) return buyCard(content, s, ctx, item);
       // A full 储物袋 buys nothing new — a stack he holds still takes one more.
       if (!roomFor(content, s, item.id)) return bagFull(content, s);
       const empty = spendStamina(content, s, ctx, 'shop');

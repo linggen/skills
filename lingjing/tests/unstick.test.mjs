@@ -34,10 +34,10 @@ test('a fight open against a beast he has tamed is found and closed — nobody w
 
 test('a scene\'s fight against a beast already tamed: offered as a problem, passed with no drop', () => {
   const at = walk(fresh(), TO_OPEN, content, NOW);
-  // 狰 at 药园 (wm-yaoyuan) with 小狰 already at his feet.
-  const sc = content.chapters['00-waimen'].scenes['wm-yaoyuan'];
+  // 蛫 in the 秘境 (wm-wangzuo) with a 蛫 already at his feet (an old save; 狰 is won with a 萝卜 now, not fought).
+  const sc = content.chapters['00-waimen'].scenes['wm-wangzuo'];
   const duel = sc.exits.find(e => e.game?.kind === 'duel');
-  const s = { ...at, chapter: '00-waimen', scene: 'wm-yaoyuan', place: sc.at, cast: [...at.cast, duel.game.creature] };
+  const s = { ...at, chapter: '00-waimen', scene: 'wm-wangzuo', place: sc.at, cast: [...at.cast, duel.game.creature] };
   const ps = health(content, s, NOW);
   const p = ps.find(x => x.id === 'tamed-offered');
   assert.ok(p, JSON.stringify(ps));
@@ -45,7 +45,7 @@ test('a scene\'s fight against a beast already tamed: offered as a problem, pass
   const r = unstick(s, content, { now: NOW });
   assert.ok(r.state.wins[duel.game.id]);
   assert.deepEqual(r.state.cards, s.cards, 'no card dealt');
-  assert.equal(r.state.scene, 'wm-yaoyuan', 'the scene is not skipped: its way on is still his to take');
+  assert.equal(r.state.scene, 'wm-wangzuo', 'the scene is not skipped: its way on is still his to take');
 });
 
 test('at a scene but somewhere with no road to its place: moved there, nothing else', () => {

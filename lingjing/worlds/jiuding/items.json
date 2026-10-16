@@ -4,9 +4,18 @@
   "_juan": "The 卷 a thing belongs to (Hanli, 2026-10-05: 不要有后面各卷的物品): `juan`, 1 unsaid. One of a 卷 not open is never shelved, found, dropped or paid by a 传闻 (world.mjs ofJuan): 固基丹, 破境丹, 望气术·下卷 and four of the 五天材 are 结丹's (卷二; 息壤 is 卷一's, from the 秘境), the provinces' goods wait for their 卷.",
   "_rarities": "刷副本 (2026-10-15): a dropped arm's `rarity` (rewards.json drop_tables pick a rarity, then an arm of it) and the word the page and Ling say for it. The bonus stays small: 普通 器攻 1 / 防 1 / 抗土 1, 精良 2 / 2 / 抗土 2, 稀有 器攻 3 / 抗土 2+水 2 (no rare 法衣: 防 3 took the stair's 犰狳 from ~50% to ~80%; no wood ward at all), through the same rates as any arm (cards.json gear).",
   "rarities": {
-    "common": { "zh": "普通", "en": "Common" },
-    "fine": { "zh": "精良", "en": "Fine" },
-    "rare": { "zh": "稀有", "en": "Rare" }
+    "common": {
+      "zh": "普通",
+      "en": "Common"
+    },
+    "fine": {
+      "zh": "精良",
+      "en": "Fine"
+    },
+    "rare": {
+      "zh": "稀有",
+      "en": "Rare"
+    }
   },
   "items": [
     {
@@ -2687,6 +2696,78 @@
         }
       },
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
+    },
+    {
+      "id": "wulei-fu",
+      "kind": "charm",
+      "name": {
+        "zh": "五雷符",
+        "en": "Five-Thunder Charm"
+      },
+      "art": "art/cards/wulei.webp",
+      "about": {
+        "zh": "钱掌柜铺子里最贵的一道符：雷落一处，六点，不论五行；一符一用。",
+        "en": "The dearest charm in Money Qian's shop: thunder on one mark, six, whatever the root; one use each."
+      },
+      "hint": {
+        "zh": "雷，一掷。",
+        "en": "Thunder, once."
+      },
+      "buy": 60,
+      "sold": [],
+      "made": {
+        "from": "sang-paper",
+        "at": "shop"
+      },
+      "effect": {
+        "charm": true
+      }
+    },
+    {
+      "id": "feijian-duan",
+      "kind": "treasure",
+      "name": {
+        "zh": "短飞剑",
+        "en": "Short flying sword"
+      },
+      "art": "art/cards/jinsuo.webp",
+      "about": {
+        "zh": "一拃来长，柳叶形，剑柄上系一根红丝；扣在指间掐个诀放出去。下品的，练气五层驱得动。",
+        "en": "A hand-span long, willow-leaf shaped, a red thread on the hilt; flicked from the fingers on a sign. Low grade — fifth layer of qi can drive it."
+      },
+      "hint": {
+        "zh": "一张牌：短飞剑。",
+        "en": "A card: the short flying sword."
+      },
+      "buy": 60,
+      "sell": 0,
+      "sold": [],
+      "effect": {
+        "card": "feijian"
+      }
+    },
+    {
+      "id": "canwu-jian",
+      "kind": "scroll",
+      "name": {
+        "zh": "参悟玉简",
+        "en": "Jade slip: Contemplation"
+      },
+      "art": "art/cards/canwu.webp",
+      "about": {
+        "zh": "一枚玉简，贴在额上，三张牌的道理一齐涌进来。",
+        "en": "A jade slip; pressed to the brow, three cards of sense come at once."
+      },
+      "hint": {
+        "zh": "一张牌：参悟。",
+        "en": "A card: Contemplation."
+      },
+      "buy": 80,
+      "sell": 0,
+      "sold": [],
+      "effect": {
+        "card": "canwu"
+      }
     }
   ]
 }

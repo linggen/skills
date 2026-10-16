@@ -5,7 +5,7 @@ import { battle } from '../battle.js';
 import { gameOf } from '../content.mjs';
 import { addStamina, dayKey, periodKey, pick, settleStamina, seedOf } from '../state.mjs';
 import { drop } from './arms.mjs';
-import { cardCatalog, fightSetup, readOf, winCard } from './cards.mjs';
+import { cardCatalog, fightSetup, grantFrom, readOf, winCard } from './cards.mjs';
 import { clone, pay, refuse, replaying, spendStamina } from './core.mjs';
 import { choreCounts, choreGrant, isOnce, kaifuAfter, questDone } from './chores.mjs';
 import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from './errands.mjs';
@@ -198,7 +198,10 @@ export function win(state, content, ctx, args) {
   // how many it has, his best ever — a knob pay can scale on later (balance.json), paid on nothing yet.
   const stars = starsOf(content, id, args.stars);
   if (stars != null) s.stars = { ...s.stars, [id]: Math.max(stars, s.stars?.[id] ?? 0) };
-  return { state: s, result: { ok: true, won: id, ...(graded ? { grade: graded.grade } : {}), ...(stars != null ? { stars } : {}) } };
+  // A board won gives the card its book action is (cards.json `from: {kind: 'beat', task}` —
+  // 射鹿 → 一箭 · 偏左半寸, 吹鹅毛 → 吐纳). Won, never skipped: a skip pays nothing (rules/skips.mjs).
+  const cards = grantFrom(content, s, 'beat', id, { how: 'beat', day: dayKey(ctx.now) });
+  return { state: s, result: { ok: true, won: id, ...(graded ? { grade: graded.grade } : {}), ...(stars != null ? { stars } : {}), ...(cards.length ? { cards } : {}) } };
 }
 
 /* A board's stars, clamped to the most its task declares (`stars`); none for a task without. */
@@ -289,6 +292,8 @@ export function duel(state, content, ctx, args) {
   // beast fought is the 图鉴's (state.beasts) — a first meeting, a first win, said on the result.
   s.duels[key] = { day, outcome: played.outcome, ...(hunt ? { n: (today.n ?? 0) + 1, at: ctx.now.toISOString(), last: rememberAt(content, today, creature.id, poolOf(content, placeOf(content, game.hunt))) } : {}) };
   const firsts = creature.person ? {} : meetBeast(s, creature.id, played.outcome === 'won', ctx.now);
+  // 新 is gone once a card is played, win or lose (cards.mjs gainCard).
+  unmark(s, played.log);
   // A 符 played is a 符 spent, win or lose (cards.mjs § 装备入局).
   const spent = spentCharms(content, setup, played);
   for (const id of spent) { s.bag[id] = Math.max(0, (s.bag[id] ?? 0) - 1); if (!s.bag[id]) delete s.bag[id]; }
@@ -316,6 +321,13 @@ export function duel(state, content, ctx, args) {
   const paid = haunt && pays ? pay(content, s, ctx, { table: 'haunt', progress: t.progress, wealth: t.wealth }) : null;
   const full = storedLine(s, dropped);
   return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, ...(spent.length ? { spent } : {}), you: played.you, foe: played.foe, turns: played.turn, ...(dropped.length ? { dropped } : {}), ...(firsts.first_met ? { first_met: true } : {}), ...(firsts.first_win ? { first_win: true } : {}), ...(hunt ? { tally: poolTally(content, s, placeOf(content, game.hunt), ctx.now) } : {}), ...(full ? { pouch_full: full } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
+}
+
+/* The cards he played in this fight lose their 新. */
+function unmark(s, log) {
+  const played = new Set(log.filter(e => e.act === 'played' && e.who === 'you').map(e => e.id));
+  const left = (s.cards_new ?? []).filter(id => !played.has(id));
+  if (left.length) s.cards_new = left; else delete s.cards_new;
 }
 
 /* The 符 the door put in his hand that the fight saw him play — each is

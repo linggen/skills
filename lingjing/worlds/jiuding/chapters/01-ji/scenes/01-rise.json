@@ -59,7 +59,10 @@
     "id": "shuanglong-trial",
     "kind": "duel",
     "creature": "foe-shuanglong",
-    "retry": true
+    "retry": true,
+    "foe": {
+     "party": []
+    }
    },
    "withdrawn": {
     "zh": "两条龙一扑一扫，都落了空，升回河伯脚下。它们还在等。",

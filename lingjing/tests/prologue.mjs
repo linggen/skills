@@ -118,6 +118,8 @@ export function everyJuan(content) {
   delete content.chapters['01-ji']?.map;
   const strip = list => (list ?? []).forEach(x => delete x.juan);
   strip(content.creatures.creatures);
+  // 银月 walks with him from the 卷 she wakes in (party.json): every 卷 open, she does.
+  for (const m of Object.values(content.party?.members ?? {})) delete m.juan;
   strip(content.items.items);
   strip(content.quests);
   for (const d of Object.values(content.seeds ?? {})) strip(d.seeds);

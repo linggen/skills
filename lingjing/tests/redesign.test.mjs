@@ -77,7 +77,8 @@ test('a 历练 still out when the cut came: she is simply back at his side, brin
     assert.equal(l.companion.name, '银月', 'she is here');
     const jingwei = content.creatures.creatures.find(c => c.id === 'jingwei');
     const setup = VERBS.duel(m, content, ctx(), { id: 'haunt:jingwei' }).result.duel?.setup;
-    assert.ok(setup ? setup.you.extra.includes('yinyue') : jingwei, 'in his hand at the next fight');
+    // 银月 is a member of the 小队, not a card (cards.md § 5) — and through 卷一 she sleeps in the 木牌 (party.json juan 2).
+    assert.ok(jingwei && !(setup?.you.extra ?? []).includes('yinyue') && !(setup?.you.party ?? []).some(m => m.id === 'yinyue'), 'not in a 卷一 fight');
     assert.deepEqual(m.bag, oldSave().bag, 'what she was bringing is not invented');
   }
 });

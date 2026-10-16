@@ -22,14 +22,14 @@ test('an old save is read from what is known: the starter at the root test, the 
   for (const c of book) assert.equal(c.from.how, starter.has(c.id) ? 'starter' : 'old');
 });
 
-test('a win keeps the beast and the place; a chance keeps the place; a grant its own how', () => {
+test('a win keeps the beast and the place; a chance deals no card (none at random); a grant its own how', () => {
   const s = player({ cards: starterOf(content, ROOTS) });
-  const beast = content.creatures.creatures.find(c => c.deck);
+  // A beast that names its card (cards.json from: beast — 杀人必摸尸, 2026-10-16).
+  const beast = content.creatures.creatures.find(c => c.id === 'yezhu');
   const won = winCard(content, s, beast, NOW);
   assert.ok(won, 'a card to win');
   assert.deepEqual(s.card_from[won.id], { how: 'win', creature: beast.id, day: '2026-09-25', place: 'sishui', chapter: s.chapter, ...(s.scene ? { scene: s.scene } : {}) });
-  const chance = winCard(content, s, { id: 'chance:sishui', root: ROOTS[0] }, NOW, 'chance', { how: 'chance' });
-  assert.equal(s.card_from[chance.id].how, 'chance');
+  assert.equal(winCard(content, s, { id: 'chance:sishui', root: ROOTS[0] }, NOW, 'chance', { how: 'chance' }), null, 'a chance names no card');
   const row = cardBook(content, s).find(c => c.id === won.id);
   assert.equal(row.from.creature, beast.name.zh, 'names resolved for the page');
   assert.equal(row.from.place, '泗水岸');
@@ -39,7 +39,7 @@ test('a win keeps the beast and the place; a chance keeps the place; a grant its
 
 test('the book hands the 牌谱 to the page, never to Ling\'s short read; 录 draws where each came from', () => {
   const s = player({ cards: starterOf(content, ROOTS) });
-  const beast = content.creatures.creatures.find(c => c.deck);
+  const beast = content.creatures.creatures.find(c => c.id === 'yezhu');
   const won = winCard(content, s, beast, NOW);
   const full = story(s, content, { now: NOW, quests: [] }).result;
   assert.equal(full.cards.length, s.cards.length);

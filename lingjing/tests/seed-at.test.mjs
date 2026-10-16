@@ -61,7 +61,9 @@ for (const policy of ['win', 'skip']) {
     const late = at.get('古九').s;
     assert.ok(late.traits?.length, 'roots read');
     assert.ok((late.cards ?? []).length > (at.get('古三').s.cards ?? []).length, 'cards won on the way');
-    for (const id of ['longzhi', 'zheng', 'gui', 'foe-zou', 'foe-lufang', 'foe-shijie', 'foe-maxiaobao']) assert.equal(late.duels?.[id]?.outcome, 'won', `${id} won by the settle`);
+    // 狰 is won with a 萝卜 at the 药园, not fought (cards.md § 1): it walks with him instead.
+    for (const id of ['longzhi', 'gui', 'foe-zou', 'foe-lufang', 'foe-shijie', 'foe-maxiaobao']) assert.equal(late.duels?.[id]?.outcome, 'won', `${id} won by the settle`);
+    assert.ok(late.cast.includes('zheng'), '小狰 walks with him');
     assert.ok(late.hunted?.['mijing-xiongya'] >= 1, 'the 凶崖\'s guard fought down');
     assert.notEqual(late.tier, at.get('古一').s.tier, 'a realm climbed');
   });

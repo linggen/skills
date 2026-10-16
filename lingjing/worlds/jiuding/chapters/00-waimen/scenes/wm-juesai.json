@@ -75,7 +75,10 @@
        "en": "What eats what: against a metal blade, a fireball curls the edge — \"metal is notched by fire.\""
       }
      }
-    ]
+    ],
+    "foe": {
+     "hp": 2.2
+    }
    },
    "withdrawn": {
     "zh": "马小宝的铜镜又亮了，他笑得更开心了。——再来。",

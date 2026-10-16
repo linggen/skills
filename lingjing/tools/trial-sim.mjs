@@ -2,13 +2,13 @@
 // when they reach it (design.md § 斗法 v3, balance gate). The field gate
 // (battle-sim.mjs) weighs every beast against built decks; a story fight that
 // must be won to go on is weighed here against the hand the road actually
-// deals: the starter, the tamed 狰, one card from each win before it.
+// deals: what the story and the road have given by then (tools/road-hand.mjs).
 //   node tools/trial-sim.mjs [creature] [--seeds N] [--at]
 // --at weighs it with the hand held when that fight comes (only the wins before it).
 import { act, begin, foeTurn, offers } from '../scripts/battle.js';
 import { loadContent } from '../scripts/content.mjs';
 import { deckFor, fightSetup } from '../scripts/rules.mjs';
-import { gainCard, winCard } from '../scripts/rules/cards.mjs';
+import { H10, HAND_AT } from './road-hand.mjs';
 import { creatureOf } from '../scripts/rules/world.mjs';
 import fs from 'node:fs';
 
@@ -19,19 +19,14 @@ const id = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--seeds')
 const at = args.includes('--at');
 const seeds = Number(args[args.indexOf('--seeds') + 1]) || 400;
 
-/* The road to 第十回, as the rules deal it: the starter at the root test,
-   银月 (asleep in the token here: she does not fight), 狰 tamed at the 药园,
-   and one card from each fight won on the way. The 宗门大比 (古六) by the
-   bracket: 卢方 (wm-fushi), 秦雁 (wm-lun2), 马小宝 (wm-juesai) won; the final
-   to 祁长松 (wm-laoyin) is lost, so it deals nothing and is not counted. */
-const BEFORE = ['longzhi', 'zheng', 'gui', 'foe-lufang', 'foe-shijie', 'foe-maxiaobao'];
+/* The road to 第十回, as the rules deal it (tools/road-hand.mjs — cards.md § 4, 2026-10-16): what
+   the story, the beats won, the beasts beaten and the 狰 tamed with a 萝卜 have given by then; none
+   at the root test, and 银月 is a member of the 小队, never a card. `upTo` (--at): the hand held when
+   that fight comes. */
 export function roadHand(base, day = new Date('2026-09-29T11:00:00Z'), upTo = null) {
   const s = structuredClone(base);
-  s.cards = [...(content.cards.starter ?? []).filter(c => catalog[c]), 'yinyue'];
-  gainCard(content, s, 'zheng', { how: 'tame', creature: 'zheng' });
-  // `upTo` (--at): only the wins before that fight — the hand held when it comes.
-  const won = upTo && BEFORE.includes(upTo) ? BEFORE.slice(0, BEFORE.indexOf(upTo)) : BEFORE;
-  won.forEach((c, i) => winCard(content, s, creatureOf(content, c), new Date(day.getTime() - (won.length - i) * 86400000)));
+  s.cards = [...(upTo && HAND_AT[upTo] ? HAND_AT[upTo] : H10)].filter(c => catalog[c]);
+  s.cast = [...new Set([...(s.cast ?? []), 'zheng'])];
   return s;
 }
 

@@ -1,8 +1,36 @@
 {
   "version": 1,
   "_about": "斗法 v3 的牌 (design.md § 斗法 v3). 一张牌是一行数据：费用、五行、身体、以及一个来自封闭词表的效果 (battle.js EFFECTS)。牌不写代码 —— 这是一个人能平衡一百张牌的前提。数值由 tools/battle-sim.mjs 的闸调，不由手感调。 每一行有自己的活法：金锐（攻高身薄）· 木众（铺场，靠数量与全体加成）· 水缓（挡、养、拖）· 火烈（一口气打穿）· 土厚（站得住）。流派是构筑值钱的来源 —— 闸量的就是这个。",
-  "_starter": "起手牌 (2026-09-22, his: 用户只能使用已经获得的牌)。测灵根那一刻，这里属于你灵根的牌、以及不属五行的牌，归你 —— 四灵根正好十张。其余的牌要在世界里得到：收服的妖、降妖所得、差事与拾遗的赏。都是便宜、朴素的牌：新人进得了门，好牌留给路上。",
-  "starter": ["xiaoyao", "qingteng", "leipu", "luying", "shuiwu", "huoya", "huodan", "tuou", "shanjing", "huiqi", "jinsuo", "jinzhua"],
+  "_starter": "起手牌 (2026-10-16, cards.md § 4)：测灵根时不再一次给十二张。小满的头一手是凡人的东西：娘的饼 (00-kitchen)、一箭 · 偏左半寸 (射鹿)、吐纳 (吹鹅毛)；褚先生的五样在第六回 (wm-qianye)。手里不满十张时，一张牌放两份进牌组 (炉石的规矩)。`_legacy_starter` 只给旧存档迁移用：测灵根时拿到的那十二张，旧档照旧留着。",
+  "_legacy_starter": [
+    "xiaoyao",
+    "qingteng",
+    "leipu",
+    "luying",
+    "shuiwu",
+    "huoya",
+    "huodan",
+    "tuou",
+    "shanjing",
+    "huiqi",
+    "jinsuo",
+    "jinzhua"
+  ],
+  "_renamed": {
+    "shuiwu": "bingzhui",
+    "jinzhua": "jinren",
+    "tuou": "tuqiang",
+    "suijin": "ruxi",
+    "wudao": "tuna",
+    "xiaoyao": "mucao",
+    "jinzhen": "yangzhen",
+    "jinsuo": "feijian",
+    "jianying": "huochai",
+    "shanjing": "shangen",
+    "gupi": "tiegu"
+  },
+  "_renamed_about": "旧档里的牌，照书里的名字换成新的那一张 (state.mjs fitWorld)：他拿着的是金爪，现在是金刃。旧的一行留给兽 —— 它们的十二张一张不动。山精、鼓皮原是起手牌，归了孙二狗的山根桩、铁箍板，旧档里的照留 (在牌谱里，不进他的十张)。",
+  "_from": "出处 (cards.md, Hanli 2026-10-16: 每张牌都在剧情里收集或者购买)：`from` 是一串来源，每个 {kind, src: 书|游戏, line}。story (scene：离开那一场时得) · beat (task：小游戏赢了得) · beast (creature：打赢它得 —— 它拿这张牌打过你) · shop (item：买那件东西得) · tame (creature：收服) · summon (只由一件东西召来) · tale (传闻了结) · member (小队里那个人的牌，由他出) · foe (只是对手的牌)。`owner`：谁出这张牌 (battle.js § sideOf)；没有 owner 的是小满的。",
   "cards": [
     {
       "id": "xiaoyao",
@@ -16,7 +44,43 @@
       "atk": 1,
       "hp": 2,
       "art": "art/cards/xiaoyao.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "foe",
+          "creature": "mihou",
+          "src": "游戏"
+        }
+      ]
+    },
+    {
+      "id": "mucao",
+      "kind": "minion",
+      "name": {
+        "zh": "木草泥马",
+        "en": "Grass-Mud Horse"
+      },
+      "cost": 1,
+      "element": "wood",
+      "atk": 1,
+      "hp": 2,
+      "art": "art/cards/xiaoyao.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "story",
+          "scene": "wm-diyilu",
+          "who": {
+            "zh": "饭桶",
+            "en": "the Rice Bucket"
+          },
+          "line": {
+            "zh": "「认主。性烈，莫近火。」",
+            "en": "\"Knows its master. Fiery. Keep from flame.\""
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "shanjing",
@@ -33,7 +97,47 @@
         "taunt"
       ],
       "art": "art/cards/shanjing.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "xiong",
+          "line": {
+            "zh": "熊人立一掌",
+            "en": "The bear rears and strikes."
+          },
+          "src": "游戏"
+        }
+      ]
+    },
+    {
+      "id": "shangen",
+      "kind": "minion",
+      "name": {
+        "zh": "山根桩",
+        "en": "Mountain-Root Stance"
+      },
+      "cost": 2,
+      "element": "earth",
+      "atk": 1,
+      "hp": 4,
+      "keywords": [
+        "taunt"
+      ],
+      "art": "art/cards/shanjing.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "owner": "sun",
+      "from": [
+        {
+          "kind": "member",
+          "member": "sun",
+          "line": {
+            "zh": "「我是山……我是山……」",
+            "en": "\"I am the mountain… I am the mountain…\""
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "jingwei",
@@ -53,7 +157,15 @@
         "draw": 1
       },
       "art": "art/jingwei.webp",
-      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。",
+      "from": [
+        {
+          "kind": "tame",
+          "creature": "jingwei",
+          "juan": 2,
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "fuzhu",
@@ -74,7 +186,15 @@
       },
       "_about": "其鸣自詨，见则其邑大水 —— 入阵，水漫它阵前每一个 1 点。",
       "art": "art/fuzhu.webp",
-      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。",
+      "from": [
+        {
+          "kind": "tame",
+          "creature": "fuzhu",
+          "juan": 9,
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "tongtong",
@@ -91,7 +211,15 @@
         "taunt"
       ],
       "art": "art/tongtong.webp",
-      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。",
+      "from": [
+        {
+          "kind": "tame",
+          "creature": "tongtong",
+          "juan": 3,
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "longzhi",
@@ -105,7 +233,14 @@
       "atk": 4,
       "hp": 2,
       "art": "art/creatures/longzhi.webp",
-      "art_source": "图鉴的蠪侄图（2026-10-02 新画，九首九尾）— 见 art/CREDITS.md；古本原图留在 art/longzhi.webp。"
+      "art_source": "图鉴的蠪侄图（2026-10-02 新画，九首九尾）— 见 art/CREDITS.md；古本原图留在 art/longzhi.webp。",
+      "from": [
+        {
+          "kind": "foe",
+          "creature": "longzhi",
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "paoxiao",
@@ -126,7 +261,15 @@
       },
       "_about": "是食人 —— 入阵先咬一口：打一个，或打它本人。",
       "art": "art/paoxiao.webp",
-      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。",
+      "from": [
+        {
+          "kind": "tame",
+          "creature": "paoxiao",
+          "juan": 2,
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "kui",
@@ -148,7 +291,15 @@
       },
       "_about": "一足，声如雷；黄帝以其皮为鼓，声闻五百里 —— 入阵一声鼓，它下回合灵力少一点。",
       "art": "art/kui.webp",
-      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。",
+      "from": [
+        {
+          "kind": "tame",
+          "creature": "kui",
+          "juan": 3,
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "leishen",
@@ -169,7 +320,15 @@
       },
       "_about": "龙身人头，鼓其腹则雷 —— 入阵一声雷，它阵前每个都挨。",
       "art": "art/leishen.webp",
-      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。",
+      "from": [
+        {
+          "kind": "tame",
+          "creature": "leishen",
+          "juan": 2,
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "yinyue",
@@ -190,7 +349,19 @@
       },
       "_about": "开局就在手上，不占牌库的十张。被打到 0 是退到一边，下一局照来 —— 这个世界没有死。",
       "art": "art/cards/yinyue.webp",
-      "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-5.5), 2026-10-01, after the 图鉴 portrait art/people/yinyue.webp (a girl of fourteen or fifteen, as 第一回 has her), in the deck's ink-wash style; replaces the FLUX card of 2026-09-18, which showed a grown woman. See art/CREDITS.md."
+      "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-5.5), 2026-10-01, after the 图鉴 portrait art/people/yinyue.webp (a girl of fourteen or fifteen, as 第一回 has her), in the deck's ink-wash style; replaces the FLUX card of 2026-09-18, which showed a grown woman. See art/CREDITS.md.",
+      "owner": "yinyue",
+      "from": [
+        {
+          "kind": "member",
+          "member": "yinyue",
+          "line": {
+            "zh": "「本王是补锅匠。」",
+            "en": "\"This queen mends pots.\""
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "qingteng",
@@ -206,7 +377,19 @@
         "damage": 2
       },
       "art": "art/cards/qingteng.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "owner": "ahe",
+      "from": [
+        {
+          "kind": "member",
+          "member": "ahe",
+          "line": {
+            "zh": "一根藤，从黑里伸出来",
+            "en": "A vine, out of the dark."
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "huodan",
@@ -221,7 +404,49 @@
         "damage": 3
       },
       "art": "art/cards/huodan.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "story",
+          "scene": "wm-qianye",
+          "who": {
+            "zh": "褚先生",
+            "en": "Master Chu"
+          },
+          "line": {
+            "zh": "褚先生：「丙丁涌出，聚炁成丸」",
+            "en": "Master Chu: \"Bing and ding well up; gather the qi into a ball.\""
+          },
+          "src": "书"
+        }
+      ]
+    },
+    {
+      "id": "yijian",
+      "kind": "spell",
+      "name": {
+        "zh": "一箭 · 偏左半寸",
+        "en": "One Arrow, Half an Inch Left"
+      },
+      "cost": 2,
+      "element": null,
+      "effect": {
+        "damage": 3
+      },
+      "art": "art/cards/yijian.webp",
+      "art_source": "Painted for Lingjing by Codex (gpt-6.1-sol) with a house card as the style, 2026-10-16.",
+      "from": [
+        {
+          "kind": "beat",
+          "task": "deer-wind",
+          "line": {
+            "zh": "银月：「往左偏半寸。」",
+            "en": "Yinyue: \"Half an inch to the left.\""
+          },
+          "src": "书"
+        }
+      ],
+      "mortal": true
     },
     {
       "id": "hantan",
@@ -236,7 +461,45 @@
         "damage": 4
       },
       "art": "art/cards/hantan.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "foe-shuanglong",
+          "line": {
+            "zh": "冰夷的双龙：寒潭",
+            "en": "Bingyi's twin dragons: the cold pool."
+          },
+          "src": "游戏"
+        }
+      ]
+    },
+    {
+      "id": "bingzhuifu",
+      "kind": "spell",
+      "name": {
+        "zh": "冰锥符",
+        "en": "Ice-Spike Charm"
+      },
+      "cost": 3,
+      "element": "water",
+      "effect": {
+        "damage": 4
+      },
+      "art": "art/cards/hantan.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "owner": "ahe",
+      "from": [
+        {
+          "kind": "member",
+          "member": "ahe",
+          "line": {
+            "zh": "冰锥符，高阶的",
+            "en": "An ice-spike charm, a high one."
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "luoshi",
@@ -251,7 +514,45 @@
         "damage": 5
       },
       "art": "art/cards/luoshi.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "heyu",
+          "line": {
+            "zh": "合窳：其音如婴儿",
+            "en": "The heyu: a voice like a baby."
+          },
+          "src": "游戏"
+        }
+      ]
+    },
+    {
+      "id": "zhenyuefu",
+      "kind": "spell",
+      "name": {
+        "zh": "镇岳符",
+        "en": "Mountain-Seal Charm"
+      },
+      "cost": 4,
+      "element": "earth",
+      "effect": {
+        "damage": 5
+      },
+      "art": "art/cards/luoshi.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "owner": "ahe",
+      "from": [
+        {
+          "kind": "member",
+          "member": "ahe",
+          "line": {
+            "zh": "符上画的是一座山",
+            "en": "On the charm, a mountain."
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "wulei",
@@ -266,7 +567,19 @@
         "damage": 6
       },
       "art": "art/cards/wulei.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "owner": "foe-shijie",
+      "from": [
+        {
+          "kind": "foe",
+          "creature": "foe-shijie",
+          "line": {
+            "zh": "一张黄纸雷符",
+            "en": "A yellow-paper thunder charm."
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "jinzhen",
@@ -281,7 +594,44 @@
         "sweep": 2
       },
       "art": "art/cards/jinzhen.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "foe",
+          "creature": "lang",
+          "src": "游戏"
+        }
+      ]
+    },
+    {
+      "id": "yangzhen",
+      "kind": "spell",
+      "name": {
+        "zh": "痒痒针",
+        "en": "Tickle Needles"
+      },
+      "cost": 3,
+      "element": "metal",
+      "effect": {
+        "sweep": 2
+      },
+      "art": "art/cards/jinzhen.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "story",
+          "scene": "wm-zhaojing",
+          "who": {
+            "zh": "饭桶",
+            "en": "the Rice Bucket"
+          },
+          "line": {
+            "zh": "「痒痒针；一针见笑。」",
+            "en": "\"Tickle needles: one prick, one laugh.\""
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "fenghuo",
@@ -296,7 +646,19 @@
         "sweep": 3
       },
       "art": "art/cards/fenghuo.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "owner": "foe-zou",
+      "from": [
+        {
+          "kind": "foe",
+          "creature": "foe-zou",
+          "line": {
+            "zh": "火出来，分成了四股",
+            "en": "The fire comes out in four strands."
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "wudao",
@@ -311,7 +673,44 @@
         "draw": 2
       },
       "art": "art/cards/wudao.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "tale",
+          "line": {
+            "zh": "传闻了结，留下的",
+            "en": "Left when a tale is done."
+          },
+          "src": "游戏"
+        }
+      ]
+    },
+    {
+      "id": "tuna",
+      "kind": "spell",
+      "name": {
+        "zh": "吐纳",
+        "en": "Breath"
+      },
+      "cost": 1,
+      "element": null,
+      "effect": {
+        "draw": 2
+      },
+      "art": "art/cards/wudao.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beat",
+          "task": "feather-breath",
+          "line": {
+            "zh": "爹：「它听见的不是你喘，是你心慌。」",
+            "en": "Father: \"It hears your fear, not your breath.\""
+          },
+          "src": "书"
+        }
+      ],
+      "mortal": true
     },
     {
       "id": "peiyuan",
@@ -329,7 +728,19 @@
         }
       },
       "art": "art/cards/peiyuan.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "owner": "ahe",
+      "from": [
+        {
+          "kind": "member",
+          "member": "ahe",
+          "line": {
+            "zh": "指尖上一点青光",
+            "en": "A point of green light at her fingertip."
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "huiqi",
@@ -338,14 +749,37 @@
         "zh": "回气丹",
         "en": "Breath Pill"
       },
-      "cost": 2,
+      "cost": 1,
       "element": null,
       "pill": true,
       "effect": {
-        "heal": 5
+        "mana": 3
       },
       "art": "art/cards/huiqi.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "story",
+          "scene": "wm-xirang",
+          "who": {
+            "zh": "邹青松的储物袋",
+            "en": "Zou Qingsong's pouch"
+          },
+          "line": {
+            "zh": "丹田空了吞一颗",
+            "en": "One when the dantian runs dry."
+          },
+          "src": "书"
+        },
+        {
+          "kind": "tale",
+          "line": {
+            "zh": "传闻了结，留下的",
+            "en": "Left when a tale is done."
+          },
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "luying",
@@ -359,7 +793,18 @@
       "atk": 3,
       "hp": 2,
       "art": "art/cards/luying.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "foe-shijie",
+          "line": {
+            "zh": "秦雁的三十招",
+            "en": "Qin Yan's thirty moves."
+          },
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "chaoqi",
@@ -374,7 +819,18 @@
         "sweep": 2
       },
       "art": "art/cards/chaoqi.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "xiegou",
+          "line": {
+            "zh": "絜钩带来的潮",
+            "en": "The tide the xiegou brings."
+          },
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "tunshi",
@@ -389,7 +845,18 @@
         "damage": 5
       },
       "art": "art/cards/tunshi.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "fushe",
+          "line": {
+            "zh": "蝮蛇一口",
+            "en": "The viper's one bite."
+          },
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "jixiao",
@@ -407,7 +874,18 @@
         }
       },
       "art": "art/cards/jixiao.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "yezhu",
+          "line": {
+            "zh": "野猪一声饥啸",
+            "en": "The boar's hungry bellow."
+          },
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "xianshi",
@@ -421,7 +899,18 @@
       "atk": 1,
       "hp": 2,
       "art": "art/cards/xianshi.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "congcong",
+          "line": {
+            "zh": "从从衔来的石子",
+            "en": "A pebble the congcong carried."
+          },
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "leipu",
@@ -435,7 +924,18 @@
       "atk": 2,
       "hp": 2,
       "art": "art/cards/leipu.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "mihou",
+          "line": {
+            "zh": "猕猴呼群",
+            "en": "The macaque calls its troop."
+          },
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "leiming",
@@ -450,7 +950,18 @@
         "damage": 4
       },
       "art": "art/cards/leiming.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "yuanhu",
+          "line": {
+            "zh": "妴胡林子里的雷声",
+            "en": "Thunder in the yuanhu's wood."
+          },
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "zhennu",
@@ -465,7 +976,18 @@
         "sweep": 3
       },
       "art": "art/cards/zhennu.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "qiuyu",
+          "line": {
+            "zh": "灵草谷：犰狳一怒",
+            "en": "Herb Valley: the qiuyu's wrath."
+          },
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "jiushou",
@@ -479,7 +1001,14 @@
       "atk": 3,
       "hp": 1,
       "art": "art/cards/jiushou.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "foe",
+          "creature": "longzhi",
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "jinzhua",
@@ -494,7 +1023,48 @@
         "damage": 3
       },
       "art": "art/cards/jinzhua.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "cangying",
+          "line": {
+            "zh": "苍鹰俯击",
+            "en": "The hawk's stoop."
+          },
+          "src": "游戏"
+        }
+      ]
+    },
+    {
+      "id": "jinren",
+      "kind": "spell",
+      "name": {
+        "zh": "金刃",
+        "en": "Metal Blade"
+      },
+      "cost": 2,
+      "element": "metal",
+      "effect": {
+        "damage": 3
+      },
+      "art": "art/cards/jinzhua.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "story",
+          "scene": "wm-qianye",
+          "who": {
+            "zh": "褚先生",
+            "en": "Master Chu"
+          },
+          "line": {
+            "zh": "掐一诀，又是一道金刃",
+            "en": "One more sign, one more blade."
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "gupi",
@@ -511,7 +1081,47 @@
         "taunt"
       ],
       "art": "art/cards/gupi.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "shanli",
+          "line": {
+            "zh": "山狸无声一扑",
+            "en": "The wildcat pounces without a sound."
+          },
+          "src": "游戏"
+        }
+      ]
+    },
+    {
+      "id": "tiegu",
+      "kind": "minion",
+      "name": {
+        "zh": "铁箍板",
+        "en": "Iron-Hooped Board"
+      },
+      "cost": 2,
+      "element": "earth",
+      "atk": 0,
+      "hp": 5,
+      "keywords": [
+        "taunt"
+      ],
+      "art": "art/cards/gupi.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "owner": "sun",
+      "from": [
+        {
+          "kind": "member",
+          "member": "sun",
+          "line": {
+            "zh": "钉了三道铁箍",
+            "en": "Three iron hoops nailed round it."
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "zhuguang",
@@ -526,7 +1136,45 @@
         "heal": 4
       },
       "art": "art/cards/zhuguang.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "dangkang",
+          "line": {
+            "zh": "当康：天下大穰",
+            "en": "The dangkang: a great harvest."
+          },
+          "src": "游戏"
+        }
+      ]
+    },
+    {
+      "id": "qingguang",
+      "kind": "spell",
+      "name": {
+        "zh": "青光",
+        "en": "Green Light"
+      },
+      "cost": 2,
+      "element": "wood",
+      "effect": {
+        "heal": 4
+      },
+      "art": "art/cards/qingguang.webp",
+      "art_source": "Painted for Lingjing by Codex (gpt-6.1-sol) with a house card as the style, 2026-10-16.",
+      "owner": "ahe",
+      "from": [
+        {
+          "kind": "member",
+          "member": "ahe",
+          "line": {
+            "zh": "观天之道，执天之行",
+            "en": "Observe the way of heaven; hold to its course."
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "jinsuo",
@@ -540,7 +1188,48 @@
       "atk": 2,
       "hp": 1,
       "art": "art/cards/jinsuo.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "tianma",
+          "line": {
+            "zh": "天马见人则飞",
+            "en": "The tianma takes wing at the sight of men."
+          },
+          "src": "游戏"
+        }
+      ]
+    },
+    {
+      "id": "feijian",
+      "kind": "minion",
+      "name": {
+        "zh": "短飞剑",
+        "en": "Short Flying Sword"
+      },
+      "cost": 1,
+      "element": "metal",
+      "atk": 2,
+      "hp": 1,
+      "art": "art/cards/jinsuo.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "shop",
+          "item": "feijian-duan",
+          "keeper": {
+            "zh": "钱掌柜",
+            "en": "Money Qian"
+          },
+          "price": 60,
+          "line": {
+            "zh": "一拃来长，柳叶形",
+            "en": "A hand-span long, willow-leaf shaped."
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "jianying",
@@ -554,7 +1243,47 @@
       "atk": 5,
       "hp": 3,
       "art": "art/cards/jianying.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "geju",
+          "line": {
+            "zh": "猲狙：是食人",
+            "en": "The geju: it eats men."
+          },
+          "src": "游戏"
+        }
+      ]
+    },
+    {
+      "id": "huochai",
+      "kind": "minion",
+      "name": {
+        "zh": "火柴",
+        "en": "Matchstick"
+      },
+      "cost": 4,
+      "element": "fire",
+      "atk": 5,
+      "hp": 3,
+      "art": "art/cards/jianying.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "story",
+          "scene": "09-snow",
+          "who": {
+            "zh": "饭桶",
+            "en": "the Rice Bucket"
+          },
+          "line": {
+            "zh": "剑脊上自己刻着：火柴",
+            "en": "On its spine, by itself: Matchstick."
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "suijin",
@@ -569,7 +1298,48 @@
         "damage": 5
       },
       "art": "art/cards/suijin.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "foe-maxiaobao",
+          "line": {
+            "zh": "马小宝的碎金",
+            "en": "Ma Xiaobao's shattering blow."
+          },
+          "src": "游戏"
+        }
+      ]
+    },
+    {
+      "id": "ruxi",
+      "kind": "spell",
+      "name": {
+        "zh": "入隙",
+        "en": "Into the Seam"
+      },
+      "cost": 4,
+      "element": "metal",
+      "effect": {
+        "damage": 5
+      },
+      "art": "art/cards/suijin.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "story",
+          "scene": "09-futian",
+          "who": {
+            "zh": "瞿老",
+            "en": "Old Qu"
+          },
+          "line": {
+            "zh": "瞿老：「石头也有缝。」",
+            "en": "Old Qu: \"Stone has seams too.\""
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "jingang",
@@ -586,7 +1356,18 @@
         "taunt"
       ],
       "art": "art/cards/jingang.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "lang",
+          "line": {
+            "zh": "群狼",
+            "en": "The pack."
+          },
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "tengmiao",
@@ -609,7 +1390,19 @@
         }
       },
       "art": "art/cards/tengmiao.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "owner": "ahe",
+      "from": [
+        {
+          "kind": "member",
+          "member": "ahe",
+          "line": {
+            "zh": "一粒一粒炸开了芽",
+            "en": "Grain by grain they burst into shoots."
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "tengmiao_token",
@@ -624,7 +1417,8 @@
       "hp": 1,
       "_token": true,
       "art": "art/cards/tengmiao_token.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "owner": "ahe"
     },
     {
       "id": "chunsheng",
@@ -642,7 +1436,19 @@
         }
       },
       "art": "art/cards/chunsheng.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "owner": "ahe",
+      "from": [
+        {
+          "kind": "member",
+          "member": "ahe",
+          "line": {
+            "zh": "青藤一根挨一根",
+            "en": "Vine after green vine."
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "fengmao",
@@ -660,7 +1466,19 @@
         }
       },
       "art": "art/cards/fengmao.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "owner": "ahe",
+      "from": [
+        {
+          "kind": "member",
+          "member": "ahe",
+          "line": {
+            "zh": "全长成了根",
+            "en": "All of it grown into roots."
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "linmu",
@@ -683,7 +1501,19 @@
         }
       },
       "art": "art/cards/linmu.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "owner": "ahe",
+      "from": [
+        {
+          "kind": "member",
+          "member": "ahe",
+          "line": {
+            "zh": "全长成了根",
+            "en": "All of it grown into roots."
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "shuiwu",
@@ -698,7 +1528,44 @@
         "damage": 2
       },
       "art": "art/cards/shuiwu.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "foe",
+          "creature": "shanli",
+          "src": "游戏"
+        }
+      ]
+    },
+    {
+      "id": "bingzhui",
+      "kind": "spell",
+      "name": {
+        "zh": "冰锥",
+        "en": "Ice Spike"
+      },
+      "cost": 1,
+      "element": "water",
+      "effect": {
+        "damage": 2
+      },
+      "art": "art/cards/shuiwu.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "story",
+          "scene": "wm-qianye",
+          "who": {
+            "zh": "褚先生",
+            "en": "Master Chu"
+          },
+          "line": {
+            "zh": "褚先生：「冰锥最快」",
+            "en": "Master Chu: \"The ice spike is the fastest.\""
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "hanquan",
@@ -718,7 +1585,18 @@
         "heal": 3
       },
       "art": "art/cards/hanquan.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "renyu",
+          "line": {
+            "zh": "柳湾的人鱼",
+            "en": "The mer-child of Willow Bay."
+          },
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "tingbo",
@@ -733,7 +1611,18 @@
         "sweep": 3
       },
       "art": "art/cards/tingbo.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "lingling",
+          "line": {
+            "zh": "軨軨：天下大水",
+            "en": "The lingling: the world floods."
+          },
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "huoya",
@@ -747,7 +1636,18 @@
       "atk": 3,
       "hp": 1,
       "art": "art/cards/huoya.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "foe-zou",
+          "line": {
+            "zh": "邹青松的赤铜葫芦：一条火蛇",
+            "en": "Zou Qingsong's red-copper gourd: a fire snake."
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "yanxin",
@@ -765,7 +1665,18 @@
         }
       },
       "art": "art/cards/yanxin.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "qique",
+          "line": {
+            "zh": "鬿雀的火",
+            "en": "The qique's fire."
+          },
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "liaotian",
@@ -780,7 +1691,18 @@
         "damage": 8
       },
       "art": "art/cards/liaotian.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "bibi",
+          "line": {
+            "zh": "獙獙：天下大旱",
+            "en": "The bibi: the world goes dry."
+          },
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "tuou",
@@ -797,7 +1719,46 @@
         "taunt"
       ],
       "art": "art/cards/tuou.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "foe",
+          "creature": "foe-sunergou",
+          "src": "游戏"
+        }
+      ]
+    },
+    {
+      "id": "tuqiang",
+      "kind": "minion",
+      "name": {
+        "zh": "土墙",
+        "en": "Earth Wall"
+      },
+      "cost": 1,
+      "element": "earth",
+      "atk": 0,
+      "hp": 3,
+      "keywords": [
+        "taunt"
+      ],
+      "art": "art/cards/tuou.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "story",
+          "scene": "wm-qianye",
+          "who": {
+            "zh": "褚先生",
+            "en": "Master Chu"
+          },
+          "line": {
+            "zh": "身前拱起一片土墙",
+            "en": "A wall of earth humps up before him."
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "shishou",
@@ -814,7 +1775,18 @@
         "taunt"
       ],
       "art": "art/cards/shishou.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "jingjing",
+          "line": {
+            "zh": "精精低头一顶",
+            "en": "The jingjing lowers its horns."
+          },
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "houtu",
@@ -832,7 +1804,18 @@
         }
       },
       "art": "art/cards/houtu.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "foe-lufang",
+          "line": {
+            "zh": "卢方的土墙",
+            "en": "Lu Fang's earth wall."
+          },
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "canwu",
@@ -847,7 +1830,23 @@
         "draw": 3
       },
       "art": "art/cards/canwu.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "shop",
+          "item": "canwu-jian",
+          "keeper": {
+            "zh": "钱掌柜",
+            "en": "Money Qian"
+          },
+          "price": 80,
+          "line": {
+            "zh": "一枚玉简：参悟",
+            "en": "A jade slip: Contemplation."
+          },
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "tongling",
@@ -867,7 +1866,18 @@
         "draw": 1
       },
       "art": "art/cards/tongling.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "chihu",
+          "line": {
+            "zh": "赤狐叼了就跑",
+            "en": "The red fox snatches and runs."
+          },
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "shewei",
@@ -919,7 +1929,23 @@
       },
       "_about": "背包里的符（items.json talisman，写符所得）。有一道在囊中，一局开局就在手上，不占十张；打出去，收场时从背包里扣掉一道 —— 一局至多一道。不属五行：相克不加不减。永不入牌库、不作赏。",
       "art": "art/items/talisman.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the description.",
+      "from": [
+        {
+          "kind": "shop",
+          "item": "talisman",
+          "keeper": {
+            "zh": "货郎",
+            "en": "the pedlar"
+          },
+          "price": 20,
+          "line": {
+            "zh": "一道符，二十块",
+            "en": "A charm, twenty stones."
+          },
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "tama-fu",
@@ -939,7 +1965,22 @@
       },
       "_about": "背包里的踏马的符（items.json tama-fu，古四饭桶吐出来、收在腰带夹层，古五瞎贴脚底）。在囊中，开局就在手上，不占十张；打出去，他一跳落到蛫背后——蛫上阵护主，下一记杀招先打它（「是可以禦火」）；收场时从背包里扣掉，只灵一回。永不入牌库、不作赏。",
       "art": "art/items/talisman.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the description."
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the description.",
+      "from": [
+        {
+          "kind": "story",
+          "scene": "wm-wangzuo",
+          "who": {
+            "zh": "饭桶",
+            "en": "the Rice Bucket"
+          },
+          "line": {
+            "zh": "「足下一踏，马上便走」",
+            "en": "\"One stamp of the foot, and away.\""
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "wuzhiqi",
@@ -961,7 +2002,15 @@
       },
       "_about": "禹锁之于龟山之足 —— 入阵，锁住它阵前一个：它下回合不能出手。",
       "art": "art/wuzhiqi.webp",
-      "art_source": "据《古岳渎经》新绘 — 见 art/CREDITS.md（无支祁不在山海经里，没有古本图）。"
+      "art_source": "据《古岳渎经》新绘 — 见 art/CREDITS.md（无支祁不在山海经里，没有古本图）。",
+      "from": [
+        {
+          "kind": "tame",
+          "creature": "wuzhiqi",
+          "juan": 4,
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "fangfeng",
@@ -979,7 +2028,15 @@
       ],
       "_about": "禹杀防风，其骨专车 —— 身高骨重，攻低而站得住。",
       "art": "art/fangfeng.webp",
-      "art_source": "据《国语》新绘 — 见 art/CREDITS.md（防风氏不在山海经里，没有古本图）。"
+      "art_source": "据《国语》新绘 — 见 art/CREDITS.md（防风氏不在山海经里，没有古本图）。",
+      "from": [
+        {
+          "kind": "tame",
+          "creature": "fangfeng",
+          "juan": 5,
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "changyou",
@@ -993,7 +2050,15 @@
       "atk": 2,
       "hp": 4,
       "art": "art/changyou.webp",
-      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。",
+      "from": [
+        {
+          "kind": "tame",
+          "creature": "changyou",
+          "juan": 5,
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "bashe",
@@ -1014,7 +2079,15 @@
       },
       "_about": "巴蛇食象，三岁而出其骨 —— 入阵，吞下它阵前一个攻不过 3 的。",
       "art": "art/bashe.webp",
-      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。",
+      "from": [
+        {
+          "kind": "tame",
+          "creature": "bashe",
+          "juan": 6,
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "gui",
@@ -1031,7 +2104,18 @@
         "taunt"
       ],
       "art": "art/gui.webp",
-      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。",
+      "from": [
+        {
+          "kind": "summon",
+          "item": "tama-fu",
+          "line": {
+            "zh": "踏马符一跳，落在蛫背后",
+            "en": "One jump of the charm, and he lands behind the gui."
+          },
+          "src": "书"
+        }
+      ]
     },
     {
       "id": "kuiniu",
@@ -1055,7 +2139,15 @@
       },
       "_about": "夔牛重千斤 —— 入阵，你阵前全体 +1/+1。",
       "art": "art/kuiniu.webp",
-      "art_source": "据《中次九经》新绘 — 见 art/CREDITS.md（夔牛没有找到有标注的古本图）。"
+      "art_source": "据《中次九经》新绘 — 见 art/CREDITS.md（夔牛没有找到有标注的古本图）。",
+      "from": [
+        {
+          "kind": "tame",
+          "creature": "kuiniu",
+          "juan": 7,
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "qiezhi",
@@ -1069,7 +2161,15 @@
       "atk": 3,
       "hp": 2,
       "art": "art/qiezhi.webp",
-      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。",
+      "from": [
+        {
+          "kind": "tame",
+          "creature": "qiezhi",
+          "juan": 7,
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "feiyi",
@@ -1087,7 +2187,15 @@
       },
       "_about": "见则其国大旱 —— 它站着，你每回合末，它阵前每个 1 点。",
       "art": "art/feiyi.webp",
-      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。",
+      "from": [
+        {
+          "kind": "tame",
+          "creature": "feiyi",
+          "juan": 8,
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "qianyang",
@@ -1104,7 +2212,15 @@
         "taunt"
       ],
       "art": "art/qianyang.webp",
-      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。",
+      "from": [
+        {
+          "kind": "tame",
+          "creature": "qianyang",
+          "juan": 8,
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "taifeng",
@@ -1125,7 +2241,15 @@
       },
       "_about": "泰逢神，动天地气 —— 入阵，抽两张。",
       "art": "art/taifeng.webp",
-      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。",
+      "from": [
+        {
+          "kind": "tame",
+          "creature": "taifeng",
+          "juan": 9,
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "mafu",
@@ -1139,7 +2263,15 @@
       "atk": 4,
       "hp": 3,
       "art": "art/mafu.webp",
-      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。",
+      "from": [
+        {
+          "kind": "tame",
+          "creature": "mafu",
+          "juan": 9,
+          "src": "游戏"
+        }
+      ]
     },
     {
       "id": "zheng",
@@ -1156,7 +2288,153 @@
         "draw": 1
       },
       "art": "art/zheng.webp",
-      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。",
+      "from": [
+        {
+          "kind": "tame",
+          "creature": "zheng",
+          "scene": "wm-yaoyuan",
+          "line": {
+            "zh": "一根萝卜。小狰跟了你。",
+            "en": "One radish. The little zheng followed you."
+          },
+          "src": "书"
+        }
+      ]
+    },
+    {
+      "id": "niangbing",
+      "kind": "spell",
+      "name": {
+        "zh": "娘的饼",
+        "en": "Mother's Flatbread"
+      },
+      "cost": 1,
+      "element": null,
+      "pill": true,
+      "effect": {
+        "heal": 4
+      },
+      "_about": "娘把最后一点白面烙成饼塞给你：「打不过就跑——跑不丢人。」一口饼，一口气。",
+      "art": "art/cards/niangbing.webp",
+      "art_source": "Painted for Lingjing by Codex (gpt-6.1-sol) with a house card as the style, 2026-10-16.",
+      "from": [
+        {
+          "kind": "story",
+          "scene": "00-kitchen",
+          "who": {
+            "zh": "娘",
+            "en": "Mother"
+          },
+          "line": {
+            "zh": "娘：「打不过就跑——跑不丢人。」",
+            "en": "Mother: \"If you can't win, run — there's no shame in running.\""
+          },
+          "src": "书"
+        }
+      ]
+    },
+    {
+      "id": "mutang",
+      "kind": "spell",
+      "name": {
+        "zh": "木藤",
+        "en": "Wood Vine"
+      },
+      "cost": 1,
+      "element": "wood",
+      "binds": true,
+      "effect": {
+        "damage": 1
+      },
+      "_about": "褚先生的五样之一：「木藤不伤人，缠人。」小满自己的藤 —— 青藤是阿禾的。",
+      "art": "art/cards/mutang.webp",
+      "art_source": "Painted for Lingjing by Codex (gpt-6.1-sol) with a house card as the style, 2026-10-16.",
+      "from": [
+        {
+          "kind": "story",
+          "scene": "wm-qianye",
+          "who": {
+            "zh": "褚先生",
+            "en": "Master Chu"
+          },
+          "line": {
+            "zh": "褚先生：「木藤不伤人，缠人」",
+            "en": "Master Chu: \"A vine does not hurt — it holds.\""
+          },
+          "src": "书"
+        }
+      ]
+    },
+    {
+      "id": "yigun",
+      "kind": "spell",
+      "name": {
+        "zh": "一滚",
+        "en": "The Roll"
+      },
+      "cost": 0,
+      "element": null,
+      "_token": true,
+      "effect": {
+        "dodge": 1
+      },
+      "_about": "三试：「爪子是从左边来的。他想也没想，往右一滚。」试里白给的一张，不入牌库、不作赏。",
+      "art": "art/cards/yigun.webp",
+      "art_source": "Painted for Lingjing by Codex (gpt-6.1-sol) with a house card as the style, 2026-10-16.",
+      "mortal": true
+    },
+    {
+      "id": "shizi",
+      "kind": "spell",
+      "name": {
+        "zh": "石子",
+        "en": "A Stone"
+      },
+      "cost": 1,
+      "element": null,
+      "_token": true,
+      "effect": {
+        "damage": 2
+      },
+      "_about": "三试：「手里那块石头已经出手了——正正地砸在第八个脑袋的鼻尖上。」试里白给的一张，不入牌库、不作赏。",
+      "art": "art/cards/shizi.webp",
+      "art_source": "Painted for Lingjing by Codex (gpt-6.1-sol) with a house card as the style, 2026-10-16.",
+      "mortal": true
+    },
+    {
+      "id": "wulei-fu",
+      "kind": "spell",
+      "name": {
+        "zh": "五雷符",
+        "en": "Five-Thunder Charm"
+      },
+      "cost": 3,
+      "element": null,
+      "charm": true,
+      "_token": true,
+      "effect": {
+        "damage": 6
+      },
+      "_about": "钱掌柜的符 (items.json wulei-fu)：在囊中，开局就在手上，不占十张；打出去，收场时从背包里扣掉。不属五行，永不入牌库、不作赏。秦雁袖子里那张雷符，她始终没掏 —— 小满得自己买。",
+      "art": "art/cards/wulei.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "from": [
+        {
+          "kind": "shop",
+          "item": "wulei-fu",
+          "keeper": {
+            "zh": "钱掌柜",
+            "en": "Money Qian"
+          },
+          "price": 60,
+          "line": {
+            "zh": "秦雁那张雷符，她始终没掏",
+            "en": "Qin Yan never drew her thunder charm."
+          },
+          "src": "游戏"
+        }
+      ]
     }
   ],
   "_curve": "单体伤害约 1.2 点/费，群伤约 0.7 点/费每个 —— 因为克制会翻倍，曲线要按翻倍之后算 (2026-09-18 闸: 五雷法 5费9点 打在克的行上是 18 点，一张牌打掉练气英雄九成气血，影响力 +33.8%)。",

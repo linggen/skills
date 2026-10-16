@@ -95,7 +95,12 @@
     "id": "mijing-zou",
     "kind": "duel",
     "creature": "foe-zou",
-    "retry": true
+    "retry": true,
+    "foe": {
+     "party": [
+      "ahe"
+     ]
+    }
    },
    "withdrawn": {
     "zh": "火蛇缩回了葫芦，那面盾横在他胸前，他笑眯眯地等着。——再来。",
@@ -105,7 +110,6 @@
     "table": "scene",
     "item": "duan-dao",
     "wealth": 9,
-    "card": "huiqi",
     "more": {
      "qi-pill": 5,
      "dingtai": 3,

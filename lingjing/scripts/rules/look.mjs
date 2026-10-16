@@ -514,6 +514,8 @@ export function look(state, content, ctx) {
     // What the story has marked (a choice it will remember), and the beasts whose first sight has played.
     ...(state.marks?.length ? { marks: state.marks } : {}),
     ...(state.appeared?.length ? { appeared: state.appeared } : {}),
+    // 新: cards gained and not yet played (cards.mjs gainCard) — the page plays the 得牌 reveal for each one it has not seen.
+    ...(state.cards_new?.length ? { cards_new: state.cards_new } : {}),
     // 恩仇簿: every debt the story has written down, good and bad.
     ...(state.ledger?.length ? { ledger: ledgerOf(content, state, ctx.now) } : {}),
     // The day's 功课 from the scroll in the bag (《吐纳经》, rules/scrolls.mjs).

@@ -172,6 +172,8 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     tones: fs.existsSync(path.join(dir, 'tones.json')) ? readJson(path.join(dir, 'tones.json')) : null,
     // The companion's past, given back chapter by chapter (companion.mjs § 她的来处).
     lore: fs.existsSync(path.join(dir, 'companion.json')) ? readJson(path.join(dir, 'companion.json')) : null,
+    // 斗法小队 (party.json, cards.md § 5): who stands beside the lead in a fight, by the 回.
+    party: fs.existsSync(path.join(dir, 'party.json')) ? readJson(path.join(dir, 'party.json')) : null,
     // The standing people (people.json): a scene line's `who` may be one of them, or a slot.
     people: fs.existsSync(path.join(dir, 'people.json')) ? readJson(path.join(dir, 'people.json')) : null,
     // 图鉴 (scripts/codex.js): one entry per subject, linked to the files above; the book reads the same.
@@ -531,6 +533,7 @@ export function lint(content) {
   };
   lintWorld(content.world, bad);
   lintItems(content, bad);
+  lintFrom(content, bad);
   lintArts(content, bad);
   bilingual(content, 'content', bad);
   for (const [part, node] of Object.entries(content)) {
@@ -1098,7 +1101,6 @@ function lintCreatures(content, bad) {
     // what is written must be one of the ways a creature fights.
     if (c.lean != null && !LEAN_IDS.includes(c.lean)) bad(`creature ${c.id}`, `leans an unknown way: ${c.lean}`);
     for (const i of c.pattern ?? []) if (!INTENTS.includes(i)) bad(`creature ${c.id}`, `fights an unknown way: ${i}`);
-    if (c.card && !(content.cards?.cards ?? []).some(k => k.id === c.card && !k._token)) bad(`creature ${c.id}`, `deals unknown card ${c.card}`);
     for (const d of [c.drops ?? []].flat()) if (!content.items.items.some(i => i.id === d)) bad(`creature ${c.id}`, `drops unknown item ${d}`);
     // `loot` (creatures.json `_loot`): rows of known things, whole weights, a `dup` that is a thing or 灵石.
     if (c.loot != null && !Array.isArray(c.loot)) bad(`creature ${c.id}`, 'loot is a list of {item, w}');
@@ -1521,6 +1523,33 @@ function lintArts(content, bad) {
   }
 }
 
+/* 出处 (cards.json `from`, cards.md): every card a player or a member can hold says where it comes
+   from, and each source names a thing that exists — a scene, a board's task, a creature, an item,
+   a party member. A card's `owner` is a member of party.json, or a creature (a foe's own art). */
+const FROM_KINDS = { story: 'scene', beat: 'task', beast: 'creature', shop: 'item', tame: 'creature', summon: 'item', member: 'member', foe: 'creature', tale: null };
+function lintFrom(content, bad) {
+  const scenes = new Set(Object.values(content.chapters ?? {}).flatMap(ch => Object.keys(ch.scenes ?? {})));
+  const has = {
+    scene: id => scenes.has(id), task: id => content.tasks.tasks.some(t => t.id === id),
+    creature: id => content.creatures.creatures.some(c => c.id === id), item: id => content.items.items.some(i => i.id === id),
+    member: id => Boolean(content.party?.members?.[id]),
+  };
+  for (const c of content.cards?.cards ?? []) {
+    const where = `card ${c.id}`;
+    if (c.owner && !has.member(c.owner) && !has.creature(c.owner)) bad(where, `owned by unknown ${c.owner}`);
+    if (!c._token && !(c.from ?? []).length) bad(where, 'says no 出处 (from)');
+    for (const f of c.from ?? []) {
+      const key = FROM_KINDS[f.kind];
+      if (!(f.kind in FROM_KINDS)) { bad(where, `from an unknown kind ${f.kind}`); continue; }
+      if (key && !has[key](f[key])) bad(where, `from ${f.kind} names unknown ${key} ${f[key]}`);
+      if (!['书', '游戏'].includes(f.src)) bad(where, `from ${f.kind} is neither 书 nor 游戏`);
+    }
+  }
+  for (const [id, m] of Object.entries(content.party?.members ?? {})) {
+    for (const k of m.deck ?? []) if (!(content.cards?.cards ?? []).some(c => c.id === k && c.owner === id)) bad(`party ${id}`, `deals ${k}, not a card of theirs`);
+  }
+}
+
 function lintItems(content, bad) {
   const seen = new Set();
   for (const item of content.items.items) {
@@ -1548,8 +1577,14 @@ function lintItems(content, bad) {
     // lends), 防 on a 法衣, 抗 on a 佩. Everything else is one plain effect.
     const arms = ['atk', 'def', 'ward'].filter(k => e[k] != null);
     // 伤势 and 强化 were cut (redesign-v2 § 四): no `mend`, no `temper`.
-    const kinds = ['key', 'progress', 'wear', 'charm', 'core', 'learn', 'pouch'].filter(k => e[k] != null);
-    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, progress, wear, charm, core, learn, pouch, or arms (atk, def, ward)');
+    const kinds = ['key', 'progress', 'wear', 'charm', 'core', 'learn', 'pouch', 'card'].filter(k => e[k] != null);
+    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, progress, wear, charm, core, learn, pouch, card, or arms (atk, def, ward)');
+    // A thing bought for the card it carries (2026-10-16, cards.md: 每张牌都在剧情里收集或者购买): the card names this item as its shop.
+    if (e.card != null) {
+      const c = (content.cards?.cards ?? []).find(x => x.id === e.card);
+      if (!c || c._token) bad(where, `carries unknown or token card ${e.card}`);
+      else if (!(c.from ?? []).some(f => f.kind === 'shop' && f.item === item.id)) bad(where, `card ${e.card} does not name ${item.id} as its shop`);
+    }
     // A bigger 储物袋: whole slots, on a thing of the kind (rules/pouch.mjs).
     if (e.pouch != null && (!Number.isInteger(e.pouch) || e.pouch < 1 || item.kind !== 'pouch')) bad(where, 'pouch is a whole number of slots above zero, on a pouch');
     if (e.learn != null && (e.learn !== 'wangqi' || ![1, 2].includes(e.level) || !content.ladder.tiers.some(t => t.id === e.tier))) bad(where, 'learn is wangqi, level 1 or 2, at a tier the ladder knows');

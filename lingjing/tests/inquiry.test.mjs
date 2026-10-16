@@ -2,6 +2,7 @@
 // `about` for a 问询, `bout` for a fight the page just finished. Seen live
 // 2026-09-25: 「说说雷神」 away from 雷泽 answered 「没有可靠记述」 and pointed at
 // the page; `[scene] won` made up the last blow and the spoils.
+import { lookahead } from '../scripts/fightline.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -41,16 +42,17 @@ function picksFor(setup, pass = false) {
   const st = begin(setup, catalog), actions = [];
   for (let guard = 0; guard < 200 && st.outcome === 'open'; guard += 1) {
     if (st.whose === 'foe') { foeTurn(st); continue; }
-    const can = pass ? [] : offers(st).filter(o => o.ok && o.action.kind !== 'end');
-    const best = can.map(o => ({ o, hp: battle([...actions, tokenOf(o.action)], setup, catalog).foe.hp })).sort((a, b) => a.hp - b.hp)[0]?.o;
-    const a = best ? best.action : { kind: 'end' };
+    // The attentive line (fightline.js lookahead): the fights are weighed to be lost by a greedy one.
+    const a = pass ? { kind: 'end' } : lookahead(st);
     act(st, a, 'you');
     actions.push(tokenOf(a));
   }
   return { actions, outcome: st.outcome };
 }
 
-const atHaunt = () => ({ ...openWorld(), chapter: '01-ji', scene: null, place: 'fuli', tier: 'foundation', step: 0, progress: 0, stamina: 50, updated: NOW.toISOString() });
+// The hand the road gives by 古九 (tools/story-fights.mjs STOPS.h10): the open world's save moved there holds it.
+const ROAD_HAND = ['niangbing', 'yijian', 'tuna', 'mucao', 'zheng', 'huiqi', 'huoya', 'huodan', 'bingzhui', 'jinren', 'tuqiang', 'mutang', 'yangzhen', 'houtu', 'luying', 'suijin', 'huochai', 'zhennu', 'ruxi'];
+const atHaunt = () => ({ ...openWorld(), chapter: '01-ji', scene: null, place: 'fuli', tier: 'core', step: 0, progress: 0, stamina: 50, cards: ROAD_HAND, updated: NOW.toISOString() });
 
 test('说说雷神 away from 雷泽: Look carries the creature from its heritage, and the 问询 then', () => {
   const w = world(atHaunt());

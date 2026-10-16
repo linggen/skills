@@ -82,7 +82,10 @@
        "en": "Ahe's records: Lu Fang — after a metal blade, he needs a breath."
       }
      }
-    ]
+    ],
+    "foe": {
+     "hp": 1.75
+    }
    },
    "withdrawn": {
     "zh": "卢方抖了抖袖子，眼皮又耷拉了下来：「外门的。」——再来。",

@@ -73,14 +73,14 @@ test('every birthday 1950–2015 gives all five; each of the five can lead', () 
   assert.equal(content.traits.names['5'].zh, '五行杂灵根');
 });
 
-test('the starter: five roots and four are the old ten exactly; fewer roots fill with beasts, never a 功法 of a root they lack', () => {
-  const TEN = ['xiaoyao', 'qingteng', 'leipu', 'luying', 'shuiwu', 'huoya', 'huodan', 'tuou', 'shanjing', 'huiqi'];
-  assert.deepEqual(starterFor(content, ['wood', 'water', 'fire', 'earth']), TEN);
-  assert.deepEqual(starterFor(content, FIVE), TEN, 'the starter\'s 金 cards stand last and fall off');
-  const one = starterFor(content, ['metal']), catalog = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
-  assert.equal(one.length, 9);
-  assert.ok(one.every(id => catalog[id].kind !== 'spell' || !catalog[id].element || catalog[id].element === 'metal'), one.join());
-  for (const roots of [['fire', 'water'], ['wood', 'water', 'fire']]) assert.equal(starterFor(content, roots).length, 10, roots.join());
+test('no starter at the root test (cards.md § 4): the stone reads the roots and hands over nothing — he holds what the road gave', () => {
+  const s = hall();
+  const out = born(s, { birth: '1985-03-03' });
+  assert.equal(out.result.ok, true, JSON.stringify(out.result));
+  assert.deepEqual(out.state.cards, s.cards ?? [], 'the same cards after the stone as before it');
+  for (const id of ['niangbing', 'yijian', 'tuna']) assert.ok(out.state.cards.includes(id), `${id}: gained on the road (00-kitchen, 射鹿, 吹鹅毛)`);
+  assert.equal(content.cards.starter, undefined);
+  assert.deepEqual(starterFor(content, FIVE), [], 'the old starter is read for old saves only (state.mjs legacyCards)');
 });
 
 test('生辰 at the 入门仪式: the roots are read and the day let go — never on the save, in the result, in the log', () => {

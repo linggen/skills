@@ -121,7 +121,7 @@ const FIGHT_DAYS = 12;
 
 /* ── one step ── */
 class Stuck extends Error {
-  constructor(s, why) { super(`stuck at ${where(s)}: ${why}`); this.scene = where(s); this.why = why; }
+  constructor(s, why) { super(`stuck at ${where(s)}: ${why}`); this.scene = where(s); this.why = why; this.state = s; }
 }
 
 function makeRunner(content, opts) {
@@ -135,7 +135,25 @@ function makeRunner(content, opts) {
     return out.state ?? s;
   };
   r.nextDay = () => { r.now = new Date(r.now.getTime() + DAY); r.days += 1; };
+  /* A sensible player puts on what he is given before a fight (tools/story-fights.mjs weighs the
+     fights so): the best 法器 · 法衣 · 佩 in the bag, each by its own number. */
+  r.dress = (s) => {
+    const best = {};
+    for (const id of Object.keys(s.bag ?? {})) {
+      const it = content.items.items.find((i) => i.id === id), e = it?.effect ?? {};
+      const slot = { weapon: 'weapon', robe: 'robe', pendant: 'pendant' }[it?.kind];
+      const n = e.atk ?? e.def ?? Object.values(e.ward ?? {}).reduce((a, b) => a + b, 0);
+      if (slot && n > (best[slot]?.n ?? 0)) best[slot] = { id, n };
+    }
+    for (const [slot, { id }] of Object.entries(best)) {
+      if (s.wear?.[slot] === id) continue;
+      const out = r.call('trade', s, { action: 'use', id });
+      if (out.result?.ok) s = out.state;
+    }
+    return s;
+  };
   r.fight = (s, game) => {
+    s = r.dress(s);
     for (let d = 0; d < FIGHT_DAYS; d += 1) {
       const started = r.call('duel', s, { id: game.id });
       if (!started.result.ok) {

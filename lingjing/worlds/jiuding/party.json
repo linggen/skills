@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "_about": "斗法小队 (cards.md § 1 · § 5, Hanli 2026-10-16): who stands beside 小满 in a fight. A member is a person with their own deck and 气血 (a share of his), never a card; their cards are theirs (cards.json `owner`) and they play them. `by_hui` is who fights beside him in a 回 of the book (第七回 h11: 阿禾 and 孙二狗 on the errands — 「一年里他们揭的第七块牌」; 第八回 h09 and 第九回 h10: 阿禾 — 「孙二狗没有来」); a scene's fight says its own (`foe.party` on the exit game: 第五回's 邹青松 with 阿禾 behind the wall, 秦雁's spar and the 双龙 alone). 银月 sleeps in the 木牌 through 卷一: she is a member from the 卷 she wakes in (`juan`), never a card in a fight before it.",
+  "lead": "xiaoman",
+  "members": {
+    "ahe": {
+      "name": { "zh": "阿禾", "en": "A-He" },
+      "root": "wood",
+      "hp": 0.6,
+      "role": { "zh": "木天灵根 · 治 · 缚", "en": "wood · heals · binds" },
+      "art": "art/people/ahe-girl.webp",
+      "deck": ["qingteng", "qingteng", "qingguang", "peiyuan", "tengmiao", "bingzhuifu", "chunsheng", "zhenyuefu"]
+    },
+    "sun": {
+      "name": { "zh": "孙二狗", "en": "Sun Ergou" },
+      "root": "earth",
+      "hp": 0.8,
+      "taunt": true,
+      "role": { "zh": "山根桩 · 嘲讽", "en": "Mountain-Root Stance · draws the blows" },
+      "art": "art/people/sunergou.webp",
+      "deck": ["tiegu", "shangen", "tiegu", "shangen"]
+    },
+    "yinyue": {
+      "name": { "zh": "银月", "en": "Yinyue" },
+      "root": "metal",
+      "hp": 0.7,
+      "juan": 2,
+      "walks": true,
+      "role": { "zh": "补锅匠", "en": "the pot-mender" },
+      "deck": ["yinyue"]
+    }
+  },
+  "by_hui": {
+    "h11": ["ahe", "sun"],
+    "h09": ["ahe"],
+    "h10": ["ahe"],
+    "j07": ["ahe", "sun"],
+    "j09": ["ahe"]
+  },
+  "_by_hui": "A 今 interlude's 回 (j07, j09) stands for the 古 回 its chapter plays when the save is between scenes there (rules/hui.mjs huiNow reads the chapter's first): 00-zhuji opens on 今·三 before 古七, 01-ji on 今·四 before 古九."
+}

@@ -21,7 +21,9 @@
   "old-bow": 1,
   "grey-robe": 1
  },
- "cast": [],
+ "cast": [
+  "zheng"
+ ],
  "wear": {},
  "duels": {},
  "arts": [],
@@ -221,26 +223,25 @@
   "asleep": true
  },
  "cards": [
-  "xiaoyao",
-  "qingteng",
-  "leipu",
-  "luying",
-  "shuiwu",
+  "niangbing",
+  "yijian",
+  "tuna",
+  "mucao",
+  "zheng",
+  "huiqi",
   "huoya",
   "huodan",
-  "tuou",
-  "shanjing",
-  "huiqi",
-  "jinsuo",
-  "jinzhua",
-  "yinyue",
-  "zheng",
+  "bingzhui",
+  "jinren",
+  "tuqiang",
+  "mutang",
+  "yangzhen",
+  "houtu",
+  "luying",
   "suijin",
-  "xianshi",
-  "canwu",
-  "jinzhen",
-  "gupi",
-  "jiushou"
+  "huochai",
+  "zhennu",
+  "ruxi"
  ],
  "card_from": {
   "xiaoyao": {

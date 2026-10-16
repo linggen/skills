@@ -664,14 +664,15 @@ function gearBrief(content, state, now = new Date()) {
     pouch: pouchBrief(content, state),
     ...(shop ? { market: true } : {}),
     // 牌 — every card he holds, cheapest first, and which ten a fight deals
-    // today (deckFor), 银月 always in hand. Roots he lacks are marked, not hid.
+    // today (deckFor); a party member's held card marked theirs. Roots he lacks are marked, not hid.
     cards: (() => {
       const catalog = cardCatalog(content), ten = new Set(deckFor(content, state)), roots = rootsOf(content, state), picked = new Set(pickedCards(content, state));
       return ownedCards(content, state).map(id => catalog[id]).filter(Boolean)
         .sort((a, b) => a.cost - b.cost || String(a.element ?? '').localeCompare(String(b.element ?? '')))
         .map(c => ({ id: c.id, name: pick(c.name, state.lang), cost: c.cost, kind: c.kind, element: c.element ?? null,
           // Picking, lit is his and a filled card is only marked; else the ten dealt.
-          ...(c.id === 'yinyue' ? { hand: true } : Array.isArray(state.deck) && canPick(content, state) ? (picked.has(c.id) ? { deck: true, picked: true } : ten.has(c.id) ? { fill: true } : {}) : ten.has(c.id) ? { deck: true } : {}),
+          // A party member's card (cards.json owner: 阿禾's, 孙二狗's, 银月) is theirs to play, never in his ten.
+          ...(c.owner ? { member: pick(content.party?.members?.[c.owner]?.name, state.lang) ?? c.owner } : Array.isArray(state.deck) && canPick(content, state) ? (picked.has(c.id) ? { deck: true, picked: true } : ten.has(c.id) ? { fill: true } : {}) : ten.has(c.id) ? { deck: true } : {}),
           ...(!usable(c, roots) ? { off_root: true } : {}),
           // 闭关's ★ (rules/seclusion.mjs), and the 灵力 it costs with them.
           ...(state.card_stars?.[c.id] ? { stars: state.card_stars[c.id], cost: costOf({ stars: state.card_stars }, c) } : {}) }));

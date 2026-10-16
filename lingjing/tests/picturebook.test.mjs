@@ -220,7 +220,8 @@ test('her lines in the book are the book\'s: played in place, awake or asleep (h
   // asleep: the token's one word at the 蠪侄 is the story's, told by Ling; no beat for her; no card of hers in the fight
   const trial = walk(start(), upTo(TO_HALL, 'subdue'), content, NOW);
   const fight = look({ ...trial, wins: { 'gate-longzhi': NOW.toISOString() } }, content, ctx()).scene.exits.find(e => e.id === 'subdue');
-  assert.deepEqual(fight.duel.setup.you.extra, [], 'asleep, she fights nothing');
+  assert.ok(!fight.duel.setup.you.extra.includes('yinyue') && !(fight.duel.setup.you.party ?? []).some(m => m.id === 'yinyue'), 'asleep, she fights nothing');
+  assert.deepEqual(fight.duel.setup.you.extra, ['yigun', 'shizi'], "the 三试's own: 一滚, 石子");
   const won = resolve({ ...trial, wins: { 'gate-longzhi': NOW.toISOString() } }, content, ctx(), { exit: 'subdue' });
   assert.equal(won.result.her_beat, undefined);
   assert.match(tellOf(content, won.state).tell.find(t => t.id === '00-longzhi/subdue').text, /……左边/);

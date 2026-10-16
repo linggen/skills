@@ -213,16 +213,15 @@ test('the chapter ended, 古九 keeps the same mountain on its own map; a save a
   assert.equal(must(move, later, { place: 'sishui' }).place, 'sishui');
 });
 
-test('小狰 is the story\'s: at the 药园 a trial bout with 狰, fought again at once, then the 萝卜 — it walks with him, and the 守夜 hands itself in at 周衡 (2026-09-30)', () => {
+test('小狰 is the story\'s: at the 药园 the 萝卜, not a fight (cards.md § 1, 第四回) — it walks with him, and the 守夜 hands itself in at 周衡 (2026-09-30)', () => {
   let s = opened();
   for (const exit of ['owe', 'can', 'breathe', 'hide']) s = step(s, exit);
   assert.equal(s.scene, 'wm-yaoyuan');
   s = must(move, s, { place: 'yaoyuan' });
   const l = look(s, content, ctx());
   const e = l.scene.exits.find(x => x.id === 'tame');
-  assert.deepEqual([e.game.kind, e.game.creature, e.game.retry], ['duel', 'zheng', true]);
-  refused(resolve, s, { exit: 'tame' }, 'game-not-won');
-  s = must(resolve, won(s, 'yaoyuan-zheng'), { exit: 'tame' });
+  assert.equal(e.game, undefined, 'no fight: a 萝卜 set down');
+  s = must(resolve, s, { exit: 'tame' });
   assert.ok(s.cast.includes('zheng') && s.cards.includes('zheng'), 'it walks with him, its card in the deck');
   assert.equal(s.scene, 'wm-chaifang');
   assert.match(tellOf(content, s).tell.map(t => t.text).join('\n'), /萝卜[\s\S]*睡着了/, 'the book\'s passage: the 萝卜, and it sleeps at his feet');
@@ -580,7 +579,8 @@ test('杀人必摸尸 (古五, 2026-10-03): 邹青松 killed leaves his 储物�
   assert.equal(card?.id, 'huoya', 'the win deals the gourd\'s fire snakes');
   const e = CH.scenes['wm-xirang'].exits.find(x => x.id === 'swallow');
   assert.equal(e.grant.wealth, 9, 'the 钱袋: seven from the fat 公子, two from the underground river');
-  assert.equal(e.grant.card, 'huiqi', 'the 回气丹 bottle');
+  // the 回气丹 bottle: its card is the scene's own (cards.json from: story wm-xirang), given as he leaves it
+  assert.ok(content.cards.cards.find(c => c.id === 'huiqi').from.some(f => f.kind === 'story' && f.scene === 'wm-xirang'), 'the 回气丹 bottle');
   // 穷人家的孩子，见了宝，都拿走: the dead 九层's pills and map, the 鼎苔 scraped clean — all stowed by the exit.
   assert.deepEqual(e.grant.more, { 'qi-pill': 5, dingtai: 3, 'neimen-map': 1 });
   let t = { ...opened(), scene: 'wm-xirang', place: 'shimen', bag: {} };

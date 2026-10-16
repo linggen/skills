@@ -7,10 +7,9 @@ import { herAwake, herLifts } from './companion.mjs';
 import { clone, refuse } from './core.mjs';
 import { gearBrief } from './errands.mjs';
 import { boutFortune } from './fortune.mjs';
-import { hashOf } from './travel.mjs';
 import { allPlaces, creatureOf, tierIndex } from './world.mjs';
-import { mainRoot, starterFor } from './roots.mjs';
-import { chapterLabel, huiLabel, sceneHui } from './hui.mjs';
+import { mainRoot } from './roots.mjs';
+import { chapterLabel, huiLabel, huiNow, sceneHui } from './hui.mjs';
 
 /* ── 斗法 v3: the ten cards a player takes in ──
    Until the skill tree picks a deck, the deck is WHO THEY ARE: the cards of
@@ -28,7 +27,7 @@ export function deckFor(content, state) {
   const auto = autoDeck(content, state);
   if (!Array.isArray(state.deck) || !canPick(content, state)) return auto;
   const owned = new Set(ownedCards(content, state)), roots = rootsOf(content, state), catalog = cardCatalog(content);
-  const picked = [...new Set(state.deck)].filter(id => owned.has(id) && catalog[id] && id !== 'yinyue' && usable(catalog[id], roots)).slice(0, MODES.pve.deck);
+  const picked = [...new Set(state.deck)].filter(id => owned.has(id) && catalog[id] && !catalog[id].owner && usable(catalog[id], roots)).slice(0, MODES.pve.deck);
   // A card he took out stays out — the fill never puts it back (seen on a
   // copy of his save, 2026-09-23: 土偶 taken out, filled straight back in).
   const out = new Set(state.deck_out ?? []);
@@ -69,12 +68,17 @@ export function deck(state, content, ctx, args) {
 function autoDeck(content, state) {
   // Only what has been obtained (his, 2026-09-22) — 得牌 below.
   const owned = new Set(ownedCards(content, state));
-  const pool = (content.cards?.cards ?? []).filter(c => !c._token && c.id !== 'yinyue' && owned.has(c.id));
+  // His own: a card a party member plays (cards.json `owner`: 阿禾's 青藤, 孙二狗's 山根桩,
+  // 银月) is that member's, in their own deck — an old save keeps it held, never in his ten.
+  const pool = (content.cards?.cards ?? []).filter(c => !c._token && !c.owner && owned.has(c.id));
   const roots = rootsOf(content, state);
   // A root decides which 功法 he can cast, not which beast will follow him:
   // 韩立 had no 金 root and raised 噬金虫 all the same (his, 2026-09-22). So a
   // spell of a root he lacks stays out; a 灵兽 of any element comes in.
-  const mine = pool.filter(c => usable(c, roots));
+  const held = pool.filter(c => usable(c, roots));
+  // Under ten, a card goes in twice (炉石's two copies; cards.md § 4): the first
+  // hand of a mortal is a few things, not ten — 娘的饼, 一箭, 吐纳.
+  const mine = held.length >= MODES.pve.deck ? held : [...held, ...held];
   // A DECK, not a pile. The gate measured the difference and it is the whole
   // game: a curve deck won 84% where ten cards drawn at random won 47%
   // (2026-09-18). So the ten are dealt along a curve, and the curve BENDS WITH
@@ -90,7 +94,7 @@ function autoDeck(content, state) {
   const CURVE = CURVES[state.tier] ?? CURVES.qi;
   const byCost = new Map();
   for (const c of shuffle(mine.map(x => x.id), `deck|${seedOf(state)}`)) {
-    const cost = Math.min(6, Math.max(1, pool.find(x => x.id === c).cost));
+    const cost = Math.min(6, Math.max(1, pool.find(x => x.id === c).cost ?? 1));
     byCost.set(cost, [...(byCost.get(cost) ?? []), c]);
   }
   const deck = [];
@@ -174,17 +178,23 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
   const boost = fortune?.card ? { element: fortune.root, n: fortune.card } : null;
   const insight = Math.max(state.insight ?? 0, fortune?.sight ?? 0, read);
   const main = state.fate?.element?.id ?? state.fate?.element ?? mainRoot(state) ?? 'wood';
-  // Her card goes into a fight only while she is awake (asleep in the fox token, she fights nothing).
-  const withHer = herAwake(state) && ownedCards(content, state).includes('yinyue');
+  // 小队 (party.json, cards.md § 5): who stands beside him in this fight. 银月 is a member, never
+  // a card in hand: asleep in the 木牌 through 卷一, she stands in the row from the 卷 she wakes in.
+  const party = partyFor(content, state, creature);
+  const withHer = party.some(m => m.id === 'yinyue');
   const gear = gearFight(content, state), lifts = withHer ? herLifts(content, state) : null;
-  // Before the root test (the prologue's 三试 comes first) a player fights with
-  // what no root claims: the starter's beasts and its one rootless 功法.
-  const deck = state.traits?.length ? deckFor(content, state) : starterFor(content, []), stars = starsIn(state, deck);
+  // Before the root test (the 三试 comes first) he fights with what no root claims:
+  // the rootless things he holds (deckFor reads no roots, so a 功法 stays out).
+  const deck = deckFor(content, state), stars = starsIn(state, deck);
+  // 新: a card gained and not yet played (cards_new), marked in the hand until it is.
+  const fresh = (state.cards_new ?? []).filter(id => deck.includes(id));
   return {
     mode: 'pve',
     seed: deal ? `${duelSeed(state, creature, now)}|${deal}` : duelSeed(state, creature, now),
     you: {
-      tier: state.tier, step: state.step ?? 0, root: main, deck, extra: [...(withHer ? ['yinyue'] : []), ...gear.charms],
+      tier: state.tier, step: state.step ?? 0, root: main, deck, extra: [...(creature.extra ?? []), ...gear.charms],
+      ...(party.length ? { party } : {}),
+      ...(fresh.length ? { fresh } : {}),
       ...(lifts ? { lifts } : {}),
       // 望气: how much of the beast's plan he can read — the scroll (items
       // `learn`), or the day's reading at 吉/大吉.
@@ -203,6 +213,22 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
   };
 }
 
+/* Who stands beside him (party.json): the fight's own word (an exit game's `foe.party`, carried
+   on the foe), else the 回 he stands in (`by_hui`); a member of a 卷 not yet open (银月, asleep in
+   卷一) never. Each member as the fight takes it: id, name, root, share of 气血, 嘲讽, deck. */
+export function partyFor(content, state, creature) {
+  const p = content.party;
+  if (!p) return [];
+  const open = juanOf(content, state);
+  // A member who `walks` with him (银月, once her 卷 is open) stands beside him in every fight she is awake for.
+  const walking = Object.entries(p.members ?? {}).filter(([, m]) => m.walks && herAwake(state)).map(([id]) => id);
+  const ids = [...new Set([...(creature?.party ?? p.by_hui?.[huiNow(content, state)] ?? []), ...walking])];
+  return ids.map(id => [id, p.members?.[id]]).filter(([, m]) => m && (m.juan ?? 1) <= open)
+    .map(([id, m]) => ({ id, name: m.name, root: m.root, hp: m.hp, ...(m.taunt ? { taunt: true } : {}), ...(m.art ? { art: m.art } : {}), deck: [...m.deck] }));
+}
+/* The 卷 he stands in: his chapter's (chapter.json `juan`), 1 when it says none. */
+const juanOf = (content, state) => content.chapters?.[state.chapter]?.juan ?? 1;
+
 /* The ★ 闭关 gave the cards in this deck — null when none has any. */
 function starsIn(state, deck) {
   const got = Object.entries(state.card_stars ?? {}).filter(([id, n]) => n > 0 && deck.includes(id));
@@ -215,18 +241,29 @@ const cardCatalog = content => Object.fromEntries((content.cards?.cards ?? []).m
    His rule, 2026-09-22: 用户只能使用已经获得的牌, 包括银月, 法术, 武器等. Roots
    used to hand out every card of their element — so 精卫, never met, sat in
    his ten while the 夫诸 and 狍鸮 that walk with him did not. Now `state.cards`
-   is what he holds: the starter at the root test, 银月 when she joins, a beast
-   when it joins, a card from each win, and whatever a grant names. A save
-   from before is read as what it would hold (`ownedAtStart`) until the first
-   card is gained, and then that is written down. 法器 are worn, not held —
+   is what he holds, and every card says where it comes from (cards.json `from`,
+   Hanli 2026-10-16: 每张牌都在剧情里收集或者购买): a scene left (`story`), a
+   board won (`beat`), a beast beaten (`beast` — the card it fought with),
+   a thing bought (`shop`), a beast tamed (`tame`). Nothing is dealt at random,
+   and no starter is handed over at the root test any more (cards.md § 4). A
+   save from before the rule is read as what it held then (`ownedAtStart`, the
+   `_legacy_starter`) until state.mjs writes it down. 法器 are worn, not held —
    the sword was always the one on the belt. */
 const isBeastCard = (content, id) => Boolean(creatureOf(content, id));
 /* A 功法 wants its root; a 灵兽 of any element answers anyone who holds it. */
 const usable = (c, roots) => c.kind !== 'spell' || !c.element || roots.has(c.element);
+/* The twelve the root test once handed over (cards.json `_legacy_starter`) — for old saves only. */
 const starterOf = (content, traits) => {
   const catalog = cardCatalog(content), roots = new Set(traits ?? []);
-  return (content.cards?.starter ?? []).filter(id => catalog[id] && (!catalog[id].element || roots.has(catalog[id].element)));
+  return (content.cards?._legacy_starter ?? []).filter(id => catalog[id] && (!catalog[id].element || roots.has(catalog[id].element)));
 };
+/* The cards a source gives: every card whose `from` names it (kind and key: a scene, a task, a creature, an item). */
+export const cardsFrom = (content, kind, key) => (content.cards?.cards ?? [])
+  .filter(c => !c._token && (c.from ?? []).some(f => f.kind === kind && (f.scene ?? f.task ?? f.creature ?? f.item) === key));
+/* Every card a source gives, into his hand: a scene left, a board won (cards.md § 2). */
+export function grantFrom(content, state, kind, key, from) {
+  return cardsFrom(content, kind, key).map(c => gainCard(content, state, c.id, from)).filter(Boolean);
+}
 function ownedAtStart(content, state) {
   const catalog = cardCatalog(content);
   if (!state.traits?.length) return [];
@@ -248,27 +285,21 @@ function gainCard(content, state, id, from = null) {
   const owned = ownedCards(content, state);
   if (owned.includes(id)) { state.cards = owned; return null; }
   state.cards = [...owned, id];
+  // 新 until it is first played (tasks.mjs duel clears it; the page marks it in the hand).
+  state.cards_new = [...new Set([...(state.cards_new ?? []), id])];
   if (from) state.card_from = { ...(state.card_from ?? {}), [id]: { ...from, place: from.place ?? state.place ?? null, chapter: from.chapter ?? state.chapter ?? null, ...(state.scene ? { scene: state.scene } : {}) } };
   return { id, name: pick(card.name, state.lang), card: true };
 }
 
-/* What a win leaves in the hand: one card not yet his that he can use — a
-   灵兽 of any element, a 功法 only of his roots (one he could never cast is no
-   gift) — the beast's own element first.
-   Never a 山海经 beast — those come only by taming. Stable by the day, the
-   beast and the 名字, like everything else a fight deals. */
+/* What a win leaves in the hand: the card this beast fought with and names as
+   its gift (cards.json `from: {kind: 'beast', creature}` — 杀人必摸尸: 邹青松's
+   gourd → 火鸦, the 野猪's 饥啸), the first not yet held; `nth` the next one.
+   Nothing when it names none or he holds them all — never a card at random. */
 function winCard(content, state, creature, now, nth = 0, from = { how: 'win', creature: creature.id }) {
-  const owned = new Set(ownedCards(content, state)), roots = new Set(state.traits ?? []);
-  // A creature that names its card (creatures.json `card`) deals that one, not yet held:
-  // what it fought with, now his (邹青松's gourd → 火鸦, 杀人必摸尸).
-  const named = !nth && creature.card ? (content.cards?.cards ?? []).find(c => c.id === creature.card) : null;
-  if (named && !owned.has(named.id)) return gainCard(content, state, named.id, { ...from, day: dayKey(now) });
-  const open = (content.cards?.cards ?? []).filter(c => !c._token && c.id !== 'yinyue' && !isBeastCard(content, c.id)
-    && !owned.has(c.id) && usable(c, roots));
-  const own = open.filter(c => c.element === creature.root);
-  const pool = own.length ? own : open;
-  if (!pool.length) return null;
-  return gainCard(content, state, pool[hashOf(`${dayKey(now)}|${creature.id}|${seedOf(state)}|card${nth ? `|${nth}` : ''}`) % pool.length].id, { ...from, day: dayKey(now) });
+  const owned = new Set(ownedCards(content, state));
+  const open = cardsFrom(content, 'beast', creature.id).filter(c => !c.owner && !owned.has(c.id));
+  const c = open[Number.isInteger(nth) ? nth : 0];
+  return c ? gainCard(content, state, c.id, { ...from, day: dayKey(now) }) : null;
 }
 
 /* 牌谱 — every card he holds and where it came from (redesign-v2 § 五). A card
@@ -290,6 +321,8 @@ function cardBook(content, state) {
     return {
       id, name: pick(c.name, lang), kind: c.kind, element: c.element ?? null, cost: c.cost ?? null,
       ...(c.atk != null ? { atk: c.atk, hp: c.hp } : {}), ...(c.art ? { art: c.art } : {}),
+      // Whose it is (a party member's card is theirs to play) and the one line of where it is from.
+      ...(c.owner ? { owner: c.owner } : {}), ...(c.from?.[0]?.line ? { said: pick(c.from[0].line, lang), src: c.from[0].src } : {}),
       from: {
         how: f.how, day: f.day ?? null,
         ...(f.creature ? { creature: nameOf.creature(f.creature) ?? f.creature } : {}),
@@ -301,4 +334,4 @@ function cardBook(content, state) {
   });
 }
 
-export { canPick, cardBook, cardCatalog, gainCard, gearFight, pickedCards, rootsOf, starterOf, usable, winCard };
+export { canPick, cardBook, cardCatalog, gainCard, gearFight, ownedAtStart, pickedCards, rootsOf, starterOf, usable, winCard };

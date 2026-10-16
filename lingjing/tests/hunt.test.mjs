@@ -148,12 +148,15 @@ test('蠪侄 and 狰 of a pool fight with the pool\'s deck; their story fights k
     assert.equal(started.result.ok, true, JSON.stringify(started.result));
     assert.deepEqual(started.result.duel.setup.foe.deck, entry.deck, `${id}: the pool's door`);
     assert.deepEqual(started.state.fight.setup.foe.deck, entry.deck, `${id}: kept on the save`);
-    // The story's fight — the scene's own game, no \`hunt\` — deals the creature's deck.
+    // The story's fight — the scene's own game, no \`hunt\` — deals its own deck (the scene's `foe.deck`, else
+    // the creature's). 狰 is won at the 药园 with a 萝卜, not fought (cards.md § 1): its scene has no fight.
     const [ch, sc] = story[id];
     const game = content.chapters[ch].scenes[sc].exits.map(e => e.game).find(g => g?.creature === id);
+    if (id === 'zheng') { assert.equal(game, undefined, '小狰 is won with a 萝卜'); continue; }
     assert.ok(game && !game.hunt, `${id}: ${sc} fights it`);
-    assert.deepEqual(foeOf(content, game).deck, own, `${id}: ${sc} keeps its deck`);
-    assert.deepEqual(fightSetup(content, at(place), foeOf(content, game), NOW, game.id).foe.deck, own);
+    const kept = game.foe?.deck ?? own;
+    assert.deepEqual(foeOf(content, game).deck, kept, `${id}: ${sc} keeps its deck`);
+    assert.deepEqual(fightSetup(content, at(place), foeOf(content, game), NOW, game.id).foe.deck, kept);
   }
 });
 

@@ -387,8 +387,10 @@ test('储物袋 · 装备 open together: what he wears, what he carries, and the
   // 牌: every card he holds, the day's ten lit, 银月 in hand — the 牌组 pane
   const deck = pouchHtml(ctx, { pane: 'deck' });
   assert.match(deck, /牌 · \d+/);
-  assert.match(deck, /class="gcard in"[^>]*><b class="cost"[^>]*>2<\/b> 银月 · 在手/);
-  assert.ok(g.cards.filter((c) => c.deck).length === 10);
+  // 银月 is a member of the 小队 (party.json), not a card in his hand: her held card is marked hers.
+  assert.match(deck, /class="gcard member"[^>]*><b class="cost"[^>]*>2<\/b> 银月 · 银月的牌，由银月出/);
+  // The ten are dealt from his own (two of a card while he holds under ten — cards.md § 4).
+  assert.ok(g.cards.filter((c) => c.deck).length >= 5);
   // 卸下: the slot's own button, and the rules put it back in the bag
   assert.match(pop2, /data-remove="bamboo-sword"[^>]*>卸下/);
   const { trade } = await import('../scripts/rules.mjs');
@@ -440,11 +442,13 @@ test('让页面算: the hand and the aimed-at say what a blow really takes off, 
   assert.match(battleHtml(view(st), offers(st), { ...ctx, lang: 'en', words: WORDS.en }, { from: 'power' }), /−3 · wood over earth/);
 });
 
-test('every card has a 五行 — only a 丹药 and a 符 have none', async () => {
+test('every card has a 五行 — only a 丹药, a 符 and a mortal\'s own skill have none', async () => {
   // His rulings, 2026-09-22: 这个要align with 凡人, 都有五行属性 · 丹药不配五行.
   // A 符 from the bag (charm) is cinnabar, not a root: 不论五行 (2026-09-24).
+  // 2026-10-16 (cards.md § 4): what 小满 learned before the 灵根 test — 一箭, 吐纳, the 三试's 一滚 and 石子 —
+  // is a mortal's (`mortal`): no root, since a root reads nothing before the stone has read it.
   const { loadWorld } = await import('../scripts/content.mjs');
-  const bare = loadWorld('jiuding').cards.cards.filter((c) => !c.element && !c.pill && !c.charm);
+  const bare = loadWorld('jiuding').cards.cards.filter((c) => !c.element && !c.pill && !c.charm && !c.mortal);
   assert.deepEqual(bare.map((c) => c.id), [], 'give it an element, or mark it a pill');
   for (const c of loadWorld('jiuding').cards.cards.filter((x) => x.charm)) assert.ok(!c.element && c._token, `${c.id}: a 符 takes no element and is never dealt`);
   for (const c of loadWorld('jiuding').cards.cards.filter((x) => x.pill)) assert.ok(!c.element, `${c.id}: a pill takes no element`);

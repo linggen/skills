@@ -66,7 +66,32 @@
     "id": "gate-longzhi",
     "kind": "duel",
     "creature": "longzhi",
-    "retry": true
+    "retry": true,
+    "foe": {
+     "trial": {
+      "survive": 4
+     },
+     "extra": [
+      "yigun",
+      "shizi"
+     ],
+     "party": [],
+     "deck": [
+      "jiushou",
+      "jiushou",
+      "jiushou",
+      "jiushou",
+      "longzhi",
+      "longzhi",
+      "longzhi",
+      "jinzhua",
+      "jinzhua",
+      "jinzhua",
+      "suijin",
+      "jinzhen"
+     ]
+    },
+    "_foe": "三试是胆子，不是降妖 (cards.md § 4): 站住四个回合便过；白给一张「一滚」、一颗「石子」 —— 书里他往右一滚，石头已经出手。蠪侄的虎爪重一分 (一张碎金)：站不住的人真会输 (lookahead 90/10)。"
    },
    "withdrawn": {
     "zh": "蠪侄缩回古松后面，九个头龇着牙。守林的执事：「再来。」",
