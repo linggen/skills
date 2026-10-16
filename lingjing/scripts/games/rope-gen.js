@@ -16,8 +16,9 @@ import { blowGust, buildWorld, calm, cutVine, dist, outOf, popBubble, stepWorld,
 export const MOUTH_Y = FLOOR - 64;
 export const MOUTH_R = 30;
 export const STAR_R = 13;
-const CALM_MS = 400, LATE_MS = 320, SLOW_MS = 1500, END_MS = 900, LIMIT_MS = 14000, STEP = 1000 / 60;
+const CALM_MS = 400, LATE_MS = 320, SLOW_MS = 1500, END_MS = 900, LIMIT_MS = 11000, STEP = 1000 / 60;
 export const TRIES = 24;
+const MAX_PLANS = 10;
 export const SEEK = 1;
 
 /* ── The seed ── */
@@ -62,13 +63,13 @@ export function playPlan(level, plan, { late = 0, limit = LIMIT_MS } = {}) {
     path.push([p.x, p.y]);
     if (ev.broke && i > 0) broke = true;
     still = calm(w) ? still + STEP : 0;
-    if (outOf(w)) return { path, end: 'out', broke };
+    if (outOf(w)) return { path, end: 'out', broke, done: i >= plan.length };
     if (i >= plan.length) {
       after += STEP;
-      if (still >= END_MS) return { path, end: 'rest', broke };
+      if (still >= END_MS) return { path, end: 'rest', broke, done: true };
     }
   }
-  return { path, end: 'timeout', broke };
+  return { path, end: 'timeout', broke, done: i >= plan.length };
 }
 
 /** Where a path first comes down through the mouth's height after its LAST move — every move of
@@ -103,8 +104,9 @@ const near = (path, [x, y], r, from = 0, until = path.length) => {
 
 function anchors(u, n, x0) {
   const xs = [];
+  // One vine hangs near where the thing is; more spread over the roof.
   for (let k = 0; xs.length < n && k < 40; k++) {
-    const x = round(between(u, 34, W - 34));
+    const x = n === 1 ? x0 + round(between(u, -30, 30)) : round(between(u, 34, W - 34));
     if (xs.every((o) => Math.abs(o - x) > 70) && Math.abs(x - x0) < 190) xs.push(x);
   }
   return xs.map((x) => ({ at: [x, 34] }));
@@ -119,7 +121,9 @@ export function compose(u, { tier = 0, els = [], must = null } = {}) {
   const level = { bread: [x0, y0], vines: anchors(u, Math.max(n, regrow ? 2 : 1), x0) };
   if (regrow) level.vines[Math.floor(u() * level.vines.length)].regrow = round(between(u, 1800, 2600));
   if (gust) {
-    const lw = round(between(u, 90, 130)), ly = round(between(u, y0 + 70, y0 + 120)), lx = Math.max(lw / 2 + 10, Math.min(W - lw / 2 - 10, x0 + round(between(u, -20, 20))));
+    // The ledge under the vine cut last in one of the orders: there the thing comes to rest for the puff.
+    const under = level.vines[Math.floor(u() * level.vines.length)].at[0];
+    const lw = round(between(u, 90, 130)), ly = round(between(u, y0 + 70, y0 + 120)), lx = Math.max(lw / 2 + 10, Math.min(W - lw / 2 - 10, under + round(between(u, -15, 15))));
     level.stones = [{ x: lx, y: ly, w: lw, h: 14, a: 0 }];
     const right = chance(u, 0.5);
     level.gust = { at: [right ? 24 : W - 24, ly - 30], to: [right ? 1 : -1, 0] };
@@ -152,7 +156,7 @@ function plansOf(level) {
       out.push([...cuts(o), { g: 'gust' }], [{ g: 'gust' }, ...cuts(o), { g: 'gust' }]);
     } else out.push(cuts(o));
   }
-  return out.slice(0, 10);
+  return out.slice(0, MAX_PLANS);
 }
 
 /* Stars stand apart (each its own catch, never a clump) and never where the thing hung at the start
@@ -170,10 +174,22 @@ function spread(pts, n, taken = []) {
   return got.length === n ? got.map((p) => p.map(round)) : null;
 }
 const fromHang = (path) => (p) => Math.hypot(p[0] - path[0][0], p[1] - path[0][1]) > 44;
+/* A path's steps, filled in every few px: a fast fall leaves its steps far apart. */
+function dense(pts, gap = 4) {
+  const out = [];
+  for (let k = 0; k < pts.length; k++) {
+    const p = pts[k], q = pts[k + 1];
+    out.push(p);
+    if (!q) break;
+    const d = Math.hypot(q[0] - p[0], q[1] - p[1]);
+    for (let j = 1; j < d / gap; j++) out.push([p[0] + ((q[0] - p[0]) * j * gap) / d, p[1] + ((q[1] - p[1]) * j * gap) / d]);
+  }
+  return out;
+}
 
 /* Three stars along a path, from just after the first move to just before the mouth. */
 function starsOn(path, end) {
-  const pts = path.slice((path.first ?? 0) + 4, end - 2).filter(fromHang(path));
+  const pts = dense(path.slice((path.first ?? 0) + 4, end - 1)).filter(fromHang(path));
   return pts.length < 4 ? null : spread(pts, 3);
 }
 
@@ -181,7 +197,7 @@ function starsOn(path, end) {
 function starsApart(path, end, main, mainEnd) {
   const from = path.first ?? 0, gap = STAR_R + BREAD_R + 16;
   const far = [], shared = [];
-  for (let k = from + 10; k < end - 6; k += 3) (near(main, path[k], gap, 0, mainEnd) ? shared : far).push(path[k]);
+  for (const p of dense(path.slice(from + 10, end - 1), 6)) (near(main, p, gap, 0, mainEnd) ? shared : far).push(p);
   const f = far.filter(fromHang(path)), sh = shared.filter(fromHang(path));
   const one = spread(f, 1);
   const two = one && spread(sh, 2, one);
@@ -192,16 +208,27 @@ function starsApart(path, end, main, mainEnd) {
 export function attempt(u, opts) {
   const { level, thorns } = compose(u, opts);
   const runs = plansOf(level).map((plan) => ({ plan, ...playPlan(level, plan) }));
-  const good = runs.filter((r) => !r.broke && crossing(r.path) != null);
+  const good = runs.filter((r) => r.done && !r.broke && crossing(r.path) != null); // the whole plan played: every move made
   // The plan to teach: the one that uses the most of what the layout holds, the longest first.
   good.sort((a, b) => b.plan.length - a.plan.length);
   const inside = good.filter((r) => { const x = crossing(r.path); return x > 56 && x < W - 56; });
-  // Two ways down through the same mouth, when the layout has them: the mouth between them, so the
-  // second (with the stars on it) is a better way to find, not luck.
-  const pair = inside.flatMap((a) => inside.filter((b) => b !== a && Math.abs(crossing(a.path) - crossing(b.path)) < 40).map((b) => [a, b]))[0];
-  const main = pair?.[0] ?? inside[0];
-  if (!main) return { why: 'no-plan' };
-  const mouth = [round(pair ? (crossing(pair[0].path) + crossing(pair[1].path)) / 2 : crossing(main.path)), MOUTH_Y];
+  if (!inside.length) return { why: 'no-plan' };
+  // Two ways down through the same mouth, when the layout has them, are tried first: the mouth between
+  // them, so the second (with a star on it) is a better way to find, not luck. Then each plan alone.
+  const pairs = inside.flatMap((a) => inside.filter((b) => b !== a && Math.abs(crossing(a.path) - crossing(b.path)) < 40).map((b) => [a, b]));
+  const tries = [...pairs.slice(0, 1), ...inside.slice(0, 3).map((a) => [a, null])];
+  let why = 'no-plan';
+  for (const [main, mate] of tries) {
+    const r = prove(structuredClone(level), thorns, runs, main, mate, u, opts);
+    if (r.level) return r;
+    why = r.why;
+  }
+  return { why };
+}
+
+/* One plan proved on a layout: the mouth set, the thorns laid, the late hands, the stars. */
+function prove(level, thorns, runs, main, mate, u, opts) {
+  const mouth = [round(mate ? (crossing(main.path) + crossing(mate.path)) / 2 : crossing(main.path)), MOUTH_Y];
   const fedMain = fedAt(main.path, mouth);
   if (fedMain < 0) return { why: 'no-feed' };
   if (fedMain < (main.path.last ?? 0)) return { why: 'in-before-the-last-move' };
@@ -238,8 +265,7 @@ export function attempt(u, opts) {
   stars ??= starsOn(main.path, fedMain);
   if (!stars) return { why: 'no-stars' };
   level.stars = stars;
-  const alt = starRun !== main;
-  return { level, plan: main.plan, starPlan: starRun.plan, better: Boolean(alt) };
+  return { level, plan: main.plan, starPlan: starRun.plan, better: starRun !== main };
 }
 
 /* The level that always works: one vine straight over the mouth. */
