@@ -871,65 +871,57 @@
    "task": "masan-taunt",
    "mechanic": "割绳子",
    "stars": 3,
-   "_levels": "Frozen from rope-gen.js (2026-10-16) and proved by games/bots/tauntrope.js; the beat's book line and art are ropebeats.js's.",
+   "_levels": "Frozen from rope-gen.js (2026-10-16; again the same day after the 弹竹 fix — the old level hid the bamboo under a stone) and proved by games/bots/tauntrope.js; the beat's book line and art are ropebeats.js's.",
    "levels": [
     {
      "id": "one",
      "bread": [
-      244,
-      141
+      267,
+      129
      ],
      "vines": [
       {
        "at": [
-        221,
+        294,
         34
        ]
-      }
-     ],
-     "stones": [
-      {
-       "x": 210,
-       "y": 241,
-       "w": 96,
-       "h": 14,
-       "a": 0
       }
      ],
      "gust": {
       "at": [
        336,
-       211
+       135
       ],
       "to": [
        -1,
        0
-      ]
+      ],
+      "band": 50
      },
      "springs": [
       {
-       "x": 214,
-       "y": 259,
-       "w": 107,
-       "a": 23
+       "x": 290,
+       "y": 253,
+       "w": 113,
+       "a": -28
       }
      ],
      "mouth": [
-      77,
+      95,
       330
      ],
      "stars": [
       [
-       222,
-       215
+       292,
+       224
       ],
       [
-       164,
-       136
+       230,
+       118
       ],
       [
-       139,
-       225
+       206,
+       199
       ]
      ],
      "must": "spring",

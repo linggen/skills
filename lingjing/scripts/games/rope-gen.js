@@ -21,6 +21,8 @@ export const STAR_R = 13;
 const CALM_MS = 400, LATE_MS = 320, SLOW_MS = 1500, END_MS = 900, LIMIT_MS = 11000, STEP = 1000 / 60;
 export const TRIES = 24;
 const MAX_PLANS = 8;
+// A 弹竹 struck at least this fast (px a step) throws the thing back visibly; slower is a slide.
+const SPRING_HIT = 3;
 /* The work a day's level may take, in physics steps (not time: the same seed makes the same level on
    any machine). Past it, the best level proved so far, else the fallback. */
 export const STEP_BUDGET = 36000;
@@ -71,6 +73,8 @@ export function playPlan(level, plan, { late = 0, limit = LIMIT_MS } = {}) {
     if (ev.broke && i > 0) broke = true;
     if (ev.stolen) return { path, end: 'stolen', broke: true, done: i >= plan.length };
     if (ev.through) path.through = (path.through ?? 0) + 1;
+    // A 弹竹 met hard enough to throw the thing back off it (not one it slid or rolled onto).
+    if (ev.sprung && ev.sprung.vin >= SPRING_HIT && path.sprungAt == null) path.sprungAt = path.length - 1;
     still = calm(w) ? still + STEP : 0;
     if (outOf(w)) return { path, end: 'out', broke, done: i >= plan.length };
     if (i >= plan.length) {
@@ -299,7 +303,9 @@ export function prove(level, thorns, runs, main, mate, u, opts) {
   if (fedMain < (main.path.last ?? 0)) return { why: 'in-before-the-last-move' };
   // The day's new tool is met on the way, not set dressing: the bamboo is bounced off, the seals are
   // gone through, the crow would take the thing if its vine were left.
-  if (opts.must === 'spring' && !touches(main.path, { ...level.springs[0], h: 16 }, 0, fedMain + 1)) return { why: 'spring-unused' };
+  // The bamboo met for real: struck (rope.js `sprung`, the body itself — a near pass, or one shielded
+  // by a stone above it, never counts) before the thing is in.
+  if (opts.must === 'spring' && !(main.path.sprungAt != null && main.path.sprungAt <= fedMain)) return { why: 'spring-unused' };
   if (opts.must === 'seals' && !main.path.through) return { why: 'seals-unused' };
   if (opts.must === 'crow' && !runs.some((r) => r.end === 'stolen')) return { why: 'crow-idle' };
   const others = runs.filter((r) => r !== main);

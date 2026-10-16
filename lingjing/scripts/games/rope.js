@@ -74,8 +74,16 @@ function vineOf(v, bread) {
   return { at: [ax, ay], len, ...vineBodies(ax, ay, bread, len), cut: null, ...(v.regrow ? { regrow: v.regrow, cutAt: null } : {}) };
 }
 
-const slab = (s, opts) => Bodies.rectangle(s.x, s.y, s.w, s.h, { isStatic: true, angle: ((s.a ?? 0) * Math.PI) / 180, ...opts });
-const stoneOf = (s) => slab(s, { restitution: s.bounce ?? 0.3, friction: 0.02, label: 'stone' });
+/* A fixed slab. Its material is set AFTER it is made static: matter.js's setStatic (run while the
+   body is created) overwrites restitution with 0 and friction with 1, so a `restitution` passed in
+   the options never held — the 弹竹 was a dead, sticky stick (Hanli 2026-10-16: 「弹竹没有作用」). */
+function slab(s, { restitution, friction, ...opts }) {
+  const b = Bodies.rectangle(s.x, s.y, s.w, s.h, { isStatic: true, angle: ((s.a ?? 0) * Math.PI) / 180, ...opts });
+  Body.set(b, { restitution, friction });
+  return b;
+}
+// A stone: dead and grippy — what every proven level was played on (the old options never held).
+const stoneOf = (s) => slab(s, { restitution: s.bounce ?? 0, friction: 1, label: 'stone' });
 const springOf = (s) => slab({ ...s, h: s.h ?? 12 }, { restitution: SPRING_BOUNCE, friction: 0, label: 'spring' });
 
 /** A level's world, hung and settled off-stage (the thing is shown at rest). */
@@ -84,7 +92,8 @@ export function buildWorld(level) {
   const [bx, by] = level.bread;
   const bread = Bodies.circle(bx, by, level.r ?? BREAD_R, { restitution: 0.3, friction: 0.04, frictionAir: AIR_HUNG, density: 0.002, label: 'bread' });
   const vines = (level.vines ?? []).map((v) => vineOf(v, bread));
-  const stones = [...(level.stones ?? []).map(stoneOf), ...(level.springs ?? []).map(springOf)];
+  const springs = (level.springs ?? []).map(springOf);
+  const stones = [...(level.stones ?? []).map(stoneOf), ...springs];
   const floor = Bodies.rectangle(W / 2, FLOOR + 40, W * 3, 80, { isStatic: true, label: 'floor' });
   // A roof only where a bubble may lift the thing to it (喂饼's own levels never had one).
   const roof = level.bubbles?.length ? [Bodies.rectangle(W / 2, ROOF - 40, W * 3, 80, { isStatic: true, label: 'roof' })] : [];
@@ -92,7 +101,7 @@ export function buildWorld(level) {
   for (let i = 0; i < SETTLE_STEPS; i++) Engine.update(engine, STEP_MS);
   Body.setVelocity(bread, { x: 0, y: 0 });
   return {
-    engine, bread, vines, acc: 0, rest: 0, gust: 0, clock: 0,
+    engine, bread, vines, acc: 0, rest: 0, gust: 0, clock: 0, springs, sprung: null,
     bubbles: (level.bubbles ?? []).map((b) => ({ at: [...b.at], r: b.r ?? BUBBLE_R, state: 'free' })),
     thorns: (level.thorns ?? []).map((t) => slab(t, { isSensor: true, label: 'thorns' })),
     seals: (level.seals ?? []).map((p) => ({ a: [...p.a], b: [...p.b], r: p.r ?? SEAL_R, until: 0 })),
@@ -212,8 +221,20 @@ export function crowAt(w, c) {
   return { x: pts[i].x + (pts[i + 1].x - pts[i].x) * k, y: pts[i].y + (pts[i + 1].y - pts[i].y) * k };
 }
 
-/** One fixed step. Answers what happened: { broke } when the thing touched thorns, { caught } bubbles. */
+/* 弹竹: the step the thing first meets a bamboo (it was clear of it the step before) — which one,
+   when, and how fast it came in; the world keeps it (`w.sprung`) for the page's bow and snap. */
+function spring(w, before, was) {
+  const hit = w.springs.findIndex((sp) => Query.collides(w.bread, [sp]).length > 0);
+  if (hit < 0 || hit === was) return null;
+  w.sprung = { i: hit, at: w.clock, vin: Math.hypot(before.x, before.y) };
+  return w.sprung;
+}
+const touching = (w) => w.springs.findIndex((sp) => Query.collides(w.bread, [sp]).length > 0);
+
+/** One fixed step. Answers what happened: { broke } when the thing touched thorns, { caught } bubbles,
+    { sprung } when it met a 弹竹. */
 export function stepWorld(w, level) {
+  const before = { ...w.bread.velocity }, was = w.springs?.length ? touching(w) : -1;
   Engine.update(w.engine, STEP_MS);
   w.clock += STEP_MS;
   w.wall = globalThis.performance?.now() ?? 0;
@@ -223,7 +244,8 @@ export function stepWorld(w, level) {
   const broke = w.thorns.length > 0 && Query.collides(w.bread, w.thorns).length > 0;
   const through = w.seals.length ? seals(w) : null;
   const stolen = w.crows.length ? crows(w) : false;
-  return { broke, caught, through, stolen };
+  const sprung = w.springs?.length ? spring(w, before, was) : null;
+  return { broke, caught, through, stolen, sprung };
 }
 
 /** Still enough to think: slow, and not turning. */
