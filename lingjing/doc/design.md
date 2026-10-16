@@ -531,7 +531,7 @@ furnaces, the furnace making 破境丹, 仙丹 after the finale.
 
 **丹囊 — 灵石 buys pills for fights** (Hanli 2026-10-16, 「灵石要有用」): at a fight's door he packs up to
 three pills from the bag (his last pick remembered); in the fight each is a free action, one a turn
-(battle.js § pills): **回春丹** +6 气血 to the member he chooses (himself, 阿禾, 孙二狗), **回气丹** +2 灵力
+(battle.js § pills): **回春丹** +10 气血 to the member he chooses (himself, 阿禾, 孙二狗), **回气丹** +3 灵力
 now (the book's 「丹田空了吞一颗」). A pill taken leaves the bag at the settle, win or lose; the beast
 never has one; the pouch is kept per member for a later seat. Sold at 南门药铺, 钱掌柜's, 冀's 东街市 and
 every province shelf: **回春丹 15 · 回气丹 10**. **Every shop price lives in balance.json `prices`** (folded

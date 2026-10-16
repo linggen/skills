@@ -61,7 +61,7 @@ test('the door carries his pick as the bag holds it; a pill taken is gone from t
   const s0 = { ...newState(content, 'zh', NOW), traits: ['metal', 'wood', 'water', 'fire', 'earth'], cards: ['niangbing', 'yijian', 'tuna', 'mucao'], bag: { 'mend-pill': 1, 'huiqi-pill': 3 }, pill_pick: ['mend-pill', 'mend-pill', 'huiqi-pill', 'huiqi-pill'] };
   assert.deepEqual(pouchFor(content, s0).map(p => p.id), ['mend-pill', 'huiqi-pill', 'huiqi-pill'], 'one 回春丹 held, three at most');
   const set = fightSetup(content, s0, creatureOf(content, 'yezhu'), NOW);
-  assert.deepEqual(set.you.pouch, [{ id: 'mend-pill', heal: 6 }, { id: 'huiqi-pill', mana: 2 }, { id: 'huiqi-pill', mana: 2 }]);
+  assert.deepEqual(set.you.pouch, [{ id: 'mend-pill', heal: 10 }, { id: 'huiqi-pill', mana: 3 }, { id: 'huiqi-pill', mana: 3 }]);
 });
 
 test('bought at the stall, carried in, one eaten: 灵石 and the bag both drop', () => {

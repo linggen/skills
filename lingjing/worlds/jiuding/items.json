@@ -319,8 +319,8 @@
       },
       "art": "art/items/mend-pill.webp",
       "about": {
-        "zh": "一粒，伤口上的血便止住了，气血回来六分。斗法时装进丹囊，一回合吞一颗。",
-        "en": "One, and the bleeding stops; six of your strength comes back. Carried into a fight in the pill pouch — one a turn."
+        "zh": "一粒，伤口上的血便止住了，气血回来十分。斗法时装进丹囊，一回合吞一颗。",
+        "en": "One, and the bleeding stops; ten of your strength comes back. Carried into a fight in the pill pouch — one a turn."
       },
       "hint": {
         "zh": "回春。",
@@ -339,7 +339,7 @@
       ],
       "effect": {
         "fight": {
-          "heal": 6
+          "heal": 10
         }
       }
     },
@@ -372,7 +372,7 @@
       ],
       "effect": {
         "fight": {
-          "mana": 2
+          "mana": 3
         }
       }
     },

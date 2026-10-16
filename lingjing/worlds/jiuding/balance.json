@@ -58,7 +58,7 @@
   },
   "_overflow_stretch": "Hanli, 2026-10-15 (approved): a step up — the story's rise, a throw, or grinding the 回's cap allows — carries the 修为 over the last mark in whole, and the new step asks this share of it more (state.mjs stepUp, `state.stretch`): 100 over 一层's mark enters 二层 at 100/450, not 0/400. Grinders stay only somewhat ahead; nothing is held or lost.",
   "overflow_stretch": 0.5,
-  "_pay": "What each kind of thing pays at most (修为 `progress`, 灵石 `wealth`); a grant is capped by its table (rules/core.mjs pay). Was rewards.json `tables`. Hanli, 2026-10-15 (「让游戏修为和故事match」): 修为 comes from cultivation; chores pay 灵石. `labor` pays an errand of 杂役 (修为 0, design.md § Pacing), `gongke` the day's 功课 (the fixed real-life chore, 修为 20), `life` the day's pick (灵石 only), `once` 开府 (灵石 only). A natural day of 卷一 play is now ~138 修为 (功课 20, two pool fights 60, half a rumor ~38, a road-meet 20) and the 练气 thresholds ask a 回 of it per held layer (tools/xiuwei-model.mjs). The 2026-09-24 note below is history.",
+  "_pay": "What each kind of thing pays at most (修为 `progress`, 灵石 `wealth`); a grant is capped by its table (rules/core.mjs pay). Was rewards.json `tables`. Hanli, 2026-10-15 (「让游戏修为和故事match」): 修为 comes from cultivation; chores pay 灵石. `labor` pays an errand of 杂役 (修为 0, design.md § Pacing), `gongke` the day's 功课 (the fixed real-life chore, 修为 20), `life` the day's pick (灵石 only), `once` 开府 (灵石 only). A natural day of 卷一 play is now ~138 修为 (功课 20, two pool fights 60, half a rumor ~38, a road-meet 20) and the 练气 thresholds ask a 回 of it per held layer (tools/xiuwei-model.mjs). The 2026-09-24 note below is history. 2026-10-16 (灵石 buys pills, and cards and gear after): a fight won at a haunt pays 15 灵石 (was 10); 功课 stays 修为 — a typical day ~49 in, ~36 to pills, a few hundred left at 卷一's end (tools/balance.mjs --wealth).",
   "pay": {
     "scene": {
       "progress": 60,
@@ -90,7 +90,7 @@
     },
     "haunt": {
       "progress": 30,
-      "wealth": 10
+      "wealth": 15
     },
     "game": {
       "progress": 6,
@@ -315,7 +315,7 @@
         "tale": 0,
         "gate_fights": 1,
         "seclude": 0,
-        "pills": 0.5
+        "pills": 0.4
       },
       "typical": {
         "minutes": 30,
@@ -328,7 +328,7 @@
         "tale": 0,
         "gate_fights": 2,
         "seclude": 8,
-        "pills": 1
+        "pills": 0.75
       },
       "heavy": {
         "minutes": 75,
@@ -341,7 +341,7 @@
         "tale": 1,
         "gate_fights": 3,
         "seclude": 8,
-        "pills": 1.5
+        "pills": 1.1
       }
     },
     "step_min": 20,

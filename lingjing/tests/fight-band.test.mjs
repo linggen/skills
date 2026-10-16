@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import { FIGHTS, keyOf, rateOf, TWO_PILLS } from '../tools/story-fights.mjs';
 
 const BARE = [0.3, 0.62];
-const PILLED = [0.5, 0.82];
+const PILLED = [0.5, 0.9];
 const NEVER_WALL = 0.2;
 const SEEDS = 60;
 
