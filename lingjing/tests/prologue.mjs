@@ -57,8 +57,6 @@ export const TO_HALL = [
   ['resolve', { exit: 'visit' }],
   ['resolve', { exit: 'dumb' }],
   ['resolve', { exit: 'on' }],
-  ['win', { id: 'xisui-hold' }],
-  ['task', { action: 'done', id: 'xisui-hold' }],
   ['resolve', { exit: 'bath' }],
   ['resolve', { exit: 'on' }],
   ['resolve', { exit: 'go' }],

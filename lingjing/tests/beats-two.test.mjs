@@ -108,32 +108,7 @@ test('拽 (00-fall\'s 暴雨, redrawn in ink): the scene in an SVG, no CSS-anima
   assert.match(storm.html(end, 'en'), /gives way/);
 });
 
-test('two boards in one scene (00-halfyear): 吹鹅毛, the rest of the passage, then 练功 — in `show` order, on the stage, in the tray and in the rules', () => {
-  const sc = content.chapters['00-prologue'].scenes['00-halfyear'];
-  assert.deepEqual(sc.show.filter(c => c.card === 'board').map(c => c.id), ['feather-breath', 'halfyear-carry']);
-  let s = atScene('00-halfyear');
-  assert.ok(s, 'walked to the half year');
-  s = tellOf(content, s)?.keep ?? s;
-  let l = look(s, content, ctx());
-  assert.ok(boardWaits(l, 'halfyear-carry'), '练功 waits for the feather');
-  assert.ok(!boardWaits(l, 'feather-breath'));
-  assert.deepEqual(l.stage.filter(c => c.card === 'board').map(c => c.id), ['feather-breath'], 'only the first board stands');
-  assert.ok(sceneGame(l, { card: 'board', id: 'feather-breath' }), 'the scene\'s own game though no way on waits on it: it stands with the scene, never queued behind it');
-  assert.doesNotMatch(trayHtml({ look: l, words: WORDS.zh, lang: 'zh', onStage: [] }), /练功/, 'nor is the second in the tray');
-  assert.equal(win(s, content, ctx(), { id: 'halfyear-carry', grade: 'even' }).result.refused, 'board-waits', 'the rules keep the order too');
-  s = win(s, content, ctx(), { id: 'feather-breath', grade: 'still' }).state;
-  s = task(s, content, ctx(), { action: 'done', id: 'feather-breath' }).state;
-  assert.ok(s.marks.includes('feather-still'));
-  const told = tellOf(content, s);
-  assert.deepEqual(told.tell.map(t => [t.of, t.id]), [['after', '00-halfyear/after']], 'the rest of the passage, right after the feather');
-  assert.match(told.tell[0].text, /他这才觉出来/);
-  s = told.keep;
-  l = look(s, content, ctx());
-  assert.deepEqual(l.stage.filter(c => c.card === 'board').map(c => c.id), ['halfyear-carry'], 'then 练功');
-  s = task(win(s, content, ctx(), { id: 'halfyear-carry', grade: 'even' }).state, content, ctx(), { action: 'done', id: 'halfyear-carry' }).state;
-  assert.equal(tellOf(content, s), null, 'the passage is not owed twice');
-  assert.equal(resolve(s, content, ctx(), { exit: 'on' }).state.scene, '00-uncle');
-});
+// (00-halfyear's two boards — 吹鹅毛 and 练功 — were cut 2026-10-16 before 入门: its passage reads whole.)
 
 test('认路: his marks along the cliff lead from the cave to the moss — the only way through; a rock only stops him; lost, she points', () => {
   let s = way.newGame('y');

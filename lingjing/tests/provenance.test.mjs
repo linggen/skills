@@ -24,11 +24,12 @@ test('every card that can be held says where it comes from, 书 or 游戏', () =
   for (const c of cards) for (const f of c.from ?? []) assert.ok(['书', '游戏'].includes(f.src), `${c.id}: ${f.kind} has no 书/游戏`);
 });
 
-test("小满's book cards come in the story: 娘的饼 at 00-kitchen, 一箭 on 射鹿, 吐纳 on 吹鹅毛, 褚先生's five at wm-qianye", () => {
+test("小满's book cards come in the story: 娘的饼 at 00-kitchen, 一箭 on 射鹿, 吐纳 at 00-halfyear (爹's line — 吹鹅毛 was cut 10-16), 褚先生's five at wm-qianye", () => {
   const ids = (kind, key) => cardsFrom(content, kind, key).map(c => c.id).sort();
   assert.deepEqual(ids('story', '00-kitchen'), ['niangbing']);
   assert.deepEqual(ids('beat', 'deer-wind'), ['yijian']);
-  assert.deepEqual(ids('beat', 'feather-breath'), ['tuna']);
+  assert.deepEqual(ids('beat', 'feather-breath'), [], 'the board was cut: no card hangs on it');
+  assert.deepEqual(ids('story', '00-halfyear'), ['tuna']);
   assert.deepEqual(ids('story', 'wm-qianye'), ['bingzhui', 'huodan', 'jinren', 'mutang', 'tuqiang']);
   // reachable: each story scene is a scene of a chapter of 卷一, each beat a board some scene shows
   const shown = new Set(Object.values(content.chapters).flatMap(ch => Object.values(ch.scenes)).flatMap(s => (s.show ?? []).filter(x => x.card === 'board').map(x => x.id)));

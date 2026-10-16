@@ -203,13 +203,11 @@ test('the rent is paid with the deer hide the shot brought, and refused without 
   const s = walk(start(), TO_HALL.slice(0, TO_HALL.findIndex(([, a]) => a.exit === 'dumb')), content, NOW);
   assert.equal(s.scene, '00-rent');
   assert.equal(s.bag['deer-hide'], 1);
-  // 算账 (2026-10-14): the hide and twenty catties go on the scale first; both ways on wait for it.
-  assert.equal(refused(resolve, s, { exit: 'truth' }, 'needs').say, '租还没交清——先把皮和肉过了秤。');
-  const weighed = walk(s, [['win', { id: 'rent-scale', grade: 'exact' }], ['task', { action: 'done', id: 'rent-scale' }]], content, NOW);
+  // 算账's board was cut 2026-10-16 (before 入门, fewer games): the hide pays at once.
+  const weighed = s;
   const paid = must(resolve, weighed, { exit: 'truth' });
   assert.equal(paid.state.bag['deer-hide'], undefined);
   assert.ok(paid.state.marks.includes('told-ma'));
-  assert.ok(paid.state.marks.includes('rent-exact'));
   const bare = { ...weighed, bag: {} };
   refused(resolve, bare, { exit: 'dumb' }, 'needs');
 });
@@ -1749,7 +1747,8 @@ test('look carries today\'s cast (none yet) and the offered tasks', () => {
   // The opening's play beats grow (batch two, 2026-10-14): every board on the way here done, the first six among them.
   assert.ok(seen.tasks.every(t => t.status === 'done'), JSON.stringify(seen.tasks.map(t => [t.id, t.status])));
   const ids = seen.tasks.map(t => t.id);
-  for (const id of ['rain-basins', 'fall-storm', 'bread-share', 'deer-wind', 'rent-scale', 'xisui-hold', 'feather-breath', 'gate-luoshu']) assert.ok(ids.includes(id), id);
+  for (const id of ['rain-basins', 'fall-storm', 'bread-share', 'deer-wind', 'gate-luoshu']) assert.ok(ids.includes(id), id);
+  for (const id of ['rent-scale', 'xisui-hold', 'feather-breath', 'halfyear-carry', 'masan-taunt', 'yinyue-way', 'kitchen-griddle']) assert.ok(!ids.includes(id), `${id}: cut before 入门 (10-16)`);
   assert.deepEqual(ids.filter(id => ['rain-basins', 'bread-share', 'deer-wind', 'gate-luoshu'].includes(id)), ['rain-basins', 'bread-share', 'deer-wind', 'gate-luoshu'], 'in the order they were played');
 });
 
