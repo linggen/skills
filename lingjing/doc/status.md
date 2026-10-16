@@ -10,6 +10,7 @@ Updated 2026-10-16.
 
 | What | Where | Started |
 |---|---|---|
+| Fight party + card provenance — doc/cards.md for Hanli's read; build waits on it | `doc/cards.md` (the 得牌 reveal kept local, unpushed) | 10-16 |
 | Pacing + economy: `tools/balance.mjs` + `balance.json`, 修为 stage quest every 回, story floor removed (`8f112416`), pool-fight daily diminishing | fresh build (the 10-15 one was lost unpushed) | 10-16 |
 | 喂饼 rebuilt as a 割绳子-style physics puzzle (00-fox: cut vines so the 饼 reaches the hurt fox; 3 stars) | first of the new small games (Hanli 10-16 「先做你说的」) | 10-16 |
 
