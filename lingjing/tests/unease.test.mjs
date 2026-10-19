@@ -206,3 +206,11 @@ test('motion reduced: only the glow; the stage hidden: she still hears it', asyn
   assert.equal(await raiseUnease({ show: 'dissolve' }, () => heard++, { doc: hid }), false);
   assert.equal(heard, 1);
 });
+
+test('her moment: a scene recap naming 银月 is told as hers, first, with her register', () => {
+  const m = nodeMoment({ kind: 'scene', recap: '天亮时，那只狐狸成了一个银发的姑娘：青丘之主，只记得自己叫银月；她看见吴婆婆的木牌，变了脸色。', mystery: '吴婆婆的木牌上，为什么刻着一只九尾的狐狸？' });
+  assert.ok(m.zh.startsWith('故事里的银月'), m.zh);
+  assert.ok(m.zh.includes('本王'), 'her register rides it');
+  assert.ok(m.zh.length + 20 <= 300, 'fits the engine\'s 300 with the name line');
+  assert.ok(m.en.startsWith('The Yinyue in the story'), m.en);
+});

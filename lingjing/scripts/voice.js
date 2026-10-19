@@ -18,6 +18,7 @@
 //
 // Pure of the DOM: the page hands in a clock, a post and what it can see.
 
+import { REGISTER } from './hersay.js';
 export const QUIET_MS = 90_000;
 export const STILL_MS = 5 * 60_000;
 export const IDLE_MS = 150_000;
@@ -232,9 +233,20 @@ export function uneaseFacts(u, zh) {
   return zh ? `${u.fact}这件事就发生在玩家眼前，玩家看见了。先说这个：用你自己的话、一两句，说出你此刻的反应——别背这段描述。`
     : `${u.fact} It happened before the player's eyes; they saw it. Say this first: your own reaction right now, in your own words, a line or two — do not recite this description.`;
 }
+/* The story's 银月 is she — a moment reaches her only once he has met her
+   (postMoment asks herHere: companion.joined) — so a recap that
+   names 银月 speaks of her, never of a stranger (Hanli 10-19, her 「她为何会怕」
+   over her own fright at 吴婆婆's token) — said first (after her unease, which
+   leads), so the engine's 300-character cut never takes it. Her register rides every story moment, last. */
+const SELF = {
+  zh: '故事里的银月（青丘之主）就是你：说起她，就是说你自己。',
+  en: 'The Yinyue in the story, mistress of Qingqiu, is you: speak of her as yourself.',
+};
 export function nodeMoment(n) {
   if (!n) return null;
   const facts = (zh) => {
+    const L = zh ? 'zh' : 'en';
+    const self = `${SELF[L]}${zh ? '' : ' '}`;
     if (n.kind === 'beat') return herBeatFacts(n.her_beat, zh);
     const ask = n.her_beat ? herBeatFacts({ facts: { line: n.her_beat.facts?.line, recalls: n.her_beat.facts?.recalls } }, zh)
       : zh ? '你就在玩家身边——说说你觉得这意味着什么，一两句；别复述发生了什么，也别替故事给出答案。' : 'You are beside the player — say what you make of it, a line or two; do not retell what happened or answer ahead of the story.';
@@ -247,9 +259,9 @@ export function nodeMoment(n) {
     if (n.memory?.length) bits.push(zh ? `你记起了：${n.memory.map((m) => quote(zh, m)).join('')}。` : `A memory came back to you: ${n.memory.map((m) => quote(zh, m)).join(' ')}.`);
     if (n.ending) bits.push(zh ? `九鼎聚齐，故事到了终局：${n.ending}。` : `The nine are gathered; the story has reached its end: ${n.ending}.`);
     if (n.next) bits.push(zh ? `前面是${n.next.title}，新的谜：${quote(zh, n.next.mystery)}。` : `Ahead lies ${n.next.title}, and a new riddle: ${quote(zh, n.next.mystery)}.`);
-    const said = `${bits.join(zh ? '' : ' ')}${zh ? '' : ' '}${ask}`;
+    const said = `${bits.join(zh ? '' : ' ')}${zh ? '' : ' '}${ask}${zh ? '' : ' '}${REGISTER[L]}`;
     // The unease leads: one moment, one line from her, the price first.
-    return n.unease ? `${uneaseFacts(n.unease, zh)}${zh ? '然后，' : ' Then, '}${said}` : said;
+    return n.unease ? `${uneaseFacts(n.unease, zh)}${zh ? '然后，' : ' Then, '}${self}${said}` : `${self}${said}`;
   };
   const id = n.unease ? 'unease' : { scene: 'scene_end', cauldron: 'cauldron', chapter: 'cauldron', memory: 'memory', beat: 'her_beat' }[n.kind];
   if (!id) return null;

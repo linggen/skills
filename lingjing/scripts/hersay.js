@@ -75,7 +75,7 @@ export function weighWin(f, { lastShort = -Infinity, now = 0 } = {}) {
 }
 
 /* ── Her register, told to her model with every moment ── */
-const REGISTER = {
+export const REGISTER = {
   zh: '以骄傲妖王的口吻（自称本王，嘴硬带刺）：夸要居高临下、反着夸；安慰靠傲气和命令，不可怜；真心最多漏一个软字就收回。不说恭喜，不哄。',
   en: 'Be the proud demon king ("this king"): backhanded praise, comfort by command, no pity; one soft word at most.',
 };
