@@ -391,7 +391,8 @@ export function newGame(seed, _level = 1, deal = {}) {
   const levels = Array.isArray(deal?.levels) ? deal.levels : [];
   const s = { seed: String(seed), live: levels.length > 0, levels, li: 0, phase: 'aim', t: 0, clock: 0, wall: 0,
     misses: levels.map(() => 0), best: levels.map(() => 0), used: 0, won: false, stars: 0, grade: null, still: Boolean(deal?.still), art: deal?.art ?? null,
-    kit: deal?.projectiles ?? null, owned: Array.isArray(deal?.owned) ? deal.owned : null, grades: deal?.grades ?? null };
+    kit: deal?.projectiles ?? null, owned: Array.isArray(deal?.owned) ? deal.owned : null, grades: deal?.grades ?? null,
+    words: deal?.words ?? null }; // a row's own lines over the deer's (games.json `words`: end, gone — the cave is no stream)
   return levels.length ? lay(s, 0) : { ...s, phase: 'empty' };
 }
 
@@ -929,9 +930,12 @@ function head(s, t) {
     + `<span class="g-da-windword">${windWord(windAt(level, s.clock), t)}</span>${quiver}</div>`;
 }
 
+/** A row's own word (games.json row `words`), else null for the deer's. */
+const rowWord = (s, key, lang) => s.words?.[key]?.[lang] ?? s.words?.[key]?.zh ?? null;
+
 function lineOf(s, t, lang) {
   const level = levelOf(s);
-  const said = { glance: t.glance, dash: t.dash, clean: t.clean, body: t.body, graze: t.graze[(s.grazes ?? 1) % t.graze.length], short: t.short, long: t.long, turned: t.turned, snap: t.snap, gone: t.gone };
+  const said = { glance: t.glance, dash: t.dash, clean: t.clean, body: t.body, graze: t.graze[(s.grazes ?? 1) % t.graze.length], short: t.short, long: t.long, turned: t.turned, snap: t.snap, gone: rowWord(s, 'gone', lang) ?? t.gone };
   if (s.phase === 'clear') return `${t.clear}${starRow(s.best[s.li], true)}`;
   if (s.phase === 'aim' && s.pull) return s.pull.p >= 0.98 ? t.full : t.pull;
   const proj = projectileOf(s.kit, s.pick);
@@ -958,7 +962,7 @@ export function html(state, lang = 'zh') {
   if (state.phase === 'empty') return `<div class="g-deerarc g-ink"><p class="g-line-say">${t.empty}</p></div>`;
   if (state.won) {
     return `<div class="g-deerarc g-ink is-won"><p class="g-da-stars">${starRow(state.stars)}</p>`
-      + `<p class="g-line-say">${t.end}<br>${t.stars.replace('{s}', String(state.stars))}</p></div>`;
+      + `<p class="g-line-say">${rowWord(state, 'end', lang) ?? t.end}<br>${t.stars.replace('{s}', String(state.stars))}</p></div>`;
   }
   return `<div class="g-deerarc g-ink">${head(state, t)}${playScene(state)}${trayPicture(state, t, lang)}<p class="g-line-say">${lineOf(state, t, lang)}</p>${controls(state, t)}</div>`;
 }
@@ -1045,9 +1049,9 @@ async function mountRow(id, container, opts = {}) {
 async function mountRowWith(id, view, container, opts = {}) {
   const row = opts.data?.levels ? {} : await rowOf(id);
   const levels = opts.data?.levels ?? row.levels ?? [], art = await presentArt(opts.data?.art ?? row.art, onServer);
-  const projectiles = opts.data?.projectiles ?? row.projectiles ?? null;
+  const projectiles = opts.data?.projectiles ?? row.projectiles ?? null, words = opts.data?.words ?? row.words ?? null;
   const quiet = opts.reducedMotion ? { still: true } : {};
-  return mountPure(view)(container, { ...opts, data: { ...(opts.data ?? {}), levels, art, projectiles, ...quiet } });
+  return mountPure(view)(container, { ...opts, data: { ...(opts.data ?? {}), levels, art, projectiles, ...(words ? { words } : {}), ...quiet } });
 }
 export const mount = (container, opts) => mountRow(meta.id, container, opts);
 

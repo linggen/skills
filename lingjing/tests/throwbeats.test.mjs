@@ -106,3 +106,15 @@ test('the whole cave by the bot', () => {
   assert.equal(r.won, true);
   assert.ok(['sure', 'lucky'].includes(r.grade));
 });
+
+test('a throw row says its own end and its own empty hand — the cave is no stream of deer (2026-10-19 live play)', () => {
+  for (const [mod, id] of [[cave, 'caveecho'], [lu, 'luwing']]) {
+    const r = row(id);
+    let s = mod.newGame('t', 1, { ...deal(r.levels), words: r.words });
+    s = { ...s, won: true, stars: 3 };
+    const end = mod.html(s, 'zh');
+    assert.ok(end.includes(r.words.end.zh), `${id}: its own end line`);
+    assert.ok(!end.includes('溪边四处'), `${id}: not the deer's`);
+    assert.ok(mod.html(s, 'en').includes(r.words.end.en), `${id}: en`);
+  }
+});

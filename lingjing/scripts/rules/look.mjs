@@ -499,7 +499,7 @@ function dealOf(content, task, state) {
   if (!task.deal && !levels) return {};
   const art = typeof row?.art === 'string' ? games.find(g => g.id === row.art)?.art : row?.art;
   const throws = levels?.some(l => l.ammo) ? { projectiles: content.games.projectiles ?? {}, owned: ownedCards(content, state) } : {};
-  return { deal: { ...(task.deal ?? {}), ...(levels ? { levels } : {}), ...(art ? { art } : {}), ...throws } };
+  return { deal: { ...(task.deal ?? {}), ...(levels ? { levels } : {}), ...(art ? { art } : {}), ...(row?.words ? { words: row.words } : {}), ...throws } };
 }
 
 export function look(state, content, ctx) {

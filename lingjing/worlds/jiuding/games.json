@@ -50,6 +50,11 @@
    "task": "cave-stone",
    "mechanic": "愤怒小鸟",
    "stars": 3,
+   "_words": "The board's own lines over the deer's (deerarc.js rowWord, 2026-10-19 live play: the cave's win said 「溪边四处，都射中了」).",
+   "words": {
+    "end": { "zh": "两块石头，两声回响——是空的。", "en": "Two stones, two echoes: empty." },
+    "gone": { "zh": "石子扔完了。再捡几块，重来。", "en": "Out of stones. Pick up a few more and try again." }
+   },
    "_levels": "扔石听声 (00-cave, restored 2026-10-16 on the throwing board): 「先往里扔了一块石头，听了听，是空的；又扔了一块，又听了听，还是空的」. Two stones, as the book's two. The target is a `zone`: where the stone comes down — deep (`deep`) the echo he listens for, `mid` a dull knock (a hit, a star fewer); `wall`s of rock (the roof, the back) it bounces off. Grades for the task's marks: sure (★★–★★★) · lucky (★).",
    "levels": [
     {
@@ -227,6 +232,10 @@
    "task": "yishui-reed",
    "mechanic": "愤怒小鸟",
    "stars": 3,
+   "words": {
+    "end": { "zh": "鯥不动了。", "en": "The lu lies still." },
+    "gone": { "zh": "这一回没成。再来。", "en": "Not this time. Again." }
+   },
    "_levels": "芦苇里那一等 (09-yishui, 2026-10-16 on the throwing board): 「翅膀张开之前，它得吸一口气，吸气的时候，翅膀根上那块皮翻开来，翻开一霎，露出底下粉红的肉……小满在芦苇里等的就是这一霎。他扣在指间的那口短飞剑，诀一掐，放了出去」. The target is `lu`: the 鯥 pinned on the shoal; its wing root opens for `open.for` ms every `open.every`; only then the blade goes in, anywhere else the hide turns it. 短飞剑: tap in flight and it flies straight. Grades for the task's marks: still (★★–★★★) · hasty (★).",
    "levels": [
     {
