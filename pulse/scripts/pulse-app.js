@@ -19,6 +19,7 @@ import { applyPageUpdate, loadSession, getSession, setOnChange, setConfig, setOn
 import { readPulseConfig, replayRuntimeGrants, applyCompactConfig } from './pulse-api.js';
 import { normalizeMention, buildMentionBlock } from './mention-policy.js';
 import { normalizeRepoPaths, buildDigestCommand, parseDigestOutput, renderDigestBlock } from './product-digest.js';
+import { applyI18n, loadLanguage, t as tr } from './strings.js';
 
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
 
@@ -227,12 +228,12 @@ function followerDelta(history, targetDays) {
 const AUDIENCE_METRICS = [
   { key: 'x',    label: 'X followers',       script: 'x-followers.sh',
     enabled: c => c?.sites?.x?.enabled,          count: d => d?.followers, id: d => d?.username },
-  { key: 'reddit', label: 'Reddit karma',    script: 'reddit-karma.sh',
+  { key: 'reddit', label: tr('pu.redditKarma'),    script: 'reddit-karma.sh',
     enabled: c => c?.sites?.reddit?.enabled && (c?.sites?.reddit?.username || '').trim(),
     count: d => d?.karma, id: d => d?.username },
-  { key: 'hn',   label: 'HN karma',          script: 'hn-karma.sh',
+  { key: 'hn',   label: tr('pu.hnKarma'),          script: 'hn-karma.sh',
     enabled: c => c?.sites?.hackernews?.enabled, count: d => d?.karma,     id: d => d?.username },
-  { key: 'bsky', label: 'Bluesky followers', script: 'bluesky-followers.sh',
+  { key: 'bsky', label: tr('pu.blueskyFollowers'), script: 'bluesky-followers.sh',
     enabled: c => c?.sites?.bluesky?.enabled,    count: d => d?.followers, id: d => d?.handle },
 ];
 
@@ -553,7 +554,7 @@ async function runGatherLocal() {
           type: 'progress',
           id: `local-empty-${Date.now()}`,
           window: data.window?.expanded_to || '24h',
-          items: [{ kind: 'decision', text: 'No local activity in window — try expanding or check workspace path.' }],
+          items: [{ kind: 'decision', text: tr('pu.noLocalActivityIn') }],
         }] },
       });
       completeChipFromSectionUpdate('progress_drafts');
@@ -1009,7 +1010,7 @@ function showConnectionToast() {
   const toast = document.getElementById('cascade-toast');
   const label = document.getElementById('cascade-toast-label');
   if (!toast || !label) return;
-  label.textContent = 'Connection to the agent lost — reconnecting. Cards will land if the run is still going.';
+  label.textContent = tr('pu.connectionToTheAgent');
   toast.classList.add('is-error');
   toast.hidden = false;
 }
@@ -1031,7 +1032,7 @@ function failCascadeToast(what, err) {
   }
   label.textContent = err && err.code === 'chip_idle'
     ? (err.turnEnded
-        ? `${what}: Ling finished without updating this section.`
+        ? tr('pu.whatLingFinishedWithout', { what })
         : `${what}: no update in ${Math.round(CHIP_MAX_MS / 60_000)} min — the page stopped tracking it; cards will land if it finishes.`)
     : `${what} failed before it started — ${(err && err.message) || err}`;
   toast.classList.add('is-error');
@@ -1051,8 +1052,8 @@ async function runGatherCascade() {
   const gen = ++cascadeGen;
   cascadeStop = false;
   const steps = [
-    { id: 'gather-local', label: 'Gathering local activity…' },
-    { id: 'gather-web',   label: 'Gathering web activity…' },
+    { id: 'gather-local', label: tr('pu.gatheringLocalActivity') },
+    { id: 'gather-web',   label: tr('pu.gatheringWebActivity') },
   ];
   for (const step of steps) {
     if (cascadeStop || gen !== cascadeGen) break;
@@ -1165,8 +1166,8 @@ function handleCardAction(action, cardId, btn) {
         || card?.reply_target?.url
         || card?.thread_url || card?.your_post_url || card?.url
         || card?.follow_up?.comment_url;
-      if (!url) { flash(btn, 'No URL'); break; }
-      copyToClipboard(url).then((ok) => flash(btn, ok ? 'Copied ✓' : 'Press ⌘C to copy'));
+      if (!url) { flash(btn, tr('pu.noUrl')); break; }
+      copyToClipboard(url).then((ok) => flash(btn, ok ? 'Copied ✓' : tr('pu.pressCToCopy')));
       break;
     }
     case 'copy': {
@@ -1174,10 +1175,10 @@ function handleCardAction(action, cardId, btn) {
       // → .draft_starter; mention / reply_to_me → .draft_reply; .quote is a
       // last-ditch fallback.
       const text = card?.content || card?.draft_starter || card?.draft_reply || card?.quote || '';
-      if (!text) { flash(btn, 'Nothing to copy'); break; }
+      if (!text) { flash(btn, tr('pu.nothingToCopy')); break; }
       // Fire-and-forget: copyToClipboard resolves true/false so we only
       // claim success when the text actually landed on the clipboard.
-      copyToClipboard(text).then((ok) => flash(btn, ok ? 'Copied ✓' : 'Press ⌘C to copy'));
+      copyToClipboard(text).then((ok) => flash(btn, ok ? 'Copied ✓' : tr('pu.pressCToCopy')));
       break;
     }
     case 'post':
@@ -1698,7 +1699,7 @@ function wireChatResizer() {
   // Inject the drag handle on the panel's left edge.
   const handle = document.createElement('div');
   handle.className = 'chat-resizer';
-  handle.title = 'Drag to resize chat panel';
+  handle.title = tr('pu.dragToResizeChat');
   panel.prepend(handle);
 
   let dragging = false;
@@ -1865,7 +1866,7 @@ async function init() {
     const sess = await readJson(`${SKILL_DIR}/data/${initialSid}/session.json`);
     loadSession(sess);
     document.getElementById('session-title').textContent = 'pulse session';
-    document.getElementById('session-sub').textContent = 'Hit ↻ Rescan for a fresh brief, or type a goal in chat.';
+    document.getElementById('session-sub').textContent = tr('pu.hitRescanForA');
   }
   await snapshotAudienceMetrics().catch(err => console.warn('[pulse] audience snapshot', err));
   await loadStatusStrip();
@@ -1878,10 +1879,10 @@ async function init() {
   refreshRedditDashData().catch(err => console.warn('[pulse] reddit-dash refresh', err));
 }
 
-init().catch(err => {
+loadLanguage().then(() => { applyI18n(); return init(); }).catch(err => {
   console.error('[pulse] init failed', err);
   const c = document.getElementById('sections-container');
-  if (c) c.innerHTML = `<div class="state-msg error">Pulse failed to initialize: ${escapeHtml(err.message || String(err))}</div>`;
+  if (c) c.innerHTML = `<div class="state-msg error">${escapeHtml(tr('pu.initFailed', { err: err.message || String(err) }))}</div>`;
 });
 
 function escapeHtml(s) {
@@ -2786,16 +2787,16 @@ function handleTabDraft(tabId) {
 const X_POST_LIMIT = 280;
 const X_POST_TIMEOUT_MS = 180000;
 const X_POST_ERRORS = {
-  no_bridge: 'Browser extension not connected',
-  not_permitted: 'Declined in the browser',
-  x_logged_out: 'Sign in to x.com first',
-  timeout: 'x.com did not answer in time',
+  no_bridge: tr('pu.browserExtensionNotConnected'),
+  not_permitted: tr('pu.declinedInTheBrowser'),
+  x_logged_out: tr('pu.signInToX'),
+  timeout: tr('pu.xComDidNot'),
 };
 
 async function postXReply(cardId, btn) {
   const card = findCard(cardId);
   const text = (card?.draft_starter || card?.content || card?.draft_reply || '').trim();
-  if (!text) { flash(btn, 'Nothing to post'); return; }
+  if (!text) { flash(btn, tr('pu.nothingToPost')); return; }
   if (text.length > X_POST_LIMIT) {
     flash(btn, `${text.length}/${X_POST_LIMIT} — too long`);
     return;
@@ -2804,12 +2805,12 @@ async function postXReply(cardId, btn) {
   // the extension would post the text standalone, where it reads as a non
   // sequitur under the user's own name — refuse instead of guessing.
   const replyTo = card?.reply_target?.url || card?.url || '';
-  if (!replyTo) { flash(btn, 'No post to reply to'); return; }
+  if (!replyTo) { flash(btn, tr('pu.noPostToReply')); return; }
   // Never reply twice to the same post. The card hides its own Post button once
   // it records a success, but a post that succeeds AFTER the bridge call times
   // out is never recorded — the button stays and a second click would publish a
   // duplicate. The already-replied list is the authority either way.
-  if (isThreadCommented(replyTo)) { flash(btn, 'Already replied to this'); return; }
+  if (isThreadCommented(replyTo)) { flash(btn, tr('pu.alreadyRepliedToThis')); return; }
 
   const label = btn ? btn.textContent : '';
   if (btn) { btn.disabled = true; btn.textContent = 'Posting…'; }

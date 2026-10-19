@@ -13,7 +13,7 @@
     <!-- HEADER (full width) -->
     <header class="header">
       <h1>Pulse</h1>
-      <a href="settings.html" id="settings-link" title="Configure sources, targets, and brief">⚙ Settings</a>
+      <a href="settings.html" id="settings-link" title="Configure sources, targets, and brief" data-i18n-title="pu.configureSourcesTargetsAnd" data-i18n="pu.settings">⚙ Settings</a>
     </header>
 
     <!-- Settings overlay — loads settings.html in an in-page modal so
@@ -21,7 +21,7 @@
     <div class="settings-modal" id="settings-modal" hidden>
       <div class="settings-modal-backdrop" data-close="1"></div>
       <div class="settings-modal-panel">
-        <button class="settings-modal-close" id="settings-close" title="Close settings">✕</button>
+        <button class="settings-modal-close" id="settings-close" title="Close settings" data-i18n-title="pu.closeSettings">✕</button>
         <iframe class="settings-modal-iframe" id="settings-iframe" title="Pulse settings"></iframe>
       </div>
     </div>
@@ -43,7 +43,7 @@
           <div class="sub" id="session-sub"></div>
         </div>
         <button class="rescan-all-btn" id="rescan-all-btn"
-                title="Re-run the daily brief — gather local activity, then web activity">
+                title="Re-run the daily brief — gather local activity, then web activity" data-i18n-title="pu.reRunTheDaily">
           ↻ Rescan
         </button>
       </div>
@@ -51,19 +51,19 @@
       <!-- Setup — shown instead of the cards while config.json has neither a
            brief nor a workspace, so a first open never looks blank. -->
       <div class="setup" id="setup-screen" hidden>
-        <div class="setup-title">Set up Pulse</div>
-        <p class="setup-sub">Tell Pulse what you're building and where your code lives.</p>
+        <div class="setup-title" data-i18n="pu.setUpPulse">Set up Pulse</div>
+        <p class="setup-sub" data-i18n="pu.tellPulseWhatYou">Tell Pulse what you're building and where your code lives.</p>
         <p class="setup-sub">Hacker News and Bluesky work from the first scan — no account needed.
           Later: a Reddit RSS token adds replies to you and every subreddit; the
           linggen-browser extension adds X.</p>
-        <button class="setup-btn" id="setup-open-settings">Open Settings</button>
+        <button class="setup-btn" id="setup-open-settings" data-i18n="pu.openSettings">Open Settings</button>
       </div>
 
       <!-- Cascade toast — shown when the auto-cascade fires on first open of
            the day. Non-blocking; user can stop it. -->
       <div class="cascade-toast" id="cascade-toast" hidden>
-        <span class="cascade-toast-label" id="cascade-toast-label">Running today's brief…</span>
-        <button class="cascade-toast-stop" id="cascade-toast-stop">Stop</button>
+        <span class="cascade-toast-label" id="cascade-toast-label" data-i18n="pu.runningTodaySBrief">Running today's brief…</span>
+        <button class="cascade-toast-stop" id="cascade-toast-stop" data-i18n="pu.stop">Stop</button>
       </div>
 
       <!-- Status strip — populated from state/ files -->
@@ -71,7 +71,7 @@
 
       <!-- Sections — populated by pulse-render.js applying body_patches -->
       <div id="sections-container">
-        <div class="state-msg" id="sections-loading">Loading…</div>
+        <div class="state-msg" id="sections-loading" data-i18n="pu.loading">Loading…</div>
       </div>
 
     </main>

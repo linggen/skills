@@ -2,6 +2,7 @@
 // Same iframe pattern as pulse-app.js (ungated, no permission prompt).
 
 import { splitList } from './list-text.js';
+import { applyI18n, loadLanguage, say, t as tr } from './strings.js';
 
 // In-page confirm — window.confirm is a silent no-op inside the app shell
 // (its WKWebView implements no confirm panel: returns false, no dialog),
@@ -25,7 +26,7 @@ function confirmDialog(message) {
       return b;
     };
     row.append(
-      mk('Cancel', false, 'padding:6px 12px;border-radius:8px;border:0;background:transparent;color:inherit;font-weight:600;cursor:pointer;'),
+      mk(tr('pu.cancel'), false, 'padding:6px 12px;border-radius:8px;border:0;background:transparent;color:inherit;font-weight:600;cursor:pointer;'),
       mk('OK', true, 'padding:6px 12px;border-radius:8px;border:0;background:#2563eb;color:#fff;font-weight:700;cursor:pointer;'),
     );
     card.append(msg, row);
@@ -256,7 +257,7 @@ async function loadAll() {
     markClean();
     clearStatus();
   } catch (err) {
-    setStatus(`Failed to load: ${err.message}`, 'error');
+    setStatus(tr('pu.failedToLoadMessage', { message: err.message }), 'error');
   } finally {
     if (mainEl) mainEl.inert = false;
   }
@@ -328,7 +329,7 @@ function renderWebsiteRow(site) {
   if (site.desc) {
     const desc = document.createElement('span');
     desc.className = 'website-desc';
-    desc.textContent = site.desc;
+    desc.textContent = say(site.desc);
     info.appendChild(desc);
   }
   row.appendChild(info);
@@ -389,8 +390,8 @@ function siteToggle(site, onChange) {
     onChange?.();
   });
   const txt = document.createElement('span');
-  txt.textContent = cb.indeterminate ? 'Partly on' : 'Enabled';
-  cb.addEventListener('change', () => { txt.textContent = 'Enabled'; });
+  txt.textContent = cb.indeterminate ? tr('pu.partlyOn') : tr('pu.enabled');
+  cb.addEventListener('change', () => { txt.textContent = tr('pu.enabled'); });
   wrap.append(cb, txt);
   return wrap;
 }
@@ -449,7 +450,7 @@ function renderCustomFeedRow(url, idx) {
   const del = document.createElement('button');
   del.type = 'button';
   del.className = 'custom-feed-delete';
-  del.textContent = 'Remove';
+  del.textContent = tr('pu.remove');
   del.addEventListener('click', () => {
     state.config.sites.rss.feeds.splice(idx, 1);
     renderWebsites();
@@ -471,12 +472,12 @@ function addCustomFeed() {
   const input = document.getElementById('add-website-url');
   const url = (input?.value || '').trim();
   if (!url) return;
-  try { new URL(url); } catch { setStatus('Invalid URL', 'error'); return; }
+  try { new URL(url); } catch { setStatus(tr('pu.invalidUrl'), 'error'); return; }
   if (!state.config.sites) state.config.sites = {};
   if (!state.config.sites.rss) state.config.sites.rss = { enabled: true, feeds: [] };
   if (!Array.isArray(state.config.sites.rss.feeds)) state.config.sites.rss.feeds = [];
   if (state.config.sites.rss.feeds.includes(url)) {
-    setStatus('Feed already added', 'error');
+    setStatus(tr('pu.feedAlreadyAdded'), 'error');
     return;
   }
   state.config.sites.rss.feeds.push(url);
@@ -505,14 +506,14 @@ function renderChipField(cfg, field) {
   const wrap = document.createElement('div');
 
   const label = document.createElement('label');
-  label.textContent = field.label;
+  label.textContent = say(field.label);
   wrap.appendChild(label);
 
   const input = document.createElement('input');
   input.type = 'text';
   input.className = 'list-input';
   input.value = cfg[field.key].join(', ');
-  input.placeholder = field.placeholder
+  input.placeholder = say(field.placeholder)
     || (field.key === 'feeds' ? 'https://example.com/rss.xml, https://…'
         : field.key === 'subs' ? 'LocalLLaMA, selfhosted'
         : field.key === 'keywords' ? 'local LLM, agent memory'
@@ -531,12 +532,12 @@ function renderTextField(cfg, field) {
   if (cfg[field.key] == null) cfg[field.key] = '';
   const wrap = document.createElement('div');
   const label = document.createElement('label');
-  label.textContent = field.label;
+  label.textContent = say(field.label);
   wrap.appendChild(label);
   const input = document.createElement('input');
   input.type = 'text';
   input.value = cfg[field.key] || '';
-  input.placeholder = field.placeholder || '';
+  input.placeholder = say(field.placeholder || '');
   if (!textInputsByCfg.has(cfg)) textInputsByCfg.set(cfg, new Map());
   textInputsByCfg.get(cfg).set(field.key, input);
   input.addEventListener('input', () => { cfg[field.key] = input.value.trim(); });
@@ -572,7 +573,7 @@ function renderRangeField(cfg, field) {
 
   const wrap = document.createElement('div');
   const label = document.createElement('label');
-  label.textContent = field.label;
+  label.textContent = say(field.label);
   wrap.appendChild(label);
 
   const row = document.createElement('div');
@@ -615,22 +616,22 @@ async function save() {
     await writeFile(CONFIG_PATH, JSON.stringify(state.config, null, 2) + '\n');
     saveBtn.textContent = 'Saved ✓';
     saveBtn.classList.add('saved');
-    setStatus('✓ Settings saved', 'ok');
+    setStatus(tr('pu.settingsSaved'), 'ok');
     setTimeout(() => {
       clearStatus();
-      saveBtn.textContent = 'Save';
+      saveBtn.textContent = tr('pu.save');
       saveBtn.classList.remove('saved');
     }, 1800);
     markClean();
   } catch (err) {
-    setStatus(`Save failed: ${err.message}`, 'error');
-    saveBtn.textContent = 'Save';
+    setStatus(tr('pu.saveFailedMessage', { message: err.message }), 'error');
+    saveBtn.textContent = tr('pu.save');
     saveBtn.disabled = false;
   }
 }
 
 async function resetDefaults() {
-  if (!(await confirmDialog('Reset brief and site configuration to defaults? Your edits will be lost.'))) return;
+  if (!(await confirmDialog(tr('pu.resetBriefAndSite')))) return;
   setStatus('Resetting…', 'loading');
   try {
     const exampleCfg = await readFile(CONFIG_EXAMPLE);
@@ -647,9 +648,9 @@ async function resetDefaults() {
     }
     render();
     markDirty();
-    setStatus('Reset to defaults (not yet saved).', 'ok');
+    setStatus(tr('pu.resetToDefaultsNot'), 'ok');
   } catch (err) {
-    setStatus(`Reset failed: ${err.message}`, 'error');
+    setStatus(tr('pu.resetFailedMessage', { message: err.message }), 'error');
   }
 }
 
@@ -689,4 +690,4 @@ if (mainEl) {
   });
 }
 
-loadAll();
+loadLanguage().then(() => { applyI18n(); loadAll(); });

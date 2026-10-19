@@ -1,3 +1,4 @@
+import { t as tr } from './strings.js';
 // pulse renderer — turns the per-session state into DOM, applies
 // body_patch and status_strip_patch updates from the agent (via
 // PageUpdate calls), and persists the session to disk.
@@ -18,14 +19,14 @@ const SECTION_ORDER = [
 ];
 
 const SECTION_LABELS = {
-  progress_drafts: 'Local progress',
-  mentions:        'Mentions',
-  replies_due:     'Replies due',
-  discovery:       'Discovery',
+  get progress_drafts() { return tr('pu.sec.progress'); },
+  get mentions() { return tr('pu.sec.mentions'); },
+  get replies_due() { return tr('pu.sec.replies'); },
+  get discovery() { return tr('pu.sec.discovery'); },
 };
 
 const SECTION_HINTS = {
-  discovery: 'cold opportunities · matched against brief',
+  get discovery() { return tr('pu.sec.discoveryHint'); },
 };
 
 let session = emptySession();
@@ -517,7 +518,7 @@ function relTime(iso) {
   const t = Date.parse(iso);
   if (isNaN(t)) return '';
   const mins = Math.floor((Date.now() - t) / 60000);
-  if (mins < 1) return 'just now';
+  if (mins < 1) return tr('pu.justNow');
   if (mins < 60) return `${mins}m ago`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h ago`;
@@ -631,13 +632,13 @@ function renderStatusStrip() {
 // additionally hosts the roster card + dashboard (mounted by pulse-app into
 // #x-tab-extras).
 const TABS = [
-  { id: 'needs',    label: 'Needs you', siteKey: null,        source: null,      sections: [] },
+  { id: 'needs',    get label() { return tr('pu.tab.needs'); }, siteKey: null,        source: null,      sections: [] },
   { id: 'x',        label: 'X',        siteKey: 'x',          source: 'x',       sections: ['discovery'] },
   { id: 'hn',       label: 'HN',       siteKey: 'hackernews', source: 'hn',      sections: ['discovery'] },
   { id: 'reddit',   label: 'Reddit',   siteKey: 'reddit',     source: 'reddit',  sections: ['discovery'] },
   { id: 'bluesky',  label: 'Bluesky',  siteKey: 'bluesky',    source: 'bluesky', sections: ['discovery'] },
-  { id: 'mentions', label: 'Mentions', siteKey: null,         source: null,      sections: ['mentions', 'replies_due'] },
-  { id: 'progress', label: 'Progress', siteKey: null,         source: null,      sections: ['progress_drafts'] },
+  { id: 'mentions', get label() { return tr('pu.sec.mentions'); }, siteKey: null,         source: null,      sections: ['mentions', 'replies_due'] },
+  { id: 'progress', get label() { return tr('pu.tab.progress'); }, siteKey: null,         source: null,      sections: ['progress_drafts'] },
 ];
 
 // Which source a card belongs to. Reddit/Bluesky discovery cards are tagged
@@ -670,7 +671,7 @@ function needsSections() {
     .filter(c => c.type !== 'empty' && !shouldFilterCard(c));
   const out = [];
   const replies = live('mentions').filter(c => c.type === 'reply_to_me');
-  if (replies.length) out.push({ sectionId: 'mentions', original: { cards: replies, label: 'Replies to you' }, cards: replies });
+  if (replies.length) out.push({ sectionId: 'mentions', original: { cards: replies, label: tr('pu.repliesToYou') }, cards: replies });
   const due = live('replies_due');
   if (due.length) out.push({ sectionId: 'replies_due', original: { cards: due }, cards: due });
   const threads = live('discovery')
@@ -679,7 +680,7 @@ function needsSections() {
     .slice(0, NEEDS_THREADS)
     .map(x => x.c);
   if (threads.length) {
-    out.push({ sectionId: 'discovery', original: { cards: threads, label: 'Worth a comment', hint: 'the top two · every thread is under its source tab' }, cards: threads });
+    out.push({ sectionId: 'discovery', original: { cards: threads, label: tr('pu.worthAComment'), hint: tr('pu.theTopTwoEvery') }, cards: threads });
   }
   return out;
 }
@@ -736,7 +737,7 @@ function renderSections() {
   if (visible.length === 0) {
     const msg = document.createElement('div');
     msg.className = 'state-msg';
-    msg.textContent = "No data for this session yet. Pick a chip above, or type a goal in chat to start.";
+    msg.textContent = tr('pu.noDataForThis');
     container.appendChild(msg);
     return;
   }
@@ -775,12 +776,12 @@ function renderTabBar(visible, counts) {
 }
 
 const DRAFT_LABELS = {
-  x: '✎ Draft', hn: '✎ Draft', reddit: '✎ Draft', progress: '✎ Draft posts',
+  x: '✎ Draft', hn: '✎ Draft', reddit: '✎ Draft', progress: tr('pu.draftPosts'),
 };
 
 const RESCAN_LABELS = {
-  needs: '↻ Check replies', x: '↻ Rescan X', hn: '↻ Rescan HN', reddit: '↻ Rescan Reddit',
-  bluesky: '↻ Rescan Bluesky', mentions: '↻ Check mentions', progress: '↻ Refresh progress',
+  needs: tr('pu.checkReplies'), x: tr('pu.rescanX'), hn: tr('pu.rescanHn'), reddit: tr('pu.rescanReddit'),
+  bluesky: tr('pu.rescanBluesky'), mentions: tr('pu.checkMentions'), progress: tr('pu.refreshProgress'),
 };
 
 function renderTabContent(tab, body) {
@@ -791,7 +792,7 @@ function renderTabContent(tab, body) {
   if (scanned) {
     const meta = document.createElement('span');
     meta.className = 'tab-scan';
-    meta.textContent = `last scan ${relTime(scanned)}`;
+    meta.textContent = tr('pu.lastScanReltime', { relTime: relTime(scanned) });
     actions.appendChild(meta);
   }
   const rescan = document.createElement('button');
@@ -862,13 +863,13 @@ function renderTabContent(tab, body) {
     msg.className = 'state-msg';
     const at = scanned || (session.sections.discovery || {}).last_updated;
     msg.textContent = at
-      ? `Nothing needs you — no replies waiting, no thread worth a comment (scanned ${relTime(at)}).`
-      : 'Nothing scanned yet — ↻ Rescan reads your sources.';
+      ? tr('pu.nothingNeedsYouNo', { relTime: relTime(at) })
+      : tr('pu.nothingScannedYetRescan');
     body.appendChild(msg);
   } else if (!renderedAny && tab.id !== 'x') {
     const msg = document.createElement('div');
     msg.className = 'state-msg';
-    msg.textContent = `Nothing in ${tab.label} yet — run a gather, or type a goal in chat.`;
+    msg.textContent = tr('pu.nothingInLabelYet', { label: tab.label });
     body.appendChild(msg);
   }
 }
@@ -1088,8 +1089,8 @@ function renderConversation(conv, collapsedCount) {
   const parts = [];
   conv.forEach((node, idx) => {
     const isLast = idx === conv.length - 1;
-    const labelTxt = idx === 0 && conv.length > 1 ? 'First reply' :
-                     isLast ? 'Latest reply' : 'Reply';
+    const labelTxt = idx === 0 && conv.length > 1 ? tr('pu.firstReply') :
+                     isLast ? tr('pu.latestReply') : tr('pu.reply');
     const meta = `${labelTxt}${node.author ? ' · ' + escapeHtml(node.author) : ''}${cardAge(node) ? ' · ' + cardAge(node) : ''}`;
     parts.push(`<div class="thread-step${isLast ? ' latest' : ''}"><div class="thread-label">${meta}</div><div class="thread-body">${escapeHtml(truncateText(node.body || '', 220))}</div></div>`);
     if (idx === 0 && collapsedCount > 0 && conv.length > 1) {
@@ -1149,7 +1150,7 @@ function renderDiscovery(c) {
   const norm = (s) => (s || '').slice(0, 120).toLowerCase().replace(/\s+/g, ' ').trim();
   const targetDupesExcerpt = !!targetBody && norm(targetBody) === norm(excerpt);
   const targetMeta = t ? [
-    t.author ? escapeHtml(t.author) + ' replied' : 'Replied',
+    t.author ? escapeHtml(t.author) + ' replied' : tr('pu.replied'),
     t.age_hours != null ? formatAge(t.age_hours) : null,
     t.score != null ? `${t.score} pts` : null,
     t.depth != null && t.depth > 1 ? `depth ${t.depth}` : null,
@@ -1159,7 +1160,7 @@ function renderDiscovery(c) {
     : '';
   // Renderer reads thread_title; accept title too (HN/X cards emit title).
   const threadTitle = c.thread_title || c.title || '';
-  const draftLabel = (t && !targetDupesExcerpt) ? 'Draft reply' : 'Draft comment';
+  const draftLabel = (t && !targetDupesExcerpt) ? tr('pu.draftReply') : tr('pu.draftComment');
   // X reply cards get a "Mark posted" action so the user can log which replies
   // they actually posted — that feeds the X dashboard's posted-per-day series.
   // "Post" replies through the browser extension in a tab you watch; the
@@ -1230,7 +1231,7 @@ function renderEmpty(c) {
   el.className = 'card empty';
   // Gather emits `reason`; older cards used `message`. Accept both so the
   // agent's one-line explanation actually reaches the tab.
-  el.textContent = c.reason || c.message || 'Nothing to show in this section.';
+  el.textContent = c.reason || c.message || tr('pu.nothingToShowIn');
   return el;
 }
 
@@ -1293,18 +1294,18 @@ function actionRow(card, actionList) {
 
 const ACTION_LABELS = {
   'post':           { label: '↗ Post',           primary: true },
-  'draft-reply':    { label: '✎ Draft reply',    primary: true },
-  'draft-replies':  { label: '✎ Draft replies',  primary: true },
-  'draft-starter':  { label: '✎ Draft starter',  primary: true },
-  'draft-post':     { label: '✎ Draft post',     primary: true },
-  'reply-back':     { label: '✎ Reply back',     primary: true },
+  'draft-reply':    { label: tr('pu.draftReply2'),    primary: true },
+  'draft-replies':  { label: tr('pu.draftReplies'),  primary: true },
+  'draft-starter':  { label: tr('pu.draftStarter'),  primary: true },
+  'draft-post':     { label: tr('pu.draftPost'),     primary: true },
+  'reply-back':     { label: tr('pu.replyBack'),     primary: true },
   'polish':         { label: '✎ Polish',         primary: true },
   'open':           { label: '↗ Open',           primary: false },
   'open-url':       { label: '↗ Open',           primary: false },
   'copy':           { label: '📋 Copy',           primary: false },
-  'copy-url':       { label: '🔗 Copy URL',       primary: false },
-  'mark-posted':    { label: '☐ Mark posted',    primary: false },
-  'x-posted':       { label: '☐ Mark posted',    primary: false },
+  'copy-url':       { label: tr('pu.copyUrl'),       primary: false },
+  'mark-posted':    { label: tr('pu.markPosted'),    primary: false },
+  'x-posted':       { label: tr('pu.markPosted'),    primary: false },
   'discard':        { label: '✗ Discard',        dismiss: true },
   'dismiss':        { label: '×',                 dismiss: true },
 };

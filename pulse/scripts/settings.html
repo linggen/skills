@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pulse · Settings</title>
+  <title data-i18n="pu.pulseSettings">Pulse · Settings</title>
   <link rel="icon" type="image/svg+xml" href="/logo.svg">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="settings.css">
@@ -13,10 +13,10 @@
 </head>
 <body>
   <header class="header">
-    <h1>Pulse · Settings</h1>
+    <h1 data-i18n="pu.pulseSettings">Pulse · Settings</h1>
     <div class="header-controls">
-      <button id="reset-btn" class="btn-secondary">Reset to defaults</button>
-      <button id="save-btn" class="btn-primary">Save</button>
+      <button id="reset-btn" class="btn-secondary" data-i18n="pu.resetToDefaults">Reset to defaults</button>
+      <button id="save-btn" class="btn-primary" data-i18n="pu.save">Save</button>
     </div>
   </header>
 
@@ -24,7 +24,7 @@
     <div id="status-banner" class="state-msg" hidden></div>
 
     <section class="card">
-      <h2>Your brief</h2>
+      <h2 data-i18n="pu.yourBrief">Your brief</h2>
       <p class="card-sub">
         The pulse reads this on every run. Tell it what you're working
         on, who reads your stuff, and your hard rules. Markdown is fine.
@@ -48,7 +48,7 @@
     </section>
 
     <section class="card">
-      <h2>Workspace</h2>
+      <h2 data-i18n="pu.workspace">Workspace</h2>
       <p class="card-sub">
         Where your work lives on disk. Pulse reads it read-only: commits
         for the progress card, and your product's README + latest
@@ -78,7 +78,7 @@
     </section>
 
     <section class="card">
-      <h2>Mentions</h2>
+      <h2 data-i18n="pu.mentions">Mentions</h2>
       <p class="card-sub">
         How drafts may name your product. On a thread where the product is
         the direct answer, a <em>disclosed</em> draft answers on the merits
@@ -96,14 +96,14 @@
         <input type="text" id="mention-domain" class="workspace-input" placeholder="Site as plain text, e.g. linggen.dev (no https://)" />
       </div>
       <div class="workspace-row">
-        <label class="card-meta" for="mention-default" style="margin-right: 8px;">Default register</label>
+        <label class="card-meta" for="mention-default" style="margin-right: 8px;" data-i18n="pu.defaultRegister">Default register</label>
         <select id="mention-default" class="workspace-input" style="max-width: 200px;">
           <option value="disclosed">disclosed</option>
           <option value="implicit">implicit</option>
         </select>
         <label class="card-meta" for="mention-hn" style="margin: 0 8px;">Hacker News</label>
         <select id="mention-hn" class="workspace-input" style="max-width: 200px;">
-          <option value="">same as default</option>
+          <option value="" data-i18n="pu.sameAsDefault">same as default</option>
           <option value="implicit">implicit</option>
           <option value="disclosed">disclosed</option>
         </select>
@@ -115,7 +115,7 @@
     </section>
 
     <section class="card">
-      <h2>Websites</h2>
+      <h2 data-i18n="pu.websites">Websites</h2>
       <p class="card-sub">
         <b>Start with Hacker News and Bluesky</b> — both work with no account,
         token or extension. Each other site says what it needs and what it adds.
@@ -130,7 +130,7 @@
       <div class="websites-list" id="websites-list"></div>
       <div class="add-website-row">
         <input type="url" id="add-website-url" placeholder="https://example.com/feed.xml" />
-        <button id="add-website-btn" class="btn-secondary">+ Add custom feed</button>
+        <button id="add-website-btn" class="btn-secondary" data-i18n="pu.addCustomFeed">+ Add custom feed</button>
       </div>
       <p class="card-meta">
         Custom URLs are added as RSS / Atom feeds (source-only). Pulse reads
