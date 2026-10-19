@@ -1956,7 +1956,27 @@
    "data": {"level":"feather"},
    "_levels": "气走经脉 (games/qimai.js, Hanli 10-19): the breath kit — hold to rise (吸), let go to sink (吐), a 气 bead along a meridian channel; one level a row, played in the 游戏厅 beside the breath game it may one day replace (story wiring waits for his play). The ladder (difficulty, games/bots/qimai.js proves each) is each level's `n` (not where its row sits): feather · xisui · qianmi · faqiu · zhoutian · cangxi · dark · lastshot, then the arcade-only chongmai · daimai · dazhoutian. A level (World 360×220, the bead at x 96; units/s): `speed`, `len`, `path` [[x, y]] the channel's middle, `width` [[x, half-width]] (≤ 36 is 窄脉), `gates` [{x, gap, y?, name}] 关窍, `xue` [{x, name}] 穴 checkpoints, `currents` [{from, to, push}] 乱流 (+ down), `waves` [{from, to, push}] 浪头, `heart` [{from, to, beat, kick}] 心跳乱流, `gold` [{from, to, amp, period, rise}] 金线 (rise 0.4: 吸四吐六), `dark` [{from, to, r}] 暗; `say` (the opening line), `book` (the book's line while it plays), `end`. `data.level` names the row's level for mount().",
    "levels": [
-    {"id":"feather","n":1,"title":{"zh":"吹鹅毛","en":"The goose feather"},"speed":88,"len":2000,"book":{"zh":"「心里数到一百二十，拿一根鸿毛搁在鼻子底下，吐气，毛不许动。」","en":"\"Count to a hundred and twenty, a feather under the nose: breathe out, and it mustn't stir.\""},"say":{"zh":"按住是吸，气往上走；松开是吐，气往下沉。顺着这道长浪慢慢来。","en":"Hold to breathe in: the qi rises. Let go: it sinks. Ride the long wave, slowly."},"end":{"zh":"鹅毛一根没动。","en":"The feather never stirred."},"path":[[0,110],[300,110],[650,76],[1000,144],[1350,76],[1700,144],[2000,110]],"width":[[0,50],[600,44],[2000,40]],"xue":[{"x":1100,"name":{"zh":"膻中","en":"Shanzhong"}}],"gold":[{"from":420,"to":1900,"amp":14,"period":300,"rise":0.4}],"goldTol":9,"look":{"tint":"#e9d9b4","ink":"#7a6237","trail":"#b98d3e","glyph":"羽"}}
+    {"id":"feather","n":1,"title":{"zh":"吹鹅毛","en":"The goose feather"},"speed":88,"len":2000,"book":{"zh":"「心里数到一百二十，拿一根鸿毛搁在鼻子底下，吐气，毛不许动。」","en":"\"Count to a hundred and twenty, a feather under the nose: breathe out, and it mustn't stir.\""},"say":{"zh":"按住是吸，气往上走；松开是吐，气往下沉。顺着这道长浪慢慢来。","en":"Hold to breathe in: the qi rises. Let go: it sinks. Ride the long wave, slowly."},"end":{"zh":"鹅毛一根没动。","en":"The feather never stirred."},"gates": [
+       {
+        "x": 650,
+        "y": 76,
+        "gap": 36,
+        "name": "第一口"
+       },
+       {
+        "x": 1000,
+        "y": 144,
+        "gap": 34,
+        "name": "第二口"
+       },
+       {
+        "x": 1350,
+        "y": 76,
+        "gap": 32,
+        "name": "第三口"
+       }
+      ],
+      "path":[[0,110],[300,110],[650,76],[1000,144],[1350,76],[1700,144],[2000,110]],"width":[[0,50],[600,44],[2000,40]],"xue":[{"x":1100,"name":{"zh":"膻中","en":"Shanzhong"}}],"gold":[{"from":420,"to":1900,"amp":14,"period":300,"rise":0.4}],"goldTol":9,"look":{"tint":"#e9d9b4","ink":"#7a6237","trail":"#b98d3e","glyph":"羽"}}
    ]
   },
   {
