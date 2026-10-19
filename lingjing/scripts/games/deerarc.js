@@ -61,7 +61,7 @@ const T = {
     gone: '箭筒空了。鹿走远了。再来。',
     pull: '往后拉……', full: '拉满了 · 松手',
     score: '得分', retry: '重来', next: '下一处', last: '收弓', again: '再来，争三星',
-    clear: '这一处：', end: '溪边{n}处，都射中了。', one: '溪边那一处，射中了。', stars: '共得 {s} 星。',
+    clear: '这一处：', end: '溪边{n}处，都射中了。', endSmash: '溪边{n}处，都拿下了——该射的射中了，该砸的也砸了个痛快。', one: '溪边那一处，射中了。', stars: '共得 {s} 星。',
     empty: '溪边没有鹿。',
   },
   en: {
@@ -79,7 +79,7 @@ const T = {
     gone: 'The quiver is empty. The deer has wandered off. Again.',
     pull: 'Pull back…', full: 'Full — let go',
     score: 'Score', retry: 'Again', next: 'Next spot', last: 'Unstring the bow', again: 'Again, for three stars',
-    clear: 'This spot: ', end: '{n} spots by the stream, each one hit.', one: 'The spot by the stream: hit.', stars: '{s} stars in all.',
+    clear: 'This spot: ', end: '{n} spots by the stream, each one hit.', endSmash: '{n} spots by the stream, every one taken — hit where it took an arrow, smashed where it took a stone.', one: 'The spot by the stream: hit.', stars: '{s} stars in all.',
     empty: 'No deer by the stream.',
   },
 };
@@ -1222,7 +1222,8 @@ function endLine(s, t, lang) {
   const k = s.levels.length;
   if (k === 1) return t.one;
   const word = lang === 'en' ? (['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][k] ?? String(k)) : (COUNT_ZH[k] ?? String(k));
-  return t.end.replace('{n}', word);
+  // A run with smash levels did not only shoot: its line says so.
+  return (s.levels.some((l) => l.smash) ? t.endSmash : t.end).replace('{n}', word);
 }
 
 /** A row's own word (games.json row `words`), else null for the deer's. */
