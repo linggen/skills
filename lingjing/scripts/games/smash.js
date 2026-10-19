@@ -223,8 +223,9 @@ function segX(p, q, a, b) {
 /** The first smash body the tip's step crosses. */
 export function firstStruck(world, from, to) {
   let best = null;
+  const skip = world.arrow?.ignore && world.arrow.steps < world.arrow.ignore.until ? world.arrow.ignore.id : null;
   for (const t of world.things) {
-    if (!t.smash || t.broken) continue;
+    if (!t.smash || t.broken || t.id === skip) continue;
     const h = sweepBody(from, to, t.body);
     if (h && (!best || h.t < best.t)) best = { ...h, thing: t };
   }
@@ -249,8 +250,13 @@ export function arrowAt(world, hit, proj) {
   if (k.arrow === 'glance' || (k.mat === 'wood' && dot > -0.35)) {
     // Off its face: the arrow keeps flying, slowed (stone) or spent (a skim along wood).
     const keep = k.arrow === 'glance' ? 0.62 : 0.3, d = v.x * nx + v.y * ny;
-    Body.setPosition(ar.body, { x: ar.body.position.x + nx * 2, y: ar.body.position.y + ny * 2 });
-    Body.setVelocity(ar.body, { x: (v.x - 2 * d * nx) * keep, y: (v.y - 2 * d * ny) * keep });
+    const out = { x: (v.x - 2 * d * nx) * keep, y: (v.y - 2 * d * ny) * keep }, ol = Math.hypot(out.x, out.y) || 1, half = proj.half ?? 13;
+    // Off the face: its point laid just outside where it struck, turned along its new way.
+    Body.setAngle(ar.body, Math.atan2(out.y, out.x));
+    Body.setPosition(ar.body, { x: hit.at[0] + nx * 1.5 - (out.x / ol) * half, y: hit.at[1] + ny * 1.5 - (out.y / ol) * half });
+    Body.setVelocity(ar.body, out);
+    ar.tip = [hit.at[0] + nx * 1.5, hit.at[1] + ny * 1.5];
+    ar.ignore = { id: t.id, until: ar.steps + 6 }; // it does not strike the same face again at once
     if (k.arrow !== 'glance') { ar.true = false; Body.setAngularVelocity(ar.body, 0.25); }
     push(t.body, hit.at, v, mass * 0.3);
     cue(world, k.arrow === 'glance' ? 'stone' : 'wood', hit.at, Math.min(1, blow / 4), { glance: true });

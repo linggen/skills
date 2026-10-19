@@ -626,7 +626,7 @@ function flying(s) {
   if (ev === 'turned') return { ...s, said: 'turned', saidAt: s.clock };
   const landedHit = ev === 'ground' ? targetOf(level)?.land?.(level, ar.tip) : null;
   if (landedHit) return clean(s, landedHit === 'body');
-  return ev && ev !== 'wall' && ev !== 'bounce' ? land(s, ev) : s;
+  return ev && !GOES_ON.has(ev) ? land(s, ev) : s;
 }
 
 /** Stars for the level's hit: by arrows used (one 3, two 2, more 1), a star fewer off the heart. */
