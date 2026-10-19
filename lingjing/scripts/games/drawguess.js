@@ -59,7 +59,7 @@ const STYLE = `.g-dg{gap:8px}.g-dg-head{display:flex;align-items:baseline;gap:10
 .g-dg-who button.is-on{border-color:var(--ling);background:var(--ling-soft);color:var(--ling);font-weight:600}
 .g-dg-who button:disabled{opacity:.5;cursor:default}
 .g-dg-paper{position:relative;width:100%;aspect-ratio:1;border-radius:6px;overflow:hidden;background:radial-gradient(130% 100% at 40% 30%,#ecdabb,${PAPER} 60%,#d8bf98);box-shadow:0 6px 22px rgba(0,0,0,.16)}
-.g-dg-paper canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+.g-dg-paper canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M3 21c1.5-.3 2.6-1 3.2-2.2L18.6 6.4a2 2 0 0 0-2.8-2.8L3.4 16C2.6 17 2.6 19 3 21z' fill='%23f3e6c8' stroke='%23332' stroke-width='1.3'/%3E%3Cpath d='M3 21c.9-.2 1.6-.6 2-1.3' stroke='%23111' stroke-width='2'/%3E%3C/svg%3E\") 2 22, crosshair}
 .g-dg-paper.is-off canvas{cursor:default}
 .g-dg-veil{position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;font-family:var(--serif);color:#4a3d2c;font-size:15px;line-height:1.7;pointer-events:none}
 .g-dg-bar{display:flex;gap:8px;width:100%}.g-dg-bar .g-btn-soft{flex:0 0 auto}.g-dg-bar .g-btn-main{flex:1;min-width:0}
@@ -261,8 +261,10 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   const setPhase = (p) => {
     g.phase = p;
     root.dataset.phase = p;
-    paper.classList.toggle('is-off', p !== 'draw');
+    paper.classList.toggle('is-off', p !== 'draw' && p !== 'ready');
     root.querySelectorAll('[data-who]').forEach((b) => { b.disabled = fixed || !CHOOSE.has(p); b.classList.toggle('is-on', b.dataset.who === g.who); });
+    // 笔 · 擦 answer on fresh paper too: the first stroke starts the round.
+    if (p === 'ready') root.querySelectorAll('.g-dg-tool').forEach((b) => { b.disabled = false; });
   };
   const sub = (s) => fill(s, { who: names[g.who] });
 
@@ -319,7 +321,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   // The eraser's ring follows the hand over the paper (a mouse hovering, a finger pressing), its
   // size the eraser's own: what is inside the ring is what rubs out.
   const ring = (e, show) => {
-    const on = show && g.tool === 'eraser' && g.phase === 'draw';
+    const on = show && g.tool === 'eraser' && (g.phase === 'draw' || g.phase === 'ready');
     rub.style.display = on ? 'block' : 'none';
     if (!on) return;
     const r = canvas.getBoundingClientRect(), d = ERASER * r.width;
@@ -327,8 +329,11 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     rub.style.left = `${e.clientX - r.left}px`;
     rub.style.top = `${e.clientY - r.top}px`;
   };
-  canvas.addEventListener('pointerdown', (e) => {
-    if (g.phase !== 'draw' || (e.button ?? 0) !== 0) return;
+  canvas.addEventListener('pointerdown', async (e) => {
+    if ((e.button ?? 0) !== 0) return;
+    // A stroke on fresh paper starts the round itself (Hanli 10-19: 「我点了笔, 用鼠标不能画」).
+    if (g.phase === 'ready' && !goBtn.disabled) { e.preventDefault(); await begin(); }
+    if (g.phase !== 'draw') return;
     e.preventDefault();
     try { canvas.setPointerCapture(e.pointerId); } catch { /* the canvas still hears it */ }
     g.cur = [at(e)];
@@ -363,13 +368,13 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     if (k === 'go' && g.phase === 'ready') return begin();
     // She cannot be asked: a 家信 is written in words only, and goes on (never stuck on the model).
     if (k === 'go' && CANT.has(g.phase) && data.fallback) return writeOut();
-    if (g.phase !== 'draw') return;
     if (k === 'pen' || k === 'eraser') {
       g.tool = k;
       root.querySelectorAll('.g-dg-tool').forEach((b) => b.classList.toggle('is-on', b.dataset.k === k));
       paper.classList.toggle('is-erasing', k === 'eraser');
       return;
     }
+    if (g.phase !== 'draw') return;
     if (k === 'clear' && g.strokes.length) { g.strokes = []; redraw(); g.loop.stroke(); }
     if (k === 'go') g.loop.now();
   });
