@@ -305,6 +305,16 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     canvas.height = Math.max(1, Math.round(r.height * dpr));
     redraw();
   };
+  /* The next line (or another try) starts on clean paper: the strokes, the clock and her last answer go
+     (Hanli 10-19: 「盆切换到弓时, 画布没有清空」). */
+  const freshPaper = () => {
+    g.strokes = [];
+    g.cur = null;
+    redraw();
+    $('.g-dg-sec').textContent = '';
+    $('.g-dg-left').textContent = '';
+    say('……', '', true);
+  };
   const redraw = () => {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -481,7 +491,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
       if (g.i < g.rounds.length) {
         setPhase('between');
         tools(false);
-        setTimeout(() => { letter(); goBtn.textContent = w.next; setPhase('ready'); goBtn.disabled = false; }, won ? 1400 : 900);
+        setTimeout(() => { freshPaper(); letter(); goBtn.textContent = w.next; setPhase('ready'); goBtn.disabled = false; }, won ? 1400 : 900);
         return;
       }
       setPhase('over');
@@ -496,7 +506,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     if (fixed && !won && data.retry !== false) {
       setPhase('between');
       tools(false);
-      setTimeout(() => { goBtn.textContent = w.again; setPhase('ready'); goBtn.disabled = false; }, 900);
+      setTimeout(() => { freshPaper(); goBtn.textContent = w.again; setPhase('ready'); goBtn.disabled = false; }, 900);
       return;
     }
     setPhase('over');
