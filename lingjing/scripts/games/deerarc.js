@@ -40,7 +40,7 @@ export const W = 480, H = 300;
 export const STEP_MS = 1000 / 60;
 export const BOW = [378, 164]; // his hand on the near bank, held up out of the grass, clear of the edge
 export const MAX_PULL = 120, MIN_POWER = 0.12, MIN_V = 3, MAX_V = 7.2;
-const HAND_REACH = 64; // how far from the bow a held stone follows the hand
+export const HAND_REACH = 64; // how far from the bow a held stone follows the hand
 export const QUIVER = 4, STUCK_MISSES = 3;
 const GRAVITY = 0.36, WIND_ACC = 0.02, ARROW_HALF = 13, TRAIL_EVERY = 3;
 const BREAK_V = 5, AFTER_BREAK = 0.88, TURN = 0.32, SLOW = 3, SLOW_STEPS = 12, SLOW_HIT_MS = 450;
@@ -504,7 +504,7 @@ export function burstHit(level, ms, [x, y], r) {
 }
 
 /** What a step may say while the throw still flies: a reed snapped, a skip, a glance off rock, clay broken through. */
-const GOES_ON = new Set(['snap', 'bounce', 'wall', 'glance', 'broke']);
+export const GOES_ON = new Set(['snap', 'bounce', 'wall', 'glance', 'broke']);
 
 /** A shot flown in a fresh world, against the deer as it moves from `at` ms: the bot's search
     and the tests use it — the same steps the game takes. → { hit, steps, tip, snapped } */
@@ -907,19 +907,19 @@ function thingPicture(t, s) {
 
 /** A smash body: its painting (games.json `art`, by KINDS[kind].art) laid on the body, turned with it;
     PLACEHOLDER ink while its painting is missing. `data-body` lets the painter carry it between steps. */
-function smashPicture(t, s) {
+export function smashPicture(t, s) {
   const { x, y } = t.body.position, deg = (t.body.angle * 180) / Math.PI, [w, h] = t.size;
   return `<g class="g-sm-thing g-sm-${t.kind}" data-body="${t.id}" transform="translate(${n(x)} ${n(y)}) rotate(${n(deg)})">${bodyArt(s, t.kind, w, h)}</g>`;
 }
 /** A painted piece filling a w × h box about the origin (or its ink stand-in). */
-function bodyArt(s, kind, w, h) {
+export function bodyArt(s, kind, w, h) {
   const a = s.art?.[KINDS[kind]?.art ?? kind];
   if (a?.file) return `<image class="g-da-sprite" href="${artUrl(a.file)}" x="${n(-w / 2 - (a.pad ?? 0) * w)}" y="${n(-h / 2 - (a.padY ?? a.pad ?? 0) * h)}" width="${n(w * (1 + 2 * (a.pad ?? 0)))}" height="${n(h * (1 + 2 * (a.padY ?? a.pad ?? 0)))}" preserveAspectRatio="none"/>`;
   return `<rect class="g-sm-ink is-${KINDS[kind]?.mat ?? 'wood'}" x="${n(-w / 2)}" y="${n(-h / 2)}" width="${n(w)}" height="${n(h)}" rx="${kind === 'jar' || kind === 'hay' ? n(Math.min(w, h) * 0.4) : 1.5}"/>`;
 }
 
 /** The shards of what broke: each a cut of the same painting (clipped to its piece), tumbling. */
-function shardsPicture(s) {
+export function shardsPicture(s) {
   const id = clipId(s);
   return (s.world.frags ?? []).map((f, i) => {
     const { x, y } = f.body.position, deg = ((f.body.angle + f.ang0) * 180) / Math.PI, [w, h] = f.size;
@@ -961,7 +961,7 @@ export function deerPicture(d, { alert = 0, gone = 0, art = null } = {}) {
    point in the picture (fractions) that stands on the deer's origin, `flip` if it faces left.
    The poses cross-fade by `lift`: drinking → looking (or walking, on the move; or bolting). */
 export const artUrl = (file) => new URL(`../../worlds/jiuding/art/${file}`, import.meta.url).href;
-function sprite(a, opacity) {
+export function sprite(a, opacity) {
   if (!a || opacity < 0.02) return '';
   const flip = a.flip ? -1 : 1, x = -a.at[0] * a.w, y = -a.at[1] * a.h;
   return `<image class="g-da-sprite" href="${artUrl(a.file)}" x="${n(x)}" y="${n(y)}" width="${a.w}" height="${a.h}" opacity="${n(opacity, 2)}"${flip < 0 ? ` transform="scale(-1 1)"` : ''} preserveAspectRatio="none"/>`;
@@ -1074,7 +1074,7 @@ export function arrowShape(art, cx = 0, spent = false) {
 
 /** While drawing, every throw: the first stretch of the arc, as if there were no wind — it moves
     with the hand; the wind is his to read, and the last throw's trail stays beside it to learn from. */
-function guidePicture(s) {
+export function guidePicture(s) {
   if (s.phase !== 'aim' || !s.pull || s.pull.p < MIN_POWER) return '';
   const v = velocityOf(s.pull), g = GRAVITY * 0.001 * STEP_MS * STEP_MS, dots = [];
   const r0 = s.art?.marks?.dot ?? 2.4, o = projectileOf(s.kit, s.pick).shape !== 'arrow' && s.pull.hand ? s.pull.hand : BOW;
@@ -1083,7 +1083,7 @@ function guidePicture(s) {
 }
 
 /** The spent arrows stuck in the grass this try, and the chaff a snapped reed threw. */
-function spentPicture(s) {
+export function spentPicture(s) {
   const stuck = (s.stuck ?? []).map(([x, y, a, id]) => `<g class="g-da-spent" transform="translate(${x} ${y}) rotate(${a})">${thrownShape(s, id, true)}</g>`).join('');
   const chaff = s.art?.straw;
   const bits = (s.world.bits ?? []).map((b) => `<g transform="translate(${n(b.position.x)} ${n(b.position.y)}) rotate(${n((b.angle * 180) / Math.PI)})">${chaff ? sprite({ ...chaff, w: 9, h: 5, at: [0.5, 0.5] }, 0.9) : '<path class="g-da-bit" d="M-3 0 L3 0"/>'}</g>`).join('');
@@ -1094,7 +1094,7 @@ function spentPicture(s) {
 }
 
 /** The last arrow's path: a bold ink stroke on a paper rim (`marks.trail` its width), or ink dots. */
-function trailPicture(s) {
+export function trailPicture(s) {
   const t = s.trail ?? [], w = s.art?.marks?.trail;
   if (!w) return t.map(([x, y], i) => (i % 2 ? '' : `<circle class="g-da-trail" cx="${x}" cy="${y}" r="1.6"/>`)).join('');
   if (t.length < 2) return '';
@@ -1102,7 +1102,7 @@ function trailPicture(s) {
   return `<path class="g-da-trail-rim" d="${d}" style="stroke-width:${n(w + 2.4)}"/><path class="g-da-trail-ink" d="${d}" style="stroke-width:${w}"/>`;
 }
 
-function arrowPicture(s) {
+export function arrowPicture(s) {
   const ar = s.world.arrow, fx = (ar?.fx ?? []).map((f) => fxPicture(f, (s.world.t ?? 0) - (f.t ?? s.world.t ?? 0), calm(s))).join('');
   if (!ar || ['hit', 'spook', 'clear'].includes(s.phase)) return fx;
   const { x, y } = ar.body.position, proj = ar.proj ?? ARROW;
@@ -1111,7 +1111,7 @@ function arrowPicture(s) {
 }
 
 /** What he threw, drawn: the arrow (painted or ink), or the kit's shape for the rest. */
-function thrownShape(s, id = 'arrow', spent = false) {
+export function thrownShape(s, id = 'arrow', spent = false) {
   const proj = projectileOf(s.kit, id);
   if (proj.shape === 'arrow') return arrowShape(s.art, 0, spent);
   // A 柴 log or a pot is the scene's own painted log and jar, at its size; a stone its pebble.
@@ -1207,7 +1207,7 @@ function playScene(s) {
 }
 
 /** What each break scored, popping up where it broke and fading (愤怒小鸟's numbers). */
-function popsPicture(s) {
+export function popsPicture(s) {
   const now = s.world.t ?? 0;
   return (s.world.broke ?? []).filter((b) => now - b.t < 1100).map((b) => {
     const age = now - b.t, k = Math.min(1, age / 160), pop = calm(s) ? 1 : k < 1 ? 0.4 + 0.9 * Math.sin((k * Math.PI) / 1.25) : 1;
@@ -1267,7 +1267,7 @@ function lineOf(s, t, lang) {
 }
 
 /** The sound's toggle (juice.js keeps it, per browser): never a game verb. */
-const muteBtn = (lang) => { const m = muted(); return `<button type="button" class="g-btn g-btn-quiet g-da-mute" data-da-mute="" data-lang="${lang}" aria-pressed="${m}">${muteLabel(m, lang)}</button>`; };
+export const muteBtn = (lang) => { const m = muted(); return `<button type="button" class="g-btn g-btn-quiet g-da-mute" data-da-mute="" data-lang="${lang}" aria-pressed="${m}">${muteLabel(m, lang)}</button>`; };
 
 function controls(s, t, lang = 'zh') {
   if (s.phase === 'clear' && s.best[s.li] < 3) return `<div class="g-pair">${btn(s.li + 1 < s.levels.length ? t.next : t.last, 'data-g="next"', 'main')}${btn(t.again, 'data-g="retry"', 'soft')}</div>`;
@@ -1308,7 +1308,7 @@ function trayPicture(s, t, lang) {
 const WORLDS = new Map();
 const esc = (v) => String(v).replace(/[&"<>]/g, (c) => `&#${c.charCodeAt(0)};`);
 
-function watch(seed, world) {
+export function watch(seed, world) {
   if (typeof requestAnimationFrame !== 'function') return;
   WORLDS.set(String(seed), world);
   if (!watch.on) { watch.on = true; requestAnimationFrame(paintFrame); }

@@ -44,6 +44,8 @@ OLD_CHINA = 'Set in old rural China (Ming dynasty dress), not Japanese, not West
 BRUSH = ('Painted like Xu Beihong\'s ink horses: the body laid in a few broad wet strokes of ink wash with soft bleeding edges, '
          'dry flying-white brush for the legs and antlers, no fine outline drawing, no fur texture, no illustration.')
 BRUSHED = set()  # pieces whose kept seed was painted with the BRUSH line
+# Extra style references for a Codex piece (art/-relative): a pose painted after the first carries the first.
+REFS = {k: ['games/zhazhai/weasel-idle.webp'] for k in ('zhazhai/weasel-taunt', 'zhazhai/weasel-worried', 'zhazhai/weasel-poof')}
 
 # "<game>/<piece>": (kind, out size (w, h) after keying/trim, paint size (w, h), kept seed, subject)
 #   kind 'sprite' = keyed to alpha and trimmed to its ink; 'pose' = keyed, kept on its whole canvas (a creature's poses
@@ -234,6 +236,45 @@ SUBJECTS = {
     'across the bottom middle, a tall dense stand of reeds at the RIGHT edge in dark ink, a thin mist over the water and a pale '
     'moon behind cloud high at the top. Quiet, dim, no animals, no people.'),
 
+  # ── 砸寨 (row zhazhai, the 游戏厅's 愤怒小鸟 mechanics; Hanli 10-19: 「用小妖, 黄鼠狼精寨子」): the 黄鼠狼精 who stole
+  # the village's chickens and grain, hiding in a fort of logs, planks, tiles and stone. Q-style but house ink: cute,
+  # expressive, never a copy of any game's characters. Painted with Codex (`--codex`); a pose after the first is
+  # painted with the first as its reference too (REFS), so the four read as one weasel.
+  'zhazhai/weasel-idle': ('sprite', (360, 360), (1024, 1024), 1,
+    'ONE cute chubby little yellow weasel spirit (a huang shu lang jing, a mischievous mountain imp), chibi proportions: a big '
+    'round head, a small plump pear-shaped body sitting upright on its haunches, tiny paws, a long bushy tail curling up '
+    'behind it, facing LEFT, three-quarter view. A sly smug grin showing one small tooth, one eye half-closed in a smirk, '
+    'small round ears, a few whiskers, a white muzzle and belly, a tiny faded red cloth bandana knotted on its head like a '
+    'little bandit. Warm ochre-yellow ink wash for the fur, white left for the belly, confident dark ink line, round dark eyes.'),
+  'zhazhai/weasel-taunt': ('sprite', (360, 360), (1024, 1024), 1,
+    'The SAME cute chubby little yellow weasel spirit as the reference (same red bandana, same round head and plump body, '
+    'same bushy tail), facing LEFT, mocking: sticking its little pink tongue out, one paw pulling down an eyelid, the other '
+    'paw on its hip, tail waving high, cheeky and rude. Warm ochre-yellow ink wash, white belly, dark ink line.'),
+  'zhazhai/weasel-worried': ('sprite', (360, 360), (1024, 1024), 1,
+    'The SAME cute chubby little yellow weasel spirit as the reference (same red bandana, same round head and plump body, '
+    'same bushy tail), facing LEFT, frightened: eyes wide and round with tiny pupils, ears flat back, mouth a wobbly little '
+    'line, a drop of sweat flying off its brow, hugging its own fluffy tail in front of its belly with both paws, fur '
+    'bristling. Warm ochre-yellow ink wash, white belly, dark ink line.'),
+  'zhazhai/weasel-poof': ('sprite', (360, 360), (1024, 1024), 1,
+    'A round cartoon puff of grey-black ink smoke bursting out, a soft cloud of a few curling swirls with bleeding wash '
+    'edges, and caught in it: two small tufts of yellow fur and a tiny faded red cloth bandana fluttering out of the smoke, '
+    'a few ink droplets flung around. No animal body, only the smoke, the tufts and the bandana.'),
+  'zhazhai/plank': ('sprite', (480, 90), (1536, 288), 1,
+    'ONE long rough wooden plank lying perfectly horizontal across the picture, sawn flat, its grain running along it, two '
+    'dark iron nails and a split at one end, weathered grey-brown. Brown-grey ink wash and dark ink line.'),
+  'zhazhai/slab': ('sprite', (480, 120), (1536, 384), 1,
+    'ONE long flat dressed stone slab lying perfectly horizontal, a heavy rectangular block of grey granite with chiselled '
+    'square edges, a few cracks and a fleck of moss, seen from the side. Grey ink wash with dark ink outline, cun texture strokes.'),
+  'zhazhai/block': ('sprite', (300, 300), (1024, 1024), 1,
+    'ONE square cut block of grey stone, a heavy cube of dressed granite seen straight from the side, chiselled square edges, '
+    'a crack across one corner and a little moss. Grey ink wash with dark ink outline, cun texture strokes.'),
+  'zhazhai/hill': ('vignette', (960, 600), (1536, 960), 1,
+    'ONE single continuous picture: a bare mountain hollow at dusk seen from the side like a stage. The lower fifth of the '
+    'picture is flat bare earth ground running straight across the whole width, with a few pebbles and dry grass tufts and two '
+    'or three scattered chicken feathers; at the far RIGHT the ground rises a little into a low grassy rock ledge. Behind: '
+    'misty layered mountain peaks in pale grey wash, an old pine leaning in from the right edge, a pale evening sky. The middle '
+    'and left of the ground are EMPTY and open. No buildings, no walls, no animals, no people.'),
+
   'sneeze/stage': ('sprite', (960, 160), (1536, 256), 3,
     'The front edge of a low stone fighting platform seen from the side, a long horizontal strip of big grey dressed stone '
     'blocks running across the whole width, its top edge flat, a few cracks and moss. Grey ink wash and dark ink.'),
@@ -333,7 +374,7 @@ def paint_flux(png, subject, kind, paint_size, seed):
   return None if r.returncode == 0 and png.exists() else (r.stdout.strip()[-200:] or r.stderr.strip()[-200:] or 'no picture')
 
 
-def paint_codex(png, subject, kind, paint_size, model='gpt-6.1-sol'):
+def paint_codex(png, subject, kind, paint_size, model='gpt-6.1-sol', extra=()):
   aspect = 'portrait' if paint_size[1] > paint_size[0] else 'landscape' if paint_size[0] > paint_size[1] else 'square'
   alone = ALONE if kind != 'vignette' else ''
   ref = ART / 'creatures/qiuyu.webp'
@@ -341,11 +382,18 @@ def paint_codex(png, subject, kind, paint_size, model='gpt-6.1-sol'):
     from PIL import Image
     refpng = Path(d) / 'ref.png'
     Image.open(ref).convert('RGB').save(refpng)
+    refs = ['-i', str(refpng)]
+    for i, e in enumerate(extra):  # a piece's own references (REFS): the character it must stay
+      p = Path(d) / f'ref{i + 1}.png'
+      Image.open(ART / e).convert('RGBA').save(p)
+      refs += ['-i', str(p)]
     name = 'piece.png'
+    also = (' The other attached image(s) show the CHARACTER this picture must keep (the same creature, its markings and dress).'
+            if extra else '')
     prompt = (f'Use your image generation tool to make ONE new image in {aspect} orientation, then save it in the current directory '
-              f'as {name}. The attached image is a STYLE reference only — do not copy its subject. Subject: {subject} {alone} '
+              f'as {name}. The first attached image is a STYLE reference only — do not copy its subject.{also} Subject: {subject} {alone} '
               f'{OLD_CHINA} Style: {STYLE} Reply with the saved file path only.')
-    subprocess.run(['codex', 'exec', '-m', model, '--skip-git-repo-check', '-s', 'workspace-write', '-i', str(refpng), '--', prompt],
+    subprocess.run(['codex', 'exec', '-m', model, '--skip-git-repo-check', '-s', 'workspace-write', *refs, '--', prompt],
                    cwd=d, capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=900)
     if not (Path(d) / name).exists():
       return 'codex: no picture'
@@ -386,7 +434,7 @@ def main():
         continue
       png = Path(tempfile.gettempdir()) / f'paint-games-{key.replace("/", "-")}-{seed}.png'
       said = f'{subject} {BRUSH}' if a.brush or key in BRUSHED else subject
-      err = paint_codex(png, said, kind, paint_size) if a.codex else paint_flux(png, said, kind, paint_size, seed)
+      err = paint_codex(png, said, kind, paint_size, extra=REFS.get(key, ())) if a.codex else paint_flux(png, said, kind, paint_size, seed)
       if err:
         print(f'{key} s{seed}: failed: {err}', flush=True)
         continue
