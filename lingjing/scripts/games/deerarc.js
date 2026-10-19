@@ -270,11 +270,14 @@ export function shoot(world, aim, proj = ARROW) {
   // A stone, a log, a pot by the stream (`real`): a body that strikes, bounces and rolls with the rest.
   const real = Boolean(proj.real && world.real);
   const body = real ? realBody(proj) : Bodies.rectangle(BOW[0], BOW[1], Math.max(4, proj.half * 2), 2, { collisionFilter: NONE, frictionAir: proj.drag, density: 0.001 });
+  // A thing thrown by hand leaves from the hand, where it was held (an arrow leaves the bow).
+  const from = proj.shape !== 'arrow' && aim.hand ? aim.hand : BOW;
+  if (from !== BOW) Body.setPosition(body, { x: from[0], y: from[1] });
   Composite.add(world.engine.world, body);
   cue(world, 'twang', BOW, Math.max(0.3, aim.p ?? 0.6), { proj: proj.id });
   Body.setAngle(body, Math.atan2(v.y, v.x));
   Body.setVelocity(body, v);
-  world.arrow = { body, proj, real, dir: [v.x / sp, v.y / sp], true: true, path: [[BOW[0], BOW[1]]], tip: tipOf(body, proj.half), steps: 0 };
+  world.arrow = { body, proj, real, dir: [v.x / sp, v.y / sp], true: true, path: [[from[0], from[1]]], tip: tipOf(body, proj.half), steps: 0 };
   return world;
 }
 
@@ -1074,8 +1077,8 @@ export function arrowShape(art, cx = 0, spent = false) {
 function guidePicture(s) {
   if (s.phase !== 'aim' || !s.pull || s.pull.p < MIN_POWER || s.used > 0 || s.trail) return '';
   const v = velocityOf(s.pull), g = GRAVITY * 0.001 * STEP_MS * STEP_MS, dots = [];
-  const r0 = s.art?.marks?.dot ?? 2.4;
-  for (let k = 4; k <= 40; k += 4) dots.push(`<circle class="g-da-guide" cx="${n(BOW[0] + v.x * k)}" cy="${n(BOW[1] + v.y * k + 0.5 * g * k * k)}" r="${n(r0 * (1 - k / 80))}"/>`);
+  const r0 = s.art?.marks?.dot ?? 2.4, o = projectileOf(s.kit, s.pick).shape !== 'arrow' && s.pull.hand ? s.pull.hand : BOW;
+  for (let k = 4; k <= 40; k += 4) dots.push(`<circle class="g-da-guide" cx="${n(o[0] + v.x * k)}" cy="${n(o[1] + v.y * k + 0.5 * g * k * k)}" r="${n(r0 * (1 - k / 80))}"/>`);
   return dots.join('');
 }
 
