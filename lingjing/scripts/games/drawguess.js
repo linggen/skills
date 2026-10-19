@@ -187,12 +187,10 @@ export const askGuess = (who, prev, context = null) => `${headOf(context)}图上
 const sight = new Map();
 let lastWord = null; // the word just drawn on this page: never twice running
 
-// Who guesses: `data.who`, else the viewer's last pick (a per-viewer convenience), else Ling.
+// Who guesses: always 银月 (Hanli 10-19: 「让yinyue猜吧, 不要选ling或者yinyue了」); `data.who` only for tests.
 const WHO_KEY = 'lingjing.drawguess.who';
 function whoKept(data) {
-  if (GUESSERS.includes(data?.who)) return data.who;
-  try { const k = globalThis.localStorage?.getItem(WHO_KEY); if (GUESSERS.includes(k)) return k; } catch { /* no storage */ }
-  return 'ling';
+  return GUESSERS.includes(data?.who) ? data.who : 'yinyue';
 }
 function keepWho(who) { try { globalThis.localStorage?.setItem(WHO_KEY, who); } catch { /* no storage */ } }
 
@@ -242,7 +240,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   // look is spent (`data.open`), the round may say where it is (`data.context`), a 测试存档 never
   // calls her (`data.seam`: 'stub' answers on the page, 'off' not at all), the rules may hand the
   // word as the round begins (`data.begin()`), and a 家信 (`data.set`) is several lines in a row.
-  const fixed = Boolean(data.fixed);
+  const fixed = true; // no 猜者 picker: she always guesses (story or 游戏厅)
   const max = Math.max(1, Number(data.maxLooks) || MAX_LOOKS);
   const ctxLine = typeof data.context === 'string' ? data.context : null;
   const root = doc.createElement('div');
