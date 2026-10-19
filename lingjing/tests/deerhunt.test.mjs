@@ -217,6 +217,16 @@ test('a press mid-flight is refused (the same state: the page rings its refusal)
   assert.equal(r.state, s);
 });
 
+test('the wind word at his back says 顺风 (a key once shadowed by the deer\'s return line)', () => {
+  const back = { ...STORY, wind: { first: 'gust', gust: [9000, 9000], lull: [1000, 1000], strength: [1, 1], dirs: [-1] } };
+  let s = dh.newGame('b', 1, { levels: [back], still: true });
+  for (let i = 0; i < 100; i++) s = dh.tick(s, 10);
+  assert.match(dh.html(s, 'zh'), /大风 · 顺风/);
+  s = { ...s, deer: { ...s.deer, mode: 'back', x: 20, to: 140, lift: 1 } };
+  assert.match(dh.html(s, 'zh'), /它回来了/);
+  assert.match(dh.html(s, 'zh'), /大风 · 顺风/);
+});
+
 test('stars: heart · first arrow · calm; grades clean · steady · rough as deerarc\'s', () => {
   assert.equal(dh.starsFor({ heart: true, shots: 1, spooks: 0 }), 3);
   assert.equal(dh.starsFor({ heart: true, shots: 2, spooks: 0 }), 2);

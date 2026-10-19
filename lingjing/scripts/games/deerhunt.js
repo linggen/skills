@@ -53,7 +53,7 @@ const T = {
     near: '箭落在它跟前——它一惊，跳进了芦苇。等它回来。', graze: '擦着鹿角过去了。它一惊，跑了。等它回来。',
     haunch: '箭擦过后胯，没吃住——它一惊，跑了。等它回来。',
     jumped: '它正抬着头，弦一响，它先跳开了。等它低头再放。', far: '它抬起头，听了一会儿。',
-    away: '溪边空了。等它回来……', back: '它回来了，还在张望。',
+    away: '溪边空了。等它回来……', returned: '它回来了，还在张望。',
     next: '下一处', again: '再来这一处', clear: '这一处：',
     end: '那头鹿，倒下了。', stars: '共得 {s} 星。', empty: '溪边没有鹿。',
   },
@@ -67,7 +67,7 @@ const T = {
     near: 'It lands at its feet — the stag bolts into the reeds. Wait for it to come back.', graze: 'It skims the antlers. The stag bolts. Wait for it.',
     haunch: 'It glances off the haunch — the stag bolts. Wait for it.',
     jumped: 'Its head was up: at the twang it leapt first. Loose when it drinks.', far: 'It lifts its head and listens a while.',
-    away: 'The stream is empty. Wait for it…', back: 'It is back, still looking round.',
+    away: 'The stream is empty. Wait for it…', returned: 'It is back, still looking round.',
     next: 'Next spot', again: 'This spot again', clear: 'This spot: ',
     end: 'The stag is down.', stars: '{s} stars in all.', empty: 'No deer by the stream.',
   },
@@ -478,7 +478,7 @@ function lineOf(s, t, lang) {
   const fresh = s.saidAt != null && s.clock - s.saidAt < 4200;
   if (said && fresh) return said;
   if (s.deer.mode === 'away' || s.deer.mode === 'bolt') return t.away;
-  if (s.deer.mode === 'back') return t.back;
+  if (s.deer.mode === 'back') return t.returned;
   return level.say?.[lang] ?? level.say?.zh ?? '';
 }
 
