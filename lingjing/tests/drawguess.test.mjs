@@ -223,3 +223,23 @@ test('the module keeps the contract and the registry places it in the 游戏厅 
   const story = reg.games.filter((g) => g.id === 'drawguess' && g.task);
   assert.deepEqual(story.map((g) => g.task), ['jiaxin-letter'], 'the story\'s 家信 is its second row (tests/drawguess-story.test.mjs)');
 });
+
+test('the 游戏厅\'s chat panel (Hanli 10-19): every look is traced — the PNG and the words sent, then the reply — and the panel only shows it', async () => {
+  const read = (p) => fs.readFileSync(new URL(`../scripts/${p}`, import.meta.url), 'utf8');
+  const { onTrace } = await import('../scripts/games/drawguess.js');
+  const heard = [], stop = onTrace((r) => heard.push(r));
+  assert.equal(typeof stop, 'function');
+  stop();
+  const src = read('games/drawguess.js');
+  // Both ways a look goes out (the opening, and every guess) log a `sent` row with the picture and the words.
+  assert.equal((src.match(/log\(\{ kind: 'sent'[^\n]*\{ png, prompt \}\)/g) ?? []).length, 2);
+  for (const kind of ['open', 'guess', 'refused', 'blind', 'far', 'error', 'begin', 'end']) assert.match(src, new RegExp(`kind: '${kind}'`), kind);
+  // The panel sends nothing and keeps nothing: no engine calls, no storage.
+  const panel = read('arcade-trace.js').replace(/^\s*\/\/.*$/gm, '');
+  assert.doesNotMatch(panel, /\/shared\/|LinggenChannel|fetch\(|localStorage/);
+  assert.match(panel, /\[image\$\{two\(n\)\}\]/, 'each look is 「@her [imageNN]」, numbered');
+  // The arcade lays it beside a game the model plays, and never stubs her: the real model only.
+  const arcade = read('arcade.js');
+  assert.match(arcade, /mod\?\.meta\?\.ai && mod\.onTrace/);
+  assert.doesNotMatch(arcade, /seam|stub/);
+});

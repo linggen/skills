@@ -90,11 +90,15 @@ async function playPage(id, n) {
   const reg = await registry();
   const row = reg.games[Number(n)]?.id === id ? reg.games[Number(n)] : reg.games.find((g) => g.id === id) ?? { id };
   const mod = await modOf(id), mount = mountOf(mod);
+  // A game the model plays (画猜) gets the chat panel beside it: what was really sent, and what came back.
+  const traced = Boolean(mount && mod?.meta?.ai && mod.onTrace);
+  const trace = traced ? await import('./arcade-trace.js') : null;
   root.innerHTML = `<header class="arcade-head"><a href="${href()}">${esc(w().back)}</a>${home()}</header>`
-    + `<article class="card gamecard scenegame arcade-play"><div class="cardtitle">${esc(titleOf(row, mod))}</div>`
+    + `<div class="${traced ? 'arcade-duo' : 'arcade-solo'}"><article class="card gamecard scenegame arcade-play"><div class="cardtitle">${esc(titleOf(row, mod))}</div>`
     + `<div class="small dim g-goal">${esc(howOf(mod))}</div><div class="arcade-slot" id="slot"></div>`
-    + `<div class="arcade-result" id="result"></div></article>`;
+    + `<div class="arcade-result" id="result"></div></article>${trace ? trace.traceHtml(lang()) : ''}</div>`;
   if (!mount) { document.getElementById('slot').textContent = w().missing; return; }
+  if (trace) trace.wireTrace(root.querySelector('.arcade-chat'), mod, lang());
   deal(mount, row);
 }
 async function deal(mount, row) {

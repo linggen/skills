@@ -207,7 +207,9 @@ async function lookFirst(doc, who, model, { open = true, seam = null, context = 
   if (named) return { blind: true, model: { id: named } };
   // In the story no opening look is spent (a look is ~8.7k tokens): the first guess says whether she can see.
   if (!open) return { blind: false, model: null };
-  const r = await askOnce({ agent: who, png: paperPng(doc, [], 32), prompt: askOpen(who, context), model });
+  const png = paperPng(doc, [], 32), prompt = askOpen(who, context);
+  log({ kind: 'sent', who, open: true }, { png, prompt });
+  const r = await askOnce({ agent: who, png, prompt, model });
   log({ kind: 'open', who, ms: r.ms, model: r.model?.id, tools: r.tools, text: r.text, refused: r.refused });
   if (r.refused) return { refused: r.refused };
   const seen = isBlindReply(r.text) ? { blind: true, model: r.model, said: r.text } : { blind: false, model: r.model, line: parseReply(r.text) };
@@ -215,12 +217,20 @@ async function lookFirst(doc, who, model, { open = true, seam = null, context = 
   return seen;
 }
 
-/** What each look cost and said, for the test page's console (and a live check's script). */
-function log(row) {
+/** What each look cost and said, for the test page's console (and a live check's script). `full`
+ *  (the picture and the words sent) goes to the tracers only — never into the console. */
+function log(row, full = null) {
   const all = (globalThis.__drawguess ??= []);
-  all.push({ at: Date.now(), ...row });
+  const at = Date.now();
+  all.push({ at, ...row });
   console.info('[drawguess]', JSON.stringify(row));
+  for (const fn of tracers) { try { fn({ at, ...row, ...full }); } catch { /* a tracer never breaks the round */ } }
 }
+// Who hears every look as it goes — the 游戏厅's side panel (arcade-trace.js): what was sent (the
+// PNG, the words) and what came back, as it happened. In the story nobody listens.
+const tracers = new Set();
+/** Hear every row; answers the way to stop. */
+export function onTrace(fn) { tracers.add(fn); return () => tracers.delete(fn); }
 
 // ── the game ───────────────────────────────────────────────────────────────────────────────
 
@@ -407,11 +417,11 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     if (data.fallback) { goBtn.textContent = w.write; goBtn.disabled = false; }
   };
   const onReply = (r) => {
-    if (r.refused) return cannot('absent', (r.refused === 'absent' && fixed ? w.asleep : w[r.refused]) ?? w.absent);
-    if (isBlindReply(r.text)) { foot(r.text); return cannot('blind', w.blind); }
+    if (r.refused) { log({ kind: 'refused', who: g.who, refused: r.refused }); return cannot('absent', (r.refused === 'absent' && fixed ? w.asleep : w[r.refused]) ?? w.absent); }
+    if (isBlindReply(r.text)) { log({ kind: 'blind', who: g.who, text: r.text }); foot(r.text); return cannot('blind', w.blind); }
     const p = parseReply(r.text);
     const ok = p.guess != null && matches(p.guess, g.word);
-    log({ kind: 'guess', who: g.who, word: g.word.zh, n: g.loop.calls, ms: r.ms, model: r.model?.id, guess: p.guess, ok, tools: r.tools, zh: p.zh, en: p.en });
+    log({ kind: 'guess', who: g.who, word: g.word.zh, n: g.loop.calls, ms: r.ms, model: r.model?.id, guess: p.guess, ok, tools: r.tools, zh: p.zh, en: p.en }, { text: r.text });
     g.note = '';
     if (p.guess) g.guesses.push(p.guess);
     sayParsed(p.zh || p.en ? p : { zh: p.guess, en: null });
@@ -445,6 +455,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
       return { text: stubReply(g.word, g.loop.calls), ms: 1200, model: { id: 'stub' }, tools: 0 };
     }
     const png = paperPng(doc, g.strokes), prompt = askGuess(g.who, g.guesses, ctxLine);
+    log({ kind: 'sent', who: g.who, word: g.word.zh, n: g.loop.calls }, { png, prompt });
     return askLing({ sid: await g.sid, agent: g.who, png, prompt, model: data.model ?? null, signal });
   };
 
@@ -475,6 +486,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
       onError,
       onSettle: () => { if (g.phase === 'closing') end(false); },
     });
+    log({ kind: 'begin', who: g.who, word: g.word.zh });
     setPhase('draw');
     g.t0 = performance.now();
     g.timer = setInterval(tick, 250);
@@ -489,6 +501,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     g.sid?.then((sid) => closeRound(sid), () => {});
     lefts();
     const word = lang === 'en' ? g.word.en : g.word.zh;
+    log({ kind: 'end', who: g.who, word: g.word.zh, won });
     const calls = g.loop?.calls ?? 0;
     // A 家信: the line is written whether she got its picture or not; then the next line, or the letter done.
     if (g.rounds) {
@@ -564,7 +577,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     g.model = s.model?.id ?? null;
     foot(modelLine());
     if (s.off) return cannot('off', w.off);
-    if (s.far) return cannot('far', w.far);
+    if (s.far) { log({ kind: 'far', who }); return cannot('far', w.far); }
     if (s.refused) return cannot('absent', s.refused === 'absent' && fixed ? w.asleep : w[s.refused]);
     if (s.blind) {
       cannot('blind', w.blind);
