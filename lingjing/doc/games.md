@@ -378,7 +378,7 @@ so the second pass made it one clear notch harder and gave every level its own l
 | 7 | 藏息 · `zhaojing-mirror` (古六) | the thinnest breath: 窄脉 the whole way (34), the mirror's light as pushes that start to turn, the thread tight (tol 6, 75%); firelight, 藏 | 窄脉 · 乱流 + 转向 · 金线 | 15/24, 5 岔气, 45 s | 游戏厅 2/4 (2–8 岔气) |
 | 8 | 随叶 · `jiuge-sui` (古七) | the 金线 is the leaf's way down, one long swing the whole level, and the wind turns under it; snow grey, 巽 | 转向乱流 · 金线 | 15/24, 6 岔气, 68 s | 游戏厅 1/4 (5–12 岔气) |
 | 9 | 定风 · `furnace-ding` (古七) | leaves spinning: the wind turns fast, a 浪头 gust, then the half step aside — a 26 关 at the end; dawn, 风 | 转向乱流 · 浪头 · 关 | 12/24, 6 岔气, 71 s | 游戏厅 1/4 (6–13 岔气) |
-| 10 | 顺风溜 · `xie-wind` (古七, the sweep) | the glide a foot off the floor (a low channel), the north wind turning three times, faster each, 墙根 a 26 关; slate green, 溜 | 转向乱流 · 关 · 金线 | 15/24, 6 岔气, 51 s | — |
+| 10 | 顺风溜 · `xie-wind` (古七, the sweep; Hanli on the old board: 「这个也不好玩」) | the glide a foot off the floor (a low channel, 窄 34), the north wind turning three times, faster each; the three 「噗」 (逆风, the gills only puff) are 关 to thread with the wind at his back, 墙根 the last; slate green, 溜 | 转向乱流 · 关 ×4 · 金线 | 19/24, 11 岔气, 72 s | — |
 | 11 | 黑地十一步 · `jin-dark` (今三) | dark switchbacks — sharp bends seen only in a small round, his panic beating in the second dark; slate, 黑 | 暗 · 窄 · 心跳 | 5/24, 7 岔气, 55 s | 0/4 (7–11 岔气) |
 | 12 | 最后一罚 · `jin-lastshot` (今四) | all 今线 taught, faster (104): two hearts out of time, a 浪头, a turning push, the thread to shoot on (tol 6, 75%); red, 惧 | 心跳 · 浪头 · 转向 · 金线 | 4/24, 8 岔气, 56 s | 0/4 (9–15 岔气) |
 | 13 | 冲脉 (试作) | straight up and down the body: steep zigzags, two 浪头, turning currents, two 关 | everything but 暗 | 2/24 | — |
