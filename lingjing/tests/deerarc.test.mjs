@@ -33,9 +33,15 @@ function shot(level, aim, { step = 10, at = 0, limit = 8000 } = {}) {
   return { s, released };
 }
 
-test('the levels are the registry\'s: still · wind · walking · reeds and a branch, then the smash three; separate from the story\'s 射鹿', () => {
-  assert.deepEqual(LEVELS.map((l) => l.id), ['still', 'wind', 'walk', 'reeds', 'pile', 'rack', 'yard']);
-  assert.deepEqual(LEVELS.filter((l) => l.smash).map((l) => l.id), ['pile', 'rack', 'yard']);
+const FORTS = ['shed', 'baskets', 'deadtree', 'camp', 'ice', 'wall', 'pine', 'temple'];
+test('the levels are the registry\'s: still · wind · walking · reeds and a branch, then the eight forts; the story deals 静 · 风', () => {
+  assert.deepEqual(LEVELS.map((l) => l.id), ['still', 'wind', 'walk', 'reeds', ...FORTS]);
+  assert.deepEqual(LEVELS.filter((l) => l.smash).map((l) => l.id), FORTS);
+  assert.deepEqual(LEVELS.filter((l) => l.story).map((l) => l.id), ['still', 'wind']);
+  for (const l of LEVELS.filter((x) => x.smash)) {
+    assert.ok(l.ammo.length >= 2 && l.ammo.length <= 4, `${l.id}: a small deliberate set`);
+    assert.ok(l.quiver >= 3 && l.quiver <= 5, `${l.id}: 3–5 throws`);
+  }
   assert.ok(LEVELS.filter((l) => l.smash).every((l) => !l.story), 'the smash levels are the 游戏厅\'s');
   // The story's 射鹿 plays this board since 2026-10-16 (Hanli: 「好像还不错」 — go).
   assert.equal(GAME.task, 'deer-wind');
@@ -46,6 +52,8 @@ test('the levels are the registry\'s: still · wind · walking · reeds and a br
   for (const l of LEVELS) assert.ok(l.say?.zh && l.say?.en, `${l.id} says what to do in both languages`);
   assert.ok(byId('wind').wind > 0 && byId('wind').hint, 'the wind level hints 「往左偏半寸」');
   assert.ok(byId('walk').deer.walk);
+  // 风 (the story's second spot) has a clump of reeds in the line (Hanli 10-19: 「难度比较低」): stiff, they turn an arrow.
+  assert.ok(byId('wind').things.filter((t) => t.kind === 'reed').every((t) => t.breaks >= 99));
   assert.ok(byId('reeds').things.some((t) => t.kind === 'reed') && byId('reeds').things.some((t) => t.kind === 'branch'));
 });
 
@@ -192,12 +200,18 @@ test('a miss: the next arrow is on the string at once, the spent one stays stuck
   // The guide follows every draw, not just the first (Hanli 10-19: 「第二次拉弓, 轨迹虚线就不变化了」).
   const dotAt = (a) => da.html({ ...s, pull: { a, p: 0.5 } }, 'zh').match(/class="g-da-guide" cx="[-\d.]+" cy="[-\d.]+"/g)?.at(-1);
   assert.ok(dotAt(30) && dotAt(10) && dotAt(30) !== dotAt(10), 'the second draw\'s guide moves with the aim');
+  // Hanli 10-19 「轨迹不变」: the live guide follows the pull on every throw; the last trail stays, fainter.
+  const pulled = da.html({ ...s, pull: { a: 30, p: 0.5 } }, 'zh'), pulled2 = da.html({ ...s, pull: { a: 50, p: 0.9 } }, 'zh');
+  assert.match(pulled, /g-da-guide/, 'the arc hint on the second arrow too');
+  assert.notEqual(pulled.match(/g-da-guide" cx="[\d.]+" cy="[\d.]+"/g).join(), pulled2.match(/g-da-guide" cx="[\d.]+" cy="[\d.]+"/g).join(), 'it moves with the pull');
+  assert.match(pulled, /is-faint/, 'the last trail under it, fainter');
+  assert.doesNotMatch(da.html(s, 'zh'), /is-faint/, 'not pulling: the trail at full');
   const fresh = da.act(da.newGame('t', 1, { levels: [still] }), { g: 'draw', a: 30, p: 0.5 }).state;
   assert.match(da.html(fresh, 'zh'), /g-da-guide/);
 });
 
 test('the wind level\'s miss brings 银月\'s 「往左偏半寸」 and the tick left of the deer', () => {
-  const wind = byId('wind'), aim = find(wind, (f) => !f.hit && f.end === 'ground');
+  const wind = byId('wind'), aim = find(wind, (f) => !f.hit && f.end === 'ground' && Math.abs(f.tip[0] - wind.deer.x) > 60);
   let { s } = shot(wind, aim);
   s = { ...s, said: null };
   assert.match(da.html(s, 'zh'), /往左偏半寸/);
@@ -263,7 +277,7 @@ test('stars: one arrow 3, two 2, more 1; the whole by the board bot: won, three 
   const r = playOnce(da, bot, { seed: 'bot-1', deal: { levels: LEVELS, projectiles: PROJ } });
   assert.equal(r.won, true);
   assert.equal(r.grade, 'clean');
-  assert.ok(r.ms < 90000, `${r.ms} ms`);
+  assert.ok(r.ms < 150000, `${r.ms} ms`); // twelve spots, the forts waiting out their dust
 });
 
 test('drawn in both languages: the scene takes the drag, 重来, stars that pop; the end; no levels draws a quiet card', () => {
@@ -277,7 +291,7 @@ test('drawn in both languages: the scene takes the drag, 重来, stars that pop;
   assert.match(da.html(clear, 'zh'), /g-da-pop/);
   assert.match(da.html(clear, 'zh'), /data-g="next"/);
   const end = { ...s, phase: 'end', won: true, live: false, stars: 3 };
-  assert.match(da.html(end, 'zh'), /溪边七处，都拿下了/, 'seven spots, three of them smashed: never 「都射中了」');
+  assert.match(da.html(end, 'zh'), /溪边十二处，都拿下了/, 'twelve spots, eight of them forts: never 「都射中了」');
   assert.doesNotMatch(da.html(end, 'zh'), /都射中了/);
   assert.match(da.html(end, 'en'), /3 stars/);
   assert.equal(da.newGame('t', 1, {}).live, false);
@@ -451,4 +465,14 @@ test('a slingshot about the bow, wherever the press began: the hand below-right 
   assert.ok(s.pull.a > 10, `the hand below the bow aims up (${s.pull.a})`);
   s = da.act(s, { g: 'move', x: da.BOW[0] + 90, y: da.BOW[1] - 40 }).state;
   assert.ok(s.pull.a < 0, `the hand above the bow aims down (${s.pull.a})`);
+});
+
+test('风: the reeds in the line turn a flat arrow; an arrow lobbed over them still finds the deer in every rolled wind', () => {
+  const wind = byId('wind');
+  const flat = da.flight({ ...wind, wind: 0.6 }, { a: 2, p: 0.9 });
+  assert.equal(flat.end, 'turned', 'straight at it: into the reeds');
+  for (let k = 0; k < da.QUIVER; k++) {
+    const w = da.rollWind(wind, 'a', 1, k), aim = solve({ ...wind, wind: w }, 700);
+    assert.ok(aim && aim.a > 8, `wind ${w}: a lob over the reeds (${aim?.a}°)`);
+  }
 });

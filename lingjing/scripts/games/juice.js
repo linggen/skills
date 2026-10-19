@@ -5,7 +5,8 @@
 //   particles  painted pieces (games.json `art`: specks · dust · chip · straw · grass · splash · leaf)
 //              thrown from where a thing broke, an arrow struck or the stag bolted, on a canvas laid
 //              over the scene (one per board, kept by the repaint: morph leaves a canvas alone);
-//   camera     in flight the view leans in after the arrow and eases back when it lands;
+//   camera     in flight the view leans in after the arrow and eases back when it lands; after a big
+//              collapse it pans over the wreck a moment (smash.js `aftermath`'s cue);
 //   shake      a short damped shake on a heart hit and a big collapse;
 //   sound      CC0 clips (worlds/jiuding/sound/deer, CREDITS.md), behind a mute remembered per browser.
 // Reduced motion: no camera, no shake, no particles; the sound stays (it is behind its own toggle).
@@ -97,6 +98,8 @@ const LOOKS = {
   bolt: { s: ['bolt', 0.9], p: [['grass', 4, 12, 1.4, 1.6, 0.12, 700], ['dust', 3, 26, 0.6, 0.4, 0.01, 800]] },
   chime: { s: ['chime', 0.7] },
   pop: { s: ['pop', 0.6] },
+  // A big collapse (smash.js `aftermath`): the logs' rumble, a shake, and the camera goes to look.
+  collapse: { s: ['logs', 0.9], p: [['dust', 5, 34, 0.7, 0.5, 0.01, 1100]], shake: 3, pan: 1300 },
 };
 
 /* ── The per-board state (keyed by the world: a new level is a new world) ─────────────────── */
@@ -137,6 +140,7 @@ function hear(f, w, calm) {
     play(look.s[0], vol, 0.92 + rnd() * 0.16);
     if (look.also) setTimeout(() => play(look.also[0], look.also[1]), look.also[2]);
     if (calm) continue;
+    if (look.pan) f.pan = { x: c.at[0], y: c.at[1], until: performance.now() + look.pan };
     for (const p of look.p ?? []) spawn(f, w.art, c, p);
     if (look.shake) f.shake = Math.max(f.shake, look.shake * (c.big ? 1.4 : 1) * (0.5 + 0.5 * (c.p ?? 1)));
   }
@@ -146,8 +150,11 @@ function hear(f, w, calm) {
     otherwise it eases home. A pure function of what it was and where the arrow is. */
 function steer(f, w, dt) {
   const ar = w.arrow, fly = ar && !ar.done && w.phase === 'fly';
-  const goal = fly ? { x: Math.max(W / 2 / 1.22, Math.min(W - W / 2 / 1.22, ar.body.position.x - 30)), y: Math.max(H / 2 / 1.22, Math.min(H - H / 2 / 1.22, ar.body.position.y + 10)), z: 1.22 } : { x: W / 2, y: H / 2, z: 1 };
-  const k = 1 - Math.exp(-dt / (fly ? 260 : 420));
+  const clampTo = (x, y, z) => ({ x: Math.max(W / 2 / z, Math.min(W - W / 2 / z, x)), y: Math.max(H / 2 / z, Math.min(H - H / 2 / z, y)), z });
+  // After a big collapse the camera looks over the wreck a moment (unless he has the next throw away).
+  const pan = !fly && f.pan && performance.now() < f.pan.until;
+  const goal = fly ? clampTo(ar.body.position.x - 30, ar.body.position.y + 10, 1.22) : pan ? clampTo(f.pan.x, f.pan.y - 10, 1.16) : { x: W / 2, y: H / 2, z: 1 };
+  const k = 1 - Math.exp(-dt / (fly ? 260 : pan ? 340 : 420));
   f.cam.x += (goal.x - f.cam.x) * k;
   f.cam.y += (goal.y - f.cam.y) * k;
   f.cam.z += (goal.z - f.cam.z) * k;

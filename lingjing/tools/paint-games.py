@@ -46,7 +46,8 @@ BRUSH = ('Painted like Xu Beihong\'s ink horses: the body laid in a few broad we
 BRUSHED = set()  # pieces whose kept seed was painted with the BRUSH line
 
 # "<game>/<piece>": (kind, out size (w, h) after keying/trim, paint size (w, h), kept seed, subject)
-#   kind 'sprite' = keyed to alpha and trimmed to its ink; 'pose' = keyed, kept on its whole canvas (a creature's poses
+#   kind 'sprite' = keyed to alpha and trimmed to its ink; 'solid' = a sprite whose body is paler than the paper (ice):
+#   all its outline holds is filled, in the painted colours; 'pose' = keyed, kept on its whole canvas (a creature's poses
 #   share one scale and ground line); 'vignette' = kept whole, on its paper.
 SUBJECTS = {
   # ── 射鹿 (00-deer): 「低着头在喝水，头上的角像一丛冬天的枯树枝」. Facing RIGHT; the hunter is to the left.
@@ -154,6 +155,48 @@ SUBJECTS = {
   'deer/talisman': ('sprite', (160, 240), (512, 768), 2,
     'ONE Taoist paper talisman, a narrow upright strip of yellow paper with a few loose red brush marks down it like '
     'a thunder charm, curling slightly at the bottom. Muted yellow ochre wash, cinnabar red strokes, no readable characters.'),
+  # 射鹿's forts (Hanli 10-19: 「游戏里面没有箱子可以砸碎, 或者树等障碍, 难度比较低」): what 卷一's hunting country has to
+  # hide a stag behind — a woodshed's crates, a hunter's baskets, a stone wall, the 山神庙's beams and door, the
+  # pines of 黑松岭, a dead tree, a bush. Each is laid on a body of its own shape (stretched to it), so each is
+  # painted in its body's proportions.
+  'deer/crate': ('sprite', (360, 320), (896, 768), 2,
+    'ONE old square wooden crate seen straight from the side, made of rough planks nailed across, two darker cross battens, '
+    'a split in one board, iron nail heads. Brown-grey ink wash and dark ink line, the planks clearly separate.'),
+  'deer/basket': ('sprite', (320, 260), (896, 768), 2,
+    'ONE round open bamboo basket (a zhu kuang) seen from the side, woven of split bamboo strips in a criss-cross weave, a '
+    'wide open mouth, a rim bound with cane. Pale muted straw-yellow wash and fine dark ink for the weave.'),
+  'deer/beiluo': ('sprite', (240, 360), (640, 1024), 2,
+    'ONE tall Chinese back basket (a bei lou) standing upright, seen from the side, woven of split bamboo, wider at the mouth '
+    'and narrow at the foot, two rope shoulder straps. Pale muted straw-yellow wash and fine dark ink for the weave.'),
+  'deer/block': ('sprite', (360, 240), (1024, 704), 1,
+    'ONE rough squared block of grey mountain stone, a building stone for a wall, seen from the side, flat top and bottom, '
+    'chipped corners, a crack, a patch of moss. Grey ink wash with dark ink outline and cun texture strokes.'),
+  'deer/ice': ('solid', (360, 240), (1024, 704), 2,
+    'ONE thick slab of clear river ice cut from a frozen stream, a rough rectangular block seen from the side, pale blue-grey '
+    'translucent wash, white cracks inside it, a frosted edge. Pale ink line, mostly empty pale wash.'),
+  'deer/beam': ('sprite', (720, 80), (1536, 256), 2,
+    'ONE long old square wooden roof beam lying perfectly horizontal across the picture, dark weathered timber, a mortise '
+    'notch at each end, a few cracks along the grain, traces of faded red lacquer. Brown ink wash and dark ink line.'),
+  'deer/post': ('sprite', (110, 560), (512, 1280), 2,
+    'ONE single round wooden pillar of an old shrine standing perfectly upright, faded and peeling red lacquer over grey wood, '
+    'a cracked stone base under it. Muted red-brown wash and dark ink line.'),
+  'deer/door': ('sprite', (260, 480), (640, 1152), 2,
+    'ONE single leaf of an old weathered wooden shrine door standing upright, seen straight on, vertical planks held by three '
+    'cross battens, rows of round iron studs, a ring handle, faded red paint flaking off grey wood. Ink line and muted wash.'),
+  'deer/trunk': ('sprite', (140, 720), (512, 1536), 1,
+    'A tall narrow vertical COLUMN of rough pine bark filling the picture from top to bottom: only the bare straight trunk of '
+    'an old black pine, as thick as a man, thick scaly plates of dark bark, a knot, the top cut off straight by the edge of the '
+    'picture and the bottom cut off straight too. NO tree crown, NO branches, NO needles, NO roots, no sky. Dark ink and grey wash.'),
+  'deer/bough': ('sprite', (640, 220), (1536, 512), 1,
+    'ONE long horizontal bough of a black pine reaching from the LEFT edge to the right, a dark crooked branch with dense '
+    'clusters of dark green-black pine needles along its top, painted in the old Chinese way with radiating needle strokes. '
+    'Dark ink and muted green-grey wash.'),
+  'deer/deadtree': ('sprite', (220, 720), (640, 1536), 2,
+    'ONE tall dead tree standing upright, a bare grey trunk split by lightning near the top, two or three short broken bare '
+    'branches, no leaves, roots at the bottom. Dry grey ink and flying-white brush.'),
+  'deer/bush': ('sprite', (400, 260), (1024, 704), 1,
+    'ONE low round wild thorny shrub, a dense tangle of thin twigs and small dark leaves, wider than it is tall, sitting on '
+    'nothing. Muted green-grey and ochre wash with dark ink twigs.'),
 
   # ── 喂饼 (00-cave/00-fox, the 割绳子 puzzle): the 饼 swings on vines in the cave to the fox.
   'bread/cave': ('vignette', (720, 880), (720, 880), 2,
@@ -229,6 +272,13 @@ SUBJECTS = {
     'short curved horns lowered at the left, a long scaly snake tail curling behind it at the right, and on its flank a pair of '
     'bat-like wings half raised, thin dark membranes. Grey-green and muddy ink wash, a touch of dull pink only where the wing '
     'meets the body. Brambles twined round its hind legs.'),
+  # The same 鯥 with its wings FOLDED flat along its back (Hanli 10-19: 「翅膀也不张开」): an edit pass from lu.webp on
+  # the same canvas, so the board cross-fades folded → spread as it breathes in.
+  'lu/lu-folded': ('pose', (640, 480), (1024, 768), 2,
+    'The SAME beast in the SAME place, size and pose, facing LEFT, ox head with short curved horns lowered at the left, scaly '
+    'snake tail at the right, brambles round its hind legs. On its back a pair of leathery bat wings FOLDED SHUT and tucked '
+    'tight along its spine like a closed umbrella, lying low and flat on the back, no membrane spread, nothing raised above the '
+    'back, no pink. Grey-green and muddy ink wash.', 'games/lu/lu.webp', [0.4, 0.0, 0.89, 0.425]),
   'lu/shoal': ('vignette', (960, 600), (1536, 960), 1,
     'A river shoal at night, a wide picture: dark slow water of a broad river across the left and the back, a flat grey mud shoal '
     'across the bottom middle, a tall dense stand of reeds at the RIGHT edge in dark ink, a thin mist over the water and a pale '
@@ -295,6 +345,11 @@ for i in range(1, n_):
     # and a pinhole always fills
     if stats[i, cv2.CC_STAT_AREA] <= h * w * 0.0006 or float(d[here].mean()) > 0.035:
         big[here] = 1
+if mode == 'solid':  # a pale body (ice) lighter than the paper: all within its ink's hull is it, in its painted colours
+    ys_, xs_ = np.where(m > 0)
+    hull = cv2.convexHull(np.stack([xs_, ys_], axis=1).astype(np.int32))
+    big = np.zeros_like(holes)
+    cv2.fillPoly(big, [hull], 1)
 solid = cv2.GaussianBlur(((m | big) * 255).astype(np.uint8), (5, 5), 0).astype(np.float32) / 255.0
 alpha = np.maximum(alpha, solid * 0.97)
 # un-mix the paper: what composited over the paper gives back the picture
@@ -304,6 +359,8 @@ rgb = np.clip((a - paper * (1 - A)) / A, 0, 1)
 # and never lighter than the paper (a body lighter than the page reads as a white cut-out).
 warm = 1 - 0.55 * (1 - paper / paper.max())
 rgb = np.minimum(rgb * warm, paper * 1.0)
+if mode == 'solid':
+    rgb = np.where(solid[..., None] > 0.5, a * 0.97, rgb)
 rgba = np.dstack([rgb, alpha])
 out = Image.fromarray((rgba * 255).astype(np.uint8), 'RGBA')
 if mode == 'pose':  # one canvas for every pose of a creature: not trimmed, so they share a scale and a ground line
@@ -324,10 +381,32 @@ out.save(dst, quality=74, alpha_quality=55, method=6, exact=False)
   return r.returncode == 0 or print(r.stderr[-400:])
 
 
-def paint_flux(png, subject, kind, paint_size, seed):
+def flat_reference(ref, paint_size, erase=None):
+  """A kept piece (keyed, with alpha) laid back on the house paper at the paint size: FLUX's edit reference.
+  `erase` [x0, y0, x1, y1] (fractions of the piece) is cleared first: what the edit is to paint anew."""
+  from PIL import Image
+  im = Image.open(ref).convert('RGBA')
+  if erase:
+    alpha = im.getchannel('A')
+    a, (W, H) = alpha.load(), im.size
+    for y in range(int(erase[1] * H), int(erase[3] * H)):
+      for x in range(int(erase[0] * W), int(erase[2] * W)):
+        a[x, y] = 0
+    im.putalpha(alpha)
+  im = im.resize(paint_size, Image.LANCZOS)
+  paper = Image.new('RGBA', paint_size, (236, 226, 204, 255))
+  paper.alpha_composite(im)
+  out = Path(tempfile.gettempdir()) / f'paint-games-ref-{Path(ref).stem}.png'
+  paper.convert('RGB').save(out)
+  return out
+
+
+def paint_flux(png, subject, kind, paint_size, seed, reference=None, erase=None):
   alone = ALONE if kind != 'vignette' else ''
   req = {'model': MODEL, 'prompt': f'{subject} {alone} {OLD_CHINA} Style: {STYLE}', 'out': str(png),
          'width': paint_size[0], 'height': paint_size[1], 'seed': seed}
+  if reference:  # the edit pass: the same creature, its pose changed (mlx_picture.py keeps the reference's shape)
+    req['reference'] = str(flat_reference(ART / reference, paint_size, erase))
   env = dict(os.environ, HF_HOME=str(Path.home() / '.linggen/models/hf-hub'), HF_HUB_OFFLINE='1')
   r = subprocess.run([str(PY), str(SCRIPT)], input=json.dumps(req), text=True, capture_output=True, env=env)
   return None if r.returncode == 0 and png.exists() else (r.stdout.strip()[-200:] or r.stderr.strip()[-200:] or 'no picture')
@@ -371,7 +450,7 @@ def main():
     print(a.only, 'ok' if key_paper(Path(a.raw), out, size, kind) else 'key failed', '→', out)
     return
   only = set(filter(None, a.only.split(',')))
-  for key, (kind, size, paint_size, kept, subject) in SUBJECTS.items():
+  for key, (kind, size, paint_size, kept, subject, *ref) in SUBJECTS.items():
     if only and key not in only and key.split('/')[0] not in only:
       continue
     seeds = list(range(1, a.seeds + 1)) if a.seeds else [a.seed if a.seed is not None else kept]
@@ -386,7 +465,7 @@ def main():
         continue
       png = Path(tempfile.gettempdir()) / f'paint-games-{key.replace("/", "-")}-{seed}.png'
       said = f'{subject} {BRUSH}' if a.brush or key in BRUSHED else subject
-      err = paint_codex(png, said, kind, paint_size) if a.codex else paint_flux(png, said, kind, paint_size, seed)
+      err = paint_codex(png, said, kind, paint_size) if a.codex else paint_flux(png, said, kind, paint_size, seed, *ref)
       if err:
         print(f'{key} s{seed}: failed: {err}', flush=True)
         continue

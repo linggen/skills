@@ -265,6 +265,11 @@ rolled and looked at beside the house sheet on paper and on a dark ground; the k
   a river boulder (1); the thrown pebble (2), short flying sword (2) and thunder talisman (2); and the particles the
   physics throws — ink specks (1), a dust puff (2), a wood chip (1), a straw wisp (2), a grass tuft (1), a water splash (1),
   a falling leaf (1). A broken thing's shards are cuts of its own painting (smash.js), never drawn.
+  2026-10-19, the forts (Hanli: 「游戏里面没有箱子可以砸碎, 或者树等障碍, 难度比较低」), two or three seeds a piece, each
+  painted in its body's proportions: a plank crate (2), a round bamboo basket (2), a back basket 背篓 (2), a squared
+  wall stone (1), a slab of river ice (2), a roof beam (2), a shrine pillar on its stone base (2), a studded shrine door
+  (2), a black-pine trunk (1, a re-roll: the first prompt painted whole trees with crowns), a pine bough (1), a dead
+  tree split by lightning (2; seed 1 painted a seal), a thorny bush (1).
 - `games/bread/` — 喂饼's cave (a vignette, 720×880, seed 2, laid on the house paper), the 饼 (2), its torn corner (1),
   the stone slab (3), the vine's sprig (2), the puff of wind at the cave mouth (2).
 - `games/rain/` — 接雨's wooden basin (1) and the wet thatch beam (1).
@@ -274,6 +279,9 @@ rolled and looked at beside the house sheet on paper and on a dark ground; the k
   the second asks for one continuous picture).
 - `games/lu/` — the 鯥 of 沂水 (a pose, 640×480, seed 1: ox-headed, bat-winged, snake-tailed, its legs bound by the
   brambles, facing left) and the 沂水 shoal at night (a vignette, 960×600, seed 1), for 芦苇里那一等 on the throwing board.
+  2026-10-19 (Hanli: 「翅膀也不张开」): the same 鯥 with its wings folded along its back (`lu-folded`, seed 2) — an edit
+  pass of the local FLUX from `lu.webp` with the wings cleared from the reference, so it is the same beast on the same
+  canvas; the board lays the spread wings of `lu.webp` over it, lifting from the root as it breathes in.
 - `games/feather/` — 吹鹅毛's goose feather (1), 小满's face in profile breathing out (1), the bamboo strip (3).
 
 

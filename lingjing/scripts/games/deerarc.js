@@ -23,7 +23,7 @@ import { mountPure } from './mount.js';
 import { frame as juiceFrame, muted, muteLabel, viewAttr } from './juice.js';
 import { ARROW, fxPicture, projectileOf, shapeOf, tapNow, trayOf, turnsWithFlight } from './throws.js';
 import { segCircle, segEllipse, segSeg, targetOf } from './targets.js';
-import { arrowAt, atRest, cue, deerSensor, FILTER, firstStruck, heavier, isSmashKind, KINDS, listen, ride, scoreMoves, settleBlows, shatter, smashThing } from './smash.js';
+import { aftermath, arrowAt, atRest, burstOn, cue, deerSensor, FILTER, firstStruck, heavier, isSmashKind, KINDS, listen, ride, scoreMoves, settleBlows, shatter, smashThing } from './smash.js';
 
 const { Engine, Bodies, Body, Composite, Sleeping } = Matter;
 
@@ -307,6 +307,7 @@ export function stepWorld(world, level, ms = 0) {
   Engine.update(world.engine, STEP_MS);
   settleBlows(world);
   scoreMoves(world);
+  aftermath(world);
   if (ar?.stuckIn && !ride(world, ar)) { ar.stuckIn = null; ar.done = true; Body.setStatic(ar.body, true); }
   world.riders = (world.riders ?? []).filter((r) => ride(world, r));
   if (!ar || ar.done) return null;
@@ -334,7 +335,7 @@ function smashed(world, from, to) {
   if (!hit) return null;
   const r = arrowAt(world, hit, world.arrow.proj ?? ARROW);
   if (r === 'stuck' || r === 'swallowed' || r === 'skim') { world.arrow.tip = hit.at; return 'stuck'; }
-  return r; // 'glance' (off the rock, still flying) · 'broke' (through the clay, flying on)
+  return r; // 'glance' (off the rock) · 'broke' (through the clay) · 'pierced' · 'brushed' · 'deflect': flying on
 }
 
 /** A real throw's step: matter moved it and struck what it met; here only the stag, reeds and the end. */
@@ -483,12 +484,20 @@ export function tapWorld(world, level, ms) {
   if (!r) return null;
   if (r.velocity) Body.setVelocity(ar.body, r.velocity);
   if (r.fx) ar.fx = [...(ar.fx ?? []), { ...r.fx, t: world.t ?? 0 }];
-  if (!r.burst) return { kind: 'dash' };
+  if (!r.burst) { ar.through = true; return { kind: 'dash' }; } // straight on, and through the next block
   const [bx, by] = r.burst.at, reach = r.burst.r;
   for (const t of world.things) if (!t.broken && t.kind === 'reed' && segCircle(t.a, t.b, [bx, by], reach)) snap(world, t, { x: 0.5, y: -1.5 });
   ar.true = false;
   ar.done = true;
   Body.setStatic(ar.body, true);
+  // By the creek's forts the thunder breaks what it reaches (stone too) and only startles the stag: the
+  // kill is the arrow's, or what falls on it.
+  if (level.smash) {
+    burstOn(world, [bx, by], reach);
+    cue(world, 'stone', [bx, by], 1, { big: true });
+    if (burstHit(level, ms, [bx, by], reach)) world.flushed = true;
+    return { kind: 'burst', hit: null };
+  }
   return { kind: 'burst', hit: burstHit(level, ms, [bx, by], reach) };
 }
 
@@ -504,7 +513,7 @@ export function burstHit(level, ms, [x, y], r) {
 }
 
 /** What a step may say while the throw still flies: a reed snapped, a skip, a glance off rock, clay broken through. */
-const GOES_ON = new Set(['snap', 'bounce', 'wall', 'glance', 'broke']);
+const GOES_ON = new Set(['snap', 'bounce', 'wall', 'glance', 'broke', 'pierced', 'brushed', 'deflect']);
 
 /** A shot flown in a fresh world, against the deer as it moves from `at` ms: the bot's search
     and the tests use it — the same steps the game takes. → { hit, steps, tip, snapped } */
@@ -767,7 +776,8 @@ export function tick(state, ms) {
 }
 
 const NOISE_R = 140;
-/** What fell on the stag: a light blow flushes it (it bolts into the open), a heavy one fells it. */
+/** What fell on the stag: a light blow flushes it (it bolts into the open), a heavy one fells it; a
+    crash near it only lifts its head. */
 function felt(s) {
   const w = s.world, level = s.levels[s.li];
   if (!w || !level?.deer || !['aim', 'fly', 'settle'].includes(s.phase)) return s;
@@ -778,9 +788,11 @@ function felt(s) {
   }
   // A crash near it (a jar, a stack of tiles, a 草垛 bursting) startles it as surely as a blow.
   const d = deerAt(levelOf(s), s.clock);
+  // A crash near it, or a shard striking it, only startles it: its head comes up, it stays (Hanli 10-19
+  // wanted forts to bring down on it; a stag that bolted at the first crack escaped every collapse).
   const heard = (w.broke ?? []).slice(w.heardBroke ?? 0).some((b) => !b.topple && Math.abs(b.at[0] - d.x) < NOISE_R);
   w.heardBroke = (w.broke ?? []).length;
-  if (heard) w.flushed = true;
+  if ((heard || w.startled) && s.flushAt == null) { w.startled = false; if (s.alertAt == null || s.clock - s.alertAt > ALERT_MS) s = { ...s, alertAt: s.clock }; }
   if (w.flushed && s.flushAt == null && level.deer.flee) {
     cue(w, 'bolt', [deerAt(levelOf(s), s.clock).x, groundAt(level.deer.x) - 30], 1);
     return { ...s, flushAt: s.clock, said: 'flushed', saidAt: s.clock };
@@ -1072,8 +1084,9 @@ export function arrowShape(art, cx = 0, spent = false) {
     + `<path class="g-da-fletch" d="M${n(t)} 0 l-4 -3 M${n(t + 3)} 0 l-4 -3 M${n(t)} 0 l-4 3 M${n(t + 3)} 0 l-4 3"/>`;
 }
 
-/** While drawing, every throw: the first stretch of the arc, as if there were no wind — it moves
-    with the hand; the wind is his to read, and the last throw's trail stays beside it to learn from. */
+/** While he pulls, every throw: the first stretch of the arc, following the pull, as if there were
+    no wind — the wind is his to read (Hanli 10-19: 「轨迹不变」 — it showed on the first arrow only, so
+    the line never moved). The last throw's trail stays under it, fainter, as the teacher. */
 function guidePicture(s) {
   if (s.phase !== 'aim' || !s.pull || s.pull.p < MIN_POWER) return '';
   const v = velocityOf(s.pull), g = GRAVITY * 0.001 * STEP_MS * STEP_MS, dots = [];
@@ -1095,11 +1108,11 @@ function spentPicture(s) {
 
 /** The last arrow's path: a bold ink stroke on a paper rim (`marks.trail` its width), or ink dots. */
 function trailPicture(s) {
-  const t = s.trail ?? [], w = s.art?.marks?.trail;
-  if (!w) return t.map(([x, y], i) => (i % 2 ? '' : `<circle class="g-da-trail" cx="${x}" cy="${y}" r="1.6"/>`)).join('');
+  const t = s.trail ?? [], w = s.art?.marks?.trail, faint = s.phase === 'aim' && s.pull && s.pull.p >= MIN_POWER ? ' is-faint' : '';
+  if (!w) return t.map(([x, y], i) => (i % 2 ? '' : `<circle class="g-da-trail${faint}" cx="${x}" cy="${y}" r="1.6"/>`)).join('');
   if (t.length < 2) return '';
   const d = `M${t.map(([x, y]) => `${x} ${y}`).join(' L')}`;
-  return `<path class="g-da-trail-rim" d="${d}" style="stroke-width:${n(w + 2.4)}"/><path class="g-da-trail-ink" d="${d}" style="stroke-width:${w}"/>`;
+  return `<g class="g-da-trailset${faint}"><path class="g-da-trail-rim" d="${d}" style="stroke-width:${n(w + 2.4)}"/><path class="g-da-trail-ink" d="${d}" style="stroke-width:${w}"/></g>`;
 }
 
 function arrowPicture(s) {
@@ -1236,11 +1249,11 @@ function head(s, t) {
 }
 
 /** The end line, counting the spots he shot (the story deals two, the 游戏厅 all). */
-const COUNT_ZH = ['', '一', '两', '三', '四', '五', '六', '七', '八', '九', '十'];
+const COUNT_ZH = ['', '一', '两', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二', '十三', '十四', '十五'];
 function endLine(s, t, lang) {
   const k = s.levels.length;
   if (k === 1) return t.one;
-  const word = lang === 'en' ? (['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][k] ?? String(k)) : (COUNT_ZH[k] ?? String(k));
+  const word = lang === 'en' ? (['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen'][k] ?? String(k)) : (COUNT_ZH[k] ?? String(k));
   // A run with smash levels did not only shoot: its line says so.
   return (s.levels.some((l) => l.smash) ? t.endSmash : t.end).replace('{n}', word);
 }
@@ -1374,12 +1387,20 @@ async function mountRow(id, container, opts = {}) {
 }
 async function mountRowWith(id, view, container, opts = {}) {
   const row = opts.data?.levels ? {} : await rowOf(id);
-  const levels = opts.data?.levels ?? row.levels ?? [], art = await presentArt(opts.data?.art ?? row.art, onServer);
+  const levels = onlyLevels(opts.data?.levels ?? row.levels ?? [], opts.data?.levels ? null : globalThis.location?.search), art = await presentArt(opts.data?.art ?? row.art, onServer);
   const projectiles = opts.data?.projectiles ?? row.projectiles ?? null, words = opts.data?.words ?? row.words ?? null;
   const quiet = opts.reducedMotion ? { still: true } : {};
   return mountPure(view)(container, { ...opts, data: { ...(opts.data ?? {}), levels, art, projectiles, ...(words ? { words } : {}), ...quiet } });
 }
 export const mount = (container, opts) => mountRow(meta.id, container, opts);
+
+/** The 游戏厅's `lv` (?lv=temple, or lv=crates,temple): straight to those levels of the row (a link
+    for Hanli to one fort; play-human plays each alone). Unknown ids: the whole row. */
+export function onlyLevels(levels, search) {
+  const want = new URLSearchParams(search ?? '').get('lv')?.split(',').filter(Boolean) ?? [];
+  const picked = levels.filter((l) => want.includes(l.id));
+  return picked.length ? picked : levels;
+}
 
 /** The same board for another row of games.json (投掷 · the kit, 扔石听声, …): its own meta, the
     rest shared. A small wrapper module (games/<id>.js) exports what this answers. */

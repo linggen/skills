@@ -307,7 +307,7 @@
     }
    ],
    "art": {
-    "_about": "The 鯥 and the 沂水 shoal at night, painted for the throwing board (tools/paint-games.py lu/lu, lu/shoal, seed 1); the 鯥 faces left, its zones (targets.js LU) fitted to the painting; the reeds at the right are where he waits.",
+    "_about": "The 鯥 and the 沂水 shoal at night, painted for the throwing board (tools/paint-games.py lu/lu, lu/shoal, seed 1); the 鯥 faces left, its zones (targets.js LU) fitted to the painting; `lu_folded` its body with the wings folded, under the spread wings that lift as it breathes in (Hanli 10-19: 「翅膀也不张开」); the reeds at the right are where he waits.",
     "lu": {
      "file": "games/lu/lu.webp",
      "w": 124,
@@ -317,6 +317,7 @@
       0.729
      ]
     },
+    "lu_folded": {"file": "games/lu/lu-folded.webp", "w": 124, "h": 93, "at": [0.453, 0.729], "_about": "the same 鯥, its wings folded along its back (tools/paint-games.py lu/lu-folded, an edit pass from lu.webp, seed 2): the body under the spread wings, which lift from the root as it breathes in (targets.js paintedLu)"},
     "backdrop": {
      "file": "games/lu/shoal.webp",
      "size": [
@@ -1111,12 +1112,24 @@
    "talisman": {
     "file": "games/deer/talisman.webp"
    },
+   "crate": {"file": "games/deer/crate.webp", "pad": 0.04},
+   "basket": {"file": "games/deer/basket.webp", "pad": 0.04},
+   "beiluo": {"file": "games/deer/beiluo.webp", "pad": 0.04},
+   "block": {"file": "games/deer/block.webp", "pad": 0.04},
+   "ice": {"file": "games/deer/ice.webp", "pad": 0.04},
+   "beam": {"file": "games/deer/beam.webp", "padY": 0.1},
+   "post": {"file": "games/deer/post.webp", "pad": 0.35, "padY": 0.02},
+   "door": {"file": "games/deer/door.webp", "pad": 0.3, "padY": 0.02},
+   "trunk": {"file": "games/deer/trunk.webp", "pad": 0.25, "padY": 0.02},
+   "bough": {"file": "games/deer/bough.webp", "pad": 0.04, "padY": 0.9},
+   "deadtree": {"file": "games/deer/deadtree.webp", "pad": 1.4, "padY": 0.03},
+   "bush": {"file": "games/deer/bush.webp", "pad": 0.06, "padY": 0.12},
    "marks": {
      "dot": 4.6,
      "trail": 2.4
     }
    },
-   "_levels": "射鹿 · 拉弓, a 愤怒小鸟-style prototype (2026-10-16) — in the 游戏厅 only; the story's 射鹿 is still `deer`. World 480×300: he stands on the near bank at the right (the bow at 426,192), the deer drinks to the left. `deer`: `x`, `face` (-1 looks left), `lift` {every, for} ms its head comes up, `walk` {to, ms, rest} back and forth. `wind`: + blows in his face (pushes the arrow right), − at his back; `roll` {min, max, dirs?} deals each arrow its own wind (strength, and a direction from dirs: 1 in his face, −1 at his back), seeded by the try and the arrow's number so 重来 deals the same again — the header and the board show it before he pulls; `gust` {amp, period, phase?} makes it rise and fall on top (a sine on top, the streamer, tufts and leaves show it as it is). `things`: a `reed` {at, h, lean?, breaks? (speed, default 5)} snaps when the arrow is fast enough, else turns it; a `branch` {from, to} turns it always. `hint`: after a miss, 银月's 「往左偏半寸」 and a tick left of the deer. games/bots/deerarc.js searches each level's aim. Levels 5–7 (柴垛 · 晾肉架 · 院角, Hanli 10-19: 「没有丢东西, 砸碎东西的快感」) are `smash` levels — the 游戏厅's only (the story deals the `story` ones): `things` of a smash kind (smash.js KINDS: log, prop, pole, fence, jar, tile, hay, rock) are real bodies {kind, at (middle), size [w, h], angle?} that sleep until touched, topple, and break into pieces of their painting when a blow beats their material; a falling one flushes the stag (`deer.flee` {x, face}: it bolts there and stands, head up) or fells it; `quiver` the throws, `ammo` the tray, `score` [one, two, three]-star points (each break its points, a topple 100, the heart 3000 / body 2000, each throw left 500); `bot` the answers [a, p, pick] the board bot plays (the world stands still between throws, so only the aim decides).",
+   "_levels": "射鹿 · 拉弓, a 愤怒小鸟-style prototype (2026-10-16) — in the 游戏厅 only; the story's 射鹿 is still `deer`. World 480×300: he stands on the near bank at the right (the bow at 426,192), the deer drinks to the left. `deer`: `x`, `face` (-1 looks left), `lift` {every, for} ms its head comes up, `walk` {to, ms, rest} back and forth. `wind`: + blows in his face (pushes the arrow right), − at his back; `roll` {min, max, dirs?} deals each arrow its own wind (strength, and a direction from dirs: 1 in his face, −1 at his back), seeded by the try and the arrow's number so 重来 deals the same again — the header and the board show it before he pulls; `gust` {amp, period, phase?} makes it rise and fall on top (a sine on top, the streamer, tufts and leaves show it as it is). `things`: a `reed` {at, h, lean?, breaks? (speed, default 5)} snaps when the arrow is fast enough, else turns it; a `branch` {from, to} turns it always. `hint`: after a miss, 银月's 「往左偏半寸」 and a tick left of the deer. games/bots/deerarc.js searches each level's aim. 风 has a clump of stiff reeds (`breaks` 99) in the line: lob over them (Hanli 10-19: 「难度比较低」). Levels 5–12 are the forts (Hanli 10-19: 「游戏里面没有箱子可以砸碎, 或者树等障碍, 难度比较低」), on a curve — 柴房 · 竹筐 · 枯树 · 窝棚 · 冰 · 石墙 · 老松 · 山神庙 — `smash` levels, the 游戏厅's only (the story deals the `story` ones): `things` of a smash kind (smash.js KINDS: crate, basket, beiluo, block, ice, beam, post, door, trunk, bough, deadtree, bush, and the first pass's log, prop, pole, fence, jar, tile, hay, rock) are real bodies {kind, at (middle), size [w, h], angle?, fixed? (held where it stands until broken)} that sleep until touched, topple, and break into pieces of their painting when a blow beats their material; what comes down on the stag fells it (a light touch flushes it: `deer.flee` {x, face}, it bolts there and stands, head up); a crash near it or a shard only lifts its head; `quiver` the throws (3–5), `ammo` the tray (a deliberate small set), `score` [one, two, three]-star points (each break its points, a topple 100, the heart 3000 / body or felled 2000, each throw left 500); `bot` the answers [a, p, pick, tapAt?] the board bot plays (the world stands still between throws, so only the aim decides; `tapAt` the flight's step it taps on, a multiple of 3). URL: arcade.html?dev=1&game=deerarc&lv=<id> plays one level (deerarc.js onlyLevels).",
    "levels": [
     {
      "id": "still",
@@ -1147,6 +1160,7 @@
       "min": 0.35,
       "max": 0.95
      },
+     "things": [{"kind": "reed", "at": [246, 252], "h": 74, "lean": -4, "breaks": 99}, {"kind": "reed", "at": [254, 252], "h": 92, "lean": 2, "breaks": 99}, {"kind": "reed", "at": [263, 252], "h": 80, "lean": 5, "breaks": 99}],
      "hint": true,
      "say": {
       "zh": "风从溪上迎面吹来。先看风，后看鹿。",
@@ -1270,390 +1284,190 @@
      }
     },
    {
-    "id": "pile",
+    "id": "shed",
+    "smash": true,
+    "quiver": 3,
+    "ammo": ["stone", "arrow"],
+    "score": [2000, 3000, 3600],
+    "deer": {"x": 92, "face": -1, "flee": {"x": 30, "face": 1}},
+    "wind": 0,
+    "things": [
+     {"kind": "crate", "at": [162, 235], "size": [34, 34]},
+     {"kind": "crate", "at": [162, 201], "size": [34, 34]},
+     {"kind": "crate", "at": [162, 167], "size": [34, 34]},
+     {"kind": "crate", "at": [162, 133], "size": [34, 34]}
+    ],
+    "say": {"zh": "石坳村的柴房后头，木箱摞得比人高，鹿就躲在箱子那边。", "en": "Behind 石坳村's woodshed, crates stacked taller than a man; the stag hides past them."},
+    "bot": [
+     [-6, 0.925, "stone"]
+    ]
+   },
+   {
+    "id": "baskets",
+    "smash": true,
+    "quiver": 3,
+    "ammo": ["arrow", "stone"],
+    "score": [2000, 3500, 4000],
+    "deer": {"x": 104, "face": -1, "flee": {"x": 34, "face": 1}},
+    "wind": 0,
+    "things": [
+     {"kind": "crate", "at": [196, 235], "size": [34, 34]},
+     {"kind": "crate", "at": [196, 201], "size": [34, 34]},
+     {"kind": "beiluo", "at": [196, 161], "size": [30, 46]},
+     {"kind": "basket", "at": [196, 125], "size": [38, 26]},
+     {"kind": "crate", "at": [232, 235], "size": [34, 34]}
+    ],
+    "say": {"zh": "溪边歇脚的地方，背篓竹筐搁在箱子上。竹篾编的，箭穿得过去。", "en": "Where the stream-walkers rest: back baskets on the crates. Woven bamboo — an arrow goes through."},
+    "bot": [
+     [15, 0.925, "arrow"]
+    ]
+   },
+   {
+    "id": "deadtree",
+    "smash": true,
+    "quiver": 3,
+    "ammo": ["arrow", "stone", "log"],
+    "score": [2000, 3500, 4000],
+    "deer": {"x": 100, "face": -1, "flee": {"x": 30, "face": 1}},
+    "wind": 0,
+    "things": [
+     {"kind": "trunk", "at": [18, 150], "size": [20, 204]},
+     {"kind": "bough", "at": [60, 112], "size": [118, 12], "angle": 4},
+     {"kind": "crate", "at": [172, 235], "size": [34, 34]},
+     {"kind": "basket", "at": [172, 204], "size": [36, 28]},
+     {"kind": "basket", "at": [172, 176], "size": [36, 28]},
+     {"kind": "basket", "at": [172, 148], "size": [36, 28]},
+     {"kind": "deadtree", "at": [262, 167], "size": [16, 170]}
+    ],
+    "say": {"zh": "老松底下，箱子垒成一道墙，鹿缩在墙后。墙外一棵枯树，叫雷劈过。", "en": "Under an old pine, crates stacked into a wall, the stag tucked behind it. Outside it a dead tree, split by lightning."},
+    "bot": [
+     [-24, 0.85, "stone"]
+    ]
+   },
+   {
+    "id": "camp",
     "smash": true,
     "quiver": 4,
-    "ammo": [
-     "arrow",
-     "stone",
-     "log"
-    ],
-    "score": [
-     3000,
-     3900,
-     4400
-    ],
-    "deer": {
-     "x": 96,
-     "face": -1,
-     "flee": {
-      "x": 40,
-      "face": 1
-     }
-    },
+    "ammo": ["arrow", "stone", "log"],
+    "score": [2500, 4000, 5000],
+    "deer": {"x": 168, "face": -1, "flee": {"x": 50, "face": 1}},
     "wind": 0,
     "things": [
-     {
-      "kind": "log",
-      "at": [
-       246,
-       212
-      ],
-      "size": [
-       80,
-       16
-      ],
-      "angle": 90
-     },
-     {
-      "kind": "log",
-      "at": [
-       214,
-       212
-      ],
-      "size": [
-       80,
-       16
-      ],
-      "angle": 90
-     },
-     {
-      "kind": "log",
-      "at": [
-       182,
-       212
-      ],
-      "size": [
-       80,
-       16
-      ],
-      "angle": 90
-     },
-     {
-      "kind": "log",
-      "at": [
-       150,
-       212
-      ],
-      "size": [
-       80,
-       16
-      ],
-      "angle": 90
-     },
-     {"kind": "rock", "at": [286, 236], "size": [50, 32]}
+     {"kind": "post", "at": [108, 214], "size": [12, 76]},
+     {"kind": "post", "at": [232, 214], "size": [12, 76]},
+     {"kind": "beam", "at": [170, 171], "size": [150, 10]},
+     {"kind": "tile", "at": [130, 159], "size": [34, 14]},
+     {"kind": "tile", "at": [168, 159], "size": [34, 14]},
+     {"kind": "tile", "at": [206, 159], "size": [34, 14]},
+     {"kind": "beiluo", "at": [268, 229], "size": [30, 46]}
     ],
-    "say": {
-     "zh": "溪边立着一排晾干的柴，鹿就在柴后头。推倒第一根。",
-     "en": "A row of firewood stood on end to dry, the deer just past it. Push the first one over."
-    },
+    "say": {"zh": "猎户的窝棚：两根柱子撑着一根梁，梁上压着瓦。鹿钻在棚底下。", "en": "A hunter's lean-to: two posts, a beam, tiles weighting it. The stag is under it."},
     "bot": [
-     [
-      20,
-      0.84,
-      "log"
-     ],
-     [
-      14,
-      0.88,
-      "arrow"
-     ]
+     [21, 0.625, "stone"],
+     [9, 0.775, "arrow"]
     ]
    },
    {
-    "id": "rack",
+    "id": "ice",
     "smash": true,
-    "quiver": 5,
-    "ammo": [
-     "arrow",
-     "stone",
-     "pot"
-    ],
-    "score": [
-     3500,
-     4800,
-     5600
-    ],
-    "deer": {
-     "x": 80,
-     "face": -1,
-     "flee": {
-      "x": 30,
-      "face": 1
-     }
-    },
+    "quiver": 3,
+    "ammo": ["arrow", "stone"],
+    "score": [2000, 3800, 4500],
+    "deer": {"x": 100, "face": -1, "flee": {"x": 30, "face": 1}},
     "wind": 0,
     "things": [
-     {
-      "kind": "hay",
-      "at": [
-       150,
-       222
-      ],
-      "size": [
-       78,
-       60
-      ]
-     },
-     {
-      "kind": "prop",
-      "at": [
-       212,
-       215
-      ],
-      "size": [
-       12,
-       74
-      ]
-     },
-     {
-      "kind": "prop",
-      "at": [
-       300,
-       215
-      ],
-      "size": [
-       12,
-       74
-      ]
-     },
-     {
-      "kind": "pole",
-      "at": [
-       256,
-       175
-      ],
-      "size": [
-       120,
-       6
-      ]
-     },
-     {
-      "kind": "tile",
-      "at": [
-       222,
-       165
-      ],
-      "size": [
-       34,
-       14
-      ]
-     },
-     {
-      "kind": "tile",
-      "at": [
-       256,
-       165
-      ],
-      "size": [
-       34,
-       14
-      ]
-     },
-     {
-      "kind": "tile",
-      "at": [
-       290,
-       165
-      ],
-      "size": [
-       34,
-       14
-      ]
-     },
-     {
-      "kind": "jar",
-      "at": [
-       240,
-       235
-      ],
-      "size": [
-       26,
-       34
-      ]
-     },
-     {
-      "kind": "jar",
-      "at": [
-       272,
-       235
-      ],
-      "size": [
-       26,
-       34
-      ]
-     }
+     {"kind": "ice", "at": [178, 239], "size": [40, 26]},
+     {"kind": "ice", "at": [178, 213], "size": [40, 26]},
+     {"kind": "ice", "at": [178, 187], "size": [40, 26]},
+     {"kind": "ice", "at": [178, 161], "size": [40, 26]},
+     {"kind": "ice", "at": [220, 239], "size": [40, 26]},
+     {"kind": "ice", "at": [220, 213], "size": [40, 26]},
+     {"kind": "bough", "at": [120, 96], "size": [150, 12], "angle": 4}
     ],
-    "say": {
-     "zh": "猎户的晾肉架，架上压着瓦，底下两只坛子。鹿在草垛后面。",
-     "en": "A hunter's drying rack weighted with tiles, two jars beneath. The deer is behind the straw stack."
-    },
+    "say": {"zh": "冬天，猎户从溪上凿下的冰块垒在岸边。冰滑，箭打上去要溜。", "en": "Winter: ice the hunters cut from the stream, stacked on the bank. Ice is slick — an arrow skids off."},
     "bot": [
-     [
-      2,
-      0.32,
-      "stone"
-     ],
-     [
-      17,
-      0.84,
-      "arrow"
-     ]
+     [-12, 1, "stone"],
+     [-15, 0.925, "arrow"]
     ]
    },
    {
-    "id": "yard",
+    "id": "wall",
     "smash": true,
-    "quiver": 5,
-    "ammo": [
-     "stone",
-     "pot",
-     "arrow"
-    ],
-    "score": [
-     3500,
-     5000,
-     6100
-    ],
-    "deer": {
-     "x": 72,
-     "face": -1,
-     "flee": {
-      "x": 28,
-      "face": 1
-     }
-    },
+    "quiver": 3,
+    "ammo": ["arrow", "stone", "talisman"],
+    "score": [2500, 4500, 5800],
+    "deer": {"x": 104, "face": -1, "flee": {"x": 34, "face": 1}},
     "wind": 0,
     "things": [
-     {
-      "kind": "fence",
-      "at": [
-       148,
-       236
-      ],
-      "size": [
-       17,
-       32
-      ]
-     },
-     {
-      "kind": "fence",
-      "at": [
-       166,
-       236
-      ],
-      "size": [
-       17,
-       32
-      ]
-     },
-     {
-      "kind": "fence",
-      "at": [
-       184,
-       236
-      ],
-      "size": [
-       17,
-       32
-      ]
-     },
-     {
-      "kind": "jar",
-      "at": [
-       218,
-       235
-      ],
-      "size": [
-       26,
-       34
-      ]
-     },
-     {
-      "kind": "tile",
-      "at": [
-       218,
-       211
-      ],
-      "size": [
-       34,
-       14
-      ]
-     },
-     {
-      "kind": "jar",
-      "at": [
-       218,
-       187
-      ],
-      "size": [
-       26,
-       34
-      ]
-     },
-     {
-      "kind": "tile",
-      "at": [
-       218,
-       163
-      ],
-      "size": [
-       34,
-       14
-      ]
-     },
-     {
-      "kind": "jar",
-      "at": [
-       218,
-       139
-      ],
-      "size": [
-       26,
-       34
-      ]
-     },
-     {
-      "kind": "hay",
-      "at": [
-       270,
-       222
-      ],
-      "size": [
-       70,
-       60
-      ]
-     },
-     {
-      "kind": "jar",
-      "at": [
-       270,
-       175
-      ],
-      "size": [
-       26,
-       34
-      ]
-     }
+     {"kind": "block", "at": [202, 240], "size": [32, 24]},
+     {"kind": "block", "at": [202, 216], "size": [32, 24]},
+     {"kind": "block", "at": [202, 192], "size": [32, 24]},
+     {"kind": "block", "at": [202, 168], "size": [32, 24]},
+     {"kind": "block", "at": [202, 144], "size": [32, 24]},
+     {"kind": "block", "at": [234, 240], "size": [32, 24]},
+     {"kind": "block", "at": [234, 216], "size": [32, 24]},
+     {"kind": "post", "at": [40, 190], "size": [12, 124]},
+     {"kind": "post", "at": [150, 190], "size": [12, 124]},
+     {"kind": "beam", "at": [95, 123], "size": [140, 10]},
+     {"kind": "tile", "at": [70, 111], "size": [34, 14]},
+     {"kind": "tile", "at": [120, 111], "size": [34, 14]}
     ],
-    "say": {
-     "zh": "破篱笆后头是人家的院角，坛子瓦片摞得老高。鹿就在篱笆那边。",
-     "en": "Past a rotten fence, a yard corner: jars and tiles stacked high. The deer is just beyond the fence."
-    },
+    "say": {"zh": "山里人垒的石墙，搭了个棚。石子砸不动，箭也打不进——得先开墙。", "en": "A dry-stone wall with a roof over it. A stone won't move it, an arrow won't go in — open the wall first."},
     "bot": [
-     [
-      -7,
-      0.68,
-      "stone"
-     ],
-     [
-      17,
-      0.84,
-      "arrow"
-     ]
+     [9, 0.475, "talisman", 48],
+     [-3, 0.775, "arrow"]
+    ]
+   },
+   {
+    "id": "pine",
+    "smash": true,
+    "quiver": 3,
+    "ammo": ["arrow", "stone"],
+    "score": [2000, 3000, 4000],
+    "deer": {"x": 150, "face": -1, "flee": {"x": 60, "face": 1}},
+    "wind": 0,
+    "things": [
+     {"kind": "trunk", "at": [240, 167], "size": [22, 170]},
+     {"kind": "trunk", "at": [16, 150], "size": [20, 204]},
+     {"kind": "bough", "at": [210, 92], "size": [70, 12], "angle": -8},
+     {"kind": "bough", "at": [56, 112], "size": [78, 12], "angle": 10},
+     {"kind": "bush", "at": [206, 234], "size": [56, 36]}
+    ],
+    "say": {"zh": "黑松岭上一棵老松，枝杈横在鹿头顶上。找那道缝。", "en": "An old pine of 黑松岭, its boughs across over the stag. Find the gap."},
+    "bot": [
+     [57, 0.55, "arrow"]
+    ]
+   },
+   {
+    "id": "temple",
+    "smash": true,
+    "quiver": 4,
+    "ammo": ["arrow", "stone", "sword", "talisman"],
+    "score": [3000, 5000, 5800],
+    "deer": {"x": 140, "face": -1, "flee": {"x": 40, "face": 1}},
+    "wind": 0,
+    "things": [
+     {"kind": "post", "at": [66, 203], "size": [12, 98], "fixed": true},
+     {"kind": "post", "at": [208, 203], "size": [12, 98], "fixed": true},
+     {"kind": "beam", "at": [160, 149], "size": [200, 10]},
+     {"kind": "tile", "at": [84, 137], "size": [34, 14]},
+     {"kind": "tile", "at": [120, 137], "size": [34, 14]},
+     {"kind": "tile", "at": [156, 137], "size": [34, 14]},
+     {"kind": "tile", "at": [192, 137], "size": [34, 14]},
+     {"kind": "tile", "at": [228, 137], "size": [34, 14]},
+     {"kind": "door", "at": [226, 203], "size": [20, 98], "fixed": true},
+     {"kind": "block", "at": [256, 240], "size": [30, 24]},
+     {"kind": "block", "at": [256, 216], "size": [30, 24]},
+     {"kind": "block", "at": [256, 192], "size": [30, 24]},
+     {"kind": "bough", "at": [300, 80], "size": [130, 12], "angle": 12}
+    ],
+    "say": {"zh": "蒙山脚下荒了的山神庙，庙门叫石块堵着，鹿进去躲雨。", "en": "The abandoned 山神庙 under 蒙山, its door blocked with stones; the stag went in out of the rain."},
+    "bot": [
+     [-18, 0.775, "talisman", 21],
+     [12, 0.25, "sword", 9]
     ]
    }
-   ]
+  ]
   },
   {
    "id": "deerhunt",

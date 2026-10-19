@@ -483,6 +483,7 @@
 .g-da-scene .g-da-trail-rim, .g-da-scene .g-da-trail-ink { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 7 5; }
 .g-da-scene .g-da-trail-rim { stroke: #f6efe0; opacity: .8; }
 .g-da-scene .g-da-trail-ink { stroke: #2e2416; opacity: .8; }
+.g-da-scene .g-da-trailset.is-faint, .g-da-scene .g-da-trail.is-faint { opacity: .4; }
 /* The bow is his hand and the arrow the play: inked darker, rimmed in paper over the painting. */
 .g-da-scene .g-da-bow .g-da-sprite { filter: brightness(.72) contrast(1.35) drop-shadow(0 0 1.2px #f6efe0) drop-shadow(0 0 1.2px #f6efe0); }
 .g-da-scene .g-da-arrow .g-da-sprite, .g-da-scene .g-da-spent .g-da-sprite { filter: brightness(.8) drop-shadow(0 0 .9px #f6efe0) drop-shadow(0 0 .9px #f6efe0); }
@@ -578,6 +579,9 @@
 .g-da-scene .g-sm-ink.is-clay { fill: #9a6a44; }
 .g-da-scene .g-sm-ink.is-straw { fill: #c9a85a; opacity: .9; }
 .g-da-scene .g-sm-ink.is-stone { fill: #8a8478; }
+.g-da-scene .g-sm-ink.is-bamboo { fill: #c2a866; opacity: .85; }
+.g-da-scene .g-sm-ink.is-ice { fill: #c9d6d8; opacity: .8; }
+.g-da-scene .g-sm-ink.is-brush { fill: #6f7a5a; opacity: .7; }
 .g-da-scene .g-sm-thing .g-da-sprite, .g-da-scene .g-sm-shard .g-da-sprite { filter: drop-shadow(0 0 .8px #f6efe0); }
 .g-deerarc .g-da-stage { position: relative; width: 100%; }
 .g-deerarc .g-da-stage > canvas.g-da-fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }

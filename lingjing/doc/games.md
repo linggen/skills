@@ -49,20 +49,36 @@ sixth board — then, the same day, approved to go with 射鹿 · 等风: **cut 
 00-cave's passage whole again (word for word), 喂饼 the scene's one board; the task (marked `cut`, so a
 save holding it offered lets it go on load), row, module and bot stay for the 游戏厅.
 
-## 射鹿 · 拉弓 — physical, with the juice (10-19, the 愤怒小鸟 benchmark)
+## 射鹿 · 拉弓 — physical, with the juice; the forts (10-19)
 
-Hanli 10-19: 「射鹿的问题是没有碰撞, 重力, 物理引擎等」, 「没有丢东西, 砸碎东西的快感」. `deerarc` (row `deerarc`):
-the story's deer-wind deals **静 then 风** only (levels marked `story`); the 游戏厅 (`arcade.html?dev=1&game=deerarc`)
-plays all seven — the four aiming levels, then three **smash** levels (games/smash.js): **柴垛** (four logs stood on
-end: knock the first and they fall one into the next onto the stag), **晾肉架** (knock a leg: the pole tips, the tiles
-slide, the jars below shatter), **院角** (a rotten fence, a jar-and-tile tower, a 草垛 that bursts into straw). Every
-thing is a matter.js body that sleeps until touched; a hard enough blow shatters it into pieces of its own painting;
-the arrow sticks in wood, glances off stone, breaks clay; 石子 · 柴 · 陶罐 are real bodies; what falls on the stag
-flushes it into the open (then the arrow) or fells it. Points: each break, each topple 100, heart 3000 / body 2000,
-500 a throw left; stars by the level's `score`. The juice (games/juice.js): painted particles, a camera that leans in
-after the throw, shake, hit-stop and slow-mo on the heart, +points pops, the bow's tremble, read and recoil, CC0
-sound behind 有声/静音. Wants Hanli's play: are the levels too easy (the answers are found by search, not by a
-designer's eye), is the camera too much at 390.
+Hanli 10-19: 「射鹿的问题是没有碰撞, 重力, 物理引擎等」, 「没有丢东西, 砸碎东西的快感」, then 「射鹿好一点了, 但是游戏里面
+没有箱子可以砸碎, 或者树等障碍, 难度比较低」. `deerarc` (row `deerarc`): the story's deer-wind deals **静 then 风**
+only (levels marked `story`; 风 now has a clump of stiff reeds in the line — lob over them); the 游戏厅
+(`arcade.html?dev=1&game=deerarc`, one level: `&lv=<id>`) plays the four aiming levels, then **eight forts**.
+
+**The physics (games/smash.js, generic — 砸寨 imports it).** Every thing is a matter.js body asleep until touched;
+a blow over its material's `strength` shatters it into pieces of its own painting (an irregular seeded Voronoi cut,
+or planks for crates, beams, posts, doors). Materials: wood (crate 木箱 → planks, beam, post, door 庙门), bamboo
+(竹筐 · 背篓: light; an arrow goes through, shoving it), stone (石块: heavy; an arrow glances, a thrown stone only
+knocks it, the 五雷符 shatters it), ice (slides, an arrow skids off), and the trees: a pine `trunk` takes the arrow, a
+`bough` catches an arrow head on and turns one at a slant (still flying), a `deadtree` stands rooted until a heavy
+blow fells it (it hinges at its foot and comes down on what stands by), a `bush` lets throws through, slowed. What
+comes down on the stag fells it; a light touch flushes it into the open; a crash near it or a shard only lifts its
+head. The ammo: the arrow pierces bamboo and sticks in wood; 石子 is heavy and topples; 柴 rolls; the 短飞剑's tap
+dashes straight through one block; the 五雷符's tap bursts (narrow) and shatters stone. A big collapse cues the
+camera to look over the wreck (juice.js). Things may be `fixed` (a shrine's door and pillars: held until broken).
+
+**The forts, on a curve** (answers in games.json `bot`, stars by `score`):
+柴房 (crates stacked by the stag: a stone topples them on it) · 竹筐 (baskets on crates: the arrow goes through the
+weave) · 枯树 (a crate-and-basket wall under a pine bough: fell the dead tree onto it) · 窝棚 (posts, a beam, tiles: knock
+a post, then the arrow) · 冰 (ice blocks: the arrow skids; a stone slides them apart, then the arrow) · 石墙 (dry stone
+under a roof: the 五雷符 opens it, then the arrow) · 老松 (trunk and boughs: lob through the gap) · 山神庙 (stones
+before a fixed door under the eaves: the thunder, then the sword's dash through the door to the heart).
+Numbers (10-19, node, the board's own steps): one-shot wins over the whole aim grid — 柴房 10%, 竹筐 12%, 枯树 11%,
+窝棚 14%, 冰 8%, 石墙 0.8%, 老松 1.5%, 山神庙 0.1%; a modelled casual hand (random-walk aim, sometimes a lob or
+another tray item) wins 柴房 9/12, 竹筐 12/12, 枯树 10/12, 窝棚 8/12, 冰 8/12 in 1–8 tries, mostly ★–★★; 老松 3/12;
+石墙 and 山神庙 0/12 (they need the right thing in the right order, and a tap). The board bot wins the row ★★★.
+Wants Hanli's play: is the late pair too hard, is the camera's look at the wreck too much at 390.
 
 ## 射鹿 · 等风 — the hunting-aim board (10-19, 游戏厅 only)
 

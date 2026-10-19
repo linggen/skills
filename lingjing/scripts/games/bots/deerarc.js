@@ -87,11 +87,14 @@ export function bot(s, see = {}) {
 
 /* A smash level (things that topple and break) is played from its answers (games.json `bot`: the
    throws [a, p, pick] in order, as a person who has found the trick would play it — the bread.js
-   way): its world stands still between throws (bodies asleep, no wind), so only the aim decides;
+   way): its world stands still between throws (bodies asleep, no wind), so only the aim decides; a
+   fourth number is the step of the flight it taps on (a multiple of 3: the same world step at any clock);
    the bot waits for a flushed stag to stop running before the next. Beyond the answers it lets go. */
 function smashTurn(s, lv) {
   if (s.flushAt != null && s.clock - s.flushAt < FLEE_MS + 200) return null;
-  const [a, p, pick] = lv.bot?.[s.used] ?? lv.bot?.at(-1) ?? [20, 0.8, 'arrow'];
+  const [a, p, pick, tapAt] = lv.bot?.[s.used] ?? lv.bot?.at(-1) ?? [20, 0.8, 'arrow'];
+  // An answer with a tap (the 短飞剑's dash, the 五雷符's burst) taps on its step: `inFlight` reads the plan.
+  plan = tapAt == null ? null : { tapAt, li: s.li, used: s.used }; // the eye says now TAP_LEAD early
   if (pick && s.pick !== pick && s.ammo?.includes(pick)) return { g: 'pick', p: pick };
   if (!s.pull || s.pull.a !== a || s.pull.p !== p) return { g: 'draw', a, p };
   return { g: 'loose' };
