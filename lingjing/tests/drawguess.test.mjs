@@ -180,7 +180,7 @@ test('猜者: Ling or 银月; she is asked in her own voice, and the engine\'s r
   assert.match(askOpen('yinyue'), /本王/);
   assert.doesNotMatch(askGuess('ling', []), /银月/);
   for (const who of GUESSERS) {
-    assert.match(askGuess(who, ['桥']), /不调用任何工具.*不超过二十字.*猜：.*你先前猜过：桥/s, who);
+    assert.match(askGuess(who, ['桥']), /不调用任何工具.*不超过二十字.*猜：.*你先前猜的「桥」都不对，别再猜这些/s, who);
   }
   assert.equal(refusalOf({ status: 'absent', agent_id: 'yinyue' }), 'absent');
   assert.equal(refusalOf({ status: 'unavailable' }), 'unavailable');

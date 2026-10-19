@@ -180,7 +180,8 @@ export const askOpen = (who, context = null) => `${headOf(context)}纸还空着�
   + '只回两行：第一行一句中文开场，不超过十二字；第二行同一句的英文。';
 export const askGuess = (who, prev, context = null) => `${headOf(context)}图上是小满用毛笔画的一样寻常东西，也许还没画完。${VOICE[who]}，猜它是什么。`
   + '只回三行：第一行一句中文，不超过二十字；第二行同一句的英文；第三行「猜：」加一个中文名词。'
-  + (prev.length ? `你先前猜过：${prev.join('、')}。画添了笔，可以改口。` : '');
+  // A wrong guess is said to be wrong, and never guessed again (Hanli 10-19: 「第一次猜错了, 第二次还猜一样的」).
+  + (prev.length ? `你先前猜的${prev.map((g) => `「${g}」`).join('、')}都不对，别再猜这些，也别猜它们的近义词；换个思路，看看画上新添的笔。` : '');
 
 /* The reveal (Hanli 10-19: 「最后解释答案的时候, 让yingyue表达一下懊恼等感情, 评论一下作者的画. 把情绪价值拉满」):
    one more look at the finished picture, now with the answer — she owns the miss or crows over the hit,
