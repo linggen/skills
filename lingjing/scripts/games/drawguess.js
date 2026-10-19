@@ -284,6 +284,8 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     const n = doc.createElement('small');
     n.textContent = `${g.i + 1} / ${g.rounds.length}`;
     el.append(n);
+    // A line's word is his own, not a secret: shown before 开始 (Hanli 10-19: 「这个是让画什么?」).
+    if (r.word) $('.g-dg-word b').textContent = lang === 'en' ? `${r.word.zh} · ${r.word.en}` : r.word.zh;
   };
   const tools = (on) => root.querySelectorAll('[data-k]').forEach((b) => { b.disabled = !on; });
 
