@@ -173,8 +173,25 @@ function taleBoard(taskId) {
   }
   const mod = gameMod(b.page);
   if (!mod) return null;
-  boards.set(taskId, { taskId, mod, day: taskId, state: mod.newGame(`${taskId}|${look.seed ?? ''}`, b.level ?? 1) });
+  // A game that keeps only the mount() contract (画猜: 银月 reads the picture) is dealt by its own mount, with the step's deal.
+  if (!mod.newGame) boards.set(taskId, { taskId, mod, day: taskId, data: mountData(b), state: { won: false } });
+  else boards.set(taskId, { taskId, mod, day: taskId, state: mod.newGame(`${taskId}|${look.seed ?? ''}`, b.level ?? 1) });
   return boards.get(taskId);
+}
+/* What a mount-only board is dealt (beat-host.js hands it to mount): the task's deal from Look, and
+   — on a 测试存档, which never calls 银月 — the scratch seam (`&her=stub` answers on the page, else
+   she is not asked at all). A deal that names a rules verb (`begin`: 本王考考你) gets its call. */
+function mountData(task) {
+  const deal = { ...(task?.deal ?? {}) };
+  if (SCRATCH) deal.seam = HER_SEAM === 'stub' ? 'stub' : 'off';
+  if (deal.begin) {
+    const { verb: name, ...args } = deal.begin;
+    deal.begin = async () => {
+      const r = await verb(name, args);
+      return r?.ok ? { ok: true, word: r.word ?? null } : { ok: false, say: r?.say ?? null, done: r?.refused === 'cap' };
+    };
+  }
+  return deal;
 }
 const isTale = (id) => String(id ?? '').startsWith('tale:');
 
@@ -191,7 +208,7 @@ function boardFor(taskId) {
     if (!old || old.day !== day || spent) {
       const round = spent ? (old.round ?? 0) + 1 : 0;
       // A game that keeps only the mount() contract (beat-host.js) is dealt by its own mount, not here.
-      if (!mod.newGame) boards.set(taskId, { taskId, mod, day, round, state: { won: false } });
+      if (!mod.newGame) boards.set(taskId, { taskId, mod, day, round, data: mountData(task), state: { won: false } });
       else boards.set(taskId, { taskId, mod, day, round, state: mod.newGame(`${day}|${look.seed ?? ''}|${taskId}${round ? `|${round}` : ''}`, task.level ?? 1, { ...(task.deal ?? {}), ...(task.done_line ? { solved: task.done_line } : {}) }) });
     }
     // A board the rules judge (密室, games/mishi.js `fromLook`): what it is comes from Look, laid in on every draw.

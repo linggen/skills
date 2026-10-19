@@ -219,5 +219,7 @@ test('the module keeps the contract and the registry places it in the 游戏厅 
   const ling = fs.readFileSync(new URL('../scripts/games/drawguess-ling.js', import.meta.url), 'utf8');
   assert.match(ling, /import\('\/shared\/api\.js'\)/, 'sessions and models from the engine\'s api.js');
   assert.match(ling, /removeSkillSession/, 'every call\'s session is removed');
-  assert.ok(!ROW.task && !ROW.scene, 'no story beat yet');
+  assert.ok(!ROW.task && !ROW.scene, 'the first row is the 游戏厅\'s own');
+  const story = reg.games.filter((g) => g.id === 'drawguess' && g.task);
+  assert.deepEqual(story.map((g) => g.task), ['jiaxin-letter'], 'the story\'s 家信 is its second row (tests/drawguess-story.test.mjs)');
 });

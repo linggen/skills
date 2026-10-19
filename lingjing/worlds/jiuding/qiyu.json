@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "_about": "奇遇 in a 秘境 rerun (rules/qiyu.mjs; Hanli 2026-10-19: 「秘境里可以有随机游戏. 设计一个剧情触发一下了」). Keyed by the rerun's beat id. As a run is entered each of its rooms rolls `chance` (≈ one room in three or four); a hit draws an entry by `weight`, never the game the room before drew nor the one the previous run drew last, and an entry that `needs: \"her\"` (你画我猜: 银月 names the picture) only while she is awake beside him on her own line. `task` is the board (tasks/world.json, `qiyu: true`); one of `frames` is its line on the board (facts, never her words); a frame's `item` is the thing hung on the vines (割绳子); `words` names the drawguess word list (games.json drawguess data) the thing drawn is dealt from. A win pays a find drawn from the rerun's own `finds`, and its first clear ever the small-game 灵石 (balance.json `boards`). On a 测试存档, `rerun enter --qiyu=<task>` forces that entry into the first room.",
+  "mijing": {
+    "chance": 0.3,
+    "pool": [
+      {
+        "task": "qiyu-drawguess", "weight": 3, "needs": "her", "words": "mijing",
+        "frames": [
+          { "zh": "岔口那道刻着「凶」字的窄缝旁，还刻着半幅画，叫水蚀得只剩几道印子。照着补全，给银月认。", "en": "Beside the narrow crack marked 凶 at the fork, half a picture is carved, worn by water to a few lines. Finish it, and let Yinyue read it." },
+          { "zh": "石阶边的崖壁上，前人拿刀刻过一样东西，刻痕叫青苔吃了大半。照着补上，叫银月认。", "en": "On the cliff by the steps someone once cut a picture into the stone; moss has eaten most of it. Fill it back in for Yinyue to read." },
+          { "zh": "干了的河床里一块平石，前人在上头画过东西，水冲得只剩几笔。补上，看银月认不认得。", "en": "A flat stone in the dry riverbed: someone drew on it once, and the water left a few strokes. Fill it in and see if Yinyue knows it." }
+        ]
+      },
+      {
+        "task": "qiyu-rope", "weight": 2,
+        "frames": [
+          { "zh": "崖缝上垂下几根老藤，藤梢吊着一块鼎苔，够不着。饭桶在底下张着嘴。", "en": "Old vines hang from a crack in the cliff, a lump of cauldron moss on their ends, out of reach. The Rice Bucket gapes below.", "item": { "zh": "鼎苔", "en": "cauldron moss" } },
+          { "zh": "暗河上头的石缝里垂下藤来，吊着一株灵芝，晃晃悠悠。", "en": "Vines trail from a crack above the dark river, a lingzhi swinging on them.", "item": { "zh": "灵芝", "en": "lingzhi" } },
+          { "zh": "崖壁上挂着一只前人的药篓，藤快断了，篓里还有东西。", "en": "Someone's old herb basket hangs on the cliff face, its vines nearly through; there is something still in it.", "item": { "zh": "药篓", "en": "herb basket" } }
+        ]
+      },
+      {
+        "task": "qiyu-huarong", "weight": 2,
+        "frames": [
+          { "zh": "碎石堵了岔口的一道口子，得一块一块挪开。", "en": "Fallen stone blocks one of the mouths at the fork; it has to be shifted block by block." },
+          { "zh": "暗河的河床里卡着几截浮木和石块，挪出一条路来。", "en": "Driftwood and stones jam the dry riverbed; work a way through." },
+          { "zh": "凶崖底下塌了半边，有只小兽困在石缝里，把石头挪开放它出来。", "en": "Half the foot of the cliff has fallen in and a small beast is trapped in a crack; shift the stones and let it out." }
+        ]
+      },
+      {
+        "task": "qiyu-qiqiao", "weight": 1,
+        "frames": [
+          { "zh": "地上散着七片碎石板，拼回去是一道符。", "en": "Seven broken stone tablets lie on the floor; put back together, they make a talisman." },
+          { "zh": "石壁上剥落了七块彩绘，捡起来拼回原样。", "en": "Seven painted flakes have fallen from the wall; fit them back as they were." }
+        ]
+      },
+      {
+        "task": "qiyu-luoshu", "weight": 1,
+        "frames": [
+          { "zh": "石缝里卡着一只石匣，匣盖上刻着残缺的九宫。", "en": "A stone casket is wedged in a crack, a broken nine-square carved on its lid." },
+          { "zh": "暗河边的石台上九个凹坑，数对了才肯开。", "en": "Nine hollows in a stone ledge by the dark river; it opens only when the numbers are right." }
+        ]
+      }
+    ]
+  }
+}

@@ -251,6 +251,10 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   const has = (kind, id) => cards.some(c => c.card === kind && (id === undefined || c.id === id));
   // 二十问 offered fills an empty stage beside the coins (rules/aigames.mjs): never over a scene's business.
   if (has('hexagram') && look.twenty && !look.twenty.open && !look.twenty.outcome && look.twenty.rounds_left) cards.push({ card: 'twenty' });
+  // 本王考考你 (rules/kao.mjs) is as light: offered only on an empty stage — or standing while a round is under way.
+  for (const b of (look.tasks ?? []).filter(t => t.light && t.kind === 'board' && t.status !== 'done' && !t.won)) {
+    if ((has('hexagram') || b.open) && !has('board', b.id)) cards.push({ card: 'board', id: b.id });
+  }
 
   if (!line) {
     // An open board is always before the player: Ling tells them it is, so it
@@ -266,7 +270,7 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
     // 刷副本: the door's way in while the rooms are open, and the run's own card inside (rules/rerun.mjs).
     if (look.rerun && (look.rerun.inside || (look.rerun.open && look.rerun.here)) && !has('rerun')) cards.push({ card: 'rerun' });
     // Every board open here: the story's, an errand's, and the games this place hosts.
-    for (const board of (look.tasks ?? []).filter(t => t.kind === 'board' && t.status !== 'done' && !t.won)) {
+    for (const board of (look.tasks ?? []).filter(t => t.kind === 'board' && t.status !== 'done' && !t.won && !t.light)) {
       if (!has('board', board.id)) cards.push({ card: 'board', id: board.id });
     }
     // A fight the scene offers, and a creature at its haunt with no scene

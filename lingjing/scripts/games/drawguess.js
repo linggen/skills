@@ -12,13 +12,14 @@
 // 妖王 voice, her lines on the paper only. She is gated as in the world: until the save has met her
 // (`absent_until`) the engine runs no turn and answers `absent` — the game says so and won't start.
 // The paper and the player's own strokes are the only things drawn here; nothing is painted in code.
-import { ERASER, guessLoop, isBlindReply, matches, parseReply, pickWord, starsFor, strokeOp } from './drawguess-rules.js';
+import { ERASER, guessLoop, isBlindReply, letterGrade, matches, parseReply, pickWord, roundsOf, starsFor, strokeOp, stubReply } from './drawguess-rules.js';
 import { askLing, askOnce, closeRound, declaredBlind, dropOpen, openRound, reachable } from './drawguess-ling.js';
 
 export const meta = {
   id: 'drawguess',
   name: { zh: '画猜 · 你画我猜', en: 'Draw · they guess' },
   how: { zh: '照字画。手一停，猜的人就看一眼。', en: 'Draw the word. Rest your hand and they look.' },
+  ai: true, // the other half is a model's (no bot plays it: tests/board-bots.test.mjs)
 };
 
 export const ROUND_MS = 60000, IDLE_MS = 2500, MAX_LOOKS = 4, EXPORT_PX = 448;
@@ -31,6 +32,7 @@ const T = {
     blind: '这个模型看不见图，画猜开不了。', far: '连不上灵。', err: '{who}没看清，再画画。',
     absent: '还没遇见银月。', unavailable: '银月不在。',
     won: '对了，是「{w}」。', time: '时间到。是「{w}」。',
+    next: '下一句', again: '再画一张', write: '就写字吧', off: '测试存档不叫银月。', plain: '这一句只写了字：「{w}」。',
   },
   en: {
     draw: 'Draw', start: 'Start', pen: 'Brush', eraser: 'Eraser', clear: 'Clear', done: 'Done', who: 'Guesser', names: { ling: 'Ling', yinyue: 'Yinyue' },
@@ -38,6 +40,7 @@ const T = {
     blind: 'This model can\'t see pictures, so this game can\'t start.', far: 'Ling can\'t be reached.', err: '{who} couldn\'t make it out. Keep drawing.',
     absent: 'You haven\'t met Yinyue yet.', unavailable: 'Yinyue isn\'t here.',
     won: 'Right — {w}.', time: 'Time. It was {w}.',
+    next: 'Next line', again: 'Draw another', write: 'Just write it', off: 'A scratch save does not call Yinyue.', plain: 'This line is in words only: {w}.',
   },
 };
 const fill = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => o[k] ?? '');
@@ -50,7 +53,7 @@ const STYLE = `.g-dg{gap:8px}.g-dg-head{display:flex;align-items:baseline;gap:10
 .g-dg-say::after{content:'';position:absolute;left:22px;bottom:-6px;width:10px;height:10px;background:inherit;border-right:1px solid var(--line);border-bottom:1px solid var(--line);transform:rotate(45deg)}
 .g-dg-say b{font-family:var(--serif);color:var(--ling);margin-right:6px}.g-dg-say .g-dg-other{display:block;font-size:12px;color:var(--faint);margin-top:2px}
 .g-dg-say.is-wait{color:var(--faint)}
-.g-dg[data-phase=blind] .g-dg-say,.g-dg[data-phase=far] .g-dg-say,.g-dg[data-phase=absent] .g-dg-say{visibility:hidden}
+.g-dg[data-phase=blind] .g-dg-say,.g-dg[data-phase=far] .g-dg-say,.g-dg[data-phase=absent] .g-dg-say,.g-dg[data-phase=off] .g-dg-say{visibility:hidden}
 .g-dg-who{display:flex;align-items:center;gap:6px;width:100%;font-size:13px;color:var(--dim);font-family:var(--serif)}
 .g-dg-who button{min-height:32px;padding:2px 14px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--dim);font:inherit;cursor:pointer}
 .g-dg-who button.is-on{border-color:var(--ling);background:var(--ling-soft);color:var(--ling);font-weight:600}
@@ -65,7 +68,10 @@ const STYLE = `.g-dg{gap:8px}.g-dg-head{display:flex;align-items:baseline;gap:10
 .g-dg-bar .g-dg-tool.is-on{border-color:var(--ling);background:var(--ling-soft);color:var(--ling);font-weight:600}
 .g-dg-eraser{position:absolute;left:0;top:0;border:1.5px solid rgba(29,24,19,.7);border-radius:50%;background:rgba(244,232,210,.35);box-shadow:0 0 0 1px rgba(244,232,210,.6);pointer-events:none;transform:translate(-50%,-50%);display:none}
 .g-dg-paper.is-erasing canvas{cursor:none}
-.g-dg-foot{font-size:11px;color:var(--faint);font-family:var(--ui);min-height:1em}`;
+.g-dg-foot{font-size:11px;color:var(--faint);font-family:var(--ui);min-height:1em}
+.g-dg-letter{width:100%;box-sizing:border-box;padding:6px 10px;border-left:2px solid var(--line);font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--text)}
+.g-dg-letter:empty{display:none}.g-dg-letter small{display:block;font-size:11px;color:var(--faint);font-family:var(--ui)}
+.g-dg.is-fixed .g-dg-who{display:none}`;
 
 function styleOnce(doc) {
   if (doc.getElementById('g-dg-style')) return;
@@ -75,12 +81,19 @@ function styleOnce(doc) {
   doc.head.append(el);
 }
 
-let wordsP = null;
+let rowP = null;
+const rowData = () => (rowP ??= fetch(new URL('../../worlds/jiuding/games.json', import.meta.url)).then((r) => r.json())
+  .then((reg) => reg.games.find((g) => g.id === 'drawguess')?.data ?? {}).catch(() => ({})));
 async function wordsOf(data) {
   if (data?.words?.length) return data.words;
-  wordsP ??= fetch(new URL('../../worlds/jiuding/games.json', import.meta.url)).then((r) => r.json())
-    .then((reg) => reg.games.find((g) => g.id === 'drawguess')?.data?.words ?? []).catch(() => []);
-  return wordsP;
+  return (await rowData()).words ?? [];
+}
+/** A set's rounds (`data.set`, games.json drawguess `data.sets`): the 家信's lines, each with its word. */
+async function setOf(data) {
+  if (!data?.set) return null;
+  const row = await rowData();
+  const rounds = roundsOf(row.sets?.[data.set], row.words ?? []);
+  return rounds.length ? rounds : null;
 }
 
 // ── the brush and the eraser ───────────────────────────────────────────────────────────────
@@ -155,13 +168,16 @@ export function paperPng(doc, strokes, px = EXPORT_PX) {
 
 export const GUESSERS = ['ling', 'yinyue'];
 const HEAD = '[画猜] 小游戏试玩，与故事无关；不调用任何工具，不提游戏或模型。';
+// In the story (a 家信, 本王考考你, a 秘境 奇遇, a 传闻's step) the round carries a line of facts
+// (`data.context`: where they are, what the picture is for) in place of 「与故事无关」.
+const headOf = (context) => (context ? `[画猜] ${context}；不调用任何工具，不提游戏或模型。` : HEAD);
 const VOICE = {
   ling: '照你平常说话的样子',
   yinyue: '你是银月，骄傲的妖王，自称本王：画得糟就毒舌一句，猜中了才勉强满意，话要短',
 };
-export const askOpen = (who) => `${HEAD}纸还空着，小满要画一样东西给你猜。${VOICE[who]}。`
+export const askOpen = (who, context = null) => `${headOf(context)}纸还空着，小满要画一样东西给你猜。${VOICE[who]}。`
   + '只回两行：第一行一句中文开场，不超过十二字；第二行同一句的英文。';
-export const askGuess = (who, prev) => `${HEAD}图上是小满用毛笔画的一样寻常东西，也许还没画完。${VOICE[who]}，猜它是什么。`
+export const askGuess = (who, prev, context = null) => `${headOf(context)}图上是小满用毛笔画的一样寻常东西，也许还没画完。${VOICE[who]}，猜它是什么。`
   + '只回三行：第一行一句中文，不超过二十字；第二行同一句的英文；第三行「猜：」加一个中文名词。'
   + (prev.length ? `你先前猜过：${prev.join('、')}。画添了笔，可以改口。` : '');
 
@@ -179,13 +195,18 @@ function whoKept(data) {
 }
 function keepWho(who) { try { globalThis.localStorage?.setItem(WHO_KEY, who); } catch { /* no storage */ } }
 
-async function lookFirst(doc, who, model) {
+async function lookFirst(doc, who, model, { open = true, seam = null, context = null } = {}) {
+  // The scratch seam: a 测试存档 never calls her (`stub` answers on the page, `off` not at all).
+  if (seam === 'stub') return { blind: false, model: { id: 'stub' } };
+  if (seam) return { off: true };
   const key = `${who}|${model ?? ''}`;
   if (sight.has(key)) return sight.get(key);
   if (!(await reachable())) return { far: true };
   const named = model ? null : await declaredBlind().catch(() => null);
   if (named) return { blind: true, model: { id: named } };
-  const r = await askOnce({ agent: who, png: paperPng(doc, [], 32), prompt: askOpen(who), model });
+  // In the story no opening look is spent (a look is ~8.7k tokens): the first guess says whether she can see.
+  if (!open) return { blind: false, model: null };
+  const r = await askOnce({ agent: who, png: paperPng(doc, [], 32), prompt: askOpen(who, context), model });
   log({ kind: 'open', who, ms: r.ms, model: r.model?.id, tools: r.tools, text: r.text, refused: r.refused });
   if (r.refused) return { refused: r.refused };
   const seen = isBlindReply(r.text) ? { blind: true, model: r.model, said: r.text } : { blind: false, model: r.model, line: parseReply(r.text) };
@@ -206,12 +227,20 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   const doc = container.ownerDocument;
   const w = T[lang] ?? T.zh;
   styleOnce(doc);
+  // In the story (`data.fixed`) the guesser is set — always 银月 — and no picker shows; no opening
+  // look is spent (`data.open`), the round may say where it is (`data.context`), a 测试存档 never
+  // calls her (`data.seam`: 'stub' answers on the page, 'off' not at all), the rules may hand the
+  // word as the round begins (`data.begin()`), and a 家信 (`data.set`) is several lines in a row.
+  const fixed = Boolean(data.fixed);
+  const max = Math.max(1, Number(data.maxLooks) || MAX_LOOKS);
+  const ctxLine = typeof data.context === 'string' ? data.context : null;
   const root = doc.createElement('div');
-  root.className = 'g-ink g-dg';
+  root.className = `g-ink g-dg${fixed ? ' is-fixed' : ''}`;
   const names = w.names;
   const whoBtns = GUESSERS.map((k) => `<button type="button" data-who="${k}">${names[k]}</button>`).join('');
   root.innerHTML = `<div class="g-dg-who"><span>${w.who}</span>${whoBtns}</div><div class="g-dg-head"><span class="g-dg-word">${w.draw}<b></b></span><span class="g-dg-left"></span><span class="g-dg-sec"></span></div>`
     + '<div class="g-dg-time"><i></i></div>'
+    + '<div class="g-dg-letter"></div>'
     + `<div class="g-dg-say is-wait"><b></b><span class="g-dg-line"></span><span class="g-dg-other"></span></div>`
     + '<div class="g-dg-paper is-off"><canvas></canvas><div class="g-dg-eraser"></div><div class="g-dg-veil"></div></div>'
     + `<div class="g-dg-bar"><button type="button" class="g-btn g-btn-soft g-dg-tool is-on" data-k="pen">${w.pen}</button>`
@@ -223,15 +252,17 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   const $ = (sel) => root.querySelector(sel);
   const canvas = $('canvas'), paper = $('.g-dg-paper'), veil = $('.g-dg-veil'), goBtn = $('[data-k="go"]'), rub = $('.g-dg-eraser');
 
-  const g = { phase: 'check', who: whoKept(data), tool: 'pen', word: null, strokes: [], cur: null, guesses: [], t0: 0, timer: null, loop: null };
+  const who0 = fixed && GUESSERS.includes(data.who) ? data.who : whoKept(data);
+  const g = { phase: 'check', who: who0, tool: 'pen', word: null, strokes: [], cur: null, guesses: [], t0: 0, timer: null, loop: null, rounds: null, i: 0, got: 0 };
   let finish = () => {};
   root.dataset.phase = g.phase;
   const CHOOSE = new Set(['ready', 'blind', 'far', 'absent']); // the guesser may change only before a round
+  const CANT = new Set(['blind', 'far', 'absent', 'off']); //     she cannot be asked: a 家信 may still be written (`data.fallback`)
   const setPhase = (p) => {
     g.phase = p;
     root.dataset.phase = p;
     paper.classList.toggle('is-off', p !== 'draw');
-    root.querySelectorAll('[data-who]').forEach((b) => { b.disabled = !CHOOSE.has(p); b.classList.toggle('is-on', b.dataset.who === g.who); });
+    root.querySelectorAll('[data-who]').forEach((b) => { b.disabled = fixed || !CHOOSE.has(p); b.classList.toggle('is-on', b.dataset.who === g.who); });
   };
   const sub = (s) => fill(s, { who: names[g.who] });
 
@@ -243,6 +274,18 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   const sayParsed = (p) => say(lang === 'en' ? (p.en ?? p.zh) : (p.zh ?? p.en), lang === 'en' ? p.zh : p.en);
   const foot = (t) => { $('.g-dg-foot').textContent = t; };
   const lefts = () => { $('.g-dg-left').textContent = g.loop ? fill(w.looks, { n: g.loop.left }) : ''; };
+  const pickLang = (o) => (o ? (lang === 'en' ? o.en ?? o.zh : o.zh ?? o.en) : '');
+  /* A 家信's line over the paper, and which of the lines it is. */
+  const letter = () => {
+    const r = g.rounds?.[g.i], el = $('.g-dg-letter');
+    if (!r) { el.textContent = ''; return; }
+    el.innerHTML = '';
+    el.append(pickLang(r.line));
+    const n = doc.createElement('small');
+    n.textContent = `${g.i + 1} / ${g.rounds.length}`;
+    el.append(n);
+  };
+  const tools = (on) => root.querySelectorAll('[data-k]').forEach((b) => { b.disabled = !on; });
 
   // The canvas follows its box at the device's pixel ratio; the strokes are kept in paper units.
   const fit = () => {
@@ -306,9 +349,11 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
 
   root.addEventListener('click', (e) => {
     const who = e.target.closest?.('[data-who]')?.dataset.who;
-    if (who && CHOOSE.has(g.phase) && who !== g.who) { g.who = who; keepWho(who); start(); return; }
+    if (who && !fixed && CHOOSE.has(g.phase) && who !== g.who) { g.who = who; keepWho(who); start(); return; }
     const k = e.target.closest?.('[data-k]')?.dataset.k;
     if (k === 'go' && g.phase === 'ready') return begin();
+    // She cannot be asked: a 家信 is written in words only, and goes on (never stuck on the model).
+    if (k === 'go' && CANT.has(g.phase) && data.fallback) return writeOut();
     if (g.phase !== 'draw') return;
     if (k === 'pen' || k === 'eraser') {
       g.tool = k;
@@ -320,10 +365,21 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     if (k === 'go') g.loop.now();
   });
 
+  /* The engine ran no turn for her mid-round, or the model turned out blind on the first look. */
+  const cannot = (phase, text) => {
+    clearInterval(g.timer);
+    g.loop?.stop();
+    g.sid?.then((sid) => closeRound(sid), () => {});
+    setPhase(phase);
+    veil.textContent = text;
+    tools(false);
+    if (data.fallback) { goBtn.textContent = w.write; goBtn.disabled = false; }
+  };
   const onReply = (r) => {
+    if (r.refused) return cannot('absent', w[r.refused] ?? w.absent);
+    if (isBlindReply(r.text)) { foot(r.text); return cannot('blind', w.blind); }
     const p = parseReply(r.text);
     const ok = p.guess != null && matches(p.guess, g.word);
-    if (r.refused) return onError(new Error(r.refused));
     log({ kind: 'guess', who: g.who, word: g.word.zh, n: g.loop.calls, ms: r.ms, model: r.model?.id, guess: p.guess, ok, tools: r.tools, zh: p.zh, en: p.en });
     g.note = '';
     if (p.guess) g.guesses.push(p.guess);
@@ -350,28 +406,43 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     if (!g.loop.busy) end(false);
   };
 
-  const begin = () => {
-    g.word = pickWord(g.words, Math.random, lastWord);
+  /* One look: the page's stub on a 测试存档 (`&her=stub`), else her turn through the engine. */
+  const send = async () => {
+    foot(sub(w.looking));
+    if (data.seam === 'stub') {
+      await new Promise((r) => setTimeout(r, 1200));
+      return { text: stubReply(g.word, g.loop.calls), ms: 1200, model: { id: 'stub' }, tools: 0 };
+    }
+    const png = paperPng(doc, g.strokes), prompt = askGuess(g.who, g.guesses, ctxLine);
+    return askLing({ sid: await g.sid, agent: g.who, png, prompt, model: data.model ?? null, signal });
+  };
+
+  const begin = async () => {
+    goBtn.disabled = true;
+    let word = g.rounds?.[g.i]?.word ?? data.word ?? null;
+    // The rules may hand the round its word, and count it (本王考考你's night cap): refused, no round.
+    if (typeof data.begin === 'function') {
+      const r = await Promise.resolve(data.begin()).catch((e) => ({ ok: false, say: String(e?.message ?? e) }));
+      if (!r?.ok) { foot(r?.say ?? ''); goBtn.disabled = Boolean(r?.done); return; }
+      word = r.word ?? word;
+    }
+    g.word = word ?? pickWord(g.words, Math.random, lastWord);
     lastWord = g.word.zh;
     $('.g-dg-word b').textContent = lang === 'en' ? `${g.word.zh} · ${g.word.en}` : g.word.zh;
     g.strokes = [];
     g.guesses = [];
     veil.textContent = '';
-    g.sid = openRound();
-    g.sid.catch(() => {});
+    tools(true);
+    goBtn.textContent = w.done;
+    if (data.seam !== 'stub') { g.sid = openRound(); g.sid.catch(() => {}); } else g.sid = null;
     g.loop = guessLoop({
-      max: MAX_LOOKS,
+      max,
       idleMs: IDLE_MS,
-      send: async () => {
-        foot(sub(w.looking));
-        const png = paperPng(doc, g.strokes), prompt = askGuess(g.who, g.guesses);
-        return askLing({ sid: await g.sid, agent: g.who, png, prompt, model: data.model ?? null, signal });
-      },
+      send,
       onReply,
       onError,
       onSettle: () => { if (g.phase === 'closing') end(false); },
     });
-    goBtn.textContent = w.done;
     setPhase('draw');
     g.t0 = performance.now();
     g.timer = setInterval(tick, 250);
@@ -380,18 +451,50 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   };
 
   const end = (won) => {
-    if (g.phase === 'over') return;
+    if (g.phase === 'over' || g.phase === 'between') return;
     clearInterval(g.timer);
     g.loop?.stop();
     g.sid?.then((sid) => closeRound(sid), () => {});
-    setPhase('over');
     lefts();
-    root.querySelectorAll('[data-k]').forEach((b) => { b.disabled = true; });
     const word = lang === 'en' ? g.word.en : g.word.zh;
-    if (won) root.classList.add('is-won');
-    foot(fill(won ? w.won : w.time, { w: word }));
     const calls = g.loop?.calls ?? 0;
-    setTimeout(() => finish(won ? { won: true, stars: starsFor(calls), grade: `${calls}` } : { won: false, grade: `${word}` }), won ? 1800 : 600);
+    // A 家信: the line is written whether she got its picture or not; then the next line, or the letter done.
+    if (g.rounds) {
+      if (won) g.got += 1;
+      foot(fill(won ? w.won : w.plain, { w: word }));
+      g.i += 1;
+      if (g.i < g.rounds.length) {
+        setPhase('between');
+        tools(false);
+        setTimeout(() => { letter(); goBtn.textContent = w.next; setPhase('ready'); goBtn.disabled = false; }, won ? 1400 : 900);
+        return;
+      }
+      setPhase('over');
+      tools(false);
+      if (g.got) root.classList.add('is-won');
+      const grade = letterGrade(g.got, g.rounds.length);
+      setTimeout(() => finish({ won: true, stars: g.got, grade }), 1600);
+      return;
+    }
+    foot(fill(won ? w.won : w.time, { w: word }));
+    // In the story a miss is another try (a new word, a new round the rules may count), never the end.
+    if (fixed && !won && data.retry !== false) {
+      setPhase('between');
+      tools(false);
+      setTimeout(() => { goBtn.textContent = w.again; setPhase('ready'); goBtn.disabled = false; }, 900);
+      return;
+    }
+    setPhase('over');
+    tools(false);
+    if (won) root.classList.add('is-won');
+    // In the story a grade is a mark id the task may name (`look1` · `look2` …: how many looks it took).
+    setTimeout(() => finish(won ? { won: true, stars: starsFor(calls), grade: fixed ? `look${calls}` : `${calls}` } : { won: false, grade: `${word}` }), won ? 1800 : 600);
+  };
+  /* She cannot be asked: the 家信 goes in words only (`written`), so the story never waits on a model. */
+  const writeOut = () => {
+    setPhase('over');
+    tools(false);
+    finish({ won: true, stars: 0, grade: 'written' });
   };
 
   return new Promise((resolve) => {
@@ -418,21 +521,23 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     say('……', '', true);
     foot(sub(w.checking));
     veil.textContent = '';
-    root.querySelectorAll('[data-k]').forEach((b) => { b.disabled = false; });
+    tools(true);
     goBtn.disabled = true;
     g.words = await wordsOf(data);
+    g.rounds = await setOf(data);
+    letter();
     let s;
-    try { s = await lookFirst(doc, who, data.model ?? null); } catch (e) { s = { far: true, err: e }; }
+    try { s = await lookFirst(doc, who, data.model ?? null, { open: data.open ?? !fixed, seam: data.seam ?? null, context: ctxLine }); } catch (e) { s = { far: true, err: e }; }
     if (who !== g.who) return; // the guesser changed while this one was asked
     g.model = s.model?.id ?? null;
     foot(modelLine());
-    if (s.far) { setPhase('far'); veil.textContent = w.far; return; }
-    if (s.refused) { setPhase('absent'); veil.textContent = w[s.refused]; foot(''); return; }
+    if (s.off) return cannot('off', w.off);
+    if (s.far) return cannot('far', w.far);
+    if (s.refused) { foot(''); return cannot('absent', w[s.refused]); }
     if (s.blind) {
-      setPhase('blind');
-      veil.textContent = w.blind;
+      cannot('blind', w.blind);
       foot(s.said ?? '');
-      root.querySelectorAll('[data-k]').forEach((b) => { b.disabled = true; });
+      if (!data.fallback) tools(false);
       return;
     }
     if (s.line?.zh || s.line?.en) sayParsed(s.line); else say('……', '', true);

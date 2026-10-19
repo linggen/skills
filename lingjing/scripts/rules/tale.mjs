@@ -22,8 +22,17 @@ import { gameLevel, lundaoForm } from './tasks.mjs';
 import { hashOf } from './travel.mjs';
 import { stow, storedLine } from './pouch.mjs';
 import { allPlaces, atScene, creatureOf, huntable, ofJuan, placeName, placeOf, placeOpen, tierIndex, tooHard } from './world.mjs';
+import { herAwake, herAway } from './companion.mjs';
 
 const WORD_GAMES = new Set(['riddle', 'lundao']);
+/* A game that needs her (tale.json `needs: "her"` — 画猜, 银月 reads the picture) stands only while
+   she is awake beside him and on her own line: never in the seed, never past the lint, otherwise. */
+const gameUp = (content, state, g) => g?.needs !== 'her' || (herAwake(state) && !herAway(content, state));
+/* The things a drawing step may ask for (`words`: a games.json row's data.words). */
+const drawWords = (content, g) => (g?.words ? (content.games?.games ?? []).find(r => r.id === g.words && r.data?.words)?.data.words ?? [] : []);
+const wordName = (w, lang) => (lang === 'en' ? w.en : w.zh);
+/* The word Ling named, in either language. */
+const namedWord = (words, said) => { const x = String(said ?? '').trim().toLowerCase(); return words.find(w => w.zh === x || String(w.en).toLowerCase() === x) ?? null; };
 const cfgOf = content => content.tale;
 const minutes = n => n * 60000;
 
@@ -78,9 +87,10 @@ function reachOf(content, state, now) {
 
 function shapeOf(content, state, now) {
   const cfg = cfgOf(content), lang = state.lang;
-  const games = Object.entries(cfg.games).map(([id, g]) => ({
+  const games = Object.entries(cfg.games).filter(([, g]) => gameUp(content, state, g)).map(([id, g]) => ({
     id, name: pick(g.name, lang), frames: g.frames.map(f => pick(f, lang)),
     ...(g.forms ? { forms: g.forms[lang] ?? g.forms.zh } : {}),
+    ...(g.words ? { words: drawWords(content, g).map(w => wordName(w, lang)) } : {}),
   }));
   return {
     steps: cfg.steps, cast: cfg.cast, reach: cfg.reach, kinds_min: cfg.kinds_min, finale: cfg.finale,
@@ -157,7 +167,9 @@ const LUNDAO_OK = (content, lang, l, bad, at) => {
 function lintLink(content, state, now, link, at, from, castIds, bad, { finale = false } = {}) {
   const lang = state.lang, lim = cfgOf(content).lengths[lang] ?? cfgOf(content).lengths.zh, games = cfgOf(content).games;
   if (!link || typeof link !== 'object') { bad(at, 'a step is an object'); return null; }
-  if (!games[link.game] || (finale && WORD_GAMES.has(link.game))) bad(`${at}.game`, `one of ${Object.keys(games).filter(g => !finale || !WORD_GAMES.has(g)).join(', ')}`);
+  if (!games[link.game] || (finale && WORD_GAMES.has(link.game))) bad(`${at}.game`, `one of ${Object.keys(games).filter(g => (!finale || !WORD_GAMES.has(g)) && gameUp(content, state, games[g])).join(', ')}`);
+  else if (!gameUp(content, state, games[link.game])) bad(`${at}.game`, `${link.game} needs Yinyue awake beside the player — she is not now; pick another game`);
+  else if (games[link.game].words && link.word != null && !namedWord(drawWords(content, games[link.game]), link.word)) bad(`${at}.word`, `one of ${drawWords(content, games[link.game]).map(w => wordName(w, lang)).join(', ')}, or left out`);
   const where = placeProblem(content, state, now, link.at, from);
   if (where) bad(`${at}.at`, where);
   if (!castIds.has(link.giver)) bad(`${at}.giver`, 'one of the cast ids');
@@ -258,7 +270,7 @@ function lintTale(content, state, now, raw) {
   return { tale: { title: t.title.trim(), hook: t.hook.trim(), ending: t.ending.trim(), cast, chain: chain.map(trimLink) } };
 }
 
-const pickLink = l => ({ game: l?.game, at: l?.at, giver: l?.giver, line: l?.line, ...(l?.clue ? { clue: l.clue } : {}), ...(l?.riddle ? { riddle: l.riddle } : {}), ...(l?.lundao ? { lundao: l.lundao } : {}) });
+const pickLink = l => ({ game: l?.game, at: l?.at, giver: l?.giver, line: l?.line, ...(l?.clue ? { clue: l.clue } : {}), ...(l?.riddle ? { riddle: l.riddle } : {}), ...(l?.lundao ? { lundao: l.lundao } : {}), ...(l?.word != null ? { word: String(l.word).trim() } : {}) });
 const trimLink = l => ({
   ...l, line: l.line.trim(), ...(l.clue ? { clue: l.clue.trim() } : {}),
   ...(l.riddle ? { riddle: { q: l.riddle.q.trim(), answers: l.riddle.answers.map(a => String(a).trim()), choices: l.riddle.choices.map(c => String(c).trim()) } } : {}),
@@ -471,6 +483,15 @@ export function tale(state, content, ctx, args) {
 const castName = (t, id) => t.cast.find(p => p.id === id)?.name ?? null;
 const gameName = (content, lang, id) => (id === 'duel' ? pick(content.dictionary.words.duel, lang) : pick(cfgOf(content).games[id]?.name, lang));
 
+/* A drawing step's deal (画猜): who reads it, and the thing drawn — Ling's `word`, else one dealt from
+   the tale and the step; the step's own line is what the picture is for. */
+function drawDeal(content, state, t, link, g) {
+  const words = drawWords(content, g);
+  const named = link.word != null ? namedWord(words, link.word) : null;
+  const word = named ?? (words.length ? words[hashOf(`${t.id}|${t.n}|word`) % words.length] : null);
+  return { ...g.deal, ...(word ? { word } : {}), context: `今日传闻：${String(link.line ?? '').slice(0, 60)}` };
+}
+
 /* The step before him: its game and place, who gives it, the line — and
    what the page needs to deal its board, or ask its riddle. Never an answer. */
 function stepBrief(content, state, now) {
@@ -484,7 +505,7 @@ function stepBrief(content, state, now) {
     giver: { id: link.giver, name: castName(t, link.giver) }, line: link.line,
     ...(t.won ? { won: true } : {}),
   };
-  if (g?.page) brief.board = { id: boardId(t), page: g.page, level: Math.min(3, gameLevel(content, state) + (link.end ? 1 : 0)) };
+  if (g?.page) brief.board = { id: boardId(t), page: g.page, level: Math.min(3, gameLevel(content, state) + (link.end ? 1 : 0)), ...(g.deal ? { deal: drawDeal(content, state, t, link, g) } : {}) };
   if (link.game === 'riddle') { const tried = new Set((t.tried ?? []).map(normalizeAnswer)); brief.riddle = { q: link.riddle.q, choices: link.riddle.choices.filter(c => !tried.has(normalizeAnswer(c))), tried: (t.tried ?? []).length }; }
   if (link.game === 'lundao') { const l = t.lundao; brief.lundao = { form: link.lundao.form, prompt: link.lundao.prompt, last: l?.last ?? link.lundao.prompt, good: l?.good ?? 0, need: cfgOf(content).lundao.need, misses: l?.misses ?? 0, max_misses: cfgOf(content).lundao.misses }; }
   if (link.game === 'duel') brief.creature = { id: link.creature, name: pick(creatureOf(content, link.creature)?.name, lang) };

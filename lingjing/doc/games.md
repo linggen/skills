@@ -183,7 +183,7 @@ Fine as they are; 洛书 is the same square three times (二试, 困阵, daily).
 - **讨价还价** — haggle with a keeper in the chat; the rules hold the floor and the mood.
 - **断案** — ask the people, find the proof, name who did it.
 - **对对子** — being built 10-16 by another agent.
-- **画猜 · 你画我猜** — prototype 10-16, 游戏厅 only (`drawguess`, group AI · 试作; Hanli: 「玩家画AI猜, 试一下吧」).
+- **画猜 · 你画我猜** — prototype 10-16 (`drawguess`, group AI · 试作; Hanli: 「玩家画AI猜, 试一下吧」); in the story 10-19 (below).
   A word from 卷一 (弓 鹿 狐狸 饼 盆 白菜 鸡 葫芦 剑 山 月亮 灯), 60 s, an ink brush on rice paper; 笔 / 擦 (an eraser, its ring
   the size it rubs; Hanli: 「给个橡皮擦工具吧, 撤一笔没啥用」) · 清空. A rub is a paper change: the next look sends it.
   When the hand rests 2.5 s, or on 画好了, the paper (448 px PNG) goes to Ling through the engine's chat
@@ -206,5 +206,39 @@ Fine as they are; 洛书 is the same square three times (二试, 困阵, daily).
     **Unverified:** her guesses, tokens and latency — the live save has not met her (10-16); measure once a save
     reaches 00-yinyue. Her lines in the right-hand chat as hers wait on an engine change (chat-bridge
     `addMessage` takes no agent; the embed shows it as the assistant) — Hanli's call.
+  - **In the story (10-19; Hanli: 「ai游戏放到游戏中吧, 还挺好玩的. 但要结合剧情」, 「秘境里也放一个. AI猜都是Yinyue猜」,
+    「秘境里可以有随机游戏」, 「AI猜画可以多放几个地方」).** The guesser is always 银月, in her 妖王 voice (the code hands
+    her the picture and one line of where they are, `data.context`; her words are hers). No opening look in the
+    story (a look is ~8.7k tokens): the first guess says whether the model can see. A 测试存档 never calls her:
+    `&her=stub` answers on the page (a marked miss, then the word), else she is not asked at all.
+    - **第六回 · 家信 · 画给娘看** (wm-jiaxin, task `jiaxin-letter`, was 写信 · 擦了又写): 娘 cannot read, so beside
+      three of the letter's own lines he draws — 「盆可以收起来了，十七个都收。」 a basin · 「给我爹买一副护膝，狗皮的。」
+      爹's bow · 「我在这里很好。」 the moon over the mountain (games.json drawguess `sets.jiaxin`). She is out that
+      night (the 火锅). A line counts once she names it; three looks a line, then it is written in words only and
+      the next line comes — no fail. Grade all · some · none (灵石 15 · 10 · 5, first clear, after 入门). She cannot
+      be asked (blind model, no engine, a 测试存档): 「就写字吧」 writes it in words (`written`, plain). ≤ 9 looks ≈ 78k
+      tokens, a typical letter 4–5 looks ≈ 40k. The book's passage untouched; 孙二狗's 恩仇簿 line kept;
+      games/letter.js stays in the 游戏厅.
+    - **本王考考你** (rules/kao.mjs, task `benwang-kao`): on a night (19:00–06:00) she is awake beside him, after
+      入门, out of any run or fight — a light offer: its board stands only on an empty stage, beside the coins
+      (as 二十问), or while a round is under way. Each round counted as it begins (`kao open`), 3 a night; the word
+      is the rules', one of games.json drawguess `met` the save has met (饼 · 木牌 · 鹿 · 饭桶 · 牙签 · 火锅 · 镜子 ·
+      狰 · 犰狳 · 鯥, each open after its scene or with its beast), never twice a night, a word never cleared
+      first. A word's first clear pays the small-game 灵石 by its looks (1 → 15, 2 → 10, 3 → 5); a miss is
+      another round. ≤ 3 looks a round: ≤ 9 looks ≈ 78k tokens a night.
+    - **秘境 · 奇遇** (rules/qiyu.mjs, worlds/jiuding/qiyu.json; a pool, not one spot): as a rerun of the 外圈 is
+      entered, each room (岔口 · 凶崖 · 暗河) rolls 0.3 — about one room a run; a hit draws by weight 你画我猜 3
+      (only while 银月 is awake; words 鼎 灵芝 人参 犰狳 蛇 钥匙) · 割藤 2 (rope-gen.js, the frame's thing hung over the
+      饭桶) · 华容道 2 · 七巧 1 · 洛书 1, never the game the room before drew nor the last run's last. Each entry
+      has 2–3 frames grounded in the rooms (the 岔口's carved 「凶」 crack, the 凶崖's steps, the dry 暗河's
+      flat stone…) — the board's line, facts only. A win pays a find from the run's own `finds` (as 拾遗) and its
+      first clear ever the small-game 灵石. A drawing round ≤ 3 looks ≈ 26k tokens. On a 测试存档:
+      `rerun enter --qiyu=<task>` forces one into the first room.
+    - **今日传闻**: tale.json `drawguess` (`needs: "her"`) — a mute witness who can only sign what he saw, a
+      child's half-washed drawing on a wall, a ghost that answers only to a picture. In the seed and past the
+      lint only while 银月 is awake beside him on her line (rules/tale.mjs, never the prompt); Ling may name the
+      thing (`word`, one of the 卷一 words), else the rules deal it. ≤ 3 looks a step.
+    - **断案**: no clean slot — its witnesses talk, and 画猜 runs one way (he draws, she names); a witness who
+      draws for him would need the model to draw. Not built.
   - **画符 (idea, not built):** draw a talisman the book teaches (五雷符 …) stroke by stroke in its order;
     the page checks order and shape from the strokes themselves (no model), Ling only says how it looks.

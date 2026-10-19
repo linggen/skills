@@ -48,8 +48,9 @@ export function withoutSealed(content, state, brief) {
   for (const key of OUTSIDE) delete out[key];
   if (out.today) out.today = { ...out.today, festival: null, term: null, jieqi: null };
   if (out.place) { const { pass, meet, ...place } = out.place; out.place = place; }
-  // A rerun (rules/rerun.mjs): the story outside waits — its boards and the rooms' story stalls too; only the run's own board stands.
-  if (sealed.run && out.tasks) out.tasks = out.tasks.filter(t => t.id === sealed.board);
+  // A rerun (rules/rerun.mjs): the story outside waits — its boards and the rooms' story stalls too; only the run's own boards stand
+  // (its 拾遗, and a 奇遇 the run rolled in this room — rules/qiyu.mjs).
+  if (sealed.run && out.tasks) out.tasks = out.tasks.filter(t => t.id === sealed.board || t.qiyu);
   // A rerun's goal points nowhere outside: the story's road waits, frozen.
   if (sealed.goal) out.waypoint = sealed.run ? { text: sealed.goal, sealed: true } : { ...(brief.waypoint ?? {}), text: sealed.goal, sealed: true };
   return out;

@@ -874,7 +874,7 @@ function taleBody(st, ctx) {
   if (TALE_BODY[st.game]) return TALE_BODY[st.game](st, ctx);
   if (st.won) return `<div class="small dim">${esc(ctx.words.taleKept)}</div>`;
   const g = st.board ? ctx.boardFor?.(st.board.id) : null;
-  return g?.mod ? `<div class="small dim">${esc(g.mod.meta.how?.[ctx.lang] ?? g.mod.meta.how?.zh ?? '')}</div><div class="game" data-game="${esc(st.board.id)}">${g.mod.html(g.state, ctx.lang)}</div>${skipBoard(g, st.board.id, ctx)}`
+  return g?.mod ? `<div class="small dim">${esc(g.mod.meta.how?.[ctx.lang] ?? g.mod.meta.how?.zh ?? '')}</div>${mountOnly(g.mod) ? mountHostHtml(st.board.id, esc) : `<div class="game" data-game="${esc(st.board.id)}">${g.mod.html(g.state, ctx.lang)}</div>`}${skipBoard(g, st.board.id, ctx)}`
     : g ? boardHtml(g, ctx.words) : `<div class="dim small">…</div>`;
 }
 

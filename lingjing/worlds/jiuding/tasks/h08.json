@@ -157,12 +157,17 @@
     {
       "id": "jiaxin-letter",
       "kind": "board",
-      "game": "letter",
+      "game": "drawguess",
       "period": "once",
+      "_game": "Hanli 10-19 (「ai游戏放到游戏中吧……但要结合剧情」; 「AI猜都是Yinyue猜」): 娘 cannot read, so beside each line of his first letter home 小满 draws a small picture (games.json drawguess `sets.jiaxin`: the basins, 爹's bow, the moon over the mountain) and 银月 — out at the 火锅 that night — has to read it; a line counts as written once she names it, in words only when she does not. Never stuck on the model: she cannot be asked (a blind model, no engine, a 测试存档) and 「就写字吧」 writes it in words (`written`). Up to 3 looks a line, no opening look: ~8.7k tokens a look, 9 at most (~78k). Was the 写信 · 擦了又写 tap (games/letter.js, 游戏厅 only now).",
       "title": {
-        "zh": "写信 · 擦了又写",
-        "en": "The letter · Written, rubbed out, written"
+        "zh": "家信 · 画给娘看",
+        "en": "The letter home · Drawn for Ma"
       },
+      "deal": { "set": "jiaxin", "who": "yinyue", "fixed": true, "fallback": true, "maxLooks": 3, "context": "腊八夜里，大通铺上，小满就着月光给家里写第一封信。娘不识字，他在每句旁边画一样东西" },
+      "stars": 3,
+      "ranks": { "all": "best", "some": "good", "none": "plain", "written": "plain" },
+      "marks": { "all": "jiaxin-drawn", "some": null, "none": null, "written": null },
       "grant": {
         "table": "task"
       },

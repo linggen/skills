@@ -1659,9 +1659,8 @@
    "id": "letter",
    "group": "later",
    "mechanic": "剧情",
-   "scene": "wm-jiaxin",
-   "hui": "第六回",
-   "task": "jiaxin-letter"
+   "hui": "第六回 · 旧版",
+   "_retired": "The old 写信 · 擦了又写 board (a 剧情 tap, no fail), kept for the 游戏厅 only; since 2026-10-19 the 家信 at wm-jiaxin is drawn for 娘 and read by 银月 (drawguess, set jiaxin)."
   },
   {
    "id": "kaipian",
@@ -1839,7 +1838,7 @@
    "id": "drawguess",
    "group": "ai",
    "mechanic": "你画我猜",
-   "_data": "画猜 (games/drawguess.js; Hanli 2026-10-16: 「玩家画AI猜, 试一下吧」) — a prototype, no story beat. `words`: things from 卷一 to draw; `also` · `en` · `enAlso` are the spellings a guess is right under, checked page-side (drawguess-rules.js matches: exact after normalize, never a substring). The guesser (Ling, or 银月 once the save has met her) only guesses.",
+   "_data": "画猜 (games/drawguess.js; Hanli 2026-10-16: 「玩家画AI猜, 试一下吧」; into the story 10-19: 「ai游戏放到游戏中吧, 还挺好玩的. 但要结合剧情」, 「秘境里也放一个. AI猜都是Yinyue猜」). `words`: things from 卷一 to draw in the 游戏厅; `also` · `en` · `enAlso` are the spellings a guess is right under, checked page-side (drawguess-rules.js matches: exact after normalize, never a substring). In the 游戏厅 the guesser is Ling, or 银月 once the save has met her; in the story always 银月, and only while she is awake and on her own line (rules). `sets.jiaxin`: 第六回's 家信 (task jiaxin-letter; the row below): each `line` is the book's own line of his letter, `word` the picture beside it, for 娘 cannot read — a line counts as written once she names it, and in words only when she does not. `met`: 本王考考你's words (rules/kao.mjs), each open once the save has passed `after` (a scene) or has `cast` (a beast walking with him). `mijing`: a 秘境 奇遇's words (rules/qiyu.mjs, worlds/jiuding/qiyu.json).",
    "data": {
     "words": [
      {"zh": "弓", "also": ["弓箭", "长弓", "猎弓", "弯弓"], "en": "bow", "enAlso": ["bow and arrow", "longbow"]},
@@ -1854,8 +1853,48 @@
      {"zh": "山", "also": ["大山", "高山", "山峰", "群山", "山头", "山岭", "远山", "山脉"], "en": "mountain", "enAlso": ["mountains", "hill", "peak"]},
      {"zh": "月亮", "also": ["月", "弯月", "月牙", "明月", "新月", "满月", "月牙儿", "残月"], "en": "moon", "enAlso": ["crescent moon", "crescent"]},
      {"zh": "灯", "also": ["油灯", "灯笼", "灯盏", "灯火", "烛灯", "煤油灯"], "en": "lamp", "enAlso": ["lantern", "oil lamp"]}
+    ],
+    "sets": {
+     "jiaxin": {
+      "_about": "His first letter home (wm-jiaxin; the book's passage untouched, these are its own lines). 娘 cannot read, so beside a line he draws what it is about: a basin for the seventeen under the leaking roof, 爹's bow for the line about 爹, the moon over the mountain for 「我在这里很好」 — the same moon over home.",
+      "lines": [
+       {"line": {"zh": "盆可以收起来了，十七个都收。", "en": "You can put the basins away now, all seventeen."}, "word": "盆"},
+       {"line": {"zh": "给我爹买一副护膝，狗皮的。", "en": "Buy Pa a pair of knee pads, dogskin."}, "word": "弓"},
+       {"line": {"zh": "我在这里很好。", "en": "I'm very well here."}, "word": "月亮"}
+      ]
+     }
+    },
+    "met": [
+     {"zh": "饼", "also": ["烙饼", "大饼", "煎饼", "烧饼", "面饼", "薄饼", "馍", "饼角"], "en": "flatbread", "enAlso": ["pancake", "bread", "cake"]},
+     {"zh": "木牌", "also": ["木牌子", "牌子", "狐狸木牌", "九尾木牌", "护身符", "令牌", "吊坠"], "en": "wooden token", "enAlso": ["token", "tablet", "wooden tablet", "amulet", "pendant", "tag"], "after": "00-fox"},
+     {"zh": "鹿", "also": ["梅花鹿", "小鹿", "公鹿", "母鹿", "雄鹿"], "en": "deer", "enAlso": ["stag", "doe", "fawn"], "after": "00-deer"},
+     {"zh": "饭桶", "also": ["桶", "木桶", "水桶", "饭甑"], "en": "rice bucket", "enAlso": ["bucket", "barrel", "tub"], "after": "wm-diyilu"},
+     {"zh": "牙签", "also": ["签子", "竹签", "木签"], "en": "toothpick", "enAlso": ["stick", "skewer"], "after": "wm-diyilu"},
+     {"zh": "火锅", "also": ["锅", "铁锅", "汤锅", "锅子"], "en": "hotpot", "enAlso": ["pot", "wok", "cooking pot"], "after": "wm-jiaxin"},
+     {"zh": "镜子", "also": ["铜镜", "镜", "圆镜"], "en": "mirror", "enAlso": ["looking glass"], "after": "wm-jiaxin"},
+     {"zh": "狰", "also": ["小狰", "豹", "豹子", "花豹"], "en": "zheng", "enAlso": ["leopard"], "cast": "zheng"},
+     {"zh": "犰狳", "also": ["穿山甲"], "en": "armadillo", "enAlso": ["pangolin"], "after": "09-lingcao"},
+     {"zh": "鯥", "also": ["鱼", "飞鱼", "牛鱼", "怪鱼"], "en": "lu fish", "enAlso": ["fish", "flying fish"], "after": "09-xie"}
+    ],
+    "mijing": [
+     {"zh": "鼎", "also": ["香炉", "炉", "丹炉", "炉子", "三足鼎", "铜鼎"], "en": "cauldron", "enAlso": ["tripod", "censer", "furnace"]},
+     {"zh": "灵芝", "also": ["蘑菇", "菌子", "芝"], "en": "lingzhi", "enAlso": ["mushroom", "reishi", "fungus"]},
+     {"zh": "人参", "also": ["参", "山参", "萝卜"], "en": "ginseng", "enAlso": ["root", "radish"]},
+     {"zh": "犰狳", "also": ["穿山甲"], "en": "armadillo", "enAlso": ["pangolin"]},
+     {"zh": "蛇", "also": ["长虫", "小蛇", "毒蛇"], "en": "snake", "enAlso": ["serpent"]},
+     {"zh": "钥匙", "also": ["铜钥匙", "锁匙"], "en": "key", "enAlso": []}
     ]
    }
+  },
+  {
+   "id": "drawguess",
+   "group": "later",
+   "mechanic": "你画我猜",
+   "scene": "wm-jiaxin",
+   "hui": "第六回",
+   "task": "jiaxin-letter",
+   "data": {"set": "jiaxin", "who": "yinyue", "fixed": true, "fallback": true, "maxLooks": 3, "context": "腊八夜里，大通铺上，小满就着月光给家里写第一封信。娘不识字，他在每句旁边画一样东西"},
+   "_story": "第六回's 家信 (Hanli 10-19): the board the story plays at wm-jiaxin — the row above's `data.sets.jiaxin`, 银月 guessing."
   }
  ]
 }

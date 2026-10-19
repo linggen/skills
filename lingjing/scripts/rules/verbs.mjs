@@ -20,6 +20,7 @@ import { examine } from './examine.mjs';
 import { stageTurn } from './gates.mjs';
 import { fantong, fantongOpen, fantongRecipes } from './fantong.mjs';
 import { mishi } from './mishi.mjs';
+import { kao } from './kao.mjs';
 import { duel, lundao, questCheck, task, win } from './tasks.mjs';
 import { seclude } from './seclusion.mjs';
 import { caseVerb, haggle, twenty } from './aigames.mjs';
@@ -71,6 +72,8 @@ export const VERBS = gated({
   appear, remember, unstick,
   // 密室 (rules/mishi.mjs): the hidden room — the page's taps checked by the rules; `info` is anyone's.
   mishi,
+  // 本王考考你 (rules/kao.mjs): a round begun on the page, counted against the night's cap.
+  kao,
   // The page's map: each province's places, and the 九州 in ink as the save stands (rules/inkmap.mjs).
   atlas: (s, c, x, args) => {
     const out = atlas(s, c, x, args), ink = inkMapOf(c, s, x.now);

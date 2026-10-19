@@ -16,7 +16,7 @@
     "zh": { "title": 12, "hook": 60, "line": 60, "clue": 40, "ending": 120, "name": 8, "role": 12, "voice": 30, "q": 40, "choice": 10, "prompt": 12, "boss": 40 },
     "en": { "title": 40, "hook": 200, "line": 200, "clue": 140, "ending": 400, "name": 24, "role": 40, "voice": 100, "q": 140, "choice": 30, "prompt": 40, "boss": 100 }
   },
-  "_games": "Each step is one of these, played on the stage at its place. `page` is the board the page deals (scripts/games/<page>.js, or the herb board for lianliankan); riddle and lundao are words: Ling writes the riddle (its answers among 3–4 choices) or the 论道 prompt, the rules judge. `frames` are the story uses a game lends itself to — handed to Ling with the seed.",
+  "_games": "Each step is one of these, played on the stage at its place. `page` is the board the page deals (scripts/games/<page>.js, or the herb board for lianliankan); riddle and lundao are words: Ling writes the riddle (its answers among 3–4 choices) or the 论道 prompt, the rules judge. `frames` are the story uses a game lends itself to — handed to Ling with the seed. A game with `needs: \"her\"` (你画我猜: the player draws, 银月 names it) is in the seed and passes the lint only while 银月 is awake beside him and on her own line; its `word` (optional, one of the seed's `words`) is the thing drawn, else the rules deal one; `deal` is what its page is handed.",
   "games": {
     "luoshu": {
       "page": "luoshu",
@@ -61,6 +61,18 @@
         { "zh": "老将军留下的残局，解开才肯交出兵符", "en": "An old general's endgame; solve it and he hands over the seal" },
         { "zh": "兵书里夹着一局死棋", "en": "A deadlocked board folded into a book of war" },
         { "zh": "两军对峙的沙盘，要一着定胜负", "en": "A sand table of two armies, one move to decide it" }
+      ]
+    },
+    "drawguess": {
+      "page": "drawguess",
+      "name": { "zh": "你画我猜", "en": "Draw, she guesses" },
+      "needs": "her",
+      "words": "drawguess",
+      "deal": { "who": "yinyue", "fixed": true, "maxLooks": 3 },
+      "frames": [
+        { "zh": "哑巴证人说不出话，只比划他看见的东西——照着画下来，银月认出是什么才算数", "en": "A mute witness can only sign what he saw — draw it, and it counts once Yinyue names it" },
+        { "zh": "墙上一幅孩子的画，被雨冲掉一半——补全它，银月认出画的是什么，就是线索", "en": "A child's drawing on a wall, half washed away — finish it; what Yinyue reads in it is the clue" },
+        { "zh": "一个不听人话、只认画的鬼——把那样东西画出来，银月先认准了，它才肯应", "en": "A ghost that heeds no words, only pictures — draw the thing; once Yinyue reads it right, it answers" }
       ]
     },
     "alchemy": {

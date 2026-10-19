@@ -18,6 +18,8 @@ import { stow } from './pouch.mjs';
 import { hashOf } from './travel.mjs';
 import { beatOf, creatureOf, mapOf, metNow, passed, placeBrief, placeName, placeOf, settlePlace } from './world.mjs';
 import { mishiOffer, mishiRoll } from './mishi.mjs';
+import { lastQiyu, rollQiyu } from './qiyu.mjs';
+import { scratchName } from './files.mjs';
 
 const HOUR = 3600000, MIN = 60000;
 
@@ -115,7 +117,7 @@ export function rollRun(content, state, r, seed, now = new Date()) {
 /* ── In and out ── */
 
 /* Enter at the door: the rooms rolled for this run, he stands in the first. */
-function enterRun(state, content, ctx) {
+function enterRun(state, content, ctx, args = {}) {
   const lang = state.lang, here = rerunHere(content, state);
   if (!here) return refuse('no-rerun', null);
   const x = here.rerun;
@@ -131,7 +133,12 @@ function enterRun(state, content, ctx) {
   // A run with no cache may roll a 暗室 instead (密室, rules/mishi.mjs — its chance and rooms are mishi.json's): offered in one of the run's rooms.
   const dark = !Object.values(s.rerun.rooms).some(r => r.cache) && mishiRoll(content, state, { seed, now: ctx.now });
   if (dark) s.mishi_offer = mishiOffer(content, s, { place: x.rooms[Math.floor(draw(`${seed}|anshi`) * x.rooms.length)], now: ctx.now }).mishi_offer;
-  s.reruns = { ...s.reruns, [here.beat.id]: { ...s.reruns?.[here.beat.id], n } };
+  // 奇遇 (rules/qiyu.mjs): a room may roll one small game from the run's pool. A 测试存档 may force one
+  // into the first room (`--qiyu=<task>`), so a check (and Hanli on a scratch save) can try it at once.
+  const force = scratchName() && args.qiyu ? String(args.qiyu) : null;
+  const qiyu = rollQiyu(content, state, { rerunId: here.beat.id, rooms: x.rooms, seed, draw, force });
+  for (const [room, q] of Object.entries(qiyu)) s.rerun.rooms[room].qiyu = q;
+  s.reruns = { ...s.reruns, [here.beat.id]: { ...s.reruns?.[here.beat.id], n, ...(lastQiyu(qiyu) ? { qiyu_last: lastQiyu(qiyu) } : {}) } };
   s.place = x.home ?? x.rooms[0];
   delete s.returned;
   settlePlace(content, s, ctx.now);
@@ -178,7 +185,7 @@ function leaveRun(state, content, ctx) {
 /* The verb: `rerun enter` at the door, `rerun leave` anywhere inside, `rerun info`. */
 export function rerun(state, content, ctx, args = {}) {
   const action = String(args.action ?? 'info');
-  if (action === 'enter') return enterRun(state, content, ctx);
+  if (action === 'enter') return enterRun(state, content, ctx, args);
   if (action === 'leave') return leaveRun(state, content, ctx);
   if (action === 'info') return { state: null, result: { ok: true, rerun: rerunBrief(content, state, ctx.now) } };
   return refuse('unknown-action', null, { actions: ['enter', 'leave', 'info'] });

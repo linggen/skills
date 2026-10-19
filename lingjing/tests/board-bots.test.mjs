@@ -11,7 +11,9 @@ const modules = await juanOneModules();
 
 test('every module 卷一\'s boards are played on has a bot', async () => {
   const missing = [];
-  for (const id of modules.keys()) if (!(await loadPair(id)).bot) missing.push(`${id} (${modules.get(id).join(', ')})`);
+  // A game a model plays the other half of (画猜: 银月 names the picture — `meta.ai`) has no bot to win it;
+  // its page-side rules are tests/drawguess*.test.mjs's.
+  for (const id of modules.keys()) { const p = await loadPair(id); if (!p.bot && !p.mod?.meta?.ai) missing.push(`${id} (${modules.get(id).join(', ')})`); }
   assert.deepEqual(missing, []);
 });
 

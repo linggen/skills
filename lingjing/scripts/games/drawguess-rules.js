@@ -126,3 +126,21 @@ export function guessLoop({ send, onReply = () => {}, onError = () => {}, onSett
     get fresh() { return s.version !== 0 && s.version !== s.sent; },
   };
 }
+
+/** The scratch seam's guesser (a 测试存档 never calls her: `&her=stub`): no model, no call — a
+    marked miss on the first look, the word on the second, so a live check walks both paths. */
+export function stubReply(word, n) {
+  if (n <= 1) return '[stub] 这画的什么东西？\n[stub] What is this?\n猜：石头';
+  return `[stub] 哼，是${word.zh}。\n[stub] Hmph, a ${word.en}.\n猜：${word.zh}`;
+}
+
+/** How a 家信 went: every line guessed 'all', some 'some', none 'none' (a line not guessed is
+    still written, in words only). Its fallback (she cannot be asked) is 'written'. */
+export const letterGrade = (got, of) => (got >= of ? 'all' : got > 0 ? 'some' : 'none');
+
+/** A set's rounds (games.json drawguess `data.sets`): each line of the set, the word drawn beside
+    it — by `zh`, from the set's own `words`, else the game's. A line naming no known word is dropped. */
+export function roundsOf(set, words = []) {
+  const all = [...(set?.words ?? []), ...words];
+  return (set?.lines ?? []).map((l) => ({ ...l, word: all.find((w) => w.zh === l.word) ?? null })).filter((l) => l.word);
+}

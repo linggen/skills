@@ -19,6 +19,8 @@ never touched.
   answers it. Each step is a game framed in the story (`frames`: 洛书 a tomb
   door, 华容道 rocks off a road, 炼丹 an antidote…) — at least three different
   games, never the same twice running; each place within `reach` of the last.
+  你画我猜 is in the seed only while 银月 is awake beside him (she names what
+  he draws): give it a `word` from its `words`, or leave it to the rules.
   One to three people, each a distinct `voice`; bring back someone `known`
   by id. Riddles and 论道 prompts are yours; every other puzzle, count and
   reward is the rules' — **never a number**. A fight finale's beast speaks:
