@@ -29,5 +29,7 @@ node lingjing/tools/playtest.mjs --save=pt-x --phone --reloads=25 --steps=300
 - At each tap it checks: something to tap, the tap did something, no console error, a realm on the strip, 回看 and 跳过 work, chip popovers open whole, and a 交差 or 收下 shows feedback.
 - Games are skipped (「算了，往下走」) or won through the page's scratch-only seam (`__lingjingPlay.win`), whichever that game has had less of. Fights are played with real taps, to a win and, on a fork, to a loss.
 - Output goes to `--out`: `findings.jsonl` (one line per finding, with its screenshot), `coverage.json` (scenes, exits, games, fights and chips seen, merged across runs) and `shots/`.
-- Flags: `--route=exit,exit` picks exits in order. `--until=<scene>` stops at a scene. `--games=skip|win` and `--fight=win|lose` force a mode. `--chips=off` skips the chip checks. `--headed` shows the browser.
+- Flags: `--route=exit,exit` picks exits in order. `--until=<scene>` stops at a scene. `--games=skip|win` and `--fight=win|lose` force a mode. `--chips=off` skips the chip checks. `--headed` shows the browser. `--width=1440` (default 1280); `--phone` is 390×844 at DPR 3 with touch taps.
+- `--games=hands` plays each story board with play-human's hands (`--hands=casual` default; per board `rain-basins:idle` sits until the flood, `bread-share:skip` waits for 「算了，往下走」); a board control that changes nothing is a soft `board-dead-tap`.
+- Every `/api` call is timed: over 1.5 s or failed is a soft `api` finding; a slow or dead tap carries `pending` (what was in flight — engine vs page).
 - Exit code 1 means a hard finding.

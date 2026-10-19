@@ -2,8 +2,14 @@
 // tap by tap, the way the player does, and flags every stall.
 //
 //   node tools/playtest.mjs [--save=pt-a] [--from=fresh|<scratch save>|<fixture>] [--route=exit,exit,…]
-//                           [--until=<scene id>] [--steps=400] [--games=skip|play] [--fight=win|lose]
-//                           [--phone] [--headed] [--base=http://localhost:9527] [--out=<dir>] [--keep]
+//                           [--until=<scene id>] [--steps=400] [--games=skip|win|hands] [--hands=casual,<task>:idle|skip]
+//                           [--fight=win|lose] [--phone] [--width=1280] [--headed] [--base=http://localhost:9527] [--out=<dir>]
+//
+// `--games=hands`: each story board is played by tools/play-human.mjs's hands (real pointer, or touch on
+// --phone), by `--hands` policy per board: casual (tries to win), idle (sits until the board's loss, e.g.
+// 接雨's flood, then tries), skip (a few tries, then waits for the stuck clock's 「算了，往下走」 and taps it).
+// --phone is 390×844 at DPR 3, every tap a touch. Every /api request is timed: one over 1.5 s or failed
+// is a soft `api` finding, and an unanswered or slow tap names what was in flight (the engine, or the page).
 //
 // It opens `index.html?save=<name>` (a scratch save — never the player's own;
 // a name the rules would not take is refused here) in a headless Chrome of its
@@ -22,6 +28,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { launch } from './cdp.mjs';
+import { SEE, CHOOSERS, chooserOf, GAME_OF_TASK, POLICIES, LOSS, START, handsFor, tapAt, motion, judgeTap } from './play-human.mjs';
+import { rng } from './board-bots.mjs';
 
 const SAVE_NAME = /^[a-z0-9][a-z0-9_-]{0,31}$/i;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -33,6 +41,15 @@ export function parseFlags(argv) {
     if (m) o[m[1]] = m[2] ?? true;
   }
   return o;
+}
+
+/* `--hands=casual,rain-basins:idle,bread-share:skip` → the policy each board is played at (default casual). */
+export function handsPolicy(spec = 'casual') {
+  const parts = String(spec === true ? 'casual' : spec).split(',').filter(Boolean);
+  const per = Object.fromEntries(parts.filter((x) => x.includes(':')).map((x) => x.split(':')));
+  const all = parts.find((x) => !x.includes(':')) ?? 'casual';
+  for (const v of [all, ...Object.values(per)]) if (!['casual', 'idle', 'skip'].includes(v)) throw new Error(`--hands: unknown policy ${v} (casual|idle|skip)`);
+  return (task) => per[task] ?? all;
 }
 
 /* ── Look, read over the engine (the page's own door), for the save under test ── */
@@ -63,7 +80,7 @@ const OBSERVE = `(() => {
     title: document.querySelector('[data-titlecard]') ? (document.querySelector('[data-titlecard]').innerText || '').trim().slice(0, 40) : null,
     place: document.getElementById('place')?.textContent ?? '', hui: document.getElementById('huiLine')?.textContent ?? '',
     focusSig: (focus?.innerHTML ?? '').replace(/\\s+/g, ' ').replace(/style="[^"]*"/g, '').length + ':' + (focus?.innerText ?? '').slice(0, 120),
-    boxSig: box ? (box.querySelector('.s.on')?.textContent ?? '') + '|' + (box.querySelector('.count')?.textContent ?? '') + '|' + box.querySelectorAll('.ways button').length : '',
+    boxSig: box ? (box.querySelector('.s.on')?.textContent ?? '') + '|' + (box.querySelector('.count')?.textContent ?? '') + '|' + box.querySelectorAll('.ways button').length + '|' + document.querySelectorAll('#dlg .lookchip.found').length : '',
     note: document.querySelector('.donote, .note.do, [data-note]')?.textContent?.trim().slice(0, 80) ?? null,
     fighting: document.body.classList.contains('fighting'),
     seal: (() => { const f = [...document.querySelectorAll('.feat, .wonseal')].find(vis); if (!f) return null; const r = f.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, text: f.textContent.trim().slice(0, 30) }; })(),
@@ -97,6 +114,9 @@ export function choose(snap, ctx) {
   if (snap.boxOn) {
     const inBox = exits.filter((t) => t.where === 'box');
     if (inBox.length) return { kind: 'way', tap: ctx.pick(inBox, snap), why: 'a way inside the box' };
+    // The last line where only its 看 chips go on (黑松岭): a chip, not 跳过 (the passage is already at its end).
+    const lookIn = ways.find((t) => t.where === 'box' && isA(t, 'look-at') && !ctx.looked.has(t.data['look-at']));
+    if (lookIn) return { kind: 'look', tap: lookIn, why: '看 in the box' };
     // 跳过 is a way to read now (2026-10-16, 自动 · 全文 · 跳过): picked once, every passage after goes to its end.
     const skip = first((t) => t.data['dlg-speed'] === 'skip' && !/\bon\b/.test(t.cls));
     if (skip) return { kind: 'skip', tap: skip, why: '跳过' };
@@ -176,15 +196,17 @@ function recorder(out, run) {
 /* ── Settle: wait until the page has answered a tap (or give up) ── */
 async function settle(page, before, verbLook, { ms = 6000 } = {}) {
   const t0 = Date.now();
-  let snap = null, lk = null;
+  let snap = null, lk = null, at3s = null;
   while (Date.now() - t0 < ms) {
     await sleep(250);
+    if (!at3s && Date.now() - t0 > 3000) at3s = page.inFlight(); // what the page waits on, if anything
     snap = await page.evaluate(OBSERVE).catch(() => null);
     if (!snap) continue;
-    if (sigOf(snap) !== sigOf(before)) { await sleep(350); return { snap: await page.evaluate(OBSERVE), changed: true }; }
+    if (sigOf(snap) !== sigOf(before)) { const took = Date.now() - t0; await sleep(350); return { snap: await page.evaluate(OBSERVE), changed: true, ms: took, at3s }; }
   }
+  const pending = page.inFlight();
   lk = await verbLook();
-  return { snap: snap ?? (await page.evaluate(OBSERVE)), changed: lk?.scene?.id !== before.sceneId, look: lk };
+  return { snap: snap ?? (await page.evaluate(OBSERVE)), changed: lk?.scene?.id !== before.sceneId, look: lk, ms: Date.now() - t0, at3s, pending };
 }
 const sigOf = (s) => [s.story, s.boxSig, s.focusSig, s.title, s.fighting, s.logOpen, s.place, s.taps.length, s.popSig, s.status, Boolean(s.seal)].join('§');
 
@@ -198,16 +220,16 @@ export async function crawl(opts) {
   const verb = rulesReader(base, save);
   const route = String(opts.route ?? '').split(',').filter(Boolean);
   const steps = Number(opts.steps ?? 400);
-  const width = opts.phone ? 390 : 1280, height = opts.phone ? 844 : 820;
-  const { page, close } = await launch({ width, height, headless: !opts.headed });
-  if (opts.phone) await page.resize(width, height, true);
+  const width = opts.phone ? 390 : Number(opts.width ?? 1280), height = opts.phone ? 844 : 820;
+  const { page, close } = await launch({ width, height, headless: !opts.headed, touch: Boolean(opts.phone) });
+  const hands = opts.games === 'hands' ? { policy: handsPolicy(opts.hands), hand: handsFor(page, page, page.touch), seed: `${save}-${width}` } : null;
   const shot = (name) => page.screenshot(path.join(out, 'shots', `${save}-${String(name).replace(/[^\w.-]+/g, '_')}.png`)).catch(() => null);
   const ctx = {
     looked: new Set(), valuePicked: false, fights: {}, chipsDone: new Set(), blankSeen: new Set(), overSeen: new Set(),
     // A game is skipped (the page's 「算了，往下走」, once stuck — it pays nothing) or won (the page's own onWin, through the seam):
     // `--games=skip|win`, else whichever this game has had less of.
     gameMode(id) {
-      if (opts.games === 'skip' || opts.games === 'win') return opts.games;
+      if (opts.games === 'skip' || opts.games === 'win' || opts.games === 'hands') return opts.games;
       return (rec.cov.games[`${id}:skip`] ?? 0) <= (rec.cov.games[`${id}:win`] ?? 0) ? 'skip' : 'win';
     },
     pick(ways, snap) {
@@ -231,7 +253,7 @@ export async function crawl(opts) {
     },
     pickBorn(live) { return live.find((t) => t.data.born && t.data.born !== '' && !/stone|石/.test(t.text)) ?? null; },
   };
-  let lastErr = 0, stuck = 0, n = 0, lk = null, blankAt = null, blankFrom = null;
+  let lastErr = 0, lastApi = 0, stuck = 0, n = 0, lk = null, blankAt = null, blankFrom = null;
   /* A fork: the scratch save copied now (the rules' files, never the player's), and the exit to take from it. */
   const dataDir = opts.data ?? path.join(os.homedir(), '.linggen', 'skills', 'lingjing', 'data');
   const forks = [];
@@ -269,6 +291,9 @@ export async function crawl(opts) {
         for (const e of page.errors.slice(lastErr)) rec.find({ kind: 'console', scene: sceneId, what: e.text?.slice(0, 300), shot: await shot(`err-${n}`) });
         lastErr = page.errors.length;
       }
+      // 3b. the engine answers in time: every /api call over 1.5 s, or failed
+      for (const a of page.api.slice(lastApi)) rec.find({ kind: 'api', soft: true, scene: sceneId, what: `${a.verb ? `Verb ${a.verb}` : a.url} ${a.failed ? `failed (${a.error})` : 'took'} ${a.ms} ms`, ...a });
+      lastApi = page.api.length;
       // 4. header sane
       if (!snap.fighting && !snap.title && !/练气|筑基|凡人|结丹|Qi|Mortal|Foundation/.test(snap.status) && !lk?.companion?.away && !/^j\d\d$/.test(lk?.chapter?.hui ?? ''))
         rec.find({ kind: 'header', scene: sceneId, what: `no realm on the strip: «${snap.status.slice(0, 80)}»`, shot: await shot(`head-${n}`) });
@@ -295,10 +320,10 @@ export async function crawl(opts) {
         if (stuck === 2) blankAt = await shot(`blank-${n}`);
         if (stuck < 12) { await sleep(1700); continue; }
         const why = await page.evaluate('globalThis.__lingjingPlay?.why?.() ?? null').catch(() => null);
-        rec.find({ kind: 'stall', scene: sceneId, why, what: 'nothing to tap for 20 s', firstSeen: blankAt, taps: snap.taps.map((t) => `${t.where}:${Object.keys(t.data).join('+')}:${t.text}`).slice(0, 30), shot: await shot(`stall-${n}`) });
+        rec.find({ kind: 'stall', scene: sceneId, why, what: 'nothing to tap for 20 s', pending: page.inFlight(), firstSeen: blankAt, taps: snap.taps.map((t) => `${t.where}:${Object.keys(t.data).join('+')}:${t.text}`).slice(0, 30), shot: await shot(`stall-${n}`) });
         break;
       }
-      if (stuck >= 2) rec.find({ kind: 'slow', soft: true, scene: sceneId, what: `nothing to tap for ${Math.round(stuck * 1.7)} s, then «${act.why}»`, shot: blankAt });
+      if (stuck >= 2) rec.find({ kind: 'slow', soft: true, scene: sceneId, what: `nothing to tap for ${Math.round(stuck * 1.7)} s, then «${act.why}»`, pending: page.inFlight(), shot: blankAt });
       stuck = 0;
       if (act.kind === 'fight' && (ctx.fights[sceneId] = (ctx.fights[sceneId] ?? 0) + 1) > 3) {
         rec.find({ kind: 'fight', scene: sceneId, what: 'a fourth fight here on one run — the fight never ends the scene', shot: await shot(`fights-${sceneId}`) });
@@ -309,6 +334,15 @@ export async function crawl(opts) {
         const ok = await page.evaluate(`globalThis.__lingjingPlay?.stuck?.(${JSON.stringify(act.game)}) ?? 'no-seam'`);
         if (ok === 'no-seam') throw new Error('the page has no __lingjingPlay.stuck seam — install the skill first');
         await sleep(400);
+        continue;
+      }
+      if (act.kind === 'game' && hands) {
+        const r = await playBoardHands(page, { rec, sceneId, shot, task: act.game, policy: hands.policy(act.game), hand: hands.hand, r: rng(`${hands.seed}-${act.game}`) });
+        if (r === 'timeout') break;
+        if (r !== 'skipped') {
+          const { changed } = await settle(page, snap, () => verb('look'), { ms: 9000 });
+          if (!changed) rec.find({ kind: 'dead-win', scene: sceneId, what: `${act.game} ended (${r}) by the hands and nothing moved`, shot: await shot(`hands-end-${n}`) });
+        }
         continue;
       }
       if (act.kind === 'game') {
@@ -342,12 +376,13 @@ export async function crawl(opts) {
       if (act.tap && !act.tap.onScreen) rec.find({ kind: 'below-fold', soft: true, scene: sceneId, what: `${act.why} «${act.tap.text}» stood off screen — scrolled to it`, shot: await shot(`fold-${n}`) });
       if (act.at) await page.clickAt(act.at.x, act.at.y); else await tapEl(page, act.tap);
       // 2. the tap answered
-      const { changed } = await settle(page, snap, () => verb('look'), { ms: act.kind === 'next' ? 3000 : 8000 });
+      const { changed, ms: took, at3s, pending } = await settle(page, snap, () => verb('look'), { ms: act.kind === 'next' ? 3000 : 8000 });
+      if (changed && took > 3000) rec.find({ kind: 'slow-answer', soft: true, scene: sceneId, what: `${act.why} «${act.tap?.text ?? ''}» answered in ${took} ms`, ms: took, pending: at3s });
       if (changed && FEEDBACK.has(act.tap?.data?.do ?? (act.kind === 'meet' ? act.tap.data.meet : ''))) {
         const after = await page.evaluate(OBSERVE);
         if (!after.turned && after.status === snap.status && after.chipsText === snap.chipsText && !after.note) rec.find({ kind: 'no-feedback', scene: sceneId, what: `${act.why} «${act.tap.text}»: no line, no card, no number moved`, shot: await shot(`feedback-${n}`) });
       }
-      if (!changed && act.kind !== 'next') rec.find({ kind: 'dead-tap', scene: sceneId, what: `${act.why} «${act.tap?.text ?? ''}» changed nothing`, data: act.tap?.data, shot: await shot(`dead-${n}`) });
+      if (!changed && act.kind !== 'next') rec.find({ kind: 'dead-tap', scene: sceneId, what: `${act.why} «${act.tap?.text ?? ''}» changed nothing`, data: act.tap?.data, pending, at3s, shot: await shot(`dead-${n}`) });
     }
   } catch (e) {
     rec.find({ kind: 'crash', scene: lk?.scene?.id ?? '?', what: String(e?.stack ?? e).slice(0, 400), shot: await shot('crash') });
@@ -433,6 +468,51 @@ async function playFight(page, snap, { rec, sceneId, shot, outcome, reload = nul
   await sleep(1500);
   if (outcome === 'win' && b?.outcome && b.outcome !== 'won' && b.outcome !== 'win') rec.find({ kind: 'fight', soft: true, scene: sceneId, what: `the win policy ended ${b.outcome}`, shot: await shot(`fight-${sceneId}`) });
 }
+/* ── A story board played by play-human's hands (`--games=hands`): what the eye sees (SEE), the
+   board's chooser, real pointer / touch at the casual policy's pace; every act judged (a control that
+   changes nothing is a soft board-dead-tap). Answers 'won' | 'gone' | 'skipped' | 'timeout'. ── */
+async function playBoardHands(page, { rec, sceneId, shot, task, policy, hand, r, seconds = 240 }) {
+  const host = `[data-game="${task}"]`, game = GAME_OF_TASK[task] ?? task, choose = CHOOSERS[chooserOf(game)], P = POLICIES.casual;
+  const evaluate = (e) => page.evaluate(e);
+  console.log(`    ✋ ${task} (${game}) by hand, ${policy}`);
+  await page.evaluate(`document.querySelector(${JSON.stringify(host)})?.scrollIntoView({ block: 'center' })`);
+  await sleep(600);
+  await shot(`board-${task}-first`);
+  let mode = policy;
+  const t0 = Date.now(), mem = {}, dead = new Set();
+  for (;;) {
+    const el = Date.now() - t0;
+    if (el > seconds * 1000) { rec.find({ kind: 'board-timeout', scene: sceneId, what: `${task} not done by hand (${mode}) in ${seconds} s`, pending: page.inFlight(), shot: await shot(`board-${task}-timeout`) }); return 'timeout'; }
+    const seen = await page.evaluate(SEE(host)).catch(() => null);
+    const out = await page.evaluate(`globalThis.__lingjingPlay?.board(${JSON.stringify(task)}) ?? null`).catch(() => null);
+    if (!seen || seen.won || out?.won || out?.sent) {
+      const won = Boolean(seen?.won || out?.won || out?.sent);
+      rec.seen('games', `${task}:hands-${won ? 'won' : 'gone'}`);
+      console.log(`      → ${won ? 'won' : 'gone'} in ${Math.round(el / 1000)} s${out?.grade ? ` ${out.grade}` : ''}${out?.stars != null ? ` ★${out.stars}` : ''}`);
+      await shot(`board-${task}-end`);
+      return won ? 'won' : 'gone';
+    }
+    // idle: sits until the board's own loss (接雨's flood), or a minute, then tries
+    if (mode === 'idle' && (LOSS[game]?.test(seen.say) || el > 60000)) {
+      rec.seen('games', `${task}:hands-lost`); console.log(`      … ${LOSS[game]?.test(seen.say) ? `lost («${seen.say.slice(0, 30)}»)` : 'a minute idle'}, now trying`);
+      await shot(`board-${task}-loss`); mode = 'casual'; continue;
+    }
+    if (mode === 'skip') {
+      const k = await page.evaluate(`(() => { const e = [...document.querySelectorAll('[data-game-skip="${task}"]')].find((x) => x.getClientRects().length); if (!e) return null; e.scrollIntoView({ block: 'nearest' }); const b = e.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; })()`);
+      if (k) { await sleep(400); await tapAt(hand, k.x, k.y); rec.seen('games', `${task}:hands-skip`); console.log(`      → 算了，往下走 after ${Math.round(el / 1000)} s`); await sleep(1500); return 'skipped'; }
+      if (el > 20000) { await sleep(1000); continue; } // a few honest tries, then he sits: the stuck clock
+    }
+    const go = seen.controls.find((c) => START.test(c.g ?? '') && c.g !== 'again');
+    if (mode === 'idle') { if (go) { await sleep(500); await tapAt(hand, go.x, go.y); } await sleep(200); continue; }
+    const a = choose(seen, r, mem) ?? (go ? { kind: 'tap', c: go } : null);
+    if (!a) { await sleep(80); continue; }
+    await sleep(P.react[0] + r() * (P.react[1] - P.react[0]) - 270);
+    const m = motion(hand, a, r, P, page.touch);
+    const got = await judgeTap(evaluate, host, m.run);
+    if (got === 'dead' && a.kind === 'tap' && !dead.has(m.key)) { dead.add(m.key); rec.find({ kind: 'board-dead-tap', soft: true, scene: sceneId, what: `${task}: ${m.key} «${a.c?.text ?? ''}» changed nothing on the board`, shot: await shot(`board-dead-${task}`) }); }
+  }
+}
+
 /* A tap on the very element observed: scrolled into view as a player would, re-measured, then
    clicked with the mouse at its centre (hit-tested — a card over it takes the click). */
 async function tapEl(page, t) {

@@ -17,8 +17,9 @@ const CHROME = [
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/// Start a headless Chrome on a fresh profile; answers { page, close }.
-export async function launch({ width = 1280, height = 820, headless = true } = {}) {
+/// Start a headless Chrome on a fresh profile; answers { page, close }. `touch`: a phone — DPR `scale`
+/// (default 3), touch input emulated, and the page's taps made as touches.
+export async function launch({ width = 1280, height = 820, headless = true, touch = false, scale = touch ? 3 : 1 } = {}) {
   if (!CHROME) throw new Error('no Chrome found (set CHROME=/path/to/chrome)');
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-playtest-'));
   const port = 9300 + Math.floor(Math.random() * 500);
@@ -33,8 +34,9 @@ export async function launch({ width = 1280, height = 820, headless = true } = {
   }
   const target = targets?.find((t) => t.type === 'page');
   if (!target) { proc.kill(); throw new Error('Chrome did not open a page'); }
-  const page = await connect(target.webSocketDebuggerUrl);
-  await page.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
+  const page = await connect(target.webSocketDebuggerUrl, { touch, scale });
+  await page.resize(width, height, touch);
+  if (touch) await page.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
   const close = async () => {
     try { page.ws.close(); } catch {}
     proc.kill();
@@ -45,7 +47,7 @@ export async function launch({ width = 1280, height = 820, headless = true } = {
 }
 
 /// One page over its debugger socket: send(method, params), on(event, fn), and the helpers the crawler uses.
-async function connect(url) {
+async function connect(url, { touch = false, scale = 1 } = {}) {
   const ws = new WebSocket(url);
   await new Promise((ok, bad) => { ws.onopen = ok; ws.onerror = bad; });
   let id = 0;
@@ -63,6 +65,7 @@ async function connect(url) {
   await send('Page.enable');
   await send('Runtime.enable');
   await send('Log.enable');
+  await send('Network.enable');
 
   /* Every console error and uncaught exception the page raises, kept in order. */
   const errors = [];
@@ -72,6 +75,26 @@ async function connect(url) {
     errors.push({ kind: `console.${p.type}`, text: p.args.map((a) => a.value ?? a.description ?? '').join(' ') });
   });
   on('Log.entryAdded', (p) => { if (p.entry.level === 'error') errors.push({ kind: `log.${p.entry.source}`, text: p.entry.text, url: p.entry.url }); });
+
+  /* Every /api request timed: the slow (> 1500 ms) and failed ones kept in order, and what is in
+     flight now — to tell a stall's cause (waiting on the engine, or the page). */
+  const api = [], inflight = new Map();
+  on('Network.requestWillBeSent', (p) => {
+    const url = p.request.url;
+    if (!url.includes('/api/')) return;
+    let verb = '';
+    try { verb = JSON.parse(p.request.postData ?? '{}').verb ?? ''; } catch {}
+    inflight.set(p.requestId, { url: url.replace(/^https?:\/\/[^/]+/, ''), verb, at: Date.now() });
+  });
+  const ended = (p, failed) => {
+    const f = inflight.get(p.requestId); if (!f) return;
+    inflight.delete(p.requestId);
+    const ms = Date.now() - f.at;
+    if (ms > 1500 || failed) api.push({ url: f.url, verb: f.verb, ms, failed, error: failed ? p.errorText : undefined });
+  };
+  on('Network.loadingFinished', (p) => ended(p, false));
+  on('Network.loadingFailed', (p) => ended(p, true));
+  const inFlight = () => [...inflight.values()].map((f) => `${f.verb ? `Verb ${f.verb}` : f.url} ${Date.now() - f.at}ms`);
 
   /// Run an expression in the page; answers its (JSON-able) value.
   const evaluate = async (expr) => {
@@ -93,8 +116,17 @@ async function connect(url) {
     return clickAt(box.x, box.y);
   };
   const clickAt = async (x, y) => {
+    if (touch) { await touchAt('touchStart', x, y); await sleep(60); await touchAt('touchEnd', x, y); return true; }
     for (const type of ['mouseMoved', 'mousePressed', 'mouseReleased']) await send('Input.dispatchMouseEvent', { type, x, y, button: 'left', clickCount: 1 });
     return true;
+  };
+  const touchAt = (type, x, y) => send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y, radiusX: 6, radiusY: 6, force: 1 }] });
+  /* A mouse shaped as Playwright's (page.mouse), for play-human's hands: a move while down carries the held button. */
+  let at = { x: 0, y: 0 }, held = false;
+  const mouse = {
+    move: (x, y) => { at = { x, y }; return send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y, ...(held ? { button: 'left', buttons: 1 } : {}) }); },
+    down: () => { held = true; return send('Input.dispatchMouseEvent', { type: 'mousePressed', ...at, button: 'left', buttons: 1, clickCount: 1 }); },
+    up: () => { held = false; return send('Input.dispatchMouseEvent', { type: 'mouseReleased', ...at, button: 'left', buttons: 0, clickCount: 1 }); },
   };
   const screenshot = async (file) => {
     const r = await send('Page.captureScreenshot', { format: 'png' });
@@ -102,6 +134,6 @@ async function connect(url) {
     fs.writeFileSync(file, Buffer.from(r.data, 'base64'));
     return file;
   };
-  const resize = (width, height, mobile = false) => send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile });
-  return { ws, send, on, errors, evaluate, goto, click, clickAt, screenshot, resize };
+  const resize = (width, height, mobile = false) => send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: scale, mobile });
+  return { ws, send, on, errors, api, inFlight, touch, mouse, evaluate, goto, click, clickAt, screenshot, resize };
 }

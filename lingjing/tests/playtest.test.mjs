@@ -57,3 +57,12 @@ test('a way on that is a card of its own holds the story view off its last beat:
   assert.equal(cardHoldsWay({ scene: { panel: { taps: [] }, exits: [{ id: 'go', won: true, game: { kind: 'duel', id: 'd' } }] } }), false);
   assert.equal(cardHoldsWay({ scene: { panel: { taps: [] }, exits: [{ id: 'go', born: { kept: true } }] } }), false, 'roots already read: a plain step');
 });
+
+test('--hands: one policy for every board, or one per board by its task (playtest --games=hands)', async () => {
+  const { handsPolicy } = await import('../tools/playtest.mjs');
+  assert.equal(handsPolicy()('rain-basins'), 'casual');
+  const p = handsPolicy('rain-basins:idle,bread-share:skip');
+  assert.deepEqual(['rain-basins', 'bread-share', 'cave-stone'].map(p), ['idle', 'skip', 'casual']);
+  assert.equal(handsPolicy('idle,cave-stone:casual')('fall-storm'), 'idle');
+  assert.throws(() => handsPolicy('rain-basins:lose'), /unknown policy/);
+});

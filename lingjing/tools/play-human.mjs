@@ -44,7 +44,7 @@ export const TOOL_LOOKS = '.g-rope-spring, .g-rope-seal, .g-rope-crow, .g-puff, 
 export const UI_GLYPHS = /(^|[\s-])(hit|pad|teach|tapink|ink-ring|pips?|ripple|splash|drop|stain|glow|streak|trail|aim|dot|ring|wash|fullmark|waterfill|gust-band|sr|bar|meter|track|cursor|seal|burp|steam|flash|spark|chaff|dust|bolt|fx)([\s-]|$)/;
 
 /* ── In the page: what the eye sees ── */
-const SEE = (host) => `(() => {
+export const SEE = (host) => `(() => {
   const host = document.querySelector(${JSON.stringify(host)}); if (!host || !host.getClientRects().length) return null;
   const W = innerWidth, H = innerHeight;
   const vis = (e) => { if (!e.getClientRects().length) return false; let a = e; while (a && a !== document.body) { const cs = getComputedStyle(a); if (cs.visibility === 'hidden' || cs.display === 'none' || Number(cs.opacity) < 0.05) return false; a = a.parentElement; } return true; };
@@ -64,7 +64,7 @@ const SEE = (host) => `(() => {
 
 /* What the board shows, as tokens: each element's tag, class, data and own words — never its
    geometry (a swinging thing moves every frame; a cut vine or a lit control changes a token). */
-const DIGEST = (host) => `(() => {
+export const DIGEST = (host) => `(() => {
   const host = document.querySelector(${JSON.stringify(host)}); if (!host) return ['<gone>'];
   const out = [];
   for (const e of host.querySelectorAll('*')) {
@@ -117,7 +117,7 @@ const DRAWN = (host, allow) => `(() => {
 })()`;
 
 /* ── Hands: real input at frame rate ── */
-function handsFor(page, cdp, touch) {
+export function handsFor(page, cdp, touch) {
   const ev = async (type, x, y) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y, radiusX: 6, radiusY: 6, force: 1 }] });
   return {
     async down(x, y) { if (touch) await ev('touchStart', x, y); else { await page.mouse.move(x, y); await page.mouse.down(); } },
@@ -133,11 +133,11 @@ export const POLICIES = {
   sloppy: { react: [600, 1200], aim: 2.6, lapse: 0.15, wrong: 0.25, curious: false },
   idle: { react: [400, 900], aim: 1, lapse: 0, wrong: 0, idle: true },
 };
-const START = /^(start|play|begin|go|next|again)$/;
+export const START = /^(start|play|begin|go|next|again)$/;
 const QUIT = /^(skip|giveup|quit)$/;
 
 /* Per kind of board, which visible thing to act on (the eye's choice). Answers an action or null. */
-const CHOOSERS = {
+export const CHOOSERS = {
   rain: (seen) => { const s = seen.controls.filter((c) => c.g === 'spot' && /g-stain|g-drop/.test(c.marks) && !/has-basin/.test(c.cls)); return s.length ? { kind: 'tap', c: s[0] } : null; },
   cut: (seen, r, mem) => {
     const next = seen.controls.find((c) => c.g === 'next');
@@ -171,8 +171,51 @@ const CHOOSERS = {
     return c.kind === 'hold' || c.kind === 'drag' ? { kind: 'hold', c, ms: 300 + r() * 2200 } : c.kind === 'swipe' ? { kind: 'swipe', c } : { kind: 'tap', c };
   },
 };
-const chooserOf = (game) => (game === 'rain' ? 'rain' : ['bread', 'fantongcut', 'rentrope', 'tauntrope', 'wayrope'].includes(game) ? 'cut' : ['deerarc', 'caveecho', 'luwing', 'throwkit'].includes(game) ? 'arc' : 'any');
-const LOSS = { rain: /成河/ };
+export const chooserOf = (game) => (game === 'rain' ? 'rain' : ['bread', 'fantongcut', 'rentrope', 'tauntrope', 'wayrope'].includes(game) ? 'cut' : ['deerarc', 'caveecho', 'luwing', 'throwkit'].includes(game) ? 'arc' : 'any');
+export const LOSS = { rain: /成河/ };
+/* A story board's task id (its [data-game] host) → its game kind (the chooser's key): games.json. */
+export const GAME_OF_TASK = Object.fromEntries(JSON.parse(fs.readFileSync(path.join(ROOT, 'worlds/jiuding/games.json'), 'utf8')).games.filter((g) => g.task).map((g) => [g.task, g.id]));
+
+/* A tap judged: the board's idle motion learned over the reaction, then the act, then 150 / 500 ms.
+   `evaluate` runs an expression in the page (Playwright's page.evaluate or cdp.mjs's). */
+export async function judgeTap(evaluate, host, act) {
+  const digest = () => evaluate(DIGEST(host));
+  const diff = (a, b) => { const m = new Map(); for (const x of a) m.set(x, (m.get(x) ?? 0) + 1); for (const x of b) m.set(x, (m.get(x) ?? 0) - 1); return [...m].filter(([, v]) => v).map(([k]) => k); };
+  const a = await digest(); await sleep(120); const b = await digest();
+  const idle = new Set(diff(a, b));
+  await act();
+  await sleep(150);
+  const c = await digest();
+  if (diff(b, c).some((x) => !idle.has(x))) return 'ok';
+  await sleep(350);
+  return diff(b, await digest()).some((x) => !idle.has(x)) ? 'slow' : 'dead';
+}
+
+/* A chooser's action as the hand makes it: aim error by the policy, the path of a swipe, a drag, a hold.
+   Answers { key, x, y, run } — `run` moves the hand. */
+export function motion(hand, a, r, P, touch) {
+  const err = (touch ? 7 : 4) * P.aim;
+  const ax = (x) => x + gauss(r) * err, ay = (y) => y + gauss(r) * err;
+  if (a.kind === 'tap' || a.kind === 'tap-at') {
+    const x = ax(a.c?.x ?? a.x), y = ay(a.c?.y ?? a.y);
+    return { key: a.c?.key ?? 'in-flight', x, y, run: () => tapAt(hand, x, y) };
+  }
+  if (a.kind === 'swipe') {
+    const [x1, y1, x2, y2] = a.c.line ?? [a.c.l, a.c.t, a.c.r, a.c.b];
+    const k = 0.2 + r() * 0.6, mx = x1 + (x2 - x1) * k, my = y1 + (y2 - y1) * k;
+    const len = Math.hypot(x2 - x1, y2 - y1) || 1, nx = -(y2 - y1) / len, ny = (x2 - x1) / len, reach = 22 + r() * 30;
+    const steps = 6 + Math.floor(r() * 10);
+    const pts = Array.from({ length: steps + 1 }, (_, i) => [ax(mx - nx * reach) + (2 * nx * reach) * i / steps, ay(my - ny * reach) + (2 * ny * reach) * i / steps]);
+    return { key: a.c.key, run: () => hand.path(pts) };
+  }
+  if (a.kind === 'drag') {
+    const steps = 14 + Math.floor(r() * 16), [x0, y0] = a.from, [x1, y1] = a.to;
+    const pts = Array.from({ length: steps + 1 }, (_, i) => [x0 + (x1 - x0) * i / steps + gauss(r) * 0.6, y0 + (y1 - y0) * i / steps + gauss(r) * 0.6]);
+    return { key: 'drag', run: async () => { await hand.down(...pts[0]); for (const p of pts.slice(1)) { await sleep(16); await hand.move(...p); } await sleep(150 + r() * 400); await hand.up(...pts.at(-1)); } };
+  }
+  const x = ax(a.c.x), y = ay(a.c.y); // hold
+  return { key: a.c.key, run: async () => { await hand.down(x, y); await sleep(a.ms); await hand.up(x, y); } };
+}
 
 /* ── One run ── */
 async function playOnce(browser, t, { width, policy, seed, seconds, out, base }) {
@@ -213,19 +256,10 @@ async function playOnce(browser, t, { width, policy, seed, seconds, out, base })
       for (const [k, v] of Object.entries(d)) drawnAll[k] = Math.max(drawnAll[k] ?? 0, v);
     };
     await look('first sight');
-    const digest = () => page.evaluate(DIGEST(t.host));
-    const diff = (a, b) => { const m = new Map(); for (const x of a) m.set(x, (m.get(x) ?? 0) + 1); for (const x of b) m.set(x, (m.get(x) ?? 0) - 1); return [...m].filter(([, v]) => v).map(([k]) => k); };
-    // A tap judged: the board's idle motion learned over the reaction, then the tap, then 150 / 500 ms.
     const judged = async (key, act) => {
-      const a = await digest(); await sleep(120); const b = await digest();
-      const idle = new Set(diff(a, b));
-      await act();
-      await sleep(150);
-      const c = await digest();
-      let moved = diff(b, c).filter((x) => !idle.has(x)).length > 0, slow = false;
-      if (!moved) { await sleep(350); const d = await digest(); slow = diff(b, d).filter((x) => !idle.has(x)).length > 0; }
-      const e = touched.get(key) ?? { n: 0, changed: 0 }; e.n++; if (moved || slow) e.changed++; touched.set(key, e);
-      return moved ? 'ok' : slow ? 'slow' : 'dead';
+      const got = await judgeTap((e) => page.evaluate(e), t.host, act);
+      const e = touched.get(key) ?? { n: 0, changed: 0 }; e.n++; if (got !== 'dead') e.changed++; touched.set(key, e);
+      return got;
     };
     const t0 = Date.now(), mem = {};
     let lapseUntil = 0, poked = new Set(), lossSeen = false, deadLogged = new Set();
@@ -265,29 +299,12 @@ async function playOnce(browser, t, { width, policy, seed, seconds, out, base })
       if (a && r() < P.wrong && seen.controls.length) { const c = seen.controls[Math.floor(r() * seen.controls.length)]; if (!QUIT.test(c.g ?? '')) a = c.kind === 'swipe' ? { kind: 'swipe', c } : { kind: 'tap', c }; }
       if (!a) { await sleep(80); continue; }
       await sleep(P.react[0] + r() * (P.react[1] - P.react[0]) - 270); // the reaction (the judge's sampling is the rest)
-      const err = (touch ? 7 : 4) * P.aim;
-      const ax = (x) => x + gauss(r) * err, ay = (y) => y + gauss(r) * err;
       res.taps++;
+      const m = motion(hand, a, r, P, touch);
+      const got = await judged(m.key, m.run);
       if (a.kind === 'tap' || a.kind === 'tap-at') {
-        const x = ax(a.c?.x ?? a.x), y = ay(a.c?.y ?? a.y);
-        const key = a.c?.key ?? 'in-flight';
-        const got = await judged(key, () => tapAt(hand, x, y));
-        if (got === 'dead' && a.c && !deadLogged.has(key)) { deadLogged.add(key); findings.push({ kind: 'dead-tap', what: `${a.c.key} "${a.c.text}"`, x: Math.round(x), y: Math.round(y), at: seen.say }); }
-        if (got === 'slow' && a.c && !deadLogged.has('slow' + key)) { deadLogged.add('slow' + key); findings.push({ kind: 'slow-tap', what: `${a.c.key} "${a.c.text}"` }); }
-      } else if (a.kind === 'swipe') {
-        const [x1, y1, x2, y2] = a.c.line ?? [a.c.l, a.c.t, a.c.r, a.c.b];
-        const k = 0.2 + r() * 0.6, mx = x1 + (x2 - x1) * k, my = y1 + (y2 - y1) * k;
-        const len = Math.hypot(x2 - x1, y2 - y1) || 1, nx = -(y2 - y1) / len, ny = (x2 - x1) / len, reach = 22 + r() * 30;
-        const steps = 6 + Math.floor(r() * 10);
-        const pts = Array.from({ length: steps + 1 }, (_, i) => [ax(mx - nx * reach) + (2 * nx * reach) * i / steps, ay(my - ny * reach) + (2 * ny * reach) * i / steps]);
-        await judged(a.c.key, () => hand.path(pts));
-      } else if (a.kind === 'drag') {
-        const steps = 14 + Math.floor(r() * 16), [x0, y0] = a.from, [x1, y1] = a.to;
-        const pts = Array.from({ length: steps + 1 }, (_, i) => [x0 + (x1 - x0) * i / steps + gauss(r) * 0.6, y0 + (y1 - y0) * i / steps + gauss(r) * 0.6]);
-        await judged('drag', async () => { await hand.down(...pts[0]); for (const p of pts.slice(1)) { await sleep(16); await hand.move(...p); } await sleep(150 + r() * 400); await hand.up(...pts.at(-1)); });
-      } else if (a.kind === 'hold') {
-        const x = ax(a.c.x), y = ay(a.c.y);
-        await judged(a.c.key, async () => { await hand.down(x, y); await sleep(a.ms); await hand.up(x, y); });
+        if (got === 'dead' && a.c && !deadLogged.has(m.key)) { deadLogged.add(m.key); findings.push({ kind: 'dead-tap', what: `${a.c.key} "${a.c.text}"`, x: Math.round(m.x), y: Math.round(m.y), at: seen.say }); }
+        if (got === 'slow' && a.c && !deadLogged.has('slow' + m.key)) { deadLogged.add('slow' + m.key); findings.push({ kind: 'slow-tap', what: `${a.c.key} "${a.c.text}"` }); }
       }
     }
     if (!res.won) res.ms = Date.now() - t0;
@@ -311,7 +328,7 @@ async function playOnce(browser, t, { width, policy, seed, seconds, out, base })
   return res;
 }
 
-const tapAt = async (hand, x, y) => { await hand.down(x, y); await sleep(70 + Math.random() * 60); await hand.up(x, y); };
+export const tapAt = async (hand, x, y) => { await hand.down(x, y); await sleep(70 + Math.random() * 60); await hand.up(x, y); };
 
 /* After a win: the end frame stands; no fresh board flashes back before the story moves on. */
 async function endFrame(page, t, shot, findings) {
